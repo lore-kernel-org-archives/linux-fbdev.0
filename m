@@ -2,329 +2,186 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B06AC433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 20 May 2022 06:19:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05CEBC433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 20 May 2022 12:40:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239565AbiETGTV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 20 May 2022 02:19:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47656 "EHLO
+        id S1349285AbiETMkg convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 20 May 2022 08:40:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34410 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233905AbiETGTV (ORCPT
+        with ESMTP id S1349254AbiETMkf (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 20 May 2022 02:19:21 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id C2F9B14C74D
-        for <linux-fbdev@vger.kernel.org>; Thu, 19 May 2022 23:19:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1653027558;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=WWnyUXwbnXllaQ0uv1b5t0P1ieqzLCHOX4I/wGwYkZE=;
-        b=dv33vae/q6R133aTOEuR7ZgcVIk6x++T7txCoP8qdnwNq2XudQG/rQIH89DSqIQ6knhXcM
-        eX9dQbcjUZ9iCROfmiqjFhevTEPUpOknj6XXRNPMS/MRc8obA2mOud67BMIO9UU7n7jgq2
-        2Tl7MZG+WQabqmJYYvpDBBetF0ZVfWg=
-Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
- [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-606-IEOqqgIxOvyENwiVfmCjPg-1; Fri, 20 May 2022 02:19:14 -0400
-X-MC-Unique: IEOqqgIxOvyENwiVfmCjPg-1
-Received: by mail-wr1-f71.google.com with SMTP id o11-20020adfca0b000000b0020adc114131so2268835wrh.8
-        for <linux-fbdev@vger.kernel.org>; Thu, 19 May 2022 23:19:14 -0700 (PDT)
+        Fri, 20 May 2022 08:40:35 -0400
+Received: from mail-qt1-f170.google.com (mail-qt1-f170.google.com [209.85.160.170])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 193871649AF;
+        Fri, 20 May 2022 05:40:34 -0700 (PDT)
+Received: by mail-qt1-f170.google.com with SMTP id y15so2511169qtx.4;
+        Fri, 20 May 2022 05:40:34 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=WWnyUXwbnXllaQ0uv1b5t0P1ieqzLCHOX4I/wGwYkZE=;
-        b=mOrLZ7wtbQnpC0ZqbgdJxI+NUPF5CclVsCh6QuvIJUjfeOceV/pvSddvVzn1szxltx
-         9MSGfvIVeBb+6xIiJWmrAbn24+nuD5yA5XYAgV9l7F7WlcNxlu/yUAJyZ7CwSr2PcU8P
-         NraRt92It4qUKqq/JE4fABWu3x/KoZ9xvWH2WGnSya+jfJfBdtstadXpHCiYuwGPq27s
-         pa8bM7PtKpxXwxW1NaT5RTcsNzcIL1P9N4b7pLchJgrlyr7KnBBxMIDZHmeYmEM5XR2x
-         eXjW0KRkcDt9lFYTT/9p9SyEec9JSqVn2wwhy8KkJnPGQkR1+/WX+tBmuwaq2vYp46Nz
-         WLuA==
-X-Gm-Message-State: AOAM532qomUZOo42PzEjCJlhlB75KbcjB7k4Zh1/AVU5UvjnT3BjGi+k
-        J4K6+mWhrO+aSd2TeYODfoE9fPMz3iGKFWVLGphwzhU31+v6+R8hkS5EDrpQf4FkKFoBh1q1Tt4
-        0BOj8kc25AuOmQyArzabc42Y=
-X-Received: by 2002:adf:ea0a:0:b0:20f:afa:c885 with SMTP id q10-20020adfea0a000000b0020f0afac885mr947009wrm.640.1653027553116;
-        Thu, 19 May 2022 23:19:13 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJw1apKhwtDuwN5y6ql+wtzPt4dv5/GCFcazI5SvaYczGFn7reMg6aU/08qipp7Qzw+vBvg6qg==
-X-Received: by 2002:adf:ea0a:0:b0:20f:afa:c885 with SMTP id q10-20020adfea0a000000b0020f0afac885mr946992wrm.640.1653027552861;
-        Thu, 19 May 2022 23:19:12 -0700 (PDT)
-Received: from [192.168.1.129] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id s26-20020adfa29a000000b0020d069148bcsm1433018wra.110.2022.05.19.23.19.11
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=AW3WbgwLSP0WZKYPK3Y6DQ8WAhPkJkHKkMhSdaktb4M=;
+        b=ci526RxuduDAZtSAK1B75bBv5EU8oW/UM99VYulFLoW0SXbQKgheOVlkKITJCSIzWo
+         KCVz8Vbz8LaRCqZmvBTadqD+PqharqnlSlidLU6xr6EOm9vs5pKDcTLMUkT2wXlf4f7i
+         qqIzhB1wg3g1HIZYq3ruMU4yVVHRsFvGKUkz/N2X61c3RLAmNF21M+sqaaXD3FhwywJU
+         HvrRlvPft9vzFShBS37mBjfVMrN9Opl+rT57FeeAjjiPWxqMsCI9LOuH+BVg3DSXekJ5
+         rdXI41P0lEYLKmucAsODcq8p1ryDd8kAhmngpcoPYk8kr/+gNMcniyrGrb+pTdkVk1yc
+         exMQ==
+X-Gm-Message-State: AOAM531GwRBYfXAHVFdPGs/6F76fA6xx6W9WD+dbC/e2iDHZXot+Yx6y
+        iz3Hcl1LWgbGk4vj9t3tbqhNNOfDbDMAAQ==
+X-Google-Smtp-Source: ABdhPJwlffsHGkLQuTm/hpnqLikeezIRbe5GuMm2uJSZ35XfJGXdhcJxKEOaW3CdGTte+VCjB79OLQ==
+X-Received: by 2002:a05:622a:1654:b0:2f3:deaa:4d53 with SMTP id y20-20020a05622a165400b002f3deaa4d53mr7354433qtj.232.1653050432999;
+        Fri, 20 May 2022 05:40:32 -0700 (PDT)
+Received: from mail-yw1-f179.google.com (mail-yw1-f179.google.com. [209.85.128.179])
+        by smtp.gmail.com with ESMTPSA id i18-20020ac84f52000000b002f9114d2ebcsm2627854qtw.17.2022.05.20.05.40.32
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 19 May 2022 23:19:12 -0700 (PDT)
-Message-ID: <84a550c3-dcef-17ac-0ae5-666cdf0fb67e@redhat.com>
-Date:   Fri, 20 May 2022 08:19:11 +0200
+        Fri, 20 May 2022 05:40:32 -0700 (PDT)
+Received: by mail-yw1-f179.google.com with SMTP id 00721157ae682-2ff90e0937aso11101967b3.4;
+        Fri, 20 May 2022 05:40:32 -0700 (PDT)
+X-Received: by 2002:a81:9b0c:0:b0:2f4:c522:7d3c with SMTP id
+ s12-20020a819b0c000000b002f4c5227d3cmr9969695ywg.316.1653050431948; Fri, 20
+ May 2022 05:40:31 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.0
-Subject: Re: [PATCH 2/2] drm/tiny: Add ofdrm for Open Firmware framebuffers
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, airlied@linux.ie,
-        daniel@ffwll.ch, deller@gmx.de, maxime@cerno.tech,
-        sam@ravnborg.org, msuchanek@suse.de, mpe@ellerman.id.au,
-        benh@kernel.crashing.org, paulus@samba.org
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-References: <20220518183006.14548-1-tzimmermann@suse.de>
- <20220518183006.14548-3-tzimmermann@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <20220518183006.14548-3-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <6285958d.+Z2aDZ4O1Y9eiazd%lkp@intel.com> <0530d502-1291-23f3-64ac-97bd38a26bd4@roeck-us.net>
+In-Reply-To: <0530d502-1291-23f3-64ac-97bd38a26bd4@roeck-us.net>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Fri, 20 May 2022 14:40:20 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdU3SYOwE5ftDwymQpVwWmpbC=1Ytyp0Y9GaeUS2i1cP+A@mail.gmail.com>
+Message-ID: <CAMuHMdU3SYOwE5ftDwymQpVwWmpbC=1Ytyp0Y9GaeUS2i1cP+A@mail.gmail.com>
+Subject: Re: [linux-next:master] BUILD REGRESSION 736ee37e2e8eed7fe48d0a37ee5a709514d478b3
+To:     Guenter Roeck <linux@roeck-us.net>
+Cc:     kernel test robot <lkp@intel.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        linux-staging@lists.linux.dev,
+        "open list:TI ETHERNET SWITCH DRIVER (CPSW)" 
+        <linux-omap@vger.kernel.org>, linux-nvme@lists.infradead.org,
+        linux-hwmon@vger.kernel.org,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        KVM list <kvm@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        amd-gfx list <amd-gfx@lists.freedesktop.org>,
+        Linux Memory Management List <linux-mm@kvack.org>,
+        Luc Van Oostenryck <luc.vanoostenryck@gmail.com>,
+        linux-sparse@vger.kernel.org,
+        linux-m68k <linux-m68k@lists.linux-m68k.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Thomas,
+Hi Günter
 
-On 5/18/22 20:30, Thomas Zimmermann wrote:
+On Thu, May 19, 2022 at 8:48 AM Guenter Roeck <linux@roeck-us.net> wrote:
+> On 5/18/22 17:55, kernel test robot wrote:
+> > tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git master
+> > branch HEAD: 736ee37e2e8eed7fe48d0a37ee5a709514d478b3  Add linux-next specific files for 20220518
+> >
+> > Error/Warning reports:
+> >
+> > https://lore.kernel.org/linux-mm/202204291924.vTGZmerI-lkp@intel.com
+> > https://lore.kernel.org/linux-mm/202205041248.WgCwPcEV-lkp@intel.com
+> > https://lore.kernel.org/linux-mm/202205122113.uLKzd3SZ-lkp@intel.com
+> > https://lore.kernel.org/linux-mm/202205172344.3GFeaum1-lkp@intel.com
+> > https://lore.kernel.org/linux-mm/202205190527.o9wVEvHI-lkp@intel.com
+> >
+> > Error/Warning: (recently discovered and may have been fixed)
+> >
+> [ .. ]
+> > drivers/hwmon/nct6775-platform.c:199:9: sparse:    unsigned char
+> > drivers/hwmon/nct6775-platform.c:199:9: sparse:    void
+>
+> This is getting tiresome. Every driver using outb() on m68k will
+> experience that "problem". As far as I can see, it is caused by
+>
+> #define out_8(addr,b) (void)((*(__force volatile u8 *) (unsigned long)(addr)) = (b))
+>
+> in arch/m68k/include/asm/raw_io.h. I have no idea what the
+> "(void)" is for,
 
->  
-> +config DRM_OFDRM
-> +	tristate "Open Firmware display driver"
-> +	depends on DRM && MMU && PPC
+The "(void)" makes sure there is no return value.
+Which matters if the result of a function returning void is propagated
+to another function returning void.
 
-Shouldn't depend on OF? I mean, is a DRM driver for Open Firmware after all :)
+> but removing it "fixes" the problem.
 
-I know that the old drivers/video/fbdev/offb.c doesn't, but I think that is a
-but and should `depends on OF || COMPILE_TEST`
+This introduces new problems (m68k all{mod,yes}config):
 
-> +
-> +/*
-> + * Helpers for display nodes
-> + */
-> +
-> +static int display_get_validated_int(struct drm_device *dev, const char *name, uint32_t value)
-> +{
-> +	if (value > INT_MAX) {
-> +		drm_err(dev, "invalid framebuffer %s of %u\n", name, value);
-> +		return -EINVAL;
-> +	}
-> +	return (int)value;
-> +}
-> +
-> +static int display_get_validated_int0(struct drm_device *dev, const char *name, uint32_t value)
-> +{
-> +	if (!value) {
-> +		drm_err(dev, "invalid framebuffer %s of %u\n", name, value);
-> +		return -EINVAL;
-> +	}
-> +	return display_get_validated_int(dev, name, value);
-> +}
-> +
+    In file included from arch/m68k/include/asm/io_mm.h:25,
+                     from arch/m68k/include/asm/io.h:8,
+                     from include/linux/io.h:13,
+                     from include/linux/of_address.h:7,
+                     from drivers/gpu/drm/msm/adreno/adreno_gpu.c:13:
+    drivers/gpu/drm/msm/adreno/a6xx_gmu.h: In function ‘gmu_write_rscc’:
+    arch/m68k/include/asm/raw_io.h:34:80: error: ‘return’ with a
+value, in function returning void [-Werror=return-type]
+       34 | #define out_le32(addr,l) ((*(__force volatile __le32 *)
+(unsigned long)(addr)) = cpu_to_le32(l))
+          |
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~
+    arch/m68k/include/asm/io_mm.h:397:26: note: in expansion of macro ‘out_le32’
+      397 | #define writel(val,addr) out_le32((addr),(val))
+          |                          ^~~~~~~~
+    drivers/gpu/drm/msm/msm_drv.h:468:32: note: in expansion of macro ‘writel’
+      468 | #define msm_writel(data, addr) writel((data), (addr))
+          |                                ^~~~~~
+    /drivers/gpu/drm/msm/adreno/a6xx_gmu.h:141:9: note: in expansion
+of macro ‘msm_writel’
+      141 |  return msm_writel(value, gmu->rscc + (offset << 2));
+          |         ^~~~~~~~~~
+    In file included from drivers/gpu/drm/msm/adreno/a6xx_gpu.h:11,
+                     from drivers/gpu/drm/msm/adreno/adreno_gpu.c:20:
+    drivers/gpu/drm/msm/adreno/a6xx_gmu.h:139:20: note: declared here
+      139 | static inline void gmu_write_rscc(struct a6xx_gmu *gmu,
+u32 offset, u32 value)
+          |                    ^~~~~~~~~~~~~~
 
-These two helpers are the same that we already have in simpledrm.c, maybe could
-include a preparatory patch that moves to drivers/gpu/drm/drm_format_helper.c
-and make them public for drivers to use ? Or maybe even as static inline in
-include/drm/drm_format_helper.h ?
+These can be fixed using e.g. (there are more in the Adreno driver):
 
-> +static const struct drm_format_info *display_get_validated_format(struct drm_device *dev,
-> +								  u32 depth)
-> +{
-> +	const struct drm_format_info *info;
-> +	u32 format;
-> +
-> +	switch (depth) {
-> +	case 8:
-> +		format = drm_mode_legacy_fb_format(8, 8);
-> +		break;
-> +	case 15:
+     static inline void gmu_write(struct a6xx_gmu *gmu, u32 offset, u32 value)
+     {
+    -       return msm_writel(value, gmu->mmio + (offset << 2));
+    +       msm_writel(value, gmu->mmio + (offset << 2));
+     }
 
-I think is customary now to add /* fall through */ here to silence GCC warns ?
+> Either case, this is not a problem with the nct6775 driver,
+> nor is it a new problem.
 
-> +}
-> +
-> +static int display_read_u32_of(struct drm_device *dev, struct device_node *of_node,
-> +			       const char *name, u32 *value)
-> +{
-> +	int ret = of_property_read_u32(of_node, name, value);
-> +
-> +	if (ret)
-> +		drm_err(dev, "cannot parse framebuffer %s: error %d\n", name, ret);
-> +	return ret;
-> +}
-> +
+Indeed.
 
-[snip]
+For the sparse people:
 
-> +static u64 display_get_address_of(struct drm_device *dev, struct device_node *of_node)
-> +{
-> +	u32 address;
-> +	int ret;
-> +
-> +	/*
-> +	 * Not all devices provide an address property, it's not
-> +	 * a bug if this fails. The driver will try to find the
-> +	 * framebuffer base address from the device's memory regions.
-> +	 */
-> +	ret = of_property_read_u32(of_node, "address", &address);
-> +	if (ret)
-> +		return OF_BAD_ADDR;
-> +
-> +	return address;
-> +}
-> +
+The full error is:
 
-All these helpers seems to be quite generic and something that other OF
-drivers could benefit from. Maybe add them to drivers/gpu/drm/drm_of.c ?
+        drivers/net/appletalk/cops.c:382:17: error: incompatible types
+in conditional expression (different base types):
+        drivers/net/appletalk/cops.c:382:17:    unsigned char
+        drivers/net/appletalk/cops.c:382:17:    void
 
-> +#if defined(CONFIG_PCI)
-> +static struct pci_dev *display_get_pci_dev_of(struct drm_device *dev, struct device_node *of_node)
-> +{
-> +	const __be32 *vendor_p, *device_p;
-> +	u32 vendor, device;
-> +	struct pci_dev *pcidev;
-> +
-> +	vendor_p = of_get_property(of_node, "vendor-id", NULL);
-> +	if (!vendor_p)
-> +		return ERR_PTR(-ENODEV);
-> +	vendor = be32_to_cpup(vendor_p);
-> +
-> +	device_p = of_get_property(of_node, "device-id", NULL);
-> +	if (!device_p)
-> +		return ERR_PTR(-ENODEV);
-> +	device = be32_to_cpup(device_p);
-> +
-> +	pcidev = pci_get_device(vendor, device, NULL);
-> +	if (!pcidev)
-> +		return ERR_PTR(-ENODEV);
-> +
-> +	return pcidev;
-> +}
-> +#else
-> +static struct pci_dev *display_get_pci_dev_of(struct drm_device *dev, struct device_node *of_node)
-> +{
-> +	return ERR_PTR(-ENODEV);
-> +}
-> +#endif
-> +
+Basically, sparse doesn't like "a ? b : c", if the return types of
+b and c don't match, even if the resulting value is not used.
 
-Unsure about this one, I don't see other display driver using a "vendor-id"
-or "device-id" when looking at Documentation/devicetree/bindings/, so guess
-this one would have to remain in the driver and not in a helper library.
+E.g. outb() on m68k:
 
-But since you have #ifdefery here, maybe would be cleaner to have that stub
-defined as static inline in include/drm/drm_of.h ?
+    #define outb(val, port) (((port) < 1024 && ISA_TYPE ==
+ISA_TYPE_ENEC) ? isa_rom_outb((val), (port)) : isa_outb((val),
+(port)))
 
+where isa_rom_outb() leads to rom_out_8() returning u8, while
+isa_outb() leads to the out_8() that includes the cast to void.
 
-> +static struct ofdrm_device *ofdrm_device_of_dev(struct drm_device *dev)
-> +{
-> +	return container_of(dev, struct ofdrm_device, dev);
-> +}
-> +
-> +/*
-> + *  OF display settings
-> + */
-> +
+So the best solution seems to be to add more "(void)" casts, to e.g.
+rom_out_8() and friends?
 
-This seems like another candidate to move to the include/drm/drm_of.h header. 
+Gr{oetje,eeting}s,
 
-> +static struct drm_display_mode ofdrm_mode(unsigned int width, unsigned int height)
-> +{
-> +	struct drm_display_mode mode = { OFDRM_MODE(width, height) };
-> +
-> +	mode.clock = mode.hdisplay * mode.vdisplay * 60 / 1000 /* kHz */;
+                        Geert
 
-Maybe a comment here about the clock value chosen ?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-> +	drm_mode_set_name(&mode);
-> +
-> +	return mode;
-> +}
-> +
-
-[snip]
-
-> +
-> +	/*
-> +	 * Never use pcim_ or other managed helpers on the returned PCI
-> +	 * device. Otherwise, probing the native driver will fail for
-> +	 * resource conflicts. PCI-device management has to be tied to
-> +	 * the lifetime of the platform device until the native driver
-> +	 * takes over.
-> +	 */
-
-Ah, was this the issue that you mentioned the other day? How interesting.
-
-
-> +/*
-> + * Support all formats of OF display and maybe more; in order
-> + * of preference. The display's update function will do any
-> + * conversion necessary.
-> + *
-> + * TODO: Add blit helpers for remaining formats and uncomment
-> + *       constants.
-> + */
-> +static const uint32_t ofdrm_default_formats[] = {
-> +	DRM_FORMAT_XRGB8888,
-> +	DRM_FORMAT_RGB565,
-> +	//DRM_FORMAT_XRGB1555,
-
-Wonder if makes sense to keep this commented and the TODO, why not
-leave that format from first version and just do it as follow-up ?
-
-> +static const struct drm_connector_funcs ofdrm_connector_funcs = {
-> +	.reset = drm_atomic_helper_connector_reset,
-> +	.fill_modes = drm_helper_probe_single_connector_modes,
-> +	.destroy = drm_connector_cleanup,
-> +	.atomic_duplicate_state = drm_atomic_helper_connector_duplicate_state,
-> +	.atomic_destroy_state = drm_atomic_helper_connector_destroy_state,
-> +};
-
-All of the callbacks used comes from helper libraries so I maybe we
-could have a macro or something to set those ? It's the same set that
-are used in simpledrm so it would make sense to have them defined in
-the same place.
-
-> +static const struct drm_mode_config_funcs ofdrm_mode_config_funcs = {
-> +	.fb_create = drm_gem_fb_create_with_dirty,
-> +	.atomic_check = drm_atomic_helper_check,
-> +	.atomic_commit = drm_atomic_helper_commit,
-> +};
-> +
-
-Same for these. We could also have a macro to define this for both
-simpledrm and ofdrm.
-
-> +static const uint32_t *ofdrm_device_formats(struct ofdrm_device *odev, size_t *nformats_out)
-> +{
-> +	struct drm_device *dev = &odev->dev;
-> +	size_t i;
-> +
-> +	if (odev->nformats)
-> +		goto out; /* don't rebuild list on recurring calls */
-> +
-
-Nice optimization to cache this.
-
-> +	/*
-> +	 * TODO: The ofdrm driver converts framebuffers to the native
-> +	 * format when copying them to device memory. If there are more
-> +	 * formats listed than supported by the driver, the native format
-> +	 * is not supported by the conversion helpers. Therefore *only*
-> +	 * support the native format and add a conversion helper ASAP.
-> +	 */
-> +	if (drm_WARN_ONCE(dev, i != odev->nformats,
-> +			  "format conversion helpers required for %p4cc",
-> +			  &odev->format->format)) {
-> +		odev->nformats = 1;
-> +	}
-> +
-
-Interesting. Did you find some formats that were not supported ?
-
-The rest of the patch looks good to me, thanks a lot for writing this.
-
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-
--- 
-Best regards,
-
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

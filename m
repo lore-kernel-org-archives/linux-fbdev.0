@@ -2,118 +2,81 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25859C433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 20 May 2022 12:46:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1937C433F5
+	for <linux-fbdev@archiver.kernel.org>; Sat, 21 May 2022 01:45:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343795AbiETMqj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 20 May 2022 08:46:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49688 "EHLO
+        id S1348769AbiEUBpW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 20 May 2022 21:45:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33912 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348109AbiETMqg (ORCPT
+        with ESMTP id S232367AbiEUBpU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 20 May 2022 08:46:36 -0400
-Received: from mail-qk1-f178.google.com (mail-qk1-f178.google.com [209.85.222.178])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 462E75C84F;
-        Fri, 20 May 2022 05:46:35 -0700 (PDT)
-Received: by mail-qk1-f178.google.com with SMTP id g207so3970013qke.7;
-        Fri, 20 May 2022 05:46:35 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=UhZYflED6/DiNr1feOC9OhkU49iweDam4jS4WznrIsk=;
-        b=P3H251hbfEKCS0STYhh+ttBN6k4JmCVqAIgJw2sY6OCa/0DUJ8nnJvDHC0OMbW5njm
-         X32Why/FWk49NtmkhlOE/5/vqT3kuE6mcXD7QY9xafdbxyWvySw8uD3zS3v2olp7uAS6
-         j0IarfLosYyy803yAOymeMM5cblvWe8InrjXH7ugU2lEDXkhASGKcg78A6DGHkPcXgzj
-         D/N8WUK9EkOsRFwQivqRztuGL7H75e4wpRL3WIVeyV5HvpXG5cz2ss7hsEHLbPMNc25a
-         dtLfDYEYyrc64d/zMzldBS1QQ8j4b2F27w/Xbs9iLo4aPlDUZCu6wqafCCSDD0j6AMjW
-         tOrQ==
-X-Gm-Message-State: AOAM531N30c3giO9I5iF4yRTinkq8xX4RxQtR39Uev507e8OssJLZL9n
-        Ucz0Zrl6t0T1ejPS+ksdhrai4BRKeGs0mw==
-X-Google-Smtp-Source: ABdhPJzQr1I56C3kTXejdctJYTvYMH8Xf51D+8crHXB+jVEBShmCHRyrvEprSSKn1QJ+AoaLhmGh7g==
-X-Received: by 2002:a05:620a:454f:b0:6a0:5212:96d2 with SMTP id u15-20020a05620a454f00b006a0521296d2mr6187861qkp.603.1653050793932;
-        Fri, 20 May 2022 05:46:33 -0700 (PDT)
-Received: from mail-yb1-f174.google.com (mail-yb1-f174.google.com. [209.85.219.174])
-        by smtp.gmail.com with ESMTPSA id 202-20020a3703d3000000b0069fc13ce213sm3111969qkd.68.2022.05.20.05.46.32
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 20 May 2022 05:46:33 -0700 (PDT)
-Received: by mail-yb1-f174.google.com with SMTP id j2so14097403ybu.0;
-        Fri, 20 May 2022 05:46:32 -0700 (PDT)
-X-Received: by 2002:a05:6902:389:b0:633:31c1:d0f7 with SMTP id
- f9-20020a056902038900b0063331c1d0f7mr9068692ybs.543.1653050792549; Fri, 20
- May 2022 05:46:32 -0700 (PDT)
-MIME-Version: 1.0
-References: <6285958d.+Z2aDZ4O1Y9eiazd%lkp@intel.com> <0530d502-1291-23f3-64ac-97bd38a26bd4@roeck-us.net>
- <CAMuHMdU3SYOwE5ftDwymQpVwWmpbC=1Ytyp0Y9GaeUS2i1cP+A@mail.gmail.com>
-In-Reply-To: <CAMuHMdU3SYOwE5ftDwymQpVwWmpbC=1Ytyp0Y9GaeUS2i1cP+A@mail.gmail.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Fri, 20 May 2022 14:46:20 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdVx7r-4TVV9uVJppT-7ZAriov01BUNk4ghU9Bs4uY28vQ@mail.gmail.com>
-Message-ID: <CAMuHMdVx7r-4TVV9uVJppT-7ZAriov01BUNk4ghU9Bs4uY28vQ@mail.gmail.com>
-Subject: Re: [linux-next:master] BUILD REGRESSION 736ee37e2e8eed7fe48d0a37ee5a709514d478b3
-To:     Guenter Roeck <linux@roeck-us.net>
-Cc:     kernel test robot <lkp@intel.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        linux-staging@lists.linux.dev,
-        "open list:TI ETHERNET SWITCH DRIVER (CPSW)" 
-        <linux-omap@vger.kernel.org>, linux-nvme@lists.infradead.org,
-        linux-hwmon@vger.kernel.org,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        KVM list <kvm@vger.kernel.org>,
+        Fri, 20 May 2022 21:45:20 -0400
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 2FEF81912E9
+        for <linux-fbdev@vger.kernel.org>; Fri, 20 May 2022 18:45:18 -0700 (PDT)
+Received: from ip6-localhost (localhost.localdomain [127.0.0.1])
+        by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 24L1ZFqO002400;
+        Fri, 20 May 2022 20:35:16 -0500
+Message-ID: <ea7ef1e652f5664a41f2befc3cb97bd089f27e69.camel@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] drm/tiny: Add ofdrm for Open Firmware framebuffers
+From:   Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Michal =?ISO-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+        Maxime Ripard <maxime@cerno.tech>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Paul Mackerras <paulus@samba.org>,
         DRI Development <dri-devel@lists.freedesktop.org>,
-        amd-gfx list <amd-gfx@lists.freedesktop.org>,
-        Linux Memory Management List <linux-mm@kvack.org>,
-        Luc Van Oostenryck <luc.vanoostenryck@gmail.com>,
-        linux-sparse@vger.kernel.org,
-        linux-m68k <linux-m68k@lists.linux-m68k.org>
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date:   Sat, 21 May 2022 11:35:14 +1000
+In-Reply-To: <CAMuHMdUws2eJ4pHng4GD0PjuvMj5Hef_y_YyM4fUJV9xdUVuEQ@mail.gmail.com>
+References: <20220518183006.14548-1-tzimmermann@suse.de>
+         <20220518183006.14548-3-tzimmermann@suse.de>
+         <20220518185156.GJ163591@kunlun.suse.cz>
+         <CAMuHMdUws2eJ4pHng4GD0PjuvMj5Hef_y_YyM4fUJV9xdUVuEQ@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.36.5-0ubuntu1 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, May 20, 2022 at 2:40 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Thu, May 19, 2022 at 8:48 AM Guenter Roeck <linux@roeck-us.net> wrote:
-> > On 5/18/22 17:55, kernel test robot wrote:
-> > > tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git master
-> > > branch HEAD: 736ee37e2e8eed7fe48d0a37ee5a709514d478b3  Add linux-next specific files for 20220518
-> > >
-> > > Error/Warning reports:
-> > >
-> > > https://lore.kernel.org/linux-mm/202204291924.vTGZmerI-lkp@intel.com
-> > > https://lore.kernel.org/linux-mm/202205041248.WgCwPcEV-lkp@intel.com
-> > > https://lore.kernel.org/linux-mm/202205122113.uLKzd3SZ-lkp@intel.com
-> > > https://lore.kernel.org/linux-mm/202205172344.3GFeaum1-lkp@intel.com
-> > > https://lore.kernel.org/linux-mm/202205190527.o9wVEvHI-lkp@intel.com
-> > >
-> > > Error/Warning: (recently discovered and may have been fixed)
-> > >
-> > [ .. ]
-> > > drivers/hwmon/nct6775-platform.c:199:9: sparse:    unsigned char
-> > > drivers/hwmon/nct6775-platform.c:199:9: sparse:    void
-> >
-> > This is getting tiresome. Every driver using outb() on m68k will
-> > experience that "problem". As far as I can see, it is caused by
-> >
-> > #define out_8(addr,b) (void)((*(__force volatile u8 *) (unsigned long)(addr)) = (b))
-> >
-> > in arch/m68k/include/asm/raw_io.h. I have no idea what the
-> > "(void)" is for,
->
-> The "(void)" makes sure there is no return value.
-> Which matters if the result of a function returning void is propagated
-> to another function returning void.
+On Thu, 2022-05-19 at 09:11 +0200, Geert Uytterhoeven wrote:
+> Hi Michal,
+> 
+> 
+> 
+> On Wed, May 18, 2022 at 8:54 PM Michal Suchánek <msuchanek@suse.de>
+> wrote:
+> 
+> > On Wed, May 18, 2022 at 08:30:06PM +0200, Thomas Zimmermann wrote:
+> > > --- a/drivers/gpu/drm/tiny/Kconfig
+> > > +++ b/drivers/gpu/drm/tiny/Kconfig
+> > > @@ -51,6 +51,18 @@ config DRM_GM12U320
+> > >         This is a KMS driver for projectors which use the
+> > > GM12U320 chipset
+> > >         for video transfer over USB2/3, such as the Acer C120
+> > > mini projector.
+> > > +config DRM_OFDRM
+> > > +     tristate "Open Firmware display driver"
+> > > +     depends on DRM && MMU && PPC
+> > Does this build with !PCI?
+> > The driver uses some PCI functions, so it might possibly break with
+> > randconfig. I don't think there are practical !PCI PPC
+> > configurations.
+> 
+> 
+> IIRC, the first PowerMacs didn't have PCI.
 
-Which, FTR, sparse also doesn't like:
+They also don't have OF and we never supported them upstream :-)
 
-    error: return expression in void function
+Cheers,
+Ben.
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

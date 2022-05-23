@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C1F8C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 23 May 2022 10:50:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38911C433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 23 May 2022 10:50:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234346AbiEWKuR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 23 May 2022 06:50:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34372 "EHLO
+        id S234323AbiEWKuT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 23 May 2022 06:50:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34428 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234321AbiEWKuK (ORCPT
+        with ESMTP id S234329AbiEWKuP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 23 May 2022 06:50:10 -0400
-Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com [IPv6:2a00:1450:4864:20::442])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 81BA94C7AD
-        for <linux-fbdev@vger.kernel.org>; Mon, 23 May 2022 03:50:07 -0700 (PDT)
-Received: by mail-wr1-x442.google.com with SMTP id e28so20140878wra.10
-        for <linux-fbdev@vger.kernel.org>; Mon, 23 May 2022 03:50:07 -0700 (PDT)
+        Mon, 23 May 2022 06:50:15 -0400
+Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C18444CD55
+        for <linux-fbdev@vger.kernel.org>; Mon, 23 May 2022 03:50:13 -0700 (PDT)
+Received: by mail-wr1-x443.google.com with SMTP id t6so20758580wra.4
+        for <linux-fbdev@vger.kernel.org>; Mon, 23 May 2022 03:50:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=baylibre-com.20210112.gappssmtp.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=QY0NXpXxssyXYxW2Q3exiUP/wgu4S8DoemCxMIQfBTE=;
-        b=5Yi5yOPTuzEy+RvEjRNlahryNYfO2WYTFkKUlksAlpvowXpuODxy/xc56sWtr/0hvS
-         Po5ahQ2I4pOuMsQM2VCv5eD8eql//fD0PmLYvHIX1ve7MK2mkHMOvEg0UqJMcML5MvfN
-         8eVXFZRQRMXRqqnQEppkvQcV4d0E19p4oGL8ejRXA0d61aXYLta76nRAMTMSmgvVMTpY
-         E8WgS3SnIpaEfmJJ9F0WEiQpY9p06AHmZ/0RIn0JxgNj4BpRO14v4hZA7afKXcEQqIWn
-         JL0ArR+Umw6fkDiv/K5aaYoPt4jWue6AEM60Pe0p7/fs4c4W2Et79phGhSgC4FxG+rxO
-         C3CA==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=OqXYVhrRj9CHgAnfmavY+OUOGAECWuzwcnTYspWQkrE=;
+        b=g/rnOuq2Ks4ma+AdgXNaku8HasO87T86iTPRwuDZffAiRvRN9E4rDlnu5km/QOEpFm
+         qmztUmdpfx6YpBrMnDQMYH50vC9CzOA2qWZBXrqLmnZw/OYCMc2HoCQA5QZJgBTbS20v
+         unujNoN+7Au/jJ8A49uL1w8fX78FPztttWQObyDlZFDdk9Run4HSzpoefjhG92Zqlwsh
+         E9vDx1lbyKrZ2HCvgMT2VKaPbdRD3Anqa5gaZ7knspM8q9LBU/1gmcL4LbFrlZRoNOTr
+         +bcNiKzLqpLepsy7SedpuzdpUI2eD18nSQln1JIYNcoljS7sjdg5CZLe6R0VhhFCzg7O
+         gNQg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=QY0NXpXxssyXYxW2Q3exiUP/wgu4S8DoemCxMIQfBTE=;
-        b=linALsSkOS5BhCfdrQ2uy6V2xSCifXAjO268Rie5u+IUhyLV6qxcrLuKVN6kM9VoeV
-         MeGIyVp6jPtJjpjjGfSrhJt9g249gI9cULNVgxaJwQxmQrFRhheXumcw53mgbu/zNyx8
-         9f6urZg+LHFJDmhTHzxvVDUdEWrSlwHTmCiIilMy/2ne9bAL3/YNh032aQiB8mFNERAz
-         wC29V7xJ5MxkdPL0iD2oGIOYt6Typc47G3dxC96VImuP88iUpj67/T7phcb7C3SZwYsU
-         Lu3zXDY5fX5FG5DfAHibabvgv3es7L8FbDt/2njM80oS072yoPVtEQ2hKWfyDTXEKRIu
-         XwNw==
-X-Gm-Message-State: AOAM5329B1g0bPKXcsAxwmbB8S68nlSZS1wwnazuVrEW3139GUqdwI0X
-        SPOPaoJhwPmzAloyKka2XXA1bA==
-X-Google-Smtp-Source: ABdhPJzP/rJVFU2ynMlYTbXcRO1djmEXdQvtCzYih6wtEb6rjUH0mAOryfUtrfJaXAEevgV8DIPr9A==
-X-Received: by 2002:adf:f1cc:0:b0:20d:b04:1281 with SMTP id z12-20020adff1cc000000b0020d0b041281mr18026498wro.160.1653303006054;
-        Mon, 23 May 2022 03:50:06 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=OqXYVhrRj9CHgAnfmavY+OUOGAECWuzwcnTYspWQkrE=;
+        b=RLv7h4Ch11zhWOmlihLB2iSKPV1eOzRuAsyzT/9OqFTOq162XooWkh1JrWcblyKnT2
+         ae+uqj8Xis9H1E/7AAE1gp0NQ6ZioNDtCWKJ9HDDXnUlOw7U7bvHqRKrOEw1XritD/dc
+         yClLL8K950/CvIENLpMz0Fqqew2/h731+QPsphDIgOmqoklLCiBWj+nwGAxVbRpDcQkN
+         CMK2kFBxpkXmVoE3xfV3y3SwMu1a7mRYxkDBfipJCoVakqsqxiw/AqrWSsc5RIU03+ti
+         z4B00UEVdz84nIorsO3RH4PPVXhLAuvOwJnakqz8ull/ROU/Nsk0NA//mEoOuoMhswJo
+         XWGQ==
+X-Gm-Message-State: AOAM531MNUM1zJETP+5eEAaJrDuQtuU7o1vp3RD+LEvoPmYlq8x/i3en
+        1IjxIYf3zSr162Jbt6JA1ryedw==
+X-Google-Smtp-Source: ABdhPJxBnLXMcYy77fFpeAyi0ruOH6Xn80k3CU5iV4vZcHjxIdmYPEXeJK7hqDTk6+kltw4LwUnbHQ==
+X-Received: by 2002:a5d:5910:0:b0:20d:6e9:d4e9 with SMTP id v16-20020a5d5910000000b0020d06e9d4e9mr18395841wrd.69.1653303012296;
+        Mon, 23 May 2022 03:50:12 -0700 (PDT)
 Received: from localhost.localdomain (2a02-8440-6141-9d1b-3074-96af-9642-0003.rev.sfr.net. [2a02:8440:6141:9d1b:3074:96af:9642:3])
-        by smtp.gmail.com with ESMTPSA id n11-20020a7bc5cb000000b003942a244f38sm8453607wmk.17.2022.05.23.03.50.04
+        by smtp.gmail.com with ESMTPSA id n11-20020a7bc5cb000000b003942a244f38sm8453607wmk.17.2022.05.23.03.50.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 May 2022 03:50:05 -0700 (PDT)
+        Mon, 23 May 2022 03:50:11 -0700 (PDT)
 From:   Guillaume Ranquet <granquet@baylibre.com>
 To:     Chun-Kuang Hu <chunkuang.hu@kernel.org>,
         Philipp Zabel <p.zabel@pengutronix.de>,
@@ -63,127 +63,95 @@ To:     Chun-Kuang Hu <chunkuang.hu@kernel.org>,
         Kishon Vijay Abraham I <kishon@ti.com>,
         Vinod Koul <vkoul@kernel.org>, Helge Deller <deller@gmx.de>,
         CK Hu <ck.hu@mediatek.com>, Jitao shi <jitao.shi@mediatek.com>
-Cc:     dri-devel@lists.freedesktop.org,
+Cc:     Markus Schneider-Pargmann <msp@baylibre.com>,
+        dri-devel@lists.freedesktop.org,
         linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-phy@lists.infradead.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH v10 00/21] drm/mediatek: Add mt8195 DisplayPort driver
-Date:   Mon, 23 May 2022 12:47:33 +0200
-Message-Id: <20220523104758.29531-1-granquet@baylibre.com>
+Subject: [PATCH v10 01/21] dt-bindings: mediatek,dpi: Add DPINTF compatible
+Date:   Mon, 23 May 2022 12:47:34 +0200
+Message-Id: <20220523104758.29531-2-granquet@baylibre.com>
 X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220523104758.29531-1-granquet@baylibre.com>
+References: <20220523104758.29531-1-granquet@baylibre.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-this series is built around the DisplayPort driver. The dpi/dpintf
-driver and the added helper functions are required for the DisplayPort
-driver to work.
+From: Markus Schneider-Pargmann <msp@baylibre.com>
 
-This v10 still has some un-answered comments and TODOs for v11.
+DPINTF is similar to DPI but does not have the exact same feature set
+or register layouts.
 
-This has been tested sucessfully on a 5.18-next based "vendor branch".
+DPINTF is the sink of the display pipeline that is connected to the
+DisplayPort controller and encoder unit. It takes the same clocks as
+DPI.
 
-There's a missing dependency in the mediatek clock framework to allow a
-mux clock to change it's parent automatically on rate change.
-Without this change, the dpi driver won't properly set the clocks on
-mode change and thus nothing will be displayed on screen.
+Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+---
+ .../bindings/display/mediatek/mediatek,dpi.yaml     | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-Changes from v9:
-- The DP-Phy is back to being a child device of the DP driver (as in v8)
-- hot plug detection has been added back to Embedded Display Port... as
-  after discussing with mediatek experts, this is needed eventhough the
-  Embedded Display port is not un-pluggable
-- rebased on linux-next
-- simplified/split train_handler function, as suggested by Rex
-- added comments on the sleep/delays present in the code
-- removed previous patch introducing retries when receiving AUX_DEFER as
-  this is already handled in the dp_aux framework
-- added max-lane and max-linkrate device tree u8 properties instead of
-  hardcoded #defines
-
-Things that are in my todolist for v11:
-- retrieve CK/DE support from panel driver instead of hardcoding it into
-  the dpi driver
-- refcount the dp driver "enabled" status for "future proofing"
-- review the drm_dp_helpers for features/functions that have been
-  re-implemented in the mediatek dp drivers
-
-Older revisions:
-RFC - https://lore.kernel.org/linux-mediatek/20210816192523.1739365-1-msp@baylibre.com/
-v1  - https://lore.kernel.org/linux-mediatek/20210906193529.718845-1-msp@baylibre.com/
-v2  - https://lore.kernel.org/linux-mediatek/20210920084424.231825-1-msp@baylibre.com/
-v3  - https://lore.kernel.org/linux-mediatek/20211001094443.2770169-1-msp@baylibre.com/
-v4  - https://lore.kernel.org/linux-mediatek/20211011094624.3416029-1-msp@baylibre.com/
-v5  - https://lore.kernel.org/all/20211021092707.3562523-1-msp@baylibre.com/
-v6  - https://lore.kernel.org/linux-mediatek/20211110130623.20553-1-granquet@baylibre.com/
-v7  - https://lore.kernel.org/linux-mediatek/20211217150854.2081-1-granquet@baylibre.com/
-v8  - https://lore.kernel.org/linux-mediatek/20220218145437.18563-1-granquet@baylibre.com/
-v9  - https://lore.kernel.org/all/20220327223927.20848-1-granquet@baylibre.com/
-
-Functional dependencies are:
-- Add Mediatek Soc DRM (vdosys0) support for mt8195
-  https://lore.kernel.org/linux-mediatek/20220419094143.9561-2-jason-jh.lin@mediatek.com/
-- Add MediaTek SoC DRM (vdosys1) support for mt8195
-  https://lore.kernel.org/linux-mediatek/20220512053128.31415-1-nancy.lin@mediatek.com/
-
-
-Guillaume Ranquet (15):
-  drm/edid: Convert cea_sad helper struct to kernelDoc
-  drm/edid: Add cea_sad helpers for freq/length
-  drm/mediatek: dpi: move dpi limits to SoC config
-  drm/mediatek: dpi: implement a CK/DE pol toggle in SoC config
-  drm/mediatek: dpi: implement a swap_input toggle in SoC config
-  drm/mediatek: dpi: move dimension mask to SoC config
-  drm/mediatek: dpi: move hvsize_mask to SoC config
-  drm/mediatek: dpi: move swap_shift to SoC config
-  drm/mediatek: dpi: move the yuv422_en_bit to SoC config
-  drm/mediatek: dpi: move the csc_enable bit to SoC config
-  drm/mediatek: dpi: Add dpintf support
-  drm/mediatek: dpi: Only enable dpi after the bridge is enabled
-  drm/meditek: dpi: Add matrix_sel helper
-  drm/mediatek: Add mt8195 External DisplayPort support
-  drm/mediatek: DP audio support for mt8195
-
-Jitao Shi (1):
-  drm/mediatek: add hpd debounce
-
-Markus Schneider-Pargmann (5):
-  dt-bindings: mediatek,dpi: Add DPINTF compatible
-  dt-bindings: mediatek,dp: Add Display Port binding
-  video/hdmi: Add audio_infoframe packing for DP
-  phy: phy-mtk-dp: Add driver for DP phy
-  drm/mediatek: Add mt8195 Embedded DisplayPort driver
-
- .../display/mediatek/mediatek,dp.yaml         |   99 +
- .../display/mediatek/mediatek,dpi.yaml        |   13 +-
- MAINTAINERS                                   |    1 +
- drivers/gpu/drm/drm_edid.c                    |   74 +
- drivers/gpu/drm/mediatek/Kconfig              |    8 +
- drivers/gpu/drm/mediatek/Makefile             |    2 +
- drivers/gpu/drm/mediatek/mtk_dp.c             | 3419 +++++++++++++++++
- drivers/gpu/drm/mediatek/mtk_dp_reg.h         |  570 +++
- drivers/gpu/drm/mediatek/mtk_dpi.c            |  272 +-
- drivers/gpu/drm/mediatek/mtk_dpi_regs.h       |   38 +
- drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.c   |    8 +
- drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.h   |    1 +
- drivers/gpu/drm/mediatek/mtk_drm_drv.c        |    8 +-
- drivers/gpu/drm/mediatek/mtk_drm_drv.h        |    3 +
- drivers/phy/mediatek/Kconfig                  |    8 +
- drivers/phy/mediatek/Makefile                 |    1 +
- drivers/phy/mediatek/phy-mtk-dp.c             |  200 +
- drivers/video/hdmi.c                          |   82 +-
- include/drm/dp/drm_dp_helper.h                |    2 +
- include/drm/drm_edid.h                        |   26 +-
- include/linux/hdmi.h                          |    7 +-
- include/linux/soc/mediatek/mtk-mmsys.h        |    4 +-
- 22 files changed, 4765 insertions(+), 81 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
- create mode 100644 drivers/gpu/drm/mediatek/mtk_dp.c
- create mode 100644 drivers/gpu/drm/mediatek/mtk_dp_reg.h
- create mode 100644 drivers/phy/mediatek/phy-mtk-dp.c
-
+diff --git a/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.yaml b/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.yaml
+index dd2896a40ff0..6d9f6c11806e 100644
+--- a/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.yaml
++++ b/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.yaml
+@@ -4,16 +4,16 @@
+ $id: http://devicetree.org/schemas/display/mediatek/mediatek,dpi.yaml#
+ $schema: http://devicetree.org/meta-schemas/core.yaml#
+ 
+-title: mediatek DPI Controller Device Tree Bindings
++title: mediatek DPI/DPINTF Controller
+ 
+ maintainers:
+   - CK Hu <ck.hu@mediatek.com>
+   - Jitao shi <jitao.shi@mediatek.com>
+ 
+ description: |
+-  The Mediatek DPI function block is a sink of the display subsystem and
+-  provides 8-bit RGB/YUV444 or 8/10/10-bit YUV422 pixel data on a parallel
+-  output bus.
++  The Mediatek DPI and DPINTF function blocks are a sink of the display
++  subsystem and provides 8-bit RGB/YUV444 or 8/10/10-bit YUV422 pixel data on a
++  parallel output bus.
+ 
+ properties:
+   compatible:
+@@ -23,6 +23,7 @@ properties:
+       - mediatek,mt8173-dpi
+       - mediatek,mt8183-dpi
+       - mediatek,mt8192-dpi
++      - mediatek,mt8195-dpintf
+ 
+   reg:
+     maxItems: 1
+@@ -35,12 +36,14 @@ properties:
+       - description: Pixel Clock
+       - description: Engine Clock
+       - description: DPI PLL
++      - description: Optional CK CG Clock
+ 
+   clock-names:
+     items:
+       - const: pixel
+       - const: engine
+       - const: pll
++      - const: ck_cg
+ 
+   pinctrl-0: true
+   pinctrl-1: true
+@@ -54,7 +57,7 @@ properties:
+     $ref: /schemas/graph.yaml#/properties/port
+     description:
+       Output port node. This port should be connected to the input port of an
+-      attached HDMI or LVDS encoder chip.
++      attached HDMI, LVDS or DisplayPort encoder chip.
+ 
+ required:
+   - compatible
 -- 
 2.35.1
 

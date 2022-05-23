@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9EDAC433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 23 May 2022 10:53:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DE97C4332F
+	for <linux-fbdev@archiver.kernel.org>; Mon, 23 May 2022 10:53:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234663AbiEWKw6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 23 May 2022 06:52:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40150 "EHLO
+        id S234664AbiEWKxD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 23 May 2022 06:53:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40414 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234410AbiEWKwB (ORCPT
+        with ESMTP id S234687AbiEWKw7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 23 May 2022 06:52:01 -0400
-Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BFFEC2E9E4
-        for <linux-fbdev@vger.kernel.org>; Mon, 23 May 2022 03:51:56 -0700 (PDT)
-Received: by mail-wr1-x436.google.com with SMTP id r23so20787802wrr.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 23 May 2022 03:51:56 -0700 (PDT)
+        Mon, 23 May 2022 06:52:59 -0400
+Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com [IPv6:2a00:1450:4864:20::344])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9ED143122B
+        for <linux-fbdev@vger.kernel.org>; Mon, 23 May 2022 03:52:17 -0700 (PDT)
+Received: by mail-wm1-x344.google.com with SMTP id bg25so8478735wmb.4
+        for <linux-fbdev@vger.kernel.org>; Mon, 23 May 2022 03:52:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=baylibre-com.20210112.gappssmtp.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=Lq/ySulA0N0z+I2Unxh2VPBjRClaI9XgUkfX+cBIGCE=;
-        b=poyZJ9Cz+Nwg86SEjlznk88PKD6+VWs/MbhOIC85j8u4WsViHdKoeS7ihDk9Dw5qcv
-         QxMGCaoAv/0m+w7tuOTTMaLlKGZcoXAaKz9dxcY7kd3qpph6NulLKKL/K4q0IlOLQzwb
-         8UYblL8FmrUqzTe2BArEu/YX4gW4QoLKeZ1AtjcrALWoLMUN+LNYBhdPT317w6+6K86S
-         M64bPNbPHV/cvPRuRp+07kywDXvdV2iNO0vOHbZAQmIf5JT2NZGp+ESDRSP9nluHEOLf
-         TRD6SOAFDlLr3xRgvA8i/97LAfHzOzYulu2oVAkB4Vwgf5TJCgGrouHQWlPmeRN4y1jN
-         cjAQ==
+        bh=hLfS42PaaSTIvwoBINmbgQcJWAC+mkxuv8Sro1ZZiBw=;
+        b=h7Ar0XPc6m9I8Rf5wHDAfZoG1WMnfebvWZ5PMsjzR2Z5Qpy93Hzk2O1p0IJMPQPx2e
+         fI+LdDbsC7B/XHPcDBpBpwFX4ePIq6AgQ23hN5ZUZq1rjV7+sLlE5NGePnl1iQPEVEEq
+         mn2qZgeg/WZl5p5a2odv8KBJH3fwk7VlQ9q1iO81MSuZBBWfmB6c38cPcJShOKM7v+tY
+         H/PXXEXLlGoPS4o2pzO3gvhyu7q07QXiiDcY9h425ZGqzmanPE1KiAZ54e6+VJNfJpIr
+         sBLX1QZev0rIBy6QjmmBMVYMJPuoxirKfPtzyttNpRhvL+61lUwqvhwv6hmR8W0yckwZ
+         z7dQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=Lq/ySulA0N0z+I2Unxh2VPBjRClaI9XgUkfX+cBIGCE=;
-        b=0OJBsPQRPZo4bHgHMiuLeqcTdOBEj60nJu2Mq5LxL4KyOoBzTQ+D5HDy1NtGlFBsul
-         iJpPWnGhr28S10oeKynpk8TUjy7A43Ci9TatosA15aZzu6oIY2fm+gIwoNgmtUhPEM7z
-         FL+Bj6fwNB0IWMIQvFQDO9hR+EB3pDXUc0ipd/x+gJ839LzAFHxj7tg/S2OrJRd42FSU
-         u5VRF+l2sS1ciiu8RF/pOBwmOPiIOO4DQ9KCFCT7GlbeXWfeKUqo+D1aRGz4xxFWm08U
-         X1HqT+72P9EL8soeQjg5HUCpnbLvsRH06S/Cnhj177/eAXbhoMmU3DmxTA2YtQ0/3uZM
-         usgw==
-X-Gm-Message-State: AOAM531xvKvMbgpkqyA4jzJB/DEKXVhRrjJEWjYaMeknx202lrat4Twd
-        UpRvrr7B0gYDVrtku+pR0pNdNQ==
-X-Google-Smtp-Source: ABdhPJylUAUmsz7C7wsYRCsWWHWZvJ3mAjB0dZwOa3n3S9Dcc9CWC4lMfDN4mTgXlvPexF+uPnh3dw==
-X-Received: by 2002:a05:6000:1e1a:b0:20f:c403:9180 with SMTP id bj26-20020a0560001e1a00b0020fc4039180mr10190025wrb.147.1653303115754;
-        Mon, 23 May 2022 03:51:55 -0700 (PDT)
+        bh=hLfS42PaaSTIvwoBINmbgQcJWAC+mkxuv8Sro1ZZiBw=;
+        b=v4np97tSuaEuQEoIwF6d8ogQSuARNmqDUQdkiL6FZzbnXasnJKXFOTx8iQwdnfvaAX
+         o+NjiCN/EGjNCBkhohcYAkmU415bKYmBmDIA+BsoDzTm02LtegytkdHxq9qkRutiIzaw
+         0K8V4ozxfKkIUX4h8oH8ll7qixDnnHItzMjb8icSLh4zehyFDeM47s3JAiIXHiCNUkS3
+         bLzMo4CKDZvx4Fox4cqbBQAdd8jXPyZ4OKfCwvxGK6X883OXwItaxsq/b/lYVzLJoKlS
+         02xgn50AeEhVcE/B43vs4hu+EcAXkbX6iwBjk/mufrA6S0z6xHy72dCild7Zs6InpEcO
+         z2vQ==
+X-Gm-Message-State: AOAM531F5arGh+p8l9gTxvfN4uaXSnBmlKLR5RSh5JYr1ad2pOr+UJwj
+        8HgW+Fv2DkVJIahB+eJkKIJzjA==
+X-Google-Smtp-Source: ABdhPJzde8+aBgbVlyoCCnCNTWr7Ur5rMTCZYCt2csAVS6LILQDcPXm+e3GmDaRs9bF2zxKHX6TnHA==
+X-Received: by 2002:a05:600c:42d3:b0:397:47ae:188c with SMTP id j19-20020a05600c42d300b0039747ae188cmr6383674wme.150.1653303136070;
+        Mon, 23 May 2022 03:52:16 -0700 (PDT)
 Received: from localhost.localdomain (2a02-8440-6141-9d1b-3074-96af-9642-0003.rev.sfr.net. [2a02:8440:6141:9d1b:3074:96af:9642:3])
-        by smtp.gmail.com with ESMTPSA id n11-20020a7bc5cb000000b003942a244f38sm8453607wmk.17.2022.05.23.03.51.54
+        by smtp.gmail.com with ESMTPSA id n11-20020a7bc5cb000000b003942a244f38sm8453607wmk.17.2022.05.23.03.52.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 May 2022 03:51:55 -0700 (PDT)
+        Mon, 23 May 2022 03:52:15 -0700 (PDT)
 From:   Guillaume Ranquet <granquet@baylibre.com>
 To:     Chun-Kuang Hu <chunkuang.hu@kernel.org>,
         Philipp Zabel <p.zabel@pengutronix.de>,
@@ -63,14 +63,14 @@ To:     Chun-Kuang Hu <chunkuang.hu@kernel.org>,
         Kishon Vijay Abraham I <kishon@ti.com>,
         Vinod Koul <vkoul@kernel.org>, Helge Deller <deller@gmx.de>,
         CK Hu <ck.hu@mediatek.com>, Jitao shi <jitao.shi@mediatek.com>
-Cc:     Markus Schneider-Pargmann <msp@baylibre.com>,
+Cc:     Rex-BC Chen <rex-bc.chen@mediatek.com>,
         dri-devel@lists.freedesktop.org,
         linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-phy@lists.infradead.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH v10 17/21] phy: phy-mtk-dp: Add driver for DP phy
-Date:   Mon, 23 May 2022 12:47:50 +0200
-Message-Id: <20220523104758.29531-18-granquet@baylibre.com>
+Subject: [PATCH v10 20/21] drm/mediatek: add hpd debounce
+Date:   Mon, 23 May 2022 12:47:53 +0200
+Message-Id: <20220523104758.29531-21-granquet@baylibre.com>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20220523104758.29531-1-granquet@baylibre.com>
 References: <20220523104758.29531-1-granquet@baylibre.com>
@@ -80,277 +80,124 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Markus Schneider-Pargmann <msp@baylibre.com>
+From: Jitao Shi <jitao.shi@mediatek.com>
 
-This is a new driver that supports the integrated DisplayPort phy for
-mediatek SoCs, especially the mt8195. The phy is integrated into the
-DisplayPort controller and will be created by the mtk-dp driver. This
-driver expects a struct regmap to be able to work on the same registers
-as the DisplayPort controller. It sets the device data to be the struct
-phy so that the DisplayPort controller can easily work with it.
+From the DP spec 1.4a chapter 3.3, upstream devices should implement
+HPD signal de-bouncing on an external connection.
+A period of 100ms should be used to detect an HPD connect event.
+To cover these cases, HPD de-bounce should be implemented only after
+HPD low has been detected for at least 100ms.
 
-The driver does not have any devicetree bindings because the datasheet
-does not list the controller and the phy as distinct units.
+Therefore,
+1. If HPD is low (which means plugging out) for longer than 100ms:
+   we need to do de-bouncing (which means we need to wait for 100ms).
+2. If HPD low is for less than 100ms:
+   we don't need to care about the de-bouncing.
 
-The interaction with the controller can be covered by the configure
-callback of the phy framework and its displayport parameters.
+In this patch, we start a 100ms timer and use a need_debounce boolean
+to implement the feature.
 
-Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+Two cases when HPD is high:
+1. If the timer is expired (>100ms):
+   - need_debounce is true.
+   - When HPD high (plugging event comes), need_debounce will be true
+     and then we need to do de-bouncing (wait for 100ms).
+2. If the timer is not expired (<100ms):
+   - need_debounce is false.
+   - When HPD high (plugging event comes), need_debounce will be false
+     and no need to do de-bouncing.
+
+HPD_______             __________________
+          |            |<-  100ms   ->
+          |____________|
+          <-  100ms   ->
+
+Without HPD de-bouncing, USB-C to HDMI Adapaters will not be detected.
+
+The change has been successfully tested with the following devices:
+- Dell Adapter - USB-C to HDMI
+- Acer 1in1 HDMI dongle
+- Ugreen 1in1 HDMI dongle
+- innowatt HDMI + USB3 hub
+- Acer 2in1 HDMI dongle
+- Apple 3in1 HDMI dongle (A2119)
+- J5Create 3in1 HDMI dongle (JAC379)
+
+Tested-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
+Reviewed-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
+Signed-off-by: Jitao Shi <jitao.shi@mediatek.com>
 Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
 ---
- MAINTAINERS                       |   1 +
- drivers/phy/mediatek/Kconfig      |   8 ++
- drivers/phy/mediatek/Makefile     |   1 +
- drivers/phy/mediatek/phy-mtk-dp.c | 200 ++++++++++++++++++++++++++++++
- 4 files changed, 210 insertions(+)
- create mode 100644 drivers/phy/mediatek/phy-mtk-dp.c
+ drivers/gpu/drm/mediatek/mtk_dp.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 4cc47b2dbdc9..bfca96469d80 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6604,6 +6604,7 @@ L:	linux-mediatek@lists.infradead.org (moderated for non-subscribers)
- S:	Supported
- F:	Documentation/devicetree/bindings/display/mediatek/
- F:	drivers/gpu/drm/mediatek/
-+F:	drivers/phy/mediatek/phy-mtk-dp.c
- F:	drivers/phy/mediatek/phy-mtk-hdmi*
- F:	drivers/phy/mediatek/phy-mtk-mipi*
+diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c b/drivers/gpu/drm/mediatek/mtk_dp.c
+index 4789853ec5ff..c056bc3ca9f6 100644
+--- a/drivers/gpu/drm/mediatek/mtk_dp.c
++++ b/drivers/gpu/drm/mediatek/mtk_dp.c
+@@ -154,6 +154,8 @@ struct mtk_dp {
+ 	struct mutex dp_lock;
  
-diff --git a/drivers/phy/mediatek/Kconfig b/drivers/phy/mediatek/Kconfig
-index 55f8e6c048ab..f7ec86059049 100644
---- a/drivers/phy/mediatek/Kconfig
-+++ b/drivers/phy/mediatek/Kconfig
-@@ -55,3 +55,11 @@ config PHY_MTK_MIPI_DSI
- 	select GENERIC_PHY
- 	help
- 	  Support MIPI DSI for Mediatek SoCs.
-+
-+config PHY_MTK_DP
-+	tristate "MediaTek DP-PHY Driver"
-+	depends on ARCH_MEDIATEK || COMPILE_TEST
-+	depends on OF
-+	select GENERIC_PHY
-+	help
-+	  Support DisplayPort PHY for Mediatek SoCs.
-diff --git a/drivers/phy/mediatek/Makefile b/drivers/phy/mediatek/Makefile
-index ace660fbed3a..4ba1e0650434 100644
---- a/drivers/phy/mediatek/Makefile
-+++ b/drivers/phy/mediatek/Makefile
-@@ -3,6 +3,7 @@
- # Makefile for the phy drivers.
- #
+ 	struct drm_connector *conn;
++	bool need_debounce;
++	struct timer_list debounce_timer;
+ };
  
-+obj-$(CONFIG_PHY_MTK_DP)		+= phy-mtk-dp.o
- obj-$(CONFIG_PHY_MTK_TPHY)		+= phy-mtk-tphy.o
- obj-$(CONFIG_PHY_MTK_UFS)		+= phy-mtk-ufs.o
- obj-$(CONFIG_PHY_MTK_XSPHY)		+= phy-mtk-xsphy.o
-diff --git a/drivers/phy/mediatek/phy-mtk-dp.c b/drivers/phy/mediatek/phy-mtk-dp.c
-new file mode 100644
-index 000000000000..6f29854f0c2f
---- /dev/null
-+++ b/drivers/phy/mediatek/phy-mtk-dp.c
-@@ -0,0 +1,200 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * MediaTek DisplayPort PHY driver
-+ *
-+ * Copyright (c) 2021 BayLibre
-+ * Author: Markus Schneider-Pargmann <msp@baylibre.com>
-+ */
+ static struct regmap_config mtk_dp_regmap_config = {
+@@ -1970,6 +1972,9 @@ static irqreturn_t mtk_dp_hpd_event_thread(int hpd, void *dev)
+ 	if (event < 0)
+ 		return IRQ_HANDLED;
+ 
++	if (mtk_dp->need_debounce && mtk_dp->train_info.cable_plugged_in)
++		msleep(100);
 +
-+#include <linux/delay.h>
-+#include <linux/io.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/of.h>
-+#include <linux/phy/phy.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+
-+#define PHY_OFFSET 0x1000
-+
-+#define MTK_DP_PHY_DIG_PLL_CTL_1		(PHY_OFFSET + 0x14)
-+#define TPLL_SSC_EN					BIT(3)
-+
-+#define MTK_DP_PHY_DIG_BIT_RATE		(PHY_OFFSET + 0x3C)
-+#define BIT_RATE_RBR				0
-+#define BIT_RATE_HBR				1
-+#define BIT_RATE_HBR2				2
-+#define BIT_RATE_HBR3				3
-+
-+#define MTK_DP_PHY_DIG_SW_RST		(PHY_OFFSET + 0x38)
-+#define DP_GLB_SW_RST_PHYD			BIT(0)
-+
-+#define MTK_DP_LANE0_DRIVING_PARAM_3		(PHY_OFFSET + 0x138)
-+#define MTK_DP_LANE1_DRIVING_PARAM_3		(PHY_OFFSET + 0x238)
-+#define MTK_DP_LANE2_DRIVING_PARAM_3		(PHY_OFFSET + 0x338)
-+#define MTK_DP_LANE3_DRIVING_PARAM_3		(PHY_OFFSET + 0x438)
-+#define XTP_LN_TX_LCTXC0_SW0_PRE0_DEFAULT	BIT(4)
-+#define XTP_LN_TX_LCTXC0_SW0_PRE1_DEFAULT	((BIT(2) | BIT(4)) << 8)
-+#define XTP_LN_TX_LCTXC0_SW0_PRE2_DEFAULT	GENMASK(20, 19)
-+#define XTP_LN_TX_LCTXC0_SW0_PRE3_DEFAULT	GENMASK(29, 29)
-+#define DRIVING_PARAM_3_DEFAULT		(XTP_LN_TX_LCTXC0_SW0_PRE0_DEFAULT | \
-+						 XTP_LN_TX_LCTXC0_SW0_PRE1_DEFAULT | \
-+						 XTP_LN_TX_LCTXC0_SW0_PRE2_DEFAULT | \
-+						 XTP_LN_TX_LCTXC0_SW0_PRE3_DEFAULT)
-+
-+#define XTP_LN_TX_LCTXC0_SW1_PRE0_DEFAULT	GENMASK(4, 3)
-+#define XTP_LN_TX_LCTXC0_SW1_PRE1_DEFAULT	GENMASK(12, 9)
-+#define XTP_LN_TX_LCTXC0_SW1_PRE2_DEFAULT	((BIT(2) | BIT(5)) << 16)
-+#define XTP_LN_TX_LCTXC0_SW2_PRE0_DEFAULT	GENMASK(29, 29)
-+#define DRIVING_PARAM_4_DEFAULT		(XTP_LN_TX_LCTXC0_SW1_PRE0_DEFAULT | \
-+						 XTP_LN_TX_LCTXC0_SW1_PRE1_DEFAULT | \
-+						 XTP_LN_TX_LCTXC0_SW1_PRE2_DEFAULT | \
-+						 XTP_LN_TX_LCTXC0_SW2_PRE0_DEFAULT)
-+
-+#define XTP_LN_TX_LCTXC0_SW2_PRE1_DEFAULT	(BIT(3) | BIT(5))
-+#define XTP_LN_TX_LCTXC0_SW3_PRE0_DEFAULT	GENMASK(13, 12)
-+#define DRIVING_PARAM_5_DEFAULT		(XTP_LN_TX_LCTXC0_SW2_PRE1_DEFAULT | \
-+						 XTP_LN_TX_LCTXC0_SW3_PRE0_DEFAULT)
-+
-+#define XTP_LN_TX_LCTXCP1_SW0_PRE0_DEFAULT	0
-+#define XTP_LN_TX_LCTXCP1_SW0_PRE1_DEFAULT	GENMASK(10, 10)
-+#define XTP_LN_TX_LCTXCP1_SW0_PRE2_DEFAULT	GENMASK(19, 19)
-+#define XTP_LN_TX_LCTXCP1_SW0_PRE3_DEFAULT	GENMASK(28, 28)
-+#define DRIVING_PARAM_6_DEFAULT		(XTP_LN_TX_LCTXCP1_SW0_PRE0_DEFAULT | \
-+						 XTP_LN_TX_LCTXCP1_SW0_PRE1_DEFAULT | \
-+						 XTP_LN_TX_LCTXCP1_SW0_PRE2_DEFAULT | \
-+						 XTP_LN_TX_LCTXCP1_SW0_PRE3_DEFAULT)
-+
-+#define XTP_LN_TX_LCTXCP1_SW1_PRE0_DEFAULT	0
-+#define XTP_LN_TX_LCTXCP1_SW1_PRE1_DEFAULT	GENMASK(10, 9)
-+#define XTP_LN_TX_LCTXCP1_SW1_PRE2_DEFAULT	GENMASK(19, 18)
-+#define XTP_LN_TX_LCTXCP1_SW2_PRE0_DEFAULT	0
-+#define DRIVING_PARAM_7_DEFAULT		(XTP_LN_TX_LCTXCP1_SW1_PRE0_DEFAULT | \
-+						 XTP_LN_TX_LCTXCP1_SW1_PRE1_DEFAULT | \
-+						 XTP_LN_TX_LCTXCP1_SW1_PRE2_DEFAULT | \
-+						 XTP_LN_TX_LCTXCP1_SW2_PRE0_DEFAULT)
-+
-+#define XTP_LN_TX_LCTXCP1_SW2_PRE1_DEFAULT	GENMASK(3, 3)
-+#define XTP_LN_TX_LCTXCP1_SW3_PRE0_DEFAULT	0
-+#define DRIVING_PARAM_8_DEFAULT		(XTP_LN_TX_LCTXCP1_SW2_PRE1_DEFAULT | \
-+						 XTP_LN_TX_LCTXCP1_SW3_PRE0_DEFAULT)
-+
-+struct mtk_dp_phy {
-+	struct regmap *regs;
-+};
-+
-+static int mtk_dp_phy_init(struct phy *phy)
-+{
-+	struct mtk_dp_phy *dp_phy = phy_get_drvdata(phy);
-+	u32 driving_params[] = {
-+		DRIVING_PARAM_3_DEFAULT,
-+		DRIVING_PARAM_4_DEFAULT,
-+		DRIVING_PARAM_5_DEFAULT,
-+		DRIVING_PARAM_6_DEFAULT,
-+		DRIVING_PARAM_7_DEFAULT,
-+		DRIVING_PARAM_8_DEFAULT
-+	};
-+
-+	regmap_bulk_write(dp_phy->regs, MTK_DP_LANE0_DRIVING_PARAM_3,
-+			  driving_params, ARRAY_SIZE(driving_params));
-+	regmap_bulk_write(dp_phy->regs, MTK_DP_LANE1_DRIVING_PARAM_3,
-+			  driving_params, ARRAY_SIZE(driving_params));
-+	regmap_bulk_write(dp_phy->regs, MTK_DP_LANE2_DRIVING_PARAM_3,
-+			  driving_params, ARRAY_SIZE(driving_params));
-+	regmap_bulk_write(dp_phy->regs, MTK_DP_LANE3_DRIVING_PARAM_3,
-+			  driving_params, ARRAY_SIZE(driving_params));
-+
-+	return 0;
-+}
-+
-+static int mtk_dp_phy_configure(struct phy *phy, union phy_configure_opts *opts)
-+{
-+	struct mtk_dp_phy *dp_phy = phy_get_drvdata(phy);
-+	u32 val;
-+
-+	if (opts->dp.set_rate) {
-+		switch (opts->dp.link_rate) {
-+		default:
-+			dev_err(&phy->dev,
-+				"Implementation error, unknown linkrate %x\n",
-+				opts->dp.link_rate);
-+			return -EINVAL;
-+		case 1620:
-+			val = BIT_RATE_RBR;
-+			break;
-+		case 2700:
-+			val = BIT_RATE_HBR;
-+			break;
-+		case 5400:
-+			val = BIT_RATE_HBR2;
-+			break;
-+		case 8100:
-+			val = BIT_RATE_HBR3;
-+			break;
-+		}
-+		regmap_write(dp_phy->regs, MTK_DP_PHY_DIG_BIT_RATE, val);
+ 	if (mtk_dp->drm_dev) {
+ 		dev_info(mtk_dp->dev, "drm_helper_hpd_irq_event\n");
+ 		drm_helper_hpd_irq_event(mtk_dp->bridge.dev);
+@@ -2047,6 +2052,11 @@ static irqreturn_t mtk_dp_hpd_isr_handler(struct mtk_dp *mtk_dp)
+ 	}
+ 	train_info->cable_state_change = true;
+ 
++	if (!train_info->cable_plugged_in) {
++		mod_timer(&mtk_dp->debounce_timer, jiffies + msecs_to_jiffies(100) - 1);
++		mtk_dp->need_debounce = false;
 +	}
 +
-+	regmap_update_bits(dp_phy->regs, MTK_DP_PHY_DIG_PLL_CTL_1,
-+			   TPLL_SSC_EN, opts->dp.ssc ? TPLL_SSC_EN : 0);
-+
-+	return 0;
-+}
-+
-+static int mtk_dp_phy_reset(struct phy *phy)
+ 	return IRQ_WAKE_THREAD;
+ }
+ 
+@@ -2474,6 +2484,13 @@ static const struct drm_bridge_funcs mtk_dp_bridge_funcs = {
+ 	.detect = mtk_dp_bdg_detect,
+ };
+ 
++static void mtk_dp_debounce_timer(struct timer_list *t)
 +{
-+	struct mtk_dp_phy *dp_phy = phy_get_drvdata(phy);
++	struct mtk_dp *mtk_dp = from_timer(mtk_dp, t, debounce_timer);
 +
-+	regmap_update_bits(dp_phy->regs, MTK_DP_PHY_DIG_SW_RST,
-+			   DP_GLB_SW_RST_PHYD, 0);
-+	usleep_range(50, 200);
-+	regmap_update_bits(dp_phy->regs, MTK_DP_PHY_DIG_SW_RST,
-+			   DP_GLB_SW_RST_PHYD, 1);
-+
-+	return 0;
++	mtk_dp->need_debounce = true;
 +}
 +
-+static const struct phy_ops mtk_dp_phy_dev_ops = {
-+	.init = mtk_dp_phy_init,
-+	.configure = mtk_dp_phy_configure,
-+	.reset = mtk_dp_phy_reset,
-+	.owner = THIS_MODULE,
-+};
+ static int mtk_dp_probe(struct platform_device *pdev)
+ {
+ 	struct mtk_dp *mtk_dp;
+@@ -2547,6 +2564,9 @@ static int mtk_dp_probe(struct platform_device *pdev)
+ 	else
+ 		mtk_dp->bridge.type = DRM_MODE_CONNECTOR_DisplayPort;
+ 
++	mtk_dp->need_debounce = true;
++	timer_setup(&mtk_dp->debounce_timer, mtk_dp_debounce_timer, 0);
 +
-+static int mtk_dp_phy_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct mtk_dp_phy *dp_phy;
-+	struct phy *phy;
-+	struct regmap *regs;
-+
-+	regs = *(struct regmap **)dev->platform_data;
-+	if (!regs)
-+		return dev_err_probe(dev, EINVAL, "No data passed, requires struct regmap**\n");
-+
-+	dp_phy = devm_kzalloc(dev, sizeof(*dp_phy), GFP_KERNEL);
-+	if (!dp_phy)
-+		return -ENOMEM;
-+
-+	dp_phy->regs = regs;
-+	phy = devm_phy_create(dev, NULL, &mtk_dp_phy_dev_ops);
-+	if (IS_ERR(phy))
-+		return dev_err_probe(dev, PTR_ERR(phy), "Failed to create DP PHY\n");
-+
-+	phy_set_drvdata(phy, dp_phy);
-+	if (!dev->of_node)
-+		phy_create_lookup(phy, "dp", dev_name(dev));
-+
-+	return 0;
-+}
-+
-+struct platform_driver mtk_dp_phy_driver = {
-+	.probe = mtk_dp_phy_probe,
-+	.driver = {
-+		.name = "mediatek-dp-phy",
-+	},
-+};
-+module_platform_driver(mtk_dp_phy_driver);
-+
-+MODULE_AUTHOR("Markus Schneider-Pargmann <msp@baylibre.com>");
-+MODULE_DESCRIPTION("MediaTek DP PHY Driver");
-+MODULE_LICENSE("GPL");
+ 	pm_runtime_enable(dev);
+ 	pm_runtime_get_sync(dev);
+ 
+@@ -2559,6 +2579,7 @@ static int mtk_dp_remove(struct platform_device *pdev)
+ 
+ 	platform_device_unregister(mtk_dp->phy_dev);
+ 	mtk_dp_video_mute(mtk_dp, true);
++	del_timer_sync(&mtk_dp->debounce_timer);
+ 
+ 	pm_runtime_disable(&pdev->dev);
+ 
 -- 
 2.35.1
 

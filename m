@@ -2,222 +2,178 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22765C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 25 May 2022 15:30:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51E88C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 25 May 2022 16:45:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233702AbiEYPam (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 25 May 2022 11:30:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34910 "EHLO
+        id S242693AbiEYQpk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 25 May 2022 12:45:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58464 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230417AbiEYPak (ORCPT
+        with ESMTP id S239271AbiEYQpk (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 25 May 2022 11:30:40 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E1082F03F;
-        Wed, 25 May 2022 08:30:39 -0700 (PDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: kholk11)
-        with ESMTPSA id 9C1F61F450E4
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1653492638;
-        bh=mGX881tfLiNKIMFbpkJ51Yg+RQ+F9f5Vkk6XOh4uNGc=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=XiLCHHbHnd1Of9D/ytssYwCUsRsP+P8gc8sVErDFW2KN0nriCpd0EnGi8pD+i7k4K
-         xEcmVmjE6akfuOKNi5dPUssQ1UQIMYMVW1VlWa8IkEUWQofaE3Qau4yswACMZT/YGR
-         wiCDrQ++snvDecCL/AL48FhDsVlYmvgGmQyhh4Z10Pf6eIGiCecdncslLCBuW/w8qA
-         H1x7wi6Wf8tWIBmV53OjicRhpeMB0HttD0TeyXge4RNnx2x8cyzglTtwlepmhgN3o9
-         TkxwHho3xnEiQxK/eXPcxX/pWdv806oz0wMRAGjIiScBpjm1TgQM/0YEzRgGLRj3t3
-         RXWyV6ddLadRA==
-Message-ID: <f2856b8f-9465-2638-aabf-d2dda842766b@collabora.com>
-Date:   Wed, 25 May 2022 17:30:33 +0200
+        Wed, 25 May 2022 12:45:40 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 74A2A101F1
+        for <linux-fbdev@vger.kernel.org>; Wed, 25 May 2022 09:45:39 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 01037219CE;
+        Wed, 25 May 2022 16:45:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1653497138; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=yVVB/+rH7yH1+0rwj0OM70hRIVE4xzwxsIpx/Lgni84=;
+        b=MX8frmUlflpONPcKVm4nTKLRjt95JwTAWtcjkfR2fCz72hadAHUtDYFNI9aAr87aQu+lEW
+        AFxTG4JQmCo2h0SLXavXVm4yw8L83Tfgp6Q+PbzAn6yoibMC/awwHcGRB5jZQN5Y5vxH/p
+        BPBW15qH8BOPMqhDTbpdlu5coQ4r8nA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1653497138;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=yVVB/+rH7yH1+0rwj0OM70hRIVE4xzwxsIpx/Lgni84=;
+        b=5fWOf6AiMfwo2ey/BVunxRKQJIOx7z5r9+hYPLoVkm8KVjQf3jAyL41reQ/LPh5E7CCBPE
+        pt/uZpYlLUGGrcCA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 9E07713487;
+        Wed, 25 May 2022 16:45:37 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id 6ds4JTFdjmLVLQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 25 May 2022 16:45:37 +0000
+Message-ID: <a077bc25-03b3-f8bd-0138-a175a2864943@suse.de>
+Date:   Wed, 25 May 2022 18:45:36 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.9.0
-Subject: Re: [PATCH v10 02/21] dt-bindings: mediatek,dp: Add Display Port
- binding
+Subject: Re: [PATCH 2/2] drm/tiny: Add ofdrm for Open Firmware framebuffers
 Content-Language: en-US
-To:     Guillaume Ranquet <granquet@baylibre.com>,
-        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
+To:     Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
+Cc:     Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
         David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Chunfeng Yun <chunfeng.yun@mediatek.com>,
-        Kishon Vijay Abraham I <kishon@ti.com>,
-        Vinod Koul <vkoul@kernel.org>, Helge Deller <deller@gmx.de>,
-        CK Hu <ck.hu@mediatek.com>, Jitao shi <jitao.shi@mediatek.com>
-Cc:     Markus Schneider-Pargmann <msp@baylibre.com>,
-        dri-devel@lists.freedesktop.org,
-        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-phy@lists.infradead.org, linux-fbdev@vger.kernel.org
-References: <20220523104758.29531-1-granquet@baylibre.com>
- <20220523104758.29531-3-granquet@baylibre.com>
-From:   AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20220523104758.29531-3-granquet@baylibre.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Helge Deller <deller@gmx.de>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        Sam Ravnborg <sam@ravnborg.org>
+References: <20220518183006.14548-1-tzimmermann@suse.de>
+ <20220518183006.14548-3-tzimmermann@suse.de>
+ <20220518185156.GJ163591@kunlun.suse.cz>
+ <CAMuHMdUws2eJ4pHng4GD0PjuvMj5Hef_y_YyM4fUJV9xdUVuEQ@mail.gmail.com>
+ <29a8201d-3c0c-eeed-81af-92b351880702@suse.de>
+ <615c93392bee43e92f0400cfa51957cd955091d3.camel@kernel.crashing.org>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <615c93392bee43e92f0400cfa51957cd955091d3.camel@kernel.crashing.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------0YGknDDjrOG6ZMdYagea9Moa"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Il 23/05/22 12:47, Guillaume Ranquet ha scritto:
-> From: Markus Schneider-Pargmann <msp@baylibre.com>
-> 
-> This controller is present on several mediatek hardware. Currently
-> mt8195 and mt8395 have this controller without a functional difference,
-> so only one compatible field is added.
-> 
-> The controller can have two forms, as a normal display port and as an
-> embedded display port.
-> 
-> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> ---
->   .../display/mediatek/mediatek,dp.yaml         | 99 +++++++++++++++++++
->   1 file changed, 99 insertions(+)
->   create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
-> new file mode 100644
-> index 000000000000..36ae0a6df299
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
-> @@ -0,0 +1,99 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/display/mediatek/mediatek,dp.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: MediaTek Display Port Controller
-> +
-> +maintainers:
-> +  - CK Hu <ck.hu@mediatek.com>
-> +  - Jitao shi <jitao.shi@mediatek.com>
-> +
-> +description: |
-> +  Device tree bindings for the MediaTek (embedded) Display Port controller
-> +  present on some MediaTek SoCs.
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - mediatek,mt8195-dp-tx
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +
-> +  clocks:
-> +    items:
-> +      - description: faxi clock
-> +
-> +  clock-names:
-> +    items:
-> +      - const: faxi
-> +
-> +  power-domains:
-> +    maxItems: 1
-> +
-> +  ports:
-> +    $ref: /schemas/graph.yaml#/properties/ports
-> +    properties:
-> +      port@0:
-> +        $ref: /schemas/graph.yaml#/properties/port
-> +        description: Input endpoint of the controller, usually dp_intf
-> +
-> +      port@1:
-> +        $ref: /schemas/graph.yaml#/properties/port
-> +        description: Output endpoint of the controller
-> +
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------0YGknDDjrOG6ZMdYagea9Moa
+Content-Type: multipart/mixed; boundary="------------SiUHlc8g3ad90M5hlc9fQZal";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+ David Airlie <airlied@linux.ie>, Michael Ellerman <mpe@ellerman.id.au>,
+ Helge Deller <deller@gmx.de>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Javier Martinez Canillas <javierm@redhat.com>,
+ DRI Development <dri-devel@lists.freedesktop.org>,
+ Paul Mackerras <paulus@samba.org>, Maxime Ripard <maxime@cerno.tech>,
+ Sam Ravnborg <sam@ravnborg.org>
+Message-ID: <a077bc25-03b3-f8bd-0138-a175a2864943@suse.de>
+Subject: Re: [PATCH 2/2] drm/tiny: Add ofdrm for Open Firmware framebuffers
+References: <20220518183006.14548-1-tzimmermann@suse.de>
+ <20220518183006.14548-3-tzimmermann@suse.de>
+ <20220518185156.GJ163591@kunlun.suse.cz>
+ <CAMuHMdUws2eJ4pHng4GD0PjuvMj5Hef_y_YyM4fUJV9xdUVuEQ@mail.gmail.com>
+ <29a8201d-3c0c-eeed-81af-92b351880702@suse.de>
+ <615c93392bee43e92f0400cfa51957cd955091d3.camel@kernel.crashing.org>
+In-Reply-To: <615c93392bee43e92f0400cfa51957cd955091d3.camel@kernel.crashing.org>
 
-You should add port@0 (and port@1, probably) as required... with what you've done
-here, you're saying that "ports" is required, but you're allowing it to be empty..
+--------------SiUHlc8g3ad90M5hlc9fQZal
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-   ports:
-     $ref: /schemas/graph.yaml#/properties/ports
-     properties:
-       port@0:
-         $ref: /schemas/graph.yaml#/properties/port
-         description: Input endpoint of the controller, usually dp_intf
+SGkNCg0KQW0gMjEuMDUuMjIgdW0gMDQ6NDkgc2NocmllYiBCZW5qYW1pbiBIZXJyZW5zY2ht
+aWR0Og0KPiBPbiBUaHUsIDIwMjItMDUtMTkgYXQgMDk6MjcgKzAyMDAsIFRob21hcyBaaW1t
+ZXJtYW5uIHdyb3RlOg0KPiANCj4+IHRvIGJ1aWxkIHdpdGhvdXQgUENJIHRvIHNlZSB3aGF0
+IGhhcHBlbnMuDQo+IA0KPiBJZiB5b3UgYnJpbmcgYW55IG9mIHRoZSAiaGV1cmlzdGljIiBh
+bmQgcGFsZXR0ZSBzdXBwb3J0IGNvZGUgaW4sIHlvdQ0KPiBuZWVkIFBDSS4gSSBkb24ndCBz
+ZWUgYW55IHJlYXNvbiB0byB0YWtlIGl0IG91dC4NCj4gDQo+PiBUaG9zZSBvbGQgTWFjcyB1
+c2UgQm9vdFgsIHJpZ2h0PyBCb290WCBpcyBub3Qgc3VwcG9ydGVkIEFUTSwgYXMgSSBkb24n
+dA0KPj4gaGF2ZSB0aGUgSFcgdG8gdGVzdC4gSXMgdGhlcmUgYW4gZW11bGF0b3IgZm9yIGl0
+Pw0KPiANCj4gSXQgaXNuJ3QgPyBXaGVuIGRpZCBpdCBicmVhayA/IDotKQ0KDQpJIG1lYW50
+IHRoYXQgQm9vdFggaXMgbm90ICh5ZXQpIHN1cHBvcnRlZCBieSB0aGlzIG5ldyBkcml2ZXIu
+IFRoZSBMaW51eCANCmtlcm5lbCBvdmVyYWxsIHByb2JhYmx5IHN1cHBvcnRzIGl0Lg0KDQoN
+Cj4gDQo+PiBJZiBhbnlvbmUgd2hhdCdzIHRvIG1ha2UgcGF0Y2hlcyBmb3IgQm9vdFgsIEkn
+ZCBiZSBoYXBweSB0byBhZGQgdGhlbS4NCj4+IFRoZSBvZmZiIGRyaXZlciBhbHNvIHN1cHBv
+cnRzIGEgbnVtYmVyIG9mIHNwZWNpYWwgY2FzZXMgZm9yIHBhbGV0dGUNCj4+IGhhbmRsaW5n
+LiBUaGF0IG1pZ2h0IGJlIG5lY2Vzc2FyeSBmb3Igb2Zkcm0gYXMgd2VsbC4NCj4gDQo+IFRo
+ZSBwYWxldHRlIGhhbmRsaW5nIGlzIHVzZWZ1bCB3aGVuIHVzaW5nIGEgcmVhbCBPcGVuIEZp
+cm13YXJlDQo+IGltcGxlbWVudGF0aW9uIHdoaWNoIHRlbmRzIHRvIGJvb3QgaW4gOC1iaXQg
+bW9kZSwgc28gd2l0aG91dCBwYWxldHRlDQo+IHRoaW5ncyB3aWxsIGxvb2sgLi4uIGJhZC4N
+Cj4gDQo+IEl0J3Mgbm90IG5lY2Vzc2FyeSB3aGVuIHVzaW5nIDE2LzMyIGJwcCBmcmFtZWJ1
+ZmZlcnMgd2hpY2ggaXMgdHlwaWNhbGx5DQo+IC4uLiB3aGF0IEJvb3RYIHByb3ZpZGVzIDot
+KQ0KDQpNYXliZSB0aGUgb2RkIGNvbG9yIGZvcm1hdHMgY2FuIGJlIHRlc3RlZCB2aWEgcWVt
+dS4NCg0KSSBkb24ndCBtaW5kIGFkZGluZyBEUk0gc3VwcG9ydCBmb3IgQm9vdFggZGlzcGxh
+eXMsIGJ1dCBnZXR0aW5nIHRoZSANCm5lY2Vzc2FyeSB0ZXN0IEhXIHdpdGggYSBzdWl0YWJs
+ZSBMaW51eCBzZWVtcyB0byBiZSBsYWJvcmlvdXMuIFdvdWxkIGEgDQpHNCBQb3dlcmJvb2sg
+d29yaz8NCg0KQmVzdCByZWdhcmQNClRob21hcw0KDQo+IA0KPiBDaGVlcnMsDQo+IEJlbi4N
+Cj4gDQo+PiBCZXN0IHJlZ2FyZHMNCj4+IFRob21hcw0KPj4NCj4+PiBHcntvZXRqZSxlZXRp
+bmd9cywNCj4+Pg0KPj4+ICAgICAgICAgICAgICAgICAgICAgICAgICAgR2VlcnQNCj4+Pg0K
+Pj4+IC0tDQo+Pj4gR2VlcnQgVXl0dGVyaG9ldmVuIC0tIFRoZXJlJ3MgbG90cyBvZiBMaW51
+eCBiZXlvbmQgaWEzMiAtLSBnZWVydEBsaW51eC1tNjhrLm9yZw0KPj4+DQo+Pj4gSW4gcGVy
+c29uYWwgY29udmVyc2F0aW9ucyB3aXRoIHRlY2huaWNhbCBwZW9wbGUsIEkgY2FsbCBteXNl
+bGYgYSBoYWNrZXIuIEJ1dA0KPj4+IHdoZW4gSSdtIHRhbGtpbmcgdG8gam91cm5hbGlzdHMg
+SSBqdXN0IHNheSAicHJvZ3JhbW1lciIgb3Igc29tZXRoaW5nIGxpa2UgdGhhdC4NCj4+PiAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLS0gTGludXMgVG9ydmFsZHMNCj4+
+DQo+PiAtLSANCj4+IFRob21hcyBaaW1tZXJtYW5uDQo+PiBHcmFwaGljcyBEcml2ZXIgRGV2
+ZWxvcGVyDQo+PiBTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCj4+IE1h
+eGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KPj4gKEhSQiAzNjgwOSwg
+QUcgTsO8cm5iZXJnKQ0KPj4gR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0KPiANCg0K
+LS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VT
+RSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQw
+OSBOw7xybmJlcmcsIEdlcm1hbnkNCihIUkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2No
+w6RmdHNmw7xocmVyOiBJdm8gVG90ZXYNCg==
 
-       port@1:
-         $ref: /schemas/graph.yaml#/properties/port
-         description: Output endpoint of the controller
+--------------SiUHlc8g3ad90M5hlc9fQZal--
 
-     required:
-       - port@0
-       - port@1
+--------------0YGknDDjrOG6ZMdYagea9Moa
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-^^^ that's how it should look.
+-----BEGIN PGP SIGNATURE-----
 
-> +  max-lanes:
-> +    maxItems: 1
-> +    description: maximum number of lanes supported by the hardware
-> +
-> +  max-linkrate:
-> +    maxItems: 1
-> +    description: maximum link rate supported by the hardware
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmKOXTAFAwAAAAAACgkQlh/E3EQov+Dg
+YhAAjdFxfDzzhYj85qmHzjGzOZlSJUOZoijRh4THFo/6wlXHtUl9oX1Z1NF8pPvcR1IbaNxDE+Mi
+gW/R5wRYKvlQ+QXcYq83uaAHRNk1PG6A30+XVzp/01OeIVnOydddX7eX1KVYuUEP9PLQxqJ2ObKi
+vn8Rrgi3XSMM/qya31hzs8L0BBS1H2DvafvnxfB4H31Cawi7sxChDiWnwAEPHQsxsCJz/m9CuHwL
+vM+IxX6lRw4bCfBf24S5M6DK8dqksP9OA9OXi5hYAu2Xl+bI4GzKX8tPoMxy/aBGLX+4nSuRwHks
+jPl1pN8w7fg4mtcQgrf5AwHFId+GA6Eyv5PHJY5srshdsl/9M6RttvbUdByOmLQupAJcPRzF9n7Q
+vL+2j/EPUEWByMqsehyDgFfHp9PdKstBFQoOlk3rgpw+/toPxb9AFmVbD8Ngo+S2PZN8tbzaWluc
+pMgqKc5xFGeD/QTuS12EHFmvGbSCfDz53wK5JYZwYdGnkOeW3tenUWanQhIcPOagXzsBnVIFI331
+L4pOq8OoHLogR/Ylm4bGQY5dVaKahX1IqNdmvDOdPmCXFz0cvNwd4sXAzSk4Zz30sDrLUq3vjgUF
+CGJwXhvNMgcvvRVmmh/V58c/7Kgimb401GTltX1KNjgu/alJUmlOSez7JrMU3wbq/OsakcAUD6GV
+JRk=
+=cPHh
+-----END PGP SIGNATURE-----
 
-As you've put it (in the example below), the max-linkrate property wants a value
-that corresponds to what you find in the HW registers... this is wrong.
-
-Devicetree bindings should be generic and devicetrees shouldn't have hardware
-specific bits inside, hence, please change this property to accept a link rate
-specified in Mbps and also specify that in the description.
-
-Thanks,
-Angelo
-
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - interrupts
-> +  - ports
-> +  - max-lanes
-> +  - max-linkrate
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +    #include <dt-bindings/power/mt8195-power.h>
-> +    edp_tx: edp_tx@1c500000 {
-> +        compatible = "mediatek,mt8195-dp-tx";
-> +        reg = <0 0x1c500000 0 0x8000>;
-> +        interrupts = <GIC_SPI 676 IRQ_TYPE_LEVEL_HIGH 0>;
-> +        power-domains = <&spm MT8195_POWER_DOMAIN_EPD_TX>;
-> +        pinctrl-names = "default";
-> +        pinctrl-0 = <&edp_pin>;
-> +        max-lanes = /bits/ 8 <4>;
-> +        max-linkrate = /bits/ 8 <0x1e>;
-> +
-> +        ports {
-> +            #address-cells = <1>;
-> +            #size-cells = <0>;
-> +
-> +            port@0 {
-> +                reg = <0>;
-> +                edp_in: endpoint {
-> +                    remote-endpoint = <&dp_intf0_out>;
-> +                };
-> +            };
-> +            port@1 {
-> +                reg = <1>;
-> +                edp_out: endpoint {
-> +                	remote-endpoint = <&panel_in>;
-> +                };
-> +            };
-> +        };
-> +    };
+--------------0YGknDDjrOG6ZMdYagea9Moa--

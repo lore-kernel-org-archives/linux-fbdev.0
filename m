@@ -2,38 +2,38 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C310C433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed, 25 May 2022 12:27:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7923DC4332F
+	for <linux-fbdev@archiver.kernel.org>; Wed, 25 May 2022 12:32:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234370AbiEYM1H (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 25 May 2022 08:27:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45856 "EHLO
+        id S241341AbiEYMcI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 25 May 2022 08:32:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54484 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231521AbiEYM1E (ORCPT
+        with ESMTP id S236767AbiEYMcI (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 25 May 2022 08:27:04 -0400
+        Wed, 25 May 2022 08:32:08 -0400
 Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C88A6D3B5;
-        Wed, 25 May 2022 05:27:02 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 639A56D4D9;
+        Wed, 25 May 2022 05:32:07 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: kholk11)
-        with ESMTPSA id DE4811F44DDB
+        with ESMTPSA id AC9251F44DDB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1653481621;
-        bh=/0q+hfmUuKvNHwu+BWOwIhmaeAH+9oVvmGqAAo1KneI=;
+        s=mail; t=1653481926;
+        bh=KKdgy9/aog9w2qO3pPEy2MN18u1D22mqf36NY6y+1tQ=;
         h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=WmpI3+u+D2P5XCFYkAzhTxLRcX0QGnwV3zpOgvU+E0ivdM6Yxx8D5xqeOWKcK4oqx
-         LEu0psFPyajJIlwGL5VYmINtHyHbBhKZGeqV2raQ+0YAEYTXu+ygj2HRnLt4c5tSv7
-         52Cj+yLSxsqsM96oitx7RHERgw6/E3vRYSmjvpZGoN+CmnKm5vnLR0s+I+slY3nXCm
-         UxO1zbbo6/87nSumJuH+h/pUL+W+QtcYhkGEXl+Xa0+COiYyX9dsyJe9XpN2vhl2xH
-         JILO8ki1JJsy442UbTfQ7GjTmTyhaGJdfvQjNnOp1jVkj9NmloJeP9CP2y8pkeonae
-         Yt4PSaGzgUyRA==
-Message-ID: <62abad94-fe4a-2505-506d-6e4bc6b425ff@collabora.com>
-Date:   Wed, 25 May 2022 14:26:57 +0200
+        b=N3AXUqtBIPjyyZiUQSQ3UKLRlNb1+ta9KrXc3ZG5Pj2NXlpsWDh57ypRCyxBT9ZHt
+         8Bk5ZDFmS7Wlu9Yf4E7SAhE/+czJouD42S8MzxON0JFQw954iX+y18oQeLPOB9n+Xu
+         kGcg+Y2mUIiRDuPI8xlMDbjR6V2OI3pntHYGkwQCa2LiTWTejpzmAVPuyBZPnkfNj7
+         bETGwxcd3g0w3tJ4jX8eio3c/x7dkyDWOaD8VRTMDifDMavcJzxjulfhzDxRAB/JcE
+         DsboFWBlIzQ2szds3t70nWQWCl7aZX2rA0GynN0DWgIEJ2J/f09+qJX81KbOXspld0
+         pXPHxXGdKDUZw==
+Message-ID: <7ae7e42c-9225-2ff2-f167-8235ab4cadc3@collabora.com>
+Date:   Wed, 25 May 2022 14:32:02 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.9.0
-Subject: Re: [PATCH v10 04/21] drm/edid: Add cea_sad helpers for freq/length
+Subject: Re: [PATCH v10 05/21] video/hdmi: Add audio_infoframe packing for DP
 Content-Language: en-US
 To:     Guillaume Ranquet <granquet@baylibre.com>,
         Chun-Kuang Hu <chunkuang.hu@kernel.org>,
@@ -56,10 +56,10 @@ Cc:     Markus Schneider-Pargmann <msp@baylibre.com>,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-phy@lists.infradead.org, linux-fbdev@vger.kernel.org
 References: <20220523104758.29531-1-granquet@baylibre.com>
- <20220523104758.29531-5-granquet@baylibre.com>
+ <20220523104758.29531-6-granquet@baylibre.com>
 From:   AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20220523104758.29531-5-granquet@baylibre.com>
+In-Reply-To: <20220523104758.29531-6-granquet@baylibre.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
@@ -67,167 +67,27 @@ List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Il 23/05/22 12:47, Guillaume Ranquet ha scritto:
-> This patch adds two helper functions that extract the frequency and word
-> length from a struct cea_sad.
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
 > 
-> For these helper functions new defines are added that help translate the
-> 'freq' and 'byte2' fields into real numbers.
+> Similar to HDMI, DP uses audio infoframes as well which are structured
+> very similar to the HDMI ones.
+> 
+> This patch adds a helper function to pack the HDMI audio infoframe for
+> DP, called hdmi_audio_infoframe_pack_for_dp().
+> hdmi_audio_infoframe_pack_only() is split into two parts. One of them
+> packs the payload only and can be used for HDMI and DP.
+> 
+> Also constify the frame parameter in hdmi_audio_infoframe_check() as
+> it is passed to hdmi_audio_infoframe_check_only() which expects a const.
 > 
 > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
 > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
 > ---
->   drivers/gpu/drm/drm_edid.c | 74 ++++++++++++++++++++++++++++++++++++++
->   include/drm/drm_edid.h     | 14 ++++++++
->   2 files changed, 88 insertions(+)
+>   drivers/video/hdmi.c           | 82 ++++++++++++++++++++++++++--------
+>   include/drm/dp/drm_dp_helper.h |  2 +
+
+this has been moved... again... this time it's include/drm/display/drm_dp_helper.h
+
+>   include/linux/hdmi.h           |  7 ++-
+>   3 files changed, 71 insertions(+), 20 deletions(-)
 > 
-> diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c
-> index 561f53831e29..61ef1b1c972c 100644
-> --- a/drivers/gpu/drm/drm_edid.c
-> +++ b/drivers/gpu/drm/drm_edid.c
-> @@ -4758,6 +4758,80 @@ int drm_edid_to_speaker_allocation(struct edid *edid, u8 **sadb)
->   }
->   EXPORT_SYMBOL(drm_edid_to_speaker_allocation);
->   
-> +/**
-> + * drm_cea_sad_get_sample_rate - Extract the sample rate from cea_sad
-> + * @sad: Pointer to the cea_sad struct
-> + *
-> + * Extracts the cea_sad frequency field and returns the sample rate in Hz.
-> + *
-> + * Return: Sample rate in Hz or a negative errno if parsing failed.
-> + */
-> +int drm_cea_sad_get_sample_rate(const struct cea_sad *sad)
-> +{
-> +	switch (sad->freq) {
-> +	case DRM_CEA_SAD_FREQ_32KHZ:
-> +		return 32000;
-> +	case DRM_CEA_SAD_FREQ_44KHZ:
-> +		return 44100;
-> +	case DRM_CEA_SAD_FREQ_48KHZ:
-> +		return 48000;
-> +	case DRM_CEA_SAD_FREQ_88KHZ:
-> +		return 88200;
-> +	case DRM_CEA_SAD_FREQ_96KHZ:
-> +		return 96000;
-> +	case DRM_CEA_SAD_FREQ_176KHZ:
-> +		return 176400;
-> +	case DRM_CEA_SAD_FREQ_192KHZ:
-> +		return 192000;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +}
-> +EXPORT_SYMBOL(drm_cea_sad_get_sample_rate);
-> +
-> +static bool drm_cea_sad_is_uncompressed(const struct cea_sad *sad)
-> +{
-> +	switch (sad->format) {
-> +	case HDMI_AUDIO_CODING_TYPE_STREAM:
-
-As far as I know, bit 0 is reserved, so HDMI_AUDIO_CODING_TYPE_STREAM should
-never occur here?
-
-> +	case HDMI_AUDIO_CODING_TYPE_PCM:
-> +		return true;
-> +	default:
-> +		return false;
-> +	}
-> +}
-> +
-
-Also, I think that implementing a drm_cea_sad_get_compressed_max_bitrate()
-function should be pretty straightforward... the spec says that this is
-8 bits, byte 3 (your byte2) contains the max bitrate divided by 8kHz,
-so to extract it, you read byte2 and multiply it by 8000Hz.
-
-/**
-  * drm_cea_sad_get_compressed_max_bitrate - Extract maximum bitrate
-  * @sad: Pointer to the cea_sad structure
-  *
-  * Extracts the cea_sad byte2 field and returns the maximum bit rate
-  * of a compressed audio stream.
-  *
-  * Note: This function may only be called for compressed audio.
-  *
-  * Return: Maximum bitrate of compressed audio stream in bit/s or
-  *         negative number for error
-  */
-int drm_cea_sad_get_compressed_max_bitrate(const struct cea_sad *sad)
-{
-	if (drm_cea_sad_is_uncompressed(sad)) {
-		DRM_ERROR("Not supported: tried to get max bitrate for uncompressed format: %u\n",
-			 sad->format);
-		return -EINVAL;
-	}
-
-	return sad->byte2 * 8000;
-}
-
-> +/**
-> + * drm_cea_sad_get_uncompressed_word_length - Extract word length
-> + * @sad: Pointer to the cea_sad struct
-> + *
-> + * Extracts the cea_sad byte2 field and returns the word length for an
-> + * uncompressed stream.
-> + *
-> + * Note: This function may only be called for uncompressed audio.
-> + *
-> + * Return: Word length in bits or a negative errno if parsing failed.
-> + */
-> +int drm_cea_sad_get_uncompressed_word_length(const struct cea_sad *sad)
-> +{
-> +	if (!drm_cea_sad_is_uncompressed(sad)) {
-> +		DRM_WARN("Unable to get the uncompressed word length for a compressed format: %u\n",
-> +			 sad->format);
-> +		return -EINVAL;
-> +	}
-> +
-> +	switch (sad->byte2) {
-> +	case DRM_CEA_SAD_UNCOMPRESSED_WORD_16BIT:
-> +		return 16;
-> +	case DRM_CEA_SAD_UNCOMPRESSED_WORD_20BIT:
-> +		return 20;
-> +	case DRM_CEA_SAD_UNCOMPRESSED_WORD_24BIT:
-> +		return 24;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +}
-> +EXPORT_SYMBOL(drm_cea_sad_get_uncompressed_word_length);
-> +
->   /**
->    * drm_av_sync_delay - compute the HDMI/DP sink audio-video sync delay
->    * @connector: connector associated with the HDMI/DP sink
-> diff --git a/include/drm/drm_edid.h b/include/drm/drm_edid.h
-> index 37c420423625..7a939cb95b38 100644
-> --- a/include/drm/drm_edid.h
-> +++ b/include/drm/drm_edid.h
-> @@ -373,6 +373,18 @@ struct cea_sad {
->   	u8 byte2;
->   };
->   
-> +#define DRM_CEA_SAD_FREQ_32KHZ  BIT(0)
-> +#define DRM_CEA_SAD_FREQ_44KHZ  BIT(1)
-> +#define DRM_CEA_SAD_FREQ_48KHZ  BIT(2)
-> +#define DRM_CEA_SAD_FREQ_88KHZ  BIT(3)
-> +#define DRM_CEA_SAD_FREQ_96KHZ  BIT(4)
-> +#define DRM_CEA_SAD_FREQ_176KHZ BIT(5)
-> +#define DRM_CEA_SAD_FREQ_192KHZ BIT(6)
-> +
-> +#define DRM_CEA_SAD_UNCOMPRESSED_WORD_16BIT BIT(0)
-> +#define DRM_CEA_SAD_UNCOMPRESSED_WORD_20BIT BIT(1)
-> +#define DRM_CEA_SAD_UNCOMPRESSED_WORD_24BIT BIT(2)
-> +
->   struct drm_encoder;
->   struct drm_connector;
->   struct drm_connector_state;
-> @@ -380,6 +392,8 @@ struct drm_display_mode;
->   
->   int drm_edid_to_sad(struct edid *edid, struct cea_sad **sads);
->   int drm_edid_to_speaker_allocation(struct edid *edid, u8 **sadb);
-> +int drm_cea_sad_get_sample_rate(const struct cea_sad *sad);
-> +int drm_cea_sad_get_uncompressed_word_length(const struct cea_sad *sad);
->   int drm_av_sync_delay(struct drm_connector *connector,
->   		      const struct drm_display_mode *mode);
->   
-

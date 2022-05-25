@@ -2,62 +2,58 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BEA1C433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue, 24 May 2022 10:13:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10943C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 25 May 2022 03:24:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232633AbiEXKNp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 24 May 2022 06:13:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55954 "EHLO
+        id S231514AbiEYDYN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 24 May 2022 23:24:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38932 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231207AbiEXKNp (ORCPT
+        with ESMTP id S230402AbiEYDYM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 24 May 2022 06:13:45 -0400
-X-Greylist: delayed 2110 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 24 May 2022 03:13:44 PDT
-Received: from box.indicandustries.com (hwsrv-970840.hostwindsdns.com [IPv6:2607:5501:3000:21a5::2])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35FFD7CDDC
-        for <linux-fbdev@vger.kernel.org>; Tue, 24 May 2022 03:13:44 -0700 (PDT)
-Received: from authenticated-user (box.indicandustries.com [104.168.149.109])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by box.indicandustries.com (Postfix) with ESMTPSA id 5A6D31085B1
-        for <linux-fbdev@vger.kernel.org>; Tue, 24 May 2022 03:25:15 -0600 (MDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-        d=box.indicandustries.com; s=mail; t=1653384315;
-        bh=V6VCn7WEbqHjVVQ20/+SYu6rwS1WmTHcxX88g+j430s=;
-        h=Reply-To:From:To:Subject:Date:From;
-        b=OM4RTz1xwyLY28Vi2DnOseQHjStzGkcbHTddlhYTY3u0C2dVBI1T9ZCR3Q/+uX0Ar
-         s+tuRh2chjqaoFvHCMNcpfwBbPRqFMGmnHqaKZ1kmrqmznI/Q5LZ2V+J9XTxpTHV9q
-         xTe/kl6kTkGVaRrORyRhHNwNxLAHvhe7JGW1QbRZ5SXqiLe5J26IgXOrjxmCHg90SC
-         6PRmPRFAcDhhCDLiNv+2Ux0t36NeCcnA4Tsa9F8m/APjkKUajmVe7eCL2APffxq8we
-         6pw2Y3JVIC+GO0vvfAuVJ4uCFzK4fIxsQh54ElI/puLyOPE3klZTG1/KDRNsH00VYW
-         IEVo9hQTp0g1g==
-Reply-To: amjalia90@gmail.com
-From:   amjad.ali@box.indicandustries.com
-To:     linux-fbdev@vger.kernel.org
-Subject: Hello Sir, I seek your urgent consideration.
-Date:   24 May 2022 11:25:14 +0200
-Message-ID: <20220524112514.B2342B3E9A6A54A8@box.indicandustries.com>
+        Tue, 24 May 2022 23:24:12 -0400
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id D1839644C4
+        for <linux-fbdev@vger.kernel.org>; Tue, 24 May 2022 20:24:11 -0700 (PDT)
+Received: from ip6-localhost (localhost.localdomain [127.0.0.1])
+        by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 24P3FVYw012347;
+        Tue, 24 May 2022 22:15:32 -0500
+Message-ID: <ede15a37b9e854a50c9d67b890bdebb25642a003.camel@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] drm/tiny: Add ofdrm for Open Firmware framebuffers
+From:   Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        airlied@linux.ie, daniel@ffwll.ch, deller@gmx.de,
+        maxime@cerno.tech, sam@ravnborg.org, msuchanek@suse.de,
+        mpe@ellerman.id.au, paulus@samba.org
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org
+Date:   Wed, 25 May 2022 13:15:31 +1000
+In-Reply-To: <8cd53439-46f1-117c-7aae-7630a6466ab8@suse.de>
+References: <20220518183006.14548-1-tzimmermann@suse.de>
+         <20220518183006.14548-3-tzimmermann@suse.de>
+         <84a550c3-dcef-17ac-0ae5-666cdf0fb67e@redhat.com>
+         <8cd53439-46f1-117c-7aae-7630a6466ab8@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.36.5-0ubuntu1 
 MIME-Version: 1.0
-Content-Type: text/plain;
-        charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello,
+On Sun, 2022-05-22 at 21:35 +0200, Thomas Zimmermann wrote:
+> > Interesting. Did you find some formats that were not supported ?
+> 
+> We still don't support XRGB1555. If the native buffer uses this format, 
+> we'd have no conversion helper. In this case, we rely on userspace/fbcon 
+> to use the native format exclusively.  (BTW, I asked one of my coworkers 
+> to implement XRGB1555 to make her familiar with DRM. That's why I 
+> haven't sent a patch yet.)
+> 
 
-Greetings? I am Amjad. I work with a leading Bio Firm.  Due to=20
-the setbacks of the pandemic, my company has opened a bid in=20
-search of new suppliers for basic raw materials needed in=20
-production.
+Various old macs do 1555 ...
 
-I am seeking a representative=C2=A0as I am a staff, I can not be=20
-involved directly. It may not be your area of work but the=20
-profits are great and I will guide you through. I have already=20
-sourced a local supplier for this. I only need a reliable=20
-representative.
+Cheers,
+Ben.
 
-Please get back to me so I can explain this in full.
-
-Amjad

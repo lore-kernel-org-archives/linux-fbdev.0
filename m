@@ -2,194 +2,238 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B53FFC433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed, 25 May 2022 05:47:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADEDDC433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 25 May 2022 09:45:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243519AbiEYFrw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 25 May 2022 01:47:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60456 "EHLO
+        id S233635AbiEYJpU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 25 May 2022 05:45:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58916 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242356AbiEYFrv (ORCPT
+        with ESMTP id S236444AbiEYJor (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 25 May 2022 01:47:51 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 26EE46FD2A;
-        Tue, 24 May 2022 22:47:48 -0700 (PDT)
-X-UUID: 9cdba63d1bd644c9b884b8750030e4a9-20220525
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:1a7feff1-630d-461f-8014-f945a40c480e,OB:0,LO
-        B:0,IP:0,URL:5,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:5
-X-CID-META: VersionHash:2a19b09,CLOUDID:4e2a6147-4fb1-496b-8f1d-39e733fed1ea,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
-        ,QS:0,BEC:nil
-X-UUID: 9cdba63d1bd644c9b884b8750030e4a9-20220525
-Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw01.mediatek.com
-        (envelope-from <ck.hu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1984232510; Wed, 25 May 2022 13:47:43 +0800
-Received: from MTKMBS07N2.mediatek.inc (172.21.101.141) by
- mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Wed, 25 May 2022 13:47:41 +0800
-Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Wed, 25 May 2022 13:47:41 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Wed, 25 May 2022 13:47:41 +0800
-Message-ID: <eaed852506a753629d0d76334664c51d98477d14.camel@mediatek.com>
-Subject: Re: [PATCH v10 18/21] drm/mediatek: Add mt8195 Embedded DisplayPort
+        Wed, 25 May 2022 05:44:47 -0400
+Received: from wnew2-smtp.messagingengine.com (wnew2-smtp.messagingengine.com [64.147.123.27])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 817C964D3;
+        Wed, 25 May 2022 02:44:43 -0700 (PDT)
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+        by mailnew.west.internal (Postfix) with ESMTP id B141D2B05006;
+        Wed, 25 May 2022 05:44:38 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute3.internal (MEProxy); Wed, 25 May 2022 05:44:41 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=cc
+        :cc:content-type:date:date:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to; s=fm3; t=1653471878; x=1653479078; bh=ys3iQzhNHF
+        k+i8WtIf+H8WQ46WfOZFCztCK2dX/C9P0=; b=N/JRB+WnexRIZ9dX5PcEm/8f/H
+        cPBsMsbDuSTmVpILRSXnNlFoPgXwTnB9sG5c2CBpqvmmZti7TCvET1ygVyPq4fwA
+        fQ5OKTgoJNLZ2M0ZTBEABVgD9xQIGnhTbnxt6XkIAVCIzuLJXBs7WAGfC96irWbw
+        lr6953LnsKHvebopgcw5k3L/zNh8kVTad2/799qbT1ZNmy0HBuUmu2c1k8Ro/kCY
+        bvMC07VkU0pJwn8wysn6o8m1M2Ne1dICZCA2GfRKAkRG+uRlxyGobz3yN2r1jOok
+        pxntt2LaG8S5EYl12Kr5IDS1ImVsXzQyl8d4WYDx7OYzrJX/5YAypClUA6hQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
+        :feedback-id:from:from:in-reply-to:in-reply-to:message-id
+        :mime-version:references:reply-to:sender:subject:subject:to:to
+        :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+        fm1; t=1653471878; x=1653479078; bh=ys3iQzhNHFk+i8WtIf+H8WQ46WfO
+        ZFCztCK2dX/C9P0=; b=XJwcQJysHomLv8q3I/a024YNpcHuA7CVVSfdAKLSNh3e
+        yCo6zETnKg3Mmiy6LoUaiq2nQu9FmR/S85oMTwF7btYoM842Xj+nV71rUSMChwSf
+        dqf2GI+aNWNs5ombF58vGOinb8gsdVPNIx+xirIXrd2MM5HTFxrTtiWm/87u7xJG
+        g2dLVRdU0LdTz2v5YPgzkl1T0mdMsa+3PlpXoMfDj0mFo5gdyV+0rNllM1Gs6YzH
+        v42Dafl6F/jY8Nx/xQNz9BWuJQwjez2vm5rfwevvrJNdAG3j0FQLxK/8UQJ0nJ0c
+        WDUETgLd5XsVCXp/jcUW6Bu92Nyy4tEdyF1vOAVWKg==
+X-ME-Sender: <xms:hfqNYq_j5GFf5Uz1mDgmLdV70fLnuq6aSKWevLqyWIawg4NmhGrHQg>
+    <xme:hfqNYqtHTkLzDuf9wZyjFbHZAlnHbcr-0YckTlhEp7Xi4YnN4O9Rj5_Rgh6byONs6
+    vUf5M6n4txqCdpV9vw>
+X-ME-Received: <xmr:hfqNYgB-vOJM3N79sWpwTBKgf_FqXdlgWKqgCm2OFJA94fiDo67jizwJV9YM_HUjfM0eagMIdOKEsmwTFs1RY076g0I827v4G1dOjck>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrjeehgddukecutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
+    fjughrpeffhffvvefukfhfgggtuggjsehgtderredttddvnecuhfhrohhmpeforgigihhm
+    vgcutfhiphgrrhguuceomhgrgihimhgvsegtvghrnhhordhtvggthheqnecuggftrfgrth
+    htvghrnhepgfeuuedtfefgveevheejfeeghedvjeejfeehkeffudetuedtgfeiieeiffeu
+    tdffnecuffhomhgrihhnpegsohhothhlihhnrdgtohhmnecuvehluhhsthgvrhfuihiivg
+    eptdenucfrrghrrghmpehmrghilhhfrhhomhepmhgrgihimhgvsegtvghrnhhordhtvggt
+    hh
+X-ME-Proxy: <xmx:hfqNYicSWVCNxtPjO2OP-dTZTG5RnA-8HT0mTEUaKkDRVcwql_I2Ug>
+    <xmx:hfqNYvOIcwaM76cNjFwwp5PA3zMSONCG2MMRXEw6yETvTmp88gEfoQ>
+    <xmx:hfqNYsk9JgcQt1Fcfw7pvS3BYvWH_sfA1sMh1fLYGKJSYXOJnHLW1A>
+    <xmx:hvqNYpW3xzQCmkMOuNOuoVddp28C1T8FymU-PtWuCJdZO9MFWihypK9P9TQ>
+Feedback-ID: i8771445c:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 25 May 2022 05:44:36 -0400 (EDT)
+Date:   Wed, 25 May 2022 11:44:34 +0200
+From:   Maxime Ripard <maxime@cerno.tech>
+To:     Guillaume Ranquet <granquet@baylibre.com>
+Cc:     airlied@linux.ie, angelogioacchino.delregno@collabora.com,
+        chunfeng.yun@mediatek.com, chunkuang.hu@kernel.org,
+        ck.hu@mediatek.com, daniel@ffwll.ch, deller@gmx.de,
+        jitao.shi@mediatek.com, kishon@ti.com, krzk+dt@kernel.org,
+        maarten.lankhorst@linux.intel.com, matthias.bgg@gmail.com,
+        p.zabel@pengutronix.de, robh+dt@kernel.org, tzimmermann@suse.de,
+        vkoul@kernel.org, devicetree@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org,
+        linux-phy@lists.infradead.org, markyacoub@google.com,
+        Markus Schneider-Pargmann <msp@baylibre.com>,
+        kernel test robot <lkp@intel.com>
+Subject: Re: [PATCH v9 18/22] drm/mediatek: Add mt8195 Embedded DisplayPort
  driver
-From:   CK Hu <ck.hu@mediatek.com>
-To:     Guillaume Ranquet <granquet@baylibre.com>,
-        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        "David Airlie" <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Chunfeng Yun <chunfeng.yun@mediatek.com>,
-        "Kishon Vijay Abraham I" <kishon@ti.com>,
-        Vinod Koul <vkoul@kernel.org>, "Helge Deller" <deller@gmx.de>,
-        Jitao shi <jitao.shi@mediatek.com>
-CC:     Markus Schneider-Pargmann <msp@baylibre.com>,
-        <dri-devel@lists.freedesktop.org>,
-        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-phy@lists.infradead.org>, <linux-fbdev@vger.kernel.org>
-Date:   Wed, 25 May 2022 13:47:41 +0800
-In-Reply-To: <20220523104758.29531-19-granquet@baylibre.com>
-References: <20220523104758.29531-1-granquet@baylibre.com>
-         <20220523104758.29531-19-granquet@baylibre.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+Message-ID: <20220525094434.7qhycnobrmgiihuf@houat>
+References: <20220327223927.20848-1-granquet@baylibre.com>
+ <20220327223927.20848-19-granquet@baylibre.com>
+ <20220429083933.q3w75q3zuyyuvo4w@houat>
+ <CABnWg9tzhZjrdKT4chkDrY-uH8BMUoxyNLUSwfuG6Sv1J+8ddg@mail.gmail.com>
+ <20220512074446.ihilbbnbuwesxbbg@houat>
+ <CABnWg9tHRc_7VZ1z6NeMEDfQvxam_xOimBnM=hzBUqkhzPOSCA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-MTK:  N
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="frqxb4oy2hxaw6mk"
+Content-Disposition: inline
+In-Reply-To: <CABnWg9tHRc_7VZ1z6NeMEDfQvxam_xOimBnM=hzBUqkhzPOSCA@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi, Guillaume:
 
-On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
-> From: Markus Schneider-Pargmann <msp@baylibre.com>
-> 
-> This patch adds a DisplayPort driver for the Mediatek mt8195 SoC.
-> 
-> It supports the mt8195, the embedded DisplayPort units. It offers
-> DisplayPort 1.4 with up to 4 lanes.
-> 
-> The driver creates a child device for the phy. The child device will
-> never exist without the parent being active. As they are sharing a
-> register range, the parent passes a regmap pointer to the child so
-> that
-> both can work with the same register range. The phy driver sets
-> device
-> data that is read by the parent to get the phy device that can be
-> used
-> to control the phy properties.
-> 
-> This driver is based on an initial version by
-> Jason-JH.Lin <jason-jh.lin@mediatek.com>.
-> 
-> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> ---
->  
+--frqxb4oy2hxaw6mk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-[snip]
+On Thu, May 19, 2022 at 09:26:59AM -0700, Guillaume Ranquet wrote:
+> On Thu, 12 May 2022 09:44, Maxime Ripard <maxime@cerno.tech> wrote:
+> >Hi,
+> >
+> >On Wed, May 11, 2022 at 05:59:13AM -0700, Guillaume Ranquet wrote:
+> >> >> +#include <drm/drm_atomic_helper.h>
+> >> >> +#include <drm/drm_bridge.h>
+> >> >> +#include <drm/drm_crtc.h>
+> >> >> +#include <drm/dp/drm_dp_helper.h>
+> >> >> +#include <drm/drm_edid.h>
+> >> >> +#include <drm/drm_of.h>
+> >> >> +#include <drm/drm_panel.h>
+> >> >> +#include <drm/drm_print.h>
+> >> >> +#include <drm/drm_probe_helper.h>
+> >> >> +#include <linux/arm-smccc.h>
+> >> >> +#include <linux/clk.h>
+> >> >> +#include <linux/delay.h>
+> >> >> +#include <linux/errno.h>
+> >> >> +#include <linux/kernel.h>
+> >> >> +#include <linux/mfd/syscon.h>
+> >> >> +#include <linux/nvmem-consumer.h>
+> >> >> +#include <linux/of.h>
+> >> >> +#include <linux/of_irq.h>
+> >> >> +#include <linux/of_platform.h>
+> >> >> +#include <linux/phy/phy.h>
+> >> >> +#include <linux/platform_device.h>
+> >> >> +#include <linux/pm_runtime.h>
+> >> >> +#include <linux/regmap.h>
+> >> >> +#include <sound/hdmi-codec.h>
+> >> >> +#include <video/videomode.h>
+> >> >> +
+> >> >> +#include "mtk_dp_reg.h"
+> >> >> +
+> >> >> +#define MTK_DP_AUX_WAIT_REPLY_COUNT 20
+> >> >> +#define MTK_DP_CHECK_SINK_CAP_TIMEOUT_COUNT 3
+> >> >> +
+> >> >> +//TODO: platform/device data or dts?
+> >> >
+> >> >DTS :)
+> >>
+> >> It's probably going to be a platform_data struct for v10...
+> >> If I have time, I'll change it to a dts property for v10.
+> >
+> >I can't really imagine a case where we would need platform_data
+> >nowadays. If you have a device tree, then it should be part of the
+> >binding.
+> >
+> >What issue would you like to address by using a platform_data?
+> >
+>=20
+> Ok, I'll migrate to dt then. I didn't realize platform_data were deprecia=
+ted.
+>=20
+> Angelo wants the MAX_LINRATE and MAX_LANES defines to be configurable.
+> I imagined platform_data would be more appropriate as (per my understandi=
+ng) the
+> limitation is associated with a specific SoC.
 
-> +
-> +static irqreturn_t mtk_dp_hpd_event_thread(int hpd, void *dev)
+The entire device tree is nothing but a collection of data associated to
+a specific SoC though :)
 
-I don't have a DP spec. I find one in [1] but I'm not sure it's real
-spec or not. If it's real, in section 3.1.3.2, it describe:
+> >> >> +static struct edid *mtk_dp_get_edid(struct drm_bridge *bridge,
+> >> >> +				    struct drm_connector *connector)
+> >> >> +{
+> >> >> +	struct mtk_dp *mtk_dp =3D mtk_dp_from_bridge(bridge);
+> >> >> +	bool enabled =3D mtk_dp->enabled;
+> >> >> +	struct edid *new_edid =3D NULL;
+> >> >> +
+> >> >> +	if (!enabled)
+> >> >> +		drm_bridge_chain_pre_enable(bridge);
+> >> >> +
+> >> >> +	drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER, DP_SET_POWER_D0);
+> >> >> +	usleep_range(2000, 5000);
+> >> >> +
+> >> >> +	if (mtk_dp_plug_state(mtk_dp))
+> >> >> +		new_edid =3D drm_get_edid(connector, &mtk_dp->aux.ddc);
+> >> >> +
+> >> >> +	if (!enabled)
+> >> >> +		drm_bridge_chain_post_disable(bridge);
+> >> >
+> >> >Are you sure we can't get a mode set while get_edid is called?
+> >> >
+> >> >If we can, then you could end up disabling the device while it's being
+> >> >powered on.
+> >>
+> >> I'm a bit unsure, I need to spend more time in the drm stack to make s=
+ure.
+> >> I'll get back to you when I have a definitive answer.
+> >
+> >So, it looks like it's ok.
+> >
+> >get_edid is your implementation of get_modes, which is called by
+> >drm_helper_probe_single_connector_modes
+> >
+> >https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/drm_probe=
+_helper.c#L416
+> >
+> >This is the standard implemantion of fill_modes, which is called
+> >whenever the get_connector ioctl is called (or similar paths, like
+> >drm_client_modeset_probe)
+> >
+> >drm_helper_probe_single_connector_modes is under the assumption that the
+> >mode_config.mutex is held though, and that the big lock. So it should be
+> >serialized there.
+> >
+> >Just for future proofing though, it would be better to use refcounting
+> >there. Would runtime_pm work for you there?
+> >
+>=20
+> Thx for looking into this for me.
+> Not sure runtime_pm works here as it would only refcount if compiled
+> with CONFIG_PM?
 
-3.1.3.2 Hot Plug/Unplug Detection
-One signal (HPD) is used by a device (an Upstream device) to detect
-that a Downstream port on the device has been connected to another
-device (the Downstream device). Implementation of HPD is optional for
-an embedded link configuration. At least a “trickle power” must be
-present both in the Upstream and Downstream devices for a Hot Plug
-event to be detected. 
+It should be enabled in most configurations these days, and you can
+always depend on it in your Kconfig option.
 
-I focus on the statement "Implementation of HPD is optional for an
-embedded link configuration". I'm not sure what does 'optional' mean.
-Does it mean eDP panel without HPD signal is possible? If so, I think
-driver should support eDP panel without HPD signal. Maybe I
-misunderstanding this spec. Please explain for me.
+> I'd rather use the enabled field as a refcounter instead of a boolean.
 
-Regards,
-CK
+It's a bit more ad-hoc, but that would work too. Make sure to use a lock
+or atomic operations though
 
+Maxime
 
-[1] https://glenwing.github.io/docs/DP-1.2.pdf
+--frqxb4oy2hxaw6mk
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> +{
-> +	struct mtk_dp *mtk_dp = dev;
-> +	int event;
-> +	u8 buf[DP_RECEIVER_CAP_SIZE] = {};
-> +
-> +	event = mtk_dp_plug_state(mtk_dp) ? connector_status_connected
-> :
-> +						  connector_status_disc
-> onnected;
-> +
-> +	if (event < 0)
-> +		return IRQ_HANDLED;
-> +
-> +	if (mtk_dp->drm_dev) {
-> +		dev_info(mtk_dp->dev, "drm_helper_hpd_irq_event\n");
-> +		drm_helper_hpd_irq_event(mtk_dp->bridge.dev);
-> +	}
-> +
-> +	if (mtk_dp->train_info.cable_state_change) {
-> +		mtk_dp->train_info.cable_state_change = false;
-> +
-> +		mtk_dp->train_state = MTK_DP_TRAIN_STATE_STARTUP;
-> +
-> +		if (!mtk_dp->train_info.cable_plugged_in ||
-> +		    !mtk_dp_plug_state(mtk_dp)) {
-> +			mtk_dp_video_mute(mtk_dp, true);
-> +
-> +			mtk_dp_initialize_priv_data(mtk_dp);
-> +			mtk_dp_set_idle_pattern(mtk_dp, true);
-> +			if (mtk_dp->has_fec)
-> +				mtk_dp_fec_enable(mtk_dp, false);
-> +
-> +			mtk_dp_update_bits(mtk_dp,
-> MTK_DP_TOP_PWR_STATE,
-> +					   DP_PWR_STATE_BANDGAP_TPLL,
-> +					   DP_PWR_STATE_MASK);
-> +		} else {
-> +			mtk_dp_update_bits(mtk_dp,
-> MTK_DP_TOP_PWR_STATE,
-> +					   DP_PWR_STATE_BANDGAP_TPLL_LA
-> NE,
-> +					   DP_PWR_STATE_MASK);
-> +			drm_dp_read_dpcd_caps(&mtk_dp->aux, buf);
-> +			mtk_dp->train_info.link_rate =
-> +				min_t(int, mtk_dp->max_linkrate,
-> +				      buf[mtk_dp->max_linkrate]);
-> +			mtk_dp->train_info.lane_count =
-> +				min_t(int, mtk_dp->max_lanes,
-> +				      drm_dp_max_lane_count(buf));
-> +		}
-> +	}
-> +
-> +	if (mtk_dp->train_info.irq_status & MTK_DP_HPD_INTERRUPT) {
-> +		dev_dbg(mtk_dp->dev, "MTK_DP_HPD_INTERRUPT\n");
-> +		mtk_dp->train_info.irq_status &= ~MTK_DP_HPD_INTERRUPT;
-> +		mtk_dp_hpd_sink_event(mtk_dp);
-> +	}
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +
+-----BEGIN PGP SIGNATURE-----
 
+iHUEABYKAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCYo36ggAKCRDj7w1vZxhR
+xZ8uAQD4p9FP6n4HWaV/eeMy9XLCytn17FejCmxsGJ+BVRXkngEA7rKJQeM++TcT
+7XF+Ij2881A16a/1Cfs+sVBCS9T7/Ao=
+=cDEf
+-----END PGP SIGNATURE-----
+
+--frqxb4oy2hxaw6mk--

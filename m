@@ -2,86 +2,86 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 663D4C433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu, 26 May 2022 01:17:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99958C433FE
+	for <linux-fbdev@archiver.kernel.org>; Thu, 26 May 2022 03:16:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344523AbiEZBRA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 25 May 2022 21:17:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54468 "EHLO
+        id S234935AbiEZDQq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 25 May 2022 23:16:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53758 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344426AbiEZBQ5 (ORCPT
+        with ESMTP id S229811AbiEZDQp (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 25 May 2022 21:16:57 -0400
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4177B4FC5F;
-        Wed, 25 May 2022 18:16:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=qYg8IKyL/r8f2Vg1ESuYjuOnE5g2jafpU06hhSyNUpw=; b=FU/B4l/86GX2mfAVzdnOZlet7o
-        4YIMhkZpbCoSmgTvSZ+0srZ6BwOG40pWCCMj19qhaZ7LyhuSaw2+YdDV5a6+88avQFq2cWdQHfPWr
-        byuXc0vT/MGU7fDuPvzVefIP3U6jrYIpaAmCNdJioEzp88SsKae4gtRxxjsbwJwKjR30fWyrk6jS+
-        6N+w+qBIVJaEKMA2SIN/QJXQZdAFNIwoALKz9JWYzo9WKGMkqQ+rWdT359dIGkZ8Sy1ZcS2tNgQxZ
-        uFqnsZqHJyvAVlUVWnv0GfWFHqg8A7Yfpa485ULCi1tDMGcQd2T2bgnhjP4//0FFa8Q9P8q43x6cS
-        bXqNJBtA==;
-Received: from willy by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1nu278-000pxs-VA; Thu, 26 May 2022 01:16:35 +0000
-Date:   Thu, 26 May 2022 02:16:34 +0100
-From:   Matthew Wilcox <willy@infradead.org>
-To:     Andrew Morton <akpm@linux-foundation.org>
-Cc:     Jessica Clarke <jrtc27@jrtc27.com>,
-        kernel test robot <lkp@intel.com>,
-        virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-riscv@lists.infradead.org,
-        linux-rdma@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-parport@lists.infradead.org, linux-omap@vger.kernel.org,
-        linux-mm@kvack.org, linux-fbdev@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, kvm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, bpf@vger.kernel.org,
-        amd-gfx@lists.freedesktop.org, alsa-devel@alsa-project.org
-Subject: Re: [linux-next:master] BUILD REGRESSION
- 8cb8311e95e3bb58bd84d6350365f14a718faa6d
-Message-ID: <Yo7U8kglHlcvQ0Ri@casper.infradead.org>
-References: <628ea118.wJYf60YnZco0hs9o%lkp@intel.com>
- <20220525145056.953631743a4c494aabf000dc@linux-foundation.org>
- <F0E25DFF-8256-48FF-8B88-C0E3730A3E5E@jrtc27.com>
- <20220525152006.e87d3fa50aca58fdc1b43b6a@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220525152006.e87d3fa50aca58fdc1b43b6a@linux-foundation.org>
+        Wed, 25 May 2022 23:16:45 -0400
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 47AB8EE3C;
+        Wed, 25 May 2022 20:16:44 -0700 (PDT)
+Received: by mail-pl1-x62a.google.com with SMTP id d22so376229plr.9;
+        Wed, 25 May 2022 20:16:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id;
+        bh=f6jLMtJrLguZvRlHX76uP5bxS6yNfg/KmTP+kPMFw2A=;
+        b=NeNH04nEYmKlxRrFKbjU/A5gGFIWu4QfR8rsFuFLIoMj/OrRI/CL7ER+lH9qLFt6v7
+         ooZ8tD4znoyV6cfroKC0X30K+JpBNll7tDwyoQEOt1T0x31lWIx3QTniGgdXW7dIvOtc
+         b4aaIVHO7NsdfcTDz7PzU/L+pt0XpbvhZgKefdOaQjl+N/0EiOKDACOvqf0WbJ2hsd8J
+         4w2hNrFaONz10ivo7QxmqlKWabHG9lJ26TdaR4QRjHgfuLuKGy51TlVwRzWEHXe1l3Yn
+         SOYziVzsEMKCg13T/uWvBClWFNplGswFouHdSq9sQdGi607cYz47CyI8t2H7vZtNMnC7
+         gTWg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=f6jLMtJrLguZvRlHX76uP5bxS6yNfg/KmTP+kPMFw2A=;
+        b=b6rcC9AyD+wbdUJyly86o70sIoLBKFjVjtqKpryGGBZ9nmr4QzJOoX6Hqq3UySO/3O
+         JtzvtDeWn/XbJFxn4dfTMH2jubhUV3aGDn/fPDk9c6q04yKCseRjxuJY8F0sC4L6HDZV
+         ngOKMup9yrkS6yLzd9ei+BHdW9dzCMBaeO9Y981hSbosxUR+kPTRZtGWA053lfoP/AGk
+         Svk5nOKJhecCSpn9b7lXPqcNiWTBvEs6XETuvRdtrV0jLPOSGpA6r/KZfe9ASSNYTxEc
+         ZmRLG97PX7BQexq6Z2hwHVsgLVEv/BIERLM1DtTN5p12qeFj54fS5lrctzV/hRWlUYkM
+         jDZg==
+X-Gm-Message-State: AOAM532xvOHA3t5pG2FUPNCTdA415M6nlLuWI3yXZV7E9nD1cQBxJfTk
+        UcMsJrcIqPuW9yf7adG3zYg=
+X-Google-Smtp-Source: ABdhPJz/ng9MEzMr2C0bCqTgfwmdUaqu1tPBtgobFs5R3bzVReetE9dkkSyLpZEelrkVQ1dPShLBuQ==
+X-Received: by 2002:a17:903:2309:b0:163:5c82:640e with SMTP id d9-20020a170903230900b001635c82640emr5614243plh.100.1653535003625;
+        Wed, 25 May 2022 20:16:43 -0700 (PDT)
+Received: from localhost.localdomain ([2402:7500:569:6b12:f420:101e:bfc0:b57c])
+        by smtp.gmail.com with ESMTPSA id t25-20020aa79479000000b0050dc7628181sm152964pfq.91.2022.05.25.20.16.39
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 25 May 2022 20:16:43 -0700 (PDT)
+From:   cy_huang <u0084500@gmail.com>
+To:     robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        lee.jones@linaro.org, daniel.thompson@linaro.org,
+        jingoohan1@gmail.com
+Cc:     pavel@ucw.cz, deller@gmx.de, cy_huang@richtek.com,
+        lucas_tsai@richtek.com, devicetree@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-leds@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] Add the property to make ocp level selectable
+Date:   Thu, 26 May 2022 11:16:33 +0800
+Message-Id: <1653534995-30794-1-git-send-email-u0084500@gmail.com>
+X-Mailer: git-send-email 2.7.4
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, May 25, 2022 at 03:20:06PM -0700, Andrew Morton wrote:
-> On Wed, 25 May 2022 23:07:35 +0100 Jessica Clarke <jrtc27@jrtc27.com> wrote:
-> 
-> > This is i386, so an unsigned long is 32-bit, but i_blocks is a blkcnt_t
-> > i.e. a u64, which makes the shift without a cast of the LHS fishy.
-> 
-> Ah, of course, thanks.  I remember 32 bits ;)
-> 
-> --- a/mm/shmem.c~mm-shmemc-suppress-shift-warning
-> +++ a/mm/shmem.c
-> @@ -1945,7 +1945,7 @@ alloc_nohuge:
->  
->  	spin_lock_irq(&info->lock);
->  	info->alloced += folio_nr_pages(folio);
-> -	inode->i_blocks += BLOCKS_PER_PAGE << folio_order(folio);
-> +	inode->i_blocks += (blkcnt_t)BLOCKS_PER_PAGE << folio_order(folio);
+From: ChiYuan Huang <cy_huang@richtek.com>
 
-Bizarre this started showing up now.  The recent patch was:
+This patch series is to make ocp level selectable.
 
--       info->alloced += compound_nr(page);
--       inode->i_blocks += BLOCKS_PER_PAGE << compound_order(page);
-+       info->alloced += folio_nr_pages(folio);
-+       inode->i_blocks += BLOCKS_PER_PAGE << folio_order(folio);
+Some application design use small inductor. And it's easy to trigger the
+over current protection. Due to the OCP limit, It make the brightness current
+not match the configured value.
 
-so it could tell that compound_order() was small, but folio_order()
-might be large?
+To meet the HW design, the ocp level have to be selectable.
 
-Silencing the warning is a good thing, but folio_order() can (at the
-moment) be at most 9 on i386, so it isn't actually going to be
-larger than 4096.
+ChiYuan Huang (2):
+  dt-bindings: backlight: rt4831: Add the new property for ocp level
+    selection
+  backlight: rt4831: Add the property parsing for ocp level selection
+
+ .../bindings/leds/backlight/richtek,rt4831-backlight.yaml   |  8 ++++++++
+ drivers/video/backlight/rt4831-backlight.c                  | 13 +++++++++++++
+ include/dt-bindings/leds/rt4831-backlight.h                 |  5 +++++
+ 3 files changed, 26 insertions(+)
+
+-- 
+2.7.4
+

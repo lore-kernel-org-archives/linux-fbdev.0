@@ -2,95 +2,79 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BC15C433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu, 26 May 2022 11:41:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35781C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 26 May 2022 14:28:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236687AbiEZLl0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 26 May 2022 07:41:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42636 "EHLO
+        id S1347645AbiEZO2y (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 26 May 2022 10:28:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59366 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229549AbiEZLlZ (ORCPT
+        with ESMTP id S1347639AbiEZO2t (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 26 May 2022 07:41:25 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E9B51DA5C;
-        Thu, 26 May 2022 04:41:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1653565205;
-        bh=GbdIaIIk78hNi8gQCmD4dMLd0D25sZO/rqp6h4oacX4=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=U2Fdg8gF9KgPifWJIy5i0JSAgT9bvp/S/TpbBh9XbRd2CGmyMVDE0vukEEUqMItKL
-         KjbjzLvr2lzUm6BmVq+MaQLX9v8fl1wj1CIT3L/vBot6dhEhVWcbthgvSL5Avo/Ih4
-         6X0FiOIdK345gdD+61naUlsacTnRl0V7G3K5jqXk=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.164.234]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MLzBj-1oBRcD3NnV-00HuNE; Thu, 26
- May 2022 13:40:04 +0200
-Message-ID: <26772d5c-5630-799b-5f10-33e3f7ba083a@gmx.de>
-Date:   Thu, 26 May 2022 13:39:50 +0200
+        Thu, 26 May 2022 10:28:49 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A2B2C6E6D;
+        Thu, 26 May 2022 07:28:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=k7apNoi1g1YhGHKMlKvo5ejDwWGQrfqPL3Ty5xTWm5Q=; b=jt2D3c7xgVZUKhGsBafhmm2sFE
+        7iHXpIRdAmkRqKCTrByt8vvIu4Y3EGktUCpnmPTFxq5LEtvIgLU7neTQ7C/IsI99LeEY7HaXKuYy7
+        5ZrEicxpMCl0i/enkPZwHxhNQ3wSCLz0PWMpopuxkJst9ua3Mey2ATEpeisJ/smtNzknhVcxsQdkT
+        dSKtJhfNJpH19fcWEk13NeBfTP6RD6LPE68nShdvuaPUklK12w19DAh/i1OVAzpUZ0A5rCLZKasUp
+        WeWqziAdu0JgzoPn8WlmbMtIWF1JBvKksSw7KZdNfdrklRu0O6zxydJrgJF+gvKG7sfmTWPCyIS6G
+        yc+jDrmg==;
+Received: from willy by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1nuETR-001JAt-Fo; Thu, 26 May 2022 14:28:25 +0000
+Date:   Thu, 26 May 2022 15:28:25 +0100
+From:   Matthew Wilcox <willy@infradead.org>
+To:     Dan Carpenter <dan.carpenter@oracle.com>
+Cc:     Andrew Morton <akpm@linux-foundation.org>,
+        Jessica Clarke <jrtc27@jrtc27.com>,
+        kernel test robot <lkp@intel.com>,
+        virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-riscv@lists.infradead.org,
+        linux-rdma@vger.kernel.org, linux-pci@vger.kernel.org,
+        linux-parport@lists.infradead.org, linux-omap@vger.kernel.org,
+        linux-mm@kvack.org, linux-fbdev@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, kvm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, bpf@vger.kernel.org,
+        amd-gfx@lists.freedesktop.org, alsa-devel@alsa-project.org
+Subject: Re: [linux-next:master] BUILD REGRESSION
+ 8cb8311e95e3bb58bd84d6350365f14a718faa6d
+Message-ID: <Yo+OiR6abzVksVTM@casper.infradead.org>
+References: <628ea118.wJYf60YnZco0hs9o%lkp@intel.com>
+ <20220525145056.953631743a4c494aabf000dc@linux-foundation.org>
+ <F0E25DFF-8256-48FF-8B88-C0E3730A3E5E@jrtc27.com>
+ <20220525152006.e87d3fa50aca58fdc1b43b6a@linux-foundation.org>
+ <Yo7U8kglHlcvQ0Ri@casper.infradead.org>
+ <20220526084832.GC2146@kadam>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.0
-Subject: Re: [PATCH] radeon: Fix spelling typo in comment
-Content-Language: en-US
-To:     pengfuyuan <pengfuyuan@kylinos.cn>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-References: <20220526062757.1155581-1-pengfuyuan@kylinos.cn>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220526062757.1155581-1-pengfuyuan@kylinos.cn>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:i6AuLEP6gw6wM4fkV8X6gXcJuhH5Qswx2kDD6/VD/KhvN0D8XWF
- DfNxTdzkI8sCW4uYlvtzgHllO1xo0mYne5aiefuObrIx3wzbFXzjaopArIR1qo5mCueEbmR
- Ai159xgDLdZQII7qBwvhyCZifyCM/O8xe6sE1tdQkI13UCgOVJScsFA0k77/A9+qAJxFGZI
- 13yl5esPQr65Dd9xF2SOA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:7gDlbvIfId4=:3xabrUmqyZGfdU3/Pcgbs/
- AIzx+Fo5oBKKivd0VAGF7Z9rAUUUbkLBhR3vuRiZX70oojyuECT+qH52LNGcNlqpxP5t335e8
- 87nMZIB8wHjGfymCbNoLy6vxmH8W1n/uI5u2RaxNR/bS5U2gVaqAqigqOwc5oictDpCP6dXGz
- R+c6EArR6rmbr9fe69G8rfxNP5H6ckbTF18IHLts4CMBrukWaAhro5OSVn0q7HkakXZR7bYbH
- JqgnB6HHZaxdpQmhGn3Tw1DUElLobEMpIP2yy3J2XFm5ILYrD3cCL6rBm4m10cbQaFoF10U8p
- KGCKhf4cCtMCSkl9wQuOZmKSpYrCDAMnzo5FzL0fcnRvcS3OMgAlM473BcO5AMNkmu1oM4Phv
- aD7AQ3ia5nGm4+SQflTHGR3m+Rd3YdgX/JQy606vs0ote32Ku/0CwogEJS13F8qnNLiKGIsw+
- S7Nx6ivMp5fUNdvPowirZUaN+itSCoVSst5CGpY85+SYvNJjJLhy/OsrcUgnGTmAkW8fd5F04
- kRs75z786tTNbZI2eLNXHhykhSp3tJcqUtQaAkIlELGlZNuNXHGrrKiXWRQt1wTvFRlTIr833
- lcjsyon2bBDNmRh3c4SOhcoLbDzT/zF1TQtj6VkZREmgCkdffqbhl/i0eoPShSl3+ZEKnJ1yV
- XTUhd4ezEPyi9+KnhOAK/zaou4x8I/96Kr1NecnYqiH3kRaCHa2EJMxIOrqCmOP235ArxEPiX
- sxAtGK6s5qE9hI8mxIKBwlocBh3+Axlb+XdZRrOfdKKOZx8YTxYFpXCxCJJvQwqsTdUO12LIF
- XyFwqM1/WJgPRDh6xrLAvU8mQ0uJQiaxz1RURsrkVQAZx4yor72bDxHPMx8QyGVIhAMvDEFR+
- 3xkrsMUybgD+nDpuAeFqxrkaZWzqpICAAMB/9k34z/Isbv43FPleIgTIs/G4hnhQEIX+9Uhd2
- DpAG8bEiFN9SE90d6nI2cER/N9z+jR8Qco2TWOecYE4Rf9nh6tt3Nj72UzvM1SF79a7P7Oznh
- 3eZ5g2i9qKA9oUDQfOyBRlW1ZxsWyEDj3vrFMh+1T9dWZ4dgX/dXbFqZtZa8HV4NCaFL9DQVw
- ugu5NcmDjyF1sQoxUdcucO4i4Rs+CXr6NZGLFqKvM8Wnv5Sd3BYgxVvXQ==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220526084832.GC2146@kadam>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 5/26/22 08:27, pengfuyuan wrote:
-> Fix spelling typo in comment.
->
-> Signed-off-by: pengfuyuan <pengfuyuan@kylinos.cn>
+On Thu, May 26, 2022 at 11:48:32AM +0300, Dan Carpenter wrote:
+> On Thu, May 26, 2022 at 02:16:34AM +0100, Matthew Wilcox wrote:
+> > Bizarre this started showing up now.  The recent patch was:
+> > 
+> > -       info->alloced += compound_nr(page);
+> > -       inode->i_blocks += BLOCKS_PER_PAGE << compound_order(page);
+> > +       info->alloced += folio_nr_pages(folio);
+> > +       inode->i_blocks += BLOCKS_PER_PAGE << folio_order(folio);
+> > 
+> > so it could tell that compound_order() was small, but folio_order()
+> > might be large?
+> 
+> The old code also generates a warning on my test system.  Smatch thinks
+> both compound_order() and folio_order() are 0-255.  I guess because of
+> the "unsigned char compound_order;" in the struct page.
 
-applied to the fbdev git tree.
-
-Thanks!
-Helge
-
-> ---
->  include/video/radeon.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/include/video/radeon.h b/include/video/radeon.h
-> index 005eae19ec09..72f94ccfa725 100644
-> --- a/include/video/radeon.h
-> +++ b/include/video/radeon.h
-> @@ -750,7 +750,7 @@
->  #define WAIT_DMA_GUI_IDLE			   (1 << 9)
->  #define WAIT_2D_IDLECLEAN			   (1 << 16)
->
-> -/* SURFACE_CNTL bit consants */
-> +/* SURFACE_CNTL bit constants */
->  #define SURF_TRANSLATION_DIS			   (1 << 8)
->  #define NONSURF_AP0_SWP_16BPP			   (1 << 20)
->  #define NONSURF_AP0_SWP_32BPP			   (1 << 21)
-
+It'd be nice if we could annotate that as "contains a value between
+1 and BITS_PER_LONG - PAGE_SHIFT".  Then be able to optionally enable
+a checker that ensures that's true on loads/stores.  Maybe we need a
+language that isn't C :-P  Ada can do this ... I don't think Rust can.

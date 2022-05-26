@@ -2,138 +2,95 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B968FC4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu, 26 May 2022 10:32:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BC15C433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu, 26 May 2022 11:41:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344023AbiEZKcT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 26 May 2022 06:32:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44132 "EHLO
+        id S236687AbiEZLl0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 26 May 2022 07:41:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42636 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345222AbiEZKcS (ORCPT
+        with ESMTP id S229549AbiEZLlZ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 26 May 2022 06:32:18 -0400
-Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com [IPv6:2a00:1450:4864:20::636])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A9F502AC74
-        for <linux-fbdev@vger.kernel.org>; Thu, 26 May 2022 03:32:15 -0700 (PDT)
-Received: by mail-ej1-x636.google.com with SMTP id wh22so2198091ejb.7
-        for <linux-fbdev@vger.kernel.org>; Thu, 26 May 2022 03:32:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=IhOoJiEVW1f9NZEh+LjhXs1p495IAP76V+trW0SBtRo=;
-        b=fHJSBncXPQADirHt+O19VJemtFTXXzyJ9q03nrECjDpx0gclUcHS+ieBBLezoqaGC8
-         fC9IFFI8ajtjcsHFcgywLvOMp38YGvBMAleD8t3/LJ+AzXKH8Ws0VP/al+A5cV+dvndp
-         vbwzgeE6XPTvGSWaBMWaPbxOPw5U6SbRdTI6AzE9Ukhmj4/OFvziEXy8j39zUB7eEJhj
-         FTN8mM+nJh+j543Nxch1kt4Eb2DiZFyFlU6AkDNnAYa7Thb88HRDsTB2Yf2h7GIIM3UL
-         5G3W+O3JObh5EYYc+QDGbPhCcusMC6Vv+6UPGGM5+QCWxR3F7NvdX/5JM+LR+olH2syZ
-         kYmg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=IhOoJiEVW1f9NZEh+LjhXs1p495IAP76V+trW0SBtRo=;
-        b=yDEXxPMA5B9MJGoLazR/P+K2tUZYDYn8IvVJVcFe0SYfF4s1G0ZHKbm3vxxm7/n00L
-         3/EVNiOV0k4ujMo4vLJJH7mNjp0jFulncN3d5r8rFr0WvsKWbGlZIIYgpp/WoeCwi+a6
-         eRjSJ57Qc9RP6V0VIarS6GUYd9eS0OCV7qXXVMxhsPiL0Mhb5CsaMJc9UvhIJX00Ptnf
-         8H2yoPOuOmB6uXtxHegN6mhk2FkT0vz6D3Fo8RUJFZ6UC9ZotDd/CFyeJwAwUndqr5wV
-         7BYVH76HDwKjzmyJ7l30due3gSEt5q0Dj2BJNtgyADUlQCXMHa9gFFYa7SrlsxLrWU94
-         znbg==
-X-Gm-Message-State: AOAM532L81A89YBCzGF4EeB/eB3AGFcAVi6FLfhJpGrFId37BcVjABVV
-        4+tO2eyika2ekBBOBGSUraIhEA==
-X-Google-Smtp-Source: ABdhPJytcoRzpFy9P5lbgclcSPwMfqb4FHL8nr2e5PQ5uM1dp3kx1YyMinkEiWBL0zjylUDn4i5I3w==
-X-Received: by 2002:a17:907:d21:b0:6fe:c340:616 with SMTP id gn33-20020a1709070d2100b006fec3400616mr22342567ejc.177.1653561134125;
-        Thu, 26 May 2022 03:32:14 -0700 (PDT)
-Received: from [192.168.0.177] (xdsl-188-155-176-92.adslplus.ch. [188.155.176.92])
-        by smtp.gmail.com with ESMTPSA id i8-20020a50c3c8000000b0042617ba63basm610186edf.68.2022.05.26.03.32.13
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 26 May 2022 03:32:13 -0700 (PDT)
-Message-ID: <076d53d3-6062-686f-8e45-14c5f936bbf6@linaro.org>
-Date:   Thu, 26 May 2022 12:32:12 +0200
+        Thu, 26 May 2022 07:41:25 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E9B51DA5C;
+        Thu, 26 May 2022 04:41:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1653565205;
+        bh=GbdIaIIk78hNi8gQCmD4dMLd0D25sZO/rqp6h4oacX4=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=U2Fdg8gF9KgPifWJIy5i0JSAgT9bvp/S/TpbBh9XbRd2CGmyMVDE0vukEEUqMItKL
+         KjbjzLvr2lzUm6BmVq+MaQLX9v8fl1wj1CIT3L/vBot6dhEhVWcbthgvSL5Avo/Ih4
+         6X0FiOIdK345gdD+61naUlsacTnRl0V7G3K5jqXk=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.164.234]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MLzBj-1oBRcD3NnV-00HuNE; Thu, 26
+ May 2022 13:40:04 +0200
+Message-ID: <26772d5c-5630-799b-5f10-33e3f7ba083a@gmx.de>
+Date:   Thu, 26 May 2022 13:39:50 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.1
-Subject: Re: [PATCH 1/2] dt-bindings: backlight: rt4831: Add the new property
- for ocp level selection
+ Thunderbird/91.9.0
+Subject: Re: [PATCH] radeon: Fix spelling typo in comment
 Content-Language: en-US
-To:     ChiYuan Huang <u0084500@gmail.com>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        jingoohan1@gmail.com, Pavel Machek <pavel@ucw.cz>, deller@gmx.de,
-        cy_huang <cy_huang@richtek.com>, lucas_tsai@richtek.com,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        lkml <linux-kernel@vger.kernel.org>
-References: <1653534995-30794-1-git-send-email-u0084500@gmail.com>
- <1653534995-30794-2-git-send-email-u0084500@gmail.com>
- <1c7ab94c-a736-c629-bd8c-8a974803e2b9@linaro.org>
- <CADiBU39jZ6TdYZoH80m4R-X2_fUXZOvDA4yUd_TQdPzBJLE+JA@mail.gmail.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <CADiBU39jZ6TdYZoH80m4R-X2_fUXZOvDA4yUd_TQdPzBJLE+JA@mail.gmail.com>
+To:     pengfuyuan <pengfuyuan@kylinos.cn>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+References: <20220526062757.1155581-1-pengfuyuan@kylinos.cn>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20220526062757.1155581-1-pengfuyuan@kylinos.cn>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:i6AuLEP6gw6wM4fkV8X6gXcJuhH5Qswx2kDD6/VD/KhvN0D8XWF
+ DfNxTdzkI8sCW4uYlvtzgHllO1xo0mYne5aiefuObrIx3wzbFXzjaopArIR1qo5mCueEbmR
+ Ai159xgDLdZQII7qBwvhyCZifyCM/O8xe6sE1tdQkI13UCgOVJScsFA0k77/A9+qAJxFGZI
+ 13yl5esPQr65Dd9xF2SOA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:7gDlbvIfId4=:3xabrUmqyZGfdU3/Pcgbs/
+ AIzx+Fo5oBKKivd0VAGF7Z9rAUUUbkLBhR3vuRiZX70oojyuECT+qH52LNGcNlqpxP5t335e8
+ 87nMZIB8wHjGfymCbNoLy6vxmH8W1n/uI5u2RaxNR/bS5U2gVaqAqigqOwc5oictDpCP6dXGz
+ R+c6EArR6rmbr9fe69G8rfxNP5H6ckbTF18IHLts4CMBrukWaAhro5OSVn0q7HkakXZR7bYbH
+ JqgnB6HHZaxdpQmhGn3Tw1DUElLobEMpIP2yy3J2XFm5ILYrD3cCL6rBm4m10cbQaFoF10U8p
+ KGCKhf4cCtMCSkl9wQuOZmKSpYrCDAMnzo5FzL0fcnRvcS3OMgAlM473BcO5AMNkmu1oM4Phv
+ aD7AQ3ia5nGm4+SQflTHGR3m+Rd3YdgX/JQy606vs0ote32Ku/0CwogEJS13F8qnNLiKGIsw+
+ S7Nx6ivMp5fUNdvPowirZUaN+itSCoVSst5CGpY85+SYvNJjJLhy/OsrcUgnGTmAkW8fd5F04
+ kRs75z786tTNbZI2eLNXHhykhSp3tJcqUtQaAkIlELGlZNuNXHGrrKiXWRQt1wTvFRlTIr833
+ lcjsyon2bBDNmRh3c4SOhcoLbDzT/zF1TQtj6VkZREmgCkdffqbhl/i0eoPShSl3+ZEKnJ1yV
+ XTUhd4ezEPyi9+KnhOAK/zaou4x8I/96Kr1NecnYqiH3kRaCHa2EJMxIOrqCmOP235ArxEPiX
+ sxAtGK6s5qE9hI8mxIKBwlocBh3+Axlb+XdZRrOfdKKOZx8YTxYFpXCxCJJvQwqsTdUO12LIF
+ XyFwqM1/WJgPRDh6xrLAvU8mQ0uJQiaxz1RURsrkVQAZx4yor72bDxHPMx8QyGVIhAMvDEFR+
+ 3xkrsMUybgD+nDpuAeFqxrkaZWzqpICAAMB/9k34z/Isbv43FPleIgTIs/G4hnhQEIX+9Uhd2
+ DpAG8bEiFN9SE90d6nI2cER/N9z+jR8Qco2TWOecYE4Rf9nh6tt3Nj72UzvM1SF79a7P7Oznh
+ 3eZ5g2i9qKA9oUDQfOyBRlW1ZxsWyEDj3vrFMh+1T9dWZ4dgX/dXbFqZtZa8HV4NCaFL9DQVw
+ ugu5NcmDjyF1sQoxUdcucO4i4Rs+CXr6NZGLFqKvM8Wnv5Sd3BYgxVvXQ==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 26/05/2022 10:13, ChiYuan Huang wrote:
-> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> 於 2022年5月26日 週四 下午4:06寫道：
->>
->> On 26/05/2022 05:16, cy_huang wrote:
->>> From: ChiYuan Huang <cy_huang@richtek.com>
->>>
->>> Add the new property for ocp level selection.
->>>
->>> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
->>> ---
->>>  .../bindings/leds/backlight/richtek,rt4831-backlight.yaml         | 8 ++++++++
->>>  include/dt-bindings/leds/rt4831-backlight.h                       | 5 +++++
->>>  2 files changed, 13 insertions(+)
->>>
->>> diff --git a/Documentation/devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml
->>> index e0ac686..c1c59de 100644
->>> --- a/Documentation/devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml
->>> +++ b/Documentation/devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml
->>> @@ -47,6 +47,14 @@ properties:
->>>      minimum: 0
->>>      maximum: 3
->>>
->>> +  richtek,bled-ocp-sel:
->>
->> Skip "sel" as it is a shortcut of selection. Name instead:
->> "richtek,backlight-ocp"
->>
-> OK, if so, do I need to rename all properties from 'bled' to 'backlight' ?
-> If  only this property is naming as 'backlight'. it may conflict with
-> the others like as "richtek,bled-ovp-sel".
+On 5/26/22 08:27, pengfuyuan wrote:
+> Fix spelling typo in comment.
+>
+> Signed-off-by: pengfuyuan <pengfuyuan@kylinos.cn>
 
-Ah, no, no need.
+applied to the fbdev git tree.
 
->>
->>> +    description: |
->>> +      Backlight OCP level selection, currently support 0.9A/1.2A/1.5A/1.8A
->>
->> Could you explain here what is OCP (unfold the acronym)?
-> Yes. And the full name is 'over current protection'.
+Thanks!
+Helge
 
-Thanks and this leads to second thing - you encode register value
-instead of logical value. This must be a logical value in mA, so
-"richtek,bled-ocp-microamp".
+> ---
+>  include/video/radeon.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/include/video/radeon.h b/include/video/radeon.h
+> index 005eae19ec09..72f94ccfa725 100644
+> --- a/include/video/radeon.h
+> +++ b/include/video/radeon.h
+> @@ -750,7 +750,7 @@
+>  #define WAIT_DMA_GUI_IDLE			   (1 << 9)
+>  #define WAIT_2D_IDLECLEAN			   (1 << 16)
+>
+> -/* SURFACE_CNTL bit consants */
+> +/* SURFACE_CNTL bit constants */
+>  #define SURF_TRANSLATION_DIS			   (1 << 8)
+>  #define NONSURF_AP0_SWP_16BPP			   (1 << 20)
+>  #define NONSURF_AP0_SWP_32BPP			   (1 << 21)
 
-I see you already did some register-style for voltage. It's wrong but it
-was done, so let it be. But let's don't make that a pattern...
-
-
->>
->>
->> Best regards,
->> Krzysztof
-
-
-Best regards,
-Krzysztof

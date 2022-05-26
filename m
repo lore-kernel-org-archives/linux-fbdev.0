@@ -2,117 +2,63 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57755C433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu, 26 May 2022 03:17:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87628C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 26 May 2022 06:28:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237961AbiEZDQ7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 25 May 2022 23:16:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54310 "EHLO
+        id S245095AbiEZG2d (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 26 May 2022 02:28:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46340 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239527AbiEZDQ4 (ORCPT
+        with ESMTP id S231466AbiEZG2c (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 25 May 2022 23:16:56 -0400
-Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 09C0D101E4;
-        Wed, 25 May 2022 20:16:52 -0700 (PDT)
-Received: by mail-pl1-x62b.google.com with SMTP id a17so392624plb.4;
-        Wed, 25 May 2022 20:16:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=UThOTLkpL6r0PfLYsEVVStjdxypFZ/KqJ5dVvlv45cQ=;
-        b=TwvS3CSU4878l6qtnM6vjb91z+ZtHsGsRArRPglugXj1iIcrUot9+RP/7cVVUlboRH
-         J/dJb7DHUGzCH5PXT5F7+FACbuPaPhozVRUKNFEKkfY/UzDoQgTwTUq2DwuUhOZV5FJD
-         VGUHUVM+ZUt0okEKD6G8gHCqtLzE1EFzYi34hzKSu1Epue0KIxYLCXwxLyN3cd3SSkJM
-         h0N5VIzySFDCKa1TXC0dfBWlTmsnDqEwQmX8mK61ruF44VsN0pYma9ckDd67YWRtRxqs
-         NrSU/zhbjbZnUPQ4uZYlvheq0H5Y++27HZhiQ93dealVKz+LLtHvNf6PvYTHNZKv0ydH
-         9hhA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=UThOTLkpL6r0PfLYsEVVStjdxypFZ/KqJ5dVvlv45cQ=;
-        b=wuWtke46iBVhC6RDba7a5V23esfepzFDTxMUg2N3g4cpaEelpuTUe8yO5hxFyhR+Tz
-         +OpBf5cQeFCzsaNIxYGwdzTaQsevNggGyLFwf4iGptEwClu3W0G00u6NbdTaQaaWpMSt
-         oKfq5uE50dr5APy8xCharH4J0n/2WLMwGYBt1b/Ap97dYQtN8gnbTJJBvbULhinbXiuD
-         S2ztvSAGxrHUxyfy+Kl6WAkHfEbVpHviYFzd3z63zGmXoilIbMn+XetuLmbvGttUXdJi
-         wGQoQk17uiqcXiNFBR/mj4FjaWmcjForBSqR/hqT/JS22Y+0qhgQeKo77sa1twL3HSJK
-         pOhg==
-X-Gm-Message-State: AOAM533f0AiYPR9SqwUgun1aQBWHnQges94vhk0pXJrLCQ/h2TfwA/7s
-        NaRT4mJ40vY2FLV0M7orEzk=
-X-Google-Smtp-Source: ABdhPJw4OWJucWjDO/OgkBgn3Kd7o4a82L1xaZs86EKdpB+JzlecBZUX/jxImhdjaEDiYy8UQCJd3g==
-X-Received: by 2002:a17:90a:e7c6:b0:1e0:9cf7:d042 with SMTP id kb6-20020a17090ae7c600b001e09cf7d042mr354429pjb.234.1653535011416;
-        Wed, 25 May 2022 20:16:51 -0700 (PDT)
-Received: from localhost.localdomain ([2402:7500:569:6b12:f420:101e:bfc0:b57c])
-        by smtp.gmail.com with ESMTPSA id t25-20020aa79479000000b0050dc7628181sm152964pfq.91.2022.05.25.20.16.47
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 25 May 2022 20:16:51 -0700 (PDT)
-From:   cy_huang <u0084500@gmail.com>
-To:     robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        lee.jones@linaro.org, daniel.thompson@linaro.org,
-        jingoohan1@gmail.com
-Cc:     pavel@ucw.cz, deller@gmx.de, cy_huang@richtek.com,
-        lucas_tsai@richtek.com, devicetree@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-leds@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] backlight: rt4831: Add the property parsing for ocp level selection
-Date:   Thu, 26 May 2022 11:16:35 +0800
-Message-Id: <1653534995-30794-3-git-send-email-u0084500@gmail.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1653534995-30794-1-git-send-email-u0084500@gmail.com>
-References: <1653534995-30794-1-git-send-email-u0084500@gmail.com>
+        Thu, 26 May 2022 02:28:32 -0400
+Received: from nksmu.kylinos.cn (mailgw.kylinos.cn [123.150.8.42])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5E7A9BC6EB;
+        Wed, 25 May 2022 23:28:30 -0700 (PDT)
+X-UUID: 1fcc9c13c4904a2fb9047121447749a4-20220526
+X-UUID: 1fcc9c13c4904a2fb9047121447749a4-20220526
+Received: from cs2c.com.cn [(172.17.111.24)] by nksmu.kylinos.cn
+        (envelope-from <pengfuyuan@kylinos.cn>)
+        (Generic MTA)
+        with ESMTP id 1815677509; Thu, 26 May 2022 14:31:21 +0800
+X-ns-mid: postfix-628F1E05-2327746001
+Received: from localhost.localdomain (unknown [172.20.4.120])
+        by cs2c.com.cn (NSMail) with ESMTPA id 1B8DE3848645;
+        Thu, 26 May 2022 06:28:21 +0000 (UTC)
+From:   pengfuyuan <pengfuyuan@kylinos.cn>
+To:     Helge Deller <deller@gmx.de>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, pengfuyuan <pengfuyuan@kylinos.cn>
+Subject: [PATCH] radeon: Fix spelling typo in comment
+Date:   Thu, 26 May 2022 14:27:57 +0800
+Message-Id: <20220526062757.1155581-1-pengfuyuan@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: ChiYuan Huang <cy_huang@richtek.com>
+Fix spelling typo in comment.
 
-Add the property parsing for ocp level selection.
-
-Reported-by: Lucas Tsai <lucas_tsai@richtek.com>
-Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+Signed-off-by: pengfuyuan <pengfuyuan@kylinos.cn>
 ---
- drivers/video/backlight/rt4831-backlight.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ include/video/radeon.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/backlight/rt4831-backlight.c b/drivers/video/backlight/rt4831-backlight.c
-index 42155c7..c81f7d9 100644
---- a/drivers/video/backlight/rt4831-backlight.c
-+++ b/drivers/video/backlight/rt4831-backlight.c
-@@ -12,6 +12,7 @@
- #define RT4831_REG_BLCFG	0x02
- #define RT4831_REG_BLDIML	0x04
- #define RT4831_REG_ENABLE	0x08
-+#define RT4831_REG_BLOPT2	0x11
+diff --git a/include/video/radeon.h b/include/video/radeon.h
+index 005eae19ec09..72f94ccfa725 100644
+--- a/include/video/radeon.h
++++ b/include/video/radeon.h
+@@ -750,7 +750,7 @@
+ #define WAIT_DMA_GUI_IDLE			   (1 << 9)
+ #define WAIT_2D_IDLECLEAN			   (1 << 16)
  
- #define RT4831_BLMAX_BRIGHTNESS	2048
- 
-@@ -23,6 +24,8 @@
- #define RT4831_BLDIML_MASK	GENMASK(2, 0)
- #define RT4831_BLDIMH_MASK	GENMASK(10, 3)
- #define RT4831_BLDIMH_SHIFT	3
-+#define RT4831_BLOCP_MASK	GENMASK(1, 0)
-+#define RT4831_BLOCP_SHIFT	0
- 
- struct rt4831_priv {
- 	struct device *dev;
-@@ -120,6 +123,16 @@ static int rt4831_parse_backlight_properties(struct rt4831_priv *priv,
- 	if (ret)
- 		return ret;
- 
-+	ret = device_property_read_u8(dev, "richtek,bled-ocp-sel", &propval);
-+	if (ret)
-+		propval = RT4831_BLOCPLVL_1P2A;
-+
-+	propval = min_t(u8, propval, RT4831_BLOCPLVL_1P8A);
-+	ret = regmap_update_bits(priv->regmap, RT4831_REG_BLOPT2, RT4831_BLOCP_MASK,
-+				 propval << RT4831_BLOCP_SHIFT);
-+	if (ret)
-+		return ret;
-+
- 	ret = device_property_read_u8(dev, "richtek,channel-use", &propval);
- 	if (ret) {
- 		dev_err(dev, "richtek,channel-use DT property missing\n");
+-/* SURFACE_CNTL bit consants */
++/* SURFACE_CNTL bit constants */
+ #define SURF_TRANSLATION_DIS			   (1 << 8)
+ #define NONSURF_AP0_SWP_16BPP			   (1 << 20)
+ #define NONSURF_AP0_SWP_32BPP			   (1 << 21)
 -- 
-2.7.4
+2.25.1
 

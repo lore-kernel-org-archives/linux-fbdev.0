@@ -2,93 +2,73 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D670CC433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 26 May 2022 20:12:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 831DAC433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri, 27 May 2022 00:26:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348916AbiEZUMX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 26 May 2022 16:12:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57056 "EHLO
+        id S229519AbiE0A0j (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 26 May 2022 20:26:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43078 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348900AbiEZUMU (ORCPT
+        with ESMTP id S229441AbiE0A0i (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 26 May 2022 16:12:20 -0400
-X-Greylist: delayed 521 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 26 May 2022 13:12:05 PDT
-Received: from 0.smtp.remotehost.it (unknown [213.190.28.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7BF39A9B5;
-        Thu, 26 May 2022 13:12:05 -0700 (PDT)
-Message-ID: <672f03a9-9ffa-c2f8-a369-e958c79a57f3@0.smtp.remotehost.it>
-Date:   Thu, 26 May 2022 22:03:05 +0200
-MIME-Version: 1.0
-Subject: Re: [PATCH] fbdev: vesafb: Fix a use-after-free due early fb_info
- cleanup
-Content-Language: en-US
-To:     Javier Martinez Canillas <javierm@redhat.com>,
-        linux-kernel@vger.kernel.org
-Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Thu, 26 May 2022 20:26:38 -0400
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E26586A044
+        for <linux-fbdev@vger.kernel.org>; Thu, 26 May 2022 17:26:36 -0700 (PDT)
+Received: from ip6-localhost (localhost.localdomain [127.0.0.1])
+        by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 24R0Ho34032466;
+        Thu, 26 May 2022 19:17:51 -0500
+Message-ID: <23740c1edd7b080133ab852cd8e3de89fd7c9aae.camel@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] drm/tiny: Add ofdrm for Open Firmware framebuffers
+From:   Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Michal =?ISO-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+Cc:     Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        David Airlie <airlied@linux.ie>,
+        Michael Ellerman <mpe@ellerman.id.au>,
         Helge Deller <deller@gmx.de>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20220526194752.307192-1-javierm@redhat.com>
-From:   Pascal Ernster <dri-devel@hardfalcon.net>
-In-Reply-To: <20220526194752.307192-1-javierm@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        Sam Ravnborg <sam@ravnborg.org>
+Date:   Fri, 27 May 2022 10:17:50 +1000
+In-Reply-To: <a077bc25-03b3-f8bd-0138-a175a2864943@suse.de>
+References: <20220518183006.14548-1-tzimmermann@suse.de>
+         <20220518183006.14548-3-tzimmermann@suse.de>
+         <20220518185156.GJ163591@kunlun.suse.cz>
+         <CAMuHMdUws2eJ4pHng4GD0PjuvMj5Hef_y_YyM4fUJV9xdUVuEQ@mail.gmail.com>
+         <29a8201d-3c0c-eeed-81af-92b351880702@suse.de>
+         <615c93392bee43e92f0400cfa51957cd955091d3.camel@kernel.crashing.org>
+         <a077bc25-03b3-f8bd-0138-a175a2864943@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.36.5-0ubuntu1 
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-[2022-05-26 21:47:52] Javier Martinez Canillas:
-> Commit b3c9a924aab6 ("fbdev: vesafb: Cleanup fb_info in .fb_destroy rather
-> than .remove") fixed a use-after-free error due the vesafb driver freeing
-> the fb_info in the .remove handler instead of doing it in .fb_destroy.
+On Wed, 2022-05-25 at 18:45 +0200, Thomas Zimmermann wrote:
 > 
-> This can happen if the .fb_destroy callback is executed after the .remove
-> callback, since the former tries to access a pointer freed by the latter.
+> > The palette handling is useful when using a real Open Firmware
+> > implementation which tends to boot in 8-bit mode, so without palette
+> > things will look ... bad.
+> > 
+> > It's not necessary when using 16/32 bpp framebuffers which is typically
+> > ... what BootX provides :-)
 > 
-> But that change didn't take into account that another possible scenario is
-> that .fb_destroy is called before the .remove callback. For example, if no
-> process has the fbdev chardev opened by the time the driver is removed.
+> Maybe the odd color formats can be tested via qemu.
 > 
-> If that's the case, fb_info will be freed when unregister_framebuffer() is
-> called, making the fb_info pointer accessed in vesafb_remove() after that
-> to no longer be valid.
-> 
-> To prevent that, move the expression containing the info->par to happen
-> before the unregister_framebuffer() function call.
-> 
-> Fixes: b3c9a924aab6 ("fbdev: vesafb: Cleanup fb_info in .fb_destroy rather than .remove")
-> Reported-by: Pascal Ernster <dri-devel@hardfalcon.net>
-> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+> I don't mind adding DRM support for BootX displays, but getting the 
+> necessary test HW with a suitable Linux seems to be laborious. Would a 
+> G4 Powerbook work?
 
-Tested on a bare metal machine and on a test VM that had both crashed 
-when booting a kernel lacking this patch.
-Again, thanks a lot for the quick fix! :)
+My point was that it's the non-BootX case that cares about the palette
+hacks :-)
 
-Tested-by: Pascal Ernster <dri-devel@hardfalcon.net>
-
-
-> ---
-> 
->   drivers/video/fbdev/vesafb.c | 5 +++--
->   1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
-> index e25e8de5ff67..929d4775cb4b 100644
-> --- a/drivers/video/fbdev/vesafb.c
-> +++ b/drivers/video/fbdev/vesafb.c
-> @@ -490,11 +490,12 @@ static int vesafb_remove(struct platform_device *pdev)
->   {
->   	struct fb_info *info = platform_get_drvdata(pdev);
->   
-> -	/* vesafb_destroy takes care of info cleanup */
-> -	unregister_framebuffer(info);
->   	if (((struct vesafb_par *)(info->par))->region)
->   		release_region(0x3c0, 32);
->   
-> +	/* vesafb_destroy takes care of info cleanup */
-> +	unregister_framebuffer(info);
-> +
->   	return 0;
->   }
->   
+Cheers,
+Ben.
 

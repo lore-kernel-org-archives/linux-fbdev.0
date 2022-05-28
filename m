@@ -2,135 +2,166 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E58B1C433EF
-	for <linux-fbdev@archiver.kernel.org>; Sat, 28 May 2022 17:28:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10777C433EF
+	for <linux-fbdev@archiver.kernel.org>; Sat, 28 May 2022 20:18:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238424AbiE1R2g (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 28 May 2022 13:28:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58378 "EHLO
+        id S229521AbiE1USD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 28 May 2022 16:18:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51020 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231777AbiE1R2g (ORCPT
+        with ESMTP id S229504AbiE1USC (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 28 May 2022 13:28:36 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 225F12662;
-        Sat, 28 May 2022 10:28:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1653758903;
-        bh=lR1SmAw3TFZ2GVQGx6Xrltu1975YzeKIyfCgmu3IbmI=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=TwY7VeAEA96tsQkihp6Y53kt7fF5IFdDfZK0kJxOBVZ3BN2JoTOn2gxG+EPBXayd0
-         1TwauGiZ+ZSWnFHxazRzYiuBm8Wp4/7b3LubTm90l5WpGZl8Em0bmA6eslfp46oUzy
-         YonBZifAugCbrq9EgfOvRT9SQtNkdIyKqODPRRa0=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.176.6]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MryXN-1nRjkI0V9B-00nyNC; Sat, 28
- May 2022 19:28:23 +0200
-Message-ID: <90a293d4-698f-5c9a-9435-3a26ea0ae97f@gmx.de>
-Date:   Sat, 28 May 2022 19:28:08 +0200
+        Sat, 28 May 2022 16:18:02 -0400
+Received: from mail-qv1-f53.google.com (mail-qv1-f53.google.com [209.85.219.53])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 637314B856
+        for <linux-fbdev@vger.kernel.org>; Sat, 28 May 2022 13:18:00 -0700 (PDT)
+Received: by mail-qv1-f53.google.com with SMTP id v5so6922555qvs.10
+        for <linux-fbdev@vger.kernel.org>; Sat, 28 May 2022 13:18:00 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=UW6Y4vJiidlHWFIwlmPdp6Tw0q2d8acxVjTk7ACvPCk=;
+        b=45gEzbOH2tx0JrCJ6wdzW1e5E5P8z2Iyak9gRI0AErH96RZ4Lf372sBIijX/A+NNKV
+         baAA1bBaai3Mxw6Dj4toilhGFmjMZq8Xnl+6YtpLvPQMvJfKOnGMXzLgd0dBUvh0KRkd
+         yMG/eUFz4m8bkhAbmCvXCUAxYb/zZPVWXHa6gJ3E4wBxLHZpkBiZXDfTYQdn+HEevH33
+         kG8vPIy2igxJP0ecQlSOy2v5Jz7EgkQIQfgssEMlQoy2lNtUGg2HK0n5MvXJf0Vu+z0M
+         RMZOb+fQjX0D3AIwv5Jzw1pOP+jRoXC48qoVYbEqyMelcFr/doJgAAR5d8ibWFDtQ5P3
+         /F1A==
+X-Gm-Message-State: AOAM532qeoyUL13tD/U1jYeTmMrTVyIA2qR4qF3+HMloIWnXzhE5SP8T
+        0hOB69WEl+S7XHcSBd3oDPaaokf2fUwPiw==
+X-Google-Smtp-Source: ABdhPJyeoLWRbE1dw6Wgac918AOktweyCOAZjKY9HfAK7JU2Gwt5D0X9RbtHZ1BMWPEYW5lhT8tHew==
+X-Received: by 2002:a05:6214:2342:b0:42d:7c8b:9eac with SMTP id hu2-20020a056214234200b0042d7c8b9eacmr39975906qvb.5.1653769079199;
+        Sat, 28 May 2022 13:17:59 -0700 (PDT)
+Received: from mail-yw1-f177.google.com (mail-yw1-f177.google.com. [209.85.128.177])
+        by smtp.gmail.com with ESMTPSA id c13-20020a05622a024d00b002f942e6bd88sm5027951qtx.48.2022.05.28.13.17.57
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 28 May 2022 13:17:57 -0700 (PDT)
+Received: by mail-yw1-f177.google.com with SMTP id 00721157ae682-2ff7b90e635so77055997b3.5
+        for <linux-fbdev@vger.kernel.org>; Sat, 28 May 2022 13:17:57 -0700 (PDT)
+X-Received: by 2002:a81:6c05:0:b0:30c:18f5:d2b0 with SMTP id
+ h5-20020a816c05000000b0030c18f5d2b0mr3886464ywc.502.1653769077224; Sat, 28
+ May 2022 13:17:57 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.0
-Subject: Re: [PATCH] fbdev: vesafb: Fix a use-after-free due early fb_info
- cleanup
-Content-Language: en-US
-To:     Javier Martinez Canillas <javierm@redhat.com>,
-        linux-kernel@vger.kernel.org
-Cc:     Pascal Ernster <dri-devel@hardfalcon.net>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20220526194752.307192-1-javierm@redhat.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220526194752.307192-1-javierm@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:Q/afMmrV6TEcA8Ald4h2sa2uBYvXhgfWAKP3dhZtZKDXuX7L5bR
- 7U8+ZHdeYUwdMiakb0VwOYuClbKKl+haWFBSOYmF+SHHED0qpI0GIqLlrUB0RXSFWtrqhTb
- AkERe7Q+TtAfR5JiIGY4CIOfm1wpUd4Ipilwn4bw331ESA1gn2Hyv3EYZgRMgmYDnN0B/kz
- dL+IkvX24bMKe5Hhl+kdQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:XqlM8cU89UE=:eTOTT44CHSOooba+fOdkyo
- y1MrLZk9ZF2hFIn2zAV64IipZRcch4TDAmcOQt1UnVDoWfg8AlPW7kQyvq5Mb0gcIb7YTmMb+
- Ln6ECUlnPq6IjylwUES9rrADlRUQrT8TxSUSTLlfppRpi/I1tEWt1UIgPkQj3qKiyBDp0T2cW
- pVPFSD+DWm3PhsvpO1MKsvFNuQyNzj5SE9NYvrhnZMTSXCWEREmugIRmXUXV5N8HXsgFx+1by
- 0vLeeaxz1f9yPwz8CNloOIkA8JGoGYDg0nc3ih94KY2nQqw99TwbRy5Qv8iL6wqu6C2gRFaqg
- g5U3IMGg/uDbjSmr+IMTOU6PB22HmuyLFAjMPTfCNKOYfXUjX7Iq50hAN+LYQhPunEIwxK+qr
- fmqigX0CR00JfCnzuQYt+EFZo7Kt00ocWT2prVauDK4heXV4gwJtzcSVkyy4tKIwYs1LXTIHy
- NBMByrSq6ZBIYXVmCyvzobNlk8yQ8Edznm5TG19y+B7C3W/mogQAdbSvpl2rWLhuaZMIvnzZQ
- d90hIfQeIHW3iU4UUwfQxkTvmKBQSaHgIeAfYG9fqWPL3qC1pHnNNIdc0QQ/EWXTdoxz2O/cA
- vwJHUPPsHbBHNbZ14vv1OAOPZEoSHnawhbLrQDkbAEL43nM0ZWeoSd7MjsgSbxe33DhVDPfcA
- FVwFhff+sw0KW9pyjcLj2n2bssGVitMJ/8PnASUnAaS4uW6DPyLCBBziIRhexGjAx6+r90zfJ
- BPW1qpm6QsDSDLMA5k7eZ30AWoWbJAPFPnZW/Z84HZ5TKNN2LvsF48abqc7EdxxFlbo2v1psQ
- qLU8Pv+vleI3K0geCzXBa33Y/nQK1T8UmMfPLpun4LWaH9J66oMwuSMOO1JmUrLp5+5u7lAY5
- dszI+2Z36wvyMgor8SOD2QfU2JvAh3jYYFkdDNtjy/RMFuaGcDCEkJQaQxVvMl26N3jMBGAyn
- xAI7dWt09WCE7bmZPWqmXRjZ4RGnBPKrTjIMSpIgk40wdhpLe9Z3fr32/HAsOs9q8X9Ga7siv
- NNUnlntJml8yv33RX450oCMkteJrBGzYkUvSqFnKSllLwHNuPpGc1JF8Ahn1iw1HXDlB6jkQe
- dk+elHRX383UtQQk6OeBRavSUqvawhcFUufJ7Htlgz07/c9V6b5L258Zw==
+References: <20191014140416.28517-1-tzimmermann@suse.de> <20191014140416.28517-10-tzimmermann@suse.de>
+In-Reply-To: <20191014140416.28517-10-tzimmermann@suse.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Sat, 28 May 2022 22:17:43 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdU9p7KUy3WEFox9KgZBHGZGNO2y5m8tLVbzGGVHu2iNYQ@mail.gmail.com>
+Message-ID: <CAMuHMdU9p7KUy3WEFox9KgZBHGZGNO2y5m8tLVbzGGVHu2iNYQ@mail.gmail.com>
+Subject: Re: [PATCH v2 09/15] drm/fbconv: Mode-setting pipeline enable / disable
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Sean Paul <sean@poorly.run>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        ajax@redhat.com,
+        =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>,
+        Mathieu Malaterre <malat@debian.org>, michel@daenzer.net,
+        Jonathan Corbet <corbet@lwn.net>,
+        Greg KH <gregkh@linuxfoundation.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 5/26/22 21:47, Javier Martinez Canillas wrote:
-> Commit b3c9a924aab6 ("fbdev: vesafb: Cleanup fb_info in .fb_destroy rath=
-er
-> than .remove") fixed a use-after-free error due the vesafb driver freein=
-g
-> the fb_info in the .remove handler instead of doing it in .fb_destroy.
->
-> This can happen if the .fb_destroy callback is executed after the .remov=
-e
-> callback, since the former tries to access a pointer freed by the latter=
-.
->
-> But that change didn't take into account that another possible scenario =
-is
-> that .fb_destroy is called before the .remove callback. For example, if =
-no
-> process has the fbdev chardev opened by the time the driver is removed.
->
-> If that's the case, fb_info will be freed when unregister_framebuffer() =
-is
-> called, making the fb_info pointer accessed in vesafb_remove() after tha=
-t
-> to no longer be valid.
->
-> To prevent that, move the expression containing the info->par to happen
-> before the unregister_framebuffer() function call.
->
-> Fixes: b3c9a924aab6 ("fbdev: vesafb: Cleanup fb_info in .fb_destroy rath=
-er than .remove")
-> Reported-by: Pascal Ernster <dri-devel@hardfalcon.net>
-> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+Hi Thomas,
 
-applied to the fbdev git tree.
+On Mon, Oct 14, 2019 at 4:05 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> The display mode is set by converting the DRM display mode to an
+> fb_info state and handling it to the fbdev driver's fb_setvar()
+> function. This also requires a color depth, which we take from the
+> value of struct drm_mode_config.preferred_depth
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-Thanks!
-Helge
-
-
-> ---
->
->  drivers/video/fbdev/vesafb.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
-> index e25e8de5ff67..929d4775cb4b 100644
-> --- a/drivers/video/fbdev/vesafb.c
-> +++ b/drivers/video/fbdev/vesafb.c
-> @@ -490,11 +490,12 @@ static int vesafb_remove(struct platform_device *p=
-dev)
->  {
->  	struct fb_info *info =3D platform_get_drvdata(pdev);
->
-> -	/* vesafb_destroy takes care of info cleanup */
-> -	unregister_framebuffer(info);
->  	if (((struct vesafb_par *)(info->par))->region)
->  		release_region(0x3c0, 32);
->
-> +	/* vesafb_destroy takes care of info cleanup */
-> +	unregister_framebuffer(info);
-> +
->  	return 0;
+> --- a/drivers/gpu/drm/drm_fbconv_helper.c
+> +++ b/drivers/gpu/drm/drm_fbconv_helper.c
+> @@ -919,6 +919,24 @@ static int drm_fbconv_update_fb_var_screeninfo_from_framebuffer(
+>         return 0;
 >  }
 >
+> +static int drm_fbconv_update_fb_var_screeninfo_from_simple_display_pipe(
+> +       struct fb_var_screeninfo *fb_var, struct drm_simple_display_pipe *pipe)
+> +{
+> +       struct drm_plane *primary = pipe->crtc.primary;
+> +       struct drm_fbconv_modeset *modeset = drm_fbconv_modeset_of_pipe(pipe);
+> +
+> +       if (primary && primary->state && primary->state->fb)
+> +               return drm_fbconv_update_fb_var_screeninfo_from_framebuffer(
+> +                       fb_var, primary->state->fb,
+> +                       modeset->fb_info->fix.smem_len);
+> +
+> +       fb_var->xres_virtual = fb_var->xres;
+> +       fb_var->yres_virtual = fb_var->yres;
+> +       fb_var->bits_per_pixel = modeset->dev->mode_config.preferred_depth;
 
+This looks wrong to me: IMHO bits_per_pixel should be derived from
+the fourcc format of the _new_ mode to be set...
+
+> +
+> +       return 0;
+> +}
+> +
+>  /**
+>   * drm_fbconv_simple_display_pipe_mode_valid - default implementation for
+>   *     struct drm_simple_display_pipe_funcs.mode_valid
+> @@ -950,6 +968,28 @@ bool drm_fbconv_simple_display_pipe_mode_fixup(
+>         struct drm_crtc *crtc, const struct drm_display_mode *mode,
+>         struct drm_display_mode *adjusted_mode)
+>  {
+> +       struct drm_simple_display_pipe *pipe =
+> +               container_of(crtc, struct drm_simple_display_pipe, crtc);
+> +       struct drm_fbconv_modeset *modeset = drm_fbconv_modeset_of_pipe(pipe);
+> +       struct fb_var_screeninfo fb_var;
+> +       int ret;
+> +
+> +       if (!modeset->fb_info->fbops->fb_check_var)
+> +               return true;
+> +
+> +       drm_fbconv_init_fb_var_screeninfo_from_mode(&fb_var, mode);
+> +
+> +       ret = drm_fbconv_update_fb_var_screeninfo_from_simple_display_pipe(
+> +               &fb_var, &modeset->pipe);
+> +       if (ret)
+> +               return true;
+> +
+> +       ret = modeset->fb_info->fbops->fb_check_var(&fb_var, modeset->fb_info);
+
+... hence this fails if the requested mode is valid with the new
+fourcc format, but invalid with the old (but preferred) depth.
+E.g. due to bandwidth limitations, a high-resolution mode is valid
+with a low color depth, while a high color depth is limited to lower
+resolutions.
+
+Unfortunately we do not know the new fourcc format here, as both
+drm_simple_display_pipe_funcs.mode_{valid,fixup}() are passed
+the mode (from drm_mode_set.mode), but not the new format (from
+drm_mode_set.fb->format).
+
+Am I missing something? Is the new format available in some other way?
+Thanks!
+
+> +       if (ret < 0)
+> +               return false;
+> +
+> +       drm_mode_update_from_fb_var_screeninfo(adjusted_mode, &fb_var);
+> +
+>         return true;
+>  }
+>  EXPORT_SYMBOL(drm_fbconv_simple_display_pipe_mode_fixup);
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

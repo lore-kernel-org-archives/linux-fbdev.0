@@ -2,168 +2,135 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 039C9C433FE
-	for <linux-fbdev@archiver.kernel.org>; Fri, 27 May 2022 10:56:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E58B1C433EF
+	for <linux-fbdev@archiver.kernel.org>; Sat, 28 May 2022 17:28:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351124AbiE0K41 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 27 May 2022 06:56:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50378 "EHLO
+        id S238424AbiE1R2g (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 28 May 2022 13:28:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58378 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351099AbiE0K4Y (ORCPT
+        with ESMTP id S231777AbiE1R2g (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 27 May 2022 06:56:24 -0400
-Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5C6CC12E320
-        for <linux-fbdev@vger.kernel.org>; Fri, 27 May 2022 03:56:11 -0700 (PDT)
-Received: by mail-wr1-x42d.google.com with SMTP id v17so1185424wrv.2
-        for <linux-fbdev@vger.kernel.org>; Fri, 27 May 2022 03:56:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=jrGgy+PH692lFsYF+dtk7dWio1nqD2I64lL7+wih4a8=;
-        b=dQx4ferhWG44Xidn1n3UXaPwXV1KQVTCRSqgo0w8ELub1AkvMVX5/sRdkmO8ll4Zk3
-         2v2PAzhmidtq0rPpqmDFMVImttdAqw0LCrUsnUjRg6+TQ4ewZ8mo8kf13oO5kYzr+Y7C
-         G316PQHNrGhLNoxEf5ytwoBjH58Aakl6bYJb1i9T0KD0R6nvAygYc435xX6d2GLtJVXB
-         BlfiQyEUXPaQW+4LVfQbk0raKU4G9lIfa/mQ03fIJUQ4jlooeuRj1C0DUesiFQdYPQOn
-         7gBzBMLVG4ey+Y2HFPs+TEP4c5xMyeb8EFvsv/5qGP6Y1ra/xldI/YhZd5PiZYVKJreT
-         9HwQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=jrGgy+PH692lFsYF+dtk7dWio1nqD2I64lL7+wih4a8=;
-        b=di9SOisOm9cRspuqmcJ4RB+zERVovH74LijLQz+hZol2QpoA2ZTJNmhJua8Rwh0sCl
-         EHGQSv20EGu+S2SgqYgZXIHzXwPO4Af8XcKmRcu4tG72lU1H+cBgRAFbK6tDHVixBJFE
-         FqOE89DywS9zB4ju6aXwc1uegMYtp+pjWMNpZbnIQ9MgUGnTxcy8P8BNB2QNENPF0M+j
-         KD3u7VYkgP3faA7wzIQDTBM/LBdNsM3rrIZhXrhmX1TwFVc0dqyKr1kbEmtPMpVPkyC/
-         pMo3GFhO3TPMoxpzYU64U6SAFxihwn8gG70nzYNZpEr9dss5+8p/vjol9SW4Xkv/IEJ+
-         iHNA==
-X-Gm-Message-State: AOAM530VjhaX6PTCmJE+i28tiJcNybe+04tsjJ6ImbQItV1+7IGBbA5G
-        8/VwcqTp6XHL1Ln/H5/qH0w8Lw==
-X-Google-Smtp-Source: ABdhPJwOt3C8JBzWvWP9ZBSLuDdffF2lB32gd6PKxfF9FArTmlC1qflYGl5xnT+8PL6XweEjZG5ZcQ==
-X-Received: by 2002:adf:ed0c:0:b0:210:e82:898 with SMTP id a12-20020adfed0c000000b002100e820898mr5148595wro.399.1653648969762;
-        Fri, 27 May 2022 03:56:09 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id v18-20020adfebd2000000b0020c5253d8besm1451810wrn.10.2022.05.27.03.56.08
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 May 2022 03:56:09 -0700 (PDT)
-Date:   Fri, 27 May 2022 11:56:07 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     ChiYuan Huang <u0084500@gmail.com>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Lee Jones <lee.jones@linaro.org>, jingoohan1@gmail.com,
-        Pavel Machek <pavel@ucw.cz>, deller@gmx.de,
-        cy_huang <cy_huang@richtek.com>, lucas_tsai@richtek.com,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] backlight: rt4831: Add the property parsing for ocp
- level selection
-Message-ID: <20220527105607.gk5ge77byuojxkkc@maple.lan>
-References: <1653534995-30794-1-git-send-email-u0084500@gmail.com>
- <1653534995-30794-3-git-send-email-u0084500@gmail.com>
- <20220526100510.3utwh5bov4ax2jmg@maple.lan>
- <CADiBU3_3rJ6uCYx_W+TZJpuPzGtt61QEDwZWtxy_abzynTr8VQ@mail.gmail.com>
+        Sat, 28 May 2022 13:28:36 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 225F12662;
+        Sat, 28 May 2022 10:28:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1653758903;
+        bh=lR1SmAw3TFZ2GVQGx6Xrltu1975YzeKIyfCgmu3IbmI=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=TwY7VeAEA96tsQkihp6Y53kt7fF5IFdDfZK0kJxOBVZ3BN2JoTOn2gxG+EPBXayd0
+         1TwauGiZ+ZSWnFHxazRzYiuBm8Wp4/7b3LubTm90l5WpGZl8Em0bmA6eslfp46oUzy
+         YonBZifAugCbrq9EgfOvRT9SQtNkdIyKqODPRRa0=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.176.6]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MryXN-1nRjkI0V9B-00nyNC; Sat, 28
+ May 2022 19:28:23 +0200
+Message-ID: <90a293d4-698f-5c9a-9435-3a26ea0ae97f@gmx.de>
+Date:   Sat, 28 May 2022 19:28:08 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CADiBU3_3rJ6uCYx_W+TZJpuPzGtt61QEDwZWtxy_abzynTr8VQ@mail.gmail.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.0
+Subject: Re: [PATCH] fbdev: vesafb: Fix a use-after-free due early fb_info
+ cleanup
+Content-Language: en-US
+To:     Javier Martinez Canillas <javierm@redhat.com>,
+        linux-kernel@vger.kernel.org
+Cc:     Pascal Ernster <dri-devel@hardfalcon.net>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+References: <20220526194752.307192-1-javierm@redhat.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20220526194752.307192-1-javierm@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:Q/afMmrV6TEcA8Ald4h2sa2uBYvXhgfWAKP3dhZtZKDXuX7L5bR
+ 7U8+ZHdeYUwdMiakb0VwOYuClbKKl+haWFBSOYmF+SHHED0qpI0GIqLlrUB0RXSFWtrqhTb
+ AkERe7Q+TtAfR5JiIGY4CIOfm1wpUd4Ipilwn4bw331ESA1gn2Hyv3EYZgRMgmYDnN0B/kz
+ dL+IkvX24bMKe5Hhl+kdQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:XqlM8cU89UE=:eTOTT44CHSOooba+fOdkyo
+ y1MrLZk9ZF2hFIn2zAV64IipZRcch4TDAmcOQt1UnVDoWfg8AlPW7kQyvq5Mb0gcIb7YTmMb+
+ Ln6ECUlnPq6IjylwUES9rrADlRUQrT8TxSUSTLlfppRpi/I1tEWt1UIgPkQj3qKiyBDp0T2cW
+ pVPFSD+DWm3PhsvpO1MKsvFNuQyNzj5SE9NYvrhnZMTSXCWEREmugIRmXUXV5N8HXsgFx+1by
+ 0vLeeaxz1f9yPwz8CNloOIkA8JGoGYDg0nc3ih94KY2nQqw99TwbRy5Qv8iL6wqu6C2gRFaqg
+ g5U3IMGg/uDbjSmr+IMTOU6PB22HmuyLFAjMPTfCNKOYfXUjX7Iq50hAN+LYQhPunEIwxK+qr
+ fmqigX0CR00JfCnzuQYt+EFZo7Kt00ocWT2prVauDK4heXV4gwJtzcSVkyy4tKIwYs1LXTIHy
+ NBMByrSq6ZBIYXVmCyvzobNlk8yQ8Edznm5TG19y+B7C3W/mogQAdbSvpl2rWLhuaZMIvnzZQ
+ d90hIfQeIHW3iU4UUwfQxkTvmKBQSaHgIeAfYG9fqWPL3qC1pHnNNIdc0QQ/EWXTdoxz2O/cA
+ vwJHUPPsHbBHNbZ14vv1OAOPZEoSHnawhbLrQDkbAEL43nM0ZWeoSd7MjsgSbxe33DhVDPfcA
+ FVwFhff+sw0KW9pyjcLj2n2bssGVitMJ/8PnASUnAaS4uW6DPyLCBBziIRhexGjAx6+r90zfJ
+ BPW1qpm6QsDSDLMA5k7eZ30AWoWbJAPFPnZW/Z84HZ5TKNN2LvsF48abqc7EdxxFlbo2v1psQ
+ qLU8Pv+vleI3K0geCzXBa33Y/nQK1T8UmMfPLpun4LWaH9J66oMwuSMOO1JmUrLp5+5u7lAY5
+ dszI+2Z36wvyMgor8SOD2QfU2JvAh3jYYFkdDNtjy/RMFuaGcDCEkJQaQxVvMl26N3jMBGAyn
+ xAI7dWt09WCE7bmZPWqmXRjZ4RGnBPKrTjIMSpIgk40wdhpLe9Z3fr32/HAsOs9q8X9Ga7siv
+ NNUnlntJml8yv33RX450oCMkteJrBGzYkUvSqFnKSllLwHNuPpGc1JF8Ahn1iw1HXDlB6jkQe
+ dk+elHRX383UtQQk6OeBRavSUqvawhcFUufJ7Htlgz07/c9V6b5L258Zw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, May 27, 2022 at 10:24:42AM +0800, ChiYuan Huang wrote:
-> Daniel Thompson <daniel.thompson@linaro.org> 於 2022年5月26日 週四 下午6:05寫道：
-> >
-> > On Thu, May 26, 2022 at 11:16:35AM +0800, cy_huang wrote:
-> > > From: ChiYuan Huang <cy_huang@richtek.com>
-> > >
-> > > Add the property parsing for ocp level selection.
-> >
-> > Isn't this just restating the Subject: line?
-> >
-> Ah, that's my fault. I didn't state too much in the patch comment.
-> I only left it in the cover letter.
-> 
-> > It would be better to provide information useful to the reviewer here.
-> > Something like:
-> >
-> > "Currently this driver simply inherits whatever over-current protection
-> > level is programmed into the hardware when it is handed over. Typically
-> > this will be the reset value, <whatever>A, although the bootloader could
-> > have established a different value.
-> >
-> > Allow the correct OCP value to be provided by the DT."
-> >
-> > BTW please don't uncritically copy the above into the patch header. It is
-> > just made something up as an example and I did no fact checking...
-> >
-> OK, got it.
-> >
-> > >
-> > > Reported-by: Lucas Tsai <lucas_tsai@richtek.com>
-> > > Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
-> > > ---
-> > >  drivers/video/backlight/rt4831-backlight.c | 13 +++++++++++++
-> > >  1 file changed, 13 insertions(+)
-> > >
-> > > diff --git a/drivers/video/backlight/rt4831-backlight.c b/drivers/video/backlight/rt4831-backlight.c
-> > > index 42155c7..c81f7d9 100644
-> > > --- a/drivers/video/backlight/rt4831-backlight.c
-> > > +++ b/drivers/video/backlight/rt4831-backlight.c
-> > > @@ -12,6 +12,7 @@
-> > >  #define RT4831_REG_BLCFG     0x02
-> > >  #define RT4831_REG_BLDIML    0x04
-> > >  #define RT4831_REG_ENABLE    0x08
-> > > +#define RT4831_REG_BLOPT2    0x11
-> > >
-> > >  #define RT4831_BLMAX_BRIGHTNESS      2048
-> > >
-> > > @@ -23,6 +24,8 @@
-> > >  #define RT4831_BLDIML_MASK   GENMASK(2, 0)
-> > >  #define RT4831_BLDIMH_MASK   GENMASK(10, 3)
-> > >  #define RT4831_BLDIMH_SHIFT  3
-> > > +#define RT4831_BLOCP_MASK    GENMASK(1, 0)
-> > > +#define RT4831_BLOCP_SHIFT   0
-> > >
-> > >  struct rt4831_priv {
-> > >       struct device *dev;
-> > > @@ -120,6 +123,16 @@ static int rt4831_parse_backlight_properties(struct rt4831_priv *priv,
-> > >       if (ret)
-> > >               return ret;
-> > >
-> > > +     ret = device_property_read_u8(dev, "richtek,bled-ocp-sel", &propval);
-> > > +     if (ret)
-> > > +             propval = RT4831_BLOCPLVL_1P2A;
-> >
-> > Is 1.2A the reset value for the register?
-> Yes, it's the HW default value.
-> >
-> > Additionally, it looks like adding a hard-coded default would cause
-> > problems for existing platforms where the bootloader doesn't use
-> > richtek,bled-ocp-sel and pre-configures a different value itself.
-> >
-> > Would it be safer (in terms of working nicely with older bootloaders)
-> > to only write to the RT4831_BLOCP_MASK if the new property is set?
-> >
-> Ah, my excuse. I really didn't consider the case that you mentioned.
-> It seems it's better to do the judgement here for two cases.
-> 1) property not exist, keep the current HW value
-> 2) property exist, clamp align and update the suitable selector to HW.
+On 5/26/22 21:47, Javier Martinez Canillas wrote:
+> Commit b3c9a924aab6 ("fbdev: vesafb: Cleanup fb_info in .fb_destroy rath=
+er
+> than .remove") fixed a use-after-free error due the vesafb driver freein=
+g
+> the fb_info in the .remove handler instead of doing it in .fb_destroy.
+>
+> This can happen if the .fb_destroy callback is executed after the .remov=
+e
+> callback, since the former tries to access a pointer freed by the latter=
+.
+>
+> But that change didn't take into account that another possible scenario =
+is
+> that .fb_destroy is called before the .remove callback. For example, if =
+no
+> process has the fbdev chardev opened by the time the driver is removed.
+>
+> If that's the case, fb_info will be freed when unregister_framebuffer() =
+is
+> called, making the fb_info pointer accessed in vesafb_remove() after tha=
+t
+> to no longer be valid.
+>
+> To prevent that, move the expression containing the info->par to happen
+> before the unregister_framebuffer() function call.
+>
+> Fixes: b3c9a924aab6 ("fbdev: vesafb: Cleanup fb_info in .fb_destroy rath=
+er than .remove")
+> Reported-by: Pascal Ernster <dri-devel@hardfalcon.net>
+> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
 
-Ok, great.
+applied to the fbdev git tree.
 
-When you make this change can you make sure there is a comment in the
-source code explaining that concerns about older firmware is *why* we
-treat bled-ocp-sel differently to bled-ovp-sel!
+Thanks!
+Helge
 
 
-Thanks
+> ---
+>
+>  drivers/video/fbdev/vesafb.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
+> index e25e8de5ff67..929d4775cb4b 100644
+> --- a/drivers/video/fbdev/vesafb.c
+> +++ b/drivers/video/fbdev/vesafb.c
+> @@ -490,11 +490,12 @@ static int vesafb_remove(struct platform_device *p=
+dev)
+>  {
+>  	struct fb_info *info =3D platform_get_drvdata(pdev);
+>
+> -	/* vesafb_destroy takes care of info cleanup */
+> -	unregister_framebuffer(info);
+>  	if (((struct vesafb_par *)(info->par))->region)
+>  		release_region(0x3c0, 32);
+>
+> +	/* vesafb_destroy takes care of info cleanup */
+> +	unregister_framebuffer(info);
+> +
+>  	return 0;
+>  }
+>
 
-Daniel.

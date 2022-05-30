@@ -2,111 +2,173 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86611C433F5
-	for <linux-fbdev@archiver.kernel.org>; Sun, 29 May 2022 11:15:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7442C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 May 2022 07:44:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229987AbiE2LPD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 29 May 2022 07:15:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50264 "EHLO
+        id S233749AbiE3Ho2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 30 May 2022 03:44:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52130 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229994AbiE2LPA (ORCPT
+        with ESMTP id S229677AbiE3Ho1 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 29 May 2022 07:15:00 -0400
-Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A01BE986C3;
-        Sun, 29 May 2022 04:14:59 -0700 (PDT)
-Received: by mail-lf1-x135.google.com with SMTP id p22so12840254lfo.10;
-        Sun, 29 May 2022 04:14:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=5FtteHWZGo9XZ7scso44Da3d3+hVMECLmg5cp5RvsAY=;
-        b=Jv3DqjnltHSi5wiXkkj3jSTxfoxCmb9HpnfqeHUGAAnEuQPf+ixHyeNtS/qdjzdD0x
-         eYlb6mAMZe1PShKaa7/QxrVXbNhrrupjAulXsNqyUZs6B+5RIE/X8eripqVTbgp20+1w
-         YRg6odmSu/oZPGwzI8igNILfLyxIkMQtbFYAEgZ6aC23eeycYNCxGDCsMmj6lzllS+Ip
-         5CZvvI+uGBCksVkAnNyzLzcM5URli1DDmrZPsQbcnTrJSkYTXjlAV8mDkaCrbWgmu8Mf
-         z/MMBIveREAaC0lSGskaj6Alx4RMCQF59ZPbg1YQ9URT1wJ8g2tJqZS1+OryPUjAW/7B
-         4RJw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=5FtteHWZGo9XZ7scso44Da3d3+hVMECLmg5cp5RvsAY=;
-        b=N+csYAMTdsg27HkB0iXa6VbYhQN7OnsnyWF1krJXzBI7aPAdpfcU0MrjhMJQ9zUB5F
-         lzCzQ9aMlvcxjBiVbqfVWypOhwmoCfIPq6rJ7+NYOPP3io0MgTaNgddHsp4Z/m1WucWY
-         o6/xhIWm8wtgbuUUlaIiG9MtH+YbzjnjBVoFa1qWEM9Vb6P8c4bX3dvwni+sLB7XOrJF
-         OjDRrEsZJ7ZfMlVkbLIF/egIv1wcqLLIiOy/mx0QeoAUMz2F4Lu+SYePXG4QdHS3hc9O
-         LvWzoFhlfKT7XWRpwKal9jK6oX6m1BqIvp4XIIhaPXb3qe0wT/ipZGcPtqHsTZW/ZHI6
-         mbWg==
-X-Gm-Message-State: AOAM532Ub7JLXT7QH7nYGxfWbsqdBq3RXkxSEvl1lUOhCJ0WEmMdo+f5
-        NzrpMrSj7eVRY1kkRts/KBs=
-X-Google-Smtp-Source: ABdhPJzEhP78Xi4TzBQreFDbg7R8/FB1cQkOqRpNRPZgf0mrOTSHXW/wpv/2YqHXr304f1c2jGHVFA==
-X-Received: by 2002:ac2:44db:0:b0:478:ae7c:ca3d with SMTP id d27-20020ac244db000000b00478ae7cca3dmr13831031lfm.571.1653822897793;
-        Sun, 29 May 2022 04:14:57 -0700 (PDT)
-Received: from dell.intranet (93-181-165-181.internetia.net.pl. [93.181.165.181])
-        by smtp.gmail.com with ESMTPSA id n17-20020ac24911000000b0047255d211eesm1729897lfi.285.2022.05.29.04.14.56
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 29 May 2022 04:14:57 -0700 (PDT)
-From:   Janusz Krzysztofik <jmkrzyszt@gmail.com>
-To:     Helge Deller <deller@gmx.de>, Tony Lindgren <tony@atomide.com>,
-        Aaro Koskinen <aaro.koskinen@iki.fi>,
-        Tomi Valkeinen <tomba@kernel.org>
-Cc:     linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Imre Deak <imre.deak@solidboot.com>,
-        Trilok Soni <soni.trilok@gmail.com>,
-        Janusz Krzysztofik <jmkrzyszt@gmail.com>
-Subject: Re: [PATCH] video: fbdev: omap: Add prototype for hwa742_update_window_async() to avoid build warning
-Date:   Sun, 29 May 2022 13:14:56 +0200
-Message-ID: <4460689.LvFx2qVVIh@dell>
-In-Reply-To: <YpMXF9luBc4Sjr9h@ls3530>
-References: <YpMXF9luBc4Sjr9h@ls3530>
+        Mon, 30 May 2022 03:44:27 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A149186D7;
+        Mon, 30 May 2022 00:44:25 -0700 (PDT)
+X-UUID: 1b2e193ca81d4d3ab3c6bc4e7bade5ba-20220530
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.5,REQID:382f089c-6b74-4bad-aa62-6ee3d61d10e2,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACT
+        ION:release,TS:-5
+X-CID-META: VersionHash:2a19b09,CLOUDID:d1d0bfb8-3c45-407b-8f66-25095432a27a,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
+        ,QS:0,BEC:nil
+X-UUID: 1b2e193ca81d4d3ab3c6bc4e7bade5ba-20220530
+Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw02.mediatek.com
+        (envelope-from <ck.hu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 1065852529; Mon, 30 May 2022 15:44:20 +0800
+Received: from mtkcas10.mediatek.inc (172.21.101.39) by
+ mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
+ Mon, 30 May 2022 15:44:19 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Mon, 30 May 2022 15:44:18 +0800
+Message-ID: <356624f3283f9203007ab21bedf15744d86e16f8.camel@mediatek.com>
+Subject: Re: [PATCH v10 07/21] drm/mediatek: dpi: implement a CK/DE pol
+ toggle in SoC config
+From:   CK Hu <ck.hu@mediatek.com>
+To:     Guillaume Ranquet <granquet@baylibre.com>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "David Airlie" <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Chunfeng Yun <chunfeng.yun@mediatek.com>,
+        "Kishon Vijay Abraham I" <kishon@ti.com>,
+        Vinod Koul <vkoul@kernel.org>, "Helge Deller" <deller@gmx.de>,
+        Jitao shi <jitao.shi@mediatek.com>
+CC:     AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Rex-BC Chen <rex-bc.chen@mediatek.com>,
+        <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-phy@lists.infradead.org>, <linux-fbdev@vger.kernel.org>
+Date:   Mon, 30 May 2022 15:44:19 +0800
+In-Reply-To: <20220523104758.29531-8-granquet@baylibre.com>
+References: <20220523104758.29531-1-granquet@baylibre.com>
+         <20220523104758.29531-8-granquet@baylibre.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Helge,
+Hi, Guillaume:
 
-On Sunday, 29 May 2022 08:47:51 CEST Helge Deller wrote:
-> The symbol hwa742_update_window_async() is exported, but there is no
-> prototype defined for it. That's why gcc complains:
-> 
-> drivers-video-fbdev-omap-hwa742.c:warning:no-previous-prototype-for-hwa742_update_window_async
-> 
-> Add the prototype, but I wonder if we couldn't drop exporting the symbol
-> instead. Since omapfb_update_window_async() is exported the same way,
-> are there any users outside of the tree?
+On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
+> Adds a bit of flexibility to support SoCs without CK/DE pol support
 
-It looks like there are no non-local users of any of those two functions 
-either, so we could make them static, and I'm not aware of any out of tree 
-users, but let's ask more deeply involved people.  Tony, Aaro, Tomi, can 
-you please confirm?
+It seems that DP_INTF has no CK/DE pol function. If so, could you
+explain why DP_INTF has this difference with DPI?
 
-Thanks,
-Janusz
+Regards,
+CK
 
 > 
-> Signed-off-by: Helge Deller <deller@gmx.de>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> Reviewed-by: AngeloGioacchino Del Regno <
+> angelogioacchino.delregno@collabora.com>
+> Reviewed-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
+> ---
+>  drivers/gpu/drm/mediatek/mtk_dpi.c | 22 +++++++++++++++++-----
+>  1 file changed, 17 insertions(+), 5 deletions(-)
 > 
-> diff --git a/drivers/video/fbdev/omap/omapfb.h b/drivers/video/fbdev/omap/omapfb.h
-> index d930152c289c..0c753ccbc1c0 100644
-> --- a/drivers/video/fbdev/omap/omapfb.h
-> +++ b/drivers/video/fbdev/omap/omapfb.h
-> @@ -229,5 +229,9 @@ extern int  omapfb_update_window_async(struct fb_info *fbi,
->  				       struct omapfb_update_window *win,
->  				       void (*callback)(void *),
->  				       void *callback_data);
-> +extern int  hwa742_update_window_async(struct fb_info *fbi,
-> +				       struct omapfb_update_window *win,
-> +				       void (*callback)(void *),
-> +				       void *callback_data);
-> 
->  #endif /* __OMAPFB_H */
-> 
-
-
-
+> diff --git a/drivers/gpu/drm/mediatek/mtk_dpi.c
+> b/drivers/gpu/drm/mediatek/mtk_dpi.c
+> index 4746eb342567..545a1337cc89 100644
+> --- a/drivers/gpu/drm/mediatek/mtk_dpi.c
+> +++ b/drivers/gpu/drm/mediatek/mtk_dpi.c
+> @@ -125,6 +125,7 @@ struct mtk_dpi_conf {
+>  	bool edge_sel_en;
+>  	const u32 *output_fmts;
+>  	u32 num_output_fmts;
+> +	bool is_ck_de_pol;
+>  	const struct mtk_dpi_yc_limit *limit;
+>  };
+>  
+> @@ -211,13 +212,20 @@ static void mtk_dpi_config_pol(struct mtk_dpi
+> *dpi,
+>  			       struct mtk_dpi_polarities *dpi_pol)
+>  {
+>  	unsigned int pol;
+> +	unsigned int mask;
+>  
+> -	pol = (dpi_pol->ck_pol == MTK_DPI_POLARITY_RISING ? 0 : CK_POL)
+> |
+> -	      (dpi_pol->de_pol == MTK_DPI_POLARITY_RISING ? 0 : DE_POL)
+> |
+> -	      (dpi_pol->hsync_pol == MTK_DPI_POLARITY_RISING ? 0 :
+> HSYNC_POL) |
+> +	mask = HSYNC_POL | VSYNC_POL;
+> +	pol = (dpi_pol->hsync_pol == MTK_DPI_POLARITY_RISING ? 0 :
+> HSYNC_POL) |
+>  	      (dpi_pol->vsync_pol == MTK_DPI_POLARITY_RISING ? 0 :
+> VSYNC_POL);
+> -	mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING, pol,
+> -		     CK_POL | DE_POL | HSYNC_POL | VSYNC_POL);
+> +	if (dpi->conf->is_ck_de_pol) {
+> +		mask |= CK_POL | DE_POL;
+> +		pol |= (dpi_pol->ck_pol == MTK_DPI_POLARITY_RISING ?
+> +			0 : CK_POL) |
+> +		       (dpi_pol->de_pol == MTK_DPI_POLARITY_RISING ?
+> +			0 : DE_POL);
+> +	}
+> +
+> +	mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING, pol, mask);
+>  }
+>  
+>  static void mtk_dpi_config_3d(struct mtk_dpi *dpi, bool en_3d)
+> @@ -799,6 +807,7 @@ static const struct mtk_dpi_conf mt8173_conf = {
+>  	.max_clock_khz = 300000,
+>  	.output_fmts = mt8173_output_fmts,
+>  	.num_output_fmts = ARRAY_SIZE(mt8173_output_fmts),
+> +	.is_ck_de_pol = true,
+>  	.limit = &mtk_dpi_limit,
+>  };
+>  
+> @@ -809,6 +818,7 @@ static const struct mtk_dpi_conf mt2701_conf = {
+>  	.max_clock_khz = 150000,
+>  	.output_fmts = mt8173_output_fmts,
+>  	.num_output_fmts = ARRAY_SIZE(mt8173_output_fmts),
+> +	.is_ck_de_pol = true,
+>  	.limit = &mtk_dpi_limit,
+>  };
+>  
+> @@ -818,6 +828,7 @@ static const struct mtk_dpi_conf mt8183_conf = {
+>  	.max_clock_khz = 100000,
+>  	.output_fmts = mt8183_output_fmts,
+>  	.num_output_fmts = ARRAY_SIZE(mt8183_output_fmts),
+> +	.is_ck_de_pol = true,
+>  	.limit = &mtk_dpi_limit,
+>  };
+>  
+> @@ -827,6 +838,7 @@ static const struct mtk_dpi_conf mt8192_conf = {
+>  	.max_clock_khz = 150000,
+>  	.output_fmts = mt8173_output_fmts,
+>  	.num_output_fmts = ARRAY_SIZE(mt8173_output_fmts),
+> +	.is_ck_de_pol = true,
+>  	.limit = &mtk_dpi_limit,
+>  };
+>  
 

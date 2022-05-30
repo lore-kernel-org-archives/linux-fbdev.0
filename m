@@ -2,45 +2,42 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FFABC433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 May 2022 07:51:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD89AC433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 May 2022 07:56:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233990AbiE3HvN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 30 May 2022 03:51:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59930 "EHLO
+        id S232927AbiE3H4J (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 30 May 2022 03:56:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48226 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234051AbiE3Hua (ORCPT
+        with ESMTP id S231672AbiE3H4H (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 30 May 2022 03:50:30 -0400
+        Mon, 30 May 2022 03:56:07 -0400
 Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 43B096300;
-        Mon, 30 May 2022 00:50:28 -0700 (PDT)
-X-UUID: c0e55e53b2994df78afd0a8347674eaf-20220530
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F88DE03;
+        Mon, 30 May 2022 00:56:05 -0700 (PDT)
+X-UUID: 4443469c0e72419db8968d689a6ebc64-20220530
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:fcd94474-4a89-4cd6-8c90-41c62bcbb644,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:0
-X-CID-META: VersionHash:2a19b09,CLOUDID:b113c0b8-3c45-407b-8f66-25095432a27a,C
+X-CID-O-INFO: VERSION:1.1.5,REQID:c14f2dcc-52e3-445c-9c85-1af21d71d8cd,OB:0,LO
+        B:0,IP:0,URL:5,TC:0,Content:-5,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACT
+        ION:release,TS:0
+X-CID-META: VersionHash:2a19b09,CLOUDID:8499fc47-4fb1-496b-8f1d-39e733fed1ea,C
         OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
         ,QS:0,BEC:nil
-X-UUID: c0e55e53b2994df78afd0a8347674eaf-20220530
-Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw02.mediatek.com
+X-UUID: 4443469c0e72419db8968d689a6ebc64-20220530
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw02.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1881320135; Mon, 30 May 2022 15:50:24 +0800
-Received: from mtkmbs07n1.mediatek.inc (172.21.101.16) by
- mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Mon, 30 May 2022 15:50:23 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1272861189; Mon, 30 May 2022 15:56:00 +0800
 Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Mon, 30 May 2022 15:50:23 +0800
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.792.15; Mon, 30 May 2022 15:55:59 +0800
 Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Mon, 30 May 2022 15:50:22 +0800
-Message-ID: <2c88fd4c308e86536d5996b3f32f68d05d452e23.camel@mediatek.com>
-Subject: Re: [PATCH v10 08/21] drm/mediatek: dpi: implement a swap_input
- toggle in SoC config
+ Transport; Mon, 30 May 2022 15:55:58 +0800
+Message-ID: <201747a8679474a1088aa12e5175b9e8ac21306e.camel@mediatek.com>
+Subject: Re: [PATCH v10 09/21] drm/mediatek: dpi: move dimension mask to SoC
+ config
 From:   CK Hu <ck.hu@mediatek.com>
 To:     Guillaume Ranquet <granquet@baylibre.com>,
         Chun-Kuang Hu <chunkuang.hu@kernel.org>,
@@ -64,10 +61,10 @@ CC:     AngeloGioacchino Del Regno
         <linux-kernel@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-phy@lists.infradead.org>, <linux-fbdev@vger.kernel.org>
-Date:   Mon, 30 May 2022 15:50:23 +0800
-In-Reply-To: <20220523104758.29531-9-granquet@baylibre.com>
+Date:   Mon, 30 May 2022 15:55:58 +0800
+In-Reply-To: <20220523104758.29531-10-granquet@baylibre.com>
 References: <20220523104758.29531-1-granquet@baylibre.com>
-         <20220523104758.29531-9-granquet@baylibre.com>
+         <20220523104758.29531-10-granquet@baylibre.com>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
@@ -79,98 +76,108 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Hi, Guillaume:
 
-
 On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
-> Adds a bit of flexibility to support SoCs without swap_input support
+> Add flexibility by moving the dimension mask to the SoC config
+
+Reviewed-by: CK Hu <ck.hu@mediatek.com>
+
 > 
 > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
 > Reviewed-by: AngeloGioacchino Del Regno <
 > angelogioacchino.delregno@collabora.com>
 > Reviewed-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
 > ---
->  drivers/gpu/drm/mediatek/mtk_dpi.c | 14 +++++++++++---
->  1 file changed, 11 insertions(+), 3 deletions(-)
+>  drivers/gpu/drm/mediatek/mtk_dpi.c | 26 ++++++++++++++++----------
+>  1 file changed, 16 insertions(+), 10 deletions(-)
 > 
 > diff --git a/drivers/gpu/drm/mediatek/mtk_dpi.c
 > b/drivers/gpu/drm/mediatek/mtk_dpi.c
-> index 545a1337cc89..454f8563efae 100644
+> index 454f8563efae..bf098f36a466 100644
 > --- a/drivers/gpu/drm/mediatek/mtk_dpi.c
 > +++ b/drivers/gpu/drm/mediatek/mtk_dpi.c
-> @@ -126,6 +126,7 @@ struct mtk_dpi_conf {
->  	const u32 *output_fmts;
+> @@ -127,6 +127,8 @@ struct mtk_dpi_conf {
 >  	u32 num_output_fmts;
 >  	bool is_ck_de_pol;
-> +	bool swap_input_support;
+>  	bool swap_input_support;
+> +	/* Mask used for HWIDTH, HPORCH, VSYNC_WIDTH and VSYNC_PORCH
+> (no shift) */
+> +	u32 dimension_mask;
 >  	const struct mtk_dpi_yc_limit *limit;
 >  };
 >  
-> @@ -378,18 +379,21 @@ static void mtk_dpi_config_color_format(struct
-> mtk_dpi *dpi,
->  	    (format == MTK_DPI_COLOR_FORMAT_YCBCR_444_FULL)) {
->  		mtk_dpi_config_yuv422_enable(dpi, false);
->  		mtk_dpi_config_csc_enable(dpi, true);
-> -		mtk_dpi_config_swap_input(dpi, false);
-> +		if (dpi->conf->swap_input_support)
-> +			mtk_dpi_config_swap_input(dpi, false);
->  		mtk_dpi_config_channel_swap(dpi,
-> MTK_DPI_OUT_CHANNEL_SWAP_BGR);
->  	} else if ((format == MTK_DPI_COLOR_FORMAT_YCBCR_422) ||
->  		   (format == MTK_DPI_COLOR_FORMAT_YCBCR_422_FULL)) {
->  		mtk_dpi_config_yuv422_enable(dpi, true);
->  		mtk_dpi_config_csc_enable(dpi, true);
-> -		mtk_dpi_config_swap_input(dpi, true);
-> +		if (dpi->conf->swap_input_support)
-> +			mtk_dpi_config_swap_input(dpi, true);
-
-As [1], please keep in touch with Mediatek engineer.
-
-Regards,
-CK
-
-[1] 
-https://patchwork.kernel.org/project/linux-mediatek/patch/20220218145437.18563-8-granquet@baylibre.com/
-
->  		mtk_dpi_config_channel_swap(dpi,
-> MTK_DPI_OUT_CHANNEL_SWAP_RGB);
->  	} else {
->  		mtk_dpi_config_yuv422_enable(dpi, false);
->  		mtk_dpi_config_csc_enable(dpi, false);
-> -		mtk_dpi_config_swap_input(dpi, false);
-> +		if (dpi->conf->swap_input_support)
-> +			mtk_dpi_config_swap_input(dpi, false);
->  		mtk_dpi_config_channel_swap(dpi,
-> MTK_DPI_OUT_CHANNEL_SWAP_RGB);
->  	}
+> @@ -156,30 +158,30 @@ static void mtk_dpi_disable(struct mtk_dpi
+> *dpi)
+>  static void mtk_dpi_config_hsync(struct mtk_dpi *dpi,
+>  				 struct mtk_dpi_sync_param *sync)
+>  {
+> -	mtk_dpi_mask(dpi, DPI_TGEN_HWIDTH,
+> -		     sync->sync_width << HPW, HPW_MASK);
+> -	mtk_dpi_mask(dpi, DPI_TGEN_HPORCH,
+> -		     sync->back_porch << HBP, HBP_MASK);
+> +	mtk_dpi_mask(dpi, DPI_TGEN_HWIDTH, sync->sync_width << HPW,
+> +		     dpi->conf->dimension_mask << HPW);
+> +	mtk_dpi_mask(dpi, DPI_TGEN_HPORCH, sync->back_porch << HBP,
+> +		     dpi->conf->dimension_mask << HBP);
+>  	mtk_dpi_mask(dpi, DPI_TGEN_HPORCH, sync->front_porch << HFP,
+> -		     HFP_MASK);
+> +		     dpi->conf->dimension_mask << HFP);
 >  }
-> @@ -808,6 +812,7 @@ static const struct mtk_dpi_conf mt8173_conf = {
->  	.output_fmts = mt8173_output_fmts,
+>  
+>  static void mtk_dpi_config_vsync(struct mtk_dpi *dpi,
+>  				 struct mtk_dpi_sync_param *sync,
+>  				 u32 width_addr, u32 porch_addr)
+>  {
+> -	mtk_dpi_mask(dpi, width_addr,
+> -		     sync->sync_width << VSYNC_WIDTH_SHIFT,
+> -		     VSYNC_WIDTH_MASK);
+>  	mtk_dpi_mask(dpi, width_addr,
+>  		     sync->shift_half_line << VSYNC_HALF_LINE_SHIFT,
+>  		     VSYNC_HALF_LINE_MASK);
+> +	mtk_dpi_mask(dpi, width_addr,
+> +		     sync->sync_width << VSYNC_WIDTH_SHIFT,
+> +		     dpi->conf->dimension_mask << VSYNC_WIDTH_SHIFT);
+>  	mtk_dpi_mask(dpi, porch_addr,
+>  		     sync->back_porch << VSYNC_BACK_PORCH_SHIFT,
+> -		     VSYNC_BACK_PORCH_MASK);
+> +		     dpi->conf->dimension_mask <<
+> VSYNC_BACK_PORCH_SHIFT);
+>  	mtk_dpi_mask(dpi, porch_addr,
+>  		     sync->front_porch << VSYNC_FRONT_PORCH_SHIFT,
+> -		     VSYNC_FRONT_PORCH_MASK);
+> +		     dpi->conf->dimension_mask <<
+> VSYNC_FRONT_PORCH_SHIFT);
+>  }
+>  
+>  static void mtk_dpi_config_vsync_lodd(struct mtk_dpi *dpi,
+> @@ -813,6 +815,7 @@ static const struct mtk_dpi_conf mt8173_conf = {
 >  	.num_output_fmts = ARRAY_SIZE(mt8173_output_fmts),
 >  	.is_ck_de_pol = true,
-> +	.swap_input_support = true,
+>  	.swap_input_support = true,
+> +	.dimension_mask = HPW_MASK,
 >  	.limit = &mtk_dpi_limit,
 >  };
 >  
-> @@ -819,6 +824,7 @@ static const struct mtk_dpi_conf mt2701_conf = {
->  	.output_fmts = mt8173_output_fmts,
+> @@ -825,6 +828,7 @@ static const struct mtk_dpi_conf mt2701_conf = {
 >  	.num_output_fmts = ARRAY_SIZE(mt8173_output_fmts),
 >  	.is_ck_de_pol = true,
-> +	.swap_input_support = true,
+>  	.swap_input_support = true,
+> +	.dimension_mask = HPW_MASK,
 >  	.limit = &mtk_dpi_limit,
 >  };
 >  
-> @@ -829,6 +835,7 @@ static const struct mtk_dpi_conf mt8183_conf = {
->  	.output_fmts = mt8183_output_fmts,
+> @@ -836,6 +840,7 @@ static const struct mtk_dpi_conf mt8183_conf = {
 >  	.num_output_fmts = ARRAY_SIZE(mt8183_output_fmts),
 >  	.is_ck_de_pol = true,
-> +	.swap_input_support = true,
+>  	.swap_input_support = true,
+> +	.dimension_mask = HPW_MASK,
 >  	.limit = &mtk_dpi_limit,
 >  };
 >  
-> @@ -839,6 +846,7 @@ static const struct mtk_dpi_conf mt8192_conf = {
->  	.output_fmts = mt8173_output_fmts,
+> @@ -847,6 +852,7 @@ static const struct mtk_dpi_conf mt8192_conf = {
 >  	.num_output_fmts = ARRAY_SIZE(mt8173_output_fmts),
 >  	.is_ck_de_pol = true,
-> +	.swap_input_support = true,
+>  	.swap_input_support = true,
+> +	.dimension_mask = HPW_MASK,
 >  	.limit = &mtk_dpi_limit,
 >  };
 >  

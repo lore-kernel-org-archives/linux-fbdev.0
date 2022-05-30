@@ -2,45 +2,45 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 197E1C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 May 2022 08:47:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BC8BC433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 May 2022 09:35:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232665AbiE3Ird (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 30 May 2022 04:47:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35076 "EHLO
+        id S232420AbiE3JfN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 30 May 2022 05:35:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39470 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230287AbiE3Ir2 (ORCPT
+        with ESMTP id S231530AbiE3Jey (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 30 May 2022 04:47:28 -0400
+        Mon, 30 May 2022 05:34:54 -0400
 Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 332B029827;
-        Mon, 30 May 2022 01:47:27 -0700 (PDT)
-X-UUID: 8411f63de33c4a2e8149dc7f93c31407-20220530
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A31097036E;
+        Mon, 30 May 2022 02:34:52 -0700 (PDT)
+X-UUID: 12292876a63e4114832784e67ff5dc24-20220530
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:19cfd18b-16d3-4fbd-baba-fdc4bfa74526,OB:0,LO
-        B:0,IP:0,URL:5,TC:0,Content:-5,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACT
-        ION:release,TS:0
-X-CID-META: VersionHash:2a19b09,CLOUDID:9802ff47-4fb1-496b-8f1d-39e733fed1ea,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
-        ,QS:0,BEC:nil
-X-UUID: 8411f63de33c4a2e8149dc7f93c31407-20220530
-Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw01.mediatek.com
+X-CID-O-INFO: VERSION:1.1.5,REQID:c1a25a89-c40b-4e19-b549-b12d22ec7966,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACT
+        ION:release,TS:45
+X-CID-INFO: VERSION:1.1.5,REQID:c1a25a89-c40b-4e19-b549-b12d22ec7966,OB:0,LOB:
+        0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTIO
+        N:release,TS:45
+X-CID-META: VersionHash:2a19b09,CLOUDID:c6600148-4fb1-496b-8f1d-39e733fed1ea,C
+        OID:c54cc7f13249,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:0,File:nil,QS:0,BEC:nil
+X-UUID: 12292876a63e4114832784e67ff5dc24-20220530
+Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw01.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1985271771; Mon, 30 May 2022 16:47:23 +0800
-Received: from mtkmbs07n1.mediatek.inc (172.21.101.16) by
- mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
+        with ESMTP id 468274590; Mon, 30 May 2022 17:34:47 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Mon, 30 May 2022 16:47:21 +0800
-Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Mon, 30 May 2022 16:47:21 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
+ Mon, 30 May 2022 17:34:46 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Mon, 30 May 2022 16:47:21 +0800
-Message-ID: <a09b45d2526f2f387b1be5c0f18c5f1c05ba2f3d.camel@mediatek.com>
-Subject: Re: [PATCH v10 12/21] drm/mediatek: dpi: move the yuv422_en_bit to
- SoC config
+ Transport; Mon, 30 May 2022 17:34:46 +0800
+Message-ID: <719320a455d4dc5d142cea48577c3a1b0317bb9a.camel@mediatek.com>
+Subject: Re: [PATCH v10 18/21] drm/mediatek: Add mt8195 Embedded DisplayPort
+ driver
 From:   CK Hu <ck.hu@mediatek.com>
 To:     Guillaume Ranquet <granquet@baylibre.com>,
         Chun-Kuang Hu <chunkuang.hu@kernel.org>,
@@ -56,18 +56,16 @@ To:     Guillaume Ranquet <granquet@baylibre.com>,
         "Kishon Vijay Abraham I" <kishon@ti.com>,
         Vinod Koul <vkoul@kernel.org>, "Helge Deller" <deller@gmx.de>,
         Jitao shi <jitao.shi@mediatek.com>
-CC:     AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        Rex-BC Chen <rex-bc.chen@mediatek.com>,
+CC:     Markus Schneider-Pargmann <msp@baylibre.com>,
         <dri-devel@lists.freedesktop.org>,
         <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-phy@lists.infradead.org>, <linux-fbdev@vger.kernel.org>
-Date:   Mon, 30 May 2022 16:47:21 +0800
-In-Reply-To: <20220523104758.29531-13-granquet@baylibre.com>
+Date:   Mon, 30 May 2022 17:34:46 +0800
+In-Reply-To: <20220523104758.29531-19-granquet@baylibre.com>
 References: <20220523104758.29531-1-granquet@baylibre.com>
-         <20220523104758.29531-13-granquet@baylibre.com>
+         <20220523104758.29531-19-granquet@baylibre.com>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
@@ -80,76 +78,184 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 Hi, Guillaume:
 
 On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
-> Add flexibility by moving the yuv422 en bit to SoC specific config
-
-Reviewed-by: CK Hu <ck.hu@mediatek.com>
-
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
 > 
+> This patch adds a DisplayPort driver for the Mediatek mt8195 SoC.
+> 
+> It supports the mt8195, the embedded DisplayPort units. It offers
+> DisplayPort 1.4 with up to 4 lanes.
+> 
+> The driver creates a child device for the phy. The child device will
+> never exist without the parent being active. As they are sharing a
+> register range, the parent passes a regmap pointer to the child so
+> that
+> both can work with the same register range. The phy driver sets
+> device
+> data that is read by the parent to get the phy device that can be
+> used
+> to control the phy properties.
+> 
+> This driver is based on an initial version by
+> Jason-JH.Lin <jason-jh.lin@mediatek.com>.
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
 > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> Reviewed-by: AngeloGioacchino Del Regno <
-> angelogioacchino.delregno@collabora.com>
-> Reviewed-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
-> ---
->  drivers/gpu/drm/mediatek/mtk_dpi.c | 8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/gpu/drm/mediatek/mtk_dpi.c
-> b/drivers/gpu/drm/mediatek/mtk_dpi.c
-> index 6d4d8c6ec47d..40254cd9d168 100644
-> --- a/drivers/gpu/drm/mediatek/mtk_dpi.c
-> +++ b/drivers/gpu/drm/mediatek/mtk_dpi.c
-> @@ -132,6 +132,7 @@ struct mtk_dpi_conf {
->  	/* HSIZE and VSIZE mask (no shift) */
->  	u32 hvsize_mask;
->  	u32 channel_swap_shift;
-> +	u32 yuv422_en_bit;
->  	const struct mtk_dpi_yc_limit *limit;
->  };
->  
-> @@ -356,7 +357,8 @@ static void mtk_dpi_config_channel_swap(struct
-> mtk_dpi *dpi,
->  
->  static void mtk_dpi_config_yuv422_enable(struct mtk_dpi *dpi, bool
-> enable)
->  {
-> -	mtk_dpi_mask(dpi, DPI_CON, enable ? YUV422_EN : 0, YUV422_EN);
-> +	mtk_dpi_mask(dpi, DPI_CON, enable ? dpi->conf->yuv422_en_bit :
-> 0,
-> +		     dpi->conf->yuv422_en_bit);
->  }
->  
->  static void mtk_dpi_config_csc_enable(struct mtk_dpi *dpi, bool
-> enable)
-> @@ -824,6 +826,7 @@ static const struct mtk_dpi_conf mt8173_conf = {
->  	.dimension_mask = HPW_MASK,
->  	.hvsize_mask = HSIZE_MASK,
->  	.channel_swap_shift = CH_SWAP,
-> +	.yuv422_en_bit = YUV422_EN,
->  	.limit = &mtk_dpi_limit,
->  };
->  
-> @@ -839,6 +842,7 @@ static const struct mtk_dpi_conf mt2701_conf = {
->  	.dimension_mask = HPW_MASK,
->  	.hvsize_mask = HSIZE_MASK,
->  	.channel_swap_shift = CH_SWAP,
-> +	.yuv422_en_bit = YUV422_EN,
->  	.limit = &mtk_dpi_limit,
->  };
->  
-> @@ -853,6 +857,7 @@ static const struct mtk_dpi_conf mt8183_conf = {
->  	.dimension_mask = HPW_MASK,
->  	.hvsize_mask = HSIZE_MASK,
->  	.channel_swap_shift = CH_SWAP,
-> +	.yuv422_en_bit = YUV422_EN,
->  	.limit = &mtk_dpi_limit,
->  };
->  
-> @@ -867,6 +872,7 @@ static const struct mtk_dpi_conf mt8192_conf = {
->  	.dimension_mask = HPW_MASK,
->  	.hvsize_mask = HSIZE_MASK,
->  	.channel_swap_shift = CH_SWAP,
-> +	.yuv422_en_bit = YUV422_EN,
->  	.limit = &mtk_dpi_limit,
->  };
->  
+
+[snip]
+
+> +
+> +static void mtk_dp_read_link_status(struct mtk_dp *mtk_dp,
+> +				    u8
+> link_status[DP_LINK_STATUS_SIZE])
+> +{
+> +	drm_dp_dpcd_read(&mtk_dp->aux, DP_LANE0_1_STATUS, link_status,
+> +			 DP_LINK_STATUS_SIZE);
+> +}
+> +
+> +static int mtk_dp_train_tps_1(struct mtk_dp *mtk_dp,
+> +			      u8 target_lane_count, int
+> *iteration_count, u8 *lane_adjust,  int *status_control, u8
+> *prev_lane_adjust)
+> +{
+> +	int ret;
+> +	u8 val;
+> +	u8 link_status[DP_LINK_STATUS_SIZE] = {};
+> +
+> +	ret = mtk_dp_training_set_scramble(mtk_dp, false);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (*status_control == 0) {
+> +		ret = mtk_dp_train_set_pattern(mtk_dp, 1);
+> +		if (ret)
+> +			return ret;
+> +
+> +		val = DP_LINK_SCRAMBLING_DISABLE |
+> +			DP_TRAINING_PATTERN_1;
+> +		drm_dp_dpcd_writeb(&mtk_dp->aux,
+> +				   DP_TRAINING_PATTERN_SET,
+> +				DP_LINK_SCRAMBLING_DISABLE |
+> +				DP_TRAINING_PATTERN_1);
+> +		drm_dp_dpcd_read(&mtk_dp->aux,
+> +				 DP_ADJUST_REQUEST_LANE0_1,
+> +				lane_adjust,
+> +				sizeof(*lane_adjust) * 2);
+> +
+> +		mtk_dp_train_update_swing_pre(mtk_dp,
+> +					      target_lane_count,
+> lane_adjust);
+> +		*status_control = 1;
+> +		(*iteration_count)++;
+> +	}
+> +
+> +	drm_dp_link_train_clock_recovery_delay(&mtk_dp->aux,
+> +					       mtk_dp->rx_cap);
+> +	mtk_dp_read_link_status(mtk_dp, link_status);
+
+drm_dp_dpcd_read_link_status(&mtk_dp->aux, link_status);
+
+> +
+> +	if (drm_dp_clock_recovery_ok(link_status,
+> +				     target_lane_count)) {
+> +		mtk_dp->train_info.cr_done = true;
+> +		*iteration_count = 1;
+> +		dev_dbg(mtk_dp->dev, "Link train CR pass\n");
+> +		return 0;
+> +	} else if (*prev_lane_adjust == link_status[4]) {
+> +		(*iteration_count)++;
+> +		if (*prev_lane_adjust &
+> DP_ADJUST_VOLTAGE_SWING_LANE0_MASK) {
+> +			dev_dbg(mtk_dp->dev, "Link train CQ fail\n");
+> +			return -EINVAL;
+> +		}
+> +	} else {
+> +		*prev_lane_adjust = link_status[4];
+> +	}
+> +	return -EAGAIN;
+> +}
+> +
+> +static int mtk_dp_train_tps_2_3(struct mtk_dp *mtk_dp, u8
+> target_linkrate,
+> +				u8 target_lane_count, int
+> *iteration_count, u8 *lane_adjust,  int *status_control, u8
+> *prev_lane_adjust)
+> +{
+> +	int ret;
+> +	u8 val;
+> +	u8 link_status[DP_LINK_STATUS_SIZE] = {};
+> +
+> +	if (*status_control == 1) {
+> +		if (mtk_dp->train_info.tps4) {
+> +			ret = mtk_dp_train_set_pattern(mtk_dp, 4);
+> +			if (ret)
+> +				return -EINVAL;
+> +
+> +			val = DP_TRAINING_PATTERN_4;
+> +		} else if (mtk_dp->train_info.tps3) {
+> +			ret = mtk_dp_train_set_pattern(mtk_dp, 3);
+> +			if (ret)
+> +				return -EINVAL;
+> +
+> +			val = DP_LINK_SCRAMBLING_DISABLE |
+> +				DP_TRAINING_PATTERN_3;
+> +		} else {
+> +			ret = mtk_dp_train_set_pattern(mtk_dp, 2);
+> +			if (ret)
+> +				return -EINVAL;
+> +
+> +			val = DP_LINK_SCRAMBLING_DISABLE |
+> +				DP_TRAINING_PATTERN_2;
+> +		}
+> +		drm_dp_dpcd_writeb(&mtk_dp->aux,
+> +				   DP_TRAINING_PATTERN_SET,
+> +				val);
+> +
+> +		drm_dp_dpcd_read(&mtk_dp->aux,
+> +				 DP_ADJUST_REQUEST_LANE0_1,
+> +				lane_adjust,
+> +				sizeof(*lane_adjust) * 2);
+> +
+> +		mtk_dp_train_update_swing_pre(mtk_dp,
+> +					      target_lane_count,
+> lane_adjust);
+> +		*status_control = 2;
+> +		(*iteration_count)++;
+> +	}
+> +
+> +	drm_dp_link_train_channel_eq_delay(&mtk_dp->aux,
+> +					   mtk_dp->rx_cap);
+> +
+> +	mtk_dp_read_link_status(mtk_dp, link_status);
+
+drm_dp_dpcd_read_link_status(&mtk_dp->aux, link_status);
+
+Regards,
+CK
+
+> +
+> +	if (!drm_dp_clock_recovery_ok(link_status,
+> +				      target_lane_count)) {
+> +		mtk_dp->train_info.cr_done = false;
+> +		mtk_dp->train_info.eq_done = false;
+> +		dev_dbg(mtk_dp->dev, "Link train EQ fail\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	if (drm_dp_channel_eq_ok(link_status,
+> +				 target_lane_count)) {
+> +		mtk_dp->train_info.eq_done = true;
+> +		dev_dbg(mtk_dp->dev, "Link train EQ pass\n");
+> +		return 0;
+> +	}
+> +
+> +	if (*prev_lane_adjust == link_status[4])
+> +		(*iteration_count)++;
+> +	else
+> +		*prev_lane_adjust = link_status[4];
+> +
+> +	return -EAGAIN;
+> +}
+> +
+> 
 

@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E107DC4332F
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 May 2022 13:44:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A79CC433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 May 2022 13:59:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236492AbiE3No5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 30 May 2022 09:44:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41216 "EHLO
+        id S237391AbiE3N7j (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 30 May 2022 09:59:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57938 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238024AbiE3Nnm (ORCPT
+        with ESMTP id S238444AbiE3N5q (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 30 May 2022 09:43:42 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 662839AE63;
-        Mon, 30 May 2022 06:32:12 -0700 (PDT)
+        Mon, 30 May 2022 09:57:46 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0688980AA;
+        Mon, 30 May 2022 06:38:56 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id D7C8A60EC3;
-        Mon, 30 May 2022 13:32:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81413C36AE3;
-        Mon, 30 May 2022 13:32:09 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 51AEF60F1F;
+        Mon, 30 May 2022 13:38:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 07BBAC385B8;
+        Mon, 30 May 2022 13:38:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1653917531;
-        bh=+ehzoZ1+4/6eIf04m+qPZ2eANMxYBdwQHqalydfBe80=;
+        s=k20201202; t=1653917935;
+        bh=kXk5idwqqGXJnobfgxdJypUu7MCif1hdLyOtzzSVYqA=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=bhTaRygIMpHU18YNO9vkdcqxyOU9vJnhWnSNXl+xEFK6zAVo3reY58beAsghdyUuy
-         DdSrU7t8tZBkQcNAkRzbXqIu0fEGQmWuRKTJZPwwxKNGPoRDdViQioABkfv7G3BVzs
-         ju11hxzOq9ctMUadM4/b2zS8gMgDLMyw62LFuKvJt6kgiHJMx31Ir4kYrLDRcI6/j9
-         ZMrJ7Gdn9fjdMDUnJalzt+q/gQFw3w3U39MFKQyQdwtSfgq0brZG8ptpwLafwYI2GD
-         HKyXBGhV1IXlToEu4m1iKf1MgAiLEtvuAa41t2gmVrYE8gQxiklMwD6OnnnUxsw+sH
-         EElbyO/+wnzbg==
+        b=L42ywWTt84r0E1uJDxGJxLNEZUV78uNVi/8+JAxNs3Q3d0p5ObH8i12a8S+r57fuC
+         vOvDOhhnK/Wp6Uc0vB7jaMdZ3R4Q2KUzXjeJCHTmRFQ6wVEMFJ8RVU3B6FyIaNnIoZ
+         uYh5oJPoCU4MihwyJV59gkcZXNA692dk14YY2qSQCBFB76D7L2fXeQcAoGl2aDfH7w
+         I9jdpAetz8i9cjrm5z5pKFec7Ydbfk491R48jgNbuw2uEOvAf/fjh//5JjOijrBQyo
+         3pxukKn9twCjqZ+nVe6jXkrhmBfee7t8Sf5bPc/RSlQl7zGC72ALVNjOHN+DYQVfPj
+         gljsfecFC3XBw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
@@ -44,12 +44,12 @@ Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
         Sasha Levin <sashal@kernel.org>, deller@gmx.de,
         javierm@redhat.com, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 5.17 013/135] fbcon: Consistently protect deferred_takeover with console_lock()
-Date:   Mon, 30 May 2022 09:29:31 -0400
-Message-Id: <20220530133133.1931716-13-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 011/109] fbcon: Consistently protect deferred_takeover with console_lock()
+Date:   Mon, 30 May 2022 09:36:47 -0400
+Message-Id: <20220530133825.1933431-11-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220530133133.1931716-1-sashal@kernel.org>
-References: <20220530133133.1931716-1-sashal@kernel.org>
+In-Reply-To: <20220530133825.1933431-1-sashal@kernel.org>
+References: <20220530133825.1933431-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -82,7 +82,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 2fc1b80a26ad..9a8ae6fa6ecb 100644
+index a53c1f6906f0..a25b63b56223 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
 @@ -3265,6 +3265,9 @@ static void fbcon_register_existing_fbs(struct work_struct *work)

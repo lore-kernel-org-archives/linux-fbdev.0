@@ -2,91 +2,413 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97EE6C4332F
-	for <linux-fbdev@archiver.kernel.org>; Wed,  1 Jun 2022 07:37:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5265C433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed,  1 Jun 2022 09:46:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1350220AbiFAHhN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 1 Jun 2022 03:37:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57644 "EHLO
+        id S1348732AbiFAJqh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 1 Jun 2022 05:46:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45262 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346393AbiFAHhL (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 1 Jun 2022 03:37:11 -0400
-Received: from mail-ed1-x52f.google.com (mail-ed1-x52f.google.com [IPv6:2a00:1450:4864:20::52f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 96AA713D72
-        for <linux-fbdev@vger.kernel.org>; Wed,  1 Jun 2022 00:37:07 -0700 (PDT)
-Received: by mail-ed1-x52f.google.com with SMTP id x62so962981ede.10
-        for <linux-fbdev@vger.kernel.org>; Wed, 01 Jun 2022 00:37:07 -0700 (PDT)
+        with ESMTP id S1351328AbiFAJq3 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 1 Jun 2022 05:46:29 -0400
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 190E3674FD
+        for <linux-fbdev@vger.kernel.org>; Wed,  1 Jun 2022 02:46:28 -0700 (PDT)
+Received: by mail-wr1-x42e.google.com with SMTP id k19so1535987wrd.8
+        for <linux-fbdev@vger.kernel.org>; Wed, 01 Jun 2022 02:46:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=VGujkgTLGJjJ+UW8ObqRqsyAB4WEAUQn5faiR07jbVk=;
-        b=eyS+I6FEnnSZ8vn2minglzX0RsZyoF9Qj5V8Mh43eR015TdUWXV4qkKWOZX2lZeySE
-         t7BZBTp+ir4baIug9pll2zWzvszfRqc0r5vLzK1maxAcIdwZ/iaA1Isq4KwlmslVPRYh
-         MIoVcBzLyZGyCFwXmKgLxcLRCyyiq88Xgxjiq3FFvEx5MmyZx+OASqZcPLHCKnw0JUjU
-         7A2ayEZqWCb7MgWHsnp8p8rpoMQoKD4IyvQ73+Lcsl9Mj4iotCbbp0u3KSqjjZacai+Q
-         /bXpn9G0c8CDLyqR79vDzIVBrNyJ35XAvFM05cJlklgGTzza55YihjFCrxtX/6ii/mNt
-         whSA==
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=Og6FPm4sRa8uBiwJMQ4UeYWy3rDVm5W0tUEfClTWPxE=;
+        b=gZvVSMzlksdRRWkClbiKbVMJ9XTEssLAgwE8fZ//ZlvSg2el0nXOb8vwKKb4QjjKGd
+         b0Mvq3t07Ze4UOAwJ7OUGeogoi50GCQePaG/JhB0N68gQ4SXN2o0AV+0V4tnlbDKjWN9
+         FfdFyLSjSWpSG7OvnoeYLA0oHcGOmPJOanodt2aOSrQ3ftqidDbnDh0EU7RHwZrMjD/e
+         wZ3ReN+aVZIe5oTKgs6Ov8vIR2DOnJgiD5xxgjrc7naFHHDbSyssszDj3wx/6MRLV91M
+         kKSP/0cTvVes7C67yNg7qnfRqaJRtVFoBiN5NubZNXrIHgrNcNr7dTF2BFUicHHOZcJc
+         c6ng==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=VGujkgTLGJjJ+UW8ObqRqsyAB4WEAUQn5faiR07jbVk=;
-        b=BnAoW++aRYvoDLioNdWSsnY6e6EYVsgjt3QdMjPTvhRn1YcOy8cefOSDmfichBFcRq
-         kuC9ZwmDJIYv9ze/T5NHyqrZErHlRY7NJV7ScCZyumW9Ek57+X5hEKtAl6rl/6h/QRgh
-         HL8UYIePP6jaC6Jgwp67+F7Db+J/EOVcFn7wTG7aiZpWTT72cfaqUwCJw8V9lGWwWO2Q
-         8Zrl+g7BQ0JOMko9q76nNDAj8pXy6vLkVNeBoT6CA0IZ8mjysrcJM6WQZAmTSk5TAYKQ
-         HdT88gmxTyrV96Lphfv0EXvWIM/mvmXRveuQa6DLPcdgsdJSAW1oiCcJpQ4m5thXpz2D
-         sYww==
-X-Gm-Message-State: AOAM533BoSdsbfCqKdfxgyWePSJEQlQfrils2zBaGGRHAG7LEI+WBoXi
-        vcGbNRVh980I9O7nMz8/eppU9Q==
-X-Google-Smtp-Source: ABdhPJxcXWYO+A4vQR4Q7Xl2APBu8dwgsKRiYU4keddDiGzFAh3Q4PYTBvmzIZbnnxHwvAbJiIod1w==
-X-Received: by 2002:a05:6402:48c:b0:42a:e585:103 with SMTP id k12-20020a056402048c00b0042ae5850103mr68634819edv.375.1654069026243;
-        Wed, 01 Jun 2022 00:37:06 -0700 (PDT)
-Received: from [192.168.0.179] (xdsl-188-155-176-92.adslplus.ch. [188.155.176.92])
-        by smtp.gmail.com with ESMTPSA id a22-20020aa7d916000000b0042dd4f9c464sm495356edr.84.2022.06.01.00.37.04
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 01 Jun 2022 00:37:05 -0700 (PDT)
-Message-ID: <dcb8c59e-243f-11c8-f10f-e037f9bd2e8f@linaro.org>
-Date:   Wed, 1 Jun 2022 09:37:04 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.1
-Subject: Re: [RESEND 05/14] dt-bindings: backlight: Add Mediatek MT6370
- backlight binding
-Content-Language: en-US
-To:     ChiaEn Wu <peterwu.pub@gmail.com>, lee.jones@linaro.org,
-        daniel.thompson@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=Og6FPm4sRa8uBiwJMQ4UeYWy3rDVm5W0tUEfClTWPxE=;
+        b=gfJI3whSBATjhbwpn2a16xCzd040Rk3X/hSYkVXmApKXaGV684H699KmxGaKad+A+H
+         h8sA5Mv95klTlPIjZ1cb26FyPPQRWVrh3c/Gg09pGlzt7az5+Z6RrCvaYRn7BV1GYxyR
+         o2WMAMcuE96zNZes8fYB5FQLXBlgIoqdtefrymdo/z2BTKW5xpPJ26RBlFrkWhdCs6lk
+         4Jq5sbd9qrMMZzFPj1nbDZ0AlBfOYWBeq6GT8KPJmv1t2+xi3l1sICAL/iDk+raSTuj8
+         xs4eIkNqxnft9awGRDWL2h2EoAW5F7f9fCk3ydJE6Vb7c6i1ZlPBne3lCWS5VGXLTe+I
+         zQgw==
+X-Gm-Message-State: AOAM530wRm86YQWjsZfJFOc036DEPOnM65mTpNxQeCciGTlLAKw3MUSb
+        jYJcJfgssLtj1twbiQuWCOa2Hg==
+X-Google-Smtp-Source: ABdhPJzZB7kdzKNqkGXawocBomBN1LXxN/TJFSKFbeKmnRK3bttFBwdbDOqE9RxtXkI+73YmA/Yabw==
+X-Received: by 2002:a5d:5342:0:b0:210:c508:956d with SMTP id t2-20020a5d5342000000b00210c508956dmr1423246wrv.205.1654076786432;
+        Wed, 01 Jun 2022 02:46:26 -0700 (PDT)
+Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
+        by smtp.gmail.com with ESMTPSA id l24-20020a05600c1d1800b00397342bcfb7sm1575251wms.46.2022.06.01.02.46.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 01 Jun 2022 02:46:25 -0700 (PDT)
+Date:   Wed, 1 Jun 2022 10:46:23 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     ChiaEn Wu <peterwu.pub@gmail.com>
+Cc:     lee.jones@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
         robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
         matthias.bgg@gmail.com, sre@kernel.org, chunfeng.yun@mediatek.com,
         gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
         lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
-        heikki.krogerus@linux.intel.com, deller@gmx.de
-Cc:     cy_huang@richtek.com, alice_chen@richtek.com,
+        heikki.krogerus@linux.intel.com, deller@gmx.de,
+        cy_huang@richtek.com, alice_chen@richtek.com,
         chiaen_wu@richtek.com, dri-devel@lists.freedesktop.org,
         linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org,
         linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
+Subject: Re: [RESEND 14/14] video: backlight: mt6370: Add Mediatek MT6370
+ support
+Message-ID: <20220601094623.jnwh2fgsqepy72tc@maple.lan>
 References: <20220531111900.19422-1-peterwu.pub@gmail.com>
- <20220531111900.19422-6-peterwu.pub@gmail.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20220531111900.19422-6-peterwu.pub@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+ <20220531111900.19422-15-peterwu.pub@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220531111900.19422-15-peterwu.pub@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 31/05/2022 13:18, ChiaEn Wu wrote:
-> From: ChiYuan Huang <cy_huang@richtek.com>
+On Tue, May 31, 2022 at 07:19:00PM +0800, ChiaEn Wu wrote:
+> From: ChiaEn Wu <chiaen_wu@richtek.com>
 > 
-> Add mt6370 backlight binding documentation.
+> Add Mediatek MT6370 Backlight support.
+> 
+> Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
+> ---
+>  drivers/video/backlight/Kconfig            |   8 +
+>  drivers/video/backlight/Makefile           |   1 +
+>  drivers/video/backlight/mt6370-backlight.c | 338 +++++++++++++++++++++
+>  3 files changed, 347 insertions(+)
+>  create mode 100644 drivers/video/backlight/mt6370-backlight.c
+> 
+> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+> index a003e02e13ce..d9868fbe7488 100644
+> --- a/drivers/video/backlight/Kconfig
+> +++ b/drivers/video/backlight/Kconfig
+> @@ -268,6 +268,14 @@ config BACKLIGHT_MAX8925
+>  	  If you have a LCD backlight connected to the WLED output of MAX8925
+>  	  WLED output, say Y here to enable this driver.
+>  
+> +config BACKLIGHT_MT6370
 
-Please apply my previous comments.
+Is MT6370 really the best name for this driver? In other words, you
+don't expect there to be any family resemblance between this backlight
+and the backlight in the *next* Mediatak PMIC?
+
+Moreover, 
 
 
-Best regards,
-Krzysztof
+> +	tristate "Mediatek MT6370 Backlight Driver"
+> +	depends on MFD_MT6370
+> +	help
+> +	  Say Y here to enable MT6370 Backlight support.
+> +	  It's commonly used to drive the display WLED. There're 4 channels
+> +	  inisde, and each channel can provide up to 30mA current.
+
+Nitpicking but this doesn't align well with other help texts in this
+file.
+
+
+> +
+>  config BACKLIGHT_APPLE
+>  	tristate "Apple Backlight Driver"
+>  	depends on X86 && ACPI
+> diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+> index cae2c83422ae..e815f3f1deff 100644
+> --- a/drivers/video/backlight/Makefile
+> +++ b/drivers/video/backlight/Makefile
+> @@ -44,6 +44,7 @@ obj-$(CONFIG_BACKLIGHT_LP855X)		+= lp855x_bl.o
+>  obj-$(CONFIG_BACKLIGHT_LP8788)		+= lp8788_bl.o
+>  obj-$(CONFIG_BACKLIGHT_LV5207LP)	+= lv5207lp.o
+>  obj-$(CONFIG_BACKLIGHT_MAX8925)		+= max8925_bl.o
+> +obj-$(CONFIG_BACKLIGHT_MT6370)		+= mt6370-backlight.o
+>  obj-$(CONFIG_BACKLIGHT_OMAP1)		+= omap1_bl.o
+>  obj-$(CONFIG_BACKLIGHT_PANDORA)		+= pandora_bl.o
+>  obj-$(CONFIG_BACKLIGHT_PCF50633)	+= pcf50633-backlight.o
+> diff --git a/drivers/video/backlight/mt6370-backlight.c b/drivers/video/backlight/mt6370-backlight.c
+> new file mode 100644
+> index 000000000000..f8a8d33203ed
+> --- /dev/null
+> +++ b/drivers/video/backlight/mt6370-backlight.c
+> @@ -0,0 +1,338 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +
+> +#include <linux/backlight.h>
+> +#include <linux/bitfield.h>
+> +#include <linux/bits.h>
+> +#include <linux/gpio/consumer.h>
+> +#include <linux/gpio/driver.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/regmap.h>
+> +
+> +#define MT6370_REG_DEV_INFO		0x100
+> +#define MT6370_REG_BL_EN		0x1A0
+> +#define MT6370_REG_BL_BSTCTRL		0x1A1
+> +#define MT6370_REG_BL_PWM		0x1A2
+> +#define MT6370_REG_BL_DIM2		0x1A4
+> +
+> +#define MT6370_VENID_MASK		GENMASK(7, 4)
+> +#define MT6370_BL_EXT_EN_MASK		BIT(7)
+> +#define MT6370_BL_EN_MASK		BIT(6)
+> +#define MT6370_BL_CONFIG_MASK		BIT(0)
+> +#define MT6370_BL_CH_MASK		GENMASK(5, 2)
+> +#define MT6370_BL_DIM2_MASK		GENMASK(2, 0)
+> +#define MT6370_BL_DUMMY_6372_MASK	GENMASK(2, 0)
+> +#define MT6370_BL_DIM2_6372_SHIFT	3
+> +#define MT6370_BL_PWM_EN_MASK		BIT(7)
+> +#define MT6370_BL_PWM_HYS_EN_MASK	BIT(2)
+> +#define MT6370_BL_PWM_HYS_SEL_MASK	GENMASK(1, 0)
+> +#define MT6370_BL_OVP_EN_MASK		BIT(7)
+> +#define MT6370_BL_OVP_SEL_MASK		GENMASK(6, 5)
+> +#define MT6370_BL_OC_EN_MASK		BIT(3)
+> +#define MT6370_BL_OC_SEL_MASK		GENMASK(2, 1)
+> +
+> +#define MT6370_BL_MAX_BRIGHTNESS	2048
+> +
+> +enum {
+> +	MT6370_VID_COMMON = 0,
+> +	MT6370_VID_6372,
+> +	MT6370_VID_MAX,
+
+Unused.
+
+> +};
+> +
+> +enum mt6370_prop_type {
+> +	MT6370_PARSE_TYPE_BOOL = 0,
+> +	MT6370_PARSE_TYPE_U8,
+> +	MT6370_PARSE_TYPE_MAX,
+
+Unused.
+
+> +};
+> +
+> +struct mt6370_priv {
+> +	int vid_type;
+> +	struct backlight_device *bl;
+> +	struct device *dev;
+> +	struct gpio_desc *enable_gpio;
+> +	struct regmap *regmap;
+> +};
+> +
+> +static int mt6370_bl_update_status(struct backlight_device *bl_dev)
+> +{
+> +	struct mt6370_priv *priv = bl_get_data(bl_dev);
+> +	int brightness = backlight_get_brightness(bl_dev);
+> +	unsigned int enable_val;
+> +	u8 brightness_val[2];
+> +	int ret;
+> +
+> +	if (brightness) {
+> +		brightness_val[0] = (brightness - 1) & MT6370_BL_DIM2_MASK;
+> +		brightness_val[1] = (brightness - 1)
+> +					>> fls(MT6370_BL_DIM2_MASK);
+> +
+> +		if (priv->vid_type == MT6370_VID_6372) {
+> +			brightness_val[0] <<= MT6370_BL_DIM2_6372_SHIFT;
+> +			brightness_val[0] |= MT6370_BL_DUMMY_6372_MASK;
+
+Comment explaining why we have to set these bits would be useful.
+
+
+> +		}
+> +
+> +		ret = regmap_raw_write(priv->regmap, MT6370_REG_BL_DIM2,
+> +				       brightness_val, sizeof(brightness_val));
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	if (priv->enable_gpio)
+> +		gpiod_set_value(priv->enable_gpio, brightness ? 1 : 0);
+> +
+> +	enable_val = brightness ? MT6370_BL_EN_MASK : 0;
+> +	return regmap_update_bits(priv->regmap, MT6370_REG_BL_EN,
+> +				  MT6370_BL_EN_MASK, enable_val);
+> +}
+> +
+
+<snip>
+
+> +#define MT6370_DT_PROP_DECL(_name, _type, _reg, _mask, _max, _inv)	\
+> +{									\
+> +	.name = "mediatek,bled-" #_name,				\
+
+I'd rather have the whole DT property in the macro (because it helps
+with grepability).
+
+
+> +	.type = MT6370_PARSE_TYPE_##_type,				\
+> +	.reg = _reg,							\
+> +	.mask = _mask,							\
+> +	.max_val = _max,						\
+> +	.invert = _inv,							\
+> +}
+> +
+> +static int mt6370_init_backlight_properties(struct mt6370_priv *priv,
+> +					    struct backlight_properties *props)
+> +{
+> +	struct device *dev = priv->dev;
+> +	u8 prop_val;
+> +	u32 brightness;
+> +	unsigned int mask, val;
+> +	static const struct {
+> +		char *name;
+> +		enum mt6370_prop_type type;
+> +		unsigned int reg;
+> +		unsigned int mask;
+> +		u8 max_val;
+> +		bool invert;
+> +	} vendor_opt_props[] = {
+> +		MT6370_DT_PROP_DECL(pwm-enable, BOOL, MT6370_REG_BL_PWM,
+> +				    MT6370_BL_PWM_EN_MASK, 1, false),
+> +		MT6370_DT_PROP_DECL(pwm-hys-enable, BOOL, MT6370_REG_BL_PWM,
+> +				    MT6370_BL_PWM_HYS_EN_MASK, 1, false),
+> +		MT6370_DT_PROP_DECL(pwm-hys-sel, U8, MT6370_REG_BL_PWM,
+> +				    MT6370_BL_PWM_HYS_SEL_MASK, 3, false),
+> +		MT6370_DT_PROP_DECL(ovp-level-sel, U8, MT6370_REG_BL_BSTCTRL,
+> +				    MT6370_BL_OVP_SEL_MASK, 3, false),
+> +		MT6370_DT_PROP_DECL(ovp-shutdown, BOOL, MT6370_REG_BL_BSTCTRL,
+> +				    MT6370_BL_OVP_EN_MASK, 1, true),
+> +		MT6370_DT_PROP_DECL(ocp-level-sel, U8, MT6370_REG_BL_BSTCTRL,
+> +				    MT6370_BL_OC_SEL_MASK, 3, false),
+> +		MT6370_DT_PROP_DECL(ocp-shutdown, BOOL, MT6370_REG_BL_BSTCTRL,
+> +				    MT6370_BL_OC_EN_MASK, 1, true),
+> +	}, *prop_now;
+> +	int i, ret;
+> +
+> +	/* vendor optional properties */
+> +	for (i = 0; i < ARRAY_SIZE(vendor_opt_props); i++) {
+> +		prop_now = vendor_opt_props + i;
+> +
+> +		switch (prop_now->type) {
+> +		case MT6370_PARSE_TYPE_BOOL:
+> +			if (device_property_read_bool(dev, prop_now->name))
+> +				val = 1;
+> +			else
+> +				val = 0;
+> +			break;
+> +		case MT6370_PARSE_TYPE_U8:
+> +			ret = device_property_read_u8(dev, prop_now->name,
+> +						      &prop_val);
+> +			/* Property not exist, keep value in default */
+> +			if (ret)
+> +				continue;
+> +
+> +			val = min_t(u8, prop_val, prop_now->max_val);
+> +			break;
+> +		default:
+> +			return -EINVAL;
+> +		}
+> +
+> +		if (prop_now->invert)
+> +			val = prop_now->max_val - val;
+> +
+> +		val <<= ffs(prop_now->mask) - 1;
+> +
+> +		ret = regmap_update_bits(priv->regmap, prop_now->reg,
+> +					 prop_now->mask, val);
+> +		if (ret)
+> +			return ret;
+> +	}
+
+Is it really worth all this tricky code for 7 properties?
+
+The code would be much easier to read and maintain if it were coded
+directly. For example, the inverted boolean code is hard to read and
+can be written directly as:
+
+
+        val = device_property_read_bool(dev, "mediatek,bled-ovp_shutdown");
+	ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_BST_CTRL,
+	                         MT6370_BL_OVP_EN_MASK,
+				 MT6370_BL_OVP_EN_MASK * !val);
+	if (ret)
+		return ret;
+
+The direct coded approach will probably also pay off if you switch
+the bindings over to microvolts/microamps since it becomes much more
+natural to call out to a lookup function to convert it into a register
+value.
+
+> +
+> +	/* common properties */
+> +	ret = device_property_read_u32(dev, "max-brightness", &brightness);
+> +	if (ret)
+> +		brightness = MT6370_BL_MAX_BRIGHTNESS;
+> +
+> +	props->max_brightness = min_t(u32, brightness,
+> +				      MT6370_BL_MAX_BRIGHTNESS);
+> +
+> +	ret = device_property_read_u32(dev, "default-brightness", &brightness);
+> +	if (ret)
+> +		brightness = props->max_brightness;
+> +
+> +	props->brightness = min_t(u32, brightness, props->max_brightness);
+> +
+> +
+> +	ret = device_property_read_u8(dev, "mediatek,bled-channel-use",
+> +				      &prop_val);
+> +	if (ret) {
+> +		dev_err(dev, "mediatek,bled-channel-use DT property missing\n");
+> +		return ret;
+> +	}
+> +
+> +	if (!prop_val) {
+> +		dev_err(dev, "No channel specified\n");
+> +		return -EINVAL;
+> +	}
+
+If we are going to validity check this property then it needs an upper
+bounds check to (e.g. consider if property is set to 64).
+
+
+> +
+> +	mask = MT6370_BL_EXT_EN_MASK | MT6370_BL_CH_MASK;
+> +	val = prop_val << (ffs(MT6370_BL_CH_MASK) - 1);
+> +
+> +	if (priv->enable_gpio)
+> +		val |= MT6370_BL_EXT_EN_MASK;
+> +
+> +	return regmap_update_bits(priv->regmap, MT6370_REG_BL_EN, mask, val);
+> +}
+> +
+> +static int mt6370_check_vendor_info(struct mt6370_priv *priv)
+
+A comment explaining what variants this function is intended to
+supported here would be good here.
+
+
+> +{
+> +	unsigned int dev_info, vid;
+> +	int ret;
+> +
+> +	ret = regmap_read(priv->regmap, MT6370_REG_DEV_INFO, &dev_info);
+> +	if (ret)
+> +		return ret;
+> +
+> +	vid = FIELD_GET(MT6370_VENID_MASK, dev_info);
+> +	if (vid == 0x9 || vid == 0xb)
+> +		priv->vid_type = MT6370_VID_6372;
+> +	else
+> +		priv->vid_type = MT6370_VID_COMMON;
+> +
+> +	return 0;
+> +}
+
+
+No furthers comments so I trimmed the rest.
+
+
+Daniel.

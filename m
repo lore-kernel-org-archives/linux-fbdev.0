@@ -2,200 +2,198 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CBF3CCA478
-	for <linux-fbdev@archiver.kernel.org>; Thu,  2 Jun 2022 12:07:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E13DFC433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu,  2 Jun 2022 12:19:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232768AbiFBMHW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 2 Jun 2022 08:07:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38618 "EHLO
+        id S234888AbiFBMTQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 2 Jun 2022 08:19:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59314 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234815AbiFBMHV (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 2 Jun 2022 08:07:21 -0400
-Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6A56B1EBEEB;
-        Thu,  2 Jun 2022 05:07:20 -0700 (PDT)
-Received: by mail-pg1-x531.google.com with SMTP id i185so4597249pge.4;
-        Thu, 02 Jun 2022 05:07:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=XwcwX6loUblFTwI5Bhmlqw2TBVsxdFoQXDJc3TovI80=;
-        b=k7esYmpY4T8Q9KWtH0jxmxeHnbiHqRF3LqvsK/4Ug3Jqt1gx+19gOZth9lZtzHsVKs
-         z65zFnDsir6/cGI09w4DESfFBhn0W5yFwcDHUhGt52REfaoXr8Lc3VEDfnfNLuP0/o4D
-         QhmI2Ziwo2TGGYdyx1kXgJ3Stahlm838VXMAuafTcApdKShsfEtVjX9TkbD+0Bn3YGXN
-         cu4WTkIfORLzLsRbi8XMZ5t129tM/R0mlJLffyFB4beE1GnzDQtiOj8V92AdJoeaUJkr
-         MOUy0Z8FtpbwiXb1/kULCSN9k82OaEpM+B4qbR683RScjbId31DRofz7DKXeQlDpP1zH
-         wMRQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=XwcwX6loUblFTwI5Bhmlqw2TBVsxdFoQXDJc3TovI80=;
-        b=tgW3x3fSz6AnxVIFHcR9qdnnwznVBAKmjKHiAwjYxffPQ9R4q7YZraQlvtEZdSP1tW
-         qkHxAWOf68VL8RQ2oHHCQPl6eusjYqfZKJsc190xid659GVlBNnnSbiTeojuHbuJZcgM
-         li5B/2xYlvdjS0DIACwmTUKAXQGhQFHMkF8o9BWjMHMndH9Xsnmr7eKH1BhAaVc5NMmB
-         D+6MgkXL3TitcqSlmpsNyIBOGzmd1lmwaKNILSyt4fjKCjocM3GR86+FssmIh4q7g3Ie
-         HTtLQ9aqvgNCPRLwh0Sd3/9jgtH2IWMmU5NK83DSdccNoewua0dUVC3omDMuk1Su1+ra
-         pnaA==
-X-Gm-Message-State: AOAM531ksrFcw+pauIm8rdZe83w1GjWhIxp0jmF/kniDugr2fTIpPwrl
-        StoZIvmv2FyccOu7w3aUAdyUARBkG/O0xM5IhMs=
-X-Google-Smtp-Source: ABdhPJwLN3JLAZweJSj8I9PDnQ5t3UDnCmJ6jzOmk2NgYlJRjY/uTSAVQc8mkFdLPGGc+2hlm0r13u/yFcGFZ+aEYy0=
-X-Received: by 2002:a63:2c15:0:b0:3f6:6a5f:8f0a with SMTP id
- s21-20020a632c15000000b003f66a5f8f0amr3954364pgs.76.1654171639739; Thu, 02
- Jun 2022 05:07:19 -0700 (PDT)
-MIME-Version: 1.0
-References: <20220531102809.11976-1-peterwu.pub@gmail.com> <20220531102809.11976-8-peterwu.pub@gmail.com>
- <CAHp75VdUQqihr=AX-wEUD05jY1ReL63hMCL+eaqmjkN8CsS_Vg@mail.gmail.com>
-In-Reply-To: <CAHp75VdUQqihr=AX-wEUD05jY1ReL63hMCL+eaqmjkN8CsS_Vg@mail.gmail.com>
-From:   szuni chen <szunichen@gmail.com>
-Date:   Thu, 2 Jun 2022 20:07:08 +0800
-Message-ID: <CA+hk2fasiriGHepNjsnPCqTMJOgAEbVHACmWrDRZY7cHPcOQqA@mail.gmail.com>
-Subject: Re: [PATCH 07/14] leds: flashlight: mt6370: Add Mediatek MT6370
- flashlight support
-To:     Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc:     ChiaEn Wu <peterwu.pub@gmail.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        with ESMTP id S232328AbiFBMTP (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 2 Jun 2022 08:19:15 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E7DF8E0E6;
+        Thu,  2 Jun 2022 05:19:11 -0700 (PDT)
+X-UUID: ac781e92043f40c1900f3c7729d24e1b-20220602
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.5,REQID:c68abee3-bff2-47ae-89ee-baf275569339,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:2a19b09,CLOUDID:6de0b26e-b02c-4af4-b838-5c14aaa063c7,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
+        ,QS:0,BEC:nil
+X-UUID: ac781e92043f40c1900f3c7729d24e1b-20220602
+Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw01.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 185878044; Thu, 02 Jun 2022 20:19:06 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Thu, 2 Jun 2022 20:19:05 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
+ Transport; Thu, 2 Jun 2022 20:19:05 +0800
+Message-ID: <1b2c534c189944b388ff7ca9adc013e8878fe37e.camel@mediatek.com>
+Subject: Re: [PATCH v10 11/21] drm/mediatek: dpi: move swap_shift to SoC
+ config
+From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
+To:     CK Hu <ck.hu@mediatek.com>,
+        Guillaume Ranquet <granquet@baylibre.com>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
         Matthias Brugger <matthias.bgg@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
         Chunfeng Yun <chunfeng.yun@mediatek.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>,
-        Helge Deller <deller@gmx.de>, cy_huang@richtek.com,
-        alice_chen@richtek.com, chiaen_wu@richtek.com,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-mediatek@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        USB <linux-usb@vger.kernel.org>,
-        linux-iio <linux-iio@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
+        "Kishon Vijay Abraham I" <kishon@ti.com>,
+        Vinod Koul <vkoul@kernel.org>, "Helge Deller" <deller@gmx.de>,
+        Jitao shi <jitao.shi@mediatek.com>
+CC:     AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-phy@lists.infradead.org>, <linux-fbdev@vger.kernel.org>
+Date:   Thu, 2 Jun 2022 20:19:05 +0800
+In-Reply-To: <76ddd49bb2bb46923900b085056ce22d7bfa0b0a.camel@mediatek.com>
+References: <20220523104758.29531-1-granquet@baylibre.com>
+         <20220523104758.29531-12-granquet@baylibre.com>
+         <76ddd49bb2bb46923900b085056ce22d7bfa0b0a.camel@mediatek.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Thank you for the valuable suggestion.
+On Mon, 2022-05-30 at 16:38 +0800, CK Hu wrote:
+> Hi, Guillaume:
+> 
+> On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
+> > Add flexibility by moving the swap shift value to SoC specific
+> > config
+> > 
+> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> > Reviewed-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
+> > Reviewed-by: AngeloGioacchino Del Regno <
+> > angelogioacchino.delregno@collabora.com>
+> > ---
+> >  drivers/gpu/drm/mediatek/mtk_dpi.c | 8 +++++++-
+> >  1 file changed, 7 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/gpu/drm/mediatek/mtk_dpi.c
+> > b/drivers/gpu/drm/mediatek/mtk_dpi.c
+> > index 6eeda222a973..6d4d8c6ec47d 100644
+> > --- a/drivers/gpu/drm/mediatek/mtk_dpi.c
+> > +++ b/drivers/gpu/drm/mediatek/mtk_dpi.c
+> > @@ -131,6 +131,7 @@ struct mtk_dpi_conf {
+> >  	u32 dimension_mask;
+> >  	/* HSIZE and VSIZE mask (no shift) */
+> >  	u32 hvsize_mask;
+> > +	u32 channel_swap_shift;
+> >  	const struct mtk_dpi_yc_limit *limit;
+> >  };
+> >  
+> > @@ -349,7 +350,8 @@ static void mtk_dpi_config_channel_swap(struct
+> > mtk_dpi *dpi,
+> >  		break;
+> >  	}
+> >  
+> > -	mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING, val << CH_SWAP,
+> > CH_SWAP_MASK);
+> > +	mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING, val << dpi->conf-
+> > > channel_swap_shift,
+> > 
+> > +		     CH_SWAP_MASK);
+> > From the definiton:
+> 
+>  #define CH_SWAP				0
+> +#define DPINTF_CH_SWAP			BIT(1)
+>  #define CH_SWAP_MASK			(0x7 << 0)
+> +#define DPINTF_CH_SWAP_MASK		(0x7 << 1)
+> 
+> This statement should be:
+> 
+> mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING, val << dpi->conf-
+> > channel_swap_shift, CH_SWAP_MASK << dpi->conf->channel_swap_shift);
+> 
+> dpi->conf->channel_swap_shift is 1 for MT8195-DP_INTF and 0 for
+> others.
+> And drop the definition of DPINTF_CH_SWAP and DPINTF_CH_SWAP_MASK,
+> 
+> Regards,
+> CK
+> 
 
-Andy Shevchenko <andy.shevchenko@gmail.com> =E6=96=BC 2022=E5=B9=B46=E6=9C=
-=881=E6=97=A5 =E9=80=B1=E4=B8=89 =E4=B8=8B=E5=8D=885:57=E5=AF=AB=E9=81=93=
-=EF=BC=9A
->
-> On Tue, May 31, 2022 at 1:32 PM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
-> >
-> > From: Alice Chen <alice_chen@richtek.com>
-> >
-> > Add Mediatek MT6370 flashlight support
->
-> Same comments about the commit message.
->
-> ...
->
-> > +#include <linux/platform_device.h>
-> > +#include <linux/property.h>
-> > +#include <linux/regmap.h>
->
-> + blank line?
-Thanks, this will be refined in the new version.
->
-> > +#include <media/v4l2-flash-led-class.h>
->
-> + blank line
-Thanks, this will be refined in the new version.
->
-> > +enum {
-> > +       MT6370_LED_FLASH1,
-> > +       MT6370_LED_FLASH2,
-> > +       MT6370_MAX_LEDS
-> > +};
->
-> ...
->
-> > +       struct mt6370_led *led =3D container_of(fl_cdev, struct mt6370_=
-led,
-> > +                                             flash);
->
-> > +       struct mt6370_led *led =3D container_of(fl_cdev, struct mt6370_=
-led,
-> > +                                             flash);
->
-> Make a helper out of this
->
->   #define to_mt637_led()  container_of()
->
-> and reuse.
-Thanks, this will be refined in the new version.
->
-> ...
->
-> > +       /*
-> > +        * For the flash turn on/off, HW rampping up/down time is 5ms/5=
-00us,
->
-> ramping
->
-> > +        * respectively
->
-> Period!
-Thanks, this will be refined in the new version.
->
-> > +        */
->
-> ...
->
-> > +       const char * const states[] =3D { "off", "keep", "on" };
-> > +       const char *str;
-> > +       int ret;
-> > +
-> > +       if (!fwnode_property_read_string(init_data->fwnode,
-> > +                                        "default-state", &str)) {
-> > +               ret =3D match_string(states, ARRAY_SIZE(states), str);
-> > +               if (ret < 0)
-> > +                       ret =3D STATE_OFF;
-> > +
-> > +               led->default_state =3D ret;
-> > +       }
->
-> fwnode_property_match_string()?
-Sorry, but I think the use of this function is different from my target.
-I want to read the string of the "default-state" property and figure
-out if the string is in the states array.
-But the fwnode_property_match_string aimed to figure out if the state
-in the property array.
-One is a property array and another one is a state array.
->
-> ...
->
-> > +       if (!count || count > MT6370_MAX_LEDS) {
-> > +               dev_err(&pdev->dev,
-> > +               "No child node or node count over max led number %lu\n"=
-, count);
-> > +               return -EINVAL;
->
-> return dev_err_probe(...);
-Thanks, will refine in the new version
->
-> > +       }
->
->
-> --
-> With Best Regards,
-> Andy Shevchenko
->
->
-Sincerely,
-Alice Chen
+Hello CK,
+
+I have checked this with Jitao,
+it's all shift 1 bit including mask and value.
+
+I will modify like this:
+#define DPINTF_CH_SWAP 1
+
+mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING,
+val << dpi->conf-> channel_swap_shift,
+CH_SWAP_MASK << dpi->conf->channel_swap_shift);
+
+
+BR,
+Bo-Chen
+> 
+> >  }
+> >  
+> >  static void mtk_dpi_config_yuv422_enable(struct mtk_dpi *dpi, bool
+> > enable)
+> > @@ -821,6 +823,7 @@ static const struct mtk_dpi_conf mt8173_conf =
+> > {
+> >  	.swap_input_support = true,
+> >  	.dimension_mask = HPW_MASK,
+> >  	.hvsize_mask = HSIZE_MASK,
+> > +	.channel_swap_shift = CH_SWAP,
+> >  	.limit = &mtk_dpi_limit,
+> >  };
+> >  
+> > @@ -835,6 +838,7 @@ static const struct mtk_dpi_conf mt2701_conf =
+> > {
+> >  	.swap_input_support = true,
+> >  	.dimension_mask = HPW_MASK,
+> >  	.hvsize_mask = HSIZE_MASK,
+> > +	.channel_swap_shift = CH_SWAP,
+> >  	.limit = &mtk_dpi_limit,
+> >  };
+> >  
+> > @@ -848,6 +852,7 @@ static const struct mtk_dpi_conf mt8183_conf =
+> > {
+> >  	.swap_input_support = true,
+> >  	.dimension_mask = HPW_MASK,
+> >  	.hvsize_mask = HSIZE_MASK,
+> > +	.channel_swap_shift = CH_SWAP,
+> >  	.limit = &mtk_dpi_limit,
+> >  };
+> >  
+> > @@ -861,6 +866,7 @@ static const struct mtk_dpi_conf mt8192_conf =
+> > {
+> >  	.swap_input_support = true,
+> >  	.dimension_mask = HPW_MASK,
+> >  	.hvsize_mask = HSIZE_MASK,
+> > +	.channel_swap_shift = CH_SWAP,
+> >  	.limit = &mtk_dpi_limit,
+> >  };
+> >  
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+

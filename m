@@ -2,60 +2,102 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05FC0C43334
-	for <linux-fbdev@archiver.kernel.org>; Thu,  2 Jun 2022 20:02:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81F32C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu,  2 Jun 2022 20:06:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239095AbiFBUCv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 2 Jun 2022 16:02:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37038 "EHLO
+        id S236813AbiFBUGm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 2 Jun 2022 16:06:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47864 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239125AbiFBUCn (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 2 Jun 2022 16:02:43 -0400
-X-Greylist: delayed 63 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 02 Jun 2022 13:02:33 PDT
-Received: from smtp687out9.mel.oss-core.net (smtp687out9.mel.oss-core.net [210.50.216.236])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 6A48A218E
-        for <linux-fbdev@vger.kernel.org>; Thu,  2 Jun 2022 13:02:33 -0700 (PDT)
-X-IPAS-Result: =?us-ascii?q?A2C0eQDRFZli/7NplnpaGQEBAQEBASsLBgEBAQEBAQEBA?=
- =?us-ascii?q?QEBAQIBAQEBAQEBAQEBARUJgUiBOgIBAQGkPocZG4IliWMLAQEBITAEAQGEe?=
- =?us-ascii?q?AEBhVEmOBMBAgQBAQEBAwIDAQEBAQEBAwEBBgEBAQEBAQYEgRyFL0aGVCAHA?=
- =?us-ascii?q?YFWAQ4BHoV1AQGsboEzDXSEWRSCEAQKgnOBOwIBAQEBAYlChV99gRCEEAGFf?=
- =?us-ascii?q?YNAgi4EkkaEIwQbOwMhFRg0EoEhRSwBCAYGBwoFMgYCDBgUBAITElMdAhIMC?=
- =?us-ascii?q?hwOVBkMDwMSAxEBBwILEggVLAgDAgMIAwIDLgIDGAkHCgMdCAoKEhIQFAIEB?=
- =?us-ascii?q?g0eCwgDGR8tCQIEDgNDCAsKAxEEAxMYCxYIEAQGAwkvDSgLAxQPAQYDBgIFB?=
- =?us-ascii?q?QEDIAMUAwUnBwMhBwsmDQ0EIx0DAwUmAwICGwcCAgMCBhcGAgJxCigNCAQIB?=
- =?us-ascii?q?AwQHSUTBQIHMQUELwIeBAUGEQkCFgIGBAUCBAQWAgISCAIIJxsHFjYZAQUOT?=
- =?us-ascii?q?wYLCSEcCSARBQYWAyNzBUgPKTU5BnwPrlKQQJ4zCoNOBSkHgQkHnkkxg2MBl?=
- =?us-ascii?q?xIRASeBV4tUlmioEoEZgX5wFYIIgRxQKJ0QgRACBgsBAQMJjwoBAQ?=
-IronPort-Data: A9a23:3UMQTao+WbA4JKkpOFo4TQ36pEheBmKTZxIvgKrLsJaIsI4StFCzt
- garIBmBbviMYWD9ftBxYI2/oUlTsJTVm9YyT1do/C9gFH4WpePIVI+TRqvSF33LcpGbJK5EA
- 2TyTvGacajYm1eF/k/F3oAMKRCQ7InQLlbGILes1htZGEk1EU/NtTo5w7Rj2tAw24Dja++wk
- YqaT/P3aQfNNwFcagr424rbwP+4lK2v0N+wlgVWicFj5DcypVFMZH4sDf3Zw0/Df2VhNrXSq
- 9AvY12O1jixEx8FUrtJm1tgG6EAaua60QOm0hK6V0U+6/RPjnRa70o1CBYTQU1ukCzQsv968
- dVcl4boDlovB67zxs1IBnG0EwkmVUFH0IDmBz2d7uO942fvVCa14Z2CDmlvZ9deo7svRzgWq
- LpBd2FlghOr3opaxJq6TOdrrsEqKsX6eogYvxmMyBmJV657H8+fGM0m4/cChR0rxe9KJc+Zf
- usBaSM3Zhb+XRdmbwJ/5JUW2b3AamPEWzlZrk+F4KQ972XN5BJ+3aKrM9fPfNGOA8JPkS6lS
- nnupj6jR0hHbJnGkWfAqy39wPTTlGXkUpgVHbGy//hmxlue2ioaFXX6SGeGnBVwsWbmM/o3F
- qDe0nNGQXQanKBzcuTAYg==
-IronPort-HdrOrdr: A9a23:CTTkx65bVU2bGpb4NgPXwKvXdLJyesId70hD6qkXc3Nom62j+/
- xG88576faZsl0ssQ8b+exoUZPoKU80k6Qa3WB7B92ftWfd1VeVEA==
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-AV: E=Sophos;i="5.91,272,1647262800"; 
-   d="scan'208";a="82056743"
-Received: from 122-150-105-179.sta.wbroadband.net.au (HELO WIN-J7GFDBAO51J) ([122.150.105.179])
-  by smtp687.mel.oss-core.net with ESMTP; 03 Jun 2022 06:01:27 +1000
-From:   "Martin Otamori" <info@mandy.com>
-Subject: Acknowledge this message
-To:     <linux-fbdev@vger.kernel.org>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Reply-To: <okkmart68@gmail.com>
-Date:   Thu, 2 Jun 2022 13:01:24 -0700
-Message-Id: <022320220601139471B9577A$D2DFC0A14F@mandy.com>
+        with ESMTP id S239185AbiFBUGg (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 2 Jun 2022 16:06:36 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C26036B4C
+        for <linux-fbdev@vger.kernel.org>; Thu,  2 Jun 2022 13:06:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1654200389;
+        bh=IsKF4iCBq0sNXJ6MjC82oLlWI1Yp1QCRZB0HT/WCHFA=;
+        h=X-UI-Sender-Class:Date:From:To:Subject;
+        b=HEezxHjVRfLjrC3TUCgjSiWUCHqIaIpSqy3gj6uBC1XFmghmJgL1otT8SC9OQ7aox
+         tQoS3wxWd0Rlq7XMhrs3eqNkL5jjO7wTdrD92a9s+1ZUMNBbTpVEIEQn9GkJsHhqXu
+         a9pLGmv/M+swC/Mt4umO1NwwE+su8KoadKWzCR90=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from p100 ([92.116.181.14]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MpUZ4-1nR6mf3Cm4-00pwLE; Thu, 02
+ Jun 2022 22:06:29 +0200
+Date:   Thu, 2 Jun 2022 22:06:28 +0200
+From:   Helge Deller <deller@gmx.de>
+To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH] fbcon: Fix boundary checks for fbcon=vc:n1-n2 parameters
+Message-ID: <YpkYRMojilrtZIgM@p100>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Provags-ID: V03:K1:Riat3W15xiHyRug7/i3UOhBY6b3BVi8Fws7yM36g2DKuCHT987m
+ HmkkSWw0+riUMm4n2dBMVcsoQDrNFg/mfQR6hHU6nUcc0bcDXqjU3hhwH/CS7J3xrzM4Sf1
+ 0o//kE9I3vZTsvUJCd92u9lwWe8hwNS3SDuroz8baSxuBob4wo1+cpKU5JkxJLsfrAwfYjm
+ xoVwsTdykeoPCXZ25vRqg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:MDYflrGxj5o=:2usV/A+HCeXBPglhWE8d/A
+ nQQYXL9Wh+raURLV+shdiK80UTXujkGOSwYsKB08gguZG9ZFyE1CUkb4Ecj6jCFx3kIhRFnMH
+ 4+gRq0cvY7SWhQQEVokvjuGUIqLXu/3OdZjl2tfTrdC65c1eYKgrwu0XgT5eWpBGHBg5gbjmR
+ +Jj5diSQDfvDQNcVR4ON0F0L7woK9PF+TyOPjo6ms1rdUOqAZyoK3fImsFkw4702RJeYGWJDr
+ nWrPSiAckRqJJgQ+kDVIWxCUxnSbySbgkyuzW7Oxdhe5750VP2VaubOlodFgOSpZxe9OQluyU
+ DBU7mq9b9pAkJOuC+W59lFsUQZeex/aw57/r493jYPM2fuXmbrhE2lwUy/o2Chj6FYpbJ7vV6
+ X/l0FonX7i4SNao+zoWsYBobCcoRJznZjK/qoeN7Drmx34HX8dUDg3xkz1cgo8c6aUA0j4BSZ
+ xXkuyb08PPt/K+plo70jzbcoWiAkuRzeM3vr5l3vjCfHh8GJPoAywv9kB1LXi5pMqkTmHSnwy
+ yhC3bidi6LUf/g/PQINdHVZPEqz3XtGgOKwkuCxGAoOYm4alrjtV7w5w5BkV4qb04uepzKF+s
+ GBpzf+qvldRtY6SXDMyjU6jzXHsatRnXmXzDad++cURJdvwyL+akICrX3Nlhlcg0Rya6h0GjR
+ lTJw7xfxZi/3Fb+0X3dCddCZpDqlXp0x+QJSneUaQNjUzvW0N3ivfYgqUVtuj3asJGa3vsxWm
+ TgxXzeaFttP/4fsG9VIXIxhqIYCYY0oaVVC3XtpSNyKvU1REY/f18CqOPTb1e0vL6Jd3f8Dci
+ p9efiBrwnjh58FGLdZQ7wTsXT7II9en8A0BktVXg9Rx5cxVrBeqy0bVRLxXTwDYa3cIcQuT0y
+ TpGJdW+dqCeml19opqmTwrkGJg4GDPe0b6hXw0mSI0yrTNsv1t+U9ZTV092YIreIOxJX/Xfqs
+ G4Z0zw8kwvEW1emYVWxmf7RKTnbRJrVoJswioLItqVLvxF1D1YTiy6yRSV11ypOrkeGXF5IoR
+ mWR13OZy621B1wOXmgorphlpgbPoRWihhRCHAhemypwmHaHbClhtQ4nWAMjUEYbNdlPNJh1fe
+ ooKXMFXgTlCAm5eni/xO6OpzOiwFLmPSBviFBpB5NbyCqO2eoskNqdpVA==
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-I will give you more details as soon as you acknowledge this message.
-Thank you.
-Martin Otamori.
+The user may use the fbcon=3Dvc:<n1>-<n2> option to tell fbcon to take
+over the given range (n1...n2) of consoles. The value for n1 and n2
+needs to be a positive number and up to (MAX_NR_CONSOLES - 1).
+The given values were not fully checked against those boundaries yet.
 
+To fix the issue, convert first_fb_vc and last_fb_vc to unsigned
+integers and check them against the upper boundary, and make sure that
+first_fb_vc is smaller than last_fb_vc.
+
+Signed-off-by: Helge Deller <deller@gmx.de>
+Cc: stable@vger.kernel.org
+
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/f=
+bcon.c
+index 2fc1b80a26ad..c2f9e5711c39 100644
+=2D-- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -115,8 +115,8 @@ static int logo_lines;
+    enums.  */
+ static int logo_shown =3D FBCON_LOGO_CANSHOW;
+ /* console mappings */
+-static int first_fb_vc;
+-static int last_fb_vc =3D MAX_NR_CONSOLES - 1;
++static unsigned int first_fb_vc;
++static unsigned int last_fb_vc =3D MAX_NR_CONSOLES - 1;
+ static int fbcon_is_default =3D 1;
+ static int primary_device =3D -1;
+ static int fbcon_has_console_bind;
+@@ -464,10 +464,12 @@ static int __init fb_console_setup(char *this_opt)
+ 			options +=3D 3;
+ 			if (*options)
+ 				first_fb_vc =3D simple_strtoul(options, &options, 10) - 1;
+-			if (first_fb_vc < 0)
++			if (first_fb_vc >=3D MAX_NR_CONSOLES)
+ 				first_fb_vc =3D 0;
+ 			if (*options++ =3D=3D '-')
+ 				last_fb_vc =3D simple_strtoul(options, &options, 10) - 1;
++			if (last_fb_vc < first_fb_vc || last_fb_vc >=3D MAX_NR_CONSOLES)
++				last_fb_vc =3D MAX_NR_CONSOLES - 1;
+ 			fbcon_is_default =3D 0;
+ 			continue;
+ 		}

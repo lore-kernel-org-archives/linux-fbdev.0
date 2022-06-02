@@ -2,157 +2,187 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DDDCC433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu,  2 Jun 2022 05:49:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDF63C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu,  2 Jun 2022 06:27:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230163AbiFBFtF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 2 Jun 2022 01:49:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56774 "EHLO
+        id S230518AbiFBG1K (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 2 Jun 2022 02:27:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35610 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229874AbiFBFtE (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 2 Jun 2022 01:49:04 -0400
-Received: from smtp.smtpout.orange.fr (smtp04.smtpout.orange.fr [80.12.242.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72E3A262AFB
-        for <linux-fbdev@vger.kernel.org>; Wed,  1 Jun 2022 22:48:59 -0700 (PDT)
-Received: from [192.168.1.18] ([90.11.190.129])
-        by smtp.orange.fr with ESMTPA
-        id wdhSn51g6QKuawdhSnS6n8; Thu, 02 Jun 2022 07:48:57 +0200
-X-ME-Helo: [192.168.1.18]
-X-ME-Auth: YWZlNiIxYWMyZDliZWIzOTcwYTEyYzlhMmU3ZiQ1M2U2MzfzZDfyZTMxZTBkMTYyNDBjNDJlZmQ3ZQ==
-X-ME-Date: Thu, 02 Jun 2022 07:48:57 +0200
-X-ME-IP: 90.11.190.129
-Message-ID: <60d33448-1cc9-c662-167b-10c1f9660545@wanadoo.fr>
-Date:   Thu, 2 Jun 2022 07:48:50 +0200
+        with ESMTP id S230156AbiFBG1I (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 2 Jun 2022 02:27:08 -0400
+Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F38B1CCE;
+        Wed,  1 Jun 2022 23:27:05 -0700 (PDT)
+Received: by mail-pj1-x1030.google.com with SMTP id w2-20020a17090ac98200b001e0519fe5a8so4028710pjt.4;
+        Wed, 01 Jun 2022 23:27:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=sgetwGF1PvFvysoUcKKwVGNS/40oEtUezOmpaPDogiY=;
+        b=ZMFPdPunvlYPQPU3WvFgrloJ8uyHxXAWCOMTRSZ9UdgD6rlNisHeAFF5/aY9eRXA0W
+         RVgqJzVwNnaI7+v11DYXSCOX+1qoTZ4UHTG6/wQD/YlQrYt1Hwg51G8tJEPipcv4GY66
+         4jWv5S3N+GmyqU6l+K858iXVMtXZSPnh1xSRU4u2GJihLrDkY356tc/U6/el6POMbuSC
+         BVjvraKgPJFIcs7OPE4lDWq0kSaW9OyCoibbg40N5i4AFl2cRDJlVWQrlLKvz816fS2X
+         IAmGmyJ+ToO08AHPxyjQEN6ZAc0PXhytlp05lepN1qcMlsN3si+QLc1JoCpWctNrxLBb
+         JqTw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=sgetwGF1PvFvysoUcKKwVGNS/40oEtUezOmpaPDogiY=;
+        b=Hisg3jz96Bfk9TZJSXpNCalvL2TC1Y3S4vXcaQ0MC3ZqP7Y9fjPuD0Id08enRmxfg9
+         GTAll6DYGjof5vq3Rykit9qYL/6drMcio9OMBDsGTx5mcWWrS19lPYc9v9ITEmRsaQ1u
+         wrhQUdpGrIEXX/Tg+4lsAopt1PIQF0n4WXhgnaBfUvBCeYdX5rJYScj8ua99+1NPXr23
+         BeH26iYZEWA4jwzsk19qYbXO2XJul7ZsH3nGSAM3JkWcdoHnhIkDDrzErA0Lp3jyM/CP
+         fydfU136CdEe9c0Rg9Lkop6C3Jpn4wyLELua7pZBWbyUh4s9StZhy1xnVbsB4sgz+8+t
+         CgjA==
+X-Gm-Message-State: AOAM531G2h5P/O9IgGjburLp3AGksWrmlqu/22mAuXaedLrNX5HrvUqJ
+        RG1NiYlktChxn88Xc2pC/lA=
+X-Google-Smtp-Source: ABdhPJw/XVMZxQqn7LbpCVPeOLw0PRZZYK3mOXAw1YPVhpRYJee8hLeBKf1SThBKLbxC47OMbHQhGw==
+X-Received: by 2002:a17:903:40ce:b0:164:248:1464 with SMTP id t14-20020a17090340ce00b0016402481464mr3355617pld.16.1654151225424;
+        Wed, 01 Jun 2022 23:27:05 -0700 (PDT)
+Received: from cyhuang-hp-elitebook-840-g3.rt ([2402:7500:569:e4e7:9594:e92e:b3a9:bf26])
+        by smtp.gmail.com with ESMTPSA id u14-20020a170902714e00b0015e8d4eb1f9sm2650433plm.67.2022.06.01.23.26.54
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 01 Jun 2022 23:27:04 -0700 (PDT)
+Date:   Thu, 2 Jun 2022 14:26:51 +0800
+From:   ChiYuan Huang <u0084500@gmail.com>
+To:     Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc:     ChiaEn Wu <peterwu.pub@gmail.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Chunfeng Yun <chunfeng.yun@mediatek.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>,
+        Helge Deller <deller@gmx.de>, cy_huang@richtek.com,
+        alice_chen@richtek.com, chiaen_wu@richtek.com, u0084500@gmail.com,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux LED Subsystem <linux-leds@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-mediatek@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        USB <linux-usb@vger.kernel.org>,
+        linux-iio <linux-iio@vger.kernel.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
+Subject: Re: [PATCH 06/14] leds: mt6370: Add Mediatek MT6370 Indicator support
+Message-ID: <20220602062643.GA13824@cyhuang-hp-elitebook-840-g3.rt>
+References: <20220531102809.11976-1-peterwu.pub@gmail.com>
+ <20220531102809.11976-7-peterwu.pub@gmail.com>
+ <CAHp75Vd8taco19vsDmBcCv8euV1SvwSiY5=P9oMkA6zWsjwXxg@mail.gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.1
-Subject: Re: [PATCH v10 14/21] drm/mediatek: dpi: Add dpintf support
-Content-Language: fr
-To:     granquet@baylibre.com
-Cc:     airlied@linux.ie, chunfeng.yun@mediatek.com,
-        chunkuang.hu@kernel.org, ck.hu@mediatek.com, daniel@ffwll.ch,
-        deller@gmx.de, devicetree@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, jitao.shi@mediatek.com,
-        kishon@ti.com, krzysztof.kozlowski+dt@linaro.org,
-        linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org,
-        linux-phy@lists.infradead.org, maarten.lankhorst@linux.intel.com,
-        matthias.bgg@gmail.com, mripard@kernel.org, msp@baylibre.com,
-        p.zabel@pengutronix.de, robh+dt@kernel.org, tzimmermann@suse.de,
-        vkoul@kernel.org
-References: <20220523104758.29531-1-granquet@baylibre.com>
- <20220523104758.29531-15-granquet@baylibre.com>
-From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-In-Reply-To: <20220523104758.29531-15-granquet@baylibre.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAHp75Vd8taco19vsDmBcCv8euV1SvwSiY5=P9oMkA6zWsjwXxg@mail.gmail.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Le 23/05/2022 à 12:47, Guillaume Ranquet a écrit :
-> dpintf is the displayport interface hardware unit. This unit is similar
-> to dpi and can reuse most of the code.
+On Wed, Jun 01, 2022 at 11:48:58AM +0200, Andy Shevchenko wrote:
+> On Tue, May 31, 2022 at 1:16 PM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
+> >
+> > From: Alice Chen <alice_chen@richtek.com>
 > 
-> This patch adds support for mt8195-dpintf to this dpi driver. Main
-> differences are:
->   - Some features/functional components are not available for dpintf
->     which are now excluded from code execution once is_dpintf is set
->   - dpintf can and needs to choose between different clockdividers based
->     on the clockspeed. This is done by choosing a different clock parent.
->   - There are two additional clocks that need to be managed. These are
->     only set for dpintf and will be set to NULL if not supplied. The
->     clk_* calls handle these as normal clocks then.
->   - Some register contents differ slightly between the two components. To
->     work around this I added register bits/masks with a DPINTF_ prefix
->     and use them where different.
+> All below comments are applicable to the rest of the series as well
+> (one way or another), so please fix all your patches where it's
+> appropriate.
 > 
-> Based on a separate driver for dpintf created by
-> Jason-JH.Lin <jason-jh.lin-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>.
+> >
+> > Add Mediatek MT6370 Indicator support
 > 
-> Signed-off-by: Markus Schneider-Pargmann <msp-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
-> Signed-off-by: Guillaume Ranquet <granquet-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
-> ---
->   drivers/gpu/drm/mediatek/mtk_dpi.c          | 126 +++++++++++++++++---
->   drivers/gpu/drm/mediatek/mtk_dpi_regs.h     |  35 ++++++
->   drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.c |   8 ++
->   drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.h |   1 +
->   drivers/gpu/drm/mediatek/mtk_drm_drv.c      |   5 +-
->   include/linux/soc/mediatek/mtk-mmsys.h      |   4 +-
->   6 files changed, 159 insertions(+), 20 deletions(-)
+> What indicator?
+It's RGB curent sink type LED driver (maximum supported current is only 24mA).
+> Please also keep attention on English punctuation (missed period).
 > 
-> diff --git a/drivers/gpu/drm/mediatek/mtk_dpi.c b/drivers/gpu/drm/mediatek/mtk_dpi.c
-> index eb969c5c5c2e..763bfb700135 100644
-> --- a/drivers/gpu/drm/mediatek/mtk_dpi.c
-> +++ b/drivers/gpu/drm/mediatek/mtk_dpi.c
-> @@ -71,6 +71,7 @@ struct mtk_dpi {
->   	void __iomem *regs;
->   	struct device *dev;
->   	struct clk *engine_clk;
-> +	struct clk *dpi_ck_cg;
->   	struct clk *pixel_clk;
->   	struct clk *tvd_clk;
->   	int irq;
-> @@ -126,6 +127,7 @@ struct mtk_dpi_conf {
->   	const u32 *output_fmts;
->   	u32 num_output_fmts;
->   	bool is_ck_de_pol;
-> +	bool is_dpintf;
->   	bool swap_input_support;
->   	/* Mask used for HWIDTH, HPORCH, VSYNC_WIDTH and VSYNC_PORCH (no shift) */
->   	u32 dimension_mask;
-> @@ -438,6 +440,8 @@ static void mtk_dpi_power_off(struct mtk_dpi *dpi)
->   	mtk_dpi_disable(dpi);
->   	clk_disable_unprepare(dpi->pixel_clk);
->   	clk_disable_unprepare(dpi->engine_clk);
-> +	clk_disable_unprepare(dpi->dpi_ck_cg);
-> +	clk_disable_unprepare(dpi->tvd_clk);
->   }
->   
->   static int mtk_dpi_power_on(struct mtk_dpi *dpi)
-> @@ -447,12 +451,24 @@ static int mtk_dpi_power_on(struct mtk_dpi *dpi)
->   	if (++dpi->refcount != 1)
->   		return 0;
->   
+Ack in next.
+> ...
+>
+> > +       help
+> > +         Support 4 channels and reg/pwm/breath mode.
+> > +         Isink4 can also use as a CHG_VIN power good Indicator.
+> 
+> be used
+> 
+Ack in next.
+> > +         Say Y here to enable support for
+> > +         MT6370_RGB_LED device.
+> 
+> ...
+> 
+> > +#include <linux/module.h>
+> > +#include <linux/mutex.h>
+> > +#include <linux/platform_device.h>
+> 
+> > +#include <linux/of.h>
+> 
+> Are you sure this is the correct header? Seems you need
+> mod_devicetable.h instead.
+> 
+It's the correct header and be used for the struct 'of_device_id'.
+> > +#include <linux/property.h>
+> > +#include <linux/regmap.h>
+> 
+> ...
+> 
+> > +struct mt6370_priv {
+> > +       struct mutex lock;
+> 
+> Do you use regmap locking?
+>
+MFD regmap register already the access lock.
 
-Hi,
+This lock is just to guarantee only one user can access the RGB register
+part.
 
-belwo the error handling path looks odd. (both where we goto, and the 
-order of the clk_disable_unprepare() in the error handling path.
-
-just my 2c,
-
-CJ
-
-> +	ret = clk_prepare_enable(dpi->tvd_clk);
-> +	if (ret) {
-> +		dev_err(dpi->dev, "Failed to enable tvd pll: %d\n", ret);
-> +		goto err_pixel;
-> +	}
-> +
->   	ret = clk_prepare_enable(dpi->engine_clk);
->   	if (ret) {
->   		dev_err(dpi->dev, "Failed to enable engine clock: %d\n", ret);
->   		goto err_refcount;
->   	}
->   
-> +	ret = clk_prepare_enable(dpi->dpi_ck_cg);
-> +	if (ret) {
-> +		dev_err(dpi->dev, "Failed to enable dpi_ck_cg clock: %d\n", ret);
-> +		goto err_ck_cg;
-> +	}
-> +
->   	ret = clk_prepare_enable(dpi->pixel_clk);
->   	if (ret) {
->   		dev_err(dpi->dev, "Failed to enable pixel clock: %d\n", ret);
-> @@ -466,6 +482,8 @@ static int mtk_dpi_power_on(struct mtk_dpi *dpi)
->   	return 0;
->   
->   err_pixel:
-> +	clk_disable_unprepare(dpi->dpi_ck_cg);
-> +err_ck_cg:
->   	clk_disable_unprepare(dpi->engine_clk);
->   err_refcount:
->   	dpi->refcount--;
-
-[...]
+Sorry, from the comment, do you want us to rename or remove this lock?
+> > +       struct device *dev;
+> 
+> > +       struct regmap *regmap;
+> 
+> > +       struct regmap_field *fields[F_MAX_FIELDS];
+> > +       const struct reg_field *reg_fields;
+> > +       const struct linear_range *ranges;
+> > +       struct reg_cfg *reg_cfgs;
+> > +       unsigned int leds_count;
+> > +       unsigned int leds_active;
+> > +       bool is_mt6372;
+> > +       struct mt6370_led leds[];
+> > +};
+> 
+> ...
+> 
+> > +static const unsigned int common_tfreqs[] = {
+> > +       10000, 5000, 2000, 1000, 500, 200, 5, 1
+> 
+> Leave a comma at the end.
+> 
+Ack in next.
+> > +};
+> > +
+> > +static const unsigned int mt6372_tfreqs[] = {
+> > +       8000, 4000, 2000, 1000, 500, 250, 8, 4
+> 
+> Ditto.
+> 
+Ack in next.
+> > +};
+> 
+> 
+> -- 
+> With Best Regards,
+> Andy Shevchenko

@@ -2,99 +2,212 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E0F9C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu,  2 Jun 2022 20:08:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 252F9C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu,  2 Jun 2022 20:16:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235464AbiFBUIs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 2 Jun 2022 16:08:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57382 "EHLO
+        id S237940AbiFBUQI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 2 Jun 2022 16:16:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58964 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238829AbiFBUIr (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 2 Jun 2022 16:08:47 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B28773A1BB
-        for <linux-fbdev@vger.kernel.org>; Thu,  2 Jun 2022 13:08:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1654200520;
-        bh=MWdsFO0Da7lpg/6VkR6yrv6S008xzfO8/q3kNEiYJGM=;
-        h=X-UI-Sender-Class:Date:From:To:Subject;
-        b=giIqeTa0rELXJlbOGCzv2gUnTIWLop8tmTvxkzDq4u+Gw1uFD55zOUPMCVwPoaF5F
-         eu+R5WEm/ioaiHPas2d6DN/ce9E2qqymjwFPcfdC9Sj8EWFcoPJNZanZ4n3HxI/imN
-         NctUZSEyuAMjVMUErWLGuNnbqt5P8YOJP6Faoq6g=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from p100 ([92.116.181.14]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1N33Il-1nmuzF0Ttd-013MdC; Thu, 02
- Jun 2022 22:08:40 +0200
-Date:   Thu, 2 Jun 2022 22:08:38 +0200
-From:   Helge Deller <deller@gmx.de>
-To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH] fbcon: Fix accelerated fbdev scrolling while logo is still
- shown
-Message-ID: <YpkYxk7wsBPx3po+@p100>
+        with ESMTP id S237676AbiFBUQH (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 2 Jun 2022 16:16:07 -0400
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com [IPv6:2607:f8b0:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A112BC2E;
+        Thu,  2 Jun 2022 13:16:03 -0700 (PDT)
+Received: by mail-pf1-x441.google.com with SMTP id b135so5613066pfb.12;
+        Thu, 02 Jun 2022 13:16:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=Kb/EgUnEl+66ubR0OBdnZBhP1OFKsT5B/tkrmGF5yWM=;
+        b=NkE0Ee2nKeVG01X4TGf7Tds/HpDebAAGIAaGwKYQebrpvg7ak4oaNFBWIPs3Xdbx/6
+         /ueM/g2UgL33WPhvSE1L6JXOWT5chkMdkpBYr1/zYN99/wpvyMYpmPhA1oytFSuRvYuV
+         PNVqn/U5agKa+qIWBAIGEorsNvVDKBWugZg900PvAoG9Qmtwztu7xfeAcVkvqkOl0WYL
+         cOZn4F9+0NeUducPaMA2Z6OZ8Mng1gwTUzPg03BP8mG4yWhRQRsi/9O5/gtaqrHqD4Bg
+         4OA13xXtBNtUEnlW2r45PUnCTtuMdwsf1kr3gPJWnFj4wDmdBPTRZoNV0p1ETDx5FzvG
+         2rSA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=Kb/EgUnEl+66ubR0OBdnZBhP1OFKsT5B/tkrmGF5yWM=;
+        b=IA3B5ANyWQw+rp206KCxp2mt1dg61aeWI7z7dxUsnrqwcrGNiinwbJtlIZ30OU2dFc
+         s83uxfkU8P9iOtzxMhd/TqbA81mVZACImSX7PhJQHjL1RT4BdVmmR1gXcgaYcU/zZ/6R
+         loc74AviYG2FhoM0bNGD9nzb1437FVAqbEVWZ17xIaYZBMIvK5VkVsewxDfWWkZHEGq6
+         Aozq1NKz2BlcOpQmzP1khm/ojNKTnrNwcSE9SgOdOGkLdpRdXxCVpZpJHRrIOP3jJvTo
+         RgXHTiinSYp0EnIkcToU6O4d7BvTWwvGRgPvnNK0rZdzlHg+PL0J3JNbxIZsyDaD5qs6
+         bXew==
+X-Gm-Message-State: AOAM533H9oh3TID4oc2GaTs5tFVkwi+HS+vtN9aaWvDRTlw6RtUAlxWH
+        jm4Q0cE8UrCs/5mWSaRA8XEOPgZnh8NdvKxYfPvyDQxWGiU=
+X-Google-Smtp-Source: ABdhPJys4WOb9urNyLdt4aeuOqGuCZdLw80FNC5PvFsBXte5r8ULYu9Wjjuq4Wzf+sPQ6VLvykCW8T4PAgm77gNu2zY=
+X-Received: by 2002:a05:6e02:4a1:b0:2d3:a778:f0f1 with SMTP id
+ e1-20020a056e0204a100b002d3a778f0f1mr3986818ils.212.1654194896902; Thu, 02
+ Jun 2022 11:34:56 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Provags-ID: V03:K1:hVfaPk/9jZny26PcD/WxhWiObtc1MLuJNdonRgwBiVzzDnIV7SK
- UoSuD0ggVXDDKP2Tn2USwM7ZrUl6zb88GkTZERFK4sKl+i0SlUq2Py5WnNfrt4Carg1hroW
- N/dyy4J9X5IsA39mp767lUk9hKA9Tgf3hBKpXsMjOFJAaq751L2toavGTqHStSHi4QjhqDr
- c5Xb8j0z5+edI4jeE9EYg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:0WOHpmXwUx0=:5r2dFs4uvkyMP/n1t9ledo
- veQcGH68JUzpjkanLCv8ZStH//t4BBPvILVjqoTEMtxp5RqPzUbhXrYx3UcMCms12XZCrS5CQ
- S+8DwEYGA3fARlRS6rIdJD1eq5231Tvomd6GHGvmzz0ffFEfOZ+74PkidF98qgOrGypnhTMh7
- WjuyN6RYx5k/4N0KY43oXLBIkf7pxmDpbXoQusgfuHJz6zXsLV+pA60e/VpwPIDVQJ7aZjodA
- bGAPH/DyLU8ZQyVbP20UZzytE+AmO+3uetxL4RCacOB5FFI+WqpymH/F7cLVlXtRYOoNpTus/
- HFjLllfxN8Ec6nBDtTIZR9Sw9GvoOAZIl5V8Ifk3VVkMo3RFyVeEzbP2Oc0DikBv4pdKstNpL
- oHC8mqhdk2WyXcii6QC6dSrNJZqwqMbN8Q0B4PI+9Gc7UnDkts8vP0RP8vwLsBJq4UlOJ983g
- JHssvAkUxLX+d57PMhle9eLKG2XZukfZ/o5o0P1B9AJFBdsv4/hZaSbGrW/Tg55qvd300kSsk
- 5fgkmHhqJQD/n4CFMZADVA9RpuBV5IVe8SOhJPFUd2fuL1eVx2Y0lYQZ40umoMNl0mcUqMTD1
- /kL6vwCObiZIj+4sV4JkLq0HQIlzezuo0zjB2HfhbE4i0v2ypmsUXcdRMSCCmbZ1hfwAtdon5
- SPsfEpkIj5BRRx/F+n3vU0DXmZJgTQHVV3OJUO+zx7C0OtEt5YToW8VYYNg37PwKFvh78MG8Z
- DjVy3YTctp5AguJqXoQitvze1SFIMZvvujtIddCzI7b7ih1gPO5tUralw1DU2g15YUiBUw2ef
- Sa6g2im3la33Ye3RImdlSnKRyvSEbU1OpCP2OAbSWQism4vWkAlryJqPnQYU8qSZHEUPXWp2q
- mmS3XUp7A5Pa2QfpklKRNXGhYzDO1ztJTsaQ8k+tOee4RnByW8DQCIfvwUX3M3iY12w9BAx/9
- hgigysppmkJ+SnsEfkEPfTGP80SLm0LxZs0rrF/R9mcRm8PSysd42nHLXznAXaXcB+ZLkbTy8
- VpLZlzseQint1oZBZ4icKKI3uxwW4y1CXGKOjKqMNLNG7GHqJAAIjO60JAGDCFPeRG0mwVipp
- iWT1r0eaZGh/9gd4BQauhI63poMviL9SXrZ
+References: <20220531104211.17106-1-peterwu.pub@gmail.com> <20220531104211.17106-2-peterwu.pub@gmail.com>
+ <33a797d7-ca60-5153-2ba1-3a909fcc5965@linaro.org>
+In-Reply-To: <33a797d7-ca60-5153-2ba1-3a909fcc5965@linaro.org>
+From:   ChiaEn Wu <peterwu.pub@gmail.com>
+Date:   Fri, 3 Jun 2022 02:34:45 +0800
+Message-ID: <CABtFH5+nNRn4azfniKCNc=S2Z2Y0jji_beA_16_UYzAvkak-VA@mail.gmail.com>
+Subject: Re: [PATCH 10/14] dt-bindings: power: supply: Add Mediatek MT6370
+ Charger binding documentation
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc:     lee.jones@linaro.org, daniel.thompson@linaro.org,
+        jingoohan1@gmail.com, pavel@ucw.cz, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, matthias.bgg@gmail.com,
+        sre@kernel.org, chunfeng.yun@mediatek.com,
+        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
+        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
+        heikki.krogerus@linux.intel.com, deller@gmx.de,
+        ChiYuan Huang <cy_huang@richtek.com>, alice_chen@richtek.com,
+        chiaen_wu@richtek.com, dri-devel@lists.freedesktop.org,
+        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-There is no need to directly skip over to the SCROLL_REDRAW case while
-the logo is still shown.
+Hi Krzysztof,
 
-When using DRM, this change has no effect because the code will reach
-the SCROLL_REDRAW case immediately anyway.
+Thank you for the valuable suggestion.
+Sorry for sending the same email again. I forgot to reply to everyone
+in my last email..
 
-But if you run an accelerated fbdev driver and have
-FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION enabled, console scrolling is
-slowed down by factors so that it feels as if you use a 9600 baud
-terminal.
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> =E6=96=BC 2022=E5=B9=
+=B46=E6=9C=881=E6=97=A5 =E9=80=B1=E4=B8=89 =E4=B8=8A=E5=8D=884:15=E5=AF=AB=
+=E9=81=93=EF=BC=9A
+>
+> On 31/05/2022 12:42, ChiaEn Wu wrote:
+> > From: ChiaEn Wu <chiaen_wu@richtek.com>
+> >
+>
+> Subject - remove "binding documentation". It's already implied by prefix.
+>
+> > Add Mediatek MT6370 Charger binding documentation.
+> >
+> > Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
+> > ---
+> >  .../power/supply/mediatek,mt6370-charger.yaml | 60 +++++++++++++++++++
+> >  1 file changed, 60 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/power/supply/medi=
+atek,mt6370-charger.yaml
+> >
+> > diff --git a/Documentation/devicetree/bindings/power/supply/mediatek,mt=
+6370-charger.yaml b/Documentation/devicetree/bindings/power/supply/mediatek=
+,mt6370-charger.yaml
+> > new file mode 100644
+> > index 000000000000..9d5c4487ca9c
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/power/supply/mediatek,mt6370-ch=
+arger.yaml
+> > @@ -0,0 +1,60 @@
+> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > +%YAML 1.2
+> > +---
+> > +$id: http://devicetree.org/schemas/power/supply/mediatek,mt6370-charge=
+r.yaml#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > +
+> > +title: Mediatek MT6370 Battery Charger
+> > +
+> > +maintainers:
+> > +  - ChiaEn Wu <chiaen_wu@richtek.com>
+> > +
+> > +description: |
+> > +  This module is part of the MT6370 MFD device.
+> > +  Provides Battery Charger, Boost for OTG devices and BC1.2 detection.
+> > +
+> > +properties:
+> > +  compatible:
+> > +    const: mediatek,mt6370-charger
+> > +
+> > +  interrupts:
+> > +    description: |
+> > +      Specify what irqs are needed to be handled by MT6370 Charger dri=
+ver. IRQ
+> > +      "MT6370_IRQ_CHG_MIVR", "MT6370_IRQ_ATTACH" and "MT6370_IRQ_OVPCT=
+RL_UVP_D"
+> > +      are required.
+> > +    items:
+> > +      - description: BC1.2 done irq for mt6370 charger
+> > +      - description: usb plug in irq for mt6370 charger
+> > +      - description: mivr irq for mt6370 charger
+>
+> s/for mt6370 charger//
+> in each item
 
-So, drop those unnecessary checks and speed up fbdev console
-acceleration during bootup.
+I got it, this will be refined in the next version. Thanks!
 
-Signed-off-by: Helge Deller <deller@gmx.de>
-Cc: stable@vger.kernel.org
+>
+> > +
+> > +  interrupt-names:
+> > +    items:
+> > +      - const: attach_i
+> > +      - const: uvp_d_evt
+> > +      - const: mivr
+> > +
+> > +  io-channels:
+> > +    description: |
+> > +      Use ADC channel to read vbus, ibus, ibat, etc., info. Ibus ADC c=
+hannel
+> > +      is required.
+>
+> Constraints (e.g. maxItems) are needed.
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index c2f9e5711c39..8eb5b73e98bc 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -1706,8 +1706,6 @@ static bool fbcon_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
- 	case SM_UP:
- 		if (count > vc->vc_rows)	/* Maximum realistic size */
- 			count = vc->vc_rows;
--		if (logo_shown >= 0)
--			goto redraw_up;
- 		switch (fb_scrollmode(p)) {
- 		case SCROLL_MOVE:
- 			fbcon_redraw_blit(vc, info, p, t, b - t - count,
-@@ -1796,8 +1794,6 @@ static bool fbcon_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
- 	case SM_DOWN:
- 		if (count > vc->vc_rows)	/* Maximum realistic size */
- 			count = vc->vc_rows;
--		if (logo_shown >= 0)
--			goto redraw_down;
- 		switch (fb_scrollmode(p)) {
- 		case SCROLL_MOVE:
- 			fbcon_redraw_blit(vc, info, p, b - 1, b - t - count,
+OK, I will add them in the new version!
+
+>
+> > +
+> > +  usb-otg-vbus:
+>
+> Let's keep the same name as in MT6360:
+>
+> usb-otg-vbus-regulator
+
+I'll change the name to correspond with MT6360 in the next patch, thanks!
+
+> > +    type: object
+> > +    description: OTG boost regulator.
+> > +    $ref: /schemas/regulator/regulator.yaml#
+> > +
+> > +    properties:
+> > +      enable-gpio:
+> > +        maxItems: 1
+> > +        description: |
+> > +          Specify a valid 'enable' gpio for the regulator and it's opt=
+ional
+>
+> This description is pointless - does not bring any more information. You
+> repeat the schema. Please, avoid such descriptions.
+
+I got it, I will remove them in the next patch.
+
+>
+> > +
+> > +required:
+> > +  - compatible
+> > +  - interrupts
+> > +  - interrupt-names
+> > +  - io-channels
+> > +
+> > +additionalProperties: false
+>
+>
+> How about example? Or is it going to be in MFD schema?
+
+All of MT6370 binding documentation examples are in the MFD schema! Thanks.
+
+>
+>
+> Best regards,
+> Krzysztof
+
+Best regards,
+ChiaEn Wu

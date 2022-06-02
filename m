@@ -2,198 +2,91 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E13DFC433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu,  2 Jun 2022 12:19:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5359C43334
+	for <linux-fbdev@archiver.kernel.org>; Thu,  2 Jun 2022 13:20:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234888AbiFBMTQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 2 Jun 2022 08:19:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59314 "EHLO
+        id S231639AbiFBNUa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 2 Jun 2022 09:20:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43712 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232328AbiFBMTP (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 2 Jun 2022 08:19:15 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E7DF8E0E6;
-        Thu,  2 Jun 2022 05:19:11 -0700 (PDT)
-X-UUID: ac781e92043f40c1900f3c7729d24e1b-20220602
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:c68abee3-bff2-47ae-89ee-baf275569339,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:0
-X-CID-META: VersionHash:2a19b09,CLOUDID:6de0b26e-b02c-4af4-b838-5c14aaa063c7,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
-        ,QS:0,BEC:nil
-X-UUID: ac781e92043f40c1900f3c7729d24e1b-20220602
-Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw01.mediatek.com
-        (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 185878044; Thu, 02 Jun 2022 20:19:06 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
- mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Thu, 2 Jun 2022 20:19:05 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Thu, 2 Jun 2022 20:19:05 +0800
-Message-ID: <1b2c534c189944b388ff7ca9adc013e8878fe37e.camel@mediatek.com>
-Subject: Re: [PATCH v10 11/21] drm/mediatek: dpi: move swap_shift to SoC
- config
-From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
-To:     CK Hu <ck.hu@mediatek.com>,
-        Guillaume Ranquet <granquet@baylibre.com>,
-        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        with ESMTP id S231612AbiFBNU3 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 2 Jun 2022 09:20:29 -0400
+Received: from mail-oa1-f41.google.com (mail-oa1-f41.google.com [209.85.160.41])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ECB86270F3A;
+        Thu,  2 Jun 2022 06:20:27 -0700 (PDT)
+Received: by mail-oa1-f41.google.com with SMTP id 586e51a60fabf-e656032735so6764028fac.0;
+        Thu, 02 Jun 2022 06:20:27 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=bTbwu+Mz+i2T1fupPqwAFML/HPc02MWUuXZGeQCvXZ8=;
+        b=nHzqP6S6BImCZAfGUibqjr40CAQ+sXQyeKEnE4ZSVo6tfjEF8V+JCzMFo9LX50Gk4a
+         bK4r68EqxvNjHQxrnLodXRIb7Y0InLBMeR9EWSeVJEZETBpzvgshRzzWOzzykmVn96tQ
+         8lj97nXr+GOiG00Hv7nbxw8wENFOWXkGSQ6iomIopzy476Txv8aKW8t7A7cGqRW1X6if
+         MkVWDjJULW/QNpE24aW1xIf3RhXPvP0tekTQLZmmz3N2rIoiKxlCKmpZ3iqa1phMrkri
+         b18ruXDN8N74bvHTjka97QfBEE6dcuHEv4R7XgYk0Uds472CHyERrgY1SQDIBsg1Yz+0
+         qALw==
+X-Gm-Message-State: AOAM531tXe5tfBG+FbSpszKguTz8xUuGliFVwhBoIqdbF6zr520TEbBd
+        mz/IMKz9+5Ms6bRUpVMeSQ==
+X-Google-Smtp-Source: ABdhPJx8+7c641wEUgu8STii4oQje/7ttveo4f3P9XPnuvNlZ3Xg+IQx39aBP3kiPfMlhnetHIGGwg==
+X-Received: by 2002:a05:6870:3456:b0:e9:23d3:e701 with SMTP id i22-20020a056870345600b000e923d3e701mr2756689oah.11.1654176027237;
+        Thu, 02 Jun 2022 06:20:27 -0700 (PDT)
+Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
+        by smtp.gmail.com with ESMTPSA id w2-20020a9d5a82000000b0060603221240sm2220019oth.16.2022.06.02.06.20.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 02 Jun 2022 06:20:26 -0700 (PDT)
+Received: (nullmailer pid 2133915 invoked by uid 1000);
+        Thu, 02 Jun 2022 13:20:25 -0000
+Date:   Thu, 2 Jun 2022 08:20:25 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Guillaume Ranquet <granquet@baylibre.com>
+Cc:     Chun-Kuang Hu <chunkuang.hu@kernel.org>,
         Philipp Zabel <p.zabel@pengutronix.de>,
         David Airlie <airlied@linux.ie>,
         Daniel Vetter <daniel@ffwll.ch>,
-        Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Matthias Brugger <matthias.bgg@gmail.com>,
         Chunfeng Yun <chunfeng.yun@mediatek.com>,
-        "Kishon Vijay Abraham I" <kishon@ti.com>,
-        Vinod Koul <vkoul@kernel.org>, "Helge Deller" <deller@gmx.de>,
-        Jitao shi <jitao.shi@mediatek.com>
-CC:     AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        <dri-devel@lists.freedesktop.org>,
-        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-phy@lists.infradead.org>, <linux-fbdev@vger.kernel.org>
-Date:   Thu, 2 Jun 2022 20:19:05 +0800
-In-Reply-To: <76ddd49bb2bb46923900b085056ce22d7bfa0b0a.camel@mediatek.com>
+        Kishon Vijay Abraham I <kishon@ti.com>,
+        Vinod Koul <vkoul@kernel.org>, Helge Deller <deller@gmx.de>,
+        CK Hu <ck.hu@mediatek.com>, Jitao shi <jitao.shi@mediatek.com>,
+        Markus Schneider-Pargmann <msp@baylibre.com>,
+        dri-devel@lists.freedesktop.org,
+        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-phy@lists.infradead.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v10 02/21] dt-bindings: mediatek,dp: Add Display Port
+ binding
+Message-ID: <20220602132025.GA2110588-robh@kernel.org>
 References: <20220523104758.29531-1-granquet@baylibre.com>
-         <20220523104758.29531-12-granquet@baylibre.com>
-         <76ddd49bb2bb46923900b085056ce22d7bfa0b0a.camel@mediatek.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+ <20220523104758.29531-3-granquet@baylibre.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220523104758.29531-3-granquet@baylibre.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, 2022-05-30 at 16:38 +0800, CK Hu wrote:
-> Hi, Guillaume:
+On Mon, May 23, 2022 at 12:47:35PM +0200, Guillaume Ranquet wrote:
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
 > 
-> On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
-> > Add flexibility by moving the swap shift value to SoC specific
-> > config
-> > 
-> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> > Reviewed-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
-> > Reviewed-by: AngeloGioacchino Del Regno <
-> > angelogioacchino.delregno@collabora.com>
-> > ---
-> >  drivers/gpu/drm/mediatek/mtk_dpi.c | 8 +++++++-
-> >  1 file changed, 7 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/gpu/drm/mediatek/mtk_dpi.c
-> > b/drivers/gpu/drm/mediatek/mtk_dpi.c
-> > index 6eeda222a973..6d4d8c6ec47d 100644
-> > --- a/drivers/gpu/drm/mediatek/mtk_dpi.c
-> > +++ b/drivers/gpu/drm/mediatek/mtk_dpi.c
-> > @@ -131,6 +131,7 @@ struct mtk_dpi_conf {
-> >  	u32 dimension_mask;
-> >  	/* HSIZE and VSIZE mask (no shift) */
-> >  	u32 hvsize_mask;
-> > +	u32 channel_swap_shift;
-> >  	const struct mtk_dpi_yc_limit *limit;
-> >  };
-> >  
-> > @@ -349,7 +350,8 @@ static void mtk_dpi_config_channel_swap(struct
-> > mtk_dpi *dpi,
-> >  		break;
-> >  	}
-> >  
-> > -	mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING, val << CH_SWAP,
-> > CH_SWAP_MASK);
-> > +	mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING, val << dpi->conf-
-> > > channel_swap_shift,
-> > 
-> > +		     CH_SWAP_MASK);
-> > From the definiton:
+> This controller is present on several mediatek hardware. Currently
+> mt8195 and mt8395 have this controller without a functional difference,
+> so only one compatible field is added.
 > 
->  #define CH_SWAP				0
-> +#define DPINTF_CH_SWAP			BIT(1)
->  #define CH_SWAP_MASK			(0x7 << 0)
-> +#define DPINTF_CH_SWAP_MASK		(0x7 << 1)
+> The controller can have two forms, as a normal display port and as an
+> embedded display port.
 > 
-> This statement should be:
-> 
-> mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING, val << dpi->conf-
-> > channel_swap_shift, CH_SWAP_MASK << dpi->conf->channel_swap_shift);
-> 
-> dpi->conf->channel_swap_shift is 1 for MT8195-DP_INTF and 0 for
-> others.
-> And drop the definition of DPINTF_CH_SWAP and DPINTF_CH_SWAP_MASK,
-> 
-> Regards,
-> CK
-> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> ---
+>  .../display/mediatek/mediatek,dp.yaml         | 99 +++++++++++++++++++
+>  1 file changed, 99 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
 
-Hello CK,
-
-I have checked this with Jitao,
-it's all shift 1 bit including mask and value.
-
-I will modify like this:
-#define DPINTF_CH_SWAP 1
-
-mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING,
-val << dpi->conf-> channel_swap_shift,
-CH_SWAP_MASK << dpi->conf->channel_swap_shift);
-
-
-BR,
-Bo-Chen
-> 
-> >  }
-> >  
-> >  static void mtk_dpi_config_yuv422_enable(struct mtk_dpi *dpi, bool
-> > enable)
-> > @@ -821,6 +823,7 @@ static const struct mtk_dpi_conf mt8173_conf =
-> > {
-> >  	.swap_input_support = true,
-> >  	.dimension_mask = HPW_MASK,
-> >  	.hvsize_mask = HSIZE_MASK,
-> > +	.channel_swap_shift = CH_SWAP,
-> >  	.limit = &mtk_dpi_limit,
-> >  };
-> >  
-> > @@ -835,6 +838,7 @@ static const struct mtk_dpi_conf mt2701_conf =
-> > {
-> >  	.swap_input_support = true,
-> >  	.dimension_mask = HPW_MASK,
-> >  	.hvsize_mask = HSIZE_MASK,
-> > +	.channel_swap_shift = CH_SWAP,
-> >  	.limit = &mtk_dpi_limit,
-> >  };
-> >  
-> > @@ -848,6 +852,7 @@ static const struct mtk_dpi_conf mt8183_conf =
-> > {
-> >  	.swap_input_support = true,
-> >  	.dimension_mask = HPW_MASK,
-> >  	.hvsize_mask = HSIZE_MASK,
-> > +	.channel_swap_shift = CH_SWAP,
-> >  	.limit = &mtk_dpi_limit,
-> >  };
-> >  
-> > @@ -861,6 +866,7 @@ static const struct mtk_dpi_conf mt8192_conf =
-> > {
-> >  	.swap_input_support = true,
-> >  	.dimension_mask = HPW_MASK,
-> >  	.hvsize_mask = HSIZE_MASK,
-> > +	.channel_swap_shift = CH_SWAP,
-> >  	.limit = &mtk_dpi_limit,
-> >  };
-> >  
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
+The example has warnings. Run 'make dt_binding_check' before submitting.

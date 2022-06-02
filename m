@@ -2,115 +2,216 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92B4ECCA477
-	for <linux-fbdev@archiver.kernel.org>; Wed,  1 Jun 2022 16:58:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0233C43334
+	for <linux-fbdev@archiver.kernel.org>; Thu,  2 Jun 2022 03:50:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346145AbiFAQ6c (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 1 Jun 2022 12:58:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56858 "EHLO
+        id S229460AbiFBDuT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 1 Jun 2022 23:50:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38520 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345508AbiFAQ6b (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 1 Jun 2022 12:58:31 -0400
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A9BAC313B1;
-        Wed,  1 Jun 2022 09:58:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1654102709; x=1685638709;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=gwfhI1oZGrbLaBNHLPYsrYeVXkiVePA59FrgD/UWM4k=;
-  b=hQSW0WHNJloSEkd+fBNg6x0D7FQwMvl1Suv+2dWGOEJpYpQ4CxA42Xq6
-   qoLY0h8sYiJLuykchPmzBw4+gYxjTAlF250nj05Y6Sd7euk0V/cHXAB6J
-   USNZdcbTYv7I0SthhZyVYkKSAYlfdJAEiE7ZjSloh8pnhwcxl6UOFG2Ef
-   e89nTdPbuy7Fe3HMIJQ0FgtRSb97ffHdc2iLOcalfVu4TkQuQ/m95xlz3
-   7IdXJbcqq5A/80LgAfsKHGUQVEX2XlhG6FEJO8VsyLjitY9RMiFCF/AQ2
-   zbxIvvldRj32SY1P6AiaYaVzouCJrhxogRr7A+ry11DDBeMxd+0ZxsMUf
-   A==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10365"; a="275734842"
-X-IronPort-AV: E=Sophos;i="5.91,268,1647327600"; 
-   d="scan'208";a="275734842"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Jun 2022 09:58:29 -0700
-X-IronPort-AV: E=Sophos;i="5.91,268,1647327600"; 
-   d="scan'208";a="530150781"
-Received: from smile.fi.intel.com ([10.237.72.54])
-  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Jun 2022 09:58:24 -0700
-Received: from andy by smile.fi.intel.com with local (Exim 4.95)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1nwRfm-000QqW-EX;
-        Wed, 01 Jun 2022 19:58:18 +0300
-Date:   Wed, 1 Jun 2022 19:58:18 +0300
-From:   "andriy.shevchenko@linux.intel.com" 
-        <andriy.shevchenko@linux.intel.com>
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     Dominik Kierner <dkierner@dh-electronics.com>,
-        "airlied@linux.ie" <airlied@linux.ie>,
-        "daniel.vetter@ffwll.ch" <daniel.vetter@ffwll.ch>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "geert@linux-m68k.org" <geert@linux-m68k.org>,
-        "lee.jones@linaro.org" <lee.jones@linaro.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>,
-        "maxime@cerno.tech" <maxime@cerno.tech>,
-        "noralf@tronnes.org" <noralf@tronnes.org>,
-        "sam@ravnborg.org" <sam@ravnborg.org>,
-        "thierry.reding@gmail.com" <thierry.reding@gmail.com>,
-        "tzimmermann@suse.de" <tzimmermann@suse.de>,
-        "u.kleine-koenig@pengutronix.de" <u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH v6 3/6] drm: Add driver for Solomon SSD130x OLED displays
-Message-ID: <Ypeaqgc9r7TOiSbn@smile.fi.intel.com>
-References: <5d817ea54144414aa7865a72694b5811@dh-electronics.com>
- <536d4700-6f28-176d-7883-5793f5cd7c8e@redhat.com>
+        with ESMTP id S229453AbiFBDuS (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 1 Jun 2022 23:50:18 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3A83B2A3065;
+        Wed,  1 Jun 2022 20:50:12 -0700 (PDT)
+X-UUID: e362700a8d8d4b6ea2f942f28d9e6338-20220602
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.5,REQID:f76b4cdc-e8fa-4f57-9431-097f5be524d7,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:2a19b09,CLOUDID:7b998c0d-3a0d-4bbe-9d72-0e5d26d57423,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
+        ,QS:0,BEC:nil
+X-UUID: e362700a8d8d4b6ea2f942f28d9e6338-20220602
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1420575617; Thu, 02 Jun 2022 11:50:02 +0800
+Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
+ mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Thu, 2 Jun 2022 11:50:00 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
+ Transport; Thu, 2 Jun 2022 11:50:00 +0800
+Message-ID: <358b183faed73672e8fa4f6eb0d48fb067aec87d.camel@mediatek.com>
+Subject: Re: [PATCH v10 00/21] drm/mediatek: Add mt8195 DisplayPort driver
+From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
+To:     Guillaume Ranquet <granquet@baylibre.com>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "David Airlie" <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Chunfeng Yun <chunfeng.yun@mediatek.com>,
+        "Kishon Vijay Abraham I" <kishon@ti.com>,
+        Vinod Koul <vkoul@kernel.org>, "Helge Deller" <deller@gmx.de>,
+        CK Hu <ck.hu@mediatek.com>, Jitao shi <jitao.shi@mediatek.com>,
+        <angelogioacchino.delregno@collabora.com>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        <maxime@cerno.tech>
+CC:     <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-phy@lists.infradead.org>, <linux-fbdev@vger.kernel.org>
+Date:   Thu, 2 Jun 2022 11:50:00 +0800
+In-Reply-To: <20220523104758.29531-1-granquet@baylibre.com>
+References: <20220523104758.29531-1-granquet@baylibre.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <536d4700-6f28-176d-7883-5793f5cd7c8e@redhat.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, May 25, 2022 at 09:46:24PM +0200, Javier Martinez Canillas wrote:
-> On 3/10/22 14:11, Dominik Kierner wrote:
-
-...
-
-> > # DRM Mode Configuration via Device Tree
-> > 
-> > In the old fbdev driver, the display modes are hard-coded, which means
-> > for every new display configuration, a new patch needs to be mainlined,
-> > which slows down official Kernel support and
-> > puts burden on the maintainers.
-> > Additionally, with the DRM-subsystem supporting height and length
-> > information, for scaling, this opens up a lot of new combinations.
-> > The SSD1306 for example, is available in multiple resolutions like
-> > 128x64 and 96x16 and comes in different sizes per resolution as well.
-> > Just to name a few:
-> > * 128x64 0.96" (22x11mm)
-> > * 128x64 1.3" (30x15mm)
-> > * 96x16 0.69" (18x3mm)
-> >> Instead of hard-coding, I would suggest something along the lines of
-> > of_get_drm_display_mode().
-> > The displays won't need to support multiple modes at the same time,
-> > let alone support for switching between them,
-> > so the one-time invocation of this expensive function might be worth it. 
-> > maybe a new and simpler function that could be named:
-> > of_get_drm_display_mode_simple()
+On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
+> this series is built around the DisplayPort driver. The dpi/dpintf
+> driver and the added helper functions are required for the
+> DisplayPort
+> driver to work.
 > 
-> This makes sense to me as well.
+> This v10 still has some un-answered comments and TODOs for v11.
+> 
+> This has been tested sucessfully on a 5.18-next based "vendor
+> branch".
+> 
+> There's a missing dependency in the mediatek clock framework to allow
+> a
+> mux clock to change it's parent automatically on rate change.
+> Without this change, the dpi driver won't properly set the clocks on
+> mode change and thus nothing will be displayed on screen.
+> 
+> Changes from v9:
+> - The DP-Phy is back to being a child device of the DP driver (as in
+> v8)
+> - hot plug detection has been added back to Embedded Display Port...
+> as
+>   after discussing with mediatek experts, this is needed eventhough
+> the
+>   Embedded Display port is not un-pluggable
+> - rebased on linux-next
+> - simplified/split train_handler function, as suggested by Rex
+> - added comments on the sleep/delays present in the code
+> - removed previous patch introducing retries when receiving AUX_DEFER
+> as
+>   this is already handled in the dp_aux framework
+> - added max-lane and max-linkrate device tree u8 properties instead
+> of
+>   hardcoded #defines
+> 
+> Things that are in my todolist for v11:
+> - retrieve CK/DE support from panel driver instead of hardcoding it
+> into
+>   the dpi driver
+> - refcount the dp driver "enabled" status for "future proofing"
+> - review the drm_dp_helpers for features/functions that have been
+>   re-implemented in the mediatek dp drivers
+> 
+> Older revisions:
+> RFC - 
+> https://lore.kernel.org/linux-mediatek/20210816192523.1739365-1-msp@baylibre.com/
+> v1  - 
+> https://lore.kernel.org/linux-mediatek/20210906193529.718845-1-msp@baylibre.com/
+> v2  - 
+> https://lore.kernel.org/linux-mediatek/20210920084424.231825-1-msp@baylibre.com/
+> v3  - 
+> https://lore.kernel.org/linux-mediatek/20211001094443.2770169-1-msp@baylibre.com/
+> v4  - 
+> https://lore.kernel.org/linux-mediatek/20211011094624.3416029-1-msp@baylibre.com/
+> v5  - 
+> https://lore.kernel.org/all/20211021092707.3562523-1-msp@baylibre.com/
+> v6  - 
+> https://lore.kernel.org/linux-mediatek/20211110130623.20553-1-granquet@baylibre.com/
+> v7  - 
+> https://lore.kernel.org/linux-mediatek/20211217150854.2081-1-granquet@baylibre.com/
+> v8  - 
+> https://lore.kernel.org/linux-mediatek/20220218145437.18563-1-granquet@baylibre.com/
+> v9  - 
+> https://lore.kernel.org/all/20220327223927.20848-1-granquet@baylibre.com/
+> 
+> Functional dependencies are:
+> - Add Mediatek Soc DRM (vdosys0) support for mt8195
+>   
+> https://lore.kernel.org/linux-mediatek/20220419094143.9561-2-jason-jh.lin@mediatek.com/
+> - Add MediaTek SoC DRM (vdosys1) support for mt8195
+>   
+> https://lore.kernel.org/linux-mediatek/20220512053128.31415-1-nancy.lin@mediatek.com/
+> 
+> 
+> Guillaume Ranquet (15):
+>   drm/edid: Convert cea_sad helper struct to kernelDoc
+>   drm/edid: Add cea_sad helpers for freq/length
+>   drm/mediatek: dpi: move dpi limits to SoC config
+>   drm/mediatek: dpi: implement a CK/DE pol toggle in SoC config
+>   drm/mediatek: dpi: implement a swap_input toggle in SoC config
+>   drm/mediatek: dpi: move dimension mask to SoC config
+>   drm/mediatek: dpi: move hvsize_mask to SoC config
+>   drm/mediatek: dpi: move swap_shift to SoC config
+>   drm/mediatek: dpi: move the yuv422_en_bit to SoC config
+>   drm/mediatek: dpi: move the csc_enable bit to SoC config
+>   drm/mediatek: dpi: Add dpintf support
+>   drm/mediatek: dpi: Only enable dpi after the bridge is enabled
+>   drm/meditek: dpi: Add matrix_sel helper
+>   drm/mediatek: Add mt8195 External DisplayPort support
+>   drm/mediatek: DP audio support for mt8195
+> 
+> Jitao Shi (1):
+>   drm/mediatek: add hpd debounce
+> 
+> Markus Schneider-Pargmann (5):
+>   dt-bindings: mediatek,dpi: Add DPINTF compatible
+>   dt-bindings: mediatek,dp: Add Display Port binding
+>   video/hdmi: Add audio_infoframe packing for DP
+>   phy: phy-mtk-dp: Add driver for DP phy
+>   drm/mediatek: Add mt8195 Embedded DisplayPort driver
+> 
+>  .../display/mediatek/mediatek,dp.yaml         |   99 +
+>  .../display/mediatek/mediatek,dpi.yaml        |   13 +-
+>  MAINTAINERS                                   |    1 +
+>  drivers/gpu/drm/drm_edid.c                    |   74 +
+>  drivers/gpu/drm/mediatek/Kconfig              |    8 +
+>  drivers/gpu/drm/mediatek/Makefile             |    2 +
+>  drivers/gpu/drm/mediatek/mtk_dp.c             | 3419
+> +++++++++++++++++
+>  drivers/gpu/drm/mediatek/mtk_dp_reg.h         |  570 +++
+>  drivers/gpu/drm/mediatek/mtk_dpi.c            |  272 +-
+>  drivers/gpu/drm/mediatek/mtk_dpi_regs.h       |   38 +
+>  drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.c   |    8 +
+>  drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.h   |    1 +
+>  drivers/gpu/drm/mediatek/mtk_drm_drv.c        |    8 +-
+>  drivers/gpu/drm/mediatek/mtk_drm_drv.h        |    3 +
+>  drivers/phy/mediatek/Kconfig                  |    8 +
+>  drivers/phy/mediatek/Makefile                 |    1 +
+>  drivers/phy/mediatek/phy-mtk-dp.c             |  200 +
+>  drivers/video/hdmi.c                          |   82 +-
+>  include/drm/dp/drm_dp_helper.h                |    2 +
+>  include/drm/drm_edid.h                        |   26 +-
+>  include/linux/hdmi.h                          |    7 +-
+>  include/linux/soc/mediatek/mtk-mmsys.h        |    4 +-
+>  22 files changed, 4765 insertions(+), 81 deletions(-)
+>  create mode 100644
+> Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+>  create mode 100644 drivers/gpu/drm/mediatek/mtk_dp.c
+>  create mode 100644 drivers/gpu/drm/mediatek/mtk_dp_reg.h
+>  create mode 100644 drivers/phy/mediatek/phy-mtk-dp.c
 
-What about non-OF platforms? Please, do not spread OF-only interfaces,
-and use fwnode instead.
+Hello all,
 
-> > Providing a mode could later prove useful for a conversion to
-> > drm_panel, if that is feasible.
-> > 
-> > But for a function like this, I have to chicken out.
+Due to the resource issue, I will keep upstreaming Guillaume's MT8195
+dp/edp series.
 
--- 
-With Best Regards,
-Andy Shevchenko
+I will check the comments for v8/v9/v10 and have some discussion with
+you.
 
+Thanks for your all comments.
+
+BRs,
+Bo-Chen
 

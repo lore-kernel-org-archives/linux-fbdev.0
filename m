@@ -2,64 +2,45 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 252F9C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu,  2 Jun 2022 20:16:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C067CCA473
+	for <linux-fbdev@archiver.kernel.org>; Fri,  3 Jun 2022 17:10:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237940AbiFBUQI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 2 Jun 2022 16:16:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58964 "EHLO
+        id S1344248AbiFCRK2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 3 Jun 2022 13:10:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52576 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237676AbiFBUQH (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 2 Jun 2022 16:16:07 -0400
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com [IPv6:2607:f8b0:4864:20::441])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A112BC2E;
-        Thu,  2 Jun 2022 13:16:03 -0700 (PDT)
-Received: by mail-pf1-x441.google.com with SMTP id b135so5613066pfb.12;
-        Thu, 02 Jun 2022 13:16:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=Kb/EgUnEl+66ubR0OBdnZBhP1OFKsT5B/tkrmGF5yWM=;
-        b=NkE0Ee2nKeVG01X4TGf7Tds/HpDebAAGIAaGwKYQebrpvg7ak4oaNFBWIPs3Xdbx/6
-         /ueM/g2UgL33WPhvSE1L6JXOWT5chkMdkpBYr1/zYN99/wpvyMYpmPhA1oytFSuRvYuV
-         PNVqn/U5agKa+qIWBAIGEorsNvVDKBWugZg900PvAoG9Qmtwztu7xfeAcVkvqkOl0WYL
-         cOZn4F9+0NeUducPaMA2Z6OZ8Mng1gwTUzPg03BP8mG4yWhRQRsi/9O5/gtaqrHqD4Bg
-         4OA13xXtBNtUEnlW2r45PUnCTtuMdwsf1kr3gPJWnFj4wDmdBPTRZoNV0p1ETDx5FzvG
-         2rSA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=Kb/EgUnEl+66ubR0OBdnZBhP1OFKsT5B/tkrmGF5yWM=;
-        b=IA3B5ANyWQw+rp206KCxp2mt1dg61aeWI7z7dxUsnrqwcrGNiinwbJtlIZ30OU2dFc
-         s83uxfkU8P9iOtzxMhd/TqbA81mVZACImSX7PhJQHjL1RT4BdVmmR1gXcgaYcU/zZ/6R
-         loc74AviYG2FhoM0bNGD9nzb1437FVAqbEVWZ17xIaYZBMIvK5VkVsewxDfWWkZHEGq6
-         Aozq1NKz2BlcOpQmzP1khm/ojNKTnrNwcSE9SgOdOGkLdpRdXxCVpZpJHRrIOP3jJvTo
-         RgXHTiinSYp0EnIkcToU6O4d7BvTWwvGRgPvnNK0rZdzlHg+PL0J3JNbxIZsyDaD5qs6
-         bXew==
-X-Gm-Message-State: AOAM533H9oh3TID4oc2GaTs5tFVkwi+HS+vtN9aaWvDRTlw6RtUAlxWH
-        jm4Q0cE8UrCs/5mWSaRA8XEOPgZnh8NdvKxYfPvyDQxWGiU=
-X-Google-Smtp-Source: ABdhPJys4WOb9urNyLdt4aeuOqGuCZdLw80FNC5PvFsBXte5r8ULYu9Wjjuq4Wzf+sPQ6VLvykCW8T4PAgm77gNu2zY=
-X-Received: by 2002:a05:6e02:4a1:b0:2d3:a778:f0f1 with SMTP id
- e1-20020a056e0204a100b002d3a778f0f1mr3986818ils.212.1654194896902; Thu, 02
- Jun 2022 11:34:56 -0700 (PDT)
-MIME-Version: 1.0
-References: <20220531104211.17106-1-peterwu.pub@gmail.com> <20220531104211.17106-2-peterwu.pub@gmail.com>
- <33a797d7-ca60-5153-2ba1-3a909fcc5965@linaro.org>
-In-Reply-To: <33a797d7-ca60-5153-2ba1-3a909fcc5965@linaro.org>
-From:   ChiaEn Wu <peterwu.pub@gmail.com>
-Date:   Fri, 3 Jun 2022 02:34:45 +0800
-Message-ID: <CABtFH5+nNRn4azfniKCNc=S2Z2Y0jji_beA_16_UYzAvkak-VA@mail.gmail.com>
-Subject: Re: [PATCH 10/14] dt-bindings: power: supply: Add Mediatek MT6370
- Charger binding documentation
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     lee.jones@linaro.org, daniel.thompson@linaro.org,
+        with ESMTP id S230480AbiFCRK0 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 3 Jun 2022 13:10:26 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 869CE5251B;
+        Fri,  3 Jun 2022 10:10:25 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 0B46BB823AB;
+        Fri,  3 Jun 2022 17:10:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3C2A6C385B8;
+        Fri,  3 Jun 2022 17:10:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1654276222;
+        bh=Yhb8OPp1sSwZzVcLGVjDxYrN0vlwebO9faHuTNWhG4o=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=pJUj26xM3omq1XfJzae2/kNYP0GNrKZJAlX6qQvFkoORdgX2jatgBaZhjITDetyo4
+         6Ho3r8JCZNDTqYqTywpriBv1enouc70JPjw/sYrT7zAqOY3+TbCZUGrBVxnV0twFzb
+         vBFIAuE6Owl4SCoC0jyhKAh0Wkj62wDDrGkEYuY9ZHlH2kkn5YxDGMdMJ4lJ4ZJtOM
+         8FilAtIOaatwJZHh8x0+lYlCL4U9MemxvnRqpNaXZGP17ucBaA6OSj8utHuAIdF2Zq
+         mOVjuiYHKrUQzkdqfZZndqYO3gcqFcQLMxn6f/bbPrMbEy5YxC7w8yXCWqyVB3lzQC
+         zN8eYoz/vFcNw==
+Date:   Fri, 3 Jun 2022 18:19:17 +0100
+From:   Jonathan Cameron <jic23@kernel.org>
+To:     ChiaEn Wu <peterwu.pub@gmail.com>
+Cc:     Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        lee.jones@linaro.org, daniel.thompson@linaro.org,
         jingoohan1@gmail.com, pavel@ucw.cz, robh+dt@kernel.org,
         krzysztof.kozlowski+dt@linaro.org, matthias.bgg@gmail.com,
         sre@kernel.org, chunfeng.yun@mediatek.com,
-        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
-        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
+        gregkh@linuxfoundation.org, lars@metafoo.de, lgirdwood@gmail.com,
+        broonie@kernel.org, linux@roeck-us.net,
         heikki.krogerus@linux.intel.com, deller@gmx.de,
         ChiYuan Huang <cy_huang@richtek.com>, alice_chen@richtek.com,
         chiaen_wu@richtek.com, dri-devel@lists.freedesktop.org,
@@ -68,146 +49,94 @@ Cc:     lee.jones@linaro.org, daniel.thompson@linaro.org,
         linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Subject: Re: [RESEND 10/14] iio: adc: mt6370: Add Mediatek MT6370 support
+Message-ID: <20220603181917.3f737913@jic23-huawei>
+In-Reply-To: <CABtFH5Lg43EXS7juhXQ2wQFZzkpD7YB8rM6UFT=U9BDOKcbaNw@mail.gmail.com>
+References: <20220531111900.19422-1-peterwu.pub@gmail.com>
+        <20220531111900.19422-11-peterwu.pub@gmail.com>
+        <20220531142102.00007df0@Huawei.com>
+        <CABtFH5Lg43EXS7juhXQ2wQFZzkpD7YB8rM6UFT=U9BDOKcbaNw@mail.gmail.com>
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.34; x86_64-pc-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Krzysztof,
-
-Thank you for the valuable suggestion.
-Sorry for sending the same email again. I forgot to reply to everyone
-in my last email..
-
-Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> =E6=96=BC 2022=E5=B9=
-=B46=E6=9C=881=E6=97=A5 =E9=80=B1=E4=B8=89 =E4=B8=8A=E5=8D=884:15=E5=AF=AB=
-=E9=81=93=EF=BC=9A
->
-> On 31/05/2022 12:42, ChiaEn Wu wrote:
-> > From: ChiaEn Wu <chiaen_wu@richtek.com>
+> >  
+> > > +
+> > > +#define MT6370_AICR_400MA            0x6
+> > > +#define MT6370_ICHG_500MA            0x4
+> > > +#define MT6370_ICHG_900MA            0x8
+> > > +
+> > > +#define ADC_CONV_TIME_US             35000
+> > > +#define ADC_CONV_POLLING_TIME                1000
+> > > +
+> > > +struct mt6370_adc_data {
+> > > +     struct device *dev;
+> > > +     struct regmap *regmap;
+> > > +     struct mutex lock;  
 > >
->
-> Subject - remove "binding documentation". It's already implied by prefix.
->
-> > Add Mediatek MT6370 Charger binding documentation.
+> > All locks need documentation.  What is the scope of the lock?
+> > Looks like it protects device state when doing setup, wait for read, read
+> > cycles.  
+> 
+> This mutex lock is for preventing the different adc channel from being
+> read at the same time.
+> So, if I just change its name to adc_chan_lock or adc_lock and add the
+> comment for this mutex lock, does this change meet your requirement
+
+Yes
+
+> 
+> >  
+> > > +};
+> > > +
+> > > +static int mt6370_adc_read_scale(struct mt6370_adc_data *priv,
+> > > +                              int chan, int *val1, int *val2)
+> > > +{
+> > > +     unsigned int reg_val;
+> > > +     int ret;
+> > > +
+> > > +     switch (chan) {
+> > > +     case MT6370_CHAN_VBAT:
+> > > +     case MT6370_CHAN_VSYS:
+> > > +     case MT6370_CHAN_CHG_VDDP:
+> > > +             *val1 = 5000;  
 > >
-> > Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
-> > ---
-> >  .../power/supply/mediatek,mt6370-charger.yaml | 60 +++++++++++++++++++
-> >  1 file changed, 60 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/power/supply/medi=
-atek,mt6370-charger.yaml
+> > This seems very large.  Voltages are in millivolts
+> > as per Documentation/ABI/testing/sysfs-bus-iio
+> > and this means each step is 5 volts.
 > >
-> > diff --git a/Documentation/devicetree/bindings/power/supply/mediatek,mt=
-6370-charger.yaml b/Documentation/devicetree/bindings/power/supply/mediatek=
-,mt6370-charger.yaml
-> > new file mode 100644
-> > index 000000000000..9d5c4487ca9c
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/power/supply/mediatek,mt6370-ch=
-arger.yaml
-> > @@ -0,0 +1,60 @@
-> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > +%YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/power/supply/mediatek,mt6370-charge=
-r.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: Mediatek MT6370 Battery Charger
-> > +
-> > +maintainers:
-> > +  - ChiaEn Wu <chiaen_wu@richtek.com>
-> > +
-> > +description: |
-> > +  This module is part of the MT6370 MFD device.
-> > +  Provides Battery Charger, Boost for OTG devices and BC1.2 detection.
-> > +
-> > +properties:
-> > +  compatible:
-> > +    const: mediatek,mt6370-charger
-> > +
-> > +  interrupts:
-> > +    description: |
-> > +      Specify what irqs are needed to be handled by MT6370 Charger dri=
-ver. IRQ
-> > +      "MT6370_IRQ_CHG_MIVR", "MT6370_IRQ_ATTACH" and "MT6370_IRQ_OVPCT=
-RL_UVP_D"
-> > +      are required.
-> > +    items:
-> > +      - description: BC1.2 done irq for mt6370 charger
-> > +      - description: usb plug in irq for mt6370 charger
-> > +      - description: mivr irq for mt6370 charger
->
-> s/for mt6370 charger//
-> in each item
+> > So value in mv is currently 5 * _raw
+> >  
+> 
+> OK, I got it. Also, I will add the ABI file in the next version. Thanks!
+Only add ABI documentation for anything non-standard.
 
-I got it, this will be refined in the next version. Thanks!
+The documentation scripts really don't like repeats!
 
->
-> > +
-> > +  interrupt-names:
-> > +    items:
-> > +      - const: attach_i
-> > +      - const: uvp_d_evt
-> > +      - const: mivr
-> > +
-> > +  io-channels:
-> > +    description: |
-> > +      Use ADC channel to read vbus, ibus, ibat, etc., info. Ibus ADC c=
-hannel
-> > +      is required.
->
-> Constraints (e.g. maxItems) are needed.
+> 
+> > > +static const char * const mt6370_channel_labels[MT6370_CHAN_MAX] = {  
+> >
+> > Perhaps define an enum with which to index this and the chan spec
+> > and hence ensure they end up matching.
+> >  [vbusdiv5] = "vbusdiv5", etc
+> >  
+> 
+> Do you mean that I can refine this const char array to the following array??
+> 
+> static const char * const mt6370_channel_labels[MT6370_CHAN_MAX] = {
+>     [MT6370_CHAN_VBUSDIV5] =  "vbusdiv5",
+>     [MT6370_CHAN_VBUSDIV2] =  "vbusdiv2",
+>     ...
+>     ...
+>     [MT6370_CHAN_TEMP_JC] =  "temp_jc",
+> };
 
-OK, I will add them in the new version!
+Yes
 
->
-> > +
-> > +  usb-otg-vbus:
->
-> Let's keep the same name as in MT6360:
->
-> usb-otg-vbus-regulator
+thanks,
 
-I'll change the name to correspond with MT6360 in the next patch, thanks!
-
-> > +    type: object
-> > +    description: OTG boost regulator.
-> > +    $ref: /schemas/regulator/regulator.yaml#
-> > +
-> > +    properties:
-> > +      enable-gpio:
-> > +        maxItems: 1
-> > +        description: |
-> > +          Specify a valid 'enable' gpio for the regulator and it's opt=
-ional
->
-> This description is pointless - does not bring any more information. You
-> repeat the schema. Please, avoid such descriptions.
-
-I got it, I will remove them in the next patch.
-
->
-> > +
-> > +required:
-> > +  - compatible
-> > +  - interrupts
-> > +  - interrupt-names
-> > +  - io-channels
-> > +
-> > +additionalProperties: false
->
->
-> How about example? Or is it going to be in MFD schema?
-
-All of MT6370 binding documentation examples are in the MFD schema! Thanks.
-
->
->
-> Best regards,
-> Krzysztof
-
-Best regards,
-ChiaEn Wu
+Jonathan

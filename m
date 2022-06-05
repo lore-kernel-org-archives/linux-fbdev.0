@@ -2,68 +2,168 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B1B5C433EF
-	for <linux-fbdev@archiver.kernel.org>; Sun,  5 Jun 2022 09:00:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C2E8CCA482
+	for <linux-fbdev@archiver.kernel.org>; Sun,  5 Jun 2022 16:11:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234747AbiFEJA5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 5 Jun 2022 05:00:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48342 "EHLO
+        id S1351195AbiFEQL0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 5 Jun 2022 12:11:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59036 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231216AbiFEJA5 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 5 Jun 2022 05:00:57 -0400
-X-Greylist: delayed 82 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Sun, 05 Jun 2022 02:00:52 PDT
-Received: from smtpbg.qq.com (smtpbg139.qq.com [175.27.65.136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F92E45529
-        for <linux-fbdev@vger.kernel.org>; Sun,  5 Jun 2022 02:00:52 -0700 (PDT)
-X-QQ-mid: bizesmtp73t1654419559tv8kcgm9
-Received: from localhost.localdomain ( [111.9.5.115])
-        by bizesmtp.qq.com (ESMTP) with 
-        id ; Sun, 05 Jun 2022 16:59:14 +0800 (CST)
-X-QQ-SSF: 01000000002000C0G000B00A0000000
-X-QQ-FEAT: DHpJGCbtM4nx5RtduTeQ1jE8RQDF4LyMBrhXEEUK5EHEg7aO/KdFUpyIc2BSy
-        yrMUqW6RJu/KdMaqHn7JDRxSJhkSf6H0FZDCWN6wYxoXaFUyorcimuMghjbT+fIYMlZ3ceP
-        9+UIYN7uAA1WAyy6HFr1mJfzJHtV6lr3VL54fOqp9ZRrK+vjLHUz9JaOE+dbSl7FZAX8INu
-        lg2OcHdwF6v0xvPt0DBQsyIEbosSgH0tizfuxGl1r+PpzLcxVYzyTWKg92tNpqBk7j8pSN2
-        mL+Y2oIs/J7hyiv7x6KuIDAkQ4EkPF2X2XRcpzuSyCNQ7Q9y0nalf1x6qEAE8j8NhTyXrXq
-        yy4kRcGFg9uwU9D91nCulRkiG+FuQ==
-X-QQ-GoodBg: 0
-From:   Xiang wangx <wangxiang@cdjrlc.com>
-To:     deller@gmx.de
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, Xiang wangx <wangxiang@cdjrlc.com>
-Subject: [PATCH] fbdev: Fix syntax errors in comments
-Date:   Sun,  5 Jun 2022 16:59:13 +0800
-Message-Id: <20220605085913.11682-1-wangxiang@cdjrlc.com>
-X-Mailer: git-send-email 2.36.1
+        with ESMTP id S1351190AbiFEQLZ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 5 Jun 2022 12:11:25 -0400
+Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 090361CFF3
+        for <linux-fbdev@vger.kernel.org>; Sun,  5 Jun 2022 09:11:24 -0700 (PDT)
+Received: by mail-ed1-x52d.google.com with SMTP id x5so10784490edi.2
+        for <linux-fbdev@vger.kernel.org>; Sun, 05 Jun 2022 09:11:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=DhEMuP67p9l6gHaYEp6fnXGttVPME12T6ktP3AWQge0=;
+        b=QNXO7F2FkAsGFQCNld2QcAUPn6alhVgigX1dmDbd3ZX+iuVaRjFFYKE3PoXy+jEf02
+         JCwnrg27lTHCMbi9hzQ6/3N6eMHqvmCIi81ChzbJj10KWxjmla2XHf5bN+4wlxf7H9/q
+         GCARFpWO8PaL7R256uVWtKXy0LSuU68cEdjmNigxHstq77ClMLVZstnQcdo7ci53pib3
+         Ke0GneWLIa4M511qgIiRFOz64sHvhTlw47c0nURg3tnCRwpcKfyF+K+GNTeGNR3VodqT
+         FoeBXabKxL2WtDlBgzGLnTd+Z9RRD0N9wWzUn0EhsEr5yoxPV7GtmxuoisKHVsN+dU8J
+         eGbw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=DhEMuP67p9l6gHaYEp6fnXGttVPME12T6ktP3AWQge0=;
+        b=6W2gVhY8WvEb6LX0u9MdswarX8nV7lCctZ1fiiRqejkEXHxbv6jV/dnvn62Svj2HP5
+         qKA+9ip1rfxpssf7Vr2MhYjzdHP/H1a9aFZFpf6Lart+7RNYghdV0w8lW+r1ZliUVbLJ
+         +DLUaE04ze1DcC0aCln9xQ1pdJwejbevKmq00L4Bbpn6qt2ZB7vpGyrYOcTAnYnr7zA+
+         IA7TpMyyOdlO7AE3DxI4EuwXgKp/nwD3G2YjboLF1IAwh1kByQfZhDfsegur+TN3IkGb
+         2Gx00/5JV08tw8tKEs4bv7vDcdrJQjrEKYpbeXfV/24/lM1Lj3UOv+A1jdATKfBLL4HQ
+         OO6Q==
+X-Gm-Message-State: AOAM533jJQWjViEFQr5PmanTdSjS3IfBK/EbS9KE2O7rinmZHlU7rORL
+        nsg8lBYuQgZS39+9FRGKUpHZ8Q==
+X-Google-Smtp-Source: ABdhPJzf1aRfWMqPIN0vUwQ81NF3efT2xr/E6L8kvihJxDqoLLshcwR5HZpZDT/Uorsouy9/KTw7mg==
+X-Received: by 2002:a05:6402:380f:b0:42b:27aa:d4cb with SMTP id es15-20020a056402380f00b0042b27aad4cbmr22449447edb.211.1654445482544;
+        Sun, 05 Jun 2022 09:11:22 -0700 (PDT)
+Received: from [192.168.0.181] (xdsl-188-155-176-92.adslplus.ch. [188.155.176.92])
+        by smtp.gmail.com with ESMTPSA id a22-20020aa7d916000000b0042dd4f9c464sm6934675edr.84.2022.06.05.09.11.21
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 05 Jun 2022 09:11:22 -0700 (PDT)
+Message-ID: <12096a2c-98c3-9e77-785f-808cc3e1a0e4@linaro.org>
+Date:   Sun, 5 Jun 2022 18:11:20 +0200
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.10.0
+Subject: Re: [PATCH 1/2] dt-bindings: backlight: rt4831: Add the new property
+ for ocp level selection
+Content-Language: en-US
+To:     ChiYuan Huang <u0084500@gmail.com>
+Cc:     Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Helge Deller <deller@gmx.de>, cy_huang <cy_huang@richtek.com>,
+        lucas_tsai@richtek.com,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+        Linux LED Subsystem <linux-leds@vger.kernel.org>,
+        lkml <linux-kernel@vger.kernel.org>
+References: <1653534995-30794-1-git-send-email-u0084500@gmail.com>
+ <1653534995-30794-2-git-send-email-u0084500@gmail.com>
+ <1c7ab94c-a736-c629-bd8c-8a974803e2b9@linaro.org>
+ <CADiBU39jZ6TdYZoH80m4R-X2_fUXZOvDA4yUd_TQdPzBJLE+JA@mail.gmail.com>
+ <076d53d3-6062-686f-8e45-14c5f936bbf6@linaro.org>
+ <20220602135604.GA2194286-robh@kernel.org>
+ <e3aa9c7e-bf2d-dd55-8b3f-ca51f569771d@linaro.org>
+ <CADiBU3-dN0vtQBEqvVLFCUp4-MkhLbQRkOiCet+fO8WfkEW4MQ@mail.gmail.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <CADiBU3-dN0vtQBEqvVLFCUp4-MkhLbQRkOiCet+fO8WfkEW4MQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtp:cdjrlc.com:qybgspam:qybgspam6
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Delete the redundant word 'its'.
+On 02/06/2022 17:31, ChiYuan Huang wrote:
+> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> 於 2022年6月2日 週四 下午9:58寫道：
+>>
+>> On 02/06/2022 15:56, Rob Herring wrote:
+>>> On Thu, May 26, 2022 at 12:32:12PM +0200, Krzysztof Kozlowski wrote:
+>>>> On 26/05/2022 10:13, ChiYuan Huang wrote:
+>>>>> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> 於 2022年5月26日 週四 下午4:06寫道：
+>>>>>>
+>>>>>> On 26/05/2022 05:16, cy_huang wrote:
+>>>>>>> From: ChiYuan Huang <cy_huang@richtek.com>
+>>>>>>>
+>>>>>>> Add the new property for ocp level selection.
+>>>>>>>
+>>>>>>> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+>>>>>>> ---
+>>>>>>>  .../bindings/leds/backlight/richtek,rt4831-backlight.yaml         | 8 ++++++++
+>>>>>>>  include/dt-bindings/leds/rt4831-backlight.h                       | 5 +++++
+>>>>>>>  2 files changed, 13 insertions(+)
+>>>>>>>
+>>>>>>> diff --git a/Documentation/devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml
+>>>>>>> index e0ac686..c1c59de 100644
+>>>>>>> --- a/Documentation/devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml
+>>>>>>> +++ b/Documentation/devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml
+>>>>>>> @@ -47,6 +47,14 @@ properties:
+>>>>>>>      minimum: 0
+>>>>>>>      maximum: 3
+>>>>>>>
+>>>>>>> +  richtek,bled-ocp-sel:
+>>>>>>
+>>>>>> Skip "sel" as it is a shortcut of selection. Name instead:
+>>>>>> "richtek,backlight-ocp"
+>>>>>>
+>>>>> OK, if so, do I need to rename all properties from 'bled' to 'backlight' ?
+>>>>> If  only this property is naming as 'backlight'. it may conflict with
+>>>>> the others like as "richtek,bled-ovp-sel".
+>>>>
+>>>> Ah, no, no need.
+>>>>
+>>>>>>
+>>>>>>> +    description: |
+>>>>>>> +      Backlight OCP level selection, currently support 0.9A/1.2A/1.5A/1.8A
+>>>>>>
+>>>>>> Could you explain here what is OCP (unfold the acronym)?
+>>>>> Yes. And the full name is 'over current protection'.
+>>>>
+>>>> Thanks and this leads to second thing - you encode register value
+>>>> instead of logical value. This must be a logical value in mA, so
+>>>> "richtek,bled-ocp-microamp".
+>>>
+>>> We already have common properties for setting current of LEDs. We should
+>>> use that here I think.
+>>
+>> It might not be exactly the same. We have "led-max-microamp" which is
+>> the maximum allowed current. I guess over-current protection level  is
+>> slightly higher (e.g. led-max-microamp + 1). IOW, led-max-microamp is
+>> something which still can be set and used by system/hardware. OCP should
+>> not.
+>>
+> Yap, you're right.
 
-Signed-off-by: Xiang wangx <wangxiang@cdjrlc.com>
----
- drivers/video/fbdev/skeletonfb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+So I am right or Rob?
 
-diff --git a/drivers/video/fbdev/skeletonfb.c b/drivers/video/fbdev/skeletonfb.c
-index bcacfb6934fa..3d4d78362ede 100644
---- a/drivers/video/fbdev/skeletonfb.c
-+++ b/drivers/video/fbdev/skeletonfb.c
-@@ -96,7 +96,7 @@ static const struct fb_fix_screeninfo xxxfb_fix = {
- 
-     /*
-      * 	Modern graphical hardware not only supports pipelines but some 
--     *  also support multiple monitors where each display can have its  
-+     *  also support multiple monitors where each display can have
-      *  its own unique data. In this case each display could be  
-      *  represented by a separate framebuffer device thus a separate 
-      *  struct fb_info. Now the struct xxx_par represents the graphics
--- 
-2.36.1
+> From the modern backlight IC design, it uses the boost converter architecture.
+> This OCP level is to limit the inductor current when the internal MOS
+> switch turn on.
+> Details can refer to the below wiki link
+> https://en.wikipedia.org/wiki/Boost_converter
+> 
+> And based on it, OVP is used to limit the inductor output voltage.
+> Each channel maximum current is based on the IC affordable limit.
+> It is more like as what you said 'led-max-microamp'.
+> 
+> So boost voltage level may depend on the LED VF.
+> The different series of LED may cause different boost voltage.
+> 
+> RT4831's OVP/OCP is not just the protection, more like as the limit.
 
+This suggests Rob is right, so let's use led-max-microamp property?
 
+Best regards,
+Krzysztof

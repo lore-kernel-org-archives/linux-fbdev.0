@@ -2,61 +2,62 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C2E8CCA482
-	for <linux-fbdev@archiver.kernel.org>; Sun,  5 Jun 2022 16:11:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29AC8C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Jun 2022 01:39:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351195AbiFEQL0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 5 Jun 2022 12:11:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59036 "EHLO
+        id S1352017AbiFFBjg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 5 Jun 2022 21:39:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56206 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351190AbiFEQLZ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 5 Jun 2022 12:11:25 -0400
-Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 090361CFF3
-        for <linux-fbdev@vger.kernel.org>; Sun,  5 Jun 2022 09:11:24 -0700 (PDT)
-Received: by mail-ed1-x52d.google.com with SMTP id x5so10784490edi.2
-        for <linux-fbdev@vger.kernel.org>; Sun, 05 Jun 2022 09:11:23 -0700 (PDT)
+        with ESMTP id S1351993AbiFFBj3 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 5 Jun 2022 21:39:29 -0400
+Received: from mail-lj1-x22e.google.com (mail-lj1-x22e.google.com [IPv6:2a00:1450:4864:20::22e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EECB04EDD3;
+        Sun,  5 Jun 2022 18:39:27 -0700 (PDT)
+Received: by mail-lj1-x22e.google.com with SMTP id q1so14261485ljb.5;
+        Sun, 05 Jun 2022 18:39:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=DhEMuP67p9l6gHaYEp6fnXGttVPME12T6ktP3AWQge0=;
-        b=QNXO7F2FkAsGFQCNld2QcAUPn6alhVgigX1dmDbd3ZX+iuVaRjFFYKE3PoXy+jEf02
-         JCwnrg27lTHCMbi9hzQ6/3N6eMHqvmCIi81ChzbJj10KWxjmla2XHf5bN+4wlxf7H9/q
-         GCARFpWO8PaL7R256uVWtKXy0LSuU68cEdjmNigxHstq77ClMLVZstnQcdo7ci53pib3
-         Ke0GneWLIa4M511qgIiRFOz64sHvhTlw47c0nURg3tnCRwpcKfyF+K+GNTeGNR3VodqT
-         FoeBXabKxL2WtDlBgzGLnTd+Z9RRD0N9wWzUn0EhsEr5yoxPV7GtmxuoisKHVsN+dU8J
-         eGbw==
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=2aAzgWufLM3eFBRQ9m2A+4XEm2/EjgHO8XjvIlt8qsc=;
+        b=Icn4irk9qnC0CRZA12hvjLPiNe929gRNEg4ZfZV0T3RYBehB9uqQtL9hviXbnYeMv2
+         bPOGPBWkInazcMgEV6wlUWAWy4LSCAmIviwlw4PqqQoU1GClhQ+gTrya2W+LXGW27HEI
+         YTBJghZmXIacPXwHbAz2rLV6GEdEzbddpeFWiv5x8CHz0zoKy99fxoUgELLe3DGexses
+         5LgMUJl0NxVpiM5Ez4NxsHgGhlLB+23vcIQlNp/NfcZ79MKpf4bLNTppNG2jATt0VSfc
+         LY9vQsx92hbFfZqPtzMGD9LKgeqzTKmWr7UkOiBTX5xPNFaUc0caWkM8N94mo7q/5kjt
+         wuHw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=DhEMuP67p9l6gHaYEp6fnXGttVPME12T6ktP3AWQge0=;
-        b=6W2gVhY8WvEb6LX0u9MdswarX8nV7lCctZ1fiiRqejkEXHxbv6jV/dnvn62Svj2HP5
-         qKA+9ip1rfxpssf7Vr2MhYjzdHP/H1a9aFZFpf6Lart+7RNYghdV0w8lW+r1ZliUVbLJ
-         +DLUaE04ze1DcC0aCln9xQ1pdJwejbevKmq00L4Bbpn6qt2ZB7vpGyrYOcTAnYnr7zA+
-         IA7TpMyyOdlO7AE3DxI4EuwXgKp/nwD3G2YjboLF1IAwh1kByQfZhDfsegur+TN3IkGb
-         2Gx00/5JV08tw8tKEs4bv7vDcdrJQjrEKYpbeXfV/24/lM1Lj3UOv+A1jdATKfBLL4HQ
-         OO6Q==
-X-Gm-Message-State: AOAM533jJQWjViEFQr5PmanTdSjS3IfBK/EbS9KE2O7rinmZHlU7rORL
-        nsg8lBYuQgZS39+9FRGKUpHZ8Q==
-X-Google-Smtp-Source: ABdhPJzf1aRfWMqPIN0vUwQ81NF3efT2xr/E6L8kvihJxDqoLLshcwR5HZpZDT/Uorsouy9/KTw7mg==
-X-Received: by 2002:a05:6402:380f:b0:42b:27aa:d4cb with SMTP id es15-20020a056402380f00b0042b27aad4cbmr22449447edb.211.1654445482544;
-        Sun, 05 Jun 2022 09:11:22 -0700 (PDT)
-Received: from [192.168.0.181] (xdsl-188-155-176-92.adslplus.ch. [188.155.176.92])
-        by smtp.gmail.com with ESMTPSA id a22-20020aa7d916000000b0042dd4f9c464sm6934675edr.84.2022.06.05.09.11.21
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 05 Jun 2022 09:11:22 -0700 (PDT)
-Message-ID: <12096a2c-98c3-9e77-785f-808cc3e1a0e4@linaro.org>
-Date:   Sun, 5 Jun 2022 18:11:20 +0200
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=2aAzgWufLM3eFBRQ9m2A+4XEm2/EjgHO8XjvIlt8qsc=;
+        b=qk5EA1mPyMBAiVwI31e0WMEWOtSdD2YLNat/olzs/OPmS+5Aw1lAXR3IFS/fdLk96r
+         ZZCccozFH8i8USaHEvWGdJgnWySmI6EHSO3onyWdJWj3+qbDwJ0GV1ni/wy2WsF1PjsC
+         up/6mfR4aCm6SxtJ8sM2gBF0qQ+rSoWpIUQxzdBla3aQ/lYDsIRtBfXD/rwXubeW+f6w
+         XqvVTu2uUrtqSaj6knm7YikMICdZlxktSUnhwFW24EVDYo0K7LySvtNo/R9YwHsXU8zO
+         F+sUYw8sRv5MZ5FsiMU3MTT/Q4hoxel5Mt3n26JYp2P8M2ATherh0wBkCZF4SEv4eQ1c
+         3TPA==
+X-Gm-Message-State: AOAM530tJO+N/QFtVAaGpxZzJAnAmJYstvw+RNsSakLXfLhGp1xfe/Ub
+        StsJQEuRI3NNjlLKNoqMzkb78fOh8XJBhZ/dEr8=
+X-Google-Smtp-Source: ABdhPJz9OSonsWzarHgyRgYmCYlUPNe4zRBAj9Xp3fTYOkGEBTtj9VEAk2DAw1kz0ZE+rmV7BJU35tGBEixhOrTn2Ic=
+X-Received: by 2002:a2e:904a:0:b0:255:7b02:8f32 with SMTP id
+ n10-20020a2e904a000000b002557b028f32mr9325452ljg.133.1654479565373; Sun, 05
+ Jun 2022 18:39:25 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.10.0
+References: <1653534995-30794-1-git-send-email-u0084500@gmail.com>
+ <1653534995-30794-2-git-send-email-u0084500@gmail.com> <1c7ab94c-a736-c629-bd8c-8a974803e2b9@linaro.org>
+ <CADiBU39jZ6TdYZoH80m4R-X2_fUXZOvDA4yUd_TQdPzBJLE+JA@mail.gmail.com>
+ <076d53d3-6062-686f-8e45-14c5f936bbf6@linaro.org> <20220602135604.GA2194286-robh@kernel.org>
+ <e3aa9c7e-bf2d-dd55-8b3f-ca51f569771d@linaro.org> <CADiBU3-dN0vtQBEqvVLFCUp4-MkhLbQRkOiCet+fO8WfkEW4MQ@mail.gmail.com>
+ <12096a2c-98c3-9e77-785f-808cc3e1a0e4@linaro.org>
+In-Reply-To: <12096a2c-98c3-9e77-785f-808cc3e1a0e4@linaro.org>
+From:   ChiYuan Huang <u0084500@gmail.com>
+Date:   Mon, 6 Jun 2022 09:39:15 +0800
+Message-ID: <CADiBU3_REqNRb4UtT5OrVBKuhYL0NPAALisHTM76SrFCHUYMuA@mail.gmail.com>
 Subject: Re: [PATCH 1/2] dt-bindings: backlight: rt4831: Add the new property
  for ocp level selection
-Content-Language: en-US
-To:     ChiYuan Huang <u0084500@gmail.com>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Cc:     Rob Herring <robh@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Lee Jones <lee.jones@linaro.org>,
@@ -70,100 +71,121 @@ Cc:     Rob Herring <robh@kernel.org>,
         "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
         Linux LED Subsystem <linux-leds@vger.kernel.org>,
         lkml <linux-kernel@vger.kernel.org>
-References: <1653534995-30794-1-git-send-email-u0084500@gmail.com>
- <1653534995-30794-2-git-send-email-u0084500@gmail.com>
- <1c7ab94c-a736-c629-bd8c-8a974803e2b9@linaro.org>
- <CADiBU39jZ6TdYZoH80m4R-X2_fUXZOvDA4yUd_TQdPzBJLE+JA@mail.gmail.com>
- <076d53d3-6062-686f-8e45-14c5f936bbf6@linaro.org>
- <20220602135604.GA2194286-robh@kernel.org>
- <e3aa9c7e-bf2d-dd55-8b3f-ca51f569771d@linaro.org>
- <CADiBU3-dN0vtQBEqvVLFCUp4-MkhLbQRkOiCet+fO8WfkEW4MQ@mail.gmail.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <CADiBU3-dN0vtQBEqvVLFCUp4-MkhLbQRkOiCet+fO8WfkEW4MQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 02/06/2022 17:31, ChiYuan Huang wrote:
-> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> 於 2022年6月2日 週四 下午9:58寫道：
->>
->> On 02/06/2022 15:56, Rob Herring wrote:
->>> On Thu, May 26, 2022 at 12:32:12PM +0200, Krzysztof Kozlowski wrote:
->>>> On 26/05/2022 10:13, ChiYuan Huang wrote:
->>>>> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> 於 2022年5月26日 週四 下午4:06寫道：
->>>>>>
->>>>>> On 26/05/2022 05:16, cy_huang wrote:
->>>>>>> From: ChiYuan Huang <cy_huang@richtek.com>
->>>>>>>
->>>>>>> Add the new property for ocp level selection.
->>>>>>>
->>>>>>> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
->>>>>>> ---
->>>>>>>  .../bindings/leds/backlight/richtek,rt4831-backlight.yaml         | 8 ++++++++
->>>>>>>  include/dt-bindings/leds/rt4831-backlight.h                       | 5 +++++
->>>>>>>  2 files changed, 13 insertions(+)
->>>>>>>
->>>>>>> diff --git a/Documentation/devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml
->>>>>>> index e0ac686..c1c59de 100644
->>>>>>> --- a/Documentation/devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml
->>>>>>> +++ b/Documentation/devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml
->>>>>>> @@ -47,6 +47,14 @@ properties:
->>>>>>>      minimum: 0
->>>>>>>      maximum: 3
->>>>>>>
->>>>>>> +  richtek,bled-ocp-sel:
->>>>>>
->>>>>> Skip "sel" as it is a shortcut of selection. Name instead:
->>>>>> "richtek,backlight-ocp"
->>>>>>
->>>>> OK, if so, do I need to rename all properties from 'bled' to 'backlight' ?
->>>>> If  only this property is naming as 'backlight'. it may conflict with
->>>>> the others like as "richtek,bled-ovp-sel".
->>>>
->>>> Ah, no, no need.
->>>>
->>>>>>
->>>>>>> +    description: |
->>>>>>> +      Backlight OCP level selection, currently support 0.9A/1.2A/1.5A/1.8A
->>>>>>
->>>>>> Could you explain here what is OCP (unfold the acronym)?
->>>>> Yes. And the full name is 'over current protection'.
->>>>
->>>> Thanks and this leads to second thing - you encode register value
->>>> instead of logical value. This must be a logical value in mA, so
->>>> "richtek,bled-ocp-microamp".
->>>
->>> We already have common properties for setting current of LEDs. We should
->>> use that here I think.
->>
->> It might not be exactly the same. We have "led-max-microamp" which is
->> the maximum allowed current. I guess over-current protection level  is
->> slightly higher (e.g. led-max-microamp + 1). IOW, led-max-microamp is
->> something which still can be set and used by system/hardware. OCP should
->> not.
->>
-> Yap, you're right.
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> =E6=96=BC 2022=E5=B9=
+=B46=E6=9C=886=E6=97=A5 =E9=80=B1=E4=B8=80 =E4=B8=8A=E5=8D=8812:11=E5=AF=AB=
+=E9=81=93=EF=BC=9A
+>
+> On 02/06/2022 17:31, ChiYuan Huang wrote:
+> > Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> =E6=96=BC 2022=E5=
+=B9=B46=E6=9C=882=E6=97=A5 =E9=80=B1=E5=9B=9B =E4=B8=8B=E5=8D=889:58=E5=AF=
+=AB=E9=81=93=EF=BC=9A
+> >>
+> >> On 02/06/2022 15:56, Rob Herring wrote:
+> >>> On Thu, May 26, 2022 at 12:32:12PM +0200, Krzysztof Kozlowski wrote:
+> >>>> On 26/05/2022 10:13, ChiYuan Huang wrote:
+> >>>>> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> =E6=96=BC 2022=
+=E5=B9=B45=E6=9C=8826=E6=97=A5 =E9=80=B1=E5=9B=9B =E4=B8=8B=E5=8D=884:06=E5=
+=AF=AB=E9=81=93=EF=BC=9A
+> >>>>>>
+> >>>>>> On 26/05/2022 05:16, cy_huang wrote:
+> >>>>>>> From: ChiYuan Huang <cy_huang@richtek.com>
+> >>>>>>>
+> >>>>>>> Add the new property for ocp level selection.
+> >>>>>>>
+> >>>>>>> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+> >>>>>>> ---
+> >>>>>>>  .../bindings/leds/backlight/richtek,rt4831-backlight.yaml       =
+  | 8 ++++++++
+> >>>>>>>  include/dt-bindings/leds/rt4831-backlight.h                     =
+  | 5 +++++
+> >>>>>>>  2 files changed, 13 insertions(+)
+> >>>>>>>
+> >>>>>>> diff --git a/Documentation/devicetree/bindings/leds/backlight/ric=
+htek,rt4831-backlight.yaml b/Documentation/devicetree/bindings/leds/backlig=
+ht/richtek,rt4831-backlight.yaml
+> >>>>>>> index e0ac686..c1c59de 100644
+> >>>>>>> --- a/Documentation/devicetree/bindings/leds/backlight/richtek,rt=
+4831-backlight.yaml
+> >>>>>>> +++ b/Documentation/devicetree/bindings/leds/backlight/richtek,rt=
+4831-backlight.yaml
+> >>>>>>> @@ -47,6 +47,14 @@ properties:
+> >>>>>>>      minimum: 0
+> >>>>>>>      maximum: 3
+> >>>>>>>
+> >>>>>>> +  richtek,bled-ocp-sel:
+> >>>>>>
+> >>>>>> Skip "sel" as it is a shortcut of selection. Name instead:
+> >>>>>> "richtek,backlight-ocp"
+> >>>>>>
+> >>>>> OK, if so, do I need to rename all properties from 'bled' to 'backl=
+ight' ?
+> >>>>> If  only this property is naming as 'backlight'. it may conflict wi=
+th
+> >>>>> the others like as "richtek,bled-ovp-sel".
+> >>>>
+> >>>> Ah, no, no need.
+> >>>>
+> >>>>>>
+> >>>>>>> +    description: |
+> >>>>>>> +      Backlight OCP level selection, currently support 0.9A/1.2A=
+/1.5A/1.8A
+> >>>>>>
+> >>>>>> Could you explain here what is OCP (unfold the acronym)?
+> >>>>> Yes. And the full name is 'over current protection'.
+> >>>>
+> >>>> Thanks and this leads to second thing - you encode register value
+> >>>> instead of logical value. This must be a logical value in mA, so
+> >>>> "richtek,bled-ocp-microamp".
+> >>>
+> >>> We already have common properties for setting current of LEDs. We sho=
+uld
+> >>> use that here I think.
+> >>
+> >> It might not be exactly the same. We have "led-max-microamp" which is
+> >> the maximum allowed current. I guess over-current protection level  is
+> >> slightly higher (e.g. led-max-microamp + 1). IOW, led-max-microamp is
+> >> something which still can be set and used by system/hardware. OCP shou=
+ld
+> >> not.
+> >>
+> > Yap, you're right.
+>
+> So I am right or Rob?
+>
+As I know, both are incorrect.
+> > From the modern backlight IC design, it uses the boost converter archit=
+ecture.
+> > This OCP level is to limit the inductor current when the internal MOS
+> > switch turn on.
+> > Details can refer to the below wiki link
+> > https://en.wikipedia.org/wiki/Boost_converter
+> >
+> > And based on it, OVP is used to limit the inductor output voltage.
+> > Each channel maximum current is based on the IC affordable limit.
+> > It is more like as what you said 'led-max-microamp'.
+> >
+> > So boost voltage level may depend on the LED VF.
+> > The different series of LED may cause different boost voltage.
+> >
+> > RT4831's OVP/OCP is not just the protection, more like as the limit.
+>
+> This suggests Rob is right, so let's use led-max-microamp property?
+>
+No, the meaning is different. 'led-max-microamp' always means the
+channel output current.
+It already can be adjusted by backlight brightness node.
 
-So I am right or Rob?
+For example
+low voltage side (3.3~4.4V) to generate the boost voltage to 16~17V,
+even 20V for BLED Vout.
+This OCP is to limit the input current of low voltage side.
 
-> From the modern backlight IC design, it uses the boost converter architecture.
-> This OCP level is to limit the inductor current when the internal MOS
-> switch turn on.
-> Details can refer to the below wiki link
-> https://en.wikipedia.org/wiki/Boost_converter
-> 
-> And based on it, OVP is used to limit the inductor output voltage.
-> Each channel maximum current is based on the IC affordable limit.
-> It is more like as what you said 'led-max-microamp'.
-> 
-> So boost voltage level may depend on the LED VF.
-> The different series of LED may cause different boost voltage.
-> 
-> RT4831's OVP/OCP is not just the protection, more like as the limit.
-
-This suggests Rob is right, so let's use led-max-microamp property?
-
-Best regards,
-Krzysztof
+After the explanation, do you still think it's the same thing?
+> Best regards,
+> Krzysztof

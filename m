@@ -2,51 +2,50 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB0EFC433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Jun 2022 02:54:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52012C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Jun 2022 03:10:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236033AbiFGCyi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Jun 2022 22:54:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47156 "EHLO
+        id S236213AbiFGDKv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Jun 2022 23:10:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36342 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233312AbiFGCyh (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Jun 2022 22:54:37 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B71A6A026;
-        Mon,  6 Jun 2022 19:54:35 -0700 (PDT)
-X-UUID: 3955505818d04c8b9969c59d09c432d2-20220607
+        with ESMTP id S236207AbiFGDKt (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Jun 2022 23:10:49 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E7B4D0295;
+        Mon,  6 Jun 2022 20:10:46 -0700 (PDT)
+X-UUID: 549b59eda6404f65abd5b720e744a6f4-20220607
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:96f292b6-9e19-4a32-9245-f3bdc58d0a67,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACT
-        ION:release,TS:45
-X-CID-INFO: VERSION:1.1.5,REQID:96f292b6-9e19-4a32-9245-f3bdc58d0a67,OB:0,LOB:
-        0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTIO
-        N:release,TS:45
-X-CID-META: VersionHash:2a19b09,CLOUDID:ea47677e-c8dc-403a-96e8-6237210dceee,C
-        OID:FAIL,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,Fil
-        e:nil,QS:0,BEC:nil
-X-UUID: 3955505818d04c8b9969c59d09c432d2-20220607
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
+X-CID-O-INFO: VERSION:1.1.5,REQID:9e2bbc86-1cd8-49ab-8252-e5e5c7c7ebaf,OB:0,LO
+        B:20,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,AC
+        TION:release,TS:45
+X-CID-INFO: VERSION:1.1.5,REQID:9e2bbc86-1cd8-49ab-8252-e5e5c7c7ebaf,OB:0,LOB:
+        20,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:45
+X-CID-META: VersionHash:2a19b09,CLOUDID:9a03687e-c8dc-403a-96e8-6237210dceee,C
+        OID:e0ded3fc8b76,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:1,File:nil,QS:0,BEC:nil
+X-UUID: 549b59eda6404f65abd5b720e744a6f4-20220607
+Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw01.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 472154471; Tue, 07 Jun 2022 10:54:29 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Tue, 7 Jun 2022 10:54:28 +0800
+        with ESMTP id 516054270; Tue, 07 Jun 2022 11:10:38 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
+ mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Tue, 7 Jun 2022 11:10:35 +0800
 Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Tue, 7 Jun 2022 10:54:27 +0800
-Message-ID: <6dcb95f2f91d91fc8fd87a86ba988eee0168df19.camel@mediatek.com>
-Subject: Re: [PATCH v10 07/21] drm/mediatek: dpi: implement a CK/DE pol
- toggle in SoC config
+ Transport; Tue, 7 Jun 2022 11:10:35 +0800
+Message-ID: <f971913e22a29b77df3a0eb3da3ea8d40a3b1be6.camel@mediatek.com>
+Subject: Re: [PATCH v10 05/21] video/hdmi: Add audio_infoframe packing for DP
 From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
-To:     CK Hu <ck.hu@mediatek.com>,
+To:     AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
         Guillaume Ranquet <granquet@baylibre.com>,
         Chun-Kuang Hu <chunkuang.hu@kernel.org>,
         Philipp Zabel <p.zabel@pengutronix.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
+        "David Airlie" <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
@@ -56,19 +55,18 @@ To:     CK Hu <ck.hu@mediatek.com>,
         Chunfeng Yun <chunfeng.yun@mediatek.com>,
         "Kishon Vijay Abraham I" <kishon@ti.com>,
         Vinod Koul <vkoul@kernel.org>, "Helge Deller" <deller@gmx.de>,
-        Jitao shi <jitao.shi@mediatek.com>
-CC:     AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
+        CK Hu <ck.hu@mediatek.com>, Jitao shi <jitao.shi@mediatek.com>
+CC:     Markus Schneider-Pargmann <msp@baylibre.com>,
         <dri-devel@lists.freedesktop.org>,
         <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-phy@lists.infradead.org>, <linux-fbdev@vger.kernel.org>
-Date:   Tue, 7 Jun 2022 10:54:27 +0800
-In-Reply-To: <356624f3283f9203007ab21bedf15744d86e16f8.camel@mediatek.com>
+Date:   Tue, 7 Jun 2022 11:10:35 +0800
+In-Reply-To: <7ae7e42c-9225-2ff2-f167-8235ab4cadc3@collabora.com>
 References: <20220523104758.29531-1-granquet@baylibre.com>
-         <20220523104758.29531-8-granquet@baylibre.com>
-         <356624f3283f9203007ab21bedf15744d86e16f8.camel@mediatek.com>
+         <20220523104758.29531-6-granquet@baylibre.com>
+         <7ae7e42c-9225-2ff2-f167-8235ab4cadc3@collabora.com>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
@@ -78,122 +76,49 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, 2022-05-30 at 15:44 +0800, CK Hu wrote:
-> Hi, Guillaume:
+On Wed, 2022-05-25 at 14:32 +0200, AngeloGioacchino Del Regno wrote:
+> Il 23/05/22 12:47, Guillaume Ranquet ha scritto:
+> > From: Markus Schneider-Pargmann <msp@baylibre.com>
+> > 
+> > Similar to HDMI, DP uses audio infoframes as well which are
+> > structured
+> > very similar to the HDMI ones.
+> > 
+> > This patch adds a helper function to pack the HDMI audio infoframe
+> > for
+> > DP, called hdmi_audio_infoframe_pack_for_dp().
+> > hdmi_audio_infoframe_pack_only() is split into two parts. One of
+> > them
+> > packs the payload only and can be used for HDMI and DP.
+> > 
+> > Also constify the frame parameter in hdmi_audio_infoframe_check()
+> > as
+> > it is passed to hdmi_audio_infoframe_check_only() which expects a
+> > const.
+> > 
+> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> > ---
+> >   drivers/video/hdmi.c           | 82 ++++++++++++++++++++++++++---
+> > -----
+> >   include/drm/dp/drm_dp_helper.h |  2 +
 > 
-> On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
-> > Adds a bit of flexibility to support SoCs without CK/DE pol support
-> 
-> It seems that DP_INTF has no CK/DE pol function. If so, could you
-> explain why DP_INTF has this difference with DPI?
-> 
-> Regards,
-> CK
+> this has been moved... again... this time it's
+> include/drm/display/drm_dp_helper.h
 > 
 
-Hello CK,
+Hello Angelo,
 
-Dp_intf does not support CK/DE polarity because the polarity
-information is not used for eDP and DP while dp_intf is only for eDP
-and DP.
-
-I will add this in commit message in next version.
+yes, I will rebase on 5.19-rc1 and fix this in next version.
 
 BRs,
 Bo-Chen
-
+> >   include/linux/hdmi.h           |  7 ++-
+> >   3 files changed, 71 insertions(+), 20 deletions(-)
 > > 
-> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> > Reviewed-by: AngeloGioacchino Del Regno <
-> > angelogioacchino.delregno@collabora.com>
-> > Reviewed-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
-> > ---
-> >  drivers/gpu/drm/mediatek/mtk_dpi.c | 22 +++++++++++++++++-----
-> >  1 file changed, 17 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/drivers/gpu/drm/mediatek/mtk_dpi.c
-> > b/drivers/gpu/drm/mediatek/mtk_dpi.c
-> > index 4746eb342567..545a1337cc89 100644
-> > --- a/drivers/gpu/drm/mediatek/mtk_dpi.c
-> > +++ b/drivers/gpu/drm/mediatek/mtk_dpi.c
-> > @@ -125,6 +125,7 @@ struct mtk_dpi_conf {
-> >  	bool edge_sel_en;
-> >  	const u32 *output_fmts;
-> >  	u32 num_output_fmts;
-> > +	bool is_ck_de_pol;
-> >  	const struct mtk_dpi_yc_limit *limit;
-> >  };
-> >  
-> > @@ -211,13 +212,20 @@ static void mtk_dpi_config_pol(struct mtk_dpi
-> > *dpi,
-> >  			       struct mtk_dpi_polarities *dpi_pol)
-> >  {
-> >  	unsigned int pol;
-> > +	unsigned int mask;
-> >  
-> > -	pol = (dpi_pol->ck_pol == MTK_DPI_POLARITY_RISING ? 0 : CK_POL)
-> > > 
-> > 
-> > -	      (dpi_pol->de_pol == MTK_DPI_POLARITY_RISING ? 0 : DE_POL)
-> > > 
-> > 
-> > -	      (dpi_pol->hsync_pol == MTK_DPI_POLARITY_RISING ? 0 :
-> > HSYNC_POL) |
-> > +	mask = HSYNC_POL | VSYNC_POL;
-> > +	pol = (dpi_pol->hsync_pol == MTK_DPI_POLARITY_RISING ? 0 :
-> > HSYNC_POL) |
-> >  	      (dpi_pol->vsync_pol == MTK_DPI_POLARITY_RISING ? 0 :
-> > VSYNC_POL);
-> > -	mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING, pol,
-> > -		     CK_POL | DE_POL | HSYNC_POL | VSYNC_POL);
-> > +	if (dpi->conf->is_ck_de_pol) {
-> > +		mask |= CK_POL | DE_POL;
-> > +		pol |= (dpi_pol->ck_pol == MTK_DPI_POLARITY_RISING ?
-> > +			0 : CK_POL) |
-> > +		       (dpi_pol->de_pol == MTK_DPI_POLARITY_RISING ?
-> > +			0 : DE_POL);
-> > +	}
-> > +
-> > +	mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING, pol, mask);
-> >  }
-> >  
-> >  static void mtk_dpi_config_3d(struct mtk_dpi *dpi, bool en_3d)
-> > @@ -799,6 +807,7 @@ static const struct mtk_dpi_conf mt8173_conf =
-> > {
-> >  	.max_clock_khz = 300000,
-> >  	.output_fmts = mt8173_output_fmts,
-> >  	.num_output_fmts = ARRAY_SIZE(mt8173_output_fmts),
-> > +	.is_ck_de_pol = true,
-> >  	.limit = &mtk_dpi_limit,
-> >  };
-> >  
-> > @@ -809,6 +818,7 @@ static const struct mtk_dpi_conf mt2701_conf =
-> > {
-> >  	.max_clock_khz = 150000,
-> >  	.output_fmts = mt8173_output_fmts,
-> >  	.num_output_fmts = ARRAY_SIZE(mt8173_output_fmts),
-> > +	.is_ck_de_pol = true,
-> >  	.limit = &mtk_dpi_limit,
-> >  };
-> >  
-> > @@ -818,6 +828,7 @@ static const struct mtk_dpi_conf mt8183_conf =
-> > {
-> >  	.max_clock_khz = 100000,
-> >  	.output_fmts = mt8183_output_fmts,
-> >  	.num_output_fmts = ARRAY_SIZE(mt8183_output_fmts),
-> > +	.is_ck_de_pol = true,
-> >  	.limit = &mtk_dpi_limit,
-> >  };
-> >  
-> > @@ -827,6 +838,7 @@ static const struct mtk_dpi_conf mt8192_conf =
-> > {
-> >  	.max_clock_khz = 150000,
-> >  	.output_fmts = mt8173_output_fmts,
-> >  	.num_output_fmts = ARRAY_SIZE(mt8173_output_fmts),
-> > +	.is_ck_de_pol = true,
-> >  	.limit = &mtk_dpi_limit,
-> >  };
-> >  
 > 
-> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 

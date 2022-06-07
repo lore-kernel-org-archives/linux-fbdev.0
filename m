@@ -2,46 +2,47 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BBE1CCCA47F
-	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Jun 2022 01:30:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF4F1C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Jun 2022 03:26:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235506AbiFHBaj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 7 Jun 2022 21:30:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41584 "EHLO
+        id S231256AbiFHD02 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Jun 2022 23:26:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45110 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1357124AbiFHBYv (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Jun 2022 21:24:51 -0400
-Received: from 16.mo561.mail-out.ovh.net (16.mo561.mail-out.ovh.net [188.165.56.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ABF306FD00
-        for <linux-fbdev@vger.kernel.org>; Tue,  7 Jun 2022 12:28:20 -0700 (PDT)
-Received: from player797.ha.ovh.net (unknown [10.109.156.6])
-        by mo561.mail-out.ovh.net (Postfix) with ESMTP id 49EF824323
-        for <linux-fbdev@vger.kernel.org>; Tue,  7 Jun 2022 19:09:57 +0000 (UTC)
+        with ESMTP id S237844AbiFHD0R (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Jun 2022 23:26:17 -0400
+X-Greylist: delayed 1818 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 07 Jun 2022 13:03:22 PDT
+Received: from 12.mo581.mail-out.ovh.net (12.mo581.mail-out.ovh.net [178.33.107.167])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 163E832A8DB
+        for <linux-fbdev@vger.kernel.org>; Tue,  7 Jun 2022 13:03:22 -0700 (PDT)
+Received: from player698.ha.ovh.net (unknown [10.109.146.143])
+        by mo581.mail-out.ovh.net (Postfix) with ESMTP id 0687E24074
+        for <linux-fbdev@vger.kernel.org>; Tue,  7 Jun 2022 19:24:20 +0000 (UTC)
 Received: from sk2.org (82-65-25-201.subs.proxad.net [82.65.25.201])
         (Authenticated sender: steve@sk2.org)
-        by player797.ha.ovh.net (Postfix) with ESMTPSA id 647C5273DCAA9;
-        Tue,  7 Jun 2022 19:09:48 +0000 (UTC)
-Authentication-Results: garm.ovh; auth=pass (GARM-102R004cfc32490-50c5-4837-a6e8-e39166bfb3cd,
+        by player698.ha.ovh.net (Postfix) with ESMTPSA id D80BF2B48047A;
+        Tue,  7 Jun 2022 19:24:10 +0000 (UTC)
+Authentication-Results: garm.ovh; auth=pass (GARM-110S004c12dac52-d115-480d-84c5-32e704857230,
                     38FB55E0ED6224772C245AF554E1AE62085133ED) smtp.auth=steve@sk2.org
 X-OVh-ClientIp: 82.65.25.201
 From:   Stephen Kitt <steve@sk2.org>
-To:     Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Stephen Kitt <steve@sk2.org>
-Subject: [PATCH 1/4] backlight: aat2870: Use backlight helper
-Date:   Tue,  7 Jun 2022 21:09:22 +0200
-Message-Id: <20220607190925.1134737-2-steve@sk2.org>
+To:     Antonino Daplas <adaplas@gmail.com>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Helge Deller <deller@gmx.de>, Paul Mackerras <paulus@samba.org>
+Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Stephen Kitt <steve@sk2.org>, dri-devel@lists.freedesktop.org
+Subject: [PATCH 3/7] fbdev: radeon: Use backlight helper
+Date:   Tue,  7 Jun 2022 21:23:31 +0200
+Message-Id: <20220607192335.1137249-4-steve@sk2.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20220607190925.1134737-1-steve@sk2.org>
-References: <20220607190925.1134737-1-steve@sk2.org>
+In-Reply-To: <20220607192335.1137249-1-steve@sk2.org>
+References: <20220607192335.1137249-1-steve@sk2.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 11710766409107932806
+X-Ovh-Tracer-Id: 11953397840202401513
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddthedgudefgecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpefuthgvphhhvghnucfmihhtthcuoehsthgvvhgvsehskhdvrdhorhhgqeenucggtffrrghtthgvrhhnpeeghffhleeigffhteeiffelveefhfeiudehkedtgefhgedvleffgfejgfdtveeigeenucfkpheptddrtddrtddrtddpkedvrdeihedrvdehrddvtddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehplhgrhigvrhejleejrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepshhtvghvvgesshhkvddrohhrghdpnhgspghrtghpthhtohepuddprhgtphhtthhopehlihhnuhigqdhfsgguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdfovfetjfhoshhtpehmohehiedu
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddthedgudefjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpefuthgvphhhvghnucfmihhtthcuoehsthgvvhgvsehskhdvrdhorhhgqeenucggtffrrghtthgvrhhnpeeghffhleeigffhteeiffelveefhfeiudehkedtgefhgedvleffgfejgfdtveeigeenucfkpheptddrtddrtddrtddpkedvrdeihedrvdehrddvtddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehplhgrhigvrheileekrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepshhtvghvvgesshhkvddrohhrghdpnhgspghrtghpthhtohepuddprhgtphhtthhopehlihhnuhigqdhfsgguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdfovfetjfhoshhtpehmohehkedu
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -52,41 +53,31 @@ should be on at all, use backlight_get_brightness() which does all
 this and insulates this from future changes.
 
 Signed-off-by: Stephen Kitt <steve@sk2.org>
-Cc: Lee Jones <lee.jones@linaro.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Jingoo Han <jingoohan1@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Helge Deller <deller@gmx.de>
-Cc: dri-devel@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
 ---
- drivers/video/backlight/aat2870_bl.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ drivers/video/fbdev/aty/radeon_backlight.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/drivers/video/backlight/aat2870_bl.c b/drivers/video/backlight/aat2870_bl.c
-index a7af9adafad6..1cbb303e9c88 100644
---- a/drivers/video/backlight/aat2870_bl.c
-+++ b/drivers/video/backlight/aat2870_bl.c
-@@ -59,7 +59,7 @@ static int aat2870_bl_update_status(struct backlight_device *bd)
- 	struct aat2870_bl_driver_data *aat2870_bl = bl_get_data(bd);
- 	struct aat2870_data *aat2870 =
- 			dev_get_drvdata(aat2870_bl->pdev->dev.parent);
--	int brightness = bd->props.brightness;
-+	int brightness = backlight_get_brightness(bd);
- 	int ret;
+diff --git a/drivers/video/fbdev/aty/radeon_backlight.c b/drivers/video/fbdev/aty/radeon_backlight.c
+index d2c1263ad260..427adc838f77 100644
+--- a/drivers/video/fbdev/aty/radeon_backlight.c
++++ b/drivers/video/fbdev/aty/radeon_backlight.c
+@@ -57,11 +57,7 @@ static int radeon_bl_update_status(struct backlight_device *bd)
+ 	 * backlight. This provides some greater power saving and the display
+ 	 * is useless without backlight anyway.
+ 	 */
+-        if (bd->props.power != FB_BLANK_UNBLANK ||
+-	    bd->props.fb_blank != FB_BLANK_UNBLANK)
+-		level = 0;
+-	else
+-		level = bd->props.brightness;
++	level = backlight_get_brightness(bd);
  
- 	if ((brightness < 0) || (bd->props.max_brightness < brightness)) {
-@@ -70,11 +70,6 @@ static int aat2870_bl_update_status(struct backlight_device *bd)
- 	dev_dbg(&bd->dev, "brightness=%d, power=%d, state=%d\n",
- 		 bd->props.brightness, bd->props.power, bd->props.state);
- 
--	if ((bd->props.power != FB_BLANK_UNBLANK) ||
--			(bd->props.state & BL_CORE_FBBLANK) ||
--			(bd->props.state & BL_CORE_SUSPENDED))
--		brightness = 0;
--
- 	ret = aat2870->write(aat2870, AAT2870_BLM,
- 			     (u8)aat2870_brightness(aat2870_bl, brightness));
- 	if (ret < 0)
+ 	del_timer_sync(&rinfo->lvds_timer);
+ 	radeon_engine_idle();
 -- 
 2.30.2
 

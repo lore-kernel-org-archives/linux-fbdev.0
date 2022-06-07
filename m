@@ -2,221 +2,234 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9140AC43334
-	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Jun 2022 10:41:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA48BC433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Jun 2022 12:24:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241266AbiFGKlo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 7 Jun 2022 06:41:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56390 "EHLO
+        id S239473AbiFGMYo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Jun 2022 08:24:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52012 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241250AbiFGKln (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Jun 2022 06:41:43 -0400
-Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A7F6CEC3E5
-        for <linux-fbdev@vger.kernel.org>; Tue,  7 Jun 2022 03:41:40 -0700 (PDT)
-Received: by mail-wm1-x332.google.com with SMTP id a10so6549162wmj.5
-        for <linux-fbdev@vger.kernel.org>; Tue, 07 Jun 2022 03:41:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=qw8JacEfJNF9P2iNLjQzkAXW/8/vZkXuOjt3GnWBvjw=;
-        b=hyDSvJIfh0LYoaLEeqkmPROm1N2u7R8cMpaut6DZYA8pNoxIG7jthQ5F82HOCMq2rG
-         fYjscsLiZQgKk+uyZcbEemQ19fmtnvUYc1F4ZnC8f0xbYYmnoXgHcdlVqTkkiGAZFBqw
-         9s6rtFDUlnRG2c31zUx4ljO2jYpPUAnFu2CD7zbQdqqR7D+ujyFr+ex7gPKhkrnSR44Y
-         KTeHSqWku7fvSZxcJb7rgNvOQP8DFieQ2czxXmC8Grj3rVCEqXal1Ce2ctYVkpSgaPKD
-         4Q++EwprNd3zbAp7TC5+zWZnPLhJLp5WeJfaaKmzs3WBKvfUaGGXdb6qII//hNYJ6OuU
-         10vg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=qw8JacEfJNF9P2iNLjQzkAXW/8/vZkXuOjt3GnWBvjw=;
-        b=3aamASH7xH3ixxU4eBxv2BTln6fW5vJxkT/tsbg8Vv9IdZP0OyXovRsOZtdmw0LPgi
-         L1g/RAEn0FtdBjW+acfp6bYasaZPO2BVaB0M9umwH9GxOHp+rQdbEFrX8Y0jMdznT8A8
-         lszRRj6o4oWgJ6c+JkDWZ0jpdnR5pOEOfyrkUEjOxzbG1Ert1C/xmD3/t6iVt5NfW5ct
-         tArwpeXOXI21I/5R0tBwowVQKJvdMFBCByHK/u0y0q7/NEuQ8iJlkkpbwpJvpOg/G3wy
-         CNqCGNMd04Tkn9+39CREi0FOa+N5S66IcFvHFEmGwNIBgyjUb1ZxVaxoxZ3GJV9/c578
-         y45w==
-X-Gm-Message-State: AOAM532iv9mk4oRPXS74GJOBh/OZWM+3c2fEQb/bJc2tKYnojFk6pLqg
-        w7So9HzG215ZrF1+C2kKy/5Wag==
-X-Google-Smtp-Source: ABdhPJz0rzj4eqfRw2wspCI3jipVGst2fbnr65Qmu05TDb5e0ptD3uTC6nEhOxZyIE8KFnMOZnH58g==
-X-Received: by 2002:a05:600c:3c8f:b0:39b:808c:b5cb with SMTP id bg15-20020a05600c3c8f00b0039b808cb5cbmr28760884wmb.11.1654598498995;
-        Tue, 07 Jun 2022 03:41:38 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id n22-20020a05600c3b9600b00397342e3830sm27940708wms.0.2022.06.07.03.41.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 07 Jun 2022 03:41:38 -0700 (PDT)
-Date:   Tue, 7 Jun 2022 11:41:36 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     ChiaEn Wu <peterwu.pub@gmail.com>
-Cc:     lee.jones@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        matthias.bgg@gmail.com, sre@kernel.org, chunfeng.yun@mediatek.com,
-        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
-        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
-        heikki.krogerus@linux.intel.com, deller@gmx.de,
-        ChiYuan Huang <cy_huang@richtek.com>, alice_chen@richtek.com,
-        chiaen_wu@richtek.com, dri-devel@lists.freedesktop.org,
-        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: Re: [RESEND 14/14] video: backlight: mt6370: Add Mediatek MT6370
- support
-Message-ID: <20220607104136.cfnpwo6ajqiuafbf@maple.lan>
-References: <20220531111900.19422-1-peterwu.pub@gmail.com>
- <20220531111900.19422-15-peterwu.pub@gmail.com>
- <20220601094623.jnwh2fgsqepy72tc@maple.lan>
- <CABtFH5+-o=cML_VCSY9frJwEU_TnZt0+myJebi8J7BpP+BOqOw@mail.gmail.com>
+        with ESMTP id S242387AbiFGMYn (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Jun 2022 08:24:43 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E3ACBD2;
+        Tue,  7 Jun 2022 05:24:37 -0700 (PDT)
+X-UUID: fb5b78e7daca4a7db5691981b3edb879-20220607
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.5,REQID:a0705966-04a2-4de5-943a-691efd1ac7ab,OB:0,LO
+        B:0,IP:0,URL:5,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACT
+        ION:release,TS:50
+X-CID-INFO: VERSION:1.1.5,REQID:a0705966-04a2-4de5-943a-691efd1ac7ab,OB:0,LOB:
+        0,IP:0,URL:5,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTIO
+        N:release,TS:50
+X-CID-META: VersionHash:2a19b09,CLOUDID:8857f3e4-2ba2-4dc1-b6c5-11feb6c769e0,C
+        OID:24b0c7df9da5,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:1,File:nil,QS:0,BEC:nil
+X-UUID: fb5b78e7daca4a7db5691981b3edb879-20220607
+Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw02.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 2012312828; Tue, 07 Jun 2022 20:24:32 +0800
+Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
+ mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Tue, 7 Jun 2022 20:24:31 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
+ Transport; Tue, 7 Jun 2022 20:24:31 +0800
+Message-ID: <8af7938ae9244e4b7caf62e0c6ce0bcdddc13889.camel@mediatek.com>
+Subject: Re: [PATCH v10 18/21] drm/mediatek: Add mt8195 Embedded DisplayPort
+ driver
+From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
+To:     CK Hu <ck.hu@mediatek.com>,
+        Guillaume Ranquet <granquet@baylibre.com>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Chunfeng Yun =?UTF-8?Q?=28=E4=BA=91=E6=98=A5=E5=B3=B0=29?= 
+        <Chunfeng.Yun@mediatek.com>,
+        Kishon Vijay Abraham I <kishon@ti.com>,
+        Vinod Koul <vkoul@kernel.org>, Helge Deller <deller@gmx.de>,
+        Jitao Shi =?UTF-8?Q?=28=E7=9F=B3=E8=AE=B0=E6=B6=9B=29?= 
+        <jitao.shi@mediatek.com>
+CC:     Markus Schneider-Pargmann <msp@baylibre.com>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-mediatek@lists.infradead.org" 
+        <linux-mediatek@lists.infradead.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "linux-phy@lists.infradead.org" <linux-phy@lists.infradead.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Date:   Tue, 7 Jun 2022 20:24:31 +0800
+In-Reply-To: <0bd8b0c66b9e2a1b63280e7eab63048bee7fe786.camel@mediatek.com>
+References: <20220523104758.29531-1-granquet@baylibre.com>
+         <20220523104758.29531-19-granquet@baylibre.com>
+         <0bd8b0c66b9e2a1b63280e7eab63048bee7fe786.camel@mediatek.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CABtFH5+-o=cML_VCSY9frJwEU_TnZt0+myJebi8J7BpP+BOqOw@mail.gmail.com>
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jun 03, 2022 at 03:14:56AM +0800, ChiaEn Wu wrote:
-> Daniel Thompson <daniel.thompson@linaro.org> 於 2022年6月1日 週三 下午5:46寫道：
-> >
-> > On Tue, May 31, 2022 at 07:19:00PM +0800, ChiaEn Wu wrote:
-> > > +#define MT6370_DT_PROP_DECL(_name, _type, _reg, _mask, _max, _inv)   \
-> > > +{                                                                    \
-> > > +     .name = "mediatek,bled-" #_name,                                \
-> >
-> > I'd rather have the whole DT property in the macro (because it helps
-> > with grepability).
+On Tue, 2022-06-07 at 14:21 +0800, CK Hu wrote:
+> Hi, Rex:
 > 
-> Do you mean the _name parameter must be the full name of the DT
-> property and do not use "#" to concat like following example?
+> On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
+> > From: Markus Schneider-Pargmann <msp@baylibre.com>
+> > 
+> > This patch adds a DisplayPort driver for the Mediatek mt8195 SoC.
+> > 
+> > It supports the mt8195, the embedded DisplayPort units. It offers
+> > DisplayPort 1.4 with up to 4 lanes.
+> > 
+> > The driver creates a child device for the phy. The child device
+> > will
+> > never exist without the parent being active. As they are sharing a
+> > register range, the parent passes a regmap pointer to the child so
+> > that
+> > both can work with the same register range. The phy driver sets
+> > device
+> > data that is read by the parent to get the phy device that can be
+> > used
+> > to control the phy properties.
+> > 
+> > This driver is based on an initial version by
+> > Jason-JH.Lin <jason-jh.lin@mediatek.com>.
+> > 
+> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> > ---
 > 
-> // in declare
->             .name = _name,
-> // in use
->             MT6370_DT_PROP_DECL(mediatek,bled-pwm-enable, ......)
-
-Yes, I would prefer this form, although, as discussed below, I don't really
-like MT6370_DT_PROP_DECL().
-
-
-> > > +     .type = MT6370_PARSE_TYPE_##_type,                              \
-> > > +     .reg = _reg,                                                    \
-> > > +     .mask = _mask,                                                  \
-> > > +     .max_val = _max,                                                \
-> > > +     .invert = _inv,                                                 \
-> > > +}
-> > > +
-> > > +static int mt6370_init_backlight_properties(struct mt6370_priv *priv,
-> > > +                                         struct backlight_properties *props)
-> > > +{
-> > > +     struct device *dev = priv->dev;
-> > > +     u8 prop_val;
-> > > +     u32 brightness;
-> > > +     unsigned int mask, val;
-> > > +     static const struct {
-> > > +             char *name;
-> > > +             enum mt6370_prop_type type;
-> > > +             unsigned int reg;
-> > > +             unsigned int mask;
-> > > +             u8 max_val;
-> > > +             bool invert;
-> > > +     } vendor_opt_props[] = {
-> > > +             MT6370_DT_PROP_DECL(pwm-enable, BOOL, MT6370_REG_BL_PWM,
-> > > +                                 MT6370_BL_PWM_EN_MASK, 1, false),
-> > > +             MT6370_DT_PROP_DECL(pwm-hys-enable, BOOL, MT6370_REG_BL_PWM,
-> > > +                                 MT6370_BL_PWM_HYS_EN_MASK, 1, false),
-> > > +             MT6370_DT_PROP_DECL(pwm-hys-sel, U8, MT6370_REG_BL_PWM,
-> > > +                                 MT6370_BL_PWM_HYS_SEL_MASK, 3, false),
-> > > +             MT6370_DT_PROP_DECL(ovp-level-sel, U8, MT6370_REG_BL_BSTCTRL,
-> > > +                                 MT6370_BL_OVP_SEL_MASK, 3, false),
-> > > +             MT6370_DT_PROP_DECL(ovp-shutdown, BOOL, MT6370_REG_BL_BSTCTRL,
-> > > +                                 MT6370_BL_OVP_EN_MASK, 1, true),
-> > > +             MT6370_DT_PROP_DECL(ocp-level-sel, U8, MT6370_REG_BL_BSTCTRL,
-> > > +                                 MT6370_BL_OC_SEL_MASK, 3, false),
-> > > +             MT6370_DT_PROP_DECL(ocp-shutdown, BOOL, MT6370_REG_BL_BSTCTRL,
-> > > +                                 MT6370_BL_OC_EN_MASK, 1, true),
-> > > +     }, *prop_now;
-> > > +     int i, ret;
-> > > +
-> > > +     /* vendor optional properties */
-> > > +     for (i = 0; i < ARRAY_SIZE(vendor_opt_props); i++) {
-> > > +             prop_now = vendor_opt_props + i;
-> > > +
-> > > +             switch (prop_now->type) {
-> > > +             case MT6370_PARSE_TYPE_BOOL:
-> > > +                     if (device_property_read_bool(dev, prop_now->name))
-> > > +                             val = 1;
-> > > +                     else
-> > > +                             val = 0;
-> > > +                     break;
-> > > +             case MT6370_PARSE_TYPE_U8:
-> > > +                     ret = device_property_read_u8(dev, prop_now->name,
-> > > +                                                   &prop_val);
-> > > +                     /* Property not exist, keep value in default */
-> > > +                     if (ret)
-> > > +                             continue;
-> > > +
-> > > +                     val = min_t(u8, prop_val, prop_now->max_val);
-> > > +                     break;
-> > > +             default:
-> > > +                     return -EINVAL;
-> > > +             }
-> > > +
-> > > +             if (prop_now->invert)
-> > > +                     val = prop_now->max_val - val;
-> > > +
-> > > +             val <<= ffs(prop_now->mask) - 1;
-> > > +
-> > > +             ret = regmap_update_bits(priv->regmap, prop_now->reg,
-> > > +                                      prop_now->mask, val);
-> > > +             if (ret)
-> > > +                     return ret;
-> > > +     }
-> >
-> > Is it really worth all this tricky code for 7 properties?
-> >
-> > The code would be much easier to read and maintain if it were coded
-> > directly. For example, the inverted boolean code is hard to read and
-> > can be written directly as:
-> >
-> >
-> >         val = device_property_read_bool(dev, "mediatek,bled-ovp_shutdown");
-> >         ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_BST_CTRL,
-> >                                  MT6370_BL_OVP_EN_MASK,
-> >                                  MT6370_BL_OVP_EN_MASK * !val);
-> >         if (ret)
-> >                 return ret;
-> >
-> > The direct coded approach will probably also pay off if you switch
-> > the bindings over to microvolts/microamps since it becomes much more
-> > natural to call out to a lookup function to convert it into a register
-> > value.
-> >
+> [snip]
 > 
-> The purpose of my code is trying to avoid the repeat code in this
-> function. And for loop can help to decrease the lines of code
-> effectively, that's why I use these code to parse the DT properties.
+> > +
+> > +static irqreturn_t mtk_dp_hpd_event_thread(int hpd, void *dev)
+> > +{
+> > +	struct mtk_dp *mtk_dp = dev;
+> > +	int event;
+> > +	u8 buf[DP_RECEIVER_CAP_SIZE] = {};
+> > +
+> > +	event = mtk_dp_plug_state(mtk_dp) ? connector_status_connected
+> > :
+> > +						  connector_status_disc
+> > onnected;
+> > +
+> > +	if (event < 0)
+> 
+> event is always > 0, isn't it?
+> 
+Hello CK,
 
-I'm not really convinced that is uses fewer lines of code. It
-certainly would if there were a very large number of properties
-but here there is only seven.
+ok, I will move this to dp patch.
 
-However I guess what I'm really complaining about is how hard it is to
-read the for loop. We have to study the macros, keep track six different
-arguments per property and review the complex logic of the for loop
-(which for example handles inverted u8's that don't actually exist).
+> > +		return IRQ_HANDLED;
+> > +
+> > +	if (mtk_dp->drm_dev) {
+> > +		dev_info(mtk_dp->dev, "drm_helper_hpd_irq_event\n");
+> > +		drm_helper_hpd_irq_event(mtk_dp->bridge.dev);
+> 
+> I think this ISR would come once. If bridge has not attached, the drm
+> core would lost this event. Maybe you should enable eDP hardware
+> after
+> bridge attached or send this event when attached.
+> 
 
-To be clear, it's not that loops aren't useful for reducing boilerplate
-code. They can be. However trying to handle booleans and integers in the
-*same* loop ends up needlessly hard to read.
+for edp patch, I will move it to (mtk_dp_bridge_attach).
+for dp patch, I will add it back.
 
-Also, I think that if/when you adopt microamps/microvolts then the
-hard-to-read problem will get even worse unless you get loops to do only
-one thing!
+> > +	}
+> > +
+> > +	if (mtk_dp->train_info.cable_state_change) {
+> 
+> Executing this thread imply cable_state_change = true, so drop
+> cable_state_change.
+> 
 
+In mtk_dp_hpd_isr_handler(), there is another irq
+"MTK_DP_HPD_INTERRUPT" which means the sink devices give a interrupt to
+source device. it's not about connected status, so I think we still
+need this.
 
-Daniel.
+> > +		mtk_dp->train_info.cable_state_change = false;
+> > +
+> > +		mtk_dp->train_state = MTK_DP_TRAIN_STATE_STARTUP;
+> > +
+> > +		if (!mtk_dp->train_info.cable_plugged_in ||
+> > +		    !mtk_dp_plug_state(mtk_dp)) {
+> 
+> I do not like two variable to present one thing. If
+> 
+> mtk_dp->train_info.cable_plugged_in = false
+> and
+> mtk_dp_plug_state(mtk_dp) = ture
+> 
+> What does this mean? I think this mean 'now' is connected because
+> cable_plugged_in is old information and mtk_dp_plug_state() is
+> current
+> information.
+> 
+> But I would like to keep cable_plugged_in and drop
+> mtk_dp_plug_state()
+> because cable_plugged_in would be changed in isr and it would be the
+> same as mtk_dp_plug_state().
+> 
+> Regards,
+> CK
+> 
+
+ok, I will drop this.
+
+BRs,
+Rex
+
+> > +			mtk_dp_video_mute(mtk_dp, true);
+> > +
+> > +			mtk_dp_initialize_priv_data(mtk_dp);
+> > +			mtk_dp_set_idle_pattern(mtk_dp, true);
+> > +			if (mtk_dp->has_fec)
+> > +				mtk_dp_fec_enable(mtk_dp, false);
+> > +
+> > +			mtk_dp_update_bits(mtk_dp,
+> > MTK_DP_TOP_PWR_STATE,
+> > +					   DP_PWR_STATE_BANDGAP_TPLL,
+> > +					   DP_PWR_STATE_MASK);
+> > +		} else {
+> > +			mtk_dp_update_bits(mtk_dp,
+> > MTK_DP_TOP_PWR_STATE,
+> > +					   DP_PWR_STATE_BANDGAP_TPLL_LA
+> > NE,
+> > +					   DP_PWR_STATE_MASK);
+> > +			drm_dp_read_dpcd_caps(&mtk_dp->aux, buf);
+> > +			mtk_dp->train_info.link_rate =
+> > +				min_t(int, mtk_dp->max_linkrate,
+> > +				      buf[mtk_dp->max_linkrate]);
+> > +			mtk_dp->train_info.lane_count =
+> > +				min_t(int, mtk_dp->max_lanes,
+> > +				      drm_dp_max_lane_count(buf));
+> > +		}
+> > +	}
+> > +
+> > +	if (mtk_dp->train_info.irq_status & MTK_DP_HPD_INTERRUPT) {
+> > +		dev_dbg(mtk_dp->dev, "MTK_DP_HPD_INTERRUPT\n");
+> > +		mtk_dp->train_info.irq_status &= ~MTK_DP_HPD_INTERRUPT;
+> > +		mtk_dp_hpd_sink_event(mtk_dp);
+> > +	}
+> > +
+> > +	return IRQ_HANDLED;
+> > +}
+> > +
+> 
+> 
+

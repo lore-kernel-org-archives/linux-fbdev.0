@@ -2,42 +2,42 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93FA8C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Jun 2022 08:01:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 029E6C43334
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Jun 2022 08:12:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231905AbiFGIBg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 7 Jun 2022 04:01:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60724 "EHLO
+        id S238083AbiFGIMR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Jun 2022 04:12:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54662 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231132AbiFGIBe (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Jun 2022 04:01:34 -0400
+        with ESMTP id S238089AbiFGIMQ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Jun 2022 04:12:16 -0400
 Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5AE1ECC148;
-        Tue,  7 Jun 2022 01:01:30 -0700 (PDT)
-X-UUID: d742e5a3f56f4ec89160624d0e463bdc-20220607
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D0B4C56;
+        Tue,  7 Jun 2022 01:12:11 -0700 (PDT)
+X-UUID: 8fb8eaf96f42466e8d9402f987ab23a8-20220607
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:5f35ce3b-6f41-4603-a32d-3e26e3b75624,OB:0,LO
-        B:10,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,AC
+X-CID-O-INFO: VERSION:1.1.5,REQID:8559b49c-3dcb-469a-9da5-0f36edc6332d,OB:0,LO
+        B:20,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,AC
         TION:release,TS:45
-X-CID-INFO: VERSION:1.1.5,REQID:5f35ce3b-6f41-4603-a32d-3e26e3b75624,OB:0,LOB:
-        10,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTI
+X-CID-INFO: VERSION:1.1.5,REQID:8559b49c-3dcb-469a-9da5-0f36edc6332d,OB:0,LOB:
+        20,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTI
         ON:release,TS:45
-X-CID-META: VersionHash:2a19b09,CLOUDID:69b7737e-c8dc-403a-96e8-6237210dceee,C
-        OID:a9c23a514e78,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+X-CID-META: VersionHash:2a19b09,CLOUDID:efe1e9e4-2ba2-4dc1-b6c5-11feb6c769e0,C
+        OID:632aa7625d2f,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
         RL:0,File:nil,QS:0,BEC:nil
-X-UUID: d742e5a3f56f4ec89160624d0e463bdc-20220607
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
+X-UUID: 8fb8eaf96f42466e8d9402f987ab23a8-20220607
+Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw02.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 298287096; Tue, 07 Jun 2022 16:01:27 +0800
-Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.792.15; Tue, 7 Jun 2022 16:01:25 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Tue, 7 Jun 2022 16:01:25 +0800
-Message-ID: <387fc4f9a65b87467fbff3878ad371bee4552e6e.camel@mediatek.com>
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 1791805342; Tue, 07 Jun 2022 16:12:05 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Tue, 7 Jun 2022 16:12:04 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
+ Transport; Tue, 7 Jun 2022 16:12:04 +0800
+Message-ID: <ff858934b622e6716dd48bf02d4d57f19358b805.camel@mediatek.com>
 Subject: Re: [PATCH v10 18/21] drm/mediatek: Add mt8195 Embedded DisplayPort
  driver
 From:   CK Hu <ck.hu@mediatek.com>
@@ -63,7 +63,7 @@ CC:     Markus Schneider-Pargmann <msp@baylibre.com>,
         <linux-kernel@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-phy@lists.infradead.org>, <linux-fbdev@vger.kernel.org>
-Date:   Tue, 7 Jun 2022 16:01:25 +0800
+Date:   Tue, 7 Jun 2022 16:12:04 +0800
 In-Reply-To: <20220523104758.29531-19-granquet@baylibre.com>
 References: <20220523104758.29531-1-granquet@baylibre.com>
          <20220523104758.29531-19-granquet@baylibre.com>
@@ -106,43 +106,106 @@ On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
 [snip]
 
 > +
-> +static void mtk_dp_state_handler(struct mtk_dp *mtk_dp)
+> +static int mtk_dp_train_start(struct mtk_dp *mtk_dp)
 > +{
-> +	switch (mtk_dp->state) {
+> +	int ret = 0;
+> +	u8 lane_count;
+> +	u8 link_rate;
+> +	u8 train_limit;
+> +	u8 max_link_rate;
+> +	u8 plug_wait;
+> +
+> +	for (plug_wait = 7; !mtk_dp_plug_state(mtk_dp) && plug_wait >
+> 0;
+> +	     --plug_wait)
+> +		/* Avoid short pulses on the HPD isr */
+> +		usleep_range(1000, 5000);
+> +	if (plug_wait == 0) {
+> +		mtk_dp->train_state = MTK_DP_TRAIN_STATE_DPIDLE;
 
-Does mtk_dp->state has any relation with mtk_dp->train_state. If yes,
-mix mtk_dp->state and mtk_dp->train_state into one state. If no, move
-calling mtk_dp_state_handler() out of mtk_dp_train_handler().
+After return, mtk_dp->train_state would be set to
+MTK_DP_TRAIN_STATE_DPIDLE, so drop this.
+
+> +		return -ENODEV;
+> +	}
+> +
+> +	link_rate = mtk_dp->rx_cap[1];
+> +	lane_count = mtk_dp->rx_cap[2] & 0x1F;
+> +
+> +	mtk_dp->train_info.link_rate = min(mtk_dp->max_linkrate,
+> link_rate);
+> +	mtk_dp->train_info.lane_count = min(mtk_dp->max_lanes,
+> lane_count);
+> +	link_rate = mtk_dp->train_info.link_rate;
+> +	lane_count = mtk_dp->train_info.lane_count;
+> +
+> +	switch (link_rate) {
+> +	case MTK_DP_LINKRATE_RBR:
+> +	case MTK_DP_LINKRATE_HBR:
+> +	case MTK_DP_LINKRATE_HBR2:
+> +	case MTK_DP_LINKRATE_HBR25:
+> +	case MTK_DP_LINKRATE_HBR3:
+> +		break;
+> +	default:
+> +		mtk_dp->train_info.link_rate = MTK_DP_LINKRATE_HBR3;
+> +		break;
+> +	};
+> +
+> +	max_link_rate = link_rate;
+> +	for (train_limit = 6; train_limit > 0; train_limit--) {
+> +		mtk_dp->train_info.cr_done = false;
+> +		mtk_dp->train_info.eq_done = false;
+> +
+> +		mtk_dp_train_change_mode(mtk_dp);
+> +		ret = mtk_dp_train_flow(mtk_dp, link_rate, lane_count);
+> +		if (ret)
+> +			return ret;
+> +
+> +		if (!mtk_dp->train_info.cr_done) {
+> +			switch (link_rate) {
+> +			case MTK_DP_LINKRATE_RBR:
+> +				lane_count = lane_count / 2;
+> +				link_rate = max_link_rate;
+> +				if (lane_count == 0) {
+> +					mtk_dp->train_state =
+> +						MTK_DP_TRAIN_STATE_DPID
+> LE;
+
+After return, mtk_dp->train_state would be set to
+MTK_DP_TRAIN_STATE_DPIDLE, so drop this.
 
 Regards,
 CK
 
-> +	case MTK_DP_STATE_INITIAL:
-> +		mtk_dp_video_mute(mtk_dp, true);
-> +		mtk_dp->state = MTK_DP_STATE_IDLE;
-> +		break;
+> +					return -EIO;
+> +				}
+> +				break;
+> +			case MTK_DP_LINKRATE_HBR:
+> +				link_rate = MTK_DP_LINKRATE_RBR;
+> +				break;
+> +			case MTK_DP_LINKRATE_HBR2:
+> +				link_rate = MTK_DP_LINKRATE_HBR;
+> +				break;
+> +			case MTK_DP_LINKRATE_HBR3:
+> +				link_rate = MTK_DP_LINKRATE_HBR2;
+> +				break;
+> +			default:
+> +				return -EINVAL;
+> +			};
+> +		} else if (!mtk_dp->train_info.eq_done) {
+> +			if (lane_count == 0)
+> +				return -EIO;
 > +
-> +	case MTK_DP_STATE_IDLE:
-> +		if (mtk_dp->train_state == MTK_DP_TRAIN_STATE_NORMAL)
-> +			mtk_dp->state = MTK_DP_STATE_PREPARE;
-> +		break;
-> +
-> +	case MTK_DP_STATE_PREPARE:
-> +		mtk_dp_video_config(mtk_dp);
-> +		mtk_dp_video_enable(mtk_dp, true);
-> +
-> +		mtk_dp->state = MTK_DP_STATE_NORMAL;
-> +		break;
-> +
-> +	case MTK_DP_STATE_NORMAL:
-> +		if (mtk_dp->train_state != MTK_DP_TRAIN_STATE_NORMAL) {
-> +			mtk_dp_video_mute(mtk_dp, true);
-> +			mtk_dp->state = MTK_DP_STATE_IDLE;
+> +			lane_count /= 2;
+> +		} else {
+> +			break;
 > +		}
-> +		break;
-> +
-> +	default:
-> +		break;
 > +	}
+> +
+> +	if (train_limit == 0)
+> +		return -ETIMEDOUT;
+> +
+> +	return 0;
 > +}
+> +
 

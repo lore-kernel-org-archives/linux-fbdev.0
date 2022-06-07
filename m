@@ -2,189 +2,207 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DCD4C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Jun 2022 06:21:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 738FCC43334
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Jun 2022 02:31:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230015AbiFFGVX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Jun 2022 02:21:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59388 "EHLO
+        id S231557AbiFGCbg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Jun 2022 22:31:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40554 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229911AbiFFGUe (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Jun 2022 02:20:34 -0400
-Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D414B22B20
-        for <linux-fbdev@vger.kernel.org>; Sun,  5 Jun 2022 23:20:25 -0700 (PDT)
-Received: by mail-ej1-x633.google.com with SMTP id y19so26937462ejq.6
-        for <linux-fbdev@vger.kernel.org>; Sun, 05 Jun 2022 23:20:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=F/BITtmLWc1VtxM65EqQjDPMCYQMAuoqz8dLA7WWjls=;
-        b=S7fiGYjkD4hCmOxEBPhVlPYrksvpFVRkVWt7637cDHckBJf5TCtLnmB9UkOmZKTIKF
-         ZLq2E6ClOr44GI0ySPWu8fcv61ODO7R7TZkolOKRsI5miFRej3Sk0Ez3u9iUUrvcJ5sD
-         cAe8JXXs9pMWUQrp3HLptyxSBK/Dp/Kxb5sEbCn1ddt6aBXwzyPUPn7+QvK0OpZFNJ1S
-         3g3yffxJw5Emt0ODfIJsXbgP0bmEDOP7Bw2xD88HDF2FIF6NYDreWrcOhAPuEekY79bd
-         EbakCJ2/E0EsEoUb9/nLOZLwS+QfCORF4eCHplr5b7slcx0Fg9kERBNrirNO5aeJAadX
-         ZL5Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=F/BITtmLWc1VtxM65EqQjDPMCYQMAuoqz8dLA7WWjls=;
-        b=Psr4M7SXzQPuDgImXtPJx/VYhMfMonxP45dCOjgrS+Exf27rkT2t7ZNwCSn4XsXNRK
-         7JL/Y5lS8i+kN/YKfuvEWOUFrcaYe2nvjm9cEpjwxdWmHhDXIVbR9eWPiE1o0lU1Kuyj
-         ZhFmPdV42/7zIKvMCLtzepBjky+xLzJXgfkXbAahHuesmdMeE9D5wAd8DcG3I8DYKX4/
-         qziYh57B/BQdQ/L63CMCNwKXE0odjK9gj4whDCONEY+1ssSj1Zruotpt1M0EiXTjMZdn
-         J4xEobpMzyfARv+CKFt5PTo5vTV2J/D+1aULVyq1EHNz2iFg7BolimO5gRACZs6MhfNw
-         5Gaw==
-X-Gm-Message-State: AOAM531UZNxI76sj6khQcEbmoN+o6aFMhO4/kknJyuL8UpPY0xxFvO6c
-        ANWrv9SiB1yy7465yv9ge5ULiw==
-X-Google-Smtp-Source: ABdhPJzAfxWKgaolZMJ1kBvo3MGRFufwf7UUXNcLCeJtJs0PDGTLYJF6eHuRcJkYjoAgJxuWKltYiw==
-X-Received: by 2002:a17:906:4fce:b0:6f4:f41c:3233 with SMTP id i14-20020a1709064fce00b006f4f41c3233mr19013888ejw.117.1654496423905;
-        Sun, 05 Jun 2022 23:20:23 -0700 (PDT)
-Received: from [192.168.0.181] (xdsl-188-155-176-92.adslplus.ch. [188.155.176.92])
-        by smtp.gmail.com with ESMTPSA id n19-20020a05640205d300b0042de8155fa1sm8150758edx.0.2022.06.05.23.20.22
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 05 Jun 2022 23:20:23 -0700 (PDT)
-Message-ID: <5af6d6ff-c5e3-f764-fa9c-a2c3d7365082@linaro.org>
-Date:   Mon, 6 Jun 2022 08:20:22 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.10.0
-Subject: Re: [PATCH 1/2] dt-bindings: backlight: rt4831: Add the new property
- for ocp level selection
-Content-Language: en-US
-To:     ChiYuan Huang <u0084500@gmail.com>
-Cc:     Rob Herring <robh@kernel.org>,
+        with ESMTP id S231431AbiFGCbe (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Jun 2022 22:31:34 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4E7458A320;
+        Mon,  6 Jun 2022 19:31:27 -0700 (PDT)
+X-UUID: 8656a8c9b5ba4510b70bf0e1b5362453-20220607
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.5,REQID:3723c212-8544-46a6-be12-41fdc549bbe9,OB:0,LO
+        B:0,IP:0,URL:25,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,AC
+        TION:release,TS:70
+X-CID-INFO: VERSION:1.1.5,REQID:3723c212-8544-46a6-be12-41fdc549bbe9,OB:0,LOB:
+        0,IP:0,URL:25,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Spam_GS981B3D,AC
+        TION:quarantine,TS:70
+X-CID-META: VersionHash:2a19b09,CLOUDID:3ecbdbe4-2ba2-4dc1-b6c5-11feb6c769e0,C
+        OID:873374f2b283,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:1,File:nil,QS:0,BEC:nil
+X-UUID: 8656a8c9b5ba4510b70bf0e1b5362453-20220607
+Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw01.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 1303853498; Tue, 07 Jun 2022 10:31:22 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.792.15; Tue, 7 Jun 2022 10:31:21 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Tue, 7 Jun 2022 10:31:21 +0800
+Message-ID: <a86afcd38ce4243f86fddd1647129d64585e56d1.camel@mediatek.com>
+Subject: Re: [PATCH v10 01/21] dt-bindings: mediatek,dpi: Add DPINTF
+ compatible
+From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
+To:     AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Guillaume Ranquet <granquet@baylibre.com>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "David Airlie" <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
+        Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-        Helge Deller <deller@gmx.de>, cy_huang <cy_huang@richtek.com>,
-        lucas_tsai@richtek.com,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        lkml <linux-kernel@vger.kernel.org>
-References: <1653534995-30794-1-git-send-email-u0084500@gmail.com>
- <1653534995-30794-2-git-send-email-u0084500@gmail.com>
- <1c7ab94c-a736-c629-bd8c-8a974803e2b9@linaro.org>
- <CADiBU39jZ6TdYZoH80m4R-X2_fUXZOvDA4yUd_TQdPzBJLE+JA@mail.gmail.com>
- <076d53d3-6062-686f-8e45-14c5f936bbf6@linaro.org>
- <20220602135604.GA2194286-robh@kernel.org>
- <e3aa9c7e-bf2d-dd55-8b3f-ca51f569771d@linaro.org>
- <CADiBU3-dN0vtQBEqvVLFCUp4-MkhLbQRkOiCet+fO8WfkEW4MQ@mail.gmail.com>
- <12096a2c-98c3-9e77-785f-808cc3e1a0e4@linaro.org>
- <CADiBU3_REqNRb4UtT5OrVBKuhYL0NPAALisHTM76SrFCHUYMuA@mail.gmail.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <CADiBU3_REqNRb4UtT5OrVBKuhYL0NPAALisHTM76SrFCHUYMuA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Chunfeng Yun <chunfeng.yun@mediatek.com>,
+        "Kishon Vijay Abraham I" <kishon@ti.com>,
+        Vinod Koul <vkoul@kernel.org>, "Helge Deller" <deller@gmx.de>,
+        CK Hu <ck.hu@mediatek.com>, Jitao shi <jitao.shi@mediatek.com>
+CC:     Markus Schneider-Pargmann <msp@baylibre.com>,
+        <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-phy@lists.infradead.org>, <linux-fbdev@vger.kernel.org>
+Date:   Tue, 7 Jun 2022 10:31:21 +0800
+In-Reply-To: <c1dacdd0-f25e-a522-5d5f-1ef2fe297094@collabora.com>
+References: <20220523104758.29531-1-granquet@baylibre.com>
+         <20220523104758.29531-2-granquet@baylibre.com>
+         <c1dacdd0-f25e-a522-5d5f-1ef2fe297094@collabora.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 06/06/2022 03:39, ChiYuan Huang wrote:
-> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> 於 2022年6月6日 週一 上午12:11寫道：
->>
->> On 02/06/2022 17:31, ChiYuan Huang wrote:
->>> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> 於 2022年6月2日 週四 下午9:58寫道：
->>>>
->>>> On 02/06/2022 15:56, Rob Herring wrote:
->>>>> On Thu, May 26, 2022 at 12:32:12PM +0200, Krzysztof Kozlowski wrote:
->>>>>> On 26/05/2022 10:13, ChiYuan Huang wrote:
->>>>>>> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> 於 2022年5月26日 週四 下午4:06寫道：
->>>>>>>>
->>>>>>>> On 26/05/2022 05:16, cy_huang wrote:
->>>>>>>>> From: ChiYuan Huang <cy_huang@richtek.com>
->>>>>>>>>
->>>>>>>>> Add the new property for ocp level selection.
->>>>>>>>>
->>>>>>>>> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
->>>>>>>>> ---
->>>>>>>>>  .../bindings/leds/backlight/richtek,rt4831-backlight.yaml         | 8 ++++++++
->>>>>>>>>  include/dt-bindings/leds/rt4831-backlight.h                       | 5 +++++
->>>>>>>>>  2 files changed, 13 insertions(+)
->>>>>>>>>
->>>>>>>>> diff --git a/Documentation/devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml
->>>>>>>>> index e0ac686..c1c59de 100644
->>>>>>>>> --- a/Documentation/devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml
->>>>>>>>> +++ b/Documentation/devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml
->>>>>>>>> @@ -47,6 +47,14 @@ properties:
->>>>>>>>>      minimum: 0
->>>>>>>>>      maximum: 3
->>>>>>>>>
->>>>>>>>> +  richtek,bled-ocp-sel:
->>>>>>>>
->>>>>>>> Skip "sel" as it is a shortcut of selection. Name instead:
->>>>>>>> "richtek,backlight-ocp"
->>>>>>>>
->>>>>>> OK, if so, do I need to rename all properties from 'bled' to 'backlight' ?
->>>>>>> If  only this property is naming as 'backlight'. it may conflict with
->>>>>>> the others like as "richtek,bled-ovp-sel".
->>>>>>
->>>>>> Ah, no, no need.
->>>>>>
->>>>>>>>
->>>>>>>>> +    description: |
->>>>>>>>> +      Backlight OCP level selection, currently support 0.9A/1.2A/1.5A/1.8A
->>>>>>>>
->>>>>>>> Could you explain here what is OCP (unfold the acronym)?
->>>>>>> Yes. And the full name is 'over current protection'.
->>>>>>
->>>>>> Thanks and this leads to second thing - you encode register value
->>>>>> instead of logical value. This must be a logical value in mA, so
->>>>>> "richtek,bled-ocp-microamp".
->>>>>
->>>>> We already have common properties for setting current of LEDs. We should
->>>>> use that here I think.
->>>>
->>>> It might not be exactly the same. We have "led-max-microamp" which is
->>>> the maximum allowed current. I guess over-current protection level  is
->>>> slightly higher (e.g. led-max-microamp + 1). IOW, led-max-microamp is
->>>> something which still can be set and used by system/hardware. OCP should
->>>> not.
->>>>
->>> Yap, you're right.
->>
->> So I am right or Rob?
->>
-> As I know, both are incorrect.
->>> From the modern backlight IC design, it uses the boost converter architecture.
->>> This OCP level is to limit the inductor current when the internal MOS
->>> switch turn on.
->>> Details can refer to the below wiki link
->>> https://en.wikipedia.org/wiki/Boost_converter
->>>
->>> And based on it, OVP is used to limit the inductor output voltage.
->>> Each channel maximum current is based on the IC affordable limit.
->>> It is more like as what you said 'led-max-microamp'.
->>>
->>> So boost voltage level may depend on the LED VF.
->>> The different series of LED may cause different boost voltage.
->>>
->>> RT4831's OVP/OCP is not just the protection, more like as the limit.
->>
->> This suggests Rob is right, so let's use led-max-microamp property?
->>
-> No, the meaning is different. 'led-max-microamp' always means the
-> channel output current.
-> It already can be adjusted by backlight brightness node.
+On Wed, 2022-05-25 at 13:55 +0200, AngeloGioacchino Del Regno wrote:
+> Il 23/05/22 12:47, Guillaume Ranquet ha scritto:
+> > From: Markus Schneider-Pargmann <msp@baylibre.com>
+> > 
+> > DPINTF is similar to DPI but does not have the exact same feature
+> > set
+> > or register layouts.
+> > 
+> > DPINTF is the sink of the display pipeline that is connected to the
+> > DisplayPort controller and encoder unit. It takes the same clocks
+> > as
+> > DPI.
+> > 
+> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> > ---
+> >   .../bindings/display/mediatek/mediatek,dpi.yaml     | 13
+> > ++++++++-----
+> >   1 file changed, 8 insertions(+), 5 deletions(-)
+> > 
+> > diff --git
+> > a/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.y
+> > aml
+> > b/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.y
+> > aml
+> > index dd2896a40ff0..6d9f6c11806e 100644
+> > ---
+> > a/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.y
+> > aml
+> > +++
+> > b/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.y
+> > aml
+> > @@ -4,16 +4,16 @@
+> >   $id: 
+> > http://devicetree.org/schemas/display/mediatek/mediatek,dpi.yaml#
+> >   $schema: http://devicetree.org/meta-schemas/core.yaml#
+> >   
+> > -title: mediatek DPI Controller Device Tree Bindings
+> > +title: mediatek DPI/DPINTF Controller
+> >   
+> >   maintainers:
+> >     - CK Hu <ck.hu@mediatek.com>
+> >     - Jitao shi <jitao.shi@mediatek.com>
+> >   
+> >   description: |
+> > -  The Mediatek DPI function block is a sink of the display
+> > subsystem and
+> > -  provides 8-bit RGB/YUV444 or 8/10/10-bit YUV422 pixel data on a
+> > parallel
+> > -  output bus.
+> > +  The Mediatek DPI and DPINTF function blocks are a sink of the
+> > display
+> > +  subsystem and provides 8-bit RGB/YUV444 or 8/10/10-bit YUV422
+> > pixel data on a
+> > +  parallel output bus.
+> >   
+> >   properties:
+> >     compatible:
+> > @@ -23,6 +23,7 @@ properties:
+> >         - mediatek,mt8173-dpi
+> >         - mediatek,mt8183-dpi
+> >         - mediatek,mt8192-dpi
+> > +      - mediatek,mt8195-dpintf
+> >   
+> >     reg:
+> >       maxItems: 1
+> > @@ -35,12 +36,14 @@ properties:
+> >         - description: Pixel Clock
+> >         - description: Engine Clock
+> >         - description: DPI PLL
+> > +      - description: Optional CK CG Clock
+> >   
+> >     clock-names:
+> >       items:
+> >         - const: pixel
+> >         - const: engine
+> >         - const: pll
+> > +      - const: ck_cg
 > 
-> For example
-> low voltage side (3.3~4.4V) to generate the boost voltage to 16~17V,
-> even 20V for BLED Vout.
-> This OCP is to limit the input current of low voltage side.
+> This is my understanding on how the DisplayPort Interface clocks work
+> on 8195:
 > 
-> After the explanation, do you still think it's the same thing?
+> The "engine" clock is for the *VPP Engine's DisplayPort ip/block*,
+> "pll" is for TVD PLL divider selection
+> "pixel" is the gate for the pixel clock to the connected display.
+> 
+> "ck_cg" is useless, as that's the parent of "pixel" (and will always
+> be)... for
+> example, on mt8195... check clk/mediatek/clk-mt8195-vdo0.c - the
+> CLK_VDO0_DP_INTF0_DP_INTF clock already has CLK_TOP_EDP as its
+> parent, hence
+> enabling the first will enable the latter.
+> 
+> That said... you can most probably avoid adding the ck_cg clock, as
+> if you try
+> to turn that off while it's in use by its children, you'll be only
+> decrementing
+> a refcount, but no "real action" will ever take place.
+> 
+> 
+> Regards,
+> Angelo
 
-This sounds differently so I propose to use this dedicated property with
-the changes I asked for.
+Hello Chunfeng and Angelo,
 
+ck_cg is a clock gate, and I try to remove it from drivers but it's
+failed to enable dp_intf.
 
-Best regards,
-Krzysztof
+the block diagram is:
+1. 26M->CLK_APMIXED_TVDPLL1(pll)->CLK_TOP_EDP(pixel)-
+>CLK_VDO0_DP_INTF0_DP_INTF(ck_cg)->dp_intf
+
+2. VDOSYS clock->CLK_VDO0_DP_INTF0(engine)->dp_intf
+
+"engine" and "ck_cg" are all clock gates which control the clock source
+input to dp_intf.
+
+Maybe we just need to rename it?
+If so, what name do you think we should modify?
+
+BRs,
+Bo-Chen
+
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+

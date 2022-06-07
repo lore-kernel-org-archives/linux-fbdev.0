@@ -2,224 +2,158 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8523C43334
-	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Jun 2022 12:55:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C3FFC433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Jun 2022 15:01:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236681AbiFGMzi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 7 Jun 2022 08:55:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55536 "EHLO
+        id S1343744AbiFGPBa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Jun 2022 11:01:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60296 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244287AbiFGMzg (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Jun 2022 08:55:36 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0AE997B9F9;
-        Tue,  7 Jun 2022 05:55:32 -0700 (PDT)
-X-UUID: bb5e143a916949d992b27f2fdc9c1465-20220607
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:3eaa7c96-6260-46d2-b3f5-7101e12b16b0,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:0
-X-CID-META: VersionHash:2a19b09,CLOUDID:275c7e7e-c8dc-403a-96e8-6237210dceee,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
-        ,QS:0,BEC:nil
-X-UUID: bb5e143a916949d992b27f2fdc9c1465-20220607
-Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw01.mediatek.com
-        (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 931050928; Tue, 07 Jun 2022 20:55:27 +0800
-Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Tue, 7 Jun 2022 20:55:26 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Tue, 7 Jun 2022 20:55:26 +0800
-Message-ID: <6d7a38e4fe4cd1811c826888531144511407a06a.camel@mediatek.com>
-Subject: Re: [PATCH v10 18/21] drm/mediatek: Add mt8195 Embedded DisplayPort
- driver
-From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
-To:     CK Hu <ck.hu@mediatek.com>,
-        Guillaume Ranquet <granquet@baylibre.com>,
-        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
+        with ESMTP id S236248AbiFGPB3 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Jun 2022 11:01:29 -0400
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA16036B60
+        for <linux-fbdev@vger.kernel.org>; Tue,  7 Jun 2022 08:01:26 -0700 (PDT)
+Received: by mail-wr1-x431.google.com with SMTP id k19so24546604wrd.8
+        for <linux-fbdev@vger.kernel.org>; Tue, 07 Jun 2022 08:01:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=9UpbUSyzB5BM/M+IOHSr/KOS4nqjlqBTVH6qCIsqDVs=;
+        b=LpTu4x2GrXKwDxfcpNodQTe04DdpSLlrLOY3kKpS21O9BqbEBGczUAopJtSZWS+rJE
+         w+aX/ZBiEcD1fIS3zZwbD20JydteRjTmVGPo3dNvlK5829FoEVE+Bmtl1o0DZY11IouJ
+         feXlNEUw60xhhZducvrdszMY8YMdy3XVMXQKQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id
+         :mail-followup-to:references:mime-version:content-disposition
+         :in-reply-to;
+        bh=9UpbUSyzB5BM/M+IOHSr/KOS4nqjlqBTVH6qCIsqDVs=;
+        b=zTNHOGdbNJa5Zn4fJ7h9g2K8B4uzIz6QHJP6PohpuXiNaipP4IStc5QeHAGWDmDIbw
+         H8Wyi1aDCZCIlS14dKtP/df37j0He0pGvd/W5VBWneXFm53Y1XLGisC5KiR1K4X/XypD
+         lIPgfyyWQlyE09aZvdMDyqku5Qmkb41ddFFXU808B24bk/Rb7uYRK/SJm/VVz5mBCd3j
+         npqaCmuRrj+qCehExj0Cl0iQTv8y4jfhHlDO18OsLZMXx2VaPHbgnTwxs6q/ElUVh/LC
+         qQrhFWkNXTidIMPIrofYn9AWVq6R9Bt4+AMn7GDW802eUJoY2n8YZ2ZYE5K15G+mjGKN
+         XswA==
+X-Gm-Message-State: AOAM533I76Gy7SZi4L1yWnWBF4nWKoqHk0ymgEug+jp+Klf7C3/OO+4O
+        THBYYNzkBwPyQNdWPi/7yjCCZQ==
+X-Google-Smtp-Source: ABdhPJzRSpk+t9rfEmAydcAN7JVl91M+kAWWTZJxeJuODBS8jkdv2bQOh5EfNSmoZ/h89TC2grRi3w==
+X-Received: by 2002:a5d:67c9:0:b0:218:4a6a:298e with SMTP id n9-20020a5d67c9000000b002184a6a298emr6424341wrw.153.1654614085040;
+        Tue, 07 Jun 2022 08:01:25 -0700 (PDT)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id j3-20020a5d4643000000b002103a7c5c91sm17684103wrs.43.2022.06.07.08.01.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Jun 2022 08:01:24 -0700 (PDT)
+Date:   Tue, 7 Jun 2022 17:01:00 +0200
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Helge Deller <deller@gmx.de>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Chunfeng Yun =?UTF-8?Q?=28=E4=BA=91=E6=98=A5=E5=B3=B0=29?= 
-        <Chunfeng.Yun@mediatek.com>,
-        Kishon Vijay Abraham I <kishon@ti.com>,
-        Vinod Koul <vkoul@kernel.org>, "Helge Deller" <deller@gmx.de>,
-        Jitao Shi =?UTF-8?Q?=28=E7=9F=B3=E8=AE=B0=E6=B6=9B=29?= 
-        <jitao.shi@mediatek.com>
-CC:     Markus Schneider-Pargmann <msp@baylibre.com>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-mediatek@lists.infradead.org" 
-        <linux-mediatek@lists.infradead.org>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "linux-phy@lists.infradead.org" <linux-phy@lists.infradead.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
-Date:   Tue, 7 Jun 2022 20:55:25 +0800
-In-Reply-To: <ff858934b622e6716dd48bf02d4d57f19358b805.camel@mediatek.com>
-References: <20220523104758.29531-1-granquet@baylibre.com>
-         <20220523104758.29531-19-granquet@baylibre.com>
-         <ff858934b622e6716dd48bf02d4d57f19358b805.camel@mediatek.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v5 5/7] fbdev: Disable sysfb device registration when
+ removing conflicting FBs
+Message-ID: <Yp9oLJ/HD2rHxO3z@phenom.ffwll.local>
+Mail-Followup-To: Javier Martinez Canillas <javierm@redhat.com>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, Helge Deller <deller@gmx.de>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+References: <20220511112438.1251024-1-javierm@redhat.com>
+ <20220511113144.1252729-1-javierm@redhat.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220511113144.1252729-1-javierm@redhat.com>
+X-Operating-System: Linux phenom 5.10.0-8-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, 2022-06-07 at 16:12 +0800, CK Hu wrote:
-> Hi, Rex:
+On Wed, May 11, 2022 at 01:31:44PM +0200, Javier Martinez Canillas wrote:
+> The platform devices registered by sysfb match with firmware-based DRM or
+> fbdev drivers, that are used to have early graphics using a framebuffer
+> provided by the system firmware.
 > 
-> On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
-> > From: Markus Schneider-Pargmann <msp@baylibre.com>
-> > 
-> > This patch adds a DisplayPort driver for the Mediatek mt8195 SoC.
-> > 
-> > It supports the mt8195, the embedded DisplayPort units. It offers
-> > DisplayPort 1.4 with up to 4 lanes.
-> > 
-> > The driver creates a child device for the phy. The child device
-> > will
-> > never exist without the parent being active. As they are sharing a
-> > register range, the parent passes a regmap pointer to the child so
-> > that
-> > both can work with the same register range. The phy driver sets
-> > device
-> > data that is read by the parent to get the phy device that can be
-> > used
-> > to control the phy properties.
-> > 
-> > This driver is based on an initial version by
-> > Jason-JH.Lin <jason-jh.lin@mediatek.com>.
-> > 
-> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> > ---
+> DRM or fbdev drivers later are probed and remove all conflicting framebuffers,
+> leading to these platform devices for generic drivers to be unregistered.
 > 
-> [snip]
+> But the current solution has a race, since the sysfb_init() function could
+> be called after a DRM or fbdev driver is probed and request to unregister
+> the devices for drivers with conflicting framebuffes.
 > 
-> > +
-> > +static int mtk_dp_train_start(struct mtk_dp *mtk_dp)
-> > +{
-> > +	int ret = 0;
-> > +	u8 lane_count;
-> > +	u8 link_rate;
-> > +	u8 train_limit;
-> > +	u8 max_link_rate;
-> > +	u8 plug_wait;
-> > +
-> > +	for (plug_wait = 7; !mtk_dp_plug_state(mtk_dp) && plug_wait >
-> > 0;
-> > +	     --plug_wait)
-> > +		/* Avoid short pulses on the HPD isr */
-> > +		usleep_range(1000, 5000);
-> > +	if (plug_wait == 0) {
-> > +		mtk_dp->train_state = MTK_DP_TRAIN_STATE_DPIDLE;
+> To prevent this, disable any future sysfb platform device registration by
+> calling sysfb_disable(), if a driver requests to remove the conflicting
+> framebuffers.
 > 
-> After return, mtk_dp->train_state would be set to
-> MTK_DP_TRAIN_STATE_DPIDLE, so drop this.
+> Suggested-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+> ---
+> 
+> Changes in v5:
+> - Move the sysfb_disable() call at conflicting framebuffers again to
+>   avoid the need of a DRIVER_FIRMWARE capability flag.
+> - Add Daniel Vetter's Reviewed-by tag again since reverted to the old
+>   patch that he already reviewed in v2.
+> 
+> Changes in v3:
+> - Call sysfb_disable() when a DRM dev and a fbdev are registered rather
+>   than when conflicting framebuffers are removed (Thomas Zimmermann).
+> - Call sysfb_disable() when a fbdev framebuffer is registered rather
+>   than when conflicting framebuffers are removed (Thomas Zimmermann).
+> - Drop Daniel Vetter's Reviewed-by tag since patch changed a lot.
+> 
+> Changes in v2:
+> - Explain in the commit message that fbmem has to unregister the device
+>   as fallback if a driver registered the device itself (Daniel Vetter).
+> - Also explain that fallback in a comment in the code (Daniel Vetter).
+> - Don't encode in fbmem the assumption that sysfb will always register
+>   platform devices (Daniel Vetter).
+> - Add a FIXME comment about drivers registering devices (Daniel Vetter).
+> 
+>  drivers/video/fbdev/core/fbmem.c | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+> 
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+> index 9b035ef4d552..265efa189bcc 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -1789,6 +1789,17 @@ int remove_conflicting_framebuffers(struct apertures_struct *a,
+>  	if (do_free)
+>  		kfree(a);
+>  
+> +	/*
+> +	 * If a driver asked to unregister a platform device registered by
+> +	 * sysfb, then can be assumed that this is a driver for a display
+> +	 * that is set up by the system firmware and has a generic driver.
+> +	 *
+> +	 * Drivers for devices that don't have a generic driver will never
+> +	 * ask for this, so let's assume that a real driver for the display
+> +	 * was already probed and prevent sysfb to register devices later.
+> +	 */
+> +	sysfb_disable();
+
+So the og version had (or should have had at least) the sysfb_disable()
+call before we go through the loop and try to unregister stuff. I think
+this needs to be done before we call do_remove_conflicting_framebuffer()
+instead. With that:
+
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+
+
+> +
+>  	return 0;
+>  }
+>  EXPORT_SYMBOL(remove_conflicting_framebuffers);
+> -- 
+> 2.35.1
 > 
 
-ok, I will do this.
-
-> > +		return -ENODEV;
-> > +	}
-> > +
-> > +	link_rate = mtk_dp->rx_cap[1];
-> > +	lane_count = mtk_dp->rx_cap[2] & 0x1F;
-> > +
-> > +	mtk_dp->train_info.link_rate = min(mtk_dp->max_linkrate,
-> > link_rate);
-> > +	mtk_dp->train_info.lane_count = min(mtk_dp->max_lanes,
-> > lane_count);
-> > +	link_rate = mtk_dp->train_info.link_rate;
-> > +	lane_count = mtk_dp->train_info.lane_count;
-> > +
-> > +	switch (link_rate) {
-> > +	case MTK_DP_LINKRATE_RBR:
-> > +	case MTK_DP_LINKRATE_HBR:
-> > +	case MTK_DP_LINKRATE_HBR2:
-> > +	case MTK_DP_LINKRATE_HBR25:
-> > +	case MTK_DP_LINKRATE_HBR3:
-> > +		break;
-> > +	default:
-> > +		mtk_dp->train_info.link_rate = MTK_DP_LINKRATE_HBR3;
-> > +		break;
-> > +	};
-> > +
-> > +	max_link_rate = link_rate;
-> > +	for (train_limit = 6; train_limit > 0; train_limit--) {
-> > +		mtk_dp->train_info.cr_done = false;
-> > +		mtk_dp->train_info.eq_done = false;
-> > +
-> > +		mtk_dp_train_change_mode(mtk_dp);
-> > +		ret = mtk_dp_train_flow(mtk_dp, link_rate, lane_count);
-> > +		if (ret)
-> > +			return ret;
-> > +
-> > +		if (!mtk_dp->train_info.cr_done) {
-> > +			switch (link_rate) {
-> > +			case MTK_DP_LINKRATE_RBR:
-> > +				lane_count = lane_count / 2;
-> > +				link_rate = max_link_rate;
-> > +				if (lane_count == 0) {
-> > +					mtk_dp->train_state =
-> > +						MTK_DP_TRAIN_STATE_DPID
-> > LE;
-> 
-> After return, mtk_dp->train_state would be set to
-> MTK_DP_TRAIN_STATE_DPIDLE, so drop this.
-> 
-> Regards,
-> CK
-> 
-
-ok.
-
-> > +					return -EIO;
-> > +				}
-> > +				break;
-> > +			case MTK_DP_LINKRATE_HBR:
-> > +				link_rate = MTK_DP_LINKRATE_RBR;
-> > +				break;
-> > +			case MTK_DP_LINKRATE_HBR2:
-> > +				link_rate = MTK_DP_LINKRATE_HBR;
-> > +				break;
-> > +			case MTK_DP_LINKRATE_HBR3:
-> > +				link_rate = MTK_DP_LINKRATE_HBR2;
-> > +				break;
-> > +			default:
-> > +				return -EINVAL;
-> > +			};
-> > +		} else if (!mtk_dp->train_info.eq_done) {
-> > +			if (lane_count == 0)
-> > +				return -EIO;
-> > +
-> > +			lane_count /= 2;
-> > +		} else {
-> > +			break;
-> > +		}
-> > +	}
-> > +
-> > +	if (train_limit == 0)
-> > +		return -ETIMEDOUT;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> 
-> 
-
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

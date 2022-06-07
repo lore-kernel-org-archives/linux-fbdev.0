@@ -2,83 +2,113 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6F1DCCA487
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B728CCCA48E
 	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Jun 2022 00:15:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1383549AbiFHAOM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 7 Jun 2022 20:14:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49110 "EHLO
+        id S1354420AbiFHAOO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Jun 2022 20:14:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50086 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1588442AbiFGXyk (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Jun 2022 19:54:40 -0400
-Received: from 12.mo584.mail-out.ovh.net (12.mo584.mail-out.ovh.net [178.33.104.253])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 87E2A3BFB5
-        for <linux-fbdev@vger.kernel.org>; Tue,  7 Jun 2022 16:08:12 -0700 (PDT)
-Received: from player698.ha.ovh.net (unknown [10.109.146.122])
-        by mo584.mail-out.ovh.net (Postfix) with ESMTP id AF6E623D54
-        for <linux-fbdev@vger.kernel.org>; Tue,  7 Jun 2022 19:24:01 +0000 (UTC)
-Received: from sk2.org (82-65-25-201.subs.proxad.net [82.65.25.201])
-        (Authenticated sender: steve@sk2.org)
-        by player698.ha.ovh.net (Postfix) with ESMTPSA id 67A972B48042C;
-        Tue,  7 Jun 2022 19:23:52 +0000 (UTC)
-Authentication-Results: garm.ovh; auth=pass (GARM-110S0043a930085-a9b6-4bf1-b62d-4f18fbec254c,
-                    38FB55E0ED6224772C245AF554E1AE62085133ED) smtp.auth=steve@sk2.org
-X-OVh-ClientIp: 82.65.25.201
-From:   Stephen Kitt <steve@sk2.org>
-To:     Antonino Daplas <adaplas@gmail.com>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Helge Deller <deller@gmx.de>, Paul Mackerras <paulus@samba.org>
-Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Stephen Kitt <steve@sk2.org>, dri-devel@lists.freedesktop.org
-Subject: [PATCH 1/7] fbdev: aty128fb: Use backlight helper
-Date:   Tue,  7 Jun 2022 21:23:29 +0200
-Message-Id: <20220607192335.1137249-2-steve@sk2.org>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20220607192335.1137249-1-steve@sk2.org>
-References: <20220607192335.1137249-1-steve@sk2.org>
+        with ESMTP id S1588482AbiFGXym (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Jun 2022 19:54:42 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A88BCEF045;
+        Tue,  7 Jun 2022 16:11:23 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 41DA96164B;
+        Tue,  7 Jun 2022 23:11:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10924C3411C;
+        Tue,  7 Jun 2022 23:11:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1654643482;
+        bh=q/o80BpaLgRq9iVSp9QC1eQiLILACxZY1sBOydVH6c4=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=YSdiaQ8MPODZjy5tDCOevIDkXOoy9Rr3/RmUG+ckiC5TfPZsA1nM06aziSbFsTNRs
+         jiczumAUXXeAqcsQUKVCqrNEiTOzLsAxvVlaofM0VxH86Mk0rncLhIjSpRjVaOA8pV
+         yBgMr53BFgdhKNzguNpDfTAt/XgQ4ggsAlzKmN7WzwC+EIF6+rUJ1WDYsL4w0b/7oX
+         3zS16NTTje4k6E60swxizXIxmNAmlj5otazvKI8Ll3RxrDKTAwZtueLgqgMcUl1owK
+         QaplqBmQsZGJuh6XDxembUwbwKeh391b2pG1oj0ENjoN9Lg9pjqvdYCHFV0YlPuytd
+         CNin5j+D8q3cQ==
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     Helge Deller <deller@gmx.de>
+Cc:     Vaibhav Gupta <vaibhavgupta40@gmail.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-pm@vger.kernel.org, linux-pci@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH 2/2] video: fbdev: skeletonfb: Convert to generic power management
+Date:   Tue,  7 Jun 2022 18:11:12 -0500
+Message-Id: <20220607231112.354165-3-helgaas@kernel.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220607231112.354165-1-helgaas@kernel.org>
+References: <20220607231112.354165-1-helgaas@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 11948331288570660585
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddthedgudefiecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpefuthgvphhhvghnucfmihhtthcuoehsthgvvhgvsehskhdvrdhorhhgqeenucggtffrrghtthgvrhhnpeeghffhleeigffhteeiffelveefhfeiudehkedtgefhgedvleffgfejgfdtveeigeenucfkpheptddrtddrtddrtddpkedvrdeihedrvdehrddvtddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehplhgrhigvrheileekrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepshhtvghvvgesshhkvddrohhrghdpnhgspghrtghpthhtohepuddprhgtphhtthhopehlihhnuhigqdhfsgguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdfovfetjfhoshhtpehmohehkeeg
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Instead of retrieving the backlight brightness in struct
-backlight_properties manually, and then checking whether the backlight
-should be on at all, use backlight_get_brightness() which does all
-this and insulates this from future changes.
+From: Bjorn Helgaas <bhelgaas@google.com>
 
-Signed-off-by: Stephen Kitt <steve@sk2.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
+PCI-specific power management (pci_driver.suspend and pci_driver.resume) is
+deprecated.  If drivers implement power management, they should use the
+generic power management framework, not the PCI-specific hooks.
+
+Convert the sample code to use the generic power management framework.
+
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- drivers/video/fbdev/aty/aty128fb.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/skeletonfb.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
-index b26c81233b6b..a8f9baac3d3f 100644
---- a/drivers/video/fbdev/aty/aty128fb.c
-+++ b/drivers/video/fbdev/aty/aty128fb.c
-@@ -1765,12 +1765,10 @@ static int aty128_bl_update_status(struct backlight_device *bd)
- 	unsigned int reg = aty_ld_le32(LVDS_GEN_CNTL);
- 	int level;
+diff --git a/drivers/video/fbdev/skeletonfb.c b/drivers/video/fbdev/skeletonfb.c
+index bcacfb6934fa..70ba78450837 100644
+--- a/drivers/video/fbdev/skeletonfb.c
++++ b/drivers/video/fbdev/skeletonfb.c
+@@ -838,9 +838,9 @@ static void xxxfb_remove(struct pci_dev *dev)
+  *
+  *      See Documentation/driver-api/pm/devices.rst for more information
+  */
+-static int xxxfb_suspend(struct pci_dev *dev, pm_message_t msg)
++static int xxxfb_suspend(struct device *dev)
+ {
+-	struct fb_info *info = pci_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct xxxfb_par *par = info->par;
  
--	if (bd->props.power != FB_BLANK_UNBLANK ||
--	    bd->props.fb_blank != FB_BLANK_UNBLANK ||
--	    !par->lcd_on)
-+	if (!par->lcd_on)
- 		level = 0;
- 	else
--		level = bd->props.brightness;
-+		level = backlight_get_brightness(bd);
+ 	/* suspend here */
+@@ -853,9 +853,9 @@ static int xxxfb_suspend(struct pci_dev *dev, pm_message_t msg)
+  *
+  *      See Documentation/driver-api/pm/devices.rst for more information
+  */
+-static int xxxfb_resume(struct pci_dev *dev)
++static int xxxfb_resume(struct device *dev)
+ {
+-	struct fb_info *info = pci_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct xxxfb_par *par = info->par;
  
- 	reg |= LVDS_BL_MOD_EN | LVDS_BLON;
- 	if (level > 0) {
+ 	/* resume here */
+@@ -873,14 +873,15 @@ static const struct pci_device_id xxxfb_id_table[] = {
+ 	{ 0, }
+ };
+ 
++static SIMPLE_DEV_PM_OPS(xxxfb_pm_ops, xxxfb_suspend, xxxfb_resume);
++
+ /* For PCI drivers */
+ static struct pci_driver xxxfb_driver = {
+ 	.name =		"xxxfb",
+ 	.id_table =	xxxfb_id_table,
+ 	.probe =	xxxfb_probe,
+ 	.remove =	xxxfb_remove,
+-	.suspend =      xxxfb_suspend, /* optional but recommended */
+-	.resume =       xxxfb_resume,  /* optional but recommended */
++	.driver.pm =	xxxfb_pm_ops, /* optional but recommended */
+ };
+ 
+ MODULE_DEVICE_TABLE(pci, xxxfb_id_table);
 -- 
-2.30.2
+2.25.1
 

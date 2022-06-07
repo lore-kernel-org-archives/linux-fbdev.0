@@ -2,42 +2,42 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E55B6C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Jun 2022 07:47:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93FA8C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Jun 2022 08:01:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237203AbiFGHrR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 7 Jun 2022 03:47:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48584 "EHLO
+        id S231905AbiFGIBg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Jun 2022 04:01:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60724 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231281AbiFGHrQ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Jun 2022 03:47:16 -0400
+        with ESMTP id S231132AbiFGIBe (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Jun 2022 04:01:34 -0400
 Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 553E5D8;
-        Tue,  7 Jun 2022 00:47:12 -0700 (PDT)
-X-UUID: 54eab18635594d2d9b7003c83070b772-20220607
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5AE1ECC148;
+        Tue,  7 Jun 2022 01:01:30 -0700 (PDT)
+X-UUID: d742e5a3f56f4ec89160624d0e463bdc-20220607
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:7be55fc0-ff08-4e14-85f1-1cc70b81aeb2,OB:10,L
-        OB:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,AC
+X-CID-O-INFO: VERSION:1.1.5,REQID:5f35ce3b-6f41-4603-a32d-3e26e3b75624,OB:0,LO
+        B:10,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,AC
         TION:release,TS:45
-X-CID-INFO: VERSION:1.1.5,REQID:7be55fc0-ff08-4e14-85f1-1cc70b81aeb2,OB:10,LOB
-        :0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTI
+X-CID-INFO: VERSION:1.1.5,REQID:5f35ce3b-6f41-4603-a32d-3e26e3b75624,OB:0,LOB:
+        10,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTI
         ON:release,TS:45
-X-CID-META: VersionHash:2a19b09,CLOUDID:a2a4e8e4-2ba2-4dc1-b6c5-11feb6c769e0,C
-        OID:f74822fd2579,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+X-CID-META: VersionHash:2a19b09,CLOUDID:69b7737e-c8dc-403a-96e8-6237210dceee,C
+        OID:a9c23a514e78,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
         RL:0,File:nil,QS:0,BEC:nil
-X-UUID: 54eab18635594d2d9b7003c83070b772-20220607
+X-UUID: d742e5a3f56f4ec89160624d0e463bdc-20220607
 Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 460672927; Tue, 07 Jun 2022 15:47:09 +0800
-Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
- mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Tue, 7 Jun 2022 15:47:07 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Tue, 7 Jun 2022 15:47:07 +0800
-Message-ID: <f791f46c6307a18818574cb7fb8653bcc84aa9ad.camel@mediatek.com>
+        with ESMTP id 298287096; Tue, 07 Jun 2022 16:01:27 +0800
+Received: from mtkcas10.mediatek.inc (172.21.101.39) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.792.15; Tue, 7 Jun 2022 16:01:25 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Tue, 7 Jun 2022 16:01:25 +0800
+Message-ID: <387fc4f9a65b87467fbff3878ad371bee4552e6e.camel@mediatek.com>
 Subject: Re: [PATCH v10 18/21] drm/mediatek: Add mt8195 Embedded DisplayPort
  driver
 From:   CK Hu <ck.hu@mediatek.com>
@@ -63,7 +63,7 @@ CC:     Markus Schneider-Pargmann <msp@baylibre.com>,
         <linux-kernel@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-phy@lists.infradead.org>, <linux-fbdev@vger.kernel.org>
-Date:   Tue, 7 Jun 2022 15:47:07 +0800
+Date:   Tue, 7 Jun 2022 16:01:25 +0800
 In-Reply-To: <20220523104758.29531-19-granquet@baylibre.com>
 References: <20220523104758.29531-1-granquet@baylibre.com>
          <20220523104758.29531-19-granquet@baylibre.com>
@@ -106,66 +106,43 @@ On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
 [snip]
 
 > +
-> +static int mtk_dp_hpd_sink_event(struct mtk_dp *mtk_dp)
+> +static void mtk_dp_state_handler(struct mtk_dp *mtk_dp)
 > +{
-> +	ssize_t ret;
-> +	u8 sink_count;
-> +	bool locked;
-> +	u8 link_status[DP_LINK_STATUS_SIZE] = {};
-> +	u32 sink_count_reg = DP_SINK_COUNT_ESI;
-> +	u32 link_status_reg = DP_LANE0_1_STATUS;
-> +
-> +	ret = drm_dp_dpcd_readb(&mtk_dp->aux, sink_count_reg,
-> &sink_count);
-> +	if (ret < 0) {
-> +		drm_err(mtk_dp->drm_dev, "Read sink count failed:
-> %ld\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	ret = drm_dp_dpcd_read(&mtk_dp->aux, link_status_reg,
-> link_status,
-> +			       sizeof(link_status));
-> +	if (!ret) {
-> +		drm_err(mtk_dp->drm_dev, "Read link status failed:
-> %ld\n",
-> +			ret);
-> +		return ret;
-> +	}
-> +
-> +	locked = drm_dp_channel_eq_ok(link_status,
-> +				      mtk_dp->train_info.lane_count);
-> +	if (!locked && mtk_dp->train_state >
-> MTK_DP_TRAIN_STATE_TRAINING_PRE)
+> +	switch (mtk_dp->state) {
 
-Before enter this function, mtk_dp->train_state is set to
-MTK_DP_TRAIN_STATE_STARTUP, so this never happen, drop this.
-
-> +		mtk_dp->train_state = MTK_DP_TRAIN_STATE_TRAINING_PRE;
-> +
-> +	if (link_status[1] & DP_REMOTE_CONTROL_COMMAND_PENDING)
-> +		drm_dp_dpcd_writeb(&mtk_dp->aux,
-> DP_DEVICE_SERVICE_IRQ_VECTOR,
-> +				   DP_REMOTE_CONTROL_COMMAND_PENDING);
-> +
-> +	if (DP_GET_SINK_COUNT(sink_count) &&
-> +	    (link_status[2] & DP_DOWNSTREAM_PORT_STATUS_CHANGED)) {
-> +		mtk_dp->train_info.check_cap_count = 0;
-> +		mtk_dp->train_state = MTK_DP_TRAIN_STATE_CHECKEDID;
-
-Why change state from MTK_DP_TRAIN_STATE_STARTUP to
-MTK_DP_TRAIN_STATE_CHECKEDID? In mtk_dp_train_handler(),
-mtk_dp_parse_capabilities() is true then change to
-MTK_DP_TRAIN_STATE_CHECKEDID. Give a reason why these two are
-different.
+Does mtk_dp->state has any relation with mtk_dp->train_state. If yes,
+mix mtk_dp->state and mtk_dp->train_state into one state. If no, move
+calling mtk_dp_state_handler() out of mtk_dp_train_handler().
 
 Regards,
 CK
 
-> +		msleep(20);
+> +	case MTK_DP_STATE_INITIAL:
+> +		mtk_dp_video_mute(mtk_dp, true);
+> +		mtk_dp->state = MTK_DP_STATE_IDLE;
+> +		break;
+> +
+> +	case MTK_DP_STATE_IDLE:
+> +		if (mtk_dp->train_state == MTK_DP_TRAIN_STATE_NORMAL)
+> +			mtk_dp->state = MTK_DP_STATE_PREPARE;
+> +		break;
+> +
+> +	case MTK_DP_STATE_PREPARE:
+> +		mtk_dp_video_config(mtk_dp);
+> +		mtk_dp_video_enable(mtk_dp, true);
+> +
+> +		mtk_dp->state = MTK_DP_STATE_NORMAL;
+> +		break;
+> +
+> +	case MTK_DP_STATE_NORMAL:
+> +		if (mtk_dp->train_state != MTK_DP_TRAIN_STATE_NORMAL) {
+> +			mtk_dp_video_mute(mtk_dp, true);
+> +			mtk_dp->state = MTK_DP_STATE_IDLE;
+> +		}
+> +		break;
+> +
+> +	default:
+> +		break;
 > +	}
-> +
-> +	return 0;
 > +}
-> +
 

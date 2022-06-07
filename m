@@ -2,69 +2,83 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F530C43334
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6F1DCCA487
 	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Jun 2022 00:15:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1383326AbiFHAOF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 7 Jun 2022 20:14:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51088 "EHLO
+        id S1383549AbiFHAOM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Jun 2022 20:14:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49110 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1389474AbiFGWx2 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Jun 2022 18:53:28 -0400
-Received: from 4.mo582.mail-out.ovh.net (4.mo582.mail-out.ovh.net [87.98.184.159])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A7632DF115
-        for <linux-fbdev@vger.kernel.org>; Tue,  7 Jun 2022 12:48:32 -0700 (PDT)
-Received: from player797.ha.ovh.net (unknown [10.108.20.204])
-        by mo582.mail-out.ovh.net (Postfix) with ESMTP id 5FACD244E5
-        for <linux-fbdev@vger.kernel.org>; Tue,  7 Jun 2022 19:09:48 +0000 (UTC)
+        with ESMTP id S1588442AbiFGXyk (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Jun 2022 19:54:40 -0400
+Received: from 12.mo584.mail-out.ovh.net (12.mo584.mail-out.ovh.net [178.33.104.253])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 87E2A3BFB5
+        for <linux-fbdev@vger.kernel.org>; Tue,  7 Jun 2022 16:08:12 -0700 (PDT)
+Received: from player698.ha.ovh.net (unknown [10.109.146.122])
+        by mo584.mail-out.ovh.net (Postfix) with ESMTP id AF6E623D54
+        for <linux-fbdev@vger.kernel.org>; Tue,  7 Jun 2022 19:24:01 +0000 (UTC)
 Received: from sk2.org (82-65-25-201.subs.proxad.net [82.65.25.201])
         (Authenticated sender: steve@sk2.org)
-        by player797.ha.ovh.net (Postfix) with ESMTPSA id 21EE9273DCA85;
-        Tue,  7 Jun 2022 19:09:40 +0000 (UTC)
-Authentication-Results: garm.ovh; auth=pass (GARM-102R004703d033f-7500-4aba-a619-332a081ea3f9,
+        by player698.ha.ovh.net (Postfix) with ESMTPSA id 67A972B48042C;
+        Tue,  7 Jun 2022 19:23:52 +0000 (UTC)
+Authentication-Results: garm.ovh; auth=pass (GARM-110S0043a930085-a9b6-4bf1-b62d-4f18fbec254c,
                     38FB55E0ED6224772C245AF554E1AE62085133ED) smtp.auth=steve@sk2.org
 X-OVh-ClientIp: 82.65.25.201
 From:   Stephen Kitt <steve@sk2.org>
-To:     Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Stephen Kitt <steve@sk2.org>
-Subject: [PATCH 0/4] video/backlight: Use backlight helpers
-Date:   Tue,  7 Jun 2022 21:09:21 +0200
-Message-Id: <20220607190925.1134737-1-steve@sk2.org>
+To:     Antonino Daplas <adaplas@gmail.com>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Helge Deller <deller@gmx.de>, Paul Mackerras <paulus@samba.org>
+Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Stephen Kitt <steve@sk2.org>, dri-devel@lists.freedesktop.org
+Subject: [PATCH 1/7] fbdev: aty128fb: Use backlight helper
+Date:   Tue,  7 Jun 2022 21:23:29 +0200
+Message-Id: <20220607192335.1137249-2-steve@sk2.org>
 X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20220607192335.1137249-1-steve@sk2.org>
+References: <20220607192335.1137249-1-steve@sk2.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 11708233135120418438
+X-Ovh-Tracer-Id: 11948331288570660585
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddthedgudefgecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkffoggfgsedtkeertdertddtnecuhfhrohhmpefuthgvphhhvghnucfmihhtthcuoehsthgvvhgvsehskhdvrdhorhhgqeenucggtffrrghtthgvrhhnpeelgeetueejffejfeejvefhtddufeejgfetleegtddukeelieelvddvteduveejtdenucfkpheptddrtddrtddrtddpkedvrdeihedrvdehrddvtddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehplhgrhigvrhejleejrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepshhtvghvvgesshhkvddrohhrghdpnhgspghrtghpthhtohepuddprhgtphhtthhopehlihhnuhigqdhfsgguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdfovfetjfhoshhtpehmohehkedv
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddthedgudefiecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpefuthgvphhhvghnucfmihhtthcuoehsthgvvhgvsehskhdvrdhorhhgqeenucggtffrrghtthgvrhhnpeeghffhleeigffhteeiffelveefhfeiudehkedtgefhgedvleffgfejgfdtveeigeenucfkpheptddrtddrtddrtddpkedvrdeihedrvdehrddvtddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehplhgrhigvrheileekrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepshhtvghvvgesshhkvddrohhrghdpnhgspghrtghpthhtohepuddprhgtphhtthhopehlihhnuhigqdhfsgguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdfovfetjfhoshhtpehmohehkeeg
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This started with work on the removal of backlight_properties'
-deprecated fb_blank field, much of which can be taken care of by using
-helper functions provided by backlight.h instead of directly accessing
-fields in backlight_properties. This patch series doesn't involve
-fb_blank, but it still seems useful to use helper functions where
-appropriate.
+Instead of retrieving the backlight brightness in struct
+backlight_properties manually, and then checking whether the backlight
+should be on at all, use backlight_get_brightness() which does all
+this and insulates this from future changes.
 
-Stephen Kitt (4):
-  backlight: aat2870: Use backlight helper
-  backlight: arcxcnn: Use backlight helper
-  backlight: ipaq_micro: Use backlight helper
-  backlight: tosa: Use backlight helper
+Signed-off-by: Stephen Kitt <steve@sk2.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+---
+ drivers/video/fbdev/aty/aty128fb.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
- drivers/video/backlight/aat2870_bl.c    | 7 +------
- drivers/video/backlight/arcxcnn_bl.c    | 5 +----
- drivers/video/backlight/ipaq_micro_bl.c | 7 +------
- drivers/video/backlight/tosa_bl.c       | 7 +------
- 4 files changed, 4 insertions(+), 22 deletions(-)
-
-
-base-commit: f2906aa863381afb0015a9eb7fefad885d4e5a56
+diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
+index b26c81233b6b..a8f9baac3d3f 100644
+--- a/drivers/video/fbdev/aty/aty128fb.c
++++ b/drivers/video/fbdev/aty/aty128fb.c
+@@ -1765,12 +1765,10 @@ static int aty128_bl_update_status(struct backlight_device *bd)
+ 	unsigned int reg = aty_ld_le32(LVDS_GEN_CNTL);
+ 	int level;
+ 
+-	if (bd->props.power != FB_BLANK_UNBLANK ||
+-	    bd->props.fb_blank != FB_BLANK_UNBLANK ||
+-	    !par->lcd_on)
++	if (!par->lcd_on)
+ 		level = 0;
+ 	else
+-		level = bd->props.brightness;
++		level = backlight_get_brightness(bd);
+ 
+ 	reg |= LVDS_BL_MOD_EN | LVDS_BLON;
+ 	if (level > 0) {
 -- 
 2.30.2
 

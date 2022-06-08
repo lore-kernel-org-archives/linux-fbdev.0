@@ -2,77 +2,137 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E9B3C43334
-	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Jun 2022 18:10:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E7CEC43334
+	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Jun 2022 21:03:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233985AbiFHSKD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 8 Jun 2022 14:10:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39250 "EHLO
+        id S233140AbiFHVDT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 8 Jun 2022 17:03:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57830 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231421AbiFHSKC (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Jun 2022 14:10:02 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC2252CCBB;
-        Wed,  8 Jun 2022 11:10:00 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 553CD61BA9;
-        Wed,  8 Jun 2022 18:10:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 16BE1C3411D;
-        Wed,  8 Jun 2022 18:09:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1654711799;
-        bh=SL+p50vdC56GXV52nZanm0Gl56oWFXJJxn/dx2xsIP8=;
-        h=Date:From:To:Subject:In-Reply-To:From;
-        b=DKJ+y+SAcKGHeFyigdlJMfYWDlfjebdHXpy1/81X4/AeXrkFRcNEmKeRLCBVGxZqg
-         N5ULAbSIJSrXgrmLPIIHJLeDQZVLZSPbZ6DSc1Z2H2oRLg3JWNSRhPJ0iCtpPtrYWT
-         NuRr5fmDLWKlwJ63P8toNPjmir6LO/nxm1Mj2wp8cszo1lW9B59GPU4VQHsb6CCe46
-         HSUz+5Ux833qbNPrmy8jAmyM+Nwu/QvGvHxfsqmkv/MDlJeT2J1/edq9l4Wg2BUS26
-         Rf0rSd2YnAOgxZNmNFZip9o3L8hF/yUGyuO9Gtss+MWaaE6SrzbktqIpZlbbRS+y2G
-         CvHV8a7G1MfuQ==
-Date:   Wed, 8 Jun 2022 13:09:56 -0500
-From:   Bjorn Helgaas <helgaas@kernel.org>
-To:     Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-pci@vger.kernel.org,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Vaibhav Gupta <vaibhavgupta40@gmail.com>,
-        Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH 0/2] video: fbdev: Convert from PCI to generic power
- management
-Message-ID: <20220608180956.GA407517@bhelgaas>
+        with ESMTP id S232431AbiFHVDT (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Jun 2022 17:03:19 -0400
+X-Greylist: delayed 372 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 08 Jun 2022 14:03:17 PDT
+Received: from 18.mo582.mail-out.ovh.net (18.mo582.mail-out.ovh.net [46.105.73.110])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D3AC21DB1CE
+        for <linux-fbdev@vger.kernel.org>; Wed,  8 Jun 2022 14:03:17 -0700 (PDT)
+Received: from player693.ha.ovh.net (unknown [10.110.208.62])
+        by mo582.mail-out.ovh.net (Postfix) with ESMTP id 568AF2429C
+        for <linux-fbdev@vger.kernel.org>; Wed,  8 Jun 2022 20:57:03 +0000 (UTC)
+Received: from sk2.org (82-65-25-201.subs.proxad.net [82.65.25.201])
+        (Authenticated sender: steve@sk2.org)
+        by player693.ha.ovh.net (Postfix) with ESMTPSA id F0CB22B5316F7;
+        Wed,  8 Jun 2022 20:56:53 +0000 (UTC)
+Authentication-Results: garm.ovh; auth=pass (GARM-107S00185b07d8f-96d6-4095-b4d8-e86ccb7a7ee7,
+                    17AB8856E930E35E66C22CFEE532C9037B5FA013) smtp.auth=steve@sk2.org
+X-OVh-ClientIp: 82.65.25.201
+From:   Stephen Kitt <steve@sk2.org>
+To:     Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Helge Deller <deller@gmx.de>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        Stephen Kitt <steve@sk2.org>
+Subject: [PATCH] fbdev: atmel_lcdfb: Rework backlight status updates
+Date:   Wed,  8 Jun 2022 22:56:23 +0200
+Message-Id: <20220608205623.2106113-1-steve@sk2.org>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <YqDNuhopLfpHkTS7@phenom.ffwll.local>
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 945474448624879238
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddtjedgudehudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkffoggfgsedtkeertdertddtnecuhfhrohhmpefuthgvphhhvghnucfmihhtthcuoehsthgvvhgvsehskhdvrdhorhhgqeenucggtffrrghtthgvrhhnpeelgeetueejffejfeejvefhtddufeejgfetleegtddukeelieelvddvteduveejtdenucfkpheptddrtddrtddrtddpkedvrdeihedrvdehrddvtddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehplhgrhigvrheileefrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepshhtvghvvgesshhkvddrohhrghdpnhgspghrtghpthhtohepuddprhgtphhtthhopehlihhnuhigqdhfsgguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdfovfetjfhoshhtpehmohehkedv
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Jun 08, 2022 at 06:26:34PM +0200, Daniel Vetter wrote:
-> On Tue, Jun 07, 2022 at 06:11:10PM -0500, Bjorn Helgaas wrote:
-> > From: Bjorn Helgaas <bhelgaas@google.com>
-> > 
-> > PCI-specific power management (pci_driver.suspend and pci_driver.resume) is
-> > deprecated.  If drivers implement power management, they should use the
-> > generic power management framework, not the PCI-specific hooks.
-> > 
-> > No fbdev drivers actually implement PCI power management, but there are a
-> > cirrusfb has some commented-out references to it and skeletonfb has
-> > examples of it.  Remove these.
-> 
-> Is this holding up some cleanup on your side and so would be easier to
-> merge these through the pci tree? If so
-> 
-> Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> 
-> for merging through your tree. Otherwise I guess Helge will get around to
-> pile them up for 5.20 (or 6.0) eventually.
+Instead of checking the state of various backlight_properties fields
+against the memorised state in atmel_lcdfb_info.bl_power,
+atmel_bl_update_status() should retrieve the desired state using
+backlight_get_brightness (which takes into account the power state,
+blanking etc.). This means the explicit checks using props.fb_blank
+and props.power can be dropped.
 
-No particular rush and nothing depending on these.
+Then brightness can only be negative if the backlight is on but
+props.brightness is negative, so the test before reading the
+brightness value from the hardware can be simplified to
+(brightness < 0).
 
-I added your ack to my local branch and if nothing happens for a
-while, I'll merge them via my tree.
+As a result, bl_power in struct atmel_lcdfb_info is no longer
+necessary, so remove that while we're at it. Since we only ever care
+about reading the current state in backlight_properties, drop the
+updates at the end of the function.
 
-Bjorn
+Signed-off-by: Stephen Kitt <steve@sk2.org>
+Cc: Nicolas Ferre <nicolas.ferre@microchip.com>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Cc: Claudiu Beznea <claudiu.beznea@microchip.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-arm-kernel@lists.infradead.org
+---
+ drivers/video/fbdev/atmel_lcdfb.c | 21 ++-------------------
+ 1 file changed, 2 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
+index 1fc8de4ecbeb..06159a4da293 100644
+--- a/drivers/video/fbdev/atmel_lcdfb.c
++++ b/drivers/video/fbdev/atmel_lcdfb.c
+@@ -49,7 +49,6 @@ struct atmel_lcdfb_info {
+ 	struct clk		*lcdc_clk;
+ 
+ 	struct backlight_device	*backlight;
+-	u8			bl_power;
+ 	u8			saved_lcdcon;
+ 
+ 	u32			pseudo_palette[16];
+@@ -109,22 +108,10 @@ static u32 contrast_ctr = ATMEL_LCDC_PS_DIV8
+ static int atmel_bl_update_status(struct backlight_device *bl)
+ {
+ 	struct atmel_lcdfb_info *sinfo = bl_get_data(bl);
+-	int			power = sinfo->bl_power;
+-	int			brightness = bl->props.brightness;
++	int			brightness = backlight_get_brightness(bl);
+ 
+-	/* REVISIT there may be a meaningful difference between
+-	 * fb_blank and power ... there seem to be some cases
+-	 * this doesn't handle correctly.
+-	 */
+-	if (bl->props.fb_blank != sinfo->bl_power)
+-		power = bl->props.fb_blank;
+-	else if (bl->props.power != sinfo->bl_power)
+-		power = bl->props.power;
+-
+-	if (brightness < 0 && power == FB_BLANK_UNBLANK)
++	if (brightness < 0)
+ 		brightness = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_VAL);
+-	else if (power != FB_BLANK_UNBLANK)
+-		brightness = 0;
+ 
+ 	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, brightness);
+ 	if (contrast_ctr & ATMEL_LCDC_POL_POSITIVE)
+@@ -133,8 +120,6 @@ static int atmel_bl_update_status(struct backlight_device *bl)
+ 	else
+ 		lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, contrast_ctr);
+ 
+-	bl->props.fb_blank = bl->props.power = sinfo->bl_power = power;
+-
+ 	return 0;
+ }
+ 
+@@ -155,8 +140,6 @@ static void init_backlight(struct atmel_lcdfb_info *sinfo)
+ 	struct backlight_properties props;
+ 	struct backlight_device	*bl;
+ 
+-	sinfo->bl_power = FB_BLANK_UNBLANK;
+-
+ 	if (sinfo->backlight)
+ 		return;
+ 
+
+base-commit: f2906aa863381afb0015a9eb7fefad885d4e5a56
+-- 
+2.30.2
+

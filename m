@@ -2,283 +2,85 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84C6AC43334
-	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Jun 2022 12:54:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22E48C43334
+	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Jun 2022 14:32:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239476AbiFHMyZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 8 Jun 2022 08:54:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33390 "EHLO
+        id S241114AbiFHOcj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 8 Jun 2022 10:32:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45072 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238976AbiFHMyX (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Jun 2022 08:54:23 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8ED8E238780;
-        Wed,  8 Jun 2022 05:54:21 -0700 (PDT)
-X-UUID: cc31f711586f46a2a3cc1ba1ab7b7834-20220608
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:a8661de1-c5b3-4c18-bb21-ffd838d2566f,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:0
-X-CID-META: VersionHash:2a19b09,CLOUDID:aa611de5-2ba2-4dc1-b6c5-11feb6c769e0,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
-        ,QS:0,BEC:nil
-X-UUID: cc31f711586f46a2a3cc1ba1ab7b7834-20220608
-Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw02.mediatek.com
-        (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1477899185; Wed, 08 Jun 2022 20:54:16 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
- mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Wed, 8 Jun 2022 20:54:14 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Wed, 8 Jun 2022 20:54:14 +0800
-Message-ID: <61ed067bc117a67ccdf64420401605c2fadfe43a.camel@mediatek.com>
-Subject: Re: [PATCH v10 18/21] drm/mediatek: Add mt8195 Embedded DisplayPort
- driver
-From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
-To:     CK Hu <ck.hu@mediatek.com>,
-        Guillaume Ranquet <granquet@baylibre.com>,
-        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Chunfeng Yun =?UTF-8?Q?=28=E4=BA=91=E6=98=A5=E5=B3=B0=29?= 
-        <Chunfeng.Yun@mediatek.com>,
-        Kishon Vijay Abraham I <kishon@ti.com>,
-        Vinod Koul <vkoul@kernel.org>, Helge Deller <deller@gmx.de>,
-        Jitao Shi =?UTF-8?Q?=28=E7=9F=B3=E8=AE=B0=E6=B6=9B=29?= 
-        <jitao.shi@mediatek.com>
-CC:     Markus Schneider-Pargmann <msp@baylibre.com>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-mediatek@lists.infradead.org" 
-        <linux-mediatek@lists.infradead.org>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "linux-phy@lists.infradead.org" <linux-phy@lists.infradead.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
-Date:   Wed, 8 Jun 2022 20:54:14 +0800
-In-Reply-To: <79bea587e20de842d48dcb2e1da19e276f9d635b.camel@mediatek.com>
-References: <20220523104758.29531-1-granquet@baylibre.com>
-         <20220523104758.29531-19-granquet@baylibre.com>
-         <b8aef76cef2fa434401b6a016de291eb24198faa.camel@mediatek.com>
-         <4329859ca11c13e7f6a9951b01a779fc391f029b.camel@mediatek.com>
-         <79bea587e20de842d48dcb2e1da19e276f9d635b.camel@mediatek.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        with ESMTP id S241422AbiFHOci (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Jun 2022 10:32:38 -0400
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D5F62228FB
+        for <linux-fbdev@vger.kernel.org>; Wed,  8 Jun 2022 07:32:37 -0700 (PDT)
+Received: by mail-wm1-x331.google.com with SMTP id q15so7867236wmj.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 08 Jun 2022 07:32:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=mHZcc87752dCD5EakMLSwQMgSNKMbCnC16gyyFD++5I=;
+        b=iRZ0wVla5u9zp0SUCSyUiAxjH9RAE3J3FBcCkxHdsTvZIAvAoIiTfT3tGOS1jmquHP
+         Enoc55DWAOCNnBOHOmwCwtXBbjlfVIHI6d3yv8fr49HgEeyDerdVlFc0Z06gG6D9H2Zc
+         ynOKMPLCV8XcC63V2GeH92kmwKS4cmctokNnA27r/B7x0K8MVdJDWThBTADofYW2KKUa
+         TxgX4BUGEdEdWdUi38Bw7CeqWaY27VL6grEHQPI5VPySkrXILGpvdxV0CJQlRePRGivJ
+         +nc2kRpn2YpwEzoG93IWD2tGyGJzfgXAni+5vvNxb3gXzfbLcKH6SCQSOXtZzcUMxV7T
+         u7BA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=mHZcc87752dCD5EakMLSwQMgSNKMbCnC16gyyFD++5I=;
+        b=ALWJyw+jUmP0ZBR4TdfMX50R4MgG03XIejg5DRxH8hvXPyi1ImXBEgkUKD/kRsORtd
+         Di5mmaf39toa54+rXjaO07K/eXP9YwToUG8HxBeo2zgDDhbhoxuDcrzrVDz5sJfAWazQ
+         Jn7A023TvpiopFm2Ov3g4u7ARMb8rcLSOQkc77Kicce+xwOgKEEh+RB7Xiai1BJl+Gn4
+         BOYOMm5w4VvxDGgbOGdhJBwUgKVgHlEYy7BJTHoBiCsN7b7eRk6t4Yo0jq1ZShct131C
+         8xH/stJAmldrMBIC3HErtIohQG0taGjK3R/xsWXCHxtT9nuDptJZJ/oTllutvhYoUr0O
+         uQ8g==
+X-Gm-Message-State: AOAM533Pg4migloJPBGrS5fC15hS+2roHxmr3zKFPZ9s5k9EY/VFwnqV
+        OAqoTZ//yD/81Ae8AeYx4WV9hQ==
+X-Google-Smtp-Source: ABdhPJwXEQ4i7ZpLaMkGxRTUYH9S/yoGBN8D+OBla3n/ONr6sTpO9FmexKwaO58/OLLltjA4Tnbt+Q==
+X-Received: by 2002:a05:600c:3b2a:b0:397:3e63:3db8 with SMTP id m42-20020a05600c3b2a00b003973e633db8mr62698557wms.40.1654698755974;
+        Wed, 08 Jun 2022 07:32:35 -0700 (PDT)
+Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
+        by smtp.gmail.com with ESMTPSA id b12-20020a5d4b8c000000b0020feb9c44c2sm21540231wrt.20.2022.06.08.07.32.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 08 Jun 2022 07:32:35 -0700 (PDT)
+Date:   Wed, 8 Jun 2022 15:32:33 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Stephen Kitt <steve@sk2.org>
+Cc:     Lee Jones <lee.jones@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] backlight: aat2870: Use backlight helper
+Message-ID: <20220608143233.l5pbopafqc4n6uwq@maple.lan>
+References: <20220607190925.1134737-1-steve@sk2.org>
+ <20220607190925.1134737-2-steve@sk2.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220607190925.1134737-2-steve@sk2.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 2022-06-08 at 10:44 +0800, CK Hu wrote:
-> Hi, Rex:
+On Tue, Jun 07, 2022 at 09:09:22PM +0200, Stephen Kitt wrote:
+> Instead of retrieving the backlight brightness in struct
+> backlight_properties manually, and then checking whether the backlight
+> should be on at all, use backlight_get_brightness() which does all
+> this and insulates this from future changes.
 > 
-> On Tue, 2022-06-07 at 20:44 +0800, Rex-BC Chen wrote:
-> > On Tue, 2022-06-07 at 14:44 +0800, CK Hu wrote:
-> > > Hi, Rex:
-> > > 
-> > > On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
-> > > > From: Markus Schneider-Pargmann <msp@baylibre.com>
-> > > > 
-> > > > This patch adds a DisplayPort driver for the Mediatek mt8195
-> > > > SoC.
-> > > > 
-> > > > It supports the mt8195, the embedded DisplayPort units. It
-> > > > offers
-> > > > DisplayPort 1.4 with up to 4 lanes.
-> > > > 
-> > > > The driver creates a child device for the phy. The child device
-> > > > will
-> > > > never exist without the parent being active. As they are
-> > > > sharing
-> > > > a
-> > > > register range, the parent passes a regmap pointer to the child
-> > > > so
-> > > > that
-> > > > both can work with the same register range. The phy driver sets
-> > > > device
-> > > > data that is read by the parent to get the phy device that can
-> > > > be
-> > > > used
-> > > > to control the phy properties.
-> > > > 
-> > > > This driver is based on an initial version by
-> > > > Jason-JH.Lin <jason-jh.lin@mediatek.com>.
-> > > > 
-> > > > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> > > > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> > > > ---
-> > > 
-> > > [snip]
-> > > 
-> > > > +
-> > > > +static int mtk_dp_train_handler(struct mtk_dp *mtk_dp)
-> > > > +{
-> > > > +	bool training_done = false;
-> > > > +	short max_retry = 50;
-> > > > +	int ret = 0;
-> > > > +
-> > > > +	do {
-> > > > +		switch (mtk_dp->train_state) {
-> > > > +		case MTK_DP_TRAIN_STATE_STARTUP:
-> > > 
-> > > mtk_dp->train_state is initialized as MTK_DP_TRAIN_STATE_STARTUP
-> > > even
-> > > though HPD ISR does not exist. Does this mean HPD ISR is
-> > > redundant?
-> > > If
-> > > HPD ISR is not redundant, create a new state
-> > > MTK_DP_TRAIN_STATE_NONE
-> > > for init state.
-> > > 
-> > 
-> > Hello CK,
-> > 
-> > I think we don't need MTK_DP_TRAIN_STATE_NONE.
-> > Because it's "DP_TRAIN_STATE" not "DP_STATE", I think it's ok if we
-> > start this state machine with "MTK_DP_TRAIN_STATE_STARTUP".
-> 
-> The initial state is MTK_DP_TRAIN_STATE_STARTUP, and HPD thread would
-> change state from MTK_DP_TRAIN_STATE_STARTUP to
-> MTK_DP_TRAIN_STATE_STARTUP, this is redundant. So drop the state
-> change
-> in HPD thread.
-> 
+> Signed-off-by: Stephen Kitt <steve@sk2.org>
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Cc: Daniel Thompson <daniel.thompson@linaro.org>
+> Cc: Jingoo Han <jingoohan1@gmail.com>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: linux-fbdev@vger.kernel.org
 
-ok, in edp it's redundant in mtk_dp_hpd_event_thread(), but I will add
-it back in dp patch.
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
-> > 
-> > > > +			mtk_dp_state_handler(mtk_dp);
-> > > > +			mtk_dp->train_state =
-> > > > MTK_DP_TRAIN_STATE_CHECKCAP;
-> > > > +			break;
-> > > > +
-> > > > +		case MTK_DP_TRAIN_STATE_CHECKCAP:
-> > > > +			if (mtk_dp_parse_capabilities(mtk_dp))
-> > > > {
-> > > > +				mtk_dp-
-> > > > >train_info.check_cap_count = 0;
-> > > > +				mtk_dp->train_state =
-> > > > MTK_DP_TRAIN_STATE_CHECKEDID;
-> > > > +			} else {
-> > > > +				mtk_dp-
-> > > > >train_info.check_cap_count++;
-> > > > +
-> > > > +				if (mtk_dp-
-> > > > >train_info.check_cap_count
-> > > > > 
-> > > > 
-> > > > +				    MTK_DP_CHECK_SINK_CAP_TIMEO
-> > > > UT_COUNT
-> > > > ) {
-> > > > +					mtk_dp-
-> > > > > train_info.check_cap_count = 0;
-> > > > 
-> > > > +					mtk_dp->train_state =
-> > > > MTK_DP_TRAIN_STATE_DPIDLE;
-> > > > +					ret = -ETIMEDOUT;
-> > > > +				}
-> > > > +			}
-> > > > +			break;
-> > > > +
-> > > > +		case MTK_DP_TRAIN_STATE_CHECKEDID:
-> > > > +			mtk_dp->train_state =
-> > > > MTK_DP_TRAIN_STATE_TRAINING_PRE;
-> > > 
-> > > MTK_DP_TRAIN_STATE_CHECKEDID is a redundant state, drop it.
-> > > 
-> > > > +			break;
-> > > > +
-> > > > +		case MTK_DP_TRAIN_STATE_TRAINING_PRE:
-> > > > +			mtk_dp_state_handler(mtk_dp);
-> > > > +			mtk_dp->train_state =
-> > > > MTK_DP_TRAIN_STATE_TRAINING;
-> > > > +			break;
-> > > > +
-> > > > +		case MTK_DP_TRAIN_STATE_TRAINING:
-> > > > +			ret = mtk_dp_train_start(mtk_dp);
-> > > > +			if (ret == 0) {
-> > > > +				mtk_dp_video_mute(mtk_dp,
-> > > > true);
-> > > > +				mtk_dp->train_state =
-> > > > MTK_DP_TRAIN_STATE_NORMAL;
-> > > > +				mtk_dp_fec_enable(mtk_dp,
-> > > > mtk_dp-
-> > > > > has_fec);
-> > > > 
-> > > > +			} else if (ret != -EAGAIN) {
-> > > > +				mtk_dp->train_state =
-> > > > MTK_DP_TRAIN_STATE_DPIDLE;
-> > > > +			}
-> > > > +			break;
-> > > > +		case MTK_DP_TRAIN_STATE_NORMAL:
-> > > > +			mtk_dp_state_handler(mtk_dp);
-> > > > +			training_done = true;
-> > > > +			break;
-> > > > +		case MTK_DP_TRAIN_STATE_DPIDLE:
-> > > 
-> > > When would this case happen?
-> > > 
-> > > Regards,
-> > > CK
-> > 
-> > Yes, if it's disconnected if we are still training for dp.
-> > or failed to training min spec RBR.
-> 
-> I mean, every time state change to MTK_DP_TRAIN_STATE_DPIDLE, it
-> would
-> jump out of this loop and would not get into this loop, so this case
-> would never get in. This is redundant, so remove this.
-> 
-> Regards,
-> CK
-> 
 
-ok, I will remove it
-
-BRs,
-Bo-Chen
-
-> > 
-> > BRs,
-> > Rex
-> > > 
-> > > > +			break;
-> > > > +		default:
-> > > > +			break;
-> > > > +		}
-> > > > +
-> > > > +		if (ret) {
-> > > > +			if (ret == -EAGAIN)
-> > > > +				continue;
-> > > > +			/*
-> > > > +			 * If we get any other error number, it
-> > > > doesn't
-> > > > +			 * make any sense to keep iterating.
-> > > > +			 */
-> > > > +			break;
-> > > > +		}
-> > > > +	} while (!training_done || --max_retry);
-> > > > +
-> > > > +	return ret;
-> > > > +}
-> > > 
-> > > 
-> > 
-> > 
-> 
-> 
-
+Daniel.

@@ -2,153 +2,57 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE680C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Jun 2022 09:19:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E73F1C43334
+	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Jun 2022 09:23:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234430AbiFHJTp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 8 Jun 2022 05:19:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58268 "EHLO
+        id S234683AbiFHJXJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 8 Jun 2022 05:23:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56260 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235289AbiFHJTP (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Jun 2022 05:19:15 -0400
-Received: from mail-oa1-x35.google.com (mail-oa1-x35.google.com [IPv6:2001:4860:4864:20::35])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F4272383C6;
-        Wed,  8 Jun 2022 01:41:47 -0700 (PDT)
-Received: by mail-oa1-x35.google.com with SMTP id 586e51a60fabf-e656032735so26419869fac.0;
-        Wed, 08 Jun 2022 01:41:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=SXmj6b+DkfLw5itmWk4/FOZXu0aiY0xTFwHQz3P20xg=;
-        b=WdYBN8CGdrIXxQzK0GPeVgw2MzDlTQbjZImmiSCIjEzItPZCLwSrJunmeLbwAI5ikm
-         7UpERZ2fzajMjBN38noWZM/RUcDEMPoazkYxmDCZ/piF6SB6ltAhCk3muTBLBmfff+up
-         1ySlRhC1vAawc4shHJYJl8WtvyOFfF7pyOD2RMHst5fPRND+9bgFXKQhUs4eFuzF83pL
-         TH7AybGjXUB/CPMHa+NdXiymNtTHvTNSi9Ff/1E1P5OvPjJCNNfhkrNJDXwi4zpqetk1
-         kyOe8mqAmriJNKLHM0imih+M6yAeZIA/mFxwR6SZyk+XLKohGvYt0P+D4aZX/5GXgoaR
-         obRw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=SXmj6b+DkfLw5itmWk4/FOZXu0aiY0xTFwHQz3P20xg=;
-        b=XlmxD4uFJ3X5WhoTEiCn0+s+2JaYcVK42fDK6N5iKvZd1JWKt1YrU3TxMVvpMeOrLn
-         RKXOiw+xJz+4CyKOZMPkkU+fWDex3qrmU3KTvul+oYv+LL2uRz0qONySfqRrTJ44+YvX
-         lUTspEvTrAhb7BdVdF3Ji661bOyV6FylHqhxViOGts3cjHz9IjLWrTz+jb73uLR98sro
-         yYwJ809nx35LNQjVsWy5yrEE7BKOsw4GObcTHX/KjK5DrRakHh0N1e/E35LSErsqAOT2
-         ilocDKkanXIUxXG54K7hcxLd8qw84qFZSBbHrHbRmm4NYPvMrxSWCtBuG8Akng07AWpC
-         KYaw==
-X-Gm-Message-State: AOAM532tfNMeo1xHmQ71vS9vGTm5AKM/ljQoe6b2qWrX7GY14wlFx21J
-        G98IA3RujJ1LfLERlTiWgQrE8g0XgTA0hA==
-X-Google-Smtp-Source: ABdhPJxAOK47geI2yEq8uUzL6jVlujBVSQkzoXkWwANZs743d3DkA34VEE/uGgrzp5MCNfVJU/Fzyg==
-X-Received: by 2002:a17:90a:4897:b0:1c7:5fce:cbcd with SMTP id b23-20020a17090a489700b001c75fcecbcdmr71830734pjh.45.1654677696141;
-        Wed, 08 Jun 2022 01:41:36 -0700 (PDT)
-Received: from localhost.localdomain ([2402:7500:479:837b:38ad:1ae9:1239:b178])
-        by smtp.gmail.com with ESMTPSA id q4-20020a170902f34400b0015e8d4eb263sm13902217ple.173.2022.06.08.01.41.31
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 08 Jun 2022 01:41:35 -0700 (PDT)
-From:   cy_huang <u0084500@gmail.com>
-To:     robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        lee.jones@linaro.org, daniel.thompson@linaro.org,
-        jingoohan1@gmail.com
-Cc:     pavel@ucw.cz, deller@gmx.de, cy_huang@richtek.com,
-        lucas_tsai@richtek.com, devicetree@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-leds@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 2/2] backlight: rt4831: Apply ocp level from devicetree
-Date:   Wed,  8 Jun 2022 16:41:14 +0800
-Message-Id: <1654677674-15417-3-git-send-email-u0084500@gmail.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1654677674-15417-1-git-send-email-u0084500@gmail.com>
-References: <1654677674-15417-1-git-send-email-u0084500@gmail.com>
+        with ESMTP id S234756AbiFHJWb (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Jun 2022 05:22:31 -0400
+X-Greylist: delayed 2237 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 08 Jun 2022 01:43:18 PDT
+Received: from mail.puregrowthonline.pl (mail.puregrowthonline.pl [51.38.124.91])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5610EF136A
+        for <linux-fbdev@vger.kernel.org>; Wed,  8 Jun 2022 01:43:18 -0700 (PDT)
+Received: by mail.puregrowthonline.pl (Postfix, from userid 1002)
+        id A6544A2AC9; Wed,  8 Jun 2022 08:05:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=puregrowthonline.pl;
+        s=mail; t=1654675543;
+        bh=CSKXLMgcdpWkXuTgJn5+jsCVobtU9JEF4vCnS5z6McM=;
+        h=Date:From:To:Subject:From;
+        b=oAPw71JShzCQ/viGdDCzyL8PYioKG27UJzHXeMdpje/eM1p6IxsTvzBUrXsM+DtV4
+         xKIb+rR1FyNUodBqIVLJWSLBJylwsKrVqJ0cgleSDsQGvwyqXdIId3lNZDmr6SNvhM
+         WGJ/0nt4hMub9MQeJBW1SzJV1EZP7qP6kbSxBs57O5xmNqQTkAbakByccK1j4V8bpy
+         +/5gD0x50qZjBytcZRH3fuKuST/GFCUdBFmGpSrdy6LpCThq8/ld5S6iClHpC6+D8b
+         WAOtUoij4yLjBv8DWRsSm+Kj2d4VHtpDdEf7Ze02uXd8iyGWrG42OcLwBH1tzTJGUL
+         4Y9Fxe1Tu/RMg==
+Received: by mail.puregrowthonline.pl for <linux-fbdev@vger.kernel.org>; Wed,  8 Jun 2022 08:05:19 GMT
+Message-ID: <20220608064500-0.1.41.cxzi.0.na3gtjpgrq@puregrowthonline.pl>
+Date:   Wed,  8 Jun 2022 08:05:19 GMT
+From:   "Wiktor Nurek" <wiktor.nurek@puregrowthonline.pl>
+To:     <linux-fbdev@vger.kernel.org>
+Subject: =?UTF-8?Q?Nap=C5=82yw_Klient=C3=B3w_ze_strony?=
+X-Mailer: mail.puregrowthonline.pl
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: ChiYuan Huang <cy_huang@richtek.com>
+Dzie=C5=84 dobry,
 
-Add 'richtek,bled-ocp-microamp' property parsing in
-device_property_init function.
+chcia=C5=82bym poinformowa=C4=87 Pa=C5=84stwa o mo=C5=BCliwo=C5=9Bci pozy=
+skania nowych zlece=C5=84 ze strony www.
 
-This value may configure prior to the kernel driver. If it's not specified in
-devicetree, keep the original setting. Else, use clamp to align the
-value in min/max range and also roundup to choose the best selector.
+Widzimy zainteresowanie potencjalnych Klient=C3=B3w Pa=C5=84stwa firm=C4=85=
+, dlatego ch=C4=99tnie pomo=C5=BCemy Pa=C5=84stwu dotrze=C4=87 z ofert=C4=
+=85 do wi=C4=99kszego grona odbiorc=C3=B3w poprzez efektywne metody pozyc=
+jonowania strony w Google.
 
-Reported-by: Lucas Tsai <lucas_tsai@richtek.com>
-Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
----
-Since v2:
-- Prase the 'richtek,bled-ocp-microamp', clamp the value in min/max range, and
-  roundup to get the best selector.
+Czy m=C3=B3g=C5=82bym liczy=C4=87 na kontakt zwrotny?
 
----
- drivers/video/backlight/rt4831-backlight.c | 33 +++++++++++++++++++++++++++++-
- 1 file changed, 32 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/backlight/rt4831-backlight.c b/drivers/video/backlight/rt4831-backlight.c
-index 42155c7..8c2001b 100644
---- a/drivers/video/backlight/rt4831-backlight.c
-+++ b/drivers/video/backlight/rt4831-backlight.c
-@@ -12,6 +12,7 @@
- #define RT4831_REG_BLCFG	0x02
- #define RT4831_REG_BLDIML	0x04
- #define RT4831_REG_ENABLE	0x08
-+#define RT4831_REG_BLOPT2	0x11
- 
- #define RT4831_BLMAX_BRIGHTNESS	2048
- 
-@@ -23,6 +24,11 @@
- #define RT4831_BLDIML_MASK	GENMASK(2, 0)
- #define RT4831_BLDIMH_MASK	GENMASK(10, 3)
- #define RT4831_BLDIMH_SHIFT	3
-+#define RT4831_BLOCP_MASK	GENMASK(1, 0)
-+
-+#define RT4831_BLOCP_MINUA	900000
-+#define RT4831_BLOCP_MAXUA	1800000
-+#define RT4831_BLOCP_STEPUA	300000
- 
- struct rt4831_priv {
- 	struct device *dev;
-@@ -85,7 +91,7 @@ static int rt4831_parse_backlight_properties(struct rt4831_priv *priv,
- {
- 	struct device *dev = priv->dev;
- 	u8 propval;
--	u32 brightness;
-+	u32 brightness, ocp_uA;
- 	unsigned int val = 0;
- 	int ret;
- 
-@@ -120,6 +126,31 @@ static int rt4831_parse_backlight_properties(struct rt4831_priv *priv,
- 	if (ret)
- 		return ret;
- 
-+	/*
-+	 * This OCP level is used to protect and limit the inductor current.
-+	 * If inductor peak current reach the level, low-side MOSFET will be
-+	 * turned off. Meanwhile, the output channel current may be limited.
-+	 * To match the configured channel current, the inductor chosen must
-+	 * be higher than the OCP level.
-+	 *
-+	 * Not like the OVP level, the default 21V can be used in the most
-+	 * application. But if the chosen OCP level is smaller than needed,
-+	 * it will also affect the backlight channel output current to be
-+	 * smaller than the register setting.
-+	 */
-+	ret = device_property_read_u32(dev, "richtek,bled-ocp-microamp",
-+				       &ocp_uA);
-+	if (!ret) {
-+		ocp_uA = clamp_val(ocp_uA, RT4831_BLOCP_MINUA,
-+				   RT4831_BLOCP_MAXUA);
-+		val = roundup(ocp_uA - RT4831_BLOCP_MINUA,
-+			      RT4831_BLOCP_STEPUA);
-+		ret = regmap_update_bits(priv->regmap, RT4831_REG_BLOPT2,
-+					 RT4831_BLOCP_MASK, val);
-+		if (ret)
-+			return ret;
-+	}
-+
- 	ret = device_property_read_u8(dev, "richtek,channel-use", &propval);
- 	if (ret) {
- 		dev_err(dev, "richtek,channel-use DT property missing\n");
--- 
-2.7.4
-
+Pozdrawiam serdecznie,
+Wiktor Nurek

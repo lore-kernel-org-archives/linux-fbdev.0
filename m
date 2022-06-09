@@ -2,193 +2,84 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 236A3C43334
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Jun 2022 08:03:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E6FEC43334
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Jun 2022 09:26:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240513AbiFIIDj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Jun 2022 04:03:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39750 "EHLO
+        id S239337AbiFIJ0q (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Jun 2022 05:26:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35674 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239848AbiFIIDi (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Jun 2022 04:03:38 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C51D665B9;
-        Thu,  9 Jun 2022 01:03:36 -0700 (PDT)
-X-UUID: 150e7171e9e144a9bd74da6109522973-20220609
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:f00b110d-b7e7-44d7-aa51-b685a148e3b7,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:0
-X-CID-META: VersionHash:2a19b09,CLOUDID:b7eec47e-c8dc-403a-96e8-6237210dceee,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
-        ,QS:0,BEC:nil
-X-UUID: 150e7171e9e144a9bd74da6109522973-20220609
-Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw01.mediatek.com
-        (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1523568253; Thu, 09 Jun 2022 16:03:32 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Thu, 9 Jun 2022 16:03:31 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Thu, 9 Jun 2022 16:03:31 +0800
-Message-ID: <49162f7d313478f13472eb0f3b07ffa2a47cbeba.camel@mediatek.com>
-Subject: Re: [PATCH v10 18/21] drm/mediatek: Add mt8195 Embedded DisplayPort
- driver
-From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
-To:     CK Hu <ck.hu@mediatek.com>,
-        Guillaume Ranquet <granquet@baylibre.com>,
-        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Chunfeng Yun =?UTF-8?Q?=28=E4=BA=91=E6=98=A5=E5=B3=B0=29?= 
-        <Chunfeng.Yun@mediatek.com>,
-        Kishon Vijay Abraham I <kishon@ti.com>,
-        Vinod Koul <vkoul@kernel.org>, "Helge Deller" <deller@gmx.de>,
-        Jitao Shi =?UTF-8?Q?=28=E7=9F=B3=E8=AE=B0=E6=B6=9B=29?= 
-        <jitao.shi@mediatek.com>
-CC:     Markus Schneider-Pargmann <msp@baylibre.com>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-mediatek@lists.infradead.org" 
-        <linux-mediatek@lists.infradead.org>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "linux-phy@lists.infradead.org" <linux-phy@lists.infradead.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
-Date:   Thu, 9 Jun 2022 16:03:30 +0800
-In-Reply-To: <651e6b993562d53c893d0325d33fa137e98ab596.camel@mediatek.com>
-References: <20220523104758.29531-1-granquet@baylibre.com>
-         <20220523104758.29531-19-granquet@baylibre.com>
-         <651e6b993562d53c893d0325d33fa137e98ab596.camel@mediatek.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        with ESMTP id S234473AbiFIJ0m (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Jun 2022 05:26:42 -0400
+Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B24227CFF
+        for <linux-fbdev@vger.kernel.org>; Thu,  9 Jun 2022 02:26:39 -0700 (PDT)
+Received: by mail-wr1-x429.google.com with SMTP id p10so31535960wrg.12
+        for <linux-fbdev@vger.kernel.org>; Thu, 09 Jun 2022 02:26:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=doJDwgeNCCpGAVqsr1zYgJtRpwsMml2sELB5t/MLY5M=;
+        b=VPq3f0ZdO06SkOgMTlkS3D7YZmul+nXO/J0BjMk+stYpad6L9H5cOp2IBGHQEJn+Sl
+         1DMRophNR04WNcXUHOqrs6OdfQB6HANh/JIw0MbdRNMPdyNkUr80U6L24XxRCD+MDAjQ
+         b8uHt8YM3EAoR9QEqHA6AWl3jKoB4Qv35ji2cAwqZiUJ19jKK2galnmED0gVBj+49+66
+         /qGVkju5ZMhYZOrCdmwHdn/4FpDWyJv/LT9amthGPdsenZoaAJkV3WM4pcG5dhO2/6AC
+         O8TCD9uWN5YA+b2+xx6Tzxnp/uPXS1CUQ9z2beYU40E9pslWPHdTUZeMIWzAmccv0CRG
+         zrng==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=doJDwgeNCCpGAVqsr1zYgJtRpwsMml2sELB5t/MLY5M=;
+        b=ktKgi0sFXWDznjqO7VOwVHyUbIv1cx9dSKXhtmMrlhYTzy5FCUK/4YZII7EMPD+Nco
+         qq0tKPsrn4Q+VJHirjI222mzN++Kq6e9UGNo+oAzzbeg5jfQSxYSxzwwy8LpqwayaaCY
+         NL1XhwQBnzCdjCf7kwqESP3eLCksmvSdgtUXCEiuBw1Z2UZ3531Qn6OB/naFeZKissPN
+         Fcew2o1KSTctiwW2dPX+7wJj9KuWqas1d7AgRK6EeF6UX2OnUxgNR/+Jsehf+8RFOOwA
+         OsrdWXDrjdI9/Fltcy34Hq3c60P+HKG9Udg87C7YSjfiiWYtXkpNnlXLy3UkLTdj1FdC
+         8grQ==
+X-Gm-Message-State: AOAM530BJS8qlsUcP90n6G+T7MLgOLSn0+neabjgQU74hzCMYBQ+7Tdy
+        bPI+LUjkGvvjbCZGLWKnwZStYw==
+X-Google-Smtp-Source: ABdhPJwHbfMoTUujhvRpFZUQSGO8P5QHWho99EELCVbHKvomYjfYHQdY9sivEWq9/Zf7ddPDSfJWtA==
+X-Received: by 2002:adf:f750:0:b0:210:2ef5:7c5c with SMTP id z16-20020adff750000000b002102ef57c5cmr36424281wrp.416.1654766797986;
+        Thu, 09 Jun 2022 02:26:37 -0700 (PDT)
+Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
+        by smtp.gmail.com with ESMTPSA id b15-20020adfde0f000000b002103136623esm24819171wrm.85.2022.06.09.02.26.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 09 Jun 2022 02:26:37 -0700 (PDT)
+Date:   Thu, 9 Jun 2022 10:26:35 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     cy_huang <u0084500@gmail.com>
+Cc:     robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        lee.jones@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
+        deller@gmx.de, cy_huang@richtek.com, lucas_tsai@richtek.com,
+        devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-leds@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/2] dt-bindings: backlight: rt4831: Add the new ocp
+ level property
+Message-ID: <20220609092635.ew3wqfi2uv6d3smj@maple.lan>
+References: <1654741339-12756-1-git-send-email-u0084500@gmail.com>
+ <1654741339-12756-2-git-send-email-u0084500@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1654741339-12756-2-git-send-email-u0084500@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 2022-06-08 at 16:30 +0800, CK Hu wrote:
-> Hi, Rex:
+On Thu, Jun 09, 2022 at 10:22:18AM +0800, cy_huang wrote:
+> From: ChiYuan Huang <cy_huang@richtek.com>
 > 
-> On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
-> > From: Markus Schneider-Pargmann <msp@baylibre.com>
-> > 
-> > This patch adds a DisplayPort driver for the Mediatek mt8195 SoC.
-> > 
-> > It supports the mt8195, the embedded DisplayPort units. It offers
-> > DisplayPort 1.4 with up to 4 lanes.
-> > 
-> > The driver creates a child device for the phy. The child device
-> > will
-> > never exist without the parent being active. As they are sharing a
-> > register range, the parent passes a regmap pointer to the child so
-> > that
-> > both can work with the same register range. The phy driver sets
-> > device
-> > data that is read by the parent to get the phy device that can be
-> > used
-> > to control the phy properties.
-> > 
-> > This driver is based on an initial version by
-> > Jason-JH.Lin <jason-jh.lin@mediatek.com>.
-> > 
-> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> > ---
+> Add 'richtek,bled-ocp-microamp' property to make it chooseable.
 > 
-> [snip]
+> The wrong backlight ocp level may affect the backlight channel output
+> current smaller than configured.
 > 
-> > +
-> > +static bool mtk_dp_parse_capabilities(struct mtk_dp *mtk_dp)
-> > +{
-> > +	u8 buf[DP_RECEIVER_CAP_SIZE] = {};
-> > +	u8 val;
-> > +	struct mtk_dp_train_info *train_info = &mtk_dp->train_info;
-> > +
-> > +	if (!mtk_dp_plug_state(mtk_dp))
-> > +		return false;
-> > +
-> > +	drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER,
-> > DP_SET_POWER_D0);
-> > +	/* Wait for power on */
-> > +	usleep_range(2000, 5000);
-> > +
-> > +	drm_dp_read_dpcd_caps(&mtk_dp->aux, buf);
-> > +
-> > +	memcpy(mtk_dp->rx_cap, buf, min(sizeof(mtk_dp->rx_cap),
-> > sizeof(buf)));
-> 
-> sizeof(mtk_dp->rx_cap) is identical to sizeof(buf), so
-> 
-> drm_dp_read_dpcd_caps(&mtk_dp->aux, mtk_dp->rx_cap);
-> 
-> 
+> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
 
-Hello CK,
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
-I will drop buf[].
 
-> > +	mtk_dp->rx_cap[DP_TRAINING_AUX_RD_INTERVAL] &=
-> > DP_TRAINING_AUX_RD_MASK;
-> > +
-> > +	train_info->link_rate =
-> > +		min_t(int, mtk_dp->max_linkrate, buf[mtk_dp-
-> > > max_linkrate]);
-> > 
-> > +	train_info->lane_count =
-> > +		min_t(int, mtk_dp->max_lanes,
-> > drm_dp_max_lane_count(buf));
-> > +
-> > +	train_info->tps3 = drm_dp_tps3_supported(buf);
-> > +	train_info->tps4 = drm_dp_tps4_supported(buf);
-> > +
-> > +	train_info->sink_ssc =
-> > +		!!(buf[DP_MAX_DOWNSPREAD] & DP_MAX_DOWNSPREAD_0_5);
-> > +
-> > +	train_info->sink_ssc = false;
-> 
-> What does these two statement do?
-> 
-
-ssc = Spread spectrum clock.
-it's for both edp and dp.
-
-BRs,
-Bo-Chen
-
-> Regards,
-> CK
-> 
-> > +
-> > +	drm_dp_dpcd_readb(&mtk_dp->aux, DP_MSTM_CAP, &val);
-> > +	if (val & DP_MST_CAP) {
-> > +		/* Clear DP_DEVICE_SERVICE_IRQ_VECTOR_ESI0 */
-> > +		drm_dp_dpcd_readb(&mtk_dp->aux,
-> > +				  DP_DEVICE_SERVICE_IRQ_VECTOR_ESI0,
-> > &val);
-> > +		if (val)
-> > +			drm_dp_dpcd_writeb(&mtk_dp->aux,
-> > +					   DP_DEVICE_SERVICE_IRQ_VECTOR
-> > _ESI0,
-> > +					   val);
-> > +	}
-> > +
-> > +	return true;
-> > +}
-> > +
-> 
-> 
-
+Daniel.

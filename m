@@ -2,123 +2,97 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C7FDC43334
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Jun 2022 09:54:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A38AC433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Jun 2022 10:31:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234983AbiFIJyT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Jun 2022 05:54:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48990 "EHLO
+        id S234358AbiFIKbu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Jun 2022 06:31:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40154 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234712AbiFIJyT (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Jun 2022 05:54:19 -0400
-Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05344194258
-        for <linux-fbdev@vger.kernel.org>; Thu,  9 Jun 2022 02:54:17 -0700 (PDT)
-Received: by mail-wr1-x430.google.com with SMTP id d14so22655808wra.10
-        for <linux-fbdev@vger.kernel.org>; Thu, 09 Jun 2022 02:54:16 -0700 (PDT)
+        with ESMTP id S233351AbiFIKbt (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Jun 2022 06:31:49 -0400
+Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 77AE620ED4A
+        for <linux-fbdev@vger.kernel.org>; Thu,  9 Jun 2022 03:31:46 -0700 (PDT)
+Received: by mail-ed1-x536.google.com with SMTP id 25so30321400edw.8
+        for <linux-fbdev@vger.kernel.org>; Thu, 09 Jun 2022 03:31:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=dgxIUh9kZnAhshZpAfcCNmc5NM9XP1H+pazqAWk3o4M=;
-        b=sYbi7/4QmhUcDAphES1n3sjziqocBdZaVokz7jqGR4vrF3G3Qx7JFQpiauElXr2toJ
-         gZCDaP679DwAhMrD7ycpRlIYOzaEABiJxvohe6lQDbOyZ046TDwXOkS0cfiY0nbpoyJn
-         YCLA016qOzd+q/EJpiVMQjT/jLcQTvR3KG6oXmdYhV8Q2nNGNmausPfLhEbsQeMd/AeP
-         cCNlWGGAQTCzmt6MBNFK4z7FzPN3oY6B1jDnNTP8HO6T7vXWhZeqo2tkfKjPrjmkzih1
-         okOr9aVs9Hff9CcOIbUAMS5m1PFeAewjo+nOUf8xnjRWRtJM3OEVD6S68MmTywxggO4G
-         esMw==
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=ufnscmxQX0AEbzv5PDtE4okgkONgzlvCJEgtYxQypeY=;
+        b=PvTB125tZx08/hSvZa0syMVCHbKXmlH9QhWjjk13m1U4RJs0l+5sC2JJ3fHV+Nb1/u
+         ep/DvZG+xBu13nOf1ivLWhHz8VBNxtgqz/kf/AQdhwfxjiQQ5wRBIWfNyI5qhHtm8/YN
+         a5pbig0h3m4TSnO4UgWGOHYITPP7Ye9e2st1LR8xlyuBjbzWObAXC6FE0A33sPe13JGW
+         uGu5S5TVz1Z8TtvQu9FkHT0EUsxkpHx5/c9mZvZJkPPE2RCcy3/lJxsBVT2LdUcRpy80
+         PF1ArDfyrRwbGp1zKwVwTbv0kpmI9vo+/YeU+llZcojlFMT7uinD924FB2KFN2yeD0J6
+         Kn3A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=dgxIUh9kZnAhshZpAfcCNmc5NM9XP1H+pazqAWk3o4M=;
-        b=04Q0EtUk2qjBOEm06CePF3T/wfKmpitzP5QG5nqRe8xpxdILcmX2rWAH/LmxRSfjh5
-         Kvsx0VdCkfWGQJl0zF7xLgFDjhguxHKjiRZQx0UDrSEujA46B2eyVpuMmypqILx/nvmu
-         dac+ssEgeiCRd1Q+VlDulYiNqGg0p7vanTtKF3fueatqZdwI+9uEwHi5D+xJvuZTavZR
-         3IT3vR6LzZM+q+LkguS8K5upxLn2qxSCxEqanQ9uUzEoDNslKn74esBYgMqpxm6pTMRu
-         P9oDI2ySQ0JRxjmSCdlxoCu+7gkG+5e8PGHE5IxOsKDYpyOaRxAUuHQs1gd7Wy1SAmD1
-         c6pw==
-X-Gm-Message-State: AOAM532k8Q4DpQNWvZuvxkHbJFpn02YwNkIXanuI7tF8zouDdhZVA6oi
-        Zd7qbmH2eAjoE5DUwvK6wiwvmQ==
-X-Google-Smtp-Source: ABdhPJwFTfJT5VBRvmZdE52zTqSkomJN72re/rRGHQq1XZGdbN0tmi270rT5tG9338WBlHEIN7CpYw==
-X-Received: by 2002:a5d:64e7:0:b0:218:5626:7e7f with SMTP id g7-20020a5d64e7000000b0021856267e7fmr11844016wri.245.1654768455480;
-        Thu, 09 Jun 2022 02:54:15 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id h13-20020a5d504d000000b002100e86319asm15031976wrt.78.2022.06.09.02.54.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 09 Jun 2022 02:54:14 -0700 (PDT)
-Date:   Thu, 9 Jun 2022 10:54:12 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Stephen Kitt <steve@sk2.org>
-Cc:     Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Helge Deller <deller@gmx.de>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fbdev: atmel_lcdfb: Rework backlight status updates
-Message-ID: <20220609095412.fccofr2e2kpzhw4t@maple.lan>
-References: <20220608205623.2106113-1-steve@sk2.org>
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=ufnscmxQX0AEbzv5PDtE4okgkONgzlvCJEgtYxQypeY=;
+        b=bzDwdwz1ahG4D34QwTc7A2ImhJtIGwCju7UlwrTeqp6jfsJih9dgrhXUQFg818ueHa
+         wSR90HjWawdh4IAfkj+jNd1XY87FST1OML/HcXI5wLzYSdaSjU6WslA9epA4E64RaBUY
+         nCchTenQvLCLXdtgGSB4XTGhKBLj5qVzQTfkXQaQGtfqQPtDErAlC8+S6yL+dtGlqNFi
+         Y/z5UFTLbPMaiCuzraA5yklfQ8YuUMWko0yYwdi5AlNOyTavEPdNubRoHtHALpLLzkHB
+         ae/c6PYstZtaryl4b9Em8CXT/qHtDMqSD1z3Xd/CxFRR9ougKuubbGGePxR2EbF2ESXb
+         /5fA==
+X-Gm-Message-State: AOAM532OxAnA7qYYdyo3b6XHDaZwxPS0KMmusg1ipdgANX/AiLV2L7v5
+        2i7OqCJMBOckGC3HD1gipyRswA==
+X-Google-Smtp-Source: ABdhPJw5ncZiCRvmHdPWyeUur4wU6OHfZmwNQw3+Rny6dLpgU8K5SbVI4FBkZ6nYipWKlORRD78xpg==
+X-Received: by 2002:a05:6402:270a:b0:431:43f6:1e02 with SMTP id y10-20020a056402270a00b0043143f61e02mr27435767edd.317.1654770705027;
+        Thu, 09 Jun 2022 03:31:45 -0700 (PDT)
+Received: from [192.168.0.196] (xdsl-188-155-176-92.adslplus.ch. [188.155.176.92])
+        by smtp.gmail.com with ESMTPSA id p23-20020a170906499700b0070f36b8cb39sm8066737eju.103.2022.06.09.03.31.43
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 09 Jun 2022 03:31:44 -0700 (PDT)
+Message-ID: <7b8653c1-355d-b390-042d-e02085a3910a@linaro.org>
+Date:   Thu, 9 Jun 2022 12:31:42 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220608205623.2106113-1-steve@sk2.org>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.10.0
+Subject: Re: [PATCH v3 1/2] dt-bindings: backlight: rt4831: Add the new ocp
+ level property
+Content-Language: en-US
+To:     cy_huang <u0084500@gmail.com>, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, lee.jones@linaro.org,
+        daniel.thompson@linaro.org, jingoohan1@gmail.com
+Cc:     pavel@ucw.cz, deller@gmx.de, cy_huang@richtek.com,
+        lucas_tsai@richtek.com, devicetree@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-leds@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1654741339-12756-1-git-send-email-u0084500@gmail.com>
+ <1654741339-12756-2-git-send-email-u0084500@gmail.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <1654741339-12756-2-git-send-email-u0084500@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Jun 08, 2022 at 10:56:23PM +0200, Stephen Kitt wrote:
-> Instead of checking the state of various backlight_properties fields
-> against the memorised state in atmel_lcdfb_info.bl_power,
-> atmel_bl_update_status() should retrieve the desired state using
-> backlight_get_brightness (which takes into account the power state,
-> blanking etc.). This means the explicit checks using props.fb_blank
-> and props.power can be dropped.
+On 09/06/2022 04:22, cy_huang wrote:
+> From: ChiYuan Huang <cy_huang@richtek.com>
 > 
-> Then brightness can only be negative if the backlight is on but
-> props.brightness is negative, so the test before reading the
-> brightness value from the hardware can be simplified to
-> (brightness < 0).
-
-props.brightness should always be in the interval 0..max_brightness.
-
-This is enforced by the main backlight code (and APIs to set the
-brightness use unsigned values). Thus props.brightness could only be
-negative is the driver explicitly sets a negative value as some kind of
-placeholder (which this driver does not do).
-
-I don't think there is any need to keep this logic.
-
-
-Daniel.
+> Add 'richtek,bled-ocp-microamp' property to make it chooseable.
+> 
+> The wrong backlight ocp level may affect the backlight channel output
+> current smaller than configured.
+> 
+> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+> ---
+> Since v3:
+> - Refine the description for backlight ocp property.
+> - Use the enum to list the supported value.
+> 
+> Since v2:
+> - Change the property name from 'richtek,bled-ocp-sel' to 'richtek,bled-ocp-microamp'.
+> 
 
 
-> diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
-> index 1fc8de4ecbeb..06159a4da293 100644
-> --- a/drivers/video/fbdev/atmel_lcdfb.c
-> +++ b/drivers/video/fbdev/atmel_lcdfb.c
-> @@ -109,22 +108,10 @@ static u32 contrast_ctr = ATMEL_LCDC_PS_DIV8
->  static int atmel_bl_update_status(struct backlight_device *bl)
->  {
->  	struct atmel_lcdfb_info *sinfo = bl_get_data(bl);
-> -	int			power = sinfo->bl_power;
-> -	int			brightness = bl->props.brightness;
-> +	int			brightness = backlight_get_brightness(bl);
->  
-> -	/* REVISIT there may be a meaningful difference between
-> -	 * fb_blank and power ... there seem to be some cases
-> -	 * this doesn't handle correctly.
-> -	 */
-> -	if (bl->props.fb_blank != sinfo->bl_power)
-> -		power = bl->props.fb_blank;
-> -	else if (bl->props.power != sinfo->bl_power)
-> -		power = bl->props.power;
-> -
-> -	if (brightness < 0 && power == FB_BLANK_UNBLANK)
-> +	if (brightness < 0)
->  		brightness = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_VAL);
-> -	else if (power != FB_BLANK_UNBLANK)
-> -		brightness = 0;
->  
->  	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, brightness);
->  	if (contrast_ctr & ATMEL_LCDC_POL_POSITIVE)
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
+Best regards,
+Krzysztof

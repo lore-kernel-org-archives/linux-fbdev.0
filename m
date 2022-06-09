@@ -2,39 +2,39 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDEA4C43334
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Jun 2022 08:00:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 236A3C43334
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Jun 2022 08:03:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229836AbiFIIAa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Jun 2022 04:00:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53672 "EHLO
+        id S240513AbiFIIDj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Jun 2022 04:03:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39750 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231955AbiFIIA3 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Jun 2022 04:00:29 -0400
+        with ESMTP id S239848AbiFIIDi (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Jun 2022 04:03:38 -0400
 Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EAF3B1080;
-        Thu,  9 Jun 2022 01:00:26 -0700 (PDT)
-X-UUID: 9a4171f0cecb4c8ea0ad39794640986a-20220609
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C51D665B9;
+        Thu,  9 Jun 2022 01:03:36 -0700 (PDT)
+X-UUID: 150e7171e9e144a9bd74da6109522973-20220609
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:5881918a-ced5-4720-ba34-449aba5cb31b,OB:0,LO
-        B:0,IP:0,URL:5,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:5
-X-CID-META: VersionHash:2a19b09,CLOUDID:64c1c47e-c8dc-403a-96e8-6237210dceee,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
+X-CID-O-INFO: VERSION:1.1.5,REQID:f00b110d-b7e7-44d7-aa51-b685a148e3b7,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:2a19b09,CLOUDID:b7eec47e-c8dc-403a-96e8-6237210dceee,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
         ,QS:0,BEC:nil
-X-UUID: 9a4171f0cecb4c8ea0ad39794640986a-20220609
-Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
+X-UUID: 150e7171e9e144a9bd74da6109522973-20220609
+Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw01.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 384527576; Thu, 09 Jun 2022 16:00:23 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
- mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Thu, 9 Jun 2022 16:00:22 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 1523568253; Thu, 09 Jun 2022 16:03:32 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Thu, 9 Jun 2022 16:03:31 +0800
 Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Thu, 9 Jun 2022 16:00:22 +0800
-Message-ID: <2a8e5db06f6f430835c4e197cfd97804d8bc3050.camel@mediatek.com>
+ Transport; Thu, 9 Jun 2022 16:03:31 +0800
+Message-ID: <49162f7d313478f13472eb0f3b07ffa2a47cbeba.camel@mediatek.com>
 Subject: Re: [PATCH v10 18/21] drm/mediatek: Add mt8195 Embedded DisplayPort
  driver
 From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
@@ -53,7 +53,7 @@ To:     CK Hu <ck.hu@mediatek.com>,
         Chunfeng Yun =?UTF-8?Q?=28=E4=BA=91=E6=98=A5=E5=B3=B0=29?= 
         <Chunfeng.Yun@mediatek.com>,
         Kishon Vijay Abraham I <kishon@ti.com>,
-        Vinod Koul <vkoul@kernel.org>, Helge Deller <deller@gmx.de>,
+        Vinod Koul <vkoul@kernel.org>, "Helge Deller" <deller@gmx.de>,
         Jitao Shi =?UTF-8?Q?=28=E7=9F=B3=E8=AE=B0=E6=B6=9B=29?= 
         <jitao.shi@mediatek.com>
 CC:     Markus Schneider-Pargmann <msp@baylibre.com>,
@@ -66,11 +66,11 @@ CC:     Markus Schneider-Pargmann <msp@baylibre.com>,
         <linux-arm-kernel@lists.infradead.org>,
         "linux-phy@lists.infradead.org" <linux-phy@lists.infradead.org>,
         "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
-Date:   Thu, 9 Jun 2022 16:00:21 +0800
-In-Reply-To: <77cdd43716b49aaffd9e052f4fe2c88e198ea7ff.camel@mediatek.com>
+Date:   Thu, 9 Jun 2022 16:03:30 +0800
+In-Reply-To: <651e6b993562d53c893d0325d33fa137e98ab596.camel@mediatek.com>
 References: <20220523104758.29531-1-granquet@baylibre.com>
          <20220523104758.29531-19-granquet@baylibre.com>
-         <77cdd43716b49aaffd9e052f4fe2c88e198ea7ff.camel@mediatek.com>
+         <651e6b993562d53c893d0325d33fa137e98ab596.camel@mediatek.com>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
@@ -80,7 +80,7 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, 2022-06-07 at 17:04 +0800, CK Hu wrote:
+On Wed, 2022-06-08 at 16:30 +0800, CK Hu wrote:
 > Hi, Rex:
 > 
 > On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
@@ -112,81 +112,81 @@ On Tue, 2022-06-07 at 17:04 +0800, CK Hu wrote:
 > [snip]
 > 
 > > +
-> > +static irqreturn_t mtk_dp_hpd_event_thread(int hpd, void *dev)
+> > +static bool mtk_dp_parse_capabilities(struct mtk_dp *mtk_dp)
 > > +{
-> > +	struct mtk_dp *mtk_dp = dev;
-> > +	int event;
 > > +	u8 buf[DP_RECEIVER_CAP_SIZE] = {};
+> > +	u8 val;
+> > +	struct mtk_dp_train_info *train_info = &mtk_dp->train_info;
 > > +
-> > +	event = mtk_dp_plug_state(mtk_dp) ? connector_status_connected
-> > :
-> > +						  connector_status_disc
-> > onnected;
+> > +	if (!mtk_dp_plug_state(mtk_dp))
+> > +		return false;
 > > +
-> > +	if (event < 0)
-> > +		return IRQ_HANDLED;
+> > +	drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER,
+> > DP_SET_POWER_D0);
+> > +	/* Wait for power on */
+> > +	usleep_range(2000, 5000);
 > > +
-> > +	if (mtk_dp->drm_dev) {
-> > +		dev_info(mtk_dp->dev, "drm_helper_hpd_irq_event\n");
-> > +		drm_helper_hpd_irq_event(mtk_dp->bridge.dev);
-> > +	}
+> > +	drm_dp_read_dpcd_caps(&mtk_dp->aux, buf);
 > > +
-> > +	if (mtk_dp->train_info.cable_state_change) {
-> > +		mtk_dp->train_info.cable_state_change = false;
-> > +
-> > +		mtk_dp->train_state = MTK_DP_TRAIN_STATE_STARTUP;
-> > +
-> > +		if (!mtk_dp->train_info.cable_plugged_in ||
-> > +		    !mtk_dp_plug_state(mtk_dp)) {
-> > +			mtk_dp_video_mute(mtk_dp, true);
+> > +	memcpy(mtk_dp->rx_cap, buf, min(sizeof(mtk_dp->rx_cap),
+> > sizeof(buf)));
 > 
-> For eDP, when does 'unplug' happen? Explain this or move unplug
-> processing to DP patch.
+> sizeof(mtk_dp->rx_cap) is identical to sizeof(buf), so
 > 
-> Regards,
-> CK
+> drm_dp_read_dpcd_caps(&mtk_dp->aux, mtk_dp->rx_cap);
+> 
 > 
 
 Hello CK,
 
-ok, I move them to dp patch.
+I will drop buf[].
+
+> > +	mtk_dp->rx_cap[DP_TRAINING_AUX_RD_INTERVAL] &=
+> > DP_TRAINING_AUX_RD_MASK;
+> > +
+> > +	train_info->link_rate =
+> > +		min_t(int, mtk_dp->max_linkrate, buf[mtk_dp-
+> > > max_linkrate]);
+> > 
+> > +	train_info->lane_count =
+> > +		min_t(int, mtk_dp->max_lanes,
+> > drm_dp_max_lane_count(buf));
+> > +
+> > +	train_info->tps3 = drm_dp_tps3_supported(buf);
+> > +	train_info->tps4 = drm_dp_tps4_supported(buf);
+> > +
+> > +	train_info->sink_ssc =
+> > +		!!(buf[DP_MAX_DOWNSPREAD] & DP_MAX_DOWNSPREAD_0_5);
+> > +
+> > +	train_info->sink_ssc = false;
+> 
+> What does these two statement do?
+> 
+
+ssc = Spread spectrum clock.
+it's for both edp and dp.
 
 BRs,
 Bo-Chen
 
+> Regards,
+> CK
+> 
 > > +
-> > +			mtk_dp_initialize_priv_data(mtk_dp);
-> > +			mtk_dp_set_idle_pattern(mtk_dp, true);
-> > +			if (mtk_dp->has_fec)
-> > +				mtk_dp_fec_enable(mtk_dp, false);
-> > +
-> > +			mtk_dp_update_bits(mtk_dp,
-> > MTK_DP_TOP_PWR_STATE,
-> > +					   DP_PWR_STATE_BANDGAP_TPLL,
-> > +					   DP_PWR_STATE_MASK);
-> > +		} else {
-> > +			mtk_dp_update_bits(mtk_dp,
-> > MTK_DP_TOP_PWR_STATE,
-> > +					   DP_PWR_STATE_BANDGAP_TPLL_LA
-> > NE,
-> > +					   DP_PWR_STATE_MASK);
-> > +			drm_dp_read_dpcd_caps(&mtk_dp->aux, buf);
-> > +			mtk_dp->train_info.link_rate =
-> > +				min_t(int, mtk_dp->max_linkrate,
-> > +				      buf[mtk_dp->max_linkrate]);
-> > +			mtk_dp->train_info.lane_count =
-> > +				min_t(int, mtk_dp->max_lanes,
-> > +				      drm_dp_max_lane_count(buf));
-> > +		}
+> > +	drm_dp_dpcd_readb(&mtk_dp->aux, DP_MSTM_CAP, &val);
+> > +	if (val & DP_MST_CAP) {
+> > +		/* Clear DP_DEVICE_SERVICE_IRQ_VECTOR_ESI0 */
+> > +		drm_dp_dpcd_readb(&mtk_dp->aux,
+> > +				  DP_DEVICE_SERVICE_IRQ_VECTOR_ESI0,
+> > &val);
+> > +		if (val)
+> > +			drm_dp_dpcd_writeb(&mtk_dp->aux,
+> > +					   DP_DEVICE_SERVICE_IRQ_VECTOR
+> > _ESI0,
+> > +					   val);
 > > +	}
 > > +
-> > +	if (mtk_dp->train_info.irq_status & MTK_DP_HPD_INTERRUPT) {
-> > +		dev_dbg(mtk_dp->dev, "MTK_DP_HPD_INTERRUPT\n");
-> > +		mtk_dp->train_info.irq_status &= ~MTK_DP_HPD_INTERRUPT;
-> > +		mtk_dp_hpd_sink_event(mtk_dp);
-> > +	}
-> > +
-> > +	return IRQ_HANDLED;
+> > +	return true;
 > > +}
 > > +
 > 

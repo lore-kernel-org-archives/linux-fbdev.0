@@ -2,157 +2,123 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B22A6CCA473
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Jun 2022 09:37:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C7FDC43334
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Jun 2022 09:54:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242791AbiFIJh1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Jun 2022 05:37:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55970 "EHLO
+        id S234983AbiFIJyT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Jun 2022 05:54:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48990 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242817AbiFIJhZ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Jun 2022 05:37:25 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 890B935A8B;
-        Thu,  9 Jun 2022 02:37:21 -0700 (PDT)
-X-UUID: 48d6f07150184fc6bbdd8c08f08310b1-20220609
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:0211ed30-9829-4f3f-ab32-7321c82a6d99,OB:10,L
-        OB:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,AC
-        TION:release,TS:45
-X-CID-INFO: VERSION:1.1.5,REQID:0211ed30-9829-4f3f-ab32-7321c82a6d99,OB:10,LOB
-        :0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:45
-X-CID-META: VersionHash:2a19b09,CLOUDID:52ae3ee5-2ba2-4dc1-b6c5-11feb6c769e0,C
-        OID:fd6f8a451be4,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
-        RL:0,File:nil,QS:0,BEC:nil
-X-UUID: 48d6f07150184fc6bbdd8c08f08310b1-20220609
-Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw02.mediatek.com
-        (envelope-from <ck.hu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1918080817; Thu, 09 Jun 2022 17:37:16 +0800
-Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.792.15; Thu, 9 Jun 2022 17:37:11 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 9 Jun 2022 17:37:11 +0800
-Message-ID: <d86e62ab8613f32a50e905f6ac14173b25d36006.camel@mediatek.com>
-Subject: Re: [PATCH v10 18/21] drm/mediatek: Add mt8195 Embedded DisplayPort
- driver
-From:   CK Hu <ck.hu@mediatek.com>
-To:     Rex-BC Chen <rex-bc.chen@mediatek.com>,
-        Guillaume Ranquet <granquet@baylibre.com>,
-        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
-        "Philipp Zabel" <p.zabel@pengutronix.de>,
-        David Airlie <airlied@linux.ie>,
-        "Daniel Vetter" <daniel@ffwll.ch>,
-        Rob Herring <robh+dt@kernel.org>,
-        "Krzysztof Kozlowski" <krzysztof.kozlowski+dt@linaro.org>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Chunfeng Yun <chunfeng.yun@mediatek.com>,
-        "Kishon Vijay Abraham I" <kishon@ti.com>,
-        Vinod Koul <vkoul@kernel.org>, "Helge Deller" <deller@gmx.de>,
-        Jitao shi <jitao.shi@mediatek.com>
-CC:     Markus Schneider-Pargmann <msp@baylibre.com>,
-        <dri-devel@lists.freedesktop.org>,
-        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-phy@lists.infradead.org>, <linux-fbdev@vger.kernel.org>
-Date:   Thu, 9 Jun 2022 17:37:11 +0800
-In-Reply-To: <20220523104758.29531-19-granquet@baylibre.com>
-References: <20220523104758.29531-1-granquet@baylibre.com>
-         <20220523104758.29531-19-granquet@baylibre.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        with ESMTP id S234712AbiFIJyT (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Jun 2022 05:54:19 -0400
+Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05344194258
+        for <linux-fbdev@vger.kernel.org>; Thu,  9 Jun 2022 02:54:17 -0700 (PDT)
+Received: by mail-wr1-x430.google.com with SMTP id d14so22655808wra.10
+        for <linux-fbdev@vger.kernel.org>; Thu, 09 Jun 2022 02:54:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=dgxIUh9kZnAhshZpAfcCNmc5NM9XP1H+pazqAWk3o4M=;
+        b=sYbi7/4QmhUcDAphES1n3sjziqocBdZaVokz7jqGR4vrF3G3Qx7JFQpiauElXr2toJ
+         gZCDaP679DwAhMrD7ycpRlIYOzaEABiJxvohe6lQDbOyZ046TDwXOkS0cfiY0nbpoyJn
+         YCLA016qOzd+q/EJpiVMQjT/jLcQTvR3KG6oXmdYhV8Q2nNGNmausPfLhEbsQeMd/AeP
+         cCNlWGGAQTCzmt6MBNFK4z7FzPN3oY6B1jDnNTP8HO6T7vXWhZeqo2tkfKjPrjmkzih1
+         okOr9aVs9Hff9CcOIbUAMS5m1PFeAewjo+nOUf8xnjRWRtJM3OEVD6S68MmTywxggO4G
+         esMw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=dgxIUh9kZnAhshZpAfcCNmc5NM9XP1H+pazqAWk3o4M=;
+        b=04Q0EtUk2qjBOEm06CePF3T/wfKmpitzP5QG5nqRe8xpxdILcmX2rWAH/LmxRSfjh5
+         Kvsx0VdCkfWGQJl0zF7xLgFDjhguxHKjiRZQx0UDrSEujA46B2eyVpuMmypqILx/nvmu
+         dac+ssEgeiCRd1Q+VlDulYiNqGg0p7vanTtKF3fueatqZdwI+9uEwHi5D+xJvuZTavZR
+         3IT3vR6LzZM+q+LkguS8K5upxLn2qxSCxEqanQ9uUzEoDNslKn74esBYgMqpxm6pTMRu
+         P9oDI2ySQ0JRxjmSCdlxoCu+7gkG+5e8PGHE5IxOsKDYpyOaRxAUuHQs1gd7Wy1SAmD1
+         c6pw==
+X-Gm-Message-State: AOAM532k8Q4DpQNWvZuvxkHbJFpn02YwNkIXanuI7tF8zouDdhZVA6oi
+        Zd7qbmH2eAjoE5DUwvK6wiwvmQ==
+X-Google-Smtp-Source: ABdhPJwFTfJT5VBRvmZdE52zTqSkomJN72re/rRGHQq1XZGdbN0tmi270rT5tG9338WBlHEIN7CpYw==
+X-Received: by 2002:a5d:64e7:0:b0:218:5626:7e7f with SMTP id g7-20020a5d64e7000000b0021856267e7fmr11844016wri.245.1654768455480;
+        Thu, 09 Jun 2022 02:54:15 -0700 (PDT)
+Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
+        by smtp.gmail.com with ESMTPSA id h13-20020a5d504d000000b002100e86319asm15031976wrt.78.2022.06.09.02.54.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 09 Jun 2022 02:54:14 -0700 (PDT)
+Date:   Thu, 9 Jun 2022 10:54:12 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Stephen Kitt <steve@sk2.org>
+Cc:     Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Helge Deller <deller@gmx.de>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fbdev: atmel_lcdfb: Rework backlight status updates
+Message-ID: <20220609095412.fccofr2e2kpzhw4t@maple.lan>
+References: <20220608205623.2106113-1-steve@sk2.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220608205623.2106113-1-steve@sk2.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi, Rex:
-
-On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
-> From: Markus Schneider-Pargmann <msp@baylibre.com>
+On Wed, Jun 08, 2022 at 10:56:23PM +0200, Stephen Kitt wrote:
+> Instead of checking the state of various backlight_properties fields
+> against the memorised state in atmel_lcdfb_info.bl_power,
+> atmel_bl_update_status() should retrieve the desired state using
+> backlight_get_brightness (which takes into account the power state,
+> blanking etc.). This means the explicit checks using props.fb_blank
+> and props.power can be dropped.
 > 
-> This patch adds a DisplayPort driver for the Mediatek mt8195 SoC.
-> 
-> It supports the mt8195, the embedded DisplayPort units. It offers
-> DisplayPort 1.4 with up to 4 lanes.
-> 
-> The driver creates a child device for the phy. The child device will
-> never exist without the parent being active. As they are sharing a
-> register range, the parent passes a regmap pointer to the child so
-> that
-> both can work with the same register range. The phy driver sets
-> device
-> data that is read by the parent to get the phy device that can be
-> used
-> to control the phy properties.
-> 
-> This driver is based on an initial version by
-> Jason-JH.Lin <jason-jh.lin@mediatek.com>.
-> 
-> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> ---
+> Then brightness can only be negative if the backlight is on but
+> props.brightness is negative, so the test before reading the
+> brightness value from the hardware can be simplified to
+> (brightness < 0).
 
-[snip]
+props.brightness should always be in the interval 0..max_brightness.
 
-> +
-> +static int mtk_dp_power_disable(struct mtk_dp *mtk_dp)
-> +{
-> +	int ret;
-> +
-> +	ret = mtk_dp_write(mtk_dp, MTK_DP_TOP_PWR_STATE, 0);
-> +
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = mtk_dp_write(mtk_dp, MTK_DP_0034,
+This is enforced by the main backlight code (and APIs to set the
+brightness use unsigned values). Thus props.brightness could only be
+negative is the driver explicitly sets a negative value as some kind of
+placeholder (which this driver does not do).
 
-MTK_DP_0034 is defined as:
-
-+#define MTK_DP_0034		      (BIT(2) | BIT(4) | BIT(5))
-
-I think this a weird address.
-
-> +			   DA_CKM_CKTX0_EN_FORCE_EN |
-> DA_CKM_BIAS_LPF_EN_FORCE_VAL |
-> +		     DA_CKM_BIAS_EN_FORCE_VAL |
-> +		     DA_XTP_GLB_LDO_EN_FORCE_VAL |
-> +		     DA_XTP_GLB_AVD10_ON_FORCE_VAL);
-> +
-> +	if (ret)
-> +		return ret;
-> +
-> +	/* Disable RX */
-> +	ret = mtk_dp_write(mtk_dp, MTK_DP_1040, 0);
+I don't think there is any need to keep this logic.
 
 
-MTK_DP_1040 is defined as:
+Daniel.
 
-+#define MTK_DP_1040		      (BIT(6) | BIT(12))
 
-I think this a weird address.
-
-Regards,
-CK
-
-> +
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = mtk_dp_write(mtk_dp, MTK_DP_TOP_MEM_PD,
-> +			   0x550 | BIT(FUSE_SEL_SHIFT) |
-> BIT(MEM_ISO_EN_SHIFT));
-> +
-> +	return ret;
-> +}
-
+> diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
+> index 1fc8de4ecbeb..06159a4da293 100644
+> --- a/drivers/video/fbdev/atmel_lcdfb.c
+> +++ b/drivers/video/fbdev/atmel_lcdfb.c
+> @@ -109,22 +108,10 @@ static u32 contrast_ctr = ATMEL_LCDC_PS_DIV8
+>  static int atmel_bl_update_status(struct backlight_device *bl)
+>  {
+>  	struct atmel_lcdfb_info *sinfo = bl_get_data(bl);
+> -	int			power = sinfo->bl_power;
+> -	int			brightness = bl->props.brightness;
+> +	int			brightness = backlight_get_brightness(bl);
+>  
+> -	/* REVISIT there may be a meaningful difference between
+> -	 * fb_blank and power ... there seem to be some cases
+> -	 * this doesn't handle correctly.
+> -	 */
+> -	if (bl->props.fb_blank != sinfo->bl_power)
+> -		power = bl->props.fb_blank;
+> -	else if (bl->props.power != sinfo->bl_power)
+> -		power = bl->props.power;
+> -
+> -	if (brightness < 0 && power == FB_BLANK_UNBLANK)
+> +	if (brightness < 0)
+>  		brightness = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_VAL);
+> -	else if (power != FB_BLANK_UNBLANK)
+> -		brightness = 0;
+>  
+>  	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, brightness);
+>  	if (contrast_ctr & ATMEL_LCDC_POL_POSITIVE)

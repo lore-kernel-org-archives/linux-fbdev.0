@@ -2,39 +2,42 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15460CCA482
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 10:58:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DBB3CCA47B
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 10:58:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349294AbiFJK6G (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Jun 2022 06:58:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39048 "EHLO
+        id S1349248AbiFJK6H (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 10 Jun 2022 06:58:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48314 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349279AbiFJK5p (ORCPT
+        with ESMTP id S243002AbiFJK5s (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Jun 2022 06:57:45 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 439FC218A8C;
-        Fri, 10 Jun 2022 03:55:30 -0700 (PDT)
-X-UUID: 10722f3f002848cdb07303dfdbd2942c-20220610
+        Fri, 10 Jun 2022 06:57:48 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C05022235B;
+        Fri, 10 Jun 2022 03:55:34 -0700 (PDT)
+X-UUID: 9ba8e6c28de94a9398723b596a61c63e-20220610
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:f563f45c-d43f-4586-86ef-30a230c45275,OB:0,LO
-        B:0,IP:0,URL:5,TC:0,Content:-5,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACT
-        ION:release,TS:0
-X-CID-META: VersionHash:2a19b09,CLOUDID:18d767e5-2ba2-4dc1-b6c5-11feb6c769e0,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
-        ,QS:0,BEC:nil
-X-UUID: 10722f3f002848cdb07303dfdbd2942c-20220610
-Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw02.mediatek.com
+X-CID-O-INFO: VERSION:1.1.5,REQID:4bb690cb-1a0a-4bcc-89f8-cfb41c14936c,OB:0,LO
+        B:20,IP:0,URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,RULE:Release_Ham,A
+        CTION:release,TS:90
+X-CID-INFO: VERSION:1.1.5,REQID:4bb690cb-1a0a-4bcc-89f8-cfb41c14936c,OB:0,LOB:
+        20,IP:0,URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,RULE:Spam_GS981B3D,A
+        CTION:quarantine,TS:90
+X-CID-META: VersionHash:2a19b09,CLOUDID:8e2ff27e-c8dc-403a-96e8-6237210dceee,C
+        OID:FAIL,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,Fil
+        e:nil,QS:0,BEC:nil
+X-UUID: 9ba8e6c28de94a9398723b596a61c63e-20220610
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1814500627; Fri, 10 Jun 2022 18:55:25 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Fri, 10 Jun 2022 18:55:24 +0800
+        with ESMTP id 1973906713; Fri, 10 Jun 2022 18:55:24 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
+ mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Fri, 10 Jun 2022 18:55:23 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
  mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.792.3 via Frontend Transport; Fri, 10 Jun 2022 18:55:24 +0800
+ 15.2.792.3 via Frontend Transport; Fri, 10 Jun 2022 18:55:23 +0800
 From:   Bo-Chen Chen <rex-bc.chen@mediatek.com>
 To:     <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
         <daniel@ffwll.ch>, <robh+dt@kernel.org>,
@@ -51,12 +54,10 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
         Bo-Chen Chen <rex-bc.chen@mediatek.com>
-Subject: [PATCH v11 06/10] drm/mediatek: Add MT8195 External DisplayPort support
-Date:   Fri, 10 Jun 2022 18:55:18 +0800
-Message-ID: <20220610105522.13449-7-rex-bc.chen@mediatek.com>
+Subject: [PATCH v11 00/10] drm/mediatek: Add MT8195 DisplayPort driver
+Date:   Fri, 10 Jun 2022 18:55:12 +0800
+Message-ID: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
-In-Reply-To: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
-References: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-MTK:  N
@@ -64,364 +65,116 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Guillaume Ranquet <granquet@baylibre.com>
+This patch is separate from v10 which is including dp driver, phy driver
+and dpintf driver. This series is only contained the DisplayPort driver.
 
-This patch adds External DisplayPort support to the mt8195 eDP driver.
+This series can be tested using 5.19-rc kernel and I test it in MT8195
+Tomato Chromebook. Modetest these modes:
 
-Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-[Bo-Chen: Move some dp features here and modify for reviewers' comments.]
-Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
----
- drivers/gpu/drm/mediatek/mtk_dp.c | 217 ++++++++++++++++++++++++------
- 1 file changed, 174 insertions(+), 43 deletions(-)
+for eDP:
+  #0 2256x1504 60.00 2256 2304 2336 2536 1504 1507 1513 1549 235690 flags: phsync, nvsync; type: preferred, driver
+  #1 2256x1504 48.00 2256 2304 2336 2536 1504 1507 1513 1549 188550 flags: phsync, nvsync; type: driver
 
-diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c b/drivers/gpu/drm/mediatek/mtk_dp.c
-index e33b513469e8..7c2bb2a494dd 100644
---- a/drivers/gpu/drm/mediatek/mtk_dp.c
-+++ b/drivers/gpu/drm/mediatek/mtk_dp.c
-@@ -124,6 +124,7 @@ struct mtk_dp {
- 
- 	bool enabled;
- 
-+	bool has_fec;
- 	/* protect the mtk_dp struct */
- 	struct mutex dp_lock;
- 
-@@ -138,6 +139,11 @@ static struct regmap_config mtk_dp_regmap_config = {
- 	.name = "mtk-dp-registers",
- };
- 
-+static bool mtk_dp_is_edp(struct mtk_dp *mtk_dp)
-+{
-+	return mtk_dp->next_bridge;
-+}
-+
- static struct mtk_dp *mtk_dp_from_bridge(struct drm_bridge *b)
- {
- 	return container_of(b, struct mtk_dp, bridge);
-@@ -414,6 +420,20 @@ static bool mtk_dp_plug_state(struct mtk_dp *mtk_dp)
- 		  HPD_DB_DP_TRANS_P0_MASK);
- }
- 
-+static bool mtk_dp_plug_state_avoid_pulse(struct mtk_dp *mtk_dp)
-+{
-+	int wait;
-+
-+	for (wait = 7; !mtk_dp_plug_state(mtk_dp) && wait > 0; --wait)
-+		/* Avoid short pulses on the HPD isr */
-+		usleep_range(1000, 5000);
-+
-+	if (wait == 0)
-+		return false;
-+
-+	return true;
-+}
-+
- static void mtk_dp_aux_irq_clear(struct mtk_dp *mtk_dp)
- {
- 	mtk_dp_write(mtk_dp, MTK_DP_AUX_P0_3640,
-@@ -638,6 +658,13 @@ static void mtk_dp_reset_swing_pre_emphasis(struct mtk_dp *mtk_dp)
- 			   DP_TX3_PRE_EMPH_MASK);
- }
- 
-+static void mtk_dp_fec_enable(struct mtk_dp *mtk_dp, bool enable)
-+{
-+	mtk_dp_update_bits(mtk_dp, MTK_DP_TRANS_P0_3540,
-+			   enable ? BIT(FEC_EN_DP_TRANS_P0_SHIFT) : 0,
-+			   FEC_EN_DP_TRANS_P0_MASK);
-+}
-+
- static u32 mtk_dp_swirq_get_clear(struct mtk_dp *mtk_dp)
- {
- 	u32 irq_status = mtk_dp_read(mtk_dp, MTK_DP_TRANS_P0_35D0) &
-@@ -865,35 +892,67 @@ static void mtk_dp_get_calibration_data(struct mtk_dp *mtk_dp)
- 		return;
- 	}
- 
--	cal_data->glb_bias_trim =
--		check_cal_data_valid(mtk_dp, 1, 0x1e,
--				     (buf[3] >> 27) & 0x1f, 0xf);
--	cal_data->clktx_impse =
--		check_cal_data_valid(mtk_dp, 1, 0xe,
--				     (buf[0] >> 9) & 0xf, 0x8);
--	cal_data->ln_tx_impsel_pmos[0] =
--		check_cal_data_valid(mtk_dp, 1, 0xe,
--				     (buf[2] >> 28) & 0xf, 0x8);
--	cal_data->ln_tx_impsel_nmos[0] =
--		check_cal_data_valid(mtk_dp, 1, 0xe,
--				     (buf[2] >> 24) & 0xf, 0x8);
--	cal_data->ln_tx_impsel_pmos[1] =
--		check_cal_data_valid(mtk_dp, 1, 0xe,
--				     (buf[2] >> 20) & 0xf, 0x8);
--	cal_data->ln_tx_impsel_nmos[1] =
--		check_cal_data_valid(mtk_dp, 1, 0xe,
--				     (buf[2] >> 16) & 0xf, 0x8);
--	cal_data->ln_tx_impsel_pmos[2] =
--		check_cal_data_valid(mtk_dp, 1, 0xe,
--				     (buf[2] >> 12) & 0xf, 0x8);
--	cal_data->ln_tx_impsel_nmos[2] =
--		check_cal_data_valid(mtk_dp, 1, 0xe,
--				     (buf[2] >> 8) & 0xf, 0x8);
--	cal_data->ln_tx_impsel_pmos[3] =
--		check_cal_data_valid(mtk_dp, 1, 0xe,
--				     (buf[2] >> 4) & 0xf, 0x8);
--	cal_data->ln_tx_impsel_nmos[3] =
--		check_cal_data_valid(mtk_dp, 1, 0xe, buf[2] & 0xf, 0x8);
-+	if (mtk_dp_is_edp(mtk_dp)) {
-+		cal_data->glb_bias_trim =
-+			check_cal_data_valid(mtk_dp, 1, 0x1e,
-+					     (buf[3] >> 27) & 0x1f, 0xf);
-+		cal_data->clktx_impse =
-+			check_cal_data_valid(mtk_dp, 1, 0xe,
-+					     (buf[0] >> 9) & 0xf, 0x8);
-+		cal_data->ln_tx_impsel_pmos[0] =
-+			check_cal_data_valid(mtk_dp, 1, 0xe,
-+					     (buf[2] >> 28) & 0xf, 0x8);
-+		cal_data->ln_tx_impsel_nmos[0] =
-+			check_cal_data_valid(mtk_dp, 1, 0xe,
-+					     (buf[2] >> 24) & 0xf, 0x8);
-+		cal_data->ln_tx_impsel_pmos[1] =
-+			check_cal_data_valid(mtk_dp, 1, 0xe,
-+					     (buf[2] >> 20) & 0xf, 0x8);
-+		cal_data->ln_tx_impsel_nmos[1] =
-+			check_cal_data_valid(mtk_dp, 1, 0xe,
-+					     (buf[2] >> 16) & 0xf, 0x8);
-+		cal_data->ln_tx_impsel_pmos[2] =
-+			check_cal_data_valid(mtk_dp, 1, 0xe,
-+					     (buf[2] >> 12) & 0xf, 0x8);
-+		cal_data->ln_tx_impsel_nmos[2] =
-+			check_cal_data_valid(mtk_dp, 1, 0xe,
-+					     (buf[2] >> 8) & 0xf, 0x8);
-+		cal_data->ln_tx_impsel_pmos[3] =
-+			check_cal_data_valid(mtk_dp, 1, 0xe,
-+					     (buf[2] >> 4) & 0xf, 0x8);
-+		cal_data->ln_tx_impsel_nmos[3] =
-+			check_cal_data_valid(mtk_dp, 1, 0xe, buf[2] & 0xf, 0x8);
-+	} else {
-+		cal_data->glb_bias_trim =
-+			check_cal_data_valid(mtk_dp, 1, 0x1e,
-+					     (buf[0] >> 27) & 0x1f, 0xf);
-+		cal_data->clktx_impse =
-+			check_cal_data_valid(mtk_dp, 1, 0xe,
-+					     (buf[0] >> 13) & 0xf, 0x8);
-+		cal_data->ln_tx_impsel_pmos[0] =
-+			check_cal_data_valid(mtk_dp, 1, 0xe,
-+					     (buf[1] >> 28) & 0xf, 0x8);
-+		cal_data->ln_tx_impsel_nmos[0] =
-+			check_cal_data_valid(mtk_dp, 1, 0xe,
-+					     (buf[1] >> 24) & 0xf, 0x8);
-+		cal_data->ln_tx_impsel_pmos[1] =
-+			check_cal_data_valid(mtk_dp, 1, 0xe,
-+					     (buf[1] >> 20) & 0xf, 0x8);
-+		cal_data->ln_tx_impsel_nmos[1] =
-+			check_cal_data_valid(mtk_dp, 1, 0xe,
-+					     (buf[1] >> 16) & 0xf, 0x8);
-+		cal_data->ln_tx_impsel_pmos[2] =
-+			check_cal_data_valid(mtk_dp, 1, 0xe,
-+					     (buf[1] >> 12) & 0xf, 0x8);
-+		cal_data->ln_tx_impsel_nmos[2] =
-+			check_cal_data_valid(mtk_dp, 1, 0xe,
-+					     (buf[1] >> 8) & 0xf, 0x8);
-+		cal_data->ln_tx_impsel_pmos[3] =
-+			check_cal_data_valid(mtk_dp, 1, 0xe,
-+					     (buf[1] >> 4) & 0xf, 0x8);
-+		cal_data->ln_tx_impsel_nmos[3] =
-+			check_cal_data_valid(mtk_dp, 1, 0xe, buf[1] & 0xf, 0x8);
-+	}
- 
- 	kfree(buf);
- }
-@@ -1021,7 +1080,10 @@ static void mtk_dp_video_mute(struct mtk_dp *mtk_dp, bool enable)
- 			   VIDEO_MUTE_SEL_DP_ENC0_P0_MASK |
- 			   VIDEO_MUTE_SW_DP_ENC0_P0_MASK);
- 
--	mtk_dp_sip_atf_call(mtk_dp, MTK_DP_SIP_ATF_EDP_VIDEO_UNMUTE, enable);
-+	mtk_dp_sip_atf_call(mtk_dp,
-+			    mtk_dp_is_edp(mtk_dp) ?
-+			    MTK_DP_SIP_ATF_EDP_VIDEO_UNMUTE :
-+			    MTK_DP_SIP_ATF_VIDEO_UNMUTE, enable);
- }
- 
- static void mtk_dp_power_enable(struct mtk_dp *mtk_dp)
-@@ -1069,6 +1131,8 @@ static void mtk_dp_initialize_priv_data(struct mtk_dp *mtk_dp)
- 	mtk_dp->info.depth = DP_MSA_MISC_8_BPC;
- 	memset(&mtk_dp->info.timings, 0, sizeof(struct mtk_dp_timings));
- 	mtk_dp->info.timings.frame_rate = 60;
-+
-+	mtk_dp->has_fec = false;
- }
- 
- static void mtk_dp_setup_tu(struct mtk_dp *mtk_dp)
-@@ -1416,6 +1480,9 @@ static int mtk_dp_parse_capabilities(struct mtk_dp *mtk_dp)
- 	drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER, DP_SET_POWER_D0);
- 	usleep_range(2000, 5000);
- 
-+	if (!mtk_dp_plug_state(mtk_dp))
-+		return -ENODEV;
-+
- 	drm_dp_read_dpcd_caps(&mtk_dp->aux, mtk_dp->rx_cap);
- 
- 	mtk_dp->rx_cap[DP_TRAINING_AUX_RD_INTERVAL] &= DP_TRAINING_AUX_RD_MASK;
-@@ -1461,6 +1528,9 @@ static int mtk_dp_train_start(struct mtk_dp *mtk_dp)
- 	u8 train_limit;
- 	u8 max_link_rate;
- 
-+	if (!mtk_dp_plug_state_avoid_pulse(mtk_dp))
-+		return -ENODEV;
-+
- 	link_rate = mtk_dp->rx_cap[1];
- 	lane_count = mtk_dp->rx_cap[2] & 0x1F;
- 
-@@ -1602,21 +1672,46 @@ static void mtk_dp_init_port(struct mtk_dp *mtk_dp)
- static irqreturn_t mtk_dp_hpd_event_thread(int hpd, void *dev)
- {
- 	struct mtk_dp *mtk_dp = dev;
-+	int event;
- 	u8 buf[DP_RECEIVER_CAP_SIZE] = {};
- 
-+	event = mtk_dp_plug_state(mtk_dp) ?
-+		connector_status_connected : connector_status_disconnected;
-+
-+	if (event < 0)
-+		return IRQ_HANDLED;
-+
-+	dev_info(mtk_dp->dev, "drm_helper_hpd_irq_event\n");
-+	drm_helper_hpd_irq_event(mtk_dp->bridge.dev);
-+
- 	if (mtk_dp->train_info.cable_state_change) {
- 		mtk_dp->train_info.cable_state_change = false;
- 
--		mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_PWR_STATE,
--				   DP_PWR_STATE_BANDGAP_TPLL_LANE,
--				   DP_PWR_STATE_MASK);
--		drm_dp_read_dpcd_caps(&mtk_dp->aux, buf);
--		mtk_dp->train_info.link_rate =
--			min_t(int, mtk_dp->max_linkrate,
--			      buf[mtk_dp->max_linkrate]);
--		mtk_dp->train_info.lane_count =
--			min_t(int, mtk_dp->max_lanes,
--			      drm_dp_max_lane_count(buf));
-+		mtk_dp->train_state = MTK_DP_TRAIN_STATE_TRAINING;
-+
-+		if (!mtk_dp->train_info.cable_plugged_in) {
-+			mtk_dp_video_mute(mtk_dp, true);
-+
-+			mtk_dp_initialize_priv_data(mtk_dp);
-+			mtk_dp_set_idle_pattern(mtk_dp, true);
-+			if (mtk_dp->has_fec)
-+				mtk_dp_fec_enable(mtk_dp, false);
-+
-+			mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_PWR_STATE,
-+					   DP_PWR_STATE_BANDGAP_TPLL,
-+					   DP_PWR_STATE_MASK);
-+		} else {
-+			mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_PWR_STATE,
-+					   DP_PWR_STATE_BANDGAP_TPLL_LANE,
-+					   DP_PWR_STATE_MASK);
-+			drm_dp_read_dpcd_caps(&mtk_dp->aux, buf);
-+			mtk_dp->train_info.link_rate =
-+				min_t(int, mtk_dp->max_linkrate,
-+				      buf[mtk_dp->max_linkrate]);
-+			mtk_dp->train_info.lane_count =
-+				min_t(int, mtk_dp->max_lanes,
-+				      drm_dp_max_lane_count(buf));
-+		}
- 	}
- 
- 	if (mtk_dp->train_info.irq_sta.hpd_inerrupt) {
-@@ -1735,6 +1830,24 @@ static int mtk_dp_dt_parse(struct mtk_dp *mtk_dp,
- 	return ret;
- }
- 
-+static enum drm_connector_status mtk_dp_bdg_detect(struct drm_bridge *bridge)
-+{
-+	struct mtk_dp *mtk_dp = mtk_dp_from_bridge(bridge);
-+	enum drm_connector_status ret = connector_status_disconnected;
-+	u8 sink_count = 0;
-+
-+	if (mtk_dp_is_edp(mtk_dp))
-+		return connector_status_connected;
-+
-+	if (mtk_dp_plug_state_avoid_pulse(mtk_dp)) {
-+		drm_dp_dpcd_readb(&mtk_dp->aux, DP_SINK_COUNT, &sink_count);
-+		if (DP_GET_SINK_COUNT(sink_count))
-+			ret = connector_status_connected;
-+	}
-+
-+	return ret;
-+}
-+
- static struct edid *mtk_dp_get_edid(struct drm_bridge *bridge,
- 				    struct drm_connector *connector)
- {
-@@ -1748,7 +1861,8 @@ static struct edid *mtk_dp_get_edid(struct drm_bridge *bridge,
- 	drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER, DP_SET_POWER_D0);
- 	usleep_range(2000, 5000);
- 
--	new_edid = drm_get_edid(connector, &mtk_dp->aux.ddc);
-+	if (mtk_dp_plug_state(mtk_dp))
-+		new_edid = drm_get_edid(connector, &mtk_dp->aux.ddc);
- 
- 	if (!enabled)
- 		drm_bridge_chain_post_disable(bridge);
-@@ -2099,6 +2213,7 @@ static const struct drm_bridge_funcs mtk_dp_bridge_funcs = {
- 	.atomic_disable = mtk_dp_bridge_atomic_disable,
- 	.mode_valid = mtk_dp_bridge_mode_valid,
- 	.get_edid = mtk_dp_get_edid,
-+	.detect = mtk_dp_bdg_detect,
- };
- 
- static int mtk_dp_probe(struct platform_device *pdev)
-@@ -2120,9 +2235,15 @@ static int mtk_dp_probe(struct platform_device *pdev)
- 				     "failed to request dp irq resource\n");
- 
- 	mtk_dp->next_bridge = devm_drm_of_get_bridge(dev, dev->of_node, 1, 0);
--	if (IS_ERR(mtk_dp->next_bridge))
-+	if (IS_ERR(mtk_dp->next_bridge) &&
-+	    PTR_ERR(mtk_dp->next_bridge) == -ENODEV) {
-+		dev_info(dev,
-+			 "No panel connected in devicetree, continue as external DP\n");
-+		mtk_dp->next_bridge = NULL;
-+	} else if (IS_ERR(mtk_dp->next_bridge)) {
- 		return dev_err_probe(dev, PTR_ERR(mtk_dp->next_bridge),
- 				     "Failed to get bridge\n");
-+	}
- 
- 	ret = mtk_dp_dt_parse(mtk_dp, pdev);
- 	if (ret)
-@@ -2167,7 +2288,10 @@ static int mtk_dp_probe(struct platform_device *pdev)
- 
- 	mtk_dp->bridge.ops =
- 		DRM_BRIDGE_OP_DETECT | DRM_BRIDGE_OP_EDID | DRM_BRIDGE_OP_HPD;
--	mtk_dp->bridge.type = DRM_MODE_CONNECTOR_eDP;
-+	if (mtk_dp_is_edp(mtk_dp))
-+		mtk_dp->bridge.type = DRM_MODE_CONNECTOR_eDP;
-+	else
-+		mtk_dp->bridge.type = DRM_MODE_CONNECTOR_DisplayPort;
- 
- 	drm_bridge_add(&mtk_dp->bridge);
- 
-@@ -2194,6 +2318,12 @@ static int mtk_dp_suspend(struct device *dev)
- {
- 	struct mtk_dp *mtk_dp = dev_get_drvdata(dev);
- 
-+	if (mtk_dp_plug_state(mtk_dp)) {
-+		drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER, DP_SET_POWER_D3);
-+		/* Ensure the sink is off before shutting down power */
-+		usleep_range(2000, 3000);
-+	}
-+
- 	mtk_dp_power_disable(mtk_dp);
- 
- 	mtk_dp_hwirq_enable(mtk_dp, false);
-@@ -2221,6 +2351,7 @@ static SIMPLE_DEV_PM_OPS(mtk_dp_pm_ops, mtk_dp_suspend, mtk_dp_resume);
- 
- static const struct of_device_id mtk_dp_of_match[] = {
- 	{ .compatible = "mediatek,mt8195-edp-tx" },
-+	{ .compatible = "mediatek,mt8195-dp-tx" },
- 	{},
- };
- MODULE_DEVICE_TABLE(of, mtk_dp_of_match);
+for DP:
+  #0 1920x1080 60.00 1920 2008 2052 2200 1080 1084 1089 1125 148500 flags: phsync, pvsync; type: preferred, driver
+  #1 1920x1080 59.94 1920 2008 2052 2200 1080 1084 1089 1125 148352 flags: phsync, pvsync; type: driver
+  #2 1920x1080 50.00 1920 2448 2492 2640 1080 1084 1089 1125 148500 flags: phsync, pvsync; type: driver
+  #3 1680x1050 59.95 1680 1784 1960 2240 1050 1053 1059 1089 146250 flags: nhsync, pvsync; type: driver
+  #4 1600x900 60.00 1600 1624 1704 1800 900 901 904 1000 108000 flags: phsync, pvsync; type: driver
+  #5 1280x1024 60.02 1280 1328 1440 1688 1024 1025 1028 1066 108000 flags: phsync, pvsync; type: driver
+  #6 1280x800 59.81 1280 1352 1480 1680 800 803 809 831 83500 flags: nhsync, pvsync; type: driver
+  #7 1280x720 60.00 1280 1390 1430 1650 720 725 730 750 74250 flags: phsync, pvsync; type: driver
+  #8 1280x720 59.94 1280 1390 1430 1650 720 725 730 750 74176 flags: phsync, pvsync; type: driver
+  #9 1280x720 50.00 1280 1720 1760 1980 720 725 730 750 74250 flags: phsync, pvsync; type: driver
+  #10 1024x768 60.00 1024 1048 1184 1344 768 771 777 806 65000 flags: nhsync, nvsync; type: driver
+  #11 800x600 60.32 800 840 968 1056 600 601 605 628 40000 flags: phsync, pvsync; type: driver
+  #12 720x576 50.00 720 732 796 864 576 581 586 625 27000 flags: nhsync, nvsync; type: driver
+  #13 720x480 60.00 720 736 798 858 480 489 495 525 27027 flags: nhsync, nvsync; type: driver
+  #14 720x480 59.94 720 736 798 858 480 489 495 525 27000 flags: nhsync, nvsync; type: driver
+  #15 640x480 60.00 640 656 752 800 480 490 492 525 25200 flags: nhsync, nvsync; type: driver
+  #16 640x480 59.94 640 656 752 800 480 490 492 525 25175 flags: nhsync, nvsync; type: driver
+
+Changes from v10 for dp driver:
+- Drop return value for write registers to make code more clear.
+- Refine training state.
+- Add property for dt-binding.
+- Add new bug fix patches for audio and suspend.
+- Rebase to v5.19-rc1.
+
+Changes from v9:
+- The DP-Phy is back to being a child device of the DP driver (as in v8)
+- hot plug detection has been added back to Embedded Display Port... as
+  after discussing with mediatek experts, this is needed eventhough the
+  Embedded Display port is not un-pluggable
+- rebased on linux-next
+- simplified/split train_handler function, as suggested by Rex
+- added comments on the sleep/delays present in the code
+- removed previous patch introducing retries when receiving AUX_DEFER as
+  this is already handled in the dp_aux framework
+- added max-lane and max-linkrate device tree u8 properties instead of
+  hardcoded #defines
+
+Things that are in my todolist for v11:
+- retrieve CK/DE support from panel driver instead of hardcoding it into
+  the dpi driver
+- refcount the dp driver "enabled" status for "future proofing"
+- review the drm_dp_helpers for features/functions that have been
+  re-implemented in the mediatek dp drivers
+
+Older revisions:
+RFC - https://lore.kernel.org/linux-mediatek/20210816192523.1739365-1-msp@baylibre.com/
+v1  - https://lore.kernel.org/linux-mediatek/20210906193529.718845-1-msp@baylibre.com/
+v2  - https://lore.kernel.org/linux-mediatek/20210920084424.231825-1-msp@baylibre.com/
+v3  - https://lore.kernel.org/linux-mediatek/20211001094443.2770169-1-msp@baylibre.com/
+v4  - https://lore.kernel.org/linux-mediatek/20211011094624.3416029-1-msp@baylibre.com/
+v5  - https://lore.kernel.org/all/20211021092707.3562523-1-msp@baylibre.com/
+v6  - https://lore.kernel.org/linux-mediatek/20211110130623.20553-1-granquet@baylibre.com/
+v7  - https://lore.kernel.org/linux-mediatek/20211217150854.2081-1-granquet@baylibre.com/
+v8  - https://lore.kernel.org/linux-mediatek/20220218145437.18563-1-granquet@baylibre.com/
+v9  - https://lore.kernel.org/all/20220327223927.20848-1-granquet@baylibre.com/
+v10 - https://lore.kernel.org/all/20220523104758.29531-1-granquet@baylibre.com/
+
+Functional dependencies are:
+- Add Mediatek Soc DRM (vdosys0) support for mt8195
+  https://lore.kernel.org/linux-mediatek/20220419094143.9561-2-jason-jh.lin@mediatek.com/
+- Add MediaTek SoC DRM (vdosys1) support for mt8195
+  https://lore.kernel.org/linux-mediatek/20220512053128.31415-1-nancy.lin@mediatek.com/
+
+Bo-Chen Chen (2):
+  drm/mediatek: set monitor to DP_SET_POWER_D3 to avoid garbage
+  drm/mediatek: fix no audio when resolution change
+
+Guillaume Ranquet (4):
+  drm/edid: Convert cea_sad helper struct to kernelDoc
+  drm/edid: Add cea_sad helpers for freq/length
+  drm/mediatek: Add MT8195 External DisplayPort support
+  drm/mediatek: DP audio support for MT8195
+
+Jitao Shi (1):
+  drm/mediatek: add hpd debounce
+
+Markus Schneider-Pargmann (3):
+  dt-bindings: mediatek,dp: Add Display Port binding
+  video/hdmi: Add audio_infoframe packing for DP
+  drm/mediatek: Add MT8195 Embedded DisplayPort driver
+
+ .../display/mediatek/mediatek,dp.yaml         |  101 +
+ drivers/gpu/drm/drm_edid.c                    |   73 +
+ drivers/gpu/drm/mediatek/Kconfig              |    8 +
+ drivers/gpu/drm/mediatek/Makefile             |    2 +
+ drivers/gpu/drm/mediatek/mtk_dp.c             | 3078 +++++++++++++++++
+ drivers/gpu/drm/mediatek/mtk_dp_reg.h         |  545 +++
+ drivers/gpu/drm/mediatek/mtk_drm_drv.c        |    3 +
+ drivers/gpu/drm/mediatek/mtk_drm_drv.h        |    3 +
+ drivers/video/hdmi.c                          |   82 +-
+ include/drm/display/drm_dp.h                  |    2 +
+ include/drm/drm_edid.h                        |   26 +-
+ include/linux/hdmi.h                          |    7 +-
+ 12 files changed, 3907 insertions(+), 23 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+ create mode 100644 drivers/gpu/drm/mediatek/mtk_dp.c
+ create mode 100644 drivers/gpu/drm/mediatek/mtk_dp_reg.h
+
 -- 
 2.18.0
 

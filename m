@@ -2,90 +2,176 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C41D0C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Jun 2022 18:55:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E585CCA473
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 02:11:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235822AbiFISzp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Jun 2022 14:55:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38160 "EHLO
+        id S1345500AbiFJCLE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Jun 2022 22:11:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55394 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234151AbiFISzo (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Jun 2022 14:55:44 -0400
-Received: from mailrelay4-1.pub.mailoutpod1-cph3.one.com (mailrelay4-1.pub.mailoutpod1-cph3.one.com [46.30.210.185])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 439964F1EF
-        for <linux-fbdev@vger.kernel.org>; Thu,  9 Jun 2022 11:55:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=rsa1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=jKbDcZ4FhDibO8JxQCv+QTocgVRW/U4XOgTC8XfUUug=;
-        b=hB40xZ4hyPPam4Fq/YieoN0twbebpXGTVjxxVs1G+S+8a9iH9D8i0u3i+AMp8/RLibzAcma9Vlt7v
-         VyO6DO4zilHHgBE2VUs2eADzCQ5C/q6dQqPCKNR4iCwX8ge4AdqSQkqi5sSjaapMCA7XLkmGPSY7sW
-         epNdmDZ3KYvcvm5DO25vTWp9w/uRRpcYqwX12wYXCOO/IgXaIwiYYcPBqnB3nKlV9atmQM8kstFqwp
-         tpSeGRj0hDrBQuiizXznNkHJ3TETssMxo//Rk6pbLM7V6caV93KqPdX/yHx3UQPQsKs8o1QtEqdWq7
-         jjGblP9Qw5uY2Mg3/ncc6DnA2XjU0ag==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=ed1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=jKbDcZ4FhDibO8JxQCv+QTocgVRW/U4XOgTC8XfUUug=;
-        b=h+XYNB6d3kMH4x9JO6z2R7yz+scQXKcFoWGqN5h9JQ+W64bMGdDm5wYYLMKC72jEHdyxVuWYMau7f
-         8sh55jeCA==
-X-HalOne-Cookie: b7de46776df3454b5a3e685c6072709fa563f076
-X-HalOne-ID: c0b9d5a1-e825-11ec-8231-d0431ea8bb10
-Received: from mailproxy3.cst.dirpod4-cph3.one.com (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
-        by mailrelay4.pub.mailoutpod1-cph3.one.com (Halon) with ESMTPSA
-        id c0b9d5a1-e825-11ec-8231-d0431ea8bb10;
-        Thu, 09 Jun 2022 18:55:39 +0000 (UTC)
-Date:   Thu, 9 Jun 2022 20:55:37 +0200
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Stephen Kitt <steve@sk2.org>
-Cc:     Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] fbdev: atmel_lcdfb: Rework backlight status updates
-Message-ID: <YqJCKQmQEuVsbspK@ravnborg.org>
-References: <20220609180440.3138625-1-steve@sk2.org>
+        with ESMTP id S232921AbiFJCLD (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Jun 2022 22:11:03 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5800C32A8C5;
+        Thu,  9 Jun 2022 19:11:01 -0700 (PDT)
+X-UUID: 813aaf29de8243c1bdc57ca68999bb53-20220610
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.5,REQID:9e4ab65c-012e-47d0-9701-33942f9fedcb,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACT
+        ION:release,TS:45
+X-CID-INFO: VERSION:1.1.5,REQID:9e4ab65c-012e-47d0-9701-33942f9fedcb,OB:0,LOB:
+        0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTIO
+        N:release,TS:45
+X-CID-META: VersionHash:2a19b09,CLOUDID:34eb52e5-2ba2-4dc1-b6c5-11feb6c769e0,C
+        OID:01099fb91726,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:0,File:nil,QS:0,BEC:nil
+X-UUID: 813aaf29de8243c1bdc57ca68999bb53-20220610
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 721379247; Fri, 10 Jun 2022 10:10:55 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Fri, 10 Jun 2022 10:10:54 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
+ Transport; Fri, 10 Jun 2022 10:10:48 +0800
+Message-ID: <3ced724e0067e105c11889a5d1bf3247ed57e520.camel@mediatek.com>
+Subject: Re: [PATCH v10 18/21] drm/mediatek: Add mt8195 Embedded DisplayPort
+ driver
+From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
+To:     CK Hu <ck.hu@mediatek.com>,
+        Guillaume Ranquet <granquet@baylibre.com>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Chunfeng Yun =?UTF-8?Q?=28=E4=BA=91=E6=98=A5=E5=B3=B0=29?= 
+        <Chunfeng.Yun@mediatek.com>,
+        Kishon Vijay Abraham I <kishon@ti.com>,
+        Vinod Koul <vkoul@kernel.org>, "Helge Deller" <deller@gmx.de>,
+        Jitao Shi =?UTF-8?Q?=28=E7=9F=B3=E8=AE=B0=E6=B6=9B=29?= 
+        <jitao.shi@mediatek.com>
+CC:     Markus Schneider-Pargmann <msp@baylibre.com>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-mediatek@lists.infradead.org" 
+        <linux-mediatek@lists.infradead.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "linux-phy@lists.infradead.org" <linux-phy@lists.infradead.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Date:   Fri, 10 Jun 2022 10:10:40 +0800
+In-Reply-To: <d86e62ab8613f32a50e905f6ac14173b25d36006.camel@mediatek.com>
+References: <20220523104758.29531-1-granquet@baylibre.com>
+         <20220523104758.29531-19-granquet@baylibre.com>
+         <d86e62ab8613f32a50e905f6ac14173b25d36006.camel@mediatek.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220609180440.3138625-1-steve@sk2.org>
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Stephen, thanks!
-On Thu, Jun 09, 2022 at 08:04:40PM +0200, Stephen Kitt wrote:
-> Instead of checking the state of various backlight_properties fields
-> against the memorised state in atmel_lcdfb_info.bl_power,
-> atmel_bl_update_status() should retrieve the desired state using
-> backlight_get_brightness (which takes into account the power state,
-> blanking etc.). This means the explicit checks using props.fb_blank
-> and props.power can be dropped.
+On Thu, 2022-06-09 at 17:37 +0800, CK Hu wrote:
+> Hi, Rex:
 > 
-> The backlight framework ensures that backlight is never negative, so
-> the test before reading the brightness from the hardware always ends
-> up false and the whole block can be removed. The framework retrieves
-> the brightness from the hardware through atmel_bl_get_brightness()
-> when necessary.
+> On Mon, 2022-05-23 at 12:47 +0200, Guillaume Ranquet wrote:
+> > From: Markus Schneider-Pargmann <msp@baylibre.com>
+> > 
+> > This patch adds a DisplayPort driver for the Mediatek mt8195 SoC.
+> > 
+> > It supports the mt8195, the embedded DisplayPort units. It offers
+> > DisplayPort 1.4 with up to 4 lanes.
+> > 
+> > The driver creates a child device for the phy. The child device
+> > will
+> > never exist without the parent being active. As they are sharing a
+> > register range, the parent passes a regmap pointer to the child so
+> > that
+> > both can work with the same register range. The phy driver sets
+> > device
+> > data that is read by the parent to get the phy device that can be
+> > used
+> > to control the phy properties.
+> > 
+> > This driver is based on an initial version by
+> > Jason-JH.Lin <jason-jh.lin@mediatek.com>.
+> > 
+> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> > ---
 > 
-> As a result, bl_power in struct atmel_lcdfb_info is no longer
-> necessary, so remove that while we're at it. Since we only ever care
-> about reading the current state in backlight_properties, drop the
-> updates at the end of the function.
+> [snip]
 > 
-> Signed-off-by: Stephen Kitt <steve@sk2.org>
-> Cc: Nicolas Ferre <nicolas.ferre@microchip.com>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
-> Cc: Claudiu Beznea <claudiu.beznea@microchip.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: linux-arm-kernel@lists.infradead.org
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> > +
+> > +static int mtk_dp_power_disable(struct mtk_dp *mtk_dp)
+> > +{
+> > +	int ret;
+> > +
+> > +	ret = mtk_dp_write(mtk_dp, MTK_DP_TOP_PWR_STATE, 0);
+> > +
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	ret = mtk_dp_write(mtk_dp, MTK_DP_0034,
+> 
+> MTK_DP_0034 is defined as:
+> 
+> +#define MTK_DP_0034		      (BIT(2) | BIT(4) | BIT(5))
+> 
+> I think this a weird address.
+> 
+> > +			   DA_CKM_CKTX0_EN_FORCE_EN |
+> > DA_CKM_BIAS_LPF_EN_FORCE_VAL |
+> > +		     DA_CKM_BIAS_EN_FORCE_VAL |
+> > +		     DA_XTP_GLB_LDO_EN_FORCE_VAL |
+> > +		     DA_XTP_GLB_AVD10_ON_FORCE_VAL);
+> > +
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	/* Disable RX */
+> > +	ret = mtk_dp_write(mtk_dp, MTK_DP_1040, 0);
+> 
+> 
+> MTK_DP_1040 is defined as:
+> 
+> +#define MTK_DP_1040		      (BIT(6) | BIT(12))
+> 
+> I think this a weird address.
+> 
+> Regards,
+> CK
+> 
 
-	Sam
+Hello CK,
+
+I will change them to 0x34 and 0x1040.
+
+BRs,
+Rex
+
+> > +
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	ret = mtk_dp_write(mtk_dp, MTK_DP_TOP_MEM_PD,
+> > +			   0x550 | BIT(FUSE_SEL_SHIFT) |
+> > BIT(MEM_ISO_EN_SHIFT));
+> > +
+> > +	return ret;
+> > +}
+> 
+> 
+

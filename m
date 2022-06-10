@@ -2,90 +2,107 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ECBB9C43334
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 09:50:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01D16C43334
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 10:58:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244063AbiFJJuG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Jun 2022 05:50:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58276 "EHLO
+        id S1349151AbiFJK6A (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 10 Jun 2022 06:58:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38882 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244610AbiFJJuE (ORCPT
+        with ESMTP id S1349248AbiFJK5n (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Jun 2022 05:50:04 -0400
-Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com [IPv6:2a00:1450:4864:20::62f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 24F42674E4
-        for <linux-fbdev@vger.kernel.org>; Fri, 10 Jun 2022 02:50:00 -0700 (PDT)
-Received: by mail-ej1-x62f.google.com with SMTP id bg6so32630448ejb.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 10 Jun 2022 02:50:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=GM7d3E0tduZqRYf2e+s3dbuLzIr4Mw1YJSMLDAOVaMI=;
-        b=mPsDPC8Jc7T4BUqovcJHh9X9aOrAhrclaAa/mhdil1CMSWhn30imVTqNFRV+0HRuZR
-         9clubq9kS7nPcWWq0+jUK/ZXeKuiFGzZDvtFDwXEp2uxKkZ+j2tw+p6oTgwkJY+ubiyC
-         fNpq3+oeKLsbInyhxMt0RU7rnoLmgsm+qFbiG6K8ZL9ftfWRVogRMaCLYG0PEmOcWyxi
-         Ej/gBPv4wGEs//8C5AqndzktP0qrzc314Ie0fAKrmlRueinVOKmVaBBtnVyEHYDDTkgY
-         p8yH/z6bfp1mBhN+ixEyIEW0HoPZyP6dMU1cLXojoX9F8XKV/BwCrjhvbDch3r8LG4uz
-         wQww==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=GM7d3E0tduZqRYf2e+s3dbuLzIr4Mw1YJSMLDAOVaMI=;
-        b=pFY8gzKYOlXO1epcfrjFZCAhWdbuDXNX9QaoAaQXZJ2M2UiN4G/Zqr+Nh6teGDH1OI
-         rHPNAS8oSpQ0oysa1sP2VMsHWxVbXxDRYybbVCRqap4D1EvQM+5ZLLHdRq+qGUViK5Do
-         NOlJc87mlsfsJ5D277WvdHZEZ88SnoqjnCoEeoOCYHTxnsp2K/4DJQ7XWjcFAgnFpIKN
-         i7caPXFsdYO1zjJaxS4HFM22pyMV+uLmqZ0PtucBGVOvyIMjgV4b3RY2mVZ8D8ibjCzg
-         dFVNnXBls0apRDwQGvsOEkODjernfqfQrKpq5FgKTK+gJqlXjCmAHxKxk9gcXYqqARNt
-         W2yA==
-X-Gm-Message-State: AOAM533D5c1HiDoCzCPf1v7st/7p+xSWjnYQwInl/iefvG9zw79fgvRb
-        mCUcy2uFhx+NtvLohN9USKtEcQ==
-X-Google-Smtp-Source: ABdhPJyCD/klApB8VX8jrzmpF60V4CVF43i+O2miGAxeX9trvWXvTRU8uZ81PMBn+YHe3kzoGb0iXQ==
-X-Received: by 2002:a17:907:3f08:b0:711:d61d:e10 with SMTP id hq8-20020a1709073f0800b00711d61d0e10mr21666615ejc.11.1654854598989;
-        Fri, 10 Jun 2022 02:49:58 -0700 (PDT)
-Received: from ash.lan (82-132-215-210.dab.02.net. [82.132.215.210])
-        by smtp.gmail.com with ESMTPSA id o13-20020a17090608cd00b006fedcb78854sm11931009eje.164.2022.06.10.02.49.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Jun 2022 02:49:58 -0700 (PDT)
-Date:   Fri, 10 Jun 2022 10:49:55 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Stephen Kitt <steve@sk2.org>
-Cc:     Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Helge Deller <deller@gmx.de>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] fbdev: atmel_lcdfb: Rework backlight status updates
-Message-ID: <20220610094955.cy53ujicaplr7aw7@ash.lan>
-References: <20220608205623.2106113-1-steve@sk2.org>
- <20220609095412.fccofr2e2kpzhw4t@maple.lan>
- <YqIuUYUXzxeSgZ/o@ravnborg.org>
- <20220609194511.4e0bc3e6@heffalump.sk2.org>
+        Fri, 10 Jun 2022 06:57:43 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 430C72178B9;
+        Fri, 10 Jun 2022 03:55:30 -0700 (PDT)
+X-UUID: 55f0601a910640398ce8a765dfde1784-20220610
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.5,REQID:958443af-c5cf-411b-8bbc-fc564b166e46,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:2a19b09,CLOUDID:12d767e5-2ba2-4dc1-b6c5-11feb6c769e0,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
+        ,QS:0,BEC:nil
+X-UUID: 55f0601a910640398ce8a765dfde1784-20220610
+Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw02.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 214986410; Fri, 10 Jun 2022 18:55:25 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Fri, 10 Jun 2022 18:55:23 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
+ mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
+ 15.2.792.3 via Frontend Transport; Fri, 10 Jun 2022 18:55:23 +0800
+From:   Bo-Chen Chen <rex-bc.chen@mediatek.com>
+To:     <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
+        <daniel@ffwll.ch>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
+        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
+        <airlied@linux.ie>
+CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
+        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
+        <angelogioacchino.delregno@collabora.com>, <ck.hu@mediatek.com>,
+        <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-fbdev@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        Bo-Chen Chen <rex-bc.chen@mediatek.com>
+Subject: [PATCH v11 02/10] drm/edid: Convert cea_sad helper struct to kernelDoc
+Date:   Fri, 10 Jun 2022 18:55:14 +0800
+Message-ID: <20220610105522.13449-3-rex-bc.chen@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
+References: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20220609194511.4e0bc3e6@heffalump.sk2.org>
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Jun 09, 2022 at 07:45:11PM +0200, Stephen Kitt wrote:
-> Hi Sam, Daniel,
->
-> On Thu, 9 Jun 2022 19:30:57 +0200, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > thanks for taking care of all these backlight simplifications - this
-> > really helps to make the code simpler and more readable.
->
-> You’re welcome! I noticed fb_blank was deprecated and near enough unused, and
-> started digging...
+From: Guillaume Ranquet <granquet@baylibre.com>
 
-I saw Sam's comment and kinda wished I'd thought to say that... definitely
-good to see these things being tidied up.
+To illustrate the cea_sad helper struct more clear, we convert the
+driver comments to kernelDoc.
 
+Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+[Bo-Chen: Add commit message and modify reviewers' comments.]
+Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+---
+ include/drm/drm_edid.h | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-Daniel.
+diff --git a/include/drm/drm_edid.h b/include/drm/drm_edid.h
+index b2756753370b..c2c43a4af681 100644
+--- a/include/drm/drm_edid.h
++++ b/include/drm/drm_edid.h
+@@ -359,12 +359,18 @@ struct edid {
+ 
+ #define EDID_PRODUCT_ID(e) ((e)->prod_code[0] | ((e)->prod_code[1] << 8))
+ 
+-/* Short Audio Descriptor */
++/**
++ * struct cea_sad - CEA Short Audio Descriptor.
++ * @format: See HDMI_AUDIO_CODING_TYPE_*.
++ * @channels: max number of channels - 1.
++ * @freq: See CEA_SAD_FREQ_*.
++ * @byte2: meaning depends on format.
++ */
+ struct cea_sad {
+ 	u8 format;
+-	u8 channels; /* max number of channels - 1 */
++	u8 channels;
+ 	u8 freq;
+-	u8 byte2; /* meaning depends on format */
++	u8 byte2;
+ };
+ 
+ struct drm_encoder;
+-- 
+2.18.0
+

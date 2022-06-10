@@ -2,123 +2,90 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4E0DC433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 09:47:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ECBB9C43334
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 09:50:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347221AbiFJJr0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Jun 2022 05:47:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47376 "EHLO
+        id S244063AbiFJJuG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 10 Jun 2022 05:50:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58276 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347199AbiFJJrY (ORCPT
+        with ESMTP id S244610AbiFJJuE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Jun 2022 05:47:24 -0400
-Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05EE45F8D6
-        for <linux-fbdev@vger.kernel.org>; Fri, 10 Jun 2022 02:47:19 -0700 (PDT)
-Received: by mail-wr1-x42b.google.com with SMTP id o8so7926698wro.3
-        for <linux-fbdev@vger.kernel.org>; Fri, 10 Jun 2022 02:47:19 -0700 (PDT)
+        Fri, 10 Jun 2022 05:50:04 -0400
+Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com [IPv6:2a00:1450:4864:20::62f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 24F42674E4
+        for <linux-fbdev@vger.kernel.org>; Fri, 10 Jun 2022 02:50:00 -0700 (PDT)
+Received: by mail-ej1-x62f.google.com with SMTP id bg6so32630448ejb.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 10 Jun 2022 02:50:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=OPbvFpgsCXrc/RPsUnJXvMubbP17Qr2YxU9/bS1wZjk=;
-        b=Sx9VSFOKuSIF/SG/wZmN6t3GEVIdE7lEIrbl9Mm6OhO6ibXPIulugZeY3eOarE4gWg
-         Xmxf7UQrHvFKBv/T01+affQqxcOeCFb1i3fIGXdkw5hb2dEDXYgTkvw4vOo6uE4njvOA
-         Cr+H0XBeSDbYhAPd/i/bPJeriwwqBIj+qQ0CY=
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=GM7d3E0tduZqRYf2e+s3dbuLzIr4Mw1YJSMLDAOVaMI=;
+        b=mPsDPC8Jc7T4BUqovcJHh9X9aOrAhrclaAa/mhdil1CMSWhn30imVTqNFRV+0HRuZR
+         9clubq9kS7nPcWWq0+jUK/ZXeKuiFGzZDvtFDwXEp2uxKkZ+j2tw+p6oTgwkJY+ubiyC
+         fNpq3+oeKLsbInyhxMt0RU7rnoLmgsm+qFbiG6K8ZL9ftfWRVogRMaCLYG0PEmOcWyxi
+         Ej/gBPv4wGEs//8C5AqndzktP0qrzc314Ie0fAKrmlRueinVOKmVaBBtnVyEHYDDTkgY
+         p8yH/z6bfp1mBhN+ixEyIEW0HoPZyP6dMU1cLXojoX9F8XKV/BwCrjhvbDch3r8LG4uz
+         wQww==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id
-         :mail-followup-to:references:mime-version:content-disposition
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
          :in-reply-to;
-        bh=OPbvFpgsCXrc/RPsUnJXvMubbP17Qr2YxU9/bS1wZjk=;
-        b=V0wu7LZOV6E8NqNOuTvRdhrRCdb8/pOQd5mMQ0A2MqjmblTFe47bs7FLaQOs2tygm6
-         6z7sB1Eetg0PWuuWy025HopWlcLf4Res6JLmxZ2UNa1A8oW1Z3WL/mzvzssI7NM0teEd
-         2EbNQnD9lwNnNsFX1Xj9t5JlkTIMC5CevSF9MMkEjMLcDmpsMdCgVpbA7JMCrWw9PseB
-         zP9FptnDEAU+I7pwtoR5LxJmhVseY7S5+RiAKzQujzO0MgKgH0dRXdzIRbwcc2K2uP3q
-         pH0Z8d+5hkULHTN2K+VnMZMNmydnAzHvMtFJnxfAJxfum9fos9dWUIcDW9ef4QIYDM6U
-         ldPQ==
-X-Gm-Message-State: AOAM530yuWs2LtR/MxIQ/16XT9mOaZItCIY5o4slE05H53VsN7+7wR5d
-        ddqk6YFcgTeGDyXlNbh0OD/l2A==
-X-Google-Smtp-Source: ABdhPJw/3X2seKC/9g3emEoshWFl3NznfblFRQrKNLuh5mPnwP52ajg48RkiCudO7VotgG18/i6y3Q==
-X-Received: by 2002:adf:e4cb:0:b0:219:b63c:d238 with SMTP id v11-20020adfe4cb000000b00219b63cd238mr7519156wrm.705.1654854438519;
-        Fri, 10 Jun 2022 02:47:18 -0700 (PDT)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id h18-20020a05600c351200b0039c50d2d28csm2364864wmq.44.2022.06.10.02.47.16
+        bh=GM7d3E0tduZqRYf2e+s3dbuLzIr4Mw1YJSMLDAOVaMI=;
+        b=pFY8gzKYOlXO1epcfrjFZCAhWdbuDXNX9QaoAaQXZJ2M2UiN4G/Zqr+Nh6teGDH1OI
+         rHPNAS8oSpQ0oysa1sP2VMsHWxVbXxDRYybbVCRqap4D1EvQM+5ZLLHdRq+qGUViK5Do
+         NOlJc87mlsfsJ5D277WvdHZEZ88SnoqjnCoEeoOCYHTxnsp2K/4DJQ7XWjcFAgnFpIKN
+         i7caPXFsdYO1zjJaxS4HFM22pyMV+uLmqZ0PtucBGVOvyIMjgV4b3RY2mVZ8D8ibjCzg
+         dFVNnXBls0apRDwQGvsOEkODjernfqfQrKpq5FgKTK+gJqlXjCmAHxKxk9gcXYqqARNt
+         W2yA==
+X-Gm-Message-State: AOAM533D5c1HiDoCzCPf1v7st/7p+xSWjnYQwInl/iefvG9zw79fgvRb
+        mCUcy2uFhx+NtvLohN9USKtEcQ==
+X-Google-Smtp-Source: ABdhPJyCD/klApB8VX8jrzmpF60V4CVF43i+O2miGAxeX9trvWXvTRU8uZ81PMBn+YHe3kzoGb0iXQ==
+X-Received: by 2002:a17:907:3f08:b0:711:d61d:e10 with SMTP id hq8-20020a1709073f0800b00711d61d0e10mr21666615ejc.11.1654854598989;
+        Fri, 10 Jun 2022 02:49:58 -0700 (PDT)
+Received: from ash.lan (82-132-215-210.dab.02.net. [82.132.215.210])
+        by smtp.gmail.com with ESMTPSA id o13-20020a17090608cd00b006fedcb78854sm11931009eje.164.2022.06.10.02.49.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Jun 2022 02:47:17 -0700 (PDT)
-Date:   Fri, 10 Jun 2022 11:47:15 +0200
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     linux-kernel@vger.kernel.org,
-        Stephen Rothwell <sfr@canb.auug.org.au>,
-        linux-fbdev@vger.kernel.org, kernel test robot <lkp@intel.com>,
-        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH] Revert "fbdev: vesafb: Allow to be built if COMPILE_TEST
- is enabled"
-Message-ID: <YqMTI3yxmWq/f+Gp@phenom.ffwll.local>
-Mail-Followup-To: Javier Martinez Canillas <javierm@redhat.com>,
-        linux-kernel@vger.kernel.org,
-        Stephen Rothwell <sfr@canb.auug.org.au>,
-        linux-fbdev@vger.kernel.org, kernel test robot <lkp@intel.com>,
-        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-References: <20220610085450.1341880-1-javierm@redhat.com>
+        Fri, 10 Jun 2022 02:49:58 -0700 (PDT)
+Date:   Fri, 10 Jun 2022 10:49:55 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Stephen Kitt <steve@sk2.org>
+Cc:     Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Helge Deller <deller@gmx.de>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Claudiu Beznea <claudiu.beznea@microchip.com>,
+        linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] fbdev: atmel_lcdfb: Rework backlight status updates
+Message-ID: <20220610094955.cy53ujicaplr7aw7@ash.lan>
+References: <20220608205623.2106113-1-steve@sk2.org>
+ <20220609095412.fccofr2e2kpzhw4t@maple.lan>
+ <YqIuUYUXzxeSgZ/o@ravnborg.org>
+ <20220609194511.4e0bc3e6@heffalump.sk2.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20220610085450.1341880-1-javierm@redhat.com>
-X-Operating-System: Linux phenom 5.10.0-8-amd64 
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220609194511.4e0bc3e6@heffalump.sk2.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jun 10, 2022 at 10:54:50AM +0200, Javier Martinez Canillas wrote:
-> This reverts commit fa0e256450f27a7d85f65c63f05e6897954a1d53. The kernel
-> test robot reported that attempting to build the vesafb driver fails on
-> some architectures, because these don't define a `struct screen_info`.
-> 
-> This leads to linking errors, for example on parisc with allyesconfig:
-> 
->   hppa-linux-ld: drivers/video/fbdev/vesafb.o: in function `vesafb_probe':
-> >> (.text+0x738): undefined reference to `screen_info'
-> >> hppa-linux-ld: (.text+0x73c): undefined reference to `screen_info'
->    hppa-linux-ld: drivers/firmware/sysfb.o: in function `sysfb_init':
-> >> (.init.text+0x28): undefined reference to `screen_info'
-> >> hppa-linux-ld: (.init.text+0x30): undefined reference to `screen_info'
->    hppa-linux-ld: (.init.text+0x78): undefined reference to `screen_info'
-> 
-> The goal of commit fa0e256450f2 ("fbdev: vesafb: Allow to be built if
-> COMPILE_TEST is enabled") was to have more build coverage for the driver
-> but it wrongly assumed that all architectures would define a screen_info.
-> 
-> Reported-by: kernel test robot <lkp@intel.com>
-> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+On Thu, Jun 09, 2022 at 07:45:11PM +0200, Stephen Kitt wrote:
+> Hi Sam, Daniel,
+>
+> On Thu, 9 Jun 2022 19:30:57 +0200, Sam Ravnborg <sam@ravnborg.org> wrote:
+> > thanks for taking care of all these backlight simplifications - this
+> > really helps to make the code simpler and more readable.
+>
+> You’re welcome! I noticed fb_blank was deprecated and near enough unused, and
+> started digging...
 
-Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> ---
-> 
->  drivers/video/fbdev/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-> index bd849013f16f..f2a6b81e45c4 100644
-> --- a/drivers/video/fbdev/Kconfig
-> +++ b/drivers/video/fbdev/Kconfig
-> @@ -616,7 +616,7 @@ config FB_UVESA
->  
->  config FB_VESA
->  	bool "VESA VGA graphics support"
-> -	depends on (FB = y) && (X86 || COMPILE_TEST)
-> +	depends on (FB = y) && X86
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> -- 
-> 2.36.1
-> 
+I saw Sam's comment and kinda wished I'd thought to say that... definitely
+good to see these things being tidied up.
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+
+Daniel.

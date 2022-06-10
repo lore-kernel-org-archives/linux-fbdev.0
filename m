@@ -2,108 +2,108 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E7144CCA47C
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 13:12:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53C12C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 18:23:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347152AbiFJNM5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Jun 2022 09:12:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48002 "EHLO
+        id S1346385AbiFJSXL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 10 Jun 2022 14:23:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51568 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343655AbiFJNMt (ORCPT
+        with ESMTP id S1346606AbiFJSXK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Jun 2022 09:12:49 -0400
-Received: from mail-io1-f49.google.com (mail-io1-f49.google.com [209.85.166.49])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E3CFB5BE6C;
-        Fri, 10 Jun 2022 06:12:44 -0700 (PDT)
-Received: by mail-io1-f49.google.com with SMTP id d123so6259590iof.10;
-        Fri, 10 Jun 2022 06:12:44 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:in-reply-to:references:subject:date
-         :message-id;
-        bh=IkgD32JQQv4iXIcEl6HeM9jrQJQd0Tq+F8d36Y5X2zg=;
-        b=tzoazb7HJ57+oOqoUkqJQ1EV0aftXD5PAp3h4oVpz2Zxyn3q6P6STcF+S1mJYqvWma
-         TSQsM5tqxl4/dOGW3rcg/LC4yUN0HZCFULVt88c2wKyaJf6fO+wFOAeG4CdUSOofmhph
-         EkaDhc3gqWfb/Oikk9IuuShFCnEgTHtyvtav9ygKGkM/cCWaQn08uSI0g0j8Gw2QVJVh
-         ECdag3quSfioBdJrbIxfaOgI12jexeBlnwbPr+7XKeowzEU3RDsJU0RbANLU/jfdX7F/
-         xEJ03oJY83bJPCL9iiY0zLHL4GcMYF7Km0KBC6E5Jcct0koXp8zlGf5WH4WD/NKQ2X0r
-         PPrw==
-X-Gm-Message-State: AOAM532Ho6QCezIA06wV89ubcVSipHF5Fz1cAFVQy+N7ZpbZtSkbq4lk
-        wQTtkRTt3IcsQWcljZs33A==
-X-Google-Smtp-Source: ABdhPJw7sfj49a/XqcZX4iEyYBeVBikgyBwiHnh2QxO3rAv60pfY7q66XAD3rxdzNX0bgAVsDTmVOw==
-X-Received: by 2002:a5d:9a13:0:b0:668:94ba:46ab with SMTP id s19-20020a5d9a13000000b0066894ba46abmr20425276iol.155.1654866764099;
-        Fri, 10 Jun 2022 06:12:44 -0700 (PDT)
-Received: from robh.at.kernel.org ([64.188.179.251])
-        by smtp.gmail.com with ESMTPSA id z12-20020a02344c000000b003318ba8386bsm7885984jaz.81.2022.06.10.06.12.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Jun 2022 06:12:43 -0700 (PDT)
-Received: (nullmailer pid 1529407 invoked by uid 1000);
-        Fri, 10 Jun 2022 13:12:35 -0000
-From:   Rob Herring <robh@kernel.org>
-To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>
-Cc:     wenst@chromium.org, linux-arm-kernel@lists.infradead.org,
-        Project_Global_Chrome_Upstream_Group@mediatek.com,
-        robh+dt@kernel.org, angelogioacchino.delregno@collabora.com,
-        chunkuang.hu@kernel.org, daniel@ffwll.ch, matthias.bgg@gmail.com,
-        krzysztof.kozlowski+dt@linaro.org, linux-kernel@vger.kernel.org,
-        granquet@baylibre.com, airlied@linux.ie, p.zabel@pengutronix.de,
-        linux-fbdev@vger.kernel.org, ck.hu@mediatek.com,
-        tzimmermann@suse.de, linux-mediatek@lists.infradead.org,
-        devicetree@vger.kernel.org, mripard@kernel.org,
-        dri-devel@lists.freedesktop.org, deller@gmx.de, msp@baylibre.com,
-        jitao.shi@mediatek.com
-In-Reply-To: <20220610105522.13449-2-rex-bc.chen@mediatek.com>
-References: <20220610105522.13449-1-rex-bc.chen@mediatek.com> <20220610105522.13449-2-rex-bc.chen@mediatek.com>
-Subject: Re: [PATCH v11 01/10] dt-bindings: mediatek,dp: Add Display Port binding
-Date:   Fri, 10 Jun 2022 07:12:35 -0600
-Message-Id: <1654866755.768151.1529406.nullmailer@robh.at.kernel.org>
+        Fri, 10 Jun 2022 14:23:10 -0400
+X-Greylist: delayed 2310 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 10 Jun 2022 11:23:08 PDT
+Received: from 9.mo583.mail-out.ovh.net (9.mo583.mail-out.ovh.net [178.32.96.204])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E52151150
+        for <linux-fbdev@vger.kernel.org>; Fri, 10 Jun 2022 11:23:08 -0700 (PDT)
+Received: from player779.ha.ovh.net (unknown [10.111.208.192])
+        by mo583.mail-out.ovh.net (Postfix) with ESMTP id C3C612395D
+        for <linux-fbdev@vger.kernel.org>; Fri, 10 Jun 2022 17:44:35 +0000 (UTC)
+Received: from sk2.org (82-65-25-201.subs.proxad.net [82.65.25.201])
+        (Authenticated sender: steve@sk2.org)
+        by player779.ha.ovh.net (Postfix) with ESMTPSA id 94DBC2B5CF843;
+        Fri, 10 Jun 2022 17:44:23 +0000 (UTC)
+Authentication-Results: garm.ovh; auth=pass (GARM-96R00152449f80-6e6f-48d1-97fa-f963f6478a11,
+                    4E496447C43E4C7632BA90A0B7747719B130BEDF) smtp.auth=steve@sk2.org
+X-OVh-ClientIp: 82.65.25.201
+Date:   Fri, 10 Jun 2022 19:44:15 +0200
+From:   Stephen Kitt <steve@sk2.org>
+To:     Daniel Thompson <daniel.thompson@linaro.org>
+Cc:     Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Helge Deller <deller@gmx.de>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Claudiu Beznea <claudiu.beznea@microchip.com>,
+        linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] fbdev: atmel_lcdfb: Rework backlight status updates
+Message-ID: <20220610194415.05e1ee95@heffalump.sk2.org>
+In-Reply-To: <20220610094955.cy53ujicaplr7aw7@ash.lan>
+References: <20220608205623.2106113-1-steve@sk2.org>
+        <20220609095412.fccofr2e2kpzhw4t@maple.lan>
+        <YqIuUYUXzxeSgZ/o@ravnborg.org>
+        <20220609194511.4e0bc3e6@heffalump.sk2.org>
+        <20220610094955.cy53ujicaplr7aw7@ash.lan>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/lMq9K57Nv6KWvkGmMFl3QXs";
+ protocol="application/pgp-signature"; micalg=pgp-sha512
+X-Ovh-Tracer-Id: 9440389247221794438
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedrudduuddgudduhecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpeffhffvvefukfgjfhfogggtsehgtderreertdejnecuhfhrohhmpefuthgvphhhvghnucfmihhtthcuoehsthgvvhgvsehskhdvrdhorhhgqeenucggtffrrghtthgvrhhnpeeiheevvdeugeejffefteffvefhieegjeevhfekjeejvdelgfefkeehhfdufffhjeenucfkpheptddrtddrtddrtddpkedvrdeihedrvdehrddvtddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehplhgrhigvrhejjeelrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepshhtvghvvgesshhkvddrohhrghdpnhgspghrtghpthhtohepuddprhgtphhtthhopehlihhnuhigqdhfsgguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdfovfetjfhoshhtpehmohehkeef
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, 10 Jun 2022 18:55:13 +0800, Bo-Chen Chen wrote:
-> From: Markus Schneider-Pargmann <msp@baylibre.com>
-> 
-> This controller is present on several mediatek hardware. Currently
-> mt8195 and mt8395 have this controller without a functional difference,
-> so only one compatible field is added.
-> 
-> The controller can have two forms, as a normal display port and as an
-> embedded display port.
-> 
-> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> [Bo-Chen: Fix reviewers' comment]
-> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
-> ---
->  .../display/mediatek/mediatek,dp.yaml         | 101 ++++++++++++++++++
->  1 file changed, 101 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
-> 
+--Sig_/lMq9K57Nv6KWvkGmMFl3QXs
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-on your patch (DT_CHECKER_FLAGS is new in v5.13):
+On Fri, 10 Jun 2022 10:49:55 +0100, Daniel Thompson
+<daniel.thompson@linaro.org> wrote:
+> On Thu, Jun 09, 2022 at 07:45:11PM +0200, Stephen Kitt wrote:
+> > Hi Sam, Daniel,
+> >
+> > On Thu, 9 Jun 2022 19:30:57 +0200, Sam Ravnborg <sam@ravnborg.org> wrot=
+e:
+> > =20
+> > > thanks for taking care of all these backlight simplifications - this
+> > > really helps to make the code simpler and more readable. =20
+> >
+> > You=E2=80=99re welcome! I noticed fb_blank was deprecated and near enou=
+gh unused,
+> > and started digging... =20
+>=20
+> I saw Sam's comment and kinda wished I'd thought to say that... definitely
+> good to see these things being tidied up.
 
-yamllint warnings/errors:
+Thanks! I saw the nice wrapper functions in backlight.h and couldn=E2=80=99=
+t resist.
 
-dtschema/dtc warnings/errors:
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.example.dtb: dp_tx@1c600000: max-lanes: b'\x04' is not of type 'object', 'array', 'boolean', 'null'
-	From schema: /usr/local/lib/python3.10/dist-packages/dtschema/schemas/dt-core.yaml
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.example.dtb: dp_tx@1c600000: max-linkrate: b'\x1f\xa4' is not of type 'object', 'array', 'boolean', 'null'
-	From schema: /usr/local/lib/python3.10/dist-packages/dtschema/schemas/dt-core.yaml
+Regards,
 
-doc reference errors (make refcheckdocs):
+Stephen
 
-See https://patchwork.ozlabs.org/patch/
+--Sig_/lMq9K57Nv6KWvkGmMFl3QXs
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
-This check can fail if there are any dependencies. The base for a patch
-series is generally the most recent rc1.
+-----BEGIN PGP SIGNATURE-----
 
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
+iQIzBAEBCgAdFiEEnPVX/hPLkMoq7x0ggNMC9Yhtg5wFAmKjgu8ACgkQgNMC9Yht
+g5y6fw/+KKVsNBW5fG/NXRxcpGQDkisyqwSf/FEeQxqGP1kAtLFQHHt7vT5BKZvt
+P/o0PaUun84je8XQfbRsdu4WvNqve0qPPVxl/aUZ35i64UJgNq3rJutIeDbmR2yl
+UsMZisIh8ZafXKmXpA88u7h5Hcdm9OkbplcM5Jhom8Amc70nDSU5nYJhk/eCPgz0
+5bgVGEedpfOVs2zXPv1NCz07g8xYzH2nx0i+TY5AkReY19QD/Wgabo5v555al41H
+uS5bTEdNESCcmroU2Gs5chc6DoDiPMhJgFYmRJpXUCHHcx+298fxvaBJKPZNhA65
+MnyknXePf7wh8IRwMZrm3DnWnUbG1J8wcsNnZEkZJda77hIzSDU+lKg9xgWuehki
+etT0e6MKqGyn5aJRMqzhJRVr3a7AIHAYpHmtvbZ+u7Snw+7ubMgrsks8Gxkq5Put
+4Px+0dQ3y+Cv/fMinzPqBfxIkjDBzs3A9TSkxVzHaSKFf3gCANL7g1FE4y9A2mdX
+DoBsGtEEsvLFT1VukhHvziTXd6mZoCQ7m6Yt0e0xTQ6a/lxesl+cA1HaGXAdThG+
+tCIFukMPzE6M6pRCS8YJtASaLjxKvMf3YhWgEKjJ4DjCgwu4+VSNnrpmii/jIrBI
+IeDCgyM0jv4Q9o90s2sPxc9MiDCgQf1j0KV0aagRKXrhMtExJU0=
+=cMaS
+-----END PGP SIGNATURE-----
 
-pip3 install dtschema --upgrade
-
-Please check and re-submit.
-
+--Sig_/lMq9K57Nv6KWvkGmMFl3QXs--

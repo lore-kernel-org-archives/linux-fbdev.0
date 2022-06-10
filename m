@@ -2,36 +2,39 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CBA1C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 10:58:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8574FCCA481
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 10:58:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349139AbiFJK6B (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Jun 2022 06:58:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42524 "EHLO
+        id S1349277AbiFJK6F (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 10 Jun 2022 06:58:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43022 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349275AbiFJK5n (ORCPT
+        with ESMTP id S1343921AbiFJK5r (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Jun 2022 06:57:43 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 43DC221CBC8;
-        Fri, 10 Jun 2022 03:55:30 -0700 (PDT)
-X-UUID: 112acddfabf84c379a2bd87e7ae1c680-20220610
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:51dc1a5c-bb99-4e30-966e-e563bf21c800,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:0
-X-CID-META: VersionHash:2a19b09,CLOUDID:652ff27e-c8dc-403a-96e8-6237210dceee,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
-        ,QS:0,BEC:nil
-X-UUID: 112acddfabf84c379a2bd87e7ae1c680-20220610
-Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw02.mediatek.com
+        Fri, 10 Jun 2022 06:57:47 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5200D218A8F;
+        Fri, 10 Jun 2022 03:55:33 -0700 (PDT)
+X-UUID: a6adc6f793e04be3994c994e3590af2d-20220610
+X-CID-P-RULE: Spam_GS6885AD
+X-CID-O-INFO: VERSION:1.1.5,REQID:af9720a6-dc48-4319-a8f0-8734f015d776,OB:0,LO
+        B:40,IP:0,URL:25,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,RULE:Spam_GS6885A
+        D,ACTION:quarantine,TS:115
+X-CID-INFO: VERSION:1.1.5,REQID:af9720a6-dc48-4319-a8f0-8734f015d776,OB:0,LOB:
+        40,IP:0,URL:25,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,RULE:Spam_GS981B3D,
+        ACTION:quarantine,TS:115
+X-CID-META: VersionHash:2a19b09,CLOUDID:912ff27e-c8dc-403a-96e8-6237210dceee,C
+        OID:FAIL,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,Fil
+        e:nil,QS:0,BEC:nil
+X-UUID: a6adc6f793e04be3994c994e3590af2d-20220610
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1055446036; Fri, 10 Jun 2022 18:55:25 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Fri, 10 Jun 2022 18:55:23 +0800
+        with ESMTP id 323076661; Fri, 10 Jun 2022 18:55:24 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
+ mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Fri, 10 Jun 2022 18:55:23 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
  mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
  15.2.792.3 via Frontend Transport; Fri, 10 Jun 2022 18:55:23 +0800
@@ -51,9 +54,9 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
         Bo-Chen Chen <rex-bc.chen@mediatek.com>
-Subject: [PATCH v11 04/10] video/hdmi: Add audio_infoframe packing for DP
-Date:   Fri, 10 Jun 2022 18:55:16 +0800
-Message-ID: <20220610105522.13449-5-rex-bc.chen@mediatek.com>
+Subject: [PATCH v11 01/10] dt-bindings: mediatek,dp: Add Display Port binding
+Date:   Fri, 10 Jun 2022 18:55:13 +0800
+Message-ID: <20220610105522.13449-2-rex-bc.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
 References: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
@@ -66,189 +69,129 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Markus Schneider-Pargmann <msp@baylibre.com>
 
-Similar to HDMI, DP uses audio infoframes as well which are structured
-very similar to the HDMI ones.
+This controller is present on several mediatek hardware. Currently
+mt8195 and mt8395 have this controller without a functional difference,
+so only one compatible field is added.
 
-This patch adds a helper function to pack the HDMI audio infoframe for
-DP, called hdmi_audio_infoframe_pack_for_dp().
-hdmi_audio_infoframe_pack_only() is split into two parts. One of them
-packs the payload only and can be used for HDMI and DP.
-
-Also constify the frame parameter in hdmi_audio_infoframe_check() as
-it is passed to hdmi_audio_infoframe_check_only() which expects a const.
+The controller can have two forms, as a normal display port and as an
+embedded display port.
 
 Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
 Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-[Bo-Chen: Modify reviewers' comment]
+[Bo-Chen: Fix reviewers' comment]
 Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
 ---
- drivers/video/hdmi.c         | 82 +++++++++++++++++++++++++++---------
- include/drm/display/drm_dp.h |  2 +
- include/linux/hdmi.h         |  7 ++-
- 3 files changed, 71 insertions(+), 20 deletions(-)
+ .../display/mediatek/mediatek,dp.yaml         | 101 ++++++++++++++++++
+ 1 file changed, 101 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
 
-diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
-index 947be761dfa4..86805d77cc86 100644
---- a/drivers/video/hdmi.c
-+++ b/drivers/video/hdmi.c
-@@ -21,6 +21,7 @@
-  * DEALINGS IN THE SOFTWARE.
-  */
- 
-+#include <drm/display/drm_dp.h>
- #include <linux/bitops.h>
- #include <linux/bug.h>
- #include <linux/errno.h>
-@@ -381,12 +382,34 @@ static int hdmi_audio_infoframe_check_only(const struct hdmi_audio_infoframe *fr
-  *
-  * Returns 0 on success or a negative error code on failure.
-  */
--int hdmi_audio_infoframe_check(struct hdmi_audio_infoframe *frame)
-+int hdmi_audio_infoframe_check(const struct hdmi_audio_infoframe *frame)
- {
- 	return hdmi_audio_infoframe_check_only(frame);
- }
- EXPORT_SYMBOL(hdmi_audio_infoframe_check);
- 
-+static void
-+hdmi_audio_infoframe_pack_payload(const struct hdmi_audio_infoframe *frame,
-+				  u8 *buffer)
-+{
-+	u8 channels;
+diff --git a/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+new file mode 100644
+index 000000000000..10f50a0dcf49
+--- /dev/null
++++ b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+@@ -0,0 +1,101 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/display/mediatek/mediatek,dp.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+	if (frame->channels >= 2)
-+		channels = frame->channels - 1;
-+	else
-+		channels = 0;
++title: MediaTek Display Port Controller
 +
-+	buffer[0] = ((frame->coding_type & 0xf) << 4) | (channels & 0x7);
-+	buffer[1] = ((frame->sample_frequency & 0x7) << 2) |
-+		 (frame->sample_size & 0x3);
-+	buffer[2] = frame->coding_type_ext & 0x1f;
-+	buffer[3] = frame->channel_allocation;
-+	buffer[4] = (frame->level_shift_value & 0xf) << 3;
++maintainers:
++  - Chun-Kuang Hu <chunkuang.hu@kernel.org>
++  - Jitao shi <jitao.shi@mediatek.com>
 +
-+	if (frame->downmix_inhibit)
-+		buffer[4] |= BIT(7);
-+}
++description: |
++  Device tree bindings for the MediaTek display port and
++  embedded display port controller present on some MediaTek SoCs.
 +
- /**
-  * hdmi_audio_infoframe_pack_only() - write HDMI audio infoframe to binary buffer
-  * @frame: HDMI audio infoframe
-@@ -404,7 +427,6 @@ EXPORT_SYMBOL(hdmi_audio_infoframe_check);
- ssize_t hdmi_audio_infoframe_pack_only(const struct hdmi_audio_infoframe *frame,
- 				       void *buffer, size_t size)
- {
--	unsigned char channels;
- 	u8 *ptr = buffer;
- 	size_t length;
- 	int ret;
-@@ -420,28 +442,13 @@ ssize_t hdmi_audio_infoframe_pack_only(const struct hdmi_audio_infoframe *frame,
- 
- 	memset(buffer, 0, size);
- 
--	if (frame->channels >= 2)
--		channels = frame->channels - 1;
--	else
--		channels = 0;
--
- 	ptr[0] = frame->type;
- 	ptr[1] = frame->version;
- 	ptr[2] = frame->length;
- 	ptr[3] = 0; /* checksum */
- 
--	/* start infoframe payload */
--	ptr += HDMI_INFOFRAME_HEADER_SIZE;
--
--	ptr[0] = ((frame->coding_type & 0xf) << 4) | (channels & 0x7);
--	ptr[1] = ((frame->sample_frequency & 0x7) << 2) |
--		 (frame->sample_size & 0x3);
--	ptr[2] = frame->coding_type_ext & 0x1f;
--	ptr[3] = frame->channel_allocation;
--	ptr[4] = (frame->level_shift_value & 0xf) << 3;
--
--	if (frame->downmix_inhibit)
--		ptr[4] |= BIT(7);
-+	hdmi_audio_infoframe_pack_payload(frame,
-+					  ptr + HDMI_INFOFRAME_HEADER_SIZE);
- 
- 	hdmi_infoframe_set_checksum(buffer, length);
- 
-@@ -479,6 +486,43 @@ ssize_t hdmi_audio_infoframe_pack(struct hdmi_audio_infoframe *frame,
- }
- EXPORT_SYMBOL(hdmi_audio_infoframe_pack);
- 
-+/**
-+ * hdmi_audio_infoframe_pack_for_dp - Pack a HDMI Audio infoframe for DisplayPort
-+ *
-+ * @frame:      HDMI Audio infoframe
-+ * @sdp:        secondary data packet for display port. This is filled with the
-+ * appropriate: data
-+ * @dp_version: Display Port version to be encoded in the header
-+ *
-+ * Packs a HDMI Audio Infoframe to be sent over Display Port. This function
-+ * fills the secondary data packet to be used for Display Port.
-+ *
-+ * Return: Number of total written bytes or a negative errno on failure.
-+ */
-+ssize_t
-+hdmi_audio_infoframe_pack_for_dp(const struct hdmi_audio_infoframe *frame,
-+				 struct dp_sdp *sdp, u8 dp_version)
-+{
-+	int ret;
++properties:
++  compatible:
++    enum:
++      - mediatek,mt8195-dp-tx
++      - mediatek,mt8195-edp-tx
 +
-+	ret = hdmi_audio_infoframe_check(frame);
-+	if (ret)
-+		return ret;
++  reg:
++    maxItems: 1
 +
-+	memset(sdp->db, 0, sizeof(sdp->db));
++  nvmem-cells:
++    maxItems: 1
++    description: efuse data for display port calibration
 +
-+	/* Secondary-data packet header */
-+	sdp->sdp_header.HB0 = 0;
-+	sdp->sdp_header.HB1 = frame->type;
-+	sdp->sdp_header.HB2 = DP_SDP_AUDIO_INFOFRAME_HB2;
-+	sdp->sdp_header.HB3 = (dp_version & 0x3f) << 2;
++  nvmem-cell-names:
++    const: dp_calibration_data
 +
-+	hdmi_audio_infoframe_pack_payload(frame, sdp->db);
++  power-domains:
++    maxItems: 1
 +
-+	return frame->length + 4;
-+}
-+EXPORT_SYMBOL(hdmi_audio_infoframe_pack_for_dp);
++  interrupts:
++    maxItems: 1
 +
- /**
-  * hdmi_vendor_infoframe_init() - initialize an HDMI vendor infoframe
-  * @frame: HDMI vendor infoframe
-diff --git a/include/drm/display/drm_dp.h b/include/drm/display/drm_dp.h
-index 9e3aff7e68bb..6c0871164771 100644
---- a/include/drm/display/drm_dp.h
-+++ b/include/drm/display/drm_dp.h
-@@ -1536,6 +1536,8 @@ enum drm_dp_phy {
- #define DP_SDP_VSC_EXT_CEA		0x21 /* DP 1.4 */
- /* 0x80+ CEA-861 infoframe types */
- 
-+#define DP_SDP_AUDIO_INFOFRAME_HB2	0x1b
++  ports:
++    $ref: /schemas/graph.yaml#/properties/ports
++    properties:
++      port@0:
++        $ref: /schemas/graph.yaml#/properties/port
++        description: Input endpoint of the controller, usually dp_intf
 +
- /**
-  * struct dp_sdp_header - DP secondary data packet header
-  * @HB0: Secondary Data Packet ID
-diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
-index c8ec982ff498..2f4dcc8d060e 100644
---- a/include/linux/hdmi.h
-+++ b/include/linux/hdmi.h
-@@ -336,7 +336,12 @@ ssize_t hdmi_audio_infoframe_pack(struct hdmi_audio_infoframe *frame,
- 				  void *buffer, size_t size);
- ssize_t hdmi_audio_infoframe_pack_only(const struct hdmi_audio_infoframe *frame,
- 				       void *buffer, size_t size);
--int hdmi_audio_infoframe_check(struct hdmi_audio_infoframe *frame);
-+int hdmi_audio_infoframe_check(const struct hdmi_audio_infoframe *frame);
++      port@1:
++        $ref: /schemas/graph.yaml#/properties/port
++        description: Output endpoint of the controller
 +
-+struct dp_sdp;
-+ssize_t
-+hdmi_audio_infoframe_pack_for_dp(const struct hdmi_audio_infoframe *frame,
-+				 struct dp_sdp *sdp, u8 dp_version);
- 
- enum hdmi_3d_structure {
- 	HDMI_3D_STRUCTURE_INVALID = -1,
++    required:
++      - port@0
++      - port@1
++
++  max-lanes:
++    maxItems: 1
++    description: maximum number of lanes supported by the hardware.
++
++  max-linkrate:
++    maxItems: 1
++    description: maximum link rate supported by the hardware and unit is MHz.
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - ports
++  - max-lanes
++  - max-linkrate
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    #include <dt-bindings/power/mt8195-power.h>
++    dp_tx@1c600000 {
++        compatible = "mediatek,mt8195-dp-tx";
++        reg = <0x1c600000 0x8000>;
++        power-domains = <&spm MT8195_POWER_DOMAIN_DP_TX>;
++        interrupts = <GIC_SPI 458 IRQ_TYPE_LEVEL_HIGH 0>;
++        max-lanes = /bits/ 8 <4>;
++        max-linkrate = /bits/ 16 <8100>;
++
++        ports {
++            #address-cells = <1>;
++            #size-cells = <0>;
++
++            port@0 {
++                reg = <0>;
++                edp_in: endpoint {
++                    remote-endpoint = <&dp_intf0_out>;
++                };
++            };
++            port@1 {
++                reg = <1>;
++                edp_out: endpoint {
++                    remote-endpoint = <&panel_in>;
++                };
++            };
++        };
++    };
 -- 
 2.18.0
 

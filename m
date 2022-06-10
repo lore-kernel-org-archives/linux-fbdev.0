@@ -2,42 +2,42 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DBB3CCA47B
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 10:58:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11935C43334
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 10:58:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349248AbiFJK6H (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Jun 2022 06:58:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48314 "EHLO
+        id S1345297AbiFJK6I (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 10 Jun 2022 06:58:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48296 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243002AbiFJK5s (ORCPT
+        with ESMTP id S1345195AbiFJK5s (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Fri, 10 Jun 2022 06:57:48 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C05022235B;
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D0E1228493;
         Fri, 10 Jun 2022 03:55:34 -0700 (PDT)
-X-UUID: 9ba8e6c28de94a9398723b596a61c63e-20220610
+X-UUID: 60cc67710e1d4d6bb4060d3b5884e553-20220610
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:4bb690cb-1a0a-4bcc-89f8-cfb41c14936c,OB:0,LO
-        B:20,IP:0,URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,RULE:Release_Ham,A
-        CTION:release,TS:90
-X-CID-INFO: VERSION:1.1.5,REQID:4bb690cb-1a0a-4bcc-89f8-cfb41c14936c,OB:0,LOB:
-        20,IP:0,URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,RULE:Spam_GS981B3D,A
-        CTION:quarantine,TS:90
-X-CID-META: VersionHash:2a19b09,CLOUDID:8e2ff27e-c8dc-403a-96e8-6237210dceee,C
-        OID:FAIL,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,Fil
-        e:nil,QS:0,BEC:nil
-X-UUID: 9ba8e6c28de94a9398723b596a61c63e-20220610
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
+X-CID-O-INFO: VERSION:1.1.5,REQID:da89de79-f5c6-400f-b7ce-2efd1424d309,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,RULE:Release_Ham,AC
+        TION:release,TS:90
+X-CID-INFO: VERSION:1.1.5,REQID:da89de79-f5c6-400f-b7ce-2efd1424d309,OB:0,LOB:
+        0,IP:0,URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,RULE:Spam_GS981B3D,AC
+        TION:quarantine,TS:90
+X-CID-META: VersionHash:2a19b09,CLOUDID:56d767e5-2ba2-4dc1-b6c5-11feb6c769e0,C
+        OID:6d508ab9e773,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:0,File:nil,QS:0,BEC:nil
+X-UUID: 60cc67710e1d4d6bb4060d3b5884e553-20220610
+Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw02.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1973906713; Fri, 10 Jun 2022 18:55:24 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 769038928; Fri, 10 Jun 2022 18:55:26 +0800
 Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
  mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Fri, 10 Jun 2022 18:55:23 +0800
+ Fri, 10 Jun 2022 18:55:24 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
  mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.792.3 via Frontend Transport; Fri, 10 Jun 2022 18:55:23 +0800
+ 15.2.792.3 via Frontend Transport; Fri, 10 Jun 2022 18:55:24 +0800
 From:   Bo-Chen Chen <rex-bc.chen@mediatek.com>
 To:     <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
         <daniel@ffwll.ch>, <robh+dt@kernel.org>,
@@ -54,10 +54,12 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
         Bo-Chen Chen <rex-bc.chen@mediatek.com>
-Subject: [PATCH v11 00/10] drm/mediatek: Add MT8195 DisplayPort driver
-Date:   Fri, 10 Jun 2022 18:55:12 +0800
-Message-ID: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
+Subject: [PATCH v11 10/10] drm/mediatek: fix no audio when resolution change
+Date:   Fri, 10 Jun 2022 18:55:22 +0800
+Message-ID: <20220610105522.13449-11-rex-bc.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
+References: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-MTK:  N
@@ -65,116 +67,127 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This patch is separate from v10 which is including dp driver, phy driver
-and dpintf driver. This series is only contained the DisplayPort driver.
+When switching resolutions, config the audio setting with the
+previous audio parameters.
 
-This series can be tested using 5.19-rc kernel and I test it in MT8195
-Tomato Chromebook. Modetest these modes:
+Signed-off-by: Jitao Shi <jitao.shi@mediatek.com>
+Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+---
+ drivers/gpu/drm/mediatek/mtk_dp.c | 51 ++++++++++---------------------
+ 1 file changed, 16 insertions(+), 35 deletions(-)
 
-for eDP:
-  #0 2256x1504 60.00 2256 2304 2336 2536 1504 1507 1513 1549 235690 flags: phsync, nvsync; type: preferred, driver
-  #1 2256x1504 48.00 2256 2304 2336 2536 1504 1507 1513 1549 188550 flags: phsync, nvsync; type: driver
-
-for DP:
-  #0 1920x1080 60.00 1920 2008 2052 2200 1080 1084 1089 1125 148500 flags: phsync, pvsync; type: preferred, driver
-  #1 1920x1080 59.94 1920 2008 2052 2200 1080 1084 1089 1125 148352 flags: phsync, pvsync; type: driver
-  #2 1920x1080 50.00 1920 2448 2492 2640 1080 1084 1089 1125 148500 flags: phsync, pvsync; type: driver
-  #3 1680x1050 59.95 1680 1784 1960 2240 1050 1053 1059 1089 146250 flags: nhsync, pvsync; type: driver
-  #4 1600x900 60.00 1600 1624 1704 1800 900 901 904 1000 108000 flags: phsync, pvsync; type: driver
-  #5 1280x1024 60.02 1280 1328 1440 1688 1024 1025 1028 1066 108000 flags: phsync, pvsync; type: driver
-  #6 1280x800 59.81 1280 1352 1480 1680 800 803 809 831 83500 flags: nhsync, pvsync; type: driver
-  #7 1280x720 60.00 1280 1390 1430 1650 720 725 730 750 74250 flags: phsync, pvsync; type: driver
-  #8 1280x720 59.94 1280 1390 1430 1650 720 725 730 750 74176 flags: phsync, pvsync; type: driver
-  #9 1280x720 50.00 1280 1720 1760 1980 720 725 730 750 74250 flags: phsync, pvsync; type: driver
-  #10 1024x768 60.00 1024 1048 1184 1344 768 771 777 806 65000 flags: nhsync, nvsync; type: driver
-  #11 800x600 60.32 800 840 968 1056 600 601 605 628 40000 flags: phsync, pvsync; type: driver
-  #12 720x576 50.00 720 732 796 864 576 581 586 625 27000 flags: nhsync, nvsync; type: driver
-  #13 720x480 60.00 720 736 798 858 480 489 495 525 27027 flags: nhsync, nvsync; type: driver
-  #14 720x480 59.94 720 736 798 858 480 489 495 525 27000 flags: nhsync, nvsync; type: driver
-  #15 640x480 60.00 640 656 752 800 480 490 492 525 25200 flags: nhsync, nvsync; type: driver
-  #16 640x480 59.94 640 656 752 800 480 490 492 525 25175 flags: nhsync, nvsync; type: driver
-
-Changes from v10 for dp driver:
-- Drop return value for write registers to make code more clear.
-- Refine training state.
-- Add property for dt-binding.
-- Add new bug fix patches for audio and suspend.
-- Rebase to v5.19-rc1.
-
-Changes from v9:
-- The DP-Phy is back to being a child device of the DP driver (as in v8)
-- hot plug detection has been added back to Embedded Display Port... as
-  after discussing with mediatek experts, this is needed eventhough the
-  Embedded Display port is not un-pluggable
-- rebased on linux-next
-- simplified/split train_handler function, as suggested by Rex
-- added comments on the sleep/delays present in the code
-- removed previous patch introducing retries when receiving AUX_DEFER as
-  this is already handled in the dp_aux framework
-- added max-lane and max-linkrate device tree u8 properties instead of
-  hardcoded #defines
-
-Things that are in my todolist for v11:
-- retrieve CK/DE support from panel driver instead of hardcoding it into
-  the dpi driver
-- refcount the dp driver "enabled" status for "future proofing"
-- review the drm_dp_helpers for features/functions that have been
-  re-implemented in the mediatek dp drivers
-
-Older revisions:
-RFC - https://lore.kernel.org/linux-mediatek/20210816192523.1739365-1-msp@baylibre.com/
-v1  - https://lore.kernel.org/linux-mediatek/20210906193529.718845-1-msp@baylibre.com/
-v2  - https://lore.kernel.org/linux-mediatek/20210920084424.231825-1-msp@baylibre.com/
-v3  - https://lore.kernel.org/linux-mediatek/20211001094443.2770169-1-msp@baylibre.com/
-v4  - https://lore.kernel.org/linux-mediatek/20211011094624.3416029-1-msp@baylibre.com/
-v5  - https://lore.kernel.org/all/20211021092707.3562523-1-msp@baylibre.com/
-v6  - https://lore.kernel.org/linux-mediatek/20211110130623.20553-1-granquet@baylibre.com/
-v7  - https://lore.kernel.org/linux-mediatek/20211217150854.2081-1-granquet@baylibre.com/
-v8  - https://lore.kernel.org/linux-mediatek/20220218145437.18563-1-granquet@baylibre.com/
-v9  - https://lore.kernel.org/all/20220327223927.20848-1-granquet@baylibre.com/
-v10 - https://lore.kernel.org/all/20220523104758.29531-1-granquet@baylibre.com/
-
-Functional dependencies are:
-- Add Mediatek Soc DRM (vdosys0) support for mt8195
-  https://lore.kernel.org/linux-mediatek/20220419094143.9561-2-jason-jh.lin@mediatek.com/
-- Add MediaTek SoC DRM (vdosys1) support for mt8195
-  https://lore.kernel.org/linux-mediatek/20220512053128.31415-1-nancy.lin@mediatek.com/
-
-Bo-Chen Chen (2):
-  drm/mediatek: set monitor to DP_SET_POWER_D3 to avoid garbage
-  drm/mediatek: fix no audio when resolution change
-
-Guillaume Ranquet (4):
-  drm/edid: Convert cea_sad helper struct to kernelDoc
-  drm/edid: Add cea_sad helpers for freq/length
-  drm/mediatek: Add MT8195 External DisplayPort support
-  drm/mediatek: DP audio support for MT8195
-
-Jitao Shi (1):
-  drm/mediatek: add hpd debounce
-
-Markus Schneider-Pargmann (3):
-  dt-bindings: mediatek,dp: Add Display Port binding
-  video/hdmi: Add audio_infoframe packing for DP
-  drm/mediatek: Add MT8195 Embedded DisplayPort driver
-
- .../display/mediatek/mediatek,dp.yaml         |  101 +
- drivers/gpu/drm/drm_edid.c                    |   73 +
- drivers/gpu/drm/mediatek/Kconfig              |    8 +
- drivers/gpu/drm/mediatek/Makefile             |    2 +
- drivers/gpu/drm/mediatek/mtk_dp.c             | 3078 +++++++++++++++++
- drivers/gpu/drm/mediatek/mtk_dp_reg.h         |  545 +++
- drivers/gpu/drm/mediatek/mtk_drm_drv.c        |    3 +
- drivers/gpu/drm/mediatek/mtk_drm_drv.h        |    3 +
- drivers/video/hdmi.c                          |   82 +-
- include/drm/display/drm_dp.h                  |    2 +
- include/drm/drm_edid.h                        |   26 +-
- include/linux/hdmi.h                          |    7 +-
- 12 files changed, 3907 insertions(+), 23 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
- create mode 100644 drivers/gpu/drm/mediatek/mtk_dp.c
- create mode 100644 drivers/gpu/drm/mediatek/mtk_dp_reg.h
-
+diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c b/drivers/gpu/drm/mediatek/mtk_dp.c
+index 35712ee6a04e..d4e4ceab7b2f 100644
+--- a/drivers/gpu/drm/mediatek/mtk_dp.c
++++ b/drivers/gpu/drm/mediatek/mtk_dp.c
+@@ -119,7 +119,7 @@ struct mtk_dp_audio_cfg {
+ struct mtk_dp_info {
+ 	u32 depth;
+ 	enum dp_pixelformat format;
+-	struct mtk_dp_audio_cfg audio_caps;
++	struct mtk_dp_audio_cfg audio_cur_cfg;
+ 	struct mtk_dp_timings timings;
+ };
+ 
+@@ -1966,8 +1966,6 @@ static bool mtk_dp_edid_parse_audio_capabilities(struct mtk_dp *mtk_dp,
+ 						 struct mtk_dp_audio_cfg *cfg)
+ {
+ 	struct cea_sad *sads;
+-	int sad_count;
+-	int i;
+ 	bool ret = false;
+ 
+ 	if (mtk_dp_is_edp(mtk_dp))
+@@ -1979,33 +1977,13 @@ static bool mtk_dp_edid_parse_audio_capabilities(struct mtk_dp *mtk_dp,
+ 		dev_err(mtk_dp->dev, "EDID not found!\n");
+ 		return false;
+ 	}
+-	sad_count = drm_edid_to_sad(mtk_dp->edid, &sads);
+-	mutex_unlock(&mtk_dp->edid_lock);
+ 
+-	if (sad_count <= 0) {
++	ret = drm_edid_to_sad(mtk_dp->edid, &sads);
++	mutex_unlock(&mtk_dp->edid_lock);
++	if (ret <= 0) {
+ 		drm_info(mtk_dp->drm_dev, "The SADs is NULL\n");
+ 		return false;
+ 	}
+-
+-	for (i = 0; i < sad_count; i++) {
+-		int sample_rate, word_length;
+-
+-		/* Only PCM supported at the moment */
+-		if (sads[i].format != HDMI_AUDIO_CODING_TYPE_PCM)
+-			continue;
+-
+-		sample_rate = drm_cea_sad_get_sample_rate(&sads[i]);
+-		word_length =
+-			drm_cea_sad_get_uncompressed_word_length(&sads[i]);
+-		if (sample_rate <= 0 || word_length <= 0)
+-			continue;
+-
+-		cfg->channels = sads[i].channels;
+-		cfg->word_length_bits = word_length;
+-		cfg->sample_rate = sample_rate;
+-		ret = true;
+-		break;
+-	}
+ 	kfree(sads);
+ 
+ 	return ret;
+@@ -2175,14 +2153,15 @@ static int mtk_dp_training(struct mtk_dp *mtk_dp)
+ 
+ 			mtk_dp->audio_enable =
+ 				mtk_dp_edid_parse_audio_capabilities(mtk_dp,
+-								     &mtk_dp->info.audio_caps);
++								     &mtk_dp->info.audio_cur_cfg);
+ 
+ 			if (mtk_dp->audio_enable) {
+-				mtk_dp_audio_setup(mtk_dp, &mtk_dp->info.audio_caps);
++				mtk_dp_audio_setup(mtk_dp,
++						   &mtk_dp->info.audio_cur_cfg);
+ 				mtk_dp_audio_mute(mtk_dp, false);
+ 			} else {
+-				memset(&mtk_dp->info.audio_caps, 0,
+-				       sizeof(mtk_dp->info.audio_caps));
++				memset(&mtk_dp->info.audio_cur_cfg, 0,
++				       sizeof(mtk_dp->info.audio_cur_cfg));
+ 			}
+ 
+ 			training_done = true;
+@@ -2624,6 +2603,9 @@ static void mtk_dp_bridge_atomic_disable(struct drm_bridge *bridge,
+ 	if (mtk_dp_plug_state(mtk_dp)) {
+ 		drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER, DP_SET_POWER_D3);
+ 		usleep_range(2000, 3000);
++	} else {
++		memset(&mtk_dp->info.audio_cur_cfg, 0,
++		       sizeof(mtk_dp->info.audio_cur_cfg));
+ 	}
+ 
+ 	mtk_dp_video_mute(mtk_dp, true);
+@@ -2834,18 +2816,17 @@ static int mtk_dp_audio_hw_params(struct device *dev, void *data,
+ 				  struct hdmi_codec_params *params)
+ {
+ 	struct mtk_dp *mtk_dp = dev_get_drvdata(dev);
+-	struct mtk_dp_audio_cfg cfg;
+ 
+ 	if (!mtk_dp->enabled) {
+ 		pr_err("%s, DP is not ready!\n", __func__);
+ 		return -ENODEV;
+ 	}
+ 
+-	cfg.channels = params->cea.channels;
+-	cfg.sample_rate = params->sample_rate;
+-	cfg.word_length_bits = 24;
++	mtk_dp->info.audio_cur_cfg.channels = params->cea.channels;
++	mtk_dp->info.audio_cur_cfg.sample_rate = params->sample_rate;
++	mtk_dp->info.audio_cur_cfg.word_length_bits = 24;
+ 
+-	mtk_dp_audio_setup(mtk_dp, &cfg);
++	mtk_dp_audio_setup(mtk_dp, &mtk_dp->info.audio_cur_cfg);
+ 
+ 	return 0;
+ }
 -- 
 2.18.0
 

@@ -2,41 +2,41 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83402C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 02:29:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0ED0C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 06:51:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237375AbiFJC3s (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Jun 2022 22:29:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53648 "EHLO
+        id S243669AbiFJGvP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 10 Jun 2022 02:51:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60338 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236737AbiFJC3s (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Jun 2022 22:29:48 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6FBD74161F;
-        Thu,  9 Jun 2022 19:29:46 -0700 (PDT)
-X-UUID: d5575e0451fc4c5e9796486f5c70b842-20220610
+        with ESMTP id S242970AbiFJGvO (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 10 Jun 2022 02:51:14 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A12041026;
+        Thu,  9 Jun 2022 23:51:06 -0700 (PDT)
+X-UUID: 37e00a594830492caea8424b78fd9833-20220610
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:ae7b9115-0a13-4a52-8fc8-fbb8df3819b7,OB:0,LO
-        B:0,IP:0,URL:25,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACT
-        ION:release,TS:25
-X-CID-META: VersionHash:2a19b09,CLOUDID:302dde7e-c8dc-403a-96e8-6237210dceee,C
+X-CID-O-INFO: VERSION:1.1.5,REQID:686e8da0-cc57-4f90-837c-3a3c94e3f6b5,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:2a19b09,CLOUDID:6cf45de5-2ba2-4dc1-b6c5-11feb6c769e0,C
         OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
         ,QS:0,BEC:nil
-X-UUID: d5575e0451fc4c5e9796486f5c70b842-20220610
-Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw01.mediatek.com
+X-UUID: 37e00a594830492caea8424b78fd9833-20220610
+Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw02.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1420429129; Fri, 10 Jun 2022 10:29:39 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 321019867; Fri, 10 Jun 2022 14:51:01 +0800
 Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
- mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Fri, 10 Jun 2022 10:29:30 +0800
+ Fri, 10 Jun 2022 14:50:59 +0800
 Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Fri, 10 Jun 2022 10:29:28 +0800
-Message-ID: <92f634007cbdba37bf7c672e03814bdad53fa4de.camel@mediatek.com>
-Subject: Re: [PATCH v10 02/21] dt-bindings: mediatek,dp: Add Display Port
- binding
+ Transport; Fri, 10 Jun 2022 14:50:59 +0800
+Message-ID: <ad31ed6f7a70babddbb2fa859b1b9c8199705f70.camel@mediatek.com>
+Subject: Re: [PATCH v10 04/21] drm/edid: Add cea_sad helpers for freq/length
 From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
 To:     AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@collabora.com>,
@@ -60,11 +60,11 @@ CC:     Markus Schneider-Pargmann <msp@baylibre.com>,
         <linux-kernel@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-phy@lists.infradead.org>, <linux-fbdev@vger.kernel.org>
-Date:   Fri, 10 Jun 2022 10:29:27 +0800
-In-Reply-To: <f2856b8f-9465-2638-aabf-d2dda842766b@collabora.com>
+Date:   Fri, 10 Jun 2022 14:50:59 +0800
+In-Reply-To: <62abad94-fe4a-2505-506d-6e4bc6b425ff@collabora.com>
 References: <20220523104758.29531-1-granquet@baylibre.com>
-         <20220523104758.29531-3-granquet@baylibre.com>
-         <f2856b8f-9465-2638-aabf-d2dda842766b@collabora.com>
+         <20220523104758.29531-5-granquet@baylibre.com>
+         <62abad94-fe4a-2505-506d-6e4bc6b425ff@collabora.com>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
@@ -74,192 +74,206 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 2022-05-25 at 17:30 +0200, AngeloGioacchino Del Regno wrote:
+On Wed, 2022-05-25 at 14:26 +0200, AngeloGioacchino Del Regno wrote:
 > Il 23/05/22 12:47, Guillaume Ranquet ha scritto:
-> > From: Markus Schneider-Pargmann <msp@baylibre.com>
+> > This patch adds two helper functions that extract the frequency and
+> > word
+> > length from a struct cea_sad.
 > > 
-> > This controller is present on several mediatek hardware. Currently
-> > mt8195 and mt8395 have this controller without a functional
-> > difference,
-> > so only one compatible field is added.
-> > 
-> > The controller can have two forms, as a normal display port and as
-> > an
-> > embedded display port.
+> > For these helper functions new defines are added that help
+> > translate the
+> > 'freq' and 'byte2' fields into real numbers.
 > > 
 > > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
 > > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
 > > ---
-> >   .../display/mediatek/mediatek,dp.yaml         | 99
-> > +++++++++++++++++++
-> >   1 file changed, 99 insertions(+)
-> >   create mode 100644
-> > Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+> >   drivers/gpu/drm/drm_edid.c | 74
+> > ++++++++++++++++++++++++++++++++++++++
+> >   include/drm/drm_edid.h     | 14 ++++++++
+> >   2 files changed, 88 insertions(+)
 > > 
-> > diff --git
-> > a/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.ya
-> > ml
-> > b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.ya
-> > ml
-> > new file mode 100644
-> > index 000000000000..36ae0a6df299
-> > --- /dev/null
-> > +++
-> > b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.ya
-> > ml
-> > @@ -0,0 +1,99 @@
-> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > +%YAML 1.2
-> > +---
-> > +$id: 
-> > http://devicetree.org/schemas/display/mediatek/mediatek,dp.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > diff --git a/drivers/gpu/drm/drm_edid.c
+> > b/drivers/gpu/drm/drm_edid.c
+> > index 561f53831e29..61ef1b1c972c 100644
+> > --- a/drivers/gpu/drm/drm_edid.c
+> > +++ b/drivers/gpu/drm/drm_edid.c
+> > @@ -4758,6 +4758,80 @@ int drm_edid_to_speaker_allocation(struct
+> > edid *edid, u8 **sadb)
+> >   }
+> >   EXPORT_SYMBOL(drm_edid_to_speaker_allocation);
+> >   
+> > +/**
+> > + * drm_cea_sad_get_sample_rate - Extract the sample rate from
+> > cea_sad
+> > + * @sad: Pointer to the cea_sad struct
+> > + *
+> > + * Extracts the cea_sad frequency field and returns the sample
+> > rate in Hz.
+> > + *
+> > + * Return: Sample rate in Hz or a negative errno if parsing
+> > failed.
+> > + */
+> > +int drm_cea_sad_get_sample_rate(const struct cea_sad *sad)
+> > +{
+> > +	switch (sad->freq) {
+> > +	case DRM_CEA_SAD_FREQ_32KHZ:
+> > +		return 32000;
+> > +	case DRM_CEA_SAD_FREQ_44KHZ:
+> > +		return 44100;
+> > +	case DRM_CEA_SAD_FREQ_48KHZ:
+> > +		return 48000;
+> > +	case DRM_CEA_SAD_FREQ_88KHZ:
+> > +		return 88200;
+> > +	case DRM_CEA_SAD_FREQ_96KHZ:
+> > +		return 96000;
+> > +	case DRM_CEA_SAD_FREQ_176KHZ:
+> > +		return 176400;
+> > +	case DRM_CEA_SAD_FREQ_192KHZ:
+> > +		return 192000;
+> > +	default:
+> > +		return -EINVAL;
+> > +	}
+> > +}
+> > +EXPORT_SYMBOL(drm_cea_sad_get_sample_rate);
 > > +
-> > +title: MediaTek Display Port Controller
-> > +
-> > +maintainers:
-> > +  - CK Hu <ck.hu@mediatek.com>
-> > +  - Jitao shi <jitao.shi@mediatek.com>
-> > +
-> > +description: |
-> > +  Device tree bindings for the MediaTek (embedded) Display Port
-> > controller
-> > +  present on some MediaTek SoCs.
-> > +
-> > +properties:
-> > +  compatible:
-> > +    enum:
-> > +      - mediatek,mt8195-dp-tx
-> > +
-> > +  reg:
-> > +    maxItems: 1
-> > +
-> > +  interrupts:
-> > +    maxItems: 1
-> > +
-> > +  clocks:
-> > +    items:
-> > +      - description: faxi clock
-> > +
-> > +  clock-names:
-> > +    items:
-> > +      - const: faxi
-> > +
-> > +  power-domains:
-> > +    maxItems: 1
-> > +
-> > +  ports:
-> > +    $ref: /schemas/graph.yaml#/properties/ports
-> > +    properties:
-> > +      port@0:
-> > +        $ref: /schemas/graph.yaml#/properties/port
-> > +        description: Input endpoint of the controller, usually
-> > dp_intf
-> > +
-> > +      port@1:
-> > +        $ref: /schemas/graph.yaml#/properties/port
-> > +        description: Output endpoint of the controller
-> > +
+> > +static bool drm_cea_sad_is_uncompressed(const struct cea_sad *sad)
+> > +{
+> > +	switch (sad->format) {
+> > +	case HDMI_AUDIO_CODING_TYPE_STREAM:
 > 
-> You should add port@0 (and port@1, probably) as required... with what
-> you've done
-> here, you're saying that "ports" is required, but you're allowing it
-> to be empty..
-> 
->    ports:
->      $ref: /schemas/graph.yaml#/properties/ports
->      properties:
->        port@0:
->          $ref: /schemas/graph.yaml#/properties/port
->          description: Input endpoint of the controller, usually
-> dp_intf
-> 
->        port@1:
->          $ref: /schemas/graph.yaml#/properties/port
->          description: Output endpoint of the controller
-> 
->      required:
->        - port@0
->        - port@1
-> 
-> ^^^ that's how it should look.
+> As far as I know, bit 0 is reserved, so HDMI_AUDIO_CODING_TYPE_STREAM
+> should
+> never occur here?
 > 
 
 Hello Angelo,
 
-ok, I will add this.
+because we do not know whether "HDMI_AUDIO_CODING_TYPE_STREAM" is
+compressed, we decide to change this function name to
+drm_cea_sad_is_pcm to prevent misunderstanding.
+For this, I will drop case HDMI_AUDIO_CODING_TYPE_STREAM
 
-> > +  max-lanes:
-> > +    maxItems: 1
-> > +    description: maximum number of lanes supported by the hardware
+> > +	case HDMI_AUDIO_CODING_TYPE_PCM:
+> > +		return true;
+> > +	default:
+> > +		return false;
+> > +	}
+> > +}
 > > +
-> > +  max-linkrate:
-> > +    maxItems: 1
-> > +    description: maximum link rate supported by the hardware
 > 
-> As you've put it (in the example below), the max-linkrate property
-> wants a value
-> that corresponds to what you find in the HW registers... this is
-> wrong.
+> Also, I think that implementing a
+> drm_cea_sad_get_compressed_max_bitrate()
+> function should be pretty straightforward... the spec says that this
+> is
+> 8 bits, byte 3 (your byte2) contains the max bitrate divided by 8kHz,
+> so to extract it, you read byte2 and multiply it by 8000Hz.
 > 
-> Devicetree bindings should be generic and devicetrees shouldn't have
-> hardware
-> specific bits inside, hence, please change this property to accept a
-> link rate
-> specified in Mbps and also specify that in the description.
+> /**
+>   * drm_cea_sad_get_compressed_max_bitrate - Extract maximum bitrate
+>   * @sad: Pointer to the cea_sad structure
+>   *
+>   * Extracts the cea_sad byte2 field and returns the maximum bit rate
+>   * of a compressed audio stream.
+>   *
+>   * Note: This function may only be called for compressed audio.
+>   *
+>   * Return: Maximum bitrate of compressed audio stream in bit/s or
+>   *         negative number for error
+>   */
+> int drm_cea_sad_get_compressed_max_bitrate(const struct cea_sad *sad)
+> {
+> 	if (drm_cea_sad_is_uncompressed(sad)) {
+> 		DRM_ERROR("Not supported: tried to get max bitrate for
+> uncompressed format: %u\n",
+> 			 sad->format);
+> 		return -EINVAL;
+> 	}
 > 
-> Thanks,
-> Angelo
+> 	return sad->byte2 * 8000;
+> }
 > 
 
-ok, I will change it to real linkrate value.
+After sync with Jitao, we think this function is not correct.
+refer to table of "Short Audio Descriptor" in [1].
+
+[1]:https://en.wikipedia.org/wiki/Extended_Display_Identification_Data
 
 BRs,
 Bo-Chen
-
+> > +/**
+> > + * drm_cea_sad_get_uncompressed_word_length - Extract word length
+> > + * @sad: Pointer to the cea_sad struct
+> > + *
+> > + * Extracts the cea_sad byte2 field and returns the word length
+> > for an
+> > + * uncompressed stream.
+> > + *
+> > + * Note: This function may only be called for uncompressed audio.
+> > + *
+> > + * Return: Word length in bits or a negative errno if parsing
+> > failed.
+> > + */
+> > +int drm_cea_sad_get_uncompressed_word_length(const struct cea_sad
+> > *sad)
+> > +{
+> > +	if (!drm_cea_sad_is_uncompressed(sad)) {
+> > +		DRM_WARN("Unable to get the uncompressed word length
+> > for a compressed format: %u\n",
+> > +			 sad->format);
+> > +		return -EINVAL;
+> > +	}
 > > +
-> > +required:
-> > +  - compatible
-> > +  - reg
-> > +  - interrupts
-> > +  - ports
-> > +  - max-lanes
-> > +  - max-linkrate
+> > +	switch (sad->byte2) {
+> > +	case DRM_CEA_SAD_UNCOMPRESSED_WORD_16BIT:
+> > +		return 16;
+> > +	case DRM_CEA_SAD_UNCOMPRESSED_WORD_20BIT:
+> > +		return 20;
+> > +	case DRM_CEA_SAD_UNCOMPRESSED_WORD_24BIT:
+> > +		return 24;
+> > +	default:
+> > +		return -EINVAL;
+> > +	}
+> > +}
+> > +EXPORT_SYMBOL(drm_cea_sad_get_uncompressed_word_length);
 > > +
-> > +additionalProperties: false
+> >   /**
+> >    * drm_av_sync_delay - compute the HDMI/DP sink audio-video sync
+> > delay
+> >    * @connector: connector associated with the HDMI/DP sink
+> > diff --git a/include/drm/drm_edid.h b/include/drm/drm_edid.h
+> > index 37c420423625..7a939cb95b38 100644
+> > --- a/include/drm/drm_edid.h
+> > +++ b/include/drm/drm_edid.h
+> > @@ -373,6 +373,18 @@ struct cea_sad {
+> >   	u8 byte2;
+> >   };
+> >   
+> > +#define DRM_CEA_SAD_FREQ_32KHZ  BIT(0)
+> > +#define DRM_CEA_SAD_FREQ_44KHZ  BIT(1)
+> > +#define DRM_CEA_SAD_FREQ_48KHZ  BIT(2)
+> > +#define DRM_CEA_SAD_FREQ_88KHZ  BIT(3)
+> > +#define DRM_CEA_SAD_FREQ_96KHZ  BIT(4)
+> > +#define DRM_CEA_SAD_FREQ_176KHZ BIT(5)
+> > +#define DRM_CEA_SAD_FREQ_192KHZ BIT(6)
 > > +
-> > +examples:
-> > +  - |
-> > +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> > +    #include <dt-bindings/power/mt8195-power.h>
-> > +    edp_tx: edp_tx@1c500000 {
-> > +        compatible = "mediatek,mt8195-dp-tx";
-> > +        reg = <0 0x1c500000 0 0x8000>;
-> > +        interrupts = <GIC_SPI 676 IRQ_TYPE_LEVEL_HIGH 0>;
-> > +        power-domains = <&spm MT8195_POWER_DOMAIN_EPD_TX>;
-> > +        pinctrl-names = "default";
-> > +        pinctrl-0 = <&edp_pin>;
-> > +        max-lanes = /bits/ 8 <4>;
-> > +        max-linkrate = /bits/ 8 <0x1e>;
+> > +#define DRM_CEA_SAD_UNCOMPRESSED_WORD_16BIT BIT(0)
+> > +#define DRM_CEA_SAD_UNCOMPRESSED_WORD_20BIT BIT(1)
+> > +#define DRM_CEA_SAD_UNCOMPRESSED_WORD_24BIT BIT(2)
 > > +
-> > +        ports {
-> > +            #address-cells = <1>;
-> > +            #size-cells = <0>;
-> > +
-> > +            port@0 {
-> > +                reg = <0>;
-> > +                edp_in: endpoint {
-> > +                    remote-endpoint = <&dp_intf0_out>;
-> > +                };
-> > +            };
-> > +            port@1 {
-> > +                reg = <1>;
-> > +                edp_out: endpoint {
-> > +                	remote-endpoint = <&panel_in>;
-> > +                };
-> > +            };
-> > +        };
-> > +    };
+> >   struct drm_encoder;
+> >   struct drm_connector;
+> >   struct drm_connector_state;
+> > @@ -380,6 +392,8 @@ struct drm_display_mode;
+> >   
+> >   int drm_edid_to_sad(struct edid *edid, struct cea_sad **sads);
+> >   int drm_edid_to_speaker_allocation(struct edid *edid, u8 **sadb);
+> > +int drm_cea_sad_get_sample_rate(const struct cea_sad *sad);
+> > +int drm_cea_sad_get_uncompressed_word_length(const struct cea_sad
+> > *sad);
+> >   int drm_av_sync_delay(struct drm_connector *connector,
+> >   		      const struct drm_display_mode *mode);
+> >   
+> 
 > 
 > _______________________________________________
 > linux-arm-kernel mailing list

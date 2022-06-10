@@ -2,95 +2,108 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ACEACC43334
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 10:58:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7144CCA47C
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 13:12:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349324AbiFJK6R (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Jun 2022 06:58:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38884 "EHLO
+        id S1347152AbiFJNM5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 10 Jun 2022 09:12:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48002 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349263AbiFJK5n (ORCPT
+        with ESMTP id S1343655AbiFJNMt (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Jun 2022 06:57:43 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 79C7D21D49C;
-        Fri, 10 Jun 2022 03:55:32 -0700 (PDT)
-X-UUID: 4e0e668297ee496db54569191e6f5c45-20220610
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:0641574a-661b-4f79-b635-5dcdd099059b,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,RULE:Release_Ham,AC
-        TION:release,TS:90
-X-CID-INFO: VERSION:1.1.5,REQID:0641574a-661b-4f79-b635-5dcdd099059b,OB:0,LOB:
-        0,IP:0,URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,RULE:Spam_GS981B3D,AC
-        TION:quarantine,TS:90
-X-CID-META: VersionHash:2a19b09,CLOUDID:39d767e5-2ba2-4dc1-b6c5-11feb6c769e0,C
-        OID:f8b2a5cf3420,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
-        RL:0,File:nil,QS:0,BEC:nil
-X-UUID: 4e0e668297ee496db54569191e6f5c45-20220610
-Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw01.mediatek.com
-        (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 2104911699; Fri, 10 Jun 2022 18:55:26 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Fri, 10 Jun 2022 18:55:24 +0800
-Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
- mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.792.3 via Frontend Transport; Fri, 10 Jun 2022 18:55:24 +0800
-From:   Bo-Chen Chen <rex-bc.chen@mediatek.com>
-To:     <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
-        <daniel@ffwll.ch>, <robh+dt@kernel.org>,
-        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
-        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
-        <airlied@linux.ie>
-CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
-        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
-        <angelogioacchino.delregno@collabora.com>, <ck.hu@mediatek.com>,
-        <dri-devel@lists.freedesktop.org>,
-        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-fbdev@vger.kernel.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
-        Bo-Chen Chen <rex-bc.chen@mediatek.com>
-Subject: [PATCH v11 08/10] drm/mediatek: set monitor to DP_SET_POWER_D3 to avoid garbage
-Date:   Fri, 10 Jun 2022 18:55:20 +0800
-Message-ID: <20220610105522.13449-9-rex-bc.chen@mediatek.com>
-X-Mailer: git-send-email 2.18.0
-In-Reply-To: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
-References: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
+        Fri, 10 Jun 2022 09:12:49 -0400
+Received: from mail-io1-f49.google.com (mail-io1-f49.google.com [209.85.166.49])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E3CFB5BE6C;
+        Fri, 10 Jun 2022 06:12:44 -0700 (PDT)
+Received: by mail-io1-f49.google.com with SMTP id d123so6259590iof.10;
+        Fri, 10 Jun 2022 06:12:44 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:in-reply-to:references:subject:date
+         :message-id;
+        bh=IkgD32JQQv4iXIcEl6HeM9jrQJQd0Tq+F8d36Y5X2zg=;
+        b=tzoazb7HJ57+oOqoUkqJQ1EV0aftXD5PAp3h4oVpz2Zxyn3q6P6STcF+S1mJYqvWma
+         TSQsM5tqxl4/dOGW3rcg/LC4yUN0HZCFULVt88c2wKyaJf6fO+wFOAeG4CdUSOofmhph
+         EkaDhc3gqWfb/Oikk9IuuShFCnEgTHtyvtav9ygKGkM/cCWaQn08uSI0g0j8Gw2QVJVh
+         ECdag3quSfioBdJrbIxfaOgI12jexeBlnwbPr+7XKeowzEU3RDsJU0RbANLU/jfdX7F/
+         xEJ03oJY83bJPCL9iiY0zLHL4GcMYF7Km0KBC6E5Jcct0koXp8zlGf5WH4WD/NKQ2X0r
+         PPrw==
+X-Gm-Message-State: AOAM532Ho6QCezIA06wV89ubcVSipHF5Fz1cAFVQy+N7ZpbZtSkbq4lk
+        wQTtkRTt3IcsQWcljZs33A==
+X-Google-Smtp-Source: ABdhPJw7sfj49a/XqcZX4iEyYBeVBikgyBwiHnh2QxO3rAv60pfY7q66XAD3rxdzNX0bgAVsDTmVOw==
+X-Received: by 2002:a5d:9a13:0:b0:668:94ba:46ab with SMTP id s19-20020a5d9a13000000b0066894ba46abmr20425276iol.155.1654866764099;
+        Fri, 10 Jun 2022 06:12:44 -0700 (PDT)
+Received: from robh.at.kernel.org ([64.188.179.251])
+        by smtp.gmail.com with ESMTPSA id z12-20020a02344c000000b003318ba8386bsm7885984jaz.81.2022.06.10.06.12.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 10 Jun 2022 06:12:43 -0700 (PDT)
+Received: (nullmailer pid 1529407 invoked by uid 1000);
+        Fri, 10 Jun 2022 13:12:35 -0000
+From:   Rob Herring <robh@kernel.org>
+To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>
+Cc:     wenst@chromium.org, linux-arm-kernel@lists.infradead.org,
+        Project_Global_Chrome_Upstream_Group@mediatek.com,
+        robh+dt@kernel.org, angelogioacchino.delregno@collabora.com,
+        chunkuang.hu@kernel.org, daniel@ffwll.ch, matthias.bgg@gmail.com,
+        krzysztof.kozlowski+dt@linaro.org, linux-kernel@vger.kernel.org,
+        granquet@baylibre.com, airlied@linux.ie, p.zabel@pengutronix.de,
+        linux-fbdev@vger.kernel.org, ck.hu@mediatek.com,
+        tzimmermann@suse.de, linux-mediatek@lists.infradead.org,
+        devicetree@vger.kernel.org, mripard@kernel.org,
+        dri-devel@lists.freedesktop.org, deller@gmx.de, msp@baylibre.com,
+        jitao.shi@mediatek.com
+In-Reply-To: <20220610105522.13449-2-rex-bc.chen@mediatek.com>
+References: <20220610105522.13449-1-rex-bc.chen@mediatek.com> <20220610105522.13449-2-rex-bc.chen@mediatek.com>
+Subject: Re: [PATCH v11 01/10] dt-bindings: mediatek,dp: Add Display Port binding
+Date:   Fri, 10 Jun 2022 07:12:35 -0600
+Message-Id: <1654866755.768151.1529406.nullmailer@robh.at.kernel.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Set the monitor power state to DP_SET_POWER_D3 to avoid garbage.
+On Fri, 10 Jun 2022 18:55:13 +0800, Bo-Chen Chen wrote:
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
+> 
+> This controller is present on several mediatek hardware. Currently
+> mt8195 and mt8395 have this controller without a functional difference,
+> so only one compatible field is added.
+> 
+> The controller can have two forms, as a normal display port and as an
+> embedded display port.
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> [Bo-Chen: Fix reviewers' comment]
+> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> ---
+>  .../display/mediatek/mediatek,dp.yaml         | 101 ++++++++++++++++++
+>  1 file changed, 101 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+> 
 
-Signed-off-by: Jitao Shi <jitao.shi@mediatek.com>
-Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
----
- drivers/gpu/drm/mediatek/mtk_dp.c | 5 +++++
- 1 file changed, 5 insertions(+)
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
-diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c b/drivers/gpu/drm/mediatek/mtk_dp.c
-index 2413551bfe9f..a5ed94ca00c6 100644
---- a/drivers/gpu/drm/mediatek/mtk_dp.c
-+++ b/drivers/gpu/drm/mediatek/mtk_dp.c
-@@ -2043,6 +2043,11 @@ static void mtk_dp_bridge_atomic_disable(struct drm_bridge *bridge,
- {
- 	struct mtk_dp *mtk_dp = mtk_dp_from_bridge(bridge);
- 
-+	if (mtk_dp_plug_state(mtk_dp)) {
-+		drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER, DP_SET_POWER_D3);
-+		usleep_range(2000, 3000);
-+	}
-+
- 	mtk_dp_video_mute(mtk_dp, true);
- 	mtk_dp->train_state = MTK_DP_TRAIN_STATE_TRAINING;
- 
--- 
-2.18.0
+yamllint warnings/errors:
+
+dtschema/dtc warnings/errors:
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.example.dtb: dp_tx@1c600000: max-lanes: b'\x04' is not of type 'object', 'array', 'boolean', 'null'
+	From schema: /usr/local/lib/python3.10/dist-packages/dtschema/schemas/dt-core.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.example.dtb: dp_tx@1c600000: max-linkrate: b'\x1f\xa4' is not of type 'object', 'array', 'boolean', 'null'
+	From schema: /usr/local/lib/python3.10/dist-packages/dtschema/schemas/dt-core.yaml
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/patch/
+
+This check can fail if there are any dependencies. The base for a patch
+series is generally the most recent rc1.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit.
 

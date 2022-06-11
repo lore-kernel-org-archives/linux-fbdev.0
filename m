@@ -2,126 +2,114 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56624C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Jun 2022 23:13:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAF06C433EF
+	for <linux-fbdev@archiver.kernel.org>; Sat, 11 Jun 2022 16:51:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231666AbiFJXNc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Jun 2022 19:13:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42618 "EHLO
+        id S233753AbiFKQvb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 11 Jun 2022 12:51:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50874 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347135AbiFJXNZ (ORCPT
+        with ESMTP id S231393AbiFKQva (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Jun 2022 19:13:25 -0400
-X-Greylist: delayed 7801 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 10 Jun 2022 16:13:22 PDT
-Received: from 16.mo583.mail-out.ovh.net (16.mo583.mail-out.ovh.net [87.98.174.144])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C93BD11A25
-        for <linux-fbdev@vger.kernel.org>; Fri, 10 Jun 2022 16:13:21 -0700 (PDT)
-Received: from player696.ha.ovh.net (unknown [10.110.115.195])
-        by mo583.mail-out.ovh.net (Postfix) with ESMTP id 6F81421A8F
-        for <linux-fbdev@vger.kernel.org>; Fri, 10 Jun 2022 20:43:26 +0000 (UTC)
-Received: from sk2.org (82-65-25-201.subs.proxad.net [82.65.25.201])
-        (Authenticated sender: steve@sk2.org)
-        by player696.ha.ovh.net (Postfix) with ESMTPSA id BB97B2147BC18;
-        Fri, 10 Jun 2022 20:43:13 +0000 (UTC)
-Authentication-Results: garm.ovh; auth=pass (GARM-110S004e6fa79bf-d8bb-4492-9659-0d8f13915340,
-                    3EA6D779A65D7DCBA15D92F127CD72011C01B2E3) smtp.auth=steve@sk2.org
-X-OVh-ClientIp: 82.65.25.201
-Date:   Fri, 10 Jun 2022 22:43:06 +0200
-From:   Stephen Kitt <steve@sk2.org>
-To:     Sam Ravnborg <sam@ravnborg.org>
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Noralf =?UTF-8?B?VHI=?= =?UTF-8?B?w7hubmVz?= 
-        <noralf@tronnes.org>, Thomas Zimmermann <tzimmermann@suse.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Len Baker <len.baker@gmx.com>, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
+        Sat, 11 Jun 2022 12:51:30 -0400
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AE68F63BF4;
+        Sat, 11 Jun 2022 09:51:29 -0700 (PDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+        by localhost (Postfix) with ESMTP id 4LL3kl5J28z9tSB;
+        Sat, 11 Jun 2022 18:51:27 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+        by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id T-GeVd3UagWG; Sat, 11 Jun 2022 18:51:27 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+        by pegase2.c-s.fr (Postfix) with ESMTP id 4LL3kl4GMcz9t4V;
+        Sat, 11 Jun 2022 18:51:27 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+        by messagerie.si.c-s.fr (Postfix) with ESMTP id 77E428B780;
+        Sat, 11 Jun 2022 18:51:27 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+        by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+        with ESMTP id xPvV6BTXLlWy; Sat, 11 Jun 2022 18:51:27 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.6.192])
+        by messagerie.si.c-s.fr (Postfix) with ESMTP id F2B968B77C;
+        Sat, 11 Jun 2022 18:51:26 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+        by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 25BGpEFO741176
+        (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+        Sat, 11 Jun 2022 18:51:14 +0200
+Received: (from chleroy@localhost)
+        by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 25BGpEha741175;
+        Sat, 11 Jun 2022 18:51:14 +0200
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
+From:   Christophe Leroy <christophe.leroy@csgroup.eu>
+To:     Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Michael Ellerman <mpe@ellerman.id.au>, deller@gmx.de,
+        manoj@linux.ibm.com, mrochs@linux.ibm.com, ukrishn@linux.ibm.com,
+        jejb@linux.ibm.com, martin.petersen@oracle.com, tzimmermann@suse.de
+Cc:     Christophe Leroy <christophe.leroy@csgroup.eu>,
+        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH] staging: ftbft: Use backlight helper
-Message-ID: <20220610224306.325a6c91@heffalump.sk2.org>
-In-Reply-To: <YqOoI6g6GVw0Z1s/@ravnborg.org>
-References: <20220607185516.1129900-1-steve@sk2.org>
-        <YqOoI6g6GVw0Z1s/@ravnborg.org>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+Subject: [PATCH 3/4] powerpc: Remove asm/prom.h from asm/mpc52xx.h and asm/pci.h
+Date:   Sat, 11 Jun 2022 18:50:59 +0200
+Message-Id: <0185bab82df3bc3f870791e75fdab577ab420c16.1654966253.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.35.3
+In-Reply-To: <a1dfa936043eeed715e8cda7f8690fe553ba7c1a.1654966253.git.christophe.leroy@csgroup.eu>
+References: <a1dfa936043eeed715e8cda7f8690fe553ba7c1a.1654966253.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/P4JAIYCU.yYfgTXqhIkbYUV";
- protocol="application/pgp-signature"; micalg=pgp-sha512
-X-Ovh-Tracer-Id: 12460897219021866630
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedrudduuddgudehtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpeffhffvvefukfgjfhfogggtsehgtderreertdejnecuhfhrohhmpefuthgvphhhvghnucfmihhtthcuoehsthgvvhgvsehskhdvrdhorhhgqeenucggtffrrghtthgvrhhnpeeiheevvdeugeejffefteffvefhieegjeevhfekjeejvdelgfefkeehhfdufffhjeenucfkpheptddrtddrtddrtddpkedvrdeihedrvdehrddvtddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehplhgrhigvrheileeirdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepshhtvghvvgesshhkvddrohhrghdpnhgspghrtghpthhtohepuddprhgtphhtthhopehlihhnuhigqdhfsgguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdfovfetjfhoshhtpehmohehkeef
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1654966257; l=1314; s=20211009; h=from:subject:message-id; bh=A5oEMWM1tbgeNqcczx0E9KKuLps7GCNDia3yuM/VYJs=; b=bWc1kazF1KLq4sogsrkpAG4F1rOEBqg+/vl9fc0JtPPtA5WhtnOk5eTi/1t/ZO/38g/dQrdZDSNc FkerX/EVA3DAwO+ytX7fR8gQV9X7CW1Xhlq5cimVg9u1qTJgvfLN
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
---Sig_/P4JAIYCU.yYfgTXqhIkbYUV
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+asm/pci.h and asm/mpc52xx.h don't need asm/prom.h
 
-Hi Sam,
+Declare struct device_node locally to avoid including of.h
 
-On Fri, 10 Jun 2022 22:22:59 +0200, Sam Ravnborg <sam@ravnborg.org> wrote:
-> On Tue, Jun 07, 2022 at 08:55:16PM +0200, Stephen Kitt wrote:
-> > backlight_properties.fb_blank is deprecated. The states it represents
-> > are handled by other properties; but instead of accessing those
-> > properties directly, drivers should use the helpers provided by
-> > backlight.h.
-> >=20
-> > Instead of manually checking the power state in struct
-> > backlight_properties, use backlight_is_blank().
-> >=20
-> > Signed-off-by: Stephen Kitt <steve@sk2.org>
-> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > Cc: "Noralf Tr=C3=B8nnes" <noralf@tronnes.org>
-> > Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> > Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> > Cc: Javier Martinez Canillas <javierm@redhat.com>
-> > Cc: Len Baker <len.baker@gmx.com>
-> > Cc: dri-devel@lists.freedesktop.org
-> > Cc: linux-fbdev@vger.kernel.org
-> > Cc: linux-staging@lists.linux.dev
-> > ---
-> >  drivers/staging/fbtft/fb_ssd1351.c | 3 +--
-> >  drivers/staging/fbtft/fbtft-core.c | 3 +--
-> >  2 files changed, 2 insertions(+), 4 deletions(-)
-> >=20
-> > diff --git a/drivers/staging/fbtft/fb_ssd1351.c
-> > b/drivers/staging/fbtft/fb_ssd1351.c index 6fd549a424d5..b8d55aa8c5c7
-> > 100644 --- a/drivers/staging/fbtft/fb_ssd1351.c
-> > +++ b/drivers/staging/fbtft/fb_ssd1351.c
-> > @@ -196,8 +196,7 @@ static int update_onboard_backlight(struct
-> > backlight_device *bd) "%s: power=3D%d, fb_blank=3D%d\n",
-> >  		      __func__, bd->props.power, bd->props.fb_blank); =20
-> Could you try to kill this use of props.fb_blank too?      ^^^^^^
-> A local variable should do the trick.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/mpc52xx.h | 3 ++-
+ arch/powerpc/include/asm/pci.h     | 1 -
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-I have a pending patch changing this to show props.state instead, that way
-the debug info shows all the backlight-relevant information from props. How
-does that sound?
+diff --git a/arch/powerpc/include/asm/mpc52xx.h b/arch/powerpc/include/asm/mpc52xx.h
+index ce1e0aabaa64..f721a5c90e20 100644
+--- a/arch/powerpc/include/asm/mpc52xx.h
++++ b/arch/powerpc/include/asm/mpc52xx.h
+@@ -15,7 +15,6 @@
+ 
+ #ifndef __ASSEMBLY__
+ #include <asm/types.h>
+-#include <asm/prom.h>
+ #include <asm/mpc5xxx.h>
+ #endif /* __ASSEMBLY__ */
+ 
+@@ -268,6 +267,8 @@ struct mpc52xx_intr {
+ 
+ #ifndef __ASSEMBLY__
+ 
++struct device_node;
++
+ /* mpc52xx_common.c */
+ extern void mpc5200_setup_xlb_arbiter(void);
+ extern void mpc52xx_declare_of_platform_devices(void);
+diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+index 915d6ee4b40a..0f182074cdb7 100644
+--- a/arch/powerpc/include/asm/pci.h
++++ b/arch/powerpc/include/asm/pci.h
+@@ -14,7 +14,6 @@
+ 
+ #include <asm/machdep.h>
+ #include <asm/io.h>
+-#include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+ 
+ /* Return values for pci_controller_ops.probe_mode function */
+-- 
+2.35.3
 
-Regards,
-
-Stephen
-
---Sig_/P4JAIYCU.yYfgTXqhIkbYUV
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEEnPVX/hPLkMoq7x0ggNMC9Yhtg5wFAmKjrNoACgkQgNMC9Yht
-g5xQdg/+Orvis6KeWgiLd8jL6lqXH9XOKSzUodRrAYjprDDP0ZJq0NCh7JbJW+q3
-OYkz1CNJ4/vsMOFU7lYPEPDRZqX+VHj2XBR11YZWTzUVi1f+ivSw/kDd5jzGe5xs
-opvDdvBTlUniPy3LAs84Z1unuX0P6JgTwvKX3oiBMgww1ym8b9B3Ha2nswe3yUI2
-kjOUfz+Zv86RtoPF3R/LBPv4aP1UmVL3/Bgg1Qnb2llzb3L3JlUq6V5BtUuxj+CC
-vie/Wsfgsx9KXPa+GZUCaxm1q9uVUV21zHvZ3mCA5gew9jLg5wEFHmySony+2n+C
-wAd+0MY7tlL+YjfV9Ccgvvo39CHe0Wan10HpWWQNwfAQgdpTHmeI8cZ+Uho85sb2
-QF3+Jz/mrnlSjHG4lqPLs0bXGb/rpVsDPbiivOWzamJGQyOx14VvrUrKyLUpLh4A
-BcB88hAvQ9z4pz8o3rkzfqi70KbDjbBpxQrpCXcwmBICUpfsm0ufteHA/7lSNEwq
-EXlDYFA66tyohK0IGuDUOf7wvDuuQjyqO8/Kc5+/xBDdlTPts3eDqmIaAF9ydTpZ
-5+pgEJITNAcHm/ig5/Kjxkye4q6DAWKEX10FUBWmm6lpc90i3NuWHGDTpC7Ru3yl
-C5F9TZVMLyarmt00UEPhkARbBJrzOXqHGXQDWyiNxGCg1OB+GTc=
-=EB3v
------END PGP SIGNATURE-----
-
---Sig_/P4JAIYCU.yYfgTXqhIkbYUV--

@@ -2,109 +2,118 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FCA6C43334
-	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Jun 2022 19:19:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C22FC433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Jun 2022 19:25:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345434AbiFMTT5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 13 Jun 2022 15:19:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45244 "EHLO
+        id S1350427AbiFMTZY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 13 Jun 2022 15:25:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53204 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351208AbiFMTT3 (ORCPT
+        with ESMTP id S1350512AbiFMTZI (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 13 Jun 2022 15:19:29 -0400
+        Mon, 13 Jun 2022 15:25:08 -0400
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 5EE8D52E6B
-        for <linux-fbdev@vger.kernel.org>; Mon, 13 Jun 2022 10:24:21 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 6FD4337A91
+        for <linux-fbdev@vger.kernel.org>; Mon, 13 Jun 2022 10:41:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1655141060;
+        s=mimecast20190719; t=1655142090;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:mime-version:mime-version:content-type:content-type:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=yGvm3qwPoTuLTdX5NWsaOkcpvKYLKtr/ysaBv6CZIVc=;
-        b=bntjUGXbaaJNFQeUvv040Uy44fbb826tEOs0r2sHvL0beOdB5KMMd+bqPz39ucQahWFatm
-        Ys+90RP2290MOVRKlTtdhjXr8v6Wu5UCPhdtbFU6H1gsisPomLjkFPD2e88KGX0CXVBMkq
-        zknNi4IJTh2C9xoiBm2ySlW8Zx9B1Ww=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=q9imHR0PldrK/4QqffqMQG4YlpeKi0rN5tf1tCAqvxI=;
+        b=OfLxLKMmXh1S0JEAwuW9kESxX/WmvV01sGlNpabaDxngbFrcIEHSG/5Fkm581Wd2AvJodx
+        IQVrUHuwGIKNdBkaL7D8xdVWIAU2Hq3X5lUoWk55A2iwasA5NQz3M4jTNc1hKEoqJopw8A
+        xF1Ia0qB9fKRr0O0qyctqVGEdnh8MNc=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-637-UMYv45fUOxCFCjnIUbPU-w-1; Mon, 13 Jun 2022 13:24:17 -0400
-X-MC-Unique: UMYv45fUOxCFCjnIUbPU-w-1
-Received: by mail-wm1-f71.google.com with SMTP id k5-20020a05600c0b4500b003941ca130f9so2798204wmr.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 13 Jun 2022 10:24:17 -0700 (PDT)
+ us-mta-661-xCYIVd-GPiGUQ0Fv8qKEWA-1; Mon, 13 Jun 2022 13:41:29 -0400
+X-MC-Unique: xCYIVd-GPiGUQ0Fv8qKEWA-1
+Received: by mail-wm1-f69.google.com with SMTP id r126-20020a1c4484000000b0039c8f5804c4so2581312wma.3
+        for <linux-fbdev@vger.kernel.org>; Mon, 13 Jun 2022 10:41:29 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:references:from:in-reply-to
+         :content-language:to:cc:references:from:in-reply-to
          :content-transfer-encoding;
-        bh=yGvm3qwPoTuLTdX5NWsaOkcpvKYLKtr/ysaBv6CZIVc=;
-        b=oXeSFChhPkK66x5vWnciwq/lgcQK8FXpL8OGrxRDTeykFzZ/cIlA30xXktHGmNfCJk
-         op8gqrK6sPVRTYBPIPHsQWg/0Wl4uji097irzrZsGEce5JxaIXw8S4aG5znqCEBTFo8+
-         lAwRKhShcbLCBZFXVtZ4/LLNcrrcuNODeiYx+L1KrsY2LN0WhrPkVcbJ1DRbhXlnp5zQ
-         SnxWFAywqw6l54gAfaKqRkW2NWzgHuLHdxZ47bcvLYh4vE6C/eWb4+TW5PwT80hcbmeC
-         JpX5wFSiimUDCNHIQptXlPP7aZCZure5Q+zSLCMuBik/bieopk8RlCNtovsgfDSCmaGt
-         cYLA==
-X-Gm-Message-State: AJIora/0R+8FgMMP4lQxIangFDwfSQwVNZGgoEJvJ+iv2JtVWnvjxlTS
-        3/MfmTPZp/lH3m64DZ86pajbxwbfMzDTn1YTTdDtiIVyGVU/RcO7DB5CFog0wW7CBnzw7nLceVF
-        oBN5WDsHVMhtjOYPOxaunvkA=
-X-Received: by 2002:a5d:5109:0:b0:218:40cc:a29b with SMTP id s9-20020a5d5109000000b0021840cca29bmr858415wrt.601.1655141055797;
-        Mon, 13 Jun 2022 10:24:15 -0700 (PDT)
-X-Google-Smtp-Source: AGRyM1umQvbmUV5kyQfsWQKm16COOgbaUu2gIG10MNTDJcGldHmXD3XO1wIjQhiRvT60PcbnoxxDAQ==
-X-Received: by 2002:a5d:5109:0:b0:218:40cc:a29b with SMTP id s9-20020a5d5109000000b0021840cca29bmr858386wrt.601.1655141055500;
-        Mon, 13 Jun 2022 10:24:15 -0700 (PDT)
+        bh=q9imHR0PldrK/4QqffqMQG4YlpeKi0rN5tf1tCAqvxI=;
+        b=ASj8qpsEVMaj5ggBn/H+vDY1fxpJmkp3ZaiRXBwk7iyLsvicZgMU0xFr8jWldgCXYM
+         3iAighq0V1CT1GhLatJbECP3z+mt778gCPhoM9SgAg7lVb221E3azwsW7BQhqwjVBSID
+         620TKwAYZT+4QxpQ0qtapZgdsNGSXnAHqZP2tkQFQwCgu1UuxT6JXfQe7+50ZzRgPZJp
+         l3XPkj6ilJ46lGlVbdfVgoIvmzy2H0XcFI898jaaPyIh8p6wRKTs/nXDFRaxZcyfhq2Q
+         1YwvsGaVIISHoXY9VuY0qxY0ZyuMzFV0kYo6dFnfmNsc/rORgSSVNMmqLYX1yXy1IlLC
+         7FKg==
+X-Gm-Message-State: AOAM532SfLAr+6hA/iS+Hp9X+Yk/EfssuNQ8MAc1D/X1m7sf8Dy0eTEA
+        ro90NZX9mepL6S6L8ZXVtkzAu+9RtkZVbxiawtgzVAleLWZvTPArsBQ+LD1THV0VSQORLTdHzqf
+        WWGpx9Pw0FQHDGDLlukn7cl4=
+X-Received: by 2002:a7b:c389:0:b0:39c:49fe:25df with SMTP id s9-20020a7bc389000000b0039c49fe25dfmr648450wmj.164.1655142087966;
+        Mon, 13 Jun 2022 10:41:27 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJzOHYbSdU3QvmmoWgh9ozEuOjCqKEtc/UugRXjsMVcbeHCAdcofLjg4QDbLTxfNrnseTW/13Q==
+X-Received: by 2002:a7b:c389:0:b0:39c:49fe:25df with SMTP id s9-20020a7bc389000000b0039c49fe25dfmr648438wmj.164.1655142087759;
+        Mon, 13 Jun 2022 10:41:27 -0700 (PDT)
 Received: from [192.168.1.129] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id d5-20020a5d5385000000b00213b93cff5fsm9082661wrv.98.2022.06.13.10.24.14
+        by smtp.gmail.com with ESMTPSA id b12-20020a05600010cc00b0020c5253d90asm9201616wrx.86.2022.06.13.10.41.26
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 13 Jun 2022 10:24:15 -0700 (PDT)
-Message-ID: <bbddcf97-7ab2-209b-e777-1874557491a3@redhat.com>
-Date:   Mon, 13 Jun 2022 19:24:14 +0200
+        Mon, 13 Jun 2022 10:41:27 -0700 (PDT)
+Message-ID: <8cbfcc29-bc31-9bc8-2eaa-d873f7cf2d5f@redhat.com>
+Date:   Mon, 13 Jun 2022 19:41:25 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.10.0
-Subject: Re: [PATCH] Revert "fbdev: vesafb: Allow to be built if COMPILE_TEST
- is enabled"
+Subject: Re: [PATCH v6 3/6] drm: Add driver for Solomon SSD130x OLED displays
 Content-Language: en-US
-To:     linux-kernel@vger.kernel.org,
-        Stephen Rothwell <sfr@canb.auug.org.au>,
-        linux-fbdev@vger.kernel.org, kernel test robot <lkp@intel.com>,
-        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-References: <20220610085450.1341880-1-javierm@redhat.com>
- <YqMTI3yxmWq/f+Gp@phenom.ffwll.local>
+To:     "andriy.shevchenko@linux.intel.com" 
+        <andriy.shevchenko@linux.intel.com>,
+        Dominik Kierner <dkierner@dh-electronics.com>
+Cc:     "airlied@linux.ie" <airlied@linux.ie>,
+        "daniel.vetter@ffwll.ch" <daniel.vetter@ffwll.ch>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "geert@linux-m68k.org" <geert@linux-m68k.org>,
+        "lee.jones@linaro.org" <lee.jones@linaro.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>,
+        "maxime@cerno.tech" <maxime@cerno.tech>,
+        "noralf@tronnes.org" <noralf@tronnes.org>,
+        "sam@ravnborg.org" <sam@ravnborg.org>,
+        "thierry.reding@gmail.com" <thierry.reding@gmail.com>,
+        "tzimmermann@suse.de" <tzimmermann@suse.de>,
+        "u.kleine-koenig@pengutronix.de" <u.kleine-koenig@pengutronix.de>
+References: <7a78d57342754a5d9bd3ce7c7bf3fa47@dh-electronics.com>
+ <YqdZN6mtEDF2CRtS@smile.fi.intel.com>
 From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <YqMTI3yxmWq/f+Gp@phenom.ffwll.local>
+In-Reply-To: <YqdZN6mtEDF2CRtS@smile.fi.intel.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 6/10/22 11:47, Daniel Vetter wrote:
-> On Fri, Jun 10, 2022 at 10:54:50AM +0200, Javier Martinez Canillas wrote:
->> This reverts commit fa0e256450f27a7d85f65c63f05e6897954a1d53. The kernel
->> test robot reported that attempting to build the vesafb driver fails on
->> some architectures, because these don't define a `struct screen_info`.
->>
->> This leads to linking errors, for example on parisc with allyesconfig:
->>
->>   hppa-linux-ld: drivers/video/fbdev/vesafb.o: in function `vesafb_probe':
->>>> (.text+0x738): undefined reference to `screen_info'
->>>> hppa-linux-ld: (.text+0x73c): undefined reference to `screen_info'
->>    hppa-linux-ld: drivers/firmware/sysfb.o: in function `sysfb_init':
->>>> (.init.text+0x28): undefined reference to `screen_info'
->>>> hppa-linux-ld: (.init.text+0x30): undefined reference to `screen_info'
->>    hppa-linux-ld: (.init.text+0x78): undefined reference to `screen_info'
->>
->> The goal of commit fa0e256450f2 ("fbdev: vesafb: Allow to be built if
->> COMPILE_TEST is enabled") was to have more build coverage for the driver
->> but it wrongly assumed that all architectures would define a screen_info.
->>
->> Reported-by: kernel test robot <lkp@intel.com>
->> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+On 6/13/22 17:35, andriy.shevchenko@linux.intel.com wrote:
+> On Mon, Jun 13, 2022 at 11:39:30AM +0000, Dominik Kierner wrote:
+>> On 5/25/2022 21:46, Javier Martinez Canillas wrote:
 > 
-> Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+> ...
+> 
+>>> Thanks, I looked at the code briefly and think that there are things there that we
+>>> could use. I.e the 3-wire SPI support that's in panel-solomon-ssd130x-spi-3wire.c.
+>>
+>> When writing my driver code, I wasn't even considering using regmaps,
+>> like You did in Your I2C-Code. If that's applicable for 3-wire-SPI,
+>> it would likely be the better, more generic option. Your SPI-code
+>> reuses these parts to some extent. For that case,
+>> ssd130x_spi_regmap_config.reg_bits would need be changed to 1,
+>> as the "register address" has a length of 1 bit and we are sending
+>> 9 bits over the line and not 16.
+>> Since we still have 2 bytes of host memory,
+>> it should still be compatible with the 4-wire write, right?
+>> Or would 3-wire SPI require a second regmap?
+> 
+> I believe the cleanest solution is to have different regmap configurations.
+> 
 
-Pushed to drm-misc (drm-misc-next). Thanks!
+I agree with this.
 
 -- 
 Best regards,

@@ -2,100 +2,209 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 302DACCA47F
-	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Jun 2022 18:39:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D8C2CCA48E
+	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Jun 2022 19:10:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237618AbiFMSjD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 13 Jun 2022 14:39:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37222 "EHLO
+        id S1348592AbiFMTKv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 13 Jun 2022 15:10:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33230 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343761AbiFMSiY (ORCPT
+        with ESMTP id S1351659AbiFMTKN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 13 Jun 2022 14:38:24 -0400
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5C5BD37A1A;
-        Mon, 13 Jun 2022 08:35:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1655134529; x=1686670529;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=VaArXUZWlGkR+Rg5TxqlTrvxLQWmF66TsY0IDaHvDJU=;
-  b=i7tyoT18uRl6ySPsqGZst7te157jclRIvZKMGTMh1TS4sZZrECxYpygY
-   +ZXwA7kT+ctDiUX3sPHxLJzo259MFPlaY7UFHQA28Eg2YwkgAi38LeTYw
-   O80v9068dP90hPDwDiv2vCA6HdKM3kMNigzjYk88JuQ84TR3QKoTe3CB3
-   QpLVcOF9VNnGVOCF66TFwcFZEqMspgH8ZVk552FaY8+mogb2/x7JEeq7x
-   3TbF/MlwTzX36pYfC6/t2jhLGMZOYKaVr8KXO2wUVr1VRG5YP8NB7Tsyy
-   zfCnuMmlh/JaHpckjv+PNulW9M6nczdRNyhkevR1bw7WODy0CB2Fr1gq9
-   Q==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10377"; a="261357223"
-X-IronPort-AV: E=Sophos;i="5.91,297,1647327600"; 
-   d="scan'208";a="261357223"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Jun 2022 08:35:28 -0700
-X-IronPort-AV: E=Sophos;i="5.91,297,1647327600"; 
-   d="scan'208";a="582283738"
-Received: from smile.fi.intel.com ([10.237.72.54])
-  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Jun 2022 08:35:24 -0700
-Received: from andy by smile.fi.intel.com with local (Exim 4.95)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1o0m64-000b8T-6V;
-        Mon, 13 Jun 2022 18:35:20 +0300
-Date:   Mon, 13 Jun 2022 18:35:19 +0300
-From:   "andriy.shevchenko@linux.intel.com" 
-        <andriy.shevchenko@linux.intel.com>
-To:     Dominik Kierner <dkierner@dh-electronics.com>
-Cc:     Javier Martinez Canillas <javierm@redhat.com>,
-        "airlied@linux.ie" <airlied@linux.ie>,
-        "daniel.vetter@ffwll.ch" <daniel.vetter@ffwll.ch>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "geert@linux-m68k.org" <geert@linux-m68k.org>,
-        "lee.jones@linaro.org" <lee.jones@linaro.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>,
-        "maxime@cerno.tech" <maxime@cerno.tech>,
-        "noralf@tronnes.org" <noralf@tronnes.org>,
-        "sam@ravnborg.org" <sam@ravnborg.org>,
-        "thierry.reding@gmail.com" <thierry.reding@gmail.com>,
-        "tzimmermann@suse.de" <tzimmermann@suse.de>,
-        "u.kleine-koenig@pengutronix.de" <u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH v6 3/6] drm: Add driver for Solomon SSD130x OLED displays
-Message-ID: <YqdZN6mtEDF2CRtS@smile.fi.intel.com>
-References: <7a78d57342754a5d9bd3ce7c7bf3fa47@dh-electronics.com>
+        Mon, 13 Jun 2022 15:10:13 -0400
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 443B630F5D
+        for <linux-fbdev@vger.kernel.org>; Mon, 13 Jun 2022 10:08:58 -0700 (PDT)
+Received: by mail-pj1-x1032.google.com with SMTP id z14so1430786pjb.4
+        for <linux-fbdev@vger.kernel.org>; Mon, 13 Jun 2022 10:08:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=AZWAPWwrm8+A0CgIBwRq++T65dkqg+V1CymCWTXMIwM=;
+        b=LIOySr/baoj4EAyTjKf+aH+Qatb2p3UHDovP+gotSlTiSN1yTcg4GCjyqC3fyUX7wl
+         npmmJtdNhVDNh5XKGkUnpjvg/YJI9/ZyQwGvcnz/SS0pPOuUekmDMJRnmbvEUG9D+H7+
+         BZM1DLAMJ8q+I+4MvG2IfeZzZu5Z2p2pmZvJH76I7ELfeoqXCbnsuzr33o2epyIJ5WeO
+         vlWeMTh3YdX80pJSfJHrPWOfpq4BMQV7PRBFhgbMKMVtr4faZ0ISbwZoAbpm/guz5Lxu
+         3Q1Lh7nmkcWUV2iquou5G8hgE2UlhX7m7htGh4cx10X02rbX81xYSe5d64L24n5jYZOT
+         up1Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=AZWAPWwrm8+A0CgIBwRq++T65dkqg+V1CymCWTXMIwM=;
+        b=2qUpOriGAu25YocBlR3aY8tzJAYexkAXey6kbQrmgJXzxK3Plo9F+4XBbfGMwAbeQC
+         ILKToS2a27IcA4k/umtqaFKp8QjQFRDmfCgzQ6Tj0WHtyQuWtTOY8CtWtJRKxY/dsozG
+         XRNtqy7JUwUZQ5dERCft/d9bEf7OxdFlwTKvb177VwtjkU9N+JM4h1hzzyhMnPL4FNuV
+         IRdm55ubDavSALQ995sSHm1BkG9srvg1ESC0jrEtDXxTtPHrV/b+ZP4+CtSBp3HB6gM2
+         spfoTJm0J472rDrccPy3y+Xk0fxPjc004LbtfYqcgBWDRpzCWSrHqre8ecYtsFbncy8E
+         MJvw==
+X-Gm-Message-State: AJIora8TyzOyDAakp1tt19jTeJyVyGmWw3faE4AGmZgy+vlMK5gBghJH
+        +/+GY7fBtg+z3J4CvEVQMDfDRw==
+X-Google-Smtp-Source: AGRyM1sELmzXAHQOaDg6BJ3FBShrRSur5yPmIKoRf1jf9G2G72yJQERR+jxqILTIiQmADcP/b1HsAg==
+X-Received: by 2002:a17:902:c94b:b0:166:4f65:cffb with SMTP id i11-20020a170902c94b00b001664f65cffbmr14965pla.103.1655140137656;
+        Mon, 13 Jun 2022 10:08:57 -0700 (PDT)
+Received: from ash.lan ([192.77.111.2])
+        by smtp.gmail.com with ESMTPSA id 142-20020a621994000000b00518b4cfbbe0sm5632766pfz.203.2022.06.13.10.08.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 13 Jun 2022 10:08:56 -0700 (PDT)
+Date:   Mon, 13 Jun 2022 18:08:53 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     ChiaEn Wu <peterwu.pub@gmail.com>
+Cc:     jic23@kernel.org, lars@metafoo.de, matthias.bgg@gmail.com,
+        lee.jones@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
+        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        linux-iio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        szunichen@gmail.com, ChiaEn Wu <chiaen_wu@richtek.com>
+Subject: Re: [PATCH v2 15/15] video: backlight: mt6370: Add Mediatek MT6370
+ support
+Message-ID: <20220613170853.bffuwkcmflfgg4gt@ash.lan>
+References: <20220613111146.25221-1-peterwu.pub@gmail.com>
+ <20220613111146.25221-16-peterwu.pub@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7a78d57342754a5d9bd3ce7c7bf3fa47@dh-electronics.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+In-Reply-To: <20220613111146.25221-16-peterwu.pub@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Jun 13, 2022 at 11:39:30AM +0000, Dominik Kierner wrote:
-> On 5/25/2022 21:46, Javier Martinez Canillas wrote:
+On Mon, Jun 13, 2022 at 07:11:46PM +0800, ChiaEn Wu wrote:
+> +static int mt6370_init_backlight_properties(struct mt6370_priv *priv,
+> +					    struct backlight_properties *props)
 
-...
-
-> > Thanks, I looked at the code briefly and think that there are things there that we
-> > could use. I.e the 3-wire SPI support that's in panel-solomon-ssd130x-spi-3wire.c.
-> 
-> When writing my driver code, I wasn't even considering using regmaps,
-> like You did in Your I2C-Code. If that's applicable for 3-wire-SPI,
-> it would likely be the better, more generic option. Your SPI-code
-> reuses these parts to some extent. For that case,
-> ssd130x_spi_regmap_config.reg_bits would need be changed to 1,
-> as the "register address" has a length of 1 bit and we are sending
-> 9 bits over the line and not 16.
-> Since we still have 2 bytes of host memory,
-> it should still be compatible with the 4-wire write, right?
-> Or would 3-wire SPI require a second regmap?
-
-I believe the cleanest solution is to have different regmap configurations.
+Most of the changes in this version looks good... but it looks the new
+code in this function has a number of problems. See below...
 
 
--- 
-With Best Regards,
-Andy Shevchenko
+> +{
+> +	struct device *dev = priv->dev;
+> +	u8 prop_val;
+> +	u32 brightness;
+> +	unsigned int mask, val;
+> +	int ret;
+> +
+> +	/* Vendor optional properties
+> +	 * if property not exist, keep value in default.
+> +	 */
+
+That's not the right strategy for booleans. Not existing means false
+(e.g. flags should actively be unset).
 
 
+> +	if (device_property_read_bool(dev, "mediatek,bled-pwm-enable")) {
+> +		ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_PWM,
+> +					 MT6370_BL_PWM_EN_MASK,
+> +					 MT6370_BL_PWM_EN_MASK);
+> +		if (ret)
+> +			return ret;
+> +	}
+
+As above comment... all of the boolean properties are now being read
+incorrectly.
+
+
+> +
+> +	if (device_property_read_bool(dev, "mediatek,bled-pwm-hys-enable")) {
+> +		ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_PWM,
+> +					 MT6370_BL_PWM_HYS_EN_MASK,
+> +					 MT6370_BL_PWM_HYS_EN_MASK);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	ret = device_property_read_u8(dev, "mediatek,bled-pwm-hys-input-bit",
+> +				      &prop_val);
+> +	if (!ret) {
+> +		val = min_t(u8, prop_val, 3)
+> +		      << (ffs(MT6370_BL_PWM_HYS_SEL_MASK) - 1);
+> +		ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_PWM,
+> +					 MT6370_BL_PWM_HYS_SEL_MASK, val);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	ret = device_property_read_u8(dev, "mediatek,bled-ovp-microvolt",
+> +				      &prop_val);
+> +	if (!ret) {
+> +		val = min_t(u8, prop_val, 3)
+> +		      << (ffs(MT6370_BL_OVP_SEL_MASK) - 1);
+
+This has been renamed but still seems to the using 0, 1, 2, 3 rather
+than an actual value in microvolts.
+
+
+> +		ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_BSTCTRL,
+> +					 MT6370_BL_OVP_SEL_MASK, val);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	if (device_property_read_bool(dev, "mediatek,bled-ovp-shutdown")) {
+> +		ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_BSTCTRL,
+> +					 MT6370_BL_OVP_EN_MASK,
+> +					 MT6370_BL_OVP_EN_MASK);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	ret = device_property_read_u8(dev, "mediatek,bled-ocp-microamp",
+> +				      &prop_val);
+> +	if (!ret) {
+> +		val = min_t(u8, prop_val, 3)
+> +		      << (ffs(MT6370_BL_OC_SEL_MASK) - 1);
+
+Likewise, should this be accepting a value in microamps?
+
+
+> +		ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_BSTCTRL,
+> +					 MT6370_BL_OC_SEL_MASK, val);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	if (device_property_read_bool(dev, "mediatek,bled-ocp-shutdown")) {
+> +		ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_BSTCTRL,
+> +					 MT6370_BL_OC_EN_MASK,
+> +					 MT6370_BL_OC_EN_MASK);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	/* Common properties */
+> +	ret = device_property_read_u32(dev, "max-brightness", &brightness);
+> +	if (ret)
+> +		brightness = MT6370_BL_MAX_BRIGHTNESS;
+> +
+> +	props->max_brightness = min_t(u32, brightness,
+> +				      MT6370_BL_MAX_BRIGHTNESS);
+> +
+> +	ret = device_property_read_u32(dev, "default-brightness", &brightness);
+> +	if (ret)
+> +		brightness = props->max_brightness;
+> +
+> +	props->brightness = min_t(u32, brightness, props->max_brightness);
+> +
+> +
+> +	ret = device_property_read_u8(dev, "mediatek,bled-channel-use",
+> +				      &prop_val);
+> +	if (ret) {
+> +		dev_err(dev, "mediatek,bled-channel-use DT property missing\n");
+> +		return ret;
+> +	}
+> +
+> +	if (!prop_val || prop_val > MT6370_BL_MAX_CH) {
+> +		dev_err(dev, "No channel specified (ch_val:%d)\n", prop_val);
+
+Error string has not been updated to match condition that triggers it.
+
+
+> +		return -EINVAL;
+> +	}
+
+
+Daniel.

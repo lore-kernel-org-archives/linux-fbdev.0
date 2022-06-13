@@ -2,387 +2,181 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1387ACCA47F
-	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Jun 2022 12:57:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF6FFCCA47E
+	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Jun 2022 16:12:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354520AbiFMMzl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 13 Jun 2022 08:55:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49868 "EHLO
+        id S242973AbiFMQMZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 13 Jun 2022 12:12:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52232 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1357888AbiFMMys (ORCPT
+        with ESMTP id S243845AbiFMQMD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 13 Jun 2022 08:54:48 -0400
-Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 428C6666A1;
-        Mon, 13 Jun 2022 04:13:34 -0700 (PDT)
-Received: by mail-pf1-x430.google.com with SMTP id e11so5448361pfj.5;
-        Mon, 13 Jun 2022 04:13:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=/lqEejA1QlzmeeLgtmf9CuPec/Et4poJF6oRM6S5nYY=;
-        b=T3inEeCF8rg5SKbCjYKoTEfwtzUv/0ZfXj8F79KcAPAHabF+gRMIsvHBt/7ac7E9EH
-         DRHoG3HheKq69tS6MwlTyzQjMuGlNYDDBo09lHKK7H3HKrYI/21TdW1AlDphu6qEa0Xc
-         doKeXYLoH7AYzxLvy7k9ovY2srogSR8Kr2G9BL5oq0lp2KLGhV2B2akYU12OrPNym1Z7
-         ZYcXdKl5+zRXEmLQlnVD3kbEHNWowCrAjQz5byd0zojHsbqjG+qMk52pQxVVnrXu02uw
-         PVoOqajKNqfOojq7jlurjcDiwi3YfbSc5LkExXpgvXn8qDU9i6WQyJwLYzjVwMW2WqeU
-         ecAw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=/lqEejA1QlzmeeLgtmf9CuPec/Et4poJF6oRM6S5nYY=;
-        b=Nd7Z+GXd1HbwwcFlm84o3+PLMm8Zi+A4XrAi5YU+WOPSnNO4cMDgaUhG3nArysbhjm
-         Vrek+tn7BKsyNHlQtHFGLpuVxrjicQO6dFc8/0+pi7uWaVjs7v4F4qEkREenCRqfsaca
-         FzxBzqKBd0AWZez2D+0XbTsTDHjed7nGC3e1zOzZmdoavWdECI/w+j/85S+ynAoBFjt1
-         AHInmoK1qdmsa5bnaNuFETgeXc6lA9qWzuM73qsGtRMwotGhVDzNLtow39vsSLOUByyU
-         2wlmDTCaPjaAgMYQqllAHOpf6AIuq4Ojtk1hV3VWOFloiRQuVfbNWfyysPnjtG4FcTNe
-         LUSw==
-X-Gm-Message-State: AOAM530C14PhBhl/Z8AzkhEZKIFjy8oqkb5sD2kX9KML3Yl06GDcLJej
-        KQotk7xrCWsu9emF3yKIxdQ=
-X-Google-Smtp-Source: ABdhPJxuh4SRxX8NzQfRVSs8oisqGHgzdq93ALtEkWO5N5TL+WESBb/K1upPTlo+uvEQipgfEjN7SQ==
-X-Received: by 2002:a63:1b26:0:b0:3fd:8db8:9602 with SMTP id b38-20020a631b26000000b003fd8db89602mr38484194pgb.239.1655118813737;
-        Mon, 13 Jun 2022 04:13:33 -0700 (PDT)
-Received: from RD-3580-24288.rt.l (42-72-115-109.emome-ip.hinet.net. [42.72.115.109])
-        by smtp.gmail.com with ESMTPSA id g17-20020a056a000b9100b0051b4e53c487sm5199989pfj.45.2022.06.13.04.13.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Jun 2022 04:13:33 -0700 (PDT)
-From:   ChiaEn Wu <peterwu.pub@gmail.com>
-To:     jic23@kernel.org, lars@metafoo.de, matthias.bgg@gmail.com,
-        lee.jones@linaro.org, daniel.thompson@linaro.org,
-        jingoohan1@gmail.com, pavel@ucw.cz, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org
-Cc:     linux-iio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        szunichen@gmail.com, ChiaEn Wu <chiaen_wu@richtek.com>
-Subject: [PATCH v2 11/15] iio: adc: mt6370: Add Mediatek MT6370 support
-Date:   Mon, 13 Jun 2022 19:11:42 +0800
-Message-Id: <20220613111146.25221-12-peterwu.pub@gmail.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220613111146.25221-1-peterwu.pub@gmail.com>
-References: <20220613111146.25221-1-peterwu.pub@gmail.com>
+        Mon, 13 Jun 2022 12:12:03 -0400
+X-Greylist: delayed 4191 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 13 Jun 2022 07:05:56 PDT
+Received: from mx4.securetransport.de (mx4.securetransport.de [178.254.6.145])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2F4DA2C13E;
+        Mon, 13 Jun 2022 07:05:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dh-electronics.com;
+        s=dhelectronicscom; t=1655120385;
+        bh=emWEwI+eGe2K820TXNIuM+O/IKv0JGmuO+FmdiFKUFg=;
+        h=From:To:CC:Subject:Date:From;
+        b=ZUSADyZmWV5k0iJqjMxaWFJEx87zw08wpupsymiY2CUgXgXnDHV5Ys/t1zy1zryjY
+         1imFTut22hZwJIfxn6io4DnttOdK4xnkmzzxASke2Xqyn+m7RWIXl8Ku/v0ft9LHPz
+         IVl3foTe7Uw1Xds6Hn9M5Q5hud9ZDtVrxRBFPZsiQhlYHfT8H0MGjy0je+oOdPLqjC
+         W6+7JuzPX892I4mgx9xlXBeHp1b0Zr2ugM2d6O3Tetmf1iSCTXUK9Im8luq5qXKbbK
+         a8VebdrQZc3h8xVD5mJDU0O5AJ01lC8SUETx/y+TeV4t7+ltGnL3PZFQqpydcIpgDL
+         pNbLIRNnSnlUg==
+X-secureTransport-forwarded: yes
+From:   Dominik Kierner <dkierner@dh-electronics.com>
+Complaints-To: abuse@cubewerk.de
+To:     Javier Martinez Canillas <javierm@redhat.com>
+CC:     "airlied@linux.ie" <airlied@linux.ie>,
+        "andriy.shevchenko@linux.intel.com" 
+        <andriy.shevchenko@linux.intel.com>,
+        "daniel.vetter@ffwll.ch" <daniel.vetter@ffwll.ch>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "geert@linux-m68k.org" <geert@linux-m68k.org>,
+        "lee.jones@linaro.org" <lee.jones@linaro.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>,
+        "maxime@cerno.tech" <maxime@cerno.tech>,
+        "noralf@tronnes.org" <noralf@tronnes.org>,
+        "sam@ravnborg.org" <sam@ravnborg.org>,
+        "thierry.reding@gmail.com" <thierry.reding@gmail.com>,
+        "tzimmermann@suse.de" <tzimmermann@suse.de>,
+        "u.kleine-koenig@pengutronix.de" <u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH v6 3/6] drm: Add driver for Solomon SSD130x OLED displays
+Thread-Topic: [PATCH v6 3/6] drm: Add driver for Solomon SSD130x OLED displays
+Thread-Index: Adh/GjKG/bFLOXDpTTiVpWIDbnNb5w==
+Date:   Mon, 13 Jun 2022 11:39:30 +0000
+Message-ID: <7a78d57342754a5d9bd3ce7c7bf3fa47@dh-electronics.com>
+Accept-Language: de-DE, en-US
+Content-Language: de-DE
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: ChiaEn Wu <chiaen_wu@richtek.com>
-
-Add Mediatek MT6370 ADC support.
-
-Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
----
- drivers/iio/adc/Kconfig      |   9 ++
- drivers/iio/adc/Makefile     |   1 +
- drivers/iio/adc/mt6370-adc.c | 262 +++++++++++++++++++++++++++++++++++
- 3 files changed, 272 insertions(+)
- create mode 100644 drivers/iio/adc/mt6370-adc.c
-
-diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
-index 71ab0a06aa82..09576fb478ad 100644
---- a/drivers/iio/adc/Kconfig
-+++ b/drivers/iio/adc/Kconfig
-@@ -737,6 +737,15 @@ config MEDIATEK_MT6360_ADC
- 	  is used in smartphones and tablets and supports a 11 channel
- 	  general purpose ADC.
- 
-+config MEDIATEK_MT6370_ADC
-+	tristate "Mediatek MT6370 ADC driver"
-+	depends on MFD_MT6370
-+	help
-+	  Say Y here to enable MT6370 ADC support.
-+
-+	  Integrated for System Monitoring includes is used in smartphones
-+	  and tablets and supports a 9 channel general purpose ADC.
-+
- config MEDIATEK_MT6577_AUXADC
- 	tristate "MediaTek AUXADC driver"
- 	depends on ARCH_MEDIATEK || COMPILE_TEST
-diff --git a/drivers/iio/adc/Makefile b/drivers/iio/adc/Makefile
-index 39d806f6d457..0ce285c7e2d0 100644
---- a/drivers/iio/adc/Makefile
-+++ b/drivers/iio/adc/Makefile
-@@ -68,6 +68,7 @@ obj-$(CONFIG_MCP320X) += mcp320x.o
- obj-$(CONFIG_MCP3422) += mcp3422.o
- obj-$(CONFIG_MCP3911) += mcp3911.o
- obj-$(CONFIG_MEDIATEK_MT6360_ADC) += mt6360-adc.o
-+obj-$(CONFIG_MEDIATEK_MT6370_ADC) += mt6370-adc.o
- obj-$(CONFIG_MEDIATEK_MT6577_AUXADC) += mt6577_auxadc.o
- obj-$(CONFIG_MEN_Z188_ADC) += men_z188_adc.o
- obj-$(CONFIG_MESON_SARADC) += meson_saradc.o
-diff --git a/drivers/iio/adc/mt6370-adc.c b/drivers/iio/adc/mt6370-adc.c
-new file mode 100644
-index 000000000000..c30e1290973a
---- /dev/null
-+++ b/drivers/iio/adc/mt6370-adc.c
-@@ -0,0 +1,262 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+#include <dt-bindings/iio/adc/mediatek,mt6370_adc.h>
-+#include <linux/bits.h>
-+#include <linux/bitfield.h>
-+#include <linux/iio/iio.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/mutex.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+
-+#define MT6370_REG_CHG_CTRL3		0x113 /* AICR */
-+#define MT6370_REG_CHG_CTRL7		0x117 /* ICHG */
-+#define MT6370_REG_CHG_ADC		0x121
-+#define MT6370_REG_ADC_DATA_H		0x14C
-+
-+#define MT6370_ADC_START_MASK		BIT(0)
-+#define MT6370_ADC_IN_SEL_MASK		GENMASK(7, 4)
-+#define MT6370_AICR_ICHG_MASK		GENMASK(7, 2)
-+
-+#define MT6370_AICR_400MA		0x6
-+#define MT6370_ICHG_500MA		0x4
-+#define MT6370_ICHG_900MA		0x8
-+
-+#define ADC_CONV_TIME_US		35000
-+#define ADC_CONV_POLLING_TIME		1000
-+
-+struct mt6370_adc_data {
-+	struct device *dev;
-+	struct regmap *regmap;
-+	struct mutex adc_lock;
-+};
-+
-+static int mt6370_adc_read_channel(struct mt6370_adc_data *priv, int chan,
-+				   unsigned long addr, int *val)
-+{
-+	__be16 be_val;
-+	unsigned int reg_val;
-+	int ret;
-+
-+	mutex_lock(&priv->adc_lock);
-+
-+	reg_val = MT6370_ADC_START_MASK |
-+		  FIELD_PREP(MT6370_ADC_IN_SEL_MASK, addr);
-+	ret = regmap_write(priv->regmap, MT6370_REG_CHG_ADC, reg_val);
-+	if (ret)
-+		goto adc_unlock;
-+
-+	msleep(ADC_CONV_TIME_US / 1000);
-+
-+	ret = regmap_read_poll_timeout(priv->regmap,
-+				       MT6370_REG_CHG_ADC, reg_val,
-+				       !(reg_val & MT6370_ADC_START_MASK),
-+				       ADC_CONV_POLLING_TIME,
-+				       ADC_CONV_TIME_US * 3);
-+	if (ret) {
-+		if (ret == -ETIMEDOUT)
-+			dev_err(priv->dev, "Failed to wait adc conversion\n");
-+		goto adc_unlock;
-+	}
-+
-+	ret = regmap_raw_read(priv->regmap, MT6370_REG_ADC_DATA_H,
-+			      &be_val, sizeof(be_val));
-+	if (ret)
-+		goto adc_unlock;
-+
-+	*val = be16_to_cpu(be_val);
-+	ret = IIO_VAL_INT;
-+
-+adc_unlock:
-+	mutex_unlock(&priv->adc_lock);
-+
-+	return ret;
-+}
-+
-+static int mt6370_adc_read_scale(struct mt6370_adc_data *priv,
-+				 int chan, int *val1, int *val2)
-+{
-+	unsigned int reg_val;
-+	int ret;
-+
-+	switch (chan) {
-+	case MT6370_CHAN_VBAT:
-+	case MT6370_CHAN_VSYS:
-+	case MT6370_CHAN_CHG_VDDP:
-+		*val1 = 5;
-+		return IIO_VAL_INT;
-+	case MT6370_CHAN_IBUS:
-+		ret = regmap_read(priv->regmap, MT6370_REG_CHG_CTRL3, &reg_val);
-+		if (ret)
-+			return ret;
-+
-+		reg_val = FIELD_GET(MT6370_AICR_ICHG_MASK, reg_val);
-+		if (reg_val < MT6370_AICR_400MA)
-+			*val1 = 33500;
-+		else
-+			*val1 = 50000;
-+
-+		return IIO_VAL_INT;
-+	case MT6370_CHAN_IBAT:
-+		ret = regmap_read(priv->regmap, MT6370_REG_CHG_CTRL7, &reg_val);
-+		if (ret)
-+			return ret;
-+
-+		reg_val = FIELD_GET(MT6370_AICR_ICHG_MASK, reg_val);
-+		if (reg_val < MT6370_ICHG_500MA)
-+			*val1 = 23750;
-+		else if (reg_val >= MT6370_ICHG_500MA &&
-+			 reg_val < MT6370_ICHG_900MA)
-+			*val1 = 26800;
-+		else
-+			*val1 = 50000;
-+
-+		return IIO_VAL_INT;
-+	case MT6370_CHAN_VBUSDIV5:
-+		*val1 = 25000;
-+		return IIO_VAL_INT;
-+	case MT6370_CHAN_VBUSDIV2:
-+		*val1 = 50000;
-+		return IIO_VAL_INT;
-+	case MT6370_CHAN_TS_BAT:
-+		*val1 = 25;
-+		*val2 = 10000;
-+		return IIO_VAL_FRACTIONAL;
-+	case MT6370_CHAN_TEMP_JC:
-+		*val1 = 2;
-+		return IIO_VAL_INT;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static int mt6370_adc_read_offset(struct mt6370_adc_data *priv,
-+				  int chan, int *val)
-+{
-+	*val = -20;
-+
-+	return IIO_VAL_INT;
-+}
-+
-+static int mt6370_adc_read_raw(struct iio_dev *iio_dev,
-+			       const struct iio_chan_spec *chan,
-+			       int *val, int *val2, long mask)
-+{
-+	struct mt6370_adc_data *priv = iio_priv(iio_dev);
-+
-+	switch (mask) {
-+	case IIO_CHAN_INFO_RAW:
-+		return mt6370_adc_read_channel(priv, chan->channel,
-+					       chan->address, val);
-+	case IIO_CHAN_INFO_SCALE:
-+		return mt6370_adc_read_scale(priv, chan->channel, val, val2);
-+	case IIO_CHAN_INFO_OFFSET:
-+		return mt6370_adc_read_offset(priv, chan->channel, val);
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static const char * const mt6370_channel_labels[MT6370_CHAN_MAX] = {
-+	[MT6370_CHAN_VBUSDIV5] = "vbusdiv5",
-+	[MT6370_CHAN_VBUSDIV2] = "vbusdiv2",
-+	[MT6370_CHAN_VSYS] = "vsys",
-+	[MT6370_CHAN_VBAT] = "vbat",
-+	[MT6370_CHAN_TS_BAT] = "ts_bat",
-+	[MT6370_CHAN_IBUS] = "ibus",
-+	[MT6370_CHAN_IBAT] = "ibat",
-+	[MT6370_CHAN_CHG_VDDP] = "chg_vddp",
-+	[MT6370_CHAN_TEMP_JC] = "temp_jc",
-+};
-+
-+static int mt6370_adc_read_label(struct iio_dev *iio_dev,
-+				 struct iio_chan_spec const *chan, char *label)
-+{
-+	return snprintf(label, PAGE_SIZE, "%s\n",
-+			mt6370_channel_labels[chan->channel]);
-+}
-+
-+static const struct iio_info mt6370_adc_iio_info = {
-+	.read_raw = mt6370_adc_read_raw,
-+	.read_label = mt6370_adc_read_label,
-+};
-+
-+#define MT6370_ADC_CHAN(_idx, _type, _addr, _extra_info) {	\
-+	.type = _type,						\
-+	.channel = MT6370_CHAN_##_idx,				\
-+	.address = _addr,					\
-+	.scan_index = MT6370_CHAN_##_idx,			\
-+	.indexed = 1,						\
-+	.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |		\
-+			      BIT(IIO_CHAN_INFO_SCALE) |	\
-+			      _extra_info			\
-+}
-+
-+static const struct iio_chan_spec mt6370_adc_channels[] = {
-+	MT6370_ADC_CHAN(VBUSDIV5, IIO_VOLTAGE, 1, 0),
-+	MT6370_ADC_CHAN(VBUSDIV2, IIO_VOLTAGE, 2, 0),
-+	MT6370_ADC_CHAN(VSYS, IIO_VOLTAGE, 3, 0),
-+	MT6370_ADC_CHAN(VBAT, IIO_VOLTAGE, 4, 0),
-+	MT6370_ADC_CHAN(TS_BAT, IIO_VOLTAGE, 6, 0),
-+	MT6370_ADC_CHAN(IBUS, IIO_CURRENT, 8, 0),
-+	MT6370_ADC_CHAN(IBAT, IIO_CURRENT, 9, 0),
-+	MT6370_ADC_CHAN(CHG_VDDP, IIO_VOLTAGE, 11, 0),
-+	MT6370_ADC_CHAN(TEMP_JC, IIO_TEMP, 12, BIT(IIO_CHAN_INFO_OFFSET)),
-+};
-+
-+static int mt6370_adc_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+	struct mt6370_adc_data *priv;
-+	struct regmap *regmap;
-+	struct iio_dev *indio_dev;
-+
-+	regmap = dev_get_regmap(pdev->dev.parent, NULL);
-+	if (!regmap) {
-+		dev_err(&pdev->dev, "Failed to get regmap\n");
-+		return -ENODEV;
-+	}
-+
-+	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*priv));
-+	if (!indio_dev)
-+		return -ENOMEM;
-+
-+	priv = iio_priv(indio_dev);
-+	priv->dev = &pdev->dev;
-+	priv->regmap = regmap;
-+	mutex_init(&priv->adc_lock);
-+
-+	ret = regmap_write(priv->regmap, MT6370_REG_CHG_ADC, 0);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Failed to reset adc\n");
-+		return ret;
-+	}
-+
-+	indio_dev->name = "mt6370-adc";
-+	indio_dev->info = &mt6370_adc_iio_info;
-+	indio_dev->modes = INDIO_DIRECT_MODE;
-+	indio_dev->channels = mt6370_adc_channels;
-+	indio_dev->num_channels = ARRAY_SIZE(mt6370_adc_channels);
-+
-+	return devm_iio_device_register(&pdev->dev, indio_dev);
-+}
-+
-+static const struct of_device_id mt6370_adc_of_id[] = {
-+	{ .compatible = "mediatek,mt6370-adc", },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, mt6370_adc_of_id);
-+
-+static struct platform_driver mt6370_adc_driver = {
-+	.driver = {
-+		.name = "mt6370-adc",
-+		.of_match_table = mt6370_adc_of_id,
-+	},
-+	.probe = mt6370_adc_probe,
-+};
-+module_platform_driver(mt6370_adc_driver);
-+
-+MODULE_AUTHOR("ChiaEn Wu <chiaen_wu@richtek.com>");
-+MODULE_DESCRIPTION("MT6370 ADC Drvier");
-+MODULE_LICENSE("GPL v2");
--- 
-2.25.1
-
+SGVsbG8gSmF2aWVyLA0KDQpPbiA1LzI1LzIwMjIgMjE6NDYsIEphdmllciBNYXJ0aW5leiBDYW5p
+bGxhcyB3cm90ZToNCj4gPiBOb3cgdGhhdCBZb3VyIGRyaXZlciBpcyBxdWl0ZSBhIGJpdCBtYXR1
+cmVyIHRoYW4gbWluZSwgSSB3aWxsIGhhcHBpbHkNCj4gPiBwcm92aWRlIFlvdSB3aXRoIHRoZSBz
+b3VyY2Ugb2YgbXkgZHJhZnQsIHNvIHRoYXQgYW55IHVzZWZ1bCBiaXRzIGNhbg0KPiA+IGJlIGlu
+Y29ycG9yYXRlZCBpbiBZb3VyIGRyaXZlci4NCj4gPiBJIGtub3cgdGhhdCBsaW5rcyBhcmUgYSBi
+aXQgZnJvd25lZCB1cG9uLCBidXQgSSdkIHJhdGhlciBhdm9pZA0KPiA+IGNsdXR0ZXJpbmcgdGhl
+IHRocmVhZCB3aXRoIG15IGRyYWZ0IGNvZGUsIHdoaWNoIGlzIHVuZmluaXNoZWQgYW5kDQo+ID4g
+aW5jb21wYXRpYmxlIHdpdGggdGhlIGNvZGUgaW4gdGhpcyB0aHJlYWQuDQo+ID4NCj4gPiBodHRw
+czovL2dpdGh1Yi5jb20vZGgtZWxlY3Ryb25pY3MvcGFuZWwtc29sb21vbi1zc2QxMzB4LWRyYWZ0
+DQo+ID4gaHR0cHM6Ly9naXRodWIuY29tL2RoLWVsZWN0cm9uaWNzL3BhbmVsLXNvbG9tb24tc3Nk
+MTMweC1kcmFmdC90cmVlL2RybS1zc2QxMzB4L2RyaXZlcnMvZ3B1L2RybS9wYW5lbA0KPiA+DQo+
+IA0KPiBUaGFua3MsIEkgbG9va2VkIGF0IHRoZSBjb2RlIGJyaWVmbHkgYW5kIHRoaW5rIHRoYXQg
+dGhlcmUgYXJlIHRoaW5ncyB0aGVyZSB0aGF0IHdlDQo+IGNvdWxkIHVzZS4gSS5lIHRoZSAzLXdp
+cmUgU1BJIHN1cHBvcnQgdGhhdCdzIGluIHBhbmVsLXNvbG9tb24tc3NkMTMweC1zcGktM3dpcmUu
+Yy4NCg0KV2hlbiB3cml0aW5nIG15IGRyaXZlciBjb2RlLCBJIHdhc24ndCBldmVuIGNvbnNpZGVy
+aW5nIHVzaW5nIHJlZ21hcHMsDQpsaWtlIFlvdSBkaWQgaW4gWW91ciBJMkMtQ29kZS4gSWYgdGhh
+dCdzIGFwcGxpY2FibGUgZm9yIDMtd2lyZS1TUEksDQppdCB3b3VsZCBsaWtlbHkgYmUgdGhlIGJl
+dHRlciwgbW9yZSBnZW5lcmljIG9wdGlvbi4gWW91ciBTUEktY29kZQ0KcmV1c2VzIHRoZXNlIHBh
+cnRzIHRvIHNvbWUgZXh0ZW50LiBGb3IgdGhhdCBjYXNlLA0Kc3NkMTMweF9zcGlfcmVnbWFwX2Nv
+bmZpZy5yZWdfYml0cyB3b3VsZCBuZWVkIGJlIGNoYW5nZWQgdG8gMSwNCmFzIHRoZSAicmVnaXN0
+ZXIgYWRkcmVzcyIgaGFzIGEgbGVuZ3RoIG9mIDEgYml0IGFuZCB3ZSBhcmUgc2VuZGluZw0KOSBi
+aXRzIG92ZXIgdGhlIGxpbmUgYW5kIG5vdCAxNi4NClNpbmNlIHdlIHN0aWxsIGhhdmUgMiBieXRl
+cyBvZiBob3N0IG1lbW9yeSwNCml0IHNob3VsZCBzdGlsbCBiZSBjb21wYXRpYmxlIHdpdGggdGhl
+IDQtd2lyZSB3cml0ZSwgcmlnaHQ/DQpPciB3b3VsZCAzLXdpcmUgU1BJIHJlcXVpcmUgYSBzZWNv
+bmQgcmVnbWFwPw0KDQoNCj4gPiBTcGxpdHRpbmcgaW4gVkNDL1ZCQVQgYW5kIFZERCBhbmQgZW5m
+b3JjaW5nIHRoZWlyIHByZXNlbmNlIGlzIG9mDQo+ID4gY291cnNlIGNvbXBhdGliaWxpdHkgYnJl
+YWtpbmcuDQo+ID4NCj4gPiBodHRwczovL2dpdGh1Yi5jb20vZGgtZWxlY3Ryb25pY3MvcGFuZWwt
+c29sb21vbi1zc2QxMzB4LWRyYWZ0L2Jsb2IvZHJtDQo+ID4gLXNzZDEzMHgvZHJpdmVycy9ncHUv
+ZHJtL3BhbmVsL3BhbmVsLXNvbG9tb24tc3NkMTMweC5oI0w4NQ0KPiA+IGh0dHBzOi8vZ2l0aHVi
+LmNvbS9kaC1lbGVjdHJvbmljcy9wYW5lbC1zb2xvbW9uLXNzZDEzMHgtZHJhZnQvYmxvYi9kcm0N
+Cj4gPiAtc3NkMTMweC9kcml2ZXJzL2dwdS9kcm0vcGFuZWwvcGFuZWwtc29sb21vbi1zc2QxMzB4
+LmMjTDgwDQo+ID4NCj4gDQo+IEl0IGlzIGEgYnJlYWsgaW4gdGhlIERUIGJpbmRpbmcgaW5kZWVk
+IGJ1dCBvbiB0aGUgb3RoZXIgaGFuZCBpdCBzZWVtcyB0aGF0IHRoZQ0KPiByZWd1bGF0b3Igc3Rv
+cnkgaXMgbGFja2luZyBpbiB0aGUgY3VycmVudCBzb2xvbW9uLHNzZDEzMDdmYi55YW1sIGFueXdh
+eXMuDQo+IA0KPiBUaGF0IGlzLCB0aGUgYmluZGluZyBzY2hlbWEgb25seSBtZW50aW9ucyBhICJ2
+YmF0LXN1cHBseSIgYnV0IHRoZSBEUk0gZHJpdmVyIGlzIG5vdA0KPiBsb29raW5nIGZvciB0aGF0
+IGJ1dCBpbnN0ZWFkIGZvciAidmNjLXN1cHBseSIgKEkgdGhpbmsgdGhhdCB3YXMgY2hhbmdlZCBk
+dWUgc29tZQ0KPiBmZWVkYmFjayBJIGdvdCBvbiBzb21lIHJldmlzaW9ucywgYnV0IGRpZG4ndCB1
+cGRhdGUgdGhlIERUIGJpbmRpbmcpLiBUaGUgZmJkZXYNCj4gZHJpdmVycy92aWRlby9mYmRldi9z
+c2QxMzA3ZmIuYyBkcml2ZXIgZG9lcyBsb29rdXAgInZiYXQtc3VwcGx5IiBidXQgYWxsIHRoZSBE
+VFMgYW5kDQo+IERUUyBvdmVybGF5cyBJIGZpbmQgZG9uJ3Qgc2V0IG9uZS4NCj4gDQo+IEFsc28g
+dGhlICJ2YmF0LXN1cHBseSIgaXMgbm90IGEgcmVxdWlyZWQgcHJvcGVydHkgaW4gdGhlIGN1cnJl
+bnQgYmluZGluZy4gT25lIHRoaW5nIHRvDQo+IG5vdGljZSBpcyB0aGF0IHJlZ3VsYXRvcl9nZXQo
+KSBhbmQgcmVndWxhdG9yX2dldF9vcHRpb25hbCgpIHNlbWFudGljcyBhcmUgY29uZnVzaW5nDQo+
+IChhdCBsZWFzdCBmb3IgbWUpLiBTaW5jZSBkb2Vzbid0IG1lYW4gd2hldGhlciB0aGUgcmVndWxh
+dG9yIG11c3QgYmUgcHJlc2VudCBvciBub3QNCj4gYnV0IHJhdGhlciBpZiBhIGR1bW15IHJlZ3Vs
+YXRvciBtdXN0IGJlIHByb3ZpZGVkIGlmIGEgc3VwcGx5IGlzIG5vdCBmb3VuZC4NCg0KSSBhbHdh
+eXMgdW5kZXJzdG9vZCByZWd1bGF0b3JfZ2V0X29wdGlvbmFsKCkgYXMgYSB3YXkgb2Ygbm90IGhh
+dmluZyB0byByZWx5IG9uIGEgZHVtbXksDQp3aGVuIGEgcmVndWxhdG9yIGlzIG5vdCBwcmVzZW50
+LCBidXQgcGxlYXNlIGNvcnJlY3QgbWUsIGlmIEkgYW0gd3Jvbmcgb24gdGhpcy4NClRoZSBkdW1t
+aWVzIHdvdWxkIG9ubHkgYmUgbmVjZXNzYXJ5IGZvciB0aGUgbWFuZGF0b3J5IHN1cHBsaWVzIFZD
+QyBhbmQgVkRELiANCg0KWW91IG1lYW4gdGhpcyBwYXJ0IG9mIHRoZSBkb2N1bWVudGF0aW9uIG9m
+IHJlZ3VsYXRvcl9nZXRfb3B0aW9uYWwoKSwgY29ycmVjdD86DQoNCj4gKiBUaGlzIGlzIGludGVu
+ZGVkIGZvciB1c2UgYnkgY29uc3VtZXJzIGZvciBkZXZpY2VzIHdoaWNoIGNhbiBoYXZlDQo+ICog
+c29tZSBzdXBwbGllcyB1bmNvbm5lY3RlZCBpbiBub3JtYWwgdXNlLCBzdWNoIGFzIHNvbWUgTU1D
+IGRldmljZXMuDQo+ICogSXQgY2FuIGFsbG93IHRoZSByZWd1bGF0b3IgY29yZSB0byBwcm92aWRl
+IHN0dWIgc3VwcGxpZXMgZm9yIG90aGVyDQo+ICogc3VwcGxpZXMgcmVxdWVzdGVkIHVzaW5nIG5v
+cm1hbCByZWd1bGF0b3JfZ2V0KCkgY2FsbHMgd2l0aG91dA0KPiAqIGRpc3J1cHRpbmcgdGhlIG9w
+ZXJhdGlvbiBvZiBkcml2ZXJzIHRoYXQgY2FuIGhhbmRsZSBhYnNlbnQNCj4gKiBzdXBwbGllcy4N
+Cg0KDQo+IEluIG90aGVyIHdvcmRzLCBJIGRvbid0IHRoaW5rIHRoYXQgYW55IG9mIHRoZXNlIHN1
+cHBsaWVzIHNob3VsZCBiZSBtYWRlIHJlcXVpcmVkIGluDQo+IHRoZSBEVCBiaW5kaW5nIGJ1dCBq
+dXN0IGxlYXZlIHRoZSBjdXJyZW50ICJ2YmF0LXN1cHBseSIgYW5kIGFkZCBwcm9wZXJ0aWVzIGZv
+ciAidmNjLQ0KPiBzdXBwbHkiIGFuZCBleHBsYWluIHRoZSByZWxhdGlvbnNoaXAgYmV0d2VlbiB0
+aGVzZSBhbmQganVzdCBtYWtlIHRoZSBsb2dpYyBpbiB0aGUNCj4gZHJpdmVyIHRvIG92ZXJyaWRl
+IHN0cnVjdCBzc2QxMzB4X2RldmljZWluZm8gLm5lZWRfY2hhcmdlcHVtcCBpZiBhcmUgcHJlc2Vu
+dC4NCg0KTXkgaWRlYSB3YXMgdG8gcmVxdWlyZSB0aGVzZSBzdXBwbGllcywgc28gdGhhdCB0aGUg
+YmluZGluZyBjb3JyZWN0bHkNCnJlZmxlY3RzIHRoZSBtYW51YWxzLiBEcml2aW5nIHN1cHBseSBW
+Q0MgYW5kIGxvZ2ljIHN1cHBseSBWREQsIGFyZQ0KcHJlc2VudCB0aHJvdWdob3V0IHRoZSBTU0Qx
+MzB4IGZhbWlseS4gT25seSB0aGUgVkJBVCBzdXBwbHkgaXMgYW4NCm9wdGlvbmFsIFNTRDEzMDYg
+c3BlY2lmaWMgYW5kIHdvdWxkIHRoZXJlZm9yZSB1c2UgYW4gb3B0aW9uYWwNCnJlZ3VsYXRvci4N
+Cg0KVGhlIG9ubHkgb3RoZXIgZGV2aWNlIHNwZWNpZmljIHN1cHBseSBpcyB0aGUgU1NEMTMwNSdz
+IFZERElPIHN1cHBseSwNCndoaWNoIGlzIG1hbmRhdG9yeSBhbmQgc2VlbXMgdG8gYmUgY29tbW9u
+bHkgY29ubmVjdGVkIHRvIFZERCwNCnNvIGluY2x1ZGluZyB0aGF0IGlzIGxpa2VseSB1bm5lY2Vz
+c2FyeS4NCkkgSnVzdCB3YW50ZWQgdG8gbWVudGlvbiBpdCBmb3IgY29tcGxldGVuZXNzLg0KDQpJ
+ZiB0aGUgZGV2aWNlIGlzbid0IGNvbnRyb2xsYWJsZSBieSBMaW51eCwgYSBkdW1teSB3b3VsZCBi
+ZSBjb25uZWN0ZWQNCmluc3RlYWQsIGp1c3QgbGlrZSB0aGUgZHVtbXkgcmVndWxhdG9yIGRvY3Vt
+ZW50YXRpb24gc3RhdGVzOg0KDQo+ICogVGhpcyBpcyB1c2VmdWwgZm9yIHN5c3RlbXMgd2l0aCBt
+aXhlZCBjb250cm9sbGFibGUgYW5kDQo+ICogbm9uLWNvbnRyb2xsYWJsZSByZWd1bGF0b3JzLCBh
+cyB3ZWxsIGFzIGZvciBhbGxvd2luZyB0ZXN0aW5nIG9uDQo+ICogc3lzdGVtcyB3aXRoIG5vIGNv
+bnRyb2xsYWJsZSByZWd1bGF0b3JzLg0KDQpXaGljaCB3b3VsZCBiZSB0aGUgY2FzZSwgd2l0aCB0
+aGUgU1NEMTMweCBjb250cm9sbGVycy4NClNvbWV0aW1lcyB0aGV5IGFyZSBjb25uZWN0ZWQgdG8g
+ZXh0ZXJuYWwsIG5vbi1jb250cm9sbGFibGUgcmVndWxhdG9ycy4NCg0KSSBmaWd1cmVkIHRoYXQg
+dGhlIGtlcm5lbCBkZXZlbG9wZXJzIG1pZ2h0IGJlIG1vcmUgb3BlbiB0byBhIGNvbXBhdGliaWxp
+dHkNCmJyZWFraW5nIGNoYW5nZSwgdW5kZXIgdGhlIGNpcmN1bXN0YW5jZSwgdGhhdCB0aGlzIGlz
+IG1vcmUgb3IgbGVzcyBhIG5ldw0KZHJpdmVyIGZvciBEUk0sIHRoYXQgaXQgcHJvdmlkZXMgYXRv
+bWljIGNoYXJnZSBwdW1wIGNvbmZpZ3VyYXRpb24gZm9yIHRoZQ0KU1NEMTMwNiBhbmQgdGhhdCBz
+b21lIChlbWJlZGRlZCkgdXNlciBzcGFjZSBzb2Z0d2FyZSBtaWdodCBuZWVkIHRvIGJlDQpyZXdy
+aXR0ZW4gdG8gYWNjb21tb2RhdGUgZm9yIHRoZSB0cmFuc2l0aW9uIGZyb20gZmJkZXYgdG8gRFJN
+IGFueXdheS4NCkJ1dCBJIG1pZ2h0IGJlIHdyb25nIG9uIHRoaXMuDQoNCg0KPiA+ICMgU3RhdGlj
+IG9yIER5bmFtaWMgQ29uZmlndXJhdGlvbiBmb3IgU1BJLU1vZGVzIDMtV2lyZSBhbmQgNC1XaXJl
+DQo+ID4NCj4gPiBGb3IgdGhlIFNQSS1wcm90b2NvbCBkcml2ZXJzIEkgc2VlIHR3byBwb3NzaWJs
+ZSBhcHByb2FjaGVzOg0KPiA+ICogRHluYW1pYyBjb25maWd1cmF0aW9uIGJ5IGRldGVybWluaW5n
+IHRoZSBwcmVzZW5jZS9hYnNlbmNlIG9mIHRoZQ0KPiA+ICAgRC9DLUdQSU8gYW5kIGFzc2lnbmlu
+ZyB0aGUgZnVuY3Rpb25zIGFjY29yZGluZ2x5Lg0KPiA+ICAgVGhpcyB3YXkgYSBzaW5nbGUgZHJp
+dmVyIGZpbGUgZm9yIGJvdGggU1BJIG1vZGVzIGNvdWxkIGJlIHN1ZmZpY2llbnQuDQo+ID4gKiBT
+dGF0aWMgY29uZmlndXJhdGlvbiBieSB1c2luZyB0aGUgZGV2aWNlLXRyZWUgbmFtZXMNCj4gPiAg
+IChzc2QxMzB4LXNwaS0zd2lyZS8tNHdpcmUpIHRvIGRpZmZlcmVudGlhdGUgYmV0d2VlbiB0aGUg
+U1BJIHByb3RvY29sDQo+ID4gICBkcml2ZXJzLg0KPiA+ICAgVGhpcyB3b3VsZCBvYnZpb3VzbHkg
+bmVjZXNzaXRhdGUgdHdvIGRyaXZlcnMgZmlsZXMuDQo+ID4NCj4gPiBXaGljaCBvbmUgZG8geW91
+IHRoaW5rIHdvdWxkIGJlIHRoZSBiZXN0IGFwcHJvYWNoIGZvciB0aGlzPw0KPiA+DQo+IA0KPiBJ
+IHRoaW5rIHRoYXQgcHJlZmVyIHRoZSBmaXJzdCBhcHByb2FjaC4gQXMgbWVudGlvbmVkIHRoZSBz
+dGFnaW5nIGRyaXZlciBoYXMgYQ0KPiAiYnVzd2lkdGgiIHByb3BlcnR5IGJ1dCBhcyB5b3Ugc2Fp
+ZCB3ZSBjb3VsZCBqdXN0IHVzZSB0aGUgImRjLWdwaW9zIiBwcmVzZW5jZSBhcw0KPiBpbmRpY2F0
+aW9uIG9uIHdoZXRoZXIgaXMgYSA0LXdpcmUgb3IgMy13aXJlIFNQSSBtb2RlLg0KDQpZb3UgYXJl
+IGNvcnJlY3QsIEkgZG8gcHJlZmVyIHRoZSBmaXJzdCBhcHByb2FjaC4NCkl0IHdvdWxkIGN1dCB0
+aGUgYWRkaXRpb25hbCBmaWxlIGFuZCBjb2RlIHJlcXVpcmVkIGZvciB0aGUgc2Vjb25kDQphcHBy
+b2FjaCBhbmQgZWxpbWluYXRlIGFuIGFkZGl0aW9uYWwgZGV2aWNlIHRyZWUgbmFtZSwNCnRoYXQg
+d291bGQgaGF2ZSBiZWVuIG5lY2Vzc2FyeSBvdGhlcndpc2UuDQoNCg0KPiA+IFdoYXQgaXMgWW91
+ciBvcGluaW9uIG9uIHVzaW5nIGRybV9wYW5lbCBmb3IgWW91ciBkcml2ZXI/DQo+ID4NCj4gDQo+
+IEkgY2FuJ3QgcmVtZW1iZXIgZXhhY3RseSB3aHkgSSBkZWNpZGVkIHRvIHN0b3AgdXNpbmcgZHJt
+X3BhbmVsLCBidXQgSSB0aGluayB0aGF0DQo+IHdhcyBiZWNhdXNlIHN0cnVjdCBkcm1fcGFuZWwg
+ZG9lc24ndCBoYXZlIGEgRFJNIGRldmljZSBhbmQgc28gY291bGRuJ3QgdXNlIGFueSBvZg0KPiB0
+aGUgaGVscGVyIGZ1bmN0aW9ucyB0aGF0IG5lZWRlZCBvbmU/DQoNCkkgbGlrZWx5IGhpdCB0aGUg
+c2FtZSByb2FkYmxvY2suDQpJIHdvdWxkIHNheSwgdGhpcyBhcHByb2FjaCBzaG91bGQgYmUgcmV2
+aXNpdGVkLCB3aGVuIGFwcHJvcHJpYXRlDQpoZWxwZXJzIGZvciB0aGlzIGFwcHJvYWNoIGV4aXN0
+LCBhcyBpdCB3b3VsZCBmdXJ0aGVyIGNsZWFuIHVwIGFuZA0KZ2VuZXJpZnkgdGhlIHNzZDEzMHgg
+ZGV2aWNlIGNvbmZpZ3VyYXRpb24uDQoNCi0tDQpCZXN0IHJlZ2FyZHMNCg0KRG9taW5payBLaWVy
+bmVyDQpSZXNlYXJjaCAmIERldmVsb3BtZW50DQpESCBlbGVjdHJvbmljcw0KDQo=

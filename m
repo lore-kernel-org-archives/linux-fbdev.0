@@ -2,181 +2,115 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF6FFCCA47E
-	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Jun 2022 16:12:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97148C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Jun 2022 17:50:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242973AbiFMQMZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 13 Jun 2022 12:12:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52232 "EHLO
+        id S242277AbiFMRue (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 13 Jun 2022 13:50:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56702 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243845AbiFMQMD (ORCPT
+        with ESMTP id S233958AbiFMRuM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 13 Jun 2022 12:12:03 -0400
-X-Greylist: delayed 4191 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 13 Jun 2022 07:05:56 PDT
-Received: from mx4.securetransport.de (mx4.securetransport.de [178.254.6.145])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2F4DA2C13E;
-        Mon, 13 Jun 2022 07:05:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dh-electronics.com;
-        s=dhelectronicscom; t=1655120385;
-        bh=emWEwI+eGe2K820TXNIuM+O/IKv0JGmuO+FmdiFKUFg=;
-        h=From:To:CC:Subject:Date:From;
-        b=ZUSADyZmWV5k0iJqjMxaWFJEx87zw08wpupsymiY2CUgXgXnDHV5Ys/t1zy1zryjY
-         1imFTut22hZwJIfxn6io4DnttOdK4xnkmzzxASke2Xqyn+m7RWIXl8Ku/v0ft9LHPz
-         IVl3foTe7Uw1Xds6Hn9M5Q5hud9ZDtVrxRBFPZsiQhlYHfT8H0MGjy0je+oOdPLqjC
-         W6+7JuzPX892I4mgx9xlXBeHp1b0Zr2ugM2d6O3Tetmf1iSCTXUK9Im8luq5qXKbbK
-         a8VebdrQZc3h8xVD5mJDU0O5AJ01lC8SUETx/y+TeV4t7+ltGnL3PZFQqpydcIpgDL
-         pNbLIRNnSnlUg==
-X-secureTransport-forwarded: yes
-From:   Dominik Kierner <dkierner@dh-electronics.com>
-Complaints-To: abuse@cubewerk.de
-To:     Javier Martinez Canillas <javierm@redhat.com>
-CC:     "airlied@linux.ie" <airlied@linux.ie>,
-        "andriy.shevchenko@linux.intel.com" 
-        <andriy.shevchenko@linux.intel.com>,
-        "daniel.vetter@ffwll.ch" <daniel.vetter@ffwll.ch>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "geert@linux-m68k.org" <geert@linux-m68k.org>,
-        "lee.jones@linaro.org" <lee.jones@linaro.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>,
-        "maxime@cerno.tech" <maxime@cerno.tech>,
-        "noralf@tronnes.org" <noralf@tronnes.org>,
-        "sam@ravnborg.org" <sam@ravnborg.org>,
-        "thierry.reding@gmail.com" <thierry.reding@gmail.com>,
-        "tzimmermann@suse.de" <tzimmermann@suse.de>,
-        "u.kleine-koenig@pengutronix.de" <u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH v6 3/6] drm: Add driver for Solomon SSD130x OLED displays
-Thread-Topic: [PATCH v6 3/6] drm: Add driver for Solomon SSD130x OLED displays
-Thread-Index: Adh/GjKG/bFLOXDpTTiVpWIDbnNb5w==
-Date:   Mon, 13 Jun 2022 11:39:30 +0000
-Message-ID: <7a78d57342754a5d9bd3ce7c7bf3fa47@dh-electronics.com>
-Accept-Language: de-DE, en-US
-Content-Language: de-DE
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-MIME-Version: 1.0
+        Mon, 13 Jun 2022 13:50:12 -0400
+Received: from mail-io1-f41.google.com (mail-io1-f41.google.com [209.85.166.41])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 728CB3CFE7;
+        Mon, 13 Jun 2022 06:33:27 -0700 (PDT)
+Received: by mail-io1-f41.google.com with SMTP id q11so6047703iod.8;
+        Mon, 13 Jun 2022 06:33:27 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:in-reply-to:references:subject:date
+         :message-id;
+        bh=vdZfN90YQu4hf8Uqw177MbmjixkJ2AAcNrLx6oY9MCU=;
+        b=0vEUpAa5zAKQ89i46hqzZ+3hHeTnn+DY1/X0kJqYTFueZ/FwBOmrWDjFsa9Z9odXwA
+         XIjIzf/6hM5JcDlSSzkHeMObN075lc2pXL6MO4JLhob4Y18jDKdvfTMrMv1IxFRWemqi
+         IekeaKiCXsLUYOKPMWwtBHZjYPlOQvFTiyS51PcrCX7Y2C+stDxntVkUIN7XsOBy43dA
+         u0xReuMw2mjoYysPsGqAcxIds4wIewSkd74UcCePomD/b6c7wQVujeaosljM/+6Uqey0
+         Vz3gXVjv0A4PGzhbEY+B87oYpb5ay9ATjp/elrD4yzI4Z4jFyKQQZLIpI8E7aucJg0pz
+         Ii2w==
+X-Gm-Message-State: AOAM532oZpiFlDl4z/q02iRfmE4Sw1UP9tpECriUzZLcRbTTDmksN14b
+        oYoyJUfpE5+LEyTXxGcKpg==
+X-Google-Smtp-Source: ABdhPJwxl/8h496O951i+ofEnsI3E+yQOwKm/ujxZmtouDcCZ56WJ1Frq7wX9lahXWnDMzS3ZoRpNQ==
+X-Received: by 2002:a6b:bf46:0:b0:669:c998:6b48 with SMTP id p67-20020a6bbf46000000b00669c9986b48mr6141923iof.67.1655127206555;
+        Mon, 13 Jun 2022 06:33:26 -0700 (PDT)
+Received: from robh.at.kernel.org ([64.188.179.251])
+        by smtp.gmail.com with ESMTPSA id l16-20020a056e020e5000b002d1a16ef24dsm3870641ilk.82.2022.06.13.06.33.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 13 Jun 2022 06:33:26 -0700 (PDT)
+Received: (nullmailer pid 3564137 invoked by uid 1000);
+        Mon, 13 Jun 2022 13:33:17 -0000
+From:   Rob Herring <robh@kernel.org>
+To:     ChiaEn Wu <peterwu.pub@gmail.com>
+Cc:     pavel@ucw.cz, robh+dt@kernel.org, linux-pm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, krzysztof.kozlowski+dt@linaro.org,
+        linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-mediatek@lists.infradead.org, szunichen@gmail.com,
+        lars@metafoo.de, matthias.bgg@gmail.com,
+        daniel.thompson@linaro.org, lee.jones@linaro.org,
+        ChiYuan Huang <cy_huang@richtek.com>,
+        linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        jingoohan1@gmail.com, devicetree@vger.kernel.org, jic23@kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-iio@vger.kernel.org
+In-Reply-To: <20220613111146.25221-7-peterwu.pub@gmail.com>
+References: <20220613111146.25221-1-peterwu.pub@gmail.com> <20220613111146.25221-7-peterwu.pub@gmail.com>
+Subject: Re: [PATCH v2 06/15] dt-bindings: mfd: Add Mediatek MT6370
+Date:   Mon, 13 Jun 2022 07:33:17 -0600
+Message-Id: <1655127197.567546.3564136.nullmailer@robh.at.kernel.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-SGVsbG8gSmF2aWVyLA0KDQpPbiA1LzI1LzIwMjIgMjE6NDYsIEphdmllciBNYXJ0aW5leiBDYW5p
-bGxhcyB3cm90ZToNCj4gPiBOb3cgdGhhdCBZb3VyIGRyaXZlciBpcyBxdWl0ZSBhIGJpdCBtYXR1
-cmVyIHRoYW4gbWluZSwgSSB3aWxsIGhhcHBpbHkNCj4gPiBwcm92aWRlIFlvdSB3aXRoIHRoZSBz
-b3VyY2Ugb2YgbXkgZHJhZnQsIHNvIHRoYXQgYW55IHVzZWZ1bCBiaXRzIGNhbg0KPiA+IGJlIGlu
-Y29ycG9yYXRlZCBpbiBZb3VyIGRyaXZlci4NCj4gPiBJIGtub3cgdGhhdCBsaW5rcyBhcmUgYSBi
-aXQgZnJvd25lZCB1cG9uLCBidXQgSSdkIHJhdGhlciBhdm9pZA0KPiA+IGNsdXR0ZXJpbmcgdGhl
-IHRocmVhZCB3aXRoIG15IGRyYWZ0IGNvZGUsIHdoaWNoIGlzIHVuZmluaXNoZWQgYW5kDQo+ID4g
-aW5jb21wYXRpYmxlIHdpdGggdGhlIGNvZGUgaW4gdGhpcyB0aHJlYWQuDQo+ID4NCj4gPiBodHRw
-czovL2dpdGh1Yi5jb20vZGgtZWxlY3Ryb25pY3MvcGFuZWwtc29sb21vbi1zc2QxMzB4LWRyYWZ0
-DQo+ID4gaHR0cHM6Ly9naXRodWIuY29tL2RoLWVsZWN0cm9uaWNzL3BhbmVsLXNvbG9tb24tc3Nk
-MTMweC1kcmFmdC90cmVlL2RybS1zc2QxMzB4L2RyaXZlcnMvZ3B1L2RybS9wYW5lbA0KPiA+DQo+
-IA0KPiBUaGFua3MsIEkgbG9va2VkIGF0IHRoZSBjb2RlIGJyaWVmbHkgYW5kIHRoaW5rIHRoYXQg
-dGhlcmUgYXJlIHRoaW5ncyB0aGVyZSB0aGF0IHdlDQo+IGNvdWxkIHVzZS4gSS5lIHRoZSAzLXdp
-cmUgU1BJIHN1cHBvcnQgdGhhdCdzIGluIHBhbmVsLXNvbG9tb24tc3NkMTMweC1zcGktM3dpcmUu
-Yy4NCg0KV2hlbiB3cml0aW5nIG15IGRyaXZlciBjb2RlLCBJIHdhc24ndCBldmVuIGNvbnNpZGVy
-aW5nIHVzaW5nIHJlZ21hcHMsDQpsaWtlIFlvdSBkaWQgaW4gWW91ciBJMkMtQ29kZS4gSWYgdGhh
-dCdzIGFwcGxpY2FibGUgZm9yIDMtd2lyZS1TUEksDQppdCB3b3VsZCBsaWtlbHkgYmUgdGhlIGJl
-dHRlciwgbW9yZSBnZW5lcmljIG9wdGlvbi4gWW91ciBTUEktY29kZQ0KcmV1c2VzIHRoZXNlIHBh
-cnRzIHRvIHNvbWUgZXh0ZW50LiBGb3IgdGhhdCBjYXNlLA0Kc3NkMTMweF9zcGlfcmVnbWFwX2Nv
-bmZpZy5yZWdfYml0cyB3b3VsZCBuZWVkIGJlIGNoYW5nZWQgdG8gMSwNCmFzIHRoZSAicmVnaXN0
-ZXIgYWRkcmVzcyIgaGFzIGEgbGVuZ3RoIG9mIDEgYml0IGFuZCB3ZSBhcmUgc2VuZGluZw0KOSBi
-aXRzIG92ZXIgdGhlIGxpbmUgYW5kIG5vdCAxNi4NClNpbmNlIHdlIHN0aWxsIGhhdmUgMiBieXRl
-cyBvZiBob3N0IG1lbW9yeSwNCml0IHNob3VsZCBzdGlsbCBiZSBjb21wYXRpYmxlIHdpdGggdGhl
-IDQtd2lyZSB3cml0ZSwgcmlnaHQ/DQpPciB3b3VsZCAzLXdpcmUgU1BJIHJlcXVpcmUgYSBzZWNv
-bmQgcmVnbWFwPw0KDQoNCj4gPiBTcGxpdHRpbmcgaW4gVkNDL1ZCQVQgYW5kIFZERCBhbmQgZW5m
-b3JjaW5nIHRoZWlyIHByZXNlbmNlIGlzIG9mDQo+ID4gY291cnNlIGNvbXBhdGliaWxpdHkgYnJl
-YWtpbmcuDQo+ID4NCj4gPiBodHRwczovL2dpdGh1Yi5jb20vZGgtZWxlY3Ryb25pY3MvcGFuZWwt
-c29sb21vbi1zc2QxMzB4LWRyYWZ0L2Jsb2IvZHJtDQo+ID4gLXNzZDEzMHgvZHJpdmVycy9ncHUv
-ZHJtL3BhbmVsL3BhbmVsLXNvbG9tb24tc3NkMTMweC5oI0w4NQ0KPiA+IGh0dHBzOi8vZ2l0aHVi
-LmNvbS9kaC1lbGVjdHJvbmljcy9wYW5lbC1zb2xvbW9uLXNzZDEzMHgtZHJhZnQvYmxvYi9kcm0N
-Cj4gPiAtc3NkMTMweC9kcml2ZXJzL2dwdS9kcm0vcGFuZWwvcGFuZWwtc29sb21vbi1zc2QxMzB4
-LmMjTDgwDQo+ID4NCj4gDQo+IEl0IGlzIGEgYnJlYWsgaW4gdGhlIERUIGJpbmRpbmcgaW5kZWVk
-IGJ1dCBvbiB0aGUgb3RoZXIgaGFuZCBpdCBzZWVtcyB0aGF0IHRoZQ0KPiByZWd1bGF0b3Igc3Rv
-cnkgaXMgbGFja2luZyBpbiB0aGUgY3VycmVudCBzb2xvbW9uLHNzZDEzMDdmYi55YW1sIGFueXdh
-eXMuDQo+IA0KPiBUaGF0IGlzLCB0aGUgYmluZGluZyBzY2hlbWEgb25seSBtZW50aW9ucyBhICJ2
-YmF0LXN1cHBseSIgYnV0IHRoZSBEUk0gZHJpdmVyIGlzIG5vdA0KPiBsb29raW5nIGZvciB0aGF0
-IGJ1dCBpbnN0ZWFkIGZvciAidmNjLXN1cHBseSIgKEkgdGhpbmsgdGhhdCB3YXMgY2hhbmdlZCBk
-dWUgc29tZQ0KPiBmZWVkYmFjayBJIGdvdCBvbiBzb21lIHJldmlzaW9ucywgYnV0IGRpZG4ndCB1
-cGRhdGUgdGhlIERUIGJpbmRpbmcpLiBUaGUgZmJkZXYNCj4gZHJpdmVycy92aWRlby9mYmRldi9z
-c2QxMzA3ZmIuYyBkcml2ZXIgZG9lcyBsb29rdXAgInZiYXQtc3VwcGx5IiBidXQgYWxsIHRoZSBE
-VFMgYW5kDQo+IERUUyBvdmVybGF5cyBJIGZpbmQgZG9uJ3Qgc2V0IG9uZS4NCj4gDQo+IEFsc28g
-dGhlICJ2YmF0LXN1cHBseSIgaXMgbm90IGEgcmVxdWlyZWQgcHJvcGVydHkgaW4gdGhlIGN1cnJl
-bnQgYmluZGluZy4gT25lIHRoaW5nIHRvDQo+IG5vdGljZSBpcyB0aGF0IHJlZ3VsYXRvcl9nZXQo
-KSBhbmQgcmVndWxhdG9yX2dldF9vcHRpb25hbCgpIHNlbWFudGljcyBhcmUgY29uZnVzaW5nDQo+
-IChhdCBsZWFzdCBmb3IgbWUpLiBTaW5jZSBkb2Vzbid0IG1lYW4gd2hldGhlciB0aGUgcmVndWxh
-dG9yIG11c3QgYmUgcHJlc2VudCBvciBub3QNCj4gYnV0IHJhdGhlciBpZiBhIGR1bW15IHJlZ3Vs
-YXRvciBtdXN0IGJlIHByb3ZpZGVkIGlmIGEgc3VwcGx5IGlzIG5vdCBmb3VuZC4NCg0KSSBhbHdh
-eXMgdW5kZXJzdG9vZCByZWd1bGF0b3JfZ2V0X29wdGlvbmFsKCkgYXMgYSB3YXkgb2Ygbm90IGhh
-dmluZyB0byByZWx5IG9uIGEgZHVtbXksDQp3aGVuIGEgcmVndWxhdG9yIGlzIG5vdCBwcmVzZW50
-LCBidXQgcGxlYXNlIGNvcnJlY3QgbWUsIGlmIEkgYW0gd3Jvbmcgb24gdGhpcy4NClRoZSBkdW1t
-aWVzIHdvdWxkIG9ubHkgYmUgbmVjZXNzYXJ5IGZvciB0aGUgbWFuZGF0b3J5IHN1cHBsaWVzIFZD
-QyBhbmQgVkRELiANCg0KWW91IG1lYW4gdGhpcyBwYXJ0IG9mIHRoZSBkb2N1bWVudGF0aW9uIG9m
-IHJlZ3VsYXRvcl9nZXRfb3B0aW9uYWwoKSwgY29ycmVjdD86DQoNCj4gKiBUaGlzIGlzIGludGVu
-ZGVkIGZvciB1c2UgYnkgY29uc3VtZXJzIGZvciBkZXZpY2VzIHdoaWNoIGNhbiBoYXZlDQo+ICog
-c29tZSBzdXBwbGllcyB1bmNvbm5lY3RlZCBpbiBub3JtYWwgdXNlLCBzdWNoIGFzIHNvbWUgTU1D
-IGRldmljZXMuDQo+ICogSXQgY2FuIGFsbG93IHRoZSByZWd1bGF0b3IgY29yZSB0byBwcm92aWRl
-IHN0dWIgc3VwcGxpZXMgZm9yIG90aGVyDQo+ICogc3VwcGxpZXMgcmVxdWVzdGVkIHVzaW5nIG5v
-cm1hbCByZWd1bGF0b3JfZ2V0KCkgY2FsbHMgd2l0aG91dA0KPiAqIGRpc3J1cHRpbmcgdGhlIG9w
-ZXJhdGlvbiBvZiBkcml2ZXJzIHRoYXQgY2FuIGhhbmRsZSBhYnNlbnQNCj4gKiBzdXBwbGllcy4N
-Cg0KDQo+IEluIG90aGVyIHdvcmRzLCBJIGRvbid0IHRoaW5rIHRoYXQgYW55IG9mIHRoZXNlIHN1
-cHBsaWVzIHNob3VsZCBiZSBtYWRlIHJlcXVpcmVkIGluDQo+IHRoZSBEVCBiaW5kaW5nIGJ1dCBq
-dXN0IGxlYXZlIHRoZSBjdXJyZW50ICJ2YmF0LXN1cHBseSIgYW5kIGFkZCBwcm9wZXJ0aWVzIGZv
-ciAidmNjLQ0KPiBzdXBwbHkiIGFuZCBleHBsYWluIHRoZSByZWxhdGlvbnNoaXAgYmV0d2VlbiB0
-aGVzZSBhbmQganVzdCBtYWtlIHRoZSBsb2dpYyBpbiB0aGUNCj4gZHJpdmVyIHRvIG92ZXJyaWRl
-IHN0cnVjdCBzc2QxMzB4X2RldmljZWluZm8gLm5lZWRfY2hhcmdlcHVtcCBpZiBhcmUgcHJlc2Vu
-dC4NCg0KTXkgaWRlYSB3YXMgdG8gcmVxdWlyZSB0aGVzZSBzdXBwbGllcywgc28gdGhhdCB0aGUg
-YmluZGluZyBjb3JyZWN0bHkNCnJlZmxlY3RzIHRoZSBtYW51YWxzLiBEcml2aW5nIHN1cHBseSBW
-Q0MgYW5kIGxvZ2ljIHN1cHBseSBWREQsIGFyZQ0KcHJlc2VudCB0aHJvdWdob3V0IHRoZSBTU0Qx
-MzB4IGZhbWlseS4gT25seSB0aGUgVkJBVCBzdXBwbHkgaXMgYW4NCm9wdGlvbmFsIFNTRDEzMDYg
-c3BlY2lmaWMgYW5kIHdvdWxkIHRoZXJlZm9yZSB1c2UgYW4gb3B0aW9uYWwNCnJlZ3VsYXRvci4N
-Cg0KVGhlIG9ubHkgb3RoZXIgZGV2aWNlIHNwZWNpZmljIHN1cHBseSBpcyB0aGUgU1NEMTMwNSdz
-IFZERElPIHN1cHBseSwNCndoaWNoIGlzIG1hbmRhdG9yeSBhbmQgc2VlbXMgdG8gYmUgY29tbW9u
-bHkgY29ubmVjdGVkIHRvIFZERCwNCnNvIGluY2x1ZGluZyB0aGF0IGlzIGxpa2VseSB1bm5lY2Vz
-c2FyeS4NCkkgSnVzdCB3YW50ZWQgdG8gbWVudGlvbiBpdCBmb3IgY29tcGxldGVuZXNzLg0KDQpJ
-ZiB0aGUgZGV2aWNlIGlzbid0IGNvbnRyb2xsYWJsZSBieSBMaW51eCwgYSBkdW1teSB3b3VsZCBi
-ZSBjb25uZWN0ZWQNCmluc3RlYWQsIGp1c3QgbGlrZSB0aGUgZHVtbXkgcmVndWxhdG9yIGRvY3Vt
-ZW50YXRpb24gc3RhdGVzOg0KDQo+ICogVGhpcyBpcyB1c2VmdWwgZm9yIHN5c3RlbXMgd2l0aCBt
-aXhlZCBjb250cm9sbGFibGUgYW5kDQo+ICogbm9uLWNvbnRyb2xsYWJsZSByZWd1bGF0b3JzLCBh
-cyB3ZWxsIGFzIGZvciBhbGxvd2luZyB0ZXN0aW5nIG9uDQo+ICogc3lzdGVtcyB3aXRoIG5vIGNv
-bnRyb2xsYWJsZSByZWd1bGF0b3JzLg0KDQpXaGljaCB3b3VsZCBiZSB0aGUgY2FzZSwgd2l0aCB0
-aGUgU1NEMTMweCBjb250cm9sbGVycy4NClNvbWV0aW1lcyB0aGV5IGFyZSBjb25uZWN0ZWQgdG8g
-ZXh0ZXJuYWwsIG5vbi1jb250cm9sbGFibGUgcmVndWxhdG9ycy4NCg0KSSBmaWd1cmVkIHRoYXQg
-dGhlIGtlcm5lbCBkZXZlbG9wZXJzIG1pZ2h0IGJlIG1vcmUgb3BlbiB0byBhIGNvbXBhdGliaWxp
-dHkNCmJyZWFraW5nIGNoYW5nZSwgdW5kZXIgdGhlIGNpcmN1bXN0YW5jZSwgdGhhdCB0aGlzIGlz
-IG1vcmUgb3IgbGVzcyBhIG5ldw0KZHJpdmVyIGZvciBEUk0sIHRoYXQgaXQgcHJvdmlkZXMgYXRv
-bWljIGNoYXJnZSBwdW1wIGNvbmZpZ3VyYXRpb24gZm9yIHRoZQ0KU1NEMTMwNiBhbmQgdGhhdCBz
-b21lIChlbWJlZGRlZCkgdXNlciBzcGFjZSBzb2Z0d2FyZSBtaWdodCBuZWVkIHRvIGJlDQpyZXdy
-aXR0ZW4gdG8gYWNjb21tb2RhdGUgZm9yIHRoZSB0cmFuc2l0aW9uIGZyb20gZmJkZXYgdG8gRFJN
-IGFueXdheS4NCkJ1dCBJIG1pZ2h0IGJlIHdyb25nIG9uIHRoaXMuDQoNCg0KPiA+ICMgU3RhdGlj
-IG9yIER5bmFtaWMgQ29uZmlndXJhdGlvbiBmb3IgU1BJLU1vZGVzIDMtV2lyZSBhbmQgNC1XaXJl
-DQo+ID4NCj4gPiBGb3IgdGhlIFNQSS1wcm90b2NvbCBkcml2ZXJzIEkgc2VlIHR3byBwb3NzaWJs
-ZSBhcHByb2FjaGVzOg0KPiA+ICogRHluYW1pYyBjb25maWd1cmF0aW9uIGJ5IGRldGVybWluaW5n
-IHRoZSBwcmVzZW5jZS9hYnNlbmNlIG9mIHRoZQ0KPiA+ICAgRC9DLUdQSU8gYW5kIGFzc2lnbmlu
-ZyB0aGUgZnVuY3Rpb25zIGFjY29yZGluZ2x5Lg0KPiA+ICAgVGhpcyB3YXkgYSBzaW5nbGUgZHJp
-dmVyIGZpbGUgZm9yIGJvdGggU1BJIG1vZGVzIGNvdWxkIGJlIHN1ZmZpY2llbnQuDQo+ID4gKiBT
-dGF0aWMgY29uZmlndXJhdGlvbiBieSB1c2luZyB0aGUgZGV2aWNlLXRyZWUgbmFtZXMNCj4gPiAg
-IChzc2QxMzB4LXNwaS0zd2lyZS8tNHdpcmUpIHRvIGRpZmZlcmVudGlhdGUgYmV0d2VlbiB0aGUg
-U1BJIHByb3RvY29sDQo+ID4gICBkcml2ZXJzLg0KPiA+ICAgVGhpcyB3b3VsZCBvYnZpb3VzbHkg
-bmVjZXNzaXRhdGUgdHdvIGRyaXZlcnMgZmlsZXMuDQo+ID4NCj4gPiBXaGljaCBvbmUgZG8geW91
-IHRoaW5rIHdvdWxkIGJlIHRoZSBiZXN0IGFwcHJvYWNoIGZvciB0aGlzPw0KPiA+DQo+IA0KPiBJ
-IHRoaW5rIHRoYXQgcHJlZmVyIHRoZSBmaXJzdCBhcHByb2FjaC4gQXMgbWVudGlvbmVkIHRoZSBz
-dGFnaW5nIGRyaXZlciBoYXMgYQ0KPiAiYnVzd2lkdGgiIHByb3BlcnR5IGJ1dCBhcyB5b3Ugc2Fp
-ZCB3ZSBjb3VsZCBqdXN0IHVzZSB0aGUgImRjLWdwaW9zIiBwcmVzZW5jZSBhcw0KPiBpbmRpY2F0
-aW9uIG9uIHdoZXRoZXIgaXMgYSA0LXdpcmUgb3IgMy13aXJlIFNQSSBtb2RlLg0KDQpZb3UgYXJl
-IGNvcnJlY3QsIEkgZG8gcHJlZmVyIHRoZSBmaXJzdCBhcHByb2FjaC4NCkl0IHdvdWxkIGN1dCB0
-aGUgYWRkaXRpb25hbCBmaWxlIGFuZCBjb2RlIHJlcXVpcmVkIGZvciB0aGUgc2Vjb25kDQphcHBy
-b2FjaCBhbmQgZWxpbWluYXRlIGFuIGFkZGl0aW9uYWwgZGV2aWNlIHRyZWUgbmFtZSwNCnRoYXQg
-d291bGQgaGF2ZSBiZWVuIG5lY2Vzc2FyeSBvdGhlcndpc2UuDQoNCg0KPiA+IFdoYXQgaXMgWW91
-ciBvcGluaW9uIG9uIHVzaW5nIGRybV9wYW5lbCBmb3IgWW91ciBkcml2ZXI/DQo+ID4NCj4gDQo+
-IEkgY2FuJ3QgcmVtZW1iZXIgZXhhY3RseSB3aHkgSSBkZWNpZGVkIHRvIHN0b3AgdXNpbmcgZHJt
-X3BhbmVsLCBidXQgSSB0aGluayB0aGF0DQo+IHdhcyBiZWNhdXNlIHN0cnVjdCBkcm1fcGFuZWwg
-ZG9lc24ndCBoYXZlIGEgRFJNIGRldmljZSBhbmQgc28gY291bGRuJ3QgdXNlIGFueSBvZg0KPiB0
-aGUgaGVscGVyIGZ1bmN0aW9ucyB0aGF0IG5lZWRlZCBvbmU/DQoNCkkgbGlrZWx5IGhpdCB0aGUg
-c2FtZSByb2FkYmxvY2suDQpJIHdvdWxkIHNheSwgdGhpcyBhcHByb2FjaCBzaG91bGQgYmUgcmV2
-aXNpdGVkLCB3aGVuIGFwcHJvcHJpYXRlDQpoZWxwZXJzIGZvciB0aGlzIGFwcHJvYWNoIGV4aXN0
-LCBhcyBpdCB3b3VsZCBmdXJ0aGVyIGNsZWFuIHVwIGFuZA0KZ2VuZXJpZnkgdGhlIHNzZDEzMHgg
-ZGV2aWNlIGNvbmZpZ3VyYXRpb24uDQoNCi0tDQpCZXN0IHJlZ2FyZHMNCg0KRG9taW5payBLaWVy
-bmVyDQpSZXNlYXJjaCAmIERldmVsb3BtZW50DQpESCBlbGVjdHJvbmljcw0KDQo=
+On Mon, 13 Jun 2022 19:11:37 +0800, ChiaEn Wu wrote:
+> From: ChiYuan Huang <cy_huang@richtek.com>
+> 
+> Add Mediatek MT6370 binding documentation.
+> 
+> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+> ---
+>  .../bindings/mfd/mediatek,mt6370.yaml         | 279 ++++++++++++++++++
+>  .../dt-bindings/iio/adc/mediatek,mt6370_adc.h |  18 ++
+>  2 files changed, 297 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+>  create mode 100644 include/dt-bindings/iio/adc/mediatek,mt6370_adc.h
+> 
+
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
+
+yamllint warnings/errors:
+
+dtschema/dtc warnings/errors:
+./Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml: Unable to find schema file matching $id: http://devicetree.org/schemas/leds/backlight/mediatek,mt6370-backlight.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: pmic@34: backlight: False schema does not allow {'compatible': ['mediatek,mt6370-backlight'], 'mediatek,bled-channel-use': b'\x0f'}
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: pmic@34: charger: False schema does not allow {'compatible': ['mediatek,mt6370-charger'], 'interrupts': [[48], [68], [6]], 'interrupt-names': ['attach_i', 'uvp_d_evt', 'mivr'], 'io-channels': [[1, 5]], 'usb-otg-vbus-regulator': {'regulator-name': ['mt6370-usb-otg-vbus'], 'regulator-min-microvolt': [[4350000]], 'regulator-max-microvolt': [[5800000]], 'regulator-min-microamp': [[500000]], 'regulator-max-microamp': [[3000000]], 'phandle': [[2]]}}
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: pmic@34: tcpc: False schema does not allow {'compatible': ['mediatek,mt6370-tcpc'], 'interrupts-extended': [[4294967295, 4, 8]], 'connector': {'compatible': ['usb-c-connector'], 'label': ['USB-C'], 'vbus-supply': [[2]], 'data-role': ['dual'], 'power-role': ['dual'], 'try-power-role': ['sink'], 'source-pdos': [[570527844]], 'sink-pdos': [[570527944]], 'op-sink-microwatt': [[10000000]], 'ports': {'#address-cells': [[1]], '#size-cells': [[0]], 'port@0': {'reg': [[0]], 'endpoint': {'remote-endpoint': [[4294967295]]}}, 'port@1': {'reg': [[1]], 'endpoint': {'remote-endpoint': [[4294967295]]}}, 'port@2': {'reg': [[2]], 'endpoint': {'remote-endpoint': [[4294967295]]}}}}}
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: pmic@34: indicator: False schema does not allow {'compatible': ['mediatek,mt6370-indicator'], '#address-cells': [[1]], '#size-cells': [[0]], 'multi-led@0': {'reg': [[0]], 'function': ['indicator'], 'color': [[9]], 'led-max-microamp': [[24000]], '#address-cells': [[1]], '#size-cells': [[0]], 'led@0': {'reg': [[0]], 'color': [[1]]}, 'led@1': {'reg': [[1]], 'color': [[2]]}, 'led@2': {'reg': [[2]], 'color': [[3]]}}, 'led@3': {'reg': [[3]], 'function': ['indicator'], 'color': [[0]], 'led-max-microamp': [[6000]]}}
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: pmic@34: flashlight: False schema does not allow {'compatible': ['mediatek,mt6370-flashlight'], '#address-cells': [[1]], '#size-cells': [[0]], 'led@0': {'reg': [[0]], 'led-sources': [[0]], 'function': ['flash'], 'color': [[0]], 'function-enumerator': [[1]], 'led-max-microamp': [[200000]], 'flash-max-microamp': [[500000]], 'flash-max-timeout-us': [[1248000]]}, 'led@1': {'reg': [[1]], 'led-sources': [[1]], 'function': ['flash'], 'color': [[0]], 'function-enumerator': [[2]], 'led-max-microamp': [[200000]], 'flash-max-microamp': [[500000]], 'flash-max-timeout-us': [[1248000]]}}
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: backlight: mediatek,bled-channel-use: b'\x0f' is not of type 'object', 'array', 'boolean', 'null'
+	From schema: /usr/local/lib/python3.10/dist-packages/dtschema/schemas/dt-core.yaml
+Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:0:0: /example-0/i2c/pmic@34/backlight: failed to match any schema with compatible: ['mediatek,mt6370-backlight']
+Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:0:0: /example-0/i2c/pmic@34/charger: failed to match any schema with compatible: ['mediatek,mt6370-charger']
+Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:0:0: /example-0/i2c/pmic@34/indicator: failed to match any schema with compatible: ['mediatek,mt6370-indicator']
+Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:0:0: /example-0/i2c/pmic@34/flashlight: failed to match any schema with compatible: ['mediatek,mt6370-flashlight']
+Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:0:0: /example-0/i2c/pmic@34/tcpc: failed to match any schema with compatible: ['mediatek,mt6370-tcpc']
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/patch/
+
+This check can fail if there are any dependencies. The base for a patch
+series is generally the most recent rc1.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit.
+

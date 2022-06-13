@@ -2,209 +2,114 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D8C2CCA48E
-	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Jun 2022 19:10:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FCA6C43334
+	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Jun 2022 19:19:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348592AbiFMTKv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 13 Jun 2022 15:10:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33230 "EHLO
+        id S1345434AbiFMTT5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 13 Jun 2022 15:19:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45244 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351659AbiFMTKN (ORCPT
+        with ESMTP id S1351208AbiFMTT3 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 13 Jun 2022 15:10:13 -0400
-Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 443B630F5D
-        for <linux-fbdev@vger.kernel.org>; Mon, 13 Jun 2022 10:08:58 -0700 (PDT)
-Received: by mail-pj1-x1032.google.com with SMTP id z14so1430786pjb.4
-        for <linux-fbdev@vger.kernel.org>; Mon, 13 Jun 2022 10:08:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=AZWAPWwrm8+A0CgIBwRq++T65dkqg+V1CymCWTXMIwM=;
-        b=LIOySr/baoj4EAyTjKf+aH+Qatb2p3UHDovP+gotSlTiSN1yTcg4GCjyqC3fyUX7wl
-         npmmJtdNhVDNh5XKGkUnpjvg/YJI9/ZyQwGvcnz/SS0pPOuUekmDMJRnmbvEUG9D+H7+
-         BZM1DLAMJ8q+I+4MvG2IfeZzZu5Z2p2pmZvJH76I7ELfeoqXCbnsuzr33o2epyIJ5WeO
-         vlWeMTh3YdX80pJSfJHrPWOfpq4BMQV7PRBFhgbMKMVtr4faZ0ISbwZoAbpm/guz5Lxu
-         3Q1Lh7nmkcWUV2iquou5G8hgE2UlhX7m7htGh4cx10X02rbX81xYSe5d64L24n5jYZOT
-         up1Q==
+        Mon, 13 Jun 2022 15:19:29 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 5EE8D52E6B
+        for <linux-fbdev@vger.kernel.org>; Mon, 13 Jun 2022 10:24:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1655141060;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=yGvm3qwPoTuLTdX5NWsaOkcpvKYLKtr/ysaBv6CZIVc=;
+        b=bntjUGXbaaJNFQeUvv040Uy44fbb826tEOs0r2sHvL0beOdB5KMMd+bqPz39ucQahWFatm
+        Ys+90RP2290MOVRKlTtdhjXr8v6Wu5UCPhdtbFU6H1gsisPomLjkFPD2e88KGX0CXVBMkq
+        zknNi4IJTh2C9xoiBm2ySlW8Zx9B1Ww=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-637-UMYv45fUOxCFCjnIUbPU-w-1; Mon, 13 Jun 2022 13:24:17 -0400
+X-MC-Unique: UMYv45fUOxCFCjnIUbPU-w-1
+Received: by mail-wm1-f71.google.com with SMTP id k5-20020a05600c0b4500b003941ca130f9so2798204wmr.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 13 Jun 2022 10:24:17 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=AZWAPWwrm8+A0CgIBwRq++T65dkqg+V1CymCWTXMIwM=;
-        b=2qUpOriGAu25YocBlR3aY8tzJAYexkAXey6kbQrmgJXzxK3Plo9F+4XBbfGMwAbeQC
-         ILKToS2a27IcA4k/umtqaFKp8QjQFRDmfCgzQ6Tj0WHtyQuWtTOY8CtWtJRKxY/dsozG
-         XRNtqy7JUwUZQ5dERCft/d9bEf7OxdFlwTKvb177VwtjkU9N+JM4h1hzzyhMnPL4FNuV
-         IRdm55ubDavSALQ995sSHm1BkG9srvg1ESC0jrEtDXxTtPHrV/b+ZP4+CtSBp3HB6gM2
-         spfoTJm0J472rDrccPy3y+Xk0fxPjc004LbtfYqcgBWDRpzCWSrHqre8ecYtsFbncy8E
-         MJvw==
-X-Gm-Message-State: AJIora8TyzOyDAakp1tt19jTeJyVyGmWw3faE4AGmZgy+vlMK5gBghJH
-        +/+GY7fBtg+z3J4CvEVQMDfDRw==
-X-Google-Smtp-Source: AGRyM1sELmzXAHQOaDg6BJ3FBShrRSur5yPmIKoRf1jf9G2G72yJQERR+jxqILTIiQmADcP/b1HsAg==
-X-Received: by 2002:a17:902:c94b:b0:166:4f65:cffb with SMTP id i11-20020a170902c94b00b001664f65cffbmr14965pla.103.1655140137656;
-        Mon, 13 Jun 2022 10:08:57 -0700 (PDT)
-Received: from ash.lan ([192.77.111.2])
-        by smtp.gmail.com with ESMTPSA id 142-20020a621994000000b00518b4cfbbe0sm5632766pfz.203.2022.06.13.10.08.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Jun 2022 10:08:56 -0700 (PDT)
-Date:   Mon, 13 Jun 2022 18:08:53 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     ChiaEn Wu <peterwu.pub@gmail.com>
-Cc:     jic23@kernel.org, lars@metafoo.de, matthias.bgg@gmail.com,
-        lee.jones@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        linux-iio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        szunichen@gmail.com, ChiaEn Wu <chiaen_wu@richtek.com>
-Subject: Re: [PATCH v2 15/15] video: backlight: mt6370: Add Mediatek MT6370
- support
-Message-ID: <20220613170853.bffuwkcmflfgg4gt@ash.lan>
-References: <20220613111146.25221-1-peterwu.pub@gmail.com>
- <20220613111146.25221-16-peterwu.pub@gmail.com>
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=yGvm3qwPoTuLTdX5NWsaOkcpvKYLKtr/ysaBv6CZIVc=;
+        b=oXeSFChhPkK66x5vWnciwq/lgcQK8FXpL8OGrxRDTeykFzZ/cIlA30xXktHGmNfCJk
+         op8gqrK6sPVRTYBPIPHsQWg/0Wl4uji097irzrZsGEce5JxaIXw8S4aG5znqCEBTFo8+
+         lAwRKhShcbLCBZFXVtZ4/LLNcrrcuNODeiYx+L1KrsY2LN0WhrPkVcbJ1DRbhXlnp5zQ
+         SnxWFAywqw6l54gAfaKqRkW2NWzgHuLHdxZ47bcvLYh4vE6C/eWb4+TW5PwT80hcbmeC
+         JpX5wFSiimUDCNHIQptXlPP7aZCZure5Q+zSLCMuBik/bieopk8RlCNtovsgfDSCmaGt
+         cYLA==
+X-Gm-Message-State: AJIora/0R+8FgMMP4lQxIangFDwfSQwVNZGgoEJvJ+iv2JtVWnvjxlTS
+        3/MfmTPZp/lH3m64DZ86pajbxwbfMzDTn1YTTdDtiIVyGVU/RcO7DB5CFog0wW7CBnzw7nLceVF
+        oBN5WDsHVMhtjOYPOxaunvkA=
+X-Received: by 2002:a5d:5109:0:b0:218:40cc:a29b with SMTP id s9-20020a5d5109000000b0021840cca29bmr858415wrt.601.1655141055797;
+        Mon, 13 Jun 2022 10:24:15 -0700 (PDT)
+X-Google-Smtp-Source: AGRyM1umQvbmUV5kyQfsWQKm16COOgbaUu2gIG10MNTDJcGldHmXD3XO1wIjQhiRvT60PcbnoxxDAQ==
+X-Received: by 2002:a5d:5109:0:b0:218:40cc:a29b with SMTP id s9-20020a5d5109000000b0021840cca29bmr858386wrt.601.1655141055500;
+        Mon, 13 Jun 2022 10:24:15 -0700 (PDT)
+Received: from [192.168.1.129] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id d5-20020a5d5385000000b00213b93cff5fsm9082661wrv.98.2022.06.13.10.24.14
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 13 Jun 2022 10:24:15 -0700 (PDT)
+Message-ID: <bbddcf97-7ab2-209b-e777-1874557491a3@redhat.com>
+Date:   Mon, 13 Jun 2022 19:24:14 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220613111146.25221-16-peterwu.pub@gmail.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.10.0
+Subject: Re: [PATCH] Revert "fbdev: vesafb: Allow to be built if COMPILE_TEST
+ is enabled"
+Content-Language: en-US
+To:     linux-kernel@vger.kernel.org,
+        Stephen Rothwell <sfr@canb.auug.org.au>,
+        linux-fbdev@vger.kernel.org, kernel test robot <lkp@intel.com>,
+        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+References: <20220610085450.1341880-1-javierm@redhat.com>
+ <YqMTI3yxmWq/f+Gp@phenom.ffwll.local>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <YqMTI3yxmWq/f+Gp@phenom.ffwll.local>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Jun 13, 2022 at 07:11:46PM +0800, ChiaEn Wu wrote:
-> +static int mt6370_init_backlight_properties(struct mt6370_priv *priv,
-> +					    struct backlight_properties *props)
+On 6/10/22 11:47, Daniel Vetter wrote:
+> On Fri, Jun 10, 2022 at 10:54:50AM +0200, Javier Martinez Canillas wrote:
+>> This reverts commit fa0e256450f27a7d85f65c63f05e6897954a1d53. The kernel
+>> test robot reported that attempting to build the vesafb driver fails on
+>> some architectures, because these don't define a `struct screen_info`.
+>>
+>> This leads to linking errors, for example on parisc with allyesconfig:
+>>
+>>   hppa-linux-ld: drivers/video/fbdev/vesafb.o: in function `vesafb_probe':
+>>>> (.text+0x738): undefined reference to `screen_info'
+>>>> hppa-linux-ld: (.text+0x73c): undefined reference to `screen_info'
+>>    hppa-linux-ld: drivers/firmware/sysfb.o: in function `sysfb_init':
+>>>> (.init.text+0x28): undefined reference to `screen_info'
+>>>> hppa-linux-ld: (.init.text+0x30): undefined reference to `screen_info'
+>>    hppa-linux-ld: (.init.text+0x78): undefined reference to `screen_info'
+>>
+>> The goal of commit fa0e256450f2 ("fbdev: vesafb: Allow to be built if
+>> COMPILE_TEST is enabled") was to have more build coverage for the driver
+>> but it wrongly assumed that all architectures would define a screen_info.
+>>
+>> Reported-by: kernel test robot <lkp@intel.com>
+>> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+> 
+> Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 
-Most of the changes in this version looks good... but it looks the new
-code in this function has a number of problems. See below...
+Pushed to drm-misc (drm-misc-next). Thanks!
 
+-- 
+Best regards,
 
-> +{
-> +	struct device *dev = priv->dev;
-> +	u8 prop_val;
-> +	u32 brightness;
-> +	unsigned int mask, val;
-> +	int ret;
-> +
-> +	/* Vendor optional properties
-> +	 * if property not exist, keep value in default.
-> +	 */
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
 
-That's not the right strategy for booleans. Not existing means false
-(e.g. flags should actively be unset).
-
-
-> +	if (device_property_read_bool(dev, "mediatek,bled-pwm-enable")) {
-> +		ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_PWM,
-> +					 MT6370_BL_PWM_EN_MASK,
-> +					 MT6370_BL_PWM_EN_MASK);
-> +		if (ret)
-> +			return ret;
-> +	}
-
-As above comment... all of the boolean properties are now being read
-incorrectly.
-
-
-> +
-> +	if (device_property_read_bool(dev, "mediatek,bled-pwm-hys-enable")) {
-> +		ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_PWM,
-> +					 MT6370_BL_PWM_HYS_EN_MASK,
-> +					 MT6370_BL_PWM_HYS_EN_MASK);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
-> +	ret = device_property_read_u8(dev, "mediatek,bled-pwm-hys-input-bit",
-> +				      &prop_val);
-> +	if (!ret) {
-> +		val = min_t(u8, prop_val, 3)
-> +		      << (ffs(MT6370_BL_PWM_HYS_SEL_MASK) - 1);
-> +		ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_PWM,
-> +					 MT6370_BL_PWM_HYS_SEL_MASK, val);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
-> +	ret = device_property_read_u8(dev, "mediatek,bled-ovp-microvolt",
-> +				      &prop_val);
-> +	if (!ret) {
-> +		val = min_t(u8, prop_val, 3)
-> +		      << (ffs(MT6370_BL_OVP_SEL_MASK) - 1);
-
-This has been renamed but still seems to the using 0, 1, 2, 3 rather
-than an actual value in microvolts.
-
-
-> +		ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_BSTCTRL,
-> +					 MT6370_BL_OVP_SEL_MASK, val);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
-> +	if (device_property_read_bool(dev, "mediatek,bled-ovp-shutdown")) {
-> +		ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_BSTCTRL,
-> +					 MT6370_BL_OVP_EN_MASK,
-> +					 MT6370_BL_OVP_EN_MASK);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
-> +	ret = device_property_read_u8(dev, "mediatek,bled-ocp-microamp",
-> +				      &prop_val);
-> +	if (!ret) {
-> +		val = min_t(u8, prop_val, 3)
-> +		      << (ffs(MT6370_BL_OC_SEL_MASK) - 1);
-
-Likewise, should this be accepting a value in microamps?
-
-
-> +		ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_BSTCTRL,
-> +					 MT6370_BL_OC_SEL_MASK, val);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
-> +	if (device_property_read_bool(dev, "mediatek,bled-ocp-shutdown")) {
-> +		ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_BSTCTRL,
-> +					 MT6370_BL_OC_EN_MASK,
-> +					 MT6370_BL_OC_EN_MASK);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
-> +	/* Common properties */
-> +	ret = device_property_read_u32(dev, "max-brightness", &brightness);
-> +	if (ret)
-> +		brightness = MT6370_BL_MAX_BRIGHTNESS;
-> +
-> +	props->max_brightness = min_t(u32, brightness,
-> +				      MT6370_BL_MAX_BRIGHTNESS);
-> +
-> +	ret = device_property_read_u32(dev, "default-brightness", &brightness);
-> +	if (ret)
-> +		brightness = props->max_brightness;
-> +
-> +	props->brightness = min_t(u32, brightness, props->max_brightness);
-> +
-> +
-> +	ret = device_property_read_u8(dev, "mediatek,bled-channel-use",
-> +				      &prop_val);
-> +	if (ret) {
-> +		dev_err(dev, "mediatek,bled-channel-use DT property missing\n");
-> +		return ret;
-> +	}
-> +
-> +	if (!prop_val || prop_val > MT6370_BL_MAX_CH) {
-> +		dev_err(dev, "No channel specified (ch_val:%d)\n", prop_val);
-
-Error string has not been updated to match condition that triggers it.
-
-
-> +		return -EINVAL;
-> +	}
-
-
-Daniel.

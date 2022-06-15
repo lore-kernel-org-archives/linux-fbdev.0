@@ -2,40 +2,40 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D517C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 15 Jun 2022 03:06:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C326C43334
+	for <linux-fbdev@archiver.kernel.org>; Wed, 15 Jun 2022 05:50:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231685AbiFODG6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 14 Jun 2022 23:06:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51512 "EHLO
+        id S243822AbiFOFue (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 15 Jun 2022 01:50:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41418 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231722AbiFODG5 (ORCPT
+        with ESMTP id S243791AbiFOFud (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 14 Jun 2022 23:06:57 -0400
+        Wed, 15 Jun 2022 01:50:33 -0400
 Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5333C4B846;
-        Tue, 14 Jun 2022 20:06:51 -0700 (PDT)
-X-UUID: d4359e43390542e3a412e5f3f9e7e785-20220615
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9FED229C87;
+        Tue, 14 Jun 2022 22:50:25 -0700 (PDT)
+X-UUID: ce101bfc05704349809b5460738fffd4-20220615
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.6,REQID:6fac960f-eae7-4e47-aba4-4f6689ee5700,OB:0,LO
+X-CID-O-INFO: VERSION:1.1.6,REQID:f682a877-830a-4635-a397-2f466098d1a9,OB:0,LO
         B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
         ON:release,TS:0
-X-CID-META: VersionHash:b14ad71,CLOUDID:ae2640f6-e099-41ba-a32c-13b8bfe63214,C
+X-CID-META: VersionHash:b14ad71,CLOUDID:14188a48-4c92-421c-ad91-b806c0f58b2a,C
         OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
         ,QS:nil,BEC:nil,COL:0
-X-UUID: d4359e43390542e3a412e5f3f9e7e785-20220615
-Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw01.mediatek.com
+X-UUID: ce101bfc05704349809b5460738fffd4-20220615
+Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw01.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1589099927; Wed, 15 Jun 2022 11:06:47 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Wed, 15 Jun 2022 11:06:45 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Wed, 15 Jun 2022 11:06:45 +0800
-Message-ID: <6efcd9fbd86e923d2b124f7a97e8e3b8ddece252.camel@mediatek.com>
+        with ESMTP id 714310013; Wed, 15 Jun 2022 13:50:19 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+ mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
+ Wed, 15 Jun 2022 13:50:18 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Wed, 15 Jun 2022 13:50:17 +0800
+Message-ID: <1cf3e33dfc10e948094f11a7ce439ced1b43f4c9.camel@mediatek.com>
 Subject: Re: [PATCH v11 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
  driver
 From:   CK Hu <ck.hu@mediatek.com>
@@ -53,7 +53,7 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Wed, 15 Jun 2022 11:06:45 +0800
+Date:   Wed, 15 Jun 2022 13:50:14 +0800
 In-Reply-To: <20220610105522.13449-6-rex-bc.chen@mediatek.com>
 References: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
          <20220610105522.13449-6-rex-bc.chen@mediatek.com>
@@ -99,55 +99,122 @@ On Fri, 2022-06-10 at 18:55 +0800, Bo-Chen Chen wrote:
 [snip]
 
 > +
-> +static int mtk_dp_parse_capabilities(struct mtk_dp *mtk_dp)
+> +static int mtk_dp_train_flow(struct mtk_dp *mtk_dp, u8
+> target_link_rate,
+> +			     u8 target_lane_count)
 > +{
-> +	u8 val;
-> +	struct mtk_dp_train_info *train_info = &mtk_dp->train_info;
+> +	u8 lane_adjust[2] = {};
+> +	bool pass_tps1 = false;
+> +	bool pass_tps2_3 = false;
+> +	int train_retries;
+> +	int status_control;
+> +	int iteration_count;
+> +	int ret;
+> +	u8 prev_lane_adjust;
 > +
-> +	drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER,
-> DP_SET_POWER_D0);
-> +	usleep_range(2000, 5000);
+> +	drm_dp_dpcd_writeb(&mtk_dp->aux, DP_LINK_BW_SET,
+> target_link_rate);
+> +	drm_dp_dpcd_writeb(&mtk_dp->aux, DP_LANE_COUNT_SET,
+> +			   target_lane_count |
+> DP_LANE_COUNT_ENHANCED_FRAME_EN);
 > +
-> +	drm_dp_read_dpcd_caps(&mtk_dp->aux, mtk_dp->rx_cap);
+> +	if (mtk_dp->train_info.sink_ssc)
+> +		drm_dp_dpcd_writeb(&mtk_dp->aux, DP_DOWNSPREAD_CTRL,
+> +				   DP_SPREAD_AMP_0_5);
 > +
-> +	mtk_dp->rx_cap[DP_TRAINING_AUX_RD_INTERVAL] &=
-> DP_TRAINING_AUX_RD_MASK;
+> +	train_retries = 0;
+> +	status_control = 0;
+> +	iteration_count = 1;
+> +	prev_lane_adjust = 0xFF;
 > +
-> +	train_info->link_rate = min_t(int, mtk_dp->max_linkrate,
-> +				      mtk_dp->rx_cap[mtk_dp-
-> >max_linkrate]);
-> +	train_info->lane_count = min_t(int, mtk_dp->max_lanes,
-> +				       drm_dp_max_lane_count(mtk_dp-
-> >rx_cap));
+> +	mtk_dp_set_lanes(mtk_dp, target_lane_count / 2);
+> +	ret = mtk_dp_phy_configure(mtk_dp, target_link_rate,
+> target_lane_count);
+> +	if (ret)
+> +		return -EINVAL;
 > +
-> +	train_info->tps3 = drm_dp_tps3_supported(mtk_dp->rx_cap);
-> +	train_info->tps4 = drm_dp_tps4_supported(mtk_dp->rx_cap);
+> +	dev_dbg(mtk_dp->dev,
+> +		"Link train target_link_rate = 0x%x, target_lane_count
+> = 0x%x\n",
+> +		target_link_rate, target_lane_count);
 > +
-> +	train_info->sink_ssc = !!(mtk_dp->rx_cap[DP_MAX_DOWNSPREAD] &
-> +				  DP_MAX_DOWNSPREAD_0_5);
+> +	do {
+> +		train_retries++;
+> +		if (!mtk_dp->train_info.cable_plugged_in ||
+> +		    mtk_dp->train_info.irq_sta.hpd_disconnect) {
+> +			return -ENODEV;
+> +		}
+> +
+> +		if (mtk_dp->train_state < MTK_DP_TRAIN_STATE_TRAINING)
 
-I think this is redundant because next statement would set sink_scc to
-false.
+This checking would never be true, so remove it.
+
+> +			return -EAGAIN;
+> +
+> +		if (!pass_tps1) {
+> +			ret = mtk_dp_train_tps_1(mtk_dp,
+> target_lane_count,
+> +						 &iteration_count,
+> lane_adjust,
+> +						 &status_control,
+> +						 &prev_lane_adjust);
+> +			if (!ret) {
+> +				pass_tps1 = true;
+> +				train_retries = 0;
+> +			} else if (ret == -EINVAL) {
+> +				break;
+> +			}
+> +		} else {
+> +			ret = mtk_dp_train_tps_2_3(mtk_dp,
+> target_link_rate,
+> +						   target_lane_count,
+> +						   &iteration_count,
+> +						   lane_adjust,
+> &status_control,
+> +						   &prev_lane_adjust);
+> +			if (!ret) {
+> +				pass_tps2_3 = true;
+> +				break;
+> +			} else if (ret == -EINVAL) {
+> +				break;
+> +			}
+> +		}
+> +
+> +		drm_dp_dpcd_read(&mtk_dp->aux,
+> DP_ADJUST_REQUEST_LANE0_1,
+> +				 lane_adjust, sizeof(lane_adjust));
+> +		mtk_dp_train_update_swing_pre(mtk_dp,
+> target_lane_count,
+> +					      lane_adjust);
+> +	} while (train_retries < MTK_DP_TRAIN_RETRY_LIMIT &&
+> +		 iteration_count < MTK_DP_TRAIN_MAX_ITERATIONS);
+
+mtk_dp_train_tps_1() & mtk_dp_train_tps_2_3() would only be called once
+and never be called twice, so remove this loop.
 
 Regards,
 CK
 
 > +
-> +	train_info->sink_ssc = false;
+> +	drm_dp_dpcd_writeb(&mtk_dp->aux, DP_TRAINING_PATTERN_SET,
+> +			   DP_TRAINING_PATTERN_DISABLE);
+> +	ret = mtk_dp_train_set_pattern(mtk_dp, 0);
+> +	if (ret)
+> +		return -EINVAL;
 > +
-> +	drm_dp_dpcd_readb(&mtk_dp->aux, DP_MSTM_CAP, &val);
-> +	if (val & DP_MST_CAP) {
-> +		/* Clear DP_DEVICE_SERVICE_IRQ_VECTOR_ESI0 */
-> +		drm_dp_dpcd_readb(&mtk_dp->aux,
-> +				  DP_DEVICE_SERVICE_IRQ_VECTOR_ESI0,
-> &val);
-> +		if (val)
-> +			drm_dp_dpcd_writeb(&mtk_dp->aux,
-> +					   DP_DEVICE_SERVICE_IRQ_VECTOR
-> _ESI0,
-> +					   val);
-> +	}
+> +	if (!pass_tps2_3)
+> +		return -ETIMEDOUT;
 > +
-> +	return 0;
+> +	mtk_dp->train_info.link_rate = target_link_rate;
+> +	mtk_dp->train_info.lane_count = target_lane_count;
+> +
+> +	mtk_dp_training_set_scramble(mtk_dp, true);
+> +
+> +	drm_dp_dpcd_writeb(&mtk_dp->aux, DP_LANE_COUNT_SET,
+> +			   target_lane_count |
+> +				   DP_LANE_COUNT_ENHANCED_FRAME_EN);
+> +	mtk_dp_set_enhanced_frame_mode(mtk_dp, true);
+> +
+> +	return ret;
 > +}
 

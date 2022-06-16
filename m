@@ -2,96 +2,198 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC753CCA47A
-	for <linux-fbdev@archiver.kernel.org>; Thu, 16 Jun 2022 05:11:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D3D3C43334
+	for <linux-fbdev@archiver.kernel.org>; Thu, 16 Jun 2022 13:22:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346235AbiFPFLO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 16 Jun 2022 01:11:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38614 "EHLO
+        id S1376878AbiFPNWg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 16 Jun 2022 09:22:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56306 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229694AbiFPFLM (ORCPT
+        with ESMTP id S232862AbiFPNWc (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 16 Jun 2022 01:11:12 -0400
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA18558E72;
-        Wed, 15 Jun 2022 22:11:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1655356270; x=1686892270;
-  h=subject:to:cc:references:from:message-id:date:
-   mime-version:in-reply-to:content-transfer-encoding;
-  bh=NkEFYvNXfkRiyQzrKr5w73UFu/bNjvCsd8osZsw1FkQ=;
-  b=fSxT62GXW1uxpxMMMowHxS5yZ6Veu9TYnr/t88PvBquBKZwEfSeW/RMZ
-   Ng5dAVC5qymZlqW4m/MhCTQlAZcReXjEnRdmdKetYGPsy/u154+oqaXBn
-   TQBw5qGehLFSt5XtvfdUAcTBFCBuKwh9fkfsy5jXPRJW8V8e6Oszv4UiT
-   nMR7IcS7Z6rWonXcCue0oEESnknGDmdfmwVQ1fZbJIKhprP+1qHUWAgsN
-   FQgdvhTZiaxbWSawapdW8uDlQTlazhca8hFkjdHN2tUsGIF9cYx+s+sr0
-   Mkwwkv6/4vPEijDoH+j3E59js7TH9n9Juy1Fq5U1cbJGjzAYcavpXMcc4
-   g==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10379"; a="276741256"
-X-IronPort-AV: E=Sophos;i="5.91,304,1647327600"; 
-   d="scan'208";a="276741256"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jun 2022 22:11:10 -0700
-X-IronPort-AV: E=Sophos;i="5.91,304,1647327600"; 
-   d="scan'208";a="641365226"
-Received: from rongch2-mobl.ccr.corp.intel.com (HELO [10.249.174.230]) ([10.249.174.230])
-  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jun 2022 22:11:05 -0700
-Subject: Re: [linux-next:master] BUILD REGRESSION
- 8cb8311e95e3bb58bd84d6350365f14a718faa6d
-To:     Arnd Bergmann <arnd@arndb.de>, kernel test robot <lkp@intel.com>
-Cc:     Andrew Morton <akpm@linux-foundation.org>,
-        "open list:DRM DRIVER FOR QEMU'S CIRRUS DEVICE" 
-        <virtualization@lists.linux-foundation.org>,
-        Networking <netdev@vger.kernel.org>,
-        linux-staging@lists.linux.dev,
-        linux-riscv <linux-riscv@lists.infradead.org>,
-        linux-rdma <linux-rdma@vger.kernel.org>,
-        linux-pci <linux-pci@vger.kernel.org>,
-        linux-parport@lists.infradead.org,
-        linux-omap <linux-omap@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        kvm list <kvm@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        bpf <bpf@vger.kernel.org>,
-        amd-gfx list <amd-gfx@lists.freedesktop.org>,
-        ALSA Development Mailing List <alsa-devel@alsa-project.org>,
-        Linux Memory Management List <linux-mm@kvack.org>
-References: <628ea118.wJYf60YnZco0hs9o%lkp@intel.com>
- <CAK8P3a10aGYNr=nKZVzv+1n_DRibSCCkoCLuTDtmhZskBMWfyw@mail.gmail.com>
-From:   "Chen, Rong A" <rong.a.chen@intel.com>
-Message-ID: <7a9f0c2d-f1e9-dd2f-6836-26d08bfa45a0@intel.com>
-Date:   Thu, 16 Jun 2022 13:11:03 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Firefox/78.0 Thunderbird/78.12.0
+        Thu, 16 Jun 2022 09:22:32 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 17F2A43486;
+        Thu, 16 Jun 2022 06:22:23 -0700 (PDT)
+X-UUID: 62ab30d1a28548cfb45cbc62c6664582-20220616
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.6,REQID:3280e293-eeb6-4f0c-8046-fba97e2c6688,OB:0,LO
+        B:0,IP:0,URL:5,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:5
+X-CID-META: VersionHash:b14ad71,CLOUDID:488fc348-4c92-421c-ad91-b806c0f58b2a,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
+        ,QS:nil,BEC:nil,COL:0
+X-UUID: 62ab30d1a28548cfb45cbc62c6664582-20220616
+Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw01.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 1138178916; Thu, 16 Jun 2022 21:22:17 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
+ mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Thu, 16 Jun 2022 21:22:16 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
+ Transport; Thu, 16 Jun 2022 21:22:16 +0800
+Message-ID: <aeebb6879d62865f8baf037e541c568eb9310f23.camel@mediatek.com>
+Subject: Re: [PATCH v11 01/10] dt-bindings: mediatek,dp: Add Display Port
+ binding
+From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
+To:     Rob Herring <robh@kernel.org>
+CC:     <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
+        <daniel@ffwll.ch>, <krzysztof.kozlowski+dt@linaro.org>,
+        <mripard@kernel.org>, <tzimmermann@suse.de>,
+        <matthias.bgg@gmail.com>, <deller@gmx.de>, <airlied@linux.ie>,
+        <msp@baylibre.com>, <granquet@baylibre.com>,
+        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
+        <angelogioacchino.delregno@collabora.com>, <ck.hu@mediatek.com>,
+        <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-fbdev@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Thu, 16 Jun 2022 21:22:16 +0800
+In-Reply-To: <20220614202336.GA2400714-robh@kernel.org>
+References: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
+         <20220610105522.13449-2-rex-bc.chen@mediatek.com>
+         <20220614202336.GA2400714-robh@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-In-Reply-To: <CAK8P3a10aGYNr=nKZVzv+1n_DRibSCCkoCLuTDtmhZskBMWfyw@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
 Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-
-
-On 5/26/2022 4:32 PM, Arnd Bergmann wrote:
-> On Wed, May 25, 2022 at 11:35 PM kernel test robot <lkp@intel.com> wrote:
->> .__mulsi3.o.cmd: No such file or directory
->> Makefile:686: arch/h8300/Makefile: No such file or directory
->> Makefile:765: arch/h8300/Makefile: No such file or directory
->> arch/Kconfig:10: can't open file "arch/h8300/Kconfig"
+On Tue, 2022-06-14 at 14:23 -0600, Rob Herring wrote:
+> On Fri, Jun 10, 2022 at 06:55:13PM +0800, Bo-Chen Chen wrote:
+> > From: Markus Schneider-Pargmann <msp@baylibre.com>
+> > 
+> > This controller is present on several mediatek hardware. Currently
+> > mt8195 and mt8395 have this controller without a functional
+> > difference,
+> > so only one compatible field is added.
+> > 
+> > The controller can have two forms, as a normal display port and as
+> > an
+> > embedded display port.
+> > 
+> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> > [Bo-Chen: Fix reviewers' comment]
+> > Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> > ---
+> >  .../display/mediatek/mediatek,dp.yaml         | 101
+> > ++++++++++++++++++
+> >  1 file changed, 101 insertions(+)
+> >  create mode 100644
+> > Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+> > 
+> > diff --git
+> > a/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.ya
+> > ml
+> > b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.ya
+> > ml
+> > new file mode 100644
+> > index 000000000000..10f50a0dcf49
+> > --- /dev/null
+> > +++
+> > b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.ya
+> > ml
+> > @@ -0,0 +1,101 @@
+> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > +%YAML 1.2
+> > +---
+> > +$id: 
+> > https://urldefense.com/v3/__http://devicetree.org/schemas/display/mediatek/mediatek,dp.yaml*__;Iw!!CTRNKA9wMg0ARbw!yqAl1KhfbHqHN7-5aeqhzqeOVhPU_Z5beko5q-y-s5pcfp1WL5oVGvY5UF4EfWm4PWjc5mjBwyBUMsr_RI45ipbhsw$
+> >  
+> > +$schema: 
+> > https://urldefense.com/v3/__http://devicetree.org/meta-schemas/core.yaml*__;Iw!!CTRNKA9wMg0ARbw!yqAl1KhfbHqHN7-5aeqhzqeOVhPU_Z5beko5q-y-s5pcfp1WL5oVGvY5UF4EfWm4PWjc5mjBwyBUMsr_RI5WzYKENQ$
+> >  
+> > +
+> > +title: MediaTek Display Port Controller
+> > +
+> > +maintainers:
+> > +  - Chun-Kuang Hu <chunkuang.hu@kernel.org>
+> > +  - Jitao shi <jitao.shi@mediatek.com>
+> > +
+> > +description: |
+> > +  Device tree bindings for the MediaTek display port and
+> > +  embedded display port controller present on some MediaTek SoCs.
+> > +
+> > +properties:
+> > +  compatible:
+> > +    enum:
+> > +      - mediatek,mt8195-dp-tx
+> > +      - mediatek,mt8195-edp-tx
+> > +
+> > +  reg:
+> > +    maxItems: 1
+> > +
+> > +  nvmem-cells:
+> > +    maxItems: 1
+> > +    description: efuse data for display port calibration
+> > +
+> > +  nvmem-cell-names:
+> > +    const: dp_calibration_data
+> > +
+> > +  power-domains:
+> > +    maxItems: 1
+> > +
+> > +  interrupts:
+> > +    maxItems: 1
+> > +
+> > +  ports:
+> > +    $ref: /schemas/graph.yaml#/properties/ports
+> > +    properties:
+> > +      port@0:
+> > +        $ref: /schemas/graph.yaml#/properties/port
+> > +        description: Input endpoint of the controller, usually
+> > dp_intf
+> > +
+> > +      port@1:
+> > +        $ref: /schemas/graph.yaml#/properties/port
+> > +        description: Output endpoint of the controller
+> > +
+> > +    required:
+> > +      - port@0
+> > +      - port@1
+> > +
+> > +  max-lanes:
+> > +    maxItems: 1
+> > +    description: maximum number of lanes supported by the
+> > hardware.
 > 
-> Please stop building h8300  after the asm-generic tree is merged, the
-> architecture is getting removed.
-> 
->          Arnd
+> We already have a 'data-lanes' property defined in 
+> 'video-interfaces.yaml' that can serve this purpose.
 > 
 
-Hi Arnd,
+Hello Rob,
 
-Thanks for the advice, we have stopped building h8300 for new kernel.
+Thanks for review.
+From the description of video-interfaces.yaml, I think it's not quite
+match what we need. We only need this value be one of "1,2,4".
 
-Best Regards,
-Rong Chen
+Any other suggestion?
+
+> > +
+> > +  max-linkrate:
+> > +    maxItems: 1
+> > +    description: maximum link rate supported by the hardware and
+> > unit is MHz.
+> 
+> Then use '-mhz' suffix on the property name. Then you don't need a
+> type 
+> (or maxItems).
+
+OK, I will write like this:
+
+  max-linkrate-mhz:
+    enum: [ 1620, 2700, 5400, 8100 ]
+    description: maximum link rate supported by the hardware.
+
+BRs,
+Bo-Chen
+

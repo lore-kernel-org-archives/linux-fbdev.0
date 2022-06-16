@@ -2,68 +2,69 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C60D2C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 16 Jun 2022 22:18:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93EECC43334
+	for <linux-fbdev@archiver.kernel.org>; Thu, 16 Jun 2022 23:21:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1378717AbiFPWSY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 16 Jun 2022 18:18:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58336 "EHLO
+        id S1379392AbiFPXVe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 16 Jun 2022 19:21:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51660 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1378901AbiFPWSX (ORCPT
+        with ESMTP id S1379394AbiFPXVc (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 16 Jun 2022 18:18:23 -0400
+        Thu, 16 Jun 2022 19:21:32 -0400
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 5871160A8C
-        for <linux-fbdev@vger.kernel.org>; Thu, 16 Jun 2022 15:18:20 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id B957862BE4
+        for <linux-fbdev@vger.kernel.org>; Thu, 16 Jun 2022 16:21:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1655417899;
+        s=mimecast20190719; t=1655421690;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=9DWpHhljjMLBCYm+B5HqD4SLrNJSN/X7QHRnWVk9iss=;
-        b=GceitrHIFDD5iUA/8ivy9MCo+HVZlX1ADGJ/2dboqK01VcB8IFiUFg131tAHx/HmlMgCHO
-        Ls20sXernssCz/KtYUQ6SCfFM9QCdbhsHNfXQMRkzTrPT3xrRIaYjiH4N2njlBZ5NCmiNn
-        bkltKINlILgHM591eaKy/IfNcg7RLKU=
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
- [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=7Sk05nK8yr31d0PfEhMiImAlc8BO2DlseMPnx7U4OyI=;
+        b=NEGHd1xkIpwE2qv/21pAiuv8ONM7XqT1hUusrSgV7a6JUlSe5Wp3rMvTQR1/JzU1B0ll+p
+        i9lXdHt9b/ietDqmpXmijoFtcMprjgo2IUkhey7xRJIfxfIOXcCoHj9sQOaD76cmxkD5Pg
+        ZUoSlyFpmd8dXo4kcROSYHuRqB5fDus=
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-563-7If8F7BoM72yYDds9TZfTA-1; Thu, 16 Jun 2022 18:18:10 -0400
-X-MC-Unique: 7If8F7BoM72yYDds9TZfTA-1
-Received: by mail-wm1-f72.google.com with SMTP id k15-20020a7bc40f000000b0039c4b7f7d09so1402225wmi.8
-        for <linux-fbdev@vger.kernel.org>; Thu, 16 Jun 2022 15:18:10 -0700 (PDT)
+ us-mta-343-mBZCHx94O16dcdprFZIxXQ-1; Thu, 16 Jun 2022 19:21:21 -0400
+X-MC-Unique: mBZCHx94O16dcdprFZIxXQ-1
+Received: by mail-wm1-f70.google.com with SMTP id p22-20020a05600c359600b0039c7b23a1c7so1817860wmq.2
+        for <linux-fbdev@vger.kernel.org>; Thu, 16 Jun 2022 16:21:21 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
+         :content-language:from:to:cc:references:in-reply-to
          :content-transfer-encoding;
-        bh=9DWpHhljjMLBCYm+B5HqD4SLrNJSN/X7QHRnWVk9iss=;
-        b=WvzutCljWhQ2Ewi6Na7Fd25otOO/Gefa0TQlQ7UFIEE3vB5PRry3LeTr0Wk/aijeS1
-         nAfw7xwdKi6VU2gSjRPomMUHnTSaIWgHubiqW9sjo3r+xpb/bsMQRoRrXYm0AutkWkCs
-         gk7PxjvnFczgMM38IV6I8UFofW71cFkETTIC6ez/szemafeOrGLeIsUgPFTTd7q6gnq7
-         58vJB4QJxDkJ+gB3+GgsVHJCvZZx4JyP6dzCqCzIdEo6IA7xJ5puQjTJ1lOcudC+RTUc
-         X8z8TDHvXMckcFTVJXa/i784xiljnuqIbNepmQd0JTDGcB7NyY63jOcY6tZO5SQJMTXb
-         7yBA==
-X-Gm-Message-State: AJIora9C4HX5CARCGy/XqBPWsr+XZxsdfwVrMMuI5Sn8Y3U8iRSvM6Xm
-        /MlkosJlF8oRJmQpHmKGelrmLWtjHFojrk/PNk4l59F20gaBHaKIDbqr9ReSO9PoaMbxczODyeH
-        7A2X8u0PAOWlv/o1HXoNByWo=
-X-Received: by 2002:adf:e181:0:b0:213:bbe1:ba66 with SMTP id az1-20020adfe181000000b00213bbe1ba66mr6215468wrb.325.1655417887925;
-        Thu, 16 Jun 2022 15:18:07 -0700 (PDT)
-X-Google-Smtp-Source: AGRyM1uO1cJJMNUcHhX2JKlWJowzj7WQI64QGyPrnUyRc32kSMp0t+NjedvVfCVD7/vwLeNG3ZUpmw==
-X-Received: by 2002:adf:e181:0:b0:213:bbe1:ba66 with SMTP id az1-20020adfe181000000b00213bbe1ba66mr6215452wrb.325.1655417887629;
-        Thu, 16 Jun 2022 15:18:07 -0700 (PDT)
+        bh=7Sk05nK8yr31d0PfEhMiImAlc8BO2DlseMPnx7U4OyI=;
+        b=echeVqdxJyNeJOjxDnd8e4GpkOoFKSgr6/u6qheZz2PG9ImzPk+E1BLNyHdxNcQB6C
+         Dkn0Dx8RhuijClJQ887Zl/40DRj5yXAJp0ZQzmRru8DJ8eCFWc6zV2xkpg0HSLKZQhQO
+         YPzGdmEqkuVKvuchVosjuNAxHpJcGBhU1mfdnRziBynMAjA+P/7wqrgY2yg3DgLDUkt0
+         AE3yoMrrevV47SOgiXmRpovs9+5rSeOfYt0Voa4vNC6jcMvSDQ8ci2QexTHfBciYWyIi
+         HJarGOlsg7RO/FpNSgzo4RUCTS0Onwdw6fx61TkFQI16JiHhRntbKnkWD3h3diN5D2gD
+         HPyw==
+X-Gm-Message-State: AJIora/SjRWySVdQp7FDeNuhobtOYIG/dfScVrn+H0I1qNxfGjVrSBgm
+        h3WEVGYYhnc66AJOYGduE7KYHQKsJGSdJZnjvLPZdNThcIRWrjey6n27rTrSTn9CxFkw+C1EMux
+        nSfXZAKMSzrdOf5eoFZRzOb8=
+X-Received: by 2002:adf:dd50:0:b0:21a:ba8:6c8d with SMTP id u16-20020adfdd50000000b0021a0ba86c8dmr6836469wrm.133.1655421680442;
+        Thu, 16 Jun 2022 16:21:20 -0700 (PDT)
+X-Google-Smtp-Source: AGRyM1sb3IFUqs3ZqGZX9qvUxp1wuRL6DIG8sHZblCmseyvlgwUjG0m1h+TgWCsvv3Al2+33swPkSg==
+X-Received: by 2002:adf:dd50:0:b0:21a:ba8:6c8d with SMTP id u16-20020adfdd50000000b0021a0ba86c8dmr6836452wrm.133.1655421680150;
+        Thu, 16 Jun 2022 16:21:20 -0700 (PDT)
 Received: from [192.168.1.129] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id l15-20020a05600c2ccf00b003974a00697esm7435615wmc.38.2022.06.16.15.18.06
+        by smtp.gmail.com with ESMTPSA id r15-20020a05600c35cf00b0039c4ff5e0a7sm3658603wmq.38.2022.06.16.16.21.19
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 16 Jun 2022 15:18:07 -0700 (PDT)
-Message-ID: <a633d605-4cb3-2e04-1818-85892cf6f7b0@redhat.com>
-Date:   Fri, 17 Jun 2022 00:18:05 +0200
+        Thu, 16 Jun 2022 16:21:19 -0700 (PDT)
+Message-ID: <97565fb5-cf7f-5991-6fb3-db96fe239ee8@redhat.com>
+Date:   Fri, 17 Jun 2022 01:21:18 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.10.0
 Subject: Re: [PATCH v6 3/5] fbdev: Disable sysfb device registration when
  removing conflicting FBs
 Content-Language: en-US
+From:   Javier Martinez Canillas <javierm@redhat.com>
 To:     Zack Rusin <zackr@vmware.com>,
         "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Cc:     "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
@@ -82,81 +83,32 @@ References: <20220607182338.344270-1-javierm@redhat.com>
  <de83ae8cb6de7ee7c88aa2121513e91bb0a74608.camel@vmware.com>
  <38473dcd-0666-67b9-28bd-afa2d0ce434a@redhat.com>
  <603e3613b9b8ff7815b63f294510d417b5b12937.camel@vmware.com>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <603e3613b9b8ff7815b63f294510d417b5b12937.camel@vmware.com>
+ <a633d605-4cb3-2e04-1818-85892cf6f7b0@redhat.com>
+In-Reply-To: <a633d605-4cb3-2e04-1818-85892cf6f7b0@redhat.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 6/16/22 23:03, Zack Rusin wrote:
-> On Thu, 2022-06-16 at 21:55 +0200, Javier Martinez Canillas wrote:
->> Hello Zack,
->>
->> On 6/16/22 21:29, Zack Rusin wrote:
->>> On Tue, 2022-06-07 at 20:23 +0200, Javier Martinez Canillas wrote:
->>>> The platform devices registered by sysfb match with firmware-based DRM or
->>>> fbdev drivers, that are used to have early graphics using a framebuffer
->>>> provided by the system firmware.
->>>>
->>
->> [snip]
->>
->>>
->>> Hi, Javier.
->>>
->>> This change broke arm64 with vmwgfx. We get a kernel oops at boot (let me know if
->>> you'd like .config or just have us test something directly for you):
->>>
->>
->> Yes please share your .config and I'll try to reproduce on an arm64 machine.
-> 
-> Attached. It might be a little hard to reproduce unless you have an arm64 machine
-> with a dedicated gpu. You'll need a system that actually transitions from a generic
-> fb driver (e.g. efifb) to the dedicated one.
->
+On 6/17/22 00:18, Javier Martinez Canillas wrote:
+> On 6/16/22 23:03, Zack Rusin wrote:
 
-Yes, all my testing for this was done with a rpi4 so I should be able to reproduce
-that case. I'm confused though because I tested efifb -> vc4, simplefb -> vc4 and
-simpledrm -> vc4.
- 
->>>
->>>  Unable to handle kernel NULL pointer dereference at virtual address
->>> 0000000000000008
->>>  Mem abort info:
->>>    ESR = 0x96000004
->>>    EC = 0x25: DABT (current EL), IL = 32 bits
->>>    SET = 0, FnV = 0
->>>    EA = 0, S1PTW = 0
->>>    FSC = 0x04: level 0 translation fault
->>>  Data abort info:
->>>    ISV = 0, ISS = 0x00000004
->>>    CM = 0, WnR = 0
->>>  user pgtable: 4k pages, 48-bit VAs, pgdp=00000001787ee000
->>>  [0000000000000008] pgd=0000000000000000, p4d=0000000000000000
->>>  Internal error: Oops: 96000004 [#1] SMP
->>>  Modules linked in: vmwgfx(+) e1000e(+) nvme ahci(+) xhci_pci drm_ttm_helper ttm
->>> sha256_arm64 sha1_ce nvme_core xhci_pci_renesas aes_neon_bs aes_neon_blk aes>
->>>  CPU: 3 PID: 215 Comm: systemd-udevd Tainted: G     U            5.18.0-rc5-vmwgfx
->>> #12
->>
->> I'm confused, your kernel version seems to be 5.18.0-rc5 but this patch
->> is only in drm-misc-next now and will land in 5.20...
->>
->> Did you backport it? Can you please try to reproduce with latest drm-tip ?
+[snip]
+
 > 
-> No, this is drm-misc-next as of yesterday. drm-misc-next was still on 5.18.0-rc5
-> yesterday.
+> I'll look at this tomorrow but in the meantime, could you please look if the following
+> commits on top of drm-misc-next help ?
+> 
+> d258d00fb9c7 fbdev: efifb: Cleanup fb_info in .fb_destroy rather than .remove
+> 1b5853dfab7f fbdev: efifb: Fix a use-after-free due early fb_info cleanup
 > 
 
-Right! I looked at the base for drm-tip but forgot that drm-misc was still on 5.18.
+Scratch that. I see in your config now that you are not using efifb but instead
+simpledrm: CONFIG_DRM_SIMPLEDRM=y, CONFIG_SYSFB_SIMPLEFB=y and CONFIG_DRM_VMWGFX.
 
-I'll look at this tomorrow but in the meantime, could you please look if the following
-commits on top of drm-misc-next help ?
-
-d258d00fb9c7 fbdev: efifb: Cleanup fb_info in .fb_destroy rather than .remove
-1b5853dfab7f fbdev: efifb: Fix a use-after-free due early fb_info cleanup
+Since you mentioned efifb I misunderstood that you are using it. Anyways, as
+said I'll investigate this tomorrow.
 
 -- 
 Best regards,

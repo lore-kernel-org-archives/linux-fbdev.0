@@ -2,188 +2,166 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73169C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 16 Jun 2022 21:28:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C60D2C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 16 Jun 2022 22:18:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1378766AbiFPV2U (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 16 Jun 2022 17:28:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47346 "EHLO
+        id S1378717AbiFPWSY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 16 Jun 2022 18:18:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58336 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1379114AbiFPV2S (ORCPT
+        with ESMTP id S1378901AbiFPWSX (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 16 Jun 2022 17:28:18 -0400
-Received: from mail-il1-f179.google.com (mail-il1-f179.google.com [209.85.166.179])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C84BC21820;
-        Thu, 16 Jun 2022 14:28:16 -0700 (PDT)
-Received: by mail-il1-f179.google.com with SMTP id a15so1774160ilq.12;
-        Thu, 16 Jun 2022 14:28:16 -0700 (PDT)
+        Thu, 16 Jun 2022 18:18:23 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 5871160A8C
+        for <linux-fbdev@vger.kernel.org>; Thu, 16 Jun 2022 15:18:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1655417899;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=9DWpHhljjMLBCYm+B5HqD4SLrNJSN/X7QHRnWVk9iss=;
+        b=GceitrHIFDD5iUA/8ivy9MCo+HVZlX1ADGJ/2dboqK01VcB8IFiUFg131tAHx/HmlMgCHO
+        Ls20sXernssCz/KtYUQ6SCfFM9QCdbhsHNfXQMRkzTrPT3xrRIaYjiH4N2njlBZ5NCmiNn
+        bkltKINlILgHM591eaKy/IfNcg7RLKU=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-563-7If8F7BoM72yYDds9TZfTA-1; Thu, 16 Jun 2022 18:18:10 -0400
+X-MC-Unique: 7If8F7BoM72yYDds9TZfTA-1
+Received: by mail-wm1-f72.google.com with SMTP id k15-20020a7bc40f000000b0039c4b7f7d09so1402225wmi.8
+        for <linux-fbdev@vger.kernel.org>; Thu, 16 Jun 2022 15:18:10 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=p2fPALb1JPQ4AHcfCxgMf5Jxk8npv4hWtBM7JpKyakw=;
-        b=xXBw8olggW/EFG3gxIajH9Cyw3KXzKU2WDukiTr4xdXjOVT3nI1brjXLefTc1cUg3m
-         BXiMqQKDlCHk7Q3KvIdd9y27NkLm9Ch8AEGjcN0PBzKvBC06bFiail1SXoZhOft0g+I2
-         uALKqYXn3YOnCx4RH7jXA9zLBh6SlowvIOmkqKYhpyasBYUpBPDOCptQpQ6Mi8ospTIm
-         AvghNzUSga4Y9gyLc2Hlns6XR8bJsDccPxZ9qS3fpSi2jBt8VlrqP4Pmv/e2N/bNsjfM
-         IwOVp1GakJYPBAtqhkF8qfIUd4rtD+Map7cOjLFbegNQHYpCMmUQQ8+4WsoEsoslbIA5
-         /KpQ==
-X-Gm-Message-State: AJIora8OvREZqWa+VJ51BAvoXn72DOblqvetfILd55EPI5znZeZMAp4j
-        RjC4vMIw6vh24TqsMYtuMw==
-X-Google-Smtp-Source: AGRyM1vXz8zr1qepnCDtLqZTRG9xKb9gNBJydHo8HDS0dVqWruV80818zrXGU2iTTEoR7y/TLi/J4w==
-X-Received: by 2002:a05:6e02:1bc8:b0:2d4:342:9c68 with SMTP id x8-20020a056e021bc800b002d403429c68mr4075981ilv.254.1655414896016;
-        Thu, 16 Jun 2022 14:28:16 -0700 (PDT)
-Received: from robh.at.kernel.org ([64.188.179.251])
-        by smtp.gmail.com with ESMTPSA id j8-20020a02a688000000b003314f874ac8sm1357939jam.36.2022.06.16.14.28.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Jun 2022 14:28:15 -0700 (PDT)
-Received: (nullmailer pid 4024739 invoked by uid 1000);
-        Thu, 16 Jun 2022 21:28:13 -0000
-Date:   Thu, 16 Jun 2022 15:28:13 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Rex-BC Chen <rex-bc.chen@mediatek.com>
-Cc:     chunkuang.hu@kernel.org, p.zabel@pengutronix.de, daniel@ffwll.ch,
-        krzysztof.kozlowski+dt@linaro.org, mripard@kernel.org,
-        tzimmermann@suse.de, matthias.bgg@gmail.com, deller@gmx.de,
-        airlied@linux.ie, msp@baylibre.com, granquet@baylibre.com,
-        jitao.shi@mediatek.com, wenst@chromium.org,
-        angelogioacchino.delregno@collabora.com, ck.hu@mediatek.com,
-        dri-devel@lists.freedesktop.org,
-        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-fbdev@vger.kernel.org,
-        Project_Global_Chrome_Upstream_Group@mediatek.com
-Subject: Re: [PATCH v11 01/10] dt-bindings: mediatek,dp: Add Display Port
- binding
-Message-ID: <20220616212813.GA3991754-robh@kernel.org>
-References: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
- <20220610105522.13449-2-rex-bc.chen@mediatek.com>
- <20220614202336.GA2400714-robh@kernel.org>
- <aeebb6879d62865f8baf037e541c568eb9310f23.camel@mediatek.com>
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=9DWpHhljjMLBCYm+B5HqD4SLrNJSN/X7QHRnWVk9iss=;
+        b=WvzutCljWhQ2Ewi6Na7Fd25otOO/Gefa0TQlQ7UFIEE3vB5PRry3LeTr0Wk/aijeS1
+         nAfw7xwdKi6VU2gSjRPomMUHnTSaIWgHubiqW9sjo3r+xpb/bsMQRoRrXYm0AutkWkCs
+         gk7PxjvnFczgMM38IV6I8UFofW71cFkETTIC6ez/szemafeOrGLeIsUgPFTTd7q6gnq7
+         58vJB4QJxDkJ+gB3+GgsVHJCvZZx4JyP6dzCqCzIdEo6IA7xJ5puQjTJ1lOcudC+RTUc
+         X8z8TDHvXMckcFTVJXa/i784xiljnuqIbNepmQd0JTDGcB7NyY63jOcY6tZO5SQJMTXb
+         7yBA==
+X-Gm-Message-State: AJIora9C4HX5CARCGy/XqBPWsr+XZxsdfwVrMMuI5Sn8Y3U8iRSvM6Xm
+        /MlkosJlF8oRJmQpHmKGelrmLWtjHFojrk/PNk4l59F20gaBHaKIDbqr9ReSO9PoaMbxczODyeH
+        7A2X8u0PAOWlv/o1HXoNByWo=
+X-Received: by 2002:adf:e181:0:b0:213:bbe1:ba66 with SMTP id az1-20020adfe181000000b00213bbe1ba66mr6215468wrb.325.1655417887925;
+        Thu, 16 Jun 2022 15:18:07 -0700 (PDT)
+X-Google-Smtp-Source: AGRyM1uO1cJJMNUcHhX2JKlWJowzj7WQI64QGyPrnUyRc32kSMp0t+NjedvVfCVD7/vwLeNG3ZUpmw==
+X-Received: by 2002:adf:e181:0:b0:213:bbe1:ba66 with SMTP id az1-20020adfe181000000b00213bbe1ba66mr6215452wrb.325.1655417887629;
+        Thu, 16 Jun 2022 15:18:07 -0700 (PDT)
+Received: from [192.168.1.129] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id l15-20020a05600c2ccf00b003974a00697esm7435615wmc.38.2022.06.16.15.18.06
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 16 Jun 2022 15:18:07 -0700 (PDT)
+Message-ID: <a633d605-4cb3-2e04-1818-85892cf6f7b0@redhat.com>
+Date:   Fri, 17 Jun 2022 00:18:05 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aeebb6879d62865f8baf037e541c568eb9310f23.camel@mediatek.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.10.0
+Subject: Re: [PATCH v6 3/5] fbdev: Disable sysfb device registration when
+ removing conflicting FBs
+Content-Language: en-US
+To:     Zack Rusin <zackr@vmware.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc:     "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "kraxel@redhat.com" <kraxel@redhat.com>,
+        "tzimmermann@suse.de" <tzimmermann@suse.de>,
+        "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+        "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "daniel.vetter@ffwll.ch" <daniel.vetter@ffwll.ch>,
+        "lersek@redhat.com" <lersek@redhat.com>,
+        "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+        "deller@gmx.de" <deller@gmx.de>,
+        Linux-graphics-maintainer <Linux-graphics-maintainer@vmware.com>
+References: <20220607182338.344270-1-javierm@redhat.com>
+ <20220607182338.344270-4-javierm@redhat.com>
+ <de83ae8cb6de7ee7c88aa2121513e91bb0a74608.camel@vmware.com>
+ <38473dcd-0666-67b9-28bd-afa2d0ce434a@redhat.com>
+ <603e3613b9b8ff7815b63f294510d417b5b12937.camel@vmware.com>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <603e3613b9b8ff7815b63f294510d417b5b12937.camel@vmware.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Jun 16, 2022 at 09:22:16PM +0800, Rex-BC Chen wrote:
-> On Tue, 2022-06-14 at 14:23 -0600, Rob Herring wrote:
-> > On Fri, Jun 10, 2022 at 06:55:13PM +0800, Bo-Chen Chen wrote:
-> > > From: Markus Schneider-Pargmann <msp@baylibre.com>
-> > > 
-> > > This controller is present on several mediatek hardware. Currently
-> > > mt8195 and mt8395 have this controller without a functional
-> > > difference,
-> > > so only one compatible field is added.
-> > > 
-> > > The controller can have two forms, as a normal display port and as
-> > > an
-> > > embedded display port.
-> > > 
-> > > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> > > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> > > [Bo-Chen: Fix reviewers' comment]
-> > > Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
-> > > ---
-> > >  .../display/mediatek/mediatek,dp.yaml         | 101
-> > > ++++++++++++++++++
-> > >  1 file changed, 101 insertions(+)
-> > >  create mode 100644
-> > > Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
-> > > 
-> > > diff --git
-> > > a/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.ya
-> > > ml
-> > > b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.ya
-> > > ml
-> > > new file mode 100644
-> > > index 000000000000..10f50a0dcf49
-> > > --- /dev/null
-> > > +++
-> > > b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.ya
-> > > ml
-> > > @@ -0,0 +1,101 @@
-> > > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > > +%YAML 1.2
-> > > +---
-> > > +$id: 
-> > > https://urldefense.com/v3/__http://devicetree.org/schemas/display/mediatek/mediatek,dp.yaml*__;Iw!!CTRNKA9wMg0ARbw!yqAl1KhfbHqHN7-5aeqhzqeOVhPU_Z5beko5q-y-s5pcfp1WL5oVGvY5UF4EfWm4PWjc5mjBwyBUMsr_RI45ipbhsw$
-> > >  
-> > > +$schema: 
-> > > https://urldefense.com/v3/__http://devicetree.org/meta-schemas/core.yaml*__;Iw!!CTRNKA9wMg0ARbw!yqAl1KhfbHqHN7-5aeqhzqeOVhPU_Z5beko5q-y-s5pcfp1WL5oVGvY5UF4EfWm4PWjc5mjBwyBUMsr_RI5WzYKENQ$
-> > >  
-> > > +
-> > > +title: MediaTek Display Port Controller
-> > > +
-> > > +maintainers:
-> > > +  - Chun-Kuang Hu <chunkuang.hu@kernel.org>
-> > > +  - Jitao shi <jitao.shi@mediatek.com>
-> > > +
-> > > +description: |
-> > > +  Device tree bindings for the MediaTek display port and
-> > > +  embedded display port controller present on some MediaTek SoCs.
-> > > +
-> > > +properties:
-> > > +  compatible:
-> > > +    enum:
-> > > +      - mediatek,mt8195-dp-tx
-> > > +      - mediatek,mt8195-edp-tx
-> > > +
-> > > +  reg:
-> > > +    maxItems: 1
-> > > +
-> > > +  nvmem-cells:
-> > > +    maxItems: 1
-> > > +    description: efuse data for display port calibration
-> > > +
-> > > +  nvmem-cell-names:
-> > > +    const: dp_calibration_data
-> > > +
-> > > +  power-domains:
-> > > +    maxItems: 1
-> > > +
-> > > +  interrupts:
-> > > +    maxItems: 1
-> > > +
-> > > +  ports:
-> > > +    $ref: /schemas/graph.yaml#/properties/ports
-> > > +    properties:
-> > > +      port@0:
-> > > +        $ref: /schemas/graph.yaml#/properties/port
-> > > +        description: Input endpoint of the controller, usually
-> > > dp_intf
-> > > +
-> > > +      port@1:
-> > > +        $ref: /schemas/graph.yaml#/properties/port
-> > > +        description: Output endpoint of the controller
-> > > +
-> > > +    required:
-> > > +      - port@0
-> > > +      - port@1
-> > > +
-> > > +  max-lanes:
-> > > +    maxItems: 1
-> > > +    description: maximum number of lanes supported by the
-> > > hardware.
-> > 
-> > We already have a 'data-lanes' property defined in 
-> > 'video-interfaces.yaml' that can serve this purpose.
-> > 
+On 6/16/22 23:03, Zack Rusin wrote:
+> On Thu, 2022-06-16 at 21:55 +0200, Javier Martinez Canillas wrote:
+>> Hello Zack,
+>>
+>> On 6/16/22 21:29, Zack Rusin wrote:
+>>> On Tue, 2022-06-07 at 20:23 +0200, Javier Martinez Canillas wrote:
+>>>> The platform devices registered by sysfb match with firmware-based DRM or
+>>>> fbdev drivers, that are used to have early graphics using a framebuffer
+>>>> provided by the system firmware.
+>>>>
+>>
+>> [snip]
+>>
+>>>
+>>> Hi, Javier.
+>>>
+>>> This change broke arm64 with vmwgfx. We get a kernel oops at boot (let me know if
+>>> you'd like .config or just have us test something directly for you):
+>>>
+>>
+>> Yes please share your .config and I'll try to reproduce on an arm64 machine.
 > 
-> Hello Rob,
+> Attached. It might be a little hard to reproduce unless you have an arm64 machine
+> with a dedicated gpu. You'll need a system that actually transitions from a generic
+> fb driver (e.g. efifb) to the dedicated one.
+>
+
+Yes, all my testing for this was done with a rpi4 so I should be able to reproduce
+that case. I'm confused though because I tested efifb -> vc4, simplefb -> vc4 and
+simpledrm -> vc4.
+ 
+>>>
+>>>  Unable to handle kernel NULL pointer dereference at virtual address
+>>> 0000000000000008
+>>>  Mem abort info:
+>>>    ESR = 0x96000004
+>>>    EC = 0x25: DABT (current EL), IL = 32 bits
+>>>    SET = 0, FnV = 0
+>>>    EA = 0, S1PTW = 0
+>>>    FSC = 0x04: level 0 translation fault
+>>>  Data abort info:
+>>>    ISV = 0, ISS = 0x00000004
+>>>    CM = 0, WnR = 0
+>>>  user pgtable: 4k pages, 48-bit VAs, pgdp=00000001787ee000
+>>>  [0000000000000008] pgd=0000000000000000, p4d=0000000000000000
+>>>  Internal error: Oops: 96000004 [#1] SMP
+>>>  Modules linked in: vmwgfx(+) e1000e(+) nvme ahci(+) xhci_pci drm_ttm_helper ttm
+>>> sha256_arm64 sha1_ce nvme_core xhci_pci_renesas aes_neon_bs aes_neon_blk aes>
+>>>  CPU: 3 PID: 215 Comm: systemd-udevd Tainted: G     U            5.18.0-rc5-vmwgfx
+>>> #12
+>>
+>> I'm confused, your kernel version seems to be 5.18.0-rc5 but this patch
+>> is only in drm-misc-next now and will land in 5.20...
+>>
+>> Did you backport it? Can you please try to reproduce with latest drm-tip ?
 > 
-> Thanks for review.
-> From the description of video-interfaces.yaml, I think it's not quite
-> match what we need. We only need this value be one of "1,2,4".
+> No, this is drm-misc-next as of yesterday. drm-misc-next was still on 5.18.0-rc5
+> yesterday.
+> 
 
-data-lanes = <0>;
-data-lanes = <0 1>;
-data-lanes = <0 1 2 3>;
+Right! I looked at the base for drm-tip but forgot that drm-misc was still on 5.18.
 
-Limiting the number of lanes to something less than the max is exactly 
-how this property is used in addition to being able to show the mapping 
-of lanes.
+I'll look at this tomorrow but in the meantime, could you please look if the following
+commits on top of drm-misc-next help ?
 
-Rob
+d258d00fb9c7 fbdev: efifb: Cleanup fb_info in .fb_destroy rather than .remove
+1b5853dfab7f fbdev: efifb: Fix a use-after-free due early fb_info cleanup
+
+-- 
+Best regards,
+
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
+

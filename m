@@ -2,95 +2,121 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31628C43334
-	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Jun 2022 12:30:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5867C43334
+	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Jun 2022 12:35:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240242AbiFTMaY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 20 Jun 2022 08:30:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46044 "EHLO
+        id S240242AbiFTMfA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 20 Jun 2022 08:35:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50644 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240064AbiFTMaU (ORCPT
+        with ESMTP id S234951AbiFTMe7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 20 Jun 2022 08:30:20 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF8E7E08F
-        for <linux-fbdev@vger.kernel.org>; Mon, 20 Jun 2022 05:30:17 -0700 (PDT)
+        Mon, 20 Jun 2022 08:34:59 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 56D88C10
+        for <linux-fbdev@vger.kernel.org>; Mon, 20 Jun 2022 05:34:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1655728210;
-        bh=SZC9i4q3AjIEWvQPjldbgNfTeLSSyLLWj2cIL0ok6tE=;
+        s=badeba3b8450; t=1655728495;
+        bh=qr61WmqUy9iVItqBVKA2vmdmUlCCwAezBVkzuKH/KpM=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=ESxmXJBXF29ue2WM996LDEofYVL8qgdDy8Kc5KeQKJIVJpZuZAu1g6etkO1fkitNA
-         gUtCki3E/brH7kYIlbt2xxK8dbct22dtXAWRESWoO2jsRVfbihNeCz62DxsanJnEnB
-         8u++8ZHovS0/msTnUqifdL7NGcFo42dB/ibuV0kU=
+        b=jppLNoLr5EEeUza1xhzdsBXCy/RjhaAkxCILhq0RBzqF//wxyJOGZr60SZ7tIuoAH
+         1c7pLcYTdLMSDwYhF9eVES8EnxwZGNy7iQViiPvtpaS92ymzgwMXl63h5VwJQMMyRs
+         Zm90cASX83uTlRERBndToHs2fZNWHvv7kxeFpjDw=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.174.149]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1N5VDE-1nbGNE0UMk-016v4B; Mon, 20
- Jun 2022 14:30:10 +0200
-Message-ID: <abd53f06-1347-8b85-1b73-53073eb76e51@gmx.de>
-Date:   Mon, 20 Jun 2022 14:29:48 +0200
+Received: from [192.168.20.60] ([92.116.174.149]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MUosN-1oCEkI0Yr3-00QjsX; Mon, 20
+ Jun 2022 14:34:55 +0200
+Message-ID: <62468431-19b7-abb1-f561-a8be887eba14@gmx.de>
+Date:   Mon, 20 Jun 2022 14:34:33 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.10.0
-Subject: Re: [PATCH] fbdev: Fix syntax errors in comments
+Subject: Re: [PATCH 1/2] video: fbdev: intelfb: Use aperture size from
+ pci_resource_len
 Content-Language: en-US
-To:     Xiang wangx <wangxiang@cdjrlc.com>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20220605085913.11682-1-wangxiang@cdjrlc.com>
+To:     Petr Cvek <petrcvekcz@gmail.com>, mbroemme@libmpq.org
+Cc:     linux-fbdev@vger.kernel.org
+References: <2a722588-e41d-75f7-dad6-944b2b1daa4a@gmail.com>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220605085913.11682-1-wangxiang@cdjrlc.com>
+In-Reply-To: <2a722588-e41d-75f7-dad6-944b2b1daa4a@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:NgguLeVq+BxBdHFUz6YBPO/hwxZVjad8WT7Ol47Nn/6wqQr+af8
- aKcSyrj0PLjMCghSVexAxbi8NH/0ExXjt1RMLigUfPrJ5nuET0KobGVPDQ4+xVBxunz9djX
- dbwZTpy8cpm5HQB2DsQt6HEz2G9G5wWF7TkKjp3x4x4iOeGHt3nfMFpgkqE86OQRgDo8CEi
- A10N4SuzBcOhldK/tA4XQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:f006Hje8nhE=:2SGZwaEvza7qPSflngyc0r
- VEMo+AFxVvA/9Bs/D8vYfZF3KhYVm+u7YfZvUayPniLd+Hq4QflCavtAj608fLilhsnmgoqAX
- 7kWuteWH4bdDXSCPG53gLNyE7mt1JL7Qo+GHm7nY55U+3H4LXPMbWxUpfsxRBXw5egnk+nYbE
- HktGXtt+qCh51r4ah/D6rZjmjaHjr2yR6YMzaCzCkLAPL1+2WTEdwAGZqR7HHTOLRvpZY4xgT
- MC4/lUt7poFJCmBIWyc4yEK3Nx5nMzKV3uOsC5A8XGHKgfR+ysc1IfEEIHHVsG/TcCjtySkAv
- oBAsdWSZKnsUN8RT+syfqF3Y0ryxCzqWdO6Vat5+L2blxjeyyxbG16Kbi8fD9sZ2CNNw5RhWE
- IVohJz5bELlM2+Yv+L//mGsdJTna0Q6dyTsowpFfLuDHpllHozSrmWfpVaNrPD/2qWMPiIaE1
- 8hDjT+Ez8uDotm1XUTxsVcHOL3Cf/L18T1Fe5McMuVoxy0dQlz9yd62MFHsKd5em75t2eWivP
- XJqbtXdZil4Yfx+4nCEeESF+P+3mADu14nZx8XPaP6aLyVUzpsnRan9bHYHsnEczRiSM9QDtX
- rtbZWzMAE0E9UNSlBXyGIZhCJtaC9eprAiLF93yXZwAJdCgBiElPOUyTF7YwRJqe0hrLupbV5
- uzGfsqW1jrWxaWteK3fSNBY7EHbzKcjfiB86zLTke8BHih8H4to1zPXDf7vuJ7tM2jTfa7nLG
- FFcDFgCQUBfqdxl7tZyD2S3P+xEDy9FkBmf8SQyYm4MSijSbD99yTR6w25tgkx7XN0bpOb2kX
- GlLetfNiXbvOrEKPS4/PLgv2Wk2PupRdlXOQdNQR1Tl0QEqDztkOBm/XulMHXfrKn/Sfb+5xz
- uQFNOKVZuiecqy46Z25onGDes5u0fnVT6cK4KyEsRMRsTdGJaU7ChO0tEWKa7jU8/86weoaPy
- hNthyWUWKM1sqzVOmM0AkfrgiyF/0NAUGut5W9xk9V06yu9d5BgkX4+NY4V2tfAQNRExassUM
- BXsb1cFMQkOyy2lr80TjtRdD8NjdL/SdHVRAOur4brU4OEIhs7KF9w73rMtRzkHWaG4512TTu
- 6N9adN044+x9jg1tvpYBAaRdpsFBva42LZSgfZnQ59Puv5nLzOuGVdkpQ==
+X-Provags-ID: V03:K1:hbdYPCy1OMt7/QW5/5tciW+cFD+KdtLaF0aSr/4HJd9nS6atO8a
+ 0qW7bZoWJHMtuW1UKN/42Y2JuGtplXSESJ6/5f+/IcFB8zxVhQAEP3AtvTrwiG/kjabV/l2
+ in8Oo+H3fN5clq0Lz59kj+VSQ5OMcpYnqVHpfPAMEab89RFCSyaJ0vLa4f0OTvLJfcjO9d5
+ DiXxgGDqsnkvADO1XBGWQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:XyjUySWcazc=:E7m0GVDOe/Og5rafrBfKe0
+ wCEe4RyP2vMbgfiJCtLcQ4mSmRRz/NhOLVC6VRh4lgkT0ecgktkYL9TfffL74lRjN1NtnCrYF
+ 5daOIrkI1Atw4AoLKiwqHLIo6g/9VCfQIXDxYT1vRgrKl2Sd6bALrCI1MBlJ2vePOf2++QWuX
+ jD/wX0i5zRdy6bZlJHtefofhR9fHaLR4MQEsdArGDM6TgTPyq0AWZICyKZbssf06jiWlbbByn
+ xSu0h5CA0vCjawEHeqPSF8AAdizBSld3JZiZ9YjTkN4VErUIG1bU00PqSTH54e7TYnXTT3glL
+ O/XQssgBgES7CzK1NpXkaudmbUsjlZGr/j5bAn8JIN1c8dKX1w8j+2jJenwuR2pzm4FL+7TM9
+ pLi33qadD95ejqPg83lMelbL9jF39XbdcO6i4skfKn+jVhMhIWWZeYg2wvVrsiowyEcc2/9OI
+ CBcLogLyhavelk2zUQ2jfloQJ7Zb4y6oK5+/aL1g+dOdHczFVR1bauK/WRduKkBMSXvNbWcbJ
+ pOtB3SIVBCdB4sKhJy3KOtSc7VXvEQRRbPrYpxENd3idqySpMon1dcJYAmHKS2wmANVUrbn8C
+ Re0HxK+uwXsRIvy7dA3aKFELfbVD77K5xdbs44SyEYs+FW0sf+qcGHWyR9HW5cooBiLwmnf7K
+ NppQuUqfvlBblFpHxDG+GGo9ktcy1K2kNT3H60VjdVEVO8aoLuGE11P/q34mYl1tDVnA6V+DF
+ LJRvqQPxywAKysnEq4xYQ8Fy6oATQcG979Sa1PS7Ib3dV4MdRVfR7iB4QoA8cQpdGkowSbxrb
+ BAgqzgAwrXtrgoAVMVeQ7wDC0IBJ7BjSFhHG3W8pRo0Bu2weDHIbNvfo/QRBuWZrrvFXk+eyr
+ qYOXYWtxJWl8blF+mjVDLiSeKWsyKkPqk4QVTAYp7JsDKBHKgSriq5B/vH++BbJmr9atsj3Ra
+ FFOZVWYKaO74PuQ6Zpd+3nzepFV8WYLyEbxY41Bc34Idy6zHq4Iono/tdd28J1S+iSOxablZu
+ hb9e6kmxKLOHZrio/td7WDXrydzSkJj9oACoJNRlzKhBd1QVhZ8npkLkjWAq2DRBFYlWQbT7v
+ UVjkMdmw3VxcAuN89IodP9oK/gh/1beoshwVzxAT24mPYfheqQt8kmtng==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 6/5/22 10:59, Xiang wangx wrote:
-> Delete the redundant word 'its'.
+On 6/17/22 15:38, Petr Cvek wrote:
+> Aperture size for i9x5 variants is determined from PCI base address.
 >
-> Signed-off-by: Xiang wangx <wangxiang@cdjrlc.com>
+> 	if (pci_resource_start(pdev, 2) & 0x08000000)
+> 		*aperture_size =3D MB(128);
+> 	...
+>
+> This condition is incorrect as 128 MiB address can have the address
+> set as 0x?8000000 or 0x?0000000. Also the code can be simplified to just
+> use pci_resource_len().
+>
+> The true settings of the aperture size is in the MSAC register, which
+> could be used instead. However the value is used only as an info message=
+,
+> so it doesn't matter.
+>
+> Signed-off-by: Petr Cvek <petrcvekcz@gmail.com>
 
-applied to fbdev tree.
+applied both patches to the fbdev tree.
 
 Thanks!
 Helge
 
+
 > ---
->  drivers/video/fbdev/skeletonfb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/video/fbdev/intelfb/intelfbhw.c | 12 +++++-------
+>  1 file changed, 5 insertions(+), 7 deletions(-)
 >
-> diff --git a/drivers/video/fbdev/skeletonfb.c b/drivers/video/fbdev/skel=
-etonfb.c
-> index bcacfb6934fa..3d4d78362ede 100644
-> --- a/drivers/video/fbdev/skeletonfb.c
-> +++ b/drivers/video/fbdev/skeletonfb.c
-> @@ -96,7 +96,7 @@ static const struct fb_fix_screeninfo xxxfb_fix =3D {
->
->      /*
->       * 	Modern graphical hardware not only supports pipelines but some
-> -     *  also support multiple monitors where each display can have its
-> +     *  also support multiple monitors where each display can have
->       *  its own unique data. In this case each display could be
->       *  represented by a separate framebuffer device thus a separate
->       *  struct fb_info. Now the struct xxx_par represents the graphics
+> diff --git a/drivers/video/fbdev/intelfb/intelfbhw.c b/drivers/video/fbd=
+ev/intelfb/intelfbhw.c
+> index 57aff7450bce..2086e06532ee 100644
+> --- a/drivers/video/fbdev/intelfb/intelfbhw.c
+> +++ b/drivers/video/fbdev/intelfb/intelfbhw.c
+> @@ -201,13 +201,11 @@ int intelfbhw_get_memory(struct pci_dev *pdev, int=
+ *aperture_size,
+>  	case PCI_DEVICE_ID_INTEL_945GME:
+>  	case PCI_DEVICE_ID_INTEL_965G:
+>  	case PCI_DEVICE_ID_INTEL_965GM:
+> -		/* 915, 945 and 965 chipsets support a 256MB aperture.
+> -		   Aperture size is determined by inspected the
+> -		   base address of the aperture. */
+> -		if (pci_resource_start(pdev, 2) & 0x08000000)
+> -			*aperture_size =3D MB(128);
+> -		else
+> -			*aperture_size =3D MB(256);
+> +		/*
+> +		 * 915, 945 and 965 chipsets support 64MB, 128MB or 256MB
+> +		 * aperture. Determine size from PCI resource length.
+> +		 */
+> +		*aperture_size =3D pci_resource_len(pdev, 2);
+>  		break;
+>  	default:
+>  		if ((tmp & INTEL_GMCH_MEM_MASK) =3D=3D INTEL_GMCH_MEM_64M)
 

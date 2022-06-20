@@ -2,68 +2,112 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE41FC43334
-	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Jun 2022 18:16:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E190AC433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Jun 2022 18:18:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243351AbiFTSQx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 20 Jun 2022 14:16:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60626 "EHLO
+        id S242638AbiFTSSv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 20 Jun 2022 14:18:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34344 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242638AbiFTSQu (ORCPT
+        with ESMTP id S241246AbiFTSSu (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 20 Jun 2022 14:16:50 -0400
-Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D5471A828
-        for <linux-fbdev@vger.kernel.org>; Mon, 20 Jun 2022 11:16:50 -0700 (PDT)
-Received: by mail-pf1-x430.google.com with SMTP id u37so10922105pfg.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 20 Jun 2022 11:16:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=euNOGFk0CS27OcgLap1u4g4jsXBFkehxJQnnbq86Opo=;
-        b=CT/ieEsgy5YbTkv6MhV0bYz5Aajv+zonGBHU/qCj7tSzwFcS34lKPcxJnfnX3tTno8
-         8v0kNFDi7PLgoGnOV2OUZkXR9s4pBOKj/5SNqWrEnUkTy3aSogxe5/VIxBaoeo3644Pk
-         L38qarylbkDjQ+Lu07cKB0zjCmSQrvdNs321brpSRQ0stEB8oBeHo7fo+6Ri0WZhC7+o
-         F3pIw3B9D/hRNbirajD0vD1cBnrqPxLZSbVuJlh8IwJMdiWc51T+d0yVo6Zch9PDJg9T
-         0dQAD8s1/H4khHr+O3544Y+CCulzpVFrjPEPOmzkT6GJj0V+7nZGwfq4Vf7wyHNZhejg
-         nkpg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=euNOGFk0CS27OcgLap1u4g4jsXBFkehxJQnnbq86Opo=;
-        b=wsFfMRQ/lnN+Ne4l7vf8KD03SyrTAeeX+GQiIoUM7N71Q9WYfGDoShpB1Sv+sFRFrD
-         DRMxMjf2YZOuAdtyIgtOTjWJjJF5OZesTZ0IRzxU1TjERk8wwS8yfgNpHG/qeEUV76OU
-         dufX/37CBL+3mPALWFxyN554gefxo6Nze2UypRe34SgX0Lv/MYzviVIVxkhgajjWLxkc
-         FyYN8Pm6GzaNjxM+vxTYy8ZILS4FAlpN1V+XrfbJ7e/TB8nfXRHisHDS52QsC9s+gzo5
-         H8abB2nwrA6Q1YbtnorDMND67MVBZsNKEr9iYmytYcIZmwnx3vE08/5ULiuNkXvM8Sev
-         3z8Q==
-X-Gm-Message-State: AJIora/fOZvBCeWXH0+CQeJ4EZpgMGBTHZgMk+nRSHhu5Ifub/XoPxe7
-        pAncSyRyl3rgSc4CXRYPO9c=
-X-Google-Smtp-Source: AGRyM1t7Mx1WwUJFIT4xL+cb7eKv7bMJvjjbyHTHrfT9WDBc+Qu0T1pO8Vas3AjY4AqOv3Az39uXUw==
-X-Received: by 2002:a63:68c1:0:b0:408:8699:7be5 with SMTP id d184-20020a6368c1000000b0040886997be5mr22264618pgc.339.1655749009604;
-        Mon, 20 Jun 2022 11:16:49 -0700 (PDT)
-Received: from ubuntu ([175.124.254.119])
-        by smtp.gmail.com with ESMTPSA id qa10-20020a17090b4fca00b001ec9a3e9d4fsm3223039pjb.0.2022.06.20.11.16.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Jun 2022 11:16:48 -0700 (PDT)
-Date:   Mon, 20 Jun 2022 11:16:45 -0700
-From:   Hyunwoo Kim <imv4bel@gmail.com>
-To:     Helge Deller <deller@gmx.de>
-Cc:     linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH] pxa3xx-gcu: Fix integer overflow in pxa3xx_gcu_write
-Message-ID: <20220620181645.GA690780@ubuntu>
-References: <20220611192851.GA482606@ubuntu>
- <a12be485-3708-a84f-0120-d6938b322e96@gmx.de>
- <20220620141746.GA688683@ubuntu>
- <8372b659-e964-a82b-b248-0d5654fdc36a@gmx.de>
+        Mon, 20 Jun 2022 14:18:50 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 86EFF1CFDC;
+        Mon, 20 Jun 2022 11:18:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1655749110;
+        bh=nDybV39t6Bl2Ro8KUpVT1iVcktYwIEWjKEfFqm5iuzE=;
+        h=X-UI-Sender-Class:Date:Subject:To:References:From:In-Reply-To;
+        b=dua/itfsyJR4VfJ6JC3yK7eKZyUATPZsQMHr4XcrrY4Xh7RPvLe/N0AYu1mfd5xw6
+         piNmzoguBMBwcUsR3Cem7FfELjfelIDaJI/Ycj5GrVFYGHkMYZUi2mJMhBawoopBX3
+         2p2QlsGiR2wAgH7VhvEeIuElbvjlp93L08IRXY/s=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.174.149]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MGQnP-1ntfj91gRJ-00Gt4g; Mon, 20
+ Jun 2022 20:18:30 +0200
+Message-ID: <6c572704-b39d-34cf-345f-9bd21a18be5b@gmx.de>
+Date:   Mon, 20 Jun 2022 20:18:08 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8372b659-e964-a82b-b248-0d5654fdc36a@gmx.de>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.10.0
+Subject: Re: [PATCH] video: fbdev: au1100fb: Check before some function not
+ needed
+Content-Language: en-US
+To:     Yihao Han <hanyihao@vivo.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+References: <20220608114658.37105-1-hanyihao@vivo.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20220608114658.37105-1-hanyihao@vivo.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:T0HtqgGBU9PMtL1wyCaJaVllY7W3Te23wRGH4P80xKWO2e9DmIs
+ rKNvATaut5ZAvA15JabqNo4LV3cpjzOR4C+PcZYvh4z5AJ66bFZvBjE+I0e65AfTJgzc3oj
+ U6/i1fLJFDQ5W8/9ph84QbnK/R27xRrB+U6ORcRf2wJ4aEwTkCm8Kw/Y/Y5yuPIYciHnDPx
+ rsNxLoovcieoJC291tXGA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:WhJrOly8xXA=:EJTzvpjHRGxf9y/PfX/OYX
+ bItf/PbMzBg9TJTR3wcWdU/0RdgHCBfBL0BWBlRIZj9ZIXN4ia33UWQ9Q4svWCfpb0RLFvu0n
+ JpmmCVeSooAsrG8T/ADmv0Y/tmV27YowJw9uohPw3DgoN66jfjouBnp/Ucd8mwLE6R+sAKH/i
+ 8u8Lcz6zTwTmxY50hDkr1FKvou/h5PX2jdK1cgN32kxnnWIV3PAKPj1i+GfSrCo1aSL9wJJah
+ P2PCbmgrb26DYWdWf5m79JPTQrlrIMNNz6TBo4GZ1depgvUvQYYghsw1vN8XVM/gaYaGgBKmt
+ Qf+nrp7LrEbh+CoRtlkgUvrsZuEB7cUSpCXHL2YvC/HTfCrLUdKxd6LER12PORUs3MZ36KYRN
+ Y9lePxSv5vXBLuQDgMYpC4FRXsiIuGOsaU82VTYyED4Lsw3x8pBdkmkmzaDsISFww3x+z6A4Z
+ TxTFuXGZWb33Bc74YFmRvNLpFC6L+tJKCrKsVLpjaHG5nO//FqmtUyFbDP72WNocqnwCPbh+S
+ H5QcbsL3eP1wBw9GQ313/yGvbRQzUa9xVqyW/5g2XyIPjjpW5K6B5/wPuqOa8EPfSx78qEeuD
+ WUij41E2uQAJaQO0JtHmkeotBMqce2JooOJKJqq0EgdQm/lKikp6SUxOd8ZF2AkzhI5EfSwRk
+ 5UL41kUydTaJksXKJq/MrPA7jGsL5QjaEjlWow7nIoNIEfMCmnZyQQ7ffYD9MSMeSk6sXPW5c
+ IcWozPgZh80NHxhHIcEldBzjnKbCckzFvoeBgfhEpYP4AeJH4/cEtxrJX5inWKJSXSdZKHaCP
+ iNx24ZEik5yMTvh61SdzFpgRJDfDGrTAtKHY4UkPF3UP3S+xPhtKdOCVYdVRv4ssRN/jSbUVR
+ Sc84pnLaA9mktMkEdX8KLDJSGLEuUPZHXZFfdti2FTFyA07jOTN0Tmlldx/nJR2dRQVzH1x5I
+ BgQJy0lE9o+hJ/I3WCx/V5uOYuy0aWT91jjK0s+7G1q6VH582iZaOk7n7zTU4UFbTUlDhait2
+ 5I2JvxqDI5x+ZaeczlU0v3/l1jsGffXUicPQpv7vcN1WMusudx7+BmM5ac9B8afMpmmFlQE1t
+ y08Bs/gbBCJllusYZAq76fxlL4xkIIcCAkabTUL68I3RXY77MqCQQfPsg==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Thanks for your feedback. :)
+On 6/8/22 13:43, Yihao Han wrote:
+> clk_disable() already checks the clk ptr using IS_ERR_OR_NULL(clk)
+> and clk_enable() checks the clk ptr using !clk, so there is no
+> need to check clk ptr again before calling them.
+>
+> Signed-off-by: Yihao Han <hanyihao@vivo.com>
+
+applied to fbdev tree.
+
+Thanks!
+Helge
+
+> ---
+>  drivers/video/fbdev/au1100fb.c | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100=
+fb.c
+> index 52f731a61482..519313b8bb00 100644
+> --- a/drivers/video/fbdev/au1100fb.c
+> +++ b/drivers/video/fbdev/au1100fb.c
+> @@ -560,8 +560,7 @@ int au1100fb_drv_suspend(struct platform_device *dev=
+, pm_message_t state)
+>  	/* Blank the LCD */
+>  	au1100fb_fb_blank(VESA_POWERDOWN, &fbdev->info);
+>
+> -	if (fbdev->lcdclk)
+> -		clk_disable(fbdev->lcdclk);
+> +	clk_disable(fbdev->lcdclk);
+>
+>  	memcpy(&fbregs, fbdev->regs, sizeof(struct au1100fb_regs));
+>
+> @@ -577,8 +576,7 @@ int au1100fb_drv_resume(struct platform_device *dev)
+>
+>  	memcpy(fbdev->regs, &fbregs, sizeof(struct au1100fb_regs));
+>
+> -	if (fbdev->lcdclk)
+> -		clk_enable(fbdev->lcdclk);
+> +	clk_enable(fbdev->lcdclk);
+>
+>  	/* Unblank the LCD */
+>  	au1100fb_fb_blank(VESA_NO_BLANKING, &fbdev->info);
+

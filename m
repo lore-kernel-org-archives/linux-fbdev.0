@@ -2,313 +2,160 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E32B9C43334
-	for <linux-fbdev@archiver.kernel.org>; Sat, 18 Jun 2022 16:00:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B053CCA47A
+	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Jun 2022 03:07:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235326AbiFRQAS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 18 Jun 2022 12:00:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59314 "EHLO
+        id S237400AbiFTDHm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 19 Jun 2022 23:07:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49682 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229449AbiFRQAR (ORCPT
+        with ESMTP id S237246AbiFTDHl (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 18 Jun 2022 12:00:17 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5DB9513E1D;
-        Sat, 18 Jun 2022 09:00:16 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 1EEB4B80A73;
-        Sat, 18 Jun 2022 16:00:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7AA5FC3411A;
-        Sat, 18 Jun 2022 16:00:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1655568013;
-        bh=f6eQqkMCCy7JOBuFzU98SzHbuGXhiTTDh0qo1FD3rRc=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=nKhv/oCvo3IgnfaeaZgect0mhgeASAg7V/biFCDZ7m2FENFdb4TigTTut6YEXBGs6
-         dDrKDA86QOwfXUbLLOGy4pgpjp/WBrfuWbVtmUPe5Nyjq8wpkN0HSyZ3ld0kgx898T
-         SdjW3VVBfmxzx7xdCAklxYwgNp9yVmeApzGHfAJ5GuQ5nB1faOwCwdmWvitNQHyyG/
-         h7qEyk5P9Hyuw5xwOlpLGDkDT/sdkPdRhx428zzaRWJ2ZMnpfrfbUYlaUvml8vyL/5
-         z6vgOjg4hqUHo6ZghCJRW0AfelETIteBBPG+80xjuu2aNJa3+9/p0FJ2wwiHPldVZ9
-         xX7Jh3cum/qLg==
-Date:   Sat, 18 Jun 2022 17:09:26 +0100
-From:   Jonathan Cameron <jic23@kernel.org>
-To:     ChiaEn Wu <peterwu.pub@gmail.com>
-Cc:     lars@metafoo.de, matthias.bgg@gmail.com, lee.jones@linaro.org,
-        daniel.thompson@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        linux-iio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        szunichen@gmail.com, ChiaEn Wu <chiaen_wu@richtek.com>
-Subject: Re: [PATCH v2 11/15] iio: adc: mt6370: Add Mediatek MT6370 support
-Message-ID: <20220618170926.678dc05f@jic23-huawei>
-In-Reply-To: <20220613111146.25221-12-peterwu.pub@gmail.com>
-References: <20220613111146.25221-1-peterwu.pub@gmail.com>
-        <20220613111146.25221-12-peterwu.pub@gmail.com>
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.34; x86_64-pc-linux-gnu)
+        Sun, 19 Jun 2022 23:07:41 -0400
+Received: from mail-il1-x12d.google.com (mail-il1-x12d.google.com [IPv6:2607:f8b0:4864:20::12d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B8B1865B2;
+        Sun, 19 Jun 2022 20:07:40 -0700 (PDT)
+Received: by mail-il1-x12d.google.com with SMTP id m16so5055740ilf.6;
+        Sun, 19 Jun 2022 20:07:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=ClA6mV7hozr21kuBkeCxjd9fGNxXJpc68c5A8HEJUUI=;
+        b=gOpv1108ut5ySpAPndiTka0cdAPZs7Flmw6QF/XASUursDWrwbsAx9Vt+ZXF5kcdEw
+         TCakBrMFGrsxiKWEOhenPFzr9LBdXhjmxW5370IMQcOOlgaFHdTNkBB+FXGyNxJcg61e
+         E1CcWHlUQ+QDQ0SBGzNysb+dxHy8expVECKExkABctkP/dtbwAAACdK2L7UDO9Gbz48K
+         ji3tgBrL0udfA8TkFrC8hp8qz2em39uxnCPqC9QkBkCfnnMqz+vlX4RNa8QIDVPQFIsS
+         Tfem3Y9ER0V16TcCeQoXqA7MiKjEXoKy5//qqMQChDe5hPDjkyy9/RyTBkvqD/PR7kp3
+         aZZQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=ClA6mV7hozr21kuBkeCxjd9fGNxXJpc68c5A8HEJUUI=;
+        b=GEfgbHzpmH0uUZ6uMTT+DbKYhbPVmaJQTSCZAFx1ZAdCCTzdFDIiDQr+wyqLTgzCDQ
+         EfmgI6/LZEzcpopXMiOC795S5yI89SucZRRMjX38yKGBQ3m/puF7EWKfUoeP/A4twnbm
+         xW/krzXvaoy1GJd1E9Fpd3AoW+o72yMqFtIkzTBUZJLn4eDL46ymkiPuSmtxrxyv57r1
+         0dKNHtKLi/YesODLsilCKAoRvrW64rjIhQAPystd8ztbtc3OZy1MrHuGDDdqDcj1ujD2
+         ei6ngSJe9/DBAXyAEAd9ALSdNgPh3fi8+6hSfBYbGzgN9sdNawzeRj6ud8aw9UyYmnfN
+         HQ6A==
+X-Gm-Message-State: AJIora9OBmOY1Vekl6KDag8YTpQ0KCLzT41BZtBZFykqGL/dMCUCj+5v
+        YgxbCS6jSXStBKCbx1uoSmzMZ9dkSXLVUYmt8zo=
+X-Google-Smtp-Source: AGRyM1uWx3Xja5gAlxQTsI9Gy8E4mbdwpO+4QcNSHclRnN4Pr80zjlE1E8X1wNostXJGk9TU7gkWHZtEAVASNa5cJX8=
+X-Received: by 2002:a05:6e02:1bc1:b0:2d1:96b3:b961 with SMTP id
+ x1-20020a056e021bc100b002d196b3b961mr12302759ilv.213.1655694460188; Sun, 19
+ Jun 2022 20:07:40 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+References: <20220613111146.25221-1-peterwu.pub@gmail.com> <20220613111146.25221-4-peterwu.pub@gmail.com>
+ <91e9e3af-8208-7535-1864-08744f934593@linaro.org>
+In-Reply-To: <91e9e3af-8208-7535-1864-08744f934593@linaro.org>
+From:   szuni chen <szunichen@gmail.com>
+Date:   Mon, 20 Jun 2022 11:07:29 +0800
+Message-ID: <CA+hk2fZbh0=8gurGS95XpXrYyF3NbwFbFMcygcrW_q10m0zinA@mail.gmail.com>
+Subject: Re: [PATCH v2 03/15] dt-bindings: leds: mt6370: Add Mediatek mt6370
+ current sink type LED indicator
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc:     ChiaEn Wu <peterwu.pub@gmail.com>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        linux-iio <linux-iio@vger.kernel.org>,
+        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-mediatek@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux LED Subsystem <linux-leds@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        USB <linux-usb@vger.kernel.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+        ChiYuan Huang <cy_huang@richtek.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, 13 Jun 2022 19:11:42 +0800
-ChiaEn Wu <peterwu.pub@gmail.com> wrote:
+Dear Krzysztof,
 
-> From: ChiaEn Wu <chiaen_wu@richtek.com>
-> 
-> Add Mediatek MT6370 ADC support.
-> 
-> Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
+Thank you for the valuable command.
 
-Hi ChiaEn Wu,
-
-A few comments inline, but mostly looks good to me
-with the exception of the scales which look far too large.
-
-Thanks,
-
-Jonathan
-
-> ---
->  drivers/iio/adc/Kconfig      |   9 ++
->  drivers/iio/adc/Makefile     |   1 +
->  drivers/iio/adc/mt6370-adc.c | 262 +++++++++++++++++++++++++++++++++++
->  3 files changed, 272 insertions(+)
->  create mode 100644 drivers/iio/adc/mt6370-adc.c
-> 
-> diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
-> index 71ab0a06aa82..09576fb478ad 100644
-> --- a/drivers/iio/adc/Kconfig
-> +++ b/drivers/iio/adc/Kconfig
-> @@ -737,6 +737,15 @@ config MEDIATEK_MT6360_ADC
->  	  is used in smartphones and tablets and supports a 11 channel
->  	  general purpose ADC.
->  
-> +config MEDIATEK_MT6370_ADC
-> +	tristate "Mediatek MT6370 ADC driver"
-> +	depends on MFD_MT6370
-> +	help
-> +	  Say Y here to enable MT6370 ADC support.
-> +
-> +	  Integrated for System Monitoring includes is used in smartphones
-> +	  and tablets and supports a 9 channel general purpose ADC.
-> +
->  config MEDIATEK_MT6577_AUXADC
->  	tristate "MediaTek AUXADC driver"
->  	depends on ARCH_MEDIATEK || COMPILE_TEST
-> diff --git a/drivers/iio/adc/Makefile b/drivers/iio/adc/Makefile
-> index 39d806f6d457..0ce285c7e2d0 100644
-> --- a/drivers/iio/adc/Makefile
-> +++ b/drivers/iio/adc/Makefile
-> @@ -68,6 +68,7 @@ obj-$(CONFIG_MCP320X) += mcp320x.o
->  obj-$(CONFIG_MCP3422) += mcp3422.o
->  obj-$(CONFIG_MCP3911) += mcp3911.o
->  obj-$(CONFIG_MEDIATEK_MT6360_ADC) += mt6360-adc.o
-> +obj-$(CONFIG_MEDIATEK_MT6370_ADC) += mt6370-adc.o
->  obj-$(CONFIG_MEDIATEK_MT6577_AUXADC) += mt6577_auxadc.o
->  obj-$(CONFIG_MEN_Z188_ADC) += men_z188_adc.o
->  obj-$(CONFIG_MESON_SARADC) += meson_saradc.o
-> diff --git a/drivers/iio/adc/mt6370-adc.c b/drivers/iio/adc/mt6370-adc.c
-> new file mode 100644
-> index 000000000000..c30e1290973a
-> --- /dev/null
-> +++ b/drivers/iio/adc/mt6370-adc.c
-> @@ -0,0 +1,262 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +
-> +#include <dt-bindings/iio/adc/mediatek,mt6370_adc.h>
-> +#include <linux/bits.h>
-> +#include <linux/bitfield.h>
-> +#include <linux/iio/iio.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-
-#include <linux/mod_devicetable.h>
-rather than relying on indirect include for
-struct of_device_id
-
-We've just removed such an include path from IIO and had
-to fix up a lot of drivers that falsely assumed that would
-available.
-
-> +#include <linux/mutex.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/regmap.h>
-> +
-> +#define MT6370_REG_CHG_CTRL3		0x113 /* AICR */
-> +#define MT6370_REG_CHG_CTRL7		0x117 /* ICHG */
-> +#define MT6370_REG_CHG_ADC		0x121
-> +#define MT6370_REG_ADC_DATA_H		0x14C
-> +
-> +#define MT6370_ADC_START_MASK		BIT(0)
-> +#define MT6370_ADC_IN_SEL_MASK		GENMASK(7, 4)
-> +#define MT6370_AICR_ICHG_MASK		GENMASK(7, 2)
-> +
-> +#define MT6370_AICR_400MA		0x6
-> +#define MT6370_ICHG_500MA		0x4
-> +#define MT6370_ICHG_900MA		0x8
-> +
-> +#define ADC_CONV_TIME_US		35000
-> +#define ADC_CONV_POLLING_TIME		1000
-> +
-> +struct mt6370_adc_data {
-> +	struct device *dev;
-> +	struct regmap *regmap;
-> +	struct mutex adc_lock;
-Please document scope of the lock.  I think it's to synchronize
-access to the device state concerned with channel reads, but there
-should be a comment here to say something about that.
-> +};
-> +
-> +static int mt6370_adc_read_channel(struct mt6370_adc_data *priv, int chan,
-> +				   unsigned long addr, int *val)
-> +{
-> +	__be16 be_val;
-> +	unsigned int reg_val;
-> +	int ret;
-> +
-> +	mutex_lock(&priv->adc_lock);
-> +
-> +	reg_val = MT6370_ADC_START_MASK |
-> +		  FIELD_PREP(MT6370_ADC_IN_SEL_MASK, addr);
-> +	ret = regmap_write(priv->regmap, MT6370_REG_CHG_ADC, reg_val);
-> +	if (ret)
-> +		goto adc_unlock;
-> +
-> +	msleep(ADC_CONV_TIME_US / 1000);
-> +
-> +	ret = regmap_read_poll_timeout(priv->regmap,
-> +				       MT6370_REG_CHG_ADC, reg_val,
-> +				       !(reg_val & MT6370_ADC_START_MASK),
-> +				       ADC_CONV_POLLING_TIME,
-> +				       ADC_CONV_TIME_US * 3);
-> +	if (ret) {
-> +		if (ret == -ETIMEDOUT)
-> +			dev_err(priv->dev, "Failed to wait adc conversion\n");
-Why are any other error here not worth reporting?  I'd print a message for
-all return values.
-
-> +		goto adc_unlock;
-> +	}
-> +
-> +	ret = regmap_raw_read(priv->regmap, MT6370_REG_ADC_DATA_H,
-> +			      &be_val, sizeof(be_val));
-> +	if (ret)
-> +		goto adc_unlock;
-> +
-> +	*val = be16_to_cpu(be_val);
-> +	ret = IIO_VAL_INT;
-> +
-> +adc_unlock:
-> +	mutex_unlock(&priv->adc_lock);
-> +
-> +	return ret;
-> +}
-> +
-> +static int mt6370_adc_read_scale(struct mt6370_adc_data *priv,
-> +				 int chan, int *val1, int *val2)
-> +{
-> +	unsigned int reg_val;
-> +	int ret;
-> +
-> +	switch (chan) {
-> +	case MT6370_CHAN_VBAT:
-> +	case MT6370_CHAN_VSYS:
-> +	case MT6370_CHAN_CHG_VDDP:
-> +		*val1 = 5;
-> +		return IIO_VAL_INT;
-> +	case MT6370_CHAN_IBUS:
-> +		ret = regmap_read(priv->regmap, MT6370_REG_CHG_CTRL3, &reg_val);
-> +		if (ret)
-> +			return ret;
-> +
-> +		reg_val = FIELD_GET(MT6370_AICR_ICHG_MASK, reg_val);
-> +		if (reg_val < MT6370_AICR_400MA)
-> +			*val1 = 33500;
-
-As (scale * raw) must give a value in milliamps, this seems very large as
-each ADC reading currently represents 33Amps. That would make an impressive
-PMIC!)
-
-Same for the various entries below.  Note that scale is often
-not an integer value (or even as large as 1) Hence the many different precisions
-of data type that IIO provides and the useful types like IIO_VAL_FRACTIONAL;
-
-
-> +		else
-> +			*val1 = 50000;
-> +
-> +		return IIO_VAL_INT;
-> +	case MT6370_CHAN_IBAT:
-> +		ret = regmap_read(priv->regmap, MT6370_REG_CHG_CTRL7, &reg_val);
-> +		if (ret)
-> +			return ret;
-> +
-> +		reg_val = FIELD_GET(MT6370_AICR_ICHG_MASK, reg_val);
-> +		if (reg_val < MT6370_ICHG_500MA)
-> +			*val1 = 23750;
-> +		else if (reg_val >= MT6370_ICHG_500MA &&
-> +			 reg_val < MT6370_ICHG_900MA)
-> +			*val1 = 26800;
-> +		else
-> +			*val1 = 50000;
-> +
-> +		return IIO_VAL_INT;
-> +	case MT6370_CHAN_VBUSDIV5:
-> +		*val1 = 25000;
-> +		return IIO_VAL_INT;
-> +	case MT6370_CHAN_VBUSDIV2:
-> +		*val1 = 50000;
-> +		return IIO_VAL_INT;
-> +	case MT6370_CHAN_TS_BAT:
-> +		*val1 = 25;
-> +		*val2 = 10000;
-> +		return IIO_VAL_FRACTIONAL;
-> +	case MT6370_CHAN_TEMP_JC:
-> +		*val1 = 2;
-> +		return IIO_VAL_INT;
-> +	}
-> +
-> +	return -EINVAL;
-As below, I'd prefer this as a default: in the switch statement.
-
-> +}
-> +
-
-...
-
-> +
-> +static int mt6370_adc_read_raw(struct iio_dev *iio_dev,
-> +			       const struct iio_chan_spec *chan,
-> +			       int *val, int *val2, long mask)
-> +{
-> +	struct mt6370_adc_data *priv = iio_priv(iio_dev);
-> +
-> +	switch (mask) {
-> +	case IIO_CHAN_INFO_RAW:
-> +		return mt6370_adc_read_channel(priv, chan->channel,
-> +					       chan->address, val);
-> +	case IIO_CHAN_INFO_SCALE:
-> +		return mt6370_adc_read_scale(priv, chan->channel, val, val2);
-> +	case IIO_CHAN_INFO_OFFSET:
-> +		return mt6370_adc_read_offset(priv, chan->channel, val);
-> +	}
-> +
-> +	return -EINVAL;
-Add a default to the switch statement and return -EINVAL in there.
-That makes it explicit that you are handling all the cases you
-care about.
-
-Sure, right now it's obvious that is the case, but it might not be so
-obvious if more code happens to get added here in future.
-
-> +}
-> +
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> =E6=96=BC 2022=E5=B9=
+=B46=E6=9C=8817=E6=97=A5 =E9=80=B1=E4=BA=94 =E6=B8=85=E6=99=A85:09=E5=AF=AB=
+=E9=81=93=EF=BC=9A
 >
+> On 13/06/2022 04:11, ChiaEn Wu wrote:
+> > From: ChiYuan Huang <cy_huang@richtek.com>
+> >
+> > Add Mediatek mt6370 current sink type LED indicator binding documentati=
+on.
+> >
+> > Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+> > ---
+> >  .../leds/mediatek,mt6370-indicator.yaml       | 48 +++++++++++++++++++
+> >  1 file changed, 48 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/leds/mediatek,mt6=
+370-indicator.yaml
+> >
+> > diff --git a/Documentation/devicetree/bindings/leds/mediatek,mt6370-ind=
+icator.yaml b/Documentation/devicetree/bindings/leds/mediatek,mt6370-indica=
+tor.yaml
+> > new file mode 100644
+> > index 000000000000..42b96c8047a3
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.=
+yaml
+> > @@ -0,0 +1,48 @@
+> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > +%YAML 1.2
+> > +---
+> > +$id: http://devicetree.org/schemas/leds/mediatek,mt6370-indicator.yaml=
+#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > +
+> > +title: LED driver for MT6370 PMIC from MediaTek Integrated.
+> > +
+> > +maintainers:
+> > +  - Alice Chen <alice_chen@richtek.com>
+> > +
+> > +description: |
+> > +  This module is part of the MT6370 MFD device.
+> > +  Add MT6370 LED driver include 4-channel RGB LED support Register/PWM=
+/Breath Mode
+> > +
+> > +properties:
+> > +  compatible:
+> > +    const: mediatek,mt6370-indicator
+> > +
+> > +  "#address-cells":
+> > +    const: 1
+> > +
+> > +  "#size-cells":
+> > +    const: 0
+> > +
+> > +patternProperties:
+> > +  "^(multi-)?led@[0-3]$":
+>
+> If this is multi-led, then you should reference
+> /schemas/leds/leds-pwm-multicolor.yaml
+>
+> See other examples using it.
 
+In my opinion, leds-pwm-multicolor.yaml is used for external pwm
+signals, and needs to assign an external pwm property.
+But our pwm leds use an internal clock to generate the pwm signal. Is
+leds-class-multicolor.yaml more appropriate?
+
+Sincerely,
+Alice
+>
+>
+>
+> Best regards,
+> Krzysztof

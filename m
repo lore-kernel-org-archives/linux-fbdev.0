@@ -2,115 +2,111 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B69FC433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Jun 2022 18:13:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E41ACCA479
+	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Jun 2022 18:16:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244784AbiFTSNn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 20 Jun 2022 14:13:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58546 "EHLO
+        id S244883AbiFTSQN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 20 Jun 2022 14:16:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60186 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245222AbiFTSNa (ORCPT
+        with ESMTP id S243978AbiFTSQM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 20 Jun 2022 14:13:30 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5CAE31A387
-        for <linux-fbdev@vger.kernel.org>; Mon, 20 Jun 2022 11:13:29 -0700 (PDT)
+        Mon, 20 Jun 2022 14:16:12 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC96F19C1F;
+        Mon, 20 Jun 2022 11:16:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1655748806;
-        bh=n3QOUhPqQ6DAvUX0ytSAsc47gFwE5xsRRL+xCJf2T10=;
+        s=badeba3b8450; t=1655748957;
+        bh=IRsReQcPvKjGuOiWZ/naJXtB5sl9AWyUBgzpYTxhbu4=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=anlMpBZflHDWqUhlACiT11ota0RbYxsXfo9q2ZVptvKN2ippfdhIrFCDklVqpeJwg
-         m8Mg0zUDAhXGwdoGJPzkREX111Z6ezJGag/q1Dmn+sWAe6QgfqSRViG1cArpl0Yb0r
-         bAvZUg3KmaksJmTj4ptWVArBkn31oemoeiHeuN1A=
+        b=MpChZBAWOnKxGAjsdfSCjFh/gS+GTAFDKiwYXwYJAlHPLUPaZG6FHf3igR/s9RvC0
+         JmkGFg2SzjQNrBff06GdWIu9DFQjbxDT6i9M3n5t3dgNSZTHH+rxsTE6i07afeLq0p
+         KPBapCFQaZDQpD1B14JLAelnUzGIrkOc/6PhXWx0=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.174.149]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MgesQ-1nStYo23uG-00h6c1; Mon, 20
- Jun 2022 20:13:26 +0200
-Message-ID: <8372b659-e964-a82b-b248-0d5654fdc36a@gmx.de>
-Date:   Mon, 20 Jun 2022 20:13:04 +0200
+Received: from [192.168.20.60] ([92.116.174.149]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N5VDE-1nbB703cd8-016vo0; Mon, 20
+ Jun 2022 20:15:56 +0200
+Message-ID: <4bf0f587-e03f-60bb-806d-383cdab8f67a@gmx.de>
+Date:   Mon, 20 Jun 2022 20:15:32 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.10.0
-Subject: Re: [PATCH] pxa3xx-gcu: Fix integer overflow in pxa3xx_gcu_write
+Subject: Re: [PATCH 1/4] video: fbdev: offb: Include missing
+ linux/platform_device.h
 Content-Language: en-US
-To:     Hyunwoo Kim <imv4bel@gmail.com>
-Cc:     linux-fbdev@vger.kernel.org
-References: <20220611192851.GA482606@ubuntu>
- <a12be485-3708-a84f-0120-d6938b322e96@gmx.de>
- <20220620141746.GA688683@ubuntu>
+To:     Christophe Leroy <christophe.leroy@csgroup.eu>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Michael Ellerman <mpe@ellerman.id.au>, manoj@linux.ibm.com,
+        mrochs@linux.ibm.com, ukrishn@linux.ibm.com, jejb@linux.ibm.com,
+        martin.petersen@oracle.com, tzimmermann@suse.de
+Cc:     linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+References: <a1dfa936043eeed715e8cda7f8690fe553ba7c1a.1654966253.git.christophe.leroy@csgroup.eu>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220620141746.GA688683@ubuntu>
+In-Reply-To: <a1dfa936043eeed715e8cda7f8690fe553ba7c1a.1654966253.git.christophe.leroy@csgroup.eu>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:rpzXGL/9WMm+0hg4SKzMGb2Ye5Q6jh4PE/jImAKkVrY9TMfXMrJ
- tMCM4aStJPrXzmvErMauQTQMagFev8Cj9Kdk/p0sccP+XrdkcStcZbdF2OFM12tZ6ndn83x
- lSAkRIGdzFXEStgsWeYx0M98ioV3rXAMVeJbypgFCopkpfwVkHAEArrfFaoa9I/t2OlFjUi
- WvkruIQxI7b+i7ZoXfziQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:8/tHim042k8=:AeFhK2o3fo5HILenW1s62X
- LYpEyo/vYQ/kSbAQCfcKwG4knMN3CopS0cBHlB2UwzRo38/oVv8N41Nx9jJLAF+dA3SakAmro
- 3rLioO+BvLynjbA9SCQ94hSZjlDnFBybS2ZE4GG0FXsGYEzf406dqCHqQw89tvugPomRpYRMn
- YJmzoqgvofu0voEL0K1rg2RHeE94bVaQqhki8qDrOKFVCKjyzo8HFcK40oxUggSXD8FNPgy1b
- g7WRP6R/6vH236xgbkgP8SfjlyzLSB6GglQetNLQjYraUBhyTvUceoVL0avk8boIUyGhynM6L
- To9zKEBIaYQqAyCxJAfZUxpsGtEMabSZ6UzpvDd/X6I6v3zkvOemd/lIs2l0oydnpFuGY7NvK
- E1mJk9giyl8Q1CuIaQOBPv68N32Wq8pQrFLz0trolQH0E8yjgazTZDCwH18dscP/E7ESplEma
- +STp2IUZDRq5Egln4HX/Q49DwYWUekZMZPZT9jG0pjRgSPSs/6xE3lvgg529yBzwsDijdx+iN
- blwnF8iJEZzLbB4CSR2UlpZL+YXbNfJ7yAzvgP/LgTV7qmhtS7uP6jxeQ3ZECLaOIRYUJRMYj
- YZstmw06Vac7sAZNh+r0GCCNpTyJ79LOfkRM6LwMjBMy28Aei/wOSHe5jTWrpaoLutEnBTsTA
- 3CgLzXZYYH2iRdi8sX2wSkDbcZiNAOCKrDzV0rE2KXEAqXgqr+ebnMl7gA414OyBk1PCsw6BM
- JP3juep+MHonV5EshlOvdaBW50NWHnmSzJ4mhuSThc+3JrWBAfWRCZvrj1kotzuatRDc+Fcf4
- 4e1XGIL7Sm7+UfiSxZJzYM4uU1aaRZGaLB+HOyNaKMmIgq1YSPVh3TQO9nXowxGbZghmOfdHe
- TSbKCIrGwOok9Fkfq3PHkLIHzEUSFCFKLcNrVlYcJzAgCdlgnI9nl5z0H0wmXlKGyKmLdgYRM
- TVIZqYICrGyPDCUWAquZx5MqsCepe3wNIjUVlDgUCskbqU77vV4ypHGJrjEp2Em0ysZUJSx90
- GjcEzB2BTqxLKHdfaT+YIsGe+O3LdnZJLTwuXqOFiM9XvlC5drwnXE3S2LwU/g9kxjePXX5jK
- +uVm7Txk2o4j+J77++bjgsfloAKs1TS64VhfcOajV4HpDHvIFoba3Jbag==
+X-Provags-ID: V03:K1:oJ9D9uGth3QBUylu+JFhLcVTIwUeAyZlFlYU4v/OPaS0ZpMihid
+ tFsd2Tanp1YkXXsADmZD7gloGpa+E8c77bFVGDTOIbSoHVGGXqjDnhlG9X2kTmyAlcnkiUl
+ YaAKGLHLr/7Cwe1Lwdry13RBpDCqRwRDdC+6HA3J7Kwgih+MFmqOSJeeQQotfiAjelWovxP
+ NrTUJ0YmY4qRCYYTkWkIA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:3vwy0K/BsAQ=:mVmzG3FTCEVF3YJX5VmLFq
+ Kbv0n9xBZ6oUg98dEQxL4XTvzFNHHEGeN3hcL6indwAgqvhjioXSbhbKWULn00ypejKFc1iXd
+ JOslbeYH6NjU8rKb0MOlREPzpm3pqldRQiGRb/oOkVvf11r6NeKbHvT5Ae49+2NT5r5gXGpRS
+ eWlFFRvp/ZrxeWFs85bNA241DQbVyAEWidEJXm9VoLHEx9iEm+G/Je3W1TvgHUJEyE9cxZ3NX
+ 3zLLLHjPv0Llp5WKUlkxtPMVqsOwMRF9lA96B0oPljvv/u0yfM7BJEoasOA+b60Wt9c6QVX37
+ QhuQNtCKZD38TlS5W3KzUCz2HqFl8hSFaZx1qpL3mjJlcqlvvc234e7nparz+irI/oyK9dcWM
+ ZetxeGVX79OIMe8HkkKVu1XZTHU0KwCdMHLgMo5XX4JflfFMifb1v1V2G+oO666w7H20jAend
+ I8p7k78nHtJNJ+7pf/3fUF28i0tNq6gzXwFVffQzK7lmML9K/dfQJJ+uL4nt4yo3ba52/awdR
+ yH8ge1cIV9TSL4D9wyXN02o1d++3z57DXeW/qZXGzve0MQyhLWLafNsa9jvpzAK85hcXwzaNl
+ ieRnoqKRsknQDnbVwPPoIALxDUhUYu0kwIZC+nsX6CiTxjRfBKeDH0/WWuUjG1JQzu2kBcJ09
+ bdiuWvYdpgDF+bute0DrVmYipy4qLrBo+1xsP5SVLeZYa4LgQvPTFbz2PfOsulplzlYxeZ4/Y
+ hlW2ILy5JIyow4X1B5T4uryx4ZAPsJuWVlsD31x6HqOLtqkc49D2nYiIaCN8yN5iO76fdtsHh
+ SuZ7lMlmo3UmIVLzhh8dy/TJvIJ91eW+jhA3hwV6fqnIpzTuuaXiNvozdUzfeSdws/2kfanWx
+ k8Rc6XE8UTjCH/8nv8IR4kBcd+W3aTJCTXY/ocolP5FuGgw/RJAuLetxI+lpCtU1es/cJmgIi
+ i/duuVuvcwrWKTHqLJNNTizAP8Cpm9VTyZlmn0C+FpT0vu3CAFMtFSshelmvdS5OKdxI/C+00
+ Gnv4LClT5oFI0QNeO8MI6jnR51W6lHXSXswDav1aKaHZwiAzNIlYuAzEsKrhho5aJ5t2IdziY
+ 62A5GzemI0vJpp5H5uncv1hbDRM7FWxSZquInJjY6wCVwRD8+5eLTsdoA==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 6/20/22 16:17, Hyunwoo Kim wrote:
-> From 1c55d1e084071caf02e7739e71e65f52206e872c Mon Sep 17 00:00:00 2001
-> From: Hyunwoo Kim <imv4bel@gmail.com>
-> Date: Mon, 20 Jun 2022 07:00:10 -0700
-> Subject: [PATCH] pxa3xx-gcu: Fix integer overflow in pxa3xx_gcu_write
+On 6/11/22 18:50, Christophe Leroy wrote:
+> A lot of drivers were getting platform and of headers
+> indirectly via headers like asm/pci.h or asm/prom.h
 >
-> In pxa3xx_gcu_write, a count parameter of
-> type size_t is passed to words of type int.
-> Then, copy_from_user may cause a heap overflow because
-> it is used as the third argument of copy_from_user.
+> Most of them were fixed during 5.19 cycle but a newissue was
+> introduced by commit 52b1b46c39ae ("of: Create platform devices
+> for OF framebuffers")
 >
-> Signed-off-by: Hyunwoo Kim <imv4bel@gmail.com>
+> Include missing platform_device.h to allow cleaning asm/pci.h
+>
+> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> Fixes: 52b1b46c39ae ("of: Create platform devices for OF framebuffers")
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-applied.
+Acked-by: Helge Deller <deller@gmx.de>
 
-Thanks!
+I assume you take this through the linuxppc git tree?
+
 Helge
 
 > ---
->  drivers/video/fbdev/pxa3xx-gcu.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/video/fbdev/offb.c | 1 +
+>  1 file changed, 1 insertion(+)
 >
-> diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3=
-xx-gcu.c
-> index 043cc8f9ef1c..c3cd1e1cc01b 100644
-> --- a/drivers/video/fbdev/pxa3xx-gcu.c
-> +++ b/drivers/video/fbdev/pxa3xx-gcu.c
-> @@ -381,7 +381,7 @@ pxa3xx_gcu_write(struct file *file, const char *buff=
-,
->  	struct pxa3xx_gcu_batch	*buffer;
->  	struct pxa3xx_gcu_priv *priv =3D to_pxa3xx_gcu_priv(file);
+> diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
+> index b1acb1ebebe9..91001990e351 100644
+> --- a/drivers/video/fbdev/offb.c
+> +++ b/drivers/video/fbdev/offb.c
+> @@ -26,6 +26,7 @@
+>  #include <linux/init.h>
+>  #include <linux/ioport.h>
+>  #include <linux/pci.h>
+> +#include <linux/platform_device.h>
+>  #include <asm/io.h>
 >
-> -	int words =3D count / 4;
-> +	size_t words =3D count / 4;
->
->  	/* Does not need to be atomic. There's a lock in user space,
->  	 * but anyhow, this is just for statistics. */
-> --
-> 2.25.1
->
-> Hello Helge,
->
-> Fixed the patch as requested.
->
-> Regards,
-> Hyunwoo Kim
+>  #ifdef CONFIG_PPC32
 

@@ -2,175 +2,196 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 808A9CCA47E
-	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Jun 2022 06:01:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 036B6CCA479
+	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Jun 2022 06:49:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238463AbiFTGBD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 20 Jun 2022 02:01:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37540 "EHLO
+        id S238764AbiFTGt5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 20 Jun 2022 02:49:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38352 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238458AbiFTGA5 (ORCPT
+        with ESMTP id S238682AbiFTGt4 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 20 Jun 2022 02:00:57 -0400
-Received: from mail-il1-x142.google.com (mail-il1-x142.google.com [IPv6:2607:f8b0:4864:20::142])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 11427DFD0;
-        Sun, 19 Jun 2022 23:00:54 -0700 (PDT)
-Received: by mail-il1-x142.google.com with SMTP id p8so632587ile.1;
-        Sun, 19 Jun 2022 23:00:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=cwN6IxyQjuvVAsZLjo36uq20E2C9scRHPNKcXTuVvbA=;
-        b=g6PojB88FJpDGekaEQW5sgtt2awlIg9Kyk+OmVxnfABwAPRZbln/Y/uyyXMGCfm5er
-         1R0+e483BrsBWcnsxOmWnurViueosKKnTooTuvNzUQMFav5s+AbIomGcK2PP1DZYPPpr
-         VQ9yUoTx79KEo59DnPTs2lGLIKmUyAHc7ejDxujesUmt3jln8fx88SDSJ7Xc4h4fpZ+m
-         YStImi8HoHdq4ffN+XYmEH9iKrQpXmIjZvY6BidOkJ07b9JEBCQIG0EV892yb0kP3kZR
-         L+mSaXygBIURfwfvW7HX1XbwBPpR7BkPNJr0VxPdz7HSXxsudDSiVGYuklRWY+DOvNS3
-         bRjg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=cwN6IxyQjuvVAsZLjo36uq20E2C9scRHPNKcXTuVvbA=;
-        b=nwwEfkz1FE/tdWuVEoZ1YpV4Opure9v8u/5QtmmvcgQabLWsn6zQixVWoDF9sU8efj
-         jJMmirBksP/VBZg0TqdsA1EsBVH2Ysq1LOZXcnZbOdoVjhJ6n3AEvUdUTsiiUyRQ9JQP
-         9n386QHLX1B7MIAdm7VVAkNUP8ne4hA2DlKoOMXXhk5fxars1wbGv9YS0oAtCII9Cz6j
-         qiiWSY0rpKtAdZdk8recQ93M9iSB8PkAVwsQiqEdg2Ed97RoRm8XBC91ybMFTbvCK910
-         OsKrS2LrwfHu2AB8P9ZcFrpuJTxi0Ip7Z9IF+zOu2RD8tXT0BoWjuBooirl9d9YraCGH
-         RIJw==
-X-Gm-Message-State: AJIora8XiJpN3/zIEOqTWH78ip1LJrlWT8yvTA29oyQce4HJqp//VuJ+
-        LHrfYOQbhMlFETSsKYDtTw5Iw3+4Vd+Bad37Vnc=
-X-Google-Smtp-Source: AGRyM1uXlPLygCXpmbKeDXm5LIO35jz/XjYzrLDMy2nvrMmyGvaWds72J9n4lNin+B4hhL3oHWaBa/1XDczfnzCMFbM=
-X-Received: by 2002:a05:6e02:1aa4:b0:2d3:aeb9:930 with SMTP id
- l4-20020a056e021aa400b002d3aeb90930mr12576572ilv.45.1655704854169; Sun, 19
- Jun 2022 23:00:54 -0700 (PDT)
-MIME-Version: 1.0
-References: <20220613111146.25221-1-peterwu.pub@gmail.com> <20220613111146.25221-8-peterwu.pub@gmail.com>
- <20220618164820.2eeb8ae8@jic23-huawei>
-In-Reply-To: <20220618164820.2eeb8ae8@jic23-huawei>
-From:   ChiaEn Wu <peterwu.pub@gmail.com>
-Date:   Mon, 20 Jun 2022 14:00:43 +0800
-Message-ID: <CABtFH5+R761Tyd4yaWg-foSC4K=_aeYiVaTf37KvVH1Z4z9Jhw@mail.gmail.com>
-Subject: Re: [PATCH v2 07/15] Documentation: ABI: testing: mt6370: Add ADC
- sysfs guideline
-To:     Jonathan Cameron <jic23@kernel.org>
-Cc:     lars@metafoo.de, matthias.bgg@gmail.com, lee.jones@linaro.org,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        jingoohan1@gmail.com, pavel@ucw.cz, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, linux-iio@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        szunichen@gmail.com, ChiaEn Wu <chiaen_wu@richtek.com>
+        Mon, 20 Jun 2022 02:49:56 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5966F6176;
+        Sun, 19 Jun 2022 23:49:55 -0700 (PDT)
+X-UUID: c299c47f328e4507b435047b71b4c7ce-20220620
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.6,REQID:a824e2f3-abc3-4a61-ba4f-f75105ac0024,OB:0,LO
+        B:0,IP:0,URL:5,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACT
+        ION:release,TS:50
+X-CID-INFO: VERSION:1.1.6,REQID:a824e2f3-abc3-4a61-ba4f-f75105ac0024,OB:0,LOB:
+        0,IP:0,URL:5,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTIO
+        N:release,TS:50
+X-CID-META: VersionHash:b14ad71,CLOUDID:87d22a3d-9948-4b2a-a784-d8a6c1086106,C
+        OID:cb306c6fdf1b,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:1,File:nil,QS:nil,BEC:nil,COL:0
+X-UUID: c299c47f328e4507b435047b71b4c7ce-20220620
+Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw01.mediatek.com
+        (envelope-from <ck.hu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 1770909525; Mon, 20 Jun 2022 14:49:48 +0800
+Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Mon, 20 Jun 2022 14:49:46 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
+ Transport; Mon, 20 Jun 2022 14:49:46 +0800
+Message-ID: <2cedb4cc1e1a69481d5997431ac2a4b368858afb.camel@mediatek.com>
+Subject: Re: [PATCH v11 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
+ driver
+From:   CK Hu <ck.hu@mediatek.com>
+To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, <chunkuang.hu@kernel.org>,
+        <p.zabel@pengutronix.de>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
+        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
+        <airlied@linux.ie>
+CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
+        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
+        <angelogioacchino.delregno@collabora.com>,
+        <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-fbdev@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Mon, 20 Jun 2022 14:49:46 +0800
+In-Reply-To: <20220610105522.13449-6-rex-bc.chen@mediatek.com>
+References: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
+         <20220610105522.13449-6-rex-bc.chen@mediatek.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Jonathan,
+Hi, Bo-Chen:
 
-Thanks for your helpful comments, and I have some questions want to
-ask you below.
+On Fri, 2022-06-10 at 18:55 +0800, Bo-Chen Chen wrote:
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
+> 
+> This patch adds a embedded displayport driver for the MediaTek mt8195
+> SoC.
+> 
+> It supports the MT8195, the embedded DisplayPort units. It offers
+> DisplayPort 1.4 with up to 4 lanes.
+> 
+> The driver creates a child device for the phy. The child device will
+> never exist without the parent being active. As they are sharing a
+> register range, the parent passes a regmap pointer to the child so
+> that
+> both can work with the same register range. The phy driver sets
+> device
+> data that is read by the parent to get the phy device that can be
+> used
+> to control the phy properties.
+> 
+> This driver is based on an initial version by
+> Jitao shi <jitao.shi@mediatek.com>
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> [Bo-Chen: Cleanup the drivers and modify comments from reviewers]
+> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> ---
 
-Jonathan Cameron <jic23@kernel.org> =E6=96=BC 2022=E5=B9=B46=E6=9C=8818=E6=
-=97=A5 =E9=80=B1=E5=85=AD =E6=99=9A=E4=B8=8A11:39=E5=AF=AB=E9=81=93=EF=BC=
-=9A
->
-> On Mon, 13 Jun 2022 19:11:38 +0800
-> ChiaEn Wu <peterwu.pub@gmail.com> wrote:
->
-> > From: ChiaEn Wu <chiaen_wu@richtek.com>
-> >
-> > Add ABI documentation for mt6370 non-standard ADC sysfs interfaces.
-> >
-> > Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
-> > ---
-> >  .../ABI/testing/sysfs-bus-iio-adc-mt6370      | 36 +++++++++++++++++++
-> >  1 file changed, 36 insertions(+)
-> >  create mode 100644 Documentation/ABI/testing/sysfs-bus-iio-adc-mt6370
-> >
-> > diff --git a/Documentation/ABI/testing/sysfs-bus-iio-adc-mt6370 b/Docum=
-entation/ABI/testing/sysfs-bus-iio-adc-mt6370
-> > new file mode 100644
-> > index 000000000000..039b3381176a
-> > --- /dev/null
-> > +++ b/Documentation/ABI/testing/sysfs-bus-iio-adc-mt6370
-> > @@ -0,0 +1,36 @@
-> > +What:                /sys/bus/iio/devices/iio:deviceX/in_voltage0_raw
->
-> Unfortunately the kernel documentation build scripts do no support duplic=
-ating
-> standard ABI for particular devices so as to provide more information.
-> Hence you can't have anything in this file.
->
+[snip]
 
-I want to confirm with you again,
-because my ABI file duplicates with standard sysfs-bus-iio (voltage,
-current, and temperature channels),
-Should I just remove this ABI file and modify the code of mt6370-adc
-to meet your expectations??
+> +
+> +static int mtk_dp_probe(struct platform_device *pdev)
+> +{
+> +	struct mtk_dp *mtk_dp;
+> +	struct device *dev = &pdev->dev;
+> +	int ret;
+> +	int irq_num = 0;
+> +
+> +	mtk_dp = devm_kzalloc(dev, sizeof(*mtk_dp), GFP_KERNEL);
+> +	if (!mtk_dp)
+> +		return -ENOMEM;
+> +
+> +	mtk_dp->dev = dev;
+> +
+> +	irq_num = platform_get_irq(pdev, 0);
+> +	if (irq_num < 0)
+> +		return dev_err_probe(dev, irq_num,
+> +				     "failed to request dp irq
+> resource\n");
+> +
+> +	mtk_dp->next_bridge = devm_drm_of_get_bridge(dev, dev->of_node, 
+> 1, 0);
+> +	if (IS_ERR(mtk_dp->next_bridge))
+> +		return dev_err_probe(dev, PTR_ERR(mtk_dp->next_bridge),
+> +				     "Failed to get bridge\n");
+> +
+> +	ret = mtk_dp_dt_parse(mtk_dp, pdev);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret, "Failed to parse dt\n");
+> +
+> +	drm_dp_aux_init(&mtk_dp->aux);
+> +	mtk_dp->aux.name = "aux_mtk_dp";
+> +	mtk_dp->aux.transfer = mtk_dp_aux_transfer;
 
->
-> > +KernelVersion:       5.18
-> > +Contact:     chiaen_wu@richtek.com
-> > +Description:
-> > +             Indicated MT6370 VBUS ADC with lower accuracy(+-75mA)
-> Curious though, voltage with a mA accuracy range?
+In the comment of drm_dp_aux_init(), drm_dp_aux_init() is used before
+drm_dp_aux_register(). So I think we still need to call
+drm_dp_aux_register().
 
-Yes, this description is based on the data sheet.
+Regards,
+CK
 
-> This scale should be presented directly to userspace anyway so no need
-> for this doc.
->
-> > +             higher measure range(1~22V)
-> > +             Calculating with scale returns voltage in uV
->
-> No. All channels return in mV. That's the ABI requirement as
-> in sysfs-bus-iio and we cannot vary if for particular drivers.  If we did
-> no generic tooling would work.
+> +
+> +	ret = devm_request_threaded_irq(dev, irq_num, mtk_dp_hpd_event,
+> +					mtk_dp_hpd_event_thread,
+> +					IRQ_TYPE_LEVEL_HIGH,
+> dev_name(dev),
+> +					mtk_dp);
+> +	if (ret)
+> +		return dev_err_probe(dev, -EPROBE_DEFER,
+> +				     "failed to request mediatek dptx
+> irq\n");
+> +
+> +	mutex_init(&mtk_dp->dp_lock);
+> +
+> +	platform_set_drvdata(pdev, mtk_dp);
+> +
+> +	mtk_dp->phy_dev = platform_device_register_data(dev, "mediatek-
+> dp-phy",
+> +							PLATFORM_DEVID_
+> AUTO,
+> +							&mtk_dp->regs,
+> +							sizeof(struct
+> regmap *));
+> +	if (IS_ERR(mtk_dp->phy_dev))
+> +		return dev_err_probe(dev, PTR_ERR(mtk_dp->phy_dev),
+> +				     "Failed to create device mediatek-
+> dp-phy\n");
+> +
+> +	mtk_dp_get_calibration_data(mtk_dp);
+> +
+> +	mtk_dp->phy = devm_phy_get(&mtk_dp->phy_dev->dev, "dp");
+> +
+> +	if (IS_ERR(mtk_dp->phy)) {
+> +		platform_device_unregister(mtk_dp->phy_dev);
+> +		return dev_err_probe(dev, PTR_ERR(mtk_dp->phy),
+> +				     "Failed to get phy\n");
+> +	}
+> +
+> +	mtk_dp->bridge.funcs = &mtk_dp_bridge_funcs;
+> +	mtk_dp->bridge.of_node = dev->of_node;
+> +
+> +	mtk_dp->bridge.ops =
+> +		DRM_BRIDGE_OP_DETECT | DRM_BRIDGE_OP_EDID |
+> DRM_BRIDGE_OP_HPD;
+> +	mtk_dp->bridge.type = DRM_MODE_CONNECTOR_eDP;
+> +
+> +	drm_bridge_add(&mtk_dp->bridge);
+> +
+> +	pm_runtime_enable(dev);
+> +	pm_runtime_get_sync(dev);
+> +
+> +	return 0;
+> +}
 
-Ok, I got it!
-
->
-> > +
-> > +What:                /sys/bus/iio/devices/iio:deviceX/in_voltage1_raw
-> > +KernelVersion:       5.18
-> > +Contact:     chiaen_wu@richtek.com
-> > +Description:
-> > +             Indicated MT6370 VBUS ADC with higher accuracy(+-30mA)
-> > +             lower measure range(1~9.76V)
-> > +             Calculating with scale offset returns voltage in uV
-> > +
-> > +What:                /sys/bus/iio/devices/iio:deviceX/in_voltage4_raw
-> > +KernelVersion:       5.18
-> > +Contact:     chiaen_wu@richtek.com
-> > +Description:
-> > +             Indicated MT6370 TS_BAT ADC
-> > +             Calculating with scale returns voltage in uV
-> > +
-> > +What:                /sys/bus/iio/devices/iio:deviceX/in_voltage7_raw
-> > +KernelVersion:       5.18
-> > +Contact:     chiaen_wu@richtek.com
-> > +Description:
-> > +             Indicated MT6370 CHG_VDDP ADC
-> > +             Calculating with scale returns voltage in mV
-> > +
-> > +What:                /sys/bus/iio/devices/iio:deviceX/in_temp8_raw
-> > +KernelVersion:       5.18
-> > +Contact:     chiaen_wu@richtek.com
-> > +Description:
-> > +             Indicated MT6370 IC junction temperature
-> > +             Calculating with scale and offset returns temperature in =
-degree
-
-Shall I modify the scale of temperature to milli degrees in
-mt6370-adc.c and remove this item??
-
->
-
-Best regards,
-ChiaEn Wu

@@ -2,43 +2,40 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95B50C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Jun 2022 03:29:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5395AC433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Jun 2022 03:46:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237888AbiFTD3j (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 19 Jun 2022 23:29:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59660 "EHLO
+        id S238070AbiFTDqZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 19 Jun 2022 23:46:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38608 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237878AbiFTD3j (ORCPT
+        with ESMTP id S238059AbiFTDqF (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 19 Jun 2022 23:29:39 -0400
+        Sun, 19 Jun 2022 23:46:05 -0400
 Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B4D876249;
-        Sun, 19 Jun 2022 20:29:37 -0700 (PDT)
-X-UUID: 6044d4ae9b2a415eade352b1ed265ef6-20220620
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6A7E2CE00;
+        Sun, 19 Jun 2022 20:46:03 -0700 (PDT)
+X-UUID: fc1652a01c914f2cb6d935a29fea5c28-20220620
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.6,REQID:8e2cf951-ce8b-47aa-b497-87933e53de16,OB:10,L
-        OB:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,AC
-        TION:release,TS:45
-X-CID-INFO: VERSION:1.1.6,REQID:8e2cf951-ce8b-47aa-b497-87933e53de16,OB:10,LOB
-        :0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:45
-X-CID-META: VersionHash:b14ad71,CLOUDID:6939f5e9-f7af-4e69-92ee-0fd74a0c286c,C
-        OID:3cc8a5dd8204,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
-        RL:0,File:nil,QS:nil,BEC:nil,COL:0
-X-UUID: 6044d4ae9b2a415eade352b1ed265ef6-20220620
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
+X-CID-O-INFO: VERSION:1.1.6,REQID:3f9de25c-c23a-405d-a658-84380fa17625,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:b14ad71,CLOUDID:d9be253d-9948-4b2a-a784-d8a6c1086106,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
+        ,QS:nil,BEC:nil,COL:0
+X-UUID: fc1652a01c914f2cb6d935a29fea5c28-20220620
+Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw02.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1014500687; Mon, 20 Jun 2022 11:29:27 +0800
-Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
- mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Mon, 20 Jun 2022 11:29:26 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Mon, 20 Jun 2022 11:29:26 +0800
-Message-ID: <94b03604c81794ea811e106802a03b888ceb57c3.camel@mediatek.com>
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 1087266528; Mon, 20 Jun 2022 11:45:59 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.792.15; Mon, 20 Jun 2022 11:45:56 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Mon, 20 Jun 2022 11:45:56 +0800
+Message-ID: <602191e9a61687a8ed05b216d0faad0092b05168.camel@mediatek.com>
 Subject: Re: [PATCH v11 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
  driver
 From:   CK Hu <ck.hu@mediatek.com>
@@ -56,7 +53,7 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Mon, 20 Jun 2022 11:29:25 +0800
+Date:   Mon, 20 Jun 2022 11:45:56 +0800
 In-Reply-To: <20220610105522.13449-6-rex-bc.chen@mediatek.com>
 References: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
          <20220610105522.13449-6-rex-bc.chen@mediatek.com>
@@ -102,50 +99,51 @@ On Fri, 2022-06-10 at 18:55 +0800, Bo-Chen Chen wrote:
 [snip]
 
 > +
-> +static void mtk_dp_set_color_depth(struct mtk_dp *mtk_dp, u32
-> color_depth)
+> +static void mtk_dp_poweroff(struct mtk_dp *mtk_dp)
+> +{
+> +	mutex_lock(&mtk_dp->dp_lock);
+> +
+> +	mtk_dp_hwirq_enable(mtk_dp, false);
+> +	mtk_dp_power_disable(mtk_dp);
+> +	phy_exit(mtk_dp->phy);
+> +
+> +	mutex_unlock(&mtk_dp->dp_lock);
+> +}
+> +
+> +static int mtk_dp_poweron(struct mtk_dp *mtk_dp)
+> +{
+> +	int ret = 0;
+> +
+> +	mutex_lock(&mtk_dp->dp_lock);
 
-In the whole driver, the color_depth would only be DP_MSA_MISC_8_BPC,
-so remove the parameter color_depth and fix the color depth to
-DP_MSA_MISC_8_BPC in this function.
+The dp_poweron/off is only called by bridge_attach/detach, and I think
+drm core would not call attach/detach concurrently, so this mutex is
+redundant. Remove it.
 
 Regards,
 CK
 
-> +{
-> +	u32 val;
 > +
-> +	mtk_dp->info.depth = color_depth;
-> +
-> +	/* Update MISC0 */
-> +	mtk_dp_update_bits(mtk_dp, MTK_DP_ENC0_P0_3034,
-> +			   color_depth, DP_TEST_BIT_DEPTH_MASK);
-> +
-> +	switch (color_depth) {
-> +	case DP_MSA_MISC_6_BPC:
-> +		val = VIDEO_COLOR_DEPTH_DP_ENC0_P0_6BIT;
-> +		break;
-> +	case DP_MSA_MISC_8_BPC:
-> +		val = VIDEO_COLOR_DEPTH_DP_ENC0_P0_8BIT;
-> +		break;
-> +	case DP_MSA_MISC_10_BPC:
-> +		val = VIDEO_COLOR_DEPTH_DP_ENC0_P0_10BIT;
-> +		break;
-> +	case DP_MSA_MISC_12_BPC:
-> +		val = VIDEO_COLOR_DEPTH_DP_ENC0_P0_12BIT;
-> +		break;
-> +	case DP_MSA_MISC_16_BPC:
-> +		val = VIDEO_COLOR_DEPTH_DP_ENC0_P0_16BIT;
-> +		break;
-> +	default:
-> +		drm_warn(mtk_dp->drm_dev, "Unsupported color depth
-> %d\n",
-> +			 color_depth);
-> +		return;
+> +	ret = phy_init(mtk_dp->phy);
+> +	if (ret) {
+> +		dev_err(mtk_dp->dev, "Failed to initialize phy: %d\n",
+> ret);
+> +		goto err_phy_init;
+> +	}
+> +	ret = mtk_dp_phy_configure(mtk_dp, MTK_DP_LINKRATE_RBR, 1);
+> +	if (ret) {
+> +		dev_err(mtk_dp->dev, "Failed to configure phy: %d\n",
+> ret);
+> +		goto err_phy_config;
 > +	}
 > +
-> +	mtk_dp_update_bits(mtk_dp, MTK_DP_ENC0_P0_303C, val,
-> +			   VIDEO_COLOR_DEPTH_DP_ENC0_P0_MASK);
-> +}
+> +	mtk_dp_init_port(mtk_dp);
+> +	mtk_dp_power_enable(mtk_dp);
 > +
+> +err_phy_config:
+> +	phy_exit(mtk_dp->phy);
+> +err_phy_init:
+> +	mutex_unlock(&mtk_dp->dp_lock);
+> +	return ret;
+> +}
 

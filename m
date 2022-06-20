@@ -2,160 +2,133 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B053CCA47A
-	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Jun 2022 03:07:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02FE7C43334
+	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Jun 2022 03:13:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237400AbiFTDHm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 19 Jun 2022 23:07:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49682 "EHLO
+        id S237712AbiFTDNI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 19 Jun 2022 23:13:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52604 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237246AbiFTDHl (ORCPT
+        with ESMTP id S231530AbiFTDNH (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 19 Jun 2022 23:07:41 -0400
-Received: from mail-il1-x12d.google.com (mail-il1-x12d.google.com [IPv6:2607:f8b0:4864:20::12d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B8B1865B2;
-        Sun, 19 Jun 2022 20:07:40 -0700 (PDT)
-Received: by mail-il1-x12d.google.com with SMTP id m16so5055740ilf.6;
-        Sun, 19 Jun 2022 20:07:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=ClA6mV7hozr21kuBkeCxjd9fGNxXJpc68c5A8HEJUUI=;
-        b=gOpv1108ut5ySpAPndiTka0cdAPZs7Flmw6QF/XASUursDWrwbsAx9Vt+ZXF5kcdEw
-         TCakBrMFGrsxiKWEOhenPFzr9LBdXhjmxW5370IMQcOOlgaFHdTNkBB+FXGyNxJcg61e
-         E1CcWHlUQ+QDQ0SBGzNysb+dxHy8expVECKExkABctkP/dtbwAAACdK2L7UDO9Gbz48K
-         ji3tgBrL0udfA8TkFrC8hp8qz2em39uxnCPqC9QkBkCfnnMqz+vlX4RNa8QIDVPQFIsS
-         Tfem3Y9ER0V16TcCeQoXqA7MiKjEXoKy5//qqMQChDe5hPDjkyy9/RyTBkvqD/PR7kp3
-         aZZQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=ClA6mV7hozr21kuBkeCxjd9fGNxXJpc68c5A8HEJUUI=;
-        b=GEfgbHzpmH0uUZ6uMTT+DbKYhbPVmaJQTSCZAFx1ZAdCCTzdFDIiDQr+wyqLTgzCDQ
-         EfmgI6/LZEzcpopXMiOC795S5yI89SucZRRMjX38yKGBQ3m/puF7EWKfUoeP/A4twnbm
-         xW/krzXvaoy1GJd1E9Fpd3AoW+o72yMqFtIkzTBUZJLn4eDL46ymkiPuSmtxrxyv57r1
-         0dKNHtKLi/YesODLsilCKAoRvrW64rjIhQAPystd8ztbtc3OZy1MrHuGDDdqDcj1ujD2
-         ei6ngSJe9/DBAXyAEAd9ALSdNgPh3fi8+6hSfBYbGzgN9sdNawzeRj6ud8aw9UyYmnfN
-         HQ6A==
-X-Gm-Message-State: AJIora9OBmOY1Vekl6KDag8YTpQ0KCLzT41BZtBZFykqGL/dMCUCj+5v
-        YgxbCS6jSXStBKCbx1uoSmzMZ9dkSXLVUYmt8zo=
-X-Google-Smtp-Source: AGRyM1uWx3Xja5gAlxQTsI9Gy8E4mbdwpO+4QcNSHclRnN4Pr80zjlE1E8X1wNostXJGk9TU7gkWHZtEAVASNa5cJX8=
-X-Received: by 2002:a05:6e02:1bc1:b0:2d1:96b3:b961 with SMTP id
- x1-20020a056e021bc100b002d196b3b961mr12302759ilv.213.1655694460188; Sun, 19
- Jun 2022 20:07:40 -0700 (PDT)
-MIME-Version: 1.0
-References: <20220613111146.25221-1-peterwu.pub@gmail.com> <20220613111146.25221-4-peterwu.pub@gmail.com>
- <91e9e3af-8208-7535-1864-08744f934593@linaro.org>
-In-Reply-To: <91e9e3af-8208-7535-1864-08744f934593@linaro.org>
-From:   szuni chen <szunichen@gmail.com>
-Date:   Mon, 20 Jun 2022 11:07:29 +0800
-Message-ID: <CA+hk2fZbh0=8gurGS95XpXrYyF3NbwFbFMcygcrW_q10m0zinA@mail.gmail.com>
-Subject: Re: [PATCH v2 03/15] dt-bindings: leds: mt6370: Add Mediatek mt6370
- current sink type LED indicator
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     ChiaEn Wu <peterwu.pub@gmail.com>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-iio <linux-iio@vger.kernel.org>,
-        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-mediatek@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        USB <linux-usb@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        ChiYuan Huang <cy_huang@richtek.com>
+        Sun, 19 Jun 2022 23:13:07 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 434AEF64;
+        Sun, 19 Jun 2022 20:13:01 -0700 (PDT)
+X-UUID: ceb30546df054db09725cd818b66b6ef-20220620
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.6,REQID:994c01eb-8f37-4e8f-b549-c77f9a8fba83,OB:0,LO
+        B:10,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,AC
+        TION:release,TS:45
+X-CID-INFO: VERSION:1.1.6,REQID:994c01eb-8f37-4e8f-b549-c77f9a8fba83,OB:0,LOB:
+        10,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:45
+X-CID-META: VersionHash:b14ad71,CLOUDID:fad4243d-9948-4b2a-a784-d8a6c1086106,C
+        OID:a27f12e3172d,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:0,File:nil,QS:nil,BEC:nil,COL:0
+X-UUID: ceb30546df054db09725cd818b66b6ef-20220620
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
+        (envelope-from <ck.hu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 169250232; Mon, 20 Jun 2022 11:12:57 +0800
+Received: from mtkcas10.mediatek.inc (172.21.101.39) by
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
+ Mon, 20 Jun 2022 11:12:56 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Mon, 20 Jun 2022 11:12:56 +0800
+Message-ID: <7a0630c68f2754343521daf7b638a20b44e55624.camel@mediatek.com>
+Subject: Re: [PATCH v11 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
+ driver
+From:   CK Hu <ck.hu@mediatek.com>
+To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, <chunkuang.hu@kernel.org>,
+        <p.zabel@pengutronix.de>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
+        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
+        <airlied@linux.ie>
+CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
+        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
+        <angelogioacchino.delregno@collabora.com>,
+        <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-fbdev@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Mon, 20 Jun 2022 11:12:55 +0800
+In-Reply-To: <20220610105522.13449-6-rex-bc.chen@mediatek.com>
+References: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
+         <20220610105522.13449-6-rex-bc.chen@mediatek.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dear Krzysztof,
+On Fri, 2022-06-10 at 18:55 +0800, Bo-Chen Chen wrote:
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
+> 
+> This patch adds a embedded displayport driver for the MediaTek mt8195
+> SoC.
+> 
+> It supports the MT8195, the embedded DisplayPort units. It offers
+> DisplayPort 1.4 with up to 4 lanes.
+> 
+> The driver creates a child device for the phy. The child device will
+> never exist without the parent being active. As they are sharing a
+> register range, the parent passes a regmap pointer to the child so
+> that
+> both can work with the same register range. The phy driver sets
+> device
+> data that is read by the parent to get the phy device that can be
+> used
+> to control the phy properties.
+> 
+> This driver is based on an initial version by
+> Jitao shi <jitao.shi@mediatek.com>
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> [Bo-Chen: Cleanup the drivers and modify comments from reviewers]
+> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> ---
 
-Thank you for the valuable command.
+[snip]
 
-Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> =E6=96=BC 2022=E5=B9=
-=B46=E6=9C=8817=E6=97=A5 =E9=80=B1=E4=BA=94 =E6=B8=85=E6=99=A85:09=E5=AF=AB=
-=E9=81=93=EF=BC=9A
->
-> On 13/06/2022 04:11, ChiaEn Wu wrote:
-> > From: ChiYuan Huang <cy_huang@richtek.com>
-> >
-> > Add Mediatek mt6370 current sink type LED indicator binding documentati=
-on.
-> >
-> > Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
-> > ---
-> >  .../leds/mediatek,mt6370-indicator.yaml       | 48 +++++++++++++++++++
-> >  1 file changed, 48 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/leds/mediatek,mt6=
-370-indicator.yaml
-> >
-> > diff --git a/Documentation/devicetree/bindings/leds/mediatek,mt6370-ind=
-icator.yaml b/Documentation/devicetree/bindings/leds/mediatek,mt6370-indica=
-tor.yaml
-> > new file mode 100644
-> > index 000000000000..42b96c8047a3
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.=
-yaml
-> > @@ -0,0 +1,48 @@
-> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > +%YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/leds/mediatek,mt6370-indicator.yaml=
-#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: LED driver for MT6370 PMIC from MediaTek Integrated.
-> > +
-> > +maintainers:
-> > +  - Alice Chen <alice_chen@richtek.com>
-> > +
-> > +description: |
-> > +  This module is part of the MT6370 MFD device.
-> > +  Add MT6370 LED driver include 4-channel RGB LED support Register/PWM=
-/Breath Mode
-> > +
-> > +properties:
-> > +  compatible:
-> > +    const: mediatek,mt6370-indicator
-> > +
-> > +  "#address-cells":
-> > +    const: 1
-> > +
-> > +  "#size-cells":
-> > +    const: 0
-> > +
-> > +patternProperties:
-> > +  "^(multi-)?led@[0-3]$":
->
-> If this is multi-led, then you should reference
-> /schemas/leds/leds-pwm-multicolor.yaml
->
-> See other examples using it.
+> +
+> +static void mtk_dp_calculate_pixrate(struct mtk_dp *mtk_dp)
+> +{
+> +	u8 target_frame_rate = 60;
+> +	u32 target_pixel_clk;
+> +	struct drm_display_mode mode;
+> +	struct mtk_dp_timings *timings = &mtk_dp->info.timings;
+> +
+> +	drm_display_mode_from_videomode(&timings->vm, &mode);
+> +
+> +	if (mtk_dp->info.timings.frame_rate > 0) {
+> +		target_frame_rate = mtk_dp->info.timings.frame_rate;
+> +		target_pixel_clk = mode.htotal * mode.vtotal *
+> +				   target_frame_rate;
+> +	} else if (mtk_dp->info.timings.pix_rate_khz > 0) {
+> +		target_pixel_clk = mtk_dp->info.timings.pix_rate_khz *
+> 1000;
+> +	} else {
+> +		target_pixel_clk = mode.htotal * mode.vtotal *
+> +				   target_frame_rate;
+> +	}
+> +
+> +	mtk_dp->info.timings.pix_rate_khz = target_pixel_clk / 1000;
 
-In my opinion, leds-pwm-multicolor.yaml is used for external pwm
-signals, and needs to assign an external pwm property.
-But our pwm leds use an internal clock to generate the pwm signal. Is
-leds-class-multicolor.yaml more appropriate?
+It seems that pix_rate_khz is used only here and does not used in
+another place, so pix_rate_khz is useless, remove it.
 
-Sincerely,
-Alice
->
->
->
-> Best regards,
-> Krzysztof
+Regards,
+CK
+
+> +}
+> +
+

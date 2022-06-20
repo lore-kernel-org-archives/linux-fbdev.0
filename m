@@ -2,112 +2,105 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E190AC433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Jun 2022 18:18:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EAE1C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Jun 2022 18:25:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242638AbiFTSSv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 20 Jun 2022 14:18:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34344 "EHLO
+        id S241509AbiFTSZm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 20 Jun 2022 14:25:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38354 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241246AbiFTSSu (ORCPT
+        with ESMTP id S238810AbiFTSZm (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 20 Jun 2022 14:18:50 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 86EFF1CFDC;
-        Mon, 20 Jun 2022 11:18:49 -0700 (PDT)
+        Mon, 20 Jun 2022 14:25:42 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EBDEC1D309;
+        Mon, 20 Jun 2022 11:25:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1655749110;
-        bh=nDybV39t6Bl2Ro8KUpVT1iVcktYwIEWjKEfFqm5iuzE=;
+        s=badeba3b8450; t=1655749531;
+        bh=g1DrBhSApPqCrOkx7rqvIZlJ4nA4K9qZgEmyWNfkG1g=;
         h=X-UI-Sender-Class:Date:Subject:To:References:From:In-Reply-To;
-        b=dua/itfsyJR4VfJ6JC3yK7eKZyUATPZsQMHr4XcrrY4Xh7RPvLe/N0AYu1mfd5xw6
-         piNmzoguBMBwcUsR3Cem7FfELjfelIDaJI/Ycj5GrVFYGHkMYZUi2mJMhBawoopBX3
-         2p2QlsGiR2wAgH7VhvEeIuElbvjlp93L08IRXY/s=
+        b=LPWXOKns/sUNNC5ie4zr1SOVSbuwDE5MHA4y1LWq1ClUNfjzu/jkVDj9J5g7QtgyT
+         plHhrs50yQa2W43qxlv4/9yPAUMT10DMrVLNNeU61hBajUYj1uwaxvF2himdCquBWs
+         RVHFc7GHX9CUBTII1SabztPKQ38kCeGgMxQUSbmo=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from [192.168.20.60] ([92.116.174.149]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MGQnP-1ntfj91gRJ-00Gt4g; Mon, 20
- Jun 2022 20:18:30 +0200
-Message-ID: <6c572704-b39d-34cf-345f-9bd21a18be5b@gmx.de>
-Date:   Mon, 20 Jun 2022 20:18:08 +0200
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MRCK6-1oHi6o3aiq-00N6Bo; Mon, 20
+ Jun 2022 20:25:30 +0200
+Message-ID: <f7e75426-035b-bf0a-b565-bc816b4eeb23@gmx.de>
+Date:   Mon, 20 Jun 2022 20:25:09 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.10.0
-Subject: Re: [PATCH] video: fbdev: au1100fb: Check before some function not
- needed
+Subject: Re: [PATCH] fbdev: simplefb: Check before clk_put() not needed
 Content-Language: en-US
-To:     Yihao Han <hanyihao@vivo.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
+To:     Hans de Goede <hdegoede@redhat.com>, Yihao Han <hanyihao@vivo.com>,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org
-References: <20220608114658.37105-1-hanyihao@vivo.com>
+References: <20220602094219.13024-1-hanyihao@vivo.com>
+ <84aa3225-d514-4c08-f6d3-ed8f0423e513@redhat.com>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220608114658.37105-1-hanyihao@vivo.com>
+In-Reply-To: <84aa3225-d514-4c08-f6d3-ed8f0423e513@redhat.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:T0HtqgGBU9PMtL1wyCaJaVllY7W3Te23wRGH4P80xKWO2e9DmIs
- rKNvATaut5ZAvA15JabqNo4LV3cpjzOR4C+PcZYvh4z5AJ66bFZvBjE+I0e65AfTJgzc3oj
- U6/i1fLJFDQ5W8/9ph84QbnK/R27xRrB+U6ORcRf2wJ4aEwTkCm8Kw/Y/Y5yuPIYciHnDPx
- rsNxLoovcieoJC291tXGA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:WhJrOly8xXA=:EJTzvpjHRGxf9y/PfX/OYX
- bItf/PbMzBg9TJTR3wcWdU/0RdgHCBfBL0BWBlRIZj9ZIXN4ia33UWQ9Q4svWCfpb0RLFvu0n
- JpmmCVeSooAsrG8T/ADmv0Y/tmV27YowJw9uohPw3DgoN66jfjouBnp/Ucd8mwLE6R+sAKH/i
- 8u8Lcz6zTwTmxY50hDkr1FKvou/h5PX2jdK1cgN32kxnnWIV3PAKPj1i+GfSrCo1aSL9wJJah
- P2PCbmgrb26DYWdWf5m79JPTQrlrIMNNz6TBo4GZ1depgvUvQYYghsw1vN8XVM/gaYaGgBKmt
- Qf+nrp7LrEbh+CoRtlkgUvrsZuEB7cUSpCXHL2YvC/HTfCrLUdKxd6LER12PORUs3MZ36KYRN
- Y9lePxSv5vXBLuQDgMYpC4FRXsiIuGOsaU82VTYyED4Lsw3x8pBdkmkmzaDsISFww3x+z6A4Z
- TxTFuXGZWb33Bc74YFmRvNLpFC6L+tJKCrKsVLpjaHG5nO//FqmtUyFbDP72WNocqnwCPbh+S
- H5QcbsL3eP1wBw9GQ313/yGvbRQzUa9xVqyW/5g2XyIPjjpW5K6B5/wPuqOa8EPfSx78qEeuD
- WUij41E2uQAJaQO0JtHmkeotBMqce2JooOJKJqq0EgdQm/lKikp6SUxOd8ZF2AkzhI5EfSwRk
- 5UL41kUydTaJksXKJq/MrPA7jGsL5QjaEjlWow7nIoNIEfMCmnZyQQ7ffYD9MSMeSk6sXPW5c
- IcWozPgZh80NHxhHIcEldBzjnKbCckzFvoeBgfhEpYP4AeJH4/cEtxrJX5inWKJSXSdZKHaCP
- iNx24ZEik5yMTvh61SdzFpgRJDfDGrTAtKHY4UkPF3UP3S+xPhtKdOCVYdVRv4ssRN/jSbUVR
- Sc84pnLaA9mktMkEdX8KLDJSGLEuUPZHXZFfdti2FTFyA07jOTN0Tmlldx/nJR2dRQVzH1x5I
- BgQJy0lE9o+hJ/I3WCx/V5uOYuy0aWT91jjK0s+7G1q6VH582iZaOk7n7zTU4UFbTUlDhait2
- 5I2JvxqDI5x+ZaeczlU0v3/l1jsGffXUicPQpv7vcN1WMusudx7+BmM5ac9B8afMpmmFlQE1t
- y08Bs/gbBCJllusYZAq76fxlL4xkIIcCAkabTUL68I3RXY77MqCQQfPsg==
+X-Provags-ID: V03:K1:F7AmgmvffE840tXWVRq7mb8PATQeMnhx+HwH9ip+oSIRJIYMOEI
+ Mc4HXrcX+QKZJ7V/nkhoiI/Dxz+zY6IAx3ijx43pkPQZKPCJSwQyek/li3OkJffXzUQHSMx
+ u0kbgcV9SZbD9lvK/ukwKjRRCbZqtDwbv8uEGtIL+xk3wGPn9+4fFavnmtGUl9XIh5yDwDU
+ TuLtJe+WcWTqk+tXZqJ5g==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:TzJKf2LyMVk=:n70VceyDlP3L499n504Lja
+ DRe5F+1r2lDAW5JEM99pCAWctF0QSTjJzHeJXUXT/CvIxu37uD7Oejws3klX1K+kTSPuQoxiI
+ 60nkDosVueRU7HvGfEYvsT0wipD0Buxk0ofEyln3T3K78eGcWPjnY7AeuBRnE05wOqn7k84Zz
+ nfbQ0AOvWzLOhI+0zdLX65WqwHaWUBhacEmzdXRcCxOJ7vnL/+Pw/8Jo3XplFfxbkT5snqXXz
+ KsURX4dxbVI9+963ErTxz0vIZpmBeCaU8pxtiaq7F557gehOhK0AcwQvyRdGwEMDH0MpI9azG
+ 9KM9+PHnZdx3Dhd4Ws5vKulMBGyJ4Eg0XUm5WgsLPpAeuTt+fByF0dJZn+mXbYwSEfSPRVuIN
+ 61bcoe0rcUQcDpUdC2ofeitx8Qeq4H/A+Q1IP4449RjGXNHU1H+B50eG4g2jFGrvfOE2/uMOU
+ rDJ8Yt3C0CK2i8ChYJudqcps+ga3TGcwW813dJ6BDYmBnQdDLB6zEGElMH/IJPe5GOWhInuum
+ s05E4wHRt4l2Ks+oTwY+Gr6mFqtotn4U2KWaAc9R3KXUTr55hTTgqrGCOfZ2B/yWLg1T0C5fb
+ Y5Yniuq4q7XyA83z4jQ9/ptVKSr2G3djKbkQyTliFy+lJOlJF/zi3UeYkCFiBWLNMuIRZmHg5
+ oFdWFc4fcVi7WUeGTMe7/7kcyujwndi9OXJvc42OlURg/VvBCWDm0Hv/ZauD/ZDterl/rv7ej
+ ljZjA79OLXikhmzpYGTryj1q88l95FZYmo7cvL9OJHpSfO0ySP/iMrfDpb1rpBCLMIA/FQhLd
+ 0J0fqmk9NlpAyQaUYcJhzAxkaMViYwK+fhD2Bq6LL28IiRTm64z+5hQ3xa2uMuX7G7mRWqXPf
+ mKUqgDNmaXtyT45cVHPKJSwRoJ9V8x8LMqKAYLqH958sUVtWpoJwJmU70+k/qBQrDJhQ0YgBt
+ h5smT0eRUPvK+VUglNgsQ2/dQkSQQ17BeMHKU21vKmI+NGoYTrZX79eLPngkn+mvveI5CrVfM
+ AxRZmRCVVCma1oY9+dMQe9oivXEOfxWatKZ9WPW2+248RgWiyckDyp1BfEy+xiXo4FRdTdH79
+ t1aJnD3B5PrXkP+rz0eSt1cJgFk2fXrKCS57FwWN5OCL1SY3ED9l2UvoA==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 6/8/22 13:43, Yihao Han wrote:
-> clk_disable() already checks the clk ptr using IS_ERR_OR_NULL(clk)
-> and clk_enable() checks the clk ptr using !clk, so there is no
-> need to check clk ptr again before calling them.
+On 6/2/22 12:50, Hans de Goede wrote:
+> Hi,
 >
-> Signed-off-by: Yihao Han <hanyihao@vivo.com>
+> On 6/2/22 11:42, Yihao Han wrote:
+>> clk_put() already checks the clk ptr using !clk and IS_ERR()
+>> so there is no need to check it again before calling it.
+>>
+>> Signed-off-by: Yihao Han <hanyihao@vivo.com>
+>> ---
+>>  drivers/video/fbdev/simplefb.c | 3 +--
+>>  1 file changed, 1 insertion(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simpl=
+efb.c
+>> index 2c198561c338..f96ce8801be4 100644
+>> --- a/drivers/video/fbdev/simplefb.c
+>> +++ b/drivers/video/fbdev/simplefb.c
+>> @@ -237,8 +237,7 @@ static int simplefb_clocks_get(struct simplefb_par =
+*par,
+>>  		if (IS_ERR(clock)) {
+>>  			if (PTR_ERR(clock) =3D=3D -EPROBE_DEFER) {
+>>  				while (--i >=3D 0) {
+>> -					if (par->clks[i])
+>> -						clk_put(par->clks[i]);
+>> +					clk_put(par->clks[i]);
+>>  				}
+>>  				kfree(par->clks);
+>>  				return -EPROBE_DEFER;
+>
+> Thanks, patch looks good to me:
+>
+> Reviewed-by: Hans de Goede <hdegoede@redhat.com>
 
 applied to fbdev tree.
 
 Thanks!
 Helge
-
-> ---
->  drivers/video/fbdev/au1100fb.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100=
-fb.c
-> index 52f731a61482..519313b8bb00 100644
-> --- a/drivers/video/fbdev/au1100fb.c
-> +++ b/drivers/video/fbdev/au1100fb.c
-> @@ -560,8 +560,7 @@ int au1100fb_drv_suspend(struct platform_device *dev=
-, pm_message_t state)
->  	/* Blank the LCD */
->  	au1100fb_fb_blank(VESA_POWERDOWN, &fbdev->info);
->
-> -	if (fbdev->lcdclk)
-> -		clk_disable(fbdev->lcdclk);
-> +	clk_disable(fbdev->lcdclk);
->
->  	memcpy(&fbregs, fbdev->regs, sizeof(struct au1100fb_regs));
->
-> @@ -577,8 +576,7 @@ int au1100fb_drv_resume(struct platform_device *dev)
->
->  	memcpy(fbdev->regs, &fbregs, sizeof(struct au1100fb_regs));
->
-> -	if (fbdev->lcdclk)
-> -		clk_enable(fbdev->lcdclk);
-> +	clk_enable(fbdev->lcdclk);
->
->  	/* Unblank the LCD */
->  	au1100fb_fb_blank(VESA_NO_BLANKING, &fbdev->info);
-

@@ -2,106 +2,226 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DF28C43334
-	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Jun 2022 00:16:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25201C43334
+	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Jun 2022 02:43:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245660AbiFUAQB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 20 Jun 2022 20:16:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43670 "EHLO
+        id S1344427AbiFUCnH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 20 Jun 2022 22:43:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56272 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239725AbiFUAQA (ORCPT
+        with ESMTP id S232725AbiFUCnG (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 20 Jun 2022 20:16:00 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 9761F19C33
-        for <linux-fbdev@vger.kernel.org>; Mon, 20 Jun 2022 17:15:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1655770558;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=am4ljrsE7Ufjfmqsop2MzHsqSlEXrA5rSRIM1yT2FYE=;
-        b=P5dRtsSKvV3QKbbOdEXRRj7ZY4MqanQrTt19Kdz7fCwkp/Xfa2FZdSX39CLp3blWQkHW3d
-        7KY+FW18aC6fDGOA32qw5O1iep3JWnx0YZ8wdS3Fj4/vAqkTRsJNnuDPKMPmw7aI/Gq+Gt
-        V2CVktJp25Zw/rUIIP/SJX0H/dqG4lM=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-3-X-KmpOgWNcaUL7_yR7nQ9A-1; Mon, 20 Jun 2022 20:15:57 -0400
-X-MC-Unique: X-KmpOgWNcaUL7_yR7nQ9A-1
-Received: by mail-wm1-f70.google.com with SMTP id h205-20020a1c21d6000000b0039c96ec500fso7591226wmh.8
-        for <linux-fbdev@vger.kernel.org>; Mon, 20 Jun 2022 17:15:57 -0700 (PDT)
+        Mon, 20 Jun 2022 22:43:06 -0400
+Received: from mail-io1-xd43.google.com (mail-io1-xd43.google.com [IPv6:2607:f8b0:4864:20::d43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EDE121C10C;
+        Mon, 20 Jun 2022 19:43:04 -0700 (PDT)
+Received: by mail-io1-xd43.google.com with SMTP id p69so12958258iod.0;
+        Mon, 20 Jun 2022 19:43:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=XBEE2W3FjydD0/XD0h/jv8cpLUWQxzRJ40zan6MUb+E=;
+        b=oWfVzxZxhoE4HCZZdM8AG2g15e+tsDablb3uv6NkJNr1Kh3zVrgyKtEPApzczQpRms
+         bD8RZbDm7aMtscYJEN8XXGOlsTqkZf1dtxoWPDORJ7urpKFNz5I0ZAkz1Y6lu2L3VKxk
+         jsgOC3+8UD4PmI07mrFKGYJUB4K2+cCuGgR1lLkTssDUPma6usi742emzjDomnez/fO7
+         gkncrR62Ovc5cM/k3mTqd9wRYOhJWE1fAYa4f47f2OUNxvJeF/xsemZbX25KUkPaIWm8
+         FPCUCW3ESzi7b+Cjy8YYs3GbGU2ami25BYtYRPOZWh4ANtHkZtNS3Ocb5DmSnpwpiC2t
+         VZVg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=am4ljrsE7Ufjfmqsop2MzHsqSlEXrA5rSRIM1yT2FYE=;
-        b=nixVZY77IIMmSb9uMzVT8tb7wDbwjdkmSF/gIhbe275+ph3PZjWqYsJx9cB0uHRXXi
-         gh2wUt0jdxmkcHJ8V1ioO+KHoLQ/VrzIZDXuEQzhX4L7V0FA5c1NycIk1Atc/qc0WCNA
-         6YLjZdbyjxpfxb9lSTecZF5/iRsVBx1sWjbqumSlo2j3T8+XnfsLlBVXW3GFjhUXEvJ3
-         v2PjmHUccK0crTVjM0mSkZBZu4xfIGdNTaTKHt7xzkq1sUWMliU1spvDNvY8fjpS0JvY
-         QaXy3TUlifbzedjWPZQhL/QJOaVyZ+eD+R0WYavXXKbcJSeRFUHzpASzXAl74PX1Byw2
-         yFvg==
-X-Gm-Message-State: AOAM53362mYbObdl7+74BE11wdCrcmEDGZbH8QWsl+drWFpgJb+c99O2
-        Vu6SsHKeZXwG9E1Z0SVVxAsvUxO8xnmC8H0jwg88GLgp0bwY7RUcSk3H7pKUOh9SVnjMuL8DcVX
-        dgJMrXGlP7LZMNGiYCvC4gCc=
-X-Received: by 2002:a05:600c:3b05:b0:397:54ce:896 with SMTP id m5-20020a05600c3b0500b0039754ce0896mr37343026wms.3.1655770556337;
-        Mon, 20 Jun 2022 17:15:56 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJxuF9L1be7ni3J1YmYNIb9c4ZabGtFSUgGjCv0tSabp2R2QRhWX6wNq50I5/oKWe6fZHu9qDw==
-X-Received: by 2002:a05:600c:3b05:b0:397:54ce:896 with SMTP id m5-20020a05600c3b0500b0039754ce0896mr37343003wms.3.1655770556103;
-        Mon, 20 Jun 2022 17:15:56 -0700 (PDT)
-Received: from [192.168.1.129] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id e13-20020adfe7cd000000b0021b89181863sm7340790wrn.41.2022.06.20.17.15.54
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 20 Jun 2022 17:15:55 -0700 (PDT)
-Message-ID: <e6306933-45c4-f38a-bae1-3ad149d67e1b@redhat.com>
-Date:   Tue, 21 Jun 2022 02:15:54 +0200
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=XBEE2W3FjydD0/XD0h/jv8cpLUWQxzRJ40zan6MUb+E=;
+        b=SFsINAcKpo0JqvLZoIiAnlSWTDwO3lvN5Q8VeVFXxVlvuJjimD+NqZVyJiuJnQzv6R
+         ZbkDwgWT+sZax3pIhI0V95jNOm2d7nzAAIoAxhN9FqWOlMzoRzpHDBh/TjXTJ4lkiuny
+         I1xJbKalFidpctUA+w4CQtQqpUGCK61Lh2vMIRNSfEzvzXdq/4DlxGz9Zj1vmLgJb+hV
+         MLhbTDCeHJBGBeEF6WEEoHlpN/hFuIQMLS5iAthEqHT3COWEmOR3wxrwdlYEYdutoNTm
+         JKySTWwPiEZmw8gtHJfUCVfhIUbQalTqh74uD1zHiGbb2kblaqW1u+1gKr345lR5P+O9
+         8eeA==
+X-Gm-Message-State: AJIora8QGpEsIBkVHrnxkeg4mZIjs1bCXwJj+a2Dz3ZT7bjeLFI/NgL2
+        qt1D5l7DvKntNPUKrog7UZdF1d4g+ixJkq+mvfY=
+X-Google-Smtp-Source: AGRyM1vpQzgV0zlZHowqIGzYAAvxpyakFnm6y9bItBulj3V4Z+ncRS7AdAAHY3Rk9Fm+0HC+g4QHLAUy8HRH6yxI77s=
+X-Received: by 2002:a02:6d61:0:b0:338:398c:1be8 with SMTP id
+ e33-20020a026d61000000b00338398c1be8mr10684754jaf.271.1655779384400; Mon, 20
+ Jun 2022 19:43:04 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.10.0
-Subject: Re: [PATCH v2 2/2] vfio/pci: Remove console drivers
-Content-Language: en-US
-To:     Alex Williamson <alex.williamson@redhat.com>, corbet@lwn.net,
-        maarten.lankhorst@linux.intel.com, mripard@kernel.org,
-        tzimmermann@suse.de, airlied@linux.ie, daniel@ffwll.ch,
-        deller@gmx.de, gregkh@linuxfoundation.org
-Cc:     linux-fbdev@vger.kernel.org, kvm@vger.kernel.org,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, Gerd Hoffmann <kraxel@redhat.com>,
-        Laszlo Ersek <lersek@redhat.com>
-References: <165541020563.1955826.16350888595945658159.stgit@omen>
- <165541193265.1955826.8778757616438743090.stgit@omen>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <165541193265.1955826.8778757616438743090.stgit@omen>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20220613111146.25221-1-peterwu.pub@gmail.com> <20220613111146.25221-8-peterwu.pub@gmail.com>
+ <20220618164820.2eeb8ae8@jic23-huawei> <CABtFH5+R761Tyd4yaWg-foSC4K=_aeYiVaTf37KvVH1Z4z9Jhw@mail.gmail.com>
+ <20220620193500.145f05b9@jic23-huawei>
+In-Reply-To: <20220620193500.145f05b9@jic23-huawei>
+From:   ChiaEn Wu <peterwu.pub@gmail.com>
+Date:   Tue, 21 Jun 2022 10:42:53 +0800
+Message-ID: <CABtFH5KsiDchvshPEEs2hejCWW3z+7RFUXuUBkpR-uiWqOMKyQ@mail.gmail.com>
+Subject: Re: [PATCH v2 07/15] Documentation: ABI: testing: mt6370: Add ADC
+ sysfs guideline
+To:     Jonathan Cameron <jic23@kernel.org>
+Cc:     lars@metafoo.de, matthias.bgg@gmail.com,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        jingoohan1@gmail.com, pavel@ucw.cz, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, linux-iio@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        szunichen@gmail.com, ChiaEn Wu <chiaen_wu@richtek.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Alex,
+Hi Jonathan,
 
-On 6/16/22 22:38, Alex Williamson wrote:
-> Console drivers can create conflicts with PCI resources resulting in
-> userspace getting mmap failures to memory BARs.  This is especially
-> evident when trying to re-use the system primary console for userspace
-> drivers.  Use the aperture helpers to remove these conflicts.
-> 
-> Reported-by: Laszlo Ersek <lersek@redhat.com>
-> Suggested-by: Gerd Hoffmann <kraxel@redhat.com>
-> Signed-off-by: Alex Williamson <alex.williamson@redhat.com>
-> ---
+Thanks for your reply!
 
-Patch looks good to me. 
+Jonathan Cameron <jic23@kernel.org> =E6=96=BC 2022=E5=B9=B46=E6=9C=8821=E6=
+=97=A5 =E9=80=B1=E4=BA=8C =E5=87=8C=E6=99=A82:35=E5=AF=AB=E9=81=93=EF=BC=9A
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+>
+> On Mon, 20 Jun 2022 14:00:43 +0800
+> ChiaEn Wu <peterwu.pub@gmail.com> wrote:
+>
+> > Hi Jonathan,
+> >
+> > Thanks for your helpful comments, and I have some questions want to
+> > ask you below.
+> >
+> > Jonathan Cameron <jic23@kernel.org> =E6=96=BC 2022=E5=B9=B46=E6=9C=8818=
+=E6=97=A5 =E9=80=B1=E5=85=AD =E6=99=9A=E4=B8=8A11:39=E5=AF=AB=E9=81=93=EF=
+=BC=9A
+> > >
+> > > On Mon, 13 Jun 2022 19:11:38 +0800
+> > > ChiaEn Wu <peterwu.pub@gmail.com> wrote:
+> > >
+> > > > From: ChiaEn Wu <chiaen_wu@richtek.com>
+> > > >
+> > > > Add ABI documentation for mt6370 non-standard ADC sysfs interfaces.
+> > > >
+> > > > Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
+> > > > ---
+> > > >  .../ABI/testing/sysfs-bus-iio-adc-mt6370      | 36 +++++++++++++++=
+++++
+> > > >  1 file changed, 36 insertions(+)
+> > > >  create mode 100644 Documentation/ABI/testing/sysfs-bus-iio-adc-mt6=
+370
+> > > >
+> > > > diff --git a/Documentation/ABI/testing/sysfs-bus-iio-adc-mt6370 b/D=
+ocumentation/ABI/testing/sysfs-bus-iio-adc-mt6370
+> > > > new file mode 100644
+> > > > index 000000000000..039b3381176a
+> > > > --- /dev/null
+> > > > +++ b/Documentation/ABI/testing/sysfs-bus-iio-adc-mt6370
+> > > > @@ -0,0 +1,36 @@
+> > > > +What:                /sys/bus/iio/devices/iio:deviceX/in_voltage0_=
+raw
+> > >
+> > > Unfortunately the kernel documentation build scripts do no support du=
+plicating
+> > > standard ABI for particular devices so as to provide more information=
+.
+> > > Hence you can't have anything in this file.
+> > >
+> >
+> > I want to confirm with you again,
+> > because my ABI file duplicates with standard sysfs-bus-iio (voltage,
+> > current, and temperature channels),
+> > Should I just remove this ABI file and modify the code of mt6370-adc
+> > to meet your expectations??
+>
+> yes.
 
--- 
+OK! I got it! I will refine the code in the next patch!
+
+>
+> >
+> > >
+> > > > +KernelVersion:       5.18
+> > > > +Contact:     chiaen_wu@richtek.com
+> > > > +Description:
+> > > > +             Indicated MT6370 VBUS ADC with lower accuracy(+-75mA)
+> > > Curious though, voltage with a mA accuracy range?
+> >
+> > Yes, this description is based on the data sheet.
+>
+> Weird :)
+
+First, I want to apologize to you because I rechecked the datasheet
+and asked the hardware engineer,
+the conclusion is I wrote the wrong unit...
+The correction is that the accuracy of vbusdiv5 is +-75"mV", not "mA",
+and another one, vbusdiv2, is +-30mV.
+I sincerely apologize for this mistake and for any inconvenience...
+
+>
+> >
+> > > This scale should be presented directly to userspace anyway so no nee=
+d
+> > > for this doc.
+> > >
+> > > > +             higher measure range(1~22V)
+> > > > +             Calculating with scale returns voltage in uV
+> > >
+> > > No. All channels return in mV. That's the ABI requirement as
+> > > in sysfs-bus-iio and we cannot vary if for particular drivers.  If we=
+ did
+> > > no generic tooling would work.
+> >
+> > Ok, I got it!
+> >
+> > >
+> > > > +
+> > > > +What:                /sys/bus/iio/devices/iio:deviceX/in_voltage1_=
+raw
+> > > > +KernelVersion:       5.18
+> > > > +Contact:     chiaen_wu@richtek.com
+> > > > +Description:
+> > > > +             Indicated MT6370 VBUS ADC with higher accuracy(+-30mA=
+)
+> > > > +             lower measure range(1~9.76V)
+> > > > +             Calculating with scale offset returns voltage in uV
+> > > > +
+> > > > +What:                /sys/bus/iio/devices/iio:deviceX/in_voltage4_=
+raw
+> > > > +KernelVersion:       5.18
+> > > > +Contact:     chiaen_wu@richtek.com
+> > > > +Description:
+> > > > +             Indicated MT6370 TS_BAT ADC
+> > > > +             Calculating with scale returns voltage in uV
+> > > > +
+> > > > +What:                /sys/bus/iio/devices/iio:deviceX/in_voltage7_=
+raw
+> > > > +KernelVersion:       5.18
+> > > > +Contact:     chiaen_wu@richtek.com
+> > > > +Description:
+> > > > +             Indicated MT6370 CHG_VDDP ADC
+> > > > +             Calculating with scale returns voltage in mV
+> > > > +
+> > > > +What:                /sys/bus/iio/devices/iio:deviceX/in_temp8_raw
+> > > > +KernelVersion:       5.18
+> > > > +Contact:     chiaen_wu@richtek.com
+> > > > +Description:
+> > > > +             Indicated MT6370 IC junction temperature
+> > > > +             Calculating with scale and offset returns temperature=
+ in degree
+> >
+> > Shall I modify the scale of temperature to milli degrees in
+> > mt6370-adc.c and remove this item??
+>
+> yes.
+>
+> Thanks,
+>
+> Jonathan
+>
+> >
+> > >
+> >
+> > Best regards,
+> > ChiaEn Wu
+>
+
 Best regards,
-
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+ChiaEn Wu

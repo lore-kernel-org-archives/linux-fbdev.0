@@ -2,120 +2,66 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63ACFC433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Jun 2022 06:12:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1F88C43334
+	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Jun 2022 06:49:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344834AbiFUGM2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 21 Jun 2022 02:12:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39546 "EHLO
+        id S242913AbiFUGti (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 21 Jun 2022 02:49:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59830 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229547AbiFUGM1 (ORCPT
+        with ESMTP id S231830AbiFUGti (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 21 Jun 2022 02:12:27 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1761C1580C;
-        Mon, 20 Jun 2022 23:12:25 -0700 (PDT)
-X-UUID: 0b15bc29da43456e9e4f6ebc04174aa8-20220621
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.6,REQID:de535e08-fa36-49bb-b16d-50d77a4fc694,OB:0,LO
-        B:10,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,AC
-        TION:release,TS:45
-X-CID-INFO: VERSION:1.1.6,REQID:de535e08-fa36-49bb-b16d-50d77a4fc694,OB:0,LOB:
-        10,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:45
-X-CID-META: VersionHash:b14ad71,CLOUDID:196c0938-5e4b-44d7-80b2-bb618cb09d29,C
-        OID:8dec583d3fd7,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
-        RL:0,File:nil,QS:nil,BEC:nil,COL:0
-X-UUID: 0b15bc29da43456e9e4f6ebc04174aa8-20220621
-Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw01.mediatek.com
-        (envelope-from <ck.hu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 827093855; Tue, 21 Jun 2022 14:12:20 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Tue, 21 Jun 2022 14:12:19 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Tue, 21 Jun 2022 14:12:19 +0800
-Message-ID: <2133b865e57d1576671c2c6e685c7c09b1717fcf.camel@mediatek.com>
-Subject: Re: [PATCH v11 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
- driver
-From:   CK Hu <ck.hu@mediatek.com>
-To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, <chunkuang.hu@kernel.org>,
-        <p.zabel@pengutronix.de>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
-        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
-        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
-        <airlied@linux.ie>
-CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
-        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
-        <angelogioacchino.delregno@collabora.com>,
-        <dri-devel@lists.freedesktop.org>,
-        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-fbdev@vger.kernel.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Tue, 21 Jun 2022 14:12:19 +0800
-In-Reply-To: <20220610105522.13449-6-rex-bc.chen@mediatek.com>
-References: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
-         <20220610105522.13449-6-rex-bc.chen@mediatek.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+        Tue, 21 Jun 2022 02:49:38 -0400
+Received: from smtpbg.qq.com (smtpbg123.qq.com [175.27.65.52])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5890C18B00;
+        Mon, 20 Jun 2022 23:49:33 -0700 (PDT)
+X-QQ-mid: bizesmtp67t1655794159tvdomlb5
+Received: from ubuntu.localdomain ( [106.117.99.68])
+        by bizesmtp.qq.com (ESMTP) with 
+        id ; Tue, 21 Jun 2022 14:49:07 +0800 (CST)
+X-QQ-SSF: 01000000007000109000B00A0000000
+X-QQ-FEAT: Jd++W0FxedFbCOgIqkryRVlgpglI3RiACg/Upg/4XQ4UW2GGHJ6LvdChpNRjD
+        Xu15wWAwIZyH5VmlK1N6HVhvzrDuEfbpgJGB0jsSHLPpqDy+yqj7c63FJn33Q6OZ89dyn5J
+        2I03ZSgEKtS9mt3de/55s/oBoQDgFPCZg5PItGAtjgSwZxaUgeCPmTj7xtuB52onN+idHlT
+        P3av2Er27nUXaMl3ifYbsjVU79VWA/ao4wNTRnKbgkYSAsLtoYqjrftC5DCNse9HHlV+GpY
+        ml5ETNxBSW4nQq+RP3bFVDVl9qTpcST5zJ6P9IYqpjfSLAdkLhlITDRr0wk5P80oyrXuKkT
+        cyt3wwMqWiVtB1BJ5M=
+X-QQ-GoodBg: 0
+From:   Jiang Jian <jiangjian@cdjrlc.com>
+To:     deller@gmx.de
+Cc:     jiangjian@cdjrlc.com, linux-omap@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] video: fbdev: aligned '*' each line
+Date:   Tue, 21 Jun 2022 14:49:04 +0800
+Message-Id: <20220621064904.27644-1-jiangjian@cdjrlc.com>
+X-Mailer: git-send-email 2.17.1
+X-QQ-SENDSIZE: 520
+Feedback-ID: bizesmtp:cdjrlc.com:qybgspam:qybgspam8
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi, Bo-Chen:
+Consider '*' alignment in comments
 
-On Fri, 2022-06-10 at 18:55 +0800, Bo-Chen Chen wrote:
-> From: Markus Schneider-Pargmann <msp@baylibre.com>
-> 
-> This patch adds a embedded displayport driver for the MediaTek mt8195
-> SoC.
-> 
-> It supports the MT8195, the embedded DisplayPort units. It offers
-> DisplayPort 1.4 with up to 4 lanes.
-> 
-> The driver creates a child device for the phy. The child device will
-> never exist without the parent being active. As they are sharing a
-> register range, the parent passes a regmap pointer to the child so
-> that
-> both can work with the same register range. The phy driver sets
-> device
-> data that is read by the parent to get the phy device that can be
-> used
-> to control the phy properties.
-> 
-> This driver is based on an initial version by
-> Jitao shi <jitao.shi@mediatek.com>
-> 
-> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> [Bo-Chen: Cleanup the drivers and modify comments from reviewers]
-> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
-> ---
+Signed-off-by: Jiang Jian <jiangjian@cdjrlc.com>
+---
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-[snip]
-
-> +
-> +#define MTK_DP_ENC0_P0_3130			(ENC0_OFFSET + 0x130)
-
-This is useless in this patch, so remove it.
-If this is used in later patch, add this back in that patch.
-
-> +#define MTK_DP_ENC0_P0_3138			(ENC0_OFFSET + 0x138)
-
-Ditto.
-
-Regards,
-CK
-
-> +#define MTK_DP_ENC0_P0_3154			(ENC0_OFFSET + 0x154)
-> +#define PGEN_HTOTAL_DP_ENC0_P0_MASK		GENMASK(13, 0)
-> +#define MTK_DP_ENC0_P0_3158			(ENC0_OFFSET + 0x158)
-> 
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c
+index 6fbfeb01b315..170463a7e1f4 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c
+@@ -143,7 +143,7 @@ int hdmi_phy_configure(struct hdmi_phy_data *phy, unsigned long hfbitclk,
+ 	/*
+ 	 * In OMAP5+, the HFBITCLK must be divided by 2 before issuing the
+ 	 * HDMI_PHYPWRCMD_LDOON command.
+-	*/
++	 */
+ 	if (phy_feat->bist_ctrl)
+ 		REG_FLD_MOD(phy->base, HDMI_TXPHY_BIST_CONTROL, 1, 11, 11);
+ 
+-- 
+2.17.1
 

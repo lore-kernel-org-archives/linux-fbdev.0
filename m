@@ -2,66 +2,151 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1F88C43334
-	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Jun 2022 06:49:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96AD2C43334
+	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Jun 2022 07:27:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242913AbiFUGti (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 21 Jun 2022 02:49:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59830 "EHLO
+        id S1346987AbiFUH1P (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 21 Jun 2022 03:27:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57620 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231830AbiFUGti (ORCPT
+        with ESMTP id S1347048AbiFUH1M (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 21 Jun 2022 02:49:38 -0400
-Received: from smtpbg.qq.com (smtpbg123.qq.com [175.27.65.52])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5890C18B00;
-        Mon, 20 Jun 2022 23:49:33 -0700 (PDT)
-X-QQ-mid: bizesmtp67t1655794159tvdomlb5
-Received: from ubuntu.localdomain ( [106.117.99.68])
-        by bizesmtp.qq.com (ESMTP) with 
-        id ; Tue, 21 Jun 2022 14:49:07 +0800 (CST)
-X-QQ-SSF: 01000000007000109000B00A0000000
-X-QQ-FEAT: Jd++W0FxedFbCOgIqkryRVlgpglI3RiACg/Upg/4XQ4UW2GGHJ6LvdChpNRjD
-        Xu15wWAwIZyH5VmlK1N6HVhvzrDuEfbpgJGB0jsSHLPpqDy+yqj7c63FJn33Q6OZ89dyn5J
-        2I03ZSgEKtS9mt3de/55s/oBoQDgFPCZg5PItGAtjgSwZxaUgeCPmTj7xtuB52onN+idHlT
-        P3av2Er27nUXaMl3ifYbsjVU79VWA/ao4wNTRnKbgkYSAsLtoYqjrftC5DCNse9HHlV+GpY
-        ml5ETNxBSW4nQq+RP3bFVDVl9qTpcST5zJ6P9IYqpjfSLAdkLhlITDRr0wk5P80oyrXuKkT
-        cyt3wwMqWiVtB1BJ5M=
-X-QQ-GoodBg: 0
-From:   Jiang Jian <jiangjian@cdjrlc.com>
-To:     deller@gmx.de
-Cc:     jiangjian@cdjrlc.com, linux-omap@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] video: fbdev: aligned '*' each line
-Date:   Tue, 21 Jun 2022 14:49:04 +0800
-Message-Id: <20220621064904.27644-1-jiangjian@cdjrlc.com>
-X-Mailer: git-send-email 2.17.1
-X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtp:cdjrlc.com:qybgspam:qybgspam8
+        Tue, 21 Jun 2022 03:27:12 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A781F22B13;
+        Tue, 21 Jun 2022 00:27:09 -0700 (PDT)
+X-UUID: 19db8c8726654863b28f9c5b736b49bb-20220621
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.6,REQID:198fdd82-d505-403b-89c2-a5f042339be1,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:b14ad71,CLOUDID:c4ee0b38-5e4b-44d7-80b2-bb618cb09d29,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
+        ,QS:nil,BEC:nil,COL:0
+X-UUID: 19db8c8726654863b28f9c5b736b49bb-20220621
+Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw02.mediatek.com
+        (envelope-from <ck.hu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 130421415; Tue, 21 Jun 2022 15:27:05 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Tue, 21 Jun 2022 15:27:03 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
+ Transport; Tue, 21 Jun 2022 15:27:03 +0800
+Message-ID: <d16d04776e20b01323df8fc7cc83b989be4cdd30.camel@mediatek.com>
+Subject: Re: [PATCH v11 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
+ driver
+From:   CK Hu <ck.hu@mediatek.com>
+To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, <chunkuang.hu@kernel.org>,
+        <p.zabel@pengutronix.de>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
+        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
+        <airlied@linux.ie>
+CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
+        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
+        <angelogioacchino.delregno@collabora.com>,
+        <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-fbdev@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Tue, 21 Jun 2022 15:27:03 +0800
+In-Reply-To: <20220610105522.13449-6-rex-bc.chen@mediatek.com>
+References: <20220610105522.13449-1-rex-bc.chen@mediatek.com>
+         <20220610105522.13449-6-rex-bc.chen@mediatek.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Consider '*' alignment in comments
+Hi, Bo-Chen:
 
-Signed-off-by: Jiang Jian <jiangjian@cdjrlc.com>
----
- drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Fri, 2022-06-10 at 18:55 +0800, Bo-Chen Chen wrote:
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
+> 
+> This patch adds a embedded displayport driver for the MediaTek mt8195
+> SoC.
+> 
+> It supports the MT8195, the embedded DisplayPort units. It offers
+> DisplayPort 1.4 with up to 4 lanes.
+> 
+> The driver creates a child device for the phy. The child device will
+> never exist without the parent being active. As they are sharing a
+> register range, the parent passes a regmap pointer to the child so
+> that
+> both can work with the same register range. The phy driver sets
+> device
+> data that is read by the parent to get the phy device that can be
+> used
+> to control the phy properties.
+> 
+> This driver is based on an initial version by
+> Jitao shi <jitao.shi@mediatek.com>
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> [Bo-Chen: Cleanup the drivers and modify comments from reviewers]
+> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> ---
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c
-index 6fbfeb01b315..170463a7e1f4 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c
-@@ -143,7 +143,7 @@ int hdmi_phy_configure(struct hdmi_phy_data *phy, unsigned long hfbitclk,
- 	/*
- 	 * In OMAP5+, the HFBITCLK must be divided by 2 before issuing the
- 	 * HDMI_PHYPWRCMD_LDOON command.
--	*/
-+	 */
- 	if (phy_feat->bist_ctrl)
- 		REG_FLD_MOD(phy->base, HDMI_TXPHY_BIST_CONTROL, 1, 11, 11);
- 
--- 
-2.17.1
+[snip]
+
+> +
+> +static int mtk_dp_parse_capabilities(struct mtk_dp *mtk_dp)
+> +{
+> +	u8 val;
+> +	struct mtk_dp_train_info *train_info = &mtk_dp->train_info;
+> +
+> +	drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER,
+> DP_SET_POWER_D0);
+> +	usleep_range(2000, 5000);
+> +
+> +	drm_dp_read_dpcd_caps(&mtk_dp->aux, mtk_dp->rx_cap);
+> +
+> +	mtk_dp->rx_cap[DP_TRAINING_AUX_RD_INTERVAL] &=
+> DP_TRAINING_AUX_RD_MASK;
+> +
+> +	train_info->link_rate = min_t(int, mtk_dp->max_linkrate,
+> +				      mtk_dp->rx_cap[mtk_dp-
+> >max_linkrate]);
+
+drm_dp_max_link_rate(mtk_dp->rx_cap)
+
+Regards,
+CK
+
+> +	train_info->lane_count = min_t(int, mtk_dp->max_lanes,
+> +				       drm_dp_max_lane_count(mtk_dp-
+> >rx_cap));
+> +
+> +	train_info->tps3 = drm_dp_tps3_supported(mtk_dp->rx_cap);
+> +	train_info->tps4 = drm_dp_tps4_supported(mtk_dp->rx_cap);
+> +
+> +	train_info->sink_ssc = !!(mtk_dp->rx_cap[DP_MAX_DOWNSPREAD] &
+> +				  DP_MAX_DOWNSPREAD_0_5);
+> +
+> +	train_info->sink_ssc = false;
+> +
+> +	drm_dp_dpcd_readb(&mtk_dp->aux, DP_MSTM_CAP, &val);
+> +	if (val & DP_MST_CAP) {
+> +		/* Clear DP_DEVICE_SERVICE_IRQ_VECTOR_ESI0 */
+> +		drm_dp_dpcd_readb(&mtk_dp->aux,
+> +				  DP_DEVICE_SERVICE_IRQ_VECTOR_ESI0,
+> &val);
+> +		if (val)
+> +			drm_dp_dpcd_writeb(&mtk_dp->aux,
+> +					   DP_DEVICE_SERVICE_IRQ_VECTOR
+> _ESI0,
+> +					   val);
+> +	}
+> +
+> +	return 0;
+> +}
 

@@ -2,53 +2,53 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3CD2CCA47D
-	for <linux-fbdev@archiver.kernel.org>; Wed, 22 Jun 2022 14:01:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F29FFCCA481
+	for <linux-fbdev@archiver.kernel.org>; Wed, 22 Jun 2022 14:01:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1357008AbiFVOBj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 22 Jun 2022 10:01:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50906 "EHLO
+        id S1357783AbiFVOBo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 22 Jun 2022 10:01:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50928 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236962AbiFVOBj (ORCPT
+        with ESMTP id S1357163AbiFVOBj (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Wed, 22 Jun 2022 10:01:39 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5348936E0C;
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF0A4369E2;
         Wed, 22 Jun 2022 07:01:38 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id D673221C2A;
-        Wed, 22 Jun 2022 14:01:36 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 99CEA1FD05;
+        Wed, 22 Jun 2022 14:01:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1655906496; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1655906497; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=NzekeBi4Y7KZsC56z0dvdn1JMQTC3UW1T2mc7ZG1Qag=;
-        b=Q5or96XnbPgFbUBfpam2kqhkYDdnoBN/8lSPuXXtgcmbS1HLL9gqzgEP9wgi5nMjnI9knj
-        FIGhRXi51pm2R7DBcLXZHHqvekcEy8SrRw9ZxNbRTLG1oRPc1VbIDJ418GalK6J2KC74wT
-        tPuyBRFadtbZpGHp4Sq+O6rEgLo0m3E=
+        bh=nNqejIK4XkB/g6M1yCpdVMg3lyKunZ50J756bTwwnb4=;
+        b=latYMzbpEH+tp6J2mRBhpyrz5+GCu85gL3h1OlrTM2vHUkkOMGv0cv5d7k3L2z11yvijoI
+        pbOnSa3eZhTgcrxdFpc6Kw+2ov8RCT7S9/lQ9SNLOwQI8o+p8mPkTUGdBeaENqkAxO99QN
+        8gAqZHRSBbI0SZ424InEkwp5PbGcU3E=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1655906496;
+        s=susede2_ed25519; t=1655906497;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=NzekeBi4Y7KZsC56z0dvdn1JMQTC3UW1T2mc7ZG1Qag=;
-        b=RQKePWKJdUv87dWW2oQ6/398YRfc9wQIQATig2QDQze8Qjkeya1QVAONohAUKJD6yifrHr
-        TTWYgFjOExzxdCDQ==
+        bh=nNqejIK4XkB/g6M1yCpdVMg3lyKunZ50J756bTwwnb4=;
+        b=BmXV7YgRO9SIg/rRI4fK6Gex9oJZ6fFx426Q5WoROO/nKthZMOyCyjhWvMD5M1jP2gWZCd
+        nYGSnTrwMGfiJTBQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8874A13AC7;
-        Wed, 22 Jun 2022 14:01:36 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 4AA7713AC7;
+        Wed, 22 Jun 2022 14:01:37 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id qGtiIMAgs2IVRwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Wed, 22 Jun 2022 14:01:36 +0000
+        id EOhfEcEgs2IVRwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 22 Jun 2022 14:01:37 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     alex.williamson@redhat.com, corbet@lwn.net,
         maarten.lankhorst@linux.intel.com, mripard@kernel.org,
@@ -57,10 +57,10 @@ To:     alex.williamson@redhat.com, corbet@lwn.net,
         kraxel@redhat.com
 Cc:     linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        kvm@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v3 1/3] MAINTAINERS: Broaden scope of simpledrm entry
-Date:   Wed, 22 Jun 2022 16:01:32 +0200
-Message-Id: <20220622140134.12763-2-tzimmermann@suse.de>
+        kvm@vger.kernel.org
+Subject: [PATCH v3 3/3] vfio/pci: Remove console drivers
+Date:   Wed, 22 Jun 2022 16:01:34 +0200
+Message-Id: <20220622140134.12763-4-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.36.1
 In-Reply-To: <20220622140134.12763-1-tzimmermann@suse.de>
 References: <20220622140134.12763-1-tzimmermann@suse.de>
@@ -70,38 +70,48 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-There will be more DRM drivers for firmware-provided framebuffers. Use
-the existing entry for simpledrm instead of adding a new one for each
-driver. Also add DRM's aperture helpers, which are part of the driver's
-infrastructure.
+From: Alex Williamson <alex.williamson@redhat.com>
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Console drivers can create conflicts with PCI resources resulting in
+userspace getting mmap failures to memory BARs.  This is especially
+evident when trying to re-use the system primary console for userspace
+drivers.  Use the aperture helpers to remove these conflicts.
+
+v3:
+	* call aperture_remove_conflicting_pci_devices()
+
+Reported-by: Laszlo Ersek <lersek@redhat.com>
+Suggested-by: Gerd Hoffmann <kraxel@redhat.com>
+Signed-off-by: Alex Williamson <alex.williamson@redhat.com>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Tested-by: Laszlo Ersek <lersek@redhat.com>
 ---
- MAINTAINERS | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/vfio/pci/vfio_pci_core.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index a0275a0b4fe6..d4c091739db2 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6466,13 +6466,15 @@ S:	Orphan / Obsolete
- F:	drivers/gpu/drm/savage/
- F:	include/uapi/drm/savage_drm.h
+diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_pci_core.c
+index a0d69ddaf90d..756d049bd9cf 100644
+--- a/drivers/vfio/pci/vfio_pci_core.c
++++ b/drivers/vfio/pci/vfio_pci_core.c
+@@ -10,6 +10,7 @@
  
--DRM DRIVER FOR SIMPLE FRAMEBUFFERS
-+DRM DRIVER FOR FIRMWARE FRAMEBUFFERS
- M:	Thomas Zimmermann <tzimmermann@suse.de>
- M:	Javier Martinez Canillas <javierm@redhat.com>
- L:	dri-devel@lists.freedesktop.org
- S:	Maintained
- T:	git git://anongit.freedesktop.org/drm/drm-misc
-+F:	drivers/gpu/drm/drm_aperture.c
- F:	drivers/gpu/drm/tiny/simpledrm.c
-+F:	include/drm/drm_aperture.h
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
  
- DRM DRIVER FOR SIS VIDEO CARDS
- S:	Orphan / Obsolete
++#include <linux/aperture.h>
+ #include <linux/device.h>
+ #include <linux/eventfd.h>
+ #include <linux/file.h>
+@@ -1793,6 +1794,10 @@ static int vfio_pci_vga_init(struct vfio_pci_core_device *vdev)
+ 	if (!vfio_pci_is_vga(pdev))
+ 		return 0;
+ 
++	ret = aperture_remove_conflicting_pci_devices(pdev, vdev->vdev.ops->name);
++	if (ret)
++		return ret;
++
+ 	ret = vga_client_register(pdev, vfio_pci_set_decode);
+ 	if (ret)
+ 		return ret;
 -- 
 2.36.1
 

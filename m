@@ -2,89 +2,95 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C791CCA482
-	for <linux-fbdev@archiver.kernel.org>; Thu, 23 Jun 2022 19:44:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E128ECCA473
+	for <linux-fbdev@archiver.kernel.org>; Fri, 24 Jun 2022 06:23:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231605AbiFWTot (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 23 Jun 2022 15:44:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38630 "EHLO
+        id S230223AbiFXGXl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 24 Jun 2022 02:23:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35966 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231548AbiFWToY (ORCPT
+        with ESMTP id S230412AbiFXGXk (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 23 Jun 2022 15:44:24 -0400
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3CA7AA4;
-        Thu, 23 Jun 2022 12:37:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:Content-Type
-        :In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:
-        Sender:Reply-To:Content-ID:Content-Description;
-        bh=9CGM3MAz5VIB06lBzNjGngOQOoE0/I7wEi8Zke9gm+w=; b=eQsA4dsC7zy0gZGxnWzQsATNue
-        4RNWA+fhmA3erPfzk5dxeMQCaD5Lf11f9oQOKkk8CzdloSz0KwOEP+HRM4wMgGPP8ofcZCZ2qDmwT
-        xfiupW9UG4h8v6ZC3HM8LRHIplQ2b0UahGQFsyNwJUOONvAmQaW+GT7DlYixlYzdJoIae9dvTqpeU
-        gy/FAvkyHsCJjzMv7Un5R+xfx0R5N1LCz8GpdTxJ5A4fM7tBl8UkLYkl8Zu3L9BNeakPSWLUWDFoM
-        lRie2OS7t8onKtNzBXKfM4zQiHwHss/qcyL+N+8jD2XviMbsj2Yz1eEDOSE48nGWdf9/GLVllbreJ
-        XSnwtsig==;
-Received: from [2601:1c0:6280:3f0::aa0b]
-        by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1o4SWU-00Bssw-NX; Thu, 23 Jun 2022 19:30:38 +0000
-Message-ID: <bcc5b395-7fd8-f1a0-1b9f-62c9948287af@infradead.org>
-Date:   Thu, 23 Jun 2022 12:29:27 -0700
+        Fri, 24 Jun 2022 02:23:40 -0400
+Received: from mail-yw1-x112d.google.com (mail-yw1-x112d.google.com [IPv6:2607:f8b0:4864:20::112d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 40F2A289A8
+        for <linux-fbdev@vger.kernel.org>; Thu, 23 Jun 2022 23:23:38 -0700 (PDT)
+Received: by mail-yw1-x112d.google.com with SMTP id 00721157ae682-3176d94c236so15419017b3.3
+        for <linux-fbdev@vger.kernel.org>; Thu, 23 Jun 2022 23:23:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=1pWYuiEty7n8qfKXbe+MlxripfjF42zMy4YaNonGDYE=;
+        b=LWlf67Kpn5DO70LzfZDzY/86k3RghUlz3LHvmFCRfp9vgWrB54PqfNu2vRF/Bdm7wc
+         ap99VK+4MQUQ+6cin3CVK00IbKjFwKj9hJY00FJWKZ+T6+Tsx1JzMXtnbwqHGT3mulUt
+         H0L5JKLz7ywUjS16o9iBqqT0TcachObVtQ0ucF3TSwp90e9HmJH9RNV0ZQ6J68d/kYAX
+         nEwFuUDUzDBezOwyq+6kVSYL3YCsnU3Px78klL9yrKaUWJlgIKUKeZJtWjG29iFkSFiR
+         pek0U91njY9MeCQ1UyKutB0l8JPIg8lysMDZ0xBMr3cTNS7GpTVSDFQe1FKYX2yHrOFZ
+         WIvg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=1pWYuiEty7n8qfKXbe+MlxripfjF42zMy4YaNonGDYE=;
+        b=L8m9of510+6Yi4+jFae/h/Yp9P9jOJ6dw+QlXv4xSns2IryFnRAUu5tAP1wjoNI3rU
+         7wxZQdqS5SshJ5HwV4TqF5/wPiF7OutpES54hBf6xEF7WRRSIRcRSfOtAerXTO/XrfkO
+         n5oqiOvE76NueyNe/bmpA4qNOie70TfNPV64lg9Xxo+9194eUt4KBWOUvacYxWCPs2bf
+         ihmmAv12OE6P9TFKggXXw8dJ67RiyKFeVQTkrJhfjy6n+gcxoFTkeCd7NV9XiKhEOPj5
+         oxIxlVNvTdVtFK32YkHRca1hOX27nZbZ5AhKGK0vH0RCZsmEaDNua8WdpHNWRS4XqOmr
+         UPYg==
+X-Gm-Message-State: AJIora+Yla41RR9/oCvb82XM0diSjKtJWPx7SP2HgVLD8lrRIzAXRSTS
+        N1GoUESZ5wUpykmqJkcSgpbyxtTczhuPUbS7inqPsQ==
+X-Google-Smtp-Source: AGRyM1ugT6Af5nX5Ixp3Ow5c+O9Je/TdD9Y/945uEnJCiYAwQr3zWQy2YOg5odN0QU1EceYIiYefh3gmTCwAPJv1mBE=
+X-Received: by 2002:a81:6587:0:b0:318:38c2:2fb1 with SMTP id
+ z129-20020a816587000000b0031838c22fb1mr14986240ywb.118.1656051817552; Thu, 23
+ Jun 2022 23:23:37 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.10.0
+References: <20220623115631.22209-1-peterwu.pub@gmail.com> <20220623115631.22209-13-peterwu.pub@gmail.com>
+In-Reply-To: <20220623115631.22209-13-peterwu.pub@gmail.com>
+From:   Linus Walleij <linus.walleij@linaro.org>
+Date:   Fri, 24 Jun 2022 08:23:26 +0200
+Message-ID: <CACRpkdZatfOFmeGXepTrjAk1or4W6KNUEaXnP+srRebfM=52AA@mail.gmail.com>
 Subject: Re: [PATCH v3 12/14] leds: mt6370: Add Mediatek MT6370 current sink
  type LED Indicator support
-Content-Language: en-US
-To:     ChiaEn Wu <peterwu.pub@gmail.com>, lee.jones@linaro.org,
-        daniel.thompson@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        matthias.bgg@gmail.com, sre@kernel.org, chunfeng.yun@mediatek.com,
+To:     ChiaEn Wu <peterwu.pub@gmail.com>
+Cc:     lee.jones@linaro.org, daniel.thompson@linaro.org,
+        jingoohan1@gmail.com, pavel@ucw.cz, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, matthias.bgg@gmail.com,
+        sre@kernel.org, chunfeng.yun@mediatek.com,
         gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
         lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
-        heikki.krogerus@linux.intel.com, deller@gmx.de
-Cc:     chiaen_wu@richtek.com, alice_chen@richtek.com,
-        cy_huang@richtek.com, dri-devel@lists.freedesktop.org,
-        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        szunichen@gmail.com
-References: <20220623115631.22209-1-peterwu.pub@gmail.com>
- <20220623115631.22209-13-peterwu.pub@gmail.com>
-From:   Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20220623115631.22209-13-peterwu.pub@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        heikki.krogerus@linux.intel.com, deller@gmx.de,
+        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        szunichen@gmail.com, alice_chen@richtek.com,
+        linux-pm@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, cy_huang@richtek.com,
+        chiaen_wu@richtek.com, linux-mediatek@lists.infradead.org,
+        linux-arm-kernel@lists.infradead.org, linux-leds@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Hi ChiaEn!
 
+Thanks for your patch!
 
-On 6/23/22 04:56, ChiaEn Wu wrote:
-> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-> index a49979f..a8c58c3 100644
-> --- a/drivers/leds/Kconfig
-> +++ b/drivers/leds/Kconfig
-> @@ -244,6 +244,17 @@ config LEDS_MT6323
->  	  This option enables support for on-chip LED drivers found on
->  	  Mediatek MT6323 PMIC.
->  
-> +config LEDS_MT6370_RGB
-> +	tristate "LED Support for Mediatek MT6370 PMIC"
-> +	depends on LEDS_CLASS
-> +	depends on MFD_MT6370
-> +	select LINEAR_RANGE
-> +	help
-> +	  Say Y here to enable support for MT6370_RGB LED device.
-> +	  In MT6370, there are four channel current-sink LED drivers that
-> +	  support hardware pattern for const current, PWM, and breath mode.
+On Thu, Jun 23, 2022 at 1:58 PM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
 
-Spell out "constant" (if that is what "const" means here). ?
+> From: ChiYuan Huang <cy_huang@richtek.com>
+>
+> Add Mediatek MT6370 current sink type LED Indicator driver.
+>
+> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+(...)
+>  drivers/leds/Kconfig       |  11 +
+>  drivers/leds/Makefile      |   1 +
+>  drivers/leds/leds-mt6370.c | 989 +++++++++++++++++++++++++++++++++++++++++++++
 
-> +	  Isink4 channel can also be used as a CHG_VIN power good indicator.
+There is a drivers/leds/flash subdirectory these days, put the driver
+in that directory instead.
 
--- 
-~Randy
+Yours,
+Linus Walleij

@@ -2,152 +2,126 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E73FCCA483
-	for <linux-fbdev@archiver.kernel.org>; Sat, 25 Jun 2022 12:25:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75087C433EF
+	for <linux-fbdev@archiver.kernel.org>; Sat, 25 Jun 2022 12:46:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232724AbiFYMZO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 25 Jun 2022 08:25:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57772 "EHLO
+        id S232491AbiFYMqB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 25 Jun 2022 08:46:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39348 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232940AbiFYMZK (ORCPT
+        with ESMTP id S232438AbiFYMp7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 25 Jun 2022 08:25:10 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B03151CFF3
-        for <linux-fbdev@vger.kernel.org>; Sat, 25 Jun 2022 05:25:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1656159903;
-        bh=t70CimBb6l0u6Vi+5r/ENmuEcpUumwWJgoX4WVhyEoY=;
-        h=X-UI-Sender-Class:From:To:Subject:Date:In-Reply-To:References;
-        b=JPXjueRtIxX258BdSHZGmjSATpFL5jaeP8TrejOaLpr393j5cS8Qr07+fitDDQLde
-         y/iRGzaAs+1AKkp7RQErSDWRXS6l5Lhcd00Bfkbu9+6Y7LoAEoEUPS8G3w2whNOnLj
-         WdnNrVDLjypI4kRSD/JAJ4FlB0rW5Lm7UlctJY0M=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from p100.fritz.box ([92.116.162.44]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MfpOd-1nTn9C2Ubx-00gLVY; Sat, 25
- Jun 2022 14:25:03 +0200
-From:   Helge Deller <deller@gmx.de>
-To:     linux-fbdev@vger.kernel.org, daniel.vetter@ffwll.ch,
-        dri-devel@lists.freedesktop.org, deller@gmx.de
-Subject: [PATCH v2 2/4] fbcon: Add fbcon_modechange_possible() check
-Date:   Sat, 25 Jun 2022 14:25:00 +0200
-Message-Id: <20220625122502.68095-3-deller@gmx.de>
-X-Mailer: git-send-email 2.35.3
-In-Reply-To: <20220625122502.68095-1-deller@gmx.de>
+        Sat, 25 Jun 2022 08:45:59 -0400
+Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D9E3E167D8
+        for <linux-fbdev@vger.kernel.org>; Sat, 25 Jun 2022 05:45:57 -0700 (PDT)
+Received: by mail-wm1-x32c.google.com with SMTP id 189so2223473wmz.2
+        for <linux-fbdev@vger.kernel.org>; Sat, 25 Jun 2022 05:45:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=y70bEuRHOkxxUZ0wqjxpIYT5Q0JSpCuiukC2RrSqg7g=;
+        b=Tcu42CE0/ZmVde99u1BY1z0/lJj5YDCMHJuRQRaMVPM8qJesrGmAuwBa9861K6OM5G
+         89k1V/goOLRzO0rzXGVFPve8x1FEwQar2kVCLWCxos005889+K5jRuc0apg0MJ8OJcWw
+         FhRsfeiKKjuy2q9H5NNAQOzZUYSXR/1YpDwAk=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=y70bEuRHOkxxUZ0wqjxpIYT5Q0JSpCuiukC2RrSqg7g=;
+        b=SrNOlwvN2TezaRHNaJgaxtI+zohVeHgiJ4Fg/JXjG823rasSZIaBJnhyT3zYmRMP8e
+         xB3eRg0F9k0TMLwL1frnHuRUoGku8r+IeJkFLPidf3cNDmz908GeWNnYXAFzAfHC8H6a
+         CQb1aIdaYFqHsnoqnSRnip05LWTSoHqdDupwtPiRfqx/hh1j3GOCvjlXj/OgO3CjQSoy
+         tVZlO0CcxfpfsZlhrIT5iZy6R6DJPeBbRBEv+xdbyY3KQ/fVk5/5NuW3+0aqGbXK0xn6
+         Gc/20VXVV4Tjn7MK0TBThayUxwaEKMO34C10zAxwI1TY1MG8MCXjdainuQXUJXIiAuUN
+         OQ2w==
+X-Gm-Message-State: AJIora++nb66mvBXmMiBSSEbaXQBzudyBoFnRBxS3AlM1sXmJ4LdTIf/
+        qzCOKmF++cQw6g8Snx9cG79XGpzpBoRXLQ==
+X-Google-Smtp-Source: AGRyM1v6xW+A+MlXOW5DqxzeePWfJRGMwxlPH88PAxgwKhE6ciVzFhoxZsjPPO+UKQum8gYyezWRHA==
+X-Received: by 2002:a7b:c017:0:b0:3a0:355d:a965 with SMTP id c23-20020a7bc017000000b003a0355da965mr9003857wmb.173.1656161156433;
+        Sat, 25 Jun 2022 05:45:56 -0700 (PDT)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id l14-20020a05600c4f0e00b003942a244f40sm10736813wmq.25.2022.06.25.05.45.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 25 Jun 2022 05:45:55 -0700 (PDT)
+Date:   Sat, 25 Jun 2022 14:45:54 +0200
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Helge Deller <deller@gmx.de>
+Cc:     linux-fbdev@vger.kernel.org, daniel.vetter@ffwll.ch,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v2 1/4] fbcon: Disallow setting font bigger than screen
+ size
+Message-ID: <YrcDgjpgeqSZtSOE@phenom.ffwll.local>
 References: <20220625122502.68095-1-deller@gmx.de>
+ <20220625122502.68095-2-deller@gmx.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:/OqXbgSKppxYJ14/66zoTizZ5YPaKvTHBEl5XxSwlIgfQXYMDMy
- Bv+DemUpypzr7LFLGGKMzor+whYSILThX7mEbNw3TW+Y2uLRBNzbM7tslBa/9Lx3xEDsRGo
- Rs5h439dIfODbN3zabcsB0g608dQ5xrCQgJVDKi+PavNzhkXMJQgi+Tkb7ydaJts3Oa4/VI
- v1xBKgR4Cb24o4dllVLrA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:OCxPORhHytI=:qCj7g7MTEZ1/GMuxQ+Yway
- EoXjAGXIi/skgHA6xHfqpLnUYwVMXHtyrRTeTIvm9mkpa4W2dwzcsrykLBCBZXp/GyQTXZWz1
- IVMykoiS2Csjf6b+8wgmwGkmRshRLgFiVStoqL0rN21ZiOSuYaSsepLe+lyr7Rku6Iza2VwxJ
- htiniCEruXseXO/JGEw3l3WwfTwgl4fiIFilWJkKh6Tp75BvLY9tE6LYt9H4OBnpyWuh3uQhe
- BBo6dGAYBFxKQOY6ozJsIBZYpZRquAckSOOqQPgmQYvRhOWA4Oju6P5v2NJPRsRG0RmaIW5Ap
- +utuLdGEvnxAg9TL+faIIuUN5bXxExGNuZdUx0plr5TzXbJoXQkx6xGZumQfxdfNmI4EASh5K
- d0vXup/tyTHCKLsi55wEBgv+EG3+uf/rBYYS9tX0qfB5klfMcgHpHkPkT9Z5ZqIgvCtg+og6D
- w/1quD45/umqYkr75J/fDdeDpE+kUC6gzxeCnaSdK/fdrqQ/ozhmZkDBN7LK2Y0RJOeRSX8vB
- FkTjFWXMXRqfOKbSEPY0BiAf9AzgN8fCHCQDqmz53OtBygKrCTjMCEfEftPfgsJdlylhhqiwz
- sebCXbpmtkfi2x3GS9RAObB+QWdLvtajG80bglrQvd3M/ZXcoC4y7lBLys6xW+CUzki1uW9AU
- slMmCtB3q736cz8pMPHl2m/47XUVsHTQ1i3R1tWocrwcM5o5oSkGMP5r9bDyUp1zsI4sp0TzQ
- nfpn63yb2pvAcvmdq9p4im1ErYVDOEpaiiusbHqcJ1PqL1XY/oZ+M20oXRZUj+gUEleGp+cxg
- souVeqo8c8PF6bUUQXI32T1d6FOZQk6/rKJoJRjGzn99iYYQrZ1IP0p2he6XLG5qdSEU5966i
- jXnie0ggPftpDbbJzAlMi/BCmnuxCB07EbN+1wuEWpgZX73zVAJpSlRWtXHU5ul6Rp7OBDhWz
- bsjwU3w7h07VuyLheAAkulkSibc8AK0rioIaR17oA3zKiAod3ik/dV/gI0Uj9gRmrRpgfVq9g
- 79INSZI07sgpNGk05+YQ7uVV35pEzYqhrT420eCtDZFcVFEnUE2Rc0RL+VmLq3P8Hi7VIu/q/
- /uq5YsRwhroJ0cE7fKhCuXt8MwywWQkSyMXFe5thxM60qYpYyxDeygi4g==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220625122502.68095-2-deller@gmx.de>
+X-Operating-System: Linux phenom 5.10.0-8-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-We need to prevent that users configure a screen size which is smaller tha=
-n the
-currently selected font size. Otherwise rendering chars on the screen will
-access memory outside the graphics memory region.
+On Sat, Jun 25, 2022 at 02:24:59PM +0200, Helge Deller wrote:
+> Prevent that users set a font size which is bigger than the physical screen.
+> It's unlikely this may happen (because screens are usually much larger than the
+> fonts and each font char is limited to 32x32 pixels), but it may happen on
+> smaller screens/LCD displays.
+> 
+> Signed-off-by: Helge Deller <deller@gmx.de>
+> Cc: stable@vger.kernel.org # v4.14+
+> ---
+>  drivers/video/fbdev/core/fbcon.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> index c4e91715ef00..e162d5e753e5 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -2469,6 +2469,11 @@ static int fbcon_set_font(struct vc_data *vc, struct console_font *font,
+>  	if (charcount != 256 && charcount != 512)
+>  		return -EINVAL;
+> 
+> +	/* font bigger than screen resolution ? */
+> +	if (font->width  > FBCON_SWAP(info->var.rotate, info->var.xres, info->var.yres) ||
+> +	    font->height > FBCON_SWAP(info->var.rotate, info->var.yres, info->var.xres))
+> +		return -EINVAL;
 
-This patch adds a new function fbcon_modechange_possible() which implement=
-s
-this check and which may be extended with other checks later if necessary.=
-  The
-new function will be called from the FBIOPUT_VSCREENINFO ioctl handler in
-fbmem.c, which will then return -EINVAL to the user if the new screen size=
- is
-too small.
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 
-Signed-off-by: Helge Deller <deller@gmx.de>
-Cc: stable@vger.kernel.org # v5.4+
-=2D--
- drivers/video/fbdev/core/fbcon.c | 26 ++++++++++++++++++++++++++
- include/linux/fbcon.h            |  4 ++++
- 2 files changed, 30 insertions(+)
+Maybe as a safety follow up patch, we have a few copies of the below:
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/f=
-bcon.c
-index e162d5e753e5..e4cc4841ed7f 100644
-=2D-- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2736,6 +2736,32 @@ void fbcon_update_vcs(struct fb_info *info, bool al=
-l)
- }
- EXPORT_SYMBOL(fbcon_update_vcs);
+	cols = FBCON_SWAP(ops->rotate, info->var.xres, info->var.yres);
+	rows = FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
+	cols /= vc->vc_font.width;
+	rows /= vc->vc_font.height;
 
-+/* let fbcon check if it supports a new screen resolution */
-+int fbcon_modechange_possible(struct fb_info *info, struct fb_var_screeni=
-nfo *var)
-+{
-+	struct fbcon_ops *ops =3D info->fbcon_par;
-+	struct vc_data *vc;
-+	int i;
-+
-+	if (!ops || ops->currcon < 0)
-+		return -EINVAL;
-+
-+	/* prevent setting a screen size which is smaller than font size */
-+	for (i =3D first_fb_vc; i <=3D last_fb_vc; i++) {
-+		vc =3D vc_cons[i].d;
-+		if (!vc || vc->vc_mode !=3D KD_TEXT ||
-+		    fbcon_info_from_console(i) !=3D info)
-+			continue;
-+
-+		if (FBCON_SWAP(var->rotate, var->xres, var->yres) < vc->vc_font.width |=
-|
-+		    FBCON_SWAP(var->rotate, var->yres, var->xres) < vc->vc_font.height)
-+			return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(fbcon_modechange_possible);
-+
- int fbcon_mode_deleted(struct fb_info *info,
- 		       struct fb_videomode *mode)
- {
-diff --git a/include/linux/fbcon.h b/include/linux/fbcon.h
-index ff5596dd30f8..2382dec6d6ab 100644
-=2D-- a/include/linux/fbcon.h
-+++ b/include/linux/fbcon.h
-@@ -15,6 +15,8 @@ void fbcon_new_modelist(struct fb_info *info);
- void fbcon_get_requirement(struct fb_info *info,
- 			   struct fb_blit_caps *caps);
- void fbcon_fb_blanked(struct fb_info *info, int blank);
-+int  fbcon_modechange_possible(struct fb_info *info,
-+			       struct fb_var_screeninfo *var);
- void fbcon_update_vcs(struct fb_info *info, bool all);
- void fbcon_remap_all(struct fb_info *info);
- int fbcon_set_con2fb_map_ioctl(void __user *argp);
-@@ -33,6 +35,8 @@ static inline void fbcon_new_modelist(struct fb_info *in=
-fo) {}
- static inline void fbcon_get_requirement(struct fb_info *info,
- 					 struct fb_blit_caps *caps) {}
- static inline void fbcon_fb_blanked(struct fb_info *info, int blank) {}
-+static inline int  fbcon_modechange_possible(struct fb_info *info,
-+				struct fb_var_screeninfo *var) { return 0; }
- static inline void fbcon_update_vcs(struct fb_info *info, bool all) {}
- static inline void fbcon_remap_all(struct fb_info *info) {}
- static inline int fbcon_set_con2fb_map_ioctl(void __user *argp) { return =
-0; }
-=2D-
-2.35.3
+Might be good to extract that into a helper and also add
 
+	WARN_ON(!cols);
+	WARN_ON(!rows);
+
+to make sure we really didn't screw this up and give syzkaller et all an
+easier time finding bugs - it doesn't need to discover the full exploit,
+only needs to get to this here.
+
+Also maybe even check that cols/rows is within reasons, like smaller than
+BIT(24) or so (so that we have a bunch of headroom for overflows).
+
+Anyway just an idea.
+-Daniel
+
+> +
+>  	/* Make sure drawing engine can handle the font */
+>  	if (!(info->pixmap.blit_x & (1 << (font->width - 1))) ||
+>  	    !(info->pixmap.blit_y & (1 << (font->height - 1))))
+> --
+> 2.35.3
+> 
+
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

@@ -2,194 +2,96 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7EA8C43334
-	for <linux-fbdev@archiver.kernel.org>; Sat, 25 Jun 2022 00:54:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 621D3C43334
+	for <linux-fbdev@archiver.kernel.org>; Sat, 25 Jun 2022 12:25:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229970AbiFYAy3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 24 Jun 2022 20:54:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59758 "EHLO
+        id S232944AbiFYMZM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 25 Jun 2022 08:25:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57766 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229757AbiFYAy2 (ORCPT
+        with ESMTP id S232602AbiFYMZK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 24 Jun 2022 20:54:28 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 740CE5001A;
-        Fri, 24 Jun 2022 17:54:26 -0700 (PDT)
-X-UUID: 780357f6997c455fb5477ca2b5b98988-20220625
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.6,REQID:de213be8-96b4-4f51-8d3f-3c2a1c709920,OB:0,LO
-        B:0,IP:0,URL:25,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,AC
-        TION:release,TS:70
-X-CID-INFO: VERSION:1.1.6,REQID:de213be8-96b4-4f51-8d3f-3c2a1c709920,OB:0,LOB:
-        0,IP:0,URL:25,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Spam_GS981B3D,AC
-        TION:quarantine,TS:70
-X-CID-META: VersionHash:b14ad71,CLOUDID:99a476ea-f7af-4e69-92ee-0fd74a0c286c,C
-        OID:4ca74c2c1c80,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
-        RL:1,File:nil,QS:nil,BEC:nil,COL:0
-X-UUID: 780357f6997c455fb5477ca2b5b98988-20220625
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
-        (envelope-from <miles.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1674105141; Sat, 25 Jun 2022 08:54:19 +0800
-Received: from mtkmbs07n1.mediatek.inc (172.21.101.16) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.792.15; Sat, 25 Jun 2022 08:54:18 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
- mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Sat, 25 Jun 2022 08:54:18 +0800
-Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
- mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.792.3 via Frontend Transport; Sat, 25 Jun 2022 08:54:18 +0800
-From:   Miles Chen <miles.chen@mediatek.com>
-To:     <peterwu.pub@gmail.com>
-CC:     <alice_chen@richtek.com>, <broonie@kernel.org>,
-        <chiaen_wu@richtek.com>, <chunfeng.yun@mediatek.com>,
-        <cy_huang@richtek.com>, <daniel.thompson@linaro.org>,
-        <deller@gmx.de>, <devicetree@vger.kernel.org>,
-        <dri-devel@lists.freedesktop.org>, <gregkh@linuxfoundation.org>,
-        <heikki.krogerus@linux.intel.com>, <jic23@kernel.org>,
-        <jingoohan1@gmail.com>, <krzysztof.kozlowski+dt@linaro.org>,
-        <lars@metafoo.de>, <lee.jones@linaro.org>, <lgirdwood@gmail.com>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-fbdev@vger.kernel.org>, <linux-iio@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <linux-leds@vger.kernel.org>,
-        <linux-mediatek@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-        <linux-usb@vger.kernel.org>, <linux@roeck-us.net>,
-        <matthias.bgg@gmail.com>, <pavel@ucw.cz>, <robh+dt@kernel.org>,
-        <sre@kernel.org>, <szunichen@gmail.com>
-Subject: Re: [PATCH v3 02/14] dt-bindings: power: supply: Add Mediatek MT6370 Charger
-Date:   Sat, 25 Jun 2022 08:54:18 +0800
-Message-ID: <20220625005418.7565-1-miles.chen@mediatek.com>
-X-Mailer: git-send-email 2.18.0
-In-Reply-To: <20220623115631.22209-3-peterwu.pub@gmail.com>
-References: <20220623115631.22209-3-peterwu.pub@gmail.com>
+        Sat, 25 Jun 2022 08:25:10 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B04861E3CD
+        for <linux-fbdev@vger.kernel.org>; Sat, 25 Jun 2022 05:25:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1656159904;
+        bh=XzWlqKg0tZRmkyyhAvOskP/AntTF8gQ4y3i07JTitN0=;
+        h=X-UI-Sender-Class:From:To:Subject:Date:In-Reply-To:References;
+        b=Wr7PGcBvGrftl27TdTYgD4sB1GXS4scvf+MKOVNTny3VJP0xPekV3HiEmKec73DOV
+         9Lo+3M8ABdGrds+AohjfpeuNyixW+hNhxVmbTa+JS0zgOJ0UNcu6GuIN43EW7GLjBV
+         4ADJOk0ByrfAaPNFZyxqVCx6IfT5BAv3htk7G4Qc=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from p100.fritz.box ([92.116.162.44]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MnakR-1nM4za3cCz-00ja5s; Sat, 25
+ Jun 2022 14:25:03 +0200
+From:   Helge Deller <deller@gmx.de>
+To:     linux-fbdev@vger.kernel.org, daniel.vetter@ffwll.ch,
+        dri-devel@lists.freedesktop.org, deller@gmx.de
+Subject: [PATCH v2 4/4] fbmem: Catch possible driver bugs regarding too small virtual screen size
+Date:   Sat, 25 Jun 2022 14:25:02 +0200
+Message-Id: <20220625122502.68095-5-deller@gmx.de>
+X-Mailer: git-send-email 2.35.3
+In-Reply-To: <20220625122502.68095-1-deller@gmx.de>
+References: <20220625122502.68095-1-deller@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:W8cNngBMUBHHJUV7dXjFa42WjdXUhH2wea0EeF11rpP1tPAtcrj
+ Vy4tmjTNURbq+eTLhYSJ3RbTSUqWcUOiJh6tMT8hIxIdAt+3g0UBYjPfsRHg+/1Jfvt6uSz
+ tkKkaHPi3xNpb4hamxPTSKlGbLRmYfthkj0i72290nt7jfNHaTATIMH4bWHxHhjVPpEvCEP
+ AKwv6u3Wv3lMQkKJHJsMA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:j0Cb/1I6yu4=:kKTYRcbYUs3HdoMx5WWEa9
+ PWTco1Zyie4e+8SCPHs7CfcbBKjiYeXfSiyuRZwqzSUXYBPKn+P4XMedgrbVbzx5sifvqZ4qT
+ zs0guonrV/KGovkhFUlEP+ztrTYlqQODHsLqHImFx/151dDjauIpWizL471bVqUeLW/SnlZh6
+ RuFIatAIRoMkKxGEoKICfNV/EUL0P8MEQ7TNDQ1G+dojcBmxUSbWSQFUz+cx0u4ia2DPQRiiW
+ 02I+/vZZCqmMUkb9i1ueAIY9LjARrAdSwTdyb4W6M8uCtg4CaIQfjtcXV8lx39lez1I2lYq08
+ C+KEnB+yk9tUVJ/FSn1ajoVXeJnXswos/BY+mjBdE3CBiZmPjb75NLbYWSu/0XeTiAz2tv8vS
+ xm6l28aj0WyDSIhMcb+d6n6pWCq73CwATDnpq+FUS+X+8IJLSuRxSK5skIB3Dz3bIzRT7Q0sA
+ /nlsd7a0XHhFOYglzzQ8fO7aRHftjDojl8HOKNFpyd99YGibUdYbogYkGejd7P/6PHaglxyCd
+ g6N4AARSvp6lDOdH8nZTf1vkmhjU6SDeq2E2g+Mq4oNH02GzeBGyXXg1TbVZG1cNds54xoTtg
+ J9P5HAOgSi5HQbP86inBoEfhHWhAP38R9uKHcroXAc63W1EdM8cPn7dN04WWyfR+P6yfE2yPX
+ 0qdDK1FS+KcLlVeznK0LkpnzFltXUSz6E8tsMnLTQcbUCIXM3XX1vmE2q5mti26kn6u4oyL/n
+ 5OaB4zD97mr7GuzJoWQAKSac/7cn6NFxaxAxMd0QMs+YyQxI8nNd1LwZD5bV7zYLjzbEFPrRe
+ YHFffqT+1AxFrNWYeRXPpVO0lH8W/NTTUSdJPye5nUpyQY245VXYCmT7HIH07U7STPeJS6NJf
+ dE4LdiB74KhARZVo9Nv1LIC7P8/MNV0QcZcNIFfEVzM7QNKpu/A5/xsJbURiWfjZqRY7Fl/1G
+ h2+wn+frd5qJIaDnJDC/yGTljlPtPfKWT+LYqqyrNMsu6k8lIaF2EAFtn7Xt6yJ+ITK4TSd8Q
+ 8V7RzQzK2is6145W5N7eA7Opk0Tab0mVS83NXmLep6rrHxHYqs99X4SdRURfnqUbfzSfpcM6S
+ F5MV6LrRZH1GiVa9O/njI+G76d03bIV+fwNLv4ha9TZTusRXjlP2TwmCQ==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi ChiaEn,
+Make sure that we catch, report and fix up fbdev and drm graphic drivers w=
+hich
+got the virtual screen resolution smaller than the physical screen resolut=
+ion.
 
-> Add Mediatek MT6370 Charger binding documentation.
+Signed-off-by: Helge Deller <deller@gmx.de>
+Cc: stable@vger.kernel.org # v5.4+
+=2D--
+ drivers/video/fbdev/core/fbmem.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-s/Mediatek/MediaTek/
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/f=
+bmem.c
+index 50fb66b954d6..6d262e341023 100644
+=2D-- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1006,6 +1006,12 @@ fb_set_var(struct fb_info *info, struct fb_var_scre=
+eninfo *var)
+ 	if (var->xres < 8 || var->yres < 8)
+ 		return -EINVAL;
 
-Would you mind fix that for the series?
++	/* make sure virtual resolution >=3D physical resolution */
++	if (WARN_ON(var->xres_virtual < var->xres))
++		var->xres_virtual =3D var->xres;
++	if (WARN_ON(var->yres_virtual < var->yres))
++		var->yres_virtual =3D var->yres;
++
+ 	/* Too huge resolution causes multiplication overflow. */
+ 	if (check_mul_overflow(var->xres, var->yres, &unused) ||
+ 	    check_mul_overflow(var->xres_virtual, var->yres_virtual, &unused))
+=2D-
+2.35.3
 
-cheers,
-Miles
-
-> 
-> Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
-> ---
-> 
-> v3
-> - Add items and remove maxItems of io-channels
-> - Add io-channel-names and describe each item
-> - Add "unevaluatedProperties: false" in "usb-otg-vbus-regulator"
-> - Rename "enable-gpio" to "enable-gpios" in "usb-otg-vbus-regulator"
-> ---
->  .../power/supply/mediatek,mt6370-charger.yaml      | 87 ++++++++++++++++++++++
->  1 file changed, 87 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/mediatek,mt6370-charger.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/power/supply/mediatek,mt6370-charger.yaml b/Documentation/devicetree/bindings/power/supply/mediatek,mt6370-charger.yaml
-> new file mode 100644
-> index 0000000..f138db6
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/mediatek,mt6370-charger.yaml
-> @@ -0,0 +1,87 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/power/supply/mediatek,mt6370-charger.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Mediatek MT6370 Battery Charger
-> +
-> +maintainers:
-> +  - ChiaEn Wu <chiaen_wu@richtek.com>
-> +
-> +description: |
-> +  This module is part of the MT6370 MFD device.
-> +  Provides Battery Charger, Boost for OTG devices and BC1.2 detection.
-> +
-> +properties:
-> +  compatible:
-> +    const: mediatek,mt6370-charger
-> +
-> +  interrupts:
-> +    description: |
-> +      Specify what irqs are needed to be handled by MT6370 Charger driver. IRQ
-> +      "MT6370_IRQ_CHG_MIVR", "MT6370_IRQ_ATTACH" and "MT6370_IRQ_OVPCTRL_UVP_D"
-> +      are required.
-> +    items:
-> +      - description: BC1.2 done irq
-> +      - description: usb plug in irq
-> +      - description: mivr irq
-> +
-> +  interrupt-names:
-> +    items:
-> +      - const: attach_i
-> +      - const: uvp_d_evt
-> +      - const: mivr
-> +
-> +  io-channels:
-> +    description: |
-> +      Use ADC channel to read VBUS, IBUS, IBAT, etc., info.
-> +    minItems: 1
-> +    items:
-> +      - description: |
-> +          VBUS voltage with lower accuracy (+-75mV) but higher measure
-> +          range (1~22V)
-> +      - description: |
-> +          VBUS voltage with higher accuracy (+-30mV) but lower measure
-> +          range (1~9.76V)
-> +      - description: the main system input voltage
-> +      - description: battery voltage
-> +      - description: battery temperature-sense input voltage
-> +      - description: IBUS current (required)
-> +      - description: battery current
-> +      - description: |
-> +          regulated output voltage to supply for the PWM low-side gate driver
-> +          and the bootstrap capacitor
-> +      - description: IC junction temperature
-> +
-> +  io-channel-names:
-> +    items:
-> +      - const: vbusdiv5
-> +      - const: vbusdiv2
-> +      - const: vsys
-> +      - const: vbat
-> +      - const: ts_bat
-> +      - const: ibus
-> +      - const: ibat
-> +      - const: chg_vddp
-> +      - const: temp_jc
-> +
-> +  usb-otg-vbus-regulator:
-> +    type: object
-> +    description: OTG boost regulator.
-> +    unevaluatedProperties: false
-> +    $ref: /schemas/regulator/regulator.yaml#
-> +
-> +    properties:
-> +      enable-gpios:
-> +        maxItems: 1
-> +
-> +required:
-> +  - compatible
-> +  - interrupts
-> +  - interrupt-names
-> +  - io-channels
-> +
-> +additionalProperties: false
-> +
-> +...
-> -- 
-> 2.7.4
-> 
-> 

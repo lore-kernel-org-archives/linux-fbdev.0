@@ -2,100 +2,135 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B049DC433EF
-	for <linux-fbdev@archiver.kernel.org>; Sat, 25 Jun 2022 22:06:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E20EC433EF
+	for <linux-fbdev@archiver.kernel.org>; Sat, 25 Jun 2022 22:27:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233382AbiFYWGl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 25 Jun 2022 18:06:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40272 "EHLO
+        id S233533AbiFYW16 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 25 Jun 2022 18:27:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49030 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233356AbiFYWGk (ORCPT
+        with ESMTP id S233530AbiFYW14 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 25 Jun 2022 18:06:40 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B8F37120BD
-        for <linux-fbdev@vger.kernel.org>; Sat, 25 Jun 2022 15:06:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1656194792;
-        bh=tRqvkgP3s46IORRaOk1LZP5YQEeJ21rrrTXuUbKXSvE=;
-        h=X-UI-Sender-Class:From:To:Subject:Date:In-Reply-To:References;
-        b=gVrFVJYj453sz98YflohNPOOQQZbth+K4YFhG9lefmk3XNgvdwmbNO/qJOp/qshBy
-         kKrZkP+3H/DHYdhbbt3W5Aq3QGYdGYjO8kHn9HCVPHInPZL5BUwZgtHbe7OVImVsP3
-         LwCHAYn2QW5Y8wrvSY472rwPWkRUmSJ5HPL0Oa6c=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from p100.fritz.box ([92.116.162.44]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MrhUK-1nHdUB3Cdg-00nhHD; Sun, 26
- Jun 2022 00:06:31 +0200
-From:   Helge Deller <deller@gmx.de>
-To:     dri-devel@lists.freedesktop.org, daniel.vetter@ffwll.ch,
-        linux-fbdev@vger.kernel.org
-Subject: [PATCH v3 1/4] fbcon: Disallow setting font bigger than screen size
-Date:   Sun, 26 Jun 2022 00:06:27 +0200
-Message-Id: <20220625220630.333705-2-deller@gmx.de>
-X-Mailer: git-send-email 2.35.3
-In-Reply-To: <20220625220630.333705-1-deller@gmx.de>
-References: <20220625220630.333705-1-deller@gmx.de>
+        Sat, 25 Jun 2022 18:27:56 -0400
+Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6AF08C31
+        for <linux-fbdev@vger.kernel.org>; Sat, 25 Jun 2022 15:27:55 -0700 (PDT)
+Received: by mail-ej1-x633.google.com with SMTP id cw10so11639344ejb.3
+        for <linux-fbdev@vger.kernel.org>; Sat, 25 Jun 2022 15:27:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=HMEA4S/foPT09jS8kwk/DI5PFsIZiXHCulkpaRC/cMc=;
+        b=Rs2PRm2e4bEIRWn7rEMlhXgz5dsI1a9YEf9uQle7MRv1Vum4pehM9b9ASQyVz0lieT
+         9JdUxRP6ypFEH2r7I2V/x348gJVbqwEC+HiyZmiqwfT/u4tM+yGqSQVE3Q4tnzNBedyX
+         1isN078R4i+bHEBRzNKVFpD5vXvUIS+fcf80k=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=HMEA4S/foPT09jS8kwk/DI5PFsIZiXHCulkpaRC/cMc=;
+        b=pY2JIEms9DPOWsDJvMa0FSgmu23FnWc0SfxYil89S+mIEBJu1D/DMoxQTeGAQYT3Jl
+         smJonuimTIVuVSAnZyTAdtyms777R2bT97hqFU+Cs9rz3hUP6wmXC09GqDc+MF7bPBeD
+         PoCgkUxjppDWhS2KkNLQ82BYMIQCcoJWpt5iJp8E5AJezGCr1fIAakY6Rzgg567snaxW
+         C6FX8rVXLWiCGTjOa2Te5jAhoB1YDiGcaFhTBTDU+ODt3C0M/HHGaKfpiENu5lYxu257
+         S7PtVxru9Y8ks7pq+5Di6iYYYOVoAUWMzHjwhpla0velAsOS0NetwuYeL8Kcl+VY6z3s
+         ak5Q==
+X-Gm-Message-State: AJIora+4eC/CmUWWCWAiH4VZuzXkyySeVmjXrPVf/89BQCG+hsOC482C
+        SD6xZRbGfzs3lj/plkawHHSP6A==
+X-Google-Smtp-Source: AGRyM1uhQtTW+avKSN5jUGIq6mcVEY1qRBqoklhRM83omd0hzACr022PZjwQmuGaEroG4miRaEvDNw==
+X-Received: by 2002:a17:907:3f84:b0:724:2ec:b474 with SMTP id hr4-20020a1709073f8400b0072402ecb474mr5759117ejc.644.1656196073984;
+        Sat, 25 Jun 2022 15:27:53 -0700 (PDT)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id p5-20020aa7c4c5000000b004376bc57de5sm2083254edr.84.2022.06.25.15.27.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 25 Jun 2022 15:27:53 -0700 (PDT)
+Date:   Sun, 26 Jun 2022 00:27:51 +0200
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Helge Deller <deller@gmx.de>
+Cc:     Daniel Vetter <daniel@ffwll.ch>, linux-fbdev@vger.kernel.org,
+        daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v2 1/4] fbcon: Disallow setting font bigger than screen
+ size
+Message-ID: <YreL5+HQdicqwfcj@phenom.ffwll.local>
+References: <20220625122502.68095-1-deller@gmx.de>
+ <20220625122502.68095-2-deller@gmx.de>
+ <YrcDgjpgeqSZtSOE@phenom.ffwll.local>
+ <feee43e4-fad3-b8c8-852b-ab85804416b6@gmx.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:FGIQ5xSaIVRGo4hp8yfX3n+NH29eA3bhr7z5zE4g+f3T5zRqYbJ
- zfitv+gynLV+29UqzuD1omCeWLTjBxw3URRCUruG5beTTpJwXPSVyPGU9rl9k3f2v72L3YI
- ryOvAP3NCpjrN2RbMJt1xe+4aqFrnRycUYXdJ1KpiKh4qTzCO0WNokFjJKttABzePmx0kau
- cYv3wRkBoZHFh0ifKVO5g==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:w5twWS2oZ94=:TVJNx05VlhXQr756TbEvcH
- pouTt5mAlmU6YoVEz8v+dt1aKBllFcVDxvL2FoCtP4AgZlSn+SBDAKdmm90iKmZC7YwxWJav/
- ga0hpPkd4loszDLRNTpUV1Q44Sr2Oe6Nn6LVs5E8qgLqIojTL/a1ZwA/kuJtUsypavAZgDFSH
- Hb6uo+Oj+chyHpfFJsyfTwoJ9K8ILT01UDcYxgtn1HYpfIIu2lA2qzyJkxBklplLlTc5O9li2
- +uj6OELsF4RsoefT5FA4tUGuohvzEghHNTm8Eq7TldqacUUYTZDNg000EvPj7Khihi9QQ/UsR
- 3qhqqWRYxtp8whXauCQxsN6uUIghz+Ay5V9vlaXFJI+vbQ0s8q3Ht77kIWqamkr58e3RA5qVQ
- xTdEEiyFF5yqGvjREyJH4BLdDVkZw29TlNlMzmkHQk8P9E3DhLmAtIU38NM78V4bMagB2DU0y
- oEELu9hg8IopMVF/s9MPWnUJImwfCbHfvBUqsNvc4Q0Zta7xtvIlKIxKmZpPZTmD+NhMCDbRa
- 7MOnV0RQT642bmCJziLpWnEIbG2UDrkghWKQ/MhM18PJYriT7Q416Mi05khoi8WGoJe1XyfmQ
- zYK+aVAJDUuhDbaBU0kjy7/4FBoJEHgw6aT5/9VI/BiX0nSRxyEVMo87IgasA56agYJps+JXb
- yqXZVm6KAz0iOBjdYfqLHb+PGIuXcA8IKMaZ8YxLsN62FWr4QA29LfY9Nh9fcVJKySsDz5iw4
- bTJ/8meRbQmO/FBmDYCcwhgxLEmoML8mmuekDSFiqki++zYxvDC/XUOld6A7A5aF4jjWATPoi
- OsrxpdFOOdwhugxigOE8rki1lZr1l7mBtZhQ+lufAApndehjsMgrHVv97vLyqjs9FCKmOo6YI
- W2wk+BMRagJM3BHLtUWcDs42Q3X5joVm1KQB/tO4zrSJdujk1DuJf0Gv0cq6qsTtbOF/m5Z67
- bX7o8O2pgAfPcMNRU6r1l3We/nIgQ6YkRK6v8vc+UTaQhrY0GaFJjprfpLke7uqn4mIJ+JCPq
- JErl0QabZmvWlApkRbWBU2vkvc79uq8snDb1GUULgToAh1m8jJ/K/MauJLFCwNT+q7W+F08hc
- f0Cep3ceI5X6zfcHS6z3YDia0IrsruF4SFxQgpBcXA4CaSHwQfKCDkyyQ==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <feee43e4-fad3-b8c8-852b-ab85804416b6@gmx.de>
+X-Operating-System: Linux phenom 5.10.0-8-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Prevent that users set a font size which is bigger than the physical scree=
-n.
-It's unlikely this may happen (because screens are usually much larger tha=
-n the
-fonts and each font char is limited to 32x32 pixels), but it may happen on
-smaller screens/LCD displays.
+On Sat, Jun 25, 2022 at 04:53:25PM +0200, Helge Deller wrote:
+> On 6/25/22 14:45, Daniel Vetter wrote:
+> > On Sat, Jun 25, 2022 at 02:24:59PM +0200, Helge Deller wrote:
+> >> Prevent that users set a font size which is bigger than the physical screen.
+> >> It's unlikely this may happen (because screens are usually much larger than the
+> >> fonts and each font char is limited to 32x32 pixels), but it may happen on
+> >> smaller screens/LCD displays.
+> >>
+> >> Signed-off-by: Helge Deller <deller@gmx.de>
+> >> Cc: stable@vger.kernel.org # v4.14+
+> >> ---
+> >>  drivers/video/fbdev/core/fbcon.c | 5 +++++
+> >>  1 file changed, 5 insertions(+)
+> >>
+> >> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> >> index c4e91715ef00..e162d5e753e5 100644
+> >> --- a/drivers/video/fbdev/core/fbcon.c
+> >> +++ b/drivers/video/fbdev/core/fbcon.c
+> >> @@ -2469,6 +2469,11 @@ static int fbcon_set_font(struct vc_data *vc, struct console_font *font,
+> >>  	if (charcount != 256 && charcount != 512)
+> >>  		return -EINVAL;
+> >>
+> >> +	/* font bigger than screen resolution ? */
+> >> +	if (font->width  > FBCON_SWAP(info->var.rotate, info->var.xres, info->var.yres) ||
+> >> +	    font->height > FBCON_SWAP(info->var.rotate, info->var.yres, info->var.xres))
+> >> +		return -EINVAL;
+> >
+> > Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+> 
+> Thanks!
+> 
+> > Maybe as a safety follow up patch, we have a few copies of the below:
+> >
+> > 	cols = FBCON_SWAP(ops->rotate, info->var.xres, info->var.yres);
+> > 	rows = FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
+> > 	cols /= vc->vc_font.width;
+> > 	rows /= vc->vc_font.height;
+> >
+> > Might be good to extract that into a helper and also add
+> >
+> > 	WARN_ON(!cols);
+> > 	WARN_ON(!rows);
+> 
+> That's not needed then.
+> The checks I added above will ensure that cols and rows are both greater than 0.
 
-Signed-off-by: Helge Deller <deller@gmx.de>
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: stable@vger.kernel.org # v4.14+
-=2D--
- drivers/video/fbdev/core/fbcon.c | 5 +++++
- 1 file changed, 5 insertions(+)
+Yeah I reviewed it too, but I don't trust review all over the place.
+Especially with something like fbcon with entry points from everywhere.
+-Daniel
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/f=
-bcon.c
-index c4e91715ef00..e162d5e753e5 100644
-=2D-- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2469,6 +2469,11 @@ static int fbcon_set_font(struct vc_data *vc, struc=
-t console_font *font,
- 	if (charcount !=3D 256 && charcount !=3D 512)
- 		return -EINVAL;
+> > to make sure we really didn't screw this up and give syzkaller et all an
+> > easier time finding bugs - it doesn't need to discover the full exploit,
+> > only needs to get to this here.
+> >
+> > Also maybe even check that cols/rows is within reasons, like smaller than
+> > BIT(24) or so (so that we have a bunch of headroom for overflows).
+> 
+> Not needed either.
+> cols and rows is the screen size divided by an value between 1-32 (the max
+> font size). So, since screen size is already the higest limit, cols&rows
+> will always be smaller than screen size (and > 0).
+> 
+> Helge
 
-+	/* font bigger than screen resolution ? */
-+	if (font->width  > FBCON_SWAP(info->var.rotate, info->var.xres, info->va=
-r.yres) ||
-+	    font->height > FBCON_SWAP(info->var.rotate, info->var.yres, info->va=
-r.xres))
-+		return -EINVAL;
-+
- 	/* Make sure drawing engine can handle the font */
- 	if (!(info->pixmap.blit_x & (1 << (font->width - 1))) ||
- 	    !(info->pixmap.blit_y & (1 << (font->height - 1))))
-=2D-
-2.35.3
-
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

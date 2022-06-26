@@ -2,151 +2,104 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A66DCC433EF
-	for <linux-fbdev@archiver.kernel.org>; Sat, 25 Jun 2022 23:56:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B5DBC43334
+	for <linux-fbdev@archiver.kernel.org>; Sun, 26 Jun 2022 02:01:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233433AbiFYX4w (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 25 Jun 2022 19:56:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36856 "EHLO
+        id S233767AbiFZCBt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 25 Jun 2022 22:01:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60958 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231234AbiFYX4v (ORCPT
+        with ESMTP id S233753AbiFZCBs (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 25 Jun 2022 19:56:51 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EDA2C10543
-        for <linux-fbdev@vger.kernel.org>; Sat, 25 Jun 2022 16:56:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1656201404;
-        bh=VTxppKwqJfr3ONtRcRtl1XWTSJMhzCmk1TNtgjM7VCU=;
-        h=X-UI-Sender-Class:Date:Subject:From:To:Cc:References:In-Reply-To;
-        b=O9cN2OLwzGIjWzQzg+E2cBvgdPxMK/5jrsQe5TfIFSsHY72/1uzSMjy1OFAj3LFEZ
-         M6668Rj1Z0Y1ynJHw1j027557FJ+RcuzlIkvJvKYlCva1PHaUIO3v3SOZVuwfctTAf
-         xQ9dYSspf3yfDy5lHAOSoHcFoxA1WzfTcpSgt/5M=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.162.44]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mz9Ux-1niNZ91Ucl-00wETt; Sun, 26
- Jun 2022 01:56:44 +0200
-Message-ID: <92f2ca1e-20f7-c456-0cd2-609202e337a2@gmx.de>
-Date:   Sun, 26 Jun 2022 01:56:18 +0200
+        Sat, 25 Jun 2022 22:01:48 -0400
+Received: from wout3-smtp.messagingengine.com (wout3-smtp.messagingengine.com [64.147.123.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BDE0E13E38;
+        Sat, 25 Jun 2022 19:01:46 -0700 (PDT)
+Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
+        by mailout.west.internal (Postfix) with ESMTP id EBFD0320051E;
+        Sat, 25 Jun 2022 22:01:43 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute5.internal (MEProxy); Sat, 25 Jun 2022 22:01:44 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=davidreaver.com;
+         h=cc:cc:content-transfer-encoding:date:date:from:from
+        :in-reply-to:message-id:mime-version:reply-to:sender:subject
+        :subject:to:to; s=fm2; t=1656208903; x=1656295303; bh=cwUPUl+OA5
+        T721UciMEMKWal2tgSsfaKw5bHf2WB2Bg=; b=Vrpc7VzWm2Is2FrgPWUh3oJS2J
+        TZJVavr+Qi6w1BZCAlOfZK0eqOF3MUmo5XOzo1+k4iT6NGaAN3JjlNmG6RNWMVjR
+        qGB+VkJ29f59nQWCkVNsjJr1bBLjVlLRnfh7+db3+l9nls8AgGXqkizaT/9gla4C
+        ddfz18H/brNWgEm+jhlEbbyTvAiQiuxlt90oqOqrxRH0GZE31lfCds3cNjDtXM+T
+        lpxl/90/dHUnhsYlB3SCjFlHKJWvz7iseJzcAg/yxIo2vlv5pdNDR6xnByYbWxtN
+        /SH9NXmpuVf+iARsjhTFFbD7F5FdDUFwpo+e+7SlyCLDzzK3FjPu6CpJZ4Yw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-transfer-encoding:date:date
+        :feedback-id:feedback-id:from:from:in-reply-to:message-id
+        :mime-version:reply-to:sender:subject:subject:to:to:x-me-proxy
+        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=
+        1656208903; x=1656295303; bh=cwUPUl+OA5T721UciMEMKWal2tgSsfaKw5b
+        Hf2WB2Bg=; b=TrG7REjbLp2fryMdS/mOHTnncpwaYqBmKRy37t0AfUoLN1Jg+cJ
+        uSu5slr8Iz6hB9p4JnCkDjspCWxWv2lnf7Rg4BazRzOdsB5lGukCGrUWvMmyTqsQ
+        wxp1dlWvkh0+ETBME+LQmEqPnA9RMJ4Tm8vD+O++aIEf1aI0YwrxmDLwDNxp0N+n
+        o7OOFT2jWBKwQIEr8TaYkEVlFx4vpguR52Oop3iztQMWDlYggj+PNMrtkhVVbGPd
+        tc/uAZ55++6nnAHJ8bV+fv5yakL/K3at2Cz9t/+uB1cu686rfBfkdpt+tGth3eWH
+        OzPS6imxzeKjNJ6TiXFGFPexUDUMaVr1kTQ==
+X-ME-Sender: <xms:B763Yq9OQrv6n8E7W63sBoJchrjPUsAy0u1A_mu2x-jG350sab1DXA>
+    <xme:B763YqvWNuHmKgjFB6p6o26CEXQamp6Dj4LrWWGI7erMAghkRHTW4iz_4FEHDFALW
+    fWCcoVQkfss0g9_Ia0>
+X-ME-Received: <xmr:B763YgBhO1C58QCCn73wPUCGPODUyeegxFsCRBlki5jTCAXxC3Ig_GPiQkkf-5usRb7T6x7jPa60sUBpHdQrquICHu4>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrudegvddgheefucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhephffvvefufffkofgggfestdekredtredttdenucfhrhhomhepffgrvhhiugcu
+    tfgvrghvvghruceomhgvsegurghvihgurhgvrghvvghrrdgtohhmqeenucggtffrrghtth
+    gvrhhnpedvvdeifeelgefgfedtjedtffehueeiffehjeeggfffjeevudeuueegteekheej
+    vdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehmvg
+    esuggrvhhiughrvggrvhgvrhdrtghomh
+X-ME-Proxy: <xmx:B763Yie5UTOKJwsSWtrkaiz3lY32BISJ5r8VIp3j7vwZAY-PShk7jQ>
+    <xmx:B763YvOjXAS7Cq88-NSIAlud4Dv9S79OaC-Fa76e58W7YNvEMWJkSg>
+    <xmx:B763Ysm8qHXV9HscF4kkuKoUVvmnpJb4JTviY9e5aiboPVtXCtRpJw>
+    <xmx:B763YkoAMKpMtSWGfHBQRRWlaR3yLGXVKwX_i4UuANR4vGcrAJbWFQ>
+Feedback-ID: i67e946c9:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Sat,
+ 25 Jun 2022 22:01:41 -0400 (EDT)
+From:   David Reaver <me@davidreaver.com>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
+        David Reaver <me@davidreaver.com>
+Subject: [PATCH] staging: fbtft: fix alignment should match open parenthesis
+Date:   Sat, 25 Jun 2022 19:00:02 -0700
+Message-Id: <20220626020002.1577101-1-me@davidreaver.com>
+X-Mailer: git-send-email 2.36.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.10.0
-Subject: Re: [PATCH v3 3/4] fbmem: Check screen resolution change against font
- size
-Content-Language: en-US
-From:   Helge Deller <deller@gmx.de>
-To:     Daniel Vetter <daniel@ffwll.ch>
-Cc:     dri-devel@lists.freedesktop.org, daniel.vetter@ffwll.ch,
-        linux-fbdev@vger.kernel.org
-References: <20220625220630.333705-1-deller@gmx.de>
- <20220625220630.333705-4-deller@gmx.de> <YreNUfv8d9QeJT8C@phenom.ffwll.local>
- <YreODaSXhAhipJKa@phenom.ffwll.local>
- <5e03d6c5-e254-f5f6-9e02-bc996d41718d@gmx.de>
-In-Reply-To: <5e03d6c5-e254-f5f6-9e02-bc996d41718d@gmx.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:sEwV10plS3Y+ryF+rxH5of9Hmnq5/YAiWB2CE5Rd9H+e2i3qMuy
- /jUNYcX/JKavmLxdJO7NN5GUTECW7YnWU+BuMyqEWn9zz7JJ2C50xVU0tc82Zqyxq1OLavU
- XSPowdfCOyrK41vltDfv6d5rzlpe6z314BsjQyyiX97E3TTZNBZykazWnvxaRlJxx45bDXY
- kYPnHxsDY1KkIKtolIfxg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:/Snn3i7vWJ8=:TSxAQZkKY87d7phi/uX089
- A3licZu+919I5aFvHKg0JIZ+aWqXFVYwOlFobyGOV/xzACnm5MU30iaAASWBtTJLiyMaN/QtJ
- Fk9+MaFaSypdKfap0OtBHH3ZMqSX3pLcrcpTXULwKIWl5tvfU0qQnw2T6O95BHpijnpu/kU1w
- U7duUaeaWV6sSdnXiM0cZdwmi+8dxGca+mx+JUCSWV4M1Rwe7LfgNfCzY98A03PVt86IMkE/p
- ZweviSmd+ZisFO46CSbf1Gl3bAFeZ9wlq1rK+TjlLtT8+8ZrTm5g0bo4Xf7q4b6ES8kKNEVQX
- kDAopR9x0+bdT0VnofSJpQABIGgxhnl4LAcyvGqZF0j4J6YDPz7J8UfoLej7pwalmXNBCCoHE
- IATmxjSQn5051EHTkg34Zeuw1hi5NAqUbN1grras64m0CeVW30WdvYUp5j4fWzOLfwe+wNn8z
- uvztE91EV6Yohe4ROdSjw+mJ2BcftoAduGBvy0uQrak/+Ix9qb6faGULF0rDWhtDV2NKY5L9Y
- D9+idTu1oxlPatyVLg+r/TMhRbzEsPmw05BuCn+K+EoqYh8BN1qs8S4nDTvTvLvLJn3q229ho
- yuy6NQvPUQu6VJwzpnDSKPhJOjAqjen3Lxo0RXbE3rlyNGtrYcYjEOuW9RICpLVeNfFGfEIJY
- pOfoK2cSwEFXHK+jkF8n4Iak1ID2Nf8XJb5XTz2/Ae9Kr9I43bA0V4mTuVWaXINdyBSFbG7mz
- QlO9N+m7gTgUhg6mu541nI/YNZUpBdq0g5ocAGDinOKmtpz7/enI9dVSs9GT3LLj/WMK+eSSs
- IY/tKvHnWUZGtDxej2j/O6lpZXzHwKc+9I2lRGNEMt56pAQ6F+6lHXAGRYEXyMv7wOfB35Tfq
- EQLLj5C3TA8bAm5SQ8iESb/heJR7NVRnrFcfEfbcFwxZIkxH5NkT/NHwD4UW975xrQ4ETlU8K
- 8yFZp3sGbMZZfinSBVF0OGLf1t2zUc8wAKOAoP9wjjpBt5KPCtJjCHDUJgh0LUuLvWU+R+Lld
- ZDzYbtb6YlL5syZRw1FdNGyBCV20Xa2vsOUvJXYqaveZ/beWYsbvXfmcgLH2MoX0VYJGyKURk
- csrjAwx9pUoF17GdVSdrkVs3FmfHpIO2uN1emRaKTIjNGw+kedD99CZ7g==
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 6/26/22 01:12, Helge Deller wrote:
-> On 6/26/22 00:37, Daniel Vetter wrote:
->> On Sun, Jun 26, 2022 at 12:33:53AM +0200, Daniel Vetter wrote:
->>> On Sun, Jun 26, 2022 at 12:06:29AM +0200, Helge Deller wrote:
->>>> Enhance the check in the FBIOPUT_VSCREENINFO ioctl handler to verify =
-if the
->>>> user-provided new screen size is bigger than the current font size.
->>>>
->>>> Signed-off-by: Helge Deller <deller@gmx.de>
->>>> Cc: stable@vger.kernel.org # v5.4+
->>>
->>> Please squash with previous patch. You might also want to add a note t=
-here
->>> that on older kernels backporters need to open-code
->>> fbcon_info_from_console instead, since it only exists since
->>> 409d6c95f9c6 ("fbcon: Introduce wrapper for console->fb_info lookup")
->>
->> Maybe easier would be to include that patch in the backports instead of
->> open coding.
->
-> I was afraid that WARN_CONSOLE_UNLOCKED() hadn't been backported.
-> But it seems it's in v4.19+ (from patch 56e6c104e4f15), so that's ok.
->
-> So, yes, it seems pushing 409d6c95f9c6 backwards is probably best.
+Fix alignment of this line of code with the previous parenthesis, as
+suggested by checkpatch.pl:
 
-It would be the best solution, but sadly 409d6c95f9c6 can't easily be back=
-ported.
-So, probably my other approach (fix up afterwards with extra patch) is
-the way to go.
+  $ ./scripts/checkpatch.pl -f drivers/staging/fbtft/fb_tinylcd.c
+  CHECK: Alignment should match open parenthesis
+  #41: FILE: drivers/staging/fbtft/fb_tinylcd.c:41:
+  +       write_reg(par, 0xE0, 0x00, 0x35, 0x33, 0x00, 0x00, 0x00,
+  +                      0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
 
-What's your thought on this ?
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ drivers/staging/fbtft/fb_tinylcd.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Helge
-
-
-
-> Will try that approach now.
->
-> Helge
->
->  I think that's what Greg generally prefers at least, less
->> divergence between stable kernels.
->> -Daniel
->>
->>>
->>> With these two nits: Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.c=
-h>
->>>
->>>> ---
->>>>  drivers/video/fbdev/core/fbmem.c | 4 +++-
->>>>  1 file changed, 3 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/c=
-ore/fbmem.c
->>>> index afa2863670f3..160389365a36 100644
->>>> --- a/drivers/video/fbdev/core/fbmem.c
->>>> +++ b/drivers/video/fbdev/core/fbmem.c
->>>> @@ -1106,7 +1106,9 @@ static long do_fb_ioctl(struct fb_info *info, u=
-nsigned int cmd,
->>>>  			return -EFAULT;
->>>>  		console_lock();
->>>>  		lock_fb_info(info);
->>>> -		ret =3D fb_set_var(info, &var);
->>>> +		ret =3D fbcon_modechange_possible(info, &var);
->>>> +		if (!ret)
->>>> +			ret =3D fb_set_var(info, &var);
->>>>  		if (!ret)
->>>>  			fbcon_update_vcs(info, var.activate & FB_ACTIVATE_ALL);
->>>>  		unlock_fb_info(info);
->>>> --
->>>> 2.35.3
->>>>
->>>
->>> --
->>> Daniel Vetter
->>> Software Engineer, Intel Corporation
->>> http://blog.ffwll.ch
->>
->
-
+diff --git a/drivers/staging/fbtft/fb_tinylcd.c b/drivers/staging/fbtft/fb_tinylcd.c
+index 9469248f2c50..60cda57bcb33 100644
+--- a/drivers/staging/fbtft/fb_tinylcd.c
++++ b/drivers/staging/fbtft/fb_tinylcd.c
+@@ -38,7 +38,7 @@ static int init_display(struct fbtft_par *par)
+ 	write_reg(par, 0xE5, 0x00);
+ 	write_reg(par, 0xF0, 0x36, 0xA5, 0x53);
+ 	write_reg(par, 0xE0, 0x00, 0x35, 0x33, 0x00, 0x00, 0x00,
+-		       0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
++		  0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
+ 	write_reg(par, MIPI_DCS_SET_PIXEL_FORMAT, 0x55);
+ 	write_reg(par, MIPI_DCS_EXIT_SLEEP_MODE);
+ 	udelay(250);

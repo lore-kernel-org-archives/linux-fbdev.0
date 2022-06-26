@@ -2,100 +2,118 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0F4BCCA482
-	for <linux-fbdev@archiver.kernel.org>; Sun, 26 Jun 2022 10:29:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8655C433EF
+	for <linux-fbdev@archiver.kernel.org>; Sun, 26 Jun 2022 15:02:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230287AbiFZK3E (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 26 Jun 2022 06:29:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56860 "EHLO
+        id S230432AbiFZPCA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 26 Jun 2022 11:02:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36976 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234198AbiFZK3B (ORCPT
+        with ESMTP id S229516AbiFZPB5 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 26 Jun 2022 06:29:01 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F3D7E12614
-        for <linux-fbdev@vger.kernel.org>; Sun, 26 Jun 2022 03:28:59 -0700 (PDT)
+        Sun, 26 Jun 2022 11:01:57 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A7E4FD03;
+        Sun, 26 Jun 2022 08:01:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1656239334;
-        bh=tRqvkgP3s46IORRaOk1LZP5YQEeJ21rrrTXuUbKXSvE=;
-        h=X-UI-Sender-Class:From:To:Subject:Date:In-Reply-To:References;
-        b=Ra4rSnpZuBPKt0T+7+ep/XhqMxDoRbM4V/Fg2Hk9Hb+pCwm8P1wuKLop5B+hs5M8N
-         sqYgms3IQreRxyTEcwFugI3pi5D/woXoxW0S37/fv6KmTW2k+14l933+3XQEZG+0kV
-         txVMvo2EnD+7iOCuJiox9D9I6cH8WBuUiFbAxA5Q=
+        s=badeba3b8450; t=1656255712;
+        bh=ftgVeWzfGVCOg8nwy7vb1fPm3ULzmc+V9gtVCzTW6vk=;
+        h=X-UI-Sender-Class:Date:From:To:Subject;
+        b=IWUX/NZe6Mno98OQlGS18Q9qM8TUU+6gF9cItdeBfZMOueYOXx4LU7gEdBPfUgX+C
+         8MjnN2XkAhkYhZPAYwbCWcGSQKG7Wdax8lFM0uEvXjqRrm0knaV6sSEW4sgV/KBXkk
+         swzVUfUd+5LjnWoQrkHcOEsoNgSJQaT4Uodr9uEk=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from p100.fritz.box ([92.116.135.166]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1N7i8Y-1nbJnY1P2Q-014iK5; Sun, 26
- Jun 2022 12:28:54 +0200
+Received: from ls3530 ([92.116.135.166]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N0XCw-1nkcvb3xX2-00wU70; Sun, 26
+ Jun 2022 17:01:52 +0200
+Date:   Sun, 26 Jun 2022 17:01:24 +0200
 From:   Helge Deller <deller@gmx.de>
-To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        daniel.vetter@ffwll.ch
-Subject: [PATCH v6 1/4] fbcon: Disallow setting font bigger than screen size
-Date:   Sun, 26 Jun 2022 12:28:50 +0200
-Message-Id: <20220626102853.124108-2-deller@gmx.de>
-X-Mailer: git-send-email 2.35.3
-In-Reply-To: <20220626102853.124108-1-deller@gmx.de>
-References: <20220626102853.124108-1-deller@gmx.de>
+To:     Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev updates & fixes for v5.19-rc4
+Message-ID: <Yrh0xOWBC1+kohed@ls3530>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:YXfT7zBTXoZauOHSIJJTtz7WrDgEiNujTauyUxlFXnplbel6KY9
- qYSqgWRSCpaiSZYIKE0Srf7hWVaUmMcKPPzmZgWL6UAR9v08TBXUVvrlSbVjYUuRx4kMORx
- K1oNsa8HaAwRuSmnyTnK1ozRnDlioAFxB+benIFiFaDtrjQMGevrBoWbN4bpC3I4gySLlSC
- IieF65HOrcXL/9fD8ewzg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:Fx/Iaz5Kofw=:K+AO7X+mA3SPcSwVthCBkV
- bx4etJAUsgLfxTe4eiO6ST5BA/DXYwyKoCSY2GfLpcPfhIvkZpBCt9pduPWLlTiND/yC/O2gp
- FzzFAjBuX/rUggohoWiq+LlmngSbg6k30HpaocrItsj+V0C2ZQX7huB+LkQwpld9mKNITrn1V
- l13yyTPLoib02OOOVvR5LfeanFP3svyQ7w3skAOBlckW28YcIgNBeKdOmD0QWQH4mtcLzx+3r
- m6Zb1AtG6fVMAbYGPRV+ktPEUnAnZBymLUSpBaYU+2k0y9v0hZ9OAD55KlzYRPuEhbRkV83ni
- fbVYb1c4dKNdIcE9stOg+QRNwRdeq9uag2JJc1+gS5I68ykYylOdyaos2ytVUqKPMQ+hMcPg5
- 6itZMi8iCK4H0MKc0Q6UWU2Br6rgjkGj7n2VlYiaZc5bTiwndKIWD1WlvaFSqyHmTJPtBdiUV
- FYsl73+FRVVgHWgW5MsVlaZtRXhDMycL7Idlak4x0GdZ7w4fyqPMYbeumKL78eRSFga8HeXHv
- Wf/xCluhU5KNSaMaexj1fjbJMCpBcRkM6jdpiDFJ5z4F7my/jBRF9IKQ20rF0D2AjbbKyG70n
- W5yfnV3fE9dyI0XPmW/b8hUS5x4mphHcUdkjYoICCHe/J0Jk/Ytv6ffetFwt6vNkkgtA2ED97
- pMvstDWNMpWy2V/halSMhUatgEPA5GaMIKfJsYJf6HSTtY08mqfPPavfeWMswf4Sk/52MAg1N
- 1p6qsXNxzqWj+egeawklnA6vv9GplGEpkp2+EpmZV0QH9nv+6dT/AbS0ygqgjQUpWlTOuJTAr
- vO30CtvgwJsId5lWJzP8Uym/Toc7A0O9nNlVPdxu39xVDAxPrTV8RoWuEVRtk1DZxyekQlA1Q
- pjHRhIW+O9SOaqeG3tjyTko4y1UWlBdaheZoXB01sUj0lNxmDmADnLQzOGfm5rxFvTtQF1R4d
- fNxozEMFx99Z1X+w0TBOsuEvLJIt6LtOAB+ssM2tW7Y9HUiPbUL1mlq5O073GuDYjKTzOH1im
- MhXeeyLLu0OYsvl65gWe95lL/LPL9ZgA/FXZo5l9ewNHM28ERiY/S4NXEu8BigTtLNj6B0O8T
- stvhqMYzLKp1AHtSJT0V3BJMjDmt+ZUD/oIrdLS4azuvfMX2eiQqgCt8A==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Provags-ID: V03:K1:6VBIh6osSUIaLBHUeqIlKoeMgGM8sIjeq3vhJ53SV1rJZPtlrB3
+ CETz4mPI1DpmRp6Nnj4Ls/wPAx6+ide0ItzprLfDo7qAYyXL7NOmQOUpnNi6e34S2yjSnnm
+ 4rkq5Yec6+HfoVX+v69gXluELO8vP50bv2OZ87IsON2pKCFrK6+bnYLVoscCxa2eiJqozDc
+ Hg1FN5Ny3mYpGHKPqNCOQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:kEGIwBNkdOU=:kQJskTD9VXo1QzyxmFQpdy
+ YMMM3S4vsJavgH0yzQ0uP2pcQrL26W/puNXsLa32GjBiqcA9nC/AkRyS3Zu5sx3/Hhq3DHGQL
+ Lw5qFYnB2dNe+Bn9BirskodXdJxlHJciOucy7L52CgvZXeN+BGpZRWd1quhP+zTuSYr2Gudvt
+ cfrnBtKulo+Q5nidMWcYKVaPs+SOh62BcOkSq5AYjfJFk53wuwOkciJnBLatriE5GNlUH/PjJ
+ +PMjJdDu5y6YL1NThgnyaoLWEm5mAMWQxdCWYZU64J3iMRNQrzIapjBiVQJLJpbREh1vETzsO
+ Ln6O+AxGqBUIx8qe5qMIp0dNXTWodn5pRESWphuD5/Atr1Ep6HjgX7Hf/rLwAIEWz8RKxXCsG
+ hLFes7u9WFsAP/yOdMWPJS+YVEwe5xvKhnIf8fqOtiiNoAIGKqyfjEYk8ck25R2NoZmcus6Pp
+ 7kCEhYnBJYQgy/Y3CAW4GTgPDy+PgtE6eD57HjWUvkVZJZyAKBO2vpkn58Yn+/2z+i0vi+WVu
+ EzrZGQ6sJ3jsodVnldFK8UXXt4eKXHTbIOLkKcu/8IDd0hh9xRPX/81xrjYFdgNTUCcHJEbU5
+ l7LnzcVAi17Qyo8KLOcIMZMx39QDcvCOYetN7vayoqKTcIuIR78b5yD6r8JsF4Q5BmkcJlUBe
+ 1Y368QkLFSqvvjOwfHnd1OE/BFaDsZXqR7SSfuSEUVYMWODwDkkCtljGlI15s3DNtMy+ztS8P
+ Wwmu2k9UdQ/4YtmIk2BpyMrxbe66BJ4d226goLu0SUPVRVlcteKdfzOZO3RBasLfjlgJp66rx
+ W41tUDxbFWNwjMG19/jXBsajVPzyHwzXyK8WAW7OIvlbKRg50kpQ6ldeSEPPoDoexo24xbytE
+ 5+z3FFlC+00zZ99+1DKrjIW9J4DCYSUpDSy+FOtpQDpYvcw7mvMmgveLE0d0aimt9zhYTwy54
+ l7EHdkXJyNTnI813NSQ0SGajBz6djGyXRKZV6CZNMcXrpoYq8Rkx3CfY5c/rXjnSCpcCK2ckH
+ ukP2fMNqU1M7cygO7PSDzJyZ1RI9LRWpKkc8YndXtAoXmZn7juFepE+LnFXkwL9mFBhF1p11/
+ BdH/pqHbfTgPLZk/gy3w+An37/mSTLV+H8yp95zZbY1/HT0raW0vXzFUw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Prevent that users set a font size which is bigger than the physical scree=
-n.
-It's unlikely this may happen (because screens are usually much larger tha=
-n the
-fonts and each font char is limited to 32x32 pixels), but it may happen on
-smaller screens/LCD displays.
+The following changes since commit a111daf0c53ae91e71fd2bfe7497862d14132e3e:
 
-Signed-off-by: Helge Deller <deller@gmx.de>
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: stable@vger.kernel.org # v4.14+
-=2D--
- drivers/video/fbdev/core/fbcon.c | 5 +++++
- 1 file changed, 5 insertions(+)
+  Linux 5.19-rc3 (2022-06-19 15:06:47 -0500)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/f=
-bcon.c
-index c4e91715ef00..e162d5e753e5 100644
-=2D-- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2469,6 +2469,11 @@ static int fbcon_set_font(struct vc_data *vc, struc=
-t console_font *font,
- 	if (charcount !=3D 256 && charcount !=3D 512)
- 		return -EINVAL;
+are available in the Git repository at:
 
-+	/* font bigger than screen resolution ? */
-+	if (font->width  > FBCON_SWAP(info->var.rotate, info->var.xres, info->va=
-r.yres) ||
-+	    font->height > FBCON_SWAP(info->var.rotate, info->var.yres, info->va=
-r.xres))
-+		return -EINVAL;
-+
- 	/* Make sure drawing engine can handle the font */
- 	if (!(info->pixmap.blit_x & (1 << (font->width - 1))) ||
- 	    !(info->pixmap.blit_y & (1 << (font->height - 1))))
-=2D-
-2.35.3
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/for-5.19/fbdev-2
 
+for you to fetch changes up to cb5177336ecb07fe1c6804306fe8efc827643c64:
+
+  video: fbdev: omap: Remove duplicate 'the' in comment (2022-06-22 16:55:51 +0200)
+
+----------------------------------------------------------------
+fbdev fixes and updates for kernel v5.19-rc4:
+
+Two bug fixes for the pxa3xx and intelfb drivers:
+- pxa3xx-gcu: Fix integer overflow in pxa3xx_gcu_write
+- intelfb: Initialize value of stolen size
+
+The other changes are small cleanups, simplifications and documentation
+updates to the cirrusfb, skeletonfb, omapfb, intelfb, au1100fb and
+simplefb drivers.
+
+----------------------------------------------------------------
+Bjorn Helgaas (2):
+      video: fbdev: cirrusfb: Remove useless reference to PCI power management
+      video: fbdev: skeletonfb: Convert to generic power management
+
+Hyunwoo Kim (1):
+      video: fbdev: pxa3xx-gcu: Fix integer overflow in pxa3xx_gcu_write
+
+Jiang Jian (2):
+      video: fbdev: omapfb: Align '*' in comment
+      video: fbdev: omap: Remove duplicate 'the' in comment
+
+Petr Cvek (2):
+      video: fbdev: intelfb: Use aperture size from pci_resource_len
+      video: fbdev: intelfb: Initialize value of stolen size
+
+Xiang wangx (1):
+      video: fbdev: skeletonfb: Fix syntax errors in comments
+
+Yihao Han (2):
+      video: fbdev: au1100fb: Drop unnecessary NULL ptr check
+      video: fbdev: simplefb: Check before clk_put() not needed
+
+ drivers/video/fbdev/au1100fb.c                  |  6 ++----
+ drivers/video/fbdev/cirrusfb.c                  |  6 ------
+ drivers/video/fbdev/intelfb/intelfbdrv.c        |  4 ++--
+ drivers/video/fbdev/intelfb/intelfbhw.c         | 12 +++++-------
+ drivers/video/fbdev/omap/sossi.c                |  2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c |  2 +-
+ drivers/video/fbdev/pxa3xx-gcu.c                |  2 +-
+ drivers/video/fbdev/simplefb.c                  |  3 +--
+ drivers/video/fbdev/skeletonfb.c                | 15 ++++++++-------
+ 9 files changed, 21 insertions(+), 31 deletions(-)

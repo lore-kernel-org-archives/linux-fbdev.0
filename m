@@ -2,168 +2,100 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CE98CCA482
-	for <linux-fbdev@archiver.kernel.org>; Sun, 26 Jun 2022 08:56:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B760CCCA47E
+	for <linux-fbdev@archiver.kernel.org>; Sun, 26 Jun 2022 08:56:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230221AbiFZI4Y (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S229829AbiFZI4Y (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Sun, 26 Jun 2022 04:56:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39428 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39420 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231126AbiFZI4X (ORCPT
+        with ESMTP id S230085AbiFZI4X (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Sun, 26 Jun 2022 04:56:23 -0400
 Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 205AE11A26
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1769A11A24
         for <linux-fbdev@vger.kernel.org>; Sun, 26 Jun 2022 01:56:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
         s=badeba3b8450; t=1656233776;
-        bh=GVwAU6WKhe8S6vd1VeXMuut4rnt9i8o8SJSS9oquiaE=;
+        bh=tRqvkgP3s46IORRaOk1LZP5YQEeJ21rrrTXuUbKXSvE=;
         h=X-UI-Sender-Class:From:To:Subject:Date:In-Reply-To:References;
-        b=R6XKwTyRQHkJ86rmkkLu23u16LWOhcM1V70X8i73d0B8i9c11P2JyrSmOdLaOJgMD
-         e6b42ZUs60PUSeqBqbC+PMQ88mrp97HFOpNP2n+MMRc79efr66+ziTU89ecegqmUoi
-         Z3civmqaz03TG6Tvj82vdZQEdy0LmhxAJUdwMFbw=
+        b=U59A+IlQq9Ty2vLJ/t0baMBfoAbH0Aw6B73DmM0bpc00v/3DEX+XtgPUaJ70pgGoD
+         ++kQQ9/7ftC4DTGLMHuoo0T13IJgBEcc4b+xQYiGtn+dSvqUvpy/i8NKOWF5IuTXt/
+         Fzd+F4UhmCtlKvF7o+tnh1sytaWxHdsXxvufsYeg=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from p100.fritz.box ([92.116.135.166]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MNKhs-1oGyfC2SKY-00Op9Y; Sun, 26
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MA7GS-1nuxfG1bNC-00BbjA; Sun, 26
  Jun 2022 10:56:16 +0200
 From:   Helge Deller <deller@gmx.de>
 To:     dri-devel@lists.freedesktop.org, daniel.vetter@ffwll.ch,
         linux-fbdev@vger.kernel.org
-Subject: [PATCH v5 3/4] fbcon: Prevent that screen size is smaller than font size
-Date:   Sun, 26 Jun 2022 10:56:14 +0200
-Message-Id: <20220626085615.53728-4-deller@gmx.de>
+Subject: [PATCH v5 1/4] fbcon: Disallow setting font bigger than screen size
+Date:   Sun, 26 Jun 2022 10:56:12 +0200
+Message-Id: <20220626085615.53728-2-deller@gmx.de>
 X-Mailer: git-send-email 2.35.3
 In-Reply-To: <20220626085615.53728-1-deller@gmx.de>
 References: <20220626085615.53728-1-deller@gmx.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:SuX2yOZiuPtU7JYAiTcg364dh4uVVWqPPo9OE9S4tlAiXJ/YREK
- s6c+snpSuu2mXq1Kp1emoiCBUJSjQjZp2h1O82PPRuM/9aDEwz/aX7ZDptD9ENlGUWB9tra
- 2NmMMluVVX6hUCi7sgejZC9oM1z5iotRc7hMg350olnjPpiEKrS7Hjswq2/aLM76p5Fm9kw
- HTWsz3xEBkMX7vrzZitPA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:MeSoyM6YPHk=:oWeY/G4fZCoo6TWyvw8YGl
- J2RMq0gOsbVkPf5pSsouduhNy1WpxZCDRrKgk4Maunc0O88/u88oCN72gpJmruYOEbItGnH3g
- Vm6bAvB98ZQ12evQWFCA4da1pLErA7e5m6NqHoyYXpd/wpLyZU4yaox2i7hf23JpzBewmaWpY
- sh0S0hfTcp7XpvA67YSqPC50/IYgprm0hGEtQ4lCu7GfVZM4omDzcMPvTbVrUeQwl1T4VOdb+
- 4/qY8z8W88xyDaPKGgvuFIg8VRwnUSPe8W6Xs6iPEPS1Yy4y5odLBVmnCFHrL51OEd0lOqUza
- y3d0ejCpNU/LBn0XaNhwPOJBCleErjj2fs8m8GQy2V2+p8SKXqk9aRWvgLZHN/9Acc6YpkR7U
- cUutiuSk9Iy7PzTOU1vT2jr4dDxAOh0Am7F8czYVYMIPNuPwHI4xZsiLR8Tawc2sPhhwoxlWn
- +DnzKJyYnwZHLxMs1oQdCgqWCeag+IpL3es36PsvEx0D1jp0cvt/IMjbeGdY+REuKBhr7K2et
- R7gJuwkuwb6rwkOn1/rcCTlo5nNmidKhZ23S9lkd/h7eyT9psGKGbBCS/heNgcjRYSwg7HqNz
- INiOCyGevt2mY2C0jkZniQNXAsU+mlo/8eq95cZSm/a5FX+v3qrm8SDQWB1bjiYVtC/62P/hu
- fnVMSzIwGRn0VxVP3f40VzlYxIxWfexEfhiiugTcAs0EKzqxMuFF7pmeWLnAzoEeVtbba0V6c
- IyORGRgo6FC5rj9wJSSW6sdFIyoP4ey0MzmT3vG3GVjVSAkpmRo0AgBa9dpogj56O5jX3eRxF
- Rh8cE+yWqjGRhr2kSWYVIvuwbyX+LdAjTVN+a7ukDL/TDr5zkT/Vs8KAAB3uEFjYClvL4H+gT
- AFja8gSILvzl1SsuJWK/MB4zb2G+lOYRtU/1XVSouoyftLkAMMqjL+hWiX8/Ldk0ebTXWC9uS
- kVN08NFcDy6iWxvo/BVJ6Athyiw1HEodCSw8tKxGQ/gJyszkKnW8uubXJiAakuPS9S8b1R4T0
- ZIuRcpRH72WafsjhJIwnsizdnSn8SQd/Vi6n7UlZaZWiqCZ5PorIu7gWf5Mc3lbojM68y5NiK
- YhFvR0TnzltUTvP39eBWLd1TWTPxqvw/B8e1vT5tkdDtEha74lKnNoqkQ==
+X-Provags-ID: V03:K1:XxMXRHHOIZppOQ33AhPRekjS6DT7v6+OWNQhGg85ofI81pYJvJo
+ oARhDCTnuKL+YZBg7K2qs/zaZo8md8P0mag1Um870odqh/X2cvpKiEJxhRCE+3JmDhpCiAW
+ bM7sTM6JuxBd3ox7kIvcLQPXJDI62DzufROcOCoD8eJyZrw2eLkRiE3TvG0V27A3z6uMB05
+ vECu29z/HYu0PuKiELnRA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:MVbxWrWMr1Q=:a9GT5HLKJt1tVYwVdhg7+5
+ 6A31l7lbfFfa83E6L6h8KdKAX9IriKPW/qQL+jw5wCVh0hGKUuxAcA0B2/FSBcbaM8rQl7Gwt
+ He+6esglESWmP0zQWntoTlIZaqFd0xUxHAusBAq4lPMujXgMUDAO/TzueO8nNHo/6VvXTGBf5
+ pYFJJV7OYiRK6jgANJlJUO18a1PAmyu70gKU37PqaCcInxVE9DJhSx9poqVOX8tTqBfMowisN
+ 26yprWYGZGNyRnwfk4+WEKbLTZB6ZUDkeTZy2XcaM7Y5F2473uuVlGegLLv72wQXav3vggZtp
+ sh1w8DJATihkjiNGBPHv6Ixn0b8L+vkk78Jpzy4fLsw4Yy5nOsYthb2xXkNbLMR6+q2l3ZLBs
+ 8Lwi8BT/lzXNwrNUmEqZxZqIThUEfG7GbGVERjiF7EB0WMU/avv0kkyRckDgOv5bhS3+RGgEk
+ vmBvebykFjbVwPaTBTGpZgG2wTVfMde5/Z56W4wL4gN3gqK+nSiQ8vEeD1BPy3gtfSJE445Zt
+ GTe3u1ArTStYtf2x9jWna5wZ3MuGy7xuPqXWI1xGh779w0bPr/8nB+79yMu2n8oPXNdbVGTPM
+ krT0DxSarSIb7lU6+U1ioYt3JYXx1i5T3wNsIAaxNei8Z9GP+dX1Hx3TewDhMdoMGWo/mHwL7
+ Vc7aOQd6BxyVC1D09URHRBzvTtyEZxQPmNnjfeNlDpcZHPPDQdZ1ZVElC2KsEF6arda0AALSj
+ FkrvO0yuVCItM+Y/gdi1y03dLrWdsKgUzAoVmgZRW2ZFYWORPFlvrpdEcTBu0GSGPgEuboa0K
+ Rwf2lOWE+ycR3Zr1AlsI/mlvueqBzga409sOz/FZMkJqZagHb0XKJr4qum5U6ZvlaJiLwgk55
+ 8OzgtbMTpY9IS4JHqq8Ezajua6qSq+GjK8wq9dj2WK5akmix8lthwwKhKSFBB0xZxTdXPUKsp
+ 0iTHrZdwmK+q6R7MVvuwHHEwATynty962r8pxbAu10bvhzdVUw+wUhQ7KhkpbpUMkR0zb4VJ4
+ 3pnHG0vwAFI2qRw6bJiTtKekycW1eNvwrLTAQfbC5Eqz7/qYTkW2rItDJ1JOpSz0U43IpfTcs
+ sdys7rCr9sVc7PiWXM9aXlPaaak9viJ6Stf4LSjY5n+ahm+NyNnHXh5fw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-We need to prevent that users configure a screen size which is smaller tha=
+Prevent that users set a font size which is bigger than the physical scree=
+n.
+It's unlikely this may happen (because screens are usually much larger tha=
 n the
-currently selected font size. Otherwise rendering chars on the screen will
-access memory outside the graphics memory region.
-
-This patch adds a new function fbcon_modechange_possible() which
-implements this check and which later may be extended with other checks
-if necessary.  The new function is called from the FBIOPUT_VSCREENINFO
-ioctl handler in fbmem.c, which will return -EINVAL if userspace asked
-for a too small screen size.
+fonts and each font char is limited to 32x32 pixels), but it may happen on
+smaller screens/LCD displays.
 
 Signed-off-by: Helge Deller <deller@gmx.de>
-Cc: stable@vger.kernel.org # v5.4+
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: stable@vger.kernel.org # v4.14+
 =2D--
- drivers/video/fbdev/core/fbcon.c | 27 +++++++++++++++++++++++++++
- drivers/video/fbdev/core/fbmem.c |  4 +++-
- include/linux/fbcon.h            |  4 ++++
- 3 files changed, 34 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/core/fbcon.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/f=
 bcon.c
-index e162d5e753e5..69c7261ac334 100644
+index c4e91715ef00..e162d5e753e5 100644
 =2D-- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2736,6 +2736,33 @@ void fbcon_update_vcs(struct fb_info *info, bool al=
-l)
- }
- EXPORT_SYMBOL(fbcon_update_vcs);
+@@ -2469,6 +2469,11 @@ static int fbcon_set_font(struct vc_data *vc, struc=
+t console_font *font,
+ 	if (charcount !=3D 256 && charcount !=3D 512)
+ 		return -EINVAL;
 
-+/* let fbcon check if it supports a new screen resolution */
-+int fbcon_modechange_possible(struct fb_info *info, struct fb_var_screeni=
-nfo *var)
-+{
-+	struct fbcon_ops *ops =3D info->fbcon_par;
-+	struct vc_data *vc;
-+	int i;
-+
-+	WARN_CONSOLE_UNLOCKED();
-+
-+	if (!ops || ops->currcon < 0)
++	/* font bigger than screen resolution ? */
++	if (font->width  > FBCON_SWAP(info->var.rotate, info->var.xres, info->va=
+r.yres) ||
++	    font->height > FBCON_SWAP(info->var.rotate, info->var.yres, info->va=
+r.xres))
 +		return -EINVAL;
 +
-+	/* prevent setting a screen size which is smaller than font size */
-+	for (i =3D first_fb_vc; i <=3D last_fb_vc; i++) {
-+		vc =3D vc_cons[i].d;
-+		if (!vc || registered_fb[con2fb_map[i]] !=3D info)
-+			continue;
-+
-+		if (vc->vc_font.width  > FBCON_SWAP(var->rotate, var->xres, var->yres) =
-||
-+		    vc->vc_font.height > FBCON_SWAP(var->rotate, var->yres, var->xres))
-+			return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(fbcon_modechange_possible);
-+
- int fbcon_mode_deleted(struct fb_info *info,
- 		       struct fb_videomode *mode)
- {
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/f=
-bmem.c
-index 5dfa4bbee642..b6e1d0f2b974 100644
-=2D-- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1112,7 +1112,9 @@ static long do_fb_ioctl(struct fb_info *info, unsign=
-ed int cmd,
- 			return -EFAULT;
- 		console_lock();
- 		lock_fb_info(info);
--		ret =3D fb_set_var(info, &var);
-+		ret =3D fbcon_modechange_possible(info, &var);
-+		if (!ret)
-+			ret =3D fb_set_var(info, &var);
- 		if (!ret)
- 			fbcon_update_vcs(info, var.activate & FB_ACTIVATE_ALL);
- 		unlock_fb_info(info);
-diff --git a/include/linux/fbcon.h b/include/linux/fbcon.h
-index ff5596dd30f8..2382dec6d6ab 100644
-=2D-- a/include/linux/fbcon.h
-+++ b/include/linux/fbcon.h
-@@ -15,6 +15,8 @@ void fbcon_new_modelist(struct fb_info *info);
- void fbcon_get_requirement(struct fb_info *info,
- 			   struct fb_blit_caps *caps);
- void fbcon_fb_blanked(struct fb_info *info, int blank);
-+int  fbcon_modechange_possible(struct fb_info *info,
-+			       struct fb_var_screeninfo *var);
- void fbcon_update_vcs(struct fb_info *info, bool all);
- void fbcon_remap_all(struct fb_info *info);
- int fbcon_set_con2fb_map_ioctl(void __user *argp);
-@@ -33,6 +35,8 @@ static inline void fbcon_new_modelist(struct fb_info *in=
-fo) {}
- static inline void fbcon_get_requirement(struct fb_info *info,
- 					 struct fb_blit_caps *caps) {}
- static inline void fbcon_fb_blanked(struct fb_info *info, int blank) {}
-+static inline int  fbcon_modechange_possible(struct fb_info *info,
-+				struct fb_var_screeninfo *var) { return 0; }
- static inline void fbcon_update_vcs(struct fb_info *info, bool all) {}
- static inline void fbcon_remap_all(struct fb_info *info) {}
- static inline int fbcon_set_con2fb_map_ioctl(void __user *argp) { return =
-0; }
+ 	/* Make sure drawing engine can handle the font */
+ 	if (!(info->pixmap.blit_x & (1 << (font->width - 1))) ||
+ 	    !(info->pixmap.blit_y & (1 << (font->height - 1))))
 =2D-
 2.35.3
 

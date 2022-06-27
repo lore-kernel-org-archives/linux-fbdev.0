@@ -2,42 +2,42 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6E1CC433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Jun 2022 08:03:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59195CCA47F
+	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Jun 2022 08:03:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232568AbiF0IDu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S233252AbiF0IDu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Mon, 27 Jun 2022 04:03:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38486 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38472 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232496AbiF0IDt (ORCPT
+        with ESMTP id S232538AbiF0IDu (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 27 Jun 2022 04:03:49 -0400
+        Mon, 27 Jun 2022 04:03:50 -0400
 Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5F1D2BEE;
-        Mon, 27 Jun 2022 01:03:48 -0700 (PDT)
-X-UUID: 7bc381f0c03d4013a18472748058727e-20220627
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5A0A26C9;
+        Mon, 27 Jun 2022 01:03:47 -0700 (PDT)
+X-UUID: 83f69500511d448ba68ea06cf89949e4-20220627
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.6,REQID:28771fd2-7b14-4db6-8d37-999f3cf03d58,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACT
-        ION:release,TS:-5
-X-CID-META: VersionHash:b14ad71,CLOUDID:8cb9212e-1756-4fa3-be7f-474a6e4be921,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
+X-CID-O-INFO: VERSION:1.1.6,REQID:57baefb9-adb9-44f0-bc25-4b39bc5069ec,OB:0,LO
+        B:0,IP:0,URL:25,TC:0,Content:-5,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,AC
+        TION:release,TS:20
+X-CID-META: VersionHash:b14ad71,CLOUDID:558ba7d8-850a-491d-a127-60d9309b2b3e,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
         ,QS:nil,BEC:nil,COL:0
-X-UUID: 7bc381f0c03d4013a18472748058727e-20220627
+X-UUID: 83f69500511d448ba68ea06cf89949e4-20220627
 Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1554139360; Mon, 27 Jun 2022 16:03:45 +0800
+        with ESMTP id 912534846; Mon, 27 Jun 2022 16:03:44 +0800
 Received: from mtkmbs07n1.mediatek.inc (172.21.101.16) by
- mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Mon, 27 Jun 2022 16:03:45 +0800
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.792.15; Mon, 27 Jun 2022 16:03:43 +0800
 Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
  mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Mon, 27 Jun 2022 16:03:44 +0800
+ 15.0.1497.2; Mon, 27 Jun 2022 16:03:43 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
  mtkmbs11n2.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.792.3 via Frontend Transport; Mon, 27 Jun 2022 16:03:44 +0800
+ 15.2.792.3 via Frontend Transport; Mon, 27 Jun 2022 16:03:43 +0800
 From:   Bo-Chen Chen <rex-bc.chen@mediatek.com>
 To:     <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
         <daniel@ffwll.ch>, <robh+dt@kernel.org>,
@@ -54,9 +54,9 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
         Bo-Chen Chen <rex-bc.chen@mediatek.com>
-Subject: [PATCH v12 10/10] drm/mediatek: fix no audio when resolution change
-Date:   Mon, 27 Jun 2022 16:03:41 +0800
-Message-ID: <20220627080341.5087-11-rex-bc.chen@mediatek.com>
+Subject: [PATCH v12 01/10] dt-bindings: mediatek,dp: Add Display Port binding
+Date:   Mon, 27 Jun 2022 16:03:32 +0800
+Message-ID: <20220627080341.5087-2-rex-bc.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20220627080341.5087-1-rex-bc.chen@mediatek.com>
 References: <20220627080341.5087-1-rex-bc.chen@mediatek.com>
@@ -67,133 +67,138 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-When switching resolutions, config the audio setting with the
-previous audio parameters.
+From: Markus Schneider-Pargmann <msp@baylibre.com>
 
-Signed-off-by: Jitao Shi <jitao.shi@mediatek.com>
+This controller is present on several mediatek hardware. Currently
+mt8195 and mt8395 have this controller without a functional difference,
+so only one compatible field is added.
+
+The controller can have two forms, as a normal display port and as an
+embedded display port.
+
+Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+[Bo-Chen: Fix reviewers' comment]
 Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
 ---
- drivers/gpu/drm/mediatek/mtk_dp.c | 55 ++++++++++---------------------
- 1 file changed, 18 insertions(+), 37 deletions(-)
+ .../display/mediatek/mediatek,dp.yaml         | 108 ++++++++++++++++++
+ 1 file changed, 108 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
 
-diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c b/drivers/gpu/drm/mediatek/mtk_dp.c
-index 62a9ebadd2a8..ab98b962c17c 100644
---- a/drivers/gpu/drm/mediatek/mtk_dp.c
-+++ b/drivers/gpu/drm/mediatek/mtk_dp.c
-@@ -109,7 +109,7 @@ struct mtk_dp_audio_cfg {
- struct mtk_dp_info {
- 	u32 depth;
- 	enum dp_pixelformat format;
--	struct mtk_dp_audio_cfg audio_caps;
-+	struct mtk_dp_audio_cfg audio_cur_cfg;
- 	struct mtk_dp_timings timings;
- };
- 
-@@ -1921,9 +1921,7 @@ static bool mtk_dp_edid_parse_audio_capabilities(struct mtk_dp *mtk_dp,
- 						 struct mtk_dp_audio_cfg *cfg)
- {
- 	struct cea_sad *sads;
--	int sad_count;
--	int i;
--	bool ret = false;
-+	int ret;
- 
- 	if (mtk_dp_is_edp(mtk_dp))
- 		return false;
-@@ -1934,36 +1932,16 @@ static bool mtk_dp_edid_parse_audio_capabilities(struct mtk_dp *mtk_dp,
- 		dev_err(mtk_dp->dev, "EDID not found!\n");
- 		return false;
- 	}
--	sad_count = drm_edid_to_sad(mtk_dp->edid, &sads);
--	mutex_unlock(&mtk_dp->edid_lock);
- 
--	if (sad_count <= 0) {
-+	ret = drm_edid_to_sad(mtk_dp->edid, &sads);
-+	mutex_unlock(&mtk_dp->edid_lock);
-+	if (ret <= 0) {
- 		drm_info(mtk_dp->drm_dev, "The SADs is NULL\n");
- 		return false;
- 	}
--
--	for (i = 0; i < sad_count; i++) {
--		int sample_rate, word_length;
--
--		/* Only PCM supported at the moment */
--		if (sads[i].format != HDMI_AUDIO_CODING_TYPE_PCM)
--			continue;
--
--		sample_rate = drm_cea_sad_get_sample_rate(&sads[i]);
--		word_length =
--			drm_cea_sad_get_uncompressed_word_length(&sads[i]);
--		if (sample_rate <= 0 || word_length <= 0)
--			continue;
--
--		cfg->channels = sads[i].channels;
--		cfg->word_length_bits = word_length;
--		cfg->sample_rate = sample_rate;
--		ret = true;
--		break;
--	}
- 	kfree(sads);
- 
--	return ret;
-+	return true;
- }
- 
- static void mtk_dp_train_change_mode(struct mtk_dp *mtk_dp)
-@@ -2129,14 +2107,15 @@ static int mtk_dp_training(struct mtk_dp *mtk_dp)
- 
- 			mtk_dp->audio_enable =
- 				mtk_dp_edid_parse_audio_capabilities(mtk_dp,
--								     &mtk_dp->info.audio_caps);
-+								     &mtk_dp->info.audio_cur_cfg);
- 
- 			if (mtk_dp->audio_enable) {
--				mtk_dp_audio_setup(mtk_dp, &mtk_dp->info.audio_caps);
-+				mtk_dp_audio_setup(mtk_dp,
-+						   &mtk_dp->info.audio_cur_cfg);
- 				mtk_dp_audio_mute(mtk_dp, false);
- 			} else {
--				memset(&mtk_dp->info.audio_caps, 0,
--				       sizeof(mtk_dp->info.audio_caps));
-+				memset(&mtk_dp->info.audio_cur_cfg, 0,
-+				       sizeof(mtk_dp->info.audio_cur_cfg));
- 			}
- 
- 			training_done = true;
-@@ -2590,6 +2569,9 @@ static void mtk_dp_bridge_atomic_disable(struct drm_bridge *bridge,
- 	if (mtk_dp_plug_state(mtk_dp)) {
- 		drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER, DP_SET_POWER_D3);
- 		usleep_range(2000, 3000);
-+	} else {
-+		memset(&mtk_dp->info.audio_cur_cfg, 0,
-+		       sizeof(mtk_dp->info.audio_cur_cfg));
- 	}
- 
- 	mtk_dp_video_mute(mtk_dp, true);
-@@ -2799,18 +2781,17 @@ static int mtk_dp_audio_hw_params(struct device *dev, void *data,
- 				  struct hdmi_codec_params *params)
- {
- 	struct mtk_dp *mtk_dp = dev_get_drvdata(dev);
--	struct mtk_dp_audio_cfg cfg;
- 
- 	if (!mtk_dp->enabled) {
- 		pr_err("%s, DP is not ready!\n", __func__);
- 		return -ENODEV;
- 	}
- 
--	cfg.channels = params->cea.channels;
--	cfg.sample_rate = params->sample_rate;
--	cfg.word_length_bits = 24;
-+	mtk_dp->info.audio_cur_cfg.channels = params->cea.channels;
-+	mtk_dp->info.audio_cur_cfg.sample_rate = params->sample_rate;
-+	mtk_dp->info.audio_cur_cfg.word_length_bits = 24;
- 
--	mtk_dp_audio_setup(mtk_dp, &cfg);
-+	mtk_dp_audio_setup(mtk_dp, &mtk_dp->info.audio_cur_cfg);
- 
- 	return 0;
- }
+diff --git a/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+new file mode 100644
+index 000000000000..1a16545b6afa
+--- /dev/null
++++ b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+@@ -0,0 +1,108 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/display/mediatek/mediatek,dp.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: MediaTek Display Port Controller
++
++maintainers:
++  - Chun-Kuang Hu <chunkuang.hu@kernel.org>
++  - Jitao shi <jitao.shi@mediatek.com>
++
++description: |
++  Device tree bindings for the MediaTek display port and
++  embedded display port controller present on some MediaTek SoCs.
++
++properties:
++  compatible:
++    enum:
++      - mediatek,mt8195-dp-tx
++      - mediatek,mt8195-edp-tx
++
++  reg:
++    maxItems: 1
++
++  nvmem-cells:
++    maxItems: 1
++    description: efuse data for display port calibration
++
++  nvmem-cell-names:
++    const: dp_calibration_data
++
++  power-domains:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  ports:
++    $ref: /schemas/graph.yaml#/properties/ports
++    properties:
++      port@0:
++        $ref: /schemas/graph.yaml#/properties/port
++        description: Input endpoint of the controller, usually dp_intf
++
++      port@1:
++        $ref: /schemas/graph.yaml#/properties/port
++        description: Output endpoint of the controller
++
++    required:
++      - port@0
++      - port@1
++
++  data-lanes:
++    $ref: /schemas/media/video-interfaces.yaml#
++    description: |
++      number of lanes supported by the hardware.
++      The possible values:
++      0       - For 1 lane enabled in IP.
++      0 1     - For 2 lanes enabled in IP.
++      0 1 2 3 - For 4 lanes enabled in IP.
++    minItems: 1
++    maxItems: 4
++
++  max-linkrate-mhz:
++    enum: [ 1620, 2700, 5400, 8100 ]
++    description: maximum link rate supported by the hardware.
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - ports
++  - data-lanes
++  - max-linkrate-mhz
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    #include <dt-bindings/power/mt8195-power.h>
++    dp_tx@1c600000 {
++        compatible = "mediatek,mt8195-dp-tx";
++        reg = <0x1c600000 0x8000>;
++        power-domains = <&spm MT8195_POWER_DOMAIN_DP_TX>;
++        interrupts = <GIC_SPI 458 IRQ_TYPE_LEVEL_HIGH 0>;
++        data-lanes = <0 1 2 3>;
++        max-linkrate-mhz = <8100>;
++
++        ports {
++            #address-cells = <1>;
++            #size-cells = <0>;
++
++            port@0 {
++                reg = <0>;
++                edp_in: endpoint {
++                    remote-endpoint = <&dp_intf0_out>;
++                };
++            };
++            port@1 {
++                reg = <1>;
++                edp_out: endpoint {
++                    remote-endpoint = <&panel_in>;
++                };
++            };
++        };
++    };
 -- 
 2.18.0
 

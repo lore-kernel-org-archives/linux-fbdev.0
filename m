@@ -2,109 +2,104 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21691C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Jun 2022 13:31:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54E02CCA480
+	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Jun 2022 14:07:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235730AbiF0Nbb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 27 Jun 2022 09:31:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41502 "EHLO
+        id S236685AbiF0OHl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 27 Jun 2022 10:07:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46932 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232282AbiF0NbU (ORCPT
+        with ESMTP id S236697AbiF0OH1 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 27 Jun 2022 09:31:20 -0400
-Received: from mail-il1-f174.google.com (mail-il1-f174.google.com [209.85.166.174])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9571B6457;
-        Mon, 27 Jun 2022 06:31:19 -0700 (PDT)
-Received: by mail-il1-f174.google.com with SMTP id a16so6020032ilr.6;
-        Mon, 27 Jun 2022 06:31:19 -0700 (PDT)
+        Mon, 27 Jun 2022 10:07:27 -0400
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 837A212AE9
+        for <linux-fbdev@vger.kernel.org>; Mon, 27 Jun 2022 07:07:25 -0700 (PDT)
+Received: by mail-wr1-x42c.google.com with SMTP id n1so13214329wrg.12
+        for <linux-fbdev@vger.kernel.org>; Mon, 27 Jun 2022 07:07:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=gsgc6DIOzArZPsUhaJm6TQBUqT+cOuEtKePYXM55dn8=;
+        b=RwHx2DUc+zQdZoM/fppv9uMqeCAsq+OTGc/uLrz+5I2GWcjSb+HNw7JV4svTtEhUy7
+         vIFfvyGeQMDZyn3ImibEdKS/PIZ63/tO5OCzlNTZhFo1Vfo96vu2exkNVAVWPKeof0N8
+         0Xu3lAWYFac0xwHZL5TSyegckajoASkwSSjl2HAGRLtOx4jZ3SS/gGt1JuEYfTGfE5r7
+         CfAeuR2t91wZvVhojT3UVBbHVMkvmi5uytl/EmCfOYw1azGp9xArgKPoVQwAZNtbZAqs
+         TYIFnFm/FWbbSQPZTSwobvd1SzOXoFJxmGpy6ujesCML//e9Al0NiJzMqwlc60Uz/OOc
+         G1+g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:in-reply-to:references:subject:date
-         :message-id;
-        bh=e0YdyNDNHfoLjY/B6VaUfC4jZi5UF0V29yd+MqAfjd8=;
-        b=68AL9koxtSs/3HjE85mIUsFg5/A0Hn+SdL+g9iUkKPuwLPZL+sdoFzQv/2v+DFV4uw
-         SJ3yJzv7U1A7v2yXvb5eWLOJOYnbjq7bMekNJJ6JGzGrAuZNt0Xw542+xBkCrWwNeo2y
-         pHYudGulZ/Q/tWdeFICes1RvS/8Y7KTlCVI01lFfvUoL9DWdcQDJo+ZOE2n2ufStGsnK
-         JJ6ErdLAjWKscog5pkUKP7Pbvc8LKhu+vmzjmZOYvgrL7PlAtTwJMwwnBeAHGPYaUlLX
-         FMxyfSQr3oL5YYPvaBHoYBVhP0USVJUQ+IR1nucq71jTzWNueu/3HvxMZ9jlDA3wdDuv
-         OWag==
-X-Gm-Message-State: AJIora/2fz1BX9A8rGOud+aaAKEAXa7k02ucj143atu1X7IE8UBltHpg
-        bklP2tpKCF9uw1bApiA0Wg==
-X-Google-Smtp-Source: AGRyM1vEEEhnghUvEvoMNkCRM2MJy0M56TmHGYSJhVoccPP4WQGcqcvf8lzrpCi+otOX48sba38IeQ==
-X-Received: by 2002:a92:c743:0:b0:2da:a849:511b with SMTP id y3-20020a92c743000000b002daa849511bmr124717ilp.109.1656336678835;
-        Mon, 27 Jun 2022 06:31:18 -0700 (PDT)
-Received: from robh.at.kernel.org ([64.188.179.253])
-        by smtp.gmail.com with ESMTPSA id v28-20020a02b09c000000b0032e0851ea0fsm4794533jah.10.2022.06.27.06.31.17
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=gsgc6DIOzArZPsUhaJm6TQBUqT+cOuEtKePYXM55dn8=;
+        b=4j5FotCo71rq18jtMYAORH+aarIxxNBl13xZ28+LmKi5xMMuZbOCArl4ZwH5dk6AUF
+         kkzhRIX71ahu9WUmFw6ICcg5fW4O9z1Apsp0PRSCTDhrjRYRWhF15e6qLzoug5E/FXux
+         q7OC4+GL7kgVX7giGnQCWnk2G3gTpPbcOUrrbEYhGUPIouEP+lfK4IzOruVfUrJfiDGZ
+         wfP+KuEoJkAA9DIHzUZAzTG23FibyHFaVPduw1yxlkniaPrn2q2WTwAYXK7/pB/v1cCq
+         9YdCZTGQzR18JO0khN9A4qibWM9+z4HQ6XVjyuRDBIEfijM20lx87/duky1KmGGQ+p9d
+         ezJA==
+X-Gm-Message-State: AJIora/gE0WyVud5x3uNe+ipwDHgJsD5T8fsIlTYowNmFsMRVt9XK2ua
+        TYTLlY2SISSlD6cUJLD10MZMug==
+X-Google-Smtp-Source: AGRyM1tqOffr5P69k2JXSjDJ26X0SHzGuAeWDAQMALNpO6JuPQMieD2zfhpuXvwpbHW0niVy/fmg2g==
+X-Received: by 2002:a05:6000:80f:b0:21b:927a:16b1 with SMTP id bt15-20020a056000080f00b0021b927a16b1mr12143982wrb.440.1656338843969;
+        Mon, 27 Jun 2022 07:07:23 -0700 (PDT)
+Received: from google.com (cpc155339-bagu17-2-0-cust87.1-3.cable.virginm.net. [86.27.177.88])
+        by smtp.gmail.com with ESMTPSA id f17-20020a7bcd11000000b0039c811077d3sm13142680wmj.22.2022.06.27.07.07.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Jun 2022 06:31:18 -0700 (PDT)
-Received: (nullmailer pid 2285172 invoked by uid 1000);
-        Mon, 27 Jun 2022 13:31:09 -0000
-From:   Rob Herring <robh@kernel.org>
-To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>
-Cc:     linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        p.zabel@pengutronix.de, granquet@baylibre.com,
-        angelogioacchino.delregno@collabora.com,
-        devicetree@vger.kernel.org, matthias.bgg@gmail.com,
-        dri-devel@lists.freedesktop.org, chunkuang.hu@kernel.org,
-        airlied@linux.ie, linux-fbdev@vger.kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, robh+dt@kernel.org,
-        daniel@ffwll.ch, msp@baylibre.com, wenst@chromium.org,
-        Project_Global_Chrome_Upstream_Group@mediatek.com, deller@gmx.de,
-        tzimmermann@suse.de, ck.hu@mediatek.com,
-        linux-arm-kernel@lists.infradead.org, mripard@kernel.org,
-        jitao.shi@mediatek.com
-In-Reply-To: <20220627080341.5087-2-rex-bc.chen@mediatek.com>
-References: <20220627080341.5087-1-rex-bc.chen@mediatek.com> <20220627080341.5087-2-rex-bc.chen@mediatek.com>
-Subject: Re: [PATCH v12 01/10] dt-bindings: mediatek,dp: Add Display Port binding
-Date:   Mon, 27 Jun 2022 07:31:09 -0600
-Message-Id: <1656336669.663950.2285171.nullmailer@robh.at.kernel.org>
+        Mon, 27 Jun 2022 07:07:23 -0700 (PDT)
+Date:   Mon, 27 Jun 2022 15:07:21 +0100
+From:   Lee Jones <lee.jones@linaro.org>
+To:     cy_huang <u0084500@gmail.com>
+Cc:     robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        daniel.thompson@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
+        deller@gmx.de, cy_huang@richtek.com, lucas_tsai@richtek.com,
+        devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-leds@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 1/2] dt-bindings: backlight: rt4831: Add the new ocp
+ level property
+Message-ID: <Yrm5mRvVm2yl7zKc@google.com>
+References: <1655807788-24511-1-git-send-email-u0084500@gmail.com>
+ <1655807788-24511-2-git-send-email-u0084500@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1655807788-24511-2-git-send-email-u0084500@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, 27 Jun 2022 16:03:32 +0800, Bo-Chen Chen wrote:
-> From: Markus Schneider-Pargmann <msp@baylibre.com>
+On Tue, 21 Jun 2022, cy_huang wrote:
+
+> From: ChiYuan Huang <cy_huang@richtek.com>
 > 
-> This controller is present on several mediatek hardware. Currently
-> mt8195 and mt8395 have this controller without a functional difference,
-> so only one compatible field is added.
+> Add 'richtek,bled-ocp-microamp' property to make it chooseable.
 > 
-> The controller can have two forms, as a normal display port and as an
-> embedded display port.
+> The wrong backlight ocp level may affect the backlight channel output
+> current smaller than configured.
 > 
-> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> [Bo-Chen: Fix reviewers' comment]
-> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 > ---
->  .../display/mediatek/mediatek,dp.yaml         | 108 ++++++++++++++++++
->  1 file changed, 108 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+> Since v3:
+> - Refine the description for backlight ocp property.
+> - Use the enum to list the supported value.
 > 
+> Since v2:
+> - Change the property name from 'richtek,bled-ocp-sel' to 'richtek,bled-ocp-microamp'.
+> 
+> ---
+>  .../devicetree/bindings/leds/backlight/richtek,rt4831-backlight.yaml | 5 +++++
+>  1 file changed, 5 insertions(+)
 
-My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-on your patch (DT_CHECKER_FLAGS is new in v5.13):
+Applied, thanks.
 
-yamllint warnings/errors:
-
-dtschema/dtc warnings/errors:
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.example.dtb: dp_tx@1c600000: data-lanes: [[0, 1, 2, 3]] is not of type 'object'
-	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.example.dtb: dp_tx@1c600000: data-lanes: [[0, 1, 2, 3]] is not of type 'object'
-	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
-
-doc reference errors (make refcheckdocs):
-
-See https://patchwork.ozlabs.org/patch/
-
-This check can fail if there are any dependencies. The base for a patch
-series is generally the most recent rc1.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit.
-
+-- 
+Lee Jones [李琼斯]
+Principal Technical Lead - Developer Services
+Linaro.org │ Open source software for Arm SoCs
+Follow Linaro: Facebook | Twitter | Blog

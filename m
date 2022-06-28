@@ -2,49 +2,49 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFB24CCA481
-	for <linux-fbdev@archiver.kernel.org>; Tue, 28 Jun 2022 02:30:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39B4EC433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 28 Jun 2022 02:30:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243089AbiF1CaD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 27 Jun 2022 22:30:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40868 "EHLO
+        id S244467AbiF1CaE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 27 Jun 2022 22:30:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40052 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244195AbiF1C1P (ORCPT
+        with ESMTP id S244736AbiF1C1y (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 27 Jun 2022 22:27:15 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0EA7824F15;
-        Mon, 27 Jun 2022 19:24:44 -0700 (PDT)
+        Mon, 27 Jun 2022 22:27:54 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 594C325EB9;
+        Mon, 27 Jun 2022 19:25:45 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 9C9BC61753;
-        Tue, 28 Jun 2022 02:24:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3669C341CA;
-        Tue, 28 Jun 2022 02:24:41 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 10B58B81C16;
+        Tue, 28 Jun 2022 02:25:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75D61C341CB;
+        Tue, 28 Jun 2022 02:25:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1656383083;
+        s=k20201202; t=1656383142;
         bh=eeaBP9D5qgTi5VnY68Jlus768yL8BfTS3ziQKvcbdYA=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=p0714so3WeQqucYCkWWmaE06vEyoOWEqaBbsYO8JpJZ8mY4GxyjcYy/7Rv4Yj4s4e
-         iNftQFqUtDsIfouED9ZFfVxxaUoUWelP4mIr3/xEM90E/kNBMOrG6O37tplRVUurKn
-         fvgshRu4WawkcmVW1iQWy0ZJba5uXVyCc9wKM8wZGeMXo1mMoif469WqILV4Iteqsj
-         J0sFNdYBsPmMmogokucTEojZEHtqEyxzrICmbzEAD0t/Lhn+QkOs5g/InrB1+Z45kR
-         Slp/YcjvNyDZ0k1ubtA2iI4NyHL4mlwHoPkH4ttWvcMFwIbxwViXnnejTTvng9v/7d
-         2OQrSgAnq9Smw==
+        b=jnXEW+q7LSvA1Wp95CvZPt4Jnt0qgl7N2g4aa88uvJO7MMGOY3FPHQLR5RHXX7bRp
+         FhD2Gq2Zli6haD0F7N9j+INQVinIuQM8ef7aI2HCUaw+eJSROWVEc8h/w0khyQJO7A
+         uZouw8iOSpYPHqtc9wHUpJK2YdKR+XmNcYiy9DAU5/j4HwJI8nTQRvKyUub8emic9q
+         QbNAZDJLd9XDQR75OgM5BkXQQGCkbeBJbVj3j8D2Dp/H72RunMNOqQ3t63ww+tgA2J
+         2lUmwDeTeL/sGMt50Qx63h4o54M1Wc7bDnO3tBTaL5qRv6rR5SJslpB5lXMI1Llg6V
+         lP1SJbltVOYMg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Xiang wangx <wangxiang@cdjrlc.com>, Helge Deller <deller@gmx.de>,
         Sasha Levin <sashal@kernel.org>, daniel.vetter@ffwll.ch,
-        svens@stackframe.org, cssk@net-c.es, geert@linux-m68k.org,
+        cssk@net-c.es, svens@stackframe.org, geert@linux-m68k.org,
         bhelgaas@google.com, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 5.4 11/27] video: fbdev: skeletonfb: Fix syntax errors in comments
-Date:   Mon, 27 Jun 2022 22:23:57 -0400
-Message-Id: <20220628022413.596341-11-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 09/22] video: fbdev: skeletonfb: Fix syntax errors in comments
+Date:   Mon, 27 Jun 2022 22:25:04 -0400
+Message-Id: <20220628022518.596687-9-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220628022413.596341-1-sashal@kernel.org>
-References: <20220628022413.596341-1-sashal@kernel.org>
+In-Reply-To: <20220628022518.596687-1-sashal@kernel.org>
+References: <20220628022518.596687-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore

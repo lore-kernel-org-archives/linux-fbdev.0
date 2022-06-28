@@ -2,49 +2,47 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A219C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 28 Jun 2022 02:30:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8053BCCA481
+	for <linux-fbdev@archiver.kernel.org>; Tue, 28 Jun 2022 02:30:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244463AbiF1CaI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 27 Jun 2022 22:30:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40414 "EHLO
+        id S244893AbiF1CaK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 27 Jun 2022 22:30:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40872 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244878AbiF1C2Q (ORCPT
+        with ESMTP id S244547AbiF1C1P (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 27 Jun 2022 22:28:16 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A3A625598;
-        Mon, 27 Jun 2022 19:27:13 -0700 (PDT)
+        Mon, 27 Jun 2022 22:27:15 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4B5825C55;
+        Mon, 27 Jun 2022 19:24:46 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 32720B81C0D;
-        Tue, 28 Jun 2022 02:27:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A26C1C34115;
-        Tue, 28 Jun 2022 02:27:09 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 9EBE6B808C0;
+        Tue, 28 Jun 2022 02:24:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E980C341CB;
+        Tue, 28 Jun 2022 02:24:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1656383230;
-        bh=lacPAtZsEPiZpm46yptQlJb7OhqxDdXtZKNT0DH6wYo=;
+        s=k20201202; t=1656383084;
+        bh=aryDqvuv3cG6khhXyW+8VRoUdPuZ96pqZ7EV4Ei5FfU=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=h9vFJ0m77ec6dtiszo8G/+JgQLwWen/gEQYLzOc69gIsFOiQbqODIQ2oSgIPRHQdA
-         ECRAlFHto6ehvKyXJYTtKMLRoCCgo3etcJiKiJm4JleFb0tQUQtBN0kozug8n8oCc3
-         oW7afg+MQSoaK66DOUeAQYiu+eJCObAgBqg++GyHZekZ2skNJ4J7XYfBHY3E3ZdDMo
-         OyPsCQ/Fzg9oi40HyMKI2sTinqSp35lomzXnyUJ0ayv5u7yCDm1k7IrSXo8hMXsG78
-         TRtRuKPjSJq1OtueuVW82VcmdLyKkt/npq2AvK6zv0UAxW02aGh6FtLlsXtCjwBWWX
-         criFOEqYwAlLg==
+        b=YC+U+kNuZRndau2XCvy4XNwBfz2ad1InBPdedERPSvV0qTYWxBHcGH0r1IDIocM1o
+         6uDgerfyRZmhQovDmnmFszDNCYUtx4/eIq2Sj8Jm0E3V8WU0Ti58Orw8GgKDln0qjH
+         BX1BtbzduWO01i08zSnFGri6O3SIgLqNkygAtqm6AatxUkx1jPqSr59LLsCTLuE9mT
+         FI1RsH6H/N7XeYlytWJS5xpIvQBEuxu/Ap0yFGwu5LvdpoL6OC3Qei/aDy59WGcy7w
+         nQrQEKn262+F0nCFf8t587aMKVdmDbM52fF5ZmgfSHLH/qRbj4a3AMy5+NeV2cMo5Z
+         7CUJXEaVfL/ow==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Xiang wangx <wangxiang@cdjrlc.com>, Helge Deller <deller@gmx.de>,
-        Sasha Levin <sashal@kernel.org>, daniel.vetter@ffwll.ch,
-        geert@linux-m68k.org, cssk@net-c.es, tzimmermann@suse.de,
-        bhelgaas@google.com, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 4.9 05/13] video: fbdev: skeletonfb: Fix syntax errors in comments
-Date:   Mon, 27 Jun 2022 22:26:49 -0400
-Message-Id: <20220628022657.597208-5-sashal@kernel.org>
+Cc:     Petr Cvek <petrcvekcz@gmail.com>, Helge Deller <deller@gmx.de>,
+        Sasha Levin <sashal@kernel.org>, mbroemme@libmpq.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 5.4 12/27] video: fbdev: intelfb: Use aperture size from pci_resource_len
+Date:   Mon, 27 Jun 2022 22:23:58 -0400
+Message-Id: <20220628022413.596341-12-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220628022657.597208-1-sashal@kernel.org>
-References: <20220628022657.597208-1-sashal@kernel.org>
+In-Reply-To: <20220628022413.596341-1-sashal@kernel.org>
+References: <20220628022413.596341-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -53,32 +51,54 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Xiang wangx <wangxiang@cdjrlc.com>
+From: Petr Cvek <petrcvekcz@gmail.com>
 
-[ Upstream commit fc378794a2f7a19cf26010dc33b89ba608d4c70f ]
+[ Upstream commit 25c9a15fb7bbfafb94dd3b4e3165c18b8e1bd039 ]
 
-Delete the redundant word 'its'.
+Aperture size for i9x5 variants is determined from PCI base address.
 
-Signed-off-by: Xiang wangx <wangxiang@cdjrlc.com>
+	if (pci_resource_start(pdev, 2) & 0x08000000)
+		*aperture_size = MB(128);
+	...
+
+This condition is incorrect as 128 MiB address can have the address
+set as 0x?8000000 or 0x?0000000. Also the code can be simplified to just
+use pci_resource_len().
+
+The true settings of the aperture size is in the MSAC register, which
+could be used instead. However the value is used only as an info message,
+so it doesn't matter.
+
+Signed-off-by: Petr Cvek <petrcvekcz@gmail.com>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/skeletonfb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/intelfb/intelfbhw.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/fbdev/skeletonfb.c b/drivers/video/fbdev/skeletonfb.c
-index f948baa16d82..254bb6e2187c 100644
---- a/drivers/video/fbdev/skeletonfb.c
-+++ b/drivers/video/fbdev/skeletonfb.c
-@@ -96,7 +96,7 @@ static struct fb_fix_screeninfo xxxfb_fix = {
- 
-     /*
-      * 	Modern graphical hardware not only supports pipelines but some 
--     *  also support multiple monitors where each display can have its  
-+     *  also support multiple monitors where each display can have
-      *  its own unique data. In this case each display could be  
-      *  represented by a separate framebuffer device thus a separate 
-      *  struct fb_info. Now the struct xxx_par represents the graphics
+diff --git a/drivers/video/fbdev/intelfb/intelfbhw.c b/drivers/video/fbdev/intelfb/intelfbhw.c
+index 57aff7450bce..2086e06532ee 100644
+--- a/drivers/video/fbdev/intelfb/intelfbhw.c
++++ b/drivers/video/fbdev/intelfb/intelfbhw.c
+@@ -201,13 +201,11 @@ int intelfbhw_get_memory(struct pci_dev *pdev, int *aperture_size,
+ 	case PCI_DEVICE_ID_INTEL_945GME:
+ 	case PCI_DEVICE_ID_INTEL_965G:
+ 	case PCI_DEVICE_ID_INTEL_965GM:
+-		/* 915, 945 and 965 chipsets support a 256MB aperture.
+-		   Aperture size is determined by inspected the
+-		   base address of the aperture. */
+-		if (pci_resource_start(pdev, 2) & 0x08000000)
+-			*aperture_size = MB(128);
+-		else
+-			*aperture_size = MB(256);
++		/*
++		 * 915, 945 and 965 chipsets support 64MB, 128MB or 256MB
++		 * aperture. Determine size from PCI resource length.
++		 */
++		*aperture_size = pci_resource_len(pdev, 2);
+ 		break;
+ 	default:
+ 		if ((tmp & INTEL_GMCH_MEM_MASK) == INTEL_GMCH_MEM_64M)
 -- 
 2.35.1
 

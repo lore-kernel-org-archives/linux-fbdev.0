@@ -2,48 +2,48 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EE27CCA47B
-	for <linux-fbdev@archiver.kernel.org>; Tue, 28 Jun 2022 02:23:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4C58C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 28 Jun 2022 02:26:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243959AbiF1CXQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 27 Jun 2022 22:23:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33334 "EHLO
+        id S244139AbiF1C0j (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 27 Jun 2022 22:26:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32806 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243955AbiF1CWf (ORCPT
+        with ESMTP id S244313AbiF1CYi (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 27 Jun 2022 22:22:35 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 132C025285;
-        Mon, 27 Jun 2022 19:22:03 -0700 (PDT)
+        Mon, 27 Jun 2022 22:24:38 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D87372528B;
+        Mon, 27 Jun 2022 19:23:30 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 430E2B81C12;
-        Tue, 28 Jun 2022 02:22:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0556CC341CD;
-        Tue, 28 Jun 2022 02:21:59 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 774BB6184B;
+        Tue, 28 Jun 2022 02:23:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A08EEC36AE2;
+        Tue, 28 Jun 2022 02:23:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1656382921;
-        bh=rOos/ArnyqrU9+/UDMZ/R2BUkprdvSdRzCRG/yD/lQ8=;
+        s=k20201202; t=1656383009;
+        bh=IUT6pKmVPJ2q3phpRNPVddGlPUiUqgs/H5gsyFOvhSY=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=bBczAIs825MzX6CRYQGzoLE37ery5+KW1kpHUG2AvwvjsVa0jAjW0TGjMYExCzSfd
-         2d/iuwTnordUhtmK6SrgvB6/Jgj23EvvJTsfjtxWz/ASsX0DLNqh/O/Vg0PpIyqiyG
-         ltbRdOL06T8QnbZXmvhV5nlOdPuZooi8bv/UBaoKObPXM0GZ2jMMHr40g2mv/nvEfa
-         G6c1ErlVMeGGpXLxg2wB3KfE7fRSFwnzuF9t09CHuEgIJ1DNxLAhFCt8SWGhoPadsj
-         P0hW8TrOgBQod6zb2XOo/sDK/sG58IfUuFsQd9lCsvG/yys1F9gG9tiDugIxudXAI2
-         +8OvTtxO3+kig==
+        b=RoPOrkZdlXlwK8NJTsACEWruwEmj22+E5/YqqKDa0t5MwV/7/CthP2wl+immS+rdy
+         kI4I7PHWfm5owlHveOV196NpSD93UeGRIxSPaz2VKyTs6U4oqyhIImahhD4ouhsWV+
+         ZXOA/WoYYaXbvlbwPKgJ/FZgOiKXT3C5ubxaDSa646k8MBQKIEJM2BxdR6H2DpzIZK
+         /JtdrueIOgyxp/EQkuaNPZ8sWgrTiHrNp1PiFxrvls9cze1IsU6V51J8bNLv0A7J3C
+         R9nv6wcx520mUDs3Bcze3dKqk5ru8KIqyExN/+G0JVBo8pyh6iAyNyWqv4h19AvnyH
+         gJPPqxRFt/yPg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Hyunwoo Kim <imv4bel@gmail.com>, Helge Deller <deller@gmx.de>,
-        Sasha Levin <sashal@kernel.org>, yang.lee@linux.alibaba.com,
-        yangyingliang@huawei.com, cai.huoqing@linux.dev,
+Cc:     Xiang wangx <wangxiang@cdjrlc.com>, Helge Deller <deller@gmx.de>,
+        Sasha Levin <sashal@kernel.org>, daniel.vetter@ffwll.ch,
+        bhelgaas@google.com, svens@stackframe.org, cssk@net-c.es,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 5.15 22/41] video: fbdev: pxa3xx-gcu: Fix integer overflow in pxa3xx_gcu_write
-Date:   Mon, 27 Jun 2022 22:20:41 -0400
-Message-Id: <20220628022100.595243-22-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 16/34] video: fbdev: skeletonfb: Fix syntax errors in comments
+Date:   Mon, 27 Jun 2022 22:22:23 -0400
+Message-Id: <20220628022241.595835-16-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220628022100.595243-1-sashal@kernel.org>
-References: <20220628022100.595243-1-sashal@kernel.org>
+In-Reply-To: <20220628022241.595835-1-sashal@kernel.org>
+References: <20220628022241.595835-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -52,34 +52,32 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Hyunwoo Kim <imv4bel@gmail.com>
+From: Xiang wangx <wangxiang@cdjrlc.com>
 
-[ Upstream commit a09d2d00af53b43c6f11e6ab3cb58443c2cac8a7 ]
+[ Upstream commit fc378794a2f7a19cf26010dc33b89ba608d4c70f ]
 
-In pxa3xx_gcu_write, a count parameter of type size_t is passed to words of
-type int.  Then, copy_from_user() may cause a heap overflow because it is used
-as the third argument of copy_from_user().
+Delete the redundant word 'its'.
 
-Signed-off-by: Hyunwoo Kim <imv4bel@gmail.com>
+Signed-off-by: Xiang wangx <wangxiang@cdjrlc.com>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/pxa3xx-gcu.c | 2 +-
+ drivers/video/fbdev/skeletonfb.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-gcu.c
-index 9421d14d0eb0..9e9888e40c57 100644
---- a/drivers/video/fbdev/pxa3xx-gcu.c
-+++ b/drivers/video/fbdev/pxa3xx-gcu.c
-@@ -381,7 +381,7 @@ pxa3xx_gcu_write(struct file *file, const char *buff,
- 	struct pxa3xx_gcu_batch	*buffer;
- 	struct pxa3xx_gcu_priv *priv = to_pxa3xx_gcu_priv(file);
+diff --git a/drivers/video/fbdev/skeletonfb.c b/drivers/video/fbdev/skeletonfb.c
+index bcacfb6934fa..3d4d78362ede 100644
+--- a/drivers/video/fbdev/skeletonfb.c
++++ b/drivers/video/fbdev/skeletonfb.c
+@@ -96,7 +96,7 @@ static const struct fb_fix_screeninfo xxxfb_fix = {
  
--	int words = count / 4;
-+	size_t words = count / 4;
- 
- 	/* Does not need to be atomic. There's a lock in user space,
- 	 * but anyhow, this is just for statistics. */
+     /*
+      * 	Modern graphical hardware not only supports pipelines but some 
+-     *  also support multiple monitors where each display can have its  
++     *  also support multiple monitors where each display can have
+      *  its own unique data. In this case each display could be  
+      *  represented by a separate framebuffer device thus a separate 
+      *  struct fb_info. Now the struct xxx_par represents the graphics
 -- 
 2.35.1
 

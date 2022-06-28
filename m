@@ -2,128 +2,103 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AA92CCA473
-	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Jun 2022 16:28:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 710ACC433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 28 Jun 2022 02:21:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239224AbiF0Q2V (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 27 Jun 2022 12:28:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58054 "EHLO
+        id S243664AbiF1CVI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 27 Jun 2022 22:21:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32856 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239230AbiF0Q2R (ORCPT
+        with ESMTP id S243564AbiF1CUb (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 27 Jun 2022 12:28:17 -0400
-Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0DFCAB4BE
-        for <linux-fbdev@vger.kernel.org>; Mon, 27 Jun 2022 09:28:13 -0700 (PDT)
-Received: by mail-wr1-x436.google.com with SMTP id b26so1439350wrc.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 27 Jun 2022 09:28:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=RFbscGfZ1HvqkolFfPgOHxRAqCYKsO6AGhI1CWcF3U0=;
-        b=QL9P5fYJiAGJ0cVberqQxZgecUlCyO035Rs/RHERScTvlSGjFZWJwcJ83NKx7icnCf
-         MmmkqeK7/MKYHkhThvS+4I5n6eilA1iv0cTdd1jM4UXHDDaaVEXvSnXIRzJWnCUCUcUi
-         hfbpR0k3AwYuP7wFzDx1Qb4iWIpTN9nBpMOsMz5YzOvQfMZ+aNGdk1BwqtUaNtHKCBDC
-         fA9t5x0TJ4kWUQmeUPz8VsbAvV+0a4AUoZiJIyO7qENghiYMyKTM8whwQHTooEBVZnfa
-         hv7NO7jkwT4JYF/WPaOvNMBn/r4c0lJo2uE2cyoUPVH1HBvXxtPYqUUryaiaIppTOHk7
-         Xteg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=RFbscGfZ1HvqkolFfPgOHxRAqCYKsO6AGhI1CWcF3U0=;
-        b=77nOHoklfhilsAPtN2EmgXd9kpafYzwUn+TfE/6/jVSgBAu22HBktM8z0XSpm3vToA
-         nGVOWkrCstDjzE2oAEHEpZHcy6bPz2OxhjmKYpxsoq6CFa+gugooMjmhyd0gT0uauCTm
-         MTXhGHzripcWUZl9HQBDcc8YBT8L2TDi00ypMkgNjecxAlYpqNI8iPzk7EzeO74joxNa
-         joyjZV3r4wmlbYjwH6IDqZcrYuQt5hOSibFNFOGPwbAZysR2BVgeemfIMtn/VKTdrdpz
-         e5NkTHA9YyxaZMUO4L9WLYWg9exw/ULEXzBp7OpMEOHTZBA8KeQEgxqztK0EyN1pkVsc
-         9q9Q==
-X-Gm-Message-State: AJIora/Nur6JT/pxkC2D9qcX/XQNeLM5I7HxZE1EcOFFsWNeMrUU2Tg9
-        8OJsNH+Ba5UGcl73xazw00Yp9A==
-X-Google-Smtp-Source: AGRyM1tWghCzrhvaQKuNnG4CtD67zaV7MVCuo84J73jDL9LXJFGuDL/uN51RLsUeyYqHqBL/FNulUA==
-X-Received: by 2002:a5d:5966:0:b0:21b:80b5:ecc3 with SMTP id e38-20020a5d5966000000b0021b80b5ecc3mr12930472wri.130.1656347292409;
-        Mon, 27 Jun 2022 09:28:12 -0700 (PDT)
-Received: from google.com (cpc155339-bagu17-2-0-cust87.1-3.cable.virginm.net. [86.27.177.88])
-        by smtp.gmail.com with ESMTPSA id m17-20020adfe0d1000000b0021b866397a7sm11132854wri.1.2022.06.27.09.28.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Jun 2022 09:28:12 -0700 (PDT)
-Date:   Mon, 27 Jun 2022 17:28:09 +0100
-From:   Lee Jones <lee.jones@linaro.org>
-To:     ChiaEn Wu <peterwu.pub@gmail.com>
-Cc:     Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-iio <linux-iio@vger.kernel.org>,
-        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-mediatek@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        USB <linux-usb@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        szuni chen <szunichen@gmail.com>,
-        ChiYuan Huang <cy_huang@richtek.com>
-Subject: Re: [PATCH v2 08/15] mfd: mt6370: Add Mediatek MT6370 support
-Message-ID: <YrnamaUx236MsNQa@google.com>
-References: <20220613111146.25221-1-peterwu.pub@gmail.com>
- <20220613111146.25221-9-peterwu.pub@gmail.com>
- <Yqph8jwHU8rPooJA@google.com>
- <CABtFH5KLVQFYOBGZ--9+s4GrHXbsDao-yL-KCFwL3FD_kbNhjg@mail.gmail.com>
- <Yrm7NTID16g8gM5t@google.com>
- <CABtFH5L7B_kEvG5E2Um5EANEScJPTfQthyLNfCbvoHq_YDpXxQ@mail.gmail.com>
+        Mon, 27 Jun 2022 22:20:31 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D5CD24BCE;
+        Mon, 27 Jun 2022 19:20:11 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id C1427B81C11;
+        Tue, 28 Jun 2022 02:20:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 87DBCC341CD;
+        Tue, 28 Jun 2022 02:20:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1656382808;
+        bh=aryDqvuv3cG6khhXyW+8VRoUdPuZ96pqZ7EV4Ei5FfU=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=B67t4W0dIxFCRWa8F61mprUWB7QEVP05nUXuh8hPic7VGZc/6cIL8DvnDum/p1xII
+         skH4vaX410gdtSpjtPiRMfql/J1T+EY9WqB2PahX2TlbH4DX1OZUVY5h4JA4QedyJq
+         Bvqj97N4N1hbCyRXHpimE5glQ4Znq7dBWwipmC+HfiTtzTPUr6X7Mx91vRXvE5a0EP
+         9GmtD9Yc4l52NvEA73HXewR+QoUmHeWa41+gnyyr7FRyBNfqqzL7rqe0TY6QoCj3sa
+         uF6nmYoPCoxEkgq1+QTU+S+k8WsGdOOJgRccgdc7VVxSAHsRDAqdDqoPgEGFmPHGnJ
+         Txmy5Ffxy3KtQ==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Petr Cvek <petrcvekcz@gmail.com>, Helge Deller <deller@gmx.de>,
+        Sasha Levin <sashal@kernel.org>, mbroemme@libmpq.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 5.18 31/53] video: fbdev: intelfb: Use aperture size from pci_resource_len
+Date:   Mon, 27 Jun 2022 22:18:17 -0400
+Message-Id: <20220628021839.594423-31-sashal@kernel.org>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220628021839.594423-1-sashal@kernel.org>
+References: <20220628021839.594423-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+X-stable: review
+X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CABtFH5L7B_kEvG5E2Um5EANEScJPTfQthyLNfCbvoHq_YDpXxQ@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-[...]
+From: Petr Cvek <petrcvekcz@gmail.com>
 
-> > > > > +#define MT6370_IRQ_DSV_VPOS_OCP              124
-> > > > > +#define MT6370_IRQ_DSV_BST_OCP               125
-> > > > > +#define MT6370_IRQ_DSV_VNEG_SCP              126
-> > > > > +#define MT6370_IRQ_DSV_VPOS_SCP              127
-> > > > > +
-> > > > > +struct mt6370_info {
-> > > > > +     struct i2c_client *i2c[MT6370_MAX_I2C];
-> > > > > +     struct device *dev;
-> > > > > +     struct regmap *regmap;
-> > > > > +     struct regmap_irq_chip_data *irq_data;
-> > > > > +};
-> > > >
-> > > > Can we shove all of the above into a header file?
-> > >
-> > > Well... In Patch v1, we put these "#define IRQ" into
-> > > "include/dt-bindings/mfd/mediatek,mt6370.h".
-> > > But the reviewer of DT files hoped us to remove this header file, we
-> > > put these "#define IRQ" in this .c file.
-> > > Shall we leave them here or put them into the header file in
-> > > "driver/power/supply/mt6370-charger.h"?
-> >
-> > Where are they used?
-> 
-> Sorry, I wrote the wrong path last time...
-> What I should say last time was to put them into the header file into
-> "driver/mfd/mt6370.h"
-> These "#define IRQ" are just used in "driver/mfd/mt6370.c"
-> I’m really sorry for making this mistake...
+[ Upstream commit 25c9a15fb7bbfafb94dd3b4e3165c18b8e1bd039 ]
 
-Yes, that would be fine.
+Aperture size for i9x5 variants is determined from PCI base address.
 
+	if (pci_resource_start(pdev, 2) & 0x08000000)
+		*aperture_size = MB(128);
+	...
+
+This condition is incorrect as 128 MiB address can have the address
+set as 0x?8000000 or 0x?0000000. Also the code can be simplified to just
+use pci_resource_len().
+
+The true settings of the aperture size is in the MSAC register, which
+could be used instead. However the value is used only as an info message,
+so it doesn't matter.
+
+Signed-off-by: Petr Cvek <petrcvekcz@gmail.com>
+Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/intelfb/intelfbhw.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/video/fbdev/intelfb/intelfbhw.c b/drivers/video/fbdev/intelfb/intelfbhw.c
+index 57aff7450bce..2086e06532ee 100644
+--- a/drivers/video/fbdev/intelfb/intelfbhw.c
++++ b/drivers/video/fbdev/intelfb/intelfbhw.c
+@@ -201,13 +201,11 @@ int intelfbhw_get_memory(struct pci_dev *pdev, int *aperture_size,
+ 	case PCI_DEVICE_ID_INTEL_945GME:
+ 	case PCI_DEVICE_ID_INTEL_965G:
+ 	case PCI_DEVICE_ID_INTEL_965GM:
+-		/* 915, 945 and 965 chipsets support a 256MB aperture.
+-		   Aperture size is determined by inspected the
+-		   base address of the aperture. */
+-		if (pci_resource_start(pdev, 2) & 0x08000000)
+-			*aperture_size = MB(128);
+-		else
+-			*aperture_size = MB(256);
++		/*
++		 * 915, 945 and 965 chipsets support 64MB, 128MB or 256MB
++		 * aperture. Determine size from PCI resource length.
++		 */
++		*aperture_size = pci_resource_len(pdev, 2);
+ 		break;
+ 	default:
+ 		if ((tmp & INTEL_GMCH_MEM_MASK) == INTEL_GMCH_MEM_64M)
 -- 
-Lee Jones [李琼斯]
-Principal Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.35.1
+

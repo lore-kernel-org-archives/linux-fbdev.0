@@ -2,100 +2,121 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00CC8C43334
-	for <linux-fbdev@archiver.kernel.org>; Wed, 29 Jun 2022 21:00:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A97A1CCA480
+	for <linux-fbdev@archiver.kernel.org>; Wed, 29 Jun 2022 21:20:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230076AbiF2VAy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 29 Jun 2022 17:00:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46766 "EHLO
+        id S230012AbiF2VUa convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 29 Jun 2022 17:20:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60934 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230323AbiF2VAw (ORCPT
+        with ESMTP id S229741AbiF2VU3 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 29 Jun 2022 17:00:52 -0400
-Received: from mail-il1-f182.google.com (mail-il1-f182.google.com [209.85.166.182])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0747B3FBF7;
-        Wed, 29 Jun 2022 14:00:40 -0700 (PDT)
-Received: by mail-il1-f182.google.com with SMTP id o4so11101114ilm.9;
-        Wed, 29 Jun 2022 14:00:39 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=QNDYng6HiaUQ2XzlbhKa6Kje7mjtGzKFFC9Apcml49c=;
-        b=H7K91T4mVLIcGnSgVXD5tPLoIgqHq7BcmMEuTbnR/ayN9NZ3lRqZRl9ACrabovvpjq
-         AO4LqPB10ZL3cfI0Q+t/TyMeW0zA71x/jUNp50fO+lRtdAbHEoLGgV7u2yI4YuoTED1V
-         /FXjo+lNHxucdvZGUAxYsTviv8hNjggyrRsyuokW4aGA0Mf6g9Re389HYBR6AL8d19vh
-         YJ+Ga2U22o6GIgmeZ9jgWU7HwtPsG2SPNwcKAsSIfH81LHINh/DNNnBvdGASNjGb4aoV
-         OmnEIlNYVP8N8rn/RXJLJdUbA+a26FYt8g8Sj0jTa2wqAJTkqVJgWTyORjn1MgsWLOy+
-         AmTg==
-X-Gm-Message-State: AJIora+iKDCVoLAUsNUBq0+Ee5Gw2FxazZQEWaVZ/cqNE03bCl0Tg0aW
-        VM2MRqBItglqyviU5zZAUg==
-X-Google-Smtp-Source: AGRyM1vaLdz2tY8DbktMG5UohpiNPszRj0YNupGJE9+wwsg3tChAw/usAM6+QnPklIlRt9YF5xSJoQ==
-X-Received: by 2002:a05:6e02:19cd:b0:2da:d593:d32 with SMTP id r13-20020a056e0219cd00b002dad5930d32mr49391ill.145.1656536439211;
-        Wed, 29 Jun 2022 14:00:39 -0700 (PDT)
-Received: from xps15.herring.priv ([64.188.179.253])
-        by smtp.googlemail.com with ESMTPSA id u13-20020a5d818d000000b0067513ad66c3sm7061434ion.41.2022.06.29.14.00.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Jun 2022 14:00:38 -0700 (PDT)
-From:   Rob Herring <robh@kernel.org>
-To:     Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
-Cc:     Jingoo Han <jg1.han@samsung.com>, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Revert "drivers/video/backlight/platform_lcd.c: add support for device tree based probe"
-Date:   Wed, 29 Jun 2022 15:00:23 -0600
-Message-Id: <20220629210024.815761-1-robh@kernel.org>
-X-Mailer: git-send-email 2.34.1
+        Wed, 29 Jun 2022 17:20:29 -0400
+Received: from hostingweb31-40.netsons.net (hostingweb31-40.netsons.net [89.40.174.40])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1C99113F79;
+        Wed, 29 Jun 2022 14:20:28 -0700 (PDT)
+Received: from [37.161.29.0] (port=43545 helo=[192.168.131.30])
+        by hostingweb31.netsons.net with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        (Exim 4.95)
+        (envelope-from <luca@lucaceresoli.net>)
+        id 1o6f6m-000BzC-Qd;
+        Wed, 29 Jun 2022 23:20:25 +0200
+Message-ID: <d682fb60-c254-f89e-5d6d-cdf7aa752939@lucaceresoli.net>
+Date:   Wed, 29 Jun 2022 23:20:04 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.1
+From:   Luca Ceresoli <luca@lucaceresoli.net>
+Subject: Re: [PATCH 6/6] i2c: Make remove callback return void
+To:     =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
+        Wolfram Sang <wsa@kernel.org>
+Cc:     linux-i2c@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linuxppc-dev@lists.ozlabs.org,
+        openipmi-developer@lists.sourceforge.net,
+        linux-integrity@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-crypto@vger.kernel.org, linux-gpio@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, chrome-platform@lists.linux.dev,
+        linux-rpi-kernel@lists.infradead.org, linux-input@vger.kernel.org,
+        linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
+        patches@opensource.cirrus.com, alsa-devel@alsa-project.org,
+        linux-omap@vger.kernel.org, linux-mtd@lists.infradead.org,
+        netdev@vger.kernel.org, devicetree@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        acpi4asus-user@lists.sourceforge.net, linux-pm@vger.kernel.org,
+        linux-pwm@vger.kernel.org, linux-rtc@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-serial@vger.kernel.org,
+        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-watchdog@vger.kernel.org, kasan-dev@googlegroups.com,
+        linux-mediatek@lists.infradead.org
+References: <20220628140313.74984-1-u.kleine-koenig@pengutronix.de>
+ <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
+Content-Language: en-US
+In-Reply-To: <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - hostingweb31.netsons.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - lucaceresoli.net
+X-Get-Message-Sender-Via: hostingweb31.netsons.net: authenticated_id: luca@lucaceresoli.net
+X-Authenticated-Sender: hostingweb31.netsons.net: luca@lucaceresoli.net
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This reverts commit 52e842432f36d5b15227d0ee0d2aa3d2bc3cc0b2.
+Hi,
 
-The DT support never would have worked because there's no platform_data
-providing ops. There's not any documented binding for it either.
+[keeping only individuals and lists in Cc to avoid bounces]
 
-Cc: Jingoo Han <jg1.han@samsung.com>
-Signed-off-by: Rob Herring <robh@kernel.org>
----
- drivers/video/backlight/platform_lcd.c | 10 ----------
- 1 file changed, 10 deletions(-)
+On 28/06/22 16:03, Uwe Kleine-König wrote:
+> From: Uwe Kleine-König <uwe@kleine-koenig.org>
+> 
+> The value returned by an i2c driver's remove function is mostly ignored.
+> (Only an error message is printed if the value is non-zero that the
+> error is ignored.)
+> 
+> So change the prototype of the remove function to return no value. This
+> way driver authors are not tempted to assume that passing an error to
+> the upper layer is a good idea. All drivers are adapted accordingly.
+> There is no intended change of behaviour, all callbacks were prepared to
+> return 0 before.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-diff --git a/drivers/video/backlight/platform_lcd.c b/drivers/video/backlight/platform_lcd.c
-index b2bfbf070200..dc37494baf42 100644
---- a/drivers/video/backlight/platform_lcd.c
-+++ b/drivers/video/backlight/platform_lcd.c
-@@ -12,7 +12,6 @@
- #include <linux/fb.h>
- #include <linux/backlight.h>
- #include <linux/lcd.h>
--#include <linux/of.h>
- #include <linux/slab.h>
- 
- #include <video/platform_lcd.h>
-@@ -133,19 +132,10 @@ static int platform_lcd_resume(struct device *dev)
- static SIMPLE_DEV_PM_OPS(platform_lcd_pm_ops, platform_lcd_suspend,
- 			platform_lcd_resume);
- 
--#ifdef CONFIG_OF
--static const struct of_device_id platform_lcd_of_match[] = {
--	{ .compatible = "platform-lcd" },
--	{},
--};
--MODULE_DEVICE_TABLE(of, platform_lcd_of_match);
--#endif
--
- static struct platform_driver platform_lcd_driver = {
- 	.driver		= {
- 		.name	= "platform-lcd",
- 		.pm	= &platform_lcd_pm_ops,
--		.of_match_table = of_match_ptr(platform_lcd_of_match),
- 	},
- 	.probe		= platform_lcd_probe,
- };
+For versaclock:
+
+> diff --git a/drivers/clk/clk-versaclock5.c b/drivers/clk/clk-versaclock5.c
+> index e7be3e54b9be..657493ecce4c 100644
+> --- a/drivers/clk/clk-versaclock5.c
+> +++ b/drivers/clk/clk-versaclock5.c
+> @@ -1138,7 +1138,7 @@ static int vc5_probe(struct i2c_client *client)
+>  	return ret;
+>  }
+>  
+> -static int vc5_remove(struct i2c_client *client)
+> +static void vc5_remove(struct i2c_client *client)
+>  {
+>  	struct vc5_driver_data *vc5 = i2c_get_clientdata(client);
+>  
+> @@ -1146,8 +1146,6 @@ static int vc5_remove(struct i2c_client *client)
+>  
+>  	if (vc5->chip_info->flags & VC5_HAS_INTERNAL_XTAL)
+>  		clk_unregister_fixed_rate(vc5->pin_xin);
+> -
+> -	return 0;
+>  }
+>  
+>  static int __maybe_unused vc5_suspend(struct device *dev)
+
+Reviewed-by: Luca Ceresoli <luca@lucaceresoli.net>
+Reviewed-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
+
 -- 
-2.34.1
-
+Luca

@@ -2,127 +2,358 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B715CCA47C
-	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Jul 2022 12:22:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5248C43334
+	for <linux-fbdev@archiver.kernel.org>; Wed, 29 Jun 2022 07:41:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234373AbiGDMWt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 4 Jul 2022 08:22:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60482 "EHLO
+        id S232203AbiF2Hlx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 29 Jun 2022 03:41:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56294 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234363AbiGDMWi (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Jul 2022 08:22:38 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id C629812D
-        for <linux-fbdev@vger.kernel.org>; Mon,  4 Jul 2022 05:22:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1656937357;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=NWz4hoF8KR1Xh3Y20DcZ/pecKJBOXaX2hZBdX2dWxEY=;
-        b=J4a9xRG33kC3umSO47WAlkq4mOYhPbpCylEhtlnU+5MXz4A4vMQBsJkoG2/VBbsK+3M8no
-        kY7QYuMVOt6aebOaKjn68DgKCNw7a/Sian19Zw2lVxQdeFtH3yGhxI+bioYOX1Ji4icE5u
-        fgt1YubKdvX2r7OjCyTc4XNQQfQnVnM=
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
- [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-656-1qPi9DXWNAOxYKipyWqtbw-1; Mon, 04 Jul 2022 08:22:35 -0400
-X-MC-Unique: 1qPi9DXWNAOxYKipyWqtbw-1
-Received: by mail-wm1-f72.google.com with SMTP id j35-20020a05600c1c2300b003a167dfa0ecso5263585wms.5
-        for <linux-fbdev@vger.kernel.org>; Mon, 04 Jul 2022 05:22:35 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=NWz4hoF8KR1Xh3Y20DcZ/pecKJBOXaX2hZBdX2dWxEY=;
-        b=exLqUCaEBAZEsXfVOjMBDXqtY6CmNJqbAm6GlucR0UBEf2Uwq/nQQzjbUtWEVtTeaU
-         Ws5ebBJD1Pg+Onz8zkz5LJOPkGyg8K/IX/jAglyT3Yd87l/B+HsHrUe6vYb7mHLx4of9
-         I3k7fiQU14VeA2M5D7wuelDBtJtVduKzOjBcFJHR4bmW7fzk2DbyDQ+V6q5fK4QV5zL0
-         BJiku3gcXdIO0aJK1wLjF8Oz5FlKlQVGJvnoTx/kPZgoPELY5e+lmmKKCK52j8cWhfIm
-         Lw1MoNgE7aIOyOtZcVww3GgzAzJhg0V5/D2EExnoVr8m7TflEc/5Q87vje6PapDisDSF
-         Yt6Q==
-X-Gm-Message-State: AJIora+zGq7E7M5D0TwHI3GAsFE803bWBQyfiPAry/MxPAsWKUrcDr+A
-        sEaVvPw1IBDY7GLen2k4rL/v7U+fHZLzLBfFU/wkB2M5aHOFmKhhQmURsLHUU7ueyOGB9JALPBI
-        KnzzZGFHBJjyZWKngiOdS4sM=
-X-Received: by 2002:a05:6000:184f:b0:21c:ae47:9b45 with SMTP id c15-20020a056000184f00b0021cae479b45mr29036165wri.76.1656937354539;
-        Mon, 04 Jul 2022 05:22:34 -0700 (PDT)
-X-Google-Smtp-Source: AGRyM1t+u2tPZeiBujJigb3uaJA2WHPeBf3YiC6XaaM/lLav9FDHwk1h6zTOaQcjNHZhn8GP9Wpmog==
-X-Received: by 2002:a05:6000:184f:b0:21c:ae47:9b45 with SMTP id c15-20020a056000184f00b0021cae479b45mr29036127wri.76.1656937354201;
-        Mon, 04 Jul 2022 05:22:34 -0700 (PDT)
-Received: from [192.168.1.129] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id l2-20020a05600c2cc200b003a18e7a5af2sm12420591wmc.34.2022.07.04.05.22.33
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 04 Jul 2022 05:22:33 -0700 (PDT)
-Message-ID: <0425d2f4-a859-46c7-b184-e32efe7165a2@redhat.com>
-Date:   Mon, 4 Jul 2022 14:22:32 +0200
+        with ESMTP id S229820AbiF2Hlv (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 29 Jun 2022 03:41:51 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31F1236B42;
+        Wed, 29 Jun 2022 00:41:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1656488510; x=1688024510;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=hRLWAheTUgpMqJ+CTyhb8q72eqCf5jXCD+qdlPmQdX8=;
+  b=V7EsYYr9EIij1ip70+OQMY/gzrh5wyGiKcYp8AWCHb25bOJrQa8ldVVA
+   WjfiGM9RSi7+O2v6aTzjnGFtciC06e+wwz660J8d1fRqDhDUuFa+GCisT
+   rKUaoFvcqeLu972MEnNCCaodyFq5KFw65hrEObpxXK1USTMOqGTNjghk1
+   M6eAb7r6RhwTd49jKSf+itMDaZ5Gu/jHoVMqNBN++BYhLvCzxTurIoN9M
+   /3H0k+pz3CbrRrMwvdgEhSQ7BUW5H6fpDqV6CtG6BHjQGM7QYyLOK833q
+   sD1PkwJUKQH1n3D/+a5t4ubmQSAULxHZs8gKZv4cjGcBr80q05Z6ghIMA
+   Q==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10392"; a="307444900"
+X-IronPort-AV: E=Sophos;i="5.92,230,1650956400"; 
+   d="scan'208";a="307444900"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jun 2022 00:41:33 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.92,230,1650956400"; 
+   d="scan'208";a="733074160"
+Received: from kuha.fi.intel.com ([10.237.72.185])
+  by fmsmga001.fm.intel.com with SMTP; 29 Jun 2022 00:40:24 -0700
+Received: by kuha.fi.intel.com (sSMTP sendmail emulation); Wed, 29 Jun 2022 10:40:23 +0300
+Date:   Wed, 29 Jun 2022 10:40:23 +0300
+From:   Heikki Krogerus <heikki.krogerus@linux.intel.com>
+To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+Cc:     Wolfram Sang <wsa@kernel.org>,
+        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <uwe@kleine-koenig.org>,
+        Sekhar Nori <nsekhar@ti.com>,
+        Bartosz Golaszewski <brgl@bgdev.pl>,
+        Russell King <linux@armlinux.org.uk>,
+        Scott Wood <oss@buserror.net>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Robin van der Gracht <robin@protonic.nl>,
+        Miguel Ojeda <ojeda@kernel.org>,
+        Corey Minyard <minyard@acm.org>,
+        Peter Huewe <peterhuewe@gmx.de>,
+        Jarkko Sakkinen <jarkko@kernel.org>,
+        Jason Gunthorpe <jgg@ziepe.ca>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>,
+        Max Filippov <jcmvbkbc@gmail.com>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Luca Ceresoli <luca@lucaceresoli.net>,
+        Tudor Ambarus <tudor.ambarus@microchip.com>,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        "David S. Miller" <davem@davemloft.net>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Michael Hennerich <michael.hennerich@analog.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Andrzej Hajda <andrzej.hajda@intel.com>,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Robert Foss <robert.foss@linaro.org>,
+        Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
+        Jonas Karlman <jonas@kwiboo.se>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Benson Leung <bleung@chromium.org>,
+        Guenter Roeck <groeck@chromium.org>,
+        Phong LE <ple@baylibre.com>,
+        Adrien Grassein <adrien.grassein@gmail.com>,
+        Peter Senna Tschudin <peter.senna@gmail.com>,
+        Martin Donnelly <martin.donnelly@ge.com>,
+        Martyn Welch <martyn.welch@collabora.co.uk>,
+        Douglas Anderson <dianders@chromium.org>,
+        Stefan Mavrodiev <stefan@olimex.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Florian Fainelli <f.fainelli@gmail.com>, Broad@vger.kernel.org
+Subject: Re: [PATCH 6/6] i2c: Make remove callback return void
+Message-ID: <YrwB5xPKZmHlXzrC@kuha.fi.intel.com>
+References: <20220628140313.74984-1-u.kleine-koenig@pengutronix.de>
+ <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH v6 3/5] fbdev: Disable sysfb device registration when
- removing conflicting FBs
-Content-Language: en-US
-To:     Xi Ruoyao <xry111@linuxfromscratch.org>,
-        Zack Rusin <zackr@vmware.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc:     "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-        "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
-        "deller@gmx.de" <deller@gmx.de>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
-        Linux-graphics-maintainer <Linux-graphics-maintainer@vmware.com>,
-        "kraxel@redhat.com" <kraxel@redhat.com>,
-        "tzimmermann@suse.de" <tzimmermann@suse.de>,
-        "daniel.vetter@ffwll.ch" <daniel.vetter@ffwll.ch>,
-        "lersek@redhat.com" <lersek@redhat.com>
-References: <20220607182338.344270-1-javierm@redhat.com>
- <20220607182338.344270-4-javierm@redhat.com>
- <de83ae8cb6de7ee7c88aa2121513e91bb0a74608.camel@vmware.com>
- <38473dcd-0666-67b9-28bd-afa2d0ce434a@redhat.com>
- <603e3613b9b8ff7815b63f294510d417b5b12937.camel@vmware.com>
- <a633d605-4cb3-2e04-1818-85892cf6f7b0@redhat.com>
- <97565fb5-cf7f-5991-6fb3-db96fe239ee8@redhat.com>
- <711c88299ef41afd8556132b7c1dcb75ee7e6117.camel@vmware.com>
- <aa144e20-a555-5c30-4796-09713c12ab0e@redhat.com>
- <64c753c98488a64b470009e45769ceab29fd8130.camel@linuxfromscratch.org>
- <61f2e4e2af40cb9d853504d0a6fe01829ff8ca60.camel@linuxfromscratch.org>
- <fddf5ca6-77dc-88f9-c191-7de09717063c@redhat.com>
- <2ae767b0439133ca4e60885a1843ee72b69adfc5.camel@linuxfromscratch.org>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <2ae767b0439133ca4e60885a1843ee72b69adfc5.camel@linuxfromscratch.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/4/22 14:11, Xi Ruoyao wrote:
-> On Mon, 2022-07-04 at 13:04 +0200, Javier Martinez Canillas wrote:
->> Hello Xi,
->>>
->>> With CONFIG_SYSFB_SIMPLEFB and CONFIG_FB_SIMPLE enabled, there is no
->>> issue.
->>>
->>> I guess it's something going wrong on a "drm -> drm" pass over.Â  For now
->>> I'll continue to use simpledrm with this commit reverted.
->>>
->>
->> Yes, we need to also cherry-pick b84efa28a48 ("drm/aperture: Run fbdev
->> removal before internal helpers") now that the sysfb_disable() patches
->> are in v5.19-rc5.
-> 
-> I confirm that cherry-picking b84efa28a48 fixes the issue for v5.19-rc5.
-> 
+On Tue, Jun 28, 2022 at 04:03:12PM +0200, Uwe Kleine-König wrote:
+> diff --git a/drivers/usb/typec/hd3ss3220.c b/drivers/usb/typec/hd3ss3220.c
+> index cd47c3597e19..2a58185fb14c 100644
+> --- a/drivers/usb/typec/hd3ss3220.c
+> +++ b/drivers/usb/typec/hd3ss3220.c
+> @@ -245,14 +245,12 @@ static int hd3ss3220_probe(struct i2c_client *client,
+>  	return ret;
+>  }
+>  
+> -static int hd3ss3220_remove(struct i2c_client *client)
+> +static void hd3ss3220_remove(struct i2c_client *client)
+>  {
+>  	struct hd3ss3220 *hd3ss3220 = i2c_get_clientdata(client);
+>  
+>  	typec_unregister_port(hd3ss3220->port);
+>  	usb_role_switch_put(hd3ss3220->role_sw);
+> -
+> -	return 0;
+>  }
+>  
+>  static const struct of_device_id dev_ids[] = {
+> diff --git a/drivers/usb/typec/mux/fsa4480.c b/drivers/usb/typec/mux/fsa4480.c
+> index 6184f5367190..d6495e533e58 100644
+> --- a/drivers/usb/typec/mux/fsa4480.c
+> +++ b/drivers/usb/typec/mux/fsa4480.c
+> @@ -181,14 +181,12 @@ static int fsa4480_probe(struct i2c_client *client)
+>  	return 0;
+>  }
+>  
+> -static int fsa4480_remove(struct i2c_client *client)
+> +static void fsa4480_remove(struct i2c_client *client)
+>  {
+>  	struct fsa4480 *fsa = i2c_get_clientdata(client);
+>  
+>  	typec_mux_unregister(fsa->mux);
+>  	typec_switch_unregister(fsa->sw);
+> -
+> -	return 0;
+>  }
+>  
+>  static const struct i2c_device_id fsa4480_table[] = {
+> diff --git a/drivers/usb/typec/mux/pi3usb30532.c b/drivers/usb/typec/mux/pi3usb30532.c
+> index 6ce9f282594e..1cd388b55c30 100644
+> --- a/drivers/usb/typec/mux/pi3usb30532.c
+> +++ b/drivers/usb/typec/mux/pi3usb30532.c
+> @@ -160,13 +160,12 @@ static int pi3usb30532_probe(struct i2c_client *client)
+>  	return 0;
+>  }
+>  
+> -static int pi3usb30532_remove(struct i2c_client *client)
+> +static void pi3usb30532_remove(struct i2c_client *client)
+>  {
+>  	struct pi3usb30532 *pi = i2c_get_clientdata(client);
+>  
+>  	typec_mux_unregister(pi->mux);
+>  	typec_switch_unregister(pi->sw);
+> -	return 0;
+>  }
+>  
+>  static const struct i2c_device_id pi3usb30532_table[] = {
+> diff --git a/drivers/usb/typec/rt1719.c b/drivers/usb/typec/rt1719.c
+> index f1b698edd7eb..ea8b700b0ceb 100644
+> --- a/drivers/usb/typec/rt1719.c
+> +++ b/drivers/usb/typec/rt1719.c
+> @@ -930,14 +930,12 @@ static int rt1719_probe(struct i2c_client *i2c)
+>  	return ret;
+>  }
+>  
+> -static int rt1719_remove(struct i2c_client *i2c)
+> +static void rt1719_remove(struct i2c_client *i2c)
+>  {
+>  	struct rt1719_data *data = i2c_get_clientdata(i2c);
+>  
+>  	typec_unregister_port(data->port);
+>  	usb_role_switch_put(data->role_sw);
+> -
+> -	return 0;
+>  }
+>  
+>  static const struct of_device_id __maybe_unused rt1719_device_table[] = {
+> diff --git a/drivers/usb/typec/stusb160x.c b/drivers/usb/typec/stusb160x.c
+> index e7745d1c2a5c..8638f1d39896 100644
+> --- a/drivers/usb/typec/stusb160x.c
+> +++ b/drivers/usb/typec/stusb160x.c
+> @@ -801,7 +801,7 @@ static int stusb160x_probe(struct i2c_client *client)
+>  	return ret;
+>  }
+>  
+> -static int stusb160x_remove(struct i2c_client *client)
+> +static void stusb160x_remove(struct i2c_client *client)
+>  {
+>  	struct stusb160x *chip = i2c_get_clientdata(client);
+>  
+> @@ -823,8 +823,6 @@ static int stusb160x_remove(struct i2c_client *client)
+>  
+>  	if (chip->main_supply)
+>  		regulator_disable(chip->main_supply);
+> -
+> -	return 0;
+>  }
+>  
+>  static int __maybe_unused stusb160x_suspend(struct device *dev)
+> diff --git a/drivers/usb/typec/tcpm/fusb302.c b/drivers/usb/typec/tcpm/fusb302.c
+> index 96c55eaf3f80..5e9348f28d50 100644
+> --- a/drivers/usb/typec/tcpm/fusb302.c
+> +++ b/drivers/usb/typec/tcpm/fusb302.c
+> @@ -1771,7 +1771,7 @@ static int fusb302_probe(struct i2c_client *client,
+>  	return ret;
+>  }
+>  
+> -static int fusb302_remove(struct i2c_client *client)
+> +static void fusb302_remove(struct i2c_client *client)
+>  {
+>  	struct fusb302_chip *chip = i2c_get_clientdata(client);
+>  
+> @@ -1783,8 +1783,6 @@ static int fusb302_remove(struct i2c_client *client)
+>  	fwnode_handle_put(chip->tcpc_dev.fwnode);
+>  	destroy_workqueue(chip->wq);
+>  	fusb302_debugfs_exit(chip);
+> -
+> -	return 0;
+>  }
+>  
+>  static int fusb302_pm_suspend(struct device *dev)
+> diff --git a/drivers/usb/typec/tcpm/tcpci.c b/drivers/usb/typec/tcpm/tcpci.c
+> index f33e08eb7670..c48fca60bb06 100644
+> --- a/drivers/usb/typec/tcpm/tcpci.c
+> +++ b/drivers/usb/typec/tcpm/tcpci.c
+> @@ -869,7 +869,7 @@ static int tcpci_probe(struct i2c_client *client,
+>  	return 0;
+>  }
+>  
+> -static int tcpci_remove(struct i2c_client *client)
+> +static void tcpci_remove(struct i2c_client *client)
+>  {
+>  	struct tcpci_chip *chip = i2c_get_clientdata(client);
+>  	int err;
+> @@ -880,8 +880,6 @@ static int tcpci_remove(struct i2c_client *client)
+>  		dev_warn(&client->dev, "Failed to disable irqs (%pe)\n", ERR_PTR(err));
+>  
+>  	tcpci_unregister_port(chip->tcpci);
+> -
+> -	return 0;
+>  }
+>  
+>  static const struct i2c_device_id tcpci_id[] = {
+> diff --git a/drivers/usb/typec/tcpm/tcpci_maxim.c b/drivers/usb/typec/tcpm/tcpci_maxim.c
+> index df2505570f07..a11be5754128 100644
+> --- a/drivers/usb/typec/tcpm/tcpci_maxim.c
+> +++ b/drivers/usb/typec/tcpm/tcpci_maxim.c
+> @@ -493,14 +493,12 @@ static int max_tcpci_probe(struct i2c_client *client, const struct i2c_device_id
+>  	return ret;
+>  }
+>  
+> -static int max_tcpci_remove(struct i2c_client *client)
+> +static void max_tcpci_remove(struct i2c_client *client)
+>  {
+>  	struct max_tcpci_chip *chip = i2c_get_clientdata(client);
+>  
+>  	if (!IS_ERR_OR_NULL(chip->tcpci))
+>  		tcpci_unregister_port(chip->tcpci);
+> -
+> -	return 0;
+>  }
+>  
+>  static const struct i2c_device_id max_tcpci_id[] = {
+> diff --git a/drivers/usb/typec/tcpm/tcpci_rt1711h.c b/drivers/usb/typec/tcpm/tcpci_rt1711h.c
+> index b56a0880a044..9ad4924b4ba7 100644
+> --- a/drivers/usb/typec/tcpm/tcpci_rt1711h.c
+> +++ b/drivers/usb/typec/tcpm/tcpci_rt1711h.c
+> @@ -263,12 +263,11 @@ static int rt1711h_probe(struct i2c_client *client,
+>  	return 0;
+>  }
+>  
+> -static int rt1711h_remove(struct i2c_client *client)
+> +static void rt1711h_remove(struct i2c_client *client)
+>  {
+>  	struct rt1711h_chip *chip = i2c_get_clientdata(client);
+>  
+>  	tcpci_unregister_port(chip->tcpci);
+> -	return 0;
+>  }
+>  
+>  static const struct i2c_device_id rt1711h_id[] = {
+> diff --git a/drivers/usb/typec/tipd/core.c b/drivers/usb/typec/tipd/core.c
+> index dfbba5ae9487..b637e8b378b3 100644
+> --- a/drivers/usb/typec/tipd/core.c
+> +++ b/drivers/usb/typec/tipd/core.c
+> @@ -857,15 +857,13 @@ static int tps6598x_probe(struct i2c_client *client)
+>  	return ret;
+>  }
+>  
+> -static int tps6598x_remove(struct i2c_client *client)
+> +static void tps6598x_remove(struct i2c_client *client)
+>  {
+>  	struct tps6598x *tps = i2c_get_clientdata(client);
+>  
+>  	tps6598x_disconnect(tps, 0);
+>  	typec_unregister_port(tps->port);
+>  	usb_role_switch_put(tps->role_sw);
+> -
+> -	return 0;
+>  }
+>  
+>  static const struct of_device_id tps6598x_of_match[] = {
+> diff --git a/drivers/usb/typec/ucsi/ucsi_ccg.c b/drivers/usb/typec/ucsi/ucsi_ccg.c
+> index 6db7c8ddd51c..920b7e743f56 100644
+> --- a/drivers/usb/typec/ucsi/ucsi_ccg.c
+> +++ b/drivers/usb/typec/ucsi/ucsi_ccg.c
+> @@ -1398,7 +1398,7 @@ static int ucsi_ccg_probe(struct i2c_client *client,
+>  	return status;
+>  }
+>  
+> -static int ucsi_ccg_remove(struct i2c_client *client)
+> +static void ucsi_ccg_remove(struct i2c_client *client)
+>  {
+>  	struct ucsi_ccg *uc = i2c_get_clientdata(client);
+>  
+> @@ -1408,8 +1408,6 @@ static int ucsi_ccg_remove(struct i2c_client *client)
+>  	ucsi_unregister(uc->ucsi);
+>  	ucsi_destroy(uc->ucsi);
+>  	free_irq(uc->irq, uc);
+> -
+> -	return 0;
+>  }
+>  
+>  static const struct i2c_device_id ucsi_ccg_device_id[] = {
+> diff --git a/drivers/usb/typec/wusb3801.c b/drivers/usb/typec/wusb3801.c
+> index e63509f8b01e..3cc7a15ecbd3 100644
+> --- a/drivers/usb/typec/wusb3801.c
+> +++ b/drivers/usb/typec/wusb3801.c
+> @@ -399,7 +399,7 @@ static int wusb3801_probe(struct i2c_client *client)
+>  	return ret;
+>  }
+>  
+> -static int wusb3801_remove(struct i2c_client *client)
+> +static void wusb3801_remove(struct i2c_client *client)
+>  {
+>  	struct wusb3801 *wusb3801 = i2c_get_clientdata(client);
+>  
+> @@ -411,8 +411,6 @@ static int wusb3801_remove(struct i2c_client *client)
+>  
+>  	if (wusb3801->vbus_on)
+>  		regulator_disable(wusb3801->vbus_supply);
+> -
+> -	return 0;
+>  }
 
-Thanks for testing it! Thomas is getting that patch through the drm-fixes
-path, so it should make it to the v5.19-rc cycle at some point.
+Reviewed-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
 
 -- 
-Best regards,
-
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+heikki

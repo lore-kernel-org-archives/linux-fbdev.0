@@ -2,145 +2,100 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32035C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 29 Jun 2022 20:06:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00CC8C43334
+	for <linux-fbdev@archiver.kernel.org>; Wed, 29 Jun 2022 21:00:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229966AbiF2UGN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 29 Jun 2022 16:06:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40662 "EHLO
+        id S230076AbiF2VAy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 29 Jun 2022 17:00:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46766 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229714AbiF2UGM (ORCPT
+        with ESMTP id S230323AbiF2VAw (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 29 Jun 2022 16:06:12 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 43FCD35869
-        for <linux-fbdev@vger.kernel.org>; Wed, 29 Jun 2022 13:06:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1656533165;
-        bh=9MAVZ3xrTPh8AYx1aq2x2X7367U1zqasYfzFWVMUtK4=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=KMPHyOD8tPgLLDm6yc5kKly2pyRprbjItGEmRId2BPpuNSwXFP2gkZBsybTRcu+9R
-         oCjm1iPojT1j/vwPcUV3dse7v1gZehTc7WxmaLuotSqcEEtHNhT9P7HAA9fT4Eh1Jp
-         9mRTbD6li/tlCyiBiPojRYjw//jrEImNLpVvaJTE=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.135.51]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1N4QwW-1nfb8V0T5y-011OCV; Wed, 29
- Jun 2022 22:06:05 +0200
-Message-ID: <e0224c85-dc03-ad8f-85e7-51325899ac38@gmx.de>
-Date:   Wed, 29 Jun 2022 22:05:36 +0200
+        Wed, 29 Jun 2022 17:00:52 -0400
+Received: from mail-il1-f182.google.com (mail-il1-f182.google.com [209.85.166.182])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0747B3FBF7;
+        Wed, 29 Jun 2022 14:00:40 -0700 (PDT)
+Received: by mail-il1-f182.google.com with SMTP id o4so11101114ilm.9;
+        Wed, 29 Jun 2022 14:00:39 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=QNDYng6HiaUQ2XzlbhKa6Kje7mjtGzKFFC9Apcml49c=;
+        b=H7K91T4mVLIcGnSgVXD5tPLoIgqHq7BcmMEuTbnR/ayN9NZ3lRqZRl9ACrabovvpjq
+         AO4LqPB10ZL3cfI0Q+t/TyMeW0zA71x/jUNp50fO+lRtdAbHEoLGgV7u2yI4YuoTED1V
+         /FXjo+lNHxucdvZGUAxYsTviv8hNjggyrRsyuokW4aGA0Mf6g9Re389HYBR6AL8d19vh
+         YJ+Ga2U22o6GIgmeZ9jgWU7HwtPsG2SPNwcKAsSIfH81LHINh/DNNnBvdGASNjGb4aoV
+         OmnEIlNYVP8N8rn/RXJLJdUbA+a26FYt8g8Sj0jTa2wqAJTkqVJgWTyORjn1MgsWLOy+
+         AmTg==
+X-Gm-Message-State: AJIora+iKDCVoLAUsNUBq0+Ee5Gw2FxazZQEWaVZ/cqNE03bCl0Tg0aW
+        VM2MRqBItglqyviU5zZAUg==
+X-Google-Smtp-Source: AGRyM1vaLdz2tY8DbktMG5UohpiNPszRj0YNupGJE9+wwsg3tChAw/usAM6+QnPklIlRt9YF5xSJoQ==
+X-Received: by 2002:a05:6e02:19cd:b0:2da:d593:d32 with SMTP id r13-20020a056e0219cd00b002dad5930d32mr49391ill.145.1656536439211;
+        Wed, 29 Jun 2022 14:00:39 -0700 (PDT)
+Received: from xps15.herring.priv ([64.188.179.253])
+        by smtp.googlemail.com with ESMTPSA id u13-20020a5d818d000000b0067513ad66c3sm7061434ion.41.2022.06.29.14.00.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 29 Jun 2022 14:00:38 -0700 (PDT)
+From:   Rob Herring <robh@kernel.org>
+To:     Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
+Cc:     Jingoo Han <jg1.han@samsung.com>, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Revert "drivers/video/backlight/platform_lcd.c: add support for device tree based probe"
+Date:   Wed, 29 Jun 2022 15:00:23 -0600
+Message-Id: <20220629210024.815761-1-robh@kernel.org>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.10.0
-Subject: Re: [PATCH v6 3/4] fbcon: Prevent that screen size is smaller than
- font size
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>
-References: <20220626102853.124108-1-deller@gmx.de>
- <20220626102853.124108-4-deller@gmx.de>
- <CAMuHMdV5zLoQWi2qd9HpP65WEvCw_q3VTsZ0MnBV1t8xM7KFUw@mail.gmail.com>
- <f3b01426-1cd4-40b9-7dd7-0965c4c0611c@gmx.de>
- <CAMuHMdUz1OMe+opM2b=XyYpQc4ynCyamXGFTjkbnzMr3wFvb8g@mail.gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <CAMuHMdUz1OMe+opM2b=XyYpQc4ynCyamXGFTjkbnzMr3wFvb8g@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:CWqgo1+Ci9R/2f4bBXRRQjPy772oMPSOIaQ5xRgV9H3VneZh9eI
- ptHcT7GGl7y/SOAwiixJ51bzsGS/Rf+p3ckFp6Vilkk4rbQLuApJdbBnzGd8OmlFSE8UmSm
- jMyQBggULXMQ1y3Uebcn2QN81RySZKC7PdYCnMRVaHy7CBUfRFNwvu9B6eCZSCU7FRauCIQ
- iiYcTIkn3uBP+70Z3W+xw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:lALLXqdfIiY=:u2lIIo0e/zXabzUSq0N5hx
- rh6vN7c0nvOQpkNfADI/Az5bdKE0ucs5tYPxmR5JrMEm6D1uQh8j7cMFaHvm8F2z5FPAwYrx6
- dW8kxOs8aBnpDtiD1vEa6CNJRNLtBAEm0NEKflVTUEV++jojZHJl1j85ZTrqMethOoVHYouJg
- fZbDmgGb2xFRv+1BWogpXXlmqorEIBFto5PfOY73viz46AJUkn+sEnF/2AXKdULax8dr+BV0A
- knLl1FRAu+2Chjffx3Phv6cYf76i7gMhYDq/XqBWjrrngbpHHo40YEyD0+A2kC9mZiS5+cMrR
- rd+1H6xiwtDSWyj5uS893D6jfLe0eFo8CG98gvN4BEUcQG7DwJj0ad/vzj30ReEhV6PjBKXMo
- YEr8O+pt8iNHB2YMB56L+6wGRH03Smq+JhxzHzz/bFQYNo6jz92Kk9wThqs9KbVBNJPhgymDt
- aVwa+ikTZbRl+ZmBsI/CFaAXHb4T0R/QkmgJERngvG/zARdjhzz1FdCX4e4K0zi2T3FUxEFj7
- sOfU9UGFKCKqXO/PNCjqgSjARoXAlHkbK9dg7uvrskQgRS7MSxux+3BQAlvIS5ft4Dmy1pLVb
- IIeM5CHYT5g8BEMOBifY/Ueehqh4wyvT+rNhSFpaGIEE93Mj4PRvyS85k0Ava29PU20gNcQPh
- zlwngUqgaohEaBmZlXNaeEoM3guAguDEcu2yVf6HGbCzKYo076elfZxWIXUkJslTvfN6Az25u
- AWY4PhI0Th58m9ytMrPXv8ELOPpEH14LFB/zqFXCaDbIbwNElaRPBtZkxfoTeiL3ka8p0pod7
- hqcHL+SAUB6T8s5G51d9jtIov3T0lKEkwiViKVI7zdkg3UvOpWBhvItPp/ZaKoG2sDY7d2zPT
- 13YOfpPh2dckyrO3Waf5EK0nrFvNavqNWCnYd1s9VJc48buPmr0gVZSQ/XoQLVKipcKDvS7xj
- o1vTzsOVf02amTmic0nR8kG2oyRul+M/juYgv8HtzuIVAn7us/kmxHTCK+36XVn3JtCSDpT23
- dM/v0Ure7YbQ6GB5EGzH5rTtpFcDoByWGyFbgYsbcLMc6qByLYJ1jPyL+rmjxxMfkpBdIdiRH
- PiF7pHxslipHwBVZ/U2QsnzRso4b7ToBOsdGSpVRWqbtbI8sLBn3Rb3UA==
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 6/29/22 09:03, Geert Uytterhoeven wrote:
-> Hi Helge,
->
-> On Tue, Jun 28, 2022 at 10:52 PM Helge Deller <deller@gmx.de> wrote:
->> On 6/28/22 10:39, Geert Uytterhoeven wrote:
->>> On Sun, Jun 26, 2022 at 12:33 PM Helge Deller <deller@gmx.de> wrote:
->>>> We need to prevent that users configure a screen size which is smalle=
-r than the
->>>> currently selected font size. Otherwise rendering chars on the screen=
- will
->>>> access memory outside the graphics memory region.
->>>>
->>>> This patch adds a new function fbcon_modechange_possible() which
->>>> implements this check and which later may be extended with other chec=
-ks
->>>> if necessary.  The new function is called from the FBIOPUT_VSCREENINF=
-O
->>>> ioctl handler in fbmem.c, which will return -EINVAL if userspace aske=
-d
->>>> for a too small screen size.
->>>>
->>>> Signed-off-by: Helge Deller <deller@gmx.de>
->>>> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
->>>> Cc: stable@vger.kernel.org # v5.4+
->>>
->>> Thanks for your patch, which is now commit f0b6a66d33ca6e7e ("fbcon:
->>> Prevent that screen size is smaller than font size") in fbdev/for-next
->
->>>> --- a/drivers/video/fbdev/core/fbmem.c
->>>> +++ b/drivers/video/fbdev/core/fbmem.c
->>>> @@ -1112,7 +1112,9 @@ static long do_fb_ioctl(struct fb_info *info, u=
-nsigned int cmd,
->>>>                         return -EFAULT;
->>>>                 console_lock();
->>>>                 lock_fb_info(info);
->>>> -               ret =3D fb_set_var(info, &var);
->>>> +               ret =3D fbcon_modechange_possible(info, &var);
->>>
->>> Again, this should be done (if done at all) after the call to
->>> fb_ops.check_var(), as it breaks the FBIOPUT_VSCREENINFO rounding rule=
-.
->>>
->>> What if the user just wants to display graphics, not text?
->>
->> Yes, I need to go back to an older version here too and check that
->> the test is only run on text consoles.
->> That check was dropped, due feedback that you could switch
->> back from graphics (e.g. X11) to text console at any time....so the
->> check for text-only is not correct.
->>
->>> Can't the text console be disabled instead?
->>
->> I think the solution is to return failure if switching back to text mod=
-e isn't possible if
->> fonts are bigger than the screen resolution. That will be another patch=
-.
->
-> Isn't the font a per-VC setting? Hence can't you change resolution,
-> switch to a different VC, and run into this?
->
-> I think the only real solution is to set the number of text columns
-> and/or rows to zero, and make sure that is handled correctly.
+This reverts commit 52e842432f36d5b15227d0ee0d2aa3d2bc3cc0b2.
 
-I agree, there doesn't seem to be a simple solution.
-On the other hand, such usecase seems very unlikely.
-If you have a proposal for a pacth I'd welcome it.
+The DT support never would have worked because there's no platform_data
+providing ops. There's not any documented binding for it either.
 
-Anyway, I've just sent out a new patch series. It does not include any pat=
-ch
-for this theoretical problem yet.
+Cc: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+ drivers/video/backlight/platform_lcd.c | 10 ----------
+ 1 file changed, 10 deletions(-)
 
-Helge
+diff --git a/drivers/video/backlight/platform_lcd.c b/drivers/video/backlight/platform_lcd.c
+index b2bfbf070200..dc37494baf42 100644
+--- a/drivers/video/backlight/platform_lcd.c
++++ b/drivers/video/backlight/platform_lcd.c
+@@ -12,7 +12,6 @@
+ #include <linux/fb.h>
+ #include <linux/backlight.h>
+ #include <linux/lcd.h>
+-#include <linux/of.h>
+ #include <linux/slab.h>
+ 
+ #include <video/platform_lcd.h>
+@@ -133,19 +132,10 @@ static int platform_lcd_resume(struct device *dev)
+ static SIMPLE_DEV_PM_OPS(platform_lcd_pm_ops, platform_lcd_suspend,
+ 			platform_lcd_resume);
+ 
+-#ifdef CONFIG_OF
+-static const struct of_device_id platform_lcd_of_match[] = {
+-	{ .compatible = "platform-lcd" },
+-	{},
+-};
+-MODULE_DEVICE_TABLE(of, platform_lcd_of_match);
+-#endif
+-
+ static struct platform_driver platform_lcd_driver = {
+ 	.driver		= {
+ 		.name	= "platform-lcd",
+ 		.pm	= &platform_lcd_pm_ops,
+-		.of_match_table = of_match_ptr(platform_lcd_of_match),
+ 	},
+ 	.probe		= platform_lcd_probe,
+ };
+-- 
+2.34.1
+

@@ -2,151 +2,143 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79E1EC43334
-	for <linux-fbdev@archiver.kernel.org>; Tue, 28 Jun 2022 20:52:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BCBF6C43334
+	for <linux-fbdev@archiver.kernel.org>; Wed, 29 Jun 2022 03:51:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231550AbiF1Uwq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 28 Jun 2022 16:52:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39158 "EHLO
+        id S229625AbiF2Dvg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 28 Jun 2022 23:51:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42344 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230190AbiF1Uwp (ORCPT
+        with ESMTP id S229977AbiF2Dvc (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 28 Jun 2022 16:52:45 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF43D33897
-        for <linux-fbdev@vger.kernel.org>; Tue, 28 Jun 2022 13:52:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1656449558;
-        bh=XazMmv0sZuZYFOGQjgLrbL0sqkc1ZYNkTxQdScLvQx0=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=Yp4yiW+IInbLOdBIFKwyQBw8u22Ilihc6TkI0neYI6HthBhyOac2MfDi0lovKrQqk
-         CgXQelJGtbNy/KuM0OQ7dDAMnuH5FWXUVWJUpFJq4pQjnTEGMAHjV+OABrKwuRb/xX
-         3RmwtuiNCmHR1cKudd6/D/pgsdjKhVOpYhZXxDwQ=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.161.166]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MhU9j-1nS1Yr0JLn-00ehAj; Tue, 28
- Jun 2022 22:52:38 +0200
-Message-ID: <f3b01426-1cd4-40b9-7dd7-0965c4c0611c@gmx.de>
-Date:   Tue, 28 Jun 2022 22:52:10 +0200
+        Tue, 28 Jun 2022 23:51:32 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A6F7721246;
+        Tue, 28 Jun 2022 20:51:30 -0700 (PDT)
+X-UUID: 1d64b464cc424b43b8463d9e17a7516b-20220629
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.7,REQID:f3a6d0ec-03cd-469f-ba75-57c8a5738483,OB:10,L
+        OB:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,AC
+        TION:release,TS:45
+X-CID-INFO: VERSION:1.1.7,REQID:f3a6d0ec-03cd-469f-ba75-57c8a5738483,OB:10,LOB
+        :0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:45
+X-CID-META: VersionHash:87442a2,CLOUDID:964b0c86-57f0-47ca-ba27-fe8c57fbf305,C
+        OID:9ab0d72c7f79,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:0,File:nil,QS:nil,BEC:nil,COL:0
+X-UUID: 1d64b464cc424b43b8463d9e17a7516b-20220629
+Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw02.mediatek.com
+        (envelope-from <ck.hu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1645961264; Wed, 29 Jun 2022 11:51:25 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
+ mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Wed, 29 Jun 2022 11:51:24 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
+ Transport; Wed, 29 Jun 2022 11:51:24 +0800
+Message-ID: <fcb60f65a30721970b7647633feea4f1df1bf774.camel@mediatek.com>
+Subject: Re: [PATCH v12 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
+ driver
+From:   CK Hu <ck.hu@mediatek.com>
+To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, <chunkuang.hu@kernel.org>,
+        <p.zabel@pengutronix.de>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
+        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
+        <airlied@linux.ie>
+CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
+        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
+        <angelogioacchino.delregno@collabora.com>,
+        <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-fbdev@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Wed, 29 Jun 2022 11:51:24 +0800
+In-Reply-To: <20220627080341.5087-6-rex-bc.chen@mediatek.com>
+References: <20220627080341.5087-1-rex-bc.chen@mediatek.com>
+         <20220627080341.5087-6-rex-bc.chen@mediatek.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.10.0
-Subject: Re: [PATCH v6 3/4] fbcon: Prevent that screen size is smaller than
- font size
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>
-References: <20220626102853.124108-1-deller@gmx.de>
- <20220626102853.124108-4-deller@gmx.de>
- <CAMuHMdV5zLoQWi2qd9HpP65WEvCw_q3VTsZ0MnBV1t8xM7KFUw@mail.gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <CAMuHMdV5zLoQWi2qd9HpP65WEvCw_q3VTsZ0MnBV1t8xM7KFUw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:G1IGzPWmlSOzWu8OL/lk16TqA2P6zW0p5Y7XeMFLpdJF5WlT7gh
- a13xtQbT9Ezyok7RwAjOBkAFWV2bw0Q6S8EWL+mFhOrBYOp8tUs11OUbgWMYkq5HOqx1TLm
- ieONWyiETFMZP8Abynqh/TxiWqsKWeovARBdmz4jsCeV6CHwfIJh/pPHfdS34bODCvi23M5
- 5o8xGab+kcTx6MvuXhWuA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:bApuQhifFEU=:XSoeIRreqI5pKq4Ig815UX
- 3//tZGqpbhX1u+7uhZQRyhd8BTTiRJhAst2Vg33SPY9ehtovNQ8pE2mMbrxy3RwHz3LS0JbKE
- Fmc0BqHUyjP5Reb3/TSKUQyVKZox3uvD4e+oheF/bBpB8mQoFXdJjYywbE2/WdYptjht4U/ar
- B7SytAz9P/c6NKqUtLIB6e+gU1n+1l2QmSRJEYRKCqs1pJb8CQ1emE0s4gew3kKGtjgUpCiPZ
- DkfG+rJeWhkWz5hwPSuCSD+7Jrcmu/jDres3PgAl9MOrObYDFyX63SG3HfKDldkhMQDntK/uW
- sKaOpyM4B9RtgpqGNk/k12PoSftypRpuHzG5ba+KYOTXaFl/eg/7juN5F5FGbB5tefLRNnarp
- auNqCqfJhTK6eZZeTq1OTP8+xyVaexT/7+jlFUXeSikEO21fBAC1j+IxxHvZ7lotdpKcQMwve
- fic2ahVHDczLH1nUqt7IE0djg1UPRwPFQi2qCuR/qy45MfQ0ebaJDzKyzhXLDU7c2phl0+Scd
- yU1ytlOzhqyQgKi3MeHYWNa2WCz38wzBhi8z2NQwXyi9fFiIVV0O8Jn6CjMApxIqdPMAMsqPe
- j7obVTCAYTDz+bkTxBjljbAeJqmQVwsNruQWQ2NeXSd9ls9IYz/zTmtLa4DPq3PcF8mhSg23U
- C3ba5pNhb1gfeYh6uMcWGckpTHC3Hlw+bo4KZOj4uL9/HjHorlfZSpc65byMan7jaL055v7ID
- q/wGsxDAY5k1/434Xkdd+kTDMF7qZjrStgNw94hQpvpnVpLprzvRuo4/ULaLMsy+WGqN9jBYl
- BKYIgQSuZ+7lRSNW1Yrfeo9Dp99Pwu3NP1g5q6WqJGQjt/J5nV6XvS6N5cNtMT6Ntm/NypHvw
- QFwXQpSIAnONbszdgcgPMbmapwRDQQPe4OZFRxX90PWXsuvkC9O6TEf+4+UTrJwbCTrK/ahd9
- qgWBfSo11kxn5PkHQURaktS6DnkmsrJFq24BWO/iuqHMlxevDaDnb+zNdbC1R1u5/bgjAoHkB
- M80Q3bze2WH5vBP1aqVRN8AKDRg0u+cGFajjZ+Mqv8rkqg8NkeXgTGVsYxGiLivQejmBXAJQL
- MgkxIkhI7F7gs/mm7xFjQHTefGdrYvsT/PR2CizrZ89WiosuPhqhALfdA==
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 6/28/22 10:39, Geert Uytterhoeven wrote:
-> Hi Helge,
->
-> On Sun, Jun 26, 2022 at 12:33 PM Helge Deller <deller@gmx.de> wrote:
->> We need to prevent that users configure a screen size which is smaller =
-than the
->> currently selected font size. Otherwise rendering chars on the screen w=
-ill
->> access memory outside the graphics memory region.
->>
->> This patch adds a new function fbcon_modechange_possible() which
->> implements this check and which later may be extended with other checks
->> if necessary.  The new function is called from the FBIOPUT_VSCREENINFO
->> ioctl handler in fbmem.c, which will return -EINVAL if userspace asked
->> for a too small screen size.
->>
->> Signed-off-by: Helge Deller <deller@gmx.de>
->> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
->> Cc: stable@vger.kernel.org # v5.4+
->
-> Thanks for your patch, which is now commit f0b6a66d33ca6e7e ("fbcon:
-> Prevent that screen size is smaller than font size") in fbdev/for-next
->
->> --- a/drivers/video/fbdev/core/fbcon.c
->> +++ b/drivers/video/fbdev/core/fbcon.c
->
->> --- a/drivers/video/fbdev/core/fbmem.c
->> +++ b/drivers/video/fbdev/core/fbmem.c
->> @@ -1112,7 +1112,9 @@ static long do_fb_ioctl(struct fb_info *info, uns=
-igned int cmd,
->>                         return -EFAULT;
->>                 console_lock();
->>                 lock_fb_info(info);
->> -               ret =3D fb_set_var(info, &var);
->> +               ret =3D fbcon_modechange_possible(info, &var);
->
-> Again, this should be done (if done at all) after the call to
-> fb_ops.check_var(), as it breaks the FBIOPUT_VSCREENINFO rounding rule.
->
-> What if the user just wants to display graphics, not text?
+Hi, Bo-Chen:
 
-Yes, I need to go back to an older version here too and check that
-the test is only run on text consoles.
-That check was dropped, due feedback that you could switch
-back from graphics (e.g. X11) to text console at any time....so the
-check for text-only is not correct.
+On Mon, 2022-06-27 at 16:03 +0800, Bo-Chen Chen wrote:
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
+> 
+> This patch adds a embedded displayport driver for the MediaTek mt8195
+> SoC.
+> 
+> It supports the MT8195, the embedded DisplayPort units. It offers
+> DisplayPort 1.4 with up to 4 lanes.
+> 
+> The driver creates a child device for the phy. The child device will
+> never exist without the parent being active. As they are sharing a
+> register range, the parent passes a regmap pointer to the child so
+> that
+> both can work with the same register range. The phy driver sets
+> device
+> data that is read by the parent to get the phy device that can be
+> used
+> to control the phy properties.
+> 
+> This driver is based on an initial version by
+> Jitao shi <jitao.shi@mediatek.com>
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> [Bo-Chen: Cleanup the drivers and modify comments from reviewers]
+> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> ---
 
-> Can't the text console be disabled instead?
+[snip]
 
-I think the solution is to return failure if switching back to text mode i=
-sn't possible if
-fonts are bigger than the screen resolution. That will be another patch.
+> +
+> +static irqreturn_t mtk_dp_hpd_event_thread(int hpd, void *dev)
+> +{
+> +	struct mtk_dp *mtk_dp = dev;
+> +	u8 buf[DP_RECEIVER_CAP_SIZE] = {};
+> +
+> +	if (mtk_dp->train_info.cable_state_change) {
+> +		mtk_dp->train_info.cable_state_change = false;
+> +
+> +		mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_PWR_STATE,
+> +				   DP_PWR_STATE_BANDGAP_TPLL_LANE,
+> +				   DP_PWR_STATE_MASK);
+> +		drm_dp_read_dpcd_caps(&mtk_dp->aux, buf);
+> +		mtk_dp->train_info.link_rate =
+> +			min_t(int, mtk_dp->max_linkrate,
+> +			      buf[mtk_dp->max_linkrate]);
+> +		mtk_dp->train_info.lane_count =
+> +			min_t(int, mtk_dp->max_lanes,
+> +			      drm_dp_max_lane_count(buf));
 
-Thanks!
+If the state_change is unplug, why do you modify link_rate and
+lane_count?
+If the state_change is plug, there is a training flow to decide
+link_rate and lane_count. I think the training flow is correct and any
+modification here is redundant.
 
-Helge
+Regards,
+CK
 
-
->
->> +               if (!ret)
->> +                       ret =3D fb_set_var(info, &var);
->>                 if (!ret)
->>                         fbcon_update_vcs(info, var.activate & FB_ACTIVA=
-TE_ALL);
->>                 unlock_fb_info(info);
->
-> Gr{oetje,eeting}s,
->
->                         Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m=
-68k.org
->
-> In personal conversations with technical people, I call myself a hacker.=
- But
-> when I'm talking to journalists I just say "programmer" or something lik=
-e that.
->                                 -- Linus Torvalds
+> +	}
+> +
+> +	if (mtk_dp->train_info.irq_sta.hpd_inerrupt) {
+> +		dev_dbg(mtk_dp->dev, "MTK_DP_HPD_INTERRUPT\n");
+> +		mtk_dp->train_info.irq_sta.hpd_inerrupt = false;
+> +		mtk_dp_hpd_sink_event(mtk_dp);
+> +	}
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
 

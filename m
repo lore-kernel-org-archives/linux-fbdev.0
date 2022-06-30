@@ -2,90 +2,73 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EB45C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Jun 2022 21:55:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D525C43334
+	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Jun 2022 23:28:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233520AbiF3VzH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 30 Jun 2022 17:55:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45018 "EHLO
+        id S232498AbiF3X17 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 30 Jun 2022 19:27:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48936 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232633AbiF3VzG (ORCPT
+        with ESMTP id S231124AbiF3X16 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 30 Jun 2022 17:55:06 -0400
-Received: from mail-io1-f47.google.com (mail-io1-f47.google.com [209.85.166.47])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ECC40217;
-        Thu, 30 Jun 2022 14:55:04 -0700 (PDT)
-Received: by mail-io1-f47.google.com with SMTP id m13so571439ioj.0;
-        Thu, 30 Jun 2022 14:55:04 -0700 (PDT)
+        Thu, 30 Jun 2022 19:27:58 -0400
+Received: from mail-ot1-x331.google.com (mail-ot1-x331.google.com [IPv6:2607:f8b0:4864:20::331])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 109F344A26
+        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 16:27:52 -0700 (PDT)
+Received: by mail-ot1-x331.google.com with SMTP id 93-20020a9d02e6000000b0060c252ee7a4so549850otl.13
+        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 16:27:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=mime-version:in-reply-to:references:from:user-agent:date:message-id
+         :subject:to:cc;
+        bh=SH4c10UHd2jm5iXZMsMlumPvXgKDKSukPGr/j2MwBes=;
+        b=DOYeB54ERnxkc8KCdfg/9ohDBPJKXF4Zj3owMi8p+AOUa5ARLSnQ6//fWAcXaUSeYo
+         pIbJo7hLhKev5eib3IyLpSXkMUnnDGAeqPNe8oSsRGAG/ReIqkW/mKCkXzKhz0k0zx7P
+         XiC1PDBqdFcx69rKuM+WWlCRM4kpBxZ2tDOdg=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=O0oI2Gbpm910/K3zuIgYxSbljlnn6O3+k19Oo002PO8=;
-        b=h2UuwuwbnKEelVZu8LJo9AA0aImrF0GDkLZVz8mo+EUEQqFuDxorAzBX7gRP9D4NMT
-         rm6f8mKyVqZKgDIIbAGaI2hPe234/3lDuyH5PeQwvVAk9FbTY/7U5kx9avfu6Od47YkG
-         Btvh+TQwsMgB9XyZ+ZbsaUb2QTgOEAD9WrlhNWqvYLG4jq/WXqD3FKgGPKx2N2Wjs6f+
-         /UfTbau/WZBJZ9scuA4vNaadl6vdLDS3u1doDgDEn5cB+Hov51zng2btG0HSw8fwEvIg
-         l4WAALllHpUUnSz/D63d6LLSppbbL567BSWjddmVR2pzhwyLEcA+qdBakaIIhFbe6ydy
-         8bRg==
-X-Gm-Message-State: AJIora9tACg6r7ixO9iVlMXVy/p+t1GuEN2Tr9/JgoW5P92w8CwCU5Ld
-        xkUItkoN2/t7wYOFSRb1ew==
-X-Google-Smtp-Source: AGRyM1vtcfkSVY6M7PNTiDY7FVEXYZMNw3bvjSTqjH2j0Qe5vPkkxFrAuZnZMfEK51OROsKsre8rDw==
-X-Received: by 2002:a05:6638:3387:b0:33c:9f9e:5a17 with SMTP id h7-20020a056638338700b0033c9f9e5a17mr6777342jav.12.1656626104166;
-        Thu, 30 Jun 2022 14:55:04 -0700 (PDT)
-Received: from robh.at.kernel.org ([64.188.179.248])
-        by smtp.gmail.com with ESMTPSA id m2-20020a02cdc2000000b00339e6168237sm8637761jap.34.2022.06.30.14.55.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 Jun 2022 14:55:03 -0700 (PDT)
-Received: (nullmailer pid 3384041 invoked by uid 1000);
-        Thu, 30 Jun 2022 21:55:00 -0000
-Date:   Thu, 30 Jun 2022 15:55:00 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     ChiaEn Wu <peterwu.pub@gmail.com>
-Cc:     chiaen_wu@richtek.com, devicetree@vger.kernel.org,
-        matthias.bgg@gmail.com, jic23@kernel.org,
-        daniel.thompson@linaro.org, krzysztof.kozlowski+dt@linaro.org,
-        linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
-        jingoohan1@gmail.com, linux-leds@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        alice_chen@richtek.com, pavel@ucw.cz, lee.jones@linaro.org,
-        lgirdwood@gmail.com, robh+dt@kernel.org, chunfeng.yun@mediatek.com,
-        linux@roeck-us.net, linux-fbdev@vger.kernel.org,
-        broonie@kernel.org, szunichen@gmail.com, sre@kernel.org,
-        heikki.krogerus@linux.intel.com, cy_huang@richtek.com,
-        linux-usb@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, gregkh@linuxfoundation.org,
-        lars@metafoo.de, deller@gmx.de
-Subject: Re: [PATCH v3 05/14] dt-bindings: backlight: Add Mediatek MT6370
- backlight
-Message-ID: <20220630215500.GA3383976-robh@kernel.org>
-References: <20220623115631.22209-1-peterwu.pub@gmail.com>
- <20220623115631.22209-6-peterwu.pub@gmail.com>
+        h=x-gm-message-state:mime-version:in-reply-to:references:from
+         :user-agent:date:message-id:subject:to:cc;
+        bh=SH4c10UHd2jm5iXZMsMlumPvXgKDKSukPGr/j2MwBes=;
+        b=gC28VET48yi06oLdQltqserr/nNlFrI0+ydnFBezi7QBiMn1taj7iEa5+NXLr+cN/f
+         VLW+rpuWYqbfEaPqGrB7h87qBIAvz1fJCBbAm7BOIoAJN8bcu0nJ0BJnZVArIEnlB6GR
+         DyvUj9OciTwoY/6MUiqHGDLTHaZBMJCzUh5d1IuonOopdhSI0M/3iBstc+jyKCMZh/TS
+         VmiOxnL1xBbjSMsI241d0PbTI6wsfk9f0PwMZgkQOLASaMVhqKCrKRQuEk5thd2QbHJR
+         0buoqTvJ5IQaIcmHC9wOhvkMEO4Df20YlL+gBK/VOm0sO/mK4cJfzDwg4qbh9UA50F8T
+         HSzg==
+X-Gm-Message-State: AJIora8iJSSsHNTISU+hXyaQSB85DHTswg7fup3skNbh0gM2M6YnCMCv
+        oQgRRi7+Z6UdrXJ85jczhKIeTSfPug8l9MmvCZKk1g==
+X-Google-Smtp-Source: AGRyM1uVXOUlD37mLQ7pLmkL8BIEdZdsnlXTlVxy7cY0Oa3nZ1gzq/kLiCUOdFyoe5MDzqiDJ+32/N24XhJQNeSiK8s=
+X-Received: by 2002:a05:6830:d81:b0:616:c424:6f22 with SMTP id
+ bv1-20020a0568300d8100b00616c4246f22mr5252300otb.77.1656631671458; Thu, 30
+ Jun 2022 16:27:51 -0700 (PDT)
+Received: from 753933720722 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 30 Jun 2022 16:27:50 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220623115631.22209-6-peterwu.pub@gmail.com>
+In-Reply-To: <20220630173328.1369576-1-hsinyi@chromium.org>
+References: <20220630173328.1369576-1-hsinyi@chromium.org>
+From:   Stephen Boyd <swboyd@chromium.org>
+User-Agent: alot/0.10
+Date:   Thu, 30 Jun 2022 16:27:50 -0700
+Message-ID: <CAE-0n50Pe2=tYeuuhBVHsTV9BqU1huU-w-xMMn-1scj2OxBWbg@mail.gmail.com>
+Subject: Re: [PATCH] video: of_display_timing.h: include errno.h
+To:     Hsin-Yi Wang <hsinyi@chromium.org>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc:     Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, 23 Jun 2022 19:56:22 +0800, ChiaEn Wu wrote:
-> From: ChiYuan Huang <cy_huang@richtek.com>
-> 
-> Add mt6370 backlight binding documentation.
-> 
-> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+Quoting Hsin-Yi Wang (2022-06-30 10:33:29)
+> If CONFIG_OF is not enabled, default of_get_display_timing() returns an
+> errno, so include the header.
+>
+> Fixes: 422b67e0b31a ("videomode: provide dummy inline functions for !CONFIG_OF")
+> Suggested-by: Stephen Boyd <swboyd@chromium.org>
+> Signed-off-by: Hsin-Yi Wang <hsinyi@chromium.org>
 > ---
-> 
-> v3
-> - Rename "mediatek,bled-pwm-hys-input-threshold-steps" to
->   "mediatek,bled-pwm-hys-input-th-steps"
-> - Refine "bled-pwm-hys-input-th-steps", "bled-ovp-microvolt",
->   "bled-ocp-microamp" enum values
-> ---
->  .../leds/backlight/mediatek,mt6370-backlight.yaml  | 92 ++++++++++++++++++++++
->  1 file changed, 92 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/leds/backlight/mediatek,mt6370-backlight.yaml
-> 
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Stephen Boyd <swboyd@chromium.org>

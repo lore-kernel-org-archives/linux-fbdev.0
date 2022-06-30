@@ -2,100 +2,137 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F826C43334
-	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Jun 2022 19:21:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BCA3FC433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Jun 2022 19:26:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233070AbiF3TVu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 30 Jun 2022 15:21:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55210 "EHLO
+        id S235269AbiF3T0q (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 30 Jun 2022 15:26:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58298 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236598AbiF3TVt (ORCPT
+        with ESMTP id S236685AbiF3T0p (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 30 Jun 2022 15:21:49 -0400
-Received: from mail-qv1-f45.google.com (mail-qv1-f45.google.com [209.85.219.45])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3392442EDA
-        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 12:21:49 -0700 (PDT)
-Received: by mail-qv1-f45.google.com with SMTP id c1so632713qvi.11
-        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 12:21:49 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=a3PYIklwKRbZib6lnKejKJfseVyL5UdoclVR+DLTM0c=;
-        b=Uag+mTtL0JoUZRnEPTHKxMvfEyh8FbbgMHKbtxFz3bFOA8w8wi0vpvEiU6aECsbBCS
-         G9hsJHxyLPK90A9gkMuCbWlOT4knoqWq1ARts2OClzO/oFPCJQ8bwfIvxBtaTV9qRPW+
-         Boqkf+NOAXanLhOdOtikqrf1t3faquRM+dFBtcfX94Wk2j/k/90n+1UMkN4tdrgyp6lI
-         /ujBDTPb6fYjzf1VZTXDnPH9BIKAYV1SsZmCLB7LGBnex/K1v3owCTMqfSY2H5FDjVah
-         Uhpb87dyOhHeUGP9DOLbAnoO0cAd7W2mIPlJv1bD0F0l+wr1DYPcBvE3VjQ86Qqk/erT
-         FdEQ==
-X-Gm-Message-State: AJIora8L6hOUfsu6xB7LeLbl7ywfNHShtBSvc9bRqM34SKXANKMXo/uE
-        MOQ1gXKNYRBe1bsmmXxHbZzlamzVh88PUA==
-X-Google-Smtp-Source: AGRyM1tjXvdXO4MJa+YYzxjBxMOK1dse/8yX/cacSuugswu/GV04w3t/X87lquREXhRNnbB0VgUPyA==
-X-Received: by 2002:a05:6214:5d88:b0:470:402d:a3fe with SMTP id mf8-20020a0562145d8800b00470402da3femr12754845qvb.6.1656616908078;
-        Thu, 30 Jun 2022 12:21:48 -0700 (PDT)
-Received: from mail-yb1-f178.google.com (mail-yb1-f178.google.com. [209.85.219.178])
-        by smtp.gmail.com with ESMTPSA id bk2-20020a05620a1a0200b006b1490619cdsm3631261qkb.99.2022.06.30.12.21.47
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 30 Jun 2022 12:21:47 -0700 (PDT)
-Received: by mail-yb1-f178.google.com with SMTP id l11so78248ybu.13
-        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 12:21:47 -0700 (PDT)
-X-Received: by 2002:a05:6902:a:b0:65c:b38e:6d9f with SMTP id
- l10-20020a056902000a00b0065cb38e6d9fmr11777905ybh.36.1656616907463; Thu, 30
- Jun 2022 12:21:47 -0700 (PDT)
+        Thu, 30 Jun 2022 15:26:45 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C5F943390
+        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 12:26:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1656617197;
+        bh=0DHbxziPs0MathoH1SF2+qVkbBZrUDPNAz0Z6UAyt2A=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=QLjpIpSkVwMqf7mkpBjU+XAuquyyQTuPa6c0nmovuP8e712Auc0xXmF9uLMpRCJr2
+         4625H5vJLJ27k2Ta1DRqTc4f+inDPoWFlKDtcnUFjla3dDp/1hYAAP5Mj9578MPJ3u
+         WFsFuCTYGnO+4JA6e8Ka2N9cM5PTEprx/S1nIitI=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.136.11]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MZktZ-1oASQk1jFf-00Wq6s; Thu, 30
+ Jun 2022 21:26:37 +0200
+Message-ID: <2c7c0791-2815-5e52-8959-a4ae179206a5@gmx.de>
+Date:   Thu, 30 Jun 2022 21:26:08 +0200
 MIME-Version: 1.0
-References: <20220629200024.187187-1-deller@gmx.de> <20220629200024.187187-6-deller@gmx.de>
-In-Reply-To: <20220629200024.187187-6-deller@gmx.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Thu, 30 Jun 2022 21:21:36 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXs+m80hPjcbW6XfNrgQYyO8G5McyGSjY5bPqAxQjqk_g@mail.gmail.com>
-Message-ID: <CAMuHMdXs+m80hPjcbW6XfNrgQYyO8G5McyGSjY5bPqAxQjqk_g@mail.gmail.com>
-Subject: Re: [PATCH 5/5] fbcon: Use fbcon_info_from_console() in fbcon_modechange_possible()
-To:     Helge Deller <deller@gmx.de>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.10.0
+Subject: Re: [PATCH 1/5] fbcon: Disallow setting font bigger than screen size
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
 Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
         DRI Development <dri-devel@lists.freedesktop.org>
-Content-Type: text/plain; charset="UTF-8"
+References: <20220629200024.187187-1-deller@gmx.de>
+ <20220629200024.187187-2-deller@gmx.de>
+ <CAMuHMdWW-oh_q7zE6riS8o+tgRmcOxxO_93-FVy9CVCcAOakhg@mail.gmail.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <CAMuHMdWW-oh_q7zE6riS8o+tgRmcOxxO_93-FVy9CVCcAOakhg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:l5Q5nu6gsNAqI7MD+2NMxKj0W0MUOKZ87/jfhP2L5qBKOmHkK2u
+ qrDr8lqa6Ba9rcVEyOU80EEf2uXN+uQXRwtOVmAdbsPRaJp5NduWX2BvWuNG80+G1QVHRbK
+ 0OXWNmUJowR/C481TI+TLFAjGtK4F00XyB2Xs2UwHa/6/wLAGBRs+4ElHzZQpxyTcKGmksE
+ xirqOwqVLZiGb8mVxemrA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:FGc3X1B9TXU=:FG9I+FYg9rsJT1JGeex4jY
+ 3dOcqb5fv8qtp/cXJlovlD6yVEwXfzmjh1U68js8rg1rLMgUQMdmRMqO7fBN3D3ZlABT2homX
+ 9WaZAmwf2CFZ1OjNvjFXvn7iczxaoUVMEKOMl3ZroQmv/wZfhP7aBsPI87mZo3Br6VZfd8iKx
+ S7Q6s7KQA+BCJZ9wdc0emDmxN/7PemqSh9ypiqHyk/sF90fbh4vWDvMG667ZYiWV0kz8hNScs
+ selESM7XLjOgGu+0yp22lOXrO2oo5xb9je3RjDNf6Zs/NZ0Er+24smAvpvX8QjJPvbqD02Jmd
+ OjOInwnYJ/uGO882GBFQnfE05KCotYSlRB0no9I1JGCO0p16mfS5OkNxdye/AqO0KHcTIYRT4
+ DHxOWRFY7VNOhl7vUAF1a7kcXN3WsLdFJvRP4z+0IXvbnk3zH9MEl/orDGAyzpMGRIsQ1GzJU
+ u07oq5Y/6kqimklZZ7yt3rQJi6QxOS76KrXRwGJjQgoq+umev1Bvlc9asQsDJtTZsuxj7is6s
+ B30/83l7Ynf2GLJqtRjNrJq6MXjvGTWjr2Pmh3kUEkz7MNMQutG3vLZ+ay4JNebNi1p125Epl
+ yLk9joea0G4ufloihfz+JbaQiUv8O+21WJjYlJbSRhqwm4T8W8x/1Unq2Jf9Z+6MzQ2lLNfCa
+ bRzG4+tgvAgq6aYTS2fFUClyD5uvExIgVtAx4CnodtjCKq5MmyTkX8O9uY0fCgouvJB965sHN
+ 7y1qcVreLs0xikas6y4T9enRF+0+EA+dEi9M8dXlEZpyPcVfMY3wSBw3CqMFfkTqLcnYlQDsP
+ C12XMrwLzg8xTN8MkLUXtB1sAj1++TJbd2lHn8OSFYW+pNmPsL+896I6ONpxEkHSJpMvYv+Mz
+ 1u02ZOp/HqmA6DkUd2N0uua1ylMmTMPdO35WXAGIWmgmPPoF1S24Ox9bHxX17VM/T3uTLGbW8
+ Zhv3ySpeSFDfCQtn+RQsB6NU3AfeNGMGvfYehU1JNaTDP/eRqx/BD+W6xV69iZvbfAXoD5LbY
+ Y8OdWjS2txea2K37ffTZlVpFXqjMGUEz2+48p6sOIwNt6ETgOknSq+jQ4+CC+mQSu9qdIJP9m
+ q8fT4xe54HpilrxWK8XoFFqGVOCuHJLIxC+mhWHLUEyqur1Y0mnCkORWg==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Helge,
-
-On Wed, Jun 29, 2022 at 10:00 PM Helge Deller <deller@gmx.de> wrote:
-> Use the fbcon_info_from_console() wrapper which was added to kernel
-> v5.19 with commit 409d6c95f9c6 ("fbcon: Introduce wrapper for console->fb_info lookup").
+On 6/30/22 20:51, Geert Uytterhoeven wrote:
+> Hi Helge,
 >
-> Signed-off-by: Helge Deller <deller@gmx.de>
-
-Thanks for your patch!
-
-I guess you kept this separate, to ease backporting?
-This does mean that upstream will never really see if using
-registered_fb[] directly may cause problems...
-
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -2752,7 +2752,7 @@ int fbcon_modechange_possible(struct fb_info *info, struct fb_var_screeninfo *va
->         for (i = first_fb_vc; i <= last_fb_vc; i++) {
->                 vc = vc_cons[i].d;
->                 if (!vc || vc->vc_mode != KD_TEXT ||
-> -                          registered_fb[con2fb_map[i]] != info)
-> +                          fbcon_info_from_console(i) != info)
->                         continue;
+> On Wed, Jun 29, 2022 at 10:00 PM Helge Deller <deller@gmx.de> wrote:
+>> Prevent that users set a font size which is bigger than the physical sc=
+reen.
+>> It's unlikely this may happen (because screens are usually much larger =
+than the
+>> fonts and each font char is limited to 32x32 pixels), but it may happen=
+ on
+>> smaller screens/LCD displays.
+>>
+>> Signed-off-by: Helge Deller <deller@gmx.de>
+>> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 >
->                 if (vc->vc_font.width  > FBCON_SWAP(var->rotate, var->xres, var->yres) ||
+> Thanks for your patch!
+>
+> Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+>
+>> --- a/drivers/video/fbdev/core/fbcon.c
+>> +++ b/drivers/video/fbdev/core/fbcon.c
+>> @@ -2469,6 +2469,11 @@ static int fbcon_set_font(struct vc_data *vc, st=
+ruct console_font *font,
+>>         if (charcount !=3D 256 && charcount !=3D 512)
+>>                 return -EINVAL;
+>>
+>> +       /* font bigger than screen resolution ? */
+>> +       if (font->width  > FBCON_SWAP(info->var.rotate, info->var.xres,=
+ info->var.yres) ||
+>> +           font->height > FBCON_SWAP(info->var.rotate, info->var.yres,=
+ info->var.xres))
+>
+> Note that we already have local vars w and h, albeit with the wrong
+> signedness.
 
-Anyway, LGTM, so
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+I don't like the "h" and "w" variables. Maybe something like "fh" for "fon=
+t-heigth"
+would have been better explaining which kind of "h" is meant.
+I assume that's why the patch below didn't used it either.
 
-Gr{oetje,eeting}s,
+That said, I'd like to keep it as is (at least for now).
 
-                        Geert
+Helge
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+>> +               return -EINVAL;
+>> +
+>>         /* Make sure drawing engine can handle the font */
+>>         if (!(info->pixmap.blit_x & (1 << (font->width - 1))) ||
+>>             !(info->pixmap.blit_y & (1 << (font->height - 1))))
+>
+> There were already more opportunities for using w and h before...
+>
+> Gr{oetje,eeting}s,
+>
+>                         Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m=
+68k.org
+>
+> In personal conversations with technical people, I call myself a hacker.=
+ But
+> when I'm talking to journalists I just say "programmer" or something lik=
+e that.
+>                                 -- Linus Torvalds
+

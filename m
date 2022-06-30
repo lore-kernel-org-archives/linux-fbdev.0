@@ -2,40 +2,40 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1EC3C43334
-	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Jun 2022 01:47:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5FD7C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Jun 2022 02:29:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229610AbiF3Brg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 29 Jun 2022 21:47:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47714 "EHLO
+        id S231604AbiF3C3k (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 29 Jun 2022 22:29:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49204 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229453AbiF3Brf (ORCPT
+        with ESMTP id S231623AbiF3C3j (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 29 Jun 2022 21:47:35 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 099F42E6BC;
-        Wed, 29 Jun 2022 18:47:27 -0700 (PDT)
-X-UUID: a00f99f6eb09426cacfa53421093aea0-20220630
+        Wed, 29 Jun 2022 22:29:39 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E701E767F;
+        Wed, 29 Jun 2022 19:29:37 -0700 (PDT)
+X-UUID: b4f413b992e541d7b3160804af19b7ad-20220630
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.7,REQID:399da4d9-4e8f-48ee-942f-56e82ae7da42,OB:0,LO
+X-CID-O-INFO: VERSION:1.1.7,REQID:b34c9f49-69f9-453d-91df-593f61f050a5,OB:0,LO
         B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
         ON:release,TS:0
-X-CID-META: VersionHash:87442a2,CLOUDID:f6972386-57f0-47ca-ba27-fe8c57fbf305,C
+X-CID-META: VersionHash:87442a2,CLOUDID:0ae22486-57f0-47ca-ba27-fe8c57fbf305,C
         OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
         ,QS:nil,BEC:nil,COL:0
-X-UUID: a00f99f6eb09426cacfa53421093aea0-20220630
-Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw02.mediatek.com
+X-UUID: b4f413b992e541d7b3160804af19b7ad-20220630
+Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw01.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1718973781; Thu, 30 Jun 2022 09:47:24 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
- mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Thu, 30 Jun 2022 09:47:22 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 1078674193; Thu, 30 Jun 2022 10:29:31 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Thu, 30 Jun 2022 10:29:30 +0800
 Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Thu, 30 Jun 2022 09:47:22 +0800
-Message-ID: <599af6f875cb85bab1a6f0e03bbfb74a2a3b948c.camel@mediatek.com>
+ Transport; Thu, 30 Jun 2022 10:29:27 +0800
+Message-ID: <52747ddcdae8c1445b6bed00acec03da0806b068.camel@mediatek.com>
 Subject: Re: [PATCH v12 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
  driver
 From:   CK Hu <ck.hu@mediatek.com>
@@ -53,7 +53,7 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Thu, 30 Jun 2022 09:47:22 +0800
+Date:   Thu, 30 Jun 2022 10:29:27 +0800
 In-Reply-To: <20220627080341.5087-6-rex-bc.chen@mediatek.com>
 References: <20220627080341.5087-1-rex-bc.chen@mediatek.com>
          <20220627080341.5087-6-rex-bc.chen@mediatek.com>
@@ -99,28 +99,67 @@ On Mon, 2022-06-27 at 16:03 +0800, Bo-Chen Chen wrote:
 [snip]
 
 > +
-> +static void mtk_dp_power_disable(struct mtk_dp *mtk_dp)
+> +static int mtk_dp_dt_parse(struct mtk_dp *mtk_dp,
+> +			   struct platform_device *pdev)
 > +{
-> +	mtk_dp_write(mtk_dp, MTK_DP_TOP_PWR_STATE, 0);
+> +	struct device_node *of_node = pdev->dev.of_node;
+> +	struct device *dev = &pdev->dev;
+> +	int ret = 0;
+> +	void __iomem *base;
+> +	u32 linkrate;
+> +	int len;
 > +
-> +	mtk_dp_write(mtk_dp, MTK_DP_0034,
-> +		     DA_CKM_CKTX0_EN_FORCE_EN |
-> +		     DA_CKM_BIAS_LPF_EN_FORCE_VAL |
-> +		     DA_CKM_BIAS_EN_FORCE_VAL |
-> +		     DA_XTP_GLB_LDO_EN_FORCE_VAL |
-> +		     DA_XTP_GLB_AVD10_ON_FORCE_VAL);
+> +	base = devm_platform_ioremap_resource(pdev, 0);
+> +	if (IS_ERR(base))
+> +		return PTR_ERR(base);
+> +
+> +	mtk_dp->regs = devm_regmap_init_mmio(dev, base,
+> &mtk_dp_regmap_config);
+> +	if (IS_ERR(mtk_dp->regs))
+> +		return PTR_ERR(mtk_dp->regs);
+> +
+> +	len = of_property_count_elems_of_size(of_node,
+> +					      "data-lanes",
+> sizeof(u32));
+> +	if (len < 0 || len > 4 || len == 3) {
+> +		dev_err(dev, "invalid data lane size: %d\n", len);
+> +		return -EINVAL;
+> +	}
+> +
+> +	mtk_dp->max_lanes = len;
+> +
+> +	ret = device_property_read_u32(dev, "max-linkrate-mhz",
+> &linkrate);
+> +	if (ret) {
+> +		dev_err(dev, "failed to read max linkrate: %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	switch (linkrate) {
+> +	case 8100: /* 8.1G */
+> +		mtk_dp->max_linkrate = DP_LINK_BW_8_1;
+> +		break;
+> +	case 5400: /* 5.4G */
+> +		mtk_dp->max_linkrate = DP_LINK_BW_5_4;
+> +		break;
+> +	case 2700: /* 2.7G */
+> +		mtk_dp->max_linkrate = DP_LINK_BW_2_7;
+> +		break;
+> +	case 1620: /* 1.62G */
+> +		mtk_dp->max_linkrate = DP_LINK_BW_1_62;
+> +		break;
+> +	default:
+> +		dev_err(dev, "invalid linkrate: %d\n", linkrate);
+> +		return -EINVAL;
+> +	}
 
-Is this clock gating? If so, separate this to ccf driver.
+Use drm_dp_link_rate_to_bw_code() instead of self-implementation.
 
 Regards,
 CK
 
 > +
-> +	/* Disable RX */
-> +	mtk_dp_write(mtk_dp, MTK_DP_1040, 0);
-> +	mtk_dp_write(mtk_dp, MTK_DP_TOP_MEM_PD,
-> +		     0x550 | BIT(FUSE_SEL_SHIFT) |
-> BIT(MEM_ISO_EN_SHIFT));
+> +	return 0;
 > +}
 > +
 

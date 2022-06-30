@@ -2,88 +2,107 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 594D3C43334
-	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Jun 2022 17:34:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BC4FC43334
+	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Jun 2022 18:51:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235788AbiF3Rea (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 30 Jun 2022 13:34:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58762 "EHLO
+        id S235833AbiF3Svq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 30 Jun 2022 14:51:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34080 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236466AbiF3Re3 (ORCPT
+        with ESMTP id S233100AbiF3Svp (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 30 Jun 2022 13:34:29 -0400
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2137331367
-        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 10:34:26 -0700 (PDT)
-Received: by mail-pf1-x42b.google.com with SMTP id p14so101675pfh.6
-        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 10:34:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=1s1jurQNn/fJ4wlZGRfg1PNeoKP8xQg/ofkOwb0NO2E=;
-        b=N0Zd0OVM4bQky4uabYzuMEV8PyZPfQ/N09BFx0mH52wgBdjlxbeg3dltvfkX2ydhgZ
-         qGVMGj4nSzoaZK0ajiSbgouaegww7bDUoWn2zDXg/JhW89N1ZOAeMeamP4XyqoL0bX+A
-         Z3qdd0mFEG9XDfttKG3enTn3ZS0Gyytg1pdi4=
+        Thu, 30 Jun 2022 14:51:45 -0400
+Received: from mail-qk1-f182.google.com (mail-qk1-f182.google.com [209.85.222.182])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 511792BB3A
+        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 11:51:43 -0700 (PDT)
+Received: by mail-qk1-f182.google.com with SMTP id z16so10278031qkj.7
+        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 11:51:43 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=1s1jurQNn/fJ4wlZGRfg1PNeoKP8xQg/ofkOwb0NO2E=;
-        b=z8wXjHODRGeNGAGnHWbeF5tjvS+PMKuLpdg1mBN+8TJBee+nMS9SPic6PVMuObnWaW
-         aG1LLtlvOkSQK8upGp9O6gylapFT29m7pMTq1enABYfsg+ODxn4i+cdh/1KMAR7YpFhA
-         OltSyVHGVvvXS6vZuEoQ7ixmQXrPUpgXQWSG6Ai1Fb9mgRg1QvlDi5h4sbqUBnfaL6Hz
-         bQVyB8i3U/mIGYRhcfBvL7iMtUncH+Jj4YjxhCAJpgMSmpEzUzMkaYP4CHiwKVfhwzj9
-         7Q/Xrhc90bmfwlzSiCqXEwe6qaYMqo9mfI5iZbbnaT9OqtEb/uaGL07MFcChFbIF+a9I
-         DcNQ==
-X-Gm-Message-State: AJIora9yhn9un4ZgazOBxi2cMY+AAagKU4xNpIwX7pi838mx/+i45Y3X
-        hCan/zOldP3ZEbWL1AmBW+UG7Q==
-X-Google-Smtp-Source: AGRyM1sTkUaMZfcu6ioDPGwJiwe0TTGaBaUHp6sw3z9cYqSKpyM+kx7JG47ES5+UsaveuyB1Qkoe6A==
-X-Received: by 2002:aa7:910b:0:b0:524:f8d9:a4c4 with SMTP id 11-20020aa7910b000000b00524f8d9a4c4mr17128695pfh.5.1656610465558;
-        Thu, 30 Jun 2022 10:34:25 -0700 (PDT)
-Received: from hsinyi-z840.tpe.corp.google.com ([2401:fa00:1:10:5175:e079:2e5a:2405])
-        by smtp.gmail.com with ESMTPSA id m20-20020aa78a14000000b00518950bfc82sm14331125pfa.10.2022.06.30.10.34.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 Jun 2022 10:34:25 -0700 (PDT)
-From:   Hsin-Yi Wang <hsinyi@chromium.org>
-To:     Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc:     Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        Stephen Boyd <swboyd@chromium.org>,
-        Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] video: of_display_timing.h: include errno.h
-Date:   Fri,  1 Jul 2022 01:33:29 +0800
-Message-Id: <20220630173328.1369576-1-hsinyi@chromium.org>
-X-Mailer: git-send-email 2.37.0.rc0.161.g10f37bed90-goog
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=OpYaioDW3jT2hu8uqTSIqgPPXpyurlp09tw76Zsm3gA=;
+        b=5CMFlhC8MnP5xUECHKOKmOmpCO2fMGuLyDIia6I5lCeZMhoxsOpaOj/BkovGFeWvZ0
+         YnRaHGrDWp/Vhh4FPCch8ZcBw1HDGPRV/1X291mPDHY6jCJWVz38gMJO3FIKf6e/lPFI
+         xlJKZJ5BIDP8qR+bRy91W0nUepIBhQ3dxrkSeq4+74DiLHgU1RRuvqly0VprEjnNqrKM
+         uJSUbzoJ6p7yfUKAQ21w7UH3jHMNtuo5KOydjce4od5Vfo01jb0KDBmjop4VNddju3Fl
+         vkiBdb1Sv6DoycFg3HotUGcnFOJ555ZxH5YwTxHi4591meANWAe7UykNANOBR+oh5Nes
+         MkPQ==
+X-Gm-Message-State: AJIora8xrI+5bvRR5w+ceUnA4kXqSCESE5Jd4/E6s6Q/xXG5jZzeIknM
+        C6JO3soRLpC8O1D/Le5TvJSaDrvjOI/qWQ==
+X-Google-Smtp-Source: AGRyM1t5u8cC00THr03bZNdllqqN641JNWlNg1wh4XtepCXEdBdUnc8bWUyMA6SRHVqk3nB6T4+ePQ==
+X-Received: by 2002:a05:620a:6008:b0:6af:5d81:870b with SMTP id dw8-20020a05620a600800b006af5d81870bmr7383877qkb.763.1656615102277;
+        Thu, 30 Jun 2022 11:51:42 -0700 (PDT)
+Received: from mail-yw1-f171.google.com (mail-yw1-f171.google.com. [209.85.128.171])
+        by smtp.gmail.com with ESMTPSA id 142-20020a370994000000b006a73cb957dasm14961195qkj.20.2022.06.30.11.51.41
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 30 Jun 2022 11:51:41 -0700 (PDT)
+Received: by mail-yw1-f171.google.com with SMTP id 00721157ae682-317a66d62dfso2220507b3.7
+        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 11:51:41 -0700 (PDT)
+X-Received: by 2002:a81:9bcc:0:b0:317:9ff1:5a39 with SMTP id
+ s195-20020a819bcc000000b003179ff15a39mr12759976ywg.384.1656615100904; Thu, 30
+ Jun 2022 11:51:40 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220629200024.187187-1-deller@gmx.de> <20220629200024.187187-2-deller@gmx.de>
+In-Reply-To: <20220629200024.187187-2-deller@gmx.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Thu, 30 Jun 2022 20:51:29 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdWW-oh_q7zE6riS8o+tgRmcOxxO_93-FVy9CVCcAOakhg@mail.gmail.com>
+Message-ID: <CAMuHMdWW-oh_q7zE6riS8o+tgRmcOxxO_93-FVy9CVCcAOakhg@mail.gmail.com>
+Subject: Re: [PATCH 1/5] fbcon: Disallow setting font bigger than screen size
+To:     Helge Deller <deller@gmx.de>
+Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-If CONFIG_OF is not enabled, default of_get_display_timing() returns an
-errno, so include the header.
+Hi Helge,
 
-Fixes: 422b67e0b31a ("videomode: provide dummy inline functions for !CONFIG_OF")
-Suggested-by: Stephen Boyd <swboyd@chromium.org>
-Signed-off-by: Hsin-Yi Wang <hsinyi@chromium.org>
----
- include/video/of_display_timing.h | 2 ++
- 1 file changed, 2 insertions(+)
+On Wed, Jun 29, 2022 at 10:00 PM Helge Deller <deller@gmx.de> wrote:
+> Prevent that users set a font size which is bigger than the physical screen.
+> It's unlikely this may happen (because screens are usually much larger than the
+> fonts and each font char is limited to 32x32 pixels), but it may happen on
+> smaller screens/LCD displays.
+>
+> Signed-off-by: Helge Deller <deller@gmx.de>
+> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 
-diff --git a/include/video/of_display_timing.h b/include/video/of_display_timing.h
-index e1126a74882a5..eff166fdd81b9 100644
---- a/include/video/of_display_timing.h
-+++ b/include/video/of_display_timing.h
-@@ -8,6 +8,8 @@
- #ifndef __LINUX_OF_DISPLAY_TIMING_H
- #define __LINUX_OF_DISPLAY_TIMING_H
- 
-+#include <linux/errno.h>
-+
- struct device_node;
- struct display_timing;
- struct display_timings;
--- 
-2.37.0.rc0.161.g10f37bed90-goog
+Thanks for your patch!
 
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -2469,6 +2469,11 @@ static int fbcon_set_font(struct vc_data *vc, struct console_font *font,
+>         if (charcount != 256 && charcount != 512)
+>                 return -EINVAL;
+>
+> +       /* font bigger than screen resolution ? */
+> +       if (font->width  > FBCON_SWAP(info->var.rotate, info->var.xres, info->var.yres) ||
+> +           font->height > FBCON_SWAP(info->var.rotate, info->var.yres, info->var.xres))
+
+Note that we already have local vars w and h, albeit with the wrong
+signedness.
+
+> +               return -EINVAL;
+> +
+>         /* Make sure drawing engine can handle the font */
+>         if (!(info->pixmap.blit_x & (1 << (font->width - 1))) ||
+>             !(info->pixmap.blit_y & (1 << (font->height - 1))))
+
+There were already more opportunities for using w and h before...
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

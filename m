@@ -2,106 +2,186 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E091AC433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Jun 2022 19:39:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6906EC43334
+	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Jun 2022 19:40:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236405AbiF3TjB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 30 Jun 2022 15:39:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41008 "EHLO
+        id S234038AbiF3Tku (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 30 Jun 2022 15:40:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41762 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236377AbiF3TjA (ORCPT
+        with ESMTP id S233279AbiF3Tku (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 30 Jun 2022 15:39:00 -0400
-Received: from mail-qk1-f180.google.com (mail-qk1-f180.google.com [209.85.222.180])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2AFC23C4BF
-        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 12:39:00 -0700 (PDT)
-Received: by mail-qk1-f180.google.com with SMTP id r138so15147020qke.13
-        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 12:39:00 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=rkKYgFZp/qSKYESmXqwsAioaMLByN2eEJsgXebEsRR0=;
-        b=xG7XpSSiGc4aAFh4ctNA0eH2W9jnM/qpF9NeKTkmKfxaTaUMof4S3hgUNbw+aA/hCZ
-         pXoyewb36EvsJ9971iFyGQKvdqCu0S7x5zMrINU7TWWdzwlFSbCDNrKpWGDfADk3ebE8
-         YGVIP0HbL5GiMKNPVkJ78FELyE/U17MmDVZkFruhADO8Ty+Cy5Lpin2tSK26p3k+Do6m
-         ood9Z5l/tas9uKkpQB/1x6Ufm5k0B7kGHeIlP2LrnBl6wB9Ga/AWEga4im1TDaXwJi7G
-         y6DkvFcTz7lmfu8l3UK42dux12uwRy9Bb7xyLr6JJ+nj9LEPo3B4I5T+4Zyo1+P4zc2K
-         19Bw==
-X-Gm-Message-State: AJIora9KCFlGbYNtI4KvfxHANlN4EfWale2BVPayo1HndhzZ6HWHtVV7
-        bdGBGzryMAONSTNwWccPtIG6nO9zPMEmVg==
-X-Google-Smtp-Source: AGRyM1t8cJe1ktaC9LphHsbdxIUgPfDz7UZHU3inj8tC/KqKY+S+JWV5s6Ru9KmSU0Tp7RHBrhgP1Q==
-X-Received: by 2002:a05:620a:4412:b0:6b2:52d0:e3e2 with SMTP id v18-20020a05620a441200b006b252d0e3e2mr742936qkp.12.1656617939104;
-        Thu, 30 Jun 2022 12:38:59 -0700 (PDT)
-Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com. [209.85.128.172])
-        by smtp.gmail.com with ESMTPSA id a186-20020a3766c3000000b006a37c908d33sm15608722qkc.28.2022.06.30.12.38.58
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 30 Jun 2022 12:38:58 -0700 (PDT)
-Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-3178acf2a92so3456047b3.6
-        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 12:38:58 -0700 (PDT)
-X-Received: by 2002:a81:574c:0:b0:317:7c3a:45be with SMTP id
- l73-20020a81574c000000b003177c3a45bemr12091300ywb.316.1656617938226; Thu, 30
- Jun 2022 12:38:58 -0700 (PDT)
+        Thu, 30 Jun 2022 15:40:50 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1FDB4198C
+        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 12:40:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1656618043;
+        bh=NySaX5kMLuXWGMRaSgwbxoKzs0WHnjyKOtUs4wVPB7I=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=dP32pXXtwOZx/EV6E6i+D/6IJ7e7MmnfNLQij8FsTN092SUx6r6FZa01lhbLyLZ2u
+         SG+AyUsi168wCSxNFaG2clh2RyILCoOKPKOplI0kEHbJvheG7QSuYvPktqXU8I5DsE
+         8ZTnX+UpnyugT7NSRwrOSuULnTFt1i5eZY/O/pZU=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.136.11]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MfYPi-1nR2V1126a-00g4Km; Thu, 30
+ Jun 2022 21:40:43 +0200
+Message-ID: <557f3600-7285-6951-37c9-75a30f978dbf@gmx.de>
+Date:   Thu, 30 Jun 2022 21:40:14 +0200
 MIME-Version: 1.0
-References: <20220629200024.187187-1-deller@gmx.de> <20220629200024.187187-5-deller@gmx.de>
- <CAMuHMdVJ0PsDyTdGoOHPOKdaR7AffG2FpFmw6fxoNdXx9y-J4A@mail.gmail.com> <1ba5f6d6-1c31-a8fb-867b-e2a7fda7da56@gmx.de>
-In-Reply-To: <1ba5f6d6-1c31-a8fb-867b-e2a7fda7da56@gmx.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Thu, 30 Jun 2022 21:38:47 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdVMp-ywWmDevdZTwHHhdiHnsFhze376guTEMd1T=tb-Pg@mail.gmail.com>
-Message-ID: <CAMuHMdVMp-ywWmDevdZTwHHhdiHnsFhze376guTEMd1T=tb-Pg@mail.gmail.com>
-Subject: Re: [PATCH 4/5] fbmem: Prevent invalid virtual screen sizes in fb_set_var()
-To:     Helge Deller <deller@gmx.de>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.10.0
+Subject: Re: [PATCH 3/5] fbcon: Prevent that screen size is smaller than font
+ size
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
 Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
         DRI Development <dri-devel@lists.freedesktop.org>
-Content-Type: text/plain; charset="UTF-8"
+References: <20220629200024.187187-1-deller@gmx.de>
+ <20220629200024.187187-4-deller@gmx.de>
+ <CAMuHMdWVe3TPCpEiNks2p1AAc-7KXx8fnEa8J=Qsvc0d+WTL+w@mail.gmail.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <CAMuHMdWVe3TPCpEiNks2p1AAc-7KXx8fnEa8J=Qsvc0d+WTL+w@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:g1MvdSNU8P+yq7r6DiLQimz5ZfjLuWIJMfbdSaaZLo6oVxHABlo
+ skBWNLiH0Atq+65SD28fBn9FtjbSovbrL3f4adJmZsi03oiiZHGoyBBe6fYvqNMW99H37k+
+ 9s7T3cpnGOyUFKsdFmzq/I0pvN2NfijfWz8norLigYgz5gNNZQ6Tzz+PqnHIyuJw7flstr4
+ f4tjqBtACe6ZwYiEPfrnw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:HUzWwN5ge6M=:TDH9ud3paq46+faGKrvwQS
+ fPK33PSGQZNB/pu1HF+FE+/T3LQYfJERbJQrgjwIOqfYoHoDAf+6QzOSUA33OWogxlX8kqeLP
+ 4jv/UVoSZMmZbugclXp4agvAeL/WsWIBtLOKLXJ0SpQSR9YNxmRuqKxahZSVcvs9qyyu93JMh
+ bjHZwiIO0dzM8R4Q+P5u6aS1/zvAx1OYLef5pznoXGk+4bOZ2vH8+IlvWau8nDlsNSp/wKy++
+ ag8EJKDlLIVMFU00NVZygsLN2kqXoU+U5RjveQVSMQyPoFAjHo4ZgkfGH2e5RS2mWU8Hw3xdT
+ LbWDAay14fKMkCDVcjBTd7BYJ54jiT4rFsA9Ar1btokmdGKYoi7dxis4h+eMGi5meGcsloMQb
+ 4q1tt6l1G3vGSPv7CjdipwF0s/B325N151bfEKFp5QPC240M3zWOmgfH0b9OyNEbBiJBVMz7F
+ QruRZd/3B8mCjudLa/VECmEV50bM6GO/x/jJLj3XeOQUYAHdh2SclIbnxUcRPQN53DJOlDYII
+ L9YBRlR+QKFWx6nFbdeg9qWekPORoAsSMWc+gWq2C0sVEjrW8qUY/ZDGFxth0FPeFQE2VgkLo
+ ZRtFGBFZy5k9ub8d06OypfLWPWByg+5iRt5qa0UQKcx1BnZ2FkYxT9kJYt4/hU1VFXrxb3uva
+ 2rNBALFSH/Xmb+HJ6kUXogvzvzD+x1GJ/MU64676cpXDo6PCGe8v3y4HXXMd2lxSnxYBvpeMV
+ bSuioiMrfjBPX2usFcH+RTASUGJzBX6PhZTZca+lsMp0Tr1WdWJC5TUynnQRF8RuMsp+S8HLr
+ RvpE6RKbKLkyxZkqGeUve2GA20ywWQkNY9zBnSLyMZ07waKB78MBukLUkS7YwHpjPLpiI6sQM
+ 01EQ6NBYD4SXLlK4gZXIEnu8GG33lW7vFNixtQlt4hS15NeV0m6CgFnydiGS8FzZJyu66FYTf
+ SJhRpvbBpRnNNGMIfa8e3zQPfuiw58XlgNIh8q3THytk3M/E47bh2Toj56uWkYIQylkgyMwsz
+ 2mCQRozbL/v4Jx4W4pWKFduBO9UmnONkVn9pOxAioG5nRi5jaYSa55PXAH8fTho/pYPhx47IH
+ 71mJ/nNJX823uGQgxJ0++DfTOiUFfmDAauFAIIxkt51d3fBoKv6H2OkCQ==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Helge,
-
-On Thu, Jun 30, 2022 at 9:17 PM Helge Deller <deller@gmx.de> wrote:
-> On 6/30/22 21:11, Geert Uytterhoeven wrote:
-> > On Wed, Jun 29, 2022 at 10:00 PM Helge Deller <deller@gmx.de> wrote:
-> >> Prevent that drivers configure a virtual screen resolution smaller than
-> >> the physical screen resolution.  This is important, because otherwise we
-> >> may access memory outside of the graphics memory area.
-> >>
-> >> Signed-off-by: Helge Deller <deller@gmx.de>
-> >> Cc: stable@vger.kernel.org # v5.4+
-> >
-> > Thanks for your patch!
-> >
-> >> --- a/drivers/video/fbdev/core/fbmem.c
-> >> +++ b/drivers/video/fbdev/core/fbmem.c
-> >> @@ -1006,6 +1006,12 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
-> >>         if (var->xres < 8 || var->yres < 8)
-> >>                 return -EINVAL;
-> >>
-> >> +       /* make sure virtual resolution >= physical resolution */
-> >> +       if (WARN_ON(var->xres_virtual < var->xres))
-> >> +               var->xres_virtual = var->xres;
-> >> +       if (WARN_ON(var->yres_virtual < var->yres))
-> >> +               var->yres_virtual = var->yres;
-> >
-> > This should be moved below the call to info->fbops->fb_check_var(),
-> > so the WARN_ON() catches buggy fbdev drivers, not userspace fuzzers.
+On 6/30/22 21:09, Geert Uytterhoeven wrote:
+> Hi Helge,
 >
-> Yes, makes sense.
+> On Wed, Jun 29, 2022 at 10:00 PM Helge Deller <deller@gmx.de> wrote:
+>> We need to prevent that users configure a screen size which is smaller =
+than the
+>> currently selected font size. Otherwise rendering chars on the screen w=
+ill
+>> access memory outside the graphics memory region.
+>> This patch adds a new function fbcon_modechange_possible() which
+>> implements this check and which later may be extended with other checks
+>> if necessary.  The new function is called from the FBIOPUT_VSCREENINFO
+>> ioctl handler in fbmem.c, which will return -EINVAL if userspace asked
+>> for a too small screen size.
+>>
+>> Signed-off-by: Helge Deller <deller@gmx.de>
+>> Cc: stable@vger.kernel.org # v5.4+
+>
+> Thanks for your patch!
+>
+>> --- a/drivers/video/fbdev/core/fbcon.c
+>> +++ b/drivers/video/fbdev/core/fbcon.c
+>> @@ -2736,6 +2736,34 @@ void fbcon_update_vcs(struct fb_info *info, bool=
+ all)
+>>  }
+>>  EXPORT_SYMBOL(fbcon_update_vcs);
+>>
+>> +/* let fbcon check if it supports a new screen resolution */
+>> +int fbcon_modechange_possible(struct fb_info *info, struct fb_var_scre=
+eninfo *var)
+>> +{
+>> +       struct fbcon_ops *ops =3D info->fbcon_par;
+>> +       struct vc_data *vc;
+>> +       int i;
+>> +
+>> +       WARN_CONSOLE_UNLOCKED();
+>> +
+>> +       if (!ops || ops->currcon < 0)
+>> +               return -EINVAL;
+>
+> So if the virtual console is _not_ used as a text console, we refuse
+> mode changes?
 
-And print the name of the frame buffer device driver, so people know
-who to blame.
+Right, this needs to be dropped.
 
-Gr{oetje,eeting}s,
+Helge
 
-                        Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>> +
+>> +       /* prevent setting a screen size which is smaller than font siz=
+e */
+>> +       for (i =3D first_fb_vc; i <=3D last_fb_vc; i++) {
+>> +               vc =3D vc_cons[i].d;
+>> +               if (!vc || vc->vc_mode !=3D KD_TEXT ||
+>> +                          registered_fb[con2fb_map[i]] !=3D info)
+>> +                       continue;
+>> +
+>> +               if (vc->vc_font.width  > FBCON_SWAP(var->rotate, var->x=
+res, var->yres) ||
+>> +                   vc->vc_font.height > FBCON_SWAP(var->rotate, var->y=
+res, var->xres))
+>> +                       return -EINVAL;
+>> +       }
+>
+> IMHO this looks way too fragile, and we should fix the rendering code
+> to handle cols =3D=3D 0 || rows =3D=3D 0 instead...
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Long-term we might need both.
+The code above will at least return EINVAL if users try it, while
+the cols/rows=3D0 code just prevents rendering if it doesn't fit.
+
+Helge
+
+>
+>> +
+>> +       return 0;
+>> +}
+>> +EXPORT_SYMBOL(fbcon_modechange_possible);
+>> +
+>>  int fbcon_mode_deleted(struct fb_info *info,
+>>                        struct fb_videomode *mode)
+>>  {
+>> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/cor=
+e/fbmem.c
+>> index e645b96d2700..324f726739c4 100644
+>> --- a/drivers/video/fbdev/core/fbmem.c
+>> +++ b/drivers/video/fbdev/core/fbmem.c
+>> @@ -1111,7 +1111,9 @@ static long do_fb_ioctl(struct fb_info *info, uns=
+igned int cmd,
+>>                         var.xres_virtual =3D var.xres;
+>>                 if (var.yres_virtual < var.yres)
+>>                         var.yres_virtual =3D var.yres;
+>> -               ret =3D fb_set_var(info, &var);
+>> +               ret =3D fbcon_modechange_possible(info, &var);
+>> +               if (!ret)
+>> +                       ret =3D fb_set_var(info, &var);
+>>                 if (!ret)
+>>                         fbcon_update_vcs(info, var.activate & FB_ACTIVA=
+TE_ALL);
+>>                 unlock_fb_info(info);
+>
+> Gr{oetje,eeting}s,
+>
+>                         Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m=
+68k.org
+>
+> In personal conversations with technical people, I call myself a hacker.=
+ But
+> when I'm talking to journalists I just say "programmer" or something lik=
+e that.
+>                                 -- Linus Torvalds
+

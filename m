@@ -2,148 +2,101 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13489C43334
-	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Jun 2022 02:54:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B183C43334
+	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Jun 2022 06:52:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230076AbiF3Cy5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 29 Jun 2022 22:54:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39478 "EHLO
+        id S230089AbiF3Gwa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 30 Jun 2022 02:52:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52240 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229755AbiF3Cy5 (ORCPT
+        with ESMTP id S232840AbiF3Gw0 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 29 Jun 2022 22:54:57 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 67572201B0;
-        Wed, 29 Jun 2022 19:54:49 -0700 (PDT)
-X-UUID: 67dec22abf944279ba7a59ae7782d158-20220630
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.7,REQID:198f82f8-0228-40e3-8a7c-526944c141a4,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:0
-X-CID-META: VersionHash:87442a2,CLOUDID:4d2435d6-5d6d-4eaf-a635-828a3ee48b7c,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
-        ,QS:nil,BEC:nil,COL:0
-X-UUID: 67dec22abf944279ba7a59ae7782d158-20220630
-Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw02.mediatek.com
-        (envelope-from <ck.hu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1096596635; Thu, 30 Jun 2022 10:54:44 +0800
-Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Thu, 30 Jun 2022 10:54:42 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Thu, 30 Jun 2022 10:54:42 +0800
-Message-ID: <3e1992f0fabccb07a1994d17cc773895fea92139.camel@mediatek.com>
-Subject: Re: [PATCH v12 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
- driver
-From:   CK Hu <ck.hu@mediatek.com>
-To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, <chunkuang.hu@kernel.org>,
-        <p.zabel@pengutronix.de>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
-        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
-        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
-        <airlied@linux.ie>
-CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
-        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
-        <angelogioacchino.delregno@collabora.com>,
-        <dri-devel@lists.freedesktop.org>,
-        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-fbdev@vger.kernel.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Thu, 30 Jun 2022 10:54:41 +0800
-In-Reply-To: <20220627080341.5087-6-rex-bc.chen@mediatek.com>
-References: <20220627080341.5087-1-rex-bc.chen@mediatek.com>
-         <20220627080341.5087-6-rex-bc.chen@mediatek.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        Thu, 30 Jun 2022 02:52:26 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B2CA31383;
+        Wed, 29 Jun 2022 23:52:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1656571934;
+        bh=ZU0HKrj/U8Ky903QI1buKExZhrj7mMmS2iFC6fGomSA=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=BPRpkDGLZ8JerUWKg3YxeyOz1mG3U3AJFEKMR1oVNymBxcF5WPPggtAgI2W+v18v4
+         7iPmwMo4DjgJtwVKPRxMdHVtEfPBkCkvdTcfbYzHaUUkz0VPL0Fu6h5cMzQJdaap5N
+         FfaVUzip5JFnTAJOKmME+SKDLMy22Jem9PjZA/qU=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.136.11]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MTABZ-1oCXsv2XjL-00UXU7; Thu, 30
+ Jun 2022 08:52:14 +0200
+Message-ID: <9eeb98b1-b53b-f90a-7610-5d40509d8204@gmx.de>
+Date:   Thu, 30 Jun 2022 08:51:45 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.10.0
+Subject: Re: [PATCH] fbdev: fbmem: Fix logo center image dx issue
+Content-Language: en-US
+To:     Guiling Deng <greens9@163.com>, daniel@ffwll.ch
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+References: <20220628163641.4167-1-greens9@163.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20220628163641.4167-1-greens9@163.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:StuGJg+gOrxZU2TSBaJ8FvbtcixzBEVjwjRW/XpF+r7xjRTqsbA
+ L1foNai+z+dE3b12FpLtKY8bsEAjKmLkj0YHIk9W0if8S/kByI417rYFOfuNCk/SJSeTl18
+ Mu28R8moWuoohDBYds+JRUtU0dSaJDo7XN76BXyZnxMZOFhIQ8mb8f1ky18H3V3kE7g6QNR
+ ZRJGSA7N3Ab8VjJSu3jyQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:nvcOhbkODdE=:Ai4lNZWMkIN1tgmRB6ou01
+ 9xmzZAukr7+lp4SM/jpnY7hyqhQeEe1FY9n23rjdzidoURTHkTwUnfdL7OHjH4fo0/UvL5Co2
+ Fec5WoV5TGariKDl1aALOMzaX1FKwS+ES/szQMfQ0hsFdI6cvXJPelT9OBx1DAh+0GbgH9V8H
+ 57UgAEF4pShZjyVEGFIQ4xD4hebXJkGj4Tk+m3ZBdQzB6YWY70fqmhphTrNfVDh3RVyx8fSIm
+ CZd63lJariinn290Abmv3/t1L79ng1FBjgDOnQKJQsZFR3lW2+NjH+DCLg565Cq6L8lpiT5lv
+ w+QwERLA8BBnj4wGp3LOrrvqaZ50oMxTqcDTcvOBf6c1waoab1qWE4vg9suPFjwVr1kfVjvVy
+ lAxZaCyPFdNK9S5yrNgOrih4/J5Fa7Xck7MicPrsVO++HzQdwMcs3p72FRMWDSR+qLJIM8WcL
+ CzgwIuZvmKFFIzJGZyHBfs+rDM3+GG5Syv5+8pjM+dKzAsHTRgFHZnWchHhCAFUp6LwUXu7Gy
+ HrEh9O7FdPFMj6Da1z1rPkYqVgyqw8tLlBwBAMyUPMCO0dx72bArxhebskznasKxt8R81ya/z
+ CWzvyE5g4WxUPGyQrjkYlRHhxBbq28xmHTo80QDBwtRgWzgPds7xySISk9NdBmwS1ZK7N256b
+ NVjVIvIz+iShIAHpUGajBkwqHf02OVno0jGo/hulWwsdcFDQTGsBBTVQ7ypimF8wklEW0wx/0
+ 7R72NZ8wm/3SQr9Z5NuU42v25YQ2K2BvttjllRn7puIp9hZhspJVKQ9IzmpHBBRdZWeBH0QfB
+ GrFCIaDCpAXzStJd2GFAIlCefeQPFhozC4CLtlvHzvJlq2Oc27472T23ipdj4cK1JZoGrzYwt
+ 9fCwO7m0WrIivUnDoPQhikRyFq9z7AzKv1rj6XOYFq3AbNgGUwaNCKiorGsy3TWwpILDjH9sV
+ KUVLLwTSaM1376tAz6NwgyYrjBspBmj/2QLPT3oMcZ/EzOplQqr6oXtAd0dam4EzIOhiMaGEB
+ 0Ms541SzJw41/DAph/7j9/Vy+79O6HGCEdLTrI3t0Ytqbkldm/Skj4B6arn4g0vcdrB9uDvFw
+ FW86Hv1VrLEq/5dJzQUGTFGRtrMboCRsWEk2VE479ILHkoMPDYHToRhlQ==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi, Bo-Chen:
+On 6/28/22 18:36, Guiling Deng wrote:
+> Image.dx gets wrong value because of missing '()'.
+>
+> If xres =3D=3D logo->width and n =3D=3D 1, image.dx =3D -16.
+>
+> Signed-off-by: Guiling Deng <greens9@163.com>
 
-On Mon, 2022-06-27 at 16:03 +0800, Bo-Chen Chen wrote:
-> From: Markus Schneider-Pargmann <msp@baylibre.com>
-> 
-> This patch adds a embedded displayport driver for the MediaTek mt8195
-> SoC.
-> 
-> It supports the MT8195, the embedded DisplayPort units. It offers
-> DisplayPort 1.4 with up to 4 lanes.
-> 
-> The driver creates a child device for the phy. The child device will
-> never exist without the parent being active. As they are sharing a
-> register range, the parent passes a regmap pointer to the child so
-> that
-> both can work with the same register range. The phy driver sets
-> device
-> data that is read by the parent to get the phy device that can be
-> used
-> to control the phy properties.
-> 
-> This driver is based on an initial version by
-> Jitao shi <jitao.shi@mediatek.com>
-> 
-> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> [Bo-Chen: Cleanup the drivers and modify comments from reviewers]
-> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+Nice catch!
+
+applied to the fbdev tree.
+
+Thanks,
+Helge
+
 > ---
-
-[snip]
-
-> +
-> +static void mtk_dp_set_color_format(struct mtk_dp *mtk_dp,
-> +				    enum dp_pixelformat color_format)
-> +{
-> +	u32 val;
-> +
-> +	mtk_dp->info.format = color_format;
-
-Drop this. mtk_dp->info.format is alwasy set out of this function.
-
-> +
-> +	/* update MISC0 */
-> +	mtk_dp_update_bits(mtk_dp, MTK_DP_ENC0_P0_3034,
-> +			   color_format << DP_TEST_COLOR_FORMAT_SHIFT,
-> +			   DP_TEST_COLOR_FORMAT_MASK);
-> +
-> +	switch (color_format) {
-> +	case DP_PIXELFORMAT_YUV422:
-> +		val = PIXEL_ENCODE_FORMAT_DP_ENC0_P0_YCBCR422;
-> +		break;
-
-This driver use only DP_PIXELFORMAT_YUV422 and DP_PIXELFORMAT_RGB, so
-keep these two and drop others.
-
-Regards,
-CK
-
-> +	case DP_PIXELFORMAT_YUV420:
-> +		val = PIXEL_ENCODE_FORMAT_DP_ENC0_P0_YCBCR420;
-> +		break;
-> +	case DP_PIXELFORMAT_RGB:
-> +	case DP_PIXELFORMAT_YUV444:
-> +		val = PIXEL_ENCODE_FORMAT_DP_ENC0_P0_RGB;
-> +		break;
-> +	case DP_PIXELFORMAT_Y_ONLY:
-> +	case DP_PIXELFORMAT_RAW:
-> +	case DP_PIXELFORMAT_RESERVED:
-> +	default:
-> +		drm_warn(mtk_dp->drm_dev, "Unsupported color format:
-> %d\n",
-> +			 color_format);
-> +		return;
-> +	}
-> +
-> +	mtk_dp_update_bits(mtk_dp, MTK_DP_ENC0_P0_303C,
-> +			   val, PIXEL_ENCODE_FORMAT_DP_ENC0_P0_MASK);
-> +}
-> +
+>  drivers/video/fbdev/core/fbmem.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core=
+/fbmem.c
+> index c4a18322dee9..1fd2bdb11266 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -511,7 +511,7 @@ static int fb_show_logo_line(struct fb_info *info, i=
+nt rotate,
+>
+>  		while (n && (n * (logo->width + 8) - 8 > xres))
+>  			--n;
+> -		image.dx =3D (xres - n * (logo->width + 8) - 8) / 2;
+> +		image.dx =3D (xres - (n * (logo->width + 8) - 8)) / 2;
+>  		image.dy =3D y ?: (yres - logo->height) / 2;
+>  	} else {
+>  		image.dx =3D 0;
 

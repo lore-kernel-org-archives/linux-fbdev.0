@@ -2,101 +2,88 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B183C43334
-	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Jun 2022 06:52:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 594D3C43334
+	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Jun 2022 17:34:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230089AbiF3Gwa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 30 Jun 2022 02:52:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52240 "EHLO
+        id S235788AbiF3Rea (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 30 Jun 2022 13:34:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58762 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232840AbiF3Gw0 (ORCPT
+        with ESMTP id S236466AbiF3Re3 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 30 Jun 2022 02:52:26 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B2CA31383;
-        Wed, 29 Jun 2022 23:52:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1656571934;
-        bh=ZU0HKrj/U8Ky903QI1buKExZhrj7mMmS2iFC6fGomSA=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=BPRpkDGLZ8JerUWKg3YxeyOz1mG3U3AJFEKMR1oVNymBxcF5WPPggtAgI2W+v18v4
-         7iPmwMo4DjgJtwVKPRxMdHVtEfPBkCkvdTcfbYzHaUUkz0VPL0Fu6h5cMzQJdaap5N
-         FfaVUzip5JFnTAJOKmME+SKDLMy22Jem9PjZA/qU=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.136.11]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MTABZ-1oCXsv2XjL-00UXU7; Thu, 30
- Jun 2022 08:52:14 +0200
-Message-ID: <9eeb98b1-b53b-f90a-7610-5d40509d8204@gmx.de>
-Date:   Thu, 30 Jun 2022 08:51:45 +0200
+        Thu, 30 Jun 2022 13:34:29 -0400
+Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2137331367
+        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 10:34:26 -0700 (PDT)
+Received: by mail-pf1-x42b.google.com with SMTP id p14so101675pfh.6
+        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 10:34:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=1s1jurQNn/fJ4wlZGRfg1PNeoKP8xQg/ofkOwb0NO2E=;
+        b=N0Zd0OVM4bQky4uabYzuMEV8PyZPfQ/N09BFx0mH52wgBdjlxbeg3dltvfkX2ydhgZ
+         qGVMGj4nSzoaZK0ajiSbgouaegww7bDUoWn2zDXg/JhW89N1ZOAeMeamP4XyqoL0bX+A
+         Z3qdd0mFEG9XDfttKG3enTn3ZS0Gyytg1pdi4=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=1s1jurQNn/fJ4wlZGRfg1PNeoKP8xQg/ofkOwb0NO2E=;
+        b=z8wXjHODRGeNGAGnHWbeF5tjvS+PMKuLpdg1mBN+8TJBee+nMS9SPic6PVMuObnWaW
+         aG1LLtlvOkSQK8upGp9O6gylapFT29m7pMTq1enABYfsg+ODxn4i+cdh/1KMAR7YpFhA
+         OltSyVHGVvvXS6vZuEoQ7ixmQXrPUpgXQWSG6Ai1Fb9mgRg1QvlDi5h4sbqUBnfaL6Hz
+         bQVyB8i3U/mIGYRhcfBvL7iMtUncH+Jj4YjxhCAJpgMSmpEzUzMkaYP4CHiwKVfhwzj9
+         7Q/Xrhc90bmfwlzSiCqXEwe6qaYMqo9mfI5iZbbnaT9OqtEb/uaGL07MFcChFbIF+a9I
+         DcNQ==
+X-Gm-Message-State: AJIora9yhn9un4ZgazOBxi2cMY+AAagKU4xNpIwX7pi838mx/+i45Y3X
+        hCan/zOldP3ZEbWL1AmBW+UG7Q==
+X-Google-Smtp-Source: AGRyM1sTkUaMZfcu6ioDPGwJiwe0TTGaBaUHp6sw3z9cYqSKpyM+kx7JG47ES5+UsaveuyB1Qkoe6A==
+X-Received: by 2002:aa7:910b:0:b0:524:f8d9:a4c4 with SMTP id 11-20020aa7910b000000b00524f8d9a4c4mr17128695pfh.5.1656610465558;
+        Thu, 30 Jun 2022 10:34:25 -0700 (PDT)
+Received: from hsinyi-z840.tpe.corp.google.com ([2401:fa00:1:10:5175:e079:2e5a:2405])
+        by smtp.gmail.com with ESMTPSA id m20-20020aa78a14000000b00518950bfc82sm14331125pfa.10.2022.06.30.10.34.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 30 Jun 2022 10:34:25 -0700 (PDT)
+From:   Hsin-Yi Wang <hsinyi@chromium.org>
+To:     Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc:     Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Stephen Boyd <swboyd@chromium.org>,
+        Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] video: of_display_timing.h: include errno.h
+Date:   Fri,  1 Jul 2022 01:33:29 +0800
+Message-Id: <20220630173328.1369576-1-hsinyi@chromium.org>
+X-Mailer: git-send-email 2.37.0.rc0.161.g10f37bed90-goog
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.10.0
-Subject: Re: [PATCH] fbdev: fbmem: Fix logo center image dx issue
-Content-Language: en-US
-To:     Guiling Deng <greens9@163.com>, daniel@ffwll.ch
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-References: <20220628163641.4167-1-greens9@163.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220628163641.4167-1-greens9@163.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:StuGJg+gOrxZU2TSBaJ8FvbtcixzBEVjwjRW/XpF+r7xjRTqsbA
- L1foNai+z+dE3b12FpLtKY8bsEAjKmLkj0YHIk9W0if8S/kByI417rYFOfuNCk/SJSeTl18
- Mu28R8moWuoohDBYds+JRUtU0dSaJDo7XN76BXyZnxMZOFhIQ8mb8f1ky18H3V3kE7g6QNR
- ZRJGSA7N3Ab8VjJSu3jyQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:nvcOhbkODdE=:Ai4lNZWMkIN1tgmRB6ou01
- 9xmzZAukr7+lp4SM/jpnY7hyqhQeEe1FY9n23rjdzidoURTHkTwUnfdL7OHjH4fo0/UvL5Co2
- Fec5WoV5TGariKDl1aALOMzaX1FKwS+ES/szQMfQ0hsFdI6cvXJPelT9OBx1DAh+0GbgH9V8H
- 57UgAEF4pShZjyVEGFIQ4xD4hebXJkGj4Tk+m3ZBdQzB6YWY70fqmhphTrNfVDh3RVyx8fSIm
- CZd63lJariinn290Abmv3/t1L79ng1FBjgDOnQKJQsZFR3lW2+NjH+DCLg565Cq6L8lpiT5lv
- w+QwERLA8BBnj4wGp3LOrrvqaZ50oMxTqcDTcvOBf6c1waoab1qWE4vg9suPFjwVr1kfVjvVy
- lAxZaCyPFdNK9S5yrNgOrih4/J5Fa7Xck7MicPrsVO++HzQdwMcs3p72FRMWDSR+qLJIM8WcL
- CzgwIuZvmKFFIzJGZyHBfs+rDM3+GG5Syv5+8pjM+dKzAsHTRgFHZnWchHhCAFUp6LwUXu7Gy
- HrEh9O7FdPFMj6Da1z1rPkYqVgyqw8tLlBwBAMyUPMCO0dx72bArxhebskznasKxt8R81ya/z
- CWzvyE5g4WxUPGyQrjkYlRHhxBbq28xmHTo80QDBwtRgWzgPds7xySISk9NdBmwS1ZK7N256b
- NVjVIvIz+iShIAHpUGajBkwqHf02OVno0jGo/hulWwsdcFDQTGsBBTVQ7ypimF8wklEW0wx/0
- 7R72NZ8wm/3SQr9Z5NuU42v25YQ2K2BvttjllRn7puIp9hZhspJVKQ9IzmpHBBRdZWeBH0QfB
- GrFCIaDCpAXzStJd2GFAIlCefeQPFhozC4CLtlvHzvJlq2Oc27472T23ipdj4cK1JZoGrzYwt
- 9fCwO7m0WrIivUnDoPQhikRyFq9z7AzKv1rj6XOYFq3AbNgGUwaNCKiorGsy3TWwpILDjH9sV
- KUVLLwTSaM1376tAz6NwgyYrjBspBmj/2QLPT3oMcZ/EzOplQqr6oXtAd0dam4EzIOhiMaGEB
- 0Ms541SzJw41/DAph/7j9/Vy+79O6HGCEdLTrI3t0Ytqbkldm/Skj4B6arn4g0vcdrB9uDvFw
- FW86Hv1VrLEq/5dJzQUGTFGRtrMboCRsWEk2VE479ILHkoMPDYHToRhlQ==
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 6/28/22 18:36, Guiling Deng wrote:
-> Image.dx gets wrong value because of missing '()'.
->
-> If xres =3D=3D logo->width and n =3D=3D 1, image.dx =3D -16.
->
-> Signed-off-by: Guiling Deng <greens9@163.com>
+If CONFIG_OF is not enabled, default of_get_display_timing() returns an
+errno, so include the header.
 
-Nice catch!
+Fixes: 422b67e0b31a ("videomode: provide dummy inline functions for !CONFIG_OF")
+Suggested-by: Stephen Boyd <swboyd@chromium.org>
+Signed-off-by: Hsin-Yi Wang <hsinyi@chromium.org>
+---
+ include/video/of_display_timing.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-applied to the fbdev tree.
-
-Thanks,
-Helge
-
-> ---
->  drivers/video/fbdev/core/fbmem.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core=
-/fbmem.c
-> index c4a18322dee9..1fd2bdb11266 100644
-> --- a/drivers/video/fbdev/core/fbmem.c
-> +++ b/drivers/video/fbdev/core/fbmem.c
-> @@ -511,7 +511,7 @@ static int fb_show_logo_line(struct fb_info *info, i=
-nt rotate,
->
->  		while (n && (n * (logo->width + 8) - 8 > xres))
->  			--n;
-> -		image.dx =3D (xres - n * (logo->width + 8) - 8) / 2;
-> +		image.dx =3D (xres - (n * (logo->width + 8) - 8)) / 2;
->  		image.dy =3D y ?: (yres - logo->height) / 2;
->  	} else {
->  		image.dx =3D 0;
+diff --git a/include/video/of_display_timing.h b/include/video/of_display_timing.h
+index e1126a74882a5..eff166fdd81b9 100644
+--- a/include/video/of_display_timing.h
++++ b/include/video/of_display_timing.h
+@@ -8,6 +8,8 @@
+ #ifndef __LINUX_OF_DISPLAY_TIMING_H
+ #define __LINUX_OF_DISPLAY_TIMING_H
+ 
++#include <linux/errno.h>
++
+ struct device_node;
+ struct display_timing;
+ struct display_timings;
+-- 
+2.37.0.rc0.161.g10f37bed90-goog
 

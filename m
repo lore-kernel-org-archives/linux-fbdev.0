@@ -2,121 +2,125 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A97A1CCA480
-	for <linux-fbdev@archiver.kernel.org>; Wed, 29 Jun 2022 21:20:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1EC3C43334
+	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Jun 2022 01:47:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230012AbiF2VUa convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 29 Jun 2022 17:20:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60934 "EHLO
+        id S229610AbiF3Brg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 29 Jun 2022 21:47:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47714 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229741AbiF2VU3 (ORCPT
+        with ESMTP id S229453AbiF3Brf (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 29 Jun 2022 17:20:29 -0400
-Received: from hostingweb31-40.netsons.net (hostingweb31-40.netsons.net [89.40.174.40])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1C99113F79;
-        Wed, 29 Jun 2022 14:20:28 -0700 (PDT)
-Received: from [37.161.29.0] (port=43545 helo=[192.168.131.30])
-        by hostingweb31.netsons.net with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-        (Exim 4.95)
-        (envelope-from <luca@lucaceresoli.net>)
-        id 1o6f6m-000BzC-Qd;
-        Wed, 29 Jun 2022 23:20:25 +0200
-Message-ID: <d682fb60-c254-f89e-5d6d-cdf7aa752939@lucaceresoli.net>
-Date:   Wed, 29 Jun 2022 23:20:04 +0200
+        Wed, 29 Jun 2022 21:47:35 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 099F42E6BC;
+        Wed, 29 Jun 2022 18:47:27 -0700 (PDT)
+X-UUID: a00f99f6eb09426cacfa53421093aea0-20220630
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.7,REQID:399da4d9-4e8f-48ee-942f-56e82ae7da42,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:87442a2,CLOUDID:f6972386-57f0-47ca-ba27-fe8c57fbf305,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
+        ,QS:nil,BEC:nil,COL:0
+X-UUID: a00f99f6eb09426cacfa53421093aea0-20220630
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw02.mediatek.com
+        (envelope-from <ck.hu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1718973781; Thu, 30 Jun 2022 09:47:24 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
+ mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Thu, 30 Jun 2022 09:47:22 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
+ Transport; Thu, 30 Jun 2022 09:47:22 +0800
+Message-ID: <599af6f875cb85bab1a6f0e03bbfb74a2a3b948c.camel@mediatek.com>
+Subject: Re: [PATCH v12 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
+ driver
+From:   CK Hu <ck.hu@mediatek.com>
+To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, <chunkuang.hu@kernel.org>,
+        <p.zabel@pengutronix.de>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
+        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
+        <airlied@linux.ie>
+CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
+        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
+        <angelogioacchino.delregno@collabora.com>,
+        <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-fbdev@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Thu, 30 Jun 2022 09:47:22 +0800
+In-Reply-To: <20220627080341.5087-6-rex-bc.chen@mediatek.com>
+References: <20220627080341.5087-1-rex-bc.chen@mediatek.com>
+         <20220627080341.5087-6-rex-bc.chen@mediatek.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.1
-From:   Luca Ceresoli <luca@lucaceresoli.net>
-Subject: Re: [PATCH 6/6] i2c: Make remove callback return void
-To:     =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
-        Wolfram Sang <wsa@kernel.org>
-Cc:     linux-i2c@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linuxppc-dev@lists.ozlabs.org,
-        openipmi-developer@lists.sourceforge.net,
-        linux-integrity@vger.kernel.org, linux-clk@vger.kernel.org,
-        linux-crypto@vger.kernel.org, linux-gpio@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, chrome-platform@lists.linux.dev,
-        linux-rpi-kernel@lists.infradead.org, linux-input@vger.kernel.org,
-        linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
-        patches@opensource.cirrus.com, alsa-devel@alsa-project.org,
-        linux-omap@vger.kernel.org, linux-mtd@lists.infradead.org,
-        netdev@vger.kernel.org, devicetree@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org,
-        acpi4asus-user@lists.sourceforge.net, linux-pm@vger.kernel.org,
-        linux-pwm@vger.kernel.org, linux-rtc@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-serial@vger.kernel.org,
-        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-watchdog@vger.kernel.org, kasan-dev@googlegroups.com,
-        linux-mediatek@lists.infradead.org
-References: <20220628140313.74984-1-u.kleine-koenig@pengutronix.de>
- <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
-Content-Language: en-US
-In-Reply-To: <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - hostingweb31.netsons.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - lucaceresoli.net
-X-Get-Message-Sender-Via: hostingweb31.netsons.net: authenticated_id: luca@lucaceresoli.net
-X-Authenticated-Sender: hostingweb31.netsons.net: luca@lucaceresoli.net
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+Hi, Bo-Chen:
 
-[keeping only individuals and lists in Cc to avoid bounces]
-
-On 28/06/22 16:03, Uwe Kleine-König wrote:
-> From: Uwe Kleine-König <uwe@kleine-koenig.org>
+On Mon, 2022-06-27 at 16:03 +0800, Bo-Chen Chen wrote:
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
 > 
-> The value returned by an i2c driver's remove function is mostly ignored.
-> (Only an error message is printed if the value is non-zero that the
-> error is ignored.)
+> This patch adds a embedded displayport driver for the MediaTek mt8195
+> SoC.
 > 
-> So change the prototype of the remove function to return no value. This
-> way driver authors are not tempted to assume that passing an error to
-> the upper layer is a good idea. All drivers are adapted accordingly.
-> There is no intended change of behaviour, all callbacks were prepared to
-> return 0 before.
+> It supports the MT8195, the embedded DisplayPort units. It offers
+> DisplayPort 1.4 with up to 4 lanes.
 > 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> The driver creates a child device for the phy. The child device will
+> never exist without the parent being active. As they are sharing a
+> register range, the parent passes a regmap pointer to the child so
+> that
+> both can work with the same register range. The phy driver sets
+> device
+> data that is read by the parent to get the phy device that can be
+> used
+> to control the phy properties.
+> 
+> This driver is based on an initial version by
+> Jitao shi <jitao.shi@mediatek.com>
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> [Bo-Chen: Cleanup the drivers and modify comments from reviewers]
+> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> ---
 
-For versaclock:
+[snip]
 
-> diff --git a/drivers/clk/clk-versaclock5.c b/drivers/clk/clk-versaclock5.c
-> index e7be3e54b9be..657493ecce4c 100644
-> --- a/drivers/clk/clk-versaclock5.c
-> +++ b/drivers/clk/clk-versaclock5.c
-> @@ -1138,7 +1138,7 @@ static int vc5_probe(struct i2c_client *client)
->  	return ret;
->  }
->  
-> -static int vc5_remove(struct i2c_client *client)
-> +static void vc5_remove(struct i2c_client *client)
->  {
->  	struct vc5_driver_data *vc5 = i2c_get_clientdata(client);
->  
-> @@ -1146,8 +1146,6 @@ static int vc5_remove(struct i2c_client *client)
->  
->  	if (vc5->chip_info->flags & VC5_HAS_INTERNAL_XTAL)
->  		clk_unregister_fixed_rate(vc5->pin_xin);
-> -
-> -	return 0;
->  }
->  
->  static int __maybe_unused vc5_suspend(struct device *dev)
+> +
+> +static void mtk_dp_power_disable(struct mtk_dp *mtk_dp)
+> +{
+> +	mtk_dp_write(mtk_dp, MTK_DP_TOP_PWR_STATE, 0);
+> +
+> +	mtk_dp_write(mtk_dp, MTK_DP_0034,
+> +		     DA_CKM_CKTX0_EN_FORCE_EN |
+> +		     DA_CKM_BIAS_LPF_EN_FORCE_VAL |
+> +		     DA_CKM_BIAS_EN_FORCE_VAL |
+> +		     DA_XTP_GLB_LDO_EN_FORCE_VAL |
+> +		     DA_XTP_GLB_AVD10_ON_FORCE_VAL);
 
-Reviewed-by: Luca Ceresoli <luca@lucaceresoli.net>
-Reviewed-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
+Is this clock gating? If so, separate this to ccf driver.
 
--- 
-Luca
+Regards,
+CK
+
+> +
+> +	/* Disable RX */
+> +	mtk_dp_write(mtk_dp, MTK_DP_1040, 0);
+> +	mtk_dp_write(mtk_dp, MTK_DP_TOP_MEM_PD,
+> +		     0x550 | BIT(FUSE_SEL_SHIFT) |
+> BIT(MEM_ISO_EN_SHIFT));
+> +}
+> +
+

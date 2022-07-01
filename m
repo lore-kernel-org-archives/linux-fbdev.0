@@ -2,98 +2,103 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F4A7CCA482
-	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Jul 2022 20:22:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C63F9C43334
+	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Jul 2022 20:24:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230030AbiGAUWS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 1 Jul 2022 16:22:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55676 "EHLO
+        id S229846AbiGAUYE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 1 Jul 2022 16:24:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57826 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230194AbiGAUWR (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Jul 2022 16:22:17 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2CECA3EF34
-        for <linux-fbdev@vger.kernel.org>; Fri,  1 Jul 2022 13:22:13 -0700 (PDT)
+        with ESMTP id S230294AbiGAUYC (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Jul 2022 16:24:02 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 062263AA6D
+        for <linux-fbdev@vger.kernel.org>; Fri,  1 Jul 2022 13:23:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1656706927;
-        bh=rQmS4yIj+Kq0oK+U8Ryv32tYGBvhOaSYofJZQWpZKAg=;
+        s=badeba3b8450; t=1656707034;
+        bh=dEefPiI9Wq3+N76bPKdFvUHz0EeUTEIRh3WCR7KXkgA=;
         h=X-UI-Sender-Class:From:To:Subject:Date:In-Reply-To:References;
-        b=iWpE2jm7Ufk7mQ50Zm8w8zIY0Q+AxA+1DILK0QiyafiApwOBjuLngJqGaccX7I3Qn
-         beQDUbzFzLO2afFs36vneCqxYr+5xajFpnCCd6bzOQoYlGx5IKKOcRVSyJYhwU2whx
-         OrABWaWuIO+27WvTFOekaazhOFosvgnAhFdPfkbk=
+        b=HEFt5iZDmNZf66zk+qkPjL3tW/l2Fg/mj39IwVLc9Udj7wk4mo3GOy8hvIzKNSMjZ
+         1gIakjLvxkq8vz/kDjPdv/khMXrT2wdDiBLpUteax/9On9UcojFbz6WKfb3RJBtpFX
+         zKPl6vMnyG8dRvOH6jql54+NqKx8HkZPl5XNYvoU=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from p100.fritz.box ([92.116.182.192]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MUGiJ-1oFJDI2ypf-00RF90; Fri, 01
- Jul 2022 22:22:07 +0200
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MsHnm-1nn6Ad44zK-00ticg; Fri, 01
+ Jul 2022 22:23:54 +0200
 From:   Helge Deller <deller@gmx.de>
-To:     daniel.vetter@ffwll.ch, linux-fbdev@vger.kernel.org,
-        geert@linux-m68k.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH v2 1/4] fbcon: Disallow setting font bigger than screen size
-Date:   Fri,  1 Jul 2022 22:22:03 +0200
-Message-Id: <20220701202206.559518-2-deller@gmx.de>
+To:     geert@linux-m68k.org, dri-devel@lists.freedesktop.org,
+        daniel.vetter@ffwll.ch, linux-fbdev@vger.kernel.org
+Subject: [PATCH v2 3/4] fbmem: Prevent invalid virtual screen sizes in fb_set_var()
+Date:   Fri,  1 Jul 2022 22:23:51 +0200
+Message-Id: <20220701202352.559808-4-deller@gmx.de>
 X-Mailer: git-send-email 2.35.3
-In-Reply-To: <20220701202206.559518-1-deller@gmx.de>
-References: <20220701202206.559518-1-deller@gmx.de>
+In-Reply-To: <20220701202352.559808-1-deller@gmx.de>
+References: <20220701202352.559808-1-deller@gmx.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:fzH1XW8PW0o+xI+pNd1m0oozUeUQdrEEe1OqFZbPAd7iLV4MbbW
- vpBM9C7r6IC/MKONWJGv1ouOBm6qifrprX+ZzZwO8B8xnLy6IxWnUXpmkmvQhe9Byl0hURi
- uULXJNuZacUcwswJYLALyFXgMEvpbs/Wo/KabteaPREOI1scjChnz5FvyKzv74Obuz+sZ30
- nus/+ajPRxbKXM/OAifjQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:aft038Hc5e4=:DFcBXqvipdLAoUMvLCG3KQ
- 80zH03BI5YlCMDQqxC8XuPR1VZscY83GWZiQ4SQ77IK/PAqiAORQ8AChtT0BGD4+s7ggp1B3n
- FHCgfscT2YDHes4MI37fquJjOpp0SL4EGnS8VE0K8LIus74E3L6xL70VJfaV+R7+hl8DJgqKV
- 0OBZp3DqPiWQcbFM5uEVys6l8bkadRY/fUmc9semeHwoYXhUZmq23TxoltxLCZQeoJsjbGQLN
- HDtFEha8Ad7WuENhZDGtrUvn+QGzoEymT+DK+XVXSrx0kClRufzflBQ1P0/oyts0S4GuQJdqd
- aGtqy3vtluBmNDgd56+TLYOQHZ4acchtwhT6Yqv5tIegbpy0AflL6HB2OwmDomQ0AOjd/fotG
- QEN2kvfdRAIF6GmF8giNDkwpwc/qSZ5G3REc8RX8rfKAfoFWxZ4cBXWby2KY4a8Rp1qmyNMY3
- HJH1jzIXGtasgYCIFNSe3II7QHMv6Q4DINpNlC6gJm9wNg//6tH4m5uT/Sx8jKQSKT9CgY5qQ
- GIbg3bhAPrRICKeIUSVep4ue0yyv59A8N6fhVIRltNg/3/S4VhuJtul8hoMNpgYeJW4Z9TsZY
- K/disEvo5AwZG2vwg+twmvXtEInVnBsvdzmG6aEC17OBpCXDhpSlzfoIPcCStsGtoF0EHk56g
- bPbq/F/C/aGs86kpPDtSBD0wkE5OQO7FncrUBHdEnKq5PiOyS1KL3zHUcbX56zIomNmiDotO1
- n39hlqlQe5H5L7Fyd21N1XUHjrURmyQDvAjjpcOLrB2mW44cD8X9+Iv/nzg4PVj+ubCnVJipl
- PxnyoXOvNuWqzxMHRA9UwdLmX2BpqTrSWYIvQ4ZrVIOJ0bYdqePiD0Xaq50I7zfa8NY7AHZLZ
- GHMv4q+DzHA95zJeysHdogTAR5WWbaDKIbaBcdMGhCVa/jTdfVv2KUlEBdGVO/491xjp4FMNo
- N+n7mPylb2cPJ0bykVq8XG9/xEcOj7ONsnsDqCCwQUWjSdJKIBFkmPpnhMXoYpbAlIkVz53Eo
- 1eJbUl5fFROzwG6UYr3yNsuMm7+mGglK9RN8ZDG96cLnIzridUv/1ejYdf8v45Z2bpl73plMT
- ODPuT8DVfK0IekD2J8UShfgWuqpWmS6DQH1PdmtQVQgas7eQz9RYnrrng==
+X-Provags-ID: V03:K1:Bf8VXfaa577fpq4acsmdWzYRjRzn9t3d4jS+k3688Br3xPNGmzP
+ p53HnFCs0503W6wMD/41hpxfgpasIAVFfi+0BsK0Vaca5CnYMrAq92Vt4Tv+y1NmmzQs91o
+ sVc5gGs3GeWTC2v0TTBIXaXv/f8fpwtPuDlMwKHBivevR9eRdM3KlUOT4Ma599iz18mKGA0
+ zulyQJ8I7gZN6XhQyLMUw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:Vw9SFYftwds=:rr4MBShpbjEyzFIUlufOTC
+ c/MzOQWgDKdqqI6ErlQQSs7fvS6fRhtrRcuAtfnXFGwMl3llbzURBcbqajh2yuL4CnGqOY/im
+ qxSAxrVThZlQNTnuErbRtOS5D1Ib4TobV9FaN8k2wSqNskvY/JdatfT9PwqyaCQbZ4JQ4y8u8
+ KNiSxIpYQ0qvVGYzwUG2PtUGoHYc9PAa7tBFoScRv9AuLwykZ2SUwCALRysMGJHo8RAMbojOw
+ HCL6o+uJQd+sHpSCC9SnXktaDTJPklX8cJE67vWppHC40YA84O4GDdrcJUEhmxyTeGsmGJhbk
+ 9OAd2RlR3kvKZSu7mPe+QPIoFj/v8MS2XaohZ+hQiR+GS7MhauN7cCcFRd+pM0baSQnnstYSC
+ TRqfUD/QZ0xh8exiFubK/APbIr7nxJRxfPQxlI5NQctBPP/YJZlQuIeUN4Cozr2+0lnxs4Dsa
+ oP1RdkF5V5RVEP1wpg56ZIpoJvA/LoiV5+HQ7Htn2r+0biNhPWEEyJ/hbhmhZTQcU3GhVPsJL
+ jR+5Iujjv2NYaR17ipV61J7X+4yJPOUVvANCSvtbkcE+MRW/wqlUfYcWkxdBykhumrzqeqbQf
+ YIt+mJS/8l5f6jZ+LzOuZ2gRoLQm2yfqyaFXQN0quCzF2l+OQErY7ZKU6HbfbIHey8vNqG1AX
+ 75EpJwWfycUEiHmRrP9mkETt/kPVECtqnJJjNn32GXg4TRN6fAAfMRAOxJavcluEUuyal7EJz
+ CJbnLMsB1UiwBif7hdyZ4+ttwl+EWWS59Uq0JFduXObZ0VAMthoMccSdRlYiT/vL6bTZjSNHy
+ TEW34N4LBqpeXkMDScqnsQarwjqDFV60vsxC1FNemFWYS4FYHziLU4er5jAt+eyu6/zzbMlNG
+ w8/ukmPmX4bUizk4xvTy7j60pICkSFog6EK5AYmaS51zyWZCU8ccJT6v4txKvxkLhx2z3A2s+
+ MYpXwZrMRyh+0uZWAbTHWv+wwT8dCmsclOjVRO6Y5aQlT7s14YkMvHsItJGuITDMtdKNvrF8o
+ OMrCmoMZ6LK0Wh4HJUj6EB0qnDehIoyzoJJF4BNJEn64pDQP/A/73hTjkQmTRNcltxtbhPkIU
+ 1M0pF0YtNlgIBkko68snz3nUE5vQLlK1s6jcdZZCFGh99qG760rPGZy/Q==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Prevent that users set a font size which is bigger than the physical scree=
-n.
-It's unlikely this may happen (because screens are usually much larger tha=
-n the
-fonts and each font char is limited to 32x32 pixels), but it may happen on
-smaller screens/LCD displays.
+Prevent that drivers configure a virtual screen resolution smaller than
+the physical screen resolution.  This is important, because otherwise we
+may access memory outside of the graphics memory area.
+
+Give a kernel WARNing and show the driver name to help locating the buggy
+driver.
 
 Signed-off-by: Helge Deller <deller@gmx.de>
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: stable@vger.kernel.org # v4.14+
+Cc: stable@vger.kernel.org # v5.4+
 =2D--
- drivers/video/fbdev/core/fbcon.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/video/fbdev/core/fbmem.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/f=
-bcon.c
-index c4e91715ef00..a33532564393 100644
-=2D-- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2469,6 +2469,11 @@ static int fbcon_set_font(struct vc_data *vc, struc=
-t console_font *font,
- 	if (charcount !=3D 256 && charcount !=3D 512)
- 		return -EINVAL;
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/f=
+bmem.c
+index 160389365a36..e8f06d26803c 100644
+=2D-- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1016,6 +1016,18 @@ fb_set_var(struct fb_info *info, struct fb_var_scre=
+eninfo *var)
+ 	if (ret)
+ 		return ret;
 
-+	/* font bigger than screen resolution ? */
-+	if (w > FBCON_SWAP(info->var.rotate, info->var.xres, info->var.yres) ||
-+	    h > FBCON_SWAP(info->var.rotate, info->var.yres, info->var.xres))
-+		return -EINVAL;
++	/* make sure virtual resolution >=3D physical resolution */
++	if (WARN_ON(var->xres_virtual < var->xres)) {
++		pr_warn("fbcon: Fix up invalid xres %d for %s\n",
++			var->xres_virtual, info->fix.id);
++		var->xres_virtual =3D var->xres;
++	}
++	if (WARN_ON(var->yres_virtual < var->yres)) {
++		pr_warn("fbcon: Fix up invalid yres %d for %s\n",
++			var->yres_virtual, info->fix.id);
++		var->yres_virtual =3D var->yres;
++	}
 +
- 	/* Make sure drawing engine can handle the font */
- 	if (!(info->pixmap.blit_x & (1 << (font->width - 1))) ||
- 	    !(info->pixmap.blit_y & (1 << (font->height - 1))))
+ 	if ((var->activate & FB_ACTIVATE_MASK) !=3D FB_ACTIVATE_NOW)
+ 		return 0;
+
 =2D-
 2.35.3
 

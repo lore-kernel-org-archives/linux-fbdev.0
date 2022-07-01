@@ -2,41 +2,42 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14C0FC43334
-	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Jul 2022 08:19:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C8E1C43334
+	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Jul 2022 08:27:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235654AbiGAITy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 1 Jul 2022 04:19:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47386 "EHLO
+        id S236304AbiGAI1T (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 1 Jul 2022 04:27:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58810 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233516AbiGAITt (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Jul 2022 04:19:49 -0400
+        with ESMTP id S236338AbiGAI1H (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Jul 2022 04:27:07 -0400
 Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 04874639D;
-        Fri,  1 Jul 2022 01:19:49 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 93FF17BD39;
+        Fri,  1 Jul 2022 01:24:46 -0700 (PDT)
 Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
         (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (No client certificate requested)
         (Authenticated sender: kholk11)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 5F4546601974;
-        Fri,  1 Jul 2022 09:19:46 +0100 (BST)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id E6AC66601974;
+        Fri,  1 Jul 2022 09:24:43 +0100 (BST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1656663587;
-        bh=fS/iT1xgWFnZF/STuxFQ2EWwRzYU7ahVyBexaMgwNOI=;
+        s=mail; t=1656663885;
+        bh=6VbdfSOOs3Mk31GnoM4flK6rivXwW2rx7zZhOL2M5uc=;
         h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=MVZ0UVaj0GOM+lhPo/zLqAd6wwphw9owl+wPI6t4QNosIzdxpif+1OJbFMqkPEmgK
-         BceDORJn6eD6XpXc1J45h/cqIuUow6DMCUCsbPdYrsg5i9iC6YGZudO2UpqYr4rkFq
-         jkT1DcMhyPm/dPKy0P5wf7XweLV/jtfSu/gfLsy+zOXWvm9NdgU8f4SF7ynzxwz5ix
-         5PptZatYua+ko/0x+JyC7YfrZVGSmdCaCXNSkh+Gp4JWO7ZIuzCJn12SDg6f9W5VBo
-         /t0oOFZyA7KupjTCBSNdoK50QQnE2H6PLsdW1lTKOhOVDIY9l9N5VjxsFRx7rV0k20
-         cg8AjERufTsfQ==
-Message-ID: <60079979-c84e-a9ba-f1b0-2f82cbac2604@collabora.com>
-Date:   Fri, 1 Jul 2022 10:19:43 +0200
+        b=mYFw5+jeerPUkzUWglYj+XMjkDIMdGTB6AeVXME2HCO7fsc2gX3Ece34moLO8e2la
+         b2A7aelCOsmvOQZ60qGa5LMnK+LSwPdbm17RzOE5f+9tp44JSrUkXv89n7Y4oHFehA
+         9lhXRhDnDJB0AcvhDJUloxfrrNo4JjRBbn1ccpHXU60sG2h2NQPVHSqhdqwQFSAaDb
+         mnon/U++cZloCHMuYbRrnyYgsasVnFie+kgNKgV3/pSwWQ0p8a3ljeJXbo0Co4IIf1
+         flbgLkTb5B/Skq6rh4ENMfCNDsBbrg9/H+AwfYsd82jv8irpKCDymb6PBQriLJU6G+
+         TvSwAP4NuNdLw==
+Message-ID: <250cd177-fbbf-343c-80c1-d9278c01410a@collabora.com>
+Date:   Fri, 1 Jul 2022 10:24:41 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.10.0
-Subject: Re: [PATCH v13 09/10] drm/mediatek: DP audio support for MT8195
+Subject: Re: [PATCH v13 10/10] drm/mediatek: fix no audio when resolution
+ change
 Content-Language: en-US
 To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, chunkuang.hu@kernel.org,
         p.zabel@pengutronix.de, daniel@ffwll.ch, robh+dt@kernel.org,
@@ -51,10 +52,10 @@ Cc:     msp@baylibre.com, granquet@baylibre.com, jitao.shi@mediatek.com,
         linux-fbdev@vger.kernel.org,
         Project_Global_Chrome_Upstream_Group@mediatek.com
 References: <20220701062808.18596-1-rex-bc.chen@mediatek.com>
- <20220701062808.18596-10-rex-bc.chen@mediatek.com>
+ <20220701062808.18596-11-rex-bc.chen@mediatek.com>
 From:   AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20220701062808.18596-10-rex-bc.chen@mediatek.com>
+In-Reply-To: <20220701062808.18596-11-rex-bc.chen@mediatek.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
@@ -62,13 +63,23 @@ List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Il 01/07/22 08:28, Bo-Chen Chen ha scritto:
-> From: Guillaume Ranquet <granquet@baylibre.com>
+> When switching resolutions, config the audio setting with the
+> previous audio parameters.
 > 
-> This patch adds audio support to the DP driver for MT8195 with up to 8
-> channels.
-> 
-> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> Signed-off-by: Jitao Shi <jitao.shi@mediatek.com>
 > Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
 
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Change the title to:
+drm/mediatek: Use cached audio config when changing resolution
 
+...and a more suitable description would be:
+
+Use the cached audio configuration during a resolution switch
+to avoid loss of sound.
+
+(perhaps also explain why we're losing it and why using cached
+data is necessary).
+
+After which...
+
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>

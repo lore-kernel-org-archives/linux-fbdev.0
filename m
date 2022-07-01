@@ -2,73 +2,155 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D525C43334
-	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Jun 2022 23:28:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F577C43334
+	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Jul 2022 02:34:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232498AbiF3X17 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 30 Jun 2022 19:27:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48936 "EHLO
+        id S233167AbiGACeR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 30 Jun 2022 22:34:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60354 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231124AbiF3X16 (ORCPT
+        with ESMTP id S233809AbiGACeI (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 30 Jun 2022 19:27:58 -0400
-Received: from mail-ot1-x331.google.com (mail-ot1-x331.google.com [IPv6:2607:f8b0:4864:20::331])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 109F344A26
-        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 16:27:52 -0700 (PDT)
-Received: by mail-ot1-x331.google.com with SMTP id 93-20020a9d02e6000000b0060c252ee7a4so549850otl.13
-        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jun 2022 16:27:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=mime-version:in-reply-to:references:from:user-agent:date:message-id
-         :subject:to:cc;
-        bh=SH4c10UHd2jm5iXZMsMlumPvXgKDKSukPGr/j2MwBes=;
-        b=DOYeB54ERnxkc8KCdfg/9ohDBPJKXF4Zj3owMi8p+AOUa5ARLSnQ6//fWAcXaUSeYo
-         pIbJo7hLhKev5eib3IyLpSXkMUnnDGAeqPNe8oSsRGAG/ReIqkW/mKCkXzKhz0k0zx7P
-         XiC1PDBqdFcx69rKuM+WWlCRM4kpBxZ2tDOdg=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:in-reply-to:references:from
-         :user-agent:date:message-id:subject:to:cc;
-        bh=SH4c10UHd2jm5iXZMsMlumPvXgKDKSukPGr/j2MwBes=;
-        b=gC28VET48yi06oLdQltqserr/nNlFrI0+ydnFBezi7QBiMn1taj7iEa5+NXLr+cN/f
-         VLW+rpuWYqbfEaPqGrB7h87qBIAvz1fJCBbAm7BOIoAJN8bcu0nJ0BJnZVArIEnlB6GR
-         DyvUj9OciTwoY/6MUiqHGDLTHaZBMJCzUh5d1IuonOopdhSI0M/3iBstc+jyKCMZh/TS
-         VmiOxnL1xBbjSMsI241d0PbTI6wsfk9f0PwMZgkQOLASaMVhqKCrKRQuEk5thd2QbHJR
-         0buoqTvJ5IQaIcmHC9wOhvkMEO4Df20YlL+gBK/VOm0sO/mK4cJfzDwg4qbh9UA50F8T
-         HSzg==
-X-Gm-Message-State: AJIora8iJSSsHNTISU+hXyaQSB85DHTswg7fup3skNbh0gM2M6YnCMCv
-        oQgRRi7+Z6UdrXJ85jczhKIeTSfPug8l9MmvCZKk1g==
-X-Google-Smtp-Source: AGRyM1uVXOUlD37mLQ7pLmkL8BIEdZdsnlXTlVxy7cY0Oa3nZ1gzq/kLiCUOdFyoe5MDzqiDJ+32/N24XhJQNeSiK8s=
-X-Received: by 2002:a05:6830:d81:b0:616:c424:6f22 with SMTP id
- bv1-20020a0568300d8100b00616c4246f22mr5252300otb.77.1656631671458; Thu, 30
- Jun 2022 16:27:51 -0700 (PDT)
-Received: from 753933720722 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 30 Jun 2022 16:27:50 -0700
-MIME-Version: 1.0
-In-Reply-To: <20220630173328.1369576-1-hsinyi@chromium.org>
-References: <20220630173328.1369576-1-hsinyi@chromium.org>
-From:   Stephen Boyd <swboyd@chromium.org>
-User-Agent: alot/0.10
-Date:   Thu, 30 Jun 2022 16:27:50 -0700
-Message-ID: <CAE-0n50Pe2=tYeuuhBVHsTV9BqU1huU-w-xMMn-1scj2OxBWbg@mail.gmail.com>
-Subject: Re: [PATCH] video: of_display_timing.h: include errno.h
-To:     Hsin-Yi Wang <hsinyi@chromium.org>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc:     Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        Arnd Bergmann <arnd@arndb.de>
+        Thu, 30 Jun 2022 22:34:08 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E776061D72;
+        Thu, 30 Jun 2022 19:34:05 -0700 (PDT)
+X-UUID: f40ea92af97b471d979a7fb212005239-20220701
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.7,REQID:763fb36e-1995-4133-96ee-2db78727ceb8,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:87442a2,CLOUDID:021c3f86-57f0-47ca-ba27-fe8c57fbf305,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
+        ,QS:nil,BEC:nil,COL:0
+X-UUID: f40ea92af97b471d979a7fb212005239-20220701
+Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw02.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 771503672; Fri, 01 Jul 2022 10:34:02 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+ mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
+ Fri, 1 Jul 2022 10:34:00 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Fri, 1 Jul 2022 10:33:59 +0800
+Message-ID: <34ecaadd5aac5275fc475c9f01afaabfa15aa542.camel@mediatek.com>
+Subject: Re: [PATCH v12 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
+ driver
+From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
+To:     CK Hu <ck.hu@mediatek.com>,
+        "chunkuang.hu@kernel.org" <chunkuang.hu@kernel.org>,
+        "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
+        "daniel@ffwll.ch" <daniel@ffwll.ch>,
+        "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        "krzysztof.kozlowski+dt@linaro.org" 
+        <krzysztof.kozlowski+dt@linaro.org>,
+        "mripard@kernel.org" <mripard@kernel.org>,
+        "tzimmermann@suse.de" <tzimmermann@suse.de>,
+        "matthias.bgg@gmail.com" <matthias.bgg@gmail.com>,
+        "deller@gmx.de" <deller@gmx.de>,
+        "airlied@linux.ie" <airlied@linux.ie>
+CC:     "msp@baylibre.com" <msp@baylibre.com>,
+        "granquet@baylibre.com" <granquet@baylibre.com>,
+        Jitao Shi =?UTF-8?Q?=28=E7=9F=B3=E8=AE=B0=E6=B6=9B=29?= 
+        <jitao.shi@mediatek.com>,
+        "wenst@chromium.org" <wenst@chromium.org>,
+        "angelogioacchino.delregno@collabora.com" 
+        <angelogioacchino.delregno@collabora.com>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-mediatek@lists.infradead.org" 
+        <linux-mediatek@lists.infradead.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        Project_Global_Chrome_Upstream_Group 
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Fri, 1 Jul 2022 10:33:58 +0800
+In-Reply-To: <599af6f875cb85bab1a6f0e03bbfb74a2a3b948c.camel@mediatek.com>
+References: <20220627080341.5087-1-rex-bc.chen@mediatek.com>
+         <20220627080341.5087-6-rex-bc.chen@mediatek.com>
+         <599af6f875cb85bab1a6f0e03bbfb74a2a3b948c.camel@mediatek.com>
 Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Quoting Hsin-Yi Wang (2022-06-30 10:33:29)
-> If CONFIG_OF is not enabled, default of_get_display_timing() returns an
-> errno, so include the header.
->
-> Fixes: 422b67e0b31a ("videomode: provide dummy inline functions for !CONFIG_OF")
-> Suggested-by: Stephen Boyd <swboyd@chromium.org>
-> Signed-off-by: Hsin-Yi Wang <hsinyi@chromium.org>
-> ---
+On Thu, 2022-06-30 at 09:47 +0800, CK Hu wrote:
+> Hi, Bo-Chen:
+> 
+> On Mon, 2022-06-27 at 16:03 +0800, Bo-Chen Chen wrote:
+> > From: Markus Schneider-Pargmann <msp@baylibre.com>
+> > 
+> > This patch adds a embedded displayport driver for the MediaTek
+> > mt8195
+> > SoC.
+> > 
+> > It supports the MT8195, the embedded DisplayPort units. It offers
+> > DisplayPort 1.4 with up to 4 lanes.
+> > 
+> > The driver creates a child device for the phy. The child device
+> > will
+> > never exist without the parent being active. As they are sharing a
+> > register range, the parent passes a regmap pointer to the child so
+> > that
+> > both can work with the same register range. The phy driver sets
+> > device
+> > data that is read by the parent to get the phy device that can be
+> > used
+> > to control the phy properties.
+> > 
+> > This driver is based on an initial version by
+> > Jitao shi <jitao.shi@mediatek.com>
+> > 
+> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> > [Bo-Chen: Cleanup the drivers and modify comments from reviewers]
+> > Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> > ---
+> 
+> [snip]
+> 
+> > +
+> > +static void mtk_dp_power_disable(struct mtk_dp *mtk_dp)
+> > +{
+> > +	mtk_dp_write(mtk_dp, MTK_DP_TOP_PWR_STATE, 0);
+> > +
+> > +	mtk_dp_write(mtk_dp, MTK_DP_0034,
+> > +		     DA_CKM_CKTX0_EN_FORCE_EN |
+> > +		     DA_CKM_BIAS_LPF_EN_FORCE_VAL |
+> > +		     DA_CKM_BIAS_EN_FORCE_VAL |
+> > +		     DA_XTP_GLB_LDO_EN_FORCE_VAL |
+> > +		     DA_XTP_GLB_AVD10_ON_FORCE_VAL);
+> 
+> Is this clock gating? If so, separate this to ccf driver.
+> 
+> Regards,
+> CK
+> 
 
-Reviewed-by: Stephen Boyd <swboyd@chromium.org>
+Hello CK,
+
+this register is inside dp hardware, so it should not move to ccf
+driver.
+
+BRs,
+Bo-Chen
+
+> > +
+> > +	/* Disable RX */
+> > +	mtk_dp_write(mtk_dp, MTK_DP_1040, 0);
+> > +	mtk_dp_write(mtk_dp, MTK_DP_TOP_MEM_PD,
+> > +		     0x550 | BIT(FUSE_SEL_SHIFT) |
+> > BIT(MEM_ISO_EN_SHIFT));
+> > +}
+> > +
+> 
+> 
+

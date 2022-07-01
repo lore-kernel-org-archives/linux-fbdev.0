@@ -2,177 +2,188 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC666C43334
-	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Jul 2022 20:02:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55A04CCA479
+	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Jul 2022 20:14:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231937AbiGAUCB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 1 Jul 2022 16:02:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38978 "EHLO
+        id S230238AbiGAUOd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 1 Jul 2022 16:14:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48172 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231985AbiGAUB5 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Jul 2022 16:01:57 -0400
-Received: from mail-qv1-f42.google.com (mail-qv1-f42.google.com [209.85.219.42])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CE2864F199
-        for <linux-fbdev@vger.kernel.org>; Fri,  1 Jul 2022 13:01:42 -0700 (PDT)
-Received: by mail-qv1-f42.google.com with SMTP id cu16so4851610qvb.7
-        for <linux-fbdev@vger.kernel.org>; Fri, 01 Jul 2022 13:01:42 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=p2stC06lnxIJ04peLci0uJckjsb+NhjEnb2d6jyIQDI=;
-        b=CYzana6E3yLyvyx9gHa1zQA5qQrRGAnlkKzcSgSsKMlQvVY7xw0mFjLjZOx1APLVZH
-         ggndnhflliqAywot74ZLIsjBomrlFLmOah3feoYFI2ehW8RYAvCrN+SAdK1c0qwsRcS3
-         M74Ju5VAsc5nRvqse5aN5fCzmCfwBxWaD8fPE8d1GVwjgtAFTDd0R49yXXOxZRG2lZpX
-         qrhKicY0RgbgP/7bYb+NIofzOpu+3e3om9pH8lrfCrxcVzjom2O48pYbDxn8CcddZ9YB
-         lO8UY368qNkcBZN2LpdUWKO0AiY3JkLkcvdg+GkgpwyHTCwtSk/ysc8xG6eidVMSluB8
-         Ly7w==
-X-Gm-Message-State: AJIora+yrX9pNrvdm6VXf/HeTjFy2o/rlN75GNWNCCohU6/45sCbJPjQ
-        VsKxUKuXAIIFASQ+6g83jcC7Klkn6XrpHA==
-X-Google-Smtp-Source: AGRyM1ubvqoI8uShr/Vyf9aFLH4PXfBdp0XMnAfBl+S5SMsNTxwOHpWNNavNCmxBK3nQkHuB+X2GvA==
-X-Received: by 2002:a05:6214:965:b0:470:5190:3350 with SMTP id do5-20020a056214096500b0047051903350mr18695490qvb.53.1656705700844;
-        Fri, 01 Jul 2022 13:01:40 -0700 (PDT)
-Received: from mail-yb1-f174.google.com (mail-yb1-f174.google.com. [209.85.219.174])
-        by smtp.gmail.com with ESMTPSA id v26-20020ac873da000000b00304dec6452csm15091931qtp.78.2022.07.01.13.01.39
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 01 Jul 2022 13:01:40 -0700 (PDT)
-Received: by mail-yb1-f174.google.com with SMTP id d5so5823915yba.5
-        for <linux-fbdev@vger.kernel.org>; Fri, 01 Jul 2022 13:01:39 -0700 (PDT)
-X-Received: by 2002:a25:3288:0:b0:66c:8a91:74bb with SMTP id
- y130-20020a253288000000b0066c8a9174bbmr16964347yby.89.1656705699367; Fri, 01
- Jul 2022 13:01:39 -0700 (PDT)
+        with ESMTP id S231872AbiGAUOV (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Jul 2022 16:14:21 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C74338BC3
+        for <linux-fbdev@vger.kernel.org>; Fri,  1 Jul 2022 13:13:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1656706415;
+        bh=IDGeeU+OCpJgNkbxdn4+n3cEveAvz/Yrwi9U+ZgIPzE=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=ZaLSJnANJZbhCUkaE1bO4YnVbxIBQG11pV6Vc0kJrb5lzN6SN0IceTtX7u7r3jaFC
+         nCCgZClIlr7DIEtbgefAkXDIFR0WbHHacHXd0TW8ZsoKo9rBzDZgpcdjZxQnEAtW3D
+         svZjE0Rkn3AVzgrEXzT3WZZ1zkLdIlnwcFMVnd+Q=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.182.192]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1M3lY1-1o6XwC17f1-000vsl; Fri, 01
+ Jul 2022 22:13:35 +0200
+Message-ID: <695b55ec-1118-bb1f-a630-8474059ccb81@gmx.de>
+Date:   Fri, 1 Jul 2022 22:13:05 +0200
 MIME-Version: 1.0
-References: <20191014140416.28517-1-tzimmermann@suse.de> <20191014140416.28517-10-tzimmermann@suse.de>
- <CAMuHMdU9p7KUy3WEFox9KgZBHGZGNO2y5m8tLVbzGGVHu2iNYQ@mail.gmail.com>
- <8b79b40b-9786-9ddf-0dc9-89efbab38c7f@suse.de> <CAMuHMdX7webJ0_R8uj=nagTHJY6viLGkhv2hmc9X48gwz1JDew@mail.gmail.com>
-In-Reply-To: <CAMuHMdX7webJ0_R8uj=nagTHJY6viLGkhv2hmc9X48gwz1JDew@mail.gmail.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Fri, 1 Jul 2022 22:01:27 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdU-QWCG16asy4o_p21meY4AnbpVNSmd4+PJkDipwPg2Vg@mail.gmail.com>
-Message-ID: <CAMuHMdU-QWCG16asy4o_p21meY4AnbpVNSmd4+PJkDipwPg2Vg@mail.gmail.com>
-Subject: Re: [PATCH v2 09/15] drm/fbconv: Mode-setting pipeline enable / disable
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Sean Paul <sean@poorly.run>, ajax@redhat.com,
-        =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>,
-        Mathieu Malaterre <malat@debian.org>, michel@daenzer.net,
-        Jonathan Corbet <corbet@lwn.net>,
-        Greg KH <gregkh@linuxfoundation.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH 2/5] fbcon: Fix up user-provided virtual screen size
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>
+References: <20220629200024.187187-1-deller@gmx.de>
+ <20220629200024.187187-3-deller@gmx.de>
+ <CAMuHMdXJRBywf+h_u1jgA6X7hLSByDDwSkskff47a0BHfd93iA@mail.gmail.com>
+ <0c418b7d-474a-3f93-a1fb-2f13c4d19941@gmx.de>
+ <CAMuHMdUoMJ6CmiKDh4MW_b-7uoxEF+H6QimsA7SfcE5kjo17vw@mail.gmail.com>
+ <d57655b2-44d1-4083-c4e9-ef4f004f2b64@gmx.de>
+ <CAMuHMdXk9Kz4-pv7-M9tufj-pruhOZWw_b51fegkr2JSqzL65g@mail.gmail.com>
+ <cae3dc86-8156-eef5-1af4-b16cb2a42849@gmx.de>
+ <CAMuHMdViqMgpiB2a-cLt1viVMgGbBz_Q=youNsWdLPYxcXxFpA@mail.gmail.com>
+ <4580aa35-5a34-0d81-56d1-1f10218375d2@gmx.de>
+ <CAMuHMdV_8+Cp=BCWhADQ-2B9o3sk6GSdmxxVLLiAnWV-Nwncug@mail.gmail.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <CAMuHMdV_8+Cp=BCWhADQ-2B9o3sk6GSdmxxVLLiAnWV-Nwncug@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:wNGzHrE1pBHovSvZnSY4QJpAwfV6gXFT4aWq7GdRRW1MnIkGWnR
+ wUvbHXmkoFSZKCXXkl4UJkNIbm7TSsMJhonbS0RINlMM4hFGFeIxZiMr5Sn0tqtxfbRT6lS
+ ayRZh+6YK+lVEkhMtTsA9CcNuz/8SfXczUpsEBZaCbR3zz9y7VuvMkgx94k7+XMwFUdQ5yk
+ 3cr1tqKk7UjXDroo4StSQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:zJ9UIdDKMTo=:tTzWDExCSTbxhR3xKx/tfm
+ 30I/FG/H7Iu8JQ4osAxGCDCJ7GRfLiS/vF5ZjgY2nN+oYCXIbrSZX5NN87fIDjGNK+dRgWxAP
+ UA04X8S01AwEl5U9G4oAN26eT96L7nva1cWwAgaW8hyQOZh+iDSfKr5oGxveYdf/N5/7VaE9b
+ eIdy+UTYI+s1YFCgol0ePXVYjcX/AmxDK0t8d/L3XocOYQZBbMcgk21h01WEMnmKRY+ZsEjra
+ V6Huq3GHz6H1ljDkY6pGxfFRDzqo0UZWSN1Byly2B7XZQFewM1BQRekkI+x9DKaNQvWkkaabw
+ /a62A3Zmasit++glJeYChfEfymV9B4pYLm5rjPlQ6+s2Z9c0yXlD3ttBT0spGtW8aFraaR6nk
+ I4DFc9rJGkHgka2GpCzh9TFXHD27WVAN+erdt/eamMI3BgrTTB67QWFAHhdhmEC0IH9lYmvz1
+ Cxe5l4yC6PQUv3pc+pgSEJCK2ijm8NAfpSUaDny7rZICsnShEOsl0odGJwKxpM16RSiXdYCTp
+ HX3fCQneROp4aRF6M+QX1akt1N/36gTQGX7U3W9MOYCQPlDWoSfbdXdpo9B1LgSoigdNHE1wn
+ TebA/pkH4E0yZwafpPbqDtvk6DumuepfFiCyONT9hyP8dCtmsZKoJeskKBlkguDa9QbmL6gj8
+ CMLi3U08VHf+AZX4CIEunNVo1J1lMJ/HVAPYJ+ftbC24N9GMKNp5641Cv43TQWhxACsRS0tp5
+ /XW/6khtTyOxw3sOQPIyd9rufhRDuULhq7zwSYy02xtY7g9tN8yvC/e555ums4dBD4mZ03MG4
+ oEDLaTY/BSXTFilkn1BAQBWv9bSEz/i9lI6MrxEVtX1DM6nZ/4u9foXy0fXa1VmsoXLPz9TlD
+ EDVIVQcVdaQzRnmFfCaIccx2Y4EBra3sbI4AaMuHuWHTxO+i/SX/9VQw7HvUzdwUOgEyD9ahF
+ 5wQIBOlodVE7MErc8zxumt3DHaA0DON61dC2iTCFxzpTdmGO/JmbpLMoZ+UEmp6MhcH4gNHgV
+ OPQD9S5M7AeIuDkjXn/zpShC98D6cEyawGmCFOeqF0A6nSIcRoOiBouI6t7GY97EdybsknZMV
+ t/gbLHzcTO1qjI2+kNvGHf7IXHpljNjqQ2zlUd56ytwZGCiI3ZONq6zgw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
-
-On Mon, May 30, 2022 at 10:34 AM Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> On Mon, May 30, 2022 at 9:47 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> > Am 28.05.22 um 22:17 schrieb Geert Uytterhoeven:
-> > > On Mon, Oct 14, 2019 at 4:05 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> > >> The display mode is set by converting the DRM display mode to an
-> > >> fb_info state and handling it to the fbdev driver's fb_setvar()
-> > >> function. This also requires a color depth, which we take from the
-> > >> value of struct drm_mode_config.preferred_depth
-> > >>
-> > >> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> > >
-> > >> --- a/drivers/gpu/drm/drm_fbconv_helper.c
-> > >> +++ b/drivers/gpu/drm/drm_fbconv_helper.c
-> > >> @@ -919,6 +919,24 @@ static int drm_fbconv_update_fb_var_screeninfo_from_framebuffer(
-> > >>          return 0;
-> > >>   }
-> > >>
-> > >> +static int drm_fbconv_update_fb_var_screeninfo_from_simple_display_pipe(
-> > >> +       struct fb_var_screeninfo *fb_var, struct drm_simple_display_pipe *pipe)
-> > >> +{
-> > >> +       struct drm_plane *primary = pipe->crtc.primary;
-> > >> +       struct drm_fbconv_modeset *modeset = drm_fbconv_modeset_of_pipe(pipe);
-> > >> +
-> > >> +       if (primary && primary->state && primary->state->fb)
-> > >> +               return drm_fbconv_update_fb_var_screeninfo_from_framebuffer(
-> > >> +                       fb_var, primary->state->fb,
-> > >> +                       modeset->fb_info->fix.smem_len);
-> > >> +
-> > >> +       fb_var->xres_virtual = fb_var->xres;
-> > >> +       fb_var->yres_virtual = fb_var->yres;
-> > >> +       fb_var->bits_per_pixel = modeset->dev->mode_config.preferred_depth;
-> > >
-> > > This looks wrong to me: IMHO bits_per_pixel should be derived from
-> > > the fourcc format of the _new_ mode to be set...
-> >
-> > Indeed, this appears to be wrong.
+On 7/1/22 16:52, Geert Uytterhoeven wrote:
+> Hi Helge,
 >
-> OK.
+> On Fri, Jul 1, 2022 at 11:30 AM Helge Deller <deller@gmx.de> wrote:
+>> On 7/1/22 09:28, Geert Uytterhoeven wrote:
+>>> On Thu, Jun 30, 2022 at 10:10 PM Helge Deller <deller@gmx.de> wrote:
+>>>> On 6/30/22 22:00, Geert Uytterhoeven wrote:
+>>>>> On Thu, Jun 30, 2022 at 9:46 PM Helge Deller <deller@gmx.de> wrote:
+>>>>>> On 6/30/22 21:36, Geert Uytterhoeven wrote:
+>>>>>>> On Thu, Jun 30, 2022 at 9:31 PM Helge Deller <deller@gmx.de> wrote=
+:
+>>>>>>>> On 6/30/22 21:00, Geert Uytterhoeven wrote:
+>>>>>>>>> On Wed, Jun 29, 2022 at 10:00 PM Helge Deller <deller@gmx.de> wr=
+ote:
+>>>>>>>>>> The virtual screen size can't be smaller than the physical scre=
+en size.
+>>>>>>>>>> Based on the general rule that we round up user-provided input =
+if
+>>>>>>>>>> neccessary, adjust the virtual screen size as well if needed.
+>>>>>>>>>>
+>>>>>>>>>> Signed-off-by: Helge Deller <deller@gmx.de>
+>>>>>>>>>> Cc: stable@vger.kernel.org # v5.4+
+>>>>>>>>>
+>>>>>>>>> Thanks for your patch!
+>>>>>>>>>
+>>>>>>>>>> --- a/drivers/video/fbdev/core/fbmem.c
+>>>>>>>>>> +++ b/drivers/video/fbdev/core/fbmem.c
+>>>>>>>>>> @@ -1106,6 +1106,11 @@ static long do_fb_ioctl(struct fb_info *=
+info, unsigned int cmd,
+>>>>>>>>>>                         return -EFAULT;
+>>>>>>>>>>                 console_lock();
+>>>>>>>>>>                 lock_fb_info(info);
+>>>>>>>>>> +               /* adjust virtual screen size if user missed it=
+ */
+>>>>>>>>>> +               if (var.xres_virtual < var.xres)
+>>>>>>>>>> +                       var.xres_virtual =3D var.xres;
+>>>>>>>>>> +               if (var.yres_virtual < var.yres)
+>>>>>>>>>> +                       var.yres_virtual =3D var.yres;
+>>>>>>>>>>                 ret =3D fb_set_var(info, &var);
+>>>>>>>>>>                 if (!ret)
+>>>>>>>>>>                         fbcon_update_vcs(info, var.activate & F=
+B_ACTIVATE_ALL);
+>>>>>>>>>
+>>>>>>>>> Given "[PATCH 4/5] fbmem: Prevent invalid virtual screen sizes i=
+n
+>>>>>>>>> fb_set_var", I don't think we need this patch.
+>>>>>>>>
+>>>>>>>> We do.
+>>>>>>>
+>>>>>>> Why? It will be caught by [PATCH 4/5].
+>>>>>>
+>>>>>> Right, it will be caught by patch #4.
+>>>>>> But if you drop this part, then everytime a user runs
+>>>>>>         fbset -xres 800 -yres 600 -xvres 200
+>>>>>> users will get the KERNEL BUG WARNING (from patch #4) including
+>>>>>> a kernel backtrace in their syslogs.
+>>>>>
+>>>>> No, they will only see that warning if they are using a broken fbdev
+>>>>> driver that implements .fb_check_var(), but fails to validate or
+>>>>> update the passed geometry.
+>>>>
+>>>> IMHO this argument is mood.
+>>>> That way you put pressure on and need such simple code in
+>>>> each single driver to fix it up, instead of cleaning it up at a centr=
+al
+>>>> place.
+>>>
+>>> Most hardware has restrictions on resolution (e.g. xres must be a
+>>> multiple of N), so the driver has to round up the resolution to make
+>>> it fit.  And after that the driver has to validate and update the
+>>> virtual resolution again anyway...
+>>>
+>>> If a driver does not support changing the video mode, it can leave
+>>> out the .fb_check_var() and .fb_set_par() callbacks, so the fbdev
+>>> core will ignore the userspace-supplied parameters, and reinstate
+>>> the single supported mode. See e.g. "[PATCH] drm/fb-helper:
+>>> Remove helpers to change frame buffer config"
+>>> (https://lore.kernel.org/all/20220629105658.1373770-1-geert@linux-m68k=
+.org).
+>>
+>> I implemented all of your suggested changes - from this mail and the ot=
+hers.
+>> I've committed a new testing tree to the fbcon-fix-testing branch at:
+>> https://github.com/hdeller/linux/tree/fbcon-fix-testing
+>> The diff is here:
+>> https://github.com/torvalds/linux/compare/master...hdeller:linux:fbcon-=
+fix-testing
+>>
+>> Although your idea is good since we now would find issues in the driver=
+s,
+>> I don't think we want to commit it, since the testcase from
+>> the bug report then immediately crashes the kernel - see below.
 >
-> >
-> > >
-> > >> +
-> > >> +       return 0;
-> > >> +}
-> > >> +
-> > >>   /**
-> > >>    * drm_fbconv_simple_display_pipe_mode_valid - default implementation for
-> > >>    *     struct drm_simple_display_pipe_funcs.mode_valid
-> > >> @@ -950,6 +968,28 @@ bool drm_fbconv_simple_display_pipe_mode_fixup(
-> > >>          struct drm_crtc *crtc, const struct drm_display_mode *mode,
-> > >>          struct drm_display_mode *adjusted_mode)
-> > >>   {
-> > >> +       struct drm_simple_display_pipe *pipe =
-> > >> +               container_of(crtc, struct drm_simple_display_pipe, crtc);
-> > >> +       struct drm_fbconv_modeset *modeset = drm_fbconv_modeset_of_pipe(pipe);
-> > >> +       struct fb_var_screeninfo fb_var;
-> > >> +       int ret;
-> > >> +
-> > >> +       if (!modeset->fb_info->fbops->fb_check_var)
-> > >> +               return true;
-> > >> +
-> > >> +       drm_fbconv_init_fb_var_screeninfo_from_mode(&fb_var, mode);
-> > >> +
-> > >> +       ret = drm_fbconv_update_fb_var_screeninfo_from_simple_display_pipe(
-> > >> +               &fb_var, &modeset->pipe);
-> > >> +       if (ret)
-> > >> +               return true;
-> > >> +
-> > >> +       ret = modeset->fb_info->fbops->fb_check_var(&fb_var, modeset->fb_info);
-> > >
-> > > ... hence this fails if the requested mode is valid with the new
-> > > fourcc format, but invalid with the old (but preferred) depth.
-> > > E.g. due to bandwidth limitations, a high-resolution mode is valid
-> > > with a low color depth, while a high color depth is limited to lower
-> > > resolutions.
+> That is expected behavior with panic_on_warn?
 
-> > > Unfortunately we do not know the new fourcc format here, as both
-> > > drm_simple_display_pipe_funcs.mode_{valid,fixup}() are passed
-> > > the mode (from drm_mode_set.mode), but not the new format (from
-> > > drm_mode_set.fb->format).
-> > >
-> > > Am I missing something? Is the new format available in some other way?
-> >
-> > We can always get the format from the new plane state of
-> > modeset->pipe->plane. We'd have this in the atomic_check call. And it
-> > appears that drm_fbconv_simple_display_pipe_check() is a better place
-> > for this code anyway.
->
-> Thanks, I'll give that a try!
+Oh well. You're right!
+The kernel config had panic_on_warn enabled, which I didn't noticed.
+I disabled that option and now it works:
 
-Getting the format from the new plane state of pipe->plane doesn't
-work, as pipe->plane.state->fb = NULL.
-But it is indeed available in the drm_simple_display_pipe_funcs.check()
-callback, so that seems to work...
+[  147.430332][ T3171] WARNING: CPU: 0 PID: 3171 at drivers/video/fbdev/co=
+re/fbmem.c:1025 fb_set_var.cold+0x83/0x1bc
+....
+[  147.431126][ T3171] ---[ end trace 0000000000000000 ]---
+[  147.431132][ T3171] fbcon: Fix up invalid yres 0 for bochs-drmdrmfb
 
-Gr{oetje,eeting}s,
+> The right fix is to fix the broken .fb_check_var() implementation.
 
-                        Geert
+Yep.
+I'll send this patch series now.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Helge

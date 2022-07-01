@@ -2,40 +2,42 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F577C43334
-	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Jul 2022 02:34:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83423C43334
+	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Jul 2022 05:18:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233167AbiGACeR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 30 Jun 2022 22:34:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60354 "EHLO
+        id S232748AbiGAFSR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 1 Jul 2022 01:18:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35508 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233809AbiGACeI (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 30 Jun 2022 22:34:08 -0400
+        with ESMTP id S232155AbiGAFSR (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Jul 2022 01:18:17 -0400
 Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E776061D72;
-        Thu, 30 Jun 2022 19:34:05 -0700 (PDT)
-X-UUID: f40ea92af97b471d979a7fb212005239-20220701
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E728B92;
+        Thu, 30 Jun 2022 22:18:06 -0700 (PDT)
+X-UUID: fd340e53259549fdbc695f57ccf4463e-20220701
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.7,REQID:763fb36e-1995-4133-96ee-2db78727ceb8,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:0
-X-CID-META: VersionHash:87442a2,CLOUDID:021c3f86-57f0-47ca-ba27-fe8c57fbf305,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
-        ,QS:nil,BEC:nil,COL:0
-X-UUID: f40ea92af97b471d979a7fb212005239-20220701
-Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw02.mediatek.com
+X-CID-O-INFO: VERSION:1.1.7,REQID:b7540888-2f96-41a5-b4c2-1edb540b14ed,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:2,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACT
+        ION:release,TS:47
+X-CID-INFO: VERSION:1.1.7,REQID:b7540888-2f96-41a5-b4c2-1edb540b14ed,OB:0,LOB:
+        0,IP:0,URL:0,TC:0,Content:2,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTIO
+        N:release,TS:47
+X-CID-META: VersionHash:87442a2,CLOUDID:b62953d6-5d6d-4eaf-a635-828a3ee48b7c,C
+        OID:a84055e5f88c,Recheck:0,SF:28|17|19|48,TC:nil,Content:4,EDM:-3,IP:nil,U
+        RL:0,File:nil,QS:nil,BEC:nil,COL:0
+X-UUID: fd340e53259549fdbc695f57ccf4463e-20220701
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 771503672; Fri, 01 Jul 2022 10:34:02 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Fri, 1 Jul 2022 10:34:00 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 1 Jul 2022 10:33:59 +0800
-Message-ID: <34ecaadd5aac5275fc475c9f01afaabfa15aa542.camel@mediatek.com>
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1009609211; Fri, 01 Jul 2022 13:18:00 +0800
+Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Fri, 1 Jul 2022 13:17:58 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
+ Transport; Fri, 1 Jul 2022 13:17:58 +0800
+Message-ID: <33f121fa1a97e9fa8fd3fc6e87f197b7965bd825.camel@mediatek.com>
 Subject: Re: [PATCH v12 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
  driver
 From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
@@ -68,11 +70,11 @@ CC:     "msp@baylibre.com" <msp@baylibre.com>,
         "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
         Project_Global_Chrome_Upstream_Group 
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Fri, 1 Jul 2022 10:33:58 +0800
-In-Reply-To: <599af6f875cb85bab1a6f0e03bbfb74a2a3b948c.camel@mediatek.com>
+Date:   Fri, 1 Jul 2022 13:17:58 +0800
+In-Reply-To: <78d71a052d214e0c11cab5c2f4dee39c4f67c0bc.camel@mediatek.com>
 References: <20220627080341.5087-1-rex-bc.chen@mediatek.com>
          <20220627080341.5087-6-rex-bc.chen@mediatek.com>
-         <599af6f875cb85bab1a6f0e03bbfb74a2a3b948c.camel@mediatek.com>
+         <78d71a052d214e0c11cab5c2f4dee39c4f67c0bc.camel@mediatek.com>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
@@ -82,7 +84,7 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, 2022-06-30 at 09:47 +0800, CK Hu wrote:
+On Wed, 2022-06-29 at 13:34 +0800, CK Hu wrote:
 > Hi, Bo-Chen:
 > 
 > On Mon, 2022-06-27 at 16:03 +0800, Bo-Chen Chen wrote:
@@ -118,6 +120,21 @@ On Thu, 2022-06-30 at 09:47 +0800, CK Hu wrote:
 > [snip]
 > 
 > > +
+> > +static void mtk_dp_power_enable(struct mtk_dp *mtk_dp)
+> > +{
+> > +	mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_RESET_AND_PROBE,
+> > +			   0, SW_RST_B_PHYD);
+> > +
+> > +	/* Wait for power enable */
+> > +	usleep_range(10, 200);
+> > +
+> > +	mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_RESET_AND_PROBE,
+> > +			   SW_RST_B_PHYD, SW_RST_B_PHYD);
+> > +	mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_PWR_STATE,
+> > +			   DP_PWR_STATE_BANDGAP_TPLL,
+> > DP_PWR_STATE_MASK);
+> > +}
+> > +
 > > +static void mtk_dp_power_disable(struct mtk_dp *mtk_dp)
 > > +{
 > > +	mtk_dp_write(mtk_dp, MTK_DP_TOP_PWR_STATE, 0);
@@ -128,8 +145,14 @@ On Thu, 2022-06-30 at 09:47 +0800, CK Hu wrote:
 > > +		     DA_CKM_BIAS_EN_FORCE_VAL |
 > > +		     DA_XTP_GLB_LDO_EN_FORCE_VAL |
 > > +		     DA_XTP_GLB_AVD10_ON_FORCE_VAL);
+> > +
+> > +	/* Disable RX */
+> > +	mtk_dp_write(mtk_dp, MTK_DP_1040, 0);
 > 
-> Is this clock gating? If so, separate this to ccf driver.
+> MTK_DP_1040 is set to 0 in mtk_dp_power_disable(), but it is not set
+> to
+> other value in mtk_dp_power_enable(). Does any thing would be wrong
+> when mtk_dp_power_disable() and mtk_dp_power_enable()?
 > 
 > Regards,
 > CK
@@ -137,15 +160,21 @@ On Thu, 2022-06-30 at 09:47 +0800, CK Hu wrote:
 
 Hello CK,
 
-this register is inside dp hardware, so it should not move to ccf
-driver.
+in mtk_dp_power_enable(),
+after we reset the hw:
+mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_RESET_AND_PROBE,
+		   SW_RST_B_PHYD, SW_RST_B_PHYD);
+mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_PWR_STATE,
+		   DP_PWR_STATE_BANDGAP_TPLL,
+		   DP_PWR_STATE_MASK);
+
+the value will be set back to default value 0x7.
+I will add "mtk_dp_write(mtk_dp, MTK_DP_1040, 7);" to prevent
+misunderstanding.
 
 BRs,
 Bo-Chen
 
-> > +
-> > +	/* Disable RX */
-> > +	mtk_dp_write(mtk_dp, MTK_DP_1040, 0);
 > > +	mtk_dp_write(mtk_dp, MTK_DP_TOP_MEM_PD,
 > > +		     0x550 | BIT(FUSE_SEL_SHIFT) |
 > > BIT(MEM_ISO_EN_SHIFT));

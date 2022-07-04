@@ -2,113 +2,95 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25D30C43334
-	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Jul 2022 11:07:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71412C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Jul 2022 12:12:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230026AbiGDLHc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 4 Jul 2022 07:07:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55302 "EHLO
+        id S233443AbiGDMMz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 4 Jul 2022 08:12:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44822 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229836AbiGDLHb (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Jul 2022 07:07:31 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 28560DFAC;
-        Mon,  4 Jul 2022 04:07:31 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id BA67F61624;
-        Mon,  4 Jul 2022 11:07:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E4F6C3411E;
-        Mon,  4 Jul 2022 11:07:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1656932850;
-        bh=ShPSNOvgzATtn2/Bsxk03dhF7u+9UjNpwSKkcGRvTT0=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=yg7oJSBac1jklWTdfgCXuJ3ysIGEvXrqf9/zfqWj42Iyu5IX6vLXQxNYM/N8zePVv
-         gl+h3HeUDHDoljmR2gePU76jeomtKSKBVHs4jLc0sVpZAXzp8rEBO43+ANIOsKdZ6Y
-         UAo9IGe43RtjSE/pzqD1J5iVI+6bU5b1kL+Sse4w=
-Date:   Mon, 4 Jul 2022 13:07:27 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     szuni chen <szunichen@gmail.com>
-Cc:     ChiaEn Wu <peterwu.pub@gmail.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Chunfeng Yun <chunfeng.yun@mediatek.com>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>,
-        Helge Deller <deller@gmx.de>, chiaen_wu@richtek.com,
-        alice_chen@richtek.com, ChiYuan Huang <cy_huang@richtek.com>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-mediatek@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        USB <linux-usb@vger.kernel.org>,
-        linux-iio <linux-iio@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
-Subject: Re: [PATCH v4 08/13] usb: typec: tcpci_mt6370: Add Mediatek MT6370
- tcpci driver
-Message-ID: <YsLJ7+HiqaBTwCLg@kroah.com>
-References: <20220704053901.728-1-peterwu.pub@gmail.com>
- <20220704053901.728-9-peterwu.pub@gmail.com>
- <YsKXcnys2Wa8Zz0p@kroah.com>
- <CA+hk2fYA3phYAoh+BFr0ddy9MR8Ro1WCoqBpa1UK2StwMtLyfQ@mail.gmail.com>
+        with ESMTP id S234156AbiGDMMo (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Jul 2022 08:12:44 -0400
+Received: from smtp2.tsag.net (smtp2.tsag.net [208.118.68.91])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C05DB11A17;
+        Mon,  4 Jul 2022 05:12:34 -0700 (PDT)
+Received: from linuxfromscratch.org (rivendell.linuxfromscratch.org [208.118.68.85])
+        (user=smtprelay@linuxfromscratch.org mech=PLAIN bits=0)
+        by smtp2.tsag.net  with ESMTP id 264CCEb3016295-264CCEb5016295
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+        Mon, 4 Jul 2022 06:12:15 -0600
+Received: from [192.168.124.21] (unknown [113.140.29.6])
+        by linuxfromscratch.org (Postfix) with ESMTPSA id 94E8B1C33A3;
+        Mon,  4 Jul 2022 12:12:03 +0000 (GMT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfromscratch.org;
+        s=cert4; t=1656936734;
+        bh=GrL/vpguVZ9tP47CYdZCrW41xA+hiKUSJdUUeQWLGpE=;
+        h=Subject:From:To:Cc:Date:In-Reply-To:References;
+        b=cih1+QImaS5HdEMectcuxojxwRTLah2ZFL57ICfKWJvgQEpOF1/UT/N0n+LTwAB87
+         zgVYrxsIEzMpjAoI+sLSjNhNYZ8S6EXNRpDplk52OHsliZA7wOwyUZNZadL820INJq
+         eY3q1NXW20y6Bgmxv0notT4Xyhlr4pXswC7bF9zz9Ca3GrCRV3I5WKT+cPDDMzOLuQ
+         HusFDkbVEZxP7LGcslMs6RjXhPWkeLuEpzszbqewJlkcgfeXlgwl4LK3OJNX1Aslqv
+         4b8acQN+j70cUyQ9aKttzbeG2jT2wCtXZKfHp7yINnYUGq5vvPt6YoqF8rVdse9UNj
+         GCNBwJzDPhkUQ==
+Message-ID: <2ae767b0439133ca4e60885a1843ee72b69adfc5.camel@linuxfromscratch.org>
+Subject: Re: [PATCH v6 3/5] fbdev: Disable sysfb device registration when
+ removing conflicting FBs
+From:   Xi Ruoyao <xry111@linuxfromscratch.org>
+To:     Javier Martinez Canillas <javierm@redhat.com>,
+        Zack Rusin <zackr@vmware.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc:     "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+        "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+        "deller@gmx.de" <deller@gmx.de>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
+        Linux-graphics-maintainer <Linux-graphics-maintainer@vmware.com>,
+        "kraxel@redhat.com" <kraxel@redhat.com>,
+        "tzimmermann@suse.de" <tzimmermann@suse.de>,
+        "daniel.vetter@ffwll.ch" <daniel.vetter@ffwll.ch>,
+        "lersek@redhat.com" <lersek@redhat.com>
+Date:   Mon, 04 Jul 2022 20:11:40 +0800
+In-Reply-To: <fddf5ca6-77dc-88f9-c191-7de09717063c@redhat.com>
+References: <20220607182338.344270-1-javierm@redhat.com>
+         <20220607182338.344270-4-javierm@redhat.com>
+         <de83ae8cb6de7ee7c88aa2121513e91bb0a74608.camel@vmware.com>
+         <38473dcd-0666-67b9-28bd-afa2d0ce434a@redhat.com>
+         <603e3613b9b8ff7815b63f294510d417b5b12937.camel@vmware.com>
+         <a633d605-4cb3-2e04-1818-85892cf6f7b0@redhat.com>
+         <97565fb5-cf7f-5991-6fb3-db96fe239ee8@redhat.com>
+         <711c88299ef41afd8556132b7c1dcb75ee7e6117.camel@vmware.com>
+         <aa144e20-a555-5c30-4796-09713c12ab0e@redhat.com>
+         <64c753c98488a64b470009e45769ceab29fd8130.camel@linuxfromscratch.org>
+         <61f2e4e2af40cb9d853504d0a6fe01829ff8ca60.camel@linuxfromscratch.org>
+         <fddf5ca6-77dc-88f9-c191-7de09717063c@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.44.3 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CA+hk2fYA3phYAoh+BFr0ddy9MR8Ro1WCoqBpa1UK2StwMtLyfQ@mail.gmail.com>
+X-FEAS-Auth-User: smtprelay@linuxfromscratch.org
+X-FEAS-DKIM: Valid
+Authentication-Results: smtp2.tsag.net;
+        dkim=pass header.i=@linuxfromscratch.org;
+        dmarc=pass header.from=linuxfromscratch.org
+X-FE-Policy-ID: 0:14:3:linuxfromscratch.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Jul 04, 2022 at 05:31:29PM +0800, szuni chen wrote:
-> Greg KH <gregkh@linuxfoundation.org> 於 2022年7月4日 週一 下午3:32寫道：
-> >
-> > On Mon, Jul 04, 2022 at 01:38:56PM +0800, ChiaEn Wu wrote:
-> > > From: ChiYuan Huang <cy_huang@richtek.com>
-> > >
-> > > Add chip level mt6370 tcpci driver.
-> >
-> > What does this mean?  Please provide more information about the hardware
-> > being supported here so we know how to review this.
-> 
-> Dear Greg,
-> 
-> MediaTek MT6370 is a highly-integrated smart power management IC,
-> which includes a single cell Li-Ion/Li-Polymer switching battery charger,
-> a USB Type-C & Power Delivery (PD) controller, dual flash LED current sources,
-> a RGB LED driver, a backlight WLED driver, a display bias driver and a
-> general LDO for portable devices.
-> 
-> This driver is used for the Type-C & Power Delivery controller in
-> MediaTek MT6370 IC.
-> 
-> If we change the commit message to
-> 
-> "Add MediaTek MT6370 tcpci driver.
-> MediaTek MT6370 is a multi-functional IC that includes USB Type-C.
-> It works with Type-C Port Controller Manager to provide USB PD and USB
-> Type-C functionalities."
-> 
-> does this meet your requirements?
+On Mon, 2022-07-04 at 13:04 +0200, Javier Martinez Canillas wrote:
+> Hello Xi,
+> >=20
+> > With CONFIG_SYSFB_SIMPLEFB and CONFIG_FB_SIMPLE enabled, there is no
+> > issue.
+> >=20
+> > I guess it's something going wrong on a "drm -> drm" pass over.=C2=A0 F=
+or now
+> > I'll continue to use simpledrm with this commit reverted.
+> >=20
+>=20
+> Yes, we need to also cherry-pick b84efa28a48 ("drm/aperture: Run fbdev
+> removal before internal helpers") now that the sysfb_disable() patches
+> are in v5.19-rc5.
 
-What would you want to see if you were reading a changelog text for an
-unfamiliar hardware device?  More text is always better!
-
-thanks,
-
-greg k-h
+I confirm that cherry-picking b84efa28a48 fixes the issue for v5.19-rc5.

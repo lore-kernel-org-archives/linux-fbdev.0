@@ -2,205 +2,96 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B552C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Jul 2022 08:38:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 147ECC43334
+	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Jul 2022 09:05:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232341AbiGDIiw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 4 Jul 2022 04:38:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44224 "EHLO
+        id S233511AbiGDJE6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 4 Jul 2022 05:04:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35886 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232268AbiGDIiv (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Jul 2022 04:38:51 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A416AB4B7
-        for <linux-fbdev@vger.kernel.org>; Mon,  4 Jul 2022 01:38:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1656923922;
-        bh=EoWxwT9/rvJfVDYjeyx47WXlpm1gsKW1JIjaJJT/qjE=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=PD2HDbTtdxKx5IO3J2W4rq70ZmKX06+77y6teurjlTQWNAqSpGZi9F3myHZHb9ghg
-         Vye3XjL7Ff2BB+DcuInSb7O05YTghZZq+w7Vzv/CBOgeGzrmiKjNwYIOvCzeHuySFN
-         xy6Mdtf8X9CNzyNMetxnkDaINeD9RUFOZfkGDxM8=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.146.45]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MRCK6-1nwGWc1ii4-00NB1B; Mon, 04
- Jul 2022 10:38:42 +0200
-Message-ID: <2f534dd1-418d-7bc0-aca8-15d26fac4132@gmx.de>
-Date:   Mon, 4 Jul 2022 10:38:11 +0200
+        with ESMTP id S233219AbiGDJE6 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Jul 2022 05:04:58 -0400
+Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7550BC27
+        for <linux-fbdev@vger.kernel.org>; Mon,  4 Jul 2022 02:04:56 -0700 (PDT)
+Received: by mail-lf1-x134.google.com with SMTP id x3so14692854lfd.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 04 Jul 2022 02:04:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=n4B9YLkKJASUbF6SDeFOUfEsE0vnt4+YdnmVDhP06z4=;
+        b=PYvq706wWC49R4jolMknaPmpRLaoYvxAwS/yrvpFklnZZejweFemyL+imVd3ZQHAkf
+         2/oXHaA9SGkarCtUTpJuT3rbr6E8/ZVClvuR1xBNSKo+a8wG5DTug1kwbGjWuOCBcI70
+         dWGUwdFSDfUGxCvJG/zPrfbQm+BbCyObhS6xtSNndCwmGipu6Cfuvu+r8eMks7OKGo0b
+         2YzZ/37v4uOxttWU2JFcYvY4M9Qr68hL1wTP8MZfoSjc1J2+2NJTNQry+5XTQR6atCko
+         dT/Z9yNTRRG/tHVo63yXJDe5gp8/LH7Off+y7xl7ruy7e2ZiSNNwjEwSUYfXcOFTMnzE
+         rrgQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=n4B9YLkKJASUbF6SDeFOUfEsE0vnt4+YdnmVDhP06z4=;
+        b=SV6BVZL+9XrQYjNIxU+bDJuoBduF+hY51WusXw0o1+A+uIueimOtg86odfGXxnvZjX
+         Gv1AuBHoUexQSdtm892ah6sQZmDQo/rYtixrMsmKuHTTpX4GfvJ7nkY+amDnfijPvhSl
+         yzJTRvkqaRpi3jp2hKu4BQNQKQcdj8Fo2POJ8jyuwuZGqe80a4X9tyR2GFsKHty7Tw6J
+         OM+ZJISeu5rDJhpUCm48MjzqBnC8sr37Oa0XCduZtlfVcYX2SmN3bAAFwLnzPKlY9e6O
+         3V8PjDxeWHShdDLqakWLId2l2mefMH8P1ZkLKYJKK2R19JgWvXVr4XrzLsFZzTGiZS2O
+         UCHA==
+X-Gm-Message-State: AJIora9dodd5uht1AR4LzmY5UX3DzX6kXL5w8p+kZw7ocVbuEUtNs7U4
+        izJxgNMQWwJO6mpUWHqzQiwTig==
+X-Google-Smtp-Source: AGRyM1sLHkpEL/e3FbHHjgOt2aInxHNlxFrHeEIa0L1/Bz4GYdHDD1jIwPyFeJeq+08viN1qBJk27g==
+X-Received: by 2002:a05:6512:acb:b0:481:cce:3c22 with SMTP id n11-20020a0565120acb00b004810cce3c22mr17601128lfu.45.1656925495041;
+        Mon, 04 Jul 2022 02:04:55 -0700 (PDT)
+Received: from [192.168.1.52] ([84.20.121.239])
+        by smtp.gmail.com with ESMTPSA id 8-20020ac25f08000000b0047863382e3dsm5024155lfq.215.2022.07.04.02.04.53
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 04 Jul 2022 02:04:54 -0700 (PDT)
+Message-ID: <4513594b-ece6-a4c2-82ba-d334f5c4234b@linaro.org>
+Date:   Mon, 4 Jul 2022 11:04:53 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH v2 3/4] fbmem: Prevent invalid virtual screen sizes in
- fb_set_var()
+ Thunderbird/91.10.0
+Subject: Re: [PATCH v4 02/13] dt-bindings: power: supply: Add Mediatek MT6370
+ Charger
 Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-References: <20220701202352.559808-1-deller@gmx.de>
- <20220701202352.559808-4-deller@gmx.de>
- <CAMuHMdUTwM+y+yi5ASY9hQLgJD-4pjtStGA9m82853LmbdywOA@mail.gmail.com>
- <YsGfdEO4lU+y2004@p100>
- <CAMuHMdULPGmK_K3QeyEpBbO5Dr9_WEszHXDGLzvdv7f3Y2O7vw@mail.gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <CAMuHMdULPGmK_K3QeyEpBbO5Dr9_WEszHXDGLzvdv7f3Y2O7vw@mail.gmail.com>
+To:     ChiaEn Wu <peterwu.pub@gmail.com>, lee.jones@linaro.org,
+        daniel.thompson@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
+        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        matthias.bgg@gmail.com, sre@kernel.org, chunfeng.yun@mediatek.com,
+        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
+        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
+        heikki.krogerus@linux.intel.com, deller@gmx.de
+Cc:     chiaen_wu@richtek.com, alice_chen@richtek.com,
+        cy_huang@richtek.com, dri-devel@lists.freedesktop.org,
+        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        szunichen@gmail.com
+References: <20220704053901.728-1-peterwu.pub@gmail.com>
+ <20220704053901.728-3-peterwu.pub@gmail.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20220704053901.728-3-peterwu.pub@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:r+c1TAW8rAPitzEZceC5MtJZfhFBg2tkFiwcRpHMMd66AzQI5OL
- VRlsTXAiA5XljMa0h80xXoV3Dyf/DLAAxLeadaNWp7Wkn5uMIWN/ZCGZabwZ+6cQpQkg/lh
- XhKuLOU7TTed+60vcawrG+O1HJH8vifP+FMdZH0jB5gwmb+7Zk18x7V0kyDz4fyOuv8QSNA
- s2GCnDQ9XhLlIy47lNzkQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:pJk3w8wI76o=:XwlYdtlKuGU4LKWzuBWh1w
- aF6EPFe47DIq2zXd8ZR5pEKJ8d2cyc6T0KNTHZNrJ72H0luGjbDWgeAEJC/yIdAxpF+5RpcLj
- n7LT1tmKWJofDDd2i4za0WUNzShPX7LTy0XodAVApQwemPoqlAUtCEV5u8A25ze4FHjxZKOg3
- VN7OpSh1EDO7FtCWdBRaYU8H5JX5hGJjTNldRSxJzZrwxGGeqf1J7BnHBtBh6+pRrJuXfXkJm
- kqQ7vOFCIuG0/SjGbjRvrNRDRDYNqBIyld45YV015YStLw/19Hp/VLqM36OQZl1Bc97YfiIPa
- VCyTxPDMG0jRr/OB9TBaw9RgsLZ+gZEjXYtGMfkvevgjP+x3/89Zfr4iEfbHY4ncvJbCF+3W8
- 5Y2OMq7lkWQ66ZsqaN9J7+WJ+Pq0qYpodKA8NPGjmMSoATuqoOFL9HXNVsfH4VMMsWvRj3IRK
- 6L2WxrLgDHwydKabIM6P6S8Wdys6h+RSLRsb5ML1W5Fsk6T4FGgN7TSdeq6zKPB1z3aeCNY8L
- YuXQ4UeofHXhklVBj6mILuV7Kq/kGcL9fCBXuOov/Obut0Dc+YghtvOGUhW0j7X6wicUBz0g6
- mmKfin+0d0dJ9VaC8yVrP9z+E+SrlxFCUy6yVno7Z0aVfd1bT8XOIp7IE66XAbcb2clXEfcYq
- /qIEoA7RMGo+FfXKhokLEyQ1eGILH868PvbWE+7rLk5ILrUiOHSGjdrmMvD7XFcRPYPKJ/eg5
- p8k7nqEM2DnoC2a0IIZ9hwzaul/OWg1BVS4JbxOwCWTe1oSRzgDnQetSwGlKYVuua6V7eCfPJ
- IRBdBF9dB9Odq+7Nuvb8YcO3HLo6qHUApGOSXWqgrUgmdIX++gH+jd3w8jinPPcoaCMBZdV2l
- Lz5qYbFjwxCZLjUVrzXyOKxui1cFLP5A2WCC+uYtAHT8FfBOJYp+VuDvY1bcOxG5CDS5+eIBi
- JdKrMYZTeaqHJl45xRsGsndgoDHYrX4X6xW/oOfyC1HmNfati9nbkr8fB3W+p1UL3iU3xq41/
- qQyqnwvGtW1v9Mnlduy4tIdEvdEmjRENWaYNK/Sarope0a1RHfkM/5LqXuPXCUZCJSLUGYL2b
- EDr1crdzjDBWIZE5Gy+ngAu8s8dC23Zi9GJ
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Daniel & DRM developers,
-
-could you please comment on the change below?
-
-
-On 7/3/22 16:41, Geert Uytterhoeven wrote:
-> Hi Helge,
->
-> On Sun, Jul 3, 2022 at 3:54 PM Helge Deller <deller@gmx.de> wrote:
->> * Geert Uytterhoeven <geert@linux-m68k.org>:
->>>> --- a/drivers/video/fbdev/core/fbmem.c
->>>> +++ b/drivers/video/fbdev/core/fbmem.c
->>>> @@ -1016,6 +1016,18 @@ fb_set_var(struct fb_info *info, struct fb_var=
-_screeninfo *var)
->>>>         if (ret)
->>>>                 return ret;
->>>>
->>>> +       /* make sure virtual resolution >=3D physical resolution */
->>>> +       if (WARN_ON(var->xres_virtual < var->xres)) {
->>>
->>> WARN_ON_ONCE()?
->>> This does mean we would miss two or more buggy drivers in a single sys=
-tem.
->>>
->>>> +               pr_warn("fbcon: Fix up invalid xres %d for %s\n",
->>>
->>> xres_virtual?
->>>
->>>> +                       var->xres_virtual, info->fix.id);
->>>> +               var->xres_virtual =3D var->xres;
->>>
->>> I think it's better to not fix this up, but return -EINVAL instead.
->>> After all if we get here, we have a buggy driver that needs to be fixe=
-d.
->>>
->>>> +       }
->>>> +       if (WARN_ON(var->yres_virtual < var->yres)) {
->>>> +               pr_warn("fbcon: Fix up invalid yres %d for %s\n",
->>>> +                       var->yres_virtual, info->fix.id);
->>>> +               var->yres_virtual =3D var->yres;
->>>> +       }
->>>
->>> Same for yres.
->>
->> Geert, thanks for your valuable feedback!
->>
->> In general I don't like for this case any of the WARN_ON* functions.
->> They don't provide any useful info for us, dumps unneccessarily the
->> stack backtrace and would annoy existing users.
->
-> Without the stack trace, most people won't notice...
->
->> We know, that DRM drivers can't change the resolution. If we would leav=
-e
->> in any kind of warning, all DRM users will ask back - and we don't have
->> a solution for them. It's also no regression, because it didn't worked
->> before either.
->
-> The warning will only be triggered when the requested virtual
-> resolution is smaller than the requested physical resolution.  As
-> long as the requested virtual and physical resolution match what
-> was returned by FBIOGET_VSCREENINFO before, the warning won't
-> be triggered.  So in normal use cases, the user won't be impacted.
-> Fuzzers will see the warning, but the kernel will no longer crash
-> on invalid values.
-
-Still, fuzzers will crash if they have panic_on_warn enabled, which
-was the case for the reproducer I got.
-
->> But we want to detect fbdev drivers which behave badly - so we should
->> print that info with the driver name.
->>
->> Below is a new patch which addresses this. The search for drm drivers
->> looks somewhat hackish - maybe someone can propose a better approach?
->>
->> Thoughts?
->>
->> Helge
->>
->>
->> From 0f33e2a3730342ab85df372f80b4f61762fb1130 Mon Sep 17 00:00:00 2001
->> From: Helge Deller <deller@gmx.de>
->> Date: Wed, 29 Jun 2022 15:53:55 +0200
->> Subject: [PATCH] fbmem: Check virtual screen sizes in fb_set_var()
->>
->> Verify that the fbdev or drm driver correctly adjusted the virtual scre=
-en
->> sizes. On failure report (in case of fbdev drivers) the failing driver.
->>
->> Signed-off-by: Helge Deller <deller@gmx.de>
->> Cc: stable@vger.kernel.org # v5.4+
->>
->> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/cor=
-e/fbmem.c
->> index 160389365a36..9b75aa4405ee 100644
->> --- a/drivers/video/fbdev/core/fbmem.c
->> +++ b/drivers/video/fbdev/core/fbmem.c
->> @@ -1016,6 +1016,21 @@ fb_set_var(struct fb_info *info, struct fb_var_s=
-creeninfo *var)
->>         if (ret)
->>                 return ret;
->>
->> +       /* verify that virtual resolution >=3D physical resolution */
->> +       if (var->xres_virtual < var->xres ||
->> +           var->yres_virtual < var->yres) {
-
-This is the part I'd like to get feedback from DRM on:
-Shall we leave that in, or drop it as Geert suggested?
-
->> +               /* drm drivers don't support mode changes yet. Do not r=
-eport. */
->> +               if (strstr(info->fix.id, "drm"))
->> +                       return -ENOTSUPP;
+On 04/07/2022 07:38, ChiaEn Wu wrote:
+> From: ChiaEn Wu <chiaen_wu@richtek.com>
+> 
+> Add Mediatek MT6370 Charger binding documentation.
+> 
+> Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
+> ---
 
 
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
 
-
->> +
->> +               pr_warn("WARNING: fbcon: Driver %s missed to adjust vir=
-tual"
->> +                       " screen size (%dx%d vs. %dx%d)\n",
->> +                       info->fix.id,
->> +                       var->xres_virtual, var->yres_virtual,
->> +                       var->xres, var->yres);
->> +               return -EINVAL;
->> +       }
->> +
->>         if ((var->activate & FB_ACTIVATE_MASK) !=3D FB_ACTIVATE_NOW)
->>                 return 0;
->
-> Hence I think there is no need for ignoring drm.
-
+Best regards,
+Krzysztof

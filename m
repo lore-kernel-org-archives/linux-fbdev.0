@@ -2,52 +2,61 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52C9AC43334
-	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Jul 2022 12:22:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B715CCA47C
+	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Jul 2022 12:22:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233895AbiGDMWs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 4 Jul 2022 08:22:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60506 "EHLO
+        id S234373AbiGDMWt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 4 Jul 2022 08:22:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60482 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234412AbiGDMWn (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Jul 2022 08:22:43 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BA7D5B6;
-        Mon,  4 Jul 2022 05:22:42 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 6839C1FEE8;
-        Mon,  4 Jul 2022 12:22:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1656937361; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
+        with ESMTP id S234363AbiGDMWi (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Jul 2022 08:22:38 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id C629812D
+        for <linux-fbdev@vger.kernel.org>; Mon,  4 Jul 2022 05:22:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1656937357;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=lMi/mKI3IgFFyMm2b4EJclOuQIMJXNAzxv7T3WptnrQ=;
-        b=ISxXfAdsRMMg0HEM4p33QLu7LIU6G2pycbgNVPYODQVHKhESlmtMGfia9Ti9kBRx0Aw+12
-        oZn7E52HFGBfUoeD3IEF4k8OsWjqrzKMpDzdmWHV76HdxqQrylFyo5NRfDDxiqlZtSZ0l9
-        BLI1N0DipXMOgFxarUb6JoXxcGTxx9I=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1656937361;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=lMi/mKI3IgFFyMm2b4EJclOuQIMJXNAzxv7T3WptnrQ=;
-        b=b3xmMnlf/SIALgu97V718o24klhIWzselU3QBQOEYsS16N4qNDFKF5nCmxs0r80j7ThoA7
-        iAzbuATfpd1dAQCg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 27D9D13451;
-        Mon,  4 Jul 2022 12:22:41 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id nvFVCJHbwmK+KQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 04 Jul 2022 12:22:41 +0000
-Message-ID: <70556947-1849-c73a-2b9a-6132aca1c055@suse.de>
-Date:   Mon, 4 Jul 2022 14:22:40 +0200
+        bh=NWz4hoF8KR1Xh3Y20DcZ/pecKJBOXaX2hZBdX2dWxEY=;
+        b=J4a9xRG33kC3umSO47WAlkq4mOYhPbpCylEhtlnU+5MXz4A4vMQBsJkoG2/VBbsK+3M8no
+        kY7QYuMVOt6aebOaKjn68DgKCNw7a/Sian19Zw2lVxQdeFtH3yGhxI+bioYOX1Ji4icE5u
+        fgt1YubKdvX2r7OjCyTc4XNQQfQnVnM=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-656-1qPi9DXWNAOxYKipyWqtbw-1; Mon, 04 Jul 2022 08:22:35 -0400
+X-MC-Unique: 1qPi9DXWNAOxYKipyWqtbw-1
+Received: by mail-wm1-f72.google.com with SMTP id j35-20020a05600c1c2300b003a167dfa0ecso5263585wms.5
+        for <linux-fbdev@vger.kernel.org>; Mon, 04 Jul 2022 05:22:35 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=NWz4hoF8KR1Xh3Y20DcZ/pecKJBOXaX2hZBdX2dWxEY=;
+        b=exLqUCaEBAZEsXfVOjMBDXqtY6CmNJqbAm6GlucR0UBEf2Uwq/nQQzjbUtWEVtTeaU
+         Ws5ebBJD1Pg+Onz8zkz5LJOPkGyg8K/IX/jAglyT3Yd87l/B+HsHrUe6vYb7mHLx4of9
+         I3k7fiQU14VeA2M5D7wuelDBtJtVduKzOjBcFJHR4bmW7fzk2DbyDQ+V6q5fK4QV5zL0
+         BJiku3gcXdIO0aJK1wLjF8Oz5FlKlQVGJvnoTx/kPZgoPELY5e+lmmKKCK52j8cWhfIm
+         Lw1MoNgE7aIOyOtZcVww3GgzAzJhg0V5/D2EExnoVr8m7TflEc/5Q87vje6PapDisDSF
+         Yt6Q==
+X-Gm-Message-State: AJIora+zGq7E7M5D0TwHI3GAsFE803bWBQyfiPAry/MxPAsWKUrcDr+A
+        sEaVvPw1IBDY7GLen2k4rL/v7U+fHZLzLBfFU/wkB2M5aHOFmKhhQmURsLHUU7ueyOGB9JALPBI
+        KnzzZGFHBJjyZWKngiOdS4sM=
+X-Received: by 2002:a05:6000:184f:b0:21c:ae47:9b45 with SMTP id c15-20020a056000184f00b0021cae479b45mr29036165wri.76.1656937354539;
+        Mon, 04 Jul 2022 05:22:34 -0700 (PDT)
+X-Google-Smtp-Source: AGRyM1t+u2tPZeiBujJigb3uaJA2WHPeBf3YiC6XaaM/lLav9FDHwk1h6zTOaQcjNHZhn8GP9Wpmog==
+X-Received: by 2002:a05:6000:184f:b0:21c:ae47:9b45 with SMTP id c15-20020a056000184f00b0021cae479b45mr29036127wri.76.1656937354201;
+        Mon, 04 Jul 2022 05:22:34 -0700 (PDT)
+Received: from [192.168.1.129] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id l2-20020a05600c2cc200b003a18e7a5af2sm12420591wmc.34.2022.07.04.05.22.33
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 04 Jul 2022 05:22:33 -0700 (PDT)
+Message-ID: <0425d2f4-a859-46c7-b184-e32efe7165a2@redhat.com>
+Date:   Mon, 4 Jul 2022 14:22:32 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.11.0
@@ -55,7 +64,6 @@ Subject: Re: [PATCH v6 3/5] fbdev: Disable sysfb device registration when
  removing conflicting FBs
 Content-Language: en-US
 To:     Xi Ruoyao <xry111@linuxfromscratch.org>,
-        Javier Martinez Canillas <javierm@redhat.com>,
         Zack Rusin <zackr@vmware.com>,
         "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Cc:     "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
@@ -66,6 +74,7 @@ Cc:     "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
         "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
         Linux-graphics-maintainer <Linux-graphics-maintainer@vmware.com>,
         "kraxel@redhat.com" <kraxel@redhat.com>,
+        "tzimmermann@suse.de" <tzimmermann@suse.de>,
         "daniel.vetter@ffwll.ch" <daniel.vetter@ffwll.ch>,
         "lersek@redhat.com" <lersek@redhat.com>
 References: <20220607182338.344270-1-javierm@redhat.com>
@@ -81,96 +90,39 @@ References: <20220607182338.344270-1-javierm@redhat.com>
  <61f2e4e2af40cb9d853504d0a6fe01829ff8ca60.camel@linuxfromscratch.org>
  <fddf5ca6-77dc-88f9-c191-7de09717063c@redhat.com>
  <2ae767b0439133ca4e60885a1843ee72b69adfc5.camel@linuxfromscratch.org>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
+From:   Javier Martinez Canillas <javierm@redhat.com>
 In-Reply-To: <2ae767b0439133ca4e60885a1843ee72b69adfc5.camel@linuxfromscratch.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------CMy4IaEhlRt8kLCAyY4sgVL0"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------CMy4IaEhlRt8kLCAyY4sgVL0
-Content-Type: multipart/mixed; boundary="------------ZK0o8Q57gaJmscwMaRrwtmgM";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Xi Ruoyao <xry111@linuxfromscratch.org>,
- Javier Martinez Canillas <javierm@redhat.com>, Zack Rusin
- <zackr@vmware.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
- "deller@gmx.de" <deller@gmx.de>,
- "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
- "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
- Linux-graphics-maintainer <Linux-graphics-maintainer@vmware.com>,
- "kraxel@redhat.com" <kraxel@redhat.com>,
- "daniel.vetter@ffwll.ch" <daniel.vetter@ffwll.ch>,
- "lersek@redhat.com" <lersek@redhat.com>
-Message-ID: <70556947-1849-c73a-2b9a-6132aca1c055@suse.de>
-Subject: Re: [PATCH v6 3/5] fbdev: Disable sysfb device registration when
- removing conflicting FBs
-References: <20220607182338.344270-1-javierm@redhat.com>
- <20220607182338.344270-4-javierm@redhat.com>
- <de83ae8cb6de7ee7c88aa2121513e91bb0a74608.camel@vmware.com>
- <38473dcd-0666-67b9-28bd-afa2d0ce434a@redhat.com>
- <603e3613b9b8ff7815b63f294510d417b5b12937.camel@vmware.com>
- <a633d605-4cb3-2e04-1818-85892cf6f7b0@redhat.com>
- <97565fb5-cf7f-5991-6fb3-db96fe239ee8@redhat.com>
- <711c88299ef41afd8556132b7c1dcb75ee7e6117.camel@vmware.com>
- <aa144e20-a555-5c30-4796-09713c12ab0e@redhat.com>
- <64c753c98488a64b470009e45769ceab29fd8130.camel@linuxfromscratch.org>
- <61f2e4e2af40cb9d853504d0a6fe01829ff8ca60.camel@linuxfromscratch.org>
- <fddf5ca6-77dc-88f9-c191-7de09717063c@redhat.com>
- <2ae767b0439133ca4e60885a1843ee72b69adfc5.camel@linuxfromscratch.org>
-In-Reply-To: <2ae767b0439133ca4e60885a1843ee72b69adfc5.camel@linuxfromscratch.org>
+On 7/4/22 14:11, Xi Ruoyao wrote:
+> On Mon, 2022-07-04 at 13:04 +0200, Javier Martinez Canillas wrote:
+>> Hello Xi,
+>>>
+>>> With CONFIG_SYSFB_SIMPLEFB and CONFIG_FB_SIMPLE enabled, there is no
+>>> issue.
+>>>
+>>> I guess it's something going wrong on a "drm -> drm" pass over.  For now
+>>> I'll continue to use simpledrm with this commit reverted.
+>>>
+>>
+>> Yes, we need to also cherry-pick b84efa28a48 ("drm/aperture: Run fbdev
+>> removal before internal helpers") now that the sysfb_disable() patches
+>> are in v5.19-rc5.
+> 
+> I confirm that cherry-picking b84efa28a48 fixes the issue for v5.19-rc5.
+> 
 
---------------ZK0o8Q57gaJmscwMaRrwtmgM
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Thanks for testing it! Thomas is getting that patch through the drm-fixes
+path, so it should make it to the v5.19-rc cycle at some point.
 
-SGkNCg0KQW0gMDQuMDcuMjIgdW0gMTQ6MTEgc2NocmllYiBYaSBSdW95YW86DQo+IE9uIE1v
-biwgMjAyMi0wNy0wNCBhdCAxMzowNCArMDIwMCwgSmF2aWVyIE1hcnRpbmV6IENhbmlsbGFz
-IHdyb3RlOg0KPj4gSGVsbG8gWGksDQo+Pj4NCj4+PiBXaXRoIENPTkZJR19TWVNGQl9TSU1Q
-TEVGQiBhbmQgQ09ORklHX0ZCX1NJTVBMRSBlbmFibGVkLCB0aGVyZSBpcyBubw0KPj4+IGlz
-c3VlLg0KPj4+DQo+Pj4gSSBndWVzcyBpdCdzIHNvbWV0aGluZyBnb2luZyB3cm9uZyBvbiBh
-ICJkcm0gLT4gZHJtIiBwYXNzIG92ZXIuwqAgRm9yIG5vdw0KPj4+IEknbGwgY29udGludWUg
-dG8gdXNlIHNpbXBsZWRybSB3aXRoIHRoaXMgY29tbWl0IHJldmVydGVkLg0KPj4+DQo+Pg0K
-Pj4gWWVzLCB3ZSBuZWVkIHRvIGFsc28gY2hlcnJ5LXBpY2sgYjg0ZWZhMjhhNDggKCJkcm0v
-YXBlcnR1cmU6IFJ1biBmYmRldg0KPj4gcmVtb3ZhbCBiZWZvcmUgaW50ZXJuYWwgaGVscGVy
-cyIpIG5vdyB0aGF0IHRoZSBzeXNmYl9kaXNhYmxlKCkgcGF0Y2hlcw0KPj4gYXJlIGluIHY1
-LjE5LXJjNS4NCj4gDQo+IEkgY29uZmlybSB0aGF0IGNoZXJyeS1waWNraW5nIGI4NGVmYTI4
-YTQ4IGZpeGVzIHRoZSBpc3N1ZSBmb3IgdjUuMTktcmM1Lg0KDQpJJ3ZlIGNoZXJyeS1waWNr
-ZWQgdGhlIGNvbW1pdCBpbnRvIGRybS1taXNjLWZpeGVzLiBJdCB3aWxsIHNob3cgdXAgaW4g
-DQptYWlubGluZSBzb29uLg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQotLSANClRob21h
-cyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJl
-IFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVy
-ZywgR2VybWFueQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhy
-ZXI6IEl2byBUb3Rldg0K
+-- 
+Best regards,
 
---------------ZK0o8Q57gaJmscwMaRrwtmgM--
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
 
---------------CMy4IaEhlRt8kLCAyY4sgVL0
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmLC25AFAwAAAAAACgkQlh/E3EQov+D6
-qw/8DMh/+FZ7015LO3/tn/cALCKklbd6z+cuLJOtvDIUldy+s05bX8zCarSv5mUWuGzuLd+wLwv3
-dqB2VYi+vs0ZfXZFfiDNiKLKtRFQQnV8nZS8uXX2ANQYvMqtAgFDAKnuDbEIRm+0Cspa7cyLaVqA
-HWa7qFVYuntlveO+f0j2ajsFybVDR7qcNcR0S5ZkpTR/FM46SrdHddkSdf4TpJ9GnzlT4tVpnzvp
-MiiQQlJJKtp4V5GDoBpMPfNz0MUWIXr3Vu+JObWDju2k2eS7SkFxIyFAIjpw7sO8kpnEOwETCwoa
-mbq6SeDQDtC4U/FsKjQ1RXLjngOL4aUxsbXgom17IxnEU1jVXjGhlMEtXYwQq4qmFYG5QRd7BjLE
-ugfow95aifWwdI5sLk9eJnEoacJ3/L0Z7lTZjLKAM71GgzpkoMEzJJjGK8yKyBv/kfp39PLOKpWK
-qH1bNhTqx8fsEg4U3+Z7BPwn5a34cxvZLCY4KfJedgqwhDe1SwadKwje2p0H27omuQQSYjLMQT5t
-VI2lFhUoCXh6ZJhgmsjX5M/9BEqceQWnJ9aO/dFv9A413Em9RwAIQkb/FraFEGmrMQYFXb5HcJpb
-vgxefroMjq2nWMYbaPJoXvovGl2+g/fZDkpGE16gYlmTRXt6Z6P1f27yAmU5j5mM5TxSitWeUduF
-8Fk=
-=I+c+
------END PGP SIGNATURE-----
-
---------------CMy4IaEhlRt8kLCAyY4sgVL0--

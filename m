@@ -2,50 +2,50 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41E24CCA473
-	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Jul 2022 15:32:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC071C43334
+	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Jul 2022 15:34:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233886AbiGFPcj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 6 Jul 2022 11:32:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44184 "EHLO
+        id S234200AbiGFPea (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 6 Jul 2022 11:34:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45696 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233895AbiGFPcT (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Jul 2022 11:32:19 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0970B27CCE;
-        Wed,  6 Jul 2022 08:31:44 -0700 (PDT)
+        with ESMTP id S234072AbiGFPeL (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Jul 2022 11:34:11 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 67D1527FFF;
+        Wed,  6 Jul 2022 08:32:49 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 854AFB81D96;
-        Wed,  6 Jul 2022 15:31:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E590FC341C8;
-        Wed,  6 Jul 2022 15:31:40 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 12C04B81D8E;
+        Wed,  6 Jul 2022 15:32:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5D92AC3411C;
+        Wed,  6 Jul 2022 15:32:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1657121502;
-        bh=EHaW5uknTyMS+Mg4sdu93WsWqNnHJWDthq1NYAiEJKg=;
+        s=k20201202; t=1657121566;
+        bh=dJ/ClODH9MSblUyY3ISrR3RfultNhLe428VSshkHzf4=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=XxfJGi1FxE6gqccq07OjeSkiLUtC2iuwoE1tA8MpvLLj6o9M0ir8GTuw4d6CRoDtP
-         wDs+TIB71o1KFJ68y1NRhKtMjGxeVCPuSr/IbZdGPXR3DNwKtbmtJlqWi8Ij9AYzXK
-         BnROQxBTpQ9UsxWM3sXx6tGV7vjip3AHGu/ypAoUxiw/SR4XCsBis71vHq64zUtZmK
-         qO6t8dTchDHB6nKYONDzL+5ZYq1UAns8OvZlFCiTJKQjJ3G7A3qSBR6U5JPShSh9Vr
-         EHDdqFTlhfUQjkR+ZiMak5CUSLMDJADm1/ZX4XyiJAhq7ntv2AGPReDMvxPFW8Jcsq
-         INa2hL4FuUfkw==
+        b=sEOTeR3O4+FDm62kEvp+gwMLbOTEPNRgpxROQA/b8CFvOgrg1KNYDVv+qXjqDHSl+
+         7Fk0sDp+bca/EqtKIpnPebQKHhBo9Z5hiHkGi946KUBVnxVfYNa+N+3C3quP5K87kb
+         4hRmbPVuSstk3NazCZPtUf3+mV5A1na/spwZXzrod29Kesi5oH9hta/7kXyyOKQQ4r
+         JDT1I+KoAEuKImdb9qvymp2+POPaokAiLU9+HvnazMb1YjIRPwzb83ddxCIFULHOpQ
+         cs1lS/MzN+IF8/jXBFGmdP3CmzKrskq7rGxa02OjJ7f5zDeB0M9yIc6ojA1KlGBaXR
+         Sohqlw7EpI/HA==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Javier Martinez Canillas <javierm@redhat.com>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
         Sasha Levin <sashal@kernel.org>, daniel@ffwll.ch,
         deller@gmx.de, sam@ravnborg.org, tzimmermann@suse.de,
-        alexander.deucher@amd.com, thunder.leizhen@huawei.com,
-        deng.changcheng@zte.com.cn, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 5.18 17/22] fbdev: Disable sysfb device registration when removing conflicting FBs
-Date:   Wed,  6 Jul 2022 11:30:35 -0400
-Message-Id: <20220706153041.1597639-17-sashal@kernel.org>
+        alexander.deucher@amd.com, zheyuma97@gmail.com,
+        thunder.leizhen@huawei.com, deng.changcheng@zte.com.cn,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 5.15 13/18] fbdev: Disable sysfb device registration when removing conflicting FBs
+Date:   Wed,  6 Jul 2022 11:31:48 -0400
+Message-Id: <20220706153153.1598076-13-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220706153041.1597639-1-sashal@kernel.org>
-References: <20220706153041.1597639-1-sashal@kernel.org>
+In-Reply-To: <20220706153153.1598076-1-sashal@kernel.org>
+References: <20220706153153.1598076-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -83,7 +83,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 12 insertions(+)
 
 diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index a6bb0e438216..70b67e24e830 100644
+index 0371ad233fdf..ba9c66a95ada 100644
 --- a/drivers/video/fbdev/core/fbmem.c
 +++ b/drivers/video/fbdev/core/fbmem.c
 @@ -19,6 +19,7 @@
@@ -94,7 +94,7 @@ index a6bb0e438216..70b67e24e830 100644
  #include <linux/mm.h>
  #include <linux/mman.h>
  #include <linux/vt.h>
-@@ -1775,6 +1776,17 @@ int remove_conflicting_framebuffers(struct apertures_struct *a,
+@@ -1774,6 +1775,17 @@ int remove_conflicting_framebuffers(struct apertures_struct *a,
  		do_free = true;
  	}
  

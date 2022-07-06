@@ -2,122 +2,106 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AADCAC43334
-	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Jul 2022 08:38:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80897C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Jul 2022 09:14:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231982AbiGFIie (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 6 Jul 2022 04:38:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51120 "EHLO
+        id S233082AbiGFJOG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 6 Jul 2022 05:14:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54952 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231962AbiGFIi3 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Jul 2022 04:38:29 -0400
-Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 92D181260F
-        for <linux-fbdev@vger.kernel.org>; Wed,  6 Jul 2022 01:38:28 -0700 (PDT)
-Received: by mail-wr1-x433.google.com with SMTP id q9so20943067wrd.8
-        for <linux-fbdev@vger.kernel.org>; Wed, 06 Jul 2022 01:38:28 -0700 (PDT)
+        with ESMTP id S232759AbiGFJNs (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Jul 2022 05:13:48 -0400
+Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com [IPv6:2a00:1450:4864:20::52b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AC3931A3B1;
+        Wed,  6 Jul 2022 02:13:20 -0700 (PDT)
+Received: by mail-ed1-x52b.google.com with SMTP id k30so10305959edk.8;
+        Wed, 06 Jul 2022 02:13:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
+        d=gmail.com; s=20210112;
         h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=jvy9fZnYZOoUrKY4T2EHzyax/+pT0S6ZamgoWmCY7lI=;
-        b=Nrhlvi6Z3KY701t0TfH8JnJ1eqEH2mzMamvFfXkAzFp4yCik2wthX5b3eiGElyvktY
-         twrPjYnxH4Az3+UmhZZyi4kamjX7dmvkLuZ3fe6Y1Zwwi7fdAUSUWpMsVoLnc6Q6rzvW
-         qQU61MwwrRJzMAfPB1T4+5euhuz6TkkhTHBkZjlLyqQmV3/u0RSXtgyy89UsQGTSptFa
-         rbxm5yZOIAAt2gicjScl7bUX2ZcLzlqji8MJM9Bzs/Mo7PsrQ05mNlXrxDJiUjYMLehx
-         AwXhr7GPmcZZgqAmb6q2D5c6t6TBjdN1QLyjaESLYjidadwhnFPeBL/fEiaKbpTIE6rX
-         PlYQ==
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=WKlacHhWVR2IblvCAgYMcCw7cvtmo7gBzlhxFpijOWM=;
+        b=UyINPEp8aUU7+iO4UvYReAysG8acJi4s0lW7fYS990hIHuI2KgReqshlPjlC0FcdQX
+         RWLEJ1iagzj5JHTLAwg1Tfl34CjKErUg06qCwRi5FpbuqXpIfRK0B8kuUc2l5x+40o+8
+         2YldATzAdsq2GhIZIL2D0cZi8oKOkVG5Y5xLvvP4kajNiX5yCXAJSyEYBx1RvA9W9SdO
+         piij5Lfa0VXVwqnHofYdHxRPOmYTBO/NXTATLm6C9JRKYr2iRvgzlsZTZRGqO8gtc9pI
+         zkPBxco6Fa5B8qkZy3WblPhpXY+1PsQ3ol/zLxC+L8wAov5SdI1JA4byrn/VHyXJavbs
+         ZPkA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=jvy9fZnYZOoUrKY4T2EHzyax/+pT0S6ZamgoWmCY7lI=;
-        b=dJkedNxnJaUT+lM/bOacu++symFigim0NsS0cw4GWvIAJzx1g1ClfWrkRxK0CFsvG3
-         tSurPHnZmPtMq95YGiINVjgt5uDQaZQyiMPoWJ2PXqAGrAtsgUfn5tNb03Z6awume0S7
-         ODVrUOKohzeUV2NMxwyRK8IuPTTZ+b7D6j/CxIN5Dqy4Raej99c6DaR2q5GEmwShFgpb
-         ps/yJO3iAps/k8DvkA2hXx/uSIPjpUWeq38KFVGn/3NjppUIl03GsSkJ39br4n7zdSrM
-         GpNd+kmICaejQPfBE7VZCHj5pKuEFxoLn9FSk769jbcWZN+kSWcLdug3yjdDNDTDcfFK
-         24ew==
-X-Gm-Message-State: AJIora8QoizBfwpZbEomVpL3SDvKKkXlr1CwYxFe0Ghv3oQh9SLWhn88
-        opRFQH8u2ASDVNSX0QN1WKLQdw==
-X-Google-Smtp-Source: AGRyM1u3aF0xlinqVbRSOVIwu8dj8kY7lVCFFrYuXzoizRjf/6/698o7/GM5e2My59isg+g9TMgrJg==
-X-Received: by 2002:a05:6000:1e10:b0:21b:98c7:d35e with SMTP id bj16-20020a0560001e1000b0021b98c7d35emr38383139wrb.30.1657096706860;
-        Wed, 06 Jul 2022 01:38:26 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id j22-20020a05600c1c1600b003a046549a85sm21339238wms.37.2022.07.06.01.38.25
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=WKlacHhWVR2IblvCAgYMcCw7cvtmo7gBzlhxFpijOWM=;
+        b=QxR5OpPe3NgjVZHkxNID4w7Mgvcw6XaQKzgi6rmn5TdcUkdgaBseRGdfsFVHDfK+LW
+         qhe6gUqffxKYBwr8jvHWxccaa/ThR1eRottwfKm2NQmkTLT10ajPqMSVzGrGZZaNbfSG
+         ornZME+JmgmlRk5r1vYTpZ8jQF3eEmPw3seTG0dsDKCTXCpG90vpF2NV/bTtBNQ0jo/r
+         Cb/OfvKw5bcMuJ+BRqb9+3CIzWMmEcQ/1X77PlHpLxmiK7TnDOOxNF2f5hWrdOj8ijIm
+         b0bKL/Ab/riiu2JY5h2t0CwqmoaY6Z57nESze7yZBTjtdV2/PF7odfLK7dF3yv5IRI8Q
+         mqsQ==
+X-Gm-Message-State: AJIora808hsnV+UdsynlkTYT6KRbYaZklCtQ/r1z67l8sQQwRm1XoMiS
+        PqE6mIIEjoGD9C62az3dzFg=
+X-Google-Smtp-Source: AGRyM1tgzHocOxIjG9HexS+g9z9ap2nsem/HblqVyMjIbl5ZbLhG8nAvflW5PCvUObUWjIPHfLadCA==
+X-Received: by 2002:a05:6402:350a:b0:435:df44:30aa with SMTP id b10-20020a056402350a00b00435df4430aamr51209856edd.403.1657098799156;
+        Wed, 06 Jul 2022 02:13:19 -0700 (PDT)
+Received: from skbuf ([188.26.185.61])
+        by smtp.gmail.com with ESMTPSA id er13-20020a056402448d00b0043a5bcf80a2sm6350790edb.60.2022.07.06.02.13.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 06 Jul 2022 01:38:26 -0700 (PDT)
-Date:   Wed, 6 Jul 2022 09:38:24 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Rob Herring <robh@kernel.org>
-Cc:     Lee Jones <lee.jones@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, Jingoo Han <jg1.han@samsung.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Revert "drivers/video/backlight/platform_lcd.c: add
- support for device tree based probe"
-Message-ID: <20220706083824.yow4e2hqthoqffol@maple.lan>
-References: <20220629210024.815761-1-robh@kernel.org>
+        Wed, 06 Jul 2022 02:13:18 -0700 (PDT)
+Date:   Wed, 6 Jul 2022 12:13:15 +0300
+From:   Vladimir Oltean <olteanv@gmail.com>
+To:     Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc:     Wolfram Sang <wsa@kernel.org>,
+        Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>,
+        linux-i2c@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linuxppc-dev@lists.ozlabs.org,
+        openipmi-developer@lists.sourceforge.net,
+        linux-integrity@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-crypto@vger.kernel.org, linux-gpio@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, chrome-platform@lists.linux.dev,
+        linux-rpi-kernel@lists.infradead.org, linux-input@vger.kernel.org,
+        linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
+        patches@opensource.cirrus.com, alsa-devel@alsa-project.org,
+        linux-omap@vger.kernel.org, linux-mtd@lists.infradead.org,
+        netdev@vger.kernel.org, devicetree@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        acpi4asus-user@lists.sourceforge.net, linux-pm@vger.kernel.org,
+        linux-pwm@vger.kernel.org, linux-rtc@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-serial@vger.kernel.org,
+        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-watchdog@vger.kernel.org, kasan-dev@googlegroups.com,
+        linux-mediatek@lists.infradead.org
+Subject: Re: [PATCH 6/6] i2c: Make remove callback return void
+Message-ID: <20220706091315.p5k2jck3rmyjhvqw@skbuf>
+References: <20220628140313.74984-1-u.kleine-koenig@pengutronix.de>
+ <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20220629210024.815761-1-robh@kernel.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Jun 29, 2022 at 03:00:23PM -0600, Rob Herring wrote:
-> This reverts commit 52e842432f36d5b15227d0ee0d2aa3d2bc3cc0b2.
+On Tue, Jun 28, 2022 at 04:03:12PM +0200, Uwe Kleine-König wrote:
+> From: Uwe Kleine-König <uwe@kleine-koenig.org>
 > 
-> The DT support never would have worked because there's no platform_data
-> providing ops. There's not any documented binding for it either.
+> The value returned by an i2c driver's remove function is mostly ignored.
+> (Only an error message is printed if the value is non-zero that the
+> error is ignored.)
 > 
-> Cc: Jingoo Han <jg1.han@samsung.com>
-> Signed-off-by: Rob Herring <robh@kernel.org>
-
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-
-
-Daniel.
-
-
+> So change the prototype of the remove function to return no value. This
+> way driver authors are not tempted to assume that passing an error to
+> the upper layer is a good idea. All drivers are adapted accordingly.
+> There is no intended change of behaviour, all callbacks were prepared to
+> return 0 before.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 > ---
->  drivers/video/backlight/platform_lcd.c | 10 ----------
->  1 file changed, 10 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/platform_lcd.c b/drivers/video/backlight/platform_lcd.c
-> index b2bfbf070200..dc37494baf42 100644
-> --- a/drivers/video/backlight/platform_lcd.c
-> +++ b/drivers/video/backlight/platform_lcd.c
-> @@ -12,7 +12,6 @@
->  #include <linux/fb.h>
->  #include <linux/backlight.h>
->  #include <linux/lcd.h>
-> -#include <linux/of.h>
->  #include <linux/slab.h>
->  
->  #include <video/platform_lcd.h>
-> @@ -133,19 +132,10 @@ static int platform_lcd_resume(struct device *dev)
->  static SIMPLE_DEV_PM_OPS(platform_lcd_pm_ops, platform_lcd_suspend,
->  			platform_lcd_resume);
->  
-> -#ifdef CONFIG_OF
-> -static const struct of_device_id platform_lcd_of_match[] = {
-> -	{ .compatible = "platform-lcd" },
-> -	{},
-> -};
-> -MODULE_DEVICE_TABLE(of, platform_lcd_of_match);
-> -#endif
-> -
->  static struct platform_driver platform_lcd_driver = {
->  	.driver		= {
->  		.name	= "platform-lcd",
->  		.pm	= &platform_lcd_pm_ops,
-> -		.of_match_table = of_match_ptr(platform_lcd_of_match),
->  	},
->  	.probe		= platform_lcd_probe,
->  };
-> -- 
-> 2.34.1
-> 
+
+Assuming you remove the spurious kasan change:
+
+Reviewed-by: Vladimir Oltean <olteanv@gmail.com>

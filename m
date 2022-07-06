@@ -2,123 +2,98 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 080B3CCA473
-	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Jul 2022 09:32:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 328D4C43334
+	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Jul 2022 15:03:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230418AbiGFJcf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 6 Jul 2022 05:32:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44104 "EHLO
+        id S232420AbiGFPDE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 6 Jul 2022 11:03:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49010 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232678AbiGFJcd (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Jul 2022 05:32:33 -0400
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA08220F4A
-        for <linux-fbdev@vger.kernel.org>; Wed,  6 Jul 2022 02:32:32 -0700 (PDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1o91Nj-0005lo-Ss; Wed, 06 Jul 2022 11:31:39 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1o91Na-004jSK-Sg; Wed, 06 Jul 2022 11:31:34 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1o91Nd-003KbY-Gm; Wed, 06 Jul 2022 11:31:33 +0200
-Date:   Wed, 6 Jul 2022 11:31:30 +0200
-From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To:     Vladimir Oltean <olteanv@gmail.com>
-Cc:     Wolfram Sang <wsa@kernel.org>,
-        Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>,
-        linux-i2c@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linuxppc-dev@lists.ozlabs.org,
-        openipmi-developer@lists.sourceforge.net,
-        linux-integrity@vger.kernel.org, linux-clk@vger.kernel.org,
-        linux-crypto@vger.kernel.org, linux-gpio@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, chrome-platform@lists.linux.dev,
-        linux-rpi-kernel@lists.infradead.org, linux-input@vger.kernel.org,
-        linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
-        patches@opensource.cirrus.com, alsa-devel@alsa-project.org,
-        linux-omap@vger.kernel.org, linux-mtd@lists.infradead.org,
-        netdev@vger.kernel.org, devicetree@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org,
-        acpi4asus-user@lists.sourceforge.net, linux-pm@vger.kernel.org,
-        linux-pwm@vger.kernel.org, linux-rtc@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-serial@vger.kernel.org,
-        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-watchdog@vger.kernel.org, kasan-dev@googlegroups.com,
-        linux-mediatek@lists.infradead.org
-Subject: Re: [PATCH 6/6] i2c: Make remove callback return void
-Message-ID: <20220706093130.cet7y7upl76rp6ug@pengutronix.de>
-References: <20220628140313.74984-1-u.kleine-koenig@pengutronix.de>
- <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
- <20220706091315.p5k2jck3rmyjhvqw@skbuf>
+        with ESMTP id S231690AbiGFPDD (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Jul 2022 11:03:03 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5B1D25EB8
+        for <linux-fbdev@vger.kernel.org>; Wed,  6 Jul 2022 08:03:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1657119774;
+        bh=rQmS4yIj+Kq0oK+U8Ryv32tYGBvhOaSYofJZQWpZKAg=;
+        h=X-UI-Sender-Class:From:To:Subject:Date:In-Reply-To:References;
+        b=A+/0m88zrK6qAQaR6+7pIQQl2Y215QcZPWHe5boyZ6Uhh+WC4eQ2EXGwf5SD8EUbg
+         5SHbuFc8RvoYxZDVF9JPNNFhmJY3Mr0iD9tfzKXpizWlPT02sT+fve+82Inr4SnfnJ
+         34kkCRR2Q4Iqe7aMHbXrO+z/duaEFoOP+0D00XDE=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from p100.fritz.box ([92.116.134.81]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MrhUK-1nlqck3BAq-00nfeK; Wed, 06
+ Jul 2022 17:02:54 +0200
+From:   Helge Deller <deller@gmx.de>
+To:     linux-fbdev@vger.kernel.org, daniel.vetter@ffwll.ch,
+        dri-devel@lists.freedesktop.org, geert@linux-m68k.org
+Subject: [PATCH v3 1/4] fbcon: Disallow setting font bigger than screen size
+Date:   Wed,  6 Jul 2022 17:02:50 +0200
+Message-Id: <20220706150253.2186-2-deller@gmx.de>
+X-Mailer: git-send-email 2.35.3
+In-Reply-To: <20220706150253.2186-1-deller@gmx.de>
+References: <20220706150253.2186-1-deller@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="yp3ilhvx53xygi7l"
-Content-Disposition: inline
-In-Reply-To: <20220706091315.p5k2jck3rmyjhvqw@skbuf>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:oShNuyil0feMp05hW2usMgSVD8rYb4p7RsxBj5uoROaM4CEahi2
+ ObJSydSfqHH9gpBYSMpoHZ81lxTTlZXIjj0QZfiBnOClixGqysk4XfH8A4kkjFRuwddzltb
+ cPCfeTRJpdMCW8dKifc/BTiW06FhPKOj14TaOZbN9OGVaBi4pCrTuEovbV0iAuoPZh4WH31
+ MuFku7YedEI6j0GwQRnLQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:inpeYIvy66s=:wOGmewbp7/ITwMjRoMhaDq
+ UYND07/RmKGB/2fbsIeNJ29LYTpM9Bf2AIEcuTJPCkXITcAUaFcA4Zos68L+oKO/NylOr9ydm
+ EKcmYClfpLatQ4kEnq0gP7CWqOCs0cKtGi+96i1+vCqzj8zzNM/MvVLY0L6Fnyklswk2seDzg
+ d15rkIFG1SmkMFqTrGxlLJEDx83kZgb4JKNs2TZC/gNqdm5I1G7+nl9E/Tmkq2MYfBWZtfy4l
+ yw5Tn9XMLdBejacOktrsw4k9eeAGAdNv2LLS2c/VrVrNdKz0nYyn5wziYQGsWLB2SW5UNc9X7
+ NFb0JdFg6DZPlmYdoaGNVXHeJ0JsRCsSNtLUl+Yv07viH08LaqOxVHMHqWrnCdWLCSAOxlfQf
+ JORWtQIWLehGCdw3vaEthVcLH3ZeGZVttaJt2rHlz+yW1kUv4OkLdecWLibpO7h42CNa3bE0k
+ auOffFoZ+LsQTSVufg6xvYB9v2283lL8hcrt7NVu6L0rdtTlvVEaxPAPbimBB03ATme95KP5Y
+ wpzGlm0qzJlyhH37BGt1P5QEoJZn9DCVi8dFVFcaMoVeSdFQubF2HOW0aJ2MWOg7rbk395Cq+
+ ocWoHyA1izw/VFzVAbXIWKdWNKNTh5PyWXUgsdw9y1J10d85KtwgptY8MVp3XW1mKnbeFB+u3
+ VsN/z6t+OxN7uE6BRup3GdxxhuNPDQeHmLu7h8pgRRS/mYWq2tuwDLWNmI6zP0O2+vhp97JlB
+ xUw/DTfqMkTWl3Ej2sYwUdv91PqexzmLNUuBipXInzdwEy7WWV5o2QPw4YFQm4G3pQaQL5KQw
+ M6mqwkQdbKLVssEOc6BWRpLKAV2ysGTbNXnvbjyrzABmnJ+7XJmWQ2ZInmnqblFpXISv5CnNz
+ Mxw9g5lHVZclRYO46rqiTa7seDse0mBj3v41Pij1e/YWeT3vb6JdU7hIW8lKUBa2GgC2cw0tI
+ WIp9KaJwhZ84tXMk4HkF0+9OOm7BH2xSvtWM/jvanQvG1HvTBc0PMLSMYAIXccKUYc4idGFTL
+ IqwJdS5Vw5Hc29K3oSjOLY+rCIx+by/gyi71fXT88BDwTMSyZAoIAq39LiEu5wg1KKMxWFxSw
+ Yt9lZzmxhcyOa48XBm0qOL4Ax222IOG3wz/CC/UcHSQIFe/FoyptyEZtA==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Prevent that users set a font size which is bigger than the physical scree=
+n.
+It's unlikely this may happen (because screens are usually much larger tha=
+n the
+fonts and each font char is limited to 32x32 pixels), but it may happen on
+smaller screens/LCD displays.
 
---yp3ilhvx53xygi7l
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Helge Deller <deller@gmx.de>
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: stable@vger.kernel.org # v4.14+
+=2D--
+ drivers/video/fbdev/core/fbcon.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-On Wed, Jul 06, 2022 at 12:13:15PM +0300, Vladimir Oltean wrote:
-> On Tue, Jun 28, 2022 at 04:03:12PM +0200, Uwe Kleine-K=F6nig wrote:
-> > From: Uwe Kleine-K=F6nig <uwe@kleine-koenig.org>
-> >=20
-> > The value returned by an i2c driver's remove function is mostly ignored.
-> > (Only an error message is printed if the value is non-zero that the
-> > error is ignored.)
-> >=20
-> > So change the prototype of the remove function to return no value. This
-> > way driver authors are not tempted to assume that passing an error to
-> > the upper layer is a good idea. All drivers are adapted accordingly.
-> > There is no intended change of behaviour, all callbacks were prepared to
-> > return 0 before.
-> >=20
-> > Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-> > ---
->=20
-> Assuming you remove the spurious kasan change:
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/f=
+bcon.c
+index c4e91715ef00..a33532564393 100644
+=2D-- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2469,6 +2469,11 @@ static int fbcon_set_font(struct vc_data *vc, struc=
+t console_font *font,
+ 	if (charcount !=3D 256 && charcount !=3D 512)
+ 		return -EINVAL;
 
-It's already gone in my tree, see
-https://git.pengutronix.de/cgit/ukl/linux/commit/?h=3Di2c-remove-void
++	/* font bigger than screen resolution ? */
++	if (w > FBCON_SWAP(info->var.rotate, info->var.xres, info->var.yres) ||
++	    h > FBCON_SWAP(info->var.rotate, info->var.yres, info->var.xres))
++		return -EINVAL;
++
+ 	/* Make sure drawing engine can handle the font */
+ 	if (!(info->pixmap.blit_x & (1 << (font->width - 1))) ||
+ 	    !(info->pixmap.blit_y & (1 << (font->height - 1))))
+=2D-
+2.35.3
 
-> Reviewed-by: Vladimir Oltean <olteanv@gmail.com>
-
-Thanks
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---yp3ilhvx53xygi7l
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmLFVmcACgkQwfwUeK3K
-7AkOwAgAkt7aZ38n1lpOoBzXslSDQyp/lKc47Ehs+a1LTESfOP6+4frSHSJhaIMw
-WX2bIAZO2kfHd2GJJ1+miP0YO3eys+YJus7vlVp9LsZCtTrR7uUlJ9PhG4eVmYxD
-ZPZMbP533Mkp9Tj201PJRSbnOlhRhKnwpl4kQfj9nXD478yP1zbT/7CDh4Im1isE
-dOUnNdPTAnT17u0fIRREu6TIC/hKy5Lh772ukCBsHwkBWQD4WTtLmdL1uZrspPa3
-fKxI4tIGoKufFCNMNNzK8li/dghhpkn4uy8iNwyjkkmjfCXAkNdwNJiCDlo6qPwb
-idJ3DvpJEEx44L8KdcjzBYUHdSNUkQ==
-=ZnQL
------END PGP SIGNATURE-----
-
---yp3ilhvx53xygi7l--

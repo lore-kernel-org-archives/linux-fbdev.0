@@ -2,39 +2,39 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4246C43334
-	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Jul 2022 06:14:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CEDD7C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Jul 2022 06:26:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231518AbiGGGOw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 7 Jul 2022 02:14:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50860 "EHLO
+        id S234846AbiGGG0J (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 7 Jul 2022 02:26:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58142 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231305AbiGGGOw (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Jul 2022 02:14:52 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ECCDD21809;
-        Wed,  6 Jul 2022 23:14:46 -0700 (PDT)
-X-UUID: 9d9dbcd51b28492cb7540ac37f5c7395-20220707
+        with ESMTP id S234120AbiGGG0I (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Jul 2022 02:26:08 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0608726ACC;
+        Wed,  6 Jul 2022 23:26:06 -0700 (PDT)
+X-UUID: 32387981d5ee4f7dbd5a8f18bdead6cd-20220707
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.8,REQID:15c04ce5-02fe-4f07-9be3-b30b7420f285,OB:0,LO
+X-CID-O-INFO: VERSION:1.1.8,REQID:9adf498b-6916-4522-b531-8c71f165c085,OB:0,LO
         B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
         ON:release,TS:0
-X-CID-META: VersionHash:0f94e32,CLOUDID:ee4fa563-0b3f-4b2c-b3a6-ed5c044366a0,C
+X-CID-META: VersionHash:0f94e32,CLOUDID:dc3fc886-57f0-47ca-ba27-fe8c57fbf305,C
         OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
         ,QS:nil,BEC:nil,COL:0
-X-UUID: 9d9dbcd51b28492cb7540ac37f5c7395-20220707
-Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw01.mediatek.com
+X-UUID: 32387981d5ee4f7dbd5a8f18bdead6cd-20220707
+Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw02.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1889397465; Thu, 07 Jul 2022 14:14:40 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Thu, 7 Jul 2022 14:14:39 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Thu, 7 Jul 2022 14:14:39 +0800
-Message-ID: <d8c634d099e988c2cf8903613352f7334d94d148.camel@mediatek.com>
+        with ESMTP id 99316468; Thu, 07 Jul 2022 14:26:03 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+ mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
+ Thu, 7 Jul 2022 14:26:02 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Thu, 7 Jul 2022 14:26:02 +0800
+Message-ID: <4a4f26bf8d0b0da7e442ea799250e31860b28ed1.camel@mediatek.com>
 Subject: Re: [PATCH v13 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
  driver
 From:   CK Hu <ck.hu@mediatek.com>
@@ -52,7 +52,7 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Thu, 7 Jul 2022 14:14:39 +0800
+Date:   Thu, 7 Jul 2022 14:26:02 +0800
 In-Reply-To: <20220701062808.18596-6-rex-bc.chen@mediatek.com>
 References: <20220701062808.18596-1-rex-bc.chen@mediatek.com>
          <20220701062808.18596-6-rex-bc.chen@mediatek.com>
@@ -97,32 +97,21 @@ On Fri, 2022-07-01 at 14:28 +0800, Bo-Chen Chen wrote:
 [snip]
 
 > +
-> +static int mtk_dp_bulk_16bit_write(struct mtk_dp *mtk_dp, u32
-> offset, u8 *buf,
-> +				   size_t length)
+> +static void mtk_dp_video_enable(struct mtk_dp *mtk_dp, bool enable)
+> +{
+> +	if (enable) {
+> +		mtk_dp_set_tx_out(mtk_dp);
+> +		mtk_dp_video_mute(mtk_dp, false);
+> +	} else {
+> +		mtk_dp_video_mute(mtk_dp, true);
 
-The caller does not process the return value, so let this function to
-be void.
+In mtk_dp_set_tx_out(), disable some function. Why not enable that
+function here?
 
 Regards,
 CK
 
-> +{
-> +	int i, ret;
-> +	int num_regs = (length + 1) / 2;
-> +
-> +	/* 2 bytes per register */
-> +	for (i = 0; i < num_regs; i++) {
-> +		u32 val = buf[i * 2] |
-> +			  (i * 2 + 1 < length ? buf[i * 2 + 1] << 8 :
-> 0);
-> +
-> +		ret = mtk_dp_write(mtk_dp, offset + i * 4, val);
-> +		if (ret)
-> +			return ret;
 > +	}
-> +
-> +	return 0;
 > +}
 > +
 

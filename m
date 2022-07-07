@@ -2,61 +2,61 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BCADCCA481
-	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Jul 2022 15:40:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF96ACCA487
+	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Jul 2022 15:40:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235576AbiGGPkD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 7 Jul 2022 11:40:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59534 "EHLO
+        id S229926AbiGGPkF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 7 Jul 2022 11:40:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59554 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229926AbiGGPkC (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Jul 2022 11:40:02 -0400
+        with ESMTP id S235548AbiGGPkD (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Jul 2022 11:40:03 -0400
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 71C5E2C673
-        for <linux-fbdev@vger.kernel.org>; Thu,  7 Jul 2022 08:40:01 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CD6112CDC8
+        for <linux-fbdev@vger.kernel.org>; Thu,  7 Jul 2022 08:40:02 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 2D7DA1FF58;
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 94D6A1FF5E;
         Thu,  7 Jul 2022 15:40:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
         t=1657208400; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=j5fY3Ea70f/1BWSbsP/cFiQ0tI3pdSpnfUk47C85qqo=;
-        b=Pdr35ePFUfiihNOZy9AyhyNW1lA9ib9jQ4LrqFbcbT13SAbhU9Rg8E9ohoD2R6b0/hylFm
-        fA3yrNeQ3o3TDJsA7dxcO06gxMJUf1zx19YvWzrU8ShtbBxplKwf8R2AgE+btknpa0584F
-        koTRipdx2Z2gM9q2q+IAVBD/uhqntoE=
+        bh=maoI6QoYjMRAWl9rx1IxBtiv9tS6pyedkoAqsEdLpSs=;
+        b=IoJGptd4HquIdbCOoIESidlhMYrMDlNsjGPf0dZD58Y5BCSTwA+62ZMZ7+Bxk8OoAfzJPG
+        +Uj6QKNic8ybrTinOn5aTqJ6L+iPjuC5pUfjgF7kAlf8Db9yn8iiUlTX8r8wwSVkGKhlwF
+        Hy1POmxzVQrM6iCSKTd1hcfcZ7G2M5U=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
         s=susede2_ed25519; t=1657208400;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=j5fY3Ea70f/1BWSbsP/cFiQ0tI3pdSpnfUk47C85qqo=;
-        b=/UoVIgD2+Vu7wXxPZ6+/9zC6ZYyMHpHAdfjGw7t1a05v/ssSGWcCim8V+B1pHLHuI2RdvZ
-        wnUOADB0finooICQ==
+        bh=maoI6QoYjMRAWl9rx1IxBtiv9tS6pyedkoAqsEdLpSs=;
+        b=qg+MloWynP9QxuiNdXey4ydTcm5z7puRr0O902lvHrQps0epiIbpbGbXz72vrLcflm0nvF
+        b96QfYRaCaWFT4BA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id F140613B4E;
-        Thu,  7 Jul 2022 15:39:59 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 6352E13B4E;
+        Thu,  7 Jul 2022 15:40:00 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id mDzxOU/+xmI9UQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 07 Jul 2022 15:39:59 +0000
+        id IBNlF1D+xmI9UQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 07 Jul 2022 15:40:00 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     javierm@redhat.com, deller@gmx.de, daniel@ffwll.ch,
         sam@ravnborg.org, maxime@cerno.tech
 Cc:     linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
         dri-devel@lists.freedesktop.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 08/11] video: Provide constants for VGA I/O range
-Date:   Thu,  7 Jul 2022 17:39:49 +0200
-Message-Id: <20220707153952.32264-9-tzimmermann@suse.de>
+Subject: [PATCH 10/11] fbdev: Acquire framebuffer apertures for firmware devices
+Date:   Thu,  7 Jul 2022 17:39:51 +0200
+Message-Id: <20220707153952.32264-11-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.36.1
 In-Reply-To: <20220707153952.32264-1-tzimmermann@suse.de>
 References: <20220707153952.32264-1-tzimmermann@suse.de>
@@ -66,105 +66,73 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Provide VGA_FB_ constants for the VGA framebuffer I/O range and convert
-fbdev code.
+When registering a generic framebuffer, automatically acquire ownership
+of the framebuffer's I/O range. The device will now be handled by the
+aperture helpers. Fbdev-based conflict handling is no longer required.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/core/fbmem.c |  4 ++--
- drivers/video/fbdev/vga16fb.c    | 15 ++++++---------
- include/video/vga.h              |  2 ++
- 3 files changed, 10 insertions(+), 11 deletions(-)
+ drivers/video/fbdev/core/fbmem.c | 33 ++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
 
 diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 3ee3ea018245..2237049327db 100644
+index 2237049327db..e556ad69f48f 100644
 --- a/drivers/video/fbdev/core/fbmem.c
 +++ b/drivers/video/fbdev/core/fbmem.c
-@@ -39,6 +39,7 @@
+@@ -13,6 +13,7 @@
  
- #include <asm/fb.h>
+ #include <linux/module.h>
  
-+#include <video/vga.h>
++#include <linux/aperture.h>
+ #include <linux/compat.h>
+ #include <linux/types.h>
+ #include <linux/errno.h>
+@@ -1739,6 +1740,32 @@ static void do_unregister_framebuffer(struct fb_info *fb_info)
+ 	put_fb_info(fb_info);
+ }
  
-     /*
-      *  Frame buffer device initialization and setup routines
-@@ -1549,7 +1550,6 @@ static bool fb_do_apertures_overlap(struct apertures_struct *gena,
- 
- static void do_unregister_framebuffer(struct fb_info *fb_info);
- 
--#define VGA_FB_PHYS 0xA0000
- static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
- 					       const char *name, bool primary)
++static int fbm_aperture_acquire_for_platform_device(struct fb_info *fb_info)
++{
++	struct apertures_struct *ap = fb_info->apertures;
++	struct device *dev = fb_info->device;
++	struct platform_device *pdev;
++	unsigned int i;
++	int ret;
++
++	if (!ap)
++		return 0;
++
++	if (!dev_is_platform(dev))
++		return 0;
++
++	pdev = to_platform_device(dev);
++
++	for (ret = 0, i = 0; i < ap->count; ++i) {
++		ret = devm_aperture_acquire_for_platform_device(pdev, ap->ranges[i].base,
++								ap->ranges[i].size);
++		if (ret)
++			break;
++	}
++
++	return ret;
++}
++
+ /**
+  * remove_conflicting_framebuffers - remove firmware-configured framebuffers
+  * @a: memory range, users of which are to be removed
+@@ -1789,6 +1816,12 @@ register_framebuffer(struct fb_info *fb_info)
  {
-@@ -1568,7 +1568,7 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
- 		device = registered_fb[i]->device;
- 		if (fb_do_apertures_overlap(gen_aper, a) ||
- 			(primary && gen_aper && gen_aper->count &&
--			 gen_aper->ranges[0].base == VGA_FB_PHYS)) {
-+			 gen_aper->ranges[0].base == VGA_FB_PHYS_BASE)) {
+ 	int ret;
  
- 			printk(KERN_INFO "fb%d: switching to %s from %s\n",
- 			       i, name, registered_fb[i]->fix.id);
-diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
-index e7767ed50c5b..595a69634082 100644
---- a/drivers/video/fbdev/vga16fb.c
-+++ b/drivers/video/fbdev/vga16fb.c
-@@ -25,9 +25,6 @@
- #include <asm/io.h>
- #include <video/vga.h>
- 
--#define VGA_FB_PHYS 0xA0000
--#define VGA_FB_PHYS_LEN 65536
--
- #define MODE_SKIP4	1
- #define MODE_8BPP	2
- #define MODE_CFB	4
-@@ -87,8 +84,8 @@ static struct fb_var_screeninfo vga16fb_defined = {
- /* name should not depend on EGA/VGA */
- static const struct fb_fix_screeninfo vga16fb_fix = {
- 	.id		= "VGA16 VGA",
--	.smem_start	= VGA_FB_PHYS,
--	.smem_len	= VGA_FB_PHYS_LEN,
-+	.smem_start	= VGA_FB_PHYS_BASE,
-+	.smem_len	= VGA_FB_PHYS_SIZE,
- 	.type		= FB_TYPE_VGA_PLANES,
- 	.type_aux	= FB_AUX_VGA_PLANES_VGA4,
- 	.visual		= FB_VISUAL_PSEUDOCOLOR,
-@@ -1357,8 +1354,8 @@ static int vga16fb_probe(struct platform_device *dev)
- 		goto err_ioremap;
- 	}
- 
--	/* XXX share VGA_FB_PHYS and I/O region with vgacon and others */
--	info->screen_base = (void __iomem *)VGA_MAP_MEM(VGA_FB_PHYS, 0);
-+	/* XXX share VGA_FB_PHYS_BASE and I/O region with vgacon and others */
-+	info->screen_base = (void __iomem *)VGA_MAP_MEM(VGA_FB_PHYS_BASE, 0);
- 
- 	if (!info->screen_base) {
- 		printk(KERN_ERR "vga16fb: unable to map device\n");
-@@ -1409,8 +1406,8 @@ static int vga16fb_probe(struct platform_device *dev)
- 
- 	vga16fb_update_fix(info);
- 
--	info->apertures->ranges[0].base = VGA_FB_PHYS;
--	info->apertures->ranges[0].size = VGA_FB_PHYS_LEN;
-+	info->apertures->ranges[0].base = VGA_FB_PHYS_BASE;
-+	info->apertures->ranges[0].size = VGA_FB_PHYS_SIZE;
- 
- 	if (register_framebuffer(info) < 0) {
- 		printk(KERN_ERR "vga16fb: unable to register framebuffer\n");
-diff --git a/include/video/vga.h b/include/video/vga.h
-index ef8e9fa9b9bd..947c0abd04ef 100644
---- a/include/video/vga.h
-+++ b/include/video/vga.h
-@@ -22,6 +22,8 @@
- #include <asm/vga.h>
- #include <asm/byteorder.h>
- 
-+#define VGA_FB_PHYS_BASE	0xA0000 /* VGA framebuffer I/O base */
-+#define VGA_FB_PHYS_SIZE	65536	/* VGA framebuffer I/O size */
- 
- /* Some of the code below is taken from SVGAlib.  The original,
-    unmodified copyright notice for that code is below. */
++	if (fb_info->flags & FBINFO_MISC_FIRMWARE) {
++		ret = fbm_aperture_acquire_for_platform_device(fb_info);
++		if (ret)
++			return ret;
++	}
++
+ 	mutex_lock(&registration_lock);
+ 	ret = do_register_framebuffer(fb_info);
+ 	mutex_unlock(&registration_lock);
 -- 
 2.36.1
 

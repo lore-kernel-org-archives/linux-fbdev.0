@@ -2,39 +2,39 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1170C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Jul 2022 04:12:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDA28C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Jul 2022 05:07:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231745AbiGGEMN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 7 Jul 2022 00:12:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39500 "EHLO
+        id S235104AbiGGFHX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 7 Jul 2022 01:07:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41056 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229472AbiGGEML (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Jul 2022 00:12:11 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B04CC1D0CA;
-        Wed,  6 Jul 2022 21:12:05 -0700 (PDT)
-X-UUID: 9e664c8c274342e1a9d2ce4616027e2f-20220707
+        with ESMTP id S230415AbiGGFHV (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Jul 2022 01:07:21 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EB19231220;
+        Wed,  6 Jul 2022 22:07:19 -0700 (PDT)
+X-UUID: 3c0c14ac62204467be601a08ec5b786d-20220707
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.8,REQID:a5e76897-188b-4de8-a872-8f8b29e6c46f,OB:0,LO
+X-CID-O-INFO: VERSION:1.1.8,REQID:5a41f761-d6f4-414c-8e86-d67772b6b2c2,OB:0,LO
         B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
         ON:release,TS:0
-X-CID-META: VersionHash:0f94e32,CLOUDID:ea45a263-0b3f-4b2c-b3a6-ed5c044366a0,C
+X-CID-META: VersionHash:0f94e32,CLOUDID:f72bc686-57f0-47ca-ba27-fe8c57fbf305,C
         OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
         ,QS:nil,BEC:nil,COL:0
-X-UUID: 9e664c8c274342e1a9d2ce4616027e2f-20220707
-Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw02.mediatek.com
+X-UUID: 3c0c14ac62204467be601a08ec5b786d-20220707
+Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw01.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 732966436; Thu, 07 Jul 2022 12:11:56 +0800
+        with ESMTP id 1765858335; Thu, 07 Jul 2022 13:07:14 +0800
 Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
- mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Thu, 7 Jul 2022 12:11:55 +0800
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Thu, 7 Jul 2022 13:07:12 +0800
 Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Thu, 7 Jul 2022 12:11:55 +0800
-Message-ID: <a9bba0b30073465dd85ca61220a0c476e8a33048.camel@mediatek.com>
+ Transport; Thu, 7 Jul 2022 13:07:12 +0800
+Message-ID: <4e09ec20087d8a197d32294806c5ecfecaff84fa.camel@mediatek.com>
 Subject: Re: [PATCH v13 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
  driver
 From:   CK Hu <ck.hu@mediatek.com>
@@ -52,7 +52,7 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Thu, 7 Jul 2022 12:11:55 +0800
+Date:   Thu, 7 Jul 2022 13:07:12 +0800
 In-Reply-To: <20220701062808.18596-6-rex-bc.chen@mediatek.com>
 References: <20220701062808.18596-1-rex-bc.chen@mediatek.com>
          <20220701062808.18596-6-rex-bc.chen@mediatek.com>
@@ -97,33 +97,50 @@ On Fri, 2022-07-01 at 14:28 +0800, Bo-Chen Chen wrote:
 [snip]
 
 > +
-> +static irqreturn_t mtk_dp_hpd_event_thread(int hpd, void *dev)
-> +{
-> +	struct mtk_dp *mtk_dp = dev;
-> +	u8 buf[DP_RECEIVER_CAP_SIZE] = {};
-> +
-> +	if (mtk_dp->train_info.cable_state_change) {
-> +		mtk_dp->train_info.cable_state_change = false;
-> +
-> +		mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_PWR_STATE,
-> +				   DP_PWR_STATE_BANDGAP_TPLL_LANE,
-> +				   DP_PWR_STATE_MASK);
-> +		drm_dp_read_dpcd_caps(&mtk_dp->aux, buf);
+> +struct mtk_dp_timings {
+> +	struct videomode vm;
+> +	u8 frame_rate;
 
-Why do you read dpcd caps into 'buf'. 'buf' is not used elsewhere.
+You just assign value to frame_rate, but you never use this frame_rate,
+so drop it.
 
 Regards,
 CK
 
-> +	}
+> +};
 > +
-> +	if (mtk_dp->train_info.irq_sta.hpd_inerrupt) {
-> +		dev_dbg(mtk_dp->dev, "MTK_DP_HPD_INTERRUPT\n");
-> +		mtk_dp->train_info.irq_sta.hpd_inerrupt = false;
-> +		mtk_dp_hpd_sink_event(mtk_dp);
-> +	}
+
+[snip]
+
 > +
-> +	return IRQ_HANDLED;
+> +static void mtk_dp_initialize_priv_data(struct mtk_dp *mtk_dp)
+> +{
+> +	mtk_dp->train_info.link_rate = DP_LINK_BW_5_4;
+> +	mtk_dp->train_info.lane_count = mtk_dp->max_lanes;
+> +	mtk_dp->train_info.cable_plugged_in = false;
+> +	mtk_dp->train_info.cable_state_change = false;
+> +	memset(&mtk_dp->train_info.irq_sta, 0, sizeof(struct
+> mtk_dp_irq_sta));
+> +
+> +	mtk_dp->info.format = DP_PIXELFORMAT_RGB;
+> +	mtk_dp->info.depth = DP_MSA_MISC_8_BPC;
+> +	memset(&mtk_dp->info.timings, 0, sizeof(struct
+> mtk_dp_timings));
+> +	mtk_dp->info.timings.frame_rate = 60;
+> +}
+> +
+
+[snip]
+
+> +
+> +static void mtk_dp_parse_drm_mode_timings(struct mtk_dp *mtk_dp,
+> +					  struct drm_display_mode
+> *mode)
+> +{
+> +	struct mtk_dp_timings *timings = &mtk_dp->info.timings;
+> +
+> +	drm_display_mode_to_videomode(mode, &timings->vm);
+> +	timings->frame_rate = drm_mode_vrefresh(mode);
 > +}
 > +
 

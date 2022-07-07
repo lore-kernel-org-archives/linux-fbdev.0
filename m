@@ -2,149 +2,159 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DAD0CCA482
-	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Jul 2022 14:03:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB0ACC43334
+	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Jul 2022 15:40:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235804AbiGGODP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 7 Jul 2022 10:03:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59582 "EHLO
+        id S235171AbiGGPkB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 7 Jul 2022 11:40:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59494 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235541AbiGGODD (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Jul 2022 10:03:03 -0400
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E3B429CA7;
-        Thu,  7 Jul 2022 07:03:01 -0700 (PDT)
-Received: by mail-pf1-x42b.google.com with SMTP id e16so6803647pfm.11;
-        Thu, 07 Jul 2022 07:03:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=afbiyF16Fd4Ewaaf3EKKCpvpR7aHAsNAQp7K3TuQXs4=;
-        b=EzpeppBfdoHkOWruUNAYNHzOi8S5lBuVkWR/uarc/O7MDVJ2qM1NUNdy3hxzZeKinw
-         1f6tPe15AftcBiSP1Sugt5jiQpAKlLcyz+gPyHgHTvK6IkiuSg6SYHkmzqBCpGaHkm3K
-         GirawtqITR+EFkG0pF8QxPm0bxzk97EH7JYJxQXFRi4d1kRfsZVOuxKRapjByLByJ3DF
-         qAVqAZfaAfJT+F8T/W2rPtPmXy6/uaYwejGaDWQ5Frl3XCXwsQlqWF67lU3BIXdseGBS
-         CTJ5pH+oR76s++4uNTCxHCZwHNyWF4xdxY3ay2k5fQlKGRbstnEbIjnAVDZkl7wMQgN9
-         oSpA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
-         :references:mime-version:content-disposition:in-reply-to;
-        bh=afbiyF16Fd4Ewaaf3EKKCpvpR7aHAsNAQp7K3TuQXs4=;
-        b=h9qday3Z6QtmC9RuMlgRhS9l10QWS3D80lqsSnqgBKC1+CKaNJRllCV1qHMEPzZaUM
-         3G4Ul8qgrHisl2n4W631fHuwsdqtWunnfaPvAeGcwV2SjB8YFxGBPM0fbntZUylk9IgL
-         fNwlkHrks28txUTJtICEOG3hV00TiGJeVsYDEd6xIlS0KEuxKgttgVOj1OT2wP8v2E9M
-         JVZQbxroyOnwkD5a9se5zP6O77TDb2VM30ByrUn6H2BGlo/Re0Z+1dExBMcaZTp24oh6
-         A3v83thqObnrjc1T9Z8rnW1KxG52OOaWwjbYRjmhQ7UjKzMSvlXymn+xyEQmMmHsHvAT
-         RX3g==
-X-Gm-Message-State: AJIora9YSLCW5JWGVsmJCaVyIp2MX3BQGmqg5tHK/FJjeqigK/qnJsvY
-        qcPc/QB7vncBioq1CQXdz9E=
-X-Google-Smtp-Source: AGRyM1uGEg1zRLKU3mt/8yK/HfEqKFBdv1eoQpzxhqHLW6DjIp1gLh6JEsU/RWRdBfoHFypH/TfaNQ==
-X-Received: by 2002:a17:90b:4c8f:b0:1ec:cdd0:41b7 with SMTP id my15-20020a17090b4c8f00b001eccdd041b7mr5420238pjb.119.1657202580508;
-        Thu, 07 Jul 2022 07:03:00 -0700 (PDT)
-Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id k127-20020a632485000000b004148cbdd4e5sm1215293pgk.57.2022.07.07.07.02.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 07 Jul 2022 07:02:59 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date:   Thu, 7 Jul 2022 07:02:58 -0700
-From:   Guenter Roeck <linux@roeck-us.net>
-To:     Greg KH <gregkh@linuxfoundation.org>
-Cc:     kernel test robot <lkp@intel.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        virtualization@lists.linux-foundation.org,
-        usbb2k-api-dev@nongnu.org, tipc-discussion@lists.sourceforge.net,
-        target-devel@vger.kernel.org, sound-open-firmware@alsa-project.org,
-        samba-technical@lists.samba.org, rds-devel@oss.oracle.com,
-        patches@opensource.cirrus.com, osmocom-net-gprs@lists.osmocom.org,
-        openipmi-developer@lists.sourceforge.net, nvdimm@lists.linux.dev,
-        ntb@lists.linux.dev, netfilter-devel@vger.kernel.org,
-        netdev@vger.kernel.org, mjpeg-users@lists.sourceforge.net,
-        megaraidlinux.pdl@broadcom.com, linuxppc-dev@lists.ozlabs.org,
-        linux1394-devel@lists.sourceforge.net, linux-x25@vger.kernel.org,
-        linux-wpan@vger.kernel.org, linux-wireless@vger.kernel.org,
-        linux-watchdog@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-unionfs@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-staging@lists.linux.dev, linux-serial@vger.kernel.org,
-        linux-sctp@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org,
-        linux-rockchip@lists.infradead.org,
-        linux-renesas-soc@vger.kernel.org, linux-rdma@vger.kernel.org,
-        linux-raid@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-phy@lists.infradead.org, linux-perf-users@vger.kernel.org,
-        linux-pci@vger.kernel.org, linux-parport@lists.infradead.org,
-        linux-parisc@vger.kernel.org, linux-omap@vger.kernel.org,
-        linux-nfc@lists.01.org, linux-mtd@lists.infradead.org,
-        linux-mmc@vger.kernel.org, linux-mm@kvack.org,
-        linux-mediatek@lists.infradead.org, linux-media@vger.kernel.org,
-        linux-leds@vger.kernel.org, linux-integrity@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-ide@vger.kernel.org, linux-hwmon@vger.kernel.org,
-        linux-fsdevel@vger.kernel.org, linux-fpga@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, linux-ext4@vger.kernel.org,
-        linux-efi@vger.kernel.org, linux-doc@vger.kernel.org,
-        linux-cxl@vger.kernel.org, linux-crypto@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-cifs@vger.kernel.org,
-        linux-btrfs@vger.kernel.org, linux-bluetooth@vger.kernel.org,
-        linux-block@vger.kernel.org, linux-bcache@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-amlogic@lists.infradead.org, linaro-mm-sig@lists.linaro.org,
-        legousb-devel@lists.sourceforge.net, kvm@vger.kernel.org,
-        keyrings@vger.kernel.org, isdn4linux@listserv.isdn4linux.de,
-        iommu@lists.linux.dev, iommu@lists.linux-foundation.org,
-        intel-wired-lan@lists.osuosl.org, greybus-dev@lists.linaro.org,
-        dri-devel@lists.freedesktop.org, dm-devel@redhat.com,
-        devicetree@vger.kernel.org, dev@openvswitch.org,
-        dccp@vger.kernel.org, damon@lists.linux.dev,
-        coreteam@netfilter.org, cgroups@vger.kernel.org,
-        ceph-devel@vger.kernel.org, ath11k@lists.infradead.org,
-        apparmor@lists.ubuntu.com, amd-gfx@lists.freedesktop.org,
-        alsa-devel@alsa-project.org,
-        accessrunner-general@lists.sourceforge.net
-Subject: Re: [linux-next:master] BUILD REGRESSION
- 088b9c375534d905a4d337c78db3b3bfbb52c4a0
-Message-ID: <20220707140258.GA3492673@roeck-us.net>
-References: <62c683a2.g1VSVt6BrQC6ZzOz%lkp@intel.com>
- <YsaUgfPbOg7WuBuB@kroah.com>
+        with ESMTP id S229926AbiGGPkA (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Jul 2022 11:40:00 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85A0BE9A
+        for <linux-fbdev@vger.kernel.org>; Thu,  7 Jul 2022 08:39:59 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 31916219F2;
+        Thu,  7 Jul 2022 15:39:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1657208398; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=4vZ5bqCfIkwqM9philRuQdabqYFiE7l8C2Z/WBk+CRs=;
+        b=XrmZeKlk8nIFeVcnen2WkP1lYO+G3PKWD4+69OoesWQ2uZQK5/+IabAX4M849tzAGewc6W
+        F7/1K196CyzbrZ7koXb+oGjpy8QXiEaMD2grHp0TgHlC+EnssG5WPUx5TBlzkFwjv4QF/3
+        yBawnDrOuZUmPyVef2xxiwlsAkf4p/E=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1657208398;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=4vZ5bqCfIkwqM9philRuQdabqYFiE7l8C2Z/WBk+CRs=;
+        b=mOElHapcEpoTN5jeCTInBT6zi/k8X5ON5DK5Cd2LrCUjdyYkFowxp+qjcXONWyyoBuXqc/
+        H4B/iCu7bmlqySCw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 01C5813A33;
+        Thu,  7 Jul 2022 15:39:57 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id sboEO03+xmI9UQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 07 Jul 2022 15:39:57 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     javierm@redhat.com, deller@gmx.de, daniel@ffwll.ch,
+        sam@ravnborg.org, maxime@cerno.tech
+Cc:     linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        dri-devel@lists.freedesktop.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 00/11] fbdev: Maintain device ownership with aperture helpers
+Date:   Thu,  7 Jul 2022 17:39:41 +0200
+Message-Id: <20220707153952.32264-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.36.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <YsaUgfPbOg7WuBuB@kroah.com>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Jul 07, 2022 at 10:08:33AM +0200, Greg KH wrote:
+Fbdev firmware drivers acquire ownership of framebuffer I/O ranges and
+hand them over to native drivers during the boot process. Re-implement
+this mechanism with aperture helpers and remove the respective fbdev
+code.
 
-[ ... ]
-> > 
-> > Unverified Error/Warning (likely false positive, please contact us if interested):
-> > 
-> > arch/x86/events/core.c:2114 init_hw_perf_events() warn: missing error code 'err'
-> > drivers/android/binder.c:1481:19-23: ERROR: from is NULL but dereferenced.
-> > drivers/android/binder.c:2920:29-33: ERROR: target_thread is NULL but dereferenced.
-> > drivers/android/binder.c:353:25-35: ERROR: node -> proc is NULL but dereferenced.
-> > drivers/android/binder.c:4888:16-20: ERROR: t is NULL but dereferenced.
-> > drivers/base/regmap/regmap.c:1996:1: internal compiler error: in arc_ifcvt, at config/arc/arc.c:9637
-> > drivers/char/random.c:869:1: internal compiler error: in arc_ifcvt, at config/arc/arc.c:9637
-> > drivers/firmware/arm_scmi/clock.c:394:1: internal compiler error: in arc_ifcvt, at config/arc/arc.c:9637
-> > drivers/firmware/arm_scmi/powercap.c:376:1: internal compiler error: in arc_ifcvt, at config/arc/arc.c:9637
-> > drivers/gpu/drm/amd/amdgpu/../pm/powerplay/hwmgr/vega10_powertune.c:1214:1: internal compiler error: in arc_ifcvt, at config/arc/arc.c:9637
-> > drivers/gpu/drm/amd/display/dc/os_types.h: drm/drm_print.h is included more than once.
-> > drivers/gpu/drm/bridge/ite-it66121.c:1398:1: internal compiler error: in arc_ifcvt, at config/arc/arc.c:9637
-> > drivers/greybus/operation.c:617:1: internal compiler error: in arc_ifcvt, at config/arc/arc.c:9637
-> 
-> <snip>
-> 
-> When the compiler crashes, why are you blaming all of these different
-> mailing lists?  Perhaps you need to fix your compiler :)
-> 
+This change allows to perform hand-over from DRM firmware drivers. In a
+later patchset, device ownership can be moved from DRM and fbdev entirely
+into aperture helpers.
 
-To be fair, it says above "likely false positive, please contact us
-if interested". Also, the 32-bit build errors _are_ real, and the NULL
-dereferences in the binder driver are at the very least suspicious.
+Patches 1 and 4 are cleanups.
 
-Guenter
+Patches 2 and 3 integrate EGA/VGA support into sysfb, although it's not
+clear if the x86 architecture code actually still supports VGA graphics
+mode.
+
+Patches 5 to 10 replace fbdev's ownership management with aperture
+helpers. This includes removal of conflicting framebuffer drivers,
+removal of conflicting VGA drivers and registration of fbdev firmware
+devices. Notably, many PCI-based fbdev drivers failed to remove firmware
+devices until now; and therefore probably haven't worked correctly for
+some time.
+
+Patch 11 removes the implementation of fbdev ownership management.
+
+The patchset has been tested by handing over device ownership between
+firmware and native drivers of DRM and fbdev in various combinations.
+
+Thomas Zimmermann (11):
+  fbdev: Remove trailing whitespaces
+  fbdev/vga16fb: Create EGA/VGA devices in sysfb code
+  fbdev/vga16fb: Auto-generate module init/exit code
+  fbdev/core: Remove remove_conflicting_pci_framebuffers()
+  fbdev: Convert drivers to aperture helpers
+  fbdev: Remove conflicting devices on PCI bus
+  video/aperture: Disable and unregister sysfb devices via aperture
+    helpers
+  video: Provide constants for VGA I/O range
+  video/aperture: Remove conflicting VGA devices, if any
+  fbdev: Acquire framebuffer apertures for firmware devices
+  fbdev: Remove conflict-handling code
+
+ drivers/firmware/sysfb.c                     |   4 +
+ drivers/staging/sm750fb/sm750.c              |  15 +-
+ drivers/video/aperture.c                     |  69 ++--
+ drivers/video/fbdev/arkfb.c                  |   5 +
+ drivers/video/fbdev/asiliantfb.c             |   5 +
+ drivers/video/fbdev/aty/aty128fb.c           |  57 ++--
+ drivers/video/fbdev/aty/atyfb_base.c         |   7 +-
+ drivers/video/fbdev/aty/radeon_base.c        |  83 +++--
+ drivers/video/fbdev/carminefb.c              |   5 +
+ drivers/video/fbdev/chipsfb.c                |  13 +-
+ drivers/video/fbdev/cirrusfb.c               |   5 +
+ drivers/video/fbdev/core/fbmem.c             | 176 ++---------
+ drivers/video/fbdev/cyber2000fb.c            |   5 +
+ drivers/video/fbdev/geode/gx1fb_core.c       |   5 +
+ drivers/video/fbdev/geode/gxfb_core.c        |   5 +
+ drivers/video/fbdev/geode/lxfb_core.c        |   5 +
+ drivers/video/fbdev/gxt4500.c                |   5 +
+ drivers/video/fbdev/hyperv_fb.c              |   6 +-
+ drivers/video/fbdev/i740fb.c                 |   5 +
+ drivers/video/fbdev/i810/i810_main.c         | 315 ++++++++++---------
+ drivers/video/fbdev/imsttfb.c                |  36 ++-
+ drivers/video/fbdev/intelfb/intelfbdrv.c     |   5 +
+ drivers/video/fbdev/kyro/fbdev.c             |   5 +
+ drivers/video/fbdev/matrox/matroxfb_base.c   |   5 +
+ drivers/video/fbdev/mb862xx/mb862xxfbdrv.c   |   5 +
+ drivers/video/fbdev/neofb.c                  |  41 +--
+ drivers/video/fbdev/nvidia/nvidia.c          |   7 +-
+ drivers/video/fbdev/pm2fb.c                  |   5 +
+ drivers/video/fbdev/pm3fb.c                  |   5 +
+ drivers/video/fbdev/pvr2fb.c                 |   5 +
+ drivers/video/fbdev/riva/fbdev.c             |  67 ++--
+ drivers/video/fbdev/s3fb.c                   |   5 +
+ drivers/video/fbdev/savage/savagefb_driver.c |   5 +
+ drivers/video/fbdev/sis/sis_main.c           |   5 +
+ drivers/video/fbdev/skeletonfb.c             | 210 +++++++------
+ drivers/video/fbdev/sm712fb.c                |   5 +
+ drivers/video/fbdev/sstfb.c                  |  43 +--
+ drivers/video/fbdev/sunxvr2500.c             |   5 +
+ drivers/video/fbdev/sunxvr500.c              |   5 +
+ drivers/video/fbdev/tdfxfb.c                 |   5 +
+ drivers/video/fbdev/tgafb.c                  |  17 +-
+ drivers/video/fbdev/tridentfb.c              |   5 +
+ drivers/video/fbdev/vermilion/vermilion.c    |   7 +-
+ drivers/video/fbdev/vga16fb.c                | 191 +++++------
+ drivers/video/fbdev/via/via-core.c           |   5 +
+ drivers/video/fbdev/vt8623fb.c               |   5 +
+ include/linux/fb.h                           |   4 -
+ include/video/vga.h                          |  20 +-
+ 48 files changed, 788 insertions(+), 735 deletions(-)
+
+
+base-commit: 11d480026e922adacd274306728adb6df6dd262a
+prerequisite-patch-id: c2b2f08f0eccc9f5df0c0da49fa1d36267deb11d
+prerequisite-patch-id: c67e5d886a47b7d0266d81100837557fda34cb24
+-- 
+2.36.1
+

@@ -2,39 +2,39 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F608C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Jul 2022 07:50:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E373C43334
+	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Jul 2022 07:57:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232931AbiGGHuX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 7 Jul 2022 03:50:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37830 "EHLO
+        id S234282AbiGGH5R (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 7 Jul 2022 03:57:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44456 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235079AbiGGHuW (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Jul 2022 03:50:22 -0400
+        with ESMTP id S230004AbiGGH5Q (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Jul 2022 03:57:16 -0400
 Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6FC2E28E13;
-        Thu,  7 Jul 2022 00:50:18 -0700 (PDT)
-X-UUID: cb064ff2a78f4462a7ba4d2367b75615-20220707
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9D87C2B26F;
+        Thu,  7 Jul 2022 00:57:14 -0700 (PDT)
+X-UUID: ba0d47e5bc3342db93345a5becc5375f-20220707
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.8,REQID:887d7773-0562-4434-9921-16d3b14add2e,OB:0,LO
+X-CID-O-INFO: VERSION:1.1.8,REQID:21a3e37c-bc2d-48ce-8d86-e463756ca306,OB:0,LO
         B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
         ON:release,TS:0
-X-CID-META: VersionHash:0f94e32,CLOUDID:e67bdad6-5d6d-4eaf-a635-828a3ee48b7c,C
+X-CID-META: VersionHash:0f94e32,CLOUDID:59f7ca86-57f0-47ca-ba27-fe8c57fbf305,C
         OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
         ,QS:nil,BEC:nil,COL:0
-X-UUID: cb064ff2a78f4462a7ba4d2367b75615-20220707
-Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw01.mediatek.com
+X-UUID: ba0d47e5bc3342db93345a5becc5375f-20220707
+Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw01.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1268588751; Thu, 07 Jul 2022 15:50:14 +0800
+        with ESMTP id 2098088199; Thu, 07 Jul 2022 15:57:08 +0800
 Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
  mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Thu, 7 Jul 2022 15:50:12 +0800
+ Thu, 7 Jul 2022 15:57:07 +0800
 Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Thu, 7 Jul 2022 15:50:12 +0800
-Message-ID: <d7078ff355a797081fcbd374c33fa5f4c74f4c98.camel@mediatek.com>
+ Transport; Thu, 7 Jul 2022 15:57:07 +0800
+Message-ID: <b84eb2804ac74b1851dea800d471d415ced7e2c4.camel@mediatek.com>
 Subject: Re: [PATCH v13 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
  driver
 From:   CK Hu <ck.hu@mediatek.com>
@@ -52,7 +52,7 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Thu, 7 Jul 2022 15:50:12 +0800
+Date:   Thu, 7 Jul 2022 15:57:07 +0800
 In-Reply-To: <20220701062808.18596-6-rex-bc.chen@mediatek.com>
 References: <20220701062808.18596-1-rex-bc.chen@mediatek.com>
          <20220701062808.18596-6-rex-bc.chen@mediatek.com>
@@ -96,88 +96,38 @@ On Fri, 2022-07-01 at 14:28 +0800, Bo-Chen Chen wrote:
 
 [snip]
 
-> +/*
-> + * We need to handle HPD signal in eDP even though eDP is a always
-> connected
-> + * device. Besides connected status, there is another feature for
-> HPD signal -
-> + * HPD pulse: it presents an IRQ from sink devices to source devices
-> (Refer to
-> + * 5.1.4 of DP1.4 spec).
-> + */
-> +static irqreturn_t mtk_dp_hpd_isr_handler(struct mtk_dp *mtk_dp)
+> +
+> +static int mtk_dp_set_color_depth(struct mtk_dp *mtk_dp)
 > +{
-> +	bool connected;
-> +	bool hpd_connect_sta;
-> +	u32 irq_status = mtk_dp_swirq_get_clear(mtk_dp) |
-> +			 mtk_dp_hwirq_get_clear(mtk_dp);
-> +	struct mtk_dp_train_info *train_info = &mtk_dp->train_info;
+> +	u32 val;
+> +	/* Only support 8 bits currently */
+> +	u32 color_depth = DP_MSA_MISC_8_BPC;
 > +
-> +	if (irq_status & MTK_DP_HPD_INTERRUPT)
-> +		train_info->irq_sta.hpd_inerrupt = true;
-> +	if (irq_status & MTK_DP_HPD_CONNECT)
-> +		hpd_connect_sta = true;
-> +	if (irq_status & MTK_DP_HPD_DISCONNECT)
-> +		train_info->irq_sta.hpd_disconnect = true;
-
-hpd_disconnect is used only in this function, so let it be local
-variable.
-
+> +	mtk_dp->info.depth = color_depth;
 > +
-> +	if (!irq_status)
-> +		return IRQ_HANDLED;
-
-Move this to top of this function.
-
+> +	/* Update MISC0 */
+> +	mtk_dp_update_bits(mtk_dp, MTK_DP_ENC0_P0_3034,
+> +			   color_depth, DP_TEST_BIT_DEPTH_MASK);
 > +
-> +	connected = mtk_dp_plug_state(mtk_dp);
-> +	if (connected || !train_info->cable_plugged_in)
-> +		train_info->irq_sta.hpd_disconnect  = false;
+> +	switch (color_depth) {
 
-The truth table of (irq_status & MTK_DP_HPD_DISCONNECT, connected,
-cable_plugged_in, hpd_disconnect) is
-
-0 0 0 0
-0 0 1 0
-0 1 0 0
-0 1 1 0
-1 0 0 0
-1 0 1 1
-1 1 0 0
-1 1 1 0
-
-So the only case that hpd_disconnect is true is
-
-(irq_status & MTK_DP_HPD_DISCONNECT) && !connected && train_info-
->cable_plugged_in)
-
-And train_info->cable_plugged_in is the previous status. The previous
-status is connected. And irq_status and connected is the new status.
-The new status is disconnected.
-
-I have a question. Why we need both irq_status and connected for new
-status? I think connected is enough for new status, so we could ignore
-irq_status.
+Drop the switch because color_depth is always DP_MSA_MISC_8_BPC.
 
 Regards,
 CK
 
-> +	else if (!connected || train_info->cable_plugged_in)
-> +		hpd_connect_sta = false;
-> +
-> +	if (!(hpd_connect_sta || train_info->irq_sta.hpd_disconnect))
-> +		return IRQ_WAKE_THREAD;
-> +
-> +	if (hpd_connect_sta) {
-> +		hpd_connect_sta = false;
-> +		train_info->cable_plugged_in = true;
-> +	} else {
-> +		train_info->irq_sta.hpd_disconnect = false;
-> +		train_info->cable_plugged_in = false;
+> +	case DP_MSA_MISC_8_BPC:
+> +		val = VIDEO_COLOR_DEPTH_DP_ENC0_P0_8BIT;
+> +		break;
+> +	default:
+> +		drm_warn(mtk_dp->drm_dev, "Unsupported color depth
+> %d\n",
+> +			 color_depth);
+> +		return -EINVAL;
 > +	}
-> +	train_info->cable_state_change = true;
 > +
-> +	return IRQ_WAKE_THREAD;
+> +	mtk_dp_update_bits(mtk_dp, MTK_DP_ENC0_P0_303C, val,
+> +			   VIDEO_COLOR_DEPTH_DP_ENC0_P0_MASK);
+> +	return 0;
 > +}
-> +
 

@@ -2,111 +2,80 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32467CCA482
-	for <linux-fbdev@archiver.kernel.org>; Fri,  8 Jul 2022 18:21:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81977C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri,  8 Jul 2022 18:22:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239362AbiGHSVz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 8 Jul 2022 14:21:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41280 "EHLO
+        id S239488AbiGHSWi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 8 Jul 2022 14:22:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41468 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239210AbiGHSVf (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 8 Jul 2022 14:21:35 -0400
-Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be [IPv6:2a02:1800:120:4::f00:13])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6C33C82391
-        for <linux-fbdev@vger.kernel.org>; Fri,  8 Jul 2022 11:21:32 -0700 (PDT)
+        with ESMTP id S239267AbiGHSVq (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 8 Jul 2022 14:21:46 -0400
+Received: from laurent.telenet-ops.be (laurent.telenet-ops.be [IPv6:2a02:1800:110:4::f00:19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A6C6783F05
+        for <linux-fbdev@vger.kernel.org>; Fri,  8 Jul 2022 11:21:38 -0700 (PDT)
 Received: from ramsan.of.borg ([84.195.186.194])
-        by baptiste.telenet-ops.be with bizsmtp
-        id siMU270024C55Sk01iMUmx; Fri, 08 Jul 2022 20:21:30 +0200
+        by laurent.telenet-ops.be with bizsmtp
+        id siMd270044C55Sk01iMdqM; Fri, 08 Jul 2022 20:21:38 +0200
 Received: from rox.of.borg ([192.168.97.57])
         by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <geert@linux-m68k.org>)
-        id 1o9sbX-002fJg-CX; Fri, 08 Jul 2022 20:21:27 +0200
+        id 1o9sbg-002fKm-Is; Fri, 08 Jul 2022 20:21:36 +0200
 Received: from geert by rox.of.borg with local (Exim 4.93)
         (envelope-from <geert@linux-m68k.org>)
-        id 1o9sbW-00BtNW-MT; Fri, 08 Jul 2022 20:21:26 +0200
+        id 1o9sbg-00BtPb-3x; Fri, 08 Jul 2022 20:21:36 +0200
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
 To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         David Airlie <airlied@linux.ie>,
         Daniel Vetter <daniel@ffwll.ch>,
-        =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
-        Gerd Hoffmann <kraxel@redhat.com>
+        Hans de Goede <hdegoede@redhat.com>
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
         Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH 1/3] drm/fourcc: Add missing big-endian XRGB1555 and RGB565 formats
-Date:   Fri,  8 Jul 2022 20:21:07 +0200
-Message-Id: <0744671ac096a12f0d538906bd324efa71b11400.1657300532.git.geert@linux-m68k.org>
+Subject: [PATCH 1/5] drm/modes: parse_cmdline: Handle empty mode name part
+Date:   Fri,  8 Jul 2022 20:21:25 +0200
+Message-Id: <64e2e9b14c26df28908789374253fd12072c26c2.1657301107.git.geert@linux-m68k.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <cover.1657300532.git.geert@linux-m68k.org>
-References: <cover.1657300532.git.geert@linux-m68k.org>
+In-Reply-To: <cover.1657301107.git.geert@linux-m68k.org>
+References: <cover.1657301107.git.geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-As of commit eae06120f1974e1a ("drm: refuse ADDFB2 ioctl for broken
-bigendian drivers"), drivers must set the
-quirk_addfb_prefer_host_byte_order quirk to make the drm_mode_addfb()
-compat code work correctly on big-endian machines.
+If no mode name part was specified, mode_end is zero, and the "ret ==
+mode_end" check does the wrong thing.
 
-While that works fine for big-endian XRGB8888 and ARGB8888, which are
-mapped to the existing little-endian BGRX8888 and BGRA8888 formats, it
-does not work for big-endian XRGB1555 and RGB565, as the latter are not
-listed in the format database.
+Fix this by checking for a non-zero return value instead.
+While at it, skip all named mode handling when mode_end is zero, as it
+is futile.
 
-Fix this by adding the missing formats.  Limit this to big-endian
-platforms, as there is currently no need to support these formats on
-little-endian platforms.
-
-Fixes: 6960e6da9cec3f66 ("drm: fix drm_mode_addfb() on big endian machines.")
+Fixes: 7b1cce760afe38b4 ("drm/modes: parse_cmdline: Allow specifying stand-alone options")
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
-Cirrus is the only driver setting quirk_addfb_prefer_host_byte_order
-and supporting RGB565 or XRGB1555, but no one tried that on big-endian?
-Cirrus does not support DRM_FORMAT_RGB565 | DRM_FORMAT_BIG_ENDIAN
-in cirrus_fb_create, so you cannot get a graphical text console.
+ drivers/gpu/drm/drm_modes.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Do we need these definitions on little-endian platforms, too?
-Would it be better to use "DRM_FORMAT_{XRGB1555,RGB565} |
-DRM_FORMAT_BIG_ENDIAN" instead of "DRM_FORMAT_HOST_{XRGB1555,RGB565}" in
-formats[]?
-
-Alternative, callers could filter out the DRM_FORMAT_BIG_ENDIAN flag
-when calling {,__}drm_format_info().
-
-Advantages:
-  - No need to have separate entries with DRM_FORMAT_BIG_ENDIAN set.
-
-Disadvantages:
-  - {,__}drm_format_info() returns a pointer to a const object,
-    whose .format field won't have the DRM_FORMAT_BIG_ENDIAN flag set,
-    complicating callers,
-  - All callers need to be updated,
-  - It is difficult to know which big-endian formats are really
-    supported, especially as only a few are needed.
----
- drivers/gpu/drm/drm_fourcc.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/gpu/drm/drm_fourcc.c b/drivers/gpu/drm/drm_fourcc.c
-index e09331bb3bc73f21..16a854c9e07fa4b0 100644
---- a/drivers/gpu/drm/drm_fourcc.c
-+++ b/drivers/gpu/drm/drm_fourcc.c
-@@ -190,6 +190,10 @@ const struct drm_format_info *__drm_format_info(u32 format)
- 		{ .format = DRM_FORMAT_BGRA5551,	.depth = 15, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1, .has_alpha = true },
- 		{ .format = DRM_FORMAT_RGB565,		.depth = 16, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
- 		{ .format = DRM_FORMAT_BGR565,		.depth = 16, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
-+#ifdef __BIG_ENDIAN
-+		{ .format = DRM_FORMAT_HOST_XRGB1555,	.depth = 15, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
-+		{ .format = DRM_FORMAT_HOST_RGB565,	.depth = 16, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
-+#endif
- 		{ .format = DRM_FORMAT_RGB888,		.depth = 24, .num_planes = 1, .cpp = { 3, 0, 0 }, .hsub = 1, .vsub = 1 },
- 		{ .format = DRM_FORMAT_BGR888,		.depth = 24, .num_planes = 1, .cpp = { 3, 0, 0 }, .hsub = 1, .vsub = 1 },
- 		{ .format = DRM_FORMAT_XRGB8888,	.depth = 24, .num_planes = 1, .cpp = { 4, 0, 0 }, .hsub = 1, .vsub = 1 },
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 14b746f7ba975954..30a7be97707bfb16 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -1823,9 +1823,9 @@ bool drm_mode_parse_command_line_for_connector(const char *mode_option,
+ 	}
+ 
+ 	/* First check for a named mode */
+-	for (i = 0; i < ARRAY_SIZE(drm_named_modes_whitelist); i++) {
++	for (i = 0; mode_end && i < ARRAY_SIZE(drm_named_modes_whitelist); i++) {
+ 		ret = str_has_prefix(name, drm_named_modes_whitelist[i]);
+-		if (ret == mode_end) {
++		if (ret) {
+ 			if (refresh_ptr)
+ 				return false; /* named + refresh is invalid */
+ 
 -- 
 2.25.1
 

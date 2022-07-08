@@ -2,29 +2,29 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62009CCA47F
-	for <linux-fbdev@archiver.kernel.org>; Fri,  8 Jul 2022 18:21:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB668CCA47F
+	for <linux-fbdev@archiver.kernel.org>; Fri,  8 Jul 2022 18:21:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239299AbiGHSVr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 8 Jul 2022 14:21:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41222 "EHLO
+        id S239310AbiGHSVv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 8 Jul 2022 14:21:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41086 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239200AbiGHSVc (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 8 Jul 2022 14:21:32 -0400
+        with ESMTP id S239141AbiGHSVd (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 8 Jul 2022 14:21:33 -0400
 Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A20FF82385
-        for <linux-fbdev@vger.kernel.org>; Fri,  8 Jul 2022 11:21:30 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E22AD82387
+        for <linux-fbdev@vger.kernel.org>; Fri,  8 Jul 2022 11:21:31 -0700 (PDT)
 Received: from ramsan.of.borg ([84.195.186.194])
         by xavier.telenet-ops.be with bizsmtp
-        id siMU270024C55Sk01iMU6C; Fri, 08 Jul 2022 20:21:30 +0200
+        id siMU270034C55Sk01iMU6D; Fri, 08 Jul 2022 20:21:30 +0200
 Received: from rox.of.borg ([192.168.97.57])
         by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <geert@linux-m68k.org>)
-        id 1o9sbX-002fJc-Ez; Fri, 08 Jul 2022 20:21:27 +0200
+        id 1o9sbX-002fJi-GN; Fri, 08 Jul 2022 20:21:27 +0200
 Received: from geert by rox.of.borg with local (Exim 4.93)
         (envelope-from <geert@linux-m68k.org>)
-        id 1o9sbW-00BtNQ-Kk; Fri, 08 Jul 2022 20:21:26 +0200
+        id 1o9sbW-00BtNk-QD; Fri, 08 Jul 2022 20:21:26 +0200
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
 To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
@@ -36,51 +36,78 @@ To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
         Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH 0/3] drm: Endianness fixes
-Date:   Fri,  8 Jul 2022 20:21:06 +0200
-Message-Id: <cover.1657300532.git.geert@linux-m68k.org>
+Subject: [PATCH 3/3] drm/gud: Fix endianness in gud_xrgb8888_to_color() helper
+Date:   Fri,  8 Jul 2022 20:21:09 +0200
+Message-Id: <b47589ed5d8ca44e0956684412e3f16f3227f887.1657300532.git.geert@linux-m68k.org>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <cover.1657300532.git.geert@linux-m68k.org>
+References: <cover.1657300532.git.geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-	Hi all,
+DRM formats are defined to be little-endian, unless the
+DRM_FORMAT_BIG_ENDIAN flag is set.  Hence when converting from one
+format to another, multi-byte pixel values loaded from memory must be
+converted from little-endian to host-endian.  Conversely, multi-byte
+pixel values written to memory must be converted from host-endian to
+little-endian.  Currently only drm_fb_xrgb8888_to_rgb332_line() includes
+endianness handling.
 
-This patch series contains several endianness fixes for the DRM
-subsystem.
+Fix gud_xrgb8888_to_color() on big-endian platforms by adding the
+missing endianness handling.
 
-This has been tested on ARAnyM using a work-in-progress Atari DRM
-driver, which supports (a.o.) big-endian RGB565 (more info and related
-patches can be found in [1]).
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+Compile-tested only.
 
-Thanks for your comments!
+Interestingly, drm_fb_xrgb8888_to_rgb332() was introduced for GUD,
+and always had correct endiannes handling...
+---
+ drivers/gpu/drm/gud/gud_pipe.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-[1] "[PATCH v3 00/10] drm: Add support for low-color frame buffer formats"
-    https://lore.kernel.org/r/cover.1657294931.git.geert@linux-m68k.org
-
-Geert Uytterhoeven (3):
-  drm/fourcc: Add missing big-endian XRGB1555 and RGB565 formats
-  drm/format-helper: Fix endianness in drm_fb_*_to_*() conversion
-    helpers
-  drm/gud: Fix endianness in gud_xrgb8888_to_color() helper
-
- drivers/gpu/drm/drm_format_helper.c | 80 +++++++++++++++++------------
- drivers/gpu/drm/drm_fourcc.c        |  4 ++
- drivers/gpu/drm/gud/gud_pipe.c      | 14 ++---
- 3 files changed, 58 insertions(+), 40 deletions(-)
-
+diff --git a/drivers/gpu/drm/gud/gud_pipe.c b/drivers/gpu/drm/gud/gud_pipe.c
+index 4873f9799f412e04..d42592f6daab8b2a 100644
+--- a/drivers/gpu/drm/gud/gud_pipe.c
++++ b/drivers/gpu/drm/gud/gud_pipe.c
+@@ -105,7 +105,8 @@ static size_t gud_xrgb8888_to_color(u8 *dst, const struct drm_format_info *forma
+ 	unsigned int bits_per_pixel = 8 / block_width;
+ 	u8 r, g, b, pix, *block = dst; /* Assign to silence compiler warning */
+ 	unsigned int x, y, width;
+-	u32 *pix32;
++	__le32 *sbuf32;
++	u32 pix32;
+ 	size_t len;
+ 
+ 	/* Start on a byte boundary */
+@@ -114,8 +115,8 @@ static size_t gud_xrgb8888_to_color(u8 *dst, const struct drm_format_info *forma
+ 	len = drm_format_info_min_pitch(format, 0, width) * drm_rect_height(rect);
+ 
+ 	for (y = rect->y1; y < rect->y2; y++) {
+-		pix32 = src + (y * fb->pitches[0]);
+-		pix32 += rect->x1;
++		sbuf32 = src + (y * fb->pitches[0]);
++		sbuf32 += rect->x1;
+ 
+ 		for (x = 0; x < width; x++) {
+ 			unsigned int pixpos = x % block_width; /* within byte from the left */
+@@ -126,9 +127,10 @@ static size_t gud_xrgb8888_to_color(u8 *dst, const struct drm_format_info *forma
+ 				*block = 0;
+ 			}
+ 
+-			r = *pix32 >> 16;
+-			g = *pix32 >> 8;
+-			b = *pix32++;
++			pix32 = le32_to_cpu(*sbuf32++);
++			r = pix32 >> 16;
++			g = pix32 >> 8;
++			b = pix32;
+ 
+ 			switch (format->format) {
+ 			case GUD_DRM_FORMAT_XRGB1111:
 -- 
 2.25.1
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds

@@ -2,54 +2,54 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 019FDCCA47B
-	for <linux-fbdev@archiver.kernel.org>; Fri,  8 Jul 2022 20:09:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68562CCA47B
+	for <linux-fbdev@archiver.kernel.org>; Fri,  8 Jul 2022 20:14:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239933AbiGHUJR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 8 Jul 2022 16:09:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39158 "EHLO
+        id S239979AbiGHUO1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 8 Jul 2022 16:14:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42614 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239224AbiGHUJR (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 8 Jul 2022 16:09:17 -0400
-Received: from mail-qt1-f182.google.com (mail-qt1-f182.google.com [209.85.160.182])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 388965FD5;
-        Fri,  8 Jul 2022 13:09:16 -0700 (PDT)
-Received: by mail-qt1-f182.google.com with SMTP id z13so28955788qts.12;
-        Fri, 08 Jul 2022 13:09:16 -0700 (PDT)
+        with ESMTP id S238380AbiGHUO0 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 8 Jul 2022 16:14:26 -0400
+Received: from mail-qt1-f170.google.com (mail-qt1-f170.google.com [209.85.160.170])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6135E2496C;
+        Fri,  8 Jul 2022 13:14:24 -0700 (PDT)
+Received: by mail-qt1-f170.google.com with SMTP id ck6so28955559qtb.7;
+        Fri, 08 Jul 2022 13:14:24 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=g4cN28gLKvnxOr4BZ0S05ExiGP3ONr1wnsZDOx3J0h4=;
-        b=fy0pERHibIWuVogxks19K+OvPgNDgPuVnVUXP/dGxP4CCAbXiBu8sXBgoTKAHOlUAh
-         /0qWzh6e53YIK+yWTUsuLv5mnAM0P/N5QS9XZSvCSZCaJ3dhMWu1mfdNtajW+s8YE8uH
-         0ANX8JK3nsJRFU1rxO3X2MnfHAlVE0SiIPRwXnLNxSdpsu0T+n03bEUSs0cdBF2RInE/
-         MNtBq25AEVgw9YVkQcrDF2H66ZgQBkVkC6pQBrgEOi4NTDLc75gXG5d8xjdEQKun3FF9
-         7gwW+tVrcDuSmNLKd/sJN9aAG8FY2/GpL68pfQZO5Hn61ebAyxJXdq5D8hIZ1ykY4+GD
-         dVFw==
-X-Gm-Message-State: AJIora9jIRu1kPfBPKmpgEIPjfPocWjWMnBKNetqpItPeS66nvA5mH1V
-        x+GWFaeqOHTojln3se+PoPAmi3bte6ztBg==
-X-Google-Smtp-Source: AGRyM1s1qza4+zDp16FWevRs8BRlL8Squ2Gb62GtQsKIVbV9ILmtTCtE9U0HspRiBFoyTRm+Ut8aGQ==
-X-Received: by 2002:a05:622a:38f:b0:305:1ea5:4a7 with SMTP id j15-20020a05622a038f00b003051ea504a7mr4592763qtx.291.1657310954977;
-        Fri, 08 Jul 2022 13:09:14 -0700 (PDT)
-Received: from mail-yw1-f177.google.com (mail-yw1-f177.google.com. [209.85.128.177])
-        by smtp.gmail.com with ESMTPSA id s12-20020a05620a29cc00b006a36b0d7f27sm39620509qkp.76.2022.07.08.13.09.13
+        bh=/zOe+CzPYZZs/hmA7mLwnSYETa9zn5ouTBI7OSu/RXM=;
+        b=B46l2DUVt8IV8Z3vH+VjVlLm1GTPMDQw8nfCx8xoV1G640XPHNgN0nnalQ8Htqd7lH
+         nJZXP1TnwC93xhinWA45GH7FeI2pVL9Yx6wsMgj0nSp5QZXLGmers8Luts2NiwEPlxto
+         GNwJ/1/jjUR+NHm/zRJJiKSl0N94MEk6fkQwJLuFrDYZQKxAGpBapcWhzn0cR//j4H8Q
+         DqzxFFN6d9YckxaV87+wVm6njiVixxKK/ZLn3NIRl8PWwYJmCwtx7ITHsjcQVu518b3b
+         dsn6e0PrJjTxelY5GoNjNivVjuqy2XuWJ/B3fzdAMIOtWtRsIyG4Fj6wcLmIMQXHBjS0
+         /EIw==
+X-Gm-Message-State: AJIora/2tJkSPpvZ+ddzop6WPa8ClgJFEgMV2bIbZpwhfhsI6HexwcWj
+        i+ZioYYY232+1UzS6r2ZN5+CPxLA/XSPxA==
+X-Google-Smtp-Source: AGRyM1sLv6Wj7wNfCmiXzq0SB0ogtFSm+SbnC84MMghTfsS7jwnfNZt/kYjXa5PtzxxL7ruRL46bFA==
+X-Received: by 2002:ac8:5808:0:b0:31b:ef47:38b3 with SMTP id g8-20020ac85808000000b0031bef4738b3mr4537504qtg.510.1657311263352;
+        Fri, 08 Jul 2022 13:14:23 -0700 (PDT)
+Received: from mail-yb1-f180.google.com (mail-yb1-f180.google.com. [209.85.219.180])
+        by smtp.gmail.com with ESMTPSA id j17-20020ac84c91000000b002f39b99f6a4sm23461297qtv.62.2022.07.08.13.14.18
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 08 Jul 2022 13:09:14 -0700 (PDT)
-Received: by mail-yw1-f177.google.com with SMTP id 00721157ae682-3137316bb69so207968357b3.10;
-        Fri, 08 Jul 2022 13:09:13 -0700 (PDT)
-X-Received: by 2002:a0d:dd09:0:b0:31c:e3b9:7442 with SMTP id
- g9-20020a0ddd09000000b0031ce3b97442mr5915415ywe.47.1657310953183; Fri, 08 Jul
- 2022 13:09:13 -0700 (PDT)
+        Fri, 08 Jul 2022 13:14:20 -0700 (PDT)
+Received: by mail-yb1-f180.google.com with SMTP id 136so7761829ybl.5;
+        Fri, 08 Jul 2022 13:14:18 -0700 (PDT)
+X-Received: by 2002:a05:6902:701:b0:66e:a06d:53d7 with SMTP id
+ k1-20020a056902070100b0066ea06d53d7mr5316435ybt.604.1657311257860; Fri, 08
+ Jul 2022 13:14:17 -0700 (PDT)
 MIME-Version: 1.0
-References: <cover.1657301107.git.geert@linux-m68k.org> <64e2e9b14c26df28908789374253fd12072c26c2.1657301107.git.geert@linux-m68k.org>
- <b7d937bc-d7c3-6f7a-047c-fc6e5756a5a0@redhat.com> <CAMuHMdWCz4j5bxKBY-W3zWiCLRc9QP+OKco-haGH_9YUhaROgA@mail.gmail.com>
-In-Reply-To: <CAMuHMdWCz4j5bxKBY-W3zWiCLRc9QP+OKco-haGH_9YUhaROgA@mail.gmail.com>
+References: <cover.1657301107.git.geert@linux-m68k.org> <402dea47269f2e3960946d186ba3cb118066e74a.1657301107.git.geert@linux-m68k.org>
+ <c95724ad-a3b0-2ac8-5413-b971626e7e63@redhat.com>
+In-Reply-To: <c95724ad-a3b0-2ac8-5413-b971626e7e63@redhat.com>
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Fri, 8 Jul 2022 22:09:00 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWmBsakEndNi0+r3NZ2xLkVt6ZhAoJGS2eWhcc1Bi20HQ@mail.gmail.com>
-Message-ID: <CAMuHMdWmBsakEndNi0+r3NZ2xLkVt6ZhAoJGS2eWhcc1Bi20HQ@mail.gmail.com>
-Subject: Re: [PATCH 1/5] drm/modes: parse_cmdline: Handle empty mode name part
+Date:   Fri, 8 Jul 2022 22:14:06 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdU4tmYfnc96SGKuvdKC_JGNOHUmmNwrN4DdOmw0LijPvA@mail.gmail.com>
+Message-ID: <CAMuHMdU4tmYfnc96SGKuvdKC_JGNOHUmmNwrN4DdOmw0LijPvA@mail.gmail.com>
+Subject: Re: [PATCH 2/5] drm/modes: Extract drm_mode_parse_cmdline_named_mode()
 To:     Hans de Goede <hdegoede@redhat.com>
 Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
@@ -67,43 +67,42 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Hi Hans,
 
-On Fri, Jul 8, 2022 at 10:06 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Fri, Jul 8, 2022 at 9:28 PM Hans de Goede <hdegoede@redhat.com> wrote:
-> > On 7/8/22 20:21, Geert Uytterhoeven wrote:
-> > > If no mode name part was specified, mode_end is zero, and the "ret ==
-> > > mode_end" check does the wrong thing.
-> > >
-> > > Fix this by checking for a non-zero return value instead.
+On Fri, Jul 8, 2022 at 9:46 PM Hans de Goede <hdegoede@redhat.com> wrote:
+> On 7/8/22 20:21, Geert Uytterhoeven wrote:
+> > Extract the code to check for a named mode parameter into its own
+> > function, to streamline the main parsing flow.
 > >
-> > Which is wrong to do, since now if you have e.g. a mode list
-> > with:
-> >
-> > "dblntsc",
-> > "dblntsc-ff"
-> >
-> > in there and the cmdline contains "dblntsc-ff" then you
-> > will already stop with a (wrong!) match at "dblntsc".
->
-> It indeed behaves that way, and did so before, as str_has_prefix()
-> checks for a matching prefix, and thus may never get to the full
-> match.  However, can we change that to an exact match, without
-> introducing regressions?
-> This can be avoided by reverse-sorting the modelist (or iterating
-> backwards through a sorted modelist), though.
->
-> > > While at it, skip all named mode handling when mode_end is zero, as it
-> > > is futile.
-> >
-> > AFAICT, this is actually what needs to be done to fix this, while keeping
-> > the ret == mode_end check.
->
-> "ret == mode_end" or "ret" doesn't matter (except for the special
-> case of mode_end is zero), as str_has_prefix() returns either zero or
-> the length of the prefix.  Hence it never returns a non-zero value
-> smaller than the length of the prefix.
+> > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Ignore that.  I finally saw what's really happening.
-And I do agree with your comment.
+> > --- a/drivers/gpu/drm/drm_modes.c
+> > +++ b/drivers/gpu/drm/drm_modes.c
+> > @@ -1749,6 +1749,30 @@ static const char * const drm_named_modes_whitelist[] = {
+> >       "PAL",
+> >  };
+> >
+> > +static int drm_mode_parse_cmdline_named_mode(const char *name,
+> > +                                          unsigned int length,
+> > +                                          bool refresh,
+> > +                                          struct drm_cmdline_mode *mode)
+> > +{
+> > +     unsigned int i;
+> > +     int ret;
+> > +
+> > +     for (i = 0; i < ARRAY_SIZE(drm_named_modes_whitelist); i++) {
+> > +             ret = str_has_prefix(name, drm_named_modes_whitelist[i]);
+> > +             if (!ret)
+>
+> As discussed in my review of 1/5 this needs to become:
+>
+>                 if (ret != length)
+> > +                     continue;
+
+Agreed.
+
+> Which renders my other comment on this patch (length not being used) mute.
+
+/me wonders if he would have seen the light earlier if gcc would have
+warned about that...
 
 Gr{oetje,eeting}s,
 

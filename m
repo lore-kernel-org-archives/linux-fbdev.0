@@ -2,29 +2,29 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD329CCA486
-	for <linux-fbdev@archiver.kernel.org>; Fri,  8 Jul 2022 18:21:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A282C43334
+	for <linux-fbdev@archiver.kernel.org>; Fri,  8 Jul 2022 18:21:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238386AbiGHSVR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S238990AbiGHSVR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Fri, 8 Jul 2022 14:21:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41018 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41024 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238990AbiGHSVO (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 8 Jul 2022 14:21:14 -0400
-Received: from albert.telenet-ops.be (albert.telenet-ops.be [IPv6:2a02:1800:110:4::f00:1a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0616E82398
+        with ESMTP id S239067AbiGHSVP (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 8 Jul 2022 14:21:15 -0400
+Received: from michel.telenet-ops.be (michel.telenet-ops.be [IPv6:2a02:1800:110:4::f00:18])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EE65482391
         for <linux-fbdev@vger.kernel.org>; Fri,  8 Jul 2022 11:21:10 -0700 (PDT)
 Received: from ramsan.of.borg ([84.195.186.194])
-        by albert.telenet-ops.be with bizsmtp
-        id siM72700H4C55Sk06iM7W1; Fri, 08 Jul 2022 20:21:08 +0200
+        by michel.telenet-ops.be with bizsmtp
+        id siM72700Q4C55Sk06iM7fm; Fri, 08 Jul 2022 20:21:08 +0200
 Received: from rox.of.borg ([192.168.97.57])
         by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <geert@linux-m68k.org>)
-        id 1o9sbD-002fGe-0N; Fri, 08 Jul 2022 20:21:07 +0200
+        id 1o9sbD-002fGc-0Q; Fri, 08 Jul 2022 20:21:07 +0200
 Received: from geert by rox.of.borg with local (Exim 4.93)
         (envelope-from <geert@linux-m68k.org>)
-        id 1o9sbC-00BtJN-As; Fri, 08 Jul 2022 20:21:06 +0200
+        id 1o9sbC-00BtJ7-8Y; Fri, 08 Jul 2022 20:21:06 +0200
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
 To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
@@ -35,9 +35,9 @@ Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
         Geert Uytterhoeven <geert@linux-m68k.org>,
         Javier Martinez Canillas <javierm@redhat.com>
-Subject: [PATCH v3 03/10] drm/client: Use actual bpp when allocating frame buffers
-Date:   Fri,  8 Jul 2022 20:20:48 +0200
-Message-Id: <eabcf4f298184dabe46823fcf5ceffa1da0ec7ef.1657294931.git.geert@linux-m68k.org>
+Subject: [PATCH v3 01/10] drm/fourcc: Add drm_format_info_bpp() helper
+Date:   Fri,  8 Jul 2022 20:20:46 +0200
+Message-Id: <1cae5ebc28513ec1c91c66b00647ce3ca23bfba7.1657294931.git.geert@linux-m68k.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <cover.1657294931.git.geert@linux-m68k.org>
 References: <cover.1657294931.git.geert@linux-m68k.org>
@@ -47,49 +47,65 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-When allocating a frame buffer, the number of bits per pixel needed is
-derived from the deprecated drm_format_info.cpp[] field.  While this may
-work for formats using less than 8 bits per pixel, it does lead to a
-large overallocation.
-
-Reduce memory consumption by using the actual number of bits per pixel
-instead.
+Add a helper to retrieve the actual number of bits per pixel for a
+plane, taking into account the number of characters and pixels per
+block for tiled formats.
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
 v3:
   - Add Reviewed-by,
 
 v2:
-  - Add Acked-by.
+  - Move up.
 ---
- drivers/gpu/drm/drm_client.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/drm_fourcc.c | 19 +++++++++++++++++++
+ include/drm/drm_fourcc.h     |  1 +
+ 2 files changed, 20 insertions(+)
 
-diff --git a/drivers/gpu/drm/drm_client.c b/drivers/gpu/drm/drm_client.c
-index af3b7395bf6932f7..2b230b4d69423752 100644
---- a/drivers/gpu/drm/drm_client.c
-+++ b/drivers/gpu/drm/drm_client.c
-@@ -264,7 +264,7 @@ drm_client_buffer_create(struct drm_client_dev *client, u32 width, u32 height, u
+diff --git a/drivers/gpu/drm/drm_fourcc.c b/drivers/gpu/drm/drm_fourcc.c
+index 07741b678798b0f1..cf48ea0b2cb70ba8 100644
+--- a/drivers/gpu/drm/drm_fourcc.c
++++ b/drivers/gpu/drm/drm_fourcc.c
+@@ -370,6 +370,25 @@ unsigned int drm_format_info_block_height(const struct drm_format_info *info,
+ }
+ EXPORT_SYMBOL(drm_format_info_block_height);
  
- 	dumb_args.width = width;
- 	dumb_args.height = height;
--	dumb_args.bpp = info->cpp[0] * 8;
-+	dumb_args.bpp = drm_format_info_bpp(info, 0);
- 	ret = drm_mode_create_dumb(dev, &dumb_args, client->file);
- 	if (ret)
- 		goto err_delete;
-@@ -373,7 +373,7 @@ static int drm_client_buffer_addfb(struct drm_client_buffer *buffer,
- 	int ret;
++/**
++ * drm_format_info_bpp - number of bits per pixel
++ * @info: pixel format info
++ * @plane: plane index
++ *
++ * Returns:
++ * The actual number of bits per pixel, depending on the plane index.
++ */
++unsigned int drm_format_info_bpp(const struct drm_format_info *info, int plane)
++{
++	if (!info || plane < 0 || plane >= info->num_planes)
++		return 0;
++
++	return info->char_per_block[plane] * 8 /
++	       (drm_format_info_block_width(info, plane) *
++		drm_format_info_block_height(info, plane));
++}
++EXPORT_SYMBOL(drm_format_info_bpp);
++
+ /**
+  * drm_format_info_min_pitch - computes the minimum required pitch in bytes
+  * @info: pixel format info
+diff --git a/include/drm/drm_fourcc.h b/include/drm/drm_fourcc.h
+index 22aa64d07c7905e2..3800a7ad7f0cda7a 100644
+--- a/include/drm/drm_fourcc.h
++++ b/include/drm/drm_fourcc.h
+@@ -313,6 +313,7 @@ unsigned int drm_format_info_block_width(const struct drm_format_info *info,
+ 					 int plane);
+ unsigned int drm_format_info_block_height(const struct drm_format_info *info,
+ 					  int plane);
++unsigned int drm_format_info_bpp(const struct drm_format_info *info, int plane);
+ uint64_t drm_format_info_min_pitch(const struct drm_format_info *info,
+ 				   int plane, unsigned int buffer_width);
  
- 	info = drm_format_info(format);
--	fb_req.bpp = info->cpp[0] * 8;
-+	fb_req.bpp = drm_format_info_bpp(info, 0);
- 	fb_req.depth = info->depth;
- 	fb_req.width = width;
- 	fb_req.height = height;
 -- 
 2.25.1
 

@@ -2,94 +2,110 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54324C43334
-	for <linux-fbdev@archiver.kernel.org>; Sat,  9 Jul 2022 13:38:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F856C43334
+	for <linux-fbdev@archiver.kernel.org>; Sun, 10 Jul 2022 13:00:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229496AbiGINih (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 9 Jul 2022 09:38:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51082 "EHLO
+        id S229579AbiGJNA0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 10 Jul 2022 09:00:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41954 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229535AbiGINig (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 9 Jul 2022 09:38:36 -0400
-Received: from mailrelay3-1.pub.mailoutpod1-cph3.one.com (mailrelay3-1.pub.mailoutpod1-cph3.one.com [46.30.210.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 246E9B1D5
-        for <linux-fbdev@vger.kernel.org>; Sat,  9 Jul 2022 06:38:32 -0700 (PDT)
+        with ESMTP id S229469AbiGJNAZ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Sun, 10 Jul 2022 09:00:25 -0400
+Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5FE41642C;
+        Sun, 10 Jul 2022 06:00:24 -0700 (PDT)
+Received: by mail-wm1-x329.google.com with SMTP id o19-20020a05600c511300b003a2de48b4bbso2212771wms.5;
+        Sun, 10 Jul 2022 06:00:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=rsa1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=XmkcfsDh57jd1J2jvUdL+BZKRd9qAe04YaTvDGQ4b5o=;
-        b=Zo5LqVUaSgfH1W5v9cXv82HIf2UTJGKnsGbh9Q5tzQ5DCQVt79EHEiPIYgGqC+LE6cN0xxGkryJDx
-         Sp02VZSmTBldxoUo61et9Qo2JEd9uUmzNkIIKYq559XURbuO8uDvFwZs+u32a+rWhq/PQyS+SnSw89
-         HimmnJkdp5Ju4TTcVkXNMc+L2IeyHNsCPV2femt6bvayQs9DetIkw6DnJsrkIu6ezP+gWpDC4pnLst
-         MmlDrPUqgq5sjtMzIVIKVwzsiOI0OI5XKk+7BUokSL7RTJio7Y5RPlUoZCByQ+PeVKO4Mp7rt24cRZ
-         p4HI8rrjcytPKML9EX1DQLjkw3fSQDg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=ed1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=XmkcfsDh57jd1J2jvUdL+BZKRd9qAe04YaTvDGQ4b5o=;
-        b=6o3gycdRpEHGoNrAwURicgyEGwLg1iuyxseqGoOk4kRzw82swxTrUITH5wBxDFk1KMBrTPUNWvZOh
-         dt2Z1nrAQ==
-X-HalOne-Cookie: aedeed65c7618423d082425d94c8b2f248725526
-X-HalOne-ID: 6b4eb816-ff8c-11ec-be7e-d0431ea8bb03
-Received: from mailproxy2.cst.dirpod3-cph3.one.com (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-        by mailrelay3.pub.mailoutpod1-cph3.one.com (Halon) with ESMTPSA
-        id 6b4eb816-ff8c-11ec-be7e-d0431ea8bb03;
-        Sat, 09 Jul 2022 13:38:30 +0000 (UTC)
-Date:   Sat, 9 Jul 2022 15:38:28 +0200
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>, linux-fbdev@vger.kernel.org,
-        linux-m68k@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 00/10] drm: Add support for low-color frame buffer
- formats
-Message-ID: <YsmE1D8lGp4XKs99@ravnborg.org>
-References: <cover.1657294931.git.geert@linux-m68k.org>
+        d=gmail.com; s=20210112;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=URkBqTaJYZiBKaHkMPyuusVxdAfWQV7wmB1QtdU3dqc=;
+        b=H28NNWSz9kCHmESG/8FbsQ+m+Jzxy0qUH0fyz1nTVT1VnfBfH5jiuEPkD53FXHjSzn
+         B/1dX86SUM+LrKgLI+OYmFPx82FdsB7V7yt8sf5XzwbtSzPbPhDXFQePbTiQi3lyyDyP
+         gMD3/4c+Za4D22NF6y4FK7z/NMbKVISAdm+vnmThUgp797/YBqaFhAmGGecJT+SZcrvc
+         nZn0bWReEM8Dfarg2Hm6x7djFxVUPsFttf22okgYsWEwwHRp6hldOhLKJUHUfEK3zrDn
+         HiqibjwQLKcAMiflSho4wiD/UVJX6XpYIzFXuACDbKgxRHdZNZO8RPbciEo4gE2fs92g
+         WkIw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=URkBqTaJYZiBKaHkMPyuusVxdAfWQV7wmB1QtdU3dqc=;
+        b=KojpgyeKoH2cLjkG0xmtD2aPZuhOAbdEo9wkqDXnqebBrOz6PArZzIebMTDwVDX8d6
+         RC6/BWrLOZXiorJmKMaIlCmdg1W9VwNqDPmTeaphieCauXNkyvq7nS7W7qzZ1L0+PQzK
+         rr5hf8rvjVyxSt1DZIzQ2by+GrBnVVtwNi6Qa4YdKqbrT2pEvwgpfZp4wvxkVT6Q0fbK
+         NvIFgWBWckZnjZYcR9RRfBgqTszrAIfRxRYNLm8ve3hl0XkhB6MyO474UlR3iKoTCHJS
+         3o0++BgyGJJI8lFE4CvKmLRDAzIgAsGASjI1F48Vjhx/EBLtAhGwq6coeAlL/hJIUBiG
+         WycA==
+X-Gm-Message-State: AJIora8Vl5Rx5OHe8cHufP82IIaMPm/3nKqUHfDyTKo9jQvejNaOH0gH
+        zsI7VcNenxAAyWwtNXzNv1M=
+X-Google-Smtp-Source: AGRyM1vsTGSbf96VTwX0XNh02DsOlmP27A9LgNPMyEn1EV6Jd3PuivbWE971HAL4v79NdOzdGIsDng==
+X-Received: by 2002:a05:600c:4f4d:b0:3a1:98de:abde with SMTP id m13-20020a05600c4f4d00b003a198deabdemr10439595wmq.36.1657458022784;
+        Sun, 10 Jul 2022 06:00:22 -0700 (PDT)
+Received: from mandalorian.koija ([2a02:587:4ba0:ca00:f1ee:516:279c:45e9])
+        by smtp.gmail.com with ESMTPSA id j2-20020a05600c2b8200b0039c8a22554bsm3876989wmc.27.2022.07.10.06.00.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 10 Jul 2022 06:00:22 -0700 (PDT)
+Date:   Sun, 10 Jul 2022 16:00:19 +0300
+From:   Christos Kollintzas <c.kollintzas.92@gmail.com>
+To:     Greg KH <gregkh@linuxfoundation.org>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: fbtft: replace udelay with usleep_range
+Message-ID: <YsrNY+uU8tUXJiPV@mandalorian.koija>
+References: <YslTQLhM7GSaGXki@mandalorian.koija>
+ <YslY25NnW6O5Tn+p@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <cover.1657294931.git.geert@linux-m68k.org>
+In-Reply-To: <YslY25NnW6O5Tn+p@kroah.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Geert,
-
-On Fri, Jul 08, 2022 at 08:20:45PM +0200, Geert Uytterhoeven wrote:
-> 	Hi all,
+On Sat, Jul 09, 2022 at 12:30:51PM +0200, Greg KH wrote:
+> On Sat, Jul 09, 2022 at 01:06:56PM +0300, Christos Kollintzas wrote:
+> > Adhere to Linux kernel coding style.
+> > 
+> > Reported by checkpatch:
+> > 
+> > CHECK: usleep_range is preferred over udelay
+> > 
+> > Signed-off-by: Christos Kollintzas <c.kollintzas.92@gmail.com>
+> > ---
+> >  drivers/staging/fbtft/fb_upd161704.c | 18 +++++++++---------
+> >  1 file changed, 9 insertions(+), 9 deletions(-)
+> > 
+> > diff --git a/drivers/staging/fbtft/fb_upd161704.c b/drivers/staging/fbtft/fb_upd161704.c
+> > index c680160d6380..eeafbab4ace1 100644
+> > --- a/drivers/staging/fbtft/fb_upd161704.c
+> > +++ b/drivers/staging/fbtft/fb_upd161704.c
+> > @@ -32,27 +32,27 @@ static int init_display(struct fbtft_par *par)
+> >  
+> >  	/* oscillator start */
+> >  	write_reg(par, 0x003A, 0x0001);	/*Oscillator 0: stop, 1: operation */
+> > -	udelay(100);
+> > +	usleep_range(100, 110);
 > 
-> A long outstanding issue with the DRM subsystem has been the lack of
-> support for low-color displays, as used typically on older desktop
-> systems, and on small embedded displays.
-
-IT is super to have this addressed - thanks!
-
+> When doing these types of changes, you really need access to the
+> hardware involved in order to be able to properly test it.
 > 
-> This patch series adds support for color-indexed frame buffer formats
-> with 2, 4, and 16 colors.  It has been tested on ARAnyM using a
-> work-in-progress Atari DRM driver supporting 2, 4, 16, 256, and 65536
-> colors, with text console operation, fbtest, and modetest.
+> Especially for this type of function which is trying to do timing
+> changes which the hardware requires.
 > 
-> Overview:
->   - Patch 1 introduces a helper, to be used by later patches in the
->     series,
->   - Patch 2 introduces a flag to indicate color-indexed formats,
->   - Patches 3 and 4 correct calculations of bits per pixel for sub-byte
->     pixel formats,
->   - Patches 5 and 6 introduce the new C[124] formats,
->   - Patch 7 fixes an untested code path,
->   - Patch 8 documents the use of "red" for light-on-dark displays,
->   - Patches 9 and 10 add more fourcc codes for light-on-dark and
->     dark-on-light frame buffer formats, which may be useful for e.g. the
->     ssd130x and repaper drivers.
+> Did you test this on the real hardware and did it work properly?
+> 
+> thanks,
+> 
+> greg k-h
 
-Applied all patches to drm-misc (drm-misc-next), including the last two
-RFC patches as we then have the formats ready when a user pops up.
+I did not.
 
-	Sam
+I will try to find the hardware and send a patch that is
+properly tested.
+
+thanks,
+
+Christos Kollintzas

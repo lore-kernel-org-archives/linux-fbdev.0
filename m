@@ -2,166 +2,100 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 351E1C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Jul 2022 12:08:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADE2FC433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Jul 2022 15:23:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231441AbiGKMIZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 11 Jul 2022 08:08:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34900 "EHLO
+        id S232130AbiGKPXP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 11 Jul 2022 11:23:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47950 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231473AbiGKMIX (ORCPT
+        with ESMTP id S232070AbiGKPXF (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 11 Jul 2022 08:08:23 -0400
-Received: from mail-qv1-f45.google.com (mail-qv1-f45.google.com [209.85.219.45])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E72A422DA;
-        Mon, 11 Jul 2022 05:08:20 -0700 (PDT)
-Received: by mail-qv1-f45.google.com with SMTP id l2so195822qvt.2;
-        Mon, 11 Jul 2022 05:08:20 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=autvjFUd9BwlA5CMi8F4/VEnOxd5KyEX6z2vFI+rQes=;
-        b=oqI0iuaF2H2wGh4NeYKOXQJur/+z7Kurz6FeQt10e7AzhB6y5YDkhTdH5Pq6jqFp8z
-         DjB/2Gue8X4XPKi0mY1cLspXoQhrCQScUynXJ67mrJ5Hl0qWsBbXQyJVXvyrDhy4jQza
-         Jzhs31nCeQZBSPDn1t4GyiesWVUapN9/5gkcCsTxs2sTWwdqL03IhfDTe90wjAMoixId
-         WXnOnKfk+eHnacx8ikS7WyJOLcoBGhf62HVLMc9ok2yVHG6FxAvaNhGPrprGgEfj7Tdq
-         wLfRCDs6kgM0hebuUCZ1j22XeofETq62UXQDBJkFmi4NrJP65ViCD7dcd6YZR+oxTa0w
-         r7/g==
-X-Gm-Message-State: AJIora8wcDxzAS2UmthzPHMu9+b0ky6Rfrl4l+gBdHKqRDUoGOExDXbS
-        cRCCAKpCJ+o5ULPWdT0w8xrDlIUF05H7EA==
-X-Google-Smtp-Source: AGRyM1vnORJM/tw2Zoj0iuIU/ZNQnkpGgvGguYGN/eEUpUKb38yF55p1zcQBUWdZLnFzo7s1yM3bPw==
-X-Received: by 2002:a05:6214:e87:b0:473:129e:224a with SMTP id hf7-20020a0562140e8700b00473129e224amr13093540qvb.29.1657541298877;
-        Mon, 11 Jul 2022 05:08:18 -0700 (PDT)
-Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com. [209.85.128.176])
-        by smtp.gmail.com with ESMTPSA id h129-20020a379e87000000b006b55df40976sm5911999qke.27.2022.07.11.05.08.18
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 11 Jul 2022 05:08:18 -0700 (PDT)
-Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-31bf3656517so46180487b3.12;
-        Mon, 11 Jul 2022 05:08:18 -0700 (PDT)
-X-Received: by 2002:a81:9209:0:b0:31c:b1b7:b063 with SMTP id
- j9-20020a819209000000b0031cb1b7b063mr19178774ywg.383.1657541298151; Mon, 11
- Jul 2022 05:08:18 -0700 (PDT)
+        Mon, 11 Jul 2022 11:23:05 -0400
+Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [80.241.56.152])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D266A67173;
+        Mon, 11 Jul 2022 08:23:04 -0700 (PDT)
+Received: from smtp1.mailbox.org (smtp1.mailbox.org [10.196.197.1])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange ECDHE (P-384) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4LhSLn0wMSz9sRL;
+        Mon, 11 Jul 2022 17:22:57 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+        t=1657552977;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=q9hE3HnYhAeCIgj3jLBbqvqbhLR0TkB/Owq0iN72XDA=;
+        b=ct7gyZRio9taxrgSLPGBH+A6BcG8r6RQvKbzFxjvK8ksp2xTH4Q2GcfBzFAUWOwS7LXS2U
+        ivhkO9UoMcfxE2piw6CRrLLq7u/eRyY84GWV/35CEqpV5yQA1o9G0sUIoA9Iogx9AiHr+0
+        11v/ALkHU8/Ln77AuZAJIrZT18KoJQuQi+QxSghVoyvawY0P+0H+09pROxFHlyWe3+2GIR
+        kZDEoX2mlN8Khixbcn9P0GoMTLpbm3Apont7BUVKI/Uj//uPFfxX4oI+BJQR4RALsFS0Bd
+        K5YkJyxyf6fs9oVtFF4vuSboj6dUxUiJwiwHq++FflHtZcWcsv2EjRTohwVr2g==
+Message-ID: <96a87833-d878-dde9-e335-9ea51a4ba406@mailbox.org>
+Date:   Mon, 11 Jul 2022 17:22:54 +0200
 MIME-Version: 1.0
-References: <cover.1657301107.git.geert@linux-m68k.org> <68923c8a129b6c2a70b570103679a1cf7876bbc2.1657301107.git.geert@linux-m68k.org>
- <ef2aada2-96e4-c2e4-645f-39bc9094e93a@suse.de> <20220711093513.wilv6e6aqcuyg52w@houat>
- <43d75dce-988a-0a95-cb0a-0d0a7c81ca63@suse.de> <20220711114206.sawqdl54ibuxsxp4@houat>
- <CAMuHMdXbFHWWQoryXihVsSrC5ZzHEV-YYR_eLvNmSAw8Y61TQg@mail.gmail.com> <20220711120243.v6lwoynqigle2aot@houat>
-In-Reply-To: <20220711120243.v6lwoynqigle2aot@houat>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 11 Jul 2022 14:08:06 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXhmf5TudQ6a1PUVV8KXff6JjgMmZOmOWVb2qW6eXF7Ow@mail.gmail.com>
-Message-ID: <CAMuHMdXhmf5TudQ6a1PUVV8KXff6JjgMmZOmOWVb2qW6eXF7Ow@mail.gmail.com>
-Subject: Re: [PATCH 4/5] drm/modes: Add support for driver-specific named modes
-To:     Maxime Ripard <maxime@cerno.tech>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+Subject: Re: [PATCH 1/3] drm/fourcc: Add missing big-endian XRGB1555 and
+ RGB565 formats
+Content-Language: en-CA
+To:     Geert Uytterhoeven <geert@linux-m68k.org>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
         David Airlie <airlied@linux.ie>,
         Daniel Vetter <daniel@ffwll.ch>,
-        Hans de Goede <hdegoede@redhat.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        "Linux/m68k" <linux-m68k@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        Gerd Hoffmann <kraxel@redhat.com>
+Cc:     linux-fbdev@vger.kernel.org, linux-m68k@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+References: <cover.1657300532.git.geert@linux-m68k.org>
+ <0744671ac096a12f0d538906bd324efa71b11400.1657300532.git.geert@linux-m68k.org>
+From:   =?UTF-8?Q?Michel_D=c3=a4nzer?= <michel.daenzer@mailbox.org>
+In-Reply-To: <0744671ac096a12f0d538906bd324efa71b11400.1657300532.git.geert@linux-m68k.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-MBO-RS-META: ux7rkbi3t3o5yq3q4t1npq168ctqzdf5
+X-MBO-RS-ID: 86e332ecdac076a1b65
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Maxime,
+On 2022-07-08 20:21, Geert Uytterhoeven wrote:
+> As of commit eae06120f1974e1a ("drm: refuse ADDFB2 ioctl for broken
+> bigendian drivers"), drivers must set the
+> quirk_addfb_prefer_host_byte_order quirk to make the drm_mode_addfb()
+> compat code work correctly on big-endian machines.
+> 
+> While that works fine for big-endian XRGB8888 and ARGB8888, which are
+> mapped to the existing little-endian BGRX8888 and BGRA8888 formats, it
+> does not work for big-endian XRGB1555 and RGB565, as the latter are not
+> listed in the format database.
+> 
+> Fix this by adding the missing formats.  Limit this to big-endian
+> platforms, as there is currently no need to support these formats on
+> little-endian platforms.
+> 
+> Fixes: 6960e6da9cec3f66 ("drm: fix drm_mode_addfb() on big endian machines.")
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> ---
+> Cirrus is the only driver setting quirk_addfb_prefer_host_byte_order
+> and supporting RGB565 or XRGB1555, but no one tried that on big-endian?
+> Cirrus does not support DRM_FORMAT_RGB565 | DRM_FORMAT_BIG_ENDIAN
+> in cirrus_fb_create, so you cannot get a graphical text console.
+> 
+> Do we need these definitions on little-endian platforms, too?
+> Would it be better to use "DRM_FORMAT_{XRGB1555,RGB565} |
+> DRM_FORMAT_BIG_ENDIAN" instead of "DRM_FORMAT_HOST_{XRGB1555,RGB565}" in
+> formats[]?
 
-On Mon, Jul 11, 2022 at 2:02 PM Maxime Ripard <maxime@cerno.tech> wrote:
-> On Mon, Jul 11, 2022 at 01:59:28PM +0200, Geert Uytterhoeven wrote:
-> > On Mon, Jul 11, 2022 at 1:42 PM Maxime Ripard <maxime@cerno.tech> wrote:
-> > > On Mon, Jul 11, 2022 at 01:11:14PM +0200, Thomas Zimmermann wrote:
-> > > > Am 11.07.22 um 11:35 schrieb Maxime Ripard:
-> > > > > On Mon, Jul 11, 2022 at 11:03:38AM +0200, Thomas Zimmermann wrote:
-> > > > > > Am 08.07.22 um 20:21 schrieb Geert Uytterhoeven:
-> > > > > > > The mode parsing code recognizes named modes only if they are explicitly
-> > > > > > > listed in the internal whitelist, which is currently limited to "NTSC"
-> > > > > > > and "PAL".
-> > > > > > >
-> > > > > > > Provide a mechanism for drivers to override this list to support custom
-> > > > > > > mode names.
-> > > > > > >
-> > > > > > > Ideally, this list should just come from the driver's actual list of
-> > > > > > > modes, but connector->probed_modes is not yet populated at the time of
-> > > > > > > parsing.
-> > > > > >
-> > > > > > I've looked for code that uses these names, couldn't find any. How is this
-> > > > > > being used in practice? For example, if I say "PAL" on the command line, is
-> > > > > > there DRM code that fills in the PAL mode parameters?
-> > > > >
-> > > > > We have some code to deal with this in sun4i:
-> > > > > https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/sun4i/sun4i_tv.c#L292
-> > > > >
-> > > > > It's a bit off topic, but for TV standards, I'm still not sure what the
-> > > > > best course of action is. There's several interactions that make this a
-> > > > > bit troublesome:
-> > > > >
-> > > > >    * Some TV standards differ by their mode (ie, PAL vs NSTC), but some
-> > > > >      other differ by parameters that are not part of drm_display_mode
-> > > > >      (NTSC vs NSTC-J where the only difference is the black and blanking
-> > > > >      signal levels for example).
-> > > > >
-> > > > >    * The mode names allow to provide a fairly convenient way to add that
-> > > > >      extra information, but the userspace is free to create its own mode
-> > > > >      and might omit the mode name entirely.
-> > > > >
-> > > > > So in the code above, if the name has been preserved we match by name,
-> > > > > but we fall back to matching by mode if it hasn't been, which in this
-> > > > > case means that we have no way to differentiate between NTSC, NTSC-J,
-> > > > > PAL-M in this case.
-> > > > >
-> > > > > We have some patches downstream for the RaspberryPi that has the TV
-> > > > > standard as a property. There's a few extra logic required for the
-> > > > > userspace (like setting the PAL property, with the NTSC mode) so I'm not
-> > > > > sure it's preferable.
-> > > > >
-> > > > > Or we could do something like a property to try that standard, and
-> > > > > another that reports the one we actually chose.
-> > > > >
-> > > > > > And another question I have is whether this whitelist belongs into the
-> > > > > > driver at all. Standard modes exist independent from drivers or hardware.
-> > > > > > Shouldn't there simply be a global list of all possible mode names? Drivers
-> > > > > > would filter out the unsupported modes anyway.
-> > > > >
-> > > > > We should totally do something like that, yeah
-> > > >
-> > > > That sun code already looks like sometihng the DRM core/helpers should be
-> > > > doing. And if we want to support named modes well, there's a long list of
-> > > > modes in Wikipedia.
-> > > >
-> > > > https://en.wikipedia.org/wiki/Video_Graphics_Array#/media/File:Vector_Video_Standards2.svg
-> > >
-> > > Yeah, and NTSC is missing :)
-> >
-> > And that diagram is about the "digital" variant of PAL.
-> > If you go the analog route, the only fixed parts are vfreq/hfreq,
-> > number of lines, and synchronization. Other parameters like overscan
-> > can vary.  The actual dot clock can vary wildly: while there is an
-> > upper limit due to bandwidth limitations, you can come up with an
-> > almost infinite number of video modes that can be called PAL, which
-> > is one of the reasons why I don't want hardware-specific variants to
-> > end up in a global video mode database.
->
-> Do you have an example of what that would look like?
+The intention of DRM_FORMAT_HOST_* is that they are macros in include/drm/drm_fourcc.h which just map to little endian formats defined in drivers/gpu/drm/drm_fourcc.c. Since this is not possible for big endian hosts for XRGB1555 or RGB565 (or any other format with non-8-bit components), this isn't applicable here.
 
-You mean a PAL mode that does not use 768x576?
+It's also doubtful that Cirrus hardware would access these formats as big endian (drivers/gpu/drm/tiny/cirrus.c has no endianness references at all, and the hardware was surely designed for x86 first and foremost).
 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/video/fbdev/amifb.c#n834
-(TAG_HIRES is replaced by the actual dot clock at runtime, as it
- depends on the crystal present on the mainboard).
-Amifb also supports 320x256, by doubling the dot clock, but that mode
-is not part of the database.
+Instead, fbcon (and user space) needs to convert to little endian when using DRM_FORMAT_HOST_{XRGB1555,RGB565} with the cirrus driver on big endian hosts.
 
-Gr{oetje,eeting}s,
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+Earthling Michel Dänzer            |                  https://redhat.com
+Libre software enthusiast          |         Mesa and Xwayland developer

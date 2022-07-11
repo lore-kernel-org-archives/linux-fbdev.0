@@ -2,120 +2,252 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34F17CCA47B
-	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Jul 2022 10:19:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2DA9C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Jul 2022 10:48:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229917AbiGKKTv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 11 Jul 2022 06:19:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38156 "EHLO
+        id S229754AbiGKKsD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 11 Jul 2022 06:48:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33720 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232934AbiGKKTX (ORCPT
+        with ESMTP id S229757AbiGKKrq (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 11 Jul 2022 06:19:23 -0400
-Received: from mail-qk1-f174.google.com (mail-qk1-f174.google.com [209.85.222.174])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DFB4DC5944;
-        Mon, 11 Jul 2022 02:36:05 -0700 (PDT)
-Received: by mail-qk1-f174.google.com with SMTP id l26so3392499qkl.10;
-        Mon, 11 Jul 2022 02:36:05 -0700 (PDT)
+        Mon, 11 Jul 2022 06:47:46 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id C6252AEAF7
+        for <linux-fbdev@vger.kernel.org>; Mon, 11 Jul 2022 02:54:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1657533265;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=/r5o7wkCaifmX4nx8dD1X4gWt/RrIM+1n5U2ObFDOvY=;
+        b=b5GfiEd4nM4XyGJSuZ9LOPdY4nine3RDh6f+10mN4PXrzBcB+I2D/a9m8HX8eLbUBWwpXZ
+        3bQWUr3vY+ArGA3znL0chYqwaxjxNT+3lJ9lpiBSlr/gOyjyW09aEf/wS4tfRWHaJGW/kE
+        yKIyTTceTIX8jF5QI++F1/bM3UbnJtc=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-356-FHS5XLNjP-qJWSN3_EN5kg-1; Mon, 11 Jul 2022 05:54:24 -0400
+X-MC-Unique: FHS5XLNjP-qJWSN3_EN5kg-1
+Received: by mail-wr1-f70.google.com with SMTP id g9-20020adfa489000000b0021d6e786099so478968wrb.7
+        for <linux-fbdev@vger.kernel.org>; Mon, 11 Jul 2022 02:54:24 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=DVJUGFx3bR67+/E6+DBeYAU8MgftXdOcu6+8ewnr6LE=;
-        b=Grb1mICe/KhbwLOEfAkKDySeSxSgknGkd+imBlMn5B3iGw309ODADz+Eg//P2ZT7iV
-         3utw/l1fNrnbwYfqGyFeNqmIVrb1YW4A0RehUd3Jk0GqWEl9vMEUrXuDiDgLjJ8WqQN4
-         tl7nl721wzrX/YV0tmyyfnAlXAYyhsfSYUxkW/F6nSEyBDTIN1bES3pdoEG5X8McxXhl
-         KVLqcUNLmxjPu7OUOtYFaf0gqJmlWuFXBE4Na+rBei5sFi+jgNZPTmTsd1HCpwnocEC0
-         IXa8hOazblbkU/dL7jQDX8OcxGEadX1bYWuiWe12nS9l9/etlohe7+q2VT+vj0kpay5u
-         njJQ==
-X-Gm-Message-State: AJIora/MaWNWJeoWUexTtHx7MFiJuFrAK06DWdFRBoe5IiGQHUGr4Dhd
-        LP7hPE4xQQy1AO1kHtb5xGt391qORApzmA==
-X-Google-Smtp-Source: AGRyM1vZzBucHiqPQeSQ/wXnca/TSwvQ/zQg9JGqNdFX+0Q2mLUM/6ehODCCxvHYTFcAisSYYK4hAw==
-X-Received: by 2002:a05:620a:254f:b0:6a6:313:3ccc with SMTP id s15-20020a05620a254f00b006a603133cccmr10787076qko.716.1657532164248;
-        Mon, 11 Jul 2022 02:36:04 -0700 (PDT)
-Received: from mail-yw1-f181.google.com (mail-yw1-f181.google.com. [209.85.128.181])
-        by smtp.gmail.com with ESMTPSA id v15-20020a05620a0f0f00b006a785ba0c25sm5993061qkl.77.2022.07.11.02.36.03
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=/r5o7wkCaifmX4nx8dD1X4gWt/RrIM+1n5U2ObFDOvY=;
+        b=tFAPRdPQvcBY6IVEjwUbI5KTduh3H97OcR1SoOg2eLvxCN4pCqnZgZW81q/caBT0dn
+         9I0O334UdpJsCKUCBUeNlMR987Z1WZjns9yyZ5uQP76AabVdovqH2PO/r11sDCIM1j2u
+         qgilGmHBP6HMm8vABGYuXf5Cq1DCtar/FtFNobwmkRhEzx3vRpynYARRRKvXfDdlfpAa
+         F4WKtbX2amNSiVMMBi2wP1RC+UO6vLjrFMcR/pulo6xE4lHI5bc9aztStHH0UnhWrmIr
+         cdFxLUvcih+UpsW8dPFaFoSReuTcqhlWta2r7G99cpSHJZScMb2AbELXKTPvDS2MP14M
+         2kJA==
+X-Gm-Message-State: AJIora+7mDqLJ1l7R3k0jLa6bYQJx2fZwStzDmCdTjj4ago6u3FvRvVe
+        7tJB0hNhuGbz8nkhA7sWjXmAcB7WLAAzaBu0wCCQFJYjJBIjBL7lo4XY7oBvPmCyAS7i+SLIN7D
+        g+fBjAOePdkoNR5FZ5F2F4oY=
+X-Received: by 2002:adf:d1c1:0:b0:21b:a5e9:b7b2 with SMTP id b1-20020adfd1c1000000b0021ba5e9b7b2mr16250718wrd.405.1657533263294;
+        Mon, 11 Jul 2022 02:54:23 -0700 (PDT)
+X-Google-Smtp-Source: AGRyM1sbBQ51QtlzjO+HKGQRy/aofISE85HxcGvQHuZ3vWX7i4s2OJEN+ZIlfmPB42g4aa4+kn9CLg==
+X-Received: by 2002:adf:d1c1:0:b0:21b:a5e9:b7b2 with SMTP id b1-20020adfd1c1000000b0021ba5e9b7b2mr16250698wrd.405.1657533263004;
+        Mon, 11 Jul 2022 02:54:23 -0700 (PDT)
+Received: from [172.20.10.7] ([90.167.95.6])
+        by smtp.gmail.com with ESMTPSA id o20-20020a05600c511400b003a2d3ed9297sm18324607wms.1.2022.07.11.02.54.21
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 11 Jul 2022 02:36:03 -0700 (PDT)
-Received: by mail-yw1-f181.google.com with SMTP id 00721157ae682-31d85f82f0bso7031027b3.7;
-        Mon, 11 Jul 2022 02:36:03 -0700 (PDT)
-X-Received: by 2002:a81:9209:0:b0:31c:b1b7:b063 with SMTP id
- j9-20020a819209000000b0031cb1b7b063mr18545635ywg.383.1657532162961; Mon, 11
- Jul 2022 02:36:02 -0700 (PDT)
+        Mon, 11 Jul 2022 02:54:22 -0700 (PDT)
+Message-ID: <253d0bea-f197-4208-b5e6-39c22ab91833@redhat.com>
+Date:   Mon, 11 Jul 2022 11:54:20 +0200
 MIME-Version: 1.0
-References: <cover.1657301107.git.geert@linux-m68k.org> <68923c8a129b6c2a70b570103679a1cf7876bbc2.1657301107.git.geert@linux-m68k.org>
- <ef2aada2-96e4-c2e4-645f-39bc9094e93a@suse.de>
-In-Reply-To: <ef2aada2-96e4-c2e4-645f-39bc9094e93a@suse.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 11 Jul 2022 11:35:51 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdUqo-_5tyhmx_QqPJhqQdoRDE6_Q7b1AJWeBZc67RsBSA@mail.gmail.com>
-Message-ID: <CAMuHMdUqo-_5tyhmx_QqPJhqQdoRDE6_Q7b1AJWeBZc67RsBSA@mail.gmail.com>
-Subject: Re: [PATCH 4/5] drm/modes: Add support for driver-specific named modes
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Hans de Goede <hdegoede@redhat.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        "Linux/m68k" <linux-m68k@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH 02/11] fbdev/vga16fb: Create EGA/VGA devices in sysfb code
+Content-Language: en-US
+To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
+        daniel@ffwll.ch, sam@ravnborg.org, maxime@cerno.tech
+Cc:     linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        dri-devel@lists.freedesktop.org
+References: <20220707153952.32264-1-tzimmermann@suse.de>
+ <20220707153952.32264-3-tzimmermann@suse.de>
+ <fec8dcc1-c490-3bb6-2d2f-805d690d3f95@redhat.com>
+ <95302954-76bc-3da6-70ad-25a8a22a37f0@suse.de>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <95302954-76bc-3da6-70ad-25a8a22a37f0@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+Hello Thomas,
 
-On Mon, Jul 11, 2022 at 11:03 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> Am 08.07.22 um 20:21 schrieb Geert Uytterhoeven:
-> > The mode parsing code recognizes named modes only if they are explicitly
-> > listed in the internal whitelist, which is currently limited to "NTSC"
-> > and "PAL".
-> >
-> > Provide a mechanism for drivers to override this list to support custom
-> > mode names.
-> >
-> > Ideally, this list should just come from the driver's actual list of
-> > modes, but connector->probed_modes is not yet populated at the time of
-> > parsing.
+On 7/11/22 09:58, Thomas Zimmermann wrote:
+> Hi Javier,
+> 
+> I'll try to give the motivation of this patch below. I known it's rather 
+> hypothetical as the VGA driver is probably not used much.
+> 
+> Am 08.07.22 um 15:09 schrieb Javier Martinez Canillas:
+>> Hello Thomas,
+>>
+>> On 7/7/22 17:39, Thomas Zimmermann wrote:
+>>> Move the device-creation from vga16fb to sysfb code. Move the few
+>>> extra videomode checks into vga16fb's probe function.
+>>>
+>>> The vga16fb driver requires a screen_info for type VIDEO_TYPE_VGAC
+>>> or VIDEO_TYPE_EGAC. Such code is nowhere present in the kernel, except
+>>> for some MIPS systems. It's not clear if the vga16fb driver actually
+>>> works in practice.
+>>>
+>>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>>> ---
+>>>   drivers/firmware/sysfb.c      |  4 +++
+>>>   drivers/video/fbdev/vga16fb.c | 59 +++++++++++++++++------------------
+>>>   2 files changed, 32 insertions(+), 31 deletions(-)
+>>>
+>>> diff --git a/drivers/firmware/sysfb.c b/drivers/firmware/sysfb.c
+>>> index 1f276f108cc9..3fd3563d962b 100644
+>>> --- a/drivers/firmware/sysfb.c
+>>> +++ b/drivers/firmware/sysfb.c
+>>> @@ -94,6 +94,10 @@ static __init int sysfb_init(void)
+>>>   		name = "efi-framebuffer";
+>>>   	else if (si->orig_video_isVGA == VIDEO_TYPE_VLFB)
+>>>   		name = "vesa-framebuffer";
+>>> +	else if (si->orig_video_isVGA == VIDEO_TYPE_VGAC)
+>>> +		name = "vga-framebuffer";
+>>> +	else if (si->orig_video_isVGA == VIDEO_TYPE_EGAC)
+>>> +
+>>
+>> I wonder if we really need to do this distinction or could just have a single
+>> platform device for both VIDEO_TYPE_VGAC and VIDEO_TYPE_EGAC. After all, the
+>> same fbdev driver is bound against both platform devices.
+> 
+> With the current driver, we don't strictly need to distinguish. But the 
+> sysfb code is the one we care about. So I wanted it to be clear and 
+> nicely looking. All the mode tests, etc depend on the driver (which no 
+> one cares about).
 >
-> I've looked for code that uses these names, couldn't find any. How is
-> this being used in practice? For example, if I say "PAL" on the command
-> line, is there DRM code that fills in the PAL mode parameters?
 
-I guess Maxime knows, as he added the whitelist?
-Reading the description of commit 3764137906a5acec ("drm/modes:
-Introduce a whitelist for the named modes"), it looks like this is
-more about preventing the parser from taking any string as a random
-mode, than about adding support for "PAL" or "NTSC"?
+Right. That is a good point. We don't want to leak a driver implementation
+detail in the sysfb code. And in theory there could be for example a DRM
+driver for EGA and one for VGA.
+ 
+> There's also a difference in hardware features between EGA and VGA. Most 
+> notably, VGA has much better color support.
+>
 
-Note that drivers/gpu/drm/i915/display/intel_tv.c defines an array of
-tv_modes[], including "PAL", so perhaps these end up as named modes?
+Yes, I know the differences. My point was that the orig_video_isVGA was
+used to make the distinction and that the same driver supported both, but
+as you said that may not be the case and separate drivers could be used.
 
-> And another question I have is whether this whitelist belongs into the
-> driver at all. Standard modes exist independent from drivers or
-> hardware. Shouldn't there simply be a global list of all possible mode
-> names? Drivers would filter out the unsupported modes anyway.
+>>
+>> [...]
+>>
+>>>   static int vga16fb_probe(struct platform_device *dev)
+>>>   {
+>>> +	struct screen_info *si;
+>>>   	struct fb_info *info;
+>>>   	struct vga16fb_par *par;
+>>>   	int i;
+>>>   	int ret = 0;
+>>>   
+>>> +	si = dev_get_platdata(&dev->dev);
+>>> +	if (!si)
+>>> +		return -ENODEV;
+>>> +
+>>> +	ret = check_mode_supported(si);
+>>> +	if (ret)
+>>> +		return ret;
+>>> +
+>>
+>> What do you see as the advantage of moving the check to the driver's probe?
+>>
+>> Because after this change the platform driver will be registered but for no
+>> reason, since can't even probe if orig_video_isVGA is neither VGAC nor EGAC.
+> 
+> The driver only supports very specific modes, which may not be what 
+> screen_info detected. Note that VGAC/EGAC can also refer to text-mode 
+> buffers. The current vgacon could be turned into a platform driver that 
+> adopts such a text buffer and integrates it with aperture helpers.
+>
 
-For standard modes, I agree.  And these are usually specified by
-resolution and refresh rate (e.g. "640x480@60", instead of "480p").
+Yes, and also there's also the monochrome variant of VGA and EGA (VGAM/EGAM).
 
-But legacy hardware may have very limited support for programmable
-pixel clocks (e.g. Amiga is limited to pixel clocks of 7, 14, or 28
-MHz), so the standard modes are a bad match, or may not work at all.
-Hence drivers may need to provide their own modes, but it seems wrong
-to me to make these non-standard modes global, and possibly pollute
-the experience for everyone.
+Should we also make that distinction or for example "vga-framebuffer" should
+handle both color and monochrome variants if at some point vgacon is turned
+into a fbdev or DRM driver ?
 
-Gr{oetje,eeting}s,
+>>
+>> [...]
+>>
+>>> +static const struct platform_device_id vga16fb_driver_id_table[] = {
+>>> +	{"ega-framebuffer", 0},
+>>> +	{"vga-framebuffer", 0},
+>>> +	{ }
+>>> +};
+>>> +
+>>
+>> The fact that the two entries don't have a platform data is an indication for
+> 
+> The name is the indication. I know that vga16 doesn't treat them 
+> differently.
+>
 
-                        Geert
+Yes, my point was that the platform device name used to bind is an internal
+Linux interface that could be changed later if needed. But I understand your
+point and since the platform device names are exposed to user-space, makes
+more sense for them to reflect what devices are bound even when the existing
+driver doesn't treat them differently.
+ 
+>> me that we could just consolidate in a single "vga16-framebuffer" or smt. I
+>> know that this won't be consistent with efi, vesa, etc but I don't think is
+>> that important and also quite likely we will get rid of this driver and the
+>> platform device registration soon. Since as you said, it's unclear that is
+>> even used.
+> 
+> There's mips code in the arch/ directory that appears to setup 
+> screen_info in the correct way. I can't say whether that's still useful 
+> to anyone. On x86, I could set a VGA mode on the kernel command line, 
+> but screen_info's isVGA only contained '1'. It might be possible to fix 
+> this easily by setting the right values in vga_probe(). [1] I simply 
+> don't have the time to provide a patch and deal with the potential 
+> fallout of such a change.
+>
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Indeed. This seems to be a remnant from the time when isVGA was just a bool
+and then at some point the field semantics was extended to denote the mode
+but the existing users weren't fixed (nor the field named to reflect this).
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Probably should be cleaned up at some point but unsure if the churn would
+be worth it.
+ 
+>>
+>>>   static struct platform_driver vga16fb_driver = {
+>>>   	.probe = vga16fb_probe,
+>>>   	.remove = vga16fb_remove,
+>>>   	.driver = {
+>>> -		.name = "vga16fb",
+>>> +		.name = "vga-framebuffer",
+>>>   	},
+>>
+>> Maybe "vga16-framebuffer" instead? Since for example VESA is also VGA AFAIK.
+> 
+> VESA is something else than VGA. Setting a VESA mode (done via INT 10h 
+> IIRC) and then fiddling with VGA state will likely produce broken output 
+> on the screen.
+>
+
+Technically it is something else but Linux conflates them in many places. For
+example, as you mentioned one can change the VESA modes using the "vga" param
+(which confusingly leads to the use of vesafb+fbcon driver instead of vgacon).
+
+That's why I think that "vga-framebuffer" as driver name would be misleading.
+Specially since it would also bind to the "ega-framebuffer" platform device.
+
+-- 
+Best regards,
+
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
+

@@ -2,110 +2,113 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F856C43334
-	for <linux-fbdev@archiver.kernel.org>; Sun, 10 Jul 2022 13:00:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AE22C43334
+	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Jul 2022 00:22:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229579AbiGJNA0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 10 Jul 2022 09:00:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41954 "EHLO
+        id S229616AbiGKAWG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 10 Jul 2022 20:22:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60982 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229469AbiGJNAZ (ORCPT
+        with ESMTP id S229476AbiGKAWG (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 10 Jul 2022 09:00:25 -0400
-Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5FE41642C;
-        Sun, 10 Jul 2022 06:00:24 -0700 (PDT)
-Received: by mail-wm1-x329.google.com with SMTP id o19-20020a05600c511300b003a2de48b4bbso2212771wms.5;
-        Sun, 10 Jul 2022 06:00:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=URkBqTaJYZiBKaHkMPyuusVxdAfWQV7wmB1QtdU3dqc=;
-        b=H28NNWSz9kCHmESG/8FbsQ+m+Jzxy0qUH0fyz1nTVT1VnfBfH5jiuEPkD53FXHjSzn
-         B/1dX86SUM+LrKgLI+OYmFPx82FdsB7V7yt8sf5XzwbtSzPbPhDXFQePbTiQi3lyyDyP
-         gMD3/4c+Za4D22NF6y4FK7z/NMbKVISAdm+vnmThUgp797/YBqaFhAmGGecJT+SZcrvc
-         nZn0bWReEM8Dfarg2Hm6x7djFxVUPsFttf22okgYsWEwwHRp6hldOhLKJUHUfEK3zrDn
-         HiqibjwQLKcAMiflSho4wiD/UVJX6XpYIzFXuACDbKgxRHdZNZO8RPbciEo4gE2fs92g
-         WkIw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=URkBqTaJYZiBKaHkMPyuusVxdAfWQV7wmB1QtdU3dqc=;
-        b=KojpgyeKoH2cLjkG0xmtD2aPZuhOAbdEo9wkqDXnqebBrOz6PArZzIebMTDwVDX8d6
-         RC6/BWrLOZXiorJmKMaIlCmdg1W9VwNqDPmTeaphieCauXNkyvq7nS7W7qzZ1L0+PQzK
-         rr5hf8rvjVyxSt1DZIzQ2by+GrBnVVtwNi6Qa4YdKqbrT2pEvwgpfZp4wvxkVT6Q0fbK
-         NvIFgWBWckZnjZYcR9RRfBgqTszrAIfRxRYNLm8ve3hl0XkhB6MyO474UlR3iKoTCHJS
-         3o0++BgyGJJI8lFE4CvKmLRDAzIgAsGASjI1F48Vjhx/EBLtAhGwq6coeAlL/hJIUBiG
-         WycA==
-X-Gm-Message-State: AJIora8Vl5Rx5OHe8cHufP82IIaMPm/3nKqUHfDyTKo9jQvejNaOH0gH
-        zsI7VcNenxAAyWwtNXzNv1M=
-X-Google-Smtp-Source: AGRyM1vsTGSbf96VTwX0XNh02DsOlmP27A9LgNPMyEn1EV6Jd3PuivbWE971HAL4v79NdOzdGIsDng==
-X-Received: by 2002:a05:600c:4f4d:b0:3a1:98de:abde with SMTP id m13-20020a05600c4f4d00b003a198deabdemr10439595wmq.36.1657458022784;
-        Sun, 10 Jul 2022 06:00:22 -0700 (PDT)
-Received: from mandalorian.koija ([2a02:587:4ba0:ca00:f1ee:516:279c:45e9])
-        by smtp.gmail.com with ESMTPSA id j2-20020a05600c2b8200b0039c8a22554bsm3876989wmc.27.2022.07.10.06.00.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 10 Jul 2022 06:00:22 -0700 (PDT)
-Date:   Sun, 10 Jul 2022 16:00:19 +0300
-From:   Christos Kollintzas <c.kollintzas.92@gmail.com>
-To:     Greg KH <gregkh@linuxfoundation.org>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: fbtft: replace udelay with usleep_range
-Message-ID: <YsrNY+uU8tUXJiPV@mandalorian.koija>
-References: <YslTQLhM7GSaGXki@mandalorian.koija>
- <YslY25NnW6O5Tn+p@kroah.com>
+        Sun, 10 Jul 2022 20:22:06 -0400
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4971B1581F;
+        Sun, 10 Jul 2022 17:22:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+        bh=2XKbdPJjnxVplVpIW0prOE5SMVdMJp4Cpi9zvSg2mgQ=; b=UkEhP6uA3PGlJ5MzM0WCIlpRQ6
+        7LzZR50E9K+rf3H2brNn7tlRR1aJFoZ/S22jmHR3b9jwAWBBBSo5Y1SJiE/xleeZKmjfkfDg+h1mH
+        +jWWsgDpD0XMnll5fN7AAs7pKlXHRTlQVfAikSyhSf7vpdpvONQbt7TJsDW83AdWPn3hCft0t8jNO
+        HGCCfusjZW7rwcMGbCv+BFsmh2c6dU60PqewycFhZ3sf3uZP+9iI0ix2RpC/qh0pKeOOIby6ItMJ7
+        p0/qZYckJttsJZ3Hl2RMKMQlt5mPq/+ZJ8ExIoz51lrmPTOp34B2lPN21Vfb5BASPORXcwlejeIqn
+        JjswkT9Q==;
+Received: from [2601:1c0:6280:3f0::a6b3]
+        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1oAhBW-00Eg6K-O0; Mon, 11 Jul 2022 00:21:58 +0000
+Message-ID: <fdd9bf58-4b9e-8843-c669-9550ada614c5@infradead.org>
+Date:   Sun, 10 Jul 2022 17:21:55 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <YslY25NnW6O5Tn+p@kroah.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: ld.lld: error: undefined symbol: omap_set_dma_priority
+Content-Language: en-US
+To:     kernel test robot <lkp@intel.com>, Arnd Bergmann <arnd@arndb.de>
+Cc:     llvm@lists.linux.dev, kbuild-all@lists.01.org,
+        linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-fbdev@vger.kernel.org
+References: <202207080322.DnumSqh8-lkp@intel.com>
+From:   Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <202207080322.DnumSqh8-lkp@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, Jul 09, 2022 at 12:30:51PM +0200, Greg KH wrote:
-> On Sat, Jul 09, 2022 at 01:06:56PM +0300, Christos Kollintzas wrote:
-> > Adhere to Linux kernel coding style.
-> > 
-> > Reported by checkpatch:
-> > 
-> > CHECK: usleep_range is preferred over udelay
-> > 
-> > Signed-off-by: Christos Kollintzas <c.kollintzas.92@gmail.com>
-> > ---
-> >  drivers/staging/fbtft/fb_upd161704.c | 18 +++++++++---------
-> >  1 file changed, 9 insertions(+), 9 deletions(-)
-> > 
-> > diff --git a/drivers/staging/fbtft/fb_upd161704.c b/drivers/staging/fbtft/fb_upd161704.c
-> > index c680160d6380..eeafbab4ace1 100644
-> > --- a/drivers/staging/fbtft/fb_upd161704.c
-> > +++ b/drivers/staging/fbtft/fb_upd161704.c
-> > @@ -32,27 +32,27 @@ static int init_display(struct fbtft_par *par)
-> >  
-> >  	/* oscillator start */
-> >  	write_reg(par, 0x003A, 0x0001);	/*Oscillator 0: stop, 1: operation */
-> > -	udelay(100);
-> > +	usleep_range(100, 110);
-> 
-> When doing these types of changes, you really need access to the
-> hardware involved in order to be able to properly test it.
-> 
-> Especially for this type of function which is trying to do timing
-> changes which the hardware requires.
-> 
-> Did you test this on the real hardware and did it work properly?
-> 
-> thanks,
-> 
-> greg k-h
 
-I did not.
 
-I will try to find the hardware and send a patch that is
-properly tested.
+On 7/7/22 12:17, kernel test robot wrote:
+> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master
+> head:   e8a4e1c1bb697b1d9fc48f0e56dc0f50bc024bee
+> commit: 7036440eab3e2d47a775d4616909f8235488d714 ARM: omap1: enable multiplatform
+> date:   5 weeks ago
+> config: arm-randconfig-r035-20220706 (https://download.01.org/0day-ci/archive/20220708/202207080322.DnumSqh8-lkp@intel.com/config)
+> compiler: clang version 15.0.0 (https://github.com/llvm/llvm-project f553287b588916de09c66e3e32bf75e5060f967f)
+> reproduce (this is a W=1 build):
+>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # install arm cross compiling tool for clang build
+>         # apt-get install binutils-arm-linux-gnueabi
+>         # https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=7036440eab3e2d47a775d4616909f8235488d714
+>         git remote add linus https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+>         git fetch --no-tags linus master
+>         git checkout 7036440eab3e2d47a775d4616909f8235488d714
+>         # save the config file
+>         mkdir build_dir && cp config build_dir/.config
+>         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=arm SHELL=/bin/bash
+> 
+> If you fix the issue, kindly add following tag where applicable
+> Reported-by: kernel test robot <lkp@intel.com>
+> 
+> All errors (new ones prefixed by >>):
+> 
+>>> ld.lld: error: undefined symbol: omap_set_dma_priority
+>    >>> referenced by omapfb_main.c:1706 (drivers/video/fbdev/omap/omapfb_main.c:1706)
+>    >>>               video/fbdev/omap/omapfb_main.o:(omapfb_do_probe) in archive drivers/built-in.a
 
-thanks,
+(also happens with gcc)
 
-Christos Kollintzas
+Discrepancy between arch/arm/Kconfig and arch/arm/mach-omap1/{Kconfig,Makefile},
+drivers/video/fbdev/omap/Kconfig, and <linux/omap-dma.h>.
+
+Kernel .config has
+
+CONFIG_ARCH_OMAP1=y
+# CONFIG_ARCH_OMAP730 is not set
+# CONFIG_ARCH_OMAP850 is not set
+# CONFIG_ARCH_OMAP16XX is not set
+CONFIG_ARCH_OMAP=y
+
+FB_OMAP_DMA_TUNE depends on FB_OMAP, which
+depends on ARCH_OMAP1 || (ARM && COMPILE_TEST), all of which are 'y'.
+
+<linux/omap-dma.h> expects omap_set_dma_priority() to be defined
+elsewhere (not inline) for this .config:
+
+#if defined(CONFIG_ARCH_OMAP1)
+extern void omap_set_dma_priority(int lch, int dst_port, int priority);
+#else
+static inline void omap_set_dma_priority(int lch, int dst_port, int priority)
+{
+}
+#endif
+
+but arch/arm/mach-omap1/Makefile only builds omap-dma.o for
+ifdef CONFIG_ARCH_OMAP1_ANY, which is not set.
+
+
+-- 
+~Randy

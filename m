@@ -2,195 +2,153 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79171C43334
-	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Jul 2022 11:45:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7284EC43334
+	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Jul 2022 11:59:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231154AbiGKLpr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 11 Jul 2022 07:45:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59888 "EHLO
+        id S229960AbiGKL7r (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 11 Jul 2022 07:59:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53988 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230376AbiGKLp3 (ORCPT
+        with ESMTP id S229695AbiGKL7o (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 11 Jul 2022 07:45:29 -0400
-Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com [66.111.4.26])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 848831B7B9;
-        Mon, 11 Jul 2022 04:42:14 -0700 (PDT)
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
-        by mailout.nyi.internal (Postfix) with ESMTP id 8E1955C013B;
-        Mon, 11 Jul 2022 07:42:10 -0400 (EDT)
-Received: from mailfrontend1 ([10.202.2.162])
-  by compute5.internal (MEProxy); Mon, 11 Jul 2022 07:42:10 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=cc
-        :cc:content-type:date:date:from:from:in-reply-to:in-reply-to
-        :message-id:mime-version:references:reply-to:sender:subject
-        :subject:to:to; s=fm2; t=1657539730; x=1657626130; bh=65xJGGrqgx
-        njVVpdic5sDfiZGfil8T9lrpxrDrPHf8g=; b=HH/oTqjkcgrCHZYQXcX34oNi2K
-        v2nwKLFL6z8ieVJvkDHC2/65uCw4GqEi7rfDiBQ3+va/U9slT9f18Y9zKOXK9X4k
-        9ilYU46tQruBfK6Xa8pn+UjeoQcKPU2/g+30tOimqCTZJcSBxvKnGA1bFLSmBw6L
-        TTvBjWDvx6ACJuzhc/sU6BRTVbi/vQcTb0mrgzv1xEP5sxZ+xByigzyuXEOgv/2q
-        98qc7V1d8rglqZkngnrnkqzkLPqhADyQo8qYPojZGFwpUg5eue2yZ7H//bReDeJF
-        KerxiCkE1e3uUMCRN0RkLEuGrpXZD7q85BBVCg/rWUsqogj40QxrWGO7vrkQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
-        :feedback-id:from:from:in-reply-to:in-reply-to:message-id
-        :mime-version:references:reply-to:sender:subject:subject:to:to
-        :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
-        fm3; t=1657539730; x=1657626130; bh=65xJGGrqgxnjVVpdic5sDfiZGfil
-        8T9lrpxrDrPHf8g=; b=SM3pwVw/xvpwPzEDiqdckW7A4Y+apqrkRj2qxW2dHpSr
-        W32C+6Yr2aW6lEClvZgzLSa1dl9T5s9zuMPQTe4YLAJx/vBroR3Cyh+KgyouUSr9
-        u/2ZxyXhLxXPQg1nw1tlfcZ3FIQQ3kdQgA12znOPg1+JntdJnKEKz5dgWDwAFnvN
-        qxS5A9piswC9OdTwScnXKKTQRXAHPTV9gsx0CWiCsu3nKrLBXPirWAMq9chKxJKj
-        hg3ekMROL5/X0H2YoMHV7IduIkpNI8KV+sCvL0T3fUgxNJvvG+EEgDHk44/c3/TN
-        tprAeyYSU6CSa+R8OpFx1gcstGWKeR8F9rzQnvZOoA==
-X-ME-Sender: <xms:kQzMYv6aGsTlyGCWJj2O8_3HBbowEcshnFvorQPQMXV1g3wE_HGc5A>
-    <xme:kQzMYk5OstTLK1E3FOtat7kPi8KBy7NhDj2vRdj5pbZxFRQTmXRGHlUL6kFLXIW2N
-    gwGgaV2XmP1motf3ow>
-X-ME-Received: <xmr:kQzMYmfDjY1o2XAncdq2l8XzWaTHY9aRFocnAQmF76LGF-pGByeWRxy-5eL45gp1k2LOBEVLwJCJTyqqSSonyaKQrpdeLdKaZ9AaUc8>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrudejfedgfeelucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepfffhvfevuffkfhggtggujgesghdtreertddtvdenucfhrhhomhepofgrgihi
-    mhgvucftihhprghrugcuoehmrgigihhmvgestggvrhhnohdrthgvtghhqeenucggtffrrg
-    htthgvrhhnpefgkeevueetgffhueeujefhgeejiefgiedtveefgfdugefhteejgedufedv
-    geeukeenucffohhmrghinhepsghoohhtlhhinhdrtghomhdpfihikhhiphgvughirgdroh
-    hrghenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehm
-    rgigihhmvgestggvrhhnohdrthgvtghh
-X-ME-Proxy: <xmx:kQzMYgIpwlyetzGyREVDazqmlrNxuxwjsUwYDYiCSpoMUYI5JiyNrA>
-    <xmx:kQzMYjIGn7UY-kdG9RPUgDecNKS9Q7x8WOGXiSR47xexBommMXEiig>
-    <xmx:kQzMYpwrRcfOhPv-CTR3BPIAulKFPs98dXVR_JaA-0cffCl8IX0X6A>
-    <xmx:kgzMYq9T4G60-J4BnJWcyTtUCNNfVlt7Nhz10dG_BXN6yCUelZWuaA>
-Feedback-ID: i8771445c:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 11 Jul 2022 07:42:09 -0400 (EDT)
-Date:   Mon, 11 Jul 2022 13:42:06 +0200
-From:   Maxime Ripard <maxime@cerno.tech>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Mon, 11 Jul 2022 07:59:44 -0400
+Received: from mail-qt1-f180.google.com (mail-qt1-f180.google.com [209.85.160.180])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A0AA357ED;
+        Mon, 11 Jul 2022 04:59:42 -0700 (PDT)
+Received: by mail-qt1-f180.google.com with SMTP id w1so6817494qtv.9;
+        Mon, 11 Jul 2022 04:59:42 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=/I/U0YnC1LrEaVGVv4SvhKsv3VnfbWrBQRKUKtDAa0I=;
+        b=WrODlGa+p7bcYgF+UU9BkJcZBbo8LvlVSFVAoaFxL3HIcTvoqYlo8jBr/yqgUNqa5u
+         Q0vYWGfYrVTjHBh4duJtndm7H9TzAlbxQyFeTVleWPLjvDUIMEpHGAwK3xMGavdGFsts
+         dmkFtcj5aQn2TQDfdSEJrmaOc8Ri1wCR0auEBPTH6570bTYxkjscPCWYt4R+38k6KPDJ
+         rzE2WxF5z5yEGwZKm4ZB5To4WXtCAp+QyQWaRZgnNi4oXqhwX7IjBrvDNW+sDPTJIhue
+         dFXRjt8uynQ+/mj8Qka1nJ5EZzZIzS5UvsvG8shbK28v5rsmTdW63ebT46YyQbuwQxS+
+         aUTQ==
+X-Gm-Message-State: AJIora9Vc1K5Gx6dRHM73OX+2UsVt8c10AxRUdncxlCAjfQsQAlsOGW5
+        /xf4vibIuhCa+Axiv4Wymig+Ir11dyfy4Q==
+X-Google-Smtp-Source: AGRyM1t/ISXoG928fExbFgZyMfFgyDzogqHObmVr7z+FU7x34yLfZVrqBnKDL3DmAIOnKRbuurtQSg==
+X-Received: by 2002:ac8:5dc8:0:b0:31d:3d0b:29ec with SMTP id e8-20020ac85dc8000000b0031d3d0b29ecmr13334430qtx.242.1657540781164;
+        Mon, 11 Jul 2022 04:59:41 -0700 (PDT)
+Received: from mail-yw1-f178.google.com (mail-yw1-f178.google.com. [209.85.128.178])
+        by smtp.gmail.com with ESMTPSA id m6-20020ac807c6000000b00315a5fa4bf6sm5184729qth.7.2022.07.11.04.59.40
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 11 Jul 2022 04:59:40 -0700 (PDT)
+Received: by mail-yw1-f178.google.com with SMTP id 00721157ae682-31d85f82f0bso10246137b3.7;
+        Mon, 11 Jul 2022 04:59:40 -0700 (PDT)
+X-Received: by 2002:a81:98d:0:b0:31c:921c:9783 with SMTP id
+ 135-20020a81098d000000b0031c921c9783mr18708130ywj.316.1657540779907; Mon, 11
+ Jul 2022 04:59:39 -0700 (PDT)
+MIME-Version: 1.0
+References: <cover.1657301107.git.geert@linux-m68k.org> <68923c8a129b6c2a70b570103679a1cf7876bbc2.1657301107.git.geert@linux-m68k.org>
+ <ef2aada2-96e4-c2e4-645f-39bc9094e93a@suse.de> <20220711093513.wilv6e6aqcuyg52w@houat>
+ <43d75dce-988a-0a95-cb0a-0d0a7c81ca63@suse.de> <20220711114206.sawqdl54ibuxsxp4@houat>
+In-Reply-To: <20220711114206.sawqdl54ibuxsxp4@houat>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Mon, 11 Jul 2022 13:59:28 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdXbFHWWQoryXihVsSrC5ZzHEV-YYR_eLvNmSAw8Y61TQg@mail.gmail.com>
+Message-ID: <CAMuHMdXbFHWWQoryXihVsSrC5ZzHEV-YYR_eLvNmSAw8Y61TQg@mail.gmail.com>
+Subject: Re: [PATCH 4/5] drm/modes: Add support for driver-specific named modes
+To:     Maxime Ripard <maxime@cerno.tech>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         David Airlie <airlied@linux.ie>,
         Daniel Vetter <daniel@ffwll.ch>,
         Hans de Goede <hdegoede@redhat.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] drm/modes: Add support for driver-specific named
- modes
-Message-ID: <20220711114206.sawqdl54ibuxsxp4@houat>
-References: <cover.1657301107.git.geert@linux-m68k.org>
- <68923c8a129b6c2a70b570103679a1cf7876bbc2.1657301107.git.geert@linux-m68k.org>
- <ef2aada2-96e4-c2e4-645f-39bc9094e93a@suse.de>
- <20220711093513.wilv6e6aqcuyg52w@houat>
- <43d75dce-988a-0a95-cb0a-0d0a7c81ca63@suse.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ochmvmz2mndf2rso"
-Content-Disposition: inline
-In-Reply-To: <43d75dce-988a-0a95-cb0a-0d0a7c81ca63@suse.de>
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        "Linux/m68k" <linux-m68k@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Hi Maxime,
 
---ochmvmz2mndf2rso
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Jul 11, 2022 at 01:11:14PM +0200, Thomas Zimmermann wrote:
-> Hi Maxime
->=20
-> Am 11.07.22 um 11:35 schrieb Maxime Ripard:
-> > Hi Thomas,
-> >=20
-> > On Mon, Jul 11, 2022 at 11:03:38AM +0200, Thomas Zimmermann wrote:
-> > > Am 08.07.22 um 20:21 schrieb Geert Uytterhoeven:
-> > > > The mode parsing code recognizes named modes only if they are expli=
-citly
-> > > > listed in the internal whitelist, which is currently limited to "NT=
-SC"
-> > > > and "PAL".
-> > > >=20
-> > > > Provide a mechanism for drivers to override this list to support cu=
-stom
-> > > > mode names.
-> > > >=20
-> > > > Ideally, this list should just come from the driver's actual list of
-> > > > modes, but connector->probed_modes is not yet populated at the time=
- of
-> > > > parsing.
-> > >=20
-> > > I've looked for code that uses these names, couldn't find any. How is=
- this
-> > > being used in practice? For example, if I say "PAL" on the command li=
-ne, is
-> > > there DRM code that fills in the PAL mode parameters?
-> >=20
-> > We have some code to deal with this in sun4i:
-> > https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/sun4i/su=
-n4i_tv.c#L292
-> >=20
-> > It's a bit off topic, but for TV standards, I'm still not sure what the
-> > best course of action is. There's several interactions that make this a
-> > bit troublesome:
-> >=20
-> >    * Some TV standards differ by their mode (ie, PAL vs NSTC), but some
-> >      other differ by parameters that are not part of drm_display_mode
-> >      (NTSC vs NSTC-J where the only difference is the black and blanking
-> >      signal levels for example).
-> >=20
-> >    * The mode names allow to provide a fairly convenient way to add that
-> >      extra information, but the userspace is free to create its own mode
-> >      and might omit the mode name entirely.
-> >=20
-> > So in the code above, if the name has been preserved we match by name,
-> > but we fall back to matching by mode if it hasn't been, which in this
-> > case means that we have no way to differentiate between NTSC, NTSC-J,
-> > PAL-M in this case.
-> >=20
-> > We have some patches downstream for the RaspberryPi that has the TV
-> > standard as a property. There's a few extra logic required for the
-> > userspace (like setting the PAL property, with the NTSC mode) so I'm not
-> > sure it's preferable.
-> >=20
-> > Or we could do something like a property to try that standard, and
-> > another that reports the one we actually chose.
-> >=20
-> > > And another question I have is whether this whitelist belongs into the
-> > > driver at all. Standard modes exist independent from drivers or hardw=
-are.
-> > > Shouldn't there simply be a global list of all possible mode names? D=
-rivers
-> > > would filter out the unsupported modes anyway.
-> >=20
-> > We should totally do something like that, yeah
->=20
-> That sun code already looks like sometihng the DRM core/helpers should be
-> doing. And if we want to support named modes well, there's a long list of
-> modes in Wikipedia.
+On Mon, Jul 11, 2022 at 1:42 PM Maxime Ripard <maxime@cerno.tech> wrote:
+> On Mon, Jul 11, 2022 at 01:11:14PM +0200, Thomas Zimmermann wrote:
+> > Am 11.07.22 um 11:35 schrieb Maxime Ripard:
+> > > On Mon, Jul 11, 2022 at 11:03:38AM +0200, Thomas Zimmermann wrote:
+> > > > Am 08.07.22 um 20:21 schrieb Geert Uytterhoeven:
+> > > > > The mode parsing code recognizes named modes only if they are explicitly
+> > > > > listed in the internal whitelist, which is currently limited to "NTSC"
+> > > > > and "PAL".
+> > > > >
+> > > > > Provide a mechanism for drivers to override this list to support custom
+> > > > > mode names.
+> > > > >
+> > > > > Ideally, this list should just come from the driver's actual list of
+> > > > > modes, but connector->probed_modes is not yet populated at the time of
+> > > > > parsing.
+> > > >
+> > > > I've looked for code that uses these names, couldn't find any. How is this
+> > > > being used in practice? For example, if I say "PAL" on the command line, is
+> > > > there DRM code that fills in the PAL mode parameters?
+> > >
+> > > We have some code to deal with this in sun4i:
+> > > https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/sun4i/sun4i_tv.c#L292
+> > >
+> > > It's a bit off topic, but for TV standards, I'm still not sure what the
+> > > best course of action is. There's several interactions that make this a
+> > > bit troublesome:
+> > >
+> > >    * Some TV standards differ by their mode (ie, PAL vs NSTC), but some
+> > >      other differ by parameters that are not part of drm_display_mode
+> > >      (NTSC vs NSTC-J where the only difference is the black and blanking
+> > >      signal levels for example).
+> > >
+> > >    * The mode names allow to provide a fairly convenient way to add that
+> > >      extra information, but the userspace is free to create its own mode
+> > >      and might omit the mode name entirely.
+> > >
+> > > So in the code above, if the name has been preserved we match by name,
+> > > but we fall back to matching by mode if it hasn't been, which in this
+> > > case means that we have no way to differentiate between NTSC, NTSC-J,
+> > > PAL-M in this case.
+> > >
+> > > We have some patches downstream for the RaspberryPi that has the TV
+> > > standard as a property. There's a few extra logic required for the
+> > > userspace (like setting the PAL property, with the NTSC mode) so I'm not
+> > > sure it's preferable.
+> > >
+> > > Or we could do something like a property to try that standard, and
+> > > another that reports the one we actually chose.
+> > >
+> > > > And another question I have is whether this whitelist belongs into the
+> > > > driver at all. Standard modes exist independent from drivers or hardware.
+> > > > Shouldn't there simply be a global list of all possible mode names? Drivers
+> > > > would filter out the unsupported modes anyway.
+> > >
+> > > We should totally do something like that, yeah
+> >
+> > That sun code already looks like sometihng the DRM core/helpers should be
+> > doing. And if we want to support named modes well, there's a long list of
+> > modes in Wikipedia.
+> >
+> > https://en.wikipedia.org/wiki/Video_Graphics_Array#/media/File:Vector_Video_Standards2.svg
 >
-> https://en.wikipedia.org/wiki/Video_Graphics_Array#/media/File:Vector_Vid=
-eo_Standards2.svg
+> Yeah, and NTSC is missing :)
 
-Yeah, and NTSC is missing :)
+And that diagram is about the "digital" variant of PAL.
+If you go the analog route, the only fixed parts are vfreq/hfreq,
+number of lines, and synchronization. Other parameters like overscan
+can vary.  The actual dot clock can vary wildly: while there is an
+upper limit due to bandwidth limitations, you can come up with an
+almost infinite number of video modes that can be called PAL, which
+is one of the reasons why I don't want hardware-specific variants to
+end up in a global video mode database.
 
-Thinking about this some more, I'm not sure how we would do that. Like I
-said, we would need some extra parameters to drm_display_mode (like
-blanking levels) that the core would need to pass to the driver.
+Gr{oetje,eeting}s,
 
-If we go through the property route, I think the core could just look at
-the name, with the new mode and state, and the driver should deal with
-it. I'm not sure we can do more than that.
+                        Geert
 
-Maxime
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
---ochmvmz2mndf2rso
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCYswMjgAKCRDj7w1vZxhR
-xVEnAP9X1YCEDZqn7PwDG4wC6RHwW3pwln90ztgI5n66WY0ckgEA3+Owyei3UCjf
-z4cZW6l3/ZzQj6xt4UxCXTf9Cd2AVAo=
-=2IFI
------END PGP SIGNATURE-----
-
---ochmvmz2mndf2rso--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

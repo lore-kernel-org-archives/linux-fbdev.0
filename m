@@ -2,115 +2,166 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CF86CCA47B
-	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Jul 2022 09:21:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9B3FC43334
+	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Jul 2022 10:17:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231719AbiGKJVm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 11 Jul 2022 05:21:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42756 "EHLO
+        id S230338AbiGKKRS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 11 Jul 2022 06:17:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35188 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231703AbiGKJVL (ORCPT
+        with ESMTP id S230104AbiGKKQx (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 11 Jul 2022 05:21:11 -0400
-Received: from mailrelay4-1.pub.mailoutpod1-cph3.one.com (mailrelay4-1.pub.mailoutpod1-cph3.one.com [46.30.210.185])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B53E2B636
-        for <linux-fbdev@vger.kernel.org>; Mon, 11 Jul 2022 02:12:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=rsa1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=f6AwxXcU7KZ2ZFztEJq0GqcoNxoKfO83tkLfZGsyscY=;
-        b=L3OH2tT6bYzKyTGPRe/w4pndW/HB8la94SNlC5QOyO3fY/bu+2Py+tLWfxsrEh3m9XV+fvX08AVsU
-         pMHjuUmZRcQNnTcjx8Wnm5ogIYRFb+QMJtiyrGoXPUhuUtP4pQ4ieSuI1YFqeWmWRWiPkVIsBzpLPu
-         cxBYJsb59MgFyjXLqcyKIP+lWzN2GhFY3qK25YvFJldwNQdwcafAPjnoFg1QMGzA+6t726HsF5G2fP
-         Dxeia/AZYWxVfXfYBuwi/j95I0bi33u79FOacbp1hXFvMmdbV7xbatSjV7r6L7D3dDbUO2okjdQBN7
-         sm2rz5uGuQLO26qa7rHhEnW8hxT03DQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=ed1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=f6AwxXcU7KZ2ZFztEJq0GqcoNxoKfO83tkLfZGsyscY=;
-        b=xlst8vfqPMpyAQ0qQK3asUPcpYaLxYW2L70+BUhavZpWrLJ93dqJmv52ChMd0RCpRn/u5usymCLtH
-         OGrgKb8BQ==
-X-HalOne-Cookie: 591724b09f00c8e44a00df13aa95246b0d36be5d
-X-HalOne-ID: a4b26c09-00f9-11ed-823e-d0431ea8bb10
-Received: from mailproxy1.cst.dirpod3-cph3.one.com (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-        by mailrelay4.pub.mailoutpod1-cph3.one.com (Halon) with ESMTPSA
-        id a4b26c09-00f9-11ed-823e-d0431ea8bb10;
-        Mon, 11 Jul 2022 09:12:53 +0000 (UTC)
-Date:   Mon, 11 Jul 2022 11:12:51 +0200
-From:   Sam Ravnborg <sam@ravnborg.org>
+        Mon, 11 Jul 2022 06:16:53 -0400
+Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com [66.111.4.25])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DDD93C1FD1;
+        Mon, 11 Jul 2022 02:35:21 -0700 (PDT)
+Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
+        by mailout.nyi.internal (Postfix) with ESMTP id C91F35C013F;
+        Mon, 11 Jul 2022 05:35:17 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute5.internal (MEProxy); Mon, 11 Jul 2022 05:35:17 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=cc
+        :cc:content-type:date:date:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to; s=fm2; t=1657532117; x=1657618517; bh=XbWPLMD2Em
+        uATKpk1FD3KGRJwxeaul3Brd4v6K9DrL4=; b=OTp3vytlqDJB+2vPD994rtzUSQ
+        jOws1ocqG9aslbnxMmio9bk1vaHERJXD7S921jfGSwXU7mfjCLmOJsp6N4kPa1nS
+        WV+bhI42L3Q1gasRfbu21/LfY0yp4ykbp2LLnIpmwPlgl5kS7zo7bJ4wOXab1QmX
+        nyqjD3zURMq1PW+SdxxfC3ISp70/EUiHicvVmCyCQV/8aMYfjd4PkHbR7IdFHaw1
+        l3sQN0VEICD8f2wFihwiBH0UnLrKFGcIj2U33+YPCUoYu7jxye3iHB5GmE+3o3q4
+        xjqnlZ7ZKympcszm3AzbT4jgpbqHFAbRu622d4YeNYOFHoQdsc4ArFJPEIww==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
+        :feedback-id:from:from:in-reply-to:in-reply-to:message-id
+        :mime-version:references:reply-to:sender:subject:subject:to:to
+        :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+        fm3; t=1657532117; x=1657618517; bh=XbWPLMD2EmuATKpk1FD3KGRJwxea
+        ul3Brd4v6K9DrL4=; b=wzqDE7Xj1fV2ovXBsdHnlLejf5Lp0LnnASBzLWnrAtd6
+        I1mRZmLfKZaPTBJA36z0FJdpWVDlOTxgEBXWk337UKwjnJS/CELoL+exFpjxhnny
+        Bn/mYvq8yOSUTmsz5RCnSp/pWCXhiEuhvq84r6RvnzBlaz4CLB04jvetRtl7dzEV
+        Ff02JrIeEvpdBOGVR7rKxmTK8YbouQ8NWTDCS3c5CnCD3t4JJA5+PbWS8Bwp75MC
+        Qbo69Cm0TQrkaGTODiop7u90HKRB8S4dF//8t2U/V4ZDitxKL673K+6czR9mfhri
+        OI0O1tctbPEc19fxRRFH1rEH2YKJdYe8RtxptgNqdw==
+X-ME-Sender: <xms:1O7LYrfWPlt6trX7NfKre5g97Ec1Lir6hi7AzCPXbF6OVCPh-e_wZw>
+    <xme:1O7LYhPyUzlv_7yTNqd4bNdxmw1nRf7BUYcdtSYMXVw3QzlSjoZlbghGnZGEmLltC
+    un91fSE4jGKyC0N5Bs>
+X-ME-Received: <xmr:1O7LYkh8H29Od_9Gxz0JVXp1ZTtb8ZJtMBOYwg8oNrw69Ysq1gs5pJPF4RAnjYKWUbPPHECySNl4efJJreLXlKjT7iTGCZ-P5A37jPQ>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrudejfedgudehucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepfffhvfevuffkfhggtggujgesghdtreertddtvdenucfhrhhomhepofgrgihi
+    mhgvucftihhprghrugcuoehmrgigihhmvgestggvrhhnohdrthgvtghhqeenucggtffrrg
+    htthgvrhhnpefgueeutdefgfevveehjeefgeehvdejjeefheekffduteeutdfgieeiieff
+    uedtffenucffohhmrghinhepsghoohhtlhhinhdrtghomhenucevlhhushhtvghrufhiii
+    gvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehmrgigihhmvgestggvrhhnohdrthgv
+    tghh
+X-ME-Proxy: <xmx:1O7LYs8GVOEWlnc9qwTWEM4C4DNev4fE0gKiRfbG7ccgZA3AWxxQyg>
+    <xmx:1O7LYnuk_HPXsKzJcilSyrY81HXlOyG7v8QtpLZFzj6WyDiUwcFZsw>
+    <xmx:1O7LYrEmoyqlinUjKkWxXmWL3baAchrY7RW6VP4y4b2TxxwQhX9SVw>
+    <xmx:1e7LYtAGRv69zomwAPy7p8ZXZ4MtM33m0b2hE1I6qKPxFx8ARLW5LA>
+Feedback-ID: i8771445c:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 11 Jul 2022 05:35:16 -0400 (EDT)
+Date:   Mon, 11 Jul 2022 11:35:13 +0200
+From:   Maxime Ripard <maxime@cerno.tech>
 To:     Thomas Zimmermann <tzimmermann@suse.de>
 Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
         David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>, linux-fbdev@vger.kernel.org,
-        linux-m68k@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 00/10] drm: Add support for low-color frame buffer
- formats
-Message-ID: <Ysvpk4fzef6caO5y@ravnborg.org>
-References: <cover.1657294931.git.geert@linux-m68k.org>
- <YsmE1D8lGp4XKs99@ravnborg.org>
- <d6e5204e-5bbb-fe51-fd29-5452198bf368@suse.de>
+        Daniel Vetter <daniel@ffwll.ch>,
+        Hans de Goede <hdegoede@redhat.com>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] drm/modes: Add support for driver-specific named
+ modes
+Message-ID: <20220711093513.wilv6e6aqcuyg52w@houat>
+References: <cover.1657301107.git.geert@linux-m68k.org>
+ <68923c8a129b6c2a70b570103679a1cf7876bbc2.1657301107.git.geert@linux-m68k.org>
+ <ef2aada2-96e4-c2e4-645f-39bc9094e93a@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="x625msex36qfkynz"
 Content-Disposition: inline
-In-Reply-To: <d6e5204e-5bbb-fe51-fd29-5452198bf368@suse.de>
+In-Reply-To: <ef2aada2-96e4-c2e4-645f-39bc9094e93a@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+
+--x625msex36qfkynz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
 Hi Thomas,
 
-On Mon, Jul 11, 2022 at 10:50:00AM +0200, Thomas Zimmermann wrote:
-> Hi
-> 
-> Am 09.07.22 um 15:38 schrieb Sam Ravnborg:
-> > Hi Geert,
-> > 
-> > On Fri, Jul 08, 2022 at 08:20:45PM +0200, Geert Uytterhoeven wrote:
-> > > 	Hi all,
-> > > 
-> > > A long outstanding issue with the DRM subsystem has been the lack of
-> > > support for low-color displays, as used typically on older desktop
-> > > systems, and on small embedded displays.
-> 
-> For the patchset
-> 
-> Acked-by: Thomas Zimemrmann <tzimmermann@suse.de>
-> 
-> > 
-> > IT is super to have this addressed - thanks!
-> > 
-> > > 
-> > > This patch series adds support for color-indexed frame buffer formats
-> > > with 2, 4, and 16 colors.  It has been tested on ARAnyM using a
-> > > work-in-progress Atari DRM driver supporting 2, 4, 16, 256, and 65536
-> > > colors, with text console operation, fbtest, and modetest.
-> > > 
-> > > Overview:
-> > >    - Patch 1 introduces a helper, to be used by later patches in the
-> > >      series,
-> > >    - Patch 2 introduces a flag to indicate color-indexed formats,
-> > >    - Patches 3 and 4 correct calculations of bits per pixel for sub-byte
-> > >      pixel formats,
-> > >    - Patches 5 and 6 introduce the new C[124] formats,
-> > >    - Patch 7 fixes an untested code path,
-> > >    - Patch 8 documents the use of "red" for light-on-dark displays,
-> > >    - Patches 9 and 10 add more fourcc codes for light-on-dark and
-> > >      dark-on-light frame buffer formats, which may be useful for e.g. the
-> > >      ssd130x and repaper drivers.
-> > 
-> > Applied all patches to drm-misc (drm-misc-next), including the last two
-> > RFC patches as we then have the formats ready when a user pops up.
-> 
-> I know it's v3 already, but give people at least a workday for reviewing
-> before merging patches of this size and impact. Friday-evening patches are
-> not supposed to be merged on Saturday afternoons.
+On Mon, Jul 11, 2022 at 11:03:38AM +0200, Thomas Zimmermann wrote:
+> Am 08.07.22 um 20:21 schrieb Geert Uytterhoeven:
+> > The mode parsing code recognizes named modes only if they are explicitly
+> > listed in the internal whitelist, which is currently limited to "NTSC"
+> > and "PAL".
+> >=20
+> > Provide a mechanism for drivers to override this list to support custom
+> > mode names.
+> >=20
+> > Ideally, this list should just come from the driver's actual list of
+> > modes, but connector->probed_modes is not yet populated at the time of
+> > parsing.
+>=20
+> I've looked for code that uses these names, couldn't find any. How is this
+> being used in practice? For example, if I say "PAL" on the command line, =
+is
+> there DRM code that fills in the PAL mode parameters?
 
-Sorry for being too enthusiastic on this one.
-Will wait a bit more in the future for these kind of patches.
+We have some code to deal with this in sun4i:
+https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/sun4i/sun4i_=
+tv.c#L292
 
-	Sam
+It's a bit off topic, but for TV standards, I'm still not sure what the
+best course of action is. There's several interactions that make this a
+bit troublesome:
+
+  * Some TV standards differ by their mode (ie, PAL vs NSTC), but some
+    other differ by parameters that are not part of drm_display_mode
+    (NTSC vs NSTC-J where the only difference is the black and blanking
+    signal levels for example).
+
+  * The mode names allow to provide a fairly convenient way to add that
+    extra information, but the userspace is free to create its own mode
+    and might omit the mode name entirely.
+
+So in the code above, if the name has been preserved we match by name,
+but we fall back to matching by mode if it hasn't been, which in this
+case means that we have no way to differentiate between NTSC, NTSC-J,
+PAL-M in this case.
+
+We have some patches downstream for the RaspberryPi that has the TV
+standard as a property. There's a few extra logic required for the
+userspace (like setting the PAL property, with the NTSC mode) so I'm not
+sure it's preferable.
+
+Or we could do something like a property to try that standard, and
+another that reports the one we actually chose.
+
+> And another question I have is whether this whitelist belongs into the
+> driver at all. Standard modes exist independent from drivers or hardware.
+> Shouldn't there simply be a global list of all possible mode names? Drive=
+rs
+> would filter out the unsupported modes anyway.
+
+We should totally do something like that, yeah
+
+Maxime
+
+--x625msex36qfkynz
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCYsvu0QAKCRDj7w1vZxhR
+xYfLAQCE7tFL3DFGFWWg7d+mu+PlmSZLGOBUYGT1QXAXIgy1PAEAszxH3TfwGPT4
+YhVwpShCkoqgvPRPCUVP/woGKYyuWAM=
+=5GMd
+-----END PGP SIGNATURE-----
+
+--x625msex36qfkynz--

@@ -2,30 +2,30 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 736F1C43334
-	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Jul 2022 15:51:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FEF2CCA481
+	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Jul 2022 15:51:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231708AbiGKPvE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 11 Jul 2022 11:51:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44644 "EHLO
+        id S231480AbiGKPvF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 11 Jul 2022 11:51:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44232 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231484AbiGKPu6 (ORCPT
+        with ESMTP id S231542AbiGKPu7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 11 Jul 2022 11:50:58 -0400
-Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E482422C9
-        for <linux-fbdev@vger.kernel.org>; Mon, 11 Jul 2022 08:50:39 -0700 (PDT)
+        Mon, 11 Jul 2022 11:50:59 -0400
+Received: from andre.telenet-ops.be (andre.telenet-ops.be [IPv6:2a02:1800:120:4::f00:15])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 23CED77A63
+        for <linux-fbdev@vger.kernel.org>; Mon, 11 Jul 2022 08:50:40 -0700 (PDT)
 Received: from ramsan.of.borg ([84.195.186.194])
-        by xavier.telenet-ops.be with bizsmtp
-        id trqd2700e4C55Sk01rqd4B; Mon, 11 Jul 2022 17:50:38 +0200
+        by andre.telenet-ops.be with bizsmtp
+        id trqe2700R4C55Sk01rqe5a; Mon, 11 Jul 2022 17:50:38 +0200
 Received: from rox.of.borg ([192.168.97.57])
         by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <geert@linux-m68k.org>)
-        id 1oAvgD-0036wz-AP; Mon, 11 Jul 2022 17:50:37 +0200
+        id 1oAvgE-0036x3-2b; Mon, 11 Jul 2022 17:50:38 +0200
 Received: from geert by rox.of.borg with local (Exim 4.93)
         (envelope-from <geert@linux-m68k.org>)
-        id 1oAvgC-006shN-T7; Mon, 11 Jul 2022 17:50:36 +0200
+        id 1oAvgD-006shq-13; Mon, 11 Jul 2022 17:50:37 +0200
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
 To:     Helge Deller <deller@gmx.de>
 Cc:     Michael Schmitz <schmitzmic@gmail.com>,
@@ -33,9 +33,9 @@ Cc:     Michael Schmitz <schmitzmic@gmail.com>,
         linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
         Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH 03/10] video: fbdev: atari: Fix inverse handling
-Date:   Mon, 11 Jul 2022 17:50:27 +0200
-Message-Id: <b24ff02cb947e5b3a00ca74268db1b504d7346ba.1657554353.git.geert@linux-m68k.org>
+Subject: [PATCH 07/10] video: fbdev: atari: Fix TT High video mode vertical refresh
+Date:   Mon, 11 Jul 2022 17:50:31 +0200
+Message-Id: <b31294522c994453a99ab57ced7346c0cef9c32d.1657554353.git.geert@linux-m68k.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <cover.1657554353.git.geert@linux-m68k.org>
 References: <cover.1657554353.git.geert@linux-m68k.org>
@@ -45,56 +45,27 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Currently, the "inverse" option does not do anything, as it just sets a
-flag, which is further unused.
-
-Fix this by calling fb_invert_cmaps() instead, like other drivers do.
-As this only affects the console colormap, this does not affect X.
-Update the documentation to match the actual behavior.
+The vertical refresh rate for the TT High video mode (1280x960) is
+wrong.  Fortunately this field is not really used.
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- Documentation/m68k/kernel-options.rst | 4 ++--
- drivers/video/fbdev/atafb.c           | 4 +---
- 2 files changed, 3 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/atafb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/m68k/kernel-options.rst b/Documentation/m68k/kernel-options.rst
-index cabd9419740d5ada..2008a20b43295bd5 100644
---- a/Documentation/m68k/kernel-options.rst
-+++ b/Documentation/m68k/kernel-options.rst
-@@ -367,8 +367,8 @@ activated by a "external:" sub-option.
- 4.1.2) inverse
- --------------
- 
--Invert the display. This affects both, text (consoles) and graphics
--(X) display. Usually, the background is chosen to be black. With this
-+Invert the display. This affects only text consoles.
-+Usually, the background is chosen to be black. With this
- option, you can make the background white.
- 
- 4.1.3) font
 diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
-index 172ef547ff6f4883..39c3b860a797d4bc 100644
+index fbc333d5615df5d5..528478f6f30857ef 100644
 --- a/drivers/video/fbdev/atafb.c
 +++ b/drivers/video/fbdev/atafb.c
-@@ -236,8 +236,6 @@ static int *MV300_reg = MV300_reg_8bit;
- #endif /* ATAFB_EXT */
+@@ -484,7 +484,7 @@ static struct fb_videomode atafb_modedb[] __initdata = {
+ 		0, FB_VMODE_NONINTERLACED
+ 	}, {
+ 		/* 1280x960, 72 kHz, 72 Hz (TT high) */
+-		"tt-high", 57, 1280, 960, 7760, 260, 60, 36, 4, 192, 4,
++		"tt-high", 72, 1280, 960, 7760, 260, 60, 36, 4, 192, 4,
+ 		0, FB_VMODE_NONINTERLACED
+ 	},
  
- 
--static int inverse;
--
- /*
-  * struct fb_ops {
-  *	* open/release and usage marking
-@@ -2971,7 +2969,7 @@ static int __init atafb_setup(char *options)
- 			default_par = temp;
- 			mode_option = this_opt;
- 		} else if (!strcmp(this_opt, "inverse"))
--			inverse = 1;
-+			fb_invert_cmaps();
- 		else if (!strncmp(this_opt, "hwscroll_", 9)) {
- 			hwscroll = simple_strtoul(this_opt + 9, NULL, 10);
- 			if (hwscroll < 0)
 -- 
 2.25.1
 

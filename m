@@ -2,166 +2,188 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67C15C43334
-	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Jul 2022 11:26:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE3F0C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Jul 2022 11:27:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231402AbiGKL0X (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 11 Jul 2022 07:26:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43254 "EHLO
+        id S231285AbiGKL1e (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 11 Jul 2022 07:27:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40566 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231147AbiGKL0A (ORCPT
+        with ESMTP id S229838AbiGKL1N (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 11 Jul 2022 07:26:00 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 31B4719036
-        for <linux-fbdev@vger.kernel.org>; Mon, 11 Jul 2022 04:01:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1657537294;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
+        Mon, 11 Jul 2022 07:27:13 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41D22357C1;
+        Mon, 11 Jul 2022 04:03:59 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id F2E472279B;
+        Mon, 11 Jul 2022 11:03:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1657537438; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=DoNRjwHn17Mb09qr5SAGudc0KtakAnj1BuIZJeny9no=;
-        b=X9+HRFedpqD9NysdeAe34dXYrFUy6S4evPWSgOx2JL3i+LkJE2GD7eGnAUpfk0pVnkUhVA
-        2rPc53Dbe2UQRGaCwEAnIrx6qpB5lfsqSTTSgD07LDcc08OiMXNfOT+qtrvLuvlnlieN+f
-        cuGtM+k4c+piQHK/WANFdNh8QgbnRGc=
-Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
- [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-63-o1LWj4uQMlGKE7eFweUMKg-1; Mon, 11 Jul 2022 07:01:32 -0400
-X-MC-Unique: o1LWj4uQMlGKE7eFweUMKg-1
-Received: by mail-wr1-f71.google.com with SMTP id h6-20020adfa4c6000000b0021d6a5ac938so533873wrb.20
-        for <linux-fbdev@vger.kernel.org>; Mon, 11 Jul 2022 04:01:32 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=DoNRjwHn17Mb09qr5SAGudc0KtakAnj1BuIZJeny9no=;
-        b=gMDB+/lSn0Q6vYj+ciUH2Q0dpUAGaMjvegdCSSecNJh5D5LH85YCmQT1qeI3woEcGl
-         Ze4qwNV0HtYjm8dYhZZJF1wScXuDrJ3yEOzulfjUkrPTlq1Dg9YoJ+lX+zFE0ZXJ2mK9
-         3y8w9KYr9e+QM6fx2txh/B2rtrCmBnZW0edIerzN/L7Wa+/MAjWTBTisS1GiYZt2d9bq
-         gxYyKaFwwhqsotk4gypiE64YbgaTGB9eypoLAxEYlGNc6rWtJBuS2JAoT2OsTrw+53mI
-         m620GkCcmOi7z0P3nMrYwJRNiSDMRPSBtNjHrIFNkepky1MMZ7nAK0ifxgGEZUJtA0nc
-         N0iw==
-X-Gm-Message-State: AJIora8evxX6ohyq2bicaXS126oqIjGE1ZZq1/2tASM26NwHRPXFYGc5
-        RwaHbGSJMpoBfH5NCFEakSrG37slN/WzB9Z3biZl2wAuYgRdZvvUj3h3OyVQxV97utU/h6ZQm+A
-        pY3XE3gJ5gS+i0oCnF4eaVyg=
-X-Received: by 2002:adf:f1d0:0:b0:21d:9c0d:9b5 with SMTP id z16-20020adff1d0000000b0021d9c0d09b5mr8849912wro.689.1657537291750;
-        Mon, 11 Jul 2022 04:01:31 -0700 (PDT)
-X-Google-Smtp-Source: AGRyM1u8mnYTbK20OklBYjenRq7ddEU4KkMn7Awl5f5jeOdfl+tJzjz1kN5TZ+19bK982BF8qePriA==
-X-Received: by 2002:adf:f1d0:0:b0:21d:9c0d:9b5 with SMTP id z16-20020adff1d0000000b0021d9c0d09b5mr8849874wro.689.1657537291410;
-        Mon, 11 Jul 2022 04:01:31 -0700 (PDT)
-Received: from [192.168.1.129] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id j38-20020a05600c1c2600b00397342e3830sm18871245wms.0.2022.07.11.04.01.30
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 11 Jul 2022 04:01:30 -0700 (PDT)
-Message-ID: <8ebc1f33-f654-6b93-8a41-1aa66ab1901c@redhat.com>
-Date:   Mon, 11 Jul 2022 13:01:30 +0200
+        bh=qsZtFmhd2wM7bnAZCCJVrbNgtem6za52WsNE9GAAo+k=;
+        b=Kk/CQuVbLGbPjt+D8aVbHl+sPhaBVqStaLvq3uIOVEsvaE3enyHn9eogvf4SaUK5CsObRA
+        +QzIlbcvMMe90UEp1pvYXBm6guLOtqV1AgP5YujBB4WoOvUVD+Zh48ZbLlXSPzXQBbeXga
+        3G9KD1p/5P5jZ+F/+AhA91duXEZGlMs=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1657537438;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=qsZtFmhd2wM7bnAZCCJVrbNgtem6za52WsNE9GAAo+k=;
+        b=bzC3oJgBJkPzVvb1HFGckyPYZVvzlZJVtzRcQKpjqn29cGb1hnDKKO9uYROjJYcnWE78b4
+        bem69BD7OQUmocBQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id BCD3C13322;
+        Mon, 11 Jul 2022 11:03:57 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id ZBoaLZ0DzGK9aAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 11 Jul 2022 11:03:57 +0000
+Message-ID: <84c3af8a-d50c-c9be-348e-e50aad59bf5d@suse.de>
+Date:   Mon, 11 Jul 2022 13:03:57 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.11.0
-Subject: Re: [PATCH 05/11] fbdev: Convert drivers to aperture helpers
+Subject: Re: [PATCH 4/5] drm/modes: Add support for driver-specific named
+ modes
 Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
-        daniel@ffwll.ch, sam@ravnborg.org, maxime@cerno.tech
-Cc:     linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        dri-devel@lists.freedesktop.org
-References: <20220707153952.32264-1-tzimmermann@suse.de>
- <20220707153952.32264-6-tzimmermann@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <20220707153952.32264-6-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Hans de Goede <hdegoede@redhat.com>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linux/m68k <linux-m68k@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <cover.1657301107.git.geert@linux-m68k.org>
+ <68923c8a129b6c2a70b570103679a1cf7876bbc2.1657301107.git.geert@linux-m68k.org>
+ <ef2aada2-96e4-c2e4-645f-39bc9094e93a@suse.de>
+ <CAMuHMdUqo-_5tyhmx_QqPJhqQdoRDE6_Q7b1AJWeBZc67RsBSA@mail.gmail.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <CAMuHMdUqo-_5tyhmx_QqPJhqQdoRDE6_Q7b1AJWeBZc67RsBSA@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------W3gjda6T5dPdYMTLKtvUwblT"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/7/22 17:39, Thomas Zimmermann wrote:
-> Convert fbdev drivers from fbdev's remove_conflicting_framebuffers() to
-> the framework-independent aperture_remove_conflicting_devices(). Calling
-> this function will also remove conflicting DRM drivers.
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------W3gjda6T5dPdYMTLKtvUwblT
+Content-Type: multipart/mixed; boundary="------------fpBott6Mn2eZcUCv7VE0xyyp";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@linux.ie>,
+ Daniel Vetter <daniel@ffwll.ch>, Hans de Goede <hdegoede@redhat.com>,
+ DRI Development <dri-devel@lists.freedesktop.org>,
+ Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+ Linux/m68k <linux-m68k@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-ID: <84c3af8a-d50c-c9be-348e-e50aad59bf5d@suse.de>
+Subject: Re: [PATCH 4/5] drm/modes: Add support for driver-specific named
+ modes
+References: <cover.1657301107.git.geert@linux-m68k.org>
+ <68923c8a129b6c2a70b570103679a1cf7876bbc2.1657301107.git.geert@linux-m68k.org>
+ <ef2aada2-96e4-c2e4-645f-39bc9094e93a@suse.de>
+ <CAMuHMdUqo-_5tyhmx_QqPJhqQdoRDE6_Q7b1AJWeBZc67RsBSA@mail.gmail.com>
+In-Reply-To: <CAMuHMdUqo-_5tyhmx_QqPJhqQdoRDE6_Q7b1AJWeBZc67RsBSA@mail.gmail.com>
 
-[...]
+--------------fpBott6Mn2eZcUCv7VE0xyyp
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
->  static int lynxfb_kick_out_firmware_fb(struct pci_dev *pdev)
->  {
-> -	struct apertures_struct *ap;
-> +	resource_size_t base = pci_resource_start(pdev, 0);
-> +	resource_size_t size = pci_resource_len(pdev, 0);
->  	bool primary = false;
->  
-> -	ap = alloc_apertures(1);
-> -	if (!ap)
-> -		return -ENOMEM;
-> -
-> -	ap->ranges[0].base = pci_resource_start(pdev, 0);
-> -	ap->ranges[0].size = pci_resource_len(pdev, 0);
->  #ifdef CONFIG_X86
->  	primary = pdev->resource[PCI_ROM_RESOURCE].flags &
->  					IORESOURCE_ROM_SHADOW;
->  #endif
-> -	remove_conflicting_framebuffers(ap, "sm750_fb1", primary);
-> -	kfree(ap);
-> -	return 0;
-> +
-> +	return aperture_remove_conflicting_devices(base, size, primary, "sm750_fb1");
+SGkNCg0KQW0gMTEuMDcuMjIgdW0gMTE6MzUgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
+DQo+IEhpIFRob21hcywNCj4gDQo+IE9uIE1vbiwgSnVsIDExLCAyMDIyIGF0IDExOjAzIEFN
+IFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPiB3cm90ZToNCj4+IEFt
+IDA4LjA3LjIyIHVtIDIwOjIxIHNjaHJpZWIgR2VlcnQgVXl0dGVyaG9ldmVuOg0KPj4+IFRo
+ZSBtb2RlIHBhcnNpbmcgY29kZSByZWNvZ25pemVzIG5hbWVkIG1vZGVzIG9ubHkgaWYgdGhl
+eSBhcmUgZXhwbGljaXRseQ0KPj4+IGxpc3RlZCBpbiB0aGUgaW50ZXJuYWwgd2hpdGVsaXN0
+LCB3aGljaCBpcyBjdXJyZW50bHkgbGltaXRlZCB0byAiTlRTQyINCj4+PiBhbmQgIlBBTCIu
+DQo+Pj4NCj4+PiBQcm92aWRlIGEgbWVjaGFuaXNtIGZvciBkcml2ZXJzIHRvIG92ZXJyaWRl
+IHRoaXMgbGlzdCB0byBzdXBwb3J0IGN1c3RvbQ0KPj4+IG1vZGUgbmFtZXMuDQo+Pj4NCj4+
+PiBJZGVhbGx5LCB0aGlzIGxpc3Qgc2hvdWxkIGp1c3QgY29tZSBmcm9tIHRoZSBkcml2ZXIn
+cyBhY3R1YWwgbGlzdCBvZg0KPj4+IG1vZGVzLCBidXQgY29ubmVjdG9yLT5wcm9iZWRfbW9k
+ZXMgaXMgbm90IHlldCBwb3B1bGF0ZWQgYXQgdGhlIHRpbWUgb2YNCj4+PiBwYXJzaW5nLg0K
+Pj4NCj4+IEkndmUgbG9va2VkIGZvciBjb2RlIHRoYXQgdXNlcyB0aGVzZSBuYW1lcywgY291
+bGRuJ3QgZmluZCBhbnkuIEhvdyBpcw0KPj4gdGhpcyBiZWluZyB1c2VkIGluIHByYWN0aWNl
+PyBGb3IgZXhhbXBsZSwgaWYgSSBzYXkgIlBBTCIgb24gdGhlIGNvbW1hbmQNCj4+IGxpbmUs
+IGlzIHRoZXJlIERSTSBjb2RlIHRoYXQgZmlsbHMgaW4gdGhlIFBBTCBtb2RlIHBhcmFtZXRl
+cnM/DQo+IA0KPiBJIGd1ZXNzIE1heGltZSBrbm93cywgYXMgaGUgYWRkZWQgdGhlIHdoaXRl
+bGlzdD8NCg0KWWVhaCwgSSBzYXcgaGlzIHJlcGx5IGFscmVhZHkuDQoNCj4gUmVhZGluZyB0
+aGUgZGVzY3JpcHRpb24gb2YgY29tbWl0IDM3NjQxMzc5MDZhNWFjZWMgKCJkcm0vbW9kZXM6
+DQo+IEludHJvZHVjZSBhIHdoaXRlbGlzdCBmb3IgdGhlIG5hbWVkIG1vZGVzIiksIGl0IGxv
+b2tzIGxpa2UgdGhpcyBpcw0KPiBtb3JlIGFib3V0IHByZXZlbnRpbmcgdGhlIHBhcnNlciBm
+cm9tIHRha2luZyBhbnkgc3RyaW5nIGFzIGEgcmFuZG9tDQo+IG1vZGUsIHRoYW4gYWJvdXQg
+YWRkaW5nIHN1cHBvcnQgZm9yICJQQUwiIG9yICJOVFNDIj8NCj4gDQo+IE5vdGUgdGhhdCBk
+cml2ZXJzL2dwdS9kcm0vaTkxNS9kaXNwbGF5L2ludGVsX3R2LmMgZGVmaW5lcyBhbiBhcnJh
+eSBvZg0KPiB0dl9tb2Rlc1tdLCBpbmNsdWRpbmcgIlBBTCIsIHNvIHBlcmhhcHMgdGhlc2Ug
+ZW5kIHVwIGFzIG5hbWVkIG1vZGVzPw0KPiANCj4+IEFuZCBhbm90aGVyIHF1ZXN0aW9uIEkg
+aGF2ZSBpcyB3aGV0aGVyIHRoaXMgd2hpdGVsaXN0IGJlbG9uZ3MgaW50byB0aGUNCj4+IGRy
+aXZlciBhdCBhbGwuIFN0YW5kYXJkIG1vZGVzIGV4aXN0IGluZGVwZW5kZW50IGZyb20gZHJp
+dmVycyBvcg0KPj4gaGFyZHdhcmUuIFNob3VsZG4ndCB0aGVyZSBzaW1wbHkgYmUgYSBnbG9i
+YWwgbGlzdCBvZiBhbGwgcG9zc2libGUgbW9kZQ0KPj4gbmFtZXM/IERyaXZlcnMgd291bGQg
+ZmlsdGVyIG91dCB0aGUgdW5zdXBwb3J0ZWQgbW9kZXMgYW55d2F5Lg0KPiANCj4gRm9yIHN0
+YW5kYXJkIG1vZGVzLCBJIGFncmVlLiAgQW5kIHRoZXNlIGFyZSB1c3VhbGx5IHNwZWNpZmll
+ZCBieQ0KPiByZXNvbHV0aW9uIGFuZCByZWZyZXNoIHJhdGUgKGUuZy4gIjY0MHg0ODBANjAi
+LCBpbnN0ZWFkIG9mICI0ODBwIikuDQo+IA0KPiBCdXQgbGVnYWN5IGhhcmR3YXJlIG1heSBo
+YXZlIHZlcnkgbGltaXRlZCBzdXBwb3J0IGZvciBwcm9ncmFtbWFibGUNCj4gcGl4ZWwgY2xv
+Y2tzIChlLmcuIEFtaWdhIGlzIGxpbWl0ZWQgdG8gcGl4ZWwgY2xvY2tzIG9mIDcsIDE0LCBv
+ciAyOA0KPiBNSHopLCBzbyB0aGUgc3RhbmRhcmQgbW9kZXMgYXJlIGEgYmFkIG1hdGNoLCBv
+ciBtYXkgbm90IHdvcmsgYXQgYWxsLg0KPiBIZW5jZSBkcml2ZXJzIG1heSBuZWVkIHRvIHBy
+b3ZpZGUgdGhlaXIgb3duIG1vZGVzLCBidXQgaXQgc2VlbXMgd3JvbmcNCj4gdG8gbWUgdG8g
+bWFrZSB0aGVzZSBub24tc3RhbmRhcmQgbW9kZXMgZ2xvYmFsLCBhbmQgcG9zc2libHkgcG9s
+bHV0ZQ0KPiB0aGUgZXhwZXJpZW5jZSBmb3IgZXZlcnlvbmUuDQpJIGRvbid0IHJlYWxseSBo
+YXZlIGEgc3Ryb25nIG9waW5pb24sIGJ1dCBoYXZpbmcgYWxsIG1vZGVzIGluIG9uZSBnbG9i
+YWwgDQpsaXN0IGlzIHF1aXRlIHVzZXItZnJpZW5kbHkuIEl0J3MgYWxsIHRoZXJlIGZvciBl
+dmVyeW9uZS4gT3RoZXJ3aXNlIA0KdXNlcnMgd291bGQgc29tZWhvdyBoYXZlIHRvIGtub3cg
+d2hpY2ggaGFyZHdhcmUgc3VwcG9ydHMgd2hpY2ggbW9kZXMuIA0KVGhhdCdzIGFjdHVhbGx5
+IHRoZSBqb2Igb2YgZWFjaCBkcml2ZXIncyBtb2RlX3ZhbGlkIGFuZCBhdG9taWNfY2hlY2sg
+DQpmdW5jdGlvbnMuDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4gDQo+IEdye29ldGpl
+LGVldGluZ31zLA0KPiANCj4gICAgICAgICAgICAgICAgICAgICAgICAgIEdlZXJ0DQo+IA0K
+PiAtLQ0KPiBHZWVydCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUncyBsb3RzIG9mIExpbnV4IGJl
+eW9uZCBpYTMyIC0tIGdlZXJ0QGxpbnV4LW02OGsub3JnDQo+IA0KPiBJbiBwZXJzb25hbCBj
+b252ZXJzYXRpb25zIHdpdGggdGVjaG5pY2FsIHBlb3BsZSwgSSBjYWxsIG15c2VsZiBhIGhh
+Y2tlci4gQnV0DQo+IHdoZW4gSSdtIHRhbGtpbmcgdG8gam91cm5hbGlzdHMgSSBqdXN0IHNh
+eSAicHJvZ3JhbW1lciIgb3Igc29tZXRoaW5nIGxpa2UgdGhhdC4NCj4gICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgLS0gTGludXMgVG9ydmFsZHMNCg0KLS0gDQpUaG9tYXMg
+WmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBT
+b2x1dGlvbnMgR2VybWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJlcmcs
+IEdlcm1hbnkNCihIUkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNmw7xocmVy
+OiBJdm8gVG90ZXYNCg==
 
-Do you know why this can't just use aperture_remove_conflicting_pci_devices() ?
+--------------fpBott6Mn2eZcUCv7VE0xyyp--
 
-It seems that the driver is open coding part of the logic already in that helper.
-For example, figuring out if is a primary by checking the IORESOURCE_ROM_SHADOW
-flag in the PCI_ROM_RESOURCE.
+--------------W3gjda6T5dPdYMTLKtvUwblT
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-But also getting the base and size for PCI BAR 0, since the loop in that helper
-would already take care of that (it also starts at BAR 0).
+-----BEGIN PGP SIGNATURE-----
 
->  }
->  
->  static int lynxfb_pci_probe(struct pci_dev *pdev,
-> diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-> index b311c07fe66d..e5e362b8c9da 100644
-> --- a/drivers/video/fbdev/aty/radeon_base.c
-> +++ b/drivers/video/fbdev/aty/radeon_base.c
-> @@ -54,6 +54,7 @@
->  
->  #include "radeonfb.h"
->  
-> +#include <linux/aperture.h>
->  #include <linux/module.h>
->  #include <linux/moduleparam.h>
->  #include <linux/kernel.h>
-> @@ -2239,20 +2240,10 @@ static const struct bin_attribute edid2_attr = {
->  
->  static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
->  {
-> -	struct apertures_struct *ap;
-> +	resource_size_t base = pci_resource_start(pdev, 0);
-> +	resource_size_t size = pci_resource_len(pdev, 0);
->  
-> -	ap = alloc_apertures(1);
-> -	if (!ap)
-> -		return -ENOMEM;
-> -
-> -	ap->ranges[0].base = pci_resource_start(pdev, 0);
-> -	ap->ranges[0].size = pci_resource_len(pdev, 0);
-> -
-> -	remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
-> -
-> -	kfree(ap);
-> -
-> -	return 0;
-> +	return aperture_remove_conflicting_devices(base, size, KBUILD_MODNAME, false);
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmLMA50FAwAAAAAACgkQlh/E3EQov+CW
+sw/+IzsJWZ3vBiBVN32rSGSbKjAcR2LqgXyYu7DxmQglL6rlBhpZ/W5tevD/hl6OXnkQxkM4eSo6
+f5CYAxABHL2LlqukBr+CVW1WchEYD8b8K4I7Ptp6dW4YkIamgBtYTFtedxQ+Kqi5SWc3IU7DkL+n
+I7q+uGT7RTfmxL2KB9PqhWkOYJrY5A42KCGw3swV2GGEthXlzUU6p98zrX/UUIVatQLAQw2bRXz3
+wQfQp7M+d+iFQzRYLmwK23tFkC4Ug7aa+0RHtA1jeoCgTI3lI59ItBrqNdEHwxXkxM43ImjsUhEJ
+at1RVMUCDklu6kTQFJJDakfA9GVNlBqLAONLZmN6OdKz600D0w2qviduJEDLNWYefR5rYOoJw/z3
+yjHlH6nl2jWaDhB2CyupV+/piEz39SJwj3IwvXb/cbv3FjIbvJtgUP6IFfxoHv4hiW9K31BrH1HE
+XdSDHUgFOUOYR3sow9YgSDW8B2AL5LK4khAXiTT17JOgR/zFa9zS8RVKgWhFtnAtZnMyTkwxHZwt
+g9bUJf6GQZYa9OEGe2MQKeB+13u8QcvjUJTXZYAxsPWWTc8PslTeiOgJ0YlL0rJ8qhB780eE348d
+Chua1IiIq2M4fS2zZqpxNPuLlGsYHgtppqrcFk2cXL33SuCiHnR3BOdfZZ1MWBTqm/iwZCGQGUbj
+tns=
+=fby2
+-----END PGP SIGNATURE-----
 
-Same for this.
-
--- 
-Best regards,
-
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+--------------W3gjda6T5dPdYMTLKtvUwblT--

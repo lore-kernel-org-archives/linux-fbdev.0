@@ -2,106 +2,195 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 567BAC43334
-	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Jul 2022 11:42:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79171C43334
+	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Jul 2022 11:45:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230158AbiGKLml (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 11 Jul 2022 07:42:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60170 "EHLO
+        id S231154AbiGKLpr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 11 Jul 2022 07:45:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59888 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229777AbiGKLma (ORCPT
+        with ESMTP id S230376AbiGKLp3 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 11 Jul 2022 07:42:30 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 0BDF0CDC
-        for <linux-fbdev@vger.kernel.org>; Mon, 11 Jul 2022 04:33:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1657539211;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=C+eRpdrxBgQt0p6K0v1wmxFNTfVvVH/tFOB6mgp15MI=;
-        b=eZQFrXb4TBRjn20paMUJ7te8wa9HPV1OznJBzT1tok6RVixm7WZEioH2y0q/0lmSdjU0P6
-        kSeLKHQtS/PFyDiFiu0ia/M2dIB1NNgWOfy5YFPntgteBGeT0gzA5s8kdlDczy9iAxxssJ
-        fwuixmGRVjPqcp2jxGdyRqZ1clM5+gY=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-426-IFDxCkHCPA2dI3hoQ_Q--Q-1; Mon, 11 Jul 2022 07:33:27 -0400
-X-MC-Unique: IFDxCkHCPA2dI3hoQ_Q--Q-1
-Received: by mail-wm1-f71.google.com with SMTP id c187-20020a1c35c4000000b003a19b3b9e6cso5092482wma.5
-        for <linux-fbdev@vger.kernel.org>; Mon, 11 Jul 2022 04:33:27 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=C+eRpdrxBgQt0p6K0v1wmxFNTfVvVH/tFOB6mgp15MI=;
-        b=m/nlNvSnbtVrKmOaYPJCDzBbaBf6w7F+VUYW8NHRxeGycAUGNC4XO1BDsE1R1ycjoz
-         43oegtOvZHJRmHOEU7sPg9M/IzAcir9xGsyNdcl3mSa33j/HJQ9SmJwH4ClBr8I65uFT
-         bYva9VlWZJztlp0YtrbZcyzXZVuPDo7bKJ5OTxhCKCVyRyjFX11hzQVt7BDWEkO4hEl1
-         RC3b6S3z5wamu2dkAASWHFRPSsYkWPp7NifnuqmIcmC5g3MiBobSPJDC2tW7GlvtQKV8
-         G4v5M8Dja5Bh4zmXW0UJLLNP56d8AN8njzc7uf3uFl9tWnJS3qWahl+lj/WMp4h9pkf3
-         Dc3A==
-X-Gm-Message-State: AJIora/KGY3K11M8N81pxUjqKWUe1MaWsStAY79XV5g4GyCFNfawabCA
-        BXWxlhu1g3Jp9+BKJPSDp6d9i/09ArsXAjtpcURrhhD8lK5laLKb8wE59kSblaT/g0W97R+2aca
-        +XlgaL1IW6T+rOo+43SRo934=
-X-Received: by 2002:a05:6000:1846:b0:21d:90e9:eb38 with SMTP id c6-20020a056000184600b0021d90e9eb38mr15874534wri.264.1657539206839;
-        Mon, 11 Jul 2022 04:33:26 -0700 (PDT)
-X-Google-Smtp-Source: AGRyM1ukVj1igcMMa9SefXsYyz4JKT4jyMTF7lkAOL7ByBHf0PskNwLBAgeRnDAzuL41/lTsk2X9tQ==
-X-Received: by 2002:a05:6000:1846:b0:21d:90e9:eb38 with SMTP id c6-20020a056000184600b0021d90e9eb38mr15874520wri.264.1657539206675;
-        Mon, 11 Jul 2022 04:33:26 -0700 (PDT)
-Received: from [192.168.1.129] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id q6-20020a1cf306000000b003a033177655sm9811923wmq.29.2022.07.11.04.33.25
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 11 Jul 2022 04:33:26 -0700 (PDT)
-Message-ID: <93fd9fd9-eb43-49b2-4322-95952626895b@redhat.com>
-Date:   Mon, 11 Jul 2022 13:33:25 +0200
+        Mon, 11 Jul 2022 07:45:29 -0400
+Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com [66.111.4.26])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 848831B7B9;
+        Mon, 11 Jul 2022 04:42:14 -0700 (PDT)
+Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
+        by mailout.nyi.internal (Postfix) with ESMTP id 8E1955C013B;
+        Mon, 11 Jul 2022 07:42:10 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute5.internal (MEProxy); Mon, 11 Jul 2022 07:42:10 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=cc
+        :cc:content-type:date:date:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to; s=fm2; t=1657539730; x=1657626130; bh=65xJGGrqgx
+        njVVpdic5sDfiZGfil8T9lrpxrDrPHf8g=; b=HH/oTqjkcgrCHZYQXcX34oNi2K
+        v2nwKLFL6z8ieVJvkDHC2/65uCw4GqEi7rfDiBQ3+va/U9slT9f18Y9zKOXK9X4k
+        9ilYU46tQruBfK6Xa8pn+UjeoQcKPU2/g+30tOimqCTZJcSBxvKnGA1bFLSmBw6L
+        TTvBjWDvx6ACJuzhc/sU6BRTVbi/vQcTb0mrgzv1xEP5sxZ+xByigzyuXEOgv/2q
+        98qc7V1d8rglqZkngnrnkqzkLPqhADyQo8qYPojZGFwpUg5eue2yZ7H//bReDeJF
+        KerxiCkE1e3uUMCRN0RkLEuGrpXZD7q85BBVCg/rWUsqogj40QxrWGO7vrkQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
+        :feedback-id:from:from:in-reply-to:in-reply-to:message-id
+        :mime-version:references:reply-to:sender:subject:subject:to:to
+        :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+        fm3; t=1657539730; x=1657626130; bh=65xJGGrqgxnjVVpdic5sDfiZGfil
+        8T9lrpxrDrPHf8g=; b=SM3pwVw/xvpwPzEDiqdckW7A4Y+apqrkRj2qxW2dHpSr
+        W32C+6Yr2aW6lEClvZgzLSa1dl9T5s9zuMPQTe4YLAJx/vBroR3Cyh+KgyouUSr9
+        u/2ZxyXhLxXPQg1nw1tlfcZ3FIQQ3kdQgA12znOPg1+JntdJnKEKz5dgWDwAFnvN
+        qxS5A9piswC9OdTwScnXKKTQRXAHPTV9gsx0CWiCsu3nKrLBXPirWAMq9chKxJKj
+        hg3ekMROL5/X0H2YoMHV7IduIkpNI8KV+sCvL0T3fUgxNJvvG+EEgDHk44/c3/TN
+        tprAeyYSU6CSa+R8OpFx1gcstGWKeR8F9rzQnvZOoA==
+X-ME-Sender: <xms:kQzMYv6aGsTlyGCWJj2O8_3HBbowEcshnFvorQPQMXV1g3wE_HGc5A>
+    <xme:kQzMYk5OstTLK1E3FOtat7kPi8KBy7NhDj2vRdj5pbZxFRQTmXRGHlUL6kFLXIW2N
+    gwGgaV2XmP1motf3ow>
+X-ME-Received: <xmr:kQzMYmfDjY1o2XAncdq2l8XzWaTHY9aRFocnAQmF76LGF-pGByeWRxy-5eL45gp1k2LOBEVLwJCJTyqqSSonyaKQrpdeLdKaZ9AaUc8>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrudejfedgfeelucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepfffhvfevuffkfhggtggujgesghdtreertddtvdenucfhrhhomhepofgrgihi
+    mhgvucftihhprghrugcuoehmrgigihhmvgestggvrhhnohdrthgvtghhqeenucggtffrrg
+    htthgvrhhnpefgkeevueetgffhueeujefhgeejiefgiedtveefgfdugefhteejgedufedv
+    geeukeenucffohhmrghinhepsghoohhtlhhinhdrtghomhdpfihikhhiphgvughirgdroh
+    hrghenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehm
+    rgigihhmvgestggvrhhnohdrthgvtghh
+X-ME-Proxy: <xmx:kQzMYgIpwlyetzGyREVDazqmlrNxuxwjsUwYDYiCSpoMUYI5JiyNrA>
+    <xmx:kQzMYjIGn7UY-kdG9RPUgDecNKS9Q7x8WOGXiSR47xexBommMXEiig>
+    <xmx:kQzMYpwrRcfOhPv-CTR3BPIAulKFPs98dXVR_JaA-0cffCl8IX0X6A>
+    <xmx:kgzMYq9T4G60-J4BnJWcyTtUCNNfVlt7Nhz10dG_BXN6yCUelZWuaA>
+Feedback-ID: i8771445c:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 11 Jul 2022 07:42:09 -0400 (EDT)
+Date:   Mon, 11 Jul 2022 13:42:06 +0200
+From:   Maxime Ripard <maxime@cerno.tech>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Hans de Goede <hdegoede@redhat.com>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] drm/modes: Add support for driver-specific named
+ modes
+Message-ID: <20220711114206.sawqdl54ibuxsxp4@houat>
+References: <cover.1657301107.git.geert@linux-m68k.org>
+ <68923c8a129b6c2a70b570103679a1cf7876bbc2.1657301107.git.geert@linux-m68k.org>
+ <ef2aada2-96e4-c2e4-645f-39bc9094e93a@suse.de>
+ <20220711093513.wilv6e6aqcuyg52w@houat>
+ <43d75dce-988a-0a95-cb0a-0d0a7c81ca63@suse.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH 11/11] fbdev: Remove conflict-handling code
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
-        daniel@ffwll.ch, sam@ravnborg.org, maxime@cerno.tech
-Cc:     linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        dri-devel@lists.freedesktop.org
-References: <20220707153952.32264-1-tzimmermann@suse.de>
- <20220707153952.32264-12-tzimmermann@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <20220707153952.32264-12-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="ochmvmz2mndf2rso"
+Content-Disposition: inline
+In-Reply-To: <43d75dce-988a-0a95-cb0a-0d0a7c81ca63@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/7/22 17:39, Thomas Zimmermann wrote:
-> Remove the call to do_remove_conflicting_framebuffers() from the
-> framebuffer registration. Aperture helpers take care of removing
-> conflicting devices. With all ownership information stored in the
-> aperture datastrcutures, remove remove_conflicting_framebuffers()
 
-data structures.
+--ochmvmz2mndf2rso
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> entirely.
-> 
-> This change also rectifies DRM generic-framebuffer registration, which
-> tried to unregister conflicting framebuffers, even though it's entirely
-> build on top of DRM.
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
+On Mon, Jul 11, 2022 at 01:11:14PM +0200, Thomas Zimmermann wrote:
+> Hi Maxime
+>=20
+> Am 11.07.22 um 11:35 schrieb Maxime Ripard:
+> > Hi Thomas,
+> >=20
+> > On Mon, Jul 11, 2022 at 11:03:38AM +0200, Thomas Zimmermann wrote:
+> > > Am 08.07.22 um 20:21 schrieb Geert Uytterhoeven:
+> > > > The mode parsing code recognizes named modes only if they are expli=
+citly
+> > > > listed in the internal whitelist, which is currently limited to "NT=
+SC"
+> > > > and "PAL".
+> > > >=20
+> > > > Provide a mechanism for drivers to override this list to support cu=
+stom
+> > > > mode names.
+> > > >=20
+> > > > Ideally, this list should just come from the driver's actual list of
+> > > > modes, but connector->probed_modes is not yet populated at the time=
+ of
+> > > > parsing.
+> > >=20
+> > > I've looked for code that uses these names, couldn't find any. How is=
+ this
+> > > being used in practice? For example, if I say "PAL" on the command li=
+ne, is
+> > > there DRM code that fills in the PAL mode parameters?
+> >=20
+> > We have some code to deal with this in sun4i:
+> > https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/sun4i/su=
+n4i_tv.c#L292
+> >=20
+> > It's a bit off topic, but for TV standards, I'm still not sure what the
+> > best course of action is. There's several interactions that make this a
+> > bit troublesome:
+> >=20
+> >    * Some TV standards differ by their mode (ie, PAL vs NSTC), but some
+> >      other differ by parameters that are not part of drm_display_mode
+> >      (NTSC vs NSTC-J where the only difference is the black and blanking
+> >      signal levels for example).
+> >=20
+> >    * The mode names allow to provide a fairly convenient way to add that
+> >      extra information, but the userspace is free to create its own mode
+> >      and might omit the mode name entirely.
+> >=20
+> > So in the code above, if the name has been preserved we match by name,
+> > but we fall back to matching by mode if it hasn't been, which in this
+> > case means that we have no way to differentiate between NTSC, NTSC-J,
+> > PAL-M in this case.
+> >=20
+> > We have some patches downstream for the RaspberryPi that has the TV
+> > standard as a property. There's a few extra logic required for the
+> > userspace (like setting the PAL property, with the NTSC mode) so I'm not
+> > sure it's preferable.
+> >=20
+> > Or we could do something like a property to try that standard, and
+> > another that reports the one we actually chose.
+> >=20
+> > > And another question I have is whether this whitelist belongs into the
+> > > driver at all. Standard modes exist independent from drivers or hardw=
+are.
+> > > Shouldn't there simply be a global list of all possible mode names? D=
+rivers
+> > > would filter out the unsupported modes anyway.
+> >=20
+> > We should totally do something like that, yeah
+>=20
+> That sun code already looks like sometihng the DRM core/helpers should be
+> doing. And if we want to support named modes well, there's a long list of
+> modes in Wikipedia.
+>
+> https://en.wikipedia.org/wiki/Video_Graphics_Array#/media/File:Vector_Vid=
+eo_Standards2.svg
 
-Amazing patch! The whole series really. Thanks a lot for working on this.
+Yeah, and NTSC is missing :)
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Thinking about this some more, I'm not sure how we would do that. Like I
+said, we would need some extra parameters to drm_display_mode (like
+blanking levels) that the core would need to pass to the driver.
 
--- 
-Best regards,
+If we go through the property route, I think the core could just look at
+the name, with the new mode and state, and the driver should deal with
+it. I'm not sure we can do more than that.
 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+Maxime
 
+--ochmvmz2mndf2rso
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCYswMjgAKCRDj7w1vZxhR
+xVEnAP9X1YCEDZqn7PwDG4wC6RHwW3pwln90ztgI5n66WY0ckgEA3+Owyei3UCjf
+z4cZW6l3/ZzQj6xt4UxCXTf9Cd2AVAo=
+=2IFI
+-----END PGP SIGNATURE-----
+
+--ochmvmz2mndf2rso--

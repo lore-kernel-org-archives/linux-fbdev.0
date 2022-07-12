@@ -2,541 +2,105 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADFA2C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Jul 2022 15:29:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2708BC43334
+	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Jul 2022 18:06:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233553AbiGLP32 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 12 Jul 2022 11:29:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37882 "EHLO
+        id S233395AbiGLSGo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 12 Jul 2022 14:06:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36074 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233459AbiGLP31 (ORCPT
+        with ESMTP id S233038AbiGLSGm (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 12 Jul 2022 11:29:27 -0400
-Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06E8D74790
-        for <linux-fbdev@vger.kernel.org>; Tue, 12 Jul 2022 08:29:23 -0700 (PDT)
-Received: by mail-wr1-x42d.google.com with SMTP id o4so11699033wrh.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 12 Jul 2022 08:29:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=Q+JH/qWaiP2eJjuYW7C2uW3S0RkJ71Ub5nbWi6ekYbU=;
-        b=OczFGqywfdpy/mS2TpodOJOjuQVYsPEbYTpYSvI59PBCT2BHt/vguhiU3Z+P/25Xy1
-         NX12SAQIPHWI4v65pWrdKecJzJ1ZGNsVrm4p4CkSKIuywvfuizpOzZ9Wqb5Jt0s0UHBp
-         T5PS8SW072ViH7TP9Q1PP6fDrZJHGcvg2WmV6fg5I4zrNV3XGkuRlHjgoLdrxTGYU28w
-         Z87I9ucdUZ9RkKjmGgpr804KkfSTtYBOnSa8OCgcdq8A7jMi3r48eOJ1/nJefL8+oJ9R
-         cLWhrGedBVWmNXkrHud8KRNz7PKK4gOV5vdbwVuBC3Im5EaXVYsYxBfTlWzC718rBE5u
-         DBkg==
+        Tue, 12 Jul 2022 14:06:42 -0400
+Received: from mail-il1-f177.google.com (mail-il1-f177.google.com [209.85.166.177])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 878DCAE553;
+        Tue, 12 Jul 2022 11:06:36 -0700 (PDT)
+Received: by mail-il1-f177.google.com with SMTP id a20so5321208ilk.9;
+        Tue, 12 Jul 2022 11:06:36 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=Q+JH/qWaiP2eJjuYW7C2uW3S0RkJ71Ub5nbWi6ekYbU=;
-        b=lSihYOPp24NAd0Z+lsuM11rdT2u5vJA5jgXrXLK5rd/lQObEe9dxgdK8duy3bseCC6
-         1oZro73fbiLWcE9QS308NWBBgECaxtTE1P/eTmif6t+CvETxxsbxAXq/jrrSKlzR75Hr
-         2jkThiXNGoyGzcSsASQZOR2Kho7hN5b+jQWkKVRg/jCBrEjO1p/4FrqgUZoMTOTD/byh
-         +UHCVQ2V9PJyijqPPgKOpGV57E0OW/nIT5IzQ//JKGKN23kKL2xJuyRSQ+Ud4EoHwgVN
-         dRgXAq1EqMjQs+iAccw6hQ5+CVpDIQoYGhiOMoO0TBpnTeFs901b5vs9dJtc/xH4TtjE
-         695w==
-X-Gm-Message-State: AJIora+Uejqs+ehypkISevcqLyTst5TEKxBwQDd6RB1tK8JSj4RObXyS
-        30fFrRCN1NTdOenVfI2LMeTB1w==
-X-Google-Smtp-Source: AGRyM1uSLPcm2Pav8BPF3Jx+Guud3701li2mH9y8hYpZuHdD2WZOCC/W4swCDeXJTVRAPp66ckDPSg==
-X-Received: by 2002:a5d:414a:0:b0:21d:6be5:1765 with SMTP id c10-20020a5d414a000000b0021d6be51765mr22980167wrq.419.1657639761463;
-        Tue, 12 Jul 2022 08:29:21 -0700 (PDT)
-Received: from google.com (cpc155339-bagu17-2-0-cust87.1-3.cable.virginm.net. [86.27.177.88])
-        by smtp.gmail.com with ESMTPSA id ay26-20020a05600c1e1a00b003a2e89d1fb5sm5149242wmb.42.2022.07.12.08.29.19
+         :mime-version:content-disposition:in-reply-to;
+        bh=YtzP7I40RQyEUjKbXHB73J4wJHJ46s1Pzo+UKJfysDc=;
+        b=50V9cYcO9thGrAX5MUBBL5TTQfHJW20x4pvbSIrcJuQfwnWNPJEpl14/9aPDo1/yNH
+         4nu6rTI2EyeJk3jO+SDn+NrbA0pS2m29ieOCzhxbNDqlTObzXDx7o2ulVu8P1aFJjHpU
+         NDQ3WW1dhOnE1Z1Syd5Ic5zylwS0sgrg72aPSdCpa51E+5yKhLsJ2WFUFwi7SjDK8doE
+         i82jl4mb+F0Y1MpvOIt9iy3rk8S5Z90ZCka6SkiinzuRSKaUFA35qQDVnMORLX9tE5eL
+         w1UxstMGv7J1uUJcnEf4HH+jaNtVCdEROYRs/ZBtnNRWaSSVjN/RlP5Q+wrv2DjLMXjB
+         n12Q==
+X-Gm-Message-State: AJIora8x8LhOYdYYjyDvV15wjZaOWO5O0xEwEmg4hJAX2z6unW1+gLWG
+        k9NIYlD7VVNHX011LAruNA==
+X-Google-Smtp-Source: AGRyM1uQj9XqR1H/j1xEWpea/Q+tQa2PKHOSbgCLwSEg/z123utZodWxiVGVv4vw8BKVxtlj/J0DYg==
+X-Received: by 2002:a05:6e02:154d:b0:2dc:6324:e1be with SMTP id j13-20020a056e02154d00b002dc6324e1bemr11287953ilu.47.1657649195773;
+        Tue, 12 Jul 2022 11:06:35 -0700 (PDT)
+Received: from robh.at.kernel.org ([64.188.179.248])
+        by smtp.gmail.com with ESMTPSA id cq7-20020a056638478700b0033f21999e6csm4389983jab.90.2022.07.12.11.06.33
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 12 Jul 2022 08:29:20 -0700 (PDT)
-Date:   Tue, 12 Jul 2022 16:29:18 +0100
-From:   Lee Jones <lee.jones@linaro.org>
-To:     ChiaEn Wu <peterwu.pub@gmail.com>
-Cc:     daniel.thompson@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        matthias.bgg@gmail.com, sre@kernel.org, chunfeng.yun@mediatek.com,
-        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
-        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
-        heikki.krogerus@linux.intel.com, deller@gmx.de,
-        chiaen_wu@richtek.com, alice_chen@richtek.com,
-        cy_huang@richtek.com, dri-devel@lists.freedesktop.org,
-        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        szunichen@gmail.com
-Subject: Re: [PATCH v3 07/14] mfd: mt6370: Add Mediatek MT6370 support
-Message-ID: <Ys2TTsv1oU8n1fUE@google.com>
-References: <20220623115631.22209-1-peterwu.pub@gmail.com>
- <20220623115631.22209-8-peterwu.pub@gmail.com>
+        Tue, 12 Jul 2022 11:06:35 -0700 (PDT)
+Received: (nullmailer pid 2112717 invoked by uid 1000);
+        Tue, 12 Jul 2022 18:06:32 -0000
+Date:   Tue, 12 Jul 2022 12:06:32 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Rex-BC Chen <rex-bc.chen@mediatek.com>
+Cc:     chunkuang.hu@kernel.org, p.zabel@pengutronix.de, daniel@ffwll.ch,
+        krzysztof.kozlowski+dt@linaro.org, mripard@kernel.org,
+        tzimmermann@suse.de, matthias.bgg@gmail.com, deller@gmx.de,
+        airlied@linux.ie, msp@baylibre.com, granquet@baylibre.com,
+        jitao.shi@mediatek.com, wenst@chromium.org,
+        angelogioacchino.delregno@collabora.com, ck.hu@mediatek.com,
+        liangxu.xu@mediatek.com, dri-devel@lists.freedesktop.org,
+        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-fbdev@vger.kernel.org,
+        Project_Global_Chrome_Upstream_Group@mediatek.com
+Subject: Re: [PATCH v13 01/10] dt-bindings: mediatek,dp: Add Display Port
+ binding
+Message-ID: <20220712180632.GH1823936-robh@kernel.org>
+References: <20220701062808.18596-1-rex-bc.chen@mediatek.com>
+ <20220701062808.18596-2-rex-bc.chen@mediatek.com>
+ <20220701202914.GA1457156-robh@kernel.org>
+ <d8b6f7d9b79608c9a533042f714869219ad067be.camel@mediatek.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20220623115631.22209-8-peterwu.pub@gmail.com>
+In-Reply-To: <d8b6f7d9b79608c9a533042f714869219ad067be.camel@mediatek.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, 23 Jun 2022, ChiaEn Wu wrote:
-
-> From: ChiYuan Huang <cy_huang@richtek.com>
+On Tue, Jul 05, 2022 at 05:40:27PM +0800, Rex-BC Chen wrote:
+> On Fri, 2022-07-01 at 14:29 -0600, Rob Herring wrote:
+> > On Fri, Jul 01, 2022 at 02:27:59PM +0800, Bo-Chen Chen wrote:
+> > > From: Markus Schneider-Pargmann <msp@baylibre.com>
+> > > 
+> > > This controller is present on several mediatek hardware. Currently
+> > > mt8195 and mt8395 have this controller without a functional
+> > > difference,
+> > > so only one compatible field is added.
+> > > 
+> > > The controller can have two forms, as a normal display port and as
+> > > an
+> > > embedded display port.
+> > 
+> > I'm sure you answered this before, but I'll keep asking until the 
+> > information is contained within this patch. Otherwise, I won't
+> > remember. 
+> > Is there a h/w difference in the 2 blocks? Different registers? Why 
+> > can't you just look at what the output is connected to?
+> > 
 > 
-> Add Mediatek MT6370 MFD support.
-
-No such thing as "MFD support".
-
-And you're not getting away with submitting a 370 line patch with a 5
-word change log either. :)
-
-Please at least tell us what the device is and what it's used for.
-
-> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
-> ---
+> Hello Rob,
 > 
-> v3
-> - Refine Kconfig help text
-> - Refine error message of unknown vendor ID in
->   mt6370_check_vendor_info()
-> - Refine return value handling of mt6370_regmap_read()
-> - Refine all probe error by using dev_err_probe()
-> - Refine "bank_idx" and "bank_addr" in mt6370_regmap_read() and
->   mt6370_regmap_write()
-> - Add "#define VENID*" and drop the comments in
->   mt6370_check_vendor_info()
-> - Drop "MFD" in MODULE_DESCRIPTION()
-> ---
->  drivers/mfd/Kconfig  |  13 ++
->  drivers/mfd/Makefile |   1 +
->  drivers/mfd/mt6370.c | 358 +++++++++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 372 insertions(+)
->  create mode 100644 drivers/mfd/mt6370.c
-> 
-> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-> index 3b59456..4c900c4 100644
-> --- a/drivers/mfd/Kconfig
-> +++ b/drivers/mfd/Kconfig
-> @@ -937,6 +937,19 @@ config MFD_MT6360
->  	  PMIC part includes 2-channel BUCKs and 2-channel LDOs
->  	  LDO part includes 4-channel LDOs
->  
-> +config MFD_MT6370
-> +	tristate "Mediatek MT6370 SubPMIC"
-> +	select MFD_CORE
-> +	select REGMAP_I2C
-> +	select REGMAP_IRQ
-> +	depends on I2C
-> +	help
-> +	  Say Y here to enable MT6370 SubPMIC functional support.
-> +	  It consists of a single cell battery charger with ADC monitoring, RGB
-> +	  LEDs, dual channel flashlight, WLED backlight driver, display bias
-> +	  voltage supply, one general purpose LDO, and the USB Type-C & PD
-> +	  controller complies with the latest USB Type-C and PD standards.
-> +
->  config MFD_MT6397
->  	tristate "MediaTek MT6397 PMIC Support"
->  	select MFD_CORE
-> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-> index 858cacf..62b2712 100644
-> --- a/drivers/mfd/Makefile
-> +++ b/drivers/mfd/Makefile
-> @@ -242,6 +242,7 @@ obj-$(CONFIG_INTEL_SOC_PMIC_BXTWC)	+= intel_soc_pmic_bxtwc.o
->  obj-$(CONFIG_INTEL_SOC_PMIC_CHTWC)	+= intel_soc_pmic_chtwc.o
->  obj-$(CONFIG_INTEL_SOC_PMIC_CHTDC_TI)	+= intel_soc_pmic_chtdc_ti.o
->  obj-$(CONFIG_MFD_MT6360)	+= mt6360-core.o
-> +obj-$(CONFIG_MFD_MT6370)	+= mt6370.o
->  mt6397-objs			:= mt6397-core.o mt6397-irq.o mt6358-irq.o
->  obj-$(CONFIG_MFD_MT6397)	+= mt6397.o
->  obj-$(CONFIG_INTEL_SOC_PMIC_MRFLD)	+= intel_soc_pmic_mrfld.o
-> diff --git a/drivers/mfd/mt6370.c b/drivers/mfd/mt6370.c
-> new file mode 100644
-> index 0000000..49f02b1
-> --- /dev/null
-> +++ b/drivers/mfd/mt6370.c
-> @@ -0,0 +1,358 @@
-> +// SPDX-License-Identifier: GPL-2.0
+> Thanks for your review.
+> Yes, it's two different hw for edp and dp and they have different
+> registers base address.
 
-No Copyright?
+Multiple instances *always* have different base addresses. That's not a 
+difference.
 
-> +#include <linux/bits.h>
-> +#include <linux/i2c.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/kernel.h>
-> +#include <linux/mfd/core.h>
-> +#include <linux/module.h>
-> +#include <linux/regmap.h>
-> +
-> +enum {
-> +	MT6370_USBC_I2C = 0,
-> +	MT6370_PMU_I2C,
-> +	MT6370_MAX_I2C
-> +};
-> +
-> +#define MT6370_REG_DEV_INFO	0x100
-> +#define MT6370_REG_CHG_IRQ1	0x1C0
-> +#define MT6370_REG_CHG_MASK1	0x1E0
-> +
-> +#define MT6370_VENID_MASK	GENMASK(7, 4)
-> +
-> +#define MT6370_NUM_IRQREGS	16
-> +#define MT6370_USBC_I2CADDR	0x4E
-> +#define MT6370_REG_ADDRLEN	2
-> +#define MT6370_REG_MAXADDR	0x1FF
-> +
-> +#define MT6370_VENID_RT5081	0x8
-> +#define MT6370_VENID_RT5081A	0xA
-> +#define MT6370_VENID_MT6370	0xE
-> +#define MT6370_VENID_MT6371	0xF
-> +#define MT6370_VENID_MT6372P	0x9
-> +#define MT6370_VENID_MT6372CP	0xB
-> +
-> +/* IRQ definitions */
-> +#define MT6370_IRQ_DIRCHGON		0
-> +#define MT6370_IRQ_CHG_TREG		4
-> +#define MT6370_IRQ_CHG_AICR		5
-> +#define MT6370_IRQ_CHG_MIVR		6
-> +#define MT6370_IRQ_PWR_RDY		7
-> +#define MT6370_IRQ_FL_CHG_VINOVP	11
-> +#define MT6370_IRQ_CHG_VSYSUV		12
-> +#define MT6370_IRQ_CHG_VSYSOV		13
-> +#define MT6370_IRQ_CHG_VBATOV		14
-> +#define MT6370_IRQ_CHG_VINOVPCHG	15
-> +#define MT6370_IRQ_TS_BAT_COLD		20
-> +#define MT6370_IRQ_TS_BAT_COOL		21
-> +#define MT6370_IRQ_TS_BAT_WARM		22
-> +#define MT6370_IRQ_TS_BAT_HOT		23
-> +#define MT6370_IRQ_TS_STATC		24
-> +#define MT6370_IRQ_CHG_FAULT		25
-> +#define MT6370_IRQ_CHG_STATC		26
-> +#define MT6370_IRQ_CHG_TMR		27
-> +#define MT6370_IRQ_CHG_BATABS		28
-> +#define MT6370_IRQ_CHG_ADPBAD		29
-> +#define MT6370_IRQ_CHG_RVP		30
-> +#define MT6370_IRQ_TSHUTDOWN		31
-> +#define MT6370_IRQ_CHG_IINMEAS		32
-> +#define MT6370_IRQ_CHG_ICCMEAS		33
-> +#define MT6370_IRQ_CHGDET_DONE		34
-> +#define MT6370_IRQ_WDTMR		35
-> +#define MT6370_IRQ_SSFINISH		36
-> +#define MT6370_IRQ_CHG_RECHG		37
-> +#define MT6370_IRQ_CHG_TERM		38
-> +#define MT6370_IRQ_CHG_IEOC		39
-> +#define MT6370_IRQ_ADC_DONE		40
-> +#define MT6370_IRQ_PUMPX_DONE		41
-> +#define MT6370_IRQ_BST_BATUV		45
-> +#define MT6370_IRQ_BST_MIDOV		46
-> +#define MT6370_IRQ_BST_OLP		47
-> +#define MT6370_IRQ_ATTACH		48
-> +#define MT6370_IRQ_DETACH		49
-> +#define MT6370_IRQ_HVDCP_STPDONE	51
-> +#define MT6370_IRQ_HVDCP_VBUSDET_DONE	52
-> +#define MT6370_IRQ_HVDCP_DET		53
-> +#define MT6370_IRQ_CHGDET		54
-> +#define MT6370_IRQ_DCDT			55
-> +#define MT6370_IRQ_DIRCHG_VGOK		59
-> +#define MT6370_IRQ_DIRCHG_WDTMR		60
-> +#define MT6370_IRQ_DIRCHG_UC		61
-> +#define MT6370_IRQ_DIRCHG_OC		62
-> +#define MT6370_IRQ_DIRCHG_OV		63
-> +#define MT6370_IRQ_OVPCTRL_SWON		67
-> +#define MT6370_IRQ_OVPCTRL_UVP_D	68
-> +#define MT6370_IRQ_OVPCTRL_UVP		69
-> +#define MT6370_IRQ_OVPCTRL_OVP_D	70
-> +#define MT6370_IRQ_OVPCTRL_OVP		71
-> +#define MT6370_IRQ_FLED_STRBPIN		72
-> +#define MT6370_IRQ_FLED_TORPIN		73
-> +#define MT6370_IRQ_FLED_TX		74
-> +#define MT6370_IRQ_FLED_LVF		75
-> +#define MT6370_IRQ_FLED2_SHORT		78
-> +#define MT6370_IRQ_FLED1_SHORT		79
-> +#define MT6370_IRQ_FLED2_STRB		80
-> +#define MT6370_IRQ_FLED1_STRB		81
-> +#define mT6370_IRQ_FLED2_STRB_TO	82
-> +#define MT6370_IRQ_FLED1_STRB_TO	83
-> +#define MT6370_IRQ_FLED2_TOR		84
-> +#define MT6370_IRQ_FLED1_TOR		85
-> +#define MT6370_IRQ_OTP			93
-> +#define MT6370_IRQ_VDDA_OVP		94
-> +#define MT6370_IRQ_VDDA_UV		95
-> +#define MT6370_IRQ_LDO_OC		103
-> +#define MT6370_IRQ_BLED_OCP		118
-> +#define MT6370_IRQ_BLED_OVP		119
-> +#define MT6370_IRQ_DSV_VNEG_OCP		123
-> +#define MT6370_IRQ_DSV_VPOS_OCP		124
-> +#define MT6370_IRQ_DSV_BST_OCP		125
-> +#define MT6370_IRQ_DSV_VNEG_SCP		126
-> +#define MT6370_IRQ_DSV_VPOS_SCP		127
+I probably asked before on what the difference is between edp and dp 
+variants if anything? If the blocks have some difference then, different 
+compatibles makes sense. But you need to explain the difference or I'll 
+just be asking again...
 
-Can you pop these into a header file please?
-
-> +struct mt6370_info {
-> +	struct i2c_client *i2c[MT6370_MAX_I2C];
-> +	struct device *dev;
-
-You don't need both 'i2c' and 'dev'.
-
-You can derive one from the other.
-
-> +	struct regmap *regmap;
-> +	struct regmap_irq_chip_data *irq_data;
-> +};
-
-This can do into the header file too.
-
-> +static const struct regmap_irq mt6370_irqs[] = {
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_DIRCHGON, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_TREG, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_AICR, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_MIVR, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_PWR_RDY, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_FL_CHG_VINOVP, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_VSYSUV, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_VSYSOV, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_VBATOV, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_VINOVPCHG, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_TS_BAT_COLD, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_TS_BAT_COOL, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_TS_BAT_WARM, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_TS_BAT_HOT, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_TS_STATC, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_FAULT, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_STATC, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_TMR, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_BATABS, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_ADPBAD, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_RVP, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_TSHUTDOWN, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_IINMEAS, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_ICCMEAS, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHGDET_DONE, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_WDTMR, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_SSFINISH, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_RECHG, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_TERM, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHG_IEOC, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_ADC_DONE, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_PUMPX_DONE, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_BST_BATUV, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_BST_MIDOV, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_BST_OLP, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_ATTACH, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_DETACH, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_HVDCP_STPDONE, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_HVDCP_VBUSDET_DONE, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_HVDCP_DET, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_CHGDET, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_DCDT, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_DIRCHG_VGOK, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_DIRCHG_WDTMR, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_DIRCHG_UC, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_DIRCHG_OC, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_DIRCHG_OV, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_OVPCTRL_SWON, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_OVPCTRL_UVP_D, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_OVPCTRL_UVP, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_OVPCTRL_OVP_D, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_OVPCTRL_OVP, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_FLED_STRBPIN, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_FLED_TORPIN, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_FLED_TX, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_FLED_LVF, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_FLED2_SHORT, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_FLED1_SHORT, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_FLED2_STRB, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_FLED1_STRB, 8),
-> +	REGMAP_IRQ_REG_LINE(mT6370_IRQ_FLED2_STRB_TO, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_FLED1_STRB_TO, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_FLED2_TOR, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_FLED1_TOR, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_OTP, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_VDDA_OVP, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_VDDA_UV, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_LDO_OC, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_BLED_OCP, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_BLED_OVP, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_DSV_VNEG_OCP, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_DSV_VPOS_OCP, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_DSV_BST_OCP, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_DSV_VNEG_SCP, 8),
-> +	REGMAP_IRQ_REG_LINE(MT6370_IRQ_DSV_VPOS_SCP, 8)
-> +};
-> +
-> +static const struct regmap_irq_chip mt6370_irq_chip = {
-> +	.name		= "mt6370-irqs",
-> +	.status_base	= MT6370_REG_CHG_IRQ1,
-> +	.mask_base	= MT6370_REG_CHG_MASK1,
-> +	.num_regs	= MT6370_NUM_IRQREGS,
-> +	.irqs		= mt6370_irqs,
-> +	.num_irqs	= ARRAY_SIZE(mt6370_irqs),
-> +};
-> +
-> +static const struct resource mt6370_regulator_irqs[] = {
-> +	DEFINE_RES_IRQ_NAMED(MT6370_IRQ_DSV_VPOS_SCP, "db_vpos_scp"),
-> +	DEFINE_RES_IRQ_NAMED(MT6370_IRQ_DSV_VNEG_SCP, "db_vneg_scp"),
-> +	DEFINE_RES_IRQ_NAMED(MT6370_IRQ_DSV_BST_OCP, "db_vbst_ocp"),
-> +	DEFINE_RES_IRQ_NAMED(MT6370_IRQ_DSV_VPOS_OCP, "db_vpos_ocp"),
-> +	DEFINE_RES_IRQ_NAMED(MT6370_IRQ_DSV_VNEG_OCP, "db_vneg_ocp"),
-> +	DEFINE_RES_IRQ_NAMED(MT6370_IRQ_LDO_OC, "ldo_oc")
-> +};
-> +
-> +static const struct mfd_cell mt6370_devices[] = {
-> +	MFD_CELL_OF("adc", NULL, NULL, 0, 0, "mediatek,mt6370-adc"),
-> +	MFD_CELL_OF("charger", NULL, NULL, 0, 0, "mediatek,mt6370-charger"),
-> +	MFD_CELL_OF("backlight", NULL, NULL, 0, 0, "mediatek,mt6370-backlight"),
-> +	MFD_CELL_OF("flashlight", NULL, NULL, 0, 0, "mediatek,mt6370-flashlight"),
-> +	MFD_CELL_OF("indicator", NULL, NULL, 0, 0, "mediatek,mt6370-indicator"),
-> +	MFD_CELL_OF("tcpc", NULL, NULL, 0, 0, "mediatek,mt6370-tcpc"),
-> +	MFD_CELL_RES("regulator", mt6370_regulator_irqs)
-
-The first parameters here should be prepended with something, perhaps
-"mt6370_"?
-
-> +};
-> +
-> +static int mt6370_check_vendor_info(struct mt6370_info *info)
-> +{
-> +	unsigned int devinfo;
-> +	int ret;
-> +
-> +	ret = regmap_read(info->regmap, MT6370_REG_DEV_INFO, &devinfo);
-> +	if (ret)
-> +		return ret;
-> +
-> +	switch (FIELD_GET(MT6370_VENID_MASK, devinfo)) {
-> +	case MT6370_VENID_RT5081:
-> +	case MT6370_VENID_RT5081A:
-> +	case MT6370_VENID_MT6370:
-> +	case MT6370_VENID_MT6371:
-> +	case MT6370_VENID_MT6372P:
-> +	case MT6370_VENID_MT6372CP:
-> +		break;
-> +	default:
-> +		dev_err(info->dev, "Unknown Vendor ID 0x%02x\n", devinfo);
-> +		return -ENODEV;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int mt6370_regmap_read(void *context, const void *reg_buf,
-> +			      size_t reg_size, void *val_buf, size_t val_size)
-> +{
-> +	struct mt6370_info *info = context;
-> +	u8 bank_idx, bank_addr;
-> +	int ret;
-> +
-> +	bank_idx = *(u8 *)reg_buf;
-> +	bank_addr = *(u8 *)(reg_buf + 1);
-> +
-> +	ret = i2c_smbus_read_i2c_block_data(info->i2c[bank_idx], bank_addr,
-> +					    val_size, val_buf);
-> +	if (ret < 0)
-> +		return ret;
-> +	else if (ret != val_size)
-> +		return -EIO;
-> +
-> +	return 0;
-> +}
-> +
-> +static int mt6370_regmap_write(void *context, const void *data, size_t count)
-> +{
-> +	struct mt6370_info *info = context;
-> +	u8 bank_idx, bank_addr;
-> +	int len = count - MT6370_REG_ADDRLEN;
-> +
-> +	bank_idx = *(u8 *)data;
-> +	bank_addr = *(u8 *)(data + 1);
-> +
-> +	return i2c_smbus_write_i2c_block_data(info->i2c[bank_idx], bank_addr,
-> +					      len, data + MT6370_REG_ADDRLEN);
-> +}
-> +
-> +static const struct regmap_bus mt6370_regmap_bus = {
-> +	.read		= mt6370_regmap_read,
-> +	.write		= mt6370_regmap_write,
-> +};
-> +
-> +static const struct regmap_config mt6370_regmap_config = {
-> +	.reg_bits		= 16,
-> +	.val_bits		= 8,
-> +	.reg_format_endian	= REGMAP_ENDIAN_BIG,
-> +	.max_register		= MT6370_REG_MAXADDR,
-> +};
-> +
-> +static int mt6370_probe(struct i2c_client *i2c)
-> +{
-> +	struct mt6370_info *info;
-> +	struct i2c_client *usbc_i2c;
-> +	int ret;
-> +
-> +	info = devm_kzalloc(&i2c->dev, sizeof(*info), GFP_KERNEL);
-> +	if (!info)
-> +		return -ENOMEM;
-> +
-> +	info->dev = &i2c->dev;
-> +
-> +	usbc_i2c = devm_i2c_new_dummy_device(&i2c->dev, i2c->adapter,
-> +					     MT6370_USBC_I2CADDR);
-> +	if (IS_ERR(usbc_i2c))
-> +		return dev_err_probe(&i2c->dev, PTR_ERR(usbc_i2c),
-> +				     "Failed to register USBC I2C client\n");
-> +
-> +	/* Assign I2C client for PMU and TypeC */
-> +	info->i2c[MT6370_PMU_I2C] = i2c;
-> +	info->i2c[MT6370_USBC_I2C] = usbc_i2c;
-> +
-> +	info->regmap = devm_regmap_init(&i2c->dev, &mt6370_regmap_bus, info,
-> +					&mt6370_regmap_config);
-
-Apart from in mt6370_check_vendor_info() where is this actually used?
-
-> +	if (IS_ERR(info->regmap))
-> +		return dev_err_probe(&i2c->dev, PTR_ERR(info->regmap),
-> +				     "Failed to register regmap\n");
-> +
-> +	ret = mt6370_check_vendor_info(info);
-> +	if (ret)
-> +		return dev_err_probe(&i2c->dev, ret,
-> +				     "Failed to check vendor info\n");
-> +
-> +	ret = devm_regmap_add_irq_chip(&i2c->dev, info->regmap, i2c->irq,
-> +				       IRQF_ONESHOT, -1, &mt6370_irq_chip,
-> +				       &info->irq_data);
-> +	if (ret)
-> +		return dev_err_probe(&i2c->dev, ret,
-> +				     "Failed to add irq chip\n");
-> +
-> +	return devm_mfd_add_devices(&i2c->dev, PLATFORM_DEVID_AUTO,
-> +				    mt6370_devices, ARRAY_SIZE(mt6370_devices),
-> +				    NULL, 0,
-> +				    regmap_irq_get_domain(info->irq_data));
-> +}
-> +
-> +static const struct of_device_id mt6370_match_table[] = {
-> +	{ .compatible = "mediatek,mt6370", },
-> +	{}
-> +};
-> +MODULE_DEVICE_TABLE(of, mt6370_match_table);
-> +
-> +static struct i2c_driver mt6370_driver = {
-> +	.driver = {
-> +		.name = "mt6370",
-> +		.of_match_table = mt6370_match_table,
-> +	},
-> +	.probe_new = mt6370_probe,
-> +};
-> +module_i2c_driver(mt6370_driver);
-> +
-> +MODULE_AUTHOR("ChiYuan Huang <cy_huang@richtek.com>");
-> +MODULE_DESCRIPTION("MT6370 I2C Driver");
-
-This is not an I2C driver.
-
-> +MODULE_LICENSE("GPL v2");
-
--- 
-Lee Jones [李琼斯]
-Principal Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Rob

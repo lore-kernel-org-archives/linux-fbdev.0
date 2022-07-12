@@ -2,170 +2,109 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC39BC43334
-	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Jul 2022 08:11:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8102FCCA482
+	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Jul 2022 08:19:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232113AbiGLILA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 12 Jul 2022 04:11:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41258 "EHLO
+        id S232614AbiGLITm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 12 Jul 2022 04:19:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49908 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232654AbiGLIKi (ORCPT
+        with ESMTP id S232276AbiGLITl (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 12 Jul 2022 04:10:38 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 086A29E47C;
-        Tue, 12 Jul 2022 01:10:14 -0700 (PDT)
-X-UUID: cfffe12f99f9400e8664b26b50cd4cf4-20220712
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.8,REQID:bb70b979-a0bc-4ec1-8984-3e71cd97a885,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:0
-X-CID-META: VersionHash:0f94e32,CLOUDID:0328be32-b9e4-42b8-b28a-6364427c76bb,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
-        ,QS:nil,BEC:nil,COL:0
-X-UUID: cfffe12f99f9400e8664b26b50cd4cf4-20220712
-Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw02.mediatek.com
-        (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 562334713; Tue, 12 Jul 2022 16:10:09 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Tue, 12 Jul 2022 16:10:07 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Tue, 12 Jul 2022 16:10:07 +0800
-Message-ID: <aa0b332468145634d6a9ef538da5c3eb26033de3.camel@mediatek.com>
-Subject: Re: [PATCH v13 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
- driver
-From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
-To:     CK Hu <ck.hu@mediatek.com>,
-        "chunkuang.hu@kernel.org" <chunkuang.hu@kernel.org>,
-        "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
-        "daniel@ffwll.ch" <daniel@ffwll.ch>,
-        "robh+dt@kernel.org" <robh+dt@kernel.org>,
-        "krzysztof.kozlowski+dt@linaro.org" 
-        <krzysztof.kozlowski+dt@linaro.org>,
-        "mripard@kernel.org" <mripard@kernel.org>,
-        "tzimmermann@suse.de" <tzimmermann@suse.de>,
-        "matthias.bgg@gmail.com" <matthias.bgg@gmail.com>,
-        "deller@gmx.de" <deller@gmx.de>,
-        "airlied@linux.ie" <airlied@linux.ie>
-CC:     "msp@baylibre.com" <msp@baylibre.com>,
-        "granquet@baylibre.com" <granquet@baylibre.com>,
-        "Jitao Shi =?UTF-8?Q?=28=E7=9F=B3=E8=AE=B0=E6=B6=9B=29?=" 
-        <jitao.shi@mediatek.com>,
-        "wenst@chromium.org" <wenst@chromium.org>,
-        "angelogioacchino.delregno@collabora.com" 
-        <angelogioacchino.delregno@collabora.com>,
-        "LiangXu Xu =?UTF-8?Q?=28=E5=BE=90=E4=BA=AE=29?=" 
-        <LiangXu.Xu@mediatek.com>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-mediatek@lists.infradead.org" 
-        <linux-mediatek@lists.infradead.org>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        Project_Global_Chrome_Upstream_Group 
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Tue, 12 Jul 2022 16:10:07 +0800
-In-Reply-To: <fde545ed10e3baa1a375eead29dd2d12d95b7cb2.camel@mediatek.com>
-References: <20220701062808.18596-1-rex-bc.chen@mediatek.com>
-         <20220701062808.18596-6-rex-bc.chen@mediatek.com>
-         <fde545ed10e3baa1a375eead29dd2d12d95b7cb2.camel@mediatek.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        Tue, 12 Jul 2022 04:19:41 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6792DA239A;
+        Tue, 12 Jul 2022 01:19:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1657613970;
+        bh=RZ/EJL3btc+F2hOcvq6PS/02fzcVymHrhmlsl8ctjeY=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=ZKKgHdk4YaFMgbMsNvVaXiLVHZksVveStccelbYwLSAO1e60A3khV/PVh8Fyic56X
+         KSPUwZaRxPi0sQ4Sf4NJfzBa2Dq3rWeKxNuzDQP7FxyzXS/bKOHakYMaYeLaPQJ9F9
+         xIMoioRu8swxC4Edn1/oCg67AVuoNgG4idDOwRFE=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.185.115]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1M4JmN-1oAu8J1HJh-000MJo; Tue, 12
+ Jul 2022 10:19:30 +0200
+Message-ID: <6e1095c7-5a7b-c71d-7d67-321214106126@gmx.de>
+Date:   Tue, 12 Jul 2022 10:18:53 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH 00/10] video: fbdev: atari: Miscellaneous fixes and
+ cleanups
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Michael Schmitz <schmitzmic@gmail.com>,
+        Jonathan Corbet <corbet@lwn.net>, linux-fbdev@vger.kernel.org,
+        linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <cover.1657554353.git.geert@linux-m68k.org>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <cover.1657554353.git.geert@linux-m68k.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:y6OTXSI/vDD0Tc+MGb9ohXJ9PmVo6065zAfD2JiW8O6WIvwH4b+
+ qyV6iWgCcllYv3nDjW391uFKSwN/tSYAjMmG0DEyUgfMhp/mt8CcPUC32UsqUzmrI6NDW39
+ ZjZ/YJXukVlZwLU1QQoZEjlhycryINuOzFlQD+1RIxgd8iSXwFw9iO+so/ZOoLJNdDNrIAk
+ QTEiETWTcvvApQkisUssg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:Gaa+xL1Kbec=:MZVxjw3JJRvAEL1HmzeYQF
+ utKKkEXMIWs6985XNF4x510rfnNbKU8K9TGo9ckn4IMZnUadKi6nSOdTv/ZeZSMJQB1W46mM7
+ +BL3IBgDiaVdLCtMHqwNDIDnktQVZYrELG5mbVx1XMw7lwe7vxZiW1Ag2cOIyL/it9VXSx3ua
+ iXXM4iV1ZaSgAASszGPJaGZnoEGjbunL7nGouTxF66/NdjXMacDg/zpNnxKv8uf6hlk9Y9PSi
+ XTVMxKq+JWHp9oIvcRjk0p5B2hHtsY/x6R7BBpHnYsvjegqRiVDOqxsxWlE65miJNwvNkHQlc
+ ss97i/JIrtmQ14X2LBFl532JjhFy8LPS8qBEq/FzbKRFthdhzVxbNvYbrBaj6+p0yI8umhTrp
+ Te/tEn7VrBqx5zy/k8DYALlKlRXzyeADo5W2EK/0B29aBmz4hw3lmk1HkjWlF/GqWF2Z6k1vH
+ sQtkCLAFVeftwSQBi3bcm6BhMwta8jU8T5SO/3fH/mXeu/dBzyMrtg14w1M4BrSvYIbyH0Num
+ vwbAhdagvvStKtrpkrwHI51jfWe2seSykqJYikkmSUgVGMQNtTI1uiCzzaigfIqMHaxxKCjdV
+ 8E+j5joAD3CDi7vjSFkHfDZ0KLVM+cQVmvmvzCkow6K6PkGtc+9vJH4GSuDpg5iJm829R3kPZ
+ Fc6UE/g8Wfs8Dvd3t322tunBsVABi1oWKm3lbvpPvAADomTfqGIN7Emar0bFTQMgPKhb44ekN
+ UdMnC2jeCe+XXJnrGmIXCNPgvg+vOmP1AhzMNTSzZPMLT/jSkZB4y3wtr/bl9GKPnsrT8Lh9z
+ ZWZjnFQxnbIep8AJL+YGTaN+Q7RN8snv16uhieEMbVXVQSLEfdKfVyk/RI+9ER6/mhwcmrvmX
+ z7nUN+5YKBEE9e4e9cTTH7lhrdm4D3m2Bcxk6dZIha6L4UdpWKM7HMw5YXUJVU1qJGiX9T2cz
+ siEmGeZe8Wnl/IYuJrt0/zj2/S/6/JqLnpvcWfk/mcHvvz5ntig9ejp5zlc3yLRZfbYqaJmdk
+ Yw/C+7hdm1N71OeCS2n8tP8/TOPMlFpTwcNvIsPkRdgrBDQo83kx1UF0hXWIERyXMOMRSyWYT
+ 9+uXkXiv/g8KAfP5XkEFClBFJgdRlQ0t7hQKTE8XOSn/GZX5TPZYSQxPA==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, 2022-07-07 at 10:21 +0800, CK Hu wrote:
-> Hi, Bo-Chen:
-> 
-> On Fri, 2022-07-01 at 14:28 +0800, Bo-Chen Chen wrote:
-> > From: Markus Schneider-Pargmann <msp@baylibre.com>
-> > 
-> > This patch adds a embedded displayport driver for the MediaTek
-> > mt8195
-> > SoC.
-> > 
-> > It supports the MT8195, the embedded DisplayPort units. It offers
-> > DisplayPort 1.4 with up to 4 lanes.
-> > 
-> > The driver creates a child device for the phy. The child device
-> > will
-> > never exist without the parent being active. As they are sharing a
-> > register range, the parent passes a regmap pointer to the child so
-> > that
-> > both can work with the same register range. The phy driver sets
-> > device
-> > data that is read by the parent to get the phy device that can be
-> > used
-> > to control the phy properties.
-> > 
-> > This driver is based on an initial version by
-> > Jitao shi <jitao.shi@mediatek.com>
-> > 
-> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> > Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
-> > ---
-> > +
-> > +static void mtk_dp_power_disable(struct mtk_dp *mtk_dp)
-> > +{
-> > +	mtk_dp_write(mtk_dp, MTK_DP_TOP_PWR_STATE, 0);
-> > +
-> > +	mtk_dp_write(mtk_dp, MTK_DP_0034,
-> > +		     DA_CKM_CKTX0_EN_FORCE_EN |
-> > +		     DA_CKM_BIAS_LPF_EN_FORCE_VAL |
-> > +		     DA_CKM_BIAS_EN_FORCE_VAL |
-> > +		     DA_XTP_GLB_LDO_EN_FORCE_VAL |
-> > +		     DA_XTP_GLB_AVD10_ON_FORCE_VAL);
-> 
-> clk-mt8195-vdo0 driver [1] is part of mtk-mmsys driver [2] and it is
-> still separated out to ccf driver. In addition, you does not manage
-> the
-> parent clock. If the parent clock is not enable, these leaf clock
-> would
-> not work.
-> 
-> [1] 
-> 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/mediatek/clk-mt8195-vdo0.c?h=v5.19-rc5#n138
-> 
-> [2] 
-> 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/soc/mediatek/mtk-mmsys.c?h=v5.19-rc5#n140
-> 
-> Regards,
-> CK
-> 
+On 7/11/22 17:50, Geert Uytterhoeven wrote:
+> 	Hi all,
+>
+> This patch series contains miscellaneous fixes and cleanups for the
+> Atari frame buffer device driver, which were identified while working on
+> the Atari DRM driver.
+>
+> Most of them have been tested on ARAnyM, and should be safe to apply,
 
-Hello CK,
+I've applied patches 1-9 to fbdev for-next git tree....
 
-MTK_DP_0034 is just a enable control for dp hardware, so I think we
-don't need to move it to ccf driver. it's not related to ccf.
+> except perhaps for the last one, which is marked RFC.
 
-After checking with Jitao, we only need to update
-DA_CKM_CKTX0_EN_FORCE_E. I will set this bit as 1 in
-mtk_dp_power_disable and 0 in mtk_dp_power_enable
+... and would like to see some thoughts/feedback from others on this one .=
+..
 
-BRs,
-Bo-Chen
+Thanks,
+Helge
 
-> > +
-> > +	/* Disable RX */
-> > +	mtk_dp_write(mtk_dp, MTK_DP_1040, 0);
-> > +	mtk_dp_write(mtk_dp, MTK_DP_TOP_MEM_PD,
-> > +		     0x550 | BIT(FUSE_SEL_SHIFT) |
-> > BIT(MEM_ISO_EN_SHIFT));
-> > +}
-> > +
-> 
-> 
+>
+> Thanks for your comments!
+>
+> Geert Uytterhoeven (10):
+>   video: fbdev: atari: Simplify atafb_pan_display()
+>   video: fbdev: atari: Remove bogus FB_VMODE_YWRAP flags
+>   video: fbdev: atari: Fix inverse handling
+>   video: fbdev: atari: Fix ext_setcolreg()
+>   video: fbdev: atari: Remove unneeded casts from void *
+>   video: fbdev: atari: Remove unneeded casts to void *
+>   video: fbdev: atari: Fix TT High video mode vertical refresh
+>   video: fbdev: atari: Fix VGA modes
+>   video: fbdev: atari: Remove unused definitions and variables
+>   [RFC] video: fbdev: atari: Remove backward bug-compatibility
+>
+>  Documentation/m68k/kernel-options.rst |   4 +-
+>  drivers/video/fbdev/atafb.c           | 101 +++++++-------------------
+>  2 files changed, 29 insertions(+), 76 deletions(-)
+>
 

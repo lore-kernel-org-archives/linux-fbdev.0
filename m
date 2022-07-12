@@ -2,186 +2,129 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DDC6C43334
-	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Jul 2022 06:57:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89B7CC43334
+	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Jul 2022 07:47:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230310AbiGLG5Z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 12 Jul 2022 02:57:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41466 "EHLO
+        id S232422AbiGLHr2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 12 Jul 2022 03:47:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49584 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229529AbiGLG5Y (ORCPT
+        with ESMTP id S231980AbiGLHr0 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 12 Jul 2022 02:57:24 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0CFC951CC;
-        Mon, 11 Jul 2022 23:57:22 -0700 (PDT)
-X-UUID: 098aa1e34f294927bc99f0d4833748ad-20220712
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.8,REQID:cfc356d1-53a1-4a27-8af5-3e9cd555aa1f,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:0
-X-CID-META: VersionHash:0f94e32,CLOUDID:7df7bb32-b9e4-42b8-b28a-6364427c76bb,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
-        ,QS:nil,BEC:nil,COL:0
-X-UUID: 098aa1e34f294927bc99f0d4833748ad-20220712
-Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw01.mediatek.com
-        (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 558935923; Tue, 12 Jul 2022 14:57:17 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Tue, 12 Jul 2022 14:57:15 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Tue, 12 Jul 2022 14:57:15 +0800
-Message-ID: <b30154d38b4c0216ddb6c587c1120846e2209335.camel@mediatek.com>
-Subject: Re: [PATCH v13 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
- driver
-From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
-To:     CK Hu <ck.hu@mediatek.com>,
-        "chunkuang.hu@kernel.org" <chunkuang.hu@kernel.org>,
-        "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
-        "daniel@ffwll.ch" <daniel@ffwll.ch>,
-        "robh+dt@kernel.org" <robh+dt@kernel.org>,
-        "krzysztof.kozlowski+dt@linaro.org" 
-        <krzysztof.kozlowski+dt@linaro.org>,
-        "mripard@kernel.org" <mripard@kernel.org>,
-        "tzimmermann@suse.de" <tzimmermann@suse.de>,
-        "matthias.bgg@gmail.com" <matthias.bgg@gmail.com>,
-        "deller@gmx.de" <deller@gmx.de>,
-        "airlied@linux.ie" <airlied@linux.ie>
-CC:     "msp@baylibre.com" <msp@baylibre.com>,
-        "granquet@baylibre.com" <granquet@baylibre.com>,
-        "Jitao Shi =?UTF-8?Q?=28=E7=9F=B3=E8=AE=B0=E6=B6=9B=29?=" 
-        <jitao.shi@mediatek.com>,
-        "wenst@chromium.org" <wenst@chromium.org>,
-        "angelogioacchino.delregno@collabora.com" 
-        <angelogioacchino.delregno@collabora.com>,
-        "LiangXu Xu =?UTF-8?Q?=28=E5=BE=90=E4=BA=AE=29?=" 
-        <LiangXu.Xu@mediatek.com>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-mediatek@lists.infradead.org" 
-        <linux-mediatek@lists.infradead.org>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        Project_Global_Chrome_Upstream_Group 
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Tue, 12 Jul 2022 14:57:15 +0800
-In-Reply-To: <6b4a4be9b5c93b1931cdbd5b009eac3bfa9badbe.camel@mediatek.com>
-References: <20220701062808.18596-1-rex-bc.chen@mediatek.com>
-         <20220701062808.18596-6-rex-bc.chen@mediatek.com>
-         <6b4a4be9b5c93b1931cdbd5b009eac3bfa9badbe.camel@mediatek.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        Tue, 12 Jul 2022 03:47:26 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 5A6279C265
+        for <linux-fbdev@vger.kernel.org>; Tue, 12 Jul 2022 00:47:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1657612043;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=IwKfKFbx4WwviqtMMacQ0C+SYHYAOQOV85TH5GU4PBI=;
+        b=HXZ5cqUdnOYg+KkchxmmV0VMLNPePmWMIcLxoXNp9NuRSFQ+WZZtc7sWJak3ZKL6YJA9bE
+        Mge+r0GuEm9zyZZ2DWl08MVnr68ef4t6NUIF6mNjPTT3ZGnol6UlmkjoI3ZAX64mZSdG0t
+        7RuQKIsbGydTkzm8w+500VYrwZ4Clt0=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-486-lWqTc9k-NwOQ2KkLNRlK6g-1; Tue, 12 Jul 2022 03:47:18 -0400
+X-MC-Unique: lWqTc9k-NwOQ2KkLNRlK6g-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.rdu2.redhat.com [10.11.54.8])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 736ED8037AA;
+        Tue, 12 Jul 2022 07:47:17 +0000 (UTC)
+Received: from sirius.home.kraxel.org (unknown [10.39.192.39])
+        by smtp.corp.redhat.com (Postfix) with ESMTPS id 08618C15D58;
+        Tue, 12 Jul 2022 07:47:17 +0000 (UTC)
+Received: by sirius.home.kraxel.org (Postfix, from userid 1000)
+        id A946318000A9; Tue, 12 Jul 2022 09:47:15 +0200 (CEST)
+Date:   Tue, 12 Jul 2022 09:47:15 +0200
+From:   Gerd Hoffmann <kraxel@redhat.com>
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Michel =?utf-8?Q?D=C3=A4nzer?= <michel.daenzer@mailbox.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Noralf =?utf-8?Q?Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linux/m68k <linux-m68k@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] drm/fourcc: Add missing big-endian XRGB1555 and
+ RGB565 formats
+Message-ID: <20220712074715.kopstlvz4q6npaye@sirius.home.kraxel.org>
+References: <cover.1657300532.git.geert@linux-m68k.org>
+ <0744671ac096a12f0d538906bd324efa71b11400.1657300532.git.geert@linux-m68k.org>
+ <96a87833-d878-dde9-e335-9ea51a4ba406@mailbox.org>
+ <CAMuHMdUgdbZeoFLFL8+Hm-6fG9cg5Wzq++JED3KR5P9YZtRQ4A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdUgdbZeoFLFL8+Hm-6fG9cg5Wzq++JED3KR5P9YZtRQ4A@mail.gmail.com>
+X-Scanned-By: MIMEDefang 2.85 on 10.11.54.8
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, 2022-07-07 at 13:14 +0800, CK Hu wrote:
-> Hi, Bo-Chen:
+On Mon, Jul 11, 2022 at 05:30:30PM +0200, Geert Uytterhoeven wrote:
+> Hi Michel,
 > 
-> On Fri, 2022-07-01 at 14:28 +0800, Bo-Chen Chen wrote:
-> > From: Markus Schneider-Pargmann <msp@baylibre.com>
-> > 
-> > This patch adds a embedded displayport driver for the MediaTek
-> > mt8195
-> > SoC.
-> > 
-> > It supports the MT8195, the embedded DisplayPort units. It offers
-> > DisplayPort 1.4 with up to 4 lanes.
-> > 
-> > The driver creates a child device for the phy. The child device
-> > will
-> > never exist without the parent being active. As they are sharing a
-> > register range, the parent passes a regmap pointer to the child so
-> > that
-> > both can work with the same register range. The phy driver sets
-> > device
-> > data that is read by the parent to get the phy device that can be
-> > used
-> > to control the phy properties.
-> > 
-> > This driver is based on an initial version by
-> > Jitao shi <jitao.shi@mediatek.com>
-> > 
-> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> > Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
-> > ---
-> 
-> [snip]
-> 
-> > +
-> > +static ssize_t mtk_dp_hpd_sink_event(struct mtk_dp *mtk_dp)
-> 
-> The caller never use the return value, so let this function to void.
-> 
-> > +{
-> > +	ssize_t ret;
-> > +	u8 sink_count;
-> > +	u8 link_status[DP_LINK_STATUS_SIZE] = {};
-> > +	u32 sink_count_reg = DP_SINK_COUNT_ESI;
-> > +	u32 link_status_reg = DP_LANE0_1_STATUS;
-> > +
-> > +	ret = drm_dp_dpcd_readb(&mtk_dp->aux, sink_count_reg,
-> > &sink_count);
-> 
-> You read sink_count but never use it, so this read is redundant.
-> Remove
-> it.
-> 
+> > > Cirrus is the only driver setting quirk_addfb_prefer_host_byte_order
+> > > and supporting RGB565 or XRGB1555, but no one tried that on big-endian?
+> > > Cirrus does not support DRM_FORMAT_RGB565 | DRM_FORMAT_BIG_ENDIAN
+> > > in cirrus_fb_create, so you cannot get a graphical text console.
+> > >
+> > > Do we need these definitions on little-endian platforms, too?
+> > > Would it be better to use "DRM_FORMAT_{XRGB1555,RGB565} |
+> > > DRM_FORMAT_BIG_ENDIAN" instead of "DRM_FORMAT_HOST_{XRGB1555,RGB565}" in
+> > > formats[]?
+> >
+> > The intention of DRM_FORMAT_HOST_* is that they are macros in
+> > include/drm/drm_fourcc.h which just map to little endian formats
+> > defined in drivers/gpu/drm/drm_fourcc.c. Since this is not possible
+> > for big endian hosts for XRGB1555 or RGB565 (or any other format
+> > with non-8-bit components), this isn't applicable here.
 
-Hello CK,
+It IMHO is not applicable to any physical hardware.  It's used by
+virtio-gpu where the supported format depends on the byte order
+(it is argb8888 in native byte order).  Only virtual hardware can
+have that kind of behavior.
 
-this is a pre-request for the following codes, so I think we need to
-keep this.
+And we can probably drop the DRM_FORMAT_HOST_* variants for 1555 and
+565, they are not used anywhere.
 
-If we failed to read sink_count, we don't need to do the driver under
-this.
+> I read that as that you prefer to write "DRM_FORMAT_{XRGB1555,RGB565}
+> | DRM_FORMAT_BIG_ENDIAN" in formats[]?
 
-> > +	if (ret < 1) {
-> > +		drm_err(mtk_dp->drm_dev, "Read sink count failed\n");
-> > +		return ret == 0 ? -EIO : ret;
-> > +	}
-> > +
-> > +	ret = drm_dp_dpcd_read(&mtk_dp->aux, link_status_reg,
-> > link_status,
-> > +			       sizeof(link_status));
-> > +	if (!ret) {
-> > +		drm_err(mtk_dp->drm_dev, "Read link status failed\n");
-> > +		return ret;
-> > +	}
-> > +
-> > +	drm_dp_channel_eq_ok(link_status, mtk_dp-
-> > > train_info.lane_count);
-> 
-> This function just return true or false, and you does not process the
-> return value, so this is redundant. Remove it.
-> 
+Agree.
 
-I will handle this in next version.
+> > It's also doubtful that Cirrus hardware would access these formats
+> > as big endian (drivers/gpu/drm/tiny/cirrus.c has no endianness
+> > references at all, and the hardware was surely designed for x86
+> > first and foremost).
 
-BRs,
-Bo-Chen
+Yes.  qemu mimics physical cirrus hardware which uses little endian.
 
-> Regard,
-> CK
-> 
-> > +
-> > +	if (link_status[1] & DP_REMOTE_CONTROL_COMMAND_PENDING)
-> > +		drm_dp_dpcd_writeb(&mtk_dp->aux,
-> > DP_DEVICE_SERVICE_IRQ_VECTOR,
-> > +				   DP_REMOTE_CONTROL_COMMAND_PENDING);
-> > +
-> > +	return 0;
-> > +}
-> 
-> 
+> > Instead, fbcon (and user space) needs to convert to little endian
+> > when using DRM_FORMAT_HOST_{XRGB1555,RGB565} with the cirrus driver
+> > on big endian hosts.
+
+Well, the cirrus driver uses shadow framebuffers anyway (the only
+workable approach given it has 4M vram only), and it also supports
+converting formats on-the-fly when copying from shadow to vram.
+
+So adding support for bigendian formats to the driver shouldn't be
+much of a problem.  The vram will continue to run in little endian
+RGB565, the shadow will be big endian RGB565, and the driver must
+byteswap when copying.
+
+> Yeah, probably the cirrus driver can use some fixes...
+
+I'd call it improvements.  It's not like the cirrus driver is broken.
+
+take care,
+  Gerd
 

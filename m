@@ -2,123 +2,174 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70745CCA47B
-	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Jul 2022 21:21:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40FA4C43334
+	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Jul 2022 06:49:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231709AbiGKVVN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 11 Jul 2022 17:21:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38946 "EHLO
+        id S231474AbiGLGts (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 12 Jul 2022 02:49:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34494 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229832AbiGKVVL (ORCPT
+        with ESMTP id S229709AbiGLGts (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 11 Jul 2022 17:21:11 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A26C12A71A;
-        Mon, 11 Jul 2022 14:21:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1657574465;
-        bh=pulbl6ZVMF89zqi4FCDK9+iI1hZBrDJ8HumaDHMz+4s=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=AxTWPobAALVtt6qz0PnEwWDJhaQKiIIYYtayCZo8Ee+NdMHNcKnVmSKaACz3nugzy
-         HetiOTydYhFfpK20CqdQJhDexwMD9UQ5ul4bMyCi3g3RqW3id/cifYXpo2UW3PA1XC
-         BvQUZBgMyDa8KnWSuHA0T0aQZhJ8MfK7rMxnHgkc=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.184.221]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MVN6t-1o22Xn3SKt-00SKrM; Mon, 11
- Jul 2022 23:21:04 +0200
-Message-ID: <681e1739-d251-661a-a46f-9412f3b6e165@gmx.de>
-Date:   Mon, 11 Jul 2022 23:20:27 +0200
+        Tue, 12 Jul 2022 02:49:48 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6EC331EEFF;
+        Mon, 11 Jul 2022 23:49:40 -0700 (PDT)
+X-UUID: 2c5deefdde4d4c63a28299ad0b6e2f3a-20220712
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.8,REQID:88eb9b1a-e6b5-4e14-9a7a-0762369b27a7,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACT
+        ION:release,TS:45
+X-CID-INFO: VERSION:1.1.8,REQID:88eb9b1a-e6b5-4e14-9a7a-0762369b27a7,OB:0,LOB:
+        0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTIO
+        N:release,TS:45
+X-CID-META: VersionHash:0f94e32,CLOUDID:27f90b64-0b3f-4b2c-b3a6-ed5c044366a0,C
+        OID:9a67550cb39b,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:0,File:nil,QS:nil,BEC:nil,COL:0
+X-UUID: 2c5deefdde4d4c63a28299ad0b6e2f3a-20220712
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1513253721; Tue, 12 Jul 2022 14:49:37 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
+ Tue, 12 Jul 2022 14:49:36 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Tue, 12 Jul 2022 14:49:35 +0800
+Message-ID: <e8c2a181926fcbd72ac7b625e2289d91132c37be.camel@mediatek.com>
+Subject: Re: [PATCH v13 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
+ driver
+From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
+To:     CK Hu <ck.hu@mediatek.com>,
+        "chunkuang.hu@kernel.org" <chunkuang.hu@kernel.org>,
+        "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
+        "daniel@ffwll.ch" <daniel@ffwll.ch>,
+        "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        "krzysztof.kozlowski+dt@linaro.org" 
+        <krzysztof.kozlowski+dt@linaro.org>,
+        "mripard@kernel.org" <mripard@kernel.org>,
+        "tzimmermann@suse.de" <tzimmermann@suse.de>,
+        "matthias.bgg@gmail.com" <matthias.bgg@gmail.com>,
+        "deller@gmx.de" <deller@gmx.de>,
+        "airlied@linux.ie" <airlied@linux.ie>
+CC:     "msp@baylibre.com" <msp@baylibre.com>,
+        "granquet@baylibre.com" <granquet@baylibre.com>,
+        Jitao Shi =?UTF-8?Q?=28=E7=9F=B3=E8=AE=B0=E6=B6=9B=29?= 
+        <jitao.shi@mediatek.com>,
+        "wenst@chromium.org" <wenst@chromium.org>,
+        "angelogioacchino.delregno@collabora.com" 
+        <angelogioacchino.delregno@collabora.com>,
+        LiangXu Xu =?UTF-8?Q?=28=E5=BE=90=E4=BA=AE=29?= 
+        <LiangXu.Xu@mediatek.com>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-mediatek@lists.infradead.org" 
+        <linux-mediatek@lists.infradead.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        Project_Global_Chrome_Upstream_Group 
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Tue, 12 Jul 2022 14:49:35 +0800
+In-Reply-To: <7af5710c5a9c0c30e38ca81a72fe30c1c7749bbb.camel@mediatek.com>
+References: <20220701062808.18596-1-rex-bc.chen@mediatek.com>
+         <20220701062808.18596-6-rex-bc.chen@mediatek.com>
+         <7af5710c5a9c0c30e38ca81a72fe30c1c7749bbb.camel@mediatek.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH] video: fbdev: amiga: Simplify amifb_pan_display()
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <b803f10a2b3b85386b25a2e25b98fb4e59413ea9.1657553681.git.geert@linux-m68k.org>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <b803f10a2b3b85386b25a2e25b98fb4e59413ea9.1657553681.git.geert@linux-m68k.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:nVTr6BBwsWtnZx2aandyv+fUBwA/rXHQ6laYCVuq5K6BMshiorz
- oSUQh06r/DOmXqzDdd5MVI7jLmIlTNgzFGwmwDnAR2OzyUN2qCk2pjlhQH6V4Wl+skQ/cq2
- 1poDea8TEluhigguiyqt+Ash7248Rhgqdb6x25clkWzCQUlwIr/oUuE5umGLWMaz82xDURS
- 50wroyX+c1Zo0C2Dtrf9A==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:NZ4kLPOUqWI=:ddtZJMwIk26PDP1AFeNs1I
- CK9cdRIKjSuTZTp1SQ8KYb/TLEpyJQfas9W/uqwufPJgcZyDeOmyK0QOFEOxd/BngpwArrQIE
- c6Ru/c4/rDTsanux1uA/krsBHHCkXGL9QJVw6MuAhlP1sisi/iN/AF4MGwEGmyDGsS1PfVwuZ
- GhC9iwzbxs12fzBjG6++qyDiFJHMwHSLfAJ+ZPwQJkbRiCpLQbRfMxNhyIYDi2iPkpnbsKfKk
- zFj41bGRf+TwVjpwhaSsN3ChpuNgxUEHRxxgTEK2ZIvbaEZ5jFQdngNVJQ4AN79eou+GuUL53
- vjQnWxknd/UpgIGIgQ7Y/1kl/wiiTKAd43W32IcdiZDO95JVKp8oD595IFgHmwl/lcKLXDfld
- qdX//ZJBrqBwL7d9dsCtQ1aQs8A50MYWtJT9AcrAZVXAup4eJO9p2hc27L9ijE7rl43XWFQ5n
- UdN2okVmidi/HEWbBqlyg8Fg5b63I+sf0Bj7e0Pav4/heM0Gk83OL2axdVJdmB3wuX4tPoD87
- zuFAMP7S0U2IetH8GckowCnU5qmgxQMDxbqbF97T+zduYczc6p+dHbPv83HSBgO9OY9bK4Pef
- oJnfIH1FgdySEhD1QuZ7LvMpX16RodLvbXuj2u/NlU7N72DEgXGmc2ZsL/ClFJKGUmGGAVLtw
- v6c7YepDyAIxLnIKxsRU37MWT+yGaTf2NqNiPxXuuuHaZJ3NfyWysn2lko9ThNXkuHJ0WvcZn
- g63SJB+apu0mgvrEIUXQiD+70i8roxHz2gZGzWow8doisq945ActjgeVRyWLRztPlEG7UWuZC
- st9LRE+wGnEp5S7TYMAaM4eaQYMwdfI0EoQyFZSu04mo0F6l/uYV056R6uR/dZUHeFFf/eT0c
- VofMUn0GKy2BcAuJDYBnyKJOi0nSaNFwwM6wFGI1mmvBluksLL1lM51qMC5U4EwxvYk5w/jy+
- pweCuDF4U9xow9b+XF2M7LOmKLCuiH00wfSoeVp5+PJFTFl5SNWnG4uGKHRetPXFzi0vW+tUJ
- 1yq2HC+N3Nbw9+7fqknLNIJLssDMPxGsdcT7/G/EPRIWNunhLGMyfjzJH4G5KzilESJUDrhJH
- r5+1ci5/NfJFG26RzRLFY6F1qGN/DLMsPbyHSfacItYZnZ/bFdkIsTTmA==
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/11/22 17:35, Geert Uytterhoeven wrote:
-> The fb_pan_display() function in the core already takes care of
-> validating most panning parameters before calling the driver's
-> .fb_pan_display() callback, and of updating the panning state
-> afterwards, so there is no need to repeat that in the driver.
->
-> Remove the duplicate code.
->
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+On Thu, 2022-07-07 at 16:00 +0800, CK Hu wrote:
+> Hi, Bo-Chen:
+> 
+> On Fri, 2022-07-01 at 14:28 +0800, Bo-Chen Chen wrote:
+> > From: Markus Schneider-Pargmann <msp@baylibre.com>
+> > 
+> > This patch adds a embedded displayport driver for the MediaTek
+> > mt8195
+> > SoC.
+> > 
+> > It supports the MT8195, the embedded DisplayPort units. It offers
+> > DisplayPort 1.4 with up to 4 lanes.
+> > 
+> > The driver creates a child device for the phy. The child device
+> > will
+> > never exist without the parent being active. As they are sharing a
+> > register range, the parent passes a regmap pointer to the child so
+> > that
+> > both can work with the same register range. The phy driver sets
+> > device
+> > data that is read by the parent to get the phy device that can be
+> > used
+> > to control the phy properties.
+> > 
+> > This driver is based on an initial version by
+> > Jitao shi <jitao.shi@mediatek.com>
+> > 
+> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> > Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> > ---
+> 
+> [snip]
+> 
+> > +
+> > +static int mtk_dp_set_color_format(struct mtk_dp *mtk_dp,
+> > +				   enum dp_pixelformat color_format)
+> > +{
+> > +	u32 val;
+> > +
+> > +	/* update MISC0 */
+> > +	mtk_dp_update_bits(mtk_dp, MTK_DP_ENC0_P0_3034,
+> > +			   color_format << DP_TEST_COLOR_FORMAT_SHIFT,
+> > +			   DP_TEST_COLOR_FORMAT_MASK);
+> > +
+> > +	switch (color_format) {
+> > +	case DP_PIXELFORMAT_YUV422:
+> > +		val = PIXEL_ENCODE_FORMAT_DP_ENC0_P0_YCBCR422;
+> > +		break;
+> > +	case DP_PIXELFORMAT_RGB:
+> > +		val = PIXEL_ENCODE_FORMAT_DP_ENC0_P0_RGB;
+> > +		break;
+> > +	default:
+> 
+> The default case would never happen, remove it.
+> 
+> Regards,
+> CK
+> 
 
-I've applied this and the other 3 patches to the fbdev git tree.
+Hello CK,
 
-Thanks!
-Helge
+after removing default, it will build error because we do not handle
+other 5 enum in enum dp_pixelformat.
 
+"error: 5 enumeration values not handled in switch"
 
-> ---
->  drivers/video/fbdev/amifb.c | 15 ++-------------
->  1 file changed, 2 insertions(+), 13 deletions(-)
->
-> diff --git a/drivers/video/fbdev/amifb.c b/drivers/video/fbdev/amifb.c
-> index 6e07a97bbd31a1dd..d88265dbebf4cb19 100644
-> --- a/drivers/video/fbdev/amifb.c
-> +++ b/drivers/video/fbdev/amifb.c
-> @@ -2540,27 +2540,16 @@ static int amifb_blank(int blank, struct fb_info=
- *info)
->  static int amifb_pan_display(struct fb_var_screeninfo *var,
->  			     struct fb_info *info)
->  {
-> -	if (var->vmode & FB_VMODE_YWRAP) {
-> -		if (var->yoffset < 0 ||
-> -			var->yoffset >=3D info->var.yres_virtual || var->xoffset)
-> -				return -EINVAL;
-> -	} else {
-> +	if (!(var->vmode & FB_VMODE_YWRAP)) {
->  		/*
->  		 * TODO: There will be problems when xpan!=3D1, so some columns
->  		 * on the right side will never be seen
->  		 */
->  		if (var->xoffset + info->var.xres >
-> -		    upx(16 << maxfmode, info->var.xres_virtual) ||
-> -		    var->yoffset + info->var.yres > info->var.yres_virtual)
-> +		    upx(16 << maxfmode, info->var.xres_virtual))
->  			return -EINVAL;
->  	}
->  	ami_pan_var(var, info);
-> -	info->var.xoffset =3D var->xoffset;
-> -	info->var.yoffset =3D var->yoffset;
-> -	if (var->vmode & FB_VMODE_YWRAP)
-> -		info->var.vmode |=3D FB_VMODE_YWRAP;
-> -	else
-> -		info->var.vmode &=3D ~FB_VMODE_YWRAP;
->  	return 0;
->  }
->
+Therefore, I will keep this.
+
+BRs,
+Bo-Chen
+
+> > +		drm_warn(mtk_dp->drm_dev, "Unsupported color format:
+> > %d\n",
+> > +			 color_format);
+> > +		return -EINVAL;
+> > +	}
+> > +
+> > +	mtk_dp_update_bits(mtk_dp, MTK_DP_ENC0_P0_303C,
+> > +			   val, PIXEL_ENCODE_FORMAT_DP_ENC0_P0_MASK);
+> > +	return 0;
+> > +}
+> > +
+> 
+> 
 

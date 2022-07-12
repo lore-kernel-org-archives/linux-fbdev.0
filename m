@@ -2,104 +2,109 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7523EC43334
-	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Jul 2022 09:10:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27504CCA47C
+	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Jul 2022 11:12:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229892AbiGLJK5 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 12 Jul 2022 05:10:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39610 "EHLO
+        id S232170AbiGLLMj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 12 Jul 2022 07:12:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57544 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229621AbiGLJK5 (ORCPT
+        with ESMTP id S229629AbiGLLMi (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 12 Jul 2022 05:10:57 -0400
-Received: from mail-qt1-f180.google.com (mail-qt1-f180.google.com [209.85.160.180])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 573F99CE1C;
-        Tue, 12 Jul 2022 02:10:56 -0700 (PDT)
-Received: by mail-qt1-f180.google.com with SMTP id ck6so8903898qtb.7;
-        Tue, 12 Jul 2022 02:10:56 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=ogZIuR/DNUWYAnvjSDu9n0AhaTeKYHQRl89eLWPlDEo=;
-        b=LuOleYcdeHnvbeF4+x6flEaNrBNwKMUHbUSbpcs/5g9PEwrySYPAnXFdEo7HEWbztp
-         Bfxqv+GALPjapKa0Q2A5x1iN3FJAfhgixuuU9j+IxMgiiHCHMuGzSSq83OCk6SS1aCJy
-         jTe4XjnRz//eVrWyeofe+EUP3Q1OMS1k7AoomtwSPP8nU+PMp9h3p2vIRbWal0Pdc4ld
-         dFcQHK6BY87mLcLte9DdCbvhw8SZY4n5L0+Fr/ER5hfQR93+04g50SOXXXKrxIfaK8c2
-         bZyxHtJwxUrohZ85VoXcKZqXNtsN05JQQ7rKfbUZLpSOaIuHn3oTv1YKRzMhcLrqMAQr
-         gOUA==
-X-Gm-Message-State: AJIora/rdgB/36xYDKlvw4UEtdFHwVyAuwGAGZchdR7JuititvGEE+Tm
-        bg+7Waavy35R+FQh6J1ix8UWoGyoWYGsNQ==
-X-Google-Smtp-Source: AGRyM1vK8rlLBJMjSaehJAPkF1WdlWuzbUVpQZAsxgJKYrBqBxRy98haDwT6SmP4butduEfh/TCx1g==
-X-Received: by 2002:a05:622a:60f:b0:31c:c5da:eb49 with SMTP id z15-20020a05622a060f00b0031cc5daeb49mr16659451qta.443.1657617055390;
-        Tue, 12 Jul 2022 02:10:55 -0700 (PDT)
-Received: from mail-yb1-f171.google.com (mail-yb1-f171.google.com. [209.85.219.171])
-        by smtp.gmail.com with ESMTPSA id u20-20020a05622a011400b0031ea53f4c5esm7264192qtw.83.2022.07.12.02.10.54
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 12 Jul 2022 02:10:54 -0700 (PDT)
-Received: by mail-yb1-f171.google.com with SMTP id g4so12882139ybg.9;
-        Tue, 12 Jul 2022 02:10:54 -0700 (PDT)
-X-Received: by 2002:a05:6902:701:b0:66e:a06d:53d7 with SMTP id
- k1-20020a056902070100b0066ea06d53d7mr20639488ybt.604.1657617053347; Tue, 12
- Jul 2022 02:10:53 -0700 (PDT)
+        Tue, 12 Jul 2022 07:12:38 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4515AAF75F;
+        Tue, 12 Jul 2022 04:12:31 -0700 (PDT)
+X-UUID: c09dbc901a5840a8bb11c8e2861f4006-20220712
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.8,REQID:fa036936-7094-4d20-99d4-3ccf500d2e07,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:95,FILE:0,RULE:Release_Ham,ACT
+        ION:release,TS:95
+X-CID-INFO: VERSION:1.1.8,REQID:fa036936-7094-4d20-99d4-3ccf500d2e07,OB:0,LOB:
+        0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:95,FILE:0,RULE:Spam_GS981B3D,ACT
+        ION:quarantine,TS:95
+X-CID-META: VersionHash:0f94e32,CLOUDID:0abb45d7-5d6d-4eaf-a635-828a3ee48b7c,C
+        OID:def7ad363484,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:0,File:nil,QS:nil,BEC:nil,COL:0
+X-UUID: c09dbc901a5840a8bb11c8e2861f4006-20220712
+Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw01.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1175405762; Tue, 12 Jul 2022 19:12:26 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
+ mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Tue, 12 Jul 2022 19:12:24 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
+ mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
+ 15.2.792.3 via Frontend Transport; Tue, 12 Jul 2022 19:12:24 +0800
+From:   Bo-Chen Chen <rex-bc.chen@mediatek.com>
+To:     <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
+        <daniel@ffwll.ch>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
+        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
+        <airlied@linux.ie>
+CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
+        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
+        <angelogioacchino.delregno@collabora.com>, <ck.hu@mediatek.com>,
+        <liangxu.xu@mediatek.com>, <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-fbdev@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        Bo-Chen Chen <rex-bc.chen@mediatek.com>
+Subject: [PATCH v14 02/10] drm/edid: Convert cea_sad helper struct to kernelDoc
+Date:   Tue, 12 Jul 2022 19:12:15 +0800
+Message-ID: <20220712111223.13080-3-rex-bc.chen@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20220712111223.13080-1-rex-bc.chen@mediatek.com>
+References: <20220712111223.13080-1-rex-bc.chen@mediatek.com>
 MIME-Version: 1.0
-References: <cover.1657300532.git.geert@linux-m68k.org> <0744671ac096a12f0d538906bd324efa71b11400.1657300532.git.geert@linux-m68k.org>
- <96a87833-d878-dde9-e335-9ea51a4ba406@mailbox.org> <CAMuHMdUgdbZeoFLFL8+Hm-6fG9cg5Wzq++JED3KR5P9YZtRQ4A@mail.gmail.com>
- <20220712074715.kopstlvz4q6npaye@sirius.home.kraxel.org> <CAMuHMdVrf7fgzumcSnZJ3OMGqA34YExXcF3O15YXYpA1ykgKyQ@mail.gmail.com>
- <20220712083907.3ic7bltstaskz72n@sirius.home.kraxel.org> <CAMuHMdVhxE9aayG8qRMwUuBryiR_ng08m63_+GY8htFCSmUiWg@mail.gmail.com>
- <20220712090305.44jq3olwhwypisoc@sirius.home.kraxel.org> <69a6aac7-0d48-7361-9750-8f242d374d60@mailbox.org>
-In-Reply-To: <69a6aac7-0d48-7361-9750-8f242d374d60@mailbox.org>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 12 Jul 2022 11:10:41 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWxbF6OsP0+c5hqxDTfHu+Wetcitk1yFiOPECoLtD6zyg@mail.gmail.com>
-Message-ID: <CAMuHMdWxbF6OsP0+c5hqxDTfHu+Wetcitk1yFiOPECoLtD6zyg@mail.gmail.com>
-Subject: Re: [PATCH 1/3] drm/fourcc: Add missing big-endian XRGB1555 and
- RGB565 formats
-To:     =?UTF-8?Q?Michel_D=C3=A4nzer?= <michel.daenzer@mailbox.org>
-Cc:     Gerd Hoffmann <kraxel@redhat.com>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        "Linux/m68k" <linux-m68k@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Michel,
+From: Guillaume Ranquet <granquet@baylibre.com>
 
-On Tue, Jul 12, 2022 at 11:09 AM Michel Dänzer
-<michel.daenzer@mailbox.org> wrote:
-> On 2022-07-12 11:03, Gerd Hoffmann wrote:
-> >>> As described above DRM_FORMAT_HOST_RGB565 means bigendian on bigendian
-> >>> hosts and little endian on little endian hosts.  Which is not correct
-> >>> when your hardware does big endian no matter what.
-> >>
-> >> But (a) drm_driver_legacy_fb_format() uses DRM_FORMAT_HOST_RGB565
-> >> if quirk_addfb_prefer_host_byte_order is set,
-> >
-> > Ah, right.  Missed that in 'git grep' output.  Given that traditional
-> > fbdev behavior is to expect native byte order using
-> > DRM_FORMAT_HOST_RGB565 there makes sense indeed.
-> >
-> > Scratch my comment about it being unused then ;)
->
-> DRM_FORMAT_RGB565 | DRM_FORMAT_BIG_ENDIAN is still what the driver should use conceptually, and should match DRM_FORMAT_HOST_RGB565 in drm_driver_legacy_fb_format on a big endian host (which is presumably always the case for the atari driver).
+To illustrate the cea_sad helper struct more clear, we convert the
+driver comments to kernelDoc.
 
-Sure, I'll update the patch accordingly.
+Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+---
+ include/drm/drm_edid.h | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-Gr{oetje,eeting}s,
+diff --git a/include/drm/drm_edid.h b/include/drm/drm_edid.h
+index b2756753370b..c2c43a4af681 100644
+--- a/include/drm/drm_edid.h
++++ b/include/drm/drm_edid.h
+@@ -359,12 +359,18 @@ struct edid {
+ 
+ #define EDID_PRODUCT_ID(e) ((e)->prod_code[0] | ((e)->prod_code[1] << 8))
+ 
+-/* Short Audio Descriptor */
++/**
++ * struct cea_sad - CEA Short Audio Descriptor.
++ * @format: See HDMI_AUDIO_CODING_TYPE_*.
++ * @channels: max number of channels - 1.
++ * @freq: See CEA_SAD_FREQ_*.
++ * @byte2: meaning depends on format.
++ */
+ struct cea_sad {
+ 	u8 format;
+-	u8 channels; /* max number of channels - 1 */
++	u8 channels;
+ 	u8 freq;
+-	u8 byte2; /* meaning depends on format */
++	u8 byte2;
+ };
+ 
+ struct drm_encoder;
+-- 
+2.18.0
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

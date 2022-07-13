@@ -2,43 +2,40 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EFA6C43334
-	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jul 2022 09:12:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ECB7C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jul 2022 09:33:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234835AbiGMJMr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 13 Jul 2022 05:12:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57074 "EHLO
+        id S236229AbiGMJdD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 13 Jul 2022 05:33:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45674 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234731AbiGMJMq (ORCPT
+        with ESMTP id S236068AbiGMJci (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 13 Jul 2022 05:12:46 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1C86CDA598;
-        Wed, 13 Jul 2022 02:12:42 -0700 (PDT)
-X-UUID: 26d315c2c3544c99a56db226c1688f00-20220713
+        Wed, 13 Jul 2022 05:32:38 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 51EAFF4239;
+        Wed, 13 Jul 2022 02:31:11 -0700 (PDT)
+X-UUID: 7c9ab3c345e64b41b9926e33f6bbac94-20220713
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.8,REQID:470977ff-af74-463d-a958-20fb93a9322b,OB:10,L
-        OB:10,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:51,FILE:0,RULE:Release_Ham,A
-        CTION:release,TS:51
-X-CID-INFO: VERSION:1.1.8,REQID:470977ff-af74-463d-a958-20fb93a9322b,OB:10,LOB
-        :10,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:51,FILE:0,RULE:Release_Ham,ACT
-        ION:release,TS:51
-X-CID-META: VersionHash:0f94e32,CLOUDID:6354dc32-b9e4-42b8-b28a-6364427c76bb,C
-        OID:92ea3a584a4c,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
-        RL:0,File:nil,QS:nil,BEC:nil,COL:0
-X-UUID: 26d315c2c3544c99a56db226c1688f00-20220713
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
+X-CID-O-INFO: VERSION:1.1.8,REQID:ca50afd8-b7df-4c67-9166-916496b64597,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:0f94e32,CLOUDID:a3715fd7-5d6d-4eaf-a635-828a3ee48b7c,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
+        ,QS:nil,BEC:nil,COL:0
+X-UUID: 7c9ab3c345e64b41b9926e33f6bbac94-20220713
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1206323069; Wed, 13 Jul 2022 17:12:37 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Wed, 13 Jul 2022 17:12:36 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Wed, 13 Jul 2022 17:12:35 +0800
-Message-ID: <f22517dc676358e055eeb5192930b8a5f0d821a5.camel@mediatek.com>
+        with ESMTP id 568296446; Wed, 13 Jul 2022 17:31:03 +0800
+Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Wed, 13 Jul 2022 17:31:02 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
+ Transport; Wed, 13 Jul 2022 17:31:02 +0800
+Message-ID: <9eceb5412bfed5f408153fe05bc2f8a4e3570b77.camel@mediatek.com>
 Subject: Re: [PATCH v14 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
  driver
 From:   CK Hu <ck.hu@mediatek.com>
@@ -56,7 +53,7 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Wed, 13 Jul 2022 17:12:35 +0800
+Date:   Wed, 13 Jul 2022 17:31:02 +0800
 In-Reply-To: <20220712111223.13080-6-rex-bc.chen@mediatek.com>
 References: <20220712111223.13080-1-rex-bc.chen@mediatek.com>
          <20220712111223.13080-6-rex-bc.chen@mediatek.com>
@@ -101,32 +98,36 @@ On Tue, 2022-07-12 at 19:12 +0800, Bo-Chen Chen wrote:
 [snip]
 
 > +
-> +static void mtk_dp_msa_bypass_enable(struct mtk_dp *mtk_dp, bool
-> enable)
+> +static void mtk_dp_bulk_16bit_write(struct mtk_dp *mtk_dp, u32
+> offset, u8 *buf,
+> +				    size_t length)
+
+The offset would always be MTK_DP_AUX_P0_3708, so drop offset and use
+MTK_DP_AUX_P0_3708 directly.
+
 > +{
-> +	u32 mask = BIT(HTOTAL_SEL_DP_ENC0_P0_SHIFT) |
-> +		   BIT(VTOTAL_SEL_DP_ENC0_P0_SHIFT) |
-> +		   BIT(HSTART_SEL_DP_ENC0_P0_SHIFT) |
-> +		   BIT(VSTART_SEL_DP_ENC0_P0_SHIFT) |
-> +		   BIT(HWIDTH_SEL_DP_ENC0_P0_SHIFT) |
-> +		   BIT(VHEIGHT_SEL_DP_ENC0_P0_SHIFT) |
-> +		   BIT(HSP_SEL_DP_ENC0_P0_SHIFT) |
-> +		   BIT(HSW_SEL_DP_ENC0_P0_SHIFT) |
-> +		   BIT(VSP_SEL_DP_ENC0_P0_SHIFT) |
-> +		   BIT(VSW_SEL_DP_ENC0_P0_SHIFT);
+> +	int i;
+> +	int num_regs = (length + 1) / 2;
+> +
+> +	/* 2 bytes per register */
+> +	for (i = 0; i < num_regs; i++) {
+> +		u32 val = buf[i * 2] |
+> +			  (i * 2 + 1 < length ? buf[i * 2 + 1] << 8 :
+> 0);
+> +
+> +		if (mtk_dp_write(mtk_dp, offset + i * 4, val))
+> +			return;
+> +	}
 
-I would like define a symbol like this
-
-#define HTOTAL_SEL_DP_ENC0_P0 BIT(0)
-#define VTOTAL_SEL_DP_ENC0_P0 BIT(1)
-#define HSTART_SEL_DP_ENC0_P0 BIT(2)
+for (i = 0; i < length; i += 2) {
+	val = buf[i] | (i + 1 < length ? buf[i + 1] << 8 : 0);
+	if (mtk_dp_write(mtk_dp, MTK_DP_AUX_P0_3708 + i * 2, val))
+		return;
+}
 
 Regards,
 CK
 
-> +	u32 val = enable ? 0 : mask;
-> +
-> +	mtk_dp_update_bits(mtk_dp, MTK_DP_ENC0_P0_3030, val, mask);
 > +}
 > +
 

@@ -2,187 +2,139 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7800ACCA482
-	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jul 2022 08:04:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4561C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jul 2022 08:10:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234993AbiGMIEa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 13 Jul 2022 04:04:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34956 "EHLO
+        id S234650AbiGMIKe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 13 Jul 2022 04:10:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39684 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232024AbiGMIE3 (ORCPT
+        with ESMTP id S234603AbiGMIKb (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 13 Jul 2022 04:04:29 -0400
-Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F960E1470
-        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jul 2022 01:04:27 -0700 (PDT)
-Received: by mail-wr1-x42b.google.com with SMTP id v14so14338524wra.5
-        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jul 2022 01:04:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=yaBi5+j2aB+gOEpu/CS6a4crTXK1oluI+G7cSMbxelM=;
-        b=MduZJ4LcUwia674sobuaUywFu/y9XJbPCqF8UXjn0wnRaCT+QZ3XOGx+YAje4xxfsx
-         x9gPEEwK6l26zgKylqiCX6kg+6Qcrx6/7WQ/ytwHvcda4vtybERuZ4s70YTn/BNqLy24
-         5MeZn8161zhdqCh3Gug8o1zPTpESCgZp9pNlebMEHS9aj8RGpd5fMetXcNCgQ8tnZWl2
-         oITFcoQoNbdZcmx8uMXLq2HS15pvFWibAtvysAkVPH+IejhAt1//CsNF6qnytW3Sp+Yo
-         iZrLyWZCZeToIHPCPlOTz9lFBuwhiDKL4zdw/LqWzu1dOoE8C4t19oUDKrZTd7BZsh3v
-         b4DA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=yaBi5+j2aB+gOEpu/CS6a4crTXK1oluI+G7cSMbxelM=;
-        b=o7/QHbbewHn/eW/yFuxWn9I2TwKkw/Te3nnNkQO2ft7xF8DTUls218J/dzHZJctb6Z
-         vCxkQLdGDoFJrgKopkbVu1QRu0qHagEgdF4nxmeGa+YJTUA0DUs/VFjrSfj4xvY5cHys
-         hSRFa7olhEVyzog/KXZ+5CUeGhg56bDqT/O7qS1qUWXbA3scyfma7CtRNoIxN6FmPVKU
-         3B19v17mBnn7H4J1T/tVv18P7R5kT9GTN/LzTq4NO4zdKg6wGZgTyhkp/7EA/icPKAhU
-         7pETi6ZvwliPBKFO2HLjbjC0C6YClAgsl4Rxft4qbpLQqIKdSQDf7KCcXz63X28L5YTX
-         ETiQ==
-X-Gm-Message-State: AJIora8cE6yv8TLQMcVKKhQEkv11WBMjTVMjJhd1hofM5NRZ7oHWk/Ju
-        GY4QuTT8QxJizbHRMdmzOtSCNQ==
-X-Google-Smtp-Source: AGRyM1sox2gwD2oOUs0Po8YP6r0hOoKvkq7xKaXz/jSSA3VY7uq2zQIZPBxBD2yVdN4jLfilFwtkQw==
-X-Received: by 2002:a5d:4890:0:b0:21d:9bf3:89b5 with SMTP id g16-20020a5d4890000000b0021d9bf389b5mr1887795wrq.153.1657699465867;
-        Wed, 13 Jul 2022 01:04:25 -0700 (PDT)
-Received: from google.com (cpc155339-bagu17-2-0-cust87.1-3.cable.virginm.net. [86.27.177.88])
-        by smtp.gmail.com with ESMTPSA id l29-20020a05600c1d1d00b0039749b01ea7sm1616879wms.32.2022.07.13.01.04.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 13 Jul 2022 01:04:25 -0700 (PDT)
-Date:   Wed, 13 Jul 2022 09:04:22 +0100
-From:   Lee Jones <lee.jones@linaro.org>
-To:     ChiaEn Wu <peterwu.pub@gmail.com>
-Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Chunfeng Yun <chunfeng.yun@mediatek.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>,
-        Helge Deller <deller@gmx.de>,
-        ChiaEn Wu <chiaen_wu@richtek.com>,
-        Alice Chen <alice_chen@richtek.com>,
-        ChiYuan Huang <cy_huang@richtek.com>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-mediatek@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        USB <linux-usb@vger.kernel.org>,
-        linux-iio <linux-iio@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        szuni chen <szunichen@gmail.com>
-Subject: Re: [PATCH v3 07/14] mfd: mt6370: Add Mediatek MT6370 support
-Message-ID: <Ys58hr3AK/p/4/ng@google.com>
-References: <20220623115631.22209-1-peterwu.pub@gmail.com>
- <20220623115631.22209-8-peterwu.pub@gmail.com>
- <Ys2TTsv1oU8n1fUE@google.com>
- <CABtFH5LMHrfOdLZZxpjwsHmyHZsHUmevpQJYDFqZtvfpC6AVxg@mail.gmail.com>
+        Wed, 13 Jul 2022 04:10:31 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31AE1E95D7;
+        Wed, 13 Jul 2022 01:10:29 -0700 (PDT)
+X-UUID: 2ee803403f314842817a5e3de57f3384-20220713
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.8,REQID:73530e99-626a-4617-8909-2bc02f1bded9,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:0f94e32,CLOUDID:80672a64-0b3f-4b2c-b3a6-ed5c044366a0,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
+        ,QS:nil,BEC:nil,COL:0
+X-UUID: 2ee803403f314842817a5e3de57f3384-20220713
+Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw02.mediatek.com
+        (envelope-from <ck.hu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 632467954; Wed, 13 Jul 2022 16:10:24 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Wed, 13 Jul 2022 16:10:23 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
+ Transport; Wed, 13 Jul 2022 16:10:23 +0800
+Message-ID: <8fad0421bb7a61ae5e2ecabfc93790f1e2f30b63.camel@mediatek.com>
+Subject: Re: [PATCH v14 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
+ driver
+From:   CK Hu <ck.hu@mediatek.com>
+To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, <chunkuang.hu@kernel.org>,
+        <p.zabel@pengutronix.de>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
+        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
+        <airlied@linux.ie>
+CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
+        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
+        <angelogioacchino.delregno@collabora.com>,
+        <liangxu.xu@mediatek.com>, <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-fbdev@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Wed, 13 Jul 2022 16:10:23 +0800
+In-Reply-To: <20220712111223.13080-6-rex-bc.chen@mediatek.com>
+References: <20220712111223.13080-1-rex-bc.chen@mediatek.com>
+         <20220712111223.13080-6-rex-bc.chen@mediatek.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CABtFH5LMHrfOdLZZxpjwsHmyHZsHUmevpQJYDFqZtvfpC6AVxg@mail.gmail.com>
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 13 Jul 2022, ChiaEn Wu wrote:
+Hi, Bo-Chen:
 
-> Hi Lee,
+On Tue, 2022-07-12 at 19:12 +0800, Bo-Chen Chen wrote:
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
 > 
-> Thanks for your reply.
+> This patch adds a embedded displayport driver for the MediaTek mt8195
+> SoC.
 > 
-> Lee Jones <lee.jones@linaro.org> 於 2022年7月12日 週二 晚上11:29寫道：
-> >
-> > On Thu, 23 Jun 2022, ChiaEn Wu wrote:
-> >
-> > > From: ChiYuan Huang <cy_huang@richtek.com>
-> > >
-> > > Add Mediatek MT6370 MFD support.
-> >
-> > No such thing as "MFD support".
-> >
-> > And you're not getting away with submitting a 370 line patch with a 5
-> > word change log either. :)
-> >
-> > Please at least tell us what the device is and what it's used for.
+> It supports the MT8195, the embedded DisplayPort units. It offers
+> DisplayPort 1.4 with up to 4 lanes.
 > 
-> I sincerely apologize.
-> We will add more descriptions of the MT6370 feature in the v5 patch.
+> The driver creates a child device for the phy. The child device will
+> never exist without the parent being active. As they are sharing a
+> register range, the parent passes a regmap pointer to the child so
+> that
+> both can work with the same register range. The phy driver sets
+> device
+> data that is read by the parent to get the phy device that can be
+> used
+> to control the phy properties.
 > 
-> >
-> > > Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
-> > > ---
-> > >
-> > > v3
-> > > - Refine Kconfig help text
-> > > - Refine error message of unknown vendor ID in
-> > >   mt6370_check_vendor_info()
-> > > - Refine return value handling of mt6370_regmap_read()
-> > > - Refine all probe error by using dev_err_probe()
-> > > - Refine "bank_idx" and "bank_addr" in mt6370_regmap_read() and
-> > >   mt6370_regmap_write()
-> > > - Add "#define VENID*" and drop the comments in
-> > >   mt6370_check_vendor_info()
-> > > - Drop "MFD" in MODULE_DESCRIPTION()
-> > > ---
-> > >  drivers/mfd/Kconfig  |  13 ++
-> > >  drivers/mfd/Makefile |   1 +
-> > >  drivers/mfd/mt6370.c | 358 +++++++++++++++++++++++++++++++++++++++++++++++++++
-> > >  3 files changed, 372 insertions(+)
-> > >  create mode 100644 drivers/mfd/mt6370.c
+> This driver is based on an initial version by
+> Jitao shi <jitao.shi@mediatek.com>
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> ---
 
-[...]
+[snip]
 
-> > > +static int mt6370_probe(struct i2c_client *i2c)
-> > > +{
-> > > +     struct mt6370_info *info;
-> > > +     struct i2c_client *usbc_i2c;
-> > > +     int ret;
-> > > +
-> > > +     info = devm_kzalloc(&i2c->dev, sizeof(*info), GFP_KERNEL);
-> > > +     if (!info)
-> > > +             return -ENOMEM;
-> > > +
-> > > +     info->dev = &i2c->dev;
-> > > +
-> > > +     usbc_i2c = devm_i2c_new_dummy_device(&i2c->dev, i2c->adapter,
-> > > +                                          MT6370_USBC_I2CADDR);
-> > > +     if (IS_ERR(usbc_i2c))
-> > > +             return dev_err_probe(&i2c->dev, PTR_ERR(usbc_i2c),
-> > > +                                  "Failed to register USBC I2C client\n");
-> > > +
-> > > +     /* Assign I2C client for PMU and TypeC */
-> > > +     info->i2c[MT6370_PMU_I2C] = i2c;
-> > > +     info->i2c[MT6370_USBC_I2C] = usbc_i2c;
-> > > +
-> > > +     info->regmap = devm_regmap_init(&i2c->dev, &mt6370_regmap_bus, info,
-> > > +                                     &mt6370_regmap_config);
-> >
-> > Apart from in mt6370_check_vendor_info() where is this actually used?
-> 
-> Well... from my understanding, we use this MFD driver to make other
-> drivers of MT6370 (e.g. charger, ADC, led...) use the same regmap
-> settings.
-> Thus, this regmap is not only used in mt6370_check_vendor_info().
+> +
+> +struct mtk_dp_timings {
+> +	struct videomode vm;
+> +};
+> +
+> +struct mtk_dp_irq_sta {
+> +	bool hpd_inerrupt;
+> +};
+> +
+> +struct mtk_dp_train_info {
+> +	bool tps3;
+> +	bool tps4;
+> +	bool sink_ssc;
+> +	bool cable_plugged_in;
+> +	bool cable_state_change;
+> +	bool cr_done;
+> +	bool eq_done;
+> +	/* link_rate is in multiple of 0.27Gbps */
+> +	int link_rate;
+> +	int lane_count;
+> +	struct mtk_dp_irq_sta irq_sta;
 
-Well for that to happen you need to store the data somewhere for the
-child devices to fetch from.  I don't see that happening in this
-patch?  What did I miss?
+There is only one member in struct mtk_dp_irq_sta, so drop struct
+mtk_dp_irq_sta and use bool hpd_inerrupt directly here.
 
--- 
-Lee Jones [李琼斯]
-Principal Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+> +};
+> +
+> +struct mtk_dp_info {
+> +	u32 depth;
+> +	enum dp_pixelformat format;
+> +	struct mtk_dp_timings timings;
+
+There is only one member in struct mtk_dp_timings, so drop struct
+mtk_dp_timings and use struct videomode vm directly here.
+
+Regards,
+CK
+
+> +};
+> +
+

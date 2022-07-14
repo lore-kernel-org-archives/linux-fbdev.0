@@ -2,142 +2,197 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E352ECCA482
-	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Jul 2022 10:20:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B905C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Jul 2022 10:21:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231895AbiGNKUM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 14 Jul 2022 06:20:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59406 "EHLO
+        id S238233AbiGNKVy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 14 Jul 2022 06:21:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33378 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237599AbiGNKUL (ORCPT
+        with ESMTP id S237809AbiGNKVx (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 14 Jul 2022 06:20:11 -0400
-Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1BECE2229A
-        for <linux-fbdev@vger.kernel.org>; Thu, 14 Jul 2022 03:20:07 -0700 (PDT)
-Received: from ramsan.of.borg ([84.195.186.194])
-        by xavier.telenet-ops.be with bizsmtp
-        id uyL32700G4C55Sk01yL3Cw; Thu, 14 Jul 2022 12:20:05 +0200
-Received: from rox.of.borg ([192.168.97.57])
-        by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1oBvwx-003The-0z; Thu, 14 Jul 2022 12:20:03 +0200
-Received: from geert by rox.of.borg with local (Exim 4.93)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1oBulZ-00Bf27-Ik; Thu, 14 Jul 2022 11:04:13 +0200
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Hans de Goede <hdegoede@redhat.com>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH v2 4/5] drm/modes: Add support for driver-specific named modes
-Date:   Thu, 14 Jul 2022 11:04:09 +0200
-Message-Id: <528b126b3d932bff055ff085e598b91e2e690a4e.1657788997.git.geert@linux-m68k.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <cover.1657788997.git.geert@linux-m68k.org>
-References: <cover.1657788997.git.geert@linux-m68k.org>
+        Thu, 14 Jul 2022 06:21:53 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B4BE1222B7;
+        Thu, 14 Jul 2022 03:21:51 -0700 (PDT)
+X-UUID: b2b634651a5e41c693ba2f87c87e5099-20220714
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.8,REQID:48061111-a145-4f1d-ba54-267d8bf77698,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:0f94e32,CLOUDID:142cfb32-b9e4-42b8-b28a-6364427c76bb,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
+        ,QS:nil,BEC:nil,COL:0
+X-UUID: b2b634651a5e41c693ba2f87c87e5099-20220714
+Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw01.mediatek.com
+        (envelope-from <ck.hu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 800925553; Thu, 14 Jul 2022 18:21:45 +0800
+Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Thu, 14 Jul 2022 18:21:44 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
+ Transport; Thu, 14 Jul 2022 18:21:42 +0800
+Message-ID: <7c847b4177b9420b98bd6ecde473f149463e50b1.camel@mediatek.com>
+Subject: Re: [PATCH v14 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
+ driver
+From:   CK Hu <ck.hu@mediatek.com>
+To:     Rex-BC Chen <rex-bc.chen@mediatek.com>,
+        "chunkuang.hu@kernel.org" <chunkuang.hu@kernel.org>,
+        "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
+        "daniel@ffwll.ch" <daniel@ffwll.ch>,
+        "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        "krzysztof.kozlowski+dt@linaro.org" 
+        <krzysztof.kozlowski+dt@linaro.org>,
+        "mripard@kernel.org" <mripard@kernel.org>,
+        "tzimmermann@suse.de" <tzimmermann@suse.de>,
+        "matthias.bgg@gmail.com" <matthias.bgg@gmail.com>,
+        "deller@gmx.de" <deller@gmx.de>,
+        "airlied@linux.ie" <airlied@linux.ie>
+CC:     "msp@baylibre.com" <msp@baylibre.com>,
+        "granquet@baylibre.com" <granquet@baylibre.com>,
+        Jitao Shi =?UTF-8?Q?=28=E7=9F=B3=E8=AE=B0=E6=B6=9B=29?= 
+        <jitao.shi@mediatek.com>,
+        "wenst@chromium.org" <wenst@chromium.org>,
+        "angelogioacchino.delregno@collabora.com" 
+        <angelogioacchino.delregno@collabora.com>,
+        LiangXu Xu =?UTF-8?Q?=28=E5=BE=90=E4=BA=AE=29?= 
+        <LiangXu.Xu@mediatek.com>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-mediatek@lists.infradead.org" 
+        <linux-mediatek@lists.infradead.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        Project_Global_Chrome_Upstream_Group 
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Thu, 14 Jul 2022 18:21:41 +0800
+In-Reply-To: <b04f4a68e012157db43f8f7b0887d611f790a9c5.camel@mediatek.com>
+References: <20220712111223.13080-1-rex-bc.chen@mediatek.com>
+         <20220712111223.13080-6-rex-bc.chen@mediatek.com>
+         <8fad0421bb7a61ae5e2ecabfc93790f1e2f30b63.camel@mediatek.com>
+         <b04f4a68e012157db43f8f7b0887d611f790a9c5.camel@mediatek.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The mode parsing code recognizes named modes only if they are explicitly
-listed in the internal whitelist, which is currently limited to "NTSC"
-and "PAL".
+Hi, Bo-Chen:
 
-Provide a mechanism for drivers to override this list to support custom
-mode names.
+On Thu, 2022-07-14 at 16:24 +0800, Rex-BC Chen wrote:
+> On Wed, 2022-07-13 at 16:10 +0800, CK Hu wrote:
+> > Hi, Bo-Chen:
+> > 
+> > On Tue, 2022-07-12 at 19:12 +0800, Bo-Chen Chen wrote:
+> > > From: Markus Schneider-Pargmann <msp@baylibre.com>
+> > > 
+> > > This patch adds a embedded displayport driver for the MediaTek
+> > > mt8195
+> > > SoC.
+> > > 
+> > > It supports the MT8195, the embedded DisplayPort units. It offers
+> > > DisplayPort 1.4 with up to 4 lanes.
+> > > 
+> > > The driver creates a child device for the phy. The child device
+> > > will
+> > > never exist without the parent being active. As they are sharing
+> > > a
+> > > register range, the parent passes a regmap pointer to the child
+> > > so
+> > > that
+> > > both can work with the same register range. The phy driver sets
+> > > device
+> > > data that is read by the parent to get the phy device that can be
+> > > used
+> > > to control the phy properties.
+> > > 
+> > > This driver is based on an initial version by
+> > > Jitao shi <jitao.shi@mediatek.com>
+> > > 
+> > > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> > > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> > > Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> > > ---
+> > 
+> > [snip]
+> > 
+> > > +
+> > > +struct mtk_dp_timings {
+> > > +	struct videomode vm;
+> > > +};
+> > > +
+> > > +struct mtk_dp_irq_sta {
+> > > +	bool hpd_inerrupt;
+> > > +};
+> > > +
+> > > +struct mtk_dp_train_info {
+> > > +	bool tps3;
+> > > +	bool tps4;
+> > > +	bool sink_ssc;
+> > > +	bool cable_plugged_in;
+> > > +	bool cable_state_change;
+> > > +	bool cr_done;
+> > > +	bool eq_done;
+> > > +	/* link_rate is in multiple of 0.27Gbps */
+> > > +	int link_rate;
+> > > +	int lane_count;
+> > > +	struct mtk_dp_irq_sta irq_sta;
+> > 
+> > There is only one member in struct mtk_dp_irq_sta, so drop struct
+> > mtk_dp_irq_sta and use bool hpd_inerrupt directly here.
+> > 
+> 
+> Hello CK,
+> 
+> ok, I will drop this.
+> 
+> > > +};
+> > > +
+> > > +struct mtk_dp_info {
+> > > +	u32 depth;
+> > > +	enum dp_pixelformat format;
+> > > +	struct mtk_dp_timings timings;
+> > 
+> > There is only one member in struct mtk_dp_timings, so drop struct
+> > mtk_dp_timings and use struct videomode vm directly here.
+> > 
+> 
+> This structure will add more variable in following patch.
+> whole struct is like,
+> struct mtk_dp_timings {
+> 	struct videomode vm;
+> 	u8 frame_rate;
+> 	u32 pix_rate_khz;
+> };
+> 
+> I want to keep this.
 
-Ideally, this list should just come from the driver's actual list of
-modes, but connector->probed_modes is not yet populated at the time of
-parsing.
+I think we could just drop struct mtk_dp_timings and place these member
+directly in struct mtk_dp_info.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
----
-v2:
-  - Add Reviewed-by.
----
- drivers/gpu/drm/drm_modes.c | 15 +++++++++++----
- include/drm/drm_connector.h | 10 ++++++++++
- 2 files changed, 21 insertions(+), 4 deletions(-)
+Regards,
+CK
 
-diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index 0cbf0467f263b30a..bfc3a08614522689 100644
---- a/drivers/gpu/drm/drm_modes.c
-+++ b/drivers/gpu/drm/drm_modes.c
-@@ -1748,24 +1748,30 @@ static int drm_mode_parse_cmdline_options(const char *str,
- static const char * const drm_named_modes_whitelist[] = {
- 	"NTSC",
- 	"PAL",
-+	NULL
- };
- 
- static int drm_mode_parse_cmdline_named_mode(const char *name,
- 					     unsigned int length, bool refresh,
-+					     const struct drm_connector *connector,
- 					     struct drm_cmdline_mode *mode)
- {
-+	const char * const *named_modes_whitelist;
- 	unsigned int i;
- 	int ret;
- 
--	for (i = 0; i < ARRAY_SIZE(drm_named_modes_whitelist); i++) {
--		ret = str_has_prefix(name, drm_named_modes_whitelist[i]);
-+	named_modes_whitelist = connector->named_modes_whitelist ? :
-+				drm_named_modes_whitelist;
-+
-+	for (i = 0; named_modes_whitelist[i]; i++) {
-+		ret = str_has_prefix(name, named_modes_whitelist[i]);
- 		if (ret != length)
- 			continue;
- 
- 		if (refresh)
- 			return -EINVAL; /* named + refresh is invalid */
- 
--		strcpy(mode->name, drm_named_modes_whitelist[i]);
-+		strcpy(mode->name, named_modes_whitelist[i]);
- 		mode->specified = true;
- 		return 0;
- 	}
-@@ -1849,7 +1855,8 @@ bool drm_mode_parse_command_line_for_connector(const char *mode_option,
- 	/* First check for a named mode */
- 	if (mode_end) {
- 		ret = drm_mode_parse_cmdline_named_mode(name, mode_end,
--							refresh_ptr, mode);
-+							refresh_ptr, connector,
-+							mode);
- 		if (ret)
- 			return false;
- 	}
-diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-index 3ac4bf87f2571c4c..6361f8a596c01107 100644
---- a/include/drm/drm_connector.h
-+++ b/include/drm/drm_connector.h
-@@ -1659,6 +1659,16 @@ struct drm_connector {
- 
- 	/** @hdr_sink_metadata: HDR Metadata Information read from sink */
- 	struct hdr_sink_metadata hdr_sink_metadata;
-+
-+	/**
-+	 * @named_modes_whitelist:
-+	 *
-+	 * Optional NULL-terminated array of names to be considered valid mode
-+	 * names.  This lets the command line option parser distinguish between
-+	 * mode names and freestanding extras and/or options.
-+	 * If not set, a set of defaults will be used.
-+	 */
-+	const char * const *named_modes_whitelist;
- };
- 
- #define obj_to_connector(x) container_of(x, struct drm_connector, base)
--- 
-2.25.1
+> 
+> BRs,
+> Bo-Chen
+> 
+> 
+> > Regards,
+> > CK
+> > 
+> > > +};
+> > > +
+> > 
+> > 
+> 
+> 
 

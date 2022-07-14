@@ -2,43 +2,43 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CD54C43334
-	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Jul 2022 08:57:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E9FDCCA47B
+	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Jul 2022 09:09:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230126AbiGNI5T (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 14 Jul 2022 04:57:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50462 "EHLO
+        id S237582AbiGNJJe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 14 Jul 2022 05:09:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59594 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229555AbiGNI5T (ORCPT
+        with ESMTP id S229719AbiGNJJd (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 14 Jul 2022 04:57:19 -0400
+        Thu, 14 Jul 2022 05:09:33 -0400
 Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B5D52402FA;
-        Thu, 14 Jul 2022 01:57:17 -0700 (PDT)
-X-UUID: 8a6da0e152d642148d1433b2967a9848-20220714
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D871622503;
+        Thu, 14 Jul 2022 02:09:31 -0700 (PDT)
+X-UUID: 21d03eebb70244deaec3128df556371f-20220714
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.8,REQID:32d12dcf-2b10-4dba-9e4f-1d2eb8e2a00f,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:51,FILE:0,RULE:Release_Ham,ACT
-        ION:release,TS:51
-X-CID-INFO: VERSION:1.1.8,REQID:32d12dcf-2b10-4dba-9e4f-1d2eb8e2a00f,OB:0,LOB:
-        0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:51,FILE:0,RULE:Release_Ham,ACTIO
-        N:release,TS:51
-X-CID-META: VersionHash:0f94e32,CLOUDID:b7384964-0b3f-4b2c-b3a6-ed5c044366a0,C
-        OID:4eaf7a51add1,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+X-CID-O-INFO: VERSION:1.1.8,REQID:8c9091bd-efd0-4e7b-aef3-aaea560794d2,OB:0,LO
+        B:10,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:51,FILE:0,RULE:Release_Ham,AC
+        TION:release,TS:51
+X-CID-INFO: VERSION:1.1.8,REQID:8c9091bd-efd0-4e7b-aef3-aaea560794d2,OB:0,LOB:
+        10,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:51,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:51
+X-CID-META: VersionHash:0f94e32,CLOUDID:1272f932-b9e4-42b8-b28a-6364427c76bb,C
+        OID:5a1e9633081d,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
         RL:0,File:nil,QS:nil,BEC:nil,COL:0
-X-UUID: 8a6da0e152d642148d1433b2967a9848-20220714
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
+X-UUID: 21d03eebb70244deaec3128df556371f-20220714
+Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw02.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1840791747; Thu, 14 Jul 2022 16:57:12 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Thu, 14 Jul 2022 16:57:11 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 14 Jul 2022 16:57:11 +0800
-Message-ID: <9d1e5b01aa23ddf592fe6a7f9ffa8abc01842b3f.camel@mediatek.com>
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 1394532435; Thu, 14 Jul 2022 17:09:23 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Thu, 14 Jul 2022 17:09:22 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
+ Transport; Thu, 14 Jul 2022 17:09:22 +0800
+Message-ID: <1f698bb3d5d50a6e508cd48e905c8c69415c2fd9.camel@mediatek.com>
 Subject: Re: [PATCH v14 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
  driver
 From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
@@ -56,12 +56,12 @@ To:     CK Hu <ck.hu@mediatek.com>,
         "airlied@linux.ie" <airlied@linux.ie>
 CC:     "msp@baylibre.com" <msp@baylibre.com>,
         "granquet@baylibre.com" <granquet@baylibre.com>,
-        "Jitao Shi =?UTF-8?Q?=28=E7=9F=B3=E8=AE=B0=E6=B6=9B=29?=" 
+        Jitao Shi =?UTF-8?Q?=28=E7=9F=B3=E8=AE=B0=E6=B6=9B=29?= 
         <jitao.shi@mediatek.com>,
         "wenst@chromium.org" <wenst@chromium.org>,
         "angelogioacchino.delregno@collabora.com" 
         <angelogioacchino.delregno@collabora.com>,
-        "LiangXu Xu =?UTF-8?Q?=28=E5=BE=90=E4=BA=AE=29?=" 
+        LiangXu Xu =?UTF-8?Q?=28=E5=BE=90=E4=BA=AE=29?= 
         <LiangXu.Xu@mediatek.com>,
         "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
         "linux-mediatek@lists.infradead.org" 
@@ -73,11 +73,11 @@ CC:     "msp@baylibre.com" <msp@baylibre.com>,
         "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
         Project_Global_Chrome_Upstream_Group 
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Thu, 14 Jul 2022 16:57:11 +0800
-In-Reply-To: <039bc647aaf4f0b744e40164ff6eae2032345c1a.camel@mediatek.com>
+Date:   Thu, 14 Jul 2022 17:09:22 +0800
+In-Reply-To: <24726b8a5994961b966cf90b1f56c71a844d274a.camel@mediatek.com>
 References: <20220712111223.13080-1-rex-bc.chen@mediatek.com>
          <20220712111223.13080-6-rex-bc.chen@mediatek.com>
-         <039bc647aaf4f0b744e40164ff6eae2032345c1a.camel@mediatek.com>
+         <24726b8a5994961b966cf90b1f56c71a844d274a.camel@mediatek.com>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
@@ -87,7 +87,7 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 2022-07-13 at 17:33 +0800, CK Hu wrote:
+On Thu, 2022-07-14 at 14:51 +0800, CK Hu wrote:
 > Hi, Bo-Chen:
 > 
 > On Tue, 2022-07-12 at 19:12 +0800, Bo-Chen Chen wrote:
@@ -121,28 +121,100 @@ On Wed, 2022-07-13 at 17:33 +0800, CK Hu wrote:
 > 
 > [snip]
 > 
-> > +
-> > +static void mtk_dp_aux_fill_write_fifo(struct mtk_dp *mtk_dp, u8
-> > *buf,
-> > +				       size_t length)
+> > +static int mtk_dp_train_tps_2_3(struct mtk_dp *mtk_dp, u8
+> > target_linkrate,
+> > +				u8 target_lane_count, int
+> > *iteration_count,
+> > +				u8 *lane_adjust,  int *status_control,
+> > +				u8 *prev_lane_adjust)
 > > +{
-> > +	mtk_dp_bulk_16bit_write(mtk_dp, MTK_DP_AUX_P0_3708, buf,
-> > length);
+> > +	u8 val;
+> > +	u8 link_status[DP_LINK_STATUS_SIZE] = {};
+> > +
+> > +	if (*status_control == 1) {
+> > +		if (mtk_dp->train_info.tps4) {
+> > +			mtk_dp_train_set_pattern(mtk_dp, 4);
+> > +			val = DP_TRAINING_PATTERN_4;
+> > +		} else if (mtk_dp->train_info.tps3) {
+> > +			mtk_dp_train_set_pattern(mtk_dp, 3);
+> > +			val = DP_LINK_SCRAMBLING_DISABLE |
+> > +				DP_TRAINING_PATTERN_3;
+> > +		} else {
+> > +			mtk_dp_train_set_pattern(mtk_dp, 2);
+> > +			val = DP_LINK_SCRAMBLING_DISABLE |
+> > +				DP_TRAINING_PATTERN_2;
+> > +		}
+> > +		drm_dp_dpcd_writeb(&mtk_dp->aux,
+> > +				   DP_TRAINING_PATTERN_SET, val);
+> > +		drm_dp_dpcd_read(&mtk_dp->aux,
+> > +				 DP_ADJUST_REQUEST_LANE0_1,
+> > lane_adjust,
+> > +				 sizeof(*lane_adjust) * 2);
+> > +
+> > +		mtk_dp_train_update_swing_pre(mtk_dp,
+> > +					      target_lane_count,
+> > lane_adjust);
+> > +		*status_control = 2;
+> > +		(*iteration_count)++;
+> > +	}
+> > +
+> > +	drm_dp_link_train_channel_eq_delay(&mtk_dp->aux, mtk_dp-
+> > > rx_cap);
+> > 
+> > +
+> > +	drm_dp_dpcd_read_link_status(&mtk_dp->aux, link_status);
+> > +
+> > +	if (!drm_dp_clock_recovery_ok(link_status, target_lane_count)) 
 > 
-> mtk_dp_aux_fill_write_fifo() directly call mtk_dp_bulk_16bit_write(),
-> so I think we could just keep one of them and drop another one.
+> I think this checking is redundant. I think we could just keep
+> drm_dp_channel_eq_ok() and drop drm_dp_clock_recovery_ok() here
+> because
+> if drm_dp_clock_recovery_ok() fail, it imply that
+> drm_dp_channel_eq_ok() would fail. So just check
+> drm_dp_channel_eq_ok()
+> is enough.
 > 
-
-Hello CK,
-
-mtk_dp_bulk_16bit_write() will also be used in following patches.
-I want to keep the driver like this.
-
-BRs,
-Bo-Chen
 > Regards,
 > CK
 > 
+> > {
+> > +		mtk_dp->train_info.cr_done = false;
+> > +		mtk_dp->train_info.eq_done = false;
+> > +		dev_dbg(mtk_dp->dev, "Link train EQ fail\n");
+> > +		return -EINVAL;
+> > +	}
+> > +
+> > +	if (drm_dp_channel_eq_ok(link_status, target_lane_count)) {
+> > +		mtk_dp->train_info.eq_done = true;
+> > +		dev_dbg(mtk_dp->dev, "Link train EQ pass\n");
+> > +		return 0;
+> > +	}
+> > +
+
+Hello CK,
+
+do you mean like this?
+if (drm_dp_channel_eq_ok(link_status, target_lane_count)) {
+  mtk_dp-
+>train_info.eq_done = true;
+  dev_dbg(mtk_dp->dev, "Link train EQ pass\n");
+  return 0;
+} else {
+  mtk_dp->train_info.cr_done = false;
+  mtk_dp->train_info.eq_done = false;
+  dev_dbg(mtk_dp->dev, "Link train EQ fail\n");
+  return -EINVAL;
+}
+
+BRs,
+Bo-Chen
+
+> > +	if (*prev_lane_adjust == link_status[4])
+> > +		(*iteration_count)++;
+> > +	else
+> > +		*prev_lane_adjust = link_status[4];
+> > +
+> > +	return -EAGAIN;
 > > +}
 > > +
 > 

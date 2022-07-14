@@ -2,170 +2,270 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FF17C43334
-	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Jul 2022 11:19:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2BD7CCA480
+	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Jul 2022 11:26:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230073AbiGNLTX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 14 Jul 2022 07:19:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57054 "EHLO
+        id S238781AbiGNL0p (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 14 Jul 2022 07:26:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35586 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230016AbiGNLTW (ORCPT
+        with ESMTP id S238785AbiGNL0c (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 14 Jul 2022 07:19:22 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1272A42AFB;
-        Thu, 14 Jul 2022 04:19:20 -0700 (PDT)
-X-UUID: 87323f8443794ff2bdacbc3f052a3eb3-20220714
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.8,REQID:dd6261c3-b5af-4250-a2c9-126d182e9630,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:0
-X-CID-META: VersionHash:0f94e32,CLOUDID:586a4c64-0b3f-4b2c-b3a6-ed5c044366a0,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
-        ,QS:nil,BEC:nil,COL:0
-X-UUID: 87323f8443794ff2bdacbc3f052a3eb3-20220714
-Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw01.mediatek.com
-        (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1722459032; Thu, 14 Jul 2022 19:19:17 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
- mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Thu, 14 Jul 2022 19:19:16 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Thu, 14 Jul 2022 19:19:15 +0800
-Message-ID: <f0ba5478d77a5190a9050e4518ebbd44bcd889a6.camel@mediatek.com>
-Subject: Re: [PATCH v14 03/10] drm/edid: Add cea_sad helpers for freq/length
-From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
-To:     AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
-        <daniel@ffwll.ch>, <robh+dt@kernel.org>,
-        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
-        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
-        <airlied@linux.ie>
-CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
-        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
-        <ck.hu@mediatek.com>, <liangxu.xu@mediatek.com>,
-        <dri-devel@lists.freedesktop.org>,
-        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-fbdev@vger.kernel.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Thu, 14 Jul 2022 19:19:10 +0800
-In-Reply-To: <67b3a842-66aa-2336-3955-d5aa760cdd4b@collabora.com>
-References: <20220712111223.13080-1-rex-bc.chen@mediatek.com>
-         <20220712111223.13080-4-rex-bc.chen@mediatek.com>
-         <67b3a842-66aa-2336-3955-d5aa760cdd4b@collabora.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        Thu, 14 Jul 2022 07:26:32 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3BEB95726C;
+        Thu, 14 Jul 2022 04:26:27 -0700 (PDT)
+Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (No client certificate requested)
+        (Authenticated sender: kholk11)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 656336601A3B;
+        Thu, 14 Jul 2022 12:26:24 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1657797985;
+        bh=S3uu1fiJqnW9GfhBdNOm5ox+Kfz/PBBejcQCNxtJG7Q=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=nmnLgvsJ7wUdm7PX1mVlONbq1I4u5c8cliefOUgywi8O7eQNZ9V+UIqkndktdgbcP
+         I0dEshLOWiiUfvkV/+4U8lS3BJfHmZgWj3KVrMa/ccUIYo9Dnpb4HTLgtic2FTgNh7
+         g5d+02tP+6EPQhfdPAcWyW0jpcfH2kHqBjomZ+ZuOvzEhVWZ2vJ9XBqB3laT4PSV/x
+         wE27WhtoF+NNzOHG02pv3MTUxMxOvBeOAV4Al3aYiSSPgVfkd9x19nYDLM9Qlt0zBW
+         OPk0gbvq517iOXDN2+v2c/sA8s86kGLxsltZPJRKhmMDcmNkBKg0OPz6pPN2wKSIEw
+         tSgJZPher7yKQ==
+Message-ID: <8bc57373-70e4-8ab6-659f-0917dbf14c38@collabora.com>
+Date:   Thu, 14 Jul 2022 13:26:21 +0200
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH v14 04/10] video/hdmi: Add audio_infoframe packing for DP
+Content-Language: en-US
+To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, chunkuang.hu@kernel.org,
+        p.zabel@pengutronix.de, daniel@ffwll.ch, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, mripard@kernel.org,
+        tzimmermann@suse.de, matthias.bgg@gmail.com, deller@gmx.de,
+        airlied@linux.ie
+Cc:     msp@baylibre.com, granquet@baylibre.com, jitao.shi@mediatek.com,
+        wenst@chromium.org, ck.hu@mediatek.com, liangxu.xu@mediatek.com,
+        dri-devel@lists.freedesktop.org,
+        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-fbdev@vger.kernel.org,
+        Project_Global_Chrome_Upstream_Group@mediatek.com
+References: <20220712111223.13080-1-rex-bc.chen@mediatek.com>
+ <20220712111223.13080-5-rex-bc.chen@mediatek.com>
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+In-Reply-To: <20220712111223.13080-5-rex-bc.chen@mediatek.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, 2022-07-14 at 13:12 +0200, AngeloGioacchino Del Regno wrote:
-> Il 12/07/22 13:12, Bo-Chen Chen ha scritto:
-> > From: Guillaume Ranquet <granquet@baylibre.com>
-> > 
-> > This patch adds two helper functions that extract the frequency and
-> > word
-> > length from a struct cea_sad.
-> > 
-> > For these helper functions new defines are added that help
-> > translate the
-> > 'freq' and 'byte2' fields into real numbers.
-> > 
-> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> > Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
-> > ---
-> >   drivers/gpu/drm/drm_edid.c | 73
-> > ++++++++++++++++++++++++++++++++++++++
-> >   include/drm/drm_edid.h     | 14 ++++++++
-> >   2 files changed, 87 insertions(+)
-> > 
-> > diff --git a/drivers/gpu/drm/drm_edid.c
-> > b/drivers/gpu/drm/drm_edid.c
-> > index bc43e1b32092..79316d7f1fd8 100644
-> > --- a/drivers/gpu/drm/drm_edid.c
-> > +++ b/drivers/gpu/drm/drm_edid.c
-> > @@ -4916,6 +4916,79 @@ int drm_edid_to_speaker_allocation(const
-> > struct edid *edid, u8 **sadb)
-> >   }
-> >   EXPORT_SYMBOL(drm_edid_to_speaker_allocation);
-> >   
-> > +/**
-> > + * drm_cea_sad_get_sample_rate - Extract the sample rate from
-> > cea_sad
-> > + * @sad: Pointer to the cea_sad struct
-> > + *
-> > + * Extracts the cea_sad frequency field and returns the sample
-> > rate in Hz.
-> > + *
-> > + * Return: Sample rate in Hz or a negative errno if parsing
-> > failed.
-> > + */
-> > +int drm_cea_sad_get_sample_rate(const struct cea_sad *sad)
-> > +{
-> > +	switch (sad->freq) {
-> > +	case DRM_CEA_SAD_FREQ_32KHZ:
-> > +		return 32000;
-> > +	case DRM_CEA_SAD_FREQ_44KHZ:
-> > +		return 44100;
-> > +	case DRM_CEA_SAD_FREQ_48KHZ:
-> > +		return 48000;
-> > +	case DRM_CEA_SAD_FREQ_88KHZ:
-> > +		return 88200;
-> > +	case DRM_CEA_SAD_FREQ_96KHZ:
-> > +		return 96000;
-> > +	case DRM_CEA_SAD_FREQ_176KHZ:
-> > +		return 176400;
-> > +	case DRM_CEA_SAD_FREQ_192KHZ:
-> > +		return 192000;
-> > +	default:
-> > +		return -EINVAL;
-> > +	}
-> > +}
-> > +EXPORT_SYMBOL(drm_cea_sad_get_sample_rate);
-> > +
-> > +static bool drm_cea_sad_is_pcm(const struct cea_sad *sad)
-> > +{
-> > +	switch (sad->format) {
-> > +	case HDMI_AUDIO_CODING_TYPE_PCM:
-> > +		return true;
-> > +	default:
-> > +		return false;
-> > +	}
+Il 12/07/22 13:12, Bo-Chen Chen ha scritto:
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
 > 
-> Are you sure that you need this helper? That's used only in one
-> function...
-> ...if you really need this one, though, I don't think that using a
-> switch
-> is the best option here.
+> Similar to HDMI, DP uses audio infoframes as well which are structured
+> very similar to the HDMI ones.
 > 
-> Unless anyone is against that (please, reason?), I would be for doing
-> it like:
+> This patch adds a helper function to pack the HDMI audio infoframe for
+> DP, called hdmi_audio_infoframe_pack_for_dp().
+> hdmi_audio_infoframe_pack_only() is split into two parts. One of them
+> packs the payload only and can be used for HDMI and DP.
 > 
-> 	return sad->format == HDMI_AUDIO_CODING_TYPE_PCM;
+> Also constify the frame parameter in hdmi_audio_infoframe_check() as
+> it is passed to hdmi_audio_infoframe_check_only() which expects a const.
 > 
-> Everything else looks good to me (and working, too).
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> ---
+>   drivers/video/hdmi.c         | 82 +++++++++++++++++++++++++++---------
+>   include/drm/display/drm_dp.h |  2 +
+>   include/linux/hdmi.h         |  7 ++-
+>   3 files changed, 71 insertions(+), 20 deletions(-)
 > 
-> Cheers,
-> Angelo
+> diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
+> index 947be761dfa4..86805d77cc86 100644
+> --- a/drivers/video/hdmi.c
+> +++ b/drivers/video/hdmi.c
+> @@ -21,6 +21,7 @@
+>    * DEALINGS IN THE SOFTWARE.
+>    */
+>   
+> +#include <drm/display/drm_dp.h>
+>   #include <linux/bitops.h>
+>   #include <linux/bug.h>
+>   #include <linux/errno.h>
+> @@ -381,12 +382,34 @@ static int hdmi_audio_infoframe_check_only(const struct hdmi_audio_infoframe *fr
+>    *
+>    * Returns 0 on success or a negative error code on failure.
+>    */
+> -int hdmi_audio_infoframe_check(struct hdmi_audio_infoframe *frame)
+> +int hdmi_audio_infoframe_check(const struct hdmi_audio_infoframe *frame)
+>   {
+>   	return hdmi_audio_infoframe_check_only(frame);
+>   }
+>   EXPORT_SYMBOL(hdmi_audio_infoframe_check);
+>   
+> +static void
+> +hdmi_audio_infoframe_pack_payload(const struct hdmi_audio_infoframe *frame,
+> +				  u8 *buffer)
+> +{
+> +	u8 channels;
+> +
+> +	if (frame->channels >= 2)
+> +		channels = frame->channels - 1;
+> +	else
+> +		channels = 0;
+> +
+> +	buffer[0] = ((frame->coding_type & 0xf) << 4) | (channels & 0x7);
+> +	buffer[1] = ((frame->sample_frequency & 0x7) << 2) |
+> +		 (frame->sample_size & 0x3);
+> +	buffer[2] = frame->coding_type_ext & 0x1f;
+> +	buffer[3] = frame->channel_allocation;
+> +	buffer[4] = (frame->level_shift_value & 0xf) << 3;
+> +
+> +	if (frame->downmix_inhibit)
+> +		buffer[4] |= BIT(7);
+> +}
+> +
+>   /**
+>    * hdmi_audio_infoframe_pack_only() - write HDMI audio infoframe to binary buffer
+>    * @frame: HDMI audio infoframe
+> @@ -404,7 +427,6 @@ EXPORT_SYMBOL(hdmi_audio_infoframe_check);
+>   ssize_t hdmi_audio_infoframe_pack_only(const struct hdmi_audio_infoframe *frame,
+>   				       void *buffer, size_t size)
+>   {
+> -	unsigned char channels;
+>   	u8 *ptr = buffer;
+>   	size_t length;
+>   	int ret;
+> @@ -420,28 +442,13 @@ ssize_t hdmi_audio_infoframe_pack_only(const struct hdmi_audio_infoframe *frame,
+>   
+>   	memset(buffer, 0, size);
+>   
+> -	if (frame->channels >= 2)
+> -		channels = frame->channels - 1;
+> -	else
+> -		channels = 0;
+> -
+>   	ptr[0] = frame->type;
+>   	ptr[1] = frame->version;
+>   	ptr[2] = frame->length;
+>   	ptr[3] = 0; /* checksum */
+>   
+> -	/* start infoframe payload */
+> -	ptr += HDMI_INFOFRAME_HEADER_SIZE;
+> -
+> -	ptr[0] = ((frame->coding_type & 0xf) << 4) | (channels & 0x7);
+> -	ptr[1] = ((frame->sample_frequency & 0x7) << 2) |
+> -		 (frame->sample_size & 0x3);
+> -	ptr[2] = frame->coding_type_ext & 0x1f;
+> -	ptr[3] = frame->channel_allocation;
+> -	ptr[4] = (frame->level_shift_value & 0xf) << 3;
+> -
+> -	if (frame->downmix_inhibit)
+> -		ptr[4] |= BIT(7);
+> +	hdmi_audio_infoframe_pack_payload(frame,
+> +					  ptr + HDMI_INFOFRAME_HEADER_SIZE);
+>   
+>   	hdmi_infoframe_set_checksum(buffer, length);
+>   
+> @@ -479,6 +486,43 @@ ssize_t hdmi_audio_infoframe_pack(struct hdmi_audio_infoframe *frame,
+>   }
+>   EXPORT_SYMBOL(hdmi_audio_infoframe_pack);
+>   
+> +/**
+> + * hdmi_audio_infoframe_pack_for_dp - Pack a HDMI Audio infoframe for DisplayPort
+> + *
+> + * @frame:      HDMI Audio infoframe
+> + * @sdp:        secondary data packet for display port. This is filled with the
+> + * appropriate: data
 
-Hello Angelo,
+"This is filled with the appropriate data"
 
-I think you are right,
-in this case, we don't need this help function.
-I will merge this function into
-drm_cea_sad_get_uncompressed_word_length()
+... well, that's pretty obvious, isn't it?
+You're describing that this function is filling sdp in the description, so you
+can just remove that part.
 
-BRs,
-Bo-Chen
+Also, "Secondary data packet for DisplayPort", please.
 
+
+> + * @dp_version: Display Port version to be encoded in the header
+
+We're not meaning "a display port", but really "DisplayPort": please remove
+the space between "Display" and "Port" :-)
+
+(here and in the description below)
+
+> + *
+> + * Packs a HDMI Audio Infoframe to be sent over Display Port. This function
+> + * fills the secondary data packet to be used for Display Port.
+> + *
+> + * Return: Number of total written bytes or a negative errno on failure.
+> + */
+> +ssize_t
+> +hdmi_audio_infoframe_pack_for_dp(const struct hdmi_audio_infoframe *frame,
+> +				 struct dp_sdp *sdp, u8 dp_version)
+> +{
+> +	int ret;
+> +
+> +	ret = hdmi_audio_infoframe_check(frame);
+> +	if (ret)
+> +		return ret;
+> +
+> +	memset(sdp->db, 0, sizeof(sdp->db));
+> +
+> +	/* Secondary-data packet header */
+> +	sdp->sdp_header.HB0 = 0;
+> +	sdp->sdp_header.HB1 = frame->type;
+> +	sdp->sdp_header.HB2 = DP_SDP_AUDIO_INFOFRAME_HB2;
+> +	sdp->sdp_header.HB3 = (dp_version & 0x3f) << 2;
+> +
+> +	hdmi_audio_infoframe_pack_payload(frame, sdp->db);
+> +
+> +	return frame->length + 4;
+
+What's this magic number 4 about?
+
+Please use a definition for that.
+
+> +}
+> +EXPORT_SYMBOL(hdmi_audio_infoframe_pack_for_dp);
+> +
+>   /**
+>    * hdmi_vendor_infoframe_init() - initialize an HDMI vendor infoframe
+>    * @frame: HDMI vendor infoframe
+> diff --git a/include/drm/display/drm_dp.h b/include/drm/display/drm_dp.h
+> index 9e3aff7e68bb..6c0871164771 100644
+> --- a/include/drm/display/drm_dp.h
+> +++ b/include/drm/display/drm_dp.h
+> @@ -1536,6 +1536,8 @@ enum drm_dp_phy {
+>   #define DP_SDP_VSC_EXT_CEA		0x21 /* DP 1.4 */
+>   /* 0x80+ CEA-861 infoframe types */
+>   
+> +#define DP_SDP_AUDIO_INFOFRAME_HB2	0x1b
+> +
+>   /**
+>    * struct dp_sdp_header - DP secondary data packet header
+>    * @HB0: Secondary Data Packet ID
+> diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
+> index c8ec982ff498..2f4dcc8d060e 100644
+> --- a/include/linux/hdmi.h
+> +++ b/include/linux/hdmi.h
+> @@ -336,7 +336,12 @@ ssize_t hdmi_audio_infoframe_pack(struct hdmi_audio_infoframe *frame,
+>   				  void *buffer, size_t size);
+>   ssize_t hdmi_audio_infoframe_pack_only(const struct hdmi_audio_infoframe *frame,
+>   				       void *buffer, size_t size);
+> -int hdmi_audio_infoframe_check(struct hdmi_audio_infoframe *frame);
+> +int hdmi_audio_infoframe_check(const struct hdmi_audio_infoframe *frame);
+> +
+> +struct dp_sdp;
+> +ssize_t
+> +hdmi_audio_infoframe_pack_for_dp(const struct hdmi_audio_infoframe *frame,
+> +				 struct dp_sdp *sdp, u8 dp_version);
+>   
+>   enum hdmi_3d_structure {
+>   	HDMI_3D_STRUCTURE_INVALID = -1,
 

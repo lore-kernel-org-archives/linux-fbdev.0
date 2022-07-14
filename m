@@ -2,82 +2,140 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84FCFCCA483
-	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Jul 2022 10:39:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5664C43334
+	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Jul 2022 11:12:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238413AbiGNKjN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 14 Jul 2022 06:39:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48098 "EHLO
+        id S237816AbiGNLMu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 14 Jul 2022 07:12:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51738 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238350AbiGNKjI (ORCPT
+        with ESMTP id S230354AbiGNLMt (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 14 Jul 2022 06:39:08 -0400
-Received: from albert.telenet-ops.be (albert.telenet-ops.be [IPv6:2a02:1800:110:4::f00:1a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F2CB249B59
-        for <linux-fbdev@vger.kernel.org>; Thu, 14 Jul 2022 03:39:02 -0700 (PDT)
-Received: from ramsan.of.borg ([84.195.186.194])
-        by albert.telenet-ops.be with bizsmtp
-        id uyez2700L4C55Sk06yezsT; Thu, 14 Jul 2022 12:39:01 +0200
-Received: from rox.of.borg ([192.168.97.57])
-        by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1oBvwx-003The-8p; Thu, 14 Jul 2022 12:20:03 +0200
-Received: from geert by rox.of.borg with local (Exim 4.93)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1oBulZ-00Bf1F-Go; Thu, 14 Jul 2022 11:04:13 +0200
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Hans de Goede <hdegoede@redhat.com>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH v2 1/5] drm/modes: parse_cmdline: Handle empty mode name part
-Date:   Thu, 14 Jul 2022 11:04:06 +0200
-Message-Id: <302d0737539daa2053134e8f24fdf37e3d939e1e.1657788997.git.geert@linux-m68k.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <cover.1657788997.git.geert@linux-m68k.org>
-References: <cover.1657788997.git.geert@linux-m68k.org>
+        Thu, 14 Jul 2022 07:12:49 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E6B6A27FFC;
+        Thu, 14 Jul 2022 04:12:48 -0700 (PDT)
+Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (No client certificate requested)
+        (Authenticated sender: kholk11)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 65E0E6601A3B;
+        Thu, 14 Jul 2022 12:12:46 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1657797167;
+        bh=ofHlqQBpp6w/LA7oamUpNLobhMVnwMZheJEW2td7o8w=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=hxx6klICvRWNySKOsGblV95bRhvescjpQujgbjCRX5WR8cHK8YBCFmePUXLNdZAUJ
+         8daIIbAvbjJdtaHbNLzzU0MZYK+UI12ZPzThokFgSrbD/XPnJLOBcBEsWz2ab7+7O0
+         4pGavv5mW0qgixNldFjda4Bhuu0VqYBN5qjr2v6OBe7bn4cuKsO0n01rsTVrm1omn/
+         Y3xawh772Qm9CHqZrASorTMJykvqxsrsNbXeui+7WBpStCqCyqMac4K2QWHt2cTAMj
+         Ab1AAc/1FTdxBUVEwNjnQyH81x2MyqKV8xz0t10xb7F6E8IrwW37akgsIi1RKXqAIM
+         L4WYLItI2jFKQ==
+Message-ID: <67b3a842-66aa-2336-3955-d5aa760cdd4b@collabora.com>
+Date:   Thu, 14 Jul 2022 13:12:43 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH v14 03/10] drm/edid: Add cea_sad helpers for freq/length
+Content-Language: en-US
+To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, chunkuang.hu@kernel.org,
+        p.zabel@pengutronix.de, daniel@ffwll.ch, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, mripard@kernel.org,
+        tzimmermann@suse.de, matthias.bgg@gmail.com, deller@gmx.de,
+        airlied@linux.ie
+Cc:     msp@baylibre.com, granquet@baylibre.com, jitao.shi@mediatek.com,
+        wenst@chromium.org, ck.hu@mediatek.com, liangxu.xu@mediatek.com,
+        dri-devel@lists.freedesktop.org,
+        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-fbdev@vger.kernel.org,
+        Project_Global_Chrome_Upstream_Group@mediatek.com
+References: <20220712111223.13080-1-rex-bc.chen@mediatek.com>
+ <20220712111223.13080-4-rex-bc.chen@mediatek.com>
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+In-Reply-To: <20220712111223.13080-4-rex-bc.chen@mediatek.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-If no mode name part was specified, mode_end is zero, and the "ret ==
-mode_end" check does the wrong thing.
+Il 12/07/22 13:12, Bo-Chen Chen ha scritto:
+> From: Guillaume Ranquet <granquet@baylibre.com>
+> 
+> This patch adds two helper functions that extract the frequency and word
+> length from a struct cea_sad.
+> 
+> For these helper functions new defines are added that help translate the
+> 'freq' and 'byte2' fields into real numbers.
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> ---
+>   drivers/gpu/drm/drm_edid.c | 73 ++++++++++++++++++++++++++++++++++++++
+>   include/drm/drm_edid.h     | 14 ++++++++
+>   2 files changed, 87 insertions(+)
+> 
+> diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c
+> index bc43e1b32092..79316d7f1fd8 100644
+> --- a/drivers/gpu/drm/drm_edid.c
+> +++ b/drivers/gpu/drm/drm_edid.c
+> @@ -4916,6 +4916,79 @@ int drm_edid_to_speaker_allocation(const struct edid *edid, u8 **sadb)
+>   }
+>   EXPORT_SYMBOL(drm_edid_to_speaker_allocation);
+>   
+> +/**
+> + * drm_cea_sad_get_sample_rate - Extract the sample rate from cea_sad
+> + * @sad: Pointer to the cea_sad struct
+> + *
+> + * Extracts the cea_sad frequency field and returns the sample rate in Hz.
+> + *
+> + * Return: Sample rate in Hz or a negative errno if parsing failed.
+> + */
+> +int drm_cea_sad_get_sample_rate(const struct cea_sad *sad)
+> +{
+> +	switch (sad->freq) {
+> +	case DRM_CEA_SAD_FREQ_32KHZ:
+> +		return 32000;
+> +	case DRM_CEA_SAD_FREQ_44KHZ:
+> +		return 44100;
+> +	case DRM_CEA_SAD_FREQ_48KHZ:
+> +		return 48000;
+> +	case DRM_CEA_SAD_FREQ_88KHZ:
+> +		return 88200;
+> +	case DRM_CEA_SAD_FREQ_96KHZ:
+> +		return 96000;
+> +	case DRM_CEA_SAD_FREQ_176KHZ:
+> +		return 176400;
+> +	case DRM_CEA_SAD_FREQ_192KHZ:
+> +		return 192000;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +EXPORT_SYMBOL(drm_cea_sad_get_sample_rate);
+> +
+> +static bool drm_cea_sad_is_pcm(const struct cea_sad *sad)
+> +{
+> +	switch (sad->format) {
+> +	case HDMI_AUDIO_CODING_TYPE_PCM:
+> +		return true;
+> +	default:
+> +		return false;
+> +	}
 
-Fix this by skipping all named mode handling when mode_end is zero.
+Are you sure that you need this helper? That's used only in one function...
+...if you really need this one, though, I don't think that using a switch
+is the best option here.
 
-Fixes: 7b1cce760afe38b4 ("drm/modes: parse_cmdline: Allow specifying stand-alone options")
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
----
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Keep "ret == mode_end" check.
----
- drivers/gpu/drm/drm_modes.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Unless anyone is against that (please, reason?), I would be for doing it like:
 
-diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index 14b746f7ba975954..67773740c74c9ba0 100644
---- a/drivers/gpu/drm/drm_modes.c
-+++ b/drivers/gpu/drm/drm_modes.c
-@@ -1823,7 +1823,7 @@ bool drm_mode_parse_command_line_for_connector(const char *mode_option,
- 	}
- 
- 	/* First check for a named mode */
--	for (i = 0; i < ARRAY_SIZE(drm_named_modes_whitelist); i++) {
-+	for (i = 0; mode_end && i < ARRAY_SIZE(drm_named_modes_whitelist); i++) {
- 		ret = str_has_prefix(name, drm_named_modes_whitelist[i]);
- 		if (ret == mode_end) {
- 			if (refresh_ptr)
--- 
-2.25.1
+	return sad->format == HDMI_AUDIO_CODING_TYPE_PCM;
 
+Everything else looks good to me (and working, too).
+
+Cheers,
+Angelo

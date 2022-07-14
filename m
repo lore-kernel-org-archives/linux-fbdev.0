@@ -2,66 +2,66 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37805CCA47B
-	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Jul 2022 12:06:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8042DC43334
+	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Jul 2022 12:11:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238723AbiGNMGU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 14 Jul 2022 08:06:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48608 "EHLO
+        id S238731AbiGNML1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 14 Jul 2022 08:11:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48852 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238696AbiGNMGS (ORCPT
+        with ESMTP id S238730AbiGNMLI (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 14 Jul 2022 08:06:18 -0400
+        Thu, 14 Jul 2022 08:11:08 -0400
 Received: from out4-smtp.messagingengine.com (out4-smtp.messagingengine.com [66.111.4.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E60615C9CC;
-        Thu, 14 Jul 2022 05:06:14 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4E5B927C;
+        Thu, 14 Jul 2022 05:10:05 -0700 (PDT)
 Received: from compute2.internal (compute2.nyi.internal [10.202.2.46])
-        by mailout.nyi.internal (Postfix) with ESMTP id 554005C0172;
-        Thu, 14 Jul 2022 08:06:14 -0400 (EDT)
+        by mailout.nyi.internal (Postfix) with ESMTP id B1B9D5C006E;
+        Thu, 14 Jul 2022 08:10:04 -0400 (EDT)
 Received: from mailfrontend1 ([10.202.2.162])
-  by compute2.internal (MEProxy); Thu, 14 Jul 2022 08:06:14 -0400
+  by compute2.internal (MEProxy); Thu, 14 Jul 2022 08:10:04 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=cc
         :cc:content-type:date:date:from:from:in-reply-to:in-reply-to
         :message-id:mime-version:references:reply-to:sender:subject
-        :subject:to:to; s=fm2; t=1657800374; x=1657886774; bh=b5gmUsLswc
-        M+GqSPANxZXShuD2xhkT0GXvBfBDz9dEo=; b=O58bELvDHpaw1FLXNwwEFFKex+
-        OUE3n//oKnzRiP7dGhkfPd2scMkHWB2LyVWVP/9pRtCBAS3gVnU8mj+/ryqOjnhr
-        GXuUpYBrLna8QpXLPF7Dz7XBlkQ9sFuvx9/A0gLQMyPC9zGd9XSHe24C/TXxqI2G
-        leDhm0sRFr+fqIJzbvmprQRb8xpRN5wHtiYYoVnSs6Xi6aLykRLhHdMDMcZDj9z+
-        /qFDLlSSfEBhZYMy+3FSYy0K2zsqUsuFtUC3wHNOOq2mIlNR0Cz7TSJsP8jZpAO0
-        GR1Ytkb4fSOCcg3bBe2n0eX8gFOaWJa/nqkkzIbxL/L/h+ppuJ3VAIc2LhnA==
+        :subject:to:to; s=fm2; t=1657800604; x=1657887004; bh=D7XHW2lpBa
+        3ZTgH/W4t9embYc3/p5pA/+qwtSxzA0qc=; b=gT2vjyMISNAlVpK6KBb58APCFo
+        2SHGPrqnY/8Gg1KxoJ+ljIDa7Wj7Q9HPLyP//Sz0fzzRu+loj9qrvTLJE6UU1CGW
+        WQN/3MXHSdjyyqnTGgmQFmJJegZ8+xm7cORiDTKp4ZX81ENOn6T5Sw/BreCuFmJD
+        fKY9SwxueiwrHkn3A0V3wmArA5ZNybEt3WbwzCGdMTgnfpFGgzKPQQFXDhKQ0utp
+        TpIW/joHCLyaJ2uW/ryhigvBpNCLZzyVIYPkinEAXgCgCcOo3YY3lnfFBezWZpUv
+        Zi4sgXdYqm4pSD08eDGSZFH4leuogQxjQBq80mZGGtoIo+DWoqE823iaG0pQ==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
         messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
         :feedback-id:from:from:in-reply-to:in-reply-to:message-id
         :mime-version:references:reply-to:sender:subject:subject:to:to
         :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
-        fm3; t=1657800374; x=1657886774; bh=b5gmUsLswcM+GqSPANxZXShuD2xh
-        kT0GXvBfBDz9dEo=; b=aJhIEcmAXBOFqUJxyJuQIjmvOqHLYTwSEG9RBTKJWT3o
-        7Sjw/vys0EgZQv5WbA9i4/xkYeQMszi+sFi3BNAYBsh2HsBqwP+10d2ylxjZZibd
-        R168w/NfX55gamugm7X9HTfO/LlEn44dmlnaokZci67vou5r+NofGmKyfP16Qkx5
-        3ocB9b7M/P2IsEC9uuAQTtMUv5mTNw5cGIHin4w0MpzsUtbIdjd/3vUHJRu50q9d
-        Id/AOxAB6mJA1iIE7egOw8afD6euVPboxkz4F0+wBp04TaueS5YbWIhzv6+XkReS
-        K55cxlfwBA9lAc2im/bcIDn7HyeWTK5z5SEDhOvIGw==
-X-ME-Sender: <xms:tQbQYqS61j29KeWLerE4Ad2V12AcJjoOzpw2D4FkqXn9hWNsBXiVHw>
-    <xme:tQbQYvzrQs9YU1L9PZvUIhXjeZey1q-ePdn46nNbQuJX6rrXoFpMvh4FxyQG5NooB
-    fV2v-aWLcGDZijBq0E>
-X-ME-Received: <xmr:tQbQYn06M2vWzMUFePVbTZ_e4cwd9qzAj_lMUmWtZtmeWgutroBzwhnQpwEpPEF8x_vrp4WifmQ6KloGb2h4Uk7tVgPhJhKBWGJxE-I>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrudejledggeekucetufdoteggodetrfdotf
+        fm3; t=1657800604; x=1657887004; bh=D7XHW2lpBa3ZTgH/W4t9embYc3/p
+        5pA/+qwtSxzA0qc=; b=DygIqKVDSB3rTAsVCxidxoQLxEsTRV/j0metHeFG3zGZ
+        WgkxwyGnb4n3y/qUi9NMOLC2KMcaR8dgqbHyO8WVeGGdrvA/5aqqcBrzRbX5oMCz
+        Ie+DuzWCMFuiI7m1LvjFuBqWXRl2IQqvkBSGAxzWOy4DNUJZNFBNfvuufySRM+z1
+        ZCqzzKeR6NSrN89jO1Sy6KkSclmG9DBhACaOS3UMACL9lIHt+lekRzonDbEoJyQk
+        qLuXCliFfITIdH/RqxHpfVrur6yYN2rUy0Ivz78ovzvePuH1Lu3wjD3n/EFXKirc
+        ro8X49UuUULW5HtBArJC+YZdYpjso67S80UAcpE2CA==
+X-ME-Sender: <xms:nAfQYtaL3DEJ9QwEdcbl-ApNga9iUFmopPr1HmwfrIuist6aDbQk-w>
+    <xme:nAfQYkbqxyVAzMHy13T5Al7O2y112aTEMC3GZdk4hxWXi4dVigdh37YFO6Km6UMMX
+    lG4pgUYyzPFWDMVc-U>
+X-ME-Received: <xmr:nAfQYv_7gVZaWHQj_puWp_KNvsMymAfCKCnN_yA7siEtQUVRp-7CTJkOrTWdNKQIVKWUy6IyLF_SlaUVWcvLtbMrxtF91kudHMYesrg>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrudejledggeelucetufdoteggodetrfdotf
     fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
     uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
     cujfgurhepfffhvfevuffkfhggtggujgesghdtreertddtvdenucfhrhhomhepofgrgihi
     mhgvucftihhprghrugcuoehmrgigihhmvgestggvrhhnohdrthgvtghhqeenucggtffrrg
     htthgvrhhnpeetfefffefgkedtfefgledugfdtjeefjedvtddtkeetieffjedvgfehheff
-    hfevudenucevlhhushhtvghrufhiiigvpedvnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
+    hfevudenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
     hmrgigihhmvgestggvrhhnohdrthgvtghh
-X-ME-Proxy: <xmx:tQbQYmChe0GfokCELHZruX3VdRiUm4xY_3magtm8RfC7ak96Fqb9gw>
-    <xmx:tQbQYji6YzW73I_gDRY21WRb3vTw_xb3KTnUm90gcuyGKdBeRf_UhQ>
-    <xmx:tQbQYio2SxFlO_q-QeUdaDs7ER-6Aapx14JNYrTIcLLlORL2MtDSzw>
-    <xmx:tgbQYkW8yTbx2M_M2hsCtUvpnztOnHiKSC7f9lhlXPxTc3ZDsD2ucg>
+X-ME-Proxy: <xmx:nAfQYrrRtlMu83HLa5kqd7j1q0fwGNlTg4vHtvC99ANfcO0JEC38Mw>
+    <xmx:nAfQYoosAMXLaGNMSLwo9AqMoETt9CGiXvqR0PPoGoTarWumLHm5kQ>
+    <xmx:nAfQYhSPNUUY-mS3WGVwbLj59RWRyiqwSC3xh1Aqgc-ciWTh3qtyKg>
+    <xmx:nAfQYkfiMwI4tSrMAHZ__A9EcHFaNaQd7Pd8MpC3sGl3ONsB9vZygg>
 Feedback-ID: i8771445c:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
- 14 Jul 2022 08:06:12 -0400 (EDT)
-Date:   Thu, 14 Jul 2022 14:06:11 +0200
+ 14 Jul 2022 08:10:04 -0400 (EDT)
+Date:   Thu, 14 Jul 2022 14:10:02 +0200
 From:   Maxime Ripard <maxime@cerno.tech>
 To:     Geert Uytterhoeven <geert@linux-m68k.org>
 Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
@@ -71,51 +71,62 @@ Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Hans de Goede <hdegoede@redhat.com>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 5/5] drm/modes: parse_cmdline: Add support for named
- modes containing dashes
-Message-ID: <20220714120611.hpzq2gkxf73hlupw@houat>
+Subject: Re: [PATCH v2 4/5] drm/modes: Add support for driver-specific named
+ modes
+Message-ID: <20220714121002.wm6byk6puajnzvmo@houat>
 References: <cover.1657788997.git.geert@linux-m68k.org>
- <2eb205da88c3cb19ddf04d167ece4e16a330948b.1657788997.git.geert@linux-m68k.org>
+ <528b126b3d932bff055ff085e598b91e2e690a4e.1657788997.git.geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="5owdr3n7gktrcrdt"
+        protocol="application/pgp-signature"; boundary="itqpfuzowi2osqrt"
 Content-Disposition: inline
-In-Reply-To: <2eb205da88c3cb19ddf04d167ece4e16a330948b.1657788997.git.geert@linux-m68k.org>
+In-Reply-To: <528b126b3d932bff055ff085e598b91e2e690a4e.1657788997.git.geert@linux-m68k.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 
---5owdr3n7gktrcrdt
+--itqpfuzowi2osqrt
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jul 14, 2022 at 11:04:10AM +0200, Geert Uytterhoeven wrote:
-> It is fairly common for named video modes to contain dashes (e.g.
-> "tt-mid" on Atari, "dblntsc-ff" on Amiga).  Currently such mode names
-> are not recognized, as the dash is considered to be a separator between
-> mode name and bpp.
+On Thu, Jul 14, 2022 at 11:04:09AM +0200, Geert Uytterhoeven wrote:
+> The mode parsing code recognizes named modes only if they are explicitly
+> listed in the internal whitelist, which is currently limited to "NTSC"
+> and "PAL".
 >=20
-> Fix this by skipping any dashes that are not followed immediately by a
-> digit when looking for the separator.
+> Provide a mechanism for drivers to override this list to support custom
+> mode names.
+>=20
+> Ideally, this list should just come from the driver's actual list of
+> modes, but connector->probed_modes is not yet populated at the time of
+> parsing.
 >=20
 > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 > Reviewed-by: Hans de Goede <hdegoede@redhat.com>
 
-Ditto, we should have a test for that
+Like we discussed on IRC, I'm not sure allowing drivers to handle named
+modes is the right thing to do.
+
+Named modes in general were a workaround the fact that we were missing
+infos in drm_display_mode to describe all the modes.
+
+I think we really should focus on addressing that first, and then
+creating some kind of backward compat layer to create an initial DRM
+state from a named mode provided on the command line.
 
 Maxime
 
---5owdr3n7gktrcrdt
+--itqpfuzowi2osqrt
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYKAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCYtAGswAKCRDj7w1vZxhR
-xXrWAP9DRGAZ4CDEQwJ0dx/IJwhV3KNEE9cndYaREAlrtTeR4gEA2IHGASXNLZc6
-vKDJnEMcDo1+uRYEdLs55KOrwI3LxAA=
-=fYfY
+iHUEABYKAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCYtAHmgAKCRDj7w1vZxhR
+xQ/aAP9oTKyhWWihhvc4XgJIvP101uSmuw+L0FQuNx3PzZgp4QEAhPIBgTwIgcqj
+nYi/57nHkDeCEA5xHbJydUz8v0AyoA4=
+=tRFA
 -----END PGP SIGNATURE-----
 
---5owdr3n7gktrcrdt--
+--itqpfuzowi2osqrt--

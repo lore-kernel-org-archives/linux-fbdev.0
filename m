@@ -2,130 +2,176 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CCBCCCA479
-	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jul 2022 13:07:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A756C43334
+	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Jul 2022 06:52:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235860AbiGMNHv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 13 Jul 2022 09:07:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55640 "EHLO
+        id S232167AbiGNGwE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 14 Jul 2022 02:52:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35320 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229607AbiGMNHt (ORCPT
+        with ESMTP id S230239AbiGNGwD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 13 Jul 2022 09:07:49 -0400
-Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4B9AB766C
-        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jul 2022 06:07:40 -0700 (PDT)
-Received: by mail-wr1-x432.google.com with SMTP id o4so15447875wrh.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jul 2022 06:07:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=ZDp5NtLIxNT/y/y4TV28JKQZE5KPsmeDwau7U2nvfbI=;
-        b=ykcE/L76OyKjfmB6gW/9PEIXPb7KX9wbY5QZt6rzoJ7cx+NshQnf3zYFk9CJJmZ/WM
-         Yjn5tpbDrFkjNkWS+WFrkqjSfGYuauzrhkLnPgPWJ+ijDPIFajS1TTDtmC2uQEI2eXJq
-         v/PjSpgG/525Lm1jJ94ez4EFFEytapEdMWKLq79xQRBWSawK2YgrGJjhf+6mviSVU3q3
-         kOx9C54FFQzStrBSdTBuFlQdgkenCIZH2XWgb8DLkaqKQZ3XbPUtvaJN7A3d1aNdPv+L
-         MOY47XiJ+MoxEz7XvBmRhEiBH0MhBUFHBMZQFzRyd4+1IQ/e0LRFMgzPqoPQQ++2EeCE
-         bFRA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=ZDp5NtLIxNT/y/y4TV28JKQZE5KPsmeDwau7U2nvfbI=;
-        b=7VMo3k3lDyxfwWN8Lr8pYPj16kk06StdtSRqdAeCWslYorzvwkbRhSYh62Vb0r7AlC
-         2vmqC2tVb3VkMhpkFY895JO7XKqBQqlXPTIS9uke9tefToNGyWiPYoroXG0wONa3eHuk
-         x2DlUcRh5V1ndvU06M605t7qmOKudnDk6Lx0DEm3gvUwJ1MevPhmckloU1v1fVxl6Q1D
-         0Os6tAruPt3i8+37rQdN+7EIgAnjee+6G5Y5ub797IdqDavkDZjWeyzxE99duZ2KHv6Z
-         jz30JcVu9PwoixAnDgDdAntJxZO6kKEBuxWjvXko1pEhB+J1KEblaYt7UweViIQm5Me/
-         Tj0Q==
-X-Gm-Message-State: AJIora8z06EVpwwPgcYVRuZnaXjInmE1Dgv/BJbEQpdVnjus923LRd9X
-        bqVQA7GBGJ0mD6igm9KVrS/FJA==
-X-Google-Smtp-Source: AGRyM1v3Wejcmcef1+JLx2OGnt8FIDdBIQxbNYoMtF21Qn+Urzq7T2tg4YCX+P2hq8vPNX2sKjEQ7Q==
-X-Received: by 2002:a5d:5747:0:b0:21d:65e9:be07 with SMTP id q7-20020a5d5747000000b0021d65e9be07mr3162978wrw.215.1657717658781;
-        Wed, 13 Jul 2022 06:07:38 -0700 (PDT)
-Received: from google.com (cpc155339-bagu17-2-0-cust87.1-3.cable.virginm.net. [86.27.177.88])
-        by smtp.gmail.com with ESMTPSA id l29-20020a05600c1d1d00b0039749b01ea7sm2628398wms.32.2022.07.13.06.07.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 13 Jul 2022 06:07:38 -0700 (PDT)
-Date:   Wed, 13 Jul 2022 14:07:35 +0100
-From:   Lee Jones <lee.jones@linaro.org>
-To:     Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc:     ChiaEn Wu <peterwu.pub@gmail.com>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Chunfeng Yun <chunfeng.yun@mediatek.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>,
-        Helge Deller <deller@gmx.de>,
-        ChiaEn Wu <chiaen_wu@richtek.com>,
-        Alice Chen <alice_chen@richtek.com>,
-        cy_huang <cy_huang@richtek.com>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-mediatek@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        USB <linux-usb@vger.kernel.org>,
-        linux-iio <linux-iio@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        szuni chen <szunichen@gmail.com>
-Subject: Re: [PATCH v4 13/13] video: backlight: mt6370: Add Mediatek MT6370
- support
-Message-ID: <Ys7Dl1oApfww27MJ@google.com>
-References: <20220704053901.728-1-peterwu.pub@gmail.com>
- <20220704053901.728-14-peterwu.pub@gmail.com>
- <CAHp75VdwEc9AW1w8ejsxkw+sBTF1dumd99QyzTY9BZaXiViRWQ@mail.gmail.com>
- <CABtFH5K-2+2hbpvpq2nPE5AsznkQxZF2r3MVC64Q39DJhVuUtA@mail.gmail.com>
- <CAHp75VevDwdAKLYEWJgnMDvzuPuFibLuVqH-GKazEOT76wM6_A@mail.gmail.com>
+        Thu, 14 Jul 2022 02:52:03 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F35CE2872A;
+        Wed, 13 Jul 2022 23:51:54 -0700 (PDT)
+X-UUID: b429b8c9050f401a862da3b3f2aa3118-20220714
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.8,REQID:ba925e1f-f082-483a-8be6-0102a9ea29cf,OB:10,L
+        OB:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:51,FILE:0,RULE:Release_Ham,AC
+        TION:release,TS:51
+X-CID-INFO: VERSION:1.1.8,REQID:ba925e1f-f082-483a-8be6-0102a9ea29cf,OB:10,LOB
+        :0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:51,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:51
+X-CID-META: VersionHash:0f94e32,CLOUDID:b800f532-b9e4-42b8-b28a-6364427c76bb,C
+        OID:da579af93ed8,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:0,File:nil,QS:nil,BEC:nil,COL:0
+X-UUID: b429b8c9050f401a862da3b3f2aa3118-20220714
+Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw02.mediatek.com
+        (envelope-from <ck.hu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1058698050; Thu, 14 Jul 2022 14:51:48 +0800
+Received: from mtkcas10.mediatek.inc (172.21.101.39) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.792.15; Thu, 14 Jul 2022 14:51:47 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Thu, 14 Jul 2022 14:51:47 +0800
+Message-ID: <24726b8a5994961b966cf90b1f56c71a844d274a.camel@mediatek.com>
+Subject: Re: [PATCH v14 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
+ driver
+From:   CK Hu <ck.hu@mediatek.com>
+To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, <chunkuang.hu@kernel.org>,
+        <p.zabel@pengutronix.de>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
+        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
+        <airlied@linux.ie>
+CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
+        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
+        <angelogioacchino.delregno@collabora.com>,
+        <liangxu.xu@mediatek.com>, <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-fbdev@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Thu, 14 Jul 2022 14:51:47 +0800
+In-Reply-To: <20220712111223.13080-6-rex-bc.chen@mediatek.com>
+References: <20220712111223.13080-1-rex-bc.chen@mediatek.com>
+         <20220712111223.13080-6-rex-bc.chen@mediatek.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAHp75VevDwdAKLYEWJgnMDvzuPuFibLuVqH-GKazEOT76wM6_A@mail.gmail.com>
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 13 Jul 2022, Andy Shevchenko wrote:
+Hi, Bo-Chen:
 
-> On Wed, Jul 13, 2022 at 12:53 PM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
-> > Andy Shevchenko <andy.shevchenko@gmail.com> 於 2022年7月5日 週二 清晨5:14寫道：
-> > > On Mon, Jul 4, 2022 at 7:43 AM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
+On Tue, 2022-07-12 at 19:12 +0800, Bo-Chen Chen wrote:
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
 > 
-> Please, remove unneeded context when replying!
+> This patch adds a embedded displayport driver for the MediaTek mt8195
+> SoC.
 > 
-> ...
+> It supports the MT8195, the embedded DisplayPort units. It offers
+> DisplayPort 1.4 with up to 4 lanes.
 > 
-> > > > +               brightness_val[0] = (brightness - 1) & MT6370_BL_DIM2_MASK;
-> > > > +               brightness_val[1] = (brightness - 1)
-> > > > +                                   >> fls(MT6370_BL_DIM2_MASK);
-> > >
-> > > Bad indentation. One line?
-> >
-> > Well... if indent to one line, it will be over 80 characters(or called columns?)
-> > From my understanding, it is not allowed, right??
+> The driver creates a child device for the phy. The child device will
+> never exist without the parent being active. As they are sharing a
+> register range, the parent passes a regmap pointer to the child so
+> that
+> both can work with the same register range. The phy driver sets
+> device
+> data that is read by the parent to get the phy device that can be
+> used
+> to control the phy properties.
 > 
-> It's allowed to some extent.Use your common sense.
-> Here it's obviously broken indentation.
+> This driver is based on an initial version by
+> Jitao shi <jitao.shi@mediatek.com>
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> ---
 
-Refrain from going crazy though - hard limit is 100 chars.
+[snip]
 
--- 
-Lee Jones [李琼斯]
-Principal Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+> +static int mtk_dp_train_tps_2_3(struct mtk_dp *mtk_dp, u8
+> target_linkrate,
+> +				u8 target_lane_count, int
+> *iteration_count,
+> +				u8 *lane_adjust,  int *status_control,
+> +				u8 *prev_lane_adjust)
+> +{
+> +	u8 val;
+> +	u8 link_status[DP_LINK_STATUS_SIZE] = {};
+> +
+> +	if (*status_control == 1) {
+> +		if (mtk_dp->train_info.tps4) {
+> +			mtk_dp_train_set_pattern(mtk_dp, 4);
+> +			val = DP_TRAINING_PATTERN_4;
+> +		} else if (mtk_dp->train_info.tps3) {
+> +			mtk_dp_train_set_pattern(mtk_dp, 3);
+> +			val = DP_LINK_SCRAMBLING_DISABLE |
+> +				DP_TRAINING_PATTERN_3;
+> +		} else {
+> +			mtk_dp_train_set_pattern(mtk_dp, 2);
+> +			val = DP_LINK_SCRAMBLING_DISABLE |
+> +				DP_TRAINING_PATTERN_2;
+> +		}
+> +		drm_dp_dpcd_writeb(&mtk_dp->aux,
+> +				   DP_TRAINING_PATTERN_SET, val);
+> +		drm_dp_dpcd_read(&mtk_dp->aux,
+> +				 DP_ADJUST_REQUEST_LANE0_1,
+> lane_adjust,
+> +				 sizeof(*lane_adjust) * 2);
+> +
+> +		mtk_dp_train_update_swing_pre(mtk_dp,
+> +					      target_lane_count,
+> lane_adjust);
+> +		*status_control = 2;
+> +		(*iteration_count)++;
+> +	}
+> +
+> +	drm_dp_link_train_channel_eq_delay(&mtk_dp->aux, mtk_dp-
+> >rx_cap);
+> +
+> +	drm_dp_dpcd_read_link_status(&mtk_dp->aux, link_status);
+> +
+> +	if (!drm_dp_clock_recovery_ok(link_status, target_lane_count)) 
+
+I think this checking is redundant. I think we could just keep
+drm_dp_channel_eq_ok() and drop drm_dp_clock_recovery_ok() here because
+if drm_dp_clock_recovery_ok() fail, it imply that
+drm_dp_channel_eq_ok() would fail. So just check drm_dp_channel_eq_ok()
+is enough.
+
+Regards,
+CK
+
+> {
+> +		mtk_dp->train_info.cr_done = false;
+> +		mtk_dp->train_info.eq_done = false;
+> +		dev_dbg(mtk_dp->dev, "Link train EQ fail\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	if (drm_dp_channel_eq_ok(link_status, target_lane_count)) {
+> +		mtk_dp->train_info.eq_done = true;
+> +		dev_dbg(mtk_dp->dev, "Link train EQ pass\n");
+> +		return 0;
+> +	}
+> +
+> +	if (*prev_lane_adjust == link_status[4])
+> +		(*iteration_count)++;
+> +	else
+> +		*prev_lane_adjust = link_status[4];
+> +
+> +	return -EAGAIN;
+> +}
+> +
+

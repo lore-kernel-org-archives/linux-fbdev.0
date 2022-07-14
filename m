@@ -2,40 +2,40 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B905C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Jul 2022 10:21:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A07C3C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Jul 2022 10:35:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238233AbiGNKVy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 14 Jul 2022 06:21:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33378 "EHLO
+        id S238445AbiGNKfI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 14 Jul 2022 06:35:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44270 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237809AbiGNKVx (ORCPT
+        with ESMTP id S238435AbiGNKe7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 14 Jul 2022 06:21:53 -0400
+        Thu, 14 Jul 2022 06:34:59 -0400
 Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B4BE1222B7;
-        Thu, 14 Jul 2022 03:21:51 -0700 (PDT)
-X-UUID: b2b634651a5e41c693ba2f87c87e5099-20220714
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BED854BD11;
+        Thu, 14 Jul 2022 03:34:47 -0700 (PDT)
+X-UUID: c013a5dc163c45d0a257b8428da23a83-20220714
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.8,REQID:48061111-a145-4f1d-ba54-267d8bf77698,OB:0,LO
+X-CID-O-INFO: VERSION:1.1.8,REQID:b3b081c3-be57-49b0-935c-67e6ab94d8c1,OB:0,LO
         B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
         ON:release,TS:0
-X-CID-META: VersionHash:0f94e32,CLOUDID:142cfb32-b9e4-42b8-b28a-6364427c76bb,C
+X-CID-META: VersionHash:0f94e32,CLOUDID:3e64fb32-b9e4-42b8-b28a-6364427c76bb,C
         OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
         ,QS:nil,BEC:nil,COL:0
-X-UUID: b2b634651a5e41c693ba2f87c87e5099-20220714
-Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw01.mediatek.com
+X-UUID: c013a5dc163c45d0a257b8428da23a83-20220714
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 800925553; Thu, 14 Jul 2022 18:21:45 +0800
-Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 2014864201; Thu, 14 Jul 2022 18:34:43 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
  mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Thu, 14 Jul 2022 18:21:44 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
+ 15.2.792.15; Thu, 14 Jul 2022 18:34:42 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
- Transport; Thu, 14 Jul 2022 18:21:42 +0800
-Message-ID: <7c847b4177b9420b98bd6ecde473f149463e50b1.camel@mediatek.com>
+ Transport; Thu, 14 Jul 2022 18:34:42 +0800
+Message-ID: <c5b54815c3667d38473a48d365af8d7520d1acdf.camel@mediatek.com>
 Subject: Re: [PATCH v14 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
  driver
 From:   CK Hu <ck.hu@mediatek.com>
@@ -70,12 +70,12 @@ CC:     "msp@baylibre.com" <msp@baylibre.com>,
         "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
         Project_Global_Chrome_Upstream_Group 
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Thu, 14 Jul 2022 18:21:41 +0800
-In-Reply-To: <b04f4a68e012157db43f8f7b0887d611f790a9c5.camel@mediatek.com>
+Date:   Thu, 14 Jul 2022 18:34:41 +0800
+In-Reply-To: <1f698bb3d5d50a6e508cd48e905c8c69415c2fd9.camel@mediatek.com>
 References: <20220712111223.13080-1-rex-bc.chen@mediatek.com>
          <20220712111223.13080-6-rex-bc.chen@mediatek.com>
-         <8fad0421bb7a61ae5e2ecabfc93790f1e2f30b63.camel@mediatek.com>
-         <b04f4a68e012157db43f8f7b0887d611f790a9c5.camel@mediatek.com>
+         <24726b8a5994961b966cf90b1f56c71a844d274a.camel@mediatek.com>
+         <1f698bb3d5d50a6e508cd48e905c8c69415c2fd9.camel@mediatek.com>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
@@ -87,8 +87,8 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Hi, Bo-Chen:
 
-On Thu, 2022-07-14 at 16:24 +0800, Rex-BC Chen wrote:
-> On Wed, 2022-07-13 at 16:10 +0800, CK Hu wrote:
+On Thu, 2022-07-14 at 17:09 +0800, Rex-BC Chen wrote:
+> On Thu, 2022-07-14 at 14:51 +0800, CK Hu wrote:
 > > Hi, Bo-Chen:
 > > 
 > > On Tue, 2022-07-12 at 19:12 +0800, Bo-Chen Chen wrote:
@@ -124,59 +124,96 @@ On Thu, 2022-07-14 at 16:24 +0800, Rex-BC Chen wrote:
 > > 
 > > [snip]
 > > 
+> > > +static int mtk_dp_train_tps_2_3(struct mtk_dp *mtk_dp, u8
+> > > target_linkrate,
+> > > +				u8 target_lane_count, int
+> > > *iteration_count,
+> > > +				u8 *lane_adjust,  int *status_control,
+> > > +				u8 *prev_lane_adjust)
+> > > +{
+> > > +	u8 val;
+> > > +	u8 link_status[DP_LINK_STATUS_SIZE] = {};
 > > > +
-> > > +struct mtk_dp_timings {
-> > > +	struct videomode vm;
-> > > +};
+> > > +	if (*status_control == 1) {
+> > > +		if (mtk_dp->train_info.tps4) {
+> > > +			mtk_dp_train_set_pattern(mtk_dp, 4);
+> > > +			val = DP_TRAINING_PATTERN_4;
+> > > +		} else if (mtk_dp->train_info.tps3) {
+> > > +			mtk_dp_train_set_pattern(mtk_dp, 3);
+> > > +			val = DP_LINK_SCRAMBLING_DISABLE |
+> > > +				DP_TRAINING_PATTERN_3;
+> > > +		} else {
+> > > +			mtk_dp_train_set_pattern(mtk_dp, 2);
+> > > +			val = DP_LINK_SCRAMBLING_DISABLE |
+> > > +				DP_TRAINING_PATTERN_2;
+> > > +		}
+> > > +		drm_dp_dpcd_writeb(&mtk_dp->aux,
+> > > +				   DP_TRAINING_PATTERN_SET, val);
+> > > +		drm_dp_dpcd_read(&mtk_dp->aux,
+> > > +				 DP_ADJUST_REQUEST_LANE0_1,
+> > > lane_adjust,
+> > > +				 sizeof(*lane_adjust) * 2);
 > > > +
-> > > +struct mtk_dp_irq_sta {
-> > > +	bool hpd_inerrupt;
-> > > +};
+> > > +		mtk_dp_train_update_swing_pre(mtk_dp,
+> > > +					      target_lane_count,
+> > > lane_adjust);
+> > > +		*status_control = 2;
+> > > +		(*iteration_count)++;
+> > > +	}
 > > > +
-> > > +struct mtk_dp_train_info {
-> > > +	bool tps3;
-> > > +	bool tps4;
-> > > +	bool sink_ssc;
-> > > +	bool cable_plugged_in;
-> > > +	bool cable_state_change;
-> > > +	bool cr_done;
-> > > +	bool eq_done;
-> > > +	/* link_rate is in multiple of 0.27Gbps */
-> > > +	int link_rate;
-> > > +	int lane_count;
-> > > +	struct mtk_dp_irq_sta irq_sta;
+> > > +	drm_dp_link_train_channel_eq_delay(&mtk_dp->aux, mtk_dp-
+> > > > rx_cap);
+> > > 
+> > > +
+> > > +	drm_dp_dpcd_read_link_status(&mtk_dp->aux, link_status);
+> > > +
+> > > +	if (!drm_dp_clock_recovery_ok(link_status, target_lane_count)) 
 > > 
-> > There is only one member in struct mtk_dp_irq_sta, so drop struct
-> > mtk_dp_irq_sta and use bool hpd_inerrupt directly here.
+> > I think this checking is redundant. I think we could just keep
+> > drm_dp_channel_eq_ok() and drop drm_dp_clock_recovery_ok() here
+> > because
+> > if drm_dp_clock_recovery_ok() fail, it imply that
+> > drm_dp_channel_eq_ok() would fail. So just check
+> > drm_dp_channel_eq_ok()
+> > is enough.
 > > 
+> > Regards,
+> > CK
+> > 
+> > > {
+> > > +		mtk_dp->train_info.cr_done = false;
+> > > +		mtk_dp->train_info.eq_done = false;
+> > > +		dev_dbg(mtk_dp->dev, "Link train EQ fail\n");
+> > > +		return -EINVAL;
+> > > +	}
+> > > +
+> > > +	if (drm_dp_channel_eq_ok(link_status, target_lane_count)) {
+> > > +		mtk_dp->train_info.eq_done = true;
+> > > +		dev_dbg(mtk_dp->dev, "Link train EQ pass\n");
+> > > +		return 0;
+> > > +	}
+> > > +
 > 
 > Hello CK,
 > 
-> ok, I will drop this.
+> do you mean like this?
+> if (drm_dp_channel_eq_ok(link_status, target_lane_count)) {
+>   mtk_dp-
+> > train_info.eq_done = true;
 > 
-> > > +};
-> > > +
-> > > +struct mtk_dp_info {
-> > > +	u32 depth;
-> > > +	enum dp_pixelformat format;
-> > > +	struct mtk_dp_timings timings;
-> > 
-> > There is only one member in struct mtk_dp_timings, so drop struct
-> > mtk_dp_timings and use struct videomode vm directly here.
-> > 
-> 
-> This structure will add more variable in following patch.
-> whole struct is like,
-> struct mtk_dp_timings {
-> 	struct videomode vm;
-> 	u8 frame_rate;
-> 	u32 pix_rate_khz;
-> };
-> 
-> I want to keep this.
+>   dev_dbg(mtk_dp->dev, "Link train EQ pass\n");
+>   return 0;
+> } else {
+>   mtk_dp->train_info.cr_done = false;
+>   mtk_dp->train_info.eq_done = false;
+>   dev_dbg(mtk_dp->dev, "Link train EQ fail\n");
+>   return -EINVAL;
+> }
 
-I think we could just drop struct mtk_dp_timings and place these member
-directly in struct mtk_dp_info.
+No, I mean just remove drm_dp_clock_recovery_ok() checking. When
+drm_dp_channel_eq_ok() fail, it should keep retry. If clock recovery
+has some problem, drm_dp_channel_eq_ok() would be finally out of retry
+count.
 
 Regards,
 CK
@@ -185,11 +222,13 @@ CK
 > BRs,
 > Bo-Chen
 > 
-> 
-> > Regards,
-> > CK
-> > 
-> > > +};
+> > > +	if (*prev_lane_adjust == link_status[4])
+> > > +		(*iteration_count)++;
+> > > +	else
+> > > +		*prev_lane_adjust = link_status[4];
+> > > +
+> > > +	return -EAGAIN;
+> > > +}
 > > > +
 > > 
 > > 

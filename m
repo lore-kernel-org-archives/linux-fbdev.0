@@ -2,118 +2,112 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90C0CC43334
-	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Jul 2022 21:53:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E208C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 15 Jul 2022 04:50:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229984AbiGNVxt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 14 Jul 2022 17:53:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48702 "EHLO
+        id S229948AbiGOEut (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 15 Jul 2022 00:50:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35434 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232299AbiGNVxr (ORCPT
+        with ESMTP id S230061AbiGOEuc (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 14 Jul 2022 17:53:47 -0400
-Received: from mx1.riseup.net (mx1.riseup.net [198.252.153.129])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B340DDFA8;
-        Thu, 14 Jul 2022 14:53:45 -0700 (PDT)
-Received: from mx0.riseup.net (mx0-pn.riseup.net [10.0.1.42])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256
-         client-signature RSA-PSS (2048 bits) client-digest SHA256)
-        (Client CN "mx0.riseup.net", Issuer "R3" (not verified))
-        by mx1.riseup.net (Postfix) with ESMTPS id 4LkStK2Nx3zDrjw;
-        Thu, 14 Jul 2022 21:53:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=riseup.net; s=squak;
-        t=1657835625; bh=Ex8sIbN7b3m/ryXhpiacHfviSvoH7OHIsjjT3wLtN/o=;
-        h=From:To:Cc:Subject:Date:From;
-        b=oR7vvOz7jLJOl1v9DVgEzyVj1trqCsMaNpRoUnFxce/NzPzGLxNi/xu4c6dCd9Fb/
-         RBrths/1uTQiS9D91GEd4cKLa9bMQvXwlTPTFkByks9Pj+apPrwQkpeOpgJrkQjKjH
-         3LjL+pVODd4amcH8ABYXIq+btTM2p8asbkPzk9PI=
-Received: from fews1.riseup.net (fews1-pn.riseup.net [10.0.1.83])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256
-         client-signature RSA-PSS (2048 bits) client-digest SHA256)
-        (Client CN "mail.riseup.net", Issuer "R3" (not verified))
-        by mx0.riseup.net (Postfix) with ESMTPS id 4LkStJ34j8z9tCY;
-        Thu, 14 Jul 2022 21:53:44 +0000 (UTC)
-X-Riseup-User-ID: B2AE8FB5CD960AF3F6CB82DB39E7CC9A82DE79F371A66BF223551A361A6589AF
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-         by fews1.riseup.net (Postfix) with ESMTPSA id 4LkStD4pQTz5vW1;
-        Thu, 14 Jul 2022 21:53:40 +0000 (UTC)
-From:   =?UTF-8?q?Ma=C3=ADra=20Canal?= <mairacanal@riseup.net>
-To:     daniel.thompson@linaro.org, lee.jones@linaro.org,
-        jingoohan1@gmail.com, thierry.reding@gmail.com,
-        u.kleine-koenig@pengutronix.de
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org,
-        =?UTF-8?q?Ma=C3=ADra=20Canal?= <mairacanal@riseup.net>
-Subject: [PATCH RESEND v6] backlight: lp855x: Switch to atomic PWM API
-Date:   Thu, 14 Jul 2022 18:53:34 -0300
-Message-Id: <20220714215334.78226-1-mairacanal@riseup.net>
+        Fri, 15 Jul 2022 00:50:32 -0400
+Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88C13785AF;
+        Thu, 14 Jul 2022 21:50:30 -0700 (PDT)
+Received: by mail-pf1-x42e.google.com with SMTP id y9so3674428pff.12;
+        Thu, 14 Jul 2022 21:50:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=subject:to:references:cc:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-transfer-encoding;
+        bh=kRLhZzbGYGaRDYFSzzNmS4CySIoJIiXGprjd8sj9K/0=;
+        b=V+hoi62i9rmotV7C9un25P6iuXZO0dEMik9ZBz3EVv9NVFcXJN95QkPmfBncsjI/Ao
+         FCxOTAqa8wvTsmNa1AOwYKeX3C3rL7cY5bTQBsQJUlcVD/Pkzfv/BmgwYTtEqzlYEqvK
+         CY5SN2DJ0kyd6PoEAxwAOH5Zq2JwJEObsYuI7yoR08OxaaYfAYOE0lTxfzI5VYFrLJAh
+         Ags94LXbQBlnBepEDdYxl8tpSLRTpMcG4ZTbO43dOwIoD56IHTdEMnPGbVG32oDhp5oZ
+         a27iAGk2eDZeSJGEI7gP30qOS/i2Hti3D6xeHqSZ6Na1K9JIY/GvwP3QFrzHEgqACVQj
+         ZSKg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:subject:to:references:cc:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-transfer-encoding;
+        bh=kRLhZzbGYGaRDYFSzzNmS4CySIoJIiXGprjd8sj9K/0=;
+        b=oL1us/M3kjElaTWFVbmBQDXaypBEIbX2OJDRC7/Z4aLjSUIPOzbTbtNElmNrBPPnzv
+         OVpbQWYWztjzEFesGFYU6vEWP4bGfuXkoUJWC1cviJCv80L/wcVn0QEe5iNkTilJePPu
+         +njIogTjgnu0lyktujf3AW2Cq4y1K617grdF2FbsNNIAyyUIH7KnWQZRno1Z4inX5rct
+         Mo5gOfuPb0b77E87XIzny2xCw30gytf+ATF0ohdTG84R58Gpo+CmEWtweD8Lmy/PQE9F
+         PAnrO5Y0AO0B9D1CPSCLoSXUzpW6SDd12g0BtGM81xDgWL5J2Xni2Q/WgBOTQzUgm4T6
+         Ml6A==
+X-Gm-Message-State: AJIora+0FyUUDrbcF50GbHLwSSmiDMEB2l+WywqEApU0ShzA64kg0X0Y
+        UdHvSt89DAvtsLnaThSlE2/af6sC4Ns=
+X-Google-Smtp-Source: AGRyM1u/RDFN0eyZrhqFr7v6lAykVv06aI/n1+Es6yulIiuzxUGnR3jVZSsEy1EL8D33z18/mQCqtA==
+X-Received: by 2002:a05:6a00:8c5:b0:510:6eae:6fa1 with SMTP id s5-20020a056a0008c500b005106eae6fa1mr12333545pfu.12.1657860629806;
+        Thu, 14 Jul 2022 21:50:29 -0700 (PDT)
+Received: from [10.1.1.24] (222-155-0-244-adsl.sparkbb.co.nz. [222.155.0.244])
+        by smtp.gmail.com with ESMTPSA id c18-20020a170902c2d200b0015e8d4eb1dbsm2389411pla.37.2022.07.14.21.50.24
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 14 Jul 2022 21:50:28 -0700 (PDT)
+Subject: Re: [PATCH 00/10] video: fbdev: atari: Miscellaneous fixes and
+ cleanups
+To:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Helge Deller <deller@gmx.de>
+References: <cover.1657554353.git.geert@linux-m68k.org>
+Cc:     Jonathan Corbet <corbet@lwn.net>, linux-fbdev@vger.kernel.org,
+        linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+From:   Michael Schmitz <schmitzmic@gmail.com>
+Message-ID: <d9af62bf-09f2-cfca-eeda-92dcb539b56e@gmail.com>
+Date:   Fri, 15 Jul 2022 16:50:21 +1200
+User-Agent: Mozilla/5.0 (X11; Linux ppc; rv:45.0) Gecko/20100101
+ Icedove/45.4.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <cover.1657554353.git.geert@linux-m68k.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Remove legacy PWM interface (pwm_config, pwm_enable, pwm_disable) and
-replace it for the atomic PWM API.
+Hi Geert,
 
-Reviewed-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-Signed-off-by: Maíra Canal <mairacanal@riseup.net>
----
-V1 -> V2: Initialize variable and simplify conditional loop
-V2 -> V3: Fix assignment of NULL variable
-V3 -> V4: Replace division for pwm_set_relative_duty_cycle
-V4 -> V5: Fix overwrite of state.period
-V5 -> V6: Fix duty cycle rounding and set period outside conditional loop
----
- drivers/video/backlight/lp855x_bl.c | 21 +++++++++------------
- 1 file changed, 9 insertions(+), 12 deletions(-)
+somehow this series slipped into my spam folder ... only saw it now.
 
-diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-index 2b9e2bbbb03e..fc02c5c16055 100644
---- a/drivers/video/backlight/lp855x_bl.c
-+++ b/drivers/video/backlight/lp855x_bl.c
-@@ -218,9 +218,8 @@ static int lp855x_configure(struct lp855x *lp)
- 
- static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
- {
--	unsigned int period = lp->pdata->period_ns;
--	unsigned int duty = br * period / max_br;
- 	struct pwm_device *pwm;
-+	struct pwm_state state;
- 
- 	/* request pwm device with the consumer name */
- 	if (!lp->pwm) {
-@@ -230,18 +229,16 @@ static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
- 
- 		lp->pwm = pwm;
- 
--		/*
--		 * FIXME: pwm_apply_args() should be removed when switching to
--		 * the atomic PWM API.
--		 */
--		pwm_apply_args(pwm);
-+		pwm_init_state(lp->pwm, &state);
-+	} else {
-+		pwm_get_state(lp->pwm, &state);
- 	}
- 
--	pwm_config(lp->pwm, duty, period);
--	if (duty)
--		pwm_enable(lp->pwm);
--	else
--		pwm_disable(lp->pwm);
-+	state.period = lp->pdata->period_ns;
-+	state.duty_cycle = div_u64(br * state.period, max_br);
-+	state.enabled = state.duty_cycle;
-+
-+	pwm_apply_state(lp->pwm, &state);
- }
- 
- static int lp855x_bl_update_status(struct backlight_device *bl)
--- 
-2.36.1
+Am 12.07.2022 um 03:50 schrieb Geert Uytterhoeven:
+> 	Hi all,
+>
+> This patch series contains miscellaneous fixes and cleanups for the
+> Atari frame buffer device driver, which were identified while working on
+> the Atari DRM driver.
+>
+> Most of them have been tested on ARAnyM, and should be safe to apply,
+> except perhaps for the last one, which is marked RFC.
+>
+> Thanks for your comments!
+>
+> Geert Uytterhoeven (10):
+>   video: fbdev: atari: Simplify atafb_pan_display()
+>   video: fbdev: atari: Remove bogus FB_VMODE_YWRAP flags
+>   video: fbdev: atari: Fix inverse handling
+>   video: fbdev: atari: Fix ext_setcolreg()
+>   video: fbdev: atari: Remove unneeded casts from void *
+>   video: fbdev: atari: Remove unneeded casts to void *
+>   video: fbdev: atari: Fix TT High video mode vertical refresh
+>   video: fbdev: atari: Fix VGA modes
+>   video: fbdev: atari: Remove unused definitions and variables
+>   [RFC] video: fbdev: atari: Remove backward bug-compatibility
+>
+>  Documentation/m68k/kernel-options.rst |   4 +-
+>  drivers/video/fbdev/atafb.c           | 101 +++++++-------------------
+>  2 files changed, 29 insertions(+), 76 deletions(-)
+>
 
+Looks good to me. (I'll still try to test it on hardware this weekend.)
+
+I'd suggest the last one be applied as well - if the regression can only 
+be triggered by a X server resolution switch, I doubt it'll matter in 
+practice.
+
+Cheers,
+
+	Michael

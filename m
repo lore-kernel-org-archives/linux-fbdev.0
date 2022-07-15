@@ -2,40 +2,43 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1D68CCA47C
-	for <linux-fbdev@archiver.kernel.org>; Fri, 15 Jul 2022 09:16:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DBA16C43334
+	for <linux-fbdev@archiver.kernel.org>; Fri, 15 Jul 2022 09:37:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233202AbiGOJQP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 15 Jul 2022 05:16:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33690 "EHLO
+        id S232274AbiGOJht (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 15 Jul 2022 05:37:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53742 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234250AbiGOJPe (ORCPT
+        with ESMTP id S230138AbiGOJhs (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 15 Jul 2022 05:15:34 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A094860695;
-        Fri, 15 Jul 2022 02:14:54 -0700 (PDT)
-X-UUID: 26969080ee0f404db657e1e83d323bc2-20220715
+        Fri, 15 Jul 2022 05:37:48 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 313AC7E817;
+        Fri, 15 Jul 2022 02:37:47 -0700 (PDT)
+X-UUID: f3ab035118674bbeb578d2d49e5fa4d9-20220715
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.8,REQID:926e97c4-8bf7-4c7c-ba16-971080154b6e,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:0
-X-CID-META: VersionHash:0f94e32,CLOUDID:3b2c6464-0b3f-4b2c-b3a6-ed5c044366a0,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
-        ,QS:nil,BEC:nil,COL:0
-X-UUID: 26969080ee0f404db657e1e83d323bc2-20220715
-Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw01.mediatek.com
+X-CID-O-INFO: VERSION:1.1.8,REQID:11a9fd0f-07cd-4713-a49d-0eb610ebc6bd,OB:0,LO
+        B:10,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:51,FILE:0,RULE:Release_Ham,AC
+        TION:release,TS:51
+X-CID-INFO: VERSION:1.1.8,REQID:11a9fd0f-07cd-4713-a49d-0eb610ebc6bd,OB:0,LOB:
+        10,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:51,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:51
+X-CID-META: VersionHash:0f94e32,CLOUDID:fba91433-b9e4-42b8-b28a-6364427c76bb,C
+        OID:0c5cc15b0205,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:0,File:nil,QS:nil,BEC:nil,COL:0
+X-UUID: f3ab035118674bbeb578d2d49e5fa4d9-20220715
+Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw02.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 956115903; Fri, 15 Jul 2022 17:14:51 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Fri, 15 Jul 2022 17:14:49 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 15 Jul 2022 17:14:49 +0800
-Message-ID: <a469edb4ddd0e5025dd0d83fb2b5d962a5be6740.camel@mediatek.com>
+        with ESMTP id 2019365385; Fri, 15 Jul 2022 17:37:43 +0800
+Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
+ mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Fri, 15 Jul 2022 17:37:42 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.3 via Frontend
+ Transport; Fri, 15 Jul 2022 17:37:42 +0800
+Message-ID: <f53b38e9a2cf36aee83aa5877134447e4613a7c2.camel@mediatek.com>
 Subject: Re: [PATCH v14 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
  driver
 From:   CK Hu <ck.hu@mediatek.com>
@@ -53,7 +56,7 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Fri, 15 Jul 2022 17:14:49 +0800
+Date:   Fri, 15 Jul 2022 17:37:42 +0800
 In-Reply-To: <20220712111223.13080-6-rex-bc.chen@mediatek.com>
 References: <20220712111223.13080-1-rex-bc.chen@mediatek.com>
          <20220712111223.13080-6-rex-bc.chen@mediatek.com>
@@ -98,17 +101,35 @@ On Tue, 2022-07-12 at 19:12 +0800, Bo-Chen Chen wrote:
 [snip]
 
 > +
-> +static void mtk_dp_mn_overwrite_disable(struct mtk_dp *mtk_dp)
+> +static enum drm_mode_status
+> +mtk_dp_bridge_mode_valid(struct drm_bridge *bridge,
+> +			 const struct drm_display_info *info,
+> +			 const struct drm_display_mode *mode)
 > +{
-> +	mtk_dp_update_bits(mtk_dp, MTK_DP_ENC0_P0_3004,
-> +			   0, VIDEO_M_CODE_SEL_DP_ENC0_P0_MASK);
-> +}
+> +	struct mtk_dp *mtk_dp = mtk_dp_from_bridge(bridge);
+> +	u32 rx_linkrate = (u32)mtk_dp->train_info.link_rate * 27000;
+> +	u32 bpp = info->color_formats & DRM_COLOR_FORMAT_YCBCR422 ? 16
+> : 24;
+> +
+> +	if (rx_linkrate * mtk_dp->train_info.lane_count < mode->clock *
+> bpp / 8)
+> +		return MODE_CLOCK_HIGH;
+> +
+> +	if (mode->clock > 600000)
+> +		return MODE_CLOCK_HIGH;
+> +
+> +	if ((mode->clock * 1000) / (mode->htotal * mode->vtotal) >
+> +	    MTK_VDOSYS1_MAX_FRAMERATE)
 
-Why has mtk_dp_mn_overwrite_disable() but no
-mtk_dp_mn_overwrite_enable()?
+Why limit frame rate to 60fps? If the resolution is small enough, why
+not support higher fps?
 
 Regards,
 CK
 
+> +		return MODE_CLOCK_HIGH;
+> +
+> +	return MODE_OK;
+> +}
 > +
 

@@ -2,137 +2,149 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97E5FC43334
-	for <linux-fbdev@archiver.kernel.org>; Fri, 15 Jul 2022 08:35:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F439C43334
+	for <linux-fbdev@archiver.kernel.org>; Fri, 15 Jul 2022 08:52:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232039AbiGOIf0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 15 Jul 2022 04:35:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58162 "EHLO
+        id S233196AbiGOIw4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 15 Jul 2022 04:52:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45128 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230151AbiGOIfZ (ORCPT
+        with ESMTP id S233906AbiGOIwn (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 15 Jul 2022 04:35:25 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E479B33A26;
-        Fri, 15 Jul 2022 01:35:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1657874109;
-        bh=LAZsLjZmpRWu0eR/ZFsMTr9a3cRlqgXyPWqeMlfwQ8A=;
-        h=X-UI-Sender-Class:Date:From:To:Subject;
-        b=aFIWV/E5shvMoJBb5vWi7fIyASjrFa9x2hPKenis+jYDRN6acpYx4jtCUxjoyuTNi
-         K05yW6o8g3hKyGlUVe5VbDkyki51w0IXuYXks0gjRp8E7ePzb8MyYfPiQ/yJjEXrWV
-         TUc3Jmvid2LPygZQrEY3qv7NI4QduAWLF124PArs=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from ls3530 ([92.116.139.47]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MS3il-1o5zGg0ieB-00TQbS; Fri, 15
- Jul 2022 10:35:09 +0200
-Date:   Fri, 15 Jul 2022 10:35:04 +0200
-From:   Helge Deller <deller@gmx.de>
-To:     linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        Janusz Krzysztofik <jmkrzyszt@gmail.com>,
-        Tony Lindgren <tony@atomide.com>,
-        Aaro Koskinen <aaro.koskinen@iki.fi>,
-        Tomi Valkeinen <tomba@kernel.org>
-Subject: [PATCH] video: fbdev: omapfb: Unexport omap*_update_window_async()
-Message-ID: <YtEmuHuPfXh6wIpc@ls3530>
+        Fri, 15 Jul 2022 04:52:43 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52A7E84EE3;
+        Fri, 15 Jul 2022 01:51:35 -0700 (PDT)
+X-UUID: d721200affec4765846b864848f39bc9-20220715
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.8,REQID:34ea4b4a-b427-491f-97f1-0940e2b80b57,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:51,FILE:0,RULE:Release_Ham,ACT
+        ION:release,TS:51
+X-CID-INFO: VERSION:1.1.8,REQID:34ea4b4a-b427-491f-97f1-0940e2b80b57,OB:0,LOB:
+        0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:51,FILE:0,RULE:Release_Ham,ACTIO
+        N:release,TS:51
+X-CID-META: VersionHash:0f94e32,CLOUDID:b1b695d7-5d6d-4eaf-a635-828a3ee48b7c,C
+        OID:9a8e9ef91b98,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:0,File:nil,QS:nil,BEC:nil,COL:0
+X-UUID: d721200affec4765846b864848f39bc9-20220715
+Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw02.mediatek.com
+        (envelope-from <ck.hu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 1312067785; Fri, 15 Jul 2022 16:51:29 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.792.15; Fri, 15 Jul 2022 16:51:27 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Fri, 15 Jul 2022 16:51:27 +0800
+Message-ID: <05e7ace27af21d141c1ecd79fb45f6e5e9d32582.camel@mediatek.com>
+Subject: Re: [PATCH v14 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
+ driver
+From:   CK Hu <ck.hu@mediatek.com>
+To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, <chunkuang.hu@kernel.org>,
+        <p.zabel@pengutronix.de>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
+        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
+        <airlied@linux.ie>
+CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
+        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
+        <angelogioacchino.delregno@collabora.com>,
+        <liangxu.xu@mediatek.com>, <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-fbdev@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Fri, 15 Jul 2022 16:51:27 +0800
+In-Reply-To: <20220712111223.13080-6-rex-bc.chen@mediatek.com>
+References: <20220712111223.13080-1-rex-bc.chen@mediatek.com>
+         <20220712111223.13080-6-rex-bc.chen@mediatek.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Provags-ID: V03:K1:g42iaChzcVEFxsRJEs+Pd7Iv4W2mQ2hk0Nm9L0mYAADlXDx2nLa
- vj6JiH/7pc5LjdjtY5db0K9T9uPA4/pcfqGpe+1XaOJSRErrpxvBkbX3wV2HG70GbhQDNRA
- 6DAahrupRx04209w/uSTaLFoyzO+jyMIGoF9dnfdmx6oRcQmATfhXat/X2Wxd93sG/7W8dF
- AG7/LGx4k98hNqdC6CvnQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:28EqFOiTA4g=:PqxoyL8h8cik+lMcKXW1O6
- yCRFIw0KikBYY0wj1ElLlOuxou9B9Hl6tdAeyJFeN6hXxQfvZIwrvQkl22qa5yN4A7PEOn3Xr
- PUH5ZMkXQPtO5ft9OfG24mYyoyGI2GE9+TOFVyxTYBjiHINW9K3IyXyzVtATQlgMresLBm8zA
- xk7DRODA5bcEDOthz/qJb7FeooAHD5uEXsbpGkLi+CNv6OQ+pEmi2DckmCsDjvBvn30d8DZJ/
- 2pgGxzXSBEZpFCpVgqrrCSPqTiaEartWSplsq4VwjQB/rWOpHjlMpOYDQdCGgelona9IHNQA1
- MAmhpAq7dfHUq6to+tX5VSfdlxgu1nkdb0APakwvueKFUXtlhHfkFObNB22UDv+h8Vtrt5ufi
- SOjuugmLvAKyEb/SakNl2Cw6ODgfLFzrCHoXinRCpmYqI7yre6ApW45vp1gKfhHBLlQhOmA49
- 679Ohm3OlYjMLDFkYHSu/O2c2B0UOK8UnxqZvOWvsHakwqnj3CsRRM6jHJRUwpFhvJooKd0HB
- Qwuxnv63/9wPErxWwFT5I1A08h7X6kJi2bRDPX2PhJ2YSnlAocAwVE36ho/B/NYFBjskKhubi
- 2idC9XdBKWHZSq1EcElQHou9XAU6EVYAo5A/kaC+Wcy3VWWoKbcxkAN8WLXbe6xHgYet1L6l9
- qyaefP4ZNzdoX7DtpsJKY90VJoYsIv90yENxpfeklnH8qhNUHgFPY5jcLQDDX30Pl4QfT/Meh
- mfRQHy6cbo14XcUI1lAv6GkU2fNj7EmmD7sLD1cACdM6bFJsDDmKj5+9IfKWl++4BAPGAk7PJ
- s9Id4+v6smNSMikvNse1TQO5HLa5FKYoJAt5TzIIGeKBb5nlyN5RE4QbWS2rmHA8YSQT/epNH
- ru8GGb6nRvJVbWlP1UhXNmrOcWE2MCh15cvnk8gd3Ocf4oVooDQ8odONAqqpwHxcIpzXPRQkK
- 8KpW00KR8Ehv28NW4sRqqudwz9YxlPDJg/5W+ylxg/q9LawbV7mI5QEce2MBEQLtwcnEjG+CX
- Sqbo/RZ6Xg2SKmhvv+/+2sYrrlt96myjBXN8Xn7ZgwE6wjfyPuV3SeOtAma13x6Gxk9DpyDvN
- LCh/LelHPZs272L246eWz9jM8QHTAUlzh9n0s0Gd7bHE6hHYgaJRHaPzg==
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-There is no need to EXPORT the functions hwa742_update_window_async()
-and omapfb_update_window_async() since they are not used anywhere else
-inside or outside the kernel tree.
+Hi, Bo-Chen:
 
-Signed-off-by: Helge Deller <deller@gmx.de>
-Link: https://lore.kernel.org/all/YpMXF9luBc4Sjr9h@ls3530/
+On Tue, 2022-07-12 at 19:12 +0800, Bo-Chen Chen wrote:
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
+> 
+> This patch adds a embedded displayport driver for the MediaTek mt8195
+> SoC.
+> 
+> It supports the MT8195, the embedded DisplayPort units. It offers
+> DisplayPort 1.4 with up to 4 lanes.
+> 
+> The driver creates a child device for the phy. The child device will
+> never exist without the parent being active. As they are sharing a
+> register range, the parent passes a regmap pointer to the child so
+> that
+> both can work with the same register range. The phy driver sets
+> device
+> data that is read by the parent to get the phy device that can be
+> used
+> to control the phy properties.
+> 
+> This driver is based on an initial version by
+> Jitao shi <jitao.shi@mediatek.com>
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> ---
 
-diff --git a/drivers/video/fbdev/omap/hwa742.c b/drivers/video/fbdev/omap/=
-hwa742.c
-index 9d9fe5c3a7a1..161fc65d6b57 100644
-=2D-- a/drivers/video/fbdev/omap/hwa742.c
-+++ b/drivers/video/fbdev/omap/hwa742.c
-@@ -489,7 +489,7 @@ static void hwa742_update_window_auto(struct timer_lis=
-t *unused)
- 	__hwa742_update_window_auto(false);
- }
+[snip]
 
--int hwa742_update_window_async(struct fb_info *fbi,
-+static int hwa742_update_window_async(struct fb_info *fbi,
- 				 struct omapfb_update_window *win,
- 				 void (*complete_callback)(void *arg),
- 				 void *complete_callback_data)
-@@ -522,7 +522,6 @@ int hwa742_update_window_async(struct fb_info *fbi,
- out:
- 	return r;
- }
--EXPORT_SYMBOL(hwa742_update_window_async);
+> +static void mtk_dp_hpd_sink_event(struct mtk_dp *mtk_dp)
+> +{
+> +	ssize_t ret;
+> +	u8 sink_count;
+> +	u8 link_status[DP_LINK_STATUS_SIZE] = {};
+> +	u32 sink_count_reg = DP_SINK_COUNT_ESI;
+> +	u32 link_status_reg = DP_LANE0_1_STATUS;
+> +
+> +	ret = drm_dp_dpcd_readb(&mtk_dp->aux, sink_count_reg,
+> &sink_count);
 
- static int hwa742_setup_plane(int plane, int channel_out,
- 				  unsigned long offset, int screen_width,
-diff --git a/drivers/video/fbdev/omap/omapfb.h b/drivers/video/fbdev/omap/=
-omapfb.h
-index beb841ccb99c..ab1cb6e7f5f8 100644
-=2D-- a/drivers/video/fbdev/omap/omapfb.h
-+++ b/drivers/video/fbdev/omap/omapfb.h
-@@ -227,13 +227,4 @@ extern int  omapfb_register_client(struct omapfb_noti=
-fier_block *nb,
- 				   omapfb_notifier_callback_t callback,
- 				   void *callback_data);
- extern int  omapfb_unregister_client(struct omapfb_notifier_block *nb);
--extern int  omapfb_update_window_async(struct fb_info *fbi,
--				       struct omapfb_update_window *win,
--				       void (*callback)(void *),
--				       void *callback_data);
--extern int  hwa742_update_window_async(struct fb_info *fbi,
--				       struct omapfb_update_window *win,
--				       void (*callback)(void *),
--				       void *callback_data);
--
- #endif /* __OMAPFB_H */
-diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/=
-omap/omapfb_main.c
-index 292fcb0a24fc..dfb4ddc45701 100644
-=2D-- a/drivers/video/fbdev/omap/omapfb_main.c
-+++ b/drivers/video/fbdev/omap/omapfb_main.c
-@@ -668,7 +668,7 @@ static int omapfb_set_par(struct fb_info *fbi)
- 	return r;
- }
+According to your last reply, if drm_dp_dpcd_readb() fail, we could
+skip below statement. So this just for error checking? If so, the next
+drm_dp_dpcd_read() would also do the error checking, so the checking
+here is redundant.
 
--int omapfb_update_window_async(struct fb_info *fbi,
-+static int omapfb_update_window_async(struct fb_info *fbi,
- 				struct omapfb_update_window *win,
- 				void (*callback)(void *),
- 				void *callback_data)
-@@ -714,7 +714,6 @@ int omapfb_update_window_async(struct fb_info *fbi,
+Regards,
+CK
 
- 	return fbdev->ctrl->update_window(fbi, win, callback, callback_data);
- }
--EXPORT_SYMBOL(omapfb_update_window_async);
+> +	if (ret < 1) {
+> +		drm_err(mtk_dp->drm_dev, "Read sink count failed\n");
+> +		return;
+> +	}
+> +
+> +	drm_dbg(mtk_dp->drm_dev,
+> +		"read sink count from dpcd: %d\n", sink_count);
+> +
+> +	ret = drm_dp_dpcd_read(&mtk_dp->aux, link_status_reg,
+> link_status,
+> +			       sizeof(link_status));
+> +	if (!ret) {
+> +		drm_err(mtk_dp->drm_dev, "Read link status failed\n");
+> +		return;
+> +	}
+> +
+> +	if (!drm_dp_channel_eq_ok(link_status, mtk_dp-
+> >train_info.lane_count)) {
+> +		drm_err(mtk_dp->drm_dev, "Channel EQ failed\n");
+> +		return;
+> +	}
+> +
+> +	if (link_status[1] & DP_REMOTE_CONTROL_COMMAND_PENDING)
+> +		drm_dp_dpcd_writeb(&mtk_dp->aux,
+> DP_DEVICE_SERVICE_IRQ_VECTOR,
+> +				   DP_REMOTE_CONTROL_COMMAND_PENDING);
+> +}
+> +
 
- static int omapfb_update_win(struct fb_info *fbi,
- 				struct omapfb_update_window *win)

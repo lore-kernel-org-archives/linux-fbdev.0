@@ -2,149 +2,129 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2EBAC433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 15 Jul 2022 11:58:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F990C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 15 Jul 2022 12:38:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230102AbiGOL6O (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 15 Jul 2022 07:58:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49712 "EHLO
+        id S229771AbiGOMiy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 15 Jul 2022 08:38:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53412 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229691AbiGOL6N (ORCPT
+        with ESMTP id S229528AbiGOMix (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 15 Jul 2022 07:58:13 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90B6F89EB7
-        for <linux-fbdev@vger.kernel.org>; Fri, 15 Jul 2022 04:58:12 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        Fri, 15 Jul 2022 08:38:53 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7162F13DCC;
+        Fri, 15 Jul 2022 05:38:52 -0700 (PDT)
+Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 4C3FC34D6E;
-        Fri, 15 Jul 2022 11:58:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1657886291; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=a8JmdST4Lo7mEf36LoInF0FvbOYTCpy5tGRrFXUHQx0=;
-        b=PEZhJoL+pjSAbIUAHK5olaZRrj+ggKT0FTKtURHx3en576qTmrvzyt09UBWfC173dnw0DN
-        CIu5WwWmp+aZgAj7lIF4OiYi7DUMqGTN485Y32a6d36tGDGBoNwy2uyxNgUuwebrW6Byn+
-        dCvMLD4yF/Tigpg0RhMHrk60q12T9Ok=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1657886291;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=a8JmdST4Lo7mEf36LoInF0FvbOYTCpy5tGRrFXUHQx0=;
-        b=mSlnC6iM3TWK9MrqkCXS/2bQ2O6TOgSsjk5liAkKoepQLZ0jp91ur9D6icYxRyuCbHa3TQ
-        172Gz9C9IzFmJrBA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 21BEC13754;
-        Fri, 15 Jul 2022 11:58:11 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id xRtDB1NW0WIHAgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Fri, 15 Jul 2022 11:58:11 +0000
-Message-ID: <e06202b3-5350-56e7-26c6-ba9ae1ae7a36@suse.de>
-Date:   Fri, 15 Jul 2022 13:58:10 +0200
+        (Authenticated sender: kholk11)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 820746601A60;
+        Fri, 15 Jul 2022 13:38:48 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1657888730;
+        bh=/TkDguAmwrQGEReJEUwEbAbHZt9Am5gC3Cijy8SnuRk=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=VoDxu0JROMcD2NU4mSc6KU2oGQ7nEERAimPhTXO1VD8zFmQrbHNDwrMwNlUWql2ae
+         Zuvmkm0S3xwbgzI0zpP/kz9v3yoK04k3QoNZnwBwykuKhQHbqzG51CGtKCFA96Q6hi
+         SeMAcSwP8M3CnBQZ7d6ejvM7cYBoV2bb/L1QWCeHDzIDpF5HfiphDmwnkVigH/QEC8
+         cacBNFGX1b0Sx2GeWa+fRrekL7Ugtuq2wO6cDNApOe8OIX/YGGcz0ksVK6jkZ1EswM
+         /7iGpFbZ+/xKc21HN8XGBZCqDFsk5RLnoa5rUbp9NV/sxPAYXZ8QaDApGSE/izbOhf
+         dhsY8N99yXETA==
+Message-ID: <ec3bdfb8-0e42-a772-28b1-165811872afa@collabora.com>
+Date:   Fri, 15 Jul 2022 14:38:45 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.11.0
-Subject: Re: [PATCH 10/11] fbdev: Acquire framebuffer apertures for firmware
- devices
+Subject: Re: [PATCH v5 13/13] video: backlight: mt6370: Add MediaTek MT6370
+ support
 Content-Language: en-US
-To:     Javier Martinez Canillas <javierm@redhat.com>, deller@gmx.de,
-        daniel@ffwll.ch, sam@ravnborg.org, maxime@cerno.tech
-Cc:     linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        dri-devel@lists.freedesktop.org
-References: <20220707153952.32264-1-tzimmermann@suse.de>
- <20220707153952.32264-11-tzimmermann@suse.de>
- <3f22174e-e1ee-1c1e-c643-37d437af7578@redhat.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <3f22174e-e1ee-1c1e-c643-37d437af7578@redhat.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------6GH0j04Z2LMK0kXsXJ0ksBoK"
+To:     ChiaEn Wu <peterwu.pub@gmail.com>, lee.jones@linaro.org,
+        daniel.thompson@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
+        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        matthias.bgg@gmail.com, sre@kernel.org, chunfeng.yun@mediatek.com,
+        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
+        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
+        heikki.krogerus@linux.intel.com, deller@gmx.de
+Cc:     chiaen_wu@richtek.com, alice_chen@richtek.com,
+        cy_huang@richtek.com, dri-devel@lists.freedesktop.org,
+        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        szunichen@gmail.com
+References: <20220715112607.591-1-peterwu.pub@gmail.com>
+ <20220715112607.591-14-peterwu.pub@gmail.com>
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+In-Reply-To: <20220715112607.591-14-peterwu.pub@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------6GH0j04Z2LMK0kXsXJ0ksBoK
-Content-Type: multipart/mixed; boundary="------------kiCGlvrWslyBzQRMKoFVl0MK";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Javier Martinez Canillas <javierm@redhat.com>, deller@gmx.de,
- daniel@ffwll.ch, sam@ravnborg.org, maxime@cerno.tech
-Cc: linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
- dri-devel@lists.freedesktop.org
-Message-ID: <e06202b3-5350-56e7-26c6-ba9ae1ae7a36@suse.de>
-Subject: Re: [PATCH 10/11] fbdev: Acquire framebuffer apertures for firmware
- devices
-References: <20220707153952.32264-1-tzimmermann@suse.de>
- <20220707153952.32264-11-tzimmermann@suse.de>
- <3f22174e-e1ee-1c1e-c643-37d437af7578@redhat.com>
-In-Reply-To: <3f22174e-e1ee-1c1e-c643-37d437af7578@redhat.com>
+Il 15/07/22 13:26, ChiaEn Wu ha scritto:
+> From: ChiaEn Wu <chiaen_wu@richtek.com>
+> 
+> MediaTek MT6370 is a SubPMIC consisting of a single cell battery charger
+> with ADC monitoring, RGB LEDs, dual channel flashlight, WLED backlight
+> driver, display bias voltage supply, one general purpose LDO, and the
+> USB Type-C & PD controller complies with the latest USB Type-C and PD
+> standards.
+> 
+> This adds support for MediaTek MT6370 Backlight driver. It's commonly used
+> to drive the display WLED. There are 4 channels inside, and each channel
+> supports up to 30mA of current capability with 2048 current steps in
+> exponential or linear mapping curves.
+> 
+> Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
 
---------------kiCGlvrWslyBzQRMKoFVl0MK
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Hello ChiaEn,
 
-SGkNCg0KQW0gMTEuMDcuMjIgdW0gMTM6Mjkgc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
-aWxsYXM6DQo+IE9uIDcvNy8yMiAxNzozOSwgVGhvbWFzIFppbW1lcm1hbm4gd3JvdGU6DQo+
-PiBXaGVuIHJlZ2lzdGVyaW5nIGEgZ2VuZXJpYyBmcmFtZWJ1ZmZlciwgYXV0b21hdGljYWxs
-eSBhY3F1aXJlIG93bmVyc2hpcA0KPj4gb2YgdGhlIGZyYW1lYnVmZmVyJ3MgSS9PIHJhbmdl
-LiBUaGUgZGV2aWNlIHdpbGwgbm93IGJlIGhhbmRsZWQgYnkgdGhlDQo+PiBhcGVydHVyZSBo
-ZWxwZXJzLiBGYmRldi1iYXNlZCBjb25mbGljdCBoYW5kbGluZyBpcyBubyBsb25nZXIgcmVx
-dWlyZWQuDQo+Pg0KPj4gU2lnbmVkLW9mZi1ieTogVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1t
-ZXJtYW5uQHN1c2UuZGU+DQo+PiAtLS0NCj4+ICAgZHJpdmVycy92aWRlby9mYmRldi9jb3Jl
-L2ZibWVtLmMgfCAzMyArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPj4gICAx
-IGZpbGUgY2hhbmdlZCwgMzMgaW5zZXJ0aW9ucygrKQ0KPj4NCj4+IGRpZmYgLS1naXQgYS9k
-cml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJtZW0uYyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYv
-Y29yZS9mYm1lbS5jDQo+PiBpbmRleCAyMjM3MDQ5MzI3ZGIuLmU1NTZhZDY5ZjQ4ZiAxMDA2
-NDQNCj4+IC0tLSBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYm1lbS5jDQo+PiArKysg
-Yi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJtZW0uYw0KPj4gQEAgLTEzLDYgKzEzLDcg
-QEANCj4+ICAgDQo+PiAgICNpbmNsdWRlIDxsaW51eC9tb2R1bGUuaD4NCj4+ICAgDQo+PiAr
-I2luY2x1ZGUgPGxpbnV4L2FwZXJ0dXJlLmg+DQo+PiAgICNpbmNsdWRlIDxsaW51eC9jb21w
-YXQuaD4NCj4+ICAgI2luY2x1ZGUgPGxpbnV4L3R5cGVzLmg+DQo+PiAgICNpbmNsdWRlIDxs
-aW51eC9lcnJuby5oPg0KPj4gQEAgLTE3MzksNiArMTc0MCwzMiBAQCBzdGF0aWMgdm9pZCBk
-b191bnJlZ2lzdGVyX2ZyYW1lYnVmZmVyKHN0cnVjdCBmYl9pbmZvICpmYl9pbmZvKQ0KPj4g
-ICAJcHV0X2ZiX2luZm8oZmJfaW5mbyk7DQo+PiAgIH0NCj4+ICAgDQo+PiArc3RhdGljIGlu
-dCBmYm1fYXBlcnR1cmVfYWNxdWlyZV9mb3JfcGxhdGZvcm1fZGV2aWNlKHN0cnVjdCBmYl9p
-bmZvICpmYl9pbmZvKQ0KPj4gK3sNCj4gDQo+IFdoYXQncyB0aGUgbWVhbmluZyBvZiAnbScg
-aGVyZSA/IE1pc2MsIG1lbW9yeSA/IEkgd291bGQganVzdCBjYWxsIGl0ICdmYl8nLg0KDQon
-bWFuYWdlZCcgYXMgaW4gZHJtbV8gQnV0IHVzaW5nIGZiXyBpcyBhbHNvIGdvb2QuIEkgYWN0
-dWFsbHkgd2Fzbid0IHN1cmUgDQphYm91dCB0aGlzIG5hbWluZy4NCg0KQmVzdCByZWdhcmRz
-DQpUaG9tYXMNCg0KPiANCj4gUmV2aWV3ZWQtYnk6IEphdmllciBNYXJ0aW5leiBDYW5pbGxh
-cyA8amF2aWVybUByZWRoYXQuY29tPg0KPiANCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0K
-R3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2Vy
-bWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJlcmcsIEdlcm1hbnkNCihI
-UkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNmw7xocmVyOiBJdm8gVG90ZXYN
-Cg==
+I propose to move this one to drivers/leds (or drivers/pwm) and, instead of
+registering a backlight device, register a PWM device.
 
---------------kiCGlvrWslyBzQRMKoFVl0MK--
+This way you will be able to reuse the generic backlight-pwm driver, as you'd
+be feeding the PWM device exposed by this driver to the generic one: this will
+most importantly make it easy to chain it with MTK_DISP_PWM (mtk-pwm-disp)
+with a devicetree that looks like...
 
---------------6GH0j04Z2LMK0kXsXJ0ksBoK
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+	pwmleds-disp {
 
------BEGIN PGP SIGNATURE-----
+		compatible = "pwm-leds";
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmLRVlIFAwAAAAAACgkQlh/E3EQov+Db
-mA//QOtVRDcENxdwcK73Yvd/iP6FGVicDdmaLMFYFrB6JJKpj+UZZlWIlV8iRSLDjTnnO+3O+oUC
-htEJ0WOZ3kv14fpQrQ/eOwTep2e3B5KT7oGXKQ9BbtLTl3dxuEZnk/Jw+qHNrOnP7Wc+ksyfV79I
-HJY9hckvCT0Ujz9gPD7YB/6hFL8Y3kUXf2egHDMwyRHy3Ln6X2q72V14jP0cMKL9VPJtrZxAyujO
-HQ+4PpxOu+S+NhenNVnh8k3OOrzu/xUZ4gj2ZS5V8J1vtaaa7AjX0I1ZdMuNoWLYjYys0cN7jFUb
-UgWTKXI6uz4QpisBXobYVt6vsdekcilFc93hgiUdmtRtesWxA+IVd1txqbly8OEVgqIawLZgqmT5
-KazrP3+FXsCdx6VGxPPn5GUk8D00lqpieuCZ1vqaeVwHiIhtZrOLQebDvCd1Xv7+lah1FWLMwj70
-bZN7MdB6XhYgjYjZ+9mVzKjUs1M0DvSsnkzUVpMfLjqDIqsymE3LE698n+yQVk8tbqy8Bi7AOeAv
-2N+AQOgPhUGoHF0NAqoSyvhrvH4sQrYytLSYCyyttx213q6/MJqp5USfxlDlHOv8qZIDeNvnUaPV
-Mvg9x64NlEDbnQLQlX/oLWQEATnVcxhLXb30ucP2qleNDzVdslBimqs4eM+Z+dEdyxTEfoHnfvCZ
-kks=
-=e49S
------END PGP SIGNATURE-----
 
---------------6GH0j04Z2LMK0kXsXJ0ksBoK--
+
+		disp_led: disp-pwm {
+
+			label = "backlight-pwm";
+
+			pwms = <&pwm0 0 500000>;
+
+			max-brightness = <1024>;
+
+		};
+
+	};
+
+
+
+	backlight_lcd0: backlight {
+
+		compatible = "led-backlight";
+
+		leds = <&disp_led>, <&pmic_bl_led>;
+
+
+
+		default-brightness-level = <300>;
+
+	};
+
+Regards,
+Angelo
+
+

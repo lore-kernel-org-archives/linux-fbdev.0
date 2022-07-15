@@ -2,732 +2,455 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16EB1C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 15 Jul 2022 09:53:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52F67C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 15 Jul 2022 11:26:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232149AbiGOJxO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 15 Jul 2022 05:53:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36104 "EHLO
+        id S229846AbiGOL0Z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 15 Jul 2022 07:26:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45464 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231833AbiGOJxN (ORCPT
+        with ESMTP id S229452AbiGOL0Y (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 15 Jul 2022 05:53:13 -0400
-Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B8F2581483
-        for <linux-fbdev@vger.kernel.org>; Fri, 15 Jul 2022 02:53:10 -0700 (PDT)
-Received: by mail-lj1-x22b.google.com with SMTP id w2so5137626ljj.7
-        for <linux-fbdev@vger.kernel.org>; Fri, 15 Jul 2022 02:53:10 -0700 (PDT)
+        Fri, 15 Jul 2022 07:26:24 -0400
+Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 167BC13DDA;
+        Fri, 15 Jul 2022 04:26:23 -0700 (PDT)
+Received: by mail-pj1-x1030.google.com with SMTP id o3-20020a17090a744300b001ef8f7f3dddso5777007pjk.3;
+        Fri, 15 Jul 2022 04:26:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
+        d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:mime-version
          :content-transfer-encoding;
-        bh=iWnFHdJkpHs2zY2dBDf4t+WlNVKjMqc8zpf/aZJAmpo=;
-        b=qOH3sNOStNit+gxBsEgvbVZ1NARteYO7cNa1eTXNmsQ50grcdqQtxcn/JbJvFKOEch
-         Z9Zgbv7I4bgEaYCtDFvuD+fiiI4JN26pl7qidz6kc4s819sWSMdPhP/d5157eUnqFfhz
-         Gqbb52/ybOPvzVcA9f7ja3ux0/De0FDN7RjisqeJ5GkzXYLB4Jun04rXL447infvEVq2
-         Hr3PGgGWMw/s3lxOhaU6PlHP6En+8WLXEVzP/8C53R+jQHJCmLsV1IbbjYqk2jNN+khp
-         4k/LO1H/RgDdHhihZ+R87Y05PsAYCTgYcaUrfl0+X6etMUyVoRtJbPUsRt0oqlFe7rqN
-         +2Ew==
+        bh=gxyNAIdF8uVow3H1XhXBwg96o/plsRwQuCipoy5Ry9E=;
+        b=HUVakAht3QYDlCi6rTyHeuImXIMd379d6m8rZFlB3sH4E5dxdvR2GCC4cEqBq0hWHO
+         3mZAFFKklsIBUVZeEziNcYCKl3zu29jSR49coEkq/NEsl8fliMu4Gps15q5kYqP7H2x2
+         pBJFKtAwkAm0YIsjRhHfrikU+jVoPijPUxfVIVn4JjFXKSyP/NBe/eprcI6/hgR03rQJ
+         ETmc1N5Q2qEArmwE5va/IgZTPbmV9zI22+JK2uCOFMjlRhq72MCfo1oJCOvIr7sI8vRB
+         fkkJ6hSHZzzEKAWLjQfbpocJ6mU2MF42oDM8TC5eEwin4rpIj5+HZnjfPYFWo1igXxvk
+         ylpg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
          :content-transfer-encoding;
-        bh=iWnFHdJkpHs2zY2dBDf4t+WlNVKjMqc8zpf/aZJAmpo=;
-        b=jdVJLWJwudD4rhqEydXg5nWfa1OgBXfZlfyaXF96kZ+ohqjE/32+tbFgXuHuKRQdLA
-         WCTuN+xOtfTlGb/nyDVpmdxbWtbJxCcmgL6cyHJRplbwjgEsWLyYOn/nWKKi0Md5bsOy
-         Y3Zkg3JEl1u3LyXhFApDqHlEYufdPfWJDsfFyNC2lfxKQJavg+bJQgjqgf3tepFqZqqs
-         IN/Xp39Fm6Bleo6DecDEt6FJmTC6QouldLiOA79lYDy9OYlogYFaIcoW0q0QLqn3Z5Bi
-         jbuBQpuAmLQNjSvCFCoKeDR1qwxrg+sxHuikgE10CfA00p12katGPR8kY6XH7T/ShCoY
-         igww==
-X-Gm-Message-State: AJIora9VykJi1ltK6J1fz7wxkNTwHu+ryBneet6kPA0c74xw9WKPekV3
-        SswkhkI8tZLa4JdgFy0UbhuXXQ==
-X-Google-Smtp-Source: AGRyM1v3T6c8Gz65tvi7jm/1E82uX3ZyTk33AETMHjR0AKvb9qI1lNUO86YvGTPjaArRZji/Bhg6gw==
-X-Received: by 2002:a2e:805a:0:b0:25d:3f51:3cac with SMTP id p26-20020a2e805a000000b0025d3f513cacmr6750434ljg.30.1657878788966;
-        Fri, 15 Jul 2022 02:53:08 -0700 (PDT)
-Received: from krzk-bin.. (fwa5da9-171.bb.online.no. [88.93.169.171])
-        by smtp.gmail.com with ESMTPSA id e5-20020a2e9845000000b0025d9f28db3esm487795ljj.20.2022.07.15.02.53.05
+        bh=gxyNAIdF8uVow3H1XhXBwg96o/plsRwQuCipoy5Ry9E=;
+        b=HTnMH46nvwcYxm4XqMIEiD+eNO/0h6/jCTu89Ilnal89R+ankotVPwr3ehn5zRvNXp
+         geleH2bIqOUuXhrTrPyiJi69mtFr5h74C31GtqKh0NJ3uZ5rnHuTPLxsBAQMQ7yEHdqy
+         4kfP+5O3i8f8VTlyu0WALaGGl+ZlbefKZyjfQqfvYcwZEW692OwmxPlvHyXrHZK/lNc4
+         SLLGDdlP7upyutkmnmL7CO1fiHTLP+PyQ4aWlapA1aXcrUnTtX5lFdqyAg4kJQ5YEgnM
+         YsVRCn5f/6ZE4Co5jXOTF5L38CN3kyZPyc8+7Ni3bcMPVDDAgglHuqpy5D0AsXmQxz/K
+         u48w==
+X-Gm-Message-State: AJIora8ftNcXzL3p0rrPcWSBg1E7RRv0Yru53PmftgKCGEQuhMbYjA+c
+        4hTGvd+VVBEzv0d5BSmAo28=
+X-Google-Smtp-Source: AGRyM1vAeOtUIfstbiXdFTS8IM2qsuNBcIlE5ZGLviTu+LOg0TWAQB6D3c0+uhw6k8SiuBspFKiMsA==
+X-Received: by 2002:a17:902:7487:b0:16b:d8ae:7e33 with SMTP id h7-20020a170902748700b0016bd8ae7e33mr12804578pll.21.1657884382451;
+        Fri, 15 Jul 2022 04:26:22 -0700 (PDT)
+Received: from RD-3580-24288.rt.l (42-72-159-86.emome-ip.hinet.net. [42.72.159.86])
+        by smtp.gmail.com with ESMTPSA id a5-20020aa78e85000000b00525b61f4792sm3550604pfr.109.2022.07.15.04.26.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 15 Jul 2022 02:53:08 -0700 (PDT)
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-To:     Lars-Peter Clausen <lars@metafoo.de>,
-        Michael Hennerich <Michael.Hennerich@analog.com>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Alexandru Tachici <alexandru.tachici@analog.com>,
-        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
-        Marcus Folkesson <marcus.folkesson@gmail.com>,
-        Kent Gustavsson <kent@minoris.se>,
-        Tomislav Denis <tomislav.denis@avl.com>,
-        Stefan Popa <stefan.popa@analog.com>,
-        Beniamin Bia <beniamin.bia@analog.com>,
-        Patrick Vasseur <patrick.vasseur@c-s.fr>,
-        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Philippe Reynes <tremyfr@yahoo.fr>,
-        Jacopo Mondi <jacopo@jmondi.org>,
-        Akinobu Mita <akinobu.mita@gmail.com>,
-        Alexandru Lazar <alazar@startmail.com>,
-        Oskar Andero <oskar.andero@gmail.com>,
-        =?UTF-8?q?M=C3=A5rten=20Lindahl?= <martenli@axis.com>,
-        Bogdan Pricop <bogdan.pricop@emutex.com>,
-        Angelo Compagnucci <angelo.compagnucci@gmail.com>,
-        Dan Murphy <dmurphy@ti.com>, linux-iio@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-fbdev@vger.kernel.org
-Cc:     linux-spi@vger.kernel.org, Mark Brown <broonie@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [RFC PATCH] dt-bindings: iio: adc: use spi-peripheral-props.yaml
-Date:   Fri, 15 Jul 2022 11:53:02 +0200
-Message-Id: <20220715095302.214276-1-krzysztof.kozlowski@linaro.org>
-X-Mailer: git-send-email 2.34.1
+        Fri, 15 Jul 2022 04:26:21 -0700 (PDT)
+From:   ChiaEn Wu <peterwu.pub@gmail.com>
+To:     lee.jones@linaro.org, daniel.thompson@linaro.org,
+        jingoohan1@gmail.com, pavel@ucw.cz, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, matthias.bgg@gmail.com,
+        sre@kernel.org, chunfeng.yun@mediatek.com,
+        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
+        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
+        heikki.krogerus@linux.intel.com, deller@gmx.de
+Cc:     chiaen_wu@richtek.com, alice_chen@richtek.com,
+        cy_huang@richtek.com, dri-devel@lists.freedesktop.org,
+        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        szunichen@gmail.com
+Subject: [PATCH v5 00/13] Add MediaTek MT6370 PMIC support
+Date:   Fri, 15 Jul 2022 19:25:54 +0800
+Message-Id: <20220715112607.591-1-peterwu.pub@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Instead of listing directly properties typical for SPI peripherals,
-reference the spi-peripheral-props.yaml schema.  This allows using all
-properties typical for SPI-connected devices, even these which device
-bindings author did not tried yet.
+From: ChiaEn Wu <chiaen_wu@richtek.com>
 
-Remove the spi-* properties which now come via spi-peripheral-props.yaml
-schema, except for the cases when device schema adds some constraints
-like maximum frequency.
+This patch series add MediaTek MT6370 PMIC support. The MT6370 is a
+highly-integrated smart power management IC, which includes a single
+cell Li-Ion/Li-Polymer switching battery charger, a USB
+Type-C & Power Delivery (PD) controller, dual Flash LED current sources,
+a RGB LED driver, a backlight WLED driver, a display bias driver and a
+general LDO for portable devices.
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In this series of patches, we based on Andy Shevchenko's mfd patch used to
+adjust the Makefile order.
+(https://lore.kernel.org/all/20220616182524.7956-2-andriy.shevchenko@linux.intel.com/)
+Among with this, we took some changes for MT6370 and refined the MT6370 device
+tree files to comply with DT specifications.
+
+"[PATCH v5 06/13] dt-bindings: mfd: Add MediaTek MT6370" depends on previous
+DT binding patches, so before applying this patch, please apply other DT
+patches first. Thanks!
+
+Thank you,
+ChiaEn Wu
 
 ---
+Changes in v5:
+- In patch 07/13:
+	- Add the comma in the last REGMAP_IRQ_REG_LINE(),
+	   DEFINE_RES_IRQ_NAMED() and MFD_CELL_RES()
+	- Add the prefix in the first parameter of all mfd_cell
+	- Move enum and struct mt6370_info to mt6370.h
+	- Remove struct device *dev in struct mt6370_info
+	- Revise the description of Kconfig help text
+	- Revise MODULE_DESCRIPTION()
 
-This is an RFC with only some files changed, as I am still not sure of
-benefits for typical case - device node has just spi-max-frequency and
-nothing more.  I still find useful to reference the schema, but maybe I
-am missing something?
+- In patch 08/13:
+	- Add comma for the last index of mt6370_reg_init.
+	- Use dev_err_probe to decrease LOC.
+	- Use 'dev' variable to make probe function more clean.
+	- Refine kconfig text.
+	- Remove both 'else' in set_vbus callback.
+	- Remove comma for of_device_id if the assigned member is only one.
 
-Before doing wide-tree cleanup like this, I would be happy to receive
-some feedback whether this makes sense.
----
- .../bindings/iio/adc/adi,ad7124.yaml          |  7 ++---
- .../bindings/iio/adc/adi,ad7192.yaml          | 11 +++-----
- .../bindings/iio/adc/adi,ad7280a.yaml         |  7 ++---
- .../bindings/iio/adc/adi,ad7292.yaml          |  9 +++----
- .../bindings/iio/adc/adi,ad7476.yaml          |  8 +++---
- .../bindings/iio/adc/adi,ad7606.yaml          | 11 +++-----
- .../bindings/iio/adc/adi,ad7768-1.yaml        | 11 +++-----
- .../bindings/iio/adc/adi,ad7923.yaml          |  7 ++---
- .../bindings/iio/adc/holt,hi8435.yaml         |  7 ++---
- .../bindings/iio/adc/lltc,ltc2496.yaml        |  8 +++---
- .../bindings/iio/adc/maxim,max1027.yaml       |  5 +++-
- .../bindings/iio/adc/maxim,max11100.yaml      |  7 +++--
- .../bindings/iio/adc/maxim,max1118.yaml       | 26 ++++++++++---------
- .../bindings/iio/adc/maxim,max1241.yaml       |  7 ++---
- .../bindings/iio/adc/microchip,mcp3201.yaml   |  9 +++----
- .../bindings/iio/adc/microchip,mcp3911.yaml   |  5 +++-
- .../bindings/iio/adc/ti,adc0832.yaml          |  7 ++---
- .../bindings/iio/adc/ti,adc084s021.yaml       |  7 ++---
- .../bindings/iio/adc/ti,adc108s102.yaml       |  6 +++--
- .../bindings/iio/adc/ti,adc12138.yaml         |  7 ++---
- .../bindings/iio/adc/ti,adc128s052.yaml       |  7 ++---
- .../bindings/iio/adc/ti,ads124s08.yaml        |  9 +++----
- .../bindings/iio/adc/ti,ads131e08.yaml        |  9 +++----
- 23 files changed, 103 insertions(+), 94 deletions(-)
+- In patch 09/13:
+	- Replace using snprintf() with sysfs_emit() in mt6370_adc_read_label()
+	- Remove macro ADC_CONV_TIME_US
+	- Revise all variable ordering
+	- Revise the description of Kconfig help text
+	- Revise MODULE_DESCRIPTION()
 
-diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7124.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7124.yaml
-index fb3d0dae9bae..75a7184a4735 100644
---- a/Documentation/devicetree/bindings/iio/adc/adi,ad7124.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7124.yaml
-@@ -52,8 +52,6 @@ properties:
-   avdd-supply:
-     description: avdd supply can be used as reference for conversion.
- 
--  spi-max-frequency: true
--
- required:
-   - compatible
-   - reg
-@@ -106,7 +104,10 @@ patternProperties:
- 
-     additionalProperties: false
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7192.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7192.yaml
-index 22b7ed3723f6..195c7e6e5206 100644
---- a/Documentation/devicetree/bindings/iio/adc/adi,ad7192.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7192.yaml
-@@ -26,12 +26,6 @@ properties:
-   reg:
-     maxItems: 1
- 
--  spi-cpol: true
--
--  spi-cpha: true
--
--  spi-max-frequency: true
--
-   clocks:
-     maxItems: 1
-     description: phandle to the master clock (mclk)
-@@ -94,7 +88,10 @@ required:
-   - spi-cpol
-   - spi-cpha
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7280a.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7280a.yaml
-index a694d5794d4a..dfb8f305e2f0 100644
---- a/Documentation/devicetree/bindings/iio/adc/adi,ad7280a.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7280a.yaml
-@@ -28,8 +28,6 @@ properties:
-     description: IRQ line for the ADC
-     maxItems: 1
- 
--  spi-max-frequency: true
--
-   adi,voltage-alert-last-chan:
-     $ref: /schemas/types.yaml#/definitions/uint32
-     description:
-@@ -55,7 +53,10 @@ required:
-   - compatible
-   - reg
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7292.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7292.yaml
-index a3e39a40c9b3..8ebeb06675bb 100644
---- a/Documentation/devicetree/bindings/iio/adc/adi,ad7292.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7292.yaml
-@@ -28,10 +28,6 @@ properties:
-     description: |
-       The regulator supply for ADC and DAC reference voltage.
- 
--  spi-cpha: true
--
--  spi-max-frequency: true
--
-   '#address-cells':
-     const: 1
- 
-@@ -65,7 +61,10 @@ patternProperties:
- 
-     additionalProperties: true
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7476.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7476.yaml
-index 666414a9c0de..44c671eeda73 100644
---- a/Documentation/devicetree/bindings/iio/adc/adi,ad7476.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7476.yaml
-@@ -66,8 +66,6 @@ properties:
-       to the other supplies. Needed to be able to establish channel scaling
-       unless there is also an internal reference available (e.g. ad7091r)
- 
--  spi-max-frequency: true
--
-   adi,conversion-start-gpios:
-     description: A GPIO used to trigger the start of a conversion
-     maxItems: 1
-@@ -76,9 +74,9 @@ required:
-   - compatible
-   - reg
- 
--additionalProperties: false
--
- allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-   # Devices where reference is vcc
-   - if:
-       properties:
-@@ -158,6 +156,8 @@ allOf:
-       properties:
-         adi,conversion-start-gpios: false
- 
-+unevaluatedProperties: false
-+
- examples:
-   - |
-     spi {
-diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
-index 73775174cf57..f76eaa4ca154 100644
---- a/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
-@@ -29,12 +29,6 @@ properties:
-   reg:
-     maxItems: 1
- 
--  spi-cpha: true
--
--  spi-cpol: true
--
--  spi-max-frequency: true
--
-   avcc-supply: true
- 
-   interrupts:
-@@ -106,7 +100,10 @@ required:
-   - interrupts
-   - adi,conversion-start-gpios
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7768-1.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7768-1.yaml
-index a85a28145ef6..117c4eb28f4e 100644
---- a/Documentation/devicetree/bindings/iio/adc/adi,ad7768-1.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7768-1.yaml
-@@ -50,12 +50,6 @@ properties:
-   reset-gpios:
-     maxItems: 1
- 
--  spi-max-frequency: true
--
--  spi-cpol: true
--
--  spi-cpha: true
--
-   "#io-channel-cells":
-     const: 1
- 
-@@ -88,7 +82,10 @@ patternProperties:
-       - reg
-     additionalProperties: false
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7923.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7923.yaml
-index e82194974eea..24a810c23197 100644
---- a/Documentation/devicetree/bindings/iio/adc/adi,ad7923.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7923.yaml
-@@ -43,13 +43,14 @@ properties:
-   '#size-cells':
-     const: 0
- 
--  spi-max-frequency: true
--
- required:
-   - compatible
-   - reg
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/holt,hi8435.yaml b/Documentation/devicetree/bindings/iio/adc/holt,hi8435.yaml
-index 52490cbb0af0..56bcbe5dcd79 100644
---- a/Documentation/devicetree/bindings/iio/adc/holt,hi8435.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/holt,hi8435.yaml
-@@ -24,8 +24,6 @@ properties:
-       GPIO used for controlling the reset pin
-     maxItems: 1
- 
--  spi-max-frequency: true
--
-   "#io-channel-cells":
-     const: 1
- 
-@@ -33,7 +31,10 @@ required:
-   - compatible
-   - reg
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/lltc,ltc2496.yaml b/Documentation/devicetree/bindings/iio/adc/lltc,ltc2496.yaml
-index 0bd2fc0356c8..5207c919abe0 100644
---- a/Documentation/devicetree/bindings/iio/adc/lltc,ltc2496.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/lltc,ltc2496.yaml
-@@ -22,15 +22,15 @@ properties:
-   reg:
-     maxItems: 1
- 
--  spi-max-frequency:
--    description: maximal spi bus frequency supported
--
- required:
-   - compatible
-   - vref-supply
-   - reg
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/maxim,max1027.yaml b/Documentation/devicetree/bindings/iio/adc/maxim,max1027.yaml
-index 46b7747076b9..d0a7ed26d9ea 100644
---- a/Documentation/devicetree/bindings/iio/adc/maxim,max1027.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/maxim,max1027.yaml
-@@ -45,7 +45,10 @@ required:
-   - compatible
-   - reg
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/maxim,max11100.yaml b/Documentation/devicetree/bindings/iio/adc/maxim,max11100.yaml
-index 0cf87556ef82..4f74cb33383a 100644
---- a/Documentation/devicetree/bindings/iio/adc/maxim,max11100.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/maxim,max11100.yaml
-@@ -26,13 +26,16 @@ properties:
-     minimum: 100000
-     maximum: 4800000
- 
--additionalProperties: false
--
- required:
-   - compatible
-   - reg
-   - vref-supply
- 
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
-+
- examples:
-   - |
-     spi {
-diff --git a/Documentation/devicetree/bindings/iio/adc/maxim,max1118.yaml b/Documentation/devicetree/bindings/iio/adc/maxim,max1118.yaml
-index e948b3e37b0c..bb336e33ebe2 100644
---- a/Documentation/devicetree/bindings/iio/adc/maxim,max1118.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/maxim,max1118.yaml
-@@ -28,23 +28,25 @@ properties:
-   vref-supply:
-     description: External reference, needed to establish input scaling
- 
--if:
--  properties:
--    compatible:
--      contains:
--        const: maxim,max1118
--then:
--  required:
--    - vref-supply
--else:
--  properties:
--    vref-supply: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: maxim,max1118
-+    then:
-+      required:
-+        - vref-supply
-+    else:
-+      properties:
-+        vref-supply: false
- 
- required:
-   - compatible
-   - reg
- 
--additionalProperties: false
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/maxim,max1241.yaml b/Documentation/devicetree/bindings/iio/adc/maxim,max1241.yaml
-index 4c7e0d94bff1..58b12fe8070c 100644
---- a/Documentation/devicetree/bindings/iio/adc/maxim,max1241.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/maxim,max1241.yaml
-@@ -39,15 +39,16 @@ properties:
-       thus enabling power-down mode.
-     maxItems: 1
- 
--  spi-max-frequency: true
--
- required:
-   - compatible
-   - reg
-   - vdd-supply
-   - vref-supply
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/microchip,mcp3201.yaml b/Documentation/devicetree/bindings/iio/adc/microchip,mcp3201.yaml
-index fcc1ba53b20d..dc7a8a50495d 100644
---- a/Documentation/devicetree/bindings/iio/adc/microchip,mcp3201.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/microchip,mcp3201.yaml
-@@ -32,10 +32,6 @@ properties:
-   reg:
-     maxItems: 1
- 
--  spi-max-frequency: true
--  spi-cpha: true
--  spi-cpol: true
--
-   vref-supply:
-     description: External reference.
- 
-@@ -51,7 +47,10 @@ required:
-   - reg
-   - vref-supply
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/microchip,mcp3911.yaml b/Documentation/devicetree/bindings/iio/adc/microchip,mcp3911.yaml
-index 95ab285f4eba..067a7bbadab8 100644
---- a/Documentation/devicetree/bindings/iio/adc/microchip,mcp3911.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/microchip,mcp3911.yaml
-@@ -51,7 +51,10 @@ required:
-   - compatible
-   - reg
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/ti,adc0832.yaml b/Documentation/devicetree/bindings/iio/adc/ti,adc0832.yaml
-index f5a923cc847f..686721176a58 100644
---- a/Documentation/devicetree/bindings/iio/adc/ti,adc0832.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/ti,adc0832.yaml
-@@ -24,8 +24,6 @@ properties:
-   reg:
-     maxItems: 1
- 
--  spi-max-frequency: true
--
-   vref-supply:
-     description: External reference, needed to establish input scaling
- 
-@@ -37,7 +35,10 @@ required:
-   - reg
-   - vref-supply
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/ti,adc084s021.yaml b/Documentation/devicetree/bindings/iio/adc/ti,adc084s021.yaml
-index 1a113b30a414..726d2cbfa368 100644
---- a/Documentation/devicetree/bindings/iio/adc/ti,adc084s021.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/ti,adc084s021.yaml
-@@ -19,8 +19,6 @@ properties:
-   reg:
-     maxItems: 1
- 
--  spi-max-frequency: true
--
-   vref-supply:
-     description: External reference, needed to establish input scaling
- 
-@@ -37,7 +35,10 @@ required:
-   - spi-cpol
-   - spi-cpha
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/ti,adc108s102.yaml b/Documentation/devicetree/bindings/iio/adc/ti,adc108s102.yaml
-index 54955f03df93..1a589ad1659f 100644
---- a/Documentation/devicetree/bindings/iio/adc/ti,adc108s102.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/ti,adc108s102.yaml
-@@ -19,7 +19,6 @@ properties:
- 
-   reg: true
-   vref-supply: true
--  spi-max-frequency: true
-   "#io-channel-cells":
-     const: 1
- 
-@@ -28,7 +27,10 @@ required:
-   - reg
-   - vref-supply
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/ti,adc12138.yaml b/Documentation/devicetree/bindings/iio/adc/ti,adc12138.yaml
-index ec3b2edf1fb7..076088a328c3 100644
---- a/Documentation/devicetree/bindings/iio/adc/ti,adc12138.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/ti,adc12138.yaml
-@@ -31,8 +31,6 @@ properties:
-     maxItems: 1
-     description: Conversion clock input.
- 
--  spi-max-frequency: true
--
-   vref-p-supply:
-     description: The regulator supply for positive analog voltage reference
- 
-@@ -62,7 +60,10 @@ required:
-   - clocks
-   - vref-p-supply
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/ti,adc128s052.yaml b/Documentation/devicetree/bindings/iio/adc/ti,adc128s052.yaml
-index d54a0183f024..775eee972b12 100644
---- a/Documentation/devicetree/bindings/iio/adc/ti,adc128s052.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/ti,adc128s052.yaml
-@@ -27,8 +27,6 @@ properties:
-   reg:
-     maxItems: 1
- 
--  spi-max-frequency: true
--
-   vref-supply: true
- 
-   "#io-channel-cells":
-@@ -39,7 +37,10 @@ required:
-   - reg
-   - vref-supply
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/ti,ads124s08.yaml b/Documentation/devicetree/bindings/iio/adc/ti,ads124s08.yaml
-index 9f5e96439c01..efdc8701a2e5 100644
---- a/Documentation/devicetree/bindings/iio/adc/ti,ads124s08.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/ti,ads124s08.yaml
-@@ -18,10 +18,6 @@ properties:
-   reg:
-     maxItems: 1
- 
--  spi-max-frequency: true
--
--  spi-cpha: true
--
-   reset-gpios:
-     maxItems: 1
- 
-@@ -32,7 +28,10 @@ required:
-   - compatible
-   - reg
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/adc/ti,ads131e08.yaml b/Documentation/devicetree/bindings/iio/adc/ti,ads131e08.yaml
-index e0670e3fbb72..b8608f58bbca 100644
---- a/Documentation/devicetree/bindings/iio/adc/ti,ads131e08.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/ti,ads131e08.yaml
-@@ -28,10 +28,6 @@ properties:
-   reg:
-     maxItems: 1
- 
--  spi-max-frequency: true
--
--  spi-cpha: true
--
-   clocks:
-     description: |
-       Device tree identifier to the clock source (2.048 MHz).
-@@ -120,7 +116,10 @@ patternProperties:
- 
-     additionalProperties: false
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
+- In patch 10/13:
+	- Replace unsigned int type of pwr_rdy with bool in
+	   mt6370_chg_set_online()
+	- Remove redundant 'else' in mt6370_chg_field_get()
+	- Revise 'if-else' in mt6370_chg_field_set()
+	- Revise 'if' condition in mt6370_chg_enable_irq()
+	- Revise all text 'otg' --> 'OTG'
+	- Revise MT6370_MIVR_IBUS_TH_100_MA --> MT6370_MIVR_IBUS_TH_100_mA
+	- Revise the description of Kconfig help text
+
+- In patch 12/13:
+	- Refine descriptions.
+	- Refine the macro name.
+	- Refine the bracket and blanks.
+
+- In patch 13/13:
+	- Add missed <mod_devicetable.h>
+	- Add struct device *dev in probe() to make code cleaning
+	- Remove useless including header file <gpio/driver.h>, <of.h>
+	- Remove useless variable uasage in mt6370_init_backlight_properties()
+	- Remove redundant checking enable_gpio in mt6370_bl_update_status()
+	- Remove redundant parentheses in mt6370_bl_get_brightness()
+	- Revise the description of Kconfig help text
+	- Revise the calculation of hys_th_steps
+
+
+Changes in v4:
+- In patch 02/13:
+	- Add minItems of "io-channel-names"
+	- Replace text "Mediatek" with "MediaTek"
+
+- In patch 06/13:
+	- Roll back all "$ref: " to v2 patch style (using "/schemas/...")
+
+- In patch 07/13:
+	- Replace text "Mediatek" with "MediaTek" in Kconfig
+	- Replace "first break and then return" with "return directly"
+	   in "mt6370_check_vendor_info()"
+	- Add module name related description in Kconfig helptext
+	- Add Copyright in the source code
+	- Add header file "mt6370.h" for all "#define IRQ"
+	- Adjust Makefile order of MT6370
+	- Refine "bank_idx" and "bank_addr" in
+	  "mt6375_regmap_read()" / "mt6375_regmap_write()"
+	- Refine redundant "else if" in "mt6370_regmap_read()"
+
+- In patch 08/13:
+	- Replace text "Mediatek" with "MediaTek" in Kconfig
+	- Replace "first ret=regulator_(dis/en)able and then return"
+	   with "return directly" in "mt6370_tcpc_set_vbus()"
+	- Replace header file <linux/of.h> with <linux/mod_devicetable.h>
+	- Add Copyright in the source code
+	- Add module name related description in Kconfig helptext
+	- Remove header file <linux/of.h>
+	- Refine all probe error by using dev_err_probe()
+
+- In patch 09/13:
+	- Replace text "Mediatek" with "MediaTek"
+	- Replace all "first dev_err() and then return" with
+	   "return dev_err_probe()"
+	- Add Copyright in the source code
+	- Add module name related description in Kconfig
+	- Add unit suffix of macro "ADC_CONV_POLLING_TIME"
+	- Add new macro "ADC_CONV_TIME_MS"
+	- Adjust the position of include file <mediatek,mt6370_adc.h>
+	- Adjust the postions between <linux/module.h> and
+	   <linux/mod_devicetable.h>
+	- Fix some incorrect characters
+
+- In patch 10/13:
+	- Replace text "Mediatek" with "MediaTek" in Kconfig and
+	   MODULE_DESCRIPTION()
+	- Replace "mt6370_chg_val_to_reg" and "mt6370_chg_reg_to_val"
+	   with "linear_range" API
+	- Replace "first break and then return" with "return directly"
+	   in all cases of get/set power_supply_property
+	- Replace all "first dev_err() and then return" with "return
+	   dev_err_probe()"
+	- Replace all "return IS_ERR(priv->rdev) ? PTR_ERR(priv->rdev) : 0"
+	   with "PTR_ERR_OR_ZERO()"
+	- Replace "priv->dev->of_node" with "dev_of_node()"
+	- Add Copyright in the source code
+	- Add module name related description in Kconfig helptext
+	- Add proper unit of "MT6370_MIVR_IBUS_TH"
+	- Add error check in "mt6370_chg_get_status"
+	- Remove including <mediatek,mt6370_adc.h> header file
+	- Remove redundant comma of every enum terminator line
+	- Remove unwanted blank lines
+	- Remove the useless label (toggle_cfo_exit:)
+	- Remove using atomic
+	- Remove using of_match_ptr()
+	- Fix some incorrect characters
+	- Fix updating wrong bits when using ena_gpiod of OTG regulator
+	- Adjust the probe order in probe()
+
+- In patch 11/13:
+	- Replace text "Mediatek" with "MediaTek" in Kconfig
+	- Replace text "const" with "constant" in Kconfig
+	- Add Copyright in the source code
+
+- In patch 12/13:
+	- Replace text "Mediatek" with "MediaTek" in Kconfig
+	- Add Copyright in the source code
+
+- In patch 13/13:
+	- Replace text "Mediatek" with "MediaTek" in Kconfig
+	- Add Copyright in the source code
+	- Revise the comment of "PWM HYS STEPS"
+
+
+Changes in v3:
+- Remove ADC ABI file, which is added in v2 Patch 7
+- In patch 02/14:
+	- Add items and remove maxItems of io-channels
+	- Add io-channel-names and describe each item
+	- Add "unevaluatedProperties: false" in "usb-otg-vbus-regulator"
+	- Rename "enable-gpio" to "enable-gpios" in "usb-otg-vbus-regulator"
+- In patch 03/14:
+	- Use leds-class-multicolor.yaml instead of common.yaml.
+	- Split multi-led and led node.
+	- Add subdevice "led" in "multi-led".
+- In patch 04/14:
+	- Remove the description of enum.
+- In patch 05/14:
+	- Rename "mediatek,bled-pwm-hys-input-threshold-steps" to
+	  "mediatek,bled-pwm-hys-input-th-steps"
+	- Refine "bled-pwm-hys-input-th-steps", "bled-ovp-microvolt",
+	  "bled-ocp-microamp" enum values
+- In patch 06/14:
+	- Use " in entire patchset
+	- Refine ADC description
+	- Rename "enable-gpio" to "enable-gpios" in "regualtor"
+- In patch 07/14:
+	- Refine Kconfig help text
+	- Refine error message of unknown vendor ID in
+	  mt6370_check_vendor_info()
+	- Refine return value handling of mt6370_regmap_read()
+	- Refine all probe error by using dev_err_probe()
+	- Refine "bank_idx" and "bank_addr" in mt6370_regmap_read() and
+	  mt6370_regmap_write()
+	- Add "#define VENID*" and drop the comments in
+	  mt6370_check_vendor_info()
+	- Drop "MFD" in MODULE_DESCRIPTION()
+- In patch 09/14:
+	- Refine Kconfig help text
+- In patch 10/14:
+	- Refine Kconfig help text
+	- Refine all channel value in read_scale()
+		a. current: uA --> mA
+		b. voltage: uV --> mV
+		c. temperature: degrees Celsius --> milli degrees Celsius
+	- Add "default:" condition of switch statement in read_scale() and read_raw()
+	- Add error message for reading ADC register failed
+	- Add the comment for adc_lock
+	- Add <linux/mod_devicetable.h> header file for struct of_device_id
+	- Replace "adc" text with "ADC" in all of the error messages
+- In patch 12/14:
+	- Refine the grammer of the Kconfig.
+	- Change reg mode to the const current mode.
+- In patch 14/14:
+	- Refine bool properties parsing (pwm-enable, ovp-shutdown, ocp-shutdown) in DT
+	  parsing function
+	- Refine u32 and u8 properties parsing (pwm-hys-input-th-steps, ovp-microvolt,
+	  ocp-microamp), from using register value to using actual value
+	- Refine error string of "channle-use" parsing failed
+	- Refine Kconfig help text
+
+
+Changes in v2:
+- In patch 01/15:
+	- Add "unevaluatedProperties: false".
+	- Delete "DT bindings".
+	- Refine the description to fit in 80 columns.
+	- Skip the connector description.
+- In patch 02/15:
+	- Refine items description of interrupt-name
+	- Rename "usb-otg-vbus" to "usb-otg-vbus-regulator"
+	- Add constraint properties for ADC
+- In patch 03/15:
+	- Skip not useful description of "^(multi-)?led@[0-3]$"
+	  and reg.
+	- Due to the dependency, remove the mention of mfd
+	  document directory.
+	- Delete Soft-start property. In design aspect, we think
+	  soft-restart should always be enabled, our new chip
+	  has deleted the related setting register , also, we don’t
+	  allow user adjust this parameter in this chip.
+	- Refine the commit message.
+- In patch 04/15:
+	- Skip not useful description of "^led@[0-1]$" and reg.
+	- Add apace after '#'.
+	- Refine the commit message.
+- In patch 05/15:
+	- Remove "binding documentation" in subject title
+	- Refine description of mt6370 backlight binding
+	  document
+	- Refine properties name(bled-pwm-hys-input-bit,
+	  bled-ovp-microvolt, bled-ocp-microamp) and their
+	  description
+- In patch 06/15:
+	- Refine ADC and Regulator descriptions
+	- Refine include header usage in example
+	- Refine node name to generic node name("pmic@34")
+	- Refine led example indentation
+	- Refine license of mediatek,mt6370_adc.h
+	- Rename the dts example from IRQ define to number.
+	- Remove mediatek,mt6370.h
+- In patch 07/15:
+	- Add ABI documentation for mt6370 non-standard ADC
+	  sysfs interfaces.
+- In patch 08/15:
+	- Add all IRQ define into mt6370.c.
+	- Refine include header usage
+- In patch 09/15:
+	- No changes.
+- In patch 10/15:
+	- Use 'gpiod_get_from_of_node' to replace
+	  'fwnode_gpiod_get_index'.
+- In patch 11/15:
+	- Refine Kconfig mt6370 help text
+	- Refine mask&shift to FIELD_PREP()
+	- Refine mutex lock name ("lock" -> "adc_lock")
+	- Refine mt6370_adc_read_scale()
+	- Refine mt6370_adc_read_offset()
+	- Refine mt6370_channel_labels[] by using enum to index
+	  chan spec
+	- Refine MT6370_ADC_CHAN()
+	- Refine indio_dev->name
+	- Remove useless include header files
+- In patch 12/15:
+	- Refine mt6370_chg_otg_rdesc.of_match
+	  ("mt6370,otg-vbus" -> "usb-otg-vbus-regulator") to match
+	  DT binding
+- In patch 13/15:
+	- Refine Kconfig description.
+	- Remove include "linux/of.h" and use
+	  "linux/mod_devicetable.h".
+	- Place a comma for the last element of the const
+	  unsigned int array.
+	- Add a comment line for the mutex 'lock'.
+	- In probe function, use 'dev_err_probe' in some
+	  judgement to reduce the LOC.
+	- Refine include header usage.
+	  BIT/GENMASK -> linux/bits.h
+	  FIELD_GET -> linux/bitfield.h
+- In patch 14/15:
+	- Add blank line.
+	- Replace container_of() with to_mt6370_led() .
+	- Refine description of ramping.
+	- Refine the mt6370_init_common_properties function.
+	- Refine the probe return.
+- In patch 15/15:
+	- Refine MT6370 help text in Kconfig
+	- Refine DT Parse function
+	- Remove useless enum
+	- Add comment for 6372 backward compatible in
+	  bl_update_status() and
+	  check_vendor_info()
+	- Using dev_err_probe(); insteads dev_err()&return; in
+	  the probe()
+
+Alice Chen (2):
+  dt-bindings: leds: Add MediaTek MT6370 flashlight
+  leds: flashlight: mt6370: Add MediaTek MT6370 flashlight support
+
+ChiYuan Huang (7):
+  dt-bindings: usb: Add MediaTek MT6370 TCPC
+  dt-bindings: leds: mt6370: Add MediaTek MT6370 current sink type LED
+    indicator
+  dt-bindings: backlight: Add MediaTek MT6370 backlight
+  dt-bindings: mfd: Add MediaTek MT6370
+  mfd: mt6370: Add MediaTek MT6370 support
+  usb: typec: tcpci_mt6370: Add Mediatek MT6370 tcpci driver
+  leds: mt6370: Add MediaTek MT6370 current sink type LED Indicator
+    support
+
+ChiaEn Wu (4):
+  dt-bindings: power: supply: Add MediaTek MT6370 Charger
+  iio: adc: mt6370: Add MediaTek MT6370 support
+  power: supply: mt6370: Add MediaTek MT6370 charger driver
+  video: backlight: mt6370: Add MediaTek MT6370 support
+
+ .../leds/backlight/mediatek,mt6370-backlight.yaml  |   92 ++
+ .../bindings/leds/mediatek,mt6370-flashlight.yaml  |   41 +
+ .../bindings/leds/mediatek,mt6370-indicator.yaml   |   77 ++
+ .../devicetree/bindings/mfd/mediatek,mt6370.yaml   |  280 ++++++
+ .../power/supply/mediatek,mt6370-charger.yaml      |   88 ++
+ .../bindings/usb/mediatek,mt6370-tcpc.yaml         |   36 +
+ drivers/iio/adc/Kconfig                            |   12 +
+ drivers/iio/adc/Makefile                           |    1 +
+ drivers/iio/adc/mt6370-adc.c                       |  273 +++++
+ drivers/leds/Kconfig                               |   14 +
+ drivers/leds/Makefile                              |    1 +
+ drivers/leds/flash/Kconfig                         |   12 +
+ drivers/leds/flash/Makefile                        |    1 +
+ drivers/leds/flash/leds-mt6370-flash.c             |  661 ++++++++++++
+ drivers/leds/leds-mt6370.c                         |  994 ++++++++++++++++++
+ drivers/mfd/Kconfig                                |   16 +
+ drivers/mfd/Makefile                               |    1 +
+ drivers/mfd/mt6370.c                               |  281 ++++++
+ drivers/mfd/mt6370.h                               |   99 ++
+ drivers/power/supply/Kconfig                       |   14 +
+ drivers/power/supply/Makefile                      |    1 +
+ drivers/power/supply/mt6370-charger.c              | 1062 ++++++++++++++++++++
+ drivers/usb/typec/tcpm/Kconfig                     |   11 +
+ drivers/usb/typec/tcpm/Makefile                    |    1 +
+ drivers/usb/typec/tcpm/tcpci_mt6370.c              |  207 ++++
+ drivers/video/backlight/Kconfig                    |   12 +
+ drivers/video/backlight/Makefile                   |    1 +
+ drivers/video/backlight/mt6370-backlight.c         |  339 +++++++
+ include/dt-bindings/iio/adc/mediatek,mt6370_adc.h  |   18 +
+ 29 files changed, 4646 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/mediatek,mt6370-backlight.yaml
+ create mode 100644 Documentation/devicetree/bindings/leds/mediatek,mt6370-flashlight.yaml
+ create mode 100644 Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
+ create mode 100644 Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+ create mode 100644 Documentation/devicetree/bindings/power/supply/mediatek,mt6370-charger.yaml
+ create mode 100644 Documentation/devicetree/bindings/usb/mediatek,mt6370-tcpc.yaml
+ create mode 100644 drivers/iio/adc/mt6370-adc.c
+ create mode 100644 drivers/leds/flash/leds-mt6370-flash.c
+ create mode 100644 drivers/leds/leds-mt6370.c
+ create mode 100644 drivers/mfd/mt6370.c
+ create mode 100644 drivers/mfd/mt6370.h
+ create mode 100644 drivers/power/supply/mt6370-charger.c
+ create mode 100644 drivers/usb/typec/tcpm/tcpci_mt6370.c
+ create mode 100644 drivers/video/backlight/mt6370-backlight.c
+ create mode 100644 include/dt-bindings/iio/adc/mediatek,mt6370_adc.h
+
 -- 
-2.34.1
+2.7.4
 

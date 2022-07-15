@@ -2,43 +2,40 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F439C43334
-	for <linux-fbdev@archiver.kernel.org>; Fri, 15 Jul 2022 08:52:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E28CBC433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 15 Jul 2022 09:14:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233196AbiGOIw4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 15 Jul 2022 04:52:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45128 "EHLO
+        id S233273AbiGOJOD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 15 Jul 2022 05:14:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60664 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233906AbiGOIwn (ORCPT
+        with ESMTP id S232919AbiGOJNV (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 15 Jul 2022 04:52:43 -0400
+        Fri, 15 Jul 2022 05:13:21 -0400
 Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52A7E84EE3;
-        Fri, 15 Jul 2022 01:51:35 -0700 (PDT)
-X-UUID: d721200affec4765846b864848f39bc9-20220715
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 10B5A5B78F;
+        Fri, 15 Jul 2022 02:13:08 -0700 (PDT)
+X-UUID: 1d41d199e36a4cd49238f9f5cc354333-20220715
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.8,REQID:34ea4b4a-b427-491f-97f1-0940e2b80b57,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:51,FILE:0,RULE:Release_Ham,ACT
-        ION:release,TS:51
-X-CID-INFO: VERSION:1.1.8,REQID:34ea4b4a-b427-491f-97f1-0940e2b80b57,OB:0,LOB:
-        0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:51,FILE:0,RULE:Release_Ham,ACTIO
-        N:release,TS:51
-X-CID-META: VersionHash:0f94e32,CLOUDID:b1b695d7-5d6d-4eaf-a635-828a3ee48b7c,C
-        OID:9a8e9ef91b98,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
-        RL:0,File:nil,QS:nil,BEC:nil,COL:0
-X-UUID: d721200affec4765846b864848f39bc9-20220715
-Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw02.mediatek.com
+X-CID-O-INFO: VERSION:1.1.8,REQID:b02bc9aa-c130-4672-95a5-f92fc34312b7,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:0f94e32,CLOUDID:071f6464-0b3f-4b2c-b3a6-ed5c044366a0,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
+        ,QS:nil,BEC:nil,COL:0
+X-UUID: 1d41d199e36a4cd49238f9f5cc354333-20220715
+Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw02.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1312067785; Fri, 15 Jul 2022 16:51:29 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 901452969; Fri, 15 Jul 2022 17:13:03 +0800
 Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.792.15; Fri, 15 Jul 2022 16:51:27 +0800
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
+ Fri, 15 Jul 2022 17:13:03 +0800
 Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 15 Jul 2022 16:51:27 +0800
-Message-ID: <05e7ace27af21d141c1ecd79fb45f6e5e9d32582.camel@mediatek.com>
+ Transport; Fri, 15 Jul 2022 17:13:03 +0800
+Message-ID: <ba34c4aafcb667eba778cbb0ec7cd12f6fac6400.camel@mediatek.com>
 Subject: Re: [PATCH v14 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
  driver
 From:   CK Hu <ck.hu@mediatek.com>
@@ -56,7 +53,7 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Fri, 15 Jul 2022 16:51:27 +0800
+Date:   Fri, 15 Jul 2022 17:13:03 +0800
 In-Reply-To: <20220712111223.13080-6-rex-bc.chen@mediatek.com>
 References: <20220712111223.13080-1-rex-bc.chen@mediatek.com>
          <20220712111223.13080-6-rex-bc.chen@mediatek.com>
@@ -100,51 +97,26 @@ On Tue, 2022-07-12 at 19:12 +0800, Bo-Chen Chen wrote:
 
 [snip]
 
-> +static void mtk_dp_hpd_sink_event(struct mtk_dp *mtk_dp)
-> +{
-> +	ssize_t ret;
-> +	u8 sink_count;
-> +	u8 link_status[DP_LINK_STATUS_SIZE] = {};
-> +	u32 sink_count_reg = DP_SINK_COUNT_ESI;
-> +	u32 link_status_reg = DP_LANE0_1_STATUS;
 > +
-> +	ret = drm_dp_dpcd_readb(&mtk_dp->aux, sink_count_reg,
-> &sink_count);
+> +static int mtk_dp_set_color_depth(struct mtk_dp *mtk_dp)
 
-According to your last reply, if drm_dp_dpcd_readb() fail, we could
-skip below statement. So this just for error checking? If so, the next
-drm_dp_dpcd_read() would also do the error checking, so the checking
-here is redundant.
+This function just return 0, so let this function to be void.
 
 Regards,
 CK
 
-> +	if (ret < 1) {
-> +		drm_err(mtk_dp->drm_dev, "Read sink count failed\n");
-> +		return;
-> +	}
+> +{
+> +	/* Only support 8 bits currently */
+> +	mtk_dp->info.depth = DP_MSA_MISC_8_BPC;
 > +
-> +	drm_dbg(mtk_dp->drm_dev,
-> +		"read sink count from dpcd: %d\n", sink_count);
+> +	/* Update MISC0 */
+> +	mtk_dp_update_bits(mtk_dp, MTK_DP_ENC0_P0_3034,
+> +			   DP_MSA_MISC_8_BPC, DP_TEST_BIT_DEPTH_MASK);
 > +
-> +	ret = drm_dp_dpcd_read(&mtk_dp->aux, link_status_reg,
-> link_status,
-> +			       sizeof(link_status));
-> +	if (!ret) {
-> +		drm_err(mtk_dp->drm_dev, "Read link status failed\n");
-> +		return;
-> +	}
-> +
-> +	if (!drm_dp_channel_eq_ok(link_status, mtk_dp-
-> >train_info.lane_count)) {
-> +		drm_err(mtk_dp->drm_dev, "Channel EQ failed\n");
-> +		return;
-> +	}
-> +
-> +	if (link_status[1] & DP_REMOTE_CONTROL_COMMAND_PENDING)
-> +		drm_dp_dpcd_writeb(&mtk_dp->aux,
-> DP_DEVICE_SERVICE_IRQ_VECTOR,
-> +				   DP_REMOTE_CONTROL_COMMAND_PENDING);
+> +	mtk_dp_update_bits(mtk_dp, MTK_DP_ENC0_P0_303C,
+> +			   VIDEO_COLOR_DEPTH_DP_ENC0_P0_8BIT,
+> +			   VIDEO_COLOR_DEPTH_DP_ENC0_P0_MASK);
+> +	return 0;
 > +}
 > +
 

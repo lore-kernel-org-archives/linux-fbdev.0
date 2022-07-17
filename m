@@ -2,117 +2,108 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F28CCCA483
-	for <linux-fbdev@archiver.kernel.org>; Sun, 17 Jul 2022 08:46:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55B75C43334
+	for <linux-fbdev@archiver.kernel.org>; Sun, 17 Jul 2022 23:02:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232616AbiGQIqs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 17 Jul 2022 04:46:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53618 "EHLO
+        id S232759AbiGQXCn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 17 Jul 2022 19:02:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59296 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230137AbiGQIqr (ORCPT
+        with ESMTP id S229535AbiGQXCn (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 17 Jul 2022 04:46:47 -0400
-Received: from jabberwock.ucw.cz (jabberwock.ucw.cz [46.255.230.98])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D43C119013;
-        Sun, 17 Jul 2022 01:46:45 -0700 (PDT)
-Received: by jabberwock.ucw.cz (Postfix, from userid 1017)
-        id A19441C0003; Sun, 17 Jul 2022 10:46:43 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ucw.cz; s=gen1;
-        t=1658047603;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=4f64FZhtfQR2a3FCAYRr0ogYWj/q8DKyVYT+VvicBeQ=;
-        b=X/BFAsMq23/Z925NfDrqcBTa1+NMdOyKTvWC/jcKDAR6LqTUqqHZoUtcXNlv78JOtxgGnV
-        KEEYsSPoUk1QuhIMUdjyfj3xzKKwVS0zAwbCUcypphXNu5ux3xhohdBfmM7V0g4XNKdvZk
-        vtsZgzTGRnv3Kh57WLG7g5U2h7I81C8=
-Date:   Sun, 17 Jul 2022 10:46:43 +0200
-From:   Pavel Machek <pavel@ucw.cz>
-To:     ChiaEn Wu <peterwu.pub@gmail.com>
-Cc:     lee.jones@linaro.org, daniel.thompson@linaro.org,
-        jingoohan1@gmail.com, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, matthias.bgg@gmail.com,
-        sre@kernel.org, chunfeng.yun@mediatek.com,
-        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
-        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
-        heikki.krogerus@linux.intel.com, deller@gmx.de,
-        chiaen_wu@richtek.com, alice_chen@richtek.com,
-        cy_huang@richtek.com, dri-devel@lists.freedesktop.org,
-        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        szunichen@gmail.com
-Subject: Re: [PATCH v5 11/13] leds: mt6370: Add MediaTek MT6370 current sink
- type LED Indicator support
-Message-ID: <20220717084643.GA14285@duo.ucw.cz>
-References: <20220715112607.591-1-peterwu.pub@gmail.com>
- <20220715112607.591-12-peterwu.pub@gmail.com>
+        Sun, 17 Jul 2022 19:02:43 -0400
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9260312618;
+        Sun, 17 Jul 2022 16:02:42 -0700 (PDT)
+Received: by mail-pj1-x102a.google.com with SMTP id p9so10196109pjd.3;
+        Sun, 17 Jul 2022 16:02:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=9duI1rSpswAXnRq3urEW1hM9QxHEE1skc8fMorpNRtM=;
+        b=Bx419kWJ5uk7pbzZCokXEhQ7DRPh7mtVCaztg7LXosqvEYYqxHD/NfuIYwQfJpz/4i
+         lqPECExSYKWZ9/9zx0mxoHwPZv2d4MtmTZTJEd42aqZQ0fkkWHVogmEXWAjN2sqIvGUk
+         A8b9mCQcU5RUfk+Ln51//K+Sz2mthahh1rAdzDKJVrwYnKGqoNgHuDVmPP/yb50zYnm0
+         GvNLc7XqQkhi0xZaS0+OWmAb6NPRasw5DSnyUcVsYFiv3RQ/qklRt5gDTPIDM0dkPa7h
+         kMHKBIC0F+AozCbKsaGvdsOGOjbbnfqskEYMG1qjgoExvS/sES1Vu+qEajndEYcOq4Ox
+         UXRw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=9duI1rSpswAXnRq3urEW1hM9QxHEE1skc8fMorpNRtM=;
+        b=YhUXjkOMGh97xVG5nN+05q310g220CgXvaDMvBNRWDNHK3MOJqoMxV6iRXZNxgkwzH
+         gV+4RsKl6cTAYGe2ngRT5poZjM/fPFw8GjaXKHQOYgU5PRE/wFgVujwG2BuD7A0O3JGY
+         Q6p9okAqUJeP2uq0ZDhUDlXQXCknzmGV0Cts4w5wg2PMDoHMQoXaYx3Xa9zY1CpZQwaf
+         svBgUsQREP0cN+2DCtPIySBYFesYLdhtxYmbD7AAWkRWRfBmjjxz+dPTehCdHaOjwSGG
+         A1cmZpNnbsTggA7suLrBg7GPKJbUJjj7lADihJxyiDjK/Ems0HkOSbkgMEpnMavYbhIU
+         lXeQ==
+X-Gm-Message-State: AJIora9cbfXBhQHl/8nJQFXP+m8dClbnvadbnf9tMVaz7aQjY2lfD9/s
+        kWGqEVXmsq9UsVAfvPI1Pdo=
+X-Google-Smtp-Source: AGRyM1s2OwobGDzORrPZHucygkybI/3hmpBr8Ni1Lah7murhJ3EfiGFcUanLyWGjdHC/P7DK+DlDgA==
+X-Received: by 2002:a17:90b:3502:b0:1f0:986:e36b with SMTP id ls2-20020a17090b350200b001f00986e36bmr35970479pjb.154.1658098962056;
+        Sun, 17 Jul 2022 16:02:42 -0700 (PDT)
+Received: from ?IPV6:2001:df0:0:200c:6c17:ca15:3733:a6a1? ([2001:df0:0:200c:6c17:ca15:3733:a6a1])
+        by smtp.gmail.com with ESMTPSA id b3-20020a170902650300b0016be96e07d1sm7766371plk.121.2022.07.17.16.02.38
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 17 Jul 2022 16:02:41 -0700 (PDT)
+Message-ID: <77ecffbd-7568-f653-5273-1f3dffb17891@gmail.com>
+Date:   Mon, 18 Jul 2022 11:02:36 +1200
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="M9NhX3UHpAaciwkO"
-Content-Disposition: inline
-In-Reply-To: <20220715112607.591-12-peterwu.pub@gmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.1
+Subject: Re: [PATCH 00/10] video: fbdev: atari: Miscellaneous fixes and
+ cleanups
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Helge Deller <deller@gmx.de>
+Cc:     Jonathan Corbet <corbet@lwn.net>, linux-fbdev@vger.kernel.org,
+        linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <cover.1657554353.git.geert@linux-m68k.org>
+From:   Michael Schmitz <schmitzmic@gmail.com>
+In-Reply-To: <cover.1657554353.git.geert@linux-m68k.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Hi Geert,
 
---M9NhX3UHpAaciwkO
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 12/07/22 03:50, Geert Uytterhoeven wrote:
+> 	Hi all,
+>
+> This patch series contains miscellaneous fixes and cleanups for the
+> Atari frame buffer device driver, which were identified while working on
+> the Atari DRM driver.
+>
+> Most of them have been tested on ARAnyM, and should be sa<fe to apply,
+> except perhaps for the last one, which is marked RFC.
+>
+> Thanks for your comments!
+>
+> Geert Uytterhoeven (10):
+>    video: fbdev: atari: Simplify atafb_pan_display()
+>    video: fbdev: atari: Remove bogus FB_VMODE_YWRAP flags
+>    video: fbdev: atari: Fix inverse handling
+>    video: fbdev: atari: Fix ext_setcolreg()
+>    video: fbdev: atari: Remove unneeded casts from void *
+>    video: fbdev: atari: Remove unneeded casts to void *
+>    video: fbdev: atari: Fix TT High video mode vertical refresh
+>    video: fbdev: atari: Fix VGA modes
+>    video: fbdev: atari: Remove unused definitions and variables
+>    [RFC] video: fbdev: atari: Remove backward bug-compatibility
+>
+>   Documentation/m68k/kernel-options.rst |   4 +-
+>   drivers/video/fbdev/atafb.c           | 101 +++++++-------------------
+>   2 files changed, 29 insertions(+), 76 deletions(-)
+>
+Works OK on my Falcon (except for the falh* modes, but that is not a 
+regression - might be something I miscoded in these modes, ages ago).
 
-Hi!
+Tested-by: Michael Schmitz <schmitzmic@gmail.com>
 
-> The MediaTek MT6370 is a highly-integrated smart power management IC,
-> which includes a single cell Li-Ion/Li-Polymer switching battery
-> charger, a USB Type-C & Power Delivery (PD) controller, dual
-> Flash LED current sources, a RGB LED driver, a backlight WLED driver,
-> a display bias driver and a general LDO for portable devices.
->=20
-> In MediaTek MT6370, there are four channel current-sink RGB LEDs that
-> support hardware pattern for constant current, PWM, and breath mode.
-> Isink4 channel can also be used as a CHG_VIN power good indicator.
->=20
-> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
 
-> index a49979f..71bacb5 100644
-> --- a/drivers/leds/Kconfig
-> +++ b/drivers/leds/Kconfig
-> @@ -244,6 +244,20 @@ config LEDS_MT6323
->  	  This option enables support for on-chip LED drivers found on
->  	  Mediatek MT6323 PMIC.
-> =20
-> +config LEDS_MT6370_RGB
-> +	tristate "LED Support for MediaTek MT6370 PMIC"
-> +	depends on LEDS_CLASS
-> +	depends on MFD_MT6370
-> +	select LINEAR_RANGE
-> +	help
-> +	  Say Y here to enable support for MT6370_RGB LED device.
-> +	  In MT6370, there are four channel current-sink LED drivers that
-> +	  support hardware pattern for constant current, PWM, and breath mode.
-> +	  Isink4 channel can also be used as a CHG_VIN power good
-
-Should this go to leds/rgb directory, and should it depend on
-multicolor framework?
-
-Best regards,
-							Pavel
---=20
-People of Russia, stop Putin before his war on Ukraine escalates.
-
---M9NhX3UHpAaciwkO
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iF0EABECAB0WIQRPfPO7r0eAhk010v0w5/Bqldv68gUCYtPMcwAKCRAw5/Bqldv6
-8kpOAJ9ibEmS72bgf9dapQwzhfeNWkBoRACdEEQFY+HUneM6yUqd3lRjlWgYdx0=
-=17QR
------END PGP SIGNATURE-----
-
---M9NhX3UHpAaciwkO--

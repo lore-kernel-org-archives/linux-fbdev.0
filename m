@@ -2,313 +2,216 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 319E7CCA482
-	for <linux-fbdev@archiver.kernel.org>; Mon, 18 Jul 2022 07:23:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DA85CCA482
+	for <linux-fbdev@archiver.kernel.org>; Mon, 18 Jul 2022 08:08:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233845AbiGRHXd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 18 Jul 2022 03:23:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52718 "EHLO
+        id S233628AbiGRIIw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 18 Jul 2022 04:08:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51810 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233835AbiGRHXb (ORCPT
+        with ESMTP id S233640AbiGRIIu (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 18 Jul 2022 03:23:31 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 20681639C
-        for <linux-fbdev@vger.kernel.org>; Mon, 18 Jul 2022 00:23:28 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id A110F20BCB;
-        Mon, 18 Jul 2022 07:23:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1658129006; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=TG3XPL0M7DyWCFkvNitjMXyrbtUbfts6ucaaQ471cmA=;
-        b=Z2CrwNP22d20BNXQb8ET3KG4dfRRbClxG6ErA+5w6oidB7Cl5TRilXTzZlYEYSdlwDRPhe
-        NU7iu9jWnVmL1e0fhTB/G4xFtySWmjdNpdB9JI+gh8IpaThRJ/Jgn9cmr2hg+ktCbyEgHs
-        OTrhfKBaAiW9VCfToOtuu0JFz2hCQ8g=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1658129006;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=TG3XPL0M7DyWCFkvNitjMXyrbtUbfts6ucaaQ471cmA=;
-        b=FFI+wWbETN1aNCl6ChysTzV14T0lNXn6nGkpOTBQsQHUAyU4GOk8YQELkloSVtC46tlQPu
-        wLwg7PQ6Kx5dDpAQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 7203A13A37;
-        Mon, 18 Jul 2022 07:23:26 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id WOMNG24K1WKjcAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 18 Jul 2022 07:23:26 +0000
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-To:     javierm@redhat.com, deller@gmx.de, daniel@ffwll.ch,
-        sam@ravnborg.org, maxime@cerno.tech
-Cc:     linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 11/11] fbdev: Remove conflict-handling code
-Date:   Mon, 18 Jul 2022 09:23:22 +0200
-Message-Id: <20220718072322.8927-12-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.36.1
-In-Reply-To: <20220718072322.8927-1-tzimmermann@suse.de>
-References: <20220718072322.8927-1-tzimmermann@suse.de>
+        Mon, 18 Jul 2022 04:08:50 -0400
+Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D3010398;
+        Mon, 18 Jul 2022 01:08:49 -0700 (PDT)
+Received: by mail-pl1-x629.google.com with SMTP id g17so8344110plh.2;
+        Mon, 18 Jul 2022 01:08:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=CUvUySPFulLpJMe6eEU3YtP+k2lXPFdi238dz02/TnA=;
+        b=pHUAhFihwGq4x+L9IFz64byctPKxMey+1jJrxWMXoIp6tYfspwIQNIMzp7YBTH00xn
+         MRzfhJj8RY4NA4mFvpX/dCVWMpW27h/Njmzv7MmAtFUvpbbul8t5EAe192JoL/OYQ6/s
+         zYjE+CbBzxnhn/cgTyA0Bs/GtDn+R9lbkor0iXsp+EmPI2KlVUjcMQTUQrIikQ8NHDMp
+         I2FQM1xubPFVtXGRB4dZts8UYYxW5QU7vg2DfZS27wC41UjIJhTXDckFd8tPgOzwbvc4
+         1cKXpRAi5A/FWLrXPzcBSgixvnKv1XZEewB7e2CcmvZHXmuVo8UORFDuotPcS3/M7CCo
+         WblQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=CUvUySPFulLpJMe6eEU3YtP+k2lXPFdi238dz02/TnA=;
+        b=NaV9C/9iP7f14brAMCMAj4H68r7cOQ+N3atVFhoxoXZXC2UvZDipnM8c2ezgcvcbKq
+         XODfQfMsK4u4/Wqs1gD4z0h8OwG6bG4dGCrvO+vqONlNOSc8iUge+7pvFYJcgJt8q9RP
+         f8eosfJQdwe0IKPd755nBOuIIe3QmBkHhB4ZfRldgaQpKz+etTkl6SIP5APPJwl4YEuP
+         2m8c/IHVHpUPgayBue11gDd1PtRdLnXC/9sIH5h9utAxkcFrrV1qm6G0OdKo6Gdv3G/m
+         gLwcHeLugUkEgy2sNYFwgHS3gVnwY7piA2F7Pd+ux3lhkNKjGiiaAing+P4HWI43sTN3
+         ujRA==
+X-Gm-Message-State: AJIora9anOqwnk4HSMI+1IFDl6yGnK7b8grZHO1ZBucM0rDamNVjn1h0
+        hPSIkDNNSKqjN3OfXmFg9P0=
+X-Google-Smtp-Source: AGRyM1vhEQ3YQzNXVMn83J82E/AUt4UjMd+K2amzhrVvPs1pmkb06EqRlQYBGCtIVLv6eW+mUn8kbQ==
+X-Received: by 2002:a17:902:e888:b0:16c:33f7:89cb with SMTP id w8-20020a170902e88800b0016c33f789cbmr27448255plg.2.1658131729130;
+        Mon, 18 Jul 2022 01:08:49 -0700 (PDT)
+Received: from cyhuang-hp-elitebook-840-g3.rt ([2402:7500:587:e7ad:4982:5f13:5219:614d])
+        by smtp.gmail.com with ESMTPSA id u9-20020a170903124900b0016cabb9d77dsm8895028plh.169.2022.07.18.01.08.39
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 18 Jul 2022 01:08:48 -0700 (PDT)
+Date:   Mon, 18 Jul 2022 16:08:35 +0800
+From:   ChiYuan Huang <u0084500@gmail.com>
+To:     Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc:     ChiaEn Wu <peterwu.pub@gmail.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Chunfeng Yun <chunfeng.yun@mediatek.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>,
+        Helge Deller <deller@gmx.de>,
+        ChiaEn Wu <chiaen_wu@richtek.com>,
+        Alice Chen <alice_chen@richtek.com>,
+        cy_huang <cy_huang@richtek.com>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux LED Subsystem <linux-leds@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-mediatek@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        USB <linux-usb@vger.kernel.org>,
+        linux-iio <linux-iio@vger.kernel.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+        szuni chen <szunichen@gmail.com>,
+        ChiYuan Huang <u0084500@gmail.com>
+Subject: Re: [PATCH v5 08/13] usb: typec: tcpci_mt6370: Add MediaTek MT6370
+ tcpci driver
+Message-ID: <20220718080831.GA31509@cyhuang-hp-elitebook-840-g3.rt>
+References: <20220715112607.591-1-peterwu.pub@gmail.com>
+ <20220715112607.591-9-peterwu.pub@gmail.com>
+ <CAHp75VdCgdTOu-CdNo9XGY+PrhPh93v_CkAHJC6hkArsKeiXbA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAHp75VdCgdTOu-CdNo9XGY+PrhPh93v_CkAHJC6hkArsKeiXbA@mail.gmail.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Remove the call to do_remove_conflicting_framebuffers() from the
-framebuffer registration. Aperture helpers take care of removing
-conflicting devices. With all ownership information stored in the
-aperture datastrcutures, remove remove_conflicting_framebuffers()
-entirely.
+On Fri, Jul 15, 2022 at 03:10:42PM +0200, Andy Shevchenko wrote:
+> On Fri, Jul 15, 2022 at 1:28 PM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
+> 
+> > The MT6370 is a highly-integrated smart power management IC, which
+> > includes a single cell Li-Ion/Li-Polymer switching battery charger,
+> > a USB Type-C & Power Delivery (PD) controller, dual Flash LED current
+> > sources, a RGB LED driver, a backlight WLED driver, a display bias
+> > driver and a general LDO for portable devices.
+> >
+> > This commit add support for the Type-C & Power Delivery controller in
+> 
+> This commit add -> Add
+> 
+Upper case? Or rewrite it as 'This commit is to add .....'?
+> 
+> > MediaTek MT6370 IC.
+> 
+> 
+> > +static int mt6370_tcpc_probe(struct platform_device *pdev)
+> > +{
+> > +       struct mt6370_priv *priv;
+> > +       struct device *dev = &pdev->dev;
+> > +       int ret;
+> > +
+> > +       priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+> > +       if (!priv)
+> > +               return -ENOMEM;
+> > +
+> > +       priv->dev = dev;
+> > +       platform_set_drvdata(pdev, priv);
+> > +
+> > +       priv->tcpci_data.regmap = dev_get_regmap(dev->parent, NULL);
+> > +       if (!priv->tcpci_data.regmap)
+> > +               return dev_err_probe(dev, -ENODEV, "Failed to init regmap\n");
+> > +
+> > +       ret = mt6370_check_vendor_info(priv);
+> > +       if (ret)
+> > +               return ret;
+> > +
+> > +       priv->irq = platform_get_irq(pdev, 0);
+> > +       if (priv->irq < 0)
+> > +               return priv->irq;
+> > +
+> > +       /* Assign TCPCI feature and ops */
+> > +       priv->tcpci_data.auto_discharge_disconnect = 1;
+> > +       priv->tcpci_data.init = mt6370_tcpc_init;
+> > +       priv->tcpci_data.set_vconn = mt6370_tcpc_set_vconn;
+> > +
+> > +       priv->vbus = devm_regulator_get_optional(dev, "vbus");
+> > +       if (!IS_ERR(priv->vbus))
+> > +               priv->tcpci_data.set_vbus = mt6370_tcpc_set_vbus;
+> > +
+> > +       priv->tcpci = tcpci_register_port(dev, &priv->tcpci_data);
+> > +       if (IS_ERR(priv->tcpci))
+> > +               return dev_err_probe(dev, PTR_ERR(priv->tcpci),
+> > +                                    "Failed to register tcpci port\n");
+> > +
+> > +       ret = devm_request_threaded_irq(dev, priv->irq, NULL,
+> > +                                       mt6370_irq_handler, IRQF_ONESHOT,
+> > +                                       dev_name(dev), priv);
+> > +       if (ret) {
+> 
+> > +               tcpci_unregister_port(priv->tcpci);
+> 
+> This is wrong.
+> You mixed devm_ with non-devm. Either drop devm_ *after* the first
+> non-devm_ call, or convert everything to be managed.
+> 
+How about to add 'devm_add_action_or_reset' for tcpci_unregister_port?
+This will convert all as 'devm_' version.
+> > +               return dev_err_probe(dev, ret, "Failed to allocate irq\n");
+> > +       }
+> > +
+> > +       device_init_wakeup(dev, true);
+> > +       dev_pm_set_wake_irq(dev, priv->irq);
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +static int mt6370_tcpc_remove(struct platform_device *pdev)
+> > +{
+> > +       struct mt6370_priv *priv = platform_get_drvdata(pdev);
+> 
+> > +       disable_irq(priv->irq);
+> 
+> Why?
+> An ugly workaround due to ordering issues in ->probe()?
+>
+Yes, due to the ordering in probe.
+'bus remove' will be called before device resource releases.
 
-This change also rectifies DRM generic-framebuffer registration, which
-tried to unregister conflicting framebuffers, even though it's entirely
-build on top of DRM.
+Like as you said, another way is to convert all as non-devm
+version after 'tcpci_unregister_port'.
 
-v2:
-	* remove internal aperture-overlap helpers, which are
-	  now unused
+If to keep the original order, 'disable_irq' before
+'tcpci_unregister_port' can make the flow more safe.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
----
- drivers/video/aperture.c         |  21 -----
- drivers/video/fbdev/core/fbmem.c | 136 -------------------------------
- include/linux/fb.h               |   2 -
- 3 files changed, 159 deletions(-)
+Or you can think one case if irq triggers after
+'tcpci_unregister_port'. Null pointer occurs.
 
-diff --git a/drivers/video/aperture.c b/drivers/video/aperture.c
-index abc691284a77..9e6bcc03a1a4 100644
---- a/drivers/video/aperture.c
-+++ b/drivers/video/aperture.c
-@@ -2,7 +2,6 @@
- 
- #include <linux/aperture.h>
- #include <linux/device.h>
--#include <linux/fb.h> /* for old fbdev helpers */
- #include <linux/list.h>
- #include <linux/mutex.h>
- #include <linux/pci.h>
-@@ -286,11 +285,6 @@ static void aperture_detach_devices(resource_size_t base, resource_size_t size)
- int aperture_remove_conflicting_devices(resource_size_t base, resource_size_t size,
- 					bool primary, const char *name)
- {
--#if IS_REACHABLE(CONFIG_FB)
--	struct apertures_struct *a;
--	int ret;
--#endif
--
- 	/*
- 	 * If a driver asked to unregister a platform device registered by
- 	 * sysfb, then can be assumed that this is a driver for a display
-@@ -312,21 +306,6 @@ int aperture_remove_conflicting_devices(resource_size_t base, resource_size_t si
- 	if (primary)
- 		aperture_detach_devices(VGA_FB_PHYS_BASE, VGA_FB_PHYS_SIZE);
- 
--#if IS_REACHABLE(CONFIG_FB)
--	a = alloc_apertures(1);
--	if (!a)
--		return -ENOMEM;
--
--	a->ranges[0].base = base;
--	a->ranges[0].size = size;
--
--	ret = remove_conflicting_framebuffers(a, name, primary);
--	kfree(a);
--
--	if (ret)
--		return ret;
--#endif
--
- 	return 0;
- }
- EXPORT_SYMBOL(aperture_remove_conflicting_devices);
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 928a8afcc5a1..c80305d34dae 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1514,102 +1514,6 @@ static int fb_check_foreignness(struct fb_info *fi)
- 	return 0;
- }
- 
--static bool apertures_overlap(struct aperture *gen, struct aperture *hw)
--{
--	/* is the generic aperture base the same as the HW one */
--	if (gen->base == hw->base)
--		return true;
--	/* is the generic aperture base inside the hw base->hw base+size */
--	if (gen->base > hw->base && gen->base < hw->base + hw->size)
--		return true;
--	return false;
--}
--
--static bool fb_do_apertures_overlap(struct apertures_struct *gena,
--				    struct apertures_struct *hwa)
--{
--	int i, j;
--	if (!hwa || !gena)
--		return false;
--
--	for (i = 0; i < hwa->count; ++i) {
--		struct aperture *h = &hwa->ranges[i];
--		for (j = 0; j < gena->count; ++j) {
--			struct aperture *g = &gena->ranges[j];
--			printk(KERN_DEBUG "checking generic (%llx %llx) vs hw (%llx %llx)\n",
--				(unsigned long long)g->base,
--				(unsigned long long)g->size,
--				(unsigned long long)h->base,
--				(unsigned long long)h->size);
--			if (apertures_overlap(g, h))
--				return true;
--		}
--	}
--
--	return false;
--}
--
--static void do_unregister_framebuffer(struct fb_info *fb_info);
--
--static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
--					       const char *name, bool primary)
--{
--	int i;
--
--restart_removal:
--	/* check all firmware fbs and kick off if the base addr overlaps */
--	for_each_registered_fb(i) {
--		struct apertures_struct *gen_aper;
--		struct device *device;
--
--		if (!(registered_fb[i]->flags & FBINFO_MISC_FIRMWARE))
--			continue;
--
--		gen_aper = registered_fb[i]->apertures;
--		device = registered_fb[i]->device;
--		if (fb_do_apertures_overlap(gen_aper, a) ||
--			(primary && gen_aper && gen_aper->count &&
--			 gen_aper->ranges[0].base == VGA_FB_PHYS_BASE)) {
--
--			printk(KERN_INFO "fb%d: switching to %s from %s\n",
--			       i, name, registered_fb[i]->fix.id);
--
--			/*
--			 * If we kick-out a firmware driver, we also want to remove
--			 * the underlying platform device, such as simple-framebuffer,
--			 * VESA, EFI, etc. A native driver will then be able to
--			 * allocate the memory range.
--			 *
--			 * If it's not a platform device, at least print a warning. A
--			 * fix would add code to remove the device from the system. For
--			 * framebuffers without any Linux device, print a warning as
--			 * well.
--			 */
--			if (!device) {
--				pr_warn("fb%d: no device set\n", i);
--				do_unregister_framebuffer(registered_fb[i]);
--			} else if (dev_is_platform(device)) {
--				/*
--				 * Drop the lock because if the device is unregistered, its
--				 * driver will call to unregister_framebuffer(), that takes
--				 * this lock.
--				 */
--				mutex_unlock(&registration_lock);
--				platform_device_unregister(to_platform_device(device));
--				mutex_lock(&registration_lock);
--			} else {
--				pr_warn("fb%d: cannot remove device\n", i);
--				do_unregister_framebuffer(registered_fb[i]);
--			}
--			/*
--			 * Restart the removal loop now that the device has been
--			 * unregistered and its associated framebuffer gone.
--			 */
--			goto restart_removal;
--		}
--	}
--}
--
- static int do_register_framebuffer(struct fb_info *fb_info)
- {
- 	int i;
-@@ -1618,10 +1522,6 @@ static int do_register_framebuffer(struct fb_info *fb_info)
- 	if (fb_check_foreignness(fb_info))
- 		return -ENOSYS;
- 
--	do_remove_conflicting_framebuffers(fb_info->apertures,
--					   fb_info->fix.id,
--					   fb_is_primary_device(fb_info));
--
- 	if (num_registered_fb == FB_MAX)
- 		return -ENXIO;
- 
-@@ -1766,42 +1666,6 @@ static int fb_aperture_acquire_for_platform_device(struct fb_info *fb_info)
- 	return ret;
- }
- 
--/**
-- * remove_conflicting_framebuffers - remove firmware-configured framebuffers
-- * @a: memory range, users of which are to be removed
-- * @name: requesting driver name
-- * @primary: also kick vga16fb if present
-- *
-- * This function removes framebuffer devices (initialized by firmware/bootloader)
-- * which use memory range described by @a. If @a is NULL all such devices are
-- * removed.
-- */
--int remove_conflicting_framebuffers(struct apertures_struct *a,
--				    const char *name, bool primary)
--{
--	bool do_free = false;
--
--	if (!a) {
--		a = alloc_apertures(1);
--		if (!a)
--			return -ENOMEM;
--
--		a->ranges[0].base = 0;
--		a->ranges[0].size = ~0;
--		do_free = true;
--	}
--
--	mutex_lock(&registration_lock);
--	do_remove_conflicting_framebuffers(a, name, primary);
--	mutex_unlock(&registration_lock);
--
--	if (do_free)
--		kfree(a);
--
--	return 0;
--}
--EXPORT_SYMBOL(remove_conflicting_framebuffers);
--
- /**
-  *	register_framebuffer - registers a frame buffer device
-  *	@fb_info: frame buffer info structure
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index b91c77016560..453c3b2b6b8e 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -615,8 +615,6 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
- /* drivers/video/fbmem.c */
- extern int register_framebuffer(struct fb_info *fb_info);
- extern void unregister_framebuffer(struct fb_info *fb_info);
--extern int remove_conflicting_framebuffers(struct apertures_struct *a,
--					   const char *name, bool primary);
- extern int fb_prepare_logo(struct fb_info *fb_info, int rotate);
- extern int fb_show_logo(struct fb_info *fb_info, int rotate);
- extern char* fb_get_buffer_offset(struct fb_info *info, struct fb_pixmap *buf, u32 size);
--- 
-2.36.1
+Anyway, in next revision, I'll convert all to be 'devm_' version.
+For this remove callback, only 'dev_pm_clear_wake_irq' and
+'device_init_wakeup' will be kept.
 
+Is this better?
+
+> > +       tcpci_unregister_port(priv->tcpci);
+> > +       dev_pm_clear_wake_irq(&pdev->dev);
+> > +       device_init_wakeup(&pdev->dev, false);
+> > +
+> > +       return 0;
+> > +}
+> 
+> -- 
+> With Best Regards,
+> Andy Shevchenko

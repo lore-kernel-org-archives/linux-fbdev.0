@@ -2,62 +2,62 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EFE1CCA479
-	for <linux-fbdev@archiver.kernel.org>; Mon, 18 Jul 2022 11:18:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE57FC43334
+	for <linux-fbdev@archiver.kernel.org>; Mon, 18 Jul 2022 11:39:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234466AbiGRLST (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 18 Jul 2022 07:18:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44184 "EHLO
+        id S234507AbiGRLjT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 18 Jul 2022 07:39:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58656 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234213AbiGRLSS (ORCPT
+        with ESMTP id S234469AbiGRLjQ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 18 Jul 2022 07:18:18 -0400
-Received: from mail-qt1-x82f.google.com (mail-qt1-x82f.google.com [IPv6:2607:f8b0:4864:20::82f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B1D2F1180B;
-        Mon, 18 Jul 2022 04:18:17 -0700 (PDT)
-Received: by mail-qt1-x82f.google.com with SMTP id r21so7734860qtn.11;
-        Mon, 18 Jul 2022 04:18:17 -0700 (PDT)
+        Mon, 18 Jul 2022 07:39:16 -0400
+Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5C2292704;
+        Mon, 18 Jul 2022 04:39:13 -0700 (PDT)
+Received: by mail-ed1-x536.google.com with SMTP id m8so1395959edd.9;
+        Mon, 18 Jul 2022 04:39:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=wSoYENXBgH2mwK4hdRwcr5ZngBoL0AeSrBZrHAlbPeQ=;
-        b=qFnFWPwvGVggO9eAAgTTMi5N3kU74UfugZ/F1ND8Dh1XwEYNQq9hleridz+UuErbjp
-         kKXke5m5utIeYESJxdI+Imw1dN7Ky712JivV5EepwVudgfHjmTqzT/4Csy8a5PRWaYcW
-         WT7WNRwPzbR88elpVuCiYFy314nf03iGRthvnSl47bKymr5iw2ISiSCilphKmc3sjDBm
-         wiODnzpQ5ZhUPmt72MGydEbUEk8Tl3V01TfyuGjdP3zZ6dMAa1QHvvhfxlrb1Fhq/iC3
-         p3s1kljCg7uX6D1BpJ/6XC9U0bCN4LfKIpfi4lFkm26bo4VkK/Gcyeu4o/iFLsYdoMKG
-         BZIw==
+        bh=WM+zWzeYAitwMFZLUVsc8lp6MA3Zpo/kJcizrD/8ssk=;
+        b=OvcuKUIjR4uhqpfL8lpsxLQ88mCYxcDOZ5lSaz8YMU5SyNSpWm2LhWIoS9CC+qDuiX
+         DI/fnwo811XGeH4U+R290EOyJleoAHOZMLhaBd4hEdDGJHO0ZVerBEE3gVl6te9BpcT4
+         KyyXCEIlVZI9vzIm3Fjqb3WD+Kz4vqa72ux+kIiV8AtKAdtI87dFPLp0/j+Mpfxof+su
+         lev/A8157qmlXkCgs9+5cRS0ruqiTC3/PHuZcO3JHcb+eMLKX823Z/MyUYWDhywL+lc6
+         ZEQD7h68BhRbIcXy5EQnFOo4JXLrkrtrSYjrBnXa5BTwwYZFNpiLwNcI86j6oai3JcHf
+         Kb7g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=wSoYENXBgH2mwK4hdRwcr5ZngBoL0AeSrBZrHAlbPeQ=;
-        b=nAuIO1vKX1NU9KD9WZt/ADfLuy3A7qszMDimDHxlqaZNKiNBICNqSGdJf+KGlJ5GSN
-         9jh/83KeH8d2xYTZTvRjMNgiuT6YP5YpuhdFtkdRuu9Sr4swdAxdqWrrW0JK5QZOPsmo
-         OX9eHtVoHgHJOffb81gvsfVkCk59WZxOileVjnt59Xn7cMKfm891XfkwdMi4aBhXSSTN
-         byOM2cGxeeECrES+rL/9VCtZuVq5NbQ1h3N0SY8AisBDucOJnGbsTGsqUUZT80Ccb67P
-         siMwC6B2fOCFxGpNVI3O95ngzH1rx8AVT4W3ezP5oLlSSGltmAT4t0YjexC8AoY++Jlu
-         lPcA==
-X-Gm-Message-State: AJIora8nZVdcLVY+wrYat7Q6QmyBIIjKQ98pRxZSPuAJFPFs4Al58ljV
-        DxLHvxVoX5QrxQ3MRFDskLsn1UhrV9EXQMg7Y8M=
-X-Google-Smtp-Source: AGRyM1sDQntCUf7aWlvIzBrAp3ngAMq6sCK0MNxJ0IaoTAwyexPRWMVJcAdASNSTm/k1fe6tXf81WYvadsLxzbGsFLI=
-X-Received: by 2002:ac8:5a8c:0:b0:31d:2826:d14f with SMTP id
- c12-20020ac85a8c000000b0031d2826d14fmr20168056qtc.198.1658143096830; Mon, 18
- Jul 2022 04:18:16 -0700 (PDT)
+        bh=WM+zWzeYAitwMFZLUVsc8lp6MA3Zpo/kJcizrD/8ssk=;
+        b=ZPzABo93bnWSf4CHpIJ+mtevlCaIMyi7sdL5NY4HacH09HwL/vR97GBSlDS+1DG8rV
+         erOe41DsfrcUEupmTUtssvzTrh1gKVWrWy0VFcWJvVKMRSfCcEkkBuQAMn44WF313Y9R
+         arEIWomj3UU/9Ovtv6mkXJoewEKSYBA4AbafY23LQuwrKOyuemF3J6NIBha+d7+Ld/54
+         F6dasTaUobv1LSoXbrt4+9VnLcnQjtNZl3h86Yc3dynIom83ihN96OQTJvXPB/hyXR7c
+         QpcNqr2IeD72plYgLjRyitIL06HvknE1D7W8WYrlYG6JuMcD7NNYZPyEBZODQ7ekPGDh
+         GdGw==
+X-Gm-Message-State: AJIora/VW1UdhFwT2CeR9JblilLwjoIjTf3Bf7NsF//p2OnvnZF/o1EY
+        2XgXIlJJtj44+Fcj+HE7hdoVxBc8a4VUQoJ6dcE=
+X-Google-Smtp-Source: AGRyM1uLSUr+2lvxiCg3cwvu9VMJCLD+uDi8ZOzhv3dgH0XROSPP5YW44n0Pb3saV+i0UvUB6nImoWisC6NYG7PACSY=
+X-Received: by 2002:a05:6402:34c5:b0:43a:8f90:e643 with SMTP id
+ w5-20020a05640234c500b0043a8f90e643mr35599070edc.88.1658144351737; Mon, 18
+ Jul 2022 04:39:11 -0700 (PDT)
 MIME-Version: 1.0
-References: <20220715112607.591-1-peterwu.pub@gmail.com> <20220715112607.591-14-peterwu.pub@gmail.com>
- <ec3bdfb8-0e42-a772-28b1-165811872afa@collabora.com> <20220715162913.5ewxwhv6jtdgt3c2@maple.lan>
- <ee88aec0-f6f8-c554-6752-447cb0f34e16@collabora.com>
-In-Reply-To: <ee88aec0-f6f8-c554-6752-447cb0f34e16@collabora.com>
-From:   ChiaEn Wu <peterwu.pub@gmail.com>
-Date:   Mon, 18 Jul 2022 19:17:40 +0800
-Message-ID: <CABtFH5J3tjx6mLfXkx_MySXdYg3qms09gX0wxpuFQxWpz3gowQ@mail.gmail.com>
-Subject: Re: [PATCH v5 13/13] video: backlight: mt6370: Add MediaTek MT6370 support
-To:     AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+References: <20220715112607.591-1-peterwu.pub@gmail.com> <20220715112607.591-9-peterwu.pub@gmail.com>
+ <CAHp75VdCgdTOu-CdNo9XGY+PrhPh93v_CkAHJC6hkArsKeiXbA@mail.gmail.com> <20220718080831.GA31509@cyhuang-hp-elitebook-840-g3.rt>
+In-Reply-To: <20220718080831.GA31509@cyhuang-hp-elitebook-840-g3.rt>
+From:   Andy Shevchenko <andy.shevchenko@gmail.com>
+Date:   Mon, 18 Jul 2022 13:38:35 +0200
+Message-ID: <CAHp75Ve2_UcS9e3pJC2j4FBc21=S8878tQusyxNV1mXtQG423w@mail.gmail.com>
+Subject: Re: [PATCH v5 08/13] usb: typec: tcpci_mt6370: Add MediaTek MT6370
+ tcpci driver
+To:     ChiYuan Huang <u0084500@gmail.com>
+Cc:     ChiaEn Wu <peterwu.pub@gmail.com>,
         Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
         Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
@@ -74,7 +74,7 @@ Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
         Helge Deller <deller@gmx.de>,
         ChiaEn Wu <chiaen_wu@richtek.com>,
         Alice Chen <alice_chen@richtek.com>,
-        ChiYuan Huang <cy_huang@richtek.com>,
+        cy_huang <cy_huang@richtek.com>,
         dri-devel <dri-devel@lists.freedesktop.org>,
         Linux LED Subsystem <linux-leds@vger.kernel.org>,
         devicetree <devicetree@vger.kernel.org>,
@@ -92,108 +92,84 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Jul 18, 2022 at 4:27 PM AngeloGioacchino Del Regno
-<angelogioacchino.delregno@collabora.com> wrote:
->
+On Mon, Jul 18, 2022 at 10:08 AM ChiYuan Huang <u0084500@gmail.com> wrote:
+> On Fri, Jul 15, 2022 at 03:10:42PM +0200, Andy Shevchenko wrote:
+> > On Fri, Jul 15, 2022 at 1:28 PM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
 
-<snip>
+...
 
-> >>
-> >> Hello ChiaEn,
-> >>
-> >> I propose to move this one to drivers/leds (or drivers/pwm) and, instead of
-> >> registering a backlight device, register a PWM device.
-> >>
-> >> This way you will be able to reuse the generic backlight-pwm driver, as you'd
-> >> be feeding the PWM device exposed by this driver to the generic one: this will
-> >> most importantly make it easy to chain it with MTK_DISP_PWM (mtk-pwm-disp)
-> >> with a devicetree that looks like...
+> > > This commit add support for the Type-C & Power Delivery controller in
 > >
-> > Out of interest, does MT6370 have the same structure for backlights as the prior
-> > systems using mtk-pwm-disp or was mtk-pwm-disp simply a normal(-ish) PWM
-> > that relied on something on the board for all the constant current
-> > driver hardware?
+> > This commit add -> Add
 > >
-> >
->
-> As per my understanding, mtk-pwm-disp is chained to other multimedia features of
-> the display block of MediaTek SoCs, such as the AAL (adaptive ambient light),
-> CABC (content adaptive backlight control) etc, other than being a normal(ish)
-> PWM... that's the reason of my request.
->
-> Moreover, in the end, this PMIC's backlight controller is just a "fancy" PWM
-> controller, with OCP/OVP.
->
-> >>
-> >>      pwmleds-disp {
-> >>              compatible = "pwm-leds";
-> >>
-> >>              disp_led: disp-pwm {
-> >>                      label = "backlight-pwm";
-> >>                      pwms = <&pwm0 0 500000>;
-> >>                      max-brightness = <1024>;
-> >>              };
-> >>      };
-> >>
-> >>      backlight_lcd0: backlight {
-> >>              compatible = "led-backlight";
-> >>              leds = <&disp_led>, <&pmic_bl_led>;
-> >>              default-brightness-level = <300>;
-> >>      };
-> >
-> > I think this proposal has to start with the devicetree bindings rather
-> > than the driver. Instead I think the question is: does this proposal
-> > result in DT bindings that better describe the underlying hardware?
-> >
->
->  From how I understand it - yes: we have a fancy PWM (&pwm0) that we use
-> to control display backlight (backlight-pwm)...
->
-> Obviously, here we're not talking about OLEDs, but LCDs, where the backlight
-> is made of multiple strings of WhiteLED (effectively, a "pwm-leds" controlled
-> "led-backlight").
->
-> Using PWM will also allow for a little more fine-grained board specific
-> configuration, as I think that this PMIC (and/or variants of it) will be
-> used in completely different form factors: I think that's going to be both
-> smartphones and tablets/laptops... and I want to avoid vendor properties
-> to configure the PWM part in a somehow different way.
->
-> > This device has lots of backlight centric features (OCP, OVP, single
-> > control with multiple outputs, exponential curves, etc) and its not
-> > clear where they would fit into the "PWM" bindings.
-> >
->
-> For OCP and OVP, the only bindings that fit would be regulators, but that's
-> not a regulator... and that's about it - I don't really have arguments for
-> that.
->
-> What I really want to see here is usage of "generic" drivers like led_bl
-> and/or pwm_bl as to get some "standardization" around with all the benefits
-> that this carries.
->
-> > Come to think of it I'm also a little worried also about the whole linear
-> > versus exponential curve thing since I thought LED drivers were required
-> > to use exponential curves.
-> >
->
-> That probably depends on how the controller interprets the data, I guess,
-> but I agree with you on this thought.
+> Upper case? Or rewrite it as 'This commit is to add .....'?
 
-Hi Angelo,
+Please, read this documentation [1] for better understanding. It
+should clarify this and perhaps other possible questions.
 
-MT6370 is just a SubPMIC, not an SoC, and is applied in cellular
-telephones, tablet PCs, and portable instruments.
-And the PWM mode of the MT6370 backlight driver is optional, and not
-must be enabled.
-From our perspective, this MT6370 backlight driver is not the same as
-mtk-pwm-disp related driver.
-Thanks!
+[1]: https://www.kernel.org/doc/html/latest/process/submitting-patches.html#describe-your-changes
 
+> > > MediaTek MT6370 IC.
+
+...
+
+> > > +       ret = devm_request_threaded_irq(dev, priv->irq, NULL,
+> > > +                                       mt6370_irq_handler, IRQF_ONESHOT,
+> > > +                                       dev_name(dev), priv);
+> > > +       if (ret) {
+> >
+> > > +               tcpci_unregister_port(priv->tcpci);
+> >
+> > This is wrong.
+> > You mixed devm_ with non-devm. Either drop devm_ *after* the first
+> > non-devm_ call, or convert everything to be managed.
+> >
+> How about to add 'devm_add_action_or_reset' for tcpci_unregister_port?
+> This will convert all as 'devm_' version.
+
+I think it would work, that wrapper was designed to cover cases like this.
+
+> > > +               return dev_err_probe(dev, ret, "Failed to allocate irq\n");
+> > > +       }
+
+...
+
+> > > +static int mt6370_tcpc_remove(struct platform_device *pdev)
+> > > +{
+> > > +       struct mt6370_priv *priv = platform_get_drvdata(pdev);
+> >
+> > > +       disable_irq(priv->irq);
+> >
+> > Why?
+> > An ugly workaround due to ordering issues in ->probe()?
+> >
+> Yes, due to the ordering in probe.
+> 'bus remove' will be called before device resource releases.
 >
-> Regards,
-> Angelo
+> Like as you said, another way is to convert all as non-devm
+> version after 'tcpci_unregister_port'.
+>
+> If to keep the original order, 'disable_irq' before
+> 'tcpci_unregister_port' can make the flow more safe.
+>
+> Or you can think one case if irq triggers after
+> 'tcpci_unregister_port'. Null pointer occurs.
+>
+> Anyway, in next revision, I'll convert all to be 'devm_' version.
+> For this remove callback, only 'dev_pm_clear_wake_irq' and
+> 'device_init_wakeup' will be kept.
+>
+> Is this better?
+
+Sounds like a plan!
+
+> > > +       tcpci_unregister_port(priv->tcpci);
+> > > +       dev_pm_clear_wake_irq(&pdev->dev);
+> > > +       device_init_wakeup(&pdev->dev, false);
+> > > +
+> > > +       return 0;
+> > > +}
 
 -- 
-Best Regards,
-ChiaEn Wu
+With Best Regards,
+Andy Shevchenko

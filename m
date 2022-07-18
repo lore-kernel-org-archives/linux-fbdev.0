@@ -2,222 +2,135 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61AAAC43334
-	for <linux-fbdev@archiver.kernel.org>; Mon, 18 Jul 2022 20:21:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13DFDCCA479
+	for <linux-fbdev@archiver.kernel.org>; Mon, 18 Jul 2022 22:00:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234995AbiGRUVR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 18 Jul 2022 16:21:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60782 "EHLO
+        id S236384AbiGRWAS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 18 Jul 2022 18:00:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47240 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231248AbiGRUVR (ORCPT
+        with ESMTP id S234452AbiGRWAR (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 18 Jul 2022 16:21:17 -0400
-Received: from mail-il1-f179.google.com (mail-il1-f179.google.com [209.85.166.179])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 95EBE3056D;
-        Mon, 18 Jul 2022 13:21:16 -0700 (PDT)
-Received: by mail-il1-f179.google.com with SMTP id w9so3123178ilg.1;
-        Mon, 18 Jul 2022 13:21:16 -0700 (PDT)
+        Mon, 18 Jul 2022 18:00:17 -0400
+Received: from mail-io1-f46.google.com (mail-io1-f46.google.com [209.85.166.46])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B5C030569;
+        Mon, 18 Jul 2022 15:00:16 -0700 (PDT)
+Received: by mail-io1-f46.google.com with SMTP id r70so9298051iod.10;
+        Mon, 18 Jul 2022 15:00:16 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=ynxFYeVYReMscKRbp1PGFWnDnfPfj0JbfYGgEj9QMa8=;
-        b=J+vrUYpQeZ/Cy0gkMY17/5bzKV7eaujoyI9bq2GFe+voqTqdoTeGpJocLQvNFZ7vQ0
-         ILgJA/GMVZHQOY92cHK/hcMmCiL+wpXnl1v24Sssfll6zfyATPLWenyP4aqq7hwtCwON
-         2pSXqoNTbEmK+vveBJXTZOXN0KFXWwV4sa5KkbDRLVopgUbQ5bD/6fI2cvTj/Dgqe4/x
-         C6soF3U6g/rPwJpbcQxVAlrF6Wg7D6PfA5EBNpI4FOSnFSI+y1MdDEBr9r2UrgEndjxp
-         CrUdvSNikdymQSZ/uBMvLa7ewD2kGrpVqHR+jI+miFOhilUVI1CD2Hb6sYdBCn/toF5g
-         PhRQ==
-X-Gm-Message-State: AJIora9d0irJ4GNdAWm43m/ikP0Zq1iOmJ6RIzAZNMAIDupkGQKvadve
-        8vQSOddRd5aflZ6qM7pmDw==
-X-Google-Smtp-Source: AGRyM1vaDDDUOeHt3lurvR3J3lSRNZ44pNwdJGSHidBa5vaIG068vrI+0SSo+eDbXIHdcLNloTdksA==
-X-Received: by 2002:a05:6e02:1688:b0:2dc:822e:7c63 with SMTP id f8-20020a056e02168800b002dc822e7c63mr14459068ila.205.1658175675865;
-        Mon, 18 Jul 2022 13:21:15 -0700 (PDT)
+        bh=gIUyF/ORGQjWXNvT5wIOVjajXgGpEkbk6f/tl0gQiac=;
+        b=di179KuRgOE3ptTOBICiYzoBzUoVyGF9NcDnAWKlJ34a3iqCe93L5MVLhfVGXDplcv
+         jQiviGqfADQCBsd5sNR40P5VXco+51oEP7/l96m1RWCCRhvC6M4EJp60E3uNtao9B+wA
+         x65ZBP19n3zU5x2ku2rO0vHRWJd//IdeBb6Odeorc3dzLOP1i8JFSl5KCEbYAa8czmMZ
+         t2Pt/NHUL1093wk95oHAtugkFByX8iqJYjCfByFFdFP391ICgCqViiWt/luytfTdvwIA
+         7aA7YU6oiuAs4D0vk1UJzSuBXR8wZeBDEKnoLBX8UqyS3AkBqN+W1Am8cYRLypIS5U+N
+         /eEg==
+X-Gm-Message-State: AJIora9SqI/5In3vPbAFmo+b4Tg8RGwirBzBn56cCvKA9YK3Qhv3XvmD
+        aUO4Y10dPA3w5NioUtw+xg==
+X-Google-Smtp-Source: AGRyM1sUfx9PknCBXVyopJZHm5bZnR/LgT1hX56ktRZLDXFdm584csRgriFVCGgWxWMs/6JjxIxhVA==
+X-Received: by 2002:a05:6602:2b84:b0:67b:d178:38bb with SMTP id r4-20020a0566022b8400b0067bd17838bbmr11138408iov.120.1658181615882;
+        Mon, 18 Jul 2022 15:00:15 -0700 (PDT)
 Received: from robh.at.kernel.org ([64.188.179.248])
-        by smtp.gmail.com with ESMTPSA id d190-20020a6bb4c7000000b0066961821575sm6327392iof.34.2022.07.18.13.21.10
+        by smtp.gmail.com with ESMTPSA id 7-20020a921307000000b002dcafb975c6sm5175816ilt.82.2022.07.18.15.00.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 Jul 2022 13:21:14 -0700 (PDT)
-Received: (nullmailer pid 3481625 invoked by uid 1000);
-        Mon, 18 Jul 2022 20:21:09 -0000
-Date:   Mon, 18 Jul 2022 14:21:09 -0600
+        Mon, 18 Jul 2022 15:00:15 -0700 (PDT)
+Received: (nullmailer pid 3640548 invoked by uid 1000);
+        Mon, 18 Jul 2022 22:00:12 -0000
+Date:   Mon, 18 Jul 2022 16:00:12 -0600
 From:   Rob Herring <robh@kernel.org>
-To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>
-Cc:     chunkuang.hu@kernel.org, p.zabel@pengutronix.de, daniel@ffwll.ch,
-        krzysztof.kozlowski+dt@linaro.org, mripard@kernel.org,
-        tzimmermann@suse.de, matthias.bgg@gmail.com, deller@gmx.de,
-        airlied@linux.ie, msp@baylibre.com, granquet@baylibre.com,
-        jitao.shi@mediatek.com, wenst@chromium.org,
-        angelogioacchino.delregno@collabora.com, ck.hu@mediatek.com,
-        liangxu.xu@mediatek.com, dri-devel@lists.freedesktop.org,
-        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-fbdev@vger.kernel.org,
-        Project_Global_Chrome_Upstream_Group@mediatek.com
-Subject: Re: [PATCH v14 01/10] dt-bindings: mediatek,dp: Add Display Port
- binding
-Message-ID: <20220718202109.GA3465206-robh@kernel.org>
-References: <20220712111223.13080-1-rex-bc.chen@mediatek.com>
- <20220712111223.13080-2-rex-bc.chen@mediatek.com>
+To:     Jonathan Cameron <jic23@kernel.org>
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Michael Hennerich <Michael.Hennerich@analog.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Alexandru Tachici <alexandru.tachici@analog.com>,
+        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
+        Marcus Folkesson <marcus.folkesson@gmail.com>,
+        Kent Gustavsson <kent@minoris.se>,
+        Tomislav Denis <tomislav.denis@avl.com>,
+        Stefan Popa <stefan.popa@analog.com>,
+        Beniamin Bia <beniamin.bia@analog.com>,
+        Patrick Vasseur <patrick.vasseur@c-s.fr>,
+        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Philippe Reynes <tremyfr@yahoo.fr>,
+        Jacopo Mondi <jacopo@jmondi.org>,
+        Akinobu Mita <akinobu.mita@gmail.com>,
+        Alexandru Lazar <alazar@startmail.com>,
+        Oskar Andero <oskar.andero@gmail.com>,
+        =?UTF-8?Q?M=C3=A5rten_Lindahl?= <martenli@axis.com>,
+        Bogdan Pricop <bogdan.pricop@emutex.com>,
+        Angelo Compagnucci <angelo.compagnucci@gmail.com>,
+        Dan Murphy <dmurphy@ti.com>, linux-iio@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, linux-spi@vger.kernel.org,
+        Mark Brown <broonie@kernel.org>
+Subject: Re: [RFC PATCH] dt-bindings: iio: adc: use spi-peripheral-props.yaml
+Message-ID: <20220718220012.GA3625497-robh@kernel.org>
+References: <20220715095302.214276-1-krzysztof.kozlowski@linaro.org>
+ <20220716192604.21a1d835@jic23-huawei>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220712111223.13080-2-rex-bc.chen@mediatek.com>
+In-Reply-To: <20220716192604.21a1d835@jic23-huawei>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Jul 12, 2022 at 07:12:14PM +0800, Bo-Chen Chen wrote:
-> From: Markus Schneider-Pargmann <msp@baylibre.com>
+On Sat, Jul 16, 2022 at 07:26:04PM +0100, Jonathan Cameron wrote:
+> On Fri, 15 Jul 2022 11:53:02 +0200
+> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
 > 
-> This controller is present on several mediatek hardware. Currently
-> mt8195 and mt8395 have this controller without a functional difference,
-> so only one compatible field is added.
+> > Instead of listing directly properties typical for SPI peripherals,
+> > reference the spi-peripheral-props.yaml schema.  This allows using all
+> > properties typical for SPI-connected devices, even these which device
+> > bindings author did not tried yet.
+> > 
+> > Remove the spi-* properties which now come via spi-peripheral-props.yaml
+> > schema, except for the cases when device schema adds some constraints
+> > like maximum frequency.
+> > 
+> > Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> > 
+> > ---
+> > 
+> > This is an RFC with only some files changed, as I am still not sure of
+> > benefits for typical case - device node has just spi-max-frequency and
+> > nothing more.  I still find useful to reference the schema, but maybe I
+> > am missing something?
+> > 
+> > Before doing wide-tree cleanup like this, I would be happy to receive
+> > some feedback whether this makes sense.
 > 
-> The controller can have two forms, as a normal display port and as an
-> embedded display port.
+> Hi Krzysztof,
 > 
-> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
-> ---
->  .../display/mediatek/mediatek,dp.yaml         | 115 ++++++++++++++++++
->  1 file changed, 115 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+> This has the side effect of allowing spi-cpol / spi-cpha for devices
+> where they weren't previously allowed by the binding.  A typical device
+> only supports a subset of combinations of those.
 > 
-> diff --git a/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
-> new file mode 100644
-> index 000000000000..e2d6cb314297
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
-> @@ -0,0 +1,115 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/display/mediatek/mediatek,dp.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: MediaTek Display Port Controller
-> +
-> +maintainers:
-> +  - Chun-Kuang Hu <chunkuang.hu@kernel.org>
-> +  - Jitao shi <jitao.shi@mediatek.com>
-> +
-> +description: |
-> +  Device tree bindings for the MediaTek display port TX (DP) and
-> +  embedded display port TX (eDP) controller present on some MediaTek SoCs.
-> +  MediaTek DP and eDP are different hardwares and they have different
-> +  base address for registers, so we need two different compatibles to
-> +  separate them.
+> I'm not clear whether these should always be allowed (e.g. allow for inverters
+> etc in the path) or whether we should be enforcing the "correct"
+> settings for devices assuming they are directly connected.
+> 
+> Currently we have a bunch of bindings that are documenting the allowed
+> flexibility - including cases where only particular combinations of these
+> settings are allowed.
+> 
+> So we could either:
+> 1) Note that we've been doing it wrong and the binding should not enforce
+>    these constraints so remove them.
 
-As I said before, 'different base address for registers' is not a reason 
-for different compatibles. If it was, then we'd never have a compatible 
-string appear more than once in a DT.
+I'd lean towards this.
 
-Explain WHAT is different within the block. For example[1].
+> 2) Add explicit spi-cpol: false statements etc the drivers where they
+>    are not allowed.
+
+3) Drop spi-cpol / spi-cpha from spi-peripheral-props.yaml. It's purpose 
+is to collect all possible SPI controller properties that are per child 
+node. Whereas we've said spi-cpol / spi-cpha are device specific 
+properties.
 
 Rob
-
-[1] https://lore.kernel.org/all/20220710084133.30976-10-dmitry.baryshkov@linaro.org/
-
-
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - mediatek,mt8195-dp-tx
-> +      - mediatek,mt8195-edp-tx
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  nvmem-cells:
-> +    maxItems: 1
-> +    description: efuse data for display port calibration
-> +
-> +  nvmem-cell-names:
-> +    const: dp_calibration_data
-> +
-> +  power-domains:
-> +    maxItems: 1
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +
-> +  ports:
-> +    $ref: /schemas/graph.yaml#/properties/ports
-> +    properties:
-> +      port@0:
-> +        $ref: /schemas/graph.yaml#/properties/port
-> +        description: Input endpoint of the controller, usually dp_intf
-> +
-> +      port@1:
-> +        $ref: /schemas/graph.yaml#/$defs/port-base
-> +        unevaluatedProperties: false
-> +        description: Output endpoint of the controller
-> +        properties:
-> +          endpoint:
-> +            $ref: /schemas/media/video-interfaces.yaml#
-> +            unevaluatedProperties: false
-> +            properties:
-> +              data-lanes:
-> +                description: |
-> +                  number of lanes supported by the hardware.
-> +                  The possible values:
-> +                  0       - For 1 lane enabled in IP.
-> +                  0 1     - For 2 lanes enabled in IP.
-> +                  0 1 2 3 - For 4 lanes enabled in IP.
-> +                minItems: 1
-> +                maxItems: 4
-> +            required:
-> +              - data-lanes
-> +
-> +    required:
-> +      - port@0
-> +      - port@1
-> +
-> +  max-linkrate-mhz:
-> +    enum: [ 1620, 2700, 5400, 8100 ]
-> +    description: maximum link rate supported by the hardware.
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - interrupts
-> +  - ports
-> +  - max-linkrate-mhz
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +    #include <dt-bindings/power/mt8195-power.h>
-> +    dp_tx@1c600000 {
-> +        compatible = "mediatek,mt8195-dp-tx";
-> +        reg = <0x1c600000 0x8000>;
-> +        power-domains = <&spm MT8195_POWER_DOMAIN_DP_TX>;
-> +        interrupts = <GIC_SPI 458 IRQ_TYPE_LEVEL_HIGH 0>;
-> +        max-linkrate-mhz = <8100>;
-> +
-> +        ports {
-> +            #address-cells = <1>;
-> +            #size-cells = <0>;
-> +
-> +            port@0 {
-> +                reg = <0>;
-> +                dptx_in: endpoint {
-> +                    remote-endpoint = <&dp_intf0_out>;
-> +                };
-> +            };
-> +            port@1 {
-> +                reg = <1>;
-> +                dptx_out: endpoint {
-> +                    data-lanes = <0 1 2 3>;
-> +                };
-> +            };
-> +        };
-> +    };
-> -- 
-> 2.18.0
-> 
-> 

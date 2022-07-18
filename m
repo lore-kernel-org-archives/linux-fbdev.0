@@ -2,62 +2,62 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71D80CCA479
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 319E7CCA482
 	for <linux-fbdev@archiver.kernel.org>; Mon, 18 Jul 2022 07:23:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233835AbiGRHXd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S233845AbiGRHXd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Mon, 18 Jul 2022 03:23:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52722 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52718 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233837AbiGRHXb (ORCPT
+        with ESMTP id S233835AbiGRHXb (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Mon, 18 Jul 2022 03:23:31 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B6C8718355
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 20681639C
         for <linux-fbdev@vger.kernel.org>; Mon, 18 Jul 2022 00:23:28 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 0F1BE345B2;
+        by smtp-out2.suse.de (Postfix) with ESMTPS id A110F20BCB;
         Mon, 18 Jul 2022 07:23:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
         t=1658129006; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=5YRJWgsLf5bxlxFvvw6v/IVmqP4/H0pgLpxEAMWr/3c=;
-        b=wpOcFjmSI1FaZW8ktVT3anEPyZGNt2jNZrLOllVSti1BT29NnG/4IQVAEubgK390yz25vm
-        rxwbPYIewY1KVu2eKhk5RpvE9qg2rbegqPFEKIQgNdCFXQaj6n4SOQ89+jihSbU81MizlA
-        +NlBHJ/ucg2vR+/mW0tX9d71ZIYWJr0=
+        bh=TG3XPL0M7DyWCFkvNitjMXyrbtUbfts6ucaaQ471cmA=;
+        b=Z2CrwNP22d20BNXQb8ET3KG4dfRRbClxG6ErA+5w6oidB7Cl5TRilXTzZlYEYSdlwDRPhe
+        NU7iu9jWnVmL1e0fhTB/G4xFtySWmjdNpdB9JI+gh8IpaThRJ/Jgn9cmr2hg+ktCbyEgHs
+        OTrhfKBaAiW9VCfToOtuu0JFz2hCQ8g=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
         s=susede2_ed25519; t=1658129006;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=5YRJWgsLf5bxlxFvvw6v/IVmqP4/H0pgLpxEAMWr/3c=;
-        b=Tqk6BzydFZVYLBNUu6yvQ+KXFFJoBZGWWyHKL9Qrbvpc1EjfbgTTQLVhWA8KpSB7+KlQEW
-        n7aFRv+/gWyHwvBQ==
+        bh=TG3XPL0M7DyWCFkvNitjMXyrbtUbfts6ucaaQ471cmA=;
+        b=FFI+wWbETN1aNCl6ChysTzV14T0lNXn6nGkpOTBQsQHUAyU4GOk8YQELkloSVtC46tlQPu
+        wLwg7PQ6Kx5dDpAQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D515713A37;
-        Mon, 18 Jul 2022 07:23:25 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 7203A13A37;
+        Mon, 18 Jul 2022 07:23:26 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id yPc5M20K1WKjcAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 18 Jul 2022 07:23:25 +0000
+        id WOMNG24K1WKjcAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 18 Jul 2022 07:23:26 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     javierm@redhat.com, deller@gmx.de, daniel@ffwll.ch,
         sam@ravnborg.org, maxime@cerno.tech
 Cc:     linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
         dri-devel@lists.freedesktop.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 08/11] video: Provide constants for VGA I/O range
-Date:   Mon, 18 Jul 2022 09:23:19 +0200
-Message-Id: <20220718072322.8927-9-tzimmermann@suse.de>
+Subject: [PATCH v2 11/11] fbdev: Remove conflict-handling code
+Date:   Mon, 18 Jul 2022 09:23:22 +0200
+Message-Id: <20220718072322.8927-12-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.36.1
 In-Reply-To: <20220718072322.8927-1-tzimmermann@suse.de>
 References: <20220718072322.8927-1-tzimmermann@suse.de>
@@ -67,110 +67,248 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Provide VGA_FB_ constants for the VGA framebuffer I/O range and convert
-fbdev code. In the case of vga16fb, this is a rename of the existing
-constants VGA_FB_PHYS and VGA_FB_PHYS_LEN.
+Remove the call to do_remove_conflicting_framebuffers() from the
+framebuffer registration. Aperture helpers take care of removing
+conflicting devices. With all ownership information stored in the
+aperture datastrcutures, remove remove_conflicting_framebuffers()
+entirely.
+
+This change also rectifies DRM generic-framebuffer registration, which
+tried to unregister conflicting framebuffers, even though it's entirely
+build on top of DRM.
 
 v2:
-	* clarify relationship with old constants in vga16fb (Javier)
+	* remove internal aperture-overlap helpers, which are
+	  now unused
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/video/fbdev/core/fbmem.c |  4 ++--
- drivers/video/fbdev/vga16fb.c    | 15 ++++++---------
- include/video/vga.h              |  2 ++
- 3 files changed, 10 insertions(+), 11 deletions(-)
+ drivers/video/aperture.c         |  21 -----
+ drivers/video/fbdev/core/fbmem.c | 136 -------------------------------
+ include/linux/fb.h               |   2 -
+ 3 files changed, 159 deletions(-)
 
+diff --git a/drivers/video/aperture.c b/drivers/video/aperture.c
+index abc691284a77..9e6bcc03a1a4 100644
+--- a/drivers/video/aperture.c
++++ b/drivers/video/aperture.c
+@@ -2,7 +2,6 @@
+ 
+ #include <linux/aperture.h>
+ #include <linux/device.h>
+-#include <linux/fb.h> /* for old fbdev helpers */
+ #include <linux/list.h>
+ #include <linux/mutex.h>
+ #include <linux/pci.h>
+@@ -286,11 +285,6 @@ static void aperture_detach_devices(resource_size_t base, resource_size_t size)
+ int aperture_remove_conflicting_devices(resource_size_t base, resource_size_t size,
+ 					bool primary, const char *name)
+ {
+-#if IS_REACHABLE(CONFIG_FB)
+-	struct apertures_struct *a;
+-	int ret;
+-#endif
+-
+ 	/*
+ 	 * If a driver asked to unregister a platform device registered by
+ 	 * sysfb, then can be assumed that this is a driver for a display
+@@ -312,21 +306,6 @@ int aperture_remove_conflicting_devices(resource_size_t base, resource_size_t si
+ 	if (primary)
+ 		aperture_detach_devices(VGA_FB_PHYS_BASE, VGA_FB_PHYS_SIZE);
+ 
+-#if IS_REACHABLE(CONFIG_FB)
+-	a = alloc_apertures(1);
+-	if (!a)
+-		return -ENOMEM;
+-
+-	a->ranges[0].base = base;
+-	a->ranges[0].size = size;
+-
+-	ret = remove_conflicting_framebuffers(a, name, primary);
+-	kfree(a);
+-
+-	if (ret)
+-		return ret;
+-#endif
+-
+ 	return 0;
+ }
+ EXPORT_SYMBOL(aperture_remove_conflicting_devices);
 diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 3ee3ea018245..2237049327db 100644
+index 928a8afcc5a1..c80305d34dae 100644
 --- a/drivers/video/fbdev/core/fbmem.c
 +++ b/drivers/video/fbdev/core/fbmem.c
-@@ -39,6 +39,7 @@
+@@ -1514,102 +1514,6 @@ static int fb_check_foreignness(struct fb_info *fi)
+ 	return 0;
+ }
  
- #include <asm/fb.h>
- 
-+#include <video/vga.h>
- 
-     /*
-      *  Frame buffer device initialization and setup routines
-@@ -1549,7 +1550,6 @@ static bool fb_do_apertures_overlap(struct apertures_struct *gena,
- 
- static void do_unregister_framebuffer(struct fb_info *fb_info);
- 
--#define VGA_FB_PHYS 0xA0000
- static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
- 					       const char *name, bool primary)
- {
-@@ -1568,7 +1568,7 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
- 		device = registered_fb[i]->device;
- 		if (fb_do_apertures_overlap(gen_aper, a) ||
- 			(primary && gen_aper && gen_aper->count &&
--			 gen_aper->ranges[0].base == VGA_FB_PHYS)) {
-+			 gen_aper->ranges[0].base == VGA_FB_PHYS_BASE)) {
- 
- 			printk(KERN_INFO "fb%d: switching to %s from %s\n",
- 			       i, name, registered_fb[i]->fix.id);
-diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
-index 3312b6a4e00d..35cf51ae3292 100644
---- a/drivers/video/fbdev/vga16fb.c
-+++ b/drivers/video/fbdev/vga16fb.c
-@@ -25,9 +25,6 @@
- #include <asm/io.h>
- #include <video/vga.h>
- 
--#define VGA_FB_PHYS 0xA0000
--#define VGA_FB_PHYS_LEN 65536
+-static bool apertures_overlap(struct aperture *gen, struct aperture *hw)
+-{
+-	/* is the generic aperture base the same as the HW one */
+-	if (gen->base == hw->base)
+-		return true;
+-	/* is the generic aperture base inside the hw base->hw base+size */
+-	if (gen->base > hw->base && gen->base < hw->base + hw->size)
+-		return true;
+-	return false;
+-}
 -
- #define MODE_SKIP4	1
- #define MODE_8BPP	2
- #define MODE_CFB	4
-@@ -87,8 +84,8 @@ static struct fb_var_screeninfo vga16fb_defined = {
- /* name should not depend on EGA/VGA */
- static const struct fb_fix_screeninfo vga16fb_fix = {
- 	.id		= "VGA16 VGA",
--	.smem_start	= VGA_FB_PHYS,
--	.smem_len	= VGA_FB_PHYS_LEN,
-+	.smem_start	= VGA_FB_PHYS_BASE,
-+	.smem_len	= VGA_FB_PHYS_SIZE,
- 	.type		= FB_TYPE_VGA_PLANES,
- 	.type_aux	= FB_AUX_VGA_PLANES_VGA4,
- 	.visual		= FB_VISUAL_PSEUDOCOLOR,
-@@ -1333,8 +1330,8 @@ static int vga16fb_probe(struct platform_device *dev)
- 		goto err_ioremap;
- 	}
+-static bool fb_do_apertures_overlap(struct apertures_struct *gena,
+-				    struct apertures_struct *hwa)
+-{
+-	int i, j;
+-	if (!hwa || !gena)
+-		return false;
+-
+-	for (i = 0; i < hwa->count; ++i) {
+-		struct aperture *h = &hwa->ranges[i];
+-		for (j = 0; j < gena->count; ++j) {
+-			struct aperture *g = &gena->ranges[j];
+-			printk(KERN_DEBUG "checking generic (%llx %llx) vs hw (%llx %llx)\n",
+-				(unsigned long long)g->base,
+-				(unsigned long long)g->size,
+-				(unsigned long long)h->base,
+-				(unsigned long long)h->size);
+-			if (apertures_overlap(g, h))
+-				return true;
+-		}
+-	}
+-
+-	return false;
+-}
+-
+-static void do_unregister_framebuffer(struct fb_info *fb_info);
+-
+-static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
+-					       const char *name, bool primary)
+-{
+-	int i;
+-
+-restart_removal:
+-	/* check all firmware fbs and kick off if the base addr overlaps */
+-	for_each_registered_fb(i) {
+-		struct apertures_struct *gen_aper;
+-		struct device *device;
+-
+-		if (!(registered_fb[i]->flags & FBINFO_MISC_FIRMWARE))
+-			continue;
+-
+-		gen_aper = registered_fb[i]->apertures;
+-		device = registered_fb[i]->device;
+-		if (fb_do_apertures_overlap(gen_aper, a) ||
+-			(primary && gen_aper && gen_aper->count &&
+-			 gen_aper->ranges[0].base == VGA_FB_PHYS_BASE)) {
+-
+-			printk(KERN_INFO "fb%d: switching to %s from %s\n",
+-			       i, name, registered_fb[i]->fix.id);
+-
+-			/*
+-			 * If we kick-out a firmware driver, we also want to remove
+-			 * the underlying platform device, such as simple-framebuffer,
+-			 * VESA, EFI, etc. A native driver will then be able to
+-			 * allocate the memory range.
+-			 *
+-			 * If it's not a platform device, at least print a warning. A
+-			 * fix would add code to remove the device from the system. For
+-			 * framebuffers without any Linux device, print a warning as
+-			 * well.
+-			 */
+-			if (!device) {
+-				pr_warn("fb%d: no device set\n", i);
+-				do_unregister_framebuffer(registered_fb[i]);
+-			} else if (dev_is_platform(device)) {
+-				/*
+-				 * Drop the lock because if the device is unregistered, its
+-				 * driver will call to unregister_framebuffer(), that takes
+-				 * this lock.
+-				 */
+-				mutex_unlock(&registration_lock);
+-				platform_device_unregister(to_platform_device(device));
+-				mutex_lock(&registration_lock);
+-			} else {
+-				pr_warn("fb%d: cannot remove device\n", i);
+-				do_unregister_framebuffer(registered_fb[i]);
+-			}
+-			/*
+-			 * Restart the removal loop now that the device has been
+-			 * unregistered and its associated framebuffer gone.
+-			 */
+-			goto restart_removal;
+-		}
+-	}
+-}
+-
+ static int do_register_framebuffer(struct fb_info *fb_info)
+ {
+ 	int i;
+@@ -1618,10 +1522,6 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+ 	if (fb_check_foreignness(fb_info))
+ 		return -ENOSYS;
  
--	/* XXX share VGA_FB_PHYS and I/O region with vgacon and others */
--	info->screen_base = (void __iomem *)VGA_MAP_MEM(VGA_FB_PHYS, 0);
-+	/* XXX share VGA_FB_PHYS_BASE and I/O region with vgacon and others */
-+	info->screen_base = (void __iomem *)VGA_MAP_MEM(VGA_FB_PHYS_BASE, 0);
+-	do_remove_conflicting_framebuffers(fb_info->apertures,
+-					   fb_info->fix.id,
+-					   fb_is_primary_device(fb_info));
+-
+ 	if (num_registered_fb == FB_MAX)
+ 		return -ENXIO;
  
- 	if (!info->screen_base) {
- 		printk(KERN_ERR "vga16fb: unable to map device\n");
-@@ -1385,8 +1382,8 @@ static int vga16fb_probe(struct platform_device *dev)
+@@ -1766,42 +1666,6 @@ static int fb_aperture_acquire_for_platform_device(struct fb_info *fb_info)
+ 	return ret;
+ }
  
- 	vga16fb_update_fix(info);
- 
--	info->apertures->ranges[0].base = VGA_FB_PHYS;
--	info->apertures->ranges[0].size = VGA_FB_PHYS_LEN;
-+	info->apertures->ranges[0].base = VGA_FB_PHYS_BASE;
-+	info->apertures->ranges[0].size = VGA_FB_PHYS_SIZE;
- 
- 	if (register_framebuffer(info) < 0) {
- 		printk(KERN_ERR "vga16fb: unable to register framebuffer\n");
-diff --git a/include/video/vga.h b/include/video/vga.h
-index ef8e9fa9b9bd..947c0abd04ef 100644
---- a/include/video/vga.h
-+++ b/include/video/vga.h
-@@ -22,6 +22,8 @@
- #include <asm/vga.h>
- #include <asm/byteorder.h>
- 
-+#define VGA_FB_PHYS_BASE	0xA0000 /* VGA framebuffer I/O base */
-+#define VGA_FB_PHYS_SIZE	65536	/* VGA framebuffer I/O size */
- 
- /* Some of the code below is taken from SVGAlib.  The original,
-    unmodified copyright notice for that code is below. */
+-/**
+- * remove_conflicting_framebuffers - remove firmware-configured framebuffers
+- * @a: memory range, users of which are to be removed
+- * @name: requesting driver name
+- * @primary: also kick vga16fb if present
+- *
+- * This function removes framebuffer devices (initialized by firmware/bootloader)
+- * which use memory range described by @a. If @a is NULL all such devices are
+- * removed.
+- */
+-int remove_conflicting_framebuffers(struct apertures_struct *a,
+-				    const char *name, bool primary)
+-{
+-	bool do_free = false;
+-
+-	if (!a) {
+-		a = alloc_apertures(1);
+-		if (!a)
+-			return -ENOMEM;
+-
+-		a->ranges[0].base = 0;
+-		a->ranges[0].size = ~0;
+-		do_free = true;
+-	}
+-
+-	mutex_lock(&registration_lock);
+-	do_remove_conflicting_framebuffers(a, name, primary);
+-	mutex_unlock(&registration_lock);
+-
+-	if (do_free)
+-		kfree(a);
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL(remove_conflicting_framebuffers);
+-
+ /**
+  *	register_framebuffer - registers a frame buffer device
+  *	@fb_info: frame buffer info structure
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index b91c77016560..453c3b2b6b8e 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -615,8 +615,6 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
+ /* drivers/video/fbmem.c */
+ extern int register_framebuffer(struct fb_info *fb_info);
+ extern void unregister_framebuffer(struct fb_info *fb_info);
+-extern int remove_conflicting_framebuffers(struct apertures_struct *a,
+-					   const char *name, bool primary);
+ extern int fb_prepare_logo(struct fb_info *fb_info, int rotate);
+ extern int fb_show_logo(struct fb_info *fb_info, int rotate);
+ extern char* fb_get_buffer_offset(struct fb_info *info, struct fb_pixmap *buf, u32 size);
 -- 
 2.36.1
 

@@ -2,108 +2,163 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55B75C43334
-	for <linux-fbdev@archiver.kernel.org>; Sun, 17 Jul 2022 23:02:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E35CC43334
+	for <linux-fbdev@archiver.kernel.org>; Mon, 18 Jul 2022 07:23:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232759AbiGQXCn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 17 Jul 2022 19:02:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59296 "EHLO
+        id S233829AbiGRHX1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 18 Jul 2022 03:23:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52586 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229535AbiGQXCn (ORCPT
+        with ESMTP id S233822AbiGRHX1 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 17 Jul 2022 19:02:43 -0400
-Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9260312618;
-        Sun, 17 Jul 2022 16:02:42 -0700 (PDT)
-Received: by mail-pj1-x102a.google.com with SMTP id p9so10196109pjd.3;
-        Sun, 17 Jul 2022 16:02:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=9duI1rSpswAXnRq3urEW1hM9QxHEE1skc8fMorpNRtM=;
-        b=Bx419kWJ5uk7pbzZCokXEhQ7DRPh7mtVCaztg7LXosqvEYYqxHD/NfuIYwQfJpz/4i
-         lqPECExSYKWZ9/9zx0mxoHwPZv2d4MtmTZTJEd42aqZQ0fkkWHVogmEXWAjN2sqIvGUk
-         A8b9mCQcU5RUfk+Ln51//K+Sz2mthahh1rAdzDKJVrwYnKGqoNgHuDVmPP/yb50zYnm0
-         GvNLc7XqQkhi0xZaS0+OWmAb6NPRasw5DSnyUcVsYFiv3RQ/qklRt5gDTPIDM0dkPa7h
-         kMHKBIC0F+AozCbKsaGvdsOGOjbbnfqskEYMG1qjgoExvS/sES1Vu+qEajndEYcOq4Ox
-         UXRw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=9duI1rSpswAXnRq3urEW1hM9QxHEE1skc8fMorpNRtM=;
-        b=YhUXjkOMGh97xVG5nN+05q310g220CgXvaDMvBNRWDNHK3MOJqoMxV6iRXZNxgkwzH
-         gV+4RsKl6cTAYGe2ngRT5poZjM/fPFw8GjaXKHQOYgU5PRE/wFgVujwG2BuD7A0O3JGY
-         Q6p9okAqUJeP2uq0ZDhUDlXQXCknzmGV0Cts4w5wg2PMDoHMQoXaYx3Xa9zY1CpZQwaf
-         svBgUsQREP0cN+2DCtPIySBYFesYLdhtxYmbD7AAWkRWRfBmjjxz+dPTehCdHaOjwSGG
-         A1cmZpNnbsTggA7suLrBg7GPKJbUJjj7lADihJxyiDjK/Ems0HkOSbkgMEpnMavYbhIU
-         lXeQ==
-X-Gm-Message-State: AJIora9cbfXBhQHl/8nJQFXP+m8dClbnvadbnf9tMVaz7aQjY2lfD9/s
-        kWGqEVXmsq9UsVAfvPI1Pdo=
-X-Google-Smtp-Source: AGRyM1s2OwobGDzORrPZHucygkybI/3hmpBr8Ni1Lah7murhJ3EfiGFcUanLyWGjdHC/P7DK+DlDgA==
-X-Received: by 2002:a17:90b:3502:b0:1f0:986:e36b with SMTP id ls2-20020a17090b350200b001f00986e36bmr35970479pjb.154.1658098962056;
-        Sun, 17 Jul 2022 16:02:42 -0700 (PDT)
-Received: from ?IPV6:2001:df0:0:200c:6c17:ca15:3733:a6a1? ([2001:df0:0:200c:6c17:ca15:3733:a6a1])
-        by smtp.gmail.com with ESMTPSA id b3-20020a170902650300b0016be96e07d1sm7766371plk.121.2022.07.17.16.02.38
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 17 Jul 2022 16:02:41 -0700 (PDT)
-Message-ID: <77ecffbd-7568-f653-5273-1f3dffb17891@gmail.com>
-Date:   Mon, 18 Jul 2022 11:02:36 +1200
+        Mon, 18 Jul 2022 03:23:27 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 844BF18352
+        for <linux-fbdev@vger.kernel.org>; Mon, 18 Jul 2022 00:23:25 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 154813392C;
+        Mon, 18 Jul 2022 07:23:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1658129004; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=GZxo82O0GSD21ZK5W2Hm0LcGlwweorBc4NPn450GI2g=;
+        b=zYROj88s6MFXXnPX4fcs295nrX+rd+QK7uPWxWXr40NlJ15H0hD9NfCmAqwd+47nbQYp3M
+        HuBRouZobCZM9AUBg8k5NgXS3ZcTzMnhA4ACYXE+sMH5zhhRYysc3aUgPOidZkREekN5jY
+        JKYoUpSeJBrSssKlv14QYOfprVuicQo=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1658129004;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=GZxo82O0GSD21ZK5W2Hm0LcGlwweorBc4NPn450GI2g=;
+        b=L2sdneqZw2OaJFF3hynxuKpTZs7BwlN84Kfck8BYgo+X3OzC4/YZMPOFzU6NwOyWC91NbB
+        I/MbDmKAVWXJZRDQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id DB68713A37;
+        Mon, 18 Jul 2022 07:23:23 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id YD+pNGsK1WKjcAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 18 Jul 2022 07:23:23 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     javierm@redhat.com, deller@gmx.de, daniel@ffwll.ch,
+        sam@ravnborg.org, maxime@cerno.tech
+Cc:     linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        dri-devel@lists.freedesktop.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v2 00/11] fbdev: Maintain device ownership with aperture helpers
+Date:   Mon, 18 Jul 2022 09:23:11 +0200
+Message-Id: <20220718072322.8927-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.36.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.1
-Subject: Re: [PATCH 00/10] video: fbdev: atari: Miscellaneous fixes and
- cleanups
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Helge Deller <deller@gmx.de>
-Cc:     Jonathan Corbet <corbet@lwn.net>, linux-fbdev@vger.kernel.org,
-        linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <cover.1657554353.git.geert@linux-m68k.org>
-From:   Michael Schmitz <schmitzmic@gmail.com>
-In-Reply-To: <cover.1657554353.git.geert@linux-m68k.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Geert,
+Fbdev firmware drivers acquire ownership of framebuffer I/O ranges and
+hand them over to native drivers during the boot process. Re-implement
+this mechanism with aperture helpers and remove the respective fbdev
+code.
 
-On 12/07/22 03:50, Geert Uytterhoeven wrote:
-> 	Hi all,
->
-> This patch series contains miscellaneous fixes and cleanups for the
-> Atari frame buffer device driver, which were identified while working on
-> the Atari DRM driver.
->
-> Most of them have been tested on ARAnyM, and should be sa<fe to apply,
-> except perhaps for the last one, which is marked RFC.
->
-> Thanks for your comments!
->
-> Geert Uytterhoeven (10):
->    video: fbdev: atari: Simplify atafb_pan_display()
->    video: fbdev: atari: Remove bogus FB_VMODE_YWRAP flags
->    video: fbdev: atari: Fix inverse handling
->    video: fbdev: atari: Fix ext_setcolreg()
->    video: fbdev: atari: Remove unneeded casts from void *
->    video: fbdev: atari: Remove unneeded casts to void *
->    video: fbdev: atari: Fix TT High video mode vertical refresh
->    video: fbdev: atari: Fix VGA modes
->    video: fbdev: atari: Remove unused definitions and variables
->    [RFC] video: fbdev: atari: Remove backward bug-compatibility
->
->   Documentation/m68k/kernel-options.rst |   4 +-
->   drivers/video/fbdev/atafb.c           | 101 +++++++-------------------
->   2 files changed, 29 insertions(+), 76 deletions(-)
->
-Works OK on my Falcon (except for the falh* modes, but that is not a 
-regression - might be something I miscoded in these modes, ages ago).
+This change allows to perform hand-over from DRM firmware drivers. In a
+later patchset, device ownership can be moved from DRM and fbdev entirely
+into aperture helpers.
 
-Tested-by: Michael Schmitz <schmitzmic@gmail.com>
+Patches 1 and 4 are cleanups.
 
+Patches 2 and 3 integrate EGA/VGA support into sysfb, although it's not
+clear if the x86 architecture code actually still supports VGA graphics
+mode.
+
+Patches 5 to 10 replace fbdev's ownership management with aperture
+helpers. This includes removal of conflicting framebuffer drivers,
+removal of conflicting VGA drivers and registration of fbdev firmware
+devices. Notably, many PCI-based fbdev drivers failed to remove firmware
+devices until now; and therefore probably haven't worked correctly for
+some time.
+
+Patch 11 removes the implementation of fbdev ownership management.
+
+The patchset has been tested by handing over device ownership between
+firmware and native drivers of DRM and fbdev in various combinations.
+
+v2:
+	* remove unused options handling from vga16fb (Javier)
+	* more elaborate commit messages (Javier)
+	* remove unused internal functions in fbmem.c
+
+Thomas Zimmermann (11):
+  fbdev: Remove trailing whitespaces
+  fbdev/vga16fb: Create EGA/VGA devices in sysfb code
+  fbdev/vga16fb: Auto-generate module init/exit code
+  fbdev/core: Remove remove_conflicting_pci_framebuffers()
+  fbdev: Convert drivers to aperture helpers
+  fbdev: Remove conflicting devices on PCI bus
+  video/aperture: Disable and unregister sysfb devices via aperture
+    helpers
+  video: Provide constants for VGA I/O range
+  video/aperture: Remove conflicting VGA devices, if any
+  fbdev: Acquire framebuffer apertures for firmware devices
+  fbdev: Remove conflict-handling code
+
+ drivers/firmware/sysfb.c                     |   4 +
+ drivers/staging/sm750fb/sm750.c              |  15 +-
+ drivers/video/aperture.c                     |  69 ++--
+ drivers/video/fbdev/arkfb.c                  |   5 +
+ drivers/video/fbdev/asiliantfb.c             |   5 +
+ drivers/video/fbdev/aty/aty128fb.c           |  57 ++--
+ drivers/video/fbdev/aty/atyfb_base.c         |   7 +-
+ drivers/video/fbdev/aty/radeon_base.c        |  83 +++--
+ drivers/video/fbdev/carminefb.c              |   5 +
+ drivers/video/fbdev/chipsfb.c                |  13 +-
+ drivers/video/fbdev/cirrusfb.c               |   5 +
+ drivers/video/fbdev/core/fbmem.c             | 213 ++-----------
+ drivers/video/fbdev/cyber2000fb.c            |   5 +
+ drivers/video/fbdev/geode/gx1fb_core.c       |   5 +
+ drivers/video/fbdev/geode/gxfb_core.c        |   5 +
+ drivers/video/fbdev/geode/lxfb_core.c        |   5 +
+ drivers/video/fbdev/gxt4500.c                |   5 +
+ drivers/video/fbdev/hyperv_fb.c              |   6 +-
+ drivers/video/fbdev/i740fb.c                 |   5 +
+ drivers/video/fbdev/i810/i810_main.c         | 315 ++++++++++---------
+ drivers/video/fbdev/imsttfb.c                |  36 ++-
+ drivers/video/fbdev/intelfb/intelfbdrv.c     |   5 +
+ drivers/video/fbdev/kyro/fbdev.c             |   5 +
+ drivers/video/fbdev/matrox/matroxfb_base.c   |   5 +
+ drivers/video/fbdev/mb862xx/mb862xxfbdrv.c   |   5 +
+ drivers/video/fbdev/neofb.c                  |  41 +--
+ drivers/video/fbdev/nvidia/nvidia.c          |   7 +-
+ drivers/video/fbdev/pm2fb.c                  |   5 +
+ drivers/video/fbdev/pm3fb.c                  |   5 +
+ drivers/video/fbdev/pvr2fb.c                 |   5 +
+ drivers/video/fbdev/riva/fbdev.c             |  67 ++--
+ drivers/video/fbdev/s3fb.c                   |   5 +
+ drivers/video/fbdev/savage/savagefb_driver.c |   5 +
+ drivers/video/fbdev/sis/sis_main.c           |   5 +
+ drivers/video/fbdev/skeletonfb.c             | 210 +++++++------
+ drivers/video/fbdev/sm712fb.c                |   5 +
+ drivers/video/fbdev/sstfb.c                  |  43 +--
+ drivers/video/fbdev/sunxvr2500.c             |   5 +
+ drivers/video/fbdev/sunxvr500.c              |   5 +
+ drivers/video/fbdev/tdfxfb.c                 |   5 +
+ drivers/video/fbdev/tgafb.c                  |  17 +-
+ drivers/video/fbdev/tridentfb.c              |   5 +
+ drivers/video/fbdev/vermilion/vermilion.c    |   7 +-
+ drivers/video/fbdev/vga16fb.c                | 191 +++++------
+ drivers/video/fbdev/via/via-core.c           |   5 +
+ drivers/video/fbdev/vt8623fb.c               |   5 +
+ include/linux/fb.h                           |   4 -
+ include/video/vga.h                          |  20 +-
+ 48 files changed, 776 insertions(+), 784 deletions(-)
+
+
+base-commit: ebea934e2651857c9b56cc80bf99460ee18a3592
+-- 
+2.36.1
 

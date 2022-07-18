@@ -2,62 +2,69 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28CF5CCA482
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA5B6CCA479
 	for <linux-fbdev@archiver.kernel.org>; Mon, 18 Jul 2022 07:23:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233822AbiGRHXa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S233838AbiGRHXa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Mon, 18 Jul 2022 03:23:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52650 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52660 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233831AbiGRHX2 (ORCPT
+        with ESMTP id S233835AbiGRHX3 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 18 Jul 2022 03:23:28 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 728F518347
-        for <linux-fbdev@vger.kernel.org>; Mon, 18 Jul 2022 00:23:26 -0700 (PDT)
+        Mon, 18 Jul 2022 03:23:29 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 37F1C18362
+        for <linux-fbdev@vger.kernel.org>; Mon, 18 Jul 2022 00:23:27 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id DF75020BCA;
-        Mon, 18 Jul 2022 07:23:24 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id D185534976;
+        Mon, 18 Jul 2022 07:23:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1658129004; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1658129005; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=AuYc6HSTdE1bmoVlJbZcViYyTFtG6gNP77kJzDK0/nI=;
-        b=wx1bphgZgYqfsj6NDn2OU/VtbuLX8HbpiJNGnooN/tBjOvKCPInp2O5WXrDNOdMCOIqeI7
-        OOAcIVfP9kgo7SHJ4E7SVb1vLRoohC50rEvdqq/D2tgX/vU9mN3zWCKjHvTVHPU4Nk1DLz
-        S7zrv3S2PEgreRlES+UEkZFRA4NqX8E=
+        bh=MvVeMZnYvZASAHn5k8eEIjpxj38T3e8SBYKFLGdLWQE=;
+        b=LiBf5N4EsVxQ1caZE4b7OG3pr38BXQ3XkWxAIJU2/pgkiQfIGGrkr61SpGCxueJrtotgKi
+        xdBGGzqq9wxqkyQopwZttoAr93DbEqEIk9QSDXn0fJCp2fGmECnLexUkZKUaFowN4TpSsF
+        KohGAOV+H876hNkx+VTfYTXOMkme5NM=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1658129004;
+        s=susede2_ed25519; t=1658129005;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=AuYc6HSTdE1bmoVlJbZcViYyTFtG6gNP77kJzDK0/nI=;
-        b=hsql5k2L6flgXO+jc9m2lcgBYSwBq0EmtqkBqC1yTNFxl3Zu4XjV4QAuID+ncokwWo9QZv
-        g4ZPXjrkWxUGzfCg==
+        bh=MvVeMZnYvZASAHn5k8eEIjpxj38T3e8SBYKFLGdLWQE=;
+        b=F2yJY3hvfuS2hdSb3EdNzXS1qIHYMB24FFQr0Mux+F3LcuIafgJr7gdvK0WH+SNh4tLiIB
+        uBLiWdOvAjNH4qBg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id B62E613A37;
-        Mon, 18 Jul 2022 07:23:24 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8A3FB13AB6;
+        Mon, 18 Jul 2022 07:23:25 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id EIO5K2wK1WKjcAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 18 Jul 2022 07:23:24 +0000
+        id iEzsIG0K1WKjcAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 18 Jul 2022 07:23:25 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     javierm@redhat.com, deller@gmx.de, daniel@ffwll.ch,
         sam@ravnborg.org, maxime@cerno.tech
 Cc:     linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
         dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 03/11] fbdev/vga16fb: Auto-generate module init/exit code
-Date:   Mon, 18 Jul 2022 09:23:14 +0200
-Message-Id: <20220718072322.8927-4-tzimmermann@suse.de>
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Zack Rusin <zackr@vmware.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Zhen Lei <thunder.leizhen@huawei.com>,
+        Changcheng Deng <deng.changcheng@zte.com.cn>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>
+Subject: [PATCH v2 07/11] video/aperture: Disable and unregister sysfb devices via aperture helpers
+Date:   Mon, 18 Jul 2022 09:23:18 +0200
+Message-Id: <20220718072322.8927-8-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.36.1
 In-Reply-To: <20220718072322.8927-1-tzimmermann@suse.de>
 References: <20220718072322.8927-1-tzimmermann@suse.de>
@@ -67,78 +74,93 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Move vgag16fb's option parsing into the driver's probe function and
-generate the rest of the module's init/exit functions from macros.
-Keep the options code, although there are no options defined.
-
-v2:
-	* no options are supported, remove the code (Javier)
+Call sysfb_disable() before removing conflicting devices in aperture
+helpers. Fixes sysfb state if fbdev has been disabled.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Fixes: fb84efa28a48 ("drm/aperture: Run fbdev removal before internal helpers")
+Cc: Zack Rusin <zackr@vmware.com>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Javier Martinez Canillas <javierm@redhat.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Alex Deucher <alexander.deucher@amd.com>
+Cc: Zhen Lei <thunder.leizhen@huawei.com>
+Cc: Changcheng Deng <deng.changcheng@zte.com.cn>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Maxime Ripard <mripard@kernel.org>
+Cc: dri-devel@lists.freedesktop.org
 ---
- drivers/video/fbdev/vga16fb.c | 41 +----------------------------------
- 1 file changed, 1 insertion(+), 40 deletions(-)
+ drivers/video/aperture.c         | 14 ++++++++++++++
+ drivers/video/fbdev/core/fbmem.c | 12 ------------
+ 2 files changed, 14 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
-index 9e614c1db03d..3312b6a4e00d 100644
---- a/drivers/video/fbdev/vga16fb.c
-+++ b/drivers/video/fbdev/vga16fb.c
-@@ -1304,21 +1304,6 @@ static const struct fb_ops vga16fb_ops = {
- 	.fb_imageblit	= vga16fb_imageblit,
- };
+diff --git a/drivers/video/aperture.c b/drivers/video/aperture.c
+index f42a0d8bc211..101e13c2cf41 100644
+--- a/drivers/video/aperture.c
++++ b/drivers/video/aperture.c
+@@ -8,6 +8,7 @@
+ #include <linux/pci.h>
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
++#include <linux/sysfb.h>
+ #include <linux/types.h>
+ #include <linux/vgaarb.h>
  
--#ifndef MODULE
--static int __init vga16fb_setup(char *options)
--{
--	char *this_opt;
--
--	if (!options || !*options)
--		return 0;
--
--	while ((this_opt = strsep(&options, ",")) != NULL) {
--		if (!*this_opt) continue;
--	}
--	return 0;
--}
--#endif
--
- static int vga16fb_probe(struct platform_device *dev)
- {
- 	struct screen_info *si;
-@@ -1449,31 +1434,7 @@ static struct platform_driver vga16fb_driver = {
- 	.id_table = vga16fb_driver_id_table,
- };
+@@ -286,7 +287,20 @@ int aperture_remove_conflicting_devices(resource_size_t base, resource_size_t si
+ #if IS_REACHABLE(CONFIG_FB)
+ 	struct apertures_struct *a;
+ 	int ret;
++#endif
++
++	/*
++	 * If a driver asked to unregister a platform device registered by
++	 * sysfb, then can be assumed that this is a driver for a display
++	 * that is set up by the system firmware and has a generic driver.
++	 *
++	 * Drivers for devices that don't have a generic driver will never
++	 * ask for this, so let's assume that a real driver for the display
++	 * was already probed and prevent sysfb to register devices later.
++	 */
++	sysfb_disable();
  
--static int __init vga16fb_init(void)
--{
--	int ret;
--#ifndef MODULE
--	char *option = NULL;
--
--	if (fb_get_options("vga16fb", &option))
--		return -ENODEV;
--
--	vga16fb_setup(option);
--#endif
--
--	ret = platform_driver_register(&vga16fb_driver);
--	if (ret)
--		return ret;
--
--	return 0;
--}
--
--static void __exit vga16fb_exit(void)
--{
--	platform_driver_unregister(&vga16fb_driver);
--}
-+module_platform_driver(vga16fb_driver);
++#if IS_REACHABLE(CONFIG_FB)
+ 	a = alloc_apertures(1);
+ 	if (!a)
+ 		return -ENOMEM;
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 877de85309f3..3ee3ea018245 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -19,7 +19,6 @@
+ #include <linux/kernel.h>
+ #include <linux/major.h>
+ #include <linux/slab.h>
+-#include <linux/sysfb.h>
+ #include <linux/mm.h>
+ #include <linux/mman.h>
+ #include <linux/vt.h>
+@@ -1765,17 +1764,6 @@ int remove_conflicting_framebuffers(struct apertures_struct *a,
+ 		do_free = true;
+ 	}
  
- MODULE_DESCRIPTION("Legacy VGA framebuffer device driver");
- MODULE_LICENSE("GPL");
--module_init(vga16fb_init);
--module_exit(vga16fb_exit);
+-	/*
+-	 * If a driver asked to unregister a platform device registered by
+-	 * sysfb, then can be assumed that this is a driver for a display
+-	 * that is set up by the system firmware and has a generic driver.
+-	 *
+-	 * Drivers for devices that don't have a generic driver will never
+-	 * ask for this, so let's assume that a real driver for the display
+-	 * was already probed and prevent sysfb to register devices later.
+-	 */
+-	sysfb_disable();
+-
+ 	mutex_lock(&registration_lock);
+ 	do_remove_conflicting_framebuffers(a, name, primary);
+ 	mutex_unlock(&registration_lock);
 -- 
 2.36.1
 

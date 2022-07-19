@@ -2,135 +2,112 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13DFDCCA479
-	for <linux-fbdev@archiver.kernel.org>; Mon, 18 Jul 2022 22:00:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E21A8C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Jul 2022 08:26:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236384AbiGRWAS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 18 Jul 2022 18:00:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47240 "EHLO
+        id S229895AbiGSI0W (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Jul 2022 04:26:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38486 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234452AbiGRWAR (ORCPT
+        with ESMTP id S232245AbiGSI0T (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 18 Jul 2022 18:00:17 -0400
-Received: from mail-io1-f46.google.com (mail-io1-f46.google.com [209.85.166.46])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B5C030569;
-        Mon, 18 Jul 2022 15:00:16 -0700 (PDT)
-Received: by mail-io1-f46.google.com with SMTP id r70so9298051iod.10;
-        Mon, 18 Jul 2022 15:00:16 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=gIUyF/ORGQjWXNvT5wIOVjajXgGpEkbk6f/tl0gQiac=;
-        b=di179KuRgOE3ptTOBICiYzoBzUoVyGF9NcDnAWKlJ34a3iqCe93L5MVLhfVGXDplcv
-         jQiviGqfADQCBsd5sNR40P5VXco+51oEP7/l96m1RWCCRhvC6M4EJp60E3uNtao9B+wA
-         x65ZBP19n3zU5x2ku2rO0vHRWJd//IdeBb6Odeorc3dzLOP1i8JFSl5KCEbYAa8czmMZ
-         t2Pt/NHUL1093wk95oHAtugkFByX8iqJYjCfByFFdFP391ICgCqViiWt/luytfTdvwIA
-         7aA7YU6oiuAs4D0vk1UJzSuBXR8wZeBDEKnoLBX8UqyS3AkBqN+W1Am8cYRLypIS5U+N
-         /eEg==
-X-Gm-Message-State: AJIora9SqI/5In3vPbAFmo+b4Tg8RGwirBzBn56cCvKA9YK3Qhv3XvmD
-        aUO4Y10dPA3w5NioUtw+xg==
-X-Google-Smtp-Source: AGRyM1sUfx9PknCBXVyopJZHm5bZnR/LgT1hX56ktRZLDXFdm584csRgriFVCGgWxWMs/6JjxIxhVA==
-X-Received: by 2002:a05:6602:2b84:b0:67b:d178:38bb with SMTP id r4-20020a0566022b8400b0067bd17838bbmr11138408iov.120.1658181615882;
-        Mon, 18 Jul 2022 15:00:15 -0700 (PDT)
-Received: from robh.at.kernel.org ([64.188.179.248])
-        by smtp.gmail.com with ESMTPSA id 7-20020a921307000000b002dcafb975c6sm5175816ilt.82.2022.07.18.15.00.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 Jul 2022 15:00:15 -0700 (PDT)
-Received: (nullmailer pid 3640548 invoked by uid 1000);
-        Mon, 18 Jul 2022 22:00:12 -0000
-Date:   Mon, 18 Jul 2022 16:00:12 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Jonathan Cameron <jic23@kernel.org>
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Michael Hennerich <Michael.Hennerich@analog.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Alexandru Tachici <alexandru.tachici@analog.com>,
-        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
-        Marcus Folkesson <marcus.folkesson@gmail.com>,
-        Kent Gustavsson <kent@minoris.se>,
-        Tomislav Denis <tomislav.denis@avl.com>,
-        Stefan Popa <stefan.popa@analog.com>,
-        Beniamin Bia <beniamin.bia@analog.com>,
-        Patrick Vasseur <patrick.vasseur@c-s.fr>,
-        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Philippe Reynes <tremyfr@yahoo.fr>,
-        Jacopo Mondi <jacopo@jmondi.org>,
-        Akinobu Mita <akinobu.mita@gmail.com>,
-        Alexandru Lazar <alazar@startmail.com>,
-        Oskar Andero <oskar.andero@gmail.com>,
-        =?UTF-8?Q?M=C3=A5rten_Lindahl?= <martenli@axis.com>,
-        Bogdan Pricop <bogdan.pricop@emutex.com>,
-        Angelo Compagnucci <angelo.compagnucci@gmail.com>,
-        Dan Murphy <dmurphy@ti.com>, linux-iio@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, linux-spi@vger.kernel.org,
-        Mark Brown <broonie@kernel.org>
-Subject: Re: [RFC PATCH] dt-bindings: iio: adc: use spi-peripheral-props.yaml
-Message-ID: <20220718220012.GA3625497-robh@kernel.org>
-References: <20220715095302.214276-1-krzysztof.kozlowski@linaro.org>
- <20220716192604.21a1d835@jic23-huawei>
+        Tue, 19 Jul 2022 04:26:19 -0400
+Received: from m15114.mail.126.com (m15114.mail.126.com [220.181.15.114])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id BC378B1DF
+        for <linux-fbdev@vger.kernel.org>; Tue, 19 Jul 2022 01:26:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
+        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=taUF6
+        l7V+UeJySwvC+OdyXLBLpx76CPkyiOEfCj7O2k=; b=ZS9sskyIdWcF6smAAdaKD
+        rmCC1ofUJIrXlE7FOhvMvi5WVD4imb31sEqpfEeYtb0iS3VBEj40JFWY8Q8JoF60
+        j3x6xgEvFOZf5dx2dC09GExorbjtgnRsOX8tsd5dL50aGWpu+0TZFYElkD1yNyQM
+        KO+XZtJetcjywCACsif1lw=
+Received: from localhost.localdomain (unknown [124.16.139.61])
+        by smtp7 (Coremail) with SMTP id DsmowAC3+_qQatZiYiEgFQ--.14447S2;
+        Tue, 19 Jul 2022 16:25:52 +0800 (CST)
+From:   Liang He <windhl@126.com>
+To:     linux@armlinux.org.uk, deller@gmx.de, linux-fbdev@vger.kernel.org,
+        windhl@126.com
+Subject: [PATCH] video: fbdev: amba-clcd: Fix refcount leak bugs
+Date:   Tue, 19 Jul 2022 16:25:46 +0800
+Message-Id: <20220719082546.1209627-1-windhl@126.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220716192604.21a1d835@jic23-huawei>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: DsmowAC3+_qQatZiYiEgFQ--.14447S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7Ary8KFW3XryfuFWkGF18Grg_yoW8Zry7pF
+        45KFWa9ry5JF17Gw12yF1DZFsYya1I9FW2kFy7K3sYkFnxAws5Zr1UKF909FZ5ZFykJa4Y
+        grsrta1Yva4UurDanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+        9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07U5uciUUUUU=
+X-Originating-IP: [124.16.139.61]
+X-CM-SenderInfo: hzlqvxbo6rjloofrz/1tbizhFDF18RPhVYIgAAsU
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, Jul 16, 2022 at 07:26:04PM +0100, Jonathan Cameron wrote:
-> On Fri, 15 Jul 2022 11:53:02 +0200
-> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
-> 
-> > Instead of listing directly properties typical for SPI peripherals,
-> > reference the spi-peripheral-props.yaml schema.  This allows using all
-> > properties typical for SPI-connected devices, even these which device
-> > bindings author did not tried yet.
-> > 
-> > Remove the spi-* properties which now come via spi-peripheral-props.yaml
-> > schema, except for the cases when device schema adds some constraints
-> > like maximum frequency.
-> > 
-> > Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> > 
-> > ---
-> > 
-> > This is an RFC with only some files changed, as I am still not sure of
-> > benefits for typical case - device node has just spi-max-frequency and
-> > nothing more.  I still find useful to reference the schema, but maybe I
-> > am missing something?
-> > 
-> > Before doing wide-tree cleanup like this, I would be happy to receive
-> > some feedback whether this makes sense.
-> 
-> Hi Krzysztof,
-> 
-> This has the side effect of allowing spi-cpol / spi-cpha for devices
-> where they weren't previously allowed by the binding.  A typical device
-> only supports a subset of combinations of those.
-> 
-> I'm not clear whether these should always be allowed (e.g. allow for inverters
-> etc in the path) or whether we should be enforcing the "correct"
-> settings for devices assuming they are directly connected.
-> 
-> Currently we have a bunch of bindings that are documenting the allowed
-> flexibility - including cases where only particular combinations of these
-> settings are allowed.
-> 
-> So we could either:
-> 1) Note that we've been doing it wrong and the binding should not enforce
->    these constraints so remove them.
+In clcdfb_of_init_display(), we should call of_node_put() for the
+references returned by of_graph_get_next_endpoint() and
+of_graph_get_remote_port_parent() which have increased the refcount.
 
-I'd lean towards this.
+Besides, we should call of_node_put() both in fail path or when
+the references are not used anymore.
 
-> 2) Add explicit spi-cpol: false statements etc the drivers where they
->    are not allowed.
+Fixes: d10715be03bd ("video: ARM CLCD: Add DT support")
+Signed-off-by: Liang He <windhl@126.com>
+---
+ drivers/video/fbdev/amba-clcd.c | 24 ++++++++++++++++++------
+ 1 file changed, 18 insertions(+), 6 deletions(-)
 
-3) Drop spi-cpol / spi-cpha from spi-peripheral-props.yaml. It's purpose 
-is to collect all possible SPI controller properties that are per child 
-node. Whereas we've said spi-cpol / spi-cpha are device specific 
-properties.
+diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
+index 8080116aea84..f65c96d1394d 100644
+--- a/drivers/video/fbdev/amba-clcd.c
++++ b/drivers/video/fbdev/amba-clcd.c
+@@ -698,16 +698,18 @@ static int clcdfb_of_init_display(struct clcd_fb *fb)
+ 		return -ENODEV;
+ 
+ 	panel = of_graph_get_remote_port_parent(endpoint);
+-	if (!panel)
+-		return -ENODEV;
++	if (!panel) {
++		err = -ENODEV;
++		goto out_endpoint_put;
++	}
+ 
+ 	err = clcdfb_of_get_backlight(&fb->dev->dev, fb->panel);
+ 	if (err)
+-		return err;
++		goto out_panel_put;
+ 
+ 	err = clcdfb_of_get_mode(&fb->dev->dev, panel, fb->panel);
+ 	if (err)
+-		return err;
++		goto out_panel_put;
+ 
+ 	err = of_property_read_u32(fb->dev->dev.of_node, "max-memory-bandwidth",
+ 			&max_bandwidth);
+@@ -736,11 +738,21 @@ static int clcdfb_of_init_display(struct clcd_fb *fb)
+ 
+ 	if (of_property_read_u32_array(endpoint,
+ 			"arm,pl11x,tft-r0g0b0-pads",
+-			tft_r0b0g0, ARRAY_SIZE(tft_r0b0g0)) != 0)
+-		return -ENOENT;
++			tft_r0b0g0, ARRAY_SIZE(tft_r0b0g0)) != 0) {
++		err = -ENOENT;
++		goto out_panel_put;
++	}
++
++	of_node_put(panel);
++	of_node_put(endpoint);
+ 
+ 	return clcdfb_of_init_tft_panel(fb, tft_r0b0g0[0],
+ 					tft_r0b0g0[1],  tft_r0b0g0[2]);
++out_panel_put:
++	of_node_put(panel);
++out_endpoint_put:
++	of_node_put(endpoint);
++	return err;
+ }
+ 
+ static int clcdfb_of_vram_setup(struct clcd_fb *fb)
+-- 
+2.25.1
 
-Rob

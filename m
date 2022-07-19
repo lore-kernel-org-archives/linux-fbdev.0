@@ -2,112 +2,134 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E21A8C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Jul 2022 08:26:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 605BBCCA489
+	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Jul 2022 14:44:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229895AbiGSI0W (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Jul 2022 04:26:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38486 "EHLO
+        id S239248AbiGSOoj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Jul 2022 10:44:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39978 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232245AbiGSI0T (ORCPT
+        with ESMTP id S239813AbiGSOoL (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Jul 2022 04:26:19 -0400
-Received: from m15114.mail.126.com (m15114.mail.126.com [220.181.15.114])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id BC378B1DF
-        for <linux-fbdev@vger.kernel.org>; Tue, 19 Jul 2022 01:26:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
-        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=taUF6
-        l7V+UeJySwvC+OdyXLBLpx76CPkyiOEfCj7O2k=; b=ZS9sskyIdWcF6smAAdaKD
-        rmCC1ofUJIrXlE7FOhvMvi5WVD4imb31sEqpfEeYtb0iS3VBEj40JFWY8Q8JoF60
-        j3x6xgEvFOZf5dx2dC09GExorbjtgnRsOX8tsd5dL50aGWpu+0TZFYElkD1yNyQM
-        KO+XZtJetcjywCACsif1lw=
-Received: from localhost.localdomain (unknown [124.16.139.61])
-        by smtp7 (Coremail) with SMTP id DsmowAC3+_qQatZiYiEgFQ--.14447S2;
-        Tue, 19 Jul 2022 16:25:52 +0800 (CST)
-From:   Liang He <windhl@126.com>
-To:     linux@armlinux.org.uk, deller@gmx.de, linux-fbdev@vger.kernel.org,
-        windhl@126.com
-Subject: [PATCH] video: fbdev: amba-clcd: Fix refcount leak bugs
-Date:   Tue, 19 Jul 2022 16:25:46 +0800
-Message-Id: <20220719082546.1209627-1-windhl@126.com>
-X-Mailer: git-send-email 2.25.1
+        Tue, 19 Jul 2022 10:44:11 -0400
+X-Greylist: delayed 165 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 19 Jul 2022 07:42:38 PDT
+Received: from smtp.domeneshop.no (smtp.domeneshop.no [IPv6:2a01:5b40:0:3005::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3D4BAFCB;
+        Tue, 19 Jul 2022 07:42:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=tronnes.org
+        ; s=ds202112; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
+        References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
+        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+        Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
+        List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=2ud6nsluqSsKTO9Z0i1MLYe01IcSu66ta8TyQvTI8QI=; b=FDYK2qx4o9VfiSKX4kjtfYaK5d
+        CuD34rsqF62M3zMoNqL8juQGVRzEcrLAIraI4aeB1HMVVtlyYKga86QnXJOREm7oSq+j0WLFtD5Zs
+        L5HyL2l1RuRLjJbrhHNW3oUF8ytDTnYjhBi9Rc0DN5VoIAugUh0iSrq2O/crqeBL2OmO2s6ELWB1h
+        N9V3Gtd5kfj8uZT9etsQ6MMoAAsvk5S9KgTe3dJIFW9Mn4Aib7nsPrlfA5kzNA99tTpoiCuWOkxAm
+        afxAmnw+oCgm/4cViLsIstPfylUadQt6qYCFWW4woG80X02NwBHp15NZRPIaA/hSwMPugvNka1r+L
+        OVQXiPnA==;
+Received: from [2a01:799:961:d200:4408:c06b:bee8:b0a3] (port=52255)
+        by smtp.domeneshop.no with esmtpsa (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <noralf@tronnes.org>)
+        id 1oDoO6-0003Mu-Dz; Tue, 19 Jul 2022 16:39:50 +0200
+Message-ID: <59b18586-f53f-9ad3-02a7-d629e4c19b81@tronnes.org>
+Date:   Tue, 19 Jul 2022 16:39:46 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: DsmowAC3+_qQatZiYiEgFQ--.14447S2
-X-Coremail-Antispam: 1Uf129KBjvJXoW7Ary8KFW3XryfuFWkGF18Grg_yoW8Zry7pF
-        45KFWa9ry5JF17Gw12yF1DZFsYya1I9FW2kFy7K3sYkFnxAws5Zr1UKF909FZ5ZFykJa4Y
-        grsrta1Yva4UurDanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-        9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07U5uciUUUUU=
-X-Originating-IP: [124.16.139.61]
-X-CM-SenderInfo: hzlqvxbo6rjloofrz/1tbizhFDF18RPhVYIgAAsU
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH 3/3] drm/gud: Fix endianness in gud_xrgb8888_to_color()
+ helper
+To:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Gerd Hoffmann <kraxel@redhat.com>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <cover.1657300532.git.geert@linux-m68k.org>
+ <b47589ed5d8ca44e0956684412e3f16f3227f887.1657300532.git.geert@linux-m68k.org>
+From:   =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
+In-Reply-To: <b47589ed5d8ca44e0956684412e3f16f3227f887.1657300532.git.geert@linux-m68k.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-In clcdfb_of_init_display(), we should call of_node_put() for the
-references returned by of_graph_get_next_endpoint() and
-of_graph_get_remote_port_parent() which have increased the refcount.
 
-Besides, we should call of_node_put() both in fail path or when
-the references are not used anymore.
 
-Fixes: d10715be03bd ("video: ARM CLCD: Add DT support")
-Signed-off-by: Liang He <windhl@126.com>
----
- drivers/video/fbdev/amba-clcd.c | 24 ++++++++++++++++++------
- 1 file changed, 18 insertions(+), 6 deletions(-)
+Den 08.07.2022 20.21, skrev Geert Uytterhoeven:
+> DRM formats are defined to be little-endian, unless the
+> DRM_FORMAT_BIG_ENDIAN flag is set.  Hence when converting from one
+> format to another, multi-byte pixel values loaded from memory must be
+> converted from little-endian to host-endian.  Conversely, multi-byte
+> pixel values written to memory must be converted from host-endian to
+> little-endian.  Currently only drm_fb_xrgb8888_to_rgb332_line() includes
+> endianness handling.
+> 
+> Fix gud_xrgb8888_to_color() on big-endian platforms by adding the
+> missing endianness handling.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> ---
+> Compile-tested only.
+> 
+> Interestingly, drm_fb_xrgb8888_to_rgb332() was introduced for GUD,
+> and always had correct endiannes handling...
 
-diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
-index 8080116aea84..f65c96d1394d 100644
---- a/drivers/video/fbdev/amba-clcd.c
-+++ b/drivers/video/fbdev/amba-clcd.c
-@@ -698,16 +698,18 @@ static int clcdfb_of_init_display(struct clcd_fb *fb)
- 		return -ENODEV;
- 
- 	panel = of_graph_get_remote_port_parent(endpoint);
--	if (!panel)
--		return -ENODEV;
-+	if (!panel) {
-+		err = -ENODEV;
-+		goto out_endpoint_put;
-+	}
- 
- 	err = clcdfb_of_get_backlight(&fb->dev->dev, fb->panel);
- 	if (err)
--		return err;
-+		goto out_panel_put;
- 
- 	err = clcdfb_of_get_mode(&fb->dev->dev, panel, fb->panel);
- 	if (err)
--		return err;
-+		goto out_panel_put;
- 
- 	err = of_property_read_u32(fb->dev->dev.of_node, "max-memory-bandwidth",
- 			&max_bandwidth);
-@@ -736,11 +738,21 @@ static int clcdfb_of_init_display(struct clcd_fb *fb)
- 
- 	if (of_property_read_u32_array(endpoint,
- 			"arm,pl11x,tft-r0g0b0-pads",
--			tft_r0b0g0, ARRAY_SIZE(tft_r0b0g0)) != 0)
--		return -ENOENT;
-+			tft_r0b0g0, ARRAY_SIZE(tft_r0b0g0)) != 0) {
-+		err = -ENOENT;
-+		goto out_panel_put;
-+	}
-+
-+	of_node_put(panel);
-+	of_node_put(endpoint);
- 
- 	return clcdfb_of_init_tft_panel(fb, tft_r0b0g0[0],
- 					tft_r0b0g0[1],  tft_r0b0g0[2]);
-+out_panel_put:
-+	of_node_put(panel);
-+out_endpoint_put:
-+	of_node_put(endpoint);
-+	return err;
- }
- 
- static int clcdfb_of_vram_setup(struct clcd_fb *fb)
--- 
-2.25.1
+RGB332 support was added later and by that time I had understood that
+the framebuffer was little endian and not host endian as I first assumed
+(there's a fixme comment in gud_pipe.c that BE is probably broken but I
+haven't got any hw to test on so I haven't tried to fix it).
 
+Thanks for fixing this, pathces 2 and 3 tested on drm/gud and applied to
+drm-misc-next.
+
+Noralf.
+
+> ---
+>  drivers/gpu/drm/gud/gud_pipe.c | 14 ++++++++------
+>  1 file changed, 8 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/gud/gud_pipe.c b/drivers/gpu/drm/gud/gud_pipe.c
+> index 4873f9799f412e04..d42592f6daab8b2a 100644
+> --- a/drivers/gpu/drm/gud/gud_pipe.c
+> +++ b/drivers/gpu/drm/gud/gud_pipe.c
+> @@ -105,7 +105,8 @@ static size_t gud_xrgb8888_to_color(u8 *dst, const struct drm_format_info *forma
+>  	unsigned int bits_per_pixel = 8 / block_width;
+>  	u8 r, g, b, pix, *block = dst; /* Assign to silence compiler warning */
+>  	unsigned int x, y, width;
+> -	u32 *pix32;
+> +	__le32 *sbuf32;
+> +	u32 pix32;
+>  	size_t len;
+>  
+>  	/* Start on a byte boundary */
+> @@ -114,8 +115,8 @@ static size_t gud_xrgb8888_to_color(u8 *dst, const struct drm_format_info *forma
+>  	len = drm_format_info_min_pitch(format, 0, width) * drm_rect_height(rect);
+>  
+>  	for (y = rect->y1; y < rect->y2; y++) {
+> -		pix32 = src + (y * fb->pitches[0]);
+> -		pix32 += rect->x1;
+> +		sbuf32 = src + (y * fb->pitches[0]);
+> +		sbuf32 += rect->x1;
+>  
+>  		for (x = 0; x < width; x++) {
+>  			unsigned int pixpos = x % block_width; /* within byte from the left */
+> @@ -126,9 +127,10 @@ static size_t gud_xrgb8888_to_color(u8 *dst, const struct drm_format_info *forma
+>  				*block = 0;
+>  			}
+>  
+> -			r = *pix32 >> 16;
+> -			g = *pix32 >> 8;
+> -			b = *pix32++;
+> +			pix32 = le32_to_cpu(*sbuf32++);
+> +			r = pix32 >> 16;
+> +			g = pix32 >> 8;
+> +			b = pix32;
+>  
+>  			switch (format->format) {
+>  			case GUD_DRM_FORMAT_XRGB1111:

@@ -2,134 +2,297 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 605BBCCA489
-	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Jul 2022 14:44:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8944DCCA482
+	for <linux-fbdev@archiver.kernel.org>; Wed, 20 Jul 2022 09:45:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239248AbiGSOoj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Jul 2022 10:44:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39978 "EHLO
+        id S232047AbiGTJp3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 20 Jul 2022 05:45:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45592 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239813AbiGSOoL (ORCPT
+        with ESMTP id S230460AbiGTJp3 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Jul 2022 10:44:11 -0400
-X-Greylist: delayed 165 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 19 Jul 2022 07:42:38 PDT
-Received: from smtp.domeneshop.no (smtp.domeneshop.no [IPv6:2a01:5b40:0:3005::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3D4BAFCB;
-        Tue, 19 Jul 2022 07:42:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=tronnes.org
-        ; s=ds202112; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
-        References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
-        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-        Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
-        List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=2ud6nsluqSsKTO9Z0i1MLYe01IcSu66ta8TyQvTI8QI=; b=FDYK2qx4o9VfiSKX4kjtfYaK5d
-        CuD34rsqF62M3zMoNqL8juQGVRzEcrLAIraI4aeB1HMVVtlyYKga86QnXJOREm7oSq+j0WLFtD5Zs
-        L5HyL2l1RuRLjJbrhHNW3oUF8ytDTnYjhBi9Rc0DN5VoIAugUh0iSrq2O/crqeBL2OmO2s6ELWB1h
-        N9V3Gtd5kfj8uZT9etsQ6MMoAAsvk5S9KgTe3dJIFW9Mn4Aib7nsPrlfA5kzNA99tTpoiCuWOkxAm
-        afxAmnw+oCgm/4cViLsIstPfylUadQt6qYCFWW4woG80X02NwBHp15NZRPIaA/hSwMPugvNka1r+L
-        OVQXiPnA==;
-Received: from [2a01:799:961:d200:4408:c06b:bee8:b0a3] (port=52255)
-        by smtp.domeneshop.no with esmtpsa (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <noralf@tronnes.org>)
-        id 1oDoO6-0003Mu-Dz; Tue, 19 Jul 2022 16:39:50 +0200
-Message-ID: <59b18586-f53f-9ad3-02a7-d629e4c19b81@tronnes.org>
-Date:   Tue, 19 Jul 2022 16:39:46 +0200
+        Wed, 20 Jul 2022 05:45:29 -0400
+Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B64B417049;
+        Wed, 20 Jul 2022 02:45:27 -0700 (PDT)
+Received: by mail-pj1-x1030.google.com with SMTP id a15so17294669pjs.0;
+        Wed, 20 Jul 2022 02:45:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=X3mlWFpj4S2AEsT7TyVuZdiSzXmbO7C8MQMMt/vGg64=;
+        b=RzIw6shq7/p2+9kSSnoLEbXRnqiI0CLXZmBib/B9u6Kz+jdHcSFA9jwb13WPFuw4Rq
+         fi+khaia4vqt0KsUbkVtO8cUSAaWDP5Ofp48hzPoXCkPZvWgqhkzGT7gkdifkkVaGpHP
+         Vjv3e5tTMQKX0ji35J52361j9AXAKZk5adFFy1pVLa86yW7MyrxApLc4xmk2hbLHtdMG
+         Jes4+tanrARtJLDZwim6oT2dcwDiqz9CLMbWipXP/zxJit1vFscdZDO3CQ1i6W9x76Rs
+         LQQiVVOsCpnwlMhlfGSqg7u3rZoTAS4/CJgRyacjIrYgPsi8ovT389k2cQ09CBUGmpVl
+         CoVA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=X3mlWFpj4S2AEsT7TyVuZdiSzXmbO7C8MQMMt/vGg64=;
+        b=PXWHLZmznHKvQponPvP6u3yOx/7XdeixN+RgtWryRyN/wkoksJYXz/HRjZ+io42myz
+         KuuOd2RAg+EtT/yjTo5HauAOmUrlbRxHPknyinFyWXF1xbUDt9eMFzkIZrJniVlNaHrk
+         McMwm3PFN2g1Ha9mCbRpLtHqc0IqwNwPzx5SUnBFlrtRYRK0F8ZGNIY2J7DNa59PHu6M
+         QxLVd0ZXsyo8/KrtwKmyu0DlEYSlfh/MLECa8CYbNm/o+3gDTYDz1jpiWapriHjlbk5i
+         xvio+qFj1BkHpTeP1L1oRtARfUKaGla1qMrT1kQAt33PK7VhqxYgPYvJ9V0Pr7nvl6or
+         vMTw==
+X-Gm-Message-State: AJIora+RbGtdhXY6VTnu4pc8TjQnBvpjEB6yXEDc198rgNBM7yKTyxtt
+        +lQRXOUMEX7+lSYPehoUttE=
+X-Google-Smtp-Source: AGRyM1sQfw9FLzUYvY3KYvRCDYSTojdB7+ka4nuileRmLrHXrjld7ic/4DquoAhGcv6UAgnVdVkJ2Q==
+X-Received: by 2002:a17:903:245:b0:16b:9c49:6b1c with SMTP id j5-20020a170903024500b0016b9c496b1cmr36679021plh.153.1658310326952;
+        Wed, 20 Jul 2022 02:45:26 -0700 (PDT)
+Received: from cyhuang-hp-elitebook-840-g3.rt ([2402:7500:487:b1ec:fd78:6fba:974b:164e])
+        by smtp.gmail.com with ESMTPSA id x1-20020a170902a38100b0015ee60ef65bsm13417514pla.260.2022.07.20.02.45.18
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 20 Jul 2022 02:45:26 -0700 (PDT)
+Date:   Wed, 20 Jul 2022 17:45:15 +0800
+From:   ChiYuan Huang <u0084500@gmail.com>
+To:     Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc:     ChiaEn Wu <peterwu.pub@gmail.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Chunfeng Yun <chunfeng.yun@mediatek.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>,
+        Helge Deller <deller@gmx.de>,
+        ChiaEn Wu <chiaen_wu@richtek.com>,
+        Alice Chen <alice_chen@richtek.com>,
+        cy_huang <cy_huang@richtek.com>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux LED Subsystem <linux-leds@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-mediatek@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        USB <linux-usb@vger.kernel.org>,
+        linux-iio <linux-iio@vger.kernel.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+        szuni chen <szunichen@gmail.com>,
+        ChiYuan Huang <u0084500@gmail.com>
+Subject: Re: [PATCH v5 11/13] leds: mt6370: Add MediaTek MT6370 current sink
+ type LED Indicator support
+Message-ID: <20220720094510.GA29755@cyhuang-hp-elitebook-840-g3.rt>
+References: <20220715112607.591-1-peterwu.pub@gmail.com>
+ <20220715112607.591-12-peterwu.pub@gmail.com>
+ <CAHp75VfyVufzf7CK38BVu_j0B4ax_d1gLAGYDE3H1zaKkuUB=A@mail.gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH 3/3] drm/gud: Fix endianness in gud_xrgb8888_to_color()
- helper
-To:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Gerd Hoffmann <kraxel@redhat.com>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <cover.1657300532.git.geert@linux-m68k.org>
- <b47589ed5d8ca44e0956684412e3f16f3227f887.1657300532.git.geert@linux-m68k.org>
-From:   =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
-In-Reply-To: <b47589ed5d8ca44e0956684412e3f16f3227f887.1657300532.git.geert@linux-m68k.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAHp75VfyVufzf7CK38BVu_j0B4ax_d1gLAGYDE3H1zaKkuUB=A@mail.gmail.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-
-
-Den 08.07.2022 20.21, skrev Geert Uytterhoeven:
-> DRM formats are defined to be little-endian, unless the
-> DRM_FORMAT_BIG_ENDIAN flag is set.  Hence when converting from one
-> format to another, multi-byte pixel values loaded from memory must be
-> converted from little-endian to host-endian.  Conversely, multi-byte
-> pixel values written to memory must be converted from host-endian to
-> little-endian.  Currently only drm_fb_xrgb8888_to_rgb332_line() includes
-> endianness handling.
+On Fri, Jul 15, 2022 at 08:29:42PM +0200, Andy Shevchenko wrote:
+> On Fri, Jul 15, 2022 at 1:29 PM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
+> >
+> > From: ChiYuan Huang <cy_huang@richtek.com>
+> >
+> > The MediaTek MT6370 is a highly-integrated smart power management IC,
+> > which includes a single cell Li-Ion/Li-Polymer switching battery
+> > charger, a USB Type-C & Power Delivery (PD) controller, dual
+> > Flash LED current sources, a RGB LED driver, a backlight WLED driver,
+> > a display bias driver and a general LDO for portable devices.
+> >
+> > In MediaTek MT6370, there are four channel current-sink RGB LEDs that
+> > support hardware pattern for constant current, PWM, and breath mode.
+> > Isink4 channel can also be used as a CHG_VIN power good indicator.
 > 
-> Fix gud_xrgb8888_to_color() on big-endian platforms by adding the
-> missing endianness handling.
+> ...
 > 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
-> Compile-tested only.
+> > +         This driver can also be built as a module. If so the module
 > 
-> Interestingly, drm_fb_xrgb8888_to_rgb332() was introduced for GUD,
-> and always had correct endiannes handling...
-
-RGB332 support was added later and by that time I had understood that
-the framebuffer was little endian and not host endian as I first assumed
-(there's a fixme comment in gud_pipe.c that BE is probably broken but I
-haven't got any hw to test on so I haven't tried to fix it).
-
-Thanks for fixing this, pathces 2 and 3 tested on drm/gud and applied to
-drm-misc-next.
-
-Noralf.
-
-> ---
->  drivers/gpu/drm/gud/gud_pipe.c | 14 ++++++++------
->  1 file changed, 8 insertions(+), 6 deletions(-)
+> so, the
 > 
-> diff --git a/drivers/gpu/drm/gud/gud_pipe.c b/drivers/gpu/drm/gud/gud_pipe.c
-> index 4873f9799f412e04..d42592f6daab8b2a 100644
-> --- a/drivers/gpu/drm/gud/gud_pipe.c
-> +++ b/drivers/gpu/drm/gud/gud_pipe.c
-> @@ -105,7 +105,8 @@ static size_t gud_xrgb8888_to_color(u8 *dst, const struct drm_format_info *forma
->  	unsigned int bits_per_pixel = 8 / block_width;
->  	u8 r, g, b, pix, *block = dst; /* Assign to silence compiler warning */
->  	unsigned int x, y, width;
-> -	u32 *pix32;
-> +	__le32 *sbuf32;
-> +	u32 pix32;
->  	size_t len;
->  
->  	/* Start on a byte boundary */
-> @@ -114,8 +115,8 @@ static size_t gud_xrgb8888_to_color(u8 *dst, const struct drm_format_info *forma
->  	len = drm_format_info_min_pitch(format, 0, width) * drm_rect_height(rect);
->  
->  	for (y = rect->y1; y < rect->y2; y++) {
-> -		pix32 = src + (y * fb->pitches[0]);
-> -		pix32 += rect->x1;
-> +		sbuf32 = src + (y * fb->pitches[0]);
-> +		sbuf32 += rect->x1;
->  
->  		for (x = 0; x < width; x++) {
->  			unsigned int pixpos = x % block_width; /* within byte from the left */
-> @@ -126,9 +127,10 @@ static size_t gud_xrgb8888_to_color(u8 *dst, const struct drm_format_info *forma
->  				*block = 0;
->  			}
->  
-> -			r = *pix32 >> 16;
-> -			g = *pix32 >> 8;
-> -			b = *pix32++;
-> +			pix32 = le32_to_cpu(*sbuf32++);
-> +			r = pix32 >> 16;
-> +			g = pix32 >> 8;
-> +			b = pix32;
->  
->  			switch (format->format) {
->  			case GUD_DRM_FORMAT_XRGB1111:
+> > +         will be called "leds-mt6370.ko".
+> 
+> No ".ko".
+> 
+> Why did you ignore these comments? Please go and fix _everywhere_ in
+> your series.
+> It's basically the rule of thumb, if the reviewer gives a comment
+> against an occurrence of something, go through entire series and check
+> if there are other places like commented one and address them all.
+> 
+> ...
+> 
+> > + * Author: Alice Chen <alice_chen@richtek.com>
+> 
+> Strange, the commit message doesn't have a corresponding SoB, why?
+> 
+Yes, there're two authors Alice and me.
+I'll correct it in next.
+> ...
+> 
+> > +#define MT6370_PWM_DUTY                                31
+> > +#define MT6372_PMW_DUTY                                255
+> 
+> Looks like these are limits by hardware?
+> Check with the datasheet if (BIT(x) - 1) makes more sense here.
+> 
+> ...
+> 
+> > +       switch (led_no) {
+> > +       case MT6370_LED_ISNK1:
+> > +               sel_field = F_LED1_DUTY;
+> > +               break;
+> > +       case MT6370_LED_ISNK2:
+> > +               sel_field = F_LED2_DUTY;
+> > +               break;
+> > +       case MT6370_LED_ISNK3:
+> > +               sel_field = F_LED3_DUTY;
+> > +               break;
+> > +       default:
+> > +               sel_field = F_LED4_DUTY;
+> 
+> Missed break;
+> 
+> > +       }
+> 
+> ...
+> 
+> > +       switch (led_no) {
+> > +       case MT6370_LED_ISNK1:
+> > +               sel_field = F_LED1_FREQ;
+> > +               break;
+> > +       case MT6370_LED_ISNK2:
+> > +               sel_field = F_LED2_FREQ;
+> > +               break;
+> > +       case MT6370_LED_ISNK3:
+> > +               sel_field = F_LED3_FREQ;
+> > +               break;
+> > +       default:
+> > +               sel_field = F_LED4_FREQ;
+> 
+> Ditto.
+> 
+> > +       }
+> 
+> ...
+> 
+> > +       switch (led_no) {
+> > +       case MT6370_LED_ISNK1:
+> > +       case MT6370_LED_ISNK2:
+> > +       case MT6370_LED_ISNK3:
+> > +               *base = MT6370_REG_RGB1_TR + led_no * 3;
+> > +               break;
+> > +       default:
+> > +               *base = MT6370_REG_RGB_CHRIND_TR;
+> 
+> Ditto.
+> It seems you dropped them for all switch-cases. It's not goot, please
+> restore them back.
+> 
+> > +       }
+> 
+> ...
+> 
+> > +       u8 val[P_MAX_PATTERNS / 2] = {0};
+> 
+> { } should suffice
+> 
+> 
+In the above range selector, we use the 'logic or' to generate the
+pattern values.
+
+If to change it from '{0} to '{ }', is it correct?
+> > +       /*
+> > +        * Pattern list
+> > +        * tr1: byte 0, b'[7: 4]
+> > +        * tr2: byte 0, b'[3: 0]
+> > +        * tf1: byte 1, b'[7: 4]
+> > +        * tf2: byte 1, b'[3: 0]
+> > +        * ton: byte 2, b'[7: 4]
+> > +        * toff: byte 2, b'[3: 0]
+> > +        */
+> > +       for (i = 0; i < P_MAX_PATTERNS; i++) {
+> > +               curr = pattern + i;
+> > +
+> > +               sel_range = i == P_LED_TOFF ? R_LED_TOFF : R_LED_TRFON;
+> > +
+> > +               linear_range_get_selector_within(priv->ranges + sel_range,
+> > +                                                curr->delta_t, &sel);
+> > +
+> > +               val[i / 2] |= sel << (4 * ((i + 1) % 2));
+> > +       }
+> > +
+> > +       memcpy(pattern_val, val, 3);
+> > +       return 0;
+> > +}
+> 
+> ...
+> 
+> > +out:
+> 
+> out_unlock:
+> 
+> > +       mutex_unlock(&priv->lock);
+> > +
+> > +       return ret;
+> 
+> ...
+> 
+> > +out:
+> 
+> Ditto. And so on.
+> 
+> > +       mutex_unlock(&priv->lock);
+> > +
+> > +       return ret;
+> 
+> ...
+> 
+> > +               sub_led = devm_kzalloc(priv->dev,
+> > +                                      sizeof(*sub_led) * MC_CHANNEL_NUM,
+> > +                                      GFP_KERNEL);
+> 
+> NIH devm_kcalloc(). Also check if you really need zeroed data.
+>
+Ok, and after the check, I also need to add one line to set the intensity to 0.
+> > +               if (!sub_led)
+> > +                       return -ENOMEM;
+> 
+> ...
+> 
+> > +                       ret = fwnode_property_read_u32(child, "color", &color);
+> > +                       if (ret) {
+> > +                               dev_err(priv->dev,
+> > +                                       "led %d, no color specified\n",
+> > +                                       led->index);
+> > +                               return ret;
+> 
+> return dev_err_probe(...) ; ?
+> 
+> Ditto for many places in your entire series.
+> 
+> > +                       }
+> 
+> ...
+> 
+> > +       priv = devm_kzalloc(&pdev->dev,
+> > +                           struct_size(priv, leds, count), GFP_KERNEL);
+> 
+> At least one parameter can be placed on the previous line.
+> 
+> > +       if (!priv)
+> > +               return -ENOMEM;
+> 
+> -- 
+> With Best Regards,
+> Andy Shevchenko

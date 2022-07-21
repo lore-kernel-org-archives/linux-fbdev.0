@@ -2,107 +2,186 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B3D2CCA488
-	for <linux-fbdev@archiver.kernel.org>; Thu, 21 Jul 2022 14:46:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D585CCA489
+	for <linux-fbdev@archiver.kernel.org>; Thu, 21 Jul 2022 15:32:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230132AbiGUOqd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 21 Jul 2022 10:46:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32936 "EHLO
+        id S231500AbiGUPcO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 21 Jul 2022 11:32:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45858 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229810AbiGUOqc (ORCPT
+        with ESMTP id S230291AbiGUPcK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 21 Jul 2022 10:46:32 -0400
-Received: from mail-qk1-f181.google.com (mail-qk1-f181.google.com [209.85.222.181])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B2F673910
-        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 07:46:31 -0700 (PDT)
-Received: by mail-qk1-f181.google.com with SMTP id b25so1417341qka.11
-        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 07:46:31 -0700 (PDT)
+        Thu, 21 Jul 2022 11:32:10 -0400
+Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 900EB48E9C
+        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 08:32:08 -0700 (PDT)
+Received: by mail-lf1-x131.google.com with SMTP id m12so2278784lfj.4
+        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 08:32:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=rrDT1Pzl9yr81tqKMwbGgy4cc56GaF0iYxKKVp4xCJc=;
+        b=zsAklumWJlcbhY0ct4EIIAbj8yOgjitDEOWYeEOJlE4CCM/XHYHvaWSlbP6tmRmXjv
+         7/TYVDfTMN1x9GJZA8AThGagQsi0vGlfKn4OI3Nfuz/g1Xp9piLcI6wvL4rvf4eCVd+V
+         EvAim5664qNdtseuKGB0LW5vrXqLKUAI/B5y04Dcugf+sgKdPJ/P/8baq+az85Qp9xSB
+         KwhuxBMoryZfPxi0rFBAdC12/YwtYTX3hmphh8aKtx5Hvzjs/A9fIF1L3CZVvblsDKdo
+         cSHpT1tqSKM77FPIlNMkdNudbVW8u/jdEqKTZD9xwDkgE8+v5A9W2OPKbol5HLuwdfoI
+         MEWg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=uRb/kpCM2Tp3RADIUm8HgY748KiyFCtoEV6JEoibXAk=;
-        b=WifBijIqhJ7KR1LqAHDpkOESXoYS7B0b1XWqXhbixqMo7/UNQfmWwRbRWpI+ZFuMBJ
-         Di9wa6ySAXTUvuMZB+EYjIcEcg6P/6ItuwuOjJeOBS/6jSBqDU317W9XE2mxwgH/oJqE
-         d1Cz2e+w3BLsmogNtaO/d49IS0avhfyTOimFWTco7VNmHfi421etigqiP+edrhYRvzGt
-         TsoulS2X/gc/kRXFyiZXWZj2Gwn9jeGN+huVkcR5sJVfVqT5Q2Joyt1bPhMk9xH95JzZ
-         EeS+y7Ggn/UQb5RNlH6zMMKv2M3H3x/45u5Rn+O6f3W1NdGPcZnReuqGbieyPUtNr8ib
-         UpkQ==
-X-Gm-Message-State: AJIora8aCMHlNFMOzrcFOzaGlgrQFOoSEMOy8ZuyyfvjpYj0bX8abGXl
-        uMonQ3h0EcO3OO222p4hQC4uEwe+1t8QfA==
-X-Google-Smtp-Source: AGRyM1v1u1oHN1gUDnAG1sfupQl8KVxRhofRmZ8RLCO++bnlSP/NtwEcQ2FzrabvEAFASfZb/+zuMA==
-X-Received: by 2002:a37:e31a:0:b0:6b5:c922:897d with SMTP id y26-20020a37e31a000000b006b5c922897dmr23018242qki.634.1658414790377;
-        Thu, 21 Jul 2022 07:46:30 -0700 (PDT)
-Received: from mail-yb1-f177.google.com (mail-yb1-f177.google.com. [209.85.219.177])
-        by smtp.gmail.com with ESMTPSA id cb8-20020a05622a1f8800b0031ece8b6666sm1415919qtb.43.2022.07.21.07.46.29
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 21 Jul 2022 07:46:30 -0700 (PDT)
-Received: by mail-yb1-f177.google.com with SMTP id i206so3140806ybc.5
-        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 07:46:29 -0700 (PDT)
-X-Received: by 2002:a05:6902:154f:b0:66e:e2d3:ce1 with SMTP id
- r15-20020a056902154f00b0066ee2d30ce1mr38429480ybu.365.1658414789102; Thu, 21
- Jul 2022 07:46:29 -0700 (PDT)
-MIME-Version: 1.0
-References: <20220720142732.32041-1-tzimmermann@suse.de> <20220720142732.32041-5-tzimmermann@suse.de>
-In-Reply-To: <20220720142732.32041-5-tzimmermann@suse.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Thu, 21 Jul 2022 16:46:17 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWEah62Ho4C8NQr-qwz62pKQiJiTi8Fa4KcXNRzo7ySJA@mail.gmail.com>
-Message-ID: <CAMuHMdWEah62Ho4C8NQr-qwz62pKQiJiTi8Fa4KcXNRzo7ySJA@mail.gmail.com>
-Subject: Re: [PATCH v2 04/10] drm/simpledrm: Compute framebuffer stride if not set
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     Javier Martinez Canillas <javierm@redhat.com>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        Maxime Ripard <maxime@cerno.tech>,
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=rrDT1Pzl9yr81tqKMwbGgy4cc56GaF0iYxKKVp4xCJc=;
+        b=DkzOmxaeLdpYW3swRwI4+f94FoBnFdea7R7GLj3zuYchka9HEsAl4+7cz6bb2lnhXE
+         NUysyl25aq0ssbMjdGAwWW36g3aEm6esmEvzfmxecvmr68B2jYH2WiKYBJ7w8+tagdxx
+         Bd+3ZPeYALRg2yQI2sVIfZfGj2ACqv3nA5yw4Mn2rnlCzGlardtaf3Pad9dYHeAWVBJJ
+         WWF7XoLUtYZ06H+lCWFMSE9Tk1wRt+iYML1Qd/QYxZXI1Du7j3LFi+TXLSgCIiIcU0Tx
+         vw5li+JxxgbAssGOl4eGYr6McGw5atRfmPiaxEontPKMW8F3Yq0hACvEPrRgQkW6gS21
+         V4cQ==
+X-Gm-Message-State: AJIora91HS+ipdVhS0C/GLfqMQ+blQsBhRP+gPJz1iGqXfCXfDXUGlmG
+        Pa1CfFl23080qNPtD3jJeSqy7w==
+X-Google-Smtp-Source: AGRyM1vu1xuZW6P4hxkiBne/br5RRQinT3eBea1kYAmvFe+TrOCrAhcFqOe1CC4JG1hETPWqt+GIMg==
+X-Received: by 2002:a05:6512:2244:b0:489:e75e:8e56 with SMTP id i4-20020a056512224400b00489e75e8e56mr24603377lfu.290.1658417526742;
+        Thu, 21 Jul 2022 08:32:06 -0700 (PDT)
+Received: from krzk-bin.. (89-162-31-138.fiber.signal.no. [89.162.31.138])
+        by smtp.gmail.com with ESMTPSA id a27-20020ac25e7b000000b0048a2995772asm504604lfr.73.2022.07.21.08.32.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 21 Jul 2022 08:32:06 -0700 (PDT)
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+To:     Thierry Reding <thierry.reding@gmail.com>,
         Sam Ravnborg <sam@ravnborg.org>,
-        Michal Suchanek <msuchanek@suse.de>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>
-Content-Type: text/plain; charset="UTF-8"
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Markuss Broks <markuss.broks@gmail.com>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Michael Hennerich <Michael.Hennerich@analog.com>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Alexandru Tachici <alexandru.tachici@analog.com>,
+        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
+        Tomislav Denis <tomislav.denis@avl.com>,
+        Cosmin Tanislav <cosmin.tanislav@analog.com>,
+        Nishant Malpani <nish.malpani25@gmail.com>,
+        Dragos Bogdan <dragos.bogdan@analog.com>,
+        Nuno Sa <nuno.sa@analog.com>,
+        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Mark Brown <broonie@kernel.org>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
+        Andrzej Hajda <andrzej.hajda@intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Marek Belisko <marek@goldelico.com>,
+        "H. Nikolaus Schaller" <hns@goldelico.com>,
+        Christian Eggers <ceggers@arri.de>,
+        Beniamin Bia <beniamin.bia@analog.com>,
+        Stefan Popa <stefan.popa@analog.com>,
+        Oskar Andero <oskar.andero@gmail.com>,
+        =?UTF-8?q?M=C3=A5rten=20Lindahl?= <martenli@axis.com>,
+        Dan Murphy <dmurphy@ti.com>, Sean Nyekjaer <sean@geanix.com>,
+        Cristian Pop <cristian.pop@analog.com>,
+        Lukas Wunner <lukas@wunner.de>,
+        Matt Ranostay <matt.ranostay@konsulko.com>,
+        Matheus Tavares <matheus.bernardino@usp.br>,
+        Sankar Velliangiri <navin@linumiz.com>,
+        Lubomir Rintel <lkundrak@v3.sk>,
+        Stefan Wahren <stefan.wahren@in-tech.com>,
+        Pratyush Yadav <p.yadav@ti.com>,
+        dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, netdev@vger.kernel.org,
+        linux-spi@vger.kernel.org
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH 0/6] dt-bindings: iio/panel/eeprom/misc/net/spi: drop SPI CPHA and CPOL
+Date:   Thu, 21 Jul 2022 17:31:49 +0200
+Message-Id: <20220721153155.245336-1-krzysztof.kozlowski@linaro.org>
+X-Mailer: git-send-email 2.34.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+Hi,
 
-On Wed, Jul 20, 2022 at 4:27 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> Compute the framebuffer's scanline stride length if not given by
-> the simplefb data.
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Rebased on next-20220714
 
-Thanks for your patch!
+Merging
+=======
+1. The first five patches (panel, eeprom, iio, misc and net) are independent
+   and could be taken as is.
+2. The last SPI patch depends on all previous five, so:
+   a. either everything goes through one tree (e.g. DT bindings),
+   b. or SPI patch waits one cycle till dependencies get to rcX.
 
-> --- a/drivers/gpu/drm/tiny/simpledrm.c
-> +++ b/drivers/gpu/drm/tiny/simpledrm.c
-> @@ -743,6 +743,9 @@ static struct simpledrm_device *simpledrm_device_create(struct drm_driver *drv,
->                 drm_err(dev, "no simplefb configuration found\n");
->                 return ERR_PTR(-ENODEV);
->         }
-> +       if (!stride)
-> +               stride = format->cpp[0] * width;
+Preference is (2a) - everything through one tree because I plan to include
+spi-peripheral-props.yaml in several SPI client bindings (continuation of [1]).
 
-DIV_ROUND_UP(drm_format_info_bpp(format) * width, 8)
+However IIO and SPI patch might not apply cleanly on DT bindings tree, as I
+based it on linux-next. I can rebase if such merging is preferred.
 
-> +
->         sdev->mode = simpledrm_mode(width, height);
->         sdev->format = format;
->         sdev->pitch = stride;
+Description
+===========
+The spi-cpha and spi-cpol properties are device specific and should be
+accepted only if device really needs them.  Inspired by [1].
 
-Gr{oetje,eeting}s,
+[1] https://lore.kernel.org/all/20220718220012.GA3625497-robh@kernel.org/
 
-                        Geert
+Best regards,
+Krzysztof
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Krzysztof Kozlowski (6):
+  dt-bindings: panel: explicitly list SPI CPHA and CPOL
+  dt-bindings: eeprom: at25: explicitly list SPI CPHA and CPOL
+  dt-bindings: iio: explicitly list SPI CPHA and CPOL
+  dt-bindings: misc: explicitly list SPI CPHA and CPOL
+  dt-bindings: net: explicitly list SPI CPHA and CPOL
+  spi: dt-bindings: drop CPHA and CPOL from common properties
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+ .../bindings/display/panel/lgphilips,lb035q02.yaml   | 10 ++++++++++
+ .../bindings/display/panel/samsung,ld9040.yaml       | 10 ++++++++++
+ .../bindings/display/panel/samsung,lms380kf01.yaml   | 12 +++++++++---
+ .../bindings/display/panel/samsung,lms397kf04.yaml   | 12 +++++++++---
+ .../bindings/display/panel/samsung,s6d27a1.yaml      | 12 +++++++++---
+ .../bindings/display/panel/sitronix,st7789v.yaml     | 10 ++++++++++
+ .../devicetree/bindings/display/panel/tpo,td.yaml    | 10 ++++++++++
+ Documentation/devicetree/bindings/eeprom/at25.yaml   | 10 ++++++++--
+ .../devicetree/bindings/iio/accel/adi,adxl345.yaml   | 10 ++++++++--
+ .../devicetree/bindings/iio/adc/adi,ad7192.yaml      | 10 ++++++++--
+ .../devicetree/bindings/iio/adc/adi,ad7292.yaml      |  5 ++++-
+ .../devicetree/bindings/iio/adc/adi,ad7606.yaml      | 10 ++++++++--
+ .../devicetree/bindings/iio/adc/adi,ad7768-1.yaml    | 10 ++++++++--
+ .../bindings/iio/adc/microchip,mcp3201.yaml          | 12 ++++++++++--
+ .../devicetree/bindings/iio/adc/ti,adc084s021.yaml   | 11 +++++++++--
+ .../devicetree/bindings/iio/adc/ti,ads124s08.yaml    |  5 ++++-
+ .../devicetree/bindings/iio/adc/ti,ads131e08.yaml    |  5 ++++-
+ .../devicetree/bindings/iio/addac/adi,ad74413r.yaml  |  5 ++++-
+ .../devicetree/bindings/iio/dac/adi,ad5592r.yaml     |  5 ++++-
+ .../devicetree/bindings/iio/dac/adi,ad5755.yaml      | 10 ++++++++--
+ .../devicetree/bindings/iio/dac/adi,ad5758.yaml      |  6 +++++-
+ .../devicetree/bindings/iio/dac/adi,ad5766.yaml      |  5 ++++-
+ .../devicetree/bindings/iio/dac/ti,dac082s085.yaml   |  9 +++++++--
+ .../bindings/iio/gyroscope/adi,adxrs290.yaml         | 10 ++++++++--
+ .../devicetree/bindings/iio/imu/adi,adis16460.yaml   | 12 +++++++++---
+ .../devicetree/bindings/iio/imu/adi,adis16475.yaml   | 10 ++++++++--
+ .../devicetree/bindings/iio/imu/adi,adis16480.yaml   | 11 +++++++++--
+ .../bindings/iio/imu/invensense,icm42600.yaml        | 12 ++++++++++--
+ .../bindings/iio/proximity/ams,as3935.yaml           |  5 ++++-
+ .../devicetree/bindings/iio/resolver/adi,ad2s90.yaml | 10 ++++++++--
+ .../bindings/iio/temperature/maxim,max31855k.yaml    |  6 +++++-
+ .../bindings/iio/temperature/maxim,max31856.yaml     |  6 +++++-
+ .../bindings/iio/temperature/maxim,max31865.yaml     |  6 +++++-
+ .../devicetree/bindings/misc/olpc,xo1.75-ec.yaml     |  5 ++++-
+ .../devicetree/bindings/net/nfc/marvell,nci.yaml     | 12 ++++++++++--
+ .../devicetree/bindings/net/vertexcom-mse102x.yaml   | 12 +++++++++---
+ .../bindings/spi/spi-peripheral-props.yaml           | 10 ----------
+ 37 files changed, 264 insertions(+), 67 deletions(-)
+
+-- 
+2.34.1
+

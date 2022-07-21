@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D585CCA489
-	for <linux-fbdev@archiver.kernel.org>; Thu, 21 Jul 2022 15:32:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0C7BC433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 21 Jul 2022 15:32:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231500AbiGUPcO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 21 Jul 2022 11:32:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45858 "EHLO
+        id S231895AbiGUPck (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 21 Jul 2022 11:32:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46056 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230291AbiGUPcK (ORCPT
+        with ESMTP id S231583AbiGUPcQ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 21 Jul 2022 11:32:10 -0400
-Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 900EB48E9C
-        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 08:32:08 -0700 (PDT)
-Received: by mail-lf1-x131.google.com with SMTP id m12so2278784lfj.4
-        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 08:32:08 -0700 (PDT)
+        Thu, 21 Jul 2022 11:32:16 -0400
+Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B5AF820EE
+        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 08:32:15 -0700 (PDT)
+Received: by mail-lj1-x235.google.com with SMTP id r14so2266844ljp.2
+        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 08:32:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=rrDT1Pzl9yr81tqKMwbGgy4cc56GaF0iYxKKVp4xCJc=;
-        b=zsAklumWJlcbhY0ct4EIIAbj8yOgjitDEOWYeEOJlE4CCM/XHYHvaWSlbP6tmRmXjv
-         7/TYVDfTMN1x9GJZA8AThGagQsi0vGlfKn4OI3Nfuz/g1Xp9piLcI6wvL4rvf4eCVd+V
-         EvAim5664qNdtseuKGB0LW5vrXqLKUAI/B5y04Dcugf+sgKdPJ/P/8baq+az85Qp9xSB
-         KwhuxBMoryZfPxi0rFBAdC12/YwtYTX3hmphh8aKtx5Hvzjs/A9fIF1L3CZVvblsDKdo
-         cSHpT1tqSKM77FPIlNMkdNudbVW8u/jdEqKTZD9xwDkgE8+v5A9W2OPKbol5HLuwdfoI
-         MEWg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=EQ3a4s4qAEwtcohIu8tm1jnBQEyD7eezvu0seYsojDk=;
+        b=pikqJKQKDc80pZvt5GG9B/77j9Vze0u0SHT/M63SdP85NaV/WJhfiWUx/O1iwBo1Zs
+         51WywlGFpQWGed8kGkk3jy3hRIlYyF6bMoDMzVFESaPihCyv2oGnsZBrm+fYFQQUvEfI
+         8SERir7uPVpgDr1aUxZpdzczhbLYBol8OzA6bkZU1Q4mIQjwb2Wno1DEK6jwYIdYnX3s
+         a7ZnCdCjHAjyZ8H5kdIxU1KB2fF5E+C2gKb1LQV8HYp2F5BTeFLPaSMuW8NDUaoIGUuS
+         eJ0tKfWVX9DsAu/i2o+lGMU/UooKmEoL+XO1TwpEoziUCJ/CUbB4nG9nYzyj0wOLRrVO
+         aDaA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=rrDT1Pzl9yr81tqKMwbGgy4cc56GaF0iYxKKVp4xCJc=;
-        b=DkzOmxaeLdpYW3swRwI4+f94FoBnFdea7R7GLj3zuYchka9HEsAl4+7cz6bb2lnhXE
-         NUysyl25aq0ssbMjdGAwWW36g3aEm6esmEvzfmxecvmr68B2jYH2WiKYBJ7w8+tagdxx
-         Bd+3ZPeYALRg2yQI2sVIfZfGj2ACqv3nA5yw4Mn2rnlCzGlardtaf3Pad9dYHeAWVBJJ
-         WWF7XoLUtYZ06H+lCWFMSE9Tk1wRt+iYML1Qd/QYxZXI1Du7j3LFi+TXLSgCIiIcU0Tx
-         vw5li+JxxgbAssGOl4eGYr6McGw5atRfmPiaxEontPKMW8F3Yq0hACvEPrRgQkW6gS21
-         V4cQ==
-X-Gm-Message-State: AJIora91HS+ipdVhS0C/GLfqMQ+blQsBhRP+gPJz1iGqXfCXfDXUGlmG
-        Pa1CfFl23080qNPtD3jJeSqy7w==
-X-Google-Smtp-Source: AGRyM1vu1xuZW6P4hxkiBne/br5RRQinT3eBea1kYAmvFe+TrOCrAhcFqOe1CC4JG1hETPWqt+GIMg==
-X-Received: by 2002:a05:6512:2244:b0:489:e75e:8e56 with SMTP id i4-20020a056512224400b00489e75e8e56mr24603377lfu.290.1658417526742;
-        Thu, 21 Jul 2022 08:32:06 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=EQ3a4s4qAEwtcohIu8tm1jnBQEyD7eezvu0seYsojDk=;
+        b=5LwxWHrFXTKL9DH7eowb9MKQkx9dc8TtYVa5V92I45D+PT4LK/hQhX21JeC67TpsFh
+         iZG9gEZwjzAx4yHMHI8UChbckXbDB7ELB4R+NS9ionQQUR5ASt7p8h8GF0RaRQYTNNTV
+         G8fXtGW//Tb2LkCge/kRbXna1PpaEuCPxVaHvE/MG+jqo380Vh+ibhjn1cGU53bGvqjV
+         /w0QEHKH/ijJZWc9gr2r/YD5xLbBLXBXgx8YL0Nufa9ymCloVT0TqKqo85QY+xtsAWhS
+         jCiDmKkTHj3av26nqR+anRJMdq5PYOyJh4KDubgGJTFhl8XSfUA4AxN4ZSNvGqo8GKVr
+         VjPg==
+X-Gm-Message-State: AJIora8pm1KiRN2IDgu7PVQ0ZrnwLCEarudNu4h2rLuZ+PxNssunl8nR
+        Afvy8I4iAJJydEnAODWt3nHc7w==
+X-Google-Smtp-Source: AGRyM1tu65CRx5q05gwHKFNcvSCCItevg0NuGLpkWKa4yuq3GQbnJvL5P0DuUjKl3ITIfcyOAD7U5g==
+X-Received: by 2002:a2e:164b:0:b0:25d:eb67:7161 with SMTP id 11-20020a2e164b000000b0025deb677161mr256507ljw.70.1658417531893;
+        Thu, 21 Jul 2022 08:32:11 -0700 (PDT)
 Received: from krzk-bin.. (89-162-31-138.fiber.signal.no. [89.162.31.138])
-        by smtp.gmail.com with ESMTPSA id a27-20020ac25e7b000000b0048a2995772asm504604lfr.73.2022.07.21.08.32.04
+        by smtp.gmail.com with ESMTPSA id a27-20020ac25e7b000000b0048a2995772asm504604lfr.73.2022.07.21.08.32.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 Jul 2022 08:32:06 -0700 (PDT)
+        Thu, 21 Jul 2022 08:32:11 -0700 (PDT)
 From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Sam Ravnborg <sam@ravnborg.org>,
@@ -97,91 +97,50 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         linux-fbdev@vger.kernel.org, netdev@vger.kernel.org,
         linux-spi@vger.kernel.org
 Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH 0/6] dt-bindings: iio/panel/eeprom/misc/net/spi: drop SPI CPHA and CPOL
-Date:   Thu, 21 Jul 2022 17:31:49 +0200
-Message-Id: <20220721153155.245336-1-krzysztof.kozlowski@linaro.org>
+Subject: [PATCH 2/6] dt-bindings: eeprom: at25: explicitly list SPI CPHA and CPOL
+Date:   Thu, 21 Jul 2022 17:31:51 +0200
+Message-Id: <20220721153155.245336-3-krzysztof.kozlowski@linaro.org>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220721153155.245336-1-krzysztof.kozlowski@linaro.org>
+References: <20220721153155.245336-1-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
-
-Rebased on next-20220714
-
-Merging
-=======
-1. The first five patches (panel, eeprom, iio, misc and net) are independent
-   and could be taken as is.
-2. The last SPI patch depends on all previous five, so:
-   a. either everything goes through one tree (e.g. DT bindings),
-   b. or SPI patch waits one cycle till dependencies get to rcX.
-
-Preference is (2a) - everything through one tree because I plan to include
-spi-peripheral-props.yaml in several SPI client bindings (continuation of [1]).
-
-However IIO and SPI patch might not apply cleanly on DT bindings tree, as I
-based it on linux-next. I can rebase if such merging is preferred.
-
-Description
-===========
 The spi-cpha and spi-cpol properties are device specific and should be
-accepted only if device really needs them.  Inspired by [1].
+accepted only if device really needs them.  Explicitly list them in
+device bindings in preparation of their removal from generic
+spi-peripheral-props.yaml schema.
 
-[1] https://lore.kernel.org/all/20220718220012.GA3625497-robh@kernel.org/
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ Documentation/devicetree/bindings/eeprom/at25.yaml | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-Best regards,
-Krzysztof
-
-Krzysztof Kozlowski (6):
-  dt-bindings: panel: explicitly list SPI CPHA and CPOL
-  dt-bindings: eeprom: at25: explicitly list SPI CPHA and CPOL
-  dt-bindings: iio: explicitly list SPI CPHA and CPOL
-  dt-bindings: misc: explicitly list SPI CPHA and CPOL
-  dt-bindings: net: explicitly list SPI CPHA and CPOL
-  spi: dt-bindings: drop CPHA and CPOL from common properties
-
- .../bindings/display/panel/lgphilips,lb035q02.yaml   | 10 ++++++++++
- .../bindings/display/panel/samsung,ld9040.yaml       | 10 ++++++++++
- .../bindings/display/panel/samsung,lms380kf01.yaml   | 12 +++++++++---
- .../bindings/display/panel/samsung,lms397kf04.yaml   | 12 +++++++++---
- .../bindings/display/panel/samsung,s6d27a1.yaml      | 12 +++++++++---
- .../bindings/display/panel/sitronix,st7789v.yaml     | 10 ++++++++++
- .../devicetree/bindings/display/panel/tpo,td.yaml    | 10 ++++++++++
- Documentation/devicetree/bindings/eeprom/at25.yaml   | 10 ++++++++--
- .../devicetree/bindings/iio/accel/adi,adxl345.yaml   | 10 ++++++++--
- .../devicetree/bindings/iio/adc/adi,ad7192.yaml      | 10 ++++++++--
- .../devicetree/bindings/iio/adc/adi,ad7292.yaml      |  5 ++++-
- .../devicetree/bindings/iio/adc/adi,ad7606.yaml      | 10 ++++++++--
- .../devicetree/bindings/iio/adc/adi,ad7768-1.yaml    | 10 ++++++++--
- .../bindings/iio/adc/microchip,mcp3201.yaml          | 12 ++++++++++--
- .../devicetree/bindings/iio/adc/ti,adc084s021.yaml   | 11 +++++++++--
- .../devicetree/bindings/iio/adc/ti,ads124s08.yaml    |  5 ++++-
- .../devicetree/bindings/iio/adc/ti,ads131e08.yaml    |  5 ++++-
- .../devicetree/bindings/iio/addac/adi,ad74413r.yaml  |  5 ++++-
- .../devicetree/bindings/iio/dac/adi,ad5592r.yaml     |  5 ++++-
- .../devicetree/bindings/iio/dac/adi,ad5755.yaml      | 10 ++++++++--
- .../devicetree/bindings/iio/dac/adi,ad5758.yaml      |  6 +++++-
- .../devicetree/bindings/iio/dac/adi,ad5766.yaml      |  5 ++++-
- .../devicetree/bindings/iio/dac/ti,dac082s085.yaml   |  9 +++++++--
- .../bindings/iio/gyroscope/adi,adxrs290.yaml         | 10 ++++++++--
- .../devicetree/bindings/iio/imu/adi,adis16460.yaml   | 12 +++++++++---
- .../devicetree/bindings/iio/imu/adi,adis16475.yaml   | 10 ++++++++--
- .../devicetree/bindings/iio/imu/adi,adis16480.yaml   | 11 +++++++++--
- .../bindings/iio/imu/invensense,icm42600.yaml        | 12 ++++++++++--
- .../bindings/iio/proximity/ams,as3935.yaml           |  5 ++++-
- .../devicetree/bindings/iio/resolver/adi,ad2s90.yaml | 10 ++++++++--
- .../bindings/iio/temperature/maxim,max31855k.yaml    |  6 +++++-
- .../bindings/iio/temperature/maxim,max31856.yaml     |  6 +++++-
- .../bindings/iio/temperature/maxim,max31865.yaml     |  6 +++++-
- .../devicetree/bindings/misc/olpc,xo1.75-ec.yaml     |  5 ++++-
- .../devicetree/bindings/net/nfc/marvell,nci.yaml     | 12 ++++++++++--
- .../devicetree/bindings/net/vertexcom-mse102x.yaml   | 12 +++++++++---
- .../bindings/spi/spi-peripheral-props.yaml           | 10 ----------
- 37 files changed, 264 insertions(+), 67 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/eeprom/at25.yaml b/Documentation/devicetree/bindings/eeprom/at25.yaml
+index fbf99e346966..64666624b6aa 100644
+--- a/Documentation/devicetree/bindings/eeprom/at25.yaml
++++ b/Documentation/devicetree/bindings/eeprom/at25.yaml
+@@ -65,9 +65,15 @@ properties:
+       For 9 bits, the MSB of the address is sent as bit 3 of the instruction
+       byte, before the address byte.
+ 
+-  spi-cpha: true
++  spi-cpha:
++    type: boolean
++    description:
++      The device requires shifted clock phase (CPHA) mode.
+ 
+-  spi-cpol: true
++  spi-cpol:
++    type: boolean
++    description:
++      The device requires inverse clock polarity (CPOL) mode.
+ 
+   read-only:
+     description:
 -- 
 2.34.1
 

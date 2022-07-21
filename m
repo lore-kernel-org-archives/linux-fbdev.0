@@ -2,126 +2,117 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96100C43334
-	for <linux-fbdev@archiver.kernel.org>; Thu, 21 Jul 2022 10:09:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BE68C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 21 Jul 2022 14:17:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233076AbiGUKJz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 21 Jul 2022 06:09:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39742 "EHLO
+        id S229481AbiGUORP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 21 Jul 2022 10:17:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57838 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232939AbiGUKJy (ORCPT
+        with ESMTP id S229985AbiGUORO (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 21 Jul 2022 06:09:54 -0400
-Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B4DA691D2;
-        Thu, 21 Jul 2022 03:09:52 -0700 (PDT)
-Received: by mail-pf1-x433.google.com with SMTP id w185so1329655pfb.4;
-        Thu, 21 Jul 2022 03:09:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=JsNvQYgS7LcjVv/c6iexGN5Si+fKRd5f5BAbC7QtYk4=;
-        b=eAa08a3+tl/ZofuTfcSSlCIRAq8gzsE5weAOP7UsxCGX7Y3mEwbV149NCokUNAuKe5
-         EN8JAjfmhP9N9CspG2jqaZSyIaGbkZUhDaW7qofKWFu8aKMXKSZIN/OslbLhdpG3vXAe
-         Ur/lyWqy91Q56Es+2f1zy2dzQ+hj8jlo3qE0YiObY2S52rcdXtLGShkNUGJiecJGeLOG
-         GtukmBHV1TgkmoL4837XnIBFnmUr7cQbqEUii+cPTEyr6HZ7158GO1PQ1FREaPNHpO3p
-         +zxpj8UH5CIEkJ0zMqYXxrZuHhPdN0LgPYLVzbKBbdgveUmcPeMuT3v6VXPjNd763lsV
-         k55Q==
+        Thu, 21 Jul 2022 10:17:14 -0400
+Received: from mail-qk1-f176.google.com (mail-qk1-f176.google.com [209.85.222.176])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CDA5E5FAF
+        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 07:17:13 -0700 (PDT)
+Received: by mail-qk1-f176.google.com with SMTP id n2so1355692qkk.8
+        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 07:17:13 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=JsNvQYgS7LcjVv/c6iexGN5Si+fKRd5f5BAbC7QtYk4=;
-        b=8NhrzcyPq8vo0eJhwJoQ3PDeYP8gtUM6T0S3PS/2iBRqpZ3WK2j2d02LCAXJWtijR0
-         ZFvkCFt7LxfEH8kXTYAjO0gcI5ex1sCbl9kXXPbGpcCgyVfZF98nBjeLtPCrC8g/S+SO
-         pxurZMjOnsWUN+dNGLSeEGRZiOkednYQcxjbSWD5mkkfGPVGdPTuqiHBSbrGwx/yRqiB
-         wCgknT25M6Brs+Nsf2EWbgIUr+MNm5+v0mfKt96EF+qkLkzV+gfxtAqD+/fp/354Y303
-         xSRxpMLc2M9FfDSGGgaMo6M1TwuVkktvB7K8nrE13H9RnKLNeXTCPaD6xVAorDH+Eu76
-         4Ylw==
-X-Gm-Message-State: AJIora/WFL/93eMT8Q7EgbhNiTf0wbblbTmaLkYxrNNSsd+bq8GvxdwU
-        ygFMao6IanLXTjJ5GnbX6kM=
-X-Google-Smtp-Source: AGRyM1tMdDKZ5ydOiuf36WZNOlcNoDOh7UeG2Wl5nFnV3DeSsvm2YGSyx3q8fnZshmx3L5mTpd0DGQ==
-X-Received: by 2002:a05:6a00:23c9:b0:52a:cedd:3992 with SMTP id g9-20020a056a0023c900b0052acedd3992mr42915651pfc.43.1658398191449;
-        Thu, 21 Jul 2022 03:09:51 -0700 (PDT)
-Received: from cyhuang-hp-elitebook-840-g3.rt ([2402:7500:56a:cec2:d9ce:3b52:7023:4b90])
-        by smtp.gmail.com with ESMTPSA id x187-20020a6286c4000000b0052ac2e23295sm1351501pfd.44.2022.07.21.03.09.41
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 21 Jul 2022 03:09:50 -0700 (PDT)
-Date:   Thu, 21 Jul 2022 18:09:37 +0800
-From:   ChiYuan Huang <u0084500@gmail.com>
-To:     Pavel Machek <pavel@ucw.cz>
-Cc:     ChiaEn Wu <peterwu.pub@gmail.com>, lee.jones@linaro.org,
-        daniel.thompson@linaro.org, jingoohan1@gmail.com,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        matthias.bgg@gmail.com, sre@kernel.org, chunfeng.yun@mediatek.com,
-        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
-        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
-        heikki.krogerus@linux.intel.com, deller@gmx.de,
-        chiaen_wu@richtek.com, alice_chen@richtek.com,
-        cy_huang@richtek.com, dri-devel@lists.freedesktop.org,
-        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        szunichen@gmail.com
-Subject: Re: [PATCH v5 11/13] leds: mt6370: Add MediaTek MT6370 current sink
- type LED Indicator support
-Message-ID: <20220721100933.GA17618@cyhuang-hp-elitebook-840-g3.rt>
-References: <20220715112607.591-1-peterwu.pub@gmail.com>
- <20220715112607.591-12-peterwu.pub@gmail.com>
- <20220717084643.GA14285@duo.ucw.cz>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=IlgcF/GK95Rjt3bgvSjXlIF1TgHRln+uJln/ZYG0UwI=;
+        b=Yb5N9X/0lT7xwlypHgpm1bM2xsmeKIcrRQOhWjq2HA5h0Oi7Uyvj1pE1pyUFACIUje
+         Z2kNWaV+sQ+FIukkBYOLSgouYh8nBsLh2+5Ouxcr6GfNJVQ4QkhZj7wgcS6olH3dGaSl
+         DVe+uSqKfdDMhW/VdkfBk+cEBsXSuykD21wxk98bC5S7v9dplO+u9uQEmV1dT3jlyCpE
+         lnHHWb/NyQVyty514bkm6UNX53PcYfMzCSDE3tD69oNrK4BdlTvdOQZcu8uzzwXiNkYG
+         RO3ukyn++224RtNcMP+dc+hFUPXqqtTFXUdtEKhAfCxR7rxM0UwZjkh95NrJwRHhmYV6
+         oKAQ==
+X-Gm-Message-State: AJIora+dKxG/f3rQ6kf04OyD7360+G4PzPhjfviV1RtlamuxJ2zi2+lo
+        8Kr6N2vZHLvPxpPPLPJiPa7Gqo3WnZCScA==
+X-Google-Smtp-Source: AGRyM1tanwxjSXjtZmYFcq82P7nKcrBt6ePhbfWYY0SO/0qpYwcEhTdsn5MtEs3VPvLLjRyi55symQ==
+X-Received: by 2002:a37:b384:0:b0:6b5:5b78:a655 with SMTP id c126-20020a37b384000000b006b55b78a655mr27087916qkf.769.1658413032528;
+        Thu, 21 Jul 2022 07:17:12 -0700 (PDT)
+Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com. [209.85.128.176])
+        by smtp.gmail.com with ESMTPSA id y11-20020a05622a004b00b003051f450049sm1475214qtw.8.2022.07.21.07.17.11
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 21 Jul 2022 07:17:12 -0700 (PDT)
+Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-31e1ecea074so18552187b3.8
+        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 07:17:11 -0700 (PDT)
+X-Received: by 2002:a81:6088:0:b0:31e:79fd:3dfa with SMTP id
+ u130-20020a816088000000b0031e79fd3dfamr4529972ywb.47.1658413031348; Thu, 21
+ Jul 2022 07:17:11 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220717084643.GA14285@duo.ucw.cz>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+References: <20220718072322.8927-1-tzimmermann@suse.de> <20220718072322.8927-7-tzimmermann@suse.de>
+In-Reply-To: <20220718072322.8927-7-tzimmermann@suse.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Thu, 21 Jul 2022 16:17:00 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVnZDu2jZyUsuCG_Z+NRUoJ_0bK2zxezo92V2XTuRgzdQ@mail.gmail.com>
+Message-ID: <CAMuHMdVnZDu2jZyUsuCG_Z+NRUoJ_0bK2zxezo92V2XTuRgzdQ@mail.gmail.com>
+Subject: Re: [PATCH v2 06/11] fbdev: Remove conflicting devices on PCI bus
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Javier Martinez Canillas <javierm@redhat.com>,
+        Helge Deller <deller@gmx.de>, Daniel Vetter <daniel@ffwll.ch>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        linux-staging@lists.linux.dev,
+        DRI Development <dri-devel@lists.freedesktop.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, Jul 17, 2022 at 10:46:43AM +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > The MediaTek MT6370 is a highly-integrated smart power management IC,
-> > which includes a single cell Li-Ion/Li-Polymer switching battery
-> > charger, a USB Type-C & Power Delivery (PD) controller, dual
-> > Flash LED current sources, a RGB LED driver, a backlight WLED driver,
-> > a display bias driver and a general LDO for portable devices.
-> > 
-> > In MediaTek MT6370, there are four channel current-sink RGB LEDs that
-> > support hardware pattern for constant current, PWM, and breath mode.
-> > Isink4 channel can also be used as a CHG_VIN power good indicator.
-> > 
-> > Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
-> 
-> > index a49979f..71bacb5 100644
-> > --- a/drivers/leds/Kconfig
-> > +++ b/drivers/leds/Kconfig
-> > @@ -244,6 +244,20 @@ config LEDS_MT6323
-> >  	  This option enables support for on-chip LED drivers found on
-> >  	  Mediatek MT6323 PMIC.
-> >  
-> > +config LEDS_MT6370_RGB
-> > +	tristate "LED Support for MediaTek MT6370 PMIC"
-> > +	depends on LEDS_CLASS
-> > +	depends on MFD_MT6370
-> > +	select LINEAR_RANGE
-> > +	help
-> > +	  Say Y here to enable support for MT6370_RGB LED device.
-> > +	  In MT6370, there are four channel current-sink LED drivers that
-> > +	  support hardware pattern for constant current, PWM, and breath mode.
-> > +	  Isink4 channel can also be used as a CHG_VIN power good
-> 
-> Should this go to leds/rgb directory, and should it depend on
-> multicolor framework?
-Yes, and I may also want to change the file name from 'leds-mt6370'
-to 'leds-mt6370-rgb'. Is it ok?
-> 
-> Best regards,
-> 							Pavel
-> -- 
-> People of Russia, stop Putin before his war on Ukraine escalates.
+Hi Thomas,
 
+On Mon, Jul 18, 2022 at 9:24 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Remove firmware devices on the PCI bus, by calling
+> aperture_remove_conflicting_pci_devices() in the probe function of
+> each related fbdev driver. iSo far, most of these drivers did not
+> remove conflicting VESA or EFI devices, or outride failed for
+> resource conflicts (i.e., matroxfb.) This must have been broken
+> for quite some time.
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
+Thanks for your patch!
+
+> --- a/drivers/video/fbdev/tgafb.c
+> +++ b/drivers/video/fbdev/tgafb.c
+> @@ -12,6 +12,7 @@
+>   *  more details.
+>   */
+>
+> +#include <linux/aperture.h>
+>  #include <linux/bitrev.h>
+>  #include <linux/compiler.h>
+>  #include <linux/delay.h>
+> @@ -106,6 +107,12 @@ static struct pci_driver tgafb_pci_driver = {
+>  static int tgafb_pci_register(struct pci_dev *pdev,
+>                               const struct pci_device_id *ent)
+>  {
+> +       int ret;
+> +
+> +       ret = aperture_remove_conflicting_pci_devices(pdev, "tgafb");
+> +       if (ret)
+> +               return ret;
+> +
+>         return tgafb_register(&pdev->dev);
+>  }
+
+I am wondering which driver could possibly conflict with TGA?
+
+Probably there are a few other drivers in the same category (tdfxfb?).
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

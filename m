@@ -2,62 +2,68 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BE68C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 21 Jul 2022 14:17:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B3D2CCA488
+	for <linux-fbdev@archiver.kernel.org>; Thu, 21 Jul 2022 14:46:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229481AbiGUORP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 21 Jul 2022 10:17:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57838 "EHLO
+        id S230132AbiGUOqd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 21 Jul 2022 10:46:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32936 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229985AbiGUORO (ORCPT
+        with ESMTP id S229810AbiGUOqc (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 21 Jul 2022 10:17:14 -0400
-Received: from mail-qk1-f176.google.com (mail-qk1-f176.google.com [209.85.222.176])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CDA5E5FAF
-        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 07:17:13 -0700 (PDT)
-Received: by mail-qk1-f176.google.com with SMTP id n2so1355692qkk.8
-        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 07:17:13 -0700 (PDT)
+        Thu, 21 Jul 2022 10:46:32 -0400
+Received: from mail-qk1-f181.google.com (mail-qk1-f181.google.com [209.85.222.181])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B2F673910
+        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 07:46:31 -0700 (PDT)
+Received: by mail-qk1-f181.google.com with SMTP id b25so1417341qka.11
+        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 07:46:31 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=IlgcF/GK95Rjt3bgvSjXlIF1TgHRln+uJln/ZYG0UwI=;
-        b=Yb5N9X/0lT7xwlypHgpm1bM2xsmeKIcrRQOhWjq2HA5h0Oi7Uyvj1pE1pyUFACIUje
-         Z2kNWaV+sQ+FIukkBYOLSgouYh8nBsLh2+5Ouxcr6GfNJVQ4QkhZj7wgcS6olH3dGaSl
-         DVe+uSqKfdDMhW/VdkfBk+cEBsXSuykD21wxk98bC5S7v9dplO+u9uQEmV1dT3jlyCpE
-         lnHHWb/NyQVyty514bkm6UNX53PcYfMzCSDE3tD69oNrK4BdlTvdOQZcu8uzzwXiNkYG
-         RO3ukyn++224RtNcMP+dc+hFUPXqqtTFXUdtEKhAfCxR7rxM0UwZjkh95NrJwRHhmYV6
-         oKAQ==
-X-Gm-Message-State: AJIora+dKxG/f3rQ6kf04OyD7360+G4PzPhjfviV1RtlamuxJ2zi2+lo
-        8Kr6N2vZHLvPxpPPLPJiPa7Gqo3WnZCScA==
-X-Google-Smtp-Source: AGRyM1tanwxjSXjtZmYFcq82P7nKcrBt6ePhbfWYY0SO/0qpYwcEhTdsn5MtEs3VPvLLjRyi55symQ==
-X-Received: by 2002:a37:b384:0:b0:6b5:5b78:a655 with SMTP id c126-20020a37b384000000b006b55b78a655mr27087916qkf.769.1658413032528;
-        Thu, 21 Jul 2022 07:17:12 -0700 (PDT)
-Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com. [209.85.128.176])
-        by smtp.gmail.com with ESMTPSA id y11-20020a05622a004b00b003051f450049sm1475214qtw.8.2022.07.21.07.17.11
+        bh=uRb/kpCM2Tp3RADIUm8HgY748KiyFCtoEV6JEoibXAk=;
+        b=WifBijIqhJ7KR1LqAHDpkOESXoYS7B0b1XWqXhbixqMo7/UNQfmWwRbRWpI+ZFuMBJ
+         Di9wa6ySAXTUvuMZB+EYjIcEcg6P/6ItuwuOjJeOBS/6jSBqDU317W9XE2mxwgH/oJqE
+         d1Cz2e+w3BLsmogNtaO/d49IS0avhfyTOimFWTco7VNmHfi421etigqiP+edrhYRvzGt
+         TsoulS2X/gc/kRXFyiZXWZj2Gwn9jeGN+huVkcR5sJVfVqT5Q2Joyt1bPhMk9xH95JzZ
+         EeS+y7Ggn/UQb5RNlH6zMMKv2M3H3x/45u5Rn+O6f3W1NdGPcZnReuqGbieyPUtNr8ib
+         UpkQ==
+X-Gm-Message-State: AJIora8aCMHlNFMOzrcFOzaGlgrQFOoSEMOy8ZuyyfvjpYj0bX8abGXl
+        uMonQ3h0EcO3OO222p4hQC4uEwe+1t8QfA==
+X-Google-Smtp-Source: AGRyM1v1u1oHN1gUDnAG1sfupQl8KVxRhofRmZ8RLCO++bnlSP/NtwEcQ2FzrabvEAFASfZb/+zuMA==
+X-Received: by 2002:a37:e31a:0:b0:6b5:c922:897d with SMTP id y26-20020a37e31a000000b006b5c922897dmr23018242qki.634.1658414790377;
+        Thu, 21 Jul 2022 07:46:30 -0700 (PDT)
+Received: from mail-yb1-f177.google.com (mail-yb1-f177.google.com. [209.85.219.177])
+        by smtp.gmail.com with ESMTPSA id cb8-20020a05622a1f8800b0031ece8b6666sm1415919qtb.43.2022.07.21.07.46.29
         for <linux-fbdev@vger.kernel.org>
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 21 Jul 2022 07:17:12 -0700 (PDT)
-Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-31e1ecea074so18552187b3.8
-        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 07:17:11 -0700 (PDT)
-X-Received: by 2002:a81:6088:0:b0:31e:79fd:3dfa with SMTP id
- u130-20020a816088000000b0031e79fd3dfamr4529972ywb.47.1658413031348; Thu, 21
- Jul 2022 07:17:11 -0700 (PDT)
+        Thu, 21 Jul 2022 07:46:30 -0700 (PDT)
+Received: by mail-yb1-f177.google.com with SMTP id i206so3140806ybc.5
+        for <linux-fbdev@vger.kernel.org>; Thu, 21 Jul 2022 07:46:29 -0700 (PDT)
+X-Received: by 2002:a05:6902:154f:b0:66e:e2d3:ce1 with SMTP id
+ r15-20020a056902154f00b0066ee2d30ce1mr38429480ybu.365.1658414789102; Thu, 21
+ Jul 2022 07:46:29 -0700 (PDT)
 MIME-Version: 1.0
-References: <20220718072322.8927-1-tzimmermann@suse.de> <20220718072322.8927-7-tzimmermann@suse.de>
-In-Reply-To: <20220718072322.8927-7-tzimmermann@suse.de>
+References: <20220720142732.32041-1-tzimmermann@suse.de> <20220720142732.32041-5-tzimmermann@suse.de>
+In-Reply-To: <20220720142732.32041-5-tzimmermann@suse.de>
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Thu, 21 Jul 2022 16:17:00 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdVnZDu2jZyUsuCG_Z+NRUoJ_0bK2zxezo92V2XTuRgzdQ@mail.gmail.com>
-Message-ID: <CAMuHMdVnZDu2jZyUsuCG_Z+NRUoJ_0bK2zxezo92V2XTuRgzdQ@mail.gmail.com>
-Subject: Re: [PATCH v2 06/11] fbdev: Remove conflicting devices on PCI bus
+Date:   Thu, 21 Jul 2022 16:46:17 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdWEah62Ho4C8NQr-qwz62pKQiJiTi8Fa4KcXNRzo7ySJA@mail.gmail.com>
+Message-ID: <CAMuHMdWEah62Ho4C8NQr-qwz62pKQiJiTi8Fa4KcXNRzo7ySJA@mail.gmail.com>
+Subject: Re: [PATCH v2 04/10] drm/simpledrm: Compute framebuffer stride if not set
 To:     Thomas Zimmermann <tzimmermann@suse.de>
 Cc:     Javier Martinez Canillas <javierm@redhat.com>,
-        Helge Deller <deller@gmx.de>, Daniel Vetter <daniel@ffwll.ch>,
-        Sam Ravnborg <sam@ravnborg.org>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
         Maxime Ripard <maxime@cerno.tech>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Michal Suchanek <msuchanek@suse.de>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        linux-staging@lists.linux.dev,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
         DRI Development <dri-devel@lists.freedesktop.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
@@ -66,45 +72,29 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Hi Thomas,
 
-On Mon, Jul 18, 2022 at 9:24 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> Remove firmware devices on the PCI bus, by calling
-> aperture_remove_conflicting_pci_devices() in the probe function of
-> each related fbdev driver. iSo far, most of these drivers did not
-> remove conflicting VESA or EFI devices, or outride failed for
-> resource conflicts (i.e., matroxfb.) This must have been broken
-> for quite some time.
+On Wed, Jul 20, 2022 at 4:27 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Compute the framebuffer's scanline stride length if not given by
+> the simplefb data.
 >
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
 Thanks for your patch!
 
-> --- a/drivers/video/fbdev/tgafb.c
-> +++ b/drivers/video/fbdev/tgafb.c
-> @@ -12,6 +12,7 @@
->   *  more details.
->   */
->
-> +#include <linux/aperture.h>
->  #include <linux/bitrev.h>
->  #include <linux/compiler.h>
->  #include <linux/delay.h>
-> @@ -106,6 +107,12 @@ static struct pci_driver tgafb_pci_driver = {
->  static int tgafb_pci_register(struct pci_dev *pdev,
->                               const struct pci_device_id *ent)
->  {
-> +       int ret;
-> +
-> +       ret = aperture_remove_conflicting_pci_devices(pdev, "tgafb");
-> +       if (ret)
-> +               return ret;
-> +
->         return tgafb_register(&pdev->dev);
->  }
+> --- a/drivers/gpu/drm/tiny/simpledrm.c
+> +++ b/drivers/gpu/drm/tiny/simpledrm.c
+> @@ -743,6 +743,9 @@ static struct simpledrm_device *simpledrm_device_create(struct drm_driver *drv,
+>                 drm_err(dev, "no simplefb configuration found\n");
+>                 return ERR_PTR(-ENODEV);
+>         }
+> +       if (!stride)
+> +               stride = format->cpp[0] * width;
 
-I am wondering which driver could possibly conflict with TGA?
+DIV_ROUND_UP(drm_format_info_bpp(format) * width, 8)
 
-Probably there are a few other drivers in the same category (tdfxfb?).
+> +
+>         sdev->mode = simpledrm_mode(width, height);
+>         sdev->format = format;
+>         sdev->pitch = stride;
 
 Gr{oetje,eeting}s,
 

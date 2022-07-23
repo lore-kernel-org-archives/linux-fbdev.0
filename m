@@ -2,161 +2,117 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F3BDC433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Jul 2022 18:37:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4670C43334
+	for <linux-fbdev@archiver.kernel.org>; Sat, 23 Jul 2022 17:58:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236047AbiGVSh6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 22 Jul 2022 14:37:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50988 "EHLO
+        id S236732AbiGWR6L (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 23 Jul 2022 13:58:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58116 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234614AbiGVSh4 (ORCPT
+        with ESMTP id S233478AbiGWR5w (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 22 Jul 2022 14:37:56 -0400
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E385EA0271
-        for <linux-fbdev@vger.kernel.org>; Fri, 22 Jul 2022 11:37:54 -0700 (PDT)
-Received: by mail-lf1-x134.google.com with SMTP id u19so9075776lfs.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 22 Jul 2022 11:37:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=pZNADembFWMrMyIeeoU2sLzijZgUqqEN6vVBxD7cEAs=;
-        b=GsqhyOyvPqQLTvBum+zuJxJdCWumdKt28rH2mPmYbBK74XD17jt60KtD0pMHpo/hya
-         vb9wzTzbNdeHuA/5g/kHobFtb0+H7CYDfb4AvZumRqW3JnejJKFeINvR34dlTLchYXjz
-         j0UREVOivqXUfB4/IgLh/3GwMH3nmWpkN29OsnadwZiyJhvuC8Ke+A7q5rONII1LLIRN
-         ur9/WC2nNosjE3LvdRSxF0kGBq3CGOT6wxtYRhP1t3tA3RPVu4/9VS+clhFLMjMPW09o
-         1TD97bVIN/s+O48yV/5C3XwcnVszKfIepyHe6JQqce4HYChtqdx1Ean31k2MwSuBhPl2
-         mZzw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=pZNADembFWMrMyIeeoU2sLzijZgUqqEN6vVBxD7cEAs=;
-        b=QZM0dzZMZbtg66aNrrVTQB5UOkFEO+rSY5FiZq848/yiqTb69G8t/oi3WaYCjax7aK
-         X2qVgCSbJbyoP6SAFeJQ3mJHaJ3u9rxwalOWzowvs7GLLS+KEw6NSnQHY6qv6tR9u6WT
-         PF3o23kCY5h0lYJqukA31+5GuyoOGHr0fUeMUVdE4mopwORKkI7B6rH+Wc2rD6v/o3Mb
-         QXDNfHOzO0Rr+w0K/+lbs8vPiII4aoGgfvIAofEgjf6xr62m5gTCoRLgmVB++0erD44P
-         xQZkdUX0Fb6cyM8H/qipa919864N3Wugow11AjHSEshBJR27vXIJiB6rrCR/MS6lmKPI
-         CIpQ==
-X-Gm-Message-State: AJIora/bmrGtMvLA97Gb4KBsMLfuq66qgMUJmPHYbfvCeJDrERwPnaBf
-        /9cHs8298WUP1nfS2Yt7Tu0Aqw==
-X-Google-Smtp-Source: AGRyM1t4tkeV7OyDpZcsS6qCtak/AfOICQG9L4dyANvy9yS4TYY7Ac7Z+0mbnuyWn6CiHaHsFou02A==
-X-Received: by 2002:a05:6512:2622:b0:481:5b17:58e7 with SMTP id bt34-20020a056512262200b004815b1758e7mr478609lfb.600.1658515073264;
-        Fri, 22 Jul 2022 11:37:53 -0700 (PDT)
-Received: from [192.168.10.173] (93.81-167-86.customer.lyse.net. [81.167.86.93])
-        by smtp.gmail.com with ESMTPSA id d15-20020a0565123d0f00b0048a7222eb8bsm1008194lfv.135.2022.07.22.11.37.50
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 22 Jul 2022 11:37:52 -0700 (PDT)
-Message-ID: <1a03d894-3f4c-fb57-5f05-ad7bf11f5488@linaro.org>
-Date:   Fri, 22 Jul 2022 20:37:49 +0200
+        Sat, 23 Jul 2022 13:57:52 -0400
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72BBE1AD8D
+        for <linux-fbdev@vger.kernel.org>; Sat, 23 Jul 2022 10:57:50 -0700 (PDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1oFJNq-0007TX-NT; Sat, 23 Jul 2022 19:57:46 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1oFJNo-002l3j-IG; Sat, 23 Jul 2022 19:57:44 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1oFJNn-007371-Ka; Sat, 23 Jul 2022 19:57:43 +0200
+From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+To:     Sascha Hauer <s.hauer@pengutronix.de>,
+        Helge Deller <deller@gmx.de>, Shawn Guo <shawnguo@kernel.org>
+Cc:     Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH 2/4] video: fb: imxfb: Drop unused symbols from header
+Date:   Sat, 23 Jul 2022 19:57:18 +0200
+Message-Id: <20220723175720.76933-2-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.36.1
+In-Reply-To: <20220723175720.76933-1-u.kleine-koenig@pengutronix.de>
+References: <20220723175720.76933-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH 1/6] dt-bindings: panel: explicitly list SPI CPHA and CPOL
-Content-Language: en-US
-To:     Rob Herring <robh@kernel.org>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Markuss Broks <markuss.broks@gmail.com>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Michael Hennerich <Michael.Hennerich@analog.com>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Alexandru Tachici <alexandru.tachici@analog.com>,
-        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
-        Tomislav Denis <tomislav.denis@avl.com>,
-        Cosmin Tanislav <cosmin.tanislav@analog.com>,
-        Nishant Malpani <nish.malpani25@gmail.com>,
-        Dragos Bogdan <dragos.bogdan@analog.com>,
-        Nuno Sa <nuno.sa@analog.com>,
-        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Mark Brown <broonie@kernel.org>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        Andrzej Hajda <andrzej.hajda@intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Marek Belisko <marek@goldelico.com>,
-        "H. Nikolaus Schaller" <hns@goldelico.com>,
-        Christian Eggers <ceggers@arri.de>,
-        Beniamin Bia <beniamin.bia@analog.com>,
-        Stefan Popa <stefan.popa@analog.com>,
-        Oskar Andero <oskar.andero@gmail.com>,
-        =?UTF-8?Q?M=c3=a5rten_Lindahl?= <martenli@axis.com>,
-        Dan Murphy <dmurphy@ti.com>, Sean Nyekjaer <sean@geanix.com>,
-        Cristian Pop <cristian.pop@analog.com>,
-        Lukas Wunner <lukas@wunner.de>,
-        Matt Ranostay <matt.ranostay@konsulko.com>,
-        Matheus Tavares <matheus.bernardino@usp.br>,
-        Sankar Velliangiri <navin@linumiz.com>,
-        Lubomir Rintel <lkundrak@v3.sk>,
-        Stefan Wahren <stefan.wahren@in-tech.com>,
-        Pratyush Yadav <p.yadav@ti.com>,
-        dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, netdev@vger.kernel.org,
-        linux-spi@vger.kernel.org
-References: <20220721153155.245336-1-krzysztof.kozlowski@linaro.org>
- <20220721153155.245336-2-krzysztof.kozlowski@linaro.org>
- <20220721193004.GA1783390-robh@kernel.org>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20220721193004.GA1783390-robh@kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2008; h=from:subject; bh=GQY8SNmv+wZWhLNZLF4qv5cFCuTXEOrxUK2Sdpj9xUk=; b=owEBbQGS/pANAwAKAcH8FHityuwJAcsmYgBi3DZzVEKwMIrfywPNGjkCG3TOpClIt6fWBetivlVO I0jbOi+JATMEAAEKAB0WIQR+cioWkBis/z50pAvB/BR4rcrsCQUCYtw2cwAKCRDB/BR4rcrsCZbAB/ 9E4YWvTK3Bn7/+6zzlx6tY6rpBI82kJKZezJ6gMIOEHyxNAIaAInvwp3p5hmwoCWyJYKDlNKUdZc8V 6LB9GALIVs+Codjz7LaYoeXbtMRAIvhjw85vQNjc+mJc4afdIPWJQivcYgZmOTBYlu+pHJQNEPrbuY VFvYMv5/kM+7iWwMAC9Ru7p822C7WwKwrVKVFdmKmo5abG8LyT9pzMZsNrkxjWqkme44s+X5aiQgsx DMkZ+fej/4xj0AQQ6ANB/IVAteIdunkEUrl19ZgEcib2ObdurdxcU9GJd75AfPIoQ97RkJvkLZYfl4 NG9UDy5IuQYCwmCks+efRedVW5pqs0
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 21/07/2022 21:30, Rob Herring wrote:
-> On Thu, Jul 21, 2022 at 05:31:50PM +0200, Krzysztof Kozlowski wrote:
->> The spi-cpha and spi-cpol properties are device specific and should be
->> accepted only if device really needs them.  Explicitly list them in
->> device bindings in preparation of their removal from generic
->> spi-peripheral-props.yaml schema.
->>
->> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
->> ---
->>  .../bindings/display/panel/lgphilips,lb035q02.yaml   | 10 ++++++++++
->>  .../bindings/display/panel/samsung,ld9040.yaml       | 10 ++++++++++
->>  .../bindings/display/panel/samsung,lms380kf01.yaml   | 12 +++++++++---
->>  .../bindings/display/panel/samsung,lms397kf04.yaml   | 12 +++++++++---
->>  .../bindings/display/panel/samsung,s6d27a1.yaml      | 12 +++++++++---
->>  .../bindings/display/panel/sitronix,st7789v.yaml     | 10 ++++++++++
->>  .../devicetree/bindings/display/panel/tpo,td.yaml    | 10 ++++++++++
->>  7 files changed, 67 insertions(+), 9 deletions(-)
->>
->> diff --git a/Documentation/devicetree/bindings/display/panel/lgphilips,lb035q02.yaml b/Documentation/devicetree/bindings/display/panel/lgphilips,lb035q02.yaml
->> index 5e4e0e552c2f..0bd7bbad5b94 100644
->> --- a/Documentation/devicetree/bindings/display/panel/lgphilips,lb035q02.yaml
->> +++ b/Documentation/devicetree/bindings/display/panel/lgphilips,lb035q02.yaml
->> @@ -21,6 +21,16 @@ properties:
->>    enable-gpios: true
->>    port: true
->>  
->> +  spi-cpha:
->> +    type: boolean
->> +    description:
->> +      The device requires shifted clock phase (CPHA) mode.
->> +
->> +  spi-cpol:
->> +    type: boolean
->> +    description:
->> +      The device requires inverse clock polarity (CPOL) mode.
-> 
-> Not great duplicating the type and description everywhere.
-> 
-> We can move the definition back to spi-controller.yaml, so then that 
-> does type checking of the property, but not presence/absence checks.
+The only file that includes <linux/platform_data/video-imxfb.h> is the
+imxfb driver. Drop all symbols that are unused there.
 
-If I understand correctly, all client devices (which do no reference
-spi-controller) will need to explicitly mention CPHA/CPOL. Good idea.
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ include/linux/platform_data/video-imxfb.h | 35 -----------------------
+ 1 file changed, 35 deletions(-)
 
-Best regards,
-Krzysztof
+diff --git a/include/linux/platform_data/video-imxfb.h b/include/linux/platform_data/video-imxfb.h
+index b80a156a6617..a16837c5e43c 100644
+--- a/include/linux/platform_data/video-imxfb.h
++++ b/include/linux/platform_data/video-imxfb.h
+@@ -8,45 +8,10 @@
+ #include <linux/fb.h>
+ 
+ #define PCR_TFT		(1 << 31)
+-#define PCR_COLOR	(1 << 30)
+-#define PCR_PBSIZ_1	(0 << 28)
+-#define PCR_PBSIZ_2	(1 << 28)
+-#define PCR_PBSIZ_4	(2 << 28)
+-#define PCR_PBSIZ_8	(3 << 28)
+-#define PCR_BPIX_1	(0 << 25)
+-#define PCR_BPIX_2	(1 << 25)
+-#define PCR_BPIX_4	(2 << 25)
+ #define PCR_BPIX_8	(3 << 25)
+ #define PCR_BPIX_12	(4 << 25)
+ #define PCR_BPIX_16	(5 << 25)
+ #define PCR_BPIX_18	(6 << 25)
+-#define PCR_PIXPOL	(1 << 24)
+-#define PCR_FLMPOL	(1 << 23)
+-#define PCR_LPPOL	(1 << 22)
+-#define PCR_CLKPOL	(1 << 21)
+-#define PCR_OEPOL	(1 << 20)
+-#define PCR_SCLKIDLE	(1 << 19)
+-#define PCR_END_SEL	(1 << 18)
+-#define PCR_END_BYTE_SWAP (1 << 17)
+-#define PCR_REV_VS	(1 << 16)
+-#define PCR_ACD_SEL	(1 << 15)
+-#define PCR_ACD(x)	(((x) & 0x7f) << 8)
+-#define PCR_SCLK_SEL	(1 << 7)
+-#define PCR_SHARP	(1 << 6)
+-#define PCR_PCD(x)	((x) & 0x3f)
+-
+-#define PWMR_CLS(x)	(((x) & 0x1ff) << 16)
+-#define PWMR_LDMSK	(1 << 15)
+-#define PWMR_SCR1	(1 << 10)
+-#define PWMR_SCR0	(1 << 9)
+-#define PWMR_CC_EN	(1 << 8)
+-#define PWMR_PW(x)	((x) & 0xff)
+-
+-#define LSCR1_PS_RISE_DELAY(x)    (((x) & 0x7f) << 26)
+-#define LSCR1_CLS_RISE_DELAY(x)   (((x) & 0x3f) << 16)
+-#define LSCR1_REV_TOGGLE_DELAY(x) (((x) & 0xf) << 8)
+-#define LSCR1_GRAY2(x)            (((x) & 0xf) << 4)
+-#define LSCR1_GRAY1(x)            (((x) & 0xf))
+ 
+ struct imx_fb_videomode {
+ 	struct fb_videomode mode;
+-- 
+2.36.1
+

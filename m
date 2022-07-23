@@ -2,31 +2,31 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5E09CCA48A
-	for <linux-fbdev@archiver.kernel.org>; Sat, 23 Jul 2022 17:58:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EA85CCA48C
+	for <linux-fbdev@archiver.kernel.org>; Sat, 23 Jul 2022 17:58:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233478AbiGWR6M (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 23 Jul 2022 13:58:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58114 "EHLO
+        id S233098AbiGWR6N (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 23 Jul 2022 13:58:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58150 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233098AbiGWR5w (ORCPT
+        with ESMTP id S235743AbiGWR6A (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 23 Jul 2022 13:57:52 -0400
+        Sat, 23 Jul 2022 13:58:00 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 728711AD89
-        for <linux-fbdev@vger.kernel.org>; Sat, 23 Jul 2022 10:57:50 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 506BC1AD98
+        for <linux-fbdev@vger.kernel.org>; Sat, 23 Jul 2022 10:57:59 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1oFJNq-0007TY-NT; Sat, 23 Jul 2022 19:57:46 +0200
+        id 1oFJNq-0007Ta-NT; Sat, 23 Jul 2022 19:57:47 +0200
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1oFJNo-002l3m-LB; Sat, 23 Jul 2022 19:57:44 +0200
+        id 1oFJNo-002l3q-OS; Sat, 23 Jul 2022 19:57:44 +0200
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1oFJNn-00736y-FD; Sat, 23 Jul 2022 19:57:43 +0200
+        id 1oFJNn-007377-W8; Sat, 23 Jul 2022 19:57:43 +0200
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
 To:     Sascha Hauer <s.hauer@pengutronix.de>,
@@ -36,13 +36,15 @@ Cc:     Pengutronix Kernel Team <kernel@pengutronix.de>,
         NXP Linux Team <linux-imx@nxp.com>,
         linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         dri-devel@lists.freedesktop.org
-Subject: [PATCH 1/4] video: fb: imxfb: Drop platform data support
-Date:   Sat, 23 Jul 2022 19:57:17 +0200
-Message-Id: <20220723175720.76933-1-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 4/4] video: fb: imxfb: Convert request_mem_region + ioremap to devm_ioremap_resource
+Date:   Sat, 23 Jul 2022 19:57:20 +0200
+Message-Id: <20220723175720.76933-4-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.36.1
+In-Reply-To: <20220723175720.76933-1-u.kleine-koenig@pengutronix.de>
+References: <20220723175720.76933-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6660; h=from:subject; bh=y89wE7182nnsNf8FmAenMhLhHybFXcToTl7us5lNukY=; b=owGbwMvMwMV48I9IxdpTbzgZT6slMSTdMcuLjXbLuqlU5rggvf+zdJrix7nr1n/3N9R567RVWpnh yXzhTkZjFgZGLgZZMUWWuiItsQkSa/7blSzhhhnEygQyhYGLUwAmEh3LwbDgQ/EeiTWc88NUs4Uyrs pmqMoutdd11e0zUTtoPz3VZVv11Fhvzta5S2613CreZqcTXO//SppTVn9ypjvTPHuz7wETO8XPKdum r2yoTm1Ydt5msRPHHaUT3ie2n9mmf8v0yBmFJ3de+h9Se1u+yP1wXH329je3Qxt3NaXvWKQuwier4D rv7NpvaQXWT2Na2fyfvLNQeKbaXFopJjz1ndcttYKbJqv+XJTfmDq1wbHy0DP1I05P1R4fFFwU6LGu /rtgmrtNuL4F91fZqLtbO7/1rVf1srgTsqvR5n75wwviFj9y09e4LdWJeHXp7dxls0KCdXdqfdLb96 mrX3exoENsVal+XLLn/786TAU2AA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2623; h=from:subject; bh=Sy7hObGjRzDQwuWl0g+BIDpZmNz70z1J61p/X002VA4=; b=owEBbQGS/pANAwAKAcH8FHityuwJAcsmYgBi3DZ7c07zI1Wue2I1wIRCwc9P6REz8lW6VqXalEtb /3TjSj+JATMEAAEKAB0WIQR+cioWkBis/z50pAvB/BR4rcrsCQUCYtw2ewAKCRDB/BR4rcrsCZt6CA CLEMPoV04R060xaKZZ4hha1Qld9Qp9OSVf7Fn8V+8ec7pQIzNgbW/x4AP/7wZt+mLjpXUSh5n0cSeA K1yX01Rh/CSBQYZSmqclsvspVprvjj6JrHzUfEQsuaT7ngvBIbHctZRaKT8UwsHv+ElUtIj6BBAiDG Fa3/JVJ+Kv/8+jOAJA23hV88Q2eNFdr6L3miMV1OP3o45F0U2w4cTpn5sEgLdJlUeeGfkEDnCaiRJt WA8FZPEQKKwSFJJaaQx0ti3RMMvV5MXa4za222ANSGfkrbvTLC8/Q0NGraPFYqBXD3aYV6gcNfAF3s tuup3wl0PWwnuX5q3xk3sfRpmgNN2m
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -53,219 +55,82 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-No source file but the driver itself includes the header containing the
-platform data definition. The last user is gone since commit
-8485adf17a15 ("ARM: imx: Remove imx device directory").
+This has several advantages:
 
-So we can safely drop platform data support.
+ - No need for manual undo of the two functions in the error path and
+   the remove function.
+ - Drops error handling in .remove()
+   Note that returning early in .remove() yields resource leaks that
+   often result in access of freed memory or unmapped registers later.
+ - Fixes a resource leak
+   request_mem_region allocates memory for the returned pointer that was
+   never freed.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/video/fbdev/imxfb.c               | 99 ++++++++---------------
- include/linux/platform_data/video-imxfb.h | 12 ---
- 2 files changed, 34 insertions(+), 77 deletions(-)
+ drivers/video/fbdev/imxfb.c | 18 +-----------------
+ 1 file changed, 1 insertion(+), 17 deletions(-)
 
 diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-index a2f644c97f28..85a5bf5639d9 100644
+index fa6a19c1ae9b..c48477893dd0 100644
 --- a/drivers/video/fbdev/imxfb.c
 +++ b/drivers/video/fbdev/imxfb.c
-@@ -656,7 +656,6 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
+@@ -937,13 +937,6 @@ static int imxfb_probe(struct platform_device *pdev)
+ 		info->fix.smem_len = max_t(size_t, info->fix.smem_len,
+ 				m->mode.xres * m->mode.yres * bytes_per_pixel);
  
- static int imxfb_init_fbinfo(struct platform_device *pdev)
- {
--	struct imx_fb_platform_data *pdata = dev_get_platdata(&pdev->dev);
- 	struct fb_info *info = platform_get_drvdata(pdev);
- 	struct imxfb_info *fbi = info->par;
- 	struct device_node *np;
-@@ -690,25 +689,20 @@ static int imxfb_init_fbinfo(struct platform_device *pdev)
- 	info->fbops			= &imxfb_ops;
- 	info->flags			= FBINFO_FLAG_DEFAULT |
- 					  FBINFO_READS_FAST;
--	if (pdata) {
--		fbi->lscr1			= pdata->lscr1;
--		fbi->dmacr			= pdata->dmacr;
--		fbi->pwmr			= pdata->pwmr;
--	} else {
--		np = pdev->dev.of_node;
--		info->var.grayscale = of_property_read_bool(np,
--						"cmap-greyscale");
--		fbi->cmap_inverse = of_property_read_bool(np, "cmap-inverse");
--		fbi->cmap_static = of_property_read_bool(np, "cmap-static");
- 
--		fbi->lscr1 = IMXFB_LSCR1_DEFAULT;
-+	np = pdev->dev.of_node;
-+	info->var.grayscale = of_property_read_bool(np,
-+					"cmap-greyscale");
-+	fbi->cmap_inverse = of_property_read_bool(np, "cmap-inverse");
-+	fbi->cmap_static = of_property_read_bool(np, "cmap-static");
- 
--		of_property_read_u32(np, "fsl,lpccr", &fbi->pwmr);
-+	fbi->lscr1 = IMXFB_LSCR1_DEFAULT;
- 
--		of_property_read_u32(np, "fsl,lscr1", &fbi->lscr1);
-+	of_property_read_u32(np, "fsl,lpccr", &fbi->pwmr);
- 
--		of_property_read_u32(np, "fsl,dmacr", &fbi->dmacr);
+-	res = request_mem_region(res->start, resource_size(res),
+-				DRIVER_NAME);
+-	if (!res) {
+-		ret = -EBUSY;
+-		goto failed_req;
 -	}
-+	of_property_read_u32(np, "fsl,lscr1", &fbi->lscr1);
-+
-+	of_property_read_u32(np, "fsl,dmacr", &fbi->dmacr);
- 
- 	return 0;
- }
-@@ -863,10 +857,10 @@ static int imxfb_probe(struct platform_device *pdev)
- 	struct imxfb_info *fbi;
- 	struct lcd_device *lcd;
- 	struct fb_info *info;
--	struct imx_fb_platform_data *pdata;
- 	struct resource *res;
- 	struct imx_fb_videomode *m;
- 	const struct of_device_id *of_id;
-+	struct device_node *display_np;
- 	int ret, i;
- 	int bytes_per_pixel;
- 
-@@ -884,8 +878,6 @@ static int imxfb_probe(struct platform_device *pdev)
- 	if (!res)
- 		return -ENODEV;
- 
--	pdata = dev_get_platdata(&pdev->dev);
 -
- 	info = framebuffer_alloc(sizeof(struct imxfb_info), &pdev->dev);
- 	if (!info)
- 		return -ENOMEM;
-@@ -898,43 +890,34 @@ static int imxfb_probe(struct platform_device *pdev)
- 	if (ret < 0)
- 		goto failed_init;
- 
--	if (pdata) {
--		if (!fb_mode)
--			fb_mode = pdata->mode[0].mode.name;
--
--		fbi->mode = pdata->mode;
--		fbi->num_modes = pdata->num_modes;
--	} else {
--		struct device_node *display_np;
--		fb_mode = NULL;
--
--		display_np = of_parse_phandle(pdev->dev.of_node, "display", 0);
--		if (!display_np) {
--			dev_err(&pdev->dev, "No display defined in devicetree\n");
--			ret = -EINVAL;
--			goto failed_of_parse;
--		}
-+	fb_mode = NULL;
- 
--		/*
--		 * imxfb does not support more modes, we choose only the native
--		 * mode.
--		 */
--		fbi->num_modes = 1;
--
--		fbi->mode = devm_kzalloc(&pdev->dev,
--				sizeof(struct imx_fb_videomode), GFP_KERNEL);
--		if (!fbi->mode) {
--			ret = -ENOMEM;
--			of_node_put(display_np);
--			goto failed_of_parse;
--		}
-+	display_np = of_parse_phandle(pdev->dev.of_node, "display", 0);
-+	if (!display_np) {
-+		dev_err(&pdev->dev, "No display defined in devicetree\n");
-+		ret = -EINVAL;
-+		goto failed_of_parse;
-+	}
- 
--		ret = imxfb_of_read_mode(&pdev->dev, display_np, fbi->mode);
-+	/*
-+	 * imxfb does not support more modes, we choose only the native
-+	 * mode.
-+	 */
-+	fbi->num_modes = 1;
-+
-+	fbi->mode = devm_kzalloc(&pdev->dev,
-+			sizeof(struct imx_fb_videomode), GFP_KERNEL);
-+	if (!fbi->mode) {
-+		ret = -ENOMEM;
- 		of_node_put(display_np);
--		if (ret)
--			goto failed_of_parse;
-+		goto failed_of_parse;
+ 	fbi->clk_ipg = devm_clk_get(&pdev->dev, "ipg");
+ 	if (IS_ERR(fbi->clk_ipg)) {
+ 		ret = PTR_ERR(fbi->clk_ipg);
+@@ -977,7 +970,7 @@ static int imxfb_probe(struct platform_device *pdev)
+ 		goto failed_getclock;
  	}
  
-+	ret = imxfb_of_read_mode(&pdev->dev, display_np, fbi->mode);
-+	of_node_put(display_np);
-+	if (ret)
-+		goto failed_of_parse;
-+
- 	/* Calculate maximum bytes used per pixel. In most cases this should
- 	 * be the same as m->bpp/8 */
- 	m = &fbi->mode[0];
-@@ -1001,13 +984,6 @@ static int imxfb_probe(struct platform_device *pdev)
- 
- 	info->fix.smem_start = fbi->map_dma;
- 
--	if (pdata && pdata->init) {
--		ret = pdata->init(fbi->pdev);
--		if (ret)
--			goto failed_platform_init;
--	}
--
--
- 	INIT_LIST_HEAD(&info->modelist);
- 	for (i = 0; i < fbi->num_modes; i++)
- 		fb_add_videomode(&fbi->mode[i].mode, &info->modelist);
-@@ -1059,9 +1035,6 @@ static int imxfb_probe(struct platform_device *pdev)
- failed_register:
- 	fb_dealloc_cmap(&info->cmap);
- failed_cmap:
--	if (pdata && pdata->exit)
--		pdata->exit(fbi->pdev);
--failed_platform_init:
+-	fbi->regs = ioremap(res->start, resource_size(res));
++	fbi->regs = devm_ioremap_resource(&pdev->dev, res);
+ 	if (fbi->regs == NULL) {
+ 		dev_err(&pdev->dev, "Cannot map frame buffer registers\n");
+ 		ret = -ENOMEM;
+@@ -1049,11 +1042,9 @@ static int imxfb_probe(struct platform_device *pdev)
  	dma_free_wc(&pdev->dev, fbi->map_size, info->screen_buffer,
  		    fbi->map_dma);
  failed_map:
-@@ -1079,7 +1052,6 @@ static int imxfb_probe(struct platform_device *pdev)
- 
- static int imxfb_remove(struct platform_device *pdev)
+-	iounmap(fbi->regs);
+ failed_ioremap:
+ failed_getclock:
+ 	release_mem_region(res->start, resource_size(res));
+-failed_req:
+ failed_of_parse:
+ 	kfree(info->pseudo_palette);
+ failed_init:
+@@ -1065,11 +1056,6 @@ static int imxfb_remove(struct platform_device *pdev)
  {
--	struct imx_fb_platform_data *pdata;
  	struct fb_info *info = platform_get_drvdata(pdev);
  	struct imxfb_info *fbi = info->par;
- 	struct resource *res;
-@@ -1092,9 +1064,6 @@ static int imxfb_remove(struct platform_device *pdev)
+-	struct resource *res;
+-
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (!res)
+-		return -EINVAL;
  
- 	unregister_framebuffer(info);
+ 	imxfb_disable_controller(fbi);
+ 
+@@ -1077,8 +1063,6 @@ static int imxfb_remove(struct platform_device *pdev)
  	fb_dealloc_cmap(&info->cmap);
--	pdata = dev_get_platdata(&pdev->dev);
--	if (pdata && pdata->exit)
--		pdata->exit(fbi->pdev);
  	dma_free_wc(&pdev->dev, fbi->map_size, info->screen_buffer,
  		    fbi->map_dma);
- 	iounmap(fbi->regs);
-diff --git a/include/linux/platform_data/video-imxfb.h b/include/linux/platform_data/video-imxfb.h
-index 02812651af7d..b80a156a6617 100644
---- a/include/linux/platform_data/video-imxfb.h
-+++ b/include/linux/platform_data/video-imxfb.h
-@@ -55,16 +55,4 @@ struct imx_fb_videomode {
- 	unsigned char	bpp;
- };
+-	iounmap(fbi->regs);
+-	release_mem_region(res->start, resource_size(res));
+ 	kfree(info->pseudo_palette);
+ 	framebuffer_release(info);
  
--struct imx_fb_platform_data {
--	struct imx_fb_videomode *mode;
--	int		num_modes;
--
--	u_int		pwmr;
--	u_int		lscr1;
--	u_int		dmacr;
--
--	int (*init)(struct platform_device *);
--	void (*exit)(struct platform_device *);
--};
--
- #endif /* ifndef __MACH_IMXFB_H__ */
-
-base-commit: f2906aa863381afb0015a9eb7fefad885d4e5a56
 -- 
 2.36.1
 

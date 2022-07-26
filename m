@@ -2,118 +2,140 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56FCEC433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Jul 2022 07:18:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1B84CCA48E
+	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Jul 2022 07:24:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237907AbiGZHSu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 26 Jul 2022 03:18:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52238 "EHLO
+        id S238270AbiGZHYl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 26 Jul 2022 03:24:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57808 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236998AbiGZHSt (ORCPT
+        with ESMTP id S238074AbiGZHXt (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 26 Jul 2022 03:18:49 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CFA962AC43;
-        Tue, 26 Jul 2022 00:18:48 -0700 (PDT)
+        Tue, 26 Jul 2022 03:23:49 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E7F82BB0A;
+        Tue, 26 Jul 2022 00:23:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1658819919;
-        bh=ZPKphOeqfUw9WDoxNukLO0XgQuydZuPrmVSi1WhjzL0=;
+        s=badeba3b8450; t=1658820190;
+        bh=87Dwh7067qd7DtPJ/NTAN/t/IaMuPuUKPEZAEiBlBAo=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=I4GxEmbkCE75KR9vBC9vuzgAS7DnwJcFXtw4wbeLRpdzQM4cFd9CzOGbn82y/z5Sw
-         ORuEcPu167u79eXuU42E7wQor8PHxf/kl+sB3+6FYsUfw3Luf0oRHnG6CqBOQqWi0I
-         9fGuaFWYSCMg5vd8d2rLp8VBmMO6r+3qkC7A1Vqs=
+        b=kP/NQsiROB70ArzFE552x2oNxBc80FiKCiR+cIXDKc0GMYc2GlKwxTkUPjfVlIQjn
+         buHKK7Ozk1vyq35A+LZ5DvKamw7dsEaX8Nfi2lsJSQv0dfHFrWEb7kKCSEbXrl+cuo
+         BpiYh/auhun04r+Dzsi0e5DpuNwuS2FV923oQ124=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from [192.168.20.60] ([92.116.186.181]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MeU4y-1nfnch1Et2-00aY10; Tue, 26
- Jul 2022 09:18:39 +0200
-Message-ID: <954de293-cd67-2f79-0529-cf7682279ae4@gmx.de>
-Date:   Tue, 26 Jul 2022 09:17:55 +0200
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MCbEp-1oOFOn1WZn-009hWr; Tue, 26
+ Jul 2022 09:23:10 +0200
+Message-ID: <4b3e4d1b-e219-1ecc-5dd3-d693c69f6124@gmx.de>
+Date:   Tue, 26 Jul 2022 09:22:26 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.11.0
-Subject: Re: [PATCH] video/fbdev/sis: fix typos in SiS_GetModeID()
+Subject: Re: [PATCH] fbdev: Make registered_fb[] private to fbmem.c
 Content-Language: en-US
-To:     Rustam Subkhankulov <subkhankulov@ispras.ru>,
-        Thomas Winischhofer <thomas@winischhofer.net>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org,
-        Alexey Khoroshilov <khoroshilov@ispras.ru>,
-        ldv-project@linuxtesting.org
-References: <20220718124344.46338-1-subkhankulov@ispras.ru>
+To:     Javier Martinez Canillas <javierm@redhat.com>,
+        linux-kernel@vger.kernel.org
+Cc:     linux-staging@lists.linux.dev,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        dri-devel@lists.freedesktop.org,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org
+References: <20220725075400.68478-1-javierm@redhat.com>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220718124344.46338-1-subkhankulov@ispras.ru>
+In-Reply-To: <20220725075400.68478-1-javierm@redhat.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:P5mZADKMLRDWe3X4DmUtFoBv9opTumb0nFI36Uuvewk9/mngzVd
- Z/dJrhiSv1ZxtOtlsg/WRmvBg/rKy1cjRwdhZg4ttzxCD/c8Db5EUZvW4U+giGeJQ+BaePA
- kOdzkpAiCW5F2SR1m5gH5JVC1Fap1tvHBz4OV0mpKQm2FS4wZ4wqP29Kh6twEtthZEvtmcI
- n3QiYZgCikPaaQJawJMJA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:/Bf6EBdHyyE=:7AV0ibN9HDfgns0V0wMIDK
- XNOny6vfwYjaQn7SXLbxYVpy2lN1aNQZ7Or+9OVnHJ84oSzWUXgrGInhcyWvVMtfwZMaS3whT
- o0pybl1uYo9AcF0sLRwiCh1IG4Q+W5xPlNB1EQdwvBVnCix6kLuAKCBt1D0cii9/42rObWnsI
- E7jdZnPkawhxOj0LZFDz//cpIkRjCXFN2BN6lQC3Yx0onHjYvpgKZmri4j5RlQ/Jaa5k0OGbI
- 5zEV4njXELZ1XbxMS/ZLtTUIIKA80AD4I/KCG0Ue906WZhumOkcbP5aktlOH0Po3+++6b/tAQ
- bPOBELuxg03Rw8HeAIZv7tBoEbrVH7A1ZYxarU+E+vsrg49cOtLTXTdrpIFeYAMzUFqGE61o3
- fq1sisKyRvjWYWgdtlMhQNxJ5iO3oiO8fIpwna8Tx5knQAqdswBaFO70u5psOr7t9sXEgfRNF
- lP4z9rA4o222XvnVRMhpcQRwQw0lgN9e7N/CweQ8WkkhIh8ymHZyoln5pqrwA0gtniPx9YoyW
- Uz23A5uZHIiKrxrDylxQpMpr+uUyCfi+AH5I2W0NX3ZSwvn0TPLaLwRNaQ6p9n27Jl2PoyYU1
- VJd29zGsZkcOQ13172Q86DqAXJCz1I4JkaG4h9wgce9tvy0qcAM2CCel6cClw/+EucthivnyJ
- ++vNVuRMP8iewYlSnpZHRJSfrFfNRJrHRetpQSD/jpNFNzb0VTinZibFa4OnMQtbsXvGOY2vf
- ByM8YJpBn6ruOBGDiA063KMfgymQxXnaRF9GqOZPzUIsQU074wVFIC0sE9W2UgSAfHXXAhjcT
- ekI53prxcNtZoMSjN9ZTBrXmVrIAeuwqZ3YhmGmHYknc3x35unWIrHZDgVMcRrzl+Gu6BbRWa
- oomeC2Wj5dLyE13Vw58LjhOoKEga7gqMZrSvR6BuGDlPk777UGuF9sJXmELEffIDJW4EGsYlh
- eAXYph4Kz0bjcsj5l9O9EG7vHSW69bB2vMBPNSZslCm2+bXJN7F4W5iOAU96Rv5F7qML060b4
- o0AMkCHa7lJ3rMR+JQrlpmujTd0+vaD+t7HFMpLfgV1PWGUzO6G0Qj0KwLjPykJFlFCoWPQB/
- PQwr5eXl4qxVGLhJht4hMz8ibqmBHY96o3C+Nd2G8Hfd1W1mUMbjucMIg==
+X-Provags-ID: V03:K1:akojF7SaFix7y2EiczH+UV96lavMDM7AZJsP+iaDgbQEG+V+i2q
+ AHp5GhXCKXNYNDOCssfMAC/zfYNxRCCJshEriwFrLnGyA1Y6pwwtSwNag0vDCVz4l90tkVW
+ DIiFJN86HihlvrTwFG4ohFYO7eklHfRT3PRulwLXOdHR0cKitqTH/XJOidG4mMQ2ZIdaVip
+ Qb52HfSj5m1KZaPuL+4Mw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:2epUbeCrlb4=:nJ4/GE1ohg6n44gxvvA1g0
+ 9tcYvqxfX29++V5TPhldux6wE+5RdakqeysnSOxwvJtU3QsfOiPWnuBaTfZHFB2e6XDI+62yX
+ Nz83sJk6qIPwxUFOPONNz62ypPSCcY0rjf82hjb9Hi2Lwi85RE/Wv8KDJ3LCi9TZKxrOOLM6x
+ q+0Fuy3DBSUKYuB0H+alZufFJ4j9+65ZpF4aOYW/hoMPFFTBOIw0Xxr1IeTidvFollcEnQbpF
+ +XfC3CGTqdf8bJwlRC6jN+hBcc7B1hgFvn25YROveAwOV/g5GveJS1Z/O4KvGV/iCcoqgsrNM
+ fCRA6jQToPDoNE8T4SQV+5vmc5jalrSX83t4zGpWJcZPQPD2KWlGjs1bwLozn0sQuFfvLOKaN
+ 1gNdrbYTNgLXnVUAKgvVSCF2xgDAoBsg/lM3MWfDou6DtlNcL9hCY6hS8gHKrlB4Mi1eS5Hqi
+ Y2sod2IRPNdEAofC/+7dApmBcSJwAG49Lft5z+At3tVmHld2z3+b2dU9yMk1bOt81R5SmngJ6
+ mwH9FdhZ5bpEr+dH3pqPGNEtiPgP6EOh/jFkUB2wCZPiiQuYpjJ6Px9/s32f0mDRLaZBb9zGc
+ I6MQdYh6nJL83crGe3gAUjbVPzzGxuqRwhLI7zSXdl+eTi8iDnnYXpH7XEduENG7QxoMOiBcK
+ +6R+9C0uYujlTGYfXL1EehIwPQlWmwlj74S8lWa8LysB0fc4qzdA0OT+iJtJwKNST/iI6ua5u
+ 5O4GRigAerQA11xXo4LUlVxuJGyKHUwW8YNM+4/TfHCfJ8pV4A3s/znEd2WDuP9ex4mMnV8vw
+ EzJWkCF4ZlgOTcdqREApz5ZP1jbgnHPGsQ69+W7P9ur/r5G6PrUmeCRGC+o4vRU61t59jySXd
+ U25SRnofD0CgrpZbbw3x8JBb7sDbu5kUTFX9IxjfJ0rh1B0cOuNVBe+oyh8cRAKoBxNN3rVik
+ hDwE6VpFYPlsHH3CwY5RHmurfpyIG9SlHBs18HCeIBzkReUl2/KrEt1geR+BgTxUl1QIo5l9P
+ Nqi5mil5Kv6r+pYpXO/lxteBQMq4F4PQyPdzB5kBHYyN23nVpXw7P6kWDWranPh6v94XYpcAK
+ cH4e6S9KuZae9P7D9d5AkDswbDqf+s2iP0IegQL/JOeQhdkk0zT83Vv8Q==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/18/22 14:43, Rustam Subkhankulov wrote:
-> The second operand of a '&&' operator has no impact on expression
-> result for cases 400 and 512 in SiS_GetModeID().
+On 7/25/22 09:54, Javier Martinez Canillas wrote:
+> From: Daniel Vetter <daniel.vetter@ffwll.ch>
 >
-> Judging by the logic and the names of the variables, in both cases a
-> typo was made.
+> No driver access this anymore, except for the olpc dcon fbdev driver but
+> that has been marked as broken anyways by commit de0952f267ff ("staging:
+> olpc_dcon: mark driver as broken").
 >
-> Found by Linux Verification Center (linuxtesting.org) with SVACE.
->
-> Signed-off-by: Rustam Subkhankulov <subkhankulov@ispras.ru>
-> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+> Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+> Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
 
-applied to fbdev git tree.
+I've applied it to the fbdev git tree.
 
 Thanks!
 Helge
 
-
 > ---
->  drivers/video/fbdev/sis/init.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
 >
-> diff --git a/drivers/video/fbdev/sis/init.c b/drivers/video/fbdev/sis/in=
-it.c
-> index b568c646a76c..2ba91d62af92 100644
-> --- a/drivers/video/fbdev/sis/init.c
-> +++ b/drivers/video/fbdev/sis/init.c
-> @@ -355,12 +355,12 @@ SiS_GetModeID(int VGAEngine, unsigned int VBFlags,=
- int HDisplay, int VDisplay,
->  		}
->  		break;
->  	case 400:
-> -		if((!(VBFlags & CRT1_LCDA)) || ((LCDwidth >=3D 800) && (LCDwidth >=3D=
- 600))) {
-> +		if((!(VBFlags & CRT1_LCDA)) || ((LCDwidth >=3D 800) && (LCDheight >=
-=3D 600))) {
->  			if(VDisplay =3D=3D 300) ModeIndex =3D ModeIndex_400x300[Depth];
->  		}
->  		break;
->  	case 512:
-> -		if((!(VBFlags & CRT1_LCDA)) || ((LCDwidth >=3D 1024) && (LCDwidth >=
-=3D 768))) {
-> +		if((!(VBFlags & CRT1_LCDA)) || ((LCDwidth >=3D 1024) && (LCDheight >=
-=3D 768))) {
->  			if(VDisplay =3D=3D 384) ModeIndex =3D ModeIndex_512x384[Depth];
->  		}
->  		break;
+>  drivers/video/fbdev/core/fbmem.c | 6 +++---
+>  include/linux/fb.h               | 6 ------
+>  2 files changed, 3 insertions(+), 9 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core=
+/fbmem.c
+> index 6ae1c5fa19f9..1e70d8c67653 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -51,10 +51,10 @@
+>  static DEFINE_MUTEX(registration_lock);
+>
+>  struct fb_info *registered_fb[FB_MAX] __read_mostly;
+> -EXPORT_SYMBOL(registered_fb);
+> -
+>  int num_registered_fb __read_mostly;
+> -EXPORT_SYMBOL(num_registered_fb);
+> +#define for_each_registered_fb(i)		\
+> +	for (i =3D 0; i < FB_MAX; i++)		\
+> +		if (!registered_fb[i]) {} else
+>
+>  bool fb_center_logo __read_mostly;
+>
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index 453c3b2b6b8e..0aff76bcbb00 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -627,16 +627,10 @@ extern int fb_get_color_depth(struct fb_var_screen=
+info *var,
+>  extern int fb_get_options(const char *name, char **option);
+>  extern int fb_new_modelist(struct fb_info *info);
+>
+> -extern struct fb_info *registered_fb[FB_MAX];
+> -extern int num_registered_fb;
+>  extern bool fb_center_logo;
+>  extern int fb_logo_count;
+>  extern struct class *fb_class;
+>
+> -#define for_each_registered_fb(i)		\
+> -	for (i =3D 0; i < FB_MAX; i++)		\
+> -		if (!registered_fb[i]) {} else
+> -
+>  static inline void lock_fb_info(struct fb_info *info)
+>  {
+>  	mutex_lock(&info->lock);
 

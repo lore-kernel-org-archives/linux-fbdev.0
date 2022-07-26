@@ -2,93 +2,229 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EDE77C43334
-	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Jul 2022 08:23:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D704DC433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Jul 2022 08:37:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237944AbiGZIXK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 26 Jul 2022 04:23:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40370 "EHLO
+        id S237942AbiGZIha (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 26 Jul 2022 04:37:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53230 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229527AbiGZIXJ (ORCPT
+        with ESMTP id S229749AbiGZIha (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 26 Jul 2022 04:23:09 -0400
-Received: from mail-qv1-xf2a.google.com (mail-qv1-xf2a.google.com [IPv6:2607:f8b0:4864:20::f2a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8D36E26AC6
-        for <linux-fbdev@vger.kernel.org>; Tue, 26 Jul 2022 01:23:07 -0700 (PDT)
-Received: by mail-qv1-xf2a.google.com with SMTP id t7so10142138qvz.6
-        for <linux-fbdev@vger.kernel.org>; Tue, 26 Jul 2022 01:23:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=streamunlimited.com; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=6czwj1HzPSVht5LKBHhjYm6MovKhK084JbpR2sXNUxE=;
-        b=PaanFb9C2onSyyBOzQuSewIeVp/JBcVJ6X2rfbbWQIfn89XDfLM+X2YNKzqdJolbxD
-         sLAzF1ykNA08gre0tABu2WPkSCctDo3MQ1aGfZd7dLvtTyQ/+LaHV3mWP+DYrnK50ScQ
-         ljQqIVT+LmzG3jQEX/dfAn0wHqLNAXV3noJmo=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=6czwj1HzPSVht5LKBHhjYm6MovKhK084JbpR2sXNUxE=;
-        b=MCnQkn0mJajlN77HOoMcEvyb4ti5lu/ioNEcDnU5G6lGymBiMwOZ30OUzHq2XoA7Cz
-         l7WVLCTTg8HNHAwxHrOtqn8uFhVSDTOjgqS1Fp3CBCyeXdMsrQtYmrJd1PXofCUcki6F
-         iPQa1WHFurUQC7rYGtR09nhlAN9eKpYoGeekQ1ocAE8g3aB7OXUKhxJBqEMXRw1VdsN8
-         owOeMhLwq8hFzS+nOl7pTH7jNqkgJlJwXJVUKDZTNLZk7n9xaCv2KZoY+ailjYcvHnKc
-         QWX+KP7K9XldA8D4lOb9eYiv3dSwW5xnG7P+eGcioAr1wBYFS1SIhksqlCmMQhdNSZ2P
-         HvWg==
-X-Gm-Message-State: AJIora+u233mGmeZlGrZoG59OJ4aqgG+U6bg/KFlScvgPtLnXl4aodrt
-        z45NDkMhmlFM2zWTWcvNJ82PJ/vBNdW2WQnp
-X-Google-Smtp-Source: AGRyM1voH2NwourXXNbOEJ/tLf9qotPbGThefm/NyTg7N/0KBHbFjT5XFPrO8DhdO3E3qZhWHOJvoA==
-X-Received: by 2002:a05:6214:2342:b0:473:bcd6:a3b7 with SMTP id hu2-20020a056214234200b00473bcd6a3b7mr13676393qvb.88.1658823786755;
-        Tue, 26 Jul 2022 01:23:06 -0700 (PDT)
-Received: from localhost.localdomain (vpn.streamunlimited.com. [91.114.0.140])
-        by smtp.gmail.com with ESMTPSA id x14-20020a05620a12ae00b006b53fe19c41sm10004461qki.14.2022.07.26.01.23.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 26 Jul 2022 01:23:06 -0700 (PDT)
-From:   Peter Suti <peter.suti@streamunlimited.com>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     Peter Suti <peter.suti@streamunlimited.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: [PATCH] staging: fbtft: core: set smem_len before fb_deferred_io_init call
-Date:   Tue, 26 Jul 2022 10:21:13 +0200
-Message-Id: <20220726082114.891853-1-peter.suti@streamunlimited.com>
-X-Mailer: git-send-email 2.25.1
+        Tue, 26 Jul 2022 04:37:30 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B45B42AC2;
+        Tue, 26 Jul 2022 01:37:28 -0700 (PDT)
+X-UUID: e80651ba2cde4989bf7630e6063b8e64-20220726
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.8,REQID:7ac7fa29-1ede-4cb9-a7ca-d5f2ff8137a1,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:0f94e32,CLOUDID:76ff0cee-db04-4499-9fdf-04ef44b9468c,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
+        ,QS:nil,BEC:nil,COL:0
+X-UUID: e80651ba2cde4989bf7630e6063b8e64-20220726
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
+        (envelope-from <ck.hu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1551725302; Tue, 26 Jul 2022 16:37:24 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Tue, 26 Jul 2022 16:37:22 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.15 via Frontend
+ Transport; Tue, 26 Jul 2022 16:37:22 +0800
+Message-ID: <9140e0b37c71bfa8193d2177a1cc044df4761e15.camel@mediatek.com>
+Subject: Re: [PATCH v14 05/10] drm/mediatek: Add MT8195 Embedded DisplayPort
+ driver
+From:   CK Hu <ck.hu@mediatek.com>
+To:     Rex-BC Chen <rex-bc.chen@mediatek.com>,
+        "chunkuang.hu@kernel.org" <chunkuang.hu@kernel.org>,
+        "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
+        "daniel@ffwll.ch" <daniel@ffwll.ch>,
+        "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        "krzysztof.kozlowski+dt@linaro.org" 
+        <krzysztof.kozlowski+dt@linaro.org>,
+        "mripard@kernel.org" <mripard@kernel.org>,
+        "tzimmermann@suse.de" <tzimmermann@suse.de>,
+        "matthias.bgg@gmail.com" <matthias.bgg@gmail.com>,
+        "deller@gmx.de" <deller@gmx.de>,
+        "airlied@linux.ie" <airlied@linux.ie>
+CC:     "msp@baylibre.com" <msp@baylibre.com>,
+        "granquet@baylibre.com" <granquet@baylibre.com>,
+        Jitao Shi =?UTF-8?Q?=28=E7=9F=B3=E8=AE=B0=E6=B6=9B=29?= 
+        <jitao.shi@mediatek.com>,
+        "wenst@chromium.org" <wenst@chromium.org>,
+        "angelogioacchino.delregno@collabora.com" 
+        <angelogioacchino.delregno@collabora.com>,
+        LiangXu Xu =?UTF-8?Q?=28=E5=BE=90=E4=BA=AE=29?= 
+        <LiangXu.Xu@mediatek.com>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-mediatek@lists.infradead.org" 
+        <linux-mediatek@lists.infradead.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        Project_Global_Chrome_Upstream_Group 
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Tue, 26 Jul 2022 16:37:21 +0800
+In-Reply-To: <ae6da1f0c9a27f97b4e9dd76071d03f21dcfcd3b.camel@mediatek.com>
+References: <20220712111223.13080-1-rex-bc.chen@mediatek.com>
+         <20220712111223.13080-6-rex-bc.chen@mediatek.com>
+         <6232f0fc15bc1057aab68523e5eb63e10b3a2802.camel@mediatek.com>
+         <ae6da1f0c9a27f97b4e9dd76071d03f21dcfcd3b.camel@mediatek.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-fb_deferred_io_init depends on smem_len being filled
-to be able to initialize the virtual page lists since
-commit 856082f021a2 ("fbdev: defio: fix the pagelist corruption")
+On Tue, 2022-07-26 at 11:30 +0800, Rex-BC Chen wrote:
+> On Mon, 2022-07-25 at 17:23 +0800, CK Hu wrote:
+> > Hi, Bo-Chen:
+> > 
+> > On Tue, 2022-07-12 at 19:12 +0800, Bo-Chen Chen wrote:
+> > > From: Markus Schneider-Pargmann <msp@baylibre.com>
+> > > 
+> > > This patch adds a embedded displayport driver for the MediaTek
+> > > mt8195
+> > > SoC.
+> > > 
+> > > It supports the MT8195, the embedded DisplayPort units. It offers
+> > > DisplayPort 1.4 with up to 4 lanes.
+> > > 
+> > > The driver creates a child device for the phy. The child device
+> > > will
+> > > never exist without the parent being active. As they are sharing
+> > > a
+> > > register range, the parent passes a regmap pointer to the child
+> > > so
+> > > that
+> > > both can work with the same register range. The phy driver sets
+> > > device
+> > > data that is read by the parent to get the phy device that can be
+> > > used
+> > > to control the phy properties.
+> > > 
+> > > This driver is based on an initial version by
+> > > Jitao shi <jitao.shi@mediatek.com>
+> > > 
+> > > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> > > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> > > Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> > > ---
+> > 
+> > [snip]
+> > 
+> > > +
+> > > +/*
+> > > + * We need to handle HPD signal in eDP even though eDP is a
+> > > always
+> > > connected
+> > > + * device. Besides connected status, there is another feature
+> > > for
+> > > HPD signal -
+> > > + * HPD pulse: it presents an IRQ from sink devices to source
+> > > devices
+> > > (Refer to
+> > > + * 5.1.4 of DP1.4 spec).
+> > > + */
+> > > +static irqreturn_t mtk_dp_hpd_isr_handler(struct mtk_dp *mtk_dp)
+> > > +{
+> > > +	bool hpd_change = false;
+> > > +	u32 irq_status = mtk_dp_swirq_get_clear(mtk_dp) |
+> > > +			 mtk_dp_hwirq_get_clear(mtk_dp);
+> > > +	struct mtk_dp_train_info *train_info = &mtk_dp->train_info;
+> > > +
+> > > +	if (!irq_status)
+> > > +		return IRQ_HANDLED;
+> > > +
+> > > +	if (irq_status & MTK_DP_HPD_INTERRUPT)
+> > > +		train_info->irq_sta.hpd_inerrupt = true;
+> > > +	if (irq_status & MTK_DP_HPD_CONNECT ||
+> > > +	    irq_status & MTK_DP_HPD_DISCONNECT)
+> > > +		hpd_change = true;
+> > > +
+> > > +	if (!(hpd_change))
+> > > +		return IRQ_WAKE_THREAD;
+> > > +
+> > > +	if (mtk_dp_plug_state(mtk_dp))
+> > 
+> > mtk_dp_plug_state() is called only here, and prevent function call
+> > in
+> > isr handler, so squash mtk_dp_plug_state() into this function.
+> > 
+> 
+> Hello CK,
+> 
+> Thanks for review.
+> 
+> I would like to keep this because we will use this function for
+> mtk_dp_plug_state_avoid_pulse() in dp patch.
 
-Signed-off-by: Peter Suti <peter.suti@streamunlimited.com>
----
- drivers/staging/fbtft/fbtft-core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Use train_info->cable_plugged_in instead of calling mtk_dp_plug_state()
+because I think train_info->cable_plugged_in is synced with
+mtk_dp_plug_state().
 
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index 9c4d797e7ae4..4137c1a51e1b 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -656,7 +656,6 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 	fbdefio->delay =           HZ / fps;
- 	fbdefio->sort_pagelist =   true;
- 	fbdefio->deferred_io =     fbtft_deferred_io;
--	fb_deferred_io_init(info);
- 
- 	snprintf(info->fix.id, sizeof(info->fix.id), "%s", dev->driver->name);
- 	info->fix.type =           FB_TYPE_PACKED_PIXELS;
-@@ -667,6 +666,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 	info->fix.line_length =    width * bpp / 8;
- 	info->fix.accel =          FB_ACCEL_NONE;
- 	info->fix.smem_len =       vmem_size;
-+	fb_deferred_io_init(info);
- 
- 	info->var.rotate =         pdata->rotate;
- 	info->var.xres =           width;
--- 
-2.25.1
+> 
+> > > +		train_info->cable_plugged_in = true;
+> > > +	else
+> > > +		train_info->cable_plugged_in = false;
+> > > +
+> > > +	train_info->cable_state_change = true;
+> > > +
+> > > +	return IRQ_WAKE_THREAD;
+> > > +}
+> > > +
+> > > +static irqreturn_t mtk_dp_hpd_event(int hpd, void *dev)
+> > > +{
+> > > +	struct mtk_dp *mtk_dp = dev;
+> > > +	u32 irq_status;
+> > > +
+> > > +	irq_status = mtk_dp_read(mtk_dp, MTK_DP_TOP_IRQ_STATUS);
+> > > +
+> > > +	if (!irq_status)
+> > > +		return IRQ_HANDLED;
+> > > +
+> > > +	if (irq_status & RGS_IRQ_STATUS_TRANSMITTER)
+> > > +		return mtk_dp_hpd_isr_handler(mtk_dp);
+> > 
+> > Prevent function call in isr handler, squash
+> > mtk_dp_hpd_isr_handler()
+> > into this function.
+> > 
+> 
+> Is this really necessary? We also modify this function in following
+> patches. I think it's not a good idea to expand this.
+
+mtk_dp_hpd_isr_handler() is only called in this function, is it really
+necessary to separate this to a independent function? The function call
+would increase jump instruction and stack push/pop instruction. I think
+we should not do many things in isr handler. I've reviewed the later
+patch and the later patch should be modified according to this.
+
+Regards,
+CK
+
+> 
+> BRs,
+> Bo-Chen
+> 
+> > Regards,
+> > CK
+> > 
+> > > +
+> > > +	return IRQ_HANDLED;
+> > > +}
+> > > +
+> > 
+> > 
+> 
+> 
 

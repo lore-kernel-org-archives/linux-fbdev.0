@@ -2,43 +2,43 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DC51C19F29
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jul 2022 09:37:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34A64C3F6B0
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jul 2022 09:38:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230478AbiG0JhG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Jul 2022 05:37:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49008 "EHLO
+        id S231430AbiG0Jii (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Jul 2022 05:38:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50574 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229600AbiG0JhF (ORCPT
+        with ESMTP id S230110AbiG0Jih (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Jul 2022 05:37:05 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD3A8394;
-        Wed, 27 Jul 2022 02:37:04 -0700 (PDT)
+        Wed, 27 Jul 2022 05:38:37 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E8B1F45046;
+        Wed, 27 Jul 2022 02:38:36 -0700 (PDT)
 Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
         (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (No client certificate requested)
         (Authenticated sender: kholk11)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 969426601B24;
-        Wed, 27 Jul 2022 10:37:02 +0100 (BST)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 9FB9D6601B24;
+        Wed, 27 Jul 2022 10:38:34 +0100 (BST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1658914623;
-        bh=aNeE4NIwYGWJ7gmVikW1+br2hiX94QgkF1KjhpADzTA=;
+        s=mail; t=1658914715;
+        bh=kb0hA66Ulh+7LVrBFaFbFx4CH2CTog1BkhvnquNUp4A=;
         h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=NIkq8FAmVhT+As5rqjhYmdrF1jOw3KVT1eGdp/io0BOt0GGmB3eoIcp/QsU21cu59
-         IAQoqrELvegPiAt1mXWDdp5Nh19eap8kOg0a9MzI5OZrjtMuBbANW4fc95LQwjOsoD
-         0lnESPF9T0KAu5c1uvyuxRxAMqehdZaLcXSWt4BwHkAG06/L07FIXTYKMoL+gU+guV
-         GmM1f8/iag7fItPd2syuUSI6/cBpwi/ld07U5ZRdOaHvQKBxSPNbRk7JEcESn9MN5n
-         R4Kq8GLtlPeSx1TgFt7a0ZeUZZh3s0zf3x1FVJmM7uGqBDYul3VeAGgD3N0zpGMYvD
-         H+HY8PX6XBN0g==
-Message-ID: <99295c28-af23-2bf4-b2b5-ed39209a1897@collabora.com>
-Date:   Wed, 27 Jul 2022 11:36:59 +0200
+        b=exegzssRDPydn8NZXLEP2+QYLvxDERNon/2ad2ZmKIpheWyJazAyQuSY2ZqWnOVcs
+         ku5Rv+1nSC7XQZn8dkx4/JKenuKhvPAHIEAd+tvBKPlFx9ZZgULuH9Ji5az4p3wsL3
+         V9pETgTGcmQTPAga1ReDqiLddUaCO64/yuf+qpDiY6YbO5wd4AgW7rrBOOwMTJTN0z
+         iw3uaAqF/T+qItfif0rvrZVQijd+w64c9GCLnlTTvVws8LIBZSJz10ayELJkbzcnGR
+         A8qJTVumydv065wwRiOvGEQvy/6AbegSLh21ZpjcKUnTIsiUPtxoqCSAXB+kS3h7KR
+         jM8qRNBBRntRQ==
+Message-ID: <223f8f7f-8655-6f72-e4f7-c4a6a3159203@collabora.com>
+Date:   Wed, 27 Jul 2022 11:38:32 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.11.0
-Subject: Re: [PATCH v15 05/11] drm/mediatek: Add MT8195 Embedded DisplayPort
- driver
+Subject: Re: [PATCH v15 06/11] drm/mediatek: Add MT8195 External DisplayPort
+ support
 Content-Language: en-US
 To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, chunkuang.hu@kernel.org,
         p.zabel@pengutronix.de, daniel@ffwll.ch, robh+dt@kernel.org,
@@ -53,10 +53,10 @@ Cc:     msp@baylibre.com, granquet@baylibre.com, jitao.shi@mediatek.com,
         linux-fbdev@vger.kernel.org,
         Project_Global_Chrome_Upstream_Group@mediatek.com
 References: <20220727045035.32225-1-rex-bc.chen@mediatek.com>
- <20220727045035.32225-6-rex-bc.chen@mediatek.com>
+ <20220727045035.32225-7-rex-bc.chen@mediatek.com>
 From:   AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20220727045035.32225-6-rex-bc.chen@mediatek.com>
+In-Reply-To: <20220727045035.32225-7-rex-bc.chen@mediatek.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
@@ -64,26 +64,12 @@ List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Il 27/07/22 06:50, Bo-Chen Chen ha scritto:
-> From: Markus Schneider-Pargmann <msp@baylibre.com>
+> From: Guillaume Ranquet <granquet@baylibre.com>
 > 
-> This patch adds a embedded displayport driver for the MediaTek mt8195 SoC.
+> This patch adds External DisplayPort support to the mt8195 eDP driver.
 > 
-> It supports the MT8195, the embedded DisplayPort units. It offers
-> DisplayPort 1.4 with up to 4 lanes.
-> 
-> The driver creates a child device for the phy. The child device will
-> never exist without the parent being active. As they are sharing a
-> register range, the parent passes a regmap pointer to the child so that
-> both can work with the same register range. The phy driver sets device
-> data that is read by the parent to get the phy device that can be used
-> to control the phy properties.
-> 
-> This driver is based on an initial version by
-> Jitao shi <jitao.shi@mediatek.com>
-> 
-> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
 > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
 > Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
 
-Tested-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+

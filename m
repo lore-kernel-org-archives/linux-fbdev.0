@@ -2,42 +2,42 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B216C19F2C
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jul 2022 04:50:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0BCCC19F28
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jul 2022 04:50:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240381AbiG0Eur (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Jul 2022 00:50:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44740 "EHLO
+        id S240321AbiG0Eus (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Jul 2022 00:50:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44752 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230302AbiG0Eup (ORCPT
+        with ESMTP id S240229AbiG0Eup (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Wed, 27 Jul 2022 00:50:45 -0400
 Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A85631B7A8;
-        Tue, 26 Jul 2022 21:50:43 -0700 (PDT)
-X-UUID: e7f080ff19bc4b00bae5570cff6c8a06-20220727
-X-CID-P-RULE: Spam_GS6885AD
-X-CID-O-INFO: VERSION:1.1.8,REQID:194fc513-44f4-4f52-9cd7-ed2bc81e9da0,OB:0,LO
-        B:10,IP:0,URL:0,TC:0,Content:40,EDM:0,RT:0,SF:95,FILE:0,RULE:Spam_GS6885AD
-        ,ACTION:quarantine,TS:135
-X-CID-INFO: VERSION:1.1.8,REQID:194fc513-44f4-4f52-9cd7-ed2bc81e9da0,OB:0,LOB:
-        10,IP:0,URL:0,TC:0,Content:40,EDM:0,RT:0,SF:95,FILE:0,RULE:Spam_US65DF41,A
-        CTION:quarantine,TS:135
-X-CID-META: VersionHash:0f94e32,CLOUDID:bb30eacb-7c9b-4dbc-a9d4-00659d6b7a90,C
-        OID:ef8f5c968e3e,Recheck:0,SF:28|17|19|48,TC:nil,Content:4,EDM:-3,IP:nil,U
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A9B101C937;
+        Tue, 26 Jul 2022 21:50:44 -0700 (PDT)
+X-UUID: 28ed4b24ce074fccabbd156b6e6849cc-20220727
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.8,REQID:eb3f64c3-288f-48c6-bbd5-b5f80d663ac3,OB:10,L
+        OB:20,IP:0,URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,RULE:Release_Ham,
+        ACTION:release,TS:90
+X-CID-INFO: VERSION:1.1.8,REQID:eb3f64c3-288f-48c6-bbd5-b5f80d663ac3,OB:10,LOB
+        :20,IP:0,URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,RULE:Spam_GS981B3D,
+        ACTION:quarantine,TS:90
+X-CID-META: VersionHash:0f94e32,CLOUDID:b930eacb-7c9b-4dbc-a9d4-00659d6b7a90,C
+        OID:b593041dd88e,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
         RL:0,File:nil,QS:nil,BEC:nil,COL:0
-X-UUID: e7f080ff19bc4b00bae5570cff6c8a06-20220727
+X-UUID: 28ed4b24ce074fccabbd156b6e6849cc-20220727
 Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw01.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1485722807; Wed, 27 Jul 2022 12:50:40 +0800
+        with ESMTP id 846818518; Wed, 27 Jul 2022 12:50:40 +0800
 Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
  mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Wed, 27 Jul 2022 12:50:38 +0800
+ 15.2.792.15; Wed, 27 Jul 2022 12:50:39 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
  mtkmbs11n2.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.792.15 via Frontend Transport; Wed, 27 Jul 2022 12:50:38 +0800
+ 15.2.792.15 via Frontend Transport; Wed, 27 Jul 2022 12:50:39 +0800
 From:   Bo-Chen Chen <rex-bc.chen@mediatek.com>
 To:     <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
         <daniel@ffwll.ch>, <robh+dt@kernel.org>,
@@ -54,9 +54,9 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
         Bo-Chen Chen <rex-bc.chen@mediatek.com>
-Subject: [PATCH v15 03/11] drm/edid: Add cea_sad helpers for freq/length
-Date:   Wed, 27 Jul 2022 12:50:27 +0800
-Message-ID: <20220727045035.32225-4-rex-bc.chen@mediatek.com>
+Subject: [PATCH v15 09/11] drm/mediatek: set monitor to DP_SET_POWER_D3 to avoid garbage
+Date:   Wed, 27 Jul 2022 12:50:33 +0800
+Message-ID: <20220727045035.32225-10-rex-bc.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20220727045035.32225-1-rex-bc.chen@mediatek.com>
 References: <20220727045035.32225-1-rex-bc.chen@mediatek.com>
@@ -67,128 +67,31 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Guillaume Ranquet <granquet@baylibre.com>
+Set the monitor power state to DP_SET_POWER_D3 to avoid garbage.
 
-This patch adds two helper functions that extract the frequency and word
-length from a struct cea_sad.
-
-For these helper functions new defines are added that help translate the
-'freq' and 'byte2' fields into real numbers.
-
-Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+Signed-off-by: Jitao Shi <jitao.shi@mediatek.com>
 Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- drivers/gpu/drm/drm_edid.c | 63 ++++++++++++++++++++++++++++++++++++++
- include/drm/drm_edid.h     | 14 +++++++++
- 2 files changed, 77 insertions(+)
+ drivers/gpu/drm/mediatek/mtk_dp.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c
-index bc43e1b32092..2a6f92da5ff3 100644
---- a/drivers/gpu/drm/drm_edid.c
-+++ b/drivers/gpu/drm/drm_edid.c
-@@ -4916,6 +4916,69 @@ int drm_edid_to_speaker_allocation(const struct edid *edid, u8 **sadb)
- }
- EXPORT_SYMBOL(drm_edid_to_speaker_allocation);
+diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c b/drivers/gpu/drm/mediatek/mtk_dp.c
+index 80dd2b999463..637fd535704a 100644
+--- a/drivers/gpu/drm/mediatek/mtk_dp.c
++++ b/drivers/gpu/drm/mediatek/mtk_dp.c
+@@ -1799,6 +1799,11 @@ static void mtk_dp_bridge_atomic_disable(struct drm_bridge *bridge,
+ {
+ 	struct mtk_dp *mtk_dp = mtk_dp_from_bridge(bridge);
  
-+/**
-+ * drm_cea_sad_get_sample_rate - Extract the sample rate from cea_sad
-+ * @sad: Pointer to the cea_sad struct
-+ *
-+ * Extracts the cea_sad frequency field and returns the sample rate in Hz.
-+ *
-+ * Return: Sample rate in Hz or a negative errno if parsing failed.
-+ */
-+int drm_cea_sad_get_sample_rate(const struct cea_sad *sad)
-+{
-+	switch (sad->freq) {
-+	case DRM_CEA_SAD_FREQ_32KHZ:
-+		return 32000;
-+	case DRM_CEA_SAD_FREQ_44KHZ:
-+		return 44100;
-+	case DRM_CEA_SAD_FREQ_48KHZ:
-+		return 48000;
-+	case DRM_CEA_SAD_FREQ_88KHZ:
-+		return 88200;
-+	case DRM_CEA_SAD_FREQ_96KHZ:
-+		return 96000;
-+	case DRM_CEA_SAD_FREQ_176KHZ:
-+		return 176400;
-+	case DRM_CEA_SAD_FREQ_192KHZ:
-+		return 192000;
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+EXPORT_SYMBOL(drm_cea_sad_get_sample_rate);
-+
-+/**
-+ * drm_cea_sad_get_uncompressed_word_length - Extract word length
-+ * @sad: Pointer to the cea_sad struct
-+ *
-+ * Extracts the cea_sad byte2 field and returns the word length for an
-+ * uncompressed stream.
-+ *
-+ * Note: This function may only be called for uncompressed audio.
-+ *
-+ * Return: Word length in bits or a negative errno if parsing failed.
-+ */
-+int drm_cea_sad_get_uncompressed_word_length(const struct cea_sad *sad)
-+{
-+	if (sad->format != HDMI_AUDIO_CODING_TYPE_PCM) {
-+		DRM_WARN("Unable to get the uncompressed word length for format: %u\n",
-+			 sad->format);
-+		return -EINVAL;
++	if (mtk_dp_plug_state(mtk_dp)) {
++		drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER, DP_SET_POWER_D3);
++		usleep_range(2000, 3000);
 +	}
 +
-+	switch (sad->byte2) {
-+	case DRM_CEA_SAD_UNCOMPRESSED_WORD_16BIT:
-+		return 16;
-+	case DRM_CEA_SAD_UNCOMPRESSED_WORD_20BIT:
-+		return 20;
-+	case DRM_CEA_SAD_UNCOMPRESSED_WORD_24BIT:
-+		return 24;
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+EXPORT_SYMBOL(drm_cea_sad_get_uncompressed_word_length);
-+
- /**
-  * drm_av_sync_delay - compute the HDMI/DP sink audio-video sync delay
-  * @connector: connector associated with the HDMI/DP sink
-diff --git a/include/drm/drm_edid.h b/include/drm/drm_edid.h
-index c2c43a4af681..779b710aed40 100644
---- a/include/drm/drm_edid.h
-+++ b/include/drm/drm_edid.h
-@@ -373,6 +373,18 @@ struct cea_sad {
- 	u8 byte2;
- };
+ 	mtk_dp_video_mute(mtk_dp, true);
  
-+#define DRM_CEA_SAD_FREQ_32KHZ  BIT(0)
-+#define DRM_CEA_SAD_FREQ_44KHZ  BIT(1)
-+#define DRM_CEA_SAD_FREQ_48KHZ  BIT(2)
-+#define DRM_CEA_SAD_FREQ_88KHZ  BIT(3)
-+#define DRM_CEA_SAD_FREQ_96KHZ  BIT(4)
-+#define DRM_CEA_SAD_FREQ_176KHZ BIT(5)
-+#define DRM_CEA_SAD_FREQ_192KHZ BIT(6)
-+
-+#define DRM_CEA_SAD_UNCOMPRESSED_WORD_16BIT BIT(0)
-+#define DRM_CEA_SAD_UNCOMPRESSED_WORD_20BIT BIT(1)
-+#define DRM_CEA_SAD_UNCOMPRESSED_WORD_24BIT BIT(2)
-+
- struct drm_encoder;
- struct drm_connector;
- struct drm_connector_state;
-@@ -380,6 +392,8 @@ struct drm_display_mode;
- 
- int drm_edid_to_sad(const struct edid *edid, struct cea_sad **sads);
- int drm_edid_to_speaker_allocation(const struct edid *edid, u8 **sadb);
-+int drm_cea_sad_get_sample_rate(const struct cea_sad *sad);
-+int drm_cea_sad_get_uncompressed_word_length(const struct cea_sad *sad);
- int drm_av_sync_delay(struct drm_connector *connector,
- 		      const struct drm_display_mode *mode);
- 
+ 	mtk_dp->enabled = false;
 -- 
 2.18.0
 

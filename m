@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3065C19F28
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jul 2022 17:28:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D587C19F2B
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jul 2022 17:30:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242228AbiG0R26 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Jul 2022 13:28:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58286 "EHLO
+        id S229915AbiG0RaL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Jul 2022 13:30:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37406 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239315AbiG0R1l (ORCPT
+        with ESMTP id S241749AbiG0R1N (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Jul 2022 13:27:41 -0400
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2DBCD7F525
-        for <linux-fbdev@vger.kernel.org>; Wed, 27 Jul 2022 09:47:18 -0700 (PDT)
-Received: by mail-lf1-x12c.google.com with SMTP id t22so21550324lfg.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 27 Jul 2022 09:47:18 -0700 (PDT)
+        Wed, 27 Jul 2022 13:27:13 -0400
+Received: from mail-lj1-x22f.google.com (mail-lj1-x22f.google.com [IPv6:2a00:1450:4864:20::22f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A0A857E339
+        for <linux-fbdev@vger.kernel.org>; Wed, 27 Jul 2022 09:47:03 -0700 (PDT)
+Received: by mail-lj1-x22f.google.com with SMTP id u20so12658673ljk.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 27 Jul 2022 09:47:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=xZf4OdbV43HHtgf1qVIKge/GbJKtAf7d2TC+uXlE1iw=;
-        b=unFrdwkByedm1Cx4IG8Ku7mviSYROrujqG4UjXQkiG0xYgsmJHR0xO4a+bYbYW/PwS
-         +BpCE5BwASL4enlWpSc5ChcanRPNkec78zKAkoqgkfIfM9juO9yFiudCpM2kK2iiVUUN
-         vcX/bOW82bpl3sEJt8lJ4P7UjpNpPGtSmZmxIhjeBtOY/lI5Pyef+zmEyrN7JnZwOT2v
-         5ornAJUjWzhOFUJ2FsEA+6X3NuHvsDNA0boK2iaiU45J721qkxkd0KE7vpsaUxk9VfAE
-         jbFm7EwWypt894KHqZaTBTjDRfbDhf2/nLsKWfjp3UDMIHwCK+Coy4qvG59UqItR52XE
-         A4RA==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=K/yOyu6GWLTGzcNYsjeLpWfd27RAacTfDstKqyrSAoE=;
+        b=zftOa3M+Qu3zYg8ILzX3Ol1djhj/t7SAeRxKo972bNgpWrEhJmClL+UZJsvsRWxOSV
+         8YI2mWF521w9R+aNiQ6iKDDtb7skefK3alDkEo6BmHQN+oUIAACk602U2irOo/AIwH86
+         i4pVQhhseEc8K7cqlXODXGwym4vCD4qbbwS9QksbzonBYHSVGUrzPJV0b57ArJjbO9vC
+         Pob8fY5MMnhQdmtQww3LEKd9bSKQKIwje2tvqVKXYv8LtIWfIpeTHPamspElaXoe1jhC
+         E3fY9mKLFffhlf+V519K2wx1AhWxbEeRXvU/hHUYcGP/vVM/o2ZFJeno4AtnaWeSrmrv
+         VORQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=xZf4OdbV43HHtgf1qVIKge/GbJKtAf7d2TC+uXlE1iw=;
-        b=yanpKHu5Kx0fu/MznR06f9MBQ2PyyiwzBMgHV5nMGykMXbUIE3xr5cRl22xoy1ggU0
-         9DvSjcqHLleM/6nhPqRsvn1C+cTOQJnJjUhYBJ01OJ9Ah4iDpTpT+i1Q8ppQxdofEO3m
-         s1LOpcTuhZF6YZ/jgpF8Y6FeKWKigtr5ivPzNKVoyI0x3CGMFIHyztMSX9ox5bG8EKt4
-         YeApSKzHaQqFqzPKsz/Lr/m3whLt83CexQFTe4bpepqY5o0VrkwBDlJdEUkPFXaBCLPI
-         2qnWTOapm8oaHuA5Kir2bwKj2tF+btkAY2fUWJXGmlzR1sueOC6+aoFxcfT5YNMfKKKM
-         ji1Q==
-X-Gm-Message-State: AJIora+8m1wvy75CJE5dwlqvzSc+3lr/B2jnzMeBnevDGhUuf/c7j0mp
-        y/tL4uqXy9tm9T6SdYiDVvlgnA==
-X-Google-Smtp-Source: AGRyM1vk2lUU2rIgm+Qs7fiV5lfej9Y3jJ3qYGukgFmUOo3/tcHiuWVrQUOzvf2yUdGjOtEdYb/yTw==
-X-Received: by 2002:a05:6512:1287:b0:489:e488:950f with SMTP id u7-20020a056512128700b00489e488950fmr8402948lfs.440.1658940436717;
-        Wed, 27 Jul 2022 09:47:16 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=K/yOyu6GWLTGzcNYsjeLpWfd27RAacTfDstKqyrSAoE=;
+        b=HDM2hXcKeFvIzObN0yKnv1y7HunhDJHT1TXQJc0TWPQOg6SkLagUrWE5FxeLmva3qT
+         KMUabe6ReUidDG66cJpVB2yHGreccls1incjsrbzl/PgtKlXd0DADXKvnPldEC2Gwkg6
+         Tg5rdQmfaRiXsTY8y1lQfjxKjxCob1gZwJaBRwnw7+NOXrAOuOJ1pu2Mvhf++8VTwVKy
+         ByR7q8cseO6NnMFh/PvCZg6bzMshYjhqbVm5MckdEnGVBoNyWpwCRUSoBlir0Yzp04Is
+         NSzd7Woy9eNbFX8pgiiGO/8MeUG16JnEjgX8qJGSiFp2DpTp7TYNu9ccoUuJdqjOwph7
+         BCgA==
+X-Gm-Message-State: AJIora9qNSscVfoAioBlDDBj3yknaedJpaqJ3nBx1basq5UIR/0R/e0o
+        R94oI5bUcrFhy3pwU244L1N8ig==
+X-Google-Smtp-Source: AGRyM1shwAJq5nKlVyuZgIIaEFt3mg7AsEO781aqRRSC7Qt8FRX7YiWFyEaXLzhx6TvoTrEe0YwYGA==
+X-Received: by 2002:a05:651c:11c5:b0:25e:22c9:19e1 with SMTP id z5-20020a05651c11c500b0025e22c919e1mr1242993ljo.428.1658940421850;
+        Wed, 27 Jul 2022 09:47:01 -0700 (PDT)
 Received: from krzk-bin.lan (78-26-46-173.network.trollfjord.no. [78.26.46.173])
-        by smtp.gmail.com with ESMTPSA id 18-20020ac25f52000000b0048910301774sm3375149lfz.307.2022.07.27.09.47.13
+        by smtp.gmail.com with ESMTPSA id 18-20020ac25f52000000b0048910301774sm3375149lfz.307.2022.07.27.09.46.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 27 Jul 2022 09:47:16 -0700 (PDT)
+        Wed, 27 Jul 2022 09:47:01 -0700 (PDT)
 From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 To:     Lars-Peter Clausen <lars@metafoo.de>,
         Michael Hennerich <Michael.Hennerich@analog.com>,
@@ -101,59 +101,129 @@ To:     Lars-Peter Clausen <lars@metafoo.de>,
         linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH v2 05/10] dt-bindings: iio: frequency: adf4371: use spi-peripheral-props.yaml
-Date:   Wed, 27 Jul 2022 18:46:41 +0200
-Message-Id: <20220727164646.387541-6-krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v2 00/10] dt-bindings: iio: use spi-peripheral-props.yaml
+Date:   Wed, 27 Jul 2022 18:46:36 +0200
+Message-Id: <20220727164646.387541-1-krzysztof.kozlowski@linaro.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220727164646.387541-1-krzysztof.kozlowski@linaro.org>
-References: <20220727164646.387541-1-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Instead of listing directly properties typical for SPI peripherals,
-reference the spi-peripheral-props.yaml schema.  This allows using all
-properties typical for SPI-connected devices, even these which device
-bindings author did not tried yet.
+Technically, this depends on [1] merged to SPI tree, if we want to
+preserve existing behavior of not allowing SPI CPHA and CPOL in each of
+schemas in this patch.
 
-Remove the spi-* properties which now come via spi-peripheral-props.yaml
-schema, except for the cases when device schema adds some constraints
-like maximum frequency.
+If this patch comes independently via different tree, the SPI CPHA and
+CPOL will be allowed for brief period of time, before [1] is merged.
+This will not have negative impact, just DT schema checks will be
+loosened for that period.
 
-While changing additionalProperties->unevaluatedProperties, put it in
-typical place, just before example DTS.
+[1] https://lore.kernel.org/all/20220722191539.90641-2-krzysztof.kozlowski@linaro.org/
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
----
- .../devicetree/bindings/iio/frequency/adf4371.yaml         | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+Changes since v1
+================
+1. Continue the rework for entire IIO.
+v1: https://lore.kernel.org/all/20220715095302.214276-1-krzysztof.kozlowski@linaro.org/
 
-diff --git a/Documentation/devicetree/bindings/iio/frequency/adf4371.yaml b/Documentation/devicetree/bindings/iio/frequency/adf4371.yaml
-index 6b3a611e1cf1..0144f74a4768 100644
---- a/Documentation/devicetree/bindings/iio/frequency/adf4371.yaml
-+++ b/Documentation/devicetree/bindings/iio/frequency/adf4371.yaml
-@@ -40,15 +40,16 @@ properties:
-       output stage will shut down until the ADF4371/ADF4372 achieves lock as
-       measured by the digital lock detect circuitry.
- 
--  spi-max-frequency: true
--
- required:
-   - compatible
-   - reg
-   - clocks
-   - clock-names
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
+Best regards,
+Krzysztof
+
+Krzysztof Kozlowski (10):
+  dt-bindings: iio: adc: use spi-peripheral-props.yaml
+  dt-bindings: iio: accel: use spi-peripheral-props.yaml
+  dt-bindings: iio: amplifiers: adi,ada4250: use
+    spi-peripheral-props.yaml
+  dt-bindings: iio: dac: use spi-peripheral-props.yaml
+  dt-bindings: iio: frequency: adf4371: use spi-peripheral-props.yaml
+  dt-bindings: iio: health: ti,afe4403: use spi-peripheral-props.yaml
+  dt-bindings: iio: imu: use spi-peripheral-props.yaml
+  dt-bindings: iio: potentiometer: use spi-peripheral-props.yaml
+  dt-bindings: iio: samsung,sensorhub-rinato: use
+    spi-peripheral-props.yaml
+  dt-bindings: iio: temperature: use spi-peripheral-props.yaml
+
+ .../bindings/iio/accel/adi,adis16201.yaml     |  7 ++---
+ .../bindings/iio/accel/adi,adis16240.yaml     |  7 ++---
+ .../bindings/iio/accel/adi,adxl313.yaml       |  9 +++----
+ .../bindings/iio/accel/adi,adxl345.yaml       |  7 ++---
+ .../bindings/iio/accel/adi,adxl355.yaml       |  7 ++---
+ .../bindings/iio/accel/adi,adxl367.yaml       |  7 ++---
+ .../bindings/iio/accel/adi,adxl372.yaml       |  7 ++---
+ .../bindings/iio/accel/bosch,bma220.yaml      |  7 ++---
+ .../bindings/iio/accel/bosch,bma255.yaml      |  5 +++-
+ .../bindings/iio/accel/bosch,bmi088.yaml      |  7 ++---
+ .../bindings/iio/accel/fsl,mma7455.yaml       |  7 ++---
+ .../bindings/iio/accel/kionix,kxsd9.yaml      |  7 ++---
+ .../bindings/iio/accel/murata,sca3300.yaml    |  5 +++-
+ .../bindings/iio/accel/nxp,fxls8962af.yaml    |  7 ++---
+ .../bindings/iio/adc/adi,ad7124.yaml          |  7 ++---
+ .../bindings/iio/adc/adi,ad7192.yaml          |  7 ++---
+ .../bindings/iio/adc/adi,ad7280a.yaml         |  7 ++---
+ .../bindings/iio/adc/adi,ad7292.yaml          |  7 ++---
+ .../bindings/iio/adc/adi,ad7298.yaml          |  6 +++--
+ .../bindings/iio/adc/adi,ad7476.yaml          |  8 +++---
+ .../bindings/iio/adc/adi,ad7606.yaml          |  7 ++---
+ .../bindings/iio/adc/adi,ad7768-1.yaml        |  7 ++---
+ .../bindings/iio/adc/adi,ad7923.yaml          |  7 ++---
+ .../bindings/iio/adc/adi,ad7949.yaml          |  7 ++---
+ .../bindings/iio/adc/holt,hi8435.yaml         |  7 ++---
+ .../bindings/iio/adc/lltc,ltc2496.yaml        |  8 +++---
+ .../bindings/iio/adc/maxim,max1027.yaml       |  5 +++-
+ .../bindings/iio/adc/maxim,max11100.yaml      |  7 +++--
+ .../bindings/iio/adc/maxim,max1118.yaml       | 26 ++++++++++---------
+ .../bindings/iio/adc/maxim,max1241.yaml       |  7 ++---
+ .../bindings/iio/adc/microchip,mcp3201.yaml   |  6 +++--
+ .../bindings/iio/adc/microchip,mcp3911.yaml   |  5 +++-
+ .../bindings/iio/adc/ti,adc0832.yaml          |  7 ++---
+ .../bindings/iio/adc/ti,adc084s021.yaml       |  7 ++---
+ .../bindings/iio/adc/ti,adc108s102.yaml       |  6 +++--
+ .../bindings/iio/adc/ti,adc12138.yaml         |  7 ++---
+ .../bindings/iio/adc/ti,adc128s052.yaml       |  7 ++---
+ .../bindings/iio/adc/ti,adc161s626.yaml       |  7 ++---
+ .../bindings/iio/adc/ti,ads124s08.yaml        |  7 ++---
+ .../bindings/iio/adc/ti,ads131e08.yaml        |  7 ++---
+ .../bindings/iio/adc/ti,ads8344.yaml          |  7 ++---
+ .../bindings/iio/adc/ti,ads8688.yaml          |  7 ++---
+ .../bindings/iio/adc/ti,tlc4541.yaml          |  7 ++---
+ .../bindings/iio/adc/ti,tsc2046.yaml          |  7 ++---
+ .../bindings/iio/amplifiers/adi,ada4250.yaml  |  7 ++---
+ .../bindings/iio/dac/adi,ad5064.yaml          |  7 +++--
+ .../bindings/iio/dac/adi,ad5360.yaml          |  7 +++--
+ .../bindings/iio/dac/adi,ad5380.yaml          |  9 ++++---
+ .../bindings/iio/dac/adi,ad5421.yaml          |  7 ++---
+ .../bindings/iio/dac/adi,ad5449.yaml          |  7 +++--
+ .../bindings/iio/dac/adi,ad5624r.yaml         |  9 ++++---
+ .../bindings/iio/dac/adi,ad5686.yaml          |  9 ++++---
+ .../bindings/iio/dac/adi,ad5755.yaml          |  9 ++++---
+ .../bindings/iio/dac/adi,ad5758.yaml          |  4 +--
+ .../bindings/iio/dac/adi,ad5761.yaml          |  7 +++--
+ .../bindings/iio/dac/adi,ad5764.yaml          |  7 +++--
+ .../bindings/iio/dac/adi,ad5770r.yaml         |  7 ++---
+ .../bindings/iio/dac/adi,ad5791.yaml          |  9 ++++---
+ .../bindings/iio/dac/adi,ad8801.yaml          |  7 +++--
+ .../bindings/iio/dac/microchip,mcp4922.yaml   |  9 ++++---
+ .../bindings/iio/dac/ti,dac082s085.yaml       |  9 ++++---
+ .../bindings/iio/dac/ti,dac7311.yaml          |  7 ++---
+ .../bindings/iio/dac/ti,dac7612.yaml          |  7 ++---
+ .../bindings/iio/frequency/adf4371.yaml       |  7 ++---
+ .../bindings/iio/health/ti,afe4403.yaml       |  9 ++++---
+ .../bindings/iio/imu/adi,adis16460.yaml       |  7 ++---
+ .../bindings/iio/imu/adi,adis16480.yaml       |  9 ++++---
+ .../bindings/iio/imu/bosch,bmi160.yaml        |  7 ++---
+ .../bindings/iio/imu/invensense,icm42600.yaml |  6 +++--
+ .../bindings/iio/imu/invensense,mpu6050.yaml  |  5 ++--
+ .../bindings/iio/imu/nxp,fxos8700.yaml        |  7 ++---
+ .../bindings/iio/imu/st,lsm6dsx.yaml          |  9 ++++---
+ .../iio/potentiometer/microchip,mcp41010.yaml |  9 ++++---
+ .../iio/potentiometer/microchip,mcp4131.yaml  |  9 ++++---
+ .../iio/samsung,sensorhub-rinato.yaml         |  9 ++++---
+ .../iio/temperature/maxim,max31855k.yaml      |  4 +--
+ .../iio/temperature/maxim,max31856.yaml       |  6 +++--
+ .../iio/temperature/maxim,max31865.yaml       |  6 +++--
+ 78 files changed, 324 insertions(+), 249 deletions(-)
+
 -- 
 2.34.1
 

@@ -2,42 +2,42 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9638C04A68
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jul 2022 09:34:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2049C3F6B0
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jul 2022 09:35:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231317AbiG0Jee (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Jul 2022 05:34:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46192 "EHLO
+        id S231286AbiG0Jfb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Jul 2022 05:35:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47972 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231135AbiG0Jea (ORCPT
+        with ESMTP id S230418AbiG0Jf3 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Jul 2022 05:34:30 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4BE3E474F0;
-        Wed, 27 Jul 2022 02:34:27 -0700 (PDT)
+        Wed, 27 Jul 2022 05:35:29 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05C2C2BA;
+        Wed, 27 Jul 2022 02:35:27 -0700 (PDT)
 Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
         (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (No client certificate requested)
         (Authenticated sender: kholk11)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id B29B66601B20;
-        Wed, 27 Jul 2022 10:34:24 +0100 (BST)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 329356601B24;
+        Wed, 27 Jul 2022 10:35:25 +0100 (BST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1658914465;
-        bh=re1AAxEYmTd0QiwLwExzRHmr/caYRFR3LwatCDthflQ=;
+        s=mail; t=1658914526;
+        bh=tInxg3UBVvu6TuW4H5I/jhEdHs4D2SGfyBq65EqJZwQ=;
         h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=ifcai99apGuxDyGJyBX3PBhR56PMkciZfnPA/j/IaDAAfLzOTUBMbcbEq7eA3p0CR
-         Ryv/KPtT9FvopGSPbjlVdUWM6AUmnzDH6BWY4BrM2JUeQWVgm0sEbGZJkjz7P22MWb
-         AkNbqg3G6pErGj7FRTvFLxsbRk1xDw5v/Y7tEpYn0CQprTQxNsut+5+/2g+cA6/bt5
-         9vsYzBrvvAFdYEGI9jjA9Ygvj0nvTxe5Gib/cJdmCNxkp8L5Pdwg2+uNk1SLtiS9qY
-         VGQusEg4pgNW8isGfPTzyLDsAdvFtNY81SQodUpnkdLQya06qhT/pRzenFr5Lk5dAZ
-         OyVrLNXKg5nEQ==
-Message-ID: <936f416e-2141-ed33-d0e9-33becfb46ba4@collabora.com>
-Date:   Wed, 27 Jul 2022 11:34:22 +0200
+        b=bNprFWkGm1Z9AhAai0N1DHKm/NH+2mFmsCVDemBDhhZ6Q8//sW9nLiToEbBt2336x
+         m6O9P/haG14FVpv6JNnfA59It28VKISS/8uZZRqE0LB5mF2ULxqK/2jlsYMctZ1HCJ
+         Twa7W6SiPDTrFw63pvgDQuKEH5RlzCVYr/mmvxVkozaMk6cJJ6SJtYwZlZF/AJkHLZ
+         luMWHcmVkzamWI5mXjPd2jMiqvM81yquso5a4yB6GbrUP6v602rKem6RXR1AZrItjF
+         NMBm2iE7WzR6uhxwCVb8YtpeSfRCYeJsCpAOzNQ9Ym/jdVeAlZxKg9SvWZYRqkvPZp
+         GHGcq+nhrRopQ==
+Message-ID: <4990e4c4-1158-feff-089c-918c890d35d3@collabora.com>
+Date:   Wed, 27 Jul 2022 11:35:23 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.11.0
-Subject: Re: [PATCH v15 03/11] drm/edid: Add cea_sad helpers for freq/length
+Subject: Re: [PATCH v15 04/11] video/hdmi: Add audio_infoframe packing for DP
 Content-Language: en-US
 To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, chunkuang.hu@kernel.org,
         p.zabel@pengutronix.de, daniel@ffwll.ch, robh+dt@kernel.org,
@@ -52,10 +52,10 @@ Cc:     msp@baylibre.com, granquet@baylibre.com, jitao.shi@mediatek.com,
         linux-fbdev@vger.kernel.org,
         Project_Global_Chrome_Upstream_Group@mediatek.com
 References: <20220727045035.32225-1-rex-bc.chen@mediatek.com>
- <20220727045035.32225-4-rex-bc.chen@mediatek.com>
+ <20220727045035.32225-5-rex-bc.chen@mediatek.com>
 From:   AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20220727045035.32225-4-rex-bc.chen@mediatek.com>
+In-Reply-To: <20220727045035.32225-5-rex-bc.chen@mediatek.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
@@ -63,13 +63,18 @@ List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Il 27/07/22 06:50, Bo-Chen Chen ha scritto:
-> From: Guillaume Ranquet <granquet@baylibre.com>
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
 > 
-> This patch adds two helper functions that extract the frequency and word
-> length from a struct cea_sad.
+> Similar to HDMI, DP uses audio infoframes as well which are structured
+> very similar to the HDMI ones.
 > 
-> For these helper functions new defines are added that help translate the
-> 'freq' and 'byte2' fields into real numbers.
+> This patch adds a helper function to pack the HDMI audio infoframe for
+> DP, called hdmi_audio_infoframe_pack_for_dp().
+> hdmi_audio_infoframe_pack_only() is split into two parts. One of them
+> packs the payload only and can be used for HDMI and DP.
+> 
+> Also constify the frame parameter in hdmi_audio_infoframe_check() as
+> it is passed to hdmi_audio_infoframe_check_only() which expects a const.
 > 
 > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
 > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>

@@ -2,155 +2,190 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E4FAC19F21
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jul 2022 04:09:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA194C19F21
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jul 2022 04:50:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240280AbiG0EJq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Jul 2022 00:09:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50346 "EHLO
+        id S240232AbiG0Eup (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Jul 2022 00:50:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44736 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240299AbiG0EJp (ORCPT
+        with ESMTP id S229601AbiG0Euo (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Jul 2022 00:09:45 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7960131908;
-        Tue, 26 Jul 2022 21:09:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1658894963;
-        bh=tDo3f2pmvZrsYMJdCO/2ELplL1eJAZ6qc5wfUzsfN8U=;
-        h=X-UI-Sender-Class:Date:Subject:From:To:Cc:References:In-Reply-To;
-        b=ZCXYDFVrcKqWLjSiDzXLueJc73bUL+Hxs5WRd0X4n/oXKCXEuh4oqkUyCrLmH4y2s
-         EFUP2/Wngf29ISuvEjw00ZVNdm4kk3B0vq7wYno5Hda+GMCj/Boo5rk6/1EF0/uShI
-         DEsCXCr4SpMZf1Yo8FPXyS0wfWWt1gx9krCSi9kg=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.186.181]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MWASY-1nxJJB1tNK-00XZPc; Wed, 27
- Jul 2022 06:09:23 +0200
-Message-ID: <99055c9c-82bc-8d65-f2c4-33530298db0f@gmx.de>
-Date:   Wed, 27 Jul 2022 06:08:39 +0200
+        Wed, 27 Jul 2022 00:50:44 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D8D4713F2F;
+        Tue, 26 Jul 2022 21:50:42 -0700 (PDT)
+X-UUID: a3aaf2b732cd496cbea4bf7df2ffde9f-20220727
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.8,REQID:af0eba5c-59eb-4edf-8312-21afdab40269,OB:10,L
+        OB:40,IP:0,URL:5,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,RULE:Release_Ham,
+        ACTION:release,TS:95
+X-CID-INFO: VERSION:1.1.8,REQID:af0eba5c-59eb-4edf-8312-21afdab40269,OB:10,LOB
+        :40,IP:0,URL:5,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,RULE:Spam_GS981B3D,
+        ACTION:quarantine,TS:95
+X-CID-META: VersionHash:0f94e32,CLOUDID:ba30eacb-7c9b-4dbc-a9d4-00659d6b7a90,C
+        OID:92e5419311ac,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:1,File:nil,QS:nil,BEC:nil,COL:0
+X-UUID: a3aaf2b732cd496cbea4bf7df2ffde9f-20220727
+Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw01.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1024025882; Wed, 27 Jul 2022 12:50:40 +0800
+Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Wed, 27 Jul 2022 12:50:39 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
+ mtkmbs11n2.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
+ 15.2.792.15 via Frontend Transport; Wed, 27 Jul 2022 12:50:39 +0800
+From:   Bo-Chen Chen <rex-bc.chen@mediatek.com>
+To:     <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
+        <daniel@ffwll.ch>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
+        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
+        <airlied@linux.ie>
+CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
+        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
+        <angelogioacchino.delregno@collabora.com>, <ck.hu@mediatek.com>,
+        <liangxu.xu@mediatek.com>, <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-fbdev@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        Bo-Chen Chen <rex-bc.chen@mediatek.com>
+Subject: [PATCH v15 08/11] drm/mediatek: add hpd debounce
+Date:   Wed, 27 Jul 2022 12:50:32 +0800
+Message-ID: <20220727045035.32225-9-rex-bc.chen@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20220727045035.32225-1-rex-bc.chen@mediatek.com>
+References: <20220727045035.32225-1-rex-bc.chen@mediatek.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH] fbdev: Make registered_fb[] private to fbmem.c
-Content-Language: en-US
-From:   Helge Deller <deller@gmx.de>
-To:     Javier Martinez Canillas <javierm@redhat.com>,
-        linux-kernel@vger.kernel.org,
-        Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc:     linux-staging@lists.linux.dev,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        dri-devel@lists.freedesktop.org,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org
-References: <20220725075400.68478-1-javierm@redhat.com>
- <4b3e4d1b-e219-1ecc-5dd3-d693c69f6124@gmx.de>
-In-Reply-To: <4b3e4d1b-e219-1ecc-5dd3-d693c69f6124@gmx.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:EY7w9p4S7r/Em3LQbbWXLyNqFQx99psOB3rex+4CjThww0H02jM
- oNoVYjCGwU3/AV8ZN8P2+8LrC+IfSScX8HMmsX1bPzSuWoBVH2JbJBAM+cjHx5FLjKfh026
- Qp2q9XlBoDco7mrkCN67uQHLgJraoqrn49SxQ1JCdqfgCec62Ygm8bHlFB8uYCIvhFARu99
- 7OcneetaY4nVa20Wh0qJw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:5LVKn6VWkXI=:A8nTlAd+8hPNNtQGjNXxBB
- 9iMBQjOq6YV9mQvWlW8SixIyDaGvFuE928MN1ZZFWDmqWvF+4AHWUTB+WLpA3UipE4jwU1k9r
- UoFKRMFxAT1mfz8XiwtGn/y2uau5WxTTRxkXSW3mFCbgwiutMSTmTxvEGye8DG54xq5CSpa27
- BMQvRAQozVadBqVDMBmFtcccn5BKEAE8loDZb2lFGB9xD9kyN+FPrXatLOlDaIJ5pQs0ZjyGa
- vQVh8eL6p4x97HRlWAoWimfDKLo2jypUHslhlMD+2rlZYPfjRr5E3lyou/ncnusqQb5lPJI4k
- QAy+aZSsyuwbXwyj0jHtXpCwpOOea6G4/zwAQL+jNScIw71toZu6k8czY+zALFHPor2IkywJR
- cM1F4HSj3TyPiQGAKfl6V1oaZaP9RzuvGmmlmpwfFWbaFEdpeYrwWAZgRp2CzYGNaW5MSu9Os
- 8w2CVtb2hcPYehUJieaDAYX01nStdTI0f/gRdmwmQ/+GDs7I6psNlE1iJdC8Agg7nNNq/td1Y
- 4ThKso1Lvw720ZPnjr9iwyfhxObe/teCqDVzUdBQ9RgKx4Xa10FwXK6a2bh9fOGEyhjrapVpg
- JyZ03m12BL9inVIN22x78v4pWpOwyoMng/TDTD6VNPFYXlyAJXn/QvffqnHaPVElDGZQWVWJN
- HDWNolGODdEJIpn7D1D+4czoqfJ+6vLyuhUVdzCBzF+XNhkBsqzATZvGD5OAkIP9r5aoJYWVC
- Vjmd2f8zyXKT/imm4PPvvyMhOhh6bygDqsoDavUt6df3lqwQHPiSTkx2PAr6CCYYDxl6GQGNW
- C9MZCIDfKdkP/fJCM8E2yrCuAk2i2dn13pSF81jfZMKsw0UGWKTkx6StfMcm48ozkKQmv/Zv4
- GpanPKqHNewOv1G7x+XXar0Ljv/p3VP/zHCbK4cTSzExXbAEQXLHUb3rnoGti97qTtAyQ+lEq
- Q95uah4fB732mrlwREfd+xBgskt04KzVUsXw2+USLyOctB9eEln0ZpEwP/XfdbFG/D6SHk6vW
- 43o7hzocWSmCjLgiVp/GsetWq03J/yvJI5wJ0wu51THobeL6nMkjKa6nN5hVVgZO/QoBCH+TA
- EBHgVix5W0syapS6/yVAKTpSn45TXqRgiiGQJymvAcxWKP3/Dz8K4QirQ==
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/26/22 09:22, Helge Deller wrote:
-> On 7/25/22 09:54, Javier Martinez Canillas wrote:
->> From: Daniel Vetter <daniel.vetter@ffwll.ch>
->>
->> No driver access this anymore, except for the olpc dcon fbdev driver bu=
-t
->> that has been marked as broken anyways by commit de0952f267ff ("staging=
-:
->> olpc_dcon: mark driver as broken").
->>
->> Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
->> Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
->> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
->> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
->
-> I've applied it to the fbdev git tree.
+From: Jitao Shi <jitao.shi@mediatek.com>
 
-I've dropped that patch for now from the fbdev git tree, since
-it gave build errors [1] in for-next:
+From the DP spec 1.4a chapter 3.3, upstream devices should implement
+HPD signal de-bouncing on an external connection.
+A period of 100ms should be used to detect an HPD connect event.
+To cover these cases, HPD de-bounce should be implemented only after
+HPD low has been detected for at least 100ms.
 
- drivers/video/fbdev/simplefb.c:426:6: error: use of undeclared identifier=
- 'num_registered_fb'; did you mean 'WB_registered'?
-           if (num_registered_fb > 0) {
-               ^~~~~~~~~~~~~~~~~
+Therefore,
+1. If HPD is low (which means plugging out) for longer than 100ms:
+   we need to do de-bouncing (which means we need to wait for 100ms).
+2. If HPD low is for less than 100ms:
+   we don't need to care about the de-bouncing.
 
-Helge
+In this patch, we start a 100ms timer and use a need_debounce boolean
+to implement the feature.
 
-[1] https://lore.kernel.org/all/202207270857.mo9oRcRE-lkp@intel.com/
+Two cases when HPD is high:
+1. If the timer is expired (>100ms):
+   - need_debounce is true.
+   - When HPD high (plugging event comes), need_debounce will be true
+     and then we need to do de-bouncing (wait for 100ms).
+2. If the timer is not expired (<100ms):
+   - need_debounce is false.
+   - When HPD high (plugging event comes), need_debounce will be false
+     and no need to do de-bouncing.
 
+HPD_______             __________________
+          |            |<-  100ms   ->
+          |____________|
+          <-  100ms   ->
 
->>
->>  drivers/video/fbdev/core/fbmem.c | 6 +++---
->>  include/linux/fb.h               | 6 ------
->>  2 files changed, 3 insertions(+), 9 deletions(-)
->>
->> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/cor=
-e/fbmem.c
->> index 6ae1c5fa19f9..1e70d8c67653 100644
->> --- a/drivers/video/fbdev/core/fbmem.c
->> +++ b/drivers/video/fbdev/core/fbmem.c
->> @@ -51,10 +51,10 @@
->>  static DEFINE_MUTEX(registration_lock);
->>
->>  struct fb_info *registered_fb[FB_MAX] __read_mostly;
->> -EXPORT_SYMBOL(registered_fb);
->> -
->>  int num_registered_fb __read_mostly;
->> -EXPORT_SYMBOL(num_registered_fb);
->> +#define for_each_registered_fb(i)		\
->> +	for (i =3D 0; i < FB_MAX; i++)		\
->> +		if (!registered_fb[i]) {} else
->>
->>  bool fb_center_logo __read_mostly;
->>
->> diff --git a/include/linux/fb.h b/include/linux/fb.h
->> index 453c3b2b6b8e..0aff76bcbb00 100644
->> --- a/include/linux/fb.h
->> +++ b/include/linux/fb.h
->> @@ -627,16 +627,10 @@ extern int fb_get_color_depth(struct fb_var_scree=
-ninfo *var,
->>  extern int fb_get_options(const char *name, char **option);
->>  extern int fb_new_modelist(struct fb_info *info);
->>
->> -extern struct fb_info *registered_fb[FB_MAX];
->> -extern int num_registered_fb;
->>  extern bool fb_center_logo;
->>  extern int fb_logo_count;
->>  extern struct class *fb_class;
->>
->> -#define for_each_registered_fb(i)		\
->> -	for (i =3D 0; i < FB_MAX; i++)		\
->> -		if (!registered_fb[i]) {} else
->> -
->>  static inline void lock_fb_info(struct fb_info *info)
->>  {
->>  	mutex_lock(&info->lock);
->
+Without HPD de-bouncing, USB-C to HDMI Adapaters will not be detected.
+
+The change has been successfully tested with the following devices:
+- Dell Adapter - USB-C to HDMI
+- Acer 1in1 HDMI dongle
+- Ugreen 1in1 HDMI dongle
+- innowatt HDMI + USB3 hub
+- Acer 2in1 HDMI dongle
+- Apple 3in1 HDMI dongle (A2119)
+- J5Create 3in1 HDMI dongle (JAC379)
+
+Tested-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
+Reviewed-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
+Signed-off-by: Jitao Shi <jitao.shi@mediatek.com>
+Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+---
+ drivers/gpu/drm/mediatek/mtk_dp.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c b/drivers/gpu/drm/mediatek/mtk_dp.c
+index 80d7d6488105..80dd2b999463 100644
+--- a/drivers/gpu/drm/mediatek/mtk_dp.c
++++ b/drivers/gpu/drm/mediatek/mtk_dp.c
+@@ -94,6 +94,8 @@ struct mtk_dp {
+ 	bool enabled;
+ 
+ 	struct drm_connector *conn;
++	bool need_debounce;
++	struct timer_list debounce_timer;
+ };
+ 
+ static struct regmap_config mtk_dp_regmap_config = {
+@@ -1486,6 +1488,9 @@ static irqreturn_t mtk_dp_hpd_event_thread(int hpd, void *dev)
+ {
+ 	struct mtk_dp *mtk_dp = dev;
+ 
++	if (mtk_dp->need_debounce && mtk_dp->train_info.cable_plugged_in)
++		msleep(100);
++
+ 	dev_dbg(mtk_dp->dev, "drm_helper_hpd_irq_event\n");
+ 	drm_helper_hpd_irq_event(mtk_dp->bridge.dev);
+ 
+@@ -1538,6 +1543,10 @@ static irqreturn_t mtk_dp_hpd_event(int hpd, void *dev)
+ 			mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_PWR_STATE,
+ 					   DP_PWR_STATE_BANDGAP_TPLL,
+ 					   DP_PWR_STATE_MASK);
++
++			mod_timer(&mtk_dp->debounce_timer,
++				  jiffies + msecs_to_jiffies(100) - 1);
++			mtk_dp->need_debounce = false;
+ 		} else {
+ 			mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_PWR_STATE,
+ 					   DP_PWR_STATE_BANDGAP_TPLL_LANE,
+@@ -1962,6 +1971,13 @@ static const struct drm_bridge_funcs mtk_dp_bridge_funcs = {
+ 	.detect = mtk_dp_bdg_detect,
+ };
+ 
++static void mtk_dp_debounce_timer(struct timer_list *t)
++{
++	struct mtk_dp *mtk_dp = from_timer(mtk_dp, t, debounce_timer);
++
++	mtk_dp->need_debounce = true;
++}
++
+ static int mtk_dp_probe(struct platform_device *pdev)
+ {
+ 	struct mtk_dp *mtk_dp;
+@@ -2039,6 +2055,9 @@ static int mtk_dp_probe(struct platform_device *pdev)
+ 
+ 	drm_bridge_add(&mtk_dp->bridge);
+ 
++	mtk_dp->need_debounce = true;
++	timer_setup(&mtk_dp->debounce_timer, mtk_dp_debounce_timer, 0);
++
+ 	pm_runtime_enable(dev);
+ 	pm_runtime_get_sync(dev);
+ 
+@@ -2051,6 +2070,7 @@ static int mtk_dp_remove(struct platform_device *pdev)
+ 
+ 	platform_device_unregister(mtk_dp->phy_dev);
+ 	mtk_dp_video_mute(mtk_dp, true);
++	del_timer_sync(&mtk_dp->debounce_timer);
+ 
+ 	pm_runtime_disable(&pdev->dev);
+ 
+-- 
+2.18.0
 

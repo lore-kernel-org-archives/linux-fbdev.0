@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C6D9C25B07
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jul 2022 17:30:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4AAFC19F2C
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jul 2022 17:30:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240203AbiG0RaP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Jul 2022 13:30:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40824 "EHLO
+        id S241749AbiG0RaR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Jul 2022 13:30:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37378 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242264AbiG0R3L (ORCPT
+        with ESMTP id S242297AbiG0R3U (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Jul 2022 13:29:11 -0400
-Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 27F9A80483
-        for <linux-fbdev@vger.kernel.org>; Wed, 27 Jul 2022 09:47:35 -0700 (PDT)
-Received: by mail-lj1-x235.google.com with SMTP id v21so1863955ljh.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 27 Jul 2022 09:47:35 -0700 (PDT)
+        Wed, 27 Jul 2022 13:29:20 -0400
+Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C4B4580498
+        for <linux-fbdev@vger.kernel.org>; Wed, 27 Jul 2022 09:47:38 -0700 (PDT)
+Received: by mail-lf1-x12a.google.com with SMTP id q23so14725081lfr.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 27 Jul 2022 09:47:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=7axPEVk6MWtPTP7h5E9Ae0SR4WCvVBdWSVGZwXrfCJc=;
-        b=OXVXmyiSwBKGxExCjMfAYqoW/5KcBGPFCllunr4xkxrHjAZAfzmM6C5GvVNZ9WEQ5n
-         Vd/L2eEK7/Jjeh65uCxfhFzTpwW/nfY41WJO2GEJ5FxJPrUbsJunJnUDZnHRyd13jXNV
-         el6qv/PaSM+iuGypevpNuTYXrfdWlfqJ4+hT3YN3sngePZTynARw5jANlBUTqDrgrZuI
-         lGTcnP7reAfuXpo7kE6zlfzjXf/fsCeGhInXq0FMW8slnZbx8Fip//DVdVpO9N5r9Ss6
-         ePb/gSBH8koPezr5mIrtzyAJSj95Ya4ZuV2zggUxbyOc9scukgioz7s73ng1wpBub0FS
-         pIvw==
+        bh=ZNmQiW5AvIOtEUDHlEIUtIO/nCYrI/d8smXZXTrIU/o=;
+        b=iWVXqzqfgZWyU6q37aPpBdfPk83KO2tiGk/vS4ImIdjeT2Dl+ubQlKovcWSMO8KLi+
+         XwvXqv6Se2XkUBte+uexnIyqDWxxfM0u0eOWoES6PD0zssoj//+yD59C9yD0hTc0h9xd
+         OJYba76JcO8JmYRV/v0dPrIFWkYQk785XpnZrV7QFo/tnpdo/SW9GYzql8UngmibcjR7
+         cJBtJKoQGp8m9zCsbIAFltb5r3tLwcBSLBei7BirzZAUDtF8jJpMjxo2m8OYcqfkXqoh
+         RVXUhQDUyJMgPmr640Dn12uoRvcqGywVXK2mIhMMU7GyeDheyh8xdE88NXCTLjDQlvPY
+         1p9A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=7axPEVk6MWtPTP7h5E9Ae0SR4WCvVBdWSVGZwXrfCJc=;
-        b=owN2+bce+NhP5Gh89AVMZmBgXMmkDpFyb23yWXr9c8PYYTTqACG3e9SlJ7dtejtu2n
-         bh6JuFPeOx0iR8GHWjRHfC1LB3TtzqE0fhzqW5bg181axHGbuR8LcM4HBIWxtnTY4dVZ
-         dojiVnAp9YPlp8bdRhMWE54GWWSp2h0fa1eBcZZJyhIta1Uk3+ZVXcmT4rTV3v9wgDsY
-         jg9sWPNLklHMP0I0uThK9ZbDCyOVJGZWyybm+TVPb5g/UL7c6IWSfOsjq2ZzJNUWUjYb
-         Wb8Ejsem9LgElfcafJsHc+Lj6BNOjlax/Pys7KPIwKwTaE5/kFzKW0Tyb1h/kQEZ8agT
-         ysbw==
-X-Gm-Message-State: AJIora/bmIV4t2NNpTlugAjCMJeJg29Tg0yBB1T4nSd0hV+k+7cy4BdL
-        JDr/RZgucDuuY+hYtwpdDIMJgw==
-X-Google-Smtp-Source: AGRyM1sKYUvvHKjGHjubByE9l1jd6M1xEA+oiFn/KZJEYN6GKSHQtVPNl1ZvwRL1PD+wISXUf38VUw==
-X-Received: by 2002:a2e:a99e:0:b0:25e:a54:8328 with SMTP id x30-20020a2ea99e000000b0025e0a548328mr4685386ljq.141.1658940447509;
-        Wed, 27 Jul 2022 09:47:27 -0700 (PDT)
+        bh=ZNmQiW5AvIOtEUDHlEIUtIO/nCYrI/d8smXZXTrIU/o=;
+        b=uZv0XMGULhayAaCMTruIIq26RMN91jML8GNa0VOw+z/PiK9Y4rhCbH9c7EmUbx2GzN
+         vi2smO+ejnnhI2EuGyJtKhM0MIDUUl5O3hU6ZSIbfPJQWT9GIwN6YGSjNbGOryTGSiRi
+         Vwcacg5MBnFA1g+ZS0GOODPdeFY9+H09yfAWkofBdRFyZLUvI/EU7HE/ospm4jsMiE/W
+         jXkp0n4aDkdyvESVv/fkcEQRyKx2ucAKzm0fgZJmSJAd9o/7MIUBNjHSIcTcuq0y67x2
+         smNoBNoRjsiN3EGXGT29AOwfkszvrN+9+Tbbr06cHoVP3Ai5MT3u8xqau0OMKdMEWPPI
+         XZpQ==
+X-Gm-Message-State: AJIora9WG7/g36rrFE/GyKVsyFwFvKcoK0SFRfo/J96bExzvSHKQGmKJ
+        /Z0Hd9mGsaUds4ngH6U+LbhldQ==
+X-Google-Smtp-Source: AGRyM1ut7IU0GDmY5J6kKoccIPiyd8sybZvYlRabx++YLduroVnAeRYMEgFsMozQNRD25CBNiFMpLA==
+X-Received: by 2002:a05:6512:c16:b0:48a:97b2:e060 with SMTP id z22-20020a0565120c1600b0048a97b2e060mr4471424lfu.660.1658940450562;
+        Wed, 27 Jul 2022 09:47:30 -0700 (PDT)
 Received: from krzk-bin.lan (78-26-46-173.network.trollfjord.no. [78.26.46.173])
-        by smtp.gmail.com with ESMTPSA id 18-20020ac25f52000000b0048910301774sm3375149lfz.307.2022.07.27.09.47.23
+        by smtp.gmail.com with ESMTPSA id 18-20020ac25f52000000b0048910301774sm3375149lfz.307.2022.07.27.09.47.27
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 27 Jul 2022 09:47:25 -0700 (PDT)
+        Wed, 27 Jul 2022 09:47:29 -0700 (PDT)
 From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 To:     Lars-Peter Clausen <lars@metafoo.de>,
         Michael Hennerich <Michael.Hennerich@analog.com>,
@@ -101,9 +101,9 @@ To:     Lars-Peter Clausen <lars@metafoo.de>,
         linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH v2 08/10] dt-bindings: iio: potentiometer: use spi-peripheral-props.yaml
-Date:   Wed, 27 Jul 2022 18:46:44 +0200
-Message-Id: <20220727164646.387541-9-krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v2 09/10] dt-bindings: iio: samsung,sensorhub-rinato: use spi-peripheral-props.yaml
+Date:   Wed, 27 Jul 2022 18:46:45 +0200
+Message-Id: <20220727164646.387541-10-krzysztof.kozlowski@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220727164646.387541-1-krzysztof.kozlowski@linaro.org>
 References: <20220727164646.387541-1-krzysztof.kozlowski@linaro.org>
@@ -127,17 +127,16 @@ typical place, just before example DTS.
 
 Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- .../bindings/iio/potentiometer/microchip,mcp41010.yaml   | 9 +++++----
- .../bindings/iio/potentiometer/microchip,mcp4131.yaml    | 9 +++++----
- 2 files changed, 10 insertions(+), 8 deletions(-)
+ .../bindings/iio/samsung,sensorhub-rinato.yaml           | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/iio/potentiometer/microchip,mcp41010.yaml b/Documentation/devicetree/bindings/iio/potentiometer/microchip,mcp41010.yaml
-index 567697d996ec..87e88f2a9908 100644
---- a/Documentation/devicetree/bindings/iio/potentiometer/microchip,mcp41010.yaml
-+++ b/Documentation/devicetree/bindings/iio/potentiometer/microchip,mcp41010.yaml
-@@ -25,14 +25,15 @@ properties:
-   reg:
-     maxItems: 1
+diff --git a/Documentation/devicetree/bindings/iio/samsung,sensorhub-rinato.yaml b/Documentation/devicetree/bindings/iio/samsung,sensorhub-rinato.yaml
+index a88b3b14d6bd..dd2ae2bd1ad7 100644
+--- a/Documentation/devicetree/bindings/iio/samsung,sensorhub-rinato.yaml
++++ b/Documentation/devicetree/bindings/iio/samsung,sensorhub-rinato.yaml
+@@ -40,10 +40,6 @@ properties:
+     description:
+       Reset the sensorhub.
  
 -  spi-max-frequency: true
 -
@@ -146,30 +145,9 @@ index 567697d996ec..87e88f2a9908 100644
  required:
    - compatible
    - reg
- 
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
-+
- examples:
-   - |
-     spi {
-diff --git a/Documentation/devicetree/bindings/iio/potentiometer/microchip,mcp4131.yaml b/Documentation/devicetree/bindings/iio/potentiometer/microchip,mcp4131.yaml
-index 32e92bced81f..896fe0b5edcc 100644
---- a/Documentation/devicetree/bindings/iio/potentiometer/microchip,mcp4131.yaml
-+++ b/Documentation/devicetree/bindings/iio/potentiometer/microchip,mcp4131.yaml
-@@ -80,14 +80,15 @@ properties:
-   reg:
-     maxItems: 1
- 
--  spi-max-frequency: true
--
--additionalProperties: false
--
- required:
-   - compatible
-   - reg
+@@ -52,6 +48,11 @@ required:
+   - mcu-ap-gpios
+   - mcu-reset-gpios
  
 +allOf:
 +  - $ref: /schemas/spi/spi-peripheral-props.yaml#

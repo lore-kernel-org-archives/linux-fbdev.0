@@ -2,127 +2,142 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20E35C04A68
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jul 2022 09:40:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74AE3C19F29
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jul 2022 09:45:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229600AbiG0Jkw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Jul 2022 05:40:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53048 "EHLO
+        id S230081AbiG0JpK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Jul 2022 05:45:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57046 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231452AbiG0Jku (ORCPT
+        with ESMTP id S230130AbiG0JpK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Jul 2022 05:40:50 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AD729402C1;
-        Wed, 27 Jul 2022 02:40:49 -0700 (PDT)
-Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
-        (No client certificate requested)
-        (Authenticated sender: kholk11)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 10CA36601B25;
-        Wed, 27 Jul 2022 10:40:47 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1658914848;
-        bh=/tSZBVIuOPVrLZ+Pv9GixCN2b9o+Bbox7JHQmveYKn8=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=CnEUNxM6sH6Za9eS1dGCEiIZSFE/trQz92dIdRmswdczzZpDwPMWmdd82JkLXKQg9
-         d8f1SHZUhha6hjj+c8J9uN97ZVzKs4nxdHNhIfA3m0lDqb1FCpKhADcsO5NK0zWFqE
-         Ko2FK6RAi31qvCOZ7keaareHRzTGqP/+Pl/Lk6SSvCbeFplKoNWh1D9auuQ0IFBWnw
-         OldnTeHWmkfh0MEk6WaS3oPRH4rtP8ev+uvGXd/6kBXOgMVku/rSKQVZTW0TGa8hKd
-         TWI3y1DXPAjxBmzAeVhPfHXyC2Er4retswk8r2bkOWDG9bVQ+i3WSAw42Wk5oFy+Mm
-         g/BZP4RD41UkA==
-Message-ID: <ce46e9b2-8e34-b6cd-d802-35b3ae66e02d@collabora.com>
-Date:   Wed, 27 Jul 2022 11:40:44 +0200
+        Wed, 27 Jul 2022 05:45:10 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 17D82110C
+        for <linux-fbdev@vger.kernel.org>; Wed, 27 Jul 2022 02:45:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1658915108;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=d7wwuGLjAZB3K+Voj80d4Ozo5qLQ+l1QsRMGTb08BDM=;
+        b=QPtBKN+J3b3qXIth+rxCs7rMxzKCaNFGhEXapV7qc8ffPr+WOmk6dAgGRmzvRb2Y6GWm93
+        t3Iw7f5GxfRRLcWdZLMpT2yXTVVJLZkDbkipVmrUgqFAGXTsuxNJ7f4PIyhsVlsDWl+FaW
+        IZRvEwkIlk15DNwwBdnw//kWWF/f4Mw=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-201-hH1N5BVTMQu2sEedvVFZdQ-1; Wed, 27 Jul 2022 05:45:06 -0400
+X-MC-Unique: hH1N5BVTMQu2sEedvVFZdQ-1
+Received: by mail-wr1-f70.google.com with SMTP id h9-20020adfa4c9000000b0021ee4a48ea7so5885wrb.10
+        for <linux-fbdev@vger.kernel.org>; Wed, 27 Jul 2022 02:45:06 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=d7wwuGLjAZB3K+Voj80d4Ozo5qLQ+l1QsRMGTb08BDM=;
+        b=HucTK057FI2s1vbgxRulHteZAmmPn2hl18Y3zT+WIkM9J0lTJWt7bK/YYpG5Gj/rwX
+         wNJ5l5tLtJh5vCSEzWJkIuaLAKgixP4b73ughmkPMHuNvnfqdjuPtROUwyycK5W9Nkvf
+         3hU9xQLdRUajL4pbUBrMrpu32+Pkw3CHwlMj+JC3NbyAsA7mFloZfZm8L5gevj3Cfmxs
+         4mxWH4JoJ0mQ19R1jPcOpzjvXJlgz5L4xagVuWSN+12Z3PRzp0EOk5FXu8TxBSg507mJ
+         ricBD2kuqwBv0EZtuy/llT5ZdLQpK3bFkp9WTDArJxOuamRZIfc4fqDeqNL+yTsWs5O3
+         iEZA==
+X-Gm-Message-State: AJIora8EnU5IhBxfe7zAqtYgtRTZ7PmPrhnSNmcf/lFNuxV8rKCsbxU0
+        Viy0gCPaNP9j7Gtr2+dEma7uPmj+cDw59zFFWZs7uzkqltwgB3vEXNRmOdWdolokUn4mofkrNKg
+        VDfWRnuSbPrmwaJs/+LGGuMM=
+X-Received: by 2002:a05:600c:3caa:b0:3a0:18e4:781b with SMTP id bg42-20020a05600c3caa00b003a018e4781bmr2469516wmb.199.1658915105273;
+        Wed, 27 Jul 2022 02:45:05 -0700 (PDT)
+X-Google-Smtp-Source: AGRyM1tY1NapkC+jkHigs52/MIzuEN8IcNKNYICxfk8KUt9jGlsGLWmG7Fj2fsNnrteJALcuFgDk/A==
+X-Received: by 2002:a05:600c:3caa:b0:3a0:18e4:781b with SMTP id bg42-20020a05600c3caa00b003a018e4781bmr2469489wmb.199.1658915105054;
+        Wed, 27 Jul 2022 02:45:05 -0700 (PDT)
+Received: from [192.168.1.130] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id t6-20020a05600c198600b003a326ba4e99sm1915497wmq.34.2022.07.27.02.45.03
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 27 Jul 2022 02:45:03 -0700 (PDT)
+Message-ID: <6b7bdf72-5ed3-f075-ecb8-639e569c5cb9@redhat.com>
+Date:   Wed, 27 Jul 2022 11:45:02 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.11.0
-Subject: Re: [PATCH v15 07/11] drm/mediatek: Add retry to prevent misjudgment
- for sink devices
+Subject: Re: [PATCH v2 10/10] drm/ofdrm: Support color management
 Content-Language: en-US
-To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, chunkuang.hu@kernel.org,
-        p.zabel@pengutronix.de, daniel@ffwll.ch, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, mripard@kernel.org,
-        tzimmermann@suse.de, matthias.bgg@gmail.com, deller@gmx.de,
-        airlied@linux.ie
-Cc:     msp@baylibre.com, granquet@baylibre.com, jitao.shi@mediatek.com,
-        wenst@chromium.org, ck.hu@mediatek.com, liangxu.xu@mediatek.com,
-        dri-devel@lists.freedesktop.org,
-        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-fbdev@vger.kernel.org,
-        Project_Global_Chrome_Upstream_Group@mediatek.com
-References: <20220727045035.32225-1-rex-bc.chen@mediatek.com>
- <20220727045035.32225-8-rex-bc.chen@mediatek.com>
-From:   AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20220727045035.32225-8-rex-bc.chen@mediatek.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To:     Thomas Zimmermann <tzimmermann@suse.de>, airlied@linux.ie,
+        daniel@ffwll.ch, deller@gmx.de, maxime@cerno.tech,
+        sam@ravnborg.org, msuchanek@suse.de, mpe@ellerman.id.au,
+        benh@kernel.crashing.org, paulus@samba.org, geert@linux-m68k.org,
+        mark.cave-ayland@ilande.co.uk
+Cc:     linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        dri-devel@lists.freedesktop.org
+References: <20220720142732.32041-1-tzimmermann@suse.de>
+ <20220720142732.32041-11-tzimmermann@suse.de>
+ <abe3fa95-942b-6d2f-7167-83d0cea59444@redhat.com>
+ <05511c35-da46-aefd-3e03-364b7311284c@suse.de>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <05511c35-da46-aefd-3e03-364b7311284c@suse.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Il 27/07/22 06:50, Bo-Chen Chen ha scritto:
-> For some DP dungles, we need to train more than onece to confirm that we
-> don't misjudge the status of sink device.
+On 7/27/22 10:41, Thomas Zimmermann wrote:
 
-Please fix the typos in your commit title and description.
-title: misjudgment -> misjudgement
-desc: dungles->dongles; onece->once
+[...]
 
+>>
+>>> +static void __iomem *ofdrm_mach64_cmap_ioremap(struct ofdrm_device *odev,
+>>> +					       struct device_node *of_node,
+>>> +					       u64 fb_base)
+>>> +{
+>>> +	struct drm_device *dev = &odev->dev;
+>>> +	u64 address;
+>>> +	void __iomem *cmap_base;
+>>> +
+>>> +	address = fb_base & 0xff000000ul;
+>>> +	address += 0x7ff000;
+>>> +
+>>
+>> It would be good to know where these addresses are coming from. Maybe some
+>> constant macros or a comment ? Same for the other places where addresses
+>> and offsets are used.
 > 
-> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
-> ---
->   drivers/gpu/drm/mediatek/mtk_dp.c | 21 ++++++++++++++++++---
->   1 file changed, 18 insertions(+), 3 deletions(-)
+> I have no idea where these values come from. I took them from offb. And 
+> I suspect that some of these CMAP helpers could be further merged if 
+> only it was clear where the numbers come from.  But as i don't have the 
+> equipment for testing, I took most of this literally as-is from offb.
+>
+
+I see. As Michal mentioned maybe someone more familiar with this platform
+could shed some light about these but in any case that could be done later.
+
+[...]
+
+>>> +
+>>> +	new_crtc_state = drm_atomic_get_new_crtc_state(new_state, new_plane_state->crtc);
+>>> +
+>>> +	new_ofdrm_crtc_state = to_ofdrm_crtc_state(new_crtc_state);
+>>> +	new_ofdrm_crtc_state->format = new_fb->format;
+>>> +
+>>
+>> Ah, I understand now why you didn't factor out the .atomic_check callbacks
+>> for the two drivers in a fwfb helper. Maybe you can also add a comment to
+>> mention that this updates the format so the CRTC palette can be applied in
+>> the .atomic_flush callback ?
 > 
-> diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c b/drivers/gpu/drm/mediatek/mtk_dp.c
-> index ce817cb59445..80d7d6488105 100644
-> --- a/drivers/gpu/drm/mediatek/mtk_dp.c
-> +++ b/drivers/gpu/drm/mediatek/mtk_dp.c
-> @@ -42,6 +42,7 @@
->   #define MTK_DP_CHECK_SINK_CAP_TIMEOUT_COUNT 3
->   #define MTK_DP_TBC_BUF_READ_START_ADDR 0x08
->   #define MTK_DP_TRAIN_DOWNSCALE_RETRY 8
-> +#define MTK_DP_TRAIN_CLEAR_RETRY 50
->   
->   struct mtk_dp_train_info {
->   	bool tps3;
-> @@ -1431,11 +1432,25 @@ static int mtk_dp_video_config(struct mtk_dp *mtk_dp)
->   
->   static int mtk_dp_training(struct mtk_dp *mtk_dp)
->   {
-> +	short max_retry = MTK_DP_TRAIN_CLEAR_RETRY;
->   	int ret;
->   
-> -	ret = mtk_dp_train_start(mtk_dp);
-> -	if (ret)
-> -		return ret;
-> +	/*
-> +	 * We do retry to confirm that we don't misjudge the sink status.
-> +	 * If it is still failed, we can confirm there are some issues for the
-> +	 * sink device.
-> +	 */
-> +	do {
-> +		ret = mtk_dp_train_start(mtk_dp);
-> +		if (!ret)
-> +			break;
-> +	} while (--max_retry);
-> +
-> +	dev_info(mtk_dp->dev, "dp training clear retry times: %d\n",
-> +		 MTK_DP_TRAIN_CLEAR_RETRY - max_retry);
+> Yeah, this code is one reason for not sharing atomic_check in fwfb.  The 
+> other reason is that the fwfb code is only a wrapper around the atomic 
+> helpers with little extra value.  I did have such fwfb helpers a some 
+> point, but removed them.
+>
 
-dev_dbg() here.
+Got it.
 
-...after which,
+-- 
+Best regards,
 
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-
-> +
-> +	if (!max_retry)
-> +		return -ETIMEDOUT;
->   
->   	ret = mtk_dp_video_config(mtk_dp);
->   	if (ret)
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
 

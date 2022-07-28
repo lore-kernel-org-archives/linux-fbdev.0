@@ -2,165 +2,228 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8F1AC3F6B0
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jul 2022 17:44:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8898CC04A68
+	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Jul 2022 09:39:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242895AbiG0Roz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Jul 2022 13:44:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42516 "EHLO
+        id S234971AbiG1Jja (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 28 Jul 2022 05:39:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44698 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243181AbiG0RoZ (ORCPT
+        with ESMTP id S234722AbiG1Jja (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Jul 2022 13:44:25 -0400
-Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6C89A8B4A8;
-        Wed, 27 Jul 2022 09:53:07 -0700 (PDT)
-Received: by mail-lf1-x130.google.com with SMTP id q23so14745423lfr.3;
-        Wed, 27 Jul 2022 09:53:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=k5oCcGPDr0My47uLGpFUyO0yVBgIsd/UrNxst8O80Sc=;
-        b=g+5t+zT1mFjw8xi+wQ9FTZBLfKWrtIEhZaRRjKjE9njUNeSQvc6VkMhzuMtF+hoClF
-         Dl3odeB6zqmqnAUHy6SmqfowXnKcKEu7IR+b9NoXdTD9TSnrZphJMCtVF/TDYHgjdVY7
-         ieDhfNA5NBxRHlPq3h3Uqp1UvqmjJ0isDsplrMCc3grkSP4gXJux4E5s2FaXdRFodevh
-         Xpxgh7fKGVXyudQyXKRVJcjcIqisXVOVkKOMunzwmb7PjV+EzgxGkdcL9gPWzLi5lvgq
-         3/p6S64i4klmhUSQAWW+f006hEdXKhvlbk7F2TMArydlrUBp61kky4TQwPEKnmQf6Gr3
-         Ixcg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=k5oCcGPDr0My47uLGpFUyO0yVBgIsd/UrNxst8O80Sc=;
-        b=DgFmsL9J2wViodJ7FisiMI+UxCOWUWLAj9MUL+imPrNZLrQYInBnn878FcGP0fVTJb
-         4BbC+pBpfNKKW7FpVzk5vCNrbF1/fEMfs4eyTWrNaNb3XQAID40ix2052BLXDL2Owe81
-         Cg8UsUMNODeawTCnRMfAOl/qQesSb7Emyvf/5jfArsCzQ2RIBxruv725YjyXVBKsiP7M
-         lHYDOzfwF1yeVgV+zEJHDKGFyod/1w51q722bEucnlwqp9Nq2vDl9QtmWJlc5m+W3mas
-         9hNQqyxAw0BTAw6XzroE+qhhOL1XwhhmcWfBuvxbWGn0bM+VvCTbH4TEXJGXrbcuJ5R6
-         uPOg==
-X-Gm-Message-State: AJIora92cMmXeYaJgMGrztiXKeH1br2p81HwmL78Xyp5S5iGGfa9PcPZ
-        ut2dIygQcDDeB8G+jrbjT98=
-X-Google-Smtp-Source: AGRyM1uS6YZG984glPCZhSncSiUhGHQNNybnJZZ603ln2wunorQ1ShlgPtDZ7WAOt2NA20TTKiQKEg==
-X-Received: by 2002:ac2:4bc1:0:b0:48a:ad3:f90f with SMTP id o1-20020ac24bc1000000b0048a0ad3f90fmr8279804lfq.91.1658940783813;
-        Wed, 27 Jul 2022 09:53:03 -0700 (PDT)
-Received: from gmail.com (82-209-154-112.cust.bredband2.com. [82.209.154.112])
-        by smtp.gmail.com with ESMTPSA id k1-20020a2ea261000000b0025d75995a07sm746769ljm.24.2022.07.27.09.53.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 27 Jul 2022 09:53:03 -0700 (PDT)
-Date:   Wed, 27 Jul 2022 18:56:58 +0200
-From:   Marcus Folkesson <marcus.folkesson@gmail.com>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     Lars-Peter Clausen <lars@metafoo.de>,
-        Michael Hennerich <Michael.Hennerich@analog.com>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Lucas Stankus <lucas.p.stankus@gmail.com>,
-        Puranjay Mohan <puranjay12@gmail.com>,
-        Cosmin Tanislav <cosmin.tanislav@analog.com>,
-        Alexandru Tachici <alexandru.tachici@analog.com>,
-        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
-        Kent Gustavsson <kent@minoris.se>,
-        Tomislav Denis <tomislav.denis@avl.com>,
-        Oleksij Rempel <linux@rempel-privat.de>, kernel@pengutronix.de,
-        Antoniu Miclaus <antoniu.miclaus@analog.com>,
-        Ricardo Ribalda <ribalda@kernel.org>,
-        Dragos Bogdan <dragos.bogdan@analog.com>,
-        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
-        Lorenzo Bianconi <lorenzo@kernel.org>,
-        Stefan Popa <stefan.popa@analog.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Mike Looijmans <mike.looijmans@topic.nl>,
-        Joachim Eastwood <manabian@gmail.com>,
-        Tomas Melin <tomas.melin@vaisala.com>,
-        Sean Nyekjaer <sean@geanix.com>,
-        Beniamin Bia <beniamin.bia@analog.com>,
-        Patrick Vasseur <patrick.vasseur@c-s.fr>,
-        Charles-Antoine Couret <charles-antoine.couret@essensium.com>,
-        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Philippe Reynes <tremyfr@yahoo.fr>,
-        Jacopo Mondi <jacopo@jmondi.org>,
-        Akinobu Mita <akinobu.mita@gmail.com>,
-        Alexandru Lazar <alazar@startmail.com>,
-        Oskar Andero <oskar.andero@gmail.com>,
-        =?iso-8859-1?Q?M=E5rten?= Lindahl <martenli@axis.com>,
-        Bogdan Pricop <bogdan.pricop@emutex.com>,
-        Angelo Compagnucci <angelo.compagnucci@gmail.com>,
-        Matt Ranostay <matt.ranostay@konsulko.com>,
-        Dan Murphy <dmurphy@ti.com>,
-        Gregory Clement <gregory.clement@bootlin.com>,
-        Phil Reid <preid@electromag.com.au>,
-        Michael Welling <mwelling@ieee.org>,
-        Lukas Wunner <lukas@wunner.de>,
-        Robert Jones <rjones@gateworks.com>,
-        Chris Coffey <cmc@babblebit.net>,
-        Slawomir Stepien <sst@poczta.fm>,
-        Sankar Velliangiri <navin@linumiz.com>,
-        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v2 01/10] dt-bindings: iio: adc: use
- spi-peripheral-props.yaml
-Message-ID: <YuFuWnvMm4tMLs7/@gmail.com>
-References: <20220727164646.387541-1-krzysztof.kozlowski@linaro.org>
- <20220727164646.387541-2-krzysztof.kozlowski@linaro.org>
+        Thu, 28 Jul 2022 05:39:30 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 78CAF37F94;
+        Thu, 28 Jul 2022 02:39:25 -0700 (PDT)
+X-UUID: 1348953cf6a04774a6e9172ff09187fb-20220728
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.8,REQID:00ce714b-e383-4642-a363-25a7bf4720fc,OB:0,LO
+        B:0,IP:0,URL:5,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACT
+        ION:release,TS:50
+X-CID-INFO: VERSION:1.1.8,REQID:00ce714b-e383-4642-a363-25a7bf4720fc,OB:0,LOB:
+        0,IP:0,URL:5,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTIO
+        N:release,TS:50
+X-CID-META: VersionHash:0f94e32,CLOUDID:2c4e93d0-841b-4e95-ad42-8f86e18f54fc,C
+        OID:f0ccf6249fe2,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:1,File:nil,QS:nil,BEC:nil,COL:0
+X-UUID: 1348953cf6a04774a6e9172ff09187fb-20220728
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 2114459139; Thu, 28 Jul 2022 17:39:20 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Thu, 28 Jul 2022 17:39:19 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.15 via Frontend
+ Transport; Thu, 28 Jul 2022 17:39:19 +0800
+Message-ID: <3dd233ff2c5a69078c9b5eb3f0263d16da128647.camel@mediatek.com>
+Subject: Re: [PATCH v15 01/11] dt-bindings: mediatek,dp: Add Display Port
+ binding
+From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
+        <daniel@ffwll.ch>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
+        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
+        <airlied@linux.ie>
+CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
+        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
+        <angelogioacchino.delregno@collabora.com>, <ck.hu@mediatek.com>,
+        <liangxu.xu@mediatek.com>, <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-fbdev@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Thu, 28 Jul 2022 17:39:19 +0800
+In-Reply-To: <aaa6b5d0-20e8-146f-ba37-8784dbfd6072@linaro.org>
+References: <20220727045035.32225-1-rex-bc.chen@mediatek.com>
+         <20220727045035.32225-2-rex-bc.chen@mediatek.com>
+         <aaa6b5d0-20e8-146f-ba37-8784dbfd6072@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="YEGndTYCRLH9MHD/"
-Content-Disposition: inline
-In-Reply-To: <20220727164646.387541-2-krzysztof.kozlowski@linaro.org>
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+On Wed, 2022-07-27 at 09:23 +0200, Krzysztof Kozlowski wrote:
+> On 27/07/2022 06:50, Bo-Chen Chen wrote:
+> > From: Markus Schneider-Pargmann <msp@baylibre.com>
+> > 
+> > This controller is present on several mediatek hardware. Currently
+> > mt8195 and mt8395 have this controller without a functional
+> > difference,
+> > so only one compatible field is added.
+> > 
+> > The controller can have two forms, as a normal display port and as
+> > an
+> > embedded display port.
+> > 
+> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> > Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> > ---
+> >  .../display/mediatek/mediatek,dp.yaml         | 117
+> > ++++++++++++++++++
+> >  1 file changed, 117 insertions(+)
+> >  create mode 100644
+> > Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+> > 
+> > diff --git
+> > a/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.ya
+> > ml
+> > b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.ya
+> > ml
+> > new file mode 100644
+> > index 000000000000..fd68c6c08df3
+> > --- /dev/null
+> > +++
+> > b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.ya
+> > ml
+> > @@ -0,0 +1,117 @@
+> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > +%YAML 1.2
+> > +---
+> > +$id: 
+> > https://urldefense.com/v3/__http://devicetree.org/schemas/display/mediatek/mediatek,dp.yaml*__;Iw!!CTRNKA9wMg0ARbw!wfsojIGZI_UYOhzgZxHy9ndUMC78GcAtJV-oZkD4DNXz0NE58uCHPE_MRZIyljEjrpwP$
+> >  
+> > +$schema: 
+> > https://urldefense.com/v3/__http://devicetree.org/meta-schemas/core.yaml*__;Iw!!CTRNKA9wMg0ARbw!wfsojIGZI_UYOhzgZxHy9ndUMC78GcAtJV-oZkD4DNXz0NE58uCHPE_MRZIylldgseRE$
+> >  
+> > +
+> > +title: MediaTek Display Port Controller
+> > +
+> > +maintainers:
+> > +  - Chun-Kuang Hu <chunkuang.hu@kernel.org>
+> > +  - Jitao shi <jitao.shi@mediatek.com>
+> > +
+> > +description: |
+> > +  Device tree bindings for the MediaTek display port TX (DP) and
+> > +  embedded display port TX (eDP) controller present on some
+> > MediaTek SoCs.
+> 
+> Drop entire sentence and just describe the hardware.
+> 
+> > +  We just need to enable the power domain of DP. The clock of DP
+> > is
+> > +  generated by itself and we are not using other PLL to generate
+> > clocks.
+> > +  MediaTek DP and eDP are different hardwares and there are some
+> > features
+> > +  which are not supported for eDP. For example, audio is not
+> > supported for
+> > +  eDP. Therefore, we need to use two different compatibles to
+> > describe them.
+> > +
+> > +properties:
+> > +  compatible:
+> > +    enum:
+> > +      - mediatek,mt8195-dp-tx
+> > +      - mediatek,mt8195-edp-tx
+> > +
+> > +  reg:
+> > +    maxItems: 1
+> > +
+> > +  nvmem-cells:
+> > +    maxItems: 1
+> > +    description: efuse data for display port calibration
+> > +
+> > +  nvmem-cell-names:
+> > +    const: dp_calibration_data
+> > +
+> > +  power-domains:
+> > +    maxItems: 1
+> > +
+> > +  interrupts:
+> > +    maxItems: 1
+> > +
+> > +  ports:
+> > +    $ref: /schemas/graph.yaml#/properties/ports
+> > +    properties:
+> > +      port@0:
+> > +        $ref: /schemas/graph.yaml#/properties/port
+> > +        description: Input endpoint of the controller, usually
+> > dp_intf
+> > +
+> > +      port@1:
+> > +        $ref: /schemas/graph.yaml#/$defs/port-base
+> > +        unevaluatedProperties: false
+> > +        description: Output endpoint of the controller
+> > +        properties:
+> > +          endpoint:
+> > +            $ref: /schemas/media/video-interfaces.yaml#
+> > +            unevaluatedProperties: false
+> > +            properties:
+> > +              data-lanes:
+> > +                description: |
+> > +                  number of lanes supported by the hardware.
+> > +                  The possible values:
+> > +                  0       - For 1 lane enabled in IP.
+> > +                  0 1     - For 2 lanes enabled in IP.
+> > +                  0 1 2 3 - For 4 lanes enabled in IP.
+> > +                minItems: 1
+> > +                maxItems: 4
+> > +            required:
+> > +              - data-lanes
+> > +
+> > +    required:
+> > +      - port@0
+> > +      - port@1
+> > +
+> > +  max-linkrate-mhz:
+> > +    enum: [ 1620, 2700, 5400, 8100 ]
+> > +    description: maximum link rate supported by the hardware.
+> > +
+> > +required:
+> > +  - compatible
+> > +  - reg
+> > +  - interrupts
+> > +  - ports
+> > +  - max-linkrate-mhz
+> > +
+> > +additionalProperties: false
+> > +
+> > +examples:
+> > +  - |
+> > +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> > +    #include <dt-bindings/power/mt8195-power.h>
+> > +    dp_tx@1c600000 {
+> 
+> No underscores in node names, so just "dp".
+> 
+> Best regards,
+> Krzysztof
 
---YEGndTYCRLH9MHD/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello Krzysztof,
 
-On Wed, Jul 27, 2022 at 06:46:37PM +0200, Krzysztof Kozlowski wrote:
-> Instead of listing directly properties typical for SPI peripherals,
-> reference the spi-peripheral-props.yaml schema.  This allows using all
-> properties typical for SPI-connected devices, even these which device
-> bindings author did not tried yet.
->=20
-> Remove the spi-* properties which now come via spi-peripheral-props.yaml
-> schema, except for the cases when device schema adds some constraints
-> like maximum frequency.
->=20
-> While changing additionalProperties->unevaluatedProperties, put it in
-> typical place, just before example DTS.
->=20
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> ---
-[...]
->  .../bindings/iio/adc/microchip,mcp3911.yaml   |  5 +++-
+Thanks for your review.
+I will modify these in next version.
 
-FWIW:=20
-Reviewed-by: Marcus Folkesson <marcus.folkesson@gmail.com>
+BRs,
+Bo-Chen
 
-
---YEGndTYCRLH9MHD/
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEBVGi6LZstU1kwSxliIBOb1ldUjIFAmLhblQACgkQiIBOb1ld
-UjJDTw/7BqHthBsEkYP0xMrkv3QyiojmRM/dm9DBpE2L4Qm9tgzjky8eHTeJdrGv
-wKJBUdlXF4ztcEev9olQs6iTZ+0mVNxh6jk5vzfO7nudKnEaoG2tgZWdZJHRHGNv
-gBeqqDHwGSv6dqIYA/DePu1RNbFqkhuzQCm+vUMg54E1dBuHLouvlB9v3rxz7YIB
-Q77AilcHt5SyFdZJayjN7YXoxJV0VKj7urCL44t2PKQnXAClErO4dICXxMP9w3O8
-HUGkSmvXWkXEKtXv3S2iF0sKTQMs3loJOtRBdRpthyNL26z114aMGuyUtufa10GA
-BuTLi+ITx1sW10g3ZHnlOhuxBOI3GkxT9bGIMm3bFBmtbAioUc/qQ5oDoBqBJNys
-24fKJDhHWn5brqSyES3hdiut1zUDRdaEzEkLXbYvCp+/sqAIRxjlimzQYwAkhjzO
-divUqxRvewwGsHiC6L3+spvWwt5VjeDhiV0VOtSS1Ws8IbmFDklGMArZqUHOOCAw
-MKwzho/muVqynERURzuzSouNuFOlWrNQozSQjZB8sd9NFHptTpNNUklPQd58O20O
-F3Pyclu2W+8JEOEJa3pZVD8XwEu3KOisUp2U4c9CUbSKCuTVLlCai0ukbC65IV7j
-f4vRdY9Apcwvw4ovK9awFC28RyZB/CJSC46TpjERIGxUeb3huVY=
-=kMsI
------END PGP SIGNATURE-----
-
---YEGndTYCRLH9MHD/--

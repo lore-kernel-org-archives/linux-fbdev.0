@@ -2,129 +2,70 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03245C19F2A
-	for <linux-fbdev@archiver.kernel.org>; Fri, 29 Jul 2022 06:17:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C30CC00144
+	for <linux-fbdev@archiver.kernel.org>; Fri, 29 Jul 2022 06:51:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234474AbiG2GR0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 29 Jul 2022 02:17:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37012 "EHLO
+        id S233434AbiG2Gvv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 29 Jul 2022 02:51:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39310 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234402AbiG2GRZ (ORCPT
+        with ESMTP id S235032AbiG2Gvu (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 29 Jul 2022 02:17:25 -0400
-Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com [IPv6:2607:f8b0:4864:20::102d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E49822BEC;
-        Thu, 28 Jul 2022 23:17:24 -0700 (PDT)
-Received: by mail-pj1-x102d.google.com with SMTP id f7so4038983pjp.0;
-        Thu, 28 Jul 2022 23:17:24 -0700 (PDT)
+        Fri, 29 Jul 2022 02:51:50 -0400
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A413180488;
+        Thu, 28 Jul 2022 23:51:49 -0700 (PDT)
+Received: by mail-pj1-x102b.google.com with SMTP id f7so4099301pjp.0;
+        Thu, 28 Jul 2022 23:51:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=EW499GBzYHaTH/WArZ0WtZvIkRlpsncxTw1RlPqz+v8=;
-        b=bBJrwZNNbNwZOSdpiHnZjxTBlhq5e5F5z/aB01/7Rhm7XVlQWB/jv1YB3Yg3stPpPN
-         SmPojYXgxob/8myvBqE/AYKB3hUIDzGgtgzp4td+2Rutu5SZSMSBz+TEPl7HNs7Bb9MW
-         W7TCxTINNO2IXJYHAUFDEo60ceS/hW+jhm95xlptfVEjnS/+i/uxEzpBJqVXlteEWYKP
-         MLSVJZ2NRzFuZR5K2IulKBp8EOOR/C3KOurSc/13nA+jBRKeS6G6Ni3gVaAmjbINYeTP
-         Y/exdADOpBiQOL0wbDkY7ixd3HtrsRWGX3QW7Rcr/xwq05d0Ejbdfk37De6Lis+ytz3+
-         Mzvg==
+        h=from:to:subject:date:message-id:in-reply-to:references:mime-version
+         :content-transfer-encoding;
+        bh=cjhKGepMlIEO3Wci9/3Wr5ru3tWGJp3cNdIthSMySCg=;
+        b=US94Ex6+mIhfte+TqRog+s2Pf22KJc6EgYEaPm3/yUsb6/+DYws4WaXhwOUT5GvYPQ
+         V92T+XmW89JigEKPMhesf2sLNaIfs8njwK4lMudM73HLb2oWIyjgOLu+Al8k1NSGP3sw
+         Bc4/TB99oOjibAFHntXUclE1OJ2BWuJKWeGHUQMHObXkXv/jBmkrQ2u35JwD6PJedTvW
+         mF+0s7zreMnnXEDUKqVM+peME7l8ECifPSAItc7v4z312/oS8NX/SwCfsmg0BKohTB2m
+         XL+ZKcgoW1ED9fh+9y6mnlckLOz/+aUnBt/952jo36p7b2lTrLCD2VDvr+bCXTtXg4bs
+         avgw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=EW499GBzYHaTH/WArZ0WtZvIkRlpsncxTw1RlPqz+v8=;
-        b=cPmxhGU7MgqV4EBa4XWT5LuS360COaAYZ6cDzOzjw8SmwjaJ1rTeBi3L+mFbxZE6vS
-         DZZBOxxfbSv13xQrsElyP7O1Ee8NmkOjgT+KiyavRF84YVFLxHPqwX0oNdyCBIG7wcQP
-         4HXBZy/2TPS+Uk1Ml+ct/Snyc/3TJ9F8rJQifEr6WKMhhGqucrFEkMt36QSE4PzbQPn0
-         y9iYeBZtcA4w+D7ztS40tlnNGpTEbDTctwEXrisw9PDPucuw10AUC2P6TFhs+JzvOX47
-         nd2s87rEcXApCbW+oQd16cUPfixPX7jNKY6LS7gQHVbb5Ul/+HuTO5IeEu67SDSfXrHd
-         ggJQ==
-X-Gm-Message-State: ACgBeo17wSnN1z33QLUnK4eooIxonOjnmRpB2YaxDgyDCEzcj0SBt3Qc
-        9lTKE01qpSBls2DN+3OTgBcrpewOZyFK1U10NVc=
-X-Google-Smtp-Source: AA6agR5CfpBYT1/n0Fz3b0mpL30Y1BQpcR5ZJ1q53vOkI+o8r7h1QJKT9bGnP/JXhqgwA8TQcF5sWeEJfeZ5+jaoGc0=
-X-Received: by 2002:a17:902:f646:b0:168:e2da:8931 with SMTP id
- m6-20020a170902f64600b00168e2da8931mr2450692plg.84.1659075444381; Thu, 28 Jul
- 2022 23:17:24 -0700 (PDT)
+        h=x-gm-message-state:from:to:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=cjhKGepMlIEO3Wci9/3Wr5ru3tWGJp3cNdIthSMySCg=;
+        b=721cc7L6fDjLqA0bo6S/9S996nR2jOeYlokyqai4Pr2pi6dpuncohfG+1XyIO2X8+H
+         +bbzvtQj7BVhL2QrQd/2RcFLiarANUnbro1Cd1uNlq6m3umqPdgYEtCNZkLAsc8PzuNn
+         X2QWpt1S2E4fU7tNLBixmyCZI4ZZlHERC4OO8XFuUHhqeKq1xm2IFscTraP2SQEZrZOx
+         ths3a/Oxb32T7CaCyFocSed+LsqaeV1yVDnbcVC5tL8QvOQ5Xe5dwvAYoGPp3FQ2NApV
+         JUva8w7MazMq97aOHuovLwE/Rf4WhR7nOP4ACwHAAGVecD3o95hpVALIdCZlGiBLUVfP
+         R/3w==
+X-Gm-Message-State: ACgBeo2VPXWpP+n69h41e/dboKYJBHR95+ZgSPd943XMtT6gK6BORSLH
+        bRhjtGe5J4hsZRu90SO75IU=
+X-Google-Smtp-Source: AA6agR5SdBo50/7T8qs90kIzI/XxNgQSSDqRotzuwp+Yc5ZycTaAJ2WsuqUnVJtlvvd/f4FflqW/6A==
+X-Received: by 2002:a17:90b:33c6:b0:1f3:2434:29c6 with SMTP id lk6-20020a17090b33c600b001f3243429c6mr3322066pjb.70.1659077509104;
+        Thu, 28 Jul 2022 23:51:49 -0700 (PDT)
+Received: from fedora.. ([103.159.189.145])
+        by smtp.gmail.com with ESMTPSA id mg20-20020a17090b371400b001f30b100e04sm4989301pjb.15.2022.07.28.23.51.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 28 Jul 2022 23:51:48 -0700 (PDT)
+From:   Khalid Masum <khalid.masum.92@gmail.com>
+To:     syzbot <syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com
+Subject: Re: [syzbot] KASAN: vmalloc-out-of-bounds Write in imageblit (2)
+Date:   Fri, 29 Jul 2022 12:51:39 +0600
+Message-Id: <20220729065139.6529-1-khalid.masum.92@gmail.com>
+X-Mailer: git-send-email 2.36.1
+In-Reply-To: <000000000000bbdd0405d120c155@google.com>
+References: <000000000000bbdd0405d120c155@google.com>
 MIME-Version: 1.0
-References: <20220722102407.2205-1-peterwu.pub@gmail.com> <20220722102407.2205-13-peterwu.pub@gmail.com>
- <CAHp75Vf85_uzA9fRxTizbPJxODcXFpM4wuU6DxP2j9UA47B_2g@mail.gmail.com>
-In-Reply-To: <CAHp75Vf85_uzA9fRxTizbPJxODcXFpM4wuU6DxP2j9UA47B_2g@mail.gmail.com>
-From:   szuni chen <szunichen@gmail.com>
-Date:   Fri, 29 Jul 2022 14:17:13 +0800
-Message-ID: <CA+hk2fYcw0szJ7bBvfEjtyUE_Z61_A1vFWmPSdhe-gmd5jbC6g@mail.gmail.com>
-Subject: Re: [PATCH v6 12/13] leds: flash: mt6370: Add MediaTek MT6370
- flashlight support
-To:     Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc:     ChiaEn Wu <peterwu.pub@gmail.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Chunfeng Yun <chunfeng.yun@mediatek.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>,
-        Helge Deller <deller@gmx.de>,
-        ChiaEn Wu <chiaen_wu@richtek.com>,
-        Alice Chen <alice_chen@richtek.com>,
-        cy_huang <cy_huang@richtek.com>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-mediatek@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        USB <linux-usb@vger.kernel.org>,
-        linux-iio <linux-iio@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Andy Shevchenko <andy.shevchenko@gmail.com> =E6=96=BC 2022=E5=B9=B47=E6=9C=
-=8825=E6=97=A5 =E9=80=B1=E4=B8=80 =E4=B8=8B=E5=8D=884:51=E5=AF=AB=E9=81=93=
-=EF=BC=9A
->
-> On Fri, Jul 22, 2022 at 12:25 PM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
-> >
-> > From: Alice Chen <alice_chen@richtek.com>
-> >
-> > The MediaTek MT6370 is a highly-integrated smart power management IC,
-> > which includes a single cell Li-Ion/Li-Polymer switching battery
-> > charger, a USB Type-C & Power Delivery (PD) controller, dual Flash
-> > LED current sources, a RGB LED driver, a backlight WLED driver,
-> > a display bias driver and a general LDO for portable devices.
-> >
-> > The Flash LED in MT6370 has 2 channels and support torch/strobe mode.
-> > Add the support of MT6370 FLASH LED.
-> >
-> > Signed-off-by: Alice Chen <alice_chen@richtek.com>
->
-> This SoB chain is wrong. Prioritize and read Submitting Patches!
->
-Hi Andy,
+Here is a simplified reproducer for the issue:
 
-After reading the Submitted Patches,
-ChiaEn Wu wasn't involved in the development but he submitted the patch,
-So, ChiaEn Wu <chiaen_wu@richtek.com> should be the last SoB, right?
-I will revise SoB to
-
-Signed-off-by: SzuNi Chen <alice_chen@richtek.com>
-Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
-
-If there is anything else I need to fix, please let me know. Thank you.
+https://gist.githubusercontent.com/Labnann/923d6b9b3a19848fc129637b839b8a55/raw/a68271fcc724569735fe27f80817e561b3ff629a/reproducer.c
 
 
-Best Regards,
-Szuni Chen

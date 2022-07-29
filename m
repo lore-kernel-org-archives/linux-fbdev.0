@@ -2,112 +2,127 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4778C3F6B0
-	for <linux-fbdev@archiver.kernel.org>; Fri, 29 Jul 2022 07:57:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40511C19F2B
+	for <linux-fbdev@archiver.kernel.org>; Fri, 29 Jul 2022 10:35:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235127AbiG2H5c (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 29 Jul 2022 03:57:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39434 "EHLO
+        id S234887AbiG2KfH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 29 Jul 2022 06:35:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58194 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235036AbiG2H5b (ORCPT
+        with ESMTP id S235889AbiG2Ke4 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 29 Jul 2022 03:57:31 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 12DD07E027;
-        Fri, 29 Jul 2022 00:57:31 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id A2F5D61BF8;
-        Fri, 29 Jul 2022 07:57:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7CEAAC433D6;
-        Fri, 29 Jul 2022 07:57:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1659081450;
-        bh=kGpstCAAwPkGYsBYA0Sv1cWBhpQqBl9cZdq6KbVZpIc=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=C5ZbaoWIRXMrNQTc535bsP0zIPJb4o4x7G+72avOewl26tmgUH0fnYcLGAm1TRjkG
-         wqEuTzdTP5GGSarwRrwLDIPmR7ZtpH/JQSaxOqnbgevhFJYaZFL/c+mM1lO2blfykq
-         e/98jXo2dQ75Q6EsD/pRVQ6C38alFpyauc3p8dHA=
-Date:   Fri, 29 Jul 2022 09:57:27 +0200
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc:     Markuss Broks <markuss.broks@gmail.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        Jonathan Corbet <corbet@lwn.net>,
-        Ard Biesheuvel <ardb@kernel.org>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Helge Deller <deller@gmx.de>,
-        "Paul E. McKenney" <paulmck@kernel.org>,
-        Borislav Petkov <bp@suse.de>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Kees Cook <keescook@chromium.org>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Michal Suchanek <msuchanek@suse.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Wei Ming Chen <jj251510319013@gmail.com>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Tony Lindgren <tony@atomide.com>,
-        Linux Documentation List <linux-doc@vger.kernel.org>,
-        linux-efi <linux-efi@vger.kernel.org>,
-        "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Petr Mladek <pmladek@suse.com>
-Subject: Re: [PATCH 1/2] drivers: serial: earlycon: Pass device-tree node
-Message-ID: <YuOS5yUfNlTOtI6U@kroah.com>
-References: <20220728142824.3836-1-markuss.broks@gmail.com>
- <20220728142824.3836-2-markuss.broks@gmail.com>
- <YuKfaVG/ZbYtFjS/@kroah.com>
- <CAHp75Vfz8e1j4qZ6XY6WqMR4E9fKFxrTxj7P6KraXzSLk_NhxQ@mail.gmail.com>
+        Fri, 29 Jul 2022 06:34:56 -0400
+Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com [IPv6:2a00:1450:4864:20::533])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1EA7677545;
+        Fri, 29 Jul 2022 03:34:54 -0700 (PDT)
+Received: by mail-ed1-x533.google.com with SMTP id c12so5304982ede.3;
+        Fri, 29 Jul 2022 03:34:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc;
+        bh=Zk6yHET57f/wYXBe4yiexZ1AAMItVqOz1Jv1kut5E8E=;
+        b=IsM5N0dJ2jSYwlQl9rbwt+OLNPEKaCRVIniuh9/fK2UA5cEWqol8qEt2eY1KAFImh0
+         xgKtFlDvRwmal8EgGb4Op+XBno/E/HH8Bxy8BPnkUU2nIxz44g1exMkT0mBgnzczAkOM
+         jEEdvopg/k2e5S3/4OLDkdml7fNMgGZXJmK2pxORFJYNKUIs9dcrZpTPKP/PyTRRiDnU
+         4AbNyblEPeQVwrctPIK+zUGSC8WmuyEHQXK0TllYSTMZqHtKbYQ+rO3pNAksc0uoqvC9
+         H7uLLtXO9go/uW0Ye5nZLjgde4OuJHwsb257PiiTAEQZboCcDlee7NJuUdg+WQoQdZGF
+         8sKg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc;
+        bh=Zk6yHET57f/wYXBe4yiexZ1AAMItVqOz1Jv1kut5E8E=;
+        b=QV3GjVqcXmZkzYvOvw6OgT3i4XSD7Gfdy313J3JcSvuqH0c+EYx/ZOsdwC2ux5OW58
+         2tN1M7mF5DZYbELP0pwzMG/Pa2RuKLZAzhW+OlyYRvr0Rg2aaoqsbkxzOdw1QPztnc8l
+         KPkkL0D0qpWL9goqpbA5LaGeBEoPvCvTWTjz/7lRZQdBd+Zvx4F7A/cgHoH54/uiranJ
+         cE3PY7JtbB5HhpOtnKluTtn18C5Bj72TI1j1OCB2pJkrXa42kmZPURPQeTiQko+AQjHB
+         Gg/9S5LyLbL89/gOPWwJMmY5HnLamveXxTLeQG9poE5pDU23LBUXRUHxl2adb7g0BtVK
+         wH1Q==
+X-Gm-Message-State: AJIora90pI00yBVTJwuF7e7ebXlM+Me5FQxFoyqIf0VRtl9Qi19H3SCa
+        vpYjgYQdjSa8C1sVboZqseomTPcUf/IqlribDhE=
+X-Google-Smtp-Source: AGRyM1thJcc6VzDaeaE+EySViKuCRpu348iS7jC1QI3PpaFzkcmRpNMn9JsAnkR2MfsFuw188nD7QnVuUJohoFdGXiU=
+X-Received: by 2002:a05:6402:501d:b0:437:e000:a898 with SMTP id
+ p29-20020a056402501d00b00437e000a898mr2923947eda.265.1659090892398; Fri, 29
+ Jul 2022 03:34:52 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAHp75Vfz8e1j4qZ6XY6WqMR4E9fKFxrTxj7P6KraXzSLk_NhxQ@mail.gmail.com>
+References: <20220722102407.2205-1-peterwu.pub@gmail.com> <20220722102407.2205-13-peterwu.pub@gmail.com>
+ <CAHp75Vf85_uzA9fRxTizbPJxODcXFpM4wuU6DxP2j9UA47B_2g@mail.gmail.com> <CA+hk2fYcw0szJ7bBvfEjtyUE_Z61_A1vFWmPSdhe-gmd5jbC6g@mail.gmail.com>
+In-Reply-To: <CA+hk2fYcw0szJ7bBvfEjtyUE_Z61_A1vFWmPSdhe-gmd5jbC6g@mail.gmail.com>
+From:   Andy Shevchenko <andy.shevchenko@gmail.com>
+Date:   Fri, 29 Jul 2022 12:34:14 +0200
+Message-ID: <CAHp75VctFBkPYumu-4+iGNATt=zE7HJ3n0kRSdDduJZ=h6FDEQ@mail.gmail.com>
+Subject: Re: [PATCH v6 12/13] leds: flash: mt6370: Add MediaTek MT6370
+ flashlight support
+To:     szuni chen <szunichen@gmail.com>
+Cc:     ChiaEn Wu <peterwu.pub@gmail.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Chunfeng Yun <chunfeng.yun@mediatek.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>,
+        Helge Deller <deller@gmx.de>,
+        ChiaEn Wu <chiaen_wu@richtek.com>,
+        Alice Chen <alice_chen@richtek.com>,
+        cy_huang <cy_huang@richtek.com>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux LED Subsystem <linux-leds@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-mediatek@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        USB <linux-usb@vger.kernel.org>,
+        linux-iio <linux-iio@vger.kernel.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Jul 28, 2022 at 11:04:24PM +0200, Andy Shevchenko wrote:
-> On Thu, Jul 28, 2022 at 4:41 PM Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org> wrote:
-> > On Thu, Jul 28, 2022 at 05:28:18PM +0300, Markuss Broks wrote:
-> > > Pass a pointer to device-tree node in case the driver probed from
-> > > OF. This makes early console drivers able to fetch options from
-> > > device-tree node properties.
-> 
-> ...
-> 
-> > > +     unsigned long node;
+On Fri, Jul 29, 2022 at 8:17 AM szuni chen <szunichen@gmail.com> wrote:
+> Andy Shevchenko <andy.shevchenko@gmail.com> =E6=96=BC 2022=E5=B9=B47=E6=
+=9C=8825=E6=97=A5 =E9=80=B1=E4=B8=80 =E4=B8=8B=E5=8D=884:51=E5=AF=AB=E9=81=
+=93=EF=BC=9A
+> > On Fri, Jul 22, 2022 at 12:25 PM ChiaEn Wu <peterwu.pub@gmail.com> wrot=
+e:
+> > >
+> > > From: Alice Chen <alice_chen@richtek.com>
+
+...
+
+> > > Signed-off-by: Alice Chen <alice_chen@richtek.com>
 > >
-> > That should not be an unsigned long, but rather an 'int'.  Something got
-> > messed up, of_setup_earlycon() should be changed to reflect this before
-> > propagating the error to other places in the kernel.
-> 
-> It's a pointer, but what puzzles me, why it can't be declared as a such:
-> 
->  struct device_node *node;
-> 
-> ?
+> > This SoB chain is wrong. Prioritize and read Submitting Patches!
+>
+> After reading the Submitted Patches,
+> ChiaEn Wu wasn't involved in the development but he submitted the patch,
+> So, ChiaEn Wu <chiaen_wu@richtek.com> should be the last SoB, right?
 
-It should not be a pointer, trace things backwards, it comes from a call
-to of_setup_earlycon() from early_init_dt_scan_chosen_stdout() which has
-offset declared as an int, and then does:
-	if (of_setup_earlycon(match, offset, options) == 0)
+Right. Submitter's SoB is the last SoB in the chain.
 
-So why would it be a node?
+> I will revise SoB to
+>
+> Signed-off-by: SzuNi Chen <alice_chen@richtek.com>
 
-> > And it's not really a "node" but an "offset", right?
-> 
-> Seems no.
+Not sure I understand the SzuNi <--> Alice transformation...
 
-Really?  What am I missing here?
+> Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
+>
+> If there is anything else I need to fix, please let me know. Thank you.
 
-confused,
-
-greg k-h
+--=20
+With Best Regards,
+Andy Shevchenko

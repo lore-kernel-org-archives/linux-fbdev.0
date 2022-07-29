@@ -2,127 +2,131 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40511C19F2B
-	for <linux-fbdev@archiver.kernel.org>; Fri, 29 Jul 2022 10:35:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5161AC19F2C
+	for <linux-fbdev@archiver.kernel.org>; Fri, 29 Jul 2022 10:48:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234887AbiG2KfH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 29 Jul 2022 06:35:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58194 "EHLO
+        id S234819AbiG2KsQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 29 Jul 2022 06:48:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44776 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235889AbiG2Ke4 (ORCPT
+        with ESMTP id S232387AbiG2KsO (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 29 Jul 2022 06:34:56 -0400
-Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com [IPv6:2a00:1450:4864:20::533])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1EA7677545;
-        Fri, 29 Jul 2022 03:34:54 -0700 (PDT)
-Received: by mail-ed1-x533.google.com with SMTP id c12so5304982ede.3;
-        Fri, 29 Jul 2022 03:34:54 -0700 (PDT)
+        Fri, 29 Jul 2022 06:48:14 -0400
+Received: from mail-ed1-x532.google.com (mail-ed1-x532.google.com [IPv6:2a00:1450:4864:20::532])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF52A1AD;
+        Fri, 29 Jul 2022 03:48:13 -0700 (PDT)
+Received: by mail-ed1-x532.google.com with SMTP id z18so5312714edb.10;
+        Fri, 29 Jul 2022 03:48:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc;
-        bh=Zk6yHET57f/wYXBe4yiexZ1AAMItVqOz1Jv1kut5E8E=;
-        b=IsM5N0dJ2jSYwlQl9rbwt+OLNPEKaCRVIniuh9/fK2UA5cEWqol8qEt2eY1KAFImh0
-         xgKtFlDvRwmal8EgGb4Op+XBno/E/HH8Bxy8BPnkUU2nIxz44g1exMkT0mBgnzczAkOM
-         jEEdvopg/k2e5S3/4OLDkdml7fNMgGZXJmK2pxORFJYNKUIs9dcrZpTPKP/PyTRRiDnU
-         4AbNyblEPeQVwrctPIK+zUGSC8WmuyEHQXK0TllYSTMZqHtKbYQ+rO3pNAksc0uoqvC9
-         H7uLLtXO9go/uW0Ye5nZLjgde4OuJHwsb257PiiTAEQZboCcDlee7NJuUdg+WQoQdZGF
-         8sKg==
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc;
+        bh=3n/U/FQWga428NP8njwRwJq8YQtOFS7dE4r1PAnkS1w=;
+        b=NUwJ6Ia5ztlFAPJRSi//yXxSQSxStivnbYzEDrxWCEUcunK9mPPbSDW9UDDz5jYYTf
+         5/3Tv/X7zyoHU/COku0GH9BU+wnuhqnwNFhGBh/oBwLrmzhgi2WmL6r/pQigVKDP+2wN
+         r2nnp+tCjUus1cege2Vm5IiCUqgIiTt4/grj8tzAwe+OtUD4H+EwBDhK/GPRq3Lq3Riq
+         OU7YrReBurHOIdx3AJ1A2MhkIWr3n3xTalz66sqsFBkMks+QVyqGj8zIaTAQPSbuEfQf
+         8cevW1Q80DurxbNMHDhAvDW9cs5zdQWNQyPeZtlVDDib66Jn5ZADWJkEZ//9TVlc5tq5
+         Kiow==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc;
-        bh=Zk6yHET57f/wYXBe4yiexZ1AAMItVqOz1Jv1kut5E8E=;
-        b=QV3GjVqcXmZkzYvOvw6OgT3i4XSD7Gfdy313J3JcSvuqH0c+EYx/ZOsdwC2ux5OW58
-         2tN1M7mF5DZYbELP0pwzMG/Pa2RuKLZAzhW+OlyYRvr0Rg2aaoqsbkxzOdw1QPztnc8l
-         KPkkL0D0qpWL9goqpbA5LaGeBEoPvCvTWTjz/7lRZQdBd+Zvx4F7A/cgHoH54/uiranJ
-         cE3PY7JtbB5HhpOtnKluTtn18C5Bj72TI1j1OCB2pJkrXa42kmZPURPQeTiQko+AQjHB
-         Gg/9S5LyLbL89/gOPWwJMmY5HnLamveXxTLeQG9poE5pDU23LBUXRUHxl2adb7g0BtVK
-         wH1Q==
-X-Gm-Message-State: AJIora90pI00yBVTJwuF7e7ebXlM+Me5FQxFoyqIf0VRtl9Qi19H3SCa
-        vpYjgYQdjSa8C1sVboZqseomTPcUf/IqlribDhE=
-X-Google-Smtp-Source: AGRyM1thJcc6VzDaeaE+EySViKuCRpu348iS7jC1QI3PpaFzkcmRpNMn9JsAnkR2MfsFuw188nD7QnVuUJohoFdGXiU=
-X-Received: by 2002:a05:6402:501d:b0:437:e000:a898 with SMTP id
- p29-20020a056402501d00b00437e000a898mr2923947eda.265.1659090892398; Fri, 29
- Jul 2022 03:34:52 -0700 (PDT)
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc;
+        bh=3n/U/FQWga428NP8njwRwJq8YQtOFS7dE4r1PAnkS1w=;
+        b=zHm82nlJ9x4xd8lO9Q8TwwhBPELe0WiAZiEc3E+uY71Dnr6RAn8Rk6/ydgPwAxBxrR
+         3CRu1godetGM4Q6Ir/pWtNdAVYlF8+317V7SnqSAMKaoS/qJ7ZXR8vZT89+Lr8SFhI00
+         BTHeuhWfaC+eLbcOUO2B7c9x/2gb73dSMF2aEBUqxjaasqJGBBrqlG225n5osWaZzZ6D
+         xvdRrXYwDw+ckzur6wMOCIoPmR30T8qb3rWsEStLsXsD3z/sRlAVCQOAPCKAzw3gANfe
+         QZN/PwjNfQ6+NT50qrCPcAGKNg9riE9SbEZ3hJcpxQQ5P5njeb0QSYABGINyifm4+Dnd
+         4TMA==
+X-Gm-Message-State: AJIora8w+u/RFNE81Ht6KgBTc15QZ6QhbOjgogmbjsl+h+cNrqoXjZKh
+        YtHzpX8xHrEODFVz+QeuCK8l7bW5g9lfqPnOYYY=
+X-Google-Smtp-Source: AGRyM1swfkCmQwapy/e5MLB35AJLdgSMfrw8dhx1rZSpZi2iRMETLlJ8/O9gf/GWaYLbPNQzerUI5dsp0GToPimD/Xw=
+X-Received: by 2002:a05:6402:2714:b0:43c:1c1:717e with SMTP id
+ y20-20020a056402271400b0043c01c1717emr2983928edd.67.1659091692189; Fri, 29
+ Jul 2022 03:48:12 -0700 (PDT)
 MIME-Version: 1.0
-References: <20220722102407.2205-1-peterwu.pub@gmail.com> <20220722102407.2205-13-peterwu.pub@gmail.com>
- <CAHp75Vf85_uzA9fRxTizbPJxODcXFpM4wuU6DxP2j9UA47B_2g@mail.gmail.com> <CA+hk2fYcw0szJ7bBvfEjtyUE_Z61_A1vFWmPSdhe-gmd5jbC6g@mail.gmail.com>
-In-Reply-To: <CA+hk2fYcw0szJ7bBvfEjtyUE_Z61_A1vFWmPSdhe-gmd5jbC6g@mail.gmail.com>
+References: <20220728142824.3836-1-markuss.broks@gmail.com>
+ <20220728142824.3836-2-markuss.broks@gmail.com> <YuKfaVG/ZbYtFjS/@kroah.com>
+ <CAHp75Vfz8e1j4qZ6XY6WqMR4E9fKFxrTxj7P6KraXzSLk_NhxQ@mail.gmail.com> <YuOS5yUfNlTOtI6U@kroah.com>
+In-Reply-To: <YuOS5yUfNlTOtI6U@kroah.com>
 From:   Andy Shevchenko <andy.shevchenko@gmail.com>
-Date:   Fri, 29 Jul 2022 12:34:14 +0200
-Message-ID: <CAHp75VctFBkPYumu-4+iGNATt=zE7HJ3n0kRSdDduJZ=h6FDEQ@mail.gmail.com>
-Subject: Re: [PATCH v6 12/13] leds: flash: mt6370: Add MediaTek MT6370
- flashlight support
-To:     szuni chen <szunichen@gmail.com>
-Cc:     ChiaEn Wu <peterwu.pub@gmail.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Chunfeng Yun <chunfeng.yun@mediatek.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>,
-        Helge Deller <deller@gmx.de>,
-        ChiaEn Wu <chiaen_wu@richtek.com>,
-        Alice Chen <alice_chen@richtek.com>,
-        cy_huang <cy_huang@richtek.com>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-mediatek@lists.infradead.org>,
+Date:   Fri, 29 Jul 2022 12:47:35 +0200
+Message-ID: <CAHp75VcqtO5E91e5HxM6qN3gcMH5-_h=508chyDiWzvmLiFn6A@mail.gmail.com>
+Subject: Re: [PATCH 1/2] drivers: serial: earlycon: Pass device-tree node
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     Markuss Broks <markuss.broks@gmail.com>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        USB <linux-usb@vger.kernel.org>,
-        linux-iio <linux-iio@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
+        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        Jonathan Corbet <corbet@lwn.net>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Helge Deller <deller@gmx.de>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Borislav Petkov <bp@suse.de>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Kees Cook <keescook@chromium.org>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Michal Suchanek <msuchanek@suse.de>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Wei Ming Chen <jj251510319013@gmail.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Tony Lindgren <tony@atomide.com>,
+        Linux Documentation List <linux-doc@vger.kernel.org>,
+        linux-efi <linux-efi@vger.kernel.org>,
+        "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Petr Mladek <pmladek@suse.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jul 29, 2022 at 8:17 AM szuni chen <szunichen@gmail.com> wrote:
-> Andy Shevchenko <andy.shevchenko@gmail.com> =E6=96=BC 2022=E5=B9=B47=E6=
-=9C=8825=E6=97=A5 =E9=80=B1=E4=B8=80 =E4=B8=8B=E5=8D=884:51=E5=AF=AB=E9=81=
-=93=EF=BC=9A
-> > On Fri, Jul 22, 2022 at 12:25 PM ChiaEn Wu <peterwu.pub@gmail.com> wrot=
-e:
-> > >
-> > > From: Alice Chen <alice_chen@richtek.com>
+On Fri, Jul 29, 2022 at 9:57 AM Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+> On Thu, Jul 28, 2022 at 11:04:24PM +0200, Andy Shevchenko wrote:
+> > On Thu, Jul 28, 2022 at 4:41 PM Greg Kroah-Hartman
+> > <gregkh@linuxfoundation.org> wrote:
+> > > On Thu, Jul 28, 2022 at 05:28:18PM +0300, Markuss Broks wrote:
 
 ...
 
-> > > Signed-off-by: Alice Chen <alice_chen@richtek.com>
+> > > > +     unsigned long node;
+> > >
+> > > That should not be an unsigned long, but rather an 'int'.  Something got
+> > > messed up, of_setup_earlycon() should be changed to reflect this before
+> > > propagating the error to other places in the kernel.
 > >
-> > This SoB chain is wrong. Prioritize and read Submitting Patches!
+> > It's a pointer, but what puzzles me, why it can't be declared as a such:
+> >
+> >  struct device_node *node;
+> >
+> > ?
 >
-> After reading the Submitted Patches,
-> ChiaEn Wu wasn't involved in the development but he submitted the patch,
-> So, ChiaEn Wu <chiaen_wu@richtek.com> should be the last SoB, right?
-
-Right. Submitter's SoB is the last SoB in the chain.
-
-> I will revise SoB to
+> It should not be a pointer, trace things backwards, it comes from a call
+> to of_setup_earlycon() from early_init_dt_scan_chosen_stdout() which has
+> offset declared as an int, and then does:
+>         if (of_setup_earlycon(match, offset, options) == 0)
 >
-> Signed-off-by: SzuNi Chen <alice_chen@richtek.com>
+> So why would it be a node?
 
-Not sure I understand the SzuNi <--> Alice transformation...
+This is a very good question.
 
-> Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
+> > > And it's not really a "node" but an "offset", right?
+> >
+> > Seems no.
 >
-> If there is anything else I need to fix, please let me know. Thank you.
+> Really?  What am I missing here?
 
---=20
+It's me who is missing something here, thanks for your elaboration!
+After it it becomes clear that your first question should be
+addressed.
+
+-- 
 With Best Regards,
 Andy Shevchenko

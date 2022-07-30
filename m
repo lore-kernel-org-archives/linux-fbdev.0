@@ -2,102 +2,226 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72FF2C00144
-	for <linux-fbdev@archiver.kernel.org>; Fri, 29 Jul 2022 21:00:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EBAEC19F29
+	for <linux-fbdev@archiver.kernel.org>; Sat, 30 Jul 2022 08:55:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238936AbiG2VA7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 29 Jul 2022 17:00:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55660 "EHLO
+        id S230135AbiG3IzL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 30 Jul 2022 04:55:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35022 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233332AbiG2VA5 (ORCPT
+        with ESMTP id S229720AbiG3IzK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 29 Jul 2022 17:00:57 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41EC62CE2A;
-        Fri, 29 Jul 2022 14:00:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1659128438;
-        bh=Ktqdjqu+6Rheao55tLBKwaUTf5LNpkYU9YBAv8YJN8w=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=Vy/sdIzFBVYlgafnkF5OqBRRyBQdbmv08mLBfQiEKzeVkeMrl1S4zhwDvQ6lu03Il
-         Wcu4b0WyLof3YsvhAy6QdbuPn4AF7JvGIuN1jF25pu1pS8IVr8vixt0zlWzDCEMspf
-         mE/MWEU5vWIEO/Nh+el1R083sozed7WMnIJP7seU=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.189.204]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1Mdeb5-1nikVj1j7Z-00ZeBp; Fri, 29
- Jul 2022 23:00:38 +0200
-Message-ID: <c23d058a-4dc0-3877-083a-2476ba4e1714@gmx.de>
-Date:   Fri, 29 Jul 2022 22:59:52 +0200
+        Sat, 30 Jul 2022 04:55:10 -0400
+Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 747B1F43;
+        Sat, 30 Jul 2022 01:55:09 -0700 (PDT)
+Received: by mail-ej1-x635.google.com with SMTP id tk8so12115687ejc.7;
+        Sat, 30 Jul 2022 01:55:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=bxfY1htXxbYgZJF5B+dESeWX+UdX+4GjUNZm08CoJ8E=;
+        b=YbS/lcslcbmkXpey5cpFq+X/ytIJj3qLqsAi5z2w3lorLorzgulYzXLv7skrAU7gN0
+         EX8kGu++8KCaP8JbTGm7Bo3U8kDDvcQXkGjM1MLqVjThH9BjNQnNUYSsBpwGPt78mnIV
+         OmvNjkD5/22LUnX3abOBs3Ip/74gtvYpkMEqaB47rKWbISEtyBK4LuIyQGvszb2bZdoL
+         CgvYhVFbtXuOgKbSqVay5FL3qu2DJiuNMGh1IjG0TKwGsmXbUFFznpLlY3RbMcwjVw9M
+         adMX/40d2nJLNi65Qz4IOrP2vL7GL5fg4YlumPSgmRc3Lgb1LQGlkLtbz97XAWPK/J7w
+         FrgQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=bxfY1htXxbYgZJF5B+dESeWX+UdX+4GjUNZm08CoJ8E=;
+        b=QXCKSPv1a/lGjPkdu9538fZa3ZWu1gFi+KWhDhgH2AkJvxXrqUAb+H+jlhm4XCS4ms
+         EF65XDo4YB1K229xJ4H1GMWiRMtYnDV3s7nx0BELxvSQOv3d9y4v/EsUDviE16/eigER
+         S8OkqPxNWCvgeSx2imUMp0/msB27p8GNMG9/Dwpk6Zs/mMFz8IfI5edHOwBZ05FCiflr
+         g9mGaroQtBBSoTvrAe9a811QQQDRgoaksGru54rG9ifnxhrezQNdl1//BpmynEYGtUvQ
+         fxnskJXx9IPFkgCyezvuJJTt2cEvd77ULpeZMciDTFS3fcGZy1DnWPzhYT1P6uDzAsWf
+         gYVg==
+X-Gm-Message-State: AJIora8pZusH4ReJ3SYqcx0wcuYINDKf4vmey5oOlR+aBrXfHxHqvJJH
+        I5vhqKwiwQS/h8JU7RcKFu0=
+X-Google-Smtp-Source: AGRyM1sheQBaWBbZ2/dbYWLUaQqAMJRtzg5nrxQDGH46I4vLTxOvUd/Zbug1LN1Ia1i+sismD/uiGg==
+X-Received: by 2002:a17:907:970c:b0:72e:e972:5c73 with SMTP id jg12-20020a170907970c00b0072ee9725c73mr5518137ejc.352.1659171307805;
+        Sat, 30 Jul 2022 01:55:07 -0700 (PDT)
+Received: from [0.0.0.0] ([81.17.18.61])
+        by smtp.gmail.com with ESMTPSA id 19-20020a170906319300b0072b8fbc9be1sm2699005ejy.187.2022.07.30.01.54.47
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 30 Jul 2022 01:55:07 -0700 (PDT)
+Message-ID: <3c55e119-5b6f-25ab-99c9-2c99b1dfd9e9@gmail.com>
+Date:   Sat, 30 Jul 2022 14:54:41 +0300
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.11.0
-Subject: Re: [PATCH -next] video: fbdev: imxfb: fix return value check in
- imxfb_probe()
+Subject: Re: [PATCH 2/2] efi: earlycon: Add support for generic framebuffers
+ and move to fbdev subsystem
 Content-Language: en-US
-To:     Yang Yingliang <yangyingliang@huawei.com>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc:     u.kleine-koenig@pengutronix.de
-References: <20220729024134.159942-1-yangyingliang@huawei.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220729024134.159942-1-yangyingliang@huawei.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:SiuDRY8Bd5qRt2CpLM3WzAW+ejCYC4ZwYRSYz3iy3fq/YAyfSb3
- u+IJQL7dsjhX0gtqoSIUY3RVYDiG0yQ4GBdD06MTOmWhs/hvos0qDshahQtY5T17DBNGQpg
- dSBFC5INj8GjqYxdsIvGWWUTR0b4KcAjIuzzDOM93cLOdfmNo27NoYdTmXrSAm69nsNWeYD
- iir7V1C5ixec7wtA3SxlQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:SWiYiZMdrx0=:z/J1yJxGJ0BYoUpshkPa6W
- LxjBNDV0tQsKq0aAgxKs/56bLD8fw5H06GMASLPKlqar71ILprIbcXqIqjpZOOnhkHka0oVmx
- LiP8dhHGWmIIntGsWgBq0dn4bW6sxcrZcVBDQ6qy3QmLy/cfMZe5kZCu7T6feLmHJijAWxBp3
- MVymZhfK7Sa/1vMUR7M/duVBSP3qBnGiV7zSs+S9sGvEzuf0kJA5H2rgJMMHTVn/x6qCZylsa
- j9BSsDbfgFtqvxYKaX4hOOfkSwkf3mlt+MAqkteMmzRBUFBi5sJn0IvTh0xDUZ9jUJnEe7gkG
- hrzbNKRgej4MJuH4MuTPR8/yq0tRmB5fX+nAqVg90lie6n5ou03xLKt7Av/sEzAIh61ptO0YL
- CgOs/1pcSz5MuTkWQdayBPMKtdDq2BEQr5n8w5YSE1RXqAIQ6HfnyLZ6FL9TD0y+KS4My8c+q
- qesySeoyioiq9IQVpaHDfZlK2xqxjcWWF11q3StwOPlfCr3gsx/K/JARGnfRkQG0PAf0a//jO
- WZ0CjCQtFdLDLaxu1bj9X2qwPbIIHC72W72wwS96LcVM0ihW7wTlAhzJirjrvMSPKjS3Kza31
- ZLyeoEOVStY+5YdrS06stJ+IQu+njjUgV6ualCkWIHmgat9+oK59kjLLKE6yoHcaQdDCeVoJJ
- 9ZdVLLCMMkVbGWA0WmlQzV3ypI8pQXnFLGiC7y5b66VReVhyggnVHEDcT1lY4WahrKsyzmQ6q
- n60jMEan2k7gbEaG+trZbkIZpu7FTmeX0U96m0oP4+zzeSHHURPzXLCWbFGv0lOtOig+832pg
- WENPIPlJNelJ4hBgR1HOhn/lEjaR/BaXISohyM084WgCnl8Ef+BWrkRKKx3elNdiV38t+Thnc
- pSssYAFlASOpbbJSn+T91WtZPqADAalHuGS651mGQSaw3Dqt20mtdsA04eJ6d+KG3otxYX/6z
- K9d/WirI7B2MLNDUVJvnEnUvsOEji4deCsCuGy6V4m4/EKhpiWnZykT0Q3R64+qPFkBt+YW0H
- +s3X394t6VreiEV7jII5xBu/YiKPWsoa5q1xVDTIqK82N5rtDdYz2Oq6sN4Ed3LdT4b40iUSw
- 3EhoquAWMFgA5rm76mK8F4Fd+W2hab90cXRzz5525okj1pqCOYn9UkH5Q==
+To:     Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        Jonathan Corbet <corbet@lwn.net>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Helge Deller <deller@gmx.de>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Borislav Petkov <bp@suse.de>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Kees Cook <keescook@chromium.org>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Michal Suchanek <msuchanek@suse.de>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Wei Ming Chen <jj251510319013@gmail.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Tony Lindgren <tony@atomide.com>,
+        Linux Documentation List <linux-doc@vger.kernel.org>,
+        linux-efi <linux-efi@vger.kernel.org>,
+        "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Rob Herring <robh@kernel.org>
+References: <20220728142824.3836-1-markuss.broks@gmail.com>
+ <20220728142824.3836-3-markuss.broks@gmail.com>
+ <CAHp75VdaDyyqRw9fAkUOhNjsyifeozVx6JuYXSU1HpoO+VHDNA@mail.gmail.com>
+From:   Markuss Broks <markuss.broks@gmail.com>
+In-Reply-To: <CAHp75VdaDyyqRw9fAkUOhNjsyifeozVx6JuYXSU1HpoO+VHDNA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/29/22 04:41, Yang Yingliang wrote:
-> If devm_ioremap_resource() fails, it never return NULL, replace
-> NULL test with IS_ERR().
->
-> Fixes: b083c22d5114 ("video: fbdev: imxfb: Convert request_mem_region + =
-ioremap to devm_ioremap_resource")
-> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+Hi Andy,
 
-applied to fbdev git tree.
+On 7/29/22 00:19, Andy Shevchenko wrote:
+> On Thu, Jul 28, 2022 at 4:32 PM Markuss Broks <markuss.broks@gmail.com> wrote:
+>>
+>> Add early console support for generic linear framebuffer devices.
+>> This driver supports probing from cmdline early parameters
+>> or from the device-tree using information in simple-framebuffer node.
+>> The EFI functionality should be retained in whole.
+>> The driver was disabled on ARM because of a bug in early_ioremap
+>> implementation on ARM.
+> 
+> ...
+> 
+>> -               efifb,[options]
+>> +               efifb
+>>                          Start an early, unaccelerated console on the EFI
+>> -                       memory mapped framebuffer (if available). On cache
+>> -                       coherent non-x86 systems that use system memory for
+>> -                       the framebuffer, pass the 'ram' option so that it is
+>> -                       mapped with the correct attributes.
+>> +                       memory mapped framebuffer (if available).
+> 
+> If somebody passes those (legacy) options, what will happen?
 
-Thanks!
-Helge
+Those would be ignored. Instead it would be automatically determined if 
+framebuffer is located in RAM or in the I/O space.
 
-> ---
->  drivers/video/fbdev/imxfb.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-> index c48477893dd0..d97d7456d15a 100644
-> --- a/drivers/video/fbdev/imxfb.c
-> +++ b/drivers/video/fbdev/imxfb.c
-> @@ -971,9 +971,9 @@ static int imxfb_probe(struct platform_device *pdev)
->  	}
->
->  	fbi->regs =3D devm_ioremap_resource(&pdev->dev, res);
-> -	if (fbi->regs =3D=3D NULL) {
-> +	if (IS_ERR(fbi->regs)) {
->  		dev_err(&pdev->dev, "Cannot map frame buffer registers\n");
-> -		ret =3D -ENOMEM;
-> +		ret =3D PTR_ERR(fbi->regs);
->  		goto failed_ioremap;
->  	}
->
+> 
+> ...
+> 
+>>   config EFI_EARLYCON
+>> -       def_bool y
+>> -       depends on SERIAL_EARLYCON && !ARM && !IA64
+>> -       select FONT_SUPPORT
+>> -       select ARCH_USE_MEMREMAP_PROT
+>> +       bool "EFI early console support"
+>> +       depends on FB_EARLYCON && !IA64
+> 
+> This doesn't sound right. Previously on my configuration it was
+> selected automatically, now I need to select it explicitly? I mean
+> that for me EFI_EARLYCON should be selected by default as it was
+> before.
 
+The problem I had with EFI_EARLYCON selected by default was that it 
+would also carry fbdev with itself. Luckily, that's solved if it's moved 
+to console subsystem.
+
+> 
+> ...
+> 
+>> +static int __init simplefb_earlycon_remap_fb(void)
+>> +{
+>> +       int is_ram;
+> 
+> + blank line.
+> 
+>> +       /* bail if there is no bootconsole or it has been disabled already */
+>> +       if (!earlycon_console || !(earlycon_console->flags & CON_ENABLED))
+>> +               return 0;
+>> +
+>> +       is_ram = region_intersects(info.phys_base, info.size,
+>> +                                  IORESOURCE_SYSTEM_RAM, IORES_DESC_NONE);
+>> +       is_ram = is_ram == REGION_INTERSECTS;
+> 
+> Was it in the original code? Otherwise, I would go with plain conditional:
+> 
+>    if (region_intersects())
+>      base = ...
+>    else
+>      base = ...
+
+It wasn't in original code. Original code assumed MEMREMAP_WC always
+unless "ram" was specified as an option to efifb (e.g.
+earlycon=efifb,ram). This code instead checks if the framebuffer is in 
+RAM, and sets the mapping accordingly.
+
+Another issue is that region_intersects() returns REGION_INTERSECTS 
+(defined as 0) when true. I suppose we could use something like:
+
+if (region_intersects() == REGION_INTERSECTS)
+...
+
+> 
+>> +       info.virt_base = memremap(info.phys_base, info.size,
+>> +                                 is_ram ? MEMREMAP_WB : MEMREMAP_WC);
+>> +
+>> +       return info.virt_base ? 0 : -ENOMEM;
+>> +}
+> 
+> ...
+> 
+>> +static void simplefb_earlycon_write_char(u8 *dst, unsigned char c, unsigned int h)
+>> +{
+>> +       const u8 *src;
+>> +       int m, n, bytes;
+>> +       u8 x;
+>> +
+>> +       bytes = BITS_TO_BYTES(font->width);
+>> +       src = font->data + c * font->height * bytes + h * bytes;
+>> +
+>> +       for (m = 0; m < font->width; m++) {
+>> +               n = m % 8;
+>> +               x = *(src + m / 8);
+>> +               if ((x >> (7 - n)) & 1)
+>> +                       memset(dst, 0xff, (info.depth / 8));
+>> +               else
+>> +                       memset(dst, 0, (info.depth / 8));
+>> +               dst += (info.depth / 8);
+>> +       }
+>> +}
+> 
+> Wondering if we already have something like this in DRM/fbdev and can
+> split into a generic helper.
+> 
+> ...
+> 
+>> +       ret = sscanf(device->options, "%u,%u,%u", &info.x, &info.y, &info.depth);
+>> +       if (ret != 3)
+>> +               return -ENODEV;
+> 
+> Don't we have some standard template of this, something like XxYxD,
+> where X, Y, and D are respective decimal numbers?
+
+I'm not aware of this.
+
+> 
+
+-Markuss

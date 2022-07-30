@@ -2,119 +2,144 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E579BC19F28
-	for <linux-fbdev@archiver.kernel.org>; Sat, 30 Jul 2022 10:26:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B88A5C04A68
+	for <linux-fbdev@archiver.kernel.org>; Sat, 30 Jul 2022 17:26:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233472AbiG3K0R (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 30 Jul 2022 06:26:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38190 "EHLO
+        id S235273AbiG3R04 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 30 Jul 2022 13:26:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49800 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233419AbiG3K0P (ORCPT
+        with ESMTP id S234778AbiG3R0z (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 30 Jul 2022 06:26:15 -0400
-Received: from mail-ed1-x52f.google.com (mail-ed1-x52f.google.com [IPv6:2a00:1450:4864:20::52f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7A0871A387;
-        Sat, 30 Jul 2022 03:26:13 -0700 (PDT)
-Received: by mail-ed1-x52f.google.com with SMTP id b16so930437edd.4;
-        Sat, 30 Jul 2022 03:26:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc;
-        bh=l0Q/7yx9FyNBDJt9oRASfJ20HzyIqt7jep5RdGQdu90=;
-        b=kdqdPdfXhJMF2w1UJLc87Kqy9nPsRpmxfI7UKx53cigvdJ8cyHSe54qVTNrI6YQ0Tn
-         40e+x/LcCMjU1pxuJWC+nZ8aRHGqVld5kwZ1Kf0w2Wgur79tXLwBh8rSq7YTbVMzMqbk
-         1DVwsy130N3THSReljll0MNEFs1HbZd5Yc7XZhC6J8NFJyPr9KtVAq/ofE+uV3mQFAqm
-         YcSjWpwVAZ6pSrKIGOB2GVK7ucXlONSqQZGGXgFnYb6gbJ2qbeujZjYkqMyYIUmYZt9l
-         pXeFF3PVa+MNUjpPgdY/w8jcldeydqpOp1/z9Z+4B9V1O/PWa0bQ/CIPZBtROnIJTDNo
-         EzMQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc;
-        bh=l0Q/7yx9FyNBDJt9oRASfJ20HzyIqt7jep5RdGQdu90=;
-        b=DlYZFmDD62xjawkHSLI3Uc3PyBz2wNLDPuIl1mOYK9VV7/h91GerICRFvEsXAY6Uwp
-         niT838OU8ofu7hNCUUWhEDsLGscZVfNH+Ja+Spp8L4L/7+6lFjPz7OqD5l+uXUVWT+HI
-         M5AN0N6KnxlTcIXGd/mBgsJ/BQGDN+EuLlxIOzne3T1f6GpnoyuqN+CLTtxj7l0etTMV
-         oLkJIR0gentzF6sDeJW+57gryLTXa921YV6NW/SazwTdcNw+KDs/xfsgzKJMrW95DMZi
-         Jb7kAKcGz3WUhci0l68QHEJpnQLLgm3zgbEnD019XB7ZRs3e6LTiWbvKF9x6apNAX9SM
-         YLQA==
-X-Gm-Message-State: AJIora93ugdPyKob0ENkZa1IH3heP/No4y3ZE0XuMPHFqcqWaXxeQYyY
-        Omv4I5yALPWaePmQ7X+i6vNO+HS8M7JhO9JtiF0=
-X-Google-Smtp-Source: AGRyM1uzdkY14o0hN5mVxeuk86vh5sIURGkQFnGzfLTCYvW7dVNz/f6Do420hxAyaoLNy5TcoYGS9EXPlPGIYYkEMTM=
-X-Received: by 2002:a05:6402:2714:b0:43c:1c1:717e with SMTP id
- y20-20020a056402271400b0043c01c1717emr7419196edd.67.1659176771666; Sat, 30
- Jul 2022 03:26:11 -0700 (PDT)
+        Sat, 30 Jul 2022 13:26:55 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5CAE26576;
+        Sat, 30 Jul 2022 10:26:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1659202000;
+        bh=NHO94zdmagMHUsaDXQDJxauKZL4m2T37y8DaXk+oiBc=;
+        h=X-UI-Sender-Class:Date:To:References:From:Subject:In-Reply-To;
+        b=jFgm+bEdqMuhl1Zs4lJl96dRyYIWLgx8CrqS5eLJz2HK0s9qX6lIbxcinXUIWEqIR
+         1py8f8ma80kYmdqKFDYB0Z/WD4cN8mkE707PLR2o7+xLXItZoi7lxYgGIH5Lt31IMI
+         ohJQuq1cvd1pxgbTiFqqTkQCnFFs00Wusdz6lr4o=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.141.10]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MryT9-1nczZt1jbJ-00nx62; Sat, 30
+ Jul 2022 19:26:40 +0200
+Message-ID: <eb4a26aa-da30-ceee-7d27-c1e902dd4218@gmx.de>
+Date:   Sat, 30 Jul 2022 19:25:54 +0200
 MIME-Version: 1.0
-References: <20220728142824.3836-1-markuss.broks@gmail.com>
- <20220728142824.3836-3-markuss.broks@gmail.com> <CAHp75VdaDyyqRw9fAkUOhNjsyifeozVx6JuYXSU1HpoO+VHDNA@mail.gmail.com>
- <3c55e119-5b6f-25ab-99c9-2c99b1dfd9e9@gmail.com>
-In-Reply-To: <3c55e119-5b6f-25ab-99c9-2c99b1dfd9e9@gmail.com>
-From:   Andy Shevchenko <andy.shevchenko@gmail.com>
-Date:   Sat, 30 Jul 2022 12:25:34 +0200
-Message-ID: <CAHp75Vcu2C-+XyVtLrX8Awxb18uNx6_n3CCCVUyekL4yP755Xw@mail.gmail.com>
-Subject: Re: [PATCH 2/2] efi: earlycon: Add support for generic framebuffers
- and move to fbdev subsystem
-To:     Markuss Broks <markuss.broks@gmail.com>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        Jonathan Corbet <corbet@lwn.net>,
-        Ard Biesheuvel <ardb@kernel.org>,
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Content-Language: en-US
+To:     Khalid Masum <khalid.masum.92@gmail.com>,
+        syzbot <syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Helge Deller <deller@gmx.de>,
-        "Paul E. McKenney" <paulmck@kernel.org>,
-        Borislav Petkov <bp@suse.de>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Kees Cook <keescook@chromium.org>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Michal Suchanek <msuchanek@suse.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Wei Ming Chen <jj251510319013@gmail.com>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Tony Lindgren <tony@atomide.com>,
-        Linux Documentation List <linux-doc@vger.kernel.org>,
-        linux-efi <linux-efi@vger.kernel.org>,
-        "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Rob Herring <robh@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        Jiri Slaby <jirislaby@kernel.org>
+References: <000000000000bbdd0405d120c155@google.com>
+ <20220729065139.6529-1-khalid.masum.92@gmail.com>
+From:   Helge Deller <deller@gmx.de>
+Subject: Re: [syzbot] KASAN: vmalloc-out-of-bounds Write in imageblit (2)
+In-Reply-To: <20220729065139.6529-1-khalid.masum.92@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:HGCv5+J9ExWMCvImsXbvpBDgH9cpBuokI7iRcT+dOsw/ko38cY9
+ SauhNpWSWmZzKrt5xX6ITQ6sb6lWTkFiwQkvO+yzGOoyFWlfWy5XlbDyvOeWq3nRlFjpdhC
+ ESNk6veDYuTCjd9wePfrPwAswVRaA/seIpRF4xZ9WqT1fmWSQNO4t/7TcxhDz534AcuoNsU
+ 3BCm6PoXilYYBfZBeBmcA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:aDU7BcE4hgI=:qfxsIq0NSZeQZEe8pA7/w/
+ T9ytiztTMBThUU3DgPT2KMg59zNcAhp8y+rs58ym4kr7mtXkGKYoZYyk0jWElG+BeLDplwVmJ
+ 5uR+kvfOLYY0AWSXRcAecWIBMaH6C/TQl4VRi5KDEdp1iHRFfc5g/YeI4Zj0rQJer0xWbJA4g
+ u2D39D6T16h9KygS25A65lT9m3gzwVCufr/3+7bz2BYpsKr7+dZNXYs3InVQFzYvRfks9LQ8a
+ /hTC7rRCIQK7Qqq9HtlTlQ2D1MuYV9ii9Rux/v3ZQJ7d4SDDy9OhiVzDbsAqBR/mgjLdk+5jp
+ fnDX2WuIUeCJOzeCJsl+qgzk4jz6VV6qQnJLTnsRbMCuc18vsLk9DTpd5hDJ2Sb+Vi55s3dZZ
+ qBhFt1GCWYbxLFcPfMvXdPuoDtz0GZdHUVtpv4/8DsGFZoxtUgZLiV0etVcVxN8cY4DWsP7kX
+ 1dB4fsdz3Q8lPc8SHlhXZ5PnDtTCRH9YnSV7LkHuaYYykw+mqgBgR9O5u0q2rlGKWJ5Z0Nouq
+ nh+mEMtci2A5RBspbkQlc5UaboG2VkapLP8dc69Cm3jgBmNtP5CE1+KPuOjiQlhHKaOSED39P
+ 6JaNez5IL592syxGuOD/xSg/K98O5H9nfhcLKzwv+eQvLDFHIGU8v/3/sKh0q0VG5pTve7vJ0
+ 8F3+eXCwtYq3BpHzuxF8e2uIrUt6N2UG3V5/zfvLgwWdwXJaO/McZLSVst/fNUUg2rHZj6U8E
+ FTiFGC1qSJcoJjw2R7p0VwdUTsSetequo8Mf8DEIVRwVWSMwt7dMSfxLe7+8dfAzmSFzxjuYq
+ HvEwqKgoBpIY//3HyNpZgGHm3Q2Xe5YDW/EMlxcojuXJvhBqcGDkWUdRy2FgSCE6/sArrHVG+
+ rREMgRnFY5pk8VyqstwVQZLAlmjBvWvmi9sZytyAyfynlimkhEqf6kOXi/C+HI9x8uXRBsEmb
+ AXanJSjg8+kT/wagQLnFCObzCAEHmVFYKWyPjGB5k7LGlvcuRw9Zonbaue4ed0fzvQ4hNzDOl
+ fbHMdkjqfolBATOcmK8anKplX3YKSGHooQ0oXSLA1I8mmHf6T7fuliI5zisbaWInhKfxvLziZ
+ +B9ED5iiXFCSfP53TMra3nbk2xR+0QnpMsnioh/G1h8AAk8LtG+pKuZ+A==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, Jul 30, 2022 at 10:55 AM Markuss Broks <markuss.broks@gmail.com> wrote:
-> On 7/29/22 00:19, Andy Shevchenko wrote:
-> > On Thu, Jul 28, 2022 at 4:32 PM Markuss Broks <markuss.broks@gmail.com> wrote:
-
-...
-
-> I suppose we could use something like:
+On 7/29/22 08:51, Khalid Masum wrote:
+> Here is a simplified reproducer for the issue:
 >
-> if (region_intersects() == REGION_INTERSECTS)
+> https://gist.githubusercontent.com/Labnann/923d6b9b3a19848fc129637b839b8=
+a55/raw/a68271fcc724569735fe27f80817e561b3ff629a/reproducer.c
 
-Yes.
+The reproducer does this:
+ioctl(3, TIOCLINUX, TIOCL_SETSEL, selection: xs:3  ys:0  xe:0 ye:0 mode:0)=
+  =3D 0
+-> sets the text selection area
+ioctl(4, KDFONTOP)  with op=3D0 (con_font_set), charcount=3D512  width=3D8=
+  height=3D32, 0x20000000) =3D 0
+-> changes the font size.
 
-...
+It does not crash with current Linus' head (v5.19-rc8).
+Kernel v5.16, which was used by this KASAN report, hasn't received backpor=
+ts
+since months, so I tried stable kernel v5.15.58 instead, and this
+kernel crashed with the reproducer.
 
-> >> +       ret = sscanf(device->options, "%u,%u,%u", &info.x, &info.y, &info.depth);
-> >> +       if (ret != 3)
-> >> +               return -ENODEV;
-> >
-> > Don't we have some standard template of this, something like XxYxD,
-> > where X, Y, and D are respective decimal numbers?
->
-> I'm not aware of this.
+The reproducer brings up two issues with current code:
+1. The reproducer uses ioctl(TIOCLINUX, TIOCL_SETSEL) and hands over (inva=
+lid)
+zero-values for ys and ye for the starting lines.
+This is wrong, since the API seems to expect a "1" as the very first line =
+for the selection.
+This can be easily fixed by adding checks for zero-values and return -EINV=
+AL if found.
 
-I believe we won't introduce more chaos in already existing formats of
-one or another thing, so I prefer to be stuck with in practice use
-(e.g. "1024x768x16" without quotes for x=1024, y=768, depth=16).
+But this bug isn't critical itself and is not the reason for the kernel cr=
+ash.
+Without the checks, the ioctl handler simply wraps the coordinate values a=
+nd converts them
+from:
+input selection: xs:3  ys:0  xe:0   ye:0  mode:0    to the new:
+vc_selection =3D   xs:2  ys:23 xe:127 ye:23 mode:0
+which is the current maximum coordinates for the screen.
 
--- 
-With Best Regards,
-Andy Shevchenko
+Those higher values now trigger issue #2:
+After the TIOCL_SETSEL the last line on the screen is now selected. The KD=
+FONTOP ioctl
+then sets a 8x32 console font, and replaces the former 8x16 console font.
+With the bigger font the current screen selection is now outside the visib=
+le screen
+and this finally triggeres this backtrace, because vc_do_resize() calls cl=
+ear_selection()
+to unhighlight the selection (which starts to render chars outside of the =
+screen):
+
+ drm_fb_helper_sys_imageblit drivers/gpu/drm/drm_fb_helper.c:794 [inline]
+ drm_fbdev_fb_imageblit+0x15c/0x350 drivers/gpu/drm/drm_fb_helper.c:2288
+ bit_putcs_unaligned drivers/video/fbdev/core/bitblit.c:124 [inline]
+ bit_putcs+0x6e1/0xd20 drivers/video/fbdev/core/bitblit.c:173
+ fbcon_putcs+0x353/0x440 drivers/video/fbdev/core/fbcon.c:1277
+ do_update_region+0x399/0x630 drivers/tty/vt/vt.c:676
+ invert_screen+0x1d4/0x600 drivers/tty/vt/vt.c:800
+ highlight drivers/tty/vt/selection.c:57 [inline]
+ clear_selection drivers/tty/vt/selection.c:84 [inline]
+ clear_selection+0x55/0x70 drivers/tty/vt/selection.c:80
+ vc_do_resize+0xe6e/0x1180 drivers/tty/vt/vt.c:1257
+
+IMHO the easiest way to prevent this crash is to simply clear the
+selection before the various con_font_set() console handlers are called.
+Otherwise every console driver needs to add checks and verify if the curre=
+nt
+selection still fits with the selected font, which gets tricky because som=
+e
+of those drivers fiddle with the screen width&height before calling vc_do_=
+resize().
+
+I'll follow up to this mail with patches for both issues shortly.
+
+Helge

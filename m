@@ -2,99 +2,90 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 869E6C3F6B0
-	for <linux-fbdev@archiver.kernel.org>; Sat, 30 Jul 2022 22:46:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 674F4C19F2C
+	for <linux-fbdev@archiver.kernel.org>; Sat, 30 Jul 2022 23:18:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235984AbiG3Wqt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 30 Jul 2022 18:46:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55488 "EHLO
+        id S236230AbiG3XS2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 30 Jul 2022 19:18:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40318 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233129AbiG3Wqs (ORCPT
+        with ESMTP id S230432AbiG3XS0 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 30 Jul 2022 18:46:48 -0400
-Received: from bmailout2.hostsharing.net (bmailout2.hostsharing.net [83.223.78.240])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D62413F57;
-        Sat, 30 Jul 2022 15:46:47 -0700 (PDT)
-Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
-         client-signature RSA-PSS (4096 bits) client-digest SHA256)
-        (Client CN "*.hostsharing.net", Issuer "RapidSSL TLS DV RSA Mixed SHA256 2020 CA-1" (verified OK))
-        by bmailout2.hostsharing.net (Postfix) with ESMTPS id B3B592800DC3B;
-        Sun, 31 Jul 2022 00:46:43 +0200 (CEST)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-        id A3C9228E4F3; Sun, 31 Jul 2022 00:46:43 +0200 (CEST)
-Date:   Sun, 31 Jul 2022 00:46:43 +0200
-From:   Lukas Wunner <lukas@wunner.de>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     Lars-Peter Clausen <lars@metafoo.de>,
-        Michael Hennerich <Michael.Hennerich@analog.com>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Lucas Stankus <lucas.p.stankus@gmail.com>,
-        Puranjay Mohan <puranjay12@gmail.com>,
-        Cosmin Tanislav <cosmin.tanislav@analog.com>,
-        Alexandru Tachici <alexandru.tachici@analog.com>,
-        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
-        Marcus Folkesson <marcus.folkesson@gmail.com>,
-        Kent Gustavsson <kent@minoris.se>,
-        Tomislav Denis <tomislav.denis@avl.com>,
-        Oleksij Rempel <linux@rempel-privat.de>, kernel@pengutronix.de,
-        Antoniu Miclaus <antoniu.miclaus@analog.com>,
-        Ricardo Ribalda <ribalda@kernel.org>,
-        Dragos Bogdan <dragos.bogdan@analog.com>,
-        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
-        Lorenzo Bianconi <lorenzo@kernel.org>,
-        Stefan Popa <stefan.popa@analog.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Mike Looijmans <mike.looijmans@topic.nl>,
-        Joachim Eastwood <manabian@gmail.com>,
-        Tomas Melin <tomas.melin@vaisala.com>,
-        Sean Nyekjaer <sean@geanix.com>,
-        Beniamin Bia <beniamin.bia@analog.com>,
-        Patrick Vasseur <patrick.vasseur@c-s.fr>,
-        Charles-Antoine Couret <charles-antoine.couret@essensium.com>,
-        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Philippe Reynes <tremyfr@yahoo.fr>,
-        Jacopo Mondi <jacopo@jmondi.org>,
-        Akinobu Mita <akinobu.mita@gmail.com>,
-        Alexandru Lazar <alazar@startmail.com>,
-        Oskar Andero <oskar.andero@gmail.com>,
-        =?iso-8859-1?Q?M=E5rten?= Lindahl <martenli@axis.com>,
-        Bogdan Pricop <bogdan.pricop@emutex.com>,
-        Angelo Compagnucci <angelo.compagnucci@gmail.com>,
-        Matt Ranostay <matt.ranostay@konsulko.com>,
-        Dan Murphy <dmurphy@ti.com>,
-        Gregory Clement <gregory.clement@bootlin.com>,
-        Phil Reid <preid@electromag.com.au>,
-        Michael Welling <mwelling@ieee.org>,
-        Robert Jones <rjones@gateworks.com>,
-        Chris Coffey <cmc@babblebit.net>,
-        Slawomir Stepien <sst@poczta.fm>,
-        Sankar Velliangiri <navin@linumiz.com>,
-        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v2 00/10] dt-bindings: iio: use spi-peripheral-props.yaml
-Message-ID: <20220730224643.GB11662@wunner.de>
-References: <20220727164646.387541-1-krzysztof.kozlowski@linaro.org>
+        Sat, 30 Jul 2022 19:18:26 -0400
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7844E13F1A
+        for <linux-fbdev@vger.kernel.org>; Sat, 30 Jul 2022 16:18:25 -0700 (PDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1oHviv-0000xF-M9; Sun, 31 Jul 2022 01:18:21 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1oHvit-000nio-30; Sun, 31 Jul 2022 01:18:19 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1oHvis-008ag0-I9; Sun, 31 Jul 2022 01:18:18 +0200
+Date:   Sun, 31 Jul 2022 01:18:15 +0200
+From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To:     Yang Yingliang <yangyingliang@huawei.com>
+Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        deller@gmx.de
+Subject: Re: [PATCH -next] video: fbdev: imxfb: fix return value check in
+ imxfb_probe()
+Message-ID: <20220730231815.dzuscf2x2sgj66bg@pengutronix.de>
+References: <20220729024134.159942-1-yangyingliang@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="2ng6o4jptt6kmqcf"
 Content-Disposition: inline
-In-Reply-To: <20220727164646.387541-1-krzysztof.kozlowski@linaro.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20220729024134.159942-1-yangyingliang@huawei.com>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Jul 27, 2022 at 06:46:36PM +0200, Krzysztof Kozlowski wrote:
->  78 files changed, 324 insertions(+), 249 deletions(-)
 
-Pardon me for being dense, but what is the benefit of this series
-that justifies inflating the schema definitions by a total of 75 lines?
+--2ng6o4jptt6kmqcf
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
+Hello,
 
-Lukas
+On Fri, Jul 29, 2022 at 10:41:34AM +0800, Yang Yingliang wrote:
+> If devm_ioremap_resource() fails, it never return NULL, replace
+> NULL test with IS_ERR().
+
+Oh, thanks for cleanup up behind me. Did you find this using some static
+analysis tool? I would consider it interesting and fair to mention this
+in the commit log.
+
+Best regards
+Uwe
+
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--2ng6o4jptt6kmqcf
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmLlvDUACgkQwfwUeK3K
+7Ako3Af/TZuLdIkfkINPaoUzB/bri5XttulHS5ntQGhaGktA+CMqub9bRyuCSl90
+qaiq3UlI7ialUmjLRtnPEf1SkIm5IJLObD9uOrF/lFR0sdHog1iKVu+1OKehN5Qt
+W374CaiG0NJjAf2LmVH78hDXk0yzOifRAjdpcWIDyvlSGqAq9A9sI4B9RIam8LCD
+/tPlavR02meG7gT0if0Wfyn0BDKGztyZLzmrMZihDLjiGPrsQZvRc5yydMnLm/+k
+4kG5v4dHLBQnVXubhnFzFYigRvDRWbkUm7W5jKJnjGmQONXGvgzZZ92xqh4sDiDs
+G2pfgN1p+VNYIwUc2TKfWTMc2FfTNw==
+=or3n
+-----END PGP SIGNATURE-----
+
+--2ng6o4jptt6kmqcf--

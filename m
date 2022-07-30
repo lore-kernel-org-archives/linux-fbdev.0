@@ -2,113 +2,94 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE148C19F2A
-	for <linux-fbdev@archiver.kernel.org>; Sat, 30 Jul 2022 18:50:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F2F9C19F2C
+	for <linux-fbdev@archiver.kernel.org>; Sat, 30 Jul 2022 21:31:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230266AbiG3Sud (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 30 Jul 2022 14:50:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58402 "EHLO
+        id S236099AbiG3VbF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 30 Jul 2022 17:31:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49492 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235571AbiG3Suc (ORCPT
+        with ESMTP id S236091AbiG3VbD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 30 Jul 2022 14:50:32 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A6426A442;
-        Sat, 30 Jul 2022 11:50:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1659207020;
-        bh=lb1Lf8t4xaY9Y+QKg74YnMmqnO8vj3n92i+vvXEUpGA=;
-        h=X-UI-Sender-Class:Date:From:To:Subject:References:In-Reply-To;
-        b=OqCn9F5VJ0ZzU4RrAfP9GQO5F0OrM8Tr8bjpKCvVtP4itsId9U2SMQTbAmFlDCSv4
-         uAr6BOqixGqUSFPLDv2CuOERLaIas5fIpEkntGPTE1xhbdvZj76ECEb3UHT9MGE46I
-         apaqNGOPUz59Wbcxkkb6AAwzGUOK0dmgGB9//wMw=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from p100 ([92.116.141.10]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MWics-1nxw0K0OL2-00X1Ln; Sat, 30
- Jul 2022 20:50:20 +0200
-Date:   Sat, 30 Jul 2022 20:50:18 +0200
-From:   Helge Deller <deller@gmx.de>
-To:     Khalid Masum <khalid.masum.92@gmail.com>,
-        syzbot <syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>
-Subject: [PATCH] vt: Clear selection before changing the font
-Message-ID: <YuV9apZGNmGfjcor@p100>
-References: <000000000000bbdd0405d120c155@google.com>
- <20220729065139.6529-1-khalid.masum.92@gmail.com>
- <eb4a26aa-da30-ceee-7d27-c1e902dd4218@gmx.de>
+        Sat, 30 Jul 2022 17:31:03 -0400
+Received: from jabberwock.ucw.cz (jabberwock.ucw.cz [46.255.230.98])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8AC9413E26;
+        Sat, 30 Jul 2022 14:31:00 -0700 (PDT)
+Received: by jabberwock.ucw.cz (Postfix, from userid 1017)
+        id 1D5FC1C0001; Sat, 30 Jul 2022 23:30:59 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ucw.cz; s=gen1;
+        t=1659216659;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=o9GONExi2bMzEQw12WI9p6+Qh5VXr1fFNHfflQl3nxw=;
+        b=cSY49q+q6Yc2MxDLhSVDO5DseSSWxSphwN08c+PDJwwl3Bm1ceR8BfmtlkTZDhMRMkQgWT
+        6hgHQOc1WS0juhjHH1FOan8RAuwST7qllswVe6Iu0ECAnUyZ9Tlo67dwNty/31HU96/0eX
+        tuwjCFSCzKGcnj8PqNUObH7zDgNN+ZM=
+Date:   Sat, 30 Jul 2022 23:30:58 +0200
+From:   Pavel Machek <pavel@ucw.cz>
+To:     ChiaEn Wu <peterwu.pub@gmail.com>
+Cc:     lee.jones@linaro.org, daniel.thompson@linaro.org,
+        jingoohan1@gmail.com, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, matthias.bgg@gmail.com,
+        sre@kernel.org, chunfeng.yun@mediatek.com,
+        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
+        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
+        heikki.krogerus@linux.intel.com, deller@gmx.de,
+        andy.shevchenko@gmail.com, chiaen_wu@richtek.com,
+        alice_chen@richtek.com, cy_huang@richtek.com,
+        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        szunichen@gmail.com,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: Re: [PATCH v6 04/13] dt-bindings: leds: Add MediaTek MT6370
+ flashlight
+Message-ID: <20220730213058.GI23307@duo.ucw.cz>
+References: <20220722102407.2205-1-peterwu.pub@gmail.com>
+ <20220722102407.2205-5-peterwu.pub@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="6b3yLyRKT1M6kiA0"
 Content-Disposition: inline
-In-Reply-To: <eb4a26aa-da30-ceee-7d27-c1e902dd4218@gmx.de>
-X-Provags-ID: V03:K1:aOJ76y6sEpgwGrwvfAja8bpGQzr5GQjvWnu3S4B6ULoT14KB9IS
- 1kW0r3aNgXnf0ZQAjCzdN524HpXX3bNj2x5ReEp6m58tt6DPYuZvv4Mp4cBAdqNzbOs2q0Y
- 4sFI7UcoIuDhGgXx46OTbL1STGIB/oqgyMpvnc2y9xNP/swxVQGZC9k0l9ByEZ7RDiDO1o3
- BDKWJaS7E2t4JTbcihZHw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:9vIoM7sHZEo=:mhN90fgXNBTJz11SQ1Z03B
- z9UUnW1mIkP+eG+jQmGYjaUMTW+e5dZIhqh/PcpFoLYPlzvIRxzA7+Pc75i3B1LmzH9VtspTI
- L2GBlFOqO1W9/nMxSAWx7FGKK3SYhi5MVcl0H126RzTS9CV1B53DdTrnTAEbBioJbBU2bnsBb
- 97R6CYHmoJ7Dz9hBSAJOXOTqmokl7mjlWkGKycnh5IHOH+hVOsgzMFCOuwKIMVt/iWLn7nQi1
- m7GA9K8Kw9syj3giA0mpUUj+ic7+SwiAjuTkpWlUtnxp1J4lF2IZio6sEN1lgwXOXDeTHz0Zl
- idOGLyQqUAHvulM+OZxQMFxJtZ7CDGkAeb/SQZvUMWo1PAEv978gVgg8eMYdSHj/ZCAYZdNnL
- DToKoVs8FyB09ef4fjor7QaQpzyr238k375dJ6rv1+baBpxfcN3UoDjUxj7ArRVPRErozqRet
- Q3wJKaWMOdqLGbNdWkIVqLSQ8H4uRPgwq4+bndJk0llcC1Ien7t2YQJIcm4yDtI4d1S4+2fQt
- GXkWdAr2UcFQjGXuaYGrAyuGlxyi1oN2lDHapPqaZgMw8OEVeDZ19f9O//284hgFEvr3cOiMQ
- Xj+sx9MGaQuRQcW51nsh1aiadcdaKM/vHQ/PTaUGJREcHQFXpd4Ntp8P7vtPDpYamTsKPaHxW
- Zk8c7yC+EW6vV/YVhSjc3kUf3MOoiEnKBufYdQRLIxT7F7MLeY/c8BNHg5XU3vHsf6FmlJvry
- /gFK5wS87pIUbZu4ghDU1QNGCgo5CtqKpZ1z80RET5PalQ9qdNUEGOtasDqiERCqFXGl/Pbbi
- iS8+6E7SjdpmJ03oSorBn/xKLRflAiECYR5RJvyy8AAtHdpr8wKIWj03xk+LIkJrLShMil9QZ
- cGSJO27M/Lij8ESuFLDvKKt2pGJbGgVhIKDJoshGQeMayZPYgHVzemRLveevxGEHJKXbE2ouU
- AnGcOF2pywFkLCBOV5aP0WcnL7va4j7J/sBBzX9l4OPMgSoKvqPnTSjkComoTYGiCu8gj66MA
- xU5IOAWEmMLaOZcjleaAcy3nT7qHLYov3PD3UC3SPUQnAeaoVeSo8lnrySfI437iIODjGWX+l
- TkWWSghXt223mfkkGMZEQRnnYPZexGk0RZnhcQSHEXqjPAp8BSffj5e9Q==
+In-Reply-To: <20220722102407.2205-5-peterwu.pub@gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-When changing the console font with ioctl(KDFONTOP) the new font size
-can be bigger than the previous font. A previous selection may thus now
-be outside of the new screen size and thus trigger out-of-bounds
-accesses to graphics memory if the selection is removed in
-vc_do_resize().
 
-Prevent such out-of-memory accesses by dropping the selection before the
-various con_font_set() console handlers are called.
+--6b3yLyRKT1M6kiA0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Helge Deller <deller@gmx.de>
-Reported-by: syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com
+On Fri 2022-07-22 18:23:58, ChiaEn Wu wrote:
+> From: Alice Chen <alice_chen@richtek.com>
+>=20
+> Add MediaTek MT6370 flashlight binding documentation.
+>=20
+> Signed-off-by: Alice Chen <alice_chen@richtek.com>
+> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index dfc1f4b445f3..3f09205185a4 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -4662,9 +4662,11 @@ static int con_font_set(struct vc_data *vc, struct console_font_op *op)
- 	console_lock();
- 	if (vc->vc_mode != KD_TEXT)
- 		rc = -EINVAL;
--	else if (vc->vc_sw->con_font_set)
-+	else if (vc->vc_sw->con_font_set) {
-+		if (vc_is_sel(vc))
-+			clear_selection();
- 		rc = vc->vc_sw->con_font_set(vc, &font, op->flags);
--	else
-+	} else
- 		rc = -ENOSYS;
- 	console_unlock();
- 	kfree(font.data);
-@@ -4691,9 +4693,11 @@ static int con_font_default(struct vc_data *vc, struct console_font_op *op)
- 		console_unlock();
- 		return -EINVAL;
- 	}
--	if (vc->vc_sw->con_font_default)
-+	if (vc->vc_sw->con_font_default) {
-+		if (vc_is_sel(vc))
-+			clear_selection();
- 		rc = vc->vc_sw->con_font_default(vc, &font, s);
--	else
-+	} else
- 		rc = -ENOSYS;
- 	console_unlock();
- 	if (!rc) {
+You'll need to get sign-offs right... And review from dt people before
+this can be applied.
+
+Best regards,
+								Pavel
+								--=20
+People of Russia, stop Putin before his war on Ukraine escalates.
+
+--6b3yLyRKT1M6kiA0
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iF0EABECAB0WIQRPfPO7r0eAhk010v0w5/Bqldv68gUCYuWjEgAKCRAw5/Bqldv6
+8o6vAKC4ARVicLPm5uV4zxu75IiOs/DsvwCgn6SlrzK+9+kIJXHJNS6WoAmW4j8=
+=aw5u
+-----END PGP SIGNATURE-----
+
+--6b3yLyRKT1M6kiA0--

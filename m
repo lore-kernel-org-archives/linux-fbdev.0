@@ -2,140 +2,468 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70801C00140
-	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jul 2022 13:55:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3293CC3F6B0
+	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jul 2022 15:39:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236780AbiGaNzV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 31 Jul 2022 09:55:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54550 "EHLO
+        id S233746AbiGaPjt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 31 Jul 2022 11:39:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40184 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230436AbiGaNzU (ORCPT
+        with ESMTP id S230494AbiGaPjs (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 31 Jul 2022 09:55:20 -0400
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EFC12617C;
-        Sun, 31 Jul 2022 06:55:18 -0700 (PDT)
-Received: by mail-pf1-x42b.google.com with SMTP id h28so2022827pfq.11;
-        Sun, 31 Jul 2022 06:55:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc;
-        bh=xNPBWOC/I43u3bImxvqM+yXOk51ZAfr3ljqZNNUlsi8=;
-        b=Mqicnhs+Neu29XxQM/6u6nW3nlCQlkJU5VqNkoqZtfhf1J8b0HIhIM6HN3MK0anGIk
-         z+KeKPiLOuFd/tQPMM/shhlkpQyeRBRmG9yRPEgsQCb6wqzWEfp10rdWUJdah0Z8Y4+t
-         7RNV87tZFcK0CzFpjlfhyANfQ06F0rfCKNyotPb5mrDR1cRxHSZaOUWF9etibS70oSb+
-         i0ekvNd9gy62NbRnjjMzvb3la38g93luZL2iO+97fdGllq/jcO8vNyL6P1dUGqOlIQX8
-         QX1UsIF8xBQX45dRPfYNlNlSH6FTRLgnd5zsoDT9nubgZTCAiF3lN0KWQZhHAZgmWdKZ
-         f25w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc;
-        bh=xNPBWOC/I43u3bImxvqM+yXOk51ZAfr3ljqZNNUlsi8=;
-        b=QD5F8U3q737lje3ag4/i/hB/lHD7z9JDyqN2dxcCxA3CvHKux3Ju/7NP6dOvEGPv/k
-         6+AkjFegI9fKwhfzNP3piGA/KPVmulIh9udp0AQyJ+AKxVTkZRPTuK/WfIYDSkIaogva
-         5HYspYkrB7HbMkqMrb6Wfdn2ns3hOtyCNwQgRCm5+pWHilPlD5Y5zkD3367gunpNiPAl
-         g4a1sqX/9xgywohfaBLs4loQV2xpDIXu0/FHL1ycEMiDxy1pMKCka6ZcrCUXNx7itDkH
-         j9aCLiFhqSwQEJM3pFJKp9Jepsb21XnRDh1wcSkeOoTer8TWgMQuP/ACuYsow+/JQwE0
-         1uRg==
-X-Gm-Message-State: AJIora+OqSsIPtS7tFsHbYP//sblrPUROh7ii76MYhGkvA6jIzyF8mDo
-        5Pju660KAHzrSKnpcHJ+vi8=
-X-Google-Smtp-Source: AGRyM1tGp667SkT01YAGydsW3pteT/piJaiF0LFUYELdzJRYw5O/AyDU2F6/fTwhdtD6eduEyU8QWw==
-X-Received: by 2002:a63:6e82:0:b0:41a:1817:15d9 with SMTP id j124-20020a636e82000000b0041a181715d9mr10077049pgc.577.1659275718377;
-        Sun, 31 Jul 2022 06:55:18 -0700 (PDT)
-Received: from [192.168.0.110] ([103.159.189.149])
-        by smtp.gmail.com with ESMTPSA id d23-20020a17090ad99700b001ef87123615sm6701473pjv.37.2022.07.31.06.55.14
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 31 Jul 2022 06:55:17 -0700 (PDT)
-Message-ID: <7973ec94-75ad-c133-032e-b83beeb2d397@gmail.com>
-Date:   Sun, 31 Jul 2022 19:55:12 +0600
+        Sun, 31 Jul 2022 11:39:48 -0400
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7B79E0A5;
+        Sun, 31 Jul 2022 08:39:46 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by sin.source.kernel.org (Postfix) with ESMTPS id D27D0CE0E12;
+        Sun, 31 Jul 2022 15:39:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C1785C433D6;
+        Sun, 31 Jul 2022 15:39:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1659281982;
+        bh=k0Z/QQGsxryaJHqpVcnWbLxKZy2oviaSn81n5NkcmWc=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=O/wsOm9jn2DG4hwj7ptUtdIV8P1Cg+weZnBXsdTR8QOHD8kY3HiRqUOq5r6Pssgwj
+         KxDoVtuJWmv0FfvjtuRnlR7l8j8MXXnh3zxLRJPRsQkRl9xe+JMZMZgGTF5VDMnBaR
+         zQ3cw42+eYyAWvMpgEh8+YPeZHPAxoxF9/6FGJuAmKmJwpQfNyCQLmRbTlJpXqLjVR
+         47Haa6+NTZVIh9ZO7vXsh4dxmaB2vgw6iD9TOl/RFgYY/GpfOKSFTZqcd12BOUNyIO
+         +iFBDLUCACrCDSZVFkvyPL5Qsgp0ynqtykbkQR2V5vb/i++2OUMKOiPKGLzi5MD7tx
+         0HtcxWKj2C60A==
+Date:   Sun, 31 Jul 2022 16:49:43 +0100
+From:   Jonathan Cameron <jic23@kernel.org>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc:     Lars-Peter Clausen <lars@metafoo.de>,
+        Michael Hennerich <Michael.Hennerich@analog.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Lucas Stankus <lucas.p.stankus@gmail.com>,
+        Puranjay Mohan <puranjay12@gmail.com>,
+        Cosmin Tanislav <cosmin.tanislav@analog.com>,
+        Alexandru Tachici <alexandru.tachici@analog.com>,
+        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
+        Marcus Folkesson <marcus.folkesson@gmail.com>,
+        Kent Gustavsson <kent@minoris.se>,
+        Tomislav Denis <tomislav.denis@avl.com>,
+        Oleksij Rempel <linux@rempel-privat.de>, kernel@pengutronix.de,
+        Antoniu Miclaus <antoniu.miclaus@analog.com>,
+        Ricardo Ribalda <ribalda@kernel.org>,
+        Dragos Bogdan <dragos.bogdan@analog.com>,
+        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
+        Lorenzo Bianconi <lorenzo@kernel.org>,
+        Stefan Popa <stefan.popa@analog.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Stephan Gerhold <stephan@gerhold.net>,
+        Mike Looijmans <mike.looijmans@topic.nl>,
+        Joachim Eastwood <manabian@gmail.com>,
+        Tomas Melin <tomas.melin@vaisala.com>,
+        Sean Nyekjaer <sean@geanix.com>,
+        Beniamin Bia <beniamin.bia@analog.com>,
+        Patrick Vasseur <patrick.vasseur@c-s.fr>,
+        Charles-Antoine Couret <charles-antoine.couret@essensium.com>,
+        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Philippe Reynes <tremyfr@yahoo.fr>,
+        Jacopo Mondi <jacopo@jmondi.org>,
+        Akinobu Mita <akinobu.mita@gmail.com>,
+        Alexandru Lazar <alazar@startmail.com>,
+        Oskar Andero <oskar.andero@gmail.com>,
+        =?UTF-8?B?TcOlcnRlbg==?= Lindahl <martenli@axis.com>,
+        Bogdan Pricop <bogdan.pricop@emutex.com>,
+        Angelo Compagnucci <angelo.compagnucci@gmail.com>,
+        Matt Ranostay <matt.ranostay@konsulko.com>,
+        Dan Murphy <dmurphy@ti.com>,
+        Gregory Clement <gregory.clement@bootlin.com>,
+        Phil Reid <preid@electromag.com.au>,
+        Michael Welling <mwelling@ieee.org>,
+        Lukas Wunner <lukas@wunner.de>,
+        Robert Jones <rjones@gateworks.com>,
+        Chris Coffey <cmc@babblebit.net>,
+        Slawomir Stepien <sst@poczta.fm>,
+        Sankar Velliangiri <navin@linumiz.com>,
+        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        broonie@kernel.org
+Subject: Re: [PATCH v2 02/10] dt-bindings: iio: accel: use
+ spi-peripheral-props.yaml
+Message-ID: <20220731164943.320babe4@jic23-huawei>
+In-Reply-To: <20220727164646.387541-3-krzysztof.kozlowski@linaro.org>
+References: <20220727164646.387541-1-krzysztof.kozlowski@linaro.org>
+        <20220727164646.387541-3-krzysztof.kozlowski@linaro.org>
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.34; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [syzbot] KASAN: vmalloc-out-of-bounds Write in imageblit (2)
-Content-Language: en-US
-To:     Helge Deller <deller@gmx.de>,
-        syzbot <syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>
-References: <000000000000bbdd0405d120c155@google.com>
- <20220729065139.6529-1-khalid.masum.92@gmail.com>
- <eb4a26aa-da30-ceee-7d27-c1e902dd4218@gmx.de>
-From:   Khalid Masum <khalid.masum.92@gmail.com>
-In-Reply-To: <eb4a26aa-da30-ceee-7d27-c1e902dd4218@gmx.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/30/22 23:25, Helge Deller wrote:
-> On 7/29/22 08:51, Khalid Masum wrote:
->> Here is a simplified reproducer for the issue:
->>
->> https://gist.githubusercontent.com/Labnann/923d6b9b3a19848fc129637b839b8a55/raw/a68271fcc724569735fe27f80817e561b3ff629a/reproducer.c
-> 
-> The reproducer does this:
-> ioctl(3, TIOCLINUX, TIOCL_SETSEL, selection: xs:3  ys:0  xe:0 ye:0 mode:0)  = 0
-> -> sets the text selection area
-> ioctl(4, KDFONTOP)  with op=0 (con_font_set), charcount=512  width=8  height=32, 0x20000000) = 0
-> -> changes the font size.
-> 
-> It does not crash with current Linus' head (v5.19-rc8).
-> Kernel v5.16, which was used by this KASAN report, hasn't received backports
-> since months, so I tried stable kernel v5.15.58 instead, and this
-> kernel crashed with the reproducer.
-> 
-> The reproducer brings up two issues with current code:
-> 1. The reproducer uses ioctl(TIOCLINUX, TIOCL_SETSEL) and hands over (invalid)
-> zero-values for ys and ye for the starting lines.
-> This is wrong, since the API seems to expect a "1" as the very first line for the selection.
+On Wed, 27 Jul 2022 18:46:38 +0200
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
 
-Why do you think that API expects a 1?
+> Instead of listing directly properties typical for SPI peripherals,
+> reference the spi-peripheral-props.yaml schema.  This allows using all
+> properties typical for SPI-connected devices, even these which device
+> bindings author did not tried yet.
+> 
+> Remove the spi-* properties which now come via spi-peripheral-props.yaml
+> schema, except for the cases when device schema adds some constraints
+> like maximum frequency.
+> 
+> While changing additionalProperties->unevaluatedProperties, put it in
+> typical place, just before example DTS.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> 
+> ---
+> 
+> I wonder if spi-3wire is device specific (not controller) and should be
+> rather explicitly mentioned by device schema. Just like spi-cpol/cpha.
 
-> This can be easily fixed by adding checks for zero-values and return -EINVAL if found.
-> 
-> But this bug isn't critical itself and is not the reason for the kernel crash.
-> Without the checks, the ioctl handler simply wraps the coordinate values and converts them
-> from:
-> input selection: xs:3  ys:0  xe:0   ye:0  mode:0    to the new:
-> vc_selection =   xs:2  ys:23 xe:127 ye:23 mode:0
-> which is the current maximum coordinates for the screen.
-> 
-> Those higher values now trigger issue #2:
-> After the TIOCL_SETSEL the last line on the screen is now selected. The KDFONTOP ioctl
-> then sets a 8x32 console font, and replaces the former 8x16 console font.
-> With the bigger font the current screen selection is now outside the visible screen
-> and this finally triggeres this backtrace, because vc_do_resize() calls clear_selection()
-> to unhighlight the selection (which starts to render chars outside of the screen):
-> 
->   drm_fb_helper_sys_imageblit drivers/gpu/drm/drm_fb_helper.c:794 [inline]
->   drm_fbdev_fb_imageblit+0x15c/0x350 drivers/gpu/drm/drm_fb_helper.c:2288
->   bit_putcs_unaligned drivers/video/fbdev/core/bitblit.c:124 [inline]
->   bit_putcs+0x6e1/0xd20 drivers/video/fbdev/core/bitblit.c:173
->   fbcon_putcs+0x353/0x440 drivers/video/fbdev/core/fbcon.c:1277
->   do_update_region+0x399/0x630 drivers/tty/vt/vt.c:676
->   invert_screen+0x1d4/0x600 drivers/tty/vt/vt.c:800
->   highlight drivers/tty/vt/selection.c:57 [inline]
->   clear_selection drivers/tty/vt/selection.c:84 [inline]
->   clear_selection+0x55/0x70 drivers/tty/vt/selection.c:80
->   vc_do_resize+0xe6e/0x1180 drivers/tty/vt/vt.c:1257
-> 
-> IMHO the easiest way to prevent this crash is to simply clear the
-> selection before the various con_font_set() console handlers are called.
-> Otherwise every console driver needs to add checks and verify if the current
-> selection still fits with the selected font, which gets tricky because some
-> of those drivers fiddle with the screen width&height before calling vc_do_resize().
-> 
-> I'll follow up to this mail with patches for both issues shortly.
-> 
-> Helge
+I think it is, but Mark is expert on this.
+In general I'm waiting on Mark's opinion on the whole idea!
 
 Thanks,
-   -- Khalid Masum
+
+Jonathan
+
+> ---
+>  .../devicetree/bindings/iio/accel/adi,adis16201.yaml     | 7 ++++---
+>  .../devicetree/bindings/iio/accel/adi,adis16240.yaml     | 7 ++++---
+>  .../devicetree/bindings/iio/accel/adi,adxl313.yaml       | 9 ++++-----
+>  .../devicetree/bindings/iio/accel/adi,adxl345.yaml       | 7 ++++---
+>  .../devicetree/bindings/iio/accel/adi,adxl355.yaml       | 7 ++++---
+>  .../devicetree/bindings/iio/accel/adi,adxl367.yaml       | 7 ++++---
+>  .../devicetree/bindings/iio/accel/adi,adxl372.yaml       | 7 ++++---
+>  .../devicetree/bindings/iio/accel/bosch,bma220.yaml      | 7 ++++---
+>  .../devicetree/bindings/iio/accel/bosch,bma255.yaml      | 5 ++++-
+>  .../devicetree/bindings/iio/accel/bosch,bmi088.yaml      | 7 ++++---
+>  .../devicetree/bindings/iio/accel/fsl,mma7455.yaml       | 7 ++++---
+>  .../devicetree/bindings/iio/accel/kionix,kxsd9.yaml      | 7 ++++---
+>  .../devicetree/bindings/iio/accel/murata,sca3300.yaml    | 5 ++++-
+>  .../devicetree/bindings/iio/accel/nxp,fxls8962af.yaml    | 7 ++++---
+>  14 files changed, 56 insertions(+), 40 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/iio/accel/adi,adis16201.yaml b/Documentation/devicetree/bindings/iio/accel/adi,adis16201.yaml
+> index 6f8f8a6258fe..7332442e5661 100644
+> --- a/Documentation/devicetree/bindings/iio/accel/adi,adis16201.yaml
+> +++ b/Documentation/devicetree/bindings/iio/accel/adi,adis16201.yaml
+> @@ -27,15 +27,16 @@ properties:
+>    interrupts:
+>      maxItems: 1
+>  
+> -  spi-max-frequency: true
+> -
+>    vdd-supply: true
+>  
+>  required:
+>    - compatible
+>    - reg
+>  
+> -additionalProperties: false
+> +allOf:
+> +  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+> +
+> +unevaluatedProperties: false
+>  
+>  examples:
+>    - |
+> diff --git a/Documentation/devicetree/bindings/iio/accel/adi,adis16240.yaml b/Documentation/devicetree/bindings/iio/accel/adi,adis16240.yaml
+> index 8d829ef878bc..f6f97164c2ca 100644
+> --- a/Documentation/devicetree/bindings/iio/accel/adi,adis16240.yaml
+> +++ b/Documentation/devicetree/bindings/iio/accel/adi,adis16240.yaml
+> @@ -25,14 +25,15 @@ properties:
+>    interrupts:
+>      maxItems: 1
+>  
+> -  spi-max-frequency: true
+> -
+>  required:
+>    - compatible
+>    - reg
+>    - interrupts
+>  
+> -additionalProperties: false
+> +allOf:
+> +  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+> +
+> +unevaluatedProperties: false
+>  
+>  examples:
+>    - |
+> diff --git a/Documentation/devicetree/bindings/iio/accel/adi,adxl313.yaml b/Documentation/devicetree/bindings/iio/accel/adi,adxl313.yaml
+> index d6afc1b8c272..7c1bc7810528 100644
+> --- a/Documentation/devicetree/bindings/iio/accel/adi,adxl313.yaml
+> +++ b/Documentation/devicetree/bindings/iio/accel/adi,adxl313.yaml
+> @@ -22,10 +22,6 @@ properties:
+>    reg:
+>      maxItems: 1
+>  
+> -  spi-3wire: true
+> -
+> -  spi-max-frequency: true
+> -
+>    vs-supply:
+>      description: Regulator that supplies power to the accelerometer
+>  
+> @@ -48,7 +44,10 @@ required:
+>    - compatible
+>    - reg
+>  
+> -additionalProperties: false
+> +allOf:
+> +  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+> +
+> +unevaluatedProperties: false
+>  
+>  examples:
+>    - |
+> diff --git a/Documentation/devicetree/bindings/iio/accel/adi,adxl345.yaml b/Documentation/devicetree/bindings/iio/accel/adi,adxl345.yaml
+> index 9bb039e2f533..346abfb13a3a 100644
+> --- a/Documentation/devicetree/bindings/iio/accel/adi,adxl345.yaml
+> +++ b/Documentation/devicetree/bindings/iio/accel/adi,adxl345.yaml
+> @@ -32,8 +32,6 @@ properties:
+>  
+>    spi-cpol: true
+>  
+> -  spi-max-frequency: true
+> -
+>    interrupts:
+>      maxItems: 1
+>  
+> @@ -42,7 +40,10 @@ required:
+>    - reg
+>    - interrupts
+>  
+> -additionalProperties: false
+> +allOf:
+> +  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+> +
+> +unevaluatedProperties: false
+>  
+>  examples:
+>    - |
+> diff --git a/Documentation/devicetree/bindings/iio/accel/adi,adxl355.yaml b/Documentation/devicetree/bindings/iio/accel/adi,adxl355.yaml
+> index ba54d6998f2e..14b487088ab4 100644
+> --- a/Documentation/devicetree/bindings/iio/accel/adi,adxl355.yaml
+> +++ b/Documentation/devicetree/bindings/iio/accel/adi,adxl355.yaml
+> @@ -45,13 +45,14 @@ properties:
+>    vddio-supply:
+>      description: Regulator that provides power to the bus
+>  
+> -  spi-max-frequency: true
+> -
+>  required:
+>    - compatible
+>    - reg
+>  
+> -additionalProperties: false
+> +allOf:
+> +  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+> +
+> +unevaluatedProperties: false
+>  
+>  examples:
+>    - |
+> diff --git a/Documentation/devicetree/bindings/iio/accel/adi,adxl367.yaml b/Documentation/devicetree/bindings/iio/accel/adi,adxl367.yaml
+> index d259e796c1d6..f10d98d34cb8 100644
+> --- a/Documentation/devicetree/bindings/iio/accel/adi,adxl367.yaml
+> +++ b/Documentation/devicetree/bindings/iio/accel/adi,adxl367.yaml
+> @@ -35,8 +35,6 @@ properties:
+>    interrupts:
+>      maxItems: 1
+>  
+> -  spi-max-frequency: true
+> -
+>    vdd-supply: true
+>    vddio-supply: true
+>  
+> @@ -45,7 +43,10 @@ required:
+>    - reg
+>    - interrupts
+>  
+> -additionalProperties: false
+> +allOf:
+> +  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+> +
+> +unevaluatedProperties: false
+>  
+>  examples:
+>    - |
+> diff --git a/Documentation/devicetree/bindings/iio/accel/adi,adxl372.yaml b/Documentation/devicetree/bindings/iio/accel/adi,adxl372.yaml
+> index 38b59b6454ce..73a5c8f814cc 100644
+> --- a/Documentation/devicetree/bindings/iio/accel/adi,adxl372.yaml
+> +++ b/Documentation/devicetree/bindings/iio/accel/adi,adxl372.yaml
+> @@ -25,14 +25,15 @@ properties:
+>    interrupts:
+>      maxItems: 1
+>  
+> -  spi-max-frequency: true
+> -
+>  required:
+>    - compatible
+>    - reg
+>    - interrupts
+>  
+> -additionalProperties: false
+> +allOf:
+> +  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+> +
+> +unevaluatedProperties: false
+>  
+>  examples:
+>    - |
+> diff --git a/Documentation/devicetree/bindings/iio/accel/bosch,bma220.yaml b/Documentation/devicetree/bindings/iio/accel/bosch,bma220.yaml
+> index 942b23ad0712..5dd06f5905b4 100644
+> --- a/Documentation/devicetree/bindings/iio/accel/bosch,bma220.yaml
+> +++ b/Documentation/devicetree/bindings/iio/accel/bosch,bma220.yaml
+> @@ -20,8 +20,6 @@ properties:
+>    interrupts:
+>      maxItems: 1
+>  
+> -  spi-max-frequency: true
+> -
+>    vdda-supply: true
+>    vddd-supply: true
+>    vddio-supply: true
+> @@ -30,7 +28,10 @@ required:
+>    - compatible
+>    - reg
+>  
+> -additionalProperties: false
+> +allOf:
+> +  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+> +
+> +unevaluatedProperties: false
+>  
+>  examples:
+>    - |
+> diff --git a/Documentation/devicetree/bindings/iio/accel/bosch,bma255.yaml b/Documentation/devicetree/bindings/iio/accel/bosch,bma255.yaml
+> index 478e75ae0885..457a709b583c 100644
+> --- a/Documentation/devicetree/bindings/iio/accel/bosch,bma255.yaml
+> +++ b/Documentation/devicetree/bindings/iio/accel/bosch,bma255.yaml
+> @@ -72,7 +72,10 @@ required:
+>    - compatible
+>    - reg
+>  
+> -additionalProperties: false
+> +allOf:
+> +  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+> +
+> +unevaluatedProperties: false
+>  
+>  examples:
+>    - |
+> diff --git a/Documentation/devicetree/bindings/iio/accel/bosch,bmi088.yaml b/Documentation/devicetree/bindings/iio/accel/bosch,bmi088.yaml
+> index 272eb48eef5a..3cb82576d758 100644
+> --- a/Documentation/devicetree/bindings/iio/accel/bosch,bmi088.yaml
+> +++ b/Documentation/devicetree/bindings/iio/accel/bosch,bmi088.yaml
+> @@ -24,8 +24,6 @@ properties:
+>    reg:
+>      maxItems: 1
+>  
+> -  spi-max-frequency: true
+> -
+>    vdd-supply: true
+>  
+>    vddio-supply: true
+> @@ -50,7 +48,10 @@ required:
+>    - compatible
+>    - reg
+>  
+> -additionalProperties: false
+> +allOf:
+> +  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+> +
+> +unevaluatedProperties: false
+>  
+>  examples:
+>    - |
+> diff --git a/Documentation/devicetree/bindings/iio/accel/fsl,mma7455.yaml b/Documentation/devicetree/bindings/iio/accel/fsl,mma7455.yaml
+> index 7c8f8bdc2333..589ca8178f4a 100644
+> --- a/Documentation/devicetree/bindings/iio/accel/fsl,mma7455.yaml
+> +++ b/Documentation/devicetree/bindings/iio/accel/fsl,mma7455.yaml
+> @@ -40,13 +40,14 @@ properties:
+>          - "INT1"
+>          - "INT2"
+>  
+> -  spi-max-frequency: true
+> -
+>  required:
+>    - compatible
+>    - reg
+>  
+> -additionalProperties: false
+> +allOf:
+> +  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+> +
+> +unevaluatedProperties: false
+>  
+>  examples:
+>    - |
+> diff --git a/Documentation/devicetree/bindings/iio/accel/kionix,kxsd9.yaml b/Documentation/devicetree/bindings/iio/accel/kionix,kxsd9.yaml
+> index 390b87242fcb..f64d99b35492 100644
+> --- a/Documentation/devicetree/bindings/iio/accel/kionix,kxsd9.yaml
+> +++ b/Documentation/devicetree/bindings/iio/accel/kionix,kxsd9.yaml
+> @@ -29,13 +29,14 @@ properties:
+>    mount-matrix:
+>      description: an optional 3x3 mounting rotation matrix.
+>  
+> -  spi-max-frequency: true
+> -
+>  required:
+>    - compatible
+>    - reg
+>  
+> -additionalProperties: false
+> +allOf:
+> +  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+> +
+> +unevaluatedProperties: false
+>  
+>  examples:
+>    - |
+> diff --git a/Documentation/devicetree/bindings/iio/accel/murata,sca3300.yaml b/Documentation/devicetree/bindings/iio/accel/murata,sca3300.yaml
+> index f6e2a16a710b..00c990caa1e4 100644
+> --- a/Documentation/devicetree/bindings/iio/accel/murata,sca3300.yaml
+> +++ b/Documentation/devicetree/bindings/iio/accel/murata,sca3300.yaml
+> @@ -29,7 +29,10 @@ required:
+>    - compatible
+>    - reg
+>  
+> -additionalProperties: false
+> +allOf:
+> +  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+> +
+> +unevaluatedProperties: false
+>  
+>  examples:
+>    - |
+> diff --git a/Documentation/devicetree/bindings/iio/accel/nxp,fxls8962af.yaml b/Documentation/devicetree/bindings/iio/accel/nxp,fxls8962af.yaml
+> index ad529ab2c6e2..65ce8ea14b52 100644
+> --- a/Documentation/devicetree/bindings/iio/accel/nxp,fxls8962af.yaml
+> +++ b/Documentation/devicetree/bindings/iio/accel/nxp,fxls8962af.yaml
+> @@ -27,8 +27,6 @@ properties:
+>    vdd-supply:
+>      description: phandle to the regulator that provides power to the accelerometer
+>  
+> -  spi-max-frequency: true
+> -
+>    interrupts:
+>      maxItems: 1
+>  
+> @@ -44,7 +42,10 @@ required:
+>    - compatible
+>    - reg
+>  
+> -additionalProperties: false
+> +allOf:
+> +  - $ref: /schemas/spi/spi-peripheral-props.yaml#
+> +
+> +unevaluatedProperties: false
+>  
+>  examples:
+>    - |
 

@@ -2,60 +2,60 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EE1DC00140
-	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jul 2022 11:32:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70801C00140
+	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jul 2022 13:55:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232558AbiGaLcu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 31 Jul 2022 07:32:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42666 "EHLO
+        id S236780AbiGaNzV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 31 Jul 2022 09:55:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54550 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232220AbiGaLct (ORCPT
+        with ESMTP id S230436AbiGaNzU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 31 Jul 2022 07:32:49 -0400
-Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0A41DDFEE;
-        Sun, 31 Jul 2022 04:32:49 -0700 (PDT)
-Received: by mail-pg1-x52f.google.com with SMTP id f11so7386509pgj.7;
-        Sun, 31 Jul 2022 04:32:49 -0700 (PDT)
+        Sun, 31 Jul 2022 09:55:20 -0400
+Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EFC12617C;
+        Sun, 31 Jul 2022 06:55:18 -0700 (PDT)
+Received: by mail-pf1-x42b.google.com with SMTP id h28so2022827pfq.11;
+        Sun, 31 Jul 2022 06:55:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=content-transfer-encoding:in-reply-to:from:references:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :from:to:cc;
-        bh=9zxYvVb7b8LZLTBs71kugtnLomBjlBQUO9h/IsY7cyk=;
-        b=I/HBjugbuX1kfRW3rikYJwk4ncEkL69ipDZZhQV2ws5vwB+xXuHZLLJw6evWq77VQm
-         nuEJWV0PBIW/oG54TENBgeP7u3eWlbl7LPN+aLuhQ1vsrukH8hJn02xjvgR1tNRHTTW7
-         sIHUE49DeSdRzNuGFRx8lPCmZm/e56cjXw5rQ/Spa1m2ShXrSFhmfK/J9oHW8Xo95kEG
-         YcmBguqez2z0nLAaviwhhsNjJREcDOqKghZto3XjwtJRGk35YijN9dsMyAQ+rNVLjm5f
-         ouWrXflh1JfCfxPGJ5A4r1sc7FTXYP17gS+eX+Pn153HqcIBcj6i5gg7Wk8d0bJUBaHJ
-         j+vw==
+        bh=xNPBWOC/I43u3bImxvqM+yXOk51ZAfr3ljqZNNUlsi8=;
+        b=Mqicnhs+Neu29XxQM/6u6nW3nlCQlkJU5VqNkoqZtfhf1J8b0HIhIM6HN3MK0anGIk
+         z+KeKPiLOuFd/tQPMM/shhlkpQyeRBRmG9yRPEgsQCb6wqzWEfp10rdWUJdah0Z8Y4+t
+         7RNV87tZFcK0CzFpjlfhyANfQ06F0rfCKNyotPb5mrDR1cRxHSZaOUWF9etibS70oSb+
+         i0ekvNd9gy62NbRnjjMzvb3la38g93luZL2iO+97fdGllq/jcO8vNyL6P1dUGqOlIQX8
+         QX1UsIF8xBQX45dRPfYNlNlSH6FTRLgnd5zsoDT9nubgZTCAiF3lN0KWQZhHAZgmWdKZ
+         f25w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:in-reply-to:from:references:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc;
-        bh=9zxYvVb7b8LZLTBs71kugtnLomBjlBQUO9h/IsY7cyk=;
-        b=hYwdIFfakU3ej14/njXf6dCa3FTgYsVTjAjU14Y37nWF4Te4vMo23PODRKcvJypdQk
-         NSob0zEtoF81LfufnLSQgBIdh2Fmj43n6tX+Q0OCJme2KSyEqaDqtpnKnEwkTLeCXhGN
-         WpjBnwUjYZgUfYLChCFYaKNczdkzS0YidaiAvFxVN0iJEibYTZKXfcvwSBNJYQ7hE/ew
-         RZumVRcdN/6T0vR+9FiFF19oo8pPxLdkBmuDMo8OiyIZkBZL8J9msWkbYO5nbG5iiLGr
-         /kkgWqwlY9ZHlUZlIc8vEnzVOshWdgJJGgl9dm94KEMEDJp0T7ymHFu1pmx90DLCMdmT
-         +86g==
-X-Gm-Message-State: AJIora80/xPddePHGuvu5AeP4oH8y1k3uHaSai8VWglD8DfbgcdDhrzY
-        9qrMbyuKfwcHaxKCZEOBd/U=
-X-Google-Smtp-Source: AGRyM1u9NHvpHt5MchqETPsuNoKOmNKdCOuJGDsUH1Ao13fjbnfwEJmvsjIYwhFNGeGKRnGnQFmHnw==
-X-Received: by 2002:a63:121a:0:b0:41a:6792:31e5 with SMTP id h26-20020a63121a000000b0041a679231e5mr9432755pgl.69.1659267168467;
-        Sun, 31 Jul 2022 04:32:48 -0700 (PDT)
-Received: from [192.168.0.110] ([103.159.189.145])
-        by smtp.gmail.com with ESMTPSA id u14-20020a170902e5ce00b0016c4f0065b4sm7358652plf.84.2022.07.31.04.32.44
+        bh=xNPBWOC/I43u3bImxvqM+yXOk51ZAfr3ljqZNNUlsi8=;
+        b=QD5F8U3q737lje3ag4/i/hB/lHD7z9JDyqN2dxcCxA3CvHKux3Ju/7NP6dOvEGPv/k
+         6+AkjFegI9fKwhfzNP3piGA/KPVmulIh9udp0AQyJ+AKxVTkZRPTuK/WfIYDSkIaogva
+         5HYspYkrB7HbMkqMrb6Wfdn2ns3hOtyCNwQgRCm5+pWHilPlD5Y5zkD3367gunpNiPAl
+         g4a1sqX/9xgywohfaBLs4loQV2xpDIXu0/FHL1ycEMiDxy1pMKCka6ZcrCUXNx7itDkH
+         j9aCLiFhqSwQEJM3pFJKp9Jepsb21XnRDh1wcSkeOoTer8TWgMQuP/ACuYsow+/JQwE0
+         1uRg==
+X-Gm-Message-State: AJIora+OqSsIPtS7tFsHbYP//sblrPUROh7ii76MYhGkvA6jIzyF8mDo
+        5Pju660KAHzrSKnpcHJ+vi8=
+X-Google-Smtp-Source: AGRyM1tGp667SkT01YAGydsW3pteT/piJaiF0LFUYELdzJRYw5O/AyDU2F6/fTwhdtD6eduEyU8QWw==
+X-Received: by 2002:a63:6e82:0:b0:41a:1817:15d9 with SMTP id j124-20020a636e82000000b0041a181715d9mr10077049pgc.577.1659275718377;
+        Sun, 31 Jul 2022 06:55:18 -0700 (PDT)
+Received: from [192.168.0.110] ([103.159.189.149])
+        by smtp.gmail.com with ESMTPSA id d23-20020a17090ad99700b001ef87123615sm6701473pjv.37.2022.07.31.06.55.14
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 31 Jul 2022 04:32:48 -0700 (PDT)
-Message-ID: <166886f8-eb9e-f779-cf57-1ea353adc446@gmail.com>
-Date:   Sun, 31 Jul 2022 17:32:41 +0600
+        Sun, 31 Jul 2022 06:55:17 -0700 (PDT)
+Message-ID: <7973ec94-75ad-c133-032e-b83beeb2d397@gmail.com>
+Date:   Sun, 31 Jul 2022 19:55:12 +0600
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.11.0
-Subject: Re: [PATCH] vt: Clear selection before changing the font
+Subject: Re: [syzbot] KASAN: vmalloc-out-of-bounds Write in imageblit (2)
 Content-Language: en-US
 To:     Helge Deller <deller@gmx.de>,
         syzbot <syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com>,
@@ -65,60 +65,77 @@ To:     Helge Deller <deller@gmx.de>,
         Jiri Slaby <jirislaby@kernel.org>
 References: <000000000000bbdd0405d120c155@google.com>
  <20220729065139.6529-1-khalid.masum.92@gmail.com>
- <eb4a26aa-da30-ceee-7d27-c1e902dd4218@gmx.de> <YuV9apZGNmGfjcor@p100>
+ <eb4a26aa-da30-ceee-7d27-c1e902dd4218@gmx.de>
 From:   Khalid Masum <khalid.masum.92@gmail.com>
-In-Reply-To: <YuV9apZGNmGfjcor@p100>
+In-Reply-To: <eb4a26aa-da30-ceee-7d27-c1e902dd4218@gmx.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/31/22 00:50, Helge Deller wrote:
-> When changing the console font with ioctl(KDFONTOP) the new font size
-> can be bigger than the previous font. A previous selection may thus now
-> be outside of the new screen size and thus trigger out-of-bounds
-> accesses to graphics memory if the selection is removed in
-> vc_do_resize().
+On 7/30/22 23:25, Helge Deller wrote:
+> On 7/29/22 08:51, Khalid Masum wrote:
+>> Here is a simplified reproducer for the issue:
+>>
+>> https://gist.githubusercontent.com/Labnann/923d6b9b3a19848fc129637b839b8a55/raw/a68271fcc724569735fe27f80817e561b3ff629a/reproducer.c
 > 
-> Prevent such out-of-memory accesses by dropping the selection before the
-> various con_font_set() console handlers are called.
+> The reproducer does this:
+> ioctl(3, TIOCLINUX, TIOCL_SETSEL, selection: xs:3  ys:0  xe:0 ye:0 mode:0)  = 0
+> -> sets the text selection area
+> ioctl(4, KDFONTOP)  with op=0 (con_font_set), charcount=512  width=8  height=32, 0x20000000) = 0
+> -> changes the font size.
 > 
-> Signed-off-by: Helge Deller <deller@gmx.de>
+> It does not crash with current Linus' head (v5.19-rc8).
+> Kernel v5.16, which was used by this KASAN report, hasn't received backports
+> since months, so I tried stable kernel v5.15.58 instead, and this
+> kernel crashed with the reproducer.
+> 
+> The reproducer brings up two issues with current code:
+> 1. The reproducer uses ioctl(TIOCLINUX, TIOCL_SETSEL) and hands over (invalid)
+> zero-values for ys and ye for the starting lines.
+> This is wrong, since the API seems to expect a "1" as the very first line for the selection.
 
-Tested-by: Khalid Masum <khalid.masum.92@gmail.com>
+Why do you think that API expects a 1?
 
-> Reported-by: syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com
+> This can be easily fixed by adding checks for zero-values and return -EINVAL if found.
 > 
-> diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-> index dfc1f4b445f3..3f09205185a4 100644
-> --- a/drivers/tty/vt/vt.c
-> +++ b/drivers/tty/vt/vt.c
-> @@ -4662,9 +4662,11 @@ static int con_font_set(struct vc_data *vc, struct console_font_op *op)
->   	console_lock();
->   	if (vc->vc_mode != KD_TEXT)
->   		rc = -EINVAL;
-> -	else if (vc->vc_sw->con_font_set)
-> +	else if (vc->vc_sw->con_font_set) {
-> +		if (vc_is_sel(vc))
-> +			clear_selection();
->   		rc = vc->vc_sw->con_font_set(vc, &font, op->flags);
-> -	else
-> +	} else
->   		rc = -ENOSYS;
->   	console_unlock();
->   	kfree(font.data);
-> @@ -4691,9 +4693,11 @@ static int con_font_default(struct vc_data *vc, struct console_font_op *op)
->   		console_unlock();
->   		return -EINVAL;
->   	}
-> -	if (vc->vc_sw->con_font_default)
-> +	if (vc->vc_sw->con_font_default) {
-> +		if (vc_is_sel(vc))
-> +			clear_selection();
->   		rc = vc->vc_sw->con_font_default(vc, &font, s);
-> -	else
-> +	} else
->   		rc = -ENOSYS;
->   	console_unlock();
->   	if (!rc) {
+> But this bug isn't critical itself and is not the reason for the kernel crash.
+> Without the checks, the ioctl handler simply wraps the coordinate values and converts them
+> from:
+> input selection: xs:3  ys:0  xe:0   ye:0  mode:0    to the new:
+> vc_selection =   xs:2  ys:23 xe:127 ye:23 mode:0
+> which is the current maximum coordinates for the screen.
+> 
+> Those higher values now trigger issue #2:
+> After the TIOCL_SETSEL the last line on the screen is now selected. The KDFONTOP ioctl
+> then sets a 8x32 console font, and replaces the former 8x16 console font.
+> With the bigger font the current screen selection is now outside the visible screen
+> and this finally triggeres this backtrace, because vc_do_resize() calls clear_selection()
+> to unhighlight the selection (which starts to render chars outside of the screen):
+> 
+>   drm_fb_helper_sys_imageblit drivers/gpu/drm/drm_fb_helper.c:794 [inline]
+>   drm_fbdev_fb_imageblit+0x15c/0x350 drivers/gpu/drm/drm_fb_helper.c:2288
+>   bit_putcs_unaligned drivers/video/fbdev/core/bitblit.c:124 [inline]
+>   bit_putcs+0x6e1/0xd20 drivers/video/fbdev/core/bitblit.c:173
+>   fbcon_putcs+0x353/0x440 drivers/video/fbdev/core/fbcon.c:1277
+>   do_update_region+0x399/0x630 drivers/tty/vt/vt.c:676
+>   invert_screen+0x1d4/0x600 drivers/tty/vt/vt.c:800
+>   highlight drivers/tty/vt/selection.c:57 [inline]
+>   clear_selection drivers/tty/vt/selection.c:84 [inline]
+>   clear_selection+0x55/0x70 drivers/tty/vt/selection.c:80
+>   vc_do_resize+0xe6e/0x1180 drivers/tty/vt/vt.c:1257
+> 
+> IMHO the easiest way to prevent this crash is to simply clear the
+> selection before the various con_font_set() console handlers are called.
+> Otherwise every console driver needs to add checks and verify if the current
+> selection still fits with the selected font, which gets tricky because some
+> of those drivers fiddle with the screen width&height before calling vc_do_resize().
+> 
+> I'll follow up to this mail with patches for both issues shortly.
+> 
+> Helge
+
+Thanks,
+   -- Khalid Masum
+

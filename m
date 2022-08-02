@@ -2,168 +2,148 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96488C00140
-	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Aug 2022 07:58:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33ABBC25B06
+	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Aug 2022 08:01:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236154AbiHBH6C (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 2 Aug 2022 03:58:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36656 "EHLO
+        id S236294AbiHBIA6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 2 Aug 2022 04:00:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40492 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236123AbiHBH6B (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 2 Aug 2022 03:58:01 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6E64E5F92;
-        Tue,  2 Aug 2022 00:57:56 -0700 (PDT)
-X-UUID: a169ae0a84e34b859d7434690ecdbb59-20220802
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.8,REQID:3c2ccd96-f64d-4764-b20b-09b95d6661ac,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:0
-X-CID-META: VersionHash:0f94e32,CLOUDID:161b0ed0-a6cf-4fb6-be1b-c60094821ca2,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
-        ,QS:nil,BEC:nil,COL:0
-X-UUID: a169ae0a84e34b859d7434690ecdbb59-20220802
-Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw02.mediatek.com
-        (envelope-from <ck.hu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1596637531; Tue, 02 Aug 2022 15:57:50 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.792.15; Tue, 2 Aug 2022 15:57:49 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Tue, 2 Aug 2022 15:57:49 +0800
-Message-ID: <e51eb3017495fc77c52e7fde507acd33a2893f6f.camel@mediatek.com>
-Subject: Re: [PATCH v15 05/11] drm/mediatek: Add MT8195 Embedded DisplayPort
- driver
-From:   CK Hu <ck.hu@mediatek.com>
-To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, <chunkuang.hu@kernel.org>,
-        <p.zabel@pengutronix.de>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
-        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
-        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
-        <airlied@linux.ie>
-CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
-        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
-        <angelogioacchino.delregno@collabora.com>,
-        <liangxu.xu@mediatek.com>, <dri-devel@lists.freedesktop.org>,
-        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-fbdev@vger.kernel.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Tue, 2 Aug 2022 15:57:49 +0800
-In-Reply-To: <20220727045035.32225-6-rex-bc.chen@mediatek.com>
-References: <20220727045035.32225-1-rex-bc.chen@mediatek.com>
-         <20220727045035.32225-6-rex-bc.chen@mediatek.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        with ESMTP id S236254AbiHBIA4 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 2 Aug 2022 04:00:56 -0400
+Received: from mail-lj1-x231.google.com (mail-lj1-x231.google.com [IPv6:2a00:1450:4864:20::231])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 094FCCE13
+        for <linux-fbdev@vger.kernel.org>; Tue,  2 Aug 2022 01:00:55 -0700 (PDT)
+Received: by mail-lj1-x231.google.com with SMTP id y23so4446425ljh.12
+        for <linux-fbdev@vger.kernel.org>; Tue, 02 Aug 2022 01:00:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=Qp/fom4yzLGREQ6eeR8li3mYbaq2TiER/tBpXxkXygo=;
+        b=TFKlaysWDIVNTrpIejCvdZ3ShsEZpGjK197WnOqTVDguDiHpHDaSiYtLkMZnv5nWVL
+         Y4HNIrLz/rrChsreSuiWgemQ3g80PyFtDxrfZiE1E8sapn0v7ZIR5BzlDcJLmpMqqwT1
+         wX++pYFLpakjvWeQhddWl3cAY9KW1symUlX6F6umXqO+4JZ3J8WmsgFz1JnpbIySrFgC
+         DYlNBb8kW3xD+a/p7M+eAjUxNgc6Jhs/CzaA30VuYoKvl3k8wpnknxRdQjaIxDqRSMB2
+         pAdELhDbrTvIN9g0syFGrU4L5TFeE8HeXYDIatMLL9ahGlsDrC5IHf6wi4UgNJP54G6P
+         C2fw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=Qp/fom4yzLGREQ6eeR8li3mYbaq2TiER/tBpXxkXygo=;
+        b=4RKKkk8YlCr4CxFreqO2BSB1hMuj2CQSnarSDsyeDvKoAaTpSTQOyw3RIVjxgrfIeO
+         S6FdNmYcVy1wnUtM6Xd2EUpjDZc90/1RERQAXD5ItFiuTGtovvTnlifaOSmAuoE7gssh
+         v1Mciff2f14gpavht0DxcjaYzope8LdpdSXvrjWAOgkOo0I0lKgjd5WNZd2LbgTi617t
+         w8fCikmlgb9G9Nyn/SiCw5qAXeZvo7pthdsDtrCOUgzJYETvR0kJnIbka+ZopjE4HNXx
+         ByaNmGSC/QVb3m1KUsU7d3Gc3nUCTrVJd3f8lQBsxDADACRn4/48h3//GkXKQySan1k4
+         QwSg==
+X-Gm-Message-State: AJIora+q4DoGwpL5oz7uY5dSBSzV3eSVbPkDF0X425Fue0YhwScYbCUM
+        9T4Jc4ydfslEbMb+zWeOqIimqg==
+X-Google-Smtp-Source: AGRyM1tLMTHtWy8rLH1qccJY+573kjD3/apdLT7hUWRIsx3cmqkIWPYfI8rcWCVwsyah4kPGJxNplg==
+X-Received: by 2002:a2e:a812:0:b0:25d:d922:d with SMTP id l18-20020a2ea812000000b0025dd922000dmr5895793ljq.181.1659427253194;
+        Tue, 02 Aug 2022 01:00:53 -0700 (PDT)
+Received: from [192.168.1.6] ([213.161.169.44])
+        by smtp.gmail.com with ESMTPSA id v2-20020a2e2f02000000b0025deba4d9f1sm1818669ljv.86.2022.08.02.01.00.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 02 Aug 2022 01:00:52 -0700 (PDT)
+Message-ID: <426b98b9-95a0-eb5e-7f68-fbe1e45b4740@linaro.org>
+Date:   Tue, 2 Aug 2022 10:00:48 +0200
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.12.0
+Subject: Re: [PATCH v2 00/10] dt-bindings: iio: use spi-peripheral-props.yaml
+Content-Language: en-US
+To:     Lukas Wunner <lukas@wunner.de>
+Cc:     Lars-Peter Clausen <lars@metafoo.de>,
+        Michael Hennerich <Michael.Hennerich@analog.com>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Lucas Stankus <lucas.p.stankus@gmail.com>,
+        Puranjay Mohan <puranjay12@gmail.com>,
+        Cosmin Tanislav <cosmin.tanislav@analog.com>,
+        Alexandru Tachici <alexandru.tachici@analog.com>,
+        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
+        Marcus Folkesson <marcus.folkesson@gmail.com>,
+        Kent Gustavsson <kent@minoris.se>,
+        Tomislav Denis <tomislav.denis@avl.com>,
+        Oleksij Rempel <linux@rempel-privat.de>, kernel@pengutronix.de,
+        Antoniu Miclaus <antoniu.miclaus@analog.com>,
+        Ricardo Ribalda <ribalda@kernel.org>,
+        Dragos Bogdan <dragos.bogdan@analog.com>,
+        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
+        Lorenzo Bianconi <lorenzo@kernel.org>,
+        Stefan Popa <stefan.popa@analog.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Stephan Gerhold <stephan@gerhold.net>,
+        Mike Looijmans <mike.looijmans@topic.nl>,
+        Joachim Eastwood <manabian@gmail.com>,
+        Tomas Melin <tomas.melin@vaisala.com>,
+        Sean Nyekjaer <sean@geanix.com>,
+        Beniamin Bia <beniamin.bia@analog.com>,
+        Patrick Vasseur <patrick.vasseur@c-s.fr>,
+        Charles-Antoine Couret <charles-antoine.couret@essensium.com>,
+        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Philippe Reynes <tremyfr@yahoo.fr>,
+        Jacopo Mondi <jacopo@jmondi.org>,
+        Akinobu Mita <akinobu.mita@gmail.com>,
+        Alexandru Lazar <alazar@startmail.com>,
+        Oskar Andero <oskar.andero@gmail.com>,
+        =?UTF-8?Q?M=c3=a5rten_Lindahl?= <martenli@axis.com>,
+        Bogdan Pricop <bogdan.pricop@emutex.com>,
+        Angelo Compagnucci <angelo.compagnucci@gmail.com>,
+        Matt Ranostay <matt.ranostay@konsulko.com>,
+        Dan Murphy <dmurphy@ti.com>,
+        Gregory Clement <gregory.clement@bootlin.com>,
+        Phil Reid <preid@electromag.com.au>,
+        Michael Welling <mwelling@ieee.org>,
+        Robert Jones <rjones@gateworks.com>,
+        Chris Coffey <cmc@babblebit.net>,
+        Slawomir Stepien <sst@poczta.fm>,
+        Sankar Velliangiri <navin@linumiz.com>,
+        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <20220727164646.387541-1-krzysztof.kozlowski@linaro.org>
+ <20220730224643.GB11662@wunner.de>
+ <bd829586-f052-03c3-aa68-e5a2be84b6bb@linaro.org>
+ <20220801160410.GA6059@wunner.de>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20220801160410.GA6059@wunner.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi, Bo-Chen:
-
-On Wed, 2022-07-27 at 12:50 +0800, Bo-Chen Chen wrote:
-> From: Markus Schneider-Pargmann <msp@baylibre.com>
+On 01/08/2022 18:04, Lukas Wunner wrote:
+> On Mon, Aug 01, 2022 at 05:45:07PM +0200, Krzysztof Kozlowski wrote:
+>> On 31/07/2022 00:46, Lukas Wunner wrote:
+>>> On Wed, Jul 27, 2022 at 06:46:36PM +0200, Krzysztof Kozlowski wrote:
+>>>>  78 files changed, 324 insertions(+), 249 deletions(-)
+>>>
+>>> Pardon me for being dense, but what is the benefit of this series
+>>> that justifies inflating the schema definitions by a total of 75 lines?
+>>
+>> The commits were explaining rationale, so let me bring it here. The
+>> benefits are:
+>> This allows using all properties typical for SPI-connected devices, even
+>> these which device bindings author did not tried yet.
 > 
-> This patch adds a embedded displayport driver for the MediaTek mt8195
-> SoC.
-> 
-> It supports the MT8195, the embedded DisplayPort units. It offers
-> DisplayPort 1.4 with up to 4 lanes.
-> 
-> The driver creates a child device for the phy. The child device will
-> never exist without the parent being active. As they are sharing a
-> register range, the parent passes a regmap pointer to the child so
-> that
-> both can work with the same register range. The phy driver sets
-> device
-> data that is read by the parent to get the phy device that can be
-> used
-> to control the phy properties.
-> 
-> This driver is based on an initial version by
-> Jitao shi <jitao.shi@mediatek.com>
-> 
-> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
-> ---
+> How do you know these untested properties work with the devices to which
+> you're adding them?
 
-[snip]
+These properties should be device independent and instead
+controller-dependent. At least some of them (that's why CPHA/CPOL was
+moved away and maybe the same we need to do with spi-3wire, spi-cs-high,
+spi-lsb-first).
 
-> +
-> +static int mtk_dp_train_tps_2_3(struct mtk_dp *mtk_dp, u8
-> target_linkrate,
-> +				u8 target_lane_count, u8 *lane_adjust,
-> +				int *status_control, u8
-> *prev_lane_adjust)
-> +{
-> +	u8 val;
-> +	u8 link_status[DP_LINK_STATUS_SIZE] = {};
-> +
-> +	if (*status_control == 1) {
-> +		if (mtk_dp->train_info.tps4) {
-> +			mtk_dp_train_set_pattern(mtk_dp, 4);
-> +			val = DP_TRAINING_PATTERN_4;
-> +		} else if (mtk_dp->train_info.tps3) {
-> +			mtk_dp_train_set_pattern(mtk_dp, 3);
-> +			val = DP_LINK_SCRAMBLING_DISABLE |
-> +				DP_TRAINING_PATTERN_3;
-> +		} else {
-> +			mtk_dp_train_set_pattern(mtk_dp, 2);
-> +			val = DP_LINK_SCRAMBLING_DISABLE |
-> +				DP_TRAINING_PATTERN_2;
-> +		}
+My approach here is no different than other subsystems. Take a look at
+regulator - we allow all regulator.yaml properties, even though several
+are not applicable (e.g. current for voltage regulators) and for sure no
+tested.
 
-Only one of tps2, tps3, tps4 would be process, and the priority is tps4
-> tps3 > tps2, so I would like use one variable for this.
-
-if support tps4, train_info.tps = 4.
-else if support tps3, train_info.tps = 3.
-else train_info.tps = 2.
-
-And this part would be almost the same as the part in
-mtk_dp_train_tps_1(), so separate this part to a function.
-
-Regards,
-CK
-
-
-> +		drm_dp_dpcd_writeb(&mtk_dp->aux,
-> +				   DP_TRAINING_PATTERN_SET, val);
-> +		drm_dp_dpcd_read(&mtk_dp->aux,
-> +				 DP_ADJUST_REQUEST_LANE0_1,
-> lane_adjust,
-> +				 sizeof(*lane_adjust) * 2);
-> +
-> +		mtk_dp_train_update_swing_pre(mtk_dp,
-> +					      target_lane_count,
-> lane_adjust);
-> +		*status_control = 2;
-> +	}
-> +
-> +	drm_dp_link_train_channel_eq_delay(&mtk_dp->aux, mtk_dp-
-> >rx_cap);
-> +
-> +	drm_dp_dpcd_read_link_status(&mtk_dp->aux, link_status);
-> +
-> +	if (drm_dp_channel_eq_ok(link_status, target_lane_count)) {
-> +		mtk_dp->train_info.eq_done = true;
-> +		dev_dbg(mtk_dp->dev, "Link train EQ pass\n");
-> +		return 0;
-> +	}
-> +
-> +	dev_dbg(mtk_dp->dev, "Link train EQ fail\n");
-> +
-> +	if (*prev_lane_adjust != link_status[4])
-> +		*prev_lane_adjust = link_status[4];
-> +
-> +	return -EAGAIN;
-> +}
-> +
-
+Best regards,
+Krzysztof

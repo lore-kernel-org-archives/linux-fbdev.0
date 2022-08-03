@@ -2,108 +2,128 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58E97C19F2C
-	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Aug 2022 09:27:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93EABC19F28
+	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Aug 2022 13:17:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234178AbiHCJ1E (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 3 Aug 2022 05:27:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45840 "EHLO
+        id S236373AbiHCNRR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 3 Aug 2022 09:17:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40612 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234150AbiHCJ1D (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 3 Aug 2022 05:27:03 -0400
-Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AED7B9FE7;
-        Wed,  3 Aug 2022 02:27:02 -0700 (PDT)
-Received: by mail-pl1-x62b.google.com with SMTP id v18so15854099plo.8;
-        Wed, 03 Aug 2022 02:27:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc;
-        bh=MVm6QmzipnyToLLkHlXgCnRVhkMCCP5rnBDdZpKvHUM=;
-        b=hXZI8q8EVU8SnP+ORDIvV8YS5W6ThAdvCpal5haO3s3myszY4AIx/2AF1Ciz0Uvnt4
-         MWz6E8S9aUtYAkTjZeVAActQYVZvTZ+euyf4zfac9VcpQqud8mphEd6Qns0QJeaBAWjB
-         k0skGVtX6/78MF3JZwg+pbKSrOiWobOPOT0Q3z/UWe+eOtU8Ud+ZoNZ5paubDSba/O6B
-         zRSKLoOcDWAXAObyrqRjLc35OdCx3pFFxp+0TUgBHOlJx1WWbLeqBYP4iSuXI0GFdEGE
-         nx9WFu+ebFE61JPrLtnW0/9pM85bR/13tElWoiLDr5AOUaQcE35HciNACBuurw8zADuN
-         DGXQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc;
-        bh=MVm6QmzipnyToLLkHlXgCnRVhkMCCP5rnBDdZpKvHUM=;
-        b=OaHI/Iu8GFPKyAFZi3licgydONgsuYAylVq2thdVzU6gzDSYb+YHW77eE9aukMgrLW
-         iH+AdWZevJJeEgg+1ak34MJxEbni1h/apCzSWIbu6rDilQFlzDH/VWkIvPnMaMYSMcnL
-         lxIK5qKOM9lih9JcZaza50T6lF7Dfr5SXYaloXqQEFGsCuqbv8n5EC3yIZFZqT5D3qta
-         VcSZTt9G90gpb9C4lndPgTHQIWe5cNY1aT/Se2QecgwGJYVfR8Tbpbc3vj7kSfmaPB4F
-         3fyHJD2cEkas3s4s8DE/srpAC02RHriVrpD6WeuM67mrdjhMp4Yz46aX4SxRg07y3UWo
-         /wyA==
-X-Gm-Message-State: ACgBeo0LuVlqzyMoAhNbyzhRISgV8D3AliF8Wva/qk12JjCr+4Hs7rkh
-        UdN1cJSoGhEEfK8O79FLJRsec/yBmTb+kU3WIv2dIX81cr8h
-X-Google-Smtp-Source: AA6agR4HSCjsx3al/Z3BmrIGBn74ROpqAVyeeZ6yN8Okjp5/cBWADFKXP740gHNIx1D+PyNEgo9GHecFLiBpBFcCDwU=
-X-Received: by 2002:a17:903:264b:b0:16d:b891:593 with SMTP id
- je11-20020a170903264b00b0016db8910593mr26128519plb.133.1659518822112; Wed, 03
- Aug 2022 02:27:02 -0700 (PDT)
+        with ESMTP id S235851AbiHCNRP (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 3 Aug 2022 09:17:15 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F37DF2620;
+        Wed,  3 Aug 2022 06:17:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1659532626;
+        bh=ijNK7+C9GwS9hFV217KdcR0mCCJXat/+dfi5+nWW7vo=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=KLVfhmUjZcW3w4VVKGLmouP9njA7VWHE6LDLlretIi4CWpeqvljsQs4OIYhSui5y7
+         co7ZGz0fmvsmOc2va97EEApaFTc7hgUeLgpg1NqE9WUMj2iF18u0XQr7wAn7Vr4Sbu
+         T0kYE8NLmLHg5KUC+F1pJqwnhtM0IRmJZc1oRFZw=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.136.66]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1N5VHG-1nLJKy2l1G-016xYA; Wed, 03
+ Aug 2022 15:17:06 +0200
+Message-ID: <d7fb3369-ef7f-8d8f-48bc-fe7cd61047b5@gmx.de>
+Date:   Wed, 3 Aug 2022 15:16:18 +0200
 MIME-Version: 1.0
-References: <CAMhUBjkps_2EAkbCpGuLiWVFObLkLuj=3UqbxcuENUNXMkbS9Q@mail.gmail.com>
- <YudX0t/P94a0LKtr@ls3530>
-In-Reply-To: <YudX0t/P94a0LKtr@ls3530>
-From:   Zheyu Ma <zheyuma97@gmail.com>
-Date:   Wed, 3 Aug 2022 17:26:51 +0800
-Message-ID: <CAMhUBjk-nounZeqN3xq1Yp7+YG=iG+L2_3e1JOnWTJasiups-w@mail.gmail.com>
-Subject: Re: [BUG] video: fbdev: arkfb: Found a divide-by-zero bug which may
- cause DoS
-To:     Helge Deller <deller@gmx.de>
-Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH] video: fbdev: arkfb: Fix a divide-by-zero bug in
+ ark_set_pixclock()
+Content-Language: en-US
+To:     Zheyu Ma <zheyuma97@gmail.com>,
+        Ondrej Zajicek <santiago@crfreenet.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Antonino Daplas <adaplas@gmail.com>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+References: <20220803092313.2492371-1-zheyuma97@gmail.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20220803092313.2492371-1-zheyuma97@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:lQljVW+9U2quFOlICL5iuL0qQsxBfhrJ/SOcJDuXBcLxgtkcRMq
+ N1VzQHqvyDjpI6ZUU9HAzKo0RYEGAybibieBpH9UP/PHT/WmA65wdyZPcC209YI0xARz1P9
+ 8BC3NMOMCSRe5ZJKsl6BltUUK3igg4tp3m6nn6MtiSYM106YPdcnxqsMRv51MPKVQ8L5fmn
+ dA0M5ojv7+gYY3RYcWUJg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:h4IFC4aVW08=:HnCeX4OCRi/TeYynLI1xBD
+ zZKE9O64nRYUapljhlHNsnE428kIdlgmS5NUXtlqstdQ3i6oLaDzRL37vQBkWyMsGgjIG7B3r
+ AEHXoy9i5/08pmUOKJc6i6EtNz5775Fyq93zNu1BFKNOZ9vSV0gJuqGn16ZcaybNUR1yQuIvL
+ eJ3RIhqxunXfkLNyApuzq6XgcEP3QD/Ez+xLIJQ7sjLSgGpBjsHdfBS7jssqs7Op2LnWNFFdD
+ TBLVB1WBKvkJukLv3z/hyQifCRCTKcCc7znZxF3DUSFUjnqIM2WxhzqAEzWgADwT48eCIGGLI
+ zh23v7XvmTHtSBoYLk0sImX1V673Zzpc+ZqkRyDJbVhvEp/gEeQcYL80L0zkPNQP1iGjXyy2j
+ YIOQFdBJLdVcSJLO/xnJ3RYiDCLgZ8BOgR5R05A9Slvqcqxj5LjFfvDPMv5ATnGntEIrnnEgj
+ i3lBt92pV1hHqsxv+OH4J1yGhPC0gFlJaMicyDZOLFS5I/tCiYM10JLYJUa8c2/Y3kMuR11yL
+ 0rl08NyM/g2OYXneYh5HJiN0oUF0gB9yQ8v6McItgQcTYj8A2yK9DCx5Bh1b/HwAHZsAmJO3b
+ MKf8zxQZ+8psG641SzPenI4g10fwqYv5w5ctR0lmrpNW6e8Xwf7w6BlOAaddoRt+4pu0vwpnl
+ ehwv5kDgoRKJbfeAPLsziUC6wW1gBBSN3Psj4d4qDqqGLp2RsJx6OIP22Cm5bnZgaWv84LHxC
+ 9TIujyV9WwCy1AcKD7kbF3ZungYAxpv3QaftNTguBsr2Crp8NJJCrF/pSvN5Ph3zEuILscDIb
+ one6vqUdIQrjC1wpWRNS1YShHnlHtokbNlZdOJjmoZQHcHjCLZF3QBgPmhJh92VcVxe0uK6g4
+ 1tWwV7y+1JyT6mdHw5A6k50sim/AinXXXujzqusU/ak+wpvZ8B38BJrUIlQSaTfPoDDYFV45/
+ rYNt6dIWIDSdXh30U1dP6gg+jS/LRAdqX5kByxSfEP2Ntrbe4StmT84eOBoljJEfecBZB6EqW
+ EEFjsm1ak+T7JqzbluMEYohOeTxFplQa3xrK3g7wH1oE1X+Xdo+TFejfeaJgvJ1Dz35pO2TGA
+ nU0OXeBV3AtABBKgLTLYOppGaoDv05E91gpo/TVIV52bFe0ToBStaHFQg==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
-
-On Mon, Aug 1, 2022 at 12:35 PM Helge Deller <deller@gmx.de> wrote:
+On 8/3/22 11:23, Zheyu Ma wrote:
+> Since the user can control the arguments of the ioctl() from the user
+> space, under special arguments that may result in a divide-by-zero bug
+> in:
+>   drivers/video/fbdev/arkfb.c:784: ark_set_pixclock(info, (hdiv * info->=
+var.pixclock) / hmul);
+> with hdiv=3D1, pixclock=3D1 and hmul=3D2 you end up with (1*1)/2 =3D (in=
+t) 0.
+> and then in:
+>   drivers/video/fbdev/arkfb.c:504: rv =3D dac_set_freq(par->dac, 0, 1000=
+000000 / pixclock);
+> we'll get a division-by-zero.
 >
-> * Zheyu Ma <zheyuma97@gmail.com>:
-> > I found a bug in the arkfb driver in the latest kernel, which may cause DoS.
-> >
-> > The reason for this bug is that the user controls some input to ioctl,
-> > making 'mode' 0x7 on line 704, which causes hdiv = 1, hmul = 2, and if
-> > the pixclock is controlled to be 1, it will cause a division error in
-> > the function ark_set_pixclock().
+> The following log can reveal it:
 >
-> You are right.
-> I see in:
->   drivers/video/fbdev/arkfb.c:784: ark_set_pixclock(info, (hdiv * info->var.pixclock) / hmul);
-> with hdiv=1, pixclock=1 and hmul=2 you end up with (1*1)/2 = (int) 0.
-> and then in
->   drivers/video/fbdev/arkfb.c:504: rv = dac_set_freq(par->dac, 0, 1000000000 / pixclock);
-> you'll get a division-by-zero.
+> divide error: 0000 [#1] PREEMPT SMP KASAN PTI
+> RIP: 0010:ark_set_pixclock drivers/video/fbdev/arkfb.c:504 [inline]
+> RIP: 0010:arkfb_set_par+0x10fc/0x24c0 drivers/video/fbdev/arkfb.c:784
+> Call Trace:
+>  fb_set_var+0x604/0xeb0 drivers/video/fbdev/core/fbmem.c:1034
+>  do_fb_ioctl+0x234/0x670 drivers/video/fbdev/core/fbmem.c:1110
+>  fb_ioctl+0xdd/0x130 drivers/video/fbdev/core/fbmem.c:1189
 >
-> > The easiest patch is to check the value of the argument 'pixclock' in
-> > the ark_set_pixclock function, but this is perhaps too late, should we
-> > do this check earlier? I'm not sure, so I'll report this bug to you.
+> Fix this by checking the argument of ark_set_pixclock() first.
 >
-> Yes, I think it should be done earlier.
+> Fixes: 681e14730c73 ("arkfb: new framebuffer driver for ARK Logic cards"=
+)
+> Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
+
+applied to fbdev git tree.
+
+Thanks!
+Helge
+
+> ---
+>  drivers/video/fbdev/arkfb.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
 >
-> Geert always mentioned that an invalid pixclock from userspace should be
-> rounded up to the next valid pixclock.
-> But since I don't have that hardware, I'm not sure how this can be done
-> best for this driver.
+> diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
+> index eb3e47c58c5f..ed76ddc7df3d 100644
+> --- a/drivers/video/fbdev/arkfb.c
+> +++ b/drivers/video/fbdev/arkfb.c
+> @@ -781,7 +781,12 @@ static int arkfb_set_par(struct fb_info *info)
+>  		return -EINVAL;
+>  	}
 >
-> Do you have the hardware to test?
-> If so, could you check the patch below?
+> -	ark_set_pixclock(info, (hdiv * info->var.pixclock) / hmul);
+> +	value =3D (hdiv * info->var.pixclock) / hmul;
+> +	if (!value) {
+> +		fb_dbg(info, "invalid pixclock\n");
+> +		value =3D 1;
+> +	}
+> +	ark_set_pixclock(info, value);
+>  	svga_set_timings(par->state.vgabase, &ark_timing_regs, &(info->var), h=
+mul, hdiv,
+>  			 (info->var.vmode & FB_VMODE_DOUBLE)     ? 2 : 1,
+>  			 (info->var.vmode & FB_VMODE_INTERLACED) ? 2 : 1,
 
-Thanks for your patch, it works for me :)
-
-> It should at least prevent the division-by-zero.
-> If it works, I'm happy if you could send a final patch...
-
-I've sent a patch to the mailing list, thanks again for your reminder.
-
-regards,
-
-Zheyu Ma

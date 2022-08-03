@@ -2,131 +2,140 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BC3AC19F28
-	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Aug 2022 13:17:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C21CC19F2B
+	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Aug 2022 21:29:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231585AbiHCNR1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 3 Aug 2022 09:17:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40752 "EHLO
+        id S236622AbiHCV3d (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 3 Aug 2022 17:29:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46878 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235851AbiHCNR0 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 3 Aug 2022 09:17:26 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 244F018B39;
-        Wed,  3 Aug 2022 06:17:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1659532639;
-        bh=2uXVOsfdm/Cp3uY6kF6GOzfMslaJ+Q2URlY6OMkhB4k=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=iUwyh9kivAhjHDlcF29t/6ST0ba/e5FHfKgjwoD9WzmxwR57Fevoqu7kmOaNGXP1x
-         JF2oY6YA2UGTTF2yR+zB52qlz4SeeSDrnoONmPggQnpiRXKUUBFW//BRXsskDZbv9z
-         E5FzmuyroQmiHk8W8RoZ5ZNMgb8RSzqkFaAAQUqU=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.136.66]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MWRVb-1nue1M2bf9-00Xx87; Wed, 03
- Aug 2022 15:17:19 +0200
-Message-ID: <cc6fd011-7859-3e3e-b5dd-54cdf0d4c348@gmx.de>
-Date:   Wed, 3 Aug 2022 15:16:31 +0200
+        with ESMTP id S231407AbiHCV3c (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 3 Aug 2022 17:29:32 -0400
+Received: from mail-il1-f169.google.com (mail-il1-f169.google.com [209.85.166.169])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D47CF19039;
+        Wed,  3 Aug 2022 14:29:31 -0700 (PDT)
+Received: by mail-il1-f169.google.com with SMTP id t15so9117379ilm.7;
+        Wed, 03 Aug 2022 14:29:31 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc;
+        bh=f9z9dK9gA2venJcM+Ps6Eq8WAHFZdcYaDOsADmzzKJM=;
+        b=fWS/DW8E32o5lPuhuJllmdnNYjJb5RXZ8afAI2Ml4Nt7iaOD4vQgbYV566ASLkOBVz
+         RRTK25XvKiXPUjC8CBeKESBR0TZztVgO3Vct285D5XjqSos5FJ3kYabHuvYOyMzw4HF8
+         Gjyx5oTnUw+DDijY99B2/cBqISeA/pLTJt+y/oRWxJ0FcNiq60m/5PyM9C+RklAUfPkL
+         guNSGKJ9vokMyE3P5tPa3alUiFW/dSBJyUJ2eu88HrDdQNhhoDrZ4b3k81N/DBmd5sUX
+         TiXkPISWMFRR1BBLWPtUUFr1Bsgv1Y1I1U7GH9zSyNI1LPf8EyEdyk6pUPRtTq/T8nnf
+         0Brw==
+X-Gm-Message-State: ACgBeo1zZAwdq2RQdAvyJpy4rfRNd8/ggSjeyYyN7KbObQNQ6tyCVBFw
+        2QncZGFTfe1awP73gtj/sg==
+X-Google-Smtp-Source: AA6agR45hy/Rqr678r9u1i7F2l8fa2PcLMenAO+cXPDrjNWdbPfsgq4JOvN7Y9ATPWx78l9RcviHMw==
+X-Received: by 2002:a92:cc41:0:b0:2de:a27c:a2ba with SMTP id t1-20020a92cc41000000b002dea27ca2bamr6686570ilq.285.1659562171097;
+        Wed, 03 Aug 2022 14:29:31 -0700 (PDT)
+Received: from robh.at.kernel.org ([64.188.179.248])
+        by smtp.gmail.com with ESMTPSA id y19-20020a02ce93000000b003428d1fbf4asm1413340jaq.36.2022.08.03.14.29.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 03 Aug 2022 14:29:30 -0700 (PDT)
+Received: (nullmailer pid 2654000 invoked by uid 1000);
+        Wed, 03 Aug 2022 21:29:26 -0000
+Date:   Wed, 3 Aug 2022 15:29:26 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Jonathan Cameron <jic23@kernel.org>
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Michael Hennerich <Michael.Hennerich@analog.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Lucas Stankus <lucas.p.stankus@gmail.com>,
+        Puranjay Mohan <puranjay12@gmail.com>,
+        Cosmin Tanislav <cosmin.tanislav@analog.com>,
+        Alexandru Tachici <alexandru.tachici@analog.com>,
+        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
+        Marcus Folkesson <marcus.folkesson@gmail.com>,
+        Kent Gustavsson <kent@minoris.se>,
+        Tomislav Denis <tomislav.denis@avl.com>,
+        Oleksij Rempel <linux@rempel-privat.de>, kernel@pengutronix.de,
+        Antoniu Miclaus <antoniu.miclaus@analog.com>,
+        Ricardo Ribalda <ribalda@kernel.org>,
+        Dragos Bogdan <dragos.bogdan@analog.com>,
+        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
+        Lorenzo Bianconi <lorenzo@kernel.org>,
+        Stefan Popa <stefan.popa@analog.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Stephan Gerhold <stephan@gerhold.net>,
+        Mike Looijmans <mike.looijmans@topic.nl>,
+        Joachim Eastwood <manabian@gmail.com>,
+        Tomas Melin <tomas.melin@vaisala.com>,
+        Sean Nyekjaer <sean@geanix.com>,
+        Beniamin Bia <beniamin.bia@analog.com>,
+        Patrick Vasseur <patrick.vasseur@c-s.fr>,
+        Charles-Antoine Couret <charles-antoine.couret@essensium.com>,
+        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Philippe Reynes <tremyfr@yahoo.fr>,
+        Jacopo Mondi <jacopo@jmondi.org>,
+        Akinobu Mita <akinobu.mita@gmail.com>,
+        Alexandru Lazar <alazar@startmail.com>,
+        Oskar Andero <oskar.andero@gmail.com>,
+        =?UTF-8?Q?M=C3=A5rten_Lindahl?= <martenli@axis.com>,
+        Bogdan Pricop <bogdan.pricop@emutex.com>,
+        Angelo Compagnucci <angelo.compagnucci@gmail.com>,
+        Matt Ranostay <matt.ranostay@konsulko.com>,
+        Dan Murphy <dmurphy@ti.com>,
+        Gregory Clement <gregory.clement@bootlin.com>,
+        Phil Reid <preid@electromag.com.au>,
+        Michael Welling <mwelling@ieee.org>,
+        Lukas Wunner <lukas@wunner.de>,
+        Robert Jones <rjones@gateworks.com>,
+        Chris Coffey <cmc@babblebit.net>,
+        Slawomir Stepien <sst@poczta.fm>,
+        Sankar Velliangiri <navin@linumiz.com>,
+        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        broonie@kernel.org
+Subject: Re: [PATCH v2 02/10] dt-bindings: iio: accel: use
+ spi-peripheral-props.yaml
+Message-ID: <20220803212926.GA2639296-robh@kernel.org>
+References: <20220727164646.387541-1-krzysztof.kozlowski@linaro.org>
+ <20220727164646.387541-3-krzysztof.kozlowski@linaro.org>
+ <20220731164943.320babe4@jic23-huawei>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH] video: fbdev: i740fb: Check the argument of
- i740_calc_vclk()
-Content-Language: en-US
-To:     Zheyu Ma <zheyuma97@gmail.com>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-References: <20220803092419.2821723-1-zheyuma97@gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220803092419.2821723-1-zheyuma97@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:eRSeW4PJIGssh/5M3NkXRiTW3dOVBM6Og7Z93prx9vqyWoQpOh8
- Ax0mO7cda3IQIsEZLIV2zyez3BqNfDOzrLF9FRn4Y149joFv74w0gapuLID3YWN6xHfg7H6
- lPwPNaENP0Jts2kzu5PeY5OMtw71VWxqePrTSL8S4Hg/knmz6BR/6uj2w2YATuGuD8sFYIH
- CBCf40KUfpMZuS29jb9mA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:bWjkjY+hQbs=:gfeB4WA58CZy4EfG67nxkX
- 5cXuvP7udvnFQMddeAmaWjLy4aDBDevEv1vnxaMOetJrOh0AXkmUeQ40uo07yKan1/HajTdDV
- 8bdJ1Ofx2eUvS95aoLDrl5DfRhY1cKU9n+o5WMDn4o2F9Hv5WB+iRxrNQNdNdaPz2Oatpkazu
- AaBHb8kTvi62/QkoKRJtOY+5M9OXP1i73DwGqfh2QHuQCSvNDwfAfUzKE/GGG/vYvdfUzcLcC
- ZOnsHOGixOTFEvyiwdiFZ+rltWQKO95w4nkJgL/IAJvkXmImufnQlX+OHOR9qIpi8OQAcxMC5
- qls25f6XB7HVp/iyguytExp4jODLx3iIDSJS4bSHzLlPR4bPim7zvWguO+3MgQYfs/mvV2uet
- V8pmv9gmOrkoeVTnLqRcNpsKnKT1Bf6JGOmqHm2qFsZ7eZvyiH/pnj5pCMXEhQdtkwXyNPlvC
- 7u0URUWrvpQNxVVGo8Pe0FVUO9HNqtTbYWo0ezoXGA2v4NheOJkkSgN2nWGtyo/THJtafBxPu
- F21q4g5aadCIXckmq6k0aRUo48gnlmtP7TVGHZxthDRLR2KLiOd9gpo0+1vn9vNBJbBvRvJWM
- qGp61OSRW9sq9ZIEB7KHoy7zQMxicKL+yi4ktNO2ygA+QZOy0+UyUXGaxHsmWulXYLChxXGjW
- 8Yjbb/RtZG7u1T22+NesNyr+TOlSm5ZyczdCljK0HyuTg+A6AfoX4YjxwX98s1jO8pVGki6et
- ItSt1oOlQy2URTxN3Qz88Yo4KIaiZ9Ac+lbO1JUGIUO0b0iX8oo/IvjTAZLDSK4xvI8tBdOkw
- 0FwrnpNBKU9bIJ3WPFkbKZh4nJ1ygVaxVC8ny0GGu9l+W8p2pAhcdbo3hEuCT5RngnYhyEt+S
- dstUFK2wqvMOMQhXe+PfD1PRxZTHZ/6zbXtpD4A6s2XOFse3+XLrpiWXZuq3oustBY5Y77PjN
- cz1VkSmhF5hU/nPxh3xK6bkqIPeIgE6agvVw3EFDoge/5NFJfGxilk3di0E59+O0CFdJ1dWpq
- S7xWnwxsIpF8ymELT9uCuOTtlbmRlksnhbwr/w+JC6LmqH1smplzl8wJSjaLQCacwiZPQJWi6
- Gh4BR51KJlcazs5ZE9vYGjkAxugC+tzlGvqNIKVKRD3bZD5zuDfDNOunA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220731164943.320babe4@jic23-huawei>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 8/3/22 11:24, Zheyu Ma wrote:
-> Since the user can control the arguments of the ioctl() from the user
-> space, under special arguments that may result in a divide-by-zero bug.
->
-> If the user provides an improper 'pixclock' value that makes the argumet
-> of i740_calc_vclk() less than 'I740_RFREQ_FIX', it will cause a
-> divide-by-zero bug in:
->     drivers/video/fbdev/i740fb.c:353 p_best =3D min(15, ilog2(I740_MAX_V=
-CO_FREQ / (freq / I740_RFREQ_FIX)));
->
-> The following log can reveal it:
->
-> divide error: 0000 [#1] PREEMPT SMP KASAN PTI
-> RIP: 0010:i740_calc_vclk drivers/video/fbdev/i740fb.c:353 [inline]
-> RIP: 0010:i740fb_decode_var drivers/video/fbdev/i740fb.c:646 [inline]
-> RIP: 0010:i740fb_set_par+0x163f/0x3b70 drivers/video/fbdev/i740fb.c:742
-> Call Trace:
->  fb_set_var+0x604/0xeb0 drivers/video/fbdev/core/fbmem.c:1034
->  do_fb_ioctl+0x234/0x670 drivers/video/fbdev/core/fbmem.c:1110
->  fb_ioctl+0xdd/0x130 drivers/video/fbdev/core/fbmem.c:1189
->
-> Fix this by checking the argument of i740_calc_vclk() first.
->
-> Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
+On Sun, Jul 31, 2022 at 04:49:43PM +0100, Jonathan Cameron wrote:
+> On Wed, 27 Jul 2022 18:46:38 +0200
+> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
+> 
+> > Instead of listing directly properties typical for SPI peripherals,
+> > reference the spi-peripheral-props.yaml schema.  This allows using all
+> > properties typical for SPI-connected devices, even these which device
+> > bindings author did not tried yet.
+> > 
+> > Remove the spi-* properties which now come via spi-peripheral-props.yaml
+> > schema, except for the cases when device schema adds some constraints
+> > like maximum frequency.
+> > 
+> > While changing additionalProperties->unevaluatedProperties, put it in
+> > typical place, just before example DTS.
+> > 
+> > Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> > 
+> > ---
+> > 
+> > I wonder if spi-3wire is device specific (not controller) and should be
+> > rather explicitly mentioned by device schema. Just like spi-cpol/cpha.
+> 
+> I think it is, but Mark is expert on this.
 
-applied to fbdev git tree.
+I would say yes as it's the device with a single data line.
 
-Thanks!
-Helge
+> In general I'm waiting on Mark's opinion on the whole idea!
 
-> ---
->  drivers/video/fbdev/i740fb.c | 9 +++++++--
->  1 file changed, 7 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/fbdev/i740fb.c b/drivers/video/fbdev/i740fb.c
-> index 09dd85553d4f..7f09a0daaaa2 100644
-> --- a/drivers/video/fbdev/i740fb.c
-> +++ b/drivers/video/fbdev/i740fb.c
-> @@ -400,7 +400,7 @@ static int i740fb_decode_var(const struct fb_var_scr=
-eeninfo *var,
->  	u32 xres, right, hslen, left, xtotal;
->  	u32 yres, lower, vslen, upper, ytotal;
->  	u32 vxres, xoffset, vyres, yoffset;
-> -	u32 bpp, base, dacspeed24, mem;
-> +	u32 bpp, base, dacspeed24, mem, freq;
->  	u8 r7;
->  	int i;
->
-> @@ -643,7 +643,12 @@ static int i740fb_decode_var(const struct fb_var_sc=
-reeninfo *var,
->  	par->atc[VGA_ATC_OVERSCAN] =3D 0;
->
->  	/* Calculate VCLK that most closely matches the requested dot clock */
-> -	i740_calc_vclk((((u32)1e9) / var->pixclock) * (u32)(1e3), par);
-> +	freq =3D (((u32)1e9) / var->pixclock) * (u32)(1e3);
-> +	if (freq < I740_RFREQ_FIX) {
-> +		fb_dbg(info, "invalid pixclock\n");
-> +		freq =3D I740_RFREQ_FIX;
-> +	}
-> +	i740_calc_vclk(freq, par);
->
->  	/* Since we program the clocks ourselves, always use VCLK2. */
->  	par->misc |=3D 0x0C;
+The prerequisite changes (except for spi-3-wire) are already queued up 
+by Mark as are changes for other subsystems.
 
+Rob

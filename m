@@ -2,127 +2,140 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C51A4C00144
-	for <linux-fbdev@archiver.kernel.org>; Thu,  4 Aug 2022 07:16:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C278CC3F6B0
+	for <linux-fbdev@archiver.kernel.org>; Thu,  4 Aug 2022 07:27:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229794AbiHDHQx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 4 Aug 2022 03:16:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42776 "EHLO
+        id S238816AbiHDH1t (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 4 Aug 2022 03:27:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49092 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229592AbiHDHQv (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 4 Aug 2022 03:16:51 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 388545C343;
-        Thu,  4 Aug 2022 00:16:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1659597387;
-        bh=oc1O2fPy86MLR9on/4I4+s39V+Vb+PCt1rvjb0LYkOY=;
-        h=X-UI-Sender-Class:Date:Subject:To:References:From:In-Reply-To;
-        b=PxNTHLa2k/Zbg+dSGTUhdxetK3v7W5se6qrcFG5akgWHcxTXRcpfcuE9It71HAj2O
-         M63IA01jWlvaPGBtGb+uoen3Ve9CtLSe91X9WCANYr1GVy4jSHnkwjxrcGwfFUQhLm
-         B1SwnLYaha7HGM34vmcgvOL3uxwXeKTFyPBFsqRc=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.176.33]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1M8QS8-1oNsoV0Gqu-004W85; Thu, 04
- Aug 2022 09:16:27 +0200
-Message-ID: <35e860bb-c76c-ca5f-3f48-2bf6cb798689@gmx.de>
-Date:   Thu, 4 Aug 2022 09:15:37 +0200
+        with ESMTP id S232405AbiHDH1r (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 4 Aug 2022 03:27:47 -0400
+Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com [IPv6:2a00:1450:4864:20::22d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CDB33220F7
+        for <linux-fbdev@vger.kernel.org>; Thu,  4 Aug 2022 00:27:45 -0700 (PDT)
+Received: by mail-lj1-x22d.google.com with SMTP id a13so21188564ljr.11
+        for <linux-fbdev@vger.kernel.org>; Thu, 04 Aug 2022 00:27:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=aSyB3KJvrvJ0BogoctkXI4bVjQHmZ/gYUNXbje+/kOI=;
+        b=TU9evHAWie+NDvs31nlalQNM1idI+WkZwpcUz6CgiQBvPAoiFI2fyRqVlPHwBabC46
+         MGadz82yrmKN07C0zIhnmyQU+J/+O8cGd5vxvUUALAC8T1/hxIcD3DITYGbmcvCOIjty
+         i/pOoEXqxi5Pvu0s05LUVK2CBbvplob+asCuGESh0ZQHS3SXQv8NCezyjawaF6S3bdll
+         05mUpDIZ/oO9EDj015QqzR4IMsYC0dXjVdDzyzF6gdnqQ5zJSs2ULUgAvy+0a8pKI7fT
+         LPdo1vjDCi30zJI8DhsBsDj7pSnymij7ReeUrQASZX+MgXuo54tC2+ZbP1rafHAgwKXD
+         OFMw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=aSyB3KJvrvJ0BogoctkXI4bVjQHmZ/gYUNXbje+/kOI=;
+        b=8MRe938faVSYTM+SFLSfUemiSORa8+UPr2gxJwbNackTB3k7YTzcbvJceLke/KDw6I
+         +6rw7W4Cip/FCTxgP5O5Xh8XNg4NoImesm1QGeqIIgoVr36ale1qLUbUPEXwTPuxlMr8
+         UcDuF8/5ulrywlw5Z1e+sOUSdQzYtZxIOtfR2I2rmLotrrCmqCywd4lPnfi4wrtC43nJ
+         q6A/AoCHSnRDLDN4QIXA8QDqSxMJcfvjdNh6JVtVjiniM7C4BX1c2tSDYCK2qYLFxhWG
+         RtECM4Qw267gUhJJinNdyxbhbwdEffTV3X02KGF+7hkix1nfzBmVqyZAsBuz1311uwOf
+         XrAQ==
+X-Gm-Message-State: ACgBeo1mAL8UXO8kWVuvVp+ah4GvIeMMrYgZ9YCRWk4+zIhwAdZrPWYA
+        1wZJJFf+aDOPVS67aFmab8UUfw==
+X-Google-Smtp-Source: AA6agR7+xRRDz610IRndZlm62HvuIryr79N8uLtJ4lMJe0TKFOdU4fTobPtr6nSF4CDtBtL6EVRPoQ==
+X-Received: by 2002:a2e:83d0:0:b0:25e:4afd:b28d with SMTP id s16-20020a2e83d0000000b0025e4afdb28dmr152816ljh.507.1659598064158;
+        Thu, 04 Aug 2022 00:27:44 -0700 (PDT)
+Received: from [192.168.1.6] ([77.222.167.48])
+        by smtp.gmail.com with ESMTPSA id w4-20020ac25984000000b0048a9a756763sm32790lfn.19.2022.08.04.00.27.38
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 04 Aug 2022 00:27:43 -0700 (PDT)
+Message-ID: <89ea12c2-d4ef-490d-ff28-27b636adb05f@linaro.org>
+Date:   Thu, 4 Aug 2022 09:27:37 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH] tty: vt: selection: Add check for valid tiocl_selection
- values
+ Thunderbird/91.12.0
+Subject: Re: [PATCH v2 02/10] dt-bindings: iio: accel: use
+ spi-peripheral-props.yaml
 Content-Language: en-US
-To:     Jiri Slaby <jirislaby@kernel.org>,
-        Khalid Masum <khalid.masum.92@gmail.com>,
-        syzbot <syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-References: <000000000000bbdd0405d120c155@google.com>
- <20220729065139.6529-1-khalid.masum.92@gmail.com>
- <eb4a26aa-da30-ceee-7d27-c1e902dd4218@gmx.de> <YuV9PybMPgc83Jis@p100>
- <1eb62346-304b-54d5-8a62-8a35888d51bd@kernel.org>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <1eb62346-304b-54d5-8a62-8a35888d51bd@kernel.org>
+To:     Rob Herring <robh@kernel.org>, Jonathan Cameron <jic23@kernel.org>
+Cc:     Lars-Peter Clausen <lars@metafoo.de>,
+        Michael Hennerich <Michael.Hennerich@analog.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Lucas Stankus <lucas.p.stankus@gmail.com>,
+        Puranjay Mohan <puranjay12@gmail.com>,
+        Cosmin Tanislav <cosmin.tanislav@analog.com>,
+        Alexandru Tachici <alexandru.tachici@analog.com>,
+        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
+        Marcus Folkesson <marcus.folkesson@gmail.com>,
+        Kent Gustavsson <kent@minoris.se>,
+        Tomislav Denis <tomislav.denis@avl.com>,
+        Oleksij Rempel <linux@rempel-privat.de>, kernel@pengutronix.de,
+        Antoniu Miclaus <antoniu.miclaus@analog.com>,
+        Ricardo Ribalda <ribalda@kernel.org>,
+        Dragos Bogdan <dragos.bogdan@analog.com>,
+        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
+        Lorenzo Bianconi <lorenzo@kernel.org>,
+        Stefan Popa <stefan.popa@analog.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Stephan Gerhold <stephan@gerhold.net>,
+        Mike Looijmans <mike.looijmans@topic.nl>,
+        Joachim Eastwood <manabian@gmail.com>,
+        Tomas Melin <tomas.melin@vaisala.com>,
+        Sean Nyekjaer <sean@geanix.com>,
+        Beniamin Bia <beniamin.bia@analog.com>,
+        Patrick Vasseur <patrick.vasseur@c-s.fr>,
+        Charles-Antoine Couret <charles-antoine.couret@essensium.com>,
+        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Philippe Reynes <tremyfr@yahoo.fr>,
+        Jacopo Mondi <jacopo@jmondi.org>,
+        Akinobu Mita <akinobu.mita@gmail.com>,
+        Alexandru Lazar <alazar@startmail.com>,
+        Oskar Andero <oskar.andero@gmail.com>,
+        =?UTF-8?Q?M=c3=a5rten_Lindahl?= <martenli@axis.com>,
+        Bogdan Pricop <bogdan.pricop@emutex.com>,
+        Angelo Compagnucci <angelo.compagnucci@gmail.com>,
+        Matt Ranostay <matt.ranostay@konsulko.com>,
+        Dan Murphy <dmurphy@ti.com>,
+        Gregory Clement <gregory.clement@bootlin.com>,
+        Phil Reid <preid@electromag.com.au>,
+        Michael Welling <mwelling@ieee.org>,
+        Lukas Wunner <lukas@wunner.de>,
+        Robert Jones <rjones@gateworks.com>,
+        Chris Coffey <cmc@babblebit.net>,
+        Slawomir Stepien <sst@poczta.fm>,
+        Sankar Velliangiri <navin@linumiz.com>,
+        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        broonie@kernel.org
+References: <20220727164646.387541-1-krzysztof.kozlowski@linaro.org>
+ <20220727164646.387541-3-krzysztof.kozlowski@linaro.org>
+ <20220731164943.320babe4@jic23-huawei>
+ <20220803212926.GA2639296-robh@kernel.org>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20220803212926.GA2639296-robh@kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:jRjVNDDdqJHTUKkL7mG+988yDQwcDTyIxbhpOuX4s43shVA9Dnn
- 5Cvvi8qFu3DTjPAR/E+WPnIE8z9iciQ6Tf9wG/dvgCcJXxl1wbZdtQu9E9KpfxbzqqzxeaO
- jSdPCN8QQ8zzlV7s21qEQ5jCHSGV3tSiQD6ixnIlwoE+fZwGFZDorgdwWgrk3BDke3rDOYa
- s/qZseDPGQt5C/ZekneLg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:4K5fc628s8A=:XCAXeu6N7qnxQkJwrpOxpL
- wyCC+Qj/fffBLtSuyuC0m767p5PPfBVxHtIEB/ABrvowUqZdizfH9OxmlYvD3RP0RBRbRY3ga
- l8mvJzbjGNb1HcaobCSYnlNOJDD8pNKscvzLoGh9Jf0wWnMiwqNUtjJI51/dKDFWoU5CBo76P
- KzBE4q/kN3AHcqEGoCDIiyXl41FfdD8pXc6HptplYcXB/8GsJAtz/t/3V6qfCOPtQC7xNKF7S
- 0pqfJweTYJ+8pqcq0fy2OKspKmRKWo8z7bhoMwYalrMYuyL+YsDVWSYMBNS5qbmIXcKf3upef
- 2o41Z0QVBo9qxwpvH+8kQiBHBk/ZEg5jHICcJuUB3ZvxCF/D+ZuM3KZOgql4e7PAMTZpA4twM
- gPfuSFm3vD18t9XBnwgJnAKS+0sSzJYkBEeoy8tngaYgb4ji+x/Ex0bSp+WwOrGIcAEY/aKd6
- aKr+a27jAR1jk/7L7iUAnIY2r5WFz0NYGY+5/lBRIJbooNIYLsoRP4SdZ/pDY5eIUVz/y2mFN
- /bYm6EDEzzUEZThnisptKj4uImXxtIRmrqylzEwMAJTOwL2nGf8/YYFZ6UuAqF+EDIugLlNs8
- OTKRqy5Gdo1VQuJ4IpjVDrsa3YStYfSjHTGFEEifrsHBW0jreAcGC3BGd7lOVUHif8oQKc9zV
- tYe4pQXpX3OfxoQk3b4tMnThcBa28ucR+lcxi8kLHtu7xE1YEiTjh90raPcYaSUavJcFh/4b+
- zlClaruuhBcf6jl8BRLzNGXguI9I30dH9soFD+M4CeAjtdpE8B2opgiMAzPSzzWpy6xk8Dkfo
- TWyQAMuvL7WQIAkKyh2zuq+LDQbu7uRm1E5EUYcwCZhwMzxWWfKJZkVhfq3zQvQ/KW7zswsVM
- ykAwI2M2+ZlEofDZzxvX8xcR5MgIP2lMrely93n4lnbhIoi1xezltWJbDRZwFrJFXyAxLe98l
- VwvXRCwF3P+jimfzcudB647Zm41WAMwZrrdyGvSUKHfOb9KwmxJVNTDWbAtMkxd4uVjCd603e
- iXcHI9quiP9ohCOvpNES5AZSQwx9MQ2aYI570s3S2I2Q3jOOvd0H6c6nKwKeIf/RhQzlazrp1
- PQIvYarnKAQLHY3tZfYO4QE+F7ChmUOP0Tynq9u+kfAkUImAqTrBlEhzA==
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Jiri,
-
-Thanks for looking into this patch!
-
-On 8/4/22 07:47, Jiri Slaby wrote:
-> On 30. 07. 22, 20:49, Helge Deller wrote:
->> The line and column numbers for the selection need to start at 1.
->> Add the checks to prevent invalid input.
+On 03/08/2022 23:29, Rob Herring wrote:
+>>> I wonder if spi-3wire is device specific (not controller) and should be
+>>> rather explicitly mentioned by device schema. Just like spi-cpol/cpha.
 >>
->> Signed-off-by: Helge Deller <deller@gmx.de>
->> Reported-by: syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com
->>
->> diff --git a/drivers/tty/vt/selection.c b/drivers/tty/vt/selection.c
->> index f7755e73696e..58692a9b4097 100644
->> --- a/drivers/tty/vt/selection.c
->> +++ b/drivers/tty/vt/selection.c
->> @@ -326,6 +326,9 @@ static int vc_selection(struct vc_data *vc, struct =
-tiocl_selection *v,
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return 0;
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 }
->>
->> +=C2=A0=C2=A0=C2=A0 if (!v->xs || !v->ys || !v->xe || !v->ye)
->> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return -EINVAL;
->
-> Hmm, I'm not sure about this. It potentially breaks userspace (by
-> returning EINVAL now).
+>> I think it is, but Mark is expert on this.
+> 
+> I would say yes as it's the device with a single data line.
 
-Right.
-According to the code below, my interpretation is that all xs/ys/xe/ye val=
-ues
-should be > 0. But of course I might be wrong on this, as I didn't find an=
-y
-documentation for TIOCL_SETSEL.
+I will move it to device schema, just like cpol/cpha, and send a v3.
+After the merge window.
 
-And if userspace tries to set an invalid selection (e.g. by selecting row =
-0),
-my patch now returns -EINVAL, while it returned success before.
+> 
+>> In general I'm waiting on Mark's opinion on the whole idea!
+> 
+> The prerequisite changes (except for spi-3-wire) are already queued up 
+> by Mark as are changes for other subsystems.
 
-> And the code below should handle this just fine, right:
->>       v->xs =3D min_t(u16, v->xs - 1, vc->vc_cols - 1);
->>       v->ys =3D min_t(u16, v->ys - 1, vc->vc_rows - 1);
->>       v->xe =3D min_t(u16, v->xe - 1, vc->vc_cols - 1);
 
-It "handles it fine" in the sense that it can cope with the
-input and will not crash.
-But it returns (maybe?) unexpected results...
-
-For example, if a user selects row 0 (where I assume he wanted to set
-the first line), he instead selects the last row.
-I'm not sure if this is the expected behaviour.
-
-Do you know of any userspace program which breaks because of this?
-
-Helge
+Best regards,
+Krzysztof

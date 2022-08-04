@@ -2,50 +2,38 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF4D4C00144
-	for <linux-fbdev@archiver.kernel.org>; Thu,  4 Aug 2022 05:47:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C51A4C00144
+	for <linux-fbdev@archiver.kernel.org>; Thu,  4 Aug 2022 07:16:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238987AbiHDFrg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 4 Aug 2022 01:47:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46508 "EHLO
+        id S229794AbiHDHQx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 4 Aug 2022 03:16:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42776 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238980AbiHDFrW (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 4 Aug 2022 01:47:22 -0400
-Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com [209.85.218.44])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 95C9860697;
-        Wed,  3 Aug 2022 22:47:12 -0700 (PDT)
-Received: by mail-ej1-f44.google.com with SMTP id c24so4209557ejd.11;
-        Wed, 03 Aug 2022 22:47:12 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc;
-        bh=+Qy5efYo9rDk2BsamMw6aPZr7j8DOLrxvf8t4GZMPAc=;
-        b=e4j4DTK4TpZ50GqUq+QmB6n96AUftRtepLJXdnFw2973CuBoZtfN7hTjBlVwqNdp6J
-         VfxMjNJgNeZVkx4kHllU3l0iNk16CAlQq6yJ2s1KZri/Bo3zrgNTT2glpQXckp04CM7x
-         5DhAqGU0NjibJQP7JooDVfJq7TmKhPrKzEhZwq0fFJCS+LGysyz+CkcMDmBcLIGXHK1B
-         uxPJ7ifdTSg7D2oj4zGDRNx3mQgO7a41+wODmzEN2H9cqLScDAXfp/X6kauvfBolQ4VL
-         l73YyxSlOm7Xes/VQNQwcoDDXAkf88eEAuWJ5YA0ThIBM95bH88bPg74idpAzyOKrcik
-         1ehw==
-X-Gm-Message-State: ACgBeo2MHZtsJ5kseGfNoVT4pgTSa4U6USBfaEii6sJC2stM3hvwAya/
-        FQxZ2j3FSvGYtTv4O66JcMI=
-X-Google-Smtp-Source: AA6agR4oUuaNBzJoYT26uMDLtGGEjB1kpaM/SRsRVEbHpQbaFOy7rHx5Ud1iTdXfq+qFj1rrnNWe+Q==
-X-Received: by 2002:a17:907:3ea8:b0:730:9756:7c81 with SMTP id hs40-20020a1709073ea800b0073097567c81mr189092ejc.726.1659592030840;
-        Wed, 03 Aug 2022 22:47:10 -0700 (PDT)
-Received: from ?IPV6:2a0b:e7c0:0:107::70f? ([2a0b:e7c0:0:107::70f])
-        by smtp.gmail.com with ESMTPSA id e3-20020a1709067e0300b0070efa110afcsm8002633ejr.83.2022.08.03.22.47.09
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 03 Aug 2022 22:47:10 -0700 (PDT)
-Message-ID: <1eb62346-304b-54d5-8a62-8a35888d51bd@kernel.org>
-Date:   Thu, 4 Aug 2022 07:47:09 +0200
+        with ESMTP id S229592AbiHDHQv (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 4 Aug 2022 03:16:51 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 388545C343;
+        Thu,  4 Aug 2022 00:16:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1659597387;
+        bh=oc1O2fPy86MLR9on/4I4+s39V+Vb+PCt1rvjb0LYkOY=;
+        h=X-UI-Sender-Class:Date:Subject:To:References:From:In-Reply-To;
+        b=PxNTHLa2k/Zbg+dSGTUhdxetK3v7W5se6qrcFG5akgWHcxTXRcpfcuE9It71HAj2O
+         M63IA01jWlvaPGBtGb+uoen3Ve9CtLSe91X9WCANYr1GVy4jSHnkwjxrcGwfFUQhLm
+         B1SwnLYaha7HGM34vmcgvOL3uxwXeKTFyPBFsqRc=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.176.33]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1M8QS8-1oNsoV0Gqu-004W85; Thu, 04
+ Aug 2022 09:16:27 +0200
+Message-ID: <35e860bb-c76c-ca5f-3f48-2bf6cb798689@gmx.de>
+Date:   Thu, 4 Aug 2022 09:15:37 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.11.0
 Subject: Re: [PATCH] tty: vt: selection: Add check for valid tiocl_selection
  values
 Content-Language: en-US
-To:     Helge Deller <deller@gmx.de>,
+To:     Jiri Slaby <jirislaby@kernel.org>,
         Khalid Masum <khalid.masum.92@gmail.com>,
         syzbot <syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
@@ -54,44 +42,87 @@ To:     Helge Deller <deller@gmx.de>,
 References: <000000000000bbdd0405d120c155@google.com>
  <20220729065139.6529-1-khalid.masum.92@gmail.com>
  <eb4a26aa-da30-ceee-7d27-c1e902dd4218@gmx.de> <YuV9PybMPgc83Jis@p100>
-From:   Jiri Slaby <jirislaby@kernel.org>
-In-Reply-To: <YuV9PybMPgc83Jis@p100>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+ <1eb62346-304b-54d5-8a62-8a35888d51bd@kernel.org>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <1eb62346-304b-54d5-8a62-8a35888d51bd@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:jRjVNDDdqJHTUKkL7mG+988yDQwcDTyIxbhpOuX4s43shVA9Dnn
+ 5Cvvi8qFu3DTjPAR/E+WPnIE8z9iciQ6Tf9wG/dvgCcJXxl1wbZdtQu9E9KpfxbzqqzxeaO
+ jSdPCN8QQ8zzlV7s21qEQ5jCHSGV3tSiQD6ixnIlwoE+fZwGFZDorgdwWgrk3BDke3rDOYa
+ s/qZseDPGQt5C/ZekneLg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:4K5fc628s8A=:XCAXeu6N7qnxQkJwrpOxpL
+ wyCC+Qj/fffBLtSuyuC0m767p5PPfBVxHtIEB/ABrvowUqZdizfH9OxmlYvD3RP0RBRbRY3ga
+ l8mvJzbjGNb1HcaobCSYnlNOJDD8pNKscvzLoGh9Jf0wWnMiwqNUtjJI51/dKDFWoU5CBo76P
+ KzBE4q/kN3AHcqEGoCDIiyXl41FfdD8pXc6HptplYcXB/8GsJAtz/t/3V6qfCOPtQC7xNKF7S
+ 0pqfJweTYJ+8pqcq0fy2OKspKmRKWo8z7bhoMwYalrMYuyL+YsDVWSYMBNS5qbmIXcKf3upef
+ 2o41Z0QVBo9qxwpvH+8kQiBHBk/ZEg5jHICcJuUB3ZvxCF/D+ZuM3KZOgql4e7PAMTZpA4twM
+ gPfuSFm3vD18t9XBnwgJnAKS+0sSzJYkBEeoy8tngaYgb4ji+x/Ex0bSp+WwOrGIcAEY/aKd6
+ aKr+a27jAR1jk/7L7iUAnIY2r5WFz0NYGY+5/lBRIJbooNIYLsoRP4SdZ/pDY5eIUVz/y2mFN
+ /bYm6EDEzzUEZThnisptKj4uImXxtIRmrqylzEwMAJTOwL2nGf8/YYFZ6UuAqF+EDIugLlNs8
+ OTKRqy5Gdo1VQuJ4IpjVDrsa3YStYfSjHTGFEEifrsHBW0jreAcGC3BGd7lOVUHif8oQKc9zV
+ tYe4pQXpX3OfxoQk3b4tMnThcBa28ucR+lcxi8kLHtu7xE1YEiTjh90raPcYaSUavJcFh/4b+
+ zlClaruuhBcf6jl8BRLzNGXguI9I30dH9soFD+M4CeAjtdpE8B2opgiMAzPSzzWpy6xk8Dkfo
+ TWyQAMuvL7WQIAkKyh2zuq+LDQbu7uRm1E5EUYcwCZhwMzxWWfKJZkVhfq3zQvQ/KW7zswsVM
+ ykAwI2M2+ZlEofDZzxvX8xcR5MgIP2lMrely93n4lnbhIoi1xezltWJbDRZwFrJFXyAxLe98l
+ VwvXRCwF3P+jimfzcudB647Zm41WAMwZrrdyGvSUKHfOb9KwmxJVNTDWbAtMkxd4uVjCd603e
+ iXcHI9quiP9ohCOvpNES5AZSQwx9MQ2aYI570s3S2I2Q3jOOvd0H6c6nKwKeIf/RhQzlazrp1
+ PQIvYarnKAQLHY3tZfYO4QE+F7ChmUOP0Tynq9u+kfAkUImAqTrBlEhzA==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 30. 07. 22, 20:49, Helge Deller wrote:
-> The line and column numbers for the selection need to start at 1.
-> Add the checks to prevent invalid input.
-> 
-> Signed-off-by: Helge Deller <deller@gmx.de>
-> Reported-by: syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com
-> 
-> diff --git a/drivers/tty/vt/selection.c b/drivers/tty/vt/selection.c
-> index f7755e73696e..58692a9b4097 100644
-> --- a/drivers/tty/vt/selection.c
-> +++ b/drivers/tty/vt/selection.c
-> @@ -326,6 +326,9 @@ static int vc_selection(struct vc_data *vc, struct tiocl_selection *v,
->   		return 0;
->   	}
-> 
-> +	if (!v->xs || !v->ys || !v->xe || !v->ye)
-> +		return -EINVAL;
+Hello Jiri,
 
-Hmm, I'm not sure about this. It potentially breaks userspace (by 
-returning EINVAL now). And the code below should handle this just fine, 
-right:
+Thanks for looking into this patch!
 
-> +
->   	v->xs = min_t(u16, v->xs - 1, vc->vc_cols - 1);
->   	v->ys = min_t(u16, v->ys - 1, vc->vc_rows - 1);
->   	v->xe = min_t(u16, v->xe - 1, vc->vc_cols - 1);
+On 8/4/22 07:47, Jiri Slaby wrote:
+> On 30. 07. 22, 20:49, Helge Deller wrote:
+>> The line and column numbers for the selection need to start at 1.
+>> Add the checks to prevent invalid input.
+>>
+>> Signed-off-by: Helge Deller <deller@gmx.de>
+>> Reported-by: syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com
+>>
+>> diff --git a/drivers/tty/vt/selection.c b/drivers/tty/vt/selection.c
+>> index f7755e73696e..58692a9b4097 100644
+>> --- a/drivers/tty/vt/selection.c
+>> +++ b/drivers/tty/vt/selection.c
+>> @@ -326,6 +326,9 @@ static int vc_selection(struct vc_data *vc, struct =
+tiocl_selection *v,
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return 0;
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 }
+>>
+>> +=C2=A0=C2=A0=C2=A0 if (!v->xs || !v->ys || !v->xe || !v->ye)
+>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return -EINVAL;
+>
+> Hmm, I'm not sure about this. It potentially breaks userspace (by
+> returning EINVAL now).
 
-?
+Right.
+According to the code below, my interpretation is that all xs/ys/xe/ye val=
+ues
+should be > 0. But of course I might be wrong on this, as I didn't find an=
+y
+documentation for TIOCL_SETSEL.
 
-thanks,
--- 
-js
-suse labs
+And if userspace tries to set an invalid selection (e.g. by selecting row =
+0),
+my patch now returns -EINVAL, while it returned success before.
+
+> And the code below should handle this just fine, right:
+>>       v->xs =3D min_t(u16, v->xs - 1, vc->vc_cols - 1);
+>>       v->ys =3D min_t(u16, v->ys - 1, vc->vc_rows - 1);
+>>       v->xe =3D min_t(u16, v->xe - 1, vc->vc_cols - 1);
+
+It "handles it fine" in the sense that it can cope with the
+input and will not crash.
+But it returns (maybe?) unexpected results...
+
+For example, if a user selects row 0 (where I assume he wanted to set
+the first line), he instead selects the last row.
+I'm not sure if this is the expected behaviour.
+
+Do you know of any userspace program which breaks because of this?
+
+Helge

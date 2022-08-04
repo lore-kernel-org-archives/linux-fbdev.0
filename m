@@ -2,98 +2,81 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BED9C19F2B
-	for <linux-fbdev@archiver.kernel.org>; Thu,  4 Aug 2022 09:53:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3A5EC19F2A
+	for <linux-fbdev@archiver.kernel.org>; Thu,  4 Aug 2022 12:41:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234496AbiHDJxg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 4 Aug 2022 05:53:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38668 "EHLO
+        id S232339AbiHDMlr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 4 Aug 2022 08:41:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58464 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232333AbiHDJxf (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 4 Aug 2022 05:53:35 -0400
-Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF1B926AE5;
-        Thu,  4 Aug 2022 02:53:34 -0700 (PDT)
-Received: by mail-pf1-x42f.google.com with SMTP id w185so18902174pfb.4;
-        Thu, 04 Aug 2022 02:53:34 -0700 (PDT)
+        with ESMTP id S239082AbiHDMlm (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 4 Aug 2022 08:41:42 -0400
+Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1EABC2AE3C;
+        Thu,  4 Aug 2022 05:41:41 -0700 (PDT)
+Received: by mail-pf1-x42b.google.com with SMTP id f28so11000441pfk.1;
+        Thu, 04 Aug 2022 05:41:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc;
-        bh=Yj4LnoCipKdQooHDqQkSzfPq9k+SbXM64sol04d/ofU=;
-        b=qVUuazv80uczwDUpa1W45XFLKQkv6E85jaluDS0qPCqx5UqLWXVRj7NNS3iB1u5yMk
-         BpAyrdAWbjN4xan/ozEhpBngVBm4vusnJrSXS6B5BtALu4Q7w0WkatMFosToCwAp0pxw
-         peyWEmojG15dUtIHplxLrARzYTKP87+hpzEs+qJ1Skx6IUC8ArRBWfpqh5foE/L0KuT3
-         5dl0vT47WvE/YFBfLMbib+8Ia4pPLthO02aty10gTq/7cMx0IUzGT+JIGnvuHvmlqhSG
-         +z4BOs0ydQYyC+O9uk363r+pOvEqCbU9PsjpybnRv4n2q2RjbjTJIV3fBXw17xudaCYj
-         TyKQ==
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc;
+        bh=Jxp/ZZ2IP/r5wdh/E9VL2sjWN7cCRv4O2EVI3aFNd88=;
+        b=mB1b1iZj1jk6+iE3H8+0/DIUxhsUtKMmi1cUlKktRqiKRdQl6wcVCaH0fxiKE5L1St
+         Oo0ssMdoZK+r/XpROJQAL4ajPnwpPXVyS3osq1JaxsveNY7yOUdGfwwVcgyxRjB/7+rD
+         TatDIZp8jwH4Q892sSBKqahFwQjQh0tcbDYNmkFOpnl+GyaYDpreX6AY0LN/kjjWFVOp
+         KjALY8HLg1vivHOSjiIKxVIuoT/K5JZwwypcojJ/gbMP0ILl+YPZy1lNDvz2V6+ybajI
+         5yjS77Vurc+ZDrE4mltLD27p3SSiNZrMPLy3NaQgwQ2c6Z6lz5tAfKQFxCDcvZoz+4o7
+         K7XA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc;
-        bh=Yj4LnoCipKdQooHDqQkSzfPq9k+SbXM64sol04d/ofU=;
-        b=ewahLd3VOGPtQ3GZMq/EPtODImi2jZTqphBuCCDYg+JCH5gVokPpOQObRCVpDdMgUZ
-         rEDXp/jLA+GDqHdHEzM0xeHS6T7qcU/Tb2cHcDerozYtbX1mfGtwFns/f4GBTml2jBHK
-         s1fI0aoUNEXiLsd/GcQFwT9/b+aSb24lxmcP92hBelwINzw8MLks2NsUgyjEJQdKiwNK
-         mr0NMxeE9j7nsHXRNhor+MFJKynV8t3R5EHgB4GZjx+/Izh982dQ/nl4a+/lK9hrJWKB
-         ctDDGc79cK+1mjFcB3VMIagU8H7XjPVcvB6S/Q0OD9FgwhaQ2AQUGmkUd0mpNO/Njezz
-         l3gg==
-X-Gm-Message-State: ACgBeo3FtQjUtk8qNh02MJ6yiePvxaMUoVzkNrLu2YZLHGh2Qp95MOJY
-        P3QB1NLgFCVKolQTZYK8T/KQnEpiSWgQ4NuIvt8=
-X-Google-Smtp-Source: AA6agR6qwy7xIi0BGj0KdaE31bzJZvJiNHMC9+UQ+P/hml7eIyhBore8DXxCh12e0tZqDO9pfcvT3sY1+E56wep5ub0=
-X-Received: by 2002:a65:694f:0:b0:41c:cc1f:4440 with SMTP id
- w15-20020a65694f000000b0041ccc1f4440mr1024346pgq.318.1659606814308; Thu, 04
- Aug 2022 02:53:34 -0700 (PDT)
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc;
+        bh=Jxp/ZZ2IP/r5wdh/E9VL2sjWN7cCRv4O2EVI3aFNd88=;
+        b=h9zk69+U3nMJjofMCydSWGm8Rz295uBFKGmF7/Xzg68xyzzZ8PazD9dSuX90LlDcB4
+         cuGlEHd9MgOsFOd95b+oUgnzOV6RUkq/6zX5RGeDi6yVxTn9hSmow+JrmYahFmVl+RLB
+         iojKZLiDNSMk64m+ZDakltjeD8TYl7nzTFRNEC1uMIdmqZosY3jwT8OGoDYLlHllcT1Y
+         ewTWyZqBr106JWZepoPp2iC8VRxzFB8NyEpjXfoF9wQJXJqrt4qzPhqxyjwUJWXtToxi
+         vKET+dn91jqfgHV8zxyCWo9iL7ES9E0H99tYOVqVvfIZ3G/HmTIPIZbOy4m/uikVYi7h
+         jlKQ==
+X-Gm-Message-State: ACgBeo0eM7uUYGWwa4NCULvnMpRYCENGNMux2PPR1Wk7p2BlS4aN8YGO
+        D2TPWvH/6Sa71ARNChIAe+6XEFEMJrpOWVA=
+X-Google-Smtp-Source: AA6agR7OCkCZOlQGd61Gl4vRVugbgIJJG5uCOjm6CCDU2oMYjrbQ4/YazeoSktpsodzeVz9eh6wGsg==
+X-Received: by 2002:a05:6a00:1c4b:b0:52e:6c05:8f1f with SMTP id s11-20020a056a001c4b00b0052e6c058f1fmr1746153pfw.7.1659616900533;
+        Thu, 04 Aug 2022 05:41:40 -0700 (PDT)
+Received: from localhost.localdomain ([166.111.133.51])
+        by smtp.gmail.com with ESMTPSA id i8-20020a63bf48000000b0041b672e93c2sm1070769pgo.17.2022.08.04.05.41.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 04 Aug 2022 05:41:40 -0700 (PDT)
+From:   Zheyu Ma <zheyuma97@gmail.com>
+To:     deller@gmx.de, adaplas@gmail.com, santiago@crfreenet.org,
+        akpm@linux-foundation.org
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, Zheyu Ma <zheyuma97@gmail.com>
+Subject: [PATCH 0/3] Fix bugs in *_set_par() caused by user input
+Date:   Thu,  4 Aug 2022 20:41:22 +0800
+Message-Id: <20220804124125.3506755-1-zheyuma97@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-References: <20220722102407.2205-1-peterwu.pub@gmail.com> <20220722102407.2205-13-peterwu.pub@gmail.com>
- <20220730214205.GK23307@duo.ucw.cz>
-In-Reply-To: <20220730214205.GK23307@duo.ucw.cz>
-From:   Alice Chen <szunichen@gmail.com>
-Date:   Thu, 4 Aug 2022 17:53:22 +0800
-Message-ID: <CA+hk2fbEvU2yJbowqKoozb2M0aQc9TFCaxAn++YrmEx+eWt_4w@mail.gmail.com>
-Subject: Re: [PATCH v6 12/13] leds: flash: mt6370: Add MediaTek MT6370
- flashlight support
-To:     Pavel Machek <pavel@ucw.cz>
-Cc:     ChiaEn Wu <peterwu.pub@gmail.com>, lee.jones@linaro.org,
-        daniel.thompson@linaro.org, jingoohan1@gmail.com,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        matthias.bgg@gmail.com, sre@kernel.org, chunfeng.yun@mediatek.com,
-        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
-        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
-        heikki.krogerus@linux.intel.com, deller@gmx.de,
-        andy.shevchenko@gmail.com, chiaen_wu@richtek.com,
-        alice_chen@richtek.com, cy_huang@richtek.com,
-        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> =E6=96=BC 2022=E5=B9=B47=E6=9C=8831=E6=97=A5 =
-=E9=80=B1=E6=97=A5 =E6=B8=85=E6=99=A85:42=E5=AF=AB=E9=81=93=EF=BC=9A
+In the function *_set_par(), the value of 'screen_size' is
+calculated by the user input. If the user provides the improper value,
+the value of 'screen_size' may larger than 'info->screen_size', which
+may cause a bug in the memset_io().
 
-> > +// SPDX-License-Identifier: GPL-2.0-only
-> > +/*
-> > + * Copyright (C) 2022 Richtek Technology Corp.
-> > + *
-> > + * Author: Alice Chen <alice_chen@richtek.com
->
-> Add ">" at end of line.
->
-> The series is quite big, would it be possible to submit LED changes
-> in separate series?
->
-Hi Pavel,
+Zheyu Ma (3):
+  video: fbdev: vt8623fb: Check the size of screen before memset_io()
+  video: fbdev: arkfb: Check the size of screen before memset_io()
+  video: fbdev: s3fb: Check the size of screen before memset_io()
 
-Our mfd dt-bindings depends on flash and LED dt-bindings,
-but our flash and LED config depend on mfd config.
-For the dependency consideration,
-we think submitting them in a patch series is better.
+ drivers/video/fbdev/arkfb.c    | 2 ++
+ drivers/video/fbdev/s3fb.c     | 2 ++
+ drivers/video/fbdev/vt8623fb.c | 2 ++
+ 3 files changed, 6 insertions(+)
 
-Best Regards,
-Alice
+-- 
+2.25.1
+

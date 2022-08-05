@@ -2,216 +2,255 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58826C25B08
-	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Aug 2022 08:23:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8055FC00140
+	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Aug 2022 10:15:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240471AbiHEIXR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 5 Aug 2022 04:23:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46006 "EHLO
+        id S240179AbiHEKPK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 5 Aug 2022 06:15:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35194 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229679AbiHEIXQ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 Aug 2022 04:23:16 -0400
+        with ESMTP id S231225AbiHEKPI (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 Aug 2022 06:15:08 -0400
 Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2654B10559;
-        Fri,  5 Aug 2022 01:23:07 -0700 (PDT)
-X-UUID: 521aec51c0c4465abc9ee5c222b83544-20220805
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DD6FA6C13A;
+        Fri,  5 Aug 2022 03:15:04 -0700 (PDT)
+X-UUID: 4d345643265f44a983993cf139968e0e-20220805
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Transfer-Encoding:MIME-Version:Content-Type:References:In-Reply-To:Date:CC:To:From:Subject:Message-ID; bh=fZpMTsQZkArkRmPkA9bGC5qIbPXJZeiECvd366oDb1M=;
-        b=YG1lyG8H6fSq8782yFTLNihYwXA8iKNA8Tp5cXjPKpQcYaUiDbJRRwDKhM9N1DjAessn7cS6n6lnnZPxoLNnugcU1DrPkQybogBLNp8XOXShlRACeoRnOKCkddHso7GJyixueNox3s+oW2L/KUiRGSz3NbnTAOPuvoV/WgmXpNQ=;
+        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=rS6eEE9xe6FDfKdMX8ocJhavhqjyxQAggDBfH0aLGsQ=;
+        b=QZPKGN4AMu4E39cN0daqO9NHMSZJ74MOYJ4lPpHDgbKmF8xmnFN+mwB/c1Xi8vJzLybim9EBVvE4/xQtOlSkhpUqAhhaYWq11mEC3pFruWrFvYetAe4dJynl20d6JwAT72Lt4E0OG4K0o/i5SDhaJzQK61K9BG2WhX0PyK3eu+Y=;
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.8,REQID:0bd14161-1a20-498a-bb5e-d5e59151099c,OB:0,LO
+X-CID-O-INFO: VERSION:1.1.8,REQID:b4366fdf-e53e-4465-a017-b75d62d9b1da,OB:0,LO
         B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
         ON:release,TS:0
-X-CID-META: VersionHash:0f94e32,CLOUDID:3fc3dd9b-da39-4e3b-a854-56c7d2111b46,C
+X-CID-META: VersionHash:0f94e32,CLOUDID:995bd448-f57f-4088-93dd-066979cdb4e6,C
         OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
         ,QS:nil,BEC:nil,COL:0
-X-UUID: 521aec51c0c4465abc9ee5c222b83544-20220805
-Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw02.mediatek.com
+X-UUID: 4d345643265f44a983993cf139968e0e-20220805
+Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw02.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 579496137; Fri, 05 Aug 2022 16:23:00 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
- mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Fri, 5 Aug 2022 16:22:58 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.2.792.15 via Frontend
- Transport; Fri, 5 Aug 2022 16:22:58 +0800
-Message-ID: <790262de6afed95870bc2e81771c166045d4757a.camel@mediatek.com>
-Subject: Re: [PATCH v15 05/11] drm/mediatek: Add MT8195 Embedded DisplayPort
- driver
-From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
-To:     CK Hu <ck.hu@mediatek.com>,
-        "chunkuang.hu@kernel.org" <chunkuang.hu@kernel.org>,
-        "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
-        "daniel@ffwll.ch" <daniel@ffwll.ch>,
-        "robh+dt@kernel.org" <robh+dt@kernel.org>,
-        "krzysztof.kozlowski+dt@linaro.org" 
-        <krzysztof.kozlowski+dt@linaro.org>,
-        "mripard@kernel.org" <mripard@kernel.org>,
-        "tzimmermann@suse.de" <tzimmermann@suse.de>,
-        "matthias.bgg@gmail.com" <matthias.bgg@gmail.com>,
-        "deller@gmx.de" <deller@gmx.de>,
-        "airlied@linux.ie" <airlied@linux.ie>
-CC:     "msp@baylibre.com" <msp@baylibre.com>,
-        "granquet@baylibre.com" <granquet@baylibre.com>,
-        Jitao Shi =?UTF-8?Q?=28=E7=9F=B3=E8=AE=B0=E6=B6=9B=29?= 
-        <jitao.shi@mediatek.com>,
-        "wenst@chromium.org" <wenst@chromium.org>,
-        "angelogioacchino.delregno@collabora.com" 
-        <angelogioacchino.delregno@collabora.com>,
-        LiangXu Xu =?UTF-8?Q?=28=E5=BE=90=E4=BA=AE=29?= 
-        <LiangXu.Xu@mediatek.com>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-mediatek@lists.infradead.org" 
-        <linux-mediatek@lists.infradead.org>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 1235914025; Fri, 05 Aug 2022 18:15:01 +0800
+Received: from mtkcas10.mediatek.inc (172.21.101.39) by
+ mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.792.15; Fri, 5 Aug 2022 18:15:00 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas10.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Fri, 5 Aug 2022 18:14:59 +0800
+From:   Bo-Chen Chen <rex-bc.chen@mediatek.com>
+To:     <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
+        <daniel@ffwll.ch>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
+        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
+        <airlied@linux.ie>
+CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
+        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
+        <angelogioacchino.delregno@collabora.com>, <ck.hu@mediatek.com>,
+        <liangxu.xu@mediatek.com>, <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        Project_Global_Chrome_Upstream_Group 
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Fri, 5 Aug 2022 16:22:58 +0800
-In-Reply-To: <202347b5f781ba1a9abe7297c9906793ad547d0d.camel@mediatek.com>
-References: <20220727045035.32225-1-rex-bc.chen@mediatek.com>
-         <20220727045035.32225-6-rex-bc.chen@mediatek.com>
-         <202347b5f781ba1a9abe7297c9906793ad547d0d.camel@mediatek.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        <linux-fbdev@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        Bo-Chen Chen <rex-bc.chen@mediatek.com>
+Subject: [PATCH v16 2/8] video/hdmi: Add audio_infoframe packing for DP
+Date:   Fri, 5 Aug 2022 18:14:53 +0800
+Message-ID: <20220805101459.3386-3-rex-bc.chen@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20220805101459.3386-1-rex-bc.chen@mediatek.com>
+References: <20220805101459.3386-1-rex-bc.chen@mediatek.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, 2022-08-02 at 13:09 +0800, CK Hu wrote:
-> Hi, Bo-Chen:
-> 
-> On Wed, 2022-07-27 at 12:50 +0800, Bo-Chen Chen wrote:
-> > From: Markus Schneider-Pargmann <msp@baylibre.com>
-> > 
-> > This patch adds a embedded displayport driver for the MediaTek
-> > mt8195
-> > SoC.
-> > 
-> > It supports the MT8195, the embedded DisplayPort units. It offers
-> > DisplayPort 1.4 with up to 4 lanes.
-> > 
-> > The driver creates a child device for the phy. The child device
-> > will
-> > never exist without the parent being active. As they are sharing a
-> > register range, the parent passes a regmap pointer to the child so
-> > that
-> > both can work with the same register range. The phy driver sets
-> > device
-> > data that is read by the parent to get the phy device that can be
-> > used
-> > to control the phy properties.
-> > 
-> > This driver is based on an initial version by
-> > Jitao shi <jitao.shi@mediatek.com>
-> > 
-> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> > Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
-> > ---
-> 
-> [snip]
-> 
-> > +
-> > +static irqreturn_t mtk_dp_hpd_event_thread(int hpd, void *dev)
-> > +{
-> > +	struct mtk_dp *mtk_dp = dev;
-> > +
-> > +	if (mtk_dp->train_info.hpd_inerrupt) {
-> 
-> When the thread is running, mtk_dp->train_info.hpd_inerrupt would be
-> true. So this checking is redundant.
-> 
+From: Markus Schneider-Pargmann <msp@baylibre.com>
 
-Hello CK,
+Similar to HDMI, DP uses audio infoframes as well which are structured
+very similar to the HDMI ones.
 
-ok, I will remove it.
+This patch adds a helper function to pack the HDMI audio infoframe for
+DP, called hdmi_audio_infoframe_pack_for_dp().
+hdmi_audio_infoframe_pack_only() is split into two parts. One of them
+packs the payload only and can be used for HDMI and DP.
 
-> > +		dev_dbg(mtk_dp->dev, "MTK_DP_HPD_INTERRUPT\n");
-> > +		mtk_dp->train_info.hpd_inerrupt = false;
-> > +		mtk_dp_hpd_sink_event(mtk_dp);
-> > +	}
-> > +
-> > +	return IRQ_HANDLED;
-> > +}
-> > +
-> > +static irqreturn_t mtk_dp_hpd_event(int hpd, void *dev)
-> > +{
-> > +	struct mtk_dp *mtk_dp = dev;
-> > +	struct mtk_dp_train_info *train_info = &mtk_dp->train_info;
-> > +	u32 irq_status;
-> > +
-> > +	irq_status = mtk_dp_read(mtk_dp, MTK_DP_TOP_IRQ_STATUS);
-> > +
-> > +	if (!irq_status)
-> > +		return IRQ_HANDLED;
-> > +
-> > +	if (irq_status & RGS_IRQ_STATUS_TRANSMITTER) {
-> 
-> Combine this if-checking with previous if-checking, it would be:
-> 
-> if (!(irq_status & RGS_IRQ_STATUS_TRANSMITTER))
-> 	return IRQ_HANDLED;
-> 
+Also constify the frame parameter in hdmi_audio_infoframe_check() as
+it is passed to hdmi_audio_infoframe_check_only() which expects a const.
 
-ok.
+Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+---
+ drivers/video/hdmi.c         | 82 +++++++++++++++++++++++++++---------
+ include/drm/display/drm_dp.h |  2 +
+ include/linux/hdmi.h         |  7 ++-
+ 3 files changed, 71 insertions(+), 20 deletions(-)
 
-> > +		irq_status = mtk_dp_swirq_get_clear(mtk_dp) |
-> > +			     mtk_dp_hwirq_get_clear(mtk_dp);
-> > +
-> > +		if (!irq_status)
-> > +			return IRQ_HANDLED;
-> > +
-> > +		if (irq_status & MTK_DP_HPD_INTERRUPT)
-> 
-> Does this interrupt MTK_DP_HPD_INTERRUPT have any relation with
-> MTK_DP_HPD_CONNECT and MTK_DP_HPD_CONNECT? From the naming, I guess
-> that when MTK_DP_HPD_CONNECT happen, MTK_DP_HPD_INTERRUPT would also
-> happen. Either for MTK_DP_HPD_DISCONNECT. When would
-> MTK_DP_HPD_INTERRUPT happen but MTK_DP_HPD_CONNECT or
-> MTK_DP_HPD_DISCONNECT does not happen.
-> 
-
-There is no relation for these status. They are individual.
-MTK_DP_HPD_INTERRUPT is for interrupt from sink device. After receiving
-this source device should do some actions.
-
-MTK_DP_HPD_CONNECT and MTK_DP_HPD_DISCONNECT are for HPD status.
-
-BRs,
-Bo-Chen
-
-> Regards,
-> CK
-> 
-> > +			train_info->hpd_inerrupt = true;
-> > +
-> > +		if (!(irq_status & MTK_DP_HPD_CONNECT ||
-> > +		      irq_status & MTK_DP_HPD_DISCONNECT))
-> > +			return IRQ_WAKE_THREAD;
-> > +
-> > +		if (!!(mtk_dp_read(mtk_dp, MTK_DP_TRANS_P0_3414) &
-> > +		       HPD_DB_DP_TRANS_P0_MASK))
-> > +			train_info->cable_plugged_in = true;
-> > +		else
-> > +			train_info->cable_plugged_in = false;
-> > +
-> > +		mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_PWR_STATE,
-> > +				   DP_PWR_STATE_BANDGAP_TPLL_LANE,
-> > +				   DP_PWR_STATE_MASK);
-> > +	}
-> > +
-> > +	return IRQ_HANDLED;
-> > +}
-> > +
-> 
-> 
+diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
+index 947be761dfa4..03c7f27dde49 100644
+--- a/drivers/video/hdmi.c
++++ b/drivers/video/hdmi.c
+@@ -21,6 +21,7 @@
+  * DEALINGS IN THE SOFTWARE.
+  */
+ 
++#include <drm/display/drm_dp.h>
+ #include <linux/bitops.h>
+ #include <linux/bug.h>
+ #include <linux/errno.h>
+@@ -381,12 +382,34 @@ static int hdmi_audio_infoframe_check_only(const struct hdmi_audio_infoframe *fr
+  *
+  * Returns 0 on success or a negative error code on failure.
+  */
+-int hdmi_audio_infoframe_check(struct hdmi_audio_infoframe *frame)
++int hdmi_audio_infoframe_check(const struct hdmi_audio_infoframe *frame)
+ {
+ 	return hdmi_audio_infoframe_check_only(frame);
+ }
+ EXPORT_SYMBOL(hdmi_audio_infoframe_check);
+ 
++static void
++hdmi_audio_infoframe_pack_payload(const struct hdmi_audio_infoframe *frame,
++				  u8 *buffer)
++{
++	u8 channels;
++
++	if (frame->channels >= 2)
++		channels = frame->channels - 1;
++	else
++		channels = 0;
++
++	buffer[0] = ((frame->coding_type & 0xf) << 4) | (channels & 0x7);
++	buffer[1] = ((frame->sample_frequency & 0x7) << 2) |
++		 (frame->sample_size & 0x3);
++	buffer[2] = frame->coding_type_ext & 0x1f;
++	buffer[3] = frame->channel_allocation;
++	buffer[4] = (frame->level_shift_value & 0xf) << 3;
++
++	if (frame->downmix_inhibit)
++		buffer[4] |= BIT(7);
++}
++
+ /**
+  * hdmi_audio_infoframe_pack_only() - write HDMI audio infoframe to binary buffer
+  * @frame: HDMI audio infoframe
+@@ -404,7 +427,6 @@ EXPORT_SYMBOL(hdmi_audio_infoframe_check);
+ ssize_t hdmi_audio_infoframe_pack_only(const struct hdmi_audio_infoframe *frame,
+ 				       void *buffer, size_t size)
+ {
+-	unsigned char channels;
+ 	u8 *ptr = buffer;
+ 	size_t length;
+ 	int ret;
+@@ -420,28 +442,13 @@ ssize_t hdmi_audio_infoframe_pack_only(const struct hdmi_audio_infoframe *frame,
+ 
+ 	memset(buffer, 0, size);
+ 
+-	if (frame->channels >= 2)
+-		channels = frame->channels - 1;
+-	else
+-		channels = 0;
+-
+ 	ptr[0] = frame->type;
+ 	ptr[1] = frame->version;
+ 	ptr[2] = frame->length;
+ 	ptr[3] = 0; /* checksum */
+ 
+-	/* start infoframe payload */
+-	ptr += HDMI_INFOFRAME_HEADER_SIZE;
+-
+-	ptr[0] = ((frame->coding_type & 0xf) << 4) | (channels & 0x7);
+-	ptr[1] = ((frame->sample_frequency & 0x7) << 2) |
+-		 (frame->sample_size & 0x3);
+-	ptr[2] = frame->coding_type_ext & 0x1f;
+-	ptr[3] = frame->channel_allocation;
+-	ptr[4] = (frame->level_shift_value & 0xf) << 3;
+-
+-	if (frame->downmix_inhibit)
+-		ptr[4] |= BIT(7);
++	hdmi_audio_infoframe_pack_payload(frame,
++					  ptr + HDMI_INFOFRAME_HEADER_SIZE);
+ 
+ 	hdmi_infoframe_set_checksum(buffer, length);
+ 
+@@ -479,6 +486,43 @@ ssize_t hdmi_audio_infoframe_pack(struct hdmi_audio_infoframe *frame,
+ }
+ EXPORT_SYMBOL(hdmi_audio_infoframe_pack);
+ 
++/**
++ * hdmi_audio_infoframe_pack_for_dp - Pack a HDMI Audio infoframe for DisplayPort
++ *
++ * @frame:      HDMI Audio infoframe
++ * @sdp:        Secondary data packet for DisplayPort.
++ * @dp_version: DisplayPort version to be encoded in the header
++ *
++ * Packs a HDMI Audio Infoframe to be sent over DisplayPort. This function
++ * fills the secondary data packet to be used for DisplayPort.
++ *
++ * Return: Number of total written bytes or a negative errno on failure.
++ */
++ssize_t
++hdmi_audio_infoframe_pack_for_dp(const struct hdmi_audio_infoframe *frame,
++				 struct dp_sdp *sdp, u8 dp_version)
++{
++	int ret;
++
++	ret = hdmi_audio_infoframe_check(frame);
++	if (ret)
++		return ret;
++
++	memset(sdp->db, 0, sizeof(sdp->db));
++
++	/* Secondary-data packet header */
++	sdp->sdp_header.HB0 = 0;
++	sdp->sdp_header.HB1 = frame->type;
++	sdp->sdp_header.HB2 = DP_SDP_AUDIO_INFOFRAME_HB2;
++	sdp->sdp_header.HB3 = (dp_version & 0x3f) << 2;
++
++	hdmi_audio_infoframe_pack_payload(frame, sdp->db);
++
++	/* Return size =  frame length + four HB for sdp_header */
++	return frame->length + 4;
++}
++EXPORT_SYMBOL(hdmi_audio_infoframe_pack_for_dp);
++
+ /**
+  * hdmi_vendor_infoframe_init() - initialize an HDMI vendor infoframe
+  * @frame: HDMI vendor infoframe
+diff --git a/include/drm/display/drm_dp.h b/include/drm/display/drm_dp.h
+index 9e3aff7e68bb..6c0871164771 100644
+--- a/include/drm/display/drm_dp.h
++++ b/include/drm/display/drm_dp.h
+@@ -1536,6 +1536,8 @@ enum drm_dp_phy {
+ #define DP_SDP_VSC_EXT_CEA		0x21 /* DP 1.4 */
+ /* 0x80+ CEA-861 infoframe types */
+ 
++#define DP_SDP_AUDIO_INFOFRAME_HB2	0x1b
++
+ /**
+  * struct dp_sdp_header - DP secondary data packet header
+  * @HB0: Secondary Data Packet ID
+diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
+index c8ec982ff498..2f4dcc8d060e 100644
+--- a/include/linux/hdmi.h
++++ b/include/linux/hdmi.h
+@@ -336,7 +336,12 @@ ssize_t hdmi_audio_infoframe_pack(struct hdmi_audio_infoframe *frame,
+ 				  void *buffer, size_t size);
+ ssize_t hdmi_audio_infoframe_pack_only(const struct hdmi_audio_infoframe *frame,
+ 				       void *buffer, size_t size);
+-int hdmi_audio_infoframe_check(struct hdmi_audio_infoframe *frame);
++int hdmi_audio_infoframe_check(const struct hdmi_audio_infoframe *frame);
++
++struct dp_sdp;
++ssize_t
++hdmi_audio_infoframe_pack_for_dp(const struct hdmi_audio_infoframe *frame,
++				 struct dp_sdp *sdp, u8 dp_version);
+ 
+ enum hdmi_3d_structure {
+ 	HDMI_3D_STRUCTURE_INVALID = -1,
+-- 
+2.18.0
 

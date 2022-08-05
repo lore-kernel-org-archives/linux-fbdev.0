@@ -2,75 +2,105 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4B1CC25B06
-	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Aug 2022 00:39:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 474D4C19F2D
+	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Aug 2022 02:48:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231256AbiHEAjm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 4 Aug 2022 20:39:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48350 "EHLO
+        id S231169AbiHECs3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 4 Aug 2022 22:48:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57168 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230311AbiHEAjl (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 4 Aug 2022 20:39:41 -0400
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id D3240E03C
-        for <linux-fbdev@vger.kernel.org>; Thu,  4 Aug 2022 17:39:38 -0700 (PDT)
-Received: from ip6-localhost (localhost.localdomain [127.0.0.1])
-        by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 2750T200009896;
-        Thu, 4 Aug 2022 19:29:02 -0500
-Message-ID: <e92ea74fefd5110d2c1dbcea454d5ec8d2cadcf8.camel@kernel.crashing.org>
-Subject: Re: [PATCH v2 10/10] drm/ofdrm: Support color management
-From:   Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        airlied@linux.ie, daniel@ffwll.ch, deller@gmx.de,
-        maxime@cerno.tech, sam@ravnborg.org, msuchanek@suse.de,
-        mpe@ellerman.id.au, paulus@samba.org, geert@linux-m68k.org,
-        mark.cave-ayland@ilande.co.uk
-Cc:     linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        dri-devel@lists.freedesktop.org
-Date:   Fri, 05 Aug 2022 10:29:01 +1000
-In-Reply-To: <05511c35-da46-aefd-3e03-364b7311284c@suse.de>
-References: <20220720142732.32041-1-tzimmermann@suse.de>
-         <20220720142732.32041-11-tzimmermann@suse.de>
-         <abe3fa95-942b-6d2f-7167-83d0cea59444@redhat.com>
-         <05511c35-da46-aefd-3e03-364b7311284c@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.36.5-0ubuntu1 
+        with ESMTP id S230015AbiHECs2 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 4 Aug 2022 22:48:28 -0400
+Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 00904220F6;
+        Thu,  4 Aug 2022 19:48:27 -0700 (PDT)
+Received: by mail-pl1-x636.google.com with SMTP id d16so1462636pll.11;
+        Thu, 04 Aug 2022 19:48:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc;
+        bh=NJmpSabGYVySx6BZBYlXrVGI+AUkhQcvqbpP5TAjxAs=;
+        b=KhuBnWDMJyITR1swyC10Dikh3DeQ8Cps4R1NrejKNF+SrrvfRiRUynX4tqfzZ2yoc4
+         5Za8ftfsBAfx1IHMMaRWgHYBJAfP0/u6vjmZ9TCvx93nb26PvslquXUH3Gsr20sHBlYc
+         qr0mkZGH44kWj59dMALKKCB1WU7EVnHy7ntu9ck7tZceaTdTKqJDw2LilCv8DfbRz6TC
+         YSE8duWnL0OvXvSbsvJctfOuHa3bED4hXQT5qFKc9ZTeBFkh2zm+CgEIZDrZbC2EQDuv
+         VdIIeMf/MaEfLgjpazk1lZWlyrcPI+1omNIJjv08cJIuG3Wz51bDaweV3eAa8qRiGn0v
+         NLBg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc;
+        bh=NJmpSabGYVySx6BZBYlXrVGI+AUkhQcvqbpP5TAjxAs=;
+        b=OZL8VK+W2+sSWwKthuXYjajqbN/r0q8+rxh+IY9h7+ia5adaO4nJqiiu6SQAiMO5Lq
+         3ggGSC2EhYXxSKlB99FsprHi61xUpUTc7co6TkYB5TGazBypoKE4HUK4QdeWw0IfTcQC
+         d1wpyLAD6zussifhixNcNB8vackq2hWxACXtnOfWs7vNUGnXfdiTGPXGmjRysf6l6EyE
+         mEqioB6TSUMaC1aYeABqjOx3eZgCPhFf9lIqjsUSNKTHmatubg8pT7vWP+/zIadHhOok
+         1J68+j2UOZwAq8hsQtyVEF+p/Ld0NppsfCPARhgCInHaby+p/mtpw4ersJToJfYMzha2
+         BcXg==
+X-Gm-Message-State: ACgBeo03D5tpDbD/IJJXZ2pqrSd4yG9wxESUaMFe7/d5aJTQJl+MMek1
+        oGHpWAx7CTdjZIOhdPPz7ZI9wDj5g/IOUfjLx99JsFqwqoyyr6Y=
+X-Google-Smtp-Source: AA6agR6gZikLvwmG4YAjYzlgW6RPbub+vhwTLBM35vXf/i9hvAAoKYKKSKGO1wlYtRNMJMFVbIxfKOFU5KSteImpazk=
+X-Received: by 2002:a17:90b:388e:b0:1f5:40d4:828d with SMTP id
+ mu14-20020a17090b388e00b001f540d4828dmr5379294pjb.31.1659667707464; Thu, 04
+ Aug 2022 19:48:27 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+References: <20220804124125.3506755-1-zheyuma97@gmail.com> <YuvbI8NEpzciTgfc@finarfin>
+In-Reply-To: <YuvbI8NEpzciTgfc@finarfin>
+From:   Zheyu Ma <zheyuma97@gmail.com>
+Date:   Fri, 5 Aug 2022 10:48:16 +0800
+Message-ID: <CAMhUBjnf6T=eJAhkOW=TOKBTjQojCmNwMB0ekOss8yf65aRBTg@mail.gmail.com>
+Subject: Re: [PATCH 0/3] Fix bugs in *_set_par() caused by user input
+To:     Ondrej Zajicek <santiago@crfreenet.org>
+Cc:     Helge Deller <deller@gmx.de>, adaplas@gmail.com,
+        akpm@linux-foundation.org,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 2022-07-27 at 10:41 +0200, Thomas Zimmermann wrote:
-> 
-> > > +static void __iomem *ofdrm_mach64_cmap_ioremap(struct ofdrm_device *odev,
-> > > +					       struct device_node *of_node,
-> > > +					       u64 fb_base)
-> > > +{
-> > > +	struct drm_device *dev = &odev->dev;
-> > > +	u64 address;
-> > > +	void __iomem *cmap_base;
-> > > +
-> > > +	address = fb_base & 0xff000000ul;
-> > > +	address += 0x7ff000;
-> > > +
-> > 
-> > It would be good to know where these addresses are coming from. Maybe some
-> > constant macros or a comment ? Same for the other places where addresses
-> > and offsets are used.
-> 
-> I have no idea where these values come from. I took them from offb. And 
-> I suspect that some of these CMAP helpers could be further merged if 
-> only it was clear where the numbers come from.  But as i don't have the 
-> equipment for testing, I took most of this literally as-is from offb.
+Hello,
 
-Ancient black magic :-) Old ATI mach64 chips had the registers sitting
-at the end of the framebuffer. You can find an equivalent in
-drivers/video/aty/atyfb_base.c:atyfb_setup_generic():
+On Thu, Aug 4, 2022 at 10:43 PM Ondrej Zajicek <santiago@crfreenet.org> wrote:
+>
+> On Thu, Aug 04, 2022 at 08:41:22PM +0800, Zheyu Ma wrote:
+> > In the function *_set_par(), the value of 'screen_size' is
+> > calculated by the user input. If the user provides the improper value,
+> > the value of 'screen_size' may larger than 'info->screen_size', which
+> > may cause a bug in the memset_io().
+>
+> Hi
+>
+> I did not saw fbdev code in years, but should not this be already checked
+> by *_check_var() ?
+>
+> arkfb_check_var():
+>
+>         ...
+>         /* Check whether have enough memory */
+>         mem = ((var->bits_per_pixel * var->xres_virtual) >> 3) * var->yres_virtual;
+>         if (mem > info->screen_size)
+>         ...
 
-	raddr = addr + 0x7ff000UL;
+Thanks for the reminder. But since the user can control all the
+parameters of the ioctl system call, it is possible to assign
+'var->bits_per_pixel' to be 0 and thus 'mem' will be 0, bypassing this
+check. And in *_set_par(), when 'var->bits_per_pixel' is 0,
+'screen_size' will be calculated as follows:
 
-Cheers,
-Ben.
+    u32 bpp = info->var.bits_per_pixel;
+    if (bpp != 0) {
+        ...
+    } else {
+        ...
+        screen_size = (info->var.xres_virtual * info->var.yres_virtual) / 64;
+    }
 
+resulting in a very large value.
+
+regards,
+
+Zheyu Ma

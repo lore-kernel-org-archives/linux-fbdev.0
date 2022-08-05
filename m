@@ -2,251 +2,135 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14E00C19F2D
-	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Aug 2022 06:55:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EB3EC25B0C
+	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Aug 2022 07:06:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237904AbiHEGzG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 5 Aug 2022 02:55:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60304 "EHLO
+        id S240071AbiHEHGk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 5 Aug 2022 03:06:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41076 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237898AbiHEGzF (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 Aug 2022 02:55:05 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9307213DD5;
-        Thu,  4 Aug 2022 23:55:03 -0700 (PDT)
-X-UUID: 5aafa9e119794ee8a52c2d6ad658eff4-20220805
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Transfer-Encoding:MIME-Version:Content-Type:References:In-Reply-To:Date:CC:To:From:Subject:Message-ID; bh=9nir8zRQtJqQ4Wo+km5ez4xfHiBIhvwG0Vod/3Ig61E=;
-        b=SxDtcbjvEKjmuqsgPsxVvg4FW2RwLUnaAmVYYfut+ZqmHzTYFzM1CDAbkkzFBjG2waTYSl+ywu6dYHvJ5+G0CHtt0QgWAufmMMMjM75bNVXpH8tYdnE6gP0QIAwyTJq/pPuzKUmLW4Qey5cHZo0YqUahc4Ohj4ek9CSsnz/FS/0=;
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.8,REQID:0b5e8034-168c-4c43-8347-b483477deaa8,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACT
-        ION:release,TS:45
-X-CID-INFO: VERSION:1.1.8,REQID:0b5e8034-168c-4c43-8347-b483477deaa8,OB:0,LOB:
-        0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTIO
-        N:release,TS:45
-X-CID-META: VersionHash:0f94e32,CLOUDID:404b01ae-9535-44a6-aa9b-7f62b79b6ff6,C
-        OID:d028bb52bd57,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
-        RL:0,File:nil,QS:nil,BEC:nil,COL:0
-X-UUID: 5aafa9e119794ee8a52c2d6ad658eff4-20220805
-Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw02.mediatek.com
-        (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 318569209; Fri, 05 Aug 2022 14:55:00 +0800
-Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
- mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Fri, 5 Aug 2022 14:54:58 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.2.792.15 via Frontend
- Transport; Fri, 5 Aug 2022 14:54:58 +0800
-Message-ID: <ad9207524145fdc8338894be70228820f40a49d8.camel@mediatek.com>
-Subject: Re: [PATCH v15 03/11] drm/edid: Add cea_sad helpers for freq/length
-From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
-To:     Jani Nikula <jani.nikula@linux.intel.com>,
-        <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
-        <daniel@ffwll.ch>, <robh+dt@kernel.org>,
-        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
-        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
-        <airlied@linux.ie>
-CC:     <devicetree@vger.kernel.org>, <linux-fbdev@vger.kernel.org>,
-        <granquet@baylibre.com>, <jitao.shi@mediatek.com>,
-        <liangxu.xu@mediatek.com>, <linux-kernel@vger.kernel.org>,
-        <dri-devel@lists.freedesktop.org>, <msp@baylibre.com>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
-        <linux-mediatek@lists.infradead.org>, <wenst@chromium.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <angelogioacchino.delregno@collabora.com>
-Date:   Fri, 5 Aug 2022 14:54:57 +0800
-In-Reply-To: <87zggmenv8.fsf@intel.com>
-References: <20220727045035.32225-1-rex-bc.chen@mediatek.com>
-         <20220727045035.32225-4-rex-bc.chen@mediatek.com>
-         <87zggmenv8.fsf@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        with ESMTP id S240141AbiHEHGf (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 Aug 2022 03:06:35 -0400
+Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com [IPv6:2607:f8b0:4864:20::630])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CCA3626FA;
+        Fri,  5 Aug 2022 00:06:34 -0700 (PDT)
+Received: by mail-pl1-x630.google.com with SMTP id w14so1883427plp.9;
+        Fri, 05 Aug 2022 00:06:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc;
+        bh=u10vAEHFFPV+m/GXeBz2tZsyM176ncPweeKXNtbzC90=;
+        b=lpYlKFaodSrlaln8lz1dUNOI4lQWvJ+cRzzDOYyx7EI8KlAYjZuIitS6HOEUQ55W5f
+         PWtVd6lpKNqO8UwhiTfFWePr3eWySMaJkxBCEYByfZwBKNfy0B1tZ1tF6vY6HRslE4bY
+         smKZ+gY3X3WRx2FXUfAq/ekAOdKBFxwUleaomuQRLg6mMBQkLAeGYUi+ihaAc60ujJja
+         3qnW8ixtVDSQ8kBKInU/9OJEZj1PRzkU1v+db2Tuizs6WFlkTzLHc4CuqYn3oXAYRsoE
+         MdETGC8tm2553zWhLzOHMWW8CN4c0t1kiT9g2SbHHeWr/92Zyn/6Ulnm0EClXMiT7iSg
+         3fIA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc;
+        bh=u10vAEHFFPV+m/GXeBz2tZsyM176ncPweeKXNtbzC90=;
+        b=3zNZorf4ExtIyvsDMyjlhZ4LI1Rt2OoTSgOXvQMFdj7cyt/xiE2aUNP3cdRaoJi+CP
+         zEgqjw4Vey8O/XQpSHBGfYPwtQqSzoKy85S7jra59BRISicNV2IMMeCPolp7tyyiN9ox
+         ttrVcdukC9bYszbegyglX+df6fEiIatnTEntmCxBjz/Mc7rxbIq7ocMG9dAfulWtdcnA
+         K5cwUixTLOdIQxXiz6YIPVcsRn5jmTMBOLP8St+pjGZcj9ulx756VtOZ/Ox39mFEhIWi
+         9S9YEHMWmZDKK+OOaisP9rhjQR+zkkFFBKdkw0At3ED1oRry0WngqC38FhC07XY5w632
+         BRnQ==
+X-Gm-Message-State: ACgBeo2DpK6J4JbW0cI4Cp5MGhhE6znzmLVFzcixsvOSKzjule3pdsJ2
+        sqh4P3LBAaFDggsThgh7qQ4=
+X-Google-Smtp-Source: AA6agR6uOX2JJQosvwhOiZcfULuJgPT1rgt3CEKqJiZbC5XzNWkHdOg8QcgsZu7eNgGXLbciVCi0Iw==
+X-Received: by 2002:a17:903:11d2:b0:167:8a0f:8d4b with SMTP id q18-20020a17090311d200b001678a0f8d4bmr5573656plh.78.1659683194207;
+        Fri, 05 Aug 2022 00:06:34 -0700 (PDT)
+Received: from RD-3580-24288.rt.l (42-72-229-62.emome-ip.hinet.net. [42.72.229.62])
+        by smtp.gmail.com with ESMTPSA id i5-20020a056a00224500b00525343b5047sm2191616pfu.76.2022.08.05.00.06.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 05 Aug 2022 00:06:33 -0700 (PDT)
+From:   ChiaEn Wu <peterwu.pub@gmail.com>
+To:     lee.jones@linaro.org, daniel.thompson@linaro.org,
+        jingoohan1@gmail.com, pavel@ucw.cz, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, matthias.bgg@gmail.com,
+        sre@kernel.org, chunfeng.yun@mediatek.com,
+        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
+        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
+        heikki.krogerus@linux.intel.com, deller@gmx.de,
+        andy.shevchenko@gmail.com
+Cc:     chiaen_wu@richtek.com, alice_chen@richtek.com,
+        cy_huang@richtek.com, dri-devel@lists.freedesktop.org,
+        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        szunichen@gmail.com,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v7 01/13] dt-bindings: usb: Add MediaTek MT6370 TCPC
+Date:   Fri,  5 Aug 2022 15:05:58 +0800
+Message-Id: <20220805070610.3516-2-peterwu.pub@gmail.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220805070610.3516-1-peterwu.pub@gmail.com>
+References: <20220805070610.3516-1-peterwu.pub@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, 2022-08-02 at 17:11 +0300, Jani Nikula wrote:
-> On Wed, 27 Jul 2022, Bo-Chen Chen <rex-bc.chen@mediatek.com> wrote:
-> > From: Guillaume Ranquet <granquet@baylibre.com>
-> > 
-> > This patch adds two helper functions that extract the frequency and
-> > word
-> > length from a struct cea_sad.
-> > 
-> > For these helper functions new defines are added that help
-> > translate the
-> > 'freq' and 'byte2' fields into real numbers.
-> 
-> I think we should stop adding a plethora of functions that deal with
-> sads like this.
-> 
-> There should probably be *one* struct that contains all the details
-> you
-> and everyone need extracted. There should be *one* function that
-> fills
-> in all the details. The struct should be placed in
-> connector->display_info, and the function should be called *once*
-> from
-> update_display_info().
-> 
-> Ideally, the function shouldn't even be exposed from drm_edid.c, but
-> if
-> you still need to deal with situations where you don't call connector
-> update, maybe it needs to be exposed.
-> 
-> BR,
-> Jani.
-> 
-> 
+From: ChiYuan Huang <cy_huang@richtek.com>
 
-Hello Jani,
+Add MediaTek MT6370 TCPC binding documentation.
 
-Thanks for your review.
-After checking our patches, we found we will not use these two function
-because we remove them in patch [11/11] drm/mediatek: Use cached audio
-config when changing resolution.
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
+---
+ .../bindings/usb/mediatek,mt6370-tcpc.yaml         | 36 ++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/usb/mediatek,mt6370-tcpc.yaml
 
-I will drop [02/11] and [03/11].
-
-Thanks!
-
-BRs,
-Bo-Chen
-
-> > 
-> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> > Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
-> > ---
-> >  drivers/gpu/drm/drm_edid.c | 63
-> > ++++++++++++++++++++++++++++++++++++++
-> >  include/drm/drm_edid.h     | 14 +++++++++
-> >  2 files changed, 77 insertions(+)
-> > 
-> > diff --git a/drivers/gpu/drm/drm_edid.c
-> > b/drivers/gpu/drm/drm_edid.c
-> > index bc43e1b32092..2a6f92da5ff3 100644
-> > --- a/drivers/gpu/drm/drm_edid.c
-> > +++ b/drivers/gpu/drm/drm_edid.c
-> > @@ -4916,6 +4916,69 @@ int drm_edid_to_speaker_allocation(const
-> > struct edid *edid, u8 **sadb)
-> >  }
-> >  EXPORT_SYMBOL(drm_edid_to_speaker_allocation);
-> >  
-> > +/**
-> > + * drm_cea_sad_get_sample_rate - Extract the sample rate from
-> > cea_sad
-> > + * @sad: Pointer to the cea_sad struct
-> > + *
-> > + * Extracts the cea_sad frequency field and returns the sample
-> > rate in Hz.
-> > + *
-> > + * Return: Sample rate in Hz or a negative errno if parsing
-> > failed.
-> > + */
-> > +int drm_cea_sad_get_sample_rate(const struct cea_sad *sad)
-> > +{
-> > +	switch (sad->freq) {
-> > +	case DRM_CEA_SAD_FREQ_32KHZ:
-> > +		return 32000;
-> > +	case DRM_CEA_SAD_FREQ_44KHZ:
-> > +		return 44100;
-> > +	case DRM_CEA_SAD_FREQ_48KHZ:
-> > +		return 48000;
-> > +	case DRM_CEA_SAD_FREQ_88KHZ:
-> > +		return 88200;
-> > +	case DRM_CEA_SAD_FREQ_96KHZ:
-> > +		return 96000;
-> > +	case DRM_CEA_SAD_FREQ_176KHZ:
-> > +		return 176400;
-> > +	case DRM_CEA_SAD_FREQ_192KHZ:
-> > +		return 192000;
-> > +	default:
-> > +		return -EINVAL;
-> > +	}
-> > +}
-> > +EXPORT_SYMBOL(drm_cea_sad_get_sample_rate);
-> > +
-> > +/**
-> > + * drm_cea_sad_get_uncompressed_word_length - Extract word length
-> > + * @sad: Pointer to the cea_sad struct
-> > + *
-> > + * Extracts the cea_sad byte2 field and returns the word length
-> > for an
-> > + * uncompressed stream.
-> > + *
-> > + * Note: This function may only be called for uncompressed audio.
-> > + *
-> > + * Return: Word length in bits or a negative errno if parsing
-> > failed.
-> > + */
-> > +int drm_cea_sad_get_uncompressed_word_length(const struct cea_sad
-> > *sad)
-> > +{
-> > +	if (sad->format != HDMI_AUDIO_CODING_TYPE_PCM) {
-> > +		DRM_WARN("Unable to get the uncompressed word length
-> > for format: %u\n",
-> > +			 sad->format);
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	switch (sad->byte2) {
-> > +	case DRM_CEA_SAD_UNCOMPRESSED_WORD_16BIT:
-> > +		return 16;
-> > +	case DRM_CEA_SAD_UNCOMPRESSED_WORD_20BIT:
-> > +		return 20;
-> > +	case DRM_CEA_SAD_UNCOMPRESSED_WORD_24BIT:
-> > +		return 24;
-> > +	default:
-> > +		return -EINVAL;
-> > +	}
-> > +}
-> > +EXPORT_SYMBOL(drm_cea_sad_get_uncompressed_word_length);
-> > +
-> >  /**
-> >   * drm_av_sync_delay - compute the HDMI/DP sink audio-video sync
-> > delay
-> >   * @connector: connector associated with the HDMI/DP sink
-> > diff --git a/include/drm/drm_edid.h b/include/drm/drm_edid.h
-> > index c2c43a4af681..779b710aed40 100644
-> > --- a/include/drm/drm_edid.h
-> > +++ b/include/drm/drm_edid.h
-> > @@ -373,6 +373,18 @@ struct cea_sad {
-> >  	u8 byte2;
-> >  };
-> >  
-> > +#define DRM_CEA_SAD_FREQ_32KHZ  BIT(0)
-> > +#define DRM_CEA_SAD_FREQ_44KHZ  BIT(1)
-> > +#define DRM_CEA_SAD_FREQ_48KHZ  BIT(2)
-> > +#define DRM_CEA_SAD_FREQ_88KHZ  BIT(3)
-> > +#define DRM_CEA_SAD_FREQ_96KHZ  BIT(4)
-> > +#define DRM_CEA_SAD_FREQ_176KHZ BIT(5)
-> > +#define DRM_CEA_SAD_FREQ_192KHZ BIT(6)
-> > +
-> > +#define DRM_CEA_SAD_UNCOMPRESSED_WORD_16BIT BIT(0)
-> > +#define DRM_CEA_SAD_UNCOMPRESSED_WORD_20BIT BIT(1)
-> > +#define DRM_CEA_SAD_UNCOMPRESSED_WORD_24BIT BIT(2)
-> > +
-> >  struct drm_encoder;
-> >  struct drm_connector;
-> >  struct drm_connector_state;
-> > @@ -380,6 +392,8 @@ struct drm_display_mode;
-> >  
-> >  int drm_edid_to_sad(const struct edid *edid, struct cea_sad
-> > **sads);
-> >  int drm_edid_to_speaker_allocation(const struct edid *edid, u8
-> > **sadb);
-> > +int drm_cea_sad_get_sample_rate(const struct cea_sad *sad);
-> > +int drm_cea_sad_get_uncompressed_word_length(const struct cea_sad
-> > *sad);
-> >  int drm_av_sync_delay(struct drm_connector *connector,
-> >  		      const struct drm_display_mode *mode);
-> 
-> 
+diff --git a/Documentation/devicetree/bindings/usb/mediatek,mt6370-tcpc.yaml b/Documentation/devicetree/bindings/usb/mediatek,mt6370-tcpc.yaml
+new file mode 100644
+index 0000000..72f56cc
+--- /dev/null
++++ b/Documentation/devicetree/bindings/usb/mediatek,mt6370-tcpc.yaml
+@@ -0,0 +1,36 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/usb/mediatek,mt6370-tcpc.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++
++title: MediatTek MT6370 Type-C Port Switch and Power Delivery controller
++
++maintainers:
++  - ChiYuan Huang <cy_huang@richtek.com>
++
++description: |
++  MediaTek MT6370 is a multi-functional device.
++  It integrates charger, ADC, flash, RGB indicators,
++  regulators (DSV/VIBLDO), and TypeC Port Switch with Power Delivery controller.
++  This document only describes MT6370 Type-C Port Switch and
++  Power Delivery controller.
++
++properties:
++  compatible:
++    enum:
++      - mediatek,mt6370-tcpc
++
++  interrupts:
++    maxItems: 1
++
++  connector:
++    type: object
++    $ref: /schemas/connector/usb-connector.yaml#
++    unevaluatedProperties: false
++
++additionalProperties: false
++
++required:
++  - compatible
++  - interrupts
+-- 
+2.7.4
 

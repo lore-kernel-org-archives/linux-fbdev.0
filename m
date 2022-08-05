@@ -2,104 +2,140 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87F6AC00140
-	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Aug 2022 11:33:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18CA9C00140
+	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Aug 2022 13:07:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240661AbiHELdt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 5 Aug 2022 07:33:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54994 "EHLO
+        id S240868AbiHENHV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 5 Aug 2022 09:07:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59380 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235412AbiHELds (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 Aug 2022 07:33:48 -0400
-X-Greylist: delayed 1204 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 05 Aug 2022 04:33:47 PDT
-Received: from tartarus.angband.pl (tartarus.angband.pl [51.83.246.204])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5692476961
-        for <linux-fbdev@vger.kernel.org>; Fri,  5 Aug 2022 04:33:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=angband.pl;
-        s=tartarus; h=In-Reply-To:Content-Transfer-Encoding:Content-Type:MIME-Version
-        :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:Content-ID:
-        Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-        :Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
-        List-Post:List-Owner:List-Archive;
-        bh=uOs/wh40/Q7gzN7z904/X5Gel6unlqxqDhMhBCgslgY=; b=XIH/GfioooVBV2WgCkvSRBc4Al
-        +zgvZiEGd3lpfH/2YYtDcR8+C3I7TaqQ+2MHBRy/M7a7JmGkBBWIp/T0kBXrGWDXN2mo2hNOSWJP8
-        mw4J+iy1hDkg4Hm5c8yWjo8RT1UuLPRW0YaRAhgbWCcjg8/Ildpcv1RMOIE+eP8BKUPU=;
-Received: from kilobyte by tartarus.angband.pl with local (Exim 4.94.2)
-        (envelope-from <kilobyte@angband.pl>)
-        id 1oJvGV-007b55-KM; Fri, 05 Aug 2022 13:13:15 +0200
-Date:   Fri, 5 Aug 2022 13:13:15 +0200
-From:   Adam Borowski <kilobyte@angband.pl>
-To:     Jiri Slaby <jirislaby@kernel.org>
-Cc:     Helge Deller <deller@gmx.de>,
-        Khalid Masum <khalid.masum.92@gmail.com>,
-        syzbot <syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] tty: vt: selection: Add check for valid tiocl_selection
- values
-Message-ID: <Yuz7S18rHNbHCHly@angband.pl>
-References: <000000000000bbdd0405d120c155@google.com>
- <20220729065139.6529-1-khalid.masum.92@gmail.com>
- <eb4a26aa-da30-ceee-7d27-c1e902dd4218@gmx.de>
- <YuV9PybMPgc83Jis@p100>
- <1eb62346-304b-54d5-8a62-8a35888d51bd@kernel.org>
- <35e860bb-c76c-ca5f-3f48-2bf6cb798689@gmx.de>
- <0fbc2150-b4aa-f2cb-5084-3a9f69b3455d@gmx.de>
- <2d4e82f9-e370-bb01-8656-fe0376c22a77@kernel.org>
+        with ESMTP id S240858AbiHENHQ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 Aug 2022 09:07:16 -0400
+Received: from mail-qk1-x735.google.com (mail-qk1-x735.google.com [IPv6:2607:f8b0:4864:20::735])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 899511A812;
+        Fri,  5 Aug 2022 06:06:58 -0700 (PDT)
+Received: by mail-qk1-x735.google.com with SMTP id j4so1761557qkl.10;
+        Fri, 05 Aug 2022 06:06:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc;
+        bh=3FEi1CuKFHPWHETXS5rrQ8s9GwbgPfiuBefvLvAoBsk=;
+        b=KgL/Ti/Sw5zH9EmMfo00bYbabUMlHnfPxzlYp138btnOZ5iHJws2jxCG33uwIKAM57
+         ZH9pcxSaQ3WAvKMK+rlXSIpmF9goTDadcJBOaraf9vF+AYXYuuUCk1nn9mZTAv7A84VS
+         IGN53sF6SexwC9WgkegcjbT+ydEtt7SJLKzuOXSjM7pv7pItuF3vkyrASesCL/DMFAma
+         rvrzVZQfTooocv0qvKbynXnxhJZQrwyBscixkLCW31xTQ5ekgGyzVfdw4/3LfOktLn40
+         aBpsyR98kiE/cfno9Vr7LLF4YuYZgav13rVMy6A3nxoUQo28k9pfuse69foAmsjNPvze
+         VLuQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc;
+        bh=3FEi1CuKFHPWHETXS5rrQ8s9GwbgPfiuBefvLvAoBsk=;
+        b=ySiFODdYM7al7IA01RtrIGmH8x7fqHG1ACFrx2XxZCLAPHNiP4uI6FWcaVt5ihXIxM
+         /NDhDkXyJj00/ToPSxMfihJbHA60Elhg5NFJuSkHUxTfRWlQBmAbM3AxsrFcCGaEkBVf
+         g603QBriJxvLZtRsomS4977AYJ8F7BU4rbJb12InVW+KOIBS9Bg3gaUtek/pLH/zjGDQ
+         qa9WBkDfbe5ydGLWVe+qcDVJYqVOAYXZiTKJJEI1T2LDA+7PHXWesewlOsyKtxZsq9Cw
+         JYoBlpOxM+/xdR+C1hx3vP0LMoNMdmLx3qtkBw+b6D7QIkvs6ODZEGIQTugaRCYJ0yLc
+         zePw==
+X-Gm-Message-State: ACgBeo13FHeALHTaMh/wRLuHWKumYi2K83YMPXfoKbLtHiLHxaWUIdY6
+        dZkOLa22jGGEHNUZNpnyIqBoz/QbE7DmnFPz0P4=
+X-Google-Smtp-Source: AA6agR4j0zsJqZaQf0Yu4UVNEf1JelHQhvwq9j519MOA8iXjVXlQvyGrJ/GntjcmyE7xYpQsU0Y5iOHVvVZTTJcjLGA=
+X-Received: by 2002:a05:620a:31a:b0:6b9:1f1a:7e13 with SMTP id
+ s26-20020a05620a031a00b006b91f1a7e13mr727146qkm.748.1659704817063; Fri, 05
+ Aug 2022 06:06:57 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2d4e82f9-e370-bb01-8656-fe0376c22a77@kernel.org>
-X-Junkbait: aaron@angband.pl, zzyx@angband.pl
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: kilobyte@angband.pl
-X-SA-Exim-Scanned: No (on tartarus.angband.pl); SAEximRunCond expanded to false
+References: <20220805070610.3516-1-peterwu.pub@gmail.com> <20220805070610.3516-14-peterwu.pub@gmail.com>
+In-Reply-To: <20220805070610.3516-14-peterwu.pub@gmail.com>
+From:   Andy Shevchenko <andy.shevchenko@gmail.com>
+Date:   Fri, 5 Aug 2022 15:06:19 +0200
+Message-ID: <CAHp75VfiYNzmcPN8LNqvU0jKuWVFR3ODY3iWaJwpDxUdSORTOg@mail.gmail.com>
+Subject: Re: [PATCH v7 13/13] video: backlight: mt6370: Add MediaTek MT6370 support
+To:     ChiaEn Wu <peterwu.pub@gmail.com>
+Cc:     Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Chunfeng Yun <chunfeng.yun@mediatek.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>,
+        Helge Deller <deller@gmx.de>,
+        ChiaEn Wu <chiaen_wu@richtek.com>,
+        Alice Chen <alice_chen@richtek.com>,
+        cy_huang <cy_huang@richtek.com>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux LED Subsystem <linux-leds@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-mediatek@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        USB <linux-usb@vger.kernel.org>,
+        linux-iio <linux-iio@vger.kernel.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+        szuni chen <szunichen@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Aug 04, 2022 at 11:22:26AM +0200, Jiri Slaby wrote:
-> On 04. 08. 22, 10:44, Helge Deller wrote:
-> > On 8/4/22 09:15, Helge Deller wrote:
-> > > On 8/4/22 07:47, Jiri Slaby wrote:
-> > > > On 30. 07. 22, 20:49, Helge Deller wrote:
-> > > > > The line and column numbers for the selection need to start at 1.
-> > > > > Add the checks to prevent invalid input.
+On Fri, Aug 5, 2022 at 9:08 AM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
+>
+> From: ChiaEn Wu <chiaen_wu@richtek.com>
+>
+> MediaTek MT6370 is a SubPMIC consisting of a single cell battery charger
+> with ADC monitoring, RGB LEDs, dual channel flashlight, WLED backlight
+> driver, display bias voltage supply, one general purpose LDO, and the
+> USB Type-C & PD controller complies with the latest USB Type-C and PD
+> standards.
+>
+> Add a support for the MediaTek MT6370 backlight driver.
+> It controls 4 channels of 8 series WLEDs in
+> 2048 (only for MT6370/MT6371) / 16384 (only for MT6372)
+> current steps (30 mA) in exponential or linear mapping curves.
 
-> > > > > --- a/drivers/tty/vt/selection.c
-> > > > > +++ b/drivers/tty/vt/selection.c
-> > > > > @@ -326,6 +326,9 @@ static int vc_selection(struct vc_data *vc, struct tiocl_selection *v,
-> > > > > +    if (!v->xs || !v->ys || !v->xe || !v->ye)
-> > > > > +        return -EINVAL;
-> > > > 
-> > > > Hmm, I'm not sure about this. It potentially breaks userspace (by
-> > > > returning EINVAL now).
+...
 
-> We can still do a trial and revert it if something breaks... It's just that
-> _noone_ knows with all this undocumented stuff ;).
-> 
-> But in fact, 0 currently means full row/column. Isn't it on purpose?
-> 
-> Today, we are out of luck, codesearch.debian.net gives no clue about users:
-> https://codesearch.debian.net/search?q=%5CbTIOCL_SETSEL%5Cb&literal=0
+> +#include <linux/backlight.h>
+> +#include <linux/bitfield.h>
+> +#include <linux/bits.h>
+> +#include <linux/gpio/consumer.h>
+> +#include <linux/kernel.h>
+> +#include <linux/minmax.h>
+> +#include <linux/mod_devicetable.h>
+> +#include <linux/module.h>
 
-That's because the macro is undocumented.
+> +#include <linux/of_device.h>
 
-"man ioctl_console" says:
-       TIOCLINUX, subcode=2
-              Set selection.  argp points to a [...]
+Why? Since below drop this and use fully fwnode / device property APIs.
 
-thus everyone writes it as a number.
+> +#include <linux/platform_device.h>
 
-You'd need to grep for TIOCLINUX; there's not that many references to
-check...
+Missed property.h which is heavily used in.the driver
 
+> +#include <linux/regmap.h>
 
-Meow!
+...
+
+> +       /*
+> +        * MT6372 uses 14 bits to control the brightness but MT6370 and MT6371
+> +        * use 11 bits. They are different so we have to use this function to
+> +        * check the vendor ID and use different mask, shift and default
+> +        * maxiimum brightness value.
+
+Use spell-checker for all your patches.
+
+> +        */
+
 -- 
-⢀⣴⠾⠻⢶⣦⠀
-⣾⠁⢠⠒⠀⣿⡁ Say what you want about Adolf, at least he was the man who
-⢿⡄⠘⠷⠚⠋⠀ killed Hitler.  Your turn, Vlad!
-⠈⠳⣄⠀⠀⠀⠀
+With Best Regards,
+Andy Shevchenko

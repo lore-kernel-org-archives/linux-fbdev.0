@@ -2,38 +2,38 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A2E6C00140
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCBADC25B06
 	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Aug 2022 10:15:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240611AbiHEKPP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 5 Aug 2022 06:15:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35486 "EHLO
+        id S240627AbiHEKPQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 5 Aug 2022 06:15:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35488 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231225AbiHEKPN (ORCPT
+        with ESMTP id S240599AbiHEKPN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 Aug 2022 06:15:13 -0400
 Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0F936D550;
-        Fri,  5 Aug 2022 03:15:09 -0700 (PDT)
-X-UUID: ef2f6b40a6394a8eab4fab23b6e088fb-20220805
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 916C2FD;
+        Fri,  5 Aug 2022 03:15:10 -0700 (PDT)
+X-UUID: 3e7b18dba3fe4f4d858146a3d6ddfe5c-20220805
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=nfIRO5FTp4YZRztdUpgyKztSf349oawEmxk993clnQE=;
-        b=KcnK/6V4j0Reh2c//mQDPAyncKYfCOGcpDscf07yk33emRgyVYePTSR7SdBTcxPHjsWrLjmDgVmU/ivOTx122sSJ7ynChgWC4vjZ0ZRlJL+BaorS0CurSzeAGQHbv9WlydXCf1hWs5nlxw4rBxDPY4X2xgvJJzOl9ZhGLHVsvsI=;
+        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=sGX6YzjigDRiefwq1x9TnO0pG3WTYmLcs7/JWY07XCk=;
+        b=dbU4CWEAgTI3N3A1dt6XycD6D57MpJUI8a4RfZTvNzY7dknN5xCfQovSOsPXSk3+/58vjJ/a0aXBQa9XHpT5+ctJCNjZ2dKvM3aq8IMVcZJnZ1nJ1rqR0PUqwfXbvFkKe1aV0uBmVdVPhSh6LVIHWwJlGhf7jRl+xt1LiX7Kybc=;
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.8,REQID:5d7e92db-50b4-4e01-a45d-c1bb034fdd27,OB:0,LO
-        B:0,IP:0,URL:5,TC:0,Content:-5,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACT
-        ION:release,TS:0
-X-CID-META: VersionHash:0f94e32,CLOUDID:fe10e19b-da39-4e3b-a854-56c7d2111b46,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
+X-CID-O-INFO: VERSION:1.1.8,REQID:d34b1369-3efb-4565-a8f0-01e15deb4436,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACT
+        ION:release,TS:-5
+X-CID-META: VersionHash:0f94e32,CLOUDID:fd10e19b-da39-4e3b-a854-56c7d2111b46,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
         ,QS:nil,BEC:nil,COL:0
-X-UUID: ef2f6b40a6394a8eab4fab23b6e088fb-20220805
-Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw01.mediatek.com
+X-UUID: 3e7b18dba3fe4f4d858146a3d6ddfe5c-20220805
+Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw01.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 2061949579; Fri, 05 Aug 2022 18:15:01 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1036865094; Fri, 05 Aug 2022 18:15:01 +0800
 Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.792.15; Fri, 5 Aug 2022 18:15:00 +0800
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
+ Fri, 5 Aug 2022 18:15:01 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas10.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
  Transport; Fri, 5 Aug 2022 18:15:00 +0800
@@ -53,9 +53,9 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
         Bo-Chen Chen <rex-bc.chen@mediatek.com>
-Subject: [PATCH v16 5/8] drm/mediatek: add hpd debounce
-Date:   Fri, 5 Aug 2022 18:14:56 +0800
-Message-ID: <20220805101459.3386-6-rex-bc.chen@mediatek.com>
+Subject: [PATCH v16 8/8] drm/mediatek: Use cached audio config when changing resolution
+Date:   Fri, 5 Aug 2022 18:14:59 +0800
+Message-ID: <20220805101459.3386-9-rex-bc.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20220805101459.3386-1-rex-bc.chen@mediatek.com>
 References: <20220805101459.3386-1-rex-bc.chen@mediatek.com>
@@ -66,125 +66,202 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Jitao Shi <jitao.shi@mediatek.com>
+When the audio is playing, we need to use the original configuration to
+set the audio instead of using new configuration. Therefore, use the
+cached audio configuration during a resolution switch to avoid loss of
+sound.
 
-From the DP spec 1.4a chapter 3.3, upstream devices should implement
-HPD signal de-bouncing on an external connection.
-A period of 100ms should be used to detect an HPD connect event.
-To cover these cases, HPD de-bounce should be implemented only after
-HPD low has been detected for at least 100ms.
-
-Therefore,
-1. If HPD is low (which means plugging out) for longer than 100ms:
-   we need to do de-bouncing (which means we need to wait for 100ms).
-2. If HPD low is for less than 100ms:
-   we don't need to care about the de-bouncing.
-
-In this patch, we start a 100ms timer and use a need_debounce boolean
-to implement the feature.
-
-Two cases when HPD is high:
-1. If the timer is expired (>100ms):
-   - need_debounce is true.
-   - When HPD high (plugging event comes), need_debounce will be true
-     and then we need to do de-bouncing (wait for 100ms).
-2. If the timer is not expired (<100ms):
-   - need_debounce is false.
-   - When HPD high (plugging event comes), need_debounce will be false
-     and no need to do de-bouncing.
-
-HPD_______             __________________
-          |            |<-  100ms   ->
-          |____________|
-          <-  100ms   ->
-
-Without HPD de-bouncing, USB-C to HDMI Adapaters will not be detected.
-
-The change has been successfully tested with the following devices:
-- Dell Adapter - USB-C to HDMI
-- Acer 1in1 HDMI dongle
-- Ugreen 1in1 HDMI dongle
-- innowatt HDMI + USB3 hub
-- Acer 2in1 HDMI dongle
-- Apple 3in1 HDMI dongle (A2119)
-- J5Create 3in1 HDMI dongle (JAC379)
-
-Tested-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
-Reviewed-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
 Signed-off-by: Jitao Shi <jitao.shi@mediatek.com>
-Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
 Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
 Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- drivers/gpu/drm/mediatek/mtk_dp.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ drivers/gpu/drm/mediatek/mtk_dp.c | 108 +++++-------------------------
+ 1 file changed, 17 insertions(+), 91 deletions(-)
 
 diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c b/drivers/gpu/drm/mediatek/mtk_dp.c
-index 00971ea2fadf..487f3ed0c19f 100644
+index 3efac9920304..e725e3104147 100644
 --- a/drivers/gpu/drm/mediatek/mtk_dp.c
 +++ b/drivers/gpu/drm/mediatek/mtk_dp.c
-@@ -95,6 +95,8 @@ struct mtk_dp {
- 	bool enabled;
+@@ -45,18 +45,6 @@
+ #define MTK_DP_TRAIN_DOWNSCALE_RETRY 8
+ #define MTK_DP_VERSION 0x11
  
- 	struct drm_connector *conn;
-+	bool need_debounce;
-+	struct timer_list debounce_timer;
+-#define MTK_DP_CEA_SAD_FREQ_32KHZ  BIT(0)
+-#define MTK_DP_CEA_SAD_FREQ_44KHZ  BIT(1)
+-#define MTK_DP_CEA_SAD_FREQ_48KHZ  BIT(2)
+-#define MTK_DP_CEA_SAD_FREQ_88KHZ  BIT(3)
+-#define MTK_DP_CEA_SAD_FREQ_96KHZ  BIT(4)
+-#define MTK_DP_CEA_SAD_FREQ_176KHZ BIT(5)
+-#define MTK_DP_CEA_SAD_FREQ_192KHZ BIT(6)
+-
+-#define MTK_DP_CEA_SAD_UNCOMPRESSED_WORD_16BIT BIT(0)
+-#define MTK_DP_CEA_SAD_UNCOMPRESSED_WORD_20BIT BIT(1)
+-#define MTK_DP_CEA_SAD_UNCOMPRESSED_WORD_24BIT BIT(2)
+-
+ struct mtk_dp_train_info {
+ 	bool tps3;
+ 	bool tps4;
+@@ -106,7 +94,7 @@ struct mtk_dp_info {
+ 	struct videomode vm;
+ 	u8 frame_rate;
+ 	u32 pix_rate_khz;
+-	struct mtk_dp_audio_cfg audio_caps;
++	struct mtk_dp_audio_cfg audio_cur_cfg;
  };
  
- struct mtk_dp_data {
-@@ -1479,6 +1481,9 @@ static irqreturn_t mtk_dp_hpd_event_thread(int hpd, void *dev)
+ struct dp_cal_data {
+@@ -413,48 +401,6 @@ static void mtk_dp_pg_enable(struct mtk_dp *mtk_dp, bool enable)
+ 			   4 << PGEN_PATTERN_SEL_SHIFT, PGEN_PATTERN_SEL_MASK);
+ }
  
- 	dev_dbg(mtk_dp->dev, "MTK_DP_HPD_INTERRUPT\n");
- 
-+	if (mtk_dp->need_debounce && mtk_dp->train_info.cable_plugged_in)
-+		msleep(100);
-+
- 	drm_helper_hpd_irq_event(mtk_dp->bridge.dev);
- 	mtk_dp->train_info.hpd_inerrupt = false;
- 	mtk_dp_hpd_sink_event(mtk_dp);
-@@ -1525,6 +1530,10 @@ static irqreturn_t mtk_dp_hpd_event(int hpd, void *dev)
- 		mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_PWR_STATE,
- 				   DP_PWR_STATE_BANDGAP_TPLL,
- 				   DP_PWR_STATE_MASK);
-+
-+		mod_timer(&mtk_dp->debounce_timer,
-+			  jiffies + msecs_to_jiffies(100) - 1);
-+		mtk_dp->need_debounce = false;
- 	} else {
- 		mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_PWR_STATE,
- 				   DP_PWR_STATE_BANDGAP_TPLL_LANE,
-@@ -1945,6 +1954,13 @@ static const struct drm_bridge_funcs mtk_dp_bridge_funcs = {
- 	.detect = mtk_dp_bdg_detect,
- };
- 
-+static void mtk_dp_debounce_timer(struct timer_list *t)
-+{
-+	struct mtk_dp *mtk_dp = from_timer(mtk_dp, t, debounce_timer);
-+
-+	mtk_dp->need_debounce = true;
-+}
-+
- static int mtk_dp_probe(struct platform_device *pdev)
+-static int mtk_dp_cea_sad_get_sample_rate(const struct cea_sad *sad)
+-{
+-	switch (sad->freq) {
+-	case MTK_DP_CEA_SAD_FREQ_32KHZ:
+-		return 32000;
+-	case MTK_DP_CEA_SAD_FREQ_44KHZ:
+-		return 44100;
+-	case MTK_DP_CEA_SAD_FREQ_48KHZ:
+-		return 48000;
+-	case MTK_DP_CEA_SAD_FREQ_88KHZ:
+-		return 88200;
+-	case MTK_DP_CEA_SAD_FREQ_96KHZ:
+-		return 96000;
+-	case MTK_DP_CEA_SAD_FREQ_176KHZ:
+-		return 176400;
+-	case MTK_DP_CEA_SAD_FREQ_192KHZ:
+-		return 192000;
+-	default:
+-		return -EINVAL;
+-	}
+-}
+-
+-static int mtk_dp_cea_sad_get_uncompressed_word_length(const struct cea_sad *sad)
+-{
+-	if (sad->format != HDMI_AUDIO_CODING_TYPE_PCM) {
+-		pr_err("Unable to get the uncompressed word length for format: %u\n",
+-		       sad->format);
+-		return -EINVAL;
+-	}
+-
+-	switch (sad->byte2) {
+-	case MTK_DP_CEA_SAD_UNCOMPRESSED_WORD_16BIT:
+-		return 16;
+-	case MTK_DP_CEA_SAD_UNCOMPRESSED_WORD_20BIT:
+-		return 20;
+-	case MTK_DP_CEA_SAD_UNCOMPRESSED_WORD_24BIT:
+-		return 24;
+-	default:
+-		return -EINVAL;
+-	}
+-}
+-
+ static void mtk_dp_audio_setup_channels(struct mtk_dp *mtk_dp,
+ 					struct mtk_dp_audio_cfg *cfg)
  {
- 	struct mtk_dp *mtk_dp;
-@@ -2020,6 +2036,9 @@ static int mtk_dp_probe(struct platform_device *pdev)
+@@ -1859,9 +1805,7 @@ static bool mtk_dp_edid_parse_audio_capabilities(struct mtk_dp *mtk_dp,
+ 						 struct mtk_dp_audio_cfg *cfg)
+ {
+ 	struct cea_sad *sads;
+-	int sad_count;
+-	int i;
+-	bool ret = false;
++	int ret;
  
- 	drm_bridge_add(&mtk_dp->bridge);
+ 	if (!mtk_dp->data->audio_supported)
+ 		return false;
+@@ -1872,36 +1816,16 @@ static bool mtk_dp_edid_parse_audio_capabilities(struct mtk_dp *mtk_dp,
+ 		dev_err(mtk_dp->dev, "EDID not found!\n");
+ 		return false;
+ 	}
+-	sad_count = drm_edid_to_sad(mtk_dp->edid, &sads);
+-	mutex_unlock(&mtk_dp->edid_lock);
  
-+	mtk_dp->need_debounce = true;
-+	timer_setup(&mtk_dp->debounce_timer, mtk_dp_debounce_timer, 0);
-+
- 	pm_runtime_enable(dev);
- 	pm_runtime_get_sync(dev);
+-	if (sad_count <= 0) {
++	ret = drm_edid_to_sad(mtk_dp->edid, &sads);
++	mutex_unlock(&mtk_dp->edid_lock);
++	if (ret <= 0) {
+ 		drm_info(mtk_dp->drm_dev, "The SADs is NULL\n");
+ 		return false;
+ 	}
+-
+-	for (i = 0; i < sad_count; i++) {
+-		int sample_rate, word_length;
+-
+-		/* Only PCM supported at the moment */
+-		if (sads[i].format != HDMI_AUDIO_CODING_TYPE_PCM)
+-			continue;
+-
+-		sample_rate = mtk_dp_cea_sad_get_sample_rate(&sads[i]);
+-		word_length =
+-			mtk_dp_cea_sad_get_uncompressed_word_length(&sads[i]);
+-		if (sample_rate <= 0 || word_length <= 0)
+-			continue;
+-
+-		cfg->channels = sads[i].channels;
+-		cfg->word_length_bits = word_length;
+-		cfg->sample_rate = sample_rate;
+-		ret = true;
+-		break;
+-	}
+ 	kfree(sads);
  
-@@ -2032,6 +2051,7 @@ static int mtk_dp_remove(struct platform_device *pdev)
+-	return ret;
++	return true;
+ }
  
- 	platform_device_unregister(mtk_dp->phy_dev);
+ static void mtk_dp_train_change_mode(struct mtk_dp *mtk_dp)
+@@ -2070,13 +1994,13 @@ static int mtk_dp_training(struct mtk_dp *mtk_dp)
+ 
+ 	mtk_dp->audio_enable =
+ 		mtk_dp_edid_parse_audio_capabilities(mtk_dp,
+-						     &mtk_dp->info.audio_caps);
++						     &mtk_dp->info.audio_cur_cfg);
+ 	if (mtk_dp->audio_enable) {
+-		mtk_dp_audio_setup(mtk_dp, &mtk_dp->info.audio_caps);
++		mtk_dp_audio_setup(mtk_dp, &mtk_dp->info.audio_cur_cfg);
+ 		mtk_dp_audio_mute(mtk_dp, false);
+ 	} else {
+-		memset(&mtk_dp->info.audio_caps, 0,
+-		       sizeof(mtk_dp->info.audio_caps));
++		memset(&mtk_dp->info.audio_cur_cfg, 0,
++		       sizeof(mtk_dp->info.audio_cur_cfg));
+ 	}
+ 
+ 	return 0;
+@@ -2442,6 +2366,9 @@ static void mtk_dp_bridge_atomic_disable(struct drm_bridge *bridge,
+ 	if (mtk_dp_plug_state(mtk_dp)) {
+ 		drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER, DP_SET_POWER_D3);
+ 		usleep_range(2000, 3000);
++	} else {
++		memset(&mtk_dp->info.audio_cur_cfg, 0,
++		       sizeof(mtk_dp->info.audio_cur_cfg));
+ 	}
+ 
  	mtk_dp_video_mute(mtk_dp, true);
-+	del_timer_sync(&mtk_dp->debounce_timer);
+@@ -2641,18 +2568,17 @@ static int mtk_dp_audio_hw_params(struct device *dev, void *data,
+ 				  struct hdmi_codec_params *params)
+ {
+ 	struct mtk_dp *mtk_dp = dev_get_drvdata(dev);
+-	struct mtk_dp_audio_cfg cfg;
  
- 	pm_runtime_disable(&pdev->dev);
+ 	if (!mtk_dp->enabled) {
+ 		dev_err(mtk_dp->dev, "%s, DP is not ready!\n", __func__);
+ 		return -ENODEV;
+ 	}
  
+-	cfg.channels = params->cea.channels;
+-	cfg.sample_rate = params->sample_rate;
+-	cfg.word_length_bits = 24;
++	mtk_dp->info.audio_cur_cfg.channels = params->cea.channels;
++	mtk_dp->info.audio_cur_cfg.sample_rate = params->sample_rate;
++	mtk_dp->info.audio_cur_cfg.word_length_bits = 24;
+ 
+-	mtk_dp_audio_setup(mtk_dp, &cfg);
++	mtk_dp_audio_setup(mtk_dp, &mtk_dp->info.audio_cur_cfg);
+ 
+ 	return 0;
+ }
 -- 
 2.18.0
 

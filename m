@@ -2,135 +2,90 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56FDEC00140
-	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Aug 2022 13:10:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73674C00140
+	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Aug 2022 16:48:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236071AbiHENKU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 5 Aug 2022 09:10:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33230 "EHLO
+        id S238484AbiHEQsH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 5 Aug 2022 12:48:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46686 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229640AbiHENKS (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 Aug 2022 09:10:18 -0400
-Received: from mail-qk1-x729.google.com (mail-qk1-x729.google.com [IPv6:2607:f8b0:4864:20::729])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CAEF9F74;
-        Fri,  5 Aug 2022 06:10:16 -0700 (PDT)
-Received: by mail-qk1-x729.google.com with SMTP id 17so1779884qky.8;
-        Fri, 05 Aug 2022 06:10:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc;
-        bh=9J24cDKKqsOduTS9UUyGj2I+dc2JXq9COm3ho1bp/NE=;
-        b=NZ/lhCyR9M4uoWmE11gXdKIY5QHCgnKHevuKo4TMG1DjXmtxuHL9IGeJwZ4LfPJ5Sx
-         An9X10WyEwlH6gobWrRkcQrihAvfFo/NEkJHppMNCjVysFpqBcUQppBPmmWv/gJlRwNJ
-         AJ5R5hBz/6Z6zt3zcMCzNBlOWAFcgddiIbDO26176idaVxtdAeLEwOB83fyRhNgFshT0
-         PgEvwdsJAJBc7N5GmC3tSOdTGVFK5PY33vJvxUo6aKPI13T8ZPWktLxzYyY8DyD7/CRd
-         N6n68KF39/cpPvRO/LCj/Zk8AkuXDm7CeFfWTupOMgC5Oh24O5OoP7ydY1qxP317WUAG
-         zV8Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc;
-        bh=9J24cDKKqsOduTS9UUyGj2I+dc2JXq9COm3ho1bp/NE=;
-        b=imnwJFAhn0BzI6QmhPhz1U4EMSdkH2oU/MKgzSijN8NrAZvqPsT3SmYCIPaydWTw+W
-         C+GMV4zm+HDbL8yAK3bSXfIH9oCI0N8yLoDGYmil4Wz8nyLAwgQdvPUp0jcy4bCGFVWn
-         M/eCqLghhNqljBSHXy4itcoo9c0RP1CgGUlmLphYsDdQO4cXNKhwpaQGabHvlwHAeyBx
-         nqUHJQV6SGlz35n7NIvlJDDRfxc7pUPy/trsCkmVsxROIUbJKLs1Ry6Rd7oQCbRkWj7I
-         Sv5ATnTjtpPvfwg466Lk7ZGrOlpkE6+NswsjwEE5nYft3EmyxTiMBW2yWaYvaslAAtR2
-         jlrw==
-X-Gm-Message-State: ACgBeo0lApKLBx6Q3ehTsBJXbCCufPGZVxhm/wC5XpLUsJG5WoMhWrea
-        UYfQFHa2ttEgoUSEE/4r8eEwjRgXfaslLWLEAcI=
-X-Google-Smtp-Source: AA6agR6KCeqnEoqyKUTU9bwzHJxmJAXoC1uA/8jBqjS4KNKKgC3bBRK/UzGUzHpzrq29/PrSFNdU8y5czcT3jzWXnGE=
-X-Received: by 2002:a05:620a:254d:b0:6ab:84b8:25eb with SMTP id
- s13-20020a05620a254d00b006ab84b825ebmr5054205qko.383.1659705015729; Fri, 05
- Aug 2022 06:10:15 -0700 (PDT)
+        with ESMTP id S236963AbiHEQsG (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 Aug 2022 12:48:06 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F11C428E01;
+        Fri,  5 Aug 2022 09:48:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1659718077;
+        bh=BwxgXFyMoX6LG4RcXS/FAfwlY+oHnVTND2orTGFFzTg=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=VY4XvpIbVvbOGQNhkoQViFXEx1DZaUvp6CDdqM9Z8ieXT/ri0Aas/wsOqzvzjYKhW
+         wGWlmGB1bYJI1eR9QI4KDJ3aWyAg7Yxw6H7FN45lSVGBJ581oJ5446zPxHrRwFNSx9
+         c9Hx+f3QACVCuV2XUQCsev9DWfiirimdssBJdcaw=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.139.128]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MJVHU-1o08Bh2wEC-00JuGH; Fri, 05
+ Aug 2022 18:47:57 +0200
+Message-ID: <98c1755d-5b67-70f7-c569-431e650ece70@gmx.de>
+Date:   Fri, 5 Aug 2022 18:47:07 +0200
 MIME-Version: 1.0
-References: <20220805070610.3516-1-peterwu.pub@gmail.com> <20220805070610.3516-13-peterwu.pub@gmail.com>
-In-Reply-To: <20220805070610.3516-13-peterwu.pub@gmail.com>
-From:   Andy Shevchenko <andy.shevchenko@gmail.com>
-Date:   Fri, 5 Aug 2022 15:09:39 +0200
-Message-ID: <CAHp75VcdU6AVdksuhsHkzvD6mOBJ6G=yrmuHA9zAXLroXDFAjg@mail.gmail.com>
-Subject: Re: [PATCH v7 12/13] leds: flash: mt6370: Add MediaTek MT6370
- flashlight support
-To:     ChiaEn Wu <peterwu.pub@gmail.com>
-Cc:     Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Chunfeng Yun <chunfeng.yun@mediatek.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>,
-        Helge Deller <deller@gmx.de>,
-        ChiaEn Wu <chiaen_wu@richtek.com>,
-        Alice Chen <alice_chen@richtek.com>,
-        cy_huang <cy_huang@richtek.com>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-mediatek@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        USB <linux-usb@vger.kernel.org>,
-        linux-iio <linux-iio@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        szuni chen <szunichen@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH 0/3] Fix bugs in *_set_par() caused by user input
+Content-Language: en-US
+To:     Zheyu Ma <zheyuma97@gmail.com>, adaplas@gmail.com,
+        santiago@crfreenet.org, akpm@linux-foundation.org
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+References: <20220804124125.3506755-1-zheyuma97@gmail.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20220804124125.3506755-1-zheyuma97@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:k9hWd321fIJId4w8JA+DmGPit3IfSkp0j0DDxrSaFTDDz5RI90+
+ rgYRcegevBKruvpsas6YTNL7Sd/n5FS79ygEB8ZjRG1Irc6fe/UruUExSw6XHsBnIcjCFhE
+ mNWteMGBNNBGslWubvmFTWBCXvw5wcK8Zb1F1A0QZWgrGN3s9QkBiQAZpxcmn1iz7E65bQT
+ 3i+DL97ehXko+KCj9jU0Q==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:flE13ZOQYvs=:2QDXygMtVdgKv5Y2vuUzR0
+ M5KIRzzFTezbFLNsDpJQ5LG+juFdRUQgvBjsRGWPtRO5tkuWCV1vg82Sik9gsmFgl2EV8wJYf
+ yxv0RYGeY1WZ+Z/puTueVm8i52U6XY5b816czI9oJqdfa5Kxe6TyXOid+nYtZhBGmQBZS7J2y
+ 6FYcbcZszrYilAwRCd41jM2/irzI6ahtpDj2Vk+6AVLFA3TyryTZwbZJx0qHEE6yUXeJgth6t
+ CKEJCKLyZzk6pk8ZZTIAMAHORcVpoiP4ZtKRLxoMSfoqOEdITacEDsRudb7T8XqkmaXRnlqDs
+ DcGnLFCXn5vqz5OVvSyTRpz7h5wq0bIy9n2hqx/U78qmSZf+ixIWct2roQbnd+aQJVZTwd5FE
+ g88nuB1U9s5gRv9KRRqAsm/moGG4QGQbRPYB+LwxQNGNT7psUu8B0xX42IUz2BRiDa88+oTMF
+ d3f1sMVMyOZiLuyG+jkf6GNXsCE7kflIlzTa/y7VJ+7fwIn/GlYhke2L1izcfqWu1S6+0uJc6
+ VG7tW2i6z5b1C2uia0IW656WOleUh6UiBuM7hNKwgZqfQpv/mIlQ+joI3NEK11bV3ezv74XCL
+ d4PrCa/BJ85hXp5ahUSl8qZtGGcvLz8RqkKOx23fSIdutWcGdGur3I0ED5c2XDmY3l6PtVhK/
+ NtOk0Bse+3UnkCPQqTd5AW/s5kZBD4qB/HDjrPMosRtmwg8uPuSCXKw82yWa9p854y2G44NYH
+ M/8RPpmlzneK//ZCxm9QgFKW3yK9KBQ7n/eswO029z5R65YZq9UeHyl2Yl/s1RU0vaVEaQGmX
+ XgwfeBtqcvO2LBNzdS7yQFjXUy1jsUveUvMQPH3S81kfw03VGAHh5IXVOfsjP1t25kX1GEBYH
+ zEmnwdbKHIFl6QzDGds40n/GYHCzAVlt2k82MT20zohKYSwMuCUbnIdoCEfcSFzvgks/VtAo+
+ 0fzzvznvlnqiBUPvMR5OOxPKvwRsajZpaQJQLM4vsN6jv7pgzzQxb86qyTU+QHp7QLU3/rUzf
+ Y87R3BluQnWr4zfzxLlfOSukmkGMxZZZu64SYXGaV9kuX4BUOW5N5LwoaIRlTEetj74czxAPZ
+ pZex8fmT9uFxIv00ASynq8Nws47fX20o8HUE1d8qYxeqvkvuJFWr8ifxQ==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Aug 5, 2022 at 9:07 AM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
+On 8/4/22 14:41, Zheyu Ma wrote:
+> In the function *_set_par(), the value of 'screen_size' is
+> calculated by the user input. If the user provides the improper value,
+> the value of 'screen_size' may larger than 'info->screen_size', which
+> may cause a bug in the memset_io().
 >
-> From: Alice Chen <alice_chen@richtek.com>
+> Zheyu Ma (3):
+>   video: fbdev: vt8623fb: Check the size of screen before memset_io()
+>   video: fbdev: arkfb: Check the size of screen before memset_io()
+>   video: fbdev: s3fb: Check the size of screen before memset_io()
+
+applied all 3 patches to fbdev git tree.
+
+Thanks!
+Helge
+
 >
-> The MediaTek MT6370 is a highly-integrated smart power management IC,
-> which includes a single cell Li-Ion/Li-Polymer switching battery
-> charger, a USB Type-C & Power Delivery (PD) controller, dual Flash
-> LED current sources, a RGB LED driver, a backlight WLED driver,
-> a display bias driver and a general LDO for portable devices.
+>  drivers/video/fbdev/arkfb.c    | 2 ++
+>  drivers/video/fbdev/s3fb.c     | 2 ++
+>  drivers/video/fbdev/vt8623fb.c | 2 ++
+>  3 files changed, 6 insertions(+)
 >
-> Add a support for the MT6370 Flash LED driver. Flash LED in MT6370
-> has 2 channels and support torch/strobe mode.
 
-Same comments as per previous LED related patch.
-
-...
-
-> +       /*
-> +        * For the flash to turn on/off, we need to wait HW ramping up/down time
-> +        * 5ms/500us to prevent the unexpected problem.
-> +        */
-> +       if (!priv->fled_strobe_used && curr)
-> +               usleep_range(5000, 6000);
-> +       else if (priv->fled_strobe_used && !curr)
-> +               usleep_range(500, 600);
-
-Now it's much better!
-
-...
-
-> +       /*
-> +        * Always configure as min level when off to
-> +        * prevent flash current spike
-
-/*
- * You need to check the style
- * of multi-line comments like
- * this one.
- */
-
-> +        */
-
--- 
-With Best Regards,
-Andy Shevchenko

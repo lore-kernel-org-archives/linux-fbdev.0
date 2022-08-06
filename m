@@ -2,137 +2,164 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06BDDC19F2D
-	for <linux-fbdev@archiver.kernel.org>; Sat,  6 Aug 2022 17:21:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BD56C19F2D
+	for <linux-fbdev@archiver.kernel.org>; Sat,  6 Aug 2022 20:07:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230211AbiHFRV3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 6 Aug 2022 13:21:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50786 "EHLO
+        id S231546AbiHFUH4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 6 Aug 2022 16:07:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45986 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229868AbiHFRV2 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 6 Aug 2022 13:21:28 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 171F7642C;
-        Sat,  6 Aug 2022 10:21:28 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id CCACAB8077B;
-        Sat,  6 Aug 2022 17:21:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 21097C433D6;
-        Sat,  6 Aug 2022 17:21:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1659806485;
-        bh=xCBMuqsZV7iPHwJALXb/Dt7nFrNqloBL28h2XN5yuAo=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=K6OisMtIuqpniraC55aPNLVoVLc4BYz2XdoQ2jnIEDAsk1DVbShma8vPN1Wz4L6A5
-         1QgaqUdGpnrlVhFbPt5cm9uMpz0zLHygBJsEvBvyh8y02k7KFA4YDYFtWU0R0tVNJY
-         tw3SMDQ31SEMmNbuD/HaV/O6d0KJYVUA+xC7tjCeiPAhoJeVkYvd5/9be/gWRB0wRb
-         HVpD2aHHj7MlQdpsXv/v/q2AhEPyDpVvjd2D5tuxRcPdUSoVm+olAto6HMeWg46jVN
-         WZOPJx6OlklC8Ywij6mT8Fmg356Wly5z5KCrYTzQMxHYmWLxquTDZiVXeeQe6DFs7E
-         QqN7vpK/gICYg==
-Date:   Sat, 6 Aug 2022 18:31:32 +0100
-From:   Jonathan Cameron <jic23@kernel.org>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     Rob Herring <robh@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Michael Hennerich <Michael.Hennerich@analog.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Lucas Stankus <lucas.p.stankus@gmail.com>,
-        Puranjay Mohan <puranjay12@gmail.com>,
-        Cosmin Tanislav <cosmin.tanislav@analog.com>,
-        Alexandru Tachici <alexandru.tachici@analog.com>,
-        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
-        Marcus Folkesson <marcus.folkesson@gmail.com>,
-        Kent Gustavsson <kent@minoris.se>,
-        Tomislav Denis <tomislav.denis@avl.com>,
-        Oleksij Rempel <linux@rempel-privat.de>, kernel@pengutronix.de,
-        Antoniu Miclaus <antoniu.miclaus@analog.com>,
-        Ricardo Ribalda <ribalda@kernel.org>,
-        Dragos Bogdan <dragos.bogdan@analog.com>,
-        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
-        Lorenzo Bianconi <lorenzo@kernel.org>,
-        Stefan Popa <stefan.popa@analog.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Mike Looijmans <mike.looijmans@topic.nl>,
-        Joachim Eastwood <manabian@gmail.com>,
-        Tomas Melin <tomas.melin@vaisala.com>,
-        Sean Nyekjaer <sean@geanix.com>,
-        Beniamin Bia <beniamin.bia@analog.com>,
-        Patrick Vasseur <patrick.vasseur@c-s.fr>,
-        Charles-Antoine Couret <charles-antoine.couret@essensium.com>,
-        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Philippe Reynes <tremyfr@yahoo.fr>,
-        Jacopo Mondi <jacopo@jmondi.org>,
-        Akinobu Mita <akinobu.mita@gmail.com>,
-        Alexandru Lazar <alazar@startmail.com>,
-        Oskar Andero <oskar.andero@gmail.com>,
-        =?UTF-8?B?TcOlcnRlbg==?= Lindahl <martenli@axis.com>,
-        Bogdan Pricop <bogdan.pricop@emutex.com>,
-        Angelo Compagnucci <angelo.compagnucci@gmail.com>,
-        Matt Ranostay <matt.ranostay@konsulko.com>,
-        Dan Murphy <dmurphy@ti.com>,
-        Gregory Clement <gregory.clement@bootlin.com>,
-        Phil Reid <preid@electromag.com.au>,
-        Michael Welling <mwelling@ieee.org>,
-        Lukas Wunner <lukas@wunner.de>,
-        Robert Jones <rjones@gateworks.com>,
-        Chris Coffey <cmc@babblebit.net>,
-        Slawomir Stepien <sst@poczta.fm>,
-        Sankar Velliangiri <navin@linumiz.com>,
-        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+        with ESMTP id S233295AbiHFUHw (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 6 Aug 2022 16:07:52 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA344E035;
+        Sat,  6 Aug 2022 13:07:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1659816462;
+        bh=JttCySagazOt1SPXCXmT9G72op/evmxRiYdJphWoCNE=;
+        h=X-UI-Sender-Class:Date:From:To:Cc:Subject;
+        b=JPPs5R97yZLhiCJoHhnWY3uIOMYdlnAKnWpVXOwCdRQkE/RP3H1dwCmBW3WD76/0s
+         +wyEyFl3JlRhKbYqq5Cu4OwrWUY1T35LyesAEogLq5L2JhLltJKipdnDqigHzl5scI
+         pZou6A3zUAYz7U345WsuQH8WhCcHZ2zsXNkXXsPY=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from ls3530 ([92.116.170.46]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MRTNF-1o6LkJ0ZeP-00NVC9; Sat, 06
+ Aug 2022 22:07:42 +0200
+Date:   Sat, 6 Aug 2022 22:06:49 +0200
+From:   Helge Deller <deller@gmx.de>
+To:     Linus Torvalds <torvalds@linux-foundation.org>,
         linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        broonie@kernel.org
-Subject: Re: [PATCH v2 02/10] dt-bindings: iio: accel: use
- spi-peripheral-props.yaml
-Message-ID: <20220806183132.77b383cd@jic23-huawei>
-In-Reply-To: <89ea12c2-d4ef-490d-ff28-27b636adb05f@linaro.org>
-References: <20220727164646.387541-1-krzysztof.kozlowski@linaro.org>
-        <20220727164646.387541-3-krzysztof.kozlowski@linaro.org>
-        <20220731164943.320babe4@jic23-huawei>
-        <20220803212926.GA2639296-robh@kernel.org>
-        <89ea12c2-d4ef-490d-ff28-27b636adb05f@linaro.org>
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.34; x86_64-pc-linux-gnu)
+        dri-devel@lists.freedesktop.org
+Cc:     Zheyu Ma <zheyuma97@gmail.com>,
+        Uwe =?iso-8859-15?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [GIT PULL] fbdev updates & fixes for v5.20-rc1
+Message-ID: <Yu7J2Yj6UyAiE2Ne@ls3530>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:7s9Da4UCIDfa/Q9sjHw2hJhx20+r87Q8QQJKmc8kJezq0A+t6L2
+ EtdvQlNtQkcIh+Th10pNNuPWrQDCtlSJdB/mdgrZHT+PSsRjnzEc8wk17NINIeahY90FMj6
+ Tpv4tJUTVHpPVRG1gZsfilGKJWCN3aEm1WcRbwLMd89Fix1ccaPcNKem31BohLWQj8suudC
+ Y5+b8pD/7A+iX0Q6bU6lA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:9j0S/gy0o4w=:Q2TIczuQTWp3wJpyKPSxFN
+ kduprlC31bdB30wYEBQ7NBx6S8/Lqcf/CjdjhOtxHNCR9mc45M95GSsu7ohhei7w+CzQV4lbg
+ heiA/Ed1R9bYx3NqIusvKxW8SzFlPqkwRtpwpA52TNGgJJqBFFvHeAmMvbNiwK4vgEhq7/HpC
+ wqIfq26V/4WqVuAspdXJyZZcJANkrwiyoLReT/9OMRvboEh01i/9r7qgxFSPkBwfAmCBpaC2Z
+ CyI7mrHU5saTdnifqDpwnY1W5MsU3y/xDcCTS09AQRph6xBnCCwnHlO50TkaRxuUFwFBPvNXj
+ yZBaI0vX3uEhBAF5gv2sG74j4Z4Yx0xm1jQiI5Iy/mqRA+w8rdXhffQSgOKnqcAVzhwcP4Uz7
+ r7egN7oqMCiiwqSX9nW1ICK1EkvbNCqumFa/XOMeXzZkfN/YcL9barfQOnHQ5ZjGHDi6Jy6mF
+ NuxEjoJERfCgeRSDmbK0m3Jy9pjj0wzc+oXyZrqIjp5fBHnMu5BvHotNLItJi1afRN3Dpa7dv
+ bDWL3m8JeDjsLmfs1YDo3K9i1lYKplyXArW/8BclwNNb5H2LCwgjUqOnW2k9mTSLYeo8t3lbM
+ xakuQdjVrHEMwpdHznpo9pGlgf/CmC0OqyOxrtTzqShCinlkIQa+wZcZgVb31dKmG7mgo9HYH
+ TbjEBjx/ZHPU6qzw7eqMh+t/0kGVnaYtG4+hyqhSuIKN+10B+Yr3qgrSySMU+4lnCZfBHyKJF
+ PK4EV6x/0NHe8Oj0AM2FL++fGbbYnKUhU20XPdwg1eLJrQvhNDZhwKOqlWLH7H5Pc9EqPt7UU
+ cYaUIelZHwQPDUAPFpqTPYHp7wRPFW9jqizY+URsvgCkbBbM+ZWCzPfLb1Y9ftn/v6QHgnDEP
+ djCgl8RvgzBtbAgco6G3GpZvrdDjVjAzVin2sINp32y5OXxc0M4qwZN7WqTHSoRLWCWpzVAAa
+ gQgow8lvZ/o+4ErllCG0xUIc3jTD4+jgJoSYsK0wJ6emEUaoN6d4N6kNlG2qTjw0tKJNiJBrF
+ 0iSOw9MiDzZDoS5btqXKOP5+5VXvYm0o66UYpIj7yjpez9ZOBSrwLjsVFn5XcmKEf3PvNLQGW
+ 16qc+m9uvre66w5aXAlBAqn+jX7wW6nd3AmwRYavsFmIZlOH0Ub5FAPfg==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, 4 Aug 2022 09:27:37 +0200
-Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
+The following changes since commit ff6992735ade75aae3e35d16b17da1008d753d2=
+8:
 
-> On 03/08/2022 23:29, Rob Herring wrote:
-> >>> I wonder if spi-3wire is device specific (not controller) and should be
-> >>> rather explicitly mentioned by device schema. Just like spi-cpol/cpha.  
-> >>
-> >> I think it is, but Mark is expert on this.  
-> > 
-> > I would say yes as it's the device with a single data line.  
-> 
-> I will move it to device schema, just like cpol/cpha, and send a v3.
-> After the merge window.
-Works for me. I'll wait for v3 then.
+  Linux 5.19-rc7 (2022-07-17 13:30:22 -0700)
 
+are available in the Git repository at:
 
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git ta=
+gs/for-5.20/fbdev-1
 
-> 
-> >   
-> >> In general I'm waiting on Mark's opinion on the whole idea!  
-> > 
-> > The prerequisite changes (except for spi-3-wire) are already queued up 
-> > by Mark as are changes for other subsystems.  
+for you to fetch changes up to 6ba592fa014f21f35a8ee8da4ca7b95a018f13e8:
 
-Ah. Got it.
+  video: fbdev: s3fb: Check the size of screen before memset_io() (2022-08=
+-05 18:44:59 +0200)
 
-Thanks for driving this through.
+=2D---------------------------------------------------------------
+fbdev fixes and updates for kernel v5.20-rc1
 
-Jonathan
-> 
-> 
-> Best regards,
-> Krzysztof
+The two major changes in this patchset corrects VGA modes, color
+handling and various other smaller fixes in the Atari framebuffer (by
+Geert Uytterhoeven), and devm_* conversion, platform data fixes and
+header cleanups in the imxfb driver (by Uwe Kleine-K=F6nig).
 
+Other small patches clean up code in sa1100fb, cirrusfb and omapfb,
+fix a refcount leak in amba-clcd (by Liang He), and adds parameter
+checks to arkfb, i740fb, vt8623fb and s3fb (by Zheyu Ma).
+
+=2D---------------------------------------------------------------
+Geert Uytterhoeven (14):
+      video: fbdev: amiga: Simplify amifb_pan_display()
+      video: fbdev: sa1100fb: Remove unused sa1100fb_setup()
+      video: fbdev: cirrusfb: Make cirrusfb_zorro_unregister() static
+      video: fbdev: Make *fb_setup() and *fb_init() static
+      video: fbdev: atari: Simplify atafb_pan_display()
+      video: fbdev: atari: Remove bogus FB_VMODE_YWRAP flags
+      video: fbdev: atari: Fix inverse handling
+      video: fbdev: atari: Fix ext_setcolreg()
+      video: fbdev: atari: Remove unneeded casts from void *
+      video: fbdev: atari: Remove unneeded casts to void *
+      video: fbdev: atari: Fix TT High video mode vertical refresh
+      video: fbdev: atari: Fix VGA modes
+      video: fbdev: atari: Remove unused definitions and variables
+      video: fbdev: atari: Remove backward bug-compatibility
+
+Helge Deller (1):
+      video: fbdev: omapfb: Unexport omap*_update_window_async()
+
+Liang He (1):
+      video: fbdev: amba-clcd: Fix refcount leak bugs
+
+Rustam Subkhankulov (1):
+      video: fbdev: sis: fix typos in SiS_GetModeID()
+
+Uwe Kleine-K=F6nig (4):
+      video: fbdev: imxfb: Drop platform data support
+      video: fbdev: imxfb: Drop unused symbols from header
+      video: fbdev: imxfb: Fold <linux/platform_data/video-imxfb.h> into o=
+nly user
+      video: fbdev: imxfb: Convert request_mem_region + ioremap to devm_io=
+remap_resource
+
+Yang Yingliang (1):
+      video: fbdev: imxfb: fix return value check in imxfb_probe()
+
+Zheyu Ma (5):
+      video: fbdev: arkfb: Fix a divide-by-zero bug in ark_set_pixclock()
+      video: fbdev: i740fb: Check the argument of i740_calc_vclk()
+      video: fbdev: vt8623fb: Check the size of screen before memset_io()
+      video: fbdev: arkfb: Check the size of screen before memset_io()
+      video: fbdev: s3fb: Check the size of screen before memset_io()
+
+ Documentation/m68k/kernel-options.rst     |   4 +-
+ MAINTAINERS                               |   1 -
+ drivers/video/fbdev/68328fb.c             |   7 +-
+ drivers/video/fbdev/amba-clcd.c           |  24 ++++--
+ drivers/video/fbdev/amifb.c               |  15 +---
+ drivers/video/fbdev/arkfb.c               |   9 +-
+ drivers/video/fbdev/atafb.c               | 103 +++++++----------------
+ drivers/video/fbdev/cirrusfb.c            |   2 +-
+ drivers/video/fbdev/dnfb.c                |   2 +-
+ drivers/video/fbdev/fm2fb.c               |   4 +-
+ drivers/video/fbdev/hpfb.c                |   4 +-
+ drivers/video/fbdev/i740fb.c              |   9 +-
+ drivers/video/fbdev/imxfb.c               | 134 +++++++++++--------------=
+-----
+ drivers/video/fbdev/omap/hwa742.c         |   3 +-
+ drivers/video/fbdev/omap/omapfb.h         |   9 --
+ drivers/video/fbdev/omap/omapfb_main.c    |   3 +-
+ drivers/video/fbdev/q40fb.c               |   2 +-
+ drivers/video/fbdev/s3fb.c                |   2 +
+ drivers/video/fbdev/sa1100fb.c            |  41 ---------
+ drivers/video/fbdev/sis/init.c            |   4 +-
+ drivers/video/fbdev/skeletonfb.c          |   6 +-
+ drivers/video/fbdev/valkyriefb.c          |  10 +--
+ drivers/video/fbdev/vt8623fb.c            |   2 +
+ include/linux/platform_data/video-imxfb.h |  70 ----------------
+ 24 files changed, 136 insertions(+), 334 deletions(-)
+ delete mode 100644 include/linux/platform_data/video-imxfb.h

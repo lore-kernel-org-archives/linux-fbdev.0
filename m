@@ -2,98 +2,137 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B70EBC25B0D
-	for <linux-fbdev@archiver.kernel.org>; Sat,  6 Aug 2022 16:57:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06BDDC19F2D
+	for <linux-fbdev@archiver.kernel.org>; Sat,  6 Aug 2022 17:21:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233295AbiHFQ5N (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 6 Aug 2022 12:57:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38720 "EHLO
+        id S230211AbiHFRV3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 6 Aug 2022 13:21:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50786 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233100AbiHFQ5M (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 6 Aug 2022 12:57:12 -0400
-Received: from mail-qt1-x82d.google.com (mail-qt1-x82d.google.com [IPv6:2607:f8b0:4864:20::82d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB437DEDB;
-        Sat,  6 Aug 2022 09:57:11 -0700 (PDT)
-Received: by mail-qt1-x82d.google.com with SMTP id cr9so717490qtb.13;
-        Sat, 06 Aug 2022 09:57:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc;
-        bh=wj6684H6Kpz2ZtSUodC0U0fU86f1YKlziRI4r3cW+HI=;
-        b=BtpSlh2x5s/SOJglV0bbuGknHlFtC17/SdHTJmS3uZdZurl45R2Le81dNFTaKIU6Od
-         NXfBR45JX5zUQEBNwnkmNwVGrnem8k97ff2spSUq73FY6s+kv8gM/Ru8ze2xYNcDLMWt
-         NsPHERX877627zE1v4BgU9NYY4jNndt7MBzqQ3NF4LA5pe/aFNJhYrfB/2iSJN3dvZ2k
-         T3Xo23bCjCQu8n82clu06hLqSSDFmUayNmcBvRq7fAN2NcRPJulq530HBdfcA9SdaNbJ
-         Cy/0MQvzHjcYAQFuGtPP1miEIcsPS2jiffpfEm4jbpjIbITcbE9I9CO0LGfjyuVWFsBk
-         ls7w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc;
-        bh=wj6684H6Kpz2ZtSUodC0U0fU86f1YKlziRI4r3cW+HI=;
-        b=VfX65Zu63iQ7E9F23P24qG523c+WtDDPbQnoW2SoGKpoBYaKJw4D2cOVPdj2cVYlt3
-         lXNCjPFoDAZv9gFbXjJUJqSiq7N24oKWdZVtzHqKcpa750/l3H4e6hWfJvnI497O7O3y
-         xkCA38F28LIth5eWNpp7Hr8T2Vc3PghzK8lCBMosCZ1REqb0U4HikcxsiqT2Tg9tsnXE
-         /uwqm2qsiYOCnqnkg94ANEmKiUF+ET44u8VtvWN/VhIm81zV3QE8uEszt7CY5QSZ5aHL
-         u2tNWIuJgDj4s5GBLTJh0V2SwS37FUkz3ExcMJa8ijRzIVzXYGDMMtpipJhzalQOArww
-         nj/g==
-X-Gm-Message-State: ACgBeo3Ao7pgaoosVqe4qHqZwc3WacBLDQIotTiXuvpMvfPzicp5ttfr
-        h3BmfI8bTPjlN84eaxu0JUhC4aHgcDqsziWR+v4=
-X-Google-Smtp-Source: AA6agR61xEI/w29pHlhpS9FZx9xdp0DX1Dk2bnjIJClh7I1yqul0PbHxwiEEgwD3NG9K2UtdJlDmFS2nsKEkKIZ0lIs=
-X-Received: by 2002:ac8:5784:0:b0:31f:24e:93f5 with SMTP id
- v4-20020ac85784000000b0031f024e93f5mr10304276qta.429.1659805030863; Sat, 06
- Aug 2022 09:57:10 -0700 (PDT)
+        with ESMTP id S229868AbiHFRV2 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 6 Aug 2022 13:21:28 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 171F7642C;
+        Sat,  6 Aug 2022 10:21:28 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id CCACAB8077B;
+        Sat,  6 Aug 2022 17:21:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 21097C433D6;
+        Sat,  6 Aug 2022 17:21:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1659806485;
+        bh=xCBMuqsZV7iPHwJALXb/Dt7nFrNqloBL28h2XN5yuAo=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=K6OisMtIuqpniraC55aPNLVoVLc4BYz2XdoQ2jnIEDAsk1DVbShma8vPN1Wz4L6A5
+         1QgaqUdGpnrlVhFbPt5cm9uMpz0zLHygBJsEvBvyh8y02k7KFA4YDYFtWU0R0tVNJY
+         tw3SMDQ31SEMmNbuD/HaV/O6d0KJYVUA+xC7tjCeiPAhoJeVkYvd5/9be/gWRB0wRb
+         HVpD2aHHj7MlQdpsXv/v/q2AhEPyDpVvjd2D5tuxRcPdUSoVm+olAto6HMeWg46jVN
+         WZOPJx6OlklC8Ywij6mT8Fmg356Wly5z5KCrYTzQMxHYmWLxquTDZiVXeeQe6DFs7E
+         QqN7vpK/gICYg==
+Date:   Sat, 6 Aug 2022 18:31:32 +0100
+From:   Jonathan Cameron <jic23@kernel.org>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc:     Rob Herring <robh@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Michael Hennerich <Michael.Hennerich@analog.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Lucas Stankus <lucas.p.stankus@gmail.com>,
+        Puranjay Mohan <puranjay12@gmail.com>,
+        Cosmin Tanislav <cosmin.tanislav@analog.com>,
+        Alexandru Tachici <alexandru.tachici@analog.com>,
+        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
+        Marcus Folkesson <marcus.folkesson@gmail.com>,
+        Kent Gustavsson <kent@minoris.se>,
+        Tomislav Denis <tomislav.denis@avl.com>,
+        Oleksij Rempel <linux@rempel-privat.de>, kernel@pengutronix.de,
+        Antoniu Miclaus <antoniu.miclaus@analog.com>,
+        Ricardo Ribalda <ribalda@kernel.org>,
+        Dragos Bogdan <dragos.bogdan@analog.com>,
+        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
+        Lorenzo Bianconi <lorenzo@kernel.org>,
+        Stefan Popa <stefan.popa@analog.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Stephan Gerhold <stephan@gerhold.net>,
+        Mike Looijmans <mike.looijmans@topic.nl>,
+        Joachim Eastwood <manabian@gmail.com>,
+        Tomas Melin <tomas.melin@vaisala.com>,
+        Sean Nyekjaer <sean@geanix.com>,
+        Beniamin Bia <beniamin.bia@analog.com>,
+        Patrick Vasseur <patrick.vasseur@c-s.fr>,
+        Charles-Antoine Couret <charles-antoine.couret@essensium.com>,
+        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Philippe Reynes <tremyfr@yahoo.fr>,
+        Jacopo Mondi <jacopo@jmondi.org>,
+        Akinobu Mita <akinobu.mita@gmail.com>,
+        Alexandru Lazar <alazar@startmail.com>,
+        Oskar Andero <oskar.andero@gmail.com>,
+        =?UTF-8?B?TcOlcnRlbg==?= Lindahl <martenli@axis.com>,
+        Bogdan Pricop <bogdan.pricop@emutex.com>,
+        Angelo Compagnucci <angelo.compagnucci@gmail.com>,
+        Matt Ranostay <matt.ranostay@konsulko.com>,
+        Dan Murphy <dmurphy@ti.com>,
+        Gregory Clement <gregory.clement@bootlin.com>,
+        Phil Reid <preid@electromag.com.au>,
+        Michael Welling <mwelling@ieee.org>,
+        Lukas Wunner <lukas@wunner.de>,
+        Robert Jones <rjones@gateworks.com>,
+        Chris Coffey <cmc@babblebit.net>,
+        Slawomir Stepien <sst@poczta.fm>,
+        Sankar Velliangiri <navin@linumiz.com>,
+        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        broonie@kernel.org
+Subject: Re: [PATCH v2 02/10] dt-bindings: iio: accel: use
+ spi-peripheral-props.yaml
+Message-ID: <20220806183132.77b383cd@jic23-huawei>
+In-Reply-To: <89ea12c2-d4ef-490d-ff28-27b636adb05f@linaro.org>
+References: <20220727164646.387541-1-krzysztof.kozlowski@linaro.org>
+        <20220727164646.387541-3-krzysztof.kozlowski@linaro.org>
+        <20220731164943.320babe4@jic23-huawei>
+        <20220803212926.GA2639296-robh@kernel.org>
+        <89ea12c2-d4ef-490d-ff28-27b636adb05f@linaro.org>
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.34; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-References: <20220806163255.10404-1-markuss.broks@gmail.com> <20220806163255.10404-2-markuss.broks@gmail.com>
-In-Reply-To: <20220806163255.10404-2-markuss.broks@gmail.com>
-From:   Andy Shevchenko <andy.shevchenko@gmail.com>
-Date:   Sat, 6 Aug 2022 18:56:34 +0200
-Message-ID: <CAHp75VfizQY3kw3qk0des42uAwnYmv94aWQC+fVq_QQJGp-QYQ@mail.gmail.com>
-Subject: Re: [PATCH v2 1/3] drivers: serial: earlycon: Correct argument name
-To:     Markuss Broks <markuss.broks@gmail.com>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        Jonathan Corbet <corbet@lwn.net>,
-        Ard Biesheuvel <ardb@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Helge Deller <deller@gmx.de>,
-        "Paul E. McKenney" <paulmck@kernel.org>,
-        Borislav Petkov <bp@suse.de>,
-        Kees Cook <keescook@chromium.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Michal Suchanek <msuchanek@suse.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Wei Ming Chen <jj251510319013@gmail.com>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Tony Lindgren <tony@atomide.com>,
-        Linux Documentation List <linux-doc@vger.kernel.org>,
-        linux-efi <linux-efi@vger.kernel.org>,
-        "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Rob Herring <robh@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, Aug 6, 2022 at 6:37 PM Markuss Broks <markuss.broks@gmail.com> wrote:
->
-> The "node" argument is actually an offset, and it's also
-> an "int", and not "unsigned long". Correct the of_setup_earlycon
-> function.
+On Thu, 4 Aug 2022 09:27:37 +0200
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
 
-Suggested-by: Greg KH?
+> On 03/08/2022 23:29, Rob Herring wrote:
+> >>> I wonder if spi-3wire is device specific (not controller) and should be
+> >>> rather explicitly mentioned by device schema. Just like spi-cpol/cpha.  
+> >>
+> >> I think it is, but Mark is expert on this.  
+> > 
+> > I would say yes as it's the device with a single data line.  
+> 
+> I will move it to device schema, just like cpol/cpha, and send a v3.
+> After the merge window.
+Works for me. I'll wait for v3 then.
 
-> Signed-off-by: Markuss Broks <markuss.broks@gmail.com>
 
--- 
-With Best Regards,
-Andy Shevchenko
+
+> 
+> >   
+> >> In general I'm waiting on Mark's opinion on the whole idea!  
+> > 
+> > The prerequisite changes (except for spi-3-wire) are already queued up 
+> > by Mark as are changes for other subsystems.  
+
+Ah. Got it.
+
+Thanks for driving this through.
+
+Jonathan
+> 
+> 
+> Best regards,
+> Krzysztof
+

@@ -2,164 +2,187 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BD56C19F2D
-	for <linux-fbdev@archiver.kernel.org>; Sat,  6 Aug 2022 20:07:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9E7DC19F2D
+	for <linux-fbdev@archiver.kernel.org>; Sat,  6 Aug 2022 21:38:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231546AbiHFUH4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 6 Aug 2022 16:07:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45986 "EHLO
+        id S231490AbiHFViQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 6 Aug 2022 17:38:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60214 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233295AbiHFUHw (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 6 Aug 2022 16:07:52 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA344E035;
-        Sat,  6 Aug 2022 13:07:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1659816462;
-        bh=JttCySagazOt1SPXCXmT9G72op/evmxRiYdJphWoCNE=;
-        h=X-UI-Sender-Class:Date:From:To:Cc:Subject;
-        b=JPPs5R97yZLhiCJoHhnWY3uIOMYdlnAKnWpVXOwCdRQkE/RP3H1dwCmBW3WD76/0s
-         +wyEyFl3JlRhKbYqq5Cu4OwrWUY1T35LyesAEogLq5L2JhLltJKipdnDqigHzl5scI
-         pZou6A3zUAYz7U345WsuQH8WhCcHZ2zsXNkXXsPY=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from ls3530 ([92.116.170.46]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MRTNF-1o6LkJ0ZeP-00NVC9; Sat, 06
- Aug 2022 22:07:42 +0200
-Date:   Sat, 6 Aug 2022 22:06:49 +0200
-From:   Helge Deller <deller@gmx.de>
-To:     Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Cc:     Zheyu Ma <zheyuma97@gmail.com>,
-        Uwe =?iso-8859-15?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
-        Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [GIT PULL] fbdev updates & fixes for v5.20-rc1
-Message-ID: <Yu7J2Yj6UyAiE2Ne@ls3530>
+        with ESMTP id S229740AbiHFViP (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 6 Aug 2022 17:38:15 -0400
+Received: from mail-qk1-x730.google.com (mail-qk1-x730.google.com [IPv6:2607:f8b0:4864:20::730])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BE53FB1CB;
+        Sat,  6 Aug 2022 14:38:13 -0700 (PDT)
+Received: by mail-qk1-x730.google.com with SMTP id o1so4166653qkg.9;
+        Sat, 06 Aug 2022 14:38:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc;
+        bh=MfKNCdoirxc2xo2dJ2ZnrKHYVycXxfrXH8JNH8fm1Y8=;
+        b=YBzle4Bzk8bMM2eG1wG0QftAx91m2KHC2NzsZY+bkn3ddnh1U940M/jxSnYcV7UjIc
+         pKdr3JCm6dxKjr9Hb2YoyGGOlso4bztjd2UILk6zq6O2FGtlS2u6FlMhyadpHXVi+OQ4
+         VLFnXJt0xdQYzrfMfNi5GuvEG+2nm5LIWyd/WwVe/+vURptktX6hP5gZ+kqvBnq5GW/x
+         uOYMEySPd9JJ4EjR9eel8ie2TJuDeTQgonSosqk441GIXY39IMjaq9ezX4siGpJPGaNe
+         dumUqe4+XqL9xkAHhTVD7Bi6ZhQIocYnNbNY/wY9R8aWANkblzYAgHFibHzxlMWRpxl6
+         C9vw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc;
+        bh=MfKNCdoirxc2xo2dJ2ZnrKHYVycXxfrXH8JNH8fm1Y8=;
+        b=jhXM5SpUEo1eSYdwewxz8vqPPgQxhOtjLvk2RQ9XT9GeovHojp1n8IyQhoWaoDt351
+         NtFkS1z8g9qheIUKE14Z81XNPmrjf/+qQSIV4EMzYCoGYkiniaxgrSVXmggwBtGIzxWG
+         0ig8eQpBDnnFvtH/Mj/FUGC79hnEDLtp0XPC+iceRWD9Wd9L5uOzN6rXhtmfbBy0zcZ1
+         dIjmLThx4kmW0zhugu+YCSgfQEBxFTOlsUBOxlUVjktITgacOobFYRiFQ+IfNQjTnsvJ
+         ketooLWNvWJdU4KyJVMx2JbcC3DO7GnQzi/ios7D9k2wPtuBMJduQfF4itSX+fvQAt2k
+         2Xhg==
+X-Gm-Message-State: ACgBeo3rPao2uXUDYvenAs/rDHa+mMWQbEiQmDPj36DVQZAO7IEcw+QD
+        PX9Hg1x/2sUV7resEc7qTaNHSevmmAo3RY6VfL8=
+X-Google-Smtp-Source: AA6agR56Da74aJjiF+4nLUKRTvJqjbVZJG6Bbd44zgX3ASwhuBBjAStAwYDAMCCSp6ij5AOPtil/tLlaj2OWYcKKILA=
+X-Received: by 2002:a05:620a:8018:b0:6b6:5df:977 with SMTP id
+ ee24-20020a05620a801800b006b605df0977mr9477710qkb.320.1659821892589; Sat, 06
+ Aug 2022 14:38:12 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:7s9Da4UCIDfa/Q9sjHw2hJhx20+r87Q8QQJKmc8kJezq0A+t6L2
- EtdvQlNtQkcIh+Th10pNNuPWrQDCtlSJdB/mdgrZHT+PSsRjnzEc8wk17NINIeahY90FMj6
- Tpv4tJUTVHpPVRG1gZsfilGKJWCN3aEm1WcRbwLMd89Fix1ccaPcNKem31BohLWQj8suudC
- Y5+b8pD/7A+iX0Q6bU6lA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:9j0S/gy0o4w=:Q2TIczuQTWp3wJpyKPSxFN
- kduprlC31bdB30wYEBQ7NBx6S8/Lqcf/CjdjhOtxHNCR9mc45M95GSsu7ohhei7w+CzQV4lbg
- heiA/Ed1R9bYx3NqIusvKxW8SzFlPqkwRtpwpA52TNGgJJqBFFvHeAmMvbNiwK4vgEhq7/HpC
- wqIfq26V/4WqVuAspdXJyZZcJANkrwiyoLReT/9OMRvboEh01i/9r7qgxFSPkBwfAmCBpaC2Z
- CyI7mrHU5saTdnifqDpwnY1W5MsU3y/xDcCTS09AQRph6xBnCCwnHlO50TkaRxuUFwFBPvNXj
- yZBaI0vX3uEhBAF5gv2sG74j4Z4Yx0xm1jQiI5Iy/mqRA+w8rdXhffQSgOKnqcAVzhwcP4Uz7
- r7egN7oqMCiiwqSX9nW1ICK1EkvbNCqumFa/XOMeXzZkfN/YcL9barfQOnHQ5ZjGHDi6Jy6mF
- NuxEjoJERfCgeRSDmbK0m3Jy9pjj0wzc+oXyZrqIjp5fBHnMu5BvHotNLItJi1afRN3Dpa7dv
- bDWL3m8JeDjsLmfs1YDo3K9i1lYKplyXArW/8BclwNNb5H2LCwgjUqOnW2k9mTSLYeo8t3lbM
- xakuQdjVrHEMwpdHznpo9pGlgf/CmC0OqyOxrtTzqShCinlkIQa+wZcZgVb31dKmG7mgo9HYH
- TbjEBjx/ZHPU6qzw7eqMh+t/0kGVnaYtG4+hyqhSuIKN+10B+Yr3qgrSySMU+4lnCZfBHyKJF
- PK4EV6x/0NHe8Oj0AM2FL++fGbbYnKUhU20XPdwg1eLJrQvhNDZhwKOqlWLH7H5Pc9EqPt7UU
- cYaUIelZHwQPDUAPFpqTPYHp7wRPFW9jqizY+URsvgCkbBbM+ZWCzPfLb1Y9ftn/v6QHgnDEP
- djCgl8RvgzBtbAgco6G3GpZvrdDjVjAzVin2sINp32y5OXxc0M4qwZN7WqTHSoRLWCWpzVAAa
- gQgow8lvZ/o+4ErllCG0xUIc3jTD4+jgJoSYsK0wJ6emEUaoN6d4N6kNlG2qTjw0tKJNiJBrF
- 0iSOw9MiDzZDoS5btqXKOP5+5VXvYm0o66UYpIj7yjpez9ZOBSrwLjsVFn5XcmKEf3PvNLQGW
- 16qc+m9uvre66w5aXAlBAqn+jX7wW6nd3AmwRYavsFmIZlOH0Ub5FAPfg==
+References: <20220806163255.10404-1-markuss.broks@gmail.com> <20220806163255.10404-4-markuss.broks@gmail.com>
+In-Reply-To: <20220806163255.10404-4-markuss.broks@gmail.com>
+From:   Andy Shevchenko <andy.shevchenko@gmail.com>
+Date:   Sat, 6 Aug 2022 23:37:35 +0200
+Message-ID: <CAHp75VcMgFQJoFC68GCTej--44+iFWXEpjh2Q7O0XbHk588OCw@mail.gmail.com>
+Subject: Re: [PATCH v2 3/3] efi: earlycon: Add support for generic
+ framebuffers and move to console subsystem
+To:     Markuss Broks <markuss.broks@gmail.com>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        Jonathan Corbet <corbet@lwn.net>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Helge Deller <deller@gmx.de>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Borislav Petkov <bp@suse.de>,
+        Kees Cook <keescook@chromium.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Michal Suchanek <msuchanek@suse.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Wei Ming Chen <jj251510319013@gmail.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Tony Lindgren <tony@atomide.com>,
+        Linux Documentation List <linux-doc@vger.kernel.org>,
+        linux-efi <linux-efi@vger.kernel.org>,
+        "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The following changes since commit ff6992735ade75aae3e35d16b17da1008d753d2=
-8:
+On Sat, Aug 6, 2022 at 6:38 PM Markuss Broks <markuss.broks@gmail.com> wrote:
+>
+> Add early console support for generic linear framebuffer devices.
+> This driver supports probing from cmdline early parameters
+> or from the device-tree using information in simple-framebuffer node.
+> The EFI functionality should be retained in whole.
+> The driver was disabled on ARM because of a bug in early_ioremap
 
-  Linux 5.19-rc7 (2022-07-17 13:30:22 -0700)
+We refer to functions like func().
 
-are available in the Git repository at:
+> implementation on ARM and on IA64 because of lack of early_memremap_prot.
 
-  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git ta=
-gs/for-5.20/fbdev-1
+Ditto.
 
-for you to fetch changes up to 6ba592fa014f21f35a8ee8da4ca7b95a018f13e8:
+...
 
-  video: fbdev: s3fb: Check the size of screen before memset_io() (2022-08=
--05 18:44:59 +0200)
+> +#include <asm/early_ioremap.h>
 
-=2D---------------------------------------------------------------
-fbdev fixes and updates for kernel v5.20-rc1
+Can it be placed after linux/* ones?
 
-The two major changes in this patchset corrects VGA modes, color
-handling and various other smaller fixes in the Atari framebuffer (by
-Geert Uytterhoeven), and devm_* conversion, platform data fixes and
-header cleanups in the imxfb driver (by Uwe Kleine-K=F6nig).
+> +#include <linux/console.h>
+> +#include <linux/efi.h>
+> +#include <linux/font.h>
+> +#include <linux/io.h>
+> +#include <linux/kernel.h>
+> +#include <linux/mm.h>
+> +#include <linux/of.h>
+> +#include <linux/of_fdt.h>
+> +#include <linux/serial_core.h>
+> +#include <linux/screen_info.h>
 
-Other small patches clean up code in sa1100fb, cirrusfb and omapfb,
-fix a refcount leak in amba-clcd (by Liang He), and adds parameter
-checks to arkfb, i740fb, vt8623fb and s3fb (by Zheyu Ma).
+...
 
-=2D---------------------------------------------------------------
-Geert Uytterhoeven (14):
-      video: fbdev: amiga: Simplify amifb_pan_display()
-      video: fbdev: sa1100fb: Remove unused sa1100fb_setup()
-      video: fbdev: cirrusfb: Make cirrusfb_zorro_unregister() static
-      video: fbdev: Make *fb_setup() and *fb_init() static
-      video: fbdev: atari: Simplify atafb_pan_display()
-      video: fbdev: atari: Remove bogus FB_VMODE_YWRAP flags
-      video: fbdev: atari: Fix inverse handling
-      video: fbdev: atari: Fix ext_setcolreg()
-      video: fbdev: atari: Remove unneeded casts from void *
-      video: fbdev: atari: Remove unneeded casts to void *
-      video: fbdev: atari: Fix TT High video mode vertical refresh
-      video: fbdev: atari: Fix VGA modes
-      video: fbdev: atari: Remove unused definitions and variables
-      video: fbdev: atari: Remove backward bug-compatibility
+> +static int __init simplefb_earlycon_remap_fb(void)
+> +{
+> +       unsigned long mapping;
 
-Helge Deller (1):
-      video: fbdev: omapfb: Unexport omap*_update_window_async()
++ Blank line.
 
-Liang He (1):
-      video: fbdev: amba-clcd: Fix refcount leak bugs
+> +       /* bail if there is no bootconsole or it has been disabled already */
+> +       if (!earlycon_console || !(earlycon_console->flags & CON_ENABLED))
+> +               return 0;
+> +
+> +       if (region_intersects(info.phys_base, info.size,
+> +                             IORESOURCE_SYSTEM_RAM, IORES_DESC_NONE) == REGION_INTERSECTS)
+> +               mapping = MEMREMAP_WB;
+> +       else
+> +               mapping = MEMREMAP_WC;
 
-Rustam Subkhankulov (1):
-      video: fbdev: sis: fix typos in SiS_GetModeID()
+> +       info.virt_base = memremap(info.phys_base, info.size, mapping);
+> +
+> +       return info.virt_base ? 0 : -ENOMEM;
 
-Uwe Kleine-K=F6nig (4):
-      video: fbdev: imxfb: Drop platform data support
-      video: fbdev: imxfb: Drop unused symbols from header
-      video: fbdev: imxfb: Fold <linux/platform_data/video-imxfb.h> into o=
-nly user
-      video: fbdev: imxfb: Convert request_mem_region + ioremap to devm_io=
-remap_resource
+Easier to read the standard pattern:
 
-Yang Yingliang (1):
-      video: fbdev: imxfb: fix return value check in imxfb_probe()
+  if (!info.virt_base)
+    return -ENOMEM;
 
-Zheyu Ma (5):
-      video: fbdev: arkfb: Fix a divide-by-zero bug in ark_set_pixclock()
-      video: fbdev: i740fb: Check the argument of i740_calc_vclk()
-      video: fbdev: vt8623fb: Check the size of screen before memset_io()
-      video: fbdev: arkfb: Check the size of screen before memset_io()
-      video: fbdev: s3fb: Check the size of screen before memset_io()
+  return 0;
 
- Documentation/m68k/kernel-options.rst     |   4 +-
- MAINTAINERS                               |   1 -
- drivers/video/fbdev/68328fb.c             |   7 +-
- drivers/video/fbdev/amba-clcd.c           |  24 ++++--
- drivers/video/fbdev/amifb.c               |  15 +---
- drivers/video/fbdev/arkfb.c               |   9 +-
- drivers/video/fbdev/atafb.c               | 103 +++++++----------------
- drivers/video/fbdev/cirrusfb.c            |   2 +-
- drivers/video/fbdev/dnfb.c                |   2 +-
- drivers/video/fbdev/fm2fb.c               |   4 +-
- drivers/video/fbdev/hpfb.c                |   4 +-
- drivers/video/fbdev/i740fb.c              |   9 +-
- drivers/video/fbdev/imxfb.c               | 134 +++++++++++--------------=
------
- drivers/video/fbdev/omap/hwa742.c         |   3 +-
- drivers/video/fbdev/omap/omapfb.h         |   9 --
- drivers/video/fbdev/omap/omapfb_main.c    |   3 +-
- drivers/video/fbdev/q40fb.c               |   2 +-
- drivers/video/fbdev/s3fb.c                |   2 +
- drivers/video/fbdev/sa1100fb.c            |  41 ---------
- drivers/video/fbdev/sis/init.c            |   4 +-
- drivers/video/fbdev/skeletonfb.c          |   6 +-
- drivers/video/fbdev/valkyriefb.c          |  10 +--
- drivers/video/fbdev/vt8623fb.c            |   2 +
- include/linux/platform_data/video-imxfb.h |  70 ----------------
- 24 files changed, 136 insertions(+), 334 deletions(-)
- delete mode 100644 include/linux/platform_data/video-imxfb.h
+> +}
+
+...
+
+> +static void simplefb_earlycon_write_char(u8 *dst, unsigned char c, unsigned int h)
+> +{
+> +       const u8 *src;
+> +       int m, n, bytes;
+> +       u8 x;
+> +
+> +       bytes = BITS_TO_BYTES(font->width);
+> +       src = font->data + c * font->height * bytes + h * bytes;
+> +
+> +       for (m = 0; m < font->width; m++) {
+> +               n = m % 8;
+> +               x = *(src + m / 8);
+
+I would write it as
+
+  x = src[m / 8];
+
+> +               if ((x >> (7 - n)) & 1)
+
+> +                       memset(dst, 0xff, (info.depth / 8));
+
+Too many parentheses.
+
+> +               else
+> +                       memset(dst, 0, (info.depth / 8));
+
+Ditto.
+
+> +               dst += (info.depth / 8);
+
+Ditto.
+
+> +       }
+> +}
+
+-- 
+With Best Regards,
+Andy Shevchenko

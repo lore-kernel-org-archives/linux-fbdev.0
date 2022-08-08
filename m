@@ -2,201 +2,482 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B0C8C25B0D
-	for <linux-fbdev@archiver.kernel.org>; Mon,  8 Aug 2022 01:28:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7E00C25B0D
+	for <linux-fbdev@archiver.kernel.org>; Mon,  8 Aug 2022 03:56:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231761AbiHHB2p (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 7 Aug 2022 21:28:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55744 "EHLO
+        id S231905AbiHHD45 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 7 Aug 2022 23:56:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47558 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229637AbiHHB2o (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 7 Aug 2022 21:28:44 -0400
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05C0F2AFE;
-        Sun,  7 Aug 2022 18:28:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1659922123; x=1691458123;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   in-reply-to;
-  bh=st6LjRLZeNJRrMDZN58ZGP4OS0SXLS7Z3FGsNNKPEH0=;
-  b=k2I10/+KMa9StfWJqKb9A3ueMcdvVV61hGVQLypgYr7lNCM/v7a38QPD
-   7WMr6DN91Fs1qm4d6GdC8ZHen8OJfnMe1thQMjm7Qvga5QlAbXxdvO4AX
-   xRTAuV16LxryXUZMvLoQ0WRXRt8WYPQFpFjOEuun/2thkhWBhwpv8bEts
-   g1jPa26/u5gY9lSJISOl4w4+UO6CIt/C/gJplh0/Z+JEO2ga6STL+fqi3
-   qdI5vumyVJLW//M3JDjrZuusTt1AyxMyj7yvpCXjx9ZQwRsIzw7tt8+9x
-   v2aulUWY/Sa715jZDApPWyAL2YG7OvAYAwOwZHONg7ve/JQ53UO5544VF
-   w==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10432"; a="290487476"
-X-IronPort-AV: E=Sophos;i="5.93,221,1654585200"; 
-   d="scan'208";a="290487476"
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Aug 2022 18:28:42 -0700
-X-IronPort-AV: E=Sophos;i="5.93,221,1654585200"; 
-   d="scan'208";a="931844646"
-Received: from rongch2-desk.sh.intel.com (HELO localhost) ([10.239.159.175])
-  by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Aug 2022 18:28:36 -0700
-Date:   Mon, 8 Aug 2022 09:28:34 +0800
-From:   kernel test robot <rong.a.chen@intel.com>
-To:     Markuss Broks <markuss.broks@gmail.com>,
-        linux-kernel@vger.kernel.org
-Cc:     llvm@lists.linux.dev, kbuild-all@lists.01.org,
-        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        Markuss Broks <markuss.broks@gmail.com>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Ard Biesheuvel <ardb@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Helge Deller <deller@gmx.de>,
-        "Paul E. McKenney" <paulmck@kernel.org>,
-        Borislav Petkov <bp@suse.de>,
-        Kees Cook <keescook@chromium.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Linux Memory Management List <linux-mm@kvack.org>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Michal Suchanek <msuchanek@suse.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Wei Ming Chen <jj251510319013@gmail.com>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Tony Lindgren <tony@atomide.com>, linux-doc@vger.kernel.org,
-        linux-efi@vger.kernel.org, linux-serial@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 1/3] drivers: serial: earlycon: Correct argument name
-Message-ID: <YvBmwgtARNuKTIgB@rongch2-desk2>
+        with ESMTP id S230364AbiHHD4x (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 7 Aug 2022 23:56:53 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E05BA63B3;
+        Sun,  7 Aug 2022 20:56:44 -0700 (PDT)
+X-UUID: af5e956206154a859f2519af9cd0bb84-20220808
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+        h=Content-Transfer-Encoding:MIME-Version:Content-Type:References:In-Reply-To:Date:CC:To:From:Subject:Message-ID; bh=DhhuJpteKCARl6+29dVpGy2mE4S43byCxsk+XzHe+vI=;
+        b=ul9ivRcvxQmuJV8WSiZ17iKgyUD6ltfzZV4Wzbdhl9joLfGujiYOXO25c+wX/RnsTmRKcD0sHvfQAXzluTQPRBDr9F3K0mnDQDgbi0MZ0rB/k8unoFuIjCQ82Xil0rBXMnX2WNsYFGIKADg3w5MDowxMevW3J/1+CYA68WP6/ZM=;
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.8,REQID:ae45cef8-719d-4c32-9673-62d4bfd5148f,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACT
+        ION:release,TS:45
+X-CID-INFO: VERSION:1.1.8,REQID:ae45cef8-719d-4c32-9673-62d4bfd5148f,OB:0,LOB:
+        0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTIO
+        N:release,TS:45
+X-CID-META: VersionHash:0f94e32,CLOUDID:6143fa48-f57f-4088-93dd-066979cdb4e6,C
+        OID:b4c7827d053a,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:0,File:nil,QS:nil,BEC:nil,COL:0
+X-UUID: af5e956206154a859f2519af9cd0bb84-20220808
+Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw02.mediatek.com
+        (envelope-from <ck.hu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 239268617; Mon, 08 Aug 2022 11:56:39 +0800
+Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Mon, 8 Aug 2022 11:56:38 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.2.792.15 via Frontend
+ Transport; Mon, 8 Aug 2022 11:56:38 +0800
+Message-ID: <9b39b3cebd144083e770a8d44bb275b4297d8c21.camel@mediatek.com>
+Subject: Re: [PATCH v16 4/8] drm/mediatek: Add MT8195 External DisplayPort
+ support
+From:   CK Hu <ck.hu@mediatek.com>
+To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, <chunkuang.hu@kernel.org>,
+        <p.zabel@pengutronix.de>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
+        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
+        <airlied@linux.ie>
+CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
+        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
+        <angelogioacchino.delregno@collabora.com>,
+        <liangxu.xu@mediatek.com>, <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-fbdev@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Mon, 8 Aug 2022 11:56:38 +0800
+In-Reply-To: <20220805101459.3386-5-rex-bc.chen@mediatek.com>
+References: <20220805101459.3386-1-rex-bc.chen@mediatek.com>
+         <20220805101459.3386-5-rex-bc.chen@mediatek.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20220806163255.10404-2-markuss.broks@gmail.com>
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Markuss,
+Hi, Bo-Chen:
 
-I love your patch! Yet something to improve:
+On Fri, 2022-08-05 at 18:14 +0800, Bo-Chen Chen wrote:
+> From: Guillaume Ranquet <granquet@baylibre.com>
+> 
+> This patch adds External DisplayPort support to the mt8195 eDP
+> driver.
+> 
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+> Reviewed-by: AngeloGioacchino Del Regno <
+> angelogioacchino.delregno@collabora.com>
+> ---
+>  drivers/gpu/drm/mediatek/mtk_dp.c     | 190 +++++++++++++++++++++---
+> --
+>  drivers/gpu/drm/mediatek/mtk_dp_reg.h |   4 +
+>  2 files changed, 158 insertions(+), 36 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c
+> b/drivers/gpu/drm/mediatek/mtk_dp.c
+> index 59fee814075b..00971ea2fadf 100644
+> --- a/drivers/gpu/drm/mediatek/mtk_dp.c
+> +++ b/drivers/gpu/drm/mediatek/mtk_dp.c
+> @@ -77,6 +77,7 @@ struct mtk_dp {
+>  	struct dp_cal_data cal_data;
+>  	u8 max_lanes;
+>  	u8 max_linkrate;
+> +	const struct mtk_dp_data *data;
+>  
+>  	struct drm_device *drm_dev;
+>  	struct drm_bridge bridge;
+> @@ -96,6 +97,12 @@ struct mtk_dp {
+>  	struct drm_connector *conn;
+>  };
+>  
+> +struct mtk_dp_data {
+> +	int bridge_type;
+> +	unsigned int smp_cmd;
+> +	unsigned int cali_data_fmt;
+> +};
+> +
+>  static struct regmap_config mtk_dp_regmap_config = {
+>  	.reg_bits = 32,
+>  	.val_bits = 32,
+> @@ -347,6 +354,14 @@ static bool mtk_dp_plug_state(struct mtk_dp
+> *mtk_dp)
+>  	return mtk_dp->train_info.cable_plugged_in;
+>  }
+>  
+> +static bool mtk_dp_plug_state_avoid_pulse(struct mtk_dp *mtk_dp)
+> +{
+> +	bool ret;
+> +
+> +	return !(readx_poll_timeout(mtk_dp_plug_state, mtk_dp, ret,
+> ret,
+> +				    4000, 7 * 4000));
+> +}
 
-[auto build test ERROR on tty/tty-testing]
-[also build test ERROR on efi/next staging/staging-testing usb/usb-testing linus/master v5.19 next-20220805]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Separate this to an independent patch which avoid pulse.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Markuss-Broks/Add-generic-framebuffer-support-to-EFI-earlycon-driver/20220807-003646
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/tty.git tty-testing
-config: x86_64-randconfig-a012 (https://download.01.org/0day-ci/archive/20220807/202208071111.oWn8uZfx-lkp@intel.com/config)
-compiler: clang version 16.0.0 (https://github.com/llvm/llvm-project 5f1c7e2cc5a3c07cbc2412e851a7283c1841f520)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/dedd7c138e9492439eeda05fa75a18bf19883a08
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Markuss-Broks/Add-generic-framebuffer-support-to-EFI-earlycon-driver/20220807-003646
-        git checkout dedd7c138e9492439eeda05fa75a18bf19883a08
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash
+> +
+>  static void mtk_dp_aux_irq_clear(struct mtk_dp *mtk_dp)
+>  {
+>  	mtk_dp_write(mtk_dp, MTK_DP_AUX_P0_3640,
+> @@ -784,35 +799,73 @@ static void mtk_dp_get_calibration_data(struct
+> mtk_dp *mtk_dp)
+>  		return;
+>  	}
+>  
+> -	cal_data->glb_bias_trim =
+> -		check_cal_data_valid(mtk_dp, 1, 0x1e,
+> -				     (buf[3] >> 27) & 0x1f, 0xf);
+> -	cal_data->clktx_impse =
+> -		check_cal_data_valid(mtk_dp, 1, 0xe,
+> -				     (buf[0] >> 9) & 0xf, 0x8);
+> -	cal_data->ln_tx_impsel_pmos[0] =
+> -		check_cal_data_valid(mtk_dp, 1, 0xe,
+> -				     (buf[2] >> 28) & 0xf, 0x8);
+> -	cal_data->ln_tx_impsel_nmos[0] =
+> -		check_cal_data_valid(mtk_dp, 1, 0xe,
+> -				     (buf[2] >> 24) & 0xf, 0x8);
+> -	cal_data->ln_tx_impsel_pmos[1] =
+> -		check_cal_data_valid(mtk_dp, 1, 0xe,
+> -				     (buf[2] >> 20) & 0xf, 0x8);
+> -	cal_data->ln_tx_impsel_nmos[1] =
+> -		check_cal_data_valid(mtk_dp, 1, 0xe,
+> -				     (buf[2] >> 16) & 0xf, 0x8);
+> -	cal_data->ln_tx_impsel_pmos[2] =
+> -		check_cal_data_valid(mtk_dp, 1, 0xe,
+> -				     (buf[2] >> 12) & 0xf, 0x8);
+> -	cal_data->ln_tx_impsel_nmos[2] =
+> -		check_cal_data_valid(mtk_dp, 1, 0xe,
+> -				     (buf[2] >> 8) & 0xf, 0x8);
+> -	cal_data->ln_tx_impsel_pmos[3] =
+> -		check_cal_data_valid(mtk_dp, 1, 0xe,
+> -				     (buf[2] >> 4) & 0xf, 0x8);
+> -	cal_data->ln_tx_impsel_nmos[3] =
+> -		check_cal_data_valid(mtk_dp, 1, 0xe, buf[2] & 0xf,
+> 0x8);
+> +	/*
+> +	 * To save the efuse bits, we place the calibration data for DP
+> and eDP
+> +	 * using method which could save the efuse bits. For this, the
+> efuse
+> +	 * orders of DP and eDP are different.
+> +	 */
+> +
+> +	if (mtk_dp->data->cali_data_fmt ==
+> MTK_DP_CALI_DATA_FMT_MT8195_EDP) {
 
-If you fix the issue, kindly add following tag where applicable
-Reported-by: kernel test robot <lkp@intel.com>
+Separate this to an independent patch which support different
+cali_data_fmt.
 
-All errors (new ones prefixed by >>):
+> +		cal_data->glb_bias_trim =
+> +			check_cal_data_valid(mtk_dp, 1, 0x1e,
+> +					     (buf[3] >> 27) & 0x1f,
+> 0xf);
+> +		cal_data->clktx_impse =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe,
+> +					     (buf[0] >> 9) & 0xf, 0x8);
+> +		cal_data->ln_tx_impsel_pmos[0] =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe,
+> +					     (buf[2] >> 28) & 0xf,
+> 0x8);
+> +		cal_data->ln_tx_impsel_nmos[0] =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe,
+> +					     (buf[2] >> 24) & 0xf,
+> 0x8);
+> +		cal_data->ln_tx_impsel_pmos[1] =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe,
+> +					     (buf[2] >> 20) & 0xf,
+> 0x8);
+> +		cal_data->ln_tx_impsel_nmos[1] =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe,
+> +					     (buf[2] >> 16) & 0xf,
+> 0x8);
+> +		cal_data->ln_tx_impsel_pmos[2] =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe,
+> +					     (buf[2] >> 12) & 0xf,
+> 0x8);
+> +		cal_data->ln_tx_impsel_nmos[2] =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe,
+> +					     (buf[2] >> 8) & 0xf, 0x8);
+> +		cal_data->ln_tx_impsel_pmos[3] =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe,
+> +					     (buf[2] >> 4) & 0xf, 0x8);
+> +		cal_data->ln_tx_impsel_nmos[3] =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe, buf[2] &
+> 0xf, 0x8);
+> +	} else {
+> +		cal_data->glb_bias_trim =
+> +			check_cal_data_valid(mtk_dp, 1, 0x1e,
+> +					     (buf[0] >> 27) & 0x1f,
+> 0xf);
+> +		cal_data->clktx_impse =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe,
+> +					     (buf[0] >> 13) & 0xf,
+> 0x8);
+> +		cal_data->ln_tx_impsel_pmos[0] =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe,
+> +					     (buf[1] >> 28) & 0xf,
+> 0x8);
+> +		cal_data->ln_tx_impsel_nmos[0] =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe,
+> +					     (buf[1] >> 24) & 0xf,
+> 0x8);
+> +		cal_data->ln_tx_impsel_pmos[1] =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe,
+> +					     (buf[1] >> 20) & 0xf,
+> 0x8);
+> +		cal_data->ln_tx_impsel_nmos[1] =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe,
+> +					     (buf[1] >> 16) & 0xf,
+> 0x8);
+> +		cal_data->ln_tx_impsel_pmos[2] =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe,
+> +					     (buf[1] >> 12) & 0xf,
+> 0x8);
+> +		cal_data->ln_tx_impsel_nmos[2] =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe,
+> +					     (buf[1] >> 8) & 0xf, 0x8);
+> +		cal_data->ln_tx_impsel_pmos[3] =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe,
+> +					     (buf[1] >> 4) & 0xf, 0x8);
+> +		cal_data->ln_tx_impsel_nmos[3] =
+> +			check_cal_data_valid(mtk_dp, 1, 0xe, buf[1] &
+> 0xf, 0x8);
+> +	}
+>  
+>  	kfree(buf);
+>  }
+> @@ -932,7 +985,7 @@ static void mtk_dp_video_mute(struct mtk_dp
+> *mtk_dp, bool enable)
+>  			   VIDEO_MUTE_SEL_DP_ENC0_P0_MASK |
+>  			   VIDEO_MUTE_SW_DP_ENC0_P0_MASK);
+>  
+> -	mtk_dp_sip_atf_call(mtk_dp, MTK_DP_SIP_ATF_EDP_VIDEO_UNMUTE,
+> enable);
+> +	mtk_dp_sip_atf_call(mtk_dp, mtk_dp->data->smp_cmd, enable);
 
->> drivers/tty/serial/earlycon.c:246:12: error: conflicting types for 'of_setup_earlycon'
-   int __init of_setup_earlycon(const struct earlycon_id *match,
-              ^
-   include/linux/serial_core.h:708:12: note: previous declaration is here
-   extern int of_setup_earlycon(const struct earlycon_id *match,
-              ^
-   1 error generated.
+Separate this to an independent patch which support different smp_cmd.
 
+>  }
+>  
+>  static void mtk_dp_power_enable(struct mtk_dp *mtk_dp)
+> @@ -1232,6 +1285,9 @@ static int mtk_dp_parse_capabilities(struct
+> mtk_dp *mtk_dp)
+>  	drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER,
+> DP_SET_POWER_D0);
+>  	usleep_range(2000, 5000);
+>  
+> +	if (!mtk_dp_plug_state(mtk_dp))
+> +		return -ENODEV;
+> +
+>  	drm_dp_read_dpcd_caps(&mtk_dp->aux, mtk_dp->rx_cap);
+>  
+>  	train_info->link_rate = min_t(int, mtk_dp->max_linkrate,
+> @@ -1283,6 +1339,9 @@ static int mtk_dp_train_start(struct mtk_dp
+> *mtk_dp)
+>  	u8 train_limit;
+>  	u8 max_link_rate;
+>  
+> +	if (!mtk_dp_plug_state_avoid_pulse(mtk_dp))
+> +		return -ENODEV;
+> +
+>  	link_rate = mtk_dp->rx_cap[1];
+>  	lane_count = mtk_dp->rx_cap[2] & 0x1F;
+>  
+> @@ -1457,9 +1516,20 @@ static irqreturn_t mtk_dp_hpd_event(int hpd,
+> void *dev)
+>  	else
+>  		train_info->cable_plugged_in = false;
+>  
+> -	mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_PWR_STATE,
+> -			   DP_PWR_STATE_BANDGAP_TPLL_LANE,
+> -			   DP_PWR_STATE_MASK);
+> +	if (!train_info->cable_plugged_in) {
+> +		mtk_dp_video_mute(mtk_dp, true);
+> +
+> +		mtk_dp_initialize_priv_data(mtk_dp);
+> +		mtk_dp_set_idle_pattern(mtk_dp, true);
+> +
+> +		mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_PWR_STATE,
+> +				   DP_PWR_STATE_BANDGAP_TPLL,
+> +				   DP_PWR_STATE_MASK);
+> +	} else {
+> +		mtk_dp_update_bits(mtk_dp, MTK_DP_TOP_PWR_STATE,
+> +				   DP_PWR_STATE_BANDGAP_TPLL_LANE,
+> +				   DP_PWR_STATE_MASK);
+> +	}
 
-vim +/of_setup_earlycon +246 drivers/tty/serial/earlycon.c
+Separate this to an independent patch.
 
-8477614d9f7c5c Peter Hurley       2016-01-16  245  
-c90fe9c0394b06 Peter Hurley       2016-01-16 @246  int __init of_setup_earlycon(const struct earlycon_id *match,
-dedd7c138e9492 Markuss Broks      2022-08-06  247  			     int offset,
-4d118c9a866590 Peter Hurley       2016-01-16  248  			     const char *options)
-b0b6abd34c1b50 Rob Herring        2014-03-27  249  {
-b0b6abd34c1b50 Rob Herring        2014-03-27  250  	int err;
-b0b6abd34c1b50 Rob Herring        2014-03-27  251  	struct uart_port *port = &early_console_dev.port;
-088da2a17619cf Peter Hurley       2016-01-16  252  	const __be32 *val;
-088da2a17619cf Peter Hurley       2016-01-16  253  	bool big_endian;
-c90fe9c0394b06 Peter Hurley       2016-01-16  254  	u64 addr;
-b0b6abd34c1b50 Rob Herring        2014-03-27  255  
-65e20e8cbbccaf Michael Walle      2022-06-28  256  	if (early_con.flags & CON_ENABLED)
-65e20e8cbbccaf Michael Walle      2022-06-28  257  		return -EALREADY;
-65e20e8cbbccaf Michael Walle      2022-06-28  258  
-e1dd3bef6d03c9 Geert Uytterhoeven 2015-11-27  259  	spin_lock_init(&port->lock);
-b0b6abd34c1b50 Rob Herring        2014-03-27  260  	port->iotype = UPIO_MEM;
-dedd7c138e9492 Markuss Broks      2022-08-06  261  	addr = of_flat_dt_translate_address(offset);
-c90fe9c0394b06 Peter Hurley       2016-01-16  262  	if (addr == OF_BAD_ADDR) {
-c90fe9c0394b06 Peter Hurley       2016-01-16  263  		pr_warn("[%s] bad address\n", match->name);
-c90fe9c0394b06 Peter Hurley       2016-01-16  264  		return -ENXIO;
-c90fe9c0394b06 Peter Hurley       2016-01-16  265  	}
-b0b6abd34c1b50 Rob Herring        2014-03-27  266  	port->mapbase = addr;
-b0b6abd34c1b50 Rob Herring        2014-03-27  267  
-dedd7c138e9492 Markuss Broks      2022-08-06  268  	val = of_get_flat_dt_prop(offset, "reg-offset", NULL);
-088da2a17619cf Peter Hurley       2016-01-16  269  	if (val)
-088da2a17619cf Peter Hurley       2016-01-16  270  		port->mapbase += be32_to_cpu(*val);
-1f66dd36bb1843 Greentime Hu       2018-02-13  271  	port->membase = earlycon_map(port->mapbase, SZ_4K);
-1f66dd36bb1843 Greentime Hu       2018-02-13  272  
-dedd7c138e9492 Markuss Broks      2022-08-06  273  	val = of_get_flat_dt_prop(offset, "reg-shift", NULL);
-088da2a17619cf Peter Hurley       2016-01-16  274  	if (val)
-088da2a17619cf Peter Hurley       2016-01-16  275  		port->regshift = be32_to_cpu(*val);
-dedd7c138e9492 Markuss Broks      2022-08-06  276  	big_endian = of_get_flat_dt_prop(offset, "big-endian", NULL) != NULL ||
-088da2a17619cf Peter Hurley       2016-01-16  277  		(IS_ENABLED(CONFIG_CPU_BIG_ENDIAN) &&
-dedd7c138e9492 Markuss Broks      2022-08-06  278  		 of_get_flat_dt_prop(offset, "native-endian", NULL) != NULL);
-dedd7c138e9492 Markuss Broks      2022-08-06  279  	val = of_get_flat_dt_prop(offset, "reg-io-width", NULL);
-088da2a17619cf Peter Hurley       2016-01-16  280  	if (val) {
-088da2a17619cf Peter Hurley       2016-01-16  281  		switch (be32_to_cpu(*val)) {
-088da2a17619cf Peter Hurley       2016-01-16  282  		case 1:
-088da2a17619cf Peter Hurley       2016-01-16  283  			port->iotype = UPIO_MEM;
-088da2a17619cf Peter Hurley       2016-01-16  284  			break;
-088da2a17619cf Peter Hurley       2016-01-16  285  		case 2:
-088da2a17619cf Peter Hurley       2016-01-16  286  			port->iotype = UPIO_MEM16;
-088da2a17619cf Peter Hurley       2016-01-16  287  			break;
-088da2a17619cf Peter Hurley       2016-01-16  288  		case 4:
-088da2a17619cf Peter Hurley       2016-01-16  289  			port->iotype = (big_endian) ? UPIO_MEM32BE : UPIO_MEM32;
-088da2a17619cf Peter Hurley       2016-01-16  290  			break;
-088da2a17619cf Peter Hurley       2016-01-16  291  		default:
-088da2a17619cf Peter Hurley       2016-01-16  292  			pr_warn("[%s] unsupported reg-io-width\n", match->name);
-088da2a17619cf Peter Hurley       2016-01-16  293  			return -EINVAL;
-088da2a17619cf Peter Hurley       2016-01-16  294  		}
-088da2a17619cf Peter Hurley       2016-01-16  295  	}
-088da2a17619cf Peter Hurley       2016-01-16  296  
-dedd7c138e9492 Markuss Broks      2022-08-06  297  	val = of_get_flat_dt_prop(offset, "current-speed", NULL);
-31cb9a8575ca04 Eugeniy Paltsev    2017-08-21  298  	if (val)
-31cb9a8575ca04 Eugeniy Paltsev    2017-08-21  299  		early_console_dev.baud = be32_to_cpu(*val);
-31cb9a8575ca04 Eugeniy Paltsev    2017-08-21  300  
-dedd7c138e9492 Markuss Broks      2022-08-06  301  	val = of_get_flat_dt_prop(offset, "clock-frequency", NULL);
-814453adea7d08 Michal Simek       2018-04-10  302  	if (val)
-814453adea7d08 Michal Simek       2018-04-10  303  		port->uartclk = be32_to_cpu(*val);
-814453adea7d08 Michal Simek       2018-04-10  304  
-4d118c9a866590 Peter Hurley       2016-01-16  305  	if (options) {
-31cb9a8575ca04 Eugeniy Paltsev    2017-08-21  306  		early_console_dev.baud = simple_strtoul(options, NULL, 0);
-4d118c9a866590 Peter Hurley       2016-01-16  307  		strlcpy(early_console_dev.options, options,
-4d118c9a866590 Peter Hurley       2016-01-16  308  			sizeof(early_console_dev.options));
-4d118c9a866590 Peter Hurley       2016-01-16  309  	}
-05d961320ba624 Peter Hurley       2016-01-16  310  	earlycon_init(&early_console_dev, match->name);
-4d118c9a866590 Peter Hurley       2016-01-16  311  	err = match->setup(&early_console_dev, options);
-f28295cc8ce14b Hsin-Yi Wang       2020-09-15  312  	earlycon_print_info(&early_console_dev);
-b0b6abd34c1b50 Rob Herring        2014-03-27  313  	if (err < 0)
-b0b6abd34c1b50 Rob Herring        2014-03-27  314  		return err;
-b0b6abd34c1b50 Rob Herring        2014-03-27  315  	if (!early_console_dev.con->write)
-b0b6abd34c1b50 Rob Herring        2014-03-27  316  		return -ENODEV;
-b0b6abd34c1b50 Rob Herring        2014-03-27  317  
-b0b6abd34c1b50 Rob Herring        2014-03-27  318  
-b0b6abd34c1b50 Rob Herring        2014-03-27  319  	register_console(early_console_dev.con);
-b0b6abd34c1b50 Rob Herring        2014-03-27  320  	return 0;
-b0b6abd34c1b50 Rob Herring        2014-03-27  321  }
-8477614d9f7c5c Peter Hurley       2016-01-16  322  
+>  
+>  	return IRQ_HANDLED;
+>  }
+> @@ -1503,6 +1573,21 @@ static int mtk_dp_dt_parse(struct mtk_dp
+> *mtk_dp,
+>  	return 0;
+>  }
+>  
+> +static enum drm_connector_status mtk_dp_bdg_detect(struct drm_bridge
+> *bridge)
+> +{
+> +	struct mtk_dp *mtk_dp = mtk_dp_from_bridge(bridge);
+> +	enum drm_connector_status ret = connector_status_disconnected;
+> +	u8 sink_count = 0;
+> +
+> +	if (mtk_dp_plug_state_avoid_pulse(mtk_dp)) {
+> +		drm_dp_dpcd_readb(&mtk_dp->aux, DP_SINK_COUNT,
+> &sink_count);
+> +		if (DP_GET_SINK_COUNT(sink_count))
+> +			ret = connector_status_connected;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+>  static struct edid *mtk_dp_get_edid(struct drm_bridge *bridge,
+>  				    struct drm_connector *connector)
+>  {
+> @@ -1857,6 +1942,7 @@ static const struct drm_bridge_funcs
+> mtk_dp_bridge_funcs = {
+>  	.atomic_disable = mtk_dp_bridge_atomic_disable,
+>  	.mode_valid = mtk_dp_bridge_mode_valid,
+>  	.get_edid = mtk_dp_get_edid,
+> +	.detect = mtk_dp_bdg_detect,
+>  };
+>  
+>  static int mtk_dp_probe(struct platform_device *pdev)
+> @@ -1871,6 +1957,7 @@ static int mtk_dp_probe(struct platform_device
+> *pdev)
+>  		return -ENOMEM;
+>  
+>  	mtk_dp->dev = dev;
+> +	mtk_dp->data = (struct mtk_dp_data
+> *)of_device_get_match_data(dev);
+>  
+>  	irq_num = platform_get_irq(pdev, 0);
+>  	if (irq_num < 0)
+> @@ -1878,9 +1965,15 @@ static int mtk_dp_probe(struct platform_device
+> *pdev)
+>  				     "failed to request dp irq
+> resource\n");
+>  
+>  	mtk_dp->next_bridge = devm_drm_of_get_bridge(dev, dev->of_node, 
+> 1, 0);
+> -	if (IS_ERR(mtk_dp->next_bridge))
+> +	if (IS_ERR(mtk_dp->next_bridge) &&
+> +	    PTR_ERR(mtk_dp->next_bridge) == -ENODEV) {
+> +		dev_info(dev,
+> +			 "No panel connected in devicetree, continue as
+> external DP\n");
+> +		mtk_dp->next_bridge = NULL;
 
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+Separate this to an independent patch.
+
+> +	} else if (IS_ERR(mtk_dp->next_bridge)) {
+>  		return dev_err_probe(dev, PTR_ERR(mtk_dp->next_bridge),
+>  				     "Failed to get bridge\n");
+> +	}
+>  
+>  	ret = mtk_dp_dt_parse(mtk_dp, pdev);
+>  	if (ret)
+> @@ -1923,7 +2016,7 @@ static int mtk_dp_probe(struct platform_device
+> *pdev)
+>  
+>  	mtk_dp->bridge.ops =
+>  		DRM_BRIDGE_OP_DETECT | DRM_BRIDGE_OP_EDID |
+> DRM_BRIDGE_OP_HPD;
+> -	mtk_dp->bridge.type = DRM_MODE_CONNECTOR_eDP;
+> +	mtk_dp->bridge.type = mtk_dp->data->bridge_type;
+
+Separate this to an independent patch which add bridge_type to support
+multiple bridge type.
+
+>  
+>  	drm_bridge_add(&mtk_dp->bridge);
+>  
+> @@ -1950,6 +2043,12 @@ static int mtk_dp_suspend(struct device *dev)
+>  {
+>  	struct mtk_dp *mtk_dp = dev_get_drvdata(dev);
+>  
+> +	if (mtk_dp_plug_state(mtk_dp)) {
+> +		drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER,
+> DP_SET_POWER_D3);
+> +		/* Ensure the sink is off before shutting down power */
+> +		usleep_range(2000, 3000);
+> +	}
+
+Separate this to an independent patch which ensure the sink is off
+before shutting down power.
+
+> +
+>  	mtk_dp_power_disable(mtk_dp);
+>  
+>  	mtk_dp_hwirq_enable(mtk_dp, false);
+> @@ -1981,8 +2080,27 @@ static int mtk_dp_resume(struct device *dev)
+>  
+>  static SIMPLE_DEV_PM_OPS(mtk_dp_pm_ops, mtk_dp_suspend,
+> mtk_dp_resume);
+>  
+> +static const struct mtk_dp_data mt8195_edp_data = {
+> +	.bridge_type = DRM_MODE_CONNECTOR_eDP,
+> +	.smp_cmd = MTK_DP_SIP_ATF_EDP_VIDEO_UNMUTE,
+> +	.cali_data_fmt = MTK_DP_CALI_DATA_FMT_MT8195_EDP,
+> +};
+> +
+> +static const struct mtk_dp_data mt8195_dp_data = {
+> +	.bridge_type = DRM_MODE_CONNECTOR_DisplayPort,
+> +	.smp_cmd = MTK_DP_SIP_ATF_VIDEO_UNMUTE,
+> +	.cali_data_fmt = MTK_DP_CALI_DATA_FMT_MT8195_DP,
+> +};
+> +
+>  static const struct of_device_id mtk_dp_of_match[] = {
+> -	{ .compatible = "mediatek,mt8195-edp-tx" },
+> +	{
+> +		.compatible = "mediatek,mt8195-edp-tx",
+> +		.data = &mt8195_edp_data,
+> +	},
+> +	{
+> +		.compatible = "mediatek,mt8195-dp-tx",
+> +		.data = &mt8195_dp_data,
+> +	},
+>  	{},
+>  };
+>  MODULE_DEVICE_TABLE(of, mtk_dp_of_match);
+> diff --git a/drivers/gpu/drm/mediatek/mtk_dp_reg.h
+> b/drivers/gpu/drm/mediatek/mtk_dp_reg.h
+> index 3676d71bd816..c12742adaa3c 100644
+> --- a/drivers/gpu/drm/mediatek/mtk_dp_reg.h
+> +++ b/drivers/gpu/drm/mediatek/mtk_dp_reg.h
+> @@ -14,6 +14,10 @@
+>  #define SEC_OFFSET	0x4000
+>  
+>  #define MTK_DP_SIP_ATF_EDP_VIDEO_UNMUTE	(BIT(0) | BIT(5))
+> +#define MTK_DP_SIP_ATF_VIDEO_UNMUTE	BIT(5)
+> +
+> +#define MTK_DP_CALI_DATA_FMT_MT8195_EDP	0
+> +#define MTK_DP_CALI_DATA_FMT_MT8195_DP	1
+
+This is not register definition, so move to mtk_dp.c
+
+Regards,
+CK
+
+>  
+>  #define DP_PHY_GLB_BIAS_GEN_00		0
+>  #define RG_XTP_GLB_BIAS_INTR_CTRL	GENMASK(20, 16)
 

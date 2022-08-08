@@ -2,45 +2,42 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3FAAC00140
-	for <linux-fbdev@archiver.kernel.org>; Mon,  8 Aug 2022 04:03:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F4FFC00140
+	for <linux-fbdev@archiver.kernel.org>; Mon,  8 Aug 2022 04:48:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229684AbiHHEDe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 8 Aug 2022 00:03:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50372 "EHLO
+        id S233189AbiHHEsJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 8 Aug 2022 00:48:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40572 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229541AbiHHEDe (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 8 Aug 2022 00:03:34 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 244F45F9A;
-        Sun,  7 Aug 2022 21:03:31 -0700 (PDT)
-X-UUID: 6cab6299791444e8972443bac60a73ef-20220808
+        with ESMTP id S232177AbiHHEsI (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 8 Aug 2022 00:48:08 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB41F5F74;
+        Sun,  7 Aug 2022 21:48:06 -0700 (PDT)
+X-UUID: cac1e6bf6c934e52bb808befa3072591-20220808
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Transfer-Encoding:MIME-Version:Content-Type:References:In-Reply-To:Date:CC:To:From:Subject:Message-ID; bh=13dVi6zffDRyU08aWmQ+RkE23iuEih6mcqLZPlBATNQ=;
-        b=W0Hxmb5Lipa+VZ0fXF3en8QZCxL+2eqLNNuNMto8QRl6TE/8U9RSuzYTmqc0b5fgjYAQqZcaZcwozFbGN0rTCoistx3mqi0T6r4a2VPGwvpdnpgH5b+YnYrdykcWKSnoaEEkabO91PNRucLQqBz32mId6eNT9T9a3HRA3wUya2Y=;
+        h=Content-Transfer-Encoding:MIME-Version:Content-Type:References:In-Reply-To:Date:CC:To:From:Subject:Message-ID; bh=J5GbJ91e8X3YtX3xXH8tAPXytmP3O2IQ15CfuTz/yzs=;
+        b=c3OgPbChHFw4p6ZyGlYD2uC0MuRyj5R3gH50j5Ac9WTgTThXGsDvcQBtoX0sG+Pd8YvdNm30CoRnSgc2MPl8URnu6SUg1dw8YVggqkgyiV7X9gl0CnKe1wQdPdZuOFHcBVyYn7FpdMqAmuPlrhhe0/w57dCeEO5p4Jz5mtnKF6Y=;
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.9,REQID:1448fca9-b1cb-490c-9fc2-6fc55749af56,OB:0,LO
-        B:10,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,BULK:0,RULE:Release
-        _Ham,ACTION:release,TS:45
-X-CID-INFO: VERSION:1.1.9,REQID:1448fca9-b1cb-490c-9fc2-6fc55749af56,OB:0,LOB:
-        10,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,BULK:0,RULE:Release_H
-        am,ACTION:release,TS:45
-X-CID-META: VersionHash:3d8acc9,CLOUDID:df2d079c-da39-4e3b-a854-56c7d2111b46,C
-        OID:f18e5827bede,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
-        RL:1,File:nil,Bulk:41,QS:nil,BEC:nil,COL:0
-X-UUID: 6cab6299791444e8972443bac60a73ef-20220808
-Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw02.mediatek.com
+X-CID-O-INFO: VERSION:1.1.9,REQID:4469bdfd-28f5-4bc5-9a34-af31b40eb282,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_H
+        am,ACTION:release,TS:0
+X-CID-META: VersionHash:3d8acc9,CLOUDID:4e3e089c-da39-4e3b-a854-56c7d2111b46,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
+        ,Bulk:nil,QS:nil,BEC:nil,COL:0
+X-UUID: cac1e6bf6c934e52bb808befa3072591-20220808
+Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw01.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1260182744; Mon, 08 Aug 2022 12:03:26 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 1624936309; Mon, 08 Aug 2022 12:48:03 +0800
 Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
  mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Mon, 8 Aug 2022 12:03:24 +0800
+ Mon, 8 Aug 2022 12:48:01 +0800
 Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n2.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.2.792.15 via Frontend
- Transport; Mon, 8 Aug 2022 12:03:24 +0800
-Message-ID: <f5165c4f6f4f72668035437ee27b476e588e60a3.camel@mediatek.com>
+ Transport; Mon, 8 Aug 2022 12:48:01 +0800
+Message-ID: <759311a0e40401c3c0f230e700b00878daf81a87.camel@mediatek.com>
 Subject: Re: [PATCH v16 3/8] drm/mediatek: Add MT8195 Embedded DisplayPort
  driver
 From:   CK Hu <ck.hu@mediatek.com>
@@ -58,7 +55,7 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Mon, 8 Aug 2022 12:03:24 +0800
+Date:   Mon, 8 Aug 2022 12:48:01 +0800
 In-Reply-To: <20220805101459.3386-4-rex-bc.chen@mediatek.com>
 References: <20220805101459.3386-1-rex-bc.chen@mediatek.com>
          <20220805101459.3386-4-rex-bc.chen@mediatek.com>
@@ -71,7 +68,7 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi, Bo-Chen:
+Hi. Bo-Chen:
 
 On Fri, 2022-08-05 at 18:14 +0800, Bo-Chen Chen wrote:
 > From: Markus Schneider-Pargmann <msp@baylibre.com>
@@ -107,74 +104,69 @@ On Fri, 2022-08-05 at 18:14 +0800, Bo-Chen Chen wrote:
 [snip]
 
 > +
-> +#define MTK_DP_ENC0_P0_30B8		(ENC0_OFFSET + 0xB8)
-
-Useless, so remove it.
-
+> +static int mtk_dp_parse_capabilities(struct mtk_dp *mtk_dp)
+> +{
+> +	u8 val;
+> +	ssize_t ret;
+> +	struct mtk_dp_train_info *train_info = &mtk_dp->train_info;
 > +
-> +#define MTK_DP_ENC0_P0_30BC		(ENC0_OFFSET + 0xBC)
-
-Ditto.
-
-> +#define ISRC_CONT_DP_ENC0_P0_MASK	BIT(0)
-> +#define ISRC_CONT_DP_ENC0_P0_SHIFT	0
-> +#define AUDIO_M_CODE_MULT_DIV_SEL_DP_ENC0_P0_MASK	GENMASK(10, 8)
-> +#define AUDIO_M_CODE_MULT_DIV_SEL_DP_ENC0_P0_SHIFT	BIT(3)
-> +#define AUDIO_M_CODE_MULT_DIV_SEL_DP_ENC0_P0_MUL_2 \
-> +		(1 << AUDIO_M_CODE_MULT_DIV_SEL_DP_ENC0_P0_SHIFT)
-> +#define AUDIO_M_CODE_MULT_DIV_SEL_DP_ENC0_P0_MUL_4 \
-> +		(2 << AUDIO_M_CODE_MULT_DIV_SEL_DP_ENC0_P0_SHIFT)
-> +#define AUDIO_M_CODE_MULT_DIV_SEL_DP_ENC0_P0_MUL_8 \
-> +		(3 << AUDIO_M_CODE_MULT_DIV_SEL_DP_ENC0_P0_SHIFT)
-> +#define AUDIO_M_CODE_MULT_DIV_SEL_DP_ENC0_P0_DIV_2 \
-> +		(5 << AUDIO_M_CODE_MULT_DIV_SEL_DP_ENC0_P0_SHIFT)
-> +#define AUDIO_M_CODE_MULT_DIV_SEL_DP_ENC0_P0_DIV_4 \
-> +		(6 << AUDIO_M_CODE_MULT_DIV_SEL_DP_ENC0_P0_SHIFT)
-> +#define AUDIO_M_CODE_MULT_DIV_SEL_DP_ENC0_P0_DIV_8 \
-> +		(7 << AUDIO_M_CODE_MULT_DIV_SEL_DP_ENC0_P0_SHIFT)
+> +	drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER,
+> DP_SET_POWER_D0);
+> +	usleep_range(2000, 5000);
 > +
-> +#define MTK_DP_ENC0_P0_30D8		(ENC0_OFFSET + 0xD8)
-
-Ditto.
-
-> +#define MTK_DP_ENC0_P0_312C		(ENC0_OFFSET + 0x12C)
-
-Ditto.
-
-> +#define ASP_HB2_DP_ENC0_P0_MASK		GENMASK(7, 0)
-> +#define ASP_HB3_DP_ENC0_P0_MASK		GENMASK(15, 8)
-> +#define ASP_HB3_DP_ENC0_P0_SHIFT	BIT(3)
+> +	drm_dp_read_dpcd_caps(&mtk_dp->aux, mtk_dp->rx_cap);
 > +
-> 
-
-[snip]
-
+> +	train_info->link_rate = min_t(int, mtk_dp->max_linkrate,
+> +				      drm_dp_max_link_rate(mtk_dp-
+> >rx_cap));
+> +	train_info->lane_count = min_t(int, mtk_dp->max_lanes,
+> +				       drm_dp_max_lane_count(mtk_dp-
+> >rx_cap));
 > +
-> +#define MTK_DP_ENC1_P0_3364				(ENC1_OFFSET +
-> 0x164)
-> +#define SDP_DOWN_CNT_INIT_IN_HBLANK_DP_ENC1_P0_MASK	GENMASK(11, 0)
-> +#define SDP_DOWN_CNT_INIT_IN_HBLANK_DP_ENC1_P0_SHIFT	0
-> +#define FIFO_READ_START_POINT_DP_ENC1_P0_MASK		GENMASK
-> (15, 12)
-> +#define FIFO_READ_START_POINT_DP_ENC1_P0_SHIFT		GENMASK
-> (3, 2)
+> +	train_info->tps3 = drm_dp_tps3_supported(mtk_dp->rx_cap);
+> +	train_info->tps4 = drm_dp_tps4_supported(mtk_dp->rx_cap);
 
-I would like bit-wise value has one more indent like [1].
+You could drop tps3, tps4 and add channel_eq_pattern like this:
 
-[1] 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/gpu/drm/mediatek/mtk_disp_rdma.c?h=v5.19
+if (drm_dp_tps4_supported(mtk_dp->rx_cap))
+	train_info->channel_eq_pattern = DP_TRAINING_PATTERN_4;
+else if (drm_dp_tps4_supported(mtk_dp->rx_cap))
+	train_info->channel_eq_pattern = DP_TRAINING_PATTERN_3;
+else
+	train_info->channel_eq_pattern = DP_TRAINING_PATTERN_2;
 
 Regards,
 CK
 
 > +
-> +#define MTK_DP_ENC1_P0_3368				(ENC1_OFFSET +
-> 0x168)
-> +#define VIDEO_SRAM_FIFO_CNT_RESET_SEL_DP_ENC1_P0_SHIFT	0
-> +#define VIDEO_STABLE_CNT_THRD_DP_ENC1_P0_SHIFT		BIT(2)
-> +#define SDP_DP13_EN_DP_ENC1_P0_SHIFT			BIT(3)
-> +#define BS2BS_MODE_DP_ENC1_P0_MASK			GENMASK(13, 12)
-> +#define BS2BS_MODE_DP_ENC1_P0_SHIFT			GENMASK(3, 2)
+> +	train_info->sink_ssc = drm_dp_max_downspread(mtk_dp->rx_cap);
 > +
-> 
+> +	ret = drm_dp_dpcd_readb(&mtk_dp->aux, DP_MSTM_CAP, &val);
+> +	if (ret < 1) {
+> +		drm_err(mtk_dp->drm_dev, "Read mstm cap failed\n");
+> +		return ret == 0 ? -EIO : ret;
+> +	}
+> +
+> +	if (val & DP_MST_CAP) {
+> +		/* Clear DP_DEVICE_SERVICE_IRQ_VECTOR_ESI0 */
+> +		ret = drm_dp_dpcd_readb(&mtk_dp->aux,
+> +					DP_DEVICE_SERVICE_IRQ_VECTOR_ES
+> I0,
+> +					&val);
+> +		if (ret < 1) {
+> +			drm_err(mtk_dp->drm_dev, "Read irq vector
+> failed\n");
+> +			return ret == 0 ? -EIO : ret;
+> +		}
+> +
+> +		if (val)
+> +			drm_dp_dpcd_writeb(&mtk_dp->aux,
+> +					   DP_DEVICE_SERVICE_IRQ_VECTOR
+> _ESI0,
+> +					   val);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
 

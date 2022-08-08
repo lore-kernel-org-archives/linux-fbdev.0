@@ -2,123 +2,96 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7E07C25B0C
-	for <linux-fbdev@archiver.kernel.org>; Mon,  8 Aug 2022 15:05:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA311C3F6B0
+	for <linux-fbdev@archiver.kernel.org>; Mon,  8 Aug 2022 15:56:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236070AbiHHPFY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 8 Aug 2022 11:05:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53034 "EHLO
+        id S243446AbiHHP4L (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 8 Aug 2022 11:56:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60062 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234034AbiHHPFX (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 8 Aug 2022 11:05:23 -0400
-Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B9D0E9F;
-        Mon,  8 Aug 2022 08:05:21 -0700 (PDT)
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 278F4JoD126550;
-        Mon, 8 Aug 2022 10:04:19 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1659971059;
-        bh=NdjYuYrRgfFqkXrI7faf1aVXflieuCOWZNGCJMFOx94=;
-        h=Date:Subject:To:References:From:In-Reply-To;
-        b=lmySqfLgt6rnGnRx3ZDw9pTF65QwTb++SXCsh9IxxF9MAQRftqsa/WREeGJ17tqpA
-         k/sw5R/YUoMY4tJ7HDRVaR9WOH2DGsonOxC62b5Vp7Cpp88RkVhE3Y2KkkcdnHE1Hm
-         UYW69jWcmfDjbrWDx4ioxp0dues0NZ0ZN0Pbdg8I=
-Received: from DFLE111.ent.ti.com (dfle111.ent.ti.com [10.64.6.32])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 278F4Jd1015602
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Mon, 8 Aug 2022 10:04:19 -0500
-Received: from DFLE101.ent.ti.com (10.64.6.22) by DFLE111.ent.ti.com
- (10.64.6.32) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14; Mon, 8
- Aug 2022 10:04:18 -0500
-Received: from lelv0327.itg.ti.com (10.180.67.183) by DFLE101.ent.ti.com
- (10.64.6.22) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14 via
- Frontend Transport; Mon, 8 Aug 2022 10:04:18 -0500
-Received: from [10.250.34.173] (ileax41-snat.itg.ti.com [10.172.224.153])
-        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 278F4HdP032491;
-        Mon, 8 Aug 2022 10:04:17 -0500
-Message-ID: <6ae15e00-36a4-09a8-112e-553ed8c5f4da@ti.com>
-Date:   Mon, 8 Aug 2022 10:04:17 -0500
+        with ESMTP id S236569AbiHHP4K (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 8 Aug 2022 11:56:10 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 24086A47B;
+        Mon,  8 Aug 2022 08:56:10 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id CEF8EB80FCD;
+        Mon,  8 Aug 2022 15:56:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E36DC43149;
+        Mon,  8 Aug 2022 15:56:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1659974167;
+        bh=v2lgBXjNZtsYzCboM1GnlUy05vvC9EjJee5FKw0cYsQ=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=mIHwvx+tj2BxsPEjBZ0vinsl4KXkSc+hUHjGOo+mlAFTJmKRMbMY/LMLgKCe1QNv4
+         nWVNNWJGt7Id3daVXh9gG0kGjCNCY90Ec8lpHmpiS1DGviiH1Ye9GbbRrGb+16XcTk
+         luRIciiAM6aSFU/64rT51FuMNb4ojhjb2dLoLIYZ+W9kTOL0L7kKvRP7p2k9OZgB3Z
+         GtVeNG5fVpg6X/jx4l8owP7xHWDcjmfsPc734Gi4Kp9fRvQ5uBJr6nArf2AwQYpBwM
+         SN13eiIZoUhJYu5L0DT1feKn/7/6/FgwtFdgCYbKqZXXmX4XC/KvDmagMFJjHVaUCk
+         W3BZthQ+6i1fg==
+Received: by mail-vk1-f179.google.com with SMTP id x128so1554356vke.3;
+        Mon, 08 Aug 2022 08:56:07 -0700 (PDT)
+X-Gm-Message-State: ACgBeo0LKoPn+86gdnjt8QxyNSMi8FgwachBS1wcPtvnAN2QD9BgOtHz
+        zZ3EmJYhrO/f1C0WUxy9g+VwzkqwBcXFCasTCg==
+X-Google-Smtp-Source: AA6agR6IlSvPTzHVkYtc/Dl9eo8Po13k4nQJVZL4SY2rHsdelBv+y2wXVK/2+5kYFhsWJQqicxm/4R8FPkDt1nisypg=
+X-Received: by 2002:a1f:2dc2:0:b0:377:84fa:dbe5 with SMTP id
+ t185-20020a1f2dc2000000b0037784fadbe5mr8008232vkt.15.1659974166257; Mon, 08
+ Aug 2022 08:56:06 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH 5/5] dt-bindings: Drop Dan Murphy
-Content-Language: en-US
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Michael Hennerich <Michael.Hennerich@analog.com>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Pavel Machek <pavel@ucw.cz>,
-        Tim Harvey <tharvey@gateworks.com>,
-        Robert Jones <rjones@gateworks.com>,
-        Lee Jones <lee@kernel.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>, <linux-hwmon@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-iio@vger.kernel.org>, <linux-fbdev@vger.kernel.org>,
-        <linux-leds@vger.kernel.org>, <netdev@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <alsa-devel@alsa-project.org>
-References: <20220808104712.54315-1-krzysztof.kozlowski@linaro.org>
- <20220808104712.54315-6-krzysztof.kozlowski@linaro.org>
- <43b3c497-97fd-29aa-a07b-bcd6413802c4@linaro.org>
-From:   Andrew Davis <afd@ti.com>
-In-Reply-To: <43b3c497-97fd-29aa-a07b-bcd6413802c4@linaro.org>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+References: <20220806163255.10404-1-markuss.broks@gmail.com> <20220806163255.10404-2-markuss.broks@gmail.com>
+In-Reply-To: <20220806163255.10404-2-markuss.broks@gmail.com>
+From:   Rob Herring <robh@kernel.org>
+Date:   Mon, 8 Aug 2022 09:55:54 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqJE7VzqdcoDDNw2QkDHyKr4WgOrgLwsHWJa+BwPTb=A8w@mail.gmail.com>
+Message-ID: <CAL_JsqJE7VzqdcoDDNw2QkDHyKr4WgOrgLwsHWJa+BwPTb=A8w@mail.gmail.com>
+Subject: Re: [PATCH v2 1/3] drivers: serial: earlycon: Correct argument name
+To:     Markuss Broks <markuss.broks@gmail.com>
+Cc:     "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS
+        <devicetree@vger.kernel.org>, Hans de Goede <hdegoede@redhat.com>, Andy
+        Shevchenko <andy.shevchenko@gmail.com>," 
+        <~postmarketos/upstreaming@lists.sr.ht>,
+        phone-devel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Helge Deller <deller@gmx.de>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Borislav Petkov <bp@suse.de>,
+        Kees Cook <keescook@chromium.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Michal Suchanek <msuchanek@suse.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Wei Ming Chen <jj251510319013@gmail.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Tony Lindgren <tony@atomide.com>,
+        Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+        linux-efi <linux-efi@vger.kernel.org>,
+        "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 8/8/22 6:08 AM, Krzysztof Kozlowski wrote:
-> On 08/08/2022 13:47, Krzysztof Kozlowski wrote:
->> Emails to Dan Murphy bounce ("550 Invalid recipient <dmurphy@ti.com>
->> (#5.1.1)").
-> 
-> 
-> (...)
-> 
->>   description: |
->> diff --git a/Documentation/devicetree/bindings/power/supply/bq25980.yaml b/Documentation/devicetree/bindings/power/supply/bq25980.yaml
->> index 4883527ab5c7..509a0667b04e 100644
->> --- a/Documentation/devicetree/bindings/power/supply/bq25980.yaml
->> +++ b/Documentation/devicetree/bindings/power/supply/bq25980.yaml
->> @@ -8,7 +8,6 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
->>   title: TI BQ25980 Flash Charger
->>   
->>   maintainers:
->> -  - Dan Murphy <dmurphy@ti.com>
->>     - Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-> 
-> Ricardo's also bounces... Does it mean TI is not interested in
-> maintaining mainline support for its drivers?
-> 
+On Sat, Aug 6, 2022 at 10:34 AM Markuss Broks <markuss.broks@gmail.com> wrote:
+>
+> The "node" argument is actually an offset,
 
-TI is still interested in maintaining support here. But as we know folks
-come and go, so giving specific emails might not be the best option.
-Doesn't look like the schema here allows free-form strings, but if it did
-I'd recommend the TI E2E Power-Management support forum[0] added. Any
-questions on Linux/DT for these parts posted there would land on my desk
-just the same, or to whomever is assigned in the future with maintaining
-these drivers.
+It's an offset to a node in the FDT. The fact that it is an offset is
+an internal implementation detail of the FDT format. So really, it's a
+handle to a node. 'node' is more descriptive to its purpose.
 
-Either way, I have several of these parts and can support these. Feel free
-to replace Dan's email with my email if that works better.
+> and it's also an "int", and not "unsigned long".
 
-Andrew
+Uh, no it's not. of_flat_dt_*() functions all take an unsigned long.
 
-[0] https://e2e.ti.com/support/power-management-group/power-management/f/power-management-forum
-
-> Best regards,
-> Krzysztof
+Rob

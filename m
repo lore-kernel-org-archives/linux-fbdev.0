@@ -2,51 +2,51 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCAC6C19F2D
-	for <linux-fbdev@archiver.kernel.org>; Tue,  9 Aug 2022 16:28:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32DCDC25B07
+	for <linux-fbdev@archiver.kernel.org>; Tue,  9 Aug 2022 16:28:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245091AbiHIQ22 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S245059AbiHIQ22 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Tue, 9 Aug 2022 12:28:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44462 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44932 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245007AbiHIQ2E (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 9 Aug 2022 12:28:04 -0400
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9DD212019E
-        for <linux-fbdev@vger.kernel.org>; Tue,  9 Aug 2022 09:28:02 -0700 (PDT)
-Received: by mail-lf1-x134.google.com with SMTP id t1so17711235lft.8
-        for <linux-fbdev@vger.kernel.org>; Tue, 09 Aug 2022 09:28:02 -0700 (PDT)
+        with ESMTP id S245050AbiHIQ2Q (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 9 Aug 2022 12:28:16 -0400
+Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0606D2018C
+        for <linux-fbdev@vger.kernel.org>; Tue,  9 Aug 2022 09:28:06 -0700 (PDT)
+Received: by mail-lf1-x132.google.com with SMTP id e15so17789176lfs.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 09 Aug 2022 09:28:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=VQqWBeEw3qmpRlqqPzE7ts9pNLZupNqxFvrZxuptWIw=;
-        b=j79cXYWF8zWqA57u666uDxDQhQSxVG4iHrBRVvIitGuWL3K37eFf18TlAp2CYAcAvf
-         k/cvVQQag/Jn2M+i8GJ41Ar4NcO7nre1mhTl3A36V6Xpsz5Bni6NO6pWjwavxsWPrVKH
-         tI2kusCmuH3F6Uj10cVQ7EftmfmtzZqnopM958bWnpYTWKObaSzu8zXuyOITi5j/onEB
-         Z5plD+zVaKsjLLhb1QmZOqK/3L6VJq4eVxpgqk2QwugxZCTU4evWptwT62bEmnhwWHa3
-         npd0xSDsOVJhgvboIJTo/8h8iegXTYZgZPwn74VBjOtej/oGhF6hMzRQwVs/4J0epcPt
-         5XAQ==
+        bh=FskYPTv76833n+1Hq30omnxb9L5MZLnaEUwuBASTaa0=;
+        b=n9b8Cvea5EVIT7ZHPBapKzhf/u8xMO3geKItvh4tXL5VfoRjWNI0D2590zpirb8aPY
+         T6Qhg9ZxvmhiQZt94wtqCAOdbxAyeYNu720/AI9yUJES8KaGF0Xe2/EltRejIw/bs6CJ
+         OWqBJZfbYEOClWPMwzI4Rp8pTeVnZv/F1nDJCJQg9dlD9layQ6Ni+I/DedxKO1fdf7lJ
+         L6cEBSbhbSuwxg9TdWGECrJwq5UFvA6tt4ZUoLz4oboMxMfzccOAkHM1CUEI7ZGk3GTk
+         UgQOveV1H6a2yLhKI65F7ePdq5dusok+lHZFEWDtmAqxGILLEhWQWprWrBUHBPusdbtz
+         vy8g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=VQqWBeEw3qmpRlqqPzE7ts9pNLZupNqxFvrZxuptWIw=;
-        b=m3kjqJSfjw/h4RmeUdRLcVGyHhewUQNL9qcHfxMrts7kSAdyeEksqhwRcjDChOeHBB
-         Mb5gKQtvC3eRwzK8CNwjK6NKOg4CY8s4ho223fMcA9a+LCqS9jO5hrIrZ6Nc/HyzaV4P
-         uHNtfvwsV5fVnSxPzHZL1EIAPY+NqQ8hXR3w8WXtYA2jTfn2QqHFNwjVAv9+rygIbRvH
-         0XwJpMWoNLlPuE/qN3mePFv86GU2sH1ycdHRtFfApvU++z/QyGBOuNuGG2jJnsaHuR10
-         Kqi/zWLk/HXrIJjwoC0AUgndar8CsG+7GFcjoa7Mi8usuKjpAhpjXK3dDROGJpZS3sYy
-         eL7Q==
-X-Gm-Message-State: ACgBeo3qhBKIW+95ZDDuwlcy7JxdTFUr/9Xu9tdpimD319/TMxcpDk6D
-        tzLCSkbEEjJWLgaOK2gVCFR9ig==
-X-Google-Smtp-Source: AA6agR7eDE6idEdhMhZWlMx2pyUpEsLs29Q4eIc0ackncepXx/MXNZjkccFDQoE9WCyEbZAey+9A4A==
-X-Received: by 2002:a05:6512:3b06:b0:48b:239e:be with SMTP id f6-20020a0565123b0600b0048b239e00bemr8058254lfv.586.1660062480249;
-        Tue, 09 Aug 2022 09:28:00 -0700 (PDT)
+        bh=FskYPTv76833n+1Hq30omnxb9L5MZLnaEUwuBASTaa0=;
+        b=6jt4BNLIMOEebQDLM0bt8cF/uetAdezrQMAc2OF5l2Cp/GGktyS2LKHo0UBbFQubV5
+         x0GXMG+OEiu2+aogNADBJfkfFEYmJfC2z5IH1LQXCEoEOC+jKtlTj2XvsNBWzXjWIFZi
+         XqWLiA55ZEW3uNZbtJZONiBFOIFhER8xewvqulrMrmGNMURKSGgJs6EIF2jEIOneCBsQ
+         zjU9WMfLheUDP1mBV7qw4Tj4S0nmR6mIbsq6S8J2Eo+nFKpOmN/g++n9AAmFpjtaczl5
+         7BzBrOuV0MvCxDXOoKSPe5QWsSgJ5bwnFsSvc2A/vP4QrrGCD3pWebUGhzcXKnRsJ4FX
+         vbZg==
+X-Gm-Message-State: ACgBeo2emd72dKi/Ei+uc3M9PSohMkLjJXtMRd6hEM7wS5W023hABj0s
+        Vfu1LVjnUAdF+1txZd0qv+jqxA==
+X-Google-Smtp-Source: AA6agR767hSt1vi/jf4SWD0G245jpJ0a3tCpFTASnOz48JrJ7rf8nR0ufvWHqiESt46jw+PhIubt1Q==
+X-Received: by 2002:a05:6512:13a4:b0:479:3b9f:f13c with SMTP id p36-20020a05651213a400b004793b9ff13cmr7842204lfa.380.1660062483418;
+        Tue, 09 Aug 2022 09:28:03 -0700 (PDT)
 Received: from localhost.localdomain ([83.146.140.105])
-        by smtp.gmail.com with ESMTPSA id h7-20020ac24d27000000b0048a8c907fe9sm20999lfk.167.2022.08.09.09.27.58
+        by smtp.gmail.com with ESMTPSA id h7-20020ac24d27000000b0048a8c907fe9sm20999lfk.167.2022.08.09.09.28.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 09 Aug 2022 09:27:59 -0700 (PDT)
+        Tue, 09 Aug 2022 09:28:02 -0700 (PDT)
 From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 To:     Michael Hennerich <Michael.Hennerich@analog.com>,
         Jean Delvare <jdelvare@suse.com>,
@@ -71,9 +71,9 @@ To:     Michael Hennerich <Michael.Hennerich@analog.com>,
         alsa-devel@alsa-project.org
 Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
         Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: [PATCH v2 2/5] dt-bindings: iio: Drop Bogdan Pricop
-Date:   Tue,  9 Aug 2022 19:27:49 +0300
-Message-Id: <20220809162752.10186-3-krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v2 4/5] dt-bindings: Drop Robert Jones
+Date:   Tue,  9 Aug 2022 19:27:51 +0300
+Message-Id: <20220809162752.10186-5-krzysztof.kozlowski@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220809162752.10186-1-krzysztof.kozlowski@linaro.org>
 References: <20220809162752.10186-1-krzysztof.kozlowski@linaro.org>
@@ -83,28 +83,46 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Emails to Bogdan Pricop bounce ("550 5.4.1 Recipient address rejected:
-Access denied. AS(201806281)").
+Emails to Robert Jones bounce ("550 5.2.1 The email account that you
+tried to reach is disabled").
 
 Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
----
- Documentation/devicetree/bindings/iio/adc/ti,adc108s102.yaml | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/iio/adc/ti,adc108s102.yaml b/Documentation/devicetree/bindings/iio/adc/ti,adc108s102.yaml
-index 54955f03df93..ae5ce60987fe 100644
---- a/Documentation/devicetree/bindings/iio/adc/ti,adc108s102.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/ti,adc108s102.yaml
+---
+
+For maintainers entry see:
+https://lore.kernel.org/all/20220808111113.71890-1-krzysztof.kozlowski@linaro.org/
+---
+ Documentation/devicetree/bindings/iio/imu/nxp,fxos8700.yaml | 2 +-
+ Documentation/devicetree/bindings/mfd/gateworks-gsc.yaml    | 1 -
+ 2 files changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/iio/imu/nxp,fxos8700.yaml b/Documentation/devicetree/bindings/iio/imu/nxp,fxos8700.yaml
+index 479e7065d4eb..0203b83b8587 100644
+--- a/Documentation/devicetree/bindings/iio/imu/nxp,fxos8700.yaml
++++ b/Documentation/devicetree/bindings/iio/imu/nxp,fxos8700.yaml
 @@ -7,7 +7,7 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
- title: Texas Instruments ADC108S102 and ADC128S102
+ title: Freescale FXOS8700 Inertial Measurement Unit
  
  maintainers:
--  - Bogdan Pricop <bogdan.pricop@emutex.com>
+-  - Robert Jones <rjones@gateworks.com>
 +  - Jonathan Cameron <jic23@kernel.org>
  
  description: |
-   Family of 8 channel, 10/12 bit, SPI, single ended ADCs.
+   Accelerometer and magnetometer combo device with an i2c and SPI interface.
+diff --git a/Documentation/devicetree/bindings/mfd/gateworks-gsc.yaml b/Documentation/devicetree/bindings/mfd/gateworks-gsc.yaml
+index 5a1e8d21f7a0..5e0fe3ebe1d2 100644
+--- a/Documentation/devicetree/bindings/mfd/gateworks-gsc.yaml
++++ b/Documentation/devicetree/bindings/mfd/gateworks-gsc.yaml
+@@ -19,7 +19,6 @@ description: |
+ 
+ maintainers:
+   - Tim Harvey <tharvey@gateworks.com>
+-  - Robert Jones <rjones@gateworks.com>
+ 
+ properties:
+   $nodename:
 -- 
 2.34.1
 

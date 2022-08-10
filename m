@@ -2,171 +2,161 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47004C25B0D
-	for <linux-fbdev@archiver.kernel.org>; Wed, 10 Aug 2022 12:58:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D35DC25B07
+	for <linux-fbdev@archiver.kernel.org>; Wed, 10 Aug 2022 15:59:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232347AbiHJM63 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 10 Aug 2022 08:58:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52928 "EHLO
+        id S231502AbiHJP7T (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 10 Aug 2022 11:59:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54742 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232378AbiHJM6H (ORCPT
+        with ESMTP id S232100AbiHJP7J (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 10 Aug 2022 08:58:07 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D3D6160525;
-        Wed, 10 Aug 2022 05:57:59 -0700 (PDT)
-Received: from mercury (dyndsl-095-033-155-153.ewe-ip-backbone.de [95.33.155.153])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-        (No client certificate requested)
-        (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 968926601C2A;
-        Wed, 10 Aug 2022 13:57:57 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1660136277;
-        bh=AXUViYjkfsjlWnyiLgWqWN9MZttYpnjGIynZu5rUAaw=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=jDXgdsOidzYTu2oNC1erHn44vbS2vts5ReWdZHenahU9BENWCkA4038OA+Nwkkb+4
-         /kUOsqVguBjz/1jC3F/3t7A+gXlSVVaUyNWk07nXB7dJANymSbUxRqRYy/NimPHiiS
-         8TexTLunA86QqT9HLoeMK639uFUaEd+QyFrVsOa8lUvBsCK6Y53MhOqGIF8FJ/oDvL
-         0jPcOgPamgd6afMYuUC20rxuBlJHdk02soJI8TezMQTsf0BgCoubktSvLhHNq9SOpi
-         tgbaI3K6qgahfLujBtUwX+9h/7FcziktKvhn7YNwpMiqeyYQmJGwfD5r9CrDeT5NAS
-         42j7pvI156W/A==
-Received: by mercury (Postfix, from userid 1000)
-        id E7D8A1060840; Wed, 10 Aug 2022 14:57:55 +0200 (CEST)
-Date:   Wed, 10 Aug 2022 14:57:55 +0200
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     Michael Hennerich <Michael.Hennerich@analog.com>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Pavel Machek <pavel@ucw.cz>,
-        Tim Harvey <tharvey@gateworks.com>, Lee Jones <lee@kernel.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>, Andrew Davis <afd@ti.com>,
-        linux-hwmon@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, linux-leds@vger.kernel.org,
-        netdev@vger.kernel.org, linux-pm@vger.kernel.org,
-        alsa-devel@alsa-project.org
-Subject: Re: [PATCH v2 5/5] dt-bindings: Drop Dan Murphy and Ricardo
- Rivera-Matos
-Message-ID: <20220810125755.l6ou6imgbeuj37ir@mercury.elektranox.org>
-References: <20220809162752.10186-1-krzysztof.kozlowski@linaro.org>
- <20220809162752.10186-6-krzysztof.kozlowski@linaro.org>
+        Wed, 10 Aug 2022 11:59:09 -0400
+Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com [IPv6:2a00:1450:4864:20::344])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC52250716
+        for <linux-fbdev@vger.kernel.org>; Wed, 10 Aug 2022 08:59:07 -0700 (PDT)
+Received: by mail-wm1-x344.google.com with SMTP id k6-20020a05600c1c8600b003a54ecc62f6so1204346wms.5
+        for <linux-fbdev@vger.kernel.org>; Wed, 10 Aug 2022 08:59:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=in-reply-to:content-disposition:mime-version:references
+         :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc;
+        bh=5J/+lzEP3tSd3WPCvbjczX9ZLB61OBoGBALKUmRBw5s=;
+        b=ObbzQmaiZonvgZXM6vJSd38JNEFOl1Gu5gzz2JK4cCiW02dTTl9lARpq5+KEgkwx5t
+         cZJhbJXz1x3QyfajbDqIBIK4mbujsEdG9ys1inAOUjcSj9Wthi41cGYBetIvCKmHUnmo
+         XO09Qv92NvVrVC0xszkX26ZJeWoeHIRqb67s8=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references
+         :mail-followup-to:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc;
+        bh=5J/+lzEP3tSd3WPCvbjczX9ZLB61OBoGBALKUmRBw5s=;
+        b=6W3EBccWjDqL3ZZrQ/Sh9DWY0VFr27AE4BGuzAjpuWbEDMV6gn1YB1Nc5HD/+69co8
+         ew0nsL1HnAIRs4kmWsMhiQk8ODxNZPSdGTBkRxPjTgtw4uiqq2LEDn8bAgEk/COBGXR1
+         rqEmlT6ahqMk/r42U1BMfoDPYVpzks9gaGsiSx/BXyu80QxkrVlE8QG/v2StkO9Cyh2O
+         weKBMy4fDuAnzubpAHcyp2R9wWPEZg07rEHBygnIQTIGDkL+yaoE22nCIazYokiEiZHx
+         OqXlggCGNyYUSVj64Oc1lx5IGRdiX7xMl0w5SctXcGh3eJPib5/0F1rpKVIwzKqbfPV0
+         I8dw==
+X-Gm-Message-State: ACgBeo2bOKp8JCNUZpi5IkI17+YdUBAuf1RLUs8FHQ+swpPWcBoa9ZO+
+        2FiiG6Q20YChWveB7hqH41AvMw==
+X-Google-Smtp-Source: AA6agR7HY0wQU3y5yY6Kddj9MwzCY8wYP5mk/EVfoL8kIoQTc3N+5GNg+l+pO2qUm7O0zYD6sEsViQ==
+X-Received: by 2002:a05:600c:4f44:b0:3a5:6de3:8375 with SMTP id m4-20020a05600c4f4400b003a56de38375mr2992173wmq.198.1660147146409;
+        Wed, 10 Aug 2022 08:59:06 -0700 (PDT)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id e5-20020a05600c4e4500b003a32251c3f9sm3033032wmq.5.2022.08.10.08.59.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 10 Aug 2022 08:59:05 -0700 (PDT)
+Date:   Wed, 10 Aug 2022 17:59:03 +0200
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Javier Martinez Canillas <javierm@redhat.com>
+Subject: Re: [PATCH v3 01/10] drm/fourcc: Add drm_format_info_bpp() helper
+Message-ID: <YvPVxy4kYKdzWgT8@phenom.ffwll.local>
+Mail-Followup-To: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-m68k@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Javier Martinez Canillas <javierm@redhat.com>
+References: <cover.1657294931.git.geert@linux-m68k.org>
+ <1cae5ebc28513ec1c91c66b00647ce3ca23bfba7.1657294931.git.geert@linux-m68k.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="qodvu6jzbg5jdb43"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220809162752.10186-6-krzysztof.kozlowski@linaro.org>
+In-Reply-To: <1cae5ebc28513ec1c91c66b00647ce3ca23bfba7.1657294931.git.geert@linux-m68k.org>
+X-Operating-System: Linux phenom 5.10.0-8-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-
---qodvu6jzbg5jdb43
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Tue, Aug 09, 2022 at 07:27:52PM +0300, Krzysztof Kozlowski wrote:
-> Emails to Dan Murphy and Ricardo Rivera-Matos bounce ("550 Invalid
-> recipient").  Andrew Davis agreed to take over the bindings.
->=20
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
->=20
+On Fri, Jul 08, 2022 at 08:20:46PM +0200, Geert Uytterhoeven wrote:
+> Add a helper to retrieve the actual number of bits per pixel for a
+> plane, taking into account the number of characters and pixels per
+> block for tiled formats.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 > ---
->=20
-> Changes since v1:
-> 1. Add Andrew Davis instead.
-> 2. Not adding accumulated ack due to change above.
+> v3:
+>   - Add Reviewed-by,
+> 
+> v2:
+>   - Move up.
 > ---
-=2E..
->  Documentation/devicetree/bindings/power/supply/bq2515x.yaml    | 3 +--
->  Documentation/devicetree/bindings/power/supply/bq256xx.yaml    | 2 +-
->  Documentation/devicetree/bindings/power/supply/bq25980.yaml    | 3 +--
+>  drivers/gpu/drm/drm_fourcc.c | 19 +++++++++++++++++++
+>  include/drm/drm_fourcc.h     |  1 +
+>  2 files changed, 20 insertions(+)
+> 
+> diff --git a/drivers/gpu/drm/drm_fourcc.c b/drivers/gpu/drm/drm_fourcc.c
+> index 07741b678798b0f1..cf48ea0b2cb70ba8 100644
+> --- a/drivers/gpu/drm/drm_fourcc.c
+> +++ b/drivers/gpu/drm/drm_fourcc.c
+> @@ -370,6 +370,25 @@ unsigned int drm_format_info_block_height(const struct drm_format_info *info,
+>  }
+>  EXPORT_SYMBOL(drm_format_info_block_height);
+>  
+> +/**
+> + * drm_format_info_bpp - number of bits per pixel
+> + * @info: pixel format info
+> + * @plane: plane index
+> + *
+> + * Returns:
+> + * The actual number of bits per pixel, depending on the plane index.
+> + */
+> +unsigned int drm_format_info_bpp(const struct drm_format_info *info, int plane)
+> +{
+> +	if (!info || plane < 0 || plane >= info->num_planes)
+> +		return 0;
+> +
+> +	return info->char_per_block[plane] * 8 /
+> +	       (drm_format_info_block_width(info, plane) *
+> +		drm_format_info_block_height(info, plane));
 
-Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Do we really needs this for blocky formats where this is potentially
+ill-defined? I think if there's no need then this should also return 0
+when block_width/height != 1, it doesn't make much sense to compute bpp
+when it's not really bits per _pixel_.
 
--- Sebastian
+Minimally this needs to check whether the division actually makes sense or
+whether there's a reminder, and if there's  reminder, then fail. But that
+feels like a bad hack and I think we should avoid it if it's not
+absolutely necessary.
 
-> [...]
-> diff --git a/Documentation/devicetree/bindings/power/supply/bq2515x.yaml =
-b/Documentation/devicetree/bindings/power/supply/bq2515x.yaml
-> index 27db38577822..1a1b240034ef 100644
-> --- a/Documentation/devicetree/bindings/power/supply/bq2515x.yaml
-> +++ b/Documentation/devicetree/bindings/power/supply/bq2515x.yaml
-> @@ -8,8 +8,7 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
->  title: TI bq2515x 500-mA Linear charger family
-> =20
->  maintainers:
-> -  - Dan Murphy <dmurphy@ti.com>
-> -  - Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-> +  - Andrew Davis <afd@ti.com>
-> =20
->  description: |
->    The BQ2515x family is a highly integrated battery charge management IC=
- that
-> diff --git a/Documentation/devicetree/bindings/power/supply/bq256xx.yaml =
-b/Documentation/devicetree/bindings/power/supply/bq256xx.yaml
-> index 91abe5733c41..82f382a7ffb3 100644
-> --- a/Documentation/devicetree/bindings/power/supply/bq256xx.yaml
-> +++ b/Documentation/devicetree/bindings/power/supply/bq256xx.yaml
-> @@ -8,7 +8,7 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
->  title: TI bq256xx Switch Mode Buck Charger
-> =20
->  maintainers:
-> -  - Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-> +  - Andrew Davis <afd@ti.com>
-> =20
->  description: |
->    The bq256xx devices are a family of highly-integrated battery charge
-> diff --git a/Documentation/devicetree/bindings/power/supply/bq25980.yaml =
-b/Documentation/devicetree/bindings/power/supply/bq25980.yaml
-> index 4883527ab5c7..b687b8bcd705 100644
-> --- a/Documentation/devicetree/bindings/power/supply/bq25980.yaml
-> +++ b/Documentation/devicetree/bindings/power/supply/bq25980.yaml
-> @@ -8,8 +8,7 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
->  title: TI BQ25980 Flash Charger
-> =20
->  maintainers:
-> -  - Dan Murphy <dmurphy@ti.com>
-> -  - Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-> +  - Andrew Davis <afd@ti.com>
-> =20
->  description: |
->    The BQ25980, BQ25975, and BQ25960 are a series of flash chargers inten=
-ded
-> [...]
+Otherwise lgtm.
+-Daniel
 
---qodvu6jzbg5jdb43
-Content-Type: application/pgp-signature; name="signature.asc"
+> +}
+> +EXPORT_SYMBOL(drm_format_info_bpp);
+> +
+>  /**
+>   * drm_format_info_min_pitch - computes the minimum required pitch in bytes
+>   * @info: pixel format info
+> diff --git a/include/drm/drm_fourcc.h b/include/drm/drm_fourcc.h
+> index 22aa64d07c7905e2..3800a7ad7f0cda7a 100644
+> --- a/include/drm/drm_fourcc.h
+> +++ b/include/drm/drm_fourcc.h
+> @@ -313,6 +313,7 @@ unsigned int drm_format_info_block_width(const struct drm_format_info *info,
+>  					 int plane);
+>  unsigned int drm_format_info_block_height(const struct drm_format_info *info,
+>  					  int plane);
+> +unsigned int drm_format_info_bpp(const struct drm_format_info *info, int plane);
+>  uint64_t drm_format_info_min_pitch(const struct drm_format_info *info,
+>  				   int plane, unsigned int buffer_width);
+>  
+> -- 
+> 2.25.1
+> 
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmLzq1MACgkQ2O7X88g7
-+prR3RAAguNXBrOMU277Ao4ijuGi+QU6SzrNjySRdOiRVoG9Jn3Zo3D6969KokAP
-JfuYQLSClNfcDgaNVQPpXT5TG377q5ZerWaqfEFCXAy+cp0RIZWXdpDhb+2A5gCU
-gISuq5p61V0AQM6xyU+E9q+q9ZzQ8Qjjo2ckVFCqfcxe3pX4YUUXYu39ieKJqX7G
-juQsf03XgmKXT9PfPpBvMpPe7PqYlFzZqkuvfpNILNtksDBasHS2Tm998RXq3OTe
-hTlItrD65Mb4EEkhtuhj4Xkm6VbW6PXMAJiTCWraJsBZV+aZMdPWeoC5RsnhEDjM
-XcwnQGGy7VZYotwFMBYv1AtxiP6YNim1aYyReT/LA/+HBcIBGmD8Q0v3tgO9ruou
-Gx3DlkUgoo+q1cOLP0dzb+BWxSEx1VlNwONhIv/5bciur7BLTgVPt/1Vt2qLle0V
-1oEq90rdpUTv2poZn3cTd7+Qt99Eld3cVZ/JUFxrXywZkDuKMXB0Krnbg+sOeLfn
-dCWCe7fKeqgEIL71rna2j5BwCGFazcU3JeB2WdncDLqpFQaeb/0OPB8zw6RnC+oM
-PA+3qhtyhYYbcRMP7enDBV4skvpNTlJMD+tYQdzFWkcotVCvXho+7mI/Us+KZwBC
-+CQWd+WnX+l91INLir3KpF7b3yR5BZeo5MYQND5yD7ZKylUXcRo=
-=yGj8
------END PGP SIGNATURE-----
-
---qodvu6jzbg5jdb43--
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

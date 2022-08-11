@@ -2,133 +2,160 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27BCAC25B0C
-	for <linux-fbdev@archiver.kernel.org>; Thu, 11 Aug 2022 07:59:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EA8BC19F2A
+	for <linux-fbdev@archiver.kernel.org>; Thu, 11 Aug 2022 15:29:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233923AbiHKH75 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 11 Aug 2022 03:59:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36748 "EHLO
+        id S235063AbiHKP27 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 11 Aug 2022 11:28:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46510 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233028AbiHKH7z (ORCPT
+        with ESMTP id S235703AbiHKP26 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 11 Aug 2022 03:59:55 -0400
-Received: from mail-qt1-f171.google.com (mail-qt1-f171.google.com [209.85.160.171])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0AB1B8E9AE;
-        Thu, 11 Aug 2022 00:59:54 -0700 (PDT)
-Received: by mail-qt1-f171.google.com with SMTP id a4so8261608qto.10;
-        Thu, 11 Aug 2022 00:59:54 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc;
-        bh=Mzt9xiZn2UZTlTKHVMvt4CFBZHRE5sVzzM2CBT3iHn0=;
-        b=pTdmlRWEUv7hnG7gNZeG7U0LqUmOkF4SQ9JswnJhOhMEm1T8IpKQteS2+VdGooCB/5
-         CMCFjpRXZzCyJu271gz/UIE2E2cq5wcmOpoduz0NyXPnzQb9zU9Dfe+kPqBb4saHKU+h
-         WQZyy30fy4qw8IDv4JQ3o2RtJARmjn7QboGz3oB7vEZNwq0RxqrVM97fAU55Fxfnvc3G
-         vPpgbFi7E80SYdk5hhmKifHvcjXKCe9KKJkkWtYhoubg4y6UQbzeL/eB0/wr/120naDe
-         +iuwvTkW9SOpdegqExBwm8F8eP9LnGbUNlp4ORkUJSgpGou9hz71WstDnzXFCRg+eska
-         FH6w==
-X-Gm-Message-State: ACgBeo1PBRar37v4bLgukPzYXW51ElUotzSqLuQELkfV5N/8fGN/bnOr
-        aUVnjzIDpnMWq3SnuNnBNwlKo+1gYnePQEQQ
-X-Google-Smtp-Source: AA6agR5UjelKsbv85y1qDnOXW7mjDM3CWvFXbSNzwYa3xa5S/qotktjR3sWL/K98ghfVPgyVLdPD4g==
-X-Received: by 2002:a05:622a:3d2:b0:31f:1e36:4782 with SMTP id k18-20020a05622a03d200b0031f1e364782mr26837995qtx.190.1660204792844;
-        Thu, 11 Aug 2022 00:59:52 -0700 (PDT)
-Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com. [209.85.128.172])
-        by smtp.gmail.com with ESMTPSA id f4-20020a05620a408400b006b46a78bc0fsm1479308qko.118.2022.08.11.00.59.51
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 11 Aug 2022 00:59:51 -0700 (PDT)
-Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-31f661b3f89so165054187b3.11;
-        Thu, 11 Aug 2022 00:59:51 -0700 (PDT)
-X-Received: by 2002:a81:b049:0:b0:324:7408:94b with SMTP id
- x9-20020a81b049000000b003247408094bmr31043465ywk.283.1660204791329; Thu, 11
- Aug 2022 00:59:51 -0700 (PDT)
+        Thu, 11 Aug 2022 11:28:58 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2793194EDD;
+        Thu, 11 Aug 2022 08:28:57 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 9CCDE615EA;
+        Thu, 11 Aug 2022 15:28:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8C5B4C433C1;
+        Thu, 11 Aug 2022 15:28:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1660231736;
+        bh=Kuyb0A29QQO2MIKHDKDd+XCxrACH1RMYPQpyZfuGt4w=;
+        h=From:To:Cc:Subject:Date:From;
+        b=HebTJaE+/frms7yIBEPuchuGnJjL+louVGMYP/0VSEpcL32XcyG6I1FcUnuFxCUsg
+         5MSmnWIK6khGdxCNOZuupIsYJ06LL2Wkl0QHusD255ekbb6dgtsSZ/uK8nRIe4fjHt
+         TPWvaC7c7izvBvxLjx/5ofKIlH71SumOu0LIqAtENPEQ/1SKE4obeyb7R9F4LbNyVp
+         Y4Rng8mCtVEblthmBX50ubS/5350t6H5/cbNOgceUyHveC9b5i5s4WoiThFmCAxPRl
+         NnnWLeY4/fRfuWfuYQn6/mDjMAX0jQeGAlXbzMgvF54bfWb16tvApII5+dMHBvUZ32
+         JfQGhSpiMbkuA==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Javier Martinez Canillas <javierm@redhat.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Sasha Levin <sashal@kernel.org>, daniel@ffwll.ch,
+        deller@gmx.de, tzimmermann@suse.de, sam@ravnborg.org,
+        alexander.deucher@amd.com, deng.changcheng@zte.com.cn,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 5.19 001/105] fbdev: Restart conflicting fb removal loop when unregistering devices
+Date:   Thu, 11 Aug 2022 11:26:45 -0400
+Message-Id: <20220811152851.1520029-1-sashal@kernel.org>
+X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
-References: <cover.1657294931.git.geert@linux-m68k.org> <1cae5ebc28513ec1c91c66b00647ce3ca23bfba7.1657294931.git.geert@linux-m68k.org>
- <YvPVxy4kYKdzWgT8@phenom.ffwll.local>
-In-Reply-To: <YvPVxy4kYKdzWgT8@phenom.ffwll.local>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Thu, 11 Aug 2022 09:59:39 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdVMuuXgYW-AkyB+G77Wsjkm715u1ifDvaY=5DufXjryRA@mail.gmail.com>
-Message-ID: <CAMuHMdVMuuXgYW-AkyB+G77Wsjkm715u1ifDvaY=5DufXjryRA@mail.gmail.com>
-Subject: Re: [PATCH v3 01/10] drm/fourcc: Add drm_format_info_bpp() helper
-To:     Daniel Vetter <daniel@ffwll.ch>
-Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        "Linux/m68k" <linux-m68k@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Javier Martinez Canillas <javierm@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Daniel,
+From: Javier Martinez Canillas <javierm@redhat.com>
 
-On Wed, Aug 10, 2022 at 5:59 PM Daniel Vetter <daniel@ffwll.ch> wrote:
-> On Fri, Jul 08, 2022 at 08:20:46PM +0200, Geert Uytterhoeven wrote:
-> > Add a helper to retrieve the actual number of bits per pixel for a
-> > plane, taking into account the number of characters and pixels per
-> > block for tiled formats.
-> >
-> > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> > Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+[ Upstream commit 3367aa7d74d240261de2543ddb35531ccad9d884 ]
 
-> > --- a/drivers/gpu/drm/drm_fourcc.c
-> > +++ b/drivers/gpu/drm/drm_fourcc.c
-> > @@ -370,6 +370,25 @@ unsigned int drm_format_info_block_height(const struct drm_format_info *info,
-> >  }
-> >  EXPORT_SYMBOL(drm_format_info_block_height);
-> >
-> > +/**
-> > + * drm_format_info_bpp - number of bits per pixel
-> > + * @info: pixel format info
-> > + * @plane: plane index
-> > + *
-> > + * Returns:
-> > + * The actual number of bits per pixel, depending on the plane index.
-> > + */
-> > +unsigned int drm_format_info_bpp(const struct drm_format_info *info, int plane)
-> > +{
-> > +     if (!info || plane < 0 || plane >= info->num_planes)
-> > +             return 0;
-> > +
-> > +     return info->char_per_block[plane] * 8 /
-> > +            (drm_format_info_block_width(info, plane) *
-> > +             drm_format_info_block_height(info, plane));
->
-> Do we really needs this for blocky formats where this is potentially
-> ill-defined? I think if there's no need then this should also return 0
-> when block_width/height != 1, it doesn't make much sense to compute bpp
-> when it's not really bits per _pixel_.
+Drivers that want to remove registered conflicting framebuffers prior to
+register their own framebuffer, call to remove_conflicting_framebuffers().
 
-Yes, we do need this.  For low-color formats, the number of bits
-per pixel is less than eight, and block_width is larger than one.
-That is actually the point of this patch.
+This function takes the registration_lock mutex, to prevent a race when
+drivers register framebuffer devices. But if a conflicting framebuffer
+device is found, the underlaying platform device is unregistered and this
+will lead to the platform driver .remove callback to be called. Which in
+turn will call to unregister_framebuffer() that takes the same lock.
 
-> Minimally this needs to check whether the division actually makes sense or
-> whether there's a reminder, and if there's  reminder, then fail. But that
-> feels like a bad hack and I think we should avoid it if it's not
-> absolutely necessary.
+To prevent this, a struct fb_info.forced_out field was used as indication
+to unregister_framebuffer() whether the mutex has to be grabbed or not.
 
-Looking at drivers/gpu/drm/drm_fourcc.c, the only supported format
-where there can be a remainder is P030, which has 2 spare bits per
-32-bit word, and thus is special anyway.
-Still, 4 * 8 / 3 = 10, so you get the correct numbers of bits for
-the first plane.  For the second plane, you get 8 * 8 / 3 = 21,
-but as .is_yuv = true, you have to divide that result by two again,
-so you get 10 again.
+But this could be unsafe, since the fbdev core is making assumptions about
+what drivers may or may not do in their .remove callbacks. Allowing to run
+these callbacks with the registration_lock held can cause deadlocks, since
+the fbdev core has no control over what drivers do in their removal path.
 
-Gr{oetje,eeting}s,
+A better solution is to drop the lock before platform_device_unregister(),
+so unregister_framebuffer() can take it when called from the fbdev driver.
+The lock is acquired again after the device has been unregistered and at
+this point the removal loop can be restarted.
 
-                        Geert
+Since the conflicting framebuffer device has already been removed, the
+loop would just finish when no more conflicting framebuffers are found.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Suggested-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Link: https://patchwork.freedesktop.org/patch/msgid/20220511113039.1252432-1-javierm@redhat.com
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/core/fbmem.c | 22 +++++++++++++++-------
+ include/linux/fb.h               |  1 -
+ 2 files changed, 15 insertions(+), 8 deletions(-)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 7ee6eb2fa715..02b0cf2cfafe 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1568,6 +1568,7 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
+ {
+ 	int i;
+ 
++restart_removal:
+ 	/* check all firmware fbs and kick off if the base addr overlaps */
+ 	for_each_registered_fb(i) {
+ 		struct apertures_struct *gen_aper;
+@@ -1600,12 +1601,23 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
+ 				pr_warn("fb%d: no device set\n", i);
+ 				do_unregister_framebuffer(registered_fb[i]);
+ 			} else if (dev_is_platform(device)) {
+-				registered_fb[i]->forced_out = true;
++				/*
++				 * Drop the lock because if the device is unregistered, its
++				 * driver will call to unregister_framebuffer(), that takes
++				 * this lock.
++				 */
++				mutex_unlock(&registration_lock);
+ 				platform_device_unregister(to_platform_device(device));
++				mutex_lock(&registration_lock);
+ 			} else {
+ 				pr_warn("fb%d: cannot remove device\n", i);
+ 				do_unregister_framebuffer(registered_fb[i]);
+ 			}
++			/*
++			 * Restart the removal loop now that the device has been
++			 * unregistered and its associated framebuffer gone.
++			 */
++			goto restart_removal;
+ 		}
+ 	}
+ }
+@@ -1876,13 +1888,9 @@ EXPORT_SYMBOL(register_framebuffer);
+ void
+ unregister_framebuffer(struct fb_info *fb_info)
+ {
+-	bool forced_out = fb_info->forced_out;
+-
+-	if (!forced_out)
+-		mutex_lock(&registration_lock);
++	mutex_lock(&registration_lock);
+ 	do_unregister_framebuffer(fb_info);
+-	if (!forced_out)
+-		mutex_unlock(&registration_lock);
++	mutex_unlock(&registration_lock);
+ }
+ EXPORT_SYMBOL(unregister_framebuffer);
+ 
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 2892145468c9..07fcd0e56682 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -511,7 +511,6 @@ struct fb_info {
+ 	} *apertures;
+ 
+ 	bool skip_vt_switch; /* no VT switch on suspend/resume required */
+-	bool forced_out; /* set when being removed by another driver */
+ };
+ 
+ static inline struct apertures_struct *alloc_apertures(unsigned int max_num) {
+-- 
+2.35.1
+

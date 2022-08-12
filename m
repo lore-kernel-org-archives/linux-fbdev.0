@@ -2,120 +2,72 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6698C25B0C
-	for <linux-fbdev@archiver.kernel.org>; Thu, 11 Aug 2022 19:30:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C3A1C00140
+	for <linux-fbdev@archiver.kernel.org>; Fri, 12 Aug 2022 06:53:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234938AbiHKTa0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 11 Aug 2022 15:30:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40264 "EHLO
+        id S233297AbiHLGxb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 12 Aug 2022 02:53:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54200 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234073AbiHKTaY (ORCPT
+        with ESMTP id S229552AbiHLGxa (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 11 Aug 2022 15:30:24 -0400
-Received: from mailrelay4-1.pub.mailoutpod1-cph3.one.com (mailrelay4-1.pub.mailoutpod1-cph3.one.com [46.30.210.185])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CDD9EB03
-        for <linux-fbdev@vger.kernel.org>; Thu, 11 Aug 2022 12:30:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=rsa1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=PiIxReYkxtBzv66jtBR4FROfX82syegstNTwPa+ySR0=;
-        b=J4WnXA650B9xrqJFOUNC99f85fvYDJAQp733iypsjAv6EqqJCkAK7OOrj2HmV44IcKdnV3v+7OM2Q
-         VBI5UDXOx9WDYcqqlqUYamwCxt9veZ0xDP0M1tZNhzKtiTJk3LKqmoJvowc6jzgVcl1XbWbLHnWGaj
-         prL9zk8v75TMw3wvqpIdOSgv8OKdHSseFmbRB9/hcaUaQsxV1ggShec0sc4PVydd3U/hZl73hVvHxr
-         y/LkQkCaLbhyFGuCCwyE98HrhJ5vXM2lzB//fk+kRnBtI4dkJsF4/Qd47/hCwSJohfSbz0YxDuEoJO
-         R1XE1Hodc/OUYnY5cMcYNsOsE7lki1Q==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=ed1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=PiIxReYkxtBzv66jtBR4FROfX82syegstNTwPa+ySR0=;
-        b=lud6DSUj9xxo1AbujB4/Ho0gbti2rokDDTZkDXnKk5P5Gu4jnxPiTtmV5CE+z6T/r+e1iMKDNB/Wp
-         EGowbZsDQ==
-X-HalOne-Cookie: 52a4d43754f5de879c648bea03fabce90926a481
-X-HalOne-ID: 07f25d33-19ac-11ed-8245-d0431ea8bb10
-Received: from mailproxy4.cst.dirpod4-cph3.one.com (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-        by mailrelay4.pub.mailoutpod1-cph3.one.com (Halon) with ESMTPSA
-        id 07f25d33-19ac-11ed-8245-d0431ea8bb10;
-        Thu, 11 Aug 2022 19:30:17 +0000 (UTC)
-Date:   Thu, 11 Aug 2022 21:30:16 +0200
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux/m68k <linux-m68k@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Javier Martinez Canillas <javierm@redhat.com>
-Subject: Re: [PATCH v3 01/10] drm/fourcc: Add drm_format_info_bpp() helper
-Message-ID: <YvVYyKZNDGfhGjb5@ravnborg.org>
-References: <cover.1657294931.git.geert@linux-m68k.org>
- <1cae5ebc28513ec1c91c66b00647ce3ca23bfba7.1657294931.git.geert@linux-m68k.org>
- <YvPVxy4kYKdzWgT8@phenom.ffwll.local>
- <CAMuHMdVMuuXgYW-AkyB+G77Wsjkm715u1ifDvaY=5DufXjryRA@mail.gmail.com>
- <YvUqPL5l8/+XbvaQ@phenom.ffwll.local>
- <YvVKe72jYBjucmkz@ravnborg.org>
- <CAMuHMdVD37MCXau4w87=x_jk9j-NMJCmu0d9qPuMqmHA_vPQRQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdVD37MCXau4w87=x_jk9j-NMJCmu0d9qPuMqmHA_vPQRQ@mail.gmail.com>
+        Fri, 12 Aug 2022 02:53:30 -0400
+Received: from mail.nfschina.com (unknown [IPv6:2400:dd01:100f:2:72e2:84ff:fe10:5f45])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 3F9D9A5986;
+        Thu, 11 Aug 2022 23:53:27 -0700 (PDT)
+Received: from localhost (unknown [127.0.0.1])
+        by mail.nfschina.com (Postfix) with ESMTP id 4CCBA1E80D0F;
+        Fri, 12 Aug 2022 14:51:15 +0800 (CST)
+X-Virus-Scanned: amavisd-new at test.com
+Received: from mail.nfschina.com ([127.0.0.1])
+        by localhost (mail.nfschina.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id xfrGYnJuGCDS; Fri, 12 Aug 2022 14:51:12 +0800 (CST)
+Received: from localhost.localdomain (unknown [180.167.10.98])
+        (Authenticated sender: yuzhe@nfschina.com)
+        by mail.nfschina.com (Postfix) with ESMTPA id 3D51E1E80CB7;
+        Fri, 12 Aug 2022 14:51:12 +0800 (CST)
+From:   Yu Zhe <yuzhe@nfschina.com>
+To:     deller@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        liqiong@nfschina.com, kernel-janitors@vger.kernel.org,
+        Yu Zhe <yuzhe@nfschina.com>
+Subject: [PATCH] fbdev: omap: fix tests for platform_get_irq() failure
+Date:   Fri, 12 Aug 2022 14:52:23 +0800
+Message-Id: <20220812065223.27471-1-yuzhe@nfschina.com>
+X-Mailer: git-send-email 2.11.0
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Geert.
+The platform_get_irq() returns negative error codes.  It can't actually
+return zero.
 
-> > >
-> > > Yeah I don't think we should describe these with bpp or cpp or anything
-> > > like that. bpp < 8 makes sense since that's how this has been done since
-> > > decades, but trying to extend these to funny new formats is a bad idea.
-> > > This is also why cpp and depth refuse to compute these (or at least
-> > > should).
-> >
-> > Daniel and I discussed this on irc. Let me try to recap here.
-> > Using the bits per pixel info from drm_format_info is something we shall
-> > try to avoid as this is often a sign of the wrong abstraction/design (my
-> > words based on the irc talk).
-> > So we shall limit the use of drm_format_info_bpp() to what we need now,
-> > thus blocky formats should not be supported - to try to avoid seeing
-> > this used more than necessary.
-> >
-> > Daniel suggested a rename to drm_format_info_legacy_bpp() to make it
-> > obvious that this is often/always the wrong solution. I did not jump on
-> > doing the rename as I do not know stuff good enough to tell people what
-> > to use when this is not the right solution. The rename is simple, it is
-> > the follow-up that keep me away.
-> >
-> > On top of this there is a few formats in drm_drourcc that has a depth
-> > field set which should be dropped. .depth is only for the few legacy
-> > formats where it is used today.
-> >
-> > We would also like to convert the fbdev helpers to drm_format_info,
-> > and doing so will likely teach us a bit more what we need and what we
-> > can drop.
-> >
-> > Geert - can you give drm_format_info_bpp() a spin so it is limited to
-> > the formats used now (not the blocky ones).
-> 
-> You mean return 0 if char_per_block[] > 1?
-if char_per_block[] > 1 AND block_w[] > 0 AND block_h[] > 0 should be
-enough.
+Signed-off-by: Yu Zhe <yuzhe@nfschina.com>
+---
+ drivers/video/fbdev/omap/omapfb_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> I'm not sure it's actually safe to do so (and make this change this late
-> in the development cycle), as this is used in drm_client_buffer_create(),
-> drm_client_buffer_addfb(), and drm_mode_getfb().
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index dfb4ddc45701..fbb3af883d4d 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -1642,14 +1642,14 @@ static int omapfb_do_probe(struct platform_device *pdev,
+ 		goto cleanup;
+ 	}
+ 	fbdev->int_irq = platform_get_irq(pdev, 0);
+-	if (!fbdev->int_irq) {
++	if (fbdev->int_irq < 0) {
+ 		dev_err(&pdev->dev, "unable to get irq\n");
+ 		r = ENXIO;
+ 		goto cleanup;
+ 	}
+ 
+ 	fbdev->ext_irq = platform_get_irq(pdev, 1);
+-	if (!fbdev->ext_irq) {
++	if (fbdev->ext_irq < 0) {
+ 		dev_err(&pdev->dev, "unable to get irq\n");
+ 		r = ENXIO;
+ 		goto cleanup;
+-- 
+2.11.0
 
-drm_client_buffer_create() and drm_client_buffer_addfb() both get their
-format from  drm_mode_legacy_fb_format() which do not produce any blocky
-formats - so they are good.
-
-drm_mode_getfb() looks up a framebuffer originally created using one of
-the above (I think), so here it should also be fine.
-I do not see the need to push this to fixes, so it has a full cycle to
-mature if it causes issues.
-
-	Sam

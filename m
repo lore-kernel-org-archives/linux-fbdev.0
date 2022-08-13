@@ -2,160 +2,498 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED053C19F2D
-	for <linux-fbdev@archiver.kernel.org>; Sat, 13 Aug 2022 13:12:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81DEBC25B0F
+	for <linux-fbdev@archiver.kernel.org>; Sat, 13 Aug 2022 15:35:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237374AbiHMNM3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 13 Aug 2022 09:12:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51062 "EHLO
+        id S239774AbiHMPft (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 13 Aug 2022 11:35:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48786 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234725AbiHMNM2 (ORCPT
+        with ESMTP id S239671AbiHMPfs (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 13 Aug 2022 09:12:28 -0400
-Received: from mail-io1-f72.google.com (mail-io1-f72.google.com [209.85.166.72])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9BCB72612D
-        for <linux-fbdev@vger.kernel.org>; Sat, 13 Aug 2022 06:12:25 -0700 (PDT)
-Received: by mail-io1-f72.google.com with SMTP id t7-20020a6b6407000000b00684ed320f97so2035822iog.11
-        for <linux-fbdev@vger.kernel.org>; Sat, 13 Aug 2022 06:12:25 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=to:from:subject:message-id:in-reply-to:date:mime-version
-         :x-gm-message-state:from:to:cc;
-        bh=VIlo//r0LJftEwzdeLRuWCYomg8j7vgvKsC6IKHpAPs=;
-        b=hLJe5SXNodhVyKpLIdf1N6bBULo0jMlqjb7yx10Kn5b4yAs7vYKRkzYFvuv0jrxJwS
-         ST09xuv2jt2vpvOk1NR/n4f4Rr0sKOl0BVTpSZFzsCeZTxhTsUvHgIHtUXC7uZu0TU1M
-         uU8bwEEL3ncB4gUADP2aK1gi4AViwQRwwg8Ydvunv0ScDYgXmiAbVNXpyVWsAZxr8/vy
-         hbR8m9eAIPsV4gEMQUZI3k/IIbfmLA0/CLQNJAtZsWd0jr5hShpk//Muc9MbgU29Tvtz
-         N5014TSLuiMLaLljemNc85wWA9UmUpJDX7rNCpClT+W2yKcQvxv/FUmwzy2CzfyxVbWn
-         e45Q==
-X-Gm-Message-State: ACgBeo0ll6oVVTk7P3foIDT3spon9Hzscno3sKxrUuq31A1Ky+/Q4v1M
-        CBP8LgqOgEuK8a8LNd2YIdqVtzPzU9rq1XSJwCQdPD0P1jOc
-X-Google-Smtp-Source: AA6agR6GtsT0p+RwHDKPWmadUL9DyCtPMX2vz5jGfIJxRCI8OcAOWnrErc+Bq1037n79jugGpsig7UHwubgUmXa9oHCw5dopUhhw
+        Sat, 13 Aug 2022 11:35:48 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4FC6520BC5;
+        Sat, 13 Aug 2022 08:35:46 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id E6363B801BF;
+        Sat, 13 Aug 2022 15:35:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 65329C433D6;
+        Sat, 13 Aug 2022 15:35:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1660404943;
+        bh=H+193s9DhJA+Fo+1yQtUSKQ/Q5LCMqL5XgyPBlKN9iM=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=awR9jlAgHn06cl1vhF3zgZ4uZsd98vev6ArN5JzdTNjlXO3+QBqNbjBNOi0fhFqGz
+         G5xETOIQbS4eacFez5N3d0j1uw6kH5WKR5zSp0Nrp713gqnQjtBPCtO0kxGnmKjY0f
+         JD+CQejRE5uTr+J/Ba19U9PMtT3dvxdAYw5X8+bRQlfgRkIZnuKnsl1RQDmCKRdQhz
+         poVbpv0LRHsvzGAW2khsaoJXWSdgxnm1zKGTGcw3liaDhdN/u5ZE9v6ZsSGppbKgUb
+         vxYeoZ1y3DOWoRlK56myGWtVQMUT5gkiXrk8D5Nnwch4G+00BcZEwgQ8/zE+q7+/Tt
+         5O5IYB13Ysc0g==
+Date:   Sat, 13 Aug 2022 16:46:06 +0100
+From:   Jonathan Cameron <jic23@kernel.org>
+To:     Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc:     ChiaEn Wu <peterwu.pub@gmail.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Chunfeng Yun <chunfeng.yun@mediatek.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>,
+        Helge Deller <deller@gmx.de>,
+        ChiaEn Wu <chiaen_wu@richtek.com>,
+        Alice Chen <alice_chen@richtek.com>,
+        cy_huang <cy_huang@richtek.com>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux LED Subsystem <linux-leds@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-mediatek@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        USB <linux-usb@vger.kernel.org>,
+        linux-iio <linux-iio@vger.kernel.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+        szuni chen <szunichen@gmail.com>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+Subject: Re: [PATCH v7 09/13] iio: adc: mt6370: Add MediaTek MT6370 support
+Message-ID: <20220813164606.3ed93322@jic23-huawei>
+In-Reply-To: <CAHp75VexyNqEFKY4PG_jYQxQGmdvE12SeuvMzHThfPY-gB4f7A@mail.gmail.com>
+References: <20220805070610.3516-1-peterwu.pub@gmail.com>
+        <20220805070610.3516-10-peterwu.pub@gmail.com>
+        <CAHp75VexyNqEFKY4PG_jYQxQGmdvE12SeuvMzHThfPY-gB4f7A@mail.gmail.com>
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.34; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-X-Received: by 2002:a05:6602:1843:b0:67d:d75:e503 with SMTP id
- d3-20020a056602184300b0067d0d75e503mr3510203ioi.36.1660396345016; Sat, 13 Aug
- 2022 06:12:25 -0700 (PDT)
-Date:   Sat, 13 Aug 2022 06:12:25 -0700
-In-Reply-To: <00000000000063154a05e382eae9@google.com>
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <00000000000054c88505e61f265b@google.com>
-Subject: Re: [syzbot] BUG: unable to handle kernel paging request in
- bitfill_aligned (3)
-From:   syzbot <syzbot+a168dbeaaa7778273c1b@syzkaller.appspotmail.com>
-To:     daniel@ffwll.ch, deller@gmx.de, dri-devel@lists.freedesktop.org,
-        javierm@redhat.com, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, sam@ravnborg.org,
-        syzkaller-bugs@googlegroups.com, tzimmermann@suse.de
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-syzbot has found a reproducer for the following issue on:
+On Fri, 5 Aug 2022 12:54:04 +0200
+Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
 
-HEAD commit:    7ebfc85e2cd7 Merge tag 'net-6.0-rc1' of git://git.kernel.o..
-git tree:       upstream
-console+strace: https://syzkaller.appspot.com/x/log.txt?x=179c3aa5080000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=20bc0b329895d963
-dashboard link: https://syzkaller.appspot.com/bug?extid=a168dbeaaa7778273c1b
-compiler:       Debian clang version 13.0.1-++20220126092033+75e33f71c2da-1~exp1~20220126212112.63, GNU ld (GNU Binutils for Debian) 2.35.2
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16e0ef4b080000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=11a1183d080000
+> On Fri, Aug 5, 2022 at 9:07 AM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
+> >
+> > From: ChiaEn Wu <chiaen_wu@richtek.com>
+> >
+> > MediaTek MT6370 is a SubPMIC consisting of a single cell battery charger
+> > with ADC monitoring, RGB LEDs, dual channel flashlight, WLED backlight
+> > driver, display bias voltage supply, one general purpose LDO, and the
+> > USB Type-C & PD controller complies with the latest USB Type-C and PD
+> > standards.
+> >
+> > Add a support for the MT6370 ADC driver for system monitoring, including
+> > charger current, voltage, and temperature.  
+> 
+> On Fri, Aug 5, 2022 at 9:07 AM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
+> >
+> > From: ChiYuan Huang <cy_huang@richtek.com>
+> >
+> > The MediaTek MT6370 is a highly-integrated smart power management IC,
+> > which includes a single cell Li-Ion/Li-Polymer switching battery
+> > charger, a USB Type-C & Power Delivery (PD) controller, dual
+> > Flash LED current sources, a RGB LED driver, a backlight WLED driver,
+> > a display bias driver and a general LDO for portable devices.
+> >
+> > Add a support for the Type-C & Power Delivery controller in
+> > MediaTek MT6370 IC.  
+> 
+> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+Oops. I just noticed I replied only to Andy due to a misclick.
 
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+a168dbeaaa7778273c1b@syzkaller.appspotmail.com
+Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
-BUG: unable to handle page fault for address: ffffc900043a1000
-#PF: supervisor write access in kernel mode
-#PF: error_code(0x0002) - not-present page
-PGD 12000067 P4D 12000067 PUD 121c9067 PMD 14733a067 PTE 0
-Oops: 0002 [#1] PREEMPT SMP KASAN
-CPU: 1 PID: 3633 Comm: syz-executor339 Not tainted 5.19.0-syzkaller-13930-g7ebfc85e2cd7 #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 07/22/2022
-RIP: 0010:memset64 arch/x86/include/asm/string_64.h:49 [inline]
-RIP: 0010:memset_l include/linux/string.h:128 [inline]
-RIP: 0010:bitfill_aligned+0x1ad/0x270 drivers/video/fbdev/core/sysfillrect.c:53
-Code: 08 49 31 ef eb 66 e8 52 38 03 fd 45 89 e6 4c 8b 64 24 10 44 89 f0 31 d2 f7 f3 89 c3 48 8b 6c 24 08 48 89 e8 4c 89 e7 48 89 d9 <f3> 48 ab 31 ff 44 89 ee e8 46 3c 03 fd 4d 85 ed 74 5f 4d 8d 24 dc
-RSP: 0018:ffffc90003a6f7e8 EFLAGS: 00010246
-RAX: 0000000000000000 RBX: 0000000000000ffc RCX: 00000000000001fc
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffffc900043a1000
-RBP: 0000000000000000 R08: ffffffff848659ae R09: 0000000000000040
-R10: 0000000000000002 R11: ffff888021ffd880 R12: ffffc9000439a000
-R13: 0000000000000000 R14: 000000000003ff00 R15: ffffffffffffffff
-FS:  0000555556df7300(0000) GS:ffff8880b9b00000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: ffffc900043a1000 CR3: 0000000072ba0000 CR4: 00000000003506e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-Call Trace:
- <TASK>
- sys_fillrect+0x5ce/0x7f0 drivers/video/fbdev/core/sysfillrect.c:281
- drm_fb_helper_sys_fillrect drivers/gpu/drm/drm_fb_helper.c:807 [inline]
- drm_fbdev_fb_fillrect+0x163/0x300 drivers/gpu/drm/drm_fb_helper.c:2322
- bit_clear_margins+0x3f1/0x6e0 drivers/video/fbdev/core/bitblit.c:232
- fbcon_clear_margins drivers/video/fbdev/core/fbcon.c:1306 [inline]
- fbcon_do_set_font+0xd7c/0x1330 drivers/video/fbdev/core/fbcon.c:2431
- fbcon_set_font+0xc29/0xf70 drivers/video/fbdev/core/fbcon.c:2519
- con_font_set drivers/tty/vt/vt.c:4666 [inline]
- con_font_op+0xbe8/0x1070 drivers/tty/vt/vt.c:4710
- vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
- vt_ioctl+0x172e/0x1d00 drivers/tty/vt/vt_ioctl.c:752
- tty_ioctl+0x874/0xc60 drivers/tty/tty_io.c:2778
- vfs_ioctl fs/ioctl.c:51 [inline]
- __do_sys_ioctl fs/ioctl.c:870 [inline]
- __se_sys_ioctl+0xfb/0x170 fs/ioctl.c:856
- do_syscall_x64 arch/x86/entry/common.c:50 [inline]
- do_syscall_64+0x2b/0x70 arch/x86/entry/common.c:80
- entry_SYSCALL_64_after_hwframe+0x63/0xcd
-RIP: 0033:0x7efe5924e239
-Code: 28 00 00 00 75 05 48 83 c4 28 c3 e8 b1 14 00 00 90 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 c0 ff ff ff f7 d8 64 89 01 48
-RSP: 002b:00007fffba970648 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 0000000000000001 RCX: 00007efe5924e239
-RDX: 0000000020000000 RSI: 0000000000004b72 RDI: 0000000000000004
-RBP: 00007fffba970660 R08: 0000000000000001 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000005
-R13: 00007fffba97065c R14: 00007fffba970680 R15: 00007fffba970670
- </TASK>
-Modules linked in:
-CR2: ffffc900043a1000
----[ end trace 0000000000000000 ]---
-RIP: 0010:memset64 arch/x86/include/asm/string_64.h:49 [inline]
-RIP: 0010:memset_l include/linux/string.h:128 [inline]
-RIP: 0010:bitfill_aligned+0x1ad/0x270 drivers/video/fbdev/core/sysfillrect.c:53
-Code: 08 49 31 ef eb 66 e8 52 38 03 fd 45 89 e6 4c 8b 64 24 10 44 89 f0 31 d2 f7 f3 89 c3 48 8b 6c 24 08 48 89 e8 4c 89 e7 48 89 d9 <f3> 48 ab 31 ff 44 89 ee e8 46 3c 03 fd 4d 85 ed 74 5f 4d 8d 24 dc
-RSP: 0018:ffffc90003a6f7e8 EFLAGS: 00010246
-RAX: 0000000000000000 RBX: 0000000000000ffc RCX: 00000000000001fc
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffffc900043a1000
-RBP: 0000000000000000 R08: ffffffff848659ae R09: 0000000000000040
-R10: 0000000000000002 R11: ffff888021ffd880 R12: ffffc9000439a000
-R13: 0000000000000000 R14: 000000000003ff00 R15: ffffffffffffffff
-FS:  0000555556df7300(0000) GS:ffff8880b9b00000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: ffffc900043a1000 CR3: 0000000072ba0000 CR4: 00000000003506e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-----------------
-Code disassembly (best guess):
-   0:	08 49 31             	or     %cl,0x31(%rcx)
-   3:	ef                   	out    %eax,(%dx)
-   4:	eb 66                	jmp    0x6c
-   6:	e8 52 38 03 fd       	callq  0xfd03385d
-   b:	45 89 e6             	mov    %r12d,%r14d
-   e:	4c 8b 64 24 10       	mov    0x10(%rsp),%r12
-  13:	44 89 f0             	mov    %r14d,%eax
-  16:	31 d2                	xor    %edx,%edx
-  18:	f7 f3                	div    %ebx
-  1a:	89 c3                	mov    %eax,%ebx
-  1c:	48 8b 6c 24 08       	mov    0x8(%rsp),%rbp
-  21:	48 89 e8             	mov    %rbp,%rax
-  24:	4c 89 e7             	mov    %r12,%rdi
-  27:	48 89 d9             	mov    %rbx,%rcx
-* 2a:	f3 48 ab             	rep stos %rax,%es:(%rdi) <-- trapping instruction
-  2d:	31 ff                	xor    %edi,%edi
-  2f:	44 89 ee             	mov    %r13d,%esi
-  32:	e8 46 3c 03 fd       	callq  0xfd033c7d
-  37:	4d 85 ed             	test   %r13,%r13
-  3a:	74 5f                	je     0x9b
-  3c:	4d 8d 24 dc          	lea    (%r12,%rbx,8),%r12
+I took a quick glance through, and with Andy's comments now all answered
+to his satisfaction I'm fine with this going through the MFD tree
+(or another path if one makes more sense).
+
+Thanks to Andy for his reviewing effort on this one!
+
+Note that because of the bindings header I think this has a build dependency on the
+MFD binding patch.
+
+Jonathan
+
+
+> 
+> > Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+> > Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
+> > ---
+> >
+> > v7
+> > - Add AICR(100mA ~ 350mA), ICHG(100mA ~ 800mA) macros
+> > - Remove 400mA AICR and 900mA ICHG macros
+> > - Revise using 'if-else' to 'switch-case' in mt6370_adc_read_scale()
+> >   where the adc channel is ibus or ibat
+> > ---
+> >  drivers/iio/adc/Kconfig      |  12 ++
+> >  drivers/iio/adc/Makefile     |   1 +
+> >  drivers/iio/adc/mt6370-adc.c | 305 +++++++++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 318 insertions(+)
+> >  create mode 100644 drivers/iio/adc/mt6370-adc.c
+> >
+> > diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
+> > index 7fe5930..995cbb5 100644
+> > --- a/drivers/iio/adc/Kconfig
+> > +++ b/drivers/iio/adc/Kconfig
+> > @@ -736,6 +736,18 @@ config MEDIATEK_MT6360_ADC
+> >           is used in smartphones and tablets and supports a 11 channel
+> >           general purpose ADC.
+> >
+> > +config MEDIATEK_MT6370_ADC
+> > +       tristate "MediaTek MT6370 ADC driver"
+> > +       depends on MFD_MT6370
+> > +       help
+> > +         Say yes here to enable MediaTek MT6370 ADC support.
+> > +
+> > +         This ADC driver provides 9 channels for system monitoring (charger
+> > +         current, voltage, and temperature).
+> > +
+> > +         This driver can also be built as a module. If so, the module
+> > +         will be called "mt6370-adc".
+> > +
+> >  config MEDIATEK_MT6577_AUXADC
+> >         tristate "MediaTek AUXADC driver"
+> >         depends on ARCH_MEDIATEK || COMPILE_TEST
+> > diff --git a/drivers/iio/adc/Makefile b/drivers/iio/adc/Makefile
+> > index 1772a54..c6bc35f 100644
+> > --- a/drivers/iio/adc/Makefile
+> > +++ b/drivers/iio/adc/Makefile
+> > @@ -68,6 +68,7 @@ obj-$(CONFIG_MCP320X) += mcp320x.o
+> >  obj-$(CONFIG_MCP3422) += mcp3422.o
+> >  obj-$(CONFIG_MCP3911) += mcp3911.o
+> >  obj-$(CONFIG_MEDIATEK_MT6360_ADC) += mt6360-adc.o
+> > +obj-$(CONFIG_MEDIATEK_MT6370_ADC) += mt6370-adc.o
+> >  obj-$(CONFIG_MEDIATEK_MT6577_AUXADC) += mt6577_auxadc.o
+> >  obj-$(CONFIG_MEN_Z188_ADC) += men_z188_adc.o
+> >  obj-$(CONFIG_MESON_SARADC) += meson_saradc.o
+> > diff --git a/drivers/iio/adc/mt6370-adc.c b/drivers/iio/adc/mt6370-adc.c
+> > new file mode 100644
+> > index 0000000..2a46471
+> > --- /dev/null
+> > +++ b/drivers/iio/adc/mt6370-adc.c
+> > @@ -0,0 +1,305 @@
+> > +// SPDX-License-Identifier: GPL-2.0-only
+> > +/*
+> > + * Copyright (C) 2022 Richtek Technology Corp.
+> > + *
+> > + * Author: ChiaEn Wu <chiaen_wu@richtek.com>
+> > + */
+> > +
+> > +#include <linux/bits.h>
+> > +#include <linux/bitfield.h>
+> > +#include <linux/iio/iio.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/mod_devicetable.h>
+> > +#include <linux/module.h>
+> > +#include <linux/mutex.h>
+> > +#include <linux/platform_device.h>
+> > +#include <linux/regmap.h>
+> > +#include <linux/sysfs.h>
+> > +#include <linux/units.h>
+> > +
+> > +#include <dt-bindings/iio/adc/mediatek,mt6370_adc.h>
+> > +
+> > +#define MT6370_REG_CHG_CTRL3           0x113
+> > +#define MT6370_REG_CHG_CTRL7           0x117
+> > +#define MT6370_REG_CHG_ADC             0x121
+> > +#define MT6370_REG_ADC_DATA_H          0x14C
+> > +
+> > +#define MT6370_ADC_START_MASK          BIT(0)
+> > +#define MT6370_ADC_IN_SEL_MASK         GENMASK(7, 4)
+> > +#define MT6370_AICR_ICHG_MASK          GENMASK(7, 2)
+> > +
+> > +#define MT6370_AICR_100_mA             0x0
+> > +#define MT6370_AICR_150_mA             0x1
+> > +#define MT6370_AICR_200_mA             0x2
+> > +#define MT6370_AICR_250_mA             0x3
+> > +#define MT6370_AICR_300_mA             0x4
+> > +#define MT6370_AICR_350_mA             0x5
+> > +
+> > +#define MT6370_ICHG_100_mA             0x0
+> > +#define MT6370_ICHG_200_mA             0x1
+> > +#define MT6370_ICHG_300_mA             0x2
+> > +#define MT6370_ICHG_400_mA             0x3
+> > +#define MT6370_ICHG_500_mA             0x4
+> > +#define MT6370_ICHG_600_mA             0x5
+> > +#define MT6370_ICHG_700_mA             0x6
+> > +#define MT6370_ICHG_800_mA             0x7
+> > +
+> > +#define ADC_CONV_TIME_MS               35
+> > +#define ADC_CONV_POLLING_TIME_US       1000
+> > +
+> > +struct mt6370_adc_data {
+> > +       struct device *dev;
+> > +       struct regmap *regmap;
+> > +       /*
+> > +        * This mutex lock is for preventing the different ADC channels
+> > +        * from being read at the same time.
+> > +        */
+> > +       struct mutex adc_lock;
+> > +};
+> > +
+> > +static int mt6370_adc_read_channel(struct mt6370_adc_data *priv, int chan,
+> > +                                  unsigned long addr, int *val)
+> > +{
+> > +       unsigned int reg_val;
+> > +       __be16 be_val;
+> > +       int ret;
+> > +
+> > +       mutex_lock(&priv->adc_lock);
+> > +
+> > +       reg_val = MT6370_ADC_START_MASK |
+> > +                 FIELD_PREP(MT6370_ADC_IN_SEL_MASK, addr);
+> > +       ret = regmap_write(priv->regmap, MT6370_REG_CHG_ADC, reg_val);
+> > +       if (ret)
+> > +               goto adc_unlock;
+> > +
+> > +       msleep(ADC_CONV_TIME_MS);
+> > +
+> > +       ret = regmap_read_poll_timeout(priv->regmap,
+> > +                                      MT6370_REG_CHG_ADC, reg_val,
+> > +                                      !(reg_val & MT6370_ADC_START_MASK),
+> > +                                      ADC_CONV_POLLING_TIME_US,
+> > +                                      ADC_CONV_TIME_MS * MILLI * 3);
+> > +       if (ret) {
+> > +               dev_err(priv->dev, "Failed to read ADC register (%d)\n", ret);
+> > +               goto adc_unlock;
+> > +       }
+> > +
+> > +       ret = regmap_raw_read(priv->regmap, MT6370_REG_ADC_DATA_H,
+> > +                             &be_val, sizeof(be_val));
+> > +       if (ret)
+> > +               goto adc_unlock;
+> > +
+> > +       *val = be16_to_cpu(be_val);
+> > +       ret = IIO_VAL_INT;
+> > +
+> > +adc_unlock:
+> > +       mutex_unlock(&priv->adc_lock);
+> > +
+> > +       return ret;
+> > +}
+> > +
+> > +static int mt6370_adc_read_scale(struct mt6370_adc_data *priv,
+> > +                                int chan, int *val1, int *val2)
+> > +{
+> > +       unsigned int reg_val;
+> > +       int ret;
+> > +
+> > +       switch (chan) {
+> > +       case MT6370_CHAN_VBAT:
+> > +       case MT6370_CHAN_VSYS:
+> > +       case MT6370_CHAN_CHG_VDDP:
+> > +               *val1 = 5;
+> > +               return IIO_VAL_INT;
+> > +       case MT6370_CHAN_IBUS:
+> > +               ret = regmap_read(priv->regmap, MT6370_REG_CHG_CTRL3, &reg_val);
+> > +               if (ret)
+> > +                       return ret;
+> > +
+> > +               reg_val = FIELD_GET(MT6370_AICR_ICHG_MASK, reg_val);
+> > +               switch (reg_val) {
+> > +               case MT6370_AICR_100_mA:
+> > +               case MT6370_AICR_150_mA:
+> > +               case MT6370_AICR_200_mA:
+> > +               case MT6370_AICR_250_mA:
+> > +               case MT6370_AICR_300_mA:
+> > +               case MT6370_AICR_350_mA:
+> > +                       *val1 = 3350;
+> > +                       break;
+> > +               default:
+> > +                       *val1 = 5000;
+> > +                       break;
+> > +               }
+> > +
+> > +               *val2 = 100;
+> > +
+> > +               return IIO_VAL_FRACTIONAL;
+> > +       case MT6370_CHAN_IBAT:
+> > +               ret = regmap_read(priv->regmap, MT6370_REG_CHG_CTRL7, &reg_val);
+> > +               if (ret)
+> > +                       return ret;
+> > +
+> > +               reg_val = FIELD_GET(MT6370_AICR_ICHG_MASK, reg_val);
+> > +               switch (reg_val) {
+> > +               case MT6370_ICHG_100_mA:
+> > +               case MT6370_ICHG_200_mA:
+> > +               case MT6370_ICHG_300_mA:
+> > +               case MT6370_ICHG_400_mA:
+> > +                       *val1 = 2375;
+> > +                       break;
+> > +               case MT6370_ICHG_500_mA:
+> > +               case MT6370_ICHG_600_mA:
+> > +               case MT6370_ICHG_700_mA:
+> > +               case MT6370_ICHG_800_mA:
+> > +                       *val1 = 2680;
+> > +                       break;
+> > +               default:
+> > +                       *val1 = 5000;
+> > +                       break;
+> > +               }
+> > +
+> > +               *val2 = 100;
+> > +
+> > +               return IIO_VAL_FRACTIONAL;
+> > +       case MT6370_CHAN_VBUSDIV5:
+> > +               *val1 = 25;
+> > +               return IIO_VAL_INT;
+> > +       case MT6370_CHAN_VBUSDIV2:
+> > +               *val1 = 50;
+> > +               return IIO_VAL_INT;
+> > +       case MT6370_CHAN_TS_BAT:
+> > +               *val1 = 25;
+> > +               *val2 = 10000;
+> > +               return IIO_VAL_FRACTIONAL;
+> > +       case MT6370_CHAN_TEMP_JC:
+> > +               *val1 = 2000;
+> > +               return IIO_VAL_FRACTIONAL;
+> > +       default:
+> > +               return -EINVAL;
+> > +       }
+> > +}
+> > +
+> > +static int mt6370_adc_read_offset(struct mt6370_adc_data *priv,
+> > +                                 int chan, int *val)
+> > +{
+> > +       *val = -20;
+> > +
+> > +       return IIO_VAL_INT;
+> > +}
+> > +
+> > +static int mt6370_adc_read_raw(struct iio_dev *iio_dev,
+> > +                              const struct iio_chan_spec *chan,
+> > +                              int *val, int *val2, long mask)
+> > +{
+> > +       struct mt6370_adc_data *priv = iio_priv(iio_dev);
+> > +
+> > +       switch (mask) {
+> > +       case IIO_CHAN_INFO_RAW:
+> > +               return mt6370_adc_read_channel(priv, chan->channel,
+> > +                                              chan->address, val);
+> > +       case IIO_CHAN_INFO_SCALE:
+> > +               return mt6370_adc_read_scale(priv, chan->channel, val, val2);
+> > +       case IIO_CHAN_INFO_OFFSET:
+> > +               return mt6370_adc_read_offset(priv, chan->channel, val);
+> > +       default:
+> > +               return -EINVAL;
+> > +       }
+> > +}
+> > +
+> > +static const char * const mt6370_channel_labels[MT6370_CHAN_MAX] = {
+> > +       [MT6370_CHAN_VBUSDIV5] = "vbusdiv5",
+> > +       [MT6370_CHAN_VBUSDIV2] = "vbusdiv2",
+> > +       [MT6370_CHAN_VSYS] = "vsys",
+> > +       [MT6370_CHAN_VBAT] = "vbat",
+> > +       [MT6370_CHAN_TS_BAT] = "ts_bat",
+> > +       [MT6370_CHAN_IBUS] = "ibus",
+> > +       [MT6370_CHAN_IBAT] = "ibat",
+> > +       [MT6370_CHAN_CHG_VDDP] = "chg_vddp",
+> > +       [MT6370_CHAN_TEMP_JC] = "temp_jc",
+> > +};
+> > +
+> > +static int mt6370_adc_read_label(struct iio_dev *iio_dev,
+> > +                                struct iio_chan_spec const *chan, char *label)
+> > +{
+> > +       return sysfs_emit(label, "%s\n", mt6370_channel_labels[chan->channel]);
+> > +}
+> > +
+> > +static const struct iio_info mt6370_adc_iio_info = {
+> > +       .read_raw = mt6370_adc_read_raw,
+> > +       .read_label = mt6370_adc_read_label,
+> > +};
+> > +
+> > +#define MT6370_ADC_CHAN(_idx, _type, _addr, _extra_info) {     \
+> > +       .type = _type,                                          \
+> > +       .channel = MT6370_CHAN_##_idx,                          \
+> > +       .address = _addr,                                       \
+> > +       .scan_index = MT6370_CHAN_##_idx,                       \
+> > +       .indexed = 1,                                           \
+> > +       .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |          \
+> > +                             BIT(IIO_CHAN_INFO_SCALE) |        \
+> > +                             _extra_info,                      \
+> > +}
+> > +
+> > +static const struct iio_chan_spec mt6370_adc_channels[] = {
+> > +       MT6370_ADC_CHAN(VBUSDIV5, IIO_VOLTAGE, 1, 0),
+> > +       MT6370_ADC_CHAN(VBUSDIV2, IIO_VOLTAGE, 2, 0),
+> > +       MT6370_ADC_CHAN(VSYS, IIO_VOLTAGE, 3, 0),
+> > +       MT6370_ADC_CHAN(VBAT, IIO_VOLTAGE, 4, 0),
+> > +       MT6370_ADC_CHAN(TS_BAT, IIO_VOLTAGE, 6, 0),
+> > +       MT6370_ADC_CHAN(IBUS, IIO_CURRENT, 8, 0),
+> > +       MT6370_ADC_CHAN(IBAT, IIO_CURRENT, 9, 0),
+> > +       MT6370_ADC_CHAN(CHG_VDDP, IIO_VOLTAGE, 11, 0),
+> > +       MT6370_ADC_CHAN(TEMP_JC, IIO_TEMP, 12, BIT(IIO_CHAN_INFO_OFFSET)),
+> > +};
+> > +
+> > +static int mt6370_adc_probe(struct platform_device *pdev)
+> > +{
+> > +       struct device *dev = &pdev->dev;
+> > +       struct mt6370_adc_data *priv;
+> > +       struct iio_dev *indio_dev;
+> > +       struct regmap *regmap;
+> > +       int ret;
+> > +
+> > +       regmap = dev_get_regmap(pdev->dev.parent, NULL);
+> > +       if (!regmap)
+> > +               return dev_err_probe(dev, -ENODEV, "Failed to get regmap\n");
+> > +
+> > +       indio_dev = devm_iio_device_alloc(dev, sizeof(*priv));
+> > +       if (!indio_dev)
+> > +               return -ENOMEM;
+> > +
+> > +       priv = iio_priv(indio_dev);
+> > +       priv->dev = dev;
+> > +       priv->regmap = regmap;
+> > +       mutex_init(&priv->adc_lock);
+> > +
+> > +       ret = regmap_write(priv->regmap, MT6370_REG_CHG_ADC, 0);
+> > +       if (ret)
+> > +               return dev_err_probe(dev, ret, "Failed to reset ADC\n");
+> > +
+> > +       indio_dev->name = "mt6370-adc";
+> > +       indio_dev->info = &mt6370_adc_iio_info;
+> > +       indio_dev->modes = INDIO_DIRECT_MODE;
+> > +       indio_dev->channels = mt6370_adc_channels;
+> > +       indio_dev->num_channels = ARRAY_SIZE(mt6370_adc_channels);
+> > +
+> > +       return devm_iio_device_register(dev, indio_dev);
+> > +}
+> > +
+> > +static const struct of_device_id mt6370_adc_of_id[] = {
+> > +       { .compatible = "mediatek,mt6370-adc", },
+> > +       {}
+> > +};
+> > +MODULE_DEVICE_TABLE(of, mt6370_adc_of_id);
+> > +
+> > +static struct platform_driver mt6370_adc_driver = {
+> > +       .driver = {
+> > +               .name = "mt6370-adc",
+> > +               .of_match_table = mt6370_adc_of_id,
+> > +       },
+> > +       .probe = mt6370_adc_probe,
+> > +};
+> > +module_platform_driver(mt6370_adc_driver);
+> > +
+> > +MODULE_AUTHOR("ChiaEn Wu <chiaen_wu@richtek.com>");
+> > +MODULE_DESCRIPTION("MT6370 ADC Driver");
+> > +MODULE_LICENSE("GPL v2");
+> > --
+> > 2.7.4
+> >  
+> 
+> 
 

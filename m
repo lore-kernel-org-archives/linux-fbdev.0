@@ -2,47 +2,47 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4C4BC2BB47
-	for <linux-fbdev@archiver.kernel.org>; Sun, 14 Aug 2022 16:32:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36C9DC25B0E
+	for <linux-fbdev@archiver.kernel.org>; Sun, 14 Aug 2022 16:36:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242426AbiHNQcY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 14 Aug 2022 12:32:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40100 "EHLO
+        id S242979AbiHNQg3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 14 Aug 2022 12:36:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48536 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242886AbiHNQbc (ORCPT
+        with ESMTP id S242734AbiHNQeN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 14 Aug 2022 12:31:32 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E680E220EF;
-        Sun, 14 Aug 2022 09:26:07 -0700 (PDT)
+        Sun, 14 Aug 2022 12:34:13 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9850D3056E;
+        Sun, 14 Aug 2022 09:27:35 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id EF84DB80B3F;
-        Sun, 14 Aug 2022 16:26:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C43A4C433C1;
-        Sun, 14 Aug 2022 16:26:03 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 34D5360F97;
+        Sun, 14 Aug 2022 16:27:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B4128C433C1;
+        Sun, 14 Aug 2022 16:27:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1660494364;
-        bh=FBzSE+qqafdeYuAtXm87bCElk3pUGrsMH2kRGcVhxpc=;
+        s=k20201202; t=1660494454;
+        bh=OojDaQ+Fj1kBMmiaCQt6cXVPGlHuy71ux3UaODHdAoY=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=ZPeoMN1u85CkuJWJYmeiFoAi23l91Qev10zkrpu/9pHebMMlwt3FM1yzRhs8To2AH
-         075uc2WQpEMqjK+29g4a3oVk8CHzuQ0Q/UWkICvD39f4aVa2EDceCdAwqjbWpR6DDg
-         38BcpjNq0Hg9MgEI/AHX65SjslbjVkWtCC8QZVRBFlNB7/OuuuSMUx7dkLtWBxd/Y8
-         400XHQXZnTTTMs3JJNDHoXF4lXSnno8sQM1E3cQ4FUA1eOKuF5Pa3Yz02xXrUv2ww1
-         PIwvV/8qn5GUkoEEAOnhsvDSGBsiDVqcF6gIW/WH0pEMHZqRa9s6h4ojpgYvqbrbri
-         hvcTN36xoTvQg==
+        b=sH7Iy5cm9he2Y9iK29LSHjyFhVvSV3+BL9GSB0zLTyROakWG7dWfLgUlLQ2Fsz2F6
+         orNT32zQFQE6gxuO/l0wcxWT72/TSWN3ngeBEjzfpr9c2kyGYYaxhEtrgLb0WET0t7
+         8ebyVU4kzVdDxFsncT7aDyDiYyvAs98oXBQirHQetjkMhKIXLb+Vf/IoBimoT/ExFF
+         d+kEskBnZIQ5jnoZ+zif3GB7uvAA1aiQrZXX/nDa6Loop+ipIhYP205kZZk3WP948H
+         8aWUT80XyzK1227aBXW17N8IN/SqlK50mtWENs/NUBcJpfYNA8yTohnurZ/Lg61qX/
+         NK0KdOaGco5ww==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Zheyu Ma <zheyuma97@gmail.com>, Helge Deller <deller@gmx.de>,
         Sasha Levin <sashal@kernel.org>, linux@zary.sk,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 5.18 38/39] video: fbdev: i740fb: Check the argument of i740_calc_vclk()
-Date:   Sun, 14 Aug 2022 12:23:27 -0400
-Message-Id: <20220814162332.2396012-38-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 27/28] video: fbdev: i740fb: Check the argument of i740_calc_vclk()
+Date:   Sun, 14 Aug 2022 12:26:07 -0400
+Message-Id: <20220814162610.2397644-27-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220814162332.2396012-1-sashal@kernel.org>
-References: <20220814162332.2396012-1-sashal@kernel.org>
+In-Reply-To: <20220814162610.2397644-1-sashal@kernel.org>
+References: <20220814162610.2397644-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -84,7 +84,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/video/fbdev/i740fb.c b/drivers/video/fbdev/i740fb.c
-index 09dd85553d4f..7f09a0daaaa2 100644
+index 52cce0db8bd3..ad5ced4ef972 100644
 --- a/drivers/video/fbdev/i740fb.c
 +++ b/drivers/video/fbdev/i740fb.c
 @@ -400,7 +400,7 @@ static int i740fb_decode_var(const struct fb_var_screeninfo *var,

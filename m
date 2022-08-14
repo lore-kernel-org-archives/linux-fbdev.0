@@ -2,47 +2,47 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FE0FC282E7
-	for <linux-fbdev@archiver.kernel.org>; Sun, 14 Aug 2022 16:42:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BE76C25B0F
+	for <linux-fbdev@archiver.kernel.org>; Sun, 14 Aug 2022 16:42:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243107AbiHNQmg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S243125AbiHNQmg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Sun, 14 Aug 2022 12:42:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38154 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60954 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243366AbiHNQkw (ORCPT
+        with ESMTP id S242921AbiHNQkK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 14 Aug 2022 12:40:52 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BFF73C66;
-        Sun, 14 Aug 2022 09:31:17 -0700 (PDT)
+        Sun, 14 Aug 2022 12:40:10 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 093852705;
+        Sun, 14 Aug 2022 09:30:38 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 7BA6EB80B3C;
-        Sun, 14 Aug 2022 16:31:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 60221C433C1;
-        Sun, 14 Aug 2022 16:31:14 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 38A0BB80B37;
+        Sun, 14 Aug 2022 16:30:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1ADF8C433C1;
+        Sun, 14 Aug 2022 16:30:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1660494675;
+        s=k20201202; t=1660494636;
         bh=QJRKZeqWyHOAMgpIQr673Jjz8RQb1Y0LVJw0ylK1rRM=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=uS/+6wltoyffidAKki2gMIEeG6JC03BBaZ33OibIk4FSEJ98+U9hLBi7DS/E4DXT5
-         pff7Yi7UGoI3hAlhzoPCFDz2s2VfW743hkbcQfNVYO1RtCRCADBWO/NFFT+miF8H0X
-         De3n2aAtznYXZ9mIP9Kf/hrfhIag0WL8xrV72PbNsUN/SGHx/tkvb9jVmLPBnQTxvk
-         DDL6s0zxHne5JE7aIlXeG0ImMnlw3pqDLrUEk0d9RxSK7110+5GL/OjIxBNXRgzNom
-         micFIvotNoglFyzDmrRB6ULXCyoH/ORhE4krLWPqgvIZA8x13xuneYC8cAUrtpGBHO
-         3joEpJ6mU6uhw==
+        b=DBXtui74Wlr8KyiWwcxMOVjEM7QHTxAe4VqRsrVCnlvGptoHJYGNpNOC/TgklIukv
+         EjZTcBH6NLTUJ/jBJBSVmFf4bj+pigUPIXvYkdD3mqcfaG2fDGumpSvo+2Kp/BvP+U
+         hhwDW/x13U7UJ1r+w9aubBLbKnvAQGQx6zc47UiXT+maEgCzTWUOmEA18alVrkdtdZ
+         4SOhxC4+rr8dCGZhC10S1CkwMDnvMKQKvzSe2aT8AYCYNYsI9qFtilUqZkU/CjPdaz
+         LFv9o7R5HNijKjKaizoap+tvLDWR6h2kG9awEW3lJkEDz/dVawE09BbbP03GXTgqf7
+         5VcDHJxEHGD2w==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Zheyu Ma <zheyuma97@gmail.com>, Helge Deller <deller@gmx.de>,
         Sasha Levin <sashal@kernel.org>, linux@zary.sk,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 4.9 7/8] video: fbdev: i740fb: Check the argument of i740_calc_vclk()
-Date:   Sun, 14 Aug 2022 12:30:40 -0400
-Message-Id: <20220814163041.2399552-7-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 8/9] video: fbdev: i740fb: Check the argument of i740_calc_vclk()
+Date:   Sun, 14 Aug 2022 12:29:58 -0400
+Message-Id: <20220814162959.2399011-8-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220814163041.2399552-1-sashal@kernel.org>
-References: <20220814163041.2399552-1-sashal@kernel.org>
+In-Reply-To: <20220814162959.2399011-1-sashal@kernel.org>
+References: <20220814162959.2399011-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore

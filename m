@@ -2,53 +2,53 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AAD56C25B0E
-	for <linux-fbdev@archiver.kernel.org>; Mon, 15 Aug 2022 10:09:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23272C00140
+	for <linux-fbdev@archiver.kernel.org>; Mon, 15 Aug 2022 10:10:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242307AbiHOKJH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 15 Aug 2022 06:09:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56456 "EHLO
+        id S230404AbiHOKKK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 15 Aug 2022 06:10:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57474 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241526AbiHOKJG (ORCPT
+        with ESMTP id S231420AbiHOKKJ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 15 Aug 2022 06:09:06 -0400
-Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4EBAB140FA
-        for <linux-fbdev@vger.kernel.org>; Mon, 15 Aug 2022 03:09:04 -0700 (PDT)
-Received: by mail-wr1-x42b.google.com with SMTP id l4so8486465wrm.13
-        for <linux-fbdev@vger.kernel.org>; Mon, 15 Aug 2022 03:09:04 -0700 (PDT)
+        Mon, 15 Aug 2022 06:10:09 -0400
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1414C17E21
+        for <linux-fbdev@vger.kernel.org>; Mon, 15 Aug 2022 03:10:08 -0700 (PDT)
+Received: by mail-wr1-x431.google.com with SMTP id h13so8520829wrf.6
+        for <linux-fbdev@vger.kernel.org>; Mon, 15 Aug 2022 03:10:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc;
-        bh=CsB/NoAW56ne050I2nV0A7tDW+eX2gZVyLlTc8MEkXE=;
-        b=Q2bJb0gcve+toJBBcF3NJDnzAW0PYtNEMYzldvGWquVi3ZwNnMiF927RQ4XD401w1Q
-         aqApE+LzZaF804S8NHNrDNnz8VcYTD2U6CLYjQtPCA0hvMrO7+jrWUUN0416udv6b/3N
-         j0DcxZKkFiISmo3jjJ5bHRXLA5SH+pXC1EGwootfPQIhe0uOztl/i8zAmb8ixOT9pd3T
-         azeux2MTH1rpO1Q7ByHU5ZrZAkuuadpYbpO6FTBqH/DVLWI4sSbbZUDAwJTGXgIB3Fj9
-         aZXYEa2IyWIsKp+g0FPxJ3fQADvGYEJEXTALcSEbjJ1sUhjschl72EaI+m1QKh6kQEKp
-         mNFQ==
+        bh=b0BG6zqNuGD+/4ZeY3ZglvZEqAlCRmK7KBUEnJVhtZY=;
+        b=x0cUGTaM7DOQAD+YM58GNbMGMtq1gCmQlmnmftzyBI29oKOvOdUlbgecFPFJ1BgZ2U
+         tbjw+j+BNQVl5617D4uN38Xk/t/ozPQhcj0zP9x5zHbOMYz42hh6Y3uIIKlA1DIGv29l
+         Zz9pRvJgziux1lNhfbSJCWACFx+5s1VuYbQpW2rlkcGeNAgJjmxfj6HcX6PPlGPCR3i+
+         A54aV6J+phJTrjfuRVi5lDVuAFoJ0fxT74VtsF2UkDfld1p1oeL12QlyZUNVeQsme2Wq
+         4mxzFzFw5aifvA0PRsOep8QRrYACpu7wzjecti+yimKmReAvpqzMnBQmO6/2lCno20F1
+         ev2g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc;
-        bh=CsB/NoAW56ne050I2nV0A7tDW+eX2gZVyLlTc8MEkXE=;
-        b=4OKJXMfAZbrEHnRCDTXf99fqltSRMtJ5pRpoP472CkCi0elgNxzoW5K76gEdCtv9wF
-         xpNTAUHQ+Bf1aGy4bOolWcaxKI/Fu5cQkxwhpWDTHb0RNtGo00ptDgdCBf8p34by9dCu
-         BpW2oHaqM0VnobG6xtyPvBmhxwjT2wgb5U4kH6MEAkEEpJS3ZIPan6qhBhrVpfLA5aqZ
-         9HK8k7VvYjLZ1Jm+ZFICvEfXmT2XZHpd8NsRnqugvbAdV106NOBeXI42gg0llSpBudzM
-         GZwlUIbj35pj6wFT8vuTeOcxhg06wvLWrBSo2Y5AvpCWWV4nbx1yIumpeVHYMjkLTO5H
-         KT4A==
-X-Gm-Message-State: ACgBeo3hCORQ8sP3kZfIpGKxnhxhMFAAjEvwgTKEq6XMHHc6iJ5EEtGo
-        sqGpzaGIh1t4hauqQSoGOaInog==
-X-Google-Smtp-Source: AA6agR6d5kQNwJdr555MMH+HrNG3/sAUb0Op9EljHjT0wTZDPmBgOVTbFs55jQ216/Ed/j4i1HlcVw==
-X-Received: by 2002:adf:f851:0:b0:220:732b:2df2 with SMTP id d17-20020adff851000000b00220732b2df2mr8761477wrq.716.1660558142782;
-        Mon, 15 Aug 2022 03:09:02 -0700 (PDT)
+        bh=b0BG6zqNuGD+/4ZeY3ZglvZEqAlCRmK7KBUEnJVhtZY=;
+        b=4a+fNK3pbOeGvhP+0jeifcY/bsn1hmFoPOjgNHBlDPPO8v9YBcdSVMSr3S0F+6UkD1
+         bLOHMCWkVLkgZt39w7vNQTePxnyc297xk7G7YSoS/voYopPzZlFuPswxou07DJEC9wG3
+         BWg5OTjY5ABZ4xreVDVzKEj/gbVnCZTGIYcctCyNfVx1E2f6KTEWTVUUPoWQhIp6hqMo
+         yUINEDRz9wKOMKZPg1W0Gzezdkvkjcpx8xYE0r2BvCIJBI0WD/AQ+UdyyQHskdW0wK69
+         bj2LXp6orJbnoA7K3U+C91oYi3VpGcwou7GZ+jBMf8Aij+GB9eqdlJVD4SgD0+Esxett
+         Da6g==
+X-Gm-Message-State: ACgBeo0dGK+oxswHfSUimYi5yFarFSd9syarnvIOHkg3Uo3dPyxomWGM
+        RpGyyulhqfwubXx+AanTNCaU5Q==
+X-Google-Smtp-Source: AA6agR5hAfQyfMOqfODbwifOJptkZd3sU12ygFhz9rZ+qe8JD6bOzrF7GiV/dIjhd/OOaU2EJnS8Bw==
+X-Received: by 2002:adf:fa81:0:b0:224:f260:2523 with SMTP id h1-20020adffa81000000b00224f2602523mr5305703wrr.26.1660558206570;
+        Mon, 15 Aug 2022 03:10:06 -0700 (PDT)
 Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id l14-20020a5d560e000000b0021f0558e51asm6890533wrv.55.2022.08.15.03.08.59
+        by smtp.gmail.com with ESMTPSA id w5-20020adfee45000000b0020e6ce4dabdsm6693090wro.103.2022.08.15.03.10.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 15 Aug 2022 03:09:00 -0700 (PDT)
-Date:   Mon, 15 Aug 2022 11:08:57 +0100
+        Mon, 15 Aug 2022 03:10:06 -0700 (PDT)
+Date:   Mon, 15 Aug 2022 11:10:03 +0100
 From:   Daniel Thompson <daniel.thompson@linaro.org>
 To:     ChiaEn Wu <peterwu.pub@gmail.com>
 Cc:     lee@kernel.org, jingoohan1@gmail.com, pavel@ucw.cz,
@@ -64,34 +64,27 @@ Cc:     lee@kernel.org, jingoohan1@gmail.com, pavel@ucw.cz,
         linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        szunichen@gmail.com
-Subject: Re: [RESEND PATCH v8 12/12] video: backlight: mt6370: Add MediaTek
- MT6370 support
-Message-ID: <20220815100857.hcna3ksejzcq5x3l@maple.lan>
+        szunichen@gmail.com, Rob Herring <robh@kernel.org>
+Subject: Re: [RESEND PATCH v8 05/12] dt-bindings: backlight: Add MediaTek
+ MT6370 backlight
+Message-ID: <20220815101003.ilgbrxhsqk53i7u3@maple.lan>
 References: <20220815090125.27705-1-peterwu.pub@gmail.com>
- <20220815090125.27705-13-peterwu.pub@gmail.com>
+ <20220815090125.27705-6-peterwu.pub@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220815090125.27705-13-peterwu.pub@gmail.com>
+In-Reply-To: <20220815090125.27705-6-peterwu.pub@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Aug 15, 2022 at 05:01:25PM +0800, ChiaEn Wu wrote:
-> From: ChiaEn Wu <chiaen_wu@richtek.com>
+On Mon, Aug 15, 2022 at 05:01:18PM +0800, ChiaEn Wu wrote:
+> From: ChiYuan Huang <cy_huang@richtek.com>
 >
-> MediaTek MT6370 is a SubPMIC consisting of a single cell battery charger
-> with ADC monitoring, RGB LEDs, dual channel flashlight, WLED backlight
-> driver, display bias voltage supply, one general purpose LDO, and the
-> USB Type-C & PD controller complies with the latest USB Type-C and PD
-> standards.
+> Add MT6370 backlight binding documentation.
 >
-> Add support for the MediaTek MT6370 backlight driver.
-> It controls 4 channels of 8 series WLEDs in
-> 2048 (only for MT6370/MT6371) / 16384 (only for MT6372)
-> current steps (30 mA) in exponential or linear mapping curves.
->
+> Reviewed-by: Rob Herring <robh@kernel.org>
+> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
 > Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
 
 Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>

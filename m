@@ -2,209 +2,67 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D160FC32792
-	for <linux-fbdev@archiver.kernel.org>; Tue, 16 Aug 2022 12:45:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 382C0C25B0E
+	for <linux-fbdev@archiver.kernel.org>; Tue, 16 Aug 2022 13:08:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234592AbiHPMpo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 16 Aug 2022 08:45:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38996 "EHLO
+        id S235066AbiHPNIQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 16 Aug 2022 09:08:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59996 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235154AbiHPMor (ORCPT
+        with ESMTP id S235399AbiHPNIP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 16 Aug 2022 08:44:47 -0400
-Received: from mail-lj1-x231.google.com (mail-lj1-x231.google.com [IPv6:2a00:1450:4864:20::231])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4D5F83F316
-        for <linux-fbdev@vger.kernel.org>; Tue, 16 Aug 2022 05:44:06 -0700 (PDT)
-Received: by mail-lj1-x231.google.com with SMTP id j3so10438143ljo.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 16 Aug 2022 05:44:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc;
-        bh=DTTVWNUuMuaI4chfKvwmUvgtvzhYatcrU+SN3O9eX+s=;
-        b=Rz/Bg7RXfF9irofPn2f5JRMl6e7xpzl07U7q2YW7ggsvflNyOQXQetfbdsPZrj64dw
-         kjJLbrLhG/EJWS7zRk7OmFJtsxamRr88a9UNMtgl5BLF1MiJXIXwsogyQTRvU5+cmp8X
-         aikirXAb7svNW5KlQ8wRRA9rihIW3PB5/5LvJyn56MJPpGI/kzEUVaV1fdr5Tnd0Y5o2
-         GFWuXuG86Mj4cTUbJD0Q+/hXTH1CZMbipuGJNpObXdQ7CLvEMRWoRxCKod2o2IV2ndnL
-         FkyORuHzOIxP4HMz4niUBSyR4qeWl15yBwyT64yYxIO4vtBtkksCjzJFMx1TMrb9E/r9
-         Yc3g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc;
-        bh=DTTVWNUuMuaI4chfKvwmUvgtvzhYatcrU+SN3O9eX+s=;
-        b=Ciupu6A28mQ1IAx0Nrb7JSBTkQXqIaL83boxCaIcYngUa0G7bt8ZUb3gHYgU2llCnY
-         P+6OZnWBTQRhqqp0C/n4D3RNFJJvQwyq48gYKiMvJND4jJ3Knve2MZargKkuKpzILdDs
-         g/iEG83tXya3XN4zXzfpD14oGTTwG9fnw7J8IeRzRxI4RorRQYd44CRAHP8L3MCUw2Ta
-         fw0NJOlUMlHmRhD8hqJdXIGwYjc9TetVhLOJnbeRb4Bp4bUJObpr6rvSxuEwd8ZCBkcP
-         EQnVMPBmRgLqpCLA1Y5gs+ibvgQwJ4SlR5P9PJGhonvXpQwx70H8wb26gNVejZrkoVkE
-         ARQA==
-X-Gm-Message-State: ACgBeo1f6I9LhNogYlr/2Pup3OgdbVbVgRCyOXh3QZ1/CXFzwfuNkTWE
-        Z3btTh0On6oYKicH1etVVlIyWA==
-X-Google-Smtp-Source: AA6agR6fGVu+pxqV/ukc2QaGNAOXAG0OJBCmVDysetGBzD8b2PceHFIC8XraGHh0rASo187HWNwA7Q==
-X-Received: by 2002:a05:651c:30d:b0:261:9979:5061 with SMTP id a13-20020a05651c030d00b0026199795061mr639524ljp.520.1660653842421;
-        Tue, 16 Aug 2022 05:44:02 -0700 (PDT)
-Received: from krzk-bin.. (d15l54g8c71znbtrbzt-4.rev.dnainternet.fi. [2001:14bb:ae:539c:1782:dd68:b0c1:c1a4])
-        by smtp.gmail.com with ESMTPSA id k14-20020ac257ce000000b0048ae4cf8a2csm1374331lfo.258.2022.08.16.05.43.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 16 Aug 2022 05:44:01 -0700 (PDT)
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-To:     Lars-Peter Clausen <lars@metafoo.de>,
-        Michael Hennerich <Michael.Hennerich@analog.com>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Lucas Stankus <lucas.p.stankus@gmail.com>,
-        Puranjay Mohan <puranjay12@gmail.com>,
-        Cosmin Tanislav <cosmin.tanislav@analog.com>,
-        Alexandru Tachici <alexandru.tachici@analog.com>,
-        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
-        Marcus Folkesson <marcus.folkesson@gmail.com>,
-        Kent Gustavsson <kent@minoris.se>,
-        Tomislav Denis <tomislav.denis@avl.com>,
-        Oleksij Rempel <linux@rempel-privat.de>, kernel@pengutronix.de,
-        Antoniu Miclaus <antoniu.miclaus@analog.com>,
-        Ricardo Ribalda <ribalda@kernel.org>,
-        Dragos Bogdan <dragos.bogdan@analog.com>,
-        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
-        Lorenzo Bianconi <lorenzo@kernel.org>,
-        Stefan Popa <stefan.popa@analog.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Mike Looijmans <mike.looijmans@topic.nl>,
-        Tomas Melin <tomas.melin@vaisala.com>,
-        Sean Nyekjaer <sean@geanix.com>,
-        Patrick Vasseur <patrick.vasseur@c-s.fr>,
-        Charles-Antoine Couret <charles-antoine.couret@essensium.com>,
-        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Philippe Reynes <tremyfr@yahoo.fr>,
-        Jacopo Mondi <jacopo@jmondi.org>,
-        Akinobu Mita <akinobu.mita@gmail.com>,
-        Alexandru Lazar <alazar@startmail.com>,
-        Oskar Andero <oskar.andero@gmail.com>,
-        =?UTF-8?q?M=C3=A5rten=20Lindahl?= <martenli@axis.com>,
-        Angelo Compagnucci <angelo.compagnucci@gmail.com>,
-        Matt Ranostay <matt.ranostay@konsulko.com>,
-        Andrew Davis <afd@ti.com>,
-        Gregory Clement <gregory.clement@bootlin.com>,
-        Phil Reid <preid@electromag.com.au>,
-        Michael Welling <mwelling@ieee.org>,
-        Lukas Wunner <lukas@wunner.de>,
-        Chris Coffey <cmc@babblebit.net>,
-        Slawomir Stepien <sst@poczta.fm>,
-        Sankar Velliangiri <navin@linumiz.com>,
-        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH v3 10/10] dt-bindings: iio: temperature: use spi-peripheral-props.yaml
-Date:   Tue, 16 Aug 2022 15:43:21 +0300
-Message-Id: <20220816124321.67817-11-krzysztof.kozlowski@linaro.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220816124321.67817-1-krzysztof.kozlowski@linaro.org>
-References: <20220816124321.67817-1-krzysztof.kozlowski@linaro.org>
+        Tue, 16 Aug 2022 09:08:15 -0400
+Received: from bg5.exmail.qq.com (bg4.exmail.qq.com [43.154.54.12])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7EBD1AF4BD;
+        Tue, 16 Aug 2022 06:07:39 -0700 (PDT)
+X-QQ-mid: bizesmtp71t1660655241t7fl0map
+Received: from localhost.localdomain ( [182.148.12.144])
+        by bizesmtp.qq.com (ESMTP) with 
+        id ; Tue, 16 Aug 2022 21:07:20 +0800 (CST)
+X-QQ-SSF: 01000000002000B0D000B00A0000000
+X-QQ-FEAT: l4gSQpGTOtI0BKbfVAZxeeRY2o4rsA1a0pvReYuYto+AzVQKRo71QCbcqjKpx
+        I/PcN2w109n/+rRkOZxFZq7em4kCCiJ5gnzwspaNRYubmGh3zLV79/IEI2m0f3ulCpGTsmU
+        GnHsOgeem3jkwLsy51wqyhBXzADEv/sbOhFes8uZXwJKRl8wso7wH4hUwbI015g2lwEf6Ip
+        HAApvn45wEUOGgIOH95BHmFCcaNKVnraxQUBlEo0S2gfBfxAxUmDrnzkM6+BAHzJRMYhzuY
+        H3r3YQPLGyz+aeH9bwTg6DnbXAgls3a7Eg6qqKYHcGcmfP7j45GwfwspQaCpcYSF43ri6X8
+        R6jjvuStlv9OBlYdF03PNxr4WBz+pNeYAnqlKs9P51oQxYnkLfYb11YtSQdpA==
+X-QQ-GoodBg: 0
+From:   Jilin Yuan <yuanjilin@cdjrlc.com>
+To:     deller@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, Jilin Yuan <yuanjilin@cdjrlc.com>
+Subject: [PATCH] video/fbdev: fix repeated words in comments
+Date:   Tue, 16 Aug 2022 21:07:13 +0800
+Message-Id: <20220816130713.28597-1-yuanjilin@cdjrlc.com>
+X-Mailer: git-send-email 2.36.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: bizesmtp:cdjrlc.com:qybglogicsvr:qybglogicsvr4
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Instead of listing directly properties typical for SPI peripherals,
-reference the spi-peripheral-props.yaml schema.  This allows using all
-properties typical for SPI-connected devices, even these which device
-bindings author did not tried yet.
+ Delete the redundant word 'set'.
 
-Remove the spi-* properties which now come via spi-peripheral-props.yaml
-schema, except for the cases when device schema adds some constraints
-like maximum frequency.
-
-While changing additionalProperties->unevaluatedProperties, put it in
-typical place, just before example DTS.
-
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Jilin Yuan <yuanjilin@cdjrlc.com>
 ---
- .../bindings/iio/temperature/maxim,max31855k.yaml           | 4 ++--
- .../devicetree/bindings/iio/temperature/maxim,max31856.yaml | 6 ++++--
- .../devicetree/bindings/iio/temperature/maxim,max31865.yaml | 6 ++++--
- 3 files changed, 10 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/ssd1307fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/iio/temperature/maxim,max31855k.yaml b/Documentation/devicetree/bindings/iio/temperature/maxim,max31855k.yaml
-index 9969bac66aa1..0805ed7e2113 100644
---- a/Documentation/devicetree/bindings/iio/temperature/maxim,max31855k.yaml
-+++ b/Documentation/devicetree/bindings/iio/temperature/maxim,max31855k.yaml
-@@ -32,7 +32,6 @@ properties:
-   reg:
-     maxItems: 1
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index 5c765655d000..52e4ed9da78c 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -450,7 +450,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
+ 	if (ret < 0)
+ 		return ret;
  
--  spi-max-frequency: true
-   spi-cpha: true
+-	/* Set Set Area Color Mode ON/OFF & Low Power Display Mode */
++	/* Set Area Color Mode ON/OFF & Low Power Display Mode */
+ 	if (par->area_color_enable || par->low_power) {
+ 		u32 mode;
  
- required:
-@@ -40,6 +39,7 @@ required:
-   - reg
- 
- allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-   - if:
-       properties:
-         compatible:
-@@ -53,7 +53,7 @@ allOf:
-       properties:
-         spi-cpha: false
- 
--additionalProperties: false
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/temperature/maxim,max31856.yaml b/Documentation/devicetree/bindings/iio/temperature/maxim,max31856.yaml
-index 873b34766676..228a94165487 100644
---- a/Documentation/devicetree/bindings/iio/temperature/maxim,max31856.yaml
-+++ b/Documentation/devicetree/bindings/iio/temperature/maxim,max31856.yaml
-@@ -19,7 +19,6 @@ properties:
-   reg:
-     maxItems: 1
- 
--  spi-max-frequency: true
-   spi-cpha: true
- 
-   thermocouple-type:
-@@ -34,7 +33,10 @@ required:
-   - reg
-   - spi-cpha
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
-diff --git a/Documentation/devicetree/bindings/iio/temperature/maxim,max31865.yaml b/Documentation/devicetree/bindings/iio/temperature/maxim,max31865.yaml
-index aafb33b16549..a2823ed6867b 100644
---- a/Documentation/devicetree/bindings/iio/temperature/maxim,max31865.yaml
-+++ b/Documentation/devicetree/bindings/iio/temperature/maxim,max31865.yaml
-@@ -25,7 +25,6 @@ properties:
-       enables 3-wire RTD connection. Else 2-wire or 4-wire RTD connection.
-     type: boolean
- 
--  spi-max-frequency: true
-   spi-cpha: true
- 
- required:
-@@ -33,7 +32,10 @@ required:
-   - reg
-   - spi-cpha
- 
--additionalProperties: false
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
- 
- examples:
-   - |
 -- 
-2.34.1
+2.36.1
 

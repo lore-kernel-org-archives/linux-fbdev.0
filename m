@@ -2,146 +2,223 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8BB6C25B06
-	for <linux-fbdev@archiver.kernel.org>; Mon, 15 Aug 2022 12:02:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CEA1C25B0E
+	for <linux-fbdev@archiver.kernel.org>; Tue, 16 Aug 2022 12:43:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231199AbiHOMC6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 15 Aug 2022 08:02:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45516 "EHLO
+        id S234595AbiHPMnj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 16 Aug 2022 08:43:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34708 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229969AbiHOMC6 (ORCPT
+        with ESMTP id S234503AbiHPMng (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 15 Aug 2022 08:02:58 -0400
-Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 367B822B3F;
-        Mon, 15 Aug 2022 05:02:57 -0700 (PDT)
-Received: by mail-lf1-x129.google.com with SMTP id o2so10363165lfb.1;
-        Mon, 15 Aug 2022 05:02:57 -0700 (PDT)
+        Tue, 16 Aug 2022 08:43:36 -0400
+Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 11D4B9FF6
+        for <linux-fbdev@vger.kernel.org>; Tue, 16 Aug 2022 05:43:33 -0700 (PDT)
+Received: by mail-lj1-x22b.google.com with SMTP id l21so10410717ljj.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 16 Aug 2022 05:43:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:in-reply-to:subject:from:references:cc:to
-         :content-language:user-agent:mime-version:date:message-id:from:to:cc;
-        bh=/XsHCAAUo/oLtA4l5n4XUmocauuvUzyU7VbH9wcjXcQ=;
-        b=ErUX/iJM60mg/GIhgD9m2o8Zsimzt51AWru/dx19gtiQS8+UJAccBHKTCddaet4TL/
-         rEMwij3r1MnT4WMxRr+n8tI+hgQvFYSU4A+na+zrazwGfgyPwI2qpZ6NcVpZgYBQU1vw
-         YnYlPGp8CSlmgHsuOypQ+2k2G75mzmpUIAyAQblYZWsbHoZ3D7uBunM2iAEjxonZUruq
-         XmQvyKmgrdxBuqrUSY5a5XnpN/CCCP/7/hdlyeD+ChsNjOc1+g5KERM6GSB1gIbDR8ZM
-         elh7UJtmD8U4ToCIwcM8PvG0qMTtWsCzvISExiM7RTPenDiFEYWS5gDjaJp7M3FiYxci
-         wuDw==
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc;
+        bh=AdLiJiQjcl9HDPKJkrKE1iI+melu2hq3hGx8aDYqrGE=;
+        b=EUKi3xQOQ78BxZyhZC7NntxLnDi8HA7UjoBDApogZY2MDv5NxxeRhe27sSPtXPTdv9
+         qtfgR1sAAHWoSxeNqDOF6jeqTOifdTETlFVACKJEQPSmKZA/P0SXlJpu4t9NH0YDeYTe
+         SAFZhHiXko8IedT/MstR36LT3ccKQXNljp6eARBCQWWK0PC+XehVxWQtRxOXLk/ZndZx
+         JuunaNlpzxdGg+pXw0rBDgX7ECJRHIUMYuNfhjnSIEmBNvfkBnTOvXIRJYaq35ixzggV
+         3vNR/auVlNgTQb41Pk8WJPsSw8mAAR0aF14TNYaChQpF3lNzcy0rCqrrVeHP80zIM6ek
+         uxlg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:subject:from:references:cc:to
-         :content-language:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc;
-        bh=/XsHCAAUo/oLtA4l5n4XUmocauuvUzyU7VbH9wcjXcQ=;
-        b=LFFj5s08rSZp3sXCny7WCK5034M0l/8oHJlWATkNeff2f3qBL2FfBMcwXOUbhnOcXt
-         SsZVzMV+GR6l1EKroSvENxU+oN3jEW9V9G+9VO1HFwgAh75VbCrJUjv5+6XEyUyTVhiS
-         LihtREIiNkBr4onWiGCNCPD4hI7gBYXcYlAuK5B/m1JZPl56P4ObRuo6osqchmy5qq6n
-         bRk3KLWdN5WdzjFLSlqZgXiWIvfOKqBZc+cN/ZXE8TZUi22acMyZCCk5NPmQa++BPo3l
-         1EnV2FvqPbJPAdZf0hFND/Q5CW94pfGo2d5EU6ZzYodM9s4Bmk5cnhmckK1PAiOkBdN1
-         bKHw==
-X-Gm-Message-State: ACgBeo3YVFrvkJpPG9f9a+tUMxAJ4+VByHBiw6XgyDqxfCA3kj7bXfK2
-        YZLaNBDQojTm5UZoFT3LzBw=
-X-Google-Smtp-Source: AA6agR5bn+jCdjoc5L3WS7gsgG/DC+Ia6If8+ihGn5S9bGfb+XvBKScyMfO5upO4+SQ2quD69RF6Lg==
-X-Received: by 2002:a05:6512:1581:b0:492:8c61:5bef with SMTP id bp1-20020a056512158100b004928c615befmr1251567lfb.518.1660564975422;
-        Mon, 15 Aug 2022 05:02:55 -0700 (PDT)
-Received: from [172.16.192.210] ([213.255.186.46])
-        by smtp.gmail.com with ESMTPSA id f26-20020a2e381a000000b0025e2e70b41fsm1384223lja.71.2022.08.15.05.02.54
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 15 Aug 2022 05:02:54 -0700 (PDT)
-Message-ID: <5a1a5a80-526c-2f76-0086-15cc76e88a06@gmail.com>
-Date:   Mon, 15 Aug 2022 15:02:53 +0300
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc;
+        bh=AdLiJiQjcl9HDPKJkrKE1iI+melu2hq3hGx8aDYqrGE=;
+        b=FG5MyqRvcE1Wk4pt64Cl+xfuVNJrsKlSGqMUhlFACdTzcMODwfjveIZAniI3giqBPA
+         GpzgyYB7isfxJ+x5zT/rCQjpFjT3Uax0rqfkmQLoTV8IzZFZAaLksiM7wUsgIDY9ZcI/
+         qOZr7M9u1AysNpQpaUVu+sNkoolUB060lbLJ/npa/oPlx9MZi/ROsrIV+R2VMnfFzs5W
+         Ly1kSydTCxLgQNI7Zep/HhIvQqULJ/Hr+OoHDDvYe6EQg5cCew6x3/6loFHf9wfJP/wC
+         Y5w4hq+6nH0KV+qZZIH5ql5/JOAmqNbCtthqXvPveq5InGoan+m77mrEztcwiWFHm+rI
+         +/Xw==
+X-Gm-Message-State: ACgBeo3PE1PfYkd/fwQIDgfWNYw8WgPmVrREHP8CTL6F/Nt3e4kg+ZRW
+        8TnLnx875m22u5kCgjZ7uQI2Cg==
+X-Google-Smtp-Source: AA6agR4gQkEWsCtCKfK5BDqrGYgQen/BiyTzMJGGfwZ6Se+PxAslWxilY6QSzX5cUjpwbsyWPZThXg==
+X-Received: by 2002:a05:651c:515:b0:25f:dce6:2e95 with SMTP id o21-20020a05651c051500b0025fdce62e95mr6568831ljp.327.1660653811790;
+        Tue, 16 Aug 2022 05:43:31 -0700 (PDT)
+Received: from krzk-bin.. (d15l54g8c71znbtrbzt-4.rev.dnainternet.fi. [2001:14bb:ae:539c:1782:dd68:b0c1:c1a4])
+        by smtp.gmail.com with ESMTPSA id k14-20020ac257ce000000b0048ae4cf8a2csm1374331lfo.258.2022.08.16.05.43.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 16 Aug 2022 05:43:31 -0700 (PDT)
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+To:     Lars-Peter Clausen <lars@metafoo.de>,
+        Michael Hennerich <Michael.Hennerich@analog.com>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Lucas Stankus <lucas.p.stankus@gmail.com>,
+        Puranjay Mohan <puranjay12@gmail.com>,
+        Cosmin Tanislav <cosmin.tanislav@analog.com>,
+        Alexandru Tachici <alexandru.tachici@analog.com>,
+        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
+        Marcus Folkesson <marcus.folkesson@gmail.com>,
+        Kent Gustavsson <kent@minoris.se>,
+        Tomislav Denis <tomislav.denis@avl.com>,
+        Oleksij Rempel <linux@rempel-privat.de>, kernel@pengutronix.de,
+        Antoniu Miclaus <antoniu.miclaus@analog.com>,
+        Ricardo Ribalda <ribalda@kernel.org>,
+        Dragos Bogdan <dragos.bogdan@analog.com>,
+        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
+        Lorenzo Bianconi <lorenzo@kernel.org>,
+        Stefan Popa <stefan.popa@analog.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Stephan Gerhold <stephan@gerhold.net>,
+        Mike Looijmans <mike.looijmans@topic.nl>,
+        Tomas Melin <tomas.melin@vaisala.com>,
+        Sean Nyekjaer <sean@geanix.com>,
+        Patrick Vasseur <patrick.vasseur@c-s.fr>,
+        Charles-Antoine Couret <charles-antoine.couret@essensium.com>,
+        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Philippe Reynes <tremyfr@yahoo.fr>,
+        Jacopo Mondi <jacopo@jmondi.org>,
+        Akinobu Mita <akinobu.mita@gmail.com>,
+        Alexandru Lazar <alazar@startmail.com>,
+        Oskar Andero <oskar.andero@gmail.com>,
+        =?UTF-8?q?M=C3=A5rten=20Lindahl?= <martenli@axis.com>,
+        Angelo Compagnucci <angelo.compagnucci@gmail.com>,
+        Matt Ranostay <matt.ranostay@konsulko.com>,
+        Andrew Davis <afd@ti.com>,
+        Gregory Clement <gregory.clement@bootlin.com>,
+        Phil Reid <preid@electromag.com.au>,
+        Michael Welling <mwelling@ieee.org>,
+        Lukas Wunner <lukas@wunner.de>,
+        Chris Coffey <cmc@babblebit.net>,
+        Slawomir Stepien <sst@poczta.fm>,
+        Sankar Velliangiri <navin@linumiz.com>,
+        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v3 00/10] dt-bindings: iio: use spi-peripheral-props.yaml
+Date:   Tue, 16 Aug 2022 15:43:11 +0300
+Message-Id: <20220816124321.67817-1-krzysztof.kozlowski@linaro.org>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.12.0
-Content-Language: en-US
-To:     ChiaEn Wu <peterwu.pub@gmail.com>, lee@kernel.org,
-        daniel.thompson@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        matthias.bgg@gmail.com, sre@kernel.org, chunfeng.yun@mediatek.com,
-        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
-        linux@roeck-us.net, heikki.krogerus@linux.intel.com, deller@gmx.de,
-        broonie@kernel.org, lgirdwood@gmail.com,
-        andriy.shevchenko@linux.intel.com
-Cc:     chiaen_wu@richtek.com, alice_chen@richtek.com,
-        cy_huang@richtek.com, dri-devel@lists.freedesktop.org,
-        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        szunichen@gmail.com
-References: <20220815090125.27705-1-peterwu.pub@gmail.com>
- <20220815090125.27705-7-peterwu.pub@gmail.com>
-From:   Matti Vaittinen <mazziesaccount@gmail.com>
-Subject: Re: [RESEND PATCH v8 06/12] lib: add linear range index macro
-In-Reply-To: <20220815090125.27705-7-peterwu.pub@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi ChiaEn,
+Hi,
 
-On 8/15/22 12:01, ChiaEn Wu wrote:
-> From: ChiaEn Wu <chiaen_wu@richtek.com>
-> 
-> Add linear_range_idx macro for declaring the linear_range struct simply.
-> 
-> Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
-> ---
->   include/linux/linear_range.h | 8 ++++++++
->   1 file changed, 8 insertions(+)
-> 
-> diff --git a/include/linux/linear_range.h b/include/linux/linear_range.h
-> index fd3d0b358f22..fb53ea13c593 100644
-> --- a/include/linux/linear_range.h
-> +++ b/include/linux/linear_range.h
-> @@ -26,6 +26,14 @@ struct linear_range {
->   	unsigned int step;
->   };
->   
-> +#define LINEAR_RANGE_IDX(_min, _min_sel, _max_sel, _step)	\
-> +	{							\
-> +		.min = _min,					\
-> +		.min_sel = _min_sel,				\
-> +		.max_sel = _max_sel,				\
-> +		.step = _step,					\
-> +	}
-> +
+The patchset is independent of my other recent changes around SPI, so feel free
+to apply it for next release.
 
-I think this somewhat differs from what you had originally scetched. Eg, 
-if I didn't misread the patch earlier - you had:
+Changes since v2
+================
+1. Keep spi-3wire also in device bindings (not in spi-peripheral-props.yaml).
+2. Add Rb tag.
 
-#define MT6370_CHG_LINEAR_RANGE(_rfd, _min, _min_sel, _max_sel, _step) \
-[_rfd] = {                                                             \
-	...
+Changes since v1
+================
+1. Continue the rework for entire IIO.
+v1: https://lore.kernel.org/all/20220715095302.214276-1-krzysztof.kozlowski@linaro.org/
 
-instead of the
- > +#define LINEAR_RANGE_IDX(_min, _min_sel, _max_sel, _step)	\
- > +	{							\
+Best regards,
+Krzysztof
 
-I think the latter (without the []-index) is more generic, and very 
-welcome. However, the IDX-suffix does no longer make much sense, right? 
-I suggested name LINEAR_RANGE_IDX for macro taking the array index as it 
-would also be useful when dealing with arrays.
+Krzysztof Kozlowski (10):
+  dt-bindings: iio: adc: use spi-peripheral-props.yaml
+  dt-bindings: iio: accel: use spi-peripheral-props.yaml
+  dt-bindings: iio: amplifiers: adi,ada4250: use
+    spi-peripheral-props.yaml
+  dt-bindings: iio: dac: use spi-peripheral-props.yaml
+  dt-bindings: iio: frequency: adf4371: use spi-peripheral-props.yaml
+  dt-bindings: iio: health: ti,afe4403: use spi-peripheral-props.yaml
+  dt-bindings: iio: imu: use spi-peripheral-props.yaml
+  dt-bindings: iio: potentiometer: use spi-peripheral-props.yaml
+  dt-bindings: iio: samsung,sensorhub-rinato: use
+    spi-peripheral-props.yaml
+  dt-bindings: iio: temperature: use spi-peripheral-props.yaml
 
-Do you think you could still drop the IDX from macro name or keep the 
-array index as the original did?
-
-Maybe ideally introduce both macros (unless Mark has objections), one 
-with the [_rfd] and suffix IDX, and the other w/o the suffix and w/o the 
-[_rfd]?
-
-Thanks for the improvements and the patience! ;)
-
-Yours
-   -- Matti
+ .../bindings/iio/accel/adi,adis16201.yaml     |  7 ++---
+ .../bindings/iio/accel/adi,adis16240.yaml     |  7 ++---
+ .../bindings/iio/accel/adi,adxl313.yaml       |  7 ++---
+ .../bindings/iio/accel/adi,adxl345.yaml       |  7 ++---
+ .../bindings/iio/accel/adi,adxl355.yaml       |  7 ++---
+ .../bindings/iio/accel/adi,adxl367.yaml       |  7 ++---
+ .../bindings/iio/accel/adi,adxl372.yaml       |  7 ++---
+ .../bindings/iio/accel/bosch,bma220.yaml      |  7 ++---
+ .../bindings/iio/accel/bosch,bma255.yaml      |  5 +++-
+ .../bindings/iio/accel/bosch,bmi088.yaml      |  7 ++---
+ .../bindings/iio/accel/fsl,mma7455.yaml       |  7 ++---
+ .../bindings/iio/accel/kionix,kxsd9.yaml      |  7 ++---
+ .../bindings/iio/accel/murata,sca3300.yaml    |  5 +++-
+ .../bindings/iio/accel/nxp,fxls8962af.yaml    |  7 ++---
+ .../bindings/iio/adc/adi,ad7124.yaml          |  7 ++---
+ .../bindings/iio/adc/adi,ad7192.yaml          |  7 ++---
+ .../bindings/iio/adc/adi,ad7280a.yaml         |  7 ++---
+ .../bindings/iio/adc/adi,ad7292.yaml          |  7 ++---
+ .../bindings/iio/adc/adi,ad7298.yaml          |  6 +++--
+ .../bindings/iio/adc/adi,ad7476.yaml          |  8 +++---
+ .../bindings/iio/adc/adi,ad7606.yaml          |  7 ++---
+ .../bindings/iio/adc/adi,ad7768-1.yaml        |  7 ++---
+ .../bindings/iio/adc/adi,ad7923.yaml          |  7 ++---
+ .../bindings/iio/adc/adi,ad7949.yaml          |  7 ++---
+ .../bindings/iio/adc/holt,hi8435.yaml         |  7 ++---
+ .../bindings/iio/adc/lltc,ltc2496.yaml        |  8 +++---
+ .../bindings/iio/adc/maxim,max1027.yaml       |  5 +++-
+ .../bindings/iio/adc/maxim,max11100.yaml      |  7 +++--
+ .../bindings/iio/adc/maxim,max1118.yaml       | 26 ++++++++++---------
+ .../bindings/iio/adc/maxim,max1241.yaml       |  7 ++---
+ .../bindings/iio/adc/microchip,mcp3201.yaml   |  6 +++--
+ .../bindings/iio/adc/microchip,mcp3911.yaml   |  5 +++-
+ .../bindings/iio/adc/ti,adc0832.yaml          |  7 ++---
+ .../bindings/iio/adc/ti,adc084s021.yaml       |  7 ++---
+ .../bindings/iio/adc/ti,adc108s102.yaml       |  6 +++--
+ .../bindings/iio/adc/ti,adc12138.yaml         |  7 ++---
+ .../bindings/iio/adc/ti,adc128s052.yaml       |  7 ++---
+ .../bindings/iio/adc/ti,adc161s626.yaml       |  7 ++---
+ .../bindings/iio/adc/ti,ads124s08.yaml        |  7 ++---
+ .../bindings/iio/adc/ti,ads131e08.yaml        |  7 ++---
+ .../bindings/iio/adc/ti,ads8344.yaml          |  7 ++---
+ .../bindings/iio/adc/ti,ads8688.yaml          |  7 ++---
+ .../bindings/iio/adc/ti,tlc4541.yaml          |  7 ++---
+ .../bindings/iio/adc/ti,tsc2046.yaml          |  7 ++---
+ .../bindings/iio/amplifiers/adi,ada4250.yaml  |  7 ++---
+ .../bindings/iio/dac/adi,ad5064.yaml          |  7 +++--
+ .../bindings/iio/dac/adi,ad5360.yaml          |  7 +++--
+ .../bindings/iio/dac/adi,ad5380.yaml          |  9 ++++---
+ .../bindings/iio/dac/adi,ad5421.yaml          |  7 ++---
+ .../bindings/iio/dac/adi,ad5449.yaml          |  7 +++--
+ .../bindings/iio/dac/adi,ad5624r.yaml         |  9 ++++---
+ .../bindings/iio/dac/adi,ad5686.yaml          |  9 ++++---
+ .../bindings/iio/dac/adi,ad5755.yaml          |  9 ++++---
+ .../bindings/iio/dac/adi,ad5758.yaml          |  4 +--
+ .../bindings/iio/dac/adi,ad5761.yaml          |  7 +++--
+ .../bindings/iio/dac/adi,ad5764.yaml          |  7 +++--
+ .../bindings/iio/dac/adi,ad5770r.yaml         |  7 ++---
+ .../bindings/iio/dac/adi,ad5791.yaml          |  9 ++++---
+ .../bindings/iio/dac/adi,ad8801.yaml          |  7 +++--
+ .../bindings/iio/dac/microchip,mcp4922.yaml   |  9 ++++---
+ .../bindings/iio/dac/ti,dac082s085.yaml       |  9 ++++---
+ .../bindings/iio/dac/ti,dac7311.yaml          |  7 ++---
+ .../bindings/iio/dac/ti,dac7612.yaml          |  7 ++---
+ .../bindings/iio/frequency/adf4371.yaml       |  7 ++---
+ .../bindings/iio/health/ti,afe4403.yaml       |  9 ++++---
+ .../bindings/iio/imu/adi,adis16460.yaml       |  7 ++---
+ .../bindings/iio/imu/adi,adis16480.yaml       |  9 ++++---
+ .../bindings/iio/imu/bosch,bmi160.yaml        |  7 ++---
+ .../bindings/iio/imu/invensense,icm42600.yaml |  6 +++--
+ .../bindings/iio/imu/invensense,mpu6050.yaml  |  5 ++--
+ .../bindings/iio/imu/nxp,fxos8700.yaml        |  7 ++---
+ .../bindings/iio/imu/st,lsm6dsx.yaml          |  9 ++++---
+ .../iio/potentiometer/microchip,mcp41010.yaml |  9 ++++---
+ .../iio/potentiometer/microchip,mcp4131.yaml  |  9 ++++---
+ .../iio/samsung,sensorhub-rinato.yaml         |  9 ++++---
+ .../iio/temperature/maxim,max31855k.yaml      |  4 +--
+ .../iio/temperature/maxim,max31856.yaml       |  6 +++--
+ .../iio/temperature/maxim,max31865.yaml       |  6 +++--
+ 78 files changed, 324 insertions(+), 247 deletions(-)
 
 -- 
-Matti Vaittinen
-Linux kernel developer at ROHM Semiconductors
-Oulu Finland
+2.34.1
 
-~~ When things go utterly wrong vim users can always type :help! ~~

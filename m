@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58269C28B2B
-	for <linux-fbdev@archiver.kernel.org>; Tue, 16 Aug 2022 12:45:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C082CC32793
+	for <linux-fbdev@archiver.kernel.org>; Tue, 16 Aug 2022 12:45:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233846AbiHPMpl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 16 Aug 2022 08:45:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35238 "EHLO
+        id S234306AbiHPMpn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 16 Aug 2022 08:45:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35680 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235523AbiHPMon (ORCPT
+        with ESMTP id S235533AbiHPMoo (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 16 Aug 2022 08:44:43 -0400
+        Tue, 16 Aug 2022 08:44:44 -0400
 Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 333E733A01
-        for <linux-fbdev@vger.kernel.org>; Tue, 16 Aug 2022 05:44:03 -0700 (PDT)
-Received: by mail-lf1-x12e.google.com with SMTP id z25so14755895lfr.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 16 Aug 2022 05:44:03 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E49C3A497
+        for <linux-fbdev@vger.kernel.org>; Tue, 16 Aug 2022 05:44:04 -0700 (PDT)
+Received: by mail-lf1-x12e.google.com with SMTP id r17so14731401lfm.11
+        for <linux-fbdev@vger.kernel.org>; Tue, 16 Aug 2022 05:44:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc;
-        bh=7axPEVk6MWtPTP7h5E9Ae0SR4WCvVBdWSVGZwXrfCJc=;
-        b=dZqAsC4XhmDGuivuJcwZM7XD6vsmSzcY0u4o8BuY6kIwGsvI6j05G+i7ZngVXzhyt3
-         0+zhxwe+OpM9q3PkrseisLeE+hZs9AmQhAPvAGf79ksMxYi7TezPrZF5RvvF4N/4H7ps
-         s6j2nlWSf+mnm5lw+I5OqKCqtSUEOmsEP3L4F2LR1D3Tw3Qo4s4dTdpRh9ZQe+dzDOQd
-         ZsgPxCHQZndYyn1puvJ9uDMb1G1drtDUPT5MWl4ZSF0dw1QkhHRdcCZc3k/HR9cJR/Ab
-         1/FKLJk66XuLQZZJmMq+crAjRH2GMFwlQIx5BaLcCY6gHf70h9FVgDJpvcF6sOOjVin6
-         Barw==
+        bh=ZNmQiW5AvIOtEUDHlEIUtIO/nCYrI/d8smXZXTrIU/o=;
+        b=ubCScZ0q9loZZzBaDHMsnkAr+Xnf0ct7t6QohzXWnoPGw69EDyNvXcLCT/1NwPMe0J
+         OZIusnmonsk6u2iHoDIoKJhDyLtB4waUwMRFxkbGTDLZgGePyZziiPQAbhSadYEJzo7H
+         jkJ6cdWc+ovszBtXnGzBLXGQNNTtG9ZLR+mysI6WfuTJnfYakipdLptor/fhgABDCa1q
+         scikdDNIOrf1fjuUaA+roiheulylJjNmyA9OnX1IxMCkHN15AXLCPWO98rIrxA61m6OO
+         KGkREXyFm/Rr4/O4RUhzNAXTv3hc4Uz1hPmApXqr/mH7xvrmfhU8w43HCfIO40lYwhkF
+         ZOhA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc;
-        bh=7axPEVk6MWtPTP7h5E9Ae0SR4WCvVBdWSVGZwXrfCJc=;
-        b=1KWkd+N7uo110KSO39FZOH9ghIsms7Tmngs27e6ZIRpjkfdBr5gSIG4GRQMh9DBJsP
-         kBu/Bsx507+x5+Mcrsksq6+Bv04N/7gADTHfa9W2uypFUYZpUGA1fXYFsLLvePeN0fWS
-         wxXJX6KnINXZVQpKaZMNP7/vPPhFnfqp/om7Vi3APWqRpYl+lq1IU+IsvhawWr9MUlNZ
-         fjUJtYb/+jpmdaHeJmS8rdo8paIAGIXkTDbJwLzyJ9DKXL8+f52esWyGv3vDgdR/Alew
-         dN7iFbaK9zcjkXOOF9UmIRUjD5/hBQDeAjXBgBCeeh6E767594r0qHjDWLLQU4/N3BhL
-         Jlog==
-X-Gm-Message-State: ACgBeo2SkSYlzHm2zBGqD5F8OyYvW9mbFX1UFh6Kjj9+wu1E8noN7eze
-        Wq74zHc9GLcL0+uzRtWKHesQ9Q==
-X-Google-Smtp-Source: AA6agR6mLRrkmmfsWWDpLPe2t3pnsuvb7LjZmhWGTARYqtxu2V3K4lbwTakD8q/5jl7F2/IulI5udw==
-X-Received: by 2002:a19:434d:0:b0:48c:fe67:5e83 with SMTP id m13-20020a19434d000000b0048cfe675e83mr7430482lfj.630.1660653836368;
-        Tue, 16 Aug 2022 05:43:56 -0700 (PDT)
+        bh=ZNmQiW5AvIOtEUDHlEIUtIO/nCYrI/d8smXZXTrIU/o=;
+        b=38V9Nk+BnhH063aevusr5/CWiyI0bAHQriaUItei8qisbUqemIrU2NDLbnP/Or9xfL
+         pIHZWRvBk3kIi4gc9rbahJ1JA+RMb5LIHNXpArFFAUblpqHrpJnNubxdzO8AKDnA4Dtd
+         yJWcWwlr35SsYN9SV/6jVl84k2++ryjYLLHgfuW6wd5EycvxUOMppUbwkpGDLJilHHUZ
+         KT+ORnYT01F+ShUb34gJf/gxSgMb5l50OQoH02yLkMa4cNh2+2NjALIbjAeQe2R3TsnA
+         yDDKLKjk20mA7YBAjz4ilnMqv/RYLHDYyJd53k0UIDfTCfFXnHGZ3lJ9KbM3oSZPHsT5
+         EXuQ==
+X-Gm-Message-State: ACgBeo2T1Om/uUl7HcBFigEZX0YxXXZ0AwcIW4wJBkYbNZL1ucWDQxAV
+        p/dlzB8xMU4onQ9y+GcaVuUNDA==
+X-Google-Smtp-Source: AA6agR4AaHt43P3HtQJfbqur6lCNkGkl/bOx3K2jvgqOFTGoSVo82LRZWU9GtjbYX12tSuyhQQ9h7Q==
+X-Received: by 2002:a05:6512:b9d:b0:48b:2567:4bad with SMTP id b29-20020a0565120b9d00b0048b25674badmr7266813lfv.9.1660653839576;
+        Tue, 16 Aug 2022 05:43:59 -0700 (PDT)
 Received: from krzk-bin.. (d15l54g8c71znbtrbzt-4.rev.dnainternet.fi. [2001:14bb:ae:539c:1782:dd68:b0c1:c1a4])
-        by smtp.gmail.com with ESMTPSA id k14-20020ac257ce000000b0048ae4cf8a2csm1374331lfo.258.2022.08.16.05.43.53
+        by smtp.gmail.com with ESMTPSA id k14-20020ac257ce000000b0048ae4cf8a2csm1374331lfo.258.2022.08.16.05.43.56
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 16 Aug 2022 05:43:55 -0700 (PDT)
+        Tue, 16 Aug 2022 05:43:59 -0700 (PDT)
 From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 To:     Lars-Peter Clausen <lars@metafoo.de>,
         Michael Hennerich <Michael.Hennerich@analog.com>,
@@ -97,9 +97,9 @@ To:     Lars-Peter Clausen <lars@metafoo.de>,
         linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH v3 08/10] dt-bindings: iio: potentiometer: use spi-peripheral-props.yaml
-Date:   Tue, 16 Aug 2022 15:43:19 +0300
-Message-Id: <20220816124321.67817-9-krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v3 09/10] dt-bindings: iio: samsung,sensorhub-rinato: use spi-peripheral-props.yaml
+Date:   Tue, 16 Aug 2022 15:43:20 +0300
+Message-Id: <20220816124321.67817-10-krzysztof.kozlowski@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220816124321.67817-1-krzysztof.kozlowski@linaro.org>
 References: <20220816124321.67817-1-krzysztof.kozlowski@linaro.org>
@@ -123,17 +123,16 @@ typical place, just before example DTS.
 
 Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- .../bindings/iio/potentiometer/microchip,mcp41010.yaml   | 9 +++++----
- .../bindings/iio/potentiometer/microchip,mcp4131.yaml    | 9 +++++----
- 2 files changed, 10 insertions(+), 8 deletions(-)
+ .../bindings/iio/samsung,sensorhub-rinato.yaml           | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/iio/potentiometer/microchip,mcp41010.yaml b/Documentation/devicetree/bindings/iio/potentiometer/microchip,mcp41010.yaml
-index 567697d996ec..87e88f2a9908 100644
---- a/Documentation/devicetree/bindings/iio/potentiometer/microchip,mcp41010.yaml
-+++ b/Documentation/devicetree/bindings/iio/potentiometer/microchip,mcp41010.yaml
-@@ -25,14 +25,15 @@ properties:
-   reg:
-     maxItems: 1
+diff --git a/Documentation/devicetree/bindings/iio/samsung,sensorhub-rinato.yaml b/Documentation/devicetree/bindings/iio/samsung,sensorhub-rinato.yaml
+index a88b3b14d6bd..dd2ae2bd1ad7 100644
+--- a/Documentation/devicetree/bindings/iio/samsung,sensorhub-rinato.yaml
++++ b/Documentation/devicetree/bindings/iio/samsung,sensorhub-rinato.yaml
+@@ -40,10 +40,6 @@ properties:
+     description:
+       Reset the sensorhub.
  
 -  spi-max-frequency: true
 -
@@ -142,30 +141,9 @@ index 567697d996ec..87e88f2a9908 100644
  required:
    - compatible
    - reg
- 
-+allOf:
-+  - $ref: /schemas/spi/spi-peripheral-props.yaml#
-+
-+unevaluatedProperties: false
-+
- examples:
-   - |
-     spi {
-diff --git a/Documentation/devicetree/bindings/iio/potentiometer/microchip,mcp4131.yaml b/Documentation/devicetree/bindings/iio/potentiometer/microchip,mcp4131.yaml
-index 32e92bced81f..896fe0b5edcc 100644
---- a/Documentation/devicetree/bindings/iio/potentiometer/microchip,mcp4131.yaml
-+++ b/Documentation/devicetree/bindings/iio/potentiometer/microchip,mcp4131.yaml
-@@ -80,14 +80,15 @@ properties:
-   reg:
-     maxItems: 1
- 
--  spi-max-frequency: true
--
--additionalProperties: false
--
- required:
-   - compatible
-   - reg
+@@ -52,6 +48,11 @@ required:
+   - mcu-ap-gpios
+   - mcu-reset-gpios
  
 +allOf:
 +  - $ref: /schemas/spi/spi-peripheral-props.yaml#

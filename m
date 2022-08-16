@@ -2,67 +2,150 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5B2EC25B0E
-	for <linux-fbdev@archiver.kernel.org>; Tue, 16 Aug 2022 13:10:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23678C2BB41
+	for <linux-fbdev@archiver.kernel.org>; Tue, 16 Aug 2022 15:39:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235467AbiHPNKo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 16 Aug 2022 09:10:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36188 "EHLO
+        id S236164AbiHPPjF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 16 Aug 2022 11:39:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50898 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235639AbiHPNKj (ORCPT
+        with ESMTP id S236119AbiHPPiU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 16 Aug 2022 09:10:39 -0400
-Received: from bg5.exmail.qq.com (bg4.exmail.qq.com [43.154.54.12])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2133AB24A2;
-        Tue, 16 Aug 2022 06:10:30 -0700 (PDT)
-X-QQ-mid: bizesmtp62t1660655421t8je3jh3
-Received: from localhost.localdomain ( [182.148.12.144])
-        by bizesmtp.qq.com (ESMTP) with 
-        id ; Tue, 16 Aug 2022 21:10:20 +0800 (CST)
-X-QQ-SSF: 01000000002000B0D000B00A0000000
-X-QQ-FEAT: ILHsT53NKPjhC6sTij/xeN8rhMmPWGvtPJWDYLMgqxtZVM17yqE/y8x0oYmur
-        P3QNT5Z+NZ2Q7QT5l4tKEdo0LQ5FIjMBiHYQFqeRGLXgCYvv+5HrDPvVPYMO7AeYC2FQX5n
-        n5XVMiCVIWdhxo1eP3QsY+fq8o79IPJMfNhkr9lr8DEgRvuEGlH9wfrkDNnY44bxKoK5myb
-        wS3wZkQIS0ofdF2hcVsQsThYeFiGDiOE5arlFcm7csNcgcWYe7ec/znNS+g1N5WasmNvHB0
-        paeFk/BJErwZyQGzBkdQu/qkJWHOKMnpNidV2BIUuCWfOHRcO1xK41gtBZqbyd34t8epPiL
-        l4zgg5ap6dFjEPPNaKrfaMLwgtKLrfnGcMH8I2VjGz+cQ/gOobYAT3Gx2tVlP6NVIqmFHYJ
-X-QQ-GoodBg: 0
-From:   Jilin Yuan <yuanjilin@cdjrlc.com>
-To:     deller@gmx.de
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, Jilin Yuan <yuanjilin@cdjrlc.com>
-Subject: [PATCH] video/fbdev: fix repeated words in comments
-Date:   Tue, 16 Aug 2022 21:10:13 +0800
-Message-Id: <20220816131013.30643-1-yuanjilin@cdjrlc.com>
-X-Mailer: git-send-email 2.36.1
+        Tue, 16 Aug 2022 11:38:20 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4276514034;
+        Tue, 16 Aug 2022 08:37:53 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id AE22C611EB;
+        Tue, 16 Aug 2022 15:37:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10ACCC433C1;
+        Tue, 16 Aug 2022 15:37:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1660664272;
+        bh=V49dgqu/RAkWRS3001yah3EjBpkjCkpA7y5OPLHrM9Q=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=HM6nA176MfOgvwM4aYzgxrXtkZNsyPzieWFtOM7wfa7Y6HbUs11ekwRDWDVFGGXGw
+         27V34YIPzdRIqrOl8k53roAb4tMeD5UDDV3RvxJs4/nEufjpEz3ytpRzUlb75UoX7f
+         SROELHAJ8Mbne9KSmP6mgvraDA/lHVPnonXJXTuB2h/9bkscGKgJ5nrdhIZtDpIjEo
+         kBNP11wnL1imt6wjN99dVad9lNWWj9FE1BCqH6GH4kVXnOR+yujHEy4YqWd9AVAx0H
+         WxHwbprxicMp3T+ovVm4DD6URYmFQxUHfQ68vJnbup2ojgM6/H6z1HwLET+nn0RO97
+         fcXe1fZzFaopQ==
+Received: by mail-ua1-f41.google.com with SMTP id s18so4160730uac.10;
+        Tue, 16 Aug 2022 08:37:51 -0700 (PDT)
+X-Gm-Message-State: ACgBeo0ajzHlMuRIr+AeGlSE5R8WgtFK0ktXaZCMoN2zXAc19FX9wQp2
+        +PVs+UzAGu/wzazL6+zG2WxB/szrdxviIa7vtw==
+X-Google-Smtp-Source: AA6agR6P6tx9Y0Tb4qmdIdqjNQDONt+9JZtqem7UsItHKI1hbGP9NpYbZ5qL4HTr0AbwT9oos2Tvh2M0MtkHzHMsHgQ=
+X-Received: by 2002:ab0:2b06:0:b0:384:c4af:107c with SMTP id
+ e6-20020ab02b06000000b00384c4af107cmr8599136uar.77.1660664270971; Tue, 16 Aug
+ 2022 08:37:50 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtp:cdjrlc.com:qybglogicsvr:qybglogicsvr4
+References: <20220805070610.3516-1-peterwu.pub@gmail.com> <20220805070610.3516-7-peterwu.pub@gmail.com>
+ <YvJdpq0MWNPQZw5c@google.com>
+In-Reply-To: <YvJdpq0MWNPQZw5c@google.com>
+From:   Rob Herring <robh+dt@kernel.org>
+Date:   Tue, 16 Aug 2022 09:37:39 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqJriSbJvejCi7n50T-NaOW+GF8yb6Fi4m-GvUkggf-9kw@mail.gmail.com>
+Message-ID: <CAL_JsqJriSbJvejCi7n50T-NaOW+GF8yb6Fi4m-GvUkggf-9kw@mail.gmail.com>
+Subject: Re: [PATCH v7 06/13] dt-bindings: mfd: Add MediaTek MT6370
+To:     Lee Jones <lee.jones@linaro.org>
+Cc:     ChiaEn Wu <peterwu.pub@gmail.com>, daniel.thompson@linaro.org,
+        jingoohan1@gmail.com, pavel@ucw.cz,
+        krzysztof.kozlowski+dt@linaro.org, matthias.bgg@gmail.com,
+        sre@kernel.org, chunfeng.yun@mediatek.com,
+        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
+        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
+        heikki.krogerus@linux.intel.com, deller@gmx.de,
+        andy.shevchenko@gmail.com, chiaen_wu@richtek.com,
+        alice_chen@richtek.com, cy_huang@richtek.com,
+        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        szunichen@gmail.com,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Lee Jones <lee@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
- Delete the redundant word 'its'.
+On Tue, Aug 9, 2022 at 7:14 AM Lee Jones <lee.jones@linaro.org> wrote:
+>
+> On Fri, 05 Aug 2022, ChiaEn Wu wrote:
+>
+> > From: ChiYuan Huang <cy_huang@richtek.com>
+> >
+> > Add MediaTek MT6370 binding documentation.
+> >
+> > Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> > Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+> > Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
+> > ---
+> >  .../devicetree/bindings/mfd/mediatek,mt6370.yaml   | 280 +++++++++++++++++++++
+> >  include/dt-bindings/iio/adc/mediatek,mt6370_adc.h  |  18 ++
+> >  2 files changed, 298 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+> >  create mode 100644 include/dt-bindings/iio/adc/mediatek,mt6370_adc.h
+>
+> Applied, thanks.
 
-Signed-off-by: Jilin Yuan <yuanjilin@cdjrlc.com>
----
- drivers/video/fbdev/skeletonfb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Without the backlight schema applied, this is the result:
 
-diff --git a/drivers/video/fbdev/skeletonfb.c b/drivers/video/fbdev/skeletonfb.c
-index 818b3a5003e1..f316ea320d29 100644
---- a/drivers/video/fbdev/skeletonfb.c
-+++ b/drivers/video/fbdev/skeletonfb.c
-@@ -97,7 +97,7 @@ static const struct fb_fix_screeninfo xxxfb_fix = {
-     /*
-      * 	Modern graphical hardware not only supports pipelines but some 
-      *  also support multiple monitors where each display can have its  
--     *  own unique data. In this case each display could be  
-+     *  own unique data. In this case each display could be
-      *  represented by a separate framebuffer device thus a separate 
-      *  struct fb_info. Now the struct xxx_par represents the graphics
-      *  hardware state thus only one exist per card. In this case the 
--- 
-2.36.1
-
+./Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml: Unable
+to find schema file matching $id:
+http://devicetree.org/schemas/leds/backlight/mediatek,mt6370-backlight.yaml
+/builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:
+pmic@34: backlight: False schema does not allow {'compatible':
+['mediatek,mt6370-backlight'], 'mediatek,bled-channel-use': b'\x0f'}
+ From schema: /builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+/builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:
+pmic@34: charger: False schema does not allow {'compatible':
+['mediatek,mt6370-charger'], 'interrupts': [[48], [68], [6]],
+'interrupt-names': ['attach_i', 'uvp_d_evt', 'mivr'], 'io-channels':
+[[1, 5]], 'usb-otg-vbus-regulator': {'regulator-name':
+['mt6370-usb-otg-vbus'], 'regulator-min-microvolt': [[4350000]],
+'regulator-max-microvolt': [[5800000]], 'regulator-min-microamp':
+[[500000]], 'regulator-max-microamp': [[3000000]], 'phandle': [[2]]}}
+ From schema: /builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+/builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:
+pmic@34: tcpc: False schema does not allow {'compatible':
+['mediatek,mt6370-tcpc'], 'interrupts-extended': [[4294967295, 4, 8]],
+'connector': {'compatible': ['usb-c-connector'], 'label': ['USB-C'],
+'vbus-supply': [[2]], 'data-role': ['dual'], 'power-role': ['dual'],
+'try-power-role': ['sink'], 'source-pdos': [[570527844]], 'sink-pdos':
+[[570527944]], 'op-sink-microwatt': [[10000000]], 'ports':
+{'#address-cells': [[1]], '#size-cells': [[0]], 'port@0': {'reg':
+[[0]], 'endpoint': {'remote-endpoint': [[4294967295]]}}, 'port@1':
+{'reg': [[1]], 'endpoint': {'remote-endpoint': [[4294967295]]}},
+'port@2': {'reg': [[2]], 'endpoint': {'remote-endpoint':
+[[4294967295]]}}}}}
+ From schema: /builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+/builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:
+pmic@34: indicator: False schema does not allow {'compatible':
+['mediatek,mt6370-indicator'], '#address-cells': [[1]], '#size-cells':
+[[0]], 'multi-led@0': {'reg': [[0]], 'function': ['indicator'],
+'color': [[9]], 'led-max-microamp': [[24000]], '#address-cells':
+[[1]], '#size-cells': [[0]], 'led@0': {'reg': [[0]], 'color': [[1]]},
+'led@1': {'reg': [[1]], 'color': [[2]]}, 'led@2': {'reg': [[2]],
+'color': [[3]]}}, 'led@3': {'reg': [[3]], 'function': ['indicator'],
+'color': [[0]], 'led-max-microamp': [[6000]]}}
+ From schema: /builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+/builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:
+pmic@34: flashlight: False schema does not allow {'compatible':
+['mediatek,mt6370-flashlight'], '#address-cells': [[1]],
+'#size-cells': [[0]], 'led@0': {'reg': [[0]], 'led-sources': [[0]],
+'function': ['flash'], 'color': [[0]], 'function-enumerator': [[1]],
+'led-max-microamp': [[200000]], 'flash-max-microamp': [[500000]],
+'flash-max-timeout-us': [[1248000]]}, 'led@1': {'reg': [[1]],
+'led-sources': [[1]], 'function': ['flash'], 'color': [[0]],
+'function-enumerator': [[2]], 'led-max-microamp': [[200000]],
+'flash-max-microamp': [[500000]], 'flash-max-timeout-us':
+[[1248000]]}}
+ From schema: /builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+/builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:
+backlight: mediatek,bled-channel-use: b'\x0f' is not of type 'object',
+'array', 'boolean', 'null'
+ From schema: /usr/local/lib/python3.10/dist-packages/dtschema/schemas/dt-core.yaml

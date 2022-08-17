@@ -2,150 +2,86 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23678C2BB41
-	for <linux-fbdev@archiver.kernel.org>; Tue, 16 Aug 2022 15:39:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 431A3C32772
+	for <linux-fbdev@archiver.kernel.org>; Wed, 17 Aug 2022 07:31:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236164AbiHPPjF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 16 Aug 2022 11:39:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50898 "EHLO
+        id S231396AbiHQHbg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 17 Aug 2022 03:31:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40324 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236119AbiHPPiU (ORCPT
+        with ESMTP id S231262AbiHQHbf (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 16 Aug 2022 11:38:20 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4276514034;
-        Tue, 16 Aug 2022 08:37:53 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id AE22C611EB;
-        Tue, 16 Aug 2022 15:37:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10ACCC433C1;
-        Tue, 16 Aug 2022 15:37:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1660664272;
-        bh=V49dgqu/RAkWRS3001yah3EjBpkjCkpA7y5OPLHrM9Q=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=HM6nA176MfOgvwM4aYzgxrXtkZNsyPzieWFtOM7wfa7Y6HbUs11ekwRDWDVFGGXGw
-         27V34YIPzdRIqrOl8k53roAb4tMeD5UDDV3RvxJs4/nEufjpEz3ytpRzUlb75UoX7f
-         SROELHAJ8Mbne9KSmP6mgvraDA/lHVPnonXJXTuB2h/9bkscGKgJ5nrdhIZtDpIjEo
-         kBNP11wnL1imt6wjN99dVad9lNWWj9FE1BCqH6GH4kVXnOR+yujHEy4YqWd9AVAx0H
-         WxHwbprxicMp3T+ovVm4DD6URYmFQxUHfQ68vJnbup2ojgM6/H6z1HwLET+nn0RO97
-         fcXe1fZzFaopQ==
-Received: by mail-ua1-f41.google.com with SMTP id s18so4160730uac.10;
-        Tue, 16 Aug 2022 08:37:51 -0700 (PDT)
-X-Gm-Message-State: ACgBeo0ajzHlMuRIr+AeGlSE5R8WgtFK0ktXaZCMoN2zXAc19FX9wQp2
-        +PVs+UzAGu/wzazL6+zG2WxB/szrdxviIa7vtw==
-X-Google-Smtp-Source: AA6agR6P6tx9Y0Tb4qmdIdqjNQDONt+9JZtqem7UsItHKI1hbGP9NpYbZ5qL4HTr0AbwT9oos2Tvh2M0MtkHzHMsHgQ=
-X-Received: by 2002:ab0:2b06:0:b0:384:c4af:107c with SMTP id
- e6-20020ab02b06000000b00384c4af107cmr8599136uar.77.1660664270971; Tue, 16 Aug
- 2022 08:37:50 -0700 (PDT)
+        Wed, 17 Aug 2022 03:31:35 -0400
+Received: from mail-lj1-x233.google.com (mail-lj1-x233.google.com [IPv6:2a00:1450:4864:20::233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2ACE96CF7E
+        for <linux-fbdev@vger.kernel.org>; Wed, 17 Aug 2022 00:31:34 -0700 (PDT)
+Received: by mail-lj1-x233.google.com with SMTP id l10so12753843lje.7
+        for <linux-fbdev@vger.kernel.org>; Wed, 17 Aug 2022 00:31:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc;
+        bh=n866UwlVQsvEsNFKCS8hnoSDwI11hrtsqigMztK4PUg=;
+        b=P5fgpWe4cPrzCJusVO6q5+NjmimvA7suGtowiRgC7IkHvYFbrYfNOz3kmbiEgRSIqR
+         QgY/zeWNw9ClHhckGsh20186cIiVx0tu5qb1/MQKpmVn57BDLMUKxzSjurdDIOXNPfF9
+         5IO/YzPq2vbW9I7rCdS2atffVlubqHXp64UdJpyhhSFFXOATF0er+Xr7Qyu50X3yQqmG
+         yKAlqqUxb/132vkBY8sqygKsbExmhkXiFF5f3184FqLM5PUWKIXQPVQcLAROrWxq49wn
+         yJBB7rR/yDMrzxwD2y/RBRwuSHD/sLgC2DANofXZdrgQLTWA7aEVVNvKwWhspgrk7z4B
+         TCUw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc;
+        bh=n866UwlVQsvEsNFKCS8hnoSDwI11hrtsqigMztK4PUg=;
+        b=iGZVSr61iM9AjDkolZTZvTm9kcYSo87BgC4Cc8c+9a9Im6rltWYe8/WetkwjIlLgFf
+         X5xKCO2yYtYJxdiPTgRq/AYpkwiMcpNsPb2y0tni1Ptq1fy5LvwzJQFYULBgaZz4OfJw
+         kjYOdXhnx6PkmMmKlD/IOT2hJGEsoHAbdwQEg24ByM5X4QGDWVVb8m7aAoWXOUOpXJMx
+         oufk2Cp2T4K/wVlpe6DbgGTXMI3OkHlhlt25SjBJrid8FqXNLi9Dd5wsM2JOpmWishbE
+         EPADRL6JC2OjjNlY0AG73KAilhDok1Xqp3//rPKStcLpuq40Mcy9+ZnNu77whwsC2fNQ
+         +WOw==
+X-Gm-Message-State: ACgBeo0q3lGZe3Mie2ngun32sE2ivFZU90vebL0WGuVKf9SjlRJGTSOO
+        r2O4gfxHHKuC2vGNQ98PaiFoJQ==
+X-Google-Smtp-Source: AA6agR4ZRa7kPXpKMgSEeReObwfLq016wKe9tLYdc9p31rQ9SyozcH3P6Vxjtg66mc6ooTXwgNS2Ow==
+X-Received: by 2002:a2e:944a:0:b0:24f:10bd:b7e8 with SMTP id o10-20020a2e944a000000b0024f10bdb7e8mr8241865ljh.238.1660721492560;
+        Wed, 17 Aug 2022 00:31:32 -0700 (PDT)
+Received: from krzk-bin.. (d15l54h48cw7vbh-qr4-4.rev.dnainternet.fi. [2001:14bb:ae:539c:1b1c:14b7:109b:ed76])
+        by smtp.gmail.com with ESMTPSA id j24-20020ac253b8000000b0048b2f079cf7sm1591957lfh.239.2022.08.17.00.31.30
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 17 Aug 2022 00:31:31 -0700 (PDT)
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+To:     linux-samsung-soc@vger.kernel.org, airlied@linux.ie,
+        daniel.lezcano@linaro.org, hdegoede@redhat.com,
+        krzysztof.kozlowski+dt@linaro.org, daniel@ffwll.ch,
+        devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        lee@kernel.org, robh+dt@kernel.org, cw00.choi@samsung.com,
+        linux-fbdev@vger.kernel.org, krzysztof.kozlowski@linaro.org,
+        broonie@kernel.org, linux-kernel@vger.kernel.org
+Cc:     bzolnier@gmail.com
+Subject: Re: (subset) [PATCH 1/3] MAINTAINERS: Drop Bartlomiej Zolnierkiewicz
+Date:   Wed, 17 Aug 2022 10:31:28 +0300
+Message-Id: <166072148468.30126.5293143761869366053.b4-ty@linaro.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220808101526.46556-1-krzysztof.kozlowski@linaro.org>
+References: <20220808101526.46556-1-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
-References: <20220805070610.3516-1-peterwu.pub@gmail.com> <20220805070610.3516-7-peterwu.pub@gmail.com>
- <YvJdpq0MWNPQZw5c@google.com>
-In-Reply-To: <YvJdpq0MWNPQZw5c@google.com>
-From:   Rob Herring <robh+dt@kernel.org>
-Date:   Tue, 16 Aug 2022 09:37:39 -0600
-X-Gmail-Original-Message-ID: <CAL_JsqJriSbJvejCi7n50T-NaOW+GF8yb6Fi4m-GvUkggf-9kw@mail.gmail.com>
-Message-ID: <CAL_JsqJriSbJvejCi7n50T-NaOW+GF8yb6Fi4m-GvUkggf-9kw@mail.gmail.com>
-Subject: Re: [PATCH v7 06/13] dt-bindings: mfd: Add MediaTek MT6370
-To:     Lee Jones <lee.jones@linaro.org>
-Cc:     ChiaEn Wu <peterwu.pub@gmail.com>, daniel.thompson@linaro.org,
-        jingoohan1@gmail.com, pavel@ucw.cz,
-        krzysztof.kozlowski+dt@linaro.org, matthias.bgg@gmail.com,
-        sre@kernel.org, chunfeng.yun@mediatek.com,
-        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
-        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
-        heikki.krogerus@linux.intel.com, deller@gmx.de,
-        andy.shevchenko@gmail.com, chiaen_wu@richtek.com,
-        alice_chen@richtek.com, cy_huang@richtek.com,
-        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        szunichen@gmail.com,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Lee Jones <lee@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Aug 9, 2022 at 7:14 AM Lee Jones <lee.jones@linaro.org> wrote:
->
-> On Fri, 05 Aug 2022, ChiaEn Wu wrote:
->
-> > From: ChiYuan Huang <cy_huang@richtek.com>
-> >
-> > Add MediaTek MT6370 binding documentation.
-> >
-> > Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> > Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
-> > Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
-> > ---
-> >  .../devicetree/bindings/mfd/mediatek,mt6370.yaml   | 280 +++++++++++++++++++++
-> >  include/dt-bindings/iio/adc/mediatek,mt6370_adc.h  |  18 ++
-> >  2 files changed, 298 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
-> >  create mode 100644 include/dt-bindings/iio/adc/mediatek,mt6370_adc.h
->
-> Applied, thanks.
+On Mon, 8 Aug 2022 13:15:24 +0300, Krzysztof Kozlowski wrote:
+> Bartlomiej's Samsung email address is not working since around last
+> year and there was no follow up patch take over of the drivers, so drop
+> the email from maintainers.
+> 
+> 
 
-Without the backlight schema applied, this is the result:
+Applied, thanks!
 
-./Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml: Unable
-to find schema file matching $id:
-http://devicetree.org/schemas/leds/backlight/mediatek,mt6370-backlight.yaml
-/builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:
-pmic@34: backlight: False schema does not allow {'compatible':
-['mediatek,mt6370-backlight'], 'mediatek,bled-channel-use': b'\x0f'}
- From schema: /builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
-/builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:
-pmic@34: charger: False schema does not allow {'compatible':
-['mediatek,mt6370-charger'], 'interrupts': [[48], [68], [6]],
-'interrupt-names': ['attach_i', 'uvp_d_evt', 'mivr'], 'io-channels':
-[[1, 5]], 'usb-otg-vbus-regulator': {'regulator-name':
-['mt6370-usb-otg-vbus'], 'regulator-min-microvolt': [[4350000]],
-'regulator-max-microvolt': [[5800000]], 'regulator-min-microamp':
-[[500000]], 'regulator-max-microamp': [[3000000]], 'phandle': [[2]]}}
- From schema: /builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
-/builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:
-pmic@34: tcpc: False schema does not allow {'compatible':
-['mediatek,mt6370-tcpc'], 'interrupts-extended': [[4294967295, 4, 8]],
-'connector': {'compatible': ['usb-c-connector'], 'label': ['USB-C'],
-'vbus-supply': [[2]], 'data-role': ['dual'], 'power-role': ['dual'],
-'try-power-role': ['sink'], 'source-pdos': [[570527844]], 'sink-pdos':
-[[570527944]], 'op-sink-microwatt': [[10000000]], 'ports':
-{'#address-cells': [[1]], '#size-cells': [[0]], 'port@0': {'reg':
-[[0]], 'endpoint': {'remote-endpoint': [[4294967295]]}}, 'port@1':
-{'reg': [[1]], 'endpoint': {'remote-endpoint': [[4294967295]]}},
-'port@2': {'reg': [[2]], 'endpoint': {'remote-endpoint':
-[[4294967295]]}}}}}
- From schema: /builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
-/builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:
-pmic@34: indicator: False schema does not allow {'compatible':
-['mediatek,mt6370-indicator'], '#address-cells': [[1]], '#size-cells':
-[[0]], 'multi-led@0': {'reg': [[0]], 'function': ['indicator'],
-'color': [[9]], 'led-max-microamp': [[24000]], '#address-cells':
-[[1]], '#size-cells': [[0]], 'led@0': {'reg': [[0]], 'color': [[1]]},
-'led@1': {'reg': [[1]], 'color': [[2]]}, 'led@2': {'reg': [[2]],
-'color': [[3]]}}, 'led@3': {'reg': [[3]], 'function': ['indicator'],
-'color': [[0]], 'led-max-microamp': [[6000]]}}
- From schema: /builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
-/builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:
-pmic@34: flashlight: False schema does not allow {'compatible':
-['mediatek,mt6370-flashlight'], '#address-cells': [[1]],
-'#size-cells': [[0]], 'led@0': {'reg': [[0]], 'led-sources': [[0]],
-'function': ['flash'], 'color': [[0]], 'function-enumerator': [[1]],
-'led-max-microamp': [[200000]], 'flash-max-microamp': [[500000]],
-'flash-max-timeout-us': [[1248000]]}, 'led@1': {'reg': [[1]],
-'led-sources': [[1]], 'function': ['flash'], 'color': [[0]],
-'function-enumerator': [[2]], 'led-max-microamp': [[200000]],
-'flash-max-microamp': [[500000]], 'flash-max-timeout-us':
-[[1248000]]}}
- From schema: /builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
-/builds/robherring/linux-dt/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:
-backlight: mediatek,bled-channel-use: b'\x0f' is not of type 'object',
-'array', 'boolean', 'null'
- From schema: /usr/local/lib/python3.10/dist-packages/dtschema/schemas/dt-core.yaml
+[1/3] MAINTAINERS: Drop Bartlomiej Zolnierkiewicz
+      https://git.kernel.org/krzk/linux/c/20b02590a3f76ee4895a917da28897736b20eda9
+
+Best regards,
+-- 
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>

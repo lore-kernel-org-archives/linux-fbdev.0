@@ -2,142 +2,96 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15296C28B2B
-	for <linux-fbdev@archiver.kernel.org>; Fri, 19 Aug 2022 18:31:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D6F7C00140
+	for <linux-fbdev@archiver.kernel.org>; Sun, 21 Aug 2022 11:17:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349924AbiHSSb0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 19 Aug 2022 14:31:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50744 "EHLO
+        id S229472AbiHULRr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 21 Aug 2022 07:17:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42502 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349745AbiHSSb0 (ORCPT
+        with ESMTP id S229460AbiHULRq (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 19 Aug 2022 14:31:26 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D6336C88AD;
-        Fri, 19 Aug 2022 11:31:24 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 613F760ED3;
-        Fri, 19 Aug 2022 18:31:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 20ABDC433C1;
-        Fri, 19 Aug 2022 18:31:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1660933883;
-        bh=QuVIEsO5UmTSs0WAutUfIo3fcQXR0O4vobQR36XYVSg=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=cSjeOqirADj4Mc3kI1ZuL8qZNGqPPgBJn9hY2YHPn3SQ1tTyxfIJNOdnsJsL/o5k/
-         Ua/O/sYZA5BSSACK4VYQnbdsrlVlJJvxXxZ8XSlTHSMNdSxueO5WoPN174PHR//gta
-         w3h1uVu45NCg0OMgIGLRaQcfI3XNRABlXxFaH1xehc/X7R9oj5b+n5q9HmX6ogPDgi
-         3zP60Z9aFLZICznzQrSfjkRd++M7wE8qhYd0RVvLPUkycIXDOB4vGU9vHYX1MpqJ87
-         Y/eUIERAJrU09SDuUX2pkBL4pa5ClmKufZeiVTDs1LSKzPMIgWeOmu2ML+0zYmHOqJ
-         9eiva/pJe+7sA==
-Date:   Fri, 19 Aug 2022 19:41:50 +0100
-From:   Jonathan Cameron <jic23@kernel.org>
-To:     Rob Herring <robh@kernel.org>
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Michael Hennerich <Michael.Hennerich@analog.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Lucas Stankus <lucas.p.stankus@gmail.com>,
-        Puranjay Mohan <puranjay12@gmail.com>,
-        Cosmin Tanislav <cosmin.tanislav@analog.com>,
-        Alexandru Tachici <alexandru.tachici@analog.com>,
-        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
-        Marcus Folkesson <marcus.folkesson@gmail.com>,
-        Kent Gustavsson <kent@minoris.se>,
-        Tomislav Denis <tomislav.denis@avl.com>,
-        Oleksij Rempel <linux@rempel-privat.de>, kernel@pengutronix.de,
-        Antoniu Miclaus <antoniu.miclaus@analog.com>,
-        Ricardo Ribalda <ribalda@kernel.org>,
-        Dragos Bogdan <dragos.bogdan@analog.com>,
-        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
-        Lorenzo Bianconi <lorenzo@kernel.org>,
-        Stefan Popa <stefan.popa@analog.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Mike Looijmans <mike.looijmans@topic.nl>,
-        Tomas Melin <tomas.melin@vaisala.com>,
-        Sean Nyekjaer <sean@geanix.com>,
-        Patrick Vasseur <patrick.vasseur@c-s.fr>,
-        Charles-Antoine Couret <charles-antoine.couret@essensium.com>,
-        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Philippe Reynes <tremyfr@yahoo.fr>,
-        Jacopo Mondi <jacopo@jmondi.org>,
-        Akinobu Mita <akinobu.mita@gmail.com>,
-        Alexandru Lazar <alazar@startmail.com>,
-        Oskar Andero <oskar.andero@gmail.com>,
-        =?UTF-8?B?TcOlcnRlbg==?= Lindahl <martenli@axis.com>,
-        Angelo Compagnucci <angelo.compagnucci@gmail.com>,
-        Matt Ranostay <matt.ranostay@konsulko.com>,
-        Andrew Davis <afd@ti.com>,
-        Gregory Clement <gregory.clement@bootlin.com>,
-        Phil Reid <preid@electromag.com.au>,
-        Michael Welling <mwelling@ieee.org>,
-        Lukas Wunner <lukas@wunner.de>,
-        Chris Coffey <cmc@babblebit.net>,
-        Slawomir Stepien <sst@poczta.fm>,
-        Sankar Velliangiri <navin@linumiz.com>,
-        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v3 00/10] dt-bindings: iio: use
- spi-peripheral-props.yaml
-Message-ID: <20220819194150.23f47751@jic23-huawei>
-In-Reply-To: <20220818145248.GD1829017-robh@kernel.org>
-References: <20220816124321.67817-1-krzysztof.kozlowski@linaro.org>
-        <20220818145248.GD1829017-robh@kernel.org>
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.34; x86_64-pc-linux-gnu)
+        Sun, 21 Aug 2022 07:17:46 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 13614267E
+        for <linux-fbdev@vger.kernel.org>; Sun, 21 Aug 2022 04:17:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1661080662;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=AxRts5aJ3HNvwn7dKavqQBNSNcUCmP54o8Yv9Iyp9m8=;
+        b=QX+/DQd4kMm+qXpd4NAIY58fbgErGzZ0LXKLlKNdboqoA75Lox28dT4oqa6LafGNwgeI3D
+        ppGsMRC9qeq09WhFWADMZvtQfvdfZm8pFApUduEVSpXnrKC0ZiP6DABp2G2YTzyQygpCjF
+        gIfO/SLtQVyKRHEc3xpcgitwMH3alNg=
+Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com
+ [209.85.216.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-170-O2uTnf06Ns-SB7qyXtUxJQ-1; Sun, 21 Aug 2022 07:17:41 -0400
+X-MC-Unique: O2uTnf06Ns-SB7qyXtUxJQ-1
+Received: by mail-pj1-f69.google.com with SMTP id rj3-20020a17090b3e8300b001fae0be4dc4so4568960pjb.7
+        for <linux-fbdev@vger.kernel.org>; Sun, 21 Aug 2022 04:17:41 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc;
+        bh=AxRts5aJ3HNvwn7dKavqQBNSNcUCmP54o8Yv9Iyp9m8=;
+        b=QYEGv+iv7nbZ1OkNVLplCQodr1Zc68QjvRwMs63oYydpTOQyIhPu+9j4qF3zmwlW7C
+         2jKa66/wrAvo8xuFfltO8QAd2Qz4K1iAuyyu91tEDVMIxAke71lSAmaFpLTdHsK/GrJv
+         qW4xaRbTzZWlBHT1pJSyDyrhdjreCO79Wn1OjfYTa8F4NnYD5gUa5hTvcFFWIu+oen7/
+         sGZXW/297h8dYvNcI500cLAQuhxEJwqzIJ9w7WJJUeCFPswPFyWwi2+WYe8V1j72cgaF
+         d1o2IZaG7AlPhGU7+7JTp7ju9hZ7lrZrMsdX/EV1aDa/mhwwkv7/I7JZYTxMLY453Gcg
+         yOvA==
+X-Gm-Message-State: ACgBeo0l/8iYoNAD/mR7NNeHoLCTPO5P39+leJxw2DHXhcG1lrfHFZJI
+        PeEUHjZz3i7JPgt5nlyvyOYSuqpi5x/8JQZwn7sU1p53nECarPfvjEzmJ9PqtqJLcKAUfWFFM3f
+        cNQFZ7KdgU3fkSCihFhiKDKo=
+X-Received: by 2002:a17:90a:e586:b0:1fa:d28b:ab9b with SMTP id g6-20020a17090ae58600b001fad28bab9bmr16538360pjz.47.1661080660366;
+        Sun, 21 Aug 2022 04:17:40 -0700 (PDT)
+X-Google-Smtp-Source: AA6agR4kgULb8Oe4M5i8Q1aOVIChTcGskCxiNDQX9B8sJq/7wZLjPKLFXM/9i4rUtW/O1NjahDdO7Q==
+X-Received: by 2002:a17:90a:e586:b0:1fa:d28b:ab9b with SMTP id g6-20020a17090ae58600b001fad28bab9bmr16538337pjz.47.1661080660102;
+        Sun, 21 Aug 2022 04:17:40 -0700 (PDT)
+Received: from xps13.. ([240d:1a:c0d:9f00:4f2f:926a:23dd:8588])
+        by smtp.gmail.com with ESMTPSA id w128-20020a623086000000b00536463e3802sm2835382pfw.36.2022.08.21.04.17.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 21 Aug 2022 04:17:39 -0700 (PDT)
+From:   Shigeru Yoshida <syoshida@redhat.com>
+To:     deller@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, Shigeru Yoshida <syoshida@redhat.com>
+Subject: [PATCH] fbcon: Destroy mutex on freeing struct fb_info
+Date:   Sun, 21 Aug 2022 20:17:31 +0900
+Message-Id: <20220821111731.247446-1-syoshida@redhat.com>
+X-Mailer: git-send-email 2.37.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, 18 Aug 2022 08:52:48 -0600
-Rob Herring <robh@kernel.org> wrote:
+It's needed to destroy bl_curve_mutex on freeing struct fb_info since
+the mutex is embedded in the structure and initialized when it's
+allocated.
 
-> On Tue, Aug 16, 2022 at 03:43:11PM +0300, Krzysztof Kozlowski wrote:
-> > Hi,
-> > 
-> > The patchset is independent of my other recent changes around SPI, so feel free
-> > to apply it for next release.
-> > 
-> > Changes since v2
-> > ================
-> > 1. Keep spi-3wire also in device bindings (not in spi-peripheral-props.yaml).
-> > 2. Add Rb tag.
-> > 
-> > Changes since v1
-> > ================
-> > 1. Continue the rework for entire IIO.
-> > v1: https://lore.kernel.org/all/20220715095302.214276-1-krzysztof.kozlowski@linaro.org/
-> > 
-> > Best regards,
-> > Krzysztof
-> > 
-> > Krzysztof Kozlowski (10):
-> >   dt-bindings: iio: adc: use spi-peripheral-props.yaml
-> >   dt-bindings: iio: accel: use spi-peripheral-props.yaml
-> >   dt-bindings: iio: amplifiers: adi,ada4250: use
-> >     spi-peripheral-props.yaml
-> >   dt-bindings: iio: dac: use spi-peripheral-props.yaml
-> >   dt-bindings: iio: frequency: adf4371: use spi-peripheral-props.yaml
-> >   dt-bindings: iio: health: ti,afe4403: use spi-peripheral-props.yaml
-> >   dt-bindings: iio: imu: use spi-peripheral-props.yaml
-> >   dt-bindings: iio: potentiometer: use spi-peripheral-props.yaml
-> >   dt-bindings: iio: samsung,sensorhub-rinato: use
-> >     spi-peripheral-props.yaml
-> >   dt-bindings: iio: temperature: use spi-peripheral-props.yaml  
-> 
-> For the series,
-> 
-> Reviewed-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Shigeru Yoshida <syoshida@redhat.com>
+---
+ drivers/video/fbdev/core/fbsysfs.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Series applied to the togreg branch of iio.git and pushed out as testing
-
-Thanks,
-
-Jonathan
+diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
+index c2a60b187467..4d7f63892dcc 100644
+--- a/drivers/video/fbdev/core/fbsysfs.c
++++ b/drivers/video/fbdev/core/fbsysfs.c
+@@ -84,6 +84,10 @@ void framebuffer_release(struct fb_info *info)
+ 	if (WARN_ON(refcount_read(&info->count)))
+ 		return;
+ 
++#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
++	mutex_destroy(&info->bl_curve_mutex);
++#endif
++
+ 	kfree(info->apertures);
+ 	kfree(info);
+ }
+-- 
+2.37.2
 

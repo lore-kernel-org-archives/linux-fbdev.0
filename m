@@ -2,147 +2,111 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F28CFC28D13
-	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Aug 2022 18:06:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C007CC28D13
+	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Aug 2022 20:02:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236446AbiHVSGJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 22 Aug 2022 14:06:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57082 "EHLO
+        id S231426AbiHVUCS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 22 Aug 2022 16:02:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52532 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236523AbiHVSGD (ORCPT
+        with ESMTP id S231839AbiHVUBq (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 22 Aug 2022 14:06:03 -0400
-Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D20654622A;
-        Mon, 22 Aug 2022 11:06:00 -0700 (PDT)
-Received: by mail-wr1-x434.google.com with SMTP id n4so14186420wrp.10;
-        Mon, 22 Aug 2022 11:06:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc;
-        bh=Csmpukwgo5IDJeAZNtEo51qxCB580Q6PQAbe+39XAEs=;
-        b=flMnpNlyMf98yXaTDUHLxaouu8dZiDrDL/ODHRRNw7MGZaD5AlbSioph709BtOkrFw
-         IZBoL15cn+9jUk/wMVedfuN1Rw0dYL83uNaRb24qCeOPdMTt9dHl1NdRox4nNATn3+m7
-         mvrJE2rek2CBrrBz3CIewfmNRX6gnifg/wv69uOq6QjFhG9ti/uRG4h4FPzd2I6+Baj8
-         BPcbN2TwmTC6JNZfi9F3+oFDr+RZDBtKY3H30SUzIHPz5WxO1eak1WcocbAYq6B2pCHQ
-         5NMkHTTcV0shr+GkeNH6my6Bk4JbRPIsvijstncvdvs4PrecIbQyKmm+7OOi3E2SKmof
-         tLSA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc;
-        bh=Csmpukwgo5IDJeAZNtEo51qxCB580Q6PQAbe+39XAEs=;
-        b=H412pHp10QzACLGw5WxWYz04+1QCvNXGHarVRhEfG/Zr63UujPwbWfbYtAAV9VcH67
-         uGVdnRlptQX1IZwAFrySxYNXzw9r2K0NAJA5sBAgUwdNvd/z1Seor4Z0SZ6qzcpoFabF
-         +qfar4NfAG22aysX3D+eaam0wj7YZFdQ9/VpqJgLiNF0UPie+2cVZjVl/MHJjrjkWp1Y
-         H8cGJpNMajzVqtNEYiXXQyhM276e5x6JlS66ShR6NdlnYjM0u7RwjjvI0/z2L5P5GqBy
-         PY6HBFrL22VqtinGIqCKJAlbH6PUK4Oegc82I+gezTIW/ata/hQ5LblQ8lmDYQsOGtKx
-         B6xw==
-X-Gm-Message-State: ACgBeo2FwCD81XKhEI5/mqPnLL+P1QWBXrixDJTQ9X2BdRHYyVuymSzd
-        ltf54Wyo+p9hjdMBnOdgj3E=
-X-Google-Smtp-Source: AA6agR6ZvTHnMaSxUzmtXd4F93OXpQZlDYmNRtz2QDv3B2maMzfD5b1HRYZ40Q/fTsDqOPFurm3I/g==
-X-Received: by 2002:a5d:634f:0:b0:225:2ab4:d539 with SMTP id b15-20020a5d634f000000b002252ab4d539mr11042085wrw.149.1661191559446;
-        Mon, 22 Aug 2022 11:05:59 -0700 (PDT)
-Received: from [192.168.1.100] (p54a07b82.dip0.t-ipconnect.de. [84.160.123.130])
-        by smtp.gmail.com with ESMTPSA id w3-20020adfde83000000b002253af82fa7sm11469438wrl.9.2022.08.22.11.05.58
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 22 Aug 2022 11:05:59 -0700 (PDT)
-Message-ID: <434d644b-2688-c3e8-814e-b9b2f2b86f85@gmail.com>
-Date:   Mon, 22 Aug 2022 20:05:57 +0200
+        Mon, 22 Aug 2022 16:01:46 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D20674F1B7;
+        Mon, 22 Aug 2022 13:01:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1661198500;
+        bh=/HVZ+xOkNcVqHqHL/iHvMYARw63vUPNEyxS9u7NvFTo=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=JKEhK7op/x5hysw53rOD1wtab6fOH2y/6ZTNst3s4ZImGikcThUdKUjKsml+hHNxd
+         wOaRisIKYB/JXFbQpMJjTiIeoruXYr7c+Do1w2VFhdKjZQ8nCTiWmeH/1ViN6UhcSW
+         tOepeBRJcw54ZxYEt9fxzk9usV/d6WOPjPLSby6w=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.190.222]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MysRu-1pKg5e2vnW-00vvtC; Mon, 22
+ Aug 2022 22:01:40 +0200
+Message-ID: <990e35c0-4044-0597-be3b-6cd2ce856ee7@gmx.de>
+Date:   Mon, 22 Aug 2022 22:01:39 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH] Split multiple assignments to individual lines.
+ Thunderbird/91.12.0
+Subject: Re: [PATCH] video: move from strlcpy with unused retval to strscpy
 Content-Language: en-US
-To:     Christopher Carbone <chris.m.carbone@gmail.com>,
-        sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-        gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-References: <YwOjt+ZrQkKFGRH9@valhalla>
-From:   Philipp Hortmann <philipp.g.hortmann@gmail.com>
-In-Reply-To: <YwOjt+ZrQkKFGRH9@valhalla>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To:     Wolfram Sang <wsa+renesas@sang-engineering.com>,
+        linux-kernel@vger.kernel.org
+Cc:     Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+References: <20220818210118.7541-1-wsa+renesas@sang-engineering.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20220818210118.7541-1-wsa+renesas@sang-engineering.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:RIpqWJarXn9cdwKTP4AP4KA+E5c2eVCYsdl+uqAoTNtf1qaxygZ
+ GYDp/bp6jzL97WUoKEg2KmfiQfJ84rRbqK+3SZeCsGamqPGtQjJc5nlK3WxBDFmk2rzwIMq
+ mN48AlYcqmoBk4SAOP9BWcpzWY1mcakSpqNO/NDiAxOcE2Fxvj5/YAcNLgOIudZA1Poq/VF
+ YJUlpf4eEP7sWxiM94NNg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:lyRoG9DPmXs=:w0XTBK9nGNrRoVnT5oS5EA
+ ZnapclZ6gpifSlo661TgOB8CPdY0o2dtiVSw9LKXME6igf+rqoo4f8sNy6xEGlXICifzsE4w7
+ WtFzTTTIPy2GEt0iaJMTt3Gaecpm8NcIx/TJwEaHXLsP6xWr8FGKVLDR77nDuU0FdU2W+vJrh
+ j6lLfvikEgMC8Gssu1ENXtOkVGbDVdBeGMpyoP2iBL4LEaqI85q5GQFx+++e7LbBUqbD9Ehjj
+ feBZMX28sG+Hd/7vXhWcww0LQaAGvaHBzFtICsh6ujYh387qyCS5Cz66BvyRmspA/qgjJZnf5
+ MRVRBq1PyFtUKNfr8oD24CgDfg4jGPWBX/SC1j1CbHLouSR7RtDNgwMCd2KBZX63t+zNC+JdV
+ 4ThyRbuGxZB8ZQr3xHurJveiGRbwbkCiEFwSLTb9WGKyl6xWHltm9/+ZEONve5g+oAFb5ZfVS
+ WQqqZ9XIb7vxVJPVdLQyj6IAAIRkPVrbtF/ZoLxHOMb8/JuXLq1vB17Thg1yD/jjGosfzM4iP
+ AG0fgtXjZE2CSrREn1UM/SHUbCmRg2jxrHFAAj8kzpl1ofERTqs7DnYH8j8YMva5MepWNTweF
+ I0d5cEPZBdGKR6Wn/Bg78/hA+RWFuWj2TTZ/6Jg7zKa2ejW+QmsQHpfTODzEhU2EsZq+ctRA8
+ mb5b8DE/F7sRy0wGjbpC7YIhIhivnv99vQo+7gUViacaI9bFJbZCxhFpGi5RCrVsPCGv3liVo
+ X393zz/kDYs34EOqHg41q0cFIhpQOlMihZyB6PJXUNHqKsz5yl6PluuKa4zqd4kjp+VeNowC0
+ uFYayC/AEWLtuULXrNKfeySMvdxKlGK55Hcd6UXN2V1EqYTgk+/H7I2AW8WIOZejCnBLg2fRY
+ c53/jCeFDnKFB+xPMIAzDj/TNSaTSoBVla/u4EGR1Et+QVdf7Fy+HO/ENhKbACcEfUM5JupH+
+ AnLlSccLE6H5tp9B0W3s51ctQrjJhkRQAv+CRNzSr2z/VbCK/gzDsFuwPdkZcaev5QvFHCELY
+ 45iTTzyiX0xcmbUmgwufq0MoHpxzgxg8nGWs5LC1sikS4up/HYgbHK2yk9SRuT7ne+Gu9RpYh
+ 9eNDxIf1x1hesSyov203OMam1g7sw7GS3C9Q2YUFJFuDDRvUpFFVwtaWw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 8/22/22 17:41, Christopher Carbone wrote:
-> Adhere to Linux kernel coding style.
-> 
-> Reported by checkpatch:
-> 
-> CHECK: multiple assignments should be avoided
-> 
-> Signed-off-by: Christopher Carbone <chris.m.carbone@gmail.com>
-> ---
->   drivers/staging/sm750fb/sm750.c | 12 ++++++++----
->   1 file changed, 8 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-> index dbd1159a2ef0..a0f8ae359248 100644
-> --- a/drivers/staging/sm750fb/sm750.c
-> +++ b/drivers/staging/sm750fb/sm750.c
-> @@ -386,7 +386,8 @@ static int lynxfb_ops_set_par(struct fb_info *info)
->   
->   	ret = lynxfb_set_color_offsets(info);
->   
-> -	var->height = var->width = -1;
-> +	var->width = -1;
-> +	var->height = var->width;
->   	var->accel_flags = 0;/*FB_ACCELF_TEXT;*/
->   
->   	if (ret) {
-> @@ -498,7 +499,8 @@ static int lynxfb_ops_check_var(struct fb_var_screeninfo *var,
->   		return ret;
->   	}
->   
-> -	var->height = var->width = -1;
-> +	var->width = -1;
-> +	var->height = var->width;
->   	var->accel_flags = 0;/* FB_ACCELF_TEXT; */
->   
->   	/* check if current fb's video memory big enough to hold the onscreen*/
-> @@ -723,7 +725,8 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
->   		0x800f0 + (int)crtc->channel * 0x140;
->   
->   	pr_info("crtc->cursor.mmio = %p\n", crtc->cursor.mmio);
-> -	crtc->cursor.max_h = crtc->cursor.max_w = 64;
-> +	crtc->cursor.max_w = 64;
-> +	crtc->cursor.max_h = crtc->cursor.max_w;
->   	crtc->cursor.size = crtc->cursor.max_h * crtc->cursor.max_w * 2 / 8;
->   	crtc->cursor.vstart = sm750_dev->pvMem + crtc->cursor.offset;
->   
-> @@ -1027,7 +1030,8 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
->   	if (!sm750_dev)
->   		return err;
->   
-> -	sm750_dev->fbinfo[0] = sm750_dev->fbinfo[1] = NULL;
-> +	sm750_dev->fbinfo[1] = NULL;
-> +	sm750_dev->fbinfo[0] = sm750_dev->fbinfo[1];
->   	sm750_dev->devid = pdev->device;
->   	sm750_dev->revid = pdev->revision;
->   	sm750_dev->pdev = pdev;
+On 8/18/22 23:01, Wolfram Sang wrote:
+> Follow the advice of the below link and prefer 'strscpy' in this
+> subsystem. Conversion is 1:1 because the return value is not used.
+> Generated by a coccinelle script.
+>
+> Link: https://lore.kernel.org/r/CAHk-=3DwgfRnXz0W3D37d01q3JFkr_i_uTL=3DV=
+6A6G1oUZcprmknw@mail.gmail.com/
+> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
+applied.
+Thanks!
 
-Hi,
+Helge
 
-the subsystem and the device is missing in the Subject.
-
-I propose you look into https://kernelnewbies.org/FirstKernelPatch to 
-read about the Subject.
-
-I personally prefer more this:
-
- > +	sm750_dev->fbinfo[1] = NULL;
- > +	sm750_dev->fbinfo[0] = NULL;
-
-That gives a better overview.
-
-Thanks for your support.
-
-Bye Philipp
-
+>  drivers/video/console/sticore.c                | 2 +-
+>  drivers/video/fbdev/aty/atyfb_base.c           | 2 +-
+>  drivers/video/fbdev/aty/radeon_base.c          | 2 +-
+>  drivers/video/fbdev/bw2.c                      | 2 +-
+>  drivers/video/fbdev/cirrusfb.c                 | 2 +-
+>  drivers/video/fbdev/clps711x-fb.c              | 2 +-
+>  drivers/video/fbdev/core/fbcon.c               | 2 +-
+>  drivers/video/fbdev/cyber2000fb.c              | 8 ++++----
+>  drivers/video/fbdev/ffb.c                      | 2 +-
+>  drivers/video/fbdev/geode/gx1fb_core.c         | 6 +++---
+>  drivers/video/fbdev/gxt4500.c                  | 2 +-
+>  drivers/video/fbdev/i740fb.c                   | 2 +-
+>  drivers/video/fbdev/imxfb.c                    | 2 +-
+>  drivers/video/fbdev/matrox/matroxfb_base.c     | 6 +++---
+>  drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 2 +-
+>  drivers/video/fbdev/pxa168fb.c                 | 2 +-
+>  drivers/video/fbdev/pxafb.c                    | 2 +-
+>  drivers/video/fbdev/s3fb.c                     | 2 +-
+>  drivers/video/fbdev/simplefb.c                 | 2 +-
+>  drivers/video/fbdev/sis/sis_main.c             | 4 ++--
+>  drivers/video/fbdev/sm501fb.c                  | 2 +-
+>  drivers/video/fbdev/sstfb.c                    | 2 +-
+>  drivers/video/fbdev/sunxvr1000.c               | 2 +-
+>  drivers/video/fbdev/sunxvr2500.c               | 2 +-
+>  drivers/video/fbdev/sunxvr500.c                | 2 +-
+>  drivers/video/fbdev/tcx.c                      | 2 +-
+>  drivers/video/fbdev/tdfxfb.c                   | 4 ++--
+>  drivers/video/fbdev/tgafb.c                    | 2 +-
+>  drivers/video/fbdev/tridentfb.c                | 2 +-
+>  29 files changed, 38 insertions(+), 38 deletions(-)

@@ -2,99 +2,98 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FBFBC28D13
-	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Aug 2022 20:09:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1658CC32792
+	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Aug 2022 20:12:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232242AbiHVUJh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 22 Aug 2022 16:09:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35804 "EHLO
+        id S232585AbiHVUMV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 22 Aug 2022 16:12:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38536 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232278AbiHVUJc (ORCPT
+        with ESMTP id S231253AbiHVUMU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 22 Aug 2022 16:09:32 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0CC6452450;
-        Mon, 22 Aug 2022 13:09:30 -0700 (PDT)
+        Mon, 22 Aug 2022 16:12:20 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4D75953031;
+        Mon, 22 Aug 2022 13:12:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1661198965;
-        bh=vM8dIaRuq/YyehZA7pwQXyRcVb/iqx4/5RXN88g/5yk=;
+        s=badeba3b8450; t=1661199123;
+        bh=Yr61DvE6j42KsMElufQGNSb79h22pZ+ZKTYiKvo0h3E=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=FHe5bxd/m91Xqz8hJnf4R/2aI49TeCdh6y1KyycViLZI5eVSfrUZzNbHSS3np9Pzp
-         z5ie0nYjWxJr8rJRpG4giWYTyAbqe2uget3xw8N1hyIg0drbCEiAMPVT4NvgsMTFJ0
-         Cr6gTxtplVEbcFIThwf2cPgLCQIk6uf5Lml0jhh0=
+        b=ZOXSbnMYN4szxajuG1iqeEVq1Okl5avFp794xqc9o1qMoThXRYsmgHG7Oq2A9b2Nx
+         2d0p3epqapdTgDLt3lFtb2OUGx/Yjo9ioUIgIky+8ApIhoEayXXKYLd1Qn5JChxaH4
+         BeTYLHA/++pQWLLwZ/AuCX3HYD2PbpEllTmJ3WLA=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.190.222]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mk0NU-1pAFrB00Vc-00kLGk; Mon, 22
- Aug 2022 22:09:25 +0200
-Message-ID: <5fcc858a-c9f2-0a9c-ded9-5df2d794e3be@gmx.de>
-Date:   Mon, 22 Aug 2022 22:09:23 +0200
+Received: from [192.168.20.60] ([92.116.190.222]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1N17UQ-1pREZF0zjG-012avd; Mon, 22
+ Aug 2022 22:12:03 +0200
+Message-ID: <b3c19a63-d9f8-028b-e59a-e428be1ed8be@gmx.de>
+Date:   Mon, 22 Aug 2022 22:11:58 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.12.0
-Subject: Re: [PATCH] fbcon: Destroy mutex on freeing struct fb_info
+Subject: Re: [PATCH -next] video: fbdev: chipsfb: add missing
+ pci_disable_device() in chipsfb_pci_init()
 Content-Language: en-US
-To:     Shigeru Yoshida <syoshida@redhat.com>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-References: <20220821111731.247446-1-syoshida@redhat.com>
+To:     Yang Yingliang <yangyingliang@huawei.com>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org
+Cc:     mpe@ellerman.id.au, christophe.leroy@csgroup.eu,
+        benh@kernel.crashing.org
+References: <20220819085752.1909541-1-yangyingliang@huawei.com>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220821111731.247446-1-syoshida@redhat.com>
+In-Reply-To: <20220819085752.1909541-1-yangyingliang@huawei.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:wzAQ+Bzi2y+wnwtxdQ3Yh8A8Ue1WmeKBSk3OxvudWmIMPj8FvMF
- 1Or2PMxUF4oW3Y95M2RWK56cDZk0IE7uyI7o3VlNKI9/waB0hLyJEuflAcvJaln/BPjJe/J
- EYFrUAnhShD2IV+2ylG6f7BQIvP1zN5uLpnWPqTU7vTKzd/Da9dKSTSCCXAt5BKplTFNAvd
- axHr1aMdYjt5YesvTzqHQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:RdCxWpvtXEE=:9E5cH3on88rnyv/vob6GXh
- RG7v94IoM1Y4H1Cv+c8XldzzygqbKr3N6xkqxYN6ZXBjP01cdyO9PJgdvA+l0Ws2CvfgB86Bf
- leNTbh1i9wx72zMF4A4vg6qYewdxREdGrxUsHvEALvNYmiVi08LpEW57QLN4cx6kXFTt32mxx
- trK6LDJPWoUDOrTtS0gVopd1vNTpFLWv4UuTiZsDQ/6g7QloiiwBjpWwewoM+0krD2tt+emiO
- dQs5Ik6HiJAkKZ0PE0LC5TrOEDqPA6XRBGF6jkBxKDA7BFSTbPuS0vjgBX/RL9TUgbhRx7zfG
- JeoKIZi3fgSiAMFXuMdWRt/GO3KAixGOeKKprN9DkW7tMJuyGAarliY4ulTNT+tsrfv9qUvkk
- 6AQEO1VykNXoCL0IsScXaA/qbfGGMFcqAy5S9BDHaj80lah3frd+MUScZp+l+LMXUILqwChs7
- 5Ywfg2gTxb4+8cXbDs7qXehX/yHbY7xZieOrFGgQpx5kZoCe/Ny0YsVFb99cTN/on69r9bPV2
- Wp8zyFSJgj+PmnPid/vbgi2j0eOKDMyxoIZTIE5gOItWhT1QImBHnRGeuQ67G3jq9K9yNhvM8
- v5EA1aJl/PlWVCmohnUX2BByfGm0T7gvK4UhDSSwcway2/IJE0uW97RAlGsPerH0IlIRS/pLh
- C3vVHiI8R9TKllvssRkPIL+l5Qwwu0PlLS5KbmvV1J5TWNYSReq1CnHa/lMxJ/B1mu2CInI62
- Bf2an6VqkiqDH+qQhjdAyDy5EF90XpS7Ama+ACuU0rzmlzcNyVz9k+/DYdXDWMMf16Pk7fgx9
- bqaP6WQ/f6o+GkS5F7xfnjXv/lL8OW4hyJ4Oypz4SNxE9YRd2LzJdv1LhysLzSgd0n/3sHg+H
- SWc8z0zcqwpDfxKVuVDag0aa5pLa+Bh3R9T6ypwzeLwcdzDb7zDWtLaFJRNQb3KPBQCapZJvD
- TRRAFunscZx7qAtU+ZpqDN6EazMdAKTEi3lsqCci1aQCxEYtpP0ew3ZTkQY1wjCrzB/6AytFm
- x1NKtnTJkAl5ySQ2YQPZY3R6GXe61JMS4R869JV0hOAjQ9JKMRCg34WYiunn5JNHCMWkVlUke
- NuUJBSZQPhoQKx9Pj19ToKNoXb8Y0APLdAxoWgoNc3CeouIJ6j7dGHXmQ==
+X-Provags-ID: V03:K1:iaJIJz9NwvfVUJgq3SuvteaGHMXdzmZFQ9lfmtKPDYvfREYcfas
+ /M0rcTAP77PhKqc8UzkQyUQIwI+6i23y2lfeOK8n7iPfFdzrhIyAspwjm4AbwNKcGYLahC/
+ CZhzRxdCNueumKvqKSYGXUPdyOE5kPzdg1oNdRXiM78urVk1r7/xVU2vetAEyRzSJSJ44zl
+ 0nkI60gpC5IjTSsJXdrEA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:x6bOX75q4ds=:JnQwJlHAqjEpfC6l5T7/lD
+ +aN2YBGR1An0UL1f/A10sJbh1ssBOZlFNc++tdxaJir4SjDOzoZMg0ay7FrkrbJfDiFFqqx4R
+ q+Jyy/uAkdfdKCwQDHM4jgaCM8Tm5ivnRKG04KYPc5e41sKaka46j27QY6NFqor2jKfR3xHn4
+ ebksuNkV9QBZfPGk/GrsmxqkdAhnT09Xyr0naowISC61sx0Ui8V2+9Xh5sZrZFpLqAYsbZCQ7
+ Ds+N3Ac+lpIPpvs5J7qu3x+hfgTrc85nViqQ+qZ+wlC0SZ5LKbMdFbMIaSZzO0i2RNBtQQabq
+ TvyyCezDgR0IL4Wc16Pi7BiDqhwpsXo/FCZ0bDVC8zvLOFDJCtxBPBkmktD6wYIHK0t+hcack
+ hVE7ztN/Xt/22hoa8i2g7oHAeeoLnfRkBG3b2PGm85tHicRutTG/Sr3S5lBI6I0cTqsXK8idI
+ z/0YICkVVzDkLyeRzNZRtwYrHY2OMNKydjZF1oW2Q0IAO+XANI9pBI82J1ovLziY4rk+U7R2M
+ Z5zKagGbc0Ua4fVCBr9v6tEPA/J7kyoZcgVSTPuiyrRj0T+nxOkXAqIbwjrxX+lTV6lWs4KSL
+ DM60CTiomIOApJD8KwRWkeuIPKBg15XrqUsPbZ5B0bdUFtg/DudJj9J/1J9N1wyYGJjRQfhIf
+ d+Y4Ks9ymG7TSMRkJ85v4py0hbXKIQ+ujuAIqRpZL9eXKHcn2NAfrgDHZUNwUll+UeAGE70pQ
+ 0ughzFXEJLc0zpv5dqfew52+NDdu2BPKUmEszaXNaWvqPN3TKkuS15bUhbDSL0b1UvDHNciKi
+ 6rd3VzvREdvxvSauj9aWqvXWCbHeLl6ZXR9xxuV8rCpzQ1FSUsE/BfHt/dnnWlSNQXMAu+OaA
+ wtbTUYPU9Th2XxmPJLyp/LI6HVWUNOnVCJm2EIfNP2RNXOkUJXp6h0JJOazXCSi3ueEVg+vk1
+ 28yrFxPL4Dhh2Piw7+lRDjqDBIxyjWu0tv/f6tpC5dQ0V03FPLYJBbwhsnwkrc95gvqC4aU8w
+ xUd/nn/snTXaKznoudO+uthB/mn2RvAt0Kk4iVDPfiLgPu6BdJV6rbM5NRh0xIuHF8wifa4w6
+ 5J30C7iAiCGZjvgZrJbftLQoFYIR1k/+rRoEshTC76u5yfVlOtM1xsjYw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 8/21/22 13:17, Shigeru Yoshida wrote:
-> It's needed to destroy bl_curve_mutex on freeing struct fb_info since
-> the mutex is embedded in the structure and initialized when it's
-> allocated.
+On 8/19/22 10:57, Yang Yingliang wrote:
+> Add missing pci_disable_device() in error path in chipsfb_pci_init().
 >
-> Signed-off-by: Shigeru Yoshida <syoshida@redhat.com>
+> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
 
 applied.
-Thanks,
+Thanks!
 Helge
 
 > ---
->  drivers/video/fbdev/core/fbsysfs.c | 4 ++++
->  1 file changed, 4 insertions(+)
+>  drivers/video/fbdev/chipsfb.c | 1 +
+>  1 file changed, 1 insertion(+)
 >
-> diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/co=
-re/fbsysfs.c
-> index c2a60b187467..4d7f63892dcc 100644
-> --- a/drivers/video/fbdev/core/fbsysfs.c
-> +++ b/drivers/video/fbdev/core/fbsysfs.c
-> @@ -84,6 +84,10 @@ void framebuffer_release(struct fb_info *info)
->  	if (WARN_ON(refcount_read(&info->count)))
->  		return;
->
-> +#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
-> +	mutex_destroy(&info->bl_curve_mutex);
-> +#endif
-> +
->  	kfree(info->apertures);
->  	kfree(info);
+> diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb=
+.c
+> index 393894af26f8..2b00a9d554fc 100644
+> --- a/drivers/video/fbdev/chipsfb.c
+> +++ b/drivers/video/fbdev/chipsfb.c
+> @@ -430,6 +430,7 @@ static int chipsfb_pci_init(struct pci_dev *dp, cons=
+t struct pci_device_id *ent)
+>   err_release_fb:
+>  	framebuffer_release(p);
+>   err_disable:
+> +	pci_disable_device(dp);
+>   err_out:
+>  	return rc;
 >  }
 

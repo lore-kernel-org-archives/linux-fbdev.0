@@ -2,155 +2,99 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB20AC28D13
-	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Aug 2022 20:07:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FBFBC28D13
+	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Aug 2022 20:09:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231253AbiHVUHy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 22 Aug 2022 16:07:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59546 "EHLO
+        id S232242AbiHVUJh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 22 Aug 2022 16:09:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35804 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229491AbiHVUHw (ORCPT
+        with ESMTP id S232278AbiHVUJc (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 22 Aug 2022 16:07:52 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9668A4CA2F;
-        Mon, 22 Aug 2022 13:07:50 -0700 (PDT)
+        Mon, 22 Aug 2022 16:09:32 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0CC6452450;
+        Mon, 22 Aug 2022 13:09:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1661198859;
-        bh=dXpn5pHIlG3QJlIra6cx9HEfiXeMoNnRQ6WKhIoZGP8=;
+        s=badeba3b8450; t=1661198965;
+        bh=vM8dIaRuq/YyehZA7pwQXyRcVb/iqx4/5RXN88g/5yk=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=Dk3l/7qVbk5gZ1+qR/XYUUvjOt5dTjw5qok/vC0c2hj7rdB9FHK3WFuZcZ/BAMEZv
-         X6kHsRC3MQxinclZto+I0kGeBzyh9vKPvqPDwJY0HZIZpoWtssYC4eZlSbgWMShvgg
-         rrxeWFBR39Hik/7bBJ9MTA20Y26Myiid5s9lZhA4=
+        b=FHe5bxd/m91Xqz8hJnf4R/2aI49TeCdh6y1KyycViLZI5eVSfrUZzNbHSS3np9Pzp
+         z5ie0nYjWxJr8rJRpG4giWYTyAbqe2uget3xw8N1hyIg0drbCEiAMPVT4NvgsMTFJ0
+         Cr6gTxtplVEbcFIThwf2cPgLCQIk6uf5Lml0jhh0=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from [192.168.20.60] ([92.116.190.222]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mjj87-1p9Qcz3YLb-00lBVT; Mon, 22
- Aug 2022 22:07:38 +0200
-Message-ID: <7ac99deb-33a1-ca62-510c-e319c759934d@gmx.de>
-Date:   Mon, 22 Aug 2022 22:07:32 +0200
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mk0NU-1pAFrB00Vc-00kLGk; Mon, 22
+ Aug 2022 22:09:25 +0200
+Message-ID: <5fcc858a-c9f2-0a9c-ded9-5df2d794e3be@gmx.de>
+Date:   Mon, 22 Aug 2022 22:09:23 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.12.0
-Subject: Re: [PATCH] video: fbdev: radeon: Clean up some inconsistent
- indenting
+Subject: Re: [PATCH] fbcon: Destroy mutex on freeing struct fb_info
 Content-Language: en-US
-To:     Jiapeng Chong <jiapeng.chong@linux.alibaba.com>,
-        benh@kernel.crashing.org
+To:     Shigeru Yoshida <syoshida@redhat.com>
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, Abaci Robot <abaci@linux.alibaba.com>
-References: <20220819110659.110384-1-jiapeng.chong@linux.alibaba.com>
+        linux-kernel@vger.kernel.org
+References: <20220821111731.247446-1-syoshida@redhat.com>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220819110659.110384-1-jiapeng.chong@linux.alibaba.com>
+In-Reply-To: <20220821111731.247446-1-syoshida@redhat.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:8LWOlxNoMfqPWSTSrv2LuGaTgY/RnlafGOGKIzO9xUNi6shY5P4
- kjwUAg3gSzLawWn44VZZwUlmBF+FtAJf8QjljDjA4wgYhHrf+6myYHVq4AzkR5QXUU/jrXJ
- f5PX+v+GNte1QqB2RtWuOwY5NcQ27K3iNW5tuQzPwyvlVYQhfj+hNG2iG0T9uMMF1qucQGZ
- ir9cui8yyAu5l8UBCzg4w==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:iepqQ7dUop0=:dfvAPfQXoqVBNxapVO52QA
- FXMIlEesCEpsPgBL4u+WqFZ9gHqnfhJhoYc/BaJOkz8c6xHlAe7PyH3eQ098KZnZQR/rjoW+W
- qcMDwQTAtXYHsnb8XrGY+f66mKidBbtme6xw+fClTRgMWrRkXOjNz077di2IcI0ancKSLWD1v
- T6wAOfhX1/jRUiT9MSks9IlamI0vgdvLXWw7n0luINaPHgjakf2sGZb1EXVCJJwphrQclR4rn
- OY399LNqd+utAfLlpAdqDKr/eYEgE2KQyiEm5YgGSJIiOqUxKyxOcgKR0ceTL0R3YnKlFLmNH
- fewSzj44Y6trRAGI16HR9Bl2Tc/BzaoXE4cbkaWeUe3tCeCMzBcl8s0zAVKoqI9YR1PL5lnCT
- K1r8AhT1uo1VPI/MEPszaS7tTO28GChLjF9qMI4LOznZPMLvPTuz/PxefEgtFJz36UgqHO7f3
- DX76ATSMoMQ92rxKVEhbQ1ad//xyXlJxA5D+2aU9Bla9YfWJm0x8GZXAdyjW0jT0Rmk67Vu1V
- tJmU+cQrdZJUXujKg+dw98ctIUC03FYAjgI4r/OB3r1XgzziLeAC13mO8HHDr5P8gSaGsftF4
- /hIsPcIixjleB/fMlEDWQ2FDKnOiQd+l5jJPFt25zJ8KIrQIImhGmaEkiFIQTz/Z9NOzGTb9C
- V1g3UCNk6/e0aTyBWZjcWf4p4N4gr0Tt2GgFf5wSetbsOjowyQsdLLP0ViKap2KNw97EWvCLq
- V0T4mlbS2BWYoLHMputEM+GUbW5Un4lKiO6kk9P65UdkcdaYgs/LQBWEgcTD1EtAvy/EDAOyq
- oIk5bQsQLaA+wrDJa9kgKfudzPXbhUQMWc+on/aar0GPbzoOKNYHGQX+VTBaUT4IR7/t1+Mv1
- gNozYhNS/Zdvp9fTyBzDcgr1lAKwfmZRRH50Npt974DZV0vR2ft9Iz7ODU0bqvtKZq2C7xFL9
- u7giPLjcY3hMygx9RsuJYZHRVUeAj7tINS68hFkfD7CmQg7DprYgC09kVlWUeLESTBB7CdCqb
- aJ0jcgQy8H22z9XD4rNW1M2nFoihykoarlttDa93SnkDVx2n6QXGQ+71bws+S0flZVz35y2dW
- 4e1UXtx2cdmb87wC4emFwygJLLFBpoz7sZbfGS451Hk+ErbB6b+IhdMyA==
+X-Provags-ID: V03:K1:wzAQ+Bzi2y+wnwtxdQ3Yh8A8Ue1WmeKBSk3OxvudWmIMPj8FvMF
+ 1Or2PMxUF4oW3Y95M2RWK56cDZk0IE7uyI7o3VlNKI9/waB0hLyJEuflAcvJaln/BPjJe/J
+ EYFrUAnhShD2IV+2ylG6f7BQIvP1zN5uLpnWPqTU7vTKzd/Da9dKSTSCCXAt5BKplTFNAvd
+ axHr1aMdYjt5YesvTzqHQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:RdCxWpvtXEE=:9E5cH3on88rnyv/vob6GXh
+ RG7v94IoM1Y4H1Cv+c8XldzzygqbKr3N6xkqxYN6ZXBjP01cdyO9PJgdvA+l0Ws2CvfgB86Bf
+ leNTbh1i9wx72zMF4A4vg6qYewdxREdGrxUsHvEALvNYmiVi08LpEW57QLN4cx6kXFTt32mxx
+ trK6LDJPWoUDOrTtS0gVopd1vNTpFLWv4UuTiZsDQ/6g7QloiiwBjpWwewoM+0krD2tt+emiO
+ dQs5Ik6HiJAkKZ0PE0LC5TrOEDqPA6XRBGF6jkBxKDA7BFSTbPuS0vjgBX/RL9TUgbhRx7zfG
+ JeoKIZi3fgSiAMFXuMdWRt/GO3KAixGOeKKprN9DkW7tMJuyGAarliY4ulTNT+tsrfv9qUvkk
+ 6AQEO1VykNXoCL0IsScXaA/qbfGGMFcqAy5S9BDHaj80lah3frd+MUScZp+l+LMXUILqwChs7
+ 5Ywfg2gTxb4+8cXbDs7qXehX/yHbY7xZieOrFGgQpx5kZoCe/Ny0YsVFb99cTN/on69r9bPV2
+ Wp8zyFSJgj+PmnPid/vbgi2j0eOKDMyxoIZTIE5gOItWhT1QImBHnRGeuQ67G3jq9K9yNhvM8
+ v5EA1aJl/PlWVCmohnUX2BByfGm0T7gvK4UhDSSwcway2/IJE0uW97RAlGsPerH0IlIRS/pLh
+ C3vVHiI8R9TKllvssRkPIL+l5Qwwu0PlLS5KbmvV1J5TWNYSReq1CnHa/lMxJ/B1mu2CInI62
+ Bf2an6VqkiqDH+qQhjdAyDy5EF90XpS7Ama+ACuU0rzmlzcNyVz9k+/DYdXDWMMf16Pk7fgx9
+ bqaP6WQ/f6o+GkS5F7xfnjXv/lL8OW4hyJ4Oypz4SNxE9YRd2LzJdv1LhysLzSgd0n/3sHg+H
+ SWc8z0zcqwpDfxKVuVDag0aa5pLa+Bh3R9T6ypwzeLwcdzDb7zDWtLaFJRNQb3KPBQCapZJvD
+ TRRAFunscZx7qAtU+ZpqDN6EazMdAKTEi3lsqCci1aQCxEYtpP0ew3ZTkQY1wjCrzB/6AytFm
+ x1NKtnTJkAl5ySQ2YQPZY3R6GXe61JMS4R869JV0hOAjQ9JKMRCg34WYiunn5JNHCMWkVlUke
+ NuUJBSZQPhoQKx9Pj19ToKNoXb8Y0APLdAxoWgoNc3CeouIJ6j7dGHXmQ==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 8/19/22 13:06, Jiapeng Chong wrote:
-> No functional modification involved.
+On 8/21/22 13:17, Shigeru Yoshida wrote:
+> It's needed to destroy bl_curve_mutex on freeing struct fb_info since
+> the mutex is embedded in the structure and initialized when it's
+> allocated.
 >
-> drivers/video/fbdev/aty/radeon_base.c:2107 radeon_identify_vram() warn: =
-inconsistent indenting.
->
-> Link: https://bugzilla.openanolis.cn/show_bug.cgi?id=3D1932
-> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-> Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+> Signed-off-by: Shigeru Yoshida <syoshida@redhat.com>
 
 applied.
-Thanks!
+Thanks,
 Helge
 
 > ---
->  drivers/video/fbdev/aty/radeon_base.c | 46 +++++++++++++--------------
->  1 file changed, 23 insertions(+), 23 deletions(-)
+>  drivers/video/fbdev/core/fbsysfs.c | 4 ++++
+>  1 file changed, 4 insertions(+)
 >
-> diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev=
-/aty/radeon_base.c
-> index 0a8199985d52..1e6ac7ef3e73 100644
-> --- a/drivers/video/fbdev/aty/radeon_base.c
-> +++ b/drivers/video/fbdev/aty/radeon_base.c
-> @@ -2095,34 +2095,34 @@ static void radeon_identify_vram(struct radeonfb=
-_info *rinfo)
->  	u32 tmp;
+> diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/co=
+re/fbsysfs.c
+> index c2a60b187467..4d7f63892dcc 100644
+> --- a/drivers/video/fbdev/core/fbsysfs.c
+> +++ b/drivers/video/fbdev/core/fbsysfs.c
+> @@ -84,6 +84,10 @@ void framebuffer_release(struct fb_info *info)
+>  	if (WARN_ON(refcount_read(&info->count)))
+>  		return;
 >
->  	/* framebuffer size */
-> -        if ((rinfo->family =3D=3D CHIP_FAMILY_RS100) ||
-> +	if ((rinfo->family =3D=3D CHIP_FAMILY_RS100) ||
->              (rinfo->family =3D=3D CHIP_FAMILY_RS200) ||
->              (rinfo->family =3D=3D CHIP_FAMILY_RS300) ||
->              (rinfo->family =3D=3D CHIP_FAMILY_RC410) ||
->              (rinfo->family =3D=3D CHIP_FAMILY_RS400) ||
->  	    (rinfo->family =3D=3D CHIP_FAMILY_RS480) ) {
-> -          u32 tom =3D INREG(NB_TOM);
-> -          tmp =3D ((((tom >> 16) - (tom & 0xffff) + 1) << 6) * 1024);
-> -
-> - 		radeon_fifo_wait(6);
-> -          OUTREG(MC_FB_LOCATION, tom);
-> -          OUTREG(DISPLAY_BASE_ADDR, (tom & 0xffff) << 16);
-> -          OUTREG(CRTC2_DISPLAY_BASE_ADDR, (tom & 0xffff) << 16);
-> -          OUTREG(OV0_BASE_ADDR, (tom & 0xffff) << 16);
-> -
-> -          /* This is supposed to fix the crtc2 noise problem. */
-> -          OUTREG(GRPH2_BUFFER_CNTL, INREG(GRPH2_BUFFER_CNTL) & ~0x7f000=
-0);
-> -
-> -          if ((rinfo->family =3D=3D CHIP_FAMILY_RS100) ||
-> -              (rinfo->family =3D=3D CHIP_FAMILY_RS200)) {
-> -             /* This is to workaround the asic bug for RMX, some versio=
-ns
-> -                of BIOS doesn't have this register initialized correctl=
-y.
-> -             */
-> -             OUTREGP(CRTC_MORE_CNTL, CRTC_H_CUTOFF_ACTIVE_EN,
-> -                     ~CRTC_H_CUTOFF_ACTIVE_EN);
-> -          }
-> -        } else {
-> -          tmp =3D INREG(CNFG_MEMSIZE);
-> +		u32 tom =3D INREG(NB_TOM);
+> +#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+> +	mutex_destroy(&info->bl_curve_mutex);
+> +#endif
 > +
-> +		tmp =3D ((((tom >> 16) - (tom & 0xffff) + 1) << 6) * 1024);
-> +		radeon_fifo_wait(6);
-> +		OUTREG(MC_FB_LOCATION, tom);
-> +		OUTREG(DISPLAY_BASE_ADDR, (tom & 0xffff) << 16);
-> +		OUTREG(CRTC2_DISPLAY_BASE_ADDR, (tom & 0xffff) << 16);
-> +		OUTREG(OV0_BASE_ADDR, (tom & 0xffff) << 16);
-> +
-> +		/* This is supposed to fix the crtc2 noise problem. */
-> +		OUTREG(GRPH2_BUFFER_CNTL, INREG(GRPH2_BUFFER_CNTL) & ~0x7f0000);
-> +
-> +		if ((rinfo->family =3D=3D CHIP_FAMILY_RS100) ||
-> +		    (rinfo->family =3D=3D CHIP_FAMILY_RS200)) {
-> +			/* This is to workaround the asic bug for RMX, some versions
-> +			 * of BIOS doesn't have this register initialized correctly.
-> +			 */
-> +			OUTREGP(CRTC_MORE_CNTL, CRTC_H_CUTOFF_ACTIVE_EN,
-> +				~CRTC_H_CUTOFF_ACTIVE_EN);
-> +		}
-> +	} else {
-> +		tmp =3D INREG(CNFG_MEMSIZE);
->          }
->
->  	/* mem size is bits [28:0], mask off the rest */
+>  	kfree(info->apertures);
+>  	kfree(info);
+>  }
 

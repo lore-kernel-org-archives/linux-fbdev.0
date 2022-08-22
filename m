@@ -2,590 +2,115 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C88F1C28D13
-	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Aug 2022 20:05:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1D80C28D13
+	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Aug 2022 20:05:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231202AbiHVUFD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 22 Aug 2022 16:05:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57422 "EHLO
+        id S231949AbiHVUFv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 22 Aug 2022 16:05:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57798 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230465AbiHVUFD (ORCPT
+        with ESMTP id S231894AbiHVUFv (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 22 Aug 2022 16:05:03 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 757DC3D5A0;
-        Mon, 22 Aug 2022 13:05:01 -0700 (PDT)
+        Mon, 22 Aug 2022 16:05:51 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9D6F14056E;
+        Mon, 22 Aug 2022 13:05:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1661198679;
-        bh=bW2CW+29+FpqS4ExdCAZJgHe3DkgZ0Aw8e3uQoV6Wh0=;
+        s=badeba3b8450; t=1661198740;
+        bh=vnTzmyaFvZ087BHDz5AGmvLkPA9Da9cTNk4rgkJoGPE=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=ImddwC4LQipBvYzZ6I14KLPrKxd3NeyaUrooD/lHaku/QbYZS5gT0Zr+8u0GE81FP
-         XRCgx7PQ7VyPuRetaqVFgZ1zcELl+PYh2VVOuXjtPd2rNXUwO3MeX20Br4U650fISN
-         yboq9yFJoRULJ5E08lULiNET9RFZ0Hsi1vMv5iQE=
+        b=hBC6xyYHOiolsUgVklqA2opRLxWVGXJ8M71BDXFtHLJeI2yZS0vu+7MjeSm7arQ+5
+         Ccxe2WA7EPgt/6lp0Hj6FNyaOwJuWNN/BIcRPO78WpJJJ6fjDaKmBjjcT2BbGcKCfJ
+         KWIhHwz+QxWXGe5C0czenQXCmWUb0x5Ebq18c2LE=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from [192.168.20.60] ([92.116.190.222]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MpUYu-1pFm6U3hXg-00pr1n; Mon, 22
- Aug 2022 22:04:38 +0200
-Message-ID: <39874c66-59c1-e5fd-5515-855e852205bd@gmx.de>
-Date:   Mon, 22 Aug 2022 22:04:37 +0200
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MBUm7-1obTQZ0gV5-00CvOr; Mon, 22
+ Aug 2022 22:05:40 +0200
+Message-ID: <e8e54b67-e434-9ee2-1999-1f447eb48d44@gmx.de>
+Date:   Mon, 22 Aug 2022 22:05:38 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.12.0
-Subject: Re: [PATCH] video: fbdev: sis_main: Clean up some inconsistent
- indenting
+Subject: Re: [PATCH] fb_pm2: Add a check to avoid potential divide by zero
+ error
 Content-Language: en-US
-To:     Jiapeng Chong <jiapeng.chong@linux.alibaba.com>,
-        thomas@winischhofer.net
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, Abaci Robot <abaci@linux.alibaba.com>
-References: <20220819110414.107565-1-jiapeng.chong@linux.alibaba.com>
+To:     Letu Ren <fantasquex@gmail.com>, baihaowen@meizu.com
+Cc:     zheyuma97@gmail.com, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+References: <20220818104425.35573-1-fantasquex@gmail.com>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220819110414.107565-1-jiapeng.chong@linux.alibaba.com>
+In-Reply-To: <20220818104425.35573-1-fantasquex@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:FBv/Gcc6P2yretpdGODj5l5bh0s49rVJVB/YWf27fUMSOgO21Xf
- rmzm+wJq67Xk9MFel3FrLCKRDqfdJGvyzSC/hVVJRvkv5w4/5HoO3U2XCLeop6BBYI6ySAy
- l3SokgoW0H0+XpWXVZpm9TOhGw14kG4pbjTjUQzmSF9+tZ1X29opE+1H/VOM5qazx6Q9W8X
- eGPC/rBor4+PGZuY58YtA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:Ye281Vhc1eY=:2Bbj4opTbK+FOisHmHEpsL
- fJZcj+rfbLxvUX2FqxYAR0Pwblw1A/J8pFxgGtpXdwHMSLUgGgsaQ8z7nwM6fCpQDQT9rwdl+
- IKAsohHr04jTOsMjbRWv66y8iYQgqTqb86JnCk2j/gVNodfa/qxcx3/i14gYjL1Xp3OKXa1Oz
- 0vdfqFi/Ryzz1mDwtCBmHYK+5YLHkOIuwUAvS8y/pxbh3TvxPc4vNZfq4fD7btvOgQzc4fz/z
- 0NEfUo1mF6uVl1CDrSiVjnAEiqZg4xa8x3p6q/X/l57qSQgO51xag2sKf58AO9Yd44A1iAiOW
- fd2p/Qji4/CVO46JUMD+vpoQfZMfcX0fD+pIVL5eMuADrIZixEIyQkh5sKdsSiOprX23Ersu4
- ev3zxWJ4XE0AyMccHXwGYBOO5YB2AjES/bKHXeui9hzdJHpH9vAiyobY+3Q0/OmUSCqyTDncH
- WGQDqvwoFtn98SKq8ju3PKChHBamJs5XyA+UdJW6fVReqs0VakDv3k6FZOQBVN2+Jb76kgAis
- +2czk2+kB9BoABwWqJxJFehHYXSKDZcUNpGMTl7EGcKuRKQ+UXd7HyKwcmgvAs8SSUhgzh018
- SQsRSnjzaCPSn0JuNoGFvESl73FiLwrk5ojXGi/RCgS1Gvs/6ABFBSce26tgKQEBUyQcAua6j
- i8gdwnJQOXwLlXJpWZ/BLJ+yONM8p//tIlV6guzs3ZGw/Cs54/DE2gD+M6X97Lxm30XgZzVYh
- XzjkaFfDe36hdr4+STwwz8MVtDnUvnlzgMiS0N75WZxMNSP1y3XzjVkxBShgrZgr/X4/H99uY
- q9hFaCM/aoeZ5fnod8/HNHX4afSEWccrg0tu2bVYpepOeXy9Zh9fE9hDXwpLgu32hw8pM2nYU
- IVVSDuijg/eeGTyX+tbHlACdFZfq0fHgk4TKk6miLg+HR9zmDxjxHz/DE0Cm9xpffIjRpNB4O
- gZeiJwuv4Ry+5NJ1/Q/tfkx6tYq3SyGohlkL/4huleQJtJyL1eEAW5heUzkpE3KgttMR3Gavo
- pwOkMPY1cC/DajI7qLS1+RlosQP073ieZdsPh6KMw4qLmN/8o6ET4zS2jfcEkFMxdGiuoKo6Y
- wlYWlmbQxM5w8WHePmGwn/crUE3pCB2l0yApbI5NtQQujsdMjSbpOfzlw==
+X-Provags-ID: V03:K1:GYyNvmTHGj7uficlN2aApE0D9+4tmU3SK4jihi9LJHTBUOAgnF0
+ s4pAOskwSY1dOioQLPhpS7FGZnkgHbWP2ytfJZdMLPnOcN8tyrejsu/pYyTwEwcJh0/3AOx
+ x1bpTQd54A5oS1UX6qFMtzOL0Gz/ZY4R8uskJWFyQOm2YkANar4/PAMdcKBIWKgEwmPeqOh
+ wDSmZCGXTdvkR6he8tQCQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:bsYpdumw9Io=:ke2+CLJvE4rul6vP6sTu04
+ j0JaWN5Huzks4LMGlF5vHkIESHyXXYfg1jib71577QLs5NeASdHLU3pz/MPnmwACAQ4W5tYeO
+ VhH/01clEt22QRg8Oz6/L1IrOyT1+b6N0yOIfOFGu/xcIy2fmdGXzDIppuHE9OG1wfb2upcOH
+ qKs4g6WXJzjGOXc3au9ZY0TwxfIuUnSzFStoWzcAmKuyHji+Y2kWGHch0/tGJz9rl4odfYgr6
+ S/cjEUObZe98lgZ89p+SVAu1x3HA0BRaGRmz0O3I7bmKe5xv3JY6/Z0uNpzizjKHnRwCZQ5so
+ ccL0LY1nJ2k8SL04FZBcqDVU6BzkJotD28whoFPFFWF5mjI5xybSxBm7HEt6tGAeTjz4o7q+F
+ WV51w/66ATKqrlso/D2XWvNLLHVemFXMvcp3+cR8QbIqeZn+9BIAgnHAPWSyV6ydPq26nMgVL
+ /aiXUTP5NplJiGz+l4rAWjf/odT8cym0XmZ4QFnbf5wTe5sT3AVGNqzgJOG4VuTfkSAaYNOrp
+ FcpV8Ddd7RSAYlUwNvKB/h3XM3g4QR1Nlj3TuPm+tn+WIcg40LzpFf6b6QG5Mq7Xtgpy3v9fb
+ wt1YaM+AWotVnYY7JYyvNFajsq5lIz+g5oVrOIOx2PKMn+yLslyufvJJCXul+SvC3qbSnpZx7
+ bKQb+VN1ZaFr+iClQAKxS1lz3qBPEVX1oIjIFZbunjsBD1ec4IjDinE8nQisLT1KTahcYWaTC
+ ZrMmVusvATbLE+27Eozc1VjTUdOxsIii01EHiJCrzqateBHcMuQ+F4uh0DfATytc0psR5w21s
+ tOB9d7WeNvWFqBafYL21FRhXRa3O18rbJb147UeyUlbX9WzYmC4eIx4XlGIvvhBIImjNN43z2
+ +Xa3TS+H/rukAZWYKtY7Anko/sFH2wXJDU25bG4MT7+jpm4UjPnjK44H/ycEEo2TWq4IPTusM
+ c/WpM4g2eF+U09iLrD/vmzX9o6AHMieDqsosfmxp4n54zFQ6p/s4VKCeryFZrRAEvzzVJU9zj
+ KU486KHxdQWlcXJOkOvAn0WMSxdSi8ollIa+0y6HhAeCWGBv07Q75rWEZ3EBP1FPUQoVsJvqZ
+ mtQqUIJXPGBAgj38qORnrQrHycol5FoYyu8jSTD1xzifYArGnmUvfp4Lw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 8/19/22 13:04, Jiapeng Chong wrote:
-> No functional modification involved.
+On 8/18/22 12:44, Letu Ren wrote:
+> In `do_fb_ioctl()` of fbmem.c, if cmd is FBIOPUT_VSCREENINFO, var will b=
+e
+> copied from user, then go through `fb_set_var()` and
+> `info->fbops->fb_check_var()` which could may be `pm2fb_check_var()`.
+> Along the path, `var->pixclock` won't be modified. This function checks
+> whether reciprocal of `var->pixclock` is too high. If `var->pixclock` is
+> zero, there will be a divide by zero error. So, it is necessary to check
+> whether denominator is zero to avoid crash. As this bug is found by
+> Syzkaller, logs are listed below.
 >
-> drivers/video/fbdev/sis/sis_main.c:6165 sisfb_probe() warn: inconsistent=
- indenting.
-> drivers/video/fbdev/sis/sis_main.c:4266 sisfb_post_300_rwtest() warn: in=
-consistent indenting.
-> drivers/video/fbdev/sis/sis_main.c:2388 SISDoSense() warn: inconsistent =
-indenting.
-> drivers/video/fbdev/sis/sis_main.c:2531 SiS_Sense30x() warn: inconsisten=
-t indenting.
-> drivers/video/fbdev/sis/sis_main.c:2382 SISDoSense() warn: inconsistent =
-indenting.
-> drivers/video/fbdev/sis/sis_main.c:2250 sisfb_sense_crt1() warn: inconsi=
-stent indenting.
-> drivers/video/fbdev/sis/sis_main.c:672 sisfb_validate_mode() warn: incon=
-sistent indenting.
+> divide error in pm2fb_check_var
+> Call Trace:
+>  <TASK>
+>  fb_set_var+0x367/0xeb0 drivers/video/fbdev/core/fbmem.c:1015
+>  do_fb_ioctl+0x234/0x670 drivers/video/fbdev/core/fbmem.c:1110
+>  fb_ioctl+0xdd/0x130 drivers/video/fbdev/core/fbmem.c:1189
 >
-> Link: https://bugzilla.openanolis.cn/show_bug.cgi?id=3D1934
-> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-> Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+> Reported-by: Zheyu Ma <zheyuma97@gmail.com>
+> Signed-off-by: Letu Ren <fantasquex@gmail.com>
 
 applied.
-
 Thanks!
 Helge
 
-
 > ---
->  drivers/video/fbdev/sis/sis_main.c | 274 +++++++++++++++--------------
->  1 file changed, 141 insertions(+), 133 deletions(-)
+>  drivers/video/fbdev/pm2fb.c | 5 +++++
+>  1 file changed, 5 insertions(+)
 >
-> diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/si=
-s/sis_main.c
-> index 7114c5c17c91..ac4680a74d78 100644
-> --- a/drivers/video/fbdev/sis/sis_main.c
-> +++ b/drivers/video/fbdev/sis/sis_main.c
-> @@ -650,37 +650,37 @@ sisfb_validate_mode(struct sis_video_info *ivideo,=
- int myindex, u32 vbflags)
->  	u16 xres=3D0, yres, myres;
->
->  #ifdef CONFIG_FB_SIS_300
-> -	if(ivideo->sisvga_engine =3D=3D SIS_300_VGA) {
-> -		if(!(sisbios_mode[myindex].chipset & MD_SIS300))
-> +	if (ivideo->sisvga_engine =3D=3D SIS_300_VGA) {
-> +		if (!(sisbios_mode[myindex].chipset & MD_SIS300))
->  			return -1 ;
->  	}
->  #endif
->  #ifdef CONFIG_FB_SIS_315
-> -	if(ivideo->sisvga_engine =3D=3D SIS_315_VGA) {
-> -		if(!(sisbios_mode[myindex].chipset & MD_SIS315))
-> +	if (ivideo->sisvga_engine =3D=3D SIS_315_VGA) {
-> +		if (!(sisbios_mode[myindex].chipset & MD_SIS315))
->  			return -1;
->  	}
->  #endif
->
->  	myres =3D sisbios_mode[myindex].yres;
->
-> -	switch(vbflags & VB_DISPTYPE_DISP2) {
-> +	switch (vbflags & VB_DISPTYPE_DISP2) {
->
->  	case CRT2_LCD:
->  		xres =3D ivideo->lcdxres; yres =3D ivideo->lcdyres;
->
-> -		if((ivideo->SiS_Pr.SiS_CustomT !=3D CUT_PANEL848) &&
-> -		   (ivideo->SiS_Pr.SiS_CustomT !=3D CUT_PANEL856)) {
-> -			if(sisbios_mode[myindex].xres > xres)
-> +		if ((ivideo->SiS_Pr.SiS_CustomT !=3D CUT_PANEL848) &&
-> +		    (ivideo->SiS_Pr.SiS_CustomT !=3D CUT_PANEL856)) {
-> +			if (sisbios_mode[myindex].xres > xres)
->  				return -1;
-> -			if(myres > yres)
-> +			if (myres > yres)
->  				return -1;
->  		}
->
-> -		if(ivideo->sisfb_fstn) {
-> -			if(sisbios_mode[myindex].xres =3D=3D 320) {
-> -				if(myres =3D=3D 240) {
-> -					switch(sisbios_mode[myindex].mode_no[1]) {
-> +		if (ivideo->sisfb_fstn) {
-> +			if (sisbios_mode[myindex].xres =3D=3D 320) {
-> +				if (myres =3D=3D 240) {
-> +					switch (sisbios_mode[myindex].mode_no[1]) {
->  						case 0x50: myindex =3D MODE_FSTN_8;  break;
->  						case 0x56: myindex =3D MODE_FSTN_16; break;
->  						case 0x53: return -1;
-> @@ -689,7 +689,7 @@ sisfb_validate_mode(struct sis_video_info *ivideo, i=
-nt myindex, u32 vbflags)
->  			}
->  		}
->
-> -		if(SiS_GetModeID_LCD(ivideo->sisvga_engine, vbflags, sisbios_mode[myi=
-ndex].xres,
-> +		if (SiS_GetModeID_LCD(ivideo->sisvga_engine, vbflags, sisbios_mode[my=
-index].xres,
->  			 	sisbios_mode[myindex].yres, 0, ivideo->sisfb_fstn,
->  			 	ivideo->SiS_Pr.SiS_CustomT, xres, yres, ivideo->vbflags2) < 0x14) =
-{
->  			return -1;
-> @@ -697,14 +697,14 @@ sisfb_validate_mode(struct sis_video_info *ivideo,=
- int myindex, u32 vbflags)
->  		break;
->
->  	case CRT2_TV:
-> -		if(SiS_GetModeID_TV(ivideo->sisvga_engine, vbflags, sisbios_mode[myin=
-dex].xres,
-> +		if (SiS_GetModeID_TV(ivideo->sisvga_engine, vbflags, sisbios_mode[myi=
-ndex].xres,
->  				sisbios_mode[myindex].yres, 0, ivideo->vbflags2) < 0x14) {
->  			return -1;
->  		}
->  		break;
->
->  	case CRT2_VGA:
-> -		if(SiS_GetModeID_VGA2(ivideo->sisvga_engine, vbflags, sisbios_mode[my=
-index].xres,
-> +		if (SiS_GetModeID_VGA2(ivideo->sisvga_engine, vbflags, sisbios_mode[m=
-yindex].xres,
->  				sisbios_mode[myindex].yres, 0, ivideo->vbflags2) < 0x14) {
->  			return -1;
->  		}
-> @@ -2205,82 +2205,88 @@ static bool sisfb_test_DDC1(struct sis_video_inf=
-o *ivideo)
->
->  static void sisfb_sense_crt1(struct sis_video_info *ivideo)
->  {
-> -    bool mustwait =3D false;
-> -    u8  sr1F, cr17;
-> +	bool mustwait =3D false;
-> +	u8  sr1F, cr17;
->  #ifdef CONFIG_FB_SIS_315
-> -    u8  cr63=3D0;
-> +	u8  cr63 =3D 0;
->  #endif
-> -    u16 temp =3D 0xffff;
-> -    int i;
-> +	u16 temp =3D 0xffff;
-> +	int i;
-> +
-> +	sr1F =3D SiS_GetReg(SISSR, 0x1F);
-> +	SiS_SetRegOR(SISSR, 0x1F, 0x04);
-> +	SiS_SetRegAND(SISSR, 0x1F, 0x3F);
->
-> -    sr1F =3D SiS_GetReg(SISSR, 0x1F);
-> -    SiS_SetRegOR(SISSR, 0x1F, 0x04);
-> -    SiS_SetRegAND(SISSR, 0x1F, 0x3F);
-> -    if(sr1F & 0xc0) mustwait =3D true;
-> +	if (sr1F & 0xc0)
-> +		mustwait =3D true;
->
->  #ifdef CONFIG_FB_SIS_315
-> -    if(ivideo->sisvga_engine =3D=3D SIS_315_VGA) {
-> -       cr63 =3D SiS_GetReg(SISCR, ivideo->SiS_Pr.SiS_MyCR63);
-> -       cr63 &=3D 0x40;
-> -       SiS_SetRegAND(SISCR, ivideo->SiS_Pr.SiS_MyCR63, 0xBF);
-> -    }
-> +	if (ivideo->sisvga_engine =3D=3D SIS_315_VGA) {
-> +		cr63 =3D SiS_GetReg(SISCR, ivideo->SiS_Pr.SiS_MyCR63);
-> +		cr63 &=3D 0x40;
-> +		SiS_SetRegAND(SISCR, ivideo->SiS_Pr.SiS_MyCR63, 0xBF);
-> +	}
->  #endif
->
-> -    cr17 =3D SiS_GetReg(SISCR, 0x17);
-> -    cr17 &=3D 0x80;
-> -    if(!cr17) {
-> -       SiS_SetRegOR(SISCR, 0x17, 0x80);
-> -       mustwait =3D true;
-> -       SiS_SetReg(SISSR, 0x00, 0x01);
-> -       SiS_SetReg(SISSR, 0x00, 0x03);
-> -    }
-> +	cr17 =3D SiS_GetReg(SISCR, 0x17);
-> +	cr17 &=3D 0x80;
->
-> -    if(mustwait) {
-> -       for(i=3D0; i < 10; i++) sisfbwaitretracecrt1(ivideo);
-> -    }
-> +	if (!cr17) {
-> +		SiS_SetRegOR(SISCR, 0x17, 0x80);
-> +		mustwait =3D true;
-> +		SiS_SetReg(SISSR, 0x00, 0x01);
-> +		SiS_SetReg(SISSR, 0x00, 0x03);
-> +	}
->
-> +	if (mustwait) {
-> +		for (i =3D 0; i < 10; i++)
-> +			sisfbwaitretracecrt1(ivideo);
-> +	}
->  #ifdef CONFIG_FB_SIS_315
-> -    if(ivideo->chip >=3D SIS_330) {
-> -       SiS_SetRegAND(SISCR, 0x32, ~0x20);
-> -       if(ivideo->chip >=3D SIS_340) {
-> -	   SiS_SetReg(SISCR, 0x57, 0x4a);
-> -       } else {
-> -	   SiS_SetReg(SISCR, 0x57, 0x5f);
-> -       }
-> -	SiS_SetRegOR(SISCR, 0x53, 0x02);
-> -	while ((SiS_GetRegByte(SISINPSTAT)) & 0x01)    break;
-> -	while (!((SiS_GetRegByte(SISINPSTAT)) & 0x01)) break;
-> -	if ((SiS_GetRegByte(SISMISCW)) & 0x10) temp =3D 1;
-> -	SiS_SetRegAND(SISCR, 0x53, 0xfd);
-> -	SiS_SetRegAND(SISCR, 0x57, 0x00);
-> -    }
-> +	if (ivideo->chip >=3D SIS_330) {
-> +		SiS_SetRegAND(SISCR, 0x32, ~0x20);
-> +		if (ivideo->chip >=3D SIS_340)
-> +			SiS_SetReg(SISCR, 0x57, 0x4a);
-> +		else
-> +			SiS_SetReg(SISCR, 0x57, 0x5f);
-> +
-> +		SiS_SetRegOR(SISCR, 0x53, 0x02);
-> +		while ((SiS_GetRegByte(SISINPSTAT)) & 0x01)
-> +			break;
-> +		while (!((SiS_GetRegByte(SISINPSTAT)) & 0x01))
-> +			break;
-> +		if ((SiS_GetRegByte(SISMISCW)) & 0x10)
-> +			temp =3D 1;
-> +
-> +		SiS_SetRegAND(SISCR, 0x53, 0xfd);
-> +		SiS_SetRegAND(SISCR, 0x57, 0x00);
-> +	}
->  #endif
->
-> -    if(temp =3D=3D 0xffff) {
-> -       i =3D 3;
-> -       do {
-> -	  temp =3D SiS_HandleDDC(&ivideo->SiS_Pr, ivideo->vbflags,
-> -		ivideo->sisvga_engine, 0, 0, NULL, ivideo->vbflags2);
-> -       } while(((temp =3D=3D 0) || (temp =3D=3D 0xffff)) && i--);
-> +	if (temp =3D=3D 0xffff) {
-> +		i =3D 3;
->
-> -       if((temp =3D=3D 0) || (temp =3D=3D 0xffff)) {
-> -          if(sisfb_test_DDC1(ivideo)) temp =3D 1;
-> -       }
-> -    }
-> +		do {
-> +			temp =3D SiS_HandleDDC(&ivideo->SiS_Pr, ivideo->vbflags,
-> +			ivideo->sisvga_engine, 0, 0, NULL, ivideo->vbflags2);
-> +		} while (((temp =3D=3D 0) || (temp =3D=3D 0xffff)) && i--);
->
-> -    if((temp) && (temp !=3D 0xffff)) {
-> -       SiS_SetRegOR(SISCR, 0x32, 0x20);
-> -    }
-> +		if ((temp =3D=3D 0) || (temp =3D=3D 0xffff)) {
-> +			if (sisfb_test_DDC1(ivideo))
-> +				temp =3D 1;
-> +		}
-> +	}
-> +
-> +	if ((temp) && (temp !=3D 0xffff))
-> +		SiS_SetRegOR(SISCR, 0x32, 0x20);
->
->  #ifdef CONFIG_FB_SIS_315
-> -    if(ivideo->sisvga_engine =3D=3D SIS_315_VGA) {
-> -	SiS_SetRegANDOR(SISCR, ivideo->SiS_Pr.SiS_MyCR63, 0xBF, cr63);
-> -    }
-> +	if (ivideo->sisvga_engine =3D=3D SIS_315_VGA)
-> +		SiS_SetRegANDOR(SISCR, ivideo->SiS_Pr.SiS_MyCR63, 0xBF, cr63);
->  #endif
->
-> -    SiS_SetRegANDOR(SISCR, 0x17, 0x7F, cr17);
-> -
-> -    SiS_SetReg(SISSR, 0x1F, sr1F);
-> +	SiS_SetRegANDOR(SISCR, 0x17, 0x7F, cr17);
-> +	SiS_SetReg(SISSR, 0x1F, sr1F);
->  }
->
->  /* Determine and detect attached devices on SiS30x */
-> @@ -2294,25 +2300,25 @@ static void SiS_SenseLCD(struct sis_video_info *=
-ivideo)
->  	ivideo->SiS_Pr.PanelSelfDetected =3D false;
->
->  	/* LCD detection only for TMDS bridges */
-> -	if(!(ivideo->vbflags2 & VB2_SISTMDSBRIDGE))
-> +	if (!(ivideo->vbflags2 & VB2_SISTMDSBRIDGE))
->  		return;
-> -	if(ivideo->vbflags2 & VB2_30xBDH)
-> +	if (ivideo->vbflags2 & VB2_30xBDH)
->  		return;
->
->  	/* If LCD already set up by BIOS, skip it */
->  	reg =3D SiS_GetReg(SISCR, 0x32);
-> -	if(reg & 0x08)
-> +	if (reg & 0x08)
->  		return;
->
->  	realcrtno =3D 1;
-> -	if(ivideo->SiS_Pr.DDCPortMixup)
-> +	if (ivideo->SiS_Pr.DDCPortMixup)
->  		realcrtno =3D 0;
->
->  	/* Check DDC capabilities */
->  	temp =3D SiS_HandleDDC(&ivideo->SiS_Pr, ivideo->vbflags, ivideo->sisvg=
-a_engine,
->  				realcrtno, 0, &buffer[0], ivideo->vbflags2);
->
-> -	if((!temp) || (temp =3D=3D 0xffff) || (!(temp & 0x02)))
-> +	if ((!temp) || (temp =3D=3D 0xffff) || (!(temp & 0x02)))
->  		return;
->
->  	/* Read DDC data */
-> @@ -2321,17 +2327,17 @@ static void SiS_SenseLCD(struct sis_video_info *=
-ivideo)
->  		temp =3D SiS_HandleDDC(&ivideo->SiS_Pr, ivideo->vbflags,
->  				ivideo->sisvga_engine, realcrtno, 1,
->  				&buffer[0], ivideo->vbflags2);
-> -	} while((temp) && i--);
-> +	} while ((temp) && i--);
->
-> -	if(temp)
-> +	if (temp)
->  		return;
->
->  	/* No digital device */
-> -	if(!(buffer[0x14] & 0x80))
-> +	if (!(buffer[0x14] & 0x80))
->  		return;
->
->  	/* First detailed timing preferred timing? */
-> -	if(!(buffer[0x18] & 0x02))
-> +	if (!(buffer[0x18] & 0x02))
->  		return;
->
->  	xres =3D buffer[0x38] | ((buffer[0x3a] & 0xf0) << 4);
-> @@ -2339,26 +2345,26 @@ static void SiS_SenseLCD(struct sis_video_info *=
-ivideo)
->
->  	switch(xres) {
->  		case 1024:
-> -			if(yres =3D=3D 768)
-> +			if (yres =3D=3D 768)
->  				paneltype =3D 0x02;
->  			break;
->  		case 1280:
-> -			if(yres =3D=3D 1024)
-> +			if (yres =3D=3D 1024)
->  				paneltype =3D 0x03;
->  			break;
->  		case 1600:
-> -			if((yres =3D=3D 1200) && (ivideo->vbflags2 & VB2_30xC))
-> +			if ((yres =3D=3D 1200) && (ivideo->vbflags2 & VB2_30xC))
->  				paneltype =3D 0x0b;
->  			break;
+> diff --git a/drivers/video/fbdev/pm2fb.c b/drivers/video/fbdev/pm2fb.c
+> index d3be2c64f1c0..8fd79deb1e2a 100644
+> --- a/drivers/video/fbdev/pm2fb.c
+> +++ b/drivers/video/fbdev/pm2fb.c
+> @@ -617,6 +617,11 @@ static int pm2fb_check_var(struct fb_var_screeninfo=
+ *var, struct fb_info *info)
+>  		return -EINVAL;
 >  	}
 >
-> -	if(!paneltype)
-> +	if (!paneltype)
->  		return;
->
-> -	if(buffer[0x23])
-> +	if (buffer[0x23])
->  		cr37 |=3D 0x10;
->
-> -	if((buffer[0x47] & 0x18) =3D=3D 0x18)
-> +	if ((buffer[0x47] & 0x18) =3D=3D 0x18)
->  		cr37 |=3D ((((buffer[0x47] & 0x06) ^ 0x06) << 5) | 0x20);
->  	else
->  		cr37 |=3D 0xc0;
-> @@ -2373,31 +2379,34 @@ static void SiS_SenseLCD(struct sis_video_info *=
-ivideo)
->
->  static int SISDoSense(struct sis_video_info *ivideo, u16 type, u16 test=
-)
->  {
-> -    int temp, mytest, result, i, j;
-> -
-> -    for(j =3D 0; j < 10; j++) {
-> -       result =3D 0;
-> -       for(i =3D 0; i < 3; i++) {
-> -          mytest =3D test;
-> -	   SiS_SetReg(SISPART4, 0x11, (type & 0x00ff));
-> -          temp =3D (type >> 8) | (mytest & 0x00ff);
-> -	  SiS_SetRegANDOR(SISPART4, 0x10, 0xe0, temp);
-> -          SiS_DDC2Delay(&ivideo->SiS_Pr, 0x1500);
-> -          mytest >>=3D 8;
-> -          mytest &=3D 0x7f;
-> -	   temp =3D SiS_GetReg(SISPART4, 0x03);
-> -          temp ^=3D 0x0e;
-> -          temp &=3D mytest;
-> -          if(temp =3D=3D mytest) result++;
-> +	int temp, mytest, result, i, j;
-> +
-> +	for (j =3D 0; j < 10; j++) {
-> +		result =3D 0;
-> +		for (i =3D 0; i < 3; i++) {
-> +			mytest =3D test;
-> +			SiS_SetReg(SISPART4, 0x11, (type & 0x00ff));
-> +			temp =3D (type >> 8) | (mytest & 0x00ff);
-> +			SiS_SetRegANDOR(SISPART4, 0x10, 0xe0, temp);
-> +			SiS_DDC2Delay(&ivideo->SiS_Pr, 0x1500);
-> +			mytest >>=3D 8;
-> +			mytest &=3D 0x7f;
-> +			temp =3D SiS_GetReg(SISPART4, 0x03);
-> +			temp ^=3D 0x0e;
-> +			temp &=3D mytest;
-> +			if (temp =3D=3D mytest)
-> +				result++;
->  #if 1
-> -	  SiS_SetReg(SISPART4, 0x11, 0x00);
-> -	  SiS_SetRegAND(SISPART4, 0x10, 0xe0);
-> -	  SiS_DDC2Delay(&ivideo->SiS_Pr, 0x1000);
-> +			SiS_SetReg(SISPART4, 0x11, 0x00);
-> +			SiS_SetRegAND(SISPART4, 0x10, 0xe0);
-> +			SiS_DDC2Delay(&ivideo->SiS_Pr, 0x1000);
->  #endif
-> -       }
-> -       if((result =3D=3D 0) || (result >=3D 2)) break;
-> -    }
-> -    return result;
-> +		}
-> +
-> +		if ((result =3D=3D 0) || (result >=3D 2))
-> +			break;
+> +	if (!var->pixclock) {
+> +		DPRINTK("pixclock is zero\n");
+> +		return -EINVAL;
 > +	}
-> +	return result;
->  }
->
->  static void SiS_Sense30x(struct sis_video_info *ivideo)
-> @@ -4263,18 +4272,17 @@ static int sisfb_post_300_rwtest(struct sis_vide=
-o_info *ivideo, int iteration,
->  	unsigned int k, RankCapacity, PageCapacity, BankNumHigh, BankNumMid;
->  	unsigned int PhysicalAdrOtherPage, PhysicalAdrHigh, PhysicalAdrHalfPag=
-e;
->
-> -	 for(k =3D 0; k < ARRAY_SIZE(SiS_DRAMType); k++) {
-> -
-> +	for (k =3D 0; k < ARRAY_SIZE(SiS_DRAMType); k++) {
->  		RankCapacity =3D buswidth * SiS_DRAMType[k][3];
->
-> -		if(RankCapacity !=3D PseudoRankCapacity)
-> +		if (RankCapacity !=3D PseudoRankCapacity)
->  			continue;
->
-> -		if((SiS_DRAMType[k][2] + SiS_DRAMType[k][0]) > PseudoAdrPinCount)
-> +		if ((SiS_DRAMType[k][2] + SiS_DRAMType[k][0]) > PseudoAdrPinCount)
->  			continue;
->
->  		BankNumHigh =3D RankCapacity * 16 * iteration - 1;
-> -		if(iteration =3D=3D 3) {             /* Rank No */
-> +		if (iteration =3D=3D 3) {             /* Rank No */
->  			BankNumMid  =3D RankCapacity * 16 - 1;
->  		} else {
->  			BankNumMid  =3D RankCapacity * 16 * iteration / 2 - 1;
-> @@ -4288,18 +4296,22 @@ static int sisfb_post_300_rwtest(struct sis_vide=
-o_info *ivideo, int iteration,
->  		SiS_SetRegAND(SISSR, 0x15, 0xFB); /* Test */
->  		SiS_SetRegOR(SISSR, 0x15, 0x04);  /* Test */
->  		sr14 =3D (SiS_DRAMType[k][3] * buswidth) - 1;
-> -		if(buswidth =3D=3D 4)      sr14 |=3D 0x80;
-> -		else if(buswidth =3D=3D 2) sr14 |=3D 0x40;
 > +
-> +		if (buswidth =3D=3D 4)
-> +			sr14 |=3D 0x80;
-> +		else if (buswidth =3D=3D 2)
-> +			sr14 |=3D 0x40;
-> +
->  		SiS_SetReg(SISSR, 0x13, SiS_DRAMType[k][4]);
->  		SiS_SetReg(SISSR, 0x14, sr14);
->
->  		BankNumHigh <<=3D 16;
->  		BankNumMid <<=3D 16;
->
-> -		if((BankNumHigh + PhysicalAdrHigh      >=3D mapsize) ||
-> -		   (BankNumMid  + PhysicalAdrHigh      >=3D mapsize) ||
-> -		   (BankNumHigh + PhysicalAdrHalfPage  >=3D mapsize) ||
-> -		   (BankNumHigh + PhysicalAdrOtherPage >=3D mapsize))
-> +		if ((BankNumHigh + PhysicalAdrHigh >=3D mapsize) ||
-> +		    (BankNumMid  + PhysicalAdrHigh >=3D mapsize) ||
-> +		    (BankNumHigh + PhysicalAdrHalfPage  >=3D mapsize) ||
-> +		    (BankNumHigh + PhysicalAdrOtherPage >=3D mapsize))
->  			continue;
->
->  		/* Write data */
-> @@ -4313,7 +4325,7 @@ static int sisfb_post_300_rwtest(struct sis_video_=
-info *ivideo, int iteration,
->  				(FBAddr + BankNumHigh + PhysicalAdrOtherPage));
->
->  		/* Read data */
-> -		if(readw(FBAddr + BankNumHigh + PhysicalAdrHigh) =3D=3D PhysicalAdrHi=
-gh)
-> +		if (readw(FBAddr + BankNumHigh + PhysicalAdrHigh) =3D=3D PhysicalAdrH=
-igh)
->  			return 1;
->  	}
->
-> @@ -6155,24 +6167,20 @@ static int sisfb_probe(struct pci_dev *pdev, con=
-st struct pci_device_id *ent)
->  #endif
->
->  #ifdef CONFIG_FB_SIS_315
-> -		if(ivideo->sisvga_engine =3D=3D SIS_315_VGA) {
-> +		if (ivideo->sisvga_engine =3D=3D SIS_315_VGA) {
->  			int result =3D 1;
-> -		/*	if((ivideo->chip =3D=3D SIS_315H)   ||
-> -			   (ivideo->chip =3D=3D SIS_315)    ||
-> -			   (ivideo->chip =3D=3D SIS_315PRO) ||
-> -			   (ivideo->chip =3D=3D SIS_330)) {
-> -				sisfb_post_sis315330(pdev);
-> -			} else */ if(ivideo->chip =3D=3D XGI_20) {
-> +
-> +			if (ivideo->chip =3D=3D XGI_20) {
->  				result =3D sisfb_post_xgi(pdev);
->  				ivideo->sisfb_can_post =3D 1;
-> -			} else if((ivideo->chip =3D=3D XGI_40) && ivideo->haveXGIROM) {
-> +			} else if ((ivideo->chip =3D=3D XGI_40) && ivideo->haveXGIROM) {
->  				result =3D sisfb_post_xgi(pdev);
->  				ivideo->sisfb_can_post =3D 1;
->  			} else {
->  				printk(KERN_INFO "sisfb: Card is not "
->  					"POSTed and sisfb can't do this either.\n");
->  			}
-> -			if(!result) {
-> +			if (!result) {
->  				printk(KERN_ERR "sisfb: Failed to POST card\n");
->  				ret =3D -ENODEV;
->  				goto error_3;
+>  	if (PICOS2KHZ(var->pixclock) > PM2_MAX_PIXCLOCK) {
+>  		DPRINTK("pixclock too high (%ldKHz)\n",
+>  			PICOS2KHZ(var->pixclock));
 

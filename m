@@ -2,96 +2,71 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 663B4C00140
-	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Aug 2022 07:31:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7AE0C00140
+	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Aug 2022 11:45:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235656AbiHXHbx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 24 Aug 2022 03:31:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55064 "EHLO
+        id S236682AbiHXLpO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 24 Aug 2022 07:45:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35676 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235545AbiHXHbm (ORCPT
+        with ESMTP id S233776AbiHXLpG (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 24 Aug 2022 03:31:42 -0400
-Received: from mail-qt1-f169.google.com (mail-qt1-f169.google.com [209.85.160.169])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA8726DAFC;
-        Wed, 24 Aug 2022 00:31:27 -0700 (PDT)
-Received: by mail-qt1-f169.google.com with SMTP id g14so2569013qto.11;
-        Wed, 24 Aug 2022 00:31:27 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc;
-        bh=82WQkDOdERyND7bY3iF+8AcDaMfTG/LJhOwz2xG4mtY=;
-        b=nwC2idr7DAFJGlnNplknxJAQ2EomFfv0BiDBozR+O+pfeeJt+drQBD0quQ7FtoYprP
-         jPxUxClpbiRL3NK/EaL4sL+hHgj8AoAfMKCUylLigg6bC5rfgY5RhEMSDhEVI/Ts4RLD
-         2b2SoIZQfgUlaS2FoSKUm4KAdMNiw8WuWmlN2KGJYYJGhREzAS/Zq8ByiaQqsXHvJhTc
-         qkG5gvBnoAUI3diWcWx/01fkmCcmoMeYfmax/JEAiPB6Y2Eey93f8lRfOw3DXoPNduIv
-         1RkxT35RWn8XLD6lujHOazfCx3nYq1zWjf+Jeo1ovBKW7iY+kOa0GS1NHp0Xtv5WtIo7
-         FLHQ==
-X-Gm-Message-State: ACgBeo3RkHOZCKyzQed38Q/ElfXic01trc/PPtvpwX/4YAOjPF/A+96c
-        77eZvnM0EmlzK3CXF3REJ+T8NewZuLPYHw==
-X-Google-Smtp-Source: AA6agR6Bn5LJwMR6U7+Q60fowE/jUAE7zd+qkzKHzsRfvNs6VFlGtVTcUt6YawUu6fSDn2opudN1mw==
-X-Received: by 2002:a05:622a:195:b0:344:5630:dcc with SMTP id s21-20020a05622a019500b0034456300dccmr22628147qtw.598.1661326286269;
-        Wed, 24 Aug 2022 00:31:26 -0700 (PDT)
-Received: from mail-yw1-f169.google.com (mail-yw1-f169.google.com. [209.85.128.169])
-        by smtp.gmail.com with ESMTPSA id t39-20020a05622a182700b00342f7beccd0sm12896450qtc.45.2022.08.24.00.31.25
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 24 Aug 2022 00:31:25 -0700 (PDT)
-Received: by mail-yw1-f169.google.com with SMTP id 00721157ae682-3246910dac3so438119857b3.12;
-        Wed, 24 Aug 2022 00:31:25 -0700 (PDT)
-X-Received: by 2002:a81:658:0:b0:334:a23e:6caa with SMTP id
- 85-20020a810658000000b00334a23e6caamr28318780ywg.283.1661326285004; Wed, 24
- Aug 2022 00:31:25 -0700 (PDT)
+        Wed, 24 Aug 2022 07:45:06 -0400
+Received: from out30-44.freemail.mail.aliyun.com (out30-44.freemail.mail.aliyun.com [115.124.30.44])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 102A867448;
+        Wed, 24 Aug 2022 04:45:03 -0700 (PDT)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R531e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046056;MF=jiapeng.chong@linux.alibaba.com;NM=1;PH=DS;RN=7;SR=0;TI=SMTPD_---0VN7Mkhl_1661341497;
+Received: from localhost(mailfrom:jiapeng.chong@linux.alibaba.com fp:SMTPD_---0VN7Mkhl_1661341497)
+          by smtp.aliyun-inc.com;
+          Wed, 24 Aug 2022 19:45:01 +0800
+From:   Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+To:     deller@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Jiapeng Chong <jiapeng.chong@linux.alibaba.com>,
+        Abaci Robot <abaci@linux.alibaba.com>
+Subject: [PATCH] video: fbdev: omap: Remove unnecessary print function dev_err()
+Date:   Wed, 24 Aug 2022 19:44:55 +0800
+Message-Id: <20220824114455.5167-1-jiapeng.chong@linux.alibaba.com>
+X-Mailer: git-send-email 2.20.1.7.g153144c
 MIME-Version: 1.0
-References: <20220816130713.28597-1-yuanjilin@cdjrlc.com>
-In-Reply-To: <20220816130713.28597-1-yuanjilin@cdjrlc.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 24 Aug 2022 09:31:13 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdV8iVoNKMKz1A12+P3hbvsJ8xgwKX8-LNTs+85dn2YDEw@mail.gmail.com>
-Message-ID: <CAMuHMdV8iVoNKMKz1A12+P3hbvsJ8xgwKX8-LNTs+85dn2YDEw@mail.gmail.com>
-Subject: Re: [PATCH] video/fbdev: fix repeated words in comments
-To:     Jilin Yuan <yuanjilin@cdjrlc.com>
-Cc:     Helge Deller <deller@gmx.de>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Jilin,
+The print function dev_err() is redundant because platform_get_irq()
+already prints an error.
 
-On Tue, Aug 16, 2022 at 3:08 PM Jilin Yuan <yuanjilin@cdjrlc.com> wrote:
->  Delete the redundant word 'set'.
->
-> Signed-off-by: Jilin Yuan <yuanjilin@cdjrlc.com>
+./drivers/video/fbdev/omap/omapfb_main.c:1653:2-9: line 1653 is redundant because platform_get_irq() already prints an error.
+./drivers/video/fbdev/omap/omapfb_main.c:1646:2-9: line 1646 is redundant because platform_get_irq() already prints an error.
 
-Thanks for your patch, which is now commit 253cabc01468d6b5 ("fbdev:
-ssd1307fb: Fix repeated words in comments") in fbdev/for-next
+Link: https://bugzilla.openanolis.cn/show_bug.cgi?id=1957
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+---
+ drivers/video/fbdev/omap/omapfb_main.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-> --- a/drivers/video/fbdev/ssd1307fb.c
-> +++ b/drivers/video/fbdev/ssd1307fb.c
-> @@ -450,7 +450,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
->         if (ret < 0)
->                 return ret;
->
-> -       /* Set Set Area Color Mode ON/OFF & Low Power Display Mode */
-> +       /* Set Area Color Mode ON/OFF & Low Power Display Mode */
->         if (par->area_color_enable || par->low_power) {
->                 u32 mode;
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index fbb3af883d4d..17cda5765683 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -1643,14 +1643,12 @@ static int omapfb_do_probe(struct platform_device *pdev,
+ 	}
+ 	fbdev->int_irq = platform_get_irq(pdev, 0);
+ 	if (fbdev->int_irq < 0) {
+-		dev_err(&pdev->dev, "unable to get irq\n");
+ 		r = ENXIO;
+ 		goto cleanup;
+ 	}
+ 
+ 	fbdev->ext_irq = platform_get_irq(pdev, 1);
+ 	if (fbdev->ext_irq < 0) {
+-		dev_err(&pdev->dev, "unable to get irq\n");
+ 		r = ENXIO;
+ 		goto cleanup;
+ 	}
+-- 
+2.20.1.7.g153144c
 
-Given the register being written below is called
-SSD1307FB_SET_AREA_COLOR_MODE, I think the original was correct
-(hint: the "S" in "Set" was capitalized).
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

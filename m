@@ -2,113 +2,161 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7401EC004D4
-	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Aug 2022 19:56:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2135C48BE4
+	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Aug 2022 20:04:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236708AbiHXT4e (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 24 Aug 2022 15:56:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50622 "EHLO
+        id S233529AbiHXUEv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 24 Aug 2022 16:04:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54662 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234790AbiHXT4d (ORCPT
+        with ESMTP id S239057AbiHXUEu (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 24 Aug 2022 15:56:33 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1DD1279EDB;
-        Wed, 24 Aug 2022 12:56:31 -0700 (PDT)
+        Wed, 24 Aug 2022 16:04:50 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E75B7632E;
+        Wed, 24 Aug 2022 13:04:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1661370984;
-        bh=g0hUjN3cAbARSzcql+JH8MKMfgvdS0bGxKwU4LFSaFY=;
+        s=badeba3b8450; t=1661371480;
+        bh=mT+JncqykK1/MQG4BV6pGNhG34tuIpbu4gUj8Qq5OJg=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=g2Be9smpQen2fyJWj7264iksqJryLmLyJqgG7lW74Rs6xY21QcjcDTG+9shf88VTF
-         8Sjb7ldgjjtDbE3i3Ku6Rtv6jWnZuQIxCM3SKigCv3i3WHs9mKrJlhtOP55EH81F8T
-         bzIsImioBJmxTSXH51Y53EW2JPJnqJHlXX4cmGC0=
+        b=je1iScQue2PuzOXKqByGfXSW1Qx1ZMfpotwkROyCZsJdSHIqDzw70Z0WtBzwWKyyO
+         T0ZcxrYqSNG599BfW8OSma065E/e+6srrPudnzs+1zheu+/wxH/0Wt8EM/6AaK5dSe
+         6URRu5A9fA7zjrdRf//AyC3DzDSuuUOT5U/cjiA0=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.173.19]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MQe5u-1olNYU1UWc-00NfEJ; Wed, 24
- Aug 2022 21:56:24 +0200
-Message-ID: <b696b6cc-7cd4-4f62-6289-6f29c1e40214@gmx.de>
-Date:   Wed, 24 Aug 2022 21:56:22 +0200
+Received: from [192.168.20.60] ([92.116.173.19]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MVvLB-1oqcLl1B5B-00RtjX; Wed, 24
+ Aug 2022 22:04:40 +0200
+Message-ID: <6efc0d2a-c2af-947c-d928-104e3add1650@gmx.de>
+Date:   Wed, 24 Aug 2022 22:04:38 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.12.0
-Subject: Re: [PATCH] video: fbdev: omap: Remove unnecessary print function
- dev_err()
+Subject: Re: [PATCH] fbcon: Properly revert changes when vc_resize() failed
 Content-Language: en-US
-To:     Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
-Cc:     linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        Abaci Robot <abaci@linux.alibaba.com>
-References: <20220824114455.5167-1-jiapeng.chong@linux.alibaba.com>
+To:     Shigeru Yoshida <syoshida@redhat.com>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org,
+        syzbot+a168dbeaaa7778273c1b@syzkaller.appspotmail.com
+References: <20220818181336.3504010-1-syoshida@redhat.com>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220824114455.5167-1-jiapeng.chong@linux.alibaba.com>
+In-Reply-To: <20220818181336.3504010-1-syoshida@redhat.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:QE/g5FKVqH/BMcj4p2uGLEVLJe07d8CPvlc2J2oLPTXty9ncQ5H
- /ZPNU7F171RI5/CWxYTZX3phnBs7+zNnMbiiAxYBPbcyIa2iwOo+at/4Io1xPsnxSp+aYEN
- pIN3NHdVCS5xwnFu8pSYwpyoUqp7qSPzdcBVl/cMq5y7S7awpt1abiQLwhdmD8/RDB/b307
- /QOvs9ZKgKOiSfCRwU0rQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:CqtS7ixjPPI=:3J3WaS2ZijgVbDNW2UfG+g
- HqkEp1Nces5eJrV+TMc4PW5I8M5KQ7kMRxfHY69PyYjVamiQsLZrNSWYN8GMKAofx7SZXcH3O
- hu2m0T9sgCmZKi+nOHJhnkvOWHvLq3z7jECYARDZ8OuGp82cDNp1TcyRZ0gL5dUxpeYvq1jws
- Jqajj9cgLk3jFv1DOZuxnJHjhntT8ltNxlOSs7cavSwRlU1PAcGqFLdn4ioC+dkTK+6MQeRmQ
- kKQsrnC8CE0llGDr2BBVTlaSB1fSohSiMi68/H6bUXTG7c+JfJAADMSTDyLkGsXc27r4xOr72
- Zda9wPDE5fKRX52AfSWMPG2twxvho4EKuwOBX5iSwtVog58lLTPa4Er2W1swyeZ7jDHqaCmSm
- 9v9mKZGNFaW97uwTbCTvL885gtfMuDExceDoWMQcd8P+0GrgUqclY4GjYZP8PHA/duv4XnIFG
- icmIQ/Yg163jIGPDoYUKovh7uzVyKnGPsHC2NB00phlgfoM7/nzz8XVGrL1DEvJ0ZSZbnHOAy
- WCkxjX2Y15c84nb42x22q/E5MEfi0txfF7KkdsxQvx6s/y3hQTwrFnKzxsfYIly/2rAhB8yfJ
- Kg2aFXkWSi7/WmfLhgEx2hSU4d7yij11CdsgfyGKLTcgT06kTipkhDGCyMvgFOYq5MqVHDwNt
- OeNo8Fb9VS1lp3yBGYeK3yrof3iXHd8cgM+LNm91NXTTXrmTvoNUb8dSOk00KMFtbF0fNu3m2
- Cv0vSSRpfiXLTfXskaNdaLrD7FNqIlCE+PHXbJSWffP8LRRDdpx3/3x5KOrxlSgXJID4owTEe
- EWDzR6U/+Rb2g5lypBIkcjSjFGrbUByuPTk5bE5thHHZoji7w87Gmbq61MNPFugqtHc+MzAFu
- VKYZMlYm+1woPOfU6zKxmK10SyBakIewqoMElLorB7iUOvW03ujO+3UNh6alN49DaI8wfEiwa
- JVR9iUJ+HCmAB8sLhZrwaPrzfg1rc/S6AkrV5gPSQhW5lXz7EFLK3Yg/jgPn6TuhQkXEhuTpU
- QQNOk+ki+HPDnpW3wDc2pAiPzQGg73Ji+AgM8NO2ZIXlUcXNNt0bzvG0/bAOHLw53tPR45s+r
- vKz5erwtkfqzCJgw5G7+MLUG4tOl5OlqKAhPmVhPZPfjmHpNl57vIVX6g==
+X-Provags-ID: V03:K1:bPYtDBYr/fK766CKWILWMU7xF4/wZ+tyXxZ1o8D2m8Jo85BJ+as
+ DNW6Cz5IoGsD2PzMXfhkHHJBmrmJi0/gZdkacY5RzJBUap2qs1wCwreOlmx6Y/XNoOsTg+o
+ 9MRQE0QR54b3UTUFtfdSXRChRLYQyp/1RIqWJFyFBQZldaNXhs6p4GYoBrUTmwMgMfMbl33
+ N6FltjFkdpDIxKBB4r6BA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:v/nCVi1yI7M=:ftuED5v4WP4ZqnIzTwPVlg
+ xvrViHqKL0rzJ7LDMoCsR+/heF0xhFSK0UMYKhhwh40W1BPiTK1E64EzZSy1/Cl037/RXsDBb
+ 9D+dxZzx3dm1h6B5MDGlSJ+g+YtEnLe51gQSWNvyw1lnO/DIuvQvaCqXJeOP7BZcuWg/ZNkme
+ /mVbVPz0eYkIfNXwy0wbr/kMiGjwDTKfcnW6z0zbARDZQkLOVwiFuJp0IjBAFOtThwrpXp7Ch
+ dttQLKauLvJ0aOT1iuUA4TzNOfCjMBjWnP9SjfzqZIg1ROskjF43YiZ2ik0+adsESHsmIeu+1
+ puv5l5z9j8Mwx0rYF1FFRLjHurmQ37IbEfMWfwIzdUdK//Y7bV+ZIdlF2M2Pb5SbIoFK4+uCB
+ yLmA3XiJekW5rtNuTgovWtkVZ1f8Nck1zGtlD6W8Wm+22tjROxAx6CIPA382GrSrLP9oH/U/m
+ 48yQOY1xfh4UNyZ++Mzw+CE96QSkWFgIxZ39sAOrQedThM2xXCF6Mzvk/L1AfEaYT9kd+8Dio
+ QzU6ysz9+nL9hH5aIox0KZzzxvLj6mGlWYn4qvy5E2XiwtHCEoOgip9XDfjGo478AqSReGqY7
+ 685niWvag0B+MphtZOzIWWHSpvOYZCfbquDOkiRSiqE3rhLbeBZzfbFb/vWhov78H2Cs1TkpW
+ L9B39CKWpS7P8OerSEOV56nOQBm1X1ty2/yRu2A8y0s0pfgg3C8zKw0ljwIp4LK6r0HShPJTN
+ bk+Li0hINWJI7zg3aBEctiqz0rZy6fnYRG/QMaUSw1/JeBYNK4OoH5j9HFg4vWYyyfhHzS0AD
+ P2UbsPpV2xxm5ujfbX4Ei9U4DOtcoRnLAydGkL6h1slTcHcyqw3QyOi2/WWJkErNhyCKqPtMT
+ e3Vm7pVjUVY5dYTSmajTtgKWXncilU6uh8uaewB3Qq1hdbkEv5B2csrIs18Zh2eR7Y1edsM7h
+ W6hvBofJhVeZJFTjdhhxERqeeYISGlYt6mhXCDmxLg4unvMfYWutpcxFQ/eemx/rNrrlgBMJh
+ mt1NRjlPOKGmR6AgqlAJyjubEifg2N7PzG4AXmpAF2U8ZC7YRvuyfuOaiPsEOw7dAgddNsFIh
+ L4+G6iYQvfZXgTRxnaowfsEVSq0z7oeaAJh87IvmNpAIu1P2q8Yn6fQvw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 8/24/22 13:44, Jiapeng Chong wrote:
-> The print function dev_err() is redundant because platform_get_irq()
-> already prints an error.
+Hi Shigeru,
+
+On 8/18/22 20:13, Shigeru Yoshida wrote:
+> fbcon_do_set_font() calls vc_resize() when font size is changed.
+> However, if if vc_resize() failed, current implementation doesn't
+> revert changes for font size, and this causes inconsistent state.
 >
-> ./drivers/video/fbdev/omap/omapfb_main.c:1653:2-9: line 1653 is redundan=
-t because platform_get_irq() already prints an error.
-> ./drivers/video/fbdev/omap/omapfb_main.c:1646:2-9: line 1646 is redundan=
-t because platform_get_irq() already prints an error.
+> syzbot reported unable to handle page fault due to this issue [1].
+> syzbot's repro uses fault injection which cause failure for memory
+> allocation, so vc_resize() failed.
 >
-> Link: https://bugzilla.openanolis.cn/show_bug.cgi?id=3D1957
-> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-> Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+> This patch fixes this issue by properly revert changes for font
+> related date when vc_resize() failed.
+>
+> Link: https://syzkaller.appspot.com/bug?id=3D3443d3a1fa6d964dd7310a0cb16=
+96d165a3e07c4 [1]
+> Reported-by: syzbot+a168dbeaaa7778273c1b@syzkaller.appspotmail.com
+> Signed-off-by: Shigeru Yoshida <syoshida@redhat.com>
 
 applied.
 
-Thanks!
+Thank you!
 Helge
 
 > ---
->  drivers/video/fbdev/omap/omapfb_main.c | 2 --
->  1 file changed, 2 deletions(-)
+>  drivers/video/fbdev/core/fbcon.c | 27 +++++++++++++++++++++++++--
+>  1 file changed, 25 insertions(+), 2 deletions(-)
 >
-> diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbde=
-v/omap/omapfb_main.c
-> index fbb3af883d4d..17cda5765683 100644
-> --- a/drivers/video/fbdev/omap/omapfb_main.c
-> +++ b/drivers/video/fbdev/omap/omapfb_main.c
-> @@ -1643,14 +1643,12 @@ static int omapfb_do_probe(struct platform_devic=
-e *pdev,
->  	}
->  	fbdev->int_irq =3D platform_get_irq(pdev, 0);
->  	if (fbdev->int_irq < 0) {
-> -		dev_err(&pdev->dev, "unable to get irq\n");
->  		r =3D ENXIO;
->  		goto cleanup;
->  	}
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core=
+/fbcon.c
+> index cf9ac4da0a82..825b012debe7 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -2401,15 +2401,21 @@ static int fbcon_do_set_font(struct vc_data *vc,=
+ int w, int h, int charcount,
+>  	struct fb_info *info =3D fbcon_info_from_console(vc->vc_num);
+>  	struct fbcon_ops *ops =3D info->fbcon_par;
+>  	struct fbcon_display *p =3D &fb_display[vc->vc_num];
+> -	int resize;
+> +	int resize, ret, old_userfont, old_width, old_height, old_charcount;
+>  	char *old_data =3D NULL;
 >
->  	fbdev->ext_irq =3D platform_get_irq(pdev, 1);
->  	if (fbdev->ext_irq < 0) {
-> -		dev_err(&pdev->dev, "unable to get irq\n");
->  		r =3D ENXIO;
->  		goto cleanup;
->  	}
+>  	resize =3D (w !=3D vc->vc_font.width) || (h !=3D vc->vc_font.height);
+>  	if (p->userfont)
+>  		old_data =3D vc->vc_font.data;
+>  	vc->vc_font.data =3D (void *)(p->fontdata =3D data);
+> +	old_userfont =3D p->userfont;
+>  	if ((p->userfont =3D userfont))
+>  		REFCOUNT(data)++;
+> +
+> +	old_width =3D vc->vc_font.width;
+> +	old_height =3D vc->vc_font.height;
+> +	old_charcount =3D vc->vc_font.charcount;
+> +
+>  	vc->vc_font.width =3D w;
+>  	vc->vc_font.height =3D h;
+>  	vc->vc_font.charcount =3D charcount;
+> @@ -2425,7 +2431,9 @@ static int fbcon_do_set_font(struct vc_data *vc, i=
+nt w, int h, int charcount,
+>  		rows =3D FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
+>  		cols /=3D w;
+>  		rows /=3D h;
+> -		vc_resize(vc, cols, rows);
+> +		ret =3D vc_resize(vc, cols, rows);
+> +		if (ret)
+> +			goto err_out;
+>  	} else if (con_is_visible(vc)
+>  		   && vc->vc_mode =3D=3D KD_TEXT) {
+>  		fbcon_clear_margins(vc, 0);
+> @@ -2435,6 +2443,21 @@ static int fbcon_do_set_font(struct vc_data *vc, =
+int w, int h, int charcount,
+>  	if (old_data && (--REFCOUNT(old_data) =3D=3D 0))
+>  		kfree(old_data - FONT_EXTRA_WORDS * sizeof(int));
+>  	return 0;
+> +
+> +err_out:
+> +	p->fontdata =3D old_data;
+> +	vc->vc_font.data =3D (void *)old_data;
+> +
+> +	if (userfont) {
+> +		p->userfont =3D old_userfont;
+> +		REFCOUNT(data)--;
+> +	}
+> +
+> +	vc->vc_font.width =3D old_width;
+> +	vc->vc_font.height =3D old_height;
+> +	vc->vc_font.charcount =3D old_charcount;
+> +
+> +	return ret;
+>  }
+>
+>  /*
 

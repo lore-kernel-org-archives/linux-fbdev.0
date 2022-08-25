@@ -2,161 +2,89 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2135C48BE4
-	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Aug 2022 20:04:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57BF9C3F6B0
+	for <linux-fbdev@archiver.kernel.org>; Thu, 25 Aug 2022 00:16:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233529AbiHXUEv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 24 Aug 2022 16:04:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54662 "EHLO
+        id S229583AbiHYAQV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 24 Aug 2022 20:16:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51052 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239057AbiHXUEu (ORCPT
+        with ESMTP id S229574AbiHYAQU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 24 Aug 2022 16:04:50 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E75B7632E;
-        Wed, 24 Aug 2022 13:04:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1661371480;
-        bh=mT+JncqykK1/MQG4BV6pGNhG34tuIpbu4gUj8Qq5OJg=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=je1iScQue2PuzOXKqByGfXSW1Qx1ZMfpotwkROyCZsJdSHIqDzw70Z0WtBzwWKyyO
-         T0ZcxrYqSNG599BfW8OSma065E/e+6srrPudnzs+1zheu+/wxH/0Wt8EM/6AaK5dSe
-         6URRu5A9fA7zjrdRf//AyC3DzDSuuUOT5U/cjiA0=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.173.19]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MVvLB-1oqcLl1B5B-00RtjX; Wed, 24
- Aug 2022 22:04:40 +0200
-Message-ID: <6efc0d2a-c2af-947c-d928-104e3add1650@gmx.de>
-Date:   Wed, 24 Aug 2022 22:04:38 +0200
+        Wed, 24 Aug 2022 20:16:20 -0400
+Received: from mail-qv1-xf29.google.com (mail-qv1-xf29.google.com [IPv6:2607:f8b0:4864:20::f29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CDBB36D559;
+        Wed, 24 Aug 2022 17:16:18 -0700 (PDT)
+Received: by mail-qv1-xf29.google.com with SMTP id u6so9581754qvp.5;
+        Wed, 24 Aug 2022 17:16:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc;
+        bh=Cmz7fm7ebAGzssd3xJv7sbaJQZ+F0fhv8ZeE1c0Oss4=;
+        b=BbYn0gFpEl3t63BpXevWKjNWuybXv5dgRXX7NNXPmwPDV9WWbsy2TFL4AwK2WAOF4L
+         Dl4uRGvFfS12lFjlJXalRvXeB5i7idDZdGtHs6QvTz2Xte8AaqV204WOLXovQE6EnXgW
+         uGT1RLT6seACe4OxhcJBK9A8hwv2kMfHPBMs71iQN6+/obi92jtetOqAPRlh6Po2s3Fx
+         mFAVPac+9ZrznBGYP/HjluetrUxYQKcCgU397MVRCTX+3r3gFoGFQcJNePmhXvgEe96q
+         9fmyo6AYUA/3FC798Q2kAFuZZno1eELFCfz9xaJlGZPuUlmSKBIVqXOCyoJrI3iYY+5l
+         5zIw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc;
+        bh=Cmz7fm7ebAGzssd3xJv7sbaJQZ+F0fhv8ZeE1c0Oss4=;
+        b=P6726HKJkZ2AErPMY0RBbCmj8gGBX++3Zu7yUztzZkPHpEnl4CmpzhTw7iEi6x1FU8
+         sqg3l8XVJpPolzLE72ijzeFwyo6FsPDgqBnS5HZ07KT9V1jSuAQkytf89vZWIxtLUu9Z
+         Xy/RsX7+peg6BJy2ugCrmxlkx2wop4V44bb3Pu2Qpx14X6efIgdEBn0tHIgPTHGnf2D2
+         3mVffu0t/NcQZt+D13zU4QN4oCpBSXnLsbnypkOI43yxIfgR8Y5p2DMGSaj5ao95SvNK
+         c6exRCQskP4M9aDooekM0pzAw1aC2bMuHOD+hStHRKsZTUnacBypcXDMjS9TH8UvDZx2
+         k2Uw==
+X-Gm-Message-State: ACgBeo1+atvRqZ6Hu+AyW5ELh+BRyP6ZTPoZ8dG5vNIfSjZGsD9BjVc2
+        Bzlmn7L7HgDPBFDElnckrVyp7tGQ28sxi3EI
+X-Google-Smtp-Source: AA6agR7cudaJBqJrWLroeNxaCLhFvEoy84qSAugT7HJRE0bR27KLPBU9oxZxVKYL3iYhZ2vl888dww==
+X-Received: by 2002:a05:6214:262a:b0:496:ccc1:12c6 with SMTP id gv10-20020a056214262a00b00496ccc112c6mr1524662qvb.33.1661386577905;
+        Wed, 24 Aug 2022 17:16:17 -0700 (PDT)
+Received: from valhalla (2603-7081-5203-61c3-0000-0000-0000-1449.res6.spectrum.com. [2603:7081:5203:61c3::1449])
+        by smtp.gmail.com with ESMTPSA id u9-20020a05622a198900b003430cbb0006sm15193239qtc.1.2022.08.24.17.16.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 24 Aug 2022 17:16:17 -0700 (PDT)
+Date:   Wed, 24 Aug 2022 20:16:14 -0400
+From:   Chris Carbone <chris.m.carbone@gmail.com>
+To:     Greg KH <gregkh@linuxfoundation.org>
+Cc:     sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: sm750fb: split multiple assignments to lines
+Message-ID: <Ywa/TiT46IH4vDw0@valhalla>
+References: <YwQGaLoBHH9C0aXN@valhalla>
+ <YwRzJN5yORAtq8md@kroah.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.12.0
-Subject: Re: [PATCH] fbcon: Properly revert changes when vc_resize() failed
-Content-Language: en-US
-To:     Shigeru Yoshida <syoshida@redhat.com>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org,
-        syzbot+a168dbeaaa7778273c1b@syzkaller.appspotmail.com
-References: <20220818181336.3504010-1-syoshida@redhat.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220818181336.3504010-1-syoshida@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:bPYtDBYr/fK766CKWILWMU7xF4/wZ+tyXxZ1o8D2m8Jo85BJ+as
- DNW6Cz5IoGsD2PzMXfhkHHJBmrmJi0/gZdkacY5RzJBUap2qs1wCwreOlmx6Y/XNoOsTg+o
- 9MRQE0QR54b3UTUFtfdSXRChRLYQyp/1RIqWJFyFBQZldaNXhs6p4GYoBrUTmwMgMfMbl33
- N6FltjFkdpDIxKBB4r6BA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:v/nCVi1yI7M=:ftuED5v4WP4ZqnIzTwPVlg
- xvrViHqKL0rzJ7LDMoCsR+/heF0xhFSK0UMYKhhwh40W1BPiTK1E64EzZSy1/Cl037/RXsDBb
- 9D+dxZzx3dm1h6B5MDGlSJ+g+YtEnLe51gQSWNvyw1lnO/DIuvQvaCqXJeOP7BZcuWg/ZNkme
- /mVbVPz0eYkIfNXwy0wbr/kMiGjwDTKfcnW6z0zbARDZQkLOVwiFuJp0IjBAFOtThwrpXp7Ch
- dttQLKauLvJ0aOT1iuUA4TzNOfCjMBjWnP9SjfzqZIg1ROskjF43YiZ2ik0+adsESHsmIeu+1
- puv5l5z9j8Mwx0rYF1FFRLjHurmQ37IbEfMWfwIzdUdK//Y7bV+ZIdlF2M2Pb5SbIoFK4+uCB
- yLmA3XiJekW5rtNuTgovWtkVZ1f8Nck1zGtlD6W8Wm+22tjROxAx6CIPA382GrSrLP9oH/U/m
- 48yQOY1xfh4UNyZ++Mzw+CE96QSkWFgIxZ39sAOrQedThM2xXCF6Mzvk/L1AfEaYT9kd+8Dio
- QzU6ysz9+nL9hH5aIox0KZzzxvLj6mGlWYn4qvy5E2XiwtHCEoOgip9XDfjGo478AqSReGqY7
- 685niWvag0B+MphtZOzIWWHSpvOYZCfbquDOkiRSiqE3rhLbeBZzfbFb/vWhov78H2Cs1TkpW
- L9B39CKWpS7P8OerSEOV56nOQBm1X1ty2/yRu2A8y0s0pfgg3C8zKw0ljwIp4LK6r0HShPJTN
- bk+Li0hINWJI7zg3aBEctiqz0rZy6fnYRG/QMaUSw1/JeBYNK4OoH5j9HFg4vWYyyfhHzS0AD
- P2UbsPpV2xxm5ujfbX4Ei9U4DOtcoRnLAydGkL6h1slTcHcyqw3QyOi2/WWJkErNhyCKqPtMT
- e3Vm7pVjUVY5dYTSmajTtgKWXncilU6uh8uaewB3Qq1hdbkEv5B2csrIs18Zh2eR7Y1edsM7h
- W6hvBofJhVeZJFTjdhhxERqeeYISGlYt6mhXCDmxLg4unvMfYWutpcxFQ/eemx/rNrrlgBMJh
- mt1NRjlPOKGmR6AgqlAJyjubEifg2N7PzG4AXmpAF2U8ZC7YRvuyfuOaiPsEOw7dAgddNsFIh
- L4+G6iYQvfZXgTRxnaowfsEVSq0z7oeaAJh87IvmNpAIu1P2q8Yn6fQvw==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <YwRzJN5yORAtq8md@kroah.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Shigeru,
+On Tue, Aug 23, 2022 at 08:26:44AM +0200, Greg KH wrote:
+> On Mon, Aug 22, 2022 at 06:42:48PM -0400, Christopher Carbone wrote:
+> > 
+> > diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+> > index dbd1159a2ef0..6f4c31635cc4 100644
+> > --- a/drivers/staging/sm750fb/sm750.c
+> > +++ b/drivers/staging/sm750fb/sm750.c
+> > @@ -386,7 +386,8 @@ static int lynxfb_ops_set_par(struct fb_info *info)
+> >  
+> >  	ret = lynxfb_set_color_offsets(info);
+> >  
+> > -	var->height = var->width = -1;
+> > +	var->height  = -1;
+> 
+> Odd spacing on this new line.  Did you run your change through
+> checkpatch?
 
-On 8/18/22 20:13, Shigeru Yoshida wrote:
-> fbcon_do_set_font() calls vc_resize() when font size is changed.
-> However, if if vc_resize() failed, current implementation doesn't
-> revert changes for font size, and this causes inconsistent state.
->
-> syzbot reported unable to handle page fault due to this issue [1].
-> syzbot's repro uses fault injection which cause failure for memory
-> allocation, so vc_resize() failed.
->
-> This patch fixes this issue by properly revert changes for font
-> related date when vc_resize() failed.
->
-> Link: https://syzkaller.appspot.com/bug?id=3D3443d3a1fa6d964dd7310a0cb16=
-96d165a3e07c4 [1]
-> Reported-by: syzbot+a168dbeaaa7778273c1b@syzkaller.appspotmail.com
-> Signed-off-by: Shigeru Yoshida <syoshida@redhat.com>
+Yes; checkpatch didn't report any problems with it.
 
-applied.
-
-Thank you!
-Helge
-
-> ---
->  drivers/video/fbdev/core/fbcon.c | 27 +++++++++++++++++++++++++--
->  1 file changed, 25 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core=
-/fbcon.c
-> index cf9ac4da0a82..825b012debe7 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -2401,15 +2401,21 @@ static int fbcon_do_set_font(struct vc_data *vc,=
- int w, int h, int charcount,
->  	struct fb_info *info =3D fbcon_info_from_console(vc->vc_num);
->  	struct fbcon_ops *ops =3D info->fbcon_par;
->  	struct fbcon_display *p =3D &fb_display[vc->vc_num];
-> -	int resize;
-> +	int resize, ret, old_userfont, old_width, old_height, old_charcount;
->  	char *old_data =3D NULL;
->
->  	resize =3D (w !=3D vc->vc_font.width) || (h !=3D vc->vc_font.height);
->  	if (p->userfont)
->  		old_data =3D vc->vc_font.data;
->  	vc->vc_font.data =3D (void *)(p->fontdata =3D data);
-> +	old_userfont =3D p->userfont;
->  	if ((p->userfont =3D userfont))
->  		REFCOUNT(data)++;
-> +
-> +	old_width =3D vc->vc_font.width;
-> +	old_height =3D vc->vc_font.height;
-> +	old_charcount =3D vc->vc_font.charcount;
-> +
->  	vc->vc_font.width =3D w;
->  	vc->vc_font.height =3D h;
->  	vc->vc_font.charcount =3D charcount;
-> @@ -2425,7 +2431,9 @@ static int fbcon_do_set_font(struct vc_data *vc, i=
-nt w, int h, int charcount,
->  		rows =3D FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
->  		cols /=3D w;
->  		rows /=3D h;
-> -		vc_resize(vc, cols, rows);
-> +		ret =3D vc_resize(vc, cols, rows);
-> +		if (ret)
-> +			goto err_out;
->  	} else if (con_is_visible(vc)
->  		   && vc->vc_mode =3D=3D KD_TEXT) {
->  		fbcon_clear_margins(vc, 0);
-> @@ -2435,6 +2443,21 @@ static int fbcon_do_set_font(struct vc_data *vc, =
-int w, int h, int charcount,
->  	if (old_data && (--REFCOUNT(old_data) =3D=3D 0))
->  		kfree(old_data - FONT_EXTRA_WORDS * sizeof(int));
->  	return 0;
-> +
-> +err_out:
-> +	p->fontdata =3D old_data;
-> +	vc->vc_font.data =3D (void *)old_data;
-> +
-> +	if (userfont) {
-> +		p->userfont =3D old_userfont;
-> +		REFCOUNT(data)--;
-> +	}
-> +
-> +	vc->vc_font.width =3D old_width;
-> +	vc->vc_font.height =3D old_height;
-> +	vc->vc_font.charcount =3D old_charcount;
-> +
-> +	return ret;
->  }
->
->  /*
+Thank you for your time,
+Chris Carbone
 

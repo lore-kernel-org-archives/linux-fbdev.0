@@ -2,93 +2,169 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0073BECAAD6
-	for <linux-fbdev@archiver.kernel.org>; Fri, 26 Aug 2022 14:57:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E33DAECAAD6
+	for <linux-fbdev@archiver.kernel.org>; Fri, 26 Aug 2022 18:30:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239997AbiHZO5Z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 26 Aug 2022 10:57:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45230 "EHLO
+        id S1345001AbiHZSaJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 26 Aug 2022 14:30:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43874 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230256AbiHZO5Y (ORCPT
+        with ESMTP id S1344952AbiHZS3v (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 26 Aug 2022 10:57:24 -0400
-Received: from laurent.telenet-ops.be (laurent.telenet-ops.be [IPv6:2a02:1800:110:4::f00:19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 815A4D91D6
-        for <linux-fbdev@vger.kernel.org>; Fri, 26 Aug 2022 07:57:21 -0700 (PDT)
-Received: from ramsan.of.borg ([84.195.186.194])
-        by laurent.telenet-ops.be with bizsmtp
-        id CExG2800E4C55Sk01ExGiB; Fri, 26 Aug 2022 16:57:19 +0200
-Received: from rox.of.borg ([192.168.97.57])
-        by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1oRalo-002kip-10; Fri, 26 Aug 2022 16:57:16 +0200
-Received: from geert by rox.of.borg with local (Exim 4.93)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1oRZgQ-005y1H-Vu; Fri, 26 Aug 2022 15:47:38 +0200
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
-        Gerd Hoffmann <kraxel@redhat.com>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH v2] drm/fourcc: Add missing big-endian XRGB1555 and RGB565 formats
-Date:   Fri, 26 Aug 2022 15:47:37 +0200
-Message-Id: <6e9fb733354fbf6af1531095d9230bad802c064c.1661521401.git.geert@linux-m68k.org>
-X-Mailer: git-send-email 2.25.1
+        Fri, 26 Aug 2022 14:29:51 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06A1DDA5;
+        Fri, 26 Aug 2022 11:29:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1661538580;
+        bh=6CwsAnaWPuxtbvE456cbmPQ06VlN91EsBREJitWI23k=;
+        h=X-UI-Sender-Class:Date:From:To:Subject;
+        b=DNulv/cP0alEZTJUhHf9A9MvJN86BSczbBQUE903Zc2XoQYyA14RVSVa4WKV7OFGj
+         js09kiCTvn2dZGb4mPKtD3K2urjkT7hoI+BOGY4BtyST0W/ttrlinBEcxG7B1dc+60
+         wPsArHkL024xLFypVRVjIcOTfhPUD8MKa0rR6wL8=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from ls3530 ([92.116.171.190]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1N0oG5-1pNrN31Zgb-00whyf; Fri, 26
+ Aug 2022 20:29:40 +0200
+Date:   Fri, 26 Aug 2022 20:29:35 +0200
+From:   Helge Deller <deller@gmx.de>
+To:     Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev updates & fixes for v6.0-rc3
+Message-ID: <YwkRD5hWd4F02dxc@ls3530>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Provags-ID: V03:K1:S+Gx95puGBUMe77q0+jOjU2CmgdcWla5iY7r2boOKY4l0p2qobj
+ 7OA90AVrpMI6lHBBdCt1MLgizBN7qyGY9ypUdCf4dlwpcAm2+c4WUExl71lLlV1KoKH4SkV
+ bOK7vaiIGd5QHxsSACyvpmghF0uymP3Mu0qkalhxDDh8rOc1PFiEfEWP0LKwvUJYDMxzrjq
+ O3zHQWAdnkStngcEB5BJw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:gu+Be2cK4x8=:QDvIi3VT+gwtRWU527U5dG
+ ppleeK8f+bnNquQH0zJUCOS8Zhe5wrEixYTYtik/oE1rqlBTst8udxlmc8cS7beLzbRNoHyrb
+ R/3bYLi66pL/1/Mkz0NITyu+MkNRJbfDfxy7vz6AQVLX6GlmwtQAbJZL55V2O3G0aqcRYQDvY
+ iGkItoof7SVcuf+qpWOQB1qMe+0wKcBPVZ9mJfpDGtmjw++gTOuDoHqDTXOztXnHB+dT4ge3g
+ m+95K0EU7GydC6wLHzcbLvbZDm0DLc3cJaENGSwdhy1Ag8kXJKK1FX4dKLFjrNtxwZUzylsOJ
+ 1YAEZ3p1kIfh7XjD9rQ20kiVkWs3iebK1waDLa0ydQ88rxI9jlBzWQFRjStoOQh5E5mHCkGhs
+ dFba/QwowSAV4YufMxHwZc1XIxxyAGTxZ1HW8qND/oKauYDqp7O9T/8MUvlknsIMgGDpK7ODa
+ rRyrKc5YvxwXRTE423b22lfY/M308u0OQxOjpaq45c/ieTjpDTHQiPGlfUCwzh4Wg539iKQHV
+ 2C+Fdv7hFD5MUj1kYQ/ozW/5gskwKX1kyd3SebMnHD9WEzJKVhLz14TFGjYpZW/J8NESoxcOk
+ N67Wd2vq6YSDqdPqUKIvwrAfmB+18racH/Wkt7YduMNvnjO8rVkrrESDE/oSA0BV/mgC+BS/9
+ upj4qh+zfyK5VHOf0AurbRNDPsGfBv8pcBmuPdS1k6zY4ogqZYIrCACVyYO0f6NBmDLcoMI8N
+ WLMOepSF7mjJTl09XnlHseVOTZa87otvN6pJktNE/8dG9pv0fmyi7D+X+NWdgzajgNUCnztqr
+ Ai4NJ4ZhHOpVbuqEVQkwso8lL+2H8I+1uyPP3HHYIyy2zablTG4qJ5h2t6DOjKup4sn+JWe3N
+ 7rTp3eJt8uJRkt+nxZGe25FGaMxctdRCLMTY4yAyEBrWTBt169Jo49XowJeuAL+fxVqhV3cwh
+ VG6/fRcvNBT5RNLW/Hm+YWmf13W2jfxtU9gtvZNTGT+fDTA3uVQT7I55SkN5il2Q7alBF5L+x
+ wZK3ltyaVnpdD21a6wdlToh1PLBaz6wootq7wiLWGzjoQdC1W7j5VCubeCgfJoD1W//JZiSvz
+ jY4P01Jk7LAqXRceXMW0SVcmkeIBo/FVhpHu5ITeqxauxo3Vyyz7dLihw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-As of commit eae06120f1974e1a ("drm: refuse ADDFB2 ioctl for broken
-bigendian drivers"), drivers must set the
-quirk_addfb_prefer_host_byte_order quirk to make the drm_mode_addfb()
-compat code work correctly on big-endian machines.
+Hi Linus,
 
-While that works fine for big-endian XRGB8888 and ARGB8888, which are
-mapped to the existing little-endian BGRX8888 and BGRA8888 formats, it
-does not work for big-endian XRGB1555 and RGB565, as the latter are not
-listed in the format database.
+please pull the second round of fbdev fixes & updates for v6.0-rc3.
 
-Fix this by adding the missing formats.  Limit this to big-endian
-platforms, as there is currently no need to support these formats on
-little-endian platforms.
+Mostly just small patches, with the exception of the bigger indenting
+cleanups in the sisfb and radeonfb drivers.
 
-Fixes: 6960e6da9cec3f66 ("drm: fix drm_mode_addfb() on big endian machines.")
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
-v2:
-  - Use "DRM_FORMAT_foo | DRM_FORMAT_BIG_ENDIAN" instead of
-    "DRM_FORMAT_HOST_foo",
-  - Turn into a lone patch, as all other patches from series
-    https://lore.kernel.org/r/cover.1657300532.git.geert@linux-m68k.org
-    were applied to drm-misc/for-linux-next.
----
- drivers/gpu/drm/drm_fourcc.c | 4 ++++
- 1 file changed, 4 insertions(+)
+Two patches should be mentioned though:
+A fix-up for fbdev if the screen resize fails (by Shigeru Yoshida), and
+a potential divide by zero fix in fb_pm2fb (by Letu Ren).
 
-diff --git a/drivers/gpu/drm/drm_fourcc.c b/drivers/gpu/drm/drm_fourcc.c
-index e09331bb3bc73f21..265671a7f9134c1f 100644
---- a/drivers/gpu/drm/drm_fourcc.c
-+++ b/drivers/gpu/drm/drm_fourcc.c
-@@ -190,6 +190,10 @@ const struct drm_format_info *__drm_format_info(u32 format)
- 		{ .format = DRM_FORMAT_BGRA5551,	.depth = 15, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1, .has_alpha = true },
- 		{ .format = DRM_FORMAT_RGB565,		.depth = 16, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
- 		{ .format = DRM_FORMAT_BGR565,		.depth = 16, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
-+#ifdef __BIG_ENDIAN
-+		{ .format = DRM_FORMAT_XRGB1555 | DRM_FORMAT_BIG_ENDIAN, .depth = 15, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
-+		{ .format = DRM_FORMAT_RGB565 | DRM_FORMAT_BIG_ENDIAN, .depth = 16, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
-+#endif
- 		{ .format = DRM_FORMAT_RGB888,		.depth = 24, .num_planes = 1, .cpp = { 3, 0, 0 }, .hsub = 1, .vsub = 1 },
- 		{ .format = DRM_FORMAT_BGR888,		.depth = 24, .num_planes = 1, .cpp = { 3, 0, 0 }, .hsub = 1, .vsub = 1 },
- 		{ .format = DRM_FORMAT_XRGB8888,	.depth = 24, .num_planes = 1, .cpp = { 4, 0, 0 }, .hsub = 1, .vsub = 1 },
--- 
-2.25.1
+More detailled info is in the tag description. All patches have been in
+for-next for a few days.
 
+Thanks!
+Helge
+
+-------
+
+The following changes since commit 1c23f9e627a7b412978b4e852793c5e3c3efc555:
+
+  Linux 6.0-rc2 (2022-08-21 17:32:54 -0700)
+
+are available in the Git repository at:
+
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.0-rc3
+
+for you to fetch changes up to a5a923038d70d2d4a86cb4e3f32625a5ee6e7e24:
+
+  fbdev: fbcon: Properly revert changes when vc_resize() failed (2022-08-26 19:56:18 +0200)
+
+----------------------------------------------------------------
+fbdev fixes and updates for kernel 6.0-rc3
+
+Major fixes:
+- Revert the changes for fbcon console when vc_resize() fails [Shigeru Yoshida]
+- Avoid a potential divide by zero error in fb_pm2fb [Letu Ren]
+
+Minor fixes:
+- Add missing pci_disable_device() in chipsfb_pci_init() [Yang Yingliang]
+- Fix tests for platform_get_irq() failure in omapfb [Yu Zhe]
+- Destroy mutex on freeing struct fb_info in fbsysfs [Shigeru Yoshida]
+
+Cleanups:
+- Move fbdev drivers from strlcpy to strscpy [Wolfram Sang]
+- Indenting fixes, comment fixes, ... [Jiapeng Chong & Jilin Yuan]
+
+----------------------------------------------------------------
+Jiapeng Chong (3):
+      fbdev: sisfb: Clean up some inconsistent indenting
+      fbdev: radeon: Clean up some inconsistent indenting
+      fbdev: omap: Remove unnecessary print function dev_err()
+
+Jilin Yuan (1):
+      fbdev: ssd1307fb: Fix repeated words in comments
+
+Letu Ren (1):
+      fbdev: fb_pm2fb: Avoid potential divide by zero error
+
+Shigeru Yoshida (2):
+      fbdev: fbcon: Destroy mutex on freeing struct fb_info
+      fbdev: fbcon: Properly revert changes when vc_resize() failed
+
+Wolfram Sang (1):
+      fbdev: Move fbdev drivers from strlcpy to strscpy
+
+Yang Yingliang (1):
+      fbdev: chipsfb: Add missing pci_disable_device() in chipsfb_pci_init()
+
+Yu Zhe (1):
+      fbdev: omapfb: Fix tests for platform_get_irq() failure
+
+ drivers/video/console/sticore.c                |   2 +-
+ drivers/video/fbdev/aty/atyfb_base.c           |   2 +-
+ drivers/video/fbdev/aty/radeon_base.c          |  48 ++---
+ drivers/video/fbdev/bw2.c                      |   2 +-
+ drivers/video/fbdev/chipsfb.c                  |   1 +
+ drivers/video/fbdev/cirrusfb.c                 |   2 +-
+ drivers/video/fbdev/clps711x-fb.c              |   2 +-
+ drivers/video/fbdev/core/fbcon.c               |  29 ++-
+ drivers/video/fbdev/core/fbsysfs.c             |   4 +
+ drivers/video/fbdev/cyber2000fb.c              |   8 +-
+ drivers/video/fbdev/ffb.c                      |   2 +-
+ drivers/video/fbdev/geode/gx1fb_core.c         |   6 +-
+ drivers/video/fbdev/gxt4500.c                  |   2 +-
+ drivers/video/fbdev/i740fb.c                   |   2 +-
+ drivers/video/fbdev/imxfb.c                    |   2 +-
+ drivers/video/fbdev/matrox/matroxfb_base.c     |   6 +-
+ drivers/video/fbdev/omap/omapfb_main.c         |   6 +-
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c |   2 +-
+ drivers/video/fbdev/pm2fb.c                    |   5 +
+ drivers/video/fbdev/pxa168fb.c                 |   2 +-
+ drivers/video/fbdev/pxafb.c                    |   2 +-
+ drivers/video/fbdev/s3fb.c                     |   2 +-
+ drivers/video/fbdev/simplefb.c                 |   2 +-
+ drivers/video/fbdev/sis/sis_main.c             | 278 +++++++++++++------------
+ drivers/video/fbdev/sm501fb.c                  |   2 +-
+ drivers/video/fbdev/ssd1307fb.c                |   2 +-
+ drivers/video/fbdev/sstfb.c                    |   2 +-
+ drivers/video/fbdev/sunxvr1000.c               |   2 +-
+ drivers/video/fbdev/sunxvr2500.c               |   2 +-
+ drivers/video/fbdev/sunxvr500.c                |   2 +-
+ drivers/video/fbdev/tcx.c                      |   2 +-
+ drivers/video/fbdev/tdfxfb.c                   |   4 +-
+ drivers/video/fbdev/tgafb.c                    |   2 +-
+ drivers/video/fbdev/tridentfb.c                |   2 +-
+ 34 files changed, 240 insertions(+), 201 deletions(-)

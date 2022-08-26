@@ -2,89 +2,93 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57BF9C3F6B0
-	for <linux-fbdev@archiver.kernel.org>; Thu, 25 Aug 2022 00:16:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0073BECAAD6
+	for <linux-fbdev@archiver.kernel.org>; Fri, 26 Aug 2022 14:57:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229583AbiHYAQV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 24 Aug 2022 20:16:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51052 "EHLO
+        id S239997AbiHZO5Z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 26 Aug 2022 10:57:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45230 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229574AbiHYAQU (ORCPT
+        with ESMTP id S230256AbiHZO5Y (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 24 Aug 2022 20:16:20 -0400
-Received: from mail-qv1-xf29.google.com (mail-qv1-xf29.google.com [IPv6:2607:f8b0:4864:20::f29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CDBB36D559;
-        Wed, 24 Aug 2022 17:16:18 -0700 (PDT)
-Received: by mail-qv1-xf29.google.com with SMTP id u6so9581754qvp.5;
-        Wed, 24 Aug 2022 17:16:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc;
-        bh=Cmz7fm7ebAGzssd3xJv7sbaJQZ+F0fhv8ZeE1c0Oss4=;
-        b=BbYn0gFpEl3t63BpXevWKjNWuybXv5dgRXX7NNXPmwPDV9WWbsy2TFL4AwK2WAOF4L
-         Dl4uRGvFfS12lFjlJXalRvXeB5i7idDZdGtHs6QvTz2Xte8AaqV204WOLXovQE6EnXgW
-         uGT1RLT6seACe4OxhcJBK9A8hwv2kMfHPBMs71iQN6+/obi92jtetOqAPRlh6Po2s3Fx
-         mFAVPac+9ZrznBGYP/HjluetrUxYQKcCgU397MVRCTX+3r3gFoGFQcJNePmhXvgEe96q
-         9fmyo6AYUA/3FC798Q2kAFuZZno1eELFCfz9xaJlGZPuUlmSKBIVqXOCyoJrI3iYY+5l
-         5zIw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc;
-        bh=Cmz7fm7ebAGzssd3xJv7sbaJQZ+F0fhv8ZeE1c0Oss4=;
-        b=P6726HKJkZ2AErPMY0RBbCmj8gGBX++3Zu7yUztzZkPHpEnl4CmpzhTw7iEi6x1FU8
-         sqg3l8XVJpPolzLE72ijzeFwyo6FsPDgqBnS5HZ07KT9V1jSuAQkytf89vZWIxtLUu9Z
-         Xy/RsX7+peg6BJy2ugCrmxlkx2wop4V44bb3Pu2Qpx14X6efIgdEBn0tHIgPTHGnf2D2
-         3mVffu0t/NcQZt+D13zU4QN4oCpBSXnLsbnypkOI43yxIfgR8Y5p2DMGSaj5ao95SvNK
-         c6exRCQskP4M9aDooekM0pzAw1aC2bMuHOD+hStHRKsZTUnacBypcXDMjS9TH8UvDZx2
-         k2Uw==
-X-Gm-Message-State: ACgBeo1+atvRqZ6Hu+AyW5ELh+BRyP6ZTPoZ8dG5vNIfSjZGsD9BjVc2
-        Bzlmn7L7HgDPBFDElnckrVyp7tGQ28sxi3EI
-X-Google-Smtp-Source: AA6agR7cudaJBqJrWLroeNxaCLhFvEoy84qSAugT7HJRE0bR27KLPBU9oxZxVKYL3iYhZ2vl888dww==
-X-Received: by 2002:a05:6214:262a:b0:496:ccc1:12c6 with SMTP id gv10-20020a056214262a00b00496ccc112c6mr1524662qvb.33.1661386577905;
-        Wed, 24 Aug 2022 17:16:17 -0700 (PDT)
-Received: from valhalla (2603-7081-5203-61c3-0000-0000-0000-1449.res6.spectrum.com. [2603:7081:5203:61c3::1449])
-        by smtp.gmail.com with ESMTPSA id u9-20020a05622a198900b003430cbb0006sm15193239qtc.1.2022.08.24.17.16.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Aug 2022 17:16:17 -0700 (PDT)
-Date:   Wed, 24 Aug 2022 20:16:14 -0400
-From:   Chris Carbone <chris.m.carbone@gmail.com>
-To:     Greg KH <gregkh@linuxfoundation.org>
-Cc:     sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: sm750fb: split multiple assignments to lines
-Message-ID: <Ywa/TiT46IH4vDw0@valhalla>
-References: <YwQGaLoBHH9C0aXN@valhalla>
- <YwRzJN5yORAtq8md@kroah.com>
+        Fri, 26 Aug 2022 10:57:24 -0400
+Received: from laurent.telenet-ops.be (laurent.telenet-ops.be [IPv6:2a02:1800:110:4::f00:19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 815A4D91D6
+        for <linux-fbdev@vger.kernel.org>; Fri, 26 Aug 2022 07:57:21 -0700 (PDT)
+Received: from ramsan.of.borg ([84.195.186.194])
+        by laurent.telenet-ops.be with bizsmtp
+        id CExG2800E4C55Sk01ExGiB; Fri, 26 Aug 2022 16:57:19 +0200
+Received: from rox.of.borg ([192.168.97.57])
+        by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1oRalo-002kip-10; Fri, 26 Aug 2022 16:57:16 +0200
+Received: from geert by rox.of.borg with local (Exim 4.93)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1oRZgQ-005y1H-Vu; Fri, 26 Aug 2022 15:47:38 +0200
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        Gerd Hoffmann <kraxel@redhat.com>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH v2] drm/fourcc: Add missing big-endian XRGB1555 and RGB565 formats
+Date:   Fri, 26 Aug 2022 15:47:37 +0200
+Message-Id: <6e9fb733354fbf6af1531095d9230bad802c064c.1661521401.git.geert@linux-m68k.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <YwRzJN5yORAtq8md@kroah.com>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Aug 23, 2022 at 08:26:44AM +0200, Greg KH wrote:
-> On Mon, Aug 22, 2022 at 06:42:48PM -0400, Christopher Carbone wrote:
-> > 
-> > diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-> > index dbd1159a2ef0..6f4c31635cc4 100644
-> > --- a/drivers/staging/sm750fb/sm750.c
-> > +++ b/drivers/staging/sm750fb/sm750.c
-> > @@ -386,7 +386,8 @@ static int lynxfb_ops_set_par(struct fb_info *info)
-> >  
-> >  	ret = lynxfb_set_color_offsets(info);
-> >  
-> > -	var->height = var->width = -1;
-> > +	var->height  = -1;
-> 
-> Odd spacing on this new line.  Did you run your change through
-> checkpatch?
+As of commit eae06120f1974e1a ("drm: refuse ADDFB2 ioctl for broken
+bigendian drivers"), drivers must set the
+quirk_addfb_prefer_host_byte_order quirk to make the drm_mode_addfb()
+compat code work correctly on big-endian machines.
 
-Yes; checkpatch didn't report any problems with it.
+While that works fine for big-endian XRGB8888 and ARGB8888, which are
+mapped to the existing little-endian BGRX8888 and BGRA8888 formats, it
+does not work for big-endian XRGB1555 and RGB565, as the latter are not
+listed in the format database.
 
-Thank you for your time,
-Chris Carbone
+Fix this by adding the missing formats.  Limit this to big-endian
+platforms, as there is currently no need to support these formats on
+little-endian platforms.
+
+Fixes: 6960e6da9cec3f66 ("drm: fix drm_mode_addfb() on big endian machines.")
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+v2:
+  - Use "DRM_FORMAT_foo | DRM_FORMAT_BIG_ENDIAN" instead of
+    "DRM_FORMAT_HOST_foo",
+  - Turn into a lone patch, as all other patches from series
+    https://lore.kernel.org/r/cover.1657300532.git.geert@linux-m68k.org
+    were applied to drm-misc/for-linux-next.
+---
+ drivers/gpu/drm/drm_fourcc.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/gpu/drm/drm_fourcc.c b/drivers/gpu/drm/drm_fourcc.c
+index e09331bb3bc73f21..265671a7f9134c1f 100644
+--- a/drivers/gpu/drm/drm_fourcc.c
++++ b/drivers/gpu/drm/drm_fourcc.c
+@@ -190,6 +190,10 @@ const struct drm_format_info *__drm_format_info(u32 format)
+ 		{ .format = DRM_FORMAT_BGRA5551,	.depth = 15, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1, .has_alpha = true },
+ 		{ .format = DRM_FORMAT_RGB565,		.depth = 16, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
+ 		{ .format = DRM_FORMAT_BGR565,		.depth = 16, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
++#ifdef __BIG_ENDIAN
++		{ .format = DRM_FORMAT_XRGB1555 | DRM_FORMAT_BIG_ENDIAN, .depth = 15, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
++		{ .format = DRM_FORMAT_RGB565 | DRM_FORMAT_BIG_ENDIAN, .depth = 16, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
++#endif
+ 		{ .format = DRM_FORMAT_RGB888,		.depth = 24, .num_planes = 1, .cpp = { 3, 0, 0 }, .hsub = 1, .vsub = 1 },
+ 		{ .format = DRM_FORMAT_BGR888,		.depth = 24, .num_planes = 1, .cpp = { 3, 0, 0 }, .hsub = 1, .vsub = 1 },
+ 		{ .format = DRM_FORMAT_XRGB8888,	.depth = 24, .num_planes = 1, .cpp = { 4, 0, 0 }, .hsub = 1, .vsub = 1 },
+-- 
+2.25.1
 

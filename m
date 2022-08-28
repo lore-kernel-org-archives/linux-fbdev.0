@@ -2,88 +2,99 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4A4BECAAD2
-	for <linux-fbdev@archiver.kernel.org>; Sun, 28 Aug 2022 05:32:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA285ECAAD5
+	for <linux-fbdev@archiver.kernel.org>; Sun, 28 Aug 2022 19:25:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229513AbiH1FcC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 28 Aug 2022 01:32:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53696 "EHLO
+        id S229771AbiH1TZP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 28 Aug 2022 15:25:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38514 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229493AbiH1FcC (ORCPT
+        with ESMTP id S229543AbiH1TZP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 28 Aug 2022 01:32:02 -0400
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 74A1B44569;
-        Sat, 27 Aug 2022 22:32:01 -0700 (PDT)
+        Sun, 28 Aug 2022 15:25:15 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8AB0721278;
+        Sun, 28 Aug 2022 12:25:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-        bh=apY3Uy4g7u5jWYvr/Eu34sq+vcsKX0NmxpVfE1iBAy0=; b=ndfPy9KPoY+bett04r1fx880KY
-        DoqEL3ZDMOmsUbYvGrmnSXFQkve+QTZkpDIR7dk6usD0k3JPUbvBCoCy+CoQSXPIB9iWq5JrwV0hT
-        KivGpJKizmxQprKWlOvlpJ7mfPkIW0p5QsgAkCOs4ebFZqeh/4XOAD2fxEYuwyIC13m9xTskwRteC
-        nfh8gmy/Me97pcrAFK73KKqJC+qV4oVc8vyttc4h2e7kP7hBA2vJkmjXcbrAsAP0C7QaJZTI1+XR7
-        iKzKIR1+wFxqSqkdhPTxtfWqGYsJ0Tm9na2jGeyEhJscRN+TtPvjOAyhVITdo/xI2HrmZw98fnZnQ
-        vml+IBhA==;
-Received: from [2601:1c0:6280:3f0::a6b3]
-        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1oSAts-00Djqn-Qd; Sun, 28 Aug 2022 05:32:00 +0000
-Message-ID: <637e5934-7dd2-c77e-748d-f8445acff29e@infradead.org>
-Date:   Sat, 27 Aug 2022 22:31:59 -0700
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.1.2
-Subject: Re: [PATCH] Documentation: fb: udlfb: clean up text and formatting
-Content-Language: en-US
-To:     Bagas Sanjaya <bagasdotme@gmail.com>, linux-kernel@vger.kernel.org
-Cc:     Bernie Thompson <bernie@plugable.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, Helge Deller <deller@gmx.de>,
-        Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
-References: <20220827193925.19612-1-rdunlap@infradead.org>
- <6cb3b3fc-30d4-0396-fc95-8182ca72fb1e@gmail.com>
+        d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+        Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+        Content-Description:In-Reply-To:References;
+        bh=zAHYVCWMSa2GkiBj19jjzwY2RqRsZ7LJnQxJnAPq1zg=; b=P8V23faQAMfvwOClKJ6XIrXpzc
+        KjvzHK7UOfyVy5euPzpRpwmPhLitNhoO1U1LzN8AITpRZSZbQbMW7NV05FfFcuPV0YVfaEnH8mjCS
+        gzTsXoBKPMZ6s2VWNGXcID7GDzzv7T/aEIRQcu5I7YrNv0QbqwehoYqNevXumHr2RlVN8YWn+FrPf
+        DPyFU/tqyX8J9yYsmm40FlH9uyGArTnvcwKOo+EXSkluSDpx3S6g7ncmDSd7Y0fzAD7WHJQNQLli0
+        AO6xPgDTmdR4cq3W7cThLVs1WfS89quANJpwPMk0IzC1LuAPO+reGc8QqcZr07E8rA/Nh0XCFSVg1
+        s4NeraQQ==;
+Received: from [2601:1c0:6280:3f0::a6b3] (helo=casper.infradead.org)
+        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1oSNu7-002SHO-D7; Sun, 28 Aug 2022 19:25:07 +0000
 From:   Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <6cb3b3fc-30d4-0396-fc95-8182ca72fb1e@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To:     linux-kernel@vger.kernel.org
+Cc:     Randy Dunlap <rdunlap@infradead.org>,
+        Bernie Thompson <bernie@plugable.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Helge Deller <deller@gmx.de>, Jonathan Corbet <corbet@lwn.net>,
+        linux-doc@vger.kernel.org, Bagas Sanjaya <bagasdotme@gmail.com>
+Subject: [PATCH v2] Documentation: fb: udlfb: clean up text and formatting
+Date:   Sun, 28 Aug 2022 12:25:01 -0700
+Message-Id: <20220828192501.14232-1-rdunlap@infradead.org>
+X-Mailer: git-send-email 2.37.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Clean up punctuation, spelling, and formatting for command line usage
+and modprobe config file usage in udlfb.rst.
 
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Bernie Thompson <bernie@plugable.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: Helge Deller <deller@gmx.de>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: linux-doc@vger.kernel.org
+Cc: Bagas Sanjaya <bagasdotme@gmail.com>
+---
+v2: use some text suggestions from Bagas Sanjaya (Thanks);
+    add a '.' at the end of a sentence.
 
-On 8/27/22 18:51, Bagas Sanjaya wrote:
-> On 8/28/22 02:39, Randy Dunlap wrote:
->> -From the command line, pass options to modprobe
->> -modprobe udlfb fb_defio=0 console=1 shadow=1
->> +From the command line, pass options to modprobe::
->>  
->> -Or modify options on the fly at /sys/module/udlfb/parameters directory via
->> -sudo nano fb_defio
->> -change the parameter in place, and save the file.
->> +  modprobe udlfb fb_defio=0 console=1 shadow=1
->> +
->> +Or modify options on the fly at /sys/module/udlfb/parameters directory via::
->> +
->> +  sudo nano fb_defio
->> +  change the parameter in place, and save the file.
->>  
-> 
-> Better say "Or change the options on the fly by editing
-> /sys/module/udlfb/parameters/fb_defio."
-> 
->>  Unplug/replug USB device to apply with new settings
->>  
->> -Or for permanent option, create file like /etc/modprobe.d/udlfb.conf with text
->> -options udlfb fb_defio=0 console=1 shadow=1
->> +Or for permanent options, create a file like /etc/modprobe.d/udlfb.conf
->> +with text::
->> +
->> +  options udlfb fb_defio=0 console=1 shadow=1
-> 
-> Maybe we can say "Or to apply options permanently, create modprobe configuration
-> like /etc/modprobe.d/udlfb.conf with::"
+ Documentation/fb/udlfb.rst |   23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
 
-Thanks, I'll send a v2.
-
--- 
-~Randy
+--- a/Documentation/fb/udlfb.rst
++++ b/Documentation/fb/udlfb.rst
+@@ -86,17 +86,24 @@ Module Options
+ Special configuration for udlfb is usually unnecessary. There are a few
+ options, however.
+ 
+-From the command line, pass options to modprobe
+-modprobe udlfb fb_defio=0 console=1 shadow=1
++From the command line, pass options to modprobe::
+ 
+-Or modify options on the fly at /sys/module/udlfb/parameters directory via
+-sudo nano fb_defio
+-change the parameter in place, and save the file.
++  modprobe udlfb fb_defio=0 console=1 shadow=1
+ 
+-Unplug/replug USB device to apply with new settings
++Or change options on the fly by editing
++/sys/module/udlfb/parameters/PARAMETER_NAME ::
+ 
+-Or for permanent option, create file like /etc/modprobe.d/udlfb.conf with text
+-options udlfb fb_defio=0 console=1 shadow=1
++  cd /sys/module/udlfb/parameters
++  ls # to see a list of parameter names
++  sudo nano PARAMETER_NAME
++  # change the parameter in place, and save the file.
++
++Unplug/replug USB device to apply with new settings.
++
++Or to apply options permanently, create a modprobe configuration file
++like /etc/modprobe.d/udlfb.conf with text::
++
++  options udlfb fb_defio=0 console=1 shadow=1
+ 
+ Accepted boolean options:
+ 

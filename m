@@ -2,91 +2,104 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23B8CC0502C
-	for <linux-fbdev@archiver.kernel.org>; Sat, 27 Aug 2022 19:39:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17546C0502A
+	for <linux-fbdev@archiver.kernel.org>; Sun, 28 Aug 2022 01:51:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231609AbiH0Tji (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 27 Aug 2022 15:39:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38384 "EHLO
+        id S229552AbiH1BvI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 27 Aug 2022 21:51:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60608 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231481AbiH0Tjg (ORCPT
+        with ESMTP id S229458AbiH1BvH (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 27 Aug 2022 15:39:36 -0400
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CEAFA4B0C4;
-        Sat, 27 Aug 2022 12:39:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
-        Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
-        Content-Description:In-Reply-To:References;
-        bh=t63ek6wzn1sWs76eOsCuIOgWn2uP5FVAKK7B50IIh4U=; b=K7t3NDw3OclQKkVe6WtTNwQyKi
-        svTVu5fXZrvNG3JQT/z0IU8aUNhm88NQaBz0oMVZblr8jLDbCcdRlt+y8czWf3YtGaJ9pdmsq2/X7
-        MYlxCsStEwCzdroDqzVPVKzBPFUbw/Cm8FdJ9Wry4FRuofNpPceo4LCcMxfcqN/nfCU9Xnpvczl/1
-        u0NtcyW59F8sQpWchIwmRXqkrVd3mxnWeQYK5SfqR/sGpa6maUW6BiVQ2c2rP73GwMr3lWx/rgbqO
-        ICtBIQAGuL8sF29MQKtKXe0Ba7NkJJgUB0R7Q5CG9Nv8pu6GfBVXdTZiHJPoPVnPD6P3cF9iX1S6l
-        JuKg+G0A==;
-Received: from [2601:1c0:6280:3f0::a6b3] (helo=casper.infradead.org)
-        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1oS1eV-001eoZ-3M; Sat, 27 Aug 2022 19:39:31 +0000
-From:   Randy Dunlap <rdunlap@infradead.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Randy Dunlap <rdunlap@infradead.org>,
-        Bernie Thompson <bernie@plugable.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Helge Deller <deller@gmx.de>, Jonathan Corbet <corbet@lwn.net>,
-        linux-doc@vger.kernel.org
-Subject: [PATCH] Documentation: fb: udlfb: clean up text and formatting
-Date:   Sat, 27 Aug 2022 12:39:25 -0700
-Message-Id: <20220827193925.19612-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.37.2
+        Sat, 27 Aug 2022 21:51:07 -0400
+Received: from mail-pg1-x52c.google.com (mail-pg1-x52c.google.com [IPv6:2607:f8b0:4864:20::52c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1FA3233A1C;
+        Sat, 27 Aug 2022 18:51:06 -0700 (PDT)
+Received: by mail-pg1-x52c.google.com with SMTP id bh13so4764564pgb.4;
+        Sat, 27 Aug 2022 18:51:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc;
+        bh=TsdWYg1/XWjmBnfDv85CY2hpRDv7YjWMUxKvmvDv9V4=;
+        b=ZW2shkgp73dSpsVXgcUHDdrnB8AN1jHKJBJMCDlj8uEfI69vKKybu/RLvyeVtHwZZ+
+         cfLLCDHtTm3NOnsBUAv8YQ/WOuRR3sb0SBNfIf5s44UFqsce6ziWBpKC127AIYwkJXEP
+         Aiga+ieNY+cY6R6yGo1G0CxhfKiJLiDOqGTqaMLEAe1cSdzpr5W1g5kF3PDsyNZyjIKD
+         f2leioLKp/w2t9ewRvYflr+QDbLpk/BGpcc+rP3DpohVHoqAkpPnH5v9e11TwTE+Bax/
+         /gBub2dR05oIwh5mgLl7DB2MH/1xEc7HMo8pxFLbFDGc5LaiHZPxI5Ewf9SLE/pgmsQa
+         bTow==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc;
+        bh=TsdWYg1/XWjmBnfDv85CY2hpRDv7YjWMUxKvmvDv9V4=;
+        b=j7XuvcqjGOfoVTBO+U4iMDD1oLaEz3FIROUviwwKbWYh0Gg140TNoST1WD1RdKZ0AS
+         K8qngX75ozvBqKaZaHKGNSLuq7FrXlUsUpIn3PkZz3JLS6sVKYt/vbAnl4I0uAxuE4BM
+         tkqWMc9e6i1c1hJ1QtgVS25oSOuZV7j/TZu6hphFaEONNBtEG+2+kx65Y/fe2qK9SD1y
+         8hdB5zblzDtEUceCKCCO3o7sx2UFGLN8smEOD9X6ZmNqrI8TDeOqFylmW5q8IpDgfhbo
+         WI00a8V9N8ZxZpAnrelY/6YMwOP50l8lEbGP7dTbwKlNykc907IzzVueOQiZ8xsflIMO
+         /3sw==
+X-Gm-Message-State: ACgBeo3pTt7pq3r2XWklfDMGFW8Szl5omctsLbzttDV4cxakKycsaKG7
+        vb3L8HwbizGOr12+zKKLUUk=
+X-Google-Smtp-Source: AA6agR6CV89n8XVQ/rikVS0vdw+KI2XOXLnkEAGObQSlv87ciFRyXGlGC7S53BWmlRHqC+M2VY3XEg==
+X-Received: by 2002:a05:6a00:1356:b0:537:9b9a:4db3 with SMTP id k22-20020a056a00135600b005379b9a4db3mr10309230pfu.69.1661651465593;
+        Sat, 27 Aug 2022 18:51:05 -0700 (PDT)
+Received: from [192.168.43.80] (subs03-180-214-233-85.three.co.id. [180.214.233.85])
+        by smtp.gmail.com with ESMTPSA id z9-20020a170903018900b001709b9d292esm4310229plg.268.2022.08.27.18.51.03
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 27 Aug 2022 18:51:05 -0700 (PDT)
+Message-ID: <6cb3b3fc-30d4-0396-fc95-8182ca72fb1e@gmail.com>
+Date:   Sun, 28 Aug 2022 08:51:01 +0700
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.13.0
+Subject: Re: [PATCH] Documentation: fb: udlfb: clean up text and formatting
+Content-Language: en-US
+To:     Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
+Cc:     Bernie Thompson <bernie@plugable.com>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, Helge Deller <deller@gmx.de>,
+        Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
+References: <20220827193925.19612-1-rdunlap@infradead.org>
+From:   Bagas Sanjaya <bagasdotme@gmail.com>
+In-Reply-To: <20220827193925.19612-1-rdunlap@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Clean up punctuation, spelling, and formatting for command line usage
-and modprobe config file usage in udlfb.rst.
+On 8/28/22 02:39, Randy Dunlap wrote:
+> -From the command line, pass options to modprobe
+> -modprobe udlfb fb_defio=0 console=1 shadow=1
+> +From the command line, pass options to modprobe::
+>  
+> -Or modify options on the fly at /sys/module/udlfb/parameters directory via
+> -sudo nano fb_defio
+> -change the parameter in place, and save the file.
+> +  modprobe udlfb fb_defio=0 console=1 shadow=1
+> +
+> +Or modify options on the fly at /sys/module/udlfb/parameters directory via::
+> +
+> +  sudo nano fb_defio
+> +  change the parameter in place, and save the file.
+>  
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Bernie Thompson <bernie@plugable.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: Helge Deller <deller@gmx.de>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-doc@vger.kernel.org
----
- Documentation/fb/udlfb.rst |   18 +++++++++++-------
- 1 file changed, 11 insertions(+), 7 deletions(-)
+Better say "Or change the options on the fly by editing
+/sys/module/udlfb/parameters/fb_defio."
 
---- a/Documentation/fb/udlfb.rst
-+++ b/Documentation/fb/udlfb.rst
-@@ -86,17 +86,21 @@ Module Options
- Special configuration for udlfb is usually unnecessary. There are a few
- options, however.
- 
--From the command line, pass options to modprobe
--modprobe udlfb fb_defio=0 console=1 shadow=1
-+From the command line, pass options to modprobe::
- 
--Or modify options on the fly at /sys/module/udlfb/parameters directory via
--sudo nano fb_defio
--change the parameter in place, and save the file.
-+  modprobe udlfb fb_defio=0 console=1 shadow=1
-+
-+Or modify options on the fly at /sys/module/udlfb/parameters directory via::
-+
-+  sudo nano fb_defio
-+  change the parameter in place, and save the file.
- 
- Unplug/replug USB device to apply with new settings
- 
--Or for permanent option, create file like /etc/modprobe.d/udlfb.conf with text
--options udlfb fb_defio=0 console=1 shadow=1
-+Or for permanent options, create a file like /etc/modprobe.d/udlfb.conf
-+with text::
-+
-+  options udlfb fb_defio=0 console=1 shadow=1
- 
- Accepted boolean options:
- 
+>  Unplug/replug USB device to apply with new settings
+>  
+> -Or for permanent option, create file like /etc/modprobe.d/udlfb.conf with text
+> -options udlfb fb_defio=0 console=1 shadow=1
+> +Or for permanent options, create a file like /etc/modprobe.d/udlfb.conf
+> +with text::
+> +
+> +  options udlfb fb_defio=0 console=1 shadow=1
+
+Maybe we can say "Or to apply options permanently, create modprobe configuration
+like /etc/modprobe.d/udlfb.conf with::"
+
+-- 
+An old man doll... just what I always wanted! - Clara

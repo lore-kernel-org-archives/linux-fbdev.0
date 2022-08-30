@@ -2,48 +2,48 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D200C0502C
-	for <linux-fbdev@archiver.kernel.org>; Tue, 30 Aug 2022 17:32:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 178E3ECAAA1
+	for <linux-fbdev@archiver.kernel.org>; Tue, 30 Aug 2022 17:32:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231982AbiH3RcJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 30 Aug 2022 13:32:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56658 "EHLO
+        id S231986AbiH3RcK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 30 Aug 2022 13:32:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56660 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231396AbiH3Rbj (ORCPT
+        with ESMTP id S231787AbiH3Rbk (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 30 Aug 2022 13:31:39 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A27B213284E;
-        Tue, 30 Aug 2022 10:27:51 -0700 (PDT)
+        Tue, 30 Aug 2022 13:31:40 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A16542AC4D;
+        Tue, 30 Aug 2022 10:28:23 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 1F190617B2;
-        Tue, 30 Aug 2022 17:26:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A2E4FC43140;
-        Tue, 30 Aug 2022 17:26:23 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 79362617C1;
+        Tue, 30 Aug 2022 17:26:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E868DC433C1;
+        Tue, 30 Aug 2022 17:26:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1661880384;
-        bh=DnYQUcsVH32s4uZbj997262p3sc1ImMPNTeT3izOTnk=;
+        s=k20201202; t=1661880418;
+        bh=whvkUYJpp+OMkxLwPyh6AxZcY193wuz/Z41ppsLlUro=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=uxEndPPLV/Eak02flQY3xpeZv0D2eSLKp+G09+K/QFY8z91v8h0va3Dr72BrNuH8y
-         ozgJVYZJGxeUSrjKMrsC1x3JX9av1IB1gxcV2etReSz6VroF7rYhy6oMOQidPlE6Kh
-         sp4digbzf/ofZN/wxSRDHDtNSsJ9nR5pf09Mz6nMBer8VG/fTcQw1CfljG0kE/AWxv
-         +Xe+qpaGKh41EFcL9jytzl/JO79HwEwSN9BFuhRi0689SPXy9T+h6oFPx1HOgsneko
-         /qFIJrOPIdQRILTixgoYy6auGD/QSu1gXtBv7bibl9h8ujG2TYo5wof90TClHFIEyR
-         AqLKmS/7C65xA==
+        b=b6nLol4WFFGCCJZfC6MOvBLmuG168aw1V4B5RgoEqvkk9eSgyotEOjHd9xc44UHgD
+         NgvQNxAUv0Dnfh+WCxFLTa1xa23iOz+R3gPN7rhDjlzp+TdAVD+NeIjvFLmhGrKIcp
+         wtwdQBpRcYqXw826VXF+rYmwESpoYtlPlPI7M7oChzxISBM6V8dB1u9l5Byxjuy6+n
+         9dMBq4AjG/OAXr2rsllBYofoNVioBkCM6qBDAMgfkLK03I/rIvY+avQh0DGxeOJEBW
+         Qcusi5bvMvXd42fVdpRaVwtRXk9VqqJs7zGTFmBR30n+5zvRlFTeJJej1NuCkFN6QU
+         wwbK6vTH7qVVQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Yang Yingliang <yangyingliang@huawei.com>,
+Cc:     Letu Ren <fantasquex@gmail.com>, Zheyu Ma <zheyuma97@gmail.com>,
         Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
-        mpe@ellerman.id.au, christophe.leroy@csgroup.eu,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 4.19 09/10] fbdev: chipsfb: Add missing pci_disable_device() in chipsfb_pci_init()
-Date:   Tue, 30 Aug 2022 13:25:40 -0400
-Message-Id: <20220830172541.581820-9-sashal@kernel.org>
+        baihaowen@meizu.com, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 4.14 7/8] fbdev: fb_pm2fb: Avoid potential divide by zero error
+Date:   Tue, 30 Aug 2022 13:26:30 -0400
+Message-Id: <20220830172631.581969-7-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220830172541.581820-1-sashal@kernel.org>
-References: <20220830172541.581820-1-sashal@kernel.org>
+In-Reply-To: <20220830172631.581969-1-sashal@kernel.org>
+References: <20220830172631.581969-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -52,31 +52,50 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Yang Yingliang <yangyingliang@huawei.com>
+From: Letu Ren <fantasquex@gmail.com>
 
-[ Upstream commit 07c55c9803dea748d17a054000cbf1913ce06399 ]
+[ Upstream commit 19f953e7435644b81332dd632ba1b2d80b1e37af ]
 
-Add missing pci_disable_device() in error path in chipsfb_pci_init().
+In `do_fb_ioctl()` of fbmem.c, if cmd is FBIOPUT_VSCREENINFO, var will be
+copied from user, then go through `fb_set_var()` and
+`info->fbops->fb_check_var()` which could may be `pm2fb_check_var()`.
+Along the path, `var->pixclock` won't be modified. This function checks
+whether reciprocal of `var->pixclock` is too high. If `var->pixclock` is
+zero, there will be a divide by zero error. So, it is necessary to check
+whether denominator is zero to avoid crash. As this bug is found by
+Syzkaller, logs are listed below.
 
-Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+divide error in pm2fb_check_var
+Call Trace:
+ <TASK>
+ fb_set_var+0x367/0xeb0 drivers/video/fbdev/core/fbmem.c:1015
+ do_fb_ioctl+0x234/0x670 drivers/video/fbdev/core/fbmem.c:1110
+ fb_ioctl+0xdd/0x130 drivers/video/fbdev/core/fbmem.c:1189
+
+Reported-by: Zheyu Ma <zheyuma97@gmail.com>
+Signed-off-by: Letu Ren <fantasquex@gmail.com>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/chipsfb.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/fbdev/pm2fb.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
-index 413b465e69d8e..7ca149ab86d20 100644
---- a/drivers/video/fbdev/chipsfb.c
-+++ b/drivers/video/fbdev/chipsfb.c
-@@ -432,6 +432,7 @@ static int chipsfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
-  err_release_fb:
- 	framebuffer_release(p);
-  err_disable:
-+	pci_disable_device(dp);
-  err_out:
- 	return rc;
- }
+diff --git a/drivers/video/fbdev/pm2fb.c b/drivers/video/fbdev/pm2fb.c
+index bd6c2f5f6095d..a5375b09415a6 100644
+--- a/drivers/video/fbdev/pm2fb.c
++++ b/drivers/video/fbdev/pm2fb.c
+@@ -614,6 +614,11 @@ static int pm2fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 		return -EINVAL;
+ 	}
+ 
++	if (!var->pixclock) {
++		DPRINTK("pixclock is zero\n");
++		return -EINVAL;
++	}
++
+ 	if (PICOS2KHZ(var->pixclock) > PM2_MAX_PIXCLOCK) {
+ 		DPRINTK("pixclock too high (%ldKHz)\n",
+ 			PICOS2KHZ(var->pixclock));
 -- 
 2.35.1
 

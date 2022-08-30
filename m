@@ -2,48 +2,48 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 178E3ECAAA1
-	for <linux-fbdev@archiver.kernel.org>; Tue, 30 Aug 2022 17:32:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1D31ECAAD1
+	for <linux-fbdev@archiver.kernel.org>; Tue, 30 Aug 2022 17:32:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231986AbiH3RcK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 30 Aug 2022 13:32:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56660 "EHLO
+        id S231892AbiH3Rc0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 30 Aug 2022 13:32:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33268 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231787AbiH3Rbk (ORCPT
+        with ESMTP id S231936AbiH3Rbq (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 30 Aug 2022 13:31:40 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A16542AC4D;
-        Tue, 30 Aug 2022 10:28:23 -0700 (PDT)
+        Tue, 30 Aug 2022 13:31:46 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 78E6D12EC74;
+        Tue, 30 Aug 2022 10:28:17 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 79362617C1;
-        Tue, 30 Aug 2022 17:26:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E868DC433C1;
-        Tue, 30 Aug 2022 17:26:57 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 3701FB81D1A;
+        Tue, 30 Aug 2022 17:26:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 084A6C433D6;
+        Tue, 30 Aug 2022 17:26:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1661880418;
-        bh=whvkUYJpp+OMkxLwPyh6AxZcY193wuz/Z41ppsLlUro=;
+        s=k20201202; t=1661880378;
+        bh=dKlYcbJg8jJBwPyfgtu+Hl0XHma2r9ZCS4XvcIUHs8Q=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=b6nLol4WFFGCCJZfC6MOvBLmuG168aw1V4B5RgoEqvkk9eSgyotEOjHd9xc44UHgD
-         NgvQNxAUv0Dnfh+WCxFLTa1xa23iOz+R3gPN7rhDjlzp+TdAVD+NeIjvFLmhGrKIcp
-         wtwdQBpRcYqXw826VXF+rYmwESpoYtlPlPI7M7oChzxISBM6V8dB1u9l5Byxjuy6+n
-         9dMBq4AjG/OAXr2rsllBYofoNVioBkCM6qBDAMgfkLK03I/rIvY+avQh0DGxeOJEBW
-         Qcusi5bvMvXd42fVdpRaVwtRXk9VqqJs7zGTFmBR30n+5zvRlFTeJJej1NuCkFN6QU
-         wwbK6vTH7qVVQ==
+        b=aPlRpzzf9kS1DuO8k9642AjN5s5vqDVPHLMQI0dp2OcQSvqeUuqYectzA2rPpWs50
+         dbePTQy5cOiVwTMEXXvtx9ZfU9INlFuyIBopbqE2uWZ1JgGKrXMXoPD9ALJ1e7zifG
+         Bg96I5QLj/aULc4zrP49pY6t+Hc5KC+Q1eEBX1QpL5GQfJVt1PzjrofnVUYOagxgtY
+         yRZlTQO4a9AoZBoFf2J0rs2v/pkmCpwwrTWUz92XUEgw18y5eHiQ2ZGFFJJcAr1ALX
+         1voZiSC/wOpDrabgIikcRbXm6buw5RkL78K002OnKF33ivgma42ol1yCrMsNs+SqBq
+         MctjdnfZ38KWw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Letu Ren <fantasquex@gmail.com>, Zheyu Ma <zheyuma97@gmail.com>,
         Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
         baihaowen@meizu.com, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 4.14 7/8] fbdev: fb_pm2fb: Avoid potential divide by zero error
-Date:   Tue, 30 Aug 2022 13:26:30 -0400
-Message-Id: <20220830172631.581969-7-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 08/10] fbdev: fb_pm2fb: Avoid potential divide by zero error
+Date:   Tue, 30 Aug 2022 13:25:39 -0400
+Message-Id: <20220830172541.581820-8-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220830172631.581969-1-sashal@kernel.org>
-References: <20220830172631.581969-1-sashal@kernel.org>
+In-Reply-To: <20220830172541.581820-1-sashal@kernel.org>
+References: <20220830172541.581820-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -81,10 +81,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 5 insertions(+)
 
 diff --git a/drivers/video/fbdev/pm2fb.c b/drivers/video/fbdev/pm2fb.c
-index bd6c2f5f6095d..a5375b09415a6 100644
+index 1dcf02e12af4f..8ae010f07d7da 100644
 --- a/drivers/video/fbdev/pm2fb.c
 +++ b/drivers/video/fbdev/pm2fb.c
-@@ -614,6 +614,11 @@ static int pm2fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+@@ -616,6 +616,11 @@ static int pm2fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
  		return -EINVAL;
  	}
  

@@ -2,130 +2,103 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 286C8C0502A
-	for <linux-fbdev@archiver.kernel.org>; Tue, 30 Aug 2022 10:34:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88B39ECAAA1
+	for <linux-fbdev@archiver.kernel.org>; Tue, 30 Aug 2022 15:13:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229446AbiH3Kee (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 30 Aug 2022 06:34:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54600 "EHLO
+        id S230286AbiH3PNT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 30 Aug 2022 11:13:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59892 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229819AbiH3Ked (ORCPT
+        with ESMTP id S229736AbiH3PNN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 30 Aug 2022 06:34:33 -0400
-Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F548A99D6;
-        Tue, 30 Aug 2022 03:34:32 -0700 (PDT)
-Received: by mail-lj1-x22b.google.com with SMTP id b26so3958411ljk.12;
-        Tue, 30 Aug 2022 03:34:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:in-reply-to:subject:from:references:cc:to
-         :content-language:user-agent:mime-version:date:message-id:from:to:cc;
-        bh=UCod0/HFGUKrf2p2FZSzQ0kgTIqag5Zo13Nui3Avcqk=;
-        b=noyZtazLMxDeLMfMDx3LzywqrsR+b2bysTT2q3oiIa9pxwlngpzxZTDp13jqqd6dCX
-         +iruMKgnQOuteRSP16gDFsiPCoF8X2cOaqV47Oqp+djtXyA+CjsWoKiOvMqp2+zFk3h9
-         Edg/HiO1bLa3dtSePz0K6bXpcgaMOAAVybubczCy4zESHU8A6j4Hqk2cDHQlQPn1rgs4
-         XjWKTmSKEr8NywzyeQvckAGZEvmrOO/3MjkfonVyUZXCRpxVZqkGHyc5QCbVn8ZWo7EK
-         VLBl0XbKPSzOeoGKkV+mILUlAr43vEefx0LUkmTabu1Zku3CQcOxCE6s+FqLHeEIgwQW
-         3wOg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:subject:from:references:cc:to
-         :content-language:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc;
-        bh=UCod0/HFGUKrf2p2FZSzQ0kgTIqag5Zo13Nui3Avcqk=;
-        b=akbcr7J/hs3f9yKI9ZwKw4kcOB6TT3Ga3ButDNw5RsN/frY80u6Vel14nQVNIR24O9
-         jXmvikorCv+gVKpPX1qyqhK4qI0BMgLlLoLA5UzESB6PvDypgsA2zD4qbq+HpsqAhIHy
-         0JrEqj6lIcrIvWEbQVJ1JxnbhOYqHptny3N40TBYgBioeLwwUteyTgwODXlFxVPRlVKn
-         qBQAn+kIgTRxrEkYNDXq5cpyZXqWH0o9z5miAZazR8PqXEJ/wm7bsjqjuCrvtHBssRYZ
-         aJujxTm+bBn/85HFwrFU+2wJvpVO+MI1OOQOYm/y1NHtR7zJ1waE+8G4EGuFu4nBYLIL
-         eZ1Q==
-X-Gm-Message-State: ACgBeo0M/GH2Cz8AjURxCoMCFvtmRcvG0MGhjWGO4lKKVUvjkYelCbwW
-        NOKAiIJsJM7s8eJh3fZjpMA=
-X-Google-Smtp-Source: AA6agR42HvKOpgztKSbICMioabWyivzr6d0K3E8tGVuitdTRPJulyJHicb40e5bgT5czhA+yR45EiQ==
-X-Received: by 2002:a05:651c:1993:b0:263:a41d:3d7b with SMTP id bx19-20020a05651c199300b00263a41d3d7bmr3523730ljb.63.1661855670682;
-        Tue, 30 Aug 2022 03:34:30 -0700 (PDT)
-Received: from ?IPV6:2001:14ba:16f3:4a00::1? (dc75zzyyyyyyyyyyyyyyt-3.rev.dnainternet.fi. [2001:14ba:16f3:4a00::1])
-        by smtp.gmail.com with ESMTPSA id e20-20020a196914000000b0048b17852938sm1099036lfc.162.2022.08.30.03.34.29
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 30 Aug 2022 03:34:30 -0700 (PDT)
-Message-ID: <8f501644-9793-214f-8a19-45ee8af3c907@gmail.com>
-Date:   Tue, 30 Aug 2022 13:34:28 +0300
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.12.0
-Content-Language: en-US
-To:     ChiaEn Wu <peterwu.pub@gmail.com>, lee@kernel.org,
-        daniel.thompson@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        matthias.bgg@gmail.com, sre@kernel.org, jic23@kernel.org,
-        lars@metafoo.de, deller@gmx.de, broonie@kernel.org,
-        andriy.shevchenko@linux.intel.com
-Cc:     chiaen_wu@richtek.com, alice_chen@richtek.com,
+        Tue, 30 Aug 2022 11:13:13 -0400
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 049901286F7;
+        Tue, 30 Aug 2022 08:13:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1661872392; x=1693408392;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=wTIUsBF5sTdJ6JbPdR2fBQZlqEWSeLoC7AVXPmb6j1c=;
+  b=cF8HA9zl2aRv0tb2hi69bsC/kc7LoUHCIqOZw0PlDqFTRx5Ycjh1pm//
+   s/S4nbwW6s8MIXUnx6LjAtUMfFuUo/bkSWcy3cxti0Kx2vs5LTVsYDZjt
+   dT3Tg48bdx3J3UdJPCjGzzBqA397zGaRb+EnJ5uIy/DvJJfZcvwXfRuGk
+   jaHIM6pUQIY6ZJ/3B+DmXUBqfac/adfYDlHaw32AZqJ9mviKY/U0LmiHz
+   63uFowhgaJMjEThcMONk3+LNEQnQrlqvzySmCS+7LXhkzNI+aIxOY/Qy+
+   UOas9UPM8uNHLNejFcoxHQeAZoaacAwWIfnm264tIvUcX4zy0ZE8rF6Th
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10455"; a="295984540"
+X-IronPort-AV: E=Sophos;i="5.93,275,1654585200"; 
+   d="scan'208";a="295984540"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Aug 2022 08:13:11 -0700
+X-IronPort-AV: E=Sophos;i="5.93,275,1654585200"; 
+   d="scan'208";a="562682956"
+Received: from smile.fi.intel.com ([10.237.72.54])
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Aug 2022 08:13:05 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.96)
+        (envelope-from <andriy.shevchenko@linux.intel.com>)
+        id 1oT2vF-0060PI-2k;
+        Tue, 30 Aug 2022 18:13:01 +0300
+Date:   Tue, 30 Aug 2022 18:13:01 +0300
+From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To:     ChiaEn Wu <peterwu.pub@gmail.com>
+Cc:     lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com,
+        pavel@ucw.cz, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, matthias.bgg@gmail.com,
+        sre@kernel.org, jic23@kernel.org, lars@metafoo.de, deller@gmx.de,
+        broonie@kernel.org, mazziesaccount@gmail.com,
+        chiaen_wu@richtek.com, alice_chen@richtek.com,
         cy_huang@richtek.com, dri-devel@lists.freedesktop.org,
         linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org,
         linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, szunichen@gmail.com,
-        andy.shevchenko@gmail.com
-References: <20220830034042.9354-2-peterwu.pub@gmail.com>
- <20220830034042.9354-8-peterwu.pub@gmail.com>
-From:   Matti Vaittinen <mazziesaccount@gmail.com>
-Subject: Re: [PATCH v9 07/10] power: supply: mt6370: Add MediaTek MT6370
- charger driver
-In-Reply-To: <20220830034042.9354-8-peterwu.pub@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+        linux-fbdev@vger.kernel.org, szunichen@gmail.com
+Subject: Re: [PATCH v9 00/10] Add MediaTek MT6370 PMIC support
+Message-ID: <Yw4o/Sx6frEtaFDp@smile.fi.intel.com>
+References: <20220830033729.9219-1-peterwu.pub@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220830033729.9219-1-peterwu.pub@gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 8/30/22 06:40, ChiaEn Wu wrote:
+On Tue, Aug 30, 2022 at 11:37:20AM +0800, ChiaEn Wu wrote:
 > From: ChiaEn Wu <chiaen_wu@richtek.com>
 > 
-> MediaTek MT6370 is a SubPMIC consisting of a single cell battery charger
-> with ADC monitoring, RGB LEDs, dual channel flashlight, WLED backlight
-> driver, display bias voltage supply, one general purpose LDO, and the
-> USB Type-C & PD controller complies with the latest USB Type-C and PD
-> standards.
+> This patch series add MediaTek MT6370 PMIC support and add a index macro
+> to <linear_range.h>. The MT6370 is a highly-integrated smart power
+> management IC, which includes a single cell Li-Ion/Li-Polymer switching
+> battery charger, a USB Type-C & Power Delivery (PD) controller, dual
+> Flash LED current sources, a RGB LED driver, a backlight WLED driver,
+> a display bias driver and a general LDO for portable devices.
 > 
-> Add support for the MediaTek MT6370 Charger driver. The charger module
-> of MT6370 supports High-Accuracy Voltage/Current Regulation,
-> Average Input Current Regulation, Battery Temperature Sensing,
-> Over-Temperature Protection, DPDM Detection for BC1.2.
+> First, in this series of patches,
+> 'dt-binding: mfd', 'mfd driver' has been applied by Lee in the v7.
+> https://lore.kernel.org/all/YvJdpq0MWNPQZw5c@google.com/
+> https://lore.kernel.org/all/YvJdxEpC2cB58Bq9@google.com/
 > 
-> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-> Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
-> ---
+> 'tcpci driver' has been applied by Greg in the v8.
+> https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb.git/commit/?h=usb-next&id=c2a8ea5997fdfeb43eda259d5533234c3cae05d7
 > 
-> +
-> +static const struct linear_range mt6370_chg_ranges[MT6370_RANGE_F_MAX] = {
-> +	LINEAR_RANGE_IDX(MT6370_RANGE_F_IAICR, 100000, 0x0, 0x3F, 50000),
-> +	LINEAR_RANGE_IDX(MT6370_RANGE_F_VOREG, 3900000, 0x0, 0x51, 10000),
-> +	LINEAR_RANGE_IDX(MT6370_RANGE_F_VMIVR, 3900000, 0x0, 0x5F, 100000),
-> +	LINEAR_RANGE_IDX(MT6370_RANGE_F_ICHG, 900000, 0x08, 0x31, 100000),
-> +	LINEAR_RANGE_IDX(MT6370_RANGE_F_IPREC, 100000, 0x0, 0x0F, 50000),
-> +	LINEAR_RANGE_IDX(MT6370_RANGE_F_IEOC, 100000, 0x0, 0x0F, 50000),
-> +};
+> Second, the LED RGB driver is based on Andy's patch which moves
+> led_init_default_state_get() to the global header.
+> https://lore.kernel.org/all/20220805154907.32263-3-andriy.shevchenko@linux.intel.com/
+> 
+> In addition, we added a macro to the <linear_range.h> for declaring the
+> linear_range struct simply (see patch v9-0005) and made some changes for
+> MT6370 drivers (see v9 section of the change log below).
 
-This looks good to me now :) Thanks for the linear-range improvement!
-
-> +	INIT_DELAYED_WORK(&priv->mivr_dwork, mt6370_chg_mivr_dwork_func);
-> +	ret = devm_add_action_or_reset(dev, mt6370_chg_cancel_mivr_dwork,
-> +				       &priv->mivr_dwork);
-> +	if (ret)
-> +		return dev_err_probe(dev, ret, "Failed to init mivr dwork\n");
-
-I just noticed this. Maybe this could be done using 
-devm_delayed_work_autocancel() ?
-
-Yours
--- Matti
+Your cover letter is dangling. Make sure you are using --cover-letter --thread
+when preparing the series.
 
 -- 
-Matti Vaittinen
-Linux kernel developer at ROHM Semiconductors
-Oulu Finland
+With Best Regards,
+Andy Shevchenko
 
-~~ When things go utterly wrong vim users can always type :help! ~~
+

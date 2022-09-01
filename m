@@ -2,41 +2,41 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50A68ECAAD8
-	for <linux-fbdev@archiver.kernel.org>; Thu,  1 Sep 2022 04:42:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51D58C6FA82
+	for <linux-fbdev@archiver.kernel.org>; Thu,  1 Sep 2022 04:42:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232045AbiIAEmD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 1 Sep 2022 00:42:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58424 "EHLO
+        id S232126AbiIAEmE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 1 Sep 2022 00:42:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58422 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231668AbiIAEmB (ORCPT
+        with ESMTP id S231700AbiIAEmB (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Thu, 1 Sep 2022 00:42:01 -0400
 Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B8437E1AA5;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 916EEE01D5;
         Wed, 31 Aug 2022 21:41:59 -0700 (PDT)
-X-UUID: 704eaf6425204c1c86c58049272884bc-20220901
+X-UUID: 7d27c801494c4d3082f70223134eb126-20220901
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=+nDV+vR78OpdEySqlDcu971kberj+QzgCFZD7N3rv4g=;
-        b=NF5R1gJGv2NMM5K1cuzm4lStOWZoHB5j5IJCv9GOo7Td7OgdRYWzIQRG7YZNwkBd956rfcHCu66jL8VMTo3qafTm/spL+gn57t9Ft+Bn40wpolJ2snGlLUCxdWIvm97X2BIeg7v47uDSSEAGsHlh8/nPrSloM1WVb3J3ziiGGwY=;
+        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=vK3zv2X4SEvxbtBXVU/SS8Fp1ynU3qEQSwzWGO+YrBI=;
+        b=I2wSE8RnDUfmoEMu1AgBfUYNjQQ6xQTCQ0gBdd7+mMbQq3b98S20DbUzUHdJPi322ncAumcqOlp8929VBiAGVL61WMQzbf1IavgZpccCToJ+GvOnBhSh5B3L0p3YEmhMAokK3N3ZwiW4EdTkMfJevQH8FTQ9wm7KtPlu5lPpCQ0=;
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.10,REQID:ab5f5452-a611-4534-a8c7-68ba3acf6908,OB:0,L
-        OB:0,IP:0,URL:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Releas
-        e_Ham,ACTION:release,TS:-25
-X-CID-META: VersionHash:84eae18,CLOUDID:09013c56-e800-47dc-8adf-0c936acf4f1b,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
-        ,Bulk:nil,QS:nil,BEC:nil,COL:0
-X-UUID: 704eaf6425204c1c86c58049272884bc-20220901
-Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw02.mediatek.com
+X-CID-O-INFO: VERSION:1.1.10,REQID:2c1daf11-7c80-43c0-887a-449aafe8c6d0,OB:0,L
+        OB:0,IP:0,URL:25,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Relea
+        se_Ham,ACTION:release,TS:0
+X-CID-META: VersionHash:84eae18,CLOUDID:9a18c520-1c20-48a5-82a0-25f9c331906d,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:11|1,File:
+        nil,Bulk:nil,QS:nil,BEC:nil,COL:0
+X-UUID: 7d27c801494c4d3082f70223134eb126-20220901
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw02.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 995666135; Thu, 01 Sep 2022 12:41:54 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 2107922538; Thu, 01 Sep 2022 12:41:53 +0800
 Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Thu, 1 Sep 2022 12:41:52 +0800
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Thu, 1 Sep 2022 12:41:51 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
  mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.792.15 via Frontend Transport; Thu, 1 Sep 2022 12:41:52 +0800
+ 15.2.792.15 via Frontend Transport; Thu, 1 Sep 2022 12:41:51 +0800
 From:   Bo-Chen Chen <rex-bc.chen@mediatek.com>
 To:     <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
         <daniel@ffwll.ch>, <robh+dt@kernel.org>,
@@ -53,9 +53,9 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
         Bo-Chen Chen <rex-bc.chen@mediatek.com>
-Subject: [PATCH v17 04/10] drm/mediatek: dp: Add multiple bridge types support
-Date:   Thu, 1 Sep 2022 12:41:43 +0800
-Message-ID: <20220901044149.16782-5-rex-bc.chen@mediatek.com>
+Subject: [PATCH v17 01/10] dt-bindings: mediatek,dp: Add Display Port binding
+Date:   Thu, 1 Sep 2022 12:41:40 +0800
+Message-ID: <20220901044149.16782-2-rex-bc.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20220901044149.16782-1-rex-bc.chen@mediatek.com>
 References: <20220901044149.16782-1-rex-bc.chen@mediatek.com>
@@ -66,70 +66,146 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The bridge types of eDP and DP are different. We add device data to
-this driver and add bridge_type to the device data to define them.
+From: Markus Schneider-Pargmann <msp@baylibre.com>
 
+This controller is present on several mediatek hardware. Currently
+mt8195 and mt8395 have this controller without a functional difference,
+so only one compatible field is added.
+
+The controller can have two forms, as a normal display port and as an
+embedded display port.
+
+Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
 Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- drivers/gpu/drm/mediatek/mtk_dp.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+ .../display/mediatek/mediatek,dp.yaml         | 116 ++++++++++++++++++
+ 1 file changed, 116 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
 
-diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c b/drivers/gpu/drm/mediatek/mtk_dp.c
-index e2ec9b02b1aa..2696c1ac1a47 100644
---- a/drivers/gpu/drm/mediatek/mtk_dp.c
-+++ b/drivers/gpu/drm/mediatek/mtk_dp.c
-@@ -101,6 +101,7 @@ struct mtk_dp {
- 	struct drm_device *drm_dev;
- 	struct drm_dp_aux aux;
- 
-+	const struct mtk_dp_data *data;
- 	struct mtk_dp_info info;
- 	struct mtk_dp_train_info train_info;
- 
-@@ -109,6 +110,9 @@ struct mtk_dp {
- 	struct regmap *regs;
- };
- 
-+struct mtk_dp_data {
-+	int bridge_type;
-+};
- static const struct mtk_dp_efuse_fmt mtk_dp_efuse_data[MTK_DP_CAL_MAX] = {
- 	[MTK_DP_CAL_GLB_BIAS_TRIM] = {
- 		.idx = 3,
-@@ -1871,6 +1875,7 @@ static int mtk_dp_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 
- 	mtk_dp->dev = dev;
-+	mtk_dp->data = (struct mtk_dp_data *)of_device_get_match_data(dev);
- 
- 	irq_num = platform_get_irq(pdev, 0);
- 	if (irq_num < 0)
-@@ -1925,7 +1930,7 @@ static int mtk_dp_probe(struct platform_device *pdev)
- 
- 	mtk_dp->bridge.ops =
- 		DRM_BRIDGE_OP_DETECT | DRM_BRIDGE_OP_EDID | DRM_BRIDGE_OP_HPD;
--	mtk_dp->bridge.type = DRM_MODE_CONNECTOR_eDP;
-+	mtk_dp->bridge.type = mtk_dp->data->bridge_type;
- 
- 	drm_bridge_add(&mtk_dp->bridge);
- 
-@@ -1974,8 +1979,15 @@ static int mtk_dp_resume(struct device *dev)
- 
- static SIMPLE_DEV_PM_OPS(mtk_dp_pm_ops, mtk_dp_suspend, mtk_dp_resume);
- 
-+static const struct mtk_dp_data mt8195_edp_data = {
-+	.bridge_type = DRM_MODE_CONNECTOR_eDP,
-+};
+diff --git a/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+new file mode 100644
+index 000000000000..ff781f2174a0
+--- /dev/null
++++ b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+@@ -0,0 +1,116 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/display/mediatek/mediatek,dp.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
- static const struct of_device_id mtk_dp_of_match[] = {
--	{ .compatible = "mediatek,mt8195-edp-tx" },
-+	{
-+		.compatible = "mediatek,mt8195-edp-tx",
-+		.data = &mt8195_edp_data,
-+	},
- 	{},
- };
- MODULE_DEVICE_TABLE(of, mtk_dp_of_match);
++title: MediaTek Display Port Controller
++
++maintainers:
++  - Chun-Kuang Hu <chunkuang.hu@kernel.org>
++  - Jitao shi <jitao.shi@mediatek.com>
++
++description: |
++  MediaTek DP and eDP are different hardwares and there are some features
++  which are not supported for eDP. For example, audio is not supported for
++  eDP. Therefore, we need to use two different compatibles to describe them.
++  In addition, We just need to enable the power domain of DP, so the clock
++  of DP is generated by itself and we are not using other PLL to generate
++  clocks.
++
++properties:
++  compatible:
++    enum:
++      - mediatek,mt8195-dp-tx
++      - mediatek,mt8195-edp-tx
++
++  reg:
++    maxItems: 1
++
++  nvmem-cells:
++    maxItems: 1
++    description: efuse data for display port calibration
++
++  nvmem-cell-names:
++    const: dp_calibration_data
++
++  power-domains:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  ports:
++    $ref: /schemas/graph.yaml#/properties/ports
++    properties:
++      port@0:
++        $ref: /schemas/graph.yaml#/properties/port
++        description: Input endpoint of the controller, usually dp_intf
++
++      port@1:
++        $ref: /schemas/graph.yaml#/$defs/port-base
++        unevaluatedProperties: false
++        description: Output endpoint of the controller
++        properties:
++          endpoint:
++            $ref: /schemas/media/video-interfaces.yaml#
++            unevaluatedProperties: false
++            properties:
++              data-lanes:
++                description: |
++                  number of lanes supported by the hardware.
++                  The possible values:
++                  0       - For 1 lane enabled in IP.
++                  0 1     - For 2 lanes enabled in IP.
++                  0 1 2 3 - For 4 lanes enabled in IP.
++                minItems: 1
++                maxItems: 4
++            required:
++              - data-lanes
++
++    required:
++      - port@0
++      - port@1
++
++  max-linkrate-mhz:
++    enum: [ 1620, 2700, 5400, 8100 ]
++    description: maximum link rate supported by the hardware.
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - ports
++  - max-linkrate-mhz
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    #include <dt-bindings/power/mt8195-power.h>
++    dptx@1c600000 {
++        compatible = "mediatek,mt8195-dp-tx";
++        reg = <0x1c600000 0x8000>;
++        power-domains = <&spm MT8195_POWER_DOMAIN_DP_TX>;
++        interrupts = <GIC_SPI 458 IRQ_TYPE_LEVEL_HIGH 0>;
++        max-linkrate-mhz = <8100>;
++
++        ports {
++            #address-cells = <1>;
++            #size-cells = <0>;
++
++            port@0 {
++                reg = <0>;
++                dptx_in: endpoint {
++                    remote-endpoint = <&dp_intf0_out>;
++                };
++            };
++            port@1 {
++                reg = <1>;
++                dptx_out: endpoint {
++                    data-lanes = <0 1 2 3>;
++                };
++            };
++        };
++    };
 -- 
 2.18.0
 

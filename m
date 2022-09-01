@@ -2,62 +2,108 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16D85ECAAD1
-	for <linux-fbdev@archiver.kernel.org>; Thu,  1 Sep 2022 07:42:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C53E9C65C0D
+	for <linux-fbdev@archiver.kernel.org>; Thu,  1 Sep 2022 10:58:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232543AbiIAHmC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 1 Sep 2022 03:42:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33640 "EHLO
+        id S234269AbiIAK6t (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 1 Sep 2022 06:58:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60698 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232999AbiIAHl6 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 1 Sep 2022 03:41:58 -0400
-Received: from mail.fadrush.pl (mail.fadrush.pl [54.37.225.211])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C4DB108538
-        for <linux-fbdev@vger.kernel.org>; Thu,  1 Sep 2022 00:41:58 -0700 (PDT)
-Received: by mail.fadrush.pl (Postfix, from userid 1002)
-        id 15B4022E27; Thu,  1 Sep 2022 07:41:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=fadrush.pl; s=mail;
-        t=1662018117; bh=bD6j9gIFU6CLTaCGl0Ow9oeIxtirvTfMeNZSfLEZQ+I=;
-        h=Date:From:To:Subject:From;
-        b=n2VtxdoXENyinhRHKfWHH0yXF/WYQ4DsUWzfFNOAGpiQEACC1e1IGqiN2rZh02qa1
-         sSU4w3DfkXu1+ATJrLo2VGcfwHWCCjb7HuG/5jm2+YOR+S3E3xNmYkIaJ+N8el3MQO
-         HXvM+D82f7s6Wv98BSGyYFjO8Hg5rTVv8mCvwV5AB6UN4uMyPMIw05Ej6gSHwhVsij
-         GgZJJ3jfEiR89VRHFhDemH9NZRdbWRPqvRlfJgW2UCLjjKLuaVuEnbha1BVlAVzO4D
-         8lOXwtCbvK3gBgihtSU9BqNrHBwteKFS5/pUTQiUcFQEhe5km5M5cjVre0fTwU0veo
-         yMzJOtb/jFljg==
-Received: by mail.fadrush.pl for <linux-fbdev@vger.kernel.org>; Thu,  1 Sep 2022 07:41:15 GMT
-Message-ID: <20220901064500-0.1.1d.bp98.0.ys4bhp9j7b@fadrush.pl>
-Date:   Thu,  1 Sep 2022 07:41:15 GMT
-From:   "Jakub Olejniczak" <jakub.olejniczak@fadrush.pl>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: =?UTF-8?Q?Zwi=C4=99kszenie_p=C5=82ynno=C5=9Bci_finansowej?=
-X-Mailer: mail.fadrush.pl
+        with ESMTP id S234261AbiIAK6f (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 1 Sep 2022 06:58:35 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1FFD961725;
+        Thu,  1 Sep 2022 03:58:34 -0700 (PDT)
+Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (No client certificate requested)
+        (Authenticated sender: kholk11)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 7DBDD6601DF7;
+        Thu,  1 Sep 2022 11:58:31 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1662029912;
+        bh=J0a7JIYzSfLJ+NmiuKc1E8YXYw0cLkKnM9rQliRatI8=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=Vb4UzK09kZ2A61z7ufCdC23usamdiAglog33FnJ+oLYi3dkxmwmTiRvJlzII0IPS7
+         2LH5JHyAmZE9ywWFhlGNnG5wNUZlRcAS2lEEL5xI7xiQ1Fi8IHDoqHhoBAs9qX9Hx7
+         WmoGU9oPqgb1BR6+8fQQ1vKbqK44R317SHn3VUscV6y2NHCLmwpqQoCuuW0qShEHuB
+         HcwocUN3tEsi9OY15U5kTscZYh7jR/DJMH2GuprZLRnAnnDgnzgcYLMSQ6/kINQ/Ai
+         ucD97vXat0x9ga4eq5wv03AKtE0kj/oW6lSAFMy5pZc+nkZunGShzgl31OZW4rFdYn
+         WHKCxAjQW5dEg==
+Message-ID: <3ceeb700-4424-6182-6d14-60c569f7c59d@collabora.com>
+Date:   Thu, 1 Sep 2022 12:58:28 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.2.0
+Subject: Re: [PATCH v17 00/10] Add MT8195 DisplayPort driver
+Content-Language: en-US
+To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, chunkuang.hu@kernel.org,
+        p.zabel@pengutronix.de, daniel@ffwll.ch, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, mripard@kernel.org,
+        tzimmermann@suse.de, matthias.bgg@gmail.com, deller@gmx.de,
+        airlied@linux.ie
+Cc:     msp@baylibre.com, granquet@baylibre.com, jitao.shi@mediatek.com,
+        wenst@chromium.org, ck.hu@mediatek.com, liangxu.xu@mediatek.com,
+        dri-devel@lists.freedesktop.org,
+        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-fbdev@vger.kernel.org,
+        Project_Global_Chrome_Upstream_Group@mediatek.com
+References: <20220901044149.16782-1-rex-bc.chen@mediatek.com>
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+In-Reply-To: <20220901044149.16782-1-rex-bc.chen@mediatek.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,
+Il 01/09/22 06:41, Bo-Chen Chen ha scritto:
+> This patch is separated from v10 which is including dp driver, phy driver
+> and dpintf driver. This series is only contained the DisplayPort driver.
 
-kontaktuj=C4=99 si=C4=99 z Pa=C5=84stwem, poniewa=C5=BC chcia=C5=82bym za=
-proponowa=C4=87 wygodne rozwi=C4=85zanie, kt=C3=B3re umo=C5=BCliwi Pa=C5=84=
-stwa firmie stabilny rozw=C3=B3j.=20
+For the entire series:
 
-Konkurencyjne otoczenie wymaga ci=C4=85g=C5=82ego ulepszania i poszerzeni=
-a oferty, co z kolei wi=C4=85=C5=BCe si=C4=99 z konieczno=C5=9Bci=C4=85 i=
-nwestowania. Brak odpowiedniego kapita=C5=82u powa=C5=BCnie ogranicza tem=
-po rozwoju firmy.
+Tested-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 
-Od wielu lat z powodzeniem pomagam firmom w uzyskaniu najlepszej formy fi=
-nansowania z banku oraz UE. Mam sta=C5=82ych Klient=C3=B3w, kt=C3=B3rzy n=
-adal ch=C4=99tnie korzystaj=C4=85 z moich us=C5=82ug, a tak=C5=BCe poleca=
-j=C4=85 je innym.
+Thanks!
+Angelo
 
-Czy chcieliby Pa=C5=84stwo skorzysta=C4=87 z pomocy wykwalifikowanego i d=
-o=C5=9Bwiadczonego doradcy finansowego?
+> 
+> Bo-Chen Chen (4):
+>    drm/mediatek: dp: Add multiple bridge types support
+>    drm/mediatek: dp: Add multiple smc commands support
+>    drm/mediatek: dp: Add multiple calibration data formats support
+>    drm/mediatek: dp: Determine device of next_bridge
+> 
+> Guillaume Ranquet (2):
+>    drm/mediatek: dp: Add MT8195 External DisplayPort support
+>    drm/mediatek: dp: Audio support for MT8195
+> 
+> Jitao Shi (1):
+>    drm/mediatek: dp: Add hpd debounce
+> 
+> Markus Schneider-Pargmann (3):
+>    dt-bindings: mediatek,dp: Add Display Port binding
+>    video/hdmi: Add audio_infoframe packing for DP
+>    drm/mediatek: Add MT8195 Embedded DisplayPort driver
+> 
+>   .../display/mediatek/mediatek,dp.yaml         |  116 +
+>   drivers/gpu/drm/mediatek/Kconfig              |    9 +
+>   drivers/gpu/drm/mediatek/Makefile             |    2 +
+>   drivers/gpu/drm/mediatek/mtk_dp.c             | 2661 +++++++++++++++++
+>   drivers/gpu/drm/mediatek/mtk_dp_reg.h         |  356 +++
+>   drivers/video/hdmi.c                          |   82 +-
+>   include/drm/display/drm_dp.h                  |    2 +
+>   include/linux/hdmi.h                          |    7 +-
+>   8 files changed, 3215 insertions(+), 20 deletions(-)
+>   create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+>   create mode 100644 drivers/gpu/drm/mediatek/mtk_dp.c
+>   create mode 100644 drivers/gpu/drm/mediatek/mtk_dp_reg.h
+> 
 
 
-Pozdrawiam
-Jakub Olejniczak
+

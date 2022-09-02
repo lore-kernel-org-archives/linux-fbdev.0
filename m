@@ -2,44 +2,44 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D26B0ECAAA1
-	for <linux-fbdev@archiver.kernel.org>; Fri,  2 Sep 2022 07:32:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A4D6C6FA83
+	for <linux-fbdev@archiver.kernel.org>; Fri,  2 Sep 2022 07:39:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234747AbiIBHc0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 2 Sep 2022 03:32:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33634 "EHLO
+        id S235315AbiIBHjh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 2 Sep 2022 03:39:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43420 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229514AbiIBHcZ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 2 Sep 2022 03:32:25 -0400
+        with ESMTP id S235338AbiIBHje (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 2 Sep 2022 03:39:34 -0400
 Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 75CE7A0631;
-        Fri,  2 Sep 2022 00:32:22 -0700 (PDT)
-X-UUID: 37ba8d69d9544fff83dab4228e52ad2b-20220902
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A51DAB9FBC;
+        Fri,  2 Sep 2022 00:38:58 -0700 (PDT)
+X-UUID: 0cc935874e6940129b10690957193d35-20220902
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Transfer-Encoding:MIME-Version:Content-Type:References:In-Reply-To:Date:CC:To:From:Subject:Message-ID; bh=qM1qgq1MV7finP/aae8s5yQZ0OBqyz3rZqiMvkPhvrk=;
-        b=G4r3C5h5cHvAVDcRRHHgoPLBhlLRM0Vb4tnJrd/KpEQwrnDgIiM/5pzW4RcEgdoVbJkT3ez4P0ZcOB1hjX2oWRZwlO7/ExPeWm61Y+LPFtIefh41VHAXhpbR7+pWlaAIv0U7NP7YhRZpMaI9OJfwSgs7cRi72eukcsdlrujD/ro=;
+        h=Content-Transfer-Encoding:MIME-Version:Content-Type:References:In-Reply-To:Date:CC:To:From:Subject:Message-ID; bh=u5DqFk5pS9uX9k6/7kK1pTWMDwS+Hgz5SrDHvFVlYkA=;
+        b=Tl094ff47oT/36ImHpnEd1PYK51+BEqSswvtyiQ54iT7SGjHn5lY7HVSq3rwLlX9q3Qz/FSuM1+m3XZL5M1H5GsJeJ+DyL2paPniQ+TwVFXeaxKzI6Dlef023zNRSf/lvSyodPRGxa88tHWEt/MzHwpTDztbcODl2jvS9mj0Qyc=;
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.10,REQID:6c390545-a2b1-498b-ada8-8ac6fa5c2923,OB:0,L
-        OB:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_
-        Ham,ACTION:release,TS:0
-X-CID-META: VersionHash:84eae18,CLOUDID:81f5ec20-1c20-48a5-82a0-25f9c331906d,C
+X-CID-O-INFO: VERSION:1.1.10,REQID:fbb1cbcc-9398-4430-a2c1-8e2edb909429,OB:0,L
+        OB:0,IP:0,URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release
+        _Ham,ACTION:release,TS:-5
+X-CID-META: VersionHash:84eae18,CLOUDID:4138ed20-1c20-48a5-82a0-25f9c331906d,C
         OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:11|1,File:
         nil,Bulk:nil,QS:nil,BEC:nil,COL:0
-X-UUID: 37ba8d69d9544fff83dab4228e52ad2b-20220902
-Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw01.mediatek.com
+X-UUID: 0cc935874e6940129b10690957193d35-20220902
+Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw01.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1567408428; Fri, 02 Sep 2022 15:32:16 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1604680535; Fri, 02 Sep 2022 15:38:53 +0800
 Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
- mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Fri, 2 Sep 2022 15:32:15 +0800
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Fri, 2 Sep 2022 15:38:51 +0800
 Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.2.792.15 via Frontend
- Transport; Fri, 2 Sep 2022 15:32:14 +0800
-Message-ID: <8ae888c3f478112bca0ae40543de878f829f2470.camel@mediatek.com>
-Subject: Re: [PATCH v17 05/10] drm/mediatek: dp: Add multiple smc commands
- support
+ Transport; Fri, 2 Sep 2022 15:38:51 +0800
+Message-ID: <e513fa856dc5c7b85a45057293f6e6549777a04e.camel@mediatek.com>
+Subject: Re: [PATCH v17 06/10] drm/mediatek: dp: Add multiple calibration
+ data formats support
 From:   CK Hu <ck.hu@mediatek.com>
 To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, <chunkuang.hu@kernel.org>,
         <p.zabel@pengutronix.de>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
@@ -55,10 +55,10 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Fri, 2 Sep 2022 15:32:14 +0800
-In-Reply-To: <20220901044149.16782-6-rex-bc.chen@mediatek.com>
+Date:   Fri, 2 Sep 2022 15:38:51 +0800
+In-Reply-To: <20220901044149.16782-7-rex-bc.chen@mediatek.com>
 References: <20220901044149.16782-1-rex-bc.chen@mediatek.com>
-         <20220901044149.16782-6-rex-bc.chen@mediatek.com>
+         <20220901044149.16782-7-rex-bc.chen@mediatek.com>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
@@ -71,54 +71,65 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 Hi, Bo-Chen:
 
 On Thu, 2022-09-01 at 12:41 +0800, Bo-Chen Chen wrote:
-> The smc commands of eDP and DP are different. We add smc_cmd to the
-> device data to define them.
+> The calibration data formats of eDP and DP are different. We add
+> "const struct mtk_dp_efuse_fmt *efuse_fmt" to the device data to
+> define them.
 
 Reviewed-by: CK Hu <ck.hu@mediatek.com>
 
 > 
 > Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
 > ---
->  drivers/gpu/drm/mediatek/mtk_dp.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
+>  drivers/gpu/drm/mediatek/mtk_dp.c | 9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
 > 
 > diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c
 > b/drivers/gpu/drm/mediatek/mtk_dp.c
-> index 2696c1ac1a47..971bd744cdb2 100644
+> index 971bd744cdb2..136e13150281 100644
 > --- a/drivers/gpu/drm/mediatek/mtk_dp.c
 > +++ b/drivers/gpu/drm/mediatek/mtk_dp.c
-> @@ -112,6 +112,7 @@ struct mtk_dp {
->  
+> @@ -113,8 +113,10 @@ struct mtk_dp {
 >  struct mtk_dp_data {
 >  	int bridge_type;
-> +	unsigned int smc_cmd;
+>  	unsigned int smc_cmd;
+> +	const struct mtk_dp_efuse_fmt *efuse_fmt;
 >  };
->  static const struct mtk_dp_efuse_fmt
+> -static const struct mtk_dp_efuse_fmt
 > mtk_dp_efuse_data[MTK_DP_CAL_MAX] = {
+> +
+> +static const struct mtk_dp_efuse_fmt
+> mt8195_edp_efuse_fmt[MTK_DP_CAL_MAX] = {
 >  	[MTK_DP_CAL_GLB_BIAS_TRIM] = {
-> @@ -945,11 +946,11 @@ static void mtk_dp_video_mute(struct mtk_dp
-> *mtk_dp, bool enable)
->  			   VIDEO_MUTE_SW_DP_ENC0_P0);
+>  		.idx = 3,
+>  		.shift = 27,
+> @@ -811,7 +813,7 @@ static void mtk_dp_get_calibration_data(struct
+> mtk_dp *mtk_dp)
+>  	}
 >  
->  	arm_smccc_smc(MTK_DP_SIP_CONTROL_AARCH32,
-> -		      MTK_DP_SIP_ATF_EDP_VIDEO_UNMUTE, enable,
-> +		      mtk_dp->data->smc_cmd, enable,
->  		      0, 0, 0, 0, 0, &res);
+>  	for (i = 0; i < MTK_DP_CAL_MAX; i++) {
+> -		fmt = &mtk_dp_efuse_data[i];
+> +		fmt = &mtk_dp->data->efuse_fmt[i];
+>  		cal_data[i] = (buf[fmt->idx] >> fmt->shift) & fmt-
+> >mask;
 >  
->  	dev_dbg(mtk_dp->dev, "smc cmd: 0x%x, p1: 0x%x, ret: 0x%lx-
-> 0x%lx\n",
-> -		MTK_DP_SIP_ATF_EDP_VIDEO_UNMUTE, enable, res.a0,
-> res.a1);
-> +		mtk_dp->data->smc_cmd, enable, res.a0, res.a1);
+>  		if (cal_data[i] < fmt->min_val || cal_data[i] > fmt-
+> >max_val) {
+> @@ -827,7 +829,7 @@ static void mtk_dp_get_calibration_data(struct
+> mtk_dp *mtk_dp)
+>  use_default_val:
+>  	dev_warn(mtk_dp->dev, "Use default calibration data\n");
+>  	for (i = 0; i < MTK_DP_CAL_MAX; i++)
+> -		cal_data[i] = mtk_dp_efuse_data[i].default_val;
+> +		cal_data[i] = mtk_dp->data->efuse_fmt[i].default_val;
 >  }
 >  
->  static void mtk_dp_power_enable(struct mtk_dp *mtk_dp)
-> @@ -1981,6 +1982,7 @@ static SIMPLE_DEV_PM_OPS(mtk_dp_pm_ops,
+>  static void mtk_dp_set_calibration_data(struct mtk_dp *mtk_dp)
+> @@ -1983,6 +1985,7 @@ static SIMPLE_DEV_PM_OPS(mtk_dp_pm_ops,
 > mtk_dp_suspend, mtk_dp_resume);
->  
 >  static const struct mtk_dp_data mt8195_edp_data = {
 >  	.bridge_type = DRM_MODE_CONNECTOR_eDP,
-> +	.smc_cmd = MTK_DP_SIP_ATF_EDP_VIDEO_UNMUTE,
+>  	.smc_cmd = MTK_DP_SIP_ATF_EDP_VIDEO_UNMUTE,
+> +	.efuse_fmt = mt8195_edp_efuse_fmt,
 >  };
 >  
 >  static const struct of_device_id mtk_dp_of_match[] = {

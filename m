@@ -2,43 +2,43 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B13CECAAA1
-	for <linux-fbdev@archiver.kernel.org>; Fri,  2 Sep 2022 07:22:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D26B0ECAAA1
+	for <linux-fbdev@archiver.kernel.org>; Fri,  2 Sep 2022 07:32:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230405AbiIBHWo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 2 Sep 2022 03:22:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47524 "EHLO
+        id S234747AbiIBHc0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 2 Sep 2022 03:32:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33634 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230317AbiIBHWn (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 2 Sep 2022 03:22:43 -0400
+        with ESMTP id S229514AbiIBHcZ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 2 Sep 2022 03:32:25 -0400
 Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 67A89B3B32;
-        Fri,  2 Sep 2022 00:22:42 -0700 (PDT)
-X-UUID: 35051b864fc44fc0ab1da91be3e8e01b-20220902
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 75CE7A0631;
+        Fri,  2 Sep 2022 00:32:22 -0700 (PDT)
+X-UUID: 37ba8d69d9544fff83dab4228e52ad2b-20220902
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Transfer-Encoding:MIME-Version:Content-Type:References:In-Reply-To:Date:CC:To:From:Subject:Message-ID; bh=jBUU3V4XFnZyK0U7HAevIpvYAVw8v4fGi9VKp93Zo6w=;
-        b=pNyXidXXMlC2ZvDheJW83d6iSa2UKteEBzbN9dYmiMYL1sUBZhzUy/f+2V/QJrnXjrnwK5hwLjNClR93XnRygPRH3R1yv3m1SUFH0atYcQjr+QAa5/qNyre+uxSJ4VPFDFTY1roRBhH+ngXGMV4QLz6q7WSL+qG3+d5XdMAoo64=;
+        h=Content-Transfer-Encoding:MIME-Version:Content-Type:References:In-Reply-To:Date:CC:To:From:Subject:Message-ID; bh=qM1qgq1MV7finP/aae8s5yQZ0OBqyz3rZqiMvkPhvrk=;
+        b=G4r3C5h5cHvAVDcRRHHgoPLBhlLRM0Vb4tnJrd/KpEQwrnDgIiM/5pzW4RcEgdoVbJkT3ez4P0ZcOB1hjX2oWRZwlO7/ExPeWm61Y+LPFtIefh41VHAXhpbR7+pWlaAIv0U7NP7YhRZpMaI9OJfwSgs7cRi72eukcsdlrujD/ro=;
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.10,REQID:42e1bdb2-12d5-43fa-a173-850779970c5c,OB:0,L
+X-CID-O-INFO: VERSION:1.1.10,REQID:6c390545-a2b1-498b-ada8-8ac6fa5c2923,OB:0,L
         OB:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_
         Ham,ACTION:release,TS:0
-X-CID-META: VersionHash:84eae18,CLOUDID:1d7b6dd0-20bd-4e5e-ace8-00692b7ab380,C
+X-CID-META: VersionHash:84eae18,CLOUDID:81f5ec20-1c20-48a5-82a0-25f9c331906d,C
         OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:11|1,File:
         nil,Bulk:nil,QS:nil,BEC:nil,COL:0
-X-UUID: 35051b864fc44fc0ab1da91be3e8e01b-20220902
-Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw01.mediatek.com
+X-UUID: 37ba8d69d9544fff83dab4228e52ad2b-20220902
+Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw01.mediatek.com
         (envelope-from <ck.hu@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1997302502; Fri, 02 Sep 2022 15:22:37 +0800
-Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
- mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Fri, 2 Sep 2022 15:22:36 +0800
+        with ESMTP id 1567408428; Fri, 02 Sep 2022 15:32:16 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Fri, 2 Sep 2022 15:32:15 +0800
 Received: from mtksdccf07 (172.21.84.99) by mtkmbs11n1.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.2.792.15 via Frontend
- Transport; Fri, 2 Sep 2022 15:22:35 +0800
-Message-ID: <475ece688e497d77779a29626daf9aef93dddf01.camel@mediatek.com>
-Subject: Re: [PATCH v17 04/10] drm/mediatek: dp: Add multiple bridge types
+ Transport; Fri, 2 Sep 2022 15:32:14 +0800
+Message-ID: <8ae888c3f478112bca0ae40543de878f829f2470.camel@mediatek.com>
+Subject: Re: [PATCH v17 05/10] drm/mediatek: dp: Add multiple smc commands
  support
 From:   CK Hu <ck.hu@mediatek.com>
 To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, <chunkuang.hu@kernel.org>,
@@ -55,10 +55,10 @@ CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-fbdev@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Fri, 2 Sep 2022 15:22:35 +0800
-In-Reply-To: <20220901044149.16782-5-rex-bc.chen@mediatek.com>
+Date:   Fri, 2 Sep 2022 15:32:14 +0800
+In-Reply-To: <20220901044149.16782-6-rex-bc.chen@mediatek.com>
 References: <20220901044149.16782-1-rex-bc.chen@mediatek.com>
-         <20220901044149.16782-5-rex-bc.chen@mediatek.com>
+         <20220901044149.16782-6-rex-bc.chen@mediatek.com>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
@@ -71,78 +71,55 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 Hi, Bo-Chen:
 
 On Thu, 2022-09-01 at 12:41 +0800, Bo-Chen Chen wrote:
-> The bridge types of eDP and DP are different. We add device data to
-> this driver and add bridge_type to the device data to define them.
+> The smc commands of eDP and DP are different. We add smc_cmd to the
+> device data to define them.
 
 Reviewed-by: CK Hu <ck.hu@mediatek.com>
 
 > 
 > Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
 > ---
->  drivers/gpu/drm/mediatek/mtk_dp.c | 16 ++++++++++++++--
->  1 file changed, 14 insertions(+), 2 deletions(-)
+>  drivers/gpu/drm/mediatek/mtk_dp.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
 > 
 > diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c
 > b/drivers/gpu/drm/mediatek/mtk_dp.c
-> index e2ec9b02b1aa..2696c1ac1a47 100644
+> index 2696c1ac1a47..971bd744cdb2 100644
 > --- a/drivers/gpu/drm/mediatek/mtk_dp.c
 > +++ b/drivers/gpu/drm/mediatek/mtk_dp.c
-> @@ -101,6 +101,7 @@ struct mtk_dp {
->  	struct drm_device *drm_dev;
->  	struct drm_dp_aux aux;
+> @@ -112,6 +112,7 @@ struct mtk_dp {
 >  
-> +	const struct mtk_dp_data *data;
->  	struct mtk_dp_info info;
->  	struct mtk_dp_train_info train_info;
->  
-> @@ -109,6 +110,9 @@ struct mtk_dp {
->  	struct regmap *regs;
+>  struct mtk_dp_data {
+>  	int bridge_type;
+> +	unsigned int smc_cmd;
 >  };
->  
-> +struct mtk_dp_data {
-> +	int bridge_type;
-> +};
 >  static const struct mtk_dp_efuse_fmt
 > mtk_dp_efuse_data[MTK_DP_CAL_MAX] = {
 >  	[MTK_DP_CAL_GLB_BIAS_TRIM] = {
->  		.idx = 3,
-> @@ -1871,6 +1875,7 @@ static int mtk_dp_probe(struct platform_device
-> *pdev)
->  		return -ENOMEM;
+> @@ -945,11 +946,11 @@ static void mtk_dp_video_mute(struct mtk_dp
+> *mtk_dp, bool enable)
+>  			   VIDEO_MUTE_SW_DP_ENC0_P0);
 >  
->  	mtk_dp->dev = dev;
-> +	mtk_dp->data = (struct mtk_dp_data
-> *)of_device_get_match_data(dev);
+>  	arm_smccc_smc(MTK_DP_SIP_CONTROL_AARCH32,
+> -		      MTK_DP_SIP_ATF_EDP_VIDEO_UNMUTE, enable,
+> +		      mtk_dp->data->smc_cmd, enable,
+>  		      0, 0, 0, 0, 0, &res);
 >  
->  	irq_num = platform_get_irq(pdev, 0);
->  	if (irq_num < 0)
-> @@ -1925,7 +1930,7 @@ static int mtk_dp_probe(struct platform_device
-> *pdev)
+>  	dev_dbg(mtk_dp->dev, "smc cmd: 0x%x, p1: 0x%x, ret: 0x%lx-
+> 0x%lx\n",
+> -		MTK_DP_SIP_ATF_EDP_VIDEO_UNMUTE, enable, res.a0,
+> res.a1);
+> +		mtk_dp->data->smc_cmd, enable, res.a0, res.a1);
+>  }
 >  
->  	mtk_dp->bridge.ops =
->  		DRM_BRIDGE_OP_DETECT | DRM_BRIDGE_OP_EDID |
-> DRM_BRIDGE_OP_HPD;
-> -	mtk_dp->bridge.type = DRM_MODE_CONNECTOR_eDP;
-> +	mtk_dp->bridge.type = mtk_dp->data->bridge_type;
+>  static void mtk_dp_power_enable(struct mtk_dp *mtk_dp)
+> @@ -1981,6 +1982,7 @@ static SIMPLE_DEV_PM_OPS(mtk_dp_pm_ops,
+> mtk_dp_suspend, mtk_dp_resume);
 >  
->  	drm_bridge_add(&mtk_dp->bridge);
->  
-> @@ -1974,8 +1979,15 @@ static int mtk_dp_resume(struct device *dev)
->  
->  static SIMPLE_DEV_PM_OPS(mtk_dp_pm_ops, mtk_dp_suspend,
-> mtk_dp_resume);
->  
-> +static const struct mtk_dp_data mt8195_edp_data = {
-> +	.bridge_type = DRM_MODE_CONNECTOR_eDP,
-> +};
-> +
->  static const struct of_device_id mtk_dp_of_match[] = {
-> -	{ .compatible = "mediatek,mt8195-edp-tx" },
-> +	{
-> +		.compatible = "mediatek,mt8195-edp-tx",
-> +		.data = &mt8195_edp_data,
-> +	},
->  	{},
+>  static const struct mtk_dp_data mt8195_edp_data = {
+>  	.bridge_type = DRM_MODE_CONNECTOR_eDP,
+> +	.smc_cmd = MTK_DP_SIP_ATF_EDP_VIDEO_UNMUTE,
 >  };
->  MODULE_DEVICE_TABLE(of, mtk_dp_of_match);
+>  
+>  static const struct of_device_id mtk_dp_of_match[] = {
 

@@ -2,166 +2,78 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 332EAECAAD1
-	for <linux-fbdev@archiver.kernel.org>; Thu,  1 Sep 2022 15:02:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE131ECAAD3
+	for <linux-fbdev@archiver.kernel.org>; Fri,  2 Sep 2022 03:04:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233337AbiIAPCb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 1 Sep 2022 11:02:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51446 "EHLO
+        id S231954AbiIBDEC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 1 Sep 2022 23:04:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55496 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229781AbiIAPC3 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 1 Sep 2022 11:02:29 -0400
-Received: from out5-smtp.messagingengine.com (out5-smtp.messagingengine.com [66.111.4.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4141D52807;
-        Thu,  1 Sep 2022 08:02:25 -0700 (PDT)
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
-        by mailout.nyi.internal (Postfix) with ESMTP id D76035C01D4;
-        Thu,  1 Sep 2022 11:02:22 -0400 (EDT)
-Received: from mailfrontend1 ([10.202.2.162])
-  by compute5.internal (MEProxy); Thu, 01 Sep 2022 11:02:22 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=cc
-        :cc:content-type:date:date:from:from:in-reply-to:in-reply-to
-        :message-id:mime-version:references:reply-to:sender:subject
-        :subject:to:to; s=fm3; t=1662044542; x=1662130942; bh=OnCzvjXHRH
-        y3N01m9+/V/6PmzsRMFO+pjDdDzmDLqh8=; b=bAWw0w7lmxKpxZhg0KSndm5IGa
-        CjvSz8L9c46N144paZAd/ACxx4RaBaGy69H56TmCDTThTY+q17DurbG6LH1WBi57
-        LvkOeWBf/QCQRgOUz9/cs6xYu6irXXAAaG/YrqB7zup71MCijLAXRfF7zpyfYxen
-        verVO4QKyY4ydq+zoWe0hlzunBuGUK03oYQzTkGYtMhhJfKQP8sWV1DqDfatv3d1
-        eTzGr+VA98WfhEYaa/CFpjW3riVnAFJNfhoDZlZSL6zOy7h460Kp8krb87wYEals
-        /eI5AEU5q2y7i/KnTJuvRPp2gv0QGz0n7xjMAVaafbFqRxbbmzS8NjDbVkDw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
-        :feedback-id:from:from:in-reply-to:in-reply-to:message-id
-        :mime-version:references:reply-to:sender:subject:subject:to:to
-        :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
-        fm1; t=1662044542; x=1662130942; bh=OnCzvjXHRHy3N01m9+/V/6PmzsRM
-        FO+pjDdDzmDLqh8=; b=jxvUFZvhqZPLAJFitpqPXFK02DNY6gEoVnbdqlzONrTx
-        ZXlWjBv67U9rAioUyCZpqf8OBuYEeUrWrUBVGjtn5S2sYXlAGGwWOwY5IoKGi2ld
-        rzIZ7TV/dCkMlNPBg1hToMEOaEp050WElhfHU4Stpk3fIACol/cjsfAHgXskminz
-        E2eKBMyrTpqgupR7kVDXYnZwdBLfYDedW4vfZEWjSurlzx37DQ3XsLJcYDhOOvO5
-        3bioGzxfv7fTnLz9Gp7TRSZLoi+ZoUf/cBIlTS9XLfw2+K04pzcV0llfK74K/e1c
-        4+r/Bkaa7G1TYNOEx1ZVDwRky93ijtOQ6SirNK3qLg==
-X-ME-Sender: <xms:fMkQYxbw-rm4rljKQSL-WISJRfFF6Ns2VNfijNJgy4V-IBgIHodBmg>
-    <xme:fMkQY4YZylOnCpIXYs8_FWZU_rddoJUB6Z0K9JoVEBdbx6B4GlYwwTGEd04zCKDrs
-    WpgulftJbcDd2EgcII>
-X-ME-Received: <xmr:fMkQYz-a4_LJX6K1yRLU0fnrcqr8CwtfNGRgxbjyLso3pCzaOfUZw8Naig>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrvdekkedgkeegucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepfffhvfevuffkfhggtggujgesghdtreertddtjeenucfhrhhomhepofgrgihi
-    mhgvucftihhprghrugcuoehmrgigihhmvgestggvrhhnohdrthgvtghhqeenucggtffrrg
-    htthgvrhhnpeejgeeiveevvdfgffeftdevuefhheduveejieefgeejveeuhfetkeelgfev
-    teefffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
-    hmrgigihhmvgestggvrhhnohdrthgvtghh
-X-ME-Proxy: <xmx:fckQY_qydAAJ8qPV0HJCOf1acyfGkqS4eTRPHMY5DXtGi11fMcZ1AQ>
-    <xmx:fckQY8qUOBEp165phkWFRoy5Obgf6JyxdsnVup_Pq4MaKMczhCAkYQ>
-    <xmx:fckQY1Ry4wEXfEqZSIIunm04iVHBn8_4x0wDocsIUnVg-i79oFaCqQ>
-    <xmx:fskQYygebStlrWoaUmohAB_yOXEftWdrJk3TmHk8TxUSPTkYlhnwfA>
-Feedback-ID: i8771445c:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
- 1 Sep 2022 11:02:20 -0400 (EDT)
-Date:   Thu, 1 Sep 2022 17:02:16 +0200
-From:   Maxime Ripard <maxime@cerno.tech>
-To:     =?utf-8?Q?Micha=C5=82?= Winiarski <michal.winiarski@intel.com>
-Cc:     dri-devel@lists.freedesktop.org, linux-doc@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        David Gow <davidgow@google.com>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Jonathan Corbet <corbet@lwn.net>, Helge Deller <deller@gmx.de>,
-        =?utf-8?B?Sm9zw6kgRXhww7NzaXRv?= <jose.exposito89@gmail.com>
-Subject: Re: [PATCH] drm: Simplify testing on UML with kunit.py
-Message-ID: <20220901150216.gt4ozth6oz6cwgjt@houat>
-References: <20220901133621.353270-1-michal.winiarski@intel.com>
- <20220901140253.6ebvykv35kyc3v3w@houat>
- <20220901144909.6rihfj4mgklk3ddf@nostramo.hardline.pl>
+        with ESMTP id S231936AbiIBDEB (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 1 Sep 2022 23:04:01 -0400
+X-Greylist: delayed 471 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 01 Sep 2022 20:03:59 PDT
+Received: from cstnet.cn (smtp23.cstnet.cn [159.226.251.23])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E00A89F8E6;
+        Thu,  1 Sep 2022 20:03:59 -0700 (PDT)
+Received: from localhost.localdomain (unknown [124.16.138.126])
+        by APP-03 (Coremail) with SMTP id rQCowAD37FHMcBFjLoZuAA--.13835S2;
+        Fri, 02 Sep 2022 10:56:12 +0800 (CST)
+From:   Jiasheng Jiang <jiasheng@iscas.ac.cn>
+To:     deller@gmx.de, broonie@kernel.org,
+        maarten.lankhorst@linux.intel.com, daniel.vetter@ffwll.ch
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, Jiasheng Jiang <jiasheng@iscas.ac.cn>
+Subject: [PATCH 2/2] video: fbdev: gbefb: Remove unproper information
+Date:   Fri,  2 Sep 2022 10:56:12 +0800
+Message-Id: <20220902025612.3833972-1-jiasheng@iscas.ac.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="v37zbd2gmhxbbh3v"
-Content-Disposition: inline
-In-Reply-To: <20220901144909.6rihfj4mgklk3ddf@nostramo.hardline.pl>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: rQCowAD37FHMcBFjLoZuAA--.13835S2
+X-Coremail-Antispam: 1UD129KBjvdXoW7Jw4DKw4kKF13Jw1xGr15Jwb_yoW3JFcEkw
+        s8ZFZxWryqkr1vg3W8Kr4Y9ry0kF1qqFy3XFn3Kryft343Ar1rX34UZr1Fg398ZF4jvFnx
+        X3Z09r4xZ3sakjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+        9fnUUIcSsGvfJTRUUUbcAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+        6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+        A2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr1j
+        6F4UJwA2z4x0Y4vEx4A2jsIE14v26r4UJVWxJr1l84ACjcxK6I8E87Iv6xkF7I0E14v26F
+        4UJVW0owAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv
+        7VC0I7IYx2IY67AKxVWUGVWUXwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r
+        1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwCY02Avz4vE14v_
+        Gr1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxV
+        WUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIYrxkI
+        7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r
+        4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVW8JVW3JwCI42IY6I8E87Iv67AKxVW8JVWxJwCI
+        42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjfUOyCGUUUUU
+X-Originating-IP: [124.16.138.126]
+X-CM-SenderInfo: pmld2xxhqjqxpvfd2hldfou0/
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+When drivers are working properly, they are quiet.
+Therefore, the fb_info() should be removed.
 
---v37zbd2gmhxbbh3v
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Jiasheng Jiang <jiasheng@iscas.ac.cn>
+---
+ drivers/video/fbdev/gbefb.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-On Thu, Sep 01, 2022 at 04:49:09PM +0200, Micha=C5=82 Winiarski wrote:
-> On Thu, Sep 01, 2022 at 04:02:53PM +0200, Maxime Ripard wrote:
-> > Hi,
-> >=20
-> > On Thu, Sep 01, 2022 at 03:36:21PM +0200, Micha=C5=82 Winiarski wrote:
-> > > DRM depends on IOMEM and DMA, introduce an additional Kconfig to pull=
- in
-> > > IOMEM and DMA emulation on UML.
-> > > Since --kconfig_add usage is no longer needed, remove it from
-> > > documentation.
-> > >=20
-> > > Signed-off-by: Micha=C5=82 Winiarski <michal.winiarski@intel.com>
-> > > ---
-> > >  Documentation/gpu/drm-internals.rst | 7 +------
-> > >  drivers/video/Kconfig               | 4 ++++
-> > >  2 files changed, 5 insertions(+), 6 deletions(-)
-> > >=20
-> > > diff --git a/Documentation/gpu/drm-internals.rst b/Documentation/gpu/=
-drm-internals.rst
-> > > index 5fd20a306718..c264a9587d21 100644
-> > > --- a/Documentation/gpu/drm-internals.rst
-> > > +++ b/Documentation/gpu/drm-internals.rst
-> > > @@ -228,16 +228,11 @@ follows:
-> > > =20
-> > >  .. code-block:: bash
-> > > =20
-> > > -	$ ./tools/testing/kunit/kunit.py run --kunitconfig=3Ddrivers/gpu/dr=
-m/tests \
-> > > -		--kconfig_add CONFIG_VIRTIO_UML=3Dy \
-> > > -		--kconfig_add CONFIG_UML_PCI_OVER_VIRTIO=3Dy
-> > > +	$ ./tools/testing/kunit/kunit.py run --kunitconfig=3Ddrivers/gpu/dr=
-m/tests
-> > > =20
-> > >  .. note::
-> > >  	The configuration included in ``.kunitconfig`` should be as generic=
- as
-> > >  	possible.
-> > > -	``CONFIG_VIRTIO_UML`` and ``CONFIG_UML_PCI_OVER_VIRTIO`` are not
-> > > -	included in it because they are only required for User Mode Linux.
-> > > -
-> >=20
-> > I'm all for removing that part of the documentation, but because
-> > 6fc3a8636a7b, in 6.0 should address this entirely? Why would we need
-> > that other symbol?
->=20
-> We don't. I wasn't aware that 6fc3a8636a7b exists and had this one in my =
-tree
-> prior to 6.0.
-> (well... technically we do need those other symbols and don't need VIRTIO=
-, but
-> since CONFIG_UML_PCI_OVER_VIRTIO pull in those two, it also works).
-> Since docs were not updated, I didn't see any conflicts when rebasing.
->=20
-> Sorry for the noise, please ignore this patch.
+diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
+index 1582c718329c..7e39ab939691 100644
+--- a/drivers/video/fbdev/gbefb.c
++++ b/drivers/video/fbdev/gbefb.c
+@@ -1217,10 +1217,6 @@ static int gbefb_probe(struct platform_device *p_dev)
+ 
+ 	platform_set_drvdata(p_dev, info);
+ 
+-	fb_info(info, "%s rev %d @ 0x%08x using %dkB memory\n",
+-		info->fix.id, gbe_revision, (unsigned)GBE_BASE,
+-		gbe_mem_size >> 10);
+-
+ 	return 0;
+ 
+ out_gbe_unmap:
+-- 
+2.25.1
 
-I mean, the doc still isn't up to date, so please send that part of the
-patch :)
-
-Maxime
-
---v37zbd2gmhxbbh3v
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCYxDJeAAKCRDj7w1vZxhR
-xfn6AP9az1d/tvykqX2O94leJJ+WaUANxEmlxQ4simD8YMJHDwEA3+Lorxpg5ULV
-d3Xg5NRITlDK7yxBCYTbbOdSjfgtggg=
-=jMVD
------END PGP SIGNATURE-----
-
---v37zbd2gmhxbbh3v--

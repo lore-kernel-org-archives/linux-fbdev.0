@@ -2,109 +2,87 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD416ECAAD5
-	for <linux-fbdev@archiver.kernel.org>; Fri,  2 Sep 2022 08:58:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C06FFC6FA82
+	for <linux-fbdev@archiver.kernel.org>; Sun,  4 Sep 2022 12:59:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235386AbiIBI6K (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 2 Sep 2022 04:58:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33906 "EHLO
+        id S232484AbiIDM7b (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 4 Sep 2022 08:59:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37290 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236054AbiIBI6J (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 2 Sep 2022 04:58:09 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5443BA0603;
-        Fri,  2 Sep 2022 01:58:06 -0700 (PDT)
-X-UUID: 55bd09ba86ae45aeb6c12ff406430924-20220902
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Transfer-Encoding:MIME-Version:Content-Type:References:In-Reply-To:Date:CC:To:From:Subject:Message-ID; bh=LjdTy1xd5BYoKHJkgGQjVcamnY1XU8R1SpCmvWnZVUs=;
-        b=AQYfPnEB1lf1xCywnf/7nQX5ptfQ8yrDYBoQKx81Q3s5mCiHpvqOApsZXr2E1ZU8YRUU4kxXXe2PmUWi0DV4bgtVB/v/2Knnh20nyTn7SmBSjdhOGNzgoeDwVU1s5dkB8jygWgdU+eUKSHr/5qq8kWdnnRy5O3R/jpvX52jv9f8=;
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.10,REQID:e58f0edb-4376-49fc-bd67-41fb7b4bb93a,OB:0,L
-        OB:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_
-        Ham,ACTION:release,TS:0
-X-CID-META: VersionHash:84eae18,CLOUDID:3f566756-e800-47dc-8adf-0c936acf4f1b,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
-        ,Bulk:nil,QS:nil,BEC:nil,COL:0
-X-UUID: 55bd09ba86ae45aeb6c12ff406430924-20220902
-Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw02.mediatek.com
-        (envelope-from <ck.hu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1814608957; Fri, 02 Sep 2022 16:58:00 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.792.15; Fri, 2 Sep 2022 16:57:58 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 2 Sep 2022 16:57:58 +0800
-Message-ID: <e5e925911c428cab87bbe12cda1dd657e1bb5075.camel@mediatek.com>
-Subject: Re: [PATCH v17 10/10] drm/mediatek: dp: Audio support for MT8195
-From:   CK Hu <ck.hu@mediatek.com>
-To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, <chunkuang.hu@kernel.org>,
-        <p.zabel@pengutronix.de>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
-        <krzysztof.kozlowski+dt@linaro.org>, <mripard@kernel.org>,
-        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>, <deller@gmx.de>,
-        <airlied@linux.ie>
-CC:     <msp@baylibre.com>, <granquet@baylibre.com>,
-        <jitao.shi@mediatek.com>, <wenst@chromium.org>,
-        <angelogioacchino.delregno@collabora.com>,
-        <liangxu.xu@mediatek.com>, <dri-devel@lists.freedesktop.org>,
-        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-fbdev@vger.kernel.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Fri, 2 Sep 2022 16:57:58 +0800
-In-Reply-To: <20220901044149.16782-11-rex-bc.chen@mediatek.com>
-References: <20220901044149.16782-1-rex-bc.chen@mediatek.com>
-         <20220901044149.16782-11-rex-bc.chen@mediatek.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        with ESMTP id S229705AbiIDM7a (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 4 Sep 2022 08:59:30 -0400
+Received: from mail-lj1-x22c.google.com (mail-lj1-x22c.google.com [IPv6:2a00:1450:4864:20::22c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D8987DEA6;
+        Sun,  4 Sep 2022 05:59:28 -0700 (PDT)
+Received: by mail-lj1-x22c.google.com with SMTP id k18so6697350lji.13;
+        Sun, 04 Sep 2022 05:59:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date;
+        bh=MaCiino+kPjk0mzeLjaGzc7ngCKP9nbk7eUckZ209Uc=;
+        b=nGmzIqyW8Gkt2mTsg3NQcRYeGgZXxAFa0SKkwwbtnDhOav/cvEu3IEgIS5XEWAujOc
+         ckBTBJ+9zEbtTbV0nmLx99sKsvVsIbVQuOxq9SgTHxVuvgcfm9i9UwZQm7hIQFx6otRJ
+         eVvoLDVBHXxQSmVg2U3fSE+lQYqe35iSj5dsJqgbrFqod/6dyxRb36Aav+p1G7BfZjS1
+         ipvEWGJDjk3RtOsB29GEL5phjWhVZxU7G2yvnb5K0pme2LJpPlud4Slnk+iAYG+XXJok
+         7NDF42stOftqkhA7YNClQZCjL60ASc+gWIXZi2ikDYdmdO6t2uiRUL+QU++1cWVOUtJd
+         TbxA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date;
+        bh=MaCiino+kPjk0mzeLjaGzc7ngCKP9nbk7eUckZ209Uc=;
+        b=TN1EC2+DFi2v3VsmI6oUKvsDG0iLP7B0Ykim9n7iohdXYKtOLQJEouN6CU8b2sNBLz
+         8U0sIqx3A84bX7jJUYOdQxUWjfgAy3nGq+zn4LwnG6fqFkdhHHIeXknopu0YIS5+kuYW
+         pm8hprsAtefK2alaqQua2L4w46UKBYkbF9ZBEdZVFQdU/KLKN4s1obDKVHY501i/nuFC
+         VZTDXae1UtQ/orMcUam6HBrMA/+fO1cLW7fA7Jw0YkByLi/m6H1rDZGhNClla8Swh737
+         kw7c0xJE0mYc2LGHiUtqlQodxJwRWU2WLSeeuyGgddj4KBJqr3R+fYEi5g+HI/196lcc
+         meIw==
+X-Gm-Message-State: ACgBeo3O6GH1Sa+3XBleSNpG5Cgoj68WocC0i9A37CwOe+j626yCKC5/
+        NveYRNU3neIgAbiuqqyWVtkL1J7ylFI=
+X-Google-Smtp-Source: AA6agR7oDNcqN4n23e8Kl3aqZxtaX3bou67PPbdyBcJiiFNQKq37CjJs3UzaOWRhwQ3dpvALHXbedQ==
+X-Received: by 2002:a2e:b892:0:b0:25f:db66:3b86 with SMTP id r18-20020a2eb892000000b0025fdb663b86mr14179513ljp.79.1662296367003;
+        Sun, 04 Sep 2022 05:59:27 -0700 (PDT)
+Received: from [192.168.2.145] ([109.252.119.13])
+        by smtp.googlemail.com with ESMTPSA id x17-20020ac259d1000000b004947e89ae4bsm888951lfn.294.2022.09.04.05.59.25
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 04 Sep 2022 05:59:26 -0700 (PDT)
+Message-ID: <af23462c-2d3b-470a-7fd6-2bf09a3174cb@gmail.com>
+Date:   Sun, 4 Sep 2022 15:59:25 +0300
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.12.0
+Subject: Re: [PATCH v17 00/10] Add MT8195 DisplayPort driver
+Content-Language: en-US
+To:     Bo-Chen Chen <rex-bc.chen@mediatek.com>, chunkuang.hu@kernel.org,
+        p.zabel@pengutronix.de, daniel@ffwll.ch, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, mripard@kernel.org,
+        tzimmermann@suse.de, matthias.bgg@gmail.com, deller@gmx.de,
+        airlied@linux.ie
+Cc:     devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        granquet@baylibre.com, jitao.shi@mediatek.com,
+        liangxu.xu@mediatek.com, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, msp@baylibre.com,
+        Project_Global_Chrome_Upstream_Group@mediatek.com,
+        linux-mediatek@lists.infradead.org, wenst@chromium.org,
+        linux-arm-kernel@lists.infradead.org,
+        angelogioacchino.delregno@collabora.com
+References: <20220901044149.16782-1-rex-bc.chen@mediatek.com>
+From:   Dmitry Osipenko <digetx@gmail.com>
+In-Reply-To: <20220901044149.16782-1-rex-bc.chen@mediatek.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi, Bo-Chen:
-
-On Thu, 2022-09-01 at 12:41 +0800, Bo-Chen Chen wrote:
-> From: Guillaume Ranquet <granquet@baylibre.com>
+01.09.2022 07:41, Bo-Chen Chen пишет:
+> This patch is separated from v10 which is including dp driver, phy driver
+> and dpintf driver. This series is only contained the DisplayPort driver.
 > 
-> This patch adds audio support to the DP driver for MT8195 with up to
-> 8
-> channels.
-> 
-> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> Signed-off-by: Bo-Chen Chen <rex-bc.chen@mediatek.com>
-> ---
->  drivers/gpu/drm/mediatek/mtk_dp.c     | 482
-> +++++++++++++++++++++++++-
->  drivers/gpu/drm/mediatek/mtk_dp_reg.h |  51 +++
->  2 files changed, 532 insertions(+), 1 deletion(-)
-> 
-> 
+> This series can be tested using 5.19-rc2 kernel and I test it in MT8195
+> Tomato Chromebook. Modetest these modes:
 
-[snip]
-
-> +#define MTK_DP_ENC0_P0_308C			0x308c
-> +#define CH_STATUS_0_DP_ENC0_P0_MASK			GENMASK(15, 0)
-> +#define MTK_DP_ENC0_P0_3090			0x3090
-> +#define CH_STATUS_1_DP_ENC0_P0_MASK			GENMASK(15, 0)
-> +#define MTK_DP_ENC0_P0_3094			0x3094
-> +#define CH_STATUS_2_DP_ENC0_P0_MASK			GENMASK(7, 0)
-> +#define MTK_DP_ENC0_P0_30A0			0x30a0
-
-Useless, so drop it.
-
-Regards,
-CK
-
-> +#define DP_ENC0_30A0_MASK				(BIT(7) |
-> BIT(8) | BIT(12))
-> +#define MTK_DP_ENC0_P0_30A4			0x30a4
-> +#define AU_TS_CFG_DP_ENC0_P0_MASK			GENMASK(7, 0)
-> +#define MTK_DP_ENC0_P0_30A8			0x30a8
-> 
-
+Applied to drm-misc-next, thanks!

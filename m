@@ -2,89 +2,94 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 185A2ECAAD5
-	for <linux-fbdev@archiver.kernel.org>; Mon,  5 Sep 2022 10:53:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0B9EC54EE9
+	for <linux-fbdev@archiver.kernel.org>; Mon,  5 Sep 2022 15:17:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237703AbiIEKxz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 5 Sep 2022 06:53:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35844 "EHLO
+        id S236825AbiIEPRR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 5 Sep 2022 11:17:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45218 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237308AbiIEKxq (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 5 Sep 2022 06:53:46 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 56DCB558D1;
-        Mon,  5 Sep 2022 03:53:45 -0700 (PDT)
-Received: from [192.168.2.145] (unknown [109.252.119.13])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        with ESMTP id S236173AbiIEPRQ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 5 Sep 2022 11:17:16 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0F5B918E3B;
+        Mon,  5 Sep 2022 08:17:16 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        (Authenticated sender: dmitry.osipenko)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 481FC6601EE3;
-        Mon,  5 Sep 2022 11:53:42 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1662375223;
-        bh=tUTd2m3nR6U01woQKAodDrlaOuHhF5+x2TW8FD72guk=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=QDVKaBW+A1Hwo04iGcKbPUC1E2zUzzl+LF//Tj5x3fJdHDPLj2xM1R6GFnViVR1Gt
-         cRv/C2z76XL5CAWqmwjvdtvHYFRRLxdwQKylPWDhkWIK3KRWz0xsckY1698E1Cn76e
-         CKro+FXClUE06ko1BHN7mbOjuDN4Bk2zC7yU0YrY4WmPjFRqjJhxfbZHGfWYKN0XQR
-         jSg6GHzW2x2FdpZHDGGuo+uU2HIO8itcP7y4fIKs54UhTa/a8JH8GvkRhZULqap4Ex
-         KGIyQKIXamGfvLvR8ji2pvqiz2MFxJyzNvDe64dde6dh5+2iFEZix3Pksg0gDzvuHe
-         JWk33/t/bjyJw==
-Message-ID: <80985882-c46f-cfb1-b077-a92866536678@collabora.com>
-Date:   Mon, 5 Sep 2022 13:53:39 +0300
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.12.0
-Subject: Re: [PATCH v17 00/10] Add MT8195 DisplayPort driver
-Content-Language: en-US
-To:     chunkuang.hu@kernel.org, angelogioacchino.delregno@collabora.com
-Cc:     devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        granquet@baylibre.com, jitao.shi@mediatek.com,
-        liangxu.xu@mediatek.com, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, msp@baylibre.com,
-        Project_Global_Chrome_Upstream_Group@mediatek.com,
-        linux-mediatek@lists.infradead.org, wenst@chromium.org,
+        by dfw.source.kernel.org (Postfix) with ESMTPS id A16AF61326;
+        Mon,  5 Sep 2022 15:17:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 024F9C433D6;
+        Mon,  5 Sep 2022 15:17:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1662391035;
+        bh=+1JZVikczD6oMQstBHmmQ6IUy+FzfgWRuCZFth/S+Dw=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=JjbTx5WsrgNdOUEf0hAeeafisFv1eS6CmLwbhpwQvtLdLcpPH1peisZcFAhR5xTMZ
+         Nr4nbdRktkjImvMIYnfyYcT33pNCCM3qy0U4PiMeM8ynYP5oJ+KgoPe17ExxQuily0
+         tuXegK4H++l+ffyv6CWE6+VOanhV082OMtBVim7GWweaeUqFYPPg4bxuYsLCZJHgiR
+         LMucXbg1Wtj5poQ9yZfXbhK2vKTi8Kg4rNguspyeq+PiRQ2kPg1AoV3EVK7HDAbA12
+         XAj9zaehTm2IRrCSqw09jRmL4FnEoTSRxBteU8pTg1Fs8qL0kVnXQcNwPC8c7Nhqxb
+         p3KAfpKGDnoJQ==
+Date:   Mon, 5 Sep 2022 16:17:03 +0100
+From:   Lee Jones <lee@kernel.org>
+To:     ChiaEn Wu <peterwu.pub@gmail.com>
+Cc:     daniel.thompson@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
+        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        matthias.bgg@gmail.com, sre@kernel.org, jic23@kernel.org,
+        lars@metafoo.de, deller@gmx.de, broonie@kernel.org,
+        mazziesaccount@gmail.com, andriy.shevchenko@linux.intel.com,
+        chiaen_wu@richtek.com, alice_chen@richtek.com,
+        cy_huang@richtek.com, dri-devel@lists.freedesktop.org,
+        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org,
-        Dmitry Osipenko <digetx@gmail.com>,
-        Bo-Chen Chen <rex-bc.chen@mediatek.com>,
-        p.zabel@pengutronix.de, daniel@ffwll.ch, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, mripard@kernel.org,
-        tzimmermann@suse.de, matthias.bgg@gmail.com, deller@gmx.de,
-        airlied@linux.ie
-References: <20220901044149.16782-1-rex-bc.chen@mediatek.com>
- <af23462c-2d3b-470a-7fd6-2bf09a3174cb@gmail.com>
-From:   Dmitry Osipenko <dmitry.osipenko@collabora.com>
-In-Reply-To: <af23462c-2d3b-470a-7fd6-2bf09a3174cb@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, szunichen@gmail.com,
+        andy.shevchenko@gmail.com
+Subject: Re: [PATCH v9 10/10] video: backlight: mt6370: Add MediaTek MT6370
+ support
+Message-ID: <YxYS7/dZI69lMXeh@google.com>
+References: <20220830034042.9354-2-peterwu.pub@gmail.com>
+ <20220830034042.9354-11-peterwu.pub@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220830034042.9354-11-peterwu.pub@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 9/4/22 15:59, Dmitry Osipenko wrote:
-> 01.09.2022 07:41, Bo-Chen Chen пишет:
->> This patch is separated from v10 which is including dp driver, phy driver
->> and dpintf driver. This series is only contained the DisplayPort driver.
->>
->> This series can be tested using 5.19-rc2 kernel and I test it in MT8195
->> Tomato Chromebook. Modetest these modes:
+On Tue, 30 Aug 2022, ChiaEn Wu wrote:
+
+> From: ChiaEn Wu <chiaen_wu@richtek.com>
 > 
-> Applied to drm-misc-next, thanks!
+> MediaTek MT6370 is a SubPMIC consisting of a single cell battery charger
+> with ADC monitoring, RGB LEDs, dual channel flashlight, WLED backlight
+> driver, display bias voltage supply, one general purpose LDO, and the
+> USB Type-C & PD controller complies with the latest USB Type-C and PD
+> standards.
+> 
+> Add support for the MediaTek MT6370 backlight driver.
+> It controls 4 channels of 8 series WLEDs in
+> 2048 (only for MT6370/MT6371) / 16384 (only for MT6372)
+> current steps (30 mA) in exponential or linear mapping curves.
+> 
+> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
+> ---
+> 
+> v9
+> - Revise the format of the comments.
+> ---
+>  drivers/video/backlight/Kconfig            |  13 ++
+>  drivers/video/backlight/Makefile           |   1 +
+>  drivers/video/backlight/mt6370-backlight.c | 351 +++++++++++++++++++++++++++++
+>  3 files changed, 365 insertions(+)
+>  create mode 100644 drivers/video/backlight/mt6370-backlight.c
 
-Hello Chun-Kuang Hu,
-
-Angelo told me today that you wanted to pick up the MTK driver patches
-and I applied them all to the drm-misc instead just of the "video/hdmi"
-patch. The series was fully reviewed and tested, so I had no doubts when
-applied all the patches.
-
-The applied patches can't be reverted, so if you have more changes
-prepared for the MTK driver, then please rebase them on top of the
-latest drm-misc-next.
-
-Apologizes for this confusion. Please let us know if we can help you.
+Applied, thanks.
 
 -- 
-Best regards,
-Dmitry
+Lee Jones [李琼斯]

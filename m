@@ -2,81 +2,124 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65BBDC6FA83
-	for <linux-fbdev@archiver.kernel.org>; Mon,  5 Sep 2022 15:19:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17287C6FA8B
+	for <linux-fbdev@archiver.kernel.org>; Tue,  6 Sep 2022 00:36:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235489AbiIEPTD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 5 Sep 2022 11:19:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46508 "EHLO
+        id S233062AbiIFAf6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 5 Sep 2022 20:35:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39722 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238684AbiIEPSm (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 5 Sep 2022 11:18:42 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 37AFF2496A;
-        Mon,  5 Sep 2022 08:18:38 -0700 (PDT)
+        with ESMTP id S232486AbiIFAf4 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 5 Sep 2022 20:35:56 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E40567C97;
+        Mon,  5 Sep 2022 17:35:54 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id E7C3DB811E0;
-        Mon,  5 Sep 2022 15:18:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BD902C433C1;
-        Mon,  5 Sep 2022 15:18:22 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 93B0EB8159F;
+        Tue,  6 Sep 2022 00:35:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3F28EC43145;
+        Tue,  6 Sep 2022 00:35:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1662391115;
-        bh=OYPiTnXo7bb7hJwVSPWes/+Nq+zYOTrTHyss+h6VYo4=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=SDxfRg7k2JMjGFkMn8+/LTZSQNlWWnzMBv8TiM+aZG8WfpCklOb/zYAqZM4XE+fpY
-         rs2rNTcqypi/Ymx66IECFIq8P0LnEAeumaycw1PLF94hacP8yD68/JeeoptW5Lx5Vl
-         57nufRRk4GhwDzlKg7oQMkrAgFpjFa1ZtYo0fvLh0XnVE5uTfTSh5+kjy7DoDp/wOY
-         xqntjmtzikCy2OmKXCYmmlAohAO13PluvsZ8YxrWTYJey/1rAIgZG58iRjY3eGIGLB
-         1Fwo6+Ls6SieLxlyJ4ygC8DlLJX7pxvZm78wBH1qEClQCJdIiEF/JnguTag1WzkZLm
-         04sga6uQd9+uA==
-Date:   Mon, 5 Sep 2022 16:18:12 +0100
-From:   Lee Jones <lee@kernel.org>
-To:     ChiaEn Wu <peterwu.pub@gmail.com>
-Cc:     daniel.thompson@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        matthias.bgg@gmail.com, sre@kernel.org, jic23@kernel.org,
-        lars@metafoo.de, deller@gmx.de, broonie@kernel.org,
-        mazziesaccount@gmail.com, andriy.shevchenko@linux.intel.com,
-        chiaen_wu@richtek.com, alice_chen@richtek.com,
-        cy_huang@richtek.com, dri-devel@lists.freedesktop.org,
-        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, szunichen@gmail.com,
-        andy.shevchenko@gmail.com, Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v9 04/10] dt-bindings: backlight: Add MediaTek MT6370
- backlight
-Message-ID: <YxYSDSlnOELL2mPF@google.com>
-References: <20220830034042.9354-2-peterwu.pub@gmail.com>
- <20220830034042.9354-5-peterwu.pub@gmail.com>
+        s=k20201202; t=1662424551;
+        bh=AFVELCe6kckm5eVg8tSkLGzu73jpu1k+AHFc6+CYBcw=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=nI77n7PyLi5FxsG5xVGzM7IPkRddyT0b0CMVM4SXMhWb+vUNwAV0WGNt4PA9n8CqS
+         zxVkXOyN5M/JlTZh6GqixESF8eOED5NoosbhPX2Hsbo0g74HUvcD5IqIAIzpnj5CaD
+         d4ygcuWBgqOpLZM9kiHSPuHX97fV/gU10RfgBZV6i4M0nptUl44AJG2NDDPrJ3KyGn
+         1mg1nut4G2j0qOt/ZUizGE05HWc7HSg5muHqEVTDVysQf1oTx2lYiY2aW+xCf1axIQ
+         MnFiCmpbeoQzdH1L8YqUu19CRdilnf4OtxFGR0RF0l82/TvXGOFtk+ukltv8mWvtx4
+         CmdEvf4qo/wqw==
+Received: by mail-ot1-f49.google.com with SMTP id m21-20020a9d6ad5000000b00638df677850so7112274otq.5;
+        Mon, 05 Sep 2022 17:35:51 -0700 (PDT)
+X-Gm-Message-State: ACgBeo1irLWI9k40WIIAZUzn+PUxbCUun/ta0nMlF7gXXQveqVBkCJz6
+        /gv/1dF3FWqxO41xCbpdUKyXzy9lVYDMFwar1g==
+X-Google-Smtp-Source: AA6agR7JB46gDLcqHlczb2XMcJBrFON4MTYWbTLa6xhusijh7jtXlCYbGmC4KWVKQpa3XwKRkOEL4frns62DfuOfGIw=
+X-Received: by 2002:a05:6830:6999:b0:61d:26f8:94c1 with SMTP id
+ cy25-20020a056830699900b0061d26f894c1mr20597426otb.278.1662424550394; Mon, 05
+ Sep 2022 17:35:50 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20220830034042.9354-5-peterwu.pub@gmail.com>
+References: <20220901044149.16782-1-rex-bc.chen@mediatek.com>
+ <af23462c-2d3b-470a-7fd6-2bf09a3174cb@gmail.com> <80985882-c46f-cfb1-b077-a92866536678@collabora.com>
+In-Reply-To: <80985882-c46f-cfb1-b077-a92866536678@collabora.com>
+From:   Chun-Kuang Hu <chunkuang.hu@kernel.org>
+Date:   Tue, 6 Sep 2022 08:35:31 +0800
+X-Gmail-Original-Message-ID: <CAAOTY_-C8fmabcTrytpHowbHe8Y+tTmv=5SV+oKPjUNRLTaU9w@mail.gmail.com>
+Message-ID: <CAAOTY_-C8fmabcTrytpHowbHe8Y+tTmv=5SV+oKPjUNRLTaU9w@mail.gmail.com>
+Subject: Re: [PATCH v17 00/10] Add MT8195 DisplayPort driver
+To:     Dmitry Osipenko <dmitry.osipenko@collabora.com>
+Cc:     Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        DTML <devicetree@vger.kernel.org>, linux-fbdev@vger.kernel.org,
+        Guillaume Ranquet <granquet@baylibre.com>,
+        Jitao Shi <jitao.shi@mediatek.com>, liangxu.xu@mediatek.com,
+        linux-kernel <linux-kernel@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Markus Schneider-Pargmann <msp@baylibre.com>,
+        Project_Global_Chrome_Upstream_Group 
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-mediatek@lists.infradead.org>,
+        Chen-Yu Tsai <wenst@chromium.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Dmitry Osipenko <digetx@gmail.com>,
+        Bo-Chen Chen <rex-bc.chen@mediatek.com>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Rob Herring <robh+dt@kernel.org>,
+        krzysztof.kozlowski+dt@linaro.org,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Matthias Brugger <matthias.bgg@gmail.com>, deller@gmx.de,
+        David Airlie <airlied@linux.ie>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, 30 Aug 2022, ChiaEn Wu wrote:
+Hi, Dmitry:
 
-> From: ChiYuan Huang <cy_huang@richtek.com>
-> 
-> Add MT6370 backlight binding documentation.
-> 
-> Reviewed-by: Rob Herring <robh@kernel.org>
-> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
-> Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
-> ---
->  .../leds/backlight/mediatek,mt6370-backlight.yaml  | 121 +++++++++++++++++++++
->  1 file changed, 121 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/leds/backlight/mediatek,mt6370-backlight.yaml
+Dmitry Osipenko <dmitry.osipenko@collabora.com> =E6=96=BC 2022=E5=B9=B49=E6=
+=9C=885=E6=97=A5 =E9=80=B1=E4=B8=80 =E4=B8=8B=E5=8D=886:53=E5=AF=AB=E9=81=
+=93=EF=BC=9A
+>
+> On 9/4/22 15:59, Dmitry Osipenko wrote:
+> > 01.09.2022 07:41, Bo-Chen Chen =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
+> >> This patch is separated from v10 which is including dp driver, phy dri=
+ver
+> >> and dpintf driver. This series is only contained the DisplayPort drive=
+r.
+> >>
+> >> This series can be tested using 5.19-rc2 kernel and I test it in MT819=
+5
+> >> Tomato Chromebook. Modetest these modes:
+> >
+> > Applied to drm-misc-next, thanks!
+>
+> Hello Chun-Kuang Hu,
+>
+> Angelo told me today that you wanted to pick up the MTK driver patches
+> and I applied them all to the drm-misc instead just of the "video/hdmi"
+> patch. The series was fully reviewed and tested, so I had no doubts when
+> applied all the patches.
+>
+> The applied patches can't be reverted, so if you have more changes
+> prepared for the MTK driver, then please rebase them on top of the
+> latest drm-misc-next.
+>
+> Apologizes for this confusion. Please let us know if we can help you.
 
-Applied, thanks.
+OK, if this cannot be reverted, I could only accept this. Normally,
+drm/mediatek patches would go though medaitek-drm-* branch. To prevent
+any confusion, it's better to discuss before pick up.
 
--- 
-Lee Jones [李琼斯]
+Regards,
+Chun-Kuang.
+
+>
+> --
+> Best regards,
+> Dmitry

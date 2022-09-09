@@ -2,135 +2,162 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B6F5ECAAD3
-	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Sep 2022 18:03:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA272ECAAD3
+	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Sep 2022 18:50:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229775AbiIISD4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 9 Sep 2022 14:03:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50952 "EHLO
+        id S229813AbiIISuw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 9 Sep 2022 14:50:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58184 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229750AbiIISD4 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 9 Sep 2022 14:03:56 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 56E4A131EF5;
-        Fri,  9 Sep 2022 11:03:55 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id F2E6EB82346;
-        Fri,  9 Sep 2022 18:03:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 586D2C433D6;
-        Fri,  9 Sep 2022 18:03:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1662746632;
-        bh=fLVpESbzmwXMWkoS/jM2ML1f0AivWO0qTh6iZrCXKb8=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=Vc+Z8iGBxt0TaS3Dj6luSvYkyHdp2781R8Z6gglwUiv5AK2VgdaB4osuHVwXVPRIN
-         tAiw2Nhfur4TYZmh66ybUJP4BLRbZsJWh4zh0T6ZvMw9tdJTSKGFMbzRKT+Ftjc80d
-         1MQ0x7uSjbu+ktOyGuwGq066GPO8ZysD5cfSrflg=
-Date:   Fri, 9 Sep 2022 20:03:50 +0200
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Burak Ozdemir <bozdemir@gmail.com>
-Cc:     Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Teddy Wang <teddy.wang@siliconmotion.com>,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: sm750fb: Coding style clean up
-Message-ID: <YxuABqKRFmcKRao8@kroah.com>
-References: <631b3177.170a0220.ccacb.0862@mx.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <631b3177.170a0220.ccacb.0862@mx.google.com>
+        with ESMTP id S229847AbiIISut (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 9 Sep 2022 14:50:49 -0400
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id B1A39EA607;
+        Fri,  9 Sep 2022 11:50:46 -0700 (PDT)
+Received: from linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net (linux.microsoft.com [13.77.154.182])
+        by linux.microsoft.com (Postfix) with ESMTPSA id 3003820B929D;
+        Fri,  9 Sep 2022 11:50:46 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 3003820B929D
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+        s=default; t=1662749446;
+        bh=EtvSqWtgoW9XjfTZfdIifuNdlSp5udD/dIkF7/nioQk=;
+        h=From:To:Subject:Date:In-Reply-To:References:From;
+        b=X3IxfAszm2Tvg2c8SQfbLxujX6DJJ7U/jVNltwRSGOsrutaORNKRpBZc/MQpH2qN0
+         XyVl0zGQ7JtbG/7vA5KQeuzmNw1jTw99eRCjUD3S01EK+hkE7yYfA3KvSr9g3ahpI+
+         P1iQAId4gbeLJLl1KQ71x7kaYQ6GAMHFcDEA9v0I=
+From:   Easwar Hariharan <eahariha@linux.microsoft.com>
+To:     vkuznets@redhat.com, Deepak Rawat <drawat.floss@gmail.com>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        "K. Y. Srinivasan" <kys@microsoft.com>,
+        Haiyang Zhang <haiyangz@microsoft.com>,
+        Stephen Hemminger <sthemmin@microsoft.com>,
+        Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>, Helge Deller <deller@gmx.de>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Easwar Hariharan <easwar.hariharan@microsoft.com>,
+        Colin Ian King <colin.i.king@googlemail.com>,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        linux-hyperv@vger.kernel.org (open list:DRM DRIVER FOR HYPERV SYNTHETIC
+        VIDEO DEVICE),
+        dri-devel@lists.freedesktop.org (open list:DRM DRIVER FOR HYPERV
+        SYNTHETIC VIDEO DEVICE), linux-kernel@vger.kernel.org (open list),
+        netdev@vger.kernel.org (open list:NETWORKING DRIVERS),
+        linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER),
+        linux-pci@vger.kernel.org (open list:PCI SUBSYSTEM)
+Subject: [PATCH v2 2/2] pci_ids: Add the various Microsoft PCI device IDs
+Date:   Fri,  9 Sep 2022 11:50:25 -0700
+Message-Id: <1662749425-3037-3-git-send-email-eahariha@linux.microsoft.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1662749425-3037-1-git-send-email-eahariha@linux.microsoft.com>
+References: <87leqsr6im.fsf@redhat.com>
+ <1662749425-3037-1-git-send-email-eahariha@linux.microsoft.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Sep 09, 2022 at 03:28:27PM +0000, Burak Ozdemir wrote:
-> From: Burak OZDEMIR <bozdemir@gmail.com>
-> 
-> Adhere to coding style and fix camel casing in function name.
-> 
-> Signed-off-by: Burak Ozdemir <bozdemir@gmail.com>
-> ---
->  drivers/staging/sm750fb/sm750.c        | 2 +-
->  drivers/staging/sm750fb/sm750_cursor.c | 2 +-
->  drivers/staging/sm750fb/sm750_cursor.h | 2 +-
->  3 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-> index 3e09e56d3930..a86222cdcb68 100644
-> --- a/drivers/staging/sm750fb/sm750.c
-> +++ b/drivers/staging/sm750fb/sm750.c
-> @@ -120,7 +120,7 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
->  
->  	sm750_hw_cursor_disable(cursor);
->  	if (fbcursor->set & FB_CUR_SETSIZE)
-> -		sm750_hw_cursor_setSize(cursor,
-> +		sm750_hw_cursor_set_size(cursor,
->  					fbcursor->image.width,
->  					fbcursor->image.height);
->  
-> diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-> index 43e6f52c2551..d5ef40b8bc8e 100644
-> --- a/drivers/staging/sm750fb/sm750_cursor.c
-> +++ b/drivers/staging/sm750fb/sm750_cursor.c
-> @@ -58,7 +58,7 @@ void sm750_hw_cursor_disable(struct lynx_cursor *cursor)
->  	poke32(HWC_ADDRESS, 0);
->  }
->  
-> -void sm750_hw_cursor_setSize(struct lynx_cursor *cursor, int w, int h)
-> +void sm750_hw_cursor_set_size(struct lynx_cursor *cursor, int w, int h)
->  {
->  	cursor->w = w;
->  	cursor->h = h;
-> diff --git a/drivers/staging/sm750fb/sm750_cursor.h b/drivers/staging/sm750fb/sm750_cursor.h
-> index b59643dd61ed..edeed2ea4b04 100644
-> --- a/drivers/staging/sm750fb/sm750_cursor.h
-> +++ b/drivers/staging/sm750fb/sm750_cursor.h
-> @@ -5,7 +5,7 @@
->  /* hw_cursor_xxx works for voyager,718 and 750 */
->  void sm750_hw_cursor_enable(struct lynx_cursor *cursor);
->  void sm750_hw_cursor_disable(struct lynx_cursor *cursor);
-> -void sm750_hw_cursor_setSize(struct lynx_cursor *cursor, int w, int h);
-> +void sm750_hw_cursor_set_size(struct lynx_cursor *cursor, int w, int h);
->  void sm750_hw_cursor_setPos(struct lynx_cursor *cursor, int x, int y);
->  void sm750_hw_cursor_setColor(struct lynx_cursor *cursor, u32 fg, u32 bg);
->  void sm750_hw_cursor_setData(struct lynx_cursor *cursor, u16 rop,
-> -- 
-> 2.35.1
-> 
+From: Easwar Hariharan <easwar.hariharan@microsoft.com>
 
-Hi,
+Signed-off-by: Easwar Hariharan <easwar.hariharan@microsoft.com>
+---
+ drivers/gpu/drm/hyperv/hyperv_drm_drv.c         | 2 +-
+ drivers/net/ethernet/microsoft/mana/gdma.h      | 3 ---
+ drivers/net/ethernet/microsoft/mana/gdma_main.c | 6 +++---
+ drivers/video/fbdev/hyperv_fb.c                 | 4 ++--
+ include/linux/pci_ids.h                         | 4 +++-
+ 5 files changed, 9 insertions(+), 10 deletions(-)
 
-This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
-a patch that has triggered this response.  He used to manually respond
-to these common problems, but in order to save his sanity (he kept
-writing the same thing over and over, yet to different people), I was
-created.  Hopefully you will not take offence and will fix the problem
-in your patch and resubmit it so that it can be accepted into the Linux
-kernel tree.
+diff --git a/drivers/gpu/drm/hyperv/hyperv_drm_drv.c b/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
+index f84d397..24c2def 100644
+--- a/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
++++ b/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
+@@ -51,7 +51,7 @@ static void hyperv_pci_remove(struct pci_dev *pdev)
+ static const struct pci_device_id hyperv_pci_tbl[] = {
+ 	{
+ 		.vendor = PCI_VENDOR_ID_MICROSOFT,
+-		.device = PCI_DEVICE_ID_HYPERV_VIDEO,
++		.device = PCI_DEVICE_ID_MICROSOFT_HYPERV_VIDEO,
+ 	},
+ 	{ /* end of list */ }
+ };
+diff --git a/drivers/net/ethernet/microsoft/mana/gdma.h b/drivers/net/ethernet/microsoft/mana/gdma.h
+index 4a6efe6..9d3a9f7 100644
+--- a/drivers/net/ethernet/microsoft/mana/gdma.h
++++ b/drivers/net/ethernet/microsoft/mana/gdma.h
+@@ -476,9 +476,6 @@ struct gdma_eqe {
+ 
+ #define GDMA_SRIOV_REG_CFG_BASE_OFF	0x108
+ 
+-#define MANA_PF_DEVICE_ID 0x00B9
+-#define MANA_VF_DEVICE_ID 0x00BA
+-
+ struct gdma_posted_wqe_info {
+ 	u32 wqe_size_in_bu;
+ };
+diff --git a/drivers/net/ethernet/microsoft/mana/gdma_main.c b/drivers/net/ethernet/microsoft/mana/gdma_main.c
+index 00d8198..18cf168 100644
+--- a/drivers/net/ethernet/microsoft/mana/gdma_main.c
++++ b/drivers/net/ethernet/microsoft/mana/gdma_main.c
+@@ -1333,7 +1333,7 @@ static void mana_gd_cleanup(struct pci_dev *pdev)
+ 
+ static bool mana_is_pf(unsigned short dev_id)
+ {
+-	return dev_id == MANA_PF_DEVICE_ID;
++	return dev_id == PCI_DEVICE_ID_MICROSOFT_MANA_PF;
+ }
+ 
+ static int mana_gd_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+@@ -1466,8 +1466,8 @@ static void mana_gd_shutdown(struct pci_dev *pdev)
+ }
+ 
+ static const struct pci_device_id mana_id_table[] = {
+-	{ PCI_DEVICE(PCI_VENDOR_ID_MICROSOFT, MANA_PF_DEVICE_ID) },
+-	{ PCI_DEVICE(PCI_VENDOR_ID_MICROSOFT, MANA_VF_DEVICE_ID) },
++	{ PCI_DEVICE(PCI_VENDOR_ID_MICROSOFT, PCI_DEVICE_ID_MICROSOFT_MANA_PF) },
++	{ PCI_DEVICE(PCI_VENDOR_ID_MICROSOFT, PCI_DEVICE_ID_MICROSOFT_MANA_VF) },
+ 	{ }
+ };
+ 
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index b58b445..118e244 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -997,7 +997,7 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 
+ 	if (!gen2vm) {
+ 		pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
+-			PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
++			PCI_DEVICE_ID_MICROSOFT_HYPERV_VIDEO, NULL);
+ 		if (!pdev) {
+ 			pr_err("Unable to find PCI Hyper-V video\n");
+ 			return -ENODEV;
+@@ -1311,7 +1311,7 @@ static int hvfb_resume(struct hv_device *hdev)
+ static const struct pci_device_id pci_stub_id_table[] = {
+ 	{
+ 		.vendor      = PCI_VENDOR_ID_MICROSOFT,
+-		.device      = PCI_DEVICE_ID_HYPERV_VIDEO,
++		.device      = PCI_DEVICE_ID_MICROSOFT_HYPERV_VIDEO,
+ 	},
+ 	{ /* end of list */ }
+ };
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index 15b49e6..fe3517f 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -2080,7 +2080,9 @@
+ #define PCI_DEVICE_ID_VT1724		0x1724
+ 
+ #define PCI_VENDOR_ID_MICROSOFT		0x1414
+-#define PCI_DEVICE_ID_HYPERV_VIDEO	0x5353
++#define PCI_DEVICE_ID_MICROSOFT_HYPERV_VIDEO	0x5353
++#define PCI_DEVICE_ID_MICROSOFT_MANA_PF  	0x00B9
++#define PCI_DEVICE_ID_MICROSOFT_MANA_VF  	0x00BA
+ 
+ #define PCI_VENDOR_ID_OXSEMI		0x1415
+ #define PCI_DEVICE_ID_OXSEMI_12PCI840	0x8403
+-- 
+1.8.3.1
 
-You are receiving this message because of the following common error(s)
-as indicated below:
-
-- You did not write a descriptive Subject: for the patch, allowing Greg,
-  and everyone else, to know what this patch is all about.  Please read
-  the section entitled "The canonical patch format" in the kernel file,
-  Documentation/SubmittingPatches for what a proper Subject: line should
-  look like.
-
-- This looks like a new version of a previously submitted patch, but you
-  did not list below the --- line any changes from the previous version.
-  Please read the section entitled "The canonical patch format" in the
-  kernel file, Documentation/SubmittingPatches for what needs to be done
-  here to properly describe this.
-
-If you wish to discuss this problem further, or you have questions about
-how to resolve this issue, please feel free to respond to this email and
-Greg will reply once he has dug out from the pending patches received
-from other developers.
-
-thanks,
-
-greg k-h's patch email bot

@@ -2,178 +2,116 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7260C54EE9
-	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Sep 2022 22:06:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 927B0C6FA82
+	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Sep 2022 11:29:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230044AbiIHWGg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 8 Sep 2022 18:06:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41884 "EHLO
+        id S230447AbiIIL3L (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 9 Sep 2022 07:29:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47854 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230072AbiIHWG3 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 8 Sep 2022 18:06:29 -0400
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id D1CF6D2B1C;
-        Thu,  8 Sep 2022 15:06:27 -0700 (PDT)
-Received: from linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net (linux.microsoft.com [13.77.154.182])
-        by linux.microsoft.com (Postfix) with ESMTPSA id 7928E204A5AD;
-        Thu,  8 Sep 2022 15:06:27 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 7928E204A5AD
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-        s=default; t=1662674787;
-        bh=clRlDW/UKU55qy4Nhd5brXYsUV02HVnxKRgDRmJFpXM=;
-        h=From:To:Subject:Date:In-Reply-To:References:From;
-        b=Z9VWtNQUK23jDB0GlWl74m51KMrqh0BhgccO2813dJAJmVKZrheyjY1er6b5u4WVH
-         WVEuz9ykp2wJgiWMnGERBZOCcnZl9ONv9mPMnG/E4jaEuxxYp1MYq+vcT4ZW/bjMxE
-         L402v8AfZ3/4KZVxkTXrxz9RqBjRapos5kNm6GsU=
-From:   eahariha@linux.microsoft.com
-To:     Deepak Rawat <drawat.floss@gmail.com>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        "K. Y. Srinivasan" <kys@microsoft.com>,
-        Haiyang Zhang <haiyangz@microsoft.com>,
-        Stephen Hemminger <sthemmin@microsoft.com>,
-        Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>, Helge Deller <deller@gmx.de>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Easwar Hariharan <easwar.hariharan@microsoft.com>,
-        Colin Ian King <colin.i.king@googlemail.com>,
-        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
-        linux-hyperv@vger.kernel.org (open list:DRM DRIVER FOR HYPERV SYNTHETIC
-        VIDEO DEVICE),
-        dri-devel@lists.freedesktop.org (open list:DRM DRIVER FOR HYPERV
-        SYNTHETIC VIDEO DEVICE), linux-kernel@vger.kernel.org (open list),
-        netdev@vger.kernel.org (open list:NETWORKING DRIVERS),
-        linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER),
-        linux-pci@vger.kernel.org (open list:PCI SUBSYSTEM)
-Subject: [PATCH 3/3] pci_ids: Add the various Microsoft PCI device IDs
-Date:   Thu,  8 Sep 2022 15:05:57 -0700
-Message-Id: <1662674757-31945-3-git-send-email-eahariha@linux.microsoft.com>
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1662674757-31945-1-git-send-email-eahariha@linux.microsoft.com>
-References: <1662674757-31945-1-git-send-email-eahariha@linux.microsoft.com>
+        with ESMTP id S230401AbiIIL3G (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 9 Sep 2022 07:29:06 -0400
+Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 30BF1139ACD;
+        Fri,  9 Sep 2022 04:29:02 -0700 (PDT)
+Received: by mail-ej1-x633.google.com with SMTP id lc7so3365715ejb.0;
+        Fri, 09 Sep 2022 04:29:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-disposition:mime-version:subject:cc:to:from:date:message-id
+         :from:to:cc:subject:date;
+        bh=dl2woc6VxZxBG9PRHSyadBOfV8W4AihZHiXdGtwtKZk=;
+        b=qyhZ3Lqk9YmDSbdq46SeszDEhNnUJGy1kd/Eii8q/jkN8+HHZKX7+TfYfrk+Fwsm3l
+         3BCY+AraYvu9CQt1MpnbxXxBfZCqYkMCJ21WYviN8UvEgd2nJyL8MiqHxpa7JN7bPuU5
+         9VDSorxTY96vvzFepULa15xSpzi5p6igLh3beppYZV/70zJFHYnLlBQcWfMU6UZQ/Rtu
+         +vx9Mck6CXhcaZtgXHRWQv4d1PYrBAK4ihh1QCWSE91HrgsT8cEN/nCDKFCnWSorlzPL
+         B/am96bP9BKbNHy+A36SsF59ulpapavktHz5kxkbzb6pcDEjyOB4wkPmUAjCLT+X5VKj
+         lEhw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-disposition:mime-version:subject:cc:to:from:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date;
+        bh=dl2woc6VxZxBG9PRHSyadBOfV8W4AihZHiXdGtwtKZk=;
+        b=R6iDqhA4kf+Mn1vYuZ5h2Us7saw4FDzzq0crBTI5UBsxjzNG/X9kYI5hKM4iCkNOCK
+         LuaYvNYD1li5f+nyj2txlb77cnf2yqrv5PYQ9WtSol0scOAjXJkvYY+yIMlEJn4oWb/S
+         BGyDx6n6TyxhjdSo+2flsWe4kPOTleBsxKCgRYcRUswokH6gnAYQ8BhIfusUtKOg+uPn
+         Oc4MSNnePk8PsxVcHJTbTdYpHLT6ulgS9n52waTv0Eaeqq/HWhdkXQy70gFyde9LY0Uu
+         MVwIs3EN7pAOgVSLY4IRkyfW0PVGeNlPSDy639GmUb561jadH504Sl8iiZ8MzfR5bedA
+         4YNQ==
+X-Gm-Message-State: ACgBeo25/0vsZsP/QavkcJGdVmxXc67i+ae+VXAED0JY9xqZ/cAXh2KF
+        Sl7oRecmD1D52XkL+uUSAiQ=
+X-Google-Smtp-Source: AA6agR7txTvJieNQLG2Ek1WmWlvmgJNiEqXiWKf4wl5I9uI/ARQ//cqOjuc+E+gk6Ex8WDZniTl6JA==
+X-Received: by 2002:a17:907:1c1e:b0:741:8abe:320e with SMTP id nc30-20020a1709071c1e00b007418abe320emr9838802ejc.123.1662722940989;
+        Fri, 09 Sep 2022 04:29:00 -0700 (PDT)
+Received: from localhost ([89.40.126.93])
+        by smtp.gmail.com with ESMTPSA id os23-20020a170906af7700b00730860b6c43sm130758ejb.173.2022.09.09.04.29.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 09 Sep 2022 04:29:00 -0700 (PDT)
+Message-ID: <631b237c.170a0220.aed56.04f5@mx.google.com>
+X-Google-Original-Message-ID: <YxtNoWt74SjNbrsF@<DarkDistro>>
+Date:   Fri, 9 Sep 2022 14:28:49 +0000
+From:   Burak Ozdemir <bozdemir@gmail.com>
+To:     Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        Teddy Wang <teddy.wang@siliconmotion.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] staging: sm750fb: Coding style clean up
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Easwar Hariharan <easwar.hariharan@microsoft.com>
+Adhere to coding style and fix camel casing in function name.
 
-Signed-off-by: Easwar Hariharan <easwar.hariharan@microsoft.com>
+Signed-off-by: Burak Ozdemir <bozdemir@gmail.com>
 ---
- drivers/gpu/drm/hyperv/hyperv_drm_drv.c         | 4 +---
- drivers/net/ethernet/microsoft/mana/gdma.h      | 3 ---
- drivers/net/ethernet/microsoft/mana/gdma_main.c | 6 +++---
- drivers/video/fbdev/hyperv_fb.c                 | 6 ++----
- include/linux/pci_ids.h                         | 3 +++
- 5 files changed, 9 insertions(+), 13 deletions(-)
+ drivers/staging/sm750fb/sm750.c        | 2 +-
+ drivers/staging/sm750fb/sm750_cursor.c | 2 +-
+ drivers/staging/sm750fb/sm750_cursor.h | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/gpu/drm/hyperv/hyperv_drm_drv.c b/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
-index 61083c7..695d3a7 100644
---- a/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
-+++ b/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
-@@ -23,8 +23,6 @@
- #define DRIVER_MAJOR 1
- #define DRIVER_MINOR 0
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 3e09e56d3930..a86222cdcb68 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -120,7 +120,7 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
  
--#define PCI_DEVICE_ID_HYPERV_VIDEO 0x5353
--
- DEFINE_DRM_GEM_FOPS(hv_fops);
+ 	sm750_hw_cursor_disable(cursor);
+ 	if (fbcursor->set & FB_CUR_SETSIZE)
+-		sm750_hw_cursor_setSize(cursor,
++		sm750_hw_cursor_set_size(cursor,
+ 					fbcursor->image.width,
+ 					fbcursor->image.height);
  
- static struct drm_driver hyperv_driver = {
-@@ -53,7 +51,7 @@ static void hyperv_pci_remove(struct pci_dev *pdev)
- static const struct pci_device_id hyperv_pci_tbl[] = {
- 	{
- 		.vendor = PCI_VENDOR_ID_MICROSOFT,
--		.device = PCI_DEVICE_ID_HYPERV_VIDEO,
-+		.device = PCI_DEVICE_ID_MICROSOFT_HYPERV_VIDEO,
- 	},
- 	{ /* end of list */ }
- };
-diff --git a/drivers/net/ethernet/microsoft/mana/gdma.h b/drivers/net/ethernet/microsoft/mana/gdma.h
-index 4a6efe6..9d3a9f7 100644
---- a/drivers/net/ethernet/microsoft/mana/gdma.h
-+++ b/drivers/net/ethernet/microsoft/mana/gdma.h
-@@ -476,9 +476,6 @@ struct gdma_eqe {
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index 43e6f52c2551..d5ef40b8bc8e 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -58,7 +58,7 @@ void sm750_hw_cursor_disable(struct lynx_cursor *cursor)
+ 	poke32(HWC_ADDRESS, 0);
+ }
  
- #define GDMA_SRIOV_REG_CFG_BASE_OFF	0x108
- 
--#define MANA_PF_DEVICE_ID 0x00B9
--#define MANA_VF_DEVICE_ID 0x00BA
--
- struct gdma_posted_wqe_info {
- 	u32 wqe_size_in_bu;
- };
-diff --git a/drivers/net/ethernet/microsoft/mana/gdma_main.c b/drivers/net/ethernet/microsoft/mana/gdma_main.c
-index 00d8198..18cf168 100644
---- a/drivers/net/ethernet/microsoft/mana/gdma_main.c
-+++ b/drivers/net/ethernet/microsoft/mana/gdma_main.c
-@@ -1333,7 +1333,7 @@ static void mana_gd_cleanup(struct pci_dev *pdev)
- 
- static bool mana_is_pf(unsigned short dev_id)
+-void sm750_hw_cursor_setSize(struct lynx_cursor *cursor, int w, int h)
++void sm750_hw_cursor_set_size(struct lynx_cursor *cursor, int w, int h)
  {
--	return dev_id == MANA_PF_DEVICE_ID;
-+	return dev_id == PCI_DEVICE_ID_MICROSOFT_MANA_PF;
- }
- 
- static int mana_gd_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
-@@ -1466,8 +1466,8 @@ static void mana_gd_shutdown(struct pci_dev *pdev)
- }
- 
- static const struct pci_device_id mana_id_table[] = {
--	{ PCI_DEVICE(PCI_VENDOR_ID_MICROSOFT, MANA_PF_DEVICE_ID) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_MICROSOFT, MANA_VF_DEVICE_ID) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_MICROSOFT, PCI_DEVICE_ID_MICROSOFT_MANA_PF) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_MICROSOFT, PCI_DEVICE_ID_MICROSOFT_MANA_VF) },
- 	{ }
- };
- 
-diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
-index a502c80..b9277e5 100644
---- a/drivers/video/fbdev/hyperv_fb.c
-+++ b/drivers/video/fbdev/hyperv_fb.c
-@@ -73,8 +73,6 @@
- #define SYNTHVID_DEPTH_WIN8 32
- #define SYNTHVID_FB_SIZE_WIN8 (8 * 1024 * 1024)
- 
--#define PCI_DEVICE_ID_HYPERV_VIDEO 0x5353
--
- enum pipe_msg_type {
- 	PIPE_MSG_INVALID,
- 	PIPE_MSG_DATA,
-@@ -998,7 +996,7 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
- 
- 	if (!gen2vm) {
- 		pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
--			PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
-+			PCI_DEVICE_ID_MICROSOFT_HYPERV_VIDEO, NULL);
- 		if (!pdev) {
- 			pr_err("Unable to find PCI Hyper-V video\n");
- 			return -ENODEV;
-@@ -1312,7 +1310,7 @@ static int hvfb_resume(struct hv_device *hdev)
- static const struct pci_device_id pci_stub_id_table[] = {
- 	{
- 		.vendor      = PCI_VENDOR_ID_MICROSOFT,
--		.device      = PCI_DEVICE_ID_HYPERV_VIDEO,
-+		.device      = PCI_DEVICE_ID_MICROSOFT_HYPERV_VIDEO,
- 	},
- 	{ /* end of list */ }
- };
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index c008fda..0bef8e6 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -2080,6 +2080,9 @@
- #define PCI_DEVICE_ID_VT1724		0x1724
- 
- #define PCI_VENDOR_ID_MICROSOFT  	0x1414
-+#define PCI_DEVICE_ID_MICROSOFT_HYPERV_VIDEO 	0x5353
-+#define PCI_DEVICE_ID_MICROSOFT_MANA_PF  	0x00B9
-+#define PCI_DEVICE_ID_MICROSOFT_MANA_VF  	0x00BA
- 
- #define PCI_VENDOR_ID_OXSEMI		0x1415
- #define PCI_DEVICE_ID_OXSEMI_12PCI840	0x8403
+ 	cursor->w = w;
+ 	cursor->h = h;
+diff --git a/drivers/staging/sm750fb/sm750_cursor.h b/drivers/staging/sm750fb/sm750_cursor.h
+index b59643dd61ed..edeed2ea4b04 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.h
++++ b/drivers/staging/sm750fb/sm750_cursor.h
+@@ -5,7 +5,7 @@
+ /* hw_cursor_xxx works for voyager,718 and 750 */
+ void sm750_hw_cursor_enable(struct lynx_cursor *cursor);
+ void sm750_hw_cursor_disable(struct lynx_cursor *cursor);
+-void sm750_hw_cursor_setSize(struct lynx_cursor *cursor, int w, int h);
++void sm750_hw_cursor_set_size(struct lynx_cursor *cursor, int w, int h);
+ void sm750_hw_cursor_setPos(struct lynx_cursor *cursor, int x, int y);
+ void sm750_hw_cursor_setColor(struct lynx_cursor *cursor, u32 fg, u32 bg);
+ void sm750_hw_cursor_setData(struct lynx_cursor *cursor, u16 rop,
 -- 
-1.8.3.1
+2.35.1
 

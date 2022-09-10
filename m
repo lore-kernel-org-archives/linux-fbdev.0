@@ -2,118 +2,136 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E38B8ECAAA1
-	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Sep 2022 20:42:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE78DC6FA82
+	for <linux-fbdev@archiver.kernel.org>; Sat, 10 Sep 2022 05:37:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229607AbiIIUmw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 9 Sep 2022 16:42:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34890 "EHLO
+        id S229774AbiIJFhH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 10 Sep 2022 01:37:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49314 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229594AbiIIUmv (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 9 Sep 2022 16:42:51 -0400
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC1E9108727;
-        Fri,  9 Sep 2022 13:42:50 -0700 (PDT)
-Received: by mail-wm1-x333.google.com with SMTP id e15so1181085wmq.1;
-        Fri, 09 Sep 2022 13:42:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-disposition:mime-version:subject:cc:to:from:date:message-id
-         :from:to:cc:subject:date;
-        bh=DZugOTI9KxAAOxuZDWfK5HFNxfJINOMz8DoYNPEVrxE=;
-        b=ho53l0n669p8mhv0vyXfuvlo39SXNN+natmOpHXqqJQYxoyhvAYIAd+Zb6fP7tspP1
-         buQSRCiENg002YzUo39D2Hnmqw6/yDU17S/8vH3/BWNbsAXbwJsPz1CxGsFD2cx78r2C
-         ro4+gHq7aYYx41ya+DjWMLL7ZyvStE44ZgVqo5i+zBhZtj7q3WJds5eWZ3dkQuehcPfb
-         IDxlcAffcRnPXIDABcfeY2niDBl99MuGikH+cTwP8CgTCxEFmXwTbf0G0DGX3iMa3Cvx
-         6V2rf5j43nvtfEwO4D49zqyrgro9OPffOj/V1FLCzpTqwvLzRAqxkjMr5U7MARJzrdHE
-         OpwQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-disposition:mime-version:subject:cc:to:from:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date;
-        bh=DZugOTI9KxAAOxuZDWfK5HFNxfJINOMz8DoYNPEVrxE=;
-        b=UFkSGu9/os6pT2Va+EecbL4JsnhEuaJw1u3TJBJ75HHKw9m3FD0yl9QAvVsBIG9qcY
-         DF0Le1ESXWnFg07pFUXmv7txOekxT4f09pdr0CxzT4caRmWkdKUL+roeePSMsea9XH0K
-         YZKUmyzemGT8jmU+AqMyJN9RWfpRv3XVetyVRSsw9qxhpUVGiOXPFqmNBVtBtO3kR1jl
-         Y6cB0/l6kvik2bYyax0Lr5dVv5Xrc/TjQySrlKWDuBzAXFMNdgTOm9wX/fs3ZNV8Qa0R
-         QJz/QHJMwzXicdoJ81VkMBpTBSLuOb/CHpsTCoZb2jgSoNaGwQETM+a6h39BYGEYMrX0
-         zBbA==
-X-Gm-Message-State: ACgBeo1woX78ClBlz2J9cXda5FReaqNKjQ3g35NVOBfSVpK3E+wpva7m
-        vtCVpR9KaK1ZdIKGJ9FUxW0=
-X-Google-Smtp-Source: AA6agR61J5kWXkCkMpitFRjVl6+WQkJ/+ibhMWFMoL0aIRqG1TFzeSF3UvnSkdliLmTh3PNinWvseg==
-X-Received: by 2002:a7b:c016:0:b0:3a5:fff2:62f4 with SMTP id c22-20020a7bc016000000b003a5fff262f4mr6872914wmb.104.1662756169174;
-        Fri, 09 Sep 2022 13:42:49 -0700 (PDT)
-Received: from localhost ([176.42.22.250])
-        by smtp.gmail.com with ESMTPSA id bh16-20020a05600c3d1000b003a60ff7c082sm1733254wmb.15.2022.09.09.13.42.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 09 Sep 2022 13:42:48 -0700 (PDT)
-Message-ID: <631ba548.050a0220.a64b3.5471@mx.google.com>
-X-Google-Original-Message-ID: <YxvPZ+FCxWoTy4Pu@<DarkDistro>>
-Date:   Fri, 9 Sep 2022 23:42:31 +0000
-From:   Burak Ozdemir <bozdemir@gmail.com>
-To:     Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        with ESMTP id S229760AbiIJFhG (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Sat, 10 Sep 2022 01:37:06 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E2F298A50;
+        Fri,  9 Sep 2022 22:37:05 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id CE377B82620;
+        Sat, 10 Sep 2022 05:37:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 41E00C433D6;
+        Sat, 10 Sep 2022 05:37:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1662788222;
+        bh=GcfovSsO1w2ypJbXHu2NgEqfyyisK/514JVnO07ymD8=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=bC8dLl3p+QnSqQYHHy5zrYEd9Ow54Pf96JEjZ3H7+mP5csdgrOiIylFzHzr07ZVEz
+         MXNa9C7oqg72aUaK3tGU2YlrVNO4G7sJ8dtvVFcuds0+eDFeWhmwq2RqfZVM/DjlX5
+         tVf/t++ywjVTH0bK11oei+3ZUg7eN/1Om7yT0AE4=
+Date:   Sat, 10 Sep 2022 07:37:25 +0200
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Burak Ozdemir <bozdemir@gmail.com>
+Cc:     Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
         Teddy Wang <teddy.wang@siliconmotion.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v2] staging: sm750fb: Coding style clean up
+Subject: Re: [PATCH v2] staging: sm750fb: Coding style clean up
+Message-ID: <YxwilRPLnSoWkEYV@kroah.com>
+References: <631ba548.050a0220.a64b3.5471@mx.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <631ba548.050a0220.a64b3.5471@mx.google.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Burak OZDEMIR <bozdemir@gmail.com>
+On Fri, Sep 09, 2022 at 11:42:31PM +0000, Burak Ozdemir wrote:
+> From: Burak OZDEMIR <bozdemir@gmail.com>
+> 
+> Adhere to coding style and fix camel casing in function name.
+> 
+> Signed-off-by: Burak Ozdemir <bozdemir@gmail.com>
+> ---
+>  drivers/staging/sm750fb/sm750.c        | 2 +-
+>  drivers/staging/sm750fb/sm750_cursor.c | 2 +-
+>  drivers/staging/sm750fb/sm750_cursor.h | 2 +-
+>  3 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+> index 3e09e56d3930..a86222cdcb68 100644
+> --- a/drivers/staging/sm750fb/sm750.c
+> +++ b/drivers/staging/sm750fb/sm750.c
+> @@ -120,7 +120,7 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
+>  
+>  	sm750_hw_cursor_disable(cursor);
+>  	if (fbcursor->set & FB_CUR_SETSIZE)
+> -		sm750_hw_cursor_setSize(cursor,
+> +		sm750_hw_cursor_set_size(cursor,
+>  					fbcursor->image.width,
+>  					fbcursor->image.height);
+>  
+> diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+> index 43e6f52c2551..d5ef40b8bc8e 100644
+> --- a/drivers/staging/sm750fb/sm750_cursor.c
+> +++ b/drivers/staging/sm750fb/sm750_cursor.c
+> @@ -58,7 +58,7 @@ void sm750_hw_cursor_disable(struct lynx_cursor *cursor)
+>  	poke32(HWC_ADDRESS, 0);
+>  }
+>  
+> -void sm750_hw_cursor_setSize(struct lynx_cursor *cursor, int w, int h)
+> +void sm750_hw_cursor_set_size(struct lynx_cursor *cursor, int w, int h)
+>  {
+>  	cursor->w = w;
+>  	cursor->h = h;
+> diff --git a/drivers/staging/sm750fb/sm750_cursor.h b/drivers/staging/sm750fb/sm750_cursor.h
+> index b59643dd61ed..edeed2ea4b04 100644
+> --- a/drivers/staging/sm750fb/sm750_cursor.h
+> +++ b/drivers/staging/sm750fb/sm750_cursor.h
+> @@ -5,7 +5,7 @@
+>  /* hw_cursor_xxx works for voyager,718 and 750 */
+>  void sm750_hw_cursor_enable(struct lynx_cursor *cursor);
+>  void sm750_hw_cursor_disable(struct lynx_cursor *cursor);
+> -void sm750_hw_cursor_setSize(struct lynx_cursor *cursor, int w, int h);
+> +void sm750_hw_cursor_set_size(struct lynx_cursor *cursor, int w, int h);
+>  void sm750_hw_cursor_setPos(struct lynx_cursor *cursor, int x, int y);
+>  void sm750_hw_cursor_setColor(struct lynx_cursor *cursor, u32 fg, u32 bg);
+>  void sm750_hw_cursor_setData(struct lynx_cursor *cursor, u16 rop,
+> -- 
+> 2.35.1
+> 
 
-Adhere to coding style and fix camel casing in function name.
+Hi,
 
-Signed-off-by: Burak Ozdemir <bozdemir@gmail.com>
----
- drivers/staging/sm750fb/sm750.c        | 2 +-
- drivers/staging/sm750fb/sm750_cursor.c | 2 +-
- drivers/staging/sm750fb/sm750_cursor.h | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
+a patch that has triggered this response.  He used to manually respond
+to these common problems, but in order to save his sanity (he kept
+writing the same thing over and over, yet to different people), I was
+created.  Hopefully you will not take offence and will fix the problem
+in your patch and resubmit it so that it can be accepted into the Linux
+kernel tree.
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 3e09e56d3930..a86222cdcb68 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -120,7 +120,7 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
- 
- 	sm750_hw_cursor_disable(cursor);
- 	if (fbcursor->set & FB_CUR_SETSIZE)
--		sm750_hw_cursor_setSize(cursor,
-+		sm750_hw_cursor_set_size(cursor,
- 					fbcursor->image.width,
- 					fbcursor->image.height);
- 
-diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-index 43e6f52c2551..d5ef40b8bc8e 100644
---- a/drivers/staging/sm750fb/sm750_cursor.c
-+++ b/drivers/staging/sm750fb/sm750_cursor.c
-@@ -58,7 +58,7 @@ void sm750_hw_cursor_disable(struct lynx_cursor *cursor)
- 	poke32(HWC_ADDRESS, 0);
- }
- 
--void sm750_hw_cursor_setSize(struct lynx_cursor *cursor, int w, int h)
-+void sm750_hw_cursor_set_size(struct lynx_cursor *cursor, int w, int h)
- {
- 	cursor->w = w;
- 	cursor->h = h;
-diff --git a/drivers/staging/sm750fb/sm750_cursor.h b/drivers/staging/sm750fb/sm750_cursor.h
-index b59643dd61ed..edeed2ea4b04 100644
---- a/drivers/staging/sm750fb/sm750_cursor.h
-+++ b/drivers/staging/sm750fb/sm750_cursor.h
-@@ -5,7 +5,7 @@
- /* hw_cursor_xxx works for voyager,718 and 750 */
- void sm750_hw_cursor_enable(struct lynx_cursor *cursor);
- void sm750_hw_cursor_disable(struct lynx_cursor *cursor);
--void sm750_hw_cursor_setSize(struct lynx_cursor *cursor, int w, int h);
-+void sm750_hw_cursor_set_size(struct lynx_cursor *cursor, int w, int h);
- void sm750_hw_cursor_setPos(struct lynx_cursor *cursor, int x, int y);
- void sm750_hw_cursor_setColor(struct lynx_cursor *cursor, u32 fg, u32 bg);
- void sm750_hw_cursor_setData(struct lynx_cursor *cursor, u16 rop,
--- 
-2.35.1
+You are receiving this message because of the following common error(s)
+as indicated below:
 
+- You did not write a descriptive Subject: for the patch, allowing Greg,
+  and everyone else, to know what this patch is all about.  Please read
+  the section entitled "The canonical patch format" in the kernel file,
+  Documentation/SubmittingPatches for what a proper Subject: line should
+  look like.
+
+- This looks like a new version of a previously submitted patch, but you
+  did not list below the --- line any changes from the previous version.
+  Please read the section entitled "The canonical patch format" in the
+  kernel file, Documentation/SubmittingPatches for what needs to be done
+  here to properly describe this.
+
+If you wish to discuss this problem further, or you have questions about
+how to resolve this issue, please feel free to respond to this email and
+Greg will reply once he has dug out from the pending patches received
+from other developers.
+
+thanks,
+
+greg k-h's patch email bot

@@ -2,103 +2,69 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C12ECC6FA91
-	for <linux-fbdev@archiver.kernel.org>; Wed, 14 Sep 2022 09:15:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DAA35ECAAD3
+	for <linux-fbdev@archiver.kernel.org>; Wed, 14 Sep 2022 10:24:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231460AbiINJP0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 14 Sep 2022 05:15:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54502 "EHLO
+        id S229617AbiINKYB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 14 Sep 2022 06:24:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51920 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231603AbiINJNt (ORCPT
+        with ESMTP id S229809AbiINKX1 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 14 Sep 2022 05:13:49 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 192807C77F;
-        Wed, 14 Sep 2022 02:06:08 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 5D02861A0A;
-        Wed, 14 Sep 2022 09:06:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 94943C433D7;
-        Wed, 14 Sep 2022 09:06:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1663146367;
-        bh=DxIhnk8DUrjhzLgSHKLOb56BARcXSbfT5x3m1PeCaNM=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=ZUVSFIKvA6yjyFUWwpw9qpyo9JJ906QDxiKZdwww2Ea+c3hA+YsrAYXj6Vm+HIh7q
-         PUkih5E5IqC0+iD+UNU3XVrR7V984fkwftSZhohhx5wjMqnG9Scwx6wgXwQZB5sv+z
-         b9X+Igp+gmmjaONGMDrb1/SoTEZq9nkA6qpaW/nDIZR8IUyxxmVjfkVAuMMzcfcad9
-         8O8Nv2zeD8GVZiWYIUse6pAMKeTMiTu7+EA0jT0jFPw8kte/WIyIezxNwbBdsmsVEW
-         3k7eFCZDecAMlYtmefcjPR4Z+KJ1EJSW4uDi+X+cUC/6CDZPtUbW2A2HM5NcD9H6cV
-         Wg34tb1nOO2gg==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Petr Cvek <petrcvekcz@gmail.com>, Helge Deller <deller@gmx.de>,
-        Sasha Levin <sashal@kernel.org>, mbroemme@libmpq.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 4.9 06/13] video: fbdev: intelfb: Use aperture size from pci_resource_len
-Date:   Wed, 14 Sep 2022 05:05:33 -0400
-Message-Id: <20220914090540.471725-6-sashal@kernel.org>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220914090540.471725-1-sashal@kernel.org>
-References: <20220914090540.471725-1-sashal@kernel.org>
+        Wed, 14 Sep 2022 06:23:27 -0400
+Received: from out30-45.freemail.mail.aliyun.com (out30-45.freemail.mail.aliyun.com [115.124.30.45])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 813737A749;
+        Wed, 14 Sep 2022 03:23:24 -0700 (PDT)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R191e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046050;MF=jiapeng.chong@linux.alibaba.com;NM=1;PH=DS;RN=6;SR=0;TI=SMTPD_---0VPn4krt_1663150996;
+Received: from localhost(mailfrom:jiapeng.chong@linux.alibaba.com fp:SMTPD_---0VPn4krt_1663150996)
+          by smtp.aliyun-inc.com;
+          Wed, 14 Sep 2022 18:23:21 +0800
+From:   Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+To:     deller@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org,
+        Jiapeng Chong <jiapeng.chong@linux.alibaba.com>,
+        Abaci Robot <abaci@linux.alibaba.com>
+Subject: [PATCH] video: fbdev: tridentfb: Remove the unused function shadowmode_off()
+Date:   Wed, 14 Sep 2022 18:23:00 +0800
+Message-Id: <20220914102301.87981-2-jiapeng.chong@linux.alibaba.com>
+X-Mailer: git-send-email 2.20.1.7.g153144c
+In-Reply-To: <20220914102301.87981-1-jiapeng.chong@linux.alibaba.com>
+References: <20220914102301.87981-1-jiapeng.chong@linux.alibaba.com>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Petr Cvek <petrcvekcz@gmail.com>
+The function shadowmode_off() is defined in the tridentfb.c file, but not
+called elsewhere, so delete this unused function.
 
-[ Upstream commit 25c9a15fb7bbfafb94dd3b4e3165c18b8e1bd039 ]
+drivers/video/fbdev/tridentfb.c:1131:20: warning: unused function 'shadowmode_off'.
 
-Aperture size for i9x5 variants is determined from PCI base address.
-
-	if (pci_resource_start(pdev, 2) & 0x08000000)
-		*aperture_size = MB(128);
-	...
-
-This condition is incorrect as 128 MiB address can have the address
-set as 0x?8000000 or 0x?0000000. Also the code can be simplified to just
-use pci_resource_len().
-
-The true settings of the aperture size is in the MSAC register, which
-could be used instead. However the value is used only as an info message,
-so it doesn't matter.
-
-Signed-off-by: Petr Cvek <petrcvekcz@gmail.com>
-Signed-off-by: Helge Deller <deller@gmx.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Link: https://bugzilla.openanolis.cn/show_bug.cgi?id=2154
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
 ---
- drivers/video/fbdev/intelfb/intelfbhw.c | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+ drivers/video/fbdev/tridentfb.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/intelfb/intelfbhw.c b/drivers/video/fbdev/intelfb/intelfbhw.c
-index d31ed4e2c46f1..3aa93565e935f 100644
---- a/drivers/video/fbdev/intelfb/intelfbhw.c
-+++ b/drivers/video/fbdev/intelfb/intelfbhw.c
-@@ -199,13 +199,11 @@ int intelfbhw_get_memory(struct pci_dev *pdev, int *aperture_size,
- 	case PCI_DEVICE_ID_INTEL_945GME:
- 	case PCI_DEVICE_ID_INTEL_965G:
- 	case PCI_DEVICE_ID_INTEL_965GM:
--		/* 915, 945 and 965 chipsets support a 256MB aperture.
--		   Aperture size is determined by inspected the
--		   base address of the aperture. */
--		if (pci_resource_start(pdev, 2) & 0x08000000)
--			*aperture_size = MB(128);
--		else
--			*aperture_size = MB(256);
-+		/*
-+		 * 915, 945 and 965 chipsets support 64MB, 128MB or 256MB
-+		 * aperture. Determine size from PCI resource length.
-+		 */
-+		*aperture_size = pci_resource_len(pdev, 2);
- 		break;
- 	default:
- 		if ((tmp & INTEL_GMCH_MEM_MASK) == INTEL_GMCH_MEM_64M)
+diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
+index f9c3b1d38fc2..2154dd5e37bd 100644
+--- a/drivers/video/fbdev/tridentfb.c
++++ b/drivers/video/fbdev/tridentfb.c
+@@ -1128,11 +1128,6 @@ static inline void shadowmode_on(struct tridentfb_par *par)
+ 	write3CE(par, CyberControl, read3CE(par, CyberControl) | 0x81);
+ }
+ 
+-static inline void shadowmode_off(struct tridentfb_par *par)
+-{
+-	write3CE(par, CyberControl, read3CE(par, CyberControl) & 0x7E);
+-}
+-
+ /* Set the hardware to the requested video mode */
+ static int tridentfb_set_par(struct fb_info *info)
+ {
 -- 
-2.35.1
+2.20.1.7.g153144c
 

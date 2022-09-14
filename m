@@ -2,143 +2,83 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 413B6ECAAD5
-	for <linux-fbdev@archiver.kernel.org>; Sat, 10 Sep 2022 09:30:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38A16ECAAD3
+	for <linux-fbdev@archiver.kernel.org>; Wed, 14 Sep 2022 09:15:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229504AbiIJJaB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 10 Sep 2022 05:30:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46434 "EHLO
+        id S231362AbiINJPU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 14 Sep 2022 05:15:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46774 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229437AbiIJJaA (ORCPT
+        with ESMTP id S231627AbiINJNz (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 10 Sep 2022 05:30:00 -0400
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 74B162A26A;
-        Sat, 10 Sep 2022 02:29:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1662802198; x=1694338198;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=5wlmV5aE837AvNzf0l+rcscxCvhVzY75vCwNE7YMGt0=;
-  b=jX4MJYfrfmOSGKPJw9dhTW60TfFg9i5VZZvtulzhYvJtHdHLJc5VuyI7
-   WHExgfPvtblQnB9nBtxg6MedJCXEbKOAAWx2BqNLHhSXDNc6CHAspudvt
-   ykLRvb9RBgGWIxNzlsKttkEESq4RPeO52cZ5Bfy9XrJ2dybvsvTJXx2lu
-   766bJOA/5fSHwNGONv3diKMQkR7Gt/UdkzIC1s2nEZz5n8/+LpRA/Vi8h
-   jOXhtQurf9uKVJmmgabj7UZ7EAgUktmAcGb36uKDxMwyag/KGhRoU0V2x
-   mQg+0oJ6N4YAf571sAITS5ETyhv90rbfQSz+v4fm/eHDBNxv0eZuhfLrn
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10465"; a="277363710"
-X-IronPort-AV: E=Sophos;i="5.93,305,1654585200"; 
-   d="scan'208";a="277363710"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Sep 2022 02:29:57 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,305,1654585200"; 
-   d="scan'208";a="757863952"
-Received: from lkp-server02.sh.intel.com (HELO b2938d2e5c5a) ([10.239.97.151])
-  by fmsmga001.fm.intel.com with ESMTP; 10 Sep 2022 02:29:55 -0700
-Received: from kbuild by b2938d2e5c5a with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1oWwoA-0002MH-0y;
-        Sat, 10 Sep 2022 09:29:50 +0000
-Date:   Sat, 10 Sep 2022 17:29:23 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-pci@vger.kernel.org
-Cc:     kbuild-all@lists.01.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] pci_ids: Add the various Microsoft PCI device IDs
-Message-ID: <202209101746.0OMdsFGk-lkp@intel.com>
-References: <1662749425-3037-3-git-send-email-eahariha@linux.microsoft.com>
+        Wed, 14 Sep 2022 05:13:55 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1474B7CA9D;
+        Wed, 14 Sep 2022 02:06:10 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 85693619FE;
+        Wed, 14 Sep 2022 09:06:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75C0EC433D6;
+        Wed, 14 Sep 2022 09:06:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1663146363;
+        bh=u+3MT7ydy3HfamCwr6YUjXHE0DkQuU8tO5TLlmkcP44=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=aBJDAsToXHggq0k+Va2Fc2abiV1Gpdh2e2NYcT+9gZugsHwSSeHe3yOgB9wT1nbrU
+         2jW082bYjEFc+yba+G1og5HEHTdqQlZKKS+nwYWXWHzKl4InoZCkCt4GeIjnJoOlyE
+         n2Mc5D2Tx3njKmsohIp/ry3pf0DAv68IOPdiSXOg1WBDLsMbheK61EWhWLDZcRYwoa
+         VW+KEsKX9vyHm/wv3QSvFZHdIMT0a6iiSo8zv5GKWJNobpMepPQti50fKFvcpQuWFD
+         Flg3OMAHtBRaeJMk6cNzBVM4hfEaS7giikRzU5BaH4v8uYimzk9X8nb9UF1xrbhdap
+         8Mxnk9Rh/TQTQ==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Xiang wangx <wangxiang@cdjrlc.com>, Helge Deller <deller@gmx.de>,
+        Sasha Levin <sashal@kernel.org>, geert@linux-m68k.org,
+        daniel.vetter@ffwll.ch, bhelgaas@google.com, tzimmermann@suse.de,
+        cssk@net-c.es, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 4.9 05/13] video: fbdev: skeletonfb: Fix syntax errors in comments
+Date:   Wed, 14 Sep 2022 05:05:32 -0400
+Message-Id: <20220914090540.471725-5-sashal@kernel.org>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220914090540.471725-1-sashal@kernel.org>
+References: <20220914090540.471725-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1662749425-3037-3-git-send-email-eahariha@linux.microsoft.com>
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Easwar,
+From: Xiang wangx <wangxiang@cdjrlc.com>
 
-Thank you for the patch! Yet something to improve:
+[ Upstream commit fc378794a2f7a19cf26010dc33b89ba608d4c70f ]
 
-[auto build test ERROR on next-20220909]
-[cannot apply to drm-misc/drm-misc-next helgaas-pci/next linus/master v6.0-rc4 v6.0-rc3 v6.0-rc2 v6.0-rc4]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Delete the redundant word 'its'.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Easwar-Hariharan/hv-Use-PCI_VENDOR_ID_MICROSOFT-for-better-discoverability/20220910-035101
-base:    9a82ccda91ed2b40619cb3c10d446ae1f97bab6e
-config: x86_64-allyesconfig (https://download.01.org/0day-ci/archive/20220910/202209101746.0OMdsFGk-lkp@intel.com/config)
-compiler: gcc-11 (Debian 11.3.0-5) 11.3.0
-reproduce (this is a W=1 build):
-        # https://github.com/intel-lab-lkp/linux/commit/68683df33cefc1108eaa8a0a2857e2f2148231d1
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Easwar-Hariharan/hv-Use-PCI_VENDOR_ID_MICROSOFT-for-better-discoverability/20220910-035101
-        git checkout 68683df33cefc1108eaa8a0a2857e2f2148231d1
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        make W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash drivers/
+Signed-off-by: Xiang wangx <wangxiang@cdjrlc.com>
+Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/skeletonfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-If you fix the issue, kindly add following tag where applicable
-Reported-by: kernel test robot <lkp@intel.com>
-
-All errors (new ones prefixed by >>):
-
-   drivers/hv/vmbus_drv.c: In function 'vmbus_reserve_fb':
->> drivers/hv/vmbus_drv.c:2278:39: error: 'PCI_DEVICE_ID_HYPERV_VIDEO' undeclared (first use in this function); did you mean 'PCI_DEVICE_ID_NS_GX_VIDEO'?
-    2278 |                                       PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
-         |                                       ^~~~~~~~~~~~~~~~~~~~~~~~~~
-         |                                       PCI_DEVICE_ID_NS_GX_VIDEO
-   drivers/hv/vmbus_drv.c:2278:39: note: each undeclared identifier is reported only once for each function it appears in
-
-
-vim +2278 drivers/hv/vmbus_drv.c
-
-7f163a6fd957a8 Jake Oshins      2015-08-05  2265  
-6d146aefbaa5c5 Jake Oshins      2016-04-05  2266  static void vmbus_reserve_fb(void)
-6d146aefbaa5c5 Jake Oshins      2016-04-05  2267  {
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2268  	resource_size_t start = 0, size;
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2269  	struct pci_dev *pdev;
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2270  
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2271  	if (efi_enabled(EFI_BOOT)) {
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2272  		/* Gen2 VM: get FB base from EFI framebuffer */
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2273  		start = screen_info.lfb_base;
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2274  		size = max_t(__u32, screen_info.lfb_size, 0x800000);
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2275  	} else {
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2276  		/* Gen1 VM: get FB base from PCI */
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2277  		pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27 @2278  				      PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2279  		if (!pdev)
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2280  			return;
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2281  
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2282  		if (pdev->resource[0].flags & IORESOURCE_MEM) {
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2283  			start = pci_resource_start(pdev, 0);
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2284  			size = pci_resource_len(pdev, 0);
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2285  		}
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2286  
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2287  		/*
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2288  		 * Release the PCI device so hyperv_drm or hyperv_fb driver can
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2289  		 * grab it later.
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2290  		 */
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2291  		pci_dev_put(pdev);
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2292  	}
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2293  
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2294  	if (!start)
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2295  		return;
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2296  
-6d146aefbaa5c5 Jake Oshins      2016-04-05  2297  	/*
-6d146aefbaa5c5 Jake Oshins      2016-04-05  2298  	 * Make a claim for the frame buffer in the resource tree under the
-6d146aefbaa5c5 Jake Oshins      2016-04-05  2299  	 * first node, which will be the one below 4GB.  The length seems to
-6d146aefbaa5c5 Jake Oshins      2016-04-05  2300  	 * be underreported, particularly in a Generation 1 VM.  So start out
-6d146aefbaa5c5 Jake Oshins      2016-04-05  2301  	 * reserving a larger area and make it smaller until it succeeds.
-6d146aefbaa5c5 Jake Oshins      2016-04-05  2302  	 */
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2303  	for (; !fb_mmio && (size >= 0x100000); size >>= 1)
-2a8a8afba0c305 Vitaly Kuznetsov 2022-08-27  2304  		fb_mmio = __request_region(hyperv_mmio, start, size, fb_mmio_name, 0);
-6d146aefbaa5c5 Jake Oshins      2016-04-05  2305  }
-6d146aefbaa5c5 Jake Oshins      2016-04-05  2306  
-
+diff --git a/drivers/video/fbdev/skeletonfb.c b/drivers/video/fbdev/skeletonfb.c
+index f948baa16d829..254bb6e2187cd 100644
+--- a/drivers/video/fbdev/skeletonfb.c
++++ b/drivers/video/fbdev/skeletonfb.c
+@@ -96,7 +96,7 @@ static struct fb_fix_screeninfo xxxfb_fix = {
+ 
+     /*
+      * 	Modern graphical hardware not only supports pipelines but some 
+-     *  also support multiple monitors where each display can have its  
++     *  also support multiple monitors where each display can have
+      *  its own unique data. In this case each display could be  
+      *  represented by a separate framebuffer device thus a separate 
+      *  struct fb_info. Now the struct xxx_par represents the graphics
 -- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+2.35.1
+

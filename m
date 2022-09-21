@@ -2,128 +2,177 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A282FC6FA8E
-	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Sep 2022 01:49:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09E84ECAAD8
+	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Sep 2022 11:41:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231496AbiIUBtA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 20 Sep 2022 21:49:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40636 "EHLO
+        id S229578AbiIULlq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 21 Sep 2022 07:41:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52692 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229716AbiIUBs7 (ORCPT
+        with ESMTP id S229528AbiIULlp (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 20 Sep 2022 21:48:59 -0400
-Received: from mail-qt1-x836.google.com (mail-qt1-x836.google.com [IPv6:2607:f8b0:4864:20::836])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EDE797C1D3;
-        Tue, 20 Sep 2022 18:48:57 -0700 (PDT)
-Received: by mail-qt1-x836.google.com with SMTP id ay9so3206024qtb.0;
-        Tue, 20 Sep 2022 18:48:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date;
-        bh=30wLobZRnFv5zggcZVF2u6wy/96nEdpY/Ifl53dhDFM=;
-        b=KPvreMS9cTD4YrMaMm0W35RXTuEm5G6cH9FqS5KKO/LdRVMrIzDCLbnnVsrr0aTF+M
-         N637xD82AWRAKw0fe2ZZFejrBD5iZfaLPj7akR8TDl8QqRK0Yc5StwWzkJAPUv82OBe5
-         /c2X2yf41KWii3ok0Kn/9kOU36HeBguY2Dz/Nekfnnij3EQIY9nBLl/PaKGQDi4oi4Pv
-         sFFueSJMtV98szCHTj+aEUPa7E9SkqEuBaE5mBsjXhajCK1zmtmoHLWetEldHrvED/r1
-         niPKxhRbwuOMZGoYphFO68twpl4C32uW7DWmlFLSVhE+W8Kl2AE0vv97jtpm6LZp1X+0
-         OkuQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date;
-        bh=30wLobZRnFv5zggcZVF2u6wy/96nEdpY/Ifl53dhDFM=;
-        b=4MXmWQ8o6VB7a7PHM66oXmBJE7SyE4b8MhskixzkslgKDYI9gVaujUjD+kceTgFJsX
-         3FMSWvly2HZOPTxP1YxOpQHtS1xv0BW+9Q45ET8gspfWBcnD9YJ8iiMt4X/pD/NsttyG
-         5fVoAKozHSX6BM4AKnTkVevrYPFu5oepYFdUur4m4O6j/bqucRn4Vw3eqDSLsVLMyAZn
-         S9qq3GnYLZ1TY+Ag1ekEmaEBDzoYaIoLvMFE6bJ/51XbOLqgNA5tagY3Iw5EE/dicpvE
-         1ijm4ArWEKiijXZple/mYW/WrsTFoIfROmgurK3bJdZU+P4LKxo/N7SGNwxvV8/NtmLF
-         XPDw==
-X-Gm-Message-State: ACrzQf2G9o9MmC1j8yGLRU8ULiWDQfFWm1hS953zimbK4J6G5UYNtsGA
-        d0vYI1oGPMCNLZFOd+c/b6OlUjtSPqrR1U9sbkA=
-X-Google-Smtp-Source: AMsMyM7bBhxaQAfT+rCoAiTyYG/eF3l1J9PoSVv3K9nIjI5BkzQczZAqbJin74KiibXz/4K0z0LmAcynXI+rqdfngVA=
-X-Received: by 2002:a05:622a:48c:b0:35c:d99a:3002 with SMTP id
- p12-20020a05622a048c00b0035cd99a3002mr17703201qtx.564.1663724937128; Tue, 20
- Sep 2022 18:48:57 -0700 (PDT)
+        Wed, 21 Sep 2022 07:41:45 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 876AC8E4CA
+        for <linux-fbdev@vger.kernel.org>; Wed, 21 Sep 2022 04:41:44 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 2C4AB21A80;
+        Wed, 21 Sep 2022 11:41:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1663760503; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=ImOVLGm8WanuenvY2MlPjkeh8t5kpVfbaUJRUoT/FFM=;
+        b=nw6fmS4Hv1KyovKTMUpW9pfRCfeJyFq45AJQtIPpQhZJ4+kT4UZOF4cyHp475ad+njnOO2
+        DksaSlxK12ibJVaU8avJu1dyn1/ifyVgJZtAhS0sedSIyR2eWnJLTnooawtRENvzGZhpZA
+        nFyOxliJgPk2S5UVR0WSxE/xj+yhQ6s=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1663760503;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=ImOVLGm8WanuenvY2MlPjkeh8t5kpVfbaUJRUoT/FFM=;
+        b=zEsTulyrMIwx4sTVvIn+WWTcLU/kOpMBHQZ4Jkai41GzxxRXgPdDSeyUvwacHfvBK1fKPB
+        eEFjoZ61tXnTaPAg==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D7FCB13A00;
+        Wed, 21 Sep 2022 11:41:42 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id epXBM3b4KmMVCQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 21 Sep 2022 11:41:42 +0000
+Message-ID: <7e1a2e1d-4635-cb1f-232e-3101ec7b83dc@suse.de>
+Date:   Wed, 21 Sep 2022 13:41:42 +0200
 MIME-Version: 1.0
-References: <20220830034042.9354-2-peterwu.pub@gmail.com> <20220830034042.9354-10-peterwu.pub@gmail.com>
- <CAPOBaE7rz2F-sij-LbYau6TRxFoOfmoUc=R__Z7iUrFWmZPgrg@mail.gmail.com>
-In-Reply-To: <CAPOBaE7rz2F-sij-LbYau6TRxFoOfmoUc=R__Z7iUrFWmZPgrg@mail.gmail.com>
-From:   ChiaEn Wu <peterwu.pub@gmail.com>
-Date:   Wed, 21 Sep 2022 09:48:21 +0800
-Message-ID: <CABtFH5+PuK4vptVNmpn4h2FCxNFp3wWvhUrOxgqArx4YxCY99w@mail.gmail.com>
-Subject: Re: [PATCH v9 09/10] leds: flash: mt6370: Add MediaTek MT6370
- flashlight support
-To:     Han Jingoo <jingoohan1@gmail.com>
-Cc:     lee@kernel.org, Daniel Thompson <daniel.thompson@linaro.org>,
-        Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Helge Deller <deller@gmx.de>, Mark Brown <broonie@kernel.org>,
-        mazziesaccount@gmail.com, andriy.shevchenko@linux.intel.com,
-        ChiaEn Wu <chiaen_wu@richtek.com>,
-        Alice Chen <alice_chen@richtek.com>,
-        ChiYuan Huang <cy_huang@richtek.com>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-mediatek@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        linux-iio <linux-iio@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        szuni chen <szunichen@gmail.com>,
-        Andy Shevchenko <andy.shevchenko@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.2.2
+Subject: Re: [PATCH v2 07/10] drm/ofdrm: Add ofdrm for Open Firmware
+ framebuffers
+Content-Language: en-US
+To:     Javier Martinez Canillas <javierm@redhat.com>, airlied@linux.ie,
+        daniel@ffwll.ch, deller@gmx.de, maxime@cerno.tech,
+        sam@ravnborg.org, msuchanek@suse.de, mpe@ellerman.id.au,
+        benh@kernel.crashing.org, paulus@samba.org, geert@linux-m68k.org,
+        mark.cave-ayland@ilande.co.uk
+Cc:     linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        dri-devel@lists.freedesktop.org
+References: <20220720142732.32041-1-tzimmermann@suse.de>
+ <20220720142732.32041-8-tzimmermann@suse.de>
+ <c08842d4-f01e-8d75-2b1d-01cf36b55a10@redhat.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <c08842d4-f01e-8d75-2b1d-01cf36b55a10@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------j0PuR9rfI0QFS6R4CVP67qPQ"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, Sep 18, 2022 at 3:22 AM Han Jingoo <jingoohan1@gmail.com> wrote:
->
-> On Mon, Aug 29, 2022 ChiaEn Wu <peterwu.pub@gmail.com> wrote:
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------j0PuR9rfI0QFS6R4CVP67qPQ
+Content-Type: multipart/mixed; boundary="------------Y1Dje9YKgCc2YIKBIZaj0TW8";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Javier Martinez Canillas <javierm@redhat.com>, airlied@linux.ie,
+ daniel@ffwll.ch, deller@gmx.de, maxime@cerno.tech, sam@ravnborg.org,
+ msuchanek@suse.de, mpe@ellerman.id.au, benh@kernel.crashing.org,
+ paulus@samba.org, geert@linux-m68k.org, mark.cave-ayland@ilande.co.uk
+Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ dri-devel@lists.freedesktop.org
+Message-ID: <7e1a2e1d-4635-cb1f-232e-3101ec7b83dc@suse.de>
+Subject: Re: [PATCH v2 07/10] drm/ofdrm: Add ofdrm for Open Firmware
+ framebuffers
+References: <20220720142732.32041-1-tzimmermann@suse.de>
+ <20220720142732.32041-8-tzimmermann@suse.de>
+ <c08842d4-f01e-8d75-2b1d-01cf36b55a10@redhat.com>
+In-Reply-To: <c08842d4-f01e-8d75-2b1d-01cf36b55a10@redhat.com>
 
-...
+--------------Y1Dje9YKgCc2YIKBIZaj0TW8
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-> > +#define MT6370_ITORCH_MIN_uA           25000
-> > +#define MT6370_ITORCH_STEP_uA          12500
-> > +#define MT6370_ITORCH_MAX_uA           400000
-> > +#define MT6370_ITORCH_DOUBLE_MAX_uA    800000
-> > +#define MT6370_ISTRB_MIN_uA            50000
-> > +#define MT6370_ISTRB_STEP_uA           12500
-> > +#define MT6370_ISTRB_MAX_uA            1500000
-> > +#define MT6370_ISTRB_DOUBLE_MAX_uA     3000000
->
-> Use upper letters as below:
->
-> #define MT6370_ITORCH_MIN_UA           25000
-> #define MT6370_ITORCH_STEP_UA          12500
-> #define MT6370_ITORCH_MAX_UA           400000
-> #define MT6370_ITORCH_DOUBLE_MAX_UA    800000
-> #define MT6370_ISTRB_MIN_UA            50000
-> #define MT6370_ISTRB_STEP_UA           12500
-> #define MT6370_ISTRB_MAX_UA            1500000
-> #define MT6370_ISTRB_DOUBLE_MAX_UA     3000000
->
->
-> > +#define MT6370_STRBTO_MIN_US           64000
-> > +#define MT6370_STRBTO_STEP_US          32000
-> > +#define MT6370_STRBTO_MAX_US           2432000
-> > +
+SGkNCg0KQW0gMjYuMDcuMjIgdW0gMTU6MTcgc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
+aWxsYXM6DQo+IEhlbGxvIFRob21hcywNCj4gDQo+IE9uIDcvMjAvMjIgMTY6MjcsIFRob21h
+cyBaaW1tZXJtYW5uIHdyb3RlOg0KPj4gT3BlbiBGaXJtd2FyZSBwcm92aWRlcyBiYXNpYyBk
+aXNwbGF5IG91dHB1dCB2aWEgdGhlICdkaXNwbGF5JyBub2RlLg0KPj4gRFQgcGxhdGZvcm0g
+Y29kZSBhbHJlYWR5IHByb3ZpZGVzIGEgZGV2aWNlIHRoYXQgcmVwcmVzZW50cyB0aGUgbm9k
+ZSdzDQo+PiBmcmFtZWJ1ZmZlci4gQWRkIGEgRFJNIGRyaXZlciBmb3IgdGhlIGRldmljZS4g
+VGhlIGRpc3BsYXkgbW9kZSBhbmQNCj4+IGNvbG9yIGZvcm1hdCBpcyBwcmUtaW5pdGlhbGl6
+ZWQgYnkgdGhlIHN5c3RlbSdzIGZpcm13YXJlLiBSdW50aW1lDQo+PiBtb2Rlc2V0dGluZyB2
+aWEgRFJNIGlzIG5vdCBwb3NzaWJsZS4gVGhlIGRpc3BsYXkgaXMgdXNlZnVsIGR1cmluZw0K
+Pj4gZWFybHkgYm9vdCBzdGFnZXMgb3IgYXMgZXJyb3IgZmFsbGJhY2suDQo+Pg0KPiANCj4g
+SSdtIG5vdCBmYW1pbGlhciB3aXRoIE9GIGRpc3BsYXkgYnV0IHRoZSBkcml2ZXIgbG9va3Mg
+Z29vZCB0byBtZS4NCj4gDQo+IFJldmlld2VkLWJ5OiBKYXZpZXIgTWFydGluZXogQ2FuaWxs
+YXMgPGphdmllcm1AcmVkaGF0LmNvbT4NCj4gDQo+IEkganVzdCBoYXZlIGEgZmV3IHF1ZXN0
+aW9ucyBiZWxvdy4NCj4gDQo+IFsuLi5dDQo+IA0KPj4gK3N0YXRpYyBpbnQgb2Zkcm1fcHJp
+bWFyeV9wbGFuZV9oZWxwZXJfYXRvbWljX2NoZWNrKHN0cnVjdCBkcm1fcGxhbmUgKnBsYW5l
+LA0KPj4gKwkJCQkJCSAgIHN0cnVjdCBkcm1fYXRvbWljX3N0YXRlICpuZXdfc3RhdGUpDQo+
+PiArew0KPj4gKwlzdHJ1Y3QgZHJtX3BsYW5lX3N0YXRlICpuZXdfcGxhbmVfc3RhdGUgPSBk
+cm1fYXRvbWljX2dldF9uZXdfcGxhbmVfc3RhdGUobmV3X3N0YXRlLCBwbGFuZSk7DQo+PiAr
+CXN0cnVjdCBkcm1fY3J0Y19zdGF0ZSAqbmV3X2NydGNfc3RhdGU7DQo+PiArCWludCByZXQ7
+DQo+PiArDQo+PiArCWlmICghbmV3X3BsYW5lX3N0YXRlLT5mYikNCj4+ICsJCXJldHVybiAw
+Ow0KPj4gKw0KPj4gKwluZXdfY3J0Y19zdGF0ZSA9IGRybV9hdG9taWNfZ2V0X25ld19jcnRj
+X3N0YXRlKG5ld19zdGF0ZSwgbmV3X3BsYW5lX3N0YXRlLT5jcnRjKTsNCj4+ICsNCj4+ICsJ
+cmV0ID0gZHJtX2F0b21pY19oZWxwZXJfY2hlY2tfcGxhbmVfc3RhdGUobmV3X3BsYW5lX3N0
+YXRlLCBuZXdfY3J0Y19zdGF0ZSwNCj4+ICsJCQkJCQkgIERSTV9QTEFORV9IRUxQRVJfTk9f
+U0NBTElORywNCj4+ICsJCQkJCQkgIERSTV9QTEFORV9IRUxQRVJfTk9fU0NBTElORywNCj4+
+ICsJCQkJCQkgIGZhbHNlLCBmYWxzZSk7DQo+PiArCWlmIChyZXQpDQo+PiArCQlyZXR1cm4g
+cmV0Ow0KPj4gKw0KPj4gKwlyZXR1cm4gMDsNCj4+ICt9DQo+IA0KPiBUaGlzIHNlZW1zIHRv
+IGJlIGV4YWN0bHkgdGhlIHNhbWUgY2hlY2sgdGhhbiB1c2VkIGluIHRoZSBzaW1wbGVkcm0g
+ZHJpdmVyLg0KPiBNYXliZSBjb3VsZCBiZSBtb3ZlZCB0byB0aGUgZndmYiBoZWxwZXIgbGli
+cmFyeSB0b28gPw0KDQpJJ3ZlIG1lYW53aGlsZSBkcm9wcGVkIGZ3ZmIgaGVscGVycy4gQ29s
+b3IgbWFuYWdlbWVudCByZXF1aXJlcyBzcGVjaWZpYyANCmNvZGUgaGVyZSwgc28gdGhlcmUn
+cyBubyBtdWNoIHRvIHNoYXJlIGFueXdheS4NCg0KPiANCj4gWy4uLl0NCj4gDQo+PiArDQo+
+PiArc3RhdGljIHZvaWQgb2Zkcm1fY3J0Y19oZWxwZXJfYXRvbWljX2Rpc2FibGUoc3RydWN0
+IGRybV9jcnRjICpjcnRjLA0KPj4gKwkJCQkJICAgICBzdHJ1Y3QgZHJtX2F0b21pY19zdGF0
+ZSAqb2xkX3N0YXRlKQ0KPj4gK3sNCj4+ICsJLyoNCj4+ICsJICogQWx3YXlzIGVuYWJsZWQ7
+IGRpc2FibGluZyBjbGVhcnMgdGhlIHNjcmVlbiBpbiB0aGUNCj4+ICsJICogcHJpbWFyeSBw
+bGFuZSdzIGF0b21pY19kaXNhYmxlIGZ1bmN0aW9uLg0KPj4gKwkgKi8NCj4+ICt9DQo+PiAr
+DQo+IA0KPiBTYW1lIGNvbW1lbnQgdGhhbiBmb3Igc2ltcGxlZHJtLCBhcmUgdGhlc2Ugbm8t
+b3AgaGVscGVycyByZWFsbHkgbmVlZGVkID8NCg0KSW4gc2ltcGxlZHJtLCBJJ3ZlIG1lYW53
+aGlsZSByZW1vdmVkIHRoZW0uIEknbGwgZG8gc28gaGVyZSBhcyB3ZWxsLg0KDQo+IA0KPiBb
+Li4uXQ0KPiANCj4+ICtzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCBvZmRybV9v
+Zl9tYXRjaF9kaXNwbGF5W10gPSB7DQo+PiArCXsgLmNvbXBhdGlibGUgPSAiZGlzcGxheSIs
+IH0sDQo+PiArCXsgfSwNCj4+ICt9Ow0KPj4gK01PRFVMRV9ERVZJQ0VfVEFCTEUob2YsIG9m
+ZHJtX29mX21hdGNoX2Rpc3BsYXkpOw0KPj4gKw0KPiANCj4gSSBkb24ndCBzZWUgYSBiaW5k
+aW5nIGZvciB0aGlzIGluIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9kaXNw
+bGF5Lg0KPiBEbyB3ZSBuZWVkIG9uZSBvciBpdCdzIHRoYXQgb25seSByZXF1aXJlZCBmb3Ig
+RkRUIGFuZCBub3QgT3BlbiBGaXJtd2FyZSBEVCA/DQo+IA0KDQpObyBpZGVhLiBUaGUgZGV2
+aWNlIGlzIGJlaW5nIGNyZWF0ZWQgaW4gZHJpdmVycy9vZi9wbGF0Zm9ybS5jLiBJZiBvZmZi
+IA0KZGlkbid0IG5lZWQgdGhlc2UgYmluZGluZ3MsIG9mZHJtIHByb2JhYmx5IHdvbid0IG5l
+ZWQgdGhlbSBlaXRoZXIuDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCg0KLS0gDQpUaG9t
+YXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2Fy
+ZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJl
+cmcsIEdlcm1hbnkNCihIUkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNmw7xo
+cmVyOiBJdm8gVG90ZXYNCg==
 
-Hi Jingoo,
+--------------Y1Dje9YKgCc2YIKBIZaj0TW8--
 
-This coding style is in accordance with Andy's opinion in this mail:
-https://lore.kernel.org/linux-arm-kernel/CAHp75Vciq4M4kVrabNV9vTLLcd1vR=bMe8JLEdAF9MkRTpcB5g@mail.gmail.com/
+--------------j0PuR9rfI0QFS6R4CVP67qPQ
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-And I will revise other parts in v12.
-Thanks for your review!
+-----BEGIN PGP SIGNATURE-----
 
---
-Best Regards,
-ChiaEn Wu
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmMq+HYFAwAAAAAACgkQlh/E3EQov+Cx
+wA//VBG6IeLkuCWOJd7C12HRN8Jl4mWlbdTJLeAsI4ETPGC8QMR6cZm/pDKvnJ4QQkDNP6Wo3szP
+rZiRcUlMQw5xhOEp0Ud30ggAtHZ4sLqJDXLP339/Xzqshc2KOKFU2fq3vaFGt+77bui0/yCX93bA
+IdgdLzrbcZwWCSx1/UulYwL3AkEV+gj8jTkOB33I/3cQY3/pKXTb/J2fOCrx4IQf28NmuLtB8URh
+eR83PCktYcZ0G/XSag/3TkP8LD7n1xHr0iTT4JFNed+aseiNZwxgEn3CbmKoeuoCwO0VyhWpZ4+d
++DVSwz+tGdY7waVxZzsSG5pWz9/i1rxLQ0IV78W8WHthRdi6PtLv3C+r22idJU4S/cRwpn+cXy1H
+tVGAnuZra1KWFD2loW2mx6wUybVQFIGvpObt08qBuq6plpbNU+gsa1YCE9bxar9rZ69coYW700oY
+UJI8BKPQrzAZnUSm02KyCTdmtdcv6Cggde8urx85FPfcrlygZe/T2Yo8IFBR87phO7Y4i6kT+urc
+zR7OeMD2P418BlDg0r5qhLv5wf7oJtckVBISnxOiIINPKpxfpM1oiofgt+7rx5njnYNazdJ6o8ZT
+LHD8nGJwJMUc37ZCx/aEMdkC+ij4aLYKBTkEez7kUlems/eTcA9lL8Fh4QxIVdQLQG18s2KQOCEx
+4zk=
+=ccz8
+-----END PGP SIGNATURE-----
+
+--------------j0PuR9rfI0QFS6R4CVP67qPQ--

@@ -2,128 +2,160 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3777EC6FA8E
-	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Sep 2022 11:49:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 074D9ECAAD8
+	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Sep 2022 12:37:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230252AbiIULty (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 21 Sep 2022 07:49:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59848 "EHLO
+        id S229761AbiIUMhi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 21 Sep 2022 08:37:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39956 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229521AbiIULtY (ORCPT
+        with ESMTP id S229677AbiIUMhh (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 21 Sep 2022 07:49:24 -0400
-Received: from mail-qt1-x82d.google.com (mail-qt1-x82d.google.com [IPv6:2607:f8b0:4864:20::82d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B63495E49;
-        Wed, 21 Sep 2022 04:48:24 -0700 (PDT)
-Received: by mail-qt1-x82d.google.com with SMTP id a20so3810283qtw.10;
-        Wed, 21 Sep 2022 04:48:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date;
-        bh=HcWKSOQfnh3ALysQmzthyFKSaMJvE4eOBrZ5WykYnf0=;
-        b=HfVB+cBHeUsQkTV1IF9sAKMKS/kfT/Ev0F60sC685i2kFcutzNrfuaR5hD53IQByBD
-         9jivhTdsPvvs9lm5s9kXj+as2t8kAgL1f43MFcqX9USDOu2lzD+2ybZqMBbG4XjQgQ4Y
-         jgCd4dOsRnsjo+D/4PaHD504CDzEYM9SJ2KgM046n1ux86DUbQlEjZm/iIajLF0rSeEV
-         P//RD6N416qpoC6TwB3WBhbRgASsfx49tC7zYBmYWU1FUcKvYqXMPYCf8BhyzBlmv2s2
-         9Zr3PFAQ2AikJFRKDDuta9GMnT5+GY/mdV/Fqdk13QWG5P6njup+PIsHziVHd+GZKtJz
-         y93Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date;
-        bh=HcWKSOQfnh3ALysQmzthyFKSaMJvE4eOBrZ5WykYnf0=;
-        b=t1KWZ3zTwyO/XVYH9VuY6mGtk7eJzlqsNwemTDPChMdc6/D4I+b/A4QNx200EEB4Hs
-         IOL9CKXwCOf3DrRPKD7lfSNkZ4QLX0BkF4h8z+RAxcrWbFdOCPnQCfxvIp8T7IgXCgEx
-         A6cBV85TslTyL3Rg8ZWzOGmjk/v2jcgMlpVAe/rB11ketIUCOXqrV/u8wO3NcHaToZXW
-         ZRtu7ZQwlJck8FXrDrNc6xxEioVHH/Lyy3+0lkc8oTAP3YxN8k7Nj475ygrjBSlTlZ6D
-         xeo3CVOjR9T8FOx7cvhtbMuAAyhRJDGW8kIq2KC4MbrEqg99XjOtpyDe9tq5vl96pKYQ
-         mQOg==
-X-Gm-Message-State: ACrzQf3mzjaIgCA/IXIesECcVYpiw8opqdb1xl/IoUyA5Ycma0BJVIf3
-        9O/1trs1RtuzzNp7/g2SwwD1ZHu8FEZRyGtx+t8=
-X-Google-Smtp-Source: AMsMyM6G55bRb+0Lbv2MWoChlYMO/VkxvcVvZF6+qxE/8auesJXC3OqMo6uD5hrChQNEavPXUJ5w0Du+HXIis6UE2X0=
-X-Received: by 2002:ac8:5e07:0:b0:35c:e7fd:1e94 with SMTP id
- h7-20020ac85e07000000b0035ce7fd1e94mr12904471qtx.384.1663760894316; Wed, 21
- Sep 2022 04:48:14 -0700 (PDT)
+        Wed, 21 Sep 2022 08:37:37 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A13B27F250
+        for <linux-fbdev@vger.kernel.org>; Wed, 21 Sep 2022 05:37:36 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 815F821AE9;
+        Wed, 21 Sep 2022 12:37:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1663763854; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=1DQcj5L4TAl4uuX44y/RQFf53uG70ciwYuYneMltK0k=;
+        b=u3uBtj1mQy5m2OjMSwkR/SMELSQs0A/uVMMItcHdK4zoguCGv+JSURzBLY86b/Z/ziUhOj
+        40y7uDPumhzVZBqbd+872GIqscWQ+sG3WhaY4Z2TzeGomRm0NcBC0VJ4fe9+/oD/Oukz2j
+        piYoYYg+ROn6gRcnLfFcDjJlRKZs4RU=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1663763854;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=1DQcj5L4TAl4uuX44y/RQFf53uG70ciwYuYneMltK0k=;
+        b=/m0exgHk/ZsyD2YhoI1SXe1YcyFLrt+wOBv5Zl9DLugUkvwqtzdrhJNYBYwlifyNH+DYm5
+        pcMECEzG63BCqjBw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 39EA213A89;
+        Wed, 21 Sep 2022 12:37:34 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id nQBLDY4FK2NIJAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 21 Sep 2022 12:37:34 +0000
+Message-ID: <39e692cd-717a-a1f2-d330-7ff14cb9d1eb@suse.de>
+Date:   Wed, 21 Sep 2022 14:37:33 +0200
 MIME-Version: 1.0
-References: <20220830034042.9354-2-peterwu.pub@gmail.com> <20220830034042.9354-10-peterwu.pub@gmail.com>
- <CAPOBaE7rz2F-sij-LbYau6TRxFoOfmoUc=R__Z7iUrFWmZPgrg@mail.gmail.com> <CABtFH5+PuK4vptVNmpn4h2FCxNFp3wWvhUrOxgqArx4YxCY99w@mail.gmail.com>
-In-Reply-To: <CABtFH5+PuK4vptVNmpn4h2FCxNFp3wWvhUrOxgqArx4YxCY99w@mail.gmail.com>
-From:   Andy Shevchenko <andy.shevchenko@gmail.com>
-Date:   Wed, 21 Sep 2022 14:47:38 +0300
-Message-ID: <CAHp75VeRgRdv54yO51nBwKx8O2pNLvOD2mrqn31zvx4ffSpCHw@mail.gmail.com>
-Subject: Re: [PATCH v9 09/10] leds: flash: mt6370: Add MediaTek MT6370
- flashlight support
-To:     ChiaEn Wu <peterwu.pub@gmail.com>
-Cc:     Han Jingoo <jingoohan1@gmail.com>, lee@kernel.org,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Helge Deller <deller@gmx.de>, Mark Brown <broonie@kernel.org>,
-        mazziesaccount@gmail.com, andriy.shevchenko@linux.intel.com,
-        ChiaEn Wu <chiaen_wu@richtek.com>,
-        Alice Chen <alice_chen@richtek.com>,
-        ChiYuan Huang <cy_huang@richtek.com>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-mediatek@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        linux-iio <linux-iio@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        szuni chen <szunichen@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.2.2
+Subject: Re: [PATCH v2 09/10] drm/ofdrm: Add per-model device function
+Content-Language: en-US
+To:     Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
+        Javier Martinez Canillas <javierm@redhat.com>
+Cc:     airlied@linux.ie, daniel@ffwll.ch, deller@gmx.de,
+        maxime@cerno.tech, sam@ravnborg.org, mpe@ellerman.id.au,
+        paulus@samba.org, geert@linux-m68k.org,
+        mark.cave-ayland@ilande.co.uk, linux-fbdev@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
+References: <20220720142732.32041-1-tzimmermann@suse.de>
+ <20220720142732.32041-10-tzimmermann@suse.de>
+ <7b1a2807-59c7-d524-af8e-1ec634c740a7@redhat.com>
+ <20220726144024.GP17705@kitsune.suse.cz>
+ <a9822ef5fba5599ddcee5daa4dbd17d8aaca8390.camel@kernel.crashing.org>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <a9822ef5fba5599ddcee5daa4dbd17d8aaca8390.camel@kernel.crashing.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------J7ZJQ22hMiBNS7g8WBOOaqnQ"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Sep 21, 2022 at 4:48 AM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
-> On Sun, Sep 18, 2022 at 3:22 AM Han Jingoo <jingoohan1@gmail.com> wrote:
-> > On Mon, Aug 29, 2022 ChiaEn Wu <peterwu.pub@gmail.com> wrote:
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------J7ZJQ22hMiBNS7g8WBOOaqnQ
+Content-Type: multipart/mixed; boundary="------------tFMA1N913dYeGh59nKAste9g";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
+ Javier Martinez Canillas <javierm@redhat.com>
+Cc: airlied@linux.ie, daniel@ffwll.ch, deller@gmx.de, maxime@cerno.tech,
+ sam@ravnborg.org, mpe@ellerman.id.au, paulus@samba.org,
+ geert@linux-m68k.org, mark.cave-ayland@ilande.co.uk,
+ linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ dri-devel@lists.freedesktop.org
+Message-ID: <39e692cd-717a-a1f2-d330-7ff14cb9d1eb@suse.de>
+Subject: Re: [PATCH v2 09/10] drm/ofdrm: Add per-model device function
+References: <20220720142732.32041-1-tzimmermann@suse.de>
+ <20220720142732.32041-10-tzimmermann@suse.de>
+ <7b1a2807-59c7-d524-af8e-1ec634c740a7@redhat.com>
+ <20220726144024.GP17705@kitsune.suse.cz>
+ <a9822ef5fba5599ddcee5daa4dbd17d8aaca8390.camel@kernel.crashing.org>
+In-Reply-To: <a9822ef5fba5599ddcee5daa4dbd17d8aaca8390.camel@kernel.crashing.org>
 
-> > > +#define MT6370_ITORCH_MIN_uA           25000
-> > > +#define MT6370_ITORCH_STEP_uA          12500
-> > > +#define MT6370_ITORCH_MAX_uA           400000
-> > > +#define MT6370_ITORCH_DOUBLE_MAX_uA    800000
-> > > +#define MT6370_ISTRB_MIN_uA            50000
-> > > +#define MT6370_ISTRB_STEP_uA           12500
-> > > +#define MT6370_ISTRB_MAX_uA            1500000
-> > > +#define MT6370_ISTRB_DOUBLE_MAX_uA     3000000
-> >
-> > Use upper letters as below:
+--------------tFMA1N913dYeGh59nKAste9g
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-For microseconds (and other -seconds) the common practice (I assume
-historically) is to use upper letters, indeed. But for current it's
-more natural to use small letters for unit multiplier as it's easier
-to read and understand.
+SGkNCg0KQW0gMDUuMDguMjIgdW0gMDI6MjIgc2NocmllYiBCZW5qYW1pbiBIZXJyZW5zY2ht
+aWR0Og0KPiBPbiBUdWUsIDIwMjItMDctMjYgYXQgMTY6NDAgKzAyMDAsIE1pY2hhbCBTdWNo
+w6FuZWsgd3JvdGU6DQo+PiBIZWxsbywNCj4+DQo+PiBPbiBUdWUsIEp1bCAyNiwgMjAyMiBh
+dCAwMzozODozN1BNICswMjAwLCBKYXZpZXIgTWFydGluZXogQ2FuaWxsYXMgd3JvdGU6DQo+
+Pj4gT24gNy8yMC8yMiAxNjoyNywgVGhvbWFzIFppbW1lcm1hbm4gd3JvdGU6DQo+Pj4+IEFk
+ZCBhIHBlci1tb2RlbCBkZXZpY2UtZnVuY3Rpb24gc3RydWN0dXJlIGluIHByZXBhcmF0aW9u
+IG9mIGFkZGluZw0KPj4+PiBjb2xvci1tYW5hZ2VtZW50IHN1cHBvcnQuIERldGVjdGlvbiBv
+ZiB0aGUgaW5kaXZpZHVhbCBtb2RlbHMgaGFzIGJlZW4NCj4+Pj4gdGFrZW4gZnJvbSBmYmRl
+didzIG9mZmIuDQo+Pj4+DQo+Pj4+IFNpZ25lZC1vZmYtYnk6IFRob21hcyBaaW1tZXJtYW5u
+IDx0emltbWVybWFubkBzdXNlLmRlPg0KPj4+PiAtLS0NCj4+Pg0KPj4+IFJldmlld2VkLWJ5
+OiBKYXZpZXIgTWFydGluZXogQ2FuaWxsYXMgPGphdmllcm1AcmVkaGF0LmNvbT4NCj4+Pg0K
+Pj4+IFsuLi5dDQo+Pj4NCj4+Pj4gK3N0YXRpYyBib29sIGlzX2F2aXZvKF9fYmUzMiB2ZW5k
+b3IsIF9fYmUzMiBkZXZpY2UpDQo+Pj4+ICt7DQo+Pj4+ICsJLyogVGhpcyB3aWxsIG1hdGNo
+IG1vc3QgUjV4eCAqLw0KPj4+PiArCXJldHVybiAodmVuZG9yID09IDB4MTAwMikgJiYNCj4+
+Pj4gKwkgICAgICAgKChkZXZpY2UgPj0gMHg3MTAwICYmIGRldmljZSA8IDB4NzgwMCkgfHwg
+KGRldmljZSA+PSAweDk0MDApKTsNCj4+Pj4gK30NCj4+Pg0KPj4+IE1heWJlIGFkZCBzb21l
+IGNvbnN0YW50IG1hY3JvcyB0byBub3QgaGF2ZSB0aGVzZSBtYWdpYyBudW1iZXJzID8NCj4+
+DQo+PiBUaGlzIGlzIGJhc2VkIG9uIHRoZSBleGlzdGluZyBmYmRldiBpbXBsZW1lbnRhdGlv
+bidzIG1hZ2ljIG51bWJlcnM6DQo+Pg0KPj4gZHJpdmVycy92aWRlby9mYmRldi9vZmZiLmM6
+ICAgICAgICAgICAgICAgICAoKCpkaWQgPj0gMHg3MTAwICYmICpkaWQgPCAweDc4MDApIHx8
+DQo+Pg0KPj4gT2YgY291cnNlLCBpdCB3b3VsZCBiZSBncmVhdCBpZiBzb21lYm9keSBrbm93
+bGVkZ2VhYmxlIGNvdWxkIGNsYXJpZnkNCj4+IHRob3NlLg0KPiANCj4gSSBkb24ndCB0aGlu
+ayBhbnlib2R5IHJlbWVtYmVycyA6LSkgVmVuZG9yIDB4MTAwMiBpcyBQQ0lfVkVORE9SX0lE
+X0FUSSwNCg0KSSBkbyA6KQ0KDQo+IGJ1dCB0aGUgcmVzdCBpcyBiYXNpY2FsbHkgcmFuZ2Vz
+IG9mIFBDSSBJRHMgZm9yIHdoaWNoIHdlIGRvbid0IGhhdmUNCj4gc3ltYm9saWMgY29uc3Rh
+bnRzLg0KDQpTaG91bGQgd2UgYWRkIHRoZW0gdG8gdGhlIG9mZmljaWFsIGxpc3QgaW4gcGNp
+X2lkcy5oPyAgSSBjYW5ub3QgZmluZCANCjB4NzgwMC4gVGhlIG90aGVycyBhcmUgUjUyMCBh
+bmQgUjYwMC4NCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiANCj4gQ2hlZXJzLA0KPiBC
+ZW4uDQo+IA0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2
+ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCk1heGZlbGRz
+dHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5i
+ZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
 
-> > #define MT6370_ITORCH_MIN_UA           25000
-> > #define MT6370_ITORCH_STEP_UA          12500
-> > #define MT6370_ITORCH_MAX_UA           400000
-> > #define MT6370_ITORCH_DOUBLE_MAX_UA    800000
-> > #define MT6370_ISTRB_MIN_UA            50000
-> > #define MT6370_ISTRB_STEP_UA           12500
-> > #define MT6370_ISTRB_MAX_UA            1500000
-> > #define MT6370_ISTRB_DOUBLE_MAX_UA     3000000
-> >
-> > > +#define MT6370_STRBTO_MIN_US           64000
-> > > +#define MT6370_STRBTO_STEP_US          32000
-> > > +#define MT6370_STRBTO_MAX_US           2432000
->
-> Hi Jingoo,
->
-> This coding style is in accordance with Andy's opinion in this mail:
-> https://lore.kernel.org/linux-arm-kernel/CAHp75Vciq4M4kVrabNV9vTLLcd1vR=bMe8JLEdAF9MkRTpcB5g@mail.gmail.com/
+--------------tFMA1N913dYeGh59nKAste9g--
 
-True.
+--------------J7ZJQ22hMiBNS7g8WBOOaqnQ
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
--- 
-With Best Regards,
-Andy Shevchenko
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmMrBY0FAwAAAAAACgkQlh/E3EQov+BL
+FRAAla16EWn6KwL9Ar+FVldXx4f2y1XdVqUBNapsPFs48Ft7QgcB4X0LorN7n2RAJ4ag/so4kvWU
+kc7lrt+vJx+MYEH2NqsN0MnXLtbmbVLCR4nzWOEduKY2VngZU/DJIS2vBbDbXlJgI/jebEMGX3Ao
+SqZUBmgqTXWEJOeyzZkf+tI5DaZtIHQVwMj8Zlsv9sMc02ya7YHsblZRR97uxP/0fUJGVTUhTeJk
+D04uZ5iTk/iJuj+j+sURQDWPZFMuRlLrK4kqqs1drK0RE79BRUdw1snIQLkbXOohna9gF8Fj8g4M
+t7UFmsvUdRqIbrWZrKCaAGZMP1t/nXGcTMvfj8LXlafSzZbvnnhGJeuyI/AB4XDTTNMoP7j++18o
+EwUqWhN0VP/luO+SV4WC+4BYgIOqtu+QiTsQUzp1XO0ML650eCj25XpW55UHDQuaZ8pK9YezZXbT
+D2orSQf8nVH5P27dxXjJ9OMoSaIH+wMccI53QgWU2vS/+UxMh+WpyImRGg4t9KgCVBt3uj4gGUzq
+DlGOZbpwYD2tJy5PBqQ7i+sPU70KO8CHTwkrU8e7dzxjAyZ6fTN407zmNyPjJoOdmpqXKMnuIITJ
+AFTpobMsnjcaUWqw9Q3xtdji+1iu6/dooTLeTEn7HvB9SbFBPbI6Xu8xCFGKdOCKB1Y55JO1EBe6
++b0=
+=4BcL
+-----END PGP SIGNATURE-----
+
+--------------J7ZJQ22hMiBNS7g8WBOOaqnQ--

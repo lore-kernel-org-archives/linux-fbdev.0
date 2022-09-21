@@ -2,157 +2,128 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AD79ECAAD8
-	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Sep 2022 11:45:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3777EC6FA8E
+	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Sep 2022 11:49:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229602AbiIULpV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 21 Sep 2022 07:45:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57216 "EHLO
+        id S230252AbiIULty (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 21 Sep 2022 07:49:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59848 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229852AbiIULpQ (ORCPT
+        with ESMTP id S229521AbiIULtY (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 21 Sep 2022 07:45:16 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ABFE8883D3
-        for <linux-fbdev@vger.kernel.org>; Wed, 21 Sep 2022 04:45:14 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 54FFE21AB3;
-        Wed, 21 Sep 2022 11:45:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1663760713; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=idEXkueM5dC+SdaLjxK4VFV+c2cSRzdpu/DUyStVyLw=;
-        b=QLHjMVjMI0trQkmtixjQSBwCnfh/2m55XWaJYsnTZupAQRBzkewNWjsnICU4q4nPFfxXSg
-        c4Wdn7i4Mg2iwmkl2ioCk+7tWBBSBFEveLsTCnQOYXzPt4AuuNDfWrG7tPJe2ru7z8p7RW
-        Xyox63PfYDG2ZPYSaDxYhZshY7uBICE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1663760713;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=idEXkueM5dC+SdaLjxK4VFV+c2cSRzdpu/DUyStVyLw=;
-        b=G0hIRewB4OoaWpntTqOsb4SdkIJb8UDZP+ZXM4d4Fbj3GAQ82Sb/Hb1DgFs31ul+45XzgU
-        mO/3otFzEfaiEUCg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 1D47F13A00;
-        Wed, 21 Sep 2022 11:45:13 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id dsJlBkn5KmP4CgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Wed, 21 Sep 2022 11:45:13 +0000
-Message-ID: <1946b9c3-f90d-a521-40e9-dfcde2b96950@suse.de>
-Date:   Wed, 21 Sep 2022 13:45:12 +0200
+        Wed, 21 Sep 2022 07:49:24 -0400
+Received: from mail-qt1-x82d.google.com (mail-qt1-x82d.google.com [IPv6:2607:f8b0:4864:20::82d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B63495E49;
+        Wed, 21 Sep 2022 04:48:24 -0700 (PDT)
+Received: by mail-qt1-x82d.google.com with SMTP id a20so3810283qtw.10;
+        Wed, 21 Sep 2022 04:48:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date;
+        bh=HcWKSOQfnh3ALysQmzthyFKSaMJvE4eOBrZ5WykYnf0=;
+        b=HfVB+cBHeUsQkTV1IF9sAKMKS/kfT/Ev0F60sC685i2kFcutzNrfuaR5hD53IQByBD
+         9jivhTdsPvvs9lm5s9kXj+as2t8kAgL1f43MFcqX9USDOu2lzD+2ybZqMBbG4XjQgQ4Y
+         jgCd4dOsRnsjo+D/4PaHD504CDzEYM9SJ2KgM046n1ux86DUbQlEjZm/iIajLF0rSeEV
+         P//RD6N416qpoC6TwB3WBhbRgASsfx49tC7zYBmYWU1FUcKvYqXMPYCf8BhyzBlmv2s2
+         9Zr3PFAQ2AikJFRKDDuta9GMnT5+GY/mdV/Fqdk13QWG5P6njup+PIsHziVHd+GZKtJz
+         y93Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date;
+        bh=HcWKSOQfnh3ALysQmzthyFKSaMJvE4eOBrZ5WykYnf0=;
+        b=t1KWZ3zTwyO/XVYH9VuY6mGtk7eJzlqsNwemTDPChMdc6/D4I+b/A4QNx200EEB4Hs
+         IOL9CKXwCOf3DrRPKD7lfSNkZ4QLX0BkF4h8z+RAxcrWbFdOCPnQCfxvIp8T7IgXCgEx
+         A6cBV85TslTyL3Rg8ZWzOGmjk/v2jcgMlpVAe/rB11ketIUCOXqrV/u8wO3NcHaToZXW
+         ZRtu7ZQwlJck8FXrDrNc6xxEioVHH/Lyy3+0lkc8oTAP3YxN8k7Nj475ygrjBSlTlZ6D
+         xeo3CVOjR9T8FOx7cvhtbMuAAyhRJDGW8kIq2KC4MbrEqg99XjOtpyDe9tq5vl96pKYQ
+         mQOg==
+X-Gm-Message-State: ACrzQf3mzjaIgCA/IXIesECcVYpiw8opqdb1xl/IoUyA5Ycma0BJVIf3
+        9O/1trs1RtuzzNp7/g2SwwD1ZHu8FEZRyGtx+t8=
+X-Google-Smtp-Source: AMsMyM6G55bRb+0Lbv2MWoChlYMO/VkxvcVvZF6+qxE/8auesJXC3OqMo6uD5hrChQNEavPXUJ5w0Du+HXIis6UE2X0=
+X-Received: by 2002:ac8:5e07:0:b0:35c:e7fd:1e94 with SMTP id
+ h7-20020ac85e07000000b0035ce7fd1e94mr12904471qtx.384.1663760894316; Wed, 21
+ Sep 2022 04:48:14 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.2
-Subject: Re: [PATCH v2 08/10] drm/ofdrm: Add CRTC state
-Content-Language: en-US
-To:     Javier Martinez Canillas <javierm@redhat.com>, airlied@linux.ie,
-        daniel@ffwll.ch, deller@gmx.de, maxime@cerno.tech,
-        sam@ravnborg.org, msuchanek@suse.de, mpe@ellerman.id.au,
-        benh@kernel.crashing.org, paulus@samba.org, geert@linux-m68k.org,
-        mark.cave-ayland@ilande.co.uk
-Cc:     linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        dri-devel@lists.freedesktop.org
-References: <20220720142732.32041-1-tzimmermann@suse.de>
- <20220720142732.32041-9-tzimmermann@suse.de>
- <3fb4d471-2653-07a6-8fbd-f59da6c113e0@redhat.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <3fb4d471-2653-07a6-8fbd-f59da6c113e0@redhat.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------FlUm8BeuCnLB3E0sIdPKAcvW"
+References: <20220830034042.9354-2-peterwu.pub@gmail.com> <20220830034042.9354-10-peterwu.pub@gmail.com>
+ <CAPOBaE7rz2F-sij-LbYau6TRxFoOfmoUc=R__Z7iUrFWmZPgrg@mail.gmail.com> <CABtFH5+PuK4vptVNmpn4h2FCxNFp3wWvhUrOxgqArx4YxCY99w@mail.gmail.com>
+In-Reply-To: <CABtFH5+PuK4vptVNmpn4h2FCxNFp3wWvhUrOxgqArx4YxCY99w@mail.gmail.com>
+From:   Andy Shevchenko <andy.shevchenko@gmail.com>
+Date:   Wed, 21 Sep 2022 14:47:38 +0300
+Message-ID: <CAHp75VeRgRdv54yO51nBwKx8O2pNLvOD2mrqn31zvx4ffSpCHw@mail.gmail.com>
+Subject: Re: [PATCH v9 09/10] leds: flash: mt6370: Add MediaTek MT6370
+ flashlight support
+To:     ChiaEn Wu <peterwu.pub@gmail.com>
+Cc:     Han Jingoo <jingoohan1@gmail.com>, lee@kernel.org,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Helge Deller <deller@gmx.de>, Mark Brown <broonie@kernel.org>,
+        mazziesaccount@gmail.com, andriy.shevchenko@linux.intel.com,
+        ChiaEn Wu <chiaen_wu@richtek.com>,
+        Alice Chen <alice_chen@richtek.com>,
+        ChiYuan Huang <cy_huang@richtek.com>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux LED Subsystem <linux-leds@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-mediatek@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        linux-iio <linux-iio@vger.kernel.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+        szuni chen <szunichen@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------FlUm8BeuCnLB3E0sIdPKAcvW
-Content-Type: multipart/mixed; boundary="------------CBRzefQJQXLs6PLdW0uG9NrQ";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Javier Martinez Canillas <javierm@redhat.com>, airlied@linux.ie,
- daniel@ffwll.ch, deller@gmx.de, maxime@cerno.tech, sam@ravnborg.org,
- msuchanek@suse.de, mpe@ellerman.id.au, benh@kernel.crashing.org,
- paulus@samba.org, geert@linux-m68k.org, mark.cave-ayland@ilande.co.uk
-Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- dri-devel@lists.freedesktop.org
-Message-ID: <1946b9c3-f90d-a521-40e9-dfcde2b96950@suse.de>
-Subject: Re: [PATCH v2 08/10] drm/ofdrm: Add CRTC state
-References: <20220720142732.32041-1-tzimmermann@suse.de>
- <20220720142732.32041-9-tzimmermann@suse.de>
- <3fb4d471-2653-07a6-8fbd-f59da6c113e0@redhat.com>
-In-Reply-To: <3fb4d471-2653-07a6-8fbd-f59da6c113e0@redhat.com>
+On Wed, Sep 21, 2022 at 4:48 AM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
+> On Sun, Sep 18, 2022 at 3:22 AM Han Jingoo <jingoohan1@gmail.com> wrote:
+> > On Mon, Aug 29, 2022 ChiaEn Wu <peterwu.pub@gmail.com> wrote:
 
---------------CBRzefQJQXLs6PLdW0uG9NrQ
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+> > > +#define MT6370_ITORCH_MIN_uA           25000
+> > > +#define MT6370_ITORCH_STEP_uA          12500
+> > > +#define MT6370_ITORCH_MAX_uA           400000
+> > > +#define MT6370_ITORCH_DOUBLE_MAX_uA    800000
+> > > +#define MT6370_ISTRB_MIN_uA            50000
+> > > +#define MT6370_ISTRB_STEP_uA           12500
+> > > +#define MT6370_ISTRB_MAX_uA            1500000
+> > > +#define MT6370_ISTRB_DOUBLE_MAX_uA     3000000
+> >
+> > Use upper letters as below:
 
-SGkNCg0KQW0gMjYuMDcuMjIgdW0gMTU6MzYgc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
-aWxsYXM6DQo+IE9uIDcvMjAvMjIgMTY6MjcsIFRob21hcyBaaW1tZXJtYW5uIHdyb3RlOg0K
-Pj4gQWRkIGEgZGVkaWNhdGVkIENSVEMgc3RhdGUgdG8gb2Zkcm0gdG8gbGF0ZXIgc3RvcmUg
-aW5mb3JtYXRpb24gZm9yDQo+PiBwYWxldHRlIHVwZGF0ZXMuDQo+Pg0KPj4gU2lnbmVkLW9m
-Zi1ieTogVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+DQo+PiAtLS0N
-Cj4+ICAgZHJpdmVycy9ncHUvZHJtL3Rpbnkvb2Zkcm0uYyB8IDYyICsrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKystLQ0KPj4gICANCj4gDQo+IFJldmlld2VkLWJ5OiBKYXZp
-ZXIgTWFydGluZXogQ2FuaWxsYXMgPGphdmllcm1AcmVkaGF0LmNvbT4NCj4gDQo+IFsuLi5d
-DQo+IA0KPj4gK3N0YXRpYyB2b2lkIG9mZHJtX2NydGNfcmVzZXQoc3RydWN0IGRybV9jcnRj
-ICpjcnRjKQ0KPj4gK3sNCj4+ICsJc3RydWN0IG9mZHJtX2NydGNfc3RhdGUgKm9mZHJtX2Ny
-dGNfc3RhdGU7DQo+PiArDQo+PiArCWlmIChjcnRjLT5zdGF0ZSkgew0KPj4gKwkJb2Zkcm1f
-Y3J0Y19zdGF0ZV9kZXN0cm95KHRvX29mZHJtX2NydGNfc3RhdGUoY3J0Yy0+c3RhdGUpKTsN
-Cj4+ICsJCWNydGMtPnN0YXRlID0gTlVMTDsgLyogbXVzdCBiZSBzZXQgdG8gTlVMTCBoZXJl
-ICovDQo+PiArCX0NCj4+ICsNCj4+ICsJb2Zkcm1fY3J0Y19zdGF0ZSA9IGt6YWxsb2Moc2l6
-ZW9mKCpvZmRybV9jcnRjX3N0YXRlKSwgR0ZQX0tFUk5FTCk7DQo+PiArCWlmICghb2Zkcm1f
-Y3J0Y19zdGF0ZSkNCj4+ICsJCXJldHVybjsNCj4+ICsJX19kcm1fYXRvbWljX2hlbHBlcl9j
-cnRjX3Jlc2V0KGNydGMsICZvZmRybV9jcnRjX3N0YXRlLT5iYXNlKTsNCj4+ICt9DQo+PiAr
-DQo+IA0KPiBJTU8gdGhpcyBmdW5jdGlvbiBpcyBoYXJkIHRvIHJlYWQsIEkgd291bGQgaW5z
-dGVhZCB3cml0ZSBpdCBhcyBmb2xsb3dpbmc6DQo+IA0KPiBzdGF0aWMgdm9pZCBvZmRybV9j
-cnRjX3Jlc2V0KHN0cnVjdCBkcm1fY3J0YyAqY3J0YykNCj4gew0KPiAgICAgICAgICBzdHJ1
-Y3Qgb2Zkcm1fY3J0Y19zdGF0ZSAqb2Zkcm1fY3J0Y19zdGF0ZSA9IGt6YWxsb2Moc2l6ZW9m
-KCpvZmRybV9jcnRjX3N0YXRlKSwgR0ZQX0tFUk5FTCk7DQo+IA0KPiAJaWYgKCFvZmRybV9j
-cnRjX3N0YXRlKQ0KPiAJCXJldHVybjsNCj4gDQo+ICAgICAgICAgIGlmIChjcnRjLT5zdGF0
-ZSkgew0KPiAgICAgICAgICAgICAgICAgIG9mZHJtX2NydGNfc3RhdGVfZGVzdHJveSh0b19v
-ZmRybV9jcnRjX3N0YXRlKGNydGMtPnN0YXRlKSk7DQo+IAkJY3J0Yy0+c3RhdGUgPSBOVUxM
-OyAvKiBtdXN0IGJlIHNldCB0byBOVUxMIGhlcmUgKi8NCj4gCX0NCj4gDQo+ICAgICAgICAg
-IF9fZHJtX2F0b21pY19oZWxwZXJfY3J0Y19yZXNldChjcnRjLCAmb2Zkcm1fY3J0Y19zdGF0
-ZS0+YmFzZSk7DQo+IH0NCj4gDQo+IEFsc28gd2l0aCB0aGF0IGZvcm0gSSB0aGluayB0aGF0
-IHRoZSBjcnRjLT5zdGF0ZSA9IE5VTEwgY291bGQganVzdCBiZSBkcm9wcGVkID8NCg0KSSBv
-bmNlIGhhZCB0byBhZGQgdGhpcyBsaW5lIHRvIGEgZHJpdmVyIHRvIG1ha2UgdGhlIERSTSBo
-ZWxwZXJzIHdvcmsuIA0KQnV0IEkgY2Fubm90IGZpbmQgYW55IGxvbmdlciB3aHkuIE1heWJl
-IGl0J3MgYmVlbiByZXNvbHZlZCBtZWFud2hpbGUuDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFz
-DQoNCj4gDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZl
-bG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0
-ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJl
-cmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
+For microseconds (and other -seconds) the common practice (I assume
+historically) is to use upper letters, indeed. But for current it's
+more natural to use small letters for unit multiplier as it's easier
+to read and understand.
 
---------------CBRzefQJQXLs6PLdW0uG9NrQ--
+> > #define MT6370_ITORCH_MIN_UA           25000
+> > #define MT6370_ITORCH_STEP_UA          12500
+> > #define MT6370_ITORCH_MAX_UA           400000
+> > #define MT6370_ITORCH_DOUBLE_MAX_UA    800000
+> > #define MT6370_ISTRB_MIN_UA            50000
+> > #define MT6370_ISTRB_STEP_UA           12500
+> > #define MT6370_ISTRB_MAX_UA            1500000
+> > #define MT6370_ISTRB_DOUBLE_MAX_UA     3000000
+> >
+> > > +#define MT6370_STRBTO_MIN_US           64000
+> > > +#define MT6370_STRBTO_STEP_US          32000
+> > > +#define MT6370_STRBTO_MAX_US           2432000
+>
+> Hi Jingoo,
+>
+> This coding style is in accordance with Andy's opinion in this mail:
+> https://lore.kernel.org/linux-arm-kernel/CAHp75Vciq4M4kVrabNV9vTLLcd1vR=bMe8JLEdAF9MkRTpcB5g@mail.gmail.com/
 
---------------FlUm8BeuCnLB3E0sIdPKAcvW
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+True.
 
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmMq+UgFAwAAAAAACgkQlh/E3EQov+CH
-ng/9GJR9WyP08CLQ+u7aFDk/QkDScbHixaIUwb89p9KC2hbg2lQLuLEkYAGRcg5chRnIPOVmCLyf
-1jlKDsGdd7H/WjwJMDMxzNjrX6AyGCYpuBa0iXGPeZ2ErpgQqyH0UUPUQvugqCHXSpoc+qRaKutP
-6ITjNmN+M6F2NgNzwAduhNUwQ8SbdZQp1AmNwjWn2zbeJJ0ambEJD0qRChayq/2ackWdRMDCU/hS
-pt3sMhVtvtCZrblJZ7nfx9+O295zWDCYeEKrYBJ0XEO5T8jqrHllqdbiKLF//ke/qMIBzZ6wN2Yf
-ZNxe4weyCJdPkUXLxGzt6aJrk1KWhj6d6aswyj22ucbsjZZZaHmPYXiXQGWM01J6v80hTmYuL1Ii
-RDw8myDNZQCGdJ2aXor9dzN1prJ/yUeQ09Cm5Rp+fcZAuBRXyXvxuh5XErMQA9urLWAPORSN38Ra
-/W7J2YyUJTzst+crA69RyxeJp4H9ZHNLRjCKbt2uuxCQdqr/puR3/A4pOBvMgfns/yswdPztiTG8
-dtaJDHU55NCUwJSEarMolF3VI8e3qzAsCXWMMA3+gptyat07oxQ4h6wzEmF6ZbH3vmRaxIAZvIPv
-Ll0Kb2D9dlerldXbIBMCsU/mZjg73WJXGkYMTViJM9M/8SayMvXdt03Th7fGld3l7Ivu2pv8e8HD
-fs8=
-=Frl4
------END PGP SIGNATURE-----
-
---------------FlUm8BeuCnLB3E0sIdPKAcvW--
+-- 
+With Best Regards,
+Andy Shevchenko

@@ -2,68 +2,59 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71869C6FA82
-	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Sep 2022 07:28:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F7B3C6FA8B
+	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Sep 2022 08:06:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229712AbiIVH2Q (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 22 Sep 2022 03:28:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53372 "EHLO
+        id S229939AbiIVIGS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 22 Sep 2022 04:06:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43862 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229919AbiIVH2P (ORCPT
+        with ESMTP id S229814AbiIVIGP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 22 Sep 2022 03:28:15 -0400
-Received: from wnew3-smtp.messagingengine.com (wnew3-smtp.messagingengine.com [64.147.123.17])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06687CBAFF
-        for <linux-fbdev@vger.kernel.org>; Thu, 22 Sep 2022 00:28:13 -0700 (PDT)
-Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
-        by mailnew.west.internal (Postfix) with ESMTP id 24F312B059F9;
-        Thu, 22 Sep 2022 03:28:09 -0400 (EDT)
-Received: from mailfrontend2 ([10.202.2.163])
-  by compute4.internal (MEProxy); Thu, 22 Sep 2022 03:28:11 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=cc
-        :cc:content-type:date:date:from:from:in-reply-to:in-reply-to
-        :message-id:mime-version:references:reply-to:sender:subject
-        :subject:to:to; s=fm2; t=1663831688; x=1663838888; bh=9+zOvyfksA
-        251WIvkjW/QnZqpctASy/cR3TjFBEJGn4=; b=myRn0aulDM5L8tUe4fqe/7J45i
-        cY8+5osPo0QVR1EZ5vaKIa8eIQEXqx9xuKq0tcPPxSbDBw3YRF2yKYnw9O6+rmmP
-        4FSXKJpcR3qYtO7EWbFTTRGMHKAe9GoDA5+FipV5o/S3mO6S+D2Qon5yQTz4WSVc
-        wkcXDb9X0ZZiJCzKxV0he4afcH8W42gcIIeclRFnw92WqitEzttwe2NcBIthViqj
-        PpefGZdUiNJDHxE325/XpnqToQZAt7vmsqPOQFa8pdaoZHNfBDYWdtZtJJ6c4EpL
-        rwdc3GDFbnvaEdbhoyF5gOzRSZi1VGGo/YLPRUzy+JFzjbTqmBX9L9cXwpjg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
-        :feedback-id:from:from:in-reply-to:in-reply-to:message-id
-        :mime-version:references:reply-to:sender:subject:subject:to:to
-        :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
-        fm2; t=1663831688; x=1663838888; bh=9+zOvyfksA251WIvkjW/QnZqpctA
-        Sy/cR3TjFBEJGn4=; b=FnZ2BBMO+1CCzdG1QUm+LdR4chFNDH+nhivWP82ell21
-        IU7Lb0gS795PvwovSwnXMJdvn9yXs5e9/VseeJ8FQDB0y46qHnq9cDV8VHTVM4bq
-        cnbb45kxvGQZvfoS7zPgtwKZnP+ESOKeRG62jeyyEvzvQR0YQjSCH1XO2dcFrkFp
-        mUQhmniZr3b48fotFRqqidDxipWW4eHk/zKIwPPpmPoTA686kZ68xZU/cN26Joic
-        KVtoUDlw60de6NOf1e8lTg3wkPVwMLrHnZ8cxUZVgo2M8jKR+qT9dcPNwZ2lXo2f
-        7ZBzw09GimHZx3wfrhfdsfqWbuFa1QF2UdZuB5nCjw==
-X-ME-Sender: <xms:hg4sY1AkevPWD9JVRhSJriAUugw6vlHVel773lEsld0tABsxGN1RKw>
-    <xme:hg4sYzhyV4nDTt_vlTfrlj8bQlSj9wj3dskde5TjZYdA_DTXceY11y4Civbbobx4p
-    HHvQUKF5PsXKgBOUc4>
-X-ME-Received: <xmr:hg4sYwlK2t3qQEHHaOnlf-9fNsc37C-A_uGDLfkRYWi5GNi-XoBE6prZiH9M>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrfeefvddguddvtdcutefuodetggdotefrod
-    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfgh
-    necuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
-    enucfjughrpeffhffvvefukfhfgggtuggjsehgtderredttddvnecuhfhrohhmpeforgig
-    ihhmvgcutfhiphgrrhguuceomhgrgihimhgvsegtvghrnhhordhtvggthheqnecuggftrf
-    grthhtvghrnhepteefffefgfektdefgfeludfgtdejfeejvddttdekteeiffejvdfgheeh
-    fffhvedunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomh
-    epmhgrgihimhgvsegtvghrnhhordhtvggthh
-X-ME-Proxy: <xmx:hg4sY_wHpefOELoyJiOWz2e17nsG3beLnWJ2ycO0usxrsJL8kddQbg>
-    <xmx:hg4sY6SSBAez_cvFkCNIQWDF1lTt_wjT197-iOq3t2JEvAlwhy-nkQ>
-    <xmx:hg4sYyZkyADq8xcZezHVUL_fNXt68MGNYB3B62YcNnHyhv-UApoaaQ>
-    <xmx:iA4sY9-s0jEl4Am3LvHFgY4Isxu0FyS01rbp4j-p-BnFYgG2U46RoPypG_k>
-Feedback-ID: i8771445c:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
- 22 Sep 2022 03:28:05 -0400 (EDT)
-Date:   Thu, 22 Sep 2022 09:28:03 +0200
-From:   Maxime Ripard <maxime@cerno.tech>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
+        Thu, 22 Sep 2022 04:06:15 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 992436C75C
+        for <linux-fbdev@vger.kernel.org>; Thu, 22 Sep 2022 01:06:13 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id CF8731F388;
+        Thu, 22 Sep 2022 08:06:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1663833971; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=1kcsOHDh2p7nChNst12Hxc0pHwS2JQyiBVmmobHF3T0=;
+        b=yh/AozUveqQhKxehU/OqKEadCFAvcYFhe8il1t/PtvxPOwaOF1+XDTvjPGCRE6SXITt1N0
+        raR64G3tvIv8ks6NvuULMyvZReJMWDHgzGuavvIDdycV2oghGYGNH6YF86YlgtY+z5o7ZK
+        qkihHBmTi+llo/mSUtSIhLv+L7hVV8o=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1663833971;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=1kcsOHDh2p7nChNst12Hxc0pHwS2JQyiBVmmobHF3T0=;
+        b=Tdw+PW2TAW0IspQU3cPBoo2eYvZd7mDkXetL8UN3LG9MYSI2Ttd/H7ZK2pUZD3cd9d9l6e
+        1zWmM/iwmPFnhVDQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8A77E13AA5;
+        Thu, 22 Sep 2022 08:06:11 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id FZPZIHMXLGOyWQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 22 Sep 2022 08:06:11 +0000
+Message-ID: <5338647a-0005-8d86-2ac0-7610ffe6c6b3@suse.de>
+Date:   Thu, 22 Sep 2022 10:06:11 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.2.2
+Subject: Re: [PATCH v2 10/10] drm/ofdrm: Support color management
+Content-Language: en-US
+To:     Maxime Ripard <maxime@cerno.tech>
 Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
         Benjamin Herrenschmidt <benh@kernel.crashing.org>,
         javierm@redhat.com, airlied@linux.ie, daniel@ffwll.ch,
@@ -71,77 +62,99 @@ Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
         mpe@ellerman.id.au, paulus@samba.org,
         mark.cave-ayland@ilande.co.uk, linux-fbdev@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v2 10/10] drm/ofdrm: Support color management
-Message-ID: <20220922072803.giqo6dhqktnyjncv@houat>
 References: <20220720142732.32041-1-tzimmermann@suse.de>
  <20220720142732.32041-11-tzimmermann@suse.de>
  <4715518d0a6ec60349c76414815ae3f6e4ed977e.camel@kernel.crashing.org>
  <350bdc4b-7fb3-f04f-06ba-0a3a266041a0@suse.de>
  <CAMuHMdVE0X=8tXQAUPR8zUe9vSY1YKiavCxQQ0i7h5Dr1v4HZw@mail.gmail.com>
  <e6326381-0f5e-1fe3-e72e-fdfa804e6574@suse.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="2sg26q6ygbmxgpjm"
-Content-Disposition: inline
-In-Reply-To: <e6326381-0f5e-1fe3-e72e-fdfa804e6574@suse.de>
+ <20220922072803.giqo6dhqktnyjncv@houat>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20220922072803.giqo6dhqktnyjncv@houat>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------eK2CnmllzDOHV1T9CtYT4Rq4"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------eK2CnmllzDOHV1T9CtYT4Rq4
+Content-Type: multipart/mixed; boundary="------------5fn0IKrHyZqYD6pzq7BGY8pR";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Maxime Ripard <maxime@cerno.tech>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, javierm@redhat.com,
+ airlied@linux.ie, daniel@ffwll.ch, deller@gmx.de, sam@ravnborg.org,
+ msuchanek@suse.de, mpe@ellerman.id.au, paulus@samba.org,
+ mark.cave-ayland@ilande.co.uk, linux-fbdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
+Message-ID: <5338647a-0005-8d86-2ac0-7610ffe6c6b3@suse.de>
+Subject: Re: [PATCH v2 10/10] drm/ofdrm: Support color management
+References: <20220720142732.32041-1-tzimmermann@suse.de>
+ <20220720142732.32041-11-tzimmermann@suse.de>
+ <4715518d0a6ec60349c76414815ae3f6e4ed977e.camel@kernel.crashing.org>
+ <350bdc4b-7fb3-f04f-06ba-0a3a266041a0@suse.de>
+ <CAMuHMdVE0X=8tXQAUPR8zUe9vSY1YKiavCxQQ0i7h5Dr1v4HZw@mail.gmail.com>
+ <e6326381-0f5e-1fe3-e72e-fdfa804e6574@suse.de>
+ <20220922072803.giqo6dhqktnyjncv@houat>
+In-Reply-To: <20220922072803.giqo6dhqktnyjncv@houat>
 
---2sg26q6ygbmxgpjm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--------------5fn0IKrHyZqYD6pzq7BGY8pR
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-On Thu, Sep 22, 2022 at 08:42:23AM +0200, Thomas Zimmermann wrote:
-> Hi
->=20
-> Am 21.09.22 um 18:48 schrieb Geert Uytterhoeven:
-> > Hi Thomas,
-> >=20
-> > On Wed, Sep 21, 2022 at 2:55 PM Thomas Zimmermann <tzimmermann@suse.de>=
- wrote:
-> > > Am 05.08.22 um 02:19 schrieb Benjamin Herrenschmidt:
-> > > > On Wed, 2022-07-20 at 16:27 +0200, Thomas Zimmermann wrote:
-> > > > > +#if !defined(CONFIG_PPC)
-> > > > > +static inline void out_8(void __iomem *addr, int val)
-> > > > > +{ }
-> > > > > +static inline void out_le32(void __iomem *addr, int val)
-> > > > > +{ }
-> > > > > +static inline unsigned int in_le32(const void __iomem *addr)
-> > > > > +{
-> > > > > +       return 0;
-> > > > > +}
-> > > > > +#endif
-> > > >=20
-> > > > These guys could just be replaced with readb/writel/readl respectiv=
-ely
-> > > > (beware of the argument swap).
-> > >=20
-> > > I only added them for COMPILE_TEST. There appears to be no portable
-> > > interface that implements out_le32() and in_le32()?
-> >=20
-> > iowrite32() and ioread32()?
->=20
-> Do they always use little endian, as these *_le32 helpers do? I though th=
-ey
-> use host byte order.
+SGkNCg0KQW0gMjIuMDkuMjIgdW0gMDk6Mjggc2NocmllYiBNYXhpbWUgUmlwYXJkOg0KPiBP
+biBUaHUsIFNlcCAyMiwgMjAyMiBhdCAwODo0MjoyM0FNICswMjAwLCBUaG9tYXMgWmltbWVy
+bWFubiB3cm90ZToNCj4+IEhpDQo+Pg0KPj4gQW0gMjEuMDkuMjIgdW0gMTg6NDggc2Nocmll
+YiBHZWVydCBVeXR0ZXJob2V2ZW46DQo+Pj4gSGkgVGhvbWFzLA0KPj4+DQo+Pj4gT24gV2Vk
+LCBTZXAgMjEsIDIwMjIgYXQgMjo1NSBQTSBUaG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1h
+bm5Ac3VzZS5kZT4gd3JvdGU6DQo+Pj4+IEFtIDA1LjA4LjIyIHVtIDAyOjE5IHNjaHJpZWIg
+QmVuamFtaW4gSGVycmVuc2NobWlkdDoNCj4+Pj4+IE9uIFdlZCwgMjAyMi0wNy0yMCBhdCAx
+NjoyNyArMDIwMCwgVGhvbWFzIFppbW1lcm1hbm4gd3JvdGU6DQo+Pj4+Pj4gKyNpZiAhZGVm
+aW5lZChDT05GSUdfUFBDKQ0KPj4+Pj4+ICtzdGF0aWMgaW5saW5lIHZvaWQgb3V0Xzgodm9p
+ZCBfX2lvbWVtICphZGRyLCBpbnQgdmFsKQ0KPj4+Pj4+ICt7IH0NCj4+Pj4+PiArc3RhdGlj
+IGlubGluZSB2b2lkIG91dF9sZTMyKHZvaWQgX19pb21lbSAqYWRkciwgaW50IHZhbCkNCj4+
+Pj4+PiAreyB9DQo+Pj4+Pj4gK3N0YXRpYyBpbmxpbmUgdW5zaWduZWQgaW50IGluX2xlMzIo
+Y29uc3Qgdm9pZCBfX2lvbWVtICphZGRyKQ0KPj4+Pj4+ICt7DQo+Pj4+Pj4gKyAgICAgICBy
+ZXR1cm4gMDsNCj4+Pj4+PiArfQ0KPj4+Pj4+ICsjZW5kaWYNCj4+Pj4+DQo+Pj4+PiBUaGVz
+ZSBndXlzIGNvdWxkIGp1c3QgYmUgcmVwbGFjZWQgd2l0aCByZWFkYi93cml0ZWwvcmVhZGwg
+cmVzcGVjdGl2ZWx5DQo+Pj4+PiAoYmV3YXJlIG9mIHRoZSBhcmd1bWVudCBzd2FwKS4NCj4+
+Pj4NCj4+Pj4gSSBvbmx5IGFkZGVkIHRoZW0gZm9yIENPTVBJTEVfVEVTVC4gVGhlcmUgYXBw
+ZWFycyB0byBiZSBubyBwb3J0YWJsZQ0KPj4+PiBpbnRlcmZhY2UgdGhhdCBpbXBsZW1lbnRz
+IG91dF9sZTMyKCkgYW5kIGluX2xlMzIoKT8NCj4+Pg0KPj4+IGlvd3JpdGUzMigpIGFuZCBp
+b3JlYWQzMigpPw0KPj4NCj4+IERvIHRoZXkgYWx3YXlzIHVzZSBsaXR0bGUgZW5kaWFuLCBh
+cyB0aGVzZSAqX2xlMzIgaGVscGVycyBkbz8gSSB0aG91Z2ggdGhleQ0KPj4gdXNlIGhvc3Qg
+Ynl0ZSBvcmRlci4NCj4gDQo+IFRoZXkgdXNlIGVpdGhlciBvdXRsIG9yIHdyaXRlbCB1bmRl
+ciB0aGUgaG9vZCwgd2hpY2ggYXJlIGFsd2F5cyBsaXR0bGUtZW5kaWFuDQoNCkkgc2VlLiBJ
+J2xsIHJlcGxhY2UgdGhlIGN1c3RvbSBoZWxwZXJzLg0KDQpCZXN0IHJlZ2FyZHMNClRob21h
+cw0KDQo+IA0KPiBNYXhpbWUNCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3Mg
+RHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJI
+DQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJlcmcsIEdlcm1hbnkNCihIUkIgMzY4MDks
+IEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNmw7xocmVyOiBJdm8gVG90ZXYNCg==
 
-They use either outl or writel under the hood, which are always little-endi=
-an
+--------------5fn0IKrHyZqYD6pzq7BGY8pR--
 
-Maxime
-
---2sg26q6ygbmxgpjm
-Content-Type: application/pgp-signature; name="signature.asc"
+--------------eK2CnmllzDOHV1T9CtYT4Rq4
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYKAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCYywOgwAKCRDj7w1vZxhR
-xc9KAQCMr0zR6IAKUmzuCZlUwOV3XuBDcqbYhVsa28Oti2b1hgEA9jZk4RV7+p/W
-TCyVh2a1nFK4iRcTGNsKIk6mmF08Owo=
-=wGmI
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmMsF3MFAwAAAAAACgkQlh/E3EQov+Ad
+cxAAsjbRMFc4kEbDJdUrM2wUw6ogdQwOVjiyug5+wx91IN3z+J1WC5XJSY5VHABBPNEwN8oycX5X
+yy1plLHS0BLjXFWgt9X1SS+wQ9SuHswQsaFuCPsXxjDKeVDD6ieFll4rQ2E8BPqlonpFNrXMdlax
+vOZU+2CKdURD+GVvUWJab7tsL6v2Ggm9Kb1vfIdxX5Bd6cEHUryx7hCSm4IpRv8V3F67i5oY9yYd
+IjbN0jXuAT4FATEOUf55y2xs4upspI+S6QCM0mFdM0Ij5JMsGwKWLYt7B6Uz1k6c5DCuGjhNl2LG
+JFIFMGbiSEO4AnQRLsjz33c18Z4nfQY8cnLHt+IFQqvRrfiXUu72ZXV0DQOW490gqAaN1W+o1tR2
+XU5jKSBlqjf6R0ooDsv9Vbu73/AeR4qoFINoDMMMpEmwIFXdKRwA6CHEdMxrTELSm2RpPl0C6C3i
+I6KP4DlUgzH6LZ3My8B6ym8TtKHWNz8WwR5qfGGafgQjuvulZZVRArUIM+yqC+py2PeJ7Eqb0d2r
+4xK11y309lE3zYNXkKXz25sWmQR5U32+ncixTRwRLqTqiTB//m58Zf7AbR0MVSJofHjfcXkyLTQW
+vpsT4Ap/JkRJMr2BqXnnUffOIwDCdJmXMSOyZrn9fC9doIGleosLVsLs5W0h0GyDgb3SVQbcQiD4
+NdA=
+=llRm
 -----END PGP SIGNATURE-----
 
---2sg26q6ygbmxgpjm--
+--------------eK2CnmllzDOHV1T9CtYT4Rq4--

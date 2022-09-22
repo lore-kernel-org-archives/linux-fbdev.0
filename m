@@ -2,159 +2,125 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F7B3C6FA8B
-	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Sep 2022 08:06:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9801DC6FA86
+	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Sep 2022 09:34:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229939AbiIVIGS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 22 Sep 2022 04:06:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43862 "EHLO
+        id S229826AbiIVJe0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 22 Sep 2022 05:34:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51702 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229814AbiIVIGP (ORCPT
+        with ESMTP id S229715AbiIVJeZ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 22 Sep 2022 04:06:15 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 992436C75C
-        for <linux-fbdev@vger.kernel.org>; Thu, 22 Sep 2022 01:06:13 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id CF8731F388;
-        Thu, 22 Sep 2022 08:06:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1663833971; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=1kcsOHDh2p7nChNst12Hxc0pHwS2JQyiBVmmobHF3T0=;
-        b=yh/AozUveqQhKxehU/OqKEadCFAvcYFhe8il1t/PtvxPOwaOF1+XDTvjPGCRE6SXITt1N0
-        raR64G3tvIv8ks6NvuULMyvZReJMWDHgzGuavvIDdycV2oghGYGNH6YF86YlgtY+z5o7ZK
-        qkihHBmTi+llo/mSUtSIhLv+L7hVV8o=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1663833971;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=1kcsOHDh2p7nChNst12Hxc0pHwS2JQyiBVmmobHF3T0=;
-        b=Tdw+PW2TAW0IspQU3cPBoo2eYvZd7mDkXetL8UN3LG9MYSI2Ttd/H7ZK2pUZD3cd9d9l6e
-        1zWmM/iwmPFnhVDQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8A77E13AA5;
-        Thu, 22 Sep 2022 08:06:11 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id FZPZIHMXLGOyWQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 22 Sep 2022 08:06:11 +0000
-Message-ID: <5338647a-0005-8d86-2ac0-7610ffe6c6b3@suse.de>
-Date:   Thu, 22 Sep 2022 10:06:11 +0200
+        Thu, 22 Sep 2022 05:34:25 -0400
+Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8FBFCCD1F1
+        for <linux-fbdev@vger.kernel.org>; Thu, 22 Sep 2022 02:34:24 -0700 (PDT)
+Received: by mail-wr1-x42b.google.com with SMTP id c11so14501202wrp.11
+        for <linux-fbdev@vger.kernel.org>; Thu, 22 Sep 2022 02:34:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date;
+        bh=zP3HTuNsbUwZjniN4PiqE90iqzlaqIfqubrWsszKuPw=;
+        b=Mj291PKDhuOodPsmekypQWw82MwYbfp9/55bxdN/V/WMcHt6est6fbWfDBnAn/38nB
+         0RXQeNlFmww1fTZacwOhBhsDtB7godgfU6nAGF60JTxaAFIA+FIcPbn7/HvuvtSnpGdm
+         abuYEHM1d8sZS8xb+ZOvfhxiv8duUJi18f/w/qoz9opT8IB1McfJ9NrMQ2pTj50v6c18
+         uC6rMTo5nwzptO6KqZhkORsGDfJ/8XFjPk/Ikngnp32Lu+dfGSHTfGKUlgUX9iL5u/Nf
+         1spUX2zhCB2m5WZIWgZkE714vr+6AvRKq/L1l5nEnnAFme649+bLRD9M7Be34h0+wSHY
+         GKNQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date;
+        bh=zP3HTuNsbUwZjniN4PiqE90iqzlaqIfqubrWsszKuPw=;
+        b=j75ZJ7EyENi+/pc2NHO8R1O0xzNPmXyXGNX3xHxcUbDXg5oY7wTuu1PmKJ7o1epJ1e
+         7LSyXMwzxQMp08LmA276NNVwmd1sjz9cBdCN75A4z1OzT1zRfFRDOqWpW3oDFKT4tqnR
+         9FN8FCZm0UGpUc5I0lHZ0nDu8UdTLOC58Kl3U35vsoLIJ2fM6QBtmeSfaT0/m8puOwbr
+         uV7lKUMluhrS3BMoWcNVrfMJTgaJlUoglr1anFgcD1R/gWRj79oLodEXuA7CUqonEOuK
+         iltKuZ93Z6nPwJAMW8HZivSdFOrOZPG6bAx2jJH6HSxCYPSGhqBaGz4Pk/qgvWcDFx/I
+         iPYg==
+X-Gm-Message-State: ACrzQf3md7fDktR6kirX8PzM8E0K17f15k/jhwwSrMUsVTdQZ16tQtl3
+        9auvJQJ9iChDeew0xHgBzUibkQ==
+X-Google-Smtp-Source: AMsMyM6Dvfz+MR03UNtgYlWi+PxGKpF4DjNBRcuVKwO9zY/oJyegFT5uMq7dcseodlayxqSSBfPobg==
+X-Received: by 2002:a5d:5c06:0:b0:22a:7b52:cda6 with SMTP id cc6-20020a5d5c06000000b0022a7b52cda6mr1351425wrb.485.1663839262967;
+        Thu, 22 Sep 2022 02:34:22 -0700 (PDT)
+Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
+        by smtp.gmail.com with ESMTPSA id n185-20020a1ca4c2000000b003a682354f63sm5288711wme.11.2022.09.22.02.34.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 22 Sep 2022 02:34:21 -0700 (PDT)
+Date:   Thu, 22 Sep 2022 10:34:19 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Li Zhong <floridsleeves@gmail.com>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        deller@gmx.de, jingoohan1@gmail.com, lee@kernel.org
+Subject: Re: [PATCH v1] drivers:adp8870_bl: check the return value of
+ adp8870_write
+Message-ID: <YywsG6b/h+Mcs88y@maple.lan>
+References: <20220921215049.1658796-1-floridsleeves@gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.2
-Subject: Re: [PATCH v2 10/10] drm/ofdrm: Support color management
-Content-Language: en-US
-To:     Maxime Ripard <maxime@cerno.tech>
-Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        javierm@redhat.com, airlied@linux.ie, daniel@ffwll.ch,
-        deller@gmx.de, sam@ravnborg.org, msuchanek@suse.de,
-        mpe@ellerman.id.au, paulus@samba.org,
-        mark.cave-ayland@ilande.co.uk, linux-fbdev@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
-References: <20220720142732.32041-1-tzimmermann@suse.de>
- <20220720142732.32041-11-tzimmermann@suse.de>
- <4715518d0a6ec60349c76414815ae3f6e4ed977e.camel@kernel.crashing.org>
- <350bdc4b-7fb3-f04f-06ba-0a3a266041a0@suse.de>
- <CAMuHMdVE0X=8tXQAUPR8zUe9vSY1YKiavCxQQ0i7h5Dr1v4HZw@mail.gmail.com>
- <e6326381-0f5e-1fe3-e72e-fdfa804e6574@suse.de>
- <20220922072803.giqo6dhqktnyjncv@houat>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20220922072803.giqo6dhqktnyjncv@houat>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------eK2CnmllzDOHV1T9CtYT4Rq4"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220921215049.1658796-1-floridsleeves@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------eK2CnmllzDOHV1T9CtYT4Rq4
-Content-Type: multipart/mixed; boundary="------------5fn0IKrHyZqYD6pzq7BGY8pR";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Maxime Ripard <maxime@cerno.tech>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, javierm@redhat.com,
- airlied@linux.ie, daniel@ffwll.ch, deller@gmx.de, sam@ravnborg.org,
- msuchanek@suse.de, mpe@ellerman.id.au, paulus@samba.org,
- mark.cave-ayland@ilande.co.uk, linux-fbdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
-Message-ID: <5338647a-0005-8d86-2ac0-7610ffe6c6b3@suse.de>
-Subject: Re: [PATCH v2 10/10] drm/ofdrm: Support color management
-References: <20220720142732.32041-1-tzimmermann@suse.de>
- <20220720142732.32041-11-tzimmermann@suse.de>
- <4715518d0a6ec60349c76414815ae3f6e4ed977e.camel@kernel.crashing.org>
- <350bdc4b-7fb3-f04f-06ba-0a3a266041a0@suse.de>
- <CAMuHMdVE0X=8tXQAUPR8zUe9vSY1YKiavCxQQ0i7h5Dr1v4HZw@mail.gmail.com>
- <e6326381-0f5e-1fe3-e72e-fdfa804e6574@suse.de>
- <20220922072803.giqo6dhqktnyjncv@houat>
-In-Reply-To: <20220922072803.giqo6dhqktnyjncv@houat>
+On Wed, Sep 21, 2022 at 02:50:49PM -0700, Li Zhong wrote:
+> Subject: [PATCH v1] drivers:adp8870_bl: check the return value of
+> adp8870_write
+                     ^^^^^^^^^^^^^^^^^^^^
 
---------------5fn0IKrHyZqYD6pzq7BGY8pR
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Should be backlight: adp8870_bl.
 
-SGkNCg0KQW0gMjIuMDkuMjIgdW0gMDk6Mjggc2NocmllYiBNYXhpbWUgUmlwYXJkOg0KPiBP
-biBUaHUsIFNlcCAyMiwgMjAyMiBhdCAwODo0MjoyM0FNICswMjAwLCBUaG9tYXMgWmltbWVy
-bWFubiB3cm90ZToNCj4+IEhpDQo+Pg0KPj4gQW0gMjEuMDkuMjIgdW0gMTg6NDggc2Nocmll
-YiBHZWVydCBVeXR0ZXJob2V2ZW46DQo+Pj4gSGkgVGhvbWFzLA0KPj4+DQo+Pj4gT24gV2Vk
-LCBTZXAgMjEsIDIwMjIgYXQgMjo1NSBQTSBUaG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1h
-bm5Ac3VzZS5kZT4gd3JvdGU6DQo+Pj4+IEFtIDA1LjA4LjIyIHVtIDAyOjE5IHNjaHJpZWIg
-QmVuamFtaW4gSGVycmVuc2NobWlkdDoNCj4+Pj4+IE9uIFdlZCwgMjAyMi0wNy0yMCBhdCAx
-NjoyNyArMDIwMCwgVGhvbWFzIFppbW1lcm1hbm4gd3JvdGU6DQo+Pj4+Pj4gKyNpZiAhZGVm
-aW5lZChDT05GSUdfUFBDKQ0KPj4+Pj4+ICtzdGF0aWMgaW5saW5lIHZvaWQgb3V0Xzgodm9p
-ZCBfX2lvbWVtICphZGRyLCBpbnQgdmFsKQ0KPj4+Pj4+ICt7IH0NCj4+Pj4+PiArc3RhdGlj
-IGlubGluZSB2b2lkIG91dF9sZTMyKHZvaWQgX19pb21lbSAqYWRkciwgaW50IHZhbCkNCj4+
-Pj4+PiAreyB9DQo+Pj4+Pj4gK3N0YXRpYyBpbmxpbmUgdW5zaWduZWQgaW50IGluX2xlMzIo
-Y29uc3Qgdm9pZCBfX2lvbWVtICphZGRyKQ0KPj4+Pj4+ICt7DQo+Pj4+Pj4gKyAgICAgICBy
-ZXR1cm4gMDsNCj4+Pj4+PiArfQ0KPj4+Pj4+ICsjZW5kaWYNCj4+Pj4+DQo+Pj4+PiBUaGVz
-ZSBndXlzIGNvdWxkIGp1c3QgYmUgcmVwbGFjZWQgd2l0aCByZWFkYi93cml0ZWwvcmVhZGwg
-cmVzcGVjdGl2ZWx5DQo+Pj4+PiAoYmV3YXJlIG9mIHRoZSBhcmd1bWVudCBzd2FwKS4NCj4+
-Pj4NCj4+Pj4gSSBvbmx5IGFkZGVkIHRoZW0gZm9yIENPTVBJTEVfVEVTVC4gVGhlcmUgYXBw
-ZWFycyB0byBiZSBubyBwb3J0YWJsZQ0KPj4+PiBpbnRlcmZhY2UgdGhhdCBpbXBsZW1lbnRz
-IG91dF9sZTMyKCkgYW5kIGluX2xlMzIoKT8NCj4+Pg0KPj4+IGlvd3JpdGUzMigpIGFuZCBp
-b3JlYWQzMigpPw0KPj4NCj4+IERvIHRoZXkgYWx3YXlzIHVzZSBsaXR0bGUgZW5kaWFuLCBh
-cyB0aGVzZSAqX2xlMzIgaGVscGVycyBkbz8gSSB0aG91Z2ggdGhleQ0KPj4gdXNlIGhvc3Qg
-Ynl0ZSBvcmRlci4NCj4gDQo+IFRoZXkgdXNlIGVpdGhlciBvdXRsIG9yIHdyaXRlbCB1bmRl
-ciB0aGUgaG9vZCwgd2hpY2ggYXJlIGFsd2F5cyBsaXR0bGUtZW5kaWFuDQoNCkkgc2VlLiBJ
-J2xsIHJlcGxhY2UgdGhlIGN1c3RvbSBoZWxwZXJzLg0KDQpCZXN0IHJlZ2FyZHMNClRob21h
-cw0KDQo+IA0KPiBNYXhpbWUNCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3Mg
-RHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJI
-DQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJlcmcsIEdlcm1hbnkNCihIUkIgMzY4MDks
-IEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNmw7xocmVyOiBJdm8gVG90ZXYNCg==
+> Check and propagate the return value of adp8870_write() when it fails,
+> which is possible when SMBus writing byte fails.
 
---------------5fn0IKrHyZqYD6pzq7BGY8pR--
+This looks like a sensible change, however...
 
---------------eK2CnmllzDOHV1T9CtYT4Rq4
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+When writing patches like this please review the whole file for similar
+concerns and fix all instances of the same issue. In this case there is another
+unchecked call to adp8870_write() in
+adp8870_bl_ambient_light_zone_store() (this function also contains
+other unchecked calls).
 
------BEGIN PGP SIGNATURE-----
+Note that the unchecked use in adp8870_led_work() because there is no
+way to propogate the error from this function (and adp8870_write()
+already logged the error).
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmMsF3MFAwAAAAAACgkQlh/E3EQov+Ad
-cxAAsjbRMFc4kEbDJdUrM2wUw6ogdQwOVjiyug5+wx91IN3z+J1WC5XJSY5VHABBPNEwN8oycX5X
-yy1plLHS0BLjXFWgt9X1SS+wQ9SuHswQsaFuCPsXxjDKeVDD6ieFll4rQ2E8BPqlonpFNrXMdlax
-vOZU+2CKdURD+GVvUWJab7tsL6v2Ggm9Kb1vfIdxX5Bd6cEHUryx7hCSm4IpRv8V3F67i5oY9yYd
-IjbN0jXuAT4FATEOUf55y2xs4upspI+S6QCM0mFdM0Ij5JMsGwKWLYt7B6Uz1k6c5DCuGjhNl2LG
-JFIFMGbiSEO4AnQRLsjz33c18Z4nfQY8cnLHt+IFQqvRrfiXUu72ZXV0DQOW490gqAaN1W+o1tR2
-XU5jKSBlqjf6R0ooDsv9Vbu73/AeR4qoFINoDMMMpEmwIFXdKRwA6CHEdMxrTELSm2RpPl0C6C3i
-I6KP4DlUgzH6LZ3My8B6ym8TtKHWNz8WwR5qfGGafgQjuvulZZVRArUIM+yqC+py2PeJ7Eqb0d2r
-4xK11y309lE3zYNXkKXz25sWmQR5U32+ncixTRwRLqTqiTB//m58Zf7AbR0MVSJofHjfcXkyLTQW
-vpsT4Ap/JkRJMr2BqXnnUffOIwDCdJmXMSOyZrn9fC9doIGleosLVsLs5W0h0GyDgb3SVQbcQiD4
-NdA=
-=llRm
------END PGP SIGNATURE-----
+It would also be good to review and fix adp8860_bl.c at the same time
+since these drivers are very similar (ideally the identical code in
+these drivers should be factored out).
 
---------------eK2CnmllzDOHV1T9CtYT4Rq4--
+
+> Signed-off-by: Li Zhong <floridsleeves@gmail.com>
+> ---
+>  drivers/video/backlight/adp8870_bl.c | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/backlight/adp8870_bl.c b/drivers/video/backlight/adp8870_bl.c
+> index 8b5213a39527..0eb4ae2ff592 100644
+> --- a/drivers/video/backlight/adp8870_bl.c
+> +++ b/drivers/video/backlight/adp8870_bl.c
+> @@ -567,9 +567,13 @@ static ssize_t adp8870_store(struct device *dev, const char *buf,
+>  		return ret;
+>
+>  	mutex_lock(&data->lock);
+> -	adp8870_write(data->client, reg, val);
+> +	ret = adp8870_write(data->client, reg, val);
+>  	mutex_unlock(&data->lock);
+>
+> +	if (ret) {
+> +		return ret;
+> +	}
+
+No need for braces here.
+
+> +
+>  	return count;
+>  }
+>
+
+Thanks
+
+
+Daniel.

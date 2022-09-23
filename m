@@ -2,169 +2,130 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 950DDC6FA82
-	for <linux-fbdev@archiver.kernel.org>; Fri, 23 Sep 2022 13:35:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED545C04A95
+	for <linux-fbdev@archiver.kernel.org>; Fri, 23 Sep 2022 21:04:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231364AbiIWNfS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 23 Sep 2022 09:35:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45508 "EHLO
+        id S230514AbiIWVES (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 23 Sep 2022 17:04:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50372 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229726AbiIWNfQ (ORCPT
+        with ESMTP id S231253AbiIWVEQ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 23 Sep 2022 09:35:16 -0400
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 45E4C8E994;
-        Fri, 23 Sep 2022 06:35:15 -0700 (PDT)
-Received: from dggemv704-chm.china.huawei.com (unknown [172.30.72.54])
-        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4MYtMk66cYzWh5P;
-        Fri, 23 Sep 2022 21:31:14 +0800 (CST)
-Received: from kwepemm600014.china.huawei.com (7.193.23.54) by
- dggemv704-chm.china.huawei.com (10.3.19.47) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Fri, 23 Sep 2022 21:35:13 +0800
-Received: from huawei.com (10.90.53.225) by kwepemm600014.china.huawei.com
- (7.193.23.54) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.31; Fri, 23 Sep
- 2022 21:35:13 +0800
-From:   Zhang Qilong <zhangqilong3@huawei.com>
-To:     <eller@gmx.de>
-CC:     <linux-omap@vger.kernel.org>, <linux-fbdev@vger.kernel.org>
-Subject: [PATCH -next] omapfb: dss: using pm_runtime_resume_and_get instead of pm_runtime_get_sync
-Date:   Fri, 23 Sep 2022 21:38:44 +0800
-Message-ID: <20220923133844.69659-1-zhangqilong3@huawei.com>
-X-Mailer: git-send-email 2.26.0.106.g9fadedd
+        Fri, 23 Sep 2022 17:04:16 -0400
+Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com [IPv6:2a00:1450:4864:20::62e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 121EF10F73D;
+        Fri, 23 Sep 2022 14:04:16 -0700 (PDT)
+Received: by mail-ej1-x62e.google.com with SMTP id 13so3144940ejn.3;
+        Fri, 23 Sep 2022 14:04:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date;
+        bh=Zn8iXtJzLQTfvlg1B5Ug66alU1b6v54dZuHDSVAJ4uw=;
+        b=abTOyeMgwoVVViLhF9zBe/P1TKCgJptRY4q9nZDgqolSgXjZa+sj6rY2CgxuMuWxI5
+         vvCsuPflwFRUloZo4apZ06j+dnsQrItS8mzQQPk+ksgE5DOpPwpClftwj5oPym38Po6e
+         aaza4J202EnXPYQi/FEM6VrKuH+ohaRFR1awnPraLdIZOO7XFWYFry/Ht/0Pcs4GSvEY
+         O+XpQ0VyqWo+2r8/WPlQM0wPhgapYhE0ZSLfw4gFW0zAhxKv3ry7vWEDVhKKDu8Wlpc3
+         xXN2reFUUKCtSGmjjWqG6JsCsQ2nUKGR7bDezoTYwS1WRsQTfGkZJvntsWL2bfgWql8Q
+         rhCg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date;
+        bh=Zn8iXtJzLQTfvlg1B5Ug66alU1b6v54dZuHDSVAJ4uw=;
+        b=a8L6OtegCYwsJo0wnP3Ts1JkwxuyhUcZNSbv4Ha64c6ZOjrQbx6Rtm6uKMu+5cvriF
+         UTyvH7hbXhP4mAu+zem8OIg1Ga+VR7IpqY4cS6nhFWjPCLF9C0bXT/YGHXQ+ZyrLOROQ
+         XCGTOT73V07q9cnbmG7zUQ0HqRyKeZh+9rALhibEPpeSkM7Lsoq/muUgYU0QlzNH6F+I
+         Wor0m/8viWFZZwqkP8feSveb2j0kytGRUDDMDB9QwF7rCZlR0M8X+7K3UzfJPAr+ueK6
+         kx8F7InxqouFEuj4LLufwxc7iLWtIyR/MUohY7p+Yx1/jeDvRBl6TfhGs6Y27Xlv+hoH
+         c5Og==
+X-Gm-Message-State: ACrzQf00lcbP5bzM7QlaKSV8SakBrUrqQMWXu2eTzlS8X2pAhh1PNshF
+        NknTlIIrqp85seefxHmmfJe2lTkmYdWrqE83Iy5E60c9pfBLRg==
+X-Google-Smtp-Source: AMsMyM6PiF+Y8BuBaQcDsMNwSbvvz8XbL0YwfcucOn9VHklzV9G4GmE7QCaBNCXvP2nzr1ZNxCBRmMbPbO3Yw4x9O4I=
+X-Received: by 2002:a17:907:7fa2:b0:781:ca3d:b385 with SMTP id
+ qk34-20020a1709077fa200b00781ca3db385mr8926425ejc.641.1663967054564; Fri, 23
+ Sep 2022 14:04:14 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [10.90.53.225]
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
- kwepemm600014.china.huawei.com (7.193.23.54)
-X-CFilter-Loop: Reflected
+References: <20220923063448.239259-1-ye.xingchen@zte.com.cn>
+In-Reply-To: <20220923063448.239259-1-ye.xingchen@zte.com.cn>
+From:   Han Jingoo <jingoohan1@gmail.com>
+Date:   Fri, 23 Sep 2022 14:04:03 -0700
+Message-ID: <CAPOBaE5FHNUCND1zOr3H7sBw_H7fK8Pvfi+Y=6SQHmkGSt9wUg@mail.gmail.com>
+Subject: Re: [PATCH linux-next] backlight: use sysfs_emit() to instead of scnprintf()
+To:     cgel.zte@gmail.com
+Cc:     lee@kernel.org, daniel.thompson@linaro.org, deller@gmx.de,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, ye xingchen <ye.xingchen@zte.com.cn>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Using the newest pm_runtime_resume_and_get is more appropriate
-for simplifing code here.
+On Thu, Sep 22, 2022 <cgel.zte@gmail.com> wrote:
+>
+> From: ye xingchen <ye.xingchen@zte.com.cn>
+>
+> Replace the open-code with sysfs_emit() to simplify the code.
+>
+> Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
 
-Signed-off-by: Zhang Qilong <zhangqilong3@huawei.com>
----
- drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 6 ++----
- drivers/video/fbdev/omap2/omapfb/dss/dsi.c   | 6 ++----
- drivers/video/fbdev/omap2/omapfb/dss/dss.c   | 6 ++----
- drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c | 6 ++----
- drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c | 6 ++----
- drivers/video/fbdev/omap2/omapfb/dss/venc.c  | 6 ++----
- 6 files changed, 12 insertions(+), 24 deletions(-)
+Acked-by: Jingoo Han <jingoohan1@gmail.com>
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-index b2d6e6df2161..92fb6b7e1f68 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-@@ -519,11 +519,9 @@ int dispc_runtime_get(void)
- 
- 	DSSDBG("dispc_runtime_get\n");
- 
--	r = pm_runtime_get_sync(&dispc.pdev->dev);
--	if (WARN_ON(r < 0)) {
--		pm_runtime_put_sync(&dispc.pdev->dev);
-+	r = pm_runtime_resume_and_get(&dispc.pdev->dev);
-+	if (WARN_ON(r < 0))
- 		return r;
--	}
- 	return 0;
- }
- EXPORT_SYMBOL(dispc_runtime_get);
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-index d43b081d592f..54b0f034c2ed 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-@@ -1136,11 +1136,9 @@ static int dsi_runtime_get(struct platform_device *dsidev)
- 
- 	DSSDBG("dsi_runtime_get\n");
- 
--	r = pm_runtime_get_sync(&dsi->pdev->dev);
--	if (WARN_ON(r < 0)) {
--		pm_runtime_put_sync(&dsi->pdev->dev);
-+	r = pm_runtime_resume_and_get(&dsi->pdev->dev);
-+	if (WARN_ON(r < 0))
- 		return r;
--	}
- 	return 0;
- }
- 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-index 45b9d3cf3860..335e0af4eec1 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-@@ -767,11 +767,9 @@ int dss_runtime_get(void)
- 
- 	DSSDBG("dss_runtime_get\n");
- 
--	r = pm_runtime_get_sync(&dss.pdev->dev);
--	if (WARN_ON(r < 0)) {
--		pm_runtime_put_sync(&dss.pdev->dev);
-+	r = pm_runtime_resume_and_get(&dss.pdev->dev);
-+	if (WARN_ON(r < 0))
- 		return r;
--	}
- 	return 0;
- }
- 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-index 800bd108e834..0f39612e002e 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-@@ -38,11 +38,9 @@ static int hdmi_runtime_get(void)
- 
- 	DSSDBG("hdmi_runtime_get\n");
- 
--	r = pm_runtime_get_sync(&hdmi.pdev->dev);
--	if (WARN_ON(r < 0)) {
--		pm_runtime_put_sync(&hdmi.pdev->dev);
-+	r = pm_runtime_resume_and_get(&hdmi.pdev->dev);
-+	if (WARN_ON(r < 0))
- 		return r;
--	}
- 
- 	return 0;
- }
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-index 2c03608addcd..bfccc2cb917a 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-@@ -42,11 +42,9 @@ static int hdmi_runtime_get(void)
- 
- 	DSSDBG("hdmi_runtime_get\n");
- 
--	r = pm_runtime_get_sync(&hdmi.pdev->dev);
--	if (WARN_ON(r < 0)) {
--		pm_runtime_put_sync(&hdmi.pdev->dev);
-+	r = pm_runtime_resume_and_get(&hdmi.pdev->dev);
-+	if (WARN_ON(r < 0))
- 		return r;
--	}
- 
- 	return 0;
- }
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/venc.c b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-index 905d642ff9ed..78a7309d25dd 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-@@ -347,11 +347,9 @@ static int venc_runtime_get(void)
- 
- 	DSSDBG("venc_runtime_get\n");
- 
--	r = pm_runtime_get_sync(&venc.pdev->dev);
--	if (WARN_ON(r < 0)) {
--		pm_runtime_put_sync(&venc.pdev->dev);
-+	r = pm_runtime_resume_and_get(&venc.pdev->dev);
-+	if (WARN_ON(r < 0))
- 		return r;
--	}
- 	return 0;
- }
- 
--- 
-2.25.1
+Best regards,
+Jingoo Han
 
+> ---
+>  drivers/video/backlight/lm3533_bl.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/video/backlight/lm3533_bl.c b/drivers/video/backlight/lm3533_bl.c
+> index 1df1b6643c0b..5e2ce9285245 100644
+> --- a/drivers/video/backlight/lm3533_bl.c
+> +++ b/drivers/video/backlight/lm3533_bl.c
+> @@ -66,7 +66,7 @@ static ssize_t show_id(struct device *dev,
+>  {
+>         struct lm3533_bl *bl = dev_get_drvdata(dev);
+>
+> -       return scnprintf(buf, PAGE_SIZE, "%d\n", bl->id);
+> +       return sysfs_emit(buf, "%d\n", bl->id);
+>  }
+>
+>  static ssize_t show_als_channel(struct device *dev,
+> @@ -75,7 +75,7 @@ static ssize_t show_als_channel(struct device *dev,
+>         struct lm3533_bl *bl = dev_get_drvdata(dev);
+>         unsigned channel = lm3533_bl_get_ctrlbank_id(bl);
+>
+> -       return scnprintf(buf, PAGE_SIZE, "%u\n", channel);
+> +       return sysfs_emit(buf, "%u\n", channel);
+>  }
+>
+>  static ssize_t show_als_en(struct device *dev,
+> @@ -95,7 +95,7 @@ static ssize_t show_als_en(struct device *dev,
+>         mask = 1 << (2 * ctrlbank);
+>         enable = val & mask;
+>
+> -       return scnprintf(buf, PAGE_SIZE, "%d\n", enable);
+> +       return sysfs_emit(buf, "%d\n", enable);
+>  }
+>
+>  static ssize_t store_als_en(struct device *dev,
+> @@ -147,7 +147,7 @@ static ssize_t show_linear(struct device *dev,
+>         else
+>                 linear = 0;
+>
+> -       return scnprintf(buf, PAGE_SIZE, "%x\n", linear);
+> +       return sysfs_emit(buf, "%x\n", linear);
+>  }
+>
+>  static ssize_t store_linear(struct device *dev,
+> @@ -190,7 +190,7 @@ static ssize_t show_pwm(struct device *dev,
+>         if (ret)
+>                 return ret;
+>
+> -       return scnprintf(buf, PAGE_SIZE, "%u\n", val);
+> +       return sysfs_emit(buf, "%u\n", val);
+>  }
+>
+>  static ssize_t store_pwm(struct device *dev,
+> --
+> 2.25.1

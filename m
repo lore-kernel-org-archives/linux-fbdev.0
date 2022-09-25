@@ -2,112 +2,97 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E89BC04A95
-	for <linux-fbdev@archiver.kernel.org>; Fri, 23 Sep 2022 22:11:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AEA0C04A95
+	for <linux-fbdev@archiver.kernel.org>; Sun, 25 Sep 2022 11:02:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231387AbiIWWLU convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 23 Sep 2022 18:11:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45306 "EHLO
+        id S229557AbiIYLCU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 25 Sep 2022 07:02:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56866 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232310AbiIWWLS (ORCPT
+        with ESMTP id S229683AbiIYLCT (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 23 Sep 2022 18:11:18 -0400
-X-Greylist: delayed 510 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 23 Sep 2022 15:11:14 PDT
-Received: from relay.hostedemail.com (smtprelay0016.hostedemail.com [216.40.44.16])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 757FC1176F6;
-        Fri, 23 Sep 2022 15:11:13 -0700 (PDT)
-Received: from omf04.hostedemail.com (a10.router.float.18 [10.200.18.1])
-        by unirelay04.hostedemail.com (Postfix) with ESMTP id 6B5201A0739;
-        Fri, 23 Sep 2022 22:02:40 +0000 (UTC)
-Received: from [HIDDEN] (Authenticated sender: joe@perches.com) by omf04.hostedemail.com (Postfix) with ESMTPA id B26E420028;
-        Fri, 23 Sep 2022 22:02:19 +0000 (UTC)
-Message-ID: <ac809b03c78355b52c4ce936cc5a4ed3dd303441.camel@perches.com>
-Subject: Re: [PATCH v9 09/10] leds: flash: mt6370: Add MediaTek MT6370
- flashlight support
-From:   Joe Perches <joe@perches.com>
-To:     Han Jingoo <jingoohan1@gmail.com>,
-        Andy Shevchenko <andy.shevchenko@gmail.com>,
-        torvalds@linux-foundation.org,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Julia.Lawall@inria.fr, krzysztof.kozlowski@linaro.org
-Cc:     ChiaEn Wu <peterwu.pub@gmail.com>, lee@kernel.org,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Helge Deller <deller@gmx.de>, Mark Brown <broonie@kernel.org>,
-        mazziesaccount@gmail.com, andriy.shevchenko@linux.intel.com,
-        ChiaEn Wu <chiaen_wu@richtek.com>,
-        Alice Chen <alice_chen@richtek.com>,
-        ChiYuan Huang <cy_huang@richtek.com>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-mediatek@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        linux-iio <linux-iio@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        szuni chen <szunichen@gmail.com>
-Date:   Fri, 23 Sep 2022 15:02:28 -0700
-In-Reply-To: <CAPOBaE7mcNqgQvsPpqewmq=Na9MC9RH5AW8CHn5ZJFAUsq6_eg@mail.gmail.com>
-References: <20220830034042.9354-2-peterwu.pub@gmail.com>
-         <20220830034042.9354-10-peterwu.pub@gmail.com>
-         <CAPOBaE7rz2F-sij-LbYau6TRxFoOfmoUc=R__Z7iUrFWmZPgrg@mail.gmail.com>
-         <CABtFH5+PuK4vptVNmpn4h2FCxNFp3wWvhUrOxgqArx4YxCY99w@mail.gmail.com>
-         <CAHp75VeRgRdv54yO51nBwKx8O2pNLvOD2mrqn31zvx4ffSpCHw@mail.gmail.com>
-         <CAPOBaE7mcNqgQvsPpqewmq=Na9MC9RH5AW8CHn5ZJFAUsq6_eg@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 8BIT
-User-Agent: Evolution 3.44.4 (3.44.4-1.fc36) 
+        Sun, 25 Sep 2022 07:02:19 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E2C583137C
+        for <linux-fbdev@vger.kernel.org>; Sun, 25 Sep 2022 04:02:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1664103707;
+        bh=3/L/kvYjUQkVAHcXRmdZEPsCObB5P2626OR5kyTqh30=;
+        h=X-UI-Sender-Class:Date:Subject:To:References:From:In-Reply-To;
+        b=LiLDgL6kD3JS2UQzpVzZar1Lstdfc8Th0lfLTV/H8qsBbcTOSHGwQYWfcSFPXc7xI
+         eg+kpqTZt1uyGMeGxOEPWWM72Hc3MZ1f/R/9bj5ReliiN3ZnvwMhjNPJofSyfyD1uf
+         wDqxnUWzpIaeK23cfX5OCO+gAzGseUraZl1Yc2HE=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.188.118]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1M8QWG-1oXzXX2lE0-004Sh8; Sun, 25
+ Sep 2022 13:01:47 +0200
+Message-ID: <670566ca-0817-3b5c-c571-b4f81ce50b08@gmx.de>
+Date:   Sun, 25 Sep 2022 13:01:46 +0200
 MIME-Version: 1.0
-X-Stat-Signature: icdqc5u914mweh6876zxemizkb1yinja
-X-Rspamd-Server: rspamout04
-X-Rspamd-Queue-Id: B26E420028
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-Session-ID: U2FsdGVkX180tjz2i84oRN7SAvJ/UKULO1Sz9+vBSi8=
-X-HE-Tag: 1663970539-507553
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.3.0
+Subject: Re: [PATCH -next] video: fbdev: imxfb: Remove redundant dev_err call
+To:     Shang XiaoJing <shangxiaojing@huawei.com>, s.hauer@pengutronix.de,
+        kernel@pengutronix.de, shawnguo@kernel.org, festevam@gmail.com,
+        linux-imx@nxp.com, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+References: <20220923102007.19870-1-shangxiaojing@huawei.com>
+Content-Language: en-US
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20220923102007.19870-1-shangxiaojing@huawei.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:nUhuDGeQC22fSnZFVChdxRDon8my8O0Ltbj+hI/GyFFQwXLFe/T
+ IvG7asVkU2ypEiaRXrvTC5gQB036/EcKDk8pCXyOXEFvyGw/wG5CzUpPb6uDcILqHvYLRw0
+ CmDfIp7efJVoqy1YPLM0xRKqTUBOI6lforQ1x4Rm8cETT+YTrvjtsusFz8GBaoXzOXejjRl
+ NjuMw7kWlbghxPstzcivg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:LfnCDeGYQqM=:oiWzlDHJmiMAKtt4uGUDw/
+ hsxDNeT/IdCh4e3GF2SVk/P6+H45A3Cl4cI9tMNpJxFz+j0TFwmsxx/7zNkbKh52Lr5ehnBd1
+ +zhlSuqdaDeHpbbnWvYhPMSSdGCnD7+ugNfMtMREgq0bdaw1/8N30ID1PjhqZxDmTc19dZWrm
+ THQCdRDY4vbN6FI4MiWAu6gNShSqNFCY50UdJTb6byHLd4IlpAzL+xXQZOYQ5jqBAsSheHmcs
+ YKHfxVTfcs2dtB9o7K7S/l26k7AHrbhbbqqMldmt7I/worBjWJ78DaEIgpnNfPLBZ8WEEPMRl
+ fuI8u6xT3XTUrS35HKfX/d+lVT+66dueoToY1ylO/PcFQODnbEwauIejBFWBl7u0bEbXOCGZB
+ +2dXvqYIXha28qYll/M12DYJ0GcPQKF7iSb+rzuWVU3aEocXM9Af0PrnRyhY6/z3k/ffxztaR
+ NXymkX52aewTUC08w1pFovldrAbHJ7BgXvpmgUWj/Ut9/n6Y6LBwcu8WUeS2mW+V7LpBkEOMW
+ bbrE7gSlK9WhnYElidqhFPuZn0Xkd9XFjtbKIFWea9hFmLRRmTI2Vcy4eJUvOEmZr/97fLWi8
+ hTF+SEqfXmCVw2x9XfBXAgalIYS+OCorlFaP9bAtyhr+Jfog5ZgpXNyBfoL1npMM4Tm5Ge+tv
+ ygrp85GGslV4cAYtq2krmBq06XMvcMJwn93meWE5vMWJoQ5Z+TM+NVZayg60R8Q4i2CfzHv4/
+ hfs075AuVfECODl+4KeHKB/iZSgIoc/obs/839uzIC6HXcmrJtfCiaBEITwBLSVsaBy2DVH98
+ hh5wPLQvr0mDDm5k5Ue98Mk4KxbPZOsG4cGTfcdTu/ubfJkRh1e9zA51Q0rs683jUOeQ9CnNL
+ ewen23JpdvI/6XlcAnMWM7NqIS+IRsfJCmUGEva9OrHklBhiDcjiigkjiiAC6kb2LAjC8RQ6Z
+ 94fcUSMb6M94ShEcp8E410Y3m51P1SchODrUOa6qchW91RMxbgNwjAw8dHAzx6cpyP39hZgpd
+ xdockjmwc16aDBNOiXzY6w7QTsDOwJ9a0Ix7RyqEzo01vHTiKi46RcVM3BoKXR/1tkU6LtJJs
+ XQKBkxgmW9on4T0bthXECeEcI1yfimvIxPC2IRHxA8mhDgg+6+h8bt0Jb95HVrBgH4kxPd4jA
+ VvELjOkuFRMev+r2a8xo6mPFB6
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, 2022-09-23 at 14:34 -0700, Han Jingoo wrote:
-> On Wed, Sep 21, 2022 Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
-> > 
-> > On Wed, Sep 21, 2022 at 4:48 AM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
-> > > On Sun, Sep 18, 2022 at 3:22 AM Han Jingoo <jingoohan1@gmail.com> wrote:
-> > > > On Mon, Aug 29, 2022 ChiaEn Wu <peterwu.pub@gmail.com> wrote:
-> > 
-> > > > > +#define MT6370_ITORCH_MIN_uA           25000
-> > > > > +#define MT6370_ITORCH_STEP_uA          12500
-> > > > > +#define MT6370_ITORCH_MAX_uA           400000
-> > > > > +#define MT6370_ITORCH_DOUBLE_MAX_uA    800000
-> > > > > +#define MT6370_ISTRB_MIN_uA            50000
-> > > > > +#define MT6370_ISTRB_STEP_uA           12500
-> > > > > +#define MT6370_ISTRB_MAX_uA            1500000
-> > > > > +#define MT6370_ISTRB_DOUBLE_MAX_uA     3000000
-> > > > 
-> > > > Use upper letters as below:
-> > 
-> > For microseconds (and other -seconds) the common practice (I assume
-> > historically) is to use upper letters, indeed. But for current it's
-> > more natural to use small letters for unit multiplier as it's easier
-> > to read and understand.
+On 9/23/22 12:20, Shang XiaoJing wrote:
+> devm_ioremap_resource() prints error message in itself. Remove the
+> dev_err call to avoid redundant error message.
+>
+> Signed-off-by: Shang XiaoJing <shangxiaojing@huawei.com>
 
-I think it's fine. see:
+applied.
 
-commit 22735ce857a2d9f4e6eec37c36be3fcf9d21d154
-Author: Joe Perches <joe@perches.com>
-Date:   Wed Jul 3 15:05:33 2013 -0700
+Thanks,
+Helge
 
-    checkpatch: ignore SI unit CamelCase variants like "_uV"
-    
-    Many existing variable names use SI like variants that should be otherwise
-    obvious and acceptable.
+> ---
+>   drivers/video/fbdev/imxfb.c | 1 -
+>   1 file changed, 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+> index 94f3bc637fc8..51fde1b2a793 100644
+> --- a/drivers/video/fbdev/imxfb.c
+> +++ b/drivers/video/fbdev/imxfb.c
+> @@ -972,7 +972,6 @@ static int imxfb_probe(struct platform_device *pdev)
+>
+>   	fbi->regs =3D devm_ioremap_resource(&pdev->dev, res);
+>   	if (IS_ERR(fbi->regs)) {
+> -		dev_err(&pdev->dev, "Cannot map frame buffer registers\n");
+>   		ret =3D PTR_ERR(fbi->regs);
+>   		goto failed_ioremap;
+>   	}
 

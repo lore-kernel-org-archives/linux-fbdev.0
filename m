@@ -2,106 +2,145 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4172BC04A95
-	for <linux-fbdev@archiver.kernel.org>; Sun, 25 Sep 2022 11:58:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1522C04A95
+	for <linux-fbdev@archiver.kernel.org>; Sun, 25 Sep 2022 12:33:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231176AbiIYL6A (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 25 Sep 2022 07:58:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53534 "EHLO
+        id S229965AbiIYMc7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 25 Sep 2022 08:32:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50618 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231511AbiIYL5y (ORCPT
+        with ESMTP id S231362AbiIYMc7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 25 Sep 2022 07:57:54 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5A7C32C112
-        for <linux-fbdev@vger.kernel.org>; Sun, 25 Sep 2022 04:57:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1664107067;
-        bh=2acJ5q54HwjpL+Cam55Jrx3R3x2p2oTERxijPz0cUl4=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=gsIYSjTFNjmflB/F04z1XhpVqsToLXVKER98TXAcUJl82DjXq1eJQdaQurCd/e2YM
-         spFLwYkl9lsEEbsXWTfwmbvGdHtyEop9cfkuXN2jOlNLBG32lEPGyLHMX5vjkfA+Rr
-         xJbP4Zqtfb6Gm8iOo2DbKlmsyH2lv5aSNqIcT3R4=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.188.118]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MQe5u-1orDrA3PGg-00NmJO; Sun, 25
- Sep 2022 13:57:46 +0200
-Message-ID: <dcccfc86-1bfe-e37a-fa6f-28a159e35f14@gmx.de>
-Date:   Sun, 25 Sep 2022 13:57:46 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.3.0
-Subject: Re: [PATCH] video: fbdev: smscufx: Fix use-after-free in
+        Sun, 25 Sep 2022 08:32:59 -0400
+Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 653872CDF7
+        for <linux-fbdev@vger.kernel.org>; Sun, 25 Sep 2022 05:32:58 -0700 (PDT)
+Received: by mail-pl1-x62c.google.com with SMTP id l10so3980641plb.10
+        for <linux-fbdev@vger.kernel.org>; Sun, 25 Sep 2022 05:32:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :from:to:cc:subject:date;
+        bh=Ev6umPhiA6NmBXFRrFI9vr8H9kP3j819zzUBWeoQWdg=;
+        b=GRg+M82sBascvInGxWw868fDwSGdjUH5tHr8xcMnDgZZ1nFvq5+GXl4ZSpCl+17kgq
+         WN23TIRrLJ2PTx8t3dp+ZN7n71orvAwB53qssDM8rl0g6eRBTT2GOsXEcoj9/NAuWvwn
+         foiQ5wK+yH1r6MBglPgesTtm1lv5s7GJQNMzMeOhWbKrd1cQieSuIWGwj5Yg89hrBh7S
+         YR21RkXm0vif30a4bIKtbt+SntIvWmbX+Hu1buGAKrFw1gbhLYWpg4TkDSj1ODbOUgPw
+         g6rQxjClq8Xttx4rnEMIwPECSfG53PDi7avOjA00rV5VfFNtlcuMB4lllAK0qLhDyka5
+         nW2g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date;
+        bh=Ev6umPhiA6NmBXFRrFI9vr8H9kP3j819zzUBWeoQWdg=;
+        b=YL3pIcjaUHW8Tmm7Rxbh/NiFoNurtsMS+uEaVTBlcxZt7p81Iyf589XuLAE/cTlmgV
+         8uYyqnXVU/kemGRVMKG7XQ3TK9mqFeeOizVzJ4E4C2WzIxELNl0M/CFwwcZVVG7f8FFq
+         iZXcdXn/voOpMycFLtucAFQKoTYKJO9N9oOQLQnU6JO7jtdjyGJEq4Gdqyd5QKPL2+wd
+         F+jUAuMK12QIMmEHgvTUIqbRACZQxR6NHyW35baUqcyes54/tlzxoZ++3KVH3Q0pjE15
+         k9sZ3hrmSKQ7aRR5nKgPEYSimJuni6QlfY47Gl2pWaqUilYF3qhGvgsXiDX4DpMTn94r
+         E6vg==
+X-Gm-Message-State: ACrzQf2qUH0Ijen+59czRA4nuzB26x9uf7y7uxDn18hsAdX/x9CWDD0O
+        9QCQkKQBaxhgczNIgFvvd6g=
+X-Google-Smtp-Source: AMsMyM7kuAH4EsSDnbgjWgPyoKhmSB1Jsg3E2/qUHl4Gouwc2vOuq7AzNW43eVWqb+1UrBw6zLZq0A==
+X-Received: by 2002:a17:90b:180e:b0:202:a0c3:6da with SMTP id lw14-20020a17090b180e00b00202a0c306damr19077966pjb.94.1664109177900;
+        Sun, 25 Sep 2022 05:32:57 -0700 (PDT)
+Received: from ubuntu ([175.124.254.119])
+        by smtp.gmail.com with ESMTPSA id c15-20020a170902d48f00b001782751833bsm9213935plg.223.2022.09.25.05.32.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 25 Sep 2022 05:32:57 -0700 (PDT)
+Date:   Sun, 25 Sep 2022 05:32:53 -0700
+From:   Hyunwoo Kim <imv4bel@gmail.com>
+To:     steve.glendinning@shawell.net, deller@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        imv4bel@gmail.com
+Subject: [PATCH v2] video: fbdev: smscufx: Fix use-after-free in
  ufx_ops_open()
-Content-Language: en-US
-To:     Hyunwoo Kim <imv4bel@gmail.com>, steve.glendinning@shawell.net
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20220925110329.GA380036@ubuntu>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220925110329.GA380036@ubuntu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:6Pvq6jJ4u17R1dbuy5/Xo1j11QgOouG6DpEYQLOIaV8lJZFs4KK
- n2txJ5rX2WkGwLsLOWdBHldyCiH1XO8fMoGPBN3r5riJGWjx/IH2PpE9Ydu6vNyb8kgY78a
- iXlnfrVapKoazZY5BGM1m0FINKx5+wyDSQtoTBhICL+qnxHSNbM5n9tgVPhzFSH8Ne9Tr7I
- ULMwonIqAH8XAEyXDL8WQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:xLuj2YrM9CM=:HANclgzyl3Y1jSgQqVGitu
- OEBbrh9CuzoTDlp5RNfmVLVvqByJNUGLKcoJ+iC5elKyDincFbwZllWvgE/q+Ai9O1qJaJ2RM
- 5oDi1Dk2LqPHaTQzhGdbew6HRuVH7YidDjBmwrUJGzs3ocqk3lfjqHj2rvGEINJm8w6HeKJ+j
- IIjm+xQUuLTAxoC3+WuP9SuYjGBg4rO59s98QcGIhEXSG0MiXr/pf+L0Gg28tmLkVA+J7hINI
- Oh5I6Wm3lPdzV/gKfk54yjEH9l40PkNaqD/lr+1TWOTGyBTWymL7AaoCwrSZxFFcsQipC5Tox
- uCOVo4gP5oLLxnNG3XFYlKcvZ2CjhXZaCrlLOJTJIjqsLLKo3r6vmSKjNRGe3fiY7XYKfSTg9
- RBYkR0eSvq384HoropoPVxyKjU78DFWLPPjumDpp9kFpzInpNJV0wR6DpO5Nu1pV7BmvxrvCD
- 1LMyFUrot0k6ur+KCowA5YpicVPVI+blMGbV6t2xIAzeHHQ3yn6RZAejw9ukhPE3vls++1FPF
- zWsfx45SG/R6xkIFFoAqA1orUrBoNBeaBMgq6VhFaoepwNifnDVoLbW8muW/yxX7N4a73OOze
- MkzRP9dtMov6Ez6QpE6gTVjqLkAlN3uq9XMB9/fN/cUljyB/EqjvuVY8Rll6H49GZ/K6W4ghE
- uufhfj1VGDPh+ijoKTorx1epy73hcUD3rNphi3Hy77UmJgekZAJpkUGHl4bNX8SVhDxirDyVF
- xGiRKIurr+tozGKU+IbXxOUp4j4d4D61DYGmIpi7s4C7AxcBb8Ff7xv2QmKE9QvUbuakhDeBs
- 9aJEQIrK/c2PaKUfC/LDiuR5UiVVzkKqONRbLSvjNUCO7hmfXCG3UXv76D56g6OJ+e8MmAf01
- OV/E/PCc7wN0gap+xNb3yxEH8giDwfGp1RNQ1P4d1cZ0hODHzg0FQOqXE7EbaKPAyxB0Q1wwD
- EyJyTpBGF985K01viHKG7BXZnwWYRx7q1RAKjuraM7S75n+aQpJABD1jLIeXERg7+FwAfcLpN
- nYi4Y5xArcnmuY0Cqqm4QJHSM80ZOGTPfxtZ5KhAqlOLr1ULZj+eGKALoE46Cc7n5F6qbEkrc
- n2xkKRV8RKs2JmapKhe6J65N58CiI5OSAzco5+AQnitP6XHbLR55J4bMTajtDIA07VOVeDtdQ
- lZP6cikdi4rduYgQc46kogvwND
+Message-ID: <20220925123253.GA381917@ubuntu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 9/25/22 13:03, Hyunwoo Kim wrote:
-> A race condition may occur if the user physically removes the
-> USB device while calling open() for this device node.
->
-> This is a race condition between the ufx_ops_open() function and
-> the ufx_usb_disconnect() function, which may eventually result in UAF.
->
-> So, add a mutex to the ufx_ops_open() and ufx_usb_disconnect() functions
-> to avoid race contidion of krefs.
->
-> Signed-off-by: Hyunwoo Kim <imv4bel@gmail.com>
-> ---
->   drivers/video/fbdev/smscufx.c | 10 ++++++++++
->   1 file changed, 10 insertions(+)
->
-> diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx=
-.c
-> index d7aa5511c361..a4378a7241f7 100644
-> --- a/drivers/video/fbdev/smscufx.c
-> +++ b/drivers/video/fbdev/smscufx.c
-> @@ -1065,6 +1067,8 @@ static int ufx_ops_open(struct fb_info *info, int =
-user)
->   {
->   	struct ufx_data *dev =3D info->par;
->
-> +	mutex_lock(&disconnect_mutex);
-> +
+A race condition may occur if the user physically removes the
+USB device while calling open() for this device node.
 
-The next few lines show:
-         if (user =3D=3D 0 && !console)
-                 return -EBUSY;
+This is a race condition between the ufx_ops_open() function and
+the ufx_usb_disconnect() function, which may eventually result in UAF.
 
-in this case this function exits with the mutex held.
+So, add a mutex to the ufx_ops_open() and ufx_usb_disconnect() functions
+to avoid race contidion of krefs.
 
-Please check all possible exit paths and unlock the mutex
-where necessary.
+Signed-off-by: Hyunwoo Kim <imv4bel@gmail.com>
+---
+ drivers/video/fbdev/smscufx.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
-Helge
+diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
+index d7aa5511c361..02a22e31e9c0 100644
+--- a/drivers/video/fbdev/smscufx.c
++++ b/drivers/video/fbdev/smscufx.c
+@@ -137,6 +137,8 @@ static int ufx_submit_urb(struct ufx_data *dev, struct urb * urb, size_t len);
+ static int ufx_alloc_urb_list(struct ufx_data *dev, int count, size_t size);
+ static void ufx_free_urb_list(struct ufx_data *dev);
+ 
++static DEFINE_MUTEX(disconnect_mutex);
++
+ /* reads a control register */
+ static int ufx_reg_read(struct ufx_data *dev, u32 index, u32 *data)
+ {
+@@ -1065,15 +1067,21 @@ static int ufx_ops_open(struct fb_info *info, int user)
+ {
+ 	struct ufx_data *dev = info->par;
+ 
++	mutex_lock(&disconnect_mutex);
++
+ 	/* fbcon aggressively connects to first framebuffer it finds,
+ 	 * preventing other clients (X) from working properly. Usually
+ 	 * not what the user wants. Fail by default with option to enable. */
+-	if (user == 0 && !console)
++	if (user == 0 && !console) {
++		mutex_unlock(&disconnect_mutex);
+ 		return -EBUSY;
++	}
+ 
+ 	/* If the USB device is gone, we don't accept new opens */
+-	if (dev->virtualized)
++	if (dev->virtualized) {
++		mutex_unlock(&disconnect_mutex);
+ 		return -ENODEV;
++	}
+ 
+ 	dev->fb_count++;
+ 
+@@ -1097,6 +1105,8 @@ static int ufx_ops_open(struct fb_info *info, int user)
+ 	pr_debug("open /dev/fb%d user=%d fb_info=%p count=%d",
+ 		info->node, user, info, dev->fb_count);
+ 
++	mutex_unlock(&disconnect_mutex);
++
+ 	return 0;
+ }
+ 
+@@ -1741,6 +1751,8 @@ static void ufx_usb_disconnect(struct usb_interface *interface)
+ {
+ 	struct ufx_data *dev;
+ 
++	mutex_lock(&disconnect_mutex);
++
+ 	dev = usb_get_intfdata(interface);
+ 
+ 	pr_debug("USB disconnect starting\n");
+@@ -1761,6 +1773,8 @@ static void ufx_usb_disconnect(struct usb_interface *interface)
+ 	kref_put(&dev->kref, ufx_free);
+ 
+ 	/* consider ufx_data freed */
++
++	mutex_unlock(&disconnect_mutex);
+ }
+ 
+ static struct usb_driver ufx_driver = {
+-- 
+2.25.1
+

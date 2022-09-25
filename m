@@ -2,84 +2,125 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A570C54EE9
-	for <linux-fbdev@archiver.kernel.org>; Sun, 25 Sep 2022 15:47:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BFB5CC54EE9
+	for <linux-fbdev@archiver.kernel.org>; Sun, 25 Sep 2022 16:22:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229567AbiIYPrg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 25 Sep 2022 11:47:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43448 "EHLO
+        id S232086AbiIYQWC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 25 Sep 2022 12:22:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41530 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231150AbiIYPrf (ORCPT
+        with ESMTP id S230505AbiIYQWC (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 25 Sep 2022 11:47:35 -0400
+        Sun, 25 Sep 2022 12:22:02 -0400
 Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 475E62BB23
-        for <linux-fbdev@vger.kernel.org>; Sun, 25 Sep 2022 08:47:34 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6CF45E0B3;
+        Sun, 25 Sep 2022 09:22:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1664120848;
-        bh=0hkhVjvY/ygZUbAaEfpX1kwcs+jyZLR1+/SmlkcaXAM=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=RTJHml5ugJvCJxqeD61QsegCaYnvu2LPCHM3BvmLwFIWy2z29+1u2gKUB6rK4t/j1
-         EJKxUd4KTTVM4OXWsOQOcRdAOjQoZyIL77DGwWPYrQUJ8QBfIoaBaeBvA07+a23wt6
-         rlcfUUJ6KyXUCSaWyjEy3FnOplybPL0Mes/3Mbbw=
+        s=badeba3b8450; t=1664122895;
+        bh=fI8v2MjLTWColJNckOi/CL8S2YaxkCPvzxue3zGfDQQ=;
+        h=X-UI-Sender-Class:Date:Subject:To:References:From:In-Reply-To;
+        b=d9L5BQzgHmgrTVpJly5w97+p1QcINxXisS07Hu4KdkpasB9ud7fGQHSw1rkzZytW1
+         UryFuYVvHSVXAgCKHM1/Oj1ZGkMiou2iSsj5XGe7YZw0YKs1Xnq5/XdsVtvTRIOFbS
+         GgRQjalXWvWLx/euY3O5aQ9gLp39RnLF1MnKqxqk=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.188.118]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1M2O6Y-1ogKPG0Rm2-003sul; Sun, 25
- Sep 2022 17:47:28 +0200
-Message-ID: <37915429-7b4d-6e64-8ef7-a28bf8015fd5@gmx.de>
-Date:   Sun, 25 Sep 2022 17:47:27 +0200
+Received: from [192.168.20.60] ([92.116.188.118]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MYNJq-1ohYsv34pW-00VQ5i; Sun, 25
+ Sep 2022 18:21:35 +0200
+Message-ID: <eabf4405-7492-19c4-0827-a240e9c75dca@gmx.de>
+Date:   Sun, 25 Sep 2022 18:21:34 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.3.0
-Subject: Re: [PATCH v3] video: fbdev: smscufx: Fix use-after-free in
- ufx_ops_open()
+Subject: Re: [PATCH -next] video: fbdev: tridentfb: Fix missing
+ pci_disable_device() in probe and remove
 Content-Language: en-US
-To:     Hyunwoo Kim <imv4bel@gmail.com>, steve.glendinning@shawell.net
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20220925133243.GA383897@ubuntu>
+To:     ruanjinjie <ruanjinjie@huawei.com>, zheyuma97@gmail.com,
+        javierm@redhat.com, wsa+renesas@sang-engineering.com,
+        tzimmermann@suse.de, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+References: <20220922013709.3324521-1-ruanjinjie@huawei.com>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220925133243.GA383897@ubuntu>
+In-Reply-To: <20220922013709.3324521-1-ruanjinjie@huawei.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:JOrA8gw47agTlXhRZBKS15wNguuEPi83J/XtrK841D6fkqjKHiP
- drFONPGRt13+Yio/Sj9d7lMGu1sdVCJlmNWruESoLoK7TqU4b4twEF/jkxPtz6WOjSYzlLm
- 3f/TccRlTxV3TiZ++MI8Pv2aHpyOMP50rYwft4Gg5iRs3onxe7nED+yz/uwsxORN/6lhxBG
- MtQNZt6vP7XyTIIfQsp4Q==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:02U4KP+3IWs=:QXlh9eICwJQxLAqYIdOkfN
- 9HNMY9c0jONgByg7LEmu21p6kbqbF/7kQPaP1GvEJFhdsNGi5GoQu3UeTtWW9LN1PZ5wcBiMO
- B6+ACAOlffqeA+yyMk5TMU7K9XzMyIN6KhpivfVXeYfcBJsLaJ1whcM2OZJoS5QM0EMoVVmyq
- AF9dP+H3+ssSF28hQbySsIWT6VhiPZE64zony48o1gjOq0VKoYJ7gX5Fiq1dN01NNzuSffiZ9
- k4Tkib5w2w9c5DJ4ZSGSyr8VHcRid2rs8wDoF+8eMh2oex4JbfJIoBRlaLIeUv/mB6kfNx1UV
- XrJOIc1ua2FqybjA4WL2LPdlFANf4FOUeXQ7roHt9Vd/xFMdg5SH2AMMQiGlQEB8ohMz+6zGU
- nBxYuxg6sAUrVMEKYSgIiT5KuY9L7pNRZE6mxXN/od+HaPMb7R7TOIwo/WJGeyuZZeZlkG9Sw
- MxhNFSEJ5m1NrFjbobm8w31uZSr+Ne3Vk5XdJVeJI9eMiV7Sx74JN0x1PoKdKp1iJ38Dp9aRX
- hRHSKDVgpDw4+UyFdnk0ojkBW7nMqHT3aM31LbdH042i9wSvRu2WeHLjjBjYTB5UmovMbpdn0
- dJxU8yAG02iya5Hr8Gj8lTJqwIXYMdNqtbyvTs7E8iHkvtGThxERhOepALshC3+o0LN9UxVwn
- 1oppx3QtQMmzzqgJ7bwSfFwbbhP28eWCY7sZFOilXCoOcU1IRZRTW1zA7sY7Fu9GRvrh61Gv2
- 8AAg47xS+KRG5n1fbgyUffinVNTq5k4o3IdUWgqOyjcmJ17zLAkpSZCdT9V+mPIwcp3oKcrd4
- NNIGvNIrpPoiWMQ8p+kNkbsaTIZMVZo4GyIDYXYjGDzTKBUGPNciF4G4T2Kfs6P75q+X2tQX9
- cekbQxVpwcK5kJm48FFrUME9sXBIzPlsMCNQjPkr/HzKbba+2vdrFP2MHJsN+09tWk5TfVbqJ
- 197JTPVZFioiv7ybAtaZY4svmROYMVBTpvk/b3fI5xit9RptbG5AV1ZRImGoPlHiotAtXA8Om
- k9JATfgNGA4DAq2LFo+rIGaBKR5I9P8I6eqjhKkVG5SDbmOaW6m4AwFCAT4XZyCwBRyhAVyj9
- 1jMNOgK1SJAt9VQ7L7j9EC+Aet2FOCPPuca5lf+tWG/aHZk+Efx4si9550DS+NKM/jUAAXZBG
- HSdgnoDCSE+2zxpIjA4LZ2I2O2
+X-Provags-ID: V03:K1:4C350QFUsyfxOBN9unp7HZnhW3cx3yY62B3+HaSeKy7Y83u0ETf
+ wcxeMn461m2islOO4yVPWtwWOInz6mdQiukZsXTbijl/YJpgYVmT99qsd0XnNqHsB3gDYOo
+ srmLQqX0Bz6d8wZc7h9BYlW9S+54WEcG3NoycQjXWJLJSvugJ+idhSSjyO+hOafZTxGmcjP
+ mDuBZub5EeYy+u1Ff/SyQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:M/VDfI/GNCk=:J0E7YpgIxEz6PydXA9ZOtf
+ o7D1/KS6Ufb8QuX8glgXQLFF/MW5SYVZS+KX8LU9Cl51VaEZZX18NxwWAl8mD8ySq1k+jKIIz
+ 7dY31DMXqd/3QIXbdw5o8xSYKHUEoFNmbaIHlYmUuYa6dCqP6iKgzszqP6optomG1BuXq8gJf
+ HidXw2EPYFBlLJ3ZMi8x9WbWH5xFpDgsFrhXMCTZ6LuHkkub8uG6xVKkDRkshBR4eGgthZd44
+ gs9bAi7tNzJIfJSYkeIkARv1xgLCFetabgkkuCp3Peh2hvGmwjAzjkCdm38sMlWwI1WmtVr7B
+ 24U9+jPudng0HpAkTN3zwT0rm2M39qZKija3NvZnChmywCHMxaylfnUiPKts5ZN6UvLtu7Adz
+ QhOrU/qr+0A8a5L1oSsOpP5bDyvSbhAfST3tEiikD2H/nJieRhIEHxjrkEn9bqupU06zChc+M
+ g3LyJviZpK4o8+aJpzf0cKQaUWWyjuUcYevFBVS5LkS691wtElojW4fpOzHhjJt5wEb7ON/0U
+ 01qv8LPHctzHEzsyKhD5BcsFrMscgOHa0600Mg/PSf1koiAHHeqOAOsdEJFeJFoG2DPxiV4qh
+ kY19RvUDo/AmA0AJqqQlffZ2dF5iq4DwmxGMjjQ9u9jeQBv8CQbTCTcoHZV+rweXZ7buFe2jJ
+ FvuXpuZnvagT5Yq3NYe2SI9s2LIvlLmDYGVSdWBozXycEPtFgZu0oFAJ6v0ax7LSHtntB9RR1
+ UIPhN521RDe0PLwmRaatav/fCchA33IZf5gHIS0TaUT1hq6U19OIj/ZcA2wJJxYsAai8s0TR3
+ A6y3W6xg0fgK52xnyj2EIzDFUXdhMN/IWM8HWb9lvMtSTmGTXTHZKwb9+D9C68QSc4NAs1PmM
+ Zg20g7m/A34XTvcmg+S2BbfQGPhTn+16n3kgtY/F9Es7SSAKcHwcCUb2AcwaswEVvE24pnR+W
+ NLuBGck6vhIV0IpXhKvCgmQdBQo6PERh1uzPHvERQEBLavTgs1wzXZY7LiozD4LxC9wOCoren
+ 0gPcF+iFhRtQ8U0WRPuq2cu0Eo3qCEG2ID7WK7LO70NLZ4pdvXYObzGgOmWJX+mmKWQ04NtiB
+ SZj0BkDZjtMOl75MPNd5Nj6U7jRC4Py4VfH6zQAXg7vm+i7CB7utqGmQAe2BkFtX7l2H3Kq/7
+ Zj0skJ6XqiTFKM8h/0794dqrud
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 9/25/22 15:32, Hyunwoo Kim wrote:
-> A race condition may occur if the user physically removes the
-> USB device while calling open() for this device node.
+On 9/22/22 03:37, ruanjinjie wrote:
+> Replace pci_enable_device() with pcim_enable_device(),
+> pci_disable_device() and pci_release_regions() will be
+> called in release automatically.
 >
-> This is a race condition between the ufx_ops_open() function and
-> the ufx_usb_disconnect() function, which may eventually result in UAF.
->
-> So, add a mutex to the ufx_ops_open() and ufx_usb_disconnect() functions
-> to avoid race contidion of krefs.
->
-> Signed-off-by: Hyunwoo Kim <imv4bel@gmail.com>
+> Signed-off-by: ruanjinjie <ruanjinjie@huawei.com>
 
 applied.
 
 Thanks!
 Helge
+
+> ---
+>   drivers/video/fbdev/tridentfb.c | 6 +-----
+>   1 file changed, 1 insertion(+), 5 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tride=
+ntfb.c
+> index f9c3b1d38fc2..7933e01aacc5 100644
+> --- a/drivers/video/fbdev/tridentfb.c
+> +++ b/drivers/video/fbdev/tridentfb.c
+> @@ -1475,7 +1475,7 @@ static int trident_pci_probe(struct pci_dev *dev,
+>   	if (err)
+>   		return err;
+>
+> -	err =3D pci_enable_device(dev);
+> +	err =3D pcim_enable_device(dev);
+>   	if (err)
+>   		return err;
+>
+> @@ -1715,12 +1715,10 @@ static int trident_pci_probe(struct pci_dev *dev=
+,
+>   	kfree(info->pixmap.addr);
+>   	if (info->screen_base)
+>   		iounmap(info->screen_base);
+> -	release_mem_region(tridentfb_fix.smem_start, tridentfb_fix.smem_len);
+>   	disable_mmio(info->par);
+>   out_unmap1:
+>   	if (default_par->io_virt)
+>   		iounmap(default_par->io_virt);
+> -	release_mem_region(tridentfb_fix.mmio_start, tridentfb_fix.mmio_len);
+>   	framebuffer_release(info);
+>   	return err;
+>   }
+> @@ -1735,8 +1733,6 @@ static void trident_pci_remove(struct pci_dev *dev=
+)
+>   		i2c_del_adapter(&par->ddc_adapter);
+>   	iounmap(par->io_virt);
+>   	iounmap(info->screen_base);
+> -	release_mem_region(tridentfb_fix.smem_start, tridentfb_fix.smem_len);
+> -	release_mem_region(tridentfb_fix.mmio_start, tridentfb_fix.mmio_len);
+>   	kfree(info->pixmap.addr);
+>   	fb_dealloc_cmap(&info->cmap);
+>   	framebuffer_release(info);
+

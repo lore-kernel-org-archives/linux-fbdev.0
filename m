@@ -2,109 +2,72 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16DF5C04A95
-	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Sep 2022 01:21:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85FB5C07E9D
+	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Sep 2022 04:50:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232983AbiIZBVP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 25 Sep 2022 21:21:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55516 "EHLO
+        id S229684AbiIZEul (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 26 Sep 2022 00:50:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43704 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232731AbiIZBVO (ORCPT
+        with ESMTP id S233001AbiIZEul (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 25 Sep 2022 21:21:14 -0400
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5737E240B2;
-        Sun, 25 Sep 2022 18:21:12 -0700 (PDT)
-Received: from kwepemi500008.china.huawei.com (unknown [172.30.72.53])
-        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4MbPxJ01bczWgtJ;
-        Mon, 26 Sep 2022 09:17:07 +0800 (CST)
-Received: from [10.67.109.254] (10.67.109.254) by
- kwepemi500008.china.huawei.com (7.221.188.139) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Mon, 26 Sep 2022 09:21:10 +0800
-Message-ID: <66e9a351-7ca0-ab02-35b1-2acbfebdde40@huawei.com>
-Date:   Mon, 26 Sep 2022 09:21:09 +0800
+        Mon, 26 Sep 2022 00:50:41 -0400
+Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90DA92654B
+        for <linux-fbdev@vger.kernel.org>; Sun, 25 Sep 2022 21:50:39 -0700 (PDT)
+Received: by mail-pj1-x1034.google.com with SMTP id j6-20020a17090a694600b00200bba67dadso5556361pjm.5
+        for <linux-fbdev@vger.kernel.org>; Sun, 25 Sep 2022 21:50:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date;
+        bh=8PxZH0BmsyJu9+ITF6qQvrU+JnlICuP2MjpJbjhQ5y0=;
+        b=qbqNGQfPQ6R0PH/uT+gONTWuOvI2r6XIk+/azya6UxU0kaTqdj1TeHfauyc0VUxp38
+         Nn4EjGYs4BSgxrnLzx3D6+mw2aMjfcJ6jERcsyKkRqcD+vqN9ykKfqLw3pi46HkRyWi7
+         hla2nbx8EZEFsTHssLouke52bR7gmv170RxLy0axkORVAr5Gep3mnOA1/wpmfAwUEwRU
+         X+HEDZ9boS8/I2Y1c5U1X85KNSMD+/u7EDOLMXN1SwH3y1iu5eXhyyjp6dqxlacQXMdw
+         bBUA5719DnSlCldxvvn9eFVNVmHhoARFlnstKOUaEWZyGIXuioEnES4s4zoOiIqerkdb
+         AcGg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date;
+        bh=8PxZH0BmsyJu9+ITF6qQvrU+JnlICuP2MjpJbjhQ5y0=;
+        b=iXqD04bBp4wpzktjcKKDYURYbi9wh8u6EPGZIcAv4hQ74PN2aljF2+hUqDr7T3AYO+
+         VaBjPN+QKa0NtVNfVdC5dxViEieMVVDauMRjxumtO9KnfKJdkfDe0wDp1jIz2TBLnw/d
+         6XFefzIvaYxxWakCmYemzbyrBeIajVgU1bnWWBo/AMdMJealfz971rnz5u78XJ4v9v8j
+         5vcd0RqE5nOK+cBCa3Zplx1G6WcICi7GcIEPXIPenBfo68ZEMbkrYmEWS96iGMpaRXc4
+         V1k9eHzCXTxXaPDL/8SgGJeNCd3wvlmFxV8Or4xQCR2fYS7pf3+ajmG/+DZKiJAtGMnD
+         DF1g==
+X-Gm-Message-State: ACrzQf0mhHib08vwQFucNoL2BKHLQqxiOp+71q62R5diz0KwsakLBANj
+        tjJz8mlfpWZtJ+46FTXwID/bZhgfMcE=
+X-Google-Smtp-Source: AMsMyM5jidO7BxUcy2yILHGXx/VYbFmwekvVE4ZTO0Z8QXVqKQ2/5c22vSg3uhBvBz+bHdfRG2HEGw==
+X-Received: by 2002:a17:902:ea11:b0:176:b283:9596 with SMTP id s17-20020a170902ea1100b00176b2839596mr19752292plg.69.1664167839026;
+        Sun, 25 Sep 2022 21:50:39 -0700 (PDT)
+Received: from ubuntu ([175.124.254.119])
+        by smtp.gmail.com with ESMTPSA id e9-20020a17090a280900b00203059fc75bsm5493653pjd.5.2022.09.25.21.50.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 25 Sep 2022 21:50:38 -0700 (PDT)
+Date:   Sun, 25 Sep 2022 21:50:34 -0700
+From:   Hyunwoo Kim <imv4bel@gmail.com>
+To:     Helge Deller <deller@gmx.de>
+Cc:     steve.glendinning@shawell.net, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v3] video: fbdev: smscufx: Fix use-after-free in
+ ufx_ops_open()
+Message-ID: <20220926045034.GA389532@ubuntu>
+References: <20220925133243.GA383897@ubuntu>
+ <37915429-7b4d-6e64-8ef7-a28bf8015fd5@gmx.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.0
-Subject: Re: [PATCH -next] video: fbdev: tridentfb: Fix missing
- pci_disable_device() in probe and remove
-Content-Language: en-US
-To:     Helge Deller <deller@gmx.de>, <zheyuma97@gmail.com>,
-        <javierm@redhat.com>, <wsa+renesas@sang-engineering.com>,
-        <tzimmermann@suse.de>, <linux-fbdev@vger.kernel.org>,
-        <dri-devel@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>
-References: <20220922013709.3324521-1-ruanjinjie@huawei.com>
- <eabf4405-7492-19c4-0827-a240e9c75dca@gmx.de>
-From:   Ruan Jinjie <ruanjinjie@huawei.com>
-In-Reply-To: <eabf4405-7492-19c4-0827-a240e9c75dca@gmx.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.67.109.254]
-X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
- kwepemi500008.china.huawei.com (7.221.188.139)
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <37915429-7b4d-6e64-8ef7-a28bf8015fd5@gmx.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Thank you very much!
+Thank you for your review.
 
-On 2022/9/26 0:21, Helge Deller wrote:
-> On 9/22/22 03:37, ruanjinjie wrote:
->> Replace pci_enable_device() with pcim_enable_device(),
->> pci_disable_device() and pci_release_regions() will be
->> called in release automatically.
->>
->> Signed-off-by: ruanjinjie <ruanjinjie@huawei.com>
-> 
-> applied.
-> 
-> Thanks!
-> Helge
-> 
->> ---
->>   drivers/video/fbdev/tridentfb.c | 6 +-----
->>   1 file changed, 1 insertion(+), 5 deletions(-)
->>
->> diff --git a/drivers/video/fbdev/tridentfb.c
->> b/drivers/video/fbdev/tridentfb.c
->> index f9c3b1d38fc2..7933e01aacc5 100644
->> --- a/drivers/video/fbdev/tridentfb.c
->> +++ b/drivers/video/fbdev/tridentfb.c
->> @@ -1475,7 +1475,7 @@ static int trident_pci_probe(struct pci_dev *dev,
->>       if (err)
->>           return err;
->>
->> -    err = pci_enable_device(dev);
->> +    err = pcim_enable_device(dev);
->>       if (err)
->>           return err;
->>
->> @@ -1715,12 +1715,10 @@ static int trident_pci_probe(struct pci_dev *dev,
->>       kfree(info->pixmap.addr);
->>       if (info->screen_base)
->>           iounmap(info->screen_base);
->> -    release_mem_region(tridentfb_fix.smem_start,
->> tridentfb_fix.smem_len);
->>       disable_mmio(info->par);
->>   out_unmap1:
->>       if (default_par->io_virt)
->>           iounmap(default_par->io_virt);
->> -    release_mem_region(tridentfb_fix.mmio_start,
->> tridentfb_fix.mmio_len);
->>       framebuffer_release(info);
->>       return err;
->>   }
->> @@ -1735,8 +1733,6 @@ static void trident_pci_remove(struct pci_dev *dev)
->>           i2c_del_adapter(&par->ddc_adapter);
->>       iounmap(par->io_virt);
->>       iounmap(info->screen_base);
->> -    release_mem_region(tridentfb_fix.smem_start,
->> tridentfb_fix.smem_len);
->> -    release_mem_region(tridentfb_fix.mmio_start,
->> tridentfb_fix.mmio_len);
->>       kfree(info->pixmap.addr);
->>       fb_dealloc_cmap(&info->cmap);
->>       framebuffer_release(info);
-> 
+
+Best Regards,
+Hyunwoo Kim.

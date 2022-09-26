@@ -2,72 +2,142 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85FB5C07E9D
-	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Sep 2022 04:50:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5BA5C32771
+	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Sep 2022 07:10:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229684AbiIZEul (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 26 Sep 2022 00:50:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43704 "EHLO
+        id S234079AbiIZHKr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 26 Sep 2022 03:10:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59850 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233001AbiIZEul (ORCPT
+        with ESMTP id S233891AbiIZHKW (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 26 Sep 2022 00:50:41 -0400
-Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90DA92654B
-        for <linux-fbdev@vger.kernel.org>; Sun, 25 Sep 2022 21:50:39 -0700 (PDT)
-Received: by mail-pj1-x1034.google.com with SMTP id j6-20020a17090a694600b00200bba67dadso5556361pjm.5
-        for <linux-fbdev@vger.kernel.org>; Sun, 25 Sep 2022 21:50:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date;
-        bh=8PxZH0BmsyJu9+ITF6qQvrU+JnlICuP2MjpJbjhQ5y0=;
-        b=qbqNGQfPQ6R0PH/uT+gONTWuOvI2r6XIk+/azya6UxU0kaTqdj1TeHfauyc0VUxp38
-         Nn4EjGYs4BSgxrnLzx3D6+mw2aMjfcJ6jERcsyKkRqcD+vqN9ykKfqLw3pi46HkRyWi7
-         hla2nbx8EZEFsTHssLouke52bR7gmv170RxLy0axkORVAr5Gep3mnOA1/wpmfAwUEwRU
-         X+HEDZ9boS8/I2Y1c5U1X85KNSMD+/u7EDOLMXN1SwH3y1iu5eXhyyjp6dqxlacQXMdw
-         bBUA5719DnSlCldxvvn9eFVNVmHhoARFlnstKOUaEWZyGIXuioEnES4s4zoOiIqerkdb
-         AcGg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date;
-        bh=8PxZH0BmsyJu9+ITF6qQvrU+JnlICuP2MjpJbjhQ5y0=;
-        b=iXqD04bBp4wpzktjcKKDYURYbi9wh8u6EPGZIcAv4hQ74PN2aljF2+hUqDr7T3AYO+
-         VaBjPN+QKa0NtVNfVdC5dxViEieMVVDauMRjxumtO9KnfKJdkfDe0wDp1jIz2TBLnw/d
-         6XFefzIvaYxxWakCmYemzbyrBeIajVgU1bnWWBo/AMdMJealfz971rnz5u78XJ4v9v8j
-         5vcd0RqE5nOK+cBCa3Zplx1G6WcICi7GcIEPXIPenBfo68ZEMbkrYmEWS96iGMpaRXc4
-         V1k9eHzCXTxXaPDL/8SgGJeNCd3wvlmFxV8Or4xQCR2fYS7pf3+ajmG/+DZKiJAtGMnD
-         DF1g==
-X-Gm-Message-State: ACrzQf0mhHib08vwQFucNoL2BKHLQqxiOp+71q62R5diz0KwsakLBANj
-        tjJz8mlfpWZtJ+46FTXwID/bZhgfMcE=
-X-Google-Smtp-Source: AMsMyM5jidO7BxUcy2yILHGXx/VYbFmwekvVE4ZTO0Z8QXVqKQ2/5c22vSg3uhBvBz+bHdfRG2HEGw==
-X-Received: by 2002:a17:902:ea11:b0:176:b283:9596 with SMTP id s17-20020a170902ea1100b00176b2839596mr19752292plg.69.1664167839026;
-        Sun, 25 Sep 2022 21:50:39 -0700 (PDT)
-Received: from ubuntu ([175.124.254.119])
-        by smtp.gmail.com with ESMTPSA id e9-20020a17090a280900b00203059fc75bsm5493653pjd.5.2022.09.25.21.50.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 25 Sep 2022 21:50:38 -0700 (PDT)
-Date:   Sun, 25 Sep 2022 21:50:34 -0700
-From:   Hyunwoo Kim <imv4bel@gmail.com>
-To:     Helge Deller <deller@gmx.de>
-Cc:     steve.glendinning@shawell.net, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v3] video: fbdev: smscufx: Fix use-after-free in
- ufx_ops_open()
-Message-ID: <20220926045034.GA389532@ubuntu>
-References: <20220925133243.GA383897@ubuntu>
- <37915429-7b4d-6e64-8ef7-a28bf8015fd5@gmx.de>
+        Mon, 26 Sep 2022 03:10:22 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4409BC69;
+        Mon, 26 Sep 2022 00:09:35 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 132E01FCEC;
+        Mon, 26 Sep 2022 07:09:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1664176173; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=ly+mBMSjR5+99cJhp0egOPTS0O5Jsqu/1wb5COyw4qg=;
+        b=2ZYPATPuV9rCu3ZsZUoJr+r0YOyszTY3I00wZvm+4U8hD0zqy0otFlAgwUVtVeIDWyRGc2
+        3CEHH+zaPKGcYCCsIuMvemmUyoKsB3ciG21W8CeYx7GHhlno+/EiUdJoJebcZuHyqzVxEc
+        SGXDga9JWTiw6HT0gISSC1Bngu7IcDA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1664176173;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=ly+mBMSjR5+99cJhp0egOPTS0O5Jsqu/1wb5COyw4qg=;
+        b=fqdoShhKRxBCqclbllvOLjI3mgC12oqkx8mmAIvQslAtqju93TYaJqLsk9wdvd2iwafRMX
+        PqWcwKZc9w3rpxDw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id DE456139BD;
+        Mon, 26 Sep 2022 07:09:32 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id IuxKNSxQMWNzMAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 26 Sep 2022 07:09:32 +0000
+Message-ID: <e3571e46-40d2-9b96-848b-ea7ceb8646be@suse.de>
+Date:   Mon, 26 Sep 2022 09:09:32 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <37915429-7b4d-6e64-8ef7-a28bf8015fd5@gmx.de>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.2.2
+Subject: Re: [PATCH 2/2] video: fbdev: gbefb: Remove unproper information
+Content-Language: en-US
+To:     Helge Deller <deller@gmx.de>,
+        Jiasheng Jiang <jiasheng@iscas.ac.cn>, broonie@kernel.org,
+        maarten.lankhorst@linux.intel.com, daniel.vetter@ffwll.ch
+Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+References: <20220902025612.3833972-1-jiasheng@iscas.ac.cn>
+ <d57755de-44dc-e39c-6f79-1c139a77525f@gmx.de>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <d57755de-44dc-e39c-6f79-1c139a77525f@gmx.de>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------v0PzPimV8QeGSfy1gdg0YYsv"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Thank you for your review.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------v0PzPimV8QeGSfy1gdg0YYsv
+Content-Type: multipart/mixed; boundary="------------BzsH74bs3ZPyVla2BMGSwHvF";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Helge Deller <deller@gmx.de>, Jiasheng Jiang <jiasheng@iscas.ac.cn>,
+ broonie@kernel.org, maarten.lankhorst@linux.intel.com, daniel.vetter@ffwll.ch
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+Message-ID: <e3571e46-40d2-9b96-848b-ea7ceb8646be@suse.de>
+Subject: Re: [PATCH 2/2] video: fbdev: gbefb: Remove unproper information
+References: <20220902025612.3833972-1-jiasheng@iscas.ac.cn>
+ <d57755de-44dc-e39c-6f79-1c139a77525f@gmx.de>
+In-Reply-To: <d57755de-44dc-e39c-6f79-1c139a77525f@gmx.de>
 
+--------------BzsH74bs3ZPyVla2BMGSwHvF
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Best Regards,
-Hyunwoo Kim.
+SGkNCg0KQW0gMjUuMDkuMjIgdW0gMTM6MjQgc2NocmllYiBIZWxnZSBEZWxsZXI6DQo+IE9u
+IDkvMi8yMiAwNDo1NiwgSmlhc2hlbmcgSmlhbmcgd3JvdGU6DQo+PiBXaGVuIGRyaXZlcnMg
+YXJlIHdvcmtpbmcgcHJvcGVybHksIHRoZXkgYXJlIHF1aWV0Lg0KPj4gVGhlcmVmb3JlLCB0
+aGUgZmJfaW5mbygpIHNob3VsZCBiZSByZW1vdmVkLg0KPiANCj4gTkFLLg0KPiBUaGlzIHNl
+ZW1zIHRvIGJlIHVzZWZ1bCBpbmZvIGFib3V0IHRoZSBkZXRlY3RlZCBjYXJkIGFuZCBpdCdz
+IG9ubHkNCj4gcHJpbnRlZCBvbmNlLg0KDQpXZWxsLCBoZSBoYXMgYSBwb2ludC4gTWF5YmUg
+dGhpcyBjb3VsZCBiZWNvbWUgYW4gZmJfZGJnKCkgPyAgKEJUVywgaXQncyANCmEgYml0IHVu
+Zm9ydHVuYXRlIHRoYXQgdGhlcmUncyBhbiBmYl9pbmZvIG1hY3JvIGFuZCBhbiBmYl9pbmZv
+IHN0cnVjdC4gOi8pDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4gDQo+IEhlbGdlDQo+
+IA0KPj4gU2lnbmVkLW9mZi1ieTogSmlhc2hlbmcgSmlhbmcgPGppYXNoZW5nQGlzY2FzLmFj
+LmNuPg0KPj4gLS0tDQo+PiDCoCBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2diZWZiLmMgfCA0IC0t
+LS0NCj4+IMKgIDEgZmlsZSBjaGFuZ2VkLCA0IGRlbGV0aW9ucygtKQ0KPj4NCj4+IGRpZmYg
+LS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2diZWZiLmMgYi9kcml2ZXJzL3ZpZGVvL2Zi
+ZGV2L2diZWZiLmMNCj4+IGluZGV4IDE1ODJjNzE4MzI5Yy4uN2UzOWFiOTM5NjkxIDEwMDY0
+NA0KPj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9nYmVmYi5jDQo+PiArKysgYi9kcml2
+ZXJzL3ZpZGVvL2ZiZGV2L2diZWZiLmMNCj4+IEBAIC0xMjE3LDEwICsxMjE3LDYgQEAgc3Rh
+dGljIGludCBnYmVmYl9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlIA0KPj4gKnBfZGV2
+KQ0KPj4NCj4+IMKgwqDCoMKgwqAgcGxhdGZvcm1fc2V0X2RydmRhdGEocF9kZXYsIGluZm8p
+Ow0KPj4NCj4+IC3CoMKgwqAgZmJfaW5mbyhpbmZvLCAiJXMgcmV2ICVkIEAgMHglMDh4IHVz
+aW5nICVka0IgbWVtb3J5XG4iLA0KPj4gLcKgwqDCoMKgwqDCoMKgIGluZm8tPmZpeC5pZCwg
+Z2JlX3JldmlzaW9uLCAodW5zaWduZWQpR0JFX0JBU0UsDQo+PiAtwqDCoMKgwqDCoMKgwqAg
+Z2JlX21lbV9zaXplID4+IDEwKTsNCj4+IC0NCj4+IMKgwqDCoMKgwqAgcmV0dXJuIDA7DQo+
+Pg0KPj4gwqAgb3V0X2diZV91bm1hcDoNCj4gDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4N
+CkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdl
+cm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQoo
+SFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2
+DQo=
+
+--------------BzsH74bs3ZPyVla2BMGSwHvF--
+
+--------------v0PzPimV8QeGSfy1gdg0YYsv
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmMxUCwFAwAAAAAACgkQlh/E3EQov+AS
+PA//epTyk0Ro2IGTikWzKpIsZN0JI5xqkfkmwM9oTVdU3N3uTRJpJxj4xAsEv4n0uvgI8Olg3+ci
+tdbweiMnDeKHhoSBsH+DRhbXSKA/UkDoj32VwHbgoAiFFA0VmXrAGIvLlrju4YxjckNEKnb/9E3i
+YT+8KURmi24Rqs5VC82YZeleImgybQUE/5UjOdyouKh6ixCdgal0WI+ijNU9ECIDbvcDE58xHDSx
++I1tOtjHOj+KFX6JxoMErNREMQOv5Sgv3J9zVnOaR9ZxHiozCli71VgxvWTtwM+uRa5HBAmhe0NT
+VazjJVw4OsuK60I0cM0jurbw/4dtPRaGe1SVlH3+BGL79cR37R8H3verjj48mJmU6cO4GyJJF04u
+vxLFjwENlwxZr8SP9p2g/oR9xVOK2/pHFVGFvT+MCRDu02mPsvu30Yr8B0BhadXXBeMRUeJ4Bqnw
+OgGicbHcel2EVC64k2au0g7aZXJ4Jhae81cKYQA2HGTqEpKt0A7uMHzoaO0AHKIQzGb/5+UBUsul
+w40zTV1MHkYVr3vCluDQefM6KH68Hm68z2gBVa2KktlRd3s5PErMIyVuMNrwDQXVw4yd6kBPRht2
+vDxZ4WpvwARv72ZK3OjJzoAoVYXygmIWtJ1BqicJPfXzqecepjED6sIN+KyHAJ7ML27HO7lUY1xw
+V3I=
+=p1Ou
+-----END PGP SIGNATURE-----
+
+--------------v0PzPimV8QeGSfy1gdg0YYsv--

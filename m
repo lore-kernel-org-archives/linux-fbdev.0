@@ -2,80 +2,103 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BA51C32771
-	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Sep 2022 15:35:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29805C32771
+	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Sep 2022 16:45:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236713AbiIZPfv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 26 Sep 2022 11:35:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52150 "EHLO
+        id S229600AbiIZQpE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 26 Sep 2022 12:45:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41608 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236873AbiIZPdu (ORCPT
+        with ESMTP id S229623AbiIZQoe (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 26 Sep 2022 11:33:50 -0400
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2F64286817;
-        Mon, 26 Sep 2022 07:21:03 -0700 (PDT)
-Received: from dggpemm500023.china.huawei.com (unknown [172.30.72.56])
-        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4MblF60X2yzWh38;
-        Mon, 26 Sep 2022 22:16:58 +0800 (CST)
-Received: from dggpemm500007.china.huawei.com (7.185.36.183) by
- dggpemm500023.china.huawei.com (7.185.36.83) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Mon, 26 Sep 2022 22:21:01 +0800
-Received: from huawei.com (10.175.103.91) by dggpemm500007.china.huawei.com
- (7.185.36.183) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.31; Mon, 26 Sep
- 2022 22:21:00 +0800
-From:   Yang Yingliang <yangyingliang@huawei.com>
-To:     <linux-fbdev@vger.kernel.org>, <linux-pwm@vger.kernel.org>,
-        <dri-devel@lists.freedesktop.org>
-CC:     <thierry.reding@gmail.com>, <u.kleine-koenig@pengutronix.de>,
-        <lee@kernel.org>, <daniel.thompson@linaro.org>,
-        <yangyingliang@huawei.com>
-Subject: [PATCH -next resend] backlight: pwm_bl: Switch to use dev_err_probe() helper
-Date:   Mon, 26 Sep 2022 22:27:50 +0800
-Message-ID: <20220926142750.2298337-1-yangyingliang@huawei.com>
-X-Mailer: git-send-email 2.25.1
+        Mon, 26 Sep 2022 12:44:34 -0400
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A3B5D8E984
+        for <linux-fbdev@vger.kernel.org>; Mon, 26 Sep 2022 08:32:37 -0700 (PDT)
+Received: by mail-wr1-x42c.google.com with SMTP id z6so10846321wrq.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 26 Sep 2022 08:32:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date;
+        bh=0KlEo+afyt4apyvxaLqPEL4NYXEKz5IumQTdfwKfpco=;
+        b=xoAHbUl+K1FV+nzNh1j3pmo5TlabCnsO83h8eMKm9rHlDB82YJ7aZGCJzVSGlL8J1F
+         prRS6DaKF27OYe2itAcEOrguRqR3JSe2uABB/yaTFX/3DdGi/eZX1+asJSt6vVcim4xy
+         iUrc+T5aQkrSWiQNtbScpF12JD3iXrdKtKCc5nw/EqgMvam2ccBd0Yw30/z6FMLF/bJ9
+         FPcbyo+6x51hfV4+tEky8O1HUNmPN4z/fcM9YmCEKTo5GdEl8dlg7GK0O6oP08wUIuJa
+         t3/l2cjZ8PFNTQDbkGcZy62nQ7mT2HaTctpyqC9QTPSR0flDO/QcVk7HdS2w/M8iJ+7K
+         llGA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date;
+        bh=0KlEo+afyt4apyvxaLqPEL4NYXEKz5IumQTdfwKfpco=;
+        b=3epYTkIJUqfXYjfVVUtRwei6vw7VcxPwhyisqh8Y3k72tF44SdxHrcKoRFdnWejvdM
+         KQoiTNKhxio3UMmVxpH/ghJ2O4aS3+FlH9lIMSIA7UjQs+UqDDCkOm3eac2+33OLEe/1
+         p8I2NFEqe9Mvs4gW0WCv1D1iYcgwrPZXX9Q2SCq011xa8XFAcBQd6Tu9pmXvoWgBrB3t
+         jij19gf8HVs/7nWHSD6jIRJ7/B76PBQZRXnBKnKS5Z+lEFeZnVNULgj3mS3Fm1YwQ6HD
+         uZ+rW2sOu1Jp4xosV4oMb7rftMa/UQDeHl8AhzPQRfNWQWDOZ01hfI1q23wenvPo/F0Y
+         avMQ==
+X-Gm-Message-State: ACrzQf2XTqcUw4+sKwPaRPsnvXCvNwlDyXgal+abVcbZmh3D+Jo8bl4/
+        QUnHVD5ggnuiQ/P+JsEARu1bppqx3swJ3yzH
+X-Google-Smtp-Source: AMsMyM52E5mqq6qKo38bBmoy7Uq9UewNHaL9e35Vmjh6mw2qQaPpjOuWlfz5YmM/Lchc3PeMqmWH1A==
+X-Received: by 2002:a05:6000:1e14:b0:22b:3aa1:f310 with SMTP id bj20-20020a0560001e1400b0022b3aa1f310mr12237323wrb.108.1664206356053;
+        Mon, 26 Sep 2022 08:32:36 -0700 (PDT)
+Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
+        by smtp.gmail.com with ESMTPSA id f9-20020a05600c154900b003a3442f1229sm12860585wmg.29.2022.09.26.08.32.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 26 Sep 2022 08:32:34 -0700 (PDT)
+Date:   Mon, 26 Sep 2022 16:32:32 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Yang Yingliang <yangyingliang@huawei.com>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        lee@kernel.org, jingoohan1@gmail.com
+Subject: Re: [PATCH -next v2] backlight: gpio_backlight: Switch to use
+ dev_err_probe() helper
+Message-ID: <YzHGEAoodSoamUIM@maple.lan>
+References: <20220926142447.2296872-1-yangyingliang@huawei.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [10.175.103.91]
-X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
- dggpemm500007.china.huawei.com (7.185.36.183)
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220926142447.2296872-1-yangyingliang@huawei.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-In the probe path, dev_err() can be replaced with dev_err_probe()
-which will check if error code is -EPROBE_DEFER and prints the
-error name. It also sets the defer probe reason which can be
-checked later through debugfs. It's more simple in error path.
+On Mon, Sep 26, 2022 at 10:24:47PM +0800, Yang Yingliang wrote:
+> In the probe path, dev_err() can be replaced with dev_err_probe()
+> which will check if error code is -EPROBE_DEFER and prints the
+> error name. It also sets the defer probe reason which can be
+> checked later through debugfs. It's more simple in error path.
+>
+> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+> ---
+> v2:
+>   Remove "Error: " in error meassage
+> ---
+>  drivers/video/backlight/gpio_backlight.c | 10 +++-------
+>  1 file changed, 3 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+> index 6f78d928f054..4ff3939e5f7e 100644
+> --- a/drivers/video/backlight/gpio_backlight.c
+> +++ b/drivers/video/backlight/gpio_backlight.c
+> @@ -64,13 +64,9 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+>  	def_value = device_property_read_bool(dev, "default-on");
+>
+>  	gbl->gpiod = devm_gpiod_get(dev, NULL, GPIOD_ASIS);
+> -	if (IS_ERR(gbl->gpiod)) {
+> -		ret = PTR_ERR(gbl->gpiod);
+> -		if (ret != -EPROBE_DEFER)
+> -			dev_err(dev,
+> -				"Error: The gpios parameter is missing or invalid.\n");
+> -		return ret;
+> -	}
+> +	if (IS_ERR(gbl->gpiod))
+> +		return dev_err_probe(dev, PTR_ERR(gbl->gpiod),
+> +				     "The gpios parameter is missing or invalid.\n");
 
-Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
----
-Resend for adding SoB.
----
- drivers/video/backlight/pwm_bl.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+Why keep the leading "The " ?
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index c0523a0269ee..ae858e3bd38f 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -513,9 +513,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	}
- 
- 	if (IS_ERR(pb->pwm)) {
--		ret = PTR_ERR(pb->pwm);
--		if (ret != -EPROBE_DEFER)
--			dev_err(&pdev->dev, "unable to request PWM\n");
-+		ret = dev_err_probe(&pdev->dev, PTR_ERR(pb->pwm),
-+				    "unable to request PWM\n");
- 		goto err_alloc;
- 	}
- 
--- 
-2.25.1
 
+Daniel.

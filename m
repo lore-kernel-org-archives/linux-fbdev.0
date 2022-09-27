@@ -2,78 +2,177 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C2F8C6FA82
-	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Sep 2022 10:57:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41F3AC54EE9
+	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Sep 2022 15:33:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229596AbiI0K5D (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 27 Sep 2022 06:57:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47436 "EHLO
+        id S231903AbiI0PdR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 27 Sep 2022 11:33:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46806 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231815AbiI0K4w (ORCPT
+        with ESMTP id S231981AbiI0PdP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 27 Sep 2022 06:56:52 -0400
-Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com [IPv6:2a00:1450:4864:20::32d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4382A9F0CF
-        for <linux-fbdev@vger.kernel.org>; Tue, 27 Sep 2022 03:56:48 -0700 (PDT)
-Received: by mail-wm1-x32d.google.com with SMTP id ay7-20020a05600c1e0700b003b49861bf48so802059wmb.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 27 Sep 2022 03:56:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date;
-        bh=1XJBHcRSEVBdxRCScP707zcT8rSQCT7edZ1g0/htxRk=;
-        b=pUS7QhQP5cGrbm+nUH5FSnKhNCujyXuMhhShWL/GXe7/y8hsTA2yD0l07pfEilsXwY
-         D2E/qI4Hh6MhK8RxYBSvzCtLV6O2KYW/o7xU6lU4JWCVOm3w/VBFvJbNTIUGEX96UNNB
-         1zWrZRH1m8NJ2UhncUcZT2dNM6okW/WWR0hrjoobCokk1CLaamCdQdQ30oA3MhvQZ60X
-         yuFNEBXrqlXwB438Y2yWklHga0yCObRxSS6cTUWIFXZSxLH8DD2J69EYG5iQ/CHgqnWu
-         faCth5OdDcNliBPvC2qWCWGtC/zFTV4wajw+SH9aonyg7Xhl3mq/DVX0eQPZG/Bqo24t
-         n9qg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date;
-        bh=1XJBHcRSEVBdxRCScP707zcT8rSQCT7edZ1g0/htxRk=;
-        b=r/t5cNp2TPst/NP+AZX9xM75c77VIUrVCt0eazne56GGZ7X0p5LWNBo/B+hWmyJVDX
-         nxFoj+66ibKND1KkMC40sYOsUO4WzEGCjf+Qyj+VFJNlxZCXWrCEWnZOoo/YOY3Ygfot
-         +A2FKy3Tsl0hOw7QRmh7LAJyL+Ym08f3IKJEbwNXUeJcIoFV/pnzwJiA6NXYUBVIfUXM
-         fM3A6UNj2bOL2eBziFBjv/cFSVn2rGOq/VXP/8Y6wWowtFDuPTlianQDR556Klvt5sx2
-         1jIuuiLoikuzhrkETS+el7Bx6SHYuo8mncsPNT2O+mF14Ds7ubrLgSHaCKRTfmfQStMb
-         cGpA==
-X-Gm-Message-State: ACrzQf3Gd/CvP9vrzYBmDUhZ1hRLk3p9BKJMnAeuRxA655E9a4EzaXz0
-        Gdw/Mms2sSWAiJ60HR/cmoYvNA==
-X-Google-Smtp-Source: AMsMyM50bBpGMcDLl8sfoP8lyLAdXtndWpMAyjMfquaKgWaxjFjP7Iq9XI59b7VH2Uz8ITGZgDijBg==
-X-Received: by 2002:a05:600c:1d2a:b0:3b4:6e31:92da with SMTP id l42-20020a05600c1d2a00b003b46e3192damr2047894wms.103.1664276206416;
-        Tue, 27 Sep 2022 03:56:46 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id q12-20020a7bce8c000000b003b5054c6cd2sm15926716wmj.36.2022.09.27.03.56.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Sep 2022 03:56:45 -0700 (PDT)
-Date:   Tue, 27 Sep 2022 11:56:43 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Yang Yingliang <yangyingliang@huawei.com>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        lee@kernel.org, jingoohan1@gmail.com
-Subject: Re: [PATCH -next v3] backlight: gpio_backlight: Switch to use
- dev_err_probe() helper
-Message-ID: <YzLW6zo/7k031jzi@maple.lan>
-References: <20220927033138.1945842-1-yangyingliang@huawei.com>
+        Tue, 27 Sep 2022 11:33:15 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC84B1C26E3
+        for <linux-fbdev@vger.kernel.org>; Tue, 27 Sep 2022 08:33:13 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 72A6621A5C;
+        Tue, 27 Sep 2022 15:33:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1664292791; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=Mi0hNi61uzt29JHAE0HhY8KMe8OoUKb8eX4Yo4wVoj0=;
+        b=XF4yO1eHQkjHeSmhInHYQ0xeRuzwGNi0aEQyau9ZWMvZc6LY0s+mmzH15WFJvk9T2s/dRO
+        x0340qGpPKGq+TdtxjfX8JlgnQRM/MhXC9n+aqEVx8Bm7EMSETljQy9zSs1SesHQzreCRA
+        yruMLkk0/hF/KqBtpVVd5HSJwvVY8uo=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1664292791;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=Mi0hNi61uzt29JHAE0HhY8KMe8OoUKb8eX4Yo4wVoj0=;
+        b=SCl/rPmRUb4JjrIpdj71X0Ih2a7xchqFv8Et0fWwdazWKjvEjk4X6brTntDYqotqfXSP66
+        lnQCTEp4dKgGd9CQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 30700139BE;
+        Tue, 27 Sep 2022 15:33:11 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id Cy3YCrcXM2PxWwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Tue, 27 Sep 2022 15:33:11 +0000
+Message-ID: <7d7bc5b6-2725-b43c-91a6-abcef50765b5@suse.de>
+Date:   Tue, 27 Sep 2022 17:33:10 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220927033138.1945842-1-yangyingliang@huawei.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.2.2
+Subject: Re: [PATCH v3 1/4] drm/ofdrm: Add ofdrm for Open Firmware
+ framebuffers
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     linux-fbdev@vger.kernel.org, airlied@linux.ie, mpe@ellerman.id.au,
+        deller@gmx.de, linuxppc-dev@lists.ozlabs.org,
+        mark.cave-ayland@ilande.co.uk, javierm@redhat.com,
+        dri-devel@lists.freedesktop.org, paulus@samba.org,
+        maxime@cerno.tech, msuchanek@suse.de, sam@ravnborg.org
+References: <20220922113306.11251-1-tzimmermann@suse.de>
+ <20220922113306.11251-2-tzimmermann@suse.de>
+ <CAMuHMdW1echz6wc6Y2cfjrkPa2vZW+X4s83rXo7VebJ0E+qaqg@mail.gmail.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <CAMuHMdW1echz6wc6Y2cfjrkPa2vZW+X4s83rXo7VebJ0E+qaqg@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------vUFJOhfb4n1ttBcE8WdbUHq9"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Sep 27, 2022 at 11:31:38AM +0800, Yang Yingliang wrote:
-> In the probe path, dev_err() can be replaced with dev_err_probe()
-> which will check if error code is -EPROBE_DEFER and prints the
-> error name. It also sets the defer probe reason which can be
-> checked later through debugfs. It's more simple in error path.
->
-> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------vUFJOhfb4n1ttBcE8WdbUHq9
+Content-Type: multipart/mixed; boundary="------------YXxC0cjTC70UcMr63EXK8BVv";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev@vger.kernel.org, airlied@linux.ie, mpe@ellerman.id.au,
+ deller@gmx.de, linuxppc-dev@lists.ozlabs.org, mark.cave-ayland@ilande.co.uk,
+ javierm@redhat.com, dri-devel@lists.freedesktop.org, paulus@samba.org,
+ maxime@cerno.tech, msuchanek@suse.de, sam@ravnborg.org
+Message-ID: <7d7bc5b6-2725-b43c-91a6-abcef50765b5@suse.de>
+Subject: Re: [PATCH v3 1/4] drm/ofdrm: Add ofdrm for Open Firmware
+ framebuffers
+References: <20220922113306.11251-1-tzimmermann@suse.de>
+ <20220922113306.11251-2-tzimmermann@suse.de>
+ <CAMuHMdW1echz6wc6Y2cfjrkPa2vZW+X4s83rXo7VebJ0E+qaqg@mail.gmail.com>
+In-Reply-To: <CAMuHMdW1echz6wc6Y2cfjrkPa2vZW+X4s83rXo7VebJ0E+qaqg@mail.gmail.com>
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+--------------YXxC0cjTC70UcMr63EXK8BVv
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
+SGkNCg0KQW0gMjMuMDkuMjIgdW0gMDk6MTQgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
+DQo+IEhpIFRob21hcywNCj4gDQo+IE9uIFRodSwgU2VwIDIyLCAyMDIyIGF0IDE6MzMgUE0g
+VGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+IHdyb3RlOg0KPj4gT3Bl
+biBGaXJtd2FyZSBwcm92aWRlcyBiYXNpYyBkaXNwbGF5IG91dHB1dCB2aWEgdGhlICdkaXNw
+bGF5JyBub2RlLg0KPj4gRFQgcGxhdGZvcm0gY29kZSBhbHJlYWR5IHByb3ZpZGVzIGEgZGV2
+aWNlIHRoYXQgcmVwcmVzZW50cyB0aGUgbm9kZSdzDQo+PiBmcmFtZWJ1ZmZlci4gQWRkIGEg
+RFJNIGRyaXZlciBmb3IgdGhlIGRldmljZS4gVGhlIGRpc3BsYXkgbW9kZSBhbmQNCj4+IGNv
+bG9yIGZvcm1hdCBpcyBwcmUtaW5pdGlhbGl6ZWQgYnkgdGhlIHN5c3RlbSdzIGZpcm13YXJl
+LiBSdW50aW1lDQo+PiBtb2Rlc2V0dGluZyB2aWEgRFJNIGlzIG5vdCBwb3NzaWJsZS4gVGhl
+IGRpc3BsYXkgaXMgdXNlZnVsIGR1cmluZw0KPj4gZWFybHkgYm9vdCBzdGFnZXMgb3IgYXMg
+ZXJyb3IgZmFsbGJhY2suDQo+Pg0KPj4gU2ltaWxhciBmdW5jdGlvbmFsaXR5IGlzIGFscmVh
+ZHkgcHJvdmlkZWQgYnkgZmJkZXYncyBvZmZiIGRyaXZlciwNCj4+IHdoaWNoIGlzIGluc3Vm
+ZmljaWVudCBmb3IgbW9kZXJuIHVzZXJzcGFjZS4gVGhlIG9sZCBkcml2ZXIgaW5jbHVkZXMN
+Cj4+IHN1cHBvcnQgZm9yIEJvb3RYIGRldmljZSB0cmVlLCB3aGljaCBjYW4gYmUgZm91bmQg
+b24gb2xkIDMyLWJpdA0KPj4gUG93ZXJQQyBNYWNpbnRvc2ggc3lzdGVtcy4gSWYgdGhlc2Ug
+YXJlIHN0aWxsIGluIHVzZSwgdGhlDQo+PiBmdW5jdGlvbmFsaXR5IGNhbiBiZSBhZGRlZCB0
+byBvZmRybSBvciBpbXBsZW1lbnRlZCBpbiBhIG5ldw0KPj4gZHJpdmVyLiBBcyB3aXRoIHNp
+bXBsZWRybSwgdGhlIGZiZGV2IGRyaXZlciBjYW5ub3QgYmUgc2VsZWN0ZWQgaWYNCj4+IG9m
+ZHJtIGlzIGFscmVhZHkgZW5hYmxlZC4NCj4gDQo+IFRoYW5rcyBmb3IgeW91ciBwYXRjaCEN
+Cj4gDQo+PiBUaGUgZHJpdmVyIGhhcyBiZWVuIHRlc3RlZCBvbiBxZW11J3MgcHBjNjRsZSBl
+bXVsYXRpb24uIFRoZSBkZXZpY2UNCj4+IGhhbmQtb3ZlciBoYXMgYmVlbiB0ZXN0ZWQgd2l0
+aCBib2Nocy4NCj4gDQo+IE9oLCB0ZXN0ZWQgb24gbGl0dGxlLWVuZGlhbiBvbmx5IDstKQ0K
+PiANCj4+IC0tLSAvZGV2L251bGwNCj4+ICsrKyBiL2RyaXZlcnMvZ3B1L2RybS90aW55L29m
+ZHJtLmMNCj4+ICtzdGF0aWMgY29uc3Qgc3RydWN0IGRybV9mb3JtYXRfaW5mbyAqZGlzcGxh
+eV9nZXRfdmFsaWRhdGVkX2Zvcm1hdChzdHJ1Y3QgZHJtX2RldmljZSAqZGV2LA0KPj4gKyAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgdTMyIGRlcHRoKQ0KPj4gK3sNCj4+ICsgICAgICAgY29uc3Qgc3RydWN0IGRy
+bV9mb3JtYXRfaW5mbyAqaW5mbzsNCj4+ICsgICAgICAgdTMyIGZvcm1hdDsNCj4+ICsNCj4+
+ICsgICAgICAgc3dpdGNoIChkZXB0aCkgew0KPj4gKyAgICAgICBjYXNlIDg6DQo+PiArICAg
+ICAgICAgICAgICAgZm9ybWF0ID0gZHJtX21vZGVfbGVnYWN5X2ZiX2Zvcm1hdCg4LCA4KTsN
+Cj4+ICsgICAgICAgICAgICAgICBicmVhazsNCj4+ICsgICAgICAgY2FzZSAxNToNCj4+ICsg
+ICAgICAgY2FzZSAxNjoNCj4+ICsgICAgICAgICAgICAgICBmb3JtYXQgPSBkcm1fbW9kZV9s
+ZWdhY3lfZmJfZm9ybWF0KDE2LCBkZXB0aCk7DQo+PiArICAgICAgICAgICAgICAgYnJlYWs7
+DQo+PiArICAgICAgIGNhc2UgMzI6DQo+PiArICAgICAgICAgICAgICAgZm9ybWF0ID0gZHJt
+X21vZGVfbGVnYWN5X2ZiX2Zvcm1hdCgzMiwgMjQpOw0KPiANCj4gU2hvdWxkbid0IGFsbCBv
+ZiB0aGVzZSB1c2UgZHJtX2RyaXZlcl9sZWdhY3lfZmJfZm9ybWF0KCkgKGFuZCB0aGUNCj4g
+ZHJpdmVyIHNldCBkcm1fbW9kZV9jb25maWcucXVpcmtfYWRkZmJfcHJlZmVyX2hvc3RfYnl0
+ZV9vcmRlcikgdG8gaGF2ZQ0KPiBhIGNoYW5jZSBvZiB3b3JraW5nIG9uIHRyYWRpdGlvbmFs
+IGJpZy1lbmRpYW4gUFBDPw0KDQpCaWcgdGhhbmtzIHRvIE1pY2hhbCBTdWNoYW5laywgd2hv
+IHBvaW50ZWQgbWUgdG8gYSBUdW1ibGV3ZWVkIGluc3RhbGxlciANCmZvciBiaWctZW5kaWFu
+IFBQQzY0LiBJJ3ZlIGFkZGVkIGNvZGUgdG8gc3VwcG9ydCBCRSBzY2Fub3V0IGJ1ZmZlcnMu
+IA0KSSdsbCBhZGQgdGhlIHBhdGNoIHRvIHRoZSBuZXh0IGl0ZXJhdGlvbi4gQnV0IFVzZXJz
+cGFjZSBpc24ndCByZWFsbHkgDQpyZWFkeSB5ZXQuIFBpeG1hbiBtb3N0bHkgd29ya3Mgb24g
+bXkgdGVzdCBzeXN0ZW0sIGJ1dCBHTCByZW5kZXJpbmcgDQpkaXNwbGF5cyBpbmNvcnJlY3Qg
+Y29sb3JzLg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KPiBHcntvZXRqZSxlZXRp
+bmd9cywNCj4gDQo+ICAgICAgICAgICAgICAgICAgICAgICAgICBHZWVydA0KPiANCj4gLS0N
+Cj4gR2VlcnQgVXl0dGVyaG9ldmVuIC0tIFRoZXJlJ3MgbG90cyBvZiBMaW51eCBiZXlvbmQg
+aWEzMiAtLSBnZWVydEBsaW51eC1tNjhrLm9yZw0KPiANCj4gSW4gcGVyc29uYWwgY29udmVy
+c2F0aW9ucyB3aXRoIHRlY2huaWNhbCBwZW9wbGUsIEkgY2FsbCBteXNlbGYgYSBoYWNrZXIu
+IEJ1dA0KPiB3aGVuIEknbSB0YWxraW5nIHRvIGpvdXJuYWxpc3RzIEkganVzdCBzYXkgInBy
+b2dyYW1tZXIiIG9yIHNvbWV0aGluZyBsaWtlIHRoYXQuDQo+ICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgIC0tIExpbnVzIFRvcnZhbGRzDQoNCi0tIA0KVGhvbWFzIFppbW1l
+cm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRp
+b25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJt
+YW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZv
+IFRvdGV2DQo=
 
-Daniel.
+--------------YXxC0cjTC70UcMr63EXK8BVv--
+
+--------------vUFJOhfb4n1ttBcE8WdbUHq9
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmMzF7YFAwAAAAAACgkQlh/E3EQov+BP
+zQ/6Axs3j3AKy1kWerkYJyF+XS98mE0/2mHVkUp7LuV4d5cpr1m+9IxUP70iWVvcN1sWWh49FA5x
+bwbmCw96jaFpZB0NoZyGoZRbutFE/eVgrIJffIu3asSeEq4fDiUIVg+nci2xQoWcnTgokxE7jQIw
+K4L8lB1+PihBzTXjGGyBUYsO2JrmqDpIfr/Mnh4/xojbtGrSTq7lpm5Jy4g2QZPmbRdU0QIKZKkc
+gCdE+FvG6GHrjzeUe3Y9bHLWbRvNVMgaIlyHgK6G+r9ruQoj4wDd4OtEQEjEs7eJXUVNkQPfRe9P
+QtSSUyrFBrVZrBmZIPgbibdGTablpxRPLlw42/YApu/KP9OJLXZ6FA/1ahH0Nrh++mCayod91YGz
+vm8zNMXkdIz8hIzck093OEB1FS58DTN+qx4Lb4dkx5PRNLTg9DwEY/1doYTRtrJ+oW3bqApIcycb
+z7kbt5s1AHa6DNLnaDoIr/BCSYmH8vrgycwH7sDUCy8mMJj0ao+Vi1qx5tCGz4cN+o0wpqP2LfGz
+uxmvAh23Q09N4hxY5IVujWk0D3J+Ap4UGH4CJT1sTS+fLG9YhGDkSb7dteDQ7ZhgBAcKiCVu4zRH
+51tx64xgzErHBylj0boEq1TbLufQm6nASoK56sDRFMjHe5tg29Q2Xg7g+Ol0aPyeIv3uEaYS8nXY
+raE=
+=rLtd
+-----END PGP SIGNATURE-----
+
+--------------vUFJOhfb4n1ttBcE8WdbUHq9--

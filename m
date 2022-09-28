@@ -2,162 +2,72 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5A4EC04A95
-	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Sep 2022 08:27:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 682D9C04A95
+	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Sep 2022 09:11:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229862AbiI1I1P (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 28 Sep 2022 04:27:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54362 "EHLO
+        id S233504AbiI1JLZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 28 Sep 2022 05:11:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43788 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233354AbiI1I1N (ORCPT
+        with ESMTP id S233265AbiI1JLS (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 28 Sep 2022 04:27:13 -0400
-Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE38972FEB
-        for <linux-fbdev@vger.kernel.org>; Wed, 28 Sep 2022 01:27:12 -0700 (PDT)
-Received: by mail-wm1-x332.google.com with SMTP id ay36so8059074wmb.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 28 Sep 2022 01:27:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date;
-        bh=lIZkVJj/+0M/778lpgTUWdNSZmlLsxXrL8AdvSaQ9uA=;
-        b=ctPKPM5Hp+aKGXd5b/qxoarEEZRc2m1B0LQIsoArSVt5/7H41uh661gxi/RDml0rYd
-         2r5BOIbXaMA3kX29XCKdaKjq+qXIsUhbWER32FXPcRD17gVj+FghNG53UZyxQEpFlD4Q
-         kVP6B2XVQA7RU6vjT2l3GCnPiCYCy5mF/v/NFHU0ThwaU7wdPrtJlSABrndONBoBgMao
-         TSb1o8jhHk9pHR1iolqzJMqxNe9kiGwyfGv8N4mTk5mCvrXtxFjs+b5mm9FmDKjtGKOe
-         1009NmbFv/t7L9YUIjhcR2kCOcuGZiIHRC6m5n9UvIip7Dk8KGnz21Ha8miWD9A5cJ25
-         Z+3g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date;
-        bh=lIZkVJj/+0M/778lpgTUWdNSZmlLsxXrL8AdvSaQ9uA=;
-        b=equ5VDzCoC5jTmsupeos7g/am/p1sMaoZ7O2tlL5qAdbB+mmurlrmi1d9ffTZgydxQ
-         FabqYrmvyq6OrTi/HmBpeLmppn07tQBAOZgy78oy5QXhto820L2pWtKDbdbpBVcZzfGz
-         cdyL/gS/6XS1n5oXIU9aLiXFTAEZTQ++AysynrgmvMpB5XGSbeZXOlaiB4asKxlDwAEX
-         x0U2TbpotmyLSbQhsWC2pQ/m4LSpTYs1hjv/5Vzl2OFZzO/Hn9p6siBx89G1zuGlBxWL
-         PtqQR53DKng9pJlTEYaZmAy4TJdQkoiXAK3eOKE1I+7UfG/ukoVHwqNAaRGKIPplmTGP
-         3sSw==
-X-Gm-Message-State: ACrzQf2Y1XdFdL/kF20q8vnFy+MlsWrY429WF1JraVyFz7wb8y0yJSSH
-        8OR9WpK6uzMyd6f0lO34JxncHQ==
-X-Google-Smtp-Source: AMsMyM5WybFYGhvPIuGUG0NAbItu/BNNr4V3dn5K2Y44thiLh67dAhNGUZdbVuP/yWoFCFZh7xh5MQ==
-X-Received: by 2002:a1c:7c12:0:b0:3b4:73e1:bdd7 with SMTP id x18-20020a1c7c12000000b003b473e1bdd7mr5998070wmc.32.1664353631341;
-        Wed, 28 Sep 2022 01:27:11 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id t18-20020adfe452000000b00228cd9f6349sm3714776wrm.106.2022.09.28.01.27.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Sep 2022 01:27:10 -0700 (PDT)
-Date:   Wed, 28 Sep 2022 09:27:08 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     yexingchen116@gmail.com
-Cc:     jingoohan1@gmail.com, lee@kernel.org, deller@gmx.de,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, ye xingchen <ye.xingchen@zte.com.cn>
-Subject: Re: [PATCH linux-next v2] backlight: use sysfs_emit() to instead of
- scnprintf()
-Message-ID: <YzQFXLD/G90+YEdo@maple.lan>
-References: <20220928014115.261470-1-ye.xingchen@zte.com.cn>
+        Wed, 28 Sep 2022 05:11:18 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 716F86556F
+        for <linux-fbdev@vger.kernel.org>; Wed, 28 Sep 2022 02:11:12 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 0210861DC0
+        for <linux-fbdev@vger.kernel.org>; Wed, 28 Sep 2022 09:11:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 22AF1C433B5;
+        Wed, 28 Sep 2022 09:11:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1664356271;
+        bh=8Ac9VJN6hOMB54pgc7YGs5fVvmhr+G9YDpSL6A6INKc=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=E9rMLE75Qeuy2XefhgL+hBKG9WjxQcu7vrQtSKX1f+hELVtlHEzJiTVidCQJ+GbDI
+         SmH5RevcaH1zUEahuTe1kWhfbFy8Isecx10Z2aVtp+vnftbXu4U3ZMaj/H8GJ1Pfu3
+         GsclsmIdyu3vpgq3tFdKa5YsjtQ8UibA7BchbIvTtXCvS4o3vx5s8QiyXH86G+scuf
+         cYDFyn7WSaUSxrEV06K9r/v/bnozMoHOhP86DmrvHQqUAiJSTIFuHjfyaE55mdCaq0
+         mgwmAVfuP2kMhu+gJKgH4btCnnumtrGGKRdux9+TDgjpWb1jD/gFnyBKLmWNebPpem
+         YLbl1LKn+qPuQ==
+Date:   Wed, 28 Sep 2022 10:11:06 +0100
+From:   Lee Jones <lee@kernel.org>
+To:     Daniel Thompson <daniel.thompson@linaro.org>
+Cc:     Yang Yingliang <yangyingliang@huawei.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        jingoohan1@gmail.com
+Subject: Re: [PATCH -next v3] backlight: gpio_backlight: Switch to use
+ dev_err_probe() helper
+Message-ID: <YzQPqjinYYAZdcR+@google.com>
+References: <20220927033138.1945842-1-yangyingliang@huawei.com>
+ <YzLW6zo/7k031jzi@maple.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20220928014115.261470-1-ye.xingchen@zte.com.cn>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <YzLW6zo/7k031jzi@maple.lan>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Sep 28, 2022 at 01:41:15AM +0000, yexingchen116@gmail.com wrote:
-> From: ye xingchen <ye.xingchen@zte.com.cn>
->
-> Replace the open-code with sysfs_emit() to simplify the code.
->
-> Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
-> ---
-> v1 -> v2
-> Add the rest of this fixes for this pattern in the 'drivers/video/backlight' directory.
->  drivers/video/backlight/lm3533_bl.c | 10 +++++-----
->  drivers/video/backlight/lp855x_bl.c |  4 ++--
+On Tue, 27 Sep 2022, Daniel Thompson wrote:
 
-What happened to the lp8788 fixes?
+> On Tue, Sep 27, 2022 at 11:31:38AM +0800, Yang Yingliang wrote:
+> > In the probe path, dev_err() can be replaced with dev_err_probe()
+> > which will check if error code is -EPROBE_DEFER and prints the
+> > error name. It also sets the defer probe reason which can be
+> > checked later through debugfs. It's more simple in error path.
+> >
+> > Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+> 
+> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
 
-Daniel.
+The original patch is not in my inbox.
 
+Was I missed from the original mail?
 
->  2 files changed, 7 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/video/backlight/lm3533_bl.c b/drivers/video/backlight/lm3533_bl.c
-> index 1df1b6643c0b..5e2ce9285245 100644
-> --- a/drivers/video/backlight/lm3533_bl.c
-> +++ b/drivers/video/backlight/lm3533_bl.c
-> @@ -66,7 +66,7 @@ static ssize_t show_id(struct device *dev,
->  {
->  	struct lm3533_bl *bl = dev_get_drvdata(dev);
->
-> -	return scnprintf(buf, PAGE_SIZE, "%d\n", bl->id);
-> +	return sysfs_emit(buf, "%d\n", bl->id);
->  }
->
->  static ssize_t show_als_channel(struct device *dev,
-> @@ -75,7 +75,7 @@ static ssize_t show_als_channel(struct device *dev,
->  	struct lm3533_bl *bl = dev_get_drvdata(dev);
->  	unsigned channel = lm3533_bl_get_ctrlbank_id(bl);
->
-> -	return scnprintf(buf, PAGE_SIZE, "%u\n", channel);
-> +	return sysfs_emit(buf, "%u\n", channel);
->  }
->
->  static ssize_t show_als_en(struct device *dev,
-> @@ -95,7 +95,7 @@ static ssize_t show_als_en(struct device *dev,
->  	mask = 1 << (2 * ctrlbank);
->  	enable = val & mask;
->
-> -	return scnprintf(buf, PAGE_SIZE, "%d\n", enable);
-> +	return sysfs_emit(buf, "%d\n", enable);
->  }
->
->  static ssize_t store_als_en(struct device *dev,
-> @@ -147,7 +147,7 @@ static ssize_t show_linear(struct device *dev,
->  	else
->  		linear = 0;
->
-> -	return scnprintf(buf, PAGE_SIZE, "%x\n", linear);
-> +	return sysfs_emit(buf, "%x\n", linear);
->  }
->
->  static ssize_t store_linear(struct device *dev,
-> @@ -190,7 +190,7 @@ static ssize_t show_pwm(struct device *dev,
->  	if (ret)
->  		return ret;
->
-> -	return scnprintf(buf, PAGE_SIZE, "%u\n", val);
-> +	return sysfs_emit(buf, "%u\n", val);
->  }
->
->  static ssize_t store_pwm(struct device *dev,
-> diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-> index bd0bdeae23a4..fafc1a9e76ef 100644
-> --- a/drivers/video/backlight/lp855x_bl.c
-> +++ b/drivers/video/backlight/lp855x_bl.c
-> @@ -293,7 +293,7 @@ static ssize_t lp855x_get_chip_id(struct device *dev,
->  {
->  	struct lp855x *lp = dev_get_drvdata(dev);
->
-> -	return scnprintf(buf, PAGE_SIZE, "%s\n", lp->chipname);
-> +	return sysfs_emit(buf, "%s\n", lp->chipname);
->  }
->
->  static ssize_t lp855x_get_bl_ctl_mode(struct device *dev,
-> @@ -307,7 +307,7 @@ static ssize_t lp855x_get_bl_ctl_mode(struct device *dev,
->  	else if (lp->mode == REGISTER_BASED)
->  		strmode = "register based";
->
-> -	return scnprintf(buf, PAGE_SIZE, "%s\n", strmode);
-> +	return sysfs_emit(buf, "%s\n", strmode);
->  }
->
->  static DEVICE_ATTR(chip_id, S_IRUGO, lp855x_get_chip_id, NULL);
-> --
-> 2.25.1
->
->
+-- 
+Lee Jones [李琼斯]

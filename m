@@ -2,177 +2,152 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41F3AC54EE9
-	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Sep 2022 15:33:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 857B8C07E9D
+	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Sep 2022 01:41:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231903AbiI0PdR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 27 Sep 2022 11:33:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46806 "EHLO
+        id S229771AbiI1Bl0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 27 Sep 2022 21:41:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51342 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231981AbiI0PdP (ORCPT
+        with ESMTP id S231684AbiI1BlZ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 27 Sep 2022 11:33:15 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC84B1C26E3
-        for <linux-fbdev@vger.kernel.org>; Tue, 27 Sep 2022 08:33:13 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 72A6621A5C;
-        Tue, 27 Sep 2022 15:33:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1664292791; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=Mi0hNi61uzt29JHAE0HhY8KMe8OoUKb8eX4Yo4wVoj0=;
-        b=XF4yO1eHQkjHeSmhInHYQ0xeRuzwGNi0aEQyau9ZWMvZc6LY0s+mmzH15WFJvk9T2s/dRO
-        x0340qGpPKGq+TdtxjfX8JlgnQRM/MhXC9n+aqEVx8Bm7EMSETljQy9zSs1SesHQzreCRA
-        yruMLkk0/hF/KqBtpVVd5HSJwvVY8uo=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1664292791;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=Mi0hNi61uzt29JHAE0HhY8KMe8OoUKb8eX4Yo4wVoj0=;
-        b=SCl/rPmRUb4JjrIpdj71X0Ih2a7xchqFv8Et0fWwdazWKjvEjk4X6brTntDYqotqfXSP66
-        lnQCTEp4dKgGd9CQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 30700139BE;
-        Tue, 27 Sep 2022 15:33:11 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id Cy3YCrcXM2PxWwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Tue, 27 Sep 2022 15:33:11 +0000
-Message-ID: <7d7bc5b6-2725-b43c-91a6-abcef50765b5@suse.de>
-Date:   Tue, 27 Sep 2022 17:33:10 +0200
+        Tue, 27 Sep 2022 21:41:25 -0400
+Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5A9451BB6C0;
+        Tue, 27 Sep 2022 18:41:24 -0700 (PDT)
+Received: by mail-pf1-x42c.google.com with SMTP id 9so11191277pfz.12;
+        Tue, 27 Sep 2022 18:41:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date;
+        bh=eAwgA8BGMVVMxNp7JTXLjpsmeLFwCAL7NP0XLkLYUBE=;
+        b=kNzBXFh17EpTe4Zm/ykApJYQG1VxxzwJhYHGO2Q7jLKFkEmSQNED69jo+lGj6MsB/i
+         JWn9VNX8ZgzEfXwbHmxTs1PxHZ7SBp7w/WDc6DjmteAEORlcatEdAqoOK3HvQptCy/fT
+         61ZrQxTzq0lHt5lMIPqgGTuecVT+r/BuBw/ifkRLgFDoTy3l4sQ7fpZgIodAS0c8KjNJ
+         dCHSIkQFF82Wd/gKighQpP3aBKrC7hymDevYMe/n5HpkBPMYwlqL0QrPsDwsOhTex7TC
+         W5E+sNcugFEEZB+50Txc6Y4MBQdhIGJcrVvqzG3rFMBYmMX1i44gzCYHoLByO0LSlr1C
+         qosw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date;
+        bh=eAwgA8BGMVVMxNp7JTXLjpsmeLFwCAL7NP0XLkLYUBE=;
+        b=GzsgEOczpiQV0i19paP3KH8D56wrYrDPV6JkULmm4mFXV6pVG4qQ8AiV+fAN4+LnKD
+         OVGwZ1iWeBxabGGsrcC69vEWaGcoQT8CEUM1mphuXBcD9Jm5Et1x0F5qoBJljrMwJf52
+         wLo8yql2Sbh8YLLxriC4Lc4WMa/u0pbYJ2W5a9wn4O+PHAQDybTvPgAr5xhnhTwKKhd+
+         R5YxajJw+IaIfiZpFJxYteqWi23zJY19t8o4A0f3go4b8AN9hEq4FmumARWNROK4dGBM
+         5BFTBa4B6PqtrRc5O1HLTwe3G6dQICjlQe8h5048g64S1viqhFY/OQ6gCpcyKRXroHGM
+         MsFw==
+X-Gm-Message-State: ACrzQf3C48qlq94ihJZUuZLJaCVVE1pCOR01E0VHNUc9+ZdVbspUrANQ
+        2/i7fBUcHbDwDDwWyz9b3zU=
+X-Google-Smtp-Source: AMsMyM6KFgNRR2OZXGm1nYTwzsxxG1ueDqktGrPUjgpkdhgBtOMApvbIh2x6bSImTsuWTbLiAZ/Qqg==
+X-Received: by 2002:a05:6a00:acc:b0:530:e79e:fc27 with SMTP id c12-20020a056a000acc00b00530e79efc27mr32313608pfl.61.1664329283732;
+        Tue, 27 Sep 2022 18:41:23 -0700 (PDT)
+Received: from localhost.localdomain ([193.203.214.57])
+        by smtp.gmail.com with ESMTPSA id k13-20020a170902c40d00b00176d218889esm2272516plk.228.2022.09.27.18.41.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 27 Sep 2022 18:41:23 -0700 (PDT)
+From:   yexingchen116@gmail.com
+X-Google-Original-From: ye.xingchen@zte.com.cn
+To:     jingoohan1@gmail.com
+Cc:     lee@kernel.org, daniel.thompson@linaro.org, deller@gmx.de,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, ye xingchen <ye.xingchen@zte.com.cn>
+Subject: [PATCH linux-next v2] backlight: use sysfs_emit() to instead of scnprintf()
+Date:   Wed, 28 Sep 2022 01:41:15 +0000
+Message-Id: <20220928014115.261470-1-ye.xingchen@zte.com.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.2
-Subject: Re: [PATCH v3 1/4] drm/ofdrm: Add ofdrm for Open Firmware
- framebuffers
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     linux-fbdev@vger.kernel.org, airlied@linux.ie, mpe@ellerman.id.au,
-        deller@gmx.de, linuxppc-dev@lists.ozlabs.org,
-        mark.cave-ayland@ilande.co.uk, javierm@redhat.com,
-        dri-devel@lists.freedesktop.org, paulus@samba.org,
-        maxime@cerno.tech, msuchanek@suse.de, sam@ravnborg.org
-References: <20220922113306.11251-1-tzimmermann@suse.de>
- <20220922113306.11251-2-tzimmermann@suse.de>
- <CAMuHMdW1echz6wc6Y2cfjrkPa2vZW+X4s83rXo7VebJ0E+qaqg@mail.gmail.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <CAMuHMdW1echz6wc6Y2cfjrkPa2vZW+X4s83rXo7VebJ0E+qaqg@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------vUFJOhfb4n1ttBcE8WdbUHq9"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------vUFJOhfb4n1ttBcE8WdbUHq9
-Content-Type: multipart/mixed; boundary="------------YXxC0cjTC70UcMr63EXK8BVv";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-fbdev@vger.kernel.org, airlied@linux.ie, mpe@ellerman.id.au,
- deller@gmx.de, linuxppc-dev@lists.ozlabs.org, mark.cave-ayland@ilande.co.uk,
- javierm@redhat.com, dri-devel@lists.freedesktop.org, paulus@samba.org,
- maxime@cerno.tech, msuchanek@suse.de, sam@ravnborg.org
-Message-ID: <7d7bc5b6-2725-b43c-91a6-abcef50765b5@suse.de>
-Subject: Re: [PATCH v3 1/4] drm/ofdrm: Add ofdrm for Open Firmware
- framebuffers
-References: <20220922113306.11251-1-tzimmermann@suse.de>
- <20220922113306.11251-2-tzimmermann@suse.de>
- <CAMuHMdW1echz6wc6Y2cfjrkPa2vZW+X4s83rXo7VebJ0E+qaqg@mail.gmail.com>
-In-Reply-To: <CAMuHMdW1echz6wc6Y2cfjrkPa2vZW+X4s83rXo7VebJ0E+qaqg@mail.gmail.com>
+From: ye xingchen <ye.xingchen@zte.com.cn>
 
---------------YXxC0cjTC70UcMr63EXK8BVv
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Replace the open-code with sysfs_emit() to simplify the code.
 
-SGkNCg0KQW0gMjMuMDkuMjIgdW0gMDk6MTQgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
-DQo+IEhpIFRob21hcywNCj4gDQo+IE9uIFRodSwgU2VwIDIyLCAyMDIyIGF0IDE6MzMgUE0g
-VGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+IHdyb3RlOg0KPj4gT3Bl
-biBGaXJtd2FyZSBwcm92aWRlcyBiYXNpYyBkaXNwbGF5IG91dHB1dCB2aWEgdGhlICdkaXNw
-bGF5JyBub2RlLg0KPj4gRFQgcGxhdGZvcm0gY29kZSBhbHJlYWR5IHByb3ZpZGVzIGEgZGV2
-aWNlIHRoYXQgcmVwcmVzZW50cyB0aGUgbm9kZSdzDQo+PiBmcmFtZWJ1ZmZlci4gQWRkIGEg
-RFJNIGRyaXZlciBmb3IgdGhlIGRldmljZS4gVGhlIGRpc3BsYXkgbW9kZSBhbmQNCj4+IGNv
-bG9yIGZvcm1hdCBpcyBwcmUtaW5pdGlhbGl6ZWQgYnkgdGhlIHN5c3RlbSdzIGZpcm13YXJl
-LiBSdW50aW1lDQo+PiBtb2Rlc2V0dGluZyB2aWEgRFJNIGlzIG5vdCBwb3NzaWJsZS4gVGhl
-IGRpc3BsYXkgaXMgdXNlZnVsIGR1cmluZw0KPj4gZWFybHkgYm9vdCBzdGFnZXMgb3IgYXMg
-ZXJyb3IgZmFsbGJhY2suDQo+Pg0KPj4gU2ltaWxhciBmdW5jdGlvbmFsaXR5IGlzIGFscmVh
-ZHkgcHJvdmlkZWQgYnkgZmJkZXYncyBvZmZiIGRyaXZlciwNCj4+IHdoaWNoIGlzIGluc3Vm
-ZmljaWVudCBmb3IgbW9kZXJuIHVzZXJzcGFjZS4gVGhlIG9sZCBkcml2ZXIgaW5jbHVkZXMN
-Cj4+IHN1cHBvcnQgZm9yIEJvb3RYIGRldmljZSB0cmVlLCB3aGljaCBjYW4gYmUgZm91bmQg
-b24gb2xkIDMyLWJpdA0KPj4gUG93ZXJQQyBNYWNpbnRvc2ggc3lzdGVtcy4gSWYgdGhlc2Ug
-YXJlIHN0aWxsIGluIHVzZSwgdGhlDQo+PiBmdW5jdGlvbmFsaXR5IGNhbiBiZSBhZGRlZCB0
-byBvZmRybSBvciBpbXBsZW1lbnRlZCBpbiBhIG5ldw0KPj4gZHJpdmVyLiBBcyB3aXRoIHNp
-bXBsZWRybSwgdGhlIGZiZGV2IGRyaXZlciBjYW5ub3QgYmUgc2VsZWN0ZWQgaWYNCj4+IG9m
-ZHJtIGlzIGFscmVhZHkgZW5hYmxlZC4NCj4gDQo+IFRoYW5rcyBmb3IgeW91ciBwYXRjaCEN
-Cj4gDQo+PiBUaGUgZHJpdmVyIGhhcyBiZWVuIHRlc3RlZCBvbiBxZW11J3MgcHBjNjRsZSBl
-bXVsYXRpb24uIFRoZSBkZXZpY2UNCj4+IGhhbmQtb3ZlciBoYXMgYmVlbiB0ZXN0ZWQgd2l0
-aCBib2Nocy4NCj4gDQo+IE9oLCB0ZXN0ZWQgb24gbGl0dGxlLWVuZGlhbiBvbmx5IDstKQ0K
-PiANCj4+IC0tLSAvZGV2L251bGwNCj4+ICsrKyBiL2RyaXZlcnMvZ3B1L2RybS90aW55L29m
-ZHJtLmMNCj4+ICtzdGF0aWMgY29uc3Qgc3RydWN0IGRybV9mb3JtYXRfaW5mbyAqZGlzcGxh
-eV9nZXRfdmFsaWRhdGVkX2Zvcm1hdChzdHJ1Y3QgZHJtX2RldmljZSAqZGV2LA0KPj4gKyAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgdTMyIGRlcHRoKQ0KPj4gK3sNCj4+ICsgICAgICAgY29uc3Qgc3RydWN0IGRy
-bV9mb3JtYXRfaW5mbyAqaW5mbzsNCj4+ICsgICAgICAgdTMyIGZvcm1hdDsNCj4+ICsNCj4+
-ICsgICAgICAgc3dpdGNoIChkZXB0aCkgew0KPj4gKyAgICAgICBjYXNlIDg6DQo+PiArICAg
-ICAgICAgICAgICAgZm9ybWF0ID0gZHJtX21vZGVfbGVnYWN5X2ZiX2Zvcm1hdCg4LCA4KTsN
-Cj4+ICsgICAgICAgICAgICAgICBicmVhazsNCj4+ICsgICAgICAgY2FzZSAxNToNCj4+ICsg
-ICAgICAgY2FzZSAxNjoNCj4+ICsgICAgICAgICAgICAgICBmb3JtYXQgPSBkcm1fbW9kZV9s
-ZWdhY3lfZmJfZm9ybWF0KDE2LCBkZXB0aCk7DQo+PiArICAgICAgICAgICAgICAgYnJlYWs7
-DQo+PiArICAgICAgIGNhc2UgMzI6DQo+PiArICAgICAgICAgICAgICAgZm9ybWF0ID0gZHJt
-X21vZGVfbGVnYWN5X2ZiX2Zvcm1hdCgzMiwgMjQpOw0KPiANCj4gU2hvdWxkbid0IGFsbCBv
-ZiB0aGVzZSB1c2UgZHJtX2RyaXZlcl9sZWdhY3lfZmJfZm9ybWF0KCkgKGFuZCB0aGUNCj4g
-ZHJpdmVyIHNldCBkcm1fbW9kZV9jb25maWcucXVpcmtfYWRkZmJfcHJlZmVyX2hvc3RfYnl0
-ZV9vcmRlcikgdG8gaGF2ZQ0KPiBhIGNoYW5jZSBvZiB3b3JraW5nIG9uIHRyYWRpdGlvbmFs
-IGJpZy1lbmRpYW4gUFBDPw0KDQpCaWcgdGhhbmtzIHRvIE1pY2hhbCBTdWNoYW5laywgd2hv
-IHBvaW50ZWQgbWUgdG8gYSBUdW1ibGV3ZWVkIGluc3RhbGxlciANCmZvciBiaWctZW5kaWFu
-IFBQQzY0LiBJJ3ZlIGFkZGVkIGNvZGUgdG8gc3VwcG9ydCBCRSBzY2Fub3V0IGJ1ZmZlcnMu
-IA0KSSdsbCBhZGQgdGhlIHBhdGNoIHRvIHRoZSBuZXh0IGl0ZXJhdGlvbi4gQnV0IFVzZXJz
-cGFjZSBpc24ndCByZWFsbHkgDQpyZWFkeSB5ZXQuIFBpeG1hbiBtb3N0bHkgd29ya3Mgb24g
-bXkgdGVzdCBzeXN0ZW0sIGJ1dCBHTCByZW5kZXJpbmcgDQpkaXNwbGF5cyBpbmNvcnJlY3Qg
-Y29sb3JzLg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KPiBHcntvZXRqZSxlZXRp
-bmd9cywNCj4gDQo+ICAgICAgICAgICAgICAgICAgICAgICAgICBHZWVydA0KPiANCj4gLS0N
-Cj4gR2VlcnQgVXl0dGVyaG9ldmVuIC0tIFRoZXJlJ3MgbG90cyBvZiBMaW51eCBiZXlvbmQg
-aWEzMiAtLSBnZWVydEBsaW51eC1tNjhrLm9yZw0KPiANCj4gSW4gcGVyc29uYWwgY29udmVy
-c2F0aW9ucyB3aXRoIHRlY2huaWNhbCBwZW9wbGUsIEkgY2FsbCBteXNlbGYgYSBoYWNrZXIu
-IEJ1dA0KPiB3aGVuIEknbSB0YWxraW5nIHRvIGpvdXJuYWxpc3RzIEkganVzdCBzYXkgInBy
-b2dyYW1tZXIiIG9yIHNvbWV0aGluZyBsaWtlIHRoYXQuDQo+ICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIC0tIExpbnVzIFRvcnZhbGRzDQoNCi0tIA0KVGhvbWFzIFppbW1l
-cm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRp
-b25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJt
-YW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZv
-IFRvdGV2DQo=
+Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
+---
+v1 -> v2
+Add the rest of this fixes for this pattern in the 'drivers/video/backlight' directory.
+ drivers/video/backlight/lm3533_bl.c | 10 +++++-----
+ drivers/video/backlight/lp855x_bl.c |  4 ++--
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
---------------YXxC0cjTC70UcMr63EXK8BVv--
+diff --git a/drivers/video/backlight/lm3533_bl.c b/drivers/video/backlight/lm3533_bl.c
+index 1df1b6643c0b..5e2ce9285245 100644
+--- a/drivers/video/backlight/lm3533_bl.c
++++ b/drivers/video/backlight/lm3533_bl.c
+@@ -66,7 +66,7 @@ static ssize_t show_id(struct device *dev,
+ {
+ 	struct lm3533_bl *bl = dev_get_drvdata(dev);
+ 
+-	return scnprintf(buf, PAGE_SIZE, "%d\n", bl->id);
++	return sysfs_emit(buf, "%d\n", bl->id);
+ }
+ 
+ static ssize_t show_als_channel(struct device *dev,
+@@ -75,7 +75,7 @@ static ssize_t show_als_channel(struct device *dev,
+ 	struct lm3533_bl *bl = dev_get_drvdata(dev);
+ 	unsigned channel = lm3533_bl_get_ctrlbank_id(bl);
+ 
+-	return scnprintf(buf, PAGE_SIZE, "%u\n", channel);
++	return sysfs_emit(buf, "%u\n", channel);
+ }
+ 
+ static ssize_t show_als_en(struct device *dev,
+@@ -95,7 +95,7 @@ static ssize_t show_als_en(struct device *dev,
+ 	mask = 1 << (2 * ctrlbank);
+ 	enable = val & mask;
+ 
+-	return scnprintf(buf, PAGE_SIZE, "%d\n", enable);
++	return sysfs_emit(buf, "%d\n", enable);
+ }
+ 
+ static ssize_t store_als_en(struct device *dev,
+@@ -147,7 +147,7 @@ static ssize_t show_linear(struct device *dev,
+ 	else
+ 		linear = 0;
+ 
+-	return scnprintf(buf, PAGE_SIZE, "%x\n", linear);
++	return sysfs_emit(buf, "%x\n", linear);
+ }
+ 
+ static ssize_t store_linear(struct device *dev,
+@@ -190,7 +190,7 @@ static ssize_t show_pwm(struct device *dev,
+ 	if (ret)
+ 		return ret;
+ 
+-	return scnprintf(buf, PAGE_SIZE, "%u\n", val);
++	return sysfs_emit(buf, "%u\n", val);
+ }
+ 
+ static ssize_t store_pwm(struct device *dev,
+diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
+index bd0bdeae23a4..fafc1a9e76ef 100644
+--- a/drivers/video/backlight/lp855x_bl.c
++++ b/drivers/video/backlight/lp855x_bl.c
+@@ -293,7 +293,7 @@ static ssize_t lp855x_get_chip_id(struct device *dev,
+ {
+ 	struct lp855x *lp = dev_get_drvdata(dev);
+ 
+-	return scnprintf(buf, PAGE_SIZE, "%s\n", lp->chipname);
++	return sysfs_emit(buf, "%s\n", lp->chipname);
+ }
+ 
+ static ssize_t lp855x_get_bl_ctl_mode(struct device *dev,
+@@ -307,7 +307,7 @@ static ssize_t lp855x_get_bl_ctl_mode(struct device *dev,
+ 	else if (lp->mode == REGISTER_BASED)
+ 		strmode = "register based";
+ 
+-	return scnprintf(buf, PAGE_SIZE, "%s\n", strmode);
++	return sysfs_emit(buf, "%s\n", strmode);
+ }
+ 
+ static DEVICE_ATTR(chip_id, S_IRUGO, lp855x_get_chip_id, NULL);
+-- 
+2.25.1
 
---------------vUFJOhfb4n1ttBcE8WdbUHq9
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
 
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmMzF7YFAwAAAAAACgkQlh/E3EQov+BP
-zQ/6Axs3j3AKy1kWerkYJyF+XS98mE0/2mHVkUp7LuV4d5cpr1m+9IxUP70iWVvcN1sWWh49FA5x
-bwbmCw96jaFpZB0NoZyGoZRbutFE/eVgrIJffIu3asSeEq4fDiUIVg+nci2xQoWcnTgokxE7jQIw
-K4L8lB1+PihBzTXjGGyBUYsO2JrmqDpIfr/Mnh4/xojbtGrSTq7lpm5Jy4g2QZPmbRdU0QIKZKkc
-gCdE+FvG6GHrjzeUe3Y9bHLWbRvNVMgaIlyHgK6G+r9ruQoj4wDd4OtEQEjEs7eJXUVNkQPfRe9P
-QtSSUyrFBrVZrBmZIPgbibdGTablpxRPLlw42/YApu/KP9OJLXZ6FA/1ahH0Nrh++mCayod91YGz
-vm8zNMXkdIz8hIzck093OEB1FS58DTN+qx4Lb4dkx5PRNLTg9DwEY/1doYTRtrJ+oW3bqApIcycb
-z7kbt5s1AHa6DNLnaDoIr/BCSYmH8vrgycwH7sDUCy8mMJj0ao+Vi1qx5tCGz4cN+o0wpqP2LfGz
-uxmvAh23Q09N4hxY5IVujWk0D3J+Ap4UGH4CJT1sTS+fLG9YhGDkSb7dteDQ7ZhgBAcKiCVu4zRH
-51tx64xgzErHBylj0boEq1TbLufQm6nASoK56sDRFMjHe5tg29Q2Xg7g+Ol0aPyeIv3uEaYS8nXY
-raE=
-=rLtd
------END PGP SIGNATURE-----
-
---------------vUFJOhfb4n1ttBcE8WdbUHq9--

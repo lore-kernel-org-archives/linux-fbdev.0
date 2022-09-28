@@ -2,53 +2,49 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2B08C04A95
-	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Sep 2022 10:53:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7990C6FA86
+	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Sep 2022 10:53:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233817AbiI1Kxw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 28 Sep 2022 06:53:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33864 "EHLO
+        id S233854AbiI1Kxx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 28 Sep 2022 06:53:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33924 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233971AbiI1Kxa (ORCPT
+        with ESMTP id S233993AbiI1Kxa (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Wed, 28 Sep 2022 06:53:30 -0400
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0A866615C
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CED353894
         for <linux-fbdev@vger.kernel.org>; Wed, 28 Sep 2022 03:50:27 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id C97DC1F8A6;
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 213611F891;
         Wed, 28 Sep 2022 10:50:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
         t=1664362212; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=KvQUnoBsokfmHLiz+N8DTo/Xf7RtApmgDFfcTdjEzD4=;
-        b=dbydHlbMC1BgPwRNzOR2k+W7EMP0+xwdAkva9hvPEIbwF46ndFRpP+hQD4SFgDwNttc8uk
-        2NzE8q9Jkbpp7nigZmDq67PStLYFGC8Q91YN2hBEit9yDOWJCBVxVGBxpuycYbXoEz2vjP
-        PgsXScIA4/QZ84dJ2akPESUehOGvsNo=
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=rvKjXOZrj9Wkmgpg1gpT8gS7uKDIb9UkBqyu7OJAIyo=;
+        b=eu2p8khAqGYaAgPD0U7yJFj05dU/KA0hqSYjHISQ6h82b6QO10/8mybWBFaJkjhKcpnAsC
+        5VPZUXi/MlU9MpC39eftRRvTTLCl/D1/Zkd2SeGv1hnXyA0S+flR6IVJ8GkW4wKpFuu4B8
+        iwrdepvHLOtOqDHk8wjpPAEEIClXEwQ=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
         s=susede2_ed25519; t=1664362212;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=KvQUnoBsokfmHLiz+N8DTo/Xf7RtApmgDFfcTdjEzD4=;
-        b=hax/IOoqQMEu1Ku+jVk29pEs+EQ45uYwOpGRQhzfqU0IpcL+slyJMfsIlgFdrz7updUehR
-        nBTi4PY9diKpAlAA==
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=rvKjXOZrj9Wkmgpg1gpT8gS7uKDIb9UkBqyu7OJAIyo=;
+        b=48QzWCvsuPUQgcTrjJ477vilsoAWv9GwxlMZtaUaZq1DDjQTky/6TNckQNK+oXXXtO2ffk
+        ltpoqOWV2SCXhdDg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 83D3213A84;
-        Wed, 28 Sep 2022 10:50:12 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C898E13A84;
+        Wed, 28 Sep 2022 10:50:11 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id KMhjH+QmNGMUEwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Wed, 28 Sep 2022 10:50:12 +0000
+        id cpIpMOMmNGMUEwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 28 Sep 2022 10:50:11 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     javierm@redhat.com, airlied@linux.ie, daniel@ffwll.ch,
         deller@gmx.de, maxime@cerno.tech, sam@ravnborg.org,
@@ -58,111 +54,60 @@ To:     javierm@redhat.com, airlied@linux.ie, daniel@ffwll.ch,
 Cc:     linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
         dri-devel@lists.freedesktop.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v4 2/5] drm/ofdrm: Add CRTC state
-Date:   Wed, 28 Sep 2022 12:50:07 +0200
-Message-Id: <20220928105010.18880-3-tzimmermann@suse.de>
+Subject: [PATCH v4 0/5] drm: Add driver for PowerPC OF displays
+Date:   Wed, 28 Sep 2022 12:50:05 +0200
+Message-Id: <20220928105010.18880-1-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.37.3
-In-Reply-To: <20220928105010.18880-1-tzimmermann@suse.de>
-References: <20220928105010.18880-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Add a dedicated CRTC state to ofdrm to later store information for
-palette updates.
+PowerPC's Open Firmware offers a simple display buffer for graphics
+output. Add ofdrm, a DRM driver for the device. As with the existing
+simpledrm driver, the graphics hardware is pre-initialized by the
+firmware. The driver only provides blitting, no actual DRM modesetting
+is possible.
 
-v3:
-	* rework CRTC state helpers (Javier)
+Patch 1 adds ofdrm, which has again been significantly reworked.
+The FWFB library has been removed infavor of various functions in
+existing DRM helper libraries. Ofdrm now supports damage iterators
+and synchronization for imported GEM BOs.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
----
- drivers/gpu/drm/tiny/ofdrm.c | 59 ++++++++++++++++++++++++++++++++++--
- 1 file changed, 56 insertions(+), 3 deletions(-)
+Patches 2 to 4 add support for color management. The code has been
+taken from fbdev's offb. I have no hardware available for testing the
+functionality. Qemu's stdvga apparently does not support gamma tables
+in RGB modes. I verified that the color management code is executed
+by running Gnome's night-mode settings, but the display's color tone
+does not change.
 
-diff --git a/drivers/gpu/drm/tiny/ofdrm.c b/drivers/gpu/drm/tiny/ofdrm.c
-index 98bd99ab7e46..d53ca70934b5 100644
---- a/drivers/gpu/drm/tiny/ofdrm.c
-+++ b/drivers/gpu/drm/tiny/ofdrm.c
-@@ -278,6 +278,21 @@ static struct resource *ofdrm_find_fb_resource(struct ofdrm_device *odev,
-  * Modesetting
-  */
- 
-+struct ofdrm_crtc_state {
-+	struct drm_crtc_state base;
-+};
-+
-+static struct ofdrm_crtc_state *to_ofdrm_crtc_state(struct drm_crtc_state *base)
-+{
-+	return container_of(base, struct ofdrm_crtc_state, base);
-+}
-+
-+static void ofdrm_crtc_state_destroy(struct ofdrm_crtc_state *ofdrm_crtc_state)
-+{
-+	__drm_atomic_helper_crtc_destroy_state(&ofdrm_crtc_state->base);
-+	kfree(ofdrm_crtc_state);
-+}
-+
- /*
-  * Support all formats of OF display and maybe more; in order
-  * of preference. The display's update function will do any
-@@ -428,13 +443,51 @@ static const struct drm_crtc_helper_funcs ofdrm_crtc_helper_funcs = {
- 	.atomic_check = ofdrm_crtc_helper_atomic_check,
- };
- 
-+static void ofdrm_crtc_reset(struct drm_crtc *crtc)
-+{
-+	struct ofdrm_crtc_state *ofdrm_crtc_state =
-+		kzalloc(sizeof(*ofdrm_crtc_state), GFP_KERNEL);
-+
-+	if (crtc->state)
-+		ofdrm_crtc_state_destroy(to_ofdrm_crtc_state(crtc->state));
-+
-+	if (ofdrm_crtc_state)
-+		__drm_atomic_helper_crtc_reset(crtc, &ofdrm_crtc_state->base);
-+	else
-+		__drm_atomic_helper_crtc_reset(crtc, NULL);
-+}
-+
-+static struct drm_crtc_state *ofdrm_crtc_atomic_duplicate_state(struct drm_crtc *crtc)
-+{
-+	struct drm_device *dev = crtc->dev;
-+	struct drm_crtc_state *crtc_state = crtc->state;
-+	struct ofdrm_crtc_state *new_ofdrm_crtc_state;
-+
-+	if (drm_WARN_ON(dev, !crtc_state))
-+		return NULL;
-+
-+	new_ofdrm_crtc_state = kzalloc(sizeof(*new_ofdrm_crtc_state), GFP_KERNEL);
-+	if (!new_ofdrm_crtc_state)
-+		return NULL;
-+
-+	__drm_atomic_helper_crtc_duplicate_state(crtc, &new_ofdrm_crtc_state->base);
-+
-+	return &new_ofdrm_crtc_state->base;
-+}
-+
-+static void ofdrm_crtc_atomic_destroy_state(struct drm_crtc *crtc,
-+					    struct drm_crtc_state *crtc_state)
-+{
-+	ofdrm_crtc_state_destroy(to_ofdrm_crtc_state(crtc_state));
-+}
-+
- static const struct drm_crtc_funcs ofdrm_crtc_funcs = {
--	.reset = drm_atomic_helper_crtc_reset,
-+	.reset = ofdrm_crtc_reset,
- 	.destroy = drm_crtc_cleanup,
- 	.set_config = drm_atomic_helper_set_config,
- 	.page_flip = drm_atomic_helper_page_flip,
--	.atomic_duplicate_state = drm_atomic_helper_crtc_duplicate_state,
--	.atomic_destroy_state = drm_atomic_helper_crtc_destroy_state,
-+	.atomic_duplicate_state = ofdrm_crtc_atomic_duplicate_state,
-+	.atomic_destroy_state = ofdrm_crtc_atomic_destroy_state,
- };
- 
- static int ofdrm_connector_helper_get_modes(struct drm_connector *connector)
+Patch 5, which is new in version 4 of this patchset, adds support for
+big-endian scanout buffers. It works at least with qemu's ppc64
+emulation. Fbdev emulation and pixman rendering works. GL rendering
+produces incorrect colors.
+
+Tested by running fbdev emulation, Wayland Gnome, and Weston on qemu's
+ppc64le and ppc64 emulation. 
+
+Thomas Zimmermann (5):
+  drm/ofdrm: Add ofdrm for Open Firmware framebuffers
+  drm/ofdrm: Add CRTC state
+  drm/ofdrm: Add per-model device function
+  drm/ofdrm: Support color management
+  drm/ofdrm: Support big-endian scanout buffers
+
+ MAINTAINERS                         |    1 +
+ drivers/gpu/drm/drm_format_helper.c |   10 +
+ drivers/gpu/drm/tiny/Kconfig        |   13 +
+ drivers/gpu/drm/tiny/Makefile       |    1 +
+ drivers/gpu/drm/tiny/ofdrm.c        | 1421 +++++++++++++++++++++++++++
+ drivers/video/fbdev/Kconfig         |    1 +
+ 6 files changed, 1447 insertions(+)
+ create mode 100644 drivers/gpu/drm/tiny/ofdrm.c
+
+
+base-commit: eee1f4330f388247943e97b93008ef11ababfda0
 -- 
 2.37.3
 

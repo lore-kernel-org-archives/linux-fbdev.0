@@ -2,107 +2,89 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7BF1C43217
-	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Oct 2022 02:53:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75196C433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Oct 2022 05:33:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230230AbiJFCxR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 5 Oct 2022 22:53:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37890 "EHLO
+        id S230169AbiJFFdm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 6 Oct 2022 01:33:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42146 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230110AbiJFCvz (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 5 Oct 2022 22:51:55 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E718888DC7;
-        Wed,  5 Oct 2022 19:51:19 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id C87D3B81ED2;
-        Thu,  6 Oct 2022 02:51:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B0C0C433C1;
-        Thu,  6 Oct 2022 02:51:15 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
-        dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="ZjRINvwJ"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-        t=1665024674;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=Mw6mQIkw0EUTS+KZQ2KSjRHdoL9NDRAH5QoihL5z5WY=;
-        b=ZjRINvwJ8Y9RjW9mEsxvsruTRD/kCfvgVCkQ7u/7FdIMuudgLfBeipJujcK5PkA7gRibAE
-        3JueW/NR7m/oXbBMBVnvqYoxLNjKuH/oJSyVnlnwJCBcUbNW9D0yGDKzhSBYRR6jQJKX/l
-        SKoNsI97C5YuUj19TWpVavwkTswS1bY=
-Received: by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id a3526377 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-        Thu, 6 Oct 2022 02:51:14 +0000 (UTC)
-From:   "Jason A. Donenfeld" <Jason@zx2c4.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     "Jason A. Donenfeld" <Jason@zx2c4.com>,
-        brcm80211-dev-list.pdl@broadcom.com, cake@lists.bufferbloat.net,
-        ceph-devel@vger.kernel.org, coreteam@netfilter.org,
-        dccp@vger.kernel.org, dev@openvswitch.org,
-        dmaengine@vger.kernel.org, drbd-dev@lists.linbit.com,
-        dri-devel@lists.freedesktop.org, kasan-dev@googlegroups.com,
-        linux-actions@lists.infradead.org,
-        linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org,
-        linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org,
-        linux-ext4@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net,
-        linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-        linux-hams@vger.kernel.org, linux-media@vger.kernel.org,
-        linux-mm@kvack.org, linux-mmc@vger.kernel.org,
-        linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
-        linux-nvme@lists.infradead.org, linux-raid@vger.kernel.org,
-        linux-rdma@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linux-sctp@vger.kernel.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
-        linux-xfs@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        lvs-devel@vger.kernel.org, netdev@vger.kernel.org,
-        netfilter-devel@vger.kernel.org, rds-devel@oss.oracle.com,
-        SHA-cyfmac-dev-list@infineon.com, target-devel@vger.kernel.org,
-        tipc-discussion@lists.sourceforge.net
-Subject: [PATCH v1 5/5] prandom: remove unused functions
-Date:   Wed,  5 Oct 2022 23:48:44 +0200
-Message-Id: <20221005214844.2699-6-Jason@zx2c4.com>
-In-Reply-To: <20221005214844.2699-1-Jason@zx2c4.com>
-References: <20221005214844.2699-1-Jason@zx2c4.com>
+        with ESMTP id S230162AbiJFFdk (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Oct 2022 01:33:40 -0400
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C9C6A8A1E8;
+        Wed,  5 Oct 2022 22:33:39 -0700 (PDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+        by localhost (Postfix) with ESMTP id 4Mjg8f3LxDz9srM;
+        Thu,  6 Oct 2022 07:33:38 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+        by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id FcCf-JPVJsZG; Thu,  6 Oct 2022 07:33:38 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+        by pegase2.c-s.fr (Postfix) with ESMTP id 4Mjg8f2WLzz9srL;
+        Thu,  6 Oct 2022 07:33:38 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+        by messagerie.si.c-s.fr (Postfix) with ESMTP id 47D268B765;
+        Thu,  6 Oct 2022 07:33:38 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+        by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+        with ESMTP id n-KpVnNpT6jZ; Thu,  6 Oct 2022 07:33:38 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.234])
+        by messagerie.si.c-s.fr (Postfix) with ESMTP id 2A94F8B763;
+        Thu,  6 Oct 2022 07:33:38 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+        by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2965XNRc212701
+        (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+        Thu, 6 Oct 2022 07:33:23 +0200
+Received: (from chleroy@localhost)
+        by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2965XNgs212672;
+        Thu, 6 Oct 2022 07:33:23 +0200
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
+From:   Christophe Leroy <christophe.leroy@csgroup.eu>
+To:     Helge Deller <deller@gmx.de>
+Cc:     Christophe Leroy <christophe.leroy@csgroup.eu>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH] video: fbdev: mb862xx: Replace NO_IRQ by 0
+Date:   Thu,  6 Oct 2022 07:33:17 +0200
+Message-Id: <58bf3cab7a6a7797f109ea40490cf5520c4b565d.1665034339.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.37.1
 MIME-Version: 1.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1665034396; l=946; s=20211009; h=from:subject:message-id; bh=5rrnv9tXfKElM58dckx8PfsDwOBKrbY7NKno08H6cjA=; b=OK1tf77KEbziItN8h1cB68jly42cwL3MPYQqo3UrdTiKSLjRbeWZtYkpnbOg+ZMRHzaXTDM9eFze UyHMOdeQCm2nJRYP75OJFzzIQ5EQjzxHi27AX6LMawn2ucnwSOE0
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-With no callers left of prandom_u32() and prandom_bytes(), remove these
-deprecated wrappers.
+NO_IRQ is used to check the return of irq_of_parse_and_map().
 
-Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
+On some architecture NO_IRQ is 0, on other architectures it is -1.
+
+irq_of_parse_and_map() returns 0 on error, independent of NO_IRQ.
+
+So use 0 instead of using NO_IRQ.
+
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- include/linux/prandom.h | 12 ------------
- 1 file changed, 12 deletions(-)
+ drivers/video/fbdev/mb862xx/mb862xxfbdrv.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/linux/prandom.h b/include/linux/prandom.h
-index 78db003bc290..e0a0759dd09c 100644
---- a/include/linux/prandom.h
-+++ b/include/linux/prandom.h
-@@ -12,18 +12,6 @@
- #include <linux/percpu.h>
- #include <linux/random.h>
+diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
+index a7508f5be343..3f605d2d8f0c 100644
+--- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
++++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
+@@ -692,7 +692,7 @@ static int of_platform_mb862xx_probe(struct platform_device *ofdev)
+ 	par->dev = dev;
  
--/* Deprecated: use get_random_u32 instead. */
--static inline u32 prandom_u32(void)
--{
--	return get_random_u32();
--}
--
--/* Deprecated: use get_random_bytes instead. */
--static inline void prandom_bytes(void *buf, size_t nbytes)
--{
--	return get_random_bytes(buf, nbytes);
--}
--
- struct rnd_state {
- 	__u32 s1, s2, s3, s4;
- };
+ 	par->irq = irq_of_parse_and_map(np, 0);
+-	if (par->irq == NO_IRQ) {
++	if (!par->irq) {
+ 		dev_err(dev, "failed to map irq\n");
+ 		ret = -ENODEV;
+ 		goto fbrel;
 -- 
-2.37.3
+2.37.1
 

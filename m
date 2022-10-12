@@ -2,59 +2,71 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AE31C433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Oct 2022 12:08:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D9F8C433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Oct 2022 13:13:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229490AbiJLMIk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 12 Oct 2022 08:08:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37526 "EHLO
+        id S229585AbiJLNNN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 12 Oct 2022 09:13:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53600 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229918AbiJLMIK (ORCPT
+        with ESMTP id S229815AbiJLNNA (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 12 Oct 2022 08:08:10 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A4EBC4C31
-        for <linux-fbdev@vger.kernel.org>; Wed, 12 Oct 2022 05:07:54 -0700 (PDT)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
-        by smtp-out2.suse.de (Postfix) with ESMTP id 6AA791F381;
-        Wed, 12 Oct 2022 12:07:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1665576433; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=FLCPJxzJ0YYg2ZOgvIOSJ8Odau36xhYM3uJca/JYmTM=;
-        b=aWK/GoG2/0N0MOrwxh+/O+NkFUqsPj6bfy5yFCLcAwu+RgOePf0jIIImImg3Y1z8Lq+jHr
-        Al6xFtCJq6TsFtHU2tv2HjYcuG5ZZZCptGMC4NAnKqXEdevp5mz3Bbmt74HeMXbrunIpAx
-        vIv2jeSVjZtVPFlwENubImIy2xQiStI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1665576433;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=FLCPJxzJ0YYg2ZOgvIOSJ8Odau36xhYM3uJca/JYmTM=;
-        b=EUwrAEdomB1XMZtAb3Yak1TjM5uFoJg8tDEwZcbhsHvzbyH78mVYjePQByhRCfQyASeXAt
-        qc/d/WVFS1IFuUDw==
-Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by relay2.suse.de (Postfix) with ESMTPS id 312582C141;
-        Wed, 12 Oct 2022 12:07:11 +0000 (UTC)
-Date:   Wed, 12 Oct 2022 14:07:09 +0200
-From:   Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To:     Arnd Bergmann <arnd@arndb.de>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        Maxime Ripard <maxime@cerno.tech>, sam@ravnborg.org,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        benh@kernel.crashing.org, Paul Mackerras <paulus@samba.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        mark.cave-ayland@ilande.co.uk, linux-fbdev@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v4 5/5] drm/ofdrm: Support big-endian scanout buffers
-Message-ID: <20221012120709.GC28810@kitsune.suse.cz>
-References: <20220928105010.18880-6-tzimmermann@suse.de>
+        Wed, 12 Oct 2022 09:13:00 -0400
+Received: from out3-smtp.messagingengine.com (out3-smtp.messagingengine.com [66.111.4.27])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D6327FE6F
+        for <linux-fbdev@vger.kernel.org>; Wed, 12 Oct 2022 06:12:59 -0700 (PDT)
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+        by mailout.nyi.internal (Postfix) with ESMTP id C0B415C008B;
+        Wed, 12 Oct 2022 09:12:56 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute3.internal (MEProxy); Wed, 12 Oct 2022 09:12:56 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+        :cc:content-type:date:date:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to; s=fm2; t=1665580376; x=1665666776; bh=Ct4fEaGcnx
+        W60ym69bXCH9mc9qXYaXsYB/Q4TrRfNec=; b=gDDtqy2G6/6ho8fsUc2YXwQBNy
+        qDV9YtM36YfT/3GCfD5l/gpVQMsIkKRm1+8hVv7KWOBvguYwxYgrdc82rQYoR6j+
+        Sprdv8wKqTKDxZ+5QCgLDsAm3SgRkU/g3bDfxfFgplzoGKQtPj4Nwz50AGvbxeOO
+        hxrCnwMfk6eKrCenRifiNywRyiz1LYLBSA2OdFNbXS0BVSuoWBpaTfzyptQKHxLI
+        urHMKY0Rq9CZlOESkHl6iI6Cx3w6SbXp14Ht89wEoj4JUWycoyHXwglQdvOx+0qc
+        puBAbrYvDqm8+Xr4AWmLbdyfG5YIQDDCQIx/vzbWQy3f/LXNDnG1RSIFdh+Q==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
+        :feedback-id:from:from:in-reply-to:in-reply-to:message-id
+        :mime-version:references:reply-to:sender:subject:subject:to:to
+        :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+        fm3; t=1665580376; x=1665666776; bh=Ct4fEaGcnxW60ym69bXCH9mc9qXY
+        aXsYB/Q4TrRfNec=; b=OWCSrc95pvOMPngNghm6dRIUz7Fu8nhJoQ+BtGUnfmsK
+        qLWORC8NXA5dMYP+euL376k3W2dX+gaOgp3NyJQN82POobBdn/jzpj+tpFMYSrS6
+        cJcdRr3ERrJ06jXmLznEb0wiSXRvRdAOZ6mEEupKYqQCnTt+tLU5fqEfqdZGmGVV
+        Z1o9Yqa7IJFDDLUXSvXpCIUbmCxrXugJS3K47ayuFjOk+7ev1TdQ3YYZHpWIUJuH
+        vzb33UGIMNSSaYckRf426yL3PsCItJRTOSYszLwLwZK8hZ4BE4z0bRgejy3pf36d
+        TAdEB9+WhwNOGRa9JZg6AxRLFRPjms5J1n+ZaXKPMQ==
+X-ME-Sender: <xms:V71GY1tLyb_WNCtKs15Ax3e6mdFrSXDacvy9pZhhUKgWJjcObi0EpA>
+    <xme:V71GY-fzQizqk0DYmFiix058HHWHSTXbbXoUDTHkcFX8kp2j9b3aqrgFkZnWMdttV
+    GKOFQmSjxwWB7iaI6s>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrfeejkedgiedvucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
+    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
+    htvghrnhepffehueegteeihfegtefhjefgtdeugfegjeelheejueethfefgeeghfektdek
+    teffnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
+    hrnhgusegrrhhnuggsrdguvg
+X-ME-Proxy: <xmx:V71GY4y79yGSFADeJ9PKUx1GR9V7C-EhPqoHbNIB1yDBRljZ7diIxQ>
+    <xmx:V71GY8MO7pr2wyWx3LQzjlnX1JDgzuQToLBlopABlU2rToG9UUJk0A>
+    <xmx:V71GY18_p8p8ZKnhcSRjjtOXljK9OTHNgijLkAvXN-L-2sVMFDeP3w>
+    <xmx:WL1GYzd62EJ-m16rv6rM-Nyi139F_5k6EdB13ttyD2lZD0pLxUQP_A>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+        id 9653DB60086; Wed, 12 Oct 2022 09:12:55 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.7.0-alpha0-1047-g9e4af4ada4-fm-20221005.001-g9e4af4ad
+Mime-Version: 1.0
+Message-Id: <76d8a408-fc3e-4bd1-91c5-8278f7469979@app.fastmail.com>
+In-Reply-To: <0a15ecf5-939d-3b00-bcde-0fc7b449cfda@suse.de>
+References: <20220928105010.18880-1-tzimmermann@suse.de>
+ <20220928105010.18880-6-tzimmermann@suse.de>
  <23333ff7-3ae1-494f-7abe-62da6698fd00@redhat.com>
  <83071743-a7f2-f761-baa3-da688f26b5e3@suse.de>
  <9162f41f-28c3-493c-ab54-b1c4a2fdf494@app.fastmail.com>
@@ -64,55 +76,51 @@ References: <20220928105010.18880-6-tzimmermann@suse.de>
  <f26ca6a1-feb1-4822-ac96-bc484b22f8a0@app.fastmail.com>
  <c80a6e2d-a3b9-8186-cc95-97c4775171ed@suse.de>
  <fc33ebf7-ecb7-4686-ac31-0118a40595f6@app.fastmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <fc33ebf7-ecb7-4686-ac31-0118a40595f6@app.fastmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ <0a15ecf5-939d-3b00-bcde-0fc7b449cfda@suse.de>
+Date:   Wed, 12 Oct 2022 15:12:35 +0200
+From:   "Arnd Bergmann" <arnd@arndb.de>
+To:     "Thomas Zimmermann" <tzimmermann@suse.de>,
+        "Javier Martinez Canillas" <javierm@redhat.com>,
+        "David Airlie" <airlied@linux.ie>,
+        "Daniel Vetter" <daniel@ffwll.ch>, "Helge Deller" <deller@gmx.de>,
+        "Maxime Ripard" <maxime@cerno.tech>, sam@ravnborg.org,
+        "Michal Suchanek" <msuchanek@suse.de>,
+        "Michael Ellerman" <mpe@ellerman.id.au>, benh@kernel.crashing.org,
+        "Paul Mackerras" <paulus@samba.org>,
+        "Geert Uytterhoeven" <geert@linux-m68k.org>,
+        mark.cave-ayland@ilande.co.uk
+Cc:     linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v4 5/5] drm/ofdrm: Support big-endian scanout buffers
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Oct 12, 2022 at 10:38:29AM +0200, Arnd Bergmann wrote:
-> On Wed, Oct 12, 2022, at 10:27 AM, Thomas Zimmermann wrote:
-> > Am 12.10.22 um 09:44 schrieb Arnd Bergmann:
-> >> On Wed, Oct 12, 2022, at 9:40 AM, Thomas Zimmermann wrote:
-> >>> Am 12.10.22 um 09:17 schrieb Arnd Bergmann:
-> >>>> On Wed, Oct 12, 2022, at 8:46 AM, Thomas Zimmermann wrote:
-> >>>
-> >>>> Does qemu mark the device has having a particular endianess then, or
-> >>>> does it switch the layout of the framebuffer to match what the CPU
-> >>>> does?
-> >>>
-> >>> The latter. On neither architecture does qemu expose this flag. The
-> >>> default endianess corresponds to the host.
-> >> 
-> >> "host" as in the machine that qemu runs on, or the machine that is
-> >> being emulated? I suppose it would be broken either way, but in the
-> >> latter case, we could get away with detecting that the machine is
-> >> running under qemu.
-> >
-> > Sorry, my mistake. I meant "guest": the endianess of the framebuffer 
-> > corresponds to the endianess of the emulated machine.  Given that many 
-> > graphics cards support LE and BE modes, I assume that this behavior 
-> > mimics real-hardware systems.
-> 
-> Not really: While the hardware may be able to switch between
-> the modes, something has to actively set some hardware registers up
-> that way, but the offb/ofdrm driver has no interface for interacting
-> with that register, and the bootloader or firmware code that knows
-> about the register has no information about what kernel it will
-> eventually run. This is a bit architecture dependent, as e.g. on
-> MIPS, a bi-endian hardware platform has to run a bootloader with the
-> same endianness as the kernel, but on arm and powerpc the bootloader
-> is usually fixed and the kernel switches to its configured endianness
-> in the first few instructions after it gets entered.
+On Wed, Oct 12, 2022, at 2:00 PM, Thomas Zimmermann wrote:
+>
+> Could well be. But ofdrm intents to replace offb and this test has 
+> worked well in offb for almost 15 yrs. If there are bug reports, I'm 
+> happy to take patches, but until then I see no reason to change it.
 
-But then the firmware knows that the kernel can switch endian and the
-endian information should be provided. And maybe that should be emulated
-better by qemu. Unfortunately, modern Power servers rarely come with a
-graphics card so it's hard to test on real hardware.
+I wouldn't change the code in offb unless a user reports a bug,
+but I don't see a point in adding the same mistake to ofdrm if we
+know it can't work on real hardware.
 
-Thanks
+I tried to find out where this is configured in qemu, but it seems
+to depend on the framebuffer backend there: most are always little-endian,
+ati/bochs/vga-pci/virtio-vga are configurable from the guest through
+some register setting, but vga.c picks a default from the
+'TARGET_WORDS_BIGENDIAN' macro, which I think is set differently
+between qemu-system-ppc64le and qemu-system-ppc64.
 
-Michal
+If you are using the framebuffer code from vga.c, I would guess that
+that you can run a big-endian kernel with qemu-system-ppc64,
+or a little-endian kernel with qemu-system-ppc64le and get the
+correct colors, while running a little-endian kernel with
+qemu-system-ppc64 and vga.c, or using a different framebuffer
+emulation on a big-endian kernel would give you the wrong colors.
+
+Which combinations did you actually test?
+
+     Arnd

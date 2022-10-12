@@ -2,124 +2,166 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3088C433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Oct 2022 21:38:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2274C4332F
+	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Oct 2022 06:46:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229585AbiJKViv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 11 Oct 2022 17:38:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41934 "EHLO
+        id S229506AbiJLGqM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 12 Oct 2022 02:46:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42342 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229538AbiJKViq (ORCPT
+        with ESMTP id S229475AbiJLGqK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 11 Oct 2022 17:38:46 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6211B9DDAB
-        for <linux-fbdev@vger.kernel.org>; Tue, 11 Oct 2022 14:38:45 -0700 (PDT)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
-        by smtp-out2.suse.de (Postfix) with ESMTP id AF61F1FCF3;
-        Tue, 11 Oct 2022 21:38:43 +0000 (UTC)
+        Wed, 12 Oct 2022 02:46:10 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D9B666170F
+        for <linux-fbdev@vger.kernel.org>; Tue, 11 Oct 2022 23:46:09 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 965FF2252C;
+        Wed, 12 Oct 2022 06:46:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1665524323; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1665557168; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=HT6Li+iF0Huei/eJnoHamNCOr9aOW9HkL2tj0lBESgY=;
-        b=wC/hF1Ny/hJY1jVHKsfExaX1+zfDSb84W4lZvBkL+iDBhyznquBZjNxSyD9cZMmCysJGlG
-        eLJjFboUoFgxjA53maP3cgAQ9cgMM7URWuOtal12f5VFZwGgu34cVl07FXWdLCdgGsFrpf
-        56vveVxG5mDY9Q/vF3X46n70Jj1HjtA=
+        bh=z23jc5a3Sq4ugnENrm8thRFqd6dG7f5FS4wDzPqyovE=;
+        b=1AJ0yEmIwMCUPB0Z4cg2EotyX3kH6OUKgzf06TuYE2yBCeYXM2O6flFgOwFPF5G5wNNSmm
+        doYXHh+7ajhM90VE3rGDsoEQ3MzaowQjict1SEhl1MWs8b1YOTTNLaQuwhKBMrbRONAq5A
+        WfApW/zBzchIxlaxHv3+kcR7QvNFcWo=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1665524323;
+        s=susede2_ed25519; t=1665557168;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=HT6Li+iF0Huei/eJnoHamNCOr9aOW9HkL2tj0lBESgY=;
-        b=TuFbMswDOmZrTi3o8o5XH75BlGDCDWOHBFECy7skP9CenomkVYx40wAF/SE46A1oZgE16J
-        oRs90C7DUPM6StAw==
-Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        bh=z23jc5a3Sq4ugnENrm8thRFqd6dG7f5FS4wDzPqyovE=;
+        b=izWIyL+kajMnNCkOAjXz7IW3irkb/rPCV+cSqmvR9rAzUKxsRdcf5w0auuZL0xX9sYO9Ul
+        U4mwRCth4GDQEqCw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by relay2.suse.de (Postfix) with ESMTPS id 979B32C141;
-        Tue, 11 Oct 2022 21:38:42 +0000 (UTC)
-Date:   Tue, 11 Oct 2022 23:38:41 +0200
-From:   Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To:     Arnd Bergmann <arnd@arndb.de>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 37C0713A5C;
+        Wed, 12 Oct 2022 06:46:08 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id 6UxRDLBiRmMGLQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 12 Oct 2022 06:46:08 +0000
+Message-ID: <fda959d7-1bae-716f-f01b-66d9db9096e0@suse.de>
+Date:   Wed, 12 Oct 2022 08:46:07 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.3.1
+Subject: Re: [PATCH v4 5/5] drm/ofdrm: Support big-endian scanout buffers
+To:     Arnd Bergmann <arnd@arndb.de>,
         Javier Martinez Canillas <javierm@redhat.com>,
         David Airlie <airlied@linux.ie>,
         Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
         maxime@cerno.tech, sam@ravnborg.org,
+        Michal Suchanek <msuchanek@suse.de>,
         Michael Ellerman <mpe@ellerman.id.au>,
         benh@kernel.crashing.org, Paul Mackerras <paulus@samba.org>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
-        mark.cave-ayland@ilande.co.uk, linux-fbdev@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v4 5/5] drm/ofdrm: Support big-endian scanout buffers
-Message-ID: <20221011213841.GA28810@kitsune.suse.cz>
+        mark.cave-ayland@ilande.co.uk
+Cc:     linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        dri-devel@lists.freedesktop.org
 References: <20220928105010.18880-1-tzimmermann@suse.de>
  <20220928105010.18880-6-tzimmermann@suse.de>
  <23333ff7-3ae1-494f-7abe-62da6698fd00@redhat.com>
  <83071743-a7f2-f761-baa3-da688f26b5e3@suse.de>
  <9162f41f-28c3-493c-ab54-b1c4a2fdf494@app.fastmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Language: en-US
+From:   Thomas Zimmermann <tzimmermann@suse.de>
 In-Reply-To: <9162f41f-28c3-493c-ab54-b1c4a2fdf494@app.fastmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------B8laPcs2O1N5259HlwVPqlqJ"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Oct 11, 2022 at 10:06:59PM +0200, Arnd Bergmann wrote:
-> On Tue, Oct 11, 2022, at 1:30 PM, Thomas Zimmermann wrote:
-> > Am 11.10.22 um 09:46 schrieb Javier Martinez Canillas:
-> >>> +static bool display_get_big_endian_of(struct drm_device *dev, struct device_node *of_node)
-> >>> +{
-> >>> +	bool big_endian;
-> >>> +
-> >>> +#ifdef __BIG_ENDIAN
-> >>> +	big_endian = true;
-> >>> +	if (of_get_property(of_node, "little-endian", NULL))
-> >>> +		big_endian = false;
-> >>> +#else
-> >>> +	big_endian = false;
-> >>> +	if (of_get_property(of_node, "big-endian", NULL))
-> >>> +		big_endian = true;
-> >>> +#endif
-> >>> +
-> >>> +	return big_endian;
-> >>> +}
-> >>> +
-> >> 
-> >> Ah, I see. The heuristic then is whether the build is BE or LE or if the Device
-> >> Tree has an explicit node defining the endianess. The patch looks good to me:
-> >
-> > Yes. I took this test from offb.
-> 
-> Has the driver been tested with little-endian kernels though? While
-> ppc32 kernels are always BE, you can build kernels as either big-endian
-> or little-endian for most (modern) powerpc64 and arm/arm64 hardware,
-> and I don't see why that should change the defaults of the driver
-> when describing the same framebuffer hardware.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------B8laPcs2O1N5259HlwVPqlqJ
+Content-Type: multipart/mixed; boundary="------------QIh76Ae0ySmHbeVgLDQvt1w0";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Arnd Bergmann <arnd@arndb.de>,
+ Javier Martinez Canillas <javierm@redhat.com>,
+ David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
+ Helge Deller <deller@gmx.de>, maxime@cerno.tech, sam@ravnborg.org,
+ Michal Suchanek <msuchanek@suse.de>, Michael Ellerman <mpe@ellerman.id.au>,
+ benh@kernel.crashing.org, Paul Mackerras <paulus@samba.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, mark.cave-ayland@ilande.co.uk
+Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ dri-devel@lists.freedesktop.org
+Message-ID: <fda959d7-1bae-716f-f01b-66d9db9096e0@suse.de>
+Subject: Re: [PATCH v4 5/5] drm/ofdrm: Support big-endian scanout buffers
+References: <20220928105010.18880-1-tzimmermann@suse.de>
+ <20220928105010.18880-6-tzimmermann@suse.de>
+ <23333ff7-3ae1-494f-7abe-62da6698fd00@redhat.com>
+ <83071743-a7f2-f761-baa3-da688f26b5e3@suse.de>
+ <9162f41f-28c3-493c-ab54-b1c4a2fdf494@app.fastmail.com>
+In-Reply-To: <9162f41f-28c3-493c-ab54-b1c4a2fdf494@app.fastmail.com>
 
-The original code was added with
-commit 7f29b87a7779 ("powerpc: offb: add support for foreign endianness")
+--------------QIh76Ae0ySmHbeVgLDQvt1w0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-The hardware is either big-endian or runtime-switchable-endian. It makes
-sense to assume big-endian when runnig big-endian and the DT does not
-specify endian which is likely on a historical system.
+SGkNCg0KQW0gMTEuMTAuMjIgdW0gMjI6MDYgc2NocmllYiBBcm5kIEJlcmdtYW5uOg0KPiBP
+biBUdWUsIE9jdCAxMSwgMjAyMiwgYXQgMTozMCBQTSwgVGhvbWFzIFppbW1lcm1hbm4gd3Jv
+dGU6DQo+PiBBbSAxMS4xMC4yMiB1bSAwOTo0NiBzY2hyaWViIEphdmllciBNYXJ0aW5leiBD
+YW5pbGxhczoNCj4+Pj4gK3N0YXRpYyBib29sIGRpc3BsYXlfZ2V0X2JpZ19lbmRpYW5fb2Yo
+c3RydWN0IGRybV9kZXZpY2UgKmRldiwgc3RydWN0IGRldmljZV9ub2RlICpvZl9ub2RlKQ0K
+Pj4+PiArew0KPj4+PiArCWJvb2wgYmlnX2VuZGlhbjsNCj4+Pj4gKw0KPj4+PiArI2lmZGVm
+IF9fQklHX0VORElBTg0KPj4+PiArCWJpZ19lbmRpYW4gPSB0cnVlOw0KPj4+PiArCWlmIChv
+Zl9nZXRfcHJvcGVydHkob2Zfbm9kZSwgImxpdHRsZS1lbmRpYW4iLCBOVUxMKSkNCj4+Pj4g
+KwkJYmlnX2VuZGlhbiA9IGZhbHNlOw0KPj4+PiArI2Vsc2UNCj4+Pj4gKwliaWdfZW5kaWFu
+ID0gZmFsc2U7DQo+Pj4+ICsJaWYgKG9mX2dldF9wcm9wZXJ0eShvZl9ub2RlLCAiYmlnLWVu
+ZGlhbiIsIE5VTEwpKQ0KPj4+PiArCQliaWdfZW5kaWFuID0gdHJ1ZTsNCj4+Pj4gKyNlbmRp
+Zg0KPj4+PiArDQo+Pj4+ICsJcmV0dXJuIGJpZ19lbmRpYW47DQo+Pj4+ICt9DQo+Pj4+ICsN
+Cj4+Pg0KPj4+IEFoLCBJIHNlZS4gVGhlIGhldXJpc3RpYyB0aGVuIGlzIHdoZXRoZXIgdGhl
+IGJ1aWxkIGlzIEJFIG9yIExFIG9yIGlmIHRoZSBEZXZpY2UNCj4+PiBUcmVlIGhhcyBhbiBl
+eHBsaWNpdCBub2RlIGRlZmluaW5nIHRoZSBlbmRpYW5lc3MuIFRoZSBwYXRjaCBsb29rcyBn
+b29kIHRvIG1lOg0KPj4NCj4+IFllcy4gSSB0b29rIHRoaXMgdGVzdCBmcm9tIG9mZmIuDQo+
+IA0KPiBIYXMgdGhlIGRyaXZlciBiZWVuIHRlc3RlZCB3aXRoIGxpdHRsZS1lbmRpYW4ga2Vy
+bmVscyB0aG91Z2g/IFdoaWxlDQo+IHBwYzMyIGtlcm5lbHMgYXJlIGFsd2F5cyBCRSwgeW91
+IGNhbiBidWlsZCBrZXJuZWxzIGFzIGVpdGhlciBiaWctZW5kaWFuDQo+IG9yIGxpdHRsZS1l
+bmRpYW4gZm9yIG1vc3QgKG1vZGVybikgcG93ZXJwYzY0IGFuZCBhcm0vYXJtNjQgaGFyZHdh
+cmUsDQo+IGFuZCBJIGRvbid0IHNlZSB3aHkgdGhhdCBzaG91bGQgY2hhbmdlIHRoZSBkZWZh
+dWx0cyBvZiB0aGUgZHJpdmVyDQo+IHdoZW4gZGVzY3JpYmluZyB0aGUgc2FtZSBmcmFtZWJ1
+ZmZlciBoYXJkd2FyZS4NCg0KWWVzLCBJIHRlc3RlZCB0aGlzIG9uIHFlbXUncyBwcGM2NGxl
+IGFuZCBwcGM2NC4NCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiANCj4gSSBjb3VsZCB1
+bmRlcnN0YW5kIGhhdmluZyBhIGRlZmF1bHQgdG8gZS5nLiBiaWctZW5kaWFuIG9uIGFsbCBw
+b3dlcnBjIGFuZA0KPiBhIGRlZmF1bHQgZm9yIGxpdHRsZS1lbmRpYW4gb24gYWxsIGFybSwg
+YnV0IGhhdmluZyBpdCB0aWVkIHRvIHRoZQ0KPiB3YXkgdGhlIGtlcm5lbCBpcyBidWlsdCBz
+ZWVtcyB3cm9uZywgYW5kIGRvZXNuJ3QgbWFrZSBzZW5zZSBpbiBhDQo+IERUIGJpbmRpbmcg
+ZWl0aGVyLg0KPiANCj4gICAgICAgIEFybmQNCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0K
+R3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2Vy
+bWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJlcmcsIEdlcm1hbnkNCihI
+UkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNmw7xocmVyOiBJdm8gVG90ZXYN
+Cg==
 
-It also makes sense to assume that on system with
-runtime-switchable-endian the DT specifies the framebuffer endian.
+--------------QIh76Ae0ySmHbeVgLDQvt1w0--
 
-If systems that only do little-endian exist or emerge later then it also
-makes sense to assume that the framebuffer matches the host if not
-specified.
+--------------B8laPcs2O1N5259HlwVPqlqJ
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-I don't really see a problem here.
+-----BEGIN PGP SIGNATURE-----
 
-BTW is this used on arm and on what platform?
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmNGYq8FAwAAAAAACgkQlh/E3EQov+AS
+fw/+Onoj40Vwl1oJ3yZl3U6w37d4FFfR0dOTZzCclf8+PaIsVzMGgq2dtiwMBUvReFDl2jAQAsZn
+jGPTaUGxQjYZkYx8IaY78i0116LVKaiQZ9YfYipchieuUDAGnsdseWcUIgkQ7k7slvr7Y97br2at
+ZGdv4fKtuCVjOX3N4dDwoUd5SKyOauNo5Lx+tAuPuziTGQGstIS736atsG+2y7lNNqTh/0n37+0d
+jOjYE5wtQNraaqh8hKH3oSzPSfWxz5vOI4TpsXBQ+AHegz21inpsFJ42qdak8GajEtd3Y6PeueE0
+vFSEdQaKOZcMC7Pa2ULS3MR2GhoH3qIccYPMFYXSeOgBeoMAdiS1n8KI5ykQ+XyC51ZBuJ1+9HW7
+Ypqnp/gSVWSHnlHzNASxBtSd0IPVold6B12YfybV0XltHu2uLGq7xukpi2hl0wsUgzVwOdimVuC3
+39QaJItvWSN06fzKFoiHUdlbOVcX/MHKgTvQqZXguV+/UdgsmAYOWMhS2pfXsHGbf5rQEth1Vy+8
+WGlKjMuCOVaL+ncCHXNCOzfYa0Tr7NNMrtv6192/W9yQgSgh9QDoFmtVnyT3Uga8bcIGbjoEtTlp
+eRSrBgYjlLuPNIaVvoiDxrhz9JUJuOlR+Dh+4sh1/EqQESykcNsG/xCeMgwK/m3nXAjcX1/nqJwU
+wDU=
+=aAOf
+-----END PGP SIGNATURE-----
 
-I do not see any bindings in dts.
-
-Thanks
-
-Michal
+--------------B8laPcs2O1N5259HlwVPqlqJ--

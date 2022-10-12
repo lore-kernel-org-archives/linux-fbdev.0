@@ -2,70 +2,69 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F7A0C4332F
-	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Oct 2022 08:27:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94E61C433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Oct 2022 08:38:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229589AbiJLI1l (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 12 Oct 2022 04:27:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48758 "EHLO
+        id S229484AbiJLIi4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 12 Oct 2022 04:38:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38740 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229502AbiJLI1k (ORCPT
+        with ESMTP id S229612AbiJLIiz (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 12 Oct 2022 04:27:40 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 358B550FB8
-        for <linux-fbdev@vger.kernel.org>; Wed, 12 Oct 2022 01:27:40 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id D45071F37C;
-        Wed, 12 Oct 2022 08:27:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1665563258; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=BRuyBuK4w++fJHkzxuAd13vQkh9RqoAGNTH0ooLKJp0=;
-        b=CCYk7sYtWxgJLTva7a0y52lzrNnbNl3xYPB+HEgtQlatAs8PmNZnClMfnYdGYNHFeXepJ4
-        vECzxO+9UXiQYFw1HfSlYX/BZqXHgLeckChfF+8xGK584rjXuqDpjbc5MmOm2kwbv9Youz
-        LzP8trpfmfEbEadixQp8qsh04vJhy10=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1665563258;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=BRuyBuK4w++fJHkzxuAd13vQkh9RqoAGNTH0ooLKJp0=;
-        b=RKYFq4XKzQUpL639ZDnB0yPfWq2iYMbEsIZ21ulEpUAefK4XMVW62vHj2urL8G6VXZz8OB
-        S0cwLf3Z3VpCPDAw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 7B4A013ACD;
-        Wed, 12 Oct 2022 08:27:38 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id LI4eHXp6RmMCWgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Wed, 12 Oct 2022 08:27:38 +0000
-Message-ID: <c80a6e2d-a3b9-8186-cc95-97c4775171ed@suse.de>
-Date:   Wed, 12 Oct 2022 10:27:38 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.3.1
-Subject: Re: [PATCH v4 5/5] drm/ofdrm: Support big-endian scanout buffers
-Content-Language: en-US
-To:     Arnd Bergmann <arnd@arndb.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        maxime@cerno.tech, sam@ravnborg.org,
-        Michal Suchanek <msuchanek@suse.de>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        benh@kernel.crashing.org, Paul Mackerras <paulus@samba.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        mark.cave-ayland@ilande.co.uk
-Cc:     linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        dri-devel@lists.freedesktop.org
+        Wed, 12 Oct 2022 04:38:55 -0400
+Received: from wout3-smtp.messagingengine.com (wout3-smtp.messagingengine.com [64.147.123.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6F802B48B7
+        for <linux-fbdev@vger.kernel.org>; Wed, 12 Oct 2022 01:38:53 -0700 (PDT)
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+        by mailout.west.internal (Postfix) with ESMTP id 789E53200B46;
+        Wed, 12 Oct 2022 04:38:51 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute3.internal (MEProxy); Wed, 12 Oct 2022 04:38:52 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+        :cc:content-type:date:date:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to; s=fm2; t=1665563931; x=1665650331; bh=2eHbNNYC76
+        Ff2rNSIFRyMcnh2drE4bgfrHDmOgKqE2I=; b=Tl/vrVXQnU6s4RXLnCcLEPSsod
+        qCki2kWIaXTUv9xtHVT4iqBc3BPYJDYXroJTBC5/BGTcUDf1ZwuwbaJAn+3sK9Fc
+        Hj1Ch7hiZZar3TK1S+iEygfvBICNc07iJxwYUPGlJQPD1XGsTVcSPwJFuFOahIcw
+        3SUuzwNecL1UUUnvWgc39atvyX5Lhf0ctOy0tf8Izi8YxVwAU6ViZ+a9OwpUobLU
+        Z5CF7Nbbs9aNJqRHp8jYs6BeTxuW/phmR6MYT5oQnxcKU0ZknPnDZ4II3gKIdZpC
+        GpuVj8hLSIuPzKbSmgdKsE9GAW91HLkAAjn5aFY6xSdQnP0p/pfjqr+X+9ng==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
+        :feedback-id:from:from:in-reply-to:in-reply-to:message-id
+        :mime-version:references:reply-to:sender:subject:subject:to:to
+        :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+        fm3; t=1665563931; x=1665650331; bh=2eHbNNYC76Ff2rNSIFRyMcnh2drE
+        4bgfrHDmOgKqE2I=; b=sL7z2hAzw076YF3FiU9Us/LAikO1eXIXh3VSmokARzom
+        pal434HxRwyKDTx75O9o98r+ZkRkEan4LWR7SQnZb7+NCGqfHxzYDmPWJFo4sbJt
+        IY6d4fy+n+zNwr+iiZSq2uuvA7pH2wOZ7paUHdPuywLOUlANzgOr1XV7EfWXURVs
+        gQMt68VNbulIGRj6x9fjc+TR6OhQOuGJvtx3FQ57A7XQFUQF5FwnAi4z1yXwFn1J
+        qYiCX95PBQlDkeN3+U7WqtQEsTbD7izaqFlm75dL6Eaa0XECcr7dxghws7Uu8Rmn
+        AzUs6WSMC+QpE8Un98SfUl0gadfa8/TEjRNQ90eUvQ==
+X-ME-Sender: <xms:Gn1GY17wUcc3zCHhlCtTqhfYn9DLyMH5Ts8hFHmy23CGsXhRjRTW8A>
+    <xme:Gn1GYy7odd4JHGdRuwvWoHVRrL0GiA4z16Wtfxi2rmD5hDM6FoTjL5BGQiluiNfRu
+    jMmeScxpjFZUN0WWoY>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrfeejkedgtdeiucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
+    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
+    htvghrnhepffehueegteeihfegtefhjefgtdeugfegjeelheejueethfefgeeghfektdek
+    teffnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
+    hrnhgusegrrhhnuggsrdguvg
+X-ME-Proxy: <xmx:Gn1GY8eHlYz1iaoU21KVs_vuLzpaHbXSkrdXC47zf-9LT9RCJwvclw>
+    <xmx:Gn1GY-IF_zXYTqXVqCmOSb75Y1OH2uHX4hnPjFUuZuzDC2nnZwK3GA>
+    <xmx:Gn1GY5JResEySmkemvAnjvtxQif7U-sXCyx8rzTGijjQSVRBSfKMsA>
+    <xmx:G31GYwYG3Ee3TNuqcjx9wuUSnbSXkzUx6a3kDmMttMFGTE8Tr79GxA>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+        id 2D9A6B60086; Wed, 12 Oct 2022 04:38:50 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.7.0-alpha0-1047-g9e4af4ada4-fm-20221005.001-g9e4af4ad
+Mime-Version: 1.0
+Message-Id: <fc33ebf7-ecb7-4686-ac31-0118a40595f6@app.fastmail.com>
+In-Reply-To: <c80a6e2d-a3b9-8186-cc95-97c4775171ed@suse.de>
 References: <20220928105010.18880-1-tzimmermann@suse.de>
  <20220928105010.18880-6-tzimmermann@suse.de>
  <23333ff7-3ae1-494f-7abe-62da6698fd00@redhat.com>
@@ -75,91 +74,59 @@ References: <20220928105010.18880-1-tzimmermann@suse.de>
  <654e3cfe-80d7-46c9-8e5e-461846e4df35@app.fastmail.com>
  <866c7033-0d4e-7b5d-008c-8eb16f99498b@suse.de>
  <f26ca6a1-feb1-4822-ac96-bc484b22f8a0@app.fastmail.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <f26ca6a1-feb1-4822-ac96-bc484b22f8a0@app.fastmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------q01aFk6poIKuQvh4BWG9wJZ4"
+ <c80a6e2d-a3b9-8186-cc95-97c4775171ed@suse.de>
+Date:   Wed, 12 Oct 2022 10:38:29 +0200
+From:   "Arnd Bergmann" <arnd@arndb.de>
+To:     "Thomas Zimmermann" <tzimmermann@suse.de>,
+        "Javier Martinez Canillas" <javierm@redhat.com>,
+        "David Airlie" <airlied@linux.ie>,
+        "Daniel Vetter" <daniel@ffwll.ch>, "Helge Deller" <deller@gmx.de>,
+        "Maxime Ripard" <maxime@cerno.tech>, sam@ravnborg.org,
+        "Michal Suchanek" <msuchanek@suse.de>,
+        "Michael Ellerman" <mpe@ellerman.id.au>, benh@kernel.crashing.org,
+        "Paul Mackerras" <paulus@samba.org>,
+        "Geert Uytterhoeven" <geert@linux-m68k.org>,
+        mark.cave-ayland@ilande.co.uk
+Cc:     linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v4 5/5] drm/ofdrm: Support big-endian scanout buffers
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------q01aFk6poIKuQvh4BWG9wJZ4
-Content-Type: multipart/mixed; boundary="------------pMJZO6Q6Q7kQwqIHJjmFDrkd";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Arnd Bergmann <arnd@arndb.de>,
- Javier Martinez Canillas <javierm@redhat.com>,
- David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
- Helge Deller <deller@gmx.de>, maxime@cerno.tech, sam@ravnborg.org,
- Michal Suchanek <msuchanek@suse.de>, Michael Ellerman <mpe@ellerman.id.au>,
- benh@kernel.crashing.org, Paul Mackerras <paulus@samba.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, mark.cave-ayland@ilande.co.uk
-Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- dri-devel@lists.freedesktop.org
-Message-ID: <c80a6e2d-a3b9-8186-cc95-97c4775171ed@suse.de>
-Subject: Re: [PATCH v4 5/5] drm/ofdrm: Support big-endian scanout buffers
-References: <20220928105010.18880-1-tzimmermann@suse.de>
- <20220928105010.18880-6-tzimmermann@suse.de>
- <23333ff7-3ae1-494f-7abe-62da6698fd00@redhat.com>
- <83071743-a7f2-f761-baa3-da688f26b5e3@suse.de>
- <9162f41f-28c3-493c-ab54-b1c4a2fdf494@app.fastmail.com>
- <fda959d7-1bae-716f-f01b-66d9db9096e0@suse.de>
- <654e3cfe-80d7-46c9-8e5e-461846e4df35@app.fastmail.com>
- <866c7033-0d4e-7b5d-008c-8eb16f99498b@suse.de>
- <f26ca6a1-feb1-4822-ac96-bc484b22f8a0@app.fastmail.com>
-In-Reply-To: <f26ca6a1-feb1-4822-ac96-bc484b22f8a0@app.fastmail.com>
+On Wed, Oct 12, 2022, at 10:27 AM, Thomas Zimmermann wrote:
+> Am 12.10.22 um 09:44 schrieb Arnd Bergmann:
+>> On Wed, Oct 12, 2022, at 9:40 AM, Thomas Zimmermann wrote:
+>>> Am 12.10.22 um 09:17 schrieb Arnd Bergmann:
+>>>> On Wed, Oct 12, 2022, at 8:46 AM, Thomas Zimmermann wrote:
+>>>
+>>>> Does qemu mark the device has having a particular endianess then, or
+>>>> does it switch the layout of the framebuffer to match what the CPU
+>>>> does?
+>>>
+>>> The latter. On neither architecture does qemu expose this flag. The
+>>> default endianess corresponds to the host.
+>> 
+>> "host" as in the machine that qemu runs on, or the machine that is
+>> being emulated? I suppose it would be broken either way, but in the
+>> latter case, we could get away with detecting that the machine is
+>> running under qemu.
+>
+> Sorry, my mistake. I meant "guest": the endianess of the framebuffer 
+> corresponds to the endianess of the emulated machine.  Given that many 
+> graphics cards support LE and BE modes, I assume that this behavior 
+> mimics real-hardware systems.
 
---------------pMJZO6Q6Q7kQwqIHJjmFDrkd
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Not really: While the hardware may be able to switch between
+the modes, something has to actively set some hardware registers up
+that way, but the offb/ofdrm driver has no interface for interacting
+with that register, and the bootloader or firmware code that knows
+about the register has no information about what kernel it will
+eventually run. This is a bit architecture dependent, as e.g. on
+MIPS, a bi-endian hardware platform has to run a bootloader with the
+same endianness as the kernel, but on arm and powerpc the bootloader
+is usually fixed and the kernel switches to its configured endianness
+in the first few instructions after it gets entered.
 
-SGkNCg0KQW0gMTIuMTAuMjIgdW0gMDk6NDQgc2NocmllYiBBcm5kIEJlcmdtYW5uOg0KPiBP
-biBXZWQsIE9jdCAxMiwgMjAyMiwgYXQgOTo0MCBBTSwgVGhvbWFzIFppbW1lcm1hbm4gd3Jv
-dGU6DQo+PiBBbSAxMi4xMC4yMiB1bSAwOToxNyBzY2hyaWViIEFybmQgQmVyZ21hbm46DQo+
-Pj4gT24gV2VkLCBPY3QgMTIsIDIwMjIsIGF0IDg6NDYgQU0sIFRob21hcyBaaW1tZXJtYW5u
-IHdyb3RlOg0KPj4NCj4+PiBEb2VzIHFlbXUgbWFyayB0aGUgZGV2aWNlIGhhcyBoYXZpbmcg
-YSBwYXJ0aWN1bGFyIGVuZGlhbmVzcyB0aGVuLCBvcg0KPj4+IGRvZXMgaXQgc3dpdGNoIHRo
-ZSBsYXlvdXQgb2YgdGhlIGZyYW1lYnVmZmVyIHRvIG1hdGNoIHdoYXQgdGhlIENQVQ0KPj4+
-IGRvZXM/DQo+Pg0KPj4gVGhlIGxhdHRlci4gT24gbmVpdGhlciBhcmNoaXRlY3R1cmUgZG9l
-cyBxZW11IGV4cG9zZSB0aGlzIGZsYWcuIFRoZQ0KPj4gZGVmYXVsdCBlbmRpYW5lc3MgY29y
-cmVzcG9uZHMgdG8gdGhlIGhvc3QuDQo+IA0KPiAiaG9zdCIgYXMgaW4gdGhlIG1hY2hpbmUg
-dGhhdCBxZW11IHJ1bnMgb24sIG9yIHRoZSBtYWNoaW5lIHRoYXQgaXMNCj4gYmVpbmcgZW11
-bGF0ZWQ/IEkgc3VwcG9zZSBpdCB3b3VsZCBiZSBicm9rZW4gZWl0aGVyIHdheSwgYnV0IGlu
-IHRoZQ0KPiBsYXR0ZXIgY2FzZSwgd2UgY291bGQgZ2V0IGF3YXkgd2l0aCBkZXRlY3Rpbmcg
-dGhhdCB0aGUgbWFjaGluZSBpcw0KPiBydW5uaW5nIHVuZGVyIHFlbXUuDQoNClNvcnJ5LCBt
-eSBtaXN0YWtlLiBJIG1lYW50ICJndWVzdCI6IHRoZSBlbmRpYW5lc3Mgb2YgdGhlIGZyYW1l
-YnVmZmVyIA0KY29ycmVzcG9uZHMgdG8gdGhlIGVuZGlhbmVzcyBvZiB0aGUgZW11bGF0ZWQg
-bWFjaGluZS4gIEdpdmVuIHRoYXQgbWFueSANCmdyYXBoaWNzIGNhcmRzIHN1cHBvcnQgTEUg
-YW5kIEJFIG1vZGVzLCBJIGFzc3VtZSB0aGF0IHRoaXMgYmVoYXZpb3IgDQptaW1pY3MgcmVh
-bC1oYXJkd2FyZSBzeXN0ZW1zLg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KPiAg
-ICAgIEFybmQNCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERl
-dmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpNYXhmZWxk
-c3RyLiA1LCA5MDQwOSBOw7xybmJlcmcsIEdlcm1hbnkNCihIUkIgMzY4MDksIEFHIE7DvHJu
-YmVyZykNCkdlc2Now6RmdHNmw7xocmVyOiBJdm8gVG90ZXYNCg==
-
---------------pMJZO6Q6Q7kQwqIHJjmFDrkd--
-
---------------q01aFk6poIKuQvh4BWG9wJZ4
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmNGenoFAwAAAAAACgkQlh/E3EQov+AS
-bw/8Ct9NMRmYNmR+Lh5nVeJGZCQd2uCzQZGGkmXMoQGiH40uxmTL8dSZX+5h7hdN3elcgsQMs1mc
-dxs/E3SQAEawxl7mRWxDlGHZIUkbNcG/71eHauSJ3yhKILPzUvWVLyoIWUGWAmEaKqsdIlvcG2bB
-UVdQPBh2wTrZ+oea5vHDmGtkRfjHBAAc/3EoKZB3KwqfxIBY2gVZIi5GzbuMbVtrJD08SycI8QRE
-i20++bNQD7erhVMB0pU6Gv0u9xe28Ev5WzZ2NcgDVkN5DGAFJR4wuKiSHbbMg2IWHHRZWriq7GXQ
-vQlmJsImaHQqLrU/iP9t3ZgWJ12tgasBdUlFc6unA7tf8HO6N/AZxa2CVfMkE23xQvFd05tvFZ94
-PAyoxiWNX09wVYdNjaqt+Z9+Rzrnx/LZFYSpP/M18MdAT+H6pK1WTtfpvPYB6aZ9JmzPSgzfP4fn
-PK4c2QEWpWBT2oeifqXH4I6U0fWopSo3F/fh6V2aOBAjezws3nBkG3U8EJvnOj50OrYLZiWMJBhG
-flNXXPrIEriA1fv8g2Si3RR6OFISEjwFPOFB16oftUykWMwU10kVnFx95HP7LWpSP7ZVM+UUsJ+o
-H/lae5Tio2M7izWA0ZHHnX0k2txHz8ofIqm1kI7f0VZpb2qCQR98SQ9RlNshH0CI5umWjiTQFb++
-Hyo=
-=7tX/
------END PGP SIGNATURE-----
-
---------------q01aFk6poIKuQvh4BWG9wJZ4--
+     Arnd

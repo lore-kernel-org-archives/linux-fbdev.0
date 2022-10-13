@@ -2,116 +2,134 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9ABEFC4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu, 13 Oct 2022 06:19:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FA40C433FE
+	for <linux-fbdev@archiver.kernel.org>; Thu, 13 Oct 2022 07:39:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229607AbiJMGTd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 13 Oct 2022 02:19:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34254 "EHLO
+        id S229462AbiJMHj2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 13 Oct 2022 03:39:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54776 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229471AbiJMGTb (ORCPT
+        with ESMTP id S229496AbiJMHj1 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 13 Oct 2022 02:19:31 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C46A711C6D9;
-        Wed, 12 Oct 2022 23:19:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1665641960;
-        bh=a0YnP1i9bs24lEAd8uB+UTB2NYRN+cwhuNptzzc/nQ8=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=GHguRvzBB+ziM0CmXN1+HKdB1gzPyALRagkF0Yrq2VwoGUy2eANlms05SB9Kdvqny
-         uu8xB1iCPbekOCP9atz9QKnAh57gQIx+W4lCQbUUQLenpyxElBG2/Yxt//yIDkp1N1
-         c7CEd3isiWe9X/F7MzycnbzlPGvU4fU1kKl6lrHs=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.165.150]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MFbRm-1owaGs1Cnu-00H40M; Thu, 13
- Oct 2022 08:19:20 +0200
-Message-ID: <68f42463-e4b8-d4ce-51c7-3e0e5dc468ec@gmx.de>
-Date:   Thu, 13 Oct 2022 08:19:18 +0200
+        Thu, 13 Oct 2022 03:39:27 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CCAD8122BD0
+        for <linux-fbdev@vger.kernel.org>; Thu, 13 Oct 2022 00:39:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1665646766;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=SxL2Gm5Nvf7A3sd8fkrST2jbFEtQq1oZHcJN0U6gqnU=;
+        b=LBist10MeVaUAHVzTp2PURVGqXL0rWhRbW0zKSj5slIQ3haKDw0uHMkFz0fhZi/6niuGHs
+        5Ui9OtksCACiHTk6RguZMRqAVgjYy7uEWVBmL78zbd8c5cWqqCJ4V3yXievtP+GL188VMy
+        qm2ynb4POvs90Y7PgwdxG5ihQyzbpbU=
+Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
+ [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-196-pYxkV5ODNQeYPQPjiSgxDA-1; Thu, 13 Oct 2022 03:39:25 -0400
+X-MC-Unique: pYxkV5ODNQeYPQPjiSgxDA-1
+Received: by mail-wr1-f69.google.com with SMTP id g4-20020adfbc84000000b0022fc417f87cso225709wrh.12
+        for <linux-fbdev@vger.kernel.org>; Thu, 13 Oct 2022 00:39:24 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=SxL2Gm5Nvf7A3sd8fkrST2jbFEtQq1oZHcJN0U6gqnU=;
+        b=O1FxZ+2Xo+coiif333CcWzeKqsYKprg7VLSF7JFxVMbe9GgsoVGwtoNTQUZTMJJMuV
+         8QwmJHTgy8bqNpg+K6q1wjIJ4diPbwmlnCRNq6JCBVv2feihNOiqvhgf/G5gg97IoYpk
+         BgS1wkrCxVKnqTNrOFVu3nIORCrrVv3I8OifEqaCyUUqPqPTrsoLpxV5JcqviVdqHVVU
+         enGEtzQpCy+8SGTCBhjujzDKwMd0ezs3UQBd1bkxmwch8QcM7eevKYmgZW8u760dn4Jc
+         fUgse7qSDAi23jNALh3iKVRi2ob+wlcMH392N5pQYf8hQgSoseTj7TyhpZ7KlDx0uxQy
+         1U0A==
+X-Gm-Message-State: ACrzQf2JLkcuEUKMcNIpw6GfTNiC+EnE2oDaJh6l9vX6h6f9jS/1LNnr
+        Sx9jPcYWK15hKiOlDo8lyFNBRJa36QADLHCaE/N1xys5RP4bZFWw0Nwdic4FoRFhfbYY3nCHHjh
+        RSzBAeeHNI+B+r3FZ3I88H68=
+X-Received: by 2002:adf:a40c:0:b0:22e:47fe:7ea3 with SMTP id d12-20020adfa40c000000b0022e47fe7ea3mr19557221wra.248.1665646763678;
+        Thu, 13 Oct 2022 00:39:23 -0700 (PDT)
+X-Google-Smtp-Source: AMsMyM5KMxO3Yw68jgmaoO2Rl19Ndp0XdvFGPmI3mYt2GmovFka1lcVoPsM/CwVUy1TT0FzKmzx5lw==
+X-Received: by 2002:adf:a40c:0:b0:22e:47fe:7ea3 with SMTP id d12-20020adfa40c000000b0022e47fe7ea3mr19557212wra.248.1665646763475;
+        Thu, 13 Oct 2022 00:39:23 -0700 (PDT)
+Received: from [192.168.1.130] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id a14-20020a5d456e000000b0022ccae2fa62sm1423311wrc.22.2022.10.13.00.39.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 13 Oct 2022 00:39:22 -0700 (PDT)
+Message-ID: <de796dba-1e75-e5a8-a908-f0aed4e01fec@redhat.com>
+Date:   Thu, 13 Oct 2022 09:39:21 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.3.1
-Subject: Re: [PATCH] fbdev: MIPS supports iomem addresses
+Subject: Re: [PATCH v4 5/5] drm/ofdrm: Support big-endian scanout buffers
 Content-Language: en-US
-To:     Kees Cook <keescook@chromium.org>
-Cc:     kernel test robot <lkp@intel.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        linux-hardening@vger.kernel.org
-References: <20221012191838.never.778-kees@kernel.org>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20221012191838.never.778-kees@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:vDcabaU0FvyZkkoeOJq7OcA4uY6T7+64cJDAjSyNahFXoqQNd6i
- 6eW+msz0PAr0dD8WrqU3hBi/1b/Qs8w6d4Kp3I19UMvLyWR3VYYBh9OfykqWDloacLcIXCC
- xBJmqUCiT2ou5I2moDYDXsfe5KYV6mzkypSLS59rDcHPEE91NGC4FEdkGv3MCKLA3cz5QoL
- NkcAMJuYNnSjOXN3K97KA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:aQjIGP8/pcU=:uhRQsZy7MG5QYeAAc6JeIB
- Oz6cN768Ay+Lw214rT4P+iadTMRbZ7lpnE/mtIj437CgbRwkOXg4IQP3jb2PXIRJHUEuS7nBO
- gUHZH/9ykXdZ8ex6HTzAQjYgq9W1esosOUp9W2n4SNhawFQ/Jm6abmwbaDSXitMg4UA9g6soF
- plBa9zU9P7RgSyfNWqsmbyJexozoWuzLibzJzvhmq2XXQy+FlnpkBuA821f0mRMy39MgQ3lTH
- 97kKNWsHIKWA8YfxiTBK9SUrNT6N2ngdwsgJwlzXrMSv0YL1MwxlYXYpwCusteaXdOrpTNTGW
- id+bWVjml1LpSt+SztAJtgj7YIaQhez3zJ+fmspXDOyTDO41twhqTyh7VagzjF00ia48dPAbu
- CmREW2T1NeHtQwpcdvRu8EjfwNauFGKX1TSxVhjzalkLqk9chRRS5Vj5fao4XCB/1ulfWNeW0
- SdXoySoeyajtcwzJpEr/bB9t5OWHICSX5DKoM4hvACE3RsQYBi9YWMb9oRoBwdThN/lV8tLzy
- ZKJ5p+X6JXFp9P4F1QUtJRVHFQi8xr4Dv/xcCuO1MDBczuaX8whxpej7qZO0LnHJ1qgZnQGXs
- 3kLtQYQmNXgCXq42nlnADcDnVvfQ8iXGJtFA5p/BhVZa+VvzUy23m/5INdDQY6uRMpsUcwV8H
- JHnZ/RbGTohKiNpDPB7s3fkhjvsURRsNwGgnOqy1z6LcZWeaYetU/MB6rN3PrO8gkOP5bGyhG
- uD92xRNfCOsK+XTyU5W1PGvucAJWklr1Xn6B/VM46RLbhpV58SNo322pQnY94ObO8dbUFE9Ug
- K60so/nYvPnAzP9nuLV8J0KAp9FaVHGJzprXL2a6NgNq8YsLxWVa3EZsMjzZaUClIiuzMl7d/
- Wa1HAkWTbr85FBlCkiQZ6MPC/v1LG1/DqL0oY3IfubOf+XtgmuwJxZE8TwVNSS8xlHVulo3s8
- XUrjK9ws1aIr7z9XqiVHVS+0zdIeoiu4F9+SpYRnJ1CS/HEdAmuU1UqtvUVuNpj3ZQU2+1eKE
- xizEm/xayJf7jeAYDgJOMyUb/YtBwEbzJh2KzxNEVI8IwDjpngySNkBFSEBr9vJoZpTm2bOns
- 3UTjBVHaFziGzTfBg168q80xls89+l6u56Ge+8EvIfZETs7p+gcEJ8X5lVNygWDlQSy3yqzf2
- ya3tEwOTBZYtnJ4TmlLzWr9TiDPoo7cT6rXqejm66iZ2DCY59nW7LWsgUuuaqem8vcXDJ5yVf
- Qvj9m6q8dXvuPq9C6DzVzE/MwCVxUrn8lar9afpK4+aSHUnvqSPH1VovkVUDFhKjErdT+M9sG
- mcwQDei6PGqFJzK8RO/8VGwekmJ1/dZ9KAHLaDBQJah2+5mPQo5E8+ImxENTsGkl4GROQc5IU
- sRvyGYVBJCSBwTkwkZqiZhsB0grGGR43tqA2r34e/yRox428mYiRQfD4yq6ZFNm5X8zvzb3er
- eUFnLGUUB33RMDx70UmkIiMy6yaw5cpOJjilo5Ho7rVlCSetayIPZQqN5jAXtYAfTT5rj82NY
- nIp5zzmoexjozcpBHyp+TwDOUnfKcgDE1EdQgACJr4XL4
+To:     =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
+        Arnd Bergmann <arnd@arndb.de>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+        Maxime Ripard <maxime@cerno.tech>, sam@ravnborg.org,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        benh@kernel.crashing.org, Paul Mackerras <paulus@samba.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        mark.cave-ayland@ilande.co.uk, linux-fbdev@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
+References: <83071743-a7f2-f761-baa3-da688f26b5e3@suse.de>
+ <9162f41f-28c3-493c-ab54-b1c4a2fdf494@app.fastmail.com>
+ <fda959d7-1bae-716f-f01b-66d9db9096e0@suse.de>
+ <654e3cfe-80d7-46c9-8e5e-461846e4df35@app.fastmail.com>
+ <866c7033-0d4e-7b5d-008c-8eb16f99498b@suse.de>
+ <f26ca6a1-feb1-4822-ac96-bc484b22f8a0@app.fastmail.com>
+ <c80a6e2d-a3b9-8186-cc95-97c4775171ed@suse.de>
+ <fc33ebf7-ecb7-4686-ac31-0118a40595f6@app.fastmail.com>
+ <0a15ecf5-939d-3b00-bcde-0fc7b449cfda@suse.de>
+ <76d8a408-fc3e-4bd1-91c5-8278f7469979@app.fastmail.com>
+ <20221012142707.GD28810@kitsune.suse.cz>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <20221012142707.GD28810@kitsune.suse.cz>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 10/12/22 21:18, Kees Cook wrote:
-> Add MIPS to fb_* helpers list for iomem addresses. This silences Sparse
-> warnings about lacking __iomem address space casts:
->
-> drivers/video/fbdev/pvr2fb.c:800:9: sparse: sparse: incorrect type in ar=
-gument 1 (different address spaces)
-> drivers/video/fbdev/pvr2fb.c:800:9: sparse:     expected void const *
-> drivers/video/fbdev/pvr2fb.c:800:9: sparse:     got char [noderef] __iom=
-em *screen_base
->
-> Reported-by: kernel test robot <lkp@intel.com>
-> Link: https://lore.kernel.org/lkml/202210100209.tR2Iqbqk-lkp@intel.com/
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: dri-devel@lists.freedesktop.org
-> Signed-off-by: Kees Cook <keescook@chromium.org>
+Hello,
 
-applied to fbdev git tree.
+On 10/12/22 16:27, Michal Suchánek wrote:
 
-Thanks!
-Helge
+[...]
 
-> ---
->   include/linux/fb.h | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/include/linux/fb.h b/include/linux/fb.h
-> index 07fcd0e56682..3822734a38c7 100644
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -555,7 +555,7 @@ static inline struct apertures_struct *alloc_apertur=
-es(unsigned int max_num) {
->
->   #elif defined(__i386__) || defined(__alpha__) || defined(__x86_64__) |=
-|	\
->   	defined(__hppa__) || defined(__sh__) || defined(__powerpc__) ||	\
-> -	defined(__arm__) || defined(__aarch64__)
-> +	defined(__arm__) || defined(__aarch64__) || defined(__mips__)
->
->   #define fb_readb __raw_readb
->   #define fb_readw __raw_readw
+>>
+>> If you are using the framebuffer code from vga.c, I would guess that
+>> that you can run a big-endian kernel with qemu-system-ppc64,
+>> or a little-endian kernel with qemu-system-ppc64le and get the
+>> correct colors, while running a little-endian kernel with
+>> qemu-system-ppc64 and vga.c, or using a different framebuffer
+>> emulation on a big-endian kernel would give you the wrong colors.
+> 
+> Thanks for digging this up.
+> 
+> That makes one thing clear: qemu does not emulate this framebuffer
+> property correctly, and cannot be relied on for verification.
+> 
+> If you can provide test results from real hardware that show the current
+> logic as flawed it should be changed.
+> 
+> In absence of such test results I think the most reasonable thing is to
+> keep the logic that nobody complained about for 10+ years.
+> 
+
+I agree with Michal and Thomas on this. I don't see a strong reason to not
+use the same heuristic that the offb fbdev driver has been doing for this.
+
+Otherwise if this turns out to be needed, it will cause a regression for a
+user that switches to this driver instead. Specially since both fbdev and
+DRM drivers match against the same "display" OF compatible string.
+
+-- 
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 

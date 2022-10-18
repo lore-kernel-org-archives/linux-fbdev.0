@@ -2,126 +2,94 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71F6AC433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Oct 2022 07:22:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF644C4332F
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Oct 2022 07:48:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230406AbiJRHWw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Oct 2022 03:22:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38040 "EHLO
+        id S230261AbiJRHsD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Oct 2022 03:48:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48556 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229670AbiJRHWi (ORCPT
+        with ESMTP id S230308AbiJRHsA (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Oct 2022 03:22:38 -0400
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 146F2ABD61
-        for <linux-fbdev@vger.kernel.org>; Tue, 18 Oct 2022 00:22:36 -0700 (PDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1okgvr-0006SP-2v; Tue, 18 Oct 2022 09:22:35 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1okgvp-002ESx-St; Tue, 18 Oct 2022 09:22:33 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1okgvo-008kKv-VO; Tue, 18 Oct 2022 09:22:32 +0200
-Date:   Tue, 18 Oct 2022 09:22:32 +0200
-From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To:     Helge Deller <deller@gmx.de>
-Cc:     linux-fbdev@vger.kernel.org, Cai Huoqing <cai.huoqing@linux.dev>,
-        kernel@pengutronix.de, dri-devel@lists.freedesktop.org,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
-        Sekhar Nori <nsekhar@ti.com>
-Subject: Re: [PATCH] fbdev: da8xx-fb: Fix error handling in .remove()
-Message-ID: <20221018072232.uodlzz3tzcugl2bo@pengutronix.de>
-References: <20221017195250.1425468-1-u.kleine-koenig@pengutronix.de>
- <7469c557-388a-4917-9810-90b1f341292d@gmx.de>
+        Tue, 18 Oct 2022 03:48:00 -0400
+Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com [IPv6:2607:f8b0:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EB5C26293F;
+        Tue, 18 Oct 2022 00:47:52 -0700 (PDT)
+Received: by mail-pf1-x42d.google.com with SMTP id p14so13361265pfq.5;
+        Tue, 18 Oct 2022 00:47:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=oYQUCwExhw/Gpp42oncI15bChvHsTTJdPx7zzXszYxc=;
+        b=diWqSdGPpWLcYc5wVUgUAWU9mbRgKb1oWTLPkZ7UJQjwU8hrNt3+4HIfmxzQvaY1hD
+         tCucGt9idZ0ENMca2PeEJpvNpcPG3yiUk+tcW8/k8o+EKPLpscOaPt6jFyNYSItLmXbp
+         IQwfieBmhuZqtRiS6zQdVWDpVv6EdxGz+zVXFrxKMj4Pg5kZ1ZbW4Jr7sGBZN1eYJyzl
+         R5ZdF2kdzCfS7kjUzBxzwJVlPKr/bk982Yq9n4Hcp1J34DNssOzx3os3JLR2lMCTN/rt
+         OdWvk4Z1zBuMu0vupb9iXXAHmyHtZQH6bbLtolfvOq4sUQTPw42Anzq1Rs/dbN2LYS3G
+         khZA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=oYQUCwExhw/Gpp42oncI15bChvHsTTJdPx7zzXszYxc=;
+        b=ewAVjZsUrsfv3aS9zYPa4SSkOam2GlrEyh2Wjg1rGZ3uiE+5CPvu37xy5G/RxgDnPq
+         fe2aUEttXoI0c4hxBpKwAqR0zPpwdZLHwB8GC+LKgO+FUUp11jsuWeWJ+SWRqbtbr1Js
+         QxZTiqd7CpUA3UQzNfEq+QJmQsqWzexQj/jHJGeA6rEhknNb6JUVCloclyBDkwT40JGR
+         4rXM8sc2JCpEf1HFAl1yB0DkL2rS+R80VAHWkpeExURrOmTEtbFdNu22VcaB5LNahYjw
+         uBAonZesNorBZZNjcGTCOzdgoXubpox82OtzgS4UxzN4JXyLU/X2QgM2XLC0ak25+y0X
+         1RPw==
+X-Gm-Message-State: ACrzQf0scJXFme8dBb1f1OsseqUrYSXdCBuNqf+cyd4Ru/obg1Mo+gR7
+        MWRnzCA4S7smvDb6l3KzQz4=
+X-Google-Smtp-Source: AMsMyM5BDR4fAvT0NYnaUxjcEr6J7D9WQ72shCxLOvZ0V9r0T7BuJ/uOXSqT08/mEcXRpW3kPvh6nA==
+X-Received: by 2002:a63:8648:0:b0:461:722b:ffc8 with SMTP id x69-20020a638648000000b00461722bffc8mr1663147pgd.118.1666079271984;
+        Tue, 18 Oct 2022 00:47:51 -0700 (PDT)
+Received: from carlis-virtual-machine.localdomain ([156.236.96.164])
+        by smtp.gmail.com with ESMTPSA id d4-20020a62f804000000b005628a30a500sm8492393pfh.41.2022.10.18.00.47.50
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 18 Oct 2022 00:47:51 -0700 (PDT)
+From:   Xuezhi Zhang <zhangxuezhi3@gmail.com>
+To:     deller@gmx.de, zhangxuezhi1@coolpad.com,
+        wsa+renesas@sang-engineering.com
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v2] video: fbdev: sm501fb: convert sysfs snprintf to sysfs_emit
+Date:   Tue, 18 Oct 2022 15:47:45 +0800
+Message-Id: <20221018074745.922062-1-zhangxuezhi3@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="wvwcnhrbkl5tpywx"
-Content-Disposition: inline
-In-Reply-To: <7469c557-388a-4917-9810-90b1f341292d@gmx.de>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+From: Xuezhi Zhang <zhangxuezhi1@coolpad.com>
 
---wvwcnhrbkl5tpywx
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Follow the advice of the Documentation/filesystems/sysfs.rst
+and show() should only use sysfs_emit() or sysfs_emit_at()
+when formatting the value to be returned to user space.
 
-On Tue, Oct 18, 2022 at 08:08:49AM +0200, Helge Deller wrote:
-> On 10/17/22 21:52, Uwe Kleine-K=F6nig wrote:
-> > Even in the presence of problems (here: regulator_disable() might fail),
-> > it's important to unregister all resources acquired during .probe() and
-> > disable the device (i.e. DMA activity) because even if .remove() returns
-> > an error code, the device is removed and the .remove() callback is never
-> > called again later to catch up.
-> >=20
-> > This is a preparation for making platform remove callbacks return void.
-> >=20
-> > Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
->=20
-> applied.
+Signed-off-by: Xuezhi Zhang <zhangxuezhi1@coolpad.com>
+---
+v2:change onvert to convert in subject.
+---
+ drivers/video/fbdev/sm501fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Great. If you want a Fixes: line, that's:
+diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
+index fce6cfbadfd6..f743bfbde2a6 100644
+--- a/drivers/video/fbdev/sm501fb.c
++++ b/drivers/video/fbdev/sm501fb.c
+@@ -1166,7 +1166,7 @@ static ssize_t sm501fb_crtsrc_show(struct device *dev,
+ 	ctrl = smc501_readl(info->regs + SM501_DC_CRT_CONTROL);
+ 	ctrl &= SM501_DC_CRT_CONTROL_SEL;
+ 
+-	return snprintf(buf, PAGE_SIZE, "%s\n", ctrl ? "crt" : "panel");
++	return sysfs_emit(buf, "%s\n", ctrl ? "crt" : "panel");
+ }
+ 
+ /* sm501fb_crtsrc_show
+-- 
+2.25.1
 
-Fixes: 611097d5daea ("fbdev: da8xx: add support for a regulator")
-
-(expanded Cc: a bit with the people involved there.)
-
-Best regards
-Uwe
-
-> > ---
-> >   drivers/video/fbdev/da8xx-fb.c | 3 ++-
-> >   1 file changed, 2 insertions(+), 1 deletion(-)
-> >=20
-> > diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx=
--fb.c
-> > index ae76a2111c77..11922b009ed7 100644
-> > --- a/drivers/video/fbdev/da8xx-fb.c
-> > +++ b/drivers/video/fbdev/da8xx-fb.c
-> > @@ -1076,7 +1076,8 @@ static int fb_remove(struct platform_device *dev)
-> >   	if (par->lcd_supply) {
-> >   		ret =3D regulator_disable(par->lcd_supply);
-> >   		if (ret)
-> > -			return ret;
-> > +			dev_warn(&dev->dev, "Failed to disable regulator (%pe)\n",
-> > +				 ERR_PTR(ret));
-> >   	}
-> >=20
-> >   	lcd_disable_raster(DA8XX_FRAME_WAIT);
-> >=20
-> > base-commit: 4fe89d07dcc2804c8b562f6c7896a45643d34b2f
->=20
->=20
->=20
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---wvwcnhrbkl5tpywx
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmNOVDYACgkQwfwUeK3K
-7Anw8Qf7Bp3WWPZoWZ3eqaIlidOS99XbrVGpK7/YocK8uv4ayqpeqyD2cDpU7hKD
-L7RAj6VJYPJ1QkkGkJYADpQvN3rrko6nkJnXjuIBKoXz53wQ8XBl9v4YxZSU1YPa
-BDFJs/3PZmXnwnGg/z8nOMULLOTVAJTf+3CuZJy4hUf26SROoWmjk1iogmUpnw9T
-UcmLZKSMg3jpbrqcNDpVn88X5JJ3nsV4znqcCU8ylFqyh/FXA1ZQzDKybnYAYeuJ
-UNj63Hh5QdkyDZFkmwh5R5emAbpiy7Y1tYD/JqXmKZHi8E/Ul4vrscjDF67sjx6m
-Zulbf2F9Ob6NTOcuHal0/8IleXxatQ==
-=f4lH
------END PGP SIGNATURE-----
-
---wvwcnhrbkl5tpywx--

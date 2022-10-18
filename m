@@ -2,108 +2,126 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 558DCC4332F
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Oct 2022 06:44:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71F6AC433FE
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Oct 2022 07:22:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229867AbiJRGok (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Oct 2022 02:44:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57328 "EHLO
+        id S230406AbiJRHWw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Oct 2022 03:22:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38040 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229535AbiJRGoj (ORCPT
+        with ESMTP id S229670AbiJRHWi (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Oct 2022 02:44:39 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B6222B1A5;
-        Mon, 17 Oct 2022 23:44:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1666075457;
-        bh=63HZwXGejDLFqTyjSGQIERszUjqAubInWNkbhxQHRfw=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=dorsbPzY5+G3UbsKLlQ90/xJXEeNF+VxEYVaQbu6mS+CKoHHwr5Jmf2/kzrZlvGj6
-         4iFK+UZ+7t6g15AsfLz1IZhqJ0irysgeDvAblo8rlmaenoXS75dvbkZzPM4eq1E7H+
-         pAZn+1jouJBRJR0VFZ5jjgrICiYxdW/fMr4gCuys=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.165.172]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MGz1f-1oxedu34sd-00E3TI; Tue, 18
- Oct 2022 08:44:17 +0200
-Message-ID: <b1a1e5b0-206c-6b3c-41f0-94de7b056f72@gmx.de>
-Date:   Tue, 18 Oct 2022 08:44:16 +0200
+        Tue, 18 Oct 2022 03:22:38 -0400
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 146F2ABD61
+        for <linux-fbdev@vger.kernel.org>; Tue, 18 Oct 2022 00:22:36 -0700 (PDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1okgvr-0006SP-2v; Tue, 18 Oct 2022 09:22:35 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1okgvp-002ESx-St; Tue, 18 Oct 2022 09:22:33 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1okgvo-008kKv-VO; Tue, 18 Oct 2022 09:22:32 +0200
+Date:   Tue, 18 Oct 2022 09:22:32 +0200
+From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To:     Helge Deller <deller@gmx.de>
+Cc:     linux-fbdev@vger.kernel.org, Cai Huoqing <cai.huoqing@linux.dev>,
+        kernel@pengutronix.de, dri-devel@lists.freedesktop.org,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
+        Sekhar Nori <nsekhar@ti.com>
+Subject: Re: [PATCH] fbdev: da8xx-fb: Fix error handling in .remove()
+Message-ID: <20221018072232.uodlzz3tzcugl2bo@pengutronix.de>
+References: <20221017195250.1425468-1-u.kleine-koenig@pengutronix.de>
+ <7469c557-388a-4917-9810-90b1f341292d@gmx.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.3.1
-Subject: Re: [PATCH] video: fbdev: sm501fb: onvert sysfs snprintf to
- sysfs_emit
-Content-Language: en-US
-To:     Xuezhi Zhang <zhangxuezhi3@gmail.com>, zhangxuezhi1@coolpad.com,
-        wsa+renesas@sang-engineering.com
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-References: <20221018062548.642910-1-zhangxuezhi3@gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20221018062548.642910-1-zhangxuezhi3@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:m0LUg5lPRQQEw6XOGHCdkytsWPN2mwF8nfxCnoi7lXPqe5vNeO0
- 8HONJbY/nJaUWviqJy6UB65Ve3vgZB99WGxPyhFluZZ8ydSoH3bbpZaIWwMzF3UgRc32P2J
- sRUWmEzUdIakUVq6svprEX+E7zcCE9t+bpk48YuwIotineLHPHL4H6A8AhvzeD34RD3MwOd
- YnQj6j5aa/RGSOuvMCX6Q==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:ROU90UQi0hY=:VK1PRXw00TKdNnI/PBgQvP
- V8bZOtcqB3npbx38QOlShFibE/ISpQ9/j7cceWW7073LPfeArVfKIh9QR7VbkpL5YRwFfgord
- 5Ln18dk449YM8KWvoqOH8d1C/iTHJ0C7rAjYQ+pgxe00CVN7NknMM5zjHxoTApCrUg9ZteeGD
- GT3jqp8gK0N/t7EDO6PtuKNI7sY+q3cqfziQTOibNVc/JthRDJfRYoRcMKttwGnZAoo0E58kJ
- GEsqh3YSYM21vEeW1KzvjVhJJyCWQ6ar1z0n21jpkIT78tuie7C/5lztkDiCl35lkXkZ1aWZV
- CS60Y5r9Xzpzqry2iRzBDbmhgATxDhQpzqQqq6WqQCvR+U4IsEqxB5L/ZLdz8PTgfvaNAgK+N
- HqnwTgRtjrGNmWrHgnzy/IUdh8d4QqaZPnSPnOiUF35PNsbtI+qrC0VV0orshHNA+cfstTc/u
- 4IqjGQlp6BovKiL4EwQl8pX5NbIIW9f/9D1WzOPtMhcuW1T6N+wOtpREsiGY7NKMf/w+fjmg8
- fNpmUQZ9+N2OC7EuCbi4hsekwUtaYOvjk3rxvZtwI8gOs+lGdJGeljPXW/mKfdqd3i1FbaRg+
- WBdasiEIzlNwLePqPLGpwoMrJRG5kq9vKownm+KhvgjlR9A3JHk8RyemQyQMW1Hw4vIDN1oce
- Wbo7MmqKRBCesoczHKV7EFnofDf3DJvkIJdWEgCKG037NdmYqpIfHH8Yx2C7ZEyA68dGdxiCZ
- 1p8j549Fvb9v9NM/Uj+iHwtl/PDZbUa8VZAA9z8GPjDLw3Azk/dEtn9KKLaF6eH8HMs47DI29
- YGFo3ENkPszbE3/AMrIXeLNGrsq0oT2JjoF3iAnORL/NjNRjjIy3R1fR+naR8Fhult0amMGo5
- /v/8VN0rcbb5A7ZS9HoPT2Zffbx9k7ZGmLNSCh0NGNIXSqRH0cqawEDbM/fS6voBZ4SI0KuGC
- kifdH2PmWMfckuDInA4iOlK68PDkM+rJ9/RlDqJq8z77aWiYrhFJfyxm0+TPgU3GX3k6wKyPX
- bXmOPxWBkHifUPcbiK0JI1LYB0L1ZneGTTiJNvQB3TRXYVzzgsR+bgkHnf3NSe2Kcz75foDcO
- Xwn9JW9kif1e7vyFkHmpAm34+TYNcPPLpJf/4ko9oqIFs4ZI9AfgZidojsMkTM1wcXvA8TE/g
- rWxLsSLM2dzREsrv/hDOZyLD2STn2yqgSqfhqY33r4y/KM03Q+bExBTwbpFv0xCahr50cPF3v
- cYcHCQFMHAQZVaX3tBLPkPsYJFHzM2KtYjNe3y8zYblJ1b60nWIW9etTaofRL0xSDvfZGEfER
- XVI4qgn28iXWlyuSWKt6GVY5+oCqIiKDZvLJGucFzF8TOJR6vRSroqvbxcDzp4nsNWXHQETDg
- shpwI8cbZIhNUXeDsdZAZSxRx82bjhqBhxP9zpsyR9F7vPrHifBVl43S22z1IuMO6n7I+JIyh
- C1AofKqaV+8jyACEq/kYJfrUEjBsp2A9Bqv4mf0bkHsgsjG6j7oFPq9nNfxX+M65DILrQPiVE
- esiBCVrxM3Zsm04Z5zhm9ygkMt1ChCpz1gl9vb/mByDYN
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="wvwcnhrbkl5tpywx"
+Content-Disposition: inline
+In-Reply-To: <7469c557-388a-4917-9810-90b1f341292d@gmx.de>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 10/18/22 08:25, Xuezhi Zhang wrote:
-> From: Xuezhi Zhang <zhangxuezhi1@coolpad.com>
->
-> Follow the advice of the Documentation/filesystems/sysfs.rst
-> and show() should only use sysfs_emit() or sysfs_emit_at()
-> when formatting the value to be returned to user space.
->
-> Signed-off-by: Xuezhi Zhang <zhangxuezhi1@coolpad.com>
 
-applied.
-Thanks!
-Helge
+--wvwcnhrbkl5tpywx
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> ---
->   drivers/video/fbdev/sm501fb.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb=
-.c
-> index fce6cfbadfd6..f743bfbde2a6 100644
-> --- a/drivers/video/fbdev/sm501fb.c
-> +++ b/drivers/video/fbdev/sm501fb.c
-> @@ -1166,7 +1166,7 @@ static ssize_t sm501fb_crtsrc_show(struct device *=
-dev,
->   	ctrl =3D smc501_readl(info->regs + SM501_DC_CRT_CONTROL);
->   	ctrl &=3D SM501_DC_CRT_CONTROL_SEL;
->
-> -	return snprintf(buf, PAGE_SIZE, "%s\n", ctrl ? "crt" : "panel");
-> +	return sysfs_emit(buf, "%s\n", ctrl ? "crt" : "panel");
->   }
->
->   /* sm501fb_crtsrc_show
+On Tue, Oct 18, 2022 at 08:08:49AM +0200, Helge Deller wrote:
+> On 10/17/22 21:52, Uwe Kleine-K=F6nig wrote:
+> > Even in the presence of problems (here: regulator_disable() might fail),
+> > it's important to unregister all resources acquired during .probe() and
+> > disable the device (i.e. DMA activity) because even if .remove() returns
+> > an error code, the device is removed and the .remove() callback is never
+> > called again later to catch up.
+> >=20
+> > This is a preparation for making platform remove callbacks return void.
+> >=20
+> > Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+>=20
+> applied.
 
+Great. If you want a Fixes: line, that's:
+
+Fixes: 611097d5daea ("fbdev: da8xx: add support for a regulator")
+
+(expanded Cc: a bit with the people involved there.)
+
+Best regards
+Uwe
+
+> > ---
+> >   drivers/video/fbdev/da8xx-fb.c | 3 ++-
+> >   1 file changed, 2 insertions(+), 1 deletion(-)
+> >=20
+> > diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx=
+-fb.c
+> > index ae76a2111c77..11922b009ed7 100644
+> > --- a/drivers/video/fbdev/da8xx-fb.c
+> > +++ b/drivers/video/fbdev/da8xx-fb.c
+> > @@ -1076,7 +1076,8 @@ static int fb_remove(struct platform_device *dev)
+> >   	if (par->lcd_supply) {
+> >   		ret =3D regulator_disable(par->lcd_supply);
+> >   		if (ret)
+> > -			return ret;
+> > +			dev_warn(&dev->dev, "Failed to disable regulator (%pe)\n",
+> > +				 ERR_PTR(ret));
+> >   	}
+> >=20
+> >   	lcd_disable_raster(DA8XX_FRAME_WAIT);
+> >=20
+> > base-commit: 4fe89d07dcc2804c8b562f6c7896a45643d34b2f
+>=20
+>=20
+>=20
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--wvwcnhrbkl5tpywx
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmNOVDYACgkQwfwUeK3K
+7Anw8Qf7Bp3WWPZoWZ3eqaIlidOS99XbrVGpK7/YocK8uv4ayqpeqyD2cDpU7hKD
+L7RAj6VJYPJ1QkkGkJYADpQvN3rrko6nkJnXjuIBKoXz53wQ8XBl9v4YxZSU1YPa
+BDFJs/3PZmXnwnGg/z8nOMULLOTVAJTf+3CuZJy4hUf26SROoWmjk1iogmUpnw9T
+UcmLZKSMg3jpbrqcNDpVn88X5JJ3nsV4znqcCU8ylFqyh/FXA1ZQzDKybnYAYeuJ
+UNj63Hh5QdkyDZFkmwh5R5emAbpiy7Y1tYD/JqXmKZHi8E/Ul4vrscjDF67sjx6m
+Zulbf2F9Ob6NTOcuHal0/8IleXxatQ==
+=f4lH
+-----END PGP SIGNATURE-----
+
+--wvwcnhrbkl5tpywx--

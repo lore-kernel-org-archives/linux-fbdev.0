@@ -2,99 +2,115 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43C99C4332F
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Oct 2022 07:51:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFEE4C4332F
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Oct 2022 08:30:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229908AbiJRHvZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Oct 2022 03:51:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59526 "EHLO
+        id S230048AbiJRIaa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Oct 2022 04:30:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60280 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229824AbiJRHvY (ORCPT
+        with ESMTP id S231132AbiJRIaQ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Oct 2022 03:51:24 -0400
-Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 349A330F79;
-        Tue, 18 Oct 2022 00:51:23 -0700 (PDT)
-Received: by mail-pl1-x631.google.com with SMTP id o21so10657979ple.5;
-        Tue, 18 Oct 2022 00:51:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=vl1/9ecW7HlTpZtLd+FURiia+/oZgLLP0reQXEaxp9o=;
-        b=XwJwK3PJkvykkn0S5pGaZYkikEofEiVjJheRW4oOoKev2JE3DDM3XariJP/edXDo81
-         ZkdksitDaNko4Nm7vlh8MzlIJaQ9t3QfQdni+SaYCed4k1QIVsl5GRfZYfuTiQk8Lc6r
-         FUOsM4C92LPDmilPmf+5KPJulsnGAnER5cJl/WfocCGF/EeIQdjaFZ2+zdN5sedq18kr
-         mD6w4HhzHgH4j/7tHj2LYCdZ5cHyCoGkvwa8np3mPpejWuwsAQs2DJ7qeferWZfwcbGF
-         79+w+myDh7BiacNkQpvUp8fmyOLVFV7GqyQ2jn/Q/uwT0Tk8PwMHbzAXzxwFWyZhZSPN
-         R9Hw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=vl1/9ecW7HlTpZtLd+FURiia+/oZgLLP0reQXEaxp9o=;
-        b=0yVy7jitAq6QxDeSBdB5pv8rLnB2vRSOJRw0CDb64l6rEtOYNxzph0zsvlJgn1/S7w
-         8pLPZyrcCwOIPMeVZjyQe8q1LRa4pzO0WzpV+IC2y9PPVRdn9qhnxkScMNtlEwjn6S+t
-         +RK4TIRsRMBn9SaPlpUI/6M+CDeN1wcfxb4nOLPaFQKCSqvwEr7blba56XrDGwnEi8Fi
-         JJFd6RXowTOtLQbkOpBE2clwKd67VLL069Ok5xFLafVUqdfWx8K/2GSIrWKD0hrjSWmh
-         i0zn5ktYd6yMpeIkF3GidgbcAkUNwtO8wMks+nmMXcW48ZQKrMHHEbZyN8fO/LnP+bKa
-         hnCg==
-X-Gm-Message-State: ACrzQf1O/cUxWbuyPtnvOhihyCWryLPRSK7fIdqClSnfdO9Mr4KVUOxA
-        QxfWj/pt3d/gaZxzKXYofF4=
-X-Google-Smtp-Source: AMsMyM7phLraWst4ozJkYCzYw63EtiFbS/zuVQszTlq88IO4Xq/7s4KAOuCblGjNUCz26cSQVTrpaQ==
-X-Received: by 2002:a17:902:d4d1:b0:185:52c4:f4c6 with SMTP id o17-20020a170902d4d100b0018552c4f4c6mr1794027plg.154.1666079482728;
-        Tue, 18 Oct 2022 00:51:22 -0700 (PDT)
-Received: from carlis-virtual-machine.localdomain ([156.236.96.164])
-        by smtp.gmail.com with ESMTPSA id y16-20020a17090264d000b00176e6f553efsm7901882pli.84.2022.10.18.00.51.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 18 Oct 2022 00:51:22 -0700 (PDT)
-From:   Xuezhi Zhang <zhangxuezhi3@gmail.com>
-To:     zhangxuezhi1@coolpad.com, deller@gmx.de, jiasheng@iscas.ac.cn
+        Tue, 18 Oct 2022 04:30:16 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F0E661EE;
+        Tue, 18 Oct 2022 01:30:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1666081760;
+        bh=fm0i1uQ9j+xRDrJ/tsIQ4TxqAKdNzMgiZeV5uu2HHwA=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=CxwOQ13YqH/3cIQF142Ivdr7bP/7NuVsy8zBQ67GBUh8KpmxaXbDZhJ6yvePF5jRq
+         AQklIUsK06n0OCKxPi4E3bUhKcllh+CqlBaGBt2hCM4OXE2qfCjFqqLfiH8H7yZMmv
+         LlKOD2EoSvVardJk+BgGfX/FFc9k/M+1/AnL9KWE=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.165.172]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MqaxU-1pXE0l3U9Y-00mZ4G; Tue, 18
+ Oct 2022 10:29:19 +0200
+Message-ID: <9e63badf-fe0f-b341-a9be-12455ad98bcb@gmx.de>
+Date:   Tue, 18 Oct 2022 10:29:18 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.3.1
+Subject: Re: [PATCH] fbdev: gbefb: convert sysfs snprintf to sysfs_emit
+Content-Language: en-US
+To:     Xuezhi Zhang <zhangxuezhi3@gmail.com>, zhangxuezhi1@coolpad.com,
+        jiasheng@iscas.ac.cn
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev: gbefb: convert sysfs snprintf to sysfs_emit
-Date:   Tue, 18 Oct 2022 15:51:18 +0800
-Message-Id: <20221018075118.922212-1-zhangxuezhi3@gmail.com>
-X-Mailer: git-send-email 2.25.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20221018075118.922212-1-zhangxuezhi3@gmail.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20221018075118.922212-1-zhangxuezhi3@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:ltNSdhYqtVEwKKEty5sa/d6o5jrNblDt1wfRzuwkNoXVsLM3XlZ
+ /ne/TgIZZjA3PT/nMtHgWd9vArSx4Di/OFyBn6ftpGLieeIKRT+IWmCx2833MRAXdVzWAaW
+ vrzJ1jkJ13IHQvaT3eaZfzxfyG7n7igMZDHaik667YRNrCkAXIt/Nsld3eITxT2dPpOXUeL
+ i8hgN3rz4FDFwTXRI4CGg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:f4yUllfLw1g=:99/DaWHSnZUmO+NvJZ4sYL
+ HEAlcdzbSWCo7X96f09U+4fagVO/dvivlWyQnFKnoXHq1p6svL/IBgZsaLnA5RQFPsTo7KFRN
+ 2/TLBNl/f4HOBRsT9KXNVyJmtTp1NeqPW/CSpdhoYYZt+UhUwGXp/3GZh3kxwqHtUmTBclBo8
+ nbKaTlXsckIzoROMPu18n7b3QoZgJ6uWw0X2mROTk+UcQv745qUGPLNWmzR0B+POwL2ZobAXS
+ WHYppGwyNk3D0IeE5fkeAtjKePOFnLExhnoUAe0nIHJYKOVXOZsH8WmQ7KhUQp/RgMjybVuQG
+ U98o15uoXpceBgZAVJTmxeRKUXuRot2VFbk8SibRggVucKXElskLD0aMZ27+x31/123ys4HYW
+ gsfngXQxhF8sdOdSrp0IoHju9cRICiJrIEYpKbP2zodolc4a82TXiguCbdlVukS5SV3OdhOMj
+ Z1ye1bb7inaMvdohBw+vj0YpVlP+/VUKCBgmtrOuFMjqD3EMdZcIXtkakLZ5WEf/8zoD599Pg
+ ObuiFzf9iMGQuXLVSpjFG31VvebEdvhZEL62Pm5PkZrtqJ/IvFuA9hurOb4G+maRzSaC+wjIZ
+ DihQw2Wmj+TgYf0embE7HR0RALDZW+GRST+y4ptl0GLCYwqpmvMRTOfbJeHtntcMg7Bf8kwkC
+ swqy6wYTqgxHPtlwC/uVU2A9JhdajUxGA/D8abXGb0PfK0C7NBOSDkqPMUzsnaaMC/mvz+u9R
+ akXoDBnvTcDWWqSO2IJb2trzgAiyGSkrxu3+vImCnvZs6nCKfTPGmWbjtFf2+U2/uCyIj2mYP
+ HOUld7y+3FTM6aVi/yt6eP8N80cMkhoOKYJNn+Rkub+i2sleYYuOPaJy3HJmvWrS8YzjkHkJ0
+ 6FWYfEdFAaSmBPOPJ6+watf6oDa+NmB8gtoPyfEmKSv/LuS+brfCpoOt8Vumuz7qW7LaA7P8z
+ jO+K3pAIyWMiYptXBaim4qHnMQFelOOZGH1SQNOJ9PKXXqR3Dzt27vRIbNKUg88kKw/s04tCJ
+ 05h9nvY6rWXRBI4j80aox3irXHkiQpRZaVXHaSRvIoNkl5afmBonzAPLhXRzZAUJcfByPehV8
+ 3gG4dpUL+1PzZ71ebnPYAMz+yIJn9IhU5jiN5gKd2bsxCbYnLdNDZoLPwcxlJvdvUGFFt9my/
+ VQZQvtxHApuqvVKl7bDUwXWaYR6uQ6gZFBHF6cbFc1boeyrSzPbemUM7uBaXOB5G9UYIzZA1+
+ 9jXo+8nPewIWtDjOjYAdpJ825CJtH0Nk9INwgg9t1zB1Rv4+kEO65l5QwBfEGXeFc5O2MlTTV
+ qAKUoucAJt63qNpjWoHFg7vaJPA8LtXZ9LIcKcKAo0DcMh94uFxz5tDcLBBlYLWty4raRLxzZ
+ xnD62xTvFKp5UXurD50KDWrJpWp56Gh+TLzbVu8+FEFZ/SeNC8BdtD19AYyzH0VMnRiP2GQBW
+ ld/MpUL3PhfHEjkF+oW9bg2E2bSKxy/uZahoVvAR4H2YJQhKGa63MnrznLwcT/H6vxTaU3YRk
+ AWDUsaumSXxV0Qlico+t48Klua2mOYms2ZVNuFqIakyhS
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Xuezhi Zhang <zhangxuezhi1@coolpad.com>
+On 10/18/22 09:51, Xuezhi Zhang wrote:
+> From: Xuezhi Zhang <zhangxuezhi1@coolpad.com>
+>
+> Follow the advice of the Documentation/filesystems/sysfs.rst
+> and show() should only use sysfs_emit() or sysfs_emit_at()
+> when formatting the value to be returned to user space.
+>
+> Signed-off-by: Xuezhi Zhang <zhangxuezhi1@coolpad.com>
 
-Follow the advice of the Documentation/filesystems/sysfs.rst
-and show() should only use sysfs_emit() or sysfs_emit_at()
-when formatting the value to be returned to user space.
+applied.
+Thanks!
+Helge
 
-Signed-off-by: Xuezhi Zhang <zhangxuezhi1@coolpad.com>
----
- drivers/video/fbdev/gbefb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
-index 1582c718329c..000b4aa44241 100644
---- a/drivers/video/fbdev/gbefb.c
-+++ b/drivers/video/fbdev/gbefb.c
-@@ -1060,14 +1060,14 @@ static const struct fb_ops gbefb_ops = {
- 
- static ssize_t gbefb_show_memsize(struct device *dev, struct device_attribute *attr, char *buf)
- {
--	return snprintf(buf, PAGE_SIZE, "%u\n", gbe_mem_size);
-+	return sysfs_emit(buf, "%u\n", gbe_mem_size);
- }
- 
- static DEVICE_ATTR(size, S_IRUGO, gbefb_show_memsize, NULL);
- 
- static ssize_t gbefb_show_rev(struct device *device, struct device_attribute *attr, char *buf)
- {
--	return snprintf(buf, PAGE_SIZE, "%d\n", gbe_revision);
-+	return sysfs_emit(buf, "%d\n", gbe_revision);
- }
- 
- static DEVICE_ATTR(revision, S_IRUGO, gbefb_show_rev, NULL);
--- 
-2.25.1
+> ---
+>   drivers/video/fbdev/gbefb.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
+> index 1582c718329c..000b4aa44241 100644
+> --- a/drivers/video/fbdev/gbefb.c
+> +++ b/drivers/video/fbdev/gbefb.c
+> @@ -1060,14 +1060,14 @@ static const struct fb_ops gbefb_ops =3D {
+>
+>   static ssize_t gbefb_show_memsize(struct device *dev, struct device_at=
+tribute *attr, char *buf)
+>   {
+> -	return snprintf(buf, PAGE_SIZE, "%u\n", gbe_mem_size);
+> +	return sysfs_emit(buf, "%u\n", gbe_mem_size);
+>   }
+>
+>   static DEVICE_ATTR(size, S_IRUGO, gbefb_show_memsize, NULL);
+>
+>   static ssize_t gbefb_show_rev(struct device *device, struct device_att=
+ribute *attr, char *buf)
+>   {
+> -	return snprintf(buf, PAGE_SIZE, "%d\n", gbe_revision);
+> +	return sysfs_emit(buf, "%d\n", gbe_revision);
+>   }
+>
+>   static DEVICE_ATTR(revision, S_IRUGO, gbefb_show_rev, NULL);
 

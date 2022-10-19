@@ -2,115 +2,68 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFEE4C4332F
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Oct 2022 08:30:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68636C433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Oct 2022 13:15:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230048AbiJRIaa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Oct 2022 04:30:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60280 "EHLO
+        id S231219AbiJSNPR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Oct 2022 09:15:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40368 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231132AbiJRIaQ (ORCPT
+        with ESMTP id S229900AbiJSNPB (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Oct 2022 04:30:16 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F0E661EE;
-        Tue, 18 Oct 2022 01:30:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1666081760;
-        bh=fm0i1uQ9j+xRDrJ/tsIQ4TxqAKdNzMgiZeV5uu2HHwA=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=CxwOQ13YqH/3cIQF142Ivdr7bP/7NuVsy8zBQ67GBUh8KpmxaXbDZhJ6yvePF5jRq
-         AQklIUsK06n0OCKxPi4E3bUhKcllh+CqlBaGBt2hCM4OXE2qfCjFqqLfiH8H7yZMmv
-         LlKOD2EoSvVardJk+BgGfX/FFc9k/M+1/AnL9KWE=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.165.172]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MqaxU-1pXE0l3U9Y-00mZ4G; Tue, 18
- Oct 2022 10:29:19 +0200
-Message-ID: <9e63badf-fe0f-b341-a9be-12455ad98bcb@gmx.de>
-Date:   Tue, 18 Oct 2022 10:29:18 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.3.1
-Subject: Re: [PATCH] fbdev: gbefb: convert sysfs snprintf to sysfs_emit
-Content-Language: en-US
-To:     Xuezhi Zhang <zhangxuezhi3@gmail.com>, zhangxuezhi1@coolpad.com,
-        jiasheng@iscas.ac.cn
+        Wed, 19 Oct 2022 09:15:01 -0400
+Received: from bg4.exmail.qq.com (bg4.exmail.qq.com [43.154.221.58])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63E181C2F21;
+        Wed, 19 Oct 2022 06:00:33 -0700 (PDT)
+X-QQ-mid: bizesmtp82t1666184265ts1d409a
+Received: from localhost.localdomain ( [182.148.15.91])
+        by bizesmtp.qq.com (ESMTP) with 
+        id ; Wed, 19 Oct 2022 20:57:44 +0800 (CST)
+X-QQ-SSF: 01000000008000F0I000B00A0000000
+X-QQ-FEAT: k8Irs33ik7sILmaHIJIKazcpedYQTXSyVb7gcd1y8saozIYNH5bXRuhnQO5B8
+        SWZ9upd814P4xShyibxu61MWNqCE8tch/gIjSZItSK0/xuHX4awzX672bkvgOXGzhe4vIkX
+        RvejmXyU5Es4iw7TyTMNh7yFak8YB0eUd8pH5ajNJTF77j5d5lLdBU00yvQ2HHcQVmxzjH/
+        4G3B/HzwGa4Je/LB/JW3rv7FIwybuXP0JrSU9QiCfVGHJ53Wta/9gTphZ9Eb6wkkds4CrS4
+        f7TAdFrPppanMdIb4x3L7yTFytEOLJW3QcFIPJVCmcaid10Dl03duaerDT6isFmidbTFNF5
+        E8JlTxslIHR2Q2Uo85eGpOuhSE2ojkhg8mro1igmXXsRUDL/h9OurpYGMDdIlnN7ley0iGk
+        oNDHIOIswnM=
+X-QQ-GoodBg: 0
+From:   Jilin Yuan <yuanjilin@cdjrlc.com>
+To:     thomas@winischhofer.net, deller@gmx.de
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-References: <20221018075118.922212-1-zhangxuezhi3@gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20221018075118.922212-1-zhangxuezhi3@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:ltNSdhYqtVEwKKEty5sa/d6o5jrNblDt1wfRzuwkNoXVsLM3XlZ
- /ne/TgIZZjA3PT/nMtHgWd9vArSx4Di/OFyBn6ftpGLieeIKRT+IWmCx2833MRAXdVzWAaW
- vrzJ1jkJ13IHQvaT3eaZfzxfyG7n7igMZDHaik667YRNrCkAXIt/Nsld3eITxT2dPpOXUeL
- i8hgN3rz4FDFwTXRI4CGg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:f4yUllfLw1g=:99/DaWHSnZUmO+NvJZ4sYL
- HEAlcdzbSWCo7X96f09U+4fagVO/dvivlWyQnFKnoXHq1p6svL/IBgZsaLnA5RQFPsTo7KFRN
- 2/TLBNl/f4HOBRsT9KXNVyJmtTp1NeqPW/CSpdhoYYZt+UhUwGXp/3GZh3kxwqHtUmTBclBo8
- nbKaTlXsckIzoROMPu18n7b3QoZgJ6uWw0X2mROTk+UcQv745qUGPLNWmzR0B+POwL2ZobAXS
- WHYppGwyNk3D0IeE5fkeAtjKePOFnLExhnoUAe0nIHJYKOVXOZsH8WmQ7KhUQp/RgMjybVuQG
- U98o15uoXpceBgZAVJTmxeRKUXuRot2VFbk8SibRggVucKXElskLD0aMZ27+x31/123ys4HYW
- gsfngXQxhF8sdOdSrp0IoHju9cRICiJrIEYpKbP2zodolc4a82TXiguCbdlVukS5SV3OdhOMj
- Z1ye1bb7inaMvdohBw+vj0YpVlP+/VUKCBgmtrOuFMjqD3EMdZcIXtkakLZ5WEf/8zoD599Pg
- ObuiFzf9iMGQuXLVSpjFG31VvebEdvhZEL62Pm5PkZrtqJ/IvFuA9hurOb4G+maRzSaC+wjIZ
- DihQw2Wmj+TgYf0embE7HR0RALDZW+GRST+y4ptl0GLCYwqpmvMRTOfbJeHtntcMg7Bf8kwkC
- swqy6wYTqgxHPtlwC/uVU2A9JhdajUxGA/D8abXGb0PfK0C7NBOSDkqPMUzsnaaMC/mvz+u9R
- akXoDBnvTcDWWqSO2IJb2trzgAiyGSkrxu3+vImCnvZs6nCKfTPGmWbjtFf2+U2/uCyIj2mYP
- HOUld7y+3FTM6aVi/yt6eP8N80cMkhoOKYJNn+Rkub+i2sleYYuOPaJy3HJmvWrS8YzjkHkJ0
- 6FWYfEdFAaSmBPOPJ6+watf6oDa+NmB8gtoPyfEmKSv/LuS+brfCpoOt8Vumuz7qW7LaA7P8z
- jO+K3pAIyWMiYptXBaim4qHnMQFelOOZGH1SQNOJ9PKXXqR3Dzt27vRIbNKUg88kKw/s04tCJ
- 05h9nvY6rWXRBI4j80aox3irXHkiQpRZaVXHaSRvIoNkl5afmBonzAPLhXRzZAUJcfByPehV8
- 3gG4dpUL+1PzZ71ebnPYAMz+yIJn9IhU5jiN5gKd2bsxCbYnLdNDZoLPwcxlJvdvUGFFt9my/
- VQZQvtxHApuqvVKl7bDUwXWaYR6uQ6gZFBHF6cbFc1boeyrSzPbemUM7uBaXOB5G9UYIzZA1+
- 9jXo+8nPewIWtDjOjYAdpJ825CJtH0Nk9INwgg9t1zB1Rv4+kEO65l5QwBfEGXeFc5O2MlTTV
- qAKUoucAJt63qNpjWoHFg7vaJPA8LtXZ9LIcKcKAo0DcMh94uFxz5tDcLBBlYLWty4raRLxzZ
- xnD62xTvFKp5UXurD50KDWrJpWp56Gh+TLzbVu8+FEFZ/SeNC8BdtD19AYyzH0VMnRiP2GQBW
- ld/MpUL3PhfHEjkF+oW9bg2E2bSKxy/uZahoVvAR4H2YJQhKGa63MnrznLwcT/H6vxTaU3YRk
- AWDUsaumSXxV0Qlico+t48Klua2mOYms2ZVNuFqIakyhS
+        linux-kernel@vger.kernel.org, Jilin Yuan <yuanjilin@cdjrlc.com>
+Subject: [PATCH] video: fix repeated words in comments
+Date:   Wed, 19 Oct 2022 20:57:38 +0800
+Message-Id: <20221019125738.54964-1-yuanjilin@cdjrlc.com>
+X-Mailer: git-send-email 2.36.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: bizesmtp:cdjrlc.com:qybglogicsvr:qybglogicsvr4
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 10/18/22 09:51, Xuezhi Zhang wrote:
-> From: Xuezhi Zhang <zhangxuezhi1@coolpad.com>
->
-> Follow the advice of the Documentation/filesystems/sysfs.rst
-> and show() should only use sysfs_emit() or sysfs_emit_at()
-> when formatting the value to be returned to user space.
->
-> Signed-off-by: Xuezhi Zhang <zhangxuezhi1@coolpad.com>
+Delete the redundant word 'the'.
 
-applied.
-Thanks!
-Helge
+Signed-off-by: Jilin Yuan <yuanjilin@cdjrlc.com>
+---
+ drivers/video/fbdev/sis/sis_accel.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> ---
->   drivers/video/fbdev/gbefb.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
-> index 1582c718329c..000b4aa44241 100644
-> --- a/drivers/video/fbdev/gbefb.c
-> +++ b/drivers/video/fbdev/gbefb.c
-> @@ -1060,14 +1060,14 @@ static const struct fb_ops gbefb_ops =3D {
->
->   static ssize_t gbefb_show_memsize(struct device *dev, struct device_at=
-tribute *attr, char *buf)
->   {
-> -	return snprintf(buf, PAGE_SIZE, "%u\n", gbe_mem_size);
-> +	return sysfs_emit(buf, "%u\n", gbe_mem_size);
->   }
->
->   static DEVICE_ATTR(size, S_IRUGO, gbefb_show_memsize, NULL);
->
->   static ssize_t gbefb_show_rev(struct device *device, struct device_att=
-ribute *attr, char *buf)
->   {
-> -	return snprintf(buf, PAGE_SIZE, "%d\n", gbe_revision);
-> +	return sysfs_emit(buf, "%d\n", gbe_revision);
->   }
->
->   static DEVICE_ATTR(revision, S_IRUGO, gbefb_show_rev, NULL);
+diff --git a/drivers/video/fbdev/sis/sis_accel.c b/drivers/video/fbdev/sis/sis_accel.c
+index 1914ab5a5a91..5850e4325f07 100644
+--- a/drivers/video/fbdev/sis/sis_accel.c
++++ b/drivers/video/fbdev/sis/sis_accel.c
+@@ -202,7 +202,7 @@ SiS310SubsequentScreenToScreenCopy(struct sis_video_info *ivideo, int src_x, int
+ 	 * and destination blitting areas overlap and
+ 	 * adapt the bitmap addresses synchronously
+ 	 * if the coordinates exceed the valid range.
+-	 * The the areas do not overlap, we do our
++	 * The areas do not overlap, we do our
+ 	 * normal check.
+ 	 */
+ 	if((mymax - mymin) < height) {
+-- 
+2.36.1
 

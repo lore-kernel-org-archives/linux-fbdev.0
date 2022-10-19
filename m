@@ -2,85 +2,104 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65C61C433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Oct 2022 20:24:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E2EEC4332F
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Oct 2022 21:43:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231331AbiJSUYG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Oct 2022 16:24:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58442 "EHLO
+        id S231312AbiJSVns (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Oct 2022 17:43:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46554 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231355AbiJSUYF (ORCPT
+        with ESMTP id S231278AbiJSVnr (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Oct 2022 16:24:05 -0400
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F15681C5A70
-        for <linux-fbdev@vger.kernel.org>; Wed, 19 Oct 2022 13:24:01 -0700 (PDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1olFbZ-0005rR-Ku; Wed, 19 Oct 2022 22:23:57 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1olFbY-000C52-Fz; Wed, 19 Oct 2022 22:23:56 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1olFbX-009A19-S0; Wed, 19 Oct 2022 22:23:55 +0200
-Date:   Wed, 19 Oct 2022 22:23:55 +0200
-From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To:     Helge Deller <deller@gmx.de>,
-        Michal Simek <michal.simek@xilinx.com>
-Cc:     linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
-        kernel@pengutronix.de, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH] Make xilinxfb_release() return void
-Message-ID: <20221019202355.qhvrlavvxlabwgom@pengutronix.de>
-References: <20221019132422.78505-1-u.kleine-koenig@pengutronix.de>
+        Wed, 19 Oct 2022 17:43:47 -0400
+X-Greylist: delayed 1811 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 19 Oct 2022 14:43:45 PDT
+Received: from smtp.smtpout.orange.fr (smtp-25.smtpout.orange.fr [80.12.242.25])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id F00611998A8
+        for <linux-fbdev@vger.kernel.org>; Wed, 19 Oct 2022 14:43:45 -0700 (PDT)
+Received: from sopl295.home ([109.220.248.156])
+        by smtp.orange.fr with ESMTPA
+        id lGNMo1N0Kg7y2lGNMocFLS; Wed, 19 Oct 2022 23:13:31 +0200
+X-ME-Helo: sopl295.home
+X-ME-Auth: amFyem1pay5yb2JlcnRAb3JhbmdlLmZy
+X-ME-Date: Wed, 19 Oct 2022 23:13:31 +0200
+X-ME-IP: 109.220.248.156
+From:   Robert Jarzmik <jarzmik.robert@orange.fr>
+To:     Arnd Bergmann <arnd@kernel.org>
+Cc:     linux-arm-kernel@lists.infradead.org,
+        Daniel Mack <daniel@zonque.org>,
+        Haojian Zhuang <haojian.zhuang@gmail.com>,
+        linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+        stern@rowland.harvard.edu, alexandre.belloni@bootlin.com,
+        brgl@bgdev.pl, damien.lemoal@opensource.wdc.com,
+        dmitry.torokhov@gmail.com, linux@dominikbrodowski.net,
+        balbi@kernel.org, gregkh@linuxfoundation.org, deller@gmx.de,
+        perex@perex.cz, jingoohan1@gmail.com, lee@kernel.org,
+        kernel@wantstofly.org, lgirdwood@gmail.com,
+        linus.walleij@linaro.org, marek.vasut@gmail.com,
+        broonie@kernel.org, mkpetch@internode.on.net,
+        miquel.raynal@bootlin.com, lost.distance@yahoo.com,
+        philipp.zabel@gmail.com, linux@armlinux.org.uk, sre@kernel.org,
+        slapin@ossfans.org, s.shtylyov@omp.ru, sudipm.mukherjee@gmail.com,
+        tiwai@suse.com, ulf.hansson@linaro.org, vigneshr@ti.com,
+        viresh.kumar@linaro.org, wsa+renesas@sang-engineering.com,
+        linux-pm@vger.kernel.org, linux-ide@vger.kernel.org,
+        linux-gpio@vger.kernel.org, linux-input@vger.kernel.org,
+        patches@opensource.cirrus.com, linux-leds@vger.kernel.org,
+        linux-mmc@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+        linux-mtd@lists.infradead.org, linux-rtc@vger.kernel.org,
+        linux-usb@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Subject: Re: [PATCH 00/30] ARM: pxa: remove all unused boards&drivers
+References: <20221019161831.3864786-1-arnd@kernel.org>
+X-URL:  http://belgarath.falguerolles.org/
+Date:   Wed, 19 Oct 2022 23:13:20 +0200
+In-Reply-To: <20221019161831.3864786-1-arnd@kernel.org> (Arnd Bergmann's
+        message of "Wed, 19 Oct 2022 18:17:53 +0200")
+Message-ID: <m2sfjjh5zj.fsf@sopl295.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/28.1 (darwin)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="eusgjvxyfskayn4d"
-Content-Disposition: inline
-In-Reply-To: <20221019132422.78505-1-u.kleine-koenig@pengutronix.de>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Arnd Bergmann <arnd@kernel.org> writes:
 
---eusgjvxyfskayn4d
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> From: Arnd Bergmann <arnd@arndb.de>
+...zip...
 
-Hello,
+> A good number of drivers become impossible to select after this, so
+> each of these also get dropped. I'm including the driver patches in the
+> series here and can either merge them through the soc tree, or they
+> can get picked up by the individual subsystem maintainers. Since both
+> the platform and the drivers get removed, the order should not matter.
+This part is a bit ... bothering.
+I at least identified these :
+>  delete mode 100644 drivers/input/touchscreen/wm9705.c
+>  delete mode 100644 drivers/input/touchscreen/wm9712.c
+>  delete mode 100644 drivers/input/touchscreen/wm9713.c
+>  delete mode 100644 drivers/input/touchscreen/wm97xx-core.c
+>  delete mode 100644 drivers/mfd/wm97xx-core.c
+>  delete mode 100644 sound/ac97/bus.c
+>  delete mode 100644 sound/ac97/codec.c
+>  delete mode 100644 sound/ac97/snd_ac97_compat.c
 
-I failed to add a proper subject prefix. "fbdev: xilinxfb: " would have
-been a good choice. I can resend, but I wouldn't say no if you are
-willing to fixup while applying this patch :-)
+For the existing platforms working with devicetree support (mioa701 for
+example), the wm9713 was properly used, providing both sound support and input
+touchscreen.
+So was the a97 part, providing a framework to make the wm9713 work.
 
-Best regards
-Uwe
+So I'm wondering how the choice to chop these drivers was done, and it is
+necessary to remove them. If so, maybe pxa support in the kernel should be
+removed all together, as people playing with it loose part of the working DT
+platforms they had.
 
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+As for the removal of defconfigs and arch-pxa, sure, this was PXA's destiny.
 
---eusgjvxyfskayn4d
-Content-Type: application/pgp-signature; name="signature.asc"
+Cheers.
 
------BEGIN PGP SIGNATURE-----
+--
+Robert
 
-iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmNQXNgACgkQwfwUeK3K
-7AnLJgf/b6pvSKg3Pm/QbY//gtR2iXSnM2Fr1+rJe0kqaW9gkh5JN2FNsitXefXR
-DtuwKShfoWPvM7kUg75oWFZoBHEL08U3VqAu6HmdcmOIvo9CZRdVDUfwIhwYLPIn
-IE53kvls0r00OnXfqtg/E1am7+jgStHaTAn4QYyROTtSPLzZDzJj/F9f7PodgBgL
-/C9k2hDf8VpcoSXho+xmpIWzdswZtTDT3ihxa8iS6LoUHAq7krq79WDrO6veUNxL
-8R7gh3vIBA9lidLEAGVuCpMey87uei7aTRCrO4MnPXWoavu/0VBccNNPpyanI3+j
-OOJ8Firg3/PnmVcCDUtd5FUAm+QzAA==
-=07br
------END PGP SIGNATURE-----
-
---eusgjvxyfskayn4d--
+PS: If this mail is sent twice, sorry in advance, my mailer is a bad mood
+lately.

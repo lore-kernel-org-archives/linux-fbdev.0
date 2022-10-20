@@ -2,103 +2,104 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 08306C433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Oct 2022 21:44:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32375C433FE
+	for <linux-fbdev@archiver.kernel.org>; Thu, 20 Oct 2022 06:35:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229832AbiJSVoF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Oct 2022 17:44:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46830 "EHLO
+        id S230148AbiJTGfO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 20 Oct 2022 02:35:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43358 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229869AbiJSVoE (ORCPT
+        with ESMTP id S230150AbiJTGfL (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Oct 2022 17:44:04 -0400
-Received: from smtp.smtpout.orange.fr (smtp-26.smtpout.orange.fr [80.12.242.26])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id A683419B658
-        for <linux-fbdev@vger.kernel.org>; Wed, 19 Oct 2022 14:44:03 -0700 (PDT)
-Received: from sopl295.home ([109.220.248.156])
-        by smtp.orange.fr with ESMTPA
-        id lGNoo1NB2g7y2lGNpocFOd; Wed, 19 Oct 2022 23:13:51 +0200
-X-ME-Helo: sopl295.home
-X-ME-Auth: amFyem1pay5yb2JlcnRAb3JhbmdlLmZy
-X-ME-Date: Wed, 19 Oct 2022 23:13:51 +0200
-X-ME-IP: 109.220.248.156
-From:   Robert Jarzmik <jarzmik.robert@orange.fr>
-To:     Arnd Bergmann <arnd@kernel.org>
-Cc:     linux-arm-kernel@lists.infradead.org,
-        Daniel Mack <daniel@zonque.org>,
-        Haojian Zhuang <haojian.zhuang@gmail.com>,
-        linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
-        stern@rowland.harvard.edu, alexandre.belloni@bootlin.com,
-        brgl@bgdev.pl, damien.lemoal@opensource.wdc.com,
-        dmitry.torokhov@gmail.com, linux@dominikbrodowski.net,
-        balbi@kernel.org, gregkh@linuxfoundation.org, deller@gmx.de,
-        perex@perex.cz, jingoohan1@gmail.com, lee@kernel.org,
-        kernel@wantstofly.org, lgirdwood@gmail.com,
-        linus.walleij@linaro.org, marek.vasut@gmail.com,
-        broonie@kernel.org, mkpetch@internode.on.net,
-        miquel.raynal@bootlin.com, lost.distance@yahoo.com,
-        philipp.zabel@gmail.com, linux@armlinux.org.uk, sre@kernel.org,
-        slapin@ossfans.org, s.shtylyov@omp.ru, sudipm.mukherjee@gmail.com,
-        tiwai@suse.com, ulf.hansson@linaro.org, vigneshr@ti.com,
-        viresh.kumar@linaro.org, wsa+renesas@sang-engineering.com,
-        linux-pm@vger.kernel.org, linux-ide@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linux-input@vger.kernel.org,
-        patches@opensource.cirrus.com, linux-leds@vger.kernel.org,
-        linux-mmc@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
-        linux-mtd@lists.infradead.org, linux-rtc@vger.kernel.org,
-        linux-usb@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Subject: Re: [PATCH 00/30] ARM: pxa: remove all unused boards&drivers
-In-Reply-To: <20221019161831.3864786-1-arnd@kernel.org> (Arnd Bergmann's
-        message of "Wed, 19 Oct 2022 18:17:53 +0200")
-References: <20221019161831.3864786-1-arnd@kernel.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/28.1 (darwin)
-X-URL:  http://belgarath.falguerolles.org/
-Date:   Wed, 19 Oct 2022 23:13:48 +0200
-Message-ID: <m2r0z3h5yr.fsf@sopl295.home>
+        Thu, 20 Oct 2022 02:35:11 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D04F3BC608;
+        Wed, 19 Oct 2022 23:35:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1666247695;
+        bh=vKBOYiiDYu+sfV4JLD93t9oJLcn4956Rbkypp34tJU4=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=MjAytoTji6RK32KGrWSd40phvZu23VqTiVuhwxXvdJqYtbW0htWzvO4CXzfiHoMky
+         A/ni2xBEBeMEsSTweanADPfVkdN13tQwPiDbxROK2OPt4EU/RzmHfpQmahbAjIYImt
+         XDwyzKYJvgzBxLYaxJRiWOX7fsPmiyn0iiAVTpEA=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.164.193]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MxUnp-1p0snG0UI5-00xvrF; Thu, 20
+ Oct 2022 08:34:55 +0200
+Message-ID: <991619f0-516e-bda4-57c5-93cab654d261@gmx.de>
+Date:   Thu, 20 Oct 2022 08:34:54 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.3.1
+Subject: Re: [PATCH] video: fix repeated words in comments
+To:     Jilin Yuan <yuanjilin@cdjrlc.com>, thomas@winischhofer.net
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+References: <20221019125738.54964-1-yuanjilin@cdjrlc.com>
+Content-Language: en-US
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20221019125738.54964-1-yuanjilin@cdjrlc.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:yuRjDwfr/9QcRKvx5rcMWrZ8MJ9vPAeABZBDX5+WmQ30KtjheYZ
+ qkdF9nlstcFghYJ1JFqDHyN9PEVuDVT4UwpDSVMIY1mPOWQ4nwgKai03PeHQsbWXC1Dhfr1
+ kHGGLgbLPcVekFebdjRKKLyNv3eYS57MoJeAHzZ7dnrztm8D+zbES5TZmVX0RdnN1XF7kPV
+ qGL79GpJco6UB37x+ICmQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:IBnwqRaSojc=:28fjBE6I6nlc9bB3Kce5MZ
+ m5ANxO1Yt0peIkQBcMPUipNYJJlXIC4nvekJlBSNrxs9EITMV3L+AYvWRP9XV9M1npfOUCs7k
+ MbHFZUtO3gGrjS2pXGpsPy20qWTnRizxhUDq1KuTrzaYZtTxqHMVh26ZVhfT/gubtGqoj0208
+ 2R02mlMoJAPn54/FE3UwEwGxiFwDuT7TWDcZIKXoEI/OktOhLuCH+c/ioz3swrMCbgeAAGcs0
+ I0URm3wPf/dhOQ7bLnKUREoeCiafjZV0PNsRJrOeL8NUJEVDOKQcX6al7tTZWLFCOffVVBgbV
+ /usBTGZVusb22ol2vhXxRgcNfJ1ka3A3/22wIChWmXPBd8gFrDa9wo9MncW46V0isf0FnQgD8
+ yTZM1ad2AM9tdKYakq3uw/sOLxEePAAsT7DgMc6aKSnQ6g8U+zK/uO6IcABXoPP5vQM52/JnW
+ XW3+m6QfX/4LJL8SwZCNf/8TYoO/rmjnDXDntBjPHPJb6dykOR0AoQP121FTkKHwzg8Y2Kd2U
+ Gt7R+uOL+Xc+okk3wYYqaVAjGuhhMEGMbfwDnaJ0UqG+zBiMHXOPkma3M1nIOT+OWk35P17jy
+ hnzmd53xiEjs3EmO94YPn4XN27zbGd/mPQ9ppATwuqL4wmR9ih8lUSOgTg6Xt5WH41JYbspze
+ h3qC/AkwAmZZNLIqYa3IT2GsaudDooiE+j0YZKaYUOXaLHL7aHvSrFtrLc7bMy+A92AeEFt+i
+ IS97FRaBf5cimVKsOZJgvjDgcePwEXN+f5O47oHVg9Dk50aa0+uz2dhiUvyejIcepA6bALfQT
+ Yh5ZfpS/x/fVM1A8CnPG2A8wRJLqUzc4FFS0Hn6/tMwCHhkyeI/riLIFjMdVd/Dr2d92g5wfQ
+ pUyNQ+LOOi0MpH6OuUNc2mDQxVJRSsInV8EHZyW7zVeP+/SYuq8m9MKASUCfYwS+NYebmIqDq
+ vrCHHmKaajYpY5H9WofaSjwSSycH3PDtSIS63UeJc2M9QYZ35Gz0VqRe2y8IV8xd/w6a7jL9t
+ DILSGuRlaJXuY/RfTpgZ5NevVq38eNksnu2MnqoB/QWESVZXpaZdYgPMLLva9ivJO0ZRs4JJm
+ Whr2ODxK5ZZWoXAmCybFL8B660h4qaKQhETSxaFm0awcide6yuH7HiBpYLwSVTrv3QVgHaNxz
+ vhZlcZH0mKEOCTMzDA8mO/alpG2JMDNM0Rb5RXEKQZMU2A9PQBInnJoiWdE3wL2A2feZqxgS6
+ X9wu7X+RQe7vnFa5epLOjFED1eZhXZeFN82xvw23jnSFeqEzG1tzSiEjajYXLZYB4w6NR3Y1A
+ pkiJJdCDRpnak2eXF90H277ygsaYvd/jBAW9AtwI87W1i8/1Mg49Q3zIUCRD7tMHQ/MB26nzB
+ RCKwJo+zPHF8PxwAPMAuFHlTYSY36UPlep4UAR4hqjzwlK9b9kMxdnA1EEMDr3o5QelGYBxxA
+ Gn11s+ab3lpiLuMhSiU/hjEIhBDuh3IteXtGfsu3yKV95HnCPkP4BTFxaUH1tC8eIzQ6XQpUU
+ dC6CLTboaiFIYuAKh20VTFHi3n4OthvsdEVUxJ8Mpwaze
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Arnd Bergmann <arnd@kernel.org> writes:
+On 10/19/22 14:57, Jilin Yuan wrote:
+> Delete the redundant word 'the'.
+>
+> Signed-off-by: Jilin Yuan <yuanjilin@cdjrlc.com>
 
-> From: Arnd Bergmann <arnd@arndb.de>
-...zip...
+applied.
+Thanks!
 
-> A good number of drivers become impossible to select after this, so
-> each of these also get dropped. I'm including the driver patches in the
-> series here and can either merge them through the soc tree, or they
-> can get picked up by the individual subsystem maintainers. Since both
-> the platform and the drivers get removed, the order should not matter.
-This part is a bit ... bothering.
-I at least identified these :
->  delete mode 100644 drivers/input/touchscreen/wm9705.c
->  delete mode 100644 drivers/input/touchscreen/wm9712.c
->  delete mode 100644 drivers/input/touchscreen/wm9713.c
->  delete mode 100644 drivers/input/touchscreen/wm97xx-core.c
->  delete mode 100644 drivers/mfd/wm97xx-core.c
->  delete mode 100644 sound/ac97/bus.c
->  delete mode 100644 sound/ac97/codec.c
->  delete mode 100644 sound/ac97/snd_ac97_compat.c
+Helge
 
-For the existing platforms working with devicetree support (mioa701 for
-example), the wm9713 was properly used, providing both sound support and input
-touchscreen.
-So was the a97 part, providing a framework to make the wm9713 work.
 
-So I'm wondering how the choice to chop these drivers was done, and it is
-necessary to remove them. If so, maybe pxa support in the kernel should be
-removed all together, as people playing with it loose part of the working DT
-platforms they had.
+> ---
+>   drivers/video/fbdev/sis/sis_accel.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/sis/sis_accel.c b/drivers/video/fbdev/s=
+is/sis_accel.c
+> index 1914ab5a5a91..5850e4325f07 100644
+> --- a/drivers/video/fbdev/sis/sis_accel.c
+> +++ b/drivers/video/fbdev/sis/sis_accel.c
+> @@ -202,7 +202,7 @@ SiS310SubsequentScreenToScreenCopy(struct sis_video_=
+info *ivideo, int src_x, int
+>   	 * and destination blitting areas overlap and
+>   	 * adapt the bitmap addresses synchronously
+>   	 * if the coordinates exceed the valid range.
+> -	 * The the areas do not overlap, we do our
+> +	 * The areas do not overlap, we do our
+>   	 * normal check.
+>   	 */
+>   	if((mymax - mymin) < height) {
 
-As for the removal of defconfigs and arch-pxa, sure, this was PXA's destiny.
-
-Cheers.
-
---
-Robert
-
-PS: If this mail is sent twice, sorry in advance, my mailer is a bad mood
-lately.

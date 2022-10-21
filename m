@@ -2,80 +2,235 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE6C8C433FE
-	for <linux-fbdev@archiver.kernel.org>; Thu, 20 Oct 2022 20:05:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BB80C433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Oct 2022 01:15:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229882AbiJTUFZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 20 Oct 2022 16:05:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56946 "EHLO
+        id S229484AbiJUBPz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 20 Oct 2022 21:15:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49618 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229954AbiJTUFW (ORCPT
+        with ESMTP id S229460AbiJUBPw (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 20 Oct 2022 16:05:22 -0400
-Received: from mail-oi1-x233.google.com (mail-oi1-x233.google.com [IPv6:2607:f8b0:4864:20::233])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D40A7E77A4
-        for <linux-fbdev@vger.kernel.org>; Thu, 20 Oct 2022 13:05:18 -0700 (PDT)
-Received: by mail-oi1-x233.google.com with SMTP id u15so893441oie.2
-        for <linux-fbdev@vger.kernel.org>; Thu, 20 Oct 2022 13:05:18 -0700 (PDT)
+        Thu, 20 Oct 2022 21:15:52 -0400
+Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3421E188AA2
+        for <linux-fbdev@vger.kernel.org>; Thu, 20 Oct 2022 18:15:50 -0700 (PDT)
+Received: by mail-pl1-x629.google.com with SMTP id n7so944296plp.1
+        for <linux-fbdev@vger.kernel.org>; Thu, 20 Oct 2022 18:15:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=3kqzNKZdLHbQGVRoA6TT9TNlPerDzkcvPk08IZ/y3eE=;
-        b=QgRBMUtYjUC9XqyTURdHv/HvgeBxWTHGdNW3yw5i54E18RnwalgNO6voNRgpHVoymn
-         Rr3v+cufUCg9rPyXPSJvojTtM/CbhjhFkf4uJan4qZAsWdmo+vwWf4E0VhLqOD4Nqvmk
-         49y32Xj/dRz3iFsDIfbSH5a7SYH30pDd3EvLqCXwPF9sMAVsZmeLOrY8j1lPCv7PVZY0
-         OvGLVk+3vk6xYGt8S1F52V8CBbZAsMNQZ9U8fBh9X5HwjPOx9lULuIugmxS9PbYI+fFE
-         ZSoxAbcuwbBR81JOX2lKivhhBWvRdlh+f1WIEQp37O7v+86Ye8uIkB2BClkMpHMJq7c5
-         d0xg==
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=TYc5dlRmOKX3pKCJnT+MFL8RVo/8Ttmq2r93sp4OQsE=;
+        b=H4nujdR2StaT8z4NSqPqeAGsi1b6673+PXh6vfeb6bElyNwNNy5g52mhzYcq36RpL9
+         9GKKanOQHIcIIp8+6Nj7Xu6BY20xS4yNgOBuZCIWjIvRKM9fAsQFLXv3c7X7c6iLfYxf
+         GdPkcv9YyThGeuigxQUNaS2YbBPGhy8TpMgxbSQA6zNLTwGPGxGKdGCsnNS3STKoU9TN
+         NhiUx7Aula+FJLPWE+64oMDteE13Pn6jYY/f1QQG4xKNP5omfh4TGBTb/SHWvMqhmXZU
+         VnlH0/8pQ53mBy3kVW6v2Elsw/1axLw48TICQP8DBID25lmqRGuSOvXyiVrgYvMDhRfm
+         pDww==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=3kqzNKZdLHbQGVRoA6TT9TNlPerDzkcvPk08IZ/y3eE=;
-        b=rsOYPh2nrx1NmmVN7TDAh19uD1bpuo37VcNs28zs2pzY/14MnzrPiQICUT6f3boIDn
-         vYYyxFrmABeHkv8L6pesXgwksqPzKPgqi8oNxSGHm9mIlkucNaTZ99SQmldngw4Wt8aP
-         nx4jONehHfQtfNATFxJV4pjx4u3Q/mFY4HufvuEf5Y/z/ITwmCLF8ChJRu/Mk7e4DL7Q
-         mSb5t3SZmYYbsPX81Nbv78Fmkj9RilL33OwDltZxR1x2lExyarfKWWGU41Dig20lpaxa
-         DXu8qLUTiQHUmmO8VTDX6gnhd4jFjUIrBOCPcBS0YVSWmfv8QLx7LZtG1gWVF8Exk3ag
-         Cb7w==
-X-Gm-Message-State: ACrzQf177O6QeujIvEoSGRFSsEweL+pRXExsbT2YBvvIxpD/JbbL8gDo
-        +qPmnAtApYDNNKhjtDKVIBG6py4IRHY=
-X-Google-Smtp-Source: AMsMyM7u4FprY/yjd2wr8bzOxdFQJLyXzS3w3BhmoAK/ZqKp4WX7jH/89I7s++EHag0Dp5i+f7rNyw==
-X-Received: by 2002:a17:90a:9381:b0:20a:79b7:766a with SMTP id q1-20020a17090a938100b0020a79b7766amr54627940pjo.33.1666296306582;
-        Thu, 20 Oct 2022 13:05:06 -0700 (PDT)
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=TYc5dlRmOKX3pKCJnT+MFL8RVo/8Ttmq2r93sp4OQsE=;
+        b=vUNwXcdKWUTbd7VcY4WCF7bFWJbBzUIjLSHj7kzsefqebxtUR1te2BMrfCsBIi7Rvq
+         FYPoqAxYHXNMwu+WcyWTVbKx7W+mqYGoizRsmdVSQ8l/DikAt9eEgeb7Puao3jG7lMSe
+         vEkrZ9P3X5gNl6tFIV7uuCOXMuKgjLi1yJ1Ihe64+AROk3AAZWfbPU8bu51UNsoyJ4Xl
+         ipfpHB1t8FpfuLeXe1LeB3nz4F2yd6hgly5vWVFAa3uWSKBDnPUOElxQIXC69oMiqpjR
+         Iqqmyl9XzXSW186+RxZkOXGIdqjYUAo7HvspRp4wrPVSKyrpnQirI81DS5Otl+e6yF3g
+         SHqQ==
+X-Gm-Message-State: ACrzQf2aJ2vB7m3tcwqgWAAzqjKGwELHJM428tpySEDxdQBi3sUYNLZ2
+        p6epeA9XELW4PUABqvqrrP4=
+X-Google-Smtp-Source: AMsMyM5Kvgj6SsrhrnGcanCbSG7FEtgALjP0nlO1UN4j4ONw2zIIgC3xgaEqTX7M5eipjsxwPwOFPQ==
+X-Received: by 2002:a17:90a:2bcb:b0:20a:ea55:32ef with SMTP id n11-20020a17090a2bcb00b0020aea5532efmr54828720pje.59.1666314949631;
+        Thu, 20 Oct 2022 18:15:49 -0700 (PDT)
 Received: from ubuntu ([175.124.254.119])
-        by smtp.gmail.com with ESMTPSA id z7-20020a170903018700b00172e19c2fa9sm13299061plg.9.2022.10.20.13.05.03
+        by smtp.gmail.com with ESMTPSA id m10-20020a1709026bca00b00181a0e61ce4sm13409281plt.6.2022.10.20.18.15.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 20 Oct 2022 13:05:06 -0700 (PDT)
-Date:   Thu, 20 Oct 2022 13:05:01 -0700
+        Thu, 20 Oct 2022 18:15:49 -0700 (PDT)
+Date:   Thu, 20 Oct 2022 18:15:44 -0700
 From:   Hyunwoo Kim <imv4bel@gmail.com>
-To:     ChenXiaoSong <chenxiaosong2@huawei.com>
-Cc:     steve.glendinning@shawell.net, deller@gmx.de,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        "zhangxiaoxu (A)" <zhangxiaoxu5@huawei.com>, yangerkun@huawei.com,
+To:     steve.glendinning@shawell.net, deller@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         imv4bel@gmail.com
-Subject: Re: Question about patch "fbdev: smscufx: Fix use-after-free in
- ufx_ops_open()"
-Message-ID: <20221020200501.GA320135@ubuntu>
-References: <363cdfe4-f54d-0ce4-2f03-bcfe998deeef@huawei.com>
+Subject: [PATCH v2] video: fbdev: smscufx: Fixed several use-after-free bugs
+Message-ID: <20221021011544.GA339803@ubuntu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <363cdfe4-f54d-0ce4-2f03-bcfe998deeef@huawei.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dear,
+Several types of UAFs can occur when physically removing a USB device.
 
+Adds ufx_ops_destroy() function to .fb_destroy of fb_ops, and
+in this function, there is kref_put() that finally calls ufx_free().
 
-An additional patch has been submitted for the disconnect->open race condition you reported:
-https://lore.kernel.org/linux-fbdev/20221020200113.GA320044@ubuntu/T/#u
+This fix prevents multiple UAFs.
 
-Thanks for reporting.
+Signed-off-by: Hyunwoo Kim <imv4bel@gmail.com>
+Link: https://lore.kernel.org/linux-fbdev/20221011153436.GA4446@ubuntu/
+---
+v2:
+The v1 patch fixed several UAFs, but "info" was not kfree()d after the device 
+was removed by calling the framebuffer_release() function from 
+ufx_free_framebuffer().
+This is because fb_info->count was not 0 at the time the 
+framebuffer_release() function was called.
 
+Moved the framebuffer_release() function to the ufx_ops_destory() function. 
+The ufx_ops_destory() function is a .fb_destory ops that is called 
+after fb_info->count goes to zero.
+---
+ drivers/video/fbdev/smscufx.c | 55 +++++++++++++++++++----------------
+ 1 file changed, 30 insertions(+), 25 deletions(-)
 
-Regards,
-Hyunwoo Kim.
+diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
+index e65bdc499c23..9343b7a4ac89 100644
+--- a/drivers/video/fbdev/smscufx.c
++++ b/drivers/video/fbdev/smscufx.c
+@@ -97,7 +97,6 @@ struct ufx_data {
+ 	struct kref kref;
+ 	int fb_count;
+ 	bool virtualized; /* true when physical usb device not present */
+-	struct delayed_work free_framebuffer_work;
+ 	atomic_t usb_active; /* 0 = update virtual buffer, but no usb traffic */
+ 	atomic_t lost_pixels; /* 1 = a render op failed. Need screen refresh */
+ 	u8 *edid; /* null until we read edid from hw or get from sysfs */
+@@ -1117,15 +1116,24 @@ static void ufx_free(struct kref *kref)
+ {
+ 	struct ufx_data *dev = container_of(kref, struct ufx_data, kref);
+ 
+-	/* this function will wait for all in-flight urbs to complete */
+-	if (dev->urbs.count > 0)
+-		ufx_free_urb_list(dev);
++	kfree(dev);
++}
+ 
+-	pr_debug("freeing ufx_data %p", dev);
++static void ufx_ops_destory(struct fb_info *info)
++{
++	struct ufx_data *dev = info->par;
++	int node = info->node;
+ 
+-	kfree(dev);
++	/* Assume info structure is freed after this point */
++	framebuffer_release(info);
++
++	pr_debug("fb_info for /dev/fb%d has been freed", node);
++
++	/* release reference taken by kref_init in probe() */
++	kref_put(&dev->kref, ufx_free);
+ }
+ 
++
+ static void ufx_release_urb_work(struct work_struct *work)
+ {
+ 	struct urb_node *unode = container_of(work, struct urb_node,
+@@ -1134,14 +1142,9 @@ static void ufx_release_urb_work(struct work_struct *work)
+ 	up(&unode->dev->urbs.limit_sem);
+ }
+ 
+-static void ufx_free_framebuffer_work(struct work_struct *work)
++static void ufx_free_framebuffer(struct ufx_data *dev)
+ {
+-	struct ufx_data *dev = container_of(work, struct ufx_data,
+-					    free_framebuffer_work.work);
+ 	struct fb_info *info = dev->info;
+-	int node = info->node;
+-
+-	unregister_framebuffer(info);
+ 
+ 	if (info->cmap.len != 0)
+ 		fb_dealloc_cmap(&info->cmap);
+@@ -1153,11 +1156,6 @@ static void ufx_free_framebuffer_work(struct work_struct *work)
+ 
+ 	dev->info = NULL;
+ 
+-	/* Assume info structure is freed after this point */
+-	framebuffer_release(info);
+-
+-	pr_debug("fb_info for /dev/fb%d has been freed", node);
+-
+ 	/* ref taken in probe() as part of registering framebfufer */
+ 	kref_put(&dev->kref, ufx_free);
+ }
+@@ -1169,11 +1167,13 @@ static int ufx_ops_release(struct fb_info *info, int user)
+ {
+ 	struct ufx_data *dev = info->par;
+ 
++	mutex_lock(&disconnect_mutex);
++
+ 	dev->fb_count--;
+ 
+ 	/* We can't free fb_info here - fbmem will touch it when we return */
+ 	if (dev->virtualized && (dev->fb_count == 0))
+-		schedule_delayed_work(&dev->free_framebuffer_work, HZ);
++		ufx_free_framebuffer(dev);
+ 
+ 	if ((dev->fb_count == 0) && (info->fbdefio)) {
+ 		fb_deferred_io_cleanup(info);
+@@ -1186,6 +1186,8 @@ static int ufx_ops_release(struct fb_info *info, int user)
+ 
+ 	kref_put(&dev->kref, ufx_free);
+ 
++	mutex_unlock(&disconnect_mutex);
++
+ 	return 0;
+ }
+ 
+@@ -1292,6 +1294,7 @@ static const struct fb_ops ufx_ops = {
+ 	.fb_blank = ufx_ops_blank,
+ 	.fb_check_var = ufx_ops_check_var,
+ 	.fb_set_par = ufx_ops_set_par,
++	.fb_destroy = ufx_ops_destory,
+ };
+ 
+ /* Assumes &info->lock held by caller
+@@ -1673,9 +1676,6 @@ static int ufx_usb_probe(struct usb_interface *interface,
+ 		goto destroy_modedb;
+ 	}
+ 
+-	INIT_DELAYED_WORK(&dev->free_framebuffer_work,
+-			  ufx_free_framebuffer_work);
+-
+ 	retval = ufx_reg_read(dev, 0x3000, &id_rev);
+ 	check_warn_goto_error(retval, "error %d reading 0x3000 register from device", retval);
+ 	dev_dbg(dev->gdev, "ID_REV register value 0x%08x", id_rev);
+@@ -1748,10 +1748,12 @@ static int ufx_usb_probe(struct usb_interface *interface,
+ static void ufx_usb_disconnect(struct usb_interface *interface)
+ {
+ 	struct ufx_data *dev;
++	struct fb_info *info;
+ 
+ 	mutex_lock(&disconnect_mutex);
+ 
+ 	dev = usb_get_intfdata(interface);
++	info = dev->info;
+ 
+ 	pr_debug("USB disconnect starting\n");
+ 
+@@ -1765,12 +1767,15 @@ static void ufx_usb_disconnect(struct usb_interface *interface)
+ 
+ 	/* if clients still have us open, will be freed on last close */
+ 	if (dev->fb_count == 0)
+-		schedule_delayed_work(&dev->free_framebuffer_work, 0);
++		ufx_free_framebuffer(dev);
+ 
+-	/* release reference taken by kref_init in probe() */
+-	kref_put(&dev->kref, ufx_free);
++	/* this function will wait for all in-flight urbs to complete */
++	if (dev->urbs.count > 0)
++		ufx_free_urb_list(dev);
+ 
+-	/* consider ufx_data freed */
++	pr_debug("freeing ufx_data %p", dev);
++
++	unregister_framebuffer(info);
+ 
+ 	mutex_unlock(&disconnect_mutex);
+ }
+-- 
+2.25.1
+

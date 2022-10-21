@@ -2,106 +2,269 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A70CC43217
-	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Oct 2022 07:51:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39F91C433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Oct 2022 15:51:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229945AbiJUHvs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 21 Oct 2022 03:51:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59994 "EHLO
+        id S229610AbiJUPvI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 21 Oct 2022 11:51:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39728 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229817AbiJUHvr (ORCPT
+        with ESMTP id S229779AbiJUPu7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 21 Oct 2022 03:51:47 -0400
-Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com [66.111.4.26])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B3F3923B6BE;
-        Fri, 21 Oct 2022 00:51:45 -0700 (PDT)
-Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
-        by mailout.nyi.internal (Postfix) with ESMTP id 503915C00A5;
-        Fri, 21 Oct 2022 03:51:43 -0400 (EDT)
-Received: from imap51 ([10.202.2.101])
-  by compute3.internal (MEProxy); Fri, 21 Oct 2022 03:51:43 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-        :cc:content-type:date:date:from:from:in-reply-to:in-reply-to
-        :message-id:mime-version:references:reply-to:sender:subject
-        :subject:to:to; s=fm2; t=1666338703; x=1666425103; bh=Bb2mHnT1JP
-        70JzG2D69kGVHJtQMGKIn402mRECKC4F4=; b=YJndt3bVrfFKDrdAek/qsaZKfC
-        GIY2+JfgU75WsfND4cO4kRG3x+O+L72Sx4MhBQ1Mrt3o7WTkd2pY6UjdmMLwfF+9
-        6FmMOPyH5dNToYT0vWd/jvRIe21+raA7qoHdxaYFHtyMiE4yzGfCAHpbE9Mhwmw2
-        XDX4OWes+gg95jH50EkrKu5BcIGHEna27w6XkRO3+A7xOU3kTEGzrzZn6M/Qstdq
-        AQMHP8oRaJRAHtDmzKR+txQuwt2kccfz20uYH3pyCih6kdhdcP7EnZPfd9VSF2LX
-        21PVkV4JX2DuEZaA2ucVt01O08H1WGOn2e30kjQMozGtQTARP12lAnQkC/Bg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
-        :feedback-id:from:from:in-reply-to:in-reply-to:message-id
-        :mime-version:references:reply-to:sender:subject:subject:to:to
-        :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
-        fm3; t=1666338703; x=1666425103; bh=Bb2mHnT1JP70JzG2D69kGVHJtQMG
-        KIn402mRECKC4F4=; b=P8j9ROzxMhxfBLefQQ/EED3Qm8fMars4PuUmKq6vKSiw
-        hBKNIvZx//r/DeiaVUPTqpRU0AxT0vdIpk3SooqlFDv2HxYrbtIO5z7b6cjp8c91
-        BKG4jFAHl7cLSRjKtJTAhSmQA9II+sVD7FafJYfZrWEi8CTl6NcJc2J+l756NSlp
-        oRzHJY1ullMZJlB807oCWUDci32NCfjGeuGq/lGU67u4r7+IVYb65gSr9ofl+peo
-        8Hpd0gbmuYClvPA5HCdruWC0hTk2//MzSlQkfdO7YqeE7/ia5ndAfiNCLbO1IiBJ
-        hCCP8LZFHlHjLZlR5EEJckEmkCNqHcjnUKB8Zl0gQw==
-X-ME-Sender: <xms:jk9SY2r6Ig5ji619KxJgCjJET4nnh55Y6oEwwGrI6QBBsuE3Zm3m0A>
-    <xme:jk9SY0r3jX90q8rFlAOcq1IX21hQp7gikJAG4I4MmNBJe4YKbs2uwHdAi_k3hoPK7
-    IGa7tK9K9yRzkjiaOw>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrfeeljedguddvjecutefuodetggdotefrod
-    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfgh
-    necuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
-    enucfjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdet
-    rhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrg
-    htthgvrhhnpeffheeugeetiefhgeethfejgfdtuefggeejleehjeeutefhfeeggefhkedt
-    keetffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
-    grrhhnugesrghrnhgusgdruggv
-X-ME-Proxy: <xmx:jk9SY7MeN_fxobJB-fqC_YlU-Ev85a3NcnYPyvb8hSin8RUKeNxIjA>
-    <xmx:jk9SY15Q9JM-W1-0jZaaUQug-1DZcRbyiYgA8wnVRbMMz01Tn3lfwA>
-    <xmx:jk9SY15wJlZo0WGK_pfL_XK54dYpRLPtNFkYon57j9T99kVGHhkx1g>
-    <xmx:j09SY5qo-mVAQ0XblG-tDD1wHSfn7K4EOn_k433Fz7n4rOmjGuUzzQ>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-        id 35876B60086; Fri, 21 Oct 2022 03:51:42 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.7.0-alpha0-1047-g9e4af4ada4-fm-20221005.001-g9e4af4ad
-Mime-Version: 1.0
-Message-Id: <09cbb91f-bea8-4c22-9c1c-26d933ca1a94@app.fastmail.com>
-In-Reply-To: <20221019173437.GB41568@darkstar.musicnaut.iki.fi>
-References: <20221019144119.3848027-1-arnd@kernel.org>
- <20221019150410.3851944-1-arnd@kernel.org>
- <20221019150410.3851944-14-arnd@kernel.org>
- <20221019173437.GB41568@darkstar.musicnaut.iki.fi>
-Date:   Fri, 21 Oct 2022 09:51:20 +0200
-From:   "Arnd Bergmann" <arnd@arndb.de>
-To:     "Aaro Koskinen" <aaro.koskinen@iki.fi>,
-        "Arnd Bergmann" <arnd@kernel.org>
-Cc:     linux-arm-kernel@lists.infradead.org,
-        "Paul Walmsley" <paul@pwsan.com>,
-        "Janusz Krzysztofik" <jmkrzyszt@gmail.com>,
-        "Tony Lindgren" <tony@atomide.com>, linux-kernel@vger.kernel.org,
-        Linux-OMAP <linux-omap@vger.kernel.org>,
-        "Kevin Hilman" <khilman@kernel.org>,
-        "Mark Brown" <broonie@kernel.org>,
-        "Felipe Balbi" <balbi@kernel.org>,
-        "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
-        "Alan Stern" <stern@rowland.harvard.edu>, "Bin Liu" <b-liu@ti.com>,
-        "Helge Deller" <deller@gmx.de>, linux-usb@vger.kernel.org,
-        linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH 14/17] ARM: omap1: remove dead code
-Content-Type: text/plain
+        Fri, 21 Oct 2022 11:50:59 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 97BCE38A21;
+        Fri, 21 Oct 2022 08:50:13 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 9DCC961EFF;
+        Fri, 21 Oct 2022 15:50:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 06D87C433C1;
+        Fri, 21 Oct 2022 15:50:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1666367411;
+        bh=u6mgMMUQyq3LFTowajdhaabP7RK0RDkS+CspfzBu8ss=;
+        h=From:To:Cc:Subject:Date:From;
+        b=us0m33iN6iGUZAAMh/Tz2ACZqo/rRVOrTPq0AWj1RL6s3z/p+CCsHUvJRu5akxjQo
+         NAgDX/4rE2eTKbbKRNUu1qMS9HbUE7hBKXzuyBmlbAVPKgTnm7SIIoBjG7oa1JhO5X
+         Bbn3eytw/tvEaOQRAP3EchiZX1LCriiwv1RlRq7dYHNHecYzEOfrJiMPlBJsIgS2v4
+         ffjTapecJOzW8de60RWn4ZRsLwB9JEl7RXFN35GRR68VGqfScsqL4/H001kjm+08Zj
+         kByGPimYibfhMNGOY7hTpfmS8tGiJ4liQ5zHdn+cfX9gK/rfydaNWrsuLbjIbDnFm6
+         pgQ9VzbgZnxdA==
+From:   Arnd Bergmann <arnd@kernel.org>
+To:     linux-arm-kernel@lists.infradead.org,
+        Russell King <linux@armlinux.org.uk>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Lubomir Rintel <lkundrak@v3.sk>
+Cc:     linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Alan Stern <stern@rowland.harvard.edu>,
+        Dominik Brodowski <linux@dominikbrodowski.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Helge Deller <deller@gmx.de>, Lee Jones <lee@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Peter Chubb <peter.chubb@unsw.edu.au>,
+        Richard Weinberger <richard@nod.at>,
+        Stefan Eletzhofer <stefan.eletzhofer@eletztrick.de>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        Vinod Koul <vkoul@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        linux-pm@vger.kernel.org, dmaengine@vger.kernel.org,
+        linux-mtd@lists.infradead.org, linux-usb@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH 00/11] ARM: sa1100, mmp: drop unused board files
+Date:   Fri, 21 Oct 2022 17:49:30 +0200
+Message-Id: <20221021155000.4108406-1-arnd@kernel.org>
+X-Mailer: git-send-email 2.29.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Oct 19, 2022, at 19:34, Aaro Koskinen wrote:
-> Hi,
->
-> On Wed, Oct 19, 2022 at 05:03:36PM +0200, Arnd Bergmann wrote:
->>  drivers/usb/phy/phy-isp1301-omap.c | 91 +-----------------------------
->
-> This driver and config option ISP1301_OMAP can be deleted altogether as
-> there are no users after H2/H3 boards are gone.
+From: Arnd Bergmann <arnd@arndb.de>
 
-Good catch! I'll split the driver removal out as a separate patch
-then and remove this bit here.
+A number of board files were marked as 'unused' in 2022 and can
+get removed in linux-6.2 at the beginning of 2023.
+I wanted to group these two platforms with the PXA series, but
+that one is already too big.
 
-     Arnd
+MMP is now DT-only, which allows removing most of the platform
+specific source code.
+
+On SA1100, four boards that have no apparent users get removed,
+while another four boards each had one person saying they would
+like to keep it around.
+
+Arnd Bergmann (11):
+  ARM: sa1100: un-deprecate jornada720
+  ARM: sa1100: remove unused board files
+  ARM: sa1100: remove irda references
+  ARM: sa1100: make cpufreq driver build standalone
+  cpufreq: remove sa1100 driver
+  mtd: remove lart flash driver
+  ARM: mmp: select specific CPU implementation
+  ARM: mmp: remove all board files
+  ARM: mmp: remove custom sram code
+  ARM: mmp: remove device definitions
+  ARM: mmp: remove old PM support
+
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Lee Jones <lee@kernel.org>
+Cc: Lubomir Rintel <lkundrak@v3.sk>
+Cc: Miquel Raynal <miquel.raynal@bootlin.com>
+Cc: Peter Chubb <peter.chubb@unsw.edu.au>
+Cc: Richard Weinberger <richard@nod.at>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Stefan Eletzhofer <stefan.eletzhofer@eletztrick.de>
+Cc: Vignesh Raghavendra <vigneshr@ti.com>
+Cc: Vinod Koul <vkoul@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-pm@vger.kernel.org
+Cc: dmaengine@vger.kernel.org
+Cc: linux-mtd@lists.infradead.org
+Cc: linux-usb@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+
+ MAINTAINERS                                   |  11 -
+ arch/arm/Kconfig                              |   6 -
+ arch/arm/boot/compressed/head-sa1100.S        |   4 -
+ arch/arm/configs/badge4_defconfig             | 105 ---
+ arch/arm/configs/cerfcube_defconfig           |  73 --
+ arch/arm/configs/hackkit_defconfig            |  48 --
+ arch/arm/configs/jornada720_defconfig         |   1 -
+ arch/arm/configs/lart_defconfig               |  64 --
+ arch/arm/configs/pleb_defconfig               |  53 --
+ arch/arm/configs/pxa168_defconfig             |   3 -
+ arch/arm/configs/pxa910_defconfig             |   2 -
+ arch/arm/configs/shannon_defconfig            |  45 --
+ arch/arm/configs/simpad_defconfig             | 100 ---
+ arch/arm/mach-mmp/Kconfig                     |  96 ---
+ arch/arm/mach-mmp/Makefile                    |  21 +-
+ arch/arm/mach-mmp/aspenite.c                  | 284 --------
+ arch/arm/mach-mmp/avengers_lite.c             |  55 --
+ arch/arm/mach-mmp/brownstone.c                | 237 ------
+ arch/arm/mach-mmp/common.c                    |   5 -
+ arch/arm/mach-mmp/common.h                    |   2 -
+ arch/arm/mach-mmp/devices.c                   | 359 ---------
+ arch/arm/mach-mmp/devices.h                   |  57 --
+ arch/arm/mach-mmp/flint.c                     | 131 ----
+ arch/arm/mach-mmp/gplugd.c                    | 206 ------
+ arch/arm/mach-mmp/irqs.h                      | 240 ------
+ arch/arm/mach-mmp/jasper.c                    | 185 -----
+ arch/arm/mach-mmp/mfp-mmp2.h                  | 396 ----------
+ arch/arm/mach-mmp/mfp-pxa168.h                | 355 ---------
+ arch/arm/mach-mmp/mfp-pxa910.h                | 170 -----
+ arch/arm/mach-mmp/mfp.h                       |  35 -
+ arch/arm/mach-mmp/mmp2.c                      | 175 -----
+ arch/arm/mach-mmp/mmp2.h                      | 104 ---
+ arch/arm/mach-mmp/pm-mmp2.c                   | 248 -------
+ arch/arm/mach-mmp/pm-mmp2.h                   |  59 --
+ arch/arm/mach-mmp/pm-pxa910.c                 | 272 -------
+ arch/arm/mach-mmp/pm-pxa910.h                 |  75 --
+ arch/arm/mach-mmp/pxa168.c                    | 175 -----
+ arch/arm/mach-mmp/pxa168.h                    | 139 ----
+ arch/arm/mach-mmp/pxa910.c                    | 190 -----
+ arch/arm/mach-mmp/pxa910.h                    |  90 ---
+ arch/arm/mach-mmp/regs-apbc.h                 |  19 -
+ arch/arm/mach-mmp/regs-apmu.h                 |  28 -
+ arch/arm/mach-mmp/regs-icu.h                  |  69 --
+ arch/arm/mach-mmp/regs-timers.h               |   5 -
+ arch/arm/mach-mmp/regs-usb.h                  | 155 ----
+ arch/arm/mach-mmp/sram.c                      | 167 -----
+ arch/arm/mach-mmp/teton_bga.c                 | 100 ---
+ arch/arm/mach-mmp/teton_bga.h                 |  22 -
+ arch/arm/mach-mmp/time.c                      |   9 +-
+ arch/arm/mach-mmp/ttc_dkb.c                   | 315 --------
+ arch/arm/mach-sa1100/Kconfig                  | 112 ---
+ arch/arm/mach-sa1100/Makefile                 |  21 -
+ arch/arm/mach-sa1100/assabet.c                |   1 -
+ arch/arm/mach-sa1100/badge4.c                 | 338 ---------
+ arch/arm/mach-sa1100/cerf.c                   | 181 -----
+ arch/arm/mach-sa1100/collie.c                 |   1 -
+ arch/arm/mach-sa1100/generic.c                |  32 -
+ arch/arm/mach-sa1100/generic.h                |   4 -
+ arch/arm/mach-sa1100/h3100.c                  | 140 ----
+ arch/arm/mach-sa1100/h3600.c                  |   1 -
+ arch/arm/mach-sa1100/hackkit.c                | 184 -----
+ arch/arm/mach-sa1100/include/mach/badge4.h    |  71 --
+ arch/arm/mach-sa1100/include/mach/cerf.h      |  20 -
+ arch/arm/mach-sa1100/include/mach/generic.h   |   1 -
+ .../arm/mach-sa1100/include/mach/nanoengine.h |  48 --
+ arch/arm/mach-sa1100/include/mach/shannon.h   |  40 -
+ arch/arm/mach-sa1100/include/mach/simpad.h    | 159 ----
+ arch/arm/mach-sa1100/lart.c                   | 177 -----
+ arch/arm/mach-sa1100/nanoengine.c             | 136 ----
+ arch/arm/mach-sa1100/pci-nanoengine.c         | 191 -----
+ arch/arm/mach-sa1100/pleb.c                   | 148 ----
+ arch/arm/mach-sa1100/shannon.c                | 157 ----
+ arch/arm/mach-sa1100/simpad.c                 | 423 -----------
+ drivers/cpufreq/Kconfig                       |   2 +-
+ drivers/cpufreq/Kconfig.arm                   |   3 -
+ drivers/cpufreq/Makefile                      |   1 -
+ drivers/cpufreq/sa1100-cpufreq.c              | 206 ------
+ drivers/cpufreq/sa1110-cpufreq.c              |  38 +-
+ drivers/dma/mmp_tdma.c                        |   7 +-
+ drivers/mfd/Kconfig                           |   2 +-
+ drivers/mtd/devices/Kconfig                   |   8 -
+ drivers/mtd/devices/Makefile                  |   1 -
+ drivers/mtd/devices/lart.c                    | 682 ------------------
+ drivers/pcmcia/sa1100_generic.c               |   5 +-
+ drivers/pcmcia/sa1100_h3600.c                 |   2 +-
+ drivers/pcmcia/sa1111_generic.c               |   4 -
+ drivers/usb/host/ohci-sa1111.c                |   5 +-
+ drivers/video/fbdev/sa1100fb.c                |   1 -
+ include/linux/platform_data/dma-mmp_tdma.h    |  36 -
+ include/linux/platform_data/irda-sa11x0.h     |  17 -
+ include/linux/soc/mmp/cputype.h               |  24 +-
+ 91 files changed, 43 insertions(+), 9352 deletions(-)
+ delete mode 100644 arch/arm/configs/badge4_defconfig
+ delete mode 100644 arch/arm/configs/cerfcube_defconfig
+ delete mode 100644 arch/arm/configs/hackkit_defconfig
+ delete mode 100644 arch/arm/configs/lart_defconfig
+ delete mode 100644 arch/arm/configs/pleb_defconfig
+ delete mode 100644 arch/arm/configs/shannon_defconfig
+ delete mode 100644 arch/arm/configs/simpad_defconfig
+ delete mode 100644 arch/arm/mach-mmp/aspenite.c
+ delete mode 100644 arch/arm/mach-mmp/avengers_lite.c
+ delete mode 100644 arch/arm/mach-mmp/brownstone.c
+ delete mode 100644 arch/arm/mach-mmp/devices.c
+ delete mode 100644 arch/arm/mach-mmp/devices.h
+ delete mode 100644 arch/arm/mach-mmp/flint.c
+ delete mode 100644 arch/arm/mach-mmp/gplugd.c
+ delete mode 100644 arch/arm/mach-mmp/irqs.h
+ delete mode 100644 arch/arm/mach-mmp/jasper.c
+ delete mode 100644 arch/arm/mach-mmp/mfp-mmp2.h
+ delete mode 100644 arch/arm/mach-mmp/mfp-pxa168.h
+ delete mode 100644 arch/arm/mach-mmp/mfp-pxa910.h
+ delete mode 100644 arch/arm/mach-mmp/mfp.h
+ delete mode 100644 arch/arm/mach-mmp/mmp2.c
+ delete mode 100644 arch/arm/mach-mmp/mmp2.h
+ delete mode 100644 arch/arm/mach-mmp/pm-mmp2.c
+ delete mode 100644 arch/arm/mach-mmp/pm-mmp2.h
+ delete mode 100644 arch/arm/mach-mmp/pm-pxa910.c
+ delete mode 100644 arch/arm/mach-mmp/pm-pxa910.h
+ delete mode 100644 arch/arm/mach-mmp/pxa168.c
+ delete mode 100644 arch/arm/mach-mmp/pxa168.h
+ delete mode 100644 arch/arm/mach-mmp/pxa910.c
+ delete mode 100644 arch/arm/mach-mmp/pxa910.h
+ delete mode 100644 arch/arm/mach-mmp/regs-apbc.h
+ delete mode 100644 arch/arm/mach-mmp/regs-apmu.h
+ delete mode 100644 arch/arm/mach-mmp/regs-icu.h
+ delete mode 100644 arch/arm/mach-mmp/regs-usb.h
+ delete mode 100644 arch/arm/mach-mmp/sram.c
+ delete mode 100644 arch/arm/mach-mmp/teton_bga.c
+ delete mode 100644 arch/arm/mach-mmp/teton_bga.h
+ delete mode 100644 arch/arm/mach-mmp/ttc_dkb.c
+ delete mode 100644 arch/arm/mach-sa1100/badge4.c
+ delete mode 100644 arch/arm/mach-sa1100/cerf.c
+ delete mode 100644 arch/arm/mach-sa1100/h3100.c
+ delete mode 100644 arch/arm/mach-sa1100/hackkit.c
+ delete mode 100644 arch/arm/mach-sa1100/include/mach/badge4.h
+ delete mode 100644 arch/arm/mach-sa1100/include/mach/cerf.h
+ delete mode 100644 arch/arm/mach-sa1100/include/mach/generic.h
+ delete mode 100644 arch/arm/mach-sa1100/include/mach/nanoengine.h
+ delete mode 100644 arch/arm/mach-sa1100/include/mach/shannon.h
+ delete mode 100644 arch/arm/mach-sa1100/include/mach/simpad.h
+ delete mode 100644 arch/arm/mach-sa1100/lart.c
+ delete mode 100644 arch/arm/mach-sa1100/nanoengine.c
+ delete mode 100644 arch/arm/mach-sa1100/pci-nanoengine.c
+ delete mode 100644 arch/arm/mach-sa1100/pleb.c
+ delete mode 100644 arch/arm/mach-sa1100/shannon.c
+ delete mode 100644 arch/arm/mach-sa1100/simpad.c
+ delete mode 100644 drivers/cpufreq/sa1100-cpufreq.c
+ delete mode 100644 drivers/mtd/devices/lart.c
+ delete mode 100644 include/linux/platform_data/dma-mmp_tdma.h
+ delete mode 100644 include/linux/platform_data/irda-sa11x0.h
+
+-- 
+2.29.2
+

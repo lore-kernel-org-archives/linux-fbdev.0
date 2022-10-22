@@ -2,77 +2,110 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44675C433FE
-	for <linux-fbdev@archiver.kernel.org>; Sat, 22 Oct 2022 11:11:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9D58C433FE
+	for <linux-fbdev@archiver.kernel.org>; Sat, 22 Oct 2022 15:19:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230302AbiJVLLd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 22 Oct 2022 07:11:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53118 "EHLO
+        id S229853AbiJVPTL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 22 Oct 2022 11:19:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42702 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230450AbiJVLLT (ORCPT
+        with ESMTP id S229679AbiJVPTH (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 22 Oct 2022 07:11:19 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 166541A2E12;
-        Sat, 22 Oct 2022 03:31:11 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id A8BB1B81B14;
-        Sat, 22 Oct 2022 10:31:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F1360C433C1;
-        Sat, 22 Oct 2022 10:31:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1666434668;
-        bh=+5LYMc9G1t+vORW3sJXjTTgdrtDBL6soqXawA6zHpeM=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=DDI97jjQHQ0d3rBWnQVJcP78xTV6jRZM+xQre1vGFQxtbVuyPWP3zr/gIwWAe++4o
-         RRepSOxHCDif7tqHWh/oDFA1psAqDVbjmlvHi3ufVnTch/VlKxKR+/Pr4UjlYvcxyP
-         9yXKaEvyJa/A31fsu91RbyrvoqkFLFrAPRdrRqSM=
-Date:   Sat, 22 Oct 2022 12:31:05 +0200
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Arnd Bergmann <arnd@kernel.org>
-Cc:     linux-arm-kernel@lists.infradead.org,
-        Russell King <linux@armlinux.org.uk>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Lubomir Rintel <lkundrak@v3.sk>, linux-kernel@vger.kernel.org,
-        Arnd Bergmann <arnd@arndb.de>,
-        Peter Chubb <peter.chubb@unsw.edu.au>,
-        Stefan Eletzhofer <stefan.eletzhofer@eletztrick.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Lee Jones <lee@kernel.org>,
-        Dominik Brodowski <linux@dominikbrodowski.net>,
-        Alan Stern <stern@rowland.harvard.edu>,
-        Helge Deller <deller@gmx.de>, linux-pm@vger.kernel.org,
-        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH 02/11] ARM: sa1100: remove unused board files
-Message-ID: <Y1PGaT1AtdoCNCgc@kroah.com>
-References: <20221021155000.4108406-1-arnd@kernel.org>
- <20221021155000.4108406-3-arnd@kernel.org>
+        Sat, 22 Oct 2022 11:19:07 -0400
+Received: from mail-oi1-x229.google.com (mail-oi1-x229.google.com [IPv6:2607:f8b0:4864:20::229])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AFCE4DED1
+        for <linux-fbdev@vger.kernel.org>; Sat, 22 Oct 2022 08:19:06 -0700 (PDT)
+Received: by mail-oi1-x229.google.com with SMTP id p127so6446894oih.9
+        for <linux-fbdev@vger.kernel.org>; Sat, 22 Oct 2022 08:19:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=gz0LxUsOUlJDcIAW5bPu+WDjpQGro2FyWxGKpu7r8bo=;
+        b=gWrs34NeTJPV2fQ1MVoQY+zpFojHR3D/A6fVxaEOoPyaG1lz86TK/RINtSik3ihs6m
+         epr6PhFlnoD33CCeTfWoNQCRee99kzlwRupaR937A3VU5HU4OTIvs/zluF82SMnywl6D
+         HdEJ7m7PbwxapFaNOFa9ppWW4y91iGtKkwoLpnocgDPBTYKE8ItremNKc8YrHhceRIZp
+         h3VMtehI1AqTwZwEWQcTgFOjDVRQQngjmAnbv2gz4Ef/Bbck+zcB6GCOTs8PKUKrqPeL
+         49sPdfcCEYUyqTEphtRdJczJc984b2NmTshEFvs/XiFALWDOPilFuaMHYm7NR6Fhz+qX
+         X9nQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=gz0LxUsOUlJDcIAW5bPu+WDjpQGro2FyWxGKpu7r8bo=;
+        b=UWZb+V6Ki2ZuJox4P6wieIMY3YTscxlIEAsupFFlKDHPHS0T1mdRr/OOaTBb/d/AMU
+         WJ50qeFtwRtNaKLQbc3NoedGluZClLoddDVmc7CS8TMUS6XAC7V63oQHMusLMweS47LI
+         CD1tfhxCBaksSqzCxGMTgzH0HEkrKWsKQ0f83VjD9GKiVD6dHCXC1z3marCjRM2hkZVa
+         G2lG2gYdkNE5DdysMiTrY8KnTuwedq0PfFsCJf359M0l4giykclz04FMA2Z4tdHxQs2p
+         IbtyzbZMkBX7bhfkyFAUTRFZ+qYj7TnzNTldAOUpouQdIMnWOMVEMvnLSwkBdFeYRsE0
+         UAoA==
+X-Gm-Message-State: ACrzQf3AMQF98OtP9X3PoNNzsOkpBNKFUFVC5qKTzFRupyNxld5Dq2dC
+        cA6ksyQpWvNL8SEEBzOl63kox2YgDGS6XA==
+X-Google-Smtp-Source: AMsMyM4Ums0et6AQMZox+xdB7Wz2plUu78klbaMd0EOzV1OnnwGbhhl8/BymyNDqbBFL+Y+cBT/t0g==
+X-Received: by 2002:a05:6870:f288:b0:131:de71:3eb6 with SMTP id u8-20020a056870f28800b00131de713eb6mr31239483oap.63.1666451935002;
+        Sat, 22 Oct 2022 08:18:55 -0700 (PDT)
+Received: from [10.203.8.70] ([205.153.95.177])
+        by smtp.gmail.com with ESMTPSA id v5-20020a056870310500b00136c20b1c59sm11538284oaa.43.2022.10.22.08.18.50
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 22 Oct 2022 08:18:54 -0700 (PDT)
+Message-ID: <e7ace68a-98e5-63c8-7dd7-a35d0eba1c6e@linaro.org>
+Date:   Sat, 22 Oct 2022 11:18:49 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221021155000.4108406-3-arnd@kernel.org>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.0
+Subject: Re: [PATCH 00/21] ARM: s3c: clean out obsolete platforms
+To:     Arnd Bergmann <arnd@kernel.org>,
+        linux-arm-kernel@lists.infradead.org
+Cc:     linux-kernel@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>,
+        Simtec Linux Team <linux@simtec.co.uk>,
+        Arnd Bergmann <arnd@arndb.de>, linux-doc@vger.kernel.org,
+        linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org,
+        patches@opensource.cirrus.com,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linux-ide@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-pm@vger.kernel.org, dmaengine@vger.kernel.org,
+        linux-hwmon@vger.kernel.org, linux-i2c@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
+        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
+        linux-gpio@vger.kernel.org, linux-rtc@vger.kernel.org,
+        linux-spi@vger.kernel.org, linux-serial@vger.kernel.org,
+        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-watchdog@vger.kernel.org,
+        alsa-devel@alsa-project.org, linux-pwm@vger.kernel.org
+References: <20221021202254.4142411-1-arnd@kernel.org>
+Content-Language: en-US
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20221021202254.4142411-1-arnd@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Oct 21, 2022 at 05:49:32PM +0200, Arnd Bergmann wrote:
+On 21/10/2022 16:22, Arnd Bergmann wrote:
 > From: Arnd Bergmann <arnd@arndb.de>
 > 
-> The Cerf, H3100, Badge4, Hackkit, LART, NanoEngine, PLEB, Shannon and
-> Simpad machines were all marked as unused as there are no known users
-> left. Remove all of these, along with references to them in defconfig
-> files and drivers.
+> The s3c24xx platform was marked as deprecated a while ago,
+> and for the s3c64xx platform, we marked all except one legacy
+> board file as unused.
 > 
-> Four machines remain now: Assabet, Collie (Zaurus SL5500), iPAQ H3600
-> and Jornada 720, each of which had one person still using them, with
-> Collie also being supported in Qemu.
+> This series removes all of those, leaving only s3c64xx support
+> for DT based boots as well as the cragg6410 board file.
 > 
-> Cc: Peter Chubb <peter.chubb@unsw.edu.au>
-> Cc: Stefan Eletzhofer <stefan.eletzhofer@eletztrick.de>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> About half of the s3c specific drivers were only used on
+> the now removed machines, so these drivers can be retired
+> as well. I can either merge the driver removal patches through
+> the soc tree along with the board file patches, or subsystem
+> maintainers can pick them up into their own trees, whichever
+> they prefer.
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Just to be sure - do you expect me to ack the series, or rather as usual
+pick them up?
+
+
+Best regards,
+Krzysztof
+

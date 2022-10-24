@@ -2,70 +2,132 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55788C38A2D
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Oct 2022 19:52:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F4B2C38A2D
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Oct 2022 20:13:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232781AbiJXTwW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Oct 2022 15:52:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48344 "EHLO
+        id S231261AbiJXUNO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Oct 2022 16:13:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37064 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233560AbiJXTvr (ORCPT
+        with ESMTP id S231607AbiJXUMn (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Oct 2022 15:51:47 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CD25CEA6BF
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Oct 2022 11:17:13 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id CB87AB8171E
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Oct 2022 12:33:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5A5F4C433C1;
-        Mon, 24 Oct 2022 12:33:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1666614799;
-        bh=N9wIamNHKy/+ppn5xdXN60PJL5TdYTrdbc8ReqtAUWw=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=hc+bbdp2OxajHemJUi1ByRJcqctWsgYxL+m97MF0ouspSYiNXzJPUEVwtgIu0C5F/
-         NfilP+ZE42qTeLFm1OBSYes5Aqp1wXga76NRZwQL0s5mFADGc1bCDN9bdasq9Pd/Rq
-         T2YFBccOh+0s3xOVUa4xg5ARCcXgBqNQGrLRqAJqErHzVwChtoFu4jYvTzdZYUivo3
-         lslINB7FjHzmbSkMbemuKML3VQAFbMMXRloYuvEi+lcpvAs7OiI6diV4VB0vp3ZiD/
-         e2ZAj6aP9A8C3ORRfAEXdq84vtDrJfIELLlQAPbGcc7mGt2Obvg6sdLpEBhirzlYp0
-         IZbZNRM7dPiRw==
-Date:   Mon, 24 Oct 2022 13:33:15 +0100
-From:   Lee Jones <lee@kernel.org>
-To:     Yang Yingliang <yangyingliang@huawei.com>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linus.walleij@linaro.org, daniel.thompson@linaro.org
-Subject: Re: [PATCH -next resend] backlight: ktd253: Switch to use
- dev_err_probe() helper
-Message-ID: <Y1aGC36X50XvlNwm@google.com>
-References: <20220926142059.2294282-1-yangyingliang@huawei.com>
+        Mon, 24 Oct 2022 16:12:43 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 271C1183DBE;
+        Mon, 24 Oct 2022 11:31:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1666636167;
+        bh=icVbzJtZ9pqflJ14jNdNOlB/DYImZ+gyK6fC/SDHPeo=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=Kkvqf/+txMBi7sxfZs0V/5+nqVslh0tnBxX4/FfBbX4K5PxEYxT5PP/zpCOkVp7bv
+         AjdzA1IvFe+Vl83LXPdeQMLwEY5VuZuTJREUOnmXgB7DCslsdCKNZhD1ffx1GoVLqb
+         rKyNNUqFB0P2skYG5FNKeRZ8QSxQWKQjW3JNG1LI=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.136.30]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MIdiZ-1oqd7434DN-00EaCt; Mon, 24
+ Oct 2022 20:29:27 +0200
+Message-ID: <ec8edb92-a21b-6291-4275-d7cba97d7ad7@gmx.de>
+Date:   Mon, 24 Oct 2022 20:29:26 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20220926142059.2294282-1-yangyingliang@huawei.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.3.1
+Subject: Re: [PATCH] video: fbdev: sis: use explicitly signed char
+Content-Language: en-US
+To:     "Jason A. Donenfeld" <Jason@zx2c4.com>,
+        linux-kernel@vger.kernel.org
+Cc:     Thomas Winischhofer <thomas@winischhofer.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+References: <20221024162901.535972-1-Jason@zx2c4.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20221024162901.535972-1-Jason@zx2c4.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:fgln+OSb5Fs7l921QypIIY6GvbB8Dpo8NbcH6CX//FlDdIZKoPn
+ HTH8weoBRqVlYnQaJOUuVnLRopE3hTyC0rQ7NFop1qJoWADAuwh/gwd/DNyU80Z/nBkvvlj
+ xLpYb1wKKdGZeA8sSZnuNeBXV4k3vo2v4nRR1R3a5fNPt5ryrwPOPk8q//T+CrXTBvb8tGY
+ ylAA2rLff9VDqREvNVy4Q==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:YeTgNuQ6oBE=:x+MrTPIRv+ADg3bGSjOX2x
+ c8XbmCSjtFftDhFgoBgA63vaJowCwC+3di5UjTuwo1cjyBDugLxf99Ls4mxXN6KNNLDlOGAj3
+ Wl6mR0AP9W+8LUZDKcgR9x2KCpFAxB7TRmVgTZk88Hvdh10HEecFZtsnjASzNO8/2eG8/PskI
+ zCW1cPfDSUtI/WSbPa7xipFxEn0bVZTrkHYJEJucNxTHt47sb0MMTLPuKU305/eTDuJh2MnFy
+ N7dUAut84zTqvFUU4rVzQEaytLznUNTgQWuMw8iJhg0Y9r1gxdBobn/uS7A7UwpBfvcO95+la
+ ExXo7tBr/QBo2R1zZFQqkWyLFfgq3Ucb+aUoRrs8RCU5lp3A+epBw+c2uzINC6vK/bTysxH4u
+ 74VxveNrMEvEJeCuNwYfaQuCUZWS03JmRx0e8zzV08dapRsrcIyXp90UUGCB0ofpbwRdKa6z4
+ iVJS+44cs4OdFyrWLx+JvO3V2lW2Ha1db3TeAI9VZOZvaWPWtO6g3smWISdQxmx26grR9QzR8
+ lJ7/VCImckMTs7vQOJleMD4MEatVye+/uZlIWjiuxRpIOwD4mH23TQvkwYlVXhNnZB/5GsqLz
+ VUqAexb1W2LapEPynIWtHfq6YnO/C6tIguZH2VlDJctLyBTyY5Ldteibfif7AdyVT3wbM3fg2
+ n5zXbAYkC8SArLNKh7IcZp/j+BSvyWaVeWjbChcVR4rtPN+mKVI1BPOUYspQKnVDix+qvsoSE
+ uLcConOmvdqLBSSqMr/QhnSEN8rMQhQdcMJxiNm60kLCxDxmZPMBEQ/gcuWMJjIfQdxzCQzXx
+ XMUEoYR2xhoeI2ejsM8HtXUrRjSf1Apkwn2dlggGOeQrwU6mA+BQiIYmNFITAcbeVZxxG6x8O
+ 746n9OVaOt4FrW0BToKm4gwFWCF1UFE3c/CEWVbzDYx73EzfCMuD/Z/dtVcAYNxxwjhNnFDp5
+ 8utlguY9KCJgr07er4rwSu0GsC3jknq0TAIeME9v16xKSDcc2TIVpo976zBvonR0+MPybIcCM
+ h2H2g5OJOn9BrqbcG9Fk4omj8xfqBjsC2nI7ULK4ZNtwSNkL4RWX1lUChj6VQVFEHo5ptjBdt
+ UYRiyhO9rWcu/rgcBPXb83TqbyZiBMwK61+QvZcn0+DacPRzUpqe9iHCYEohp87oJsMkDWf7g
+ 5tWzTVkU2WEhcEoBQOaIM9TLnOhpui0xVHCt3i2ChLG+oBQnDCdeqVmhOuP3nugZ4AFSHjm5s
+ 1Vj1RWF2rhVPMK22jsLg7C4VPdecfyXbhtdJXGBCMdC5/PesfYAfQcVD1YpLkNrA9PuFXEDXh
+ RC9SkKW4N7S/kPU5B8dCwYXVWnbtCTZlsjLfNmRqDveBSnMo782+7qGudFzP/fPnD3AzOq2WG
+ C4txTHKBUgDkTOOgru1dp0fjnM5oXhkcvzC4mApzEc+DFHwaxpAHbIp2ScSj95wpB6eVqAIlb
+ sXZ20FkJ2MN+Mk7WiXrpUkwEEJdEn2cTKNP1vqFwpg4tR3vGSP7j4/hbYLpbli5f3N1phP2fq
+ r6dpFpstHxDSUm+0+SFiELW5DZ+6atWpEcW35DAGYFASa
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, 26 Sep 2022, Yang Yingliang wrote:
+On 10/24/22 18:29, Jason A. Donenfeld wrote:
+> With char becoming unsigned by default, and with `char` alone being
+> ambiguous and based on architecture, signed chars need to be marked
+> explicitly as such. This fixes warnings like:
+>
+> drivers/video/fbdev/sis/init301.c:3549 SiS_GetCRT2Data301() warn: 'SiS_P=
+r->SiS_EModeIDTable[ModeIdIndex]->ROMMODEIDX661' is unsigned
+>
+> Cc: Thomas Winischhofer <thomas@winischhofer.net>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: linux-usb@vger.kernel.org
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
+> Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
 
-> In the probe path, dev_err() can be replaced with dev_err_probe()
-> which will check if error code is -EPROBE_DEFER and prints the
-> error name. It also sets the defer probe reason which can be
-> checked later through debugfs. It's more simple in error path.
-> 
-> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
-> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Applied to linux-fbdev git tree.
+
+Thanks,
+Helge
+
+
 > ---
-> Resend for adding Sob.
-> ---
->  drivers/video/backlight/ktd253-backlight.c | 9 +++------
->  1 file changed, 3 insertions(+), 6 deletions(-)
+>   drivers/usb/misc/sisusbvga/sisusb_struct.h | 2 +-
+>   drivers/video/fbdev/sis/vstruct.h          | 2 +-
+>   2 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/usb/misc/sisusbvga/sisusb_struct.h b/drivers/usb/mi=
+sc/sisusbvga/sisusb_struct.h
+> index 3df64d2a9d43..a86032a26d36 100644
+> --- a/drivers/usb/misc/sisusbvga/sisusb_struct.h
+> +++ b/drivers/usb/misc/sisusbvga/sisusb_struct.h
+> @@ -91,7 +91,7 @@ struct SiS_Ext {
+>   	unsigned char VB_ExtTVYFilterIndex;
+>   	unsigned char VB_ExtTVYFilterIndexROM661;
+>   	unsigned char REFindex;
+> -	char ROMMODEIDX661;
+> +	signed char ROMMODEIDX661;
+>   };
+>
+>   struct SiS_Ext2 {
+> diff --git a/drivers/video/fbdev/sis/vstruct.h b/drivers/video/fbdev/sis=
+/vstruct.h
+> index ea94d214dcff..d7a14e63ba5a 100644
+> --- a/drivers/video/fbdev/sis/vstruct.h
+> +++ b/drivers/video/fbdev/sis/vstruct.h
+> @@ -148,7 +148,7 @@ struct SiS_Ext {
+>   	unsigned char  VB_ExtTVYFilterIndex;
+>   	unsigned char  VB_ExtTVYFilterIndexROM661;
+>   	unsigned char  REFindex;
+> -	char           ROMMODEIDX661;
+> +	signed char    ROMMODEIDX661;
+>   };
+>
+>   struct SiS_Ext2 {
 
-Applied, thanks.
-
--- 
-Lee Jones [李琼斯]

@@ -2,111 +2,70 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E2F5FA3743
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Oct 2022 19:44:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55788C38A2D
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Oct 2022 19:52:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232236AbiJXTow (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Oct 2022 15:44:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48342 "EHLO
+        id S232781AbiJXTwW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Oct 2022 15:52:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48344 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233507AbiJXToE (ORCPT
+        with ESMTP id S233560AbiJXTvr (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Oct 2022 15:44:04 -0400
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D4CA7194219;
-        Mon, 24 Oct 2022 11:12:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1666635141; x=1698171141;
-  h=from:to:cc:subject:in-reply-to:references:date:
-   message-id:mime-version;
-  bh=5z5J6hyo+xzhPJHRSqQ2l3yOfGRRo8+TjXETgVVrD8A=;
-  b=CTreJ/NTlalPXaOM+VYIQ30+UirYB0cafgqkos+0j5oy3cgHWYw7LuOZ
-   H46KTgzh4inW7Y4JY3enkMEmQ4/H1dlplhzmigdzxecUwDWqD/4ENtikS
-   MwoRzhj3NtFCfUMVT/oxF71d3HPGerykryaksqMgcFQu2btBXj5aOtubb
-   r3ZCCUugQ8xKTDDKAyn6oX7tNUDDmhZoOb/2OveaOVrnDCMEx1Q6+khI0
-   ptZhdXud2mHLmsXw48XlobER/BC++TMPpW/sLVwCZb4bmjteJ3B+Hi932
-   krtHztMHY9HLvk4quni6YmhdKxT/cHBkDkI8PeiJz+gE47LrRq+5qUkuz
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10510"; a="393805616"
-X-IronPort-AV: E=Sophos;i="5.95,209,1661842800"; 
-   d="scan'208";a="393805616"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Oct 2022 11:11:22 -0700
-X-IronPort-AV: E=McAfee;i="6500,9779,10510"; a="609286400"
-X-IronPort-AV: E=Sophos;i="5.95,209,1661842800"; 
-   d="scan'208";a="609286400"
-Received: from emontau-mobl2.ger.corp.intel.com (HELO localhost) ([10.252.52.221])
-  by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Oct 2022 11:11:11 -0700
-From:   Jani Nikula <jani.nikula@linux.intel.com>
-To:     Akihiko Odaki <akihiko.odaki@daynix.com>,
-        Hans de Goede <hdegoede@redhat.com>
-Cc:     David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Jonathan Corbet <corbet@lwn.net>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Len Brown <lenb@kernel.org>,
-        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-        "Lee, Chun-Yi" <jlee@suse.com>, Mark Gross <markgross@kernel.org>,
-        Corentin Chary <corentin.chary@gmail.com>,
-        Cezary Jackiewicz <cezary.jackiewicz@gmail.com>,
-        Matthew Garrett <mjg59@srcf.ucam.org>,
-        Pali =?utf-8?Q?Roh=C3=A1r?= <pali@kernel.org>,
-        Jonathan Woithe <jwoithe@just42.net>,
-        Ike Panhc <ike.pan@canonical.com>,
-        Daniel Dadap <ddadap@nvidia.com>,
-        Kenneth Chan <kenneth.t.chan@gmail.com>,
-        Mattia Dongili <malattia@linux.it>,
-        Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-        Azael Avalos <coproscefalo@gmail.com>,
-        Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>,
-        Robert Moore <robert.moore@intel.com>,
-        dri-devel@lists.freedesktop.org, linux-doc@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-        intel-gfx@lists.freedesktop.org,
-        platform-driver-x86@vger.kernel.org,
-        acpi4asus-user@lists.sourceforge.net,
-        ibm-acpi-devel@lists.sourceforge.net, linux-fbdev@vger.kernel.org,
-        devel@acpica.org
-Subject: Re: [PATCH 00/22] Fallback to native backlight
-In-Reply-To: <78ad5d7b-4078-0b8e-f4aa-6c8113631359@daynix.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-References: <20221024113513.5205-1-akihiko.odaki@daynix.com>
- <746e5cc6-516f-8f69-9d4b-8fe237de8fd6@redhat.com>
- <edec5950-cec8-b647-ccb1-ba48f9b3bbb0@daynix.com>
- <60672af8-05d2-113c-12b9-d635608be0dd@redhat.com>
- <ea69242c-0bc8-c7bb-9602-c7489bb69684@daynix.com>
- <7373e258-f7cc-4416-9b1c-c8c9dab59ada@daynix.com>
- <ae3497ed-b68d-c36a-6b6f-f7b9771d9238@redhat.com>
- <78ad5d7b-4078-0b8e-f4aa-6c8113631359@daynix.com>
-Date:   Mon, 24 Oct 2022 21:11:08 +0300
-Message-ID: <87o7u1drcz.fsf@intel.com>
+        Mon, 24 Oct 2022 15:51:47 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CD25CEA6BF
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Oct 2022 11:17:13 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id CB87AB8171E
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Oct 2022 12:33:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5A5F4C433C1;
+        Mon, 24 Oct 2022 12:33:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1666614799;
+        bh=N9wIamNHKy/+ppn5xdXN60PJL5TdYTrdbc8ReqtAUWw=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=hc+bbdp2OxajHemJUi1ByRJcqctWsgYxL+m97MF0ouspSYiNXzJPUEVwtgIu0C5F/
+         NfilP+ZE42qTeLFm1OBSYes5Aqp1wXga76NRZwQL0s5mFADGc1bCDN9bdasq9Pd/Rq
+         T2YFBccOh+0s3xOVUa4xg5ARCcXgBqNQGrLRqAJqErHzVwChtoFu4jYvTzdZYUivo3
+         lslINB7FjHzmbSkMbemuKML3VQAFbMMXRloYuvEi+lcpvAs7OiI6diV4VB0vp3ZiD/
+         e2ZAj6aP9A8C3ORRfAEXdq84vtDrJfIELLlQAPbGcc7mGt2Obvg6sdLpEBhirzlYp0
+         IZbZNRM7dPiRw==
+Date:   Mon, 24 Oct 2022 13:33:15 +0100
+From:   Lee Jones <lee@kernel.org>
+To:     Yang Yingliang <yangyingliang@huawei.com>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linus.walleij@linaro.org, daniel.thompson@linaro.org
+Subject: Re: [PATCH -next resend] backlight: ktd253: Switch to use
+ dev_err_probe() helper
+Message-ID: <Y1aGC36X50XvlNwm@google.com>
+References: <20220926142059.2294282-1-yangyingliang@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220926142059.2294282-1-yangyingliang@huawei.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, 25 Oct 2022, Akihiko Odaki <akihiko.odaki@daynix.com> wrote:
-> That aside, the first patch in this series can be applied without the 
-> later patches so you may have a look at it. It's fine if you don't merge 
-> it though since it does not fix really a pragmatic bug as its message says.
+On Mon, 26 Sep 2022, Yang Yingliang wrote:
 
-I think it's problematic because it needlessly ties i915 backlight
-operation to existence of backlight devices that may not be related to
-Intel GPU at all. The direction should be multiple supported backlight
-devices, across GPUs and connectors, but only one per display.
+> In the probe path, dev_err() can be replaced with dev_err_probe()
+> which will check if error code is -EPROBE_DEFER and prints the
+> error name. It also sets the defer probe reason which can be
+> checked later through debugfs. It's more simple in error path.
+> 
+> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> ---
+> Resend for adding Sob.
+> ---
+>  drivers/video/backlight/ktd253-backlight.c | 9 +++------
+>  1 file changed, 3 insertions(+), 6 deletions(-)
 
-BR,
-Jani.
-
+Applied, thanks.
 
 -- 
-Jani Nikula, Intel Open Source Graphics Center
+Lee Jones [李琼斯]

@@ -2,54 +2,54 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B2C3FA3740
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Oct 2022 11:38:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E1F7FA3743
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Oct 2022 11:38:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231217AbiJXLii (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Oct 2022 07:38:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50060 "EHLO
+        id S230438AbiJXLip (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Oct 2022 07:38:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50284 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230519AbiJXLhy (ORCPT
+        with ESMTP id S231149AbiJXLiD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Oct 2022 07:37:54 -0400
-Received: from mail-pg1-x536.google.com (mail-pg1-x536.google.com [IPv6:2607:f8b0:4864:20::536])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E716D188
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Oct 2022 04:37:43 -0700 (PDT)
-Received: by mail-pg1-x536.google.com with SMTP id 128so8471408pga.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Oct 2022 04:37:42 -0700 (PDT)
+        Mon, 24 Oct 2022 07:38:03 -0400
+Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1CBBE222A8
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Oct 2022 04:37:36 -0700 (PDT)
+Received: by mail-pj1-x1033.google.com with SMTP id s22-20020a17090a075600b002130d2ad62aso2037542pje.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Oct 2022 04:37:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=daynix-com.20210112.gappssmtp.com; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=FzYckbVTu84cFuvQYLHBAleZORC/YQBRLh0kCNSwM7o=;
-        b=iBmB5k8OKAjf/Xfxgs/hagECXPJWV1vTEOyWaHgXEXGGuvWdPS3TIcFuqN2vljOt/3
-         nNxtvkj18I0SllZUWw1t8qqvPmaaAP/Ih4C/z6eW1oEg/YHBwNE/UBrQc6mXtkTAyvYj
-         FRBgnjpPaQlPvG+Y3I8gbe9DDVTlZH0hAaXfoiGfSlX3bhk3XTqmJy1s3Zn6Jxm7ASHo
-         5qpBijR2lRjm+mURr8kmnNH7SvMPVVmMWVtI9kd+jgDbk3k+yebqsm9WcqXOGkuW8EHo
-         ONz+AiYuv6fxJZh8VBFUV+IvV75FH4hihqZWU8KhCWTYY3SL2W8//2gxAwO5cZ7vPvF7
-         RcQA==
+        bh=jd6ACh5yshC3v+wpibDWDf3qgLlWAznCMtTQxn1zcTM=;
+        b=BWB1bsRo1D1/5aG2HUlQshwnot5GiQEKVcgQhO+OxWk4Yv6RJGjGc0+BnbVcAU1ilB
+         NhLxiTmmJgpEWvIeGzC5nj6mZ2YWuafNwN+o0OYaPM29MksvUZTfQAH1/K+UrZCFM6bR
+         i7w9/In5jUCFaBvu+D1VTFv7mFYSrjvbVqaokCOIPR/VUAMFVxjnDdpJCpz7bMR/BSkg
+         Jq+u8O9YrnPI/nP0nolD9ycK218e8OEhDyBgyhXa6WYV51n2uaBY0GhjjlonI341V0zm
+         ZR6a6kMTVC2I54CmN/XhCqU+xMvNbG8LWMhVeF721NMtiIvmVm8HCmwl7f0mofuKqBvv
+         T6qA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=FzYckbVTu84cFuvQYLHBAleZORC/YQBRLh0kCNSwM7o=;
-        b=R1MmiV4bY37+G8aLdRTd5AxVlMBQ3YMGgJJZv1lRPOnIWr6/7r8Se5mQqfuPi27yPb
-         y6qj4q3Te2HafJmRe2FMpCAkXDUE6vnXC0d2MxFy+djWxDkz/Rk4AK47hJiJnkKD0UaU
-         a0QC7ICBBTmKPYpK6IOPf8bR/dZj05DOL4xCT1G7HS21A7wbLApc+tqJefFrJWNSghL1
-         wl2sNslCaDVYiM0YsUQ2zIJ12mgMRgCumtbDGJKAQcabzNm3e/jsVyf2p2SmofwQGyEY
-         V7mribHpXUD67oe8QqANVTy9OWI7f3hhku5/tv5euOl7sxr8C5WfGCY6QXpzta+Ektxs
-         /geQ==
-X-Gm-Message-State: ACrzQf3VhZpM330lMi2fGAbdN11lFEcixqSpBL+YFhshk+9rGFn1+YI6
-        bRnO/cgWS3UPSDHnERkWMhxr2A==
-X-Google-Smtp-Source: AMsMyM7eq4O5TcwFPN0I0cjYrONCrFe9kecGGggyXcsgPXfbT+UNin9IKo2yeDqy+SAw/EfdKKa+7Q==
-X-Received: by 2002:a63:2a86:0:b0:46a:eaba:f1f3 with SMTP id q128-20020a632a86000000b0046aeabaf1f3mr27591150pgq.79.1666611383075;
-        Mon, 24 Oct 2022 04:36:23 -0700 (PDT)
+        bh=jd6ACh5yshC3v+wpibDWDf3qgLlWAznCMtTQxn1zcTM=;
+        b=kss2RRLfOAPvhMe8Yb6XSsoQNEf3CSLMfSmfyblKoVF4ZGRpcUeDcbWdRqYGbmzS40
+         S61Pf9cszJ2si/G2E0Op2rNrv75XXj8b7Lqe/ftuOXc27stP1Utb3KqBJ3CukjCUOFIG
+         C8yCF7NesobdpvhiuoiKnb6aZiGCgvVyNwoaJIQJEopUArL/eCeFZMwNsMr4ObNdVBMj
+         RtpA0jzncxKQzaFVNvL6PySjGi9r/Bmsx6+tHFMTNzACWWelBXBQgQEExXVI0jONgtys
+         zybYSZc7zE9j/dY20wasMy+uMB5zg5tHLf+uI8+uQjDL/Q6isqXYAPUwEQf/x+zkt1jD
+         ASmQ==
+X-Gm-Message-State: ACrzQf2cuuYqDE46vg4RHzJUQBIZ7a3Sa7/xTo6BYQbwoxVENRi9+mPt
+        Vpm4Zd5gJSlZURYJ4V/aFErAQg==
+X-Google-Smtp-Source: AMsMyM73/rjifhWGMHa1zueK60XfZjEW5Vq3d/GPCr3Dh4GubkmNIV3imNkhOdeBYtsFWNdeZJSquQ==
+X-Received: by 2002:a17:902:da90:b0:185:5537:f388 with SMTP id j16-20020a170902da9000b001855537f388mr34408779plx.113.1666611366225;
+        Mon, 24 Oct 2022 04:36:06 -0700 (PDT)
 Received: from fedora.flets-east.jp ([2400:4050:c360:8200:8ae8:3c4:c0da:7419])
-        by smtp.gmail.com with ESMTPSA id b8-20020a170903228800b001830ed575c3sm19475075plh.117.2022.10.24.04.36.15
+        by smtp.gmail.com with ESMTPSA id b8-20020a170903228800b001830ed575c3sm19475075plh.117.2022.10.24.04.35.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Oct 2022 04:36:22 -0700 (PDT)
+        Mon, 24 Oct 2022 04:36:05 -0700 (PDT)
 From:   Akihiko Odaki <akihiko.odaki@daynix.com>
 Cc:     David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
@@ -88,9 +88,9 @@ Cc:     David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
         acpi4asus-user@lists.sourceforge.net,
         ibm-acpi-devel@lists.sourceforge.net, linux-fbdev@vger.kernel.org,
         devel@acpica.org, Akihiko Odaki <akihiko.odaki@daynix.com>
-Subject: [PATCH 05/22] platform/x86: asus-laptop: Use acpi_video_get_backlight_types()
-Date:   Mon, 24 Oct 2022 20:34:56 +0900
-Message-Id: <20221024113513.5205-6-akihiko.odaki@daynix.com>
+Subject: [PATCH 03/22] LoongArch: Use acpi_video_get_backlight_types()
+Date:   Mon, 24 Oct 2022 20:34:54 +0900
+Message-Id: <20221024113513.5205-4-akihiko.odaki@daynix.com>
 X-Mailer: git-send-email 2.37.3
 In-Reply-To: <20221024113513.5205-1-akihiko.odaki@daynix.com>
 References: <20221024113513.5205-1-akihiko.odaki@daynix.com>
@@ -105,22 +105,25 @@ acpi_video_get_backlight_type() is now deprecated.
 
 Signed-off-by: Akihiko Odaki <akihiko.odaki@daynix.com>
 ---
- drivers/platform/x86/asus-laptop.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/platform/loongarch/loongson-laptop.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/platform/x86/asus-laptop.c b/drivers/platform/x86/asus-laptop.c
-index 47b2f8bb6fb5..fb7f9e8ca6c4 100644
---- a/drivers/platform/x86/asus-laptop.c
-+++ b/drivers/platform/x86/asus-laptop.c
-@@ -1854,7 +1854,7 @@ static int asus_acpi_add(struct acpi_device *device)
- 	if (result)
- 		goto fail_platform;
+diff --git a/drivers/platform/loongarch/loongson-laptop.c b/drivers/platform/loongarch/loongson-laptop.c
+index f0166ad5d2c2..3b54b4cefedb 100644
+--- a/drivers/platform/loongarch/loongson-laptop.c
++++ b/drivers/platform/loongarch/loongson-laptop.c
+@@ -454,9 +454,9 @@ static int __init event_init(struct generic_sub_driver *sub_driver)
  
--	if (acpi_video_get_backlight_type() == acpi_backlight_vendor) {
-+	if ((acpi_video_get_backlight_types() & ACPI_BACKLIGHT_VENDOR)) {
- 		result = asus_backlight_init(asus);
- 		if (result)
- 			goto fail_backlight;
+ 	/*
+ 	 * This hotkey driver handle backlight event when
+-	 * acpi_video_get_backlight_type() gets acpi_backlight_vendor
++	 * acpi_video_get_backlight_types() gets ACPI_BACKLIGHT_VENDOR
+ 	 */
+-	if (acpi_video_get_backlight_type() == acpi_backlight_vendor)
++	if ((acpi_video_get_backlight_types() & ACPI_BACKLIGHT_VENDOR))
+ 		hotkey_backlight_set(true);
+ 	else
+ 		hotkey_backlight_set(false);
 -- 
 2.37.3
 

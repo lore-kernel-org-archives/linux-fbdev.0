@@ -2,128 +2,85 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20F07C04A95
-	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Oct 2022 11:36:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C703C04A95
+	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Oct 2022 13:00:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230366AbiJYLgO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 25 Oct 2022 07:36:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50738 "EHLO
+        id S232498AbiJYM77 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 25 Oct 2022 08:59:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46322 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229904AbiJYLgM (ORCPT
+        with ESMTP id S232931AbiJYM7h (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 25 Oct 2022 07:36:12 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0903885AAB;
-        Tue, 25 Oct 2022 04:36:10 -0700 (PDT)
+        Tue, 25 Oct 2022 08:59:37 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2DC4F61101;
+        Tue, 25 Oct 2022 05:55:53 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 5F01AB81C4E;
-        Tue, 25 Oct 2022 11:36:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67087C433C1;
-        Tue, 25 Oct 2022 11:36:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1666697765;
-        bh=FP+xDQm/fMcpABfdVoP8FT/aX0L5t/2j4/YpFeFO+jI=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=ElviCW5AQEx3xm+RVwc+kjflXkingkanSmARDUD9ctWYLnX094KxT4frshxSfGZf8
-         Te/XnFb8OCwwDzpDSgnJy1Nh9ZNKAF62Z2gUvbL7rJpCo7IVxgMhy/6vAECp6SmFVO
-         GJywtdr+AsgWITWncPkCi4aBloJgiMhnceg7x+r8=
-Date:   Tue, 25 Oct 2022 13:36:03 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     javierm@redhat.com, deller@gmx.de, sashal@kernel.org,
-        stable@vger.kernel.org,
-        Andreas Thalhammer <andreas.thalhammer-linux@gmx.net>,
-        Thorsten Leemhuis <regressions@leemhuis.info>,
-        Zack Rusin <zackr@vmware.com>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Zhen Lei <thunder.leizhen@huawei.com>,
-        Changcheng Deng <deng.changcheng@zte.com.cn>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH] video/aperture: Call sysfb_disable() before removing PCI
- devices
-Message-ID: <Y1fKI7CtCaqK03tj@kroah.com>
-References: <20221025110453.9404-1-tzimmermann@suse.de>
+        by dfw.source.kernel.org (Postfix) with ESMTPS id C0F466191C;
+        Tue, 25 Oct 2022 12:55:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D5FE8C433B5;
+        Tue, 25 Oct 2022 12:55:51 +0000 (UTC)
+Authentication-Results: smtp.kernel.org;
+        dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="TLDAXUj0"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
+        t=1666702548;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=QGSEJHQ6O6h56v9HDr0qaun/dwKwWOG4TfufXFT9A7g=;
+        b=TLDAXUj0dhqKSXKimkr9oIlh3k/6nMfUB9a8GjP+AlVoxSX0A5UQ6R6kYiZ9Jik4dkSDEM
+        y9T9IimtGqYHqDbp4PYeU//M7RjFTubI2K6fWVwt9+GtwjIvleAmsbbdeLAdMYdic1pyFR
+        bwXl+pUkkVyG7EZCgVEMlP8byRu3IXE=
+Received: by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 2b352582 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
+        Tue, 25 Oct 2022 12:55:48 +0000 (UTC)
+Received: by mail-vs1-f42.google.com with SMTP id h3so10832163vsa.4;
+        Tue, 25 Oct 2022 05:55:47 -0700 (PDT)
+X-Gm-Message-State: ACrzQf337OFKOose2iM9tqgenoZbYqp+Stx8rRXxLef+qg5EA3U+AGzv
+        ReNvs/eKvf5hjI28fsZCZ9yyIbpFzHLAFNlU2to=
+X-Google-Smtp-Source: AMsMyM4JokenVVEnbZ82CCTmDYmaTcsx2t4i/rPNK/XWJbxN4bY61RcFoPAXn4TA3gx2R7Mvql4drbYRB8ft7pY2F+0=
+X-Received: by 2002:a05:6102:f9a:b0:3aa:1a11:2702 with SMTP id
+ e26-20020a0561020f9a00b003aa1a112702mr5874116vsv.73.1666702547125; Tue, 25
+ Oct 2022 05:55:47 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221025110453.9404-1-tzimmermann@suse.de>
+References: <20221024162901.535972-1-Jason@zx2c4.com> <ec8edb92-a21b-6291-4275-d7cba97d7ad7@gmx.de>
+In-Reply-To: <ec8edb92-a21b-6291-4275-d7cba97d7ad7@gmx.de>
+From:   "Jason A. Donenfeld" <Jason@zx2c4.com>
+Date:   Tue, 25 Oct 2022 14:55:36 +0200
+X-Gmail-Original-Message-ID: <CAHmME9r=E=sUEU0_thtrj6agd_8YbTVUm2fEsErGKM-ff6y03w@mail.gmail.com>
+Message-ID: <CAHmME9r=E=sUEU0_thtrj6agd_8YbTVUm2fEsErGKM-ff6y03w@mail.gmail.com>
+Subject: Re: [PATCH] video: fbdev: sis: use explicitly signed char
+To:     Helge Deller <deller@gmx.de>
+Cc:     linux-kernel@vger.kernel.org,
+        Thomas Winischhofer <thomas@winischhofer.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Oct 25, 2022 at 01:04:53PM +0200, Thomas Zimmermann wrote:
-> Call sysfb_disable() from aperture_remove_conflicting_pci_devices()
-> before removing PCI devices. Without, simpledrm can still bind to
-> simple-framebuffer devices after the hardware driver has taken over
-> the hardware. Both drivers interfere with each other and results are
-> undefined.
-> 
-> Reported modesetting errors are shown below.
-> 
-> ---- snap ----
-> rcu: INFO: rcu_sched detected expedited stalls on CPUs/tasks: { 13-.... } 7 jiffies s: 165 root: 0x2000/.
-> rcu: blocking rcu_node structures (internal RCU debug):
-> Task dump for CPU 13:
-> task:X               state:R  running task     stack:    0 pid: 4242 ppid:  4228 flags:0x00000008
-> Call Trace:
->  <TASK>
->  ? commit_tail+0xd7/0x130
->  ? drm_atomic_helper_commit+0x126/0x150
->  ? drm_atomic_commit+0xa4/0xe0
->  ? drm_plane_get_damage_clips.cold+0x1c/0x1c
->  ? drm_atomic_helper_dirtyfb+0x19e/0x280
->  ? drm_mode_dirtyfb_ioctl+0x10f/0x1e0
->  ? drm_mode_getfb2_ioctl+0x2d0/0x2d0
->  ? drm_ioctl_kernel+0xc4/0x150
->  ? drm_ioctl+0x246/0x3f0
->  ? drm_mode_getfb2_ioctl+0x2d0/0x2d0
->  ? __x64_sys_ioctl+0x91/0xd0
->  ? do_syscall_64+0x60/0xd0
->  ? entry_SYSCALL_64_after_hwframe+0x4b/0xb5
->  </TASK>
-> ...
-> rcu: INFO: rcu_sched detected expedited stalls on CPUs/tasks: { 13-.... } 30 jiffies s: 169 root: 0x2000/.
-> rcu: blocking rcu_node structures (internal RCU debug):
-> Task dump for CPU 13:
-> task:X               state:R  running task     stack:    0 pid: 4242 ppid:  4228 flags:0x0000400e
-> Call Trace:
->  <TASK>
->  ? memcpy_toio+0x76/0xc0
->  ? memcpy_toio+0x1b/0xc0
->  ? drm_fb_memcpy_toio+0x76/0xb0
->  ? drm_fb_blit_toio+0x75/0x2b0
->  ? simpledrm_simple_display_pipe_update+0x132/0x150
->  ? drm_atomic_helper_commit_planes+0xb6/0x230
->  ? drm_atomic_helper_commit_tail+0x44/0x80
->  ? commit_tail+0xd7/0x130
->  ? drm_atomic_helper_commit+0x126/0x150
->  ? drm_atomic_commit+0xa4/0xe0
->  ? drm_plane_get_damage_clips.cold+0x1c/0x1c
->  ? drm_atomic_helper_dirtyfb+0x19e/0x280
->  ? drm_mode_dirtyfb_ioctl+0x10f/0x1e0
->  ? drm_mode_getfb2_ioctl+0x2d0/0x2d0
->  ? drm_ioctl_kernel+0xc4/0x150
->  ? drm_ioctl+0x246/0x3f0
->  ? drm_mode_getfb2_ioctl+0x2d0/0x2d0
->  ? __x64_sys_ioctl+0x91/0xd0
->  ? do_syscall_64+0x60/0xd0
->  ? entry_SYSCALL_64_after_hwframe+0x4b/0xb5
->  </TASK>
-> 
-> The problem was added by commit 5e0137612430 ("video/aperture: Disable
-> and unregister sysfb devices via aperture helpers") to v6.0.3 and does
-> not exist in the mainline branch.
+On Mon, Oct 24, 2022 at 8:29 PM Helge Deller <deller@gmx.de> wrote:
+>
+> On 10/24/22 18:29, Jason A. Donenfeld wrote:
+> > With char becoming unsigned by default, and with `char` alone being
+> > ambiguous and based on architecture, signed chars need to be marked
+> > explicitly as such. This fixes warnings like:
+> >
+> > drivers/video/fbdev/sis/init301.c:3549 SiS_GetCRT2Data301() warn: 'SiS_Pr->SiS_EModeIDTable[ModeIdIndex]->ROMMODEIDX661' is unsigned
+> >
+> > Cc: Thomas Winischhofer <thomas@winischhofer.net>
+> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > Cc: Helge Deller <deller@gmx.de>
+> > Cc: linux-usb@vger.kernel.org
+> > Cc: linux-fbdev@vger.kernel.org
+> > Cc: dri-devel@lists.freedesktop.org
+> > Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
+>
+> Applied to linux-fbdev git tree.
 
-Why isn't this a problem in Linus's tree?  What commits there cause this
-to not be an issue and why can't we just take them instead?
+For 6.1 as a fix, right? Since this is already broken on, e.g., ARM.
 
-thanks,
-
-greg k-h
+Jason

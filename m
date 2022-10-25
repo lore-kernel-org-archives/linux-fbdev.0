@@ -2,105 +2,91 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EE78C04A95
-	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Oct 2022 05:10:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CD8EC38A2D
+	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Oct 2022 10:06:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230046AbiJYFK5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 25 Oct 2022 01:10:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39132 "EHLO
+        id S232183AbiJYKGC convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 25 Oct 2022 06:06:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49928 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229973AbiJYFK4 (ORCPT
+        with ESMTP id S231892AbiJYKFf (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 25 Oct 2022 01:10:56 -0400
-Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 27E7A82850
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Oct 2022 22:10:55 -0700 (PDT)
-Received: by mail-pf1-x42f.google.com with SMTP id w189so9400831pfw.4
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Oct 2022 22:10:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=N7HV+2O7fdwVJwRzKmZ0rsq+s0/h80leow5C99ZjbCk=;
-        b=hkb8xybnSV2gWZ/UtkvEPpfkO9Qxb6o8Q2XSPI5eJ9LUXXPMNBhL4F2b0G9DVHZVZO
-         awtvkuVsFDXqLILkIAFxE3RVv3E5XRZR0JaeROlmKN5+6X1Lt/Jm29PdHcUMo+fQ6A3P
-         jwMXSR7no7u/SZfrAu29FdTM5sRnz1Q1ZRaf29kNy5Becp/1KFnILui60x9ufO9cBrmj
-         7mVPiaL3PHg+3wGdQcf0Cu6CN+RqNkLRAHOkLqXiYCxac13fnnz0Zoxn8YlDIsKEXoIZ
-         rqWK4XDtIKRHfxG1P87J2+Lsqt57ZUTiIHk/lqLONELr8aJxcdQ95U1NWbsUDOYCmZAb
-         1oYA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=N7HV+2O7fdwVJwRzKmZ0rsq+s0/h80leow5C99ZjbCk=;
-        b=lDJ6mHxQfDdRkuwB+sDPeupEC6U1+21tYJurq8gF+kptnNVLrzFeGJ/yxmOt2PjEWu
-         e/AF6Ia5TRoug2RwDSOK66Skq+0aTfVT090/1R9ETiyZMRqGyC08H2Fsy3fbdeN7qAgV
-         FQDsns8POFBeiMBHMcXfMc0AsVLvVS/H0zPbFtpYDzhB+wY6TvOC5U4sk5FlKpkC6o3H
-         ZbOy/N1zrDjIwJDqX/em/4GKUmipb7MEQO+yotSG//OKxPuLYIsu2tpLn4dlcrH0VRBe
-         B79yxOc/XM199w/D3ntuS+jg85ZTapyjeago10oXYOYUUDFfj3Ucyfu/v2f22sjKCOYI
-         tJZg==
-X-Gm-Message-State: ACrzQf0XxV9jRh/Yq6i28LGxeEYzixKcEEHhX/gLkBrWs7f6LN3rRcyC
-        e4LmL3eFY55w+tCFcPABOuupbA==
-X-Google-Smtp-Source: AMsMyM4dqBh79PBmEq4bNi3bKpyxWmF8pKyrddK0RgHHrwPwJ9UaGdcmUV9KpdRicCKxD5dzSxxkQw==
-X-Received: by 2002:a63:db42:0:b0:45c:9c73:d72e with SMTP id x2-20020a63db42000000b0045c9c73d72emr30514395pgi.181.1666674654641;
-        Mon, 24 Oct 2022 22:10:54 -0700 (PDT)
-Received: from localhost ([122.172.87.26])
-        by smtp.gmail.com with ESMTPSA id v6-20020a17090a00c600b001ef8ab65052sm667404pjd.11.2022.10.24.22.10.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Oct 2022 22:10:54 -0700 (PDT)
-Date:   Tue, 25 Oct 2022 10:40:52 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Arnd Bergmann <arnd@kernel.org>
-Cc:     linux-arm-kernel@lists.infradead.org,
-        Russell King <linux@armlinux.org.uk>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Lubomir Rintel <lkundrak@v3.sk>, linux-kernel@vger.kernel.org,
-        Arnd Bergmann <arnd@arndb.de>,
-        Peter Chubb <peter.chubb@unsw.edu.au>,
-        Stefan Eletzhofer <stefan.eletzhofer@eletztrick.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Lee Jones <lee@kernel.org>,
-        Dominik Brodowski <linux@dominikbrodowski.net>,
-        Alan Stern <stern@rowland.harvard.edu>,
+        Tue, 25 Oct 2022 06:05:35 -0400
+Received: from eu-smtp-delivery-151.mimecast.com (eu-smtp-delivery-151.mimecast.com [185.58.86.151])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 433F217FD49
+        for <linux-fbdev@vger.kernel.org>; Tue, 25 Oct 2022 02:59:56 -0700 (PDT)
+Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ uk-mta-221-ubkgpKyWN-GZuVIw3Ovb-w-1; Tue, 25 Oct 2022 10:59:44 +0100
+X-MC-Unique: ubkgpKyWN-GZuVIw3Ovb-w-1
+Received: from AcuMS.Aculab.com (10.202.163.6) by AcuMS.aculab.com
+ (10.202.163.6) with Microsoft SMTP Server (TLS) id 15.0.1497.42; Tue, 25 Oct
+ 2022 10:59:16 +0100
+Received: from AcuMS.Aculab.com ([::1]) by AcuMS.aculab.com ([::1]) with mapi
+ id 15.00.1497.042; Tue, 25 Oct 2022 10:59:16 +0100
+From:   David Laight <David.Laight@ACULAB.COM>
+To:     "'Jason A. Donenfeld'" <Jason@zx2c4.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC:     Thomas Winischhofer <thomas@winischhofer.net>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Helge Deller <deller@gmx.de>, linux-pm@vger.kernel.org,
-        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH 02/11] ARM: sa1100: remove unused board files
-Message-ID: <20221025051052.qn2ruyjdkawwwida@vireshk-i7>
-References: <20221021155000.4108406-1-arnd@kernel.org>
- <20221021155000.4108406-3-arnd@kernel.org>
+        Helge Deller <deller@gmx.de>,
+        "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
+Subject: RE: [PATCH] video: fbdev: sis: use explicitly signed char
+Thread-Topic: [PATCH] video: fbdev: sis: use explicitly signed char
+Thread-Index: AQHY59GfTKHiiX1cE0qqKUXinyrVOK4e4PPg
+Date:   Tue, 25 Oct 2022 09:59:16 +0000
+Message-ID: <37a4d200e0b74c72854c018c02e18b50@AcuMS.aculab.com>
+References: <20221024162901.535972-1-Jason@zx2c4.com>
+In-Reply-To: <20221024162901.535972-1-Jason@zx2c4.com>
+Accept-Language: en-GB, en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221021155000.4108406-3-arnd@kernel.org>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: aculab.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 21-10-22, 17:49, Arnd Bergmann wrote:
-> diff --git a/drivers/cpufreq/sa1110-cpufreq.c b/drivers/cpufreq/sa1110-cpufreq.c
-> index 1a83c8678a63..bb7f591a8b05 100644
-> --- a/drivers/cpufreq/sa1110-cpufreq.c
-> +++ b/drivers/cpufreq/sa1110-cpufreq.c
-> @@ -344,14 +344,8 @@ static int __init sa1110_clk_init(void)
->  	if (!name[0]) {
->  		if (machine_is_assabet())
->  			name = "TC59SM716-CL3";
-> -		if (machine_is_pt_system3())
-> -			name = "K4S641632D";
-> -		if (machine_is_h3100())
-> -			name = "KM416S4030CT";
->  		if (machine_is_jornada720() || machine_is_h3600())
->  			name = "K4S281632B-1H";
-> -		if (machine_is_nanoengine())
-> -			name = "MT48LC8M16A2TG-75";
->  	}
->  
->  	sdram = sa1110_find_sdram(name);
+From: Jason A. Donenfeld
+> Sent: 24 October 2022 17:29
+> To: linux-kernel@vger.kernel.org
+> 
+> With char becoming unsigned by default, and with `char` alone being
+> ambiguous and based on architecture, signed chars need to be marked
+> explicitly as such. This fixes warnings like:
+> 
+...
+> ---
+>  drivers/usb/misc/sisusbvga/sisusb_struct.h | 2 +-
+>  drivers/video/fbdev/sis/vstruct.h          | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/usb/misc/sisusbvga/sisusb_struct.h b/drivers/usb/misc/sisusbvga/sisusb_struct.h
+> index 3df64d2a9d43..a86032a26d36 100644
+> --- a/drivers/usb/misc/sisusbvga/sisusb_struct.h
+> +++ b/drivers/usb/misc/sisusbvga/sisusb_struct.h
+> @@ -91,7 +91,7 @@ struct SiS_Ext {
+>  	unsigned char VB_ExtTVYFilterIndex;
+>  	unsigned char VB_ExtTVYFilterIndexROM661;
+>  	unsigned char REFindex;
+> -	char ROMMODEIDX661;
+> +	signed char ROMMODEIDX661;
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Isn't the correct fix to use u8 and s8 ?
 
--- 
-viresh
+	David
+
+-
+Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
+Registration No: 1397386 (Wales)
+

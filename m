@@ -2,142 +2,105 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43972FA373D
-	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Oct 2022 03:23:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EE78C04A95
+	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Oct 2022 05:10:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229455AbiJYDXw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Oct 2022 23:23:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33466 "EHLO
+        id S230046AbiJYFK5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 25 Oct 2022 01:10:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39132 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230156AbiJYDXv (ORCPT
+        with ESMTP id S229973AbiJYFK4 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Oct 2022 23:23:51 -0400
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9EE864BA42
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Oct 2022 20:23:49 -0700 (PDT)
-Received: by mail-pl1-x62c.google.com with SMTP id u6so10104541plq.12
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Oct 2022 20:23:49 -0700 (PDT)
+        Tue, 25 Oct 2022 01:10:56 -0400
+Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 27E7A82850
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Oct 2022 22:10:55 -0700 (PDT)
+Received: by mail-pf1-x42f.google.com with SMTP id w189so9400831pfw.4
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Oct 2022 22:10:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=daynix-com.20210112.gappssmtp.com; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=f9FEmbC5xpjHJg/2O8DNlMMB4H4G84Faq1RNdC5/70Y=;
-        b=J6AoKAQCxSkBd/sowbwPCi6ub1mPxV0qlHWX0WF7X3NIlYQn4YHES82Srn6p4epgIr
-         I/r34Cbt1RAn8twGDRZkfGNfzOPw/CE/lQ3d8KKm/xk0O0byOMZgfEBxXin8xMsH6Ae4
-         OYdMDc09gEwKmklQ38eKDQ1EP/Ifp9975kI3vOWpMT2+B7APWMDg1HWdHh6RDm2IhmZp
-         nFlQWBQ5LXCjatGUOm0Nssz0irDhTOK5bRfoLWDBGVjr3x7Zn+3TjCCDg34vvNahoMXf
-         /GTBMcEoPm5pkxKRsBe/cZklokeE7OuhvhWmNxe9o2BV3Dg9u2aHkD+tP04uQVNOH6VR
-         XDtw==
+        d=linaro.org; s=google;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=N7HV+2O7fdwVJwRzKmZ0rsq+s0/h80leow5C99ZjbCk=;
+        b=hkb8xybnSV2gWZ/UtkvEPpfkO9Qxb6o8Q2XSPI5eJ9LUXXPMNBhL4F2b0G9DVHZVZO
+         awtvkuVsFDXqLILkIAFxE3RVv3E5XRZR0JaeROlmKN5+6X1Lt/Jm29PdHcUMo+fQ6A3P
+         jwMXSR7no7u/SZfrAu29FdTM5sRnz1Q1ZRaf29kNy5Becp/1KFnILui60x9ufO9cBrmj
+         7mVPiaL3PHg+3wGdQcf0Cu6CN+RqNkLRAHOkLqXiYCxac13fnnz0Zoxn8YlDIsKEXoIZ
+         rqWK4XDtIKRHfxG1P87J2+Lsqt57ZUTiIHk/lqLONELr8aJxcdQ95U1NWbsUDOYCmZAb
+         1oYA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=f9FEmbC5xpjHJg/2O8DNlMMB4H4G84Faq1RNdC5/70Y=;
-        b=rFSyefAQEO0jI/peJDauVx4Fu/U4aSN0wdimyyq0BOPRTZVVGM4QZ+uAdfGgLXwCnR
-         HesidN6VrKmA6bVeknnZo9BQbu7Wp1R8DnnFEtaUglxg4iU6v/vxf7G5Oruj9cZVDgm4
-         lbDajDnmaip3AjNTOGG47o3uoIP1fbxS36hvZ2s5iXA3wz+FBAcPWeneS0CuK4c1ll5Q
-         nPJrOpK80M6sgjnLYXbf217yrdrGoCccm6j6xmLeyaApYtCqAcsBNu3WzNoxk2q6Dp+u
-         O2U4+MeVRRLqmeOyA9NTI4BWBdkUbCpdN0FkuP44eHJDY7JBU160kN+F7fZAN7QY5a5v
-         xPLg==
-X-Gm-Message-State: ACrzQf13psiVN2uIzVSDQcJ6/4HwR2Caw6mSh1Ll+CR54cIzswWB+JxR
-        xz+4zdlLQISVJdV+rGjr58ROwQ==
-X-Google-Smtp-Source: AMsMyM6T9pbgn5kWI4AmOtmghV7rd1u8oseHmlwr+2DnuT3VwNTxi88zyEHreGyjv+o07wkD42j/iQ==
-X-Received: by 2002:a17:90b:4a47:b0:212:f7ef:1bd6 with SMTP id lb7-20020a17090b4a4700b00212f7ef1bd6mr13717346pjb.79.1666668229127;
-        Mon, 24 Oct 2022 20:23:49 -0700 (PDT)
-Received: from ?IPV6:2400:4050:c360:8200:8ae8:3c4:c0da:7419? ([2400:4050:c360:8200:8ae8:3c4:c0da:7419])
-        by smtp.gmail.com with ESMTPSA id n16-20020a170903111000b001868d4600b8sm397270plh.158.2022.10.24.20.23.41
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 24 Oct 2022 20:23:48 -0700 (PDT)
-Message-ID: <8ed65e3e-e0b9-05ae-b113-db9d649a1e5a@daynix.com>
-Date:   Tue, 25 Oct 2022 12:23:39 +0900
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.3.3
-Subject: Re: [PATCH 00/22] Fallback to native backlight
-To:     Jani Nikula <jani.nikula@linux.intel.com>,
-        Hans de Goede <hdegoede@redhat.com>
-Cc:     David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Jonathan Corbet <corbet@lwn.net>,
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=N7HV+2O7fdwVJwRzKmZ0rsq+s0/h80leow5C99ZjbCk=;
+        b=lDJ6mHxQfDdRkuwB+sDPeupEC6U1+21tYJurq8gF+kptnNVLrzFeGJ/yxmOt2PjEWu
+         e/AF6Ia5TRoug2RwDSOK66Skq+0aTfVT090/1R9ETiyZMRqGyC08H2Fsy3fbdeN7qAgV
+         FQDsns8POFBeiMBHMcXfMc0AsVLvVS/H0zPbFtpYDzhB+wY6TvOC5U4sk5FlKpkC6o3H
+         ZbOy/N1zrDjIwJDqX/em/4GKUmipb7MEQO+yotSG//OKxPuLYIsu2tpLn4dlcrH0VRBe
+         B79yxOc/XM199w/D3ntuS+jg85ZTapyjeago10oXYOYUUDFfj3Ucyfu/v2f22sjKCOYI
+         tJZg==
+X-Gm-Message-State: ACrzQf0XxV9jRh/Yq6i28LGxeEYzixKcEEHhX/gLkBrWs7f6LN3rRcyC
+        e4LmL3eFY55w+tCFcPABOuupbA==
+X-Google-Smtp-Source: AMsMyM4dqBh79PBmEq4bNi3bKpyxWmF8pKyrddK0RgHHrwPwJ9UaGdcmUV9KpdRicCKxD5dzSxxkQw==
+X-Received: by 2002:a63:db42:0:b0:45c:9c73:d72e with SMTP id x2-20020a63db42000000b0045c9c73d72emr30514395pgi.181.1666674654641;
+        Mon, 24 Oct 2022 22:10:54 -0700 (PDT)
+Received: from localhost ([122.172.87.26])
+        by smtp.gmail.com with ESMTPSA id v6-20020a17090a00c600b001ef8ab65052sm667404pjd.11.2022.10.24.22.10.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 24 Oct 2022 22:10:54 -0700 (PDT)
+Date:   Tue, 25 Oct 2022 10:40:52 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Arnd Bergmann <arnd@kernel.org>
+Cc:     linux-arm-kernel@lists.infradead.org,
+        Russell King <linux@armlinux.org.uk>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Lubomir Rintel <lkundrak@v3.sk>, linux-kernel@vger.kernel.org,
+        Arnd Bergmann <arnd@arndb.de>,
+        Peter Chubb <peter.chubb@unsw.edu.au>,
+        Stefan Eletzhofer <stefan.eletzhofer@eletztrick.de>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
-        Len Brown <lenb@kernel.org>,
-        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-        "Lee, Chun-Yi" <jlee@suse.com>, Mark Gross <markgross@kernel.org>,
-        Corentin Chary <corentin.chary@gmail.com>,
-        Cezary Jackiewicz <cezary.jackiewicz@gmail.com>,
-        Matthew Garrett <mjg59@srcf.ucam.org>,
-        =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali@kernel.org>,
-        Jonathan Woithe <jwoithe@just42.net>,
-        Ike Panhc <ike.pan@canonical.com>,
-        Daniel Dadap <ddadap@nvidia.com>,
-        Kenneth Chan <kenneth.t.chan@gmail.com>,
-        Mattia Dongili <malattia@linux.it>,
-        Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-        Azael Avalos <coproscefalo@gmail.com>,
         Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>,
-        Robert Moore <robert.moore@intel.com>,
-        dri-devel@lists.freedesktop.org, linux-doc@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-        intel-gfx@lists.freedesktop.org,
-        platform-driver-x86@vger.kernel.org,
-        acpi4asus-user@lists.sourceforge.net,
-        ibm-acpi-devel@lists.sourceforge.net, linux-fbdev@vger.kernel.org,
-        devel@acpica.org
-References: <20221024113513.5205-1-akihiko.odaki@daynix.com>
- <746e5cc6-516f-8f69-9d4b-8fe237de8fd6@redhat.com>
- <edec5950-cec8-b647-ccb1-ba48f9b3bbb0@daynix.com>
- <60672af8-05d2-113c-12b9-d635608be0dd@redhat.com>
- <ea69242c-0bc8-c7bb-9602-c7489bb69684@daynix.com>
- <7373e258-f7cc-4416-9b1c-c8c9dab59ada@daynix.com>
- <ae3497ed-b68d-c36a-6b6f-f7b9771d9238@redhat.com>
- <78ad5d7b-4078-0b8e-f4aa-6c8113631359@daynix.com> <87o7u1drcz.fsf@intel.com>
-Content-Language: en-US
-From:   Akihiko Odaki <akihiko.odaki@daynix.com>
-In-Reply-To: <87o7u1drcz.fsf@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+        Dominik Brodowski <linux@dominikbrodowski.net>,
+        Alan Stern <stern@rowland.harvard.edu>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Helge Deller <deller@gmx.de>, linux-pm@vger.kernel.org,
+        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH 02/11] ARM: sa1100: remove unused board files
+Message-ID: <20221025051052.qn2ruyjdkawwwida@vireshk-i7>
+References: <20221021155000.4108406-1-arnd@kernel.org>
+ <20221021155000.4108406-3-arnd@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221021155000.4108406-3-arnd@kernel.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2022/10/25 3:11, Jani Nikula wrote:
-> On Tue, 25 Oct 2022, Akihiko Odaki <akihiko.odaki@daynix.com> wrote:
->> That aside, the first patch in this series can be applied without the
->> later patches so you may have a look at it. It's fine if you don't merge
->> it though since it does not fix really a pragmatic bug as its message says.
-> 
-> I think it's problematic because it needlessly ties i915 backlight
-> operation to existence of backlight devices that may not be related to
-> Intel GPU at all. The direction should be multiple supported backlight
-> devices, across GPUs and connectors, but only one per display.
-> 
-> BR,
-> Jani.
-> 
-> 
+On 21-10-22, 17:49, Arnd Bergmann wrote:
+> diff --git a/drivers/cpufreq/sa1110-cpufreq.c b/drivers/cpufreq/sa1110-cpufreq.c
+> index 1a83c8678a63..bb7f591a8b05 100644
+> --- a/drivers/cpufreq/sa1110-cpufreq.c
+> +++ b/drivers/cpufreq/sa1110-cpufreq.c
+> @@ -344,14 +344,8 @@ static int __init sa1110_clk_init(void)
+>  	if (!name[0]) {
+>  		if (machine_is_assabet())
+>  			name = "TC59SM716-CL3";
+> -		if (machine_is_pt_system3())
+> -			name = "K4S641632D";
+> -		if (machine_is_h3100())
+> -			name = "KM416S4030CT";
+>  		if (machine_is_jornada720() || machine_is_h3600())
+>  			name = "K4S281632B-1H";
+> -		if (machine_is_nanoengine())
+> -			name = "MT48LC8M16A2TG-75";
+>  	}
+>  
+>  	sdram = sa1110_find_sdram(name);
 
-Unfortunately it is the current situation (even without this patch), and 
-this patch is not meant to fix the particular issue.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-This patch replaces the following expression:
-acpi_video_get_backlight_type() == acpi_backlight_native
-
-As you can see, acpi_video_get_backlight_type() doesn't take a parameter 
-which represents the backlight currently being operated. The problem is 
-known and documented in "Brightness handling on devices with multiple 
-internal panels" section of Documentation/gpu/todo.rst.
-
-The exiting solution is based on the assumption that no device with i915 
-and multiple internal backlights.
-
-Regards,
-Akihiko Odaki
+-- 
+viresh

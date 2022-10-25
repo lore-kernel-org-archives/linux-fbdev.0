@@ -2,85 +2,105 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C703C04A95
-	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Oct 2022 13:00:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8AECC04A95
+	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Oct 2022 13:02:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232498AbiJYM77 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 25 Oct 2022 08:59:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46322 "EHLO
+        id S232512AbiJYNCQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 25 Oct 2022 09:02:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51184 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232931AbiJYM7h (ORCPT
+        with ESMTP id S232506AbiJYNB4 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 25 Oct 2022 08:59:37 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2DC4F61101;
-        Tue, 25 Oct 2022 05:55:53 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id C0F466191C;
-        Tue, 25 Oct 2022 12:55:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D5FE8C433B5;
-        Tue, 25 Oct 2022 12:55:51 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
-        dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="TLDAXUj0"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-        t=1666702548;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=QGSEJHQ6O6h56v9HDr0qaun/dwKwWOG4TfufXFT9A7g=;
-        b=TLDAXUj0dhqKSXKimkr9oIlh3k/6nMfUB9a8GjP+AlVoxSX0A5UQ6R6kYiZ9Jik4dkSDEM
-        y9T9IimtGqYHqDbp4PYeU//M7RjFTubI2K6fWVwt9+GtwjIvleAmsbbdeLAdMYdic1pyFR
-        bwXl+pUkkVyG7EZCgVEMlP8byRu3IXE=
-Received: by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 2b352582 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-        Tue, 25 Oct 2022 12:55:48 +0000 (UTC)
-Received: by mail-vs1-f42.google.com with SMTP id h3so10832163vsa.4;
-        Tue, 25 Oct 2022 05:55:47 -0700 (PDT)
-X-Gm-Message-State: ACrzQf337OFKOose2iM9tqgenoZbYqp+Stx8rRXxLef+qg5EA3U+AGzv
-        ReNvs/eKvf5hjI28fsZCZ9yyIbpFzHLAFNlU2to=
-X-Google-Smtp-Source: AMsMyM4JokenVVEnbZ82CCTmDYmaTcsx2t4i/rPNK/XWJbxN4bY61RcFoPAXn4TA3gx2R7Mvql4drbYRB8ft7pY2F+0=
-X-Received: by 2002:a05:6102:f9a:b0:3aa:1a11:2702 with SMTP id
- e26-20020a0561020f9a00b003aa1a112702mr5874116vsv.73.1666702547125; Tue, 25
- Oct 2022 05:55:47 -0700 (PDT)
+        Tue, 25 Oct 2022 09:01:56 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B47696DAFB;
+        Tue, 25 Oct 2022 06:00:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1666702811;
+        bh=wsDhwFYF2ypw9VCnpe60sIBdnr/nisSCe9ukcSaSRJc=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=HeBGreJuEr0HxgZjQSTleJuyFSwNYqu58sCfGzb0FtLR/c6HqBEXAqs9qHeNp4ur/
+         lftOHiS0chQj7YchcW10fjb6r5f5Zk1pzZriv/gV2GY6Zhv4mcXaNDy00v21c1qoJF
+         mHAP0MEO3dO8w/2F25tUY1tBkJWJGVUWV5xMGXhM=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.173.118]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1M3lc9-1omUSO0PND-000wT2; Tue, 25
+ Oct 2022 15:00:11 +0200
+Message-ID: <d8ece597-33a1-fa9e-919c-e366baf429a8@gmx.de>
+Date:   Tue, 25 Oct 2022 15:00:10 +0200
 MIME-Version: 1.0
-References: <20221024162901.535972-1-Jason@zx2c4.com> <ec8edb92-a21b-6291-4275-d7cba97d7ad7@gmx.de>
-In-Reply-To: <ec8edb92-a21b-6291-4275-d7cba97d7ad7@gmx.de>
-From:   "Jason A. Donenfeld" <Jason@zx2c4.com>
-Date:   Tue, 25 Oct 2022 14:55:36 +0200
-X-Gmail-Original-Message-ID: <CAHmME9r=E=sUEU0_thtrj6agd_8YbTVUm2fEsErGKM-ff6y03w@mail.gmail.com>
-Message-ID: <CAHmME9r=E=sUEU0_thtrj6agd_8YbTVUm2fEsErGKM-ff6y03w@mail.gmail.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.3.1
 Subject: Re: [PATCH] video: fbdev: sis: use explicitly signed char
-To:     Helge Deller <deller@gmx.de>
+Content-Language: en-US
+To:     "Jason A. Donenfeld" <Jason@zx2c4.com>
 Cc:     linux-kernel@vger.kernel.org,
         Thomas Winischhofer <thomas@winischhofer.net>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Content-Type: text/plain; charset="UTF-8"
+References: <20221024162901.535972-1-Jason@zx2c4.com>
+ <ec8edb92-a21b-6291-4275-d7cba97d7ad7@gmx.de>
+ <CAHmME9r=E=sUEU0_thtrj6agd_8YbTVUm2fEsErGKM-ff6y03w@mail.gmail.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <CAHmME9r=E=sUEU0_thtrj6agd_8YbTVUm2fEsErGKM-ff6y03w@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:3jd4/zuW7A1CY/7wnyvEZTEZ75iH/CycOOhyBADdI+VYatFG8BU
+ r8yAOfCMJXTYpe8IB05uMf0a5Pg/TfTvUipZsO1vqgDPGvkmVVIJrJT89JdX3H8NDL7u/Ol
+ OFDiAy0ITEF1G+3zCOAUCK3rRcG9kuCi4h0Gl/yW6IdavWS9LJhHVgsOlUUz0BtpkqStzeF
+ SZVVS2Vp1qxaKVl4DX8eQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:p9RwJudlmmI=:P8aM+/cDAX+TuByCTv6svH
+ rGu5tv79wQt9hOXjkhmD7vBtcHcWwPR+InAILrrdho5rXzIqdk80MBXWSJUJ8etARgqHPIWHG
+ 3AbvJsXolUzL2qUb9NqrlXM5AdIsr4ggGtABPN2nwA7ZZ7hbcKDtlV+rZGhl4QB11/+5cMl4C
+ i3YUnEnVcNYag23c/lozSIiQPyKVIBwv6IoF0H49JGtN6jDgs2wwgyhl8Y2r15PLvo3tQUJiQ
+ 9Pt1zgIpfQlcjjfgt4aycCpe66uYMCXQeos8LJSZYGTYaA8IW4bM7fRLp3BUuqV3finMlLV75
+ xVgsCs7uwq/Ev5Z/ECDkJFpU1gCwwYSk1g+Md7Kzz2Ow0Q9i+aBLnN5WEP2vqPJ+YkRr041pe
+ DQTCLKwNkkUG4sgStm583HtxhCB2hk3RTeDUBPlXCAKXHjrz9JPzGQ6snn1Ck3MpK6VaHJ2VP
+ lOMHlpHtL3ZHANwmTHa4GcBNySu5UAhGGKmqZP2/rTXL3QoQveXaoayEotjaO4uv5TtB9BZmH
+ cdXOceDmwXggpM8UR6RbfhhVHfg7p3XtERF1oj5SJnxy9xaQBLK+n+GoldiIt34RA5SH42/Gq
+ eN/UxC0dXMuFOkVa05Bk1XFfxWG40LVJI8TcqXSsH25yF3jfBZTIOWwrkfzzO4nOGdLlsDg3B
+ JdfaxEyv8bX+mHTSZJp3qKI8NLGQdN9hUbirr0+eNbx735C6w58smWNoCZ8DcGpkiZmDQ2XJ9
+ lqewWxcnwGYKJ2NK1r86oGr1l7rKr5eeNhrM6FZltFKKCkAwRd941SVGjLqcuNG2oZinqM1jv
+ HU2EJjyz/tkRqiWLQWZ5kHQ7mWD5e0uvVCZhgfqid6eYp0jo49lAJgD3/GEoXroRD44ZfGJ0k
+ 558ZJnCPNpLPi3IEZsLEGWJaYs8vsSXGQr5zMnlqQ5rjw9P5bpxgVyZhhnWiGYLlQgwxaiSYQ
+ o6ewWdullqeQN4FrYSannHJqek/cMU6cUjA28ragWGpyWvc+Eua0PnN2MkSg0hO+Tbv5UemJT
+ Jbc/6DY++byRPGnoRhxIHCsKCnilI9kpcCD7n1EkqP1DfXOsm2zwZqBir+/z9kXo24abFjfm0
+ v758+kY2PE0m8Ot0S7aSsrQSENaCKoLTsO+83cyzDZZROCqdiuUezkphn3sc/VWSX+4J2Smpm
+ M7rJbnhPyfXz+uZslPfQ2pLwljUoCS02T8AHn8RaIHMFD0zc5GEJbBf9hh0svO4z9TFUqGwbn
+ H9sn6sTeHAMjAlRvye9WBFjpEERlmltbvkFGAJ2r5KIEEsZ56+4zXjpdIxB1ABkJPh3ulBcnQ
+ RiDdVgeKDItVxDvhaBQSlbZ69ZHvpXEqcHnZ4h+cQEXdm3kSzGK8HBA6dKneskrEQFw7NzSLi
+ 9ySJ8pbcn+ZNLxwNOmC6KhM884NAzFTituKMbXaEhCHdGy8u3/iX2vF9Cz9I9l8cuuhrfylIz
+ CeJESdJgEA5qkhLI4O4Kk/Kh6lxyw6cWynkuBhXYRF55FbCTaTbsqpB95RqZMrWc8lSg71jSe
+ 44/Ta6HzDDmep0aznGk+xnkihgK+f4wdDYl3yf3uIsHG6
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Oct 24, 2022 at 8:29 PM Helge Deller <deller@gmx.de> wrote:
+On 10/25/22 14:55, Jason A. Donenfeld wrote:
+> On Mon, Oct 24, 2022 at 8:29 PM Helge Deller <deller@gmx.de> wrote:
+>>
+>> On 10/24/22 18:29, Jason A. Donenfeld wrote:
+>>> With char becoming unsigned by default, and with `char` alone being
+>>> ambiguous and based on architecture, signed chars need to be marked
+>>> explicitly as such. This fixes warnings like:
+>>>
+>>> drivers/video/fbdev/sis/init301.c:3549 SiS_GetCRT2Data301() warn: 'SiS=
+_Pr->SiS_EModeIDTable[ModeIdIndex]->ROMMODEIDX661' is unsigned
+>>>
+>>> Cc: Thomas Winischhofer <thomas@winischhofer.net>
+>>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>>> Cc: Helge Deller <deller@gmx.de>
+>>> Cc: linux-usb@vger.kernel.org
+>>> Cc: linux-fbdev@vger.kernel.org
+>>> Cc: dri-devel@lists.freedesktop.org
+>>> Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
+>>
+>> Applied to linux-fbdev git tree.
 >
-> On 10/24/22 18:29, Jason A. Donenfeld wrote:
-> > With char becoming unsigned by default, and with `char` alone being
-> > ambiguous and based on architecture, signed chars need to be marked
-> > explicitly as such. This fixes warnings like:
-> >
-> > drivers/video/fbdev/sis/init301.c:3549 SiS_GetCRT2Data301() warn: 'SiS_Pr->SiS_EModeIDTable[ModeIdIndex]->ROMMODEIDX661' is unsigned
-> >
-> > Cc: Thomas Winischhofer <thomas@winischhofer.net>
-> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > Cc: Helge Deller <deller@gmx.de>
-> > Cc: linux-usb@vger.kernel.org
-> > Cc: linux-fbdev@vger.kernel.org
-> > Cc: dri-devel@lists.freedesktop.org
-> > Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
->
-> Applied to linux-fbdev git tree.
+> For 6.1 as a fix, right? Since this is already broken on, e.g., ARM.
 
-For 6.1 as a fix, right? Since this is already broken on, e.g., ARM.
+Yes.
 
-Jason
+Helge
+

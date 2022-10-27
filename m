@@ -2,71 +2,79 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C912C38A2D
-	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Oct 2022 14:47:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 228D0C38A2D
+	for <linux-fbdev@archiver.kernel.org>; Thu, 27 Oct 2022 00:11:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233160AbiJZOrr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Oct 2022 10:47:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55918 "EHLO
+        id S229602AbiJ0AL6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Oct 2022 20:11:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33682 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233305AbiJZOrq (ORCPT
+        with ESMTP id S234000AbiJ0AL5 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Oct 2022 10:47:46 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4C7F79F34A;
-        Wed, 26 Oct 2022 07:47:46 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id C27E161F40;
-        Wed, 26 Oct 2022 14:47:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A2955C433D6;
-        Wed, 26 Oct 2022 14:47:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1666795665;
-        bh=X2UhieQC0vkYAuIOP+R8NvoQajm/xqAszoQi26wF+rw=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=hi8TM+flyocLYcbgEdcchBVnwTOr18yT+pNUXD+8TpjnWt8NNNaXCgmCqrEl7zeL2
-         C4T3z5y7Wj2qGmv+KoM3gJEtGLwOqlpHBmPsc9blKH5yDOicE4ICVIaycOKG6ZyBDw
-         bwR6o6kQmaAIsIzfEI0T5+mQ1dn6MlzBpOjPf42o=
-Date:   Wed, 26 Oct 2022 16:47:42 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     javierm@redhat.com, deller@gmx.de, sashal@kernel.org,
-        stable@vger.kernel.org,
-        Andreas Thalhammer <andreas.thalhammer-linux@gmx.net>,
-        Thorsten Leemhuis <regressions@leemhuis.info>,
-        Zack Rusin <zackr@vmware.com>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Zhen Lei <thunder.leizhen@huawei.com>,
-        Changcheng Deng <deng.changcheng@zte.com.cn>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v2] video/aperture: Call sysfb_disable() before removing
- PCI devices
-Message-ID: <Y1lIjt3awUj3MNIz@kroah.com>
-References: <20221026144448.424-1-tzimmermann@suse.de>
+        Wed, 26 Oct 2022 20:11:57 -0400
+X-Greylist: delayed 335 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 26 Oct 2022 17:11:55 PDT
+Received: from rere.qmqm.pl (rere.qmqm.pl [91.227.64.183])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA1267DF6D;
+        Wed, 26 Oct 2022 17:11:55 -0700 (PDT)
+Received: from remote.user (localhost [127.0.0.1])
+        by rere.qmqm.pl (Postfix) with ESMTPSA id 4MyQvF1097zBJ;
+        Thu, 27 Oct 2022 02:06:17 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
+        t=1666829178; bh=RSJxyVz8Wp0ZC04fPiuQJGAr4G/ZnkUAptmDTf6i+zM=;
+        h=Date:Subject:From:To:Cc:From;
+        b=KuY1fW0OZvy3E8gkGpnLiHBpnPo2EtFy/+OpEqI3h01ek23eIKT5uD7GsZPLkvnWa
+         Bu7CBlDNBdNPyuWgnmYNLIYrxLjy9i0zJ8+1qKr6C2y3T3JAzcTNB6fyuAZG+RTGzi
+         a/Z2o+e9UqwlV4nXK3rpT6vUP44HzIXj4MZWVqtcT/oCNWvreJQJnaatdYNoPGxgBb
+         GMjcyoMigAvsL1ZO5Kd52FycQ2p4Pfbgj5qyLeHZ2WL3bgkmdcsb0uv1yG4GKI1iPa
+         PDescXJrfWwmg3Kbyoi36KpXERRDUN60YtXPEk9I9kXTMGAKj0nRwdhQ7qK1pLbz/F
+         N0scZAP9lQ4lw==
+X-Virus-Status: Clean
+X-Virus-Scanned: clamav-milter 0.103.7 at mail
+Date:   Thu, 27 Oct 2022 02:06:16 +0200
+Message-Id: <e75323732bedc46d613d72ecb40f97e3bc75eea8.1666829073.git.mirq-linux@rere.qmqm.pl>
+Subject: [PATCH] fbdev/core: Avoid uninitialized read in aperture_remove_conflicting_pci_device()
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221026144448.424-1-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+From:   =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Javier Martinez Canillas <javierm@redhat.com>,
+        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Oct 26, 2022 at 04:44:48PM +0200, Thomas Zimmermann wrote:
-> Call sysfb_disable() from aperture_remove_conflicting_pci_devices()
-> before removing PCI devices. Without, simpledrm can still bind to
-> simple-framebuffer devices after the hardware driver has taken over
-> the hardware. Both drivers interfere with each other and results are
-> undefined.
-> 
-> Reported modesetting errors [1] are shown below.
+Return on error directly from the BAR-iterating loop instead of
+break+return.
 
-Now queued up, thanks.
+This is actually a cosmetic fix, since it would be highly unusual to
+have this called for a PCI device without any memory BARs.
 
-greg k-h
+Fixes: 9d69ef183815 ("fbdev/core: Remove remove_conflicting_pci_framebuffers()")
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/video/aperture.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/drivers/video/aperture.c b/drivers/video/aperture.c
+index 9e6bcc03a1a4..41e77de1ea82 100644
+--- a/drivers/video/aperture.c
++++ b/drivers/video/aperture.c
+@@ -340,12 +340,9 @@ int aperture_remove_conflicting_pci_devices(struct pci_dev *pdev, const char *na
+ 		size = pci_resource_len(pdev, bar);
+ 		ret = aperture_remove_conflicting_devices(base, size, primary, name);
+ 		if (ret)
+-			break;
++			return ret;
+ 	}
+ 
+-	if (ret)
+-		return ret;
+-
+ 	/*
+ 	 * WARNING: Apparently we must kick fbdev drivers before vgacon,
+ 	 * otherwise the vga fbdev driver falls over.
+-- 
+2.30.2
+

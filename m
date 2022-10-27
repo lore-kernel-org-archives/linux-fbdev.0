@@ -2,79 +2,141 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 228D0C38A2D
-	for <linux-fbdev@archiver.kernel.org>; Thu, 27 Oct 2022 00:11:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3BA1C38A2D
+	for <linux-fbdev@archiver.kernel.org>; Thu, 27 Oct 2022 07:57:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229602AbiJ0AL6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Oct 2022 20:11:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33682 "EHLO
+        id S234545AbiJ0H5C (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 27 Oct 2022 03:57:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37408 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234000AbiJ0AL5 (ORCPT
+        with ESMTP id S234720AbiJ0H4x (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Oct 2022 20:11:57 -0400
-X-Greylist: delayed 335 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 26 Oct 2022 17:11:55 PDT
-Received: from rere.qmqm.pl (rere.qmqm.pl [91.227.64.183])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA1267DF6D;
-        Wed, 26 Oct 2022 17:11:55 -0700 (PDT)
-Received: from remote.user (localhost [127.0.0.1])
-        by rere.qmqm.pl (Postfix) with ESMTPSA id 4MyQvF1097zBJ;
-        Thu, 27 Oct 2022 02:06:17 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
-        t=1666829178; bh=RSJxyVz8Wp0ZC04fPiuQJGAr4G/ZnkUAptmDTf6i+zM=;
-        h=Date:Subject:From:To:Cc:From;
-        b=KuY1fW0OZvy3E8gkGpnLiHBpnPo2EtFy/+OpEqI3h01ek23eIKT5uD7GsZPLkvnWa
-         Bu7CBlDNBdNPyuWgnmYNLIYrxLjy9i0zJ8+1qKr6C2y3T3JAzcTNB6fyuAZG+RTGzi
-         a/Z2o+e9UqwlV4nXK3rpT6vUP44HzIXj4MZWVqtcT/oCNWvreJQJnaatdYNoPGxgBb
-         GMjcyoMigAvsL1ZO5Kd52FycQ2p4Pfbgj5qyLeHZ2WL3bgkmdcsb0uv1yG4GKI1iPa
-         PDescXJrfWwmg3Kbyoi36KpXERRDUN60YtXPEk9I9kXTMGAKj0nRwdhQ7qK1pLbz/F
-         N0scZAP9lQ4lw==
-X-Virus-Status: Clean
-X-Virus-Scanned: clamav-milter 0.103.7 at mail
-Date:   Thu, 27 Oct 2022 02:06:16 +0200
-Message-Id: <e75323732bedc46d613d72ecb40f97e3bc75eea8.1666829073.git.mirq-linux@rere.qmqm.pl>
-Subject: [PATCH] fbdev/core: Avoid uninitialized read in aperture_remove_conflicting_pci_device()
+        Thu, 27 Oct 2022 03:56:53 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C73479F775;
+        Thu, 27 Oct 2022 00:56:51 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 9CEB1228A3;
+        Thu, 27 Oct 2022 07:56:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1666857410; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=Evqq0byI84PReYvRvM07SQEq8l1WooFes9CiMsDMDsM=;
+        b=ATm+WMtLYDrgpAX8yQL3zutor5iNPX77ylX2+raW25SlEZWRq1oH4EvfeTecZA18UuDP5B
+        zwqN2UfZyirsGCdJPLI83yyUvUnqYjrn5HZ31k1fsA88ebeaI3cjbq9D/6j7jbyoKp3FVN
+        BDBYMJMEyIRrej1fc2JcqGhrwh1X2JI=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1666857410;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=Evqq0byI84PReYvRvM07SQEq8l1WooFes9CiMsDMDsM=;
+        b=ctNvsTD5xPRMDUCO25122CICMpOHjZUarTtsba5tgYkmd1elQE0w/7ifbtV4qikEp2u0G7
+        I7/WnQ4d4HNFamBA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 70D66134CA;
+        Thu, 27 Oct 2022 07:56:50 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id qw6FGsI5WmPBMQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 27 Oct 2022 07:56:50 +0000
+Message-ID: <8a228fca-993b-154e-edaa-8d6044449631@suse.de>
+Date:   Thu, 27 Oct 2022 09:56:48 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-From:   =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.3.3
+Subject: Re: [PATCH] fbdev/core: Avoid uninitialized read in
+ aperture_remove_conflicting_pci_device()
+To:     =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
 Cc:     Javier Martinez Canillas <javierm@redhat.com>,
         Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
         linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <e75323732bedc46d613d72ecb40f97e3bc75eea8.1666829073.git.mirq-linux@rere.qmqm.pl>
+Content-Language: en-US
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <e75323732bedc46d613d72ecb40f97e3bc75eea8.1666829073.git.mirq-linux@rere.qmqm.pl>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------gRU1oBovFLRWQNMpCU8tSiSN"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Return on error directly from the BAR-iterating loop instead of
-break+return.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------gRU1oBovFLRWQNMpCU8tSiSN
+Content-Type: multipart/mixed; boundary="------------VnvR9JJDTyISABynCCLieTas";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
+Cc: Javier Martinez Canillas <javierm@redhat.com>,
+ Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-ID: <8a228fca-993b-154e-edaa-8d6044449631@suse.de>
+Subject: Re: [PATCH] fbdev/core: Avoid uninitialized read in
+ aperture_remove_conflicting_pci_device()
+References: <e75323732bedc46d613d72ecb40f97e3bc75eea8.1666829073.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <e75323732bedc46d613d72ecb40f97e3bc75eea8.1666829073.git.mirq-linux@rere.qmqm.pl>
 
-This is actually a cosmetic fix, since it would be highly unusual to
-have this called for a PCI device without any memory BARs.
+--------------VnvR9JJDTyISABynCCLieTas
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Fixes: 9d69ef183815 ("fbdev/core: Remove remove_conflicting_pci_framebuffers()")
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
----
- drivers/video/aperture.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+SGkNCg0KdGhhbmtzIGZvciB0aGUgcGF0Y2guIEFkZGVkIHRvIGRybS1taXNjLWZpeGVzLg0K
+DQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQpBbSAyNy4xMC4yMiB1bSAwMjowNiBzY2hyaWVi
+IE1pY2hhxYIgTWlyb3PFgmF3Og0KPiBSZXR1cm4gb24gZXJyb3IgZGlyZWN0bHkgZnJvbSB0
+aGUgQkFSLWl0ZXJhdGluZyBsb29wIGluc3RlYWQgb2YNCj4gYnJlYWsrcmV0dXJuLg0KPiAN
+Cj4gVGhpcyBpcyBhY3R1YWxseSBhIGNvc21ldGljIGZpeCwgc2luY2UgaXQgd291bGQgYmUg
+aGlnaGx5IHVudXN1YWwgdG8NCj4gaGF2ZSB0aGlzIGNhbGxlZCBmb3IgYSBQQ0kgZGV2aWNl
+IHdpdGhvdXQgYW55IG1lbW9yeSBCQVJzLg0KPiANCj4gRml4ZXM6IDlkNjllZjE4MzgxNSAo
+ImZiZGV2L2NvcmU6IFJlbW92ZSByZW1vdmVfY29uZmxpY3RpbmdfcGNpX2ZyYW1lYnVmZmVy
+cygpIikNCj4gU2lnbmVkLW9mZi1ieTogTWljaGHFgiBNaXJvc8WCYXcgPG1pcnEtbGludXhA
+cmVyZS5xbXFtLnBsPg0KPiAtLS0NCj4gICBkcml2ZXJzL3ZpZGVvL2FwZXJ0dXJlLmMgfCA1
+ICstLS0tDQo+ICAgMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspLCA0IGRlbGV0aW9u
+cygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vYXBlcnR1cmUuYyBiL2Ry
+aXZlcnMvdmlkZW8vYXBlcnR1cmUuYw0KPiBpbmRleCA5ZTZiY2MwM2ExYTQuLjQxZTc3ZGUx
+ZWE4MiAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9hcGVydHVyZS5jDQo+ICsrKyBi
+L2RyaXZlcnMvdmlkZW8vYXBlcnR1cmUuYw0KPiBAQCAtMzQwLDEyICszNDAsOSBAQCBpbnQg
+YXBlcnR1cmVfcmVtb3ZlX2NvbmZsaWN0aW5nX3BjaV9kZXZpY2VzKHN0cnVjdCBwY2lfZGV2
+ICpwZGV2LCBjb25zdCBjaGFyICpuYQ0KPiAgIAkJc2l6ZSA9IHBjaV9yZXNvdXJjZV9sZW4o
+cGRldiwgYmFyKTsNCj4gICAJCXJldCA9IGFwZXJ0dXJlX3JlbW92ZV9jb25mbGljdGluZ19k
+ZXZpY2VzKGJhc2UsIHNpemUsIHByaW1hcnksIG5hbWUpOw0KPiAgIAkJaWYgKHJldCkNCj4g
+LQkJCWJyZWFrOw0KPiArCQkJcmV0dXJuIHJldDsNCj4gICAJfQ0KPiAgIA0KPiAtCWlmIChy
+ZXQpDQo+IC0JCXJldHVybiByZXQ7DQo+IC0NCj4gICAJLyoNCj4gICAJICogV0FSTklORzog
+QXBwYXJlbnRseSB3ZSBtdXN0IGtpY2sgZmJkZXYgZHJpdmVycyBiZWZvcmUgdmdhY29uLA0K
+PiAgIAkgKiBvdGhlcndpc2UgdGhlIHZnYSBmYmRldiBkcml2ZXIgZmFsbHMgb3Zlci4NCg0K
+LS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VT
+RSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQw
+OSBOw7xybmJlcmcsIEdlcm1hbnkNCihIUkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2No
+w6RmdHNmw7xocmVyOiBJdm8gVG90ZXYNCg==
 
-diff --git a/drivers/video/aperture.c b/drivers/video/aperture.c
-index 9e6bcc03a1a4..41e77de1ea82 100644
---- a/drivers/video/aperture.c
-+++ b/drivers/video/aperture.c
-@@ -340,12 +340,9 @@ int aperture_remove_conflicting_pci_devices(struct pci_dev *pdev, const char *na
- 		size = pci_resource_len(pdev, bar);
- 		ret = aperture_remove_conflicting_devices(base, size, primary, name);
- 		if (ret)
--			break;
-+			return ret;
- 	}
- 
--	if (ret)
--		return ret;
--
- 	/*
- 	 * WARNING: Apparently we must kick fbdev drivers before vgacon,
- 	 * otherwise the vga fbdev driver falls over.
--- 
-2.30.2
+--------------VnvR9JJDTyISABynCCLieTas--
 
+--------------gRU1oBovFLRWQNMpCU8tSiSN
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmNaOcAFAwAAAAAACgkQlh/E3EQov+Ds
+nRAAl8KNToBD5+ADiAmVEnTE48c5Aw5xyI/4oB5ybf2onmE5GKahNQ6XeXLxFfOyef79QXWC5MyX
+sMQxSM72ICjQH9NHqRUpLuC41lBqh4Ml3YMQTQuzSjyE1fcnovOD1aXxql9gyIQtLUs3Vu/8mO08
+QMuUpQpSd3FHvullxmk4AcAMc92IjgYiHi1cKlP7YxMVQV26iNLL3oOHak2b8lZyIpgv9Wk1m5SH
+9fkre849lekn5GiIQALfESuWbs5Nb8bgVpCtzfPOLcBawcfjdG36HUSfsfOzXDGe5dzUXH/z7snE
+I9U1K5cuW+KwqPqQZLNXR7nPN1Ha2PGliZ9PqlIyO28u8aoU+oT79eHvVfsbrFC4tyUGxYOwaTua
+oXM8mBiCfSy8gzQVnC++DT9snzgRuwWHvk8FAeu2p/CAH9lAwr9WAY+LhcCpEP8N6NGYfW6td2Cp
+Ua288UVFDrYxNBK7UNWhWiHgG5ktviXbkhqfIWwOR0uloxdKHVOZy8wQxhBa27U6sNl7W5cftYuE
+iSFjOWhF967ijlGfoGghv0wa7tFdS3UYsG6HsqiddwO1vTVpp/YA2jzw0K/6vP242Nvgn9gpko1X
+t7KUrZztu3CJ5I+o00W2GHDeWowRwrA5vNT0JTHZ0smINiUOPIfs6oGDDORWU0w5oEj568kXm1gU
+W4Q=
+=q2Aa
+-----END PGP SIGNATURE-----
+
+--------------gRU1oBovFLRWQNMpCU8tSiSN--

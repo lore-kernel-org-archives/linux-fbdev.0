@@ -2,189 +2,106 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BDB6DFA3740
-	for <linux-fbdev@archiver.kernel.org>; Thu, 27 Oct 2022 16:55:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1553FA3742
+	for <linux-fbdev@archiver.kernel.org>; Thu, 27 Oct 2022 18:33:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235132AbiJ0Qzs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 27 Oct 2022 12:55:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39888 "EHLO
+        id S234493AbiJ0SdI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 27 Oct 2022 14:33:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59464 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234730AbiJ0Qzr (ORCPT
+        with ESMTP id S235484AbiJ0SdH (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 27 Oct 2022 12:55:47 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2FB4DD259D;
-        Thu, 27 Oct 2022 09:55:46 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id D6D39B82708;
-        Thu, 27 Oct 2022 16:55:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 13398C433D6;
-        Thu, 27 Oct 2022 16:55:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1666889743;
-        bh=+NQUXBWxMDcjKd1qUF+jvvhREtcMHvY+4DvsYClRT6U=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=qfK3QytRTz9gi6rbnb9CHEVnWlw1M+Jv3rZ69K57vHapAajNj9PfKFi5MT4NbLTok
-         FW9dGhlP5DQR/im7tnt/sj8hlG7ltxzLggfo/ISEgskJ9jrlinIAZfAoDd5HGgArs/
-         tF3x2ZQZLdT09hTzY/hmDaSPHZ2OC+Z9jD14RzlM=
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     stable@vger.kernel.org
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        patches@lists.linux.dev,
-        Andreas Thalhammer <andreas.thalhammer-linux@gmx.net>,
-        Thorsten Leemhuis <regressions@leemhuis.info>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Zack Rusin <zackr@vmware.com>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Sam Ravnborg <sam@ravnborg.org>, Helge Deller <deller@gmx.de>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Zhen Lei <thunder.leizhen@huawei.com>,
-        Changcheng Deng <deng.changcheng@zte.com.cn>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        dri-devel@lists.freedesktop.org, Sasha Levin <sashal@kernel.org>,
-        linux-fbdev@vger.kernel.org
-Subject: [PATCH 6.0 01/94] [PATCH v2] video/aperture: Call sysfb_disable() before removing PCI devices
-Date:   Thu, 27 Oct 2022 18:54:03 +0200
-Message-Id: <20221027165057.255751031@linuxfoundation.org>
-X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20221027165057.208202132@linuxfoundation.org>
-References: <20221027165057.208202132@linuxfoundation.org>
-User-Agent: quilt/0.67
-X-stable: review
-X-Patchwork-Hint: ignore
+        Thu, 27 Oct 2022 14:33:07 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 297388FD7A
+        for <linux-fbdev@vger.kernel.org>; Thu, 27 Oct 2022 11:33:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1666895574; bh=Wfqc5MPUW8et1k0WVDHfrdAuCLw66A+m6CtVx0gT3/E=;
+        h=X-UI-Sender-Class:Date:Subject:To:References:From:In-Reply-To;
+        b=inUROeg1dTiF6IbYhLHiX2qkeDyFSmK91qFlytOK6wGI/OCyjHG8Z9uzr1TcAX0nd
+         ixkm1kr+yIZk6JgG0OlHu4eaHBgk2o/tlmzdjEnKpoblgDpc8+09hhRpYnGUKTaVon
+         OEzA+x1DPl4yXVGlef3ptHi4m3IV8GmgvUNpQqugGFoGsoDfrdezEDCJ/Cy7cg2E+4
+         AbCOK69F/fdIsMPiWVVYW/ORzpPHRqCEaJGDQ/RpzBpmGKWKNiJk7BuqiXlcJKPkUP
+         PYrZsQyG5SQ+tMV2Ml4sqGPxVqxFKnbm3ZSmL37WvcmyyNjiOgs5deyN0uRJ/80R9q
+         wuKXimgJhuTnA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([92.116.164.228]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1Mzhj9-1p1PN90UYT-00viN4; Thu, 27
+ Oct 2022 20:32:54 +0200
+Message-ID: <6be81673-ffdf-42ab-515d-ee33c2d0408a@gmx.de>
+Date:   Thu, 27 Oct 2022 20:32:53 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.0
+Subject: Re: [PATCH] video: fbdev: cyber2000fb: fix missing
+ pci_disable_device()
+Content-Language: en-US
+To:     Yang Yingliang <yangyingliang@huawei.com>,
+        linux-fbdev@vger.kernel.org
+References: <20221024140028.2896689-1-yangyingliang@huawei.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20221024140028.2896689-1-yangyingliang@huawei.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:seaxUzQKjyJhFqZhgZ/Qk/9BStFeYBQWv2hrGMR+yH4U22xlG5w
+ 9ky1Av0KXKJx62FLQBASq48qnwGRF43unaTPMqHSAU4iThKLV+26Icr+GYT/bV5gvm+wV7H
+ g/X6dUULuv43XAYT58acK3uj9yv5md3rNZkbaUMiaLjIEGMsdt5+AbUDKEfvRWC2AL3BR+/
+ NcNhW50QKL0R1HjnbScgQ==
+UI-OutboundReport: notjunk:1;M01:P0:VbWsGv6UoaY=;TEAXGEMUrAhBDL2vfaE5H9ToSUE
+ t9c7Am8HkMx3SRlPhakhPyVRSZAOyHyQsgbNVJZUKrWHy0PJLX3u7pm0zPUs6BWJVlhffgdeD
+ Mp0Vx63NRZR5AyQFrX1JNfqY7rPWkCvdzGKbyyiHGKIxPz4H8qjSPsvS9Q0hdemLtGufxfn+k
+ Zm/4SKIhHR/Xc7rBrDkGT1Rij4I4F5WrWAnfFIPuxic4ZqLF7Bh0NiekGWYeBUQy8Mdm+6Uzh
+ c+UIKUGl7Juqzc54bqAr506nfQAS7b/6eNUVMC14EJzPzoJIbfBTXcbs7gp42CTyx0uAsnaJN
+ UZQdF2Kuy329Q1gGMSAnevDmYXyxjUNU0J8CEQZ03pr1TJ3CVSbzjHHCuqDOLn7/tWsiz9GNi
+ oY2M4OUYpXKWb0VG6XaDrjTXcplgwTwpKhf/XxlH2zmHmaHDS2AOKwDbeajUtXsD4nWAGmaK/
+ TTzpCn5Bu3VYIEPTOJt7KRhPivl/40paNqD2oH4ylAtUs32f0xUnIWQg98h68ghHfxAJtU/bO
+ mldJBWX5c6aObie5VJo7dO6bDYUaVT2Ae2AyLKhsbWn8HY7Su53zfPKdkXg46BDje8Aqk4Hog
+ NeAS6NHCzJ5cZlvCWe2yLC2akAdGgWhNaDqevi/VOuc0onn43f2iXxFAU7L4B1nAe5CM39b/P
+ 7CKJUW5KRBxX27Sxlg6AD1uGsxnSF/M545fy3QtDiT2astPVkFkq2WqQileaYethwGdzNjYBC
+ EH1pT1OPC0sd1t4e6KFEgbgJX/nCULQPUVzxl0G7K4divmj80eodtsKjQPqJ3/ruoasqky3Ga
+ SJZOV1L6lfYKGDDFQC4k6fg7MdTWZZF5R3siCpexwo32x+TIsQC5pfwlicL9F2r9kmckZSAp4
+ 0hJM5iAmsOMRCwSI/UhC5Wc+fVuP2AnwT5/7/oI+TTy0/eAMB9QI2+qgt/iZyCoobXmVOedWX
+ l66HERD8qQ7ggmowmfC2+8qEVU4=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Thomas Zimmermann <tzimmermann@suse.de>
+On 10/24/22 16:00, Yang Yingliang wrote:
+> Add missing pci_disable_device() in error path of probe() and remove() p=
+ath.
+>
+> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
 
-Call sysfb_disable() from aperture_remove_conflicting_pci_devices()
-before removing PCI devices. Without, simpledrm can still bind to
-simple-framebuffer devices after the hardware driver has taken over
-the hardware. Both drivers interfere with each other and results are
-undefined.
+applied to fbdev tree.
+Thanks!
 
-Reported modesetting errors [1] are shown below.
+Helge
 
----- snap ----
-rcu: INFO: rcu_sched detected expedited stalls on CPUs/tasks: { 13-.... } 7 jiffies s: 165 root: 0x2000/.
-rcu: blocking rcu_node structures (internal RCU debug):
-Task dump for CPU 13:
-task:X               state:R  running task     stack:    0 pid: 4242 ppid:  4228 flags:0x00000008
-Call Trace:
- <TASK>
- ? commit_tail+0xd7/0x130
- ? drm_atomic_helper_commit+0x126/0x150
- ? drm_atomic_commit+0xa4/0xe0
- ? drm_plane_get_damage_clips.cold+0x1c/0x1c
- ? drm_atomic_helper_dirtyfb+0x19e/0x280
- ? drm_mode_dirtyfb_ioctl+0x10f/0x1e0
- ? drm_mode_getfb2_ioctl+0x2d0/0x2d0
- ? drm_ioctl_kernel+0xc4/0x150
- ? drm_ioctl+0x246/0x3f0
- ? drm_mode_getfb2_ioctl+0x2d0/0x2d0
- ? __x64_sys_ioctl+0x91/0xd0
- ? do_syscall_64+0x60/0xd0
- ? entry_SYSCALL_64_after_hwframe+0x4b/0xb5
- </TASK>
-...
-rcu: INFO: rcu_sched detected expedited stalls on CPUs/tasks: { 13-.... } 30 jiffies s: 169 root: 0x2000/.
-rcu: blocking rcu_node structures (internal RCU debug):
-Task dump for CPU 13:
-task:X               state:R  running task     stack:    0 pid: 4242 ppid:  4228 flags:0x0000400e
-Call Trace:
- <TASK>
- ? memcpy_toio+0x76/0xc0
- ? memcpy_toio+0x1b/0xc0
- ? drm_fb_memcpy_toio+0x76/0xb0
- ? drm_fb_blit_toio+0x75/0x2b0
- ? simpledrm_simple_display_pipe_update+0x132/0x150
- ? drm_atomic_helper_commit_planes+0xb6/0x230
- ? drm_atomic_helper_commit_tail+0x44/0x80
- ? commit_tail+0xd7/0x130
- ? drm_atomic_helper_commit+0x126/0x150
- ? drm_atomic_commit+0xa4/0xe0
- ? drm_plane_get_damage_clips.cold+0x1c/0x1c
- ? drm_atomic_helper_dirtyfb+0x19e/0x280
- ? drm_mode_dirtyfb_ioctl+0x10f/0x1e0
- ? drm_mode_getfb2_ioctl+0x2d0/0x2d0
- ? drm_ioctl_kernel+0xc4/0x150
- ? drm_ioctl+0x246/0x3f0
- ? drm_mode_getfb2_ioctl+0x2d0/0x2d0
- ? __x64_sys_ioctl+0x91/0xd0
- ? do_syscall_64+0x60/0xd0
- ? entry_SYSCALL_64_after_hwframe+0x4b/0xb5
- </TASK>
-
-The problem was added by commit 5e0137612430 ("video/aperture: Disable
-and unregister sysfb devices via aperture helpers") to v6.0.3 and does
-not exist in the mainline branch.
-
-The mainline commit 5e0137612430 ("video/aperture: Disable and
-unregister sysfb devices via aperture helpers") has been backported
-from v6.0-rc1 to stable v6.0.3 from a larger patch series [2] that
-reworks fbdev framebuffer ownership. The backport misses a change to
-aperture_remove_conflicting_pci_devices(). Mainline itself is fine,
-because the function does not exist there as a result of the patch
-series.
-
-Instead of backporting the whole series, fix the additional function.
-
-Reported-by: Andreas Thalhammer <andreas.thalhammer-linux@gmx.net>
-Reported-by: Thorsten Leemhuis <regressions@leemhuis.info>
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Tested-by: Andreas Thalhammer <andreas.thalhammer-linux@gmx.net>
-Fixes: cfecfc98a78d ("video/aperture: Disable and unregister sysfb devices via aperture helpers")
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Zack Rusin <zackr@vmware.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Daniel Vetter <daniel@ffwll.ch>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Helge Deller <deller@gmx.de>
-Cc: Alex Deucher <alexander.deucher@amd.com>
-Cc: Zhen Lei <thunder.leizhen@huawei.com>
-Cc: Changcheng Deng <deng.changcheng@zte.com.cn>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Maxime Ripard <mripard@kernel.org>
-Cc: dri-devel@lists.freedesktop.org
-Cc: Sasha Levin <sashal@kernel.org>
-Cc: linux-fbdev@vger.kernel.org
-Cc: <stable@vger.kernel.org> # v6.0.3+
-Link: https://lore.kernel.org/dri-devel/d6afe54b-f8d7-beb2-3609-186e566cbfac@gmx.net/T/#t # [1]
-Link: https://patchwork.freedesktop.org/series/106040/ # [2]
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- drivers/video/aperture.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
-
---- a/drivers/video/aperture.c
-+++ b/drivers/video/aperture.c
-@@ -358,6 +358,17 @@ int aperture_remove_conflicting_pci_devi
- 		return ret;
- 
- 	/*
-+	 * If a driver asked to unregister a platform device registered by
-+	 * sysfb, then can be assumed that this is a driver for a display
-+	 * that is set up by the system firmware and has a generic driver.
-+	 *
-+	 * Drivers for devices that don't have a generic driver will never
-+	 * ask for this, so let's assume that a real driver for the display
-+	 * was already probed and prevent sysfb to register devices later.
-+	 */
-+	sysfb_disable();
-+
-+	/*
- 	 * WARNING: Apparently we must kick fbdev drivers before vgacon,
- 	 * otherwise the vga fbdev driver falls over.
- 	 */
-
+> ---
+>   drivers/video/fbdev/cyber2000fb.c | 2 ++
+>   1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/video/fbdev/cyber2000fb.c b/drivers/video/fbdev/cyb=
+er2000fb.c
+> index 585af90a68a5..31ff1da82c05 100644
+> --- a/drivers/video/fbdev/cyber2000fb.c
+> +++ b/drivers/video/fbdev/cyber2000fb.c
+> @@ -1796,6 +1796,7 @@ static int cyberpro_pci_probe(struct pci_dev *dev,
+>   failed_regions:
+>   	cyberpro_free_fb_info(cfb);
+>   failed_release:
+> +	pci_disable_device(dev);
+>   	return err;
+>   }
+>
+> @@ -1812,6 +1813,7 @@ static void cyberpro_pci_remove(struct pci_dev *de=
+v)
+>   			int_cfb_info =3D NULL;
+>
+>   		pci_release_regions(dev);
+> +		pci_disable_device(dev);
+>   	}
+>   }
+>
 

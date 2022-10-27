@@ -2,141 +2,160 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3BA1C38A2D
-	for <linux-fbdev@archiver.kernel.org>; Thu, 27 Oct 2022 07:57:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B568ECAAA1
+	for <linux-fbdev@archiver.kernel.org>; Thu, 27 Oct 2022 13:18:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234545AbiJ0H5C (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 27 Oct 2022 03:57:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37408 "EHLO
+        id S235988AbiJ0NS3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 27 Oct 2022 09:18:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59992 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234720AbiJ0H4x (ORCPT
+        with ESMTP id S235984AbiJ0NS1 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 27 Oct 2022 03:56:53 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C73479F775;
-        Thu, 27 Oct 2022 00:56:51 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 9CEB1228A3;
-        Thu, 27 Oct 2022 07:56:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1666857410; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        Thu, 27 Oct 2022 09:18:27 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0AD478E781;
+        Thu, 27 Oct 2022 06:18:27 -0700 (PDT)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+        by smtp-out1.suse.de (Postfix) with ESMTP id B61C121BA3;
+        Thu, 27 Oct 2022 13:18:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+        t=1666876705; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=Evqq0byI84PReYvRvM07SQEq8l1WooFes9CiMsDMDsM=;
-        b=ATm+WMtLYDrgpAX8yQL3zutor5iNPX77ylX2+raW25SlEZWRq1oH4EvfeTecZA18UuDP5B
-        zwqN2UfZyirsGCdJPLI83yyUvUnqYjrn5HZ31k1fsA88ebeaI3cjbq9D/6j7jbyoKp3FVN
-        BDBYMJMEyIRrej1fc2JcqGhrwh1X2JI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1666857410;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=Evqq0byI84PReYvRvM07SQEq8l1WooFes9CiMsDMDsM=;
-        b=ctNvsTD5xPRMDUCO25122CICMpOHjZUarTtsba5tgYkmd1elQE0w/7ifbtV4qikEp2u0G7
-        I7/WnQ4d4HNFamBA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        bh=RS4nUztMlT4sqHAFv70WY2xp371wMgrBVx/69bIOcds=;
+        b=Pc8De5jHGsaMKpOgz+pwUzsiu6bIHhUw1tQKxuOOsNDG5/uS4xmTsUhEhqS/iUpdMqLcpl
+        ri+Tin761jQSWHyTK16SC3/R7c+sgONlBaAzV9i6eoHm1DgqyrVdkSPyie8nuI2QwXVBeK
+        xca3nLpXcWa1BrYQrfSwyXDLrpO02dw=
+Received: from suse.cz (unknown [10.100.208.146])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 70D66134CA;
-        Thu, 27 Oct 2022 07:56:50 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id qw6FGsI5WmPBMQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 27 Oct 2022 07:56:50 +0000
-Message-ID: <8a228fca-993b-154e-edaa-8d6044449631@suse.de>
-Date:   Thu, 27 Oct 2022 09:56:48 +0200
+        by relay2.suse.de (Postfix) with ESMTPS id 4D1232C141;
+        Thu, 27 Oct 2022 13:18:25 +0000 (UTC)
+Date:   Thu, 27 Oct 2022 15:18:21 +0200
+From:   Petr Mladek <pmladek@suse.com>
+To:     John Ogness <john.ogness@linutronix.de>
+Cc:     Sergey Senozhatsky <senozhatsky@chromium.org>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        linux-kernel@vger.kernel.org, Helge Deller <deller@gmx.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Juergen Gross <jgross@suse.com>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Tom Rix <trix@redhat.com>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH printk v2 38/38] printk, xen: fbfront: create/use safe
+ function for forcing preferred
+Message-ID: <Y1qFHbi39SpTggPH@alley>
+References: <20221019145600.1282823-1-john.ogness@linutronix.de>
+ <20221019145600.1282823-39-john.ogness@linutronix.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.3.3
-Subject: Re: [PATCH] fbdev/core: Avoid uninitialized read in
- aperture_remove_conflicting_pci_device()
-To:     =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
-Cc:     Javier Martinez Canillas <javierm@redhat.com>,
-        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <e75323732bedc46d613d72ecb40f97e3bc75eea8.1666829073.git.mirq-linux@rere.qmqm.pl>
-Content-Language: en-US
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <e75323732bedc46d613d72ecb40f97e3bc75eea8.1666829073.git.mirq-linux@rere.qmqm.pl>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------gRU1oBovFLRWQNMpCU8tSiSN"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221019145600.1282823-39-john.ogness@linutronix.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------gRU1oBovFLRWQNMpCU8tSiSN
-Content-Type: multipart/mixed; boundary="------------VnvR9JJDTyISABynCCLieTas";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
-Cc: Javier Martinez Canillas <javierm@redhat.com>,
- Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-ID: <8a228fca-993b-154e-edaa-8d6044449631@suse.de>
-Subject: Re: [PATCH] fbdev/core: Avoid uninitialized read in
- aperture_remove_conflicting_pci_device()
-References: <e75323732bedc46d613d72ecb40f97e3bc75eea8.1666829073.git.mirq-linux@rere.qmqm.pl>
-In-Reply-To: <e75323732bedc46d613d72ecb40f97e3bc75eea8.1666829073.git.mirq-linux@rere.qmqm.pl>
+On Wed 2022-10-19 17:02:00, John Ogness wrote:
+> With commit 9e124fe16ff2("xen: Enable console tty by default in domU
+> if it's not a dummy") a hack was implemented to make sure that the
+> tty console remains the console behind the /dev/console device. The
+> main problem with the hack is that, after getting the console pointer
+> to the tty console, it is assumed the pointer is still valid after
+> releasing the console_sem. This assumption is incorrect and unsafe.
+> 
+> Make the hack safe by introducing a new function
+> console_force_preferred() to perform the full operation under
+> the console_list_lock.
+> 
+> Signed-off-by: John Ogness <john.ogness@linutronix.de>
+> ---
+>  drivers/video/fbdev/xen-fbfront.c |  8 +---
+>  include/linux/console.h           |  1 +
+>  kernel/printk/printk.c            | 69 +++++++++++++++++++------------
+>  3 files changed, 46 insertions(+), 32 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/xen-fbfront.c b/drivers/video/fbdev/xen-fbfront.c
+> index 2552c853c6c2..aa362b25a60f 100644
+> --- a/drivers/video/fbdev/xen-fbfront.c
+> +++ b/drivers/video/fbdev/xen-fbfront.c
+> @@ -512,12 +512,8 @@ static void xenfb_make_preferred_console(void)
+>  	}
+>  	console_srcu_read_unlock(cookie);
+>  
+> -	if (c) {
+> -		unregister_console(c);
+> -		c->flags |= CON_CONSDEV;
+> -		c->flags &= ~CON_PRINTBUFFER; /* don't print again */
+> -		register_console(c);
+> -	}
+> +	if (c)
+> +		console_force_preferred(c);
 
---------------VnvR9JJDTyISABynCCLieTas
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+I would prefer to fix this a clean way. The current code is a real hack.
+It tries to find a console under console_srcu. Then the console
+is unregistered, flags are modified, and gets registered again.
+The locks are released between all these operations.
 
-SGkNCg0KdGhhbmtzIGZvciB0aGUgcGF0Y2guIEFkZGVkIHRvIGRybS1taXNjLWZpeGVzLg0K
-DQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQpBbSAyNy4xMC4yMiB1bSAwMjowNiBzY2hyaWVi
-IE1pY2hhxYIgTWlyb3PFgmF3Og0KPiBSZXR1cm4gb24gZXJyb3IgZGlyZWN0bHkgZnJvbSB0
-aGUgQkFSLWl0ZXJhdGluZyBsb29wIGluc3RlYWQgb2YNCj4gYnJlYWsrcmV0dXJuLg0KPiAN
-Cj4gVGhpcyBpcyBhY3R1YWxseSBhIGNvc21ldGljIGZpeCwgc2luY2UgaXQgd291bGQgYmUg
-aGlnaGx5IHVudXN1YWwgdG8NCj4gaGF2ZSB0aGlzIGNhbGxlZCBmb3IgYSBQQ0kgZGV2aWNl
-IHdpdGhvdXQgYW55IG1lbW9yeSBCQVJzLg0KPiANCj4gRml4ZXM6IDlkNjllZjE4MzgxNSAo
-ImZiZGV2L2NvcmU6IFJlbW92ZSByZW1vdmVfY29uZmxpY3RpbmdfcGNpX2ZyYW1lYnVmZmVy
-cygpIikNCj4gU2lnbmVkLW9mZi1ieTogTWljaGHFgiBNaXJvc8WCYXcgPG1pcnEtbGludXhA
-cmVyZS5xbXFtLnBsPg0KPiAtLS0NCj4gICBkcml2ZXJzL3ZpZGVvL2FwZXJ0dXJlLmMgfCA1
-ICstLS0tDQo+ICAgMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspLCA0IGRlbGV0aW9u
-cygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vYXBlcnR1cmUuYyBiL2Ry
-aXZlcnMvdmlkZW8vYXBlcnR1cmUuYw0KPiBpbmRleCA5ZTZiY2MwM2ExYTQuLjQxZTc3ZGUx
-ZWE4MiAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9hcGVydHVyZS5jDQo+ICsrKyBi
-L2RyaXZlcnMvdmlkZW8vYXBlcnR1cmUuYw0KPiBAQCAtMzQwLDEyICszNDAsOSBAQCBpbnQg
-YXBlcnR1cmVfcmVtb3ZlX2NvbmZsaWN0aW5nX3BjaV9kZXZpY2VzKHN0cnVjdCBwY2lfZGV2
-ICpwZGV2LCBjb25zdCBjaGFyICpuYQ0KPiAgIAkJc2l6ZSA9IHBjaV9yZXNvdXJjZV9sZW4o
-cGRldiwgYmFyKTsNCj4gICAJCXJldCA9IGFwZXJ0dXJlX3JlbW92ZV9jb25mbGljdGluZ19k
-ZXZpY2VzKGJhc2UsIHNpemUsIHByaW1hcnksIG5hbWUpOw0KPiAgIAkJaWYgKHJldCkNCj4g
-LQkJCWJyZWFrOw0KPiArCQkJcmV0dXJuIHJldDsNCj4gICAJfQ0KPiAgIA0KPiAtCWlmIChy
-ZXQpDQo+IC0JCXJldHVybiByZXQ7DQo+IC0NCj4gICAJLyoNCj4gICAJICogV0FSTklORzog
-QXBwYXJlbnRseSB3ZSBtdXN0IGtpY2sgZmJkZXYgZHJpdmVycyBiZWZvcmUgdmdhY29uLA0K
-PiAgIAkgKiBvdGhlcndpc2UgdGhlIHZnYSBmYmRldiBkcml2ZXIgZmFsbHMgb3Zlci4NCg0K
-LS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VT
-RSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQw
-OSBOw7xybmJlcmcsIEdlcm1hbnkNCihIUkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2No
-w6RmdHNmw7xocmVyOiBJdm8gVG90ZXYNCg==
+I would suggest to implement:
 
---------------VnvR9JJDTyISABynCCLieTas--
+void console_force_preferred_locked(struct console *new_pref_con)
+{
+	struct console *cur_pref_con;
 
---------------gRU1oBovFLRWQNMpCU8tSiSN
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+	assert_console_list_lock_held();
 
------BEGIN PGP SIGNATURE-----
+	if (hlist_unhashed(&new_pref_con->node))
+		return;
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmNaOcAFAwAAAAAACgkQlh/E3EQov+Ds
-nRAAl8KNToBD5+ADiAmVEnTE48c5Aw5xyI/4oB5ybf2onmE5GKahNQ6XeXLxFfOyef79QXWC5MyX
-sMQxSM72ICjQH9NHqRUpLuC41lBqh4Ml3YMQTQuzSjyE1fcnovOD1aXxql9gyIQtLUs3Vu/8mO08
-QMuUpQpSd3FHvullxmk4AcAMc92IjgYiHi1cKlP7YxMVQV26iNLL3oOHak2b8lZyIpgv9Wk1m5SH
-9fkre849lekn5GiIQALfESuWbs5Nb8bgVpCtzfPOLcBawcfjdG36HUSfsfOzXDGe5dzUXH/z7snE
-I9U1K5cuW+KwqPqQZLNXR7nPN1Ha2PGliZ9PqlIyO28u8aoU+oT79eHvVfsbrFC4tyUGxYOwaTua
-oXM8mBiCfSy8gzQVnC++DT9snzgRuwWHvk8FAeu2p/CAH9lAwr9WAY+LhcCpEP8N6NGYfW6td2Cp
-Ua288UVFDrYxNBK7UNWhWiHgG5ktviXbkhqfIWwOR0uloxdKHVOZy8wQxhBa27U6sNl7W5cftYuE
-iSFjOWhF967ijlGfoGghv0wa7tFdS3UYsG6HsqiddwO1vTVpp/YA2jzw0K/6vP242Nvgn9gpko1X
-t7KUrZztu3CJ5I+o00W2GHDeWowRwrA5vNT0JTHZ0smINiUOPIfs6oGDDORWU0w5oEj568kXm1gU
-W4Q=
-=q2Aa
------END PGP SIGNATURE-----
+	for_each_console(cur_pref_con) {
+		if (cur_pref_con->flags & CON_CONSDEV)
+			break;
+	}
 
---------------gRU1oBovFLRWQNMpCU8tSiSN--
+	/* Already preferred? */
+	if (cur_pref_con == new_pref_con)
+		return;
+
+	hlist_del_init_rcu(&new_pref_con->node);
+	/*
+	 * Ensure that all SRCU list walks have completed before @con
+	 * is added back as the first console
+	 */
+	synchronize_srcu()
+	hlist_add_behind_rcu(&new_pref_con->node, console_list.first);
+
+	cur_pref_con->flags &= ~CON_CONSDEV;
+	new_pref_con->flags |= CON_CONSDEV;
+}
+
+And do:
+
+static void xenfb_make_preferred_console(void)
+{
+	struct console *c;
+
+	if (console_set_on_cmdline)
+		return;
+
+	console_list_lock();
+	for_each_console(c) {
+		if (!strcmp(c->name, "tty") && c->index == 0)
+			break;
+	}
+
+	if (c)
+		console_force_preferred_locked(c);
+
+	console_list_unlock();
+}
+
+It is a more code. But it is race-free. Also it is much more clear
+what is going on.
+
+How does this sound, please?
+
+Best Regards,
+Petr

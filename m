@@ -2,137 +2,144 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 178DEFA3740
-	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Oct 2022 12:05:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8510FA3741
+	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Oct 2022 15:18:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231179AbiJaMFj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 31 Oct 2022 08:05:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38602 "EHLO
+        id S230072AbiJaPSO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 31 Oct 2022 11:18:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46548 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231199AbiJaMFh (ORCPT
+        with ESMTP id S229826AbiJaPSM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 31 Oct 2022 08:05:37 -0400
-Received: from mail2-relais-roc.national.inria.fr (mail2-relais-roc.national.inria.fr [192.134.164.83])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0DD7560EC;
-        Mon, 31 Oct 2022 05:05:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=inria.fr; s=dc;
-  h=date:from:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=14iICmGII8xNulZN/p1BaMqaiaz+48D2pzhmrN7vrkw=;
-  b=SMzbMxp3Jf1dRIc5FmBSL9JLpH5ta5npmYLBqOinHldFs9pUVeFX/96a
-   4quxcpxbU4Tm4feIFzjjkqEWTHeZXIwcyNk8AMSCwpoCkJ9eUh5ntyAo9
-   ZCUyEOwlbDdXRVueJLZYZpzonpa7bwL5z0F9UHrXC+TPhCZpTQNBGVB5w
-   o=;
-Authentication-Results: mail2-relais-roc.national.inria.fr; dkim=none (message not signed) header.i=none; spf=SoftFail smtp.mailfrom=julia.lawall@inria.fr; dmarc=fail (p=none dis=none) d=inria.fr
-X-IronPort-AV: E=Sophos;i="5.95,227,1661810400"; 
-   d="scan'208";a="72400942"
-Received: from dt-lawall.paris.inria.fr ([128.93.67.65])
-  by mail2-relais-roc.national.inria.fr with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2022 13:05:33 +0100
-Date:   Mon, 31 Oct 2022 13:05:32 +0100 (CET)
-From:   Julia Lawall <julia.lawall@inria.fr>
-To:     Deepak R Varma <drv@mailo.com>
-cc:     Julia Lawall <julia.lawall@inria.fr>,
+        Mon, 31 Oct 2022 11:18:12 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 87C5B11441;
+        Mon, 31 Oct 2022 08:18:11 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 251DD612B8;
+        Mon, 31 Oct 2022 15:18:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B25EC433C1;
+        Mon, 31 Oct 2022 15:18:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1667229490;
+        bh=fZQmE3ZoLyvvFn4DphHE7oXQ3j9AI9iK/6owWdIRsas=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=gJ+6M32c1NzKowboPOTlB8AjQ6s07iNwFn6R0waqYwLB63R+1+vqwRWCBFirJxe6k
+         Gt/cYH3BTnDAp0fJ3l/bOSeEYjjQAR1XAH6HOXmT59zDOFpLJ12UddsWOELBUSmMxA
+         R2yxrso2Vp2w0UDcSvijat+eS5aG+RdZQKXmLHiw4euF7z+rvfbGN6fa7m9H0hNizi
+         oAhgIPLoO/wGcA5MrxrRdkImiY5S60bQT5WV+bOZh9/Mx67HCp7Jh8I8Z9lSG+NSSJ
+         fNzfD4bcJhAm9kSwgFF/PedYUobZ/Hw9dQE31LYyJzxguFzoKkfV35LzKH5htLRlIP
+         RklF91F9P9Wyw==
+Date:   Mon, 31 Oct 2022 15:18:03 +0000
+From:   Lee Jones <lee@kernel.org>
+To:     Arnd Bergmann <arnd@kernel.org>
+Cc:     linux-arm-kernel@lists.infradead.org,
+        Russell King <linux@armlinux.org.uk>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Lubomir Rintel <lkundrak@v3.sk>, linux-kernel@vger.kernel.org,
+        Arnd Bergmann <arnd@arndb.de>,
+        Peter Chubb <peter.chubb@unsw.edu.au>,
+        Stefan Eletzhofer <stefan.eletzhofer@eletztrick.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Dominik Brodowski <linux@dominikbrodowski.net>,
+        Alan Stern <stern@rowland.harvard.edu>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        outreachy@lists.linux.dev, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: fbtft: Use ARRAY_SIZE() to get argument count
-In-Reply-To: <Y1+YC5OuycA5hLFx@ubunlion>
-Message-ID: <7dc9b4d2-413-3f65-1381-b164d810c3ee@inria.fr>
-References: <Y1vZXUi0Bjiub8HZ@ubunlion> <Y1zXIjCe3LGwApWD@kroah.com> <Y11b0oCmle2pbRel@ubunlion> <alpine.DEB.2.22.394.2210291931590.2917@hadrien> <Y191LI7zKVRA5LEb@ubunlion> <Y1+YC5OuycA5hLFx@ubunlion>
+        Helge Deller <deller@gmx.de>, linux-pm@vger.kernel.org,
+        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH 02/11] ARM: sa1100: remove unused board files
+Message-ID: <Y1/nK0kLURkyel2n@google.com>
+References: <20221021155000.4108406-1-arnd@kernel.org>
+ <20221021155000.4108406-3-arnd@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20221021155000.4108406-3-arnd@kernel.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+On Fri, 21 Oct 2022, Arnd Bergmann wrote:
 
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> The Cerf, H3100, Badge4, Hackkit, LART, NanoEngine, PLEB, Shannon and
+> Simpad machines were all marked as unused as there are no known users
+> left. Remove all of these, along with references to them in defconfig
+> files and drivers.
+> 
+> Four machines remain now: Assabet, Collie (Zaurus SL5500), iPAQ H3600
+> and Jornada 720, each of which had one person still using them, with
+> Collie also being supported in Qemu.
+> 
+> Cc: Peter Chubb <peter.chubb@unsw.edu.au>
+> Cc: Stefan Eletzhofer <stefan.eletzhofer@eletztrick.de>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  MAINTAINERS                                   |  11 -
+>  arch/arm/Kconfig                              |   6 -
+>  arch/arm/boot/compressed/head-sa1100.S        |   4 -
+>  arch/arm/configs/badge4_defconfig             | 105 -----
+>  arch/arm/configs/cerfcube_defconfig           |  73 ---
+>  arch/arm/configs/hackkit_defconfig            |  48 --
+>  arch/arm/configs/lart_defconfig               |  64 ---
+>  arch/arm/configs/pleb_defconfig               |  53 ---
+>  arch/arm/configs/shannon_defconfig            |  45 --
+>  arch/arm/configs/simpad_defconfig             | 100 -----
+>  arch/arm/mach-sa1100/Kconfig                  | 111 -----
+>  arch/arm/mach-sa1100/Makefile                 |  21 -
+>  arch/arm/mach-sa1100/badge4.c                 | 338 --------------
+>  arch/arm/mach-sa1100/cerf.c                   | 181 --------
+>  arch/arm/mach-sa1100/h3100.c                  | 140 ------
+>  arch/arm/mach-sa1100/hackkit.c                | 184 --------
+>  arch/arm/mach-sa1100/include/mach/badge4.h    |  71 ---
+>  arch/arm/mach-sa1100/include/mach/cerf.h      |  20 -
+>  .../arm/mach-sa1100/include/mach/nanoengine.h |  48 --
+>  arch/arm/mach-sa1100/include/mach/shannon.h   |  40 --
+>  arch/arm/mach-sa1100/include/mach/simpad.h    | 159 -------
+>  arch/arm/mach-sa1100/lart.c                   | 177 --------
+>  arch/arm/mach-sa1100/nanoengine.c             | 136 ------
+>  arch/arm/mach-sa1100/pci-nanoengine.c         | 191 --------
+>  arch/arm/mach-sa1100/pleb.c                   | 148 ------
+>  arch/arm/mach-sa1100/shannon.c                | 157 -------
+>  arch/arm/mach-sa1100/simpad.c                 | 423 ------------------
+>  drivers/cpufreq/sa1110-cpufreq.c              |   6 -
+>  drivers/mfd/Kconfig                           |   2 +-
 
-On Mon, 31 Oct 2022, Deepak R Varma wrote:
+Acked-by: Lee Jones <lee@kernel.org>
 
-> On Mon, Oct 31, 2022 at 12:41:40PM +0530, Deepak Varma wrote:
-> > On Sat, Oct 29, 2022 at 07:34:26PM +0200, Julia Lawall wrote:
-> > >
-> > >
-> > > On Sat, 29 Oct 2022, Deepak R Varma wrote:
-> > >
-> > > > On Sat, Oct 29, 2022 at 09:32:50AM +0200, Greg Kroah-Hartman wrote:
-> > > > > On Fri, Oct 28, 2022 at 07:00:05PM +0530, Deepak R Varma wrote:
-> > > > > > The ARRAY_SIZE(foo) macro should be preferred over sizeof operator
-> > > > > > based computation such as sizeof(foo)/sizeof(foo[0]) for finding
-> > > > > > number of elements in an array. Issue identified using coccicheck.
-> > > > > >
-> > > > > > Signed-off-by: Deepak R Varma <drv@mailo.com>
-> > > > > > ---
-> > > > > >  drivers/staging/fbtft/fbtft.h | 2 +-
-> > > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > > >
-> > > > > > diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-> > > > > > index 2c2b5f1c1df3..5506a473be91 100644
-> > > > > > --- a/drivers/staging/fbtft/fbtft.h
-> > > > > > +++ b/drivers/staging/fbtft/fbtft.h
-> > > > > > @@ -231,7 +231,7 @@ struct fbtft_par {
-> > > > > >  	bool polarity;
-> > > > > >  };
-> > > > > >
-> > > > > > -#define NUMARGS(...)  (sizeof((int[]){__VA_ARGS__}) / sizeof(int))
-> > > > > > +#define NUMARGS(...)  ARRAY_SIZE(((int[]){ __VA_ARGS__ }))
-> > > > >
-> > > > > Please please please test-build your patches before sending them out.
-> > > > > To not do so just wastes reviewer resources :(
-> > > >
-> > > > Hello Greg,
-> > > > I did build the .ko files by making the driver/staging/fbtft/ path. I verified
-> > > > .o and .ko files were built.
-> > > >
-> > > > I did a make clean just now and was again able to rebuild without any errors.
-> > > > Please see the attached log file.
-> > > >
-> > > > Is there something wrong with the way I am firing the build?
-> > >
-> > > The change is in the definition of a macro.  The compiler won't help you
-> > > in this case unless the macro is actually used in code that is compiled.
-> > > Find the uses and check for any nearby ifdefs.  For file foo.c you can
-> > > also do make foo.i to see the result of reducing ifdef and expanding
-> > > macros.  Then you can see if the code you changed is actually included in
-> > > the build.
-> >
-> > Okay. This is helpful. I understand. Looking into the file where the macro
-> > expansion is reported to be failed.
->
-> Hi Julia,
-> I could see the macro expansions in the .i files for the fbtft-core.c and
-> fb_hx8353d.c file. I am not sure why it built successfully on my x86 though. The
-> error in Kerbel bot seems to be specific to ARM arch. I will try that later
-> today. I am on the right track to the build error triage?
->
-> Also, while reviewing the macro expansion, I saw change in the computation that
-> seems odd to me. In the denominator of the expanded macro, there is a "+
-> ((int)...." computation that I am not sure if is result of ARRAY_SIZE. I have
-> attached the old anf the new .i file diff for your review. If you get a change
-> could you help me understand why this additional computation is added to the
-> denominator?
+>  drivers/pcmcia/sa1100_generic.c               |   5 +-
+>  drivers/pcmcia/sa1100_h3600.c                 |   2 +-
+>  drivers/pcmcia/sa1111_generic.c               |   4 -
+>  drivers/usb/host/ohci-sa1111.c                |   5 +-
+>  drivers/video/fbdev/sa1100fb.c                |   1 -
+>  34 files changed, 4 insertions(+), 3075 deletions(-)
+>  delete mode 100644 arch/arm/configs/badge4_defconfig
+>  delete mode 100644 arch/arm/configs/cerfcube_defconfig
+>  delete mode 100644 arch/arm/configs/hackkit_defconfig
+>  delete mode 100644 arch/arm/configs/lart_defconfig
+>  delete mode 100644 arch/arm/configs/pleb_defconfig
+>  delete mode 100644 arch/arm/configs/shannon_defconfig
+>  delete mode 100644 arch/arm/configs/simpad_defconfig
+>  delete mode 100644 arch/arm/mach-sa1100/badge4.c
+>  delete mode 100644 arch/arm/mach-sa1100/cerf.c
+>  delete mode 100644 arch/arm/mach-sa1100/h3100.c
+>  delete mode 100644 arch/arm/mach-sa1100/hackkit.c
+>  delete mode 100644 arch/arm/mach-sa1100/include/mach/badge4.h
+>  delete mode 100644 arch/arm/mach-sa1100/include/mach/cerf.h
+>  delete mode 100644 arch/arm/mach-sa1100/include/mach/nanoengine.h
+>  delete mode 100644 arch/arm/mach-sa1100/include/mach/shannon.h
+>  delete mode 100644 arch/arm/mach-sa1100/include/mach/simpad.h
+>  delete mode 100644 arch/arm/mach-sa1100/lart.c
+>  delete mode 100644 arch/arm/mach-sa1100/nanoengine.c
+>  delete mode 100644 arch/arm/mach-sa1100/pci-nanoengine.c
+>  delete mode 100644 arch/arm/mach-sa1100/pleb.c
+>  delete mode 100644 arch/arm/mach-sa1100/shannon.c
+>  delete mode 100644 arch/arm/mach-sa1100/simpad.c
 
-I took a look, but it's pretty complex.  You could take the code and
-reorganize it so that it is more readable, and then take the definition of
-the ARRAY_SIZE macro, to better see what is going on.
-
-julia
-
->
-> Thank you,
-> ./drv
-> >
-> > Thank you,
-> > ./drv
-> >
-> > >
-> > > julia
-> > >
-> >
-> >
-> >
->
->
->
+-- 
+Lee Jones [李琼斯]

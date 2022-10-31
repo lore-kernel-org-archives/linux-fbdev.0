@@ -2,59 +2,55 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E32FDC38A02
-	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Oct 2022 09:42:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 178DEFA3740
+	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Oct 2022 12:05:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229906AbiJaJl7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 31 Oct 2022 05:41:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49966 "EHLO
+        id S231179AbiJaMFj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 31 Oct 2022 08:05:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38602 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229648AbiJaJl7 (ORCPT
+        with ESMTP id S231199AbiJaMFh (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 31 Oct 2022 05:41:59 -0400
-Received: from msg-4.mailo.com (msg-4.mailo.com [213.182.54.15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 77B30DEEF;
-        Mon, 31 Oct 2022 02:41:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=mailo.com; s=mailo;
-        t=1667209300; bh=Z25McFAq/fZg6Nt+RMlIuZnOqxW+HHMoOOGINtr8RnE=;
-        h=X-EA-Auth:Date:From:To:Cc:Subject:Message-ID:References:
-         MIME-Version:Content-Type:In-Reply-To;
-        b=miTlzDsqy/dEfPKSFyutFeBV6FTEu4pUayowICHqq6GCZk1LanhFDTIkxJSu2wHdA
-         gxRGjfdIDnm3rftNQbHvZBHCeDp9RyOs9n0BXDc/bSNA3zVo07jXTCFAIUZq/rZUFn
-         U7SVyrxlyw2zq/rIS76bbX6plIe+sE2svV8xU13M=
-Received: by b-3.in.mailobj.net [192.168.90.13] with ESMTP
-        via [213.182.55.206]
-        Mon, 31 Oct 2022 10:41:40 +0100 (CET)
-X-EA-Auth: L7i+ZqFQ7hgqy31RkIacIVqE5ujQIRhCaBIpvwogTIgXp2OOAi4Mvw1d9cH/ZGNmRhS0i3i4FpQXhSQ+0jbDduANPyttGcxR
-Date:   Mon, 31 Oct 2022 15:11:36 +0530
-From:   Deepak R Varma <drv@mailo.com>
-To:     Julia Lawall <julia.lawall@inria.fr>
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Mon, 31 Oct 2022 08:05:37 -0400
+Received: from mail2-relais-roc.national.inria.fr (mail2-relais-roc.national.inria.fr [192.134.164.83])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0DD7560EC;
+        Mon, 31 Oct 2022 05:05:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=inria.fr; s=dc;
+  h=date:from:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=14iICmGII8xNulZN/p1BaMqaiaz+48D2pzhmrN7vrkw=;
+  b=SMzbMxp3Jf1dRIc5FmBSL9JLpH5ta5npmYLBqOinHldFs9pUVeFX/96a
+   4quxcpxbU4Tm4feIFzjjkqEWTHeZXIwcyNk8AMSCwpoCkJ9eUh5ntyAo9
+   ZCUyEOwlbDdXRVueJLZYZpzonpa7bwL5z0F9UHrXC+TPhCZpTQNBGVB5w
+   o=;
+Authentication-Results: mail2-relais-roc.national.inria.fr; dkim=none (message not signed) header.i=none; spf=SoftFail smtp.mailfrom=julia.lawall@inria.fr; dmarc=fail (p=none dis=none) d=inria.fr
+X-IronPort-AV: E=Sophos;i="5.95,227,1661810400"; 
+   d="scan'208";a="72400942"
+Received: from dt-lawall.paris.inria.fr ([128.93.67.65])
+  by mail2-relais-roc.national.inria.fr with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2022 13:05:33 +0100
+Date:   Mon, 31 Oct 2022 13:05:32 +0100 (CET)
+From:   Julia Lawall <julia.lawall@inria.fr>
+To:     Deepak R Varma <drv@mailo.com>
+cc:     Julia Lawall <julia.lawall@inria.fr>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         outreachy@lists.linux.dev, dri-devel@lists.freedesktop.org,
         linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
         linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] staging: fbtft: Use ARRAY_SIZE() to get argument count
-Message-ID: <Y1+YUMCog7K5fVep@ubunlion>
-References: <Y1vZXUi0Bjiub8HZ@ubunlion>
- <Y1zXIjCe3LGwApWD@kroah.com>
- <Y11b0oCmle2pbRel@ubunlion>
- <alpine.DEB.2.22.394.2210291931590.2917@hadrien>
- <Y191LI7zKVRA5LEb@ubunlion>
- <Y1+YC5OuycA5hLFx@ubunlion>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="SJmkD8dY3dyTpnMo"
-Content-Disposition: inline
 In-Reply-To: <Y1+YC5OuycA5hLFx@ubunlion>
+Message-ID: <7dc9b4d2-413-3f65-1381-b164d810c3ee@inria.fr>
+References: <Y1vZXUi0Bjiub8HZ@ubunlion> <Y1zXIjCe3LGwApWD@kroah.com> <Y11b0oCmle2pbRel@ubunlion> <alpine.DEB.2.22.394.2210291931590.2917@hadrien> <Y191LI7zKVRA5LEb@ubunlion> <Y1+YC5OuycA5hLFx@ubunlion>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 
---SJmkD8dY3dyTpnMo
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-On Mon, Oct 31, 2022 at 03:10:27PM +0530, Deepak Varma wrote:
+On Mon, 31 Oct 2022, Deepak R Varma wrote:
+
 > On Mon, Oct 31, 2022 at 12:41:40PM +0530, Deepak Varma wrote:
 > > On Sat, Oct 29, 2022 at 07:34:26PM +0200, Julia Lawall wrote:
 > > >
@@ -118,7 +114,11 @@ On Mon, Oct 31, 2022 at 03:10:27PM +0530, Deepak Varma wrote:
 > could you help me understand why this additional computation is added to the
 > denominator?
 
-File now attached.
+I took a look, but it's pretty complex.  You could take the code and
+reorganize it so that it is more readable, and then take the definition of
+the ARRAY_SIZE macro, to better see what is going on.
+
+julia
 
 >
 > Thank you,
@@ -136,34 +136,3 @@ File now attached.
 >
 >
 >
-
---SJmkD8dY3dyTpnMo
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="fbtft-core.diff"
-
-74422c74422,74428
-< # 242 "drivers/staging/fbtft/fbtft.h"
----
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-74644c74650
-<  ((par)->fbtftops.write_register(par, (sizeof((int[]){MIPI_DCS_SET_COLUMN_ADDRESS, (xs >> 8) & 0xFF, xs & 0xFF, (xe >> 8) & 0xFF, xe & 0xFF}) / sizeof(int)), MIPI_DCS_SET_COLUMN_ADDRESS, (xs >> 8) & 0xFF, xs & 0xFF, (xe >> 8) & 0xFF, xe & 0xFF))
----
->  ((par)->fbtftops.write_register(par, (sizeof(((int[]){ MIPI_DCS_SET_COLUMN_ADDRESS, (xs >> 8) & 0xFF, xs & 0xFF, (xe >> 8) & 0xFF, xe & 0xFF })) / sizeof((((int[]){ MIPI_DCS_SET_COLUMN_ADDRESS, (xs >> 8) & 0xFF, xs & 0xFF, (xe >> 8) & 0xFF, xe & 0xFF }))[0]) + ((int)(sizeof(struct { int:(-!!(__builtin_types_compatible_p(typeof((((int[]){ MIPI_DCS_SET_COLUMN_ADDRESS, (xs >> 8) & 0xFF, xs & 0xFF, (xe >> 8) & 0xFF, xe & 0xFF }))), typeof(&(((int[]){ MIPI_DCS_SET_COLUMN_ADDRESS, (xs >> 8) & 0xFF, xs & 0xFF, (xe >> 8) & 0xFF, xe & 0xFF }))[0])))); })))), MIPI_DCS_SET_COLUMN_ADDRESS, (xs >> 8) & 0xFF, xs & 0xFF, (xe >> 8) & 0xFF, xe & 0xFF))
-74647c74653
-<  ((par)->fbtftops.write_register(par, (sizeof((int[]){MIPI_DCS_SET_PAGE_ADDRESS, (ys >> 8) & 0xFF, ys & 0xFF, (ye >> 8) & 0xFF, ye & 0xFF}) / sizeof(int)), MIPI_DCS_SET_PAGE_ADDRESS, (ys >> 8) & 0xFF, ys & 0xFF, (ye >> 8) & 0xFF, ye & 0xFF))
----
->  ((par)->fbtftops.write_register(par, (sizeof(((int[]){ MIPI_DCS_SET_PAGE_ADDRESS, (ys >> 8) & 0xFF, ys & 0xFF, (ye >> 8) & 0xFF, ye & 0xFF })) / sizeof((((int[]){ MIPI_DCS_SET_PAGE_ADDRESS, (ys >> 8) & 0xFF, ys & 0xFF, (ye >> 8) & 0xFF, ye & 0xFF }))[0]) + ((int)(sizeof(struct { int:(-!!(__builtin_types_compatible_p(typeof((((int[]){ MIPI_DCS_SET_PAGE_ADDRESS, (ys >> 8) & 0xFF, ys & 0xFF, (ye >> 8) & 0xFF, ye & 0xFF }))), typeof(&(((int[]){ MIPI_DCS_SET_PAGE_ADDRESS, (ys >> 8) & 0xFF, ys & 0xFF, (ye >> 8) & 0xFF, ye & 0xFF }))[0])))); })))), MIPI_DCS_SET_PAGE_ADDRESS, (ys >> 8) & 0xFF, ys & 0xFF, (ye >> 8) & 0xFF, ye & 0xFF))
-74650c74656
-<  ((par)->fbtftops.write_register(par, (sizeof((int[]){MIPI_DCS_WRITE_MEMORY_START}) / sizeof(int)), MIPI_DCS_WRITE_MEMORY_START));
----
->  ((par)->fbtftops.write_register(par, (sizeof(((int[]){ MIPI_DCS_WRITE_MEMORY_START })) / sizeof((((int[]){ MIPI_DCS_WRITE_MEMORY_START }))[0]) + ((int)(sizeof(struct { int:(-!!(__builtin_types_compatible_p(typeof((((int[]){ MIPI_DCS_WRITE_MEMORY_START }))), typeof(&(((int[]){ MIPI_DCS_WRITE_MEMORY_START }))[0])))); })))), MIPI_DCS_WRITE_MEMORY_START));
-
---SJmkD8dY3dyTpnMo--
-
-

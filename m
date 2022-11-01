@@ -2,96 +2,96 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFB9DFA3743
-	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Oct 2022 19:55:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC84DFA373D
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Nov 2022 10:29:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229711AbiJaTzX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 31 Oct 2022 15:55:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59922 "EHLO
+        id S230047AbiKAK3z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Nov 2022 06:29:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57146 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229870AbiJaTzW (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 31 Oct 2022 15:55:22 -0400
-Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com [IPv6:2a00:1450:4864:20::52b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F092813F8E
-        for <linux-fbdev@vger.kernel.org>; Mon, 31 Oct 2022 12:55:19 -0700 (PDT)
-Received: by mail-ed1-x52b.google.com with SMTP id r14so19006899edc.7
-        for <linux-fbdev@vger.kernel.org>; Mon, 31 Oct 2022 12:55:19 -0700 (PDT)
+        with ESMTP id S229511AbiKAK3y (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Nov 2022 06:29:54 -0400
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DD40E18B38;
+        Tue,  1 Nov 2022 03:29:50 -0700 (PDT)
+Received: by mail-wr1-x42c.google.com with SMTP id z14so19480796wrn.7;
+        Tue, 01 Nov 2022 03:29:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=DF4wkWvWXegmip018YfFTMUIfpvZ++f68WTZSD1bWH4=;
-        b=b/AhgHxwilfewDUeFdF7w5tS1qudHYwzeXYHCeNTee8gy7zQX39fPcLeEM+Wg2XbVc
-         OMXGEWO82RD7yGQEkDfRc2i0aqOuYklgxxBLGlc3zsxIFDUxm5azTpth70VNAT6C/K0V
-         Sp55l2H8ExCVM971zGFtptSmbXODgOa63SoNl/bpXl2unUrPP8r7gJoRJ5lyg749pl8u
-         tk7UmZgFsHQ6SrAr8fiCmWbrqAdFMgUuBhxhyH5fE2JHga4rzsYrQkaLeck9SCqq868x
-         v9dDgVFzZdrz6jmTK0GaAXL6a36GJmr4G2f5Kt0kQpPmy2lPsBMyIQ8bASyY8Ivup2CE
-         0YnA==
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=N2+PF9plcSy2ATWJiPecwWooFcxaUwfoTFa4mF3SLg4=;
+        b=o7VSw37luCk1txJUxzqGQMkFhWqPrkJ/Xe4dZxvAF9K2NLZee08637+m3uU3zEBMD8
+         bFO4nxwVEdbyrKqJly8BfZ4hWbE3+grDvZdJlZ3q9qPOcgAUJ59XiFJ3BbU149QiwV/7
+         P6oI8ORxdxlYwPKtwapsFoBp/qyk00T9LJq9ctjEF87jRgCoMec0FV3ZFXt3rNp6ANKp
+         UTLiY1KkIG6lcSKnnBfk95DYCakxEpX58/xK7SZgBaLPB0R6qV3LehugPLa+KaAv/7LJ
+         LsDY6ETq96leRawKoZTv4IjoR86J5X00p7uloSGefTQn2z3a+f60lCUKVmeRVCiwUzo8
+         t8xg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=DF4wkWvWXegmip018YfFTMUIfpvZ++f68WTZSD1bWH4=;
-        b=RjD0Z2P9NHEzPpsK5Ty/yBhO85Bg0b9jtEWlxRUZf1tz7pMLQDB581w+XbLcrUtHTB
-         fGfWDCQhWzPu+MqKOyGWCBfRoc0IKrmEFldtbR2cNdgz6qP0fFmFFDoIZHFkXBd8kCzn
-         RSZB/KqlIV/0+FA3ucr/bX1KRSgJhZDmW4hN6mTV2886YGZDB6QsQQAxArfHaDrhcUTV
-         xQ9T55BhHjaaXXnncYGSdkgOc0E3OD+SNm5MHSO4aFx/DkaOY2ZYGw9DAuh5vWqzlJ7y
-         ZZaOSG2L13H13UmH05xeMb6gvS2fSDi+Kgf0LbynO+hVT0kh1KSk59faGXC3XCMKGODG
-         bMWQ==
-X-Gm-Message-State: ACrzQf3ftaDBw0Ztut7WTEnRMYEPF4VAKJUNBDss0sP8njzUpsrFIGQJ
-        n/H05yTCTvUNwnMIMiAgjgj41hmzw8OtiudUvv/WNA==
-X-Google-Smtp-Source: AMsMyM56VjnjVqw1pPVrEHK3+oaJydtdMBXaE2SuGomtgUtwtlegLzPacGGZ1UIeWQGuFFHcB8CXww6lQcbWYaPdUiY=
-X-Received: by 2002:a05:6402:1bdc:b0:463:6315:1b96 with SMTP id
- ch28-20020a0564021bdc00b0046363151b96mr6249924edb.158.1667246118524; Mon, 31
- Oct 2022 12:55:18 -0700 (PDT)
+        bh=N2+PF9plcSy2ATWJiPecwWooFcxaUwfoTFa4mF3SLg4=;
+        b=xeoKtjNtVT1EhgFhLPXYjMzLl/8/iFCKIc9BI8XOEVlLD5ayu/iqSTjea5wblp0mNq
+         Hc4WkYnUGsTik7v5g+1wUi4hzkvw4tAGfKsZK0k6dRVhkIvjQurINDG+IppgxzlWueFQ
+         GhIEQTf7w/85AwnemYqSsW225RCNVaNlaGZ+qJdAavdHOAiDT3HmATzuZBsCDZ/ntRY5
+         kiMWZrj/HiJ7EK82ckf2kzGWJC5CvDSAWJTqfMjnnKSmHr4imnOXVZEGV9sWzKCgK2Xz
+         Xb9rBektvOYE+4RLM5I31rP4QHPBv12Oot8AvbE1QGxRgqDl3W5ImW5oNJl/JM5+9H95
+         y5qw==
+X-Gm-Message-State: ACrzQf0DpS8hImHpcvmE53bSyEz5M8UiQByB27ceDVXfOt1vWYm9Zn9e
+        rJY+Rn/Lhb6AOyBqSGmGIdeFM0pWvpo2CYpN
+X-Google-Smtp-Source: AMsMyM6AaaZkGwEBkHo0F9rE7Xc/JyFXaDjj/Nj1mXN0rOHNFWvZVdKnRcqhCbJgXxu8mE3QnxWurg==
+X-Received: by 2002:a5d:4ecb:0:b0:236:be56:1a6 with SMTP id s11-20020a5d4ecb000000b00236be5601a6mr8691097wrv.252.1667298589374;
+        Tue, 01 Nov 2022 03:29:49 -0700 (PDT)
+Received: from localhost (cpc154979-craw9-2-0-cust193.16-3.cable.virginm.net. [80.193.200.194])
+        by smtp.gmail.com with ESMTPSA id n44-20020a05600c502c00b003cf537ec2efsm132921wmr.36.2022.11.01.03.29.48
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 01 Nov 2022 03:29:48 -0700 (PDT)
+From:   Colin Ian King <colin.i.king@gmail.com>
+To:     Helge Deller <deller@gmx.de>, linux-omap@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] video: fbdev: omapfb: remove redundant variable checksum
+Date:   Tue,  1 Nov 2022 10:29:47 +0000
+Message-Id: <20221101102947.27524-1-colin.i.king@gmail.com>
+X-Mailer: git-send-email 2.37.3
 MIME-Version: 1.0
-References: <20221021155000.4108406-1-arnd@kernel.org> <20221021155000.4108406-3-arnd@kernel.org>
-In-Reply-To: <20221021155000.4108406-3-arnd@kernel.org>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Mon, 31 Oct 2022 20:55:07 +0100
-Message-ID: <CACRpkdYayAm4rxg3taUqDa_9YCTK+EFiGKAoMETQd+yg1C83-w@mail.gmail.com>
-Subject: Re: [PATCH 02/11] ARM: sa1100: remove unused board files
-To:     Arnd Bergmann <arnd@kernel.org>
-Cc:     linux-arm-kernel@lists.infradead.org,
-        Russell King <linux@armlinux.org.uk>,
-        Lubomir Rintel <lkundrak@v3.sk>, linux-kernel@vger.kernel.org,
-        Arnd Bergmann <arnd@arndb.de>,
-        Peter Chubb <peter.chubb@unsw.edu.au>,
-        Stefan Eletzhofer <stefan.eletzhofer@eletztrick.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Lee Jones <lee@kernel.org>,
-        Dominik Brodowski <linux@dominikbrodowski.net>,
-        Alan Stern <stern@rowland.harvard.edu>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Helge Deller <deller@gmx.de>, linux-pm@vger.kernel.org,
-        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Oct 21, 2022 at 5:55 PM Arnd Bergmann <arnd@kernel.org> wrote:
+Variable checksum is being used to accumulate values however
+it is never read or used afterwards. It is redundant and can
+be removed.
 
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> The Cerf, H3100, Badge4, Hackkit, LART, NanoEngine, PLEB, Shannon and
-> Simpad machines were all marked as unused as there are no known users
-> left. Remove all of these, along with references to them in defconfig
-> files and drivers.
->
-> Four machines remain now: Assabet, Collie (Zaurus SL5500), iPAQ H3600
-> and Jornada 720, each of which had one person still using them, with
-> Collie also being supported in Qemu.
->
-> Cc: Peter Chubb <peter.chubb@unsw.edu.au>
-> Cc: Stefan Eletzhofer <stefan.eletzhofer@eletztrick.de>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
+---
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
+index cb63bc0e92ca..b33f62c5cb22 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
+@@ -129,7 +129,6 @@ static int hdmi_core_ddc_edid(struct hdmi_core_data *core, u8 *pedid, u8 ext)
+ {
+ 	void __iomem *base = core->base;
+ 	u8 cur_addr;
+-	char checksum = 0;
+ 	const int retries = 1000;
+ 	u8 seg_ptr = ext / 2;
+ 	u8 edidbase = ((ext % 2) * 0x80);
+@@ -178,7 +177,6 @@ static int hdmi_core_ddc_edid(struct hdmi_core_data *core, u8 *pedid, u8 ext)
+ 		}
+ 
+ 		pedid[cur_addr] = REG_GET(base, HDMI_CORE_I2CM_DATAI, 7, 0);
+-		checksum += pedid[cur_addr];
+ 	}
+ 
+ 	return 0;
+-- 
+2.37.3
 
-Yours,
-Linus Walleij

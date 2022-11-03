@@ -2,190 +2,127 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58C0DC43217
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Nov 2022 21:22:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C8D4C4332F
+	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Nov 2022 22:47:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229648AbiKAVW5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Nov 2022 17:22:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43282 "EHLO
+        id S229547AbiKCWrI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 3 Nov 2022 18:47:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58604 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230132AbiKAVWx (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Nov 2022 17:22:53 -0400
-X-Greylist: delayed 451 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 01 Nov 2022 14:22:51 PDT
-Received: from smtp.smtpout.orange.fr (smtp-16.smtpout.orange.fr [80.12.242.16])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id CE3101AF
-        for <linux-fbdev@vger.kernel.org>; Tue,  1 Nov 2022 14:22:51 -0700 (PDT)
-Received: from pop-os.home ([86.243.100.34])
-        by smtp.orange.fr with ESMTPA
-        id pyanoKD2rsfCIpybOoWfJm; Tue, 01 Nov 2022 22:15:19 +0100
-X-ME-Helo: pop-os.home
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Tue, 01 Nov 2022 22:15:19 +0100
-X-ME-IP: 86.243.100.34
-From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To:     Helge Deller <deller@gmx.de>
-Cc:     linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-        linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: [PATCH 15/30] video: fbdev: omapfb: Use kstrtobool() instead of strtobool()
-Date:   Tue,  1 Nov 2022 22:14:03 +0100
-Message-Id: <49e4f12b45470c02e4b7c64cc20939667690f948.1667336095.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <cover.1667336095.git.christophe.jaillet@wanadoo.fr>
-References: <cover.1667336095.git.christophe.jaillet@wanadoo.fr>
+        with ESMTP id S230231AbiKCWrG (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 3 Nov 2022 18:47:06 -0400
+Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5C4536429;
+        Thu,  3 Nov 2022 15:47:02 -0700 (PDT)
+Received: by mail-pj1-x102c.google.com with SMTP id k5so2998180pjo.5;
+        Thu, 03 Nov 2022 15:47:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=r0/NL8UAcocVV5ehp/plcYGqKjt4DMIirOXHBCu5MlQ=;
+        b=G0/bQToU7tPN8mLGPnPkz6Ur7I2LMjiUMq0+UpOLlSN9bl0h2iIDUESYHeMy0nnW34
+         EHjKfNL7gK4yBvrAfnWRU6y2KunueO6e64i9Ukolxq8ez8e7FenMg4ZeDW7WyWZSj/Ym
+         pU3IT0XvDhmkWPll03bsxr5lEEdxcNgl7bxEUlv0p+c745ZfZ6gPjTLcGwWK9hag7TK6
+         Nx9OXjeTdNZ174FUQ8R5mtgPoJgWsBYdx0Vz3AEW0rMtPZNvUbtWC04q0LgpaqmS3zeI
+         ZcZDUyXax9BzfR7IuugEUkZ8Z75X13iSMOeCn+JGVop66UHhwaKRT54vI0l/ndW1NNdO
+         dgvg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=r0/NL8UAcocVV5ehp/plcYGqKjt4DMIirOXHBCu5MlQ=;
+        b=kAoOhiDThju+/OYZ3HqkQJSHqR1/gHF/9Frb8CF3vE4MQ6+tk15vNciygvE3d1A2L1
+         WsOcxkIZ2neXakCe80Syw5emauwdk6lA/BCMqIK7aue7pV0D1Z1wjZWoLtZwR5ASuUv4
+         VBt04B6aWUq3Iv0ufJMwnSLPfihzhoTvahh9/lSNyf3X3lzKkFgn5T2PP9N6N3hq0b1U
+         Oh5qEipWo1HT2ltR4igUQNSAU7og4xtMBUwMNahBSYSxt3ZXUXN2/HilI7HlphRR6ee1
+         AOGHPzoSbggHKFFUaPKwI7EPuzG61mtw/M58fBl5WKoPnvkBXLDOWW6EVGe8pkPLWUbr
+         eQZA==
+X-Gm-Message-State: ACrzQf1HvY/QQkmPLRKPeHweDgLEeqfEbUooS+AHu65DjDimM3h1BgZr
+        mDKFJN5At57lfH/ksvfJyruRGkSbWJA=
+X-Google-Smtp-Source: AMsMyM4Oa4HbEfbZNjCJqoJpiijPlXGyFGhnNO0rP23WjhKll5VMKaNJJknY32yyG1fCc7i4wCm/aQ==
+X-Received: by 2002:a17:902:e54a:b0:186:a3ba:232a with SMTP id n10-20020a170902e54a00b00186a3ba232amr32022870plf.77.1667515621647;
+        Thu, 03 Nov 2022 15:47:01 -0700 (PDT)
+Received: from dtor-ws.mtv.corp.google.com ([2620:15c:9d:2:a6ae:11ff:fe11:fcc3])
+        by smtp.gmail.com with ESMTPSA id g13-20020aa796ad000000b0056be1d7d4a3sm1280421pfk.73.2022.11.03.15.47.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 03 Nov 2022 15:47:00 -0700 (PDT)
+From:   Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To:     Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
+        Helge Deller <deller@gmx.de>, Tony Lindgren <tony@atomide.com>,
+        Sebastian Reichel <sre@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-omap@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH 00/13] Convert omapfb drivers to gpiod API
+Date:   Thu,  3 Nov 2022 15:46:35 -0700
+Message-Id: <20221103-omapfb-gpiod-v1-0-c3d53ca7988f@gmail.com>
+X-Mailer: git-send-email 2.38.1.431.g37b22c650d-goog
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+X-Mailer: b4 0.11.0-dev-5166b
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-strtobool() is the same as kstrtobool().
-However, the latter is more used within the kernel.
-
-In order to remove strtobool() and slightly simplify kstrtox.h, switch to
-the other function name.
-
-While at it, include the corresponding header file (<linux/kstrtox.h>)
-
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-This patch is part of a serie that axes all usages of strtobool().
-Each patch can be applied independently from the other ones.
-
-The last patch of the serie removes the definition of strtobool().
-
-You may not be in copy of the cover letter. So, if needed, it is available
-at [1].
-
-[1]: https://lore.kernel.org/all/cover.1667336095.git.christophe.jaillet@wanadoo.fr/
----
- drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c | 7 ++++---
- drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c | 7 ++++---
- drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c | 3 ++-
- drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c      | 3 ++-
- 4 files changed, 12 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
-index bc5a44c2a144..ae937854403b 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
-@@ -10,6 +10,7 @@
- #define DSS_SUBSYS_NAME "DISPLAY"
- 
- #include <linux/kernel.h>
-+#include <linux/kstrtox.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/sysfs.h>
-@@ -36,7 +37,7 @@ static ssize_t display_enabled_store(struct omap_dss_device *dssdev,
- 	int r;
- 	bool enable;
- 
--	r = strtobool(buf, &enable);
-+	r = kstrtobool(buf, &enable);
- 	if (r)
- 		return r;
- 
-@@ -73,7 +74,7 @@ static ssize_t display_tear_store(struct omap_dss_device *dssdev,
- 	if (!dssdev->driver->enable_te || !dssdev->driver->get_te)
- 		return -ENOENT;
- 
--	r = strtobool(buf, &te);
-+	r = kstrtobool(buf, &te);
- 	if (r)
- 		return r;
- 
-@@ -183,7 +184,7 @@ static ssize_t display_mirror_store(struct omap_dss_device *dssdev,
- 	if (!dssdev->driver->set_mirror || !dssdev->driver->get_mirror)
- 		return -ENOENT;
- 
--	r = strtobool(buf, &mirror);
-+	r = kstrtobool(buf, &mirror);
- 	if (r)
- 		return r;
- 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
-index ba21c4a2633d..1b644be5fe2e 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
-@@ -10,6 +10,7 @@
- #define DSS_SUBSYS_NAME "MANAGER"
- 
- #include <linux/kernel.h>
-+#include <linux/kstrtox.h>
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
-@@ -246,7 +247,7 @@ static ssize_t manager_trans_key_enabled_store(struct omap_overlay_manager *mgr,
- 	bool enable;
- 	int r;
- 
--	r = strtobool(buf, &enable);
-+	r = kstrtobool(buf, &enable);
- 	if (r)
- 		return r;
- 
-@@ -290,7 +291,7 @@ static ssize_t manager_alpha_blending_enabled_store(
- 	if(!dss_has_feature(FEAT_ALPHA_FIXED_ZORDER))
- 		return -ENODEV;
- 
--	r = strtobool(buf, &enable);
-+	r = kstrtobool(buf, &enable);
- 	if (r)
- 		return r;
- 
-@@ -329,7 +330,7 @@ static ssize_t manager_cpr_enable_store(struct omap_overlay_manager *mgr,
- 	if (!dss_has_feature(FEAT_CPR))
- 		return -ENODEV;
- 
--	r = strtobool(buf, &enable);
-+	r = kstrtobool(buf, &enable);
- 	if (r)
- 		return r;
- 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c
-index 601c0beb6de9..1da4fb1c77b4 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c
-@@ -13,6 +13,7 @@
- #include <linux/err.h>
- #include <linux/sysfs.h>
- #include <linux/kobject.h>
-+#include <linux/kstrtox.h>
- #include <linux/platform_device.h>
- 
- #include <video/omapfb_dss.h>
-@@ -210,7 +211,7 @@ static ssize_t overlay_enabled_store(struct omap_overlay *ovl, const char *buf,
- 	int r;
- 	bool enable;
- 
--	r = strtobool(buf, &enable);
-+	r = kstrtobool(buf, &enable);
- 	if (r)
- 		return r;
- 
-diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c b/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
-index 06dc41aa0354..831b2c2fbdf9 100644
---- a/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
-+++ b/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
-@@ -15,6 +15,7 @@
- #include <linux/uaccess.h>
- #include <linux/platform_device.h>
- #include <linux/kernel.h>
-+#include <linux/kstrtox.h>
- #include <linux/mm.h>
- #include <linux/omapfb.h>
- 
-@@ -96,7 +97,7 @@ static ssize_t store_mirror(struct device *dev,
- 	int r;
- 	struct fb_var_screeninfo new_var;
- 
--	r = strtobool(buf, &mirror);
-+	r = kstrtobool(buf, &mirror);
- 	if (r)
- 		return r;
- 
--- 
-2.34.1
-
+This series converts various OMAPFB drivers to use the newer gpiod API=0D
+that respects line polarity specified in DTS.=0D
+=0D
+Unfortunately existing DTS files specify incorrect (active high) polarity=0D
+for reset lines. As discussed in [1] we will not try to correct existing=0D
+DTSes, but instead follow the path established by DRM drivers for the same=
+=0D
+components, and continue using inverted polarity in the FB drivers.=0D
+=0D
+[1] https://lore.kernel.org/all/20221004213503.848262-1-dmitry.torokhov@gma=
+il.com/=0D
+=0D
+To: Helge Deller <deller@gmx.de>=0D
+To: Tony Lindgren <tony@atomide.com>=0D
+To: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>=0D
+To: Sebastian Reichel <sre@kernel.org>=0D
+Cc: linux-omap@vger.kernel.org=0D
+Cc: linux-fbdev@vger.kernel.org=0D
+Cc: dri-devel@lists.freedesktop.org=0D
+Cc: linux-kernel@vger.kernel.org=0D
+=0D
+---=0D
+Dmitry Torokhov (13):=0D
+      omapfb: connector-hdmi: switch to using gpiod API=0D
+      omapfb: panel-sony-acx565akm: remove support for platform data=0D
+      omapfb: panel-sony-acx565akm: switch to using gpiod API=0D
+      omapfb: encoder-tfp410: switch to using gpiod API=0D
+      omapfb: panel-dsi-cm: switch to using gpiod API=0D
+      omapfb: panel-tpo-td043mtea1: switch to using gpiod API=0D
+      omapfb: panel-nec-nl8048hl11: switch to using gpiod API=0D
+      omapfb: panel-dpi: remove support for platform data=0D
+      omapfb: connector-analog-tv: remove support for platform data=0D
+      omapfb: encoder-opa362: fix included headers=0D
+      omapfb: panel-lgphilips-lb035q02: remove backlight GPIO handling=0D
+      omapfb: panel-tpo-td028ttec1: stop including gpio.h=0D
+      omapfb: panel-sharp-ls037v7dw01: fix included headers=0D
+=0D
+ .../omap2/omapfb/displays/connector-analog-tv.c    |  60 ++---------=0D
+ .../fbdev/omap2/omapfb/displays/connector-hdmi.c   |  49 +++------=0D
+ .../fbdev/omap2/omapfb/displays/encoder-opa362.c   |   4 +-=0D
+ .../fbdev/omap2/omapfb/displays/encoder-tfp410.c   |  67 ++++--------=0D
+ .../video/fbdev/omap2/omapfb/displays/panel-dpi.c  |  83 ++-------------=0D
+ .../fbdev/omap2/omapfb/displays/panel-dsi-cm.c     | 116 ++++++++---------=
+----=0D
+ .../omapfb/displays/panel-lgphilips-lb035q02.c     |  21 +---=0D
+ .../omap2/omapfb/displays/panel-nec-nl8048hl11.c   |  72 ++++---------=0D
+ .../omapfb/displays/panel-sharp-ls037v7dw01.c      |   3 +-=0D
+ .../omap2/omapfb/displays/panel-sony-acx565akm.c   | 105 ++++++-----------=
+--=0D
+ .../omap2/omapfb/displays/panel-tpo-td028ttec1.c   |   1 -=0D
+ .../omap2/omapfb/displays/panel-tpo-td043mtea1.c   |  59 +++--------=0D
+ include/video/omap-panel-data.h                    |  71 -------------=0D
+ 13 files changed, 170 insertions(+), 541 deletions(-)=0D
+---=0D
+base-commit: 61c3426aca2c71052ddcd06c32e29d92304990fd=0D
+change-id: 20221103-omapfb-gpiod-87ca2550bd90=0D
+=0D
+-- =0D
+Dmitry=0D
+=0D

@@ -2,85 +2,69 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16548C433FE
-	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Nov 2022 14:43:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CB6BC4332F
+	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Nov 2022 14:49:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232050AbiKDOnZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 4 Nov 2022 10:43:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56594 "EHLO
+        id S232016AbiKDOtO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 4 Nov 2022 10:49:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34684 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232109AbiKDOmo (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 4 Nov 2022 10:42:44 -0400
-Received: from msg-1.mailo.com (msg-1.mailo.com [213.182.54.11])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB666252;
-        Fri,  4 Nov 2022 07:42:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=mailo.com; s=mailo;
-        t=1667572936; bh=T3OgI0NGyKucc5ebvWG2uKcZ/0JteubuO2ZxTytgP/I=;
-        h=X-EA-Auth:Date:From:To:Cc:Subject:Message-ID:References:
-         MIME-Version:Content-Type:In-Reply-To;
-        b=HMAP6Fz8KezIEsbOy3MjSIi+qjYMEKBviCJoBDqW3Qld2gF6TCB2s0+QKo38TwBtI
-         bb9gx1EduHn4/h6xaN2zczdtuDNehmB7aeyOmgb+pxlyhnboXkVFLbKdY8VfsQR3oa
-         lcYJbF9Dy0U8CMjCzCOTWfUAzQf9OVXicHvLCFe4=
-Received: by b-3.in.mailobj.net [192.168.90.13] with ESMTP
-        via ip-206.mailobj.net [213.182.55.206]
-        Fri,  4 Nov 2022 15:42:16 +0100 (CET)
-X-EA-Auth: DdVu9IX4hw4A4UzDQdO9q5PajoGUFgj0H9It2PZJAKB2I8CzY4aZOF0ISi2FL8RcG6fVet1LWR9fkyueDxeTTHQoqTZt0r18
-Date:   Fri, 4 Nov 2022 20:12:11 +0530
-From:   Deepak R Varma <drv@mailo.com>
-To:     Julia Lawall <julia.lawall@inria.fr>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     outreachy@lists.linux.dev, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: fbtft: Use ARRAY_SIZE() to get argument count
-Message-ID: <Y2UkwwUn+IaCq3wf@qemulion>
-References: <Y1vZXUi0Bjiub8HZ@ubunlion>
- <Y1zXIjCe3LGwApWD@kroah.com>
- <Y11b0oCmle2pbRel@ubunlion>
- <alpine.DEB.2.22.394.2210291931590.2917@hadrien>
- <Y191LI7zKVRA5LEb@ubunlion>
- <Y1+YC5OuycA5hLFx@ubunlion>
- <7dc9b4d2-413-3f65-1381-b164d810c3ee@inria.fr>
- <Y2T/FA0Ws9ExS+uz@qemulion>
+        with ESMTP id S232010AbiKDOsw (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 4 Nov 2022 10:48:52 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 04 Nov 2022 07:48:40 PDT
+Received: from chronos.abteam.si (chronos.abteam.si [IPv6:2a01:4f8:140:90ea::2])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ADF6731FA2
+        for <linux-fbdev@vger.kernel.org>; Fri,  4 Nov 2022 07:48:40 -0700 (PDT)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+        by chronos.abteam.si (Postfix) with ESMTP id CE4AE5D0009F
+        for <linux-fbdev@vger.kernel.org>; Fri,  4 Nov 2022 15:41:55 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=bstnet.org; h=
+        content-transfer-encoding:content-type:content-type:subject
+        :subject:from:from:content-language:user-agent:mime-version:date
+        :date:message-id; s=default; t=1667572915; x=1669387316; bh=pHap
+        QSQ4H883EUWWNvq261cfDDkMm+K45YuRuvjes8g=; b=V8sQA3O/2JXpRqK0UJYW
+        Ohz2cgwe86LcVdl2+644OOJ/gP+NimxsY/sP3J0omHgpln/vploi/gtbUASDDuHz
+        th8ffBVKbrCDcfFSh0xjSb451c8heZCvrlKw9ZjH42dm5XqIm0Tdm2MejxvvKt3L
+        3YWYRnw56ODGwt1P8hNeMMU=
+X-Virus-Scanned: Debian amavisd-new at chronos.abteam.si
+Received: from chronos.abteam.si ([127.0.0.1])
+        by localhost (chronos.abteam.si [127.0.0.1]) (amavisd-new, port 10026)
+        with LMTP id uoAA-Ede0jfH for <linux-fbdev@vger.kernel.org>;
+        Fri,  4 Nov 2022 15:41:55 +0100 (CET)
+Received: from [IPV6:2a00:ee2:4d00:602:1216:21cb:4f5e:ef4a] (unknown [IPv6:2a00:ee2:4d00:602:1216:21cb:4f5e:ef4a])
+        (Authenticated sender: boris@abteam.si)
+        by chronos.abteam.si (Postfix) with ESMTPSA id 92DF75D0009E
+        for <linux-fbdev@vger.kernel.org>; Fri,  4 Nov 2022 15:41:55 +0100 (CET)
+Message-ID: <1e7fafae-4b1b-4d9d-d619-b1a61d214c8a@bstnet.org>
+Date:   Fri, 4 Nov 2022 15:41:55 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Y2T/FA0Ws9ExS+uz@qemulion>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.0
+Content-Language: en-US
+To:     linux-fbdev@vger.kernel.org
+From:   "Boris V." <borisvk@bstnet.org>
+Subject: With 6.0.4 kernel, framebuffer on GPU1 is disabled, if vfio-pci
+ driver is used for GPU2
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Nov 04, 2022 at 05:31:24PM +0530, Deepak R Varma wrote:
-> On Mon, Oct 31, 2022 at 01:05:32PM +0100, Julia Lawall wrote:
-> >
-> >
-> > I took a look, but it's pretty complex.  You could take the code and
-> > reorganize it so that it is more readable, and then take the definition of
-> > the ARRAY_SIZE macro, to better see what is going on.
-> >
-> > julia
-> >
->
-> Hello Greg, Julia,
-> I was able to successfully build the fbtft object file for arm architecture as
-> well. I used gcc 6.5.0 and 9.5.0 tool chains. It was successful using both. I
-> have attached the build log from my machine for your reference.
->
-> I am also looking at the .i file and rearrange the expanded macro to understand
-> it. However, since it is built successfully, I am not sure if that is truly the
-> problem area.
->
-> Should I resend the patch and check if it still errors the kernel build bot?
-> Anything else I can try?
+Hello,
 
-Looks like the change I proposed is causing nesting inside the write_reg
-function due to additional set of { & } brackets for the __VA_ARGS__ symbol.
+not sure where is the right place to post this.
+I already posted reply to patch that caused this 
+https://lore.kernel.org/lkml/ba4caf7a-9e1f-d5fb-f20c-dba81dc00c06@bstnet.org/
 
-Am I understanding it right?
-
->
-> Thank you,
-> ./drv
-
-
-
+Problem is that after kernel 6.0.4 console/framebuffer on GPU 1 is 
+disabled, if GPU 2 is bound to vfio-pci driver.
+Git bisect lead to commit af9ac541e88390d97b01d5e8c77309d2637c1d4c.
+After this patch sysfb_disable() is always called. Before it was not.
+Maybe it should be "if (primary) sysfb_disable();" or check if framebuffer
+is used on pci_dev passed to aperture_remove_conflicting_pci_devices() 
+and only in this case call sysfb_disable()?
+But I don't know how this things work.
+Is this intended change? I see no reason to disable framebuffer/console 
+on GPU 1, if GPU 2 is bound to vfio-pci driver.
+And this was not the case until 6.0.4 kernel. Kernel 6.0.3 still works.

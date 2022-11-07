@@ -2,123 +2,297 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F11D6C433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon,  7 Nov 2022 13:57:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63444C4332F
+	for <linux-fbdev@archiver.kernel.org>; Mon,  7 Nov 2022 14:16:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231563AbiKGN5j (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 7 Nov 2022 08:57:39 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45174 "EHLO
+        id S232062AbiKGOQr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 7 Nov 2022 09:16:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55628 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231350AbiKGN5i (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 7 Nov 2022 08:57:38 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5519D1CFF7
-        for <linux-fbdev@vger.kernel.org>; Mon,  7 Nov 2022 05:57:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1667829447; bh=4BClMNRktfth1UcCB5lvIjIvsBi5zp0t+Rlr89MuvFE=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=D93F5czjRb1Hi6Ru2+1b54rofjiVrBUYj1rKRyr53RoGLXltEllxdMs1FWbeu/Qsl
-         5eQ+0mQABpwDrqBsQUJqQpn9Eo+qU+628GSbHlMPzkqb95nLaN/BWFUzzpsapQh3TB
-         1/wI5PEi0rosPUBxmRrcQ/dEgWGYZX7YcWiCuED1+DPjsV+9qn3lk9XdGZ5mXI5Dk9
-         m3QLLsvg9EQqMsv+CYqEEQR9xXBeHa11+I7uIQpDke6E9TdrUmiFjN2HqrYzjr3AvB
-         54zFf9MkI/OJPNXJTI9AydSTgAeHXMmQ8Sh33gv35AoUFhNwLG8x7kagIMYwDWGNwL
-         imdeXXnl6i74w==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([92.116.191.140]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MnJlc-1pJhsh1mSa-00jKeZ; Mon, 07
- Nov 2022 14:57:27 +0100
-Message-ID: <2e2d23f3-9c2d-e75e-f390-4651a4da730f@gmx.de>
-Date:   Mon, 7 Nov 2022 14:57:26 +0100
+        with ESMTP id S232065AbiKGOQo (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 7 Nov 2022 09:16:44 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 178CA1BE94;
+        Mon,  7 Nov 2022 06:16:42 -0800 (PST)
+From:   John Ogness <john.ogness@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020; t=1667830600;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=zf2Nnq9aaBhq9OyJBdbPoPZazbYrZ5ZYcguoDhN8w38=;
+        b=2DMdV6P5I8sPplJufSLuueHeVl4bvVMKaOCMLHG/8T/fwK7DAOABqqdX7aJ+59oIKbSeI/
+        jxIUQ7vmqJIWBg5uBPUnLwho/ozyVcK4cifb7E8MZWqNAgvSZcTQkooqi2XOBJKmdFoPe0
+        S/wZC7FHNIjNqHF8aKh2I4aJghp93sxvUy5SQTr2sLIW2gINDw/7UBtkXqGJH9YxH5hhOO
+        0O67dTObUBp0/Va8bcvOAkYNduQYwv+rsV/BkAAXQ2emD/fAX8uWsiRgCCzSlHK71l+mxd
+        DWhAO2yHDDwVwuy7tiy10mhyFAMcwaRZxpwSCRbmOIfW9QXr83hR7vV88Ebaiw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020e; t=1667830600;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=zf2Nnq9aaBhq9OyJBdbPoPZazbYrZ5ZYcguoDhN8w38=;
+        b=jYEgYMmbvDXYj7DRG/zDjOcuyxgqHf6CJ4sMHlEhQTQPnAhOStcpCmHEsG9VmODdbETAmt
+        FuRjrih+zd0krvCw==
+To:     Petr Mladek <pmladek@suse.com>
+Cc:     Sergey Senozhatsky <senozhatsky@chromium.org>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        linux-kernel@vger.kernel.org,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Frederic Weisbecker <frederic@kernel.org>,
+        Neeraj Upadhyay <quic_neeraju@quicinc.com>,
+        Josh Triplett <josh@joshtriplett.org>,
+        Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+        Lai Jiangshan <jiangshanlai@gmail.com>,
+        Joel Fernandes <joel@joelfernandes.org>, rcu@vger.kernel.org,
+        Jason Wessel <jason.wessel@windriver.com>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Douglas Anderson <dianders@chromium.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        kgdb-bugreport@lists.sourceforge.net, linux-serial@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>,
+        Richard Weinberger <richard@nod.at>,
+        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        linux-um@lists.infradead.org, Luis Chamberlain <mcgrof@kernel.org>,
+        Aaron Tomlin <atomlin@redhat.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Tony Lindgren <tony@atomide.com>,
+        Lukas Wunner <lukas@wunner.de>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        linux-m68k@lists.linux-m68k.org, Ard Biesheuvel <ardb@kernel.org>,
+        linux-efi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org,
+        Michal Simek <michal.simek@xilinx.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Mathias Nyman <mathias.nyman@linux.intel.com>,
+        linux-usb@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>, netdev@vger.kernel.org,
+        Helge Deller <deller@gmx.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Juergen Gross <jgross@suse.com>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Tom Rix <trix@redhat.com>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH printk v3 00/40] reduce console_lock scope
+Date:   Mon,  7 Nov 2022 15:21:58 +0106
+Message-Id: <20221107141638.3790965-1-john.ogness@linutronix.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.0
-Subject: Re: [PATCH 2/2] fbdev: Add support for the nomodeset kernel parameter
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
-        javierm@redhat.com
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20221107104916.18733-1-tzimmermann@suse.de>
- <20221107104916.18733-3-tzimmermann@suse.de>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20221107104916.18733-3-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:xUMWzaVhRY8mI5Ap3+Zlf7TkfGAi2LBsljwuLShbi5Z5U/tfUf3
- bBp8I5qnapHHnNmj6zy32qK83NrFJOgjyzcW9RRWqUdq41F39E2Uy6IufVmpZuIq07Mwp4n
- EG8z5csNCQBSjOI6khz4xFC5nA7LDBy/oxJiVmQbAi8ZK/UMnuOhZywO272x43d4EKcdzR5
- oZaEI+yBDLbgkT4jMyZ9g==
-UI-OutboundReport: notjunk:1;M01:P0:9a3R+vQbCfs=;19bP7TorY1sknckB/lmL2wYFGFs
- wApCRdKwmuj+/AD6uSCivxYLI1TnCydRQKzeOjmbJC1hGyYYVug48/qWMeW4GAK32pslDwJ0p
- k0L9XGg9VpW3WVjsRhwqL5lBSx1BiooODJQsFCIQDWM5GAfLrtV6QuRUpFEOGVU6CM9ZxZfkV
- o3VJpwy/4kNpsGJ4lk0DoSl9qg33mpEQBjW9pHnn0IJy5Bv58KW7YcoeLJBOKAse0ue1XjIJZ
- ZSE5O3tKEMrgKmroAxWqNcggS0vlnFsnukqj21+cFwZce+nR1LRbgQrrhVaFqjpiMEg2dbTW7
- DNPNr3Ik8qdmEDlEdnN5+oYXUtae966EaLsdiXC3hlFQ2Z1AVmJeSHK0gfrdLhS6xBWnI8E5z
- PU+pDndQ2zsXdgaScdKOTKl1A8uB0HMJtSdFGywv+uOSMKikKVAfxRVxsq5oOnZ4ZTxaoS9Qq
- YbkO7pGA1W/osgAmnSBYN+cDFqkr/jRw3mWFw1zeBx6bo4Z81b80BrP3TocGG3bJhfvrQ+5QJ
- O0P6SU2phzyYJFUgai3Wp8ExhDxFI1WN9V0KPInaNzX1wHmrjsFZLSR//0RBGBKr2hwqof+Vk
- 172Dgd5rSUNPPO1FlobXU4+eoyqUukhAIeIGAbpe6cV6DhoUSDU2Hsgo/BMkX6iGmXz84Udci
- wSEnH/jQIDtXeBR5jPuDQF1Zq/l51GzTKGa5GGhNLJEyQhw+mcmAOfzd70lo/mvAHFAb7bQAq
- lD/fpOF7aNrDjnubUYPNwrz1EzBoXUTEMAoVWazSjoWExTTYgVMIAZn5Y3SB5/ixgQTHGMlfi
- 12RSX6P89QkCCcyDbV04Aw4rw3a3yguqozppnERz5kB40seG41R5OERz2SnynN/UKKf3VUhHE
- /lSH3baK0OVNf+wzjZxAkjxXEBuvw92vHBE9PHkhu5W6uQy6gIAnsK41cSelooAxDr7V72l3t
- VbkKBFeizOkPBqCDfT51mjulr8o=
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 11/7/22 11:49, Thomas Zimmermann wrote:
-> Support the kernel's nomodeset parameter for all PCI-based fbdev
-> drivers that use aperture helpers to remove other, hardware-agnostic
-> graphics drivers.
->
-> The parameter is a simple way of using the firmware-provided scanout
-> buffer if the hardware's native driver is broken.
+This is v3 of a series to prepare for threaded/atomic
+printing. v2 is here [0]. This series focuses on reducing the
+scope of the BKL console_lock. It achieves this by switching to
+SRCU and a dedicated mutex for console list iteration and
+modification, respectively. The console_lock will no longer
+offer this protection and is completely removed from
+(un)register_console() and console_stop/start() code.
 
-Nah... it's probably not broken, but you want it disabled in order
-to use the DRM driver instead?
+Also, during the review of v2 it came to our attention that
+many console drivers are checking CON_ENABLED to see if they
+are registered. Because this flag can change without
+unregistering and because this flag does not represent an
+atomic point when an (un)registration process is complete,
+a new console_is_registered() function is introduced. This
+function uses the console_list_lock to synchronize with the
+(un)registration process to provide a reliable status.
 
-> The same effect
-> could be achieved with per-driver options, but the importance of the
-> graphics output for many users makes a single, unified approach
-> worthwhile.
->
-> With nomodeset specified, the fbdev driver module will not load. This
-> unifies behavior with similar DRM drivers. In DRM helpers, modules
-> first check the nomodeset parameter before registering the PCI
-> driver. As fbdev has no such module helpers, we have to modify each
-> driver individually.
+All users of the console_lock for list iteration have been
+modified. For the call sites where the console_lock is still
+needed (because of other reasons), comments are added to
+explain exactly why the console_lock was needed.
 
-Ok.
+All users of CON_ENABLED for registration status have been
+modified to use console_is_registered(). Note that there are
+still users of CON_ENABLED, but this is for legitimate purposes
+about a registered console being able to print.
 
-> The name 'nomodeset' is slightly misleading, but has been chosen for
-> historical reasons. Several drivers implemented it before it became a
-> general option for DRM. So keeping the existing name was preferred over
-> introducing a new one.
+The base commit for this series is from Paul McKenney's RCU tree
+and provides an NMI-safe SRCU implementation [1]. Without the
+NMI-safe SRCU implementation, this series is not less safe than
+mainline. But we will need the NMI-safe SRCU implementation for
+atomic consoles anyway, so we might as well get it in
+now. Especially since it _does_ increase the reliability for
+mainline in the panic path.
 
-> diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/at=
-y/aty128fb.c
-> index 57e398fe7a81c..1a26ac2865d65 100644
-> --- a/drivers/video/fbdev/aty/aty128fb.c
-> +++ b/drivers/video/fbdev/aty/aty128fb.c
-> @@ -2503,7 +2504,12 @@ static int aty128fb_init(void)
->   {
->   #ifndef MODULE
->   	char *option =3D NULL;
-> +#endif
-> +
-> +	if (video_firmware_drivers_only())
-> +		return -ENODEV;
+Changes since v3:
 
-I think it makes sense to give at least some info, why a specific
-driver wasn't loaded, e.g. something like this kernel message:
-aty128fb: Driver disabled due to "nomodeset" kernel parameter.
+general:
 
-If you e.g. change the function video_firmware_drivers_only()
-to become video_firmware_drivers_only(const char *drivername)
-then you could print such a message in video_firmware_drivers_only().
+- introduce a synchronized console_is_registered() to query if
+  a console is registered, meant to replace CON_ENABLED
+  (mis)use for this purpose
 
-And I don't like very much the name of function video_firmware_drivers_onl=
-y(),
-but don't have any other better idea right now either...
+- directly read console->flags for registered consoles if it is
+  race-free (and document that it is so)
 
-Helge
+- replace uart_console_enabled() with a new
+  uart_console_registered() based on console_is_registered()
+
+- change comments about why console_lock is used to synchronize
+  console->device() by providing an example
+
+registration check fixups:
+
+- the following drivers were modified to use the new
+  console_is_registered() instead of CON_ENABLED checks
+
+   - arch/m68k/emu/nfcon.c
+   - drivers/firmware/efi/earlycon.c
+   - drivers/net/netconsole.c
+   - drivers/tty/hvc/hvc_console.c
+   - drivers/tty/serial/8250/8250_core.c
+   - drivers/tty/serial/earlycon.c
+   - drivers/tty/serial/pic32_uart.c
+   - drivers/tty/serial/samsung_tty.c
+   - drivers/tty/serial/serial_core.c
+   - drivers/tty/serial/xilinx_uartps.c
+   - drivers/usb/early/xhci-dbc.c
+
+um: kmsg_dumper:
+
+- change stdout dump criteria to match original intention
+
+kgdb/kdb:
+
+- in configure_kgdboc(), take console_list_lock to synchronize
+  tty_find_polling_driver() against register_console()
+
+- add comments explaining why calling console->write() without
+  locking might work
+
+tty: sh-sci:
+
+- use a setup() callback to setup the early console
+
+fbdev: xen:
+
+- implement a cleaner approach for
+  console_force_preferred_locked()
+
+rcu:
+
+- implement debug_lockdep_rcu_enabled() for
+  !CONFIG_DEBUG_LOCK_ALLOC
+
+printk:
+
+- check CONFIG_DEBUG_LOCK_ALLOC for srcu_read_lock_held()
+  availability
+
+- for console_lock/_trylock/_unlock, replace "lock the console
+  system" language with "block the console subsystem from
+  printing"
+
+- use WRITE_ONCE() for updating console->flags of registered
+  consoles
+
+- expand comments of synchronize_srcu() calls to explain why
+  they are needed, and also expand comments to explain when it
+  is not needed
+
+- change CON_BOOT consoles to always begin at earliest message
+
+- for non-BOOT/non-PRINTBUFFER consoles, initialize @seq to the
+  minimal @seq of any of the enabled boot consoles
+
+- add comments and lockdep assertion to
+  unregister_console_locked() because it is not clear from the
+  name which lock is implied
+
+- dropped patches that caused unnecessary churn in the series
+
+John Ogness
+
+[0] https://lore.kernel.org/lkml/20221019145600.1282823-1-john.ogness@linutronix.de
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git/log/?h=srcunmisafe.2022.10.21a
+
+John Ogness (38):
+  rcu: implement lockdep_rcu_enabled for !CONFIG_DEBUG_LOCK_ALLOC
+  printk: Prepare for SRCU console list protection
+  printk: fix setting first seq for consoles
+  um: kmsg_dump: only dump when no output console available
+  console: introduce console_is_enabled() wrapper
+  printk: use console_is_enabled()
+  um: kmsg_dump: use console_is_enabled()
+  kdb: kdb_io: use console_is_enabled()
+  um: kmsg_dumper: use srcu console list iterator
+  tty: serial: kgdboc: document console_lock usage
+  tty: tty_io: document console_lock usage
+  proc: consoles: document console_lock usage
+  kdb: use srcu console list iterator
+  printk: console_flush_all: use srcu console list iterator
+  printk: console_unblank: use srcu console list iterator
+  printk: console_flush_on_panic: use srcu console list iterator
+  printk: console_device: use srcu console list iterator
+  printk: __pr_flush: use srcu console list iterator
+  printk: introduce console_list_lock
+  console: introduce console_is_registered()
+  serial_core: replace uart_console_enabled() with
+    uart_console_registered()
+  tty: nfcon: use console_is_registered()
+  efi: earlycon: use console_is_registered()
+  tty: hvc: use console_is_registered()
+  tty: serial: earlycon: use console_is_registered()
+  tty: serial: pic32_uart: use console_is_registered()
+  tty: serial: samsung_tty: use console_is_registered()
+  tty: serial: xilinx_uartps: use console_is_registered()
+  usb: early: xhci-dbc: use console_is_registered()
+  netconsole: avoid CON_ENABLED misuse to track registration
+  printk, xen: fbfront: create/use safe function for forcing preferred
+  tty: tty_io: use console_list_lock for list synchronization
+  proc: consoles: use console_list_lock for list iteration
+  tty: serial: kgdboc: use console_list_lock for list traversal
+  tty: serial: kgdboc: synchronize tty_find_polling_driver() and
+    register_console()
+  tty: serial: kgdboc: use console_list_lock to trap exit
+  printk: relieve console_lock of list synchronization duties
+  tty: serial: sh-sci: use setup() callback for early console
+
+Thomas Gleixner (2):
+  serial: kgdboc: Lock console list in probe function
+  printk: Convert console_drivers list to hlist
+
+ .clang-format                       |   1 +
+ arch/m68k/emu/nfcon.c               |  10 +-
+ arch/um/kernel/kmsg_dump.c          |  24 +-
+ drivers/firmware/efi/earlycon.c     |   8 +-
+ drivers/net/netconsole.c            |  21 +-
+ drivers/tty/hvc/hvc_console.c       |   4 +-
+ drivers/tty/serial/8250/8250_core.c |   2 +-
+ drivers/tty/serial/earlycon.c       |   4 +-
+ drivers/tty/serial/kgdboc.c         |  46 ++-
+ drivers/tty/serial/pic32_uart.c     |   4 +-
+ drivers/tty/serial/samsung_tty.c    |   2 +-
+ drivers/tty/serial/serial_core.c    |  14 +-
+ drivers/tty/serial/sh-sci.c         |  17 +-
+ drivers/tty/serial/xilinx_uartps.c  |   2 +-
+ drivers/tty/tty_io.c                |  18 +-
+ drivers/usb/early/xhci-dbc.c        |   2 +-
+ drivers/video/fbdev/xen-fbfront.c   |  12 +-
+ fs/proc/consoles.c                  |  21 +-
+ include/linux/console.h             | 111 +++++++-
+ include/linux/rcupdate.h            |   5 +
+ include/linux/serial_core.h         |  15 +-
+ kernel/debug/kdb/kdb_io.c           |  14 +-
+ kernel/printk/printk.c              | 424 +++++++++++++++++++++-------
+ 23 files changed, 605 insertions(+), 176 deletions(-)
+
+
+base-commit: e29a4915db1480f96e0bc2e928699d086a71f43c
+-- 
+2.30.2
+

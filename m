@@ -2,166 +2,212 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD96CC4332F
-	for <linux-fbdev@archiver.kernel.org>; Mon,  7 Nov 2022 20:47:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7522C433FE
+	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Nov 2022 08:16:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232308AbiKGUrO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 7 Nov 2022 15:47:14 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39414 "EHLO
+        id S233287AbiKHIQ0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 8 Nov 2022 03:16:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36658 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232974AbiKGUqt (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 7 Nov 2022 15:46:49 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7109610066
-        for <linux-fbdev@vger.kernel.org>; Mon,  7 Nov 2022 12:46:48 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1667854000; bh=VUOGtRW5QRcsoux1eIEKMXiDp1er4Kt2H8bnoQy1LKE=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=N7RisSlFhEn4jI2jJXrNfAbDlR9TZ0/4IALTvQZd+uUabVJZY7783gXOVuA6j7glk
-         LnefvdkbONd4C57CMmy0I8yOjU8wsZgEKmOOSKB0yWoKvnPasX8bZXtzXon5oaVVYQ
-         cMrL64JO6Wcxd6blB6B+bB5HE790kSAUDN8dyoG84js1iQkeqJzWzO2VheAYdzO0h6
-         AdoFFpGe4Hok9/2yeWXZbJm9kQdCi8V2SMZetJ7vECFo3KBMjDjg/A7ea0KHt3XKuy
-         oSZD+LFaQfMSuzzAkaMUWi3zzGsXL1XEhKMFGrBVqe2V1e4E6hBcWGaxo0hrKseYD0
-         F7WZULX9zeHtw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([92.116.191.140]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1N3KTo-1p1WeQ08Je-010Mw6; Mon, 07
- Nov 2022 21:46:40 +0100
-Message-ID: <d21a0a0d-22fb-99bf-0d29-75b1fe1db677@gmx.de>
-Date:   Mon, 7 Nov 2022 21:46:38 +0100
+        with ESMTP id S229843AbiKHIQZ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Nov 2022 03:16:25 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3770E25C76
+        for <linux-fbdev@vger.kernel.org>; Tue,  8 Nov 2022 00:16:24 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id D439B2249D;
+        Tue,  8 Nov 2022 08:16:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1667895382; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=7AjH3iy5foLIcMClHOHIZnBN7Cx/DCSY5CAl77BmECQ=;
+        b=0XmDLAWR/soPXHPszutNhobbg1c+fqK5nQ0yhisHf+iWkJsK6KoUOWN5wLO5za/KNk8yu9
+        5BJ52DUTZFgO1686BdEBgLsvHsGd3P1PCsysvrpx/Gi8oQmq3qwld4PIzOaEO5NzbjV/Y0
+        V4U9W8kAiFGPMWdR97KoFafxo7PfYsI=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1667895382;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=7AjH3iy5foLIcMClHOHIZnBN7Cx/DCSY5CAl77BmECQ=;
+        b=gN48d2w2vIbTmw+irHNPayjokGVBstf5pl2KuUo191fkXJ8gP3As91d62zsxLRKwPGEMzP
+        dpBoJMfdp3KJ5kDw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id B46A113398;
+        Tue,  8 Nov 2022 08:16:22 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id ZR//KlYQamOBRAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Tue, 08 Nov 2022 08:16:22 +0000
+Message-ID: <dfa83c75-4062-93ee-380c-3e0e4f41c448@suse.de>
+Date:   Tue, 8 Nov 2022 09:16:21 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.0
+ Thunderbird/102.4.1
 Subject: Re: [PATCH 2/2] fbdev: Add support for the nomodeset kernel parameter
 Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
-        javierm@redhat.com
+To:     Helge Deller <deller@gmx.de>, daniel@ffwll.ch, javierm@redhat.com
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 References: <20221107104916.18733-1-tzimmermann@suse.de>
  <20221107104916.18733-3-tzimmermann@suse.de>
  <2e2d23f3-9c2d-e75e-f390-4651a4da730f@gmx.de>
  <6547fba2-a002-f339-2997-5b28df794095@suse.de>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <6547fba2-a002-f339-2997-5b28df794095@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:L8/XBgG1PIjL93oNfV/gXI0qXEMGIaLBiQQUACow6nK11QidiuL
- 2GCywnNwdO0yrImxxuFKy+4T8kMRLfJCZuMtN/PtSoORoXONYSbrVYX19IbU27Af5xGvuiU
- DtgrfF61+h+bWNPbuCgqAqdJfY6sJCWT0/5EEzev5qr/br/vOz68/xxRyXsFFdrZqJqNREj
- VJmxpFXkr96N3Yu9/5Ehw==
-UI-OutboundReport: notjunk:1;M01:P0:+gWM8z4yrq8=;E7pJ1rO1R/NeDqKQejHtFMjrRea
- UEyiJQfHCpgQ/fkDMWO1tFxSscmI+Ru69CaEMnzTxpbEmURyDx6HNTj+w7TVsMZ80jn5xK5gM
- 35N9qzXQR/bDNVlso4Qnq4CnRDTYGj5FZZx8IT3z8c0jUAvAVr3Lc3qiO1YTgB55Vnh9/YDRv
- dUoImcQpysglGGeE+BeZ976u0lw7ihBizuMVyD2rEaH5HwbG4/JKn9lsW8hcjWQpxH94jARqd
- ILm+w+DRP6L7eRoghc7uCQSBGBKjqsVzbdSxV+E44tOK+LFtbKNnwXfLOxIbLEdRC5x/kiUB+
- df0sgUrakR4QOob05YyvpXilsJHGfoh8SgEzVAe4xRhMsIf47EmAyBsHrI3wOoy06lwa6aQPU
- uQVqLcX928A2jgbp8/0U/6GkENKtTLkswVJNCpoXRDtDlJTHpcAwdPIADcuuUioaCqt9vtTHA
- oS7BiLDkX0P9XkHfQ3qEybI5VrYR/T4OST++1MLHdPlev0TGDjjeCUfM+DVr9hgBIqPahh4dT
- VI4Gf0bVKAWecbJT7iKmFJiUGIjH24PX58jO7T0XHNj2sjDJxwSvzBAWgb2yJfViejlxrIavy
- XqKNGQwJsC8jdD5g6wzb4ritnA8vRcK3jFjEVRMq1YiJnPMQYCTgZol6Y9w++FMPKQw/78LLC
- poSxxLjqTLCUIj9SORb7d+TXVPonCk0PRXM3XQOWl5LRVCUFK8ce+SyO8C33deNidzklLM2I9
- YqB/j0oyQBSaYgUDLOqfsQiEM89UGuSuYycl9gJ4mNjHnQEWO4ECl7mpz3fte600u3ZyrrOSI
- 0lKqbuvzLQPxKBqUshAgxSfJIiuUkQpH1vg8f/Y/LZPhG/v68M4ecjph7K90ler9R3XJMw3q8
- 1LjurwB5D3+1AQvgXU/3zqM86BLfOC3IeRSE8+DP7oLWT/VGTMUOBXHpW1zMDz0vN5eNGbVrr
- +sOHKQ==
+ <d21a0a0d-22fb-99bf-0d29-75b1fe1db677@gmx.de>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <d21a0a0d-22fb-99bf-0d29-75b1fe1db677@gmx.de>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------jq1kv0QifaGD1J9gYvl42emD"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 11/7/22 16:30, Thomas Zimmermann wrote:
-> Hi
->
-> Am 07.11.22 um 14:57 schrieb Helge Deller:
->> On 11/7/22 11:49, Thomas Zimmermann wrote:
->>> Support the kernel's nomodeset parameter for all PCI-based fbdev
->>> drivers that use aperture helpers to remove other, hardware-agnostic
->>> graphics drivers.
->>>
->>> The parameter is a simple way of using the firmware-provided scanout
->>> buffer if the hardware's native driver is broken.
->>
->> Nah... it's probably not broken, but you want it disabled in order
->> to use the DRM driver instead?
->
-> No, it's really for broken native drivers or any kind of problematic
-> modesetting. Most DRM drivers already respect the nomodeset option
-> and won't load when given. All you'd get are the generic drivers,
-> such as simpledrm, efifb or simplefb.
->
-> There are better options of configuring video output on the kernel
-> command line.  But as graphics output is such a fundamental feature
-> to using a computer, we found that a simple and easy option to
-> workaround erroneous systems would benefit DRM users; hence the
-> nomodeset parameter.
->
-> As fbdev drivers also do modesetting, supporting the parameter simply
-> unifies the behavior.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------jq1kv0QifaGD1J9gYvl42emD
+Content-Type: multipart/mixed; boundary="------------fyrWrYRXqZLgyhIByiVS45ZY";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Helge Deller <deller@gmx.de>, daniel@ffwll.ch, javierm@redhat.com
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Message-ID: <dfa83c75-4062-93ee-380c-3e0e4f41c448@suse.de>
+Subject: Re: [PATCH 2/2] fbdev: Add support for the nomodeset kernel parameter
+References: <20221107104916.18733-1-tzimmermann@suse.de>
+ <20221107104916.18733-3-tzimmermann@suse.de>
+ <2e2d23f3-9c2d-e75e-f390-4651a4da730f@gmx.de>
+ <6547fba2-a002-f339-2997-5b28df794095@suse.de>
+ <d21a0a0d-22fb-99bf-0d29-75b1fe1db677@gmx.de>
+In-Reply-To: <d21a0a0d-22fb-99bf-0d29-75b1fe1db677@gmx.de>
 
-Ok.
+--------------fyrWrYRXqZLgyhIByiVS45ZY
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
->>> The same effect
->>> could be achieved with per-driver options, but the importance of the
->>> graphics output for many users makes a single, unified approach
->>> worthwhile.
->>>
->>> With nomodeset specified, the fbdev driver module will not load. This
->>> unifies behavior with similar DRM drivers. In DRM helpers, modules
->>> first check the nomodeset parameter before registering the PCI
->>> driver. As fbdev has no such module helpers, we have to modify each
->>> driver individually.
->>
->> Ok.
->>
->>> The name 'nomodeset' is slightly misleading, but has been chosen for
->>> historical reasons. Several drivers implemented it before it became a
->>> general option for DRM. So keeping the existing name was preferred ove=
-r
->>> introducing a new one.
->>
->>> diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/=
-aty/aty128fb.c
->>> index 57e398fe7a81c..1a26ac2865d65 100644
->>> --- a/drivers/video/fbdev/aty/aty128fb.c
->>> +++ b/drivers/video/fbdev/aty/aty128fb.c
->>> @@ -2503,7 +2504,12 @@ static int aty128fb_init(void)
->>> =C2=A0 {
->>> =C2=A0 #ifndef MODULE
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 char *option =3D NULL;
->>> +#endif
->>> +
->>> +=C2=A0=C2=A0=C2=A0 if (video_firmware_drivers_only())
->>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return -ENODEV;
->>
->> I think it makes sense to give at least some info, why a specific
->> driver wasn't loaded, e.g. something like this kernel message:
->> aty128fb: Driver disabled due to "nomodeset" kernel parameter.
->>
->> If you e.g. change the function video_firmware_drivers_only()
->> to become video_firmware_drivers_only(const char *drivername)
->> then you could print such a message in video_firmware_drivers_only()
->
-> Well, we do have such a message in disable_modeset() already. [1]
-> [1] https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/drm_n=
-omodeset.c#L18
+SGkNCg0KQW0gMDcuMTEuMjIgdW0gMjE6NDYgc2NocmllYiBIZWxnZSBEZWxsZXI6DQo+IE9u
+IDExLzcvMjIgMTY6MzAsIFRob21hcyBaaW1tZXJtYW5uIHdyb3RlOg0KPj4gSGkNCj4+DQo+
+PiBBbSAwNy4xMS4yMiB1bSAxNDo1NyBzY2hyaWViIEhlbGdlIERlbGxlcjoNCj4+PiBPbiAx
+MS83LzIyIDExOjQ5LCBUaG9tYXMgWmltbWVybWFubiB3cm90ZToNCj4+Pj4gU3VwcG9ydCB0
+aGUga2VybmVsJ3Mgbm9tb2Rlc2V0IHBhcmFtZXRlciBmb3IgYWxsIFBDSS1iYXNlZCBmYmRl
+dg0KPj4+PiBkcml2ZXJzIHRoYXQgdXNlIGFwZXJ0dXJlIGhlbHBlcnMgdG8gcmVtb3ZlIG90
+aGVyLCBoYXJkd2FyZS1hZ25vc3RpYw0KPj4+PiBncmFwaGljcyBkcml2ZXJzLg0KPj4+Pg0K
+Pj4+PiBUaGUgcGFyYW1ldGVyIGlzIGEgc2ltcGxlIHdheSBvZiB1c2luZyB0aGUgZmlybXdh
+cmUtcHJvdmlkZWQgc2Nhbm91dA0KPj4+PiBidWZmZXIgaWYgdGhlIGhhcmR3YXJlJ3MgbmF0
+aXZlIGRyaXZlciBpcyBicm9rZW4uDQo+Pj4NCj4+PiBOYWguLi4gaXQncyBwcm9iYWJseSBu
+b3QgYnJva2VuLCBidXQgeW91IHdhbnQgaXQgZGlzYWJsZWQgaW4gb3JkZXINCj4+PiB0byB1
+c2UgdGhlIERSTSBkcml2ZXIgaW5zdGVhZD8NCj4+DQo+PiBObywgaXQncyByZWFsbHkgZm9y
+IGJyb2tlbiBuYXRpdmUgZHJpdmVycyBvciBhbnkga2luZCBvZiBwcm9ibGVtYXRpYw0KPj4g
+bW9kZXNldHRpbmcuIE1vc3QgRFJNIGRyaXZlcnMgYWxyZWFkeSByZXNwZWN0IHRoZSBub21v
+ZGVzZXQgb3B0aW9uDQo+PiBhbmQgd29uJ3QgbG9hZCB3aGVuIGdpdmVuLiBBbGwgeW91J2Qg
+Z2V0IGFyZSB0aGUgZ2VuZXJpYyBkcml2ZXJzLA0KPj4gc3VjaCBhcyBzaW1wbGVkcm0sIGVm
+aWZiIG9yIHNpbXBsZWZiLg0KPj4NCj4+IFRoZXJlIGFyZSBiZXR0ZXIgb3B0aW9ucyBvZiBj
+b25maWd1cmluZyB2aWRlbyBvdXRwdXQgb24gdGhlIGtlcm5lbA0KPj4gY29tbWFuZCBsaW5l
+LsKgIEJ1dCBhcyBncmFwaGljcyBvdXRwdXQgaXMgc3VjaCBhIGZ1bmRhbWVudGFsIGZlYXR1
+cmUNCj4+IHRvIHVzaW5nIGEgY29tcHV0ZXIsIHdlIGZvdW5kIHRoYXQgYSBzaW1wbGUgYW5k
+IGVhc3kgb3B0aW9uIHRvDQo+PiB3b3JrYXJvdW5kIGVycm9uZW91cyBzeXN0ZW1zIHdvdWxk
+IGJlbmVmaXQgRFJNIHVzZXJzOyBoZW5jZSB0aGUNCj4+IG5vbW9kZXNldCBwYXJhbWV0ZXIu
+DQo+Pg0KPj4gQXMgZmJkZXYgZHJpdmVycyBhbHNvIGRvIG1vZGVzZXR0aW5nLCBzdXBwb3J0
+aW5nIHRoZSBwYXJhbWV0ZXIgc2ltcGx5DQo+PiB1bmlmaWVzIHRoZSBiZWhhdmlvci4NCj4g
+DQo+IE9rLg0KPiANCj4+Pj4gVGhlIHNhbWUgZWZmZWN0DQo+Pj4+IGNvdWxkIGJlIGFjaGll
+dmVkIHdpdGggcGVyLWRyaXZlciBvcHRpb25zLCBidXQgdGhlIGltcG9ydGFuY2Ugb2YgdGhl
+DQo+Pj4+IGdyYXBoaWNzIG91dHB1dCBmb3IgbWFueSB1c2VycyBtYWtlcyBhIHNpbmdsZSwg
+dW5pZmllZCBhcHByb2FjaA0KPj4+PiB3b3J0aHdoaWxlLg0KPj4+Pg0KPj4+PiBXaXRoIG5v
+bW9kZXNldCBzcGVjaWZpZWQsIHRoZSBmYmRldiBkcml2ZXIgbW9kdWxlIHdpbGwgbm90IGxv
+YWQuIFRoaXMNCj4+Pj4gdW5pZmllcyBiZWhhdmlvciB3aXRoIHNpbWlsYXIgRFJNIGRyaXZl
+cnMuIEluIERSTSBoZWxwZXJzLCBtb2R1bGVzDQo+Pj4+IGZpcnN0IGNoZWNrIHRoZSBub21v
+ZGVzZXQgcGFyYW1ldGVyIGJlZm9yZSByZWdpc3RlcmluZyB0aGUgUENJDQo+Pj4+IGRyaXZl
+ci4gQXMgZmJkZXYgaGFzIG5vIHN1Y2ggbW9kdWxlIGhlbHBlcnMsIHdlIGhhdmUgdG8gbW9k
+aWZ5IGVhY2gNCj4+Pj4gZHJpdmVyIGluZGl2aWR1YWxseS4NCj4+Pg0KPj4+IE9rLg0KPj4+
+DQo+Pj4+IFRoZSBuYW1lICdub21vZGVzZXQnIGlzIHNsaWdodGx5IG1pc2xlYWRpbmcsIGJ1
+dCBoYXMgYmVlbiBjaG9zZW4gZm9yDQo+Pj4+IGhpc3RvcmljYWwgcmVhc29ucy4gU2V2ZXJh
+bCBkcml2ZXJzIGltcGxlbWVudGVkIGl0IGJlZm9yZSBpdCBiZWNhbWUgYQ0KPj4+PiBnZW5l
+cmFsIG9wdGlvbiBmb3IgRFJNLiBTbyBrZWVwaW5nIHRoZSBleGlzdGluZyBuYW1lIHdhcyBw
+cmVmZXJyZWQgb3Zlcg0KPj4+PiBpbnRyb2R1Y2luZyBhIG5ldyBvbmUuDQo+Pj4NCj4+Pj4g
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvYXR5L2F0eTEyOGZiLmMgDQo+Pj4+
+IGIvZHJpdmVycy92aWRlby9mYmRldi9hdHkvYXR5MTI4ZmIuYw0KPj4+PiBpbmRleCA1N2Uz
+OThmZTdhODFjLi4xYTI2YWMyODY1ZDY1IDEwMDY0NA0KPj4+PiAtLS0gYS9kcml2ZXJzL3Zp
+ZGVvL2ZiZGV2L2F0eS9hdHkxMjhmYi5jDQo+Pj4+ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJk
+ZXYvYXR5L2F0eTEyOGZiLmMNCj4+Pj4gQEAgLTI1MDMsNyArMjUwNCwxMiBAQCBzdGF0aWMg
+aW50IGF0eTEyOGZiX2luaXQodm9pZCkNCj4+Pj4gwqAgew0KPj4+PiDCoCAjaWZuZGVmIE1P
+RFVMRQ0KPj4+PiDCoMKgwqDCoMKgIGNoYXIgKm9wdGlvbiA9IE5VTEw7DQo+Pj4+ICsjZW5k
+aWYNCj4+Pj4gKw0KPj4+PiArwqDCoMKgIGlmICh2aWRlb19maXJtd2FyZV9kcml2ZXJzX29u
+bHkoKSkNCj4+Pj4gK8KgwqDCoMKgwqDCoMKgIHJldHVybiAtRU5PREVWOw0KPj4+DQo+Pj4g
+SSB0aGluayBpdCBtYWtlcyBzZW5zZSB0byBnaXZlIGF0IGxlYXN0IHNvbWUgaW5mbywgd2h5
+IGEgc3BlY2lmaWMNCj4+PiBkcml2ZXIgd2Fzbid0IGxvYWRlZCwgZS5nLiBzb21ldGhpbmcg
+bGlrZSB0aGlzIGtlcm5lbCBtZXNzYWdlOg0KPj4+IGF0eTEyOGZiOiBEcml2ZXIgZGlzYWJs
+ZWQgZHVlIHRvICJub21vZGVzZXQiIGtlcm5lbCBwYXJhbWV0ZXIuDQo+Pj4NCj4+PiBJZiB5
+b3UgZS5nLiBjaGFuZ2UgdGhlIGZ1bmN0aW9uIHZpZGVvX2Zpcm13YXJlX2RyaXZlcnNfb25s
+eSgpDQo+Pj4gdG8gYmVjb21lIHZpZGVvX2Zpcm13YXJlX2RyaXZlcnNfb25seShjb25zdCBj
+aGFyICpkcml2ZXJuYW1lKQ0KPj4+IHRoZW4geW91IGNvdWxkIHByaW50IHN1Y2ggYSBtZXNz
+YWdlIGluIHZpZGVvX2Zpcm13YXJlX2RyaXZlcnNfb25seSgpDQo+Pg0KPj4gV2VsbCwgd2Ug
+ZG8gaGF2ZSBzdWNoIGEgbWVzc2FnZSBpbiBkaXNhYmxlX21vZGVzZXQoKSBhbHJlYWR5LiBb
+MV0NCj4+IFsxXSANCj4+IGh0dHBzOi8vZWxpeGlyLmJvb3RsaW4uY29tL2xpbnV4L2xhdGVz
+dC9zb3VyY2UvZHJpdmVycy9ncHUvZHJtL2RybV9ub21vZGVzZXQuYyNMMTgNCj4gDQo+IFll
+cywgSSBzYXcgaXQsIGJ1dCB0aGF0IG1lc3NhZ2UgcXVpdGUgZ2VuZXJpYy4NCj4gSWYgZm9y
+IGV4YW1wbGUgbXkgYXR5ZmIgZG9lc24ndCBzaG93IHVwLCBJIHdvdWxkIGdyZXAgZG1lc2cg
+Zm9yICJhdHkiIGFuZA0KPiBub3QgIm5vbW9kZXNldCIuLi4NCg0KSSdkIGxpa2UgdG8gYWRk
+IHRoaXMgdG8gZmJkZXYgb3IgdGhlIGRyaXZlcnMgaW5zdGVhZCBvZiB0aGUgdmlkZW8gDQpo
+ZWxwZXIuIE9uIHRoZSBEUk0gc2lkZSwgaXQgd29ya3MgYSBhIGJpdCBkaWZmZXJlbnQgYW5k
+IEkgdGhpbmsgSSBoYXZlIGEgDQp1c2UgY2FzZSBmb3IgdGhlIGZ1bmN0aW9uIHRoYXQgZG9l
+cyBub3QgZGlyZWN0bHkgaW52b2x2ZSBkaXNhYmxpbmcgDQpkcml2ZXJzLiBTZWUgYmVsb3cg
+Zm9yIGEgcHJvcG9zYWwuDQoNCj4gDQo+IA0KPj4+IEFuZCBJIGRvbid0IGxpa2UgdmVyeSBt
+dWNoIHRoZSBuYW1lIG9mIGZ1bmN0aW9uIA0KPj4+IHZpZGVvX2Zpcm13YXJlX2RyaXZlcnNf
+b25seSgpLA0KPj4+IGJ1dCBkb24ndCBoYXZlIGFueSBvdGhlciBiZXR0ZXIgaWRlYSByaWdo
+dCBub3cgZWl0aGVyLi4uDQo+Pg0KPj4gSXQncyBwYXJ0IG9mIHRoZSAndmlkZW8nIG1vZHVs
+ZSwgaGVuY2UgdGhlIHByZWZpeC4gVGhlICdub21vZGVzZXQnDQo+PiBvcHRpb24gdXNlZCB0
+byBiZSBpbXBsZW1lbnRlZCBpbiBzZXZlcmFsIERSTSBkcml2ZXJzLiBJdCdzIGFuIGF3ZnVs
+DQo+PiBuYW1lLCBidXQgd2UgZGlkbid0IHdhbnQgdG8gcmVtb3ZlIGl0IG9yIGludHJvZHVj
+ZSBhIG5ldyBvbmUgZm9yIHRoZQ0KPj4gc2FtZSBmZWF0dXJlLiBTbyB3ZSBrZXB0IG5vbW9k
+ZXNldCBmb3IgYWxsIG9mIERSTS7CoCBUaGVuIHdlIHN0YXJ0ZWQNCj4+IGJpa2VzaGVkZGlu
+ZyB0aGUgZnVuY3Rpb24gbmFtZSB0aGF0IHJldHVybnMgdGhlIHNldHRpbmcuIEFuZA0KPj4g
+ZmlybXdhcmUtZHJpdmVycy1vbmx5IGlzIHRoZSBiZXN0IGRlc2NyaXB0aW9uIG9mIHdoYXQg
+aXMgaGFwcGVuaW5nDQo+PiBoZXJlLiBTbyB0aGF0J3MgaG93IHRoZSBuYW1lIGhhcHBlbmQu
+DQo+IA0KPiB2aWRlb19tb2Rlc2V0dGluZ19kaXNhYmxlZCgpID8NCj4gKEp1c3QgYW4gaWRl
+YSkNCg0KVGhlIHRlcm0gbW9kZXNldHRpbmcgaXMgbWlzbGVhZGluZyBhbmQgd2UgaGFkIHRo
+aXMgcHJvYmxlbSB3aXRoIA0KJ25vbW9kZXNldCcgYWxyZWFkeS4gVGhlcmUgYXJlIHN0aWxs
+IHBsZW50eSBvZiBkcml2ZXJzIHdpdGggbW9kZSANCnNldHRpbmcsIHN1Y2ggYXMgdGhlIFVT
+Qi1iYXNlZCBvbmVzLiAgSXQncyBhbHNvIG5vdCBzbyBlYXN5IG9uIHRoZSBEUk0gDQpzaWRl
+LCB3aGVyZSBhIG1vZGVzZXR0aW5nIG9wZXJhdGlvbiBpcyBvbmUgb2YgbWFueSBlZmZlY3Rz
+IG9mIGxvYWRpbmcgYW4gDQphdG9taWMgc3RhdGUuICBNYXliZSBsZXQncyBsZWF2ZSB0aGUg
+bmFtZSBpcyBmb3Igbm93PyBJZiB3ZSBldmVyIGZpbmQgDQp0aGUgcGVyZmVjdCBuYW1lLCBp
+dCdzIGEgc2ltcGxlIHJlbmFtZSB3aXRoIHNlZC4NCg0KTXkgcHJvcG9zYWwgd291bGQgYmUg
+dG8gYWRkIGEgbGl0dGxlIGhlbHBlciB0byBmYmRldiB0aGF0IGluY2x1ZGVzIHlvdXIgDQpz
+dWdnZXN0aW9uczoNCg0KICAgYm9vbCBmYl9tb2Rlc2V0dGluZ19kaXNhYmxlZChjb25zdCBj
+aGFyICpkcnZuYW1lKQ0KICAgew0KICAgICAgZndvbmx5ID0gdmlkZW9fZmlybXdhcmVfZHJp
+dmVyc19vbmx5KCkNCiAgICAgIGlmIChmYm9ubHkgJiYgZHJ2bmFtZSkNCglwcl93YXJuKCIi
+KQ0KICAgICAgcmV0dXJuIGZib25seTsNCiAgIH0NCg0KRHJpdmVycyBjYW4gdXNlIHRoYXQg
+Zm9yIHRoZSB0ZXN0Lg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQoNCj4gDQo+IEhlbGdl
+DQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXIN
+ClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwg
+OTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpH
+ZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
 
-Yes, I saw it, but that message quite generic.
-If for example my atyfb doesn't show up, I would grep dmesg for "aty" and
-not "nomodeset"...
+--------------fyrWrYRXqZLgyhIByiVS45ZY--
 
+--------------jq1kv0QifaGD1J9gYvl42emD
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
->> And I don't like very much the name of function video_firmware_drivers_=
-only(),
->> but don't have any other better idea right now either...
->
-> It's part of the 'video' module, hence the prefix. The 'nomodeset'
-> option used to be implemented in several DRM drivers. It's an awful
-> name, but we didn't want to remove it or introduce a new one for the
-> same feature. So we kept nomodeset for all of DRM.  Then we started
-> bikeshedding the function name that returns the setting. And
-> firmware-drivers-only is the best description of what is happening
-> here. So that's how the name happend.
+-----BEGIN PGP SIGNATURE-----
 
-video_modesetting_disabled() ?
-(Just an idea)
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmNqEFUFAwAAAAAACgkQlh/E3EQov+DR
+UxAAuoa4xPwiPCYa7kUcjHxtO2m8oWqharvnnIIby9LKEYLpH2nRQliUXdjuFnCcwlBugbdJNOmT
+bUluWmV4NHikeaySkSPctgvH1ChR9RDsfVFOMR++e5ufEZ+hWc9e04Z42gnDj9DlT/GUb2dCmj94
+9hgGqpEp0iRBad4y9acADUb2f9iwTagi/mf/IdzHhBL1Z/Gt93z6Q9mBsDvW9ZnDaHO+ASQipDVJ
+/MEb4HDufMBWWcQbirrtdwAENDA4IpIQv8QY6grspRrnuj5FKD35hZ9zzngTlLHSH5aBLY5dYj7U
+lVIN/RAoBWJROzitXr6jusmt5HDAYDRPYb6RfEiWhhoFVqWD+fpwMHtUTEBgT153Ho+zzRICgmf/
+tqcDhCdDrJet+N21sAYjwo056/ApO98Jd9Kou+nlrcRnNA74D/IqkK+sQXxYmLdev4oqoZcW+24G
+6e9JLtoSt1v5TxYAr/L13ou42AKB1LzVbOoUNleu8b7SkWMkannkeeRhwqdWS0y35vWeuOq6cZl4
+iSVZXZUEKFY+bW4uFPDwRqBLCfbx0mT2nPL4G/WdqMg70XpoZ2OYBYnB6YwMlt+0UHQIFZw/CYWH
+JExV6YQXmU0XACW1O4Y8DAJqMXHjLEcBBG0IlO+01lVZWyhlf7MIxKLKJxEY5CqBiRzlxVAA78eb
+CVI=
+=Oc9w
+-----END PGP SIGNATURE-----
 
-Helge
+--------------jq1kv0QifaGD1J9gYvl42emD--

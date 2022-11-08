@@ -2,57 +2,85 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 30DAEC43219
-	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Nov 2022 08:42:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C536C4332F
+	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Nov 2022 11:40:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233540AbiKHIm0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 8 Nov 2022 03:42:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48386 "EHLO
+        id S233082AbiKHLkM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 8 Nov 2022 06:40:12 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45602 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233499AbiKHImZ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Nov 2022 03:42:25 -0500
-X-Greylist: delayed 394 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 08 Nov 2022 00:42:24 PST
-Received: from mail.lokoho.com (mail.lokoho.com [217.61.105.98])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DD8C02C659
-        for <linux-fbdev@vger.kernel.org>; Tue,  8 Nov 2022 00:42:24 -0800 (PST)
-Received: by mail.lokoho.com (Postfix, from userid 1001)
-        id DFD53825E7; Tue,  8 Nov 2022 08:35:40 +0000 (GMT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=lokoho.com; s=mail;
-        t=1667896547; bh=Z0N5VlX9/JlryGOL5I747Le9USomZJCRNNGRT3LbbKc=;
-        h=Date:From:To:Subject:From;
-        b=NaDWL997ACAREfiEhNL9+SgEKsorU4BpNFASnxKKrLlSrarClUbCZ1UBsL5kSV7x8
-         ygGVNLJyxca/XvpG/x0L+l5j1Ms2Fj3pP7egOXxLEckh95omj3XL9HBExfm1nqmgzp
-         VqONWK+mOS7mCBcpPxy2V14jowTMmXfjRmA901x5mZ+YbXkRnwGe0zySO0FwXEqo37
-         3Y7CQtLmc760OISo79QPLEzNU9Kk0ATbl6G2NmK+aiLiWp7f6UkZyAtCe4E1TwCNek
-         hy5JbDxpDBN/Tg+fk4eHfuu6OsIqX929ND+dHNr6EQPzw3R/2ll4pTbVCkLi3joJm5
-         2ME1rej3lfJYA==
-Received: by mail.lokoho.com for <linux-fbdev@vger.kernel.org>; Tue,  8 Nov 2022 08:35:30 GMT
-Message-ID: <20221108074500-0.1.24.5mov.0.byiejn4r05@lokoho.com>
-Date:   Tue,  8 Nov 2022 08:35:30 GMT
-From:   "Adam Charachuta" <adam.charachuta@lokoho.com>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: =?UTF-8?Q?S=C5=82owa_kluczowe_do_wypozycjonowania?=
-X-Mailer: mail.lokoho.com
+        with ESMTP id S233103AbiKHLkK (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Nov 2022 06:40:10 -0500
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D52827FC0
+        for <linux-fbdev@vger.kernel.org>; Tue,  8 Nov 2022 03:40:08 -0800 (PST)
+Received: from dggpeml500025.china.huawei.com (unknown [172.30.72.54])
+        by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4N65f26kbFzpSsj;
+        Tue,  8 Nov 2022 19:36:26 +0800 (CST)
+Received: from dggpeml500003.china.huawei.com (7.185.36.200) by
+ dggpeml500025.china.huawei.com (7.185.36.35) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.31; Tue, 8 Nov 2022 19:40:06 +0800
+Received: from huawei.com (10.175.103.91) by dggpeml500003.china.huawei.com
+ (7.185.36.200) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.31; Tue, 8 Nov
+ 2022 19:40:06 +0800
+From:   Yu Liao <liaoyu15@huawei.com>
+To:     <lee@kernel.org>, <deller@gmx.de>
+CC:     <liwei391@huawei.com>, <linux-fbdev@vger.kernel.org>,
+        <liaoyu15@huawei.com>
+Subject: [PATCH] backlight: fix build error when CONFIG_ARCH_OMAP1_ANY=n
+Date:   Tue, 8 Nov 2022 19:38:35 +0800
+Message-ID: <20221108113835.4135655-1-liaoyu15@huawei.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.175.103.91]
+X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
+ dggpeml500003.china.huawei.com (7.185.36.200)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,
+If CONFIG_BACKLIGHT_OMAP1=y and CONFIG_ARCH_OMAP1_ANY=n, it leads a build
+error:
 
-zapozna=C5=82em si=C4=99 z Pa=C5=84stwa ofert=C4=85 i z przyjemno=C5=9Bci=
-=C4=85 przyznaj=C4=99, =C5=BCe przyci=C4=85ga uwag=C4=99 i zach=C4=99ca d=
-o dalszych rozm=C3=B3w.=20
+	drivers/video/backlight/omap1_bl.o: In function `omapbl_probe':
+	omap1_bl.c:(.text+0x198): undefined reference to `omap_cfg_reg'
 
-Pomy=C5=9Bla=C5=82em, =C5=BCe mo=C5=BCe m=C3=B3g=C5=82bym mie=C4=87 sw=C3=
-=B3j wk=C5=82ad w Pa=C5=84stwa rozw=C3=B3j i pom=C3=B3c dotrze=C4=87 z t=C4=
-=85 ofert=C4=85 do wi=C4=99kszego grona odbiorc=C3=B3w. Pozycjonuj=C4=99 =
-strony www, dzi=C4=99ki czemu generuj=C4=85 =C5=9Bwietny ruch w sieci.
+Here is the link to the issue reported by kernel test bot:
 
-Mo=C5=BCemy porozmawia=C4=87 w najbli=C5=BCszym czasie?
+https://lore.kernel.org/lkml/202211060819.fHDGmrB4-lkp@intel.com/
 
+arch/arm/mach-omap1/mux.c where defines omap_cfg_reg() depends on
+CONFIG_ARCH_OMAP1_ANY, so make CONFIG_BACKLIGHT_OMAP1 depends on
+CONFIG_ARCH_OMAP1_ANY to fix it. ARCH_OMAP1_ANY depends on ARCH_OMAP1,
+so the following logic is equivalent:
 
-Pozdrawiam
-Adam Charachuta
+ARCH_OMAP1_ANY && (ARCH_OMAP1 || COMPILE_TEST) = ARCH_OMAP1_ANY
+
+Fixes: 7036440eab3e ("ARM: omap1: enable multiplatform")
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Yu Liao <liaoyu15@huawei.com>
+---
+ drivers/video/backlight/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 936ba1e4d35e..ff66cfebe45a 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -211,7 +211,7 @@ config BACKLIGHT_LOCOMO
+ 
+ config BACKLIGHT_OMAP1
+ 	tristate "OMAP1 PWL-based LCD Backlight"
+-	depends on ARCH_OMAP1 || COMPILE_TEST
++	depends on ARCH_OMAP1_ANY
+ 	default ARCH_OMAP1
+ 	help
+ 	  This driver controls the LCD backlight level and power for
+-- 
+2.25.1
+

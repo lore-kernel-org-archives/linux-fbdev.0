@@ -2,116 +2,65 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D887AC4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu, 10 Nov 2022 17:27:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ABA19C433FE
+	for <linux-fbdev@archiver.kernel.org>; Thu, 10 Nov 2022 20:50:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231823AbiKJR1D (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 10 Nov 2022 12:27:03 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50182 "EHLO
+        id S231154AbiKJUur (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 10 Nov 2022 15:50:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50998 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230493AbiKJR0w (ORCPT
+        with ESMTP id S231414AbiKJUuq (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 10 Nov 2022 12:26:52 -0500
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E173F18E37;
-        Thu, 10 Nov 2022 09:26:50 -0800 (PST)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
-        by smtp-out1.suse.de (Postfix) with ESMTP id 9FD55228D3;
-        Thu, 10 Nov 2022 17:26:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
-        t=1668101209; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=Nzyi44WKO3p/rhzOL3lGsqVjLxzcpLoKQVlmwsHqaY4=;
-        b=VIifZ/vuAtq6adyPtfIzER7lD6dcovCYFn2LPl2N7liyeJ2smk+e619717bVZOVG2cCs4L
-        4NW34hAc5nZGPOp/hx+KHmTKMgvXYz+r6z8waJ7yaz+ZDQCc5GlM2IINXZtTuek5vPZ+hB
-        8h++xOtr6IViY8n5P15stCuy6lMKTek=
-Received: from suse.cz (unknown [10.100.208.146])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by relay2.suse.de (Postfix) with ESMTPS id 3D2E22C141;
-        Thu, 10 Nov 2022 17:26:49 +0000 (UTC)
-Date:   Thu, 10 Nov 2022 18:26:48 +0100
-From:   Petr Mladek <pmladek@suse.com>
-To:     John Ogness <john.ogness@linutronix.de>
-Cc:     Sergey Senozhatsky <senozhatsky@chromium.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        linux-kernel@vger.kernel.org, Helge Deller <deller@gmx.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Juergen Gross <jgross@suse.com>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        Tom Rix <trix@redhat.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH printk v3 33/40] printk, xen: fbfront: create/use safe
- function for forcing preferred
-Message-ID: <Y200WG6q4z0JGYBc@alley>
-References: <20221107141638.3790965-1-john.ogness@linutronix.de>
- <20221107141638.3790965-34-john.ogness@linutronix.de>
- <Y20aBwNWT19YDeib@alley>
- <877d026blr.fsf@jogness.linutronix.de>
+        Thu, 10 Nov 2022 15:50:46 -0500
+Received: from mail-oa1-x29.google.com (mail-oa1-x29.google.com [IPv6:2001:4860:4864:20::29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6DB3445A3E
+        for <linux-fbdev@vger.kernel.org>; Thu, 10 Nov 2022 12:50:45 -0800 (PST)
+Received: by mail-oa1-x29.google.com with SMTP id 586e51a60fabf-13ba86b5ac0so3504417fac.1
+        for <linux-fbdev@vger.kernel.org>; Thu, 10 Nov 2022 12:50:45 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=CwL7aq5cSs9HEaq0nqBlSMF4bh+wklN/OA+m+xjVg1s=;
+        b=c0ZfMKCxMTI2b6N8HwLJSwPpMWI1RGwNPoaCQMBK0iq91fjfVrM7WQDsHtjg2L0Kcb
+         sZz5mQqL9TKa323CvP5paVCRdLHynD0nLPJ8xQg4Sk2CzDmnm2dbRPn+ZUbwIQ/PWXD3
+         GwPay++TL2h7tLjYeug7kp271mTKD/7mY1czue3WyyEX21dWogbywYqn+aZDs6lk2LdM
+         FJ59FdxQ7aYNUYJIlRaJMGvQ26EaZ4ZAashMRsu4pPBYzQqpn5fqTNH9LcwokbBpAVFq
+         fLKrCbpkPZr4X4vA0l8jmkyebT/xsNQMWkm6L9uRmbM81G00MnO4J9/21DGzx0gXajb2
+         /zIA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=CwL7aq5cSs9HEaq0nqBlSMF4bh+wklN/OA+m+xjVg1s=;
+        b=6pMqfP3Y7D54uiXjFx8LP+KQoLFVIBIpZUjWaswCrTY0TvcniRJ8dSJvG6VbNTZDgN
+         kqHfMoF6cs76TXIUfN3+qOIUlSebhk7R0YPyqMvOc1yAn5jp8Mx8zPN1Ms2guTybI27H
+         cGZ9URmZn+L5w6iRB6QvWPVa/zeZyPyQ4HuH6CqSKrOo5uGOPkaXuUhyMBpd5eB9elLo
+         xHCbcqzVfUJlZPfJ7nRtdsObiBKLGpKB6gWQkMCmJ6Mco5QlzB+laaVogNv/iLfDymgs
+         aFWrAdyt7qhdUoDfT/s76wseb+tkMFEI+cCqIm0K7gphNELHlpODWGrN+YLnlGdhfMoj
+         JUCw==
+X-Gm-Message-State: ACrzQf1ujOYNDBgI4rTqsP4++pbgDOGyIfYDrWc/LsID78Nxp5bKsekw
+        BgkBRspMYuEzsDhxKU4ecEouUo05/KRnN0wNp2yLF6Od9YI=
+X-Google-Smtp-Source: AMsMyM4ir0uLwB/7TgR6k0nSyFkY6+GdJd+6Dnlj/FzeBmQlXGZEMY8wBY8hmgV8tb+meHSkJoGL+HDlbfMmJGwOHOI=
+X-Received: by 2002:a05:6870:5b8e:b0:13b:d693:2ee1 with SMTP id
+ em14-20020a0568705b8e00b0013bd6932ee1mr2119868oab.77.1668113444445; Thu, 10
+ Nov 2022 12:50:44 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <877d026blr.fsf@jogness.linutronix.de>
+From:   "David F." <df7729@gmail.com>
+Date:   Thu, 10 Nov 2022 12:50:33 -0800
+Message-ID: <CAGRSmLtF3Nwpbdh8M=AL1GiVNLK7jWTWae+FMKq=c=P50hzgyQ@mail.gmail.com>
+Subject: scrambled screen
+To:     linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu 2022-11-10 17:09:12, John Ogness wrote:
-> On 2022-11-10, Petr Mladek <pmladek@suse.com> wrote:
-> >> +void console_force_preferred_locked(struct console *con)
-> >> +{
-> >> +	struct console *cur_pref_con;
-> >> +
-> >> +	if (!console_is_registered_locked(con))
-> >> +		return;
-> >> +
-> >> +	cur_pref_con = console_first();
-> >> +
-> >> +	/* Already preferred? */
-> >> +	if (cur_pref_con == con)
-> >> +		return;
-> >> +
-> >> +	hlist_del_init_rcu(&con->node);
-> >
-> > We actually should re-initialize the node only after all existing
-> > console list walks are finished. Se we should use here:
-> >
-> > 	hlist_del_rcu(&con->node);
-> 
-> hlist_del_init_rcu() only re-initializes @pprev pointer.
+Customer with Lenovo Ideapad MIIX 310-10ICR has issue with newer
+kernels updates.  The screen is scrambled.
 
-Ah, I was not aware of it.
+Kernel 5.10.19 works, later with 5.10.91 he had a problem with it, as
+well as 5.15.x
 
-> But maybe you
-> are concerned that there is a window where list_unhashed() becomes true?
-> I agree that it should be changed to hlist_del_rcu() because there
-> should not be a window where this console appears unregistered.
-
-Makes sense.
-
-> >> +	/* Only the new head can have CON_CONSDEV set. */
-> >> +	WRITE_ONCE(cur_pref_con->flags, cur_pref_con->flags & ~CON_CONSDEV);
-> >
-> > As mentioned in the reply for 7th patch, I would prefer to hide this
-> > WRITE_ONCE into a wrapper, e.g. console_set_flag(). It might also
-> > check that the console_list_lock is taken...
-> 
-> Agreed. For v4 it will become:
-> 
-> console_srcu_write_flags(cur_pref_con->flags & ~CON_CONSDEV);
-
-I am happy that your are going to introduce an API for this.
-
-Just to be sure. The _srcu_ in the name means that the write
-will use WRITE_ONCE() so that it can be read safely in SRCU
-context using READ_ONCE(). Do I get it correctly, please?
-
-I expect that the counter part will be console_srcu_read_flags().
-I like the name. It is better than _unsafe_ that I proposed earlier.
-
-Best Regards,
-Petr
+Here's a sample of the screen:
+https://www.dropbox.com/s/wvunl4acd5dkt55/IMG_5327.JPG?dl=0

@@ -2,65 +2,96 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ABA19C433FE
-	for <linux-fbdev@archiver.kernel.org>; Thu, 10 Nov 2022 20:50:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EADD7C4332F
+	for <linux-fbdev@archiver.kernel.org>; Thu, 10 Nov 2022 22:37:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231154AbiKJUur (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 10 Nov 2022 15:50:47 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50998 "EHLO
+        id S229757AbiKJWhc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 10 Nov 2022 17:37:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43816 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231414AbiKJUuq (ORCPT
+        with ESMTP id S229559AbiKJWhb (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 10 Nov 2022 15:50:46 -0500
-Received: from mail-oa1-x29.google.com (mail-oa1-x29.google.com [IPv6:2001:4860:4864:20::29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6DB3445A3E
-        for <linux-fbdev@vger.kernel.org>; Thu, 10 Nov 2022 12:50:45 -0800 (PST)
-Received: by mail-oa1-x29.google.com with SMTP id 586e51a60fabf-13ba86b5ac0so3504417fac.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 10 Nov 2022 12:50:45 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=CwL7aq5cSs9HEaq0nqBlSMF4bh+wklN/OA+m+xjVg1s=;
-        b=c0ZfMKCxMTI2b6N8HwLJSwPpMWI1RGwNPoaCQMBK0iq91fjfVrM7WQDsHtjg2L0Kcb
-         sZz5mQqL9TKa323CvP5paVCRdLHynD0nLPJ8xQg4Sk2CzDmnm2dbRPn+ZUbwIQ/PWXD3
-         GwPay++TL2h7tLjYeug7kp271mTKD/7mY1czue3WyyEX21dWogbywYqn+aZDs6lk2LdM
-         FJ59FdxQ7aYNUYJIlRaJMGvQ26EaZ4ZAashMRsu4pPBYzQqpn5fqTNH9LcwokbBpAVFq
-         fLKrCbpkPZr4X4vA0l8jmkyebT/xsNQMWkm6L9uRmbM81G00MnO4J9/21DGzx0gXajb2
-         /zIA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=to:subject:message-id:date:from:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=CwL7aq5cSs9HEaq0nqBlSMF4bh+wklN/OA+m+xjVg1s=;
-        b=6pMqfP3Y7D54uiXjFx8LP+KQoLFVIBIpZUjWaswCrTY0TvcniRJ8dSJvG6VbNTZDgN
-         kqHfMoF6cs76TXIUfN3+qOIUlSebhk7R0YPyqMvOc1yAn5jp8Mx8zPN1Ms2guTybI27H
-         cGZ9URmZn+L5w6iRB6QvWPVa/zeZyPyQ4HuH6CqSKrOo5uGOPkaXuUhyMBpd5eB9elLo
-         xHCbcqzVfUJlZPfJ7nRtdsObiBKLGpKB6gWQkMCmJ6Mco5QlzB+laaVogNv/iLfDymgs
-         aFWrAdyt7qhdUoDfT/s76wseb+tkMFEI+cCqIm0K7gphNELHlpODWGrN+YLnlGdhfMoj
-         JUCw==
-X-Gm-Message-State: ACrzQf1ujOYNDBgI4rTqsP4++pbgDOGyIfYDrWc/LsID78Nxp5bKsekw
-        BgkBRspMYuEzsDhxKU4ecEouUo05/KRnN0wNp2yLF6Od9YI=
-X-Google-Smtp-Source: AMsMyM4ir0uLwB/7TgR6k0nSyFkY6+GdJd+6Dnlj/FzeBmQlXGZEMY8wBY8hmgV8tb+meHSkJoGL+HDlbfMmJGwOHOI=
-X-Received: by 2002:a05:6870:5b8e:b0:13b:d693:2ee1 with SMTP id
- em14-20020a0568705b8e00b0013bd6932ee1mr2119868oab.77.1668113444445; Thu, 10
- Nov 2022 12:50:44 -0800 (PST)
+        Thu, 10 Nov 2022 17:37:31 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4D15AB87B;
+        Thu, 10 Nov 2022 14:37:30 -0800 (PST)
+From:   John Ogness <john.ogness@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020; t=1668119847;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=W2EsEvJhlAZZQPSn3pNUyWB9e4WUrObOqKYk/7OmMuc=;
+        b=L0SMSt4q7jIhlzsoMg/xRFF+mS5mvQInBQrHnxfqgLft7IMQvdhT0dYdY7yePwM9Fv+G4C
+        Jo7De6PJWh1b57zTUEvA/r0LIsHe+Ele14Jqom9ODT7aG/xmLKVcR6kEkUGj65//fEAUEn
+        LU694e9AwzJ05OHi702f+znr9M7EsMbvzWj5bFjKIV8TV6mgQ7YRykr3ApF1NcKh2+ZLZR
+        /Mme5fix7hlnZP8MTGD/Hc3n5tv9+dRIWuECLKRCUQYsHHRPQUysQApkyADc/Utz/ZXHBL
+        oNUuV/8UY2GMEtRqZNNwfY5AAaqIXXvG0DR5T0VeSz3HrDewe4dlY+d0MJrS1g==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020e; t=1668119847;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=W2EsEvJhlAZZQPSn3pNUyWB9e4WUrObOqKYk/7OmMuc=;
+        b=cR6YDafDK7z9RudGpmOn+Lr/YsZxGTyyB4YVYSNXVaaNOgu+QC1ESLllubJrkI6jh2NdsI
+        K/UxS8kYMw8BavCA==
+To:     Petr Mladek <pmladek@suse.com>
+Cc:     Sergey Senozhatsky <senozhatsky@chromium.org>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        linux-kernel@vger.kernel.org, Helge Deller <deller@gmx.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Juergen Gross <jgross@suse.com>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Tom Rix <trix@redhat.com>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH printk v3 33/40] printk, xen: fbfront: create/use safe
+ function for forcing preferred
+In-Reply-To: <Y200WG6q4z0JGYBc@alley>
+References: <20221107141638.3790965-1-john.ogness@linutronix.de>
+ <20221107141638.3790965-34-john.ogness@linutronix.de>
+ <Y20aBwNWT19YDeib@alley> <877d026blr.fsf@jogness.linutronix.de>
+ <Y200WG6q4z0JGYBc@alley>
+Date:   Thu, 10 Nov 2022 23:43:26 +0106
+Message-ID: <87mt8ywi55.fsf@jogness.linutronix.de>
 MIME-Version: 1.0
-From:   "David F." <df7729@gmail.com>
-Date:   Thu, 10 Nov 2022 12:50:33 -0800
-Message-ID: <CAGRSmLtF3Nwpbdh8M=AL1GiVNLK7jWTWae+FMKq=c=P50hzgyQ@mail.gmail.com>
-Subject: scrambled screen
-To:     linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Customer with Lenovo Ideapad MIIX 310-10ICR has issue with newer
-kernels updates.  The screen is scrambled.
+On 2022-11-10, Petr Mladek <pmladek@suse.com> wrote:
+>>>> +	/* Only the new head can have CON_CONSDEV set. */
+>>>> +	WRITE_ONCE(cur_pref_con->flags, cur_pref_con->flags & ~CON_CONSDEV);
+>>>
+>>> As mentioned in the reply for 7th patch, I would prefer to hide this
+>>> WRITE_ONCE into a wrapper, e.g. console_set_flag(). It might also
+>>> check that the console_list_lock is taken...
+>> 
+>> Agreed. For v4 it will become:
+>> 
+>> console_srcu_write_flags(cur_pref_con, cur_pref_con->flags & ~CON_CONSDEV);
+>
+> I am happy that your are going to introduce an API for this.
+>
+> Just to be sure. The _srcu_ in the name means that the write
+> will use WRITE_ONCE() so that it can be read safely in SRCU
+> context using READ_ONCE(). Do I get it correctly, please?
 
-Kernel 5.10.19 works, later with 5.10.91 he had a problem with it, as
-well as 5.15.x
+Yes.
 
-Here's a sample of the screen:
-https://www.dropbox.com/s/wvunl4acd5dkt55/IMG_5327.JPG?dl=0
+> I expect that the counter part will be console_srcu_read_flags().
+> I like the name. It is better than _unsafe_ that I proposed earlier.
+
+Since the only flag that is ever checked in this way is CON_ENABLED, I
+was planning on calling it console_srcu_is_enabled(). But I suppose I
+could have it be: (console_srcu_read_flags() & CON_ENABLED). That would
+keep it more abstract in case anyone should want to read other flag bits
+under SRCU.
+
+There are only 4 call sites that need this, so I suppose we don't need a
+special _is_enabled() variant. Thanks for the suggestion!
+
+John

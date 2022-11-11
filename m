@@ -2,193 +2,132 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4AA6C433FE
-	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Nov 2022 05:51:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B75B5C433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Nov 2022 09:30:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229932AbiKKFvi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 11 Nov 2022 00:51:38 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35754 "EHLO
+        id S233350AbiKKJa1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 11 Nov 2022 04:30:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46870 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229536AbiKKFvi (ORCPT
+        with ESMTP id S233559AbiKKJaS (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 11 Nov 2022 00:51:38 -0500
-Received: from hust.edu.cn (unknown [202.114.0.240])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C48876F344;
-        Thu, 10 Nov 2022 21:51:36 -0800 (PST)
-Received: from pride-PowerEdge-R740.. ([172.16.0.254])
-        (user=dzm91@hust.edu.cn mech=LOGIN bits=0)
-        by mx1.hust.edu.cn  with ESMTP id 2AB5nqtB015042-2AB5nqtE015042
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
-        Fri, 11 Nov 2022 13:49:57 +0800
-From:   Dongliang Mu <dzm91@hust.edu.cn>
-To:     Steve Glendinning <steve.glendinning@shawell.net>,
-        Helge Deller <deller@gmx.de>
-Cc:     Dongliang Mu <dzm91@hust.edu.cn>,
-        syzkaller <syzkaller@googlegroups.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev: smscufx: fix error handling code in ufx_usb_probe
-Date:   Fri, 11 Nov 2022 13:49:49 +0800
-Message-Id: <20221111054949.1002804-1-dzm91@hust.edu.cn>
-X-Mailer: git-send-email 2.34.1
+        Fri, 11 Nov 2022 04:30:18 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A10C71F03
+        for <linux-fbdev@vger.kernel.org>; Fri, 11 Nov 2022 01:28:58 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1668158937;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=fi2SE1B7lTw9mdq0VS6e9xO7m6BadB4tfHCV89qdFtE=;
+        b=hmcFF/wuu+YxBRL97flWTXw9VYjEofAg0nApthy+N6q9xbJAeewQayeFjXI3ybdPQw8scG
+        nXgG8jNyCOhEL53JjTpYnPcdlzHuvEpw7PKPCMtoglMcRc+/BFrGetnqhiVSbQBpT2i6Oy
+        Yfpnw2GVF/nmtMehhX7pTQlv5kyRR/c=
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-413-9pkED4QWMAKWamWQosLdLQ-1; Fri, 11 Nov 2022 04:28:54 -0500
+X-MC-Unique: 9pkED4QWMAKWamWQosLdLQ-1
+Received: by mail-wm1-f70.google.com with SMTP id bg25-20020a05600c3c9900b003cf3ed7e27bso2311163wmb.4
+        for <linux-fbdev@vger.kernel.org>; Fri, 11 Nov 2022 01:28:54 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=fi2SE1B7lTw9mdq0VS6e9xO7m6BadB4tfHCV89qdFtE=;
+        b=M4ZTOBeBxlj3DovKlM6YarCEhadPtjGyoBH5zbPyHResLDeEj9QlIvQ4Lry17ld7Qg
+         GcAJ/zen6KmVqw9kQHnDT0FjJ9kpVf2KmsoM6Ewfk/tYN8iDEkhYKv3aIZaHZCxTLFHm
+         XJCejRJAEZfhaWoGrDKqih9Za1YkpjVpjJjGag4w/Tik07SENAUNIspZOTSgWltuZCvd
+         MV//7jtj9nxpTR/l4Hv5A87VXHEahWDuS7E9moRgv0HbrCbKuuYnk359ftk0tZ30Zdu/
+         I2rtNHeGJ3i1KTog5fwScfNtAAXaNAkWyWp5YYObWMriBeHjDe6fLzY3T1gem+Pr5iFF
+         Dkug==
+X-Gm-Message-State: ANoB5plso8zl7mM9LJqBlpX9I7J4y1szzgCxWNYoMf/thVDtQwHZBuBC
+        n506Qm1iiVyD/QAgMsQAAGFdPGNb1xCpzlhW2g7fiyuO97b1jZJXCkgAZoha0DO8+FwVPZptwqu
+        RaT6STCE6pvmWp7n2VZ//2PY=
+X-Received: by 2002:a05:600c:501f:b0:3cf:7801:c780 with SMTP id n31-20020a05600c501f00b003cf7801c780mr665760wmr.29.1668158933143;
+        Fri, 11 Nov 2022 01:28:53 -0800 (PST)
+X-Google-Smtp-Source: AA0mqf6gggVWY5XHMDcKBvOquzjta+/8rIcI2BSxVmt+9jHIw0LxNFF/HyaBPWPLAepS/LDlWXKyyA==
+X-Received: by 2002:a05:600c:501f:b0:3cf:7801:c780 with SMTP id n31-20020a05600c501f00b003cf7801c780mr665754wmr.29.1668158932932;
+        Fri, 11 Nov 2022 01:28:52 -0800 (PST)
+Received: from [192.168.1.130] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id m10-20020a5d56ca000000b00241736714c3sm342853wrw.14.2022.11.11.01.28.52
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 11 Nov 2022 01:28:52 -0800 (PST)
+Message-ID: <8447ae65-3f44-6e96-2c0e-f62a06b3e712@redhat.com>
+Date:   Fri, 11 Nov 2022 10:28:51 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-FEAS-AUTH-USER: dzm91@hust.edu.cn
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.3.1
+Subject: Re: [PATCH 1/2] drm: Move nomodeset kernel parameter to drivers/video
+Content-Language: en-US
+To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
+        daniel@ffwll.ch
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <20221107104916.18733-1-tzimmermann@suse.de>
+ <20221107104916.18733-2-tzimmermann@suse.de>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <20221107104916.18733-2-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The current error handling code in ufx_usb_probe have many unmatching
-issues, e.g., missing ufx_free_usb_list, destroy_modedb label should
-only include framebuffer_release, fb_dealloc_cmap only matches
-fb_alloc_cmap.
+Hello Thomas,
 
-My local syzkaller reports a memory leak bug:
+On 11/7/22 11:49, Thomas Zimmermann wrote:
 
-memory leak in ufx_usb_probe
+[...]
 
-BUG: memory leak
-unreferenced object 0xffff88802f879580 (size 128):
-  comm "kworker/0:7", pid 17416, jiffies 4295067474 (age 46.710s)
-  hex dump (first 32 bytes):
-    80 21 7c 2e 80 88 ff ff 18 d0 d0 0c 80 88 ff ff  .!|.............
-    00 d0 d0 0c 80 88 ff ff e0 ff ff ff 0f 00 00 00  ................
-  backtrace:
-    [<ffffffff814c99a0>] kmalloc_trace+0x20/0x90 mm/slab_common.c:1045
-    [<ffffffff824d219c>] kmalloc include/linux/slab.h:553 [inline]
-    [<ffffffff824d219c>] kzalloc include/linux/slab.h:689 [inline]
-    [<ffffffff824d219c>] ufx_alloc_urb_list drivers/video/fbdev/smscufx.c:1873 [inline]
-    [<ffffffff824d219c>] ufx_usb_probe+0x11c/0x15a0 drivers/video/fbdev/smscufx.c:1655
-    [<ffffffff82d17927>] usb_probe_interface+0x177/0x370 drivers/usb/core/driver.c:396
-    [<ffffffff82712f0d>] call_driver_probe drivers/base/dd.c:560 [inline]
-    [<ffffffff82712f0d>] really_probe+0x12d/0x390 drivers/base/dd.c:639
-    [<ffffffff8271322f>] __driver_probe_device+0xbf/0x140 drivers/base/dd.c:778
-    [<ffffffff827132da>] driver_probe_device+0x2a/0x120 drivers/base/dd.c:808
-    [<ffffffff82713c27>] __device_attach_driver+0xf7/0x150 drivers/base/dd.c:936
-    [<ffffffff82710137>] bus_for_each_drv+0xb7/0x100 drivers/base/bus.c:427
-    [<ffffffff827136b5>] __device_attach+0x105/0x2d0 drivers/base/dd.c:1008
-    [<ffffffff82711d36>] bus_probe_device+0xc6/0xe0 drivers/base/bus.c:487
-    [<ffffffff8270e242>] device_add+0x642/0xdc0 drivers/base/core.c:3517
-    [<ffffffff82d14d5f>] usb_set_configuration+0x8ef/0xb80 drivers/usb/core/message.c:2170
-    [<ffffffff82d2576c>] usb_generic_driver_probe+0x8c/0xc0 drivers/usb/core/generic.c:238
-    [<ffffffff82d16ffc>] usb_probe_device+0x5c/0x140 drivers/usb/core/driver.c:293
-    [<ffffffff82712f0d>] call_driver_probe drivers/base/dd.c:560 [inline]
-    [<ffffffff82712f0d>] really_probe+0x12d/0x390 drivers/base/dd.c:639
-    [<ffffffff8271322f>] __driver_probe_device+0xbf/0x140 drivers/base/dd.c:778
+> 
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+> index a465d5242774a..70178c5f53956 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -3777,7 +3777,7 @@
+>  			shutdown the other cpus.  Instead use the REBOOT_VECTOR
+>  			irq.
+>  
+> -	nomodeset	Disable kernel modesetting. DRM drivers will not perform
+> +	nomodeset	Disable kernel modesetting. Graphics drivers will not perform
+>  			display-mode changes or accelerated rendering. Only the
+>  			system framebuffer will be available for use if this was
+>  			set-up by the firmware or boot loader.
 
-Fix this bug by rewriting the error handling code in ufx_usb_probe.
+Not really part of your patch but probably we should reword this a little bit.
 
-Reported-by: syzkaller <syzkaller@googlegroups.com>
-Tested-by: Dongliang Mu <dzm91@hust.edu.cn>
-Signed-off-by: Dongliang Mu <dzm91@hust.edu.cn>
----
- drivers/video/fbdev/smscufx.c | 46 +++++++++++++++++++++++------------
- 1 file changed, 31 insertions(+), 15 deletions(-)
+Because as this is written, it implies that not only DRM drivers with feature
+DRIVER_MODESET will not be available but also drivers with DRIVER_RENDER. But
+that's not the case, render-only drivers usually just ignore this parameter
+(but not all IIRC), so I wonder how we could make this comment more accurate.
 
-diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
-index 9343b7a4ac89..2ad6e98ce10d 100644
---- a/drivers/video/fbdev/smscufx.c
-+++ b/drivers/video/fbdev/smscufx.c
-@@ -1622,7 +1622,7 @@ static int ufx_usb_probe(struct usb_interface *interface,
- 	struct usb_device *usbdev;
- 	struct ufx_data *dev;
- 	struct fb_info *info;
--	int retval;
-+	int retval = -ENOMEM;
- 	u32 id_rev, fpga_rev;
- 
- 	/* usb initialization */
-@@ -1654,15 +1654,17 @@ static int ufx_usb_probe(struct usb_interface *interface,
- 
- 	if (!ufx_alloc_urb_list(dev, WRITES_IN_FLIGHT, MAX_TRANSFER)) {
- 		dev_err(dev->gdev, "ufx_alloc_urb_list failed\n");
--		goto e_nomem;
-+		goto put_ref;
- 	}
- 
- 	/* We don't register a new USB class. Our client interface is fbdev */
- 
- 	/* allocates framebuffer driver structure, not framebuffer memory */
- 	info = framebuffer_alloc(0, &usbdev->dev);
--	if (!info)
--		goto e_nomem;
-+	if (!info) {
-+		dev_err(dev->gdev, "framebuffer_alloc failed\n");
-+		goto free_urb_list;
-+	}
- 
- 	dev->info = info;
- 	info->par = dev;
-@@ -1705,22 +1707,34 @@ static int ufx_usb_probe(struct usb_interface *interface,
- 	check_warn_goto_error(retval, "unable to find common mode for display and adapter");
- 
- 	retval = ufx_reg_set_bits(dev, 0x4000, 0x00000001);
--	check_warn_goto_error(retval, "error %d enabling graphics engine", retval);
-+	if (retval < 0) {
-+		dev_err(dev->gdev, "error %d enabling graphics engine", retval);
-+		goto setup_modes;
-+	}
- 
- 	/* ready to begin using device */
- 	atomic_set(&dev->usb_active, 1);
- 
- 	dev_dbg(dev->gdev, "checking var");
- 	retval = ufx_ops_check_var(&info->var, info);
--	check_warn_goto_error(retval, "error %d ufx_ops_check_var", retval);
-+	if (retval < 0) {
-+		dev_err(dev->gdev, "error %d ufx_ops_check_var", retval);
-+		goto reset_active;
-+	}
- 
- 	dev_dbg(dev->gdev, "setting par");
- 	retval = ufx_ops_set_par(info);
--	check_warn_goto_error(retval, "error %d ufx_ops_set_par", retval);
-+	if (retval < 0) {
-+		dev_err(dev->gdev, "error %d ufx_ops_set_par", retval);
-+		goto reset_active;
-+	}
- 
- 	dev_dbg(dev->gdev, "registering framebuffer");
- 	retval = register_framebuffer(info);
--	check_warn_goto_error(retval, "error %d register_framebuffer", retval);
-+	if (retval < 0) {
-+		dev_err(dev->gdev, "error %d register_framebuffer", retval);
-+		goto reset_active;
-+	}
- 
- 	dev_info(dev->gdev, "SMSC UDX USB device /dev/fb%d attached. %dx%d resolution."
- 		" Using %dK framebuffer memory\n", info->node,
-@@ -1728,21 +1742,23 @@ static int ufx_usb_probe(struct usb_interface *interface,
- 
- 	return 0;
- 
--error:
--	fb_dealloc_cmap(&info->cmap);
--destroy_modedb:
-+reset_active:
-+	atomic_set(&dev->usb_active, 0);
-+setup_modes:
- 	fb_destroy_modedb(info->monspecs.modedb);
- 	vfree(info->screen_base);
- 	fb_destroy_modelist(&info->modelist);
-+error:
-+	fb_dealloc_cmap(&info->cmap);
-+destroy_modedb:
- 	framebuffer_release(info);
-+free_urb_list:
-+	if (dev->urbs.count > 0)
-+		ufx_free_urb_list(dev);
- put_ref:
- 	kref_put(&dev->kref, ufx_free); /* ref for framebuffer */
- 	kref_put(&dev->kref, ufx_free); /* last ref from kref_init */
- 	return retval;
--
--e_nomem:
--	retval = -ENOMEM;
--	goto put_ref;
- }
- 
- static void ufx_usb_disconnect(struct usb_interface *interface)
+Also maybe we can mention in the comment fbdev and DRM? Just to make it clear
+that this will affect to both subsystems? When I first worked on this, there
+were a lot of assumptions in the stack (gdm, mutter, plymouth) that nomodeset
+basically meant "no DRM but fbdev".
+
+[...]
+
+>  
+>  int drm_dev_set_unique(struct drm_device *dev, const char *name);
+>  
+> -extern bool drm_firmware_drivers_only(void);
+> +/* TODO: Inline drm_firmware_drivers_only() in all its callers. */
+
+I guess you plan to do that as follow-up patches once this series land? Just
+to avoid the churn to require acks for all the drivers to merge this series?
+
+The changes looks good to me.
+
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+
 -- 
-2.34.1
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 

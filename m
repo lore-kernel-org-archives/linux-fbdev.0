@@ -2,162 +2,141 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 531F2C4332F
-	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Nov 2022 13:07:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3918C4332F
+	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Nov 2022 13:27:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233911AbiKKNHY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 11 Nov 2022 08:07:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36888 "EHLO
+        id S233204AbiKKN1c (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 11 Nov 2022 08:27:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45324 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233903AbiKKNHF (ORCPT
+        with ESMTP id S231625AbiKKN1b (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 11 Nov 2022 08:07:05 -0500
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 099AD83BBD
-        for <linux-fbdev@vger.kernel.org>; Fri, 11 Nov 2022 05:06:32 -0800 (PST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 8991D224D2;
-        Fri, 11 Nov 2022 13:06:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1668171991; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=K+JlNlyePVLnz2jqYT6WGFk3AcCxTZOe+857oL6M14A=;
-        b=xKEMmRpQ2YJtsJ1zUlgG2YhnCOMxVu+HHDeNU5t+RDWiH5fK2bN0T63yJ4TNS2v+1EYf5U
-        s0TafClxvnI8J7aPmUIu+dBB5qO/teFERLTkVUwrPx9rcU/1NK2H6Jv/7OixguhEZScgFY
-        /CHYO+t9cl3BF0xMZuAyz6jiLxGpTtw=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1668171991;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=K+JlNlyePVLnz2jqYT6WGFk3AcCxTZOe+857oL6M14A=;
-        b=J5pUloGfFECMFWA90pksoJ7kLkaAM6CjkoYPzXI9mhOI+j2tRYZe7gwlJ6LNPohaYJa4+B
-        iXL1xiWsKGBIwLAw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 6790813357;
-        Fri, 11 Nov 2022 13:06:31 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id yJ9CGNdIbmOyXwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Fri, 11 Nov 2022 13:06:31 +0000
-Message-ID: <a0cf08f7-d60c-f438-dc26-fb8af0e49f80@suse.de>
-Date:   Fri, 11 Nov 2022 14:06:30 +0100
+        Fri, 11 Nov 2022 08:27:31 -0500
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9EAFB1180B
+        for <linux-fbdev@vger.kernel.org>; Fri, 11 Nov 2022 05:27:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1668173241; bh=AslS6UA+QkhpCx7N4UCcC8p6QUKhFKPG0xeQ88Oxy6Y=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=VJ69l5gJt46hBUB436+ZCSwZjGW/41v1m+lo7LCWfKBuIbRsBIo1ouBubtrzpiMKx
+         S2WVgzmnaY//lYIn+HxmZYgzqvKEz0uGtxpK3BDaCVObxa7/7KJWcZ3sm3CxKA8eNq
+         4OF9TDMU5Va+oTj7BMLFBk6SdYswFuUigxgweMXl2WBIrkMKuiGeoCt0PCWFY73Ajs
+         X3FkZXdUdn30dCpu76h7I2toj0tiiQ3EptB9l4SjlU+38hf1cZAH27RMmUdUTtKKGP
+         n+MLoSes5X5EBA7i+fzSkkqZdmSqsZiFhuEWcXvZSMVzQKDc4jxBVRQUt9s8mX85Wh
+         gHXYAKKh6tB+Q==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([92.116.140.172]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MtfNf-1p7Z4Q253H-00v96C; Fri, 11
+ Nov 2022 14:27:21 +0100
+Message-ID: <5c332e30-fd05-9eef-8f42-f2899e787906@gmx.de>
+Date:   Fri, 11 Nov 2022 14:27:20 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.4.1
-Subject: Re: [PATCH 1/2] drm: Move nomodeset kernel parameter to drivers/video
+Subject: Re: [PATCH 2/2] fbdev: Add support for the nomodeset kernel parameter
 Content-Language: en-US
-To:     Javier Martinez Canillas <javierm@redhat.com>, deller@gmx.de,
+To:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
         daniel@ffwll.ch
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 References: <20221107104916.18733-1-tzimmermann@suse.de>
- <20221107104916.18733-2-tzimmermann@suse.de>
- <8447ae65-3f44-6e96-2c0e-f62a06b3e712@redhat.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <8447ae65-3f44-6e96-2c0e-f62a06b3e712@redhat.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------H9T48zxYPd7vCLT9XDBDGccg"
+ <20221107104916.18733-3-tzimmermann@suse.de>
+ <2e2d23f3-9c2d-e75e-f390-4651a4da730f@gmx.de>
+ <6547fba2-a002-f339-2997-5b28df794095@suse.de>
+ <d21a0a0d-22fb-99bf-0d29-75b1fe1db677@gmx.de>
+ <dfa83c75-4062-93ee-380c-3e0e4f41c448@suse.de>
+ <73c7243d-b1b7-ac3c-7b17-1f0084821aa4@redhat.com>
+ <3b3d0af7-0ad2-bd45-26ec-bd00eebfa905@gmx.de>
+ <33481e86-8c8a-b464-6112-4ffa6decceaa@suse.de>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <33481e86-8c8a-b464-6112-4ffa6decceaa@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:+PVEYq53kmee5aohdr1h6cSZZkyxrcJ/eqhU8Py5n+tB15LGhCk
+ aHomMYT7sXLhINU48pezSPhEQ4HbcafTe3GZ+trvvFW1dMmQLCX2nfGuR402+/RSKNiNoms
+ hrys5xX6Rd6V3wMJfUawvkrYtoAcatt36tibi8NVSHNlZDNr+Z7doA6yyNMxXPl0bchjfb5
+ OFpp4atH/sYpMr+3p8ETw==
+UI-OutboundReport: notjunk:1;M01:P0:flBcKf4Amb0=;ysDVK2Jmhr7YfCkjlRInNw1CSJW
+ G/WTcZS+gvjQVXHP9MGbqV8mFNFR/xL+D2KyX4u+uaXqhIaqnCYa+Nyv/qCjXhUTOIPMcMWe1
+ 1qGlEgBRqfDx4rmMwGO2YmFBkg4Lv0zmyCL6F6SVBJEyTfXForIFy5tDvJbKlf5E+GwjU021M
+ PzEkoPdGBcLBWfgqDoQAHarXbJMHWf7y41Enrr6lPL36l3sd2kZyfE+aABDXImfct4q6HQGPW
+ GbTcoeaTh4ov6Zmed7kh+tg/XGrqRixWPxaZK2ORktiSyhpKXg51mMRhbaHdz4rHC+jSsTtZt
+ b7TJxi8rgB7wnyx4PEtHk44SMA6bGiod6fNkKDhsH45VHB4jFejwaRrHGFygGwEfHbVow4oek
+ 8Z1kXV5mCbflFD6TVIx6ECLoGHuPakW/WjRNQogcV4veyVSjrg7u+xM75x4RiA8Rqqt6DwOHf
+ TMb6pcZpyXbN//8jcf5WQiItpxswUiWRY8XYRBnlm2m1IFYDKgK43WBTOC+JoxgxoOmLGMUZy
+ j2Xs08BuXGdCel/a/i3Dpfo19SJsXh5XnQSym+aoqICok3nfQD67VmM21+dPDNN9PcMebyaGC
+ eD9/0bTwJs4cPLMVB+UdfgLG27sx9u+p3hbBHKlI+BM89tpziQ5fjieAHaSqgBY6nxLVObqfD
+ hKsml9lQTALxnTQXZjOkcKErzjeOFAT54aqOWwQUAl6tgdwG5XizgM/S8e16i28gX8Usmeu2G
+ 5hVgJ2FHWg1cR0IJsQT4XldQCLpIHuAhAx44h/VJgPmfBdpcxDnhPD28RMg0SOO6dI+8jE3Ym
+ bWUztAoK2SAf7nmq3G+DUT6tV0+qQl/OHZxZx/AWF9oGQeIV7upYFDP5ekTQWRkv26Z02sr5l
+ PyxtvTozaYYVmuBgSCTZ9LY9ZNG0icavxgp1kMR9Kbhjpm8FyH+GyCK7qHE0X1KEkP7rGRzO4
+ o5/eSET5aVkaNMrXq58rqyl6DP0=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------H9T48zxYPd7vCLT9XDBDGccg
-Content-Type: multipart/mixed; boundary="------------maZk3gYgbEZguHtxIIVGQnvj";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Javier Martinez Canillas <javierm@redhat.com>, deller@gmx.de,
- daniel@ffwll.ch
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Message-ID: <a0cf08f7-d60c-f438-dc26-fb8af0e49f80@suse.de>
-Subject: Re: [PATCH 1/2] drm: Move nomodeset kernel parameter to drivers/video
-References: <20221107104916.18733-1-tzimmermann@suse.de>
- <20221107104916.18733-2-tzimmermann@suse.de>
- <8447ae65-3f44-6e96-2c0e-f62a06b3e712@redhat.com>
-In-Reply-To: <8447ae65-3f44-6e96-2c0e-f62a06b3e712@redhat.com>
+On 11/11/22 12:42, Thomas Zimmermann wrote:
+> Hi
+>
+> Am 11.11.22 um 11:49 schrieb Helge Deller:
+>> On 11/11/22 10:49, Javier Martinez Canillas wrote:
+>>> On 11/8/22 09:16, Thomas Zimmermann wrote:
+>>>> Hi
+>>>
+>>> [...]
+>>>
+>>>>
+>>>> My proposal would be to add a little helper to fbdev that includes yo=
+ur
+>>>> suggestions:
+>>>>
+>>>> =C2=A0=C2=A0=C2=A0 bool fb_modesetting_disabled(const char *drvname)
+>>>> =C2=A0=C2=A0=C2=A0 {
+>>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 fwonly =3D video_firmware_driver=
+s_only()
+>>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (fbonly && drvname)
+>>>> =C2=A0=C2=A0=C2=A0=C2=A0pr_warn("")
+>>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return fbonly;
+>>>> =C2=A0=C2=A0=C2=A0 }
+>>
+>> I'm still wondering why you can't simply merge it with what is printed =
+in
+>> =C2=A0=C2=A0[1] https://elixir.bootlin.com/linux/latest/source/drivers/=
+gpu/drm/drm_nomodeset.c#L18
+>
+> I don't understand. That message is still there after moving the code
+> around.
 
---------------maZk3gYgbEZguHtxIIVGQnvj
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Sure.
 
-SGkNCg0KQW0gMTEuMTEuMjIgdW0gMTA6Mjggc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
-aWxsYXM6DQo+IEhlbGxvIFRob21hcywNCj4gDQo+IE9uIDExLzcvMjIgMTE6NDksIFRob21h
-cyBaaW1tZXJtYW5uIHdyb3RlOg0KPiANCj4gWy4uLl0NCj4gDQo+Pg0KPj4gZGlmZiAtLWdp
-dCBhL0RvY3VtZW50YXRpb24vYWRtaW4tZ3VpZGUva2VybmVsLXBhcmFtZXRlcnMudHh0IGIv
-RG9jdW1lbnRhdGlvbi9hZG1pbi1ndWlkZS9rZXJuZWwtcGFyYW1ldGVycy50eHQNCj4+IGlu
-ZGV4IGE0NjVkNTI0Mjc3NGEuLjcwMTc4YzVmNTM5NTYgMTAwNjQ0DQo+PiAtLS0gYS9Eb2N1
-bWVudGF0aW9uL2FkbWluLWd1aWRlL2tlcm5lbC1wYXJhbWV0ZXJzLnR4dA0KPj4gKysrIGIv
-RG9jdW1lbnRhdGlvbi9hZG1pbi1ndWlkZS9rZXJuZWwtcGFyYW1ldGVycy50eHQNCj4+IEBA
-IC0zNzc3LDcgKzM3NzcsNyBAQA0KPj4gICAJCQlzaHV0ZG93biB0aGUgb3RoZXIgY3B1cy4g
-IEluc3RlYWQgdXNlIHRoZSBSRUJPT1RfVkVDVE9SDQo+PiAgIAkJCWlycS4NCj4+ICAgDQo+
-PiAtCW5vbW9kZXNldAlEaXNhYmxlIGtlcm5lbCBtb2Rlc2V0dGluZy4gRFJNIGRyaXZlcnMg
-d2lsbCBub3QgcGVyZm9ybQ0KPj4gKwlub21vZGVzZXQJRGlzYWJsZSBrZXJuZWwgbW9kZXNl
-dHRpbmcuIEdyYXBoaWNzIGRyaXZlcnMgd2lsbCBub3QgcGVyZm9ybQ0KPj4gICAJCQlkaXNw
-bGF5LW1vZGUgY2hhbmdlcyBvciBhY2NlbGVyYXRlZCByZW5kZXJpbmcuIE9ubHkgdGhlDQo+
-PiAgIAkJCXN5c3RlbSBmcmFtZWJ1ZmZlciB3aWxsIGJlIGF2YWlsYWJsZSBmb3IgdXNlIGlm
-IHRoaXMgd2FzDQo+PiAgIAkJCXNldC11cCBieSB0aGUgZmlybXdhcmUgb3IgYm9vdCBsb2Fk
-ZXIuDQo+IA0KPiBOb3QgcmVhbGx5IHBhcnQgb2YgeW91ciBwYXRjaCBidXQgcHJvYmFibHkg
-d2Ugc2hvdWxkIHJld29yZCB0aGlzIGEgbGl0dGxlIGJpdC4NCj4gDQo+IEJlY2F1c2UgYXMg
-dGhpcyBpcyB3cml0dGVuLCBpdCBpbXBsaWVzIHRoYXQgbm90IG9ubHkgRFJNIGRyaXZlcnMg
-d2l0aCBmZWF0dXJlDQo+IERSSVZFUl9NT0RFU0VUIHdpbGwgbm90IGJlIGF2YWlsYWJsZSBi
-dXQgYWxzbyBkcml2ZXJzIHdpdGggRFJJVkVSX1JFTkRFUi4gQnV0DQo+IHRoYXQncyBub3Qg
-dGhlIGNhc2UsIHJlbmRlci1vbmx5IGRyaXZlcnMgdXN1YWxseSBqdXN0IGlnbm9yZSB0aGlz
-IHBhcmFtZXRlcg0KPiAoYnV0IG5vdCBhbGwgSUlSQyksIHNvIEkgd29uZGVyIGhvdyB3ZSBj
-b3VsZCBtYWtlIHRoaXMgY29tbWVudCBtb3JlIGFjY3VyYXRlLg0KDQpJIHNlZSB3aGF0IHlv
-dSBtZWFuLCBidXQgaXQncyBoYXJkIHRvIGRlc2NyaWJlIGluIHNpbXBsZSB3b3Jkcy4gVGhl
-IA0Kb3B0aW9uIGlzIGEgYml0IGZ1enp5LiBJdCBtZWFucyB0aGF0IGEgZHJpdmVyIHdpbGwg
-bm90IHJlcGxhY2UgYSANCmZpcm13YXJlIGJ1ZmZlcjsgZXZlbiBpZiB0aGF0IG1lYW5zIGl0
-IHdvbid0IGluaXRpYWxpemUgYXQgYWxsLiBJIGd1ZXNzIA0Kd2Ugc2hvdWxkIHNwZWxsIHRo
-YXQgb3V0Lg0KDQo+IA0KPiBBbHNvIG1heWJlIHdlIGNhbiBtZW50aW9uIGluIHRoZSBjb21t
-ZW50IGZiZGV2IGFuZCBEUk0/IEp1c3QgdG8gbWFrZSBpdCBjbGVhcg0KPiB0aGF0IHRoaXMg
-d2lsbCBhZmZlY3QgdG8gYm90aCBzdWJzeXN0ZW1zPyBXaGVuIEkgZmlyc3Qgd29ya2VkIG9u
-IHRoaXMsIHRoZXJlDQo+IHdlcmUgYSBsb3Qgb2YgYXNzdW1wdGlvbnMgaW4gdGhlIHN0YWNr
-IChnZG0sIG11dHRlciwgcGx5bW91dGgpIHRoYXQgbm9tb2Rlc2V0DQo+IGJhc2ljYWxseSBt
-ZWFudCAibm8gRFJNIGJ1dCBmYmRldiIuDQoNCkkgY2FuIGNoYW5nZSB0aGUgdGV4dCB0byBz
-YXkgJ0RSTSBhbmQgZmJkZXYgZHJpdmVycycuDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoN
-Cj4gDQo+IFsuLi5dDQo+IA0KPj4gICANCj4+ICAgaW50IGRybV9kZXZfc2V0X3VuaXF1ZShz
-dHJ1Y3QgZHJtX2RldmljZSAqZGV2LCBjb25zdCBjaGFyICpuYW1lKTsNCj4+ICAgDQo+PiAt
-ZXh0ZXJuIGJvb2wgZHJtX2Zpcm13YXJlX2RyaXZlcnNfb25seSh2b2lkKTsNCj4+ICsvKiBU
-T0RPOiBJbmxpbmUgZHJtX2Zpcm13YXJlX2RyaXZlcnNfb25seSgpIGluIGFsbCBpdHMgY2Fs
-bGVycy4gKi8NCj4gDQo+IEkgZ3Vlc3MgeW91IHBsYW4gdG8gZG8gdGhhdCBhcyBmb2xsb3ct
-dXAgcGF0Y2hlcyBvbmNlIHRoaXMgc2VyaWVzIGxhbmQ/IEp1c3QNCj4gdG8gYXZvaWQgdGhl
-IGNodXJuIHRvIHJlcXVpcmUgYWNrcyBmb3IgYWxsIHRoZSBkcml2ZXJzIHRvIG1lcmdlIHRo
-aXMgc2VyaWVzPw0KPiANCj4gVGhlIGNoYW5nZXMgbG9va3MgZ29vZCB0byBtZS4NCj4gDQo+
-IFJldmlld2VkLWJ5OiBKYXZpZXIgTWFydGluZXogQ2FuaWxsYXMgPGphdmllcm1AcmVkaGF0
-LmNvbT4NCj4gDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBE
-ZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVs
-ZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xy
-bmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
+> It is always printed if the nomodeset parameter is given.
 
---------------maZk3gYgbEZguHtxIIVGQnvj--
+Yes, but wouldn't it be better if it would print the name of the really af=
+fected DRM driver too?
+Currently it even shows up if you don't have any graphic card installed (a=
+nd gave that parameter).
 
---------------H9T48zxYPd7vCLT9XDBDGccg
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+> In addition to that, you get a per-driver warning for fbdev, so that it'=
+s clear which drivers are affected.
 
------BEGIN PGP SIGNATURE-----
+and a per-drm-driver message would be nice too (can be added by follow-up =
+patches).
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmNuSNYFAwAAAAAACgkQlh/E3EQov+Bj
-Eg/7BeY77VnD8YzPYPOOEuTw6eXjY6zjCNPWlReP0/GJVGFwPdeihUohbQYuzQzis9SVEC3oEeH1
-EYx+fxBVkLZa8i/H0prrO3WZVefrgnRyT0pDQTpKgf6XVeS7GHHdn04txaPahMbhvWUo0UYTmb27
-dQwzgn5UWzTFTyM/FXM5BWkgoHzCh5LOBZ2L3E1MRl/SOvif7/5hbww9H/kN8UD0LdrDKGXw2lcq
-k3mc/OIQ2qMzLZBh+4DO5A/whgJqNIH5R00NNi1ixBjv/cn4MJvDeW2nlDLW3EY5DaMu06mfuh7U
-sDjC7Pue8JBr/KMwH62spY9WrfaGh8/8Dten9Ts85/76In16FDNeGwnULNGCnqD90BW49glZ9vg8
-6PK+87E2yO/kQ1qgJu0r4uLc5VrIcEl0Jv6NgH0rYjmiqSao2D0r+nzsfk69kHSoKxJ2Q8MjMMH+
-nRHY+nCoj8py13j4PN/p6OJBzSxQE0Y3kmuxZdzJbVCLTdhwuXWQV78xdMLu0WvLhZCcZSWmY/iN
-Bp9PNEqgeqCT81u4v6AqcY50xptjh0TXkDrUyfX1Tj/z8YeQmceBzuWZdpBU0Ziln2Pd1/SuIu6+
-q1+fGvEaV+5L2UTGxX4g9DHiGeeADf43vWXTju/0sQa2LZ6rKmhAxBHFAX8XtCWxM8F3jRTvRKAi
-gjA=
-=IdF2
------END PGP SIGNATURE-----
+Helge
 
---------------H9T48zxYPd7vCLT9XDBDGccg--
+>
+> Best regards
+> Thomas
+>
+>>
+>> Other than that, your the proposal is okay, if you adjust your patches =
+to
+>> call this new function "fb_modesetting_disabled()" instead of
+>> calling video_firmware_drivers_only() like this:
+>>
+>>> +=C2=A0=C2=A0=C2=A0 if (video_firmware_drivers_only())
+>>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return -ENODEV;
+>>
+>> Helge
+>
+

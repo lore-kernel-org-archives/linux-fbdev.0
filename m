@@ -2,96 +2,193 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EADD7C4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu, 10 Nov 2022 22:37:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4AA6C433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Nov 2022 05:51:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229757AbiKJWhc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 10 Nov 2022 17:37:32 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43816 "EHLO
+        id S229932AbiKKFvi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 11 Nov 2022 00:51:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35754 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229559AbiKJWhb (ORCPT
+        with ESMTP id S229536AbiKKFvi (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 10 Nov 2022 17:37:31 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4D15AB87B;
-        Thu, 10 Nov 2022 14:37:30 -0800 (PST)
-From:   John Ogness <john.ogness@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1668119847;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=W2EsEvJhlAZZQPSn3pNUyWB9e4WUrObOqKYk/7OmMuc=;
-        b=L0SMSt4q7jIhlzsoMg/xRFF+mS5mvQInBQrHnxfqgLft7IMQvdhT0dYdY7yePwM9Fv+G4C
-        Jo7De6PJWh1b57zTUEvA/r0LIsHe+Ele14Jqom9ODT7aG/xmLKVcR6kEkUGj65//fEAUEn
-        LU694e9AwzJ05OHi702f+znr9M7EsMbvzWj5bFjKIV8TV6mgQ7YRykr3ApF1NcKh2+ZLZR
-        /Mme5fix7hlnZP8MTGD/Hc3n5tv9+dRIWuECLKRCUQYsHHRPQUysQApkyADc/Utz/ZXHBL
-        oNUuV/8UY2GMEtRqZNNwfY5AAaqIXXvG0DR5T0VeSz3HrDewe4dlY+d0MJrS1g==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1668119847;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=W2EsEvJhlAZZQPSn3pNUyWB9e4WUrObOqKYk/7OmMuc=;
-        b=cR6YDafDK7z9RudGpmOn+Lr/YsZxGTyyB4YVYSNXVaaNOgu+QC1ESLllubJrkI6jh2NdsI
-        K/UxS8kYMw8BavCA==
-To:     Petr Mladek <pmladek@suse.com>
-Cc:     Sergey Senozhatsky <senozhatsky@chromium.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        linux-kernel@vger.kernel.org, Helge Deller <deller@gmx.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Juergen Gross <jgross@suse.com>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        Tom Rix <trix@redhat.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH printk v3 33/40] printk, xen: fbfront: create/use safe
- function for forcing preferred
-In-Reply-To: <Y200WG6q4z0JGYBc@alley>
-References: <20221107141638.3790965-1-john.ogness@linutronix.de>
- <20221107141638.3790965-34-john.ogness@linutronix.de>
- <Y20aBwNWT19YDeib@alley> <877d026blr.fsf@jogness.linutronix.de>
- <Y200WG6q4z0JGYBc@alley>
-Date:   Thu, 10 Nov 2022 23:43:26 +0106
-Message-ID: <87mt8ywi55.fsf@jogness.linutronix.de>
+        Fri, 11 Nov 2022 00:51:38 -0500
+Received: from hust.edu.cn (unknown [202.114.0.240])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C48876F344;
+        Thu, 10 Nov 2022 21:51:36 -0800 (PST)
+Received: from pride-PowerEdge-R740.. ([172.16.0.254])
+        (user=dzm91@hust.edu.cn mech=LOGIN bits=0)
+        by mx1.hust.edu.cn  with ESMTP id 2AB5nqtB015042-2AB5nqtE015042
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+        Fri, 11 Nov 2022 13:49:57 +0800
+From:   Dongliang Mu <dzm91@hust.edu.cn>
+To:     Steve Glendinning <steve.glendinning@shawell.net>,
+        Helge Deller <deller@gmx.de>
+Cc:     Dongliang Mu <dzm91@hust.edu.cn>,
+        syzkaller <syzkaller@googlegroups.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] fbdev: smscufx: fix error handling code in ufx_usb_probe
+Date:   Fri, 11 Nov 2022 13:49:49 +0800
+Message-Id: <20221111054949.1002804-1-dzm91@hust.edu.cn>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
+X-FEAS-AUTH-USER: dzm91@hust.edu.cn
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2022-11-10, Petr Mladek <pmladek@suse.com> wrote:
->>>> +	/* Only the new head can have CON_CONSDEV set. */
->>>> +	WRITE_ONCE(cur_pref_con->flags, cur_pref_con->flags & ~CON_CONSDEV);
->>>
->>> As mentioned in the reply for 7th patch, I would prefer to hide this
->>> WRITE_ONCE into a wrapper, e.g. console_set_flag(). It might also
->>> check that the console_list_lock is taken...
->> 
->> Agreed. For v4 it will become:
->> 
->> console_srcu_write_flags(cur_pref_con, cur_pref_con->flags & ~CON_CONSDEV);
->
-> I am happy that your are going to introduce an API for this.
->
-> Just to be sure. The _srcu_ in the name means that the write
-> will use WRITE_ONCE() so that it can be read safely in SRCU
-> context using READ_ONCE(). Do I get it correctly, please?
+The current error handling code in ufx_usb_probe have many unmatching
+issues, e.g., missing ufx_free_usb_list, destroy_modedb label should
+only include framebuffer_release, fb_dealloc_cmap only matches
+fb_alloc_cmap.
 
-Yes.
+My local syzkaller reports a memory leak bug:
 
-> I expect that the counter part will be console_srcu_read_flags().
-> I like the name. It is better than _unsafe_ that I proposed earlier.
+memory leak in ufx_usb_probe
 
-Since the only flag that is ever checked in this way is CON_ENABLED, I
-was planning on calling it console_srcu_is_enabled(). But I suppose I
-could have it be: (console_srcu_read_flags() & CON_ENABLED). That would
-keep it more abstract in case anyone should want to read other flag bits
-under SRCU.
+BUG: memory leak
+unreferenced object 0xffff88802f879580 (size 128):
+  comm "kworker/0:7", pid 17416, jiffies 4295067474 (age 46.710s)
+  hex dump (first 32 bytes):
+    80 21 7c 2e 80 88 ff ff 18 d0 d0 0c 80 88 ff ff  .!|.............
+    00 d0 d0 0c 80 88 ff ff e0 ff ff ff 0f 00 00 00  ................
+  backtrace:
+    [<ffffffff814c99a0>] kmalloc_trace+0x20/0x90 mm/slab_common.c:1045
+    [<ffffffff824d219c>] kmalloc include/linux/slab.h:553 [inline]
+    [<ffffffff824d219c>] kzalloc include/linux/slab.h:689 [inline]
+    [<ffffffff824d219c>] ufx_alloc_urb_list drivers/video/fbdev/smscufx.c:1873 [inline]
+    [<ffffffff824d219c>] ufx_usb_probe+0x11c/0x15a0 drivers/video/fbdev/smscufx.c:1655
+    [<ffffffff82d17927>] usb_probe_interface+0x177/0x370 drivers/usb/core/driver.c:396
+    [<ffffffff82712f0d>] call_driver_probe drivers/base/dd.c:560 [inline]
+    [<ffffffff82712f0d>] really_probe+0x12d/0x390 drivers/base/dd.c:639
+    [<ffffffff8271322f>] __driver_probe_device+0xbf/0x140 drivers/base/dd.c:778
+    [<ffffffff827132da>] driver_probe_device+0x2a/0x120 drivers/base/dd.c:808
+    [<ffffffff82713c27>] __device_attach_driver+0xf7/0x150 drivers/base/dd.c:936
+    [<ffffffff82710137>] bus_for_each_drv+0xb7/0x100 drivers/base/bus.c:427
+    [<ffffffff827136b5>] __device_attach+0x105/0x2d0 drivers/base/dd.c:1008
+    [<ffffffff82711d36>] bus_probe_device+0xc6/0xe0 drivers/base/bus.c:487
+    [<ffffffff8270e242>] device_add+0x642/0xdc0 drivers/base/core.c:3517
+    [<ffffffff82d14d5f>] usb_set_configuration+0x8ef/0xb80 drivers/usb/core/message.c:2170
+    [<ffffffff82d2576c>] usb_generic_driver_probe+0x8c/0xc0 drivers/usb/core/generic.c:238
+    [<ffffffff82d16ffc>] usb_probe_device+0x5c/0x140 drivers/usb/core/driver.c:293
+    [<ffffffff82712f0d>] call_driver_probe drivers/base/dd.c:560 [inline]
+    [<ffffffff82712f0d>] really_probe+0x12d/0x390 drivers/base/dd.c:639
+    [<ffffffff8271322f>] __driver_probe_device+0xbf/0x140 drivers/base/dd.c:778
 
-There are only 4 call sites that need this, so I suppose we don't need a
-special _is_enabled() variant. Thanks for the suggestion!
+Fix this bug by rewriting the error handling code in ufx_usb_probe.
 
-John
+Reported-by: syzkaller <syzkaller@googlegroups.com>
+Tested-by: Dongliang Mu <dzm91@hust.edu.cn>
+Signed-off-by: Dongliang Mu <dzm91@hust.edu.cn>
+---
+ drivers/video/fbdev/smscufx.c | 46 +++++++++++++++++++++++------------
+ 1 file changed, 31 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
+index 9343b7a4ac89..2ad6e98ce10d 100644
+--- a/drivers/video/fbdev/smscufx.c
++++ b/drivers/video/fbdev/smscufx.c
+@@ -1622,7 +1622,7 @@ static int ufx_usb_probe(struct usb_interface *interface,
+ 	struct usb_device *usbdev;
+ 	struct ufx_data *dev;
+ 	struct fb_info *info;
+-	int retval;
++	int retval = -ENOMEM;
+ 	u32 id_rev, fpga_rev;
+ 
+ 	/* usb initialization */
+@@ -1654,15 +1654,17 @@ static int ufx_usb_probe(struct usb_interface *interface,
+ 
+ 	if (!ufx_alloc_urb_list(dev, WRITES_IN_FLIGHT, MAX_TRANSFER)) {
+ 		dev_err(dev->gdev, "ufx_alloc_urb_list failed\n");
+-		goto e_nomem;
++		goto put_ref;
+ 	}
+ 
+ 	/* We don't register a new USB class. Our client interface is fbdev */
+ 
+ 	/* allocates framebuffer driver structure, not framebuffer memory */
+ 	info = framebuffer_alloc(0, &usbdev->dev);
+-	if (!info)
+-		goto e_nomem;
++	if (!info) {
++		dev_err(dev->gdev, "framebuffer_alloc failed\n");
++		goto free_urb_list;
++	}
+ 
+ 	dev->info = info;
+ 	info->par = dev;
+@@ -1705,22 +1707,34 @@ static int ufx_usb_probe(struct usb_interface *interface,
+ 	check_warn_goto_error(retval, "unable to find common mode for display and adapter");
+ 
+ 	retval = ufx_reg_set_bits(dev, 0x4000, 0x00000001);
+-	check_warn_goto_error(retval, "error %d enabling graphics engine", retval);
++	if (retval < 0) {
++		dev_err(dev->gdev, "error %d enabling graphics engine", retval);
++		goto setup_modes;
++	}
+ 
+ 	/* ready to begin using device */
+ 	atomic_set(&dev->usb_active, 1);
+ 
+ 	dev_dbg(dev->gdev, "checking var");
+ 	retval = ufx_ops_check_var(&info->var, info);
+-	check_warn_goto_error(retval, "error %d ufx_ops_check_var", retval);
++	if (retval < 0) {
++		dev_err(dev->gdev, "error %d ufx_ops_check_var", retval);
++		goto reset_active;
++	}
+ 
+ 	dev_dbg(dev->gdev, "setting par");
+ 	retval = ufx_ops_set_par(info);
+-	check_warn_goto_error(retval, "error %d ufx_ops_set_par", retval);
++	if (retval < 0) {
++		dev_err(dev->gdev, "error %d ufx_ops_set_par", retval);
++		goto reset_active;
++	}
+ 
+ 	dev_dbg(dev->gdev, "registering framebuffer");
+ 	retval = register_framebuffer(info);
+-	check_warn_goto_error(retval, "error %d register_framebuffer", retval);
++	if (retval < 0) {
++		dev_err(dev->gdev, "error %d register_framebuffer", retval);
++		goto reset_active;
++	}
+ 
+ 	dev_info(dev->gdev, "SMSC UDX USB device /dev/fb%d attached. %dx%d resolution."
+ 		" Using %dK framebuffer memory\n", info->node,
+@@ -1728,21 +1742,23 @@ static int ufx_usb_probe(struct usb_interface *interface,
+ 
+ 	return 0;
+ 
+-error:
+-	fb_dealloc_cmap(&info->cmap);
+-destroy_modedb:
++reset_active:
++	atomic_set(&dev->usb_active, 0);
++setup_modes:
+ 	fb_destroy_modedb(info->monspecs.modedb);
+ 	vfree(info->screen_base);
+ 	fb_destroy_modelist(&info->modelist);
++error:
++	fb_dealloc_cmap(&info->cmap);
++destroy_modedb:
+ 	framebuffer_release(info);
++free_urb_list:
++	if (dev->urbs.count > 0)
++		ufx_free_urb_list(dev);
+ put_ref:
+ 	kref_put(&dev->kref, ufx_free); /* ref for framebuffer */
+ 	kref_put(&dev->kref, ufx_free); /* last ref from kref_init */
+ 	return retval;
+-
+-e_nomem:
+-	retval = -ENOMEM;
+-	goto put_ref;
+ }
+ 
+ static void ufx_usb_disconnect(struct usb_interface *interface)
+-- 
+2.34.1
+

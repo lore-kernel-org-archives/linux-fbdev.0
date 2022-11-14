@@ -2,105 +2,151 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26296C433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Nov 2022 18:48:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F07BEC433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Nov 2022 19:51:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235591AbiKNSsm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 14 Nov 2022 13:48:42 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40710 "EHLO
+        id S235838AbiKNTvZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 14 Nov 2022 14:51:25 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53684 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236533AbiKNSsj (ORCPT
+        with ESMTP id S235813AbiKNTvV (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 14 Nov 2022 13:48:39 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 404B820B
-        for <linux-fbdev@vger.kernel.org>; Mon, 14 Nov 2022 10:48:36 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1668451697; bh=gewXAtIaH7SmnHnPPkwoF7m+Ih7zyoFHig7cxNLFeBQ=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=c60iFwJ1Qty8Q+mBGZ2HWcqx7p7IUS4CIiMDL+yZvmF4APzlfqxkWGIXjEU4LFRcT
-         Z+dJzn4qM4DaRydtsT9qIhBUO9QzMDeARsKxFX5Xijvy/tzCZ8zXspXf3d1ZqkNywO
-         48R56MttIScFDm4pDijq+NF4w2vcedd50940FANzYbeWYiTt26gJwBrSZoxpMiK8+e
-         zbynr4EkQ2THroyEOcT369Pl0gu7AkQtAZh7YqmCS/AvKy9HopxrsxI33jSI04ycc4
-         JCZbtFyg2Gf6QUVZ8zt4bgiOiZiXXMhqZN317leH5Gzk+owymFf2aes1R7kryjyjxV
-         W+NvnALVGYdtg==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([92.116.133.36]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1M9nxn-1ordh62J3V-005oDH; Mon, 14
- Nov 2022 19:48:17 +0100
-Message-ID: <4bdd59e7-e811-0fa9-4f1b-154d7f038a20@gmx.de>
-Date:   Mon, 14 Nov 2022 19:48:17 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.1
-Subject: Re: [PATCH] video: fbdev: vermilion: decrease reference count in
- error path
-Content-Language: en-US
-To:     Xiongfeng Wang <wangxiongfeng2@huawei.com>, javierm@redhat.com,
-        b.zolnierkie@samsung.com, tzimmermann@suse.de
-Cc:     yangyingliang@huawei.com, linux-fbdev@vger.kernel.org,
+        Mon, 14 Nov 2022 14:51:21 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5193AC16;
+        Mon, 14 Nov 2022 11:51:20 -0800 (PST)
+From:   John Ogness <john.ogness@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020; t=1668455478;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=PfwmN3gCUQ+9TAw/6+bki3KtgpMLZgBklmxHfTgDw4o=;
+        b=iMGGVuDKNStmNor0UI3iTAYJ0AUO55XogBClFvM6B+tx0AU7fG2GCFY1lB/NC6Tb3UDkHT
+        wjMXw+7S+KKxg6nci2jZINQSPEpVH8/S75n8xpxWvbZB9TxM/doLt1grp8dJYSQNe4gcu2
+        DqQPQFAS80ZUU4gsK6dxxarHe2nXdRbTQa10ScIZY9lfZD459n/D+zboV2n4sGBx1lblni
+        JnLYd56MPxPaQR/+Mg3f7wjXIhTMsGxmrmPTrYXYKM4AA9jm8M7zDoQPx6vcpAWYDQ7x6x
+        bqOsfc0s5Ggddqj32cmnHa27cCEyV5ocQGudIreuupfSYr3csW2a8Zggd4jVgw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020e; t=1668455478;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=PfwmN3gCUQ+9TAw/6+bki3KtgpMLZgBklmxHfTgDw4o=;
+        b=dncJ14jVrz1LFCtglE+whx9TPp6GS0vWhsUTBrHNZGXicNcXkFVwyCGWGQtJhi1XDLy5gW
+        vPUxufgOngSBI2Bw==
+To:     Petr Mladek <pmladek@suse.com>
+Cc:     Sergey Senozhatsky <senozhatsky@chromium.org>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        linux-kernel@vger.kernel.org, Helge Deller <deller@gmx.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Juergen Gross <jgross@suse.com>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Tom Rix <trix@redhat.com>, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-References: <20221114085654.179249-1-wangxiongfeng2@huawei.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20221114085654.179249-1-wangxiongfeng2@huawei.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:QOK4Tcx7oEbHsGgvfXLbx44lFheyPwM4DdEbbF5Vqerx6tZ4VG4
- 7Q+ULuxdik5GV0nG07V284SqhNTp1Bv7pVlL8q5PG9jyXFLPVmmkF1rXllISUEgtsVdfoGr
- j7uFY8TpA7VtYzCiwxLuVhwPIluqMx2ytHCjDdq8fBQdXTEJ0q/cv4AEc8zELT1QheIjFe4
- AwK0feMlQDay6uWoWVReQ==
-UI-OutboundReport: notjunk:1;M01:P0:qd2ifuF6r70=;hHLBaoUSfeUZpTDhQr0cKz8gaOO
- cpoyZxLjIfhtZt/tyz77oGAPk2Ug8I3Y3NGwPmjJTTJhOVl6fs72fsQp1Nt3u/Vqgvca0vuTD
- nWiY4G/2oe07X/gQUGgpxa5dCbeMWhM6Ao9KWOTjfjN/0NoIYNDSt4PYszb2UB/u7YImx8AmW
- eabnYmX7OfMxbQoImhzFSE41T9uPwBc92xAxdEevq0voZ0YtyaaGXBK6rtl4/CrmtUvx38vOl
- 29QbfptLvcUkSa3ad1pq/96moQKpaFAZWGKTubfyeykuUePY2ezdCHeqhkpu4rZCAQ4GsyClC
- lSrEAMO49V+wae625dE9+smVvYoLfOz4rgNNA91YR5U9pNDCWCfnivFHc93IB2wzn9CCWcaOp
- Z+VO1wPWHoPdhZz+gHum64ymgzewecT8VyvOXTEBJkKWstw+M+tmEe0UUEpUHR39meVmm4ns8
- rgI9uH7iOlcvI2o2orwB7cOD6IUp6g/shu33UVQWpn5NKpxGTD9bw8VOpefCObRX785C7TXqS
- SryZiB46a0O6xMPhQt9M6DOQayISpWknuU7dPT2nxhh71kr0F1IHTQGH1MXw0gHJPbUO0mXrB
- UhfyAPIlB8NlBMm+Kyk3B0dN4Hn/OGk8OQ0z87jYrnJ9mmKccmsO8tJrweqIX1v9ym2Qnhefj
- pq8EZxROD3r/IaGCkZAA5/iASShQ6mssDIuKtNdseG9LfqpCD9NK3qUaaxRiblCaP9V7eNvk1
- rSZrFGCqjeZJZAVx56+pBCQrTKPn6IYW9mUn2rU9mKXzhABPktVU+/ICXCJmQYUMDQJJnPH82
- j5sJDLjx/N0Taq+OgfnoQ8pIpuCQRytSHn07CRS7aMBYqiDHdH/2NokoKL4bx0217QO5e1dKO
- y35QjfVT07CXocwuM/hmaPkhcxVQo08EyxfTJpRpACwOJ6o9pXwcxd/NkqkCDgnDXV+lP6CIp
- YeMud6c7oQkxKdu3bsi6CK5z0B0=
+Subject: Re: [PATCH printk v4 31/39] printk, xen: fbfront: create/use safe
+ function for forcing preferred
+In-Reply-To: <20221114162932.141883-32-john.ogness@linutronix.de>
+References: <20221114162932.141883-1-john.ogness@linutronix.de>
+ <20221114162932.141883-32-john.ogness@linutronix.de>
+Date:   Mon, 14 Nov 2022 20:57:18 +0106
+Message-ID: <87mt8tfh6x.fsf@jogness.linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 11/14/22 09:56, Xiongfeng Wang wrote:
-> pci_get_device() will increase the reference count for the returned
-> pci_dev. For the error path, we need to use pci_dev_put() to decrease
-> the reference count.
->
-> Fixes: dbe7e429fedb ("vmlfb: framebuffer driver for Intel Vermilion Rang=
-e")
-> Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+Hi,
 
-applied.
+After more detailed runtime testing I discovered that I didn't re-insert
+the console to the correct place in the list. More below...
 
-Thanks!
-Helge
+On 2022-11-14, John Ogness <john.ogness@linutronix.de> wrote:
+> diff --git a/include/linux/console.h b/include/linux/console.h
+> index f716e1dd9eaf..9cea254b34b8 100644
+> --- a/include/linux/console.h
+> +++ b/include/linux/console.h
+> @@ -291,6 +291,7 @@ enum con_flush_mode {
+>  };
+>  
+>  extern int add_preferred_console(char *name, int idx, char *options);
+> +extern void console_force_preferred_locked(struct console *con);
+>  extern void register_console(struct console *);
+>  extern int unregister_console(struct console *);
+>  extern void console_lock(void);
+> diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+> index e770b1ede6c9..dff76c1cef80 100644
+> --- a/kernel/printk/printk.c
+> +++ b/kernel/printk/printk.c
+> @@ -3461,6 +3462,48 @@ int unregister_console(struct console *console)
+>  }
+>  EXPORT_SYMBOL(unregister_console);
+>  
+> +/**
+> + * console_force_preferred_locked - force a registered console preferred
+> + * @con: The registered console to force preferred.
+> + *
+> + * Must be called under console_list_lock().
+> + */
+> +void console_force_preferred_locked(struct console *con)
+> +{
+> +	struct console *cur_pref_con;
+> +
+> +	if (!console_is_registered_locked(con))
+> +		return;
+> +
+> +	cur_pref_con = console_first();
+> +
+> +	/* Already preferred? */
+> +	if (cur_pref_con == con)
+> +		return;
+> +
+> +	/*
+> +	 * Delete, but do not re-initialize the entry. This allows the console
+> +	 * to continue to appear registered (via any hlist_unhashed_lockless()
+> +	 * checks), even though it was briefly removed from the console list.
+> +	 */
+> +	hlist_del_rcu(&con->node);
+> +
+> +	/*
+> +	 * Ensure that all SRCU list walks have completed so that the console
+> +	 * can be added to the beginning of the console list and its forward
+> +	 * list pointer can be re-initialized.
+> +	 */
+> +	synchronize_srcu(&console_srcu);
+> +
+> +	con->flags |= CON_CONSDEV;
+> +	WARN_ON(!con->device);
+> +
+> +	/* Only the new head can have CON_CONSDEV set. */
+> +	console_srcu_write_flags(cur_pref_con, cur_pref_con->flags & ~CON_CONSDEV);
+> +	hlist_add_behind_rcu(&con->node, console_list.first);
 
-> ---
->   drivers/video/fbdev/vermilion/vermilion.c | 4 +++-
->   1 file changed, 3 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/video/fbdev/vermilion/vermilion.c b/drivers/video/f=
-bdev/vermilion/vermilion.c
-> index 82b36dbb5b1a..33051e3a2561 100644
-> --- a/drivers/video/fbdev/vermilion/vermilion.c
-> +++ b/drivers/video/fbdev/vermilion/vermilion.c
-> @@ -278,8 +278,10 @@ static int vmlfb_get_gpu(struct vml_par *par)
->
->   	mutex_unlock(&vml_mutex);
->
-> -	if (pci_enable_device(par->gpu) < 0)
-> +	if (pci_enable_device(par->gpu) < 0) {
-> +		pci_dev_put(par->gpu);
->   		return -ENODEV;
-> +	}
->
->   	return 0;
->   }
+This is adding the console as the 2nd item. It should be the new
+head. The patch below fixes it.
 
+I have done careful runtime testing with this fixup. After the
+force_preferred, the console is the new head and sending data to
+/dev/console redirects to that console.
+
+It would be nice if we could fold this in. Sorry.
+
+John Ogness
+
+diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+index 8d635467882f..4b77586cf4cb 100644
+--- a/kernel/printk/printk.c
++++ b/kernel/printk/printk.c
+@@ -3494,7 +3494,7 @@ void console_force_preferred_locked(struct console *con)
+ 
+ 	/* Only the new head can have CON_CONSDEV set. */
+ 	console_srcu_write_flags(cur_pref_con, cur_pref_con->flags & ~CON_CONSDEV);
+-	hlist_add_behind_rcu(&con->node, console_list.first);
++	hlist_add_head_rcu(&con->node, &console_list);
+ }
+ EXPORT_SYMBOL(console_force_preferred_locked);
+ 

@@ -2,151 +2,70 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F07BEC433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Nov 2022 19:51:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D334FC433FE
+	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Nov 2022 02:55:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235838AbiKNTvZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 14 Nov 2022 14:51:25 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53684 "EHLO
+        id S237343AbiKOCzL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 14 Nov 2022 21:55:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38048 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235813AbiKNTvV (ORCPT
+        with ESMTP id S237062AbiKOCys (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 14 Nov 2022 14:51:21 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5193AC16;
-        Mon, 14 Nov 2022 11:51:20 -0800 (PST)
-From:   John Ogness <john.ogness@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1668455478;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=PfwmN3gCUQ+9TAw/6+bki3KtgpMLZgBklmxHfTgDw4o=;
-        b=iMGGVuDKNStmNor0UI3iTAYJ0AUO55XogBClFvM6B+tx0AU7fG2GCFY1lB/NC6Tb3UDkHT
-        wjMXw+7S+KKxg6nci2jZINQSPEpVH8/S75n8xpxWvbZB9TxM/doLt1grp8dJYSQNe4gcu2
-        DqQPQFAS80ZUU4gsK6dxxarHe2nXdRbTQa10ScIZY9lfZD459n/D+zboV2n4sGBx1lblni
-        JnLYd56MPxPaQR/+Mg3f7wjXIhTMsGxmrmPTrYXYKM4AA9jm8M7zDoQPx6vcpAWYDQ7x6x
-        bqOsfc0s5Ggddqj32cmnHa27cCEyV5ocQGudIreuupfSYr3csW2a8Zggd4jVgw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1668455478;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=PfwmN3gCUQ+9TAw/6+bki3KtgpMLZgBklmxHfTgDw4o=;
-        b=dncJ14jVrz1LFCtglE+whx9TPp6GS0vWhsUTBrHNZGXicNcXkFVwyCGWGQtJhi1XDLy5gW
-        vPUxufgOngSBI2Bw==
-To:     Petr Mladek <pmladek@suse.com>
-Cc:     Sergey Senozhatsky <senozhatsky@chromium.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        linux-kernel@vger.kernel.org, Helge Deller <deller@gmx.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Juergen Gross <jgross@suse.com>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        Tom Rix <trix@redhat.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH printk v4 31/39] printk, xen: fbfront: create/use safe
- function for forcing preferred
-In-Reply-To: <20221114162932.141883-32-john.ogness@linutronix.de>
-References: <20221114162932.141883-1-john.ogness@linutronix.de>
- <20221114162932.141883-32-john.ogness@linutronix.de>
-Date:   Mon, 14 Nov 2022 20:57:18 +0106
-Message-ID: <87mt8tfh6x.fsf@jogness.linutronix.de>
+        Mon, 14 Nov 2022 21:54:48 -0500
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ACBA917062
+        for <linux-fbdev@vger.kernel.org>; Mon, 14 Nov 2022 18:54:38 -0800 (PST)
+Received: from kwepemi500016.china.huawei.com (unknown [172.30.72.54])
+        by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4NB9kJ04t7zmVtl;
+        Tue, 15 Nov 2022 10:54:15 +0800 (CST)
+Received: from huawei.com (10.175.100.227) by kwepemi500016.china.huawei.com
+ (7.221.188.220) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.31; Tue, 15 Nov
+ 2022 10:54:35 +0800
+From:   Shang XiaoJing <shangxiaojing@huawei.com>
+To:     <FlorianSchandinat@gmx.de>, <deller@gmx.de>, <corbet@lwn.net>,
+        <sfr@canb.auug.org.au>, <linux-fbdev@vger.kernel.org>,
+        <dri-devel@lists.freedesktop.org>
+CC:     <shangxiaojing@huawei.com>
+Subject: [PATCH -next] fbdev: via: Fix section mismatch warning in via_core_init()
+Date:   Tue, 15 Nov 2022 10:53:06 +0800
+Message-ID: <20221115025306.2602-1-shangxiaojing@huawei.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
 Content-Type: text/plain
+X-Originating-IP: [10.175.100.227]
+X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
+ kwepemi500016.china.huawei.com (7.221.188.220)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+Due to viafb_exit() with "__exit" tag, it should not be called by the
+__init function via_core_init().
 
-After more detailed runtime testing I discovered that I didn't re-insert
-the console to the correct place in the list. More below...
+WARNING: modpost: drivers/video/fbdev/via/viafb.o: section mismatch in
+reference: init_module (section: .init.text) -> viafb_exit (section:
+.exit.text)
 
-On 2022-11-14, John Ogness <john.ogness@linutronix.de> wrote:
-> diff --git a/include/linux/console.h b/include/linux/console.h
-> index f716e1dd9eaf..9cea254b34b8 100644
-> --- a/include/linux/console.h
-> +++ b/include/linux/console.h
-> @@ -291,6 +291,7 @@ enum con_flush_mode {
->  };
->  
->  extern int add_preferred_console(char *name, int idx, char *options);
-> +extern void console_force_preferred_locked(struct console *con);
->  extern void register_console(struct console *);
->  extern int unregister_console(struct console *);
->  extern void console_lock(void);
-> diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-> index e770b1ede6c9..dff76c1cef80 100644
-> --- a/kernel/printk/printk.c
-> +++ b/kernel/printk/printk.c
-> @@ -3461,6 +3462,48 @@ int unregister_console(struct console *console)
->  }
->  EXPORT_SYMBOL(unregister_console);
->  
-> +/**
-> + * console_force_preferred_locked - force a registered console preferred
-> + * @con: The registered console to force preferred.
-> + *
-> + * Must be called under console_list_lock().
-> + */
-> +void console_force_preferred_locked(struct console *con)
-> +{
-> +	struct console *cur_pref_con;
-> +
-> +	if (!console_is_registered_locked(con))
-> +		return;
-> +
-> +	cur_pref_con = console_first();
-> +
-> +	/* Already preferred? */
-> +	if (cur_pref_con == con)
-> +		return;
-> +
-> +	/*
-> +	 * Delete, but do not re-initialize the entry. This allows the console
-> +	 * to continue to appear registered (via any hlist_unhashed_lockless()
-> +	 * checks), even though it was briefly removed from the console list.
-> +	 */
-> +	hlist_del_rcu(&con->node);
-> +
-> +	/*
-> +	 * Ensure that all SRCU list walks have completed so that the console
-> +	 * can be added to the beginning of the console list and its forward
-> +	 * list pointer can be re-initialized.
-> +	 */
-> +	synchronize_srcu(&console_srcu);
-> +
-> +	con->flags |= CON_CONSDEV;
-> +	WARN_ON(!con->device);
-> +
-> +	/* Only the new head can have CON_CONSDEV set. */
-> +	console_srcu_write_flags(cur_pref_con, cur_pref_con->flags & ~CON_CONSDEV);
-> +	hlist_add_behind_rcu(&con->node, console_list.first);
+Fixes: ab885d8c7e15 ("fbdev: via: Fix error in via_core_init()")
+Signed-off-by: Shang XiaoJing <shangxiaojing@huawei.com>
+---
+ drivers/video/fbdev/via/via-core.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-This is adding the console as the 2nd item. It should be the new
-head. The patch below fixes it.
-
-I have done careful runtime testing with this fixup. After the
-force_preferred, the console is the new head and sending data to
-/dev/console redirects to that console.
-
-It would be nice if we could fold this in. Sorry.
-
-John Ogness
-
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index 8d635467882f..4b77586cf4cb 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -3494,7 +3494,7 @@ void console_force_preferred_locked(struct console *con)
+diff --git a/drivers/video/fbdev/via/via-core.c b/drivers/video/fbdev/via/via-core.c
+index b2e3b5df38cd..b8cd04defc5e 100644
+--- a/drivers/video/fbdev/via/via-core.c
++++ b/drivers/video/fbdev/via/via-core.c
+@@ -734,7 +734,6 @@ static int __init via_core_init(void)
+ 	if (ret) {
+ 		viafb_gpio_exit();
+ 		viafb_i2c_exit();
+-		viafb_exit();
+ 		return ret;
+ 	}
  
- 	/* Only the new head can have CON_CONSDEV set. */
- 	console_srcu_write_flags(cur_pref_con, cur_pref_con->flags & ~CON_CONSDEV);
--	hlist_add_behind_rcu(&con->node, console_list.first);
-+	hlist_add_head_rcu(&con->node, &console_list);
- }
- EXPORT_SYMBOL(console_force_preferred_locked);
- 
+-- 
+2.17.1
+

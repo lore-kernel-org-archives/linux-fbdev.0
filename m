@@ -2,85 +2,138 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A7B1C433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Nov 2022 22:38:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8A39C433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed, 16 Nov 2022 08:47:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230194AbiKOWix (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 15 Nov 2022 17:38:53 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40158 "EHLO
+        id S233263AbiKPIrG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 16 Nov 2022 03:47:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46254 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229710AbiKOWiw (ORCPT
+        with ESMTP id S231259AbiKPIrD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 15 Nov 2022 17:38:52 -0500
-Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B9DD1DEA4
-        for <linux-fbdev@vger.kernel.org>; Tue, 15 Nov 2022 14:38:51 -0800 (PST)
-Received: by mail-ej1-x630.google.com with SMTP id y14so39851072ejd.9
-        for <linux-fbdev@vger.kernel.org>; Tue, 15 Nov 2022 14:38:51 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=gnqA11iiuLChaY0HRtUDGCUom8icxowvJYIl0Uu61BU=;
-        b=KUa84NfcB3wa5RH7Ijr6DhXn9S4M4Yu6VK5rgQFNJaxzb45HZXfQJkcT/JKfr5m4HA
-         vR8iKUxqmDcHsYouRnG4SHZ0SQ0wn3FHjAwyUR24oo03KoJQhMZnR6EYUyKrzdgSMIZm
-         donZugFRmoc/s0tRlNMlP0qO1ZmTXfOORMORHlRwJVcW0m2LyzZJYZyk6/2Vkwl/nH/P
-         iaFq0V6yfxkq6dp7aLtN4mvmBJVbUH3RVat9KdZyDMafGST+FUuUtWiX0bATJwAcBhyG
-         R2g0CuscFeIT9onflw1jPdGOGLlQtGIPapz1DpBUxH0uEpcRfzGbpkW5Pe5Cle5/CfNW
-         p7PQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=gnqA11iiuLChaY0HRtUDGCUom8icxowvJYIl0Uu61BU=;
-        b=ySXRpKUhrVnmb2VfnVnpaonvd4vZ2Jowz6PBbbdqw9Y94AsfI6chhIwMLcYws/Yap3
-         htPBipC1LUhA26FW7/wWyCAaf6rL0v0wT6tDS+gwhPY+/NFWdsimLV8bfxGmfHL7KBPK
-         NU4a5u/vJNxvjZYk7LvfLOg+mqZ4zuVlLeIR15UUAXDk4OdYbWlZNqS10TrQZCpy+H5m
-         6pbEeZhQwI20YiiUSZaHadEC/1LkMmQt1izI5/1ugayuNw8GH1HCbFva7T4oXmobx3Fp
-         +pbLZ2MBwdgGUz4k3yhebN1tZOx/JorD8daQoxIeqCRcTyWtLAExPOHvOC5DIxvLXwZi
-         bKrA==
-X-Gm-Message-State: ANoB5plMgGa3AYH43Umjk6NAd+4VWKcV1CyKCS13wI3J2ZUG4kYr1lR+
-        hwLJJkhxQz3t2BPeszuAsIZdMbduaC4/ikhLqMOQmFWRuLn+yw==
-X-Google-Smtp-Source: AA0mqf5EeAiVuVsx1/ZVEl14H7nvzS8uJh40s5dJvvg/CqzIlqLlEzzTNJdcNDX71dA75G/RnQUjXgSEUKZJciYRlSQ=
-X-Received: by 2002:a17:906:ae43:b0:73f:40a9:62ff with SMTP id
- lf3-20020a170906ae4300b0073f40a962ffmr15632388ejb.678.1668551930113; Tue, 15
- Nov 2022 14:38:50 -0800 (PST)
+        Wed, 16 Nov 2022 03:47:03 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85904193EF
+        for <linux-fbdev@vger.kernel.org>; Wed, 16 Nov 2022 00:47:01 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id C5FAE1F917;
+        Wed, 16 Nov 2022 08:46:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1668588419; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=f8xsodB29M0YHl5cgmPZ4kptVwsvYgCqWImnEyfEags=;
+        b=rF90pqrQimfw/MuQWTIYOq4Yw7e2lXoBvGwaiECFfkZ6TNfHvMUJCiBtNNKCkqj2XmkCD5
+        l2Kb01cXk4jbFc/VaB8dXkWC64mpIHR59pg6vdWrOtsCBbny12wrcrtdnqLmroXEwAi+wT
+        qb9tdn9DeqxjYIfx6Lcc5k8FbLuTips=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1668588419;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=f8xsodB29M0YHl5cgmPZ4kptVwsvYgCqWImnEyfEags=;
+        b=r7NL0Ie0gTOTjs2jfYRjtZ4tv21JW5Jf+dmwb4lku1DsWzmVGOwp2HbTs8kmV8Ty1rxxXF
+        6o+6f1XsPqiX2dDw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id AE19513480;
+        Wed, 16 Nov 2022 08:46:59 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id GKoLKYOjdGPzIgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 16 Nov 2022 08:46:59 +0000
+Message-ID: <ab379da4-f137-c820-277f-5432ea80cdee@suse.de>
+Date:   Wed, 16 Nov 2022 09:46:58 +0100
 MIME-Version: 1.0
-References: <CAEYL+X9qahvtsi71thrOzzqdtq_mpdTyV1ZCqc-TvMH--7HqdQ@mail.gmail.com>
- <09b7b91c-4bae-0bba-7701-cb1f8c58c00b@gmx.de>
-In-Reply-To: <09b7b91c-4bae-0bba-7701-cb1f8c58c00b@gmx.de>
-From:   Zopolis0 <creatorsmithmdt@gmail.com>
-Date:   Wed, 16 Nov 2022 09:38:38 +1100
-Message-ID: <CAEYL+X9mM_m9HvdW-dMWDNWkyaY=Y7Y0TeZP3w3K7RA066RNJA@mail.gmail.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.2
 Subject: Re: [PATCH] Add framebuffer device driver for gamecube/wii,
  incorporating Farter's work.
-To:     Helge Deller <deller@gmx.de>
+To:     Zopolis0 <creatorsmithmdt@gmail.com>, Helge Deller <deller@gmx.de>
 Cc:     linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+References: <CAEYL+X9qahvtsi71thrOzzqdtq_mpdTyV1ZCqc-TvMH--7HqdQ@mail.gmail.com>
+ <09b7b91c-4bae-0bba-7701-cb1f8c58c00b@gmx.de>
+ <CAEYL+X9mM_m9HvdW-dMWDNWkyaY=Y7Y0TeZP3w3K7RA066RNJA@mail.gmail.com>
+Content-Language: en-US
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <CAEYL+X9mM_m9HvdW-dMWDNWkyaY=Y7Y0TeZP3w3K7RA066RNJA@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------0ybUxSqEs206Ju7Utty0M1Uu"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-I'm not too familiar with DRM, unfortunately, so I can't give you a
-great answer.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------0ybUxSqEs206Ju7Utty0M1Uu
+Content-Type: multipart/mixed; boundary="------------cvgmOQY3Q0sr93qozh0JBJsQ";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Zopolis0 <creatorsmithmdt@gmail.com>, Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+Message-ID: <ab379da4-f137-c820-277f-5432ea80cdee@suse.de>
+Subject: Re: [PATCH] Add framebuffer device driver for gamecube/wii,
+ incorporating Farter's work.
+References: <CAEYL+X9qahvtsi71thrOzzqdtq_mpdTyV1ZCqc-TvMH--7HqdQ@mail.gmail.com>
+ <09b7b91c-4bae-0bba-7701-cb1f8c58c00b@gmx.de>
+ <CAEYL+X9mM_m9HvdW-dMWDNWkyaY=Y7Y0TeZP3w3K7RA066RNJA@mail.gmail.com>
+In-Reply-To: <CAEYL+X9mM_m9HvdW-dMWDNWkyaY=Y7Y0TeZP3w3K7RA066RNJA@mail.gmail.com>
 
-My current aim is just to get this and the other gc-linux patches into
-upstream before they begin to rot.
+--------------cvgmOQY3Q0sr93qozh0JBJsQ
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-But, I'd be happy to look into porting this to DRM after it's merged though.
+SGkNCg0KQW0gMTUuMTEuMjIgdW0gMjM6Mzggc2NocmllYiBab3BvbGlzMDoNCj4gSSdtIG5v
+dCB0b28gZmFtaWxpYXIgd2l0aCBEUk0sIHVuZm9ydHVuYXRlbHksIHNvIEkgY2FuJ3QgZ2l2
+ZSB5b3UgYQ0KPiBncmVhdCBhbnN3ZXIuDQo+IA0KPiBNeSBjdXJyZW50IGFpbSBpcyBqdXN0
+IHRvIGdldCB0aGlzIGFuZCB0aGUgb3RoZXIgZ2MtbGludXggcGF0Y2hlcyBpbnRvDQo+IHVw
+c3RyZWFtIGJlZm9yZSB0aGV5IGJlZ2luIHRvIHJvdC4NCj4gDQo+IEJ1dCwgSSdkIGJlIGhh
+cHB5IHRvIGxvb2sgaW50byBwb3J0aW5nIHRoaXMgdG8gRFJNIGFmdGVyIGl0J3MgbWVyZ2Vk
+IHRob3VnaC4NCg0KV2UgZ2VuZXJhbGx5IGRvbid0IGFjY2VwdCBuZXcgZHJpdmVycyBpbnRv
+IGZiZGV2Lg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KPiBPbiBXZWQsIE5vdiAx
+NiwgMjAyMiBhdCA0OjA1IEFNIEhlbGdlIERlbGxlciA8ZGVsbGVyQGdteC5kZT4gd3JvdGU6
+DQo+Pg0KPj4gT24gMTEvMTUvMjIgMTE6MDUsIFpvcG9saXMwIHdyb3RlOg0KPj4+IEp1c3Qg
+dXBzdHJlYW1pbmcgdGhlIGdjL3dpaSBmcmFtZWJ1ZmZlciBkcml2ZXIgZnJvbSBnYy1saW51
+eCwgYW5kDQo+Pj4gaW5jb3Jwb3JhdGVzIEZhcnRlcidzIHBhdGNoIHRvIHNvbHZlIHRoZSBj
+b2xvciBpc3N1ZS4gU2VlDQo+Pj4gaHR0cHM6Ly9mYXJ0ZXJzb2Z0LmNvbS9ibG9nLzIwMTEv
+MDYvMjIvaGFja2luZy11cC1hbi1yZ2ItZnJhbWVidWZmZXItZHJpdmVyLWZvci13aWktbGlu
+dXgvDQo+Pj4gYW5kIGh0dHBzOi8vZmFydGVyc29mdC5jb20vYmxvZy8yMDExLzA3LzMxL2hh
+Y2tpbmctdXAtYW4tcmdiLWZyYW1lYnVmZmVyLWRyaXZlci1mb3Itd2lpLWxpbnV4LXRha2Ut
+dHdvLy4NCj4+DQo+PiBKdXN0IGZvciB0aGUgcmVjb3JkOg0KPj4gSXMgdGhlcmUgYSByZWFz
+b24gd2h5IGl0IHdhc24ndCAob3IgY2FuJ3QgYmUpIHBvcnRlZCB0byBEUk0gPw0KPj4gTG9v
+a2luZyBhdCB0aGUgcGF0Y2ggKGFuZCB0aGUgaGFyZHdhcmUgYmVoaW5kIGl0KSBJIGRvIHNl
+ZSB2YXJpb3VzIHJlYXNvbnMsDQo+PiBidXQgSSdkIGxpa2UgdG8gaGVhciBpdCBmcm9tIHlv
+dS4uLg0KPj4NCj4+IEhlbGdlDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNz
+IERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21i
+SA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5
+LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
 
-On Wed, Nov 16, 2022 at 4:05 AM Helge Deller <deller@gmx.de> wrote:
->
-> On 11/15/22 11:05, Zopolis0 wrote:
-> > Just upstreaming the gc/wii framebuffer driver from gc-linux, and
-> > incorporates Farter's patch to solve the color issue. See
-> > https://fartersoft.com/blog/2011/06/22/hacking-up-an-rgb-framebuffer-driver-for-wii-linux/
-> > and https://fartersoft.com/blog/2011/07/31/hacking-up-an-rgb-framebuffer-driver-for-wii-linux-take-two/.
->
-> Just for the record:
-> Is there a reason why it wasn't (or can't be) ported to DRM ?
-> Looking at the patch (and the hardware behind it) I do see various reasons,
-> but I'd like to hear it from you...
->
-> Helge
+--------------cvgmOQY3Q0sr93qozh0JBJsQ--
+
+--------------0ybUxSqEs206Ju7Utty0M1Uu
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmN0o4IFAwAAAAAACgkQlh/E3EQov+BD
+IQ//SJOtyV9p+uYb/mKbkXgWgMkjQ2noJmB6HJwznL1cpJSjCK0GZ2d/hTrncxz6M+2l6fIDXIxO
+g+Dusmr/RynwRLjX241Wx2yFZ9hCBHZyx0omLig4bZP/iqoNUwk73ttXGPRZkqCPjd34CNmPFIpC
+4FJ+N6b/rbSjxGOGn4bK0jWSX/GLPzK3FKo6lsZn0S0Xpx2Ba9lTa2/rD34m1d60XAeXDP3qxZoW
+TNu6/UtcqxtVXwP0+35w76udADhguufKq6M8dvTlznFUVngBc3wCyNjZavqnCIfY81/oHFE4zxXQ
+Pkap/A8ZYSMgNhgm9BzUnYxGRuvwSDn8C016d52b35ZMhFyv8q9vC32YlCajH6r2LiQ5toEViCvO
+grqE8ocI5twkUf4ZDT0NO75F21/JfOUDZ8Nsu+zarv1rrapuKNBdmYis0z+QN5L6JzrTaRfpfEGW
+dOWxr+bKLwxpZoidj8LMm1oYD3neP2sD311JcmxEJl92KlLs4i/VKje2d+Fx965PEpYti+gpOmyy
+g/ZPa4U5Q9M3CdHAhjX5VWTl+7bBTpfQn5hVFYoFb5buY0X6loctOcOk6ZBf4YbKJdyYxNyKIMaQ
+VbtlXXY1cdzx3YB7Id6Jny78LCOakzs0U4DAoTUbQQwiKWJ6O1uKniES9kLoH8zdRnHHYBUPe55Y
+S1M=
+=ekjU
+-----END PGP SIGNATURE-----
+
+--------------0ybUxSqEs206Ju7Utty0M1Uu--

@@ -2,138 +2,217 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8A39C433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed, 16 Nov 2022 08:47:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0391C43217
+	for <linux-fbdev@archiver.kernel.org>; Wed, 16 Nov 2022 16:22:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233263AbiKPIrG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 16 Nov 2022 03:47:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46254 "EHLO
+        id S233528AbiKPQWE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 16 Nov 2022 11:22:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58620 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231259AbiKPIrD (ORCPT
+        with ESMTP id S233205AbiKPQWC (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 16 Nov 2022 03:47:03 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85904193EF
-        for <linux-fbdev@vger.kernel.org>; Wed, 16 Nov 2022 00:47:01 -0800 (PST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id C5FAE1F917;
-        Wed, 16 Nov 2022 08:46:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1668588419; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=f8xsodB29M0YHl5cgmPZ4kptVwsvYgCqWImnEyfEags=;
-        b=rF90pqrQimfw/MuQWTIYOq4Yw7e2lXoBvGwaiECFfkZ6TNfHvMUJCiBtNNKCkqj2XmkCD5
-        l2Kb01cXk4jbFc/VaB8dXkWC64mpIHR59pg6vdWrOtsCBbny12wrcrtdnqLmroXEwAi+wT
-        qb9tdn9DeqxjYIfx6Lcc5k8FbLuTips=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1668588419;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=f8xsodB29M0YHl5cgmPZ4kptVwsvYgCqWImnEyfEags=;
-        b=r7NL0Ie0gTOTjs2jfYRjtZ4tv21JW5Jf+dmwb4lku1DsWzmVGOwp2HbTs8kmV8Ty1rxxXF
-        6o+6f1XsPqiX2dDw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id AE19513480;
-        Wed, 16 Nov 2022 08:46:59 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id GKoLKYOjdGPzIgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Wed, 16 Nov 2022 08:46:59 +0000
-Message-ID: <ab379da4-f137-c820-277f-5432ea80cdee@suse.de>
-Date:   Wed, 16 Nov 2022 09:46:58 +0100
+        Wed, 16 Nov 2022 11:22:02 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2CB42326E8;
+        Wed, 16 Nov 2022 08:22:00 -0800 (PST)
+From:   John Ogness <john.ogness@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020; t=1668615717;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=VtCslIGlEzy614T2a8IHyZzYUS3h+qQy0DKVc9BzNdg=;
+        b=GzY5cgNDoWBa/lbOwfd9mX/PwG123YTrjFa/2RWy/MxTGTTbo5ThPzbyy9v6dG3zYsF1pZ
+        N+iegswchbcXUAHRtbTykseR0L6W+HQIgfgiX9SSYYN5RgrOfoZwE1DQPFiaVifugRbmwD
+        AyBCdUHkwK+OSb4pBPykW240H0ST1UqF503Aq8rnG+/8xoyKFITxQ5Wo6+vQYoyof/YpGg
+        mwgQRVb20rIizIFIJqJNAksD+xCwoZHyDaiU+3Ezmava1OwpI8+ReSgzmSupdlYX72TX7m
+        HSxs3KVDXxdWRzVgOd+h/0zRrlR+P8zbX1vczS2jWcXMvKgDHE79PmhU5YDATQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020e; t=1668615717;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=VtCslIGlEzy614T2a8IHyZzYUS3h+qQy0DKVc9BzNdg=;
+        b=vFkQ9WmGMftRn2ZYMrgPBYAnAbFOKcqTla1ih+Fi5GvDPVQBXzB/7++jTAHdNGmTFP2e82
+        KdXuR59uIU7zsfBw==
+To:     Petr Mladek <pmladek@suse.com>
+Cc:     Sergey Senozhatsky <senozhatsky@chromium.org>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        linux-kernel@vger.kernel.org,
+        Jason Wessel <jason.wessel@windriver.com>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Douglas Anderson <dianders@chromium.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        kgdb-bugreport@lists.sourceforge.net, linux-serial@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>,
+        Richard Weinberger <richard@nod.at>,
+        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        linux-um@lists.infradead.org, Aaron Tomlin <atomlin@redhat.com>,
+        Luis Chamberlain <mcgrof@kernel.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+        Lukas Wunner <lukas@wunner.de>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        linux-m68k@lists.linux-m68k.org, Ard Biesheuvel <ardb@kernel.org>,
+        linux-efi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org,
+        Michal Simek <michal.simek@xilinx.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Mathias Nyman <mathias.nyman@linux.intel.com>,
+        linux-usb@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>, netdev@vger.kernel.org,
+        Helge Deller <deller@gmx.de>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Juergen Gross <jgross@suse.com>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Tom Rix <trix@redhat.com>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH printk v5 00/40] reduce console_lock scope
+Date:   Wed, 16 Nov 2022 17:27:12 +0106
+Message-Id: <20221116162152.193147-1-john.ogness@linutronix.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.2
-Subject: Re: [PATCH] Add framebuffer device driver for gamecube/wii,
- incorporating Farter's work.
-To:     Zopolis0 <creatorsmithmdt@gmail.com>, Helge Deller <deller@gmx.de>
-Cc:     linux-fbdev@vger.kernel.org
-References: <CAEYL+X9qahvtsi71thrOzzqdtq_mpdTyV1ZCqc-TvMH--7HqdQ@mail.gmail.com>
- <09b7b91c-4bae-0bba-7701-cb1f8c58c00b@gmx.de>
- <CAEYL+X9mM_m9HvdW-dMWDNWkyaY=Y7Y0TeZP3w3K7RA066RNJA@mail.gmail.com>
-Content-Language: en-US
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <CAEYL+X9mM_m9HvdW-dMWDNWkyaY=Y7Y0TeZP3w3K7RA066RNJA@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------0ybUxSqEs206Ju7Utty0M1Uu"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------0ybUxSqEs206Ju7Utty0M1Uu
-Content-Type: multipart/mixed; boundary="------------cvgmOQY3Q0sr93qozh0JBJsQ";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Zopolis0 <creatorsmithmdt@gmail.com>, Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org
-Message-ID: <ab379da4-f137-c820-277f-5432ea80cdee@suse.de>
-Subject: Re: [PATCH] Add framebuffer device driver for gamecube/wii,
- incorporating Farter's work.
-References: <CAEYL+X9qahvtsi71thrOzzqdtq_mpdTyV1ZCqc-TvMH--7HqdQ@mail.gmail.com>
- <09b7b91c-4bae-0bba-7701-cb1f8c58c00b@gmx.de>
- <CAEYL+X9mM_m9HvdW-dMWDNWkyaY=Y7Y0TeZP3w3K7RA066RNJA@mail.gmail.com>
-In-Reply-To: <CAEYL+X9mM_m9HvdW-dMWDNWkyaY=Y7Y0TeZP3w3K7RA066RNJA@mail.gmail.com>
+This is v5 of a series to prepare for threaded/atomic
+printing. v4 is here [0]. This series focuses on reducing the
+scope of the BKL console_lock. It achieves this by switching to
+SRCU and a dedicated mutex for console list iteration and
+modification, respectively. The console_lock will no longer
+offer this protection.
 
---------------cvgmOQY3Q0sr93qozh0JBJsQ
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Also, during the review of v2 it came to our attention that
+many console drivers are checking CON_ENABLED to see if they
+are registered. Because this flag can change without
+unregistering and because this flag does not represent an
+atomic point when an (un)registration process is complete,
+a new console_is_registered() function is introduced. This
+function uses the console_list_lock to synchronize with the
+(un)registration process to provide a reliable status.
 
-SGkNCg0KQW0gMTUuMTEuMjIgdW0gMjM6Mzggc2NocmllYiBab3BvbGlzMDoNCj4gSSdtIG5v
-dCB0b28gZmFtaWxpYXIgd2l0aCBEUk0sIHVuZm9ydHVuYXRlbHksIHNvIEkgY2FuJ3QgZ2l2
-ZSB5b3UgYQ0KPiBncmVhdCBhbnN3ZXIuDQo+IA0KPiBNeSBjdXJyZW50IGFpbSBpcyBqdXN0
-IHRvIGdldCB0aGlzIGFuZCB0aGUgb3RoZXIgZ2MtbGludXggcGF0Y2hlcyBpbnRvDQo+IHVw
-c3RyZWFtIGJlZm9yZSB0aGV5IGJlZ2luIHRvIHJvdC4NCj4gDQo+IEJ1dCwgSSdkIGJlIGhh
-cHB5IHRvIGxvb2sgaW50byBwb3J0aW5nIHRoaXMgdG8gRFJNIGFmdGVyIGl0J3MgbWVyZ2Vk
-IHRob3VnaC4NCg0KV2UgZ2VuZXJhbGx5IGRvbid0IGFjY2VwdCBuZXcgZHJpdmVycyBpbnRv
-IGZiZGV2Lg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KPiBPbiBXZWQsIE5vdiAx
-NiwgMjAyMiBhdCA0OjA1IEFNIEhlbGdlIERlbGxlciA8ZGVsbGVyQGdteC5kZT4gd3JvdGU6
-DQo+Pg0KPj4gT24gMTEvMTUvMjIgMTE6MDUsIFpvcG9saXMwIHdyb3RlOg0KPj4+IEp1c3Qg
-dXBzdHJlYW1pbmcgdGhlIGdjL3dpaSBmcmFtZWJ1ZmZlciBkcml2ZXIgZnJvbSBnYy1saW51
-eCwgYW5kDQo+Pj4gaW5jb3Jwb3JhdGVzIEZhcnRlcidzIHBhdGNoIHRvIHNvbHZlIHRoZSBj
-b2xvciBpc3N1ZS4gU2VlDQo+Pj4gaHR0cHM6Ly9mYXJ0ZXJzb2Z0LmNvbS9ibG9nLzIwMTEv
-MDYvMjIvaGFja2luZy11cC1hbi1yZ2ItZnJhbWVidWZmZXItZHJpdmVyLWZvci13aWktbGlu
-dXgvDQo+Pj4gYW5kIGh0dHBzOi8vZmFydGVyc29mdC5jb20vYmxvZy8yMDExLzA3LzMxL2hh
-Y2tpbmctdXAtYW4tcmdiLWZyYW1lYnVmZmVyLWRyaXZlci1mb3Itd2lpLWxpbnV4LXRha2Ut
-dHdvLy4NCj4+DQo+PiBKdXN0IGZvciB0aGUgcmVjb3JkOg0KPj4gSXMgdGhlcmUgYSByZWFz
-b24gd2h5IGl0IHdhc24ndCAob3IgY2FuJ3QgYmUpIHBvcnRlZCB0byBEUk0gPw0KPj4gTG9v
-a2luZyBhdCB0aGUgcGF0Y2ggKGFuZCB0aGUgaGFyZHdhcmUgYmVoaW5kIGl0KSBJIGRvIHNl
-ZSB2YXJpb3VzIHJlYXNvbnMsDQo+PiBidXQgSSdkIGxpa2UgdG8gaGVhciBpdCBmcm9tIHlv
-dS4uLg0KPj4NCj4+IEhlbGdlDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNz
-IERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21i
-SA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5
-LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
+All users of the console_lock for list iteration have been
+modified. For the call sites where the console_lock is still
+needed (for other reasons), comments are added to explain
+exactly why the console_lock is needed.
 
---------------cvgmOQY3Q0sr93qozh0JBJsQ--
+All users of CON_ENABLED for registration status have been
+modified to use console_is_registered(). Note that there are
+still users of CON_ENABLED, but this is for legitimate purposes
+about a registered console being able to print.
 
---------------0ybUxSqEs206Ju7Utty0M1Uu
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+The base commit for this series is from Paul McKenney's RCU tree
+and provides an NMI-safe SRCU implementation [1]. Without the
+NMI-safe SRCU implementation, this series is not less safe than
+mainline. But we will need the NMI-safe SRCU implementation for
+atomic consoles anyway, so we might as well get it in
+now. Especially since it _does_ increase the reliability for
+mainline in the panic path.
 
------BEGIN PGP SIGNATURE-----
+Changes since v4:
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmN0o4IFAwAAAAAACgkQlh/E3EQov+BD
-IQ//SJOtyV9p+uYb/mKbkXgWgMkjQ2noJmB6HJwznL1cpJSjCK0GZ2d/hTrncxz6M+2l6fIDXIxO
-g+Dusmr/RynwRLjX241Wx2yFZ9hCBHZyx0omLig4bZP/iqoNUwk73ttXGPRZkqCPjd34CNmPFIpC
-4FJ+N6b/rbSjxGOGn4bK0jWSX/GLPzK3FKo6lsZn0S0Xpx2Ba9lTa2/rD34m1d60XAeXDP3qxZoW
-TNu6/UtcqxtVXwP0+35w76udADhguufKq6M8dvTlznFUVngBc3wCyNjZavqnCIfY81/oHFE4zxXQ
-Pkap/A8ZYSMgNhgm9BzUnYxGRuvwSDn8C016d52b35ZMhFyv8q9vC32YlCajH6r2LiQ5toEViCvO
-grqE8ocI5twkUf4ZDT0NO75F21/JfOUDZ8Nsu+zarv1rrapuKNBdmYis0z+QN5L6JzrTaRfpfEGW
-dOWxr+bKLwxpZoidj8LMm1oYD3neP2sD311JcmxEJl92KlLs4i/VKje2d+Fx965PEpYti+gpOmyy
-g/ZPa4U5Q9M3CdHAhjX5VWTl+7bBTpfQn5hVFYoFb5buY0X6loctOcOk6ZBf4YbKJdyYxNyKIMaQ
-VbtlXXY1cdzx3YB7Id6Jny78LCOakzs0U4DAoTUbQQwiKWJ6O1uKniES9kLoH8zdRnHHYBUPe55Y
-S1M=
-=ekjU
------END PGP SIGNATURE-----
+printk:
 
---------------0ybUxSqEs206Ju7Utty0M1Uu--
+- Introduce console_init_seq() to handle the now rather complex
+  procedure to find an appropriate start sequence number for a
+  new console upon registration.
+
+- When registering a non-boot console and boot consoles are
+  registered, try to flush all the consoles to get the next @seq
+  value before falling back to use the @seq of the enabled boot
+  console that is furthest behind.
+
+- For console_force_preferred_locked(), make the console the
+  head of the console list.
+
+John Ogness
+
+[0] https://lore.kernel.org/lkml/20221114162932.141883-1-john.ogness@linutronix.de
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git/log/?h=srcunmisafe.2022.11.09a
+
+John Ogness (38):
+  printk: Prepare for SRCU console list protection
+  printk: register_console: use "registered" for variable names
+  printk: move @seq initialization to helper
+  printk: fix setting first seq for consoles
+  um: kmsg_dump: only dump when no output console available
+  tty: serial: kgdboc: document console_lock usage
+  tty: tty_io: document console_lock usage
+  proc: consoles: document console_lock usage
+  printk: introduce console_list_lock
+  console: introduce wrappers to read/write console flags
+  um: kmsg_dumper: use srcu console list iterator
+  kdb: use srcu console list iterator
+  printk: console_flush_all: use srcu console list iterator
+  printk: __pr_flush: use srcu console list iterator
+  printk: console_is_usable: use console_srcu_read_flags
+  printk: console_unblank: use srcu console list iterator
+  printk: console_flush_on_panic: use srcu console list iterator
+  printk: console_device: use srcu console list iterator
+  console: introduce console_is_registered()
+  serial_core: replace uart_console_enabled() with
+    uart_console_registered()
+  tty: nfcon: use console_is_registered()
+  efi: earlycon: use console_is_registered()
+  tty: hvc: use console_is_registered()
+  tty: serial: earlycon: use console_is_registered()
+  tty: serial: pic32_uart: use console_is_registered()
+  tty: serial: samsung_tty: use console_is_registered()
+  tty: serial: xilinx_uartps: use console_is_registered()
+  usb: early: xhci-dbc: use console_is_registered()
+  netconsole: avoid CON_ENABLED misuse to track registration
+  printk, xen: fbfront: create/use safe function for forcing preferred
+  tty: tty_io: use console_list_lock for list synchronization
+  proc: consoles: use console_list_lock for list iteration
+  tty: serial: kgdboc: use srcu console list iterator
+  tty: serial: kgdboc: use console_list_lock for list traversal
+  tty: serial: kgdboc: synchronize tty_find_polling_driver() and
+    register_console()
+  tty: serial: kgdboc: use console_list_lock to trap exit
+  printk: relieve console_lock of list synchronization duties
+  tty: serial: sh-sci: use setup() callback for early console
+
+Thomas Gleixner (2):
+  serial: kgdboc: Lock console list in probe function
+  printk: Convert console_drivers list to hlist
+
+ .clang-format                       |   1 +
+ arch/m68k/emu/nfcon.c               |   9 +-
+ arch/um/kernel/kmsg_dump.c          |  24 +-
+ drivers/firmware/efi/earlycon.c     |   8 +-
+ drivers/net/netconsole.c            |  21 +-
+ drivers/tty/hvc/hvc_console.c       |   4 +-
+ drivers/tty/serial/8250/8250_core.c |   2 +-
+ drivers/tty/serial/earlycon.c       |   4 +-
+ drivers/tty/serial/kgdboc.c         |  46 ++-
+ drivers/tty/serial/pic32_uart.c     |   4 +-
+ drivers/tty/serial/samsung_tty.c    |   2 +-
+ drivers/tty/serial/serial_core.c    |  14 +-
+ drivers/tty/serial/sh-sci.c         |  20 +-
+ drivers/tty/serial/xilinx_uartps.c  |   2 +-
+ drivers/tty/tty_io.c                |  18 +-
+ drivers/usb/early/xhci-dbc.c        |   2 +-
+ drivers/video/fbdev/xen-fbfront.c   |  12 +-
+ fs/proc/consoles.c                  |  21 +-
+ include/linux/console.h             | 129 +++++++-
+ include/linux/serial_core.h         |  10 +-
+ kernel/debug/kdb/kdb_io.c           |  18 +-
+ kernel/printk/printk.c              | 493 +++++++++++++++++++++-------
+ 22 files changed, 680 insertions(+), 184 deletions(-)
+
+
+base-commit: f733615e39aa2d6ddeef33b7b2c9aa6a5a2c2785
+-- 
+2.30.2
+

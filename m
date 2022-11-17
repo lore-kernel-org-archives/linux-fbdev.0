@@ -2,145 +2,127 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48FC6C4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Nov 2022 12:11:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EFFDC433FE
+	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Nov 2022 15:28:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239989AbiKQMH2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 17 Nov 2022 07:07:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37030 "EHLO
+        id S231469AbiKQP2Y (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 17 Nov 2022 10:28:24 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44470 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239973AbiKQMHX (ORCPT
+        with ESMTP id S234815AbiKQP2R (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 17 Nov 2022 07:07:23 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F2A5D6EB7A
-        for <linux-fbdev@vger.kernel.org>; Thu, 17 Nov 2022 04:07:21 -0800 (PST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 995DA1F8D5;
-        Thu, 17 Nov 2022 12:07:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1668686840; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=T1P53PSPmZj8BycHB9QGMQ25PfB2A/W6UdVkyB14pyo=;
-        b=Ks32PxodvtgslgVvgxDvf32Tb6+AKwWat3LsjahNLhdWT4yWkH4lMTOuempqwdVALMhXbK
-        PupoNXk3h4aL3CuuFkWqkrtDv5f12j41eM4MrUe2BOBR552/RErUXzHHVnbhOtzB1rOUpu
-        JhVbhDYc5gKrzoJuRLAzhWbQ564KTis=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1668686840;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=T1P53PSPmZj8BycHB9QGMQ25PfB2A/W6UdVkyB14pyo=;
-        b=1Szz83Rgb6fuPgfym3fBG5dfCK1whLdWjKfbiQfAWkIrqCOixxCI9A/RqPSwF88NNBPUJ4
-        ZIn4YAQQS37zlMCA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 6E22A13B56;
-        Thu, 17 Nov 2022 12:07:20 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id OK3YGfgjdmPCTQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 17 Nov 2022 12:07:20 +0000
-Message-ID: <320e795d-ebe5-f5a3-fc57-5c54d30b1a5a@suse.de>
-Date:   Thu, 17 Nov 2022 13:07:19 +0100
+        Thu, 17 Nov 2022 10:28:17 -0500
+Received: from www262.sakura.ne.jp (www262.sakura.ne.jp [202.181.97.72])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 322EC1E2
+        for <linux-fbdev@vger.kernel.org>; Thu, 17 Nov 2022 07:28:15 -0800 (PST)
+Received: from fsav113.sakura.ne.jp (fsav113.sakura.ne.jp [27.133.134.240])
+        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTP id 2AHFS8Uf072379;
+        Fri, 18 Nov 2022 00:28:08 +0900 (JST)
+        (envelope-from penguin-kernel@I-love.SAKURA.ne.jp)
+Received: from www262.sakura.ne.jp (202.181.97.72)
+ by fsav113.sakura.ne.jp (F-Secure/fsigk_smtp/550/fsav113.sakura.ne.jp);
+ Fri, 18 Nov 2022 00:28:08 +0900 (JST)
+X-Virus-Status: clean(F-Secure/fsigk_smtp/550/fsav113.sakura.ne.jp)
+Received: from [192.168.1.9] (M106072142033.v4.enabler.ne.jp [106.72.142.33])
+        (authenticated bits=0)
+        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTPSA id 2AHFS3Sk072369
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NO);
+        Fri, 18 Nov 2022 00:28:07 +0900 (JST)
+        (envelope-from penguin-kernel@I-love.SAKURA.ne.jp)
+Message-ID: <cad03d25-0ea0-32c4-8173-fd1895314bce@I-love.SAKURA.ne.jp>
+Date:   Fri, 18 Nov 2022 00:27:58 +0900
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+User-Agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:102.0) Gecko/20100101
  Thunderbird/102.4.2
-Subject: Re: [PATCH] fbdev: Make fb_modesetting_disabled() static inline
-To:     javierm@redhat.com, deller@gmx.de, sfr@canb.auug.org.au
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        kernel test robot <lkp@intel.com>,
-        Daniel Vetter <daniel@ffwll.ch>
-References: <20221117114729.7570-1-tzimmermann@suse.de>
 Content-Language: en-US
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20221117114729.7570-1-tzimmermann@suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------ICmo0ZK8FvAVSeOK6MdZ5XdQ"
+To:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>
+Cc:     Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        DRI <dri-devel@lists.freedesktop.org>
+From:   Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Subject: [PATCH] fbcon: Use kzalloc() in fbcon_prepare_logo()
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------ICmo0ZK8FvAVSeOK6MdZ5XdQ
-Content-Type: multipart/mixed; boundary="------------AVJVcTmK3PEeJghp1UTw079E";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: javierm@redhat.com, deller@gmx.de, sfr@canb.auug.org.au
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- kernel test robot <lkp@intel.com>, Daniel Vetter <daniel@ffwll.ch>
-Message-ID: <320e795d-ebe5-f5a3-fc57-5c54d30b1a5a@suse.de>
-Subject: Re: [PATCH] fbdev: Make fb_modesetting_disabled() static inline
-References: <20221117114729.7570-1-tzimmermann@suse.de>
-In-Reply-To: <20221117114729.7570-1-tzimmermann@suse.de>
+A kernel built with syzbot's config file reported that
 
---------------AVJVcTmK3PEeJghp1UTw079E
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+  scr_memcpyw(q, save, array3_size(logo_lines, new_cols, 2))
 
-DQoNCkFtIDE3LjExLjIyIHVtIDEyOjQ3IHNjaHJpZWIgVGhvbWFzIFppbW1lcm1hbm46DQo+
-IE1ha2UgZmJfbW9kZXNldHRpbmdfZGlzYWJsZWQoKSBhIHN0YXRpYy1pbmxpbmUgZnVuY3Rp
-b24gd2hlbiBpdCBpcw0KPiBkZWZpbmVkIGluIHRoZSBoZWFkZXIgZmlsZS4gQXZvaWQgdGhl
-IGxpbmtlciBlcnJvciBzaG93biBiZWxvdy4NCj4gDQo+ICAgbGQ6IGRyaXZlcnMvdmlkZW8v
-ZmJkZXYvY29yZS9mYm1vbi5vOiBpbiBmdW5jdGlvbiBgZmJfbW9kZXNldHRpbmdfZGlzYWJs
-ZWQnOg0KPiAgIGZibW9uLmM6KC50ZXh0KzB4MWU0KTogbXVsdGlwbGUgZGVmaW5pdGlvbiBv
-ZiBgZmJfbW9kZXNldHRpbmdfZGlzYWJsZWQnOyBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUv
-ZmJtZW0ubzpmYm1lbS5jOigudGV4dCsweDFiYWMpOiBmaXJzdCBkZWZpbmVkIGhlcmUNCj4g
-DQo+IEEgYnVnIHJlcG9ydCBpcyBhdCBbMV0uDQo+IA0KPiBSZXBvcnRlZC1ieTogU3RlcGhl
-biBSb3Rod2VsbCA8c2ZyQGNhbmIuYXV1Zy5vcmcuYXU+DQo+IFJlcG9ydGVkLWJ5OiBrZXJu
-ZWwgdGVzdCByb2JvdCA8bGtwQGludGVsLmNvbT4NCj4gU2lnbmVkLW9mZi1ieTogVGhvbWFz
-IFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+DQo+IEZpeGVzOiAwYmEyZmE4Y2Jk
-MjkgKCJmYmRldjogQWRkIHN1cHBvcnQgZm9yIHRoZSBub21vZGVzZXQga2VybmVsIHBhcmFt
-ZXRlciIpDQo+IENjOiBKYXZpZXIgTWFydGluZXogQ2FuaWxsYXMgPGphdmllcm1AcmVkaGF0
-LmNvbT4NCg0KSmF2aWVyIGdhdmUgaGlzIHItYiB2aWEgaXJjLg0KDQo+IENjOiBEYW5pZWwg
-VmV0dGVyIDxkYW5pZWxAZmZ3bGwuY2g+DQo+IENjOiBIZWxnZSBEZWxsZXIgPGRlbGxlckBn
-bXguZGU+DQo+IENjOiBsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmcNCj4gQ2M6IGRyaS1k
-ZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcNCj4gTGluazogaHR0cHM6Ly9sb3JlLmtlcm5l
-bC5vcmcvZHJpLWRldmVsLzIwMjIxMTE3MTgzMjE0LjI0NzNlNzQ1QGNhbmIuYXV1Zy5vcmcu
-YXUvVC8jdSAjIDENCj4gLS0tDQo+ICAgaW5jbHVkZS9saW51eC9mYi5oIHwgMiArLQ0KPiAg
-IDEgZmlsZSBjaGFuZ2VkLCAxIGluc2VydGlvbigrKSwgMSBkZWxldGlvbigtKQ0KPiANCj4g
-ZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvZmIuaCBiL2luY2x1ZGUvbGludXgvZmIuaA0K
-PiBpbmRleCAzYTgyMmU0MzU3YjEyLi5lYTQyMTcyNGY3MzM4IDEwMDY0NA0KPiAtLS0gYS9p
-bmNsdWRlL2xpbnV4L2ZiLmgNCj4gKysrIGIvaW5jbHVkZS9saW51eC9mYi5oDQo+IEBAIC04
-MDcsNyArODA3LDcgQEAgZXh0ZXJuIGludCBmYl9maW5kX21vZGUoc3RydWN0IGZiX3Zhcl9z
-Y3JlZW5pbmZvICp2YXIsDQo+ICAgI2lmIGRlZmluZWQoQ09ORklHX1ZJREVPX05PTU9ERVNF
-VCkNCj4gICBib29sIGZiX21vZGVzZXR0aW5nX2Rpc2FibGVkKGNvbnN0IGNoYXIgKmRydm5h
-bWUpOw0KPiAgICNlbHNlDQo+IC1ib29sIGZiX21vZGVzZXR0aW5nX2Rpc2FibGVkKGNvbnN0
-IGNoYXIgKmRydm5hbWUpDQo+ICtzdGF0aWMgaW5saW5lIGJvb2wgZmJfbW9kZXNldHRpbmdf
-ZGlzYWJsZWQoY29uc3QgY2hhciAqZHJ2bmFtZSkNCj4gICB7DQo+ICAgCXJldHVybiBmYWxz
-ZTsNCj4gICB9DQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBE
-ZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVs
-ZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xy
-bmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
+causes uninitialized "save" to be copied.
 
---------------AVJVcTmK3PEeJghp1UTw079E--
+  ----------
+  [drm] Initialized vgem 1.0.0 20120112 for vgem on minor 0
+  [drm] Initialized vkms 1.0.0 20180514 for vkms on minor 1
+  Console: switching to colour frame buffer device 128x48
+  =====================================================
+  BUG: KMSAN: uninit-value in do_update_region+0x4b8/0xba0
+   do_update_region+0x4b8/0xba0
+   update_region+0x40d/0x840
+   fbcon_switch+0x3364/0x35e0
+   redraw_screen+0xae3/0x18a0
+   do_bind_con_driver+0x1cb3/0x1df0
+   do_take_over_console+0x11cb/0x13f0
+   fbcon_fb_registered+0xacc/0xfd0
+   register_framebuffer+0x1179/0x1320
+   __drm_fb_helper_initial_config_and_unlock+0x23ad/0x2b40
+   drm_fbdev_client_hotplug+0xbea/0xda0
+   drm_fbdev_generic_setup+0x65e/0x9d0
+   vkms_init+0x9f3/0xc76
+   (...snipped...)
+  
+  Uninit was stored to memory at:
+   fbcon_prepare_logo+0x143b/0x1940
+   fbcon_init+0x2c1b/0x31c0
+   visual_init+0x3e7/0x820
+   do_bind_con_driver+0x14a4/0x1df0
+   do_take_over_console+0x11cb/0x13f0
+   fbcon_fb_registered+0xacc/0xfd0
+   register_framebuffer+0x1179/0x1320
+   __drm_fb_helper_initial_config_and_unlock+0x23ad/0x2b40
+   drm_fbdev_client_hotplug+0xbea/0xda0
+   drm_fbdev_generic_setup+0x65e/0x9d0
+   vkms_init+0x9f3/0xc76
+   (...snipped...)
+  
+  Uninit was created at:
+   __kmem_cache_alloc_node+0xb69/0x1020
+   __kmalloc+0x379/0x680
+   fbcon_prepare_logo+0x704/0x1940
+   fbcon_init+0x2c1b/0x31c0
+   visual_init+0x3e7/0x820
+   do_bind_con_driver+0x14a4/0x1df0
+   do_take_over_console+0x11cb/0x13f0
+   fbcon_fb_registered+0xacc/0xfd0
+   register_framebuffer+0x1179/0x1320
+   __drm_fb_helper_initial_config_and_unlock+0x23ad/0x2b40
+   drm_fbdev_client_hotplug+0xbea/0xda0
+   drm_fbdev_generic_setup+0x65e/0x9d0
+   vkms_init+0x9f3/0xc76
+   (...snipped...)
+  
+  CPU: 2 PID: 1 Comm: swapper/0 Not tainted 6.1.0-rc4-00356-g8f2975c2bb4c #924
+  Hardware name: innotek GmbH VirtualBox/VirtualBox, BIOS VirtualBox 12/01/2006
+  ----------
 
---------------ICmo0ZK8FvAVSeOK6MdZ5XdQ
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ drivers/video/fbdev/core/fbcon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmN2I/cFAwAAAAAACgkQlh/E3EQov+Ca
-gA/+LdU3SyeGbcVQXqoVNeJbtsVUYTP7uY/Y52gF+VbVthvfebOhmwjCUQjRFwNKZsz1QlQqGxgh
-WjgRHxI2sAu98D5gJS7JdYbSP6v3VrlDYe9StJkhnCu62xgf3ydVoppfy0KgzQkxvzAvIF/iJvf5
-9NHF8RQWTiwobCPVFD4Q3YEp5aYWIvOxNU8b4RCDPETAGt4B8z91NjOsnNhpbuGdmgisksxOy8Kk
-kfAKE1tsl94Ww7RzxbtIdb95LYetXOcHPn6AGOf3LJkXdr8s6CZorZT8UlReAbqa2tldUNQfpTq8
-ZaVDnOeIjVYloMO66ndoYMFiyWvQNPhumeRMAZ67VNzgt/hLRxl3ALhCozF1EBbqfKwnc+KlDqvv
-Fs93jrP7IUYN3tyrAz8t13nJ/6LfxJdi/nfUgvoQ1HiFeHFhtKeXqQSUDHZ3MWO1MzAAa26/wipD
-GZHTPML09oLmBsSBy9fnHjsfq08O4cBtuVdMVFI9WYiKopYz5NDdF1nZAAwzXBqFyQDDwXL6zizv
-Htq0sebIeoA6KjuX/lgZ6chzQDYpI4iHYPDXJuK4tUEVGoK+BvPL7nU0k0ZoMKPYtUuVHeMTh8s9
-W5AOOVcQHycvbCSPxi+mMvVxf42Hn6Rg73ShN71I1RdSaGWakEXxZ7LMx8BzKHMzfgf+jfd54dsM
-5Sg=
-=lhQ1
------END PGP SIGNATURE-----
-
---------------ICmo0ZK8FvAVSeOK6MdZ5XdQ--
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 098b62f7b701..c0143d38df83 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -577,7 +577,7 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
+ 		if (scr_readw(r) != vc->vc_video_erase_char)
+ 			break;
+ 	if (r != q && new_rows >= rows + logo_lines) {
+-		save = kmalloc(array3_size(logo_lines, new_cols, 2),
++		save = kzalloc(array3_size(logo_lines, new_cols, 2),
+ 			       GFP_KERNEL);
+ 		if (save) {
+ 			int i = min(cols, new_cols);
+-- 
+2.34.1

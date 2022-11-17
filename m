@@ -2,189 +2,100 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1476AC4332F
-	for <linux-fbdev@archiver.kernel.org>; Wed, 16 Nov 2022 16:24:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D3CBC4332F
+	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Nov 2022 11:47:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238812AbiKPQYE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 16 Nov 2022 11:24:04 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60486 "EHLO
+        id S234700AbiKQLrf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 17 Nov 2022 06:47:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51476 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237885AbiKPQWy (ORCPT
+        with ESMTP id S233622AbiKQLrd (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 16 Nov 2022 11:22:54 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2908E58BCE;
-        Wed, 16 Nov 2022 08:22:14 -0800 (PST)
-From:   John Ogness <john.ogness@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1668615732;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=TXbxC6JVJ+uC/rHR//oihXQviGVU9SyaOLb0BW4WVkQ=;
-        b=LkpXIHJO8B+YQGVTcPEhOmF6o85fbBVZsjNCb9sna4O0OUflqM62zl7N8YLgWUtINRBDq9
-        6loOUJNzVVpmAhyP6TDqkZAgy2b+mvZVDCouf4GSyq86hzmRxgtezOj4rELb7tocUScO4J
-        2DZjAcUhvrNUcjl9DGPJex9xVKNBtJgAgIbA7I9hqDxka3fENpGkCHHFDD/Bs5jbbTDdOa
-        LuRBlUdyNLAyaf6qB6291uSzCLyXW3HqT4OyoXaYQZrqdciDZVDsm9HM8BlWNrufeLn/c6
-        jYo1WB6s3s7NlsFNAFmDgPC2uqPJKlTomPPgESDMnrms5xVN23fG91jl8N0Y9g==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1668615732;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=TXbxC6JVJ+uC/rHR//oihXQviGVU9SyaOLb0BW4WVkQ=;
-        b=aJ+OvlENo5zCvnworlHkhLW2ECjAESLEwtxR1qampDPfmlrUySSqcLernNYaBQewAHGX5b
-        JujLFM840TLOzQCg==
-To:     Petr Mladek <pmladek@suse.com>
-Cc:     Sergey Senozhatsky <senozhatsky@chromium.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        linux-kernel@vger.kernel.org, Helge Deller <deller@gmx.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Thu, 17 Nov 2022 06:47:33 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B3181A05F
+        for <linux-fbdev@vger.kernel.org>; Thu, 17 Nov 2022 03:47:33 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id D7EF81F8CC;
+        Thu, 17 Nov 2022 11:47:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1668685651; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=/Wzy7xEyhUdDlxC1bAmO3ib74A9kXG9xQXitEdnb4pc=;
+        b=wu/SUa1v0E5OqGuYJTrTfVVIwuuzp7TIxEfN8zo7Lz7iiRiGouAVF6+h7lpHlRJ3iLCY4R
+        uUsDcDX3z6a5jkV41ysJU46g084gugghCb3OS90cm1fwidBFsnkXrJ2SkaqM5vrynE9T4q
+        +aJDL1JhvzUFFWa+bYkm5+rnejC2mFo=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1668685651;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=/Wzy7xEyhUdDlxC1bAmO3ib74A9kXG9xQXitEdnb4pc=;
+        b=pFnHcBOvrNgy7o1nH3X8zlTN/W1DPgblDDc/dpBNSM702t4IFjjrIXPR8emXzHvLdN0953
+        TEovxXHdEjTS4KCg==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id AC31613B56;
+        Thu, 17 Nov 2022 11:47:31 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id TN0mKVMfdmPIRQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 17 Nov 2022 11:47:31 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     javierm@redhat.com, deller@gmx.de, sfr@canb.auug.org.au
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Juergen Gross <jgross@suse.com>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        Tom Rix <trix@redhat.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: [PATCH printk v5 32/40] printk, xen: fbfront: create/use safe function for forcing preferred
-Date:   Wed, 16 Nov 2022 17:27:44 +0106
-Message-Id: <20221116162152.193147-33-john.ogness@linutronix.de>
-In-Reply-To: <20221116162152.193147-1-john.ogness@linutronix.de>
-References: <20221116162152.193147-1-john.ogness@linutronix.de>
+        kernel test robot <lkp@intel.com>,
+        Daniel Vetter <daniel@ffwll.ch>
+Subject: [PATCH] fbdev: Make fb_modesetting_disabled() static inline
+Date:   Thu, 17 Nov 2022 12:47:29 +0100
+Message-Id: <20221117114729.7570-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.38.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-With commit 9e124fe16ff2("xen: Enable console tty by default in domU
-if it's not a dummy") a hack was implemented to make sure that the
-tty console remains the console behind the /dev/console device. The
-main problem with the hack is that, after getting the console pointer
-to the tty console, it is assumed the pointer is still valid after
-releasing the console_sem. This assumption is incorrect and unsafe.
+Make fb_modesetting_disabled() a static-inline function when it is
+defined in the header file. Avoid the linker error shown below.
 
-Make the hack safe by introducing a new function
-console_force_preferred_locked() and perform the full operation
-under the console_list_lock.
+ ld: drivers/video/fbdev/core/fbmon.o: in function `fb_modesetting_disabled':
+ fbmon.c:(.text+0x1e4): multiple definition of `fb_modesetting_disabled'; drivers/video/fbdev/core/fbmem.o:fbmem.c:(.text+0x1bac): first defined here
 
-Signed-off-by: John Ogness <john.ogness@linutronix.de>
-Reviewed-by: Petr Mladek <pmladek@suse.com>
+A bug report is at [1].
+
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Fixes: 0ba2fa8cbd29 ("fbdev: Add support for the nomodeset kernel parameter")
+Cc: Javier Martinez Canillas <javierm@redhat.com>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Link: https://lore.kernel.org/dri-devel/20221117183214.2473e745@canb.auug.org.au/T/#u # 1
 ---
- drivers/video/fbdev/xen-fbfront.c | 12 +++-----
- include/linux/console.h           |  1 +
- kernel/printk/printk.c            | 49 +++++++++++++++++++++++++++++--
- 3 files changed, 51 insertions(+), 11 deletions(-)
+ include/linux/fb.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/xen-fbfront.c b/drivers/video/fbdev/xen-fbfront.c
-index 4d2694d904aa..8752d389e382 100644
---- a/drivers/video/fbdev/xen-fbfront.c
-+++ b/drivers/video/fbdev/xen-fbfront.c
-@@ -504,18 +504,14 @@ static void xenfb_make_preferred_console(void)
- 	if (console_set_on_cmdline)
- 		return;
- 
--	console_lock();
-+	console_list_lock();
- 	for_each_console(c) {
- 		if (!strcmp(c->name, "tty") && c->index == 0)
- 			break;
- 	}
--	console_unlock();
--	if (c) {
--		unregister_console(c);
--		c->flags |= CON_CONSDEV;
--		c->flags &= ~CON_PRINTBUFFER; /* don't print again */
--		register_console(c);
--	}
-+	if (c)
-+		console_force_preferred_locked(c);
-+	console_list_unlock();
- }
- 
- static int xenfb_resume(struct xenbus_device *dev)
-diff --git a/include/linux/console.h b/include/linux/console.h
-index f716e1dd9eaf..9cea254b34b8 100644
---- a/include/linux/console.h
-+++ b/include/linux/console.h
-@@ -291,6 +291,7 @@ enum con_flush_mode {
- };
- 
- extern int add_preferred_console(char *name, int idx, char *options);
-+extern void console_force_preferred_locked(struct console *con);
- extern void register_console(struct console *);
- extern int unregister_console(struct console *);
- extern void console_lock(void);
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index 410d3f2cdeb3..ece34abbc9cc 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -247,9 +247,10 @@ int devkmsg_sysctl_set_loglvl(struct ctl_table *table, int write,
- void console_list_lock(void)
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 3a822e4357b12..ea421724f7338 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -807,7 +807,7 @@ extern int fb_find_mode(struct fb_var_screeninfo *var,
+ #if defined(CONFIG_VIDEO_NOMODESET)
+ bool fb_modesetting_disabled(const char *drvname);
+ #else
+-bool fb_modesetting_disabled(const char *drvname)
++static inline bool fb_modesetting_disabled(const char *drvname)
  {
- 	/*
--	 * In unregister_console(), synchronize_srcu() is called with the
--	 * console_list_lock held. Therefore it is not allowed that the
--	 * console_list_lock is taken with the srcu_lock held.
-+	 * In unregister_console() and console_force_preferred_locked(),
-+	 * synchronize_srcu() is called with the console_list_lock held.
-+	 * Therefore it is not allowed that the console_list_lock is taken
-+	 * with the srcu_lock held.
- 	 *
- 	 * Detecting if this context is really in the read-side critical
- 	 * section is only possible if the appropriate debug options are
-@@ -3489,6 +3490,48 @@ int unregister_console(struct console *console)
+ 	return false;
  }
- EXPORT_SYMBOL(unregister_console);
- 
-+/**
-+ * console_force_preferred_locked - force a registered console preferred
-+ * @con: The registered console to force preferred.
-+ *
-+ * Must be called under console_list_lock().
-+ */
-+void console_force_preferred_locked(struct console *con)
-+{
-+	struct console *cur_pref_con;
-+
-+	if (!console_is_registered_locked(con))
-+		return;
-+
-+	cur_pref_con = console_first();
-+
-+	/* Already preferred? */
-+	if (cur_pref_con == con)
-+		return;
-+
-+	/*
-+	 * Delete, but do not re-initialize the entry. This allows the console
-+	 * to continue to appear registered (via any hlist_unhashed_lockless()
-+	 * checks), even though it was briefly removed from the console list.
-+	 */
-+	hlist_del_rcu(&con->node);
-+
-+	/*
-+	 * Ensure that all SRCU list walks have completed so that the console
-+	 * can be added to the beginning of the console list and its forward
-+	 * list pointer can be re-initialized.
-+	 */
-+	synchronize_srcu(&console_srcu);
-+
-+	con->flags |= CON_CONSDEV;
-+	WARN_ON(!con->device);
-+
-+	/* Only the new head can have CON_CONSDEV set. */
-+	console_srcu_write_flags(cur_pref_con, cur_pref_con->flags & ~CON_CONSDEV);
-+	hlist_add_head_rcu(&con->node, &console_list);
-+}
-+EXPORT_SYMBOL(console_force_preferred_locked);
-+
- /*
-  * Initialize the console device. This is called *early*, so
-  * we can't necessarily depend on lots of kernel help here.
 -- 
-2.30.2
+2.38.1
 

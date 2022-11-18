@@ -2,89 +2,111 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E7FC7C4332F
-	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Nov 2022 14:19:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41335C43219
+	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Nov 2022 14:56:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242249AbiKROTV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 18 Nov 2022 09:19:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52968 "EHLO
+        id S242038AbiKRO4e (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 18 Nov 2022 09:56:34 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53970 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242287AbiKROTR (ORCPT
+        with ESMTP id S242023AbiKROzz (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 18 Nov 2022 09:19:17 -0500
-Received: from hust.edu.cn (mail.hust.edu.cn [202.114.0.240])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD60AF21;
-        Fri, 18 Nov 2022 06:19:14 -0800 (PST)
-Received: from localhost.localdomain ([172.16.0.254])
-        (user=dzm91@hust.edu.cn mech=LOGIN bits=0)
-        by mx1.hust.edu.cn  with ESMTP id 2AIEGVXC002760-2AIEGVXF002760
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
-        Fri, 18 Nov 2022 22:16:36 +0800
-From:   Dongliang Mu <dzm91@hust.edu.cn>
-To:     Helge Deller <deller@gmx.de>, Dongliang Mu <dzm91@hust.edu.cn>,
-        Cai Huoqing <cai.huoqing@linux.dev>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>, Sekhar Nori <nsekhar@ti.com>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev: da8xx-fb: add missing regulator_disable() in fb_probe
-Date:   Fri, 18 Nov 2022 22:14:06 +0800
-Message-Id: <20221118141431.3005015-1-dzm91@hust.edu.cn>
-X-Mailer: git-send-email 2.35.1
+        Fri, 18 Nov 2022 09:55:55 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5CDB390397;
+        Fri, 18 Nov 2022 06:55:31 -0800 (PST)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+        by smtp-out1.suse.de (Postfix) with ESMTP id A1D8221FB8;
+        Fri, 18 Nov 2022 14:55:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+        t=1668783329; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=RcWbup5BnnjHzEPpsHQeQ/9zmfC/ktCQBWDNShm4WAU=;
+        b=EDb4yO6yUhovxR1R/uuiYft78ukr2h+oU+IjaIre1crSLD6FqDa7tOBl7T9GdFyjImWzLl
+        fuZVE7BJe7raqlKMXUK6GnRr1NqEKply8FF3aod58x9Whn9xAOWMtUkNgxO/GnqpzSdULK
+        TFzAN6y09Rae96AY+OVlAOuIn3VhXg8=
+Received: from suse.cz (unknown [10.100.201.202])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by relay2.suse.de (Postfix) with ESMTPS id 093D42C141;
+        Fri, 18 Nov 2022 14:55:28 +0000 (UTC)
+Date:   Fri, 18 Nov 2022 15:55:27 +0100
+From:   Petr Mladek <pmladek@suse.com>
+To:     John Ogness <john.ogness@linutronix.de>
+Cc:     Sergey Senozhatsky <senozhatsky@chromium.org>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        linux-kernel@vger.kernel.org,
+        Jason Wessel <jason.wessel@windriver.com>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Douglas Anderson <dianders@chromium.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        kgdb-bugreport@lists.sourceforge.net, linux-serial@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>,
+        Richard Weinberger <richard@nod.at>,
+        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        linux-um@lists.infradead.org, Aaron Tomlin <atomlin@redhat.com>,
+        Luis Chamberlain <mcgrof@kernel.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+        Lukas Wunner <lukas@wunner.de>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        linux-m68k@lists.linux-m68k.org, Ard Biesheuvel <ardb@kernel.org>,
+        linux-efi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org,
+        Michal Simek <michal.simek@xilinx.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Mathias Nyman <mathias.nyman@linux.intel.com>,
+        linux-usb@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>, netdev@vger.kernel.org,
+        Helge Deller <deller@gmx.de>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Juergen Gross <jgross@suse.com>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Tom Rix <trix@redhat.com>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH printk v5 00/40] reduce console_lock scope
+Message-ID: <Y3ec3/fpdAQacAOW@alley>
+References: <20221116162152.193147-1-john.ogness@linutronix.de>
+ <Y3drEOkD1fuZcvV2@alley>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-FEAS-AUTH-USER: dzm91@hust.edu.cn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Y3drEOkD1fuZcvV2@alley>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The error handling code in fb_probe misses regulator_disable if
-regulator_enable is called successfully. The previous commit only
-adds regulator_disable in the .remove(), forgetting the error
-handling code in the .probe.
+On Fri 2022-11-18 12:22:58, Petr Mladek wrote:
+> On Wed 2022-11-16 17:27:12, John Ogness wrote:
+> > This is v5 of a series to prepare for threaded/atomic
+> > printing. v4 is here [0]. This series focuses on reducing the
+> > scope of the BKL console_lock. It achieves this by switching to
+> > SRCU and a dedicated mutex for console list iteration and
+> > modification, respectively. The console_lock will no longer
+> > offer this protection.
+> 
+> The patchset looks ready for linux-next from my POV.
+> 
+> I am going to push it there right now to get as much testing
+> as possible before the merge window.
 
-Fix this by adding a new error label to call regulator_disable.
+JFYI, the patchset is committed in printk/linux.git,
+branch rework/console-list-lock.
 
-Fixes: 611097d5daea("fbdev: da8xx: add support for a regulator")
-Signed-off-by: Dongliang Mu <dzm91@hust.edu.cn>
----
- drivers/video/fbdev/da8xx-fb.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+I'll eventually merge it into rework/kthreads. But I wanted to have
+it separated until it gets some more testing in linux-next and
+eventually some more review.
 
-diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
-index 11922b009ed7..cd07e401b326 100644
---- a/drivers/video/fbdev/da8xx-fb.c
-+++ b/drivers/video/fbdev/da8xx-fb.c
-@@ -1431,7 +1431,7 @@ static int fb_probe(struct platform_device *device)
- 		dev_err(&device->dev,
- 			"GLCD: kmalloc for frame buffer failed\n");
- 		ret = -EINVAL;
--		goto err_release_fb;
-+		goto err_disable_reg;
- 	}
- 
- 	da8xx_fb_info->screen_base = (char __iomem *) par->vram_virt;
-@@ -1475,7 +1475,7 @@ static int fb_probe(struct platform_device *device)
- 
- 	ret = fb_alloc_cmap(&da8xx_fb_info->cmap, PALETTE_SIZE, 0);
- 	if (ret)
--		goto err_release_fb;
-+		goto err_disable_reg;
- 	da8xx_fb_info->cmap.len = par->palette_sz;
- 
- 	/* initialize var_screeninfo */
-@@ -1529,6 +1529,9 @@ static int fb_probe(struct platform_device *device)
- err_dealloc_cmap:
- 	fb_dealloc_cmap(&da8xx_fb_info->cmap);
- 
-+err_disable_reg:
-+	if (par->lcd_supply)
-+		regulator_disable(par->lcd_supply);
- err_release_fb:
- 	framebuffer_release(da8xx_fb_info);
- 
--- 
-2.35.1
-
+Best Regards,
+Petr

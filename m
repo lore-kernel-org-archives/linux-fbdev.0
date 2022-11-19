@@ -2,128 +2,116 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FBB7C433FE
-	for <linux-fbdev@archiver.kernel.org>; Sat, 19 Nov 2022 06:20:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C847C433FE
+	for <linux-fbdev@archiver.kernel.org>; Sat, 19 Nov 2022 06:40:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231660AbiKSGUg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 19 Nov 2022 01:20:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54606 "EHLO
+        id S229470AbiKSGkF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 19 Nov 2022 01:40:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37194 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229836AbiKSGUe (ORCPT
+        with ESMTP id S231904AbiKSGkB (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 19 Nov 2022 01:20:34 -0500
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7433B7EC8B;
-        Fri, 18 Nov 2022 22:20:32 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-        bh=GWI3tHIEFUoKRvzS0Oizyv0BLbzzh/6tf/RAcYC6Iro=; b=G3KxCV2rb5mZfvvznp/9CC+EBM
-        KcD+vP36I5TzIJhXtU9IVoOtRT6L8qz/QgF0XyX2kTWrJpX9rG5F2QQVvUDuWEXF2FpnhGWWMrRkf
-        +Ha8WFAf/r9qx3aOzCNInuywFLiebucR8zYtFRPANgQwVvhvwltkqP6FONTeu6PoHh82awA/J7q2t
-        WGErOJl064QxGyos8yxqX6wsDEvWsXlyjuze8KlYJDm6XDNh7l2Fhkyaco6oSG4/SYmsPrPiUE3fe
-        h9I0/q0/tazRyiclDDKIQj8evtGN9oDUHEIZjmGH+PEyS9al61jda18owK2RlX4OFTGWy7W2/Ctqw
-        /cVj6wDg==;
-Received: from [2601:1c2:d80:3110::a2e7]
-        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1owHDL-00BaOP-Da; Sat, 19 Nov 2022 06:20:31 +0000
-Message-ID: <b8191c01-4d78-537b-9650-a783e14e5997@infradead.org>
-Date:   Fri, 18 Nov 2022 22:20:30 -0800
+        Sat, 19 Nov 2022 01:40:01 -0500
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F6D24F1AD;
+        Fri, 18 Nov 2022 22:40:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1668839994; bh=l+WsbfLURdjYJd9P5p3v7g6Q4AV62aE2sA1DFwUojDk=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=tnMEwqGwhsRTSm4HzdENLCLBCbVgUIRtxSa2y5ZVm6sUdBL3TwQiXl5MeVqxQ8Rk8
+         rkttyM49dUedBlHWfHZgwDM4v3369ljSapgxLkbkWxRV1h1lmauxEDV7WEg8fg6Qla
+         52Lgxe8Jm3fv519XwTgsq4318xdFPo5puxnyPdgX6Tf+bJrDz2ZUkdHQ63RS43IxYu
+         1l5zIn7yfTwQ5Zasqp28eG2Tj02D1Ro927ZfSJJ5Z7geazGJihTk7tx28xIZ2g4Mx7
+         JUVoq7XWyoFkrVM3GTDBjFYK2qJ0khvaRmKCEz6usS2afgv83m9hz4eSffw5qbT+0N
+         K9A7vyplAFDPA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([92.116.184.159]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1N4zAy-1p6DiY0nTQ-010rWZ; Sat, 19
+ Nov 2022 07:39:54 +0100
+Message-ID: <75f7bba1-8dca-ff17-f922-e3465759ba66@gmx.de>
+Date:   Sat, 19 Nov 2022 07:39:53 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.2
-Subject: Re: build failure in linux-next: offb missing fb helpers
+ Thunderbird/102.4.1
+Subject: Re: [PATCH 594/606] video: fbdev: matrox: Convert to i2c's
+ .probe_new()
 Content-Language: en-US
-To:     =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
-        linux-kernel@vger.kernel.org,
-        Masahiro Yamada <masahiroy@kernel.org>
-Cc:     linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org,
-        linux-kbuild@vger.kernel.org
-References: <20221118150351.GV28810@kitsune.suse.cz>
-From:   Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20221118150351.GV28810@kitsune.suse.cz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To:     =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <uwe@kleine-koenig.org>
+Cc:     linux-i2c@vger.kernel.org, kernel@pengutronix.de,
+        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+References: <20221118224540.619276-1-uwe@kleine-koenig.org>
+ <20221118224540.619276-595-uwe@kleine-koenig.org>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20221118224540.619276-595-uwe@kleine-koenig.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:VZ7IAwxjDCqR+1ZSYMAULZDjKb3OwL/bJQZZP+mRsalty8QZ/n8
+ aRf6cSjyfqRQ+eJ4DdRt/b8yLK9hE9sDjXnP1lADZaX+7AchVX/zAp7c0alNrR19ntr+5lW
+ mcDhca1dxVuRnKqnMxVEG6lTqET/fLW97TumFBs2qvuwibf3DunzSCp+jdW8GwooXCNSLM7
+ Xa9AjRa57SmDBaQEiqeKA==
+UI-OutboundReport: notjunk:1;M01:P0:H8sX/ATSKvQ=;oTX6ETbOe4jXDHYbibatzVli/xH
+ 8NThLqA8TssXhDfdFQ052wf434YbMGPp7X+Ond7PwhjiRY2K8CEeQOL0DYsVsqzuX32HO3TtR
+ XhYNttThSIkAFO6YKox7hk6wfxBx8pQVU3WZUo/3eEGD3qUmDpUfL12ihvDBvAPL/wL1z044T
+ fpHvxPUF601m8oqoO8lIcWJHrrtzx+hgNks5qXo2JdHWDBeeWrw0o8D8jTIiX/M6oAZOgRTBt
+ IP2iUs70vI5ErJqj/9gq2abaP9EdKUY8Zgkne3Ti89D4bgg4Dv8SJN2+mIBty4Z561DYrn3Dk
+ rCPwhxS8JCiLEG6Z384QOmi+XXMjOGaCozKODFYlAwGm8ygZR4MNn2Vpef88EUoMI48H6ckC2
+ U6+PC9TMFXIEAWD/Syn/Cic2gpwlVv5ToourVoe5q6gYwLoiGykdFJwxfqTIr47E5zOF3CdPw
+ gv+OnSg5LI/UWCVKxeKKMUYxbd+AxWcJXa6ExCK3baSlhTWGegoC/DpXE7WgQi0zfKtXpEopS
+ nl3Py7y3Lxdi8xZlwdQL9g/LSCL0qS6p7ae15Tkk56AzfZDNGB2KmXRiPDVvHeFs9wBZm/ilZ
+ kZMo5Cy4aMV9uJRQ76xxkjoxfu/kC8Zx31mC0jnaeoarAVAJP0mAJwk5D+sMWhudRX2cIutCm
+ sYIujEZsSMayOkndCqJxef3uEAwnQQBapS+i9bUdIdHRGRNz6AnA5BIsMzZWNtWzaLpRRzUyn
+ kJwh1EqZRqC6cFIMmfw7HE7v8faSVjFWd/ZftScNRLM5jak1PE7A+NcbJSgtpRzHiBlk+iCtG
+ x/p50WRXEq6lTx6BGQDIVTh0FOtKnFgdnSdv9xDwTeBuYAP9liks/Q8XbEFAl1ooUsbOom5qr
+ KkxPpsH4uCeZ+lJc5CIqRo6w6qUD8Q3cj5Koh7mT44S1Les6BFAcs33pS2O9WMR/Jwhygh7cu
+ TF8xE6f+tA+lrXwB8Gw/E6P4xI4=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi--
+On 11/18/22 23:45, Uwe Kleine-K=C3=B6nig wrote:
+> From: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+>
+> The probe function doesn't make use of the i2c_device_id * parameter so =
+it
+> can be trivially converted.
+>
+> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
 
-[adding Masahiro-san]
+applied.
+
+Thanks!
+Helge
 
 
-On 11/18/22 07:03, Michal Suchánek wrote:
-> Hello,
-> 
-> I am seeing these errors:
-> 
-> [ 3825s]   AR      built-in.a
-> [ 3827s]   AR      vmlinux.a
-> [ 3835s]   LD      vmlinux.o
-> [ 3835s]   OBJCOPY modules.builtin.modinfo
-> [ 3835s]   GEN     modules.builtin
-> [ 3835s]   GEN     .vmlinux.objs
-> [ 3848s]   MODPOST Module.symvers
-> [ 3848s]   CC      .vmlinux.export.o
-> [ 3849s]   UPD     include/generated/utsversion.h
-> [ 3849s]   CC      init/version-timestamp.o
-> [ 3849s]   LD      .tmp_vmlinux.btf
-> [ 3864s] ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x58): undefined
-> reference to `cfb_fillrect'
-> [ 3864s] ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x60): undefined
-> reference to `cfb_copyarea'
-> [ 3864s] ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x68): undefined
-> reference to `cfb_imageblit'
-> 
-> cfb_fillrect is provided by drivers/video/fbdev/core/cfbfillrect.c
-> 
-> It is compiled when CONFIG_FB_CFB_FILLRECT
-> drivers/video/fbdev/core/Makefile:obj-$(CONFIG_FB_CFB_FILLRECT)  += cfbfillrect.o
-> 
-> drivers/video/fbdev/Makefile:obj-$(CONFIG_FB_OF)               += offb.o
-> is compiled when CONFIG_FB_OF
-> 
-> It selects CONFIG_FB_CFB_FILLRECT
-> config FB_OF
->         bool "Open Firmware frame buffer device support"
->         depends on (FB = y) && PPC && (!PPC_PSERIES || PCI)
->         select APERTURE_HELPERS
->         select FB_CFB_FILLRECT
->         select FB_CFB_COPYAREA
->         select FB_CFB_IMAGEBLIT
->         select FB_MACMODES
-> 
-> The config has FB_OF built-in and FB_CFB_FILLRECT modular
-> config/ppc64le/vanilla:CONFIG_FB_CFB_FILLRECT=m
-> config/ppc64le/vanilla:CONFIG_FB_CFB_COPYAREA=m
-> config/ppc64le/vanilla:CONFIG_FB_CFB_IMAGEBLIT=m
-> config/ppc64le/vanilla:CONFIG_FB_OF=y
-> 
-> It only depends on FB which mut be built-in for FB_OF
-> config FB_CFB_FILLRECT
->         tristate
->         depends on FB
-> 
-> Is select in kconfig broken?
-> 
-> Attachnig the config in question.
+> ---
+>   drivers/video/fbdev/matrox/matroxfb_maven.c | 5 ++---
+>   1 file changed, 2 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/matrox/matroxfb_maven.c b/drivers/video=
+/fbdev/matrox/matroxfb_maven.c
+> index f2e02958673d..727a10a59811 100644
+> --- a/drivers/video/fbdev/matrox/matroxfb_maven.c
+> +++ b/drivers/video/fbdev/matrox/matroxfb_maven.c
+> @@ -1249,8 +1249,7 @@ static int maven_shutdown_client(struct i2c_client=
+* clnt) {
+>   	return 0;
+>   }
+>
+> -static int maven_probe(struct i2c_client *client,
+> -		       const struct i2c_device_id *id)
+> +static int maven_probe(struct i2c_client *client)
+>   {
+>   	struct i2c_adapter *adapter =3D client->adapter;
+>   	int err =3D -ENODEV;
+> @@ -1292,7 +1291,7 @@ static struct i2c_driver maven_driver=3D{
+>   	.driver =3D {
+>   		.name	=3D "maven",
+>   	},
+> -	.probe		=3D maven_probe,
+> +	.probe_new	=3D maven_probe,
+>   	.remove		=3D maven_remove,
+>   	.id_table	=3D maven_id,
+>   };
 
-The symbol info from xconfig says:
-
-Symbol: FB_CFB_FILLRECT [=m]
-Type : tristate
-Defined at drivers/video/fbdev/Kconfig:69
-Depends on: HAS_IOMEM [=y] && FB [=y]
-Selected by [m]:
-[deleted]
-- FB_OF [=y] && HAS_IOMEM [=y] && FB [=y]=y && PPC [=y] && (!PPC_PSERIES [=y] || PCI [=y]) && !DRM_OFDRM [=m]
-
-I don't see why the 'select' from (bool) FB_OF would leave FB_CFB_FILLRECT (and the others)
-as =m instead of =y.
-
-Hopefully Masahiro can shed some light on this.
-
--- 
-~Randy

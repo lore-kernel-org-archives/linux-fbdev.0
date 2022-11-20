@@ -2,197 +2,218 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA651C433FE
-	for <linux-fbdev@archiver.kernel.org>; Sat, 19 Nov 2022 18:16:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB0AFC4332F
+	for <linux-fbdev@archiver.kernel.org>; Sun, 20 Nov 2022 17:47:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233576AbiKSSQI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 19 Nov 2022 13:16:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41800 "EHLO
+        id S229698AbiKTRrS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 20 Nov 2022 12:47:18 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51536 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230398AbiKSSQH (ORCPT
+        with ESMTP id S229712AbiKTRrR (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 19 Nov 2022 13:16:07 -0500
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0196CDFBD;
-        Sat, 19 Nov 2022 10:16:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-        bh=9SwaJ6NSFdZ58ryO0pMVgvtwB1SnIYyFPiRf+VeDF1c=; b=ofg3H2a5hOPaZVIpRY+uNvR/zm
-        0Q3JwCs8MbvIRMsTh80pp0BGQCYOKf9heh0vOl7W/x2MBJahU+dnEKf/OM/DXFUHL6N5JSVb6Zl6i
-        LYrbqqy1NnQjE+yWlxDDWFEzuc3z0r2swVtQJ2jqcVeX8qachIFwJEeppFFfEqzeVvELFbDM+5qE3
-        0Kx3t91b9oX99gs7GTF9pGMjRtMeHIKvzonZkxTcGwl9Tx8H4YDvNcqfuzn4gUJS3FxpUomoLtpCP
-        2vvq1kUoF8rZFnHs/fe6eEgtmMu+BDqEafI1JDDK7z/1rmxSjRx34TyJAK3spSOjqsvPBtt3ziYFe
-        7AEvqy6g==;
-Received: from [2601:1c2:d80:3110::a2e7]
-        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1owSNg-00FqGS-Ts; Sat, 19 Nov 2022 18:15:57 +0000
-Message-ID: <ff3a1ee2-3439-d79c-aa59-5bccec99bf3e@infradead.org>
-Date:   Sat, 19 Nov 2022 10:15:55 -0800
+        Sun, 20 Nov 2022 12:47:17 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF4171D0D4;
+        Sun, 20 Nov 2022 09:47:12 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 534F91F38A;
+        Sun, 20 Nov 2022 17:47:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1668966431; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=qQlkNKhlh2I+jMc5FdVV/7SJOjtEM9O9Z7NPgfkMBVg=;
+        b=prEOr59tiXnLEQkbf/tRGw+dZIKs6ddqY0KpoB1YlRNUmI3NZIE2S8qBxIq/a2pS5/9aoJ
+        p95hLhLCXNoJ1yZus47qavY7CJoDRvGLR/zbCBTEQULEldXHBVifQKNs0f6jSdBAgd7RAD
+        pKUsjaGnVZglq7WRpPlAFYgV+RpxP4w=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1668966431;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=qQlkNKhlh2I+jMc5FdVV/7SJOjtEM9O9Z7NPgfkMBVg=;
+        b=2lDE5UaYHzj4m59MtraFqRie9mXVzgkVy39I9K//Xdl643B+mxoLxOqu1XiCQoQxViE/pp
+        mpOsS/RYuGW5HSBw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 24F7F1348D;
+        Sun, 20 Nov 2022 17:47:11 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id dpGvBx9oemMVbgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Sun, 20 Nov 2022 17:47:11 +0000
+Message-ID: <fc0b2426-d463-028a-68df-26b73e8ba802@suse.de>
+Date:   Sun, 20 Nov 2022 18:47:08 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.2
+ Thunderbird/102.5.0
 Subject: Re: build failure in linux-next: offb missing fb helpers
-Content-Language: en-US
-To:     =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
+To:     Randy Dunlap <rdunlap@infradead.org>,
+        =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
         Masahiro Yamada <masahiroy@kernel.org>
 Cc:     linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-fbdev@vger.kernel.org, linux-kbuild@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
+        linux-fbdev@vger.kernel.org, linux-kbuild@vger.kernel.org
 References: <20221118150351.GV28810@kitsune.suse.cz>
  <b8191c01-4d78-537b-9650-a783e14e5997@infradead.org>
  <CAK7LNASBhTvzkjXuJDH8ePCVXnZ=GUYdNa-OU+QURbBp3oyEBQ@mail.gmail.com>
  <20221119153729.GX28810@kitsune.suse.cz>
-From:   Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20221119153729.GX28810@kitsune.suse.cz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+ <ff3a1ee2-3439-d79c-aa59-5bccec99bf3e@infradead.org>
+Content-Language: en-US
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <ff3a1ee2-3439-d79c-aa59-5bccec99bf3e@infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------Hd9vTpvjP00gY5a6j0YzCwNO"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------Hd9vTpvjP00gY5a6j0YzCwNO
+Content-Type: multipart/mixed; boundary="------------DiVkbqDeZoAT8wL94A68726j";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Randy Dunlap <rdunlap@infradead.org>, =?UTF-8?Q?Michal_Such=c3=a1nek?=
+ <msuchanek@suse.de>, Masahiro Yamada <masahiroy@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-fbdev@vger.kernel.org, linux-kbuild@vger.kernel.org
+Message-ID: <fc0b2426-d463-028a-68df-26b73e8ba802@suse.de>
+Subject: Re: build failure in linux-next: offb missing fb helpers
+References: <20221118150351.GV28810@kitsune.suse.cz>
+ <b8191c01-4d78-537b-9650-a783e14e5997@infradead.org>
+ <CAK7LNASBhTvzkjXuJDH8ePCVXnZ=GUYdNa-OU+QURbBp3oyEBQ@mail.gmail.com>
+ <20221119153729.GX28810@kitsune.suse.cz>
+ <ff3a1ee2-3439-d79c-aa59-5bccec99bf3e@infradead.org>
+In-Reply-To: <ff3a1ee2-3439-d79c-aa59-5bccec99bf3e@infradead.org>
 
-On 11/19/22 07:37, Michal Suchánek wrote:
-> Hello,
-> 
-> On Sat, Nov 19, 2022 at 10:27:04PM +0900, Masahiro Yamada wrote:
->> On Sat, Nov 19, 2022 at 3:20 PM Randy Dunlap <rdunlap@infradead.org> wrote:
->>>
->>> Hi--
->>>
->>> [adding Masahiro-san]
->>>
->>>
->>> On 11/18/22 07:03, Michal Suchánek wrote:
->>>> Hello,
->>>>
->>>> I am seeing these errors:
->>>>
->>>> [ 3825s]   AR      built-in.a
->>>> [ 3827s]   AR      vmlinux.a
->>>> [ 3835s]   LD      vmlinux.o
->>>> [ 3835s]   OBJCOPY modules.builtin.modinfo
->>>> [ 3835s]   GEN     modules.builtin
->>>> [ 3835s]   GEN     .vmlinux.objs
->>>> [ 3848s]   MODPOST Module.symvers
->>>> [ 3848s]   CC      .vmlinux.export.o
->>>> [ 3849s]   UPD     include/generated/utsversion.h
->>>> [ 3849s]   CC      init/version-timestamp.o
->>>> [ 3849s]   LD      .tmp_vmlinux.btf
->>>> [ 3864s] ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x58): undefined
->>>> reference to `cfb_fillrect'
->>>> [ 3864s] ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x60): undefined
->>>> reference to `cfb_copyarea'
->>>> [ 3864s] ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x68): undefined
->>>> reference to `cfb_imageblit'
->>>>
->>>> cfb_fillrect is provided by drivers/video/fbdev/core/cfbfillrect.c
->>>>
->>>> It is compiled when CONFIG_FB_CFB_FILLRECT
->>>> drivers/video/fbdev/core/Makefile:obj-$(CONFIG_FB_CFB_FILLRECT)  += cfbfillrect.o
->>>>
->>>> drivers/video/fbdev/Makefile:obj-$(CONFIG_FB_OF)               += offb.o
->>>> is compiled when CONFIG_FB_OF
->>>>
->>>> It selects CONFIG_FB_CFB_FILLRECT
->>>> config FB_OF
->>>>         bool "Open Firmware frame buffer device support"
->>>>         depends on (FB = y) && PPC && (!PPC_PSERIES || PCI)
->>>>         select APERTURE_HELPERS
->>>>         select FB_CFB_FILLRECT
->>>>         select FB_CFB_COPYAREA
->>>>         select FB_CFB_IMAGEBLIT
->>>>         select FB_MACMODES
->>>>
->>>> The config has FB_OF built-in and FB_CFB_FILLRECT modular
->>>> config/ppc64le/vanilla:CONFIG_FB_CFB_FILLRECT=m
->>>> config/ppc64le/vanilla:CONFIG_FB_CFB_COPYAREA=m
->>>> config/ppc64le/vanilla:CONFIG_FB_CFB_IMAGEBLIT=m
->>>> config/ppc64le/vanilla:CONFIG_FB_OF=y
->>>>
->>>> It only depends on FB which mut be built-in for FB_OF
->>>> config FB_CFB_FILLRECT
->>>>         tristate
->>>>         depends on FB
->>>>
->>>> Is select in kconfig broken?
->>>>
->>>> Attachnig the config in question.
->>>
->>> The symbol info from xconfig says:
->>>
->>> Symbol: FB_CFB_FILLRECT [=m]
->>> Type : tristate
->>> Defined at drivers/video/fbdev/Kconfig:69
->>> Depends on: HAS_IOMEM [=y] && FB [=y]
->>> Selected by [m]:
->>> [deleted]
->>> - FB_OF [=y] && HAS_IOMEM [=y] && FB [=y]=y && PPC [=y] && (!PPC_PSERIES [=y] || PCI [=y]) && !DRM_OFDRM [=m]
->>>
->>> I don't see why the 'select' from (bool) FB_OF would leave FB_CFB_FILLRECT (and the others)
->>> as =m instead of =y.
->>>
->>> Hopefully Masahiro can shed some light on this.
->>>
->>> --
->>> ~Randy
->>
->>
->> The reason is shown in your paste of help message:
->>
->> "&& !DRM_OFDRM [=m]" downgrades it to "selected by m"
->>
->> To aid this particular case, the following will select
->> FB_CFB_FILLRECT=y.
->>
->>
+--------------DiVkbqDeZoAT8wL94A68726j
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Thanks again for your help.
+SGkNCg0KQW0gMTkuMTEuMjIgdW0gMTk6MTUgc2NocmllYiBSYW5keSBEdW5sYXA6DQo+IEhp
+LA0KPiANCj4gT24gMTEvMTkvMjIgMDc6MzcsIE1pY2hhbCBTdWNow6FuZWsgd3JvdGU6DQo+
+PiBIZWxsbywNCj4+DQo+PiBPbiBTYXQsIE5vdiAxOSwgMjAyMiBhdCAxMDoyNzowNFBNICsw
+OTAwLCBNYXNhaGlybyBZYW1hZGEgd3JvdGU6DQo+Pj4gT24gU2F0LCBOb3YgMTksIDIwMjIg
+YXQgMzoyMCBQTSBSYW5keSBEdW5sYXAgPHJkdW5sYXBAaW5mcmFkZWFkLm9yZz4gd3JvdGU6
+DQo+Pj4+DQo+Pj4+IEhpLS0NCj4+Pj4NCj4+Pj4gW2FkZGluZyBNYXNhaGlyby1zYW5dDQo+
+Pj4+DQo+Pj4+DQo+Pj4+IE9uIDExLzE4LzIyIDA3OjAzLCBNaWNoYWwgU3VjaMOhbmVrIHdy
+b3RlOg0KPj4+Pj4gSGVsbG8sDQo+Pj4+Pg0KPj4+Pj4gSSBhbSBzZWVpbmcgdGhlc2UgZXJy
+b3JzOg0KPj4+Pj4NCj4+Pj4+IFsgMzgyNXNdICAgQVIgICAgICBidWlsdC1pbi5hDQo+Pj4+
+PiBbIDM4MjdzXSAgIEFSICAgICAgdm1saW51eC5hDQo+Pj4+PiBbIDM4MzVzXSAgIExEICAg
+ICAgdm1saW51eC5vDQo+Pj4+PiBbIDM4MzVzXSAgIE9CSkNPUFkgbW9kdWxlcy5idWlsdGlu
+Lm1vZGluZm8NCj4+Pj4+IFsgMzgzNXNdICAgR0VOICAgICBtb2R1bGVzLmJ1aWx0aW4NCj4+
+Pj4+IFsgMzgzNXNdICAgR0VOICAgICAudm1saW51eC5vYmpzDQo+Pj4+PiBbIDM4NDhzXSAg
+IE1PRFBPU1QgTW9kdWxlLnN5bXZlcnMNCj4+Pj4+IFsgMzg0OHNdICAgQ0MgICAgICAudm1s
+aW51eC5leHBvcnQubw0KPj4+Pj4gWyAzODQ5c10gICBVUEQgICAgIGluY2x1ZGUvZ2VuZXJh
+dGVkL3V0c3ZlcnNpb24uaA0KPj4+Pj4gWyAzODQ5c10gICBDQyAgICAgIGluaXQvdmVyc2lv
+bi10aW1lc3RhbXAubw0KPj4+Pj4gWyAzODQ5c10gICBMRCAgICAgIC50bXBfdm1saW51eC5i
+dGYNCj4+Pj4+IFsgMzg2NHNdIGxkOiBkcml2ZXJzL3ZpZGVvL2ZiZGV2L29mZmIubzooLmRh
+dGEucmVsLnJvKzB4NTgpOiB1bmRlZmluZWQNCj4+Pj4+IHJlZmVyZW5jZSB0byBgY2ZiX2Zp
+bGxyZWN0Jw0KPj4+Pj4gWyAzODY0c10gbGQ6IGRyaXZlcnMvdmlkZW8vZmJkZXYvb2ZmYi5v
+OiguZGF0YS5yZWwucm8rMHg2MCk6IHVuZGVmaW5lZA0KPj4+Pj4gcmVmZXJlbmNlIHRvIGBj
+ZmJfY29weWFyZWEnDQo+Pj4+PiBbIDM4NjRzXSBsZDogZHJpdmVycy92aWRlby9mYmRldi9v
+ZmZiLm86KC5kYXRhLnJlbC5ybysweDY4KTogdW5kZWZpbmVkDQo+Pj4+PiByZWZlcmVuY2Ug
+dG8gYGNmYl9pbWFnZWJsaXQnDQo+Pj4+Pg0KPj4+Pj4gY2ZiX2ZpbGxyZWN0IGlzIHByb3Zp
+ZGVkIGJ5IGRyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9jZmJmaWxscmVjdC5jDQo+Pj4+Pg0K
+Pj4+Pj4gSXQgaXMgY29tcGlsZWQgd2hlbiBDT05GSUdfRkJfQ0ZCX0ZJTExSRUNUDQo+Pj4+
+PiBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvTWFrZWZpbGU6b2JqLSQoQ09ORklHX0ZCX0NG
+Ql9GSUxMUkVDVCkgICs9IGNmYmZpbGxyZWN0Lm8NCj4+Pj4+DQo+Pj4+PiBkcml2ZXJzL3Zp
+ZGVvL2ZiZGV2L01ha2VmaWxlOm9iai0kKENPTkZJR19GQl9PRikgICAgICAgICAgICAgICAr
+PSBvZmZiLm8NCj4+Pj4+IGlzIGNvbXBpbGVkIHdoZW4gQ09ORklHX0ZCX09GDQo+Pj4+Pg0K
+Pj4+Pj4gSXQgc2VsZWN0cyBDT05GSUdfRkJfQ0ZCX0ZJTExSRUNUDQo+Pj4+PiBjb25maWcg
+RkJfT0YNCj4+Pj4+ICAgICAgICAgIGJvb2wgIk9wZW4gRmlybXdhcmUgZnJhbWUgYnVmZmVy
+IGRldmljZSBzdXBwb3J0Ig0KPj4+Pj4gICAgICAgICAgZGVwZW5kcyBvbiAoRkIgPSB5KSAm
+JiBQUEMgJiYgKCFQUENfUFNFUklFUyB8fCBQQ0kpDQo+Pj4+PiAgICAgICAgICBzZWxlY3Qg
+QVBFUlRVUkVfSEVMUEVSUw0KPj4+Pj4gICAgICAgICAgc2VsZWN0IEZCX0NGQl9GSUxMUkVD
+VA0KPj4+Pj4gICAgICAgICAgc2VsZWN0IEZCX0NGQl9DT1BZQVJFQQ0KPj4+Pj4gICAgICAg
+ICAgc2VsZWN0IEZCX0NGQl9JTUFHRUJMSVQNCj4+Pj4+ICAgICAgICAgIHNlbGVjdCBGQl9N
+QUNNT0RFUw0KPj4+Pj4NCj4+Pj4+IFRoZSBjb25maWcgaGFzIEZCX09GIGJ1aWx0LWluIGFu
+ZCBGQl9DRkJfRklMTFJFQ1QgbW9kdWxhcg0KPj4+Pj4gY29uZmlnL3BwYzY0bGUvdmFuaWxs
+YTpDT05GSUdfRkJfQ0ZCX0ZJTExSRUNUPW0NCj4+Pj4+IGNvbmZpZy9wcGM2NGxlL3Zhbmls
+bGE6Q09ORklHX0ZCX0NGQl9DT1BZQVJFQT1tDQo+Pj4+PiBjb25maWcvcHBjNjRsZS92YW5p
+bGxhOkNPTkZJR19GQl9DRkJfSU1BR0VCTElUPW0NCj4+Pj4+IGNvbmZpZy9wcGM2NGxlL3Zh
+bmlsbGE6Q09ORklHX0ZCX09GPXkNCj4+Pj4+DQo+Pj4+PiBJdCBvbmx5IGRlcGVuZHMgb24g
+RkIgd2hpY2ggbXV0IGJlIGJ1aWx0LWluIGZvciBGQl9PRg0KPj4+Pj4gY29uZmlnIEZCX0NG
+Ql9GSUxMUkVDVA0KPj4+Pj4gICAgICAgICAgdHJpc3RhdGUNCj4+Pj4+ICAgICAgICAgIGRl
+cGVuZHMgb24gRkINCj4+Pj4+DQo+Pj4+PiBJcyBzZWxlY3QgaW4ga2NvbmZpZyBicm9rZW4/
+DQo+Pj4+Pg0KPj4+Pj4gQXR0YWNobmlnIHRoZSBjb25maWcgaW4gcXVlc3Rpb24uDQo+Pj4+
+DQo+Pj4+IFRoZSBzeW1ib2wgaW5mbyBmcm9tIHhjb25maWcgc2F5czoNCj4+Pj4NCj4+Pj4g
+U3ltYm9sOiBGQl9DRkJfRklMTFJFQ1QgWz1tXQ0KPj4+PiBUeXBlIDogdHJpc3RhdGUNCj4+
+Pj4gRGVmaW5lZCBhdCBkcml2ZXJzL3ZpZGVvL2ZiZGV2L0tjb25maWc6NjkNCj4+Pj4gRGVw
+ZW5kcyBvbjogSEFTX0lPTUVNIFs9eV0gJiYgRkIgWz15XQ0KPj4+PiBTZWxlY3RlZCBieSBb
+bV06DQo+Pj4+IFtkZWxldGVkXQ0KPj4+PiAtIEZCX09GIFs9eV0gJiYgSEFTX0lPTUVNIFs9
+eV0gJiYgRkIgWz15XT15ICYmIFBQQyBbPXldICYmICghUFBDX1BTRVJJRVMgWz15XSB8fCBQ
+Q0kgWz15XSkgJiYgIURSTV9PRkRSTSBbPW1dDQo+Pj4+DQo+Pj4+IEkgZG9uJ3Qgc2VlIHdo
+eSB0aGUgJ3NlbGVjdCcgZnJvbSAoYm9vbCkgRkJfT0Ygd291bGQgbGVhdmUgRkJfQ0ZCX0ZJ
+TExSRUNUIChhbmQgdGhlIG90aGVycykNCj4+Pj4gYXMgPW0gaW5zdGVhZCBvZiA9eS4NCj4+
+Pj4NCj4+Pj4gSG9wZWZ1bGx5IE1hc2FoaXJvIGNhbiBzaGVkIHNvbWUgbGlnaHQgb24gdGhp
+cy4NCj4+Pj4NCj4+Pj4gLS0NCj4+Pj4gflJhbmR5DQo+Pj4NCj4+Pg0KPj4+IFRoZSByZWFz
+b24gaXMgc2hvd24gaW4geW91ciBwYXN0ZSBvZiBoZWxwIG1lc3NhZ2U6DQo+Pj4NCj4+PiAi
+JiYgIURSTV9PRkRSTSBbPW1dIiBkb3duZ3JhZGVzIGl0IHRvICJzZWxlY3RlZCBieSBtIg0K
+Pj4+DQo+Pj4gVG8gYWlkIHRoaXMgcGFydGljdWxhciBjYXNlLCB0aGUgZm9sbG93aW5nIHdp
+bGwgc2VsZWN0DQo+Pj4gRkJfQ0ZCX0ZJTExSRUNUPXkuDQo+Pj4NCj4+Pg0KPiANCj4gVGhh
+bmtzIGFnYWluIGZvciB5b3VyIGhlbHAuDQo+IA0KPj4+DQo+Pj4NCj4+PiBkaWZmIC0tZ2l0
+IGEvZHJpdmVycy92aWRlby9mYmRldi9LY29uZmlnIGIvZHJpdmVycy92aWRlby9mYmRldi9L
+Y29uZmlnDQo+Pj4gaW5kZXggNjZmMzZiNjllOGYzLi4yYmNmODYyNzgxOWYgMTAwNjQ0DQo+
+Pj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9LY29uZmlnDQo+Pj4gKysrIGIvZHJpdmVy
+cy92aWRlby9mYmRldi9LY29uZmlnDQo+Pj4gQEAgLTQ1OCw3ICs0NTgsNyBAQCBjb25maWcg
+RkJfQVRBUkkNCj4+PiAgIGNvbmZpZyBGQl9PRg0KPj4+ICAgICAgICAgIGJvb2wgIk9wZW4g
+RmlybXdhcmUgZnJhbWUgYnVmZmVyIGRldmljZSBzdXBwb3J0Ig0KPj4+ICAgICAgICAgIGRl
+cGVuZHMgb24gKEZCID0geSkgJiYgUFBDICYmICghUFBDX1BTRVJJRVMgfHwgUENJKQ0KPj4+
+IC0gICAgICAgZGVwZW5kcyBvbiAhRFJNX09GRFJNDQo+Pj4gKyAgICAgICBkZXBlbmRzIG9u
+IERSTV9PRkRSTSAhPSB5DQo+Pj4gICAgICAgICAgc2VsZWN0IEFQRVJUVVJFX0hFTFBFUlMN
+Cj4+PiAgICAgICAgICBzZWxlY3QgRkJfQ0ZCX0ZJTExSRUNUDQo+Pj4gICAgICAgICAgc2Vs
+ZWN0IEZCX0NGQl9DT1BZQVJFQQ0KPj4NCj4+IFRoYW5rcyBmb3IgY2xhcmlmaWNhdGlvbi4N
+Cj4+DQo+PiBUaGlzIGNoYW5nZSBmaXhlc3MgdGhlIGNvbmZpZyBmb3IgbWUuDQo+IA0KPiAN
+Cj4gVGhvbWFzLCBpcyB0aGlzIGNoYW5nZSB0byBEUk1fT0ZEUk0gdW5kZXIgRkJfT0YgYWNj
+ZXB0YWJsZSB0byB5b3U/DQoNClN1cmUsIHRoYW5rcyBmb3IgaGVscGluZy4NCg0KVGhlIG9u
+bHkgcmVhc29uIGZvciBhZGRpbmcgdGhpcyBLY29uZmlnIHJ1bGUgaXMgdGhhdCBpdCBkb2Vz
+bid0IG1ha2UgDQptdWNoIHNlbnNlIHRvIGhhdmUgb2ZmYiBhbmQgb2Zkcm0gZW5hYmxlZCBh
+dCB0aGUgc2FtZSB0aW1lLiBCVFcgd2UgaGF2ZSANCmEgc2ltaWxhciBydWxlIGZvciBzaW1w
+bGVmYi9zaW1wbGVkcm0sIHdoaWNoIG5ldmVyIG1hZGUgYW55IHByb2JsZW1zLg0KDQpCZXN0
+IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KPiANCj4+PiBPciwgcGVyaGFwcyAiZGVwZW5kcyBv
+biBEUk1fT0ZEUk0gPSBuIg0KPj4+IEkgZG8gbm90IGtub3cgdGhlIGludGVudGlvbiBvZiB0
+aGlzIGRlcGVuZGVuY3kuDQo+Pj4NCj4+PiBSZWNvbW1lbmRhdGlvbiBpcyB0byB1c2UgImRl
+cGVuZHMgb24iIGluc3RlYWQgb2YgInNlbGVjdCIgdGhvdWdoLg0KPj4+DQo+Pj4NCj4+Pg0K
+Pj4+IEJUVywgdGhpcyBpcyBzaW1pbGFyIHRvIHdoYXQgeW91IGFza2VkIGJlZm9yZS4NCj4+
+Pg0KPj4+IGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2xpbnV4LWtidWlsZC9lMWE2MjI4ZC0x
+MzQxLTYyNjQtZDk3YS1lMmJkNTJhNjVjODJAaW5mcmFkZWFkLm9yZy8NCj4+Pg0KPj4+DQo+
+Pj4gSSB0cmllZCB0byBmaXggaXQgaW4gdGhlIHBhc3QsIGJ1dCB0aGUgaXNzdWUgd2FzIG5v
+dCBhcyBzaGFsbG93IGFzIEkNCj4+PiBoYWQgZXhwZWN0ZWQuDQo+Pj4gSSBkaWQgbm90IGdl
+dCBhcm91bmQgdG8gcmV2aXNpdGluZyB0aGlzIHRvcGljLg0KPj4+DQo+Pj4gaHR0cHM6Ly9w
+YXRjaHdvcmsua2VybmVsLm9yZy9wcm9qZWN0L2xpbnV4LWtidWlsZC9wYXRjaC8xNTQzMjE2
+OTY5LTIyMjctMS1naXQtc2VuZC1lbWFpbC15YW1hZGEubWFzYWhpcm9Ac29jaW9uZXh0LmNv
+bS8NCj4+Pg0KPiANCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVy
+IERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpNYXhm
+ZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJlcmcsIEdlcm1hbnkNCihIUkIgMzY4MDksIEFHIE7D
+vHJuYmVyZykNCkdlc2Now6RmdHNmw7xocmVyOiBJdm8gVG90ZXYNCg==
 
->>
->>
->> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
->> index 66f36b69e8f3..2bcf8627819f 100644
->> --- a/drivers/video/fbdev/Kconfig
->> +++ b/drivers/video/fbdev/Kconfig
->> @@ -458,7 +458,7 @@ config FB_ATARI
->>  config FB_OF
->>         bool "Open Firmware frame buffer device support"
->>         depends on (FB = y) && PPC && (!PPC_PSERIES || PCI)
->> -       depends on !DRM_OFDRM
->> +       depends on DRM_OFDRM != y
->>         select APERTURE_HELPERS
->>         select FB_CFB_FILLRECT
->>         select FB_CFB_COPYAREA
-> 
-> Thanks for clarification.
-> 
-> This change fixess the config for me.
+--------------DiVkbqDeZoAT8wL94A68726j--
 
+--------------Hd9vTpvjP00gY5a6j0YzCwNO
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-Thomas, is this change to DRM_OFDRM under FB_OF acceptable to you?
+-----BEGIN PGP SIGNATURE-----
 
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmN6aBwFAwAAAAAACgkQlh/E3EQov+Bw
+hhAArl4AVotTy386F5ntfFIvxY+AlvG68dHXSpnrxqel4zUBbU3rGQy7a2heXeZHjx+Wv02ylAN2
+tZ1qAcb1v3Iezrg9goYmRKE+fAZgpRKOggEu/sumDW2NuWutZrKIedLKYe3XSGCFsWR7ee43KoRn
+bGWPr1olHTs4Ny5ecYNHNMW21OS71ONwE/LQc+4mllopk/rlFJeHLucSjH04dG0Z0Th40/CwaBJv
+bU59iPCut6peMdWusXQHeUkcGjdiPR5uTzZRp66OGEYiYY3e91z//KlbAKCNstN18cH6fhMJCKOQ
+8aswW5Ba0/0W1vqX8DfTHXqNTGT9fUrCNpqkh5HQH7YFUKWYa7ucjgHBkqvDvzY/HJHk5t26Yq6D
+jlDznX74cGMASKCArQsqGUH1yglkK9y0bdllP2i+7kJEslfJwW0GWz2PQzB0AN+Suqj112SN8yUu
+1RZ1/cXSYp6wuye3BXDW3+WEegyq4UqfteFaKdwifmLESCJ9XZ+alOJUL0lIg4oe5ANPuKMqx++f
+IbYbJq3sZI0Jrn/gamD9cwjNs3UhTI1uMvrqCkuqy75iBmnTiVrYkegn4dNKDJ70dqv7EhdfXkTq
+w3K/7wrxiLpb5V1JmorP0p54OnMROKGRCq7LxzvZZks0HFOopVcDYRvdqH/0mwHBtjFMVwWgWGnL
+McA=
+=UxHj
+-----END PGP SIGNATURE-----
 
->> Or, perhaps "depends on DRM_OFDRM = n"
->> I do not know the intention of this dependency.
->>
->> Recommendation is to use "depends on" instead of "select" though.
->>
->>
->>
->> BTW, this is similar to what you asked before.
->>
->> https://lore.kernel.org/linux-kbuild/e1a6228d-1341-6264-d97a-e2bd52a65c82@infradead.org/
->>
->>
->> I tried to fix it in the past, but the issue was not as shallow as I
->> had expected.
->> I did not get around to revisiting this topic.
->>
->> https://patchwork.kernel.org/project/linux-kbuild/patch/1543216969-2227-1-git-send-email-yamada.masahiro@socionext.com/
->>
-
--- 
-~Randy
+--------------Hd9vTpvjP00gY5a6j0YzCwNO--

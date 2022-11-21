@@ -2,55 +2,55 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D5C3C4332F
-	for <linux-fbdev@archiver.kernel.org>; Mon, 21 Nov 2022 11:05:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0200C4332F
+	for <linux-fbdev@archiver.kernel.org>; Mon, 21 Nov 2022 11:06:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229629AbiKULFS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 21 Nov 2022 06:05:18 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59290 "EHLO
+        id S229980AbiKULGT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 21 Nov 2022 06:06:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59860 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229512AbiKULFR (ORCPT
+        with ESMTP id S229938AbiKULGJ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 21 Nov 2022 06:05:17 -0500
-Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 656CD2ED7F
-        for <linux-fbdev@vger.kernel.org>; Mon, 21 Nov 2022 03:05:16 -0800 (PST)
-Received: by mail-wr1-x436.google.com with SMTP id i12so15429947wrb.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 21 Nov 2022 03:05:16 -0800 (PST)
+        Mon, 21 Nov 2022 06:06:09 -0500
+Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C584A5D682
+        for <linux-fbdev@vger.kernel.org>; Mon, 21 Nov 2022 03:06:07 -0800 (PST)
+Received: by mail-wm1-x333.google.com with SMTP id t25-20020a1c7719000000b003cfa34ea516so10148398wmi.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 21 Nov 2022 03:06:07 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=in-reply-to:content-transfer-encoding:content-disposition
          :mime-version:references:message-id:subject:cc:to:from:date:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=YaIiikUQITopaZC738kqFEHiw7e57otc7id5Rv4UvzI=;
-        b=WJJXwuLReaJtwxy6Bw0sm6p1bzQ1AKkXHJY45SLeDgJCMCJxYJz+YpCRh9F0Co8fwf
-         Lc6+dtsYDgb9qBmZShzVW6y22UH4rn3Z5JVYnmiCnd/BM/yW0sU6UsI7iO9TeCpKblH4
-         sF0lfkkQoEdKBtNzl5E+Sw0+rvHG8rUVKMkIiQfm4NN7Bu+r/Y2KHiEorQ8TELQY5m+U
-         /JrGQOQpnpru26SjhwDnu/MtJrWDziYQJc22N/T/PjW9enYvVPdPyCNBU5DhHRKnxTg8
-         ueT0OXpQry4mmuQdCkZ9VVKpjapYhr6lnhfqucd5odf/pyIUTQykKgyP/SIARr7yD0aH
-         eMBg==
+        bh=evsmNawcwqO6lha6bUl7Gf+9LrN+sO/Pwn+zWyJO1wM=;
+        b=G7QARcYbyW9f0dfiOsuBOrzCi/KpTEH27qaR9M7P1StW3Su1gT/rmw6fHc+4P/zfIf
+         hkSo6DC9X6i+YByHPbQiIJTE6T9n15th1reaNS1U4nfIuDwCmGFuIir81EODva9IqJQJ
+         RjnH4fy8CwH2PD54C7YIcoeAq+yo8qq04nMIhz+cNHYwO7hl12P07Gp46hvFgltwXK13
+         FS3Z/QZ93naI77vLXZPWC1xmUvSYPXkReYh6jb0QtdMw/cO9J7L0XxniiOAomxKljHqo
+         azsgIR5KmfZbZsAL2q6df0Nk4WPpV6ELMjGg6LSMFb1T5QyK2pnlT8jpvjNUT+B2/z0z
+         /j5w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=in-reply-to:content-transfer-encoding:content-disposition
          :mime-version:references:message-id:subject:cc:to:from:date
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=YaIiikUQITopaZC738kqFEHiw7e57otc7id5Rv4UvzI=;
-        b=rTqLSVMPj6IA9Cb6zBSU229PBePzt225erFrPSHGW3RvCm5ktHBOclzlfDZjubxJeZ
-         HHkVauwCbtavaPpS0bs2ys2GjWfzXx5AvFh0qfRxBCNAwUZknpF8bYqOYCzmmUuohEC7
-         D/5senu5yusx2grwMRmTMVwjNZaRRtsdx6NuJu4nfv5XYK+16Hwtzcvu44SoV4nIcGDL
-         rvCHlFm3VYHGJTlGbJVU4x9HbMxshlV/hKqjLLOhIHLy6sFFTfxmS/WubRTtX4QbXrDl
-         XqIru5ffSBr6EvQ0AIdHcaw8O+A3K9FRCq3jzLeM8GNroC53S0HJnsSjGq2/hCsytVnI
-         SkKA==
-X-Gm-Message-State: ANoB5pkiPiVsat8tKOsSq+92U5c3RNHeFZhpgUITR2vnMxEa0qkG8etH
-        HlGBbThqWbNl1lGbAZ/tlBNN2Q==
-X-Google-Smtp-Source: AA0mqf4D21+0QnufM39rLE0tMSVRA8jM5QGBO8Vgd4xHGkTH7YG4WUn7z7t7CB/SUqdrQDVuVtK7lw==
-X-Received: by 2002:adf:e303:0:b0:22e:3c66:bda1 with SMTP id b3-20020adfe303000000b0022e3c66bda1mr2066072wrj.139.1669028714799;
-        Mon, 21 Nov 2022 03:05:14 -0800 (PST)
+        bh=evsmNawcwqO6lha6bUl7Gf+9LrN+sO/Pwn+zWyJO1wM=;
+        b=gNp/eoMgu9/DgdIzmkCfw19ZEULdEJr6pDAfzajEWPTKiDn1VQtFK/BiInFfhERy34
+         QbWD1RUNoUDyEeW2AimCM+m8aDT6+lEgxhhTmfOnLiu+X3JzsC2p2AT3UKMwFyAloTHH
+         Ba6EeTydFwH73rAD3KEzljBkSQc74G9FuM37AbL4De48qAqfK9EU07qHWqaEVrtN8w3Y
+         eYS+Jzhv/T83HMVblsnHB9T+3+D+tB7KJ7EnvoHrylme4vK48w6zPvwPEVnBMqGAcYH+
+         zR7DZpClGtQFyyLmOhhfourf8z5FawpP/L6esoZcApxHjureAmxfJ6hLL81Z9rGP/SvT
+         ToOg==
+X-Gm-Message-State: ANoB5pnigKlTpqgZ96QbMR8jAv1z/fZANci/vcZCsyAdvw1jbMFXmMOV
+        rMx9+PHiJYpa9N67j2wZudvLUw==
+X-Google-Smtp-Source: AA0mqf6lVXLamDzYQYOoqpf6gqacemtmk+Na0iIl6z9H0biRW1QNT519RrWCrVA/rY7FWftqZiXvzw==
+X-Received: by 2002:a05:600c:a41:b0:3cf:895a:b22b with SMTP id c1-20020a05600c0a4100b003cf895ab22bmr3567784wmq.81.1669028766360;
+        Mon, 21 Nov 2022 03:06:06 -0800 (PST)
 Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id n27-20020a05600c3b9b00b003cfa81e2eb4sm14716314wms.38.2022.11.21.03.05.13
+        by smtp.gmail.com with ESMTPSA id v3-20020a1cf703000000b003cf774c31a0sm16576295wmh.16.2022.11.21.03.06.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 21 Nov 2022 03:05:14 -0800 (PST)
-Date:   Mon, 21 Nov 2022 11:05:11 +0000
+        Mon, 21 Nov 2022 03:06:05 -0800 (PST)
+Date:   Mon, 21 Nov 2022 11:06:04 +0000
 From:   Daniel Thompson <daniel.thompson@linaro.org>
 To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <uwe@kleine-koenig.org>
 Cc:     Angel Iglesias <ang.iglesiasg@gmail.com>,
@@ -63,20 +63,20 @@ Cc:     Angel Iglesias <ang.iglesiasg@gmail.com>,
         Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
         <u.kleine-koenig@pengutronix.de>, dri-devel@lists.freedesktop.org,
         linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 588/606] backlight: bd6107: Convert to i2c's .probe_new()
-Message-ID: <Y3tbZ2VN/vtVYLn3@maple.lan>
+Subject: Re: [PATCH 589/606] backlight: lm3630a: Convert to i2c's .probe_new()
+Message-ID: <Y3tbnHgRScTsI+o6@maple.lan>
 References: <20221118224540.619276-1-uwe@kleine-koenig.org>
- <20221118224540.619276-589-uwe@kleine-koenig.org>
+ <20221118224540.619276-590-uwe@kleine-koenig.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20221118224540.619276-589-uwe@kleine-koenig.org>
+In-Reply-To: <20221118224540.619276-590-uwe@kleine-koenig.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Nov 18, 2022 at 11:45:22PM +0100, Uwe Kleine-König wrote:
+On Fri, Nov 18, 2022 at 11:45:23PM +0100, Uwe Kleine-König wrote:
 > From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 >
 > The probe function doesn't make use of the i2c_device_id * parameter so it

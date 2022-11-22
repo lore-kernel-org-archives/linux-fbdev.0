@@ -2,63 +2,139 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31FFEC433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue, 22 Nov 2022 09:26:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E9ABC4332F
+	for <linux-fbdev@archiver.kernel.org>; Tue, 22 Nov 2022 16:43:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232517AbiKVJ0D (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 22 Nov 2022 04:26:03 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58914 "EHLO
+        id S234400AbiKVQnc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 22 Nov 2022 11:43:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44288 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231465AbiKVJ0C (ORCPT
+        with ESMTP id S234110AbiKVQnW (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 22 Nov 2022 04:26:02 -0500
-X-Greylist: delayed 909 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 22 Nov 2022 01:26:02 PST
-Received: from mail.axisfairfi.com (mail.axisfairfi.com [94.177.230.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 230F149B61
-        for <linux-fbdev@vger.kernel.org>; Tue, 22 Nov 2022 01:26:01 -0800 (PST)
-Received: by mail.axisfairfi.com (Postfix, from userid 1001)
-        id 3DA83823CF; Tue, 22 Nov 2022 09:10:46 +0000 (GMT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=axisfairfi.com;
-        s=mail; t=1669108251;
-        bh=0BgaW9t8GFER5QecxVkFsHrVi3gO/4V5KAZgJaiRYBs=;
-        h=Date:From:To:Subject:From;
-        b=fgpuJPiqa7EPvSvJmOj7QcHCsfX1HzwcsCJ3S4bOroHumSddn9eHTjIIlgt6cIjCm
-         LJwdurJKlnbPvKs3hhBC0/3/Xr5nS7Xf7GaSdw8ciQ5/EqVg1unLT/58/883GeptO5
-         QV6BYcavfbIuVxU3nognQat4VGXkjcscsmE8DOeUobhUg1JIKmkPg0/gwISuNmpKjI
-         Xi7vaE2xJLjARkTz3ApBvAlXO3oinmrnDN8J7qJMrcNPYLXOR6W/gFRTYjHDEQa1Dh
-         uNTQ4xt5aSPfExUWK8PIL6DIvYGMMIQHvgPHtRqMzUcCrvljlyzdcM47VtysygL4/X
-         DM6cy3UkBWQyA==
-Received: by mail.axisfairfi.com for <linux-fbdev@vger.kernel.org>; Tue, 22 Nov 2022 09:10:36 GMT
-Message-ID: <20221122074500-0.1.d.o6s.0.uobt0m5oxo@axisfairfi.com>
-Date:   Tue, 22 Nov 2022 09:10:36 GMT
-From:   "Zbynek Spacek" <zbynek.spacek@axisfairfi.com>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: Silikonmischungen
-X-Mailer: mail.axisfairfi.com
+        Tue, 22 Nov 2022 11:43:22 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8DABC61B8C;
+        Tue, 22 Nov 2022 08:43:13 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 0EAEE61796;
+        Tue, 22 Nov 2022 16:43:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B7CD1C433D6;
+        Tue, 22 Nov 2022 16:43:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1669135392;
+        bh=HhGB03f7yfLJTw6SIRqhGxERi9Gom4x4ToervBUNQF8=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=ai29wCwrSrFMalECnQg3VZFE6JJ7w1PVvNsX/nUcTdZGvwJT9FgVXh0Qu1fP/KZjg
+         gLL1mmmGyJUPfkwUZ8U8rfzyORb4k7cg2ocWkdlYVwXPJu4ByDHKX8FbqktGuqI0/r
+         L84ihOeSNwOdUyo5JUrjvyIoAUgVxWDKIToY6zCM=
+Date:   Tue, 22 Nov 2022 17:43:08 +0100
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     John Ogness <john.ogness@linutronix.de>
+Cc:     Petr Mladek <pmladek@suse.com>,
+        Sergey Senozhatsky <senozhatsky@chromium.org>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        linux-kernel@vger.kernel.org,
+        Jason Wessel <jason.wessel@windriver.com>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Douglas Anderson <dianders@chromium.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        kgdb-bugreport@lists.sourceforge.net, linux-serial@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>,
+        Richard Weinberger <richard@nod.at>,
+        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        linux-um@lists.infradead.org, Aaron Tomlin <atomlin@redhat.com>,
+        Luis Chamberlain <mcgrof@kernel.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+        Lukas Wunner <lukas@wunner.de>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        linux-m68k@lists.linux-m68k.org, Ard Biesheuvel <ardb@kernel.org>,
+        linux-efi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org,
+        Michal Simek <michal.simek@xilinx.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Mathias Nyman <mathias.nyman@linux.intel.com>,
+        linux-usb@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>, netdev@vger.kernel.org,
+        Helge Deller <deller@gmx.de>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Juergen Gross <jgross@suse.com>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Tom Rix <trix@redhat.com>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH printk v5 00/40] reduce console_lock scope
+Message-ID: <Y3z8HOt0yOd1nceY@kroah.com>
+References: <20221116162152.193147-1-john.ogness@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221116162152.193147-1-john.ogness@linutronix.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Good morning,
+On Wed, Nov 16, 2022 at 05:27:12PM +0106, John Ogness wrote:
+> This is v5 of a series to prepare for threaded/atomic
+> printing. v4 is here [0]. This series focuses on reducing the
+> scope of the BKL console_lock. It achieves this by switching to
+> SRCU and a dedicated mutex for console list iteration and
+> modification, respectively. The console_lock will no longer
+> offer this protection.
+> 
+> Also, during the review of v2 it came to our attention that
+> many console drivers are checking CON_ENABLED to see if they
+> are registered. Because this flag can change without
+> unregistering and because this flag does not represent an
+> atomic point when an (un)registration process is complete,
+> a new console_is_registered() function is introduced. This
+> function uses the console_list_lock to synchronize with the
+> (un)registration process to provide a reliable status.
+> 
+> All users of the console_lock for list iteration have been
+> modified. For the call sites where the console_lock is still
+> needed (for other reasons), comments are added to explain
+> exactly why the console_lock is needed.
+> 
+> All users of CON_ENABLED for registration status have been
+> modified to use console_is_registered(). Note that there are
+> still users of CON_ENABLED, but this is for legitimate purposes
+> about a registered console being able to print.
+> 
+> The base commit for this series is from Paul McKenney's RCU tree
+> and provides an NMI-safe SRCU implementation [1]. Without the
+> NMI-safe SRCU implementation, this series is not less safe than
+> mainline. But we will need the NMI-safe SRCU implementation for
+> atomic consoles anyway, so we might as well get it in
+> now. Especially since it _does_ increase the reliability for
+> mainline in the panic path.
+> 
+> Changes since v4:
+> 
+> printk:
+> 
+> - Introduce console_init_seq() to handle the now rather complex
+>   procedure to find an appropriate start sequence number for a
+>   new console upon registration.
+> 
+> - When registering a non-boot console and boot consoles are
+>   registered, try to flush all the consoles to get the next @seq
+>   value before falling back to use the @seq of the enabled boot
+>   console that is furthest behind.
+> 
+> - For console_force_preferred_locked(), make the console the
+>   head of the console list.
+> 
 
-do you need intermediates for processing, plastics (e.g. rubber) or silic=
-one mixtures?
 
-We provide a wide range of silicone rubbers with various properties, sili=
-cone mixtures from renowned manufacturers such as Wacker, Elastosil LR an=
-d dyes, stabilizers, primers and anti-adhesive additives.
-
-We also produce technical silicone compounds with increased resistance to=
- oils, resistant to high temperatures and water vapor, conductive and man=
-y more.
-
-We provide fast order fulfillment, timely deliveries and cost optimizatio=
-n.
-
-Can I introduce what we can offer you?
-
-
-Zbynek Spacek
+Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>

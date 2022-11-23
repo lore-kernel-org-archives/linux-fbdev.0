@@ -2,120 +2,92 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2312DC4332F
-	for <linux-fbdev@archiver.kernel.org>; Wed, 23 Nov 2022 16:35:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD0A3C4332F
+	for <linux-fbdev@archiver.kernel.org>; Wed, 23 Nov 2022 16:43:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236859AbiKWQfv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 23 Nov 2022 11:35:51 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59640 "EHLO
+        id S239079AbiKWQnU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 23 Nov 2022 11:43:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38336 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235641AbiKWQft (ORCPT
+        with ESMTP id S239068AbiKWQnU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 23 Nov 2022 11:35:49 -0500
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6C15E23BD7;
-        Wed, 23 Nov 2022 08:35:48 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        Content-Type:In-Reply-To:References:Cc:To:From:Subject:MIME-Version:Date:
-        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-        bh=3h/VgEw0Wflfm9bqnZb5OvyNPIn+ZE40wg6eS0dcqRM=; b=fT8osm953AWBxu8+52OtN4myCG
-        neTJeoJChBklml5lCWyNy25CDFeCueojHw+n+N61xIYLuxt1T0p6PxZVBJjwjMV0ldvrUH2A9OPYR
-        itmfGGiLDmlnZXP36gb1owvtUQvHzf7Bhp4BKeaTXV8RUlfIwfnhhKdkNzQb/KSsUKO3ko7L9q+nJ
-        z57ddCke4H/HGWjrZM2F76zLg2jda4Ljv9btOrm663EPRkvBCTE7sGeyjzbaVMz4F2QkOJyvsyHfj
-        pxSBJRnkJQvI0qSzv+OzdDFYLi0au9aheuskBtF1H6aN58aWr8WzoD5HTnMtiM9Xxtyo+Is5iBpQ2
-        DOF4RH5A==;
-Received: from [2601:1c2:d80:3110::a2e7]
-        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1oxsix-000tzy-65; Wed, 23 Nov 2022 16:35:47 +0000
-Message-ID: <fcdb5238-5977-526a-4752-fa82893a580e@infradead.org>
-Date:   Wed, 23 Nov 2022 08:35:44 -0800
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.5.0
-Subject: Re: [PATCH -next] fbdev: offb: allow build when DRM_OFDRM=m
-Content-Language: en-US
-From:   Randy Dunlap <rdunlap@infradead.org>
-To:     Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
-Cc:     linux-fbdev@vger.kernel.org,
+        Wed, 23 Nov 2022 11:43:20 -0500
+Received: from andre.telenet-ops.be (andre.telenet-ops.be [IPv6:2a02:1800:120:4::f00:15])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D28F22B0B
+        for <linux-fbdev@vger.kernel.org>; Wed, 23 Nov 2022 08:43:18 -0800 (PST)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed10:881b:815b:474d:c3fd])
+        by andre.telenet-ops.be with bizsmtp
+        id nsjF2800J49U0Rd01sjFf2; Wed, 23 Nov 2022 17:43:17 +0100
+Received: from rox.of.borg ([192.168.97.57])
+        by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1oxsqB-001SDE-2q; Wed, 23 Nov 2022 17:43:15 +0100
+Received: from geert by rox.of.borg with local (Exim 4.93)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1oxsqA-001M4Y-FF; Wed, 23 Nov 2022 17:43:14 +0100
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Masahiro Yamada <masahiroy@kernel.org>,
-        dri-devel@lists.freedesktop.org, Daniel Vetter <daniel@ffwll.ch>,
-        Michal Suchanek <msuchanek@suse.de>,
-        linuxppc-dev@lists.ozlabs.org, Helge Deller <deller@gmx.de>
-References: <20221123031605.16680-1-rdunlap@infradead.org>
- <4b10b87d-f255-4839-8700-858d98ffb801@app.fastmail.com>
- <25c22370-b67a-33a6-f1e6-abf70760d866@infradead.org>
-In-Reply-To: <25c22370-b67a-33a6-f1e6-abf70760d866@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Gerd Hoffmann <kraxel@redhat.com>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-m68k@lists.linux-m68k.org, linux-kernel@vger.kernel.org,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH resend v2] drm/fourcc: Add missing big-endian XRGB1555 and RGB565 formats
+Date:   Wed, 23 Nov 2022 17:43:10 +0100
+Message-Id: <3ee1f8144feb96c28742b22384189f1f83bcfc1a.1669221671.git.geert@linux-m68k.org>
+X-Mailer: git-send-email 2.25.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+As of commit eae06120f1974e1a ("drm: refuse ADDFB2 ioctl for broken
+bigendian drivers"), drivers must set the
+quirk_addfb_prefer_host_byte_order quirk to make the drm_mode_addfb()
+compat code work correctly on big-endian machines.
 
+While that works fine for big-endian XRGB8888 and ARGB8888, which are
+mapped to the existing little-endian BGRX8888 and BGRA8888 formats, it
+does not work for big-endian XRGB1555 and RGB565, as the latter are not
+listed in the format database.
 
-On 11/23/22 02:02, Randy Dunlap wrote:
-> Hi Arnd,
-> 
-> On 11/23/22 01:08, Arnd Bergmann wrote:
->> On Wed, Nov 23, 2022, at 04:16, Randy Dunlap wrote:
->>> Fix build when CONFIG_FB_OF=y and CONFIG_DRM_OFDRM=m.
->>> When the latter symbol is =m, kconfig downgrades (limits) the 'select's
->>> under FB_OF to modular (=m). This causes undefined symbol references:
->>>
->>> powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x58): 
->>> undefined reference to `cfb_fillrect'
->>> powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x60): 
->>> undefined reference to `cfb_copyarea'
->>> powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x68): 
->>> undefined reference to `cfb_imageblit'
->>>
->>> Fix this by allowing FB_OF any time that DRM_OFDRM != y so that the
->>> selected FB_CFB_* symbols will become =y instead of =m.
->>>
->>> In tristate logic (for DRM_OFDRM), this changes the dependency from
->>>     !DRM_OFDRM	== 2 - 1 == 1 => modular only (or disabled)
->>> to (boolean)
->>>     DRM_OFDRM != y == y, allowing the 'select's to cause the
->>> FB_CFB_* symbols to =y instead of =m.
->>>
->>
->> Is it actually a useful configuration to have OFDRM=m and
->> FB_OF=y though? I would expect in that case that the OFDRM
->> driver never binds to a device because it's already owned
->> by FB_OF.
->>
->>> diff -- a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
->>> --- a/drivers/video/fbdev/Kconfig
->>> +++ b/drivers/video/fbdev/Kconfig
->>> @@ -455,7 +455,7 @@ config FB_ATARI
->>>  config FB_OF
->>>  	bool "Open Firmware frame buffer device support"
->>>  	depends on (FB = y) && PPC && (!PPC_PSERIES || PCI)
->>> -	depends on !DRM_OFDRM
->>> +	depends on DRM_OFDRM != y
->>>  	select APERTURE_HELPERS
->>
->> I would instead make this 'depends on DRM_OFDRM=n', which
->> completely eliminates configs that have both driver enabled.
-> 
-> Yep, that works for me. Thanks.
-> 
-> Thomas, Michal, are you OK with that change?
-> 
->> A nicer change would be to make FB_OF a tristate symbol,
->> which makes it possible to load one of the two modules if
->> both are enabled =m, while only allowing one of them to
->> be =y if the other is completely disabled. It looks like
->> offb was originally written to be usable as a loadable module,
->> but Kconfig has prevented this since at least the start of
->> the git history.
+Fix this by adding the missing formats.  Limit this to big-endian
+platforms, as there is currently no need to support these formats on
+little-endian platforms.
 
-ISTM that a distro would prefer to have both DFM_OFDRM and
-FB_OF as tristate symbols that could both be built as loadable
-modules, as Arnd describes above.
-I'll look into that.
+Fixes: 6960e6da9cec3f66 ("drm: fix drm_mode_addfb() on big endian machines.")
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+v2:
+  - Use "DRM_FORMAT_foo | DRM_FORMAT_BIG_ENDIAN" instead of
+    "DRM_FORMAT_HOST_foo",
+  - Turn into a lone patch, as all other patches from series
+    https://lore.kernel.org/r/cover.1657300532.git.geert@linux-m68k.org
+    were applied to drm-misc/for-linux-next.
+---
+ drivers/gpu/drm/drm_fourcc.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
+diff --git a/drivers/gpu/drm/drm_fourcc.c b/drivers/gpu/drm/drm_fourcc.c
+index e09331bb3bc73f21..265671a7f9134c1f 100644
+--- a/drivers/gpu/drm/drm_fourcc.c
++++ b/drivers/gpu/drm/drm_fourcc.c
+@@ -190,6 +190,10 @@ const struct drm_format_info *__drm_format_info(u32 format)
+ 		{ .format = DRM_FORMAT_BGRA5551,	.depth = 15, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1, .has_alpha = true },
+ 		{ .format = DRM_FORMAT_RGB565,		.depth = 16, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
+ 		{ .format = DRM_FORMAT_BGR565,		.depth = 16, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
++#ifdef __BIG_ENDIAN
++		{ .format = DRM_FORMAT_XRGB1555 | DRM_FORMAT_BIG_ENDIAN, .depth = 15, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
++		{ .format = DRM_FORMAT_RGB565 | DRM_FORMAT_BIG_ENDIAN, .depth = 16, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
++#endif
+ 		{ .format = DRM_FORMAT_RGB888,		.depth = 24, .num_planes = 1, .cpp = { 3, 0, 0 }, .hsub = 1, .vsub = 1 },
+ 		{ .format = DRM_FORMAT_BGR888,		.depth = 24, .num_planes = 1, .cpp = { 3, 0, 0 }, .hsub = 1, .vsub = 1 },
+ 		{ .format = DRM_FORMAT_XRGB8888,	.depth = 24, .num_planes = 1, .cpp = { 4, 0, 0 }, .hsub = 1, .vsub = 1 },
 -- 
-~Randy
+2.25.1
+

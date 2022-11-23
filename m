@@ -2,75 +2,111 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F24BDC433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed, 23 Nov 2022 09:31:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C58DDC4332F
+	for <linux-fbdev@archiver.kernel.org>; Wed, 23 Nov 2022 10:13:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237714AbiKWJbT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 23 Nov 2022 04:31:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50834 "EHLO
+        id S236070AbiKWKNY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 23 Nov 2022 05:13:24 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40234 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237792AbiKWJbA (ORCPT
+        with ESMTP id S236997AbiKWKMf (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 23 Nov 2022 04:31:00 -0500
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 003F41B9D6
-        for <linux-fbdev@vger.kernel.org>; Wed, 23 Nov 2022 01:29:45 -0800 (PST)
-Received: from kwepemi500012.china.huawei.com (unknown [172.30.72.53])
-        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4NHG6C2QY1zHw5Q;
-        Wed, 23 Nov 2022 17:29:07 +0800 (CST)
-Received: from cgs.huawei.com (10.244.148.83) by
- kwepemi500012.china.huawei.com (7.221.188.12) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Wed, 23 Nov 2022 17:29:43 +0800
-From:   Gaosheng Cui <cuigaosheng1@huawei.com>
-To:     <deller@gmx.de>, <cuigaosheng1@huawei.com>,
-        <alexander.sverdlin@gmail.com>, <sam@ravnborg.org>,
-        <nikita.shubin@maquefel.me>
-CC:     <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>
-Subject: [PATCH] video: ep93xx: Add missing clk_disable_unprepare in ep93xxfb_probe()
-Date:   Wed, 23 Nov 2022 17:29:43 +0800
-Message-ID: <20221123092943.2259585-1-cuigaosheng1@huawei.com>
-X-Mailer: git-send-email 2.25.1
+        Wed, 23 Nov 2022 05:12:35 -0500
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AFB091181C9;
+        Wed, 23 Nov 2022 02:02:22 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+        bh=83MdFbKu6KOPOEKDlo0HlMJgvVO0m/fdLoc4Thdcuh4=; b=L3GMSKCqIzE5TXY6NpR87122vy
+        5RVcYocIKBTqMAxQaZoiJ26f3xxpygT4Hf/l2rSm5zmBMLR9K2N/2mPp+cYoJ9/mUTY8NWl8ziZpr
+        kX70BA8Srb3jpD9hxth5wGoV8JGwXqz91SC2E4uajGOgkWPwuWd9aGQRRqTeLbJRPtftMFidcYzu6
+        aeqZhh3wKtR1ExxNNJg94/SzeQmae/PxjwijVcftwjeDJ1SLenmjfGsRmTG6ahE+iW4jpu7JwIvlK
+        UATAjIgUlUhR+dPn+PQe8PPqZxCNT+h+O1AT3+4VJZzlLiJT9C0NEReTJ/xl/Xz2JGTLsr0h9Y+vU
+        52fM13JQ==;
+Received: from [2601:1c2:d80:3110::a2e7]
+        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1oxmaD-00GBoz-D2; Wed, 23 Nov 2022 10:02:21 +0000
+Message-ID: <25c22370-b67a-33a6-f1e6-abf70760d866@infradead.org>
+Date:   Wed, 23 Nov 2022 02:02:18 -0800
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [10.244.148.83]
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- kwepemi500012.china.huawei.com (7.221.188.12)
-X-CFilter-Loop: Reflected
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.5.0
+Subject: Re: [PATCH -next] fbdev: offb: allow build when DRM_OFDRM=m
+Content-Language: en-US
+To:     Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
+Cc:     linux-fbdev@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Masahiro Yamada <masahiroy@kernel.org>,
+        dri-devel@lists.freedesktop.org, Daniel Vetter <daniel@ffwll.ch>,
+        Michal Suchanek <msuchanek@suse.de>,
+        linuxppc-dev@lists.ozlabs.org, Helge Deller <deller@gmx.de>
+References: <20221123031605.16680-1-rdunlap@infradead.org>
+ <4b10b87d-f255-4839-8700-858d98ffb801@app.fastmail.com>
+From:   Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <4b10b87d-f255-4839-8700-858d98ffb801@app.fastmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The clk_disable_unprepare() should be called in the error handling
-of register_framebuffer(), fix it.
+Hi Arnd,
 
-Fixes: 0937a7b3625d ("video: ep93xx: Prepare clock before using it")
-Signed-off-by: Gaosheng Cui <cuigaosheng1@huawei.com>
----
- drivers/video/fbdev/ep93xx-fb.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+On 11/23/22 01:08, Arnd Bergmann wrote:
+> On Wed, Nov 23, 2022, at 04:16, Randy Dunlap wrote:
+>> Fix build when CONFIG_FB_OF=y and CONFIG_DRM_OFDRM=m.
+>> When the latter symbol is =m, kconfig downgrades (limits) the 'select's
+>> under FB_OF to modular (=m). This causes undefined symbol references:
+>>
+>> powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x58): 
+>> undefined reference to `cfb_fillrect'
+>> powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x60): 
+>> undefined reference to `cfb_copyarea'
+>> powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x68): 
+>> undefined reference to `cfb_imageblit'
+>>
+>> Fix this by allowing FB_OF any time that DRM_OFDRM != y so that the
+>> selected FB_CFB_* symbols will become =y instead of =m.
+>>
+>> In tristate logic (for DRM_OFDRM), this changes the dependency from
+>>     !DRM_OFDRM	== 2 - 1 == 1 => modular only (or disabled)
+>> to (boolean)
+>>     DRM_OFDRM != y == y, allowing the 'select's to cause the
+>> FB_CFB_* symbols to =y instead of =m.
+>>
+> 
+> Is it actually a useful configuration to have OFDRM=m and
+> FB_OF=y though? I would expect in that case that the OFDRM
+> driver never binds to a device because it's already owned
+> by FB_OF.
+> 
+>> diff -- a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+>> --- a/drivers/video/fbdev/Kconfig
+>> +++ b/drivers/video/fbdev/Kconfig
+>> @@ -455,7 +455,7 @@ config FB_ATARI
+>>  config FB_OF
+>>  	bool "Open Firmware frame buffer device support"
+>>  	depends on (FB = y) && PPC && (!PPC_PSERIES || PCI)
+>> -	depends on !DRM_OFDRM
+>> +	depends on DRM_OFDRM != y
+>>  	select APERTURE_HELPERS
+> 
+> I would instead make this 'depends on DRM_OFDRM=n', which
+> completely eliminates configs that have both driver enabled.
 
-diff --git a/drivers/video/fbdev/ep93xx-fb.c b/drivers/video/fbdev/ep93xx-fb.c
-index 2398b3d48fed..305f1587bd89 100644
---- a/drivers/video/fbdev/ep93xx-fb.c
-+++ b/drivers/video/fbdev/ep93xx-fb.c
-@@ -552,12 +552,14 @@ static int ep93xxfb_probe(struct platform_device *pdev)
- 
- 	err = register_framebuffer(info);
- 	if (err)
--		goto failed_check;
-+		goto failed_framebuffer;
- 
- 	dev_info(info->dev, "registered. Mode = %dx%d-%d\n",
- 		 info->var.xres, info->var.yres, info->var.bits_per_pixel);
- 	return 0;
- 
-+failed_framebuffer:
-+	clk_disable_unprepare(fbi->clk);
- failed_check:
- 	if (fbi->mach_info->teardown)
- 		fbi->mach_info->teardown(pdev);
+Yep, that works for me. Thanks.
+
+Thomas, Michal, are you OK with that change?
+
+> A nicer change would be to make FB_OF a tristate symbol,
+> which makes it possible to load one of the two modules if
+> both are enabled =m, while only allowing one of them to
+> be =y if the other is completely disabled. It looks like
+> offb was originally written to be usable as a loadable module,
+> but Kconfig has prevented this since at least the start of
+> the git history.
+
 -- 
-2.25.1
-
+~Randy

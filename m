@@ -2,121 +2,178 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C91C7C4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu, 24 Nov 2022 08:03:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DA70C433FE
+	for <linux-fbdev@archiver.kernel.org>; Thu, 24 Nov 2022 08:46:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229597AbiKXIDN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 24 Nov 2022 03:03:13 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51900 "EHLO
+        id S229677AbiKXIqx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 24 Nov 2022 03:46:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48460 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229463AbiKXIDN (ORCPT
+        with ESMTP id S229504AbiKXIqw (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 24 Nov 2022 03:03:13 -0500
-Received: from mail-qk1-f181.google.com (mail-qk1-f181.google.com [209.85.222.181])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7307088F85;
-        Thu, 24 Nov 2022 00:03:07 -0800 (PST)
-Received: by mail-qk1-f181.google.com with SMTP id x18so573904qki.4;
-        Thu, 24 Nov 2022 00:03:07 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=NxhodYFDmdQqVB4ltzcytu+P4hXGUv/V9/mCUnkpmmg=;
-        b=TjQExKhIg+vBdXYkhLv4WSk8cKOUj0L6okTupVgp3IkDeqkqTxbAUMEd0mjbGEKszS
-         mNSeNrMoSd1qDuiudOFyIfB3p+CpIYUmc9fC0t7mI3BN4b0KzaY0x9Z/X3bvQ1anYO5F
-         cSdwnmA5EmJCKVbMcwpCeoEzLyvU7tBJkDZDyBul6vc5SFaK4//X/TUsrTS/vkvewzrT
-         /lj1Fa4mW0abRE7BJk/PUCTzbcgff9SunnFM2Jh5IadCaSHOJjvrraQ5STIEh4kSUVcl
-         Po8YiKX4oQUmR2+m+tsUGzbu63t4vCkfwz8g0j7po+sclam6sHj8SEDK01ng/UTGJOzO
-         habA==
-X-Gm-Message-State: ANoB5pkL/IJTMgtChoKWEfrV0tB3DeIgcQBvP5+G/jdKek9pA1G/N3Nf
-        vfRxkPG8DF+6GUliwmWhiribdu74dig73g==
-X-Google-Smtp-Source: AA0mqf4miuwas6rsAAzI7UyaaKeNZC287sV3PQ6zEM7xecF0LIbC4/38+q9mSLIdsQOsunR7r0753g==
-X-Received: by 2002:a37:b986:0:b0:6fa:3244:cf6e with SMTP id j128-20020a37b986000000b006fa3244cf6emr11425612qkf.656.1669276986320;
-        Thu, 24 Nov 2022 00:03:06 -0800 (PST)
-Received: from mail-yw1-f180.google.com (mail-yw1-f180.google.com. [209.85.128.180])
-        by smtp.gmail.com with ESMTPSA id i13-20020a05620a248d00b006fbdeecad51sm474190qkn.48.2022.11.24.00.03.05
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 24 Nov 2022 00:03:05 -0800 (PST)
-Received: by mail-yw1-f180.google.com with SMTP id 00721157ae682-3b56782b3f6so8002357b3.13;
-        Thu, 24 Nov 2022 00:03:05 -0800 (PST)
-X-Received: by 2002:a81:f80f:0:b0:38e:e541:d8ca with SMTP id
- z15-20020a81f80f000000b0038ee541d8camr29389264ywm.283.1669276985156; Thu, 24
- Nov 2022 00:03:05 -0800 (PST)
+        Thu, 24 Nov 2022 03:46:52 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A12D1107E6E;
+        Thu, 24 Nov 2022 00:46:50 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 524C71F749;
+        Thu, 24 Nov 2022 08:46:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1669279609; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=9qza448ucCDLGXGUlE/3bEGm8MMmtXTkWkq9TnW9DtE=;
+        b=GEi96S4SyfecsiFxaE86ihxeSvR1D03MtusDH0XjWuuQ0wX+uN3kBdrfpcsgtLppq8SmI9
+        90hVukRxwjbQ5HrMhF5dzGHJHuWs+TpoEgCrMuVBsU3CeBWzwUmHqaZXHGGb0eKCQpBCz7
+        ZHIpEWsJOTxu5bRQjza/6IIdSmdJEjY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1669279609;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=9qza448ucCDLGXGUlE/3bEGm8MMmtXTkWkq9TnW9DtE=;
+        b=+m8YSErwN+RnQrPIRCfV4LFRiLWRc1ityUpYueX5fm9YznSxtbKgSNWf4Dj0zna+23H+FB
+        JAdj7MHMOyVdJCAQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 0ABB613B1A;
+        Thu, 24 Nov 2022 08:46:49 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id T9acAXkvf2P/cwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 24 Nov 2022 08:46:49 +0000
+Message-ID: <e2ef753e-8527-1fc6-f2f0-bc10aa744463@suse.de>
+Date:   Thu, 24 Nov 2022 09:46:48 +0100
 MIME-Version: 1.0
-References: <3ee1f8144feb96c28742b22384189f1f83bcfc1a.1669221671.git.geert@linux-m68k.org>
- <Y35RCaEP0icg6San@phenom.ffwll.local> <CAMuHMdVgqwHjm8Hxms04rg6YXiQacEwKiaRV80nNA_OM9mvZpA@mail.gmail.com>
- <20221124065148.7v4m3qli2k74mic6@sirius.home.kraxel.org>
-In-Reply-To: <20221124065148.7v4m3qli2k74mic6@sirius.home.kraxel.org>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Thu, 24 Nov 2022 09:02:53 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdUJUUPPxS6VCHV1X9XMqzfACvu8qivUVO2pMbvD7rcQKg@mail.gmail.com>
-Message-ID: <CAMuHMdUJUUPPxS6VCHV1X9XMqzfACvu8qivUVO2pMbvD7rcQKg@mail.gmail.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.5.0
 Subject: Re: [PATCH resend v2] drm/fourcc: Add missing big-endian XRGB1555 and
  RGB565 formats
-To:     Gerd Hoffmann <kraxel@redhat.com>
-Cc:     Daniel Vetter <daniel@ffwll.ch>,
+To:     Geert Uytterhoeven <geert@linux-m68k.org>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
         David Airlie <airlied@gmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-m68k@lists.linux-m68k.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+        Daniel Vetter <daniel@ffwll.ch>,
+        Gerd Hoffmann <kraxel@redhat.com>
+Cc:     linux-fbdev@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+References: <3ee1f8144feb96c28742b22384189f1f83bcfc1a.1669221671.git.geert@linux-m68k.org>
+Content-Language: en-US
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <3ee1f8144feb96c28742b22384189f1f83bcfc1a.1669221671.git.geert@linux-m68k.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------XjylbMlXxkAsWPRzXxAOvfvO"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Gerd,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------XjylbMlXxkAsWPRzXxAOvfvO
+Content-Type: multipart/mixed; boundary="------------XoyofduipLwRhZAo4vf0knVq";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
+ Daniel Vetter <daniel@ffwll.ch>, Gerd Hoffmann <kraxel@redhat.com>
+Cc: linux-fbdev@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Message-ID: <e2ef753e-8527-1fc6-f2f0-bc10aa744463@suse.de>
+Subject: Re: [PATCH resend v2] drm/fourcc: Add missing big-endian XRGB1555 and
+ RGB565 formats
+References: <3ee1f8144feb96c28742b22384189f1f83bcfc1a.1669221671.git.geert@linux-m68k.org>
+In-Reply-To: <3ee1f8144feb96c28742b22384189f1f83bcfc1a.1669221671.git.geert@linux-m68k.org>
 
-On Thu, Nov 24, 2022 at 8:29 AM Gerd Hoffmann <kraxel@redhat.com> wrote:
-> > > > +#ifdef __BIG_ENDIAN
-> > >
-> > > Why do we need the #ifdef here? Iirc some hw has big endian flags in the
-> > > scanout registers, so could supprt this unconditionally if there's no
-> > > #ifdef around the format defines. Some drivers might then also want a
-> > > DRM_FORMAT_FOO_BE define to simplify tables and stuff, but that's more a
-> > > bikeshed.
-> >
-> >  "Limit this to big-endian platforms, as there is currently no need
-> >  to support these formats on little-endian platforms."
-> >
-> > Will anyone make use of this? In theory, all of the 16-bpp formats
-> > can have a big-endian counterpart.
->
-> Highly unlikely.  Dealing with 16-bpp formats in non-native byte order
-> is a PITA because it isn't enough to simply adjust the masks and shifts
-> to pick the correct bits and be done with it.
->
-> The qemu stdvga happens to have a register to switch framebuffer
-> byteorder (so both x64 and ppc are happy), and the bochs drm driver
-> actually supports that no matter what the cpu byte order is, but it
-> supports only DRM_FORMAT_XRGB8888 + DRM_FORMAT_BGRX8888.
->
-> Supporting 16 bpp in the driver wouldn't be that much of a problem, but
-> processing the framebuffer on the host side when emulating a big endian
-> guest on a little endian host is painful.  I think I can't ask pixman to
-> do a conversation from DRM_FORMAT_RGB565 | DRM_FORMAT_BIG_ENDIAN to
-> DRM_FORMAT_XRGB8888 on a little endian machine.
+--------------XoyofduipLwRhZAo4vf0knVq
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Indeed. But you can do a quick 16-bit byteswap, and convert from
-DRM_FORMAT_RGB565 to DRM_FORMAT_XRGB8888?
+SGkNCg0KQW0gMjMuMTEuMjIgdW0gMTc6NDMgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
+DQo+IEFzIG9mIGNvbW1pdCBlYWUwNjEyMGYxOTc0ZTFhICgiZHJtOiByZWZ1c2UgQURERkIy
+IGlvY3RsIGZvciBicm9rZW4NCj4gYmlnZW5kaWFuIGRyaXZlcnMiKSwgZHJpdmVycyBtdXN0
+IHNldCB0aGUNCj4gcXVpcmtfYWRkZmJfcHJlZmVyX2hvc3RfYnl0ZV9vcmRlciBxdWlyayB0
+byBtYWtlIHRoZSBkcm1fbW9kZV9hZGRmYigpDQo+IGNvbXBhdCBjb2RlIHdvcmsgY29ycmVj
+dGx5IG9uIGJpZy1lbmRpYW4gbWFjaGluZXMuDQo+IA0KPiBXaGlsZSB0aGF0IHdvcmtzIGZp
+bmUgZm9yIGJpZy1lbmRpYW4gWFJHQjg4ODggYW5kIEFSR0I4ODg4LCB3aGljaCBhcmUNCj4g
+bWFwcGVkIHRvIHRoZSBleGlzdGluZyBsaXR0bGUtZW5kaWFuIEJHUlg4ODg4IGFuZCBCR1JB
+ODg4OCBmb3JtYXRzLCBpdA0KPiBkb2VzIG5vdCB3b3JrIGZvciBiaWctZW5kaWFuIFhSR0Ix
+NTU1IGFuZCBSR0I1NjUsIGFzIHRoZSBsYXR0ZXIgYXJlIG5vdA0KPiBsaXN0ZWQgaW4gdGhl
+IGZvcm1hdCBkYXRhYmFzZS4NCj4gDQo+IEZpeCB0aGlzIGJ5IGFkZGluZyB0aGUgbWlzc2lu
+ZyBmb3JtYXRzLiAgTGltaXQgdGhpcyB0byBiaWctZW5kaWFuDQo+IHBsYXRmb3JtcywgYXMg
+dGhlcmUgaXMgY3VycmVudGx5IG5vIG5lZWQgdG8gc3VwcG9ydCB0aGVzZSBmb3JtYXRzIG9u
+DQo+IGxpdHRsZS1lbmRpYW4gcGxhdGZvcm1zLg0KPiANCj4gRml4ZXM6IDY5NjBlNmRhOWNl
+YzNmNjYgKCJkcm06IGZpeCBkcm1fbW9kZV9hZGRmYigpIG9uIGJpZyBlbmRpYW4gbWFjaGlu
+ZXMuIikNCj4gU2lnbmVkLW9mZi1ieTogR2VlcnQgVXl0dGVyaG9ldmVuIDxnZWVydEBsaW51
+eC1tNjhrLm9yZz4NCj4gLS0tDQo+IHYyOg0KPiAgICAtIFVzZSAiRFJNX0ZPUk1BVF9mb28g
+fCBEUk1fRk9STUFUX0JJR19FTkRJQU4iIGluc3RlYWQgb2YNCj4gICAgICAiRFJNX0ZPUk1B
+VF9IT1NUX2ZvbyIsDQo+ICAgIC0gVHVybiBpbnRvIGEgbG9uZSBwYXRjaCwgYXMgYWxsIG90
+aGVyIHBhdGNoZXMgZnJvbSBzZXJpZXMNCj4gICAgICBodHRwczovL2xvcmUua2VybmVsLm9y
+Zy9yL2NvdmVyLjE2NTczMDA1MzIuZ2l0LmdlZXJ0QGxpbnV4LW02OGsub3JnDQo+ICAgICAg
+d2VyZSBhcHBsaWVkIHRvIGRybS1taXNjL2Zvci1saW51eC1uZXh0Lg0KPiAtLS0NCj4gICBk
+cml2ZXJzL2dwdS9kcm0vZHJtX2ZvdXJjYy5jIHwgNCArKysrDQo+ICAgMSBmaWxlIGNoYW5n
+ZWQsIDQgaW5zZXJ0aW9ucygrKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2Ry
+bS9kcm1fZm91cmNjLmMgYi9kcml2ZXJzL2dwdS9kcm0vZHJtX2ZvdXJjYy5jDQo+IGluZGV4
+IGUwOTMzMWJiM2JjNzNmMjEuLjI2NTY3MWE3ZjkxMzRjMWYgMTAwNjQ0DQo+IC0tLSBhL2Ry
+aXZlcnMvZ3B1L2RybS9kcm1fZm91cmNjLmMNCj4gKysrIGIvZHJpdmVycy9ncHUvZHJtL2Ry
+bV9mb3VyY2MuYw0KPiBAQCAtMTkwLDYgKzE5MCwxMCBAQCBjb25zdCBzdHJ1Y3QgZHJtX2Zv
+cm1hdF9pbmZvICpfX2RybV9mb3JtYXRfaW5mbyh1MzIgZm9ybWF0KQ0KPiAgIAkJeyAuZm9y
+bWF0ID0gRFJNX0ZPUk1BVF9CR1JBNTU1MSwJLmRlcHRoID0gMTUsIC5udW1fcGxhbmVzID0g
+MSwgLmNwcCA9IHsgMiwgMCwgMCB9LCAuaHN1YiA9IDEsIC52c3ViID0gMSwgLmhhc19hbHBo
+YSA9IHRydWUgfSwNCj4gICAJCXsgLmZvcm1hdCA9IERSTV9GT1JNQVRfUkdCNTY1LAkJLmRl
+cHRoID0gMTYsIC5udW1fcGxhbmVzID0gMSwgLmNwcCA9IHsgMiwgMCwgMCB9LCAuaHN1YiA9
+IDEsIC52c3ViID0gMSB9LA0KPiAgIAkJeyAuZm9ybWF0ID0gRFJNX0ZPUk1BVF9CR1I1NjUs
+CQkuZGVwdGggPSAxNiwgLm51bV9wbGFuZXMgPSAxLCAuY3BwID0geyAyLCAwLCAwIH0sIC5o
+c3ViID0gMSwgLnZzdWIgPSAxIH0sDQo+ICsjaWZkZWYgX19CSUdfRU5ESUFODQo+ICsJCXsg
+LmZvcm1hdCA9IERSTV9GT1JNQVRfWFJHQjE1NTUgfCBEUk1fRk9STUFUX0JJR19FTkRJQU4s
+IC5kZXB0aCA9IDE1LCAubnVtX3BsYW5lcyA9IDEsIC5jcHAgPSB7IDIsIDAsIDAgfSwgLmhz
+dWIgPSAxLCAudnN1YiA9IDEgfSwNCj4gKwkJeyAuZm9ybWF0ID0gRFJNX0ZPUk1BVF9SR0I1
+NjUgfCBEUk1fRk9STUFUX0JJR19FTkRJQU4sIC5kZXB0aCA9IDE2LCAubnVtX3BsYW5lcyA9
+IDEsIC5jcHAgPSB7IDIsIDAsIDAgfSwgLmhzdWIgPSAxLCAudnN1YiA9IDEgfSwNCg0KR2V0
+dGluZyBiYWNrIHRvIHRoZSBkaXNjdXNzaW9uIG9uIGVuZGlhbmVzcywgSSBkb24ndCB1bmRl
+cnN0YW5kIHdoeSB0aGUgDQpCSUdfRU5ESUFOIGZsYWcgaXMgc2V0IGhlcmUuICBBRkFJSyB0
+aGVzZSBmb3JtYXRzIGFyZSBhbHdheXMgbGl0dGxlIA0KZW5kaWFuLiAgQW5kIHRoZSBCRSBm
+bGFnIGlzIHNldCBieSBkcml2ZXJzL3VzZXJzcGFjZSBpZiBhIGZyYW1lYnVmZmVyIA0KaGFz
+IGEgQkUgb3JkZXJpbmcuDQoNCkl0IHdvdWxkIGJlIGJldHRlciB0byBmaWx0ZXIgdGhlIEJF
+IGZsYWcgaW4gX19kcm1fZm9ybWF0X2luZm8oKSBiZWZvcmUgDQp0aGUgZnVuY3Rpb24gZG9l
+cyB0aGUgbG9va3VwLg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+ICsjZW5kaWYNCj4g
+ICAJCXsgLmZvcm1hdCA9IERSTV9GT1JNQVRfUkdCODg4LAkJLmRlcHRoID0gMjQsIC5udW1f
+cGxhbmVzID0gMSwgLmNwcCA9IHsgMywgMCwgMCB9LCAuaHN1YiA9IDEsIC52c3ViID0gMSB9
+LA0KPiAgIAkJeyAuZm9ybWF0ID0gRFJNX0ZPUk1BVF9CR1I4ODgsCQkuZGVwdGggPSAyNCwg
+Lm51bV9wbGFuZXMgPSAxLCAuY3BwID0geyAzLCAwLCAwIH0sIC5oc3ViID0gMSwgLnZzdWIg
+PSAxIH0sDQo+ICAgCQl7IC5mb3JtYXQgPSBEUk1fRk9STUFUX1hSR0I4ODg4LAkuZGVwdGgg
+PSAyNCwgLm51bV9wbGFuZXMgPSAxLCAuY3BwID0geyA0LCAwLCAwIH0sIC5oc3ViID0gMSwg
+LnZzdWIgPSAxIH0sDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZl
+ciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4
+ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBO
+w7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
 
-There's a similar issue with Cairo, cfr. '[PATCH libdrm v2 08/10]
-util: Fix pwetty on big-endian"[1].
+--------------XoyofduipLwRhZAo4vf0knVq--
 
-BTW, does pixman support converting DRM_FORMAT_RGB565 to
-DRM_FORMAT_XRGB8888 on a big-endian machine?
+--------------XjylbMlXxkAsWPRzXxAOvfvO
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-[1] https://lore.kernel.org/all/e8597038478f12e9eda5e86b309b52988f69f2eb.1657302103.git.geert@linux-m68k.org
+-----BEGIN PGP SIGNATURE-----
 
-Gr{oetje,eeting}s,
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmN/L3gFAwAAAAAACgkQlh/E3EQov+Dl
+Ng/+M9NIvPFL7BpWwOAQiETFFLv006djr/agkCRGf84E4Ae4D8HQ6dkXUSRigJK5v1coZnsHQ/Dy
+Md8ArPuDTQhS3XTJVgy+JjTbDFaBUiBYXuRYHOsMMom4iojYTt77ff3HvteUVOCo4VwoRwjyfS4z
+AiRkyoQgqOOUVU/+Bq8NVjEPncbRnSzvNp5zWXh6C+X4fAMjhfeNM1dVgKCmroyvoOH7hH8DPYxJ
+O8ViAVkIS9c/lg1At15h7eOyaiPoGMxq7h224Li4tkD1cU7jGs0qmoLMtGADHQqta22S4m5SUSwB
+t8vdc4lElo0gU6Sva62LPLWYbSRa1roxDRbwXbnyI8Pmj2Ok+z0MUBmE7Pnm3lCENTHUkzKLZFgF
+5oj5Vp5k77oKi5PtOpIGpHDe+fwllLJCDfAfUa17wIX9BlHjHuzy/r7mS6BBz10fFfbigIECZI+h
+BeBHVpj3HtR450pAZ6XFDZw0Eorhz4ivutBKezkk+ikFapIy4cJb3eJiCd29ibOqyB1nWeHeUOuK
+s2hrxzTCgsDcAZB/tKVVZ59dTIJSQW7Pv/kQPOMjioS/8Z8sz5AODxKmZ22aYqg+v2peOGkcPSKK
+nSyjxCUa/MI4U9a4NXVbDNPzJCBIT0BSPVspajo8qyF9m6+vNp9Q3PdQSAej2Tq/BLg8yWK8fA9j
+PRs=
+=Ezd/
+-----END PGP SIGNATURE-----
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+--------------XjylbMlXxkAsWPRzXxAOvfvO--

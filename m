@@ -2,90 +2,97 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CDB7C433FE
-	for <linux-fbdev@archiver.kernel.org>; Thu, 24 Nov 2022 11:19:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E632C46467
+	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Nov 2022 20:31:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229487AbiKXLTZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 24 Nov 2022 06:19:25 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45474 "EHLO
+        id S229943AbiKYUbQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 25 Nov 2022 15:31:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56486 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229644AbiKXLTX (ORCPT
+        with ESMTP id S229948AbiKYUbP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 24 Nov 2022 06:19:23 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E20C27D286
-        for <linux-fbdev@vger.kernel.org>; Thu, 24 Nov 2022 03:18:02 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1669288682;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=xPrnI3wUzzA5EN1dGSFZgqDRTkuK8RUJQxnTAkxblL0=;
-        b=ICsGyojkrI657XQb/u27fYu1YzNkQ18cPjcn3vShqogL3hh6tKOIxj7kOnd43MvyRLFJuF
-        Js9IXknS/2WSHA2gsXMGsoI8Ij2l7cH+lAyZM8T5ZmTKZ3/3jqjZIsymSH6O5GjAGsEmtw
-        7Zc0qeri2kcDnLG8cnHvdHQTcuzYWYg=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-16-f7iuFoDwNPSvuE7nPRhkhQ-1; Thu, 24 Nov 2022 06:17:58 -0500
-X-MC-Unique: f7iuFoDwNPSvuE7nPRhkhQ-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com [10.11.54.6])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id F40AD858F17;
-        Thu, 24 Nov 2022 11:17:57 +0000 (UTC)
-Received: from sirius.home.kraxel.org (unknown [10.39.192.212])
-        by smtp.corp.redhat.com (Postfix) with ESMTPS id 817292166B26;
-        Thu, 24 Nov 2022 11:17:57 +0000 (UTC)
-Received: by sirius.home.kraxel.org (Postfix, from userid 1000)
-        id 2A9D91800609; Thu, 24 Nov 2022 12:17:54 +0100 (CET)
-Date:   Thu, 24 Nov 2022 12:17:54 +0100
-From:   Gerd Hoffmann <kraxel@redhat.com>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Daniel Vetter <daniel@ffwll.ch>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Fri, 25 Nov 2022 15:31:15 -0500
+Received: from michel.telenet-ops.be (michel.telenet-ops.be [IPv6:2a02:1800:110:4::f00:18])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B1E1D3207A
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Nov 2022 12:31:11 -0800 (PST)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed10:d898:271f:7512:e47f])
+        by michel.telenet-ops.be with bizsmtp
+        id okX62800M4su47u06kX6c1; Fri, 25 Nov 2022 21:31:08 +0100
+Received: from rox.of.borg ([192.168.97.57])
+        by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1oyfLj-001aQ6-VH; Fri, 25 Nov 2022 21:31:03 +0100
+Received: from geert by rox.of.borg with local (Exim 4.93)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1oyfLj-003Kwt-E7; Fri, 25 Nov 2022 21:31:03 +0100
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         David Airlie <airlied@gmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-m68k@lists.linux-m68k.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH resend v2] drm/fourcc: Add missing big-endian XRGB1555
- and RGB565 formats
-Message-ID: <20221124111754.yrfewus6mqismc3b@sirius.home.kraxel.org>
-References: <3ee1f8144feb96c28742b22384189f1f83bcfc1a.1669221671.git.geert@linux-m68k.org>
- <Y35RCaEP0icg6San@phenom.ffwll.local>
- <CAMuHMdVgqwHjm8Hxms04rg6YXiQacEwKiaRV80nNA_OM9mvZpA@mail.gmail.com>
- <20221124065148.7v4m3qli2k74mic6@sirius.home.kraxel.org>
- <CAMuHMdUJUUPPxS6VCHV1X9XMqzfACvu8qivUVO2pMbvD7rcQKg@mail.gmail.com>
+        Daniel Vetter <daniel@ffwll.ch>,
+        Hans de Goede <hdegoede@redhat.com>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH v3 0/2] drm/modes: Command line mode selection improvements
+Date:   Fri, 25 Nov 2022 21:30:59 +0100
+Message-Id: <cover.1669405382.git.geert@linux-m68k.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdUJUUPPxS6VCHV1X9XMqzfACvu8qivUVO2pMbvD7rcQKg@mail.gmail.com>
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.6
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-  Hi,
+	Hi all,
 
-> > Supporting 16 bpp in the driver wouldn't be that much of a problem, but
-> > processing the framebuffer on the host side when emulating a big endian
-> > guest on a little endian host is painful.  I think I can't ask pixman to
-> > do a conversation from DRM_FORMAT_RGB565 | DRM_FORMAT_BIG_ENDIAN to
-> > DRM_FORMAT_XRGB8888 on a little endian machine.
-> 
-> Indeed. But you can do a quick 16-bit byteswap, and convert from
-> DRM_FORMAT_RGB565 to DRM_FORMAT_XRGB8888?
+This patch series contains improvements for specifying video modes on the
+kernel command line.
 
-Sure doable, but it's an extra step in a rarely tested code path ...
+I don't expect the second patch to be acceptable as-is, but it's a
+dependency for posting the RFC Atari DRM driver...
 
-> BTW, does pixman support converting DRM_FORMAT_RGB565 to
-> DRM_FORMAT_XRGB8888 on a big-endian machine?
+Changes compared to v2[1]:
+  - Drop applied and obsolete patches,
+  - Add Acked-by,
+  - Update for the switch from names to named mode descriptors.
 
-I don't think so.  When you can get the color bits with shifting and
-masking pixman is happy.  For rgb565 (and xrgb1555) that works only on
-native byte order.
+Changes compared to v1[2]:
+  - Add Reviewed-by, Acked-by,
+  - Keep length check.
 
-take care,
-  Gerd
+This has been tested on ARAnyM using a work-in-progress Atari DRM
+driver.
 
+Thanks for your comments!
+
+[1] "[PATCH v2 0/5] drm/modes: Command line mode selection fixes and
+    improvements"
+    https://lore.kernel.org/r/cover.1657788997.git.geert@linux-m68k.org
+[2] "[PATCH 0/5] drm/modes: Command line mode selection fixes and
+    improvements"
+    https://lore.kernel.org/r/cover.1657301107.git.geert@linux-m68k.org
+
+Geert Uytterhoeven (2):
+  drm/modes: parse_cmdline: Make mode->*specified handling more uniform
+  drm/modes: Add support for driver-specific named modes
+
+ drivers/gpu/drm/drm_modes.c | 26 +++++++++-----------------
+ include/drm/drm_connector.h | 18 ++++++++++++++++++
+ 2 files changed, 27 insertions(+), 17 deletions(-)
+
+-- 
+2.25.1
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds

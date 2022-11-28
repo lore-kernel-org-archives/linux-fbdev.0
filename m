@@ -2,291 +2,143 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3776BC43217
-	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Nov 2022 13:08:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F080C4332F
+	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Nov 2022 17:41:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230249AbiK1NIW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 28 Nov 2022 08:08:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35342 "EHLO
+        id S233274AbiK1Rlh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 28 Nov 2022 12:41:37 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52172 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230252AbiK1NIV (ORCPT
+        with ESMTP id S233270AbiK1RlG (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 28 Nov 2022 08:08:21 -0500
-Received: from mail-qv1-f45.google.com (mail-qv1-f45.google.com [209.85.219.45])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A4868183B0;
-        Mon, 28 Nov 2022 05:08:16 -0800 (PST)
-Received: by mail-qv1-f45.google.com with SMTP id u10so1689040qvp.4;
-        Mon, 28 Nov 2022 05:08:16 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=9NyJ4oC6Fj5jfuI9pmJZJst2bJ3O+9u6ckzE/ZvDK8M=;
-        b=NjRKU81huEF9eu0dk5sq/E0EPhXE6Iyi+YlJj7CJz7u8swjOjII8J3oPyicEdSK4E+
-         +06FJGsi6s19cL6duOKC3HqxjsO9R7OjqYxh0v5E5h7i0NqhTWL6Hz11ZkUZ9+9eu1wN
-         GqWvso/+Qyu7Xn3xv631qq2qEjJWXSSVfMA9/cVALzDvfylFVaKLtp3kllGDXO7Iped9
-         17ZUZPLxL6cVpIqssFAnvFxZMZJzMusBfFqWPz9R97cmBQmKXLzbrvF33W7edmdEBTMQ
-         8Mc24M9QeS7lDvXtDMAD+c4TFQC7HNZmjyz7bQQ1oXAE/UydiiX+zJO0imTHfVXCuEWv
-         +n9Q==
-X-Gm-Message-State: ANoB5pm5D7UHZUr68l44E0z2R5Agwwffe1hcfuBuX9tvAqtGYoHD8nxi
-        rKTNAcY7GX2AqLUd0VFIJ7kB+QxVcdsw6Q==
-X-Google-Smtp-Source: AA0mqf5hM5QRLexdkJWfBJGQOWq+9NLMBKOQdFiXoCPXgDz7a9GX9W4YTSsz0wWYespqLsWwojaKMw==
-X-Received: by 2002:a05:6214:448e:b0:4bb:754f:e974 with SMTP id on14-20020a056214448e00b004bb754fe974mr30627189qvb.2.1669640895439;
-        Mon, 28 Nov 2022 05:08:15 -0800 (PST)
-Received: from mail-yb1-f170.google.com (mail-yb1-f170.google.com. [209.85.219.170])
-        by smtp.gmail.com with ESMTPSA id z27-20020ac87cbb000000b00359961365f1sm6846059qtv.68.2022.11.28.05.08.14
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 28 Nov 2022 05:08:14 -0800 (PST)
-Received: by mail-yb1-f170.google.com with SMTP id d128so13182147ybf.10;
-        Mon, 28 Nov 2022 05:08:14 -0800 (PST)
-X-Received: by 2002:a25:7a02:0:b0:6f7:952d:b145 with SMTP id
- v2-20020a257a02000000b006f7952db145mr2006716ybc.604.1669640893818; Mon, 28
- Nov 2022 05:08:13 -0800 (PST)
+        Mon, 28 Nov 2022 12:41:06 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B25FD27DEF;
+        Mon, 28 Nov 2022 09:39:28 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 4E79F612F4;
+        Mon, 28 Nov 2022 17:39:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 80AAAC433D6;
+        Mon, 28 Nov 2022 17:39:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1669657167;
+        bh=nGObBFgcTEWTQYpOqe4OisMkkiZCofNclTJTWSQkVeo=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=E0ATYhqdFRZT34xWTnE/WqPHk0+WUU/gckJbLpraOgtBvm0uJWTGdA0m41GleGh+C
+         WbsZ1QBtcYUqI0/6CTnxKcz100ZZ1spFQu7twdq6jcbhZWDh2YD4l8s4mKdGaJBwAr
+         dywnZ79MXX5+G0ebXq9v3n/vXa1bN5IosPPjk7/8TbzJPVNudi6MTgYG4MpigJnZPk
+         EL8b3CZMtN1aOjfgyU4bkOywq3ZikUa6FlhQZ7y561CYjFuhdAmAhqty4sjyaSQSrq
+         14Fd3MPchiNBxmeamRjOQZ1lxizUPouejDIttcC7Qq3Ne62dGeAmqzsr9MJfw+2wxf
+         eBRtgikdD+P8w==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Sasha Levin <sashal@kernel.org>, daniel@ffwll.ch,
+        deller@gmx.de, sam@ravnborg.org, tzimmermann@suse.de,
+        geert+renesas@glider.be, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 6.0 32/39] fbcon: Use kzalloc() in fbcon_prepare_logo()
+Date:   Mon, 28 Nov 2022 12:36:12 -0500
+Message-Id: <20221128173642.1441232-32-sashal@kernel.org>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20221128173642.1441232-1-sashal@kernel.org>
+References: <20221128173642.1441232-1-sashal@kernel.org>
 MIME-Version: 1.0
-References: <cover.1669406380.git.geert@linux-m68k.org> <9ef3ed30a45a367db0231ea2e98f6f37ba860b4c.1669406382.git.geert@linux-m68k.org>
- <488b261a-843e-de94-bace-16364e6f9d92@suse.de>
-In-Reply-To: <488b261a-843e-de94-bace-16364e6f9d92@suse.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 28 Nov 2022 14:08:02 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdWcY1i-oFKu11Lk-urFi=E3TXinWKBL98hMhkVPzQPfZQ@mail.gmail.com>
-Message-ID: <CAMuHMdWcY1i-oFKu11Lk-urFi=E3TXinWKBL98hMhkVPzQPfZQ@mail.gmail.com>
-Subject: Re: [PATCH/RFC 3/3] drm: atari: Add a DRM driver for Atari graphics hardware
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Michael Schmitz <schmitzmic@gmail.com>,
-        linux-m68k@vger.kernel.org, Helge Deller <deller@gmx.de>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 
-On Sat, Nov 26, 2022 at 3:51 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> that's an interesting driver. I left a few comments below.
+[ Upstream commit a6a00d7e8ffd78d1cdb7a43f1278f081038c638f ]
 
-Thanks for your comments!
+A kernel built with syzbot's config file reported that
 
-> Am 25.11.22 um 21:31 schrieb Geert Uytterhoeven:
-> > Supported formats:
-> >    - C[1248],
-> >    - RG16 (both standard DRM (little-endian) and native (big-endian)),
-> >    - XR24.
-> >
-> > RG16 and XR24 are only supported with the underlying RGB565 hardware
-> > mode on Falcon, and are subject to hardware restrictions (limited to
-> > e.g. "qvga" and "hvga" modes).
-> >
-> > All formats use a shadow buffer (TODO: BE RG16 buffers from ST-RAM).
-> > Initial mode setting works, later mode changes sometimes fail.
+  scr_memcpyw(q, save, array3_size(logo_lines, new_cols, 2))
 
-> > --- a/drivers/gpu/drm/tiny/Kconfig
-> > +++ b/drivers/gpu/drm/tiny/Kconfig
-> > @@ -10,6 +10,14 @@ config DRM_ARCPGU
-> >
-> >         If M is selected the module will be called arcpgu.
-> >
-> > +config DRM_ATARI
-> > +     tristate "DRM support for Atari native chipset"
-> > +     depends on DRM && ATARI
-> > +     select DRM_KMS_HELPER
-> > +     select DRM_GEM_SHMEM_HELPER
->
-> Alphabetical sorting of the select statements.
+causes uninitialized "save" to be copied.
 
-OK
+  ----------
+  [drm] Initialized vgem 1.0.0 20120112 for vgem on minor 0
+  [drm] Initialized vkms 1.0.0 20180514 for vkms on minor 1
+  Console: switching to colour frame buffer device 128x48
+  =====================================================
+  BUG: KMSAN: uninit-value in do_update_region+0x4b8/0xba0
+   do_update_region+0x4b8/0xba0
+   update_region+0x40d/0x840
+   fbcon_switch+0x3364/0x35e0
+   redraw_screen+0xae3/0x18a0
+   do_bind_con_driver+0x1cb3/0x1df0
+   do_take_over_console+0x11cb/0x13f0
+   fbcon_fb_registered+0xacc/0xfd0
+   register_framebuffer+0x1179/0x1320
+   __drm_fb_helper_initial_config_and_unlock+0x23ad/0x2b40
+   drm_fbdev_client_hotplug+0xbea/0xda0
+   drm_fbdev_generic_setup+0x65e/0x9d0
+   vkms_init+0x9f3/0xc76
+   (...snipped...)
 
-(I blame the chain of DRM_KMS_CMA_HELPER -> DRM_GEM_CMA_HELPER ->
- DRM_GEM_DMA_HELPER renames ;-)
+  Uninit was stored to memory at:
+   fbcon_prepare_logo+0x143b/0x1940
+   fbcon_init+0x2c1b/0x31c0
+   visual_init+0x3e7/0x820
+   do_bind_con_driver+0x14a4/0x1df0
+   do_take_over_console+0x11cb/0x13f0
+   fbcon_fb_registered+0xacc/0xfd0
+   register_framebuffer+0x1179/0x1320
+   __drm_fb_helper_initial_config_and_unlock+0x23ad/0x2b40
+   drm_fbdev_client_hotplug+0xbea/0xda0
+   drm_fbdev_generic_setup+0x65e/0x9d0
+   vkms_init+0x9f3/0xc76
+   (...snipped...)
 
-> > --- a/drivers/video/fbdev/atafb.c
-> > +++ b/drivers/gpu/drm/tiny/atari_drm.c
+  Uninit was created at:
+   __kmem_cache_alloc_node+0xb69/0x1020
+   __kmalloc+0x379/0x680
+   fbcon_prepare_logo+0x704/0x1940
+   fbcon_init+0x2c1b/0x31c0
+   visual_init+0x3e7/0x820
+   do_bind_con_driver+0x14a4/0x1df0
+   do_take_over_console+0x11cb/0x13f0
+   fbcon_fb_registered+0xacc/0xfd0
+   register_framebuffer+0x1179/0x1320
+   __drm_fb_helper_initial_config_and_unlock+0x23ad/0x2b40
+   drm_fbdev_client_hotplug+0xbea/0xda0
+   drm_fbdev_generic_setup+0x65e/0x9d0
+   vkms_init+0x9f3/0xc76
+   (...snipped...)
 
-> > @@ -2288,11 +2279,13 @@ static struct fb_hwswitch tt_switch = {
-> >   static struct fb_hwswitch falcon_switch = {
-> >       .detect         = falcon_detect,
-> >       .encode_fix     = falcon_encode_fix,
-> > +     .config_init    = falcon_config_init,
-> >       .decode_var     = falcon_decode_var,
-> >       .encode_var     = falcon_encode_var,
-> >       .get_par        = falcon_get_par,
-> >       .set_par        = falcon_set_par,
-> >       .set_screen_base = set_screen_base,
-> > +     .set_col_reg    = falcon_set_col_reg,
-> >       .blank          = falcon_blank,
-> >       .pan_display    = falcon_pan_display,
-> >   };
-> > @@ -2302,11 +2295,13 @@ static struct fb_hwswitch falcon_switch = {
-> >   static struct fb_hwswitch st_switch = {
-> >       .detect         = stste_detect,
-> >       .encode_fix     = stste_encode_fix,
-> > +     .config_init    = stste_config_init,
-> >       .decode_var     = stste_decode_var,
-> >       .encode_var     = stste_encode_var,
-> >       .get_par        = stste_get_par,
-> >       .set_par        = stste_set_par,
-> >       .set_screen_base = stste_set_screen_base,
-> > +     .set_col_reg    = stste_set_col_reg,
-> >       .pan_display    = pan_display
-> >   };
-> >   #endif
-> > @@ -2315,10 +2310,12 @@ static struct fb_hwswitch st_switch = {
-> >   static struct fb_hwswitch ext_switch = {
-> >       .detect         = ext_detect,
-> >       .encode_fix     = ext_encode_fix,
-> > +     .config_init    = ext_config_init,
-> >       .decode_var     = ext_decode_var,
-> >       .encode_var     = ext_encode_var,
-> >       .get_par        = ext_get_par,
-> >       .set_par        = ext_set_par,
-> > +     .set_col_reg    = ext_set_col_reg,
-> >   };
-> >   #endif
->
-> This design is problematic. It recreates fbdev interfaces within DRM and
-> makes it very hard to convert the driver to good DRM code. I suggest to
-> branch at the outer-most point for each supported model. So each model
-> effectively receives it's own mode-config pipeline. Common code can
-> still be shared.
->
-> For a good example, I'd refer to the latest mgag200 driver, which
-> implements this pattern for the variety of revisions of its hardware.
+  CPU: 2 PID: 1 Comm: swapper/0 Not tainted 6.1.0-rc4-00356-g8f2975c2bb4c #924
+  Hardware name: innotek GmbH VirtualBox/VirtualBox, BIOS VirtualBox 12/01/2006
+  ----------
 
-I do not intend to keep this internal API.
-It should be reworked by removing all fbdev'isms.
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Link: https://patchwork.freedesktop.org/patch/msgid/cad03d25-0ea0-32c4-8173-fd1895314bce@I-love.SAKURA.ne.jp
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/core/fbcon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> > +// FIXME helpers from
-> > +// "[PATCH v2 5/15] drm/fbconv: Add DRM <-> fbdev pixel-format conversion"
-> > +// by Thomas Zimmermann <tzimmermann@suse.de>
->
-> All these FIXMEs will need to be resolved.
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 098b62f7b701..c0143d38df83 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -577,7 +577,7 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
+ 		if (scr_readw(r) != vc->vc_video_erase_char)
+ 			break;
+ 	if (r != q && new_rows >= rows + logo_lines) {
+-		save = kmalloc(array3_size(logo_lines, new_cols, 2),
++		save = kzalloc(array3_size(logo_lines, new_cols, 2),
+ 			       GFP_KERNEL);
+ 		if (save) {
+ 			int i = min(cols, new_cols);
+-- 
+2.35.1
 
-Definitely.
-
-> > +static void atari_drm_pipe_update(struct drm_simple_display_pipe *pipe,
-> > +                               struct drm_plane_state *old_plane_state)
-> > +{
-> > +     struct atari_drm_device *atari_drm = atari_drm_from_pipe(pipe);
-> > +     struct drm_plane_state *plane_state = pipe->plane.state;
-> > +     struct drm_shadow_plane_state *shadow_plane_state =
-> > +             to_drm_shadow_plane_state(plane_state);
-> > +     struct drm_framebuffer *fb = plane_state->fb;
-> > +     struct drm_crtc *crtc = &pipe->crtc;
-
-> > +     // FIXME removing the block below triggers WARN_ON(new_crtc_state->event) in drivers/gpu/drm/drm_atomic_helper.c:2475 drm_atomic_helper_commit_hw_done
-> > +     // FIXME I still see that warning when running modetest
-
-BTW, do you know why I see that warning?
-It happens less when sprinkling debug prints all over the place.
-
-> > +     if (crtc->state->event) {
-> > +             spin_lock_irq(&crtc->dev->event_lock);
-> > +             drm_crtc_send_vblank_event(crtc, crtc->state->event);
-> > +             crtc->state->event = NULL;
-> > +             spin_unlock_irq(&crtc->dev->event_lock);
-> > +     }
-> > +}
-
-> > +static struct drm_framebuffer*
-> > +atari_drm_fb_create(struct drm_device *dev, struct drm_file *file_priv,
-> > +                 const struct drm_mode_fb_cmd2 *mode_cmd)
-> > +{
-> > +     struct drm_framebuffer *fb;
-> > +
-> > +     switch (mode_cmd->pixel_format) {
-> > +     case DRM_FORMAT_C1:
-> > +     case DRM_FORMAT_C2:
-> > +     case DRM_FORMAT_C4:
-> > +             break;
-> > +
-> > +     case DRM_FORMAT_C8:
-> > +             // FIXME TT & Falcon only
-> > +             break;
-> > +
-> > +     case DRM_FORMAT_RGB565:
-> > +     case DRM_FORMAT_RGB565 | DRM_FORMAT_BIG_ENDIAN:
-> > +             // FIXME Falcon only
-> > +             break;
-> > +
-> > +     case DRM_FORMAT_XRGB8888:
-> > +             // FIXME
-> > +             break;
-> > +
-> > +     default:
-> > +             return ERR_PTR(-EINVAL);
-> > +     }
->
-> The format checks don't belong here. IIRC the format will be validated
-> when you try to set the framebuffer for a plane during the atomic commit
-
-OK
-
-> > +
-> > +     if (atari_drm_check_size(mode_cmd->width, mode_cmd->height, NULL) < 0)
-> > +             return ERR_PTR(-EINVAL);
->
-> Same here. The size checks are performed when the framebuffer is used.
-
-FTR, this was based on cirrus_fb_create()...
-
-> > +
-> > +     // FIXME allocate C1 and RGB565 in ST-RAM?
-> > +     fb = drm_gem_fb_create_with_dirty(dev, file_priv, mode_cmd);
-
-BTW, how do I allocate a buffer from graphics memory?
-Any example to point me to?
-
-> > +     drm_WARN_ON_ONCE(dev, fb->pitches[0] > fb->width *
-> > +                           drm_format_info_bpp(fb->format, 0) / 8);
-> > +     return fb;
-> > +}
-> > +
-> > +static const struct drm_mode_config_funcs atari_drm_mode_config_funcs = {
-> > +     .fb_create = atari_drm_fb_create,
-> > +     .atomic_check = drm_atomic_helper_check,        // FIXME
-> > +     .atomic_commit = drm_atomic_helper_commit,      // FIXME
->
-> Why FIXMEs? Thes elines appear correct.
-
-Because I had the feeling I should pass my own functions...
-
->
-> > +};
-
-> > +static int __init atari_drm_probe(struct platform_device *pdev)
-> > +{
-> > +     struct atari_drm_device *atari_drm;
-> > +     int pad, detected_mode, error;
-> > +     struct drm_device *dev;
-> > +     unsigned long mem_req;
-> > +     char *option = NULL;
-> > +     int ret;
-> > +
-> > +     if (fb_get_options("atafb", &option))
-> > +             return -ENODEV;
->
-> That function is not available here.
-
-It is.
-
-But now I see drm_connector_get_cmdline_mode() already calls
-fb_get_options(), and handles this when calling drm_connector_init(),
-albeit a bit late (it should bail out before changing any hardware
-state)?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

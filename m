@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F080C4332F
-	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Nov 2022 17:41:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E33FEC4332F
+	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Nov 2022 17:46:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233274AbiK1Rlh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 28 Nov 2022 12:41:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52172 "EHLO
+        id S233225AbiK1Rqe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 28 Nov 2022 12:46:34 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34524 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233270AbiK1RlG (ORCPT
+        with ESMTP id S233216AbiK1RqE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 28 Nov 2022 12:41:06 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B25FD27DEF;
-        Mon, 28 Nov 2022 09:39:28 -0800 (PST)
+        Mon, 28 Nov 2022 12:46:04 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6A64D2B26E;
+        Mon, 28 Nov 2022 09:41:24 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 4E79F612F4;
-        Mon, 28 Nov 2022 17:39:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 80AAAC433D6;
-        Mon, 28 Nov 2022 17:39:26 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 62765B80E96;
+        Mon, 28 Nov 2022 17:41:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7F01C433C1;
+        Mon, 28 Nov 2022 17:41:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1669657167;
-        bh=nGObBFgcTEWTQYpOqe4OisMkkiZCofNclTJTWSQkVeo=;
+        s=k20201202; t=1669657274;
+        bh=5S7Z5K0ymQBvmif+hmW/nos25uNTlzbP+ySOmHt7C4M=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=E0ATYhqdFRZT34xWTnE/WqPHk0+WUU/gckJbLpraOgtBvm0uJWTGdA0m41GleGh+C
-         WbsZ1QBtcYUqI0/6CTnxKcz100ZZ1spFQu7twdq6jcbhZWDh2YD4l8s4mKdGaJBwAr
-         dywnZ79MXX5+G0ebXq9v3n/vXa1bN5IosPPjk7/8TbzJPVNudi6MTgYG4MpigJnZPk
-         EL8b3CZMtN1aOjfgyU4bkOywq3ZikUa6FlhQZ7y561CYjFuhdAmAhqty4sjyaSQSrq
-         14Fd3MPchiNBxmeamRjOQZ1lxizUPouejDIttcC7Qq3Ne62dGeAmqzsr9MJfw+2wxf
-         eBRtgikdD+P8w==
+        b=KU4OBCR/EOnuvqCCmjbD6QUbnnZnoS1QiBhR8yOTCP4GPbJk3ooA4jdyy40vtMmQQ
+         PGEewj2DKLWOEwCUNEhFm6oREqpPbCbW0NT4GxeSW8t/DGjBHYsdPVUpiTDx7VgaJO
+         BDs9Wff3T1Dte/Hx/niVOCHhTRiNXOy53X84uVnzn35sBn8mUvqIawVhtkC398XSPm
+         TGtRbns8jWApHVx1G50Kq9HMW3lxIrJZnfdlO/A2J8AdK1KYDfbPqm6m2vLpWyqMg7
+         wiywX91wTdRT8SCSKidBdZT4+YIWP+71mFQjRzEiPcBN4ot0UH6aktonp61zz0GaHw
+         eK/uvwM/a75Xg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
@@ -40,12 +40,12 @@ Cc:     Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
         deller@gmx.de, sam@ravnborg.org, tzimmermann@suse.de,
         geert+renesas@glider.be, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 6.0 32/39] fbcon: Use kzalloc() in fbcon_prepare_logo()
-Date:   Mon, 28 Nov 2022 12:36:12 -0500
-Message-Id: <20221128173642.1441232-32-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 21/24] fbcon: Use kzalloc() in fbcon_prepare_logo()
+Date:   Mon, 28 Nov 2022 12:40:21 -0500
+Message-Id: <20221128174027.1441921-21-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20221128173642.1441232-1-sashal@kernel.org>
-References: <20221128173642.1441232-1-sashal@kernel.org>
+In-Reply-To: <20221128174027.1441921-1-sashal@kernel.org>
+References: <20221128174027.1441921-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -127,10 +127,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 098b62f7b701..c0143d38df83 100644
+index e035a63bbe5b..1f37904b0405 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -577,7 +577,7 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
+@@ -601,7 +601,7 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
  		if (scr_readw(r) != vc->vc_video_erase_char)
  			break;
  	if (r != q && new_rows >= rows + logo_lines) {
@@ -138,7 +138,7 @@ index 098b62f7b701..c0143d38df83 100644
 +		save = kzalloc(array3_size(logo_lines, new_cols, 2),
  			       GFP_KERNEL);
  		if (save) {
- 			int i = min(cols, new_cols);
+ 			int i = cols < new_cols ? cols : new_cols;
 -- 
 2.35.1
 

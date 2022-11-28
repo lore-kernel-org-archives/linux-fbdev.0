@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E33FEC4332F
-	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Nov 2022 17:46:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57861C636F9
+	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Nov 2022 17:48:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233225AbiK1Rqe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 28 Nov 2022 12:46:34 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34524 "EHLO
+        id S233689AbiK1RsH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 28 Nov 2022 12:48:07 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33112 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233216AbiK1RqE (ORCPT
+        with ESMTP id S233747AbiK1RrM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 28 Nov 2022 12:46:04 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6A64D2B26E;
-        Mon, 28 Nov 2022 09:41:24 -0800 (PST)
+        Mon, 28 Nov 2022 12:47:12 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 081932B251;
+        Mon, 28 Nov 2022 09:41:57 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 62765B80E96;
-        Mon, 28 Nov 2022 17:41:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7F01C433C1;
-        Mon, 28 Nov 2022 17:41:12 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id AC6BCB80E96;
+        Mon, 28 Nov 2022 17:41:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 35A8DC433C1;
+        Mon, 28 Nov 2022 17:41:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1669657274;
-        bh=5S7Z5K0ymQBvmif+hmW/nos25uNTlzbP+ySOmHt7C4M=;
+        s=k20201202; t=1669657314;
+        bh=3XCvpEUAde9L5rOVYJiM7GSuh5V/A6GXuarnYLuqMH0=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=KU4OBCR/EOnuvqCCmjbD6QUbnnZnoS1QiBhR8yOTCP4GPbJk3ooA4jdyy40vtMmQQ
-         PGEewj2DKLWOEwCUNEhFm6oREqpPbCbW0NT4GxeSW8t/DGjBHYsdPVUpiTDx7VgaJO
-         BDs9Wff3T1Dte/Hx/niVOCHhTRiNXOy53X84uVnzn35sBn8mUvqIawVhtkC398XSPm
-         TGtRbns8jWApHVx1G50Kq9HMW3lxIrJZnfdlO/A2J8AdK1KYDfbPqm6m2vLpWyqMg7
-         wiywX91wTdRT8SCSKidBdZT4+YIWP+71mFQjRzEiPcBN4ot0UH6aktonp61zz0GaHw
-         eK/uvwM/a75Xg==
+        b=i4k2UIrdRHo47FJJZRcvXMFrbguXYA2QUjyI1r0LkmEU3+hRZNvMM3C1yLaGifHuv
+         +aWLBpoYM+FmreaSWGa9zGUY9hNQhJHBe+MmE1jRiBgsL0Ul8uHC+Z9uDUXFF+y/W8
+         KPYugzAMwDN7ZaD0AILur9WD+Rq/9UJy2B/nkzrEeBywqtpNAankdN9KOiqutUCVE1
+         7Zhg0Ra8ZvNGIfPXua8vZ/OdEuYUEPNUMHO5UbXSNf8K1hzFmmeIt93dJxHd3jGgnY
+         VT8NMXl6X7yCVVxA8wESN+gHSD/tm+MXtql1krtD4hYYSuzuRWJIAkJcqGdAOcj78M
+         aG404APd6G0Yw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
@@ -40,12 +40,12 @@ Cc:     Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
         deller@gmx.de, sam@ravnborg.org, tzimmermann@suse.de,
         geert+renesas@glider.be, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 5.15 21/24] fbcon: Use kzalloc() in fbcon_prepare_logo()
-Date:   Mon, 28 Nov 2022 12:40:21 -0500
-Message-Id: <20221128174027.1441921-21-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 16/19] fbcon: Use kzalloc() in fbcon_prepare_logo()
+Date:   Mon, 28 Nov 2022 12:41:16 -0500
+Message-Id: <20221128174120.1442235-16-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20221128174027.1441921-1-sashal@kernel.org>
-References: <20221128174027.1441921-1-sashal@kernel.org>
+In-Reply-To: <20221128174120.1442235-1-sashal@kernel.org>
+References: <20221128174120.1442235-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -127,10 +127,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index e035a63bbe5b..1f37904b0405 100644
+index 2618d3beef64..27828435dd4f 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -601,7 +601,7 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
+@@ -609,7 +609,7 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
  		if (scr_readw(r) != vc->vc_video_erase_char)
  			break;
  	if (r != q && new_rows >= rows + logo_lines) {

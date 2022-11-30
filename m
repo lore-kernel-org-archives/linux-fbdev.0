@@ -2,57 +2,102 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3909BC4332F
-	for <linux-fbdev@archiver.kernel.org>; Tue, 29 Nov 2022 08:47:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91DB9C4321E
+	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Nov 2022 21:55:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229733AbiK2Irp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 29 Nov 2022 03:47:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56988 "EHLO
+        id S229618AbiK3Vz6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 30 Nov 2022 16:55:58 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47864 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229603AbiK2Iro (ORCPT
+        with ESMTP id S229448AbiK3Vz4 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 29 Nov 2022 03:47:44 -0500
-X-Greylist: delayed 387 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 29 Nov 2022 00:47:41 PST
-Received: from mail.lucidfour.pl (mail.lucidfour.pl [217.61.97.194])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 56D222DFB
-        for <linux-fbdev@vger.kernel.org>; Tue, 29 Nov 2022 00:47:40 -0800 (PST)
-Received: by mail.lucidfour.pl (Postfix, from userid 1001)
-        id 773B18195D; Tue, 29 Nov 2022 08:41:19 +0000 (GMT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=lucidfour.pl; s=mail;
-        t=1669711279; bh=CSKXLMgcdpWkXuTgJn5+jsCVobtU9JEF4vCnS5z6McM=;
-        h=Date:From:To:Subject:From;
-        b=ajB0oNa1cEMY/CZftpXTUpOY8gMNiyVHa4lMoVUSFm2XrNEuOUrmJTuq4hYHB/8+b
-         pPugf3I5uT37cmgvp3GF1CykMMn+yMccNEySesYXzuMIgHW0NNz+xGmr5yVy99qCbJ
-         xIR70L5rJijjeE0c54fGbbvac8P05p5sdrypq/0JLlNyxRhi8UufNuJWxETenfOdQY
-         ZK9aBYBAFR03IZPnUIckbxim9zQdRt345Wrw3oFBFoGYzAijZf1tq9/YwsemKoRPLt
-         5wu5J1zELDkjQIkIDUVD64MzcC4/60YtjPVT44iOlU39by1zjkQaEgvaTmSHB15f4Y
-         eQFDjkwQxJIXw==
-Received: by mail.lucidfour.pl for <linux-fbdev@vger.kernel.org>; Tue, 29 Nov 2022 08:40:05 GMT
-Message-ID: <20221129074501-0.1.e.1exz.0.rs7y69miz2@lucidfour.pl>
-Date:   Tue, 29 Nov 2022 08:40:05 GMT
-From:   "Wiktor Nurek" <wiktor.nurek@lucidfour.pl>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: =?UTF-8?Q?Nap=C5=82yw_Klient=C3=B3w_ze_strony?=
-X-Mailer: mail.lucidfour.pl
+        Wed, 30 Nov 2022 16:55:56 -0500
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 797407615A;
+        Wed, 30 Nov 2022 13:55:54 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
+        MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-ID:
+        Content-Description:In-Reply-To:References;
+        bh=IYRKxi+onLBFbh4zY0bg9jQRkT3TX2p808M3H7FEIdk=; b=goeggzxiVtspFRe1gCJYV2AjAY
+        3Ien6lK0K0BV9wiAGtv//wzGWz+O8fXUKPwpErcqh4Hc6va6uoVte449UkPeVtdFBUyvgfz1CBA3h
+        WupqZvb7OgIQcJ3wjHdpYFVenXpiwYuYrQ+l9BRsQqbZjWQRJaptQaYsgH3WqLWeiWEJnPLEOBcE2
+        cJfLGab+Am3K/zwPuvgF/nkLtN1lnsFmdyi5fSWpGDDKkM3523z4ASMf/QcQ+tuiXzAprfodEI+Qf
+        Ix0WXRT0AG4kIZnHJnSzyVCRWbLkmAZlngq3lZ4WCsNSzwoV9vtu2K8SizYZkDWZe/Wb0iRRc0qh2
+        qVUd31gA==;
+Received: from [2601:1c2:d80:3110::a2e7] (helo=casper.infradead.org)
+        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1p0V3d-00FKCY-3n; Wed, 30 Nov 2022 21:55:57 +0000
+From:   Randy Dunlap <rdunlap@infradead.org>
+To:     linux-kernel@vger.kernel.org
+Cc:     Randy Dunlap <rdunlap@infradead.org>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        Richard Weinberger <richard@nod.at>,
+        linux-um@lists.infradead.org, Daniel Vetter <daniel@ffwll.ch>,
+        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        Andres Salomon <dilinger@queued.net>,
+        linux-geode@lists.infradead.org
+Subject: [PATCH 1/2] fbdev: geode: don't build on UML
+Date:   Wed, 30 Nov 2022 13:55:44 -0800
+Message-Id: <20221130215544.28497-1-rdunlap@infradead.org>
+X-Mailer: git-send-email 2.38.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,
+The geode fbdev driver uses struct cpuinfo fields that are not present
+on ARCH=um, so don't allow this driver to be built on UML.
 
-chcia=C5=82bym poinformowa=C4=87 Pa=C5=84stwa o mo=C5=BCliwo=C5=9Bci pozy=
-skania nowych zlece=C5=84 ze strony www.
+Prevents these build errors:
 
-Widzimy zainteresowanie potencjalnych Klient=C3=B3w Pa=C5=84stwa firm=C4=85=
-, dlatego ch=C4=99tnie pomo=C5=BCemy Pa=C5=84stwu dotrze=C4=87 z ofert=C4=
-=85 do wi=C4=99kszego grona odbiorc=C3=B3w poprzez efektywne metody pozyc=
-jonowania strony w Google.
+In file included from ../arch/x86/include/asm/olpc.h:7:0,
+                 from ../drivers/mfd/cs5535-mfd.c:17:
+../arch/x86/include/asm/geode.h: In function ‘is_geode_gx’:
+../arch/x86/include/asm/geode.h:16:24: error: ‘struct cpuinfo_um’ has no member named ‘x86_vendor’
+  return ((boot_cpu_data.x86_vendor == X86_VENDOR_NSC) &&
+../arch/x86/include/asm/geode.h:16:39: error: ‘X86_VENDOR_NSC’ undeclared (first use in this function); did you mean ‘X86_VENDOR_ANY’?
+  return ((boot_cpu_data.x86_vendor == X86_VENDOR_NSC) &&
+../arch/x86/include/asm/geode.h:17:17: error: ‘struct cpuinfo_um’ has no member named ‘x86’
+   (boot_cpu_data.x86 == 5) &&
+../arch/x86/include/asm/geode.h:18:17: error: ‘struct cpuinfo_um’ has no member named ‘x86_model’
+   (boot_cpu_data.x86_model == 5));
+../arch/x86/include/asm/geode.h: In function ‘is_geode_lx’:
+../arch/x86/include/asm/geode.h:23:24: error: ‘struct cpuinfo_um’ has no member named ‘x86_vendor’
+  return ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) &&
+../arch/x86/include/asm/geode.h:23:39: error: ‘X86_VENDOR_AMD’ undeclared (first use in this function); did you mean ‘X86_VENDOR_ANY’?
+  return ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) &&
+../arch/x86/include/asm/geode.h:24:17: error: ‘struct cpuinfo_um’ has no member named ‘x86’
+   (boot_cpu_data.x86 == 5) &&
+../arch/x86/include/asm/geode.h:25:17: error: ‘struct cpuinfo_um’ has no member named ‘x86_model’
+   (boot_cpu_data.x86_model == 10));
 
-Czy m=C3=B3g=C5=82bym liczy=C4=87 na kontakt zwrotny?
+Fixes: 68f5d3f3b654 ("um: add PCI over virtio emulation driver")
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Cc: Richard Weinberger <richard@nod.at>
+Cc: linux-um@lists.infradead.org
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: Andres Salomon <dilinger@queued.net>
+Cc: linux-geode@lists.infradead.org
+---
+ drivers/video/fbdev/geode/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
-
-Pozdrawiam serdecznie,
-Wiktor Nurek
+diff -- a/drivers/video/fbdev/geode/Kconfig b/drivers/video/fbdev/geode/Kconfig
+--- a/drivers/video/fbdev/geode/Kconfig
++++ b/drivers/video/fbdev/geode/Kconfig
+@@ -5,6 +5,7 @@
+ config FB_GEODE
+ 	bool "AMD Geode family framebuffer support"
+ 	depends on FB && PCI && (X86_32 || (X86 && COMPILE_TEST))
++	depends on !UML
+ 	help
+ 	  Say 'Y' here to allow you to select framebuffer drivers for
+ 	  the AMD Geode family of processors.

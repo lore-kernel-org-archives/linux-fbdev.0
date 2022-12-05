@@ -2,95 +2,79 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 845C6C4332F
-	for <linux-fbdev@archiver.kernel.org>; Mon,  5 Dec 2022 08:54:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70A88C4708C
+	for <linux-fbdev@archiver.kernel.org>; Mon,  5 Dec 2022 22:12:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232374AbiLEIy2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 5 Dec 2022 03:54:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45502 "EHLO
+        id S231639AbiLEWL7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 5 Dec 2022 17:11:59 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43106 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231540AbiLEIxv (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 5 Dec 2022 03:53:51 -0500
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7095F7678;
-        Mon,  5 Dec 2022 00:52:57 -0800 (PST)
-Received: from dggpemm500013.china.huawei.com (unknown [172.30.72.57])
-        by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4NQck06QY8z15N6H;
-        Mon,  5 Dec 2022 16:52:08 +0800 (CST)
-Received: from ubuntu1804.huawei.com (10.67.175.36) by
- dggpemm500013.china.huawei.com (7.185.36.172) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Mon, 5 Dec 2022 16:52:55 +0800
-From:   Chen Zhongjin <chenzhongjin@huawei.com>
-To:     <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
-        <stable@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-CC:     <chenzhongjin@huawei.com>, <daniel@ffwll.ch>, <deller@gmx.de>,
-        <sam@ravnborg.org>, <tzimmermann@suse.de>,
-        <geert+renesas@glider.be>,
-        <syzbot+25bdb7b1703639abd498@syzkaller.appspotmail.com>
-Subject: [PATCH] fbcon: Fix memleak when fbcon_set_font() fails
-Date:   Mon, 5 Dec 2022 16:49:59 +0800
-Message-ID: <20221205084959.147904-1-chenzhongjin@huawei.com>
-X-Mailer: git-send-email 2.17.1
+        with ESMTP id S233686AbiLEWLz (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 5 Dec 2022 17:11:55 -0500
+Received: from www262.sakura.ne.jp (www262.sakura.ne.jp [202.181.97.72])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F0E761A216
+        for <linux-fbdev@vger.kernel.org>; Mon,  5 Dec 2022 14:11:52 -0800 (PST)
+Received: from fsav411.sakura.ne.jp (fsav411.sakura.ne.jp [133.242.250.110])
+        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTP id 2B5MBo19027801;
+        Tue, 6 Dec 2022 07:11:50 +0900 (JST)
+        (envelope-from penguin-kernel@I-love.SAKURA.ne.jp)
+Received: from www262.sakura.ne.jp (202.181.97.72)
+ by fsav411.sakura.ne.jp (F-Secure/fsigk_smtp/550/fsav411.sakura.ne.jp);
+ Tue, 06 Dec 2022 07:11:50 +0900 (JST)
+X-Virus-Status: clean(F-Secure/fsigk_smtp/550/fsav411.sakura.ne.jp)
+Received: from [192.168.1.9] (M106072142033.v4.enabler.ne.jp [106.72.142.33])
+        (authenticated bits=0)
+        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTPSA id 2B5MAZtx027513
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NO);
+        Tue, 6 Dec 2022 07:10:35 +0900 (JST)
+        (envelope-from penguin-kernel@I-love.SAKURA.ne.jp)
+Message-ID: <d37c0147-3605-a876-9b85-16bcbc05eaa6@I-love.SAKURA.ne.jp>
+Date:   Tue, 6 Dec 2022 07:10:31 +0900
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.67.175.36]
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- dggpemm500013.china.huawei.com (7.185.36.172)
-X-CFilter-Loop: Reflected
+User-Agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.5.1
+Subject: [PATCH] fbdev: fbcon: release buffer when fbcon_do_set_font() failed
+Content-Language: en-US
+To:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+        Shigeru Yoshida <syoshida@redhat.com>
+References: <000000000000e2efc305ef0d341f@google.com>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+From:   Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+In-Reply-To: <000000000000e2efc305ef0d341f@google.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-syzkaller reported a memleak:
-https://syzkaller.appspot.com/bug?id=7cc8bce62e201c60e36ef0133dab7f6b8afbc626
+syzbot is reporting memory leak at fbcon_do_set_font() [1], for
+commit a5a923038d70 ("fbdev: fbcon: Properly revert changes when
+vc_resize() failed") missed that the buffer might be newly allocated
+by fbcon_set_font().
 
-BUG: memory leak
-unreferenced object 0xffff888111648000 (size 18448):
-  backtrace:
-    [<ffffffff8250c359>] kmalloc
-    [<ffffffff8250c359>] fbcon_set_font+0x1a9/0x470
-    [<ffffffff8262cd59>] con_font_set
-    [<ffffffff8262cd59>] con_font_op+0x3a9/0x600
-    ...
-
-It's because when fbcon_do_set_font() fails in fbcon_set_font(), it
-return error directly and doesn't free allocated memory 'new_data'.
-
-Reported-by: syzbot+25bdb7b1703639abd498@syzkaller.appspotmail.com
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-Cc: stable@vger.kernel.org
-Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
+Link: https://syzkaller.appspot.com/bug?extid=25bdb7b1703639abd498 [1]
+Reported-by: syzbot <syzbot+25bdb7b1703639abd498@syzkaller.appspotmail.com>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Tested-by: syzbot <syzbot+25bdb7b1703639abd498@syzkaller.appspotmail.com>
+Fixes: a5a923038d70 ("fbdev: fbcon: Properly revert changes when vc_resize() failed")
 ---
- drivers/video/fbdev/core/fbcon.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/core/fbcon.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index c0143d38df83..edb01d200b5b 100644
+index 098b62f7b701..8363f3b2b452 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2480,7 +2480,7 @@ static int fbcon_set_font(struct vc_data *vc, struct console_font *font,
- 	int w = font->width;
- 	int h = font->height;
- 	int size;
--	int i, csum;
-+	int i, csum, ret;
- 	u8 *new_data, *data = font->data;
- 	int pitch = PITCH(font->width);
+@@ -2450,7 +2450,8 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
  
-@@ -2539,7 +2539,11 @@ static int fbcon_set_font(struct vc_data *vc, struct console_font *font,
- 			break;
- 		}
+ 	if (userfont) {
+ 		p->userfont = old_userfont;
+-		REFCOUNT(data)--;
++		if (--REFCOUNT(data) == 0)
++			kfree(data - FONT_EXTRA_WORDS * sizeof(int));
  	}
--	return fbcon_do_set_font(vc, font->width, font->height, charcount, new_data, 1);
-+
-+	ret = fbcon_do_set_font(vc, font->width, font->height, charcount, new_data, 1);
-+	if (ret && i > last_fb_vc)
-+		kfree(new_data - FONT_EXTRA_WORDS * sizeof(int));
-+	return ret;
- }
  
- static int fbcon_set_def_font(struct vc_data *vc, struct console_font *font, char *name)
+ 	vc->vc_font.width = old_width;
 -- 
-2.17.1
+2.34.1
 

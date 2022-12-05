@@ -2,144 +2,134 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2A33C47088
-	for <linux-fbdev@archiver.kernel.org>; Thu,  1 Dec 2022 07:59:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84C60C4321E
+	for <linux-fbdev@archiver.kernel.org>; Mon,  5 Dec 2022 04:34:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229730AbiLAH70 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 1 Dec 2022 02:59:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37272 "EHLO
+        id S231192AbiLEEet (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 4 Dec 2022 23:34:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46676 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229722AbiLAH6x (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 1 Dec 2022 02:58:53 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4CE9F3AC21;
-        Wed, 30 Nov 2022 23:58:02 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1669881435; bh=1TG7t7iGxI5iBeZfr7K40KtO8/tCvEl9OlJVEZXqzdw=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=IXXS/ihDLD5r8o14UFrcAyCArHgi7HmLAv0BnsoiEfOZGjm0P1u5N1fUE2XmKrbTa
-         Q2WMF07+M3Cu6d5qGgtxj7Eh8cqCrg4Kf1x+xLQweirrBP6N5gL0cckat36ref6v+A
-         dH0vLbZ0xBUoMlaBzfd/u+yZi0ZtH9qLljT3UiBT9ww17bxSB5q8dE3DUD4IIjGWA2
-         MLevw/Z8GKp9pblHcEr3SnlT7PZPZZaEDNDGxXioAiaPCaTDiWljB/UR4dnlt4AKZC
-         24GzfmzwAzqSNoIuAe/0WAJ4599Z5CntJSSZkL4N5JvIzd/qRdRiOCMxzTFNB1qAMg
-         9pp7Jh0RefuhA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([92.116.178.52]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MNKlu-1pKu2r1YOA-00OmnK; Thu, 01
- Dec 2022 08:57:15 +0100
-Message-ID: <a3e1bbd6-9ff8-6cb2-4034-05055f499c6d@gmx.de>
-Date:   Thu, 1 Dec 2022 08:57:14 +0100
+        with ESMTP id S231156AbiLEEer (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 4 Dec 2022 23:34:47 -0500
+Received: from mail-il1-f199.google.com (mail-il1-f199.google.com [209.85.166.199])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E23B64D1
+        for <linux-fbdev@vger.kernel.org>; Sun,  4 Dec 2022 20:34:45 -0800 (PST)
+Received: by mail-il1-f199.google.com with SMTP id g4-20020a92cda4000000b00301ff06da14so11283213ild.11
+        for <linux-fbdev@vger.kernel.org>; Sun, 04 Dec 2022 20:34:45 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=vcFrvjYpY9w3oBH5VMBrbCN5cG4DGtca+C+V9MNGNBY=;
+        b=1/i1gtGCc3S9sO4Mdv5AyMlOAyBeXvzqLChY0Z6v9Ss8XfpthIboSuCfSXhAW9ygf2
+         5QsTNcPVYI/wAfgTF0htvQ2Vpx0vjVK6OoHskD+45q3foaIYfzrHfXcfwDTXLlS15vBU
+         1lwqEIM0f5bKZP1I5KOAkP63sRNcYOCJnF5gxcpLuuyb+0U4f5aAruZTelXBBpg6fR+I
+         1mmh13zg+GQL4GsCh2rPXej2OVMVwSzqLV5BvOQAo4bXYRWSz2/Wu7dOm/HqCSBVqKIl
+         8UxlctuF7J9Fz+Jbr2g8QpwpeCgxUzFlxoa+FFEksLZAD7Id9+OI9Q0KACLZSlclzc9n
+         Le/A==
+X-Gm-Message-State: ANoB5pl8Q5ZDfNfmh7I1VPiDN8d7ECVdCmvq+qQrvH5tODf/XFHhc5e/
+        PqZ2eAVK86CuJqUfwiSI5e1sxHPlrEBYnyDM5Dp8IzttN0V1
+X-Google-Smtp-Source: AA0mqf7iyVepFf9uvSqFu+Czqel85Bx9rIZHqrT9xKNbJkXJrxGVTRza++ig5vx166ELXQ5StTz/hrZ9soFSQWNPcWfAbfhn3byU
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.5.0
-Subject: Re: [PATCH 1/2] fbdev: geode: don't build on UML
-To:     Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
-Cc:     Johannes Berg <johannes@sipsolutions.net>,
-        Richard Weinberger <richard@nod.at>,
-        linux-um@lists.infradead.org, Daniel Vetter <daniel@ffwll.ch>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Andres Salomon <dilinger@queued.net>,
-        linux-geode@lists.infradead.org
-References: <20221130215544.28497-1-rdunlap@infradead.org>
-Content-Language: en-US
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20221130215544.28497-1-rdunlap@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:PpGogZnW6HhwaMr7tc/5/1UjEN/jHdMDXMece1a88p3qFJsxYnH
- pqyNgQ/pEphLd1DIZWkKcguwYgCFIlM/UAVYmmDvU4V/9pMH6vnOOfLlzPzNPwI/kxh0pHP
- szX0goj+isPJtRkSFRy/nL1DAaJSEUTKyyVL8ZeVlTri8IO49fLLLjCX8w0oMQsM7p21wVx
- UZjay3b7hdJqUaQGrFhiQ==
-UI-OutboundReport: notjunk:1;M01:P0:5PKJk0yIPzM=;kqh16m3VshbvOOXZdkeQQw4m8pN
- 34hBkfxHn/b/W2s3sZWRvyww+JuLDdbgq7wd5S/CedBb9F5snxlzC6c90vOT5v1LCw4wvIRL7
- 1CL43JEfPXgGbdEUkAzy17TxIh8YdhnX2LmCVWz0FoRE03GiCczJBKDAamo5TlqlRUhFecgr2
- QrCxSIjn4gFMbAbTjMGUiYqdKI6MOHJzvNgGbXVmxqGxrIEzSv3Ob5XEm3m/auy6jJhhgsdqa
- 6/gUSFChG1uyAvfszTwnCeFCRi9WlAdxU1GBLPz+nedkqCvC46eFUhZsvLy7W34ibGd26ASlo
- GHGAPfNiY8HrPbYtNW3Mnca7wFXieyosEWEv2YcqxnMd0AnKDbySkRaIX6Ho2TWfx+zv3VAoz
- I4dmkor/6GgN4N0rq+TVvol2MZbpg2nSadAA/0WP7IBXklp6gAqbfXq5ghJpAeQlmyoCF7QuK
- 4P/Do+tVzGxsDTU9mZAnjvoeVFGFvFvtenlWQfTJaqpCyOwYrNZRDjiJ3vcbg7otT1exnogbB
- xyaBOI5VdFVQDwziE7F0iDKWxJarly376Zp0w48+8ZajRLoSiGY/mQfyVHPNs95sTWYbagw5k
- A8lWTojjckEY3wPiK8ORXum4TGEMu4R27hPNRgE5eJaBopcYgmLEmVQBO5UO5FFOp0Y0wGcs3
- cRhlLRrWb3STkYZk3VfRfwymh/dC6rA53NAu0U6FmQTjUJtJwhDLsuUGUbUyxRE1sU7yLTVWy
- CwDvoS69jjogATmheSXUOBThpXfg+cgmFLi+xJ3B9ZLqeutY5XNfXPaKAgN9buh9Ndz7OS0Zn
- U0UT8KY9fWGEETAt46b1h5SiktUpYGwMwpROxvcXD+W2X0hh4Bvcfu/U1ffT/tlIsGSIp7U+C
- aBQDmZsh0aaaaNgqb7kdl3spPh75hba0jk1e+xbn7D4BlngYDPdtxLhtQBSnnuZGzhrvP55UF
- 7lXH5zWou3FdKyj4IS80Xh2Zb+k=
+X-Received: by 2002:a5d:804e:0:b0:6dc:30bd:ed8f with SMTP id
+ b14-20020a5d804e000000b006dc30bded8fmr30399822ior.130.1670214884451; Sun, 04
+ Dec 2022 20:34:44 -0800 (PST)
+Date:   Sun, 04 Dec 2022 20:34:44 -0800
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <000000000000e2efc305ef0d341f@google.com>
+Subject: [syzbot] memory leak in fbcon_set_font (2)
+From:   syzbot <syzbot+25bdb7b1703639abd498@syzkaller.appspotmail.com>
+To:     daniel@ffwll.ch, deller@gmx.de, dri-devel@lists.freedesktop.org,
+        geert+renesas@glider.be, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, sam@ravnborg.org,
+        syzkaller-bugs@googlegroups.com, tzimmermann@suse.de
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 11/30/22 22:55, Randy Dunlap wrote:
-> The geode fbdev driver uses struct cpuinfo fields that are not present
-> on ARCH=3Dum, so don't allow this driver to be built on UML.
->
-> Prevents these build errors:
->
-> In file included from ../arch/x86/include/asm/olpc.h:7:0,
->                   from ../drivers/mfd/cs5535-mfd.c:17:
-> ../arch/x86/include/asm/geode.h: In function =E2=80=98is_geode_gx=E2=80=
-=99:
-> ../arch/x86/include/asm/geode.h:16:24: error: =E2=80=98struct cpuinfo_um=
-=E2=80=99 has no member named =E2=80=98x86_vendor=E2=80=99
->    return ((boot_cpu_data.x86_vendor =3D=3D X86_VENDOR_NSC) &&
-> ../arch/x86/include/asm/geode.h:16:39: error: =E2=80=98X86_VENDOR_NSC=E2=
-=80=99 undeclared (first use in this function); did you mean =E2=80=98X86_=
-VENDOR_ANY=E2=80=99?
->    return ((boot_cpu_data.x86_vendor =3D=3D X86_VENDOR_NSC) &&
-> ../arch/x86/include/asm/geode.h:17:17: error: =E2=80=98struct cpuinfo_um=
-=E2=80=99 has no member named =E2=80=98x86=E2=80=99
->     (boot_cpu_data.x86 =3D=3D 5) &&
-> ../arch/x86/include/asm/geode.h:18:17: error: =E2=80=98struct cpuinfo_um=
-=E2=80=99 has no member named =E2=80=98x86_model=E2=80=99
->     (boot_cpu_data.x86_model =3D=3D 5));
-> ../arch/x86/include/asm/geode.h: In function =E2=80=98is_geode_lx=E2=80=
-=99:
-> ../arch/x86/include/asm/geode.h:23:24: error: =E2=80=98struct cpuinfo_um=
-=E2=80=99 has no member named =E2=80=98x86_vendor=E2=80=99
->    return ((boot_cpu_data.x86_vendor =3D=3D X86_VENDOR_AMD) &&
-> ../arch/x86/include/asm/geode.h:23:39: error: =E2=80=98X86_VENDOR_AMD=E2=
-=80=99 undeclared (first use in this function); did you mean =E2=80=98X86_=
-VENDOR_ANY=E2=80=99?
->    return ((boot_cpu_data.x86_vendor =3D=3D X86_VENDOR_AMD) &&
-> ../arch/x86/include/asm/geode.h:24:17: error: =E2=80=98struct cpuinfo_um=
-=E2=80=99 has no member named =E2=80=98x86=E2=80=99
->     (boot_cpu_data.x86 =3D=3D 5) &&
-> ../arch/x86/include/asm/geode.h:25:17: error: =E2=80=98struct cpuinfo_um=
-=E2=80=99 has no member named =E2=80=98x86_model=E2=80=99
->     (boot_cpu_data.x86_model =3D=3D 10));
->
-> Fixes: 68f5d3f3b654 ("um: add PCI over virtio emulation driver")
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Johannes Berg <johannes@sipsolutions.net>
-> Cc: Richard Weinberger <richard@nod.at>
-> Cc: linux-um@lists.infradead.org
-> Cc: Daniel Vetter <daniel@ffwll.ch>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: Andres Salomon <dilinger@queued.net>
-> Cc: linux-geode@lists.infradead.org
+Hello,
 
-applied.
-Thanks!
+syzbot found the following issue on:
 
-Helge
+HEAD commit:    c2bf05db6c78 Merge tag 'i2c-for-6.1-rc8' of git://git.kern..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=171883d5880000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=979161df0e247659
+dashboard link: https://syzkaller.appspot.com/bug?extid=25bdb7b1703639abd498
+compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=14fff84d880000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=135806a7880000
+
+Downloadable assets:
+disk image: https://storage.googleapis.com/syzbot-assets/63cd45bf1d68/disk-c2bf05db.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/bafbfb42c660/vmlinux-c2bf05db.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/9f803a721cfc/bzImage-c2bf05db.xz
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+25bdb7b1703639abd498@syzkaller.appspotmail.com
+
+BUG: memory leak
+unreferenced object 0xffff888111648000 (size 18448):
+  comm "syz-executor148", pid 3653, jiffies 4294970435 (age 13.520s)
+  hex dump (first 32 bytes):
+    85 44 7e c7 00 00 00 00 00 48 00 00 00 00 00 00  .D~......H......
+    92 30 86 d2 8c 38 30 9e e7 a3 05 00 9f 09 33 bb  .0...80.......3.
+  backtrace:
+    [<ffffffff814ee6d3>] __do_kmalloc_node mm/slab_common.c:943 [inline]
+    [<ffffffff814ee6d3>] __kmalloc+0xb3/0x120 mm/slab_common.c:968
+    [<ffffffff8250c359>] kmalloc include/linux/slab.h:558 [inline]
+    [<ffffffff8250c359>] fbcon_set_font+0x1a9/0x470 drivers/video/fbdev/core/fbcon.c:2508
+    [<ffffffff8262cd59>] con_font_set drivers/tty/vt/vt.c:4667 [inline]
+    [<ffffffff8262cd59>] con_font_op+0x3a9/0x600 drivers/tty/vt/vt.c:4713
+    [<ffffffff82618e3d>] vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
+    [<ffffffff82618e3d>] vt_ioctl+0x14fd/0x1a80 drivers/tty/vt/vt_ioctl.c:752
+    [<ffffffff825fdaf5>] tty_ioctl+0x6d5/0xbe0 drivers/tty/tty_io.c:2771
+    [<ffffffff816200bc>] vfs_ioctl fs/ioctl.c:51 [inline]
+    [<ffffffff816200bc>] __do_sys_ioctl fs/ioctl.c:870 [inline]
+    [<ffffffff816200bc>] __se_sys_ioctl fs/ioctl.c:856 [inline]
+    [<ffffffff816200bc>] __x64_sys_ioctl+0xfc/0x140 fs/ioctl.c:856
+    [<ffffffff8485c5e5>] do_syscall_x64 arch/x86/entry/common.c:50 [inline]
+    [<ffffffff8485c5e5>] do_syscall_64+0x35/0xb0 arch/x86/entry/common.c:80
+    [<ffffffff84a00087>] entry_SYSCALL_64_after_hwframe+0x63/0xcd
+
+BUG: memory leak
+unreferenced object 0xffff888110b18000 (size 18448):
+  comm "syz-executor148", pid 3655, jiffies 4294971001 (age 7.860s)
+  hex dump (first 32 bytes):
+    85 44 7e c7 00 00 00 00 00 48 00 00 00 00 00 00  .D~......H......
+    92 30 86 d2 8c 38 30 9e e7 a3 05 00 9f 09 33 bb  .0...80.......3.
+  backtrace:
+    [<ffffffff814ee6d3>] __do_kmalloc_node mm/slab_common.c:943 [inline]
+    [<ffffffff814ee6d3>] __kmalloc+0xb3/0x120 mm/slab_common.c:968
+    [<ffffffff8250c359>] kmalloc include/linux/slab.h:558 [inline]
+    [<ffffffff8250c359>] fbcon_set_font+0x1a9/0x470 drivers/video/fbdev/core/fbcon.c:2508
+    [<ffffffff8262cd59>] con_font_set drivers/tty/vt/vt.c:4667 [inline]
+    [<ffffffff8262cd59>] con_font_op+0x3a9/0x600 drivers/tty/vt/vt.c:4713
+    [<ffffffff82618e3d>] vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
+    [<ffffffff82618e3d>] vt_ioctl+0x14fd/0x1a80 drivers/tty/vt/vt_ioctl.c:752
+    [<ffffffff825fdaf5>] tty_ioctl+0x6d5/0xbe0 drivers/tty/tty_io.c:2771
+    [<ffffffff816200bc>] vfs_ioctl fs/ioctl.c:51 [inline]
+    [<ffffffff816200bc>] __do_sys_ioctl fs/ioctl.c:870 [inline]
+    [<ffffffff816200bc>] __se_sys_ioctl fs/ioctl.c:856 [inline]
+    [<ffffffff816200bc>] __x64_sys_ioctl+0xfc/0x140 fs/ioctl.c:856
+    [<ffffffff8485c5e5>] do_syscall_x64 arch/x86/entry/common.c:50 [inline]
+    [<ffffffff8485c5e5>] do_syscall_64+0x35/0xb0 arch/x86/entry/common.c:80
+    [<ffffffff84a00087>] entry_SYSCALL_64_after_hwframe+0x63/0xcd
+
+write to /proc/sys/kernel/hung_task_check_interval_secs failed: No such file or directory
+write to /proc/sys/kernel/softlockup_all_cpu_backtrace failed: No such file or directory
+write to /proc/sys/kernel/hung_task_check_interval_secs failed: No such file or directory
+write to /proc/sys/kernel/softlockup_all_cpu_backtrace failed: No such file or directory
 
 
-> ---
->   drivers/video/fbdev/geode/Kconfig |    1 +
->   1 file changed, 1 insertion(+)
->
-> diff -- a/drivers/video/fbdev/geode/Kconfig b/drivers/video/fbdev/geode/=
-Kconfig
-> --- a/drivers/video/fbdev/geode/Kconfig
-> +++ b/drivers/video/fbdev/geode/Kconfig
-> @@ -5,6 +5,7 @@
->   config FB_GEODE
->   	bool "AMD Geode family framebuffer support"
->   	depends on FB && PCI && (X86_32 || (X86 && COMPILE_TEST))
-> +	depends on !UML
->   	help
->   	  Say 'Y' here to allow you to select framebuffer drivers for
->   	  the AMD Geode family of processors.
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+syzbot can test patches for this issue, for details see:
+https://goo.gl/tpsmEJ#testing-patches

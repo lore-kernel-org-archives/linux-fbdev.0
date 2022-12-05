@@ -2,49 +2,49 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B518DC4321E
-	for <linux-fbdev@archiver.kernel.org>; Mon,  5 Dec 2022 08:08:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19821C4321E
+	for <linux-fbdev@archiver.kernel.org>; Mon,  5 Dec 2022 08:17:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231907AbiLEII2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 5 Dec 2022 03:08:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59464 "EHLO
+        id S231992AbiLEIRF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 5 Dec 2022 03:17:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40358 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231910AbiLEIIV (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 5 Dec 2022 03:08:21 -0500
-Received: from mxct.zte.com.cn (mxct.zte.com.cn [183.62.165.209])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E7AFE1408F;
-        Mon,  5 Dec 2022 00:08:16 -0800 (PST)
+        with ESMTP id S231959AbiLEIQ7 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 5 Dec 2022 03:16:59 -0500
+Received: from mxhk.zte.com.cn (mxhk.zte.com.cn [63.216.63.40])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D1A3DBC06;
+        Mon,  5 Dec 2022 00:16:56 -0800 (PST)
 Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mxct.zte.com.cn (FangMail) with ESMTPS id 4NQblM2R66z4y0vF;
-        Mon,  5 Dec 2022 16:08:15 +0800 (CST)
+        by mxhk.zte.com.cn (FangMail) with ESMTPS id 4NQbxM1jhJz8RV7G;
+        Mon,  5 Dec 2022 16:16:55 +0800 (CST)
 Received: from xaxapp01.zte.com.cn ([10.88.40.50])
-        by mse-fl2.zte.com.cn with SMTP id 2B58825v016075;
-        Mon, 5 Dec 2022 16:08:02 +0800 (+08)
+        by mse-fl2.zte.com.cn with SMTP id 2B58Gf6p028925;
+        Mon, 5 Dec 2022 16:16:41 +0800 (+08)
         (envelope-from ye.xingchen@zte.com.cn)
 Received: from mapi (xaxapp01[null])
         by mapi (Zmail) with MAPI id mid31;
-        Mon, 5 Dec 2022 16:08:04 +0800 (CST)
-Date:   Mon, 5 Dec 2022 16:08:04 +0800 (CST)
-X-Zmail-TransId: 2af9638da6e4fffffffffc58ba99
+        Mon, 5 Dec 2022 16:16:43 +0800 (CST)
+Date:   Mon, 5 Dec 2022 16:16:43 +0800 (CST)
+X-Zmail-TransId: 2af9638da8eb41c9fedb
 X-Mailer: Zmail v1.0
-Message-ID: <202212051608044377107@zte.com.cn>
+Message-ID: <202212051616434207425@zte.com.cn>
 Mime-Version: 1.0
 From:   <ye.xingchen@zte.com.cn>
 To:     <deller@gmx.de>
 Cc:     <javierm@redhat.com>, <tzimmermann@suse.de>,
         <geert+renesas@glider.be>, <linux-fbdev@vger.kernel.org>,
         <dri-devel@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>
-Subject: =?UTF-8?B?W1BBVENIIGxpbnV4LW5leHRdIGZiZGV2OiB1c2Ugc3lzZnNfZW1pdCgpIHRvIGluc3RlYWQgb2Ygc2NucHJpbnRmKCk=?=
+Subject: =?UTF-8?B?W1BBVENIIGxpbnV4LW5leHQgdjJdIGZiZGV2OiB1c2Ugc3lzZnNfZW1pdCgpIHRvIGluc3RlYWQgb2Ygc2NucHJpbnRmKCk=?=
 Content-Type: text/plain;
         charset="UTF-8"
-X-MAIL: mse-fl2.zte.com.cn 2B58825v016075
+X-MAIL: mse-fl2.zte.com.cn 2B58Gf6p028925
 X-Fangmail-Gw-Spam-Type: 0
-X-FangMail-Miltered: at cgslv5.04-192.168.251.13.novalocal with ID 638DA6EF.000 by FangMail milter!
-X-FangMail-Envelope: 1670227695/4NQblM2R66z4y0vF/638DA6EF.000/10.5.228.133/[10.5.228.133]/mse-fl2.zte.com.cn/<ye.xingchen@zte.com.cn>
+X-FangMail-Miltered: at cgslv5.04-192.168.250.137.novalocal with ID 638DA8F7.000 by FangMail milter!
+X-FangMail-Envelope: 1670228215/4NQbxM1jhJz8RV7G/638DA8F7.000/10.5.228.133/[10.5.228.133]/mse-fl2.zte.com.cn/<ye.xingchen@zte.com.cn>
 X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 638DA6EF.000/4NQblM2R66z4y0vF
+X-Fangmail-MID-QID: 638DA8F7.000/4NQbxM1jhJz8RV7G
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -57,8 +57,11 @@ value to be returned to user space.
 
 Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
 ---
- drivers/video/fbdev/sh_mobile_lcdcfb.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+v1 -> v2
+Add another patch about this in ./video/fbdev/
+ drivers/video/fbdev/sh_mobile_lcdcfb.c |  8 ++++----
+ drivers/video/fbdev/uvesafb.c          | 10 +++++-----
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
 index 6d00893d41f4..ad9323ed8e2e 100644
@@ -100,5 +103,54 @@ index 6d00893d41f4..ad9323ed8e2e 100644
  }
 
  static ssize_t
+diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
+index 00d789b6c0fa..ba8028a0cc7a 100644
+--- a/drivers/video/fbdev/uvesafb.c
++++ b/drivers/video/fbdev/uvesafb.c
+@@ -1580,7 +1580,7 @@ static ssize_t uvesafb_show_vendor(struct device *dev,
+ 	struct uvesafb_par *par = info->par;
+
+ 	if (par->vbe_ib.oem_vendor_name_ptr)
+-		return scnprintf(buf, PAGE_SIZE, "%s\n", (char *)
++		return sysfs_emit(buf, "%s\n", (char *)
+ 			(&par->vbe_ib) + par->vbe_ib.oem_vendor_name_ptr);
+ 	else
+ 		return 0;
+@@ -1595,7 +1595,7 @@ static ssize_t uvesafb_show_product_name(struct device *dev,
+ 	struct uvesafb_par *par = info->par;
+
+ 	if (par->vbe_ib.oem_product_name_ptr)
+-		return scnprintf(buf, PAGE_SIZE, "%s\n", (char *)
++		return sysfs_emit(buf, "%s\n", (char *)
+ 			(&par->vbe_ib) + par->vbe_ib.oem_product_name_ptr);
+ 	else
+ 		return 0;
+@@ -1610,7 +1610,7 @@ static ssize_t uvesafb_show_product_rev(struct device *dev,
+ 	struct uvesafb_par *par = info->par;
+
+ 	if (par->vbe_ib.oem_product_rev_ptr)
+-		return scnprintf(buf, PAGE_SIZE, "%s\n", (char *)
++		return sysfs_emit(buf, "%s\n", (char *)
+ 			(&par->vbe_ib) + par->vbe_ib.oem_product_rev_ptr);
+ 	else
+ 		return 0;
+@@ -1625,7 +1625,7 @@ static ssize_t uvesafb_show_oem_string(struct device *dev,
+ 	struct uvesafb_par *par = info->par;
+
+ 	if (par->vbe_ib.oem_string_ptr)
+-		return scnprintf(buf, PAGE_SIZE, "%s\n",
++		return sysfs_emit(buf, "%s\n",
+ 			(char *)(&par->vbe_ib) + par->vbe_ib.oem_string_ptr);
+ 	else
+ 		return 0;
+@@ -1639,7 +1639,7 @@ static ssize_t uvesafb_show_nocrtc(struct device *dev,
+ 	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct uvesafb_par *par = info->par;
+
+-	return scnprintf(buf, PAGE_SIZE, "%d\n", par->nocrtc);
++	return sysfs_emit(buf, "%d\n", par->nocrtc);
+ }
+
+ static ssize_t uvesafb_store_nocrtc(struct device *dev,
 -- 
 2.25.1

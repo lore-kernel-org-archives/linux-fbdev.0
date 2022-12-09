@@ -2,166 +2,90 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9BEFC2D0CD
-	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Dec 2022 12:00:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 444B9C4167B
+	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Dec 2022 12:51:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229749AbiLIMAv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 9 Dec 2022 07:00:51 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37362 "EHLO
+        id S229561AbiLIMvi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 9 Dec 2022 07:51:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59418 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229814AbiLIMAr (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 9 Dec 2022 07:00:47 -0500
-Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com [IPv6:2a00:1450:4864:20::636])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 82FBB30F50
-        for <linux-fbdev@vger.kernel.org>; Fri,  9 Dec 2022 04:00:38 -0800 (PST)
-Received: by mail-ej1-x636.google.com with SMTP id qk9so10997281ejc.3
-        for <linux-fbdev@vger.kernel.org>; Fri, 09 Dec 2022 04:00:38 -0800 (PST)
+        with ESMTP id S229957AbiLIMvh (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 9 Dec 2022 07:51:37 -0500
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 26A5B5C0EE
+        for <linux-fbdev@vger.kernel.org>; Fri,  9 Dec 2022 04:51:32 -0800 (PST)
+Received: by mail-wr1-x432.google.com with SMTP id co23so5112771wrb.4
+        for <linux-fbdev@vger.kernel.org>; Fri, 09 Dec 2022 04:51:32 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=CCwzWMPdgO9Dcc0FuYTNg8nT6gaYsC62geOPdirkTlQ=;
-        b=blV6eki9f/dE3yt8k9vQjmYbdmKqtjXhWL8aRDi0+PTy9DZ7PoASn6Hb4YDawt6/Pq
-         TOTWkNyJ1bQ0LXeAOKmZsgrohPEAxg4I9Vxq8Iql4MCfOpzd9bk59Kg8A1l2aCabzc1i
-         Pwb8zUD5pTagBDWz9wlqw8be8RXHOe4ntLhBEh7HXgPppKgizTPX68btz3fJ69iSfJef
-         zAFAyKFjvCY4s0mBfuw+77i/sj6ivMcyXsKkk5Q+7miuQY1uqqYMcxvazgbad3gQhSeN
-         osKwSC1CYREx2mikz7Rsbjiro/V/gVq1uBZVJYbtUMGcexuFEHFb/xJK0jJPCO1YVyoF
-         GpZg==
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=OtnZ1kdjAPZRqPqQ9rwdeEDxyI3IJgipy4lZ3Z6DHOU=;
+        b=mzhiuYzLh5MXO4d2/CaGSLQRvmAHHQmyihleIadBSeVx0urmsuaZmDMUhlN6s6G8Up
+         KGqJ2YNpR9+iZiOaO1gzAodX6jigmaayrqo/LY5geqBf0KGwQiN28ak0hr+qKVhp41/h
+         lwiBFZuTLTdW/6SDBpJfuU28ZTjfX0BYytaoyOD4VdJvI5R6qLbslN8pJoYKU/RUfBxc
+         yqvA/kxuhhz9o5Y6B2qx95QtRTxAjXm4uEfj31X4efvNKWuxnGeFyjDP1kIh0Lgasnb7
+         uO+8X9prY1dZNpqTfVJp2HvUy4jyN7/6zqEDrct7rMKKm1K8MijdUSHqH3O6ArIOH3Pl
+         9/hg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=CCwzWMPdgO9Dcc0FuYTNg8nT6gaYsC62geOPdirkTlQ=;
-        b=nwKBkIur+st+LjbyKwRJ92zQAbrQF+wD+UWOB4FfFK4iWxTneAoCtCbi61t6WzTQ6f
-         /6zgu79G3cEKG/+JpJErbKR+tUs9xThPQ44BqHqSGn//Fzx98KosFeP0EZHxk3axIf3l
-         7LdS+7EjIAPGhKwGg46B2PjULxSQCrFOYc8ubU0fTxIapTpsHIhsaqvkuyBJrPJvAx4B
-         zEzdHql5fCbfpw3O+YZUuT6qn9+miNs4jSazSljMTe9Eo/En/BXgmT+1Md8ejrpoMh5y
-         IXPbxfsCvNI4n5YWEOPG4lrHMABJqIu4H3ZeInyrZWpYZ3JnnHI/La8vAeQR/d6wYOki
-         Fhtw==
-X-Gm-Message-State: ANoB5plKPvXKOaNnUeRsrFPK2h0hSG7xpKoxtoBgaW1dhUYOGkg0HgjN
-        RKgaoyMsec5yU2O5kmKYU8Axhw==
-X-Google-Smtp-Source: AA0mqf7P1uuFrcKToZQL1Qs7OSMRUELHntqUphTx86r+y9eGx8OMntNtg5Twtz4wxSVo6DNFFYUZgg==
-X-Received: by 2002:a17:906:4907:b0:7c0:d4fa:3151 with SMTP id b7-20020a170906490700b007c0d4fa3151mr4765674ejq.17.1670587236522;
-        Fri, 09 Dec 2022 04:00:36 -0800 (PST)
-Received: from prec5560.. (freifunk-gw.bsa1-cpe1.syseleven.net. [176.74.57.43])
-        by smtp.gmail.com with ESMTPSA id o23-20020a170906861700b007c0a7286c0asm489597ejx.58.2022.12.09.04.00.34
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=OtnZ1kdjAPZRqPqQ9rwdeEDxyI3IJgipy4lZ3Z6DHOU=;
+        b=zPtxypaim18lbh4TVNiqW4L613k/VRNKLT3ejrm3W3SxpdwtrPCb3Zt5lZjb/0hedL
+         AxKIgi3+BvF7lrrYv3RWoWFGWrA+aQgBNHSDNZeXj99XRd3vIqgPvlHXGXg1FHrKbDGD
+         NSEEmB3x1IU0djYyB9lydosFfu/TmO3CKH8op3KOKCL102llGH2pomQgzSK5v+FFp2LT
+         kKHxlri/+B74gEFj3hZ/zSuh+lDKcu3PNJb769zcMMM+Fy+WykRXNr7DYXUQsMkeyz0+
+         KlH+pg4PE0CYd1g/hjg21+HyhvkQJHiBQHef8NvmIU57zt+TDFQvbzm8XR40xz1b9cJk
+         ctBQ==
+X-Gm-Message-State: ANoB5pnHaDY5vCW34yh0cQPkZ4YecgllwydlJ8cUg4LWHQfLVHRfpZQY
+        QfY8xYhlY3tndCkTStPdRiMfVA==
+X-Google-Smtp-Source: AA0mqf44qDADYcbcErOKO4f1THlbbJ0Qbkf2oOidypUvsQ4ltBNeY7SL3mw7aTGkms7BkKrITifFxA==
+X-Received: by 2002:a5d:5111:0:b0:232:be5b:44db with SMTP id s17-20020a5d5111000000b00232be5b44dbmr3931759wrt.67.1670590290559;
+        Fri, 09 Dec 2022 04:51:30 -0800 (PST)
+Received: from aspen.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
+        by smtp.gmail.com with ESMTPSA id e4-20020a5d5004000000b0022e57e66824sm1538868wrt.99.2022.12.09.04.51.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 09 Dec 2022 04:00:35 -0800 (PST)
-From:   Robert Foss <robert.foss@linaro.org>
-To:     =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>,
-        Wolfram Sang <wsa@kernel.org>,
-        Angel Iglesias <ang.iglesiasg@gmail.com>,
-        Grant Likely <grant.likely@linaro.org>,
-        Lee Jones <lee.jones@linaro.org>
-Cc:     Robert Foss <robert.foss@linaro.org>,
-        Broadcom internal kernel review list 
-        <bcm-kernel-feedback-list@broadcom.com>,
-        linux-gpio@vger.kernel.org, linux-rtc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-input@vger.kernel.org,
-        linux-integrity@vger.kernel.org, linux-media@vger.kernel.org,
-        openipmi-developer@lists.sourceforge.net,
-        linux-serial@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-spi@vger.kernel.org, kernel@pengutronix.de,
-        Purism Kernel Team <kernel@puri.sm>,
-        linux-rpi-kernel@lists.infradead.org, linux-leds@vger.kernel.org,
-        linux-actions@lists.infradead.org, netdev@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-pwm@vger.kernel.org,
-        linux-staging@lists.linux.dev, chrome-platform@lists.linux.dev,
-        linux-crypto@vger.kernel.org, linux-watchdog@vger.kernel.org,
-        linux-amlogic@lists.infradead.org, linux-fbdev@vger.kernel.org,
-        linux-renesas-soc@vger.kernel.org, linux-i2c@vger.kernel.org,
-        linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linuxppc-dev@lists.ozlabs.org, patches@opensource.cirrus.com,
-        linux-omap@vger.kernel.org, linux-mtd@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org, devicetree@vger.kernel.org
-Subject: Re: (subset) [PATCH 000/606] i2c: Complete conversion to i2c_probe_new
-Date:   Fri,  9 Dec 2022 13:00:14 +0100
-Message-Id: <167058708567.1651663.18170722235132459286.b4-ty@linaro.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20221118224540.619276-1-uwe@kleine-koenig.org>
-References: <20221118224540.619276-1-uwe@kleine-koenig.org>
+        Fri, 09 Dec 2022 04:51:30 -0800 (PST)
+Date:   Fri, 9 Dec 2022 12:51:28 +0000
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     ye.xingchen@zte.com.cn
+Cc:     lee@kernel.org, jingoohan1@gmail.com, deller@gmx.de,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH linux-next] backlight: use sysfs_emit() to instead of
+ scnprintf()
+Message-ID: <Y5MvULWEnqp7pzft@aspen.lan>
+References: <202212051556478226726@zte.com.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <202212051556478226726@zte.com.cn>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, 18 Nov 2022 23:35:34 +0100, Uwe Kleine-König wrote:
-> since commit b8a1a4cd5a98 ("i2c: Provide a temporary .probe_new()
-> call-back type") from 2016 there is a "temporary" alternative probe
-> callback for i2c drivers.
-> 
-> This series completes all drivers to this new callback (unless I missed
-> something). It's based on current next/master.
-> A part of the patches depend on commit 662233731d66 ("i2c: core:
-> Introduce i2c_client_get_device_id helper function"), there is a branch that
-> you can pull into your tree to get it:
-> 
-> [...]
+On Mon, Dec 05, 2022 at 03:56:47PM +0800, ye.xingchen@zte.com.cn wrote:
+> Subject: [PATCH linux-next] backlight: use sysfs_emit() to instead of
+> scnprintf()
 
-Applied all patches that build.
+Isn't this a v2?
 
-Patches excluded:
- - ps8622
- - ti-sn65dsi83
- - adv7511
-
-Repo: https://cgit.freedesktop.org/drm/drm-misc/
+(this isn't just a "nice to have"... I ended up delaying review for
+several days until I had time to look up where I had seen these changes
+before)
 
 
-[014/606] drm/bridge: adv7511: Convert to i2c's .probe_new()
-          (no commit info)
-[015/606] drm/bridge/analogix/anx6345: Convert to i2c's .probe_new()
-          (no commit info)
-[016/606] drm/bridge/analogix/anx78xx: Convert to i2c's .probe_new()
-          (no commit info)
-[017/606] drm/bridge: anx7625: Convert to i2c's .probe_new()
-          (no commit info)
-[018/606] drm/bridge: icn6211: Convert to i2c's .probe_new()
-          (no commit info)
-[019/606] drm/bridge: chrontel-ch7033: Convert to i2c's .probe_new()
-          commit: 8dc6de280f01c0f7b8d40435736f3c975368ad70
-[020/606] drm/bridge: it6505: Convert to i2c's .probe_new()
-          (no commit info)
-[021/606] drm/bridge: it66121: Convert to i2c's .probe_new()
-          (no commit info)
-[022/606] drm/bridge: lt8912b: Convert to i2c's .probe_new()
-          (no commit info)
-[023/606] drm/bridge: lt9211: Convert to i2c's .probe_new()
-          (no commit info)
-[024/606] drm/bridge: lt9611: Convert to i2c's .probe_new()
-          (no commit info)
-[025/606] drm/bridge: lt9611uxc: Convert to i2c's .probe_new()
-          (no commit info)
-[026/606] drm/bridge: megachips: Convert to i2c's .probe_new()
-          (no commit info)
-[027/606] drm/bridge: nxp-ptn3460: Convert to i2c's .probe_new()
-          (no commit info)
-[028/606] drm/bridge: parade-ps8622: Convert to i2c's .probe_new()
-          (no commit info)
-[029/606] drm/bridge: sii902x: Convert to i2c's .probe_new()
-          (no commit info)
-[030/606] drm/bridge: sii9234: Convert to i2c's .probe_new()
-          (no commit info)
-[031/606] drm/bridge: sii8620: Convert to i2c's .probe_new()
-          (no commit info)
-[032/606] drm/bridge: tc358767: Convert to i2c's .probe_new()
-          (no commit info)
-[033/606] drm/bridge: tc358768: Convert to i2c's .probe_new()
-          (no commit info)
-[034/606] drm/bridge/tc358775: Convert to i2c's .probe_new()
-          (no commit info)
-[035/606] drm/bridge: ti-sn65dsi83: Convert to i2c's .probe_new()
-          (no commit info)
-[037/606] drm/bridge: tfp410: Convert to i2c's .probe_new()
-          (no commit info)
+> From: ye xingchen <ye.xingchen@zte.com.cn>
+>
+> Follow the advice of the Documentation/filesystems/sysfs.rst and show()
+> should only use sysfs_emit() or sysfs_emit_at() when formatting the
+> value to be returned to user space.
+>
+> Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
+
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
 
-
-rob
-
+Daniel.

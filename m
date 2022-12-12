@@ -2,73 +2,123 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F17BDC4332F
-	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Dec 2022 12:21:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EA0FC4332F
+	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Dec 2022 16:40:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232036AbiLLMVi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 12 Dec 2022 07:21:38 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39468 "EHLO
+        id S232917AbiLLQkA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 12 Dec 2022 11:40:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40434 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229452AbiLLMVg (ORCPT
+        with ESMTP id S232834AbiLLQjN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 12 Dec 2022 07:21:36 -0500
-X-Greylist: delayed 536 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 12 Dec 2022 04:21:35 PST
-Received: from mailout.dotplex.com (mailout.dotplex.com [185.231.124.8])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0741764EB
-        for <linux-fbdev@vger.kernel.org>; Mon, 12 Dec 2022 04:21:34 -0800 (PST)
-Received: from remote.ip.hidden (remote.ip.hidden [127.0.0.1])
-        (Authenticated sender: estellnb@elstel.org)
-        by mailout.dotplex.com (Postfix) with ESMTPSA id 1BB2D1FDDD
-        for <linux-fbdev@vger.kernel.org>; Mon, 12 Dec 2022 13:12:37 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=elstel.org;
-        s=dotplex1; t=1670847157;
-        bh=f/W/GqIsuQ5POpMDxr3ftiv5tGEL0k2QFPgT9pUQyAQ=;
-        h=Date:From:Subject:To;
-        b=OkhbolTIlDc1Jn5H3Az2ZqPMYjXxO3gq5EqkMnGVJOD31AmDpQ3JmyrzEBPN/KMFU
-         MyJ97TOvxC2zmph5LxfZuNnJQC68765lrQCORalVPE5FJRkRUlTaJekp1njcD9NO+C
-         JARx1GE/pCRsbzq+rUCi+vu/3kE8zXDBbbmYD0gGQQgEcSjXtRg8ikoxG9KfAedJOR
-         tFN04x/LYeXFZDZ1hb3pJEsoICyWRkslOzQf2v6fPY7izTkO/+rkGI0QH+fA9F6Myc
-         rMrmO4LGeJ06oIYW2tKfaaYSXk8FcH1otav8PCA/dp8EPGIEz2x54xPm7obpR19Yj4
-         cxd6CWtoMZDjA==
-Message-ID: <560b51c6-a6b8-a315-f5b5-307e393f6ef8@elstel.org>
-Date:   Mon, 12 Dec 2022 13:12:36 +0100
+        Mon, 12 Dec 2022 11:39:13 -0500
+Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7EB96165A3
+        for <linux-fbdev@vger.kernel.org>; Mon, 12 Dec 2022 08:37:21 -0800 (PST)
+Received: by mail-ed1-x535.google.com with SMTP id d20so13737559edn.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 12 Dec 2022 08:37:21 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=lvYON1Uq6UT3Qph7OPPr0NH47G6rUYR8O1BO9MFwJow=;
+        b=lIFXcScE+1mmzH1SBNLfPzmU2yyZ22FDa7zo6/O0Bw9aIOxDeXxYkEVfus52JWuhda
+         4ouELocZnEhmnwFppolEYq4c3c7RHYAqD4pax4M3unQDLONiM/9+ejXSM9E2FE+Z0v02
+         plxbNMhSLCExfq6g58BwEJLatQLzpt/xLWOhKWfMwSgaHbhPuPfGnoShEU2Q/8V0GhBe
+         I8mO/6POKEHTvHhiQrSmT3i/DlcfyH1o4pAMtSuNXvNoHj+mOy3GKKCsRTSQGVPFd3Z7
+         AQYI0FN6wamo3RnZf0VXDCwVvMRjPWjYDkKYXDeP5o/vQIFIn9FanCQzU/XNFNQHrfWF
+         2geA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=lvYON1Uq6UT3Qph7OPPr0NH47G6rUYR8O1BO9MFwJow=;
+        b=XvOa5lfsyixq/J6LlaT6HgvwDAeqmk61dtysmPj1u9ICFPb0rhEE3deAgvgoL8/+Ym
+         bOQB5/8EqaLLC/4FJQvKZfusoN0TeWH7o9Ic63pgLAgFGKKIY0UC86H9B0fbJFbtgN4n
+         0xSrmfu3tKwVbGrizk2uHpuH3FjoCkZsiaTt5qhUn9l9cBhq5ujLmkn5JFqu6WlOSbIB
+         ERSnfaW1QhxV+95pJ8piQNvrj35s7FVFHGqOkgWcInWOcGDyRzUfQKaXDkHSIoRrH9xM
+         gPqLuvQsOzLhdSyPugpoUzi0q9hTdNaQF0SbtephINgTFN08F8/mvP01LURIkmKG+59H
+         Q3XA==
+X-Gm-Message-State: ANoB5pkuAtKLg0VtvmLYFtugbyuQoYp+lQcp2PPLPgTm02qVImLFRJy9
+        nAwWnjtvl0sGf/GelhUL3RFynWgLMWNasbz9
+X-Google-Smtp-Source: AA0mqf5ppTTyM6N0bPOAfBX//eKXVRPakyRimeYdkY/8NocUbAvjnOSiYLmQOcD2W7tmhBu2XO410g==
+X-Received: by 2002:a05:6402:702:b0:46f:68d0:76 with SMTP id w2-20020a056402070200b0046f68d00076mr10093614edx.34.1670863020790;
+        Mon, 12 Dec 2022 08:37:00 -0800 (PST)
+Received: from prec5560.. ([2001:bf7:830:a7a8:ff97:7d8d:1f2e:ffaa])
+        by smtp.gmail.com with ESMTPSA id m15-20020a50930f000000b00463597d2c25sm4051979eda.74.2022.12.12.08.36.58
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 12 Dec 2022 08:37:00 -0800 (PST)
+From:   Robert Foss <robert.foss@linaro.org>
+To:     Lee Jones <lee.jones@linaro.org>,
+        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>,
+        Angel Iglesias <ang.iglesiasg@gmail.com>,
+        Wolfram Sang <wsa@kernel.org>,
+        Grant Likely <grant.likely@linaro.org>
+Cc:     Robert Foss <robert.foss@linaro.org>,
+        linuxppc-dev@lists.ozlabs.org, linux-actions@lists.infradead.org,
+        linux-spi@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-media@vger.kernel.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linux-crypto@vger.kernel.org, chrome-platform@lists.linux.dev,
+        Broadcom internal kernel review list 
+        <bcm-kernel-feedback-list@broadcom.com>,
+        linux-input@vger.kernel.org, linux-rpi-kernel@lists.infradead.org,
+        linux-integrity@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-serial@vger.kernel.org, Purism Kernel Team <kernel@puri.sm>,
+        linux-staging@lists.linux.dev, alsa-devel@alsa-project.org,
+        linux-watchdog@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-rtc@vger.kernel.org, linux-leds@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-usb@vger.kernel.org, linux-pm@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org, patches@opensource.cirrus.com,
+        linux-mtd@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
+        linux-amlogic@lists.infradead.org, linux-pwm@vger.kernel.org,
+        linux-samsung-soc@vger.kernel.org, linux-i2c@vger.kernel.org,
+        kernel@pengutronix.de, netdev@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        openipmi-developer@lists.sourceforge.net,
+        linux-fbdev@vger.kernel.org
+Subject: Re: (subset) [PATCH 000/606] i2c: Complete conversion to i2c_probe_new
+Date:   Mon, 12 Dec 2022 17:36:51 +0100
+Message-Id: <167086288411.3041259.17824406556561546642.b4-ty@linaro.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20221118224540.619276-1-uwe@kleine-koenig.org>
+References: <20221118224540.619276-1-uwe@kleine-koenig.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.5.0
-From:   Elmar Stellnberger <estellnb@elstel.org>
-Subject: making uvesafb work on i586
-To:     linux-fbdev@vger.kernel.org
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-   I am debugging/testing glx and suspend issues on an i586 computer. 
-With the vesa driver suspend works and there are no glx problems (since 
-it does not support glx). However it only allows for 800x600 instead of 
-1024x768 and no external monitor. Now I thought that a framebuffer based 
-solution would work best on this computer. However if I want to
+On Fri, 18 Nov 2022 23:35:34 +0100, Uwe Kleine-König wrote:
+> since commit b8a1a4cd5a98 ("i2c: Provide a temporary .probe_new()
+> call-back type") from 2016 there is a "temporary" alternative probe
+> callback for i2c drivers.
+> 
+> This series completes all drivers to this new callback (unless I missed
+> something). It's based on current next/master.
+> A part of the patches depend on commit 662233731d66 ("i2c: core:
+> Introduce i2c_client_get_device_id helper function"), there is a branch that
+> you can pull into your tree to get it:
+> 
+> [...]
 
-> modprobe uvesafb
-uvesafb: failed to execute /sbin/v86d
-uvesafb: getting VBE info block failed (eax=0x4f00, err=-2)
-uvesafb: vbe_init failed with -22
+Applied, thanks!
 
-   However there is no sense to have an v86d on an i586 system since you 
-would not like to emulate code that is running natively on this machine!
-What about a fix for this issue?
-
-   Secondly I have discovered that echo 0 
- >/sys/class/vtconsole/vtcon1/bind hangs my system if nouveau is loaded 
-and modesettting isn´t disabled. I was working on the console without 
-running an X-server. That seems to be a bug and a regression, too, since 
-I remember that having worked in order to switch to another console 
-graphics mode driver.
+Repo: https://cgit.freedesktop.org/drm/drm-misc/
 
 
-see also: https://sourceforge.net/p/linux-fbdev/bugs/10/
-regarding my debugging/testing efforts you may want to have a look at:
-https://bugs.mageia.org/show_bug.cgi?id=31227
+[014/606] drm/bridge: adv7511: Convert to i2c's .probe_new()
+          commit: 1c546894ff82f8b7c070998c03f9b15a3499f326
+[028/606] drm/bridge: parade-ps8622: Convert to i2c's .probe_new()
+          commit: d6b522e9bbb0cca1aeae4ef6188800534794836f
+[035/606] drm/bridge: ti-sn65dsi83: Convert to i2c's .probe_new()
+          commit: 0f6548807fa77e87bbc37964c6b1ed9ba6e1155d
+
+
+
+rob
 

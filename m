@@ -2,123 +2,57 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EA0FC4332F
-	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Dec 2022 16:40:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07F87C001B2
+	for <linux-fbdev@archiver.kernel.org>; Wed, 14 Dec 2022 09:07:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232917AbiLLQkA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 12 Dec 2022 11:40:00 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40434 "EHLO
+        id S229829AbiLNJHX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 14 Dec 2022 04:07:23 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60642 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232834AbiLLQjN (ORCPT
+        with ESMTP id S237457AbiLNJHV (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 12 Dec 2022 11:39:13 -0500
-Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7EB96165A3
-        for <linux-fbdev@vger.kernel.org>; Mon, 12 Dec 2022 08:37:21 -0800 (PST)
-Received: by mail-ed1-x535.google.com with SMTP id d20so13737559edn.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 12 Dec 2022 08:37:21 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=lvYON1Uq6UT3Qph7OPPr0NH47G6rUYR8O1BO9MFwJow=;
-        b=lIFXcScE+1mmzH1SBNLfPzmU2yyZ22FDa7zo6/O0Bw9aIOxDeXxYkEVfus52JWuhda
-         4ouELocZnEhmnwFppolEYq4c3c7RHYAqD4pax4M3unQDLONiM/9+ejXSM9E2FE+Z0v02
-         plxbNMhSLCExfq6g58BwEJLatQLzpt/xLWOhKWfMwSgaHbhPuPfGnoShEU2Q/8V0GhBe
-         I8mO/6POKEHTvHhiQrSmT3i/DlcfyH1o4pAMtSuNXvNoHj+mOy3GKKCsRTSQGVPFd3Z7
-         AQYI0FN6wamo3RnZf0VXDCwVvMRjPWjYDkKYXDeP5o/vQIFIn9FanCQzU/XNFNQHrfWF
-         2geA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=lvYON1Uq6UT3Qph7OPPr0NH47G6rUYR8O1BO9MFwJow=;
-        b=XvOa5lfsyixq/J6LlaT6HgvwDAeqmk61dtysmPj1u9ICFPb0rhEE3deAgvgoL8/+Ym
-         bOQB5/8EqaLLC/4FJQvKZfusoN0TeWH7o9Ic63pgLAgFGKKIY0UC86H9B0fbJFbtgN4n
-         0xSrmfu3tKwVbGrizk2uHpuH3FjoCkZsiaTt5qhUn9l9cBhq5ujLmkn5JFqu6WlOSbIB
-         ERSnfaW1QhxV+95pJ8piQNvrj35s7FVFHGqOkgWcInWOcGDyRzUfQKaXDkHSIoRrH9xM
-         gPqLuvQsOzLhdSyPugpoUzi0q9hTdNaQF0SbtephINgTFN08F8/mvP01LURIkmKG+59H
-         Q3XA==
-X-Gm-Message-State: ANoB5pkuAtKLg0VtvmLYFtugbyuQoYp+lQcp2PPLPgTm02qVImLFRJy9
-        nAwWnjtvl0sGf/GelhUL3RFynWgLMWNasbz9
-X-Google-Smtp-Source: AA0mqf5ppTTyM6N0bPOAfBX//eKXVRPakyRimeYdkY/8NocUbAvjnOSiYLmQOcD2W7tmhBu2XO410g==
-X-Received: by 2002:a05:6402:702:b0:46f:68d0:76 with SMTP id w2-20020a056402070200b0046f68d00076mr10093614edx.34.1670863020790;
-        Mon, 12 Dec 2022 08:37:00 -0800 (PST)
-Received: from prec5560.. ([2001:bf7:830:a7a8:ff97:7d8d:1f2e:ffaa])
-        by smtp.gmail.com with ESMTPSA id m15-20020a50930f000000b00463597d2c25sm4051979eda.74.2022.12.12.08.36.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 12 Dec 2022 08:37:00 -0800 (PST)
-From:   Robert Foss <robert.foss@linaro.org>
-To:     Lee Jones <lee.jones@linaro.org>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>,
-        Angel Iglesias <ang.iglesiasg@gmail.com>,
-        Wolfram Sang <wsa@kernel.org>,
-        Grant Likely <grant.likely@linaro.org>
-Cc:     Robert Foss <robert.foss@linaro.org>,
-        linuxppc-dev@lists.ozlabs.org, linux-actions@lists.infradead.org,
-        linux-spi@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-media@vger.kernel.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-crypto@vger.kernel.org, chrome-platform@lists.linux.dev,
-        Broadcom internal kernel review list 
-        <bcm-kernel-feedback-list@broadcom.com>,
-        linux-input@vger.kernel.org, linux-rpi-kernel@lists.infradead.org,
-        linux-integrity@vger.kernel.org, linux-omap@vger.kernel.org,
-        linux-serial@vger.kernel.org, Purism Kernel Team <kernel@puri.sm>,
-        linux-staging@lists.linux.dev, alsa-devel@alsa-project.org,
-        linux-watchdog@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-rtc@vger.kernel.org, linux-leds@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-usb@vger.kernel.org, linux-pm@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org, patches@opensource.cirrus.com,
-        linux-mtd@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
-        linux-amlogic@lists.infradead.org, linux-pwm@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org, linux-i2c@vger.kernel.org,
-        kernel@pengutronix.de, netdev@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        openipmi-developer@lists.sourceforge.net,
-        linux-fbdev@vger.kernel.org
-Subject: Re: (subset) [PATCH 000/606] i2c: Complete conversion to i2c_probe_new
-Date:   Mon, 12 Dec 2022 17:36:51 +0100
-Message-Id: <167086288411.3041259.17824406556561546642.b4-ty@linaro.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20221118224540.619276-1-uwe@kleine-koenig.org>
-References: <20221118224540.619276-1-uwe@kleine-koenig.org>
+        Wed, 14 Dec 2022 04:07:21 -0500
+Received: from mail.lokoho.com (mail.lokoho.com [217.61.105.98])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E87931AA0C
+        for <linux-fbdev@vger.kernel.org>; Wed, 14 Dec 2022 01:07:20 -0800 (PST)
+Received: by mail.lokoho.com (Postfix, from userid 1001)
+        id 4618586345; Wed, 14 Dec 2022 09:06:11 +0000 (GMT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=lokoho.com; s=mail;
+        t=1671008839; bh=Z0N5VlX9/JlryGOL5I747Le9USomZJCRNNGRT3LbbKc=;
+        h=Date:From:To:Subject:From;
+        b=U1d5sGNHDnaw5gNDOO7P3ZQbC1MUvduDAEbBzRrpi/VJMN1dJJfpzEPLdpcqdt1SS
+         SrIbOy3rN2UJgndfazqSvPs0GXRfe7Wwu1xckuFbFFvhAShoYkJZhku3wS96Nn/khe
+         k/hdkObQmN4jFoiUUvZC4qNAWknsVM7sLbImcMjaswB8LDqCJH/iXg8+xDFV9RfZZr
+         IFF/wW93SbOIbKWjjnvDXqQiU8z+TLixzVf4F+QFP/gkEOZ8HyMW1s87TrR0N9Nsu/
+         LgdCuUhRwT7v3e2YXU11Rav5oVtT0iZJE+BCE8oI1aWgZwDNHIod94Zz0l7mu3b+68
+         fQDUnkBn5k+YA==
+Received: by mail.lokoho.com for <linux-fbdev@vger.kernel.org>; Wed, 14 Dec 2022 09:05:06 GMT
+Message-ID: <20221214074502-0.1.2t.9r7c.0.781lnrfq7w@lokoho.com>
+Date:   Wed, 14 Dec 2022 09:05:06 GMT
+From:   "Adam Charachuta" <adam.charachuta@lokoho.com>
+To:     <linux-fbdev@vger.kernel.org>
+Subject: =?UTF-8?Q?S=C5=82owa_kluczowe_do_wypozycjonowania?=
+X-Mailer: mail.lokoho.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, 18 Nov 2022 23:35:34 +0100, Uwe Kleine-König wrote:
-> since commit b8a1a4cd5a98 ("i2c: Provide a temporary .probe_new()
-> call-back type") from 2016 there is a "temporary" alternative probe
-> callback for i2c drivers.
-> 
-> This series completes all drivers to this new callback (unless I missed
-> something). It's based on current next/master.
-> A part of the patches depend on commit 662233731d66 ("i2c: core:
-> Introduce i2c_client_get_device_id helper function"), there is a branch that
-> you can pull into your tree to get it:
-> 
-> [...]
+Dzie=C5=84 dobry,
 
-Applied, thanks!
+zapozna=C5=82em si=C4=99 z Pa=C5=84stwa ofert=C4=85 i z przyjemno=C5=9Bci=
+=C4=85 przyznaj=C4=99, =C5=BCe przyci=C4=85ga uwag=C4=99 i zach=C4=99ca d=
+o dalszych rozm=C3=B3w.=20
 
-Repo: https://cgit.freedesktop.org/drm/drm-misc/
+Pomy=C5=9Bla=C5=82em, =C5=BCe mo=C5=BCe m=C3=B3g=C5=82bym mie=C4=87 sw=C3=
+=B3j wk=C5=82ad w Pa=C5=84stwa rozw=C3=B3j i pom=C3=B3c dotrze=C4=87 z t=C4=
+=85 ofert=C4=85 do wi=C4=99kszego grona odbiorc=C3=B3w. Pozycjonuj=C4=99 =
+strony www, dzi=C4=99ki czemu generuj=C4=85 =C5=9Bwietny ruch w sieci.
+
+Mo=C5=BCemy porozmawia=C4=87 w najbli=C5=BCszym czasie?
 
 
-[014/606] drm/bridge: adv7511: Convert to i2c's .probe_new()
-          commit: 1c546894ff82f8b7c070998c03f9b15a3499f326
-[028/606] drm/bridge: parade-ps8622: Convert to i2c's .probe_new()
-          commit: d6b522e9bbb0cca1aeae4ef6188800534794836f
-[035/606] drm/bridge: ti-sn65dsi83: Convert to i2c's .probe_new()
-          commit: 0f6548807fa77e87bbc37964c6b1ed9ba6e1155d
-
-
-
-rob
-
+Pozdrawiam
+Adam Charachuta

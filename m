@@ -2,198 +2,80 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D029C4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu, 15 Dec 2022 07:34:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29575C00145
+	for <linux-fbdev@archiver.kernel.org>; Thu, 15 Dec 2022 09:26:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229591AbiLOHeV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 15 Dec 2022 02:34:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46114 "EHLO
+        id S229952AbiLOJ0L (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 15 Dec 2022 04:26:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33356 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229558AbiLOHeU (ORCPT
+        with ESMTP id S229603AbiLOJ0K (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 15 Dec 2022 02:34:20 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 961452A24C;
-        Wed, 14 Dec 2022 23:34:18 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1671089644; bh=7zUfFLAsv5BwM3QMGuwZSLFemhuXLiMBGDJ7SGzoB/I=;
-        h=X-UI-Sender-Class:Date:From:To:Cc:Subject;
-        b=OOD5ti6VdDaR+rcFwkynf2gjPkrmX5HJPfX0SbqP7mcYd802XdXs5uQwL81d4asuM
-         sTkeYkU+dlamdevRriMazZcnrcPlMyaZb1OVS2vldJpqcfNq/uM1QelijdPkeO9XOS
-         pkbcLLKlcBvCth1SzG2YslNOkjgtAefFe0nTB5Av3c46iX3IgB45fSx5QjUUF7gWAG
-         hY4yKJNgrr5/m9bgpJNMgqYHZJGetwRnXpqkY6wNO/V7lZrRJp/DB/KbzhjyqRgZzm
-         ogOMptD9ssoWG4YzqSRiYdIxtZJ3Rtw6fZMeomX3R7YqqVPcHG3tshOLygx1w3XMNK
-         CByVhLq7hevvA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from ls3530 ([92.116.161.210]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MGQj7-1p9KiH15oL-00Gqik; Thu, 15
- Dec 2022 08:34:04 +0100
-Date:   Thu, 15 Dec 2022 08:34:00 +0100
-From:   Helge Deller <deller@gmx.de>
-To:     Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Cc:     Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: [GIT PULL] fbdev fixes and updates for v6.2-rc1
-Message-ID: <Y5rN6CT8genL6wQc@ls3530>
+        Thu, 15 Dec 2022 04:26:10 -0500
+Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C286633C3A
+        for <linux-fbdev@vger.kernel.org>; Thu, 15 Dec 2022 01:26:08 -0800 (PST)
+Received: by mail-wm1-x333.google.com with SMTP id c65-20020a1c3544000000b003cfffd00fc0so1255627wma.1
+        for <linux-fbdev@vger.kernel.org>; Thu, 15 Dec 2022 01:26:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=rT5nYetbt/rUXKIwgJbVz9fS9IuJsFVtRBisMphoNoo=;
+        b=uuryZsdS88lObitkX7oxZa7cfGT9633pRc4WZIgl5bJUbG9D8CBtD15kZGCxNXmd8W
+         SRwLhAR2eiJIhtAEZS9smEviFkVCL4zLFUaDE7JDGN1o0y6dDq5KSuqrYfCGczRFjXLj
+         PRVNRc9lFvKfpmul5ElCdoG0EIX0ixYU9SENXyrO6n0qDwLTyWlK8mOiKjQ7ktNyxmUl
+         2RIPHyh1eqJzELF1iNAtxlDnABfR2/fXoi3rbIIMnqkxUTRC/8qhTx84nZajQjMSYIDm
+         gdF/kr5djm6fIGjajwNgGSaXkRThEWBLjPNuOWiBwU6h+w1/gQEknxYtY+LQMgPwu+rI
+         2kmQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=rT5nYetbt/rUXKIwgJbVz9fS9IuJsFVtRBisMphoNoo=;
+        b=YztjELMpx7rAELAvmAeeBDPhXTRMzMfG7xr3FyFgJDknn/Zj8SKxLZYTRfIjZz71hS
+         IKqsJNNY9H+Z47x6daYwh7wl8tEf2iWcnn9Dvsjpz+N7pLwVHoflY5012/MFcC7plHva
+         WjVw1EAc+4g4p54VUyb09VmzhVH1PwbZekkeh5BQikhmySAyAOLgze74qL2z8UN/Dl4a
+         yzcC/MjUXqJNnuYW5wBOgcUoS8jy2oBf32EGp2zLZs8c4IrB1V1UAMJKoaamjGpu+dni
+         8MK4nvdZVcjexFJ6f0MfIbnBfXpInHP5G8vpLsCcqab20D7Hse+sXLgp7scFWg2BUc1Y
+         XNJA==
+X-Gm-Message-State: ANoB5plxYq33PxZktFzICijf+LBa3Mziq2tucwUBXM7tRVoMZKzdRDT8
+        9lNJHQ8exzwYVz3HFbeRTHNkzA==
+X-Google-Smtp-Source: AA0mqf40a/Y200wMJ6a9mSLz6nlNT4JTAlNOWT8f3KhBY+g472ukIetY/DrD+llEO7lEN4DsR6KLsQ==
+X-Received: by 2002:a05:600c:4f05:b0:3cf:85af:6a4a with SMTP id l5-20020a05600c4f0500b003cf85af6a4amr28838749wmq.25.1671096367213;
+        Thu, 15 Dec 2022 01:26:07 -0800 (PST)
+Received: from aspen.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
+        by smtp.gmail.com with ESMTPSA id v6-20020a05600c15c600b003d33ab317dasm1152748wmf.14.2022.12.15.01.26.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 15 Dec 2022 01:26:06 -0800 (PST)
+Date:   Thu, 15 Dec 2022 09:26:04 +0000
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Miaoqian Lin <linmq006@gmail.com>
+Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, Sam Ravnborg <sam@ravnborg.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] backlight: backlight: Fix doc for
+ backlight_device_get_by_name
+Message-ID: <Y5roLFINjM/GjWPK@aspen.lan>
+References: <20221215071902.424005-1-linmq006@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:SJKW3VdumEyfRXaGPuMgEugdQ28y1gGugzzxmGlhUPdfZe2lmwB
- RjkLBiB8DfeFAGF2O2evCIyfas6ccVSVg9LU2joUz7JZFC5Y8xlcHPhergLvf85Bxwfim54
- XjENivD2T2kz32zxQ2IwZnKzQvi2PVeQNbD06sa2GHHce378lXJELK8RoGjjopRWy00/quJ
- YLyvI4BuR/MU5gqKA29Gw==
-UI-OutboundReport: notjunk:1;M01:P0:EWKHmqdbQ80=;ZmrZIcg34/MRqa9ksMn3dYo+Ozp
- qcOLgk/lQUF3P2gWjlllkf52NQGu7frshakJFogGgMiEUNm9E0S7HcVQwb7g8/RhvqZtI8HpY
- 8zLH0QEEzl0K3MxUbJpArY+arS+EsKFConp0OnDMLc7btbJTk8LgpZwUrHZTQWOJz6u2T0nXy
- 6kh4eT6PEUhspzkA5CsuEPIO8S9hOXeEaOrBiRsKsWK8ml7etnhClPuN5OKTxpEKHekYL8BxQ
- xlxkH7Qfrka85Wqyy7dTNTipt6L/O0Ug18coThKXGUsDs6NJAclwn1gC9P9ueI+VZMBErSwyq
- R2FZnBk9oyZrRrfQt88ws2qOYch4Pidd2vNBoYumaqnOzc+9K4nEnNdTXWfPJ+bXvU4zHlmq6
- s7ryWSwPm/8iMReoQgpyjvDUq6JFTIAW07XoaJO7c0zE7AWlBlpKEFXXAPfu/8oJgPVc2IH23
- hx6APp9Wmi1HKar4TDdcX+M6hN5QQ0cKUZE8J13+bpjq/inWknphZwoT8YaNmbIs+av6dt+hZ
- he2pVAnmD4hX8QtxzR3uv5hUi0Dq90WHl88btsEzAZERo3rwCHneG2MwXpJMknlNGeU3sKpln
- 2WomdaOKAGUS+eeP3hVNfuSErOlIHFaYgj2nQfAEPy61Uhj/ZJzVT6nU4CekLoFeLsiZcob3E
- waCXGDR4jrPVzmcJehaVfwlaecqbhpx8iLdI2YaIzkRz5y6GIsE7fglFfZ2yJjQviZdSxuzFb
- mOHJ+r6gPpdbt+afEV0nEW3e7M4KYES9BgHT1SzvZIXnGfvcTZgZmNJOYuNDs4IbW+p9bmISU
- LBG0Li3uspT1iCw/OqfmJhBOtAZtUOUZwBzZ/HCBuWySxYPuNE7wZJxAwOhP8+RA+vWYCgt9g
- AcR8RWMSK/gkjZNs2olxFCkRLnRXIiwu4BaIuVVWF43OHiyJ9FZ4Ix5WkKH6Deyxq5+Y9Rquu
- /NiQ/Q==
+In-Reply-To: <20221215071902.424005-1-linmq006@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Linus,
+On Thu, Dec 15, 2022 at 11:19:01AM +0400, Miaoqian Lin wrote:
+> backlight_put() has been dropped, we should call put_device() to drop
+> the reference taken by backlight_device_get_by_name().
+>
+> Fixes: 0f6a3256fd81 ("backlight: backlight: Drop backlight_put()")
+> Signed-off-by: Miaoqian Lin <linmq006@gmail.com>
 
-please pull fbdev fixes and updates for kernel 6.2-rc1.
-
-Most relevant are the patches from Dmitry Torokhov to switch omapfb to
-the gpiod API.
-The other patches are small and fix e.g. UML build issues, improve
-the error paths and cleanup code.
-
-Thanks,
-Helge
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
 
-The following changes since commit c7020e1b346d5840e93b58cc4f2c67fc645d8df=
-9:
-
-  Merge tag 'pci-v6.2-changes' of git://git.kernel.org/pub/scm/linux/kerne=
-l/git/helgaas/pci (2022-12-14 09:54:10 -0800)
-
-are available in the Git repository at:
-
-  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git ta=
-gs/fbdev-for-6.2-rc1
-
-for you to fetch changes up to 3c3bfb8586f848317ceba5d777e11204ba3e5758:
-
-  fbdev: fbcon: release buffer when fbcon_do_set_font() failed (2022-12-14=
- 20:01:51 +0100)
-
-=2D---------------------------------------------------------------
-fbdev updates and fixes for kernel 6.2-rc1:
-
-Switch omapfb to the gpiod API, some failure path fixes and
-UML build fixes.
-
-=2D---------------------------------------------------------------
-Andy Shevchenko (2):
-      fbdev: ssd1307fb: Drop optional dependency
-      fbdev: ssd1307fb: Drop duplicate NULL checks for PWM APIs
-
-Christophe JAILLET (2):
-      fbdev: uvesafb: Fixes an error handling path in uvesafb_probe()
-      fbdev: uvesafb: Simplify uvesafb_remove()
-
-Colin Ian King (1):
-      fbdev: omapfb: remove redundant variable checksum
-
-Dmitry Torokhov (13):
-      fbdev: omapfb: connector-hdmi: switch to using gpiod API
-      fbdev: omapfb: panel-sony-acx565akm: remove support for platform dat=
-a
-      fbdev: omapfb: panel-sony-acx565akm: switch to using gpiod API
-      fbdev: omapfb: encoder-tfp410: switch to using gpiod API
-      fbdev: omapfb: panel-dsi-cm: switch to using gpiod API
-      fbdev: omapfb: panel-tpo-td043mtea1: switch to using gpiod API
-      fbdev: omapfb: panel-nec-nl8048hl11: switch to using gpiod API
-      fbdev: omapfb: panel-dpi: remove support for platform data
-      fbdev: omapfb: connector-analog-tv: remove support for platform data
-      fbdev: omapfb: encoder-opa362: fix included headers
-      fbdev: omapfb: panel-lgphilips-lb035q02: remove backlight GPIO handl=
-ing
-      fbdev: omapfb: panel-tpo-td028ttec1: stop including gpio.h
-      fbdev: omapfb: panel-sharp-ls037v7dw01: fix included headers
-
-Dongliang Mu (2):
-      fbdev: smscufx: fix error handling code in ufx_usb_probe
-      fbdev: da8xx-fb: add missing regulator_disable() in fb_probe
-
-Gaosheng Cui (1):
-      fbdev: ep93xx-fb: Add missing clk_disable_unprepare in ep93xxfb_prob=
-e()
-
-Randy Dunlap (2):
-      fbdev: geode: don't build on UML
-      fbdev: uvesafb: don't build on UML
-
-Shang XiaoJing (1):
-      fbdev: via: Fix error in via_core_init()
-
-Tetsuo Handa (1):
-      fbdev: fbcon: release buffer when fbcon_do_set_font() failed
-
-Uwe Kleine-K=F6nig (1):
-      fbdev: matroxfb: Convert to i2c's .probe_new()
-
-Xiongfeng Wang (1):
-      fbdev: vermilion: decrease reference count in error path
-
-Yang Yingliang (1):
-      fbdev: pm2fb: fix missing pci_disable_device()
-
-Yu Zhe (1):
-      fbdev: controlfb: fix spelling mistake "paramaters"->"parameters"
-
-wangkailong@jari.cn (1):
-      fbdev: pxafb: Remove unnecessary print function dev_err()
-
-ye xingchen (2):
-      fbdev: uvesafb: use sysfs_emit() to instead of scnprintf()
-      fbdev: sh_mobile_lcdcfb: use sysfs_emit() to instead of scnprintf()
-
- drivers/video/fbdev/Kconfig                        |   2 +-
- drivers/video/fbdev/controlfb.c                    |   2 +-
- drivers/video/fbdev/core/fbcon.c                   |   3 +-
- drivers/video/fbdev/da8xx-fb.c                     |   7 +-
- drivers/video/fbdev/ep93xx-fb.c                    |   4 +-
- drivers/video/fbdev/geode/Kconfig                  |   1 +
- drivers/video/fbdev/matrox/matroxfb_maven.c        |   5 +-
- .../omap2/omapfb/displays/connector-analog-tv.c    |  60 ++---------
- .../fbdev/omap2/omapfb/displays/connector-hdmi.c   |  49 +++------
- .../fbdev/omap2/omapfb/displays/encoder-opa362.c   |   4 +-
- .../fbdev/omap2/omapfb/displays/encoder-tfp410.c   |  67 ++++--------
- .../video/fbdev/omap2/omapfb/displays/panel-dpi.c  |  83 ++-------------
- .../fbdev/omap2/omapfb/displays/panel-dsi-cm.c     | 116 ++++++++--------=
------
- .../omapfb/displays/panel-lgphilips-lb035q02.c     |  21 +---
- .../omap2/omapfb/displays/panel-nec-nl8048hl11.c   |  72 ++++---------
- .../omapfb/displays/panel-sharp-ls037v7dw01.c      |   3 +-
- .../omap2/omapfb/displays/panel-sony-acx565akm.c   | 105 ++++++----------=
----
- .../omap2/omapfb/displays/panel-tpo-td028ttec1.c   |   1 -
- .../omap2/omapfb/displays/panel-tpo-td043mtea1.c   |  59 +++--------
- drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c  |   2 -
- drivers/video/fbdev/pm2fb.c                        |   9 +-
- drivers/video/fbdev/pxafb.c                        |   1 -
- drivers/video/fbdev/sh_mobile_lcdcfb.c             |   8 +-
- drivers/video/fbdev/smscufx.c                      |  46 +++++---
- drivers/video/fbdev/ssd1307fb.c                    |  12 +--
- drivers/video/fbdev/uvesafb.c                      |  39 ++++---
- drivers/video/fbdev/vermilion/vermilion.c          |   4 +-
- drivers/video/fbdev/via/via-core.c                 |   9 +-
- include/video/omap-panel-data.h                    |  71 -------------
- 29 files changed, 261 insertions(+), 604 deletions(-)
- delete mode 100644 include/video/omap-panel-data.h
+Daniel.

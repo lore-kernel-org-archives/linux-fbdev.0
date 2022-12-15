@@ -2,119 +2,93 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7ED97C4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu, 15 Dec 2022 04:37:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F085C00145
+	for <linux-fbdev@archiver.kernel.org>; Thu, 15 Dec 2022 07:19:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229471AbiLOEhY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 14 Dec 2022 23:37:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37368 "EHLO
+        id S229469AbiLOHTN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 15 Dec 2022 02:19:13 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41054 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229543AbiLOEhX (ORCPT
+        with ESMTP id S229496AbiLOHTM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 14 Dec 2022 23:37:23 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 474A44732E;
-        Wed, 14 Dec 2022 20:37:21 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 0ACB5B81A1D;
-        Thu, 15 Dec 2022 04:37:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 349EEC433D2;
-        Thu, 15 Dec 2022 04:37:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1671079038;
-        bh=iPpQhEwGYEJvzDjn9myuRzCRrqgzmmgWSjtc0v77jC8=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=ZWh0F5DfFMlr0MK1gV6BiBbPyGgu7t8p2nXlv4k3UBaswCYoJViDbaUXnQsjk3L5M
-         XDM6ts9j5FK/DsaH/a0hpoD4XRNcj1GJD6GeR3vfR/QbgzvBpMmCIP9550Tsna7YTs
-         c4SROpoBFEc1G9QmqMVnYYFFNuKP+WUm31wKkySs=
-Date:   Thu, 15 Dec 2022 05:37:15 +0100
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     "Haris M. Bhatti" <kernel@techtum.dev>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers: staging: fbtft: Replace usage of udelay
-Message-ID: <Y5qkey7Xj7tKwl48@kroah.com>
-References: <20221215013746.270404-1-kernel@techtum.dev>
+        Thu, 15 Dec 2022 02:19:12 -0500
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7084DCEB;
+        Wed, 14 Dec 2022 23:19:11 -0800 (PST)
+Received: by mail-pj1-x1032.google.com with SMTP id 3-20020a17090a098300b00219041dcbe9so1827886pjo.3;
+        Wed, 14 Dec 2022 23:19:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=gNNEXVu8wt2zuNH1k1KAp/j5xACVIRsF33hCTFu+i90=;
+        b=ke0PMAQli34KzagT/iZlwE1G+uKztUSLuFSo0o7cOv4AecrTSxBF0OO4UpjcehSj/K
+         GWr83LJSbCF0siXy0+Tsc2J/2grwXzEZKtYThtuyh7cQb7Vls/Lr8TiwN81ocJrvHxdO
+         er59dswgGOeFX51hSVWXvbvh5mYpqSYRSUPnzk2BMSWktH+7E+ih+OXq0uXwIfNSVRDO
+         u31QH8N0sDTDQIfnKM0vxnH177cIRN1Dj6DUdVv3MX9vKqCYtj6D/2+Eq4CKs2TU0Y2F
+         Wme02BGLglHiiGcCjNkAnh9XF/SvGLNwXji90UU+BdWKxVzrGs2kWBpszuBQIPAmwKnj
+         FO9Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=gNNEXVu8wt2zuNH1k1KAp/j5xACVIRsF33hCTFu+i90=;
+        b=eoPf0NoUlnTQ8k9XVcUgJy8SiImM8E2PWKiCHyrp8qBRUBuycqivCUJRX8zLeXviQO
+         9FODsDndcp6lnkJPS2gIFOJ8GM3u4CXp0g7+YT5USP1BYrB+Zo8XVnmzjC8+0n18yNAJ
+         EAed2mPHVd8J+dtgTxb/5lXNjykvl47Ul9TvQJWNMeqvNK7NKKpGkwoehuPqkfbdD1rO
+         nIlEfGH8mDQdy5mDDrA0/6fT6JfwiBSxcA7sx9BTYbeTGiyo1YmBL+K2NGikHgsBDo8w
+         1iSOM09kYPlIIeKi3szPSk4X0+9moKrANx0caf/IrWYbAO5MPx6ZdvOJc1E2wzl7cNFD
+         COeg==
+X-Gm-Message-State: ANoB5pku9RKdfkB4iAveQQoXM91zPLzKSgwMBps0k8Lqry+6dZy5l7BJ
+        6Lrbr9YZYAnwQxgHwPenq5o=
+X-Google-Smtp-Source: AA0mqf7MmXmaf/L+wigAXaOlCY44BwYrdpA2K+M67FvUPZ85+eGbZGssAOusmVHwWAkIDEiiIKdAcg==
+X-Received: by 2002:a17:903:24e:b0:188:8745:35af with SMTP id j14-20020a170903024e00b00188874535afmr49943612plh.63.1671088750984;
+        Wed, 14 Dec 2022 23:19:10 -0800 (PST)
+Received: from localhost.localdomain ([202.120.234.246])
+        by smtp.googlemail.com with ESMTPSA id j14-20020a170903024e00b001897bfc9802sm3046141plh.93.2022.12.14.23.19.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 14 Dec 2022 23:19:10 -0800 (PST)
+From:   Miaoqian Lin <linmq006@gmail.com>
+To:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, Sam Ravnborg <sam@ravnborg.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     linmq006@gmail.com
+Subject: [PATCH] backlight: backlight: Fix doc for backlight_device_get_by_name
+Date:   Thu, 15 Dec 2022 11:19:01 +0400
+Message-Id: <20221215071902.424005-1-linmq006@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221215013746.270404-1-kernel@techtum.dev>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Dec 15, 2022 at 01:37:46AM +0000, Haris M. Bhatti wrote:
-> checkpatch highlighted that use of udelay should be replaced by
-> usleep_range.
-> ---
->  drivers/staging/fbtft/fb_ra8875.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/staging/fbtft/fb_ra8875.c b/drivers/staging/fbtft/fb_ra8875.c
-> index 398bdbf53c9a..75cf3bb18414 100644
-> --- a/drivers/staging/fbtft/fb_ra8875.c
-> +++ b/drivers/staging/fbtft/fb_ra8875.c
-> @@ -217,7 +217,7 @@ static void write_reg8_bus8(struct fbtft_par *par, int len, ...)
->  	}
->  	len--;
->  
-> -	udelay(100);
-> +	usleep_range(100, 101);
->  
->  	if (len) {
->  		buf = (u8 *)par->buf;
-> @@ -238,7 +238,7 @@ static void write_reg8_bus8(struct fbtft_par *par, int len, ...)
->  
->  	/* restore user spi-speed */
->  	par->fbtftops.write = fbtft_write_spi;
-> -	udelay(100);
-> +	usleep_range(100, 101);
->  }
->  
->  static int write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
-> -- 
-> 2.38.1
-> 
-> 
+backlight_put() has been dropped, we should call put_device() to drop
+the reference taken by backlight_device_get_by_name().
 
-Hi,
+Fixes: 0f6a3256fd81 ("backlight: backlight: Drop backlight_put()")
+Signed-off-by: Miaoqian Lin <linmq006@gmail.com>
+---
+ drivers/video/backlight/backlight.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
-a patch that has triggered this response.  He used to manually respond
-to these common problems, but in order to save his sanity (he kept
-writing the same thing over and over, yet to different people), I was
-created.  Hopefully you will not take offence and will fix the problem
-in your patch and resubmit it so that it can be accepted into the Linux
-kernel tree.
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index b788ff3d0f45..6eea72aa8dbf 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -501,7 +501,7 @@ EXPORT_SYMBOL(backlight_device_get_by_type);
+  *
+  * This function looks up a backlight device by its name. It obtains a reference
+  * on the backlight device and it is the caller's responsibility to drop the
+- * reference by calling backlight_put().
++ * reference by calling put_device().
+  *
+  * Returns:
+  * A pointer to the backlight device if found, otherwise NULL.
+-- 
+2.25.1
 
-You are receiving this message because of the following common error(s)
-as indicated below:
-
-- Your patch does not have a Signed-off-by: line.  Please read the
-  kernel file, Documentation/SubmittingPatches and resend it after
-  adding that line.  Note, the line needs to be in the body of the
-  email, before the patch, not at the bottom of the patch or in the
-  email signature.
-
-- You did not specify a description of why the patch is needed, or
-  possibly, any description at all, in the email body.  Please read the
-  section entitled "The canonical patch format" in the kernel file,
-  Documentation/SubmittingPatches for what is needed in order to
-  properly describe the change.
-
-- You did not write a descriptive Subject: for the patch, allowing Greg,
-  and everyone else, to know what this patch is all about.  Please read
-  the section entitled "The canonical patch format" in the kernel file,
-  Documentation/SubmittingPatches for what a proper Subject: line should
-  look like.
-
-If you wish to discuss this problem further, or you have questions about
-how to resolve this issue, please feel free to respond to this email and
-Greg will reply once he has dug out from the pending patches received
-from other developers.
-
-thanks,
-
-greg k-h's patch email bot

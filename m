@@ -2,242 +2,163 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36229C4332F
-	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Dec 2022 21:21:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52E08C3DA7B
+	for <linux-fbdev@archiver.kernel.org>; Sat, 17 Dec 2022 00:10:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229764AbiLPVVp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 16 Dec 2022 16:21:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53666 "EHLO
+        id S229957AbiLQAKI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 16 Dec 2022 19:10:08 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43644 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229453AbiLPVVo (ORCPT
+        with ESMTP id S229453AbiLQAKE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 16 Dec 2022 16:21:44 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C76C61D50;
-        Fri, 16 Dec 2022 13:21:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1671225684; bh=aUOSQEhCMR/62w3hhkuJ9BsB1wW4vOhU1ddyczTpHTc=;
-        h=X-UI-Sender-Class:Date:From:To:Cc:Subject:References:In-Reply-To;
-        b=rpUj14RuTxPXnlnwLehw+nouQjJwRkStKnC+FATbjevuT2NLvO3vHB4e84GpHSy25
-         fF+d6hEHRkic1YKcmS6xfFyFJSk9j2g2W0yRA8bSff6+tEEup+EDtf6VdEiAgyMs5B
-         8RXJhwBrJZ0/GmlIoCIZrZUp/1UKYrxG6gIrSQ2ENHeQnPh7IDAYNTrl7VG7OYJPvS
-         SXfzNwKVG9rFsbz9XRv1kjUzYIX2qs62spJ6J9XEiSPI0SGWaeBpK28Cuu49/uSZNc
-         +2MuiBsYrwH8qn3CCg+8wvwlndxZS3zuFjUCnF3FNhkXuj2MIZhJ4hS147KCrD7v/y
-         F7bxWnOP6DCkg==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from p100 ([92.116.155.237]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1Mof9P-1oZQEv1CZN-00p8Wn; Fri, 16
- Dec 2022 22:21:24 +0100
-Date:   Fri, 16 Dec 2022 22:21:22 +0100
-From:   Helge Deller <deller@gmx.de>
-To:     Paul Menzel <pmenzel@molgen.mpg.de>
-Cc:     Helge Deller <deller@gmx.de>, "Z. Liu" <liuzx@knownsec.com>,
-        linux-fbdev@vger.kernel.org, it+linux-fbdev@molgen.mpg.de,
-        regressions@lists.linux.dev, stable@vger.kernel.org
-Subject: Re: matroxfb: cannot determine memory size
-Message-ID: <Y5zhUl7r9z0lFJxc@p100>
-References: <5da53ec5-3a9c-ec87-da20-69f140aaaa6b@molgen.mpg.de>
- <6ef71be5-def9-4578-3f73-c43c35d7e4a9@gmx.de>
- <dc0b1487-04f9-5a2f-e0f8-d157a74b6bcb@molgen.mpg.de>
+        Fri, 16 Dec 2022 19:10:04 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D72487330F;
+        Fri, 16 Dec 2022 16:10:02 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 8BDEBB81E4E;
+        Sat, 17 Dec 2022 00:10:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 96200C433EF;
+        Sat, 17 Dec 2022 00:09:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1671235800;
+        bh=vF23BYv+6T0tXv7MxbXYpcNuOcT2bfRsDDi4oBi3KiQ=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=kMwcDSGaq0fzj21Mo0hBx7iKaBaP5TcKwWL/liJLLJn0Iq4MdGGJPZKkfiN/t68Px
+         OEPDWIvd71B9TCKnmVCzLNKaBptpd9TopjZGB0MY8TG4Ay/2EjHqmQdyROrd09XJsr
+         RpueJqmB7WkPajUaFWmRmARMqUKMhGXPbL+e/18Qx3oIr3u5poyVS6eeQlMBBMLR5e
+         yOh2Ht76kN622QvCll3j9N7jnld2Oe9INQOXiX+Clo+fWHo/jTL6ZutMnfgCzJ1ova
+         7XK8IAyHOdmwHaJdilLNrkLWZIt28l1BX5TOyw90BjnrV0m2Y2M+uUp6YL3JMHsLF/
+         VCaCXW/viwK0g==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
+        Andrea Parri <parri.andrea@gmail.com>,
+        Dexuan Cui <decui@microsoft.com>,
+        Haiyang Zhang <haiyangz@microsoft.com>,
+        "K. Y. Srinivasan" <kys@microsoft.com>,
+        Michael Kelley <mikelley@microsoft.com>,
+        Stephen Hemminger <sthemmin@microsoft.com>,
+        Tianyu Lan <Tianyu.Lan@microsoft.com>,
+        Wei Liu <wei.liu@kernel.org>,
+        Fabio A M Martins <fabiomirmar@gmail.com>,
+        Sasha Levin <sashal@kernel.org>, deller@gmx.de,
+        linux-hyperv@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 6.1 4/9] video: hyperv_fb: Avoid taking busy spinlock on panic path
+Date:   Fri, 16 Dec 2022 19:09:31 -0500
+Message-Id: <20221217000937.41115-4-sashal@kernel.org>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20221217000937.41115-1-sashal@kernel.org>
+References: <20221217000937.41115-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <dc0b1487-04f9-5a2f-e0f8-d157a74b6bcb@molgen.mpg.de>
-X-Provags-ID: V03:K1:j5u2j/ROt/Uxz6zlMZOTjJBO8Y4Gu9BJJtWwaigPJOdbthEddOb
- Be2ItH11ei7KaK/q7ndqOxc/HnEmBXBKgpZnUhTzbKJiRfPhRX1//KF/MRofUIad0L9snI3
- qrLBAJBjTGcMrrc9fYIzpfZKLtU+DTX34ylv9QCQf1gZOOUyvYNYxZUKOz8QPjKq8PTx2ZH
- 1n1SVtrUa5VDxnYJZ0x4w==
-UI-OutboundReport: notjunk:1;M01:P0:GIlZc3KVv24=;t1dMMnP4aDlcDvDO/jXP6ipS2M3
- YHfRwIQeBVqArP/e+NecUU1XMyyT/Ym/4XRF9Ux4faD6CDAEfcPRlXtWXQZm6oXEVX9iigxPu
- 0HEVcpVg5DESnyZ79laSey+4VOTksMp8+YyGvLHNl8541YitVoN5hs04BTB++smibsJXaHQXQ
- 8nen4GZabKd+BAymucFKhaV5k2sfHMTfMlzaOH2M3yHa0hYEIYc7CtDRpMuodnhotyaekESOD
- S/P3dU+zwGh7T9OWAAEmq3aHhJzHPR/Iu9KgmcS8oBcPQWmUOqBBQ5fXf01lXfdyVt3sEyV72
- JNaHwzGzrYgmaqNGlLvxhJ03VsP4eP6FETaZK9GKDiq6d/RbVAwkUWsUpfL0OaVjSxW3PukzK
- rAqmNxFLskxoMqy8605VHqZiSzdtsKHelLW9g/EulNHCo5kQyKnN+iA7m7hr/PTvLamh2aaSJ
- XM+GIC9cNVbbpo+0bBdXNLeLxU22ourFfNjYvxuDLg3fjFB3qVnx1t3fKQZobNRygv1hjJnzn
- dzHFBXyl5ng6gwDr/AyDPA1Z6Ypuvff8kH+zxapAj549v2Xpa2QnxcMJLI+78IXGdl3vCxjZx
- PxtPpYhgnWepJ2oyhyelVQ4PPz63GPClYgCRDOlPeKBXTYexrKnIC0Id/+Df3wYfsYnBqOZx2
- YB5BKu8QjM1NFmb9MDQDPEsRH2VdYg38Gda5kyFUwbDrf6GtzCGFO795n7QAAg7sLeYGGiRiR
- VGOmkEO/13EHm6mCfMaEGQFZEvLhuFZ2qjjrmBEGG6q+auGfG/7OqbSsC8snbLXaRe2FFQz/O
- qxV0Wy333bcA0bVfhk/0QndZlRM+WwgTRiZdp/TxuTbrHXS2Klv9S4BCcvbY8imKl/CkKoVLD
- 5fE3JD4oRLY1TLHwr5skGKpjs2H/0wbkvNiHthF4JZKOjFBmvLc3ri+fSH9i9TRH822bHBLoI
- kw3WhQ==
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-* Paul Menzel <pmenzel@molgen.mpg.de>:
-> [Cc: +regressions@, +stable@]
->
-> #regzbot ^introduced: 62d89a7d49afe46e6b9bbe9e23b004ad848dbde4
->
->
-> Dear Helge,
->
->
-> Thank you for your prompt reply.
->
-> Am 16.12.22 um 00:02 schrieb Helge Deller:
-> > On 12/15/22 17:39, Paul Menzel wrote:
->
-> > > Between Linux 5.10.103 and 5.10.110/5.15.77, matrixfb fails to load.
-> > >
-> > > ## Working:
-> > >
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0=C2=A0 0.000000] Linux version=
- 5.10.103.mx64.429 (root@theinternet.molgen.mpg.de) (gcc (GCC) 7.5.0, GNU =
-ld (GNU Binutils) 2.37) #1 SMP Mon Mar 7 16:41:58 CET 2022
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0=C2=A0 0.000000] Command line:=
- BOOT_IMAGE=3D/boot/bzImage-5.10.103.mx64.429 root=3DLABEL=3Droot ro crash=
-kernel=3D64G-:256M console=3DttyS0,115200n8 console=3Dtty0 init=3D/bin/sys=
-temd audit=3D0 random.trust_cpu=3Don systemd.unified_cgroup_hierarchy
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=E2=80=A6]
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0=C2=A0 0.000000] DMI: Dell Inc=
-. PowerEdge R910/0KYD3D, BIOS 2.10.0 08/29/2013
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=E2=80=A6]
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0 48.045530] matroxfb: Matrox M=
-GA-G200eW (PCI) detected
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0 48.054675] matroxfb: 640x480x=
-8bpp (virtual: 640x13107)
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0 48.059966] matroxfb: framebuf=
-fer at 0xC5000000, mapped to 0x00000000ca7238fa, size 8388608
-> > >
-> > > ## Non-working:
-> > >
-> > > ### 5.10.110
-> > >
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0=C2=A0 0.000000] Linux version=
- 5.10.110.mx64.433
-> > > (root@theinternet.molgen.mpg.de) (gcc (GCC) 7.5.0, GNU ld (GNU
-> > > Binutils) 2.37) #1 SMP Thu Apr 14 15:28:53 CEST 2022
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0=C2=A0 0.000000] Command line:=
- root=3DLABEL=3Droot ro crashkernel=3D64G-:256M console=3DttyS0,115200n8 c=
-onsole=3Dtty0 init=3D/bin/systemd audit=3D0 random.trust_cpu=3Don systemd.=
-unified_cgroup_hierarchy
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=E2=80=A6]
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0=C2=A0 0.000000] DMI: Dell Inc=
-. PowerEdge R910/0KYD3D, BIOS 2.10.0 08/29/2013
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=E2=80=A6]
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0 35.225987] matroxfb: Matrox M=
-GA-G200eW (PCI) detected
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0 35.234088] matroxfb: cannot d=
-etermine memory size
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0 35.238931] matroxfb: probe of=
- 0000:09:03.0 failed with error -1
-> > >
-> > > ### 5.15.77
-> > >
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0=C2=A0 0.000000] Linux version=
- 5.15.77.mx64.440 (root@theinternet.molgen.mpg.de) (gcc (GCC) 10.4.0, GNU =
-ld (GNU Binutils) 2.37) #1 SMP Tue Nov 8 15:42:33 CET 2022
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0=C2=A0 0.000000] Command line:=
- root=3DLABEL=3Droot ro crashkernel=3D64G-:256M console=3DttyS0,115200n8 c=
-onsole=3Dtty0 init=3D/bin/systemd audit=3D0 random.trust_cpu=3Don systemd.=
-unified_cgroup_hierarchy
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=E2=80=A6]
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0=C2=A0 0.000000] DMI: Dell Inc=
-. PowerEdge R715/0G2DP3, BIOS 1.5.2 04/19/2011
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=E2=80=A6]
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0=C2=A0 9.436420] matroxfb: Mat=
-rox MGA-G200eW (PCI) detected
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0=C2=A0 9.444502] matroxfb: can=
-not determine memory size
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 [=C2=A0=C2=A0=C2=A0 9.449316] matroxfb: pro=
-be of 0000:0a:03.0 failed with error -1
-> > >
-> > > We see it on several systems:
-> > >
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 $ lspci -nn -s 0a:03.0 # Dell PowerEdge R71=
-5
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 0a:03.0 VGA compatible controller [0300]: M=
-atrox Electronics Systems Ltd. MGA G200eW WPCM450 [102b:0532] (rev 0a)
-> > >
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 $ lspci -nn -s 09:03.0 # Dell PowerEdge R91=
-0
-> > > =C2=A0=C2=A0=C2=A0=C2=A0 09:03.0 VGA compatible controller [0300]: M=
-atrox Electronics Systems Ltd. MGA G200eW WPCM450 [102b:0532] (rev 0a)
-> > >
-> > > I found some old log from April 2022, where I booted 5.10.109, and
-> > > the error is not there, pointing toward the regression to be
-> > > introduced between 5.10.109 and 5.10.110.
-> > >
-> > > ```
-> > > $ git log --oneline v5.10.109..v5.10.110 --grep fbdev
->
-> [=E2=80=A6]
->
-> > > ```
-> > >
-> > > Is it worthwhile to test commit f8bf19f7f311 (video: fbdev:
-> > > matroxfb: set maxvram of vbG200eW to the same as vbG200 to avoid
-> > > black screen)?
-> >
-> > Yes, it is.
-> > Please try and report back.
-> > It seems to be the only relevant patch, and it fits with the name of
-> > your card.
->
-> I tested Linus=E2=80=99 master with commit 84e57d292203 (Merge tag
-> 'exfat-for-6.2-rc1' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/linkinjeon/exfat) and the
-> error is still there. Reverting commit fixes the issue.
->
-> Tested on:
->
->     DMI: Dell Inc. PowerEdge R910/0KYD3D, BIOS 2.10.0 08/29/2013
->
-> Current master:
->
->     [   36.221595] matroxfb 0000:09:03.0: vgaarb: deactivate vga console
->     [   36.228355] Console: switching to colour dummy device 80x25
->     [   36.234069] matroxfb: Matrox MGA-G200eW (PCI) detected
->     [   36.239316] PInS memtype =3D 7
->     [   36.242198] matroxfb: cannot determine memory size
->     [   36.242209] matroxfb: probe of 0000:09:03.0 failed with error -1
->
-> After reverting 62d89a7d49af (video: fbdev: matroxfb: set maxvram of
-> vbG200eW to the same as vbG200 to avoid black screen):
->
->     [   38.140763] matroxfb 0000:09:03.0: vgaarb: deactivate vga console
->     [   38.148057] Console: switching to colour dummy device 80x25
->     [   38.153789] matroxfb: Matrox MGA-G200eW (PCI) detected
->     [   38.159042] PInS memtype =3D 7
->     [   38.161953] matroxfb: 640x480x8bpp (virtual: 640x13107)
-> 2022-12-16T12:26:11.301999+01:00 invidia kernel: [   38.167175] matroxfb=
-:
-> framebuffer at 0xC5000000, mapped to 0x000000006f41c38c, size 8388608
->
-> > > The master commit 62d89a7d49a was added to v5.18-rc1, and was also
-> > > backported to the Linux 5.15 series in 5.15.33.
+From: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
 
-Good.
+[ Upstream commit 1d044ca035dc22df0d3b39e56f2881071d9118bd ]
 
-Could you test if the patch below works for you as well (on top of git mas=
-ter) ?
-I believe the commit f8bf19f7f311 (video: fbdev: matroxfb: set maxvram of =
-vbG200eW to the same as vbG200 to avoid black screen)
-changed the wrong value...
+The Hyper-V framebuffer code registers a panic notifier in order
+to try updating its fbdev if the kernel crashed. The notifier
+callback is straightforward, but it calls the vmbus_sendpacket()
+routine eventually, and such function takes a spinlock for the
+ring buffer operations.
 
-If it works, can you send a patch?
+Panic path runs in atomic context, with local interrupts and
+preemption disabled, and all secondary CPUs shutdown. That said,
+taking a spinlock might cause a lockup if a secondary CPU was
+disabled with such lock taken. Fix it here by checking if the
+ring buffer spinlock is busy on Hyper-V framebuffer panic notifier;
+if so, bail-out avoiding the potential lockup scenario.
 
-Helge
+Cc: Andrea Parri (Microsoft) <parri.andrea@gmail.com>
+Cc: Dexuan Cui <decui@microsoft.com>
+Cc: Haiyang Zhang <haiyangz@microsoft.com>
+Cc: "K. Y. Srinivasan" <kys@microsoft.com>
+Cc: Michael Kelley <mikelley@microsoft.com>
+Cc: Stephen Hemminger <sthemmin@microsoft.com>
+Cc: Tianyu Lan <Tianyu.Lan@microsoft.com>
+Cc: Wei Liu <wei.liu@kernel.org>
+Tested-by: Fabio A M Martins <fabiomirmar@gmail.com>
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@igalia.com>
+Reviewed-by: Michael Kelley <mikelley@microsoft.com>
+Link: https://lore.kernel.org/r/20220819221731.480795-10-gpiccoli@igalia.com
+Signed-off-by: Wei Liu <wei.liu@kernel.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/hv/ring_buffer.c        | 13 +++++++++++++
+ drivers/video/fbdev/hyperv_fb.c |  8 +++++++-
+ include/linux/hyperv.h          |  2 ++
+ 3 files changed, 22 insertions(+), 1 deletion(-)
 
-
-diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fb=
-dev/matrox/matroxfb_base.c
-index 0d3cee7ae726..5192c7ac459a 100644
-=2D-- a/drivers/video/fbdev/matrox/matroxfb_base.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_base.c
-@@ -1378,8 +1378,8 @@ static struct video_board vbG200 =3D {
- 	.lowlevel =3D &matrox_G100
- };
- static struct video_board vbG200eW =3D {
--	.maxvram =3D 0x100000,
--	.maxdisplayable =3D 0x800000,
-+	.maxvram =3D 0x800000,
-+	.maxdisplayable =3D 0x100000,
- 	.accelID =3D FB_ACCEL_MATROX_MGAG200,
- 	.lowlevel =3D &matrox_G100
- };
+diff --git a/drivers/hv/ring_buffer.c b/drivers/hv/ring_buffer.c
+index 59a4aa86d1f3..c6692fd5ab15 100644
+--- a/drivers/hv/ring_buffer.c
++++ b/drivers/hv/ring_buffer.c
+@@ -280,6 +280,19 @@ void hv_ringbuffer_cleanup(struct hv_ring_buffer_info *ring_info)
+ 	ring_info->pkt_buffer_size = 0;
+ }
+ 
++/*
++ * Check if the ring buffer spinlock is available to take or not; used on
++ * atomic contexts, like panic path (see the Hyper-V framebuffer driver).
++ */
++
++bool hv_ringbuffer_spinlock_busy(struct vmbus_channel *channel)
++{
++	struct hv_ring_buffer_info *rinfo = &channel->outbound;
++
++	return spin_is_locked(&rinfo->ring_lock);
++}
++EXPORT_SYMBOL_GPL(hv_ringbuffer_spinlock_busy);
++
+ /* Write to the ring buffer. */
+ int hv_ringbuffer_write(struct vmbus_channel *channel,
+ 			const struct kvec *kv_list, u32 kv_count,
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index 072ce07ba9e0..4ff25dfc865d 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -780,12 +780,18 @@ static void hvfb_ondemand_refresh_throttle(struct hvfb_par *par,
+ static int hvfb_on_panic(struct notifier_block *nb,
+ 			 unsigned long e, void *p)
+ {
++	struct hv_device *hdev;
+ 	struct hvfb_par *par;
+ 	struct fb_info *info;
+ 
+ 	par = container_of(nb, struct hvfb_par, hvfb_panic_nb);
+-	par->synchronous_fb = true;
+ 	info = par->info;
++	hdev = device_to_hv_device(info->device);
++
++	if (hv_ringbuffer_spinlock_busy(hdev->channel))
++		return NOTIFY_DONE;
++
++	par->synchronous_fb = true;
+ 	if (par->need_docopy)
+ 		hvfb_docopy(par, 0, dio_fb_size);
+ 	synthvid_update(info, 0, 0, INT_MAX, INT_MAX);
+diff --git a/include/linux/hyperv.h b/include/linux/hyperv.h
+index 3b42264333ef..646f1da9f27e 100644
+--- a/include/linux/hyperv.h
++++ b/include/linux/hyperv.h
+@@ -1341,6 +1341,8 @@ struct hv_ring_buffer_debug_info {
+ int hv_ringbuffer_get_debuginfo(struct hv_ring_buffer_info *ring_info,
+ 				struct hv_ring_buffer_debug_info *debug_info);
+ 
++bool hv_ringbuffer_spinlock_busy(struct vmbus_channel *channel);
++
+ /* Vmbus interface */
+ #define vmbus_driver_register(driver)	\
+ 	__vmbus_driver_register(driver, THIS_MODULE, KBUILD_MODNAME)
+-- 
+2.35.1
 

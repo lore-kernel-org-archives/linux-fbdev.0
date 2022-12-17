@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52E08C3DA7B
-	for <linux-fbdev@archiver.kernel.org>; Sat, 17 Dec 2022 00:10:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4278CC3DA7B
+	for <linux-fbdev@archiver.kernel.org>; Sat, 17 Dec 2022 00:11:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229957AbiLQAKI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 16 Dec 2022 19:10:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43644 "EHLO
+        id S230078AbiLQALw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 16 Dec 2022 19:11:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45176 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229453AbiLQAKE (ORCPT
+        with ESMTP id S229865AbiLQALT (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 16 Dec 2022 19:10:04 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D72487330F;
-        Fri, 16 Dec 2022 16:10:02 -0800 (PST)
+        Fri, 16 Dec 2022 19:11:19 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2484740801;
+        Fri, 16 Dec 2022 16:10:30 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 8BDEBB81E4E;
-        Sat, 17 Dec 2022 00:10:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 96200C433EF;
-        Sat, 17 Dec 2022 00:09:58 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id A6624622CB;
+        Sat, 17 Dec 2022 00:10:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 79287C433D2;
+        Sat, 17 Dec 2022 00:10:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1671235800;
-        bh=vF23BYv+6T0tXv7MxbXYpcNuOcT2bfRsDDi4oBi3KiQ=;
+        s=k20201202; t=1671235829;
+        bh=mv8tgCOUMGgtx94A/3ywNez81omKJEm3PGs42DkrCxo=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=kMwcDSGaq0fzj21Mo0hBx7iKaBaP5TcKwWL/liJLLJn0Iq4MdGGJPZKkfiN/t68Px
-         OEPDWIvd71B9TCKnmVCzLNKaBptpd9TopjZGB0MY8TG4Ay/2EjHqmQdyROrd09XJsr
-         RpueJqmB7WkPajUaFWmRmARMqUKMhGXPbL+e/18Qx3oIr3u5poyVS6eeQlMBBMLR5e
-         yOh2Ht76kN622QvCll3j9N7jnld2Oe9INQOXiX+Clo+fWHo/jTL6ZutMnfgCzJ1ova
-         7XK8IAyHOdmwHaJdilLNrkLWZIt28l1BX5TOyw90BjnrV0m2Y2M+uUp6YL3JMHsLF/
-         VCaCXW/viwK0g==
+        b=dfQq5FjS5taah0ZNDWPi0cUQ25cV3PhQepoa22b7kh4Z325yNlaTCMZb9x5IcVjHy
+         k097TCRlP/rX7Sv2ApHnnxgLulYYNb3Ui9FHmiAFODTSa/F6k1o3kgSNi+RfcPDyb7
+         eafZNXxDWyTtUYJV0pUf5cGY0pcj11oeurfKo5wAA8RUtk8BP9gxsdY2YOqvnjEqK6
+         y5HBcwt/puSF8WZQw7lwkI46um/4Mfgj5Li2gYV/JdkcR6eIFgIFMEWzYJ0jIiXMc3
+         YecBKpTCHHO6PmWWh5IQVW09aJqvpgSnl5hzFXTO8zDKg355IaTIQGsQE8c8mmdl3W
+         SnsZlfWYrOa7A==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
@@ -47,12 +47,12 @@ Cc:     "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
         Sasha Levin <sashal@kernel.org>, deller@gmx.de,
         linux-hyperv@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 6.1 4/9] video: hyperv_fb: Avoid taking busy spinlock on panic path
-Date:   Fri, 16 Dec 2022 19:09:31 -0500
-Message-Id: <20221217000937.41115-4-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.0 4/8] video: hyperv_fb: Avoid taking busy spinlock on panic path
+Date:   Fri, 16 Dec 2022 19:10:08 -0500
+Message-Id: <20221217001013.41239-4-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20221217000937.41115-1-sashal@kernel.org>
-References: <20221217000937.41115-1-sashal@kernel.org>
+In-Reply-To: <20221217001013.41239-1-sashal@kernel.org>
+References: <20221217001013.41239-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -123,10 +123,10 @@ index 59a4aa86d1f3..c6692fd5ab15 100644
  int hv_ringbuffer_write(struct vmbus_channel *channel,
  			const struct kvec *kv_list, u32 kv_count,
 diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
-index 072ce07ba9e0..4ff25dfc865d 100644
+index b58b445bb529..0839ba7d3a34 100644
 --- a/drivers/video/fbdev/hyperv_fb.c
 +++ b/drivers/video/fbdev/hyperv_fb.c
-@@ -780,12 +780,18 @@ static void hvfb_ondemand_refresh_throttle(struct hvfb_par *par,
+@@ -779,12 +779,18 @@ static void hvfb_ondemand_refresh_throttle(struct hvfb_par *par,
  static int hvfb_on_panic(struct notifier_block *nb,
  			 unsigned long e, void *p)
  {

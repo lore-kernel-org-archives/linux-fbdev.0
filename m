@@ -2,66 +2,66 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BC0CC4332F
-	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Dec 2022 09:24:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B249DC10F1E
+	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Dec 2022 09:25:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229845AbiLTJY6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 20 Dec 2022 04:24:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37058 "EHLO
+        id S232633AbiLTJZt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 20 Dec 2022 04:25:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38216 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229769AbiLTJY5 (ORCPT
+        with ESMTP id S232989AbiLTJZs (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 20 Dec 2022 04:24:57 -0500
+        Tue, 20 Dec 2022 04:25:48 -0500
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC607BE9
-        for <linux-fbdev@vger.kernel.org>; Tue, 20 Dec 2022 01:24:18 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 50DD4BE9
+        for <linux-fbdev@vger.kernel.org>; Tue, 20 Dec 2022 01:25:04 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1671528258;
+        s=mimecast20190719; t=1671528303;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=hYMKnwowgCZbmQLyZb+O1xPkwcQc1vWKiI5mpSCZQTU=;
-        b=A/7LC0W2LuPNDh009vMU274Iqay9dstaNyxACKvN8N2Dffxm6s9f3z/jeDT1hRGmBhQzrF
-        6BH3yuhnv4vO/wwBvLvxPbhFAe2dQ1KJDVSgfZUn85FqU7s7edA908fx/Migxx9YZrlQvp
-        jt9lDkhJEvYBqGlBNlGCfzYdUZ+LklY=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=hMFhZOuihLodO313fEA5R64i9CUhN9/n0ds4HavllAs=;
+        b=gngBIQ7zUBhzzIIqKucjHvclR7o4PWQ3/726DmDRWDGZOM6mk2/YSoILD8ocMM7imtg8G6
+        2CnBMyzNXJZHANGz9VzfIyhL8lgXQvWOtZiVLVz9KNl4SCR7WHloqevFWouugcH7bP5CSG
+        W/In6c1pl2Eg44MnVu7mZjRSpxeojgQ=
+Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
+ [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-171-1JDa4zoFOuagt2OrbYqwKw-1; Tue, 20 Dec 2022 04:24:09 -0500
-X-MC-Unique: 1JDa4zoFOuagt2OrbYqwKw-1
-Received: by mail-wm1-f70.google.com with SMTP id i187-20020a1c3bc4000000b003d634aca337so137970wma.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 20 Dec 2022 01:24:09 -0800 (PST)
+ us-mta-651-sUpwUkLePNO9K3zhkAn5aw-1; Tue, 20 Dec 2022 04:25:01 -0500
+X-MC-Unique: sUpwUkLePNO9K3zhkAn5aw-1
+Received: by mail-wr1-f69.google.com with SMTP id i13-20020adfa50d000000b0025f5084b95dso1149147wrb.5
+        for <linux-fbdev@vger.kernel.org>; Tue, 20 Dec 2022 01:25:01 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=hYMKnwowgCZbmQLyZb+O1xPkwcQc1vWKiI5mpSCZQTU=;
-        b=iBK4dUZgjDDQcUJSzubmXSPofGmW26tLnz+7yz5XSjLSEC77ldGTs7Ymv6sDQUPmPI
-         lUlPn8TkW/5cfRRAJ3zKMwey1Gv8Vb6y3odFRQnHdEXFFAerVjPRF1a8Mcl4FQAhZQ93
-         MFn0Mm+qZFM4UyiC0TZ0+1a8y3AEHG/mp+JST9aFplKOAEU8HpiFS7RkDCEK7NxZ5M3B
-         pXm6hYlosOdFin1n0QapV4nupYcDjKNlgb8wAsjZK0He8zWbOfbeME2gqGvwUJGeh33u
-         YTu1LN8/2OMZrkPzceS132H09zzgGiOZgtYGqrqLc/H/VYsmbUX+xYwxG4h5VHOGB62M
-         1cIQ==
-X-Gm-Message-State: ANoB5plx3nU9zxxiO9l4o4J2UB2C8XAKt3i3KdjkcmuzN6G8LB7TvsyS
-        TAh8MoWvWuuXHZnsffFWU7cdTpATHrtJcb+V0BMdxiuxh/ETPUi4nHZvkx6cyAY9rx+G5W43Hqn
-        9XjyG9I2hXrc7iR0nolpHPt0=
-X-Received: by 2002:a05:600c:3592:b0:3d1:bc32:2447 with SMTP id p18-20020a05600c359200b003d1bc322447mr34442427wmq.21.1671528248085;
-        Tue, 20 Dec 2022 01:24:08 -0800 (PST)
-X-Google-Smtp-Source: AA0mqf63KxuIxT0M/bl3iLHanyFrnj5hgoC/KBz3bLt1CmA/PA7eDrziJ0q3Lz1WCcHGowxEUJxpPQ==
-X-Received: by 2002:a05:600c:3592:b0:3d1:bc32:2447 with SMTP id p18-20020a05600c359200b003d1bc322447mr34442411wmq.21.1671528247925;
-        Tue, 20 Dec 2022 01:24:07 -0800 (PST)
+        bh=hMFhZOuihLodO313fEA5R64i9CUhN9/n0ds4HavllAs=;
+        b=h0+30DPoeWeVfvRXjVnv7cPqMjSSZsAYQq1tviSx9rbJPHzsbvzsoAfuuzdoFyUsin
+         bjJQgKzyxlKnqmWBWFr02TWDVcFxp8VnQSKvzFdrpCZ9jAN9hpGY6WkAw9LeTsdsxp2Q
+         u42Fs1ScUQNr0YI5ytdb4UMYjmAWbcTHDKclVqvS34WvIWnFm4jiGG4Ubun5ZM6i2CJy
+         43EEBKIoxm5MuOYuW0St9L/HJFsJxcxbmhvYMHSGF+sTU7yNl5wwURS/X+A/9U+kRtVU
+         HIVn1gXgjJGgi50Hu9X4U9N3iyDCwE4B7/77SdYrQYUU503x4s4KosppibCtw69g3x3P
+         e86w==
+X-Gm-Message-State: ANoB5pngOARAqeBr67ftS7B+FFFhvnASbdXSxPWPB19htbsqkPL8NaPd
+        fv1ozEWtfAUWEeresRGl0oEsaGPFi/g4TCgJ7ZyR74zTt204YoJuIzKDjB+xGOg6ZainAXbXLkg
+        iiJq2aTNJ3D/0WvTmqHvNXdc=
+X-Received: by 2002:a05:600c:1d27:b0:3d2:27ba:dde0 with SMTP id l39-20020a05600c1d2700b003d227badde0mr25905734wms.33.1671528300460;
+        Tue, 20 Dec 2022 01:25:00 -0800 (PST)
+X-Google-Smtp-Source: AA0mqf6s+ju9wPrh/cxmy7d4OakLICIinEdQttdoLSS+PoembSG//ZlaMVN/BK9U8/HRYjVObQWlOA==
+X-Received: by 2002:a05:600c:1d27:b0:3d2:27ba:dde0 with SMTP id l39-20020a05600c1d2700b003d227badde0mr25905720wms.33.1671528300274;
+        Tue, 20 Dec 2022 01:25:00 -0800 (PST)
 Received: from [192.168.1.130] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id k18-20020a05600c1c9200b003a84375d0d1sm24663667wms.44.2022.12.20.01.24.07
+        by smtp.gmail.com with ESMTPSA id i27-20020a05600c4b1b00b003d220ef3232sm14440188wmp.34.2022.12.20.01.24.59
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 20 Dec 2022 01:24:07 -0800 (PST)
-Message-ID: <e807855d-cfaa-ebab-8aff-7a3e78b1967d@redhat.com>
-Date:   Tue, 20 Dec 2022 10:24:06 +0100
+        Tue, 20 Dec 2022 01:24:59 -0800 (PST)
+Message-ID: <cc578fa7-31f0-8cfa-4cdd-981d7303412e@redhat.com>
+Date:   Tue, 20 Dec 2022 10:24:58 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.5.0
-Subject: Re: [PATCH 07/18] fbdev/clps711x-fb: Do not set struct
+Subject: Re: [PATCH 08/18] fbdev/hyperv-fb: Do not set struct
  fb_info.apertures
 Content-Language: en-US
 To:     Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
@@ -70,9 +70,9 @@ Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         intel-gfx@lists.freedesktop.org, amd-gfx@lists.freedesktop.org,
         linux-arm-kernel@lists.infradead.org, linux-hyperv@vger.kernel.org
 References: <20221219160516.23436-1-tzimmermann@suse.de>
- <20221219160516.23436-8-tzimmermann@suse.de>
+ <20221219160516.23436-9-tzimmermann@suse.de>
 From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <20221219160516.23436-8-tzimmermann@suse.de>
+In-Reply-To: <20221219160516.23436-9-tzimmermann@suse.de>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
@@ -82,7 +82,7 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 On 12/19/22 17:05, Thomas Zimmermann wrote:
 > Generic fbdev drivers use the apertures field in struct fb_info to
 > control ownership of the framebuffer memory and graphics device. Do
-> not set the values in clps711x-fb.
+> not set the values in hyperv-fb.
 > 
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---

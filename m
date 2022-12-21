@@ -2,331 +2,133 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CDB5C4332F
-	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Dec 2022 06:58:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36373C10F1B
+	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Dec 2022 10:54:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229533AbiLUG6l (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 21 Dec 2022 01:58:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50920 "EHLO
+        id S234494AbiLUKyh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 21 Dec 2022 05:54:37 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33008 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229961AbiLUG6h (ORCPT
+        with ESMTP id S229596AbiLUKyg (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 21 Dec 2022 01:58:37 -0500
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EEB2C1DA49;
-        Tue, 20 Dec 2022 22:58:36 -0800 (PST)
-Received: by mail-pj1-x102e.google.com with SMTP id v13-20020a17090a6b0d00b00219c3be9830so1188167pjj.4;
-        Tue, 20 Dec 2022 22:58:36 -0800 (PST)
+        Wed, 21 Dec 2022 05:54:36 -0500
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 658591902F;
+        Wed, 21 Dec 2022 02:54:35 -0800 (PST)
+Received: by mail-wr1-x432.google.com with SMTP id i7so14495569wrv.8;
+        Wed, 21 Dec 2022 02:54:35 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=e45rscKTI6u81mCj/R2QZBqhZBF/FrZ0m07X26XWRSs=;
-        b=gIzE6DLSZ4HyH3F7Ij/QKjlcH3ZRd5F4cC/rWtLAxaRiVUWCRxofgcncivoBksQ/sp
-         QrsjwXru5Q45TFv7NL9SbFLn8ulBf51jOBMNpUTD9f5EokbGMFZBfKfSdy9rHQbH9e8O
-         gCRmfvqkdHXIbgPg/yuP/DHkWnMOMR4mnypGfHEQpv+1yqW4kbrhQf7KZ7wmUZKHjaIZ
-         Ek7o91h+9aNGmA9DWRmK6OcmiSZLt482aBi8bKRHopYpkB7KkUu81mji9ERx5vD860VS
-         KNoFM5rv781SupiqytK/uZYP3TALhbSXVVP+/krd47tFkE3SjUuYbIaOph6dp+xIhRe6
-         YhGQ==
+        bh=dYF4aCoOjNocXMp5ObQdxM+1IiESaniY5tGPacmK2hI=;
+        b=UPW7reYDRuGDUoiD+Lb3uTPFeJy8MKOAkABhUJagUeaIYU2k84h1Kbzb2indRGVCZ/
+         +nH3idszhlY/oUm6Zvg6tHwqhKOVw6u5cipKErnxKQsnKJ8G4IvA3UyMnfjorA8szIBA
+         I9JsUylJt8PX4aPDA8l4ich2/9lN6I4mEyMBRk5iXtA6hhfqo3IxHTZFJZRjqFMLKbsp
+         dEzycxHUNgzX6Ur9PxTwGkpja06mu+WlioLu0T/qj0rgpVbaFCaQJJdD17J208t5tQ1c
+         T3ywqFaYmQE6qB2qnWrGLYiyPdKqjcE/oxCRMdnGXpufnq9kZVHvaGfHYtDof2gIy8sE
+         hSEQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=e45rscKTI6u81mCj/R2QZBqhZBF/FrZ0m07X26XWRSs=;
-        b=SgaUCJR/6f0kaO6I0w1QnAAsdv+hBwAT4NM8pOhkOSzMeyUJPnuLVhgFwRVrBt7M1j
-         kD9ftLPInS/Txe3+56+NoofMhtEVlfgjCWEwVUrRXub9iN77UNyrKDISQG1m0aMACGX3
-         OjScqriWs5Oi8MFoAkvPVSquMxfEZn75ZzPIGHSgA9WSdt6rmgZx3dJ8J9AIHsPPujCG
-         Y8XT/5VDDa0P2Lyf+R40Cz4mIyvQft7i8/G4HBuWQ160Slukk3z8fg7hSx5bm/k7EYHQ
-         uq9CPnz16S5ihf7ooMa5F+PzxbJqr2gv8LJwi6DOUfGit/E3Dsgz1V6Yd6C44mSBzx6k
-         wDug==
-X-Gm-Message-State: AFqh2kr8IZe4YRLPvMbktnXbf4wWjoy+prB+43u445kNIJKc9uW6jvS4
-        9mnpMZ9FxDU1Q5djo5f7OG4=
-X-Google-Smtp-Source: AMrXdXsZLo+T9Cconl4czzkqowYrSxR6iqAyA64t6R7YSqiux5eG7g4ARp0Hv7zTmY8XFDWNE7nxtg==
-X-Received: by 2002:a17:902:ef8d:b0:187:178a:73c0 with SMTP id iz13-20020a170902ef8d00b00187178a73c0mr16286720plb.1.1671605916423;
-        Tue, 20 Dec 2022 22:58:36 -0800 (PST)
-Received: from localhost.localdomain ([117.189.239.185])
-        by smtp.gmail.com with ESMTPSA id q3-20020a17090311c300b0018099c9618esm10589217plh.231.2022.12.20.22.58.30
+        bh=dYF4aCoOjNocXMp5ObQdxM+1IiESaniY5tGPacmK2hI=;
+        b=rGkXSsGkQUFqrNl8Y6PB6rV6qGeF09jcwJIITNyimhs8vcI4JJHQd4RwPoObzcVSWy
+         7G+ZU/ZjqjwW9PBz6hE6cwJBtxSowiIdxXbw0cyColOHqIeUX/HhEKFxCUrQna4H1Wjy
+         SUvHMgSkfRZL7QRixBrBmYkSc7UWWPuOQwPvZhtKcnokiTeQQ31F+t7hrjIQ7Ym+M6yu
+         t53yO9/Pwf14xcQ3xM9vOTZat8EuXPwOAfbr3ZmtGwpo3N83TmzsfYWXSgVZFCVZ9wUl
+         iAQ7i4bzb3jp2i06NSwS28y+rDYwoMqE0ueN4VWG1bXBt14rFzS1zZMdVf+Zxkmj/rJL
+         uufg==
+X-Gm-Message-State: AFqh2kpibcl7xXPb6mtIkOrZ54fWUeQTiHMTj5EicASeu6P/QQgmgAxQ
+        9Q1uCtBX4mv4r4icJadMbASROYrkSa1GVw==
+X-Google-Smtp-Source: AMrXdXtIftRiBiFpiF6+MSGQS3GVWuGnzm/NgMFLOBRRFdQV+jBuHN9wNcOzPNqZa5/poEcZ9eVQBg==
+X-Received: by 2002:adf:eecf:0:b0:24a:852d:e292 with SMTP id a15-20020adfeecf000000b0024a852de292mr779711wrp.46.1671620073626;
+        Wed, 21 Dec 2022 02:54:33 -0800 (PST)
+Received: from localhost.localdomain ([37.55.203.63])
+        by smtp.gmail.com with ESMTPSA id y5-20020a056000108500b0023657e1b980sm15080156wrw.53.2022.12.21.02.54.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 20 Dec 2022 22:58:36 -0800 (PST)
-From:   Jianhua Lu <lujianhua000@gmail.com>
-To:     Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
-Cc:     linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, Jianhua Lu <lujianhua000@gmail.com>
-Subject: [PATCH 1/2] backlight: ktz8866: Add support for Kinetic KTZ8866 backlight
-Date:   Wed, 21 Dec 2022 14:58:07 +0800
-Message-Id: <20221221065807.15998-1-lujianhua000@gmail.com>
-X-Mailer: git-send-email 2.38.2
+        Wed, 21 Dec 2022 02:54:33 -0800 (PST)
+From:   Markuss Broks <markuss.broks@gmail.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     Jami Kettunen <jami.kettunen@protonmail.com>,
+        Markuss Broks <markuss.broks@gmail.com>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Helge Deller <deller@gmx.de>, Borislav Petkov <bp@suse.de>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Will Deacon <will@kernel.org>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Muchun Song <muchun.song@linux.dev>,
+        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
+        Kim Phillips <kim.phillips@amd.com>, linux-doc@vger.kernel.org,
+        linux-efi@vger.kernel.org, linux-serial@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH v3 0/3] Add generic framebuffer support to EFI earlycon driver
+Date:   Wed, 21 Dec 2022 12:53:57 +0200
+Message-Id: <20221221105402.6598-1-markuss.broks@gmail.com>
+X-Mailer: git-send-email 2.39.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Add support for Kinetic KTZ8866 backlight, which is used in
-Xiaomi tablet, Mi Pad 5 series. This driver lightly based on
-downstream implementation [1].
-[1] https://github.com/MiCode/Xiaomi_Kernel_OpenSource/blob/elish-r-oss/drivers/video/backlight/ktz8866.c
+Make the EFI earlycon driver be suitable for any linear framebuffers.
+This should be helpful for early porting of boards with no other means of
+output, like smartphones/tablets. There seems to be an issue with early_ioremap
+function on ARM32, but I am unable to find the exact cause. It appears the mappings
+returned by it are somehow incorrect, thus the driver is disabled on ARM. EFI early
+console was disabled on IA64 previously because of missing early_memremap_prot,
+and this is inherited to this driver.
 
-Signed-off-by: Jianhua Lu <lujianhua000@gmail.com>
----
- drivers/video/backlight/Kconfig   |   8 ++
- drivers/video/backlight/Makefile  |   1 +
- drivers/video/backlight/ktz8866.c | 173 ++++++++++++++++++++++++++++++
- drivers/video/backlight/ktz8866.h |  31 ++++++
- 4 files changed, 213 insertions(+)
- create mode 100644 drivers/video/backlight/ktz8866.c
- create mode 100644 drivers/video/backlight/ktz8866.h
+This patch also changes behavior on EFI systems, by selecting the mapping type
+based on if the framebuffer region intersects with system RAM. If it does, it's
+common sense that it should be in RAM as a whole, and so the system RAM mapping is
+used. It was tested to be working on my PC (Intel Z490 platform), as well as several
+ARM64 boards (Samsung Galaxy S9 (Exynos), iPad Air 2, Xiaomi Mi Pad 4, ...).
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 936ba1e4d35e..2845fd7e33ad 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -190,6 +190,14 @@ config BACKLIGHT_KTD253
- 	  which is a 1-wire GPIO-controlled backlight found in some mobile
- 	  phones.
- 
-+config BACKLIGHT_KTZ8866
-+	tristate "Backlight Driver for Kinetic KTZ8866"
-+	depends on I2C
-+	select REGMAP_I2C
-+	help
-+		Say Y to enabled the backlight driver for the Kinetic KTZ8866
-+		found in Xiaomi Mi Pad 5 series.
-+
- config BACKLIGHT_LM3533
- 	tristate "Backlight Driver for LM3533"
- 	depends on MFD_LM3533
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index e815f3f1deff..f70a819c304c 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -36,6 +36,7 @@ obj-$(CONFIG_BACKLIGHT_HP680)		+= hp680_bl.o
- obj-$(CONFIG_BACKLIGHT_HP700)		+= jornada720_bl.o
- obj-$(CONFIG_BACKLIGHT_IPAQ_MICRO)	+= ipaq_micro_bl.o
- obj-$(CONFIG_BACKLIGHT_KTD253)		+= ktd253-backlight.o
-+obj-$(CONFIG_BACKLIGHT_KTZ8866)		+= ktz8866.o
- obj-$(CONFIG_BACKLIGHT_LM3533)		+= lm3533_bl.o
- obj-$(CONFIG_BACKLIGHT_LM3630A)		+= lm3630a_bl.o
- obj-$(CONFIG_BACKLIGHT_LM3639)		+= lm3639_bl.o
-diff --git a/drivers/video/backlight/ktz8866.c b/drivers/video/backlight/ktz8866.c
-new file mode 100644
-index 000000000000..1eaf72d9116b
---- /dev/null
-+++ b/drivers/video/backlight/ktz8866.c
-@@ -0,0 +1,173 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Backlight driver for the Kinetic KTZ8866
-+ *
-+ * Copyright (C) Jianhua Lu <lujianhua000@gmail.com>
-+ */
-+
-+#include <linux/backlight.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/of.h>
-+#include <linux/i2c.h>
-+#include <linux/module.h>
-+#include <linux/regmap.h>
-+#include "ktz8866.h"
-+
-+#define DEF_BRIGHTNESS 1500
-+#define MAX_BRIGHTNESS 2047
-+#define REG_MAX 0x15
-+
-+/* Helper */
-+#define low_3_bit(x) ((x)&0x7)
-+#define high_8_bit(x) ((x >> 3) & 0xFF)
-+
-+struct ktz8866 {
-+	struct i2c_client *client;
-+	struct regmap *regmap;
-+	bool state;
-+};
-+
-+enum {
-+	LED_OFF,
-+	LED_ON,
-+};
-+
-+static const struct regmap_config ktz8866_regmap_config = {
-+	.reg_bits = 8,
-+	.val_bits = 8,
-+	.max_register = REG_MAX,
-+};
-+
-+int ktz8866_write(struct ktz8866 *ktz, unsigned int reg, unsigned int val)
-+{
-+	return regmap_write(ktz->regmap, reg, val);
-+}
-+
-+static int ktz8866_update_bits(struct ktz8866 *ktz, unsigned int reg,
-+			       unsigned int mask, unsigned int val)
-+{
-+	return regmap_update_bits(ktz->regmap, reg, mask, val);
-+}
-+
-+static int
-+ktz8866_backlight_update_status(struct backlight_device *backlight_dev)
-+{
-+	struct ktz8866 *ktz = bl_get_data(backlight_dev);
-+	unsigned int brightness = backlight_get_brightness(backlight_dev);
-+
-+	if (!ktz->state && brightness > 0) {
-+		ktz8866_update_bits(ktz, BL_EN, BIT(6), BIT(6));
-+		ktz->state = LED_ON;
-+	} else if (brightness == 0) {
-+		ktz8866_update_bits(ktz, BL_EN, BIT(6), 0);
-+		ktz->state = LED_OFF;
-+		msleep(10);
-+	}
-+
-+	/* Set brightness */
-+	ktz8866_write(ktz, BL_BRT_LSB, low_3_bit(brightness));
-+	ktz8866_write(ktz, BL_BRT_MSB, high_8_bit(brightness));
-+
-+	return 0;
-+}
-+
-+static const struct backlight_ops ktz8866_backlight_ops = {
-+	.options = BL_CORE_SUSPENDRESUME,
-+	.update_status = ktz8866_backlight_update_status,
-+};
-+
-+static void ktz8866_init(struct ktz8866 *ktz)
-+{
-+	/* Enable 1~5 current sinks */
-+	ktz8866_write(ktz, BL_EN, 0x1F);
-+	/* Backlight OVP 26.4V */
-+	ktz8866_write(ktz, BL_CFG1, 0x33);
-+	/* LED ramping time 128ms */
-+	ktz8866_write(ktz, BL_CFG2, 0xBD);
-+	/* LED on/off ramping time 1ms */
-+	ktz8866_write(ktz, BL_DIMMING, 0x11);
-+	/* Enable OUTP and OUTN via pin ENP and ENN */
-+	ktz8866_write(ktz, LCD_BIAS_CFG1, 0x9F);
-+	/* Backlight Full-scale LED Current 30.0mA */
-+	ktz8866_write(ktz, FULL_SCALE_CURRENT, 0xF9);
-+}
-+
-+static int ktz8866_probe(struct i2c_client *client,
-+			 const struct i2c_device_id *id)
-+{
-+	struct backlight_device *backlight_dev;
-+	struct backlight_properties props;
-+	struct ktz8866 *ktz;
-+
-+	ktz = devm_kzalloc(&client->dev, sizeof(*ktz), GFP_KERNEL);
-+	if (!ktz)
-+		return -ENOMEM;
-+
-+	ktz->client = client;
-+	ktz->regmap = devm_regmap_init_i2c(client, &ktz8866_regmap_config);
-+
-+	if (IS_ERR(ktz->regmap)) {
-+		dev_err(&client->dev, "failed to init regmap\n");
-+		return PTR_ERR(ktz->regmap);
-+	}
-+
-+	memset(&props, 0, sizeof(props));
-+	props.type = BACKLIGHT_RAW;
-+	props.max_brightness = MAX_BRIGHTNESS;
-+	props.brightness =
-+		clamp_t(unsigned int, DEF_BRIGHTNESS, 0, props.max_brightness);
-+
-+	backlight_dev = devm_backlight_device_register(
-+		&client->dev, "ktz8866-backlight", &client->dev, ktz,
-+		&ktz8866_backlight_ops, &props);
-+
-+	if (IS_ERR(backlight_dev)) {
-+		dev_err(&client->dev, "failed to register backlight device\n");
-+		return PTR_ERR(backlight_dev);
-+	}
-+
-+	ktz8866_init(ktz);
-+
-+	i2c_set_clientdata(client, backlight_dev);
-+	backlight_update_status(backlight_dev);
-+
-+	return 0;
-+}
-+
-+static void ktz8866_remove(struct i2c_client *client)
-+{
-+	struct backlight_device *backlight_dev = i2c_get_clientdata(client);
-+
-+	backlight_dev->props.brightness = 0;
-+	backlight_update_status(backlight_dev);
-+}
-+
-+static const struct i2c_device_id ktz8866_ids[] = {
-+	{ "ktz8866", 0 },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(i2c, ktz8866_ids);
-+
-+static const struct of_device_id ktz8866_match_table[] = {
-+	{
-+		.compatible = "kinetic,ktz8866",
-+	},
-+	{},
-+};
-+
-+static struct i2c_driver ktz8866_driver = {
-+	.driver = {
-+		.name = "ktz8866",
-+		.of_match_table = ktz8866_match_table,
-+	},
-+	.probe = ktz8866_probe,
-+	.remove = ktz8866_remove,
-+	.id_table = ktz8866_ids,
-+};
-+
-+module_i2c_driver(ktz8866_driver);
-+
-+MODULE_DESCRIPTION("Kinetic KTZ8866 Backlight Driver");
-+MODULE_AUTHOR("Jianhua Lu <lujianhua000@gmail.com>");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/video/backlight/ktz8866.h b/drivers/video/backlight/ktz8866.h
-new file mode 100644
-index 000000000000..b2a606288a7e
---- /dev/null
-+++ b/drivers/video/backlight/ktz8866.h
-@@ -0,0 +1,31 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * Register definitions for Kinetic KTZ8866 backlight
-+ *
-+ * Copyright (C) Jianhua Lu <lujianhua000@gmail.com>
-+ */
-+
-+#ifndef KTZ8866_H
-+#define KTZ8866_H
-+
-+#define DEVICE_ID 0x01
-+#define BL_CFG1 0x02
-+#define BL_CFG2 0x03
-+#define BL_BRT_LSB 0x04
-+#define BL_BRT_MSB 0x05
-+#define BL_EN 0x08
-+#define LCD_BIAS_CFG1 0x09
-+#define LCD_BIAS_CFG2 0x0A
-+#define LCD_BIAS_CFG3 0x0B
-+#define LCD_BOOST_CFG 0x0C
-+#define OUTP_CFG 0x0D
-+#define OUTN_CFG 0x0E
-+#define FLAG 0x0F
-+#define BL_OPTION1 0x10
-+#define BL_OPTION2 0x11
-+#define PWM2DIG_LSBs 0x12
-+#define PWM2DIG_MSBs 0x13
-+#define BL_DIMMING 0x14
-+#define FULL_SCALE_CURRENT 0x15
-+
-+#endif /* KTZ8866_H */
+Markuss Broks (2):
+  drivers: serial: earlycon: Pass device-tree node
+  efi: earlycon: Add support for generic framebuffers and move to fbdev
+    subsystem
+
+
+v1 -> v2:
+
+- a new patch correcting serial/earlycon.c argument name to "offset" instead
+  of "node"
+- move IA64 exclusion from EFI earlycon Kconfig to earlycon driver Kconfig
+  (IA64 has no early_memremap_prot)
+- move driver from fbdev to console subsystem
+- select EFI earlycon by default
+- fetch stride manually from device-tree, as on some devices it seems stride
+  doesn't match the horizontal resolution * bpp.
+- use saner format (e.g. 1920x1080x32 instead of 1920,1080,32).
+
+
+Markuss Broks (3):
+  drivers: serial: earlycon: Pass device-tree node
+  efi: earlycon: move to video/console to prepare for changes
+  efi: earlycon: Add support for generic framebuffers
+
+ .../admin-guide/kernel-parameters.txt         |  12 +-
+ MAINTAINERS                                   |   5 +
+ drivers/firmware/efi/Kconfig                  |   7 +-
+ drivers/firmware/efi/Makefile                 |   1 -
+ drivers/firmware/efi/earlycon.c               | 246 --------------
+ drivers/tty/serial/earlycon.c                 |   3 +
+ drivers/video/console/Kconfig                 |  11 +
+ drivers/video/console/Makefile                |   1 +
+ drivers/video/console/earlycon.c              | 305 ++++++++++++++++++
+ include/linux/serial_core.h                   |   1 +
+ 10 files changed, 336 insertions(+), 256 deletions(-)
+ delete mode 100644 drivers/firmware/efi/earlycon.c
+ create mode 100644 drivers/video/console/earlycon.c
+
 -- 
-2.38.2
+2.39.0
 

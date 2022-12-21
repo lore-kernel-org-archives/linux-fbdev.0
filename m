@@ -2,62 +2,66 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCBD3C4332F
-	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Dec 2022 13:19:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31618C10F1B
+	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Dec 2022 15:36:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229728AbiLUNTB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 21 Dec 2022 08:19:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60094 "EHLO
+        id S234841AbiLUPf5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 21 Dec 2022 10:35:57 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37704 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229676AbiLUNTA (ORCPT
+        with ESMTP id S234890AbiLUPfd (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 21 Dec 2022 08:19:00 -0500
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CFB19205C7;
-        Wed, 21 Dec 2022 05:18:58 -0800 (PST)
-Received: by mail-pf1-x432.google.com with SMTP id x66so10673432pfx.3;
-        Wed, 21 Dec 2022 05:18:58 -0800 (PST)
+        Wed, 21 Dec 2022 10:35:33 -0500
+Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2CA422495C;
+        Wed, 21 Dec 2022 07:32:05 -0800 (PST)
+Received: by mail-pj1-x1033.google.com with SMTP id v13-20020a17090a6b0d00b00219c3be9830so2409318pjj.4;
+        Wed, 21 Dec 2022 07:32:05 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=DriSRwCP3ggEVceguuPjWSqJlvi6Le2y23PSrVSIc6A=;
-        b=i8CdrHruEyO26MA6OZEAlAqYhbmSI7rh9RDteCSKwED17marKImYToVCCQcIN0V1zx
-         PVY/jRmQp3YKUuhApRTRNCe58NPXbtV3UVHFZzBPGrM+7zqI9PheBY8gpjQh/vwVsf7+
-         anuIbJvJ2k9NqtA4UC7/k166XJzqfC04baiH9XOJyKQGBU6I1hEofLmyrQ/GFleWAXpk
-         b5nRbpJCtG0gnBcO5OD+D2GN3TwRwAdNxlWJQz6olxvVa07K61agNn16QhsHQ9KH1+jX
-         pCRVaVpP6PygR9FHGHVQUbAnLiDdjwb3UsIzgQB6lU4dccyFPcTHAHbvuvDtxeuwhgPn
-         Jkrw==
+        bh=SHpbm65i3qPb+0IeMkxdI9AlLCwaDtvZNcSfvLMEXgk=;
+        b=p005q3woIlKjM0pEzsIQiQOurW3EcTP2jRctbiXKufGvXs2a14yDAOoxIM1Ttw6Oyx
+         Dhs33LfiT03DTttbyHEgZLf9IGhqwhJI9cQiYo6Yf0vc4TF0TXTEn1VxxSjIiCoVqhXU
+         m9VEsgzg9EaUUHqMM/lULQdszpbJTietgKBDdCQ88rZq9ZUhwIxvl2kSfIOO+flBs/r1
+         X/sxyI5KCyR5Pcs56BRMcDDjYKtxY16HPA/Wsrq2hvA2W40MYHaBYePDYleQ+4G1Tu3L
+         Iddjr18VvK4xUyxDXkUPXVG/CW3hMA7DmIVTjNgiCKa1qj38+ObtX+7Yr8my4o50O1Z2
+         ssow==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=DriSRwCP3ggEVceguuPjWSqJlvi6Le2y23PSrVSIc6A=;
-        b=bSAAE471BQTycgxlv9+kA8cTkZ4wClO9Yqo1jyvr2djN11T4OSJp3DQEfm4T1mpJtH
-         DslcFi86U+75VjCFy+uUtCfjFs4rSW5qB/gmOz6jSFWP5mvTHowfON/XtjuKTl0Z4DTp
-         1df12oWgvNg0/IrDhMYglfPbRLhAUmov7pROJyrlXHmpQVZD2sEqUBma2keJviHzGkj3
-         dp9DBMJLycs6b8f0/j78rUbTcthFKUQBfZ0YrG5JeulKNqmSZXnasC/9VYeZwxJvwrj7
-         iMjgkmnCKGiALcA2n116s/P5JCdWELkCpVWUz7lXe+XYxCgofdI2pXQ0w4wUZ7NBZSLE
-         u2/Q==
-X-Gm-Message-State: AFqh2krWSwWrpZWhYQiv6lbcLGhhaXq7Tkn//gretLlsin3whM+BtXa+
-        ehT77fnNXP4se/ZkQKVMZRcBR3otXkhrExvr
-X-Google-Smtp-Source: AMrXdXvUgucW2eElR7v3axe6MpjhP3/iuhGotxAcsEeVGK/R/v84SC4AtdYswO4K6Ko+RW2qp47vDg==
-X-Received: by 2002:a62:1bc6:0:b0:56d:74bf:3256 with SMTP id b189-20020a621bc6000000b0056d74bf3256mr1903915pfb.22.1671628738303;
-        Wed, 21 Dec 2022 05:18:58 -0800 (PST)
-Received: from localhost.localdomain ([117.189.239.185])
-        by smtp.gmail.com with ESMTPSA id w7-20020aa79a07000000b0056c2e497b02sm10866772pfj.173.2022.12.21.05.18.55
+        bh=SHpbm65i3qPb+0IeMkxdI9AlLCwaDtvZNcSfvLMEXgk=;
+        b=C2MURPKaXsLRDFMk80N5FcNLhBp6MYK/yX/J4xJnaExootqgIMb4b3rIbKzYih7idn
+         LeWj2FFAdr5SkWFuqqLAE1isu2sk8ceNoHalBNj0WmGkUi2iqTMxEUHW39yKzFVmG7q6
+         k4kvM9KoTGt3mLRyYeGpXmjZGp+ndUOvWDStpmFizrz3mr6zGBTUZoHrcz6wrlm05Iby
+         VHtDwFkGzuqZf5hqwJxv9LJpkMAJmzoypTmWcYwxlDgHTEK8zJqI+ZEyWskZ7Ls8Xc1L
+         M26ISAlGE2x4BsKiLFba2CWnlSq0k0zHXhmc8BHnFTxyaj6ExnlyBZjRJIpkQBZvYYkl
+         w5Hw==
+X-Gm-Message-State: AFqh2krNqP2No9z3RkHB33F4EksvzRkLeefa+P5J7Uji8mb889Xy0VQC
+        G3IIH2HdjLmJ1f8P6iif8mZcGDpLfgG9vYhYBLI=
+X-Google-Smtp-Source: AMrXdXsKX0WpoIVcC/8hC/GZCzYXwDc3Zss14Murt/k5cCboa0E1NqOEql3n1NJoosWALV3fIn6LSA==
+X-Received: by 2002:a17:902:eb4c:b0:187:450:2692 with SMTP id i12-20020a170902eb4c00b0018704502692mr2145911pli.22.1671636724563;
+        Wed, 21 Dec 2022 07:32:04 -0800 (PST)
+Received: from localhost.localdomain ([45.62.172.3])
+        by smtp.gmail.com with ESMTPSA id n3-20020a170902e54300b00186ff402508sm11633409plf.281.2022.12.21.07.31.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 21 Dec 2022 05:18:57 -0800 (PST)
+        Wed, 21 Dec 2022 07:32:04 -0800 (PST)
 From:   Jianhua Lu <lujianhua000@gmail.com>
 To:     Lee Jones <lee@kernel.org>,
         Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Helge Deller <deller@gmx.de>
 Cc:     linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
         linux-fbdev@vger.kernel.org, Jianhua Lu <lujianhua000@gmail.com>
-Subject: [RESEND] backlight: ktz8866: Add support for Kinetic KTZ8866 backlight
-Date:   Wed, 21 Dec 2022 21:18:43 +0800
-Message-Id: <20221221131843.30438-1-lujianhua000@gmail.com>
+Subject: [PATCH v2 1/2] backlight: ktz8866: Add support for Kinetic KTZ8866 backlight
+Date:   Wed, 21 Dec 2022 23:31:53 +0800
+Message-Id: <20221221153154.25411-1-lujianhua000@gmail.com>
 X-Mailer: git-send-email 2.38.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -72,6 +76,9 @@ downstream implementation [1].
 
 Signed-off-by: Jianhua Lu <lujianhua000@gmail.com>
 ---
+Changces in v2:
+  - Add missing staitc modifier to ktz8866_write function.
+
  drivers/video/backlight/Kconfig   |   8 ++
  drivers/video/backlight/Makefile  |   1 +
  drivers/video/backlight/ktz8866.c | 174 ++++++++++++++++++++++++++++++

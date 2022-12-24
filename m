@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60B05C4332F
-	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Dec 2022 01:34:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60E39C4167B
+	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Dec 2022 01:37:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236700AbiLXBem (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 23 Dec 2022 20:34:42 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57784 "EHLO
+        id S236492AbiLXBhY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 23 Dec 2022 20:37:24 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39400 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236696AbiLXBdb (ORCPT
+        with ESMTP id S236854AbiLXBgQ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 23 Dec 2022 20:33:31 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C65B14495E;
-        Fri, 23 Dec 2022 17:31:29 -0800 (PST)
+        Fri, 23 Dec 2022 20:36:16 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0FDFA4B9A9;
+        Fri, 23 Dec 2022 17:32:03 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 79756B821B8;
-        Sat, 24 Dec 2022 01:31:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 36B3DC433D2;
-        Sat, 24 Dec 2022 01:31:26 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 912F2B821B3;
+        Sat, 24 Dec 2022 01:32:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 665EFC433EF;
+        Sat, 24 Dec 2022 01:32:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1671845487;
-        bh=whuEc7Qx9JkUEXPRLKgBTUSOZX0jlCTtJVNvBKyVWh0=;
+        s=k20201202; t=1671845521;
+        bh=DbfdHHMZ3+SCGDMvYg2JdHeWQy9ZJANEdEUNafPfkss=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=nR7e4zUpH3PnVDllOwRWEe21DWQNLMKIIcnLMQRR84yA3N77is3/IVjoUp9vsWYCl
-         pCViw5stBLpaeqKuKM7Mp7VvzxQYYC5jIQUxuZe3QwxjU4viRryN1H4uz3qd6uwb/e
-         flvC/vF2ggDULXBpgcD5TG0iQ2bdDA24Imho5WpLcHb6ZqP3T1yY3PZs0TQhs03itm
-         MM+t+qg+Z/PhB/GqAYD+z5ZkC6F1gurnKLBPYSz6/Rj5PqWjcIBPHWZEmi0ayJjh3D
-         YMk5SRD6fIK4AR41kItFZe5JDVgOLEOz+VqNsaW4PT0VkrZRtykYwtQc0afayUimxk
-         aa/gneY73oBLQ==
+        b=IWnXD7hCUmxaPfRCysJ4oQjOvItNyctyS3Qw9fmTVSOZM2qmN+rRPM0IbofB1pRF+
+         qoBXIqwMHDFt6OVmY+5HtU4S//4k1rd80RVw2n2ZJG5uv8g7SdBX9rTVx+ZCxDe9xR
+         0Pypb5kLVFfwKwJZrcrdQvTkxZxWlgtzbEEvpp6fZBo5diwFbKQ/VCoGToGQte8LPo
+         G6Y0+CkLAWq3oV+10AdAlBnvulkwmQnRv5ijQZ0U1KEYX9ubveR7gxr9u35VDJy+qe
+         kVgFGWwZjbLMgs8a1e3GjgW5lwpQ9yXs9INNfgwuCrSCx9U6fQ33KWGyfD8JTm1Wwp
+         CWvfye5a2ayEw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Dongliang Mu <dzm91@hust.edu.cn>,
@@ -39,12 +39,12 @@ Cc:     Dongliang Mu <dzm91@hust.edu.cn>,
         Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
         steve.glendinning@shawell.net, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 6.0 18/18] fbdev: smscufx: fix error handling code in ufx_usb_probe
-Date:   Fri, 23 Dec 2022 20:30:34 -0500
-Message-Id: <20221224013034.392810-18-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 14/14] fbdev: smscufx: fix error handling code in ufx_usb_probe
+Date:   Fri, 23 Dec 2022 20:31:27 -0500
+Message-Id: <20221224013127.393187-14-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20221224013034.392810-1-sashal@kernel.org>
-References: <20221224013034.392810-1-sashal@kernel.org>
+In-Reply-To: <20221224013127.393187-1-sashal@kernel.org>
+References: <20221224013127.393187-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -107,10 +107,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 31 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
-index 9343b7a4ac89..2ad6e98ce10d 100644
+index 5fa3f1e5dfe8..b3295cd7fd4f 100644
 --- a/drivers/video/fbdev/smscufx.c
 +++ b/drivers/video/fbdev/smscufx.c
-@@ -1622,7 +1622,7 @@ static int ufx_usb_probe(struct usb_interface *interface,
+@@ -1621,7 +1621,7 @@ static int ufx_usb_probe(struct usb_interface *interface,
  	struct usb_device *usbdev;
  	struct ufx_data *dev;
  	struct fb_info *info;
@@ -119,7 +119,7 @@ index 9343b7a4ac89..2ad6e98ce10d 100644
  	u32 id_rev, fpga_rev;
  
  	/* usb initialization */
-@@ -1654,15 +1654,17 @@ static int ufx_usb_probe(struct usb_interface *interface,
+@@ -1653,15 +1653,17 @@ static int ufx_usb_probe(struct usb_interface *interface,
  
  	if (!ufx_alloc_urb_list(dev, WRITES_IN_FLIGHT, MAX_TRANSFER)) {
  		dev_err(dev->gdev, "ufx_alloc_urb_list failed\n");
@@ -140,7 +140,7 @@ index 9343b7a4ac89..2ad6e98ce10d 100644
  
  	dev->info = info;
  	info->par = dev;
-@@ -1705,22 +1707,34 @@ static int ufx_usb_probe(struct usb_interface *interface,
+@@ -1704,22 +1706,34 @@ static int ufx_usb_probe(struct usb_interface *interface,
  	check_warn_goto_error(retval, "unable to find common mode for display and adapter");
  
  	retval = ufx_reg_set_bits(dev, 0x4000, 0x00000001);
@@ -179,7 +179,7 @@ index 9343b7a4ac89..2ad6e98ce10d 100644
  
  	dev_info(dev->gdev, "SMSC UDX USB device /dev/fb%d attached. %dx%d resolution."
  		" Using %dK framebuffer memory\n", info->node,
-@@ -1728,21 +1742,23 @@ static int ufx_usb_probe(struct usb_interface *interface,
+@@ -1727,21 +1741,23 @@ static int ufx_usb_probe(struct usb_interface *interface,
  
  	return 0;
  

@@ -2,178 +2,214 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2754C46467
-	for <linux-fbdev@archiver.kernel.org>; Fri, 23 Dec 2022 14:58:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A756C4332F
+	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Dec 2022 01:32:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236435AbiLWO6i (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 23 Dec 2022 09:58:38 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42004 "EHLO
+        id S236609AbiLXBcZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 23 Dec 2022 20:32:25 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56794 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230468AbiLWO6h (ORCPT
+        with ESMTP id S236503AbiLXBb0 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 23 Dec 2022 09:58:37 -0500
-Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4B5A11A049;
-        Fri, 23 Dec 2022 06:58:36 -0800 (PST)
-Received: by mail-wr1-x42d.google.com with SMTP id h7so4799688wrs.6;
-        Fri, 23 Dec 2022 06:58:36 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=TmvBHq2/9NF220RtIhTYhX1TAkXINfaY4qHf9+DiZSU=;
-        b=cftQtPSbMb3WwKxw9PnrrQxoONvByrVntLcAFFx/eodAs43YCS919XO0m6wNvkCcsk
-         h3pa6qid4EGkMCDJakXQNYixl8jrufFqwl/MCoUkW/IHOoBmEGC2+eTn54M6THDDoDe/
-         Glj9Imo1J4OpXPz8Kz53mXkG1nXtySIN25bMK2NiVJ//e8IoTofq2ekQjQakBqrFkmaX
-         twXIVKjk+4NtAHnpRsg6knp7BJE8pNV+nHMvio/1d47YiKkaEWZiyVt/e6vs8URghTE7
-         CHxEv3OCWNwii8NAPQUChs25eTEhqkAWMbbetLL00qyPbcqpbC2lHxqOcCBcB1XvGJCB
-         pvZg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=TmvBHq2/9NF220RtIhTYhX1TAkXINfaY4qHf9+DiZSU=;
-        b=Y5GZNmRuAYFJd21fsHXinZ4V6NJfFBP3qNZnnsJrt1hcDCN/1n+dcyy/b8uGmL1UTt
-         wjBe9L6MnCww72VMtGFi0HNDRkcZTiZz5zJ9Z/4m1V2NDVqiGfM+VUiwc0srhQXtldUd
-         5sMhm91FhhdhQ/timBWvGGrkyUjravb7h6KIUev0on9Mu2RPH7yjQKUb74vXQAk68tPc
-         gzYdFL2CZwl3TpbYe/dk6/JFMUwo/XOEJCZWmlTf0KFwYqBC68V3g/Yaw9ZNXHXzNdZX
-         Rky7XAq3FdaEUndtWkumpGXhFI7kuOO4PyZCjLxqdQbpxnVFxoBBPCohP6SAN4hQLoKB
-         808Q==
-X-Gm-Message-State: AFqh2kpbEcO+e8wYtqAjsXwljwtfLat16rkMYm4MpwzKVDIsUaTl+dGX
-        l7MfwpN00rKG7dS6IWQR9kU=
-X-Google-Smtp-Source: AMrXdXsyxBxdUeqfa/v6cGXhdhmkoJoLysIKux7E0NzZ4vrTQekRoxK2ddB8vZnleXLB1EmWuFZ07g==
-X-Received: by 2002:a5d:5606:0:b0:242:5ae0:5b38 with SMTP id l6-20020a5d5606000000b002425ae05b38mr5422529wrv.8.1671807514712;
-        Fri, 23 Dec 2022 06:58:34 -0800 (PST)
-Received: from [192.168.1.16] ([37.55.203.63])
-        by smtp.gmail.com with ESMTPSA id u13-20020a5d468d000000b00275970a85f4sm823864wrq.74.2022.12.23.06.58.32
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 23 Dec 2022 06:58:34 -0800 (PST)
-Message-ID: <97639381-2558-4cf5-75b0-7f80f0393b16@gmail.com>
-Date:   Fri, 23 Dec 2022 16:58:30 +0200
+        Fri, 23 Dec 2022 20:31:26 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E272B165AB;
+        Fri, 23 Dec 2022 17:30:35 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 9F01B61FAD;
+        Sat, 24 Dec 2022 01:30:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1EFC2C433F0;
+        Sat, 24 Dec 2022 01:30:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1671845434;
+        bh=whuEc7Qx9JkUEXPRLKgBTUSOZX0jlCTtJVNvBKyVWh0=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=HrODESTMCAsrgCCXo91Vt3WUFks2RhED+x6lvzhjAM/QZVU/C70FlsmpXS0wriuO2
+         ctxJtCqr4RsnGJ0SXDhfd+JAi5Wl53bpFysaqfYKAOkswncHka2n1Eo2dNKIfKEIf8
+         55t931ULTpCPHWcvNn0GJKeeWAghZCdcfJBSoT+jMlp7QxKQsUDqnlxg8fNbk5sXia
+         2U84ilmRt4BuJcBRc+mvo854E1JlwWn3eU47/3uRuIcj8ZqwnaCfLcudLl9BPBcO3f
+         D7lBRE3NYqfKT+Wh0pxkmo6eoUtNorCuYFyBd4Cb/zinzQTq9A//ZP6VxiEjVJJR0h
+         CPz6cA82rN7rQ==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Dongliang Mu <dzm91@hust.edu.cn>,
+        syzkaller <syzkaller@googlegroups.com>,
+        Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
+        steve.glendinning@shawell.net, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 6.1 26/26] fbdev: smscufx: fix error handling code in ufx_usb_probe
+Date:   Fri, 23 Dec 2022 20:29:30 -0500
+Message-Id: <20221224012930.392358-26-sashal@kernel.org>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20221224012930.392358-1-sashal@kernel.org>
+References: <20221224012930.392358-1-sashal@kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.5.1
-Subject: Re: [PATCH v3 0/3] Add generic framebuffer support to EFI earlycon
- driver
-Content-Language: en-US
-To:     Ard Biesheuvel <ardb@kernel.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc:     linux-kernel@vger.kernel.org,
-        Jami Kettunen <jami.kettunen@protonmail.com>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Helge Deller <deller@gmx.de>, Borislav Petkov <bp@suse.de>,
-        "Paul E. McKenney" <paulmck@kernel.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Will Deacon <will@kernel.org>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Muchun Song <muchun.song@linux.dev>,
-        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
-        Kim Phillips <kim.phillips@amd.com>, linux-doc@vger.kernel.org,
-        linux-efi@vger.kernel.org, linux-serial@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20221221105402.6598-1-markuss.broks@gmail.com>
- <CAMj1kXGUC7dsSwVEUsAMeAoqDYtbqrM7SDOJTXbPfi-LrcSk9g@mail.gmail.com>
-From:   Markuss Broks <markuss.broks@gmail.com>
-In-Reply-To: <CAMj1kXGUC7dsSwVEUsAMeAoqDYtbqrM7SDOJTXbPfi-LrcSk9g@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Ard,
+From: Dongliang Mu <dzm91@hust.edu.cn>
 
-On 12/23/22 16:42, Ard Biesheuvel wrote:
-> (cc Andy)
->
->
-> On Wed, 21 Dec 2022 at 11:54, Markuss Broks <markuss.broks@gmail.com> wrote:
->> Make the EFI earlycon driver be suitable for any linear framebuffers.
->> This should be helpful for early porting of boards with no other means of
->> output, like smartphones/tablets. There seems to be an issue with early_ioremap
->> function on ARM32, but I am unable to find the exact cause. It appears the mappings
->> returned by it are somehow incorrect, thus the driver is disabled on ARM.
-> The reason that this driver is disabled on ARM is because the struct
-> screen_info is not populated early enough, as it is retrieved from a
-> UEFI configuration table.
+[ Upstream commit b76449ee75e21acfe9fa4c653d8598f191ed7d68 ]
 
-I believe I must be hitting some other bug then, since my driver should 
-not use `struct screen_info` when the arguments are specified manually 
-(e.g. in device-tree or in kernel command line options), and it still is 
-broken on ARM when they are. I got it to work on ARM when I moved the 
-early console initialization later into the kernel booting process, but 
-that mostly defeats the purpose of early console driver, I believe. I've 
-been thinking that it could be some stuff not getting initialized early 
-enough indeed, but I've got no clue what could it be.
+The current error handling code in ufx_usb_probe have many unmatching
+issues, e.g., missing ufx_free_usb_list, destroy_modedb label should
+only include framebuffer_release, fb_dealloc_cmap only matches
+fb_alloc_cmap.
 
->
-> early_ioremap() works fine on ARM as long as they mapping is torn down
-> before paging_init()
->
->> EFI early
->> console was disabled on IA64 previously because of missing early_memremap_prot,
->> and this is inherited to this driver.
->>
->> This patch also changes
-> "This patch also changes ..." is usually a strong hint to self that
-> the patches need to be split up.
->
->> behavior on EFI systems, by selecting the mapping type
->> based on if the framebuffer region intersects with system RAM. If it does, it's
->> common sense that it should be in RAM as a whole, and so the system RAM mapping is
->> used. It was tested to be working on my PC (Intel Z490 platform), as well as several
->> ARM64 boards (Samsung Galaxy S9 (Exynos), iPad Air 2, Xiaomi Mi Pad 4, ...).
->>
->> Markuss Broks (2):
->>    drivers: serial: earlycon: Pass device-tree node
->>    efi: earlycon: Add support for generic framebuffers and move to fbdev
->>      subsystem
->>
->>
->> v1 -> v2:
->>
->> - a new patch correcting serial/earlycon.c argument name to "offset" instead
->>    of "node"
->> - move IA64 exclusion from EFI earlycon Kconfig to earlycon driver Kconfig
->>    (IA64 has no early_memremap_prot)
->> - move driver from fbdev to console subsystem
->> - select EFI earlycon by default
->> - fetch stride manually from device-tree, as on some devices it seems stride
->>    doesn't match the horizontal resolution * bpp.
->> - use saner format (e.g. 1920x1080x32 instead of 1920,1080,32).
->>
->>
->> Markuss Broks (3):
->>    drivers: serial: earlycon: Pass device-tree node
->>    efi: earlycon: move to video/console to prepare for changes
->>    efi: earlycon: Add support for generic framebuffers
->>
->>   .../admin-guide/kernel-parameters.txt         |  12 +-
->>   MAINTAINERS                                   |   5 +
->>   drivers/firmware/efi/Kconfig                  |   7 +-
->>   drivers/firmware/efi/Makefile                 |   1 -
->>   drivers/firmware/efi/earlycon.c               | 246 --------------
->>   drivers/tty/serial/earlycon.c                 |   3 +
->>   drivers/video/console/Kconfig                 |  11 +
->>   drivers/video/console/Makefile                |   1 +
->>   drivers/video/console/earlycon.c              | 305 ++++++++++++++++++
->>   include/linux/serial_core.h                   |   1 +
->>   10 files changed, 336 insertions(+), 256 deletions(-)
->>   delete mode 100644 drivers/firmware/efi/earlycon.c
->>   create mode 100644 drivers/video/console/earlycon.c
->>
->> --
->> 2.39.0
->>
-- Markuss
+My local syzkaller reports a memory leak bug:
 
+memory leak in ufx_usb_probe
 
-P.S. Just noticed I forgot to Ctrl^S the cover letter before saving... 
-The main change v3 does is separate the moving action and edit action 
-into two separate commits, I don't think there're more major changes. 
-With v4 I'd try to attach the proper version log.
+BUG: memory leak
+unreferenced object 0xffff88802f879580 (size 128):
+  comm "kworker/0:7", pid 17416, jiffies 4295067474 (age 46.710s)
+  hex dump (first 32 bytes):
+    80 21 7c 2e 80 88 ff ff 18 d0 d0 0c 80 88 ff ff  .!|.............
+    00 d0 d0 0c 80 88 ff ff e0 ff ff ff 0f 00 00 00  ................
+  backtrace:
+    [<ffffffff814c99a0>] kmalloc_trace+0x20/0x90 mm/slab_common.c:1045
+    [<ffffffff824d219c>] kmalloc include/linux/slab.h:553 [inline]
+    [<ffffffff824d219c>] kzalloc include/linux/slab.h:689 [inline]
+    [<ffffffff824d219c>] ufx_alloc_urb_list drivers/video/fbdev/smscufx.c:1873 [inline]
+    [<ffffffff824d219c>] ufx_usb_probe+0x11c/0x15a0 drivers/video/fbdev/smscufx.c:1655
+    [<ffffffff82d17927>] usb_probe_interface+0x177/0x370 drivers/usb/core/driver.c:396
+    [<ffffffff82712f0d>] call_driver_probe drivers/base/dd.c:560 [inline]
+    [<ffffffff82712f0d>] really_probe+0x12d/0x390 drivers/base/dd.c:639
+    [<ffffffff8271322f>] __driver_probe_device+0xbf/0x140 drivers/base/dd.c:778
+    [<ffffffff827132da>] driver_probe_device+0x2a/0x120 drivers/base/dd.c:808
+    [<ffffffff82713c27>] __device_attach_driver+0xf7/0x150 drivers/base/dd.c:936
+    [<ffffffff82710137>] bus_for_each_drv+0xb7/0x100 drivers/base/bus.c:427
+    [<ffffffff827136b5>] __device_attach+0x105/0x2d0 drivers/base/dd.c:1008
+    [<ffffffff82711d36>] bus_probe_device+0xc6/0xe0 drivers/base/bus.c:487
+    [<ffffffff8270e242>] device_add+0x642/0xdc0 drivers/base/core.c:3517
+    [<ffffffff82d14d5f>] usb_set_configuration+0x8ef/0xb80 drivers/usb/core/message.c:2170
+    [<ffffffff82d2576c>] usb_generic_driver_probe+0x8c/0xc0 drivers/usb/core/generic.c:238
+    [<ffffffff82d16ffc>] usb_probe_device+0x5c/0x140 drivers/usb/core/driver.c:293
+    [<ffffffff82712f0d>] call_driver_probe drivers/base/dd.c:560 [inline]
+    [<ffffffff82712f0d>] really_probe+0x12d/0x390 drivers/base/dd.c:639
+    [<ffffffff8271322f>] __driver_probe_device+0xbf/0x140 drivers/base/dd.c:778
+
+Fix this bug by rewriting the error handling code in ufx_usb_probe.
+
+Reported-by: syzkaller <syzkaller@googlegroups.com>
+Tested-by: Dongliang Mu <dzm91@hust.edu.cn>
+Signed-off-by: Dongliang Mu <dzm91@hust.edu.cn>
+Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/smscufx.c | 46 +++++++++++++++++++++++------------
+ 1 file changed, 31 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
+index 9343b7a4ac89..2ad6e98ce10d 100644
+--- a/drivers/video/fbdev/smscufx.c
++++ b/drivers/video/fbdev/smscufx.c
+@@ -1622,7 +1622,7 @@ static int ufx_usb_probe(struct usb_interface *interface,
+ 	struct usb_device *usbdev;
+ 	struct ufx_data *dev;
+ 	struct fb_info *info;
+-	int retval;
++	int retval = -ENOMEM;
+ 	u32 id_rev, fpga_rev;
+ 
+ 	/* usb initialization */
+@@ -1654,15 +1654,17 @@ static int ufx_usb_probe(struct usb_interface *interface,
+ 
+ 	if (!ufx_alloc_urb_list(dev, WRITES_IN_FLIGHT, MAX_TRANSFER)) {
+ 		dev_err(dev->gdev, "ufx_alloc_urb_list failed\n");
+-		goto e_nomem;
++		goto put_ref;
+ 	}
+ 
+ 	/* We don't register a new USB class. Our client interface is fbdev */
+ 
+ 	/* allocates framebuffer driver structure, not framebuffer memory */
+ 	info = framebuffer_alloc(0, &usbdev->dev);
+-	if (!info)
+-		goto e_nomem;
++	if (!info) {
++		dev_err(dev->gdev, "framebuffer_alloc failed\n");
++		goto free_urb_list;
++	}
+ 
+ 	dev->info = info;
+ 	info->par = dev;
+@@ -1705,22 +1707,34 @@ static int ufx_usb_probe(struct usb_interface *interface,
+ 	check_warn_goto_error(retval, "unable to find common mode for display and adapter");
+ 
+ 	retval = ufx_reg_set_bits(dev, 0x4000, 0x00000001);
+-	check_warn_goto_error(retval, "error %d enabling graphics engine", retval);
++	if (retval < 0) {
++		dev_err(dev->gdev, "error %d enabling graphics engine", retval);
++		goto setup_modes;
++	}
+ 
+ 	/* ready to begin using device */
+ 	atomic_set(&dev->usb_active, 1);
+ 
+ 	dev_dbg(dev->gdev, "checking var");
+ 	retval = ufx_ops_check_var(&info->var, info);
+-	check_warn_goto_error(retval, "error %d ufx_ops_check_var", retval);
++	if (retval < 0) {
++		dev_err(dev->gdev, "error %d ufx_ops_check_var", retval);
++		goto reset_active;
++	}
+ 
+ 	dev_dbg(dev->gdev, "setting par");
+ 	retval = ufx_ops_set_par(info);
+-	check_warn_goto_error(retval, "error %d ufx_ops_set_par", retval);
++	if (retval < 0) {
++		dev_err(dev->gdev, "error %d ufx_ops_set_par", retval);
++		goto reset_active;
++	}
+ 
+ 	dev_dbg(dev->gdev, "registering framebuffer");
+ 	retval = register_framebuffer(info);
+-	check_warn_goto_error(retval, "error %d register_framebuffer", retval);
++	if (retval < 0) {
++		dev_err(dev->gdev, "error %d register_framebuffer", retval);
++		goto reset_active;
++	}
+ 
+ 	dev_info(dev->gdev, "SMSC UDX USB device /dev/fb%d attached. %dx%d resolution."
+ 		" Using %dK framebuffer memory\n", info->node,
+@@ -1728,21 +1742,23 @@ static int ufx_usb_probe(struct usb_interface *interface,
+ 
+ 	return 0;
+ 
+-error:
+-	fb_dealloc_cmap(&info->cmap);
+-destroy_modedb:
++reset_active:
++	atomic_set(&dev->usb_active, 0);
++setup_modes:
+ 	fb_destroy_modedb(info->monspecs.modedb);
+ 	vfree(info->screen_base);
+ 	fb_destroy_modelist(&info->modelist);
++error:
++	fb_dealloc_cmap(&info->cmap);
++destroy_modedb:
+ 	framebuffer_release(info);
++free_urb_list:
++	if (dev->urbs.count > 0)
++		ufx_free_urb_list(dev);
+ put_ref:
+ 	kref_put(&dev->kref, ufx_free); /* ref for framebuffer */
+ 	kref_put(&dev->kref, ufx_free); /* last ref from kref_init */
+ 	return retval;
+-
+-e_nomem:
+-	retval = -ENOMEM;
+-	goto put_ref;
+ }
+ 
+ static void ufx_usb_disconnect(struct usb_interface *interface)
+-- 
+2.35.1
 

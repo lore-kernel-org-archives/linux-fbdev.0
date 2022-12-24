@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60E39C4167B
-	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Dec 2022 01:37:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0713C4332F
+	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Dec 2022 01:39:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236492AbiLXBhY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 23 Dec 2022 20:37:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39400 "EHLO
+        id S236655AbiLXBjI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 23 Dec 2022 20:39:08 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40356 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236854AbiLXBgQ (ORCPT
+        with ESMTP id S236795AbiLXBig (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 23 Dec 2022 20:36:16 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0FDFA4B9A9;
-        Fri, 23 Dec 2022 17:32:03 -0800 (PST)
+        Fri, 23 Dec 2022 20:38:36 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC5CB537F4;
+        Fri, 23 Dec 2022 17:32:47 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 912F2B821B3;
-        Sat, 24 Dec 2022 01:32:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 665EFC433EF;
-        Sat, 24 Dec 2022 01:32:00 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 2F38961FBF;
+        Sat, 24 Dec 2022 01:32:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A1600C433EF;
+        Sat, 24 Dec 2022 01:32:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1671845521;
+        s=k20201202; t=1671845552;
         bh=DbfdHHMZ3+SCGDMvYg2JdHeWQy9ZJANEdEUNafPfkss=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=IWnXD7hCUmxaPfRCysJ4oQjOvItNyctyS3Qw9fmTVSOZM2qmN+rRPM0IbofB1pRF+
-         qoBXIqwMHDFt6OVmY+5HtU4S//4k1rd80RVw2n2ZJG5uv8g7SdBX9rTVx+ZCxDe9xR
-         0Pypb5kLVFfwKwJZrcrdQvTkxZxWlgtzbEEvpp6fZBo5diwFbKQ/VCoGToGQte8LPo
-         G6Y0+CkLAWq3oV+10AdAlBnvulkwmQnRv5ijQZ0U1KEYX9ubveR7gxr9u35VDJy+qe
-         kVgFGWwZjbLMgs8a1e3GjgW5lwpQ9yXs9INNfgwuCrSCx9U6fQ33KWGyfD8JTm1Wwp
-         CWvfye5a2ayEw==
+        b=EDqmSK5QzrzyAHs69LdV44V941AsigXHYplpdEq8DR74pnE5bKDJbBjU8Onu2eVF4
+         RrxhTlKB56L3tvRrBMYp+dsHi0R8HBOh839X1xSHT4WvfrNhJ2Actootq1FHHhpRsc
+         HenZmLNvX+jnoIxCxs96aCMgx/xpILCL652S1DU/eiUo+5Srzg+yJqntf2H/VxtGOk
+         T5Vm1MxeWPU+z6aTfkqvsf66Sph3M2ZIE8sSIoUtIfysavXk0wYXGiFCS2PMeGxsUF
+         5C02aOHWpvC5uAgpvWRq/ulQNnJVSftLRzOJ0G3pj9lGBl6AgfJ+l1BrQnZrA19Sgt
+         rR9GOUqGf/KCg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Dongliang Mu <dzm91@hust.edu.cn>,
@@ -39,12 +39,12 @@ Cc:     Dongliang Mu <dzm91@hust.edu.cn>,
         Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
         steve.glendinning@shawell.net, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 5.15 14/14] fbdev: smscufx: fix error handling code in ufx_usb_probe
-Date:   Fri, 23 Dec 2022 20:31:27 -0500
-Message-Id: <20221224013127.393187-14-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 11/11] fbdev: smscufx: fix error handling code in ufx_usb_probe
+Date:   Fri, 23 Dec 2022 20:32:01 -0500
+Message-Id: <20221224013202.393372-11-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20221224013127.393187-1-sashal@kernel.org>
-References: <20221224013127.393187-1-sashal@kernel.org>
+In-Reply-To: <20221224013202.393372-1-sashal@kernel.org>
+References: <20221224013202.393372-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore

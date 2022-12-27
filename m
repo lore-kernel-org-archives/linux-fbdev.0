@@ -2,122 +2,160 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 284D0C10F1B
-	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Dec 2022 18:48:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB4B0C54EBE
+	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Dec 2022 21:11:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230302AbiL0SsR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 27 Dec 2022 13:48:17 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36080 "EHLO
+        id S231742AbiL0VKi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 27 Dec 2022 16:10:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46336 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230354AbiL0SsQ (ORCPT
+        with ESMTP id S232494AbiL0VJW (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 27 Dec 2022 13:48:16 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C086AD12A;
-        Tue, 27 Dec 2022 10:48:15 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 753DFB810AC;
-        Tue, 27 Dec 2022 18:48:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5D088C433D2;
-        Tue, 27 Dec 2022 18:48:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1672166893;
-        bh=jC+G6KggctyJl19lPvX6acqHjopjAKeOdWYT4ODLTZU=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=Lo1YFgc4wMO579CEmwBJteC/WRWHqg6NmNoHdgr2Myntqw6NsJ/QboLSBLlG0/wQl
-         GNxFtfJuBD1zNW0kzFB0gkOFhWDXP7vftCIm8u80vENUIrb/sF3LRupDlqdpM7mH8p
-         Spu9aRXzzs5wSCaFWUx0HinsGxFdV1WgK4abqeTTyC4fyNYrPd6N5EXj06jxX81NYI
-         hl8HBlrrxBvlWkP7lFICUXqtL7HIHU5/Fh8fT8AxhPEir4aAaHqYdTrPahC6IoZctI
-         OOIVJmRn7TjXDhhk9ne82b53glBkRNIvZO4zUJaZWpWsVpawEz/rsxgxxNgnkOxk7w
-         zNVuI+iJztoZw==
-Date:   Tue, 27 Dec 2022 11:48:10 -0700
-From:   Nathan Chancellor <nathan@kernel.org>
-To:     Helge Deller <deller@gmx.de>
+        Tue, 27 Dec 2022 16:09:22 -0500
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1B3B26D;
+        Tue, 27 Dec 2022 13:07:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1672175221; bh=OL5WJhJ3/ioUTccUP2H6ZJHZm++nEKN5MiFWcaZshkI=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=DP1X3adLdzt3xnBG3I0B9VUWlDhKza6IbdAs40Qoe/bPk3oB4A+eZOBtyvYpW0ppF
+         VKlADVUoLV255aRFH2P6g7Os4xXiKumbLF5yWAhXH6h0IpeuxIs0hsiyIgapKEfIpk
+         Mr/7enpe72LseWOrkj3IG7rGXXGLRNgmbtEqCPJkM9667QYESkhYbLC7f5ugS883do
+         w5wlWUPT0LlOyCXAMnTBZpSRkOHCHDZ1DFEyfp5HZMeH2SRqU0V4HT06AA+sPwMImI
+         dtu9zVhJ2Tdnj3Jz0dCy05W1a4kFLd8W59zYAEX7cFq0kIs1/d40QIyrRkpbRiKEEg
+         Kn45IwDeNEXlA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([92.116.190.3]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MrQJ5-1oX6Re0szP-00oYBV; Tue, 27
+ Dec 2022 22:07:01 +0100
+Message-ID: <aaf6a109-ac1b-c22a-88b7-0414b3265857@gmx.de>
+Date:   Tue, 27 Dec 2022 22:06:59 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.0
+Subject: Re: [PATCH] fbdev: make offb driver tristate
+To:     Nathan Chancellor <nathan@kernel.org>
 Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
         Randy Dunlap <rdunlap@infradead.org>,
         linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
         Masahiro Yamada <masahiroy@kernel.org>,
-        Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
+        =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
         linuxppc-dev@lists.ozlabs.org, Daniel Vetter <daniel@ffwll.ch>,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         llvm@lists.linux.dev
-Subject: Re: [PATCH] fbdev: make offb driver tristate
-Message-ID: <Y6s96iuc3NRN5tS4@dev-arch.thelio-3990X>
 References: <20221126000401.25302-1-rdunlap@infradead.org>
  <46e8cf0d-ab47-59b1-6c87-53d2d63a5bf6@suse.de>
  <f8c6eb94-10ee-07a8-ea48-d4fae60fc9ae@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <f8c6eb94-10ee-07a8-ea48-d4fae60fc9ae@gmx.de>
+ <Y6s96iuc3NRN5tS4@dev-arch.thelio-3990X>
+Content-Language: en-US
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <Y6s96iuc3NRN5tS4@dev-arch.thelio-3990X>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:pmufG/yBB7w10j8I7juqQ1B39xUxP8hRiEiNAVefeU+Zrc6CndG
+ P8D13De0yweY4iSpmMFzYgs6fOK5FY/JajFhHgVW2MhBJFSnDzKgrXKxbm67ZiGG77ZOXyu
+ FLsoDQkkcIufDRIPC8QEKCG9C/E/xdgEsK+r6KUlD4LVKleVqgJN1rYSFrY3/kFHkS0k90G
+ 3aibwRR9tFFMx1kg3m9XA==
+UI-OutboundReport: notjunk:1;M01:P0:4m/m/TKe8EY=;8px+0lBpXJqhmDlMMqcatGE6fyR
+ kwdAiq3U2LOYRCxMiNVKvGCCqgYC7ouanOJGEqPMwm2bYQgcwkpZQa8H5cF9bZQj34BAIsZsA
+ 1XaKbiPO6NpfRjtEEMZtMJxLLjyQml/if2W/d9BlP9bs9nHhn/x81lApHGsN8lRiie2Hw5s65
+ CkGmlTfGpZqQFfR3vl7BrvMn8H4VBnh9fqZQP/Qax0iIoCeVG57nvtJwaUGFKx1Te4GHsigtp
+ qyYqRalAbUye9HFVHulSa43FI7QDfWFz2FHzyrboHoSvQ4m2xPUpU6QY+Ux9j2ZRBr78JqaDN
+ cLZz6NQUsojzhZ7gPHpjMdyART5prM6RQozcOlq0WB/yyNqsD7UqbWQWFAsV3oVafcDG8X6gf
+ xAYOzoEoYGRMmpt3htPz1nJYi+fKuvOOWmc2eG6edLfPAH3KtnnZQtpvfgWt7cVkLqbtWWoPC
+ CB8xkIdRQglorW4K8x1cCNApA3rr6y26eFaZKXjO87lEhOg5QOnz5XTSn3XgZ2d9FmFaYsFMc
+ 3NVsCgZ2gE0BFa1lem1NlLGvpU/bgrnCIZppeqOe+xhZ5+fw5t+KVVhVXmg1x1PDaY/o1cJJ5
+ p5YQfhICbF/Eh1NNjPo7XKtVU4NqOxXWhh+SyAiNabpDIxUEx3phW6Iw5RwSvqeOijsriYAT6
+ KBZLy4gdPEg9p0Yq9h6tzRUSB183VmBIaM4L1toY6RF1VO2tS5fCRb9GQUp25gmkTRG8CSVbx
+ ejQSOttkcoVUXEb64ETtnJNUVv6KF5bHR96YTiNAqjSryZd5VJLZJ4Hfagb4S6XgT69FXReDu
+ pmU6YXRpUtZQNzcqZ3A9mqEJPS8H35jtEqXcPR54RKvB+gPOlKqmyw4DEMc5O+Ew+og53U+LL
+ MpDMGXwo0jV2Nu1DrSFMLj6Hw9g9KHRXCGYL6LdvIrIT1jl2QayH61cYho1wZiYKrCMhf+e4c
+ gkwanbkBWZCZ56wz9awOPy+2nJk=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, Dec 10, 2022 at 05:35:06PM +0100, Helge Deller wrote:
-> On 11/26/22 14:40, Thomas Zimmermann wrote:
-> > Am 26.11.22 um 01:04 schrieb Randy Dunlap:
-> > > Make the offb (Open Firmware frame buffer) driver tristate,
-> > > i.e., so that it can be built as a loadable module.
-> > > 
-> > > However, it still depends on the setting of DRM_OFDRM
-> > > so that both of these drivers cannot be builtin at the same time
-> > > nor can one be builtin and the other one a loadable module.
-> > > 
-> > > Build-tested successfully with all combination of DRM_OFDRM and FB_OF.
-> > > 
-> > > This fixes a build issue that Michal reported when FB_OF=y and
-> > > DRM_OFDRM=m:
-> > > 
-> > > powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x58): undefined reference to `cfb_fillrect'
-> > > powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x60): undefined reference to `cfb_copyarea'
-> > > powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x68): undefined reference to `cfb_imageblit'
-> > > 
-> > > Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> > > Suggested-by: Arnd Bergmann <arnd@arndb.de>
-> > > Cc: Masahiro Yamada <masahiroy@kernel.org>
-> > > Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> > > Cc: Michal Suchánek <msuchanek@suse.de>
-> > > Cc: linuxppc-dev@lists.ozlabs.org
-> > > Cc: Daniel Vetter <daniel@ffwll.ch>
-> > > Cc: Helge Deller <deller@gmx.de>
-> > > Cc: linux-fbdev@vger.kernel.org
-> > > Cc: dri-devel@lists.freedesktop.org
-> > 
-> > Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
-> 
-> applied.
+On 12/27/22 19:48, Nathan Chancellor wrote:
+> On Sat, Dec 10, 2022 at 05:35:06PM +0100, Helge Deller wrote:
+>> On 11/26/22 14:40, Thomas Zimmermann wrote:
+>>> Am 26.11.22 um 01:04 schrieb Randy Dunlap:
+>>>> Make the offb (Open Firmware frame buffer) driver tristate,
+>>>> i.e., so that it can be built as a loadable module.
+>>>>
+>>>> However, it still depends on the setting of DRM_OFDRM
+>>>> so that both of these drivers cannot be builtin at the same time
+>>>> nor can one be builtin and the other one a loadable module.
+>>>>
+>>>> Build-tested successfully with all combination of DRM_OFDRM and FB_OF=
+.
+>>>>
+>>>> This fixes a build issue that Michal reported when FB_OF=3Dy and
+>>>> DRM_OFDRM=3Dm:
+>>>>
+>>>> powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x58): u=
+ndefined reference to `cfb_fillrect'
+>>>> powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x60): u=
+ndefined reference to `cfb_copyarea'
+>>>> powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x68): u=
+ndefined reference to `cfb_imageblit'
+>>>>
+>>>> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+>>>> Suggested-by: Arnd Bergmann <arnd@arndb.de>
+>>>> Cc: Masahiro Yamada <masahiroy@kernel.org>
+>>>> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+>>>> Cc: Michal Such=C3=A1nek <msuchanek@suse.de>
+>>>> Cc: linuxppc-dev@lists.ozlabs.org
+>>>> Cc: Daniel Vetter <daniel@ffwll.ch>
+>>>> Cc: Helge Deller <deller@gmx.de>
+>>>> Cc: linux-fbdev@vger.kernel.org
+>>>> Cc: dri-devel@lists.freedesktop.org
+>>>
+>>> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
+>>
+>> applied.
+>
+> Is this going to make it to Linus soon? We are now seeing this error in
+> our CI, which has the configuration describe in this commit.
+>
+> https://github.com/ClangBuiltLinux/continuous-integration2/actions/runs/=
+3785609002/jobs/6437398666#step:5:149
+>
+> https://storage.tuxsuite.com/public/clangbuiltlinux/continuous-integrati=
+on2/builds/2JUMSmjAoSJoKfl6PPjfU66JGit/build.log
 
-Is this going to make it to Linus soon? We are now seeing this error in
-our CI, which has the configuration describe in this commit.
 
-https://github.com/ClangBuiltLinux/continuous-integration2/actions/runs/3785609002/jobs/6437398666#step:5:149
+It didn't applied cleanly earlier.
+I've now added it to the fbdev for-next branch, and if no problems
+show up in the next few days I'll push it before next weekend.
+https://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git/log=
+/?h=3Dfor-next
 
-https://storage.tuxsuite.com/public/clangbuiltlinux/continuous-integration2/builds/2JUMSmjAoSJoKfl6PPjfU66JGit/build.log
+Helge
 
-Cheers,
-Nathan
 
-> > > ---
-> > >   drivers/video/fbdev/Kconfig |    4 ++--
-> > >   1 file changed, 2 insertions(+), 2 deletions(-)
-> > > 
-> > > diff -- a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-> > > --- a/drivers/video/fbdev/Kconfig
-> > > +++ b/drivers/video/fbdev/Kconfig
-> > > @@ -456,8 +456,8 @@ config FB_ATARI
-> > >         chipset found in Ataris.
-> > >   config FB_OF
-> > > -    bool "Open Firmware frame buffer device support"
-> > > -    depends on (FB = y) && PPC && (!PPC_PSERIES || PCI)
-> > > +    tristate "Open Firmware frame buffer device support"
-> > > +    depends on FB && PPC && (!PPC_PSERIES || PCI)
-> > >       depends on !DRM_OFDRM
-> > >       select APERTURE_HELPERS
-> > >       select FB_CFB_FILLRECT
-> > 
-> 
-> 
+> Cheers,
+> Nathan
+>
+>>>> ---
+>>>>  =C2=A0 drivers/video/fbdev/Kconfig |=C2=A0=C2=A0=C2=A0 4 ++--
+>>>>  =C2=A0 1 file changed, 2 insertions(+), 2 deletions(-)
+>>>>
+>>>> diff -- a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+>>>> --- a/drivers/video/fbdev/Kconfig
+>>>> +++ b/drivers/video/fbdev/Kconfig
+>>>> @@ -456,8 +456,8 @@ config FB_ATARI
+>>>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 chipset found in Ataris.
+>>>>  =C2=A0 config FB_OF
+>>>> -=C2=A0=C2=A0=C2=A0 bool "Open Firmware frame buffer device support"
+>>>> -=C2=A0=C2=A0=C2=A0 depends on (FB =3D y) && PPC && (!PPC_PSERIES || =
+PCI)
+>>>> +=C2=A0=C2=A0=C2=A0 tristate "Open Firmware frame buffer device suppo=
+rt"
+>>>> +=C2=A0=C2=A0=C2=A0 depends on FB && PPC && (!PPC_PSERIES || PCI)
+>>>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on !DRM_OFDRM
+>>>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select APERTURE_HELPERS
+>>>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select FB_CFB_FILLRECT
+>>>
+>>
+>>
+

@@ -2,115 +2,131 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4862FC46467
-	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Dec 2022 07:59:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6E79C4167B
+	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Dec 2022 14:04:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229691AbiL1H7T (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 28 Dec 2022 02:59:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36324 "EHLO
+        id S230133AbiL1OEM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 28 Dec 2022 09:04:12 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51464 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230451AbiL1H7D (ORCPT
+        with ESMTP id S229630AbiL1OEL (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 28 Dec 2022 02:59:03 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F50CEA0;
-        Tue, 27 Dec 2022 23:59:02 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1672214307; bh=ut0QnBH+n52wyKHqQwBmihflDips2qqky7SOU6xr2yk=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=eN4Ex5QIPgdWjYcTYy02q5aoymbvKY1bYLviQ/rRbu0eSYMZYvDKomIFZwyNpSL6X
-         dDOlDBXZU4g0zLRxV0OxLqMb9jix3i5YNyaXWlN0Ka+e3fgKL15J32gphECk6EMM7y
-         cfjWG4Tz9e36ntSPS253HeVp+vP17JdNUBl2E5by+N7Y6jh/jAqRCy67LhtnlOLm6o
-         G+LZqLeLqTG9nX2vnX+UGBjeNOETP1nvbjzFH3/v7kPl83v9rvCMZ7VbBybaPGfRE4
-         2+nWnwa24JVg8yE75z9IdoUKneFPViOCAR6FBG9Z6bMeE9NMA+MIr0supORmd6XdQF
-         Wvm1t9CQH48RQ==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([92.116.184.137]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MmDEm-1oSGsF2jrc-00iCsh; Wed, 28
- Dec 2022 08:58:27 +0100
-Message-ID: <10b15ff6-0671-a523-a708-76f1dfa0383e@gmx.de>
-Date:   Wed, 28 Dec 2022 08:58:25 +0100
+        Wed, 28 Dec 2022 09:04:11 -0500
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC2E11099;
+        Wed, 28 Dec 2022 06:04:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1672236249; x=1703772249;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=Lg126dF0ZRB51ZzT/H9t/6uTcxQgkla19QDrEd0Bge0=;
+  b=c2iP/ZA0uWkDdxNpHAOp0YCPyjxlv8h7aQGjKTZMRR6SF9YaM3bfiYBo
+   znnuls8vYhO1gaLI8oWuZ0LS1uu7CDIFWchzA0Bm52jf8k1gXX5ukVRGS
+   yQjFCK/Uyg1WSsPnfwkU1I6ZkA2N0fP+v7wT7LJci5FMbxPvNgbNBQ3Sb
+   trJLLyHX6b08mMxFr3/IEyVreRUFb8JhUOZscI71WMkXsnHO3DCKYLE6h
+   MhiDvWFxat86ZuPres05zdP8WimKmqBfpkojgFFT29JBeuJ4L8HEUyf0f
+   RzMhpsKGuVkrBKvQjXmNvZlxeTh770iy7IgB4+Iowwg9wednRPRO6uk59
+   Q==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10574"; a="308631762"
+X-IronPort-AV: E=Sophos;i="5.96,280,1665471600"; 
+   d="scan'208";a="308631762"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Dec 2022 06:03:21 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10574"; a="655320885"
+X-IronPort-AV: E=Sophos;i="5.96,280,1665471600"; 
+   d="scan'208";a="655320885"
+Received: from smile.fi.intel.com ([10.237.72.54])
+  by fmsmga007.fm.intel.com with ESMTP; 28 Dec 2022 06:03:13 -0800
+Received: from andy by smile.fi.intel.com with local (Exim 4.96)
+        (envelope-from <andriy.shevchenko@linux.intel.com>)
+        id 1pAX1S-000cPm-1R;
+        Wed, 28 Dec 2022 16:03:10 +0200
+Date:   Wed, 28 Dec 2022 16:03:10 +0200
+From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To:     Ard Biesheuvel <ardb@kernel.org>
+Cc:     Markuss Broks <markuss.broks@gmail.com>,
+        linux-kernel@vger.kernel.org,
+        Jami Kettunen <jami.kettunen@protonmail.com>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Helge Deller <deller@gmx.de>, Borislav Petkov <bp@suse.de>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Will Deacon <will@kernel.org>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Muchun Song <muchun.song@linux.dev>,
+        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
+        Kim Phillips <kim.phillips@amd.com>, linux-doc@vger.kernel.org,
+        linux-efi@vger.kernel.org, linux-serial@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v3 0/3] Add generic framebuffer support to EFI earlycon
+ driver
+Message-ID: <Y6xMnuMqpThmFn1q@smile.fi.intel.com>
+References: <20221221105402.6598-1-markuss.broks@gmail.com>
+ <CAMj1kXGUC7dsSwVEUsAMeAoqDYtbqrM7SDOJTXbPfi-LrcSk9g@mail.gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.0
-Subject: Re: [PATCH linux-next] fbdev: omap: use strscpy() to instead of
- strncpy()
-Content-Language: en-US
-To:     yang.yang29@zte.com.cn
-Cc:     tony@atomide.com, b.zolnierkie@samsung.com, arnd@arndb.de,
-        yuzhe@nfschina.com, jiapeng.chong@linux.alibaba.com,
-        guozhengkui@vivo.com, linux-fbdev@vger.kernel.org,
-        linux-omap@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, xu.panda@zte.com.cn
-References: <202212280940017919910@zte.com.cn>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <202212280940017919910@zte.com.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:6xYT7XBtpcRWzDX6SMR5Z8MDNCitrlJnvbo6qFAtHCUpmmFKG34
- DRPCkQvPUUNTq4SCURlK0nW2KbSdPE5Grhs+SCPnjG/D6UE8SdJcq6trxfGRFDV4ZuurelR
- zYw9zApIoPh+QWH9UbFNIYmcfnm6xI2/COONct/6CTwTjyCUFD+izjSkiIBF2L0gY2tMMdL
- OatStnnePHFTsFj5928yQ==
-UI-OutboundReport: notjunk:1;M01:P0:dneBwogOC4o=;S5DKRe/GJouDkmz713c8D7GJqKU
- smMzawgYoxAlQfzoJG7OXVgQcpjkt0IqYNibKYZVNkL2RQRa7gXQ1lrTQsyKPGWl9CrX+7x/S
- HYNu+j2+k7b+uybzfaetqpRO7G9vBLo9113eU2gXJ8Jft0dGNt7+ig8rJAHnIGB11Q/aU9mc1
- jamMY/chikb/PyJis3Gj/tNPtorYqoHvDMV9xa8W4LKoR6aFAFkMYf8qWmI87dZNJ4gCGiJCS
- kTx2vXFySUiydsVkvPxrciN05hMZOqt05nw1LFJjxIcAuyFEQ7zvAkBFMfSc8W5rgyPiddNyT
- 9c7td3QC0z/0hmVWWvZoAe9xbd25xFcpvYcI4tpeRc7JHj1RVwlpsSDmN1+qtsETI3RM1YYA0
- sVE4F5QcqsS2wuwb8J/gKg3m5a1AYnUMvryyvnLD1lFetZcJCSXY/AjHZb876N1aopDWNiVOQ
- 5F/UsAU+tUSRuJAPhmN3PYJgiUGRFDKQkalmiGHrto4JoXyHDggqvBsJsffnqbm0NT8my9hUZ
- 8wdEeN2AB7PJ8CZWJH/Pb/owXT6XnCTZCifnZL76LBYF/pHWyzqGwG/azsCGeV/9jpvUzKVO4
- 02KtXNoDD+PfphySAkjnEDzt2czFaRFLB1yvxfSgz0jU+HmgSXwpAiFfCw5JluOESFCJNzjVr
- loYNzfH+SMkrk57A8cGmw49z+l3TbhJnw63OqbcbWEIQxYAOIgVpG+/ur5WFZn3z8GY6FSvXk
- ZANUX3x6tzYeqO7715fn0cQ9L5BZlzx5JqqYVDotaWxSs8q+ukKz6vbJGqNulenCnT95wcDOu
- fb/6RmYWzTAPLVpv44PMsfQe10S52P9t9Nv1OjW8/pfvIMObhWLzM6MbMLgmbhk63pRe9mXUb
- 897s79htsTTweXHFSzhBxzxBuTgwHY8r7eVu38W/Xu0sP9xytOj7tj7Duz075b6TRm2LS/l3Q
- ftQ5+g==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAMj1kXGUC7dsSwVEUsAMeAoqDYtbqrM7SDOJTXbPfi-LrcSk9g@mail.gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 12/28/22 02:40, yang.yang29@zte.com.cn wrote:
-> From: Xu Panda <xu.panda@zte.com.cn>
->
-> The implementation of strscpy() is more robust and safer.
-> That's now the recommended way to copy NUL-terminated strings.
->
-> Signed-off-by: Xu Panda <xu.panda@zte.com.cn>
-> Signed-off-by: Yang Yang <yang.yang29@zte.com>
-> ---
->   drivers/video/fbdev/omap/omapfb_main.c | 5 ++---
->   1 file changed, 2 insertions(+), 3 deletions(-)
+On Fri, Dec 23, 2022 at 03:42:33PM +0100, Ard Biesheuvel wrote:
+> (cc Andy)
 
-applied.
-Thanks!
-Helge
+I believe there are two reasons I'm Cc'ed now:
+- the Cc was forgotten. because I remember reviewing some parts
+  of this contribution
+- this conflicts (to some extent) with my patch that speeds up
+  the scrolling
 
->
-> diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbde=
-v/omap/omapfb_main.c
-> index 17cda5765683..1f3df2055ff0 100644
-> --- a/drivers/video/fbdev/omap/omapfb_main.c
-> +++ b/drivers/video/fbdev/omap/omapfb_main.c
-> @@ -1447,7 +1447,7 @@ static int fbinfo_init(struct omapfb_device *fbdev=
-, struct fb_info *info)
->   	info->fbops =3D &omapfb_ops;
->   	info->flags =3D FBINFO_FLAG_DEFAULT;
->
-> -	strncpy(fix->id, MODULE_NAME, sizeof(fix->id));
-> +	strscpy(fix->id, MODULE_NAME, sizeof(fix->id));
->
->   	info->pseudo_palette =3D fbdev->pseudo_palette;
->
-> @@ -1573,8 +1573,7 @@ static int omapfb_find_ctrl(struct omapfb_device *=
-fbdev)
->
->   	fbdev->ctrl =3D NULL;
->
-> -	strncpy(name, conf->lcd.ctrl_name, sizeof(name) - 1);
-> -	name[sizeof(name) - 1] =3D '\0';
-> +	strscpy(name, conf->lcd.ctrl_name, sizeof(name));
->
->   	if (strcmp(name, "internal") =3D=3D 0) {
->   		fbdev->ctrl =3D fbdev->int_ctrl;
+For the first it's obvious what to do, I think Markuss can include me
+in his v4.
+
+For the second I don't see the functional clash. The scrolling in this
+series is not anyhow optimized. I think my patch should go first as
+- it is less intrusive
+- it has been tested, or can be tested easily
+
+Tell me if I'm missing something here.
+
+> On Wed, 21 Dec 2022 at 11:54, Markuss Broks <markuss.broks@gmail.com> wrote:
+> >
+> > Make the EFI earlycon driver be suitable for any linear framebuffers.
+> > This should be helpful for early porting of boards with no other means of
+> > output, like smartphones/tablets. There seems to be an issue with early_ioremap
+> > function on ARM32, but I am unable to find the exact cause. It appears the mappings
+> > returned by it are somehow incorrect, thus the driver is disabled on ARM.
+> 
+> The reason that this driver is disabled on ARM is because the struct
+> screen_info is not populated early enough, as it is retrieved from a
+> UEFI configuration table.
+> 
+> early_ioremap() works fine on ARM as long as they mapping is torn down
+> before paging_init()
+> 
+> > EFI early
+> > console was disabled on IA64 previously because of missing early_memremap_prot,
+> > and this is inherited to this driver.
+> >
+> > This patch also changes
+> 
+> "This patch also changes ..." is usually a strong hint to self that
+> the patches need to be split up.
+> 
+> > behavior on EFI systems, by selecting the mapping type
+> > based on if the framebuffer region intersects with system RAM. If it does, it's
+> > common sense that it should be in RAM as a whole, and so the system RAM mapping is
+> > used. It was tested to be working on my PC (Intel Z490 platform), as well as several
+> > ARM64 boards (Samsung Galaxy S9 (Exynos), iPad Air 2, Xiaomi Mi Pad 4, ...).
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
 

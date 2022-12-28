@@ -2,33 +2,33 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6996C3DA7A
-	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Dec 2022 15:34:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD24EC4708D
+	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Dec 2022 16:27:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233847AbiL1Pe2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 28 Dec 2022 10:34:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52320 "EHLO
+        id S230392AbiL1Q1R (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 28 Dec 2022 11:27:17 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43022 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233209AbiL1Pe2 (ORCPT
+        with ESMTP id S234686AbiL1Q01 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 28 Dec 2022 10:34:28 -0500
+        Wed, 28 Dec 2022 11:26:27 -0500
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E6211648F;
-        Wed, 28 Dec 2022 07:34:27 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B18A1C921;
+        Wed, 28 Dec 2022 08:22:55 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id B1E8561542;
-        Wed, 28 Dec 2022 15:34:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9CB39C433F0;
-        Wed, 28 Dec 2022 15:34:25 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id ECD666157F;
+        Wed, 28 Dec 2022 16:22:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BEE3FC433D2;
+        Wed, 28 Dec 2022 16:22:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1672241666;
-        bh=SW5xKFSPrwYLrKP1omDMY+E/09Pr8z9WKCx+2TLz0uQ=;
+        s=korg; t=1672244574;
+        bh=BLOZxcjnEXYR6XvwzCsyfFc30JnGmIUnqT9FcOApdUQ=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=OBzdoWBmldAdErd0Fy0EavevjKR3oYDk9Osfrsx+2mqMqvwNMyPVQTyPILdscoUzh
-         OYEbocwSzNlpCyNZblqST4NWX1X+VuRT5n5McCyU+p6BeHQAksn5tiT2ww/d5oJ1tp
-         mQpBoS+HA/frZUH7ZCG0/VtQh1QM9VoyjkL66nkI=
+        b=AyB9TxUVC4nxnJ2eZHsZYMl7rhga/NMlBErEyc2pujDhzoWgdGZN2ImqjnReZTDlD
+         Zb3l9oDhx6E4rjr7YKpV1lBD3jBD33Zzan559H+l6lO8ebtca/T3WQgUwZS0iB0Zbo
+         k1fg1rRO2TJl332SdMptxQmRAC2cBJoOPqLtTTOY=
 From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To:     stable@vger.kernel.org
 Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -40,12 +40,12 @@ Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         dri-devel@lists.freedesktop.org,
         Michal Januszewski <spock@gentoo.org>,
         Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 5.15 509/731] fbdev: uvesafb: dont build on UML
-Date:   Wed, 28 Dec 2022 15:40:16 +0100
-Message-Id: <20221228144311.300749846@linuxfoundation.org>
+Subject: [PATCH 6.0 0735/1073] fbdev: uvesafb: dont build on UML
+Date:   Wed, 28 Dec 2022 15:38:43 +0100
+Message-Id: <20221228144347.986496644@linuxfoundation.org>
 X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20221228144256.536395940@linuxfoundation.org>
-References: <20221228144256.536395940@linuxfoundation.org>
+In-Reply-To: <20221228144328.162723588@linuxfoundation.org>
+References: <20221228144328.162723588@linuxfoundation.org>
 User-Agent: quilt/0.67
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -86,10 +86,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+)
 
 diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 5050a9f8e879..26531aa19428 100644
+index 9497fe929162..974e862cd20d 100644
 --- a/drivers/video/fbdev/Kconfig
 +++ b/drivers/video/fbdev/Kconfig
-@@ -606,6 +606,7 @@ config FB_TGA
+@@ -601,6 +601,7 @@ config FB_TGA
  config FB_UVESA
  	tristate "Userspace VESA VGA graphics support"
  	depends on FB && CONNECTOR

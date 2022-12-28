@@ -2,131 +2,119 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6E79C4167B
-	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Dec 2022 14:04:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EAD2C3DA7D
+	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Dec 2022 15:34:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230133AbiL1OEM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 28 Dec 2022 09:04:12 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51464 "EHLO
+        id S233401AbiL1PeV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 28 Dec 2022 10:34:21 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52222 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229630AbiL1OEL (ORCPT
+        with ESMTP id S233456AbiL1PeU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 28 Dec 2022 09:04:11 -0500
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC2E11099;
-        Wed, 28 Dec 2022 06:04:08 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1672236249; x=1703772249;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=Lg126dF0ZRB51ZzT/H9t/6uTcxQgkla19QDrEd0Bge0=;
-  b=c2iP/ZA0uWkDdxNpHAOp0YCPyjxlv8h7aQGjKTZMRR6SF9YaM3bfiYBo
-   znnuls8vYhO1gaLI8oWuZ0LS1uu7CDIFWchzA0Bm52jf8k1gXX5ukVRGS
-   yQjFCK/Uyg1WSsPnfwkU1I6ZkA2N0fP+v7wT7LJci5FMbxPvNgbNBQ3Sb
-   trJLLyHX6b08mMxFr3/IEyVreRUFb8JhUOZscI71WMkXsnHO3DCKYLE6h
-   MhiDvWFxat86ZuPres05zdP8WimKmqBfpkojgFFT29JBeuJ4L8HEUyf0f
-   RzMhpsKGuVkrBKvQjXmNvZlxeTh770iy7IgB4+Iowwg9wednRPRO6uk59
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10574"; a="308631762"
-X-IronPort-AV: E=Sophos;i="5.96,280,1665471600"; 
-   d="scan'208";a="308631762"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Dec 2022 06:03:21 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10574"; a="655320885"
-X-IronPort-AV: E=Sophos;i="5.96,280,1665471600"; 
-   d="scan'208";a="655320885"
-Received: from smile.fi.intel.com ([10.237.72.54])
-  by fmsmga007.fm.intel.com with ESMTP; 28 Dec 2022 06:03:13 -0800
-Received: from andy by smile.fi.intel.com with local (Exim 4.96)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1pAX1S-000cPm-1R;
-        Wed, 28 Dec 2022 16:03:10 +0200
-Date:   Wed, 28 Dec 2022 16:03:10 +0200
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Ard Biesheuvel <ardb@kernel.org>
-Cc:     Markuss Broks <markuss.broks@gmail.com>,
-        linux-kernel@vger.kernel.org,
-        Jami Kettunen <jami.kettunen@protonmail.com>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Helge Deller <deller@gmx.de>, Borislav Petkov <bp@suse.de>,
-        "Paul E. McKenney" <paulmck@kernel.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Will Deacon <will@kernel.org>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Muchun Song <muchun.song@linux.dev>,
-        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
-        Kim Phillips <kim.phillips@amd.com>, linux-doc@vger.kernel.org,
-        linux-efi@vger.kernel.org, linux-serial@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v3 0/3] Add generic framebuffer support to EFI earlycon
- driver
-Message-ID: <Y6xMnuMqpThmFn1q@smile.fi.intel.com>
-References: <20221221105402.6598-1-markuss.broks@gmail.com>
- <CAMj1kXGUC7dsSwVEUsAMeAoqDYtbqrM7SDOJTXbPfi-LrcSk9g@mail.gmail.com>
+        Wed, 28 Dec 2022 10:34:20 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 18CA315FF3;
+        Wed, 28 Dec 2022 07:34:19 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id AA2D561560;
+        Wed, 28 Dec 2022 15:34:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 94AD7C433F0;
+        Wed, 28 Dec 2022 15:34:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1672241658;
+        bh=l6SZ1o3XablMRreE/05h9qlGf3szz8R5it9zAPOMn0Y=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=LIN4TO73VrpYIw+BXmoBrcco1HQ4txnkCnPoDBf6uobkmC4ZA/UJdFwn9h7da42Ca
+         M9DkKvx4l/22GY4eabQcC1y9MNx5x5nL9tby5Fv2x139xNQXX0oHz70t9OLnSRl28R
+         zT2bwzcE81f5Ng4hE0NWyd8jLxGe9HA9Ruhxx+lY=
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     stable@vger.kernel.org
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        patches@lists.linux.dev, Randy Dunlap <rdunlap@infradead.org>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        Richard Weinberger <richard@nod.at>,
+        linux-um@lists.infradead.org, Daniel Vetter <daniel@ffwll.ch>,
+        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        Andres Salomon <dilinger@queued.net>,
+        linux-geode@lists.infradead.org, Sasha Levin <sashal@kernel.org>
+Subject: [PATCH 5.15 508/731] fbdev: geode: dont build on UML
+Date:   Wed, 28 Dec 2022 15:40:15 +0100
+Message-Id: <20221228144311.271388741@linuxfoundation.org>
+X-Mailer: git-send-email 2.39.0
+In-Reply-To: <20221228144256.536395940@linuxfoundation.org>
+References: <20221228144256.536395940@linuxfoundation.org>
+User-Agent: quilt/0.67
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMj1kXGUC7dsSwVEUsAMeAoqDYtbqrM7SDOJTXbPfi-LrcSk9g@mail.gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Dec 23, 2022 at 03:42:33PM +0100, Ard Biesheuvel wrote:
-> (cc Andy)
+From: Randy Dunlap <rdunlap@infradead.org>
 
-I believe there are two reasons I'm Cc'ed now:
-- the Cc was forgotten. because I remember reviewing some parts
-  of this contribution
-- this conflicts (to some extent) with my patch that speeds up
-  the scrolling
+[ Upstream commit 71c53e19226b0166ba387d3c590d0509f541a0a1 ]
 
-For the first it's obvious what to do, I think Markuss can include me
-in his v4.
+The geode fbdev driver uses struct cpuinfo fields that are not present
+on ARCH=um, so don't allow this driver to be built on UML.
 
-For the second I don't see the functional clash. The scrolling in this
-series is not anyhow optimized. I think my patch should go first as
-- it is less intrusive
-- it has been tested, or can be tested easily
+Prevents these build errors:
 
-Tell me if I'm missing something here.
+In file included from ../arch/x86/include/asm/olpc.h:7:0,
+                 from ../drivers/mfd/cs5535-mfd.c:17:
+../arch/x86/include/asm/geode.h: In function ‘is_geode_gx’:
+../arch/x86/include/asm/geode.h:16:24: error: ‘struct cpuinfo_um’ has no member named ‘x86_vendor’
+  return ((boot_cpu_data.x86_vendor == X86_VENDOR_NSC) &&
+../arch/x86/include/asm/geode.h:16:39: error: ‘X86_VENDOR_NSC’ undeclared (first use in this function); did you mean ‘X86_VENDOR_ANY’?
+  return ((boot_cpu_data.x86_vendor == X86_VENDOR_NSC) &&
+../arch/x86/include/asm/geode.h:17:17: error: ‘struct cpuinfo_um’ has no member named ‘x86’
+   (boot_cpu_data.x86 == 5) &&
+../arch/x86/include/asm/geode.h:18:17: error: ‘struct cpuinfo_um’ has no member named ‘x86_model’
+   (boot_cpu_data.x86_model == 5));
+../arch/x86/include/asm/geode.h: In function ‘is_geode_lx’:
+../arch/x86/include/asm/geode.h:23:24: error: ‘struct cpuinfo_um’ has no member named ‘x86_vendor’
+  return ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) &&
+../arch/x86/include/asm/geode.h:23:39: error: ‘X86_VENDOR_AMD’ undeclared (first use in this function); did you mean ‘X86_VENDOR_ANY’?
+  return ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) &&
+../arch/x86/include/asm/geode.h:24:17: error: ‘struct cpuinfo_um’ has no member named ‘x86’
+   (boot_cpu_data.x86 == 5) &&
+../arch/x86/include/asm/geode.h:25:17: error: ‘struct cpuinfo_um’ has no member named ‘x86_model’
+   (boot_cpu_data.x86_model == 10));
 
-> On Wed, 21 Dec 2022 at 11:54, Markuss Broks <markuss.broks@gmail.com> wrote:
-> >
-> > Make the EFI earlycon driver be suitable for any linear framebuffers.
-> > This should be helpful for early porting of boards with no other means of
-> > output, like smartphones/tablets. There seems to be an issue with early_ioremap
-> > function on ARM32, but I am unable to find the exact cause. It appears the mappings
-> > returned by it are somehow incorrect, thus the driver is disabled on ARM.
-> 
-> The reason that this driver is disabled on ARM is because the struct
-> screen_info is not populated early enough, as it is retrieved from a
-> UEFI configuration table.
-> 
-> early_ioremap() works fine on ARM as long as they mapping is torn down
-> before paging_init()
-> 
-> > EFI early
-> > console was disabled on IA64 previously because of missing early_memremap_prot,
-> > and this is inherited to this driver.
-> >
-> > This patch also changes
-> 
-> "This patch also changes ..." is usually a strong hint to self that
-> the patches need to be split up.
-> 
-> > behavior on EFI systems, by selecting the mapping type
-> > based on if the framebuffer region intersects with system RAM. If it does, it's
-> > common sense that it should be in RAM as a whole, and so the system RAM mapping is
-> > used. It was tested to be working on my PC (Intel Z490 platform), as well as several
-> > ARM64 boards (Samsung Galaxy S9 (Exynos), iPad Air 2, Xiaomi Mi Pad 4, ...).
+Fixes: 68f5d3f3b654 ("um: add PCI over virtio emulation driver")
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Cc: Richard Weinberger <richard@nod.at>
+Cc: linux-um@lists.infradead.org
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: Andres Salomon <dilinger@queued.net>
+Cc: linux-geode@lists.infradead.org
+Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/geode/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
+diff --git a/drivers/video/fbdev/geode/Kconfig b/drivers/video/fbdev/geode/Kconfig
+index ac9c860592aa..85bc14b6faf6 100644
+--- a/drivers/video/fbdev/geode/Kconfig
++++ b/drivers/video/fbdev/geode/Kconfig
+@@ -5,6 +5,7 @@
+ config FB_GEODE
+ 	bool "AMD Geode family framebuffer support"
+ 	depends on FB && PCI && (X86_32 || (X86 && COMPILE_TEST))
++	depends on !UML
+ 	help
+ 	  Say 'Y' here to allow you to select framebuffer drivers for
+ 	  the AMD Geode family of processors.
 -- 
-With Best Regards,
-Andy Shevchenko
+2.35.1
+
 
 

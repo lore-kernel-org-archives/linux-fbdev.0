@@ -2,53 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51880C10F1B
-	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Dec 2022 01:40:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB95FC10F1B
+	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Dec 2022 01:44:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229660AbiL1BkJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 27 Dec 2022 20:40:09 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32942 "EHLO
+        id S229740AbiL1BoZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 27 Dec 2022 20:44:25 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34238 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229475AbiL1BkI (ORCPT
+        with ESMTP id S229583AbiL1BoY (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 27 Dec 2022 20:40:08 -0500
-Received: from mxhk.zte.com.cn (mxhk.zte.com.cn [63.216.63.40])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 04A31DF94;
-        Tue, 27 Dec 2022 17:40:08 -0800 (PST)
+        Tue, 27 Dec 2022 20:44:24 -0500
+Received: from mxct.zte.com.cn (mxct.zte.com.cn [183.62.165.209])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4860CB85B;
+        Tue, 27 Dec 2022 17:44:22 -0800 (PST)
 Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mxhk.zte.com.cn (FangMail) with ESMTPS id 4NhZ2t53W1z8QrkZ;
-        Wed, 28 Dec 2022 09:40:06 +0800 (CST)
-Received: from szxlzmapp06.zte.com.cn ([10.5.230.252])
-        by mse-fl1.zte.com.cn with SMTP id 2BS1e0df048934;
-        Wed, 28 Dec 2022 09:40:00 +0800 (+08)
+        by mxct.zte.com.cn (FangMail) with ESMTPS id 4NhZ7m2gCdz501Qh;
+        Wed, 28 Dec 2022 09:44:20 +0800 (CST)
+Received: from szxlzmapp03.zte.com.cn ([10.5.231.207])
+        by mse-fl1.zte.com.cn with SMTP id 2BS1iAG9052060;
+        Wed, 28 Dec 2022 09:44:10 +0800 (+08)
         (envelope-from yang.yang29@zte.com.cn)
 Received: from mapi (szxlzmapp01[null])
         by mapi (Zmail) with MAPI id mid14;
-        Wed, 28 Dec 2022 09:40:01 +0800 (CST)
-Date:   Wed, 28 Dec 2022 09:40:01 +0800 (CST)
-X-Zmail-TransId: 2b0363ab9e71ffffffffbc84f49e
+        Wed, 28 Dec 2022 09:44:11 +0800 (CST)
+Date:   Wed, 28 Dec 2022 09:44:11 +0800 (CST)
+X-Zmail-TransId: 2b0363ab9f6b7fd5e0c4
 X-Mailer: Zmail v1.0
-Message-ID: <202212280940017919910@zte.com.cn>
+Message-ID: <202212280944112670081@zte.com.cn>
 Mime-Version: 1.0
 From:   <yang.yang29@zte.com.cn>
 To:     <deller@gmx.de>
-Cc:     <tony@atomide.com>, <b.zolnierkie@samsung.com>, <arnd@arndb.de>,
-        <yuzhe@nfschina.com>, <jiapeng.chong@linux.alibaba.com>,
-        <guozhengkui@vivo.com>, <linux-fbdev@vger.kernel.org>,
-        <linux-omap@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
+Cc:     <javierm@redhat.com>, <tzimmermann@suse.de>,
+        <christophe.leroy@csgroup.eu>, <wsa+renesas@sang-engineering.com>,
+        <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
         <linux-kernel@vger.kernel.org>, <xu.panda@zte.com.cn>,
         <yang.yang29@zte.com.cn>
-Subject: =?UTF-8?B?W1BBVENIIGxpbnV4LW5leHRdIGZiZGV2OiBvbWFwOiB1c2Ugc3Ryc2NweSgpIHRvIGluc3RlYWQgb2Ygc3RybmNweSgp?=
+Subject: =?UTF-8?B?W1BBVENIIGxpbnV4LW5leHRdIGZiZGV2OiB1c2Ugc3Ryc2NweSgpIHRvIGluc3RlYWQgb2Ygc3RybmNweSgp?=
 Content-Type: text/plain;
         charset="UTF-8"
-X-MAIL: mse-fl1.zte.com.cn 2BS1e0df048934
+X-MAIL: mse-fl1.zte.com.cn 2BS1iAG9052060
 X-Fangmail-Gw-Spam-Type: 0
-X-FangMail-Miltered: at cgslv5.04-192.168.250.137.novalocal with ID 63AB9E76.000 by FangMail milter!
-X-FangMail-Envelope: 1672191606/4NhZ2t53W1z8QrkZ/63AB9E76.000/10.5.228.132/[10.5.228.132]/mse-fl1.zte.com.cn/<yang.yang29@zte.com.cn>
+X-FangMail-Miltered: at cgslv5.04-192.168.251.13.novalocal with ID 63AB9F74.000 by FangMail milter!
+X-FangMail-Envelope: 1672191860/4NhZ7m2gCdz501Qh/63AB9F74.000/10.5.228.132/[10.5.228.132]/mse-fl1.zte.com.cn/<yang.yang29@zte.com.cn>
 X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 63AB9E76.000/4NhZ2t53W1z8QrkZ
+X-Fangmail-MID-QID: 63AB9F74.000/4NhZ7m2gCdz501Qh
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -61,31 +60,22 @@ That's now the recommended way to copy NUL-terminated strings.
 Signed-off-by: Xu Panda <xu.panda@zte.com.cn>
 Signed-off-by: Yang Yang <yang.yang29@zte.com>
 ---
- drivers/video/fbdev/omap/omapfb_main.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/aty/atyfb_base.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
-index 17cda5765683..1f3df2055ff0 100644
---- a/drivers/video/fbdev/omap/omapfb_main.c
-+++ b/drivers/video/fbdev/omap/omapfb_main.c
-@@ -1447,7 +1447,7 @@ static int fbinfo_init(struct omapfb_device *fbdev, struct fb_info *info)
- 	info->fbops = &omapfb_ops;
- 	info->flags = FBINFO_FLAG_DEFAULT;
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index 0ccf5d401ecb..851c1236fddb 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -3192,8 +3192,7 @@ static void aty_init_lcd(struct atyfb_par *par, u32 bios_base)
+ 		 * which we print to the screen.
+ 		 */
+ 		id = *(u8 *)par->lcd_table;
+-		strncpy(model, (char *)par->lcd_table+1, 24);
+-		model[23] = 0;
++		strscpy(model, (char *)par->lcd_table+1, 24);
 
--	strncpy(fix->id, MODULE_NAME, sizeof(fix->id));
-+	strscpy(fix->id, MODULE_NAME, sizeof(fix->id));
-
- 	info->pseudo_palette = fbdev->pseudo_palette;
-
-@@ -1573,8 +1573,7 @@ static int omapfb_find_ctrl(struct omapfb_device *fbdev)
-
- 	fbdev->ctrl = NULL;
-
--	strncpy(name, conf->lcd.ctrl_name, sizeof(name) - 1);
--	name[sizeof(name) - 1] = '\0';
-+	strscpy(name, conf->lcd.ctrl_name, sizeof(name));
-
- 	if (strcmp(name, "internal") == 0) {
- 		fbdev->ctrl = fbdev->int_ctrl;
+ 		width = par->lcd_width = *(u16 *)(par->lcd_table+25);
+ 		height = par->lcd_height = *(u16 *)(par->lcd_table+27);
 -- 
 2.15.2

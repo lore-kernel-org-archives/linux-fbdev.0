@@ -2,30 +2,30 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE4DBC3DA7A
-	for <linux-fbdev@archiver.kernel.org>; Mon,  2 Jan 2023 13:58:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5070EC4708E
+	for <linux-fbdev@archiver.kernel.org>; Mon,  2 Jan 2023 14:02:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232975AbjABN6E (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 2 Jan 2023 08:58:04 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47472 "EHLO
+        id S236065AbjABOCe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 2 Jan 2023 09:02:34 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50832 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232531AbjABN6C (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 2 Jan 2023 08:58:02 -0500
+        with ESMTP id S232479AbjABOCb (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 2 Jan 2023 09:02:31 -0500
 Received: from mx1.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 77DE026A;
-        Mon,  2 Jan 2023 05:58:00 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8735F656E;
+        Mon,  2 Jan 2023 06:02:28 -0800 (PST)
 Received: from handsomejack.molgen.mpg.de (handsomejack.molgen.mpg.de [141.14.17.248])
-        by mx.molgen.mpg.de (Postfix) with ESMTP id 5E15B60027FC1;
-        Mon,  2 Jan 2023 14:57:57 +0100 (CET)
+        by mx.molgen.mpg.de (Postfix) with ESMTP id 0274460027FCD;
+        Mon,  2 Jan 2023 15:02:27 +0100 (CET)
 From:   Paul Menzel <pmenzel@molgen.mpg.de>
 To:     Helge Deller <deller@gmx.de>, "Z. Liu" <liuzx@knownsec.com>
 Cc:     Paul Menzel <pmenzel@molgen.mpg.de>, it+linux-fbdev@molgen.mpg.de,
-        Rich Felker <dalias@libc.org>, stable@vger.kernel.org,
+        Rich Felker <dalias@aerifal.cx>, stable@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH] matroxfb: G200eW: Increase max memory from 1 MB to 16 MB
-Date:   Mon,  2 Jan 2023 14:57:30 +0100
-Message-Id: <20230102135731.6487-1-pmenzel@molgen.mpg.de>
+Subject: [PATCH v2] matroxfb: G200eW: Increase max memory from 1 MB to 16 MB
+Date:   Mon,  2 Jan 2023 15:02:07 +0100
+Message-Id: <20230102140206.6778-1-pmenzel@molgen.mpg.de>
 X-Mailer: git-send-email 2.39.0
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -60,10 +60,12 @@ Fixes: 62d89a7d49af ("video: fbdev: matroxfb: set maxvram of vbG200eW to the sam
 Link: https://lore.kernel.org/linux-fbdev/972999d3-b75d-5680-fcef-6e6905c52ac5@suse.de/T/#mb6953a9995ebd18acc8552f99d6db39787aec775
 Cc: it+linux-fbdev@molgen.mpg.de
 Cc: Z. Liu <liuzx@knownsec.com>
-Cc: Rich Felker <dalias@libc.org>
+Cc: Rich Felker <dalias@aerifal.cx>
 Cc: stable@vger.kernel.org
 Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
 ---
+Update Rich’s address.
+
  drivers/video/fbdev/matrox/matroxfb_base.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 

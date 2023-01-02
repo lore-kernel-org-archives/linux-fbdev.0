@@ -2,131 +2,125 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80EC0C3DA7A
-	for <linux-fbdev@archiver.kernel.org>; Mon,  2 Jan 2023 14:49:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9646C53210
+	for <linux-fbdev@archiver.kernel.org>; Mon,  2 Jan 2023 15:29:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230340AbjABOs6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 2 Jan 2023 09:48:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39618 "EHLO
+        id S235952AbjABP3P (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 2 Jan 2023 10:29:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36086 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232942AbjABOss (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 2 Jan 2023 09:48:48 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C84966465;
-        Mon,  2 Jan 2023 06:48:45 -0800 (PST)
+        with ESMTP id S230120AbjABP3O (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 2 Jan 2023 10:29:14 -0500
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ED58FFFF;
+        Mon,  2 Jan 2023 07:29:12 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1672670903; bh=cUUTc8Fvgowvs3kRn4xQ5Ko18CAYd2NLfEAuO5+9Il0=;
+        t=1672673338; bh=DkGt1eCxxN8PX6FO9pxQ90B7u0RDcF4MmuhsN+3Bmxs=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=sD1gBsVq08UZG71PKBLJYyt449w8RFoLAtADqA7lKzYYXIiP4q1IrLsA5nsx/puCh
-         PbP1yLh92PZwboVF6SaxJ7E8Z8XfthrzMjOyHyKrShzBin83Pw1HHow18vG8r4NTZy
-         wwRq7pVdKlZMMHb/+CbolLS51iG0mTestS/4NWMMs4AZHVffTQrA9wtfCzMM0lqOcT
-         BEUCVlutiiFB2krRoHQJuTKTEWQhksOw/IMNR02m2b4TV70Yxr/W9ulk0zT7wNLWm4
-         jthcfUy3hDU+57pjRq8sAWQAYlTt9SQdB7D4QDQskV4H4+jcRQCFflgApd6EDXNomR
-         pHT/4H+IRSLDg==
+        b=b3VDJcR3fy4VS2ddCMT/Hr24KqojpgSyzHGvFHNoJU7MHKzKBV8e0MziE4m/LUmUU
+         aGX37QoOdU3f4eh+U7kgWwmq07F2t8C1irt3Sa3BrMBZ8UDl/AHXQ/iffpVfuMqrYW
+         2Ps89f54TbISfOLjFWgPRUGp+T4f44ykzPbwYTmV7t3u+xegTJDQGnQlhd0Gl3MJtM
+         2eDlfye3mzCwTtFLvytrjbv4Ud0o8AuuoSu0JJreYA8fHDQC6ISWHRQXeq/sTNBK3l
+         IaVaRmRTAVtqF8Vo2zKoIejb0dX3ADQvPyGBASEWwBymkEOgcsUyLtgRzmm4dsO4sy
+         BA59yTEZeX2AA==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([92.116.130.137]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MN5if-1pVG2U07HB-00J0eB; Mon, 02
- Jan 2023 15:48:23 +0100
-Message-ID: <17a2982e-f4e8-f8bd-db8f-dd14bf27b4e7@gmx.de>
-Date:   Mon, 2 Jan 2023 15:48:21 +0100
+Received: from [192.168.20.60] ([92.116.130.137]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MAOJP-1p5S2z3351-00Buoi; Mon, 02
+ Jan 2023 16:28:58 +0100
+Message-ID: <2711de96-fcbe-5611-657a-ab29becd2ff6@gmx.de>
+Date:   Mon, 2 Jan 2023 16:28:57 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.6.0
-Subject: Re: [PATCH] matroxfb: G200eW: Increase max memory from 1 MB to 16 MB
+Subject: Re: [PATCH] fbmem: prevent potential use-after-free issues with
+ console_lock()
 Content-Language: en-US
-To:     Paul Menzel <pmenzel@molgen.mpg.de>, "Z. Liu" <liuzx@knownsec.com>
-Cc:     it+linux-fbdev@molgen.mpg.de, Rich Felker <dalias@libc.org>,
-        stable@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-References: <20230102135731.6487-1-pmenzel@molgen.mpg.de>
+To:     Hang Zhang <zh.nvgt@gmail.com>
+Cc:     Daniel Vetter <daniel@ffwll.ch>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+References: <20221230063528.41037-1-zh.nvgt@gmail.com>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20230102135731.6487-1-pmenzel@molgen.mpg.de>
+In-Reply-To: <20221230063528.41037-1-zh.nvgt@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:8eWfw4Opnqkzxf+1Ev79iySp2RH8FDZc46AiwNc3lV8sHnsUFte
- xLvNG2vJLuvr5TD3q2zUoVnuIq62vEur8NRiJq7o4pib6toIMrTia5S6gTslmF9e9CS4Kkj
- HoI5n5TbXYIczVViYf5cM7e/w7ekz6GH2UW0641AnDFWTzy5+QEwQ/R+2lpRDKrnXP9YFlS
- 0mt/7r2YOVGS30eLPCKhA==
-UI-OutboundReport: notjunk:1;M01:P0:z6gzU0P4Vkk=;dQYG9VM4sTyZ0ppmp5CCsi7GSut
- GDuitMne9sLdvy5EKVAwni+274uOK1jvMkCfssSsjpDCpi6YHvBXUoFGQVaT/QEYP0IFyGGae
- Fh2UXq9hv2FXUFokyhxP6OmbELq6G5IotwKXCHszdU9o9zrR+Cu/USPuaftynrVEA+LdpOv8M
- QrFtSHKUF4Bz7ZmAZiVBE581Yn8P/0Nf2khlAu8lP283SeeCXrljHkYKsiV9deECUZSnYQAXG
- Pz0UzlJoFKLGMO/LaQQ8AfYCgn7M0UFSlDDC2AtS/u4NNjHmMkXoi88YALov9VEiqwhTmMygb
- 0zj6knzAXWC35VkDnS0e7hFbF5f0Wlw1HwFDxsJLDMTYvuVu+VVlJkzaIDvxQW5/d5g4m60EP
- WNJKvPath2U1ux8m9zvBPgQOxrJA1G15KG994xSAMX1orJ6sKFjyKmbTV8k+wpEvfdFyB0K94
- 8V4R6bm9MXAB6RGQ3KJhgVnrxCr4xlTXefRxwCQzTD+iZ9pI4Jp/xbCMmEBNcNZvu8TQzp+ZM
- rtsJ75tShkzjvJ6HJkMhe3wjTG+vWnnVYGy086+iR4b6un5nu1OtPeCILB2fg/i8NJodIKAaV
- YJRACTjwiQr9wfgm5Swh1tFo6Sauv4oLp4HV5cAsOREDkXrHX4mZZ6ZoObWM1gBWlKGV9xAcY
- VXIbLv+y6y88/8E5+c6V5qsdSf7bNgPqkTsOJxAmx229irjZxSXI0nascGN/ceffp//chH/pZ
- ck0vA7oYg6L6AZeGp47MPzBy30LRRs2dg0t7TXyqwFeBzFKDD6tdJ4Ix+4Uxa4hcyzBysdZSh
- kEsw1UzKOOhcVCD/5W2hR7pwVVO79jBs5hxciNYe1zTMdGXV18cQYWDhJkGycY/4FMGguvYDa
- HGQwEcdA3cISEpcezc1sE1IW2VoGozI7w93+vS0VYCV31i/DC1QaEsCWDBgR4MVjQy/j0JNsm
- 0cvPRuBttroAuvFizkPwr2NbmPY=
+X-Provags-ID: V03:K1:aTcReHIKu+xxJWbzwqX228SBD5Luh+xZ4uzZ4/xjCzTqWPcYQAO
+ vPsYbvU1YupcRWWP+eq/Yx6OmWVqEsaERdkaTjdfJLXr8quiBJHLIk041Ygr12OTSCQyFL7
+ cF+zCZhBIS5mCq0omgQiDgoW0wycSgjp+rGzaKhWyPG2RH95JKmklZlkn71voObiENfRfIk
+ zkAckz8iC7ibykuq2+TJw==
+UI-OutboundReport: notjunk:1;M01:P0:pBymp9236EI=;da+v+g8Y0TYN9jtrRxxfqcmbjQd
+ LxeAPwsghelbrg5gSmXj2YO8H76ZdpR5nLQGGr3xq941tHQKF1fT4bMV96VLRyrI7bNY5K/0L
+ 9WqjvbyEUVAiAe1lN6A8XjTL5fIB5HParLv80hG9LwU7uIoYL0lOfIk6J89BAru5ctaTMvvGu
+ tWIU2QzAXyM6VYI6UUCcOdDr/5MdUvN0p9dRuetMZbjpzR5Scm7CTSsK5GmUwFoVEjkX6g49B
+ h5ZvWyNNKxwUljFaQV14jch3Wyyu5hK8jgVSqGKHTyBLrbBxffdItnWxA1tnz7nNVUBm8L2C6
+ 4IMfHZM2Mk9VQUsLDRXVagkinA3/TG2P0ya0PE6lCtfk0PxC7YncMsdcaLDhWrvUuAMzbCKNn
+ xHyF+Bz9RmOGmiXk2qM3vRn6p5TlB75ZZoJCYVovf2od3Onllpo6CtIlsCTvHsjnF1xuYqGM4
+ xi7f9/aL8obs1GGBP5NfUFyZkwG64xds2YYYEvPVKTxjiHf71C3pDfj/yn6XmRn3A/Twqld3e
+ RsPgsnIt5zTiUakqa1FzR3u04rbXcKHlwUHTd7eLLXpBXPfopl5vvtpFFd3p60ITtmax6B770
+ 8G6zFAoO0psQgy1TorcqltKw94FWQWRSuRF6j/CpWBf/7GZlQjV94Aqq6W4qveeqd8Mal0HHg
+ 3uYSm5LuuNgLnwBNER4d0WMaVgnxS4UEIf7w+SNaJBTI7d/fhcHc6/fRyGMnzMk01BdqsIgae
+ CjhrVEWry2Fl1HCXHFIXu5qRHng4x+EH+sJk0R0g4TOLOwsLlOlEoPxOSkOcokFU89o2WTH9A
+ vz2G3IZFgc+8Ad8J2knimcLipOOoyaXhnaYu3h9uiNa6MEAn3KBxgP+au/BKVMDVGSX8T+mWP
+ averrVrAVE1WdMCLepTqwqskAVvCZGm01Y+w7SNsJ+Uba3Vkgp5FUlSoJRdUWw9btHR/5T03w
+ rwuIrTXQYS9XoSCuj5yfTDCsfqA=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/2/23 14:57, Paul Menzel wrote:
-> Commit 62d89a7d49af ("video: fbdev: matroxfb: set maxvram of vbG200eW to
-> the same as vbG200 to avoid black screen") accidently decreases the
-> maximum memory size for the Matrox G200eW (102b:0532) from 8 MB to 1 MB
-> by missing one zero. This caused the driver initialization to fail with
-> the messages below, as the minimum required VRAM size is 2 MB:
+On 12/30/22 07:35, Hang Zhang wrote:
+> In do_fb_ioctl(), user specified "fb_info" can be freed in the callee
+> fbcon_get_con2fb_map_ioctl() -> set_con2fb_map() ->
+> con2fb_release_oldinfo(), this free operation is protected by
+> console_lock() in fbcon_set_con2fb_map_ioctl(), it also results in
+> the change of certain states such as "minfo->dead" in matroxfb_remove(),
+> so that it can be checked to avoid use-after-free before the use sites
+> (e.g., the check at the beginning of matroxfb_ioctl()). However,
+> the problem is that the use site is not protected by the same locks
+> as for the free operation, e.g., "default" case in do_fb_ioctl()
+> can lead to "matroxfb_ioctl()" but it's not protected by console_lock(),
+> which can invalidate the aforementioned state set and check in a
+> concurrent setting.
 >
->       [    9.436420] matroxfb: Matrox MGA-G200eW (PCI) detected
->       [    9.444502] matroxfb: cannot determine memory size
->       [    9.449316] matroxfb: probe of 0000:0a:03.0 failed with error -=
-1
+> Prevent the potential use-after-free issues by protecting the "default"
+> case in do_fb_ioctl() with console_lock(), similarly as for many other
+> cases like "case FBIOBLANK" and "case FBIOPAN_DISPLAY".
 >
-> So, add the missing 0 to make it the intended 16 MB. Successfully tested=
- on
-> the Dell PowerEdge R910/0KYD3D, BIOS 2.10.0 08/29/2013, that the warning=
- is
-> gone.
->
-> While at it, add a leading 0 to the maxdisplayable entry, so it=E2=80=99=
-s aligned
-> properly. The value could probably also be increased from 8 MB to 16 MB,=
- as
-> the G200 uses the same values, but I have not checked any datasheet.
->
-> Note, matroxfb is obsolete and superseded by the maintained DRM driver
-> mga200, which is used by default on most systems where both drivers are
-> available. Therefore, on most systems it was only a cosmetic issue.
->
-> Fixes: 62d89a7d49af ("video: fbdev: matroxfb: set maxvram of vbG200eW to=
- the same as vbG200 to avoid black screen")
-> Link: https://lore.kernel.org/linux-fbdev/972999d3-b75d-5680-fcef-6e6905=
-c52ac5@suse.de/T/#mb6953a9995ebd18acc8552f99d6db39787aec775
-> Cc: it+linux-fbdev@molgen.mpg.de
-> Cc: Z. Liu <liuzx@knownsec.com>
-> Cc: Rich Felker <dalias@libc.org>
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
+> Signed-off-by: Hang Zhang <zh.nvgt@gmail.com>
 
-applied this v1 version to the fbdev git tree.
-Thanks!
+applied to fbdev git tree.
+
+Thanks,
 Helge
 
-
 > ---
->   drivers/video/fbdev/matrox/matroxfb_base.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
+>   drivers/video/fbdev/core/fbmem.c | 2 ++
+>   1 file changed, 2 insertions(+)
 >
-> diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/=
-fbdev/matrox/matroxfb_base.c
-> index 0d3cee7ae7268..a043a737ea9f7 100644
-> --- a/drivers/video/fbdev/matrox/matroxfb_base.c
-> +++ b/drivers/video/fbdev/matrox/matroxfb_base.c
-> @@ -1378,8 +1378,8 @@ static struct video_board vbG200 =3D {
->   	.lowlevel =3D &matrox_G100
->   };
->   static struct video_board vbG200eW =3D {
-> -	.maxvram =3D 0x100000,
-> -	.maxdisplayable =3D 0x800000,
-> +	.maxvram =3D 0x1000000,
-> +	.maxdisplayable =3D 0x0800000,
->   	.accelID =3D FB_ACCEL_MATROX_MGAG200,
->   	.lowlevel =3D &matrox_G100
->   };
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core=
+/fbmem.c
+> index 1e70d8c67653..8b1a1527d18a 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -1182,6 +1182,7 @@ static long do_fb_ioctl(struct fb_info *info, unsi=
+gned int cmd,
+>   		console_unlock();
+>   		break;
+>   	default:
+> +		console_lock();
+>   		lock_fb_info(info);
+>   		fb =3D info->fbops;
+>   		if (fb->fb_ioctl)
+> @@ -1189,6 +1190,7 @@ static long do_fb_ioctl(struct fb_info *info, unsi=
+gned int cmd,
+>   		else
+>   			ret =3D -ENOTTY;
+>   		unlock_fb_info(info);
+> +		console_unlock();
+>   	}
+>   	return ret;
+>   }
 

@@ -2,114 +2,86 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EBE9C4332F
-	for <linux-fbdev@archiver.kernel.org>; Fri, 30 Dec 2022 06:36:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE4DBC3DA7A
+	for <linux-fbdev@archiver.kernel.org>; Mon,  2 Jan 2023 13:58:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229663AbiL3GgI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 30 Dec 2022 01:36:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41780 "EHLO
+        id S232975AbjABN6E (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 2 Jan 2023 08:58:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47472 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229557AbiL3GgH (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 30 Dec 2022 01:36:07 -0500
-Received: from mail-oa1-x35.google.com (mail-oa1-x35.google.com [IPv6:2001:4860:4864:20::35])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7E9BAAE43;
-        Thu, 29 Dec 2022 22:36:02 -0800 (PST)
-Received: by mail-oa1-x35.google.com with SMTP id 586e51a60fabf-1447c7aa004so23918735fac.11;
-        Thu, 29 Dec 2022 22:36:02 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=GAvkJUoPDYmWRhAwgSj95u5byto+2nWkIpy69HcVzzA=;
-        b=chmxPcmZDfrqDkOb6grw5n9WABwC7AWm9NlE1JDaiZZVXSjJ0sTBOCA65G6ANggrp4
-         vZhXEMQwEMhw1TnKRlDtIz2+9kmySb60qBl9lliQwjy225K7qGxeKyjp17ocxLHj21F1
-         WjWW/Keir209f60myxHUh3MLgunDT8F4a6B3p7bRkTPDvWCyBqQMOovUxaJ3B/fIg1/x
-         QwTtfarB29BSW6+WY9me3g666RVfvCG3JXyF4K3VOZPdLEX85petPfRFz7tcAy9WXG6G
-         kz6aEl4nTZwiwAMyjwk6erNtMiqGF4ANOl62eqOcqxiaxWTaz2bhHAZ8gjLkhsiz+bnN
-         E9yQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=GAvkJUoPDYmWRhAwgSj95u5byto+2nWkIpy69HcVzzA=;
-        b=fx3cvADoaD+8dLtmpBsSjekjwN2FhmLngO6MVDa7n0vhIW7DleMxSUjZuEKjunDfxE
-         d6Xev1L0EwP+qvcZb1JFelIm/5VzsXEIUMbOx7NqUODxfp20OKB3eWuBILvwZAqCpkAB
-         meUcBkYGRryde3/B+8ww8nnUxf+kwEdlkfIxAE8RIqI6ukA7JzBgCzxfjiy2sC/6W4XK
-         za9t7934cdSX4sUcsIjRSh0Vs540keeJyzoaZhGRn1lknukIY8qfr90ajqW2HxzSz2h4
-         1/ylsD2VGzuaOv6eM8FhPLwCFYyI1V802HSEMouvEP5Z1yifP+qYssztuEOtQvJPgX5t
-         GZ7A==
-X-Gm-Message-State: AFqh2krRxhee2i468+HBtK8ZptzrEC3bWLinL4nEk0Lk8r6GCr1MK/Mo
-        S29SRTJEiLd/IsyUwmUlMF4=
-X-Google-Smtp-Source: AMrXdXu8tuII+NQ94TSjxHteZaU5UKVhWyRIdtPSP8n4vzqiJe3EBkB9K95dp/oEC/QKGMbL8PYeng==
-X-Received: by 2002:a05:6870:be85:b0:144:4c04:4b73 with SMTP id nx5-20020a056870be8500b001444c044b73mr15306401oab.50.1672382161887;
-        Thu, 29 Dec 2022 22:36:01 -0800 (PST)
-Received: from protoss.cs.ucr.edu (protoss.cs.ucr.edu. [169.235.26.60])
-        by smtp.gmail.com with ESMTPSA id o10-20020a4abe8a000000b004a0ad937ccdsm8281508oop.1.2022.12.29.22.36.00
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 29 Dec 2022 22:36:01 -0800 (PST)
-From:   Hang Zhang <zh.nvgt@gmail.com>
-Cc:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Alex Deucher <alexander.deucher@amd.com>,
+        with ESMTP id S232531AbjABN6C (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 2 Jan 2023 08:58:02 -0500
+Received: from mx1.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 77DE026A;
+        Mon,  2 Jan 2023 05:58:00 -0800 (PST)
+Received: from handsomejack.molgen.mpg.de (handsomejack.molgen.mpg.de [141.14.17.248])
+        by mx.molgen.mpg.de (Postfix) with ESMTP id 5E15B60027FC1;
+        Mon,  2 Jan 2023 14:57:57 +0100 (CET)
+From:   Paul Menzel <pmenzel@molgen.mpg.de>
+To:     Helge Deller <deller@gmx.de>, "Z. Liu" <liuzx@knownsec.com>
+Cc:     Paul Menzel <pmenzel@molgen.mpg.de>, it+linux-fbdev@molgen.mpg.de,
+        Rich Felker <dalias@libc.org>, stable@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, Hang Zhang <zh.nvgt@gmail.com>
-Subject: [PATCH] fbmem: prevent potential use-after-free issues with console_lock()
-Date:   Thu, 29 Dec 2022 22:35:28 -0800
-Message-Id: <20221230063528.41037-1-zh.nvgt@gmail.com>
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] matroxfb: G200eW: Increase max memory from 1 MB to 16 MB
+Date:   Mon,  2 Jan 2023 14:57:30 +0100
+Message-Id: <20230102135731.6487-1-pmenzel@molgen.mpg.de>
 X-Mailer: git-send-email 2.39.0
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-In do_fb_ioctl(), user specified "fb_info" can be freed in the callee
-fbcon_get_con2fb_map_ioctl() -> set_con2fb_map() ->
-con2fb_release_oldinfo(), this free operation is protected by
-console_lock() in fbcon_set_con2fb_map_ioctl(), it also results in
-the change of certain states such as "minfo->dead" in matroxfb_remove(),
-so that it can be checked to avoid use-after-free before the use sites
-(e.g., the check at the beginning of matroxfb_ioctl()). However,
-the problem is that the use site is not protected by the same locks
-as for the free operation, e.g., "default" case in do_fb_ioctl()
-can lead to "matroxfb_ioctl()" but it's not protected by console_lock(),
-which can invalidate the aforementioned state set and check in a
-concurrent setting.
+Commit 62d89a7d49af ("video: fbdev: matroxfb: set maxvram of vbG200eW to
+the same as vbG200 to avoid black screen") accidently decreases the
+maximum memory size for the Matrox G200eW (102b:0532) from 8 MB to 1 MB
+by missing one zero. This caused the driver initialization to fail with
+the messages below, as the minimum required VRAM size is 2 MB:
 
-Prevent the potential use-after-free issues by protecting the "default"
-case in do_fb_ioctl() with console_lock(), similarly as for many other
-cases like "case FBIOBLANK" and "case FBIOPAN_DISPLAY".
+     [    9.436420] matroxfb: Matrox MGA-G200eW (PCI) detected
+     [    9.444502] matroxfb: cannot determine memory size
+     [    9.449316] matroxfb: probe of 0000:0a:03.0 failed with error -1
 
-Signed-off-by: Hang Zhang <zh.nvgt@gmail.com>
+So, add the missing 0 to make it the intended 16 MB. Successfully tested on
+the Dell PowerEdge R910/0KYD3D, BIOS 2.10.0 08/29/2013, that the warning is
+gone.
+
+While at it, add a leading 0 to the maxdisplayable entry, so it’s aligned
+properly. The value could probably also be increased from 8 MB to 16 MB, as
+the G200 uses the same values, but I have not checked any datasheet.
+
+Note, matroxfb is obsolete and superseded by the maintained DRM driver
+mga200, which is used by default on most systems where both drivers are
+available. Therefore, on most systems it was only a cosmetic issue.
+
+Fixes: 62d89a7d49af ("video: fbdev: matroxfb: set maxvram of vbG200eW to the same as vbG200 to avoid black screen")
+Link: https://lore.kernel.org/linux-fbdev/972999d3-b75d-5680-fcef-6e6905c52ac5@suse.de/T/#mb6953a9995ebd18acc8552f99d6db39787aec775
+Cc: it+linux-fbdev@molgen.mpg.de
+Cc: Z. Liu <liuzx@knownsec.com>
+Cc: Rich Felker <dalias@libc.org>
+Cc: stable@vger.kernel.org
+Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
 ---
- drivers/video/fbdev/core/fbmem.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/matrox/matroxfb_base.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 1e70d8c67653..8b1a1527d18a 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1182,6 +1182,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 		console_unlock();
- 		break;
- 	default:
-+		console_lock();
- 		lock_fb_info(info);
- 		fb = info->fbops;
- 		if (fb->fb_ioctl)
-@@ -1189,6 +1190,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 		else
- 			ret = -ENOTTY;
- 		unlock_fb_info(info);
-+		console_unlock();
- 	}
- 	return ret;
- }
+diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
+index 0d3cee7ae7268..a043a737ea9f7 100644
+--- a/drivers/video/fbdev/matrox/matroxfb_base.c
++++ b/drivers/video/fbdev/matrox/matroxfb_base.c
+@@ -1378,8 +1378,8 @@ static struct video_board vbG200 = {
+ 	.lowlevel = &matrox_G100
+ };
+ static struct video_board vbG200eW = {
+-	.maxvram = 0x100000,
+-	.maxdisplayable = 0x800000,
++	.maxvram = 0x1000000,
++	.maxdisplayable = 0x0800000,
+ 	.accelID = FB_ACCEL_MATROX_MGAG200,
+ 	.lowlevel = &matrox_G100
+ };
 -- 
 2.39.0
 

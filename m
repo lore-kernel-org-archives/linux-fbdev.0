@@ -2,111 +2,173 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D369DC54EBC
-	for <linux-fbdev@archiver.kernel.org>; Tue,  3 Jan 2023 16:20:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7763C46467
+	for <linux-fbdev@archiver.kernel.org>; Wed,  4 Jan 2023 08:19:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231229AbjACQUO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 3 Jan 2023 11:20:14 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45698 "EHLO
+        id S233383AbjADITc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 4 Jan 2023 03:19:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55692 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238057AbjACQUK (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 3 Jan 2023 11:20:10 -0500
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9445C1A0
-        for <linux-fbdev@vger.kernel.org>; Tue,  3 Jan 2023 08:20:08 -0800 (PST)
-Received: from [141.14.14.97] (v097.vpnx.molgen.mpg.de [141.14.14.97])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        with ESMTP id S229590AbjADITb (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 4 Jan 2023 03:19:31 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D8EBD19297
+        for <linux-fbdev@vger.kernel.org>; Wed,  4 Jan 2023 00:19:29 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        (Authenticated sender: pmenzel)
-        by mx.molgen.mpg.de (Postfix) with ESMTPSA id 0557960293A85;
-        Tue,  3 Jan 2023 17:20:07 +0100 (CET)
-Message-ID: <c11a7128-ec34-c497-e012-577a4928dc94@molgen.mpg.de>
-Date:   Tue, 3 Jan 2023 17:20:06 +0100
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 8B8DA38DBF;
+        Wed,  4 Jan 2023 08:19:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1672820368; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=wRCuw/FBpjLFmZlr4t9YLBU/akbtfRaeLolHpVMegfU=;
+        b=moBOfYNAWpZteHiDRyBm+aaEvmldyGoq8rVcjvyhPu8gLP4XnyJV4kCECUSNZ6Kn7wPkK2
+        ZtewzWdAV82NbjCDK9qT8+jqLApfJTypxUI/PshA87hIsdaNON9w90/IQFY/mtP7VC6fbR
+        HXTlV5/thjdEk7IGQ7PWEp6c1AGRBP4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1672820368;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=wRCuw/FBpjLFmZlr4t9YLBU/akbtfRaeLolHpVMegfU=;
+        b=atsLXFjA7tc6VOT4qTxfuIQI3Deo60lP7ONaXldY0oGyV1jbfWmCZjfFIEOxPu8IjKyhpJ
+        qdg7bdQ//YHdesAw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 6D7F5133D1;
+        Wed,  4 Jan 2023 08:19:28 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id ubXZGZA2tWPXFQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 04 Jan 2023 08:19:28 +0000
+Message-ID: <db1458b3-d109-bcae-b136-d0e1567519e1@suse.de>
+Date:   Wed, 4 Jan 2023 09:19:28 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.0
+ Thunderbird/102.6.1
 Subject: Re: Why is mgag200 not used over matroxfb?
 Content-Language: en-US
-From:   Paul Menzel <pmenzel@molgen.mpg.de>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
+To:     Paul Menzel <pmenzel@molgen.mpg.de>
 Cc:     "Z. Liu" <liuzx@knownsec.com>, Helge Deller <deller@gmx.de>,
         linux-fbdev@vger.kernel.org, it+linux-fbdev@molgen.mpg.de
 References: <5da53ec5-3a9c-ec87-da20-69f140aaaa6b@molgen.mpg.de>
  <972999d3-b75d-5680-fcef-6e6905c52ac5@suse.de>
  <7b85b832-e6fd-fe42-c6a1-93ebb591383c@molgen.mpg.de>
-In-Reply-To: <7b85b832-e6fd-fe42-c6a1-93ebb591383c@molgen.mpg.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+ <c11a7128-ec34-c497-e012-577a4928dc94@molgen.mpg.de>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <c11a7128-ec34-c497-e012-577a4928dc94@molgen.mpg.de>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------sJksckRwE3cHuYz1sdmQt0He"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dear Thomas,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------sJksckRwE3cHuYz1sdmQt0He
+Content-Type: multipart/mixed; boundary="------------UCeGCWfvKj3rvM20hZkPsPPd";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Paul Menzel <pmenzel@molgen.mpg.de>
+Cc: "Z. Liu" <liuzx@knownsec.com>, Helge Deller <deller@gmx.de>,
+ linux-fbdev@vger.kernel.org, it+linux-fbdev@molgen.mpg.de
+Message-ID: <db1458b3-d109-bcae-b136-d0e1567519e1@suse.de>
+Subject: Re: Why is mgag200 not used over matroxfb?
+References: <5da53ec5-3a9c-ec87-da20-69f140aaaa6b@molgen.mpg.de>
+ <972999d3-b75d-5680-fcef-6e6905c52ac5@suse.de>
+ <7b85b832-e6fd-fe42-c6a1-93ebb591383c@molgen.mpg.de>
+ <c11a7128-ec34-c497-e012-577a4928dc94@molgen.mpg.de>
+In-Reply-To: <c11a7128-ec34-c497-e012-577a4928dc94@molgen.mpg.de>
 
+--------------UCeGCWfvKj3rvM20hZkPsPPd
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-I have to correct myself.
+SGkNCg0KQW0gMDMuMDEuMjMgdW0gMTc6MjAgc2NocmllYiBQYXVsIE1lbnplbDoNCj4gRGVh
+ciBUaG9tYXMsDQo+IA0KPiANCj4gSSBoYXZlIHRvIGNvcnJlY3QgbXlzZWxmLg0KPiANCj4g
+DQo+IEFtIDE2LjEyLjIyIHVtIDE0OjE2IHNjaHJpZWIgUGF1bCBNZW56ZWw6DQo+IA0KPj4g
+QW0gMTYuMTIuMjIgdW0gMTM6Mjcgc2NocmllYiBUaG9tYXMgWmltbWVybWFubjoNCj4+DQo+
+Pj4gQW0gMTUuMTIuMjIgdW0gMTc6Mzkgc2NocmllYiBQYXVsIE1lbnplbDoNCj4+DQo+PiBb
+4oCmXQ0KPj4NCj4+Pj4gQmV0d2VlbiBMaW51eCA1LjEwLjEwMyBhbmQgNS4xMC4xMTAvNS4x
+NS43NywgbWF0cml4ZmIgZmFpbHMgdG8gbG9hZC4NCj4+Pg0KPj4+IE9mZi10b3BpYywgYnV0
+IHJlbGF0ZWQuIG1hdHJveGZiIGlzIG9ic29sZXRlIGFuZCB0aGVyZSdzIGEgbWFpbnRhaW5l
+ZCANCj4+PiBEUk0gcmVwbGFjZW1lbnQgKG1nYWcyMDApIGZvciB0aGlzIGhhcmR3YXJlLg0K
+Pj4NCj4+IEkgYWxzbyByZW1lbWJlcmVkIHNvbWV0aGluZyBsaWtlIHRoaXMgaW4gdGhlIGJh
+Y2sgb2YgbXkgaGVhZC4gVGhvdWdoIEkgDQo+PiB0aG91Z2h0IGFib3V0IHVzaW5nIHNpbXBs
+ZWRybSAoYERSTV9TSU1QTEVEUk1gKSwgd2UgZG8gbm90IGJ1aWxkIHRob3VnaC4NCj4+DQo+
+Pj4gSXMgdGhlcmUgYW55dGhpbmcgbWlzc2luZyBmcm9tIG1nYWcyMDAgdGhhdCBwcmV2ZW50
+cyB5b3UgZnJvbSBzd2l0Y2hpbmc/DQo+PiBObywgaXQgbG9va3MgbGlrZSB0aGUgbWF0cm94
+ZmIgbW9kdWxlcyB0YWtlIHByZWNlZGVuY2Ugb3ZlciB0aGUgDQo+PiBtZ2FnMjAwIG1vZHVs
+ZToNCj4+DQo+PiDCoMKgwqDCoCAkIGdyZXAgLWUgRkJfTUFUUk9YIC1lIE1HQUcgL2Jvb3Qv
+Y29uZmlnLTUuMTUuNzcubXg2NC40NDANCj4+IMKgwqDCoMKgIENPTkZJR19EUk1fTUdBRzIw
+MD1tDQo+PiDCoMKgwqDCoCBDT05GSUdfRkJfTUFUUk9YPW0NCj4+IMKgwqDCoMKgIENPTkZJ
+R19GQl9NQVRST1hfTUlMTEVOSVVNPXkNCj4+IMKgwqDCoMKgIENPTkZJR19GQl9NQVRST1hf
+TVlTVElRVUU9eQ0KPj4gwqDCoMKgwqAgQ09ORklHX0ZCX01BVFJPWF9HPXkNCj4+IMKgwqDC
+oMKgIENPTkZJR19GQl9NQVRST1hfSTJDPW0NCj4+IMKgwqDCoMKgICMgQ09ORklHX0ZCX01B
+VFJPWF9NQVZFTiBpcyBub3Qgc2V0DQo+Pg0KPj4gwqDCoMKgwqAgJCBsc21vZCB8IGdyZXAg
+bWF0cm94DQo+PiDCoMKgwqDCoCBtYXRyb3hmYl9iYXNlwqDCoMKgwqDCoMKgwqDCoMKgIDI4
+NjcywqAgMA0KPj4gwqDCoMKgwqAgbWF0cm94ZmJfZzQ1MMKgwqDCoMKgwqDCoMKgwqDCoCAx
+NjM4NMKgIDEgbWF0cm94ZmJfYmFzZQ0KPj4gwqDCoMKgwqAgbWF0cm94ZmJfVGkzMDI2wqDC
+oMKgwqDCoMKgwqAgMTYzODTCoCAxIG1hdHJveGZiX2Jhc2UNCj4+IMKgwqDCoMKgIG1hdHJv
+eGZiX2FjY2VswqDCoMKgwqDCoMKgwqDCoCAxNjM4NMKgIDEgbWF0cm94ZmJfYmFzZQ0KPj4g
+wqDCoMKgwqAgbWF0cm94ZmJfREFDMTA2NMKgwqDCoMKgwqDCoCAyMDQ4MMKgIDEgbWF0cm94
+ZmJfYmFzZQ0KPj4gwqDCoMKgwqAgZzQ1MF9wbGzCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgIDE2Mzg0wqAgMiBtYXRyb3hmYl9nNDUwLG1hdHJveGZiX0RBQzEwNjQNCj4+IMKgwqDC
+oMKgIG1hdHJveGZiX21pc2PCoMKgwqDCoMKgwqDCoMKgwqAgMjA0ODDCoCA1IA0KPj4gZzQ1
+MF9wbGwsbWF0cm94ZmJfVGkzMDI2LG1hdHJveGZiX2Jhc2UsbWF0cm94ZmJfZzQ1MCxtYXRy
+b3hmYl9EQUMxMDY0DQo+IA0KPiBUaGUgc2VhcmNoIHN0cmluZyB3YXMgaW5jb3JyZWN0LiBU
+aGUgbW9kdWxlIG1nYWcyMDAsIGlzIGxvYWRlZDoNCj4gDQo+ICDCoMKgwqAgJCBsc21vZCB8
+IGdyZXAgbWdhZzIwMA0KPiAgwqDCoMKgIG1nYWcyMDDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqAgMzY4NjTCoCAwDQo+ICDCoMKgwqAgZHJtX2ttc19oZWxwZXLCoMKgwqDCoMKg
+wqDCoCAyNDE2NjTCoCAzIG1nYWcyMDANCj4gIMKgwqDCoCBkcm3CoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqAgNTI0Mjg4wqAgMyBkcm1fa21zX2hlbHBlcixtZ2FnMjAw
+DQo+ICDCoMKgwqAgaTJjX2FsZ29fYml0wqDCoMKgwqDCoMKgwqDCoMKgwqAgMTYzODTCoCAx
+IG1nYWcyMDANCj4gDQo+IGFuZCBpdCBpcyB1c2VkIGFjY29yZGluZyB0byBgbHNwY2lgOg0K
+PiANCj4gIMKgwqDCoCAkIGxzcGNpIC1ubiAtayAtcyAwOTowMy4NCj4gIMKgwqDCoCAwOTow
+My4wIFZHQSBjb21wYXRpYmxlIGNvbnRyb2xsZXIgWzAzMDBdOiBNYXRyb3ggRWxlY3Ryb25p
+Y3MgDQo+IFN5c3RlbXMgTHRkLiBNR0EgRzIwMGVXIFdQQ000NTAgWzEwMmI6MDUzMl0gKHJl
+diAwYSkNCj4gIMKgwqDCoMKgwqDCoMKgIERldmljZU5hbWU6IEVtYmVkZGVkIFZpZGVvDQo+
+ICDCoMKgwqDCoMKgwqDCoCBTdWJzeXN0ZW06IERlbGwgTUdBIEcyMDBlVyBXUENNNDUwIFsx
+MDI4OjAyZDNdDQo+ICDCoMKgwqDCoMKgwqDCoCBLZXJuZWwgZHJpdmVyIGluIHVzZTogbWdh
+ZzIwMA0KPiAgwqDCoMKgwqDCoMKgwqAgS2VybmVsIG1vZHVsZXM6IG1hdHJveGZiX2Jhc2Us
+IG1nYWcyMDANCj4gDQo+IFNvLCBpdCB3YXMgb25seSBhIGNvc21ldGljIGlzc3VlLg0KDQpU
+aGFua3MgZm9yIGFsbCB0aGUgZmVlZGJhY2suIFRoZSBvdXRwdXQgc2hvd24gaW4geW91ciBv
+cmlnaW5hbCBidWcgDQpyZXBvcnQgY2FtZSBmcm9tIG1hdHJveGZiLCBzbyBpdCBtdXN0IGhh
+dmUgYmVlbiBsb2FkZWQgdGhlbi4gSSBkb24ndCANCmtub3cgd2hhdCB0aGUgcHJlZmVycmVk
+IG9yZGVyIGlzIGlmIG11bHRpcGxlIG1vZHVsZXMgc2VydmUgdGhlIHNhbWUgDQpoYXJkd2Fy
+ZS4gTWF5YmUgaXQncyByYW5kb20uDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4gDQo+
+IA0KPiBLaW5kIHJlZ2FyZHMsDQo+IA0KPiBQYXVsDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1h
+bm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25z
+IEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55
+DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRv
+dGV2DQo=
 
+--------------UCeGCWfvKj3rvM20hZkPsPPd--
 
-Am 16.12.22 um 14:16 schrieb Paul Menzel:
+--------------sJksckRwE3cHuYz1sdmQt0He
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-> Am 16.12.22 um 13:27 schrieb Thomas Zimmermann:
-> 
->> Am 15.12.22 um 17:39 schrieb Paul Menzel:
-> 
-> […]
-> 
->>> Between Linux 5.10.103 and 5.10.110/5.15.77, matrixfb fails to load.
->>
->> Off-topic, but related. matroxfb is obsolete and there's a maintained 
->> DRM replacement (mgag200) for this hardware.
-> 
-> I also remembered something like this in the back of my head. Though I 
-> thought about using simpledrm (`DRM_SIMPLEDRM`), we do not build though.
-> 
->> Is there anything missing from mgag200 that prevents you from switching?
-> No, it looks like the matroxfb modules take precedence over the mgag200 
-> module:
-> 
->      $ grep -e FB_MATROX -e MGAG /boot/config-5.15.77.mx64.440
->      CONFIG_DRM_MGAG200=m
->      CONFIG_FB_MATROX=m
->      CONFIG_FB_MATROX_MILLENIUM=y
->      CONFIG_FB_MATROX_MYSTIQUE=y
->      CONFIG_FB_MATROX_G=y
->      CONFIG_FB_MATROX_I2C=m
->      # CONFIG_FB_MATROX_MAVEN is not set
-> 
->      $ lsmod | grep matrox
->      matroxfb_base          28672  0
->      matroxfb_g450          16384  1 matroxfb_base
->      matroxfb_Ti3026        16384  1 matroxfb_base
->      matroxfb_accel         16384  1 matroxfb_base
->      matroxfb_DAC1064       20480  1 matroxfb_base
->      g450_pll               16384  2 matroxfb_g450,matroxfb_DAC1064
->      matroxfb_misc          20480  5 g450_pll,matroxfb_Ti3026,matroxfb_base,matroxfb_g450,matroxfb_DAC1064
+-----BEGIN PGP SIGNATURE-----
 
-The search string was incorrect. The module mgag200, is loaded:
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmO1NpAFAwAAAAAACgkQlh/E3EQov+Bu
+SRAArjiC601rJfC4f3wtoQiPu195JhfiVXsW7+F3Ag0Jv7fE96OuCBXcNinFPqzxk3xQ2PXiy8TM
+OWKY88CjntZeJRRGKZcRYivuhxM/bnXCVKORZan6E4ZtXpa5efgCTCkLZr1MSzehfcRz4hnbEUtf
+Ean1Vyv+GVyXwEYBJgptY9+kxKo4gzRYYai/bpgmNcgTiBWwovXxa95960SVmK9qYWpjESQLqVP6
+wGTYQey6Op0DzQxt9s0FFmZxS+EqmSVUHSon2xMu9Y2iAjmLUa7TlerDttwYbbuHeRouTSxjQjiV
+8vJKagmFoMU7b7YiVLcIaJfhLPYo+EqjYMBnmKjfs/0ILj1lW5MDY8zUeenEHqCukC6GxFvBt7TI
+0c6GA6mdDx+A9qkZQYcvXAfuKNIbFPr4bvMBHmK1FKR0vHaIzlychcv3ZzGmJ+11VL7RO3X1GWOQ
+tRBapskam+aiuArWCw6PpkvEb5PrOZVP+milONUsQYp+7PWM6hf1sy9+cySAn+aUPVhLPORUw1zK
+Ls47e35w3IANDZIQ9p/rQY5ZzZ9bIcZFTR5Ci+yMBtNyYwthXBoJ8yzpQ5rJX1MCHzC3qiUDj1Jv
+ap2rg2e1ak0Pv+qJbA0sGsBEQeiYpHxKAFyQFwu4ySk+L95gXNKNB6XMQyd9rbpIsgKhlDH0HbA6
+iOY=
+=sjxE
+-----END PGP SIGNATURE-----
 
-     $ lsmod | grep mgag200
-     mgag200                36864  0
-     drm_kms_helper        241664  3 mgag200
-     drm                   524288  3 drm_kms_helper,mgag200
-     i2c_algo_bit           16384  1 mgag200
-
-and it is used according to `lspci`:
-
-     $ lspci -nn -k -s 09:03.
-     09:03.0 VGA compatible controller [0300]: Matrox Electronics 
-Systems Ltd. MGA G200eW WPCM450 [102b:0532] (rev 0a)
-         DeviceName: Embedded Video
-         Subsystem: Dell MGA G200eW WPCM450 [1028:02d3]
-         Kernel driver in use: mgag200
-         Kernel modules: matroxfb_base, mgag200
-
-So, it was only a cosmetic issue.
-
-
-Kind regards,
-
-Paul
+--------------sJksckRwE3cHuYz1sdmQt0He--

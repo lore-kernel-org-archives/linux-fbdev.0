@@ -2,73 +2,146 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1AADC3DA7A
-	for <linux-fbdev@archiver.kernel.org>; Thu,  5 Jan 2023 09:44:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD79CC3DA7D
+	for <linux-fbdev@archiver.kernel.org>; Thu,  5 Jan 2023 10:25:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231391AbjAEJoe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 5 Jan 2023 04:44:34 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46774 "EHLO
+        id S233043AbjAEKZq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 5 Jan 2023 05:25:46 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50360 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229839AbjAEJod (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 Jan 2023 04:44:33 -0500
-Received: from mailgw.kylinos.cn (unknown [124.126.103.232])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2D5C1479EA;
-        Thu,  5 Jan 2023 01:44:32 -0800 (PST)
-X-UUID: 804c3e73b6a14ec39fec93fa705b63bf-20230105
-X-CPASD-INFO: 67c3d77b275c46ada19488d1ec90ff30@f4edU5FpZZJeV3evg3msnoFiaWRoZIS
-        Ap51ZYpSWX1CVhH5xTV5nX1V9gnNXZF5dXFV3dnBQYmBhXVJ3i3-XblBiXoZgUZB3hXmdU5ZlZw==
-X-CLOUD-ID: 67c3d77b275c46ada19488d1ec90ff30
-X-CPASD-SUMMARY: SIP:-1,APTIP:-2.0,KEY:0.0,FROMBLOCK:1,OB:2.0,URL:-5,TVAL:173.
-        0,ESV:0.0,ECOM:-5.0,ML:0.0,FD:0.0,CUTS:73.0,IP:-2.0,MAL:-5.0,PHF:-5.0,PHC:-5.
-        0,SPF:4.0,EDMS:-5,IPLABEL:4480.0,FROMTO:0,AD:0,FFOB:2.0,CFOB:2.0,SPC:0,SIG:-5
-        ,AUF:7,DUF:11702,ACD:193,DCD:193,SL:0,EISP:0,AG:0,CFC:0.373,CFSR:0.127,UAT:0,
-        RAF:0,IMG:-5.0,DFA:0,DTA:0,IBL:-2.0,ADI:-5,SBL:0,REDM:0,REIP:0,ESB:0,ATTNUM:0
-        ,EAF:0,CID:-5.0,VERSION:2.3.17
-X-CPASD-ID: 804c3e73b6a14ec39fec93fa705b63bf-20230105
-X-CPASD-BLOCK: 1000
-X-CPASD-STAGE: 1
-X-UUID: 804c3e73b6a14ec39fec93fa705b63bf-20230105
-X-User: xurui@kylinos.cn
-Received: from localhost.localdomain [(116.128.244.169)] by mailgw
-        (envelope-from <xurui@kylinos.cn>)
-        (Generic MTA)
-        with ESMTP id 210505913; Thu, 05 Jan 2023 17:44:30 +0800
-From:   xurui <xurui@kylinos.cn>
-To:     deller@gmx.de
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, trivial@kernel.org,
-        xurui <xurui@kylinos.cn>
-Subject: [PATCH] fbdev/g364fb: Fix a compilation issue
-Date:   Thu,  5 Jan 2023 17:44:39 +0800
-Message-Id: <20230105094439.1478337-1-xurui@kylinos.cn>
-X-Mailer: git-send-email 2.25.1
+        with ESMTP id S232657AbjAEKZQ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 Jan 2023 05:25:16 -0500
+Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F68A5E656
+        for <linux-fbdev@vger.kernel.org>; Thu,  5 Jan 2023 02:21:20 -0800 (PST)
+Received: by mail-pg1-x530.google.com with SMTP id r18so24201937pgr.12
+        for <linux-fbdev@vger.kernel.org>; Thu, 05 Jan 2023 02:21:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=6ZK4nzjpwYyPyn93IloxZTntg6CUAnuhsiuX1hJc/KI=;
+        b=NuTSU+tAnwC8J4btJEi46FZKTDoZWSpXhsZZzvvEeCRUZI31x8P+7W/qyYZB6cEEZK
+         0KfqehuBvr3rjXJk15PxC+x+93bMexZ1PTi8huCZmuuTQwSpPawXccgf2pmEghY9bMvX
+         RzGNrLQAa48wSr1uQzuiAGZF/YjK7ZhJfA8YU=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=6ZK4nzjpwYyPyn93IloxZTntg6CUAnuhsiuX1hJc/KI=;
+        b=zI9+KJqJq2Hmsxp8J5Vpn/sXytLOBw9O02xkT//msEN/RCgRlu1m6eBfkow/NVMbaN
+         3614fRQrS6BAtMBbmiqXCRx0gHtTKFrlh/li1uwNcPzz21P6QBooFR9A387+39RVSkSu
+         NV7T+NyyUO0Guo4KpjLzPX/bP9wOzeABUbNt+YEuL0peonHfj+Iu4KRrjOmJFMohxhUP
+         cKJSAdNNmjJGmbe1DgNNpv68lAazmLpRaa8lJpeUmnMDaCnnBpfC70TOb/+n8jnhf4yT
+         pQMs1152pyr2ogFadBrgnGy4GumKmhcV6BkfaM5zfTBXtMfIy6daMiDfIf4BbXFmwM23
+         jlCA==
+X-Gm-Message-State: AFqh2kp+i3rR2FAmnUxJBgbcu1nWNh6z/AJ1QLy7FfXk0T/51pOOnOGE
+        1J6ga1PGz3wANYr4VS8Z3FKv7ai+lMbc0qa0nTo/Kw==
+X-Google-Smtp-Source: AMrXdXssy7ciG/1su3bGuzOuebGGe/Miuoaa+b1nRbxfY/bK92mfuvYqvrAxm2xmyTnyeF75o20imvtTyBVEbJ5RYRs=
+X-Received: by 2002:a63:1b59:0:b0:478:b792:dea6 with SMTP id
+ b25-20020a631b59000000b00478b792dea6mr3746828pgm.445.1672914077499; Thu, 05
+ Jan 2023 02:21:17 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20221230063528.41037-1-zh.nvgt@gmail.com> <2711de96-fcbe-5611-657a-ab29becd2ff6@gmx.de>
+In-Reply-To: <2711de96-fcbe-5611-657a-ab29becd2ff6@gmx.de>
+From:   Daniel Vetter <daniel@ffwll.ch>
+Date:   Thu, 5 Jan 2023 11:21:05 +0100
+Message-ID: <CAKMK7uEOX5n64cjzMt9GRQaS13HFPFyOeqdrkmzc035U5_T8tg@mail.gmail.com>
+Subject: Re: [PATCH] fbmem: prevent potential use-after-free issues with console_lock()
+To:     Helge Deller <deller@gmx.de>
+Cc:     Hang Zhang <zh.nvgt@gmail.com>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-drivers/video/fbdev/g364fb.c:202:4: error: cast to pointer from integer of different size [-Werror=int-to-pointer-cast]
+Hi Helge
 
-Signed-off-by: xurui <xurui@kylinos.cn>
----
- drivers/video/fbdev/g364fb.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+On Mon, 2 Jan 2023 at 16:28, Helge Deller <deller@gmx.de> wrote:
+>
+> On 12/30/22 07:35, Hang Zhang wrote:
+> > In do_fb_ioctl(), user specified "fb_info" can be freed in the callee
+> > fbcon_get_con2fb_map_ioctl() -> set_con2fb_map() ->
+> > con2fb_release_oldinfo(), this free operation is protected by
+> > console_lock() in fbcon_set_con2fb_map_ioctl(), it also results in
+> > the change of certain states such as "minfo->dead" in matroxfb_remove(),
+> > so that it can be checked to avoid use-after-free before the use sites
+> > (e.g., the check at the beginning of matroxfb_ioctl()). However,
+> > the problem is that the use site is not protected by the same locks
+> > as for the free operation, e.g., "default" case in do_fb_ioctl()
+> > can lead to "matroxfb_ioctl()" but it's not protected by console_lock(),
+> > which can invalidate the aforementioned state set and check in a
+> > concurrent setting.
+> >
+> > Prevent the potential use-after-free issues by protecting the "default"
+> > case in do_fb_ioctl() with console_lock(), similarly as for many other
+> > cases like "case FBIOBLANK" and "case FBIOPAN_DISPLAY".
+> >
+> > Signed-off-by: Hang Zhang <zh.nvgt@gmail.com>
+>
+> applied to fbdev git tree.
 
-diff --git a/drivers/video/fbdev/g364fb.c b/drivers/video/fbdev/g364fb.c
-index 05837a3b985c..beef4bcec3c5 100644
---- a/drivers/video/fbdev/g364fb.c
-+++ b/drivers/video/fbdev/g364fb.c
-@@ -175,7 +175,8 @@ int __init g364fb_init(void)
- {
- 	volatile unsigned int *curs_pal_ptr =
- 	    (volatile unsigned int *) CURS_PAL_REG;
--	int mem, i;
-+	int mem;
-+	uintptr_t i;
- 
- 	if (fb_get_options("g364fb", NULL))
- 		return -ENODEV;
+The patch above makes no sense at all to me:
+
+- fb_info is protected by lock_fb_info and
+- the lifetime of fb_info is protected by the get/put functions
+- yes there's the interaction with con2fb, which is protected by
+console_lock, but the lifetime guarantees are ensured by the device
+removal
+- which means any stuff happening in matroxfb_remove is also not a
+concern here (unless matroxfb completely gets all the device lifetime
+stuff wrong, but it doesn't look like it's any worse than any of the
+other fbdev drivers that we haven't recently fixed up due to the
+takeover issues with firmware drivers
+
+On the very clear downside this now means we take console_lock for the
+vblank ioctl (which is a device driver extension for reasons, despite
+that it's a standard fbdev ioctl), which is no good at all given how
+console_lock() is a really expensive lock.
+
+Unless I'm massively missing something, can you pls push the revert
+before this lands in Linus' tree?
+
+Thanks, Daniel
+
+> Thanks,
+> Helge
+>
+> > ---
+> >   drivers/video/fbdev/core/fbmem.c | 2 ++
+> >   1 file changed, 2 insertions(+)
+> >
+> > diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+> > index 1e70d8c67653..8b1a1527d18a 100644
+> > --- a/drivers/video/fbdev/core/fbmem.c
+> > +++ b/drivers/video/fbdev/core/fbmem.c
+> > @@ -1182,6 +1182,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+> >               console_unlock();
+> >               break;
+> >       default:
+> > +             console_lock();
+> >               lock_fb_info(info);
+> >               fb = info->fbops;
+> >               if (fb->fb_ioctl)
+> > @@ -1189,6 +1190,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+> >               else
+> >                       ret = -ENOTTY;
+> >               unlock_fb_info(info);
+> > +             console_unlock();
+> >       }
+> >       return ret;
+> >   }
+>
+
+
 -- 
-2.25.1
-
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

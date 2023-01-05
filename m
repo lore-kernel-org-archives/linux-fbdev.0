@@ -2,170 +2,115 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED92AC4332F
-	for <linux-fbdev@archiver.kernel.org>; Wed,  4 Jan 2023 18:14:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BBF1C3DA7D
+	for <linux-fbdev@archiver.kernel.org>; Thu,  5 Jan 2023 08:14:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235269AbjADSOE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 4 Jan 2023 13:14:04 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34142 "EHLO
+        id S231185AbjAEIOP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 5 Jan 2023 03:14:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54052 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233421AbjADSOD (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 4 Jan 2023 13:14:03 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F2B6B17E2B;
-        Wed,  4 Jan 2023 10:14:01 -0800 (PST)
+        with ESMTP id S231570AbjAEIOG (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 Jan 2023 03:14:06 -0500
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6512158320;
+        Thu,  5 Jan 2023 00:14:02 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1672855886; bh=QAtVPb8/maBAbEqyYYU7IL6BXcXNEnFbxuu32oqJJJI=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=ANgi4/tnT+LdcOQfKXgDnOzpKxKHZajftGHzP36ewHMDwUsc8LOpFG11eZQAVYUkm
-         effb8tGWZecMTmwsiw41ptMcbturL4t7yuO3L9MFOV/rBqdXxZp0uLdPWptEsmr512
-         ig3vEBmwMXFLSoAKTIYYUK5froS9xZyhZLZOyldxSa1kqdUEOCOTTqo3wUxqFaE1sx
-         gvZYZqgH6L+Vph8ZuoerFfvit8e89Jqm24VsyHzLrQzEQy3m3OhJCnPHgrVMXlMsVq
-         LqQmy7DK2SYpfAQjEFAJaY9kh3jjgsO65dmcK4rrWZiGZ/angNVI/cn7pWyGA3eQ+6
-         Dsjnr6i37i2Dw==
+        t=1672906437; bh=CGzT08iim77SF3hU99ejpjFf5EG6Rl2ItIprKmEgLtY=;
+        h=X-UI-Sender-Class:Date:From:To:Subject;
+        b=Ehs/8wo9Gks5PCvbWS3s9SW7nONzx6a38cyKKITH/xm+UQ4SBGl9zo98iW7+GqUPx
+         yqX7sbOfwqXzV15gXzQZ5s5KW7mThPtfWJ5J/Lird24hj8nkwS/OZeZTqbdaNTxycQ
+         FT1ilMhlDe+yv/o5JV2TQzRQs2CG91NgIdtadUrFT/+SjGVdyh/GZZkCJQRZ/cnXAr
+         q5Xem7yR2E7coOcnkwk1WvvKoFpqe+1iE3Y9pb6w+L7LicgSKUpuHLnEitDdFsO8yd
+         iH8dK1roQHprsdmtDh29TDeZEXCecPZ7Ko8ehQXu4RYCYviafVOYEzGX6JxCUBwdcD
+         ycJAPQ3CkAkxw==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([92.116.135.20]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1N2V0H-1onx0z2eI3-013uIe; Wed, 04
- Jan 2023 19:11:26 +0100
-Message-ID: <a187d1a7-fdf4-560f-7b04-7b050adeae26@gmx.de>
-Date:   Wed, 4 Jan 2023 19:11:23 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.0
-Subject: Re: [PATCH] fbdev: omapfb: avoid stack overflow warning
-Content-Language: en-US
-To:     Arnd Bergmann <arnd@kernel.org>
-Cc:     Arnd Bergmann <arnd@arndb.de>,
-        Zhang Qilong <zhangqilong3@huawei.com>,
-        linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-References: <20221215170234.2515030-1-arnd@kernel.org>
+Received: from ls3530 ([92.116.173.134]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1N63RQ-1okjjJ1BSC-016MjW; Thu, 05
+ Jan 2023 09:13:57 +0100
+Date:   Thu, 5 Jan 2023 09:13:55 +0100
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20221215170234.2515030-1-arnd@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:o7jEKVSLoyMQ1mu2kGuybgdfN422oA9LLfcwWrY3jDvf/72dkTw
- jkaB7DZ6/dKNZJeUACKaGCerZFkZzKeinztdfPrjENYIhQF5e5Tquucglcilg/c9JiTzHiB
- BJS3CcM5hD5LrAliUQML2Mu03+ZCPNd873aeH3FUsmZpAd9q9kRw6HQKSyCeffRnAeZKe1E
- 8CeAvs8XdZHlA7/lR+mkA==
-UI-OutboundReport: notjunk:1;M01:P0:YgyS5b8jd1Q=;vIw3i+LL+6sOzRPYMEl2+prMT6/
- YDGpUzv1gD/paYtwpUTyIwnJ7uGHAbqXdKG/YQs+w3Wdx37hp7EhUP/YDg10F5seuvrGlHBHz
- wEMGMQ0tzZUVqi0pqYAmGXIvtvGptUtilRDE8ym2eJoAwyMKWOcruJJdCPC19sk5qxgHU5w0Z
- lmrPqsaG479PNncy7QxYwPDv9W6USNiTJPLY1qp1RtA0hn5Pe2r6T/n3SRMiszhoKiXLmcaQX
- 53/twgXarfEKVesSYB/ncJSPbeRoUO1FkAOTxS6EFKIeR67Gsmqg55xnuWUD3nraMotvu1Eo4
- Hsz01Vpp+K/iUUJZEh+ef68nGDsftNNyixSP9F9JXPXiKxslKwHPGmqd03M9LSeKoofG5VJYT
- YlUg0hQgc6EQjKOVs+WC6T/NM8RvbK8Bhh6gd6JTJy2S0MXkN2fO//Sa6mqs0OOc7EnrgN4W2
- jevDroifZeZO/57eI9Gtt+7u4gSXHKPI/y+9p7/0k64QZTn2tkKfXLBsrOqJ91LQy8Exqa0vV
- W+CCe2Jwk47O5i8y2JcBPSPv7bliRDHYXYFY0CwO9AVxwn88F59EDnWwzXKvzVZWgTdAxxBwi
- IfoT4aQyNlYr4EztXzsyrWDLSnYFnkrK1d2Um/4fWNe7feSK/2GYIoNOP6pMS2jLGDBocagvG
- 6qYLGfwS6WAMmfIdHUKFqIhP8JASzoHbdKxMq3bYGmR9mCr8qqhPISLPeop9kjiIeIIm1se9d
- cBGpQFpklEqj7TzLyYwu6TYnFdEjS9M1D5p93+gg/pivRmoJ1jw1tAmIGOQgNnWHCN03B39j8
- Y6YezNLnVLxZ7vOaz8ACW6C2juM5wG3SCBIknqhuz5OhEDnfyZU+2hSUF9cxc64n3oj2Ae0r+
- Fx46LrxSaqPWA6UuYboGMyiuLuRHMUmQnTpqj3pVISBVg2R9wpRcuNIsbJjDsBL2W+XZsBw66
- 9ptsJA==
+To:     Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev fixes for v6.2-rc3
+Message-ID: <Y7aGw/irynC61O85@ls3530>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Provags-ID: V03:K1:e6ixn9x3qrMQjq5CqimdU7JpgjsjVfDoNyoLBcb4EczLrtrNX2U
+ ixFxDAtD48kLgFDrPNFAtl3EjKeMmGGy+mNWLbC368qglH80q7IJQc42I90nVdO3HoJWC5p
+ LJR0PbX5gc/GC9llc6V6Sc3hKaoe0/xTDqY1wERRsxd/nqE+eftxoEKY5i1wUk3oZiFxrfi
+ 85AumXIc2Kq4aQ9JPAIEQ==
+UI-OutboundReport: notjunk:1;M01:P0:OZlzwYr2Qw0=;IDBYe5yVimYZIWzoGw/RJniwNZo
+ 0uolB61iaJtJ7/PD9C8a1Mc1v4VCpRbKCogcoHML5XQ2mFzrOYEQkDeTUw4hUmgFTCd5ua5zV
+ 05yftmCaW0llhRpSSAEBGSnm/5uIwtkh0mVJU1A2jmPsJpvyw0ejaxm5+BemLXRoCjQgV18tZ
+ W8AqN0RHL2+7Jg87Jagu3lDvhM7nm0FVbM/CKscnID5Rc6neheP9c/Pf1EsE+cezW5Ezjn624
+ Gs50PmkbMsA3CEOFv/G6SsrtTFLj6L8zDyD4b1165OME9skmYdaQc+ZEUn91dJcFmc+xyeMvN
+ QjemPbGRllKACic6Gk3r/nfzhse3i84yuz7KX0rpbgI4i5PE/+TfG/prDCvdzFfvSLLhPPYkp
+ AtlJFY8dsu8CJC/otOnchry7zuhKwlbvlA3pW4piTvRJu6+Bzpj1Edzys095c3cXk372RB6Ry
+ nDhRWbFyRI2Sbdlluw4rqC7UyDlopBM019uw3ZIa/eh0WeTrDtwxZEv+y7VH2HCyK8mTH4NlN
+ 4Tx+Bylc8wO4deDHuCw/O6vTw338HCS6qkiwN0/4aI5qqoQpP0VRCY+MuPNlTaaEAbXPNkRRF
+ XTQy1F0/hPsySkLhTkfYJTmYoDfezsEDvxOTSha5oazarOm/TlNrEO17Wm1mFriZqkkeZ8Q2c
+ xJo73OXF0d/JwVE9obNoUiZacFhq9UZlWRgSaPdBDA2j+CQreds5Hj8ODyFSldamrI3RflYsp
+ 0VP6q9r3r0GwVLkAniB+qakskzYqPbl6NrsBIyXLND33LtsniMtAldQLHs7WTAlTeJf9wNFIw
+ Wvs5Xr2fBAKfskFRMlLux5bgl36+d7kLRlk99kVnwIiUtiFCU9yTZ4EsldIZPr+aBQnc/ME51
+ 4PF3Hdv5TYS7n7XPFC/Qj9+n1XrT8VYOK29zPFStjj1Jx6GshEosyjOUBB7o6dMQISFT/CiwS
+ sT9Ygw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 12/15/22 18:02, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> The dsi_irq_stats structure is a little too big to fit on the
-> stack of a 32-bit task, depending on the specific gcc options:
->
-> fbdev/omap2/omapfb/dss/dsi.c: In function 'dsi_dump_dsidev_irqs':
-> fbdev/omap2/omapfb/dss/dsi.c:1621:1: error: the frame size of 1064 bytes=
- is larger than 1024 bytes [-Werror=3Dframe-larger-than=3D]
->
-> Since this is only a debugfs file, performance is not critical,
-> so just dynamically allocate it, and print an error message
-> in there in place of a failure code when the allocation fails.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Hi Linus,
 
-applied to fbdev git tree.
+please pull the fbdev driver updates for 6.2-rc3, to receive
+fixes for matroxfb, offb, omapfb and fbmem.
 
-Thanks!
+Thanks,
 Helge
 
-> ---
->   drivers/video/fbdev/omap2/omapfb/dss/dsi.c | 28 ++++++++++++++--------
->   1 file changed, 18 insertions(+), 10 deletions(-)
->
-> diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/=
-fbdev/omap2/omapfb/dss/dsi.c
-> index 54b0f034c2ed..7cddb7b8ae34 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-> @@ -1536,22 +1536,28 @@ static void dsi_dump_dsidev_irqs(struct platform=
-_device *dsidev,
->   {
->   	struct dsi_data *dsi =3D dsi_get_dsidrv_data(dsidev);
->   	unsigned long flags;
-> -	struct dsi_irq_stats stats;
-> +	struct dsi_irq_stats *stats;
-> +
-> +	stats =3D kzalloc(sizeof(*stats), GFP_KERNEL);
-> +	if (!stats) {
-> +		seq_printf(s, "out of memory\n");
-> +		return;
-> +	}
->
->   	spin_lock_irqsave(&dsi->irq_stats_lock, flags);
->
-> -	stats =3D dsi->irq_stats;
-> +	*stats =3D dsi->irq_stats;
->   	memset(&dsi->irq_stats, 0, sizeof(dsi->irq_stats));
->   	dsi->irq_stats.last_reset =3D jiffies;
->
->   	spin_unlock_irqrestore(&dsi->irq_stats_lock, flags);
->
->   	seq_printf(s, "period %u ms\n",
-> -			jiffies_to_msecs(jiffies - stats.last_reset));
-> +			jiffies_to_msecs(jiffies - stats->last_reset));
->
-> -	seq_printf(s, "irqs %d\n", stats.irq_count);
-> +	seq_printf(s, "irqs %d\n", stats->irq_count);
->   #define PIS(x) \
-> -	seq_printf(s, "%-20s %10d\n", #x, stats.dsi_irqs[ffs(DSI_IRQ_##x)-1])
-> +	seq_printf(s, "%-20s %10d\n", #x, stats->dsi_irqs[ffs(DSI_IRQ_##x)-1])
->
->   	seq_printf(s, "-- DSI%d interrupts --\n", dsi->module_id + 1);
->   	PIS(VC0);
-> @@ -1575,10 +1581,10 @@ static void dsi_dump_dsidev_irqs(struct platform=
-_device *dsidev,
->
->   #define PIS(x) \
->   	seq_printf(s, "%-20s %10d %10d %10d %10d\n", #x, \
-> -			stats.vc_irqs[0][ffs(DSI_VC_IRQ_##x)-1], \
-> -			stats.vc_irqs[1][ffs(DSI_VC_IRQ_##x)-1], \
-> -			stats.vc_irqs[2][ffs(DSI_VC_IRQ_##x)-1], \
-> -			stats.vc_irqs[3][ffs(DSI_VC_IRQ_##x)-1]);
-> +			stats->vc_irqs[0][ffs(DSI_VC_IRQ_##x)-1], \
-> +			stats->vc_irqs[1][ffs(DSI_VC_IRQ_##x)-1], \
-> +			stats->vc_irqs[2][ffs(DSI_VC_IRQ_##x)-1], \
-> +			stats->vc_irqs[3][ffs(DSI_VC_IRQ_##x)-1]);
->
->   	seq_printf(s, "-- VC interrupts --\n");
->   	PIS(CS);
-> @@ -1594,7 +1600,7 @@ static void dsi_dump_dsidev_irqs(struct platform_d=
-evice *dsidev,
->
->   #define PIS(x) \
->   	seq_printf(s, "%-20s %10d\n", #x, \
-> -			stats.cio_irqs[ffs(DSI_CIO_IRQ_##x)-1]);
-> +			stats->cio_irqs[ffs(DSI_CIO_IRQ_##x)-1]);
->
->   	seq_printf(s, "-- CIO interrupts --\n");
->   	PIS(ERRSYNCESC1);
-> @@ -1618,6 +1624,8 @@ static void dsi_dump_dsidev_irqs(struct platform_d=
-evice *dsidev,
->   	PIS(ULPSACTIVENOT_ALL0);
->   	PIS(ULPSACTIVENOT_ALL1);
->   #undef PIS
-> +
-> +	kfree(stats);
->   }
->
->   static void dsi1_dump_irqs(struct seq_file *s)
+----
 
+The following changes since commit 1b929c02afd37871d5afb9d498426f83432e71c2:
+
+  Linux 6.2-rc1 (2022-12-25 13:41:39 -0800)
+
+are available in the Git repository at:
+
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.2-rc3
+
+for you to fetch changes up to 764043cccd7232a783753a612d628fc0cb7854be:
+
+  fbdev: omapfb: avoid stack overflow warning (2023-01-04 19:09:40 +0100)
+
+----------------------------------------------------------------
+fbdev updates for kernel 6.2-rc3:
+
+- Fix Matrox G200eW initialization failure
+- Fix build failure of offb driver when built as module
+- Optimize stack usage in omapfb
+- Prevent use-after-free in fbmem
+
+----------------------------------------------------------------
+Arnd Bergmann (1):
+      fbdev: omapfb: avoid stack overflow warning
+
+Hang Zhang (1):
+      fbdev: fbmem: prevent potential use-after-free issues with console_lock()
+
+Paul Menzel (1):
+      fbdev: matroxfb: G200eW: Increase max memory from 1 MB to 16 MB
+
+Randy Dunlap (1):
+      fbdev: make offb driver tristate
+
+Xu Panda (2):
+      fbdev: omapfb: use strscpy() to instead of strncpy()
+      fbdev: atyfb: use strscpy() to instead of strncpy()
+
+ drivers/video/fbdev/Kconfig                |  4 ++--
+ drivers/video/fbdev/aty/atyfb_base.c       |  3 +--
+ drivers/video/fbdev/core/fbmem.c           |  2 ++
+ drivers/video/fbdev/matrox/matroxfb_base.c |  4 ++--
+ drivers/video/fbdev/omap/omapfb_main.c     |  5 ++---
+ drivers/video/fbdev/omap2/omapfb/dss/dsi.c | 28 ++++++++++++++++++----------
+ 6 files changed, 27 insertions(+), 19 deletions(-)

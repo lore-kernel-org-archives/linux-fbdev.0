@@ -2,104 +2,69 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11A27C3DA7A
-	for <linux-fbdev@archiver.kernel.org>; Thu,  5 Jan 2023 19:26:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F594C5479D
+	for <linux-fbdev@archiver.kernel.org>; Thu,  5 Jan 2023 19:32:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235682AbjAET0a (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 5 Jan 2023 14:26:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53542 "EHLO
+        id S235839AbjAETcP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 5 Jan 2023 14:32:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58088 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235881AbjAETZx (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 Jan 2023 14:25:53 -0500
-Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06DB3A473
-        for <linux-fbdev@vger.kernel.org>; Thu,  5 Jan 2023 11:21:38 -0800 (PST)
-Received: by mail-pf1-x433.google.com with SMTP id y5so1030059pfe.2
-        for <linux-fbdev@vger.kernel.org>; Thu, 05 Jan 2023 11:21:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=97sxfhjaB8PxBR7URrYCExoGnpeZKnrOyMFs+deDqoA=;
-        b=IFFFns4mTLHYiYPOdpH3k/Z6BfSYt1T8o7KcJMEOb7uldcq+iWk0U8tofOlIyAkpKx
-         Zm2YjpnCHTIqDwutAyZ/t+YGUhFLuddGsBcIAIPJyosjV4qRzQJLBfboku0pRLxE3rwg
-         E92VlWkAp8E1qj7r+WM0hJV4a+/SrUMEFxVSk=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=97sxfhjaB8PxBR7URrYCExoGnpeZKnrOyMFs+deDqoA=;
-        b=usHgGLs1Ivfo76kYmQkjZGTznhG90s1BG7w9HF7ScRTRR+oWd44fYugbZOPaJfUscE
-         6ozEv6UcFc1/Rau/UiMvoUXhOzK0OkxNR+qTf7s6VGg/1SYiOI4d2CEBnjHzNAk7sERC
-         xR0uU+Cs6bgwF8bH8ocaSykKeAtcQs/Qzne5j1sxWi87bIk5mdzltWo0pAJJBejvtMg2
-         1BIFpXNfNavivrb8LRU8JCUxg8uFmnYjJZEoWrdBZ9JaMqTsB7tr4HhVF2Oy4fWQBbio
-         oKVW/q+gKExp2dmWdvCqZV8FgSHCmgHX7Z/R5oYB8e1mjekckdW4oMumB7DeoRALVykr
-         QcFg==
-X-Gm-Message-State: AFqh2kpP3N38PR8KtxvO/MsVB40RVALDupKVP1GN3XcY7Fnw9mrtY53g
-        xcrTa7Mp///BNVwowO6VDGX1Ig==
-X-Google-Smtp-Source: AMrXdXtusMz0bppoL5uIlyajN4gT+TrhL1MIdwcwHem6NamVhADBBImbslU9eAUU89LaXsDyEkiXYA==
-X-Received: by 2002:a62:4e8e:0:b0:583:3d70:3661 with SMTP id c136-20020a624e8e000000b005833d703661mr473651pfb.9.1672946440663;
-        Thu, 05 Jan 2023 11:20:40 -0800 (PST)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
-        by smtp.gmail.com with ESMTPSA id h11-20020aa79f4b000000b00582bdaab584sm5868470pfr.81.2023.01.05.11.20.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Jan 2023 11:20:40 -0800 (PST)
-From:   Kees Cook <keescook@chromium.org>
+        with ESMTP id S234650AbjAETbs (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 Jan 2023 14:31:48 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA82ADE96;
+        Thu,  5 Jan 2023 11:26:47 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 3DE5261BE9;
+        Thu,  5 Jan 2023 19:26:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id A1E86C433EF;
+        Thu,  5 Jan 2023 19:26:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1672946806;
+        bh=s5g0WENZb5vwVZOYV8eJY5ke6jHO1BmPYsSPvs74uc8=;
+        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+        b=sGthtr9Y87pT0RGc0Es0XVEsdyaLR9+8zLFNLFQV2Lw3B4d/toBBrCWvYvC9AEcNY
+         E0mzrZwkvnw+AlIELMqvCS5P9nDwnOH19ymKvk9MROY1lmPv+1Okxss3ISaGWN20DW
+         BdWE1UYBFh4EdtZVlvFenYAea7WYrinMYgo+LeT1aB/xAm2WjSmFKHDIYeHfhE1h1Z
+         OPJ0iVXyMTTN2i5AodQQgl+jlzon3w2XnJMQplfSj4n2lpfyxOq4Nx+l1gHclT8nVK
+         d9s4I+hO5s9C9kJ4KMdh1J48LL03MmPEmvLdfJMeaPXuQ0K0ie/BycgwsdAqL0OlUz
+         PF3uHL9RuGnbg==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 8FB2CE5724A;
+        Thu,  5 Jan 2023 19:26:46 +0000 (UTC)
+Subject: Re: [GIT PULL - v2] fbdev fixes for v6.2-rc3
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <Y7aweqyDS7EmnDj8@ls3530>
+References: <Y7aweqyDS7EmnDj8@ls3530>
+X-PR-Tracked-List-Id: Direct Rendering Infrastructure - Development
+ <dri-devel.lists.freedesktop.org>
+X-PR-Tracked-Message-Id: <Y7aweqyDS7EmnDj8@ls3530>
+X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.2-rc3
+X-PR-Tracked-Commit-Id: 634cf6ead93988b0da9ac054521ab63a3ba189db
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 5e9af4b42660b2a8db067db8ff03db8a268d6a95
+Message-Id: <167294680658.18567.5299201102789509394.pr-tracker-bot@kernel.org>
+Date:   Thu, 05 Jan 2023 19:26:46 +0000
 To:     Helge Deller <deller@gmx.de>
-Cc:     Kees Cook <keescook@chromium.org>,
-        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
-Subject: [PATCH] fbdev: Replace 0-length array with flexible array
-Date:   Thu,  5 Jan 2023 11:20:38 -0800
-Message-Id: <20230105192034.never.249-kees@kernel.org>
-X-Mailer: git-send-email 2.34.1
-MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1496; h=from:subject:message-id; bh=eBudshCogBtu2xin7cq/2EcDLuR1Ha1dnf+jDA9WM7A=; b=owEBbQKS/ZANAwAKAYly9N/cbcAmAcsmYgBjtyMFUMFrIl5nzBw/rrohurWWx677rm+9jnFO2OEH EHsCmCCJAjMEAAEKAB0WIQSlw/aPIp3WD3I+bhOJcvTf3G3AJgUCY7cjBQAKCRCJcvTf3G3AJh39D/ 9JXSePQkOSG9y/c/7C77a7sNLOH6tRaBYFyxy0DqaiEqTL/wMEaWTJIe/TCr3eh5BcFRGkvE9aIydJ k0rjqKkxDAuT1SXy1IBz60cx2VutSvE62Wg6uN3jeM3wPgOHq+ccnA71nY8P8nAsDE0iC/5YR4s0tO e1YWFmLBF8TiWofavtjiQzRN5JArRGAdoSseCu9rM4Agl2OI1Z99fhdxq3LrYJXFVDdZLIlMW8n1DO egCycrggYzOaG114EndKmY7TBCBUfZkAxDU0O/t/YRLEBYqVlpZTGugD+LL0Odn8sgVNk5qwzCabkA A6v2Azd+H1iC5u5tFAoJD01fRv6ehdA4UZP+Alp0cSfooDCbJ8gHvwkVaktKC6pwKotnrI9de/3zpO 46+EcziPobYfUE/n+MG406Cr5/DbX8EH9RPVHvhxCN4tY5nHwpnIrHnelwe0RJOypvREb+N9DWq3hk QV+e8YP2rpKcIn25nevZZYExlnnxRWg+81Eo2n4xhAAtGY0ixR7hSYBOTp3jD1BuSfucmRBNiCuXRL qAMcw3Ygfp9kKDBDxcXrVBF21hRPN0cv45Odmb5Ee2GoQKhWYwpTAqHsctn4r3fhnQU7DNTWYzTjXp EU6fBQVzpe+v4o+gD7iVUj1EdwkxfMj9MlKVTgdtSKn+PDYo58UfpL2zyUyw==
-X-Developer-Key: i=keescook@chromium.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
-Content-Transfer-Encoding: 8bit
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Zero-length arrays are deprecated[1]. Replace struct aperture's "ranges"
-0-length array with a flexible array. (How is the size of this array
-verified?) Detected with GCC 13, using -fstrict-flex-arrays=3:
+The pull request you sent on Thu, 5 Jan 2023 12:11:54 +0100:
 
-samples/vfio-mdev/mdpy-fb.c: In function 'mdpy_fb_probe':
-samples/vfio-mdev/mdpy-fb.c:169:32: warning: array subscript 0 is outside array bounds of 'struct aperture[0]' [-Warray-bounds=]
-  169 |         info->apertures->ranges[0].base = info->fix.smem_start;
-      |         ~~~~~~~~~~~~~~~~~~~~~~~^~~
-In file included from samples/vfio-mdev/mdpy-fb.c:21:
-include/linux/fb.h:510:19: note: while referencing 'ranges'
-  510 |                 } ranges[0];
-      |                   ^~~~~~
+> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.2-rc3
 
-[1] https://www.kernel.org/doc/html/latest/process/deprecated.html#zero-length-and-one-element-arrays
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/5e9af4b42660b2a8db067db8ff03db8a268d6a95
 
-Cc: Helge Deller <deller@gmx.de>
-Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
- include/linux/fb.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thank you!
 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 96b96323e9cb..bf59d6a3590f 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -507,7 +507,7 @@ struct fb_info {
- 		struct aperture {
- 			resource_size_t base;
- 			resource_size_t size;
--		} ranges[0];
-+		} ranges[];
- 	} *apertures;
- 
- 	bool skip_vt_switch; /* no VT switch on suspend/resume required */
 -- 
-2.34.1
-
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html

@@ -2,115 +2,73 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BBF1C3DA7D
-	for <linux-fbdev@archiver.kernel.org>; Thu,  5 Jan 2023 08:14:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B2BCC3DA7A
+	for <linux-fbdev@archiver.kernel.org>; Thu,  5 Jan 2023 09:40:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231185AbjAEIOP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 5 Jan 2023 03:14:15 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54052 "EHLO
+        id S231777AbjAEJkw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 5 Jan 2023 04:40:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45470 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231570AbjAEIOG (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 Jan 2023 03:14:06 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6512158320;
-        Thu,  5 Jan 2023 00:14:02 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1672906437; bh=CGzT08iim77SF3hU99ejpjFf5EG6Rl2ItIprKmEgLtY=;
-        h=X-UI-Sender-Class:Date:From:To:Subject;
-        b=Ehs/8wo9Gks5PCvbWS3s9SW7nONzx6a38cyKKITH/xm+UQ4SBGl9zo98iW7+GqUPx
-         yqX7sbOfwqXzV15gXzQZ5s5KW7mThPtfWJ5J/Lird24hj8nkwS/OZeZTqbdaNTxycQ
-         FT1ilMhlDe+yv/o5JV2TQzRQs2CG91NgIdtadUrFT/+SjGVdyh/GZZkCJQRZ/cnXAr
-         q5Xem7yR2E7coOcnkwk1WvvKoFpqe+1iE3Y9pb6w+L7LicgSKUpuHLnEitDdFsO8yd
-         iH8dK1roQHprsdmtDh29TDeZEXCecPZ7Ko8ehQXu4RYCYviafVOYEzGX6JxCUBwdcD
-         ycJAPQ3CkAkxw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from ls3530 ([92.116.173.134]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1N63RQ-1okjjJ1BSC-016MjW; Thu, 05
- Jan 2023 09:13:57 +0100
-Date:   Thu, 5 Jan 2023 09:13:55 +0100
-From:   Helge Deller <deller@gmx.de>
-To:     Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: [GIT PULL] fbdev fixes for v6.2-rc3
-Message-ID: <Y7aGw/irynC61O85@ls3530>
+        with ESMTP id S232208AbjAEJkl (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 Jan 2023 04:40:41 -0500
+Received: from mailgw.kylinos.cn (unknown [124.126.103.232])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C918C56889;
+        Thu,  5 Jan 2023 01:40:39 -0800 (PST)
+X-UUID: 947685667712421c9d4cfc3f7c906f29-20230105
+X-CPASD-INFO: 94df836ab5fe4ed7a27774bb7dd53dca@goSehmVlZJGOVaixg6ivcYFjZ2dnYIK
+        xeZ6EZWGUj4GVhH5xTV5nX1V9gnNXZF5dXFV3dnBQYmBhXVJ3i3-XblBgXoZgUZB3iHaehmhhZg==
+X-CLOUD-ID: 94df836ab5fe4ed7a27774bb7dd53dca
+X-CPASD-SUMMARY: SIP:-1,APTIP:-2.0,KEY:0.0,FROMBLOCK:1,OB:0.0,URL:-5,TVAL:173.
+        0,ESV:0.0,ECOM:-5.0,ML:0.0,FD:0.0,CUTS:73.0,IP:-2.0,MAL:-5.0,PHF:-5.0,PHC:-5.
+        0,SPF:4.0,EDMS:-5,IPLABEL:4480.0,FROMTO:0,AD:0,FFOB:0.0,CFOB:0.0,SPC:0,SIG:-5
+        ,AUF:6,DUF:11701,ACD:193,DCD:193,SL:0,EISP:0,AG:0,CFC:0.373,CFSR:0.127,UAT:0,
+        RAF:0,IMG:-5.0,DFA:0,DTA:0,IBL:-2.0,ADI:-5,SBL:0,REDM:0,REIP:0,ESB:0,ATTNUM:0
+        ,EAF:0,CID:-5.0,VERSION:2.3.17
+X-CPASD-ID: 947685667712421c9d4cfc3f7c906f29-20230105
+X-CPASD-BLOCK: 1000
+X-CPASD-STAGE: 1
+X-UUID: 947685667712421c9d4cfc3f7c906f29-20230105
+X-User: xurui@kylinos.cn
+Received: from localhost.localdomain [(116.128.244.169)] by mailgw
+        (envelope-from <xurui@kylinos.cn>)
+        (Generic MTA)
+        with ESMTP id 1746260541; Thu, 05 Jan 2023 17:40:38 +0800
+From:   xurui <xurui@kylinos.cn>
+To:     deller@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, trivial@kernel.org,
+        xurui <xurui@kylinos.cn>
+Subject: [PATCH] fbdev/g364fb: Fix a compilation issue
+Date:   Thu,  5 Jan 2023 17:40:39 +0800
+Message-Id: <20230105094039.1474255-1-xurui@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Provags-ID: V03:K1:e6ixn9x3qrMQjq5CqimdU7JpgjsjVfDoNyoLBcb4EczLrtrNX2U
- ixFxDAtD48kLgFDrPNFAtl3EjKeMmGGy+mNWLbC368qglH80q7IJQc42I90nVdO3HoJWC5p
- LJR0PbX5gc/GC9llc6V6Sc3hKaoe0/xTDqY1wERRsxd/nqE+eftxoEKY5i1wUk3oZiFxrfi
- 85AumXIc2Kq4aQ9JPAIEQ==
-UI-OutboundReport: notjunk:1;M01:P0:OZlzwYr2Qw0=;IDBYe5yVimYZIWzoGw/RJniwNZo
- 0uolB61iaJtJ7/PD9C8a1Mc1v4VCpRbKCogcoHML5XQ2mFzrOYEQkDeTUw4hUmgFTCd5ua5zV
- 05yftmCaW0llhRpSSAEBGSnm/5uIwtkh0mVJU1A2jmPsJpvyw0ejaxm5+BemLXRoCjQgV18tZ
- W8AqN0RHL2+7Jg87Jagu3lDvhM7nm0FVbM/CKscnID5Rc6neheP9c/Pf1EsE+cezW5Ezjn624
- Gs50PmkbMsA3CEOFv/G6SsrtTFLj6L8zDyD4b1165OME9skmYdaQc+ZEUn91dJcFmc+xyeMvN
- QjemPbGRllKACic6Gk3r/nfzhse3i84yuz7KX0rpbgI4i5PE/+TfG/prDCvdzFfvSLLhPPYkp
- AtlJFY8dsu8CJC/otOnchry7zuhKwlbvlA3pW4piTvRJu6+Bzpj1Edzys095c3cXk372RB6Ry
- nDhRWbFyRI2Sbdlluw4rqC7UyDlopBM019uw3ZIa/eh0WeTrDtwxZEv+y7VH2HCyK8mTH4NlN
- 4Tx+Bylc8wO4deDHuCw/O6vTw338HCS6qkiwN0/4aI5qqoQpP0VRCY+MuPNlTaaEAbXPNkRRF
- XTQy1F0/hPsySkLhTkfYJTmYoDfezsEDvxOTSha5oazarOm/TlNrEO17Wm1mFriZqkkeZ8Q2c
- xJo73OXF0d/JwVE9obNoUiZacFhq9UZlWRgSaPdBDA2j+CQreds5Hj8ODyFSldamrI3RflYsp
- 0VP6q9r3r0GwVLkAniB+qakskzYqPbl6NrsBIyXLND33LtsniMtAldQLHs7WTAlTeJf9wNFIw
- Wvs5Xr2fBAKfskFRMlLux5bgl36+d7kLRlk99kVnwIiUtiFCU9yTZ4EsldIZPr+aBQnc/ME51
- 4PF3Hdv5TYS7n7XPFC/Qj9+n1XrT8VYOK29zPFStjj1Jx6GshEosyjOUBB7o6dMQISFT/CiwS
- sT9Ygw==
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Linus,
+drivers/video/fbdev/g364fb.c:202:4: error: cast to pointer from integer of different size [-Werror=int-to-pointer-cast]
 
-please pull the fbdev driver updates for 6.2-rc3, to receive
-fixes for matroxfb, offb, omapfb and fbmem.
+Signed-off-by: xurui <xurui@kylinos.cn>
+---
+ drivers/video/fbdev/g364fb.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Thanks,
-Helge
+diff --git a/drivers/video/fbdev/g364fb.c b/drivers/video/fbdev/g364fb.c
+index 05837a3b985c..beef4bcec3c5 100644
+--- a/drivers/video/fbdev/g364fb.c
++++ b/drivers/video/fbdev/g364fb.c
+@@ -175,7 +175,8 @@ int __init g364fb_init(void)
+ {
+ 	volatile unsigned int *curs_pal_ptr =
+ 	    (volatile unsigned int *) CURS_PAL_REG;
+-	int mem, i;
++	int mem;
++	uintptr_t i;
+ 
+ 	if (fb_get_options("g364fb", NULL))
+ 		return -ENODEV;
+-- 
+2.25.1
 
-----
-
-The following changes since commit 1b929c02afd37871d5afb9d498426f83432e71c2:
-
-  Linux 6.2-rc1 (2022-12-25 13:41:39 -0800)
-
-are available in the Git repository at:
-
-  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.2-rc3
-
-for you to fetch changes up to 764043cccd7232a783753a612d628fc0cb7854be:
-
-  fbdev: omapfb: avoid stack overflow warning (2023-01-04 19:09:40 +0100)
-
-----------------------------------------------------------------
-fbdev updates for kernel 6.2-rc3:
-
-- Fix Matrox G200eW initialization failure
-- Fix build failure of offb driver when built as module
-- Optimize stack usage in omapfb
-- Prevent use-after-free in fbmem
-
-----------------------------------------------------------------
-Arnd Bergmann (1):
-      fbdev: omapfb: avoid stack overflow warning
-
-Hang Zhang (1):
-      fbdev: fbmem: prevent potential use-after-free issues with console_lock()
-
-Paul Menzel (1):
-      fbdev: matroxfb: G200eW: Increase max memory from 1 MB to 16 MB
-
-Randy Dunlap (1):
-      fbdev: make offb driver tristate
-
-Xu Panda (2):
-      fbdev: omapfb: use strscpy() to instead of strncpy()
-      fbdev: atyfb: use strscpy() to instead of strncpy()
-
- drivers/video/fbdev/Kconfig                |  4 ++--
- drivers/video/fbdev/aty/atyfb_base.c       |  3 +--
- drivers/video/fbdev/core/fbmem.c           |  2 ++
- drivers/video/fbdev/matrox/matroxfb_base.c |  4 ++--
- drivers/video/fbdev/omap/omapfb_main.c     |  5 ++---
- drivers/video/fbdev/omap2/omapfb/dss/dsi.c | 28 ++++++++++++++++++----------
- 6 files changed, 27 insertions(+), 19 deletions(-)

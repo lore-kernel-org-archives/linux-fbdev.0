@@ -2,88 +2,193 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 634FBC3DA7A
-	for <linux-fbdev@archiver.kernel.org>; Thu,  5 Jan 2023 14:23:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24385C3DA7A
+	for <linux-fbdev@archiver.kernel.org>; Thu,  5 Jan 2023 18:39:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231834AbjAEOXu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 5 Jan 2023 09:23:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35486 "EHLO
+        id S230493AbjAESji (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 5 Jan 2023 13:39:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56690 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233398AbjAEOX3 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 Jan 2023 09:23:29 -0500
-Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0023B559C3
-        for <linux-fbdev@vger.kernel.org>; Thu,  5 Jan 2023 06:23:26 -0800 (PST)
-Received: by mail-wr1-x430.google.com with SMTP id t15so27418102wro.9
-        for <linux-fbdev@vger.kernel.org>; Thu, 05 Jan 2023 06:23:26 -0800 (PST)
+        with ESMTP id S235237AbjAESjQ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 Jan 2023 13:39:16 -0500
+Received: from mail-oa1-x2f.google.com (mail-oa1-x2f.google.com [IPv6:2001:4860:4864:20::2f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 82E985F49E;
+        Thu,  5 Jan 2023 10:39:05 -0800 (PST)
+Received: by mail-oa1-x2f.google.com with SMTP id 586e51a60fabf-14fb7fdb977so37217913fac.12;
+        Thu, 05 Jan 2023 10:39:05 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=2O8qAtal3UIh6dVVxKSeZtPNmNVJVzzTrbBSvkVmU/4=;
-        b=OnBXfld0yK17k8BzxzH6dsorYAl/PqiA2lMaWW8T656ZlzW8aUSwRpgLiNsGEwoMSf
-         WgTvcrFyjbBEXdpoXNYNVqT5BJyH6MNlLEHJjzF0FN9Lt/AHWz7hirl1C0m2NMVOkCiX
-         EwNGVSxmcxTRJwHiX1bM1sa8rV4rgJKt6y3h4muOSA0ghYIawn+Oxq8bOLTgU4iw4u83
-         VBFWNF4EJsCQGQMO0K2n3RWeR4FGMyQz9v+pVapkRfwXc46yjeBfPKvPe/HNhPCz9tok
-         d4UcHzX623NtPkDCjzr9ePPPSFiSjxKCUMJOAysfFjy3trEa2EmqAmU08hGxUvlTKgYF
-         ODXA==
+        d=gmail.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=N0AB2x4qCilYXNN66qpiEjklcJr+ewmZBA/9Mtvh7+Y=;
+        b=I4ymJC1LD9APlEXUMwtIT5TECUDlW7u6vpX4qge/EmRQCdkmAn1/3oUo+qWYty0Jl3
+         hpoVUsUfASLZibDOcVc3ATfFV6UXHb4bd8N2mplIrS2KAKUtiM/OHl1TGgaWwVCu7Ewo
+         E3thvCUbT5deEYkDzGiwVRnXFcJADeFJ6x6iRlyJ0DWFnjZiTuhOpVqSh3L7CbqeBcc9
+         AAP2lOCt2xwkPAa73EC5hAn64oI4y98ZRvAQtOCwUV8iS1wSTbjc5J1bWX3cWk1bWNrb
+         hZnrtafaaFAjqk5B+5WK9KePsCJjrB1q8wtPwu6y5U079El0JREX790ToHxPEaQvdLUC
+         hZKg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=2O8qAtal3UIh6dVVxKSeZtPNmNVJVzzTrbBSvkVmU/4=;
-        b=cSElXS0GYPArRBf5qjVxAgTJH3NyBPOVT1daaKWgO1W0alIEOffdJ2z8U5NndL25Sa
-         LiPUz/sKjIZ+ZDFOzSiR8nYT09IuKciHcBKuGwFi/2dPcDTYKus6m+0xY1iVIKPTh/pY
-         4v4hdnNthq/ISHat/afpLBzRKSXdb2nKEBj+wD6RiME/F94YWJ3ymzR5ci6x2k0eGt4E
-         6rcr5hrYZ7s1YW2oZcNfRMtcQs6ZX/i1EUnb/q9WGWG8Noj4OyFIb5u71mLSFekF8QXX
-         iSTg9etVvyg3yGU0ArK+5UYr5NVJFCcF4WLIosWBYVBxdroL2fsdTuSqkEk9/XcLNI++
-         4VZw==
-X-Gm-Message-State: AFqh2kow5LeA5SsH5zC/MggV8Xn4t8K8UCS7c6CBEAdMTKQrmBfaUSiI
-        zNzFg3GestVQugL1jjUGEpn2vg==
-X-Google-Smtp-Source: AMrXdXuKaNUVjrQTANx/S3IuaYZuFDw62Vq63XtmQR6uWzRVkHezN/Wl0vZekaskc5e/xo+44czkqw==
-X-Received: by 2002:adf:e307:0:b0:2b6:8a41:a949 with SMTP id b7-20020adfe307000000b002b68a41a949mr721487wrj.46.1672928605403;
-        Thu, 05 Jan 2023 06:23:25 -0800 (PST)
-Received: from aspen.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id h7-20020a5d4307000000b002a64e575b4esm3922790wrq.47.2023.01.05.06.23.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Jan 2023 06:23:24 -0800 (PST)
-Date:   Thu, 5 Jan 2023 14:23:23 +0000
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Arnd Bergmann <arnd@kernel.org>
-Cc:     Robert Jarzmik <robert.jarzmik@free.fr>,
-        Daniel Mack <daniel@zonque.org>,
-        Haojian Zhuang <haojian.zhuang@gmail.com>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        Arnd Bergmann <arnd@arndb.de>, Lee Jones <lee@kernel.org>,
-        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH 09/27] backlight: remove pxa tosa support
-Message-ID: <Y7bdW4maNBCZinLz@aspen.lan>
-References: <20230105134622.254560-1-arnd@kernel.org>
- <20230105134622.254560-10-arnd@kernel.org>
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=N0AB2x4qCilYXNN66qpiEjklcJr+ewmZBA/9Mtvh7+Y=;
+        b=nOH1zMfbMcVX6bSC/HVmZU6TNgvO4YLdEqH2GepD+xGbVoY/Z+5Rympy22l5vJqVKD
+         4o6FUKmsgmqIbt9cwHjaQ5Nm7u7fVD4grudRm8UNh4iNKCOvF8hMCVPQQDZvXorbxwcp
+         PfxltPikrE9FB4SHoXL8a+j/thIHSLaSMaG4FCLG8Nbo7B1Ea2UwGGYIXSh9bNwMkepJ
+         mxSWWuKE+S455x2RyVMlonA2+c8iKGt90MiBJxbFGwvybH5ri8zOw1Kc70tL7HF+07ff
+         eYsy77/FhT7hvG487sUyMWePS8Gd82RHZcFL7MAYwpAakd/D7/jU3QkhsumFk2mMOfyk
+         E3SQ==
+X-Gm-Message-State: AFqh2kouzwqJpBjPoG2Xrc5gTXGa5LVTPkIQ2rHOv8gvg47I2ndCtOWm
+        KCL7TYeTkLxfJk4aj/fc9AMnPpNdumf2Cfzt2iU=
+X-Google-Smtp-Source: AMrXdXsdMfEt5J885g1j3Ot5GIl62/nRUiRrClg26yZH58s7d8RhcsuMZq2Q3v4IZVgAMMy7VsYYTksCGBjAyZF+/Gg=
+X-Received: by 2002:a05:6870:1706:b0:144:dffd:8302 with SMTP id
+ h6-20020a056870170600b00144dffd8302mr4104835oae.146.1672943945260; Thu, 05
+ Jan 2023 10:39:05 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230105134622.254560-10-arnd@kernel.org>
+References: <20221230063528.41037-1-zh.nvgt@gmail.com> <2711de96-fcbe-5611-657a-ab29becd2ff6@gmx.de>
+ <CAKMK7uEOX5n64cjzMt9GRQaS13HFPFyOeqdrkmzc035U5_T8tg@mail.gmail.com> <CAKMK7uE7CAXO50JPQ6ziQGGehqfDK2UanBQbfLdUH2RwrwXUvw@mail.gmail.com>
+In-Reply-To: <CAKMK7uE7CAXO50JPQ6ziQGGehqfDK2UanBQbfLdUH2RwrwXUvw@mail.gmail.com>
+From:   Hang Zhang <zh.nvgt@gmail.com>
+Date:   Thu, 5 Jan 2023 13:38:54 -0500
+Message-ID: <CAO2zrtYDcOfvxpG6wPghPnWZVks+NL6N9VaynsBVoX7nHBcxuw@mail.gmail.com>
+Subject: Re: [PATCH] fbmem: prevent potential use-after-free issues with console_lock()
+To:     Daniel Vetter <daniel@ffwll.ch>
+Cc:     Helge Deller <deller@gmx.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Jan 05, 2023 at 02:46:04PM +0100, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
+On Thu, Jan 5, 2023 at 5:25 AM Daniel Vetter <daniel@ffwll.ch> wrote:
 >
-> The PXA tosa machine was removed, so this backlight driver is no
-> longer needed.
+> On Thu, 5 Jan 2023 at 11:21, Daniel Vetter <daniel@ffwll.ch> wrote:
+> >
+> > Hi Helge
+> >
+> > On Mon, 2 Jan 2023 at 16:28, Helge Deller <deller@gmx.de> wrote:
+> > >
+> > > On 12/30/22 07:35, Hang Zhang wrote:
+> > > > In do_fb_ioctl(), user specified "fb_info" can be freed in the callee
+> > > > fbcon_get_con2fb_map_ioctl() -> set_con2fb_map() ->
+> > > > con2fb_release_oldinfo(), this free operation is protected by
+> > > > console_lock() in fbcon_set_con2fb_map_ioctl(), it also results in
+> > > > the change of certain states such as "minfo->dead" in matroxfb_remove(),
+> > > > so that it can be checked to avoid use-after-free before the use sites
+> > > > (e.g., the check at the beginning of matroxfb_ioctl()). However,
+> > > > the problem is that the use site is not protected by the same locks
+> > > > as for the free operation, e.g., "default" case in do_fb_ioctl()
+> > > > can lead to "matroxfb_ioctl()" but it's not protected by console_lock(),
+> > > > which can invalidate the aforementioned state set and check in a
+> > > > concurrent setting.
+> > > >
+> > > > Prevent the potential use-after-free issues by protecting the "default"
+> > > > case in do_fb_ioctl() with console_lock(), similarly as for many other
+> > > > cases like "case FBIOBLANK" and "case FBIOPAN_DISPLAY".
+> > > >
+> > > > Signed-off-by: Hang Zhang <zh.nvgt@gmail.com>
+> > >
+> > > applied to fbdev git tree.
+> >
+> > The patch above makes no sense at all to me:
+> >
+> > - fb_info is protected by lock_fb_info and
+> > - the lifetime of fb_info is protected by the get/put functions
+> > - yes there's the interaction with con2fb, which is protected by
+> > console_lock, but the lifetime guarantees are ensured by the device
+> > removal
+> > - which means any stuff happening in matroxfb_remove is also not a
+> > concern here (unless matroxfb completely gets all the device lifetime
+> > stuff wrong, but it doesn't look like it's any worse than any of the
+> > other fbdev drivers that we haven't recently fixed up due to the
+> > takeover issues with firmware drivers
 >
-> Cc: Lee Jones <lee@kernel.org>
-> Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> Cc: Jingoo Han <jingoohan1@gmail.com>
-> Cc: linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER)
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> I have also a really hard timing finding the con2fb map use in the
+> matroxfb ioctl code, but that just might be that I didn't look
+> carefully enough. Maybe that would shed some light on this.
+> -Daniel
+>
+>
+> >
+> > On the very clear downside this now means we take console_lock for the
+> > vblank ioctl (which is a device driver extension for reasons, despite
+> > that it's a standard fbdev ioctl), which is no good at all given how
+> > console_lock() is a really expensive lock.
+> >
+> > Unless I'm massively missing something, can you pls push the revert
+> > before this lands in Linus' tree?
+> >
+> > Thanks, Daniel
 
-OK by me ;-).
+Hi, Daniel. Thank you for your feedback. We're not developers of the
+video subsystem and thus may be short in domain knowledge (e.g., the
+performance of console_lock() and the complex lifetime management).
+This patch initially intended to bring up the potential use-after-free
+issues here to the community - we have performed a best-effort code
+review and cannot exclude the possibility based on our understanding.
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+What we have observed is that the call chain leading to the free site
+(do_fb_ioctl()->fbcon_set_con2fb_map_ioctl()->set_con2fb_map()->
+con2fb_release_oldinfo()-> ... ->matroxfb_remove()) is only protected
+by console_lock() but not lock_fb_info(), while the potential use
+site (call chain starts from the default case in do_fb_ioctl()) is
+only protected by lock_fb_info() but not console_lock().
+We thus propose to add this extra console_lock() to the default case,
+which is inspired by the lock protection of many other existing
+switch-case terms in the same function.
 
+Since we do not have deep domain knowledge of this subsystem, we will
+rely on the developers to make a decision regarding the patch. Thank
+you again for your review and help!
 
-Daniel.
+Best,
+Hang
+
+> >
+> > > Thanks,
+> > > Helge
+> > >
+> > > > ---
+> > > >   drivers/video/fbdev/core/fbmem.c | 2 ++
+> > > >   1 file changed, 2 insertions(+)
+> > > >
+> > > > diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+> > > > index 1e70d8c67653..8b1a1527d18a 100644
+> > > > --- a/drivers/video/fbdev/core/fbmem.c
+> > > > +++ b/drivers/video/fbdev/core/fbmem.c
+> > > > @@ -1182,6 +1182,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+> > > >               console_unlock();
+> > > >               break;
+> > > >       default:
+> > > > +             console_lock();
+> > > >               lock_fb_info(info);
+> > > >               fb = info->fbops;
+> > > >               if (fb->fb_ioctl)
+> > > > @@ -1189,6 +1190,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+> > > >               else
+> > > >                       ret = -ENOTTY;
+> > > >               unlock_fb_info(info);
+> > > > +             console_unlock();
+> > > >       }
+> > > >       return ret;
+> > > >   }
+> > >
+> >
+> >
+> > --
+> > Daniel Vetter
+> > Software Engineer, Intel Corporation
+> > http://blog.ffwll.ch
+>
+>
+>
+> --
+> Daniel Vetter
+> Software Engineer, Intel Corporation
+> http://blog.ffwll.ch

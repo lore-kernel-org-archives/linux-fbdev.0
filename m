@@ -2,42 +2,42 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B54CC3DA7A
-	for <linux-fbdev@archiver.kernel.org>; Fri,  6 Jan 2023 18:01:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62D82C54EBD
+	for <linux-fbdev@archiver.kernel.org>; Fri,  6 Jan 2023 18:27:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234565AbjAFSBY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 6 Jan 2023 13:01:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48644 "EHLO
+        id S233994AbjAFS1Y (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 6 Jan 2023 13:27:24 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58060 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235196AbjAFSA5 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 6 Jan 2023 13:00:57 -0500
-X-Greylist: delayed 964 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 06 Jan 2023 10:00:56 PST
-Received: from mailrelay5-1.pub.mailoutpod2-cph3.one.com (mailrelay5-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:404::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D85B64565A
-        for <linux-fbdev@vger.kernel.org>; Fri,  6 Jan 2023 10:00:56 -0800 (PST)
+        with ESMTP id S231376AbjAFS1X (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 6 Jan 2023 13:27:23 -0500
+X-Greylist: delayed 2512 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 06 Jan 2023 10:27:21 PST
+Received: from mailrelay3-1.pub.mailoutpod2-cph3.one.com (mailrelay3-1.pub.mailoutpod2-cph3.one.com [46.30.211.178])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E77DF78A7A
+        for <linux-fbdev@vger.kernel.org>; Fri,  6 Jan 2023 10:27:21 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=ravnborg.org; s=rsa2;
         h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
          from:date:from;
-        bh=FSqXexJzCRVeHRIZREcKXEAPwBfY3fDmKI9BXOUKmLs=;
-        b=TyFpN28itepy0w/qodgA7k58SxSGO2oVol439ZxYDGmDVyMPXI8eCAEmNR3GSNDDa3N5KR1pFTpqL
-         0fxVWS+IoZR8n2b0vFH0bUl9J7XjOGWprjTylXOM0vdPcR7j7hVg5bWy6UhFhTT/Yi0VgaD/xkrX2N
-         I3DvWsZTAmFqBnDkU9eVNJ/S0MhaMpL5KVWVnSjrwlw9t1sEk5QHG0hpqlC4kkkRwoiQPHg6howi9L
-         W7aEGiM30DK1V2/6Q6uHFAoxEW9mau9Jm83ZSWD/LExt2k2iqO0MCP6a1MYo5iIhnDdshOYfy7rhM9
-         VBjCjfF++NwMSmRf8BB+j9ccQj0NYcQ==
+        bh=6QdIVHUIxY3riu8WNeI8Qtp4pkrdBvAzRwqu/PCAFGU=;
+        b=yr96O8zHMLzRmFQMRd4SUJl0do+s1hYzEGmfkvh0ku+qeXpE27MkdzGvB+GJycTZIu00SilEKlUKg
+         ZSvmHLoaUNy+sQhO+0ngEE+IBbQv+kvqBPr0RT7AlW1odVyI5pQIu5IuNfBio+Jb+yWiq2aIF8htZ+
+         KmPOto5POPqVXO6aZl5vmAM1s8MGzW6Wx+GO3rSt/T3kmVwaaV/tjk8pgvAZhGLH4ULPxvLgac0LKu
+         f/m/ZwmaVaPX8Y+mPsHL6iTJY4JpthEE6cRMUFW5CJ418HXm/ffVLwJA7TE5tQI4LieYGydxfk2X1O
+         7ecSaLDoTCFq+9ZCcqJtEqSVJr2x+HA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
         d=ravnborg.org; s=ed2;
         h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
          from:date:from;
-        bh=FSqXexJzCRVeHRIZREcKXEAPwBfY3fDmKI9BXOUKmLs=;
-        b=VdqY98AJKtj0j1G6CDmNlGEHh0seMeKpXOOv835nCu+xHeTIwx+sgbs5s1jaaIFnx5HxD1+HlbnES
-         eQQxSUrAw==
-X-HalOne-ID: d04ebfe6-8de9-11ed-9e86-7703b0afff57
+        bh=6QdIVHUIxY3riu8WNeI8Qtp4pkrdBvAzRwqu/PCAFGU=;
+        b=cU17wfqUmdKxgvCBUHUA1ulduzLjNdkasBS4b/MUGXLGG5/3PkSrCGtgB2+fpQGmNC+Yd5pzDzUQ4
+         P+Z4AcSCA==
+X-HalOne-ID: 9b58e155-8def-11ed-931a-ede074c87fad
 Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-        by mailrelay5 (Halon) with ESMTPSA
-        id d04ebfe6-8de9-11ed-9e86-7703b0afff57;
-        Fri, 06 Jan 2023 17:44:50 +0000 (UTC)
-Date:   Fri, 6 Jan 2023 18:44:49 +0100
+        by mailrelay3 (Halon) with ESMTPSA
+        id 9b58e155-8def-11ed-931a-ede074c87fad;
+        Fri, 06 Jan 2023 18:26:17 +0000 (UTC)
+Date:   Fri, 6 Jan 2023 19:26:16 +0100
 From:   Sam Ravnborg <sam@ravnborg.org>
 To:     Stephen Kitt <steve@sk2.org>
 Cc:     Lee Jones <lee@kernel.org>,
@@ -45,18 +45,18 @@ Cc:     Lee Jones <lee@kernel.org>,
         Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
         Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH RESEND 2/4] backlight: arcxcnn: Use backlight helper
-Message-ID: <Y7heER7NIHVFQY8a@ravnborg.org>
-References: <20230106164856.1453819-3-steve@sk2.org>
+Subject: Re: [PATCH RESEND 3/4] backlight: ipaq_micro: Use backlight helper
+Message-ID: <Y7hnyCOlWuJf+obV@ravnborg.org>
+References: <20230106164856.1453819-4-steve@sk2.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230106164856.1453819-3-steve@sk2.org>
+In-Reply-To: <20230106164856.1453819-4-steve@sk2.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jan 06, 2023 at 05:48:53PM +0100, Stephen Kitt wrote:
+On Fri, Jan 06, 2023 at 05:48:54PM +0100, Stephen Kitt wrote:
 > Instead of retrieving the backlight brightness in struct
 > backlight_properties manually, and then checking whether the backlight
 > should be on at all, use backlight_get_brightness() which does all
@@ -65,26 +65,31 @@ On Fri, Jan 06, 2023 at 05:48:53PM +0100, Stephen Kitt wrote:
 > Signed-off-by: Stephen Kitt <steve@sk2.org>
 Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
 > ---
->  drivers/video/backlight/arcxcnn_bl.c | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
+>  drivers/video/backlight/ipaq_micro_bl.c | 7 +------
+>  1 file changed, 1 insertion(+), 6 deletions(-)
 > 
-> diff --git a/drivers/video/backlight/arcxcnn_bl.c b/drivers/video/backlight/arcxcnn_bl.c
-> index 555b036643fb..e610d7a1d13d 100644
-> --- a/drivers/video/backlight/arcxcnn_bl.c
-> +++ b/drivers/video/backlight/arcxcnn_bl.c
-> @@ -130,12 +130,9 @@ static int arcxcnn_set_brightness(struct arcxcnn *lp, u32 brightness)
->  static int arcxcnn_bl_update_status(struct backlight_device *bl)
+> diff --git a/drivers/video/backlight/ipaq_micro_bl.c b/drivers/video/backlight/ipaq_micro_bl.c
+> index 85b16cc82878..f595b8c8cbb2 100644
+> --- a/drivers/video/backlight/ipaq_micro_bl.c
+> +++ b/drivers/video/backlight/ipaq_micro_bl.c
+> @@ -16,17 +16,12 @@
+>  static int micro_bl_update_status(struct backlight_device *bd)
 >  {
->  	struct arcxcnn *lp = bl_get_data(bl);
-> -	u32 brightness = bl->props.brightness;
-> +	u32 brightness = backlight_get_brightness(bl);
->  	int ret;
+>  	struct ipaq_micro *micro = dev_get_drvdata(&bd->dev);
+> -	int intensity = bd->props.brightness;
+> +	int intensity = backlight_get_brightness(bd);
+>  	struct ipaq_micro_msg msg = {
+>  		.id = MSG_BACKLIGHT,
+>  		.tx_len = 3,
+>  	};
 >  
-> -	if (bl->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
-> -		brightness = 0;
+> -	if (bd->props.power != FB_BLANK_UNBLANK)
+> -		intensity = 0;
+> -	if (bd->props.state & (BL_CORE_FBBLANK | BL_CORE_SUSPENDED))
+> -		intensity = 0;
 > -
->  	ret = arcxcnn_set_brightness(lp, brightness);
->  	if (ret)
->  		return ret;
+>  	/*
+>  	 * Message format:
+>  	 * Byte 0: backlight instance (usually 1)
 > -- 
 > 2.30.2

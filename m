@@ -2,69 +2,146 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F594C5479D
-	for <linux-fbdev@archiver.kernel.org>; Thu,  5 Jan 2023 19:32:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF932C5479D
+	for <linux-fbdev@archiver.kernel.org>; Fri,  6 Jan 2023 09:49:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235839AbjAETcP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 5 Jan 2023 14:32:15 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58088 "EHLO
+        id S231855AbjAFJso (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 6 Jan 2023 04:48:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42614 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234650AbjAETbs (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 Jan 2023 14:31:48 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA82ADE96;
-        Thu,  5 Jan 2023 11:26:47 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 3DE5261BE9;
-        Thu,  5 Jan 2023 19:26:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id A1E86C433EF;
-        Thu,  5 Jan 2023 19:26:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1672946806;
-        bh=s5g0WENZb5vwVZOYV8eJY5ke6jHO1BmPYsSPvs74uc8=;
-        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=sGthtr9Y87pT0RGc0Es0XVEsdyaLR9+8zLFNLFQV2Lw3B4d/toBBrCWvYvC9AEcNY
-         E0mzrZwkvnw+AlIELMqvCS5P9nDwnOH19ymKvk9MROY1lmPv+1Okxss3ISaGWN20DW
-         BdWE1UYBFh4EdtZVlvFenYAea7WYrinMYgo+LeT1aB/xAm2WjSmFKHDIYeHfhE1h1Z
-         OPJ0iVXyMTTN2i5AodQQgl+jlzon3w2XnJMQplfSj4n2lpfyxOq4Nx+l1gHclT8nVK
-         d9s4I+hO5s9C9kJ4KMdh1J48LL03MmPEmvLdfJMeaPXuQ0K0ie/BycgwsdAqL0OlUz
-         PF3uHL9RuGnbg==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 8FB2CE5724A;
-        Thu,  5 Jan 2023 19:26:46 +0000 (UTC)
-Subject: Re: [GIT PULL - v2] fbdev fixes for v6.2-rc3
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <Y7aweqyDS7EmnDj8@ls3530>
-References: <Y7aweqyDS7EmnDj8@ls3530>
-X-PR-Tracked-List-Id: Direct Rendering Infrastructure - Development
- <dri-devel.lists.freedesktop.org>
-X-PR-Tracked-Message-Id: <Y7aweqyDS7EmnDj8@ls3530>
-X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.2-rc3
-X-PR-Tracked-Commit-Id: 634cf6ead93988b0da9ac054521ab63a3ba189db
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 5e9af4b42660b2a8db067db8ff03db8a268d6a95
-Message-Id: <167294680658.18567.5299201102789509394.pr-tracker-bot@kernel.org>
-Date:   Thu, 05 Jan 2023 19:26:46 +0000
-To:     Helge Deller <deller@gmx.de>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        with ESMTP id S233592AbjAFJsI (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 6 Jan 2023 04:48:08 -0500
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 066183E84D;
+        Fri,  6 Jan 2023 01:48:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1672998455; bh=X5XGAIPvr22MI0eLf6jR3JeaxkhbXLyZMnU47GJOnEw=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=bhp4kWHBiZ062LakSuGlAeI1jKBq0geouwPhOVoA4z6A9Nvu2f5Vbkf+3u5Li+LdH
+         jKuMf77iV+neeDKMYPWVsJaXt99T9wcPsrQ2Nsn5ghGvjy7t+HxHT2AM/63qkdJUR5
+         27wRTyg50u5FawL3/ByCzivIkh8lr9/suzZ23VTZY8uNxy4LmvNuAKLIEJIsHZP841
+         3YMMg40GvU432j92jKuE3raVH85yxR9YCCOgUFwAePYpQ2brS0Qebf9yk6how3UoIr
+         MyU86ora954Uw3ppQdFmm5BthcjOqoFNHAMnX1/1QghE5K2bbH2ldKH30YBLpzVHrh
+         rs0qc/Y014QAg==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([92.116.174.87]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1M4b1o-1pC4cz1nPy-001iw7; Fri, 06
+ Jan 2023 10:47:35 +0100
+Message-ID: <3bbd5135-a556-6097-9ca3-aef3399b2990@gmx.de>
+Date:   Fri, 6 Jan 2023 10:47:33 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.0
+Subject: Re: [PATCH 22/27] fbdev: remove tmiofb driver
+Content-Language: en-US
+To:     Arnd Bergmann <arnd@kernel.org>,
+        Robert Jarzmik <robert.jarzmik@free.fr>
+Cc:     Daniel Mack <daniel@zonque.org>,
+        Haojian Zhuang <haojian.zhuang@gmail.com>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
+References: <20230105134622.254560-1-arnd@kernel.org>
+ <20230105134622.254560-23-arnd@kernel.org>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20230105134622.254560-23-arnd@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:0Jq4oXtpeY5Zcp1vcmNdwRjg473SuDv8Fg8XziQ3y3xhHgj1BhB
+ LtDuFYRvQMmEUsp9ISNAP6vkXlOh6GIRvM3Rf3h/v2tF82uX6xAbObBZ++2D5xbrISu02AF
+ R9wbH8quUF6r/jTu2gM/8zJlQzcnAz1ThizbL3hKsJi57YuNYopB4bkZizTAD69ebdLZuDB
+ ij3zeuLgUN9lvqAxZaRyA==
+UI-OutboundReport: notjunk:1;M01:P0:0Z2ibuAUW7Q=;awQLBEyBJDhrp6pjDcs9iUmevu+
+ mSndKtwGgR6c9ubgsoaW+3gtipfaVYf8t9Yag8lKbeBk4dwJBDELWNhx1jZARg9jgJa8bqBD7
+ evV4ddefTFVRHKMCNR8DUs0sqAYZpct3Q1wpfEs/OH3QU4Yy2bMHY1Decqh1jRriyzrMjxR9R
+ qYZKO8YI8ibbx0JUEefBEixfpLRm+hbBYmNK1UkQonUXMfvI9u16PSnLZvL9n6Vy/Z6c6ZQ9e
+ DiKPsBMXcowuK6KbfdBqTVeVX/PT7bEJaUPmuUp3Ohe8OS+kC1QzFCKVgiprzqwVpHUaxRvVL
+ XTfI/9pY8L1Y2LGI68mkJJFzllOFQ35C2laqe8m7CVDpzYD4/Li34u5Ag9v+QfMgMgeUbcH/Q
+ Mvtj7UVZ+NSRxrcURZxf7wG+yzn5S41uPJcmDwl2d4qEE8utm5efj+v0d17zt7fNHf7fcHCbU
+ B9BDZfkRsCmDDBfWHOzXlIlu1FLhPzu9Jg2silzLGGSKlMWIfze4XKV/kRr+hphgJ3KDorT91
+ jhItr5mARaaGUPsz+c8XXqQ+5F2kFxjfAuqFmz8hhBNIVXhyoVi2IOMRriEr5eMVITrnnQF6O
+ k9jPMjFDkBKP8/oBrVIsMZrjFVa5NvFWgm8U+/p7cpX1Lz37/Xbs1inL57G8b5nHIGmMo7VQS
+ 688jqnCUTJbtBcviakG48A1+dmRwiomoLHmUMNUihS3WvRJyp95qygjejCrf5Qz/THiGGJgef
+ ztAKAIKMpHnUh/SGyFTcLVLM1/JqBF68aeAtziSEUelC5IhT0S+hGJbZMfCrFnbQrg7xS/erz
+ znxGAHw0accUORxOc7rFnkjOp/bW+zCLuSu2dvROt1pXuu5J/WpjFwwxiyoxenkYwy+NpPRSs
+ c4GC95tzvQBfaX+7WfrN3wS6+sQBAE5PVfct2vnlTsNaJwhBF0KF/SNJAirIHvo6wKSXeA0qt
+ POLI2UKtigOAILmXtBEnjDxIhaw=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The pull request you sent on Thu, 5 Jan 2023 12:11:54 +0100:
+On 1/5/23 14:46, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+>
+> With the TMIO MFD support removed, the framebuffer driver can be
+> removed as well.
+>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.2-rc3
+Acked-by: Helge Deller <deller@gmx.de>
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/5e9af4b42660b2a8db067db8ff03db8a268d6a95
+Arnd, I assume you will push the whole series through the ARM tree
+(which I'd prefer) ?
 
-Thank you!
+Helge
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+
+> ---
+>   drivers/video/fbdev/Kconfig  |   22 -
+>   drivers/video/fbdev/Makefile |    1 -
+>   drivers/video/fbdev/tmiofb.c | 1040 ----------------------------------
+>   3 files changed, 1063 deletions(-)
+>   delete mode 100644 drivers/video/fbdev/tmiofb.c
+>
+> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+> index 28febf400666..3152f1a06a39 100644
+> --- a/drivers/video/fbdev/Kconfig
+> +++ b/drivers/video/fbdev/Kconfig
+> @@ -1871,28 +1871,6 @@ config FB_SH_MOBILE_LCDC
+>   	help
+>   	  Frame buffer driver for the on-chip SH-Mobile LCD controller.
+>
+> -config FB_TMIO
+> -	tristate "Toshiba Mobile IO FrameBuffer support"
+> -	depends on FB && (MFD_TMIO || COMPILE_TEST)
+> -	select FB_CFB_FILLRECT
+> -	select FB_CFB_COPYAREA
+> -	select FB_CFB_IMAGEBLIT
+> -	help
+> -	  Frame buffer driver for the Toshiba Mobile IO integrated as found
+> -	  on the Sharp SL-6000 series
+> -
+> -	  This driver is also available as a module ( =3D code which can be
+> -	  inserted and removed from the running kernel whenever you want). The
+> -	  module will be called tmiofb. If you want to compile it as a module,
+> -	  say M here and read <file:Documentation/kbuild/modules.rst>.
+> -
+> -	  If unsure, say N.
+> -
+> -config FB_TMIO_ACCELL
+> -	bool "tmiofb acceleration"
+> -	depends on FB_TMIO
+> -	default y
+> -
+>   config FB_S3C
+>   	tristate "Samsung S3C framebuffer support"
+>   	depends on FB && HAVE_CLK && HAS_IOMEM
+> diff --git a/drivers/video/fbdev/Makefile b/drivers/video/fbdev/Makefile
+> index 1bb870b98848..e5206c3331d6 100644
+> --- a/drivers/video/fbdev/Makefile
+> +++ b/drivers/video/fbdev/Makefile
+> @@ -85,7 +85,6 @@ obj-$(CONFIG_FB_PXA168)		  +=3D pxa168fb.o
+>   obj-$(CONFIG_PXA3XX_GCU)	  +=3D pxa3xx-gcu.o
+>   obj-$(CONFIG_MMP_DISP)           +=3D mmp/
+>   obj-$(CONFIG_FB_W100)		  +=3D w100fb.o
+> -obj-$(CONFIG_FB_TMIO)		  +=3D tmiofb.o
+>   obj-$(CONFIG_FB_AU1100)		  +=3D au1100fb.o
+>   obj-$(CONFIG_FB_AU1200)		  +=3D au1200fb.o
+>   obj-$(CONFIG_FB_VT8500)		  +=3D vt8500lcdfb.o
+> diff --git a/drivers/video/fbdev/tmiofb.c b/drivers/video/fbdev/tmiofb.c
+> deleted file mode 100644
+> index 50111966c981..000000000000
+

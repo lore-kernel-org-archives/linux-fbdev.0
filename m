@@ -2,142 +2,142 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E4FAC54EBD
-	for <linux-fbdev@archiver.kernel.org>; Fri,  6 Jan 2023 22:47:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1503C5479D
+	for <linux-fbdev@archiver.kernel.org>; Fri,  6 Jan 2023 23:20:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229547AbjAFWq6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 6 Jan 2023 17:46:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59978 "EHLO
+        id S229870AbjAFXUB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 6 Jan 2023 18:20:01 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41852 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230268AbjAFWq5 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 6 Jan 2023 17:46:57 -0500
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 336C4872B7
-        for <linux-fbdev@vger.kernel.org>; Fri,  6 Jan 2023 14:46:56 -0800 (PST)
-Received: by mail-wm1-x336.google.com with SMTP id ay2-20020a05600c1e0200b003d22e3e796dso2132014wmb.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 06 Jan 2023 14:46:56 -0800 (PST)
+        with ESMTP id S229547AbjAFXUA (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 6 Jan 2023 18:20:00 -0500
+Received: from mail-oa1-x33.google.com (mail-oa1-x33.google.com [IPv6:2001:4860:4864:20::33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 76EB4848FF;
+        Fri,  6 Jan 2023 15:19:59 -0800 (PST)
+Received: by mail-oa1-x33.google.com with SMTP id 586e51a60fabf-1322d768ba7so3239599fac.5;
+        Fri, 06 Jan 2023 15:19:59 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=in-reply-to:content-disposition:mime-version:references
-         :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=nzqP04USoFIby+HEXep+3hJAGRxvsp5L+xLira7xfHg=;
-        b=gfw7TY3dKnUK/QGyYCdXS9j6zn3HRs3r64YEs5PPtxKUu5b7cb1NGSMmS4vCE3qSuU
-         OvSSUAFk+9rBRp9a9JJFYCGhVGlgfJ3lDjIDIqPTV7nKzXonqiDG4DB5+WkRIE1QfLXi
-         wKnqyXYXC1u+fLaTfS+Sh20g7fQvee7Wjysx0=
+        d=gmail.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=xrkX5xkEIRPtCscm6csPTufu9CiZDK4zYthOrxMdi9s=;
+        b=IzKCcfOm5QxzTMADdbbxl8ayD9YBk2GZVUm8qQthuVSfBUuLDERrkPUAc3G7/5B5pf
+         6s97IhewUNsaMx6D+l2U42aZ3Ob5zb6eZf15FrV1p2cRZXalO1Nmx6Wrw3IbZl/N6Yp1
+         9RtxJNBYm6ONbrWIYTitsYd5DycKUVijDr8k/VGOMV/fOR7pbFFRuz5H9uQ/H55IJdbb
+         ninmemoxebDxWJKadUuYAG1Z4cf9Ht/v2q6kAfX6oRao8tNZr9BNLnZtL1UffU+VphfT
+         pUHEecfDrXvo1qYVJb98uOFzM8TlIuL7YPpFoldTBfOGDxSOWZ200BT8piIrnXPVcivx
+         KKpQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references
-         :mail-followup-to:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=nzqP04USoFIby+HEXep+3hJAGRxvsp5L+xLira7xfHg=;
-        b=lGRJwf3AuKS3tI/RwKU6wj9lj7O0tfHz0yKQ+1SAZK2i5I8xCVo2KUvhHrbs2Rgm23
-         ciUQJuBCSBiVYlhRRmwCcAkXKEr61G0JkVAyCt1HXg+wYdTJgbWUsLSyiE1qEIX0xoVH
-         o6gxJmDLwcfkW6uEVsh04aDbRvCc2E+/p8vNHZs9RckjY/YkD284r0vH/B0rMlNlkLxM
-         3oEHADQW29GZRnysU5calppOam2i9GUhCOkubp4F06ewIzr+llplBHrfhN+yEU7xoy7u
-         MRHuqjSUbPQGWncfH3B+MP1JgErPJt+PwAyQS6QMNvs2lciY0qGyYqRklJDwdlU6gjHM
-         XhBg==
-X-Gm-Message-State: AFqh2kqbHJ0xIZJVYjmUd7ba9cUQ2+uirdCPCTLAyxycFfXIZ1ftmnrK
-        FYNdsgrcC/MOirFcKQ+1vMvNXQ==
-X-Google-Smtp-Source: AMrXdXslz4blP81M3W6GoFIqzvARXTxMb6uRo+Cakzp+vFWOecq/6a74aUHECo6VNF8l8x7L4fm6JQ==
-X-Received: by 2002:a05:600c:ace:b0:3d1:fe0a:f134 with SMTP id c14-20020a05600c0ace00b003d1fe0af134mr40601523wmr.19.1673045214780;
-        Fri, 06 Jan 2023 14:46:54 -0800 (PST)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id d8-20020a05600c34c800b003c5571c27a1sm3771606wmq.32.2023.01.06.14.46.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Jan 2023 14:46:54 -0800 (PST)
-Date:   Fri, 6 Jan 2023 23:46:52 +0100
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Hang Zhang <zh.nvgt@gmail.com>
-Cc:     Helge Deller <deller@gmx.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>
-Subject: Re: [PATCH] fbmem: prevent potential use-after-free issues with
- console_lock()
-Message-ID: <Y7ik3ONV5ba7UXQB@phenom.ffwll.local>
-Mail-Followup-To: Hang Zhang <zh.nvgt@gmail.com>,
-        Helge Deller <deller@gmx.de>,
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=xrkX5xkEIRPtCscm6csPTufu9CiZDK4zYthOrxMdi9s=;
+        b=q+wiEDtTWp4Zjp607lfvBncz5hftNm2lazFzkGaqrmkdkf9t4kBkpHorRFUC0hh5Vd
+         /Se+uGm2uL9KzFxwnuRhj7vDq/CfSH43VNSfwEMdpEQUOuvKjaSUr5NsVJq4Cx+uwp5u
+         dlzQDveZ9vpo2L4uWKglKFlMEV2R6a68MSxJ4uUkc8cwewP7I7PaueB/sfRmMuoYPqMX
+         8w8bmA+lMlzQZZU/DdlEi0dBSLL3TFOKERAudV/7uIoHWgh9hZQC/KTMVBEsB/2PNmam
+         5/ANjKDpIjpZvqgZ0W28l66LGTOvKRBgYlzgjSTPC3t5GFkh63S5C0INMLPxli7QTtIP
+         tR8g==
+X-Gm-Message-State: AFqh2kpRGZ+9PI6pPXvnTLgg221qntjjOvcXEsplcf7YtzECfSdoBEGk
+        VMDnfLqAPd5NP0bVWfBt0Ch9BibFUIQ+NULwDmE=
+X-Google-Smtp-Source: AMrXdXs2YfOVRGfvirBoBH2dILSBsh8py8ufVw8s7A2EukCt7u3cQI/2MK45GFXF4VvUSMq3w5jrtYaepa7teCmjX7Y=
+X-Received: by 2002:a05:6870:1706:b0:144:dffd:8302 with SMTP id
+ h6-20020a056870170600b00144dffd8302mr4600339oae.146.1673047198723; Fri, 06
+ Jan 2023 15:19:58 -0800 (PST)
+MIME-Version: 1.0
+References: <2711de96-fcbe-5611-657a-ab29becd2ff6@gmx.de> <CAKMK7uEOX5n64cjzMt9GRQaS13HFPFyOeqdrkmzc035U5_T8tg@mail.gmail.com>
+ <CAKMK7uE7CAXO50JPQ6ziQGGehqfDK2UanBQbfLdUH2RwrwXUvw@mail.gmail.com>
+ <CAO2zrtYDcOfvxpG6wPghPnWZVks+NL6N9VaynsBVoX7nHBcxuw@mail.gmail.com>
+ <Y7hvhtHeivfsnBtE@phenom.ffwll.local> <CAO2zrtb9H=OWPbrgmqTxQnHqETt-P4K6AxiwdtN7guxUYL2NCw@mail.gmail.com>
+ <Y7h++5sU/hGJ/yTS@phenom.ffwll.local> <CAO2zrtaB3GZRSzgWu2kV_jTojwuhtL_kFz0gpzPPVGe9D8kVbQ@mail.gmail.com>
+ <Y7iQckF/6EMYVpQt@phenom.ffwll.local> <CAO2zrtY+mMBTLimW6aZhOGFqqw53EVdP0CT8ieW6iVUXevZ7ag@mail.gmail.com>
+ <Y7ik3ONV5ba7UXQB@phenom.ffwll.local>
+In-Reply-To: <Y7ik3ONV5ba7UXQB@phenom.ffwll.local>
+From:   Hang Zhang <zh.nvgt@gmail.com>
+Date:   Fri, 6 Jan 2023 18:19:47 -0500
+Message-ID: <CAO2zrtYeJg6Zn1SicfBNKBjioO7i07D3ir86+w5v_wVHZYUAWw@mail.gmail.com>
+Subject: Re: [PATCH] fbmem: prevent potential use-after-free issues with console_lock()
+To:     Hang Zhang <zh.nvgt@gmail.com>, Helge Deller <deller@gmx.de>,
         Javier Martinez Canillas <javierm@redhat.com>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Sam Ravnborg <sam@ravnborg.org>,
         Alex Deucher <alexander.deucher@amd.com>,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org
-References: <2711de96-fcbe-5611-657a-ab29becd2ff6@gmx.de>
- <CAKMK7uEOX5n64cjzMt9GRQaS13HFPFyOeqdrkmzc035U5_T8tg@mail.gmail.com>
- <CAKMK7uE7CAXO50JPQ6ziQGGehqfDK2UanBQbfLdUH2RwrwXUvw@mail.gmail.com>
- <CAO2zrtYDcOfvxpG6wPghPnWZVks+NL6N9VaynsBVoX7nHBcxuw@mail.gmail.com>
- <Y7hvhtHeivfsnBtE@phenom.ffwll.local>
- <CAO2zrtb9H=OWPbrgmqTxQnHqETt-P4K6AxiwdtN7guxUYL2NCw@mail.gmail.com>
- <Y7h++5sU/hGJ/yTS@phenom.ffwll.local>
- <CAO2zrtaB3GZRSzgWu2kV_jTojwuhtL_kFz0gpzPPVGe9D8kVbQ@mail.gmail.com>
- <Y7iQckF/6EMYVpQt@phenom.ffwll.local>
- <CAO2zrtY+mMBTLimW6aZhOGFqqw53EVdP0CT8ieW6iVUXevZ7ag@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAO2zrtY+mMBTLimW6aZhOGFqqw53EVdP0CT8ieW6iVUXevZ7ag@mail.gmail.com>
-X-Operating-System: Linux phenom 5.19.0-2-amd64 
+Cc:     Daniel Vetter <daniel@ffwll.ch>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jan 06, 2023 at 05:12:57PM -0500, Hang Zhang wrote:
-> On Fri, Jan 6, 2023 at 4:19 PM Daniel Vetter <daniel@ffwll.ch> wrote:
-> > On Fri, Jan 06, 2023 at 03:25:14PM -0500, Hang Zhang wrote:
-> > > On Fri, Jan 6, 2023 at 3:05 PM Daniel Vetter <daniel@ffwll.ch> wrote:
-> > > > On Fri, Jan 06, 2023 at 02:58:27PM -0500, Hang Zhang wrote:
-> > > > > On Fri, Jan 6, 2023 at 1:59 PM Daniel Vetter <daniel@ffwll.ch> wrote:
-> > > > > BTW, if this is worthed a fix and the performance of console_lock() is a
-> > > > > major concern, then I think there may be alternative solutions like adding
-> > > > > a lock_fb_info() to the free call chain - if that's better in performance,
-> > > > > or maybe selectively protect the matroxfb ioctl but not vblank ioctl as you
-> > > > > mentioned.
+On Fri, Jan 6, 2023 at 5:46 PM Daniel Vetter <daniel@ffwll.ch> wrote:
+>
+> On Fri, Jan 06, 2023 at 05:12:57PM -0500, Hang Zhang wrote:
+> > On Fri, Jan 6, 2023 at 4:19 PM Daniel Vetter <daniel@ffwll.ch> wrote:
+> > > On Fri, Jan 06, 2023 at 03:25:14PM -0500, Hang Zhang wrote:
+> > > > On Fri, Jan 6, 2023 at 3:05 PM Daniel Vetter <daniel@ffwll.ch> wrote:
+> > > > > On Fri, Jan 06, 2023 at 02:58:27PM -0500, Hang Zhang wrote:
+> > > > > > On Fri, Jan 6, 2023 at 1:59 PM Daniel Vetter <daniel@ffwll.ch> wrote:
+> > > > > > BTW, if this is worthed a fix and the performance of console_lock() is a
+> > > > > > major concern, then I think there may be alternative solutions like adding
+> > > > > > a lock_fb_info() to the free call chain - if that's better in performance,
+> > > > > > or maybe selectively protect the matroxfb ioctl but not vblank ioctl as you
+> > > > > > mentioned.
+> > > > >
+> > > > > Please start out with explaining what kind of bug your checker is seeing,
+> > > > > and why. Not how you're trying to fix it. Because I'm pretty sure there
+> > > > > isn't a bug, but since I've already spent a pile of time looking at this,
+> > > > > I want to make sure.
 > > > >
-> > > > Please start out with explaining what kind of bug your checker is seeing,
-> > > > and why. Not how you're trying to fix it. Because I'm pretty sure there
-> > > > isn't a bug, but since I've already spent a pile of time looking at this,
-> > > > I want to make sure.
+> > > > We are sorry for the inconvenience caused, we'll follow these practices and
+> > > > guidelines in the future. Thank you!
 > > >
-> > > We are sorry for the inconvenience caused, we'll follow these practices and
-> > > guidelines in the future. Thank you!
+> > > Once more: Please explain what you're static checker is seeing. I want to
+> > > understanding this, and I'm hoping at least someone involved in this
+> > > static checker can explain what it thinks is going on.
+> > >
+> > > Thanks, Daniel
+> > > --
+> > > Daniel Vetter
+> > > Software Engineer, Intel Corporation
+> > > http://blog.ffwll.ch
 > >
-> > Once more: Please explain what you're static checker is seeing. I want to
-> > understanding this, and I'm hoping at least someone involved in this
-> > static checker can explain what it thinks is going on.
-> >
-> > Thanks, Daniel
-> > --
-> > Daniel Vetter
-> > Software Engineer, Intel Corporation
-> > http://blog.ffwll.ch
-> 
-> Thank you for your interest, Daniel. The checker tries first to find
-> the free and
-> use sites of a certain object (in this case "fb_info"), then reason
-> about whether
-> the use can actually happen after the free (e.g., taking into account
-> factors like
-> state set/check, locks, etc.), if so, it will flag a potential
-> use-after-free. As a static
-> checker, is doesn't execute a program or generate a PoC. We then manually
-> review each flagged issue by inspecting all related code. In this
-> case, the checker
-> (and us) are unaware of the lifetime management logic, which may cause
-> problems.
+> > Thank you for your interest, Daniel. The checker tries first to find
+> > the free and
+> > use sites of a certain object (in this case "fb_info"), then reason
+> > about whether
+> > the use can actually happen after the free (e.g., taking into account
+> > factors like
+> > state set/check, locks, etc.), if so, it will flag a potential
+> > use-after-free. As a static
+> > checker, is doesn't execute a program or generate a PoC. We then manually
+> > review each flagged issue by inspecting all related code. In this
+> > case, the checker
+> > (and us) are unaware of the lifetime management logic, which may cause
+> > problems.
+>
+> Lifetime management is and absolute basic part in the linux kernel. So if
+> your checker flags every free which isn't protected by a lock, then you'll
+> creating endless amounts of false positives. Is this really what you're
+> doing?
+>
+> I'm still very confused ...
+> -Daniel
+> --
+> Daniel Vetter
+> Software Engineer, Intel Corporation
+> http://blog.ffwll.ch
 
-Lifetime management is and absolute basic part in the linux kernel. So if
-your checker flags every free which isn't protected by a lock, then you'll
-creating endless amounts of false positives. Is this really what you're
-doing?
+Hi, Daniel. Lock is only one of many factors we consider in the checker, so the
+actual workflow is certainly more complicated than "mark every free w/o lock".
+E.g., we also need to consider the data flow between use and free, the state
+check, etc. But as you know, it is very challenging for a static checker to
+automatically and accurately reason about everything in the code (automatic
+lifetime management analysis can also be tricky for a static analyzer), that's
+why we perform a manual review afterward. We will continue working on the
+checker to reduce its false alarms and submit higher-quality reports to the
+community following your guidelines. Thank you so much for your time!
 
-I'm still very confused ...
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Best,
+Hang

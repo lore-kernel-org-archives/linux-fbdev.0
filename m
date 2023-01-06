@@ -2,102 +2,97 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78BF4C5479D
-	for <linux-fbdev@archiver.kernel.org>; Fri,  6 Jan 2023 11:26:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8098AC5479D
+	for <linux-fbdev@archiver.kernel.org>; Fri,  6 Jan 2023 15:54:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232580AbjAFL0O (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 6 Jan 2023 06:26:14 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60010 "EHLO
+        id S232530AbjAFPyO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 6 Jan 2023 10:54:14 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57638 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231741AbjAFL0N (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 6 Jan 2023 06:26:13 -0500
-Received: from wout5-smtp.messagingengine.com (wout5-smtp.messagingengine.com [64.147.123.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9D7C160D0;
-        Fri,  6 Jan 2023 03:26:12 -0800 (PST)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-        by mailout.west.internal (Postfix) with ESMTP id 92AB43200AA4;
-        Fri,  6 Jan 2023 06:26:08 -0500 (EST)
-Received: from imap51 ([10.202.2.101])
-  by compute6.internal (MEProxy); Fri, 06 Jan 2023 06:26:09 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-        :cc:content-type:date:date:from:from:in-reply-to:in-reply-to
-        :message-id:mime-version:references:reply-to:sender:subject
-        :subject:to:to; s=fm2; t=1673004368; x=1673090768; bh=I7mBrQSCFI
-        tUQt1fxLzHS6xUeZXx0GJtfnCC/5PE5f4=; b=guDcxstlcbTlVjV7lIS+fDf37l
-        NG12X/yxr6xxZu9TxVS8uyp2/7pKbhRv7u5exECyNvyyTXYdzkDmtkLR0G/sMZGx
-        KOGDXqC//m9WJ820qOlRD2veEDe+Oax9iMJFngR8jhQXBthsnOcI9Vh0kMhBJuX+
-        ChcB237Pr0nloxj244NiNdu18yvne/+uMpJw8b0Sl6TkkftWz1uJXMpZEJ0HmyPg
-        J6WM6MMmrD+8H/QYVclbZj+UCkxjkiB22H6FGorBc73X1tX+MUpUUmj0Jez1uPEa
-        K6Yc+0fLCEB9Misehq3/Zj1RRnIX4jO4eFBkQ0OhDio5u/hAcNZGEBP641Bg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
-        :feedback-id:from:from:in-reply-to:in-reply-to:message-id
-        :mime-version:references:reply-to:sender:subject:subject:to:to
-        :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
-        fm2; t=1673004368; x=1673090768; bh=I7mBrQSCFItUQt1fxLzHS6xUeZXx
-        0GJtfnCC/5PE5f4=; b=Xzhd6JZKjtyjfgZVVIEWAZA+Htk60K10x2hBRdFvGNYC
-        XN74CdJfEjEK/A4z2Z5ufMwo01arKR5E6XX1cAtQASJgfM86QoFAwPZu/7JjywN7
-        YlweRciM0SzwUNjET+v0DBc4734rCynfmiq2ma1K66ARyOHVGV0qdmEptcwPUsz0
-        Olbc+0LkU1ZFWKkbeWG3a3lbTG0oPTpBEXfzkYhRADsISXYSO6ijNBxIspDTvDyu
-        7AhTQe8wSWYOIu+2L5l16ojP4MTD4vlzr+wtCciJ0kIP2IzVTLVUT9yOMYvpqV3c
-        z0AmLs5pXo4bW4ESqmPgvwCEZ11DIM/1CLqTrZsMaw==
-X-ME-Sender: <xms:TwW4Y0xH2YKVFGy5sl4ulYKE7x-P8FnXfbkvPGl0vlXam2oONNsfzQ>
-    <xme:TwW4Y4S_l9YsliSk2AUmu4MXdVZKKYykwLRBvQQWnsRlYWtbF_gTLLfQb8hq2Rlak
-    iDPLkVtS3RodSs6XQ0>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrkedtgddvlecutefuodetggdotefrodftvf
-    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
-    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
-    fjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdetrhhn
-    ugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtth
-    gvrhhnpeffheeugeetiefhgeethfejgfdtuefggeejleehjeeutefhfeeggefhkedtkeet
-    ffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrh
-    hnugesrghrnhgusgdruggv
-X-ME-Proxy: <xmx:TwW4Y2V7vbGUv6Yq8a_-7w8eqTTFdft_68WY5Xfjqv4vqBU6d7hqow>
-    <xmx:TwW4Yyi0iYZHbrVv91NPYTXVY5Rx77ixhJArlxVjJE9G8gB6EdpT5A>
-    <xmx:TwW4Y2BpoQE5UeiaQZvw1iraAzWhlF171STggQniNPQa8QQywNKB1A>
-    <xmx:UAW4Y40Xl2XtQ8B-FWoDd-h_i5CpuqeRT1NTGqYDZBXCu-3D-VGgHg>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-        id B32FCB60089; Fri,  6 Jan 2023 06:26:07 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.7.0-alpha0-1185-g841157300a-fm-20221208.002-g84115730
-Mime-Version: 1.0
-Message-Id: <14e3a492-5d61-4bfe-8998-b29f66b37061@app.fastmail.com>
-In-Reply-To: <3bbd5135-a556-6097-9ca3-aef3399b2990@gmx.de>
-References: <20230105134622.254560-1-arnd@kernel.org>
- <20230105134622.254560-23-arnd@kernel.org>
- <3bbd5135-a556-6097-9ca3-aef3399b2990@gmx.de>
-Date:   Fri, 06 Jan 2023 12:25:47 +0100
-From:   "Arnd Bergmann" <arnd@arndb.de>
-To:     "Helge Deller" <deller@gmx.de>, "Arnd Bergmann" <arnd@kernel.org>,
-        "Robert Jarzmik" <robert.jarzmik@free.fr>
-Cc:     "Daniel Mack" <daniel@zonque.org>,
-        "Haojian Zhuang" <haojian.zhuang@gmail.com>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH 22/27] fbdev: remove tmiofb driver
-Content-Type: text/plain
+        with ESMTP id S232981AbjAFPyK (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 6 Jan 2023 10:54:10 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8CA208CD09;
+        Fri,  6 Jan 2023 07:54:07 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 2BAE2616FF;
+        Fri,  6 Jan 2023 15:54:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E0429C433D2;
+        Fri,  6 Jan 2023 15:54:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1673020446;
+        bh=7cB3UhToZf19WjldWyLHUYEnxMRKMO5WZVXBb1fRwRs=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=j6p/ExogshxrCRekX6bJ3dnNQu8ehUl5v4Oq9PpfZ4QtduzTqmG+cCqr6f1z+7UOc
+         HIbzWhBKwV2Vv5Fqz61ALO8qm6TGYpMMFx3AdlRn6oep788mro5a5/YpgDOlp3WBqR
+         ZlRl1pMSZN6GczeFPeG/F3cVklimuLNMX4dSEYSAW5S5zUplTySkHUTypjgDUPtezu
+         yfBoqAyEq3EUebZSRPlsI8bo2Bgg/850woK49aNhmPzliUmF+NoRmwr/HWMaRrCo5O
+         yKEJkaEPke71vnT4AvI9NX/0aD607X5yEkLbPJUrEo1ROPZ6N8wg4UZYlkVClYMSIQ
+         ZhGwLTrSSDeBg==
+Date:   Fri, 6 Jan 2023 09:54:11 -0600
+From:   "Gustavo A. R. Silva" <gustavoars@kernel.org>
+To:     Kees Cook <keescook@chromium.org>
+Cc:     Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        linux-hardening@vger.kernel.org
+Subject: Re: [PATCH] fbdev: Replace 0-length array with flexible array
+Message-ID: <Y7hEIySgveQCEMUP@work>
+References: <20230105192034.never.249-kees@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230105192034.never.249-kees@kernel.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jan 6, 2023, at 10:47, Helge Deller wrote:
-> On 1/5/23 14:46, Arnd Bergmann wrote:
->> From: Arnd Bergmann <arnd@arndb.de>
->>
->> With the TMIO MFD support removed, the framebuffer driver can be
->> removed as well.
->>
->> Cc: Helge Deller <deller@gmx.de>
->> Cc: linux-fbdev@vger.kernel.org
->> Cc: dri-devel@lists.freedesktop.org
->> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
->
-> Acked-by: Helge Deller <deller@gmx.de>
->
-> Arnd, I assume you will push the whole series through the ARM tree
-> (which I'd prefer) ?
+On Thu, Jan 05, 2023 at 11:20:38AM -0800, Kees Cook wrote:
+> Zero-length arrays are deprecated[1]. Replace struct aperture's "ranges"
+> 0-length array with a flexible array. (How is the size of this array
+> verified?) Detected with GCC 13, using -fstrict-flex-arrays=3:
+> 
+> samples/vfio-mdev/mdpy-fb.c: In function 'mdpy_fb_probe':
+> samples/vfio-mdev/mdpy-fb.c:169:32: warning: array subscript 0 is outside array bounds of 'struct aperture[0]' [-Warray-bounds=]
+>   169 |         info->apertures->ranges[0].base = info->fix.smem_start;
+>       |         ~~~~~~~~~~~~~~~~~~~~~~~^~~
+> In file included from samples/vfio-mdev/mdpy-fb.c:21:
+> include/linux/fb.h:510:19: note: while referencing 'ranges'
+>   510 |                 } ranges[0];
+>       |                   ^~~~~~
+> 
+> [1] https://www.kernel.org/doc/html/latest/process/deprecated.html#zero-length-and-one-element-arrays
+> 
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
+> Signed-off-by: Kees Cook <keescook@chromium.org>
 
-Yes, I think it's best to keep this together here.
+Reviewed-by: Gustavo A. R. Silva <gustavoars@kernel.org>
 
-     Arnd
+Thanks!
+--
+Gustavo
+
+> ---
+>  include/linux/fb.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index 96b96323e9cb..bf59d6a3590f 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -507,7 +507,7 @@ struct fb_info {
+>  		struct aperture {
+>  			resource_size_t base;
+>  			resource_size_t size;
+> -		} ranges[0];
+> +		} ranges[];
+>  	} *apertures;
+>  
+>  	bool skip_vt_switch; /* no VT switch on suspend/resume required */
+> -- 
+> 2.34.1
+> 

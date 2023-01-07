@@ -2,142 +2,124 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1503C5479D
-	for <linux-fbdev@archiver.kernel.org>; Fri,  6 Jan 2023 23:20:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A6BFC46467
+	for <linux-fbdev@archiver.kernel.org>; Sat,  7 Jan 2023 18:26:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229870AbjAFXUB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 6 Jan 2023 18:20:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41852 "EHLO
+        id S232413AbjAGS0X (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 7 Jan 2023 13:26:23 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52518 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229547AbjAFXUA (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 6 Jan 2023 18:20:00 -0500
-Received: from mail-oa1-x33.google.com (mail-oa1-x33.google.com [IPv6:2001:4860:4864:20::33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 76EB4848FF;
-        Fri,  6 Jan 2023 15:19:59 -0800 (PST)
-Received: by mail-oa1-x33.google.com with SMTP id 586e51a60fabf-1322d768ba7so3239599fac.5;
-        Fri, 06 Jan 2023 15:19:59 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=xrkX5xkEIRPtCscm6csPTufu9CiZDK4zYthOrxMdi9s=;
-        b=IzKCcfOm5QxzTMADdbbxl8ayD9YBk2GZVUm8qQthuVSfBUuLDERrkPUAc3G7/5B5pf
-         6s97IhewUNsaMx6D+l2U42aZ3Ob5zb6eZf15FrV1p2cRZXalO1Nmx6Wrw3IbZl/N6Yp1
-         9RtxJNBYm6ONbrWIYTitsYd5DycKUVijDr8k/VGOMV/fOR7pbFFRuz5H9uQ/H55IJdbb
-         ninmemoxebDxWJKadUuYAG1Z4cf9Ht/v2q6kAfX6oRao8tNZr9BNLnZtL1UffU+VphfT
-         pUHEecfDrXvo1qYVJb98uOFzM8TlIuL7YPpFoldTBfOGDxSOWZ200BT8piIrnXPVcivx
-         KKpQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=xrkX5xkEIRPtCscm6csPTufu9CiZDK4zYthOrxMdi9s=;
-        b=q+wiEDtTWp4Zjp607lfvBncz5hftNm2lazFzkGaqrmkdkf9t4kBkpHorRFUC0hh5Vd
-         /Se+uGm2uL9KzFxwnuRhj7vDq/CfSH43VNSfwEMdpEQUOuvKjaSUr5NsVJq4Cx+uwp5u
-         dlzQDveZ9vpo2L4uWKglKFlMEV2R6a68MSxJ4uUkc8cwewP7I7PaueB/sfRmMuoYPqMX
-         8w8bmA+lMlzQZZU/DdlEi0dBSLL3TFOKERAudV/7uIoHWgh9hZQC/KTMVBEsB/2PNmam
-         5/ANjKDpIjpZvqgZ0W28l66LGTOvKRBgYlzgjSTPC3t5GFkh63S5C0INMLPxli7QTtIP
-         tR8g==
-X-Gm-Message-State: AFqh2kpRGZ+9PI6pPXvnTLgg221qntjjOvcXEsplcf7YtzECfSdoBEGk
-        VMDnfLqAPd5NP0bVWfBt0Ch9BibFUIQ+NULwDmE=
-X-Google-Smtp-Source: AMrXdXs2YfOVRGfvirBoBH2dILSBsh8py8ufVw8s7A2EukCt7u3cQI/2MK45GFXF4VvUSMq3w5jrtYaepa7teCmjX7Y=
-X-Received: by 2002:a05:6870:1706:b0:144:dffd:8302 with SMTP id
- h6-20020a056870170600b00144dffd8302mr4600339oae.146.1673047198723; Fri, 06
- Jan 2023 15:19:58 -0800 (PST)
+        with ESMTP id S229785AbjAGS0X (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 7 Jan 2023 13:26:23 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3271A37260;
+        Sat,  7 Jan 2023 10:26:22 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id CDB2660BAA;
+        Sat,  7 Jan 2023 18:26:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 2B12AC433F1;
+        Sat,  7 Jan 2023 18:26:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1673115981;
+        bh=depPTI0dNs82ApYntY0i9Fl7bNR8n2arzj755GfE+VQ=;
+        h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+        b=sqHpySDJ4n/IvhYXU+F523jhEHOhqF8OXLnJ1KVhBjw6MsYmVPxBA3GWpI4ZTxX/h
+         3slaQf4N6FlYYLCMGS6SsHKcFqFm2iQN6yl0+uJ0YJrczFqN/mJdF6Xpq/esTZCiF8
+         /sJ/XpUSZd5AX2SxI6Ae+AQPJjAmMwG3QEWFxkFxd5BmKij53BVTIXuPVdZLX4Z3M2
+         ukQRhfuPmhzgFXr511aG/5FcFew0Dd8pkJ+bNkzge2sroS+TIULToXWF9DxidfQpx4
+         5p04DVFnIXze6NSUxgCCWL97ZOwFRn+IYK5XEcKC2E+qEuU582m5EMDmpiU0XLowFI
+         M+hlRGyJmclow==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+        by smtp.lore.kernel.org (Postfix) with ESMTP id 12A75C63797;
+        Sat,  7 Jan 2023 18:26:21 +0000 (UTC)
+From:   Sam Ravnborg via B4 Submission Endpoint 
+        <devnull+sam.ravnborg.org@kernel.org>
+Date:   Sat, 07 Jan 2023 19:26:16 +0100
+Subject: [PATCH 02/15] video: fbdev: atyfb: Introduce backlight_get_brightness()
 MIME-Version: 1.0
-References: <2711de96-fcbe-5611-657a-ab29becd2ff6@gmx.de> <CAKMK7uEOX5n64cjzMt9GRQaS13HFPFyOeqdrkmzc035U5_T8tg@mail.gmail.com>
- <CAKMK7uE7CAXO50JPQ6ziQGGehqfDK2UanBQbfLdUH2RwrwXUvw@mail.gmail.com>
- <CAO2zrtYDcOfvxpG6wPghPnWZVks+NL6N9VaynsBVoX7nHBcxuw@mail.gmail.com>
- <Y7hvhtHeivfsnBtE@phenom.ffwll.local> <CAO2zrtb9H=OWPbrgmqTxQnHqETt-P4K6AxiwdtN7guxUYL2NCw@mail.gmail.com>
- <Y7h++5sU/hGJ/yTS@phenom.ffwll.local> <CAO2zrtaB3GZRSzgWu2kV_jTojwuhtL_kFz0gpzPPVGe9D8kVbQ@mail.gmail.com>
- <Y7iQckF/6EMYVpQt@phenom.ffwll.local> <CAO2zrtY+mMBTLimW6aZhOGFqqw53EVdP0CT8ieW6iVUXevZ7ag@mail.gmail.com>
- <Y7ik3ONV5ba7UXQB@phenom.ffwll.local>
-In-Reply-To: <Y7ik3ONV5ba7UXQB@phenom.ffwll.local>
-From:   Hang Zhang <zh.nvgt@gmail.com>
-Date:   Fri, 6 Jan 2023 18:19:47 -0500
-Message-ID: <CAO2zrtYeJg6Zn1SicfBNKBjioO7i07D3ir86+w5v_wVHZYUAWw@mail.gmail.com>
-Subject: Re: [PATCH] fbmem: prevent potential use-after-free issues with console_lock()
-To:     Hang Zhang <zh.nvgt@gmail.com>, Helge Deller <deller@gmx.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20230107-sam-video-backlight-drop-fb_blank-v1-2-1bd9bafb351f@ravnborg.org>
+References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
+In-Reply-To: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
+To:     Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Helge Deller <deller@gmx.de>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>,
+        Antonino Daplas <adaplas@gmail.com>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Robin van der Gracht <robin@protonic.nl>,
+        Miguel Ojeda <ojeda@kernel.org>, Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-omap@vger.kernel.org, linux-staging@lists.linux.dev,
+        linuxppc-dev@lists.ozlabs.org, Stephen Kitt <steve@sk2.org>,
         Sam Ravnborg <sam@ravnborg.org>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-Cc:     Daniel Vetter <daniel@ffwll.ch>
-Content-Type: text/plain; charset="UTF-8"
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Souptick Joarder <jrdr.linux@gmail.com>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Jason Yan <yanaijie@huawei.com>,
+        Jani Nikula <jani.nikula@intel.com>,
+        Arnd Bergmann <arnd@arndb.de>
+X-Mailer: b4 0.11.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1673115978; l=1311;
+ i=sam@ravnborg.org; s=20230107; h=from:subject:message-id;
+ bh=/QbAHY615CfNfGpaP64/mhOeeFjzqofmnLkwjP8TdRk=; =?utf-8?q?b=3DpeFAXztHf+aX?=
+ =?utf-8?q?nZ041+ByYlSGJcH0uIKJtmc9ze5LMo7+ev8qRdSy4KAZF/gFoJO2KCg5E2PIfxSr?=
+ qiX2RHJjC5aAXbbBDBuJbQRpdONkZhL0a8wWkB85MFUIRjBShkmE
+X-Developer-Key: i=sam@ravnborg.org; a=ed25519;
+ pk=R0+pqV7BRYOAeOIGkyOrSNke7arx5y3LkEuNi37YEyU=
+X-Endpoint-Received: by B4 Submission Endpoint for sam@ravnborg.org/20230107 with auth_id=22
+X-Original-From: Sam Ravnborg <sam@ravnborg.org>
+Reply-To: <sam@ravnborg.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jan 6, 2023 at 5:46 PM Daniel Vetter <daniel@ffwll.ch> wrote:
->
-> On Fri, Jan 06, 2023 at 05:12:57PM -0500, Hang Zhang wrote:
-> > On Fri, Jan 6, 2023 at 4:19 PM Daniel Vetter <daniel@ffwll.ch> wrote:
-> > > On Fri, Jan 06, 2023 at 03:25:14PM -0500, Hang Zhang wrote:
-> > > > On Fri, Jan 6, 2023 at 3:05 PM Daniel Vetter <daniel@ffwll.ch> wrote:
-> > > > > On Fri, Jan 06, 2023 at 02:58:27PM -0500, Hang Zhang wrote:
-> > > > > > On Fri, Jan 6, 2023 at 1:59 PM Daniel Vetter <daniel@ffwll.ch> wrote:
-> > > > > > BTW, if this is worthed a fix and the performance of console_lock() is a
-> > > > > > major concern, then I think there may be alternative solutions like adding
-> > > > > > a lock_fb_info() to the free call chain - if that's better in performance,
-> > > > > > or maybe selectively protect the matroxfb ioctl but not vblank ioctl as you
-> > > > > > mentioned.
-> > > > >
-> > > > > Please start out with explaining what kind of bug your checker is seeing,
-> > > > > and why. Not how you're trying to fix it. Because I'm pretty sure there
-> > > > > isn't a bug, but since I've already spent a pile of time looking at this,
-> > > > > I want to make sure.
-> > > >
-> > > > We are sorry for the inconvenience caused, we'll follow these practices and
-> > > > guidelines in the future. Thank you!
-> > >
-> > > Once more: Please explain what you're static checker is seeing. I want to
-> > > understanding this, and I'm hoping at least someone involved in this
-> > > static checker can explain what it thinks is going on.
-> > >
-> > > Thanks, Daniel
-> > > --
-> > > Daniel Vetter
-> > > Software Engineer, Intel Corporation
-> > > http://blog.ffwll.ch
-> >
-> > Thank you for your interest, Daniel. The checker tries first to find
-> > the free and
-> > use sites of a certain object (in this case "fb_info"), then reason
-> > about whether
-> > the use can actually happen after the free (e.g., taking into account
-> > factors like
-> > state set/check, locks, etc.), if so, it will flag a potential
-> > use-after-free. As a static
-> > checker, is doesn't execute a program or generate a PoC. We then manually
-> > review each flagged issue by inspecting all related code. In this
-> > case, the checker
-> > (and us) are unaware of the lifetime management logic, which may cause
-> > problems.
->
-> Lifetime management is and absolute basic part in the linux kernel. So if
-> your checker flags every free which isn't protected by a lock, then you'll
-> creating endless amounts of false positives. Is this really what you're
-> doing?
->
-> I'm still very confused ...
-> -Daniel
-> --
-> Daniel Vetter
-> Software Engineer, Intel Corporation
-> http://blog.ffwll.ch
+From: Sam Ravnborg <sam@ravnborg.org>
 
-Hi, Daniel. Lock is only one of many factors we consider in the checker, so the
-actual workflow is certainly more complicated than "mark every free w/o lock".
-E.g., we also need to consider the data flow between use and free, the state
-check, etc. But as you know, it is very challenging for a static checker to
-automatically and accurately reason about everything in the code (automatic
-lifetime management analysis can also be tricky for a static analyzer), that's
-why we perform a manual review afterward. We will continue working on the
-checker to reduce its false alarms and submit higher-quality reports to the
-community following your guidelines. Thank you so much for your time!
+Introduce backlight_get_brightness() to simplify logic
+and avoid direct access to backlight properties.
 
-Best,
-Hang
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Souptick Joarder <jrdr.linux@gmail.com>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Jason Yan <yanaijie@huawei.com>
+Cc: Jani Nikula <jani.nikula@intel.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/video/fbdev/aty/atyfb_base.c | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
+
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index 0ccf5d401ecb..ca361e215904 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -2219,13 +2219,7 @@ static int aty_bl_update_status(struct backlight_device *bd)
+ {
+ 	struct atyfb_par *par = bl_get_data(bd);
+ 	unsigned int reg = aty_ld_lcd(LCD_MISC_CNTL, par);
+-	int level;
+-
+-	if (bd->props.power != FB_BLANK_UNBLANK ||
+-	    bd->props.fb_blank != FB_BLANK_UNBLANK)
+-		level = 0;
+-	else
+-		level = bd->props.brightness;
++	int level = backlight_get_brightness(bd);
+ 
+ 	reg |= (BLMOD_EN | BIASMOD_EN);
+ 	if (level > 0) {
+
+-- 
+2.34.1

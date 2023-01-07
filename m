@@ -2,47 +2,46 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52355C678D9
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84B7FC678DA
 	for <linux-fbdev@archiver.kernel.org>; Sat,  7 Jan 2023 18:27:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232870AbjAGS0y (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 7 Jan 2023 13:26:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52552 "EHLO
+        id S232574AbjAGS0z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 7 Jan 2023 13:26:55 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52550 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232494AbjAGS0Y (ORCPT
+        with ESMTP id S232493AbjAGS0Y (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Sat, 7 Jan 2023 13:26:24 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D78137260;
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 340D43F13B;
         Sat,  7 Jan 2023 10:26:23 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 9F55860BB5;
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 9364360B9B;
         Sat,  7 Jan 2023 18:26:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id D6118C43396;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id B24DAC43445;
         Sat,  7 Jan 2023 18:26:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=k20201202; t=1673115981;
-        bh=NopO6/WDONQttpL/maFut1E5RlkJB2uOICrSmRTuvrs=;
+        bh=FpJgYKX0WvqOM6qXNZm3orw83KtE8CnVdKskuu7Bxj8=;
         h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-        b=a+TGg0zalLu1IZUe0Dusx60kOUTAgJB6i2V0ntZSdpG5hA7ZzF9GFzb2Jzh5cLqTV
-         udilmzFV/9GY2Q3+sJ1scx5kxvtRS4G/9uxntABwo7uUwhgf6vFzlxK7WJqaNC5zMo
-         2N3akNeLX30I+ZVwfVcQoVc25k6ocdIxpIS3uirQJC6Ehp1L01MwXb9Exhe/1cLaPD
-         6BQnOgaCjj1iWPKfalhHAuMKx/39xYumSGulqURz1zsjcovak9tmiWrsqRY/YJaXxL
-         xZsAIM0ke+gx7atPRAuPhTvpBKHxO1nLnBlU+RrLEzUE+Ak8SXCQIo7SBDQpfYHPnz
-         UFvQ6BGEyrU1g==
+        b=ibafoQF9RQ0654p7+XrOtYyy0N7e1+Wqbgurr/s3R0c31xlvWMaiv1rE43GmUD0ax
+         1uKtvH80Di1rpSHQJe+XRgjTJHrofPadAh/ODHSirpNZAFmmMTVoFeMkhMqF2M+/Qu
+         WixKllalmm7bZbY2IRu/nqJzf6pqWuaniQUtGDhj54eKNMlAEYrq6fZ1KlFl1OT+YX
+         VlpA1g/VS6yYLtn1NxEKn3c6ox3/JuoX4jCkSLY1e0Gw/W5jtHzqrJqEjbuhLSPnHx
+         vYPFsreIQl0LgDBkgFOOLtrp9vDAjIyfpPUWOJji2EM4Q4MDv7NkHov4t04dpqNoph
+         XMqhiOwWLdVzg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-        by smtp.lore.kernel.org (Postfix) with ESMTP id C4E09C54EBC;
+        by smtp.lore.kernel.org (Postfix) with ESMTP id 9DC36C63797;
         Sat,  7 Jan 2023 18:26:21 +0000 (UTC)
 From:   Sam Ravnborg via B4 Submission Endpoint 
         <devnull+sam.ravnborg.org@kernel.org>
-Date:   Sat, 07 Jan 2023 19:26:25 +0100
-Subject: [PATCH 11/15] powerpc: via-pmu-backlight: Introduce
- backlight_get_brightness()
+Date:   Sat, 07 Jan 2023 19:26:23 +0100
+Subject: [PATCH 09/15] staging: fbtft: fb_ssd1351.c: Introduce backlight_is_blank()
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230107-sam-video-backlight-drop-fb_blank-v1-11-1bd9bafb351f@ravnborg.org>
+Message-Id: <20230107-sam-video-backlight-drop-fb_blank-v1-9-1bd9bafb351f@ravnborg.org>
 References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
 In-Reply-To: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
 To:     Nicolas Ferre <nicolas.ferre@microchip.com>,
@@ -61,13 +60,14 @@ Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-omap@vger.kernel.org, linux-staging@lists.linux.dev,
         linuxppc-dev@lists.ozlabs.org, Stephen Kitt <steve@sk2.org>,
-        Sam Ravnborg <sam@ravnborg.org>
+        Sam Ravnborg <sam@ravnborg.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 X-Mailer: b4 0.11.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1673115978; l=1090;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1673115978; l=1470;
  i=sam@ravnborg.org; s=20230107; h=from:subject:message-id;
- bh=lPqymbzfNTifpXa2QzoPI3zSglttX8N9s2/xbxu8aQ4=; =?utf-8?q?b=3DoM0VPahuDXBa?=
- =?utf-8?q?8NICHQ0XEZfUD/cH3Cz8tGxqgZI94evf9mznv/gWoWJFlh9dpNlj1GiU49BWm0cl?=
- g1Zmn+5lAV0k2VgXGHyPJ7cqtCg0PIxR/iXKZWAR3vZGmqh+vYaD
+ bh=G6rOZdtEwpeQEO+0r3oVVgedO7Rz1feTEQR8eX27nq4=; =?utf-8?q?b=3D+S7h4F0wUNPp?=
+ =?utf-8?q?/JDzVLZhorRrHoeXoMU92DpeyUhmf+Ru9VbwxZ4HQL+EQ45PgrZJYvAfns99nGaz?=
+ +nssZXN1Aj803PnEukV8/v1tXrrRhgpXnDQN/jH9brZR1cK2eNGw
 X-Developer-Key: i=sam@ravnborg.org; a=ed25519;
  pk=R0+pqV7BRYOAeOIGkyOrSNke7arx5y3LkEuNi37YEyU=
 X-Endpoint-Received: by B4 Submission Endpoint for sam@ravnborg.org/20230107 with auth_id=22
@@ -79,35 +79,44 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Sam Ravnborg <sam@ravnborg.org>
 
-Introduce backlight_get_brightness() to simplify logic
-and avoid direct access to backlight properties.
+Avoiding direct access to backlight_properties.props.
+
+Access to the deprecated props.fb_blank replaced by backlight_is_blank().
+Access to props.power is dropped - it was only used for debug.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Stephen Kitt <steve@sk2.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-fbdev@vger.kernel.org
 ---
- drivers/macintosh/via-pmu-backlight.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ drivers/staging/fbtft/fb_ssd1351.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/macintosh/via-pmu-backlight.c b/drivers/macintosh/via-pmu-backlight.c
-index 2194016122d2..c2d87e7fa85b 100644
---- a/drivers/macintosh/via-pmu-backlight.c
-+++ b/drivers/macintosh/via-pmu-backlight.c
-@@ -71,12 +71,7 @@ static int pmu_backlight_get_level_brightness(int level)
- static int __pmu_backlight_update_status(struct backlight_device *bd)
+diff --git a/drivers/staging/fbtft/fb_ssd1351.c b/drivers/staging/fbtft/fb_ssd1351.c
+index b8d55aa8c5c7..995fbd2f3dc6 100644
+--- a/drivers/staging/fbtft/fb_ssd1351.c
++++ b/drivers/staging/fbtft/fb_ssd1351.c
+@@ -190,15 +190,12 @@ static struct fbtft_display display = {
+ static int update_onboard_backlight(struct backlight_device *bd)
  {
- 	struct adb_request req;
--	int level = bd->props.brightness;
--
--
--	if (bd->props.power != FB_BLANK_UNBLANK ||
--	    bd->props.fb_blank != FB_BLANK_UNBLANK)
--		level = 0;
-+	int level = backlight_get_brightness(bd);
+ 	struct fbtft_par *par = bl_get_data(bd);
+-	bool on;
++	bool blank = backlight_is_blank(bd);
  
- 	if (level > 0) {
- 		int pmulevel = pmu_backlight_get_level_brightness(level);
+-	fbtft_par_dbg(DEBUG_BACKLIGHT, par,
+-		      "%s: power=%d, fb_blank=%d\n",
+-		      __func__, bd->props.power, bd->props.fb_blank);
++	fbtft_par_dbg(DEBUG_BACKLIGHT, par, "%s: blank=%d\n", __func__, blank);
+ 
+-	on = !backlight_is_blank(bd);
+ 	/* Onboard backlight connected to GPIO0 on SSD1351, GPIO1 unused */
+-	write_reg(par, 0xB5, on ? 0x03 : 0x02);
++	write_reg(par, 0xB5, !blank ? 0x03 : 0x02);
+ 
+ 	return 0;
+ }
 
 -- 
 2.34.1

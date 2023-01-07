@@ -2,36 +2,44 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B759C46467
-	for <linux-fbdev@archiver.kernel.org>; Sat,  7 Jan 2023 20:44:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D47CC46467
+	for <linux-fbdev@archiver.kernel.org>; Sat,  7 Jan 2023 20:53:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232050AbjAGUo1 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 7 Jan 2023 15:44:27 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34244 "EHLO
+        id S232536AbjAGUxw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 7 Jan 2023 15:53:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35878 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229691AbjAGUo1 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 7 Jan 2023 15:44:27 -0500
-Received: from 14.mo561.mail-out.ovh.net (14.mo561.mail-out.ovh.net [188.165.43.98])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2FD7E3DBC1
-        for <linux-fbdev@vger.kernel.org>; Sat,  7 Jan 2023 12:44:25 -0800 (PST)
-Received: from director2.ghost.mail-out.ovh.net (unknown [10.109.143.232])
-        by mo561.mail-out.ovh.net (Postfix) with ESMTP id 69DDD25060
-        for <linux-fbdev@vger.kernel.org>; Sat,  7 Jan 2023 20:36:55 +0000 (UTC)
-Received: from ghost-submission-6684bf9d7b-lxtls (unknown [10.110.115.90])
-        by director2.ghost.mail-out.ovh.net (Postfix) with ESMTPS id BD8F71FE98;
-        Sat,  7 Jan 2023 20:36:50 +0000 (UTC)
-Received: from sk2.org ([37.59.142.105])
-        by ghost-submission-6684bf9d7b-lxtls with ESMTPSA
-        id eSsCKuLXuWPI3wUAubRvvA
-        (envelope-from <steve@sk2.org>); Sat, 07 Jan 2023 20:36:50 +0000
-Authentication-Results: garm.ovh; auth=pass (GARM-105G0067839b063-0764-4415-809e-52a6ec1d72ef,
-                    DAE31E0ADBCC733EDB52157E78EF0D9B49FF90DC) smtp.auth=steve@sk2.org
-X-OVh-ClientIp: 37.167.110.121
-Date:   Sat, 07 Jan 2023 21:36:47 +0100
-From:   Stephen Kitt <steve@sk2.org>
-To:     sam@ravnborg.org,
-        Sam Ravnborg via B4 Submission Endpoint 
+        with ESMTP id S231962AbjAGUxv (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 7 Jan 2023 15:53:51 -0500
+Received: from mailrelay5-1.pub.mailoutpod2-cph3.one.com (mailrelay5-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:404::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF20345671
+        for <linux-fbdev@vger.kernel.org>; Sat,  7 Jan 2023 12:53:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=rsa2;
+        h=in-reply-to:content-transfer-encoding:content-type:mime-version:references:
+         message-id:subject:cc:to:from:date:from;
+        bh=RV+O7cB5l+vaR5SO6XJa6RTpRYVy6GA4qJE6OAXy7jM=;
+        b=uqBjqGUZaw40K9daezgVaSHVAazfEdhdq+JcI2yeGkxOlNFTZpIFrUFk9XABsNvhmL+1pP+c2lsty
+         Fi/30HkWP0cfz+KFCzbqIr/KGrCdW/29/A9qOOGzewzeaFTff3HpRc47oTq/JDYLJUfS8ZZUXFOmTY
+         azBMO9ivKekwR/UiON6K6kWi1Gj4cbXkrtyGZ9T7dDTTn0DBgbLsLGNS6OYSpriPvzh8GbhHLaUpyB
+         dHvxIRmsvOwDoOIvd4kGkpON115b5GxtLYJB/0xlLJ0U9QY+ALENfS6ycYcvcoAx/L+IU1v7E1TCXg
+         U5p0JjIWM8blmp8UFnPHVXSsbDCeFJA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=ed2;
+        h=in-reply-to:content-transfer-encoding:content-type:mime-version:references:
+         message-id:subject:cc:to:from:date:from;
+        bh=RV+O7cB5l+vaR5SO6XJa6RTpRYVy6GA4qJE6OAXy7jM=;
+        b=AadjSAWAhsd9s/NuxYyFEDx/hhJmkRh8x7bTEGYiRhB+J+8BsiLl49CfqGKNFHOtMHHLkdtDsLSml
+         eZo40lsBw==
+X-HalOne-ID: 602b5661-8ecd-11ed-85e1-7703b0afff57
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+        by mailrelay5 (Halon) with ESMTPSA
+        id 602b5661-8ecd-11ed-85e1-7703b0afff57;
+        Sat, 07 Jan 2023 20:53:47 +0000 (UTC)
+Date:   Sat, 7 Jan 2023 21:53:46 +0100
+From:   Sam Ravnborg <sam@ravnborg.org>
+To:     Stephen Kitt <steve@sk2.org>
+Cc:     Sam Ravnborg via B4 Submission Endpoint 
         <devnull+sam.ravnborg.org@kernel.org>,
         Nicolas Ferre <nicolas.ferre@microchip.com>,
         Helge Deller <deller@gmx.de>,
@@ -44,118 +52,67 @@ To:     sam@ravnborg.org,
         Robin van der Gracht <robin@protonic.nl>,
         Miguel Ojeda <ojeda@kernel.org>, Lee Jones <lee@kernel.org>,
         Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>
-CC:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-omap@vger.kernel.org, linux-staging@lists.linux.dev,
-        linuxppc-dev@lists.ozlabs.org, Sam Ravnborg <sam@ravnborg.org>,
+        linuxppc-dev@lists.ozlabs.org,
         Ludovic Desroches <ludovic.desroches@microchip.com>
-Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_01/15=5D_video=3A_fbdev=3A_atm?= =?US-ASCII?Q?el=5Flcdfb=3A_Rework_backlight_handling?=
-User-Agent: K-9 Mail for Android
-In-Reply-To: <20230107-sam-video-backlight-drop-fb_blank-v1-1-1bd9bafb351f@ravnborg.org>
-References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org> <20230107-sam-video-backlight-drop-fb_blank-v1-1-1bd9bafb351f@ravnborg.org>
-Message-ID: <553AE999-CAF1-4E59-9F3F-68591ED192DE@sk2.org>
+Subject: Re: [PATCH 01/15] video: fbdev: atmel_lcdfb: Rework backlight
+ handling
+Message-ID: <Y7nb2q6SDota/rTU@ravnborg.org>
+References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
+ <20230107-sam-video-backlight-drop-fb_blank-v1-1-1bd9bafb351f@ravnborg.org>
+ <553AE999-CAF1-4E59-9F3F-68591ED192DE@sk2.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Ovh-Tracer-Id: 15557403441115072134
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrkedvgddufeeiucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepfffhvfevufgfjghfkfggtgfgsehtqhhmtddtreejnecuhfhrohhmpefuthgvphhhvghnucfmihhtthcuoehsthgvvhgvsehskhdvrdhorhhgqeenucggtffrrghtthgvrhhnpeekvddvteekgedtkefgueefheetheefffdtfeeuveettdejjeeutdetkefggeegleenucffohhmrghinheplhhkmhhlrdhorhhgnecukfhppeduvdejrddtrddtrddupdefjedrheelrddugedvrddutdehnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepuddvjedrtddrtddruddpmhgrihhlfhhrohhmpeeoshhtvghvvgesshhkvddrohhrgheqpdhnsggprhgtphhtthhopedupdhrtghpthhtoheplhhinhhugidqfhgsuggvvhesvhhgvghrrdhkvghrnhgvlhdrohhrghdpoffvtefjohhsthepmhhoheeiuddpmhhouggvpehsmhhtphhouhht
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <553AE999-CAF1-4E59-9F3F-68591ED192DE@sk2.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7 January 2023 19:26:15 CET, Sam Ravnborg via B4 Submission Endpoint <devnull+sam.ravnborg.org@kernel.org> wrote:
->From: Sam Ravnborg <sam@ravnborg.org>
->
->The atmel_lcdfb had code to save/restore power state.
->This is not needed so drop it.
->
->Introduce backlight_is_brightness() to make logic simpler.
->
->Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
->Cc: Nicolas Ferre <nicolas.ferre@microchip.com>
->Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
->Cc: Ludovic Desroches <ludovic.desroches@microchip.com>
->Cc: linux-fbdev@vger.kernel.org
->Cc: linux-arm-kernel@lists.infradead.org
->---
-> drivers/video/fbdev/atmel_lcdfb.c | 24 +++---------------------
-> 1 file changed, 3 insertions(+), 21 deletions(-)
->
->diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
->index 1fc8de4ecbeb..d297b3892637 100644
->--- a/drivers/video/fbdev/atmel_lcdfb.c
->+++ b/drivers/video/fbdev/atmel_lcdfb.c
->@@ -49,7 +49,6 @@ struct atmel_lcdfb_info {
-> 	struct clk		*lcdc_clk;
-> 
-> 	struct backlight_device	*backlight;
->-	u8			bl_power;
-> 	u8			saved_lcdcon;
-> 
-> 	u32			pseudo_palette[16];
->@@ -109,32 +108,18 @@ static u32 contrast_ctr = ATMEL_LCDC_PS_DIV8
-> static int atmel_bl_update_status(struct backlight_device *bl)
-> {
-> 	struct atmel_lcdfb_info *sinfo = bl_get_data(bl);
->-	int			power = sinfo->bl_power;
->-	int			brightness = bl->props.brightness;
->+	int brightness;
-> 
->-	/* REVISIT there may be a meaningful difference between
->-	 * fb_blank and power ... there seem to be some cases
->-	 * this doesn't handle correctly.
->-	 */
->-	if (bl->props.fb_blank != sinfo->bl_power)
->-		power = bl->props.fb_blank;
->-	else if (bl->props.power != sinfo->bl_power)
->-		power = bl->props.power;
->-
->-	if (brightness < 0 && power == FB_BLANK_UNBLANK)
->-		brightness = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_VAL);
->-	else if (power != FB_BLANK_UNBLANK)
->-		brightness = 0;
->+	brightness = backlight_get_brightness(bl);
-> 
-> 	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, brightness);
->+
-> 	if (contrast_ctr & ATMEL_LCDC_POL_POSITIVE)
-> 		lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR,
-> 			brightness ? contrast_ctr : 0);
-> 	else
-> 		lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, contrast_ctr);
-> 
->-	bl->props.fb_blank = bl->props.power = sinfo->bl_power = power;
->-
-> 	return 0;
-> }
-> 
->@@ -155,8 +140,6 @@ static void init_backlight(struct atmel_lcdfb_info *sinfo)
-> 	struct backlight_properties props;
-> 	struct backlight_device	*bl;
-> 
->-	sinfo->bl_power = FB_BLANK_UNBLANK;
->-
-> 	if (sinfo->backlight)
-> 		return;
-> 
->@@ -173,7 +156,6 @@ static void init_backlight(struct atmel_lcdfb_info *sinfo)
-> 	sinfo->backlight = bl;
-> 
-> 	bl->props.power = FB_BLANK_UNBLANK;
->-	bl->props.fb_blank = FB_BLANK_UNBLANK;
-> 	bl->props.brightness = atmel_bl_get_brightness(bl);
-> }
-> 
->
+Hi Stephen.
 
-Hi Sam,
+On Sat, Jan 07, 2023 at 09:36:47PM +0100, Stephen Kitt wrote:
+> On 7 January 2023 19:26:15 CET, Sam Ravnborg via B4 Submission Endpoint <devnull+sam.ravnborg.org@kernel.org> wrote:
+> >From: Sam Ravnborg <sam@ravnborg.org>
+> >
+> >The atmel_lcdfb had code to save/restore power state.
+> >This is not needed so drop it.
+> >
+> >Introduce backlight_is_brightness() to make logic simpler.
+> >
+> >Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> >Cc: Nicolas Ferre <nicolas.ferre@microchip.com>
+> >Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
+> >Cc: Ludovic Desroches <ludovic.desroches@microchip.com>
+> >Cc: linux-fbdev@vger.kernel.org
+> >Cc: linux-arm-kernel@lists.infradead.org
+> >---
+> > drivers/video/fbdev/atmel_lcdfb.c | 24 +++---------------------
+> > 1 file changed, 3 insertions(+), 21 deletions(-)
+...
+> 
+> Hi Sam,
+> 
+> I’d submitted quite a few more of these previously (and you’d reviewed them), see e.g. the thread starting at https://lkml.org/lkml/2022/6/7/4365, and yesterday, https://lkml.org/lkml/2023/1/6/520, https://lkml.org/lkml/2023/1/6/656, https://lkml.org/lkml/2023/1/6/970, https://lkml.org/lkml/2023/1/6/643, and https://lkml.org/lkml/2023/1/6/680. There are a few more, I can find them if it’s any use.
 
-I’d submitted quite a few more of these previously (and you’d reviewed them), see e.g. the thread starting at https://lkml.org/lkml/2022/6/7/4365, and yesterday, https://lkml.org/lkml/2023/1/6/520, https://lkml.org/lkml/2023/1/6/656, https://lkml.org/lkml/2023/1/6/970, https://lkml.org/lkml/2023/1/6/643, and https://lkml.org/lkml/2023/1/6/680. There are a few more, I can find them if it’s any use.
+The patches from yesterday was what triggered me to resurrect an old
+branch of mine where I had done something similar. I had lost all
+memory of reviewing similar patches from you.
 
-Regards,
 
-Stephen
+Helge - could you pick the reviewed patches from:
+https://lore.kernel.org/all/20220607192335.1137249-1-steve@sk2.org/
+[This is the same mail as Stephen refer to above - looked up via lore].
+
+Stephen - I expect Daniel/Lee to take care of the patches from yesterday.
+If you can look up other pending patches from you please do so, so we
+can have them applied.
+Preferably with links to lore - as this makes it easier to apply them.
+
+Review of what is unique in this set would be appreciated.
+
+	Sam

@@ -2,123 +2,101 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37804C5479D
-	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Jan 2023 10:28:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C48E3C54EBD
+	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Jan 2023 10:28:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233885AbjAIK1k (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 9 Jan 2023 05:27:40 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47846 "EHLO
+        id S231126AbjAIK2S (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 9 Jan 2023 05:28:18 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48378 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237047AbjAIK1X (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Jan 2023 05:27:23 -0500
-Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com [IPv6:2a00:1450:4864:20::32d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1362CCE38
-        for <linux-fbdev@vger.kernel.org>; Mon,  9 Jan 2023 02:27:18 -0800 (PST)
-Received: by mail-wm1-x32d.google.com with SMTP id ja17so5897526wmb.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 09 Jan 2023 02:27:18 -0800 (PST)
+        with ESMTP id S235213AbjAIK2M (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Jan 2023 05:28:12 -0500
+X-Greylist: delayed 964 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 09 Jan 2023 02:28:11 PST
+Received: from smtp16.bhosted.nl (smtp16.bhosted.nl [IPv6:2a02:9e0:8000::27])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 94380634F
+        for <linux-fbdev@vger.kernel.org>; Mon,  9 Jan 2023 02:28:11 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=SR4xg/8vRGqoBJiSpvGD2Rl2ghk9VGEtuelbvA5hJfk=;
-        b=aT3ss8O+Gsu9jCN8YuL3TDXjKyNWf4nB21P7RR9Th1b+8mZp8kz3LPZ9G8Ug/9sSbr
-         JmeDD4GvprLSePBUp4a0A5MB7ZzURamGMbAjnAq7iF3USgE9Kv0+e28Kt3qHCsN8NGN9
-         21WASmcnew4Cd/TZS+qup11illvEBYs18hjBTbG+EVySqrihxge0+iZqjKyWIaMKb59I
-         zqRx0kU5xQvogoAUaleQhVB/eG0XEIup+csXL5dIT9wK1/BTQlL7L98iLAVNHJSRJWbt
-         SVLxKaJrSs6/0qwW/Fo7d9ghv0DVJMQsmZOj6b13qqG7Uh25bJyFTyQH2iKv0bt8jP9I
-         uSKA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=SR4xg/8vRGqoBJiSpvGD2Rl2ghk9VGEtuelbvA5hJfk=;
-        b=rhUNyI+iIBzUSyCD3JyNEEsCiPsQ9GTqAVy3QgrVlywxK2Tcv0yqziaAY+xlLCpp67
-         msfFp1WklOXG2X4oE3dMBTan13KFj7orC8S6Y92zBWTsm839nM2ekd2Yg8vb7YBjVCet
-         JojXI38FHL7fEhsgURUbBgjKijkUi4/loa6I1H6hBKJ7H60XdXmvxfRr7FlQI/K9wZ9c
-         GOe5Dp3kqkjuQ2LqSChPb50lzvKKpXPecCIM1yjqI6rh8Hy8gZr6UbyXZdV4tsaZNz9G
-         Qq1lnI79xN5t2FPhvXbZolyk8Ah+zQgbA/sJFiSEY2UYyjOXEu1qpye1zZOWWm8DaQe+
-         8MOg==
-X-Gm-Message-State: AFqh2kqGsgliihd6LQsM7GNmRKZ0ObQ3laW4rMAWMLTa014Eh0MKmsm4
-        VqHzlXVI6oFZVRliswsqVtgJCkPOStr3IfWEo28=
-X-Google-Smtp-Source: AMrXdXvlCiyiCuzHJg/WG8LUCp3wL2rzbSPwtjvrHVXTysfocLK7IGL9XmfsmXW4Llcem1k1rdDJBA==
-X-Received: by 2002:a05:600c:4e90:b0:3cf:894f:964b with SMTP id f16-20020a05600c4e9000b003cf894f964bmr47444559wmq.16.1673260036605;
-        Mon, 09 Jan 2023 02:27:16 -0800 (PST)
-Received: from aspen.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id p16-20020a05600c469000b003d9b87296a9sm16796137wmo.25.2023.01.09.02.27.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Jan 2023 02:27:15 -0800 (PST)
-Date:   Mon, 9 Jan 2023 10:27:13 +0000
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Stephen Kitt <steve@sk2.org>, Lee Jones <lee@kernel.org>,
-        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
-        Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH RESEND 1/4] backlight: aat2870: Use backlight helper
-Message-ID: <Y7vsAdMqGNgYS/m9@aspen.lan>
-References: <20230106164856.1453819-2-steve@sk2.org>
- <Y7hdyPAKBYv+gAzf@phenom.ffwll.local>
+        d=protonic.nl; s=202111;
+        h=message-id:references:in-reply-to:reply-to:subject:cc:to:from:date:
+         content-transfer-encoding:content-type:mime-version:from;
+        bh=DpADeRqnpOK1INfFn7yqaglpmahJbhY8EX582Bmd3SY=;
+        b=I1ZQK8QX3QZlT2tEUahNaplPFpvXCyeS9V/mlZDOYwtUI7pmVX0sulujmgh+iZCm0yNHQ1CTJAwCO
+         2UD84ZVaPxKibdiTFen6jJJA2ngMcKk/YHCQvNir+vGDtmvCc+hbDtExXjzCYs9bVKLFKyFV1eEJ5e
+         H2GU3TJKh5rN41xWmbjpij5cdo5TqQRuuL92xrGuPFof4+3q3YAS+D54SAV1xmAjAY/OoBcZQ1gtVH
+         KGf56rbaDfz4I/xH6cWK5TwxYW5NoBO4LWgqyeST3CQWbwwlCFWMjUa04Elb/KRVqS6BfSBrc4Vy70
+         Ca3+4vIXUqVfvBYHz0i1DjTMhZyLfmQ==
+X-MSG-ID: 0f6a649e-9006-11ed-8e79-0050569d2c73
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Y7hdyPAKBYv+gAzf@phenom.ffwll.local>
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date:   Mon, 09 Jan 2023 11:12:02 +0100
+From:   Robin van der Gracht <robin@protonic.nl>
+To:     Sam Ravnborg <sam@ravnborg.org>
+Cc:     Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
+        Stephen Kitt <steve@sk2.org>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Helge Deller <deller@gmx.de>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>,
+        Antonino Daplas <adaplas@gmail.com>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Miguel Ojeda <ojeda@kernel.org>, Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-omap@vger.kernel.org, linux-staging@lists.linux.dev,
+        linuxppc-dev@lists.ozlabs.org,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 12/15] auxdisplay: ht16k33: Introduce
+ backlight_get_brightness()
+Organization: Protonic Holland
+Reply-To: robin@protonic.nl
+Mail-Reply-To: robin@protonic.nl
+In-Reply-To: <Y7qM+ZlG5gQiOW4K@ravnborg.org>
+References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
+ <20230107-sam-video-backlight-drop-fb_blank-v1-12-1bd9bafb351f@ravnborg.org>
+ <CANiq72mFMJuec+r=T6xYtLpuU+a1rOrAhrHiecy_1Jpj2m4J=g@mail.gmail.com>
+ <Y7qM+ZlG5gQiOW4K@ravnborg.org>
+Message-ID: <2857575f6ec206f79cc21d423fde7d17@protonic.nl>
+X-Sender: robin@protonic.nl
+User-Agent: Roundcube Webmail/1.3.1 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jan 06, 2023 at 06:43:36PM +0100, Daniel Vetter wrote:
-> On Fri, Jan 06, 2023 at 05:48:52PM +0100, Stephen Kitt wrote:
-> > Instead of retrieving the backlight brightness in struct
-> > backlight_properties manually, and then checking whether the backlight
-> > should be on at all, use backlight_get_brightness() which does all
-> > this and insulates this from future changes.
-> >
-> > Signed-off-by: Stephen Kitt <steve@sk2.org>
->
-> Lee/Daniel, will you pick these up, or should I smash them all into
-> drm-misc-next for 6.3?
+Hi Sam,
 
-Outside of holiday, Lee usually hoovers up the backlight patches (and
-negotiates about who merges what).
+On 2023-01-08 10:29, Sam Ravnborg wrote:
+> Hi Robin.
+> 
+> On Sat, Jan 07, 2023 at 10:02:38PM +0100, Miguel Ojeda wrote:
+>> On Sat, Jan 7, 2023 at 7:26 PM Sam Ravnborg via B4 Submission Endpoint
+>> <devnull+sam.ravnborg.org@kernel.org> wrote:
+>> >
+>> > Introduce backlight_get_brightness() to simplify logic
+>> > and avoid direct access to backlight properties.
+>> 
+>> Note: Stephen sent this one too a while ago (with some more details in
+>> the commit message, which is always nice); and then he sent yesterday
+>> v2 [1] (to mention the functional change with `BL_CORE_SUSPENDED`
+>> [2]).
+> Thanks for the pointers. I will try to move forward with Stephen's
+> patches.
+>> 
+>> Anyway, if it goes via drm-misc, feel free to have my:
+>> 
+>>     Acked-by: Miguel Ojeda <ojeda@kernel.org>
+>> 
+>> Though it would be nice to have Robin test the change.
+> 
+> Robin - can I get your ack to apply Stephen's original v2 patch to
+> drm-misc?
 
+done! see: 
+https://lore.kernel.org/lkml/0b16391f997e6ed005a326e4e48f2033@protonic.nl/
 
-Daniel.
-
-
-> > ---
-> >  drivers/video/backlight/aat2870_bl.c | 7 +------
-> >  1 file changed, 1 insertion(+), 6 deletions(-)
-> >
-> > diff --git a/drivers/video/backlight/aat2870_bl.c b/drivers/video/backlight/aat2870_bl.c
-> > index a7af9adafad6..1cbb303e9c88 100644
-> > --- a/drivers/video/backlight/aat2870_bl.c
-> > +++ b/drivers/video/backlight/aat2870_bl.c
-> > @@ -59,7 +59,7 @@ static int aat2870_bl_update_status(struct backlight_device *bd)
-> >  	struct aat2870_bl_driver_data *aat2870_bl = bl_get_data(bd);
-> >  	struct aat2870_data *aat2870 =
-> >  			dev_get_drvdata(aat2870_bl->pdev->dev.parent);
-> > -	int brightness = bd->props.brightness;
-> > +	int brightness = backlight_get_brightness(bd);
-> >  	int ret;
-> >
-> >  	if ((brightness < 0) || (bd->props.max_brightness < brightness)) {
-> > @@ -70,11 +70,6 @@ static int aat2870_bl_update_status(struct backlight_device *bd)
-> >  	dev_dbg(&bd->dev, "brightness=%d, power=%d, state=%d\n",
-> >  		 bd->props.brightness, bd->props.power, bd->props.state);
-> >
-> > -	if ((bd->props.power != FB_BLANK_UNBLANK) ||
-> > -			(bd->props.state & BL_CORE_FBBLANK) ||
-> > -			(bd->props.state & BL_CORE_SUSPENDED))
-> > -		brightness = 0;
-> > -
-> >  	ret = aat2870->write(aat2870, AAT2870_BLM,
-> >  			     (u8)aat2870_brightness(aat2870_bl, brightness));
-> >  	if (ret < 0)
-> > --
-> > 2.30.2
-> >
->
-> --
-> Daniel Vetter
-> Software Engineer, Intel Corporation
-> http://blog.ffwll.ch
+- Robin

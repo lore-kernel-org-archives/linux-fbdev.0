@@ -2,101 +2,76 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36A0DC54EBD
-	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Jan 2023 16:28:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C9B0C5479D
+	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Jan 2023 16:35:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229469AbjAIQ2C (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 9 Jan 2023 11:28:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57688 "EHLO
+        id S233296AbjAIQf2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 9 Jan 2023 11:35:28 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34304 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233994AbjAIQ1x (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Jan 2023 11:27:53 -0500
-Received: from mailrelay5-1.pub.mailoutpod2-cph3.one.com (mailrelay5-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:404::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B2FFE12092
-        for <linux-fbdev@vger.kernel.org>; Mon,  9 Jan 2023 08:27:48 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=rsa2;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=dTBh2Be6Q1A/kCwcp9I8OjPATYhgdC0pFQ07Wxod3+Y=;
-        b=EOIf6mOnKkwHLtxJfgBg+c8bPYu10/CKQBjGac1w8zAfMoPxooFOFujSC2ijxczH4uOtY0Bvbr2DB
-         dOfgp/+5vh+TdYJ9/gS2dW0oSa9EK9kwH08Gq6W7zHk+zYtXjrMB5o85CSGzKR/qu4SxRHIkB3YjhJ
-         nK33nuOn8mS58pgxZ/8KZOujIXPLA8gEzLXSCWI63CwTYgbSjeYf3V9Aez9KhtnTgwWvhq865DJmyl
-         OegDyOeMmkzrZLPHNHiOW8GLRLIFT2s4E6jlU9Z8KUTOcuTJzwVr7O4P+N+b3pvZOFVL9/CY1/0CS7
-         UyPxebBNy3HMfqddcSX+d0Qa+M9j2aQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=ed2;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=dTBh2Be6Q1A/kCwcp9I8OjPATYhgdC0pFQ07Wxod3+Y=;
-        b=6W6KcsOY9JYk9b8jg6LJ3hg3GFrer/Pt34tm0RAXXpZTaoIrXrRW9qNshWIWd8BH9aKUo8XvraB9r
-         XpoLe/SAQ==
-X-HalOne-ID: 8af36721-903a-11ed-b86b-7703b0afff57
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-        by mailrelay5 (Halon) with ESMTPSA
-        id 8af36721-903a-11ed-b86b-7703b0afff57;
-        Mon, 09 Jan 2023 16:27:45 +0000 (UTC)
-Date:   Mon, 9 Jan 2023 17:27:44 +0100
-From:   Sam Ravnborg <sam@ravnborg.org>
+        with ESMTP id S233189AbjAIQf1 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Jan 2023 11:35:27 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0EA77B8;
+        Mon,  9 Jan 2023 08:35:24 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id AECD8B80E79;
+        Mon,  9 Jan 2023 16:35:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 30543C433D2;
+        Mon,  9 Jan 2023 16:35:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1673282121;
+        bh=umPOwY842WPvWxkEqRjKZxzSq09MaxAOymz700VqRaY=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=mxSVAkFKU+d+OE0pcqgp/ey0snTrGmxrVzKT4+kH5Z9Gjy6LMo9iM1snpntAm6pZJ
+         AqBucc1dJCGujWc2h7JT8GxDC5+oXMcDho+f80vPDtyLIq1gxMkl3VNlm3CPCN+d0c
+         0GMSxhAw3chx2KHvMFVpe0OnKdJ/sI0vXLSrk4FwB3dzvRqAWgSTRgZw+mv1royWBA
+         eKd1lRWFeCZ88So1JoCN01OJMwuBE0LJnnx8Rnk4YMtip0w7Ctm7KXJ8w01dJhmrcL
+         g/46Cb6EicB+AcU91U9eGa4fAx4BOZoMGlWsU5ugCzNhkXZvcehtE2bplAmie3IEwR
+         RIMlG3W8WA8tg==
+Date:   Mon, 9 Jan 2023 16:35:15 +0000
+From:   Lee Jones <lee@kernel.org>
 To:     Daniel Thompson <daniel.thompson@linaro.org>
-Cc:     Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Helge Deller <deller@gmx.de>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        Antonino Daplas <adaplas@gmail.com>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Robin van der Gracht <robin@protonic.nl>,
-        Miguel Ojeda <ojeda@kernel.org>, Lee Jones <lee@kernel.org>,
-        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-omap@vger.kernel.org, linux-staging@lists.linux.dev,
-        linuxppc-dev@lists.ozlabs.org, Stephen Kitt <steve@sk2.org>
-Subject: Re: [PATCH 15/15] backlight: backlight: Drop the deprecated fb_blank
- property
-Message-ID: <Y7xAgHgg0sfh32Ga@ravnborg.org>
-References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
- <20230107-sam-video-backlight-drop-fb_blank-v1-15-1bd9bafb351f@ravnborg.org>
- <Y7v1OxdowGdxgvUj@aspen.lan>
+Cc:     Stephen Kitt <steve@sk2.org>, Jingoo Han <jingoohan1@gmail.com>,
+        linux-fbdev@vger.kernel.org, Helge Deller <deller@gmx.de>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH RESEND 1/4] backlight: aat2870: Use backlight helper
+Message-ID: <Y7xCQ68aRTK19eRg@google.com>
+References: <20230106164856.1453819-2-steve@sk2.org>
+ <Y7hdyPAKBYv+gAzf@phenom.ffwll.local>
+ <Y7vsAdMqGNgYS/m9@aspen.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Y7v1OxdowGdxgvUj@aspen.lan>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Y7vsAdMqGNgYS/m9@aspen.lan>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Daniel.
+On Mon, 09 Jan 2023, Daniel Thompson wrote:
 
-On Mon, Jan 09, 2023 at 11:06:35AM +0000, Daniel Thompson wrote:
-> On Sat, Jan 07, 2023 at 07:26:29PM +0100, Sam Ravnborg via B4 Submission Endpoint wrote:
-> > From: Sam Ravnborg <sam@ravnborg.org>
+> On Fri, Jan 06, 2023 at 06:43:36PM +0100, Daniel Vetter wrote:
+> > On Fri, Jan 06, 2023 at 05:48:52PM +0100, Stephen Kitt wrote:
+> > > Instead of retrieving the backlight brightness in struct
+> > > backlight_properties manually, and then checking whether the backlight
+> > > should be on at all, use backlight_get_brightness() which does all
+> > > this and insulates this from future changes.
+> > >
+> > > Signed-off-by: Stephen Kitt <steve@sk2.org>
 > >
-> > With all users gone remove the deprecated fb_blank member in
-> > backlight_properties.
-> >
-> > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> > Cc: Lee Jones <lee@kernel.org>
-> > Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> > Cc: Jingoo Han <jingoohan1@gmail.com>
+> > Lee/Daniel, will you pick these up, or should I smash them all into
+> > drm-misc-next for 6.3?
 > 
-> 
-> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> Outside of holiday, Lee usually hoovers up the backlight patches (and
+> negotiates about who merges what).
 
-Thanks for the follow-up on all the backlight related patches.
+Right, I'll collect these into the Backlight tree if there aren't any
+build deps involved.  If there are, we'll need to devise a strategy
+that will likely involve immutable branches.
 
-> 
-> 
-> PS Please don't treat this like a maintainer Acked-by: and merge it
->    (Lee's not on holiday so work with Lee to figure out the merge
->    strategy ;-) ).
-Nope, I am aware that the usual pattern here and wait for Lee to show
-up.
-For this patch there is a bug as I need to update a comment.
-I will fix this when I resend after all the patches in flight has
-landed. So likely after the next merge window,
-
-	Sam
-
+-- 
+Lee Jones [李琼斯]

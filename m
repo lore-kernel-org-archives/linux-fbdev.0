@@ -2,115 +2,132 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D01A4C5479D
-	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Jan 2023 11:19:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC811C5479D
+	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Jan 2023 11:49:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233730AbjAILTZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 9 Jan 2023 06:19:25 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43268 "EHLO
+        id S233849AbjAILsx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 9 Jan 2023 06:48:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33508 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236893AbjAILSz (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Jan 2023 06:18:55 -0500
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BA99B15F29
-        for <linux-fbdev@vger.kernel.org>; Mon,  9 Jan 2023 03:18:25 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1673263105; x=1704799105;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=hq/seFdmnkoqCIt9DfA6XX+wEq4WRTzqNNlBF8+qvFE=;
-  b=ewmo/t3LcMqah+2K9x963i0RYDxvcZgApQNjG1WxN2TPudKunBYGlOhJ
-   tpYtYkT8ifxyfMfgLzCINn0a1vP2VrBPgTjFT4EaI6UiewU7BXkpF8TMz
-   Z7cCU+3Dc1soDigEjV5J9kn+WNlkQnunoCWK+MwRm297Je5U3Vxwe/rD2
-   DAutNLiIedG9ihjFRd7a5lDUTTHe3fLnwblhHXqjFmb4W0LWxn084kKlf
-   s3h6nDF36bprAUF9HOtu4uTZRB5Dkof8tXG0duDSEh0QRGyxVlTVnR2h7
-   d02GiaxYmgeAR+MCbNrnAmcPrlb1SEDGyMmvP1ug24afeiYU57byAhE3s
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10584"; a="324096447"
-X-IronPort-AV: E=Sophos;i="5.96,311,1665471600"; 
-   d="scan'208";a="324096447"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jan 2023 03:18:25 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10584"; a="830563319"
-X-IronPort-AV: E=Sophos;i="5.96,311,1665471600"; 
-   d="scan'208";a="830563319"
-Received: from smile.fi.intel.com ([10.237.72.54])
-  by orsmga005.jf.intel.com with ESMTP; 09 Jan 2023 03:18:24 -0800
-Received: from andy by smile.fi.intel.com with local (Exim 4.96)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1pEqAZ-006MUO-07;
-        Mon, 09 Jan 2023 13:18:23 +0200
-Date:   Mon, 9 Jan 2023 13:18:22 +0200
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     sam@ravnborg.org
-Cc:     linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH 00/15] backlight: Drop use of deprecated fb_blank property
-Message-ID: <Y7v3/pbQqoLgCsOc@smile.fi.intel.com>
-References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
+        with ESMTP id S236918AbjAILsM (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Jan 2023 06:48:12 -0500
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CAB9B13CE6;
+        Mon,  9 Jan 2023 03:48:09 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1673264884; bh=KMpl6S7lSlaZ+5yiGcgsKsmplZZc72cQt2PocMHQQ+4=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=Ov7smU7fXXKmFQoWUwHLOAWagAYM5bIaeNpOmiTlHt6/mVfHHZUWSpGW2dWgJuTm1
+         2e9fncUjJgCKiFctLNlNTrffN14v+9eaGtdH/X1idaawabbkj5LKuLgCyHa5Tqy/yy
+         hPJHN8uR3PEZfKB2obxabQWnuP+RaZRwlKPr6jRaHhFyXM+PRLgXZ/lRnBz51fpza5
+         +71eoygdGDXp1XbA0K8WjeL5mNGke9MVb4VLxQ4t5Bo5A/izIDIE2c88p6eW7M4HqD
+         rMeGQj83JoWzXMt5lEExViIN0cfEybOck4TFy30QjluwLbarKr01MA4esMu78GKDDW
+         RSEOOXe5b2N6g==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([92.116.168.5]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MvbBu-1oxaMc1YU2-00scLO; Mon, 09
+ Jan 2023 12:48:04 +0100
+Message-ID: <70764773-ee94-869c-4a08-1810789db2e9@gmx.de>
+Date:   Mon, 9 Jan 2023 12:48:03 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.0
+Subject: Re: [GIT PULL] fbdev fixes for v6.2-rc3
+Content-Language: en-US
+To:     Daniel Vetter <daniel@ffwll.ch>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+References: <Y7aGw/irynC61O85@ls3530>
+ <CAKMK7uEnFBo_YfU8OTvMS8+YkoGS=vmpGQPMa9PKxGOB3pd7nA@mail.gmail.com>
+ <CAKMK7uFijjF+px9=xDXnyfhMbkxRqinEmV_N5VX6eAuJkc1J+g@mail.gmail.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <CAKMK7uFijjF+px9=xDXnyfhMbkxRqinEmV_N5VX6eAuJkc1J+g@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:t7aq0ObGspn1cqOYLuC2y4ZriMmnTdLAEMWFlnaY/QM58ZVYQ6M
+ A+aUfYHOCxB7lFAySs07SCH8Hr5NJWFT7zI6wf0j69XuWHF53+1+SBw3X1D0R53sTATNBTn
+ KxXaPaADOP+wm516nefSSazg8X/cMGsNeK7JNoRHdXYrgRN/TAOvrdS7fqB1F4/lHhY6wJp
+ gGqkmZsTyQUuX5nhZR2vw==
+UI-OutboundReport: notjunk:1;M01:P0:FjDXyeR7/1w=;Rlzm8dWnWnIv3YtmsaxjocevHWg
+ fCWo6dlP/N48kxqGGgj9hR3OYxO2H/9DXDo7FuYfOp/ZCUP9VrgUvBbFJq0eZICVlJO01IXE+
+ 4/7edylkI65qOWI+YFjoc0Okq+YOs2UzMW3IaRvST+MriyM8tAOmFHpgGwhy3FdiAhXXOK+sX
+ kO6oyy92vxxREwhC2Kn9CiVMBoDRfbvvD4bTNOgNVxEF6Vt+ILEfQdQHLDowtoI4BPv9fHR4M
+ gmlHAY7Q0WVlmjsWZXBLP1t0eDu07JZ6CBbKJWIaoE5Xq54DOSesNI0Pvl6UVJpdiR1qfz3I6
+ VE3OKMY8efXD2W/j26LTUztGm+Z/7FXDdNW4HFXaUMUt37yvIHVMpoixby6LywH6KvcYwSVXQ
+ ShIedViIod5HjPvakiBF91+aiNCBtGDlmFC+uPv2/haY8G/YvOwcFBn9KyMx0rA+Sv044njcp
+ yE3a/XFA0SV75NmysttRRsDkC+k7hZFM667iX0hBPbETtBFutAbJAjo9kKp7HmzC+ihK2WjiR
+ yOThRYxAgXiWgJgzP9vAPa4iPKVGpAuMDeTSThxC4N9TNHTqyfs7GWcyiFhSyCs3eKOOEu+AN
+ QeZ/lQFlBIjKLtpkq2+saosJY/4rg/3L+AWEUI4pQjTKQxulpvkwBpMigHs7n3UVs25uJIqIF
+ oJNrw83cQgOu3pQXK9nXVEokfNaZ4CG4igf3ldtO1iYMXIp7bGRWGEdsTFMfmAMaJObZ5E7WN
+ tpU6SxYQLvmTrtxi5ebwS3g06rh+sV3xKC4gtlCz5PWGEaYWC2K6bNj1+a3PJff3YfFup+ftp
+ bXsx+Zfn0A0dinS1frGJHZVXFGuUY+rfmbg8yRAqyFTLyEIvFZtWP6qrucR3LsMtR7cwAxlfn
+ Snh0A8c5p+68CQI8aAdvvXw1VyjpjHaLcLi4CV63CXlAPTAqfoz98BSbH1meCF5E9yAMJAkYw
+ CArOz3wZYlmLbUIs0jCcPiTnxk4=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, Jan 07, 2023 at 07:26:15PM +0100, Sam Ravnborg via B4 Submission Endpoint wrote:
-> This series refactor backlight users to avoid use of the
-> deprecated backlight_properties.fb_blank member.
-> 
-> Stephen Kitt <steve@sk2.org> and others already did a lot of
-> work and this is the final touches.
-> 
-> Patches 1-13 are independent and can be applied individually.
-> Patch 14 was already sent by Stephen and included here to make
-> the series complete.
-> 
-> The last patch may have to wait to avoid breaking the build
-> as it depends on all the other patches.
-> 
-> The series touches several sub-systems, so with acks I could
-> take them all in drm-misc. Or we can let the subsystems take
-> them and wait until next merge window with the final removal.
-> As new users of fb_blank do not pop up that often, waiting
-> one merge cycle is fine.
-> 
-> Sam
-> 
-> To: Nicolas Ferre <nicolas.ferre@microchip.com>
-> To: Helge Deller <deller@gmx.de>
-> To: Alexandre Belloni <alexandre.belloni@bootlin.com>
-> To: Claudiu Beznea <claudiu.beznea@microchip.com>
-> To: Antonino Daplas <adaplas@gmail.com>
-> To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> To: Paul Mackerras <paulus@samba.org>
-> To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> To: Robin van der Gracht <robin@protonic.nl>
-> To: Miguel Ojeda <ojeda@kernel.org>
-> To: Lee Jones <lee@kernel.org>
-> To: Daniel Thompson <daniel.thompson@linaro.org>
-> To: Jingoo Han <jingoohan1@gmail.com>
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-omap@vger.kernel.org
-> Cc: linux-staging@lists.linux.dev
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: Stephen Kitt <steve@sk2.org>
-> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+On 1/9/23 11:26, Daniel Vetter wrote:
+> On Thu, 5 Jan 2023 at 11:22, Daniel Vetter <daniel@ffwll.ch> wrote:
+>>
+>> On Thu, 5 Jan 2023 at 09:14, Helge Deller <deller@gmx.de> wrote:
+>>>
+>>> Hi Linus,
+>>>
+>>> please pull the fbdev driver updates for 6.2-rc3, to receive
+>>> fixes for matroxfb, offb, omapfb and fbmem.
+>>>
+>>> Thanks,
+>>> Helge
+>>>
+>>> ----
+>>>
+>>> The following changes since commit 1b929c02afd37871d5afb9d498426f83432=
+e71c2:
+>>>
+>>>    Linux 6.2-rc1 (2022-12-25 13:41:39 -0800)
+>>>
+>>> are available in the Git repository at:
+>>>
+>>>    http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.g=
+it tags/fbdev-for-6.2-rc3
+>>>
+>>> for you to fetch changes up to 764043cccd7232a783753a612d628fc0cb7854b=
+e:
+>>>
+>>>    fbdev: omapfb: avoid stack overflow warning (2023-01-04 19:09:40 +0=
+100)
+>>>
+>>> ----------------------------------------------------------------
+>>> fbdev updates for kernel 6.2-rc3:
+>>>
+>>> - Fix Matrox G200eW initialization failure
+>>> - Fix build failure of offb driver when built as module
+>>> - Optimize stack usage in omapfb
+>>> - Prevent use-after-free in fbmem
+>>>
+>>> ----------------------------------------------------------------
+>>> Arnd Bergmann (1):
+>>>        fbdev: omapfb: avoid stack overflow warning
+>>>
+>>> Hang Zhang (1):
+>>>        fbdev: fbmem: prevent potential use-after-free issues with cons=
+ole_lock()
+>>
+>> I looked at this, and even by fbdev locking standards this makes
+>> absolutely no sense to me. I think this should be dropped before we've
+>> reached some sort of conclusion on what is going on, or whether this
+>> is just pure static checker conjecture without fully understanding how
+>> this is supposed to work really.
+>
+> Just to close this: Turned out to be some kind of static checker dud
+> (and unfortunately the commit message didn't even explain that it was
+> found through some undisclosed static checker, I asked the submitter
+> to rectify this going forward since they'll likely submit more stuff
+> like this).
+> -Daniel
 
-I have created a helper script [1] to send series, so it hides these long Cc
-lists behind the command line parameters. Feel free to use / comment / update
-/ take any ideas from it...
+Thank you, Daniel!
 
-[1]: https://github.com/andy-shev/home-bin-tools/blob/master/ge2maintainer.sh
-
-
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+Helge

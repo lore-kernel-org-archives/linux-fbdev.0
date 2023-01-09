@@ -2,156 +2,116 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DDB7C54EBD
-	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Jan 2023 20:48:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 074CDC54EBD
+	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Jan 2023 22:31:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231310AbjAIUsi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 9 Jan 2023 15:48:38 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57742 "EHLO
+        id S237654AbjAIWbh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 9 Jan 2023 17:31:37 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52380 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234368AbjAIUsR (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Jan 2023 15:48:17 -0500
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E7F21C12A
-        for <linux-fbdev@vger.kernel.org>; Mon,  9 Jan 2023 12:48:16 -0800 (PST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1pEz3y-0000Nt-E6; Mon, 09 Jan 2023 21:48:10 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1pEz3x-004vYT-JU; Mon, 09 Jan 2023 21:48:09 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1pEz3w-00BVa6-MU; Mon, 09 Jan 2023 21:48:08 +0100
-From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>
-Cc:     linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, kernel@pengutronix.de
-Subject: [PATCH 1/2] backlight: pwm_bl: configure pwm only once per backlight toggle
-Date:   Mon,  9 Jan 2023 21:47:57 +0100
-Message-Id: <20230109204758.610400-1-u.kleine-koenig@pengutronix.de>
+        with ESMTP id S237597AbjAIWbg (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Jan 2023 17:31:36 -0500
+Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com [IPv6:2a00:1450:4864:20::62f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B4C86388;
+        Mon,  9 Jan 2023 14:31:35 -0800 (PST)
+Received: by mail-ej1-x62f.google.com with SMTP id vm8so23949040ejc.2;
+        Mon, 09 Jan 2023 14:31:35 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=googlemail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=OZe8VJu/fGCCz+Eb3NiW7mLJBs19t4YWlgg0ulzutFw=;
+        b=GSLrukwN25auhR2Y9tG2IvbfkBqYNzBDfNQWqdjB7K51f6ZiksEJtgxejWerw/vsf2
+         HNWduMWWXpqKrNtgR6PFRro4ZZuKOB98gyrC/XFdBUmrPVrcv2jCc5s8rehfL+LPZnU8
+         MhNevobZTxfeKXIkbrB9LqAJhC1d31Q9hYmQa0UajkdpAndEzKp9/kk+VJPF37zNwxK9
+         7CIpcKX9PdMjk/cq6i4TfyNgl+KglhAwRLcAZ5vKtBOfHjgaes3vVDty0R4aPtkYxq41
+         5ccz1Ju28ipPWVxiOHMN+CyD54l+blvQ2kfCJ0seUSKRkZAfOP58voelxFXZBm6Oy9XM
+         jb3g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=OZe8VJu/fGCCz+Eb3NiW7mLJBs19t4YWlgg0ulzutFw=;
+        b=Es1DLcczHNrBl2tL8WO+1OD/xxGHMqPMO9kUFJ/NvvLibKue+wiEn7eOnIOo5PdVZv
+         SdUA+B4uSnzNhE0GHBIDOpOjGT5NRZpHhlC/myFMZxfwWVrKwbkQzaA2/yY7IkUm16uf
+         pyWJmB3lCTiTzvDJ7N9iPB6hRZWvLnSy2Lnctq23NSkKK1NqQzWTQXk0CFZCdpfVNCbm
+         hXsFhbVNJXArf6DHufxRgIbuIcHBf43/4o1Y/PvpMYhP4Sh7McmNN0QJzR2TDQ67xAdu
+         lRYoOSUanTmuVZxXU9mSBCX9g9b03s03ef/2E4bvk1UKEx3tKXBxGcQs6l7suiBEbMuc
+         VJ6g==
+X-Gm-Message-State: AFqh2krc7u9UrN7p9Tjq3l53X1N8a6Clj9s+/7S6iwsgK6BXVwFRZ2Hy
+        ttLhFm/Q/JKry3qETdMxVt329kWwLxQ=
+X-Google-Smtp-Source: AMrXdXvpiCc8i3vWtwCmmEDeA46pFWN6Dz27By5UAtP+wRO7CW2CRYa8a71xhMAms7AZC6iBTAbe0Q==
+X-Received: by 2002:a17:906:b043:b0:7c0:d23c:ead3 with SMTP id bj3-20020a170906b04300b007c0d23cead3mr58284154ejb.27.1673303493935;
+        Mon, 09 Jan 2023 14:31:33 -0800 (PST)
+Received: from localhost.localdomain (dynamic-2a01-0c23-bcd2-ed00-0000-0000-0000-0e63.c23.pool.telefonica.de. [2a01:c23:bcd2:ed00::e63])
+        by smtp.googlemail.com with ESMTPSA id k8-20020a17090632c800b00780982d77d1sm4228235ejk.154.2023.01.09.14.31.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 09 Jan 2023 14:31:33 -0800 (PST)
+From:   Martin Blumenstingl <martin.blumenstingl@googlemail.com>
+To:     dri-devel@lists.freedesktop.org
+Cc:     Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Hans Verkuil <hans.verkuil@cisco.com>,
+        ville.syrjala@linux.intel.com,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Bernard Zhao <bernard@vivo.com>,
+        Martin Blumenstingl <martin.blumenstingl@googlemail.com>
+Subject: [PATCH v1 RFC] video/hdmi: Fix HDMI_VENDOR_INFOFRAME_SIZE
+Date:   Mon,  9 Jan 2023 23:31:10 +0100
+Message-Id: <20230109223110.1165433-1-martin.blumenstingl@googlemail.com>
 X-Mailer: git-send-email 2.39.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3028; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=tMZdMl/umVRDeT9rsYMGqAfkRDAo8yVZQfLxsndR6+E=; b=owEBbQGS/pANAwAKAcH8FHityuwJAcsmYgBjvH13dvRtwRaDgz+Z46J6LBniAuKUN/DofOrLFmgK XkdthLeJATMEAAEKAB0WIQR+cioWkBis/z50pAvB/BR4rcrsCQUCY7x9dwAKCRDB/BR4rcrsCb/FB/ 4iyFKEMW5MHQBK6gkxthBP3Bhb0W/n9q0TqmYFUJ0l822Axjn65LQFvhPivbRbz2C4Upgh9+s+QI7h RBXbWglWjQBJ4QBw1YypBPDTeWMIJS6rp0o7zjclyzi6f05SHrV9y27quTH8ysQfYebKp4hCT4CAhr qSFwNUM4c1q0m9T+nUZLYwsyLmjNOVUlgbNcaX44e8wlzFe5qbkp24o9v22CXxvq7rP1fAML2XdW0S CbCCWMIigDeBXHgpvJJ/4ADYn94E7eIL7bbcxQduP0wrCYqJMbM3QoIATwwI8TKECDLF3sKErUWHNV hR/A6Y2SyYhKAfgwHRbwrnGiUQpSl3
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-When the function pwm_backlight_update_status() was called with
-brightness > 0, pwm_get_state() was called twice (once directly and once
-in compute_duty_cycle). Also pwm_apply_state() was called twice (once in
-pwm_backlight_power_on() and once directly).
+When support for the HDMI vendor infoframe was introduced back with
+commit 7d27becb3532 ("video/hdmi: Introduce helpers for the HDMI vendor
+specific infoframe") it's payload size was either 5 or 6 bytes,
+depending on:
+  if (frame->s3d_struct >= HDMI_3D_STRUCTURE_SIDE_BY_SIDE_HALF)
+When true the size was 6 bytes, otherwise 5 bytes.
 
-Optimize this to do both calls only once.
+Drivers that are using hdmi_infoframe_pack() are reserving 10 bytes (4
+bytes for the header and up to 6 bytes for the infoframe payload data)
+or more (exynos_hdmi reserves 25 bytes).
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Over time the frame payload length was reduced to 4 bytes. This however
+does not match the code from hdmi_hdmi_infoframe_pack() where ptr[8] and
+ptr[9] are written, which means the infoframe has to allow up to 6 bytes
+of payload data (considering that the header takes 4 bytes).
+
+Change HDMI_VENDOR_INFOFRAME_SIZE to 6 bytes so
+hdmi_vendor_infoframe_pack_only() can properly check the passed buffer
+size and avoid an out of bounds write to ptr[8] or ptr[9].
+
+Fixes: c5e69ab35c0d ("video/hdmi: Constify infoframe passed to the pack functions")
+Fixes: d43be2554b58 ("drivers: video: hdmi: cleanup coding style in video a bit")
+Signed-off-by: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
 ---
- drivers/video/backlight/pwm_bl.c | 28 ++++++++++------------------
- 1 file changed, 10 insertions(+), 18 deletions(-)
+I'm not an expert on this topic and I'm not sure if the size still
+depends on that if condition from long time ago. So please share your
+thoughts.
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index d0b22158cd70..0509fecd5715 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -40,10 +40,8 @@ struct pwm_bl_data {
- 
- static void pwm_backlight_power_on(struct pwm_bl_data *pb)
- {
--	struct pwm_state state;
- 	int err;
- 
--	pwm_get_state(pb->pwm, &state);
- 	if (pb->enabled)
- 		return;
- 
-@@ -51,9 +49,6 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb)
- 	if (err < 0)
- 		dev_err(pb->dev, "failed to enable power supply\n");
- 
--	state.enabled = true;
--	pwm_apply_state(pb->pwm, &state);
--
- 	if (pb->post_pwm_on_delay)
- 		msleep(pb->post_pwm_on_delay);
- 
-@@ -65,9 +60,6 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb)
- 
- static void pwm_backlight_power_off(struct pwm_bl_data *pb)
- {
--	struct pwm_state state;
--
--	pwm_get_state(pb->pwm, &state);
- 	if (!pb->enabled)
- 		return;
- 
-@@ -77,28 +69,21 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
- 	if (pb->pwm_off_delay)
- 		msleep(pb->pwm_off_delay);
- 
--	state.enabled = false;
--	state.duty_cycle = 0;
--	pwm_apply_state(pb->pwm, &state);
--
- 	regulator_disable(pb->power_supply);
- 	pb->enabled = false;
- }
- 
--static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness)
-+static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness, struct pwm_state *state)
- {
- 	unsigned int lth = pb->lth_brightness;
--	struct pwm_state state;
- 	u64 duty_cycle;
- 
--	pwm_get_state(pb->pwm, &state);
--
- 	if (pb->levels)
- 		duty_cycle = pb->levels[brightness];
- 	else
- 		duty_cycle = brightness;
- 
--	duty_cycle *= state.period - lth;
-+	duty_cycle *= state->period - lth;
- 	do_div(duty_cycle, pb->scale);
- 
- 	return duty_cycle + lth;
-@@ -115,11 +100,18 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
- 
- 	if (brightness > 0) {
- 		pwm_get_state(pb->pwm, &state);
--		state.duty_cycle = compute_duty_cycle(pb, brightness);
-+		state.duty_cycle = compute_duty_cycle(pb, brightness, &state);
-+		state.enabled = true;
- 		pwm_apply_state(pb->pwm, &state);
-+
- 		pwm_backlight_power_on(pb);
- 	} else {
- 		pwm_backlight_power_off(pb);
-+
-+		pwm_get_state(pb->pwm, &state);
-+		state.enabled = false;
-+		state.duty_cycle = 0;
-+		pwm_apply_state(pb->pwm, &state);
- 	}
- 
- 	if (pb->notify_after)
 
-base-commit: 1b929c02afd37871d5afb9d498426f83432e71c2
-prerequisite-patch-id: a0c7497a32092d284bc47eda60e4b3690338ba6e
+ include/linux/hdmi.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
+index 2f4dcc8d060e..026c5ef5a1a5 100644
+--- a/include/linux/hdmi.h
++++ b/include/linux/hdmi.h
+@@ -57,7 +57,7 @@ enum hdmi_infoframe_type {
+ #define HDMI_SPD_INFOFRAME_SIZE    25
+ #define HDMI_AUDIO_INFOFRAME_SIZE  10
+ #define HDMI_DRM_INFOFRAME_SIZE    26
+-#define HDMI_VENDOR_INFOFRAME_SIZE  4
++#define HDMI_VENDOR_INFOFRAME_SIZE  6
+ 
+ #define HDMI_INFOFRAME_SIZE(type)	\
+ 	(HDMI_INFOFRAME_HEADER_SIZE + HDMI_ ## type ## _INFOFRAME_SIZE)
 -- 
 2.39.0
 

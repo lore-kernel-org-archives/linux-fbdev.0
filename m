@@ -2,176 +2,115 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A517C5479D
-	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Jan 2023 07:23:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AC67C54EBD
+	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Jan 2023 08:03:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233304AbjAIHXv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 9 Jan 2023 02:23:51 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38976 "EHLO
+        id S233635AbjAIIDN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 9 Jan 2023 03:03:13 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58482 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233929AbjAIHXs (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Jan 2023 02:23:48 -0500
-Received: from 14.mo581.mail-out.ovh.net (14.mo581.mail-out.ovh.net [178.33.251.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7178212771
-        for <linux-fbdev@vger.kernel.org>; Sun,  8 Jan 2023 23:23:47 -0800 (PST)
-Received: from director10.ghost.mail-out.ovh.net (unknown [10.109.146.131])
-        by mo581.mail-out.ovh.net (Postfix) with ESMTP id F2C2722E68
-        for <linux-fbdev@vger.kernel.org>; Mon,  9 Jan 2023 07:04:17 +0000 (UTC)
-Received: from ghost-submission-6684bf9d7b-vcj6j (unknown [10.110.208.152])
-        by director10.ghost.mail-out.ovh.net (Postfix) with ESMTPS id 114F81FE0E;
-        Mon,  9 Jan 2023 07:04:15 +0000 (UTC)
-Received: from sk2.org ([37.59.142.97])
-        by ghost-submission-6684bf9d7b-vcj6j with ESMTPSA
-        id VL7nAW+8u2NFIg8AanWh3Q
-        (envelope-from <steve@sk2.org>); Mon, 09 Jan 2023 07:04:15 +0000
-Authentication-Results: garm.ovh; auth=pass (GARM-97G002b1d9a515-bcd6-46a5-9747-d99bfac79232,
-                    796317D5D98EA53ED2B7ABF3FE0FDD27B7A2AA3D) smtp.auth=steve@sk2.org
-X-OVh-ClientIp: 82.65.25.201
-Date:   Mon, 9 Jan 2023 08:04:08 +0100
-From:   Stephen Kitt <steve@sk2.org>
-To:     Sam Ravnborg <sam@ravnborg.org>
-Cc:     Sam Ravnborg via B4 Submission Endpoint 
-        <devnull+sam.ravnborg.org@kernel.org>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        linux-staging@lists.linux.dev,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Helge Deller <deller@gmx.de>, Lee Jones <lee@kernel.org>,
-        Miguel Ojeda <ojeda@kernel.org>,
-        Antonino Daplas <adaplas@gmail.com>,
-        linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        Robin van der Gracht <robin@protonic.nl>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        linuxppc-dev@lists.ozlabs.org,
-        Claudiu Beznea <claudiu.beznea@microchip.com>
-Subject: Re: [PATCH 09/15] staging: fbtft: fb_ssd1351.c: Introduce
- backlight_is_blank()
-Message-ID: <20230109080408.318b9188@heffalump.sk2.org>
-In-Reply-To: <Y7sntztwrNqw41+i@ravnborg.org>
-References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
-        <20230107-sam-video-backlight-drop-fb_blank-v1-9-1bd9bafb351f@ravnborg.org>
-        <20230108202817.7890f85c@heffalump.sk2.org>
-        <Y7sntztwrNqw41+i@ravnborg.org>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+        with ESMTP id S233106AbjAIIDN (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Jan 2023 03:03:13 -0500
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D850DFCDA;
+        Mon,  9 Jan 2023 00:03:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1673251383; bh=qozjcx4hTpr3jaYdT2eKjDnLhPkqHFw+E4wFsV+KjBo=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=smzHY8PNV3Owc520Tr9p8IXQNBB9KKe4GYCYgmoeCwe6bz71EZc4DA6nOyUvP8bVf
+         1nT6FchfvuH/idf4w/pYs8IYRPsRNvPTCdbsk9RdPZr164FKH5gvVOJPredv5RruCz
+         1uYcoj1ypJRVK3w3dvdktbAe6C+XMQmY87PTaG2jIvQZGpDB8R7v/3mqwsdPJLEtZU
+         B9YI4MPAm0O1F8NJYMp+FwU9rrftW/l1QQIMiUnnfykkiniFWe8dLCN2xFlKAOkdYT
+         IcPvik70XX9eKiXjk1dF0+VAJ30kRtHcZbaPXO2K1rRgRBBxXsjD13WvxRV9Evn2BE
+         4fwlcf4j0NiDQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([92.116.168.5]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MwfWU-1opqNY4Aig-00y8zI; Mon, 09
+ Jan 2023 09:03:03 +0100
+Message-ID: <b1ba214d-f3e1-4f6e-5226-2ab7761c4366@gmx.de>
+Date:   Mon, 9 Jan 2023 09:03:01 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/k5LKo+Vu6bf_gN1b.VvwaPq";
- protocol="application/pgp-signature"; micalg=pgp-sha512
-X-Ovh-Tracer-Id: 13578634353109337734
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrkeehgddutdehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepfffhvfevuffkjghfofggtgesghdtreerredtvdenucfhrhhomhepufhtvghphhgvnhcumfhithhtuceoshhtvghvvgesshhkvddrohhrgheqnecuggftrfgrthhtvghrnhepfeffgefhgfeuueeffeejieefieefgfefffethfdtudegvdejueelhffhfeegjeeinecukfhppeduvdejrddtrddtrddupdefjedrheelrddugedvrdeljeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduvdejrddtrddtrddupdhmrghilhhfrhhomhepoehsthgvvhgvsehskhdvrdhorhhgqedpnhgspghrtghpthhtohepuddprhgtphhtthhopehlihhnuhigqdhfsgguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdfovfetjfhoshhtpehmohehkedupdhmohguvgepshhmthhpohhuth
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.0
+Subject: Re: [PATCH] fbdev: Replace 0-length array with flexible array
+Content-Language: en-US
+To:     Kees Cook <keescook@chromium.org>
+Cc:     "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
+References: <20230105192034.never.249-kees@kernel.org>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20230105192034.never.249-kees@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:9YTJmsZjsjckd6I9le8J645mr0N28l3SdIAvOuyOXzXTuxHoKTG
+ qoIQNW6zyu1FP5X6N850VSLQj1Yw9UebNucTTQJta3AtHaS+teEAiFne08YoJwisaVxSDKz
+ N0oYml7bDnzZQ1yhL5GdZ+k+Rw41aEnT0J2GsXeJAIU8XqYi2nstRW8BFge+4dsNu52nJl+
+ EE9Lx6dmVlu166rTDsPCA==
+UI-OutboundReport: notjunk:1;M01:P0:UMFGxlVWvYY=;5AI8Fz86dVux/6X6Zo26d4ofLkC
+ Mn+YuXFtnpca4uzGQr10jGyFUg4BvKVTFjgjCPtpHp+9t+TvPxS1H2Odj2prQlE/FQ3V9eEwH
+ xxb+uWK5yADaZddzuMIVkgqJWW7A2oWr7pF28RTRhGpqJoRmsh6ygXWO+RcoI29/M6QLaptlv
+ 8pcFmo6+6CqJZ0zD+1hf+KY/w0KMqnEMSPNq1X1ASYHssCDwwjtRtDHzfkeLkj3DFPt5LQCq3
+ 0eO+7duchHK0eZVEYULvCHQIv80zsVW518lnz0nsKBKSTg8nCTINjNjV3SPsJM9qariCEB0gJ
+ yDLg0G9L88CTjZqj018fr5yj5xb0UfRa/9qJ/IoeALU04WRyKVcLeggi2jPGzfkMSq38MauOs
+ trLH8xBQP1+fNv8n2BBGHzpqaHPwDcmUYQmmnZyvw2mWz3RtiyzNXv41Ni7/obCPxnjrvNuSF
+ OpjiBhrKaV5tWj1FmXWLhGAb7SOn+K1bioeZA7uZpDwNnL97VNxz1CujfD6OlnYbHmEYtLOIe
+ j/Mm223Cvc4wFGQsQca3aV3X0ZGP5WnC/YU+euHqNvO0XVFM0YNIt+noJKjFRgET/MOB7oJdY
+ D9rrUCL31P4PRPMax3YRU9pNEg8tqVj6Zijn1frN2hZ59Gwx+9FIvmoZ/XPXc+c0gQyJ2rB+F
+ C90+bAPSObZ8ctryBCfK+CBe8R2lStLhnvwpPQrOjsLaus/5vRp/vHj8Y3s3A6ynDvzFgQbgQ
+ Tu56CTwE4PHumDWLoIuhhJV0irXMDCtmXGuoDbb0ZWRD10A+5hldW9orqblk/fN7eeoXNm+rM
+ HijCdlGagKbAYRZeAgSga65k0N470YFnFz3shIyUXLsXI185uPoTKSwu05UkMoURZCGc9xm2n
+ fTuwX9wN5JthviOzrR6vHxUnFHofAx/v5LHDLzaKCOlX7SLbaJLH1KJI5FzdZfI1biLpG8jS8
+ 5zHJ/A==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
---Sig_/k5LKo+Vu6bf_gN1b.VvwaPq
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On 1/5/23 20:20, Kees Cook wrote:
+> Zero-length arrays are deprecated[1]. Replace struct aperture's "ranges"
+> 0-length array with a flexible array. (How is the size of this array
+> verified?) Detected with GCC 13, using -fstrict-flex-arrays=3D3:
+>
+> samples/vfio-mdev/mdpy-fb.c: In function 'mdpy_fb_probe':
+> samples/vfio-mdev/mdpy-fb.c:169:32: warning: array subscript 0 is outsid=
+e array bounds of 'struct aperture[0]' [-Warray-bounds=3D]
+>    169 |         info->apertures->ranges[0].base =3D info->fix.smem_star=
+t;
+>        |         ~~~~~~~~~~~~~~~~~~~~~~~^~~
+> In file included from samples/vfio-mdev/mdpy-fb.c:21:
+> include/linux/fb.h:510:19: note: while referencing 'ranges'
+>    510 |                 } ranges[0];
+>        |                   ^~~~~~
+>
+> [1] https://www.kernel.org/doc/html/latest/process/deprecated.html#zero-=
+length-and-one-element-arrays
+>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
+> Signed-off-by: Kees Cook <keescook@chromium.org>
 
-Hi Sam,
+applied to the fbdev git tree.
 
-On Sun, 8 Jan 2023 21:29:43 +0100, Sam Ravnborg <sam@ravnborg.org> wrote:
-> On Sun, Jan 08, 2023 at 08:28:17PM +0100, Stephen Kitt wrote:
-> > On Sat, 07 Jan 2023 19:26:23 +0100, Sam Ravnborg via B4 Submission
-> > Endpoint <devnull+sam.ravnborg.org@kernel.org> wrote:
-> >  =20
-> > > From: Sam Ravnborg <sam@ravnborg.org>
-> > >=20
-> > > Avoiding direct access to backlight_properties.props.
-> > >=20
-> > > Access to the deprecated props.fb_blank replaced by
-> > > backlight_is_blank(). Access to props.power is dropped - it was only
-> > > used for debug.
-> > >=20
-> > > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> > > Cc: Stephen Kitt <steve@sk2.org>
-> > > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > > Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> > > Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> > > Cc: linux-fbdev@vger.kernel.org
-> > > ---
-> > >  drivers/staging/fbtft/fb_ssd1351.c | 9 +++------
-> > >  1 file changed, 3 insertions(+), 6 deletions(-)
-> > >=20
-> > > diff --git a/drivers/staging/fbtft/fb_ssd1351.c
-> > > b/drivers/staging/fbtft/fb_ssd1351.c index b8d55aa8c5c7..995fbd2f3dc6
-> > > 100644 --- a/drivers/staging/fbtft/fb_ssd1351.c
-> > > +++ b/drivers/staging/fbtft/fb_ssd1351.c
-> > > @@ -190,15 +190,12 @@ static struct fbtft_display display =3D {
-> > >  static int update_onboard_backlight(struct backlight_device *bd)
-> > >  {
-> > >  	struct fbtft_par *par =3D bl_get_data(bd);
-> > > -	bool on;
-> > > +	bool blank =3D backlight_is_blank(bd);
-> > > =20
-> > > -	fbtft_par_dbg(DEBUG_BACKLIGHT, par,
-> > > -		      "%s: power=3D%d, fb_blank=3D%d\n",
-> > > -		      __func__, bd->props.power, bd->props.fb_blank);
-> > > +	fbtft_par_dbg(DEBUG_BACKLIGHT, par, "%s: blank=3D%d\n", __func__,
-> > > blank);=20
-> > > -	on =3D !backlight_is_blank(bd);
-> > >  	/* Onboard backlight connected to GPIO0 on SSD1351, GPIO1
-> > > unused */
-> > > -	write_reg(par, 0xB5, on ? 0x03 : 0x02);
-> > > +	write_reg(par, 0xB5, !blank ? 0x03 : 0x02);
-> > > =20
-> > >  	return 0;
-> > >  }
-> > >=20
-> > > --=20
-> > > 2.34.1 =20
-> >=20
-> > For debugging purposes here, would there be any point in logging
-> > props.state? As in
-> >=20
-> >         fbtft_par_dbg(DEBUG_BACKLIGHT, par,
-> > -                     "%s: power=3D%d, fb_blank=3D%d\n",
-> > -                     __func__, bd->props.power, bd->props.fb_blank);
-> > +                     "%s: power=3D%d, state=3D%u\n",
-> > +                     __func__, bd->props.power, bd->props.state); =20
->=20
-> Thanks for the suggestion - and the reviews!
->=20
-> I was tempted to just remove the debugging.
-> If we require debugging, then this could be added in the backlight core,
-> thus everyone would benefit from it.
->=20
-> The solution above avoid any direct use of backlight_properties
-> which I consider a layer violation outside the backlight core.
-> (We cannot avoid it today with the current interface - but we can
-> minimize it).
+Thanks!
+Helge
 
-Ah yes, ideally backlight_properties should be viewed as an opaque structur=
-e,
-that makes sense.
+> ---
+>   include/linux/fb.h | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index 96b96323e9cb..bf59d6a3590f 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -507,7 +507,7 @@ struct fb_info {
+>   		struct aperture {
+>   			resource_size_t base;
+>   			resource_size_t size;
+> -		} ranges[0];
+> +		} ranges[];
+>   	} *apertures;
+>
+>   	bool skip_vt_switch; /* no VT switch on suspend/resume required */
 
-Regards,
-
-Stephen
-
---Sig_/k5LKo+Vu6bf_gN1b.VvwaPq
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEEnPVX/hPLkMoq7x0ggNMC9Yhtg5wFAmO7vGgACgkQgNMC9Yht
-g5xpKw/+N/+V4N4YMTYfpGMKaFq+uDIg1giIEl9CWezI5BHkqwm7JGWbaeS23efZ
-UHblHcZJZHTVQEXdJB8WMyhR9dHbEuati13IWacBs5OpBnvdL9kp2cTyBaChErEO
-hMbeCaJVRmBEedoCVyGWPYp13KeX6CuYTqR/7/gTroZIK68bnTuwuIaeQlpgVXqL
-Lue5OQUM2VezQCOLTiHUTspj82Bd1bTPfZfm/W8HKNzC6L2wSIzLuVRMphomjnek
-Yb+lLKK45q++yxbI/5M1k8cXB626ooPXfFB8BSZlQVSjcye2Nxd4heB7EKD9bMTe
-9qS7EjKDjbjm1l/7M542TEIL8zelZ9kaFqTom6JpeIS6iQIlb9XQP0jq/QWXv+9T
-w7aCVB/ImS08kMVlW+uhCLmJudvc5Ro1XBnHMi+KvETzmr8j2kWBvw8WDtgxq76c
-/PgbkkZWE2Htehso+egiPYRTT+0QRX1EPk9SpyFgaQV9YwZupBlCwxh2uhlbCweV
-Ff/w5ZGTTZe/n1ZlgPPkAZWhPQotPFgkOzZpEACy2EOI5VIF7luIbXnPUyKvIEsE
-W85vEaPzGZNqcZw3WW0a1CqgEVUFxJg29oTuC4KKM6BfNe+4hFCJ0EzShLmo+DHk
-fXp1T3rFtAWKgcTEjK4vwxpSEZJPfQDx+JR5GESW204w2Accxiw=
-=aVeb
------END PGP SIGNATURE-----
-
---Sig_/k5LKo+Vu6bf_gN1b.VvwaPq--

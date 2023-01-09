@@ -2,164 +2,106 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BB3BC54EBE
-	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Jan 2023 09:18:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83059C63797
+	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Jan 2023 10:02:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233679AbjAIJS5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 9 Jan 2023 04:18:57 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52738 "EHLO
+        id S234130AbjAIKCN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 9 Jan 2023 05:02:13 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52116 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237136AbjAIJSf (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Jan 2023 04:18:35 -0500
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 28E04E005;
-        Mon,  9 Jan 2023 01:15:02 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1673255702; x=1704791702;
-  h=from:to:cc:subject:in-reply-to:references:date:
-   message-id:mime-version;
-  bh=8H3hPCFI47nxZtoBbne24d82bPkrwkUNa3C9m/vtPLs=;
-  b=anXYq0ABsHPv/O6yvljWBVthLlBaH8dmTJtBkPGywTYP8zcqwN1Sbnri
-   ZyktcExmENsz3E14KTTJ2CnWX36HUFrvhyiegbjN/8YESC8RmO45oce8k
-   lb16pD/xCq7U/BCkHnvvKnGWI4OF3K7K3IcpT+F1q2TqktdF2kjuiSWXq
-   kZNZFUcVHlmxIH0Dg2L+dHRkymZQh0wz+VwcdtM5DNFc86J0c866L6zHG
-   CvLbhLyv1azIZpTC0DdBKSiWTfF9wTMm7nJ5MfNmexTmIoiiT+ZtupJm+
-   T57yq3H+SmfAAL01N9902ZdU6fLjkaf/2Z6VayC9KMHnrjszWTnAhxnqu
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10584"; a="322904952"
-X-IronPort-AV: E=Sophos;i="5.96,311,1665471600"; 
-   d="scan'208";a="322904952"
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jan 2023 01:15:01 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10584"; a="985334290"
-X-IronPort-AV: E=Sophos;i="5.96,311,1665471600"; 
-   d="scan'208";a="985334290"
-Received: from gtmcgeac-mobl1.ger.corp.intel.com (HELO localhost) ([10.252.11.217])
-  by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jan 2023 01:14:55 -0800
-From:   Jani Nikula <jani.nikula@linux.intel.com>
-To:     Sam Ravnborg via B4 Submission Endpoint 
-        <devnull+sam.ravnborg.org@kernel.org>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Helge Deller <deller@gmx.de>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        Antonino Daplas <adaplas@gmail.com>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Robin van der Gracht <robin@protonic.nl>,
-        Miguel Ojeda <ojeda@kernel.org>, Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>
-Cc:     linux-fbdev@vger.kernel.org, Stephen Kitt <steve@sk2.org>,
-        Sam Ravnborg <sam@ravnborg.org>, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Ludovic Desroches <ludovic.desroches@microchip.com>,
-        linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 01/15] video: fbdev: atmel_lcdfb: Rework backlight handling
-In-Reply-To: <20230107-sam-video-backlight-drop-fb_blank-v1-1-1bd9bafb351f@ravnborg.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
- <20230107-sam-video-backlight-drop-fb_blank-v1-1-1bd9bafb351f@ravnborg.org>
-Date:   Mon, 09 Jan 2023 11:14:53 +0200
-Message-ID: <87a62s2ho2.fsf@intel.com>
+        with ESMTP id S233264AbjAIKBo (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Jan 2023 05:01:44 -0500
+Received: from mail-qt1-f175.google.com (mail-qt1-f175.google.com [209.85.160.175])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A0D44B6F;
+        Mon,  9 Jan 2023 02:01:37 -0800 (PST)
+Received: by mail-qt1-f175.google.com with SMTP id z12so7390403qtv.5;
+        Mon, 09 Jan 2023 02:01:37 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=eshgBixf0oY5QW+geWBankTPG5WvD9jfZetbBO0Ldgo=;
+        b=V+PXoU83OHHdY/GgD7/DiH8sew4jVppU65AFX/zq2BcGhx8uHUu4lkru/c/ZiVNHcd
+         pkZugqcIzdvZdCD8GYJpe+qr4ErPWSiK2WWaXXS8oW4ASbc1L7SCSXZWOjbGhzqyUeHV
+         ApeNni79ms4T4ZtkSduGqbTHNImRThoUlyMUqAge7QHHlMTqaNZY8f0ATST1XMEHfZW3
+         1KcOVtVpf2WGNZ+uWB36mqBRZTWwYg+A4Btzeo+zT5I3CBnEb+vRRcxj9LCoq4LXVx+G
+         ISJnM5w7cYPCXh0BTbEzP6aUJa5V2AfqpaPKPUcDey8omyaXSzPUgLNqIjsnVsbPHIcZ
+         nJfA==
+X-Gm-Message-State: AFqh2ko8ie01tFBmB9F1BuXuAvO/jOcy+O2tCjNQQAtMhswwVI1+Njn2
+        2WYxkgPFV7IN57Ls6sQaTIOvHettyDvYTA==
+X-Google-Smtp-Source: AMrXdXsb5h/is58LB+3UBFAMOeHyEY+glI/sIPy1xi+F8M8ClqXCGvO8ffUuA66ByNMTv9Ca0eTWrQ==
+X-Received: by 2002:ac8:1487:0:b0:3ad:b9af:a507 with SMTP id l7-20020ac81487000000b003adb9afa507mr2371270qtj.52.1673258496676;
+        Mon, 09 Jan 2023 02:01:36 -0800 (PST)
+Received: from mail-yb1-f180.google.com (mail-yb1-f180.google.com. [209.85.219.180])
+        by smtp.gmail.com with ESMTPSA id t5-20020a05620a450500b006fa8299b4d5sm5160632qkp.100.2023.01.09.02.01.35
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 09 Jan 2023 02:01:35 -0800 (PST)
+Received: by mail-yb1-f180.google.com with SMTP id c124so7973202ybb.13;
+        Mon, 09 Jan 2023 02:01:35 -0800 (PST)
+X-Received: by 2002:a25:d103:0:b0:75d:3ecb:1967 with SMTP id
+ i3-20020a25d103000000b0075d3ecb1967mr5480772ybg.604.1673258494966; Mon, 09
+ Jan 2023 02:01:34 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
+References: <20230105094039.1474255-1-xurui@kylinos.cn>
+In-Reply-To: <20230105094039.1474255-1-xurui@kylinos.cn>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Mon, 9 Jan 2023 11:01:22 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdX174erGgrCUBv2WdX67H=mig-hi=SOdeMJ=0__thC_fw@mail.gmail.com>
+Message-ID: <CAMuHMdX174erGgrCUBv2WdX67H=mig-hi=SOdeMJ=0__thC_fw@mail.gmail.com>
+Subject: Re: [PATCH] fbdev/g364fb: Fix a compilation issue
+To:     xurui <xurui@kylinos.cn>
+Cc:     deller@gmx.de, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        trivial@kernel.org,
+        Linux MIPS Mailing List <linux-mips@linux-mips.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, 07 Jan 2023, Sam Ravnborg via B4 Submission Endpoint <devnull+sam.ravnborg.org@kernel.org> wrote:
-> From: Sam Ravnborg <sam@ravnborg.org>
->
-> The atmel_lcdfb had code to save/restore power state.
-> This is not needed so drop it.
->
-> Introduce backlight_is_brightness() to make logic simpler.
+Hi Xurui,
 
-backlight_is_brightness?
-
-BR,
-Jani.
-
-
+On Thu, Jan 5, 2023 at 10:45 AM xurui <xurui@kylinos.cn> wrote:
+> drivers/video/fbdev/g364fb.c:202:4: error: cast to pointer from integer of different size [-Werror=int-to-pointer-cast]
 >
-> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Nicolas Ferre <nicolas.ferre@microchip.com>
-> Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
-> Cc: Ludovic Desroches <ludovic.desroches@microchip.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> ---
->  drivers/video/fbdev/atmel_lcdfb.c | 24 +++---------------------
->  1 file changed, 3 insertions(+), 21 deletions(-)
->
-> diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
-> index 1fc8de4ecbeb..d297b3892637 100644
-> --- a/drivers/video/fbdev/atmel_lcdfb.c
-> +++ b/drivers/video/fbdev/atmel_lcdfb.c
-> @@ -49,7 +49,6 @@ struct atmel_lcdfb_info {
->  	struct clk		*lcdc_clk;
->  
->  	struct backlight_device	*backlight;
-> -	u8			bl_power;
->  	u8			saved_lcdcon;
->  
->  	u32			pseudo_palette[16];
-> @@ -109,32 +108,18 @@ static u32 contrast_ctr = ATMEL_LCDC_PS_DIV8
->  static int atmel_bl_update_status(struct backlight_device *bl)
+> Signed-off-by: xurui <xurui@kylinos.cn>
+
+Thanks for your patch!
+
+> --- a/drivers/video/fbdev/g364fb.c
+> +++ b/drivers/video/fbdev/g364fb.c
+> @@ -175,7 +175,8 @@ int __init g364fb_init(void)
 >  {
->  	struct atmel_lcdfb_info *sinfo = bl_get_data(bl);
-> -	int			power = sinfo->bl_power;
-> -	int			brightness = bl->props.brightness;
-> +	int brightness;
->  
-> -	/* REVISIT there may be a meaningful difference between
-> -	 * fb_blank and power ... there seem to be some cases
-> -	 * this doesn't handle correctly.
-> -	 */
-> -	if (bl->props.fb_blank != sinfo->bl_power)
-> -		power = bl->props.fb_blank;
-> -	else if (bl->props.power != sinfo->bl_power)
-> -		power = bl->props.power;
-> -
-> -	if (brightness < 0 && power == FB_BLANK_UNBLANK)
-> -		brightness = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_VAL);
-> -	else if (power != FB_BLANK_UNBLANK)
-> -		brightness = 0;
-> +	brightness = backlight_get_brightness(bl);
->  
->  	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, brightness);
-> +
->  	if (contrast_ctr & ATMEL_LCDC_POL_POSITIVE)
->  		lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR,
->  			brightness ? contrast_ctr : 0);
->  	else
->  		lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, contrast_ctr);
->  
-> -	bl->props.fb_blank = bl->props.power = sinfo->bl_power = power;
-> -
->  	return 0;
->  }
->  
-> @@ -155,8 +140,6 @@ static void init_backlight(struct atmel_lcdfb_info *sinfo)
->  	struct backlight_properties props;
->  	struct backlight_device	*bl;
->  
-> -	sinfo->bl_power = FB_BLANK_UNBLANK;
-> -
->  	if (sinfo->backlight)
->  		return;
->  
-> @@ -173,7 +156,6 @@ static void init_backlight(struct atmel_lcdfb_info *sinfo)
->  	sinfo->backlight = bl;
->  
->  	bl->props.power = FB_BLANK_UNBLANK;
-> -	bl->props.fb_blank = FB_BLANK_UNBLANK;
->  	bl->props.brightness = atmel_bl_get_brightness(bl);
->  }
+>         volatile unsigned int *curs_pal_ptr =
+>             (volatile unsigned int *) CURS_PAL_REG;
+> -       int mem, i;
+> +       int mem;
+> +       uintptr_t i;
 
--- 
-Jani Nikula, Intel Open Source Graphics Center
+This doesn't look like the right fix to me.
+
+The line the compiler[1] complains about is:
+
+                *(unsigned short *) (CURS_PAT_REG + i * 8) = 0;
+
+Interestingly, it doesn't complain about:
+
+        *(unsigned short *) (CURS_PAT_REG + 14 * 64) = 0xffff;
+
+This driver uses raw memory writes to write to hardware registers.
+Probably it should use writel() instead.
+
+[1] mips64-linux-gnuabi64-gcc version 10.3.0 (Ubuntu 10.3.0-1ubuntu1)
+    jazz_defconfig + CONFIG_64BIT=y
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

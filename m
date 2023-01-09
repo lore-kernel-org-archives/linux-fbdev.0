@@ -2,116 +2,158 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 074CDC54EBD
-	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Jan 2023 22:31:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6C8DC54EBD
+	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Jan 2023 22:47:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237654AbjAIWbh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 9 Jan 2023 17:31:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52380 "EHLO
+        id S237486AbjAIWq7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 9 Jan 2023 17:46:59 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33436 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237597AbjAIWbg (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Jan 2023 17:31:36 -0500
-Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com [IPv6:2a00:1450:4864:20::62f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B4C86388;
-        Mon,  9 Jan 2023 14:31:35 -0800 (PST)
-Received: by mail-ej1-x62f.google.com with SMTP id vm8so23949040ejc.2;
-        Mon, 09 Jan 2023 14:31:35 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=googlemail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=OZe8VJu/fGCCz+Eb3NiW7mLJBs19t4YWlgg0ulzutFw=;
-        b=GSLrukwN25auhR2Y9tG2IvbfkBqYNzBDfNQWqdjB7K51f6ZiksEJtgxejWerw/vsf2
-         HNWduMWWXpqKrNtgR6PFRro4ZZuKOB98gyrC/XFdBUmrPVrcv2jCc5s8rehfL+LPZnU8
-         MhNevobZTxfeKXIkbrB9LqAJhC1d31Q9hYmQa0UajkdpAndEzKp9/kk+VJPF37zNwxK9
-         7CIpcKX9PdMjk/cq6i4TfyNgl+KglhAwRLcAZ5vKtBOfHjgaes3vVDty0R4aPtkYxq41
-         5ccz1Ju28ipPWVxiOHMN+CyD54l+blvQ2kfCJ0seUSKRkZAfOP58voelxFXZBm6Oy9XM
-         jb3g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=OZe8VJu/fGCCz+Eb3NiW7mLJBs19t4YWlgg0ulzutFw=;
-        b=Es1DLcczHNrBl2tL8WO+1OD/xxGHMqPMO9kUFJ/NvvLibKue+wiEn7eOnIOo5PdVZv
-         SdUA+B4uSnzNhE0GHBIDOpOjGT5NRZpHhlC/myFMZxfwWVrKwbkQzaA2/yY7IkUm16uf
-         pyWJmB3lCTiTzvDJ7N9iPB6hRZWvLnSy2Lnctq23NSkKK1NqQzWTQXk0CFZCdpfVNCbm
-         hXsFhbVNJXArf6DHufxRgIbuIcHBf43/4o1Y/PvpMYhP4Sh7McmNN0QJzR2TDQ67xAdu
-         lRYoOSUanTmuVZxXU9mSBCX9g9b03s03ef/2E4bvk1UKEx3tKXBxGcQs6l7suiBEbMuc
-         VJ6g==
-X-Gm-Message-State: AFqh2krc7u9UrN7p9Tjq3l53X1N8a6Clj9s+/7S6iwsgK6BXVwFRZ2Hy
-        ttLhFm/Q/JKry3qETdMxVt329kWwLxQ=
-X-Google-Smtp-Source: AMrXdXvpiCc8i3vWtwCmmEDeA46pFWN6Dz27By5UAtP+wRO7CW2CRYa8a71xhMAms7AZC6iBTAbe0Q==
-X-Received: by 2002:a17:906:b043:b0:7c0:d23c:ead3 with SMTP id bj3-20020a170906b04300b007c0d23cead3mr58284154ejb.27.1673303493935;
-        Mon, 09 Jan 2023 14:31:33 -0800 (PST)
-Received: from localhost.localdomain (dynamic-2a01-0c23-bcd2-ed00-0000-0000-0000-0e63.c23.pool.telefonica.de. [2a01:c23:bcd2:ed00::e63])
-        by smtp.googlemail.com with ESMTPSA id k8-20020a17090632c800b00780982d77d1sm4228235ejk.154.2023.01.09.14.31.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Jan 2023 14:31:33 -0800 (PST)
-From:   Martin Blumenstingl <martin.blumenstingl@googlemail.com>
-To:     dri-devel@lists.freedesktop.org
-Cc:     Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Hans Verkuil <hans.verkuil@cisco.com>,
-        ville.syrjala@linux.intel.com,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Bernard Zhao <bernard@vivo.com>,
-        Martin Blumenstingl <martin.blumenstingl@googlemail.com>
-Subject: [PATCH v1 RFC] video/hdmi: Fix HDMI_VENDOR_INFOFRAME_SIZE
-Date:   Mon,  9 Jan 2023 23:31:10 +0100
-Message-Id: <20230109223110.1165433-1-martin.blumenstingl@googlemail.com>
-X-Mailer: git-send-email 2.39.0
+        with ESMTP id S231358AbjAIWq6 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Jan 2023 17:46:58 -0500
+X-Greylist: delayed 7799 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 09 Jan 2023 14:46:57 PST
+Received: from 12.mo583.mail-out.ovh.net (12.mo583.mail-out.ovh.net [46.105.39.65])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 03BA61C13E
+        for <linux-fbdev@vger.kernel.org>; Mon,  9 Jan 2023 14:46:56 -0800 (PST)
+Received: from director2.ghost.mail-out.ovh.net (unknown [10.109.156.76])
+        by mo583.mail-out.ovh.net (Postfix) with ESMTP id 3165424A4F
+        for <linux-fbdev@vger.kernel.org>; Mon,  9 Jan 2023 20:19:08 +0000 (UTC)
+Received: from ghost-submission-6684bf9d7b-frlns (unknown [10.109.138.190])
+        by director2.ghost.mail-out.ovh.net (Postfix) with ESMTPS id 7D9691FEFE;
+        Mon,  9 Jan 2023 20:19:04 +0000 (UTC)
+Received: from sk2.org ([37.59.142.110])
+        by ghost-submission-6684bf9d7b-frlns with ESMTPSA
+        id 3/0OF7h2vGMDvxAAlD46gA
+        (envelope-from <steve@sk2.org>); Mon, 09 Jan 2023 20:19:04 +0000
+Authentication-Results: garm.ovh; auth=pass (GARM-110S004842627ec-d049-43fb-8f4c-5212fa5a1396,
+                    796317D5D98EA53ED2B7ABF3FE0FDD27B7A2AA3D) smtp.auth=steve@sk2.org
+X-OVh-ClientIp: 82.65.25.201
+Date:   Mon, 9 Jan 2023 21:18:57 +0100
+From:   Stephen Kitt <steve@sk2.org>
+To:     Helge Deller <deller@gmx.de>
+Cc:     Sam Ravnborg <sam@ravnborg.org>,
+        Sam Ravnborg via B4 Submission Endpoint 
+        <devnull+sam.ravnborg.org@kernel.org>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>,
+        Antonino Daplas <adaplas@gmail.com>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Robin van der Gracht <robin@protonic.nl>,
+        Miguel Ojeda <ojeda@kernel.org>, Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-omap@vger.kernel.org, linux-staging@lists.linux.dev,
+        linuxppc-dev@lists.ozlabs.org,
+        Ludovic Desroches <ludovic.desroches@microchip.com>
+Subject: Re: [PATCH 01/15] video: fbdev: atmel_lcdfb: Rework backlight
+ handling
+Message-ID: <20230109211857.79856bcf@heffalump.sk2.org>
+In-Reply-To: <811a392a-d634-5557-dd58-57f1580e28f2@gmx.de>
+References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
+        <20230107-sam-video-backlight-drop-fb_blank-v1-1-1bd9bafb351f@ravnborg.org>
+        <553AE999-CAF1-4E59-9F3F-68591ED192DE@sk2.org>
+        <Y7nb2q6SDota/rTU@ravnborg.org>
+        <811a392a-d634-5557-dd58-57f1580e28f2@gmx.de>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; boundary="Sig_/JDvLw33J.MlCnUHZ=3B.xEG";
+ protocol="application/pgp-signature"; micalg=pgp-sha512
+X-Ovh-Tracer-Id: 8555713393067591302
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrkeeigddufeduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepfffhvfevuffkjghfofggtgesghdtreerredtjeenucfhrhhomhepufhtvghphhgvnhcumfhithhtuceoshhtvghvvgesshhkvddrohhrgheqnecuggftrfgrthhtvghrnhepfeeljeehvdeuheejudetvdfggfdutdekledvuddthedtkeehhfejffefudegveelnecuffhomhgrihhnpehlkhhmlhdrohhrghdpkhgvrhhnvghlrdhorhhgnecukfhppeduvdejrddtrddtrddupdefjedrheelrddugedvrdduuddtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepuddvjedrtddrtddruddpmhgrihhlfhhrohhmpeeoshhtvghvvgesshhkvddrohhrgheqpdhnsggprhgtphhtthhopedupdhrtghpthhtoheplhhinhhugidqfhgsuggvvhesvhhgvghrrdhkvghrnhgvlhdrohhrghdpoffvtefjohhsthepmhhoheekfedpmhhouggvpehsmhhtphhouhht
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-When support for the HDMI vendor infoframe was introduced back with
-commit 7d27becb3532 ("video/hdmi: Introduce helpers for the HDMI vendor
-specific infoframe") it's payload size was either 5 or 6 bytes,
-depending on:
-  if (frame->s3d_struct >= HDMI_3D_STRUCTURE_SIDE_BY_SIDE_HALF)
-When true the size was 6 bytes, otherwise 5 bytes.
+--Sig_/JDvLw33J.MlCnUHZ=3B.xEG
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Drivers that are using hdmi_infoframe_pack() are reserving 10 bytes (4
-bytes for the header and up to 6 bytes for the infoframe payload data)
-or more (exynos_hdmi reserves 25 bytes).
+On Sun, 8 Jan 2023 18:26:12 +0100, Helge Deller <deller@gmx.de> wrote:
 
-Over time the frame payload length was reduced to 4 bytes. This however
-does not match the code from hdmi_hdmi_infoframe_pack() where ptr[8] and
-ptr[9] are written, which means the infoframe has to allow up to 6 bytes
-of payload data (considering that the header takes 4 bytes).
+> On 1/7/23 21:53, Sam Ravnborg wrote:
+> > Hi Stephen.
+> >
+> > On Sat, Jan 07, 2023 at 09:36:47PM +0100, Stephen Kitt wrote: =20
+> >> On 7 January 2023 19:26:15 CET, Sam Ravnborg via B4 Submission Endpoint
+> >> <devnull+sam.ravnborg.org@kernel.org> wrote: =20
+> >>> From: Sam Ravnborg <sam@ravnborg.org>
+> >>>
+> >>> The atmel_lcdfb had code to save/restore power state.
+> >>> This is not needed so drop it.
+> >>>
+> >>> Introduce backlight_is_brightness() to make logic simpler.
+> >>>
+> >>> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> >>> Cc: Nicolas Ferre <nicolas.ferre@microchip.com>
+> >>> Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
+> >>> Cc: Ludovic Desroches <ludovic.desroches@microchip.com>
+> >>> Cc: linux-fbdev@vger.kernel.org
+> >>> Cc: linux-arm-kernel@lists.infradead.org
+> >>> ---
+> >>> drivers/video/fbdev/atmel_lcdfb.c | 24 +++---------------------
+> >>> 1 file changed, 3 insertions(+), 21 deletions(-) =20
+> > ... =20
+> >>
+> >> Hi Sam,
+> >>
+> >> I=E2=80=99d submitted quite a few more of these previously (and you=E2=
+=80=99d reviewed
+> >> them), see e.g. the thread starting at
+> >> https://lkml.org/lkml/2022/6/7/4365, and yesterday,
+> >> https://lkml.org/lkml/2023/1/6/520, https://lkml.org/lkml/2023/1/6/656,
+> >> https://lkml.org/lkml/2023/1/6/970, https://lkml.org/lkml/2023/1/6/643,
+> >> and https://lkml.org/lkml/2023/1/6/680. There are a few more, I can fi=
+nd
+> >> them if it=E2=80=99s any use. =20
+> >
+> > The patches from yesterday was what triggered me to resurrect an old
+> > branch of mine where I had done something similar. I had lost all
+> > memory of reviewing similar patches from you.
+> >
+> >
+> > Helge - could you pick the reviewed patches from:
+> > https://lore.kernel.org/all/20220607192335.1137249-1-steve@sk2.org/
+> > [This is the same mail as Stephen refer to above - looked up via lore].=
+ =20
+>=20
+> I just pulled those 7 patches into fbdev/for-next.
+> If you need more, please let me know,
 
-Change HDMI_VENDOR_INFOFRAME_SIZE to 6 bytes so
-hdmi_vendor_infoframe_pack_only() can properly check the passed buffer
-size and avoid an out of bounds write to ptr[8] or ptr[9].
+Please pull
+https://lore.kernel.org/lkml/20230109200239.1850611-1-steve@sk2.org/ too, it
+completes the fbdev set. (It=E2=80=99s a re-send of
+https://lore.kernel.org/lkml/20220609180440.3138625-1-steve@sk2.org/).
 
-Fixes: c5e69ab35c0d ("video/hdmi: Constify infoframe passed to the pack functions")
-Fixes: d43be2554b58 ("drivers: video: hdmi: cleanup coding style in video a bit")
-Signed-off-by: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
----
-I'm not an expert on this topic and I'm not sure if the size still
-depends on that if condition from long time ago. So please share your
-thoughts.
+Thanks,
 
+Stephen
 
- include/linux/hdmi.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+--Sig_/JDvLw33J.MlCnUHZ=3B.xEG
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
-diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
-index 2f4dcc8d060e..026c5ef5a1a5 100644
---- a/include/linux/hdmi.h
-+++ b/include/linux/hdmi.h
-@@ -57,7 +57,7 @@ enum hdmi_infoframe_type {
- #define HDMI_SPD_INFOFRAME_SIZE    25
- #define HDMI_AUDIO_INFOFRAME_SIZE  10
- #define HDMI_DRM_INFOFRAME_SIZE    26
--#define HDMI_VENDOR_INFOFRAME_SIZE  4
-+#define HDMI_VENDOR_INFOFRAME_SIZE  6
- 
- #define HDMI_INFOFRAME_SIZE(type)	\
- 	(HDMI_INFOFRAME_HEADER_SIZE + HDMI_ ## type ## _INFOFRAME_SIZE)
--- 
-2.39.0
+-----BEGIN PGP SIGNATURE-----
 
+iQIzBAEBCgAdFiEEnPVX/hPLkMoq7x0ggNMC9Yhtg5wFAmO8drEACgkQgNMC9Yht
+g5xaOhAAjf3wpZqPQkXA+OJq7x3rFQCxDxu+EC9QfKpc+GTyKDeYUp1CiCaMACTm
+CmEva3GpgKshfkWam50r0elXs+IKPn9/Bwu7aoFot55EumgQp5Tbep2Bmzq92XPu
+oFvKrneavKK3Zc0y8tMyqnY44egaf1p5ngnCL9KWvgtSxSdqUUc7h1rp8Uevxc16
+Svpv5x8AaWNjvHqexEWU7DPoGzWwhCJosdFfzE0E/b5oamL3bCpniVgqvrhZ3XNh
+xDDLZsUQPWx6h51ndY44PfUUaF93mHtXo678mlOXIBK4Eb+GCQUTu6FUgWsbIYL9
+3zS7n+hYOgrAcvjXD+Kj2EwGAkfAkySAOs98SZYc/P9qzdEPZ7SIA2FbLbXyqf6x
+oO7qJlb7PLYCro4L6uSzBYJHK9or4nFh/K0sjWlJMCu3BSHtuDBxpU1+ajilEZYw
+GCN2Or9X+vFwQm0GtdpnbwRXutktuUmyEiaTZ0SRswPuK/8o/gc4BjaNdVm7xGld
+Yite9fSnhZsSwrT+TsCmoZw4m3W43c5zNs35lcw2LlhZEFnMNhYPAOd6I5zJPKno
+SgxxN7R6BxWIiXk7uEt+3CR745R6yGebDDD2G5cR1LtilzKWaj49g4ChgwAjsN5t
+uicuFMKEruILdqw6DfjJ5cDi+/1Db3pnP0mdjoiHWmrgigU6wD0=
+=3DFt
+-----END PGP SIGNATURE-----
+
+--Sig_/JDvLw33J.MlCnUHZ=3B.xEG--

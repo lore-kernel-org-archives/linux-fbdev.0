@@ -2,158 +2,57 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6C8DC54EBD
-	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Jan 2023 22:47:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0E71C67871
+	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Jan 2023 08:41:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237486AbjAIWq7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 9 Jan 2023 17:46:59 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33436 "EHLO
+        id S232803AbjAJIla (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 10 Jan 2023 03:41:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34300 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231358AbjAIWq6 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Jan 2023 17:46:58 -0500
-X-Greylist: delayed 7799 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 09 Jan 2023 14:46:57 PST
-Received: from 12.mo583.mail-out.ovh.net (12.mo583.mail-out.ovh.net [46.105.39.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 03BA61C13E
-        for <linux-fbdev@vger.kernel.org>; Mon,  9 Jan 2023 14:46:56 -0800 (PST)
-Received: from director2.ghost.mail-out.ovh.net (unknown [10.109.156.76])
-        by mo583.mail-out.ovh.net (Postfix) with ESMTP id 3165424A4F
-        for <linux-fbdev@vger.kernel.org>; Mon,  9 Jan 2023 20:19:08 +0000 (UTC)
-Received: from ghost-submission-6684bf9d7b-frlns (unknown [10.109.138.190])
-        by director2.ghost.mail-out.ovh.net (Postfix) with ESMTPS id 7D9691FEFE;
-        Mon,  9 Jan 2023 20:19:04 +0000 (UTC)
-Received: from sk2.org ([37.59.142.110])
-        by ghost-submission-6684bf9d7b-frlns with ESMTPSA
-        id 3/0OF7h2vGMDvxAAlD46gA
-        (envelope-from <steve@sk2.org>); Mon, 09 Jan 2023 20:19:04 +0000
-Authentication-Results: garm.ovh; auth=pass (GARM-110S004842627ec-d049-43fb-8f4c-5212fa5a1396,
-                    796317D5D98EA53ED2B7ABF3FE0FDD27B7A2AA3D) smtp.auth=steve@sk2.org
-X-OVh-ClientIp: 82.65.25.201
-Date:   Mon, 9 Jan 2023 21:18:57 +0100
-From:   Stephen Kitt <steve@sk2.org>
-To:     Helge Deller <deller@gmx.de>
-Cc:     Sam Ravnborg <sam@ravnborg.org>,
-        Sam Ravnborg via B4 Submission Endpoint 
-        <devnull+sam.ravnborg.org@kernel.org>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        Antonino Daplas <adaplas@gmail.com>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Robin van der Gracht <robin@protonic.nl>,
-        Miguel Ojeda <ojeda@kernel.org>, Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-omap@vger.kernel.org, linux-staging@lists.linux.dev,
-        linuxppc-dev@lists.ozlabs.org,
-        Ludovic Desroches <ludovic.desroches@microchip.com>
-Subject: Re: [PATCH 01/15] video: fbdev: atmel_lcdfb: Rework backlight
- handling
-Message-ID: <20230109211857.79856bcf@heffalump.sk2.org>
-In-Reply-To: <811a392a-d634-5557-dd58-57f1580e28f2@gmx.de>
-References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
-        <20230107-sam-video-backlight-drop-fb_blank-v1-1-1bd9bafb351f@ravnborg.org>
-        <553AE999-CAF1-4E59-9F3F-68591ED192DE@sk2.org>
-        <Y7nb2q6SDota/rTU@ravnborg.org>
-        <811a392a-d634-5557-dd58-57f1580e28f2@gmx.de>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+        with ESMTP id S237937AbjAJIlI (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 10 Jan 2023 03:41:08 -0500
+Received: from mail.lokoho.com (mail.lokoho.com [217.61.105.98])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8D77D1D0C1
+        for <linux-fbdev@vger.kernel.org>; Tue, 10 Jan 2023 00:41:06 -0800 (PST)
+Received: by mail.lokoho.com (Postfix, from userid 1001)
+        id 50D04839BA; Tue, 10 Jan 2023 08:40:54 +0000 (GMT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=lokoho.com; s=mail;
+        t=1673340065; bh=Z0N5VlX9/JlryGOL5I747Le9USomZJCRNNGRT3LbbKc=;
+        h=Date:From:To:Subject:From;
+        b=KIW0cUbPKcWG2thd8OmucRyJ8E8r4myRXM7F8qC1liGDz0WpaknOrhMvzBw1kX1fJ
+         BzGvHP5JE+tcsSeAJpvO57KMlKavFNTL2kJ+sFSbX4tgbmNLvZ/5m/+hfcH7yUHW2O
+         71kdM8SSdFA+VADHv/EugAoXJ6rWYfOecQFZVY9+r6rh43cGs3xie2CyR0yWF4bXKL
+         g6DBBqu6wJMiP1nzMyFC5ONhS1ckf8B5HtZRqqAmNY6QfZdNVXGu5BGRwod1QLp6Yl
+         bsNz6L2Ajj6OIakjrRLqnh9GAK7l501rEamC7ljO2VNYAyUspWT8ZjIF9vej3n9j+O
+         Utb9h9JFnbGLw==
+Received: by mail.lokoho.com for <linux-fbdev@vger.kernel.org>; Tue, 10 Jan 2023 08:40:32 GMT
+Message-ID: <20230110074501-0.1.3b.li1i.0.6036xrdki3@lokoho.com>
+Date:   Tue, 10 Jan 2023 08:40:32 GMT
+From:   "Adam Charachuta" <adam.charachuta@lokoho.com>
+To:     <linux-fbdev@vger.kernel.org>
+Subject: =?UTF-8?Q?S=C5=82owa_kluczowe_do_wypozycjonowania?=
+X-Mailer: mail.lokoho.com
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/JDvLw33J.MlCnUHZ=3B.xEG";
- protocol="application/pgp-signature"; micalg=pgp-sha512
-X-Ovh-Tracer-Id: 8555713393067591302
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrkeeigddufeduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepfffhvfevuffkjghfofggtgesghdtreerredtjeenucfhrhhomhepufhtvghphhgvnhcumfhithhtuceoshhtvghvvgesshhkvddrohhrgheqnecuggftrfgrthhtvghrnhepfeeljeehvdeuheejudetvdfggfdutdekledvuddthedtkeehhfejffefudegveelnecuffhomhgrihhnpehlkhhmlhdrohhrghdpkhgvrhhnvghlrdhorhhgnecukfhppeduvdejrddtrddtrddupdefjedrheelrddugedvrdduuddtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepuddvjedrtddrtddruddpmhgrihhlfhhrohhmpeeoshhtvghvvgesshhkvddrohhrgheqpdhnsggprhgtphhtthhopedupdhrtghpthhtoheplhhinhhugidqfhgsuggvvhesvhhgvghrrdhkvghrnhgvlhdrohhrghdpoffvtefjohhsthepmhhoheekfedpmhhouggvpehsmhhtphhouhht
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
---Sig_/JDvLw33J.MlCnUHZ=3B.xEG
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Dzie=C5=84 dobry,
 
-On Sun, 8 Jan 2023 18:26:12 +0100, Helge Deller <deller@gmx.de> wrote:
+zapozna=C5=82em si=C4=99 z Pa=C5=84stwa ofert=C4=85 i z przyjemno=C5=9Bci=
+=C4=85 przyznaj=C4=99, =C5=BCe przyci=C4=85ga uwag=C4=99 i zach=C4=99ca d=
+o dalszych rozm=C3=B3w.=20
 
-> On 1/7/23 21:53, Sam Ravnborg wrote:
-> > Hi Stephen.
-> >
-> > On Sat, Jan 07, 2023 at 09:36:47PM +0100, Stephen Kitt wrote: =20
-> >> On 7 January 2023 19:26:15 CET, Sam Ravnborg via B4 Submission Endpoint
-> >> <devnull+sam.ravnborg.org@kernel.org> wrote: =20
-> >>> From: Sam Ravnborg <sam@ravnborg.org>
-> >>>
-> >>> The atmel_lcdfb had code to save/restore power state.
-> >>> This is not needed so drop it.
-> >>>
-> >>> Introduce backlight_is_brightness() to make logic simpler.
-> >>>
-> >>> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> >>> Cc: Nicolas Ferre <nicolas.ferre@microchip.com>
-> >>> Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
-> >>> Cc: Ludovic Desroches <ludovic.desroches@microchip.com>
-> >>> Cc: linux-fbdev@vger.kernel.org
-> >>> Cc: linux-arm-kernel@lists.infradead.org
-> >>> ---
-> >>> drivers/video/fbdev/atmel_lcdfb.c | 24 +++---------------------
-> >>> 1 file changed, 3 insertions(+), 21 deletions(-) =20
-> > ... =20
-> >>
-> >> Hi Sam,
-> >>
-> >> I=E2=80=99d submitted quite a few more of these previously (and you=E2=
-=80=99d reviewed
-> >> them), see e.g. the thread starting at
-> >> https://lkml.org/lkml/2022/6/7/4365, and yesterday,
-> >> https://lkml.org/lkml/2023/1/6/520, https://lkml.org/lkml/2023/1/6/656,
-> >> https://lkml.org/lkml/2023/1/6/970, https://lkml.org/lkml/2023/1/6/643,
-> >> and https://lkml.org/lkml/2023/1/6/680. There are a few more, I can fi=
-nd
-> >> them if it=E2=80=99s any use. =20
-> >
-> > The patches from yesterday was what triggered me to resurrect an old
-> > branch of mine where I had done something similar. I had lost all
-> > memory of reviewing similar patches from you.
-> >
-> >
-> > Helge - could you pick the reviewed patches from:
-> > https://lore.kernel.org/all/20220607192335.1137249-1-steve@sk2.org/
-> > [This is the same mail as Stephen refer to above - looked up via lore].=
- =20
->=20
-> I just pulled those 7 patches into fbdev/for-next.
-> If you need more, please let me know,
+Pomy=C5=9Bla=C5=82em, =C5=BCe mo=C5=BCe m=C3=B3g=C5=82bym mie=C4=87 sw=C3=
+=B3j wk=C5=82ad w Pa=C5=84stwa rozw=C3=B3j i pom=C3=B3c dotrze=C4=87 z t=C4=
+=85 ofert=C4=85 do wi=C4=99kszego grona odbiorc=C3=B3w. Pozycjonuj=C4=99 =
+strony www, dzi=C4=99ki czemu generuj=C4=85 =C5=9Bwietny ruch w sieci.
 
-Please pull
-https://lore.kernel.org/lkml/20230109200239.1850611-1-steve@sk2.org/ too, it
-completes the fbdev set. (It=E2=80=99s a re-send of
-https://lore.kernel.org/lkml/20220609180440.3138625-1-steve@sk2.org/).
+Mo=C5=BCemy porozmawia=C4=87 w najbli=C5=BCszym czasie?
 
-Thanks,
 
-Stephen
-
---Sig_/JDvLw33J.MlCnUHZ=3B.xEG
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEEnPVX/hPLkMoq7x0ggNMC9Yhtg5wFAmO8drEACgkQgNMC9Yht
-g5xaOhAAjf3wpZqPQkXA+OJq7x3rFQCxDxu+EC9QfKpc+GTyKDeYUp1CiCaMACTm
-CmEva3GpgKshfkWam50r0elXs+IKPn9/Bwu7aoFot55EumgQp5Tbep2Bmzq92XPu
-oFvKrneavKK3Zc0y8tMyqnY44egaf1p5ngnCL9KWvgtSxSdqUUc7h1rp8Uevxc16
-Svpv5x8AaWNjvHqexEWU7DPoGzWwhCJosdFfzE0E/b5oamL3bCpniVgqvrhZ3XNh
-xDDLZsUQPWx6h51ndY44PfUUaF93mHtXo678mlOXIBK4Eb+GCQUTu6FUgWsbIYL9
-3zS7n+hYOgrAcvjXD+Kj2EwGAkfAkySAOs98SZYc/P9qzdEPZ7SIA2FbLbXyqf6x
-oO7qJlb7PLYCro4L6uSzBYJHK9or4nFh/K0sjWlJMCu3BSHtuDBxpU1+ajilEZYw
-GCN2Or9X+vFwQm0GtdpnbwRXutktuUmyEiaTZ0SRswPuK/8o/gc4BjaNdVm7xGld
-Yite9fSnhZsSwrT+TsCmoZw4m3W43c5zNs35lcw2LlhZEFnMNhYPAOd6I5zJPKno
-SgxxN7R6BxWIiXk7uEt+3CR745R6yGebDDD2G5cR1LtilzKWaj49g4ChgwAjsN5t
-uicuFMKEruILdqw6DfjJ5cDi+/1Db3pnP0mdjoiHWmrgigU6wD0=
-=3DFt
------END PGP SIGNATURE-----
-
---Sig_/JDvLw33J.MlCnUHZ=3B.xEG--
+Pozdrawiam
+Adam Charachuta

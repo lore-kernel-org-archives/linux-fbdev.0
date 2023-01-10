@@ -2,57 +2,105 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0E71C67871
-	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Jan 2023 08:41:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D810FC54EBE
+	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Jan 2023 10:09:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232803AbjAJIla (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 10 Jan 2023 03:41:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34300 "EHLO
+        id S231512AbjAJKJ3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 10 Jan 2023 05:09:29 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36626 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237937AbjAJIlI (ORCPT
+        with ESMTP id S230133AbjAJKJ1 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 10 Jan 2023 03:41:08 -0500
-Received: from mail.lokoho.com (mail.lokoho.com [217.61.105.98])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8D77D1D0C1
-        for <linux-fbdev@vger.kernel.org>; Tue, 10 Jan 2023 00:41:06 -0800 (PST)
-Received: by mail.lokoho.com (Postfix, from userid 1001)
-        id 50D04839BA; Tue, 10 Jan 2023 08:40:54 +0000 (GMT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=lokoho.com; s=mail;
-        t=1673340065; bh=Z0N5VlX9/JlryGOL5I747Le9USomZJCRNNGRT3LbbKc=;
-        h=Date:From:To:Subject:From;
-        b=KIW0cUbPKcWG2thd8OmucRyJ8E8r4myRXM7F8qC1liGDz0WpaknOrhMvzBw1kX1fJ
-         BzGvHP5JE+tcsSeAJpvO57KMlKavFNTL2kJ+sFSbX4tgbmNLvZ/5m/+hfcH7yUHW2O
-         71kdM8SSdFA+VADHv/EugAoXJ6rWYfOecQFZVY9+r6rh43cGs3xie2CyR0yWF4bXKL
-         g6DBBqu6wJMiP1nzMyFC5ONhS1ckf8B5HtZRqqAmNY6QfZdNVXGu5BGRwod1QLp6Yl
-         bsNz6L2Ajj6OIakjrRLqnh9GAK7l501rEamC7ljO2VNYAyUspWT8ZjIF9vej3n9j+O
-         Utb9h9JFnbGLw==
-Received: by mail.lokoho.com for <linux-fbdev@vger.kernel.org>; Tue, 10 Jan 2023 08:40:32 GMT
-Message-ID: <20230110074501-0.1.3b.li1i.0.6036xrdki3@lokoho.com>
-Date:   Tue, 10 Jan 2023 08:40:32 GMT
-From:   "Adam Charachuta" <adam.charachuta@lokoho.com>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: =?UTF-8?Q?S=C5=82owa_kluczowe_do_wypozycjonowania?=
-X-Mailer: mail.lokoho.com
+        Tue, 10 Jan 2023 05:09:27 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 548C54D731;
+        Tue, 10 Jan 2023 02:09:27 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id C415061589;
+        Tue, 10 Jan 2023 10:09:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB743C433D2;
+        Tue, 10 Jan 2023 10:09:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1673345366;
+        bh=wbyd3dtAWj+DS0fcJULsfdTl+t+d2B5Uw2ZuQAp6tpM=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=XKJ7hEZZUPaCSNrB26CzNsDjquQbBentUhlmtWHZJjjl5ajSRsc2cY1J6TlsbuK52
+         UoeGdRXnxLZ8mTjHgbPSqEmh732Odonfjc467CustS3+5wXOJ8G7sxPOOj5OmOUNRy
+         w0kKUTLk2m70RapGM9Y4KlCXmcVOjK/OPWsBagysaySfqoZm82qlsKdYmxswDYrer+
+         TbB8sWFTiUPd3iYuGD/0RfH2xQw1GdiwwQtq6XoVkDXuGvwSpzZu+xjIKPR/5OQlxm
+         16rTc6Mfdvm4x7QdvW8p5nVL1YDBiVFkf6NsLekUIa2pYUR8HMFXdeiKexpKNRNiyO
+         ttG8j2EPjTphQ==
+Date:   Tue, 10 Jan 2023 10:09:18 +0000
+From:   Lee Jones <lee@kernel.org>
+To:     Sam Ravnborg <sam@ravnborg.org>
+Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Helge Deller <deller@gmx.de>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>,
+        Antonino Daplas <adaplas@gmail.com>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Robin van der Gracht <robin@protonic.nl>,
+        Miguel Ojeda <ojeda@kernel.org>,
+        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-omap@vger.kernel.org, linux-staging@lists.linux.dev,
+        linuxppc-dev@lists.ozlabs.org, Stephen Kitt <steve@sk2.org>
+Subject: Re: [PATCH 15/15] backlight: backlight: Drop the deprecated fb_blank
+ property
+Message-ID: <Y705TvBPWkHzeMrp@google.com>
+References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
+ <20230107-sam-video-backlight-drop-fb_blank-v1-15-1bd9bafb351f@ravnborg.org>
+ <Y7v1OxdowGdxgvUj@aspen.lan>
+ <Y7xAgHgg0sfh32Ga@ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Y7xAgHgg0sfh32Ga@ravnborg.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,
+On Mon, 09 Jan 2023, Sam Ravnborg wrote:
 
-zapozna=C5=82em si=C4=99 z Pa=C5=84stwa ofert=C4=85 i z przyjemno=C5=9Bci=
-=C4=85 przyznaj=C4=99, =C5=BCe przyci=C4=85ga uwag=C4=99 i zach=C4=99ca d=
-o dalszych rozm=C3=B3w.=20
+> Hi Daniel.
+> 
+> On Mon, Jan 09, 2023 at 11:06:35AM +0000, Daniel Thompson wrote:
+> > On Sat, Jan 07, 2023 at 07:26:29PM +0100, Sam Ravnborg via B4 Submission Endpoint wrote:
+> > > From: Sam Ravnborg <sam@ravnborg.org>
+> > >
+> > > With all users gone remove the deprecated fb_blank member in
+> > > backlight_properties.
+> > >
+> > > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> > > Cc: Lee Jones <lee@kernel.org>
+> > > Cc: Daniel Thompson <daniel.thompson@linaro.org>
+> > > Cc: Jingoo Han <jingoohan1@gmail.com>
+> > 
+> > 
+> > Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> 
+> Thanks for the follow-up on all the backlight related patches.
+> 
+> > 
+> > 
+> > PS Please don't treat this like a maintainer Acked-by: and merge it
+> >    (Lee's not on holiday so work with Lee to figure out the merge
+> >    strategy ;-) ).
+> Nope, I am aware that the usual pattern here and wait for Lee to show
+> up.
 
-Pomy=C5=9Bla=C5=82em, =C5=BCe mo=C5=BCe m=C3=B3g=C5=82bym mie=C4=87 sw=C3=
-=B3j wk=C5=82ad w Pa=C5=84stwa rozw=C3=B3j i pom=C3=B3c dotrze=C4=87 z t=C4=
-=85 ofert=C4=85 do wi=C4=99kszego grona odbiorc=C3=B3w. Pozycjonuj=C4=99 =
-strony www, dzi=C4=99ki czemu generuj=C4=85 =C5=9Bwietny ruch w sieci.
+It's on the list.  Only 50 more reviews in the backlog now!
 
-Mo=C5=BCemy porozmawia=C4=87 w najbli=C5=BCszym czasie?
+> For this patch there is a bug as I need to update a comment.
+> I will fix this when I resend after all the patches in flight has
+> landed. So likely after the next merge window,
 
-
-Pozdrawiam
-Adam Charachuta
+-- 
+Lee Jones [李琼斯]

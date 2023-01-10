@@ -2,136 +2,121 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1C9DC54EBE
-	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Jan 2023 17:50:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED8C8C61DB3
+	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Jan 2023 18:24:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233326AbjAJRuh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 10 Jan 2023 12:50:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35544 "EHLO
+        id S239150AbjAJSXr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 10 Jan 2023 13:23:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36040 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233017AbjAJRuf (ORCPT
+        with ESMTP id S239348AbjAJSWv (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 10 Jan 2023 12:50:35 -0500
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E3FD561300
-        for <linux-fbdev@vger.kernel.org>; Tue, 10 Jan 2023 09:50:33 -0800 (PST)
-Received: by mail-wm1-x32a.google.com with SMTP id k26-20020a05600c1c9a00b003d972646a7dso12529089wms.5
-        for <linux-fbdev@vger.kernel.org>; Tue, 10 Jan 2023 09:50:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=nt9ArI+JjVqSRJaIaSBcPk+r+kr6d2qBthz/f2axQJM=;
-        b=HGipDWE5HW9bTEU2/qD84yGEWOVC12wVGDqy8fSs90yMMlpL3OSPTghTLyEfPJNz9E
-         tJSjOvJtFJHhefemW1op/zFo0gubT/EK1hzowZRk2D6do/CDdvLUmfCcgft2DLQPy6Ur
-         z5Wc6VFxe74vZrOQyQYR8Wfq+xZwl/vxgUKOaCyr7OdGmfmeZDArNQwvBBeS8jpjV30x
-         Gf2T6OrR016HWzkQ2AIl1vG3gs7DZ067kSvfzRz1cwgwrYpbYUNy9Ibnht2JqZneci8B
-         i/bS5foJFhvjTR3VEFKeGRZKZ4uJSYneV5Xun5UB6dH1tnalmTSNF51GVGS+JpXIrzSy
-         qRmA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=nt9ArI+JjVqSRJaIaSBcPk+r+kr6d2qBthz/f2axQJM=;
-        b=wOKBOTbXd6Ij14yfsnUAL4ZJ6SJdMnr1ZbxIzQ64OH52MBCg2uxXAvU3IxynTiGrPa
-         EvGCQIieRfE/ITGT94DQuUl4GD458bIu0Ts95Xn+MIW6XzpOvKUghsruDrxnmefFyT+P
-         yUeHrBsNE/9hMc8h0iVbFzqkAFP25dwwvqgiv4iq14z9+wCFrWCfBkWyHrqJg+fPSfnG
-         DPmAp+fFO123maRl42tgtM5ewjclWE3RHKdtZ49OYopuQUePXpj7/LKdsOwG0dKeFYeA
-         7SvPd4/818EEWh3z0gr2aPBtbeQm/WCNGjfibuEFjNb2GGiJPNfu74HLCfR5DsH228pd
-         Parg==
-X-Gm-Message-State: AFqh2kqQYI5ZT42La0cONEoo4cL2aXfljm1SfQ19mkQqLtWqLtx8MdSL
-        OJ0qav6gEIzrTByVRs8/T3Ok9w==
-X-Google-Smtp-Source: AMrXdXuCJL4uQ+PBinA6P/b9RggIwyThMBDurC6C+ptBksadjtbuhYRNXWKJCyEah587HtAqAuvABA==
-X-Received: by 2002:a05:600c:5012:b0:3d3:5a4a:9103 with SMTP id n18-20020a05600c501200b003d35a4a9103mr49094369wmr.31.1673373032253;
-        Tue, 10 Jan 2023 09:50:32 -0800 (PST)
-Received: from aspen.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id o11-20020a05600c4fcb00b003c6f3f6675bsm21934771wmq.26.2023.01.10.09.50.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Jan 2023 09:50:31 -0800 (PST)
-Date:   Tue, 10 Jan 2023 17:50:30 +0000
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-Cc:     linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee@kernel.org>,
-        dri-devel@lists.freedesktop.org,
-        Thierry Reding <thierry.reding@gmail.com>,
-        kernel@pengutronix.de
-Subject: Re: [PATCH 2/2] backlight: pwm_bl: Don't disable the PWM to disable
- the backlight
-Message-ID: <Y72lZi+Ghtjm/r8i@aspen.lan>
-References: <20230109204758.610400-1-u.kleine-koenig@pengutronix.de>
- <20230109204758.610400-2-u.kleine-koenig@pengutronix.de>
- <Y72RpjK4T2VEoIVI@aspen.lan>
- <20230110173500.7w55deshspedexh6@pengutronix.de>
+        Tue, 10 Jan 2023 13:22:51 -0500
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7168F6F96D;
+        Tue, 10 Jan 2023 10:20:41 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1673374841; x=1704910841;
+  h=from:to:cc:subject:in-reply-to:references:date:
+   message-id:mime-version;
+  bh=gEDEe6v6P56XKTKVod6hHvBcJizZdWIOCj+46/uxJjc=;
+  b=Agjq5E3iXs4cTLas1xFngzftUT+M/SYy0IGoYl+pp1WDIZ9E4u9oyklg
+   SMIiL7BEsn3whY//FnKNsMU4hceeWszUGRjHz6aD6ceoUcb7x9WBtW/nL
+   /+0UZZkg/nDSMB09k+zUhfYGmTSQXafr5ReOdnfXPe36RYq0LlsTiokuD
+   HqpNR7/NhqK1tkmQMW5ZHjFTbeQ72d+P2Sb6Tkoke7tb1viWfXAA4kbvB
+   GEMi01SAV7u0HCoJy3rZty5IVIMExIAEpUOiuL6bpsnarT0CYonWPQYPi
+   6nGbA0xRipm4kLBvjiP/hv+SRtYklwXcOp0ynUpGtIKiX65Pk1oJh4pcZ
+   Q==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10586"; a="311025545"
+X-IronPort-AV: E=Sophos;i="5.96,315,1665471600"; 
+   d="scan'208";a="311025545"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jan 2023 10:20:40 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10586"; a="657139780"
+X-IronPort-AV: E=Sophos;i="5.96,315,1665471600"; 
+   d="scan'208";a="657139780"
+Received: from drooney-mobl.ger.corp.intel.com (HELO localhost) ([10.252.11.80])
+  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jan 2023 10:20:37 -0800
+From:   Jani Nikula <jani.nikula@linux.intel.com>
+To:     Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+        dri-devel@lists.freedesktop.org
+Cc:     linux-fbdev@vger.kernel.org,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+        Bernard Zhao <bernard@vivo.com>, Helge Deller <deller@gmx.de>,
+        linux-kernel@vger.kernel.org,
+        Hans Verkuil <hans.verkuil@cisco.com>,
+        ville.syrjala@linux.intel.com
+Subject: Re: [PATCH v1 RFC] video/hdmi: Fix HDMI_VENDOR_INFOFRAME_SIZE
+In-Reply-To: <20230109223110.1165433-1-martin.blumenstingl@googlemail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+References: <20230109223110.1165433-1-martin.blumenstingl@googlemail.com>
+Date:   Tue, 10 Jan 2023 20:20:34 +0200
+Message-ID: <87lemai74d.fsf@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230110173500.7w55deshspedexh6@pengutronix.de>
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Jan 10, 2023 at 06:35:00PM +0100, Uwe Kleine-König wrote:
-> Hello Daniel,
+On Mon, 09 Jan 2023, Martin Blumenstingl <martin.blumenstingl@googlemail.com> wrote:
+> When support for the HDMI vendor infoframe was introduced back with
+> commit 7d27becb3532 ("video/hdmi: Introduce helpers for the HDMI vendor
+> specific infoframe") it's payload size was either 5 or 6 bytes,
+> depending on:
+>   if (frame->s3d_struct >= HDMI_3D_STRUCTURE_SIDE_BY_SIDE_HALF)
+> When true the size was 6 bytes, otherwise 5 bytes.
 >
-> On Tue, Jan 10, 2023 at 04:26:14PM +0000, Daniel Thompson wrote:
-> > On Mon, Jan 09, 2023 at 09:47:58PM +0100, Uwe Kleine-König wrote:
-> > > Most but not all PWMs drive the PWM pin to its inactive state when
-> > > disabled. Rely on the lowlevel PWM implementation to implement
-> > > duty_cycle = 0 in an energy efficient way and don't disable the PWM.
-> >
-> > I'm a little worried about this one.
-> >
-> > I thought the PWM APIs allow the duty cycle to be rounded up or down
-> > slightly during the apply.
+> Drivers that are using hdmi_infoframe_pack() are reserving 10 bytes (4
+> bytes for the header and up to 6 bytes for the infoframe payload data)
+> or more (exynos_hdmi reserves 25 bytes).
 >
-> In my book only rounding down is correct, but in practise there is some
-> deviation.
+> Over time the frame payload length was reduced to 4 bytes. This however
+> does not match the code from hdmi_hdmi_infoframe_pack() where ptr[8] and
+> ptr[9] are written, which means the infoframe has to allow up to 6 bytes
+> of payload data (considering that the header takes 4 bytes).
 >
-> Nearly all PWMs can implement a zero duty cycle. Those that cannot but
-> emit a constant inactive signal when disabled are expected to disable
-> when .duty_cycle = 0 is requested. (And for those that can neither
-> implement a zero duty_cycle nor emit the inactive level (not sure there
-> is any) all bets are lost with and without my patch.)
-> So if this case will be hit (and noticed) this is fixable.
+> Change HDMI_VENDOR_INFOFRAME_SIZE to 6 bytes so
+> hdmi_vendor_infoframe_pack_only() can properly check the passed buffer
+> size and avoid an out of bounds write to ptr[8] or ptr[9].
 >
-> However there are hardware PWMs that just freeze in their current state
-> when disabled (e.g. mxs). That's why .duty_cycle=0 + .enabled=true is
-> the safer bet. Only disable a PWM if you don't rely on the output state.
-> See also commit 80a22fde803af6f390be49ee5ced6ee75595ba05.
+> Fixes: c5e69ab35c0d ("video/hdmi: Constify infoframe passed to the pack functions")
+> Fixes: d43be2554b58 ("drivers: video: hdmi: cleanup coding style in video a bit")
+> Signed-off-by: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
+> ---
+> I'm not an expert on this topic and I'm not sure if the size still
+> depends on that if condition from long time ago. So please share your
+> thoughts.
 
-Reading this, it does strike me that if pwm_bl has a regulator or an
-enable GPIO then it does not rely on the output state. We could use
-the presence of either of these to choose to disable the PWM
-(which could potentially undrive the pin to save power).
+I tried to look at this quickly, but it makes my brain hurt. I don't
+think simply changing the size here is right either.
 
+Cc: Ville.
 
-> > So when you say "rely on the lowlevel to implement duty_cycle = 0 to..."
-> > is it confirmed that this is true (and that all PWMs *can* implement
-> > a duty_cycle of 0 without rounding up)?
->
-> The scenario I had in mind that can realistically go wrong here is that
-> a lowlevel driver that has the property that the inactive level is
-> emitted for a disabled HW doesn't actually disable when .duty_cycle=0 is
-> requested and so might consume slightly more energy. But I'm confident
-> my patch is an improvement and I don't expect regressions. (Famous last
-> words :-)
->
-> I suggest to amend the commit log and add something like:
->
->    If this change results in a regression, the bug is in the lowlevel
->    pwm driver.
-
-I guess I can live with that :-) .
-
-If the reasoning about regulator or enable GPIO makes sense then let's
-implement that. If not, a terse comment in the code reminding some
-future version of me that disabled PWM has undefined state (making
-clear that the absense of enable = false is deliberate) would be useful!
+BR,
+Jani.
 
 
-Daniel.
+
+>
+>
+>  include/linux/hdmi.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
+> index 2f4dcc8d060e..026c5ef5a1a5 100644
+> --- a/include/linux/hdmi.h
+> +++ b/include/linux/hdmi.h
+> @@ -57,7 +57,7 @@ enum hdmi_infoframe_type {
+>  #define HDMI_SPD_INFOFRAME_SIZE    25
+>  #define HDMI_AUDIO_INFOFRAME_SIZE  10
+>  #define HDMI_DRM_INFOFRAME_SIZE    26
+> -#define HDMI_VENDOR_INFOFRAME_SIZE  4
+> +#define HDMI_VENDOR_INFOFRAME_SIZE  6
+>  
+>  #define HDMI_INFOFRAME_SIZE(type)	\
+>  	(HDMI_INFOFRAME_HEADER_SIZE + HDMI_ ## type ## _INFOFRAME_SIZE)
+
+-- 
+Jani Nikula, Intel Open Source Graphics Center

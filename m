@@ -2,105 +2,96 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D810FC54EBE
-	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Jan 2023 10:09:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59BAFC54EBE
+	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Jan 2023 14:30:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231512AbjAJKJ3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 10 Jan 2023 05:09:29 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36626 "EHLO
+        id S233126AbjAJOan (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 10 Jan 2023 09:30:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47886 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230133AbjAJKJ1 (ORCPT
+        with ESMTP id S231675AbjAJOam (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 10 Jan 2023 05:09:27 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 548C54D731;
-        Tue, 10 Jan 2023 02:09:27 -0800 (PST)
+        Tue, 10 Jan 2023 09:30:42 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3BABB2FF;
+        Tue, 10 Jan 2023 06:30:42 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id C415061589;
-        Tue, 10 Jan 2023 10:09:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB743C433D2;
-        Tue, 10 Jan 2023 10:09:21 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id B5CBA6172F;
+        Tue, 10 Jan 2023 14:30:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1F164C433A7;
+        Tue, 10 Jan 2023 14:30:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1673345366;
-        bh=wbyd3dtAWj+DS0fcJULsfdTl+t+d2B5Uw2ZuQAp6tpM=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=XKJ7hEZZUPaCSNrB26CzNsDjquQbBentUhlmtWHZJjjl5ajSRsc2cY1J6TlsbuK52
-         UoeGdRXnxLZ8mTjHgbPSqEmh732Odonfjc467CustS3+5wXOJ8G7sxPOOj5OmOUNRy
-         w0kKUTLk2m70RapGM9Y4KlCXmcVOjK/OPWsBagysaySfqoZm82qlsKdYmxswDYrer+
-         TbB8sWFTiUPd3iYuGD/0RfH2xQw1GdiwwQtq6XoVkDXuGvwSpzZu+xjIKPR/5OQlxm
-         16rTc6Mfdvm4x7QdvW8p5nVL1YDBiVFkf6NsLekUIa2pYUR8HMFXdeiKexpKNRNiyO
-         ttG8j2EPjTphQ==
-Date:   Tue, 10 Jan 2023 10:09:18 +0000
-From:   Lee Jones <lee@kernel.org>
-To:     Sam Ravnborg <sam@ravnborg.org>
-Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Helge Deller <deller@gmx.de>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        Antonino Daplas <adaplas@gmail.com>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Robin van der Gracht <robin@protonic.nl>,
-        Miguel Ojeda <ojeda@kernel.org>,
-        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-omap@vger.kernel.org, linux-staging@lists.linux.dev,
-        linuxppc-dev@lists.ozlabs.org, Stephen Kitt <steve@sk2.org>
-Subject: Re: [PATCH 15/15] backlight: backlight: Drop the deprecated fb_blank
- property
-Message-ID: <Y705TvBPWkHzeMrp@google.com>
-References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
- <20230107-sam-video-backlight-drop-fb_blank-v1-15-1bd9bafb351f@ravnborg.org>
- <Y7v1OxdowGdxgvUj@aspen.lan>
- <Y7xAgHgg0sfh32Ga@ravnborg.org>
+        s=k20201202; t=1673361041;
+        bh=Ft5hewhBhdYXUka/gOOBMULEVYdfXdVyhTlVravny7Y=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=Vangzlq864OD1GjPZkelYA+gGrWvzCPKLSrgEETBuZ2fSF6GhARIqGxkHbWgaE6+4
+         wXau/2qn8+CuWDTAbfyEWJ0q+/wa6OyzyQUgnXMIIQsVLNhjvqXdpD3cZ5F2c9ntnz
+         XscRQYPet/Jexkxaj/TN4vWWdtv5aBsWhmI7WHPp8iIXmuhNlrgeO8hJdcFRNdQGEB
+         18stxLunFmH42SKYmBV3zVlCQ+TdifHdl/4EyIIf+J8KLrRq4sBLldK719okyN0/C/
+         dKNkVUFnhhlv6yzxGS+xFEn530oDwN/eE7qN7yQZ3V/eghnDH+F2EYXNnwLcqAwabr
+         8WkHMuPzJYmRg==
+Received: by mail-lf1-f53.google.com with SMTP id v25so18677924lfe.12;
+        Tue, 10 Jan 2023 06:30:41 -0800 (PST)
+X-Gm-Message-State: AFqh2koSSA/5QWHUns+uzDNzUStRYzeKJg8ZJ9Ygp3HPeOuOgu4Okeg5
+        t3p+/1pBTskh4YKTtt2uxnn7harzjF7Vgaa+V8Q=
+X-Google-Smtp-Source: AMrXdXsGCXl5imR+5Ag+UULiUqPiN2NPwCkctr1I4ZqlLYeykxjkAncZBtoJoiKqIgfFw96YRojd4uts4JLGGCzJdSA=
+X-Received: by 2002:a05:6512:3d93:b0:4b8:9001:a694 with SMTP id
+ k19-20020a0565123d9300b004b89001a694mr3292555lfv.426.1673361038907; Tue, 10
+ Jan 2023 06:30:38 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Y7xAgHgg0sfh32Ga@ravnborg.org>
+References: <20221221105402.6598-1-markuss.broks@gmail.com>
+ <CAMj1kXGUC7dsSwVEUsAMeAoqDYtbqrM7SDOJTXbPfi-LrcSk9g@mail.gmail.com> <Y6xMnuMqpThmFn1q@smile.fi.intel.com>
+In-Reply-To: <Y6xMnuMqpThmFn1q@smile.fi.intel.com>
+From:   Ard Biesheuvel <ardb@kernel.org>
+Date:   Tue, 10 Jan 2023 15:30:27 +0100
+X-Gmail-Original-Message-ID: <CAMj1kXFtmK0jOt1Boeb6t=DoyVg6xWgCMVEB59jCm8zz7XcNAA@mail.gmail.com>
+Message-ID: <CAMj1kXFtmK0jOt1Boeb6t=DoyVg6xWgCMVEB59jCm8zz7XcNAA@mail.gmail.com>
+Subject: Re: [PATCH v3 0/3] Add generic framebuffer support to EFI earlycon driver
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc:     Markuss Broks <markuss.broks@gmail.com>,
+        linux-kernel@vger.kernel.org,
+        Jami Kettunen <jami.kettunen@protonmail.com>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Helge Deller <deller@gmx.de>, Borislav Petkov <bp@suse.de>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Will Deacon <will@kernel.org>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Muchun Song <muchun.song@linux.dev>,
+        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
+        Kim Phillips <kim.phillips@amd.com>, linux-doc@vger.kernel.org,
+        linux-efi@vger.kernel.org, linux-serial@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, 09 Jan 2023, Sam Ravnborg wrote:
+On Wed, 28 Dec 2022 at 15:04, Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+>
+> On Fri, Dec 23, 2022 at 03:42:33PM +0100, Ard Biesheuvel wrote:
+> > (cc Andy)
+>
+> I believe there are two reasons I'm Cc'ed now:
+> - the Cc was forgotten. because I remember reviewing some parts
+>   of this contribution
+> - this conflicts (to some extent) with my patch that speeds up
+>   the scrolling
+>
+> For the first it's obvious what to do, I think Markuss can include me
+> in his v4.
+>
+> For the second I don't see the functional clash. The scrolling in this
+> series is not anyhow optimized. I think my patch should go first as
+> - it is less intrusive
+> - it has been tested, or can be tested easily
+>
+> Tell me if I'm missing something here.
+>
 
-> Hi Daniel.
-> 
-> On Mon, Jan 09, 2023 at 11:06:35AM +0000, Daniel Thompson wrote:
-> > On Sat, Jan 07, 2023 at 07:26:29PM +0100, Sam Ravnborg via B4 Submission Endpoint wrote:
-> > > From: Sam Ravnborg <sam@ravnborg.org>
-> > >
-> > > With all users gone remove the deprecated fb_blank member in
-> > > backlight_properties.
-> > >
-> > > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> > > Cc: Lee Jones <lee@kernel.org>
-> > > Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> > > Cc: Jingoo Han <jingoohan1@gmail.com>
-> > 
-> > 
-> > Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-> 
-> Thanks for the follow-up on all the backlight related patches.
-> 
-> > 
-> > 
-> > PS Please don't treat this like a maintainer Acked-by: and merge it
-> >    (Lee's not on holiday so work with Lee to figure out the merge
-> >    strategy ;-) ).
-> Nope, I am aware that the usual pattern here and wait for Lee to show
-> up.
-
-It's on the list.  Only 50 more reviews in the backlog now!
-
-> For this patch there is a bug as I need to update a comment.
-> I will fix this when I resend after all the patches in flight has
-> landed. So likely after the next merge window,
-
--- 
-Lee Jones [李琼斯]
+Thanks for your input.

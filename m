@@ -2,64 +2,63 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 370F7C678D5
-	for <linux-fbdev@archiver.kernel.org>; Wed, 11 Jan 2023 15:41:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A416C677F1
+	for <linux-fbdev@archiver.kernel.org>; Wed, 11 Jan 2023 15:41:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234422AbjAKPlc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 11 Jan 2023 10:41:32 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33866 "EHLO
+        id S235513AbjAKPle (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 11 Jan 2023 10:41:34 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34336 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234867AbjAKPl2 (ORCPT
+        with ESMTP id S234002AbjAKPla (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 11 Jan 2023 10:41:28 -0500
-Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32D0FDA
-        for <linux-fbdev@vger.kernel.org>; Wed, 11 Jan 2023 07:41:27 -0800 (PST)
-Received: by mail-wr1-x431.google.com with SMTP id v2so4454173wrw.10
-        for <linux-fbdev@vger.kernel.org>; Wed, 11 Jan 2023 07:41:27 -0800 (PST)
+        Wed, 11 Jan 2023 10:41:30 -0500
+Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A2A3E29C
+        for <linux-fbdev@vger.kernel.org>; Wed, 11 Jan 2023 07:41:29 -0800 (PST)
+Received: by mail-wm1-x332.google.com with SMTP id bg13-20020a05600c3c8d00b003d9712b29d2so14682067wmb.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 11 Jan 2023 07:41:29 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=ffwll.ch; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=3apArcl7OMNeWOL87XhRmEIILQii5IFqm3oMsEY2uTQ=;
-        b=TWS3RJUGnec7HJ8IdThWihyacAzGTfgOMMVKgAJ3sP5gvHzb6Hv2fQ8yYcj9IsnVVA
-         o219u3LYZ8uCnmmEdWK9E++vy2du8AWTGfafd+vHo4u8SlnZt/LoMDlKNNioYzUIuXPf
-         TJ6xYHvwDOSOn4s2j1NLyLLyiRMiLhKLjL0bQ=
+        bh=uA+tPLir+1X4c7NIGPD8fbGsyIZBKsPUjYPi9h9kAc8=;
+        b=eNQu3m5MBYcJ4ir7wnU2uKSOdOlTVnwwoNbl7ndwmx7pL0oaymY4tJ+VPavmH4gWu3
+         ctX/ciqpqll+Gi0G39VkzdIVV+zIy+55w4NRmQ48GvAAagPpdV92t11x9dtuCypNqs8x
+         VKs1+2qNooBYEQ/WTCaaYQDd8eQZXRMv5YgkU=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=3apArcl7OMNeWOL87XhRmEIILQii5IFqm3oMsEY2uTQ=;
-        b=RnrkKe1wmBWvvOpCoicBf+8mqC85IwJW8tRon2mOZnR+Lxz/wDevooAiCrqEX/uavN
-         MOgw/9XGEs6V2EyETLD7YIbfLE+L5IMWhJsl+XjMazDTglieEyPx2cTsCw4LjJj1sCmC
-         VfkvX+Gp4MsjDhOQbwOxx+0nEJDiSWW0AeUgGa5yQgbgdOxwXBUhcLhdVNp6ssSArco0
-         r8RmqYtF9Fr23s9I1TelB8uodU8C0a8NQwuD0nMxfaL8ILwNP80GZBaXLKG4t22Z/6IN
-         sMFFYJOW6p1JputLOF8ZmurVZa0X1u+duZ47N7ljThbUMp3dnp28ochx+S2ybo0cW/R/
-         HPCQ==
-X-Gm-Message-State: AFqh2kqyuj1ywOVjYn87WlcW9fN8tPjhrwVGUTLzQ0Ouxh2xamXf4WGy
-        SIvz0sW23qONXUqpICnGu6dX3A==
-X-Google-Smtp-Source: AMrXdXsZQQb90TZBhyIGbWCTV3hGh5NVwdW1rv7mMEKuwv41FW1zTUhYSl2ws/vK/PGYSdPl/U3j9w==
-X-Received: by 2002:a5d:664c:0:b0:281:b594:c716 with SMTP id f12-20020a5d664c000000b00281b594c716mr39704840wrw.36.1673451685621;
-        Wed, 11 Jan 2023 07:41:25 -0800 (PST)
+        bh=uA+tPLir+1X4c7NIGPD8fbGsyIZBKsPUjYPi9h9kAc8=;
+        b=16HgXjjzB5EJRKpxyAxM9MVLeU4yTYYoHu+5541oNpedMdAyQUTAolycdnlCMX4Skm
+         uttQ0K6Po37VVatGl0mSIh8WvzqwS6LL5qvZ5MONPneRn2LLJSokyz3V11tpYS8otlzI
+         OjdWammO8OdbV+suRCH+VrfhX2kcspgsIDRhJlm1bSy6xJPMSg+B1+WRWtw2Q1XWAxoi
+         4C8A86pIR5nWUmVBtWGr2LFAIcuKIqxhqhTK18VsopSNIZ8dpnyBTd1Gkahw3ygsAnTQ
+         XezUaIS5WRj/ewQL4d+IK9MRqHZ/S7Qh51iL6h1wUgJWnQykXAqwjoTscK6TGBj3v3GS
+         MFPg==
+X-Gm-Message-State: AFqh2kpEUymFYBbcLXWgqvVRnT3xt7jVMSLGYmIGvvP4tDhQyXC3sKlV
+        utdYHDBTe2OnjslbxYAVBz1OoQ==
+X-Google-Smtp-Source: AMrXdXvP0g7aBxRONWD/2hWDOWNy8uqW2LewLgFiVP8szo0yPD2T/n1jDfUyAtI8xKF52PjIaacOWg==
+X-Received: by 2002:a05:600c:4f83:b0:3d2:3f55:f73f with SMTP id n3-20020a05600c4f8300b003d23f55f73fmr53421615wmq.8.1673451688237;
+        Wed, 11 Jan 2023 07:41:28 -0800 (PST)
 Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id t9-20020a05600c198900b003d9e74dd9b2sm15936149wmq.9.2023.01.11.07.41.24
+        by smtp.gmail.com with ESMTPSA id t9-20020a05600c198900b003d9e74dd9b2sm15936149wmq.9.2023.01.11.07.41.27
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Jan 2023 07:41:24 -0800 (PST)
+        Wed, 11 Jan 2023 07:41:27 -0800 (PST)
 From:   Daniel Vetter <daniel.vetter@ffwll.ch>
 To:     DRI Development <dri-devel@lists.freedesktop.org>
 Cc:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
         LKML <linux-kernel@vger.kernel.org>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
         Daniel Vetter <daniel.vetter@intel.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org
-Subject: [PATCH 04/11] video/aperture: use generic code to figure out the vga default device
-Date:   Wed, 11 Jan 2023 16:41:05 +0100
-Message-Id: <20230111154112.90575-4-daniel.vetter@ffwll.ch>
+        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        Teddy Wang <teddy.wang@siliconmotion.com>,
+        linux-fbdev@vger.kernel.org
+Subject: [PATCH 06/11] staging/lynxfb: Use pci aperture helper
+Date:   Wed, 11 Jan 2023 16:41:07 +0100
+Message-Id: <20230111154112.90575-6-daniel.vetter@ffwll.ch>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <20230111154112.90575-1-daniel.vetter@ffwll.ch>
 References: <20230111154112.90575-1-daniel.vetter@ffwll.ch>
@@ -69,47 +68,51 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Since vgaarb has been promoted to be a core piece of the pci subsystem
-we don't have to open code random guesses anymore, we actually know
-this in a platform agnostic way, and there's no need for an x86
-specific hack. See also 1d38fe6ee6a8 ("PCI/VGA: Move vgaarb to
-drivers/pci")
-
-This should not result in any functional change, and the non-x86
-multi-gpu pci systems are probably rare enough to not matter (I don't
-know of any tbh). But it's a nice cleanup, so let's do it.
+It exists! Note that since this is an exact copy, there shouldn't be
+any functional difference here.
 
 Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Helge Deller <deller@gmx.de>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Teddy Wang <teddy.wang@siliconmotion.com>
 Cc: linux-fbdev@vger.kernel.org
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: linux-pci@vger.kernel.org
 ---
- drivers/video/aperture.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 16 +---------------
+ 1 file changed, 1 insertion(+), 15 deletions(-)
 
-diff --git a/drivers/video/aperture.c b/drivers/video/aperture.c
-index 41e77de1ea82..3d8c925c7365 100644
---- a/drivers/video/aperture.c
-+++ b/drivers/video/aperture.c
-@@ -324,13 +324,11 @@ EXPORT_SYMBOL(aperture_remove_conflicting_devices);
-  */
- int aperture_remove_conflicting_pci_devices(struct pci_dev *pdev, const char *name)
- {
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index effc7fcc3703..22ace3168723 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -989,20 +989,6 @@ static int sm750fb_framebuffer_alloc(struct sm750_dev *sm750_dev, int fbidx)
+ 	return err;
+ }
+ 
+-static int lynxfb_kick_out_firmware_fb(struct pci_dev *pdev)
+-{
+-	resource_size_t base = pci_resource_start(pdev, 0);
+-	resource_size_t size = pci_resource_len(pdev, 0);
 -	bool primary = false;
-+	bool primary;
- 	resource_size_t base, size;
- 	int bar, ret;
- 
+-
 -#ifdef CONFIG_X86
--	primary = pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
+-	primary = pdev->resource[PCI_ROM_RESOURCE].flags &
+-					IORESOURCE_ROM_SHADOW;
 -#endif
-+	primary = pdev == vga_default_device();
+-
+-	return aperture_remove_conflicting_devices(base, size, primary, "sm750_fb1");
+-}
+-
+ static int lynxfb_pci_probe(struct pci_dev *pdev,
+ 			    const struct pci_device_id *ent)
+ {
+@@ -1011,7 +997,7 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
+ 	int fbidx;
+ 	int err;
  
- 	for (bar = 0; bar < PCI_STD_NUM_BARS; ++bar) {
- 		if (!(pci_resource_flags(pdev, bar) & IORESOURCE_MEM))
+-	err = lynxfb_kick_out_firmware_fb(pdev);
++	err = aperture_remove_conflicting_pci_devices(pdev, "sm750_fb1");
+ 	if (err)
+ 		return err;
+ 
 -- 
 2.39.0
 

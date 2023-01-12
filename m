@@ -2,63 +2,160 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2153C61DB3
-	for <linux-fbdev@archiver.kernel.org>; Thu, 12 Jan 2023 08:52:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 878A5C54EBD
+	for <linux-fbdev@archiver.kernel.org>; Thu, 12 Jan 2023 09:44:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239174AbjALIwy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 12 Jan 2023 03:52:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46614 "EHLO
+        id S239586AbjALJoq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 12 Jan 2023 04:44:46 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52916 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239272AbjALIvu (ORCPT
+        with ESMTP id S240072AbjALJno (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 12 Jan 2023 03:51:50 -0500
-Received: from mail.glencoeaur.com (mail.glencoeaur.com [217.61.97.113])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 09EF137273
-        for <linux-fbdev@vger.kernel.org>; Thu, 12 Jan 2023 00:50:03 -0800 (PST)
-Received: by mail.glencoeaur.com (Postfix, from userid 1001)
-        id D09F4821EB; Thu, 12 Jan 2023 08:40:48 +0000 (GMT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=glencoeaur.com;
-        s=mail; t=1673512853;
-        bh=2S0GQFScndXkBEK4sqdoOhOYLqsB2sEH8Q5XQfVvKpo=;
-        h=Date:From:To:Subject:From;
-        b=KfLaZZkU6si4OLL+n53Onb7D+GQmr1uEIXqlvidtQ6vWnwyuxkeygIY7n3G74knGA
-         W/XaMVGCYdZdhlyjZWV6/D1pfE7+Yp5NlREo3nuGDk370iKxXGEAC1cpv6psFAfZop
-         YhWUj4qc+4p5PqdRR7wL8HX565pAG7JIrY/XVBBhGTjJYTInNNaIcGNkiyxl9IzD/y
-         ZVjGbbFkucqTnT7NyQ9vbwwPBjDnhcBL9SmP64k3Y87OQ+KWGd6e7CVB6Q9ng1RGAU
-         8XOq/zX+nR+1w+HYV8bZr4joqqXX4qEqyqjav/BOO7BASZPgoe5E1PEj4Y/GgqlE6m
-         8737b1nR74vMQ==
-Received: by mail.glencoeaur.com for <linux-fbdev@vger.kernel.org>; Thu, 12 Jan 2023 08:40:39 GMT
-Message-ID: <20230112074500-0.1.z.3gd3.0.6a4ninelxk@glencoeaur.com>
-Date:   Thu, 12 Jan 2023 08:40:39 GMT
-From:   "Zbynek Spacek" <zbynek.spacek@glencoeaur.com>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: Silikonmischungen
-X-Mailer: mail.glencoeaur.com
+        Thu, 12 Jan 2023 04:43:44 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8B694517D0;
+        Thu, 12 Jan 2023 01:41:43 -0800 (PST)
+Received: from imap1.suse-dmz.suse.de (imap1.suse-dmz.suse.de [192.168.254.73])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id A3EED3EEB2;
+        Thu, 12 Jan 2023 09:41:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1673516500; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=6co9Mq3/4tg5vYTRc6Bu/MTG1Uz5/2WeUp1oM2NDVSk=;
+        b=ITIvBazLa38FQyvum4fNY1LLPIwITQg+Pt7TJx7dmrZEA5KNI6MVYLSjql2VT8A8bDA8Yu
+        lS9imnVpGBjB7vUMZpbZ+B1c5n7r32uPdT5NsDBUX+TLqBnWkh91tEl/3cjtARcDJAj7Nn
+        HgAPcu2APnkOU6DUQHhBa9Ypn1Rtyeg=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1673516500;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=6co9Mq3/4tg5vYTRc6Bu/MTG1Uz5/2WeUp1oM2NDVSk=;
+        b=BbLpIv7SfvHsogcpc9GutuDkESQagaL+63zBqAW507r6G/hjf6bYu/N2QILEM2Tyck7LBd
+        Uu5iOxKvaBNHj4DA==
+Received: from imap1.suse-dmz.suse.de (imap1.suse-dmz.suse.de [192.168.254.73])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap1.suse-dmz.suse.de (Postfix) with ESMTPS id 728E0136AE;
+        Thu, 12 Jan 2023 09:41:40 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap1.suse-dmz.suse.de with ESMTPSA
+        id 3y32GtTVv2MqIwAAGKfGzw
+        (envelope-from <tzimmermann@suse.de>); Thu, 12 Jan 2023 09:41:40 +0000
+Message-ID: <59149393-73cf-83a3-5ea5-ff6f47fe2c31@suse.de>
+Date:   Thu, 12 Jan 2023 10:41:40 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.1
+Subject: Re: [PATCH 01/11] drm/ast: Use
+ drm_aperture_remove_conflicting_pci_framebuffers
+Content-Language: en-US
+To:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        DRI Development <dri-devel@lists.freedesktop.org>
+Cc:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Dave Airlie <airlied@redhat.com>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org
+References: <20230111154112.90575-1-daniel.vetter@ffwll.ch>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20230111154112.90575-1-daniel.vetter@ffwll.ch>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------vOwfUhSOD3p0obgeA20yv5UJ"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Good morning,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------vOwfUhSOD3p0obgeA20yv5UJ
+Content-Type: multipart/mixed; boundary="------------IR20Ox5nOYlN0pQH131diBcQ";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Daniel Vetter <daniel.vetter@ffwll.ch>,
+ DRI Development <dri-devel@lists.freedesktop.org>
+Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
+ LKML <linux-kernel@vger.kernel.org>, Daniel Vetter
+ <daniel.vetter@intel.com>, Dave Airlie <airlied@redhat.com>,
+ Javier Martinez Canillas <javierm@redhat.com>, Helge Deller <deller@gmx.de>,
+ linux-fbdev@vger.kernel.org
+Message-ID: <59149393-73cf-83a3-5ea5-ff6f47fe2c31@suse.de>
+Subject: Re: [PATCH 01/11] drm/ast: Use
+ drm_aperture_remove_conflicting_pci_framebuffers
+References: <20230111154112.90575-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20230111154112.90575-1-daniel.vetter@ffwll.ch>
 
-do you need intermediates for processing, plastics (e.g. rubber) or silic=
-one mixtures?
+--------------IR20Ox5nOYlN0pQH131diBcQ
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-We provide a wide range of silicone rubbers with various properties, sili=
-cone mixtures from renowned manufacturers such as Wacker, Elastosil LR an=
-d dyes, stabilizers, primers and anti-adhesive additives.
+DQoNCkFtIDExLjAxLjIzIHVtIDE2OjQxIHNjaHJpZWIgRGFuaWVsIFZldHRlcjoNCj4gSXQn
+cyBqdXN0IG9wZW4gY29kZWQgYW5kIG1hdGNoZXMuDQo+IA0KPiBOb3RlIHRoYXQgVGhvbWFz
+IHNhaWQgdGhhdCBoaXMgdmVyc2lvbiBhcHBhcmVudGx5IGZhaWxlZCBmb3Igc29tZQ0KPiBy
+ZWFzb24sIGJ1dCBoZXkgbWF5YmUgd2Ugc2hvdWxkIHRyeSBhZ2Fpbi4NCg0KSXQgYXBwYXJl
+bnRseSB3b3JrZWQgdGhpcyB0aW1lLiBUZXN0ZWQgb24gYW4gQVNUMjEwMCBjaGlwLg0KDQo+
+IA0KPiBTaWduZWQtb2ZmLWJ5OiBEYW5pZWwgVmV0dGVyIDxkYW5pZWwudmV0dGVyQGludGVs
+LmNvbT4NCj4gQ2M6IERhdmUgQWlybGllIDxhaXJsaWVkQHJlZGhhdC5jb20+DQo+IENjOiBU
+aG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1hbm5Ac3VzZS5kZT4NCj4gQ2M6IEphdmllciBN
+YXJ0aW5leiBDYW5pbGxhcyA8amF2aWVybUByZWRoYXQuY29tPg0KPiBDYzogSGVsZ2UgRGVs
+bGVyIDxkZWxsZXJAZ214LmRlPg0KPiBDYzogbGludXgtZmJkZXZAdmdlci5rZXJuZWwub3Jn
+DQoNClRlc3RlZC1ieTogVGhvbWFzIFppbW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRl
+Pg0KUmV2aWV3ZWQtYnk6IFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRl
+Pg0KDQo+IC0tLQ0KPiAgIGRyaXZlcnMvZ3B1L2RybS9hc3QvYXN0X2Rydi5jIHwgMTYgKy0t
+LS0tLS0tLS0tLS0tLQ0KPiAgIDEgZmlsZSBjaGFuZ2VkLCAxIGluc2VydGlvbigrKSwgMTUg
+ZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9ncHUvZHJtL2FzdC9h
+c3RfZHJ2LmMgYi9kcml2ZXJzL2dwdS9kcm0vYXN0L2FzdF9kcnYuYw0KPiBpbmRleCA0MjBm
+Yzc1YzI0MGUuLjNhYzI0YTc4MGY1MCAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9ncHUvZHJt
+L2FzdC9hc3RfZHJ2LmMNCj4gKysrIGIvZHJpdmVycy9ncHUvZHJtL2FzdC9hc3RfZHJ2LmMN
+Cj4gQEAgLTkwLDI3ICs5MCwxMyBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IHBjaV9kZXZpY2Vf
+aWQgYXN0X3BjaWlkbGlzdFtdID0gew0KPiAgIA0KPiAgIE1PRFVMRV9ERVZJQ0VfVEFCTEUo
+cGNpLCBhc3RfcGNpaWRsaXN0KTsNCj4gICANCj4gLXN0YXRpYyBpbnQgYXN0X3JlbW92ZV9j
+b25mbGljdGluZ19mcmFtZWJ1ZmZlcnMoc3RydWN0IHBjaV9kZXYgKnBkZXYpDQo+IC17DQo+
+IC0JYm9vbCBwcmltYXJ5ID0gZmFsc2U7DQo+IC0JcmVzb3VyY2Vfc2l6ZV90IGJhc2UsIHNp
+emU7DQo+IC0NCj4gLQliYXNlID0gcGNpX3Jlc291cmNlX3N0YXJ0KHBkZXYsIDApOw0KPiAt
+CXNpemUgPSBwY2lfcmVzb3VyY2VfbGVuKHBkZXYsIDApOw0KPiAtI2lmZGVmIENPTkZJR19Y
+ODYNCj4gLQlwcmltYXJ5ID0gcGRldi0+cmVzb3VyY2VbUENJX1JPTV9SRVNPVVJDRV0uZmxh
+Z3MgJiBJT1JFU09VUkNFX1JPTV9TSEFET1c7DQo+IC0jZW5kaWYNCj4gLQ0KPiAtCXJldHVy
+biBkcm1fYXBlcnR1cmVfcmVtb3ZlX2NvbmZsaWN0aW5nX2ZyYW1lYnVmZmVycyhiYXNlLCBz
+aXplLCBwcmltYXJ5LCAmYXN0X2RyaXZlcik7DQo+IC19DQo+IC0NCj4gICBzdGF0aWMgaW50
+IGFzdF9wY2lfcHJvYmUoc3RydWN0IHBjaV9kZXYgKnBkZXYsIGNvbnN0IHN0cnVjdCBwY2lf
+ZGV2aWNlX2lkICplbnQpDQo+ICAgew0KPiAgIAlzdHJ1Y3QgYXN0X3ByaXZhdGUgKmFzdDsN
+Cj4gICAJc3RydWN0IGRybV9kZXZpY2UgKmRldjsNCj4gICAJaW50IHJldDsNCj4gICANCj4g
+LQlyZXQgPSBhc3RfcmVtb3ZlX2NvbmZsaWN0aW5nX2ZyYW1lYnVmZmVycyhwZGV2KTsNCj4g
+KwlyZXQgPSBkcm1fYXBlcnR1cmVfcmVtb3ZlX2NvbmZsaWN0aW5nX3BjaV9mcmFtZWJ1ZmZl
+cnMocGRldiwgJmFzdF9kcml2ZXIpOw0KPiAgIAlpZiAocmV0KQ0KPiAgIAkJcmV0dXJuIHJl
+dDsNCj4gICANCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERl
+dmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpNYXhmZWxk
+c3RyLiA1LCA5MDQwOSBOw7xybmJlcmcsIEdlcm1hbnkNCihIUkIgMzY4MDksIEFHIE7DvHJu
+YmVyZykNCkdlc2Now6RmdHNmw7xocmVyOiBJdm8gVG90ZXYNCg==
 
-We also produce technical silicone compounds with increased resistance to=
- oils, resistant to high temperatures and water vapor, conductive and man=
-y more.
+--------------IR20Ox5nOYlN0pQH131diBcQ--
 
-We provide fast order fulfillment, timely deliveries and cost optimizatio=
-n.
+--------------vOwfUhSOD3p0obgeA20yv5UJ
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-Can I introduce what we can offer you?
+-----BEGIN PGP SIGNATURE-----
 
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmO/1dQFAwAAAAAACgkQlh/E3EQov+Cc
+5xAAk3FJIwGC3Ck8LsaxJld64fexaAC3Pw+8kJCHmcrHz5LNOzKA5DwAqRBv2WcftULO73E5VCVn
+pgAGNw6D1N6h7D/L5+e+9GW8Qfm78QEHINYnCEcrfTTDPaK7On5fOMnDxCcgzH3Pmt9wIq8wnDfT
+09CL3+v0tLjTX4hTyuyDd6RPcrj/4T5AHgz9gWfKy5571Dz02Fs/R29x1wfiAuUFmCO1F0bOlLJR
+kpH+CTKihh18EMRWRVzKP5+7JtJc78omDsLqWaiDkfO2QNMC9XDRf0ZUk+nX7HNGgJRglIIJf36R
+cVyuTtQDGxKhqOAjO8b78QyU1rqHTuO2FNwmKsQeCLCpahyHWpFu6bgA1+bsyN2OVborpibaMQNG
+y/CAYox6FqsfEdIQ+Zk/KY1lb+QIOvpyBO9lFzzscr4TsFcFS0hIPQn/lavTu424KcH174upKie2
+K7ac77a2REabSElUrXdapgD1gbPHr/Vbu2PTM1EmkldUBS6knkpntQ/8H8mIsyoRiK9EA3knS3q4
+JiNxk8PWHTKFEP/RjzSjlqDyUKdKc0PgpzzHFv8h5TXyT0rDJP5GrpGDr7KkUuN1GrBsOu6wAqFc
+vZYQHdjwqQy9IYkTa1esd7i1zfxXP50u2MrUsTCd/iviAyBgtwA2tIsiMIYt7WYKRuR51ycz8Bah
+rEw=
+=X8Ot
+-----END PGP SIGNATURE-----
 
-Best regards
-Zbynek Spacek
+--------------vOwfUhSOD3p0obgeA20yv5UJ--

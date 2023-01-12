@@ -2,65 +2,63 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5EE1C46467
-	for <linux-fbdev@archiver.kernel.org>; Wed, 11 Jan 2023 21:51:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2153C61DB3
+	for <linux-fbdev@archiver.kernel.org>; Thu, 12 Jan 2023 08:52:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235353AbjAKVvj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 11 Jan 2023 16:51:39 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52030 "EHLO
+        id S239174AbjALIwy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 12 Jan 2023 03:52:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46614 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235729AbjAKVvf (ORCPT
+        with ESMTP id S239272AbjALIvu (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 11 Jan 2023 16:51:35 -0500
-Received: from mail-qk1-x72d.google.com (mail-qk1-x72d.google.com [IPv6:2607:f8b0:4864:20::72d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 738422BD9
-        for <linux-fbdev@vger.kernel.org>; Wed, 11 Jan 2023 13:51:34 -0800 (PST)
-Received: by mail-qk1-x72d.google.com with SMTP id pe2so8378845qkn.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 11 Jan 2023 13:51:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=K7cAnoIF5ddqrNvYwjRRB1k8EiCmZovTNVjLwrtZdI0=;
-        b=JI++sEPjknkaI9Wk2ynle7+yuSHPyn6A+iOATdMDRfX3rASwHe974ZIBBqwkzlZfe5
-         BD9yxib38OazeJ3NeH1F740bvrnRdkbO5VAkUwKzyan5+h0PNAYNVRCprMIDE2Hsi+dd
-         M9gBq6SC8CqWEgo37uEw3U67wauhGLuH7fldeu2l+UBuiDXVGy0xNkye3CeFsfNEjWSz
-         AdiUPbkgDUA6jGNYbbNAIEhC9TjG2jAIalI2Sfv6nZg0N32EARR1yn6sqeQWnOtaNSpm
-         LvtAxB5YzdruokA3js6rOVF/j9XIXkkdN++LQTQDfuKueH/l7Tkd00nduBXFQIE7/FCq
-         XFaw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=to:subject:message-id:date:from:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=K7cAnoIF5ddqrNvYwjRRB1k8EiCmZovTNVjLwrtZdI0=;
-        b=MeWbxADUu2VsJIIlAHGoaZw9W+MA/90uMKmQHoR7hKor8QKSihkb1EsnAB6Z+ZSDTH
-         wFTPHT963su7tOMYnw2p4AzzMJlOI5fcdZQdKjAJeQgW+Lj+0DQdtmGiWKh2knLapX6e
-         ZocukT12gm0+/KV7vNt6iBBLYjnJIAx+UzoMeKObKnqoL1GGmdF+IH76eCR4aKlj5hqv
-         KNVYsmyCcHEto8rgW89TpUdOnJZj+cBQYzDyrsEQn5Pha5XR8PJKINoTvVsoZ+BiDUCS
-         PhLxSuuUI1qASTelD4WDTsLGAERp1CBjNpLEgtOLBcC52R3RKttCkm9BNMYdA9ZUBxVZ
-         /WVw==
-X-Gm-Message-State: AFqh2kpKneC6WFuyIFes7DD8szMsdWT+AjYnLLgTjnYmT/KoBvQMK/P/
-        oayJTKF+4rBEIuE4S517CIJXKynShDpZklJk60Gbo3OX
-X-Google-Smtp-Source: AMrXdXvcf4DBh3alDX3TkLtJZ+rEyntqBUx8vMupmvZ+RBNNYzypDJraykR+sVEYeoJqFtBe9YdU4dkCqBis8Qd8yD8=
-X-Received: by 2002:a05:620a:4384:b0:6ff:bf9:21d0 with SMTP id
- a4-20020a05620a438400b006ff0bf921d0mr4037309qkp.555.1673473893358; Wed, 11
- Jan 2023 13:51:33 -0800 (PST)
+        Thu, 12 Jan 2023 03:51:50 -0500
+Received: from mail.glencoeaur.com (mail.glencoeaur.com [217.61.97.113])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 09EF137273
+        for <linux-fbdev@vger.kernel.org>; Thu, 12 Jan 2023 00:50:03 -0800 (PST)
+Received: by mail.glencoeaur.com (Postfix, from userid 1001)
+        id D09F4821EB; Thu, 12 Jan 2023 08:40:48 +0000 (GMT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=glencoeaur.com;
+        s=mail; t=1673512853;
+        bh=2S0GQFScndXkBEK4sqdoOhOYLqsB2sEH8Q5XQfVvKpo=;
+        h=Date:From:To:Subject:From;
+        b=KfLaZZkU6si4OLL+n53Onb7D+GQmr1uEIXqlvidtQ6vWnwyuxkeygIY7n3G74knGA
+         W/XaMVGCYdZdhlyjZWV6/D1pfE7+Yp5NlREo3nuGDk370iKxXGEAC1cpv6psFAfZop
+         YhWUj4qc+4p5PqdRR7wL8HX565pAG7JIrY/XVBBhGTjJYTInNNaIcGNkiyxl9IzD/y
+         ZVjGbbFkucqTnT7NyQ9vbwwPBjDnhcBL9SmP64k3Y87OQ+KWGd6e7CVB6Q9ng1RGAU
+         8XOq/zX+nR+1w+HYV8bZr4joqqXX4qEqyqjav/BOO7BASZPgoe5E1PEj4Y/GgqlE6m
+         8737b1nR74vMQ==
+Received: by mail.glencoeaur.com for <linux-fbdev@vger.kernel.org>; Thu, 12 Jan 2023 08:40:39 GMT
+Message-ID: <20230112074500-0.1.z.3gd3.0.6a4ninelxk@glencoeaur.com>
+Date:   Thu, 12 Jan 2023 08:40:39 GMT
+From:   "Zbynek Spacek" <zbynek.spacek@glencoeaur.com>
+To:     <linux-fbdev@vger.kernel.org>
+Subject: Silikonmischungen
+X-Mailer: mail.glencoeaur.com
 MIME-Version: 1.0
-From:   "David F." <df7729@gmail.com>
-Date:   Wed, 11 Jan 2023 13:51:22 -0800
-Message-ID: <CAGRSmLuWKhmthR=evQ7-5MKnE44ABsCdqQeysUyMG7ssQkKCEw@mail.gmail.com>
-Subject: Wake from Sleep doesn't work
-To:     linux-fbdev@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-When a system is using fbdev and goes to sleep and wakes, the system
-works fine but the screen remains black, fbdev doesn't wake up.
+Good morning,
 
-There was a patch from 2009 but I doubt it would apply today.
+do you need intermediates for processing, plastics (e.g. rubber) or silic=
+one mixtures?
 
-Is there a way to make fbdev wake properly?
+We provide a wide range of silicone rubbers with various properties, sili=
+cone mixtures from renowned manufacturers such as Wacker, Elastosil LR an=
+d dyes, stabilizers, primers and anti-adhesive additives.
 
-Thanks.
+We also produce technical silicone compounds with increased resistance to=
+ oils, resistant to high temperatures and water vapor, conductive and man=
+y more.
+
+We provide fast order fulfillment, timely deliveries and cost optimizatio=
+n.
+
+Can I introduce what we can offer you?
+
+
+Best regards
+Zbynek Spacek

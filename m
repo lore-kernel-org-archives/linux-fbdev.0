@@ -2,75 +2,107 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B461BC61DB3
-	for <linux-fbdev@archiver.kernel.org>; Fri, 13 Jan 2023 06:57:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98DF5C61DB3
+	for <linux-fbdev@archiver.kernel.org>; Fri, 13 Jan 2023 07:22:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240981AbjAMG46 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 13 Jan 2023 01:56:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59874 "EHLO
+        id S240992AbjAMHWs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 13 Jan 2023 02:22:48 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52664 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240731AbjAMG4Q (ORCPT
+        with ESMTP id S234084AbjAMHWT (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 13 Jan 2023 01:56:16 -0500
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3D0B1714BC;
-        Thu, 12 Jan 2023 22:41:20 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
-        Content-ID:Content-Description:In-Reply-To:References;
-        bh=v/GT59MkBIStouZ5bA5ISsCi2iWAi8szvTx0tj4+hnE=; b=u46K34HSQykmz5ADBnh7XhiyLl
-        CHm6l4VLByZQ7/AFNniSg7YA/7YYjApUmgoePYCPHUzAOt42W5p2Za5CgxiLQFit+nF/Qk1nYxCAV
-        v3QvD7SB8GcNrGIzMVdQwI1fhcAbHHw9jV9WnxqExJL5T12sH0cQamk2QJjcDlShsQNFpxGwuJkF2
-        nZKMGKJh5vzdTO1nCHPeclhsqMCKyd20eMXnSfXdDORoqSHfw4WhZWuae21MmlBt+a75qRhGkz63H
-        6xkLIKaiBeP0/NfICbbxStr6D7fl0mecpLCq4zPIMMOwJsJOJYgp35YdwRiGvXnM+2iUP9unSiJzJ
-        yhwwe1Hg==;
-Received: from [2601:1c2:d80:3110::9307] (helo=bombadil.infradead.org)
-        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1pGDkd-000qs4-Kc; Fri, 13 Jan 2023 06:41:19 +0000
-From:   Randy Dunlap <rdunlap@infradead.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Randy Dunlap <rdunlap@infradead.org>, Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org
-Subject: [PATCH] backlight: sky81452: fix sky81452_bl_platform_data kernel-doc
-Date:   Thu, 12 Jan 2023 22:41:18 -0800
-Message-Id: <20230113064118.30169-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.39.0
+        Fri, 13 Jan 2023 02:22:19 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4CDBD5BA1E;
+        Thu, 12 Jan 2023 23:12:49 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id C26A862274;
+        Fri, 13 Jan 2023 07:12:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4DE1AC433D2;
+        Fri, 13 Jan 2023 07:12:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1673593968;
+        bh=QW1PY3rFgL7HIa1lrzMI5uksSAfbml0XYJbvQzFAuWk=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=0oMMF0AsnNGVsfn35DXLDvgW2FFDBQctJVJeY8ZKTXb5ezzn7lhGkAftJpZH35IQL
+         SnxMV96zvZ93p/8lbSuV6nhLT/2v6ajWOmV2dS1jXf/y0bbQOvb+apnJ6XXiXzoBRc
+         F2PSRDe2WkZQdYDnszi1VWAGguwJrTfCgd0RBj8I=
+Date:   Fri, 13 Jan 2023 08:12:44 +0100
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Christoph Hellwig <hch@lst.de>
+Cc:     Yoshinori Sato <ysato@users.sourceforge.jp>,
+        Rich Felker <dalias@libc.org>, Arnd Bergmann <arnd@arndb.de>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        linux-kernel@vger.kernel.org, linux-watchdog@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arch@vger.kernel.org,
+        dmaengine@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-renesas-soc@vger.kernel.org, linux-i2c@vger.kernel.org,
+        linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
+        netdev@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-rtc@vger.kernel.org, linux-spi@vger.kernel.org,
+        linux-serial@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org,
+        linux-sh@vger.kernel.org
+Subject: Re: [PATCH 02/22] usb: remove the dead USB_OHCI_SH option
+Message-ID: <Y8EEbCP6PRMzWP5y@kroah.com>
+References: <20230113062339.1909087-1-hch@lst.de>
+ <20230113062339.1909087-3-hch@lst.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230113062339.1909087-3-hch@lst.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Correct the struct name and add a short struct description to fix the
-kernel-doc notation.
+On Fri, Jan 13, 2023 at 07:23:19AM +0100, Christoph Hellwig wrote:
+> USB_OHCI_SH is a dummy option that never builds any code, remove it.
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>  drivers/usb/host/Kconfig | 11 -----------
+>  1 file changed, 11 deletions(-)
+> 
+> diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
+> index 8d799d23c476e1..ca5f657c092cf4 100644
+> --- a/drivers/usb/host/Kconfig
+> +++ b/drivers/usb/host/Kconfig
+> @@ -548,17 +548,6 @@ config USB_OHCI_HCD_SSB
+>  
+>  	  If unsure, say N.
+>  
+> -config USB_OHCI_SH
+> -	bool "OHCI support for SuperH USB controller (DEPRECATED)"
+> -	depends on SUPERH || COMPILE_TEST
+> -	select USB_OHCI_HCD_PLATFORM
+> -	help
+> -	  This option is deprecated now and the driver was removed, use
+> -	  USB_OHCI_HCD_PLATFORM instead.
+> -
+> -	  Enables support for the on-chip OHCI controller on the SuperH.
+> -	  If you use the PCI OHCI controller, this option is not necessary.
+> -
+>  config USB_OHCI_EXYNOS
+>  	tristate "OHCI support for Samsung S5P/Exynos SoC Series"
+>  	depends on ARCH_S5PV210 || ARCH_EXYNOS || COMPILE_TEST
+> -- 
+> 2.39.0
+> 
 
-Prevents this kernel-doc warning:
-drivers/video/backlight/sky81452-backlight.c:64: warning: expecting prototype for struct sky81452_platform_data. Prototype was for struct sky81452_bl_platform_data instead
+Do you want all of these to go through a single tree, or can they go
+through the different driver subsystem trees?
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Lee Jones <lee@kernel.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Jingoo Han <jingoohan1@gmail.com>
-Cc: Helge Deller <deller@gmx.de>
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org
----
- drivers/video/backlight/sky81452-backlight.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+If single:
 
-diff -- a/drivers/video/backlight/sky81452-backlight.c b/drivers/video/backlight/sky81452-backlight.c
---- a/drivers/video/backlight/sky81452-backlight.c
-+++ b/drivers/video/backlight/sky81452-backlight.c
-@@ -41,7 +41,7 @@
- #define SKY81452_MAX_BRIGHTNESS	(SKY81452_CS + 1)
- 
- /**
-- * struct sky81452_platform_data
-+ * struct sky81452_bl_platform_data - backlight platform data
-  * @name:	backlight driver name.
-  *		If it is not defined, default name is lcd-backlight.
-  * @gpiod_enable:GPIO descriptor which control EN pin
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
+If not, I'll be glad to take this.
+
+thanks,
+
+greg k-h

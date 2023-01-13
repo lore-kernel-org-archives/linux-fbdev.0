@@ -2,114 +2,92 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EDAB4C677F1
-	for <linux-fbdev@archiver.kernel.org>; Thu, 12 Jan 2023 20:07:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30DEAC678DA
+	for <linux-fbdev@archiver.kernel.org>; Fri, 13 Jan 2023 06:25:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229640AbjALUH0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 12 Jan 2023 15:07:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47248 "EHLO
+        id S239237AbjAMGY7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 13 Jan 2023 01:24:59 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33406 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241389AbjALUDw (ORCPT
+        with ESMTP id S236259AbjAMGYQ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 12 Jan 2023 15:03:52 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4252713E2A;
-        Thu, 12 Jan 2023 12:01:31 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id E0FBDB81E62;
-        Thu, 12 Jan 2023 20:01:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 28061C433D2;
-        Thu, 12 Jan 2023 20:01:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1673553688;
-        bh=DjplknG/Og42vIVzT/q7FbntQdQMbrnKJqFFsTyhjNM=;
-        h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-        b=EUafdQGi6kPVntwFcsX8dQ++eMfDpAt4hRufXGYp4rn3498p9O5an8Dtzb32f8VZO
-         /0dwxqLx9EiZWyrofGYjXdGydKTREAjzdQvusJ0Ow7D4V0fv83WO6VIMOVK93JIW2S
-         WKNFKVIBv7VwC+kTD5h1WgF5etFBp2YPn8S3ZXmT1Seav9nsmaQ1vhNBslaNNmcYRn
-         zsCLB4TmasZgZxWFa1UpanGfaUnDdJStrP+pk1HardQUH3NiBxgoCCXTezH0ic2ZBw
-         6otuSPV9m9aONvZu3dzL7IfHqeZgMZCL4VALktP1HibdXNi78cOSWjN0jogQQsvptF
-         31XhLFJQie5QQ==
-From:   Mark Brown <broonie@kernel.org>
-To:     Robert Jarzmik <robert.jarzmik@free.fr>,
-        Arnd Bergmann <arnd@kernel.org>
-Cc:     Daniel Mack <daniel@zonque.org>,
-        Haojian Zhuang <haojian.zhuang@gmail.com>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        Arnd Bergmann <arnd@arndb.de>, stern@rowland.harvard.edu,
-        alexandre.belloni@bootlin.com, brgl@bgdev.pl,
-        damien.lemoal@opensource.wdc.com, dmitry.torokhov@gmail.com,
-        linux@dominikbrodowski.net, balbi@kernel.org,
-        gregkh@linuxfoundation.org, deller@gmx.de, perex@perex.cz,
-        jingoohan1@gmail.com, lee@kernel.org, kernel@wantstofly.org,
-        lgirdwood@gmail.com, linus.walleij@linaro.org,
-        marek.vasut@gmail.com, mkpetch@internode.on.net,
-        miquel.raynal@bootlin.com, lost.distance@yahoo.com,
-        philipp.zabel@gmail.com, linux@armlinux.org.uk, sre@kernel.org,
-        slapin@ossfans.org, s.shtylyov@omp.ru, sudipm.mukherjee@gmail.com,
-        tiwai@suse.com, ulf.hansson@linaro.org, vigneshr@ti.com,
-        viresh.kumar@linaro.org, wsa+renesas@sang-engineering.com,
-        linux-pm@vger.kernel.org, linux-ide@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linux-input@vger.kernel.org,
-        patches@opensource.cirrus.com, linux-leds@vger.kernel.org,
-        linux-mmc@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
-        linux-mtd@lists.infradead.org, linux-rtc@vger.kernel.org,
-        linux-usb@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-In-Reply-To: <20230105134622.254560-1-arnd@kernel.org>
-References: <20230105134622.254560-1-arnd@kernel.org>
-Subject: Re: (subset) [PATCH v2 00/27] ARM: pxa: remove all unused boards&drivers
-Message-Id: <167355367885.2500964.3629822486060649314.b4-ty@kernel.org>
-Date:   Thu, 12 Jan 2023 20:01:18 +0000
+        Fri, 13 Jan 2023 01:24:16 -0500
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 469BF5BA26;
+        Thu, 12 Jan 2023 22:23:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+        :Reply-To:Content-Type:Content-ID:Content-Description;
+        bh=pE5vHsweVi9sw+XFtbQOjd8ZmlFDvTP0hqXRxtOPgdI=; b=UPm4fiFNqG828TmS+12Rola8gO
+        eqHlHcKs17NiINhJVso8pQaJLXAawxXFCKuLlP7HRjKIjJN2ZXqL/cl3jIEux4plqaePmjKWoVYai
+        QlJizCpTb7yVhQxL/QJWjJ37KmX8qVxA7Rot4hYXsbm50Ukgoehbb75E6d7ZbOqa0NS55yCF1vD12
+        hTv+9XqO7HKABDyO220qXwurWxcmgcwBxl9/GRlKpDUCPyGWGMAz1KKVnajqZK+KC0juYlZ2W8UlT
+        3xv/hB5gSMNo2fI0kJb/GNm6IFqQb0S3ZTYgJMi4xbRkGq5u2ysaI8Zc1eFL7BGimSK1gVFq75foe
+        LEx3cuRw==;
+Received: from [2001:4bb8:181:656b:9509:7d20:8d39:f895] (helo=localhost)
+        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1pGDTf-000lNa-NO; Fri, 13 Jan 2023 06:23:48 +0000
+From:   Christoph Hellwig <hch@lst.de>
+To:     Yoshinori Sato <ysato@users.sourceforge.jp>,
+        Rich Felker <dalias@libc.org>, Arnd Bergmann <arnd@arndb.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        linux-kernel@vger.kernel.org, linux-watchdog@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arch@vger.kernel.org,
+        dmaengine@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-renesas-soc@vger.kernel.org, linux-i2c@vger.kernel.org,
+        linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
+        netdev@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-rtc@vger.kernel.org, linux-spi@vger.kernel.org,
+        linux-serial@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org,
+        linux-sh@vger.kernel.org
+Subject: [PATCH 02/22] usb: remove the dead USB_OHCI_SH option
+Date:   Fri, 13 Jan 2023 07:23:19 +0100
+Message-Id: <20230113062339.1909087-3-hch@lst.de>
+X-Mailer: git-send-email 2.39.0
+In-Reply-To: <20230113062339.1909087-1-hch@lst.de>
+References: <20230113062339.1909087-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.12-dev-8b3d1
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, 05 Jan 2023 14:45:55 +0100, Arnd Bergmann wrote:
-> Most of the legacy PXA board files were marked as unused in linux-5.19 and
-> can get removed in linux-6.3. There is support for pxa250/pxa270/pxa300
-> using devicetree already, which supports a number of boards, but progress
-> on converting the remaining ones has stalled over the past few years.
-> 
-> The two boards that are left in the tree for now are the three 'sharpsl'
-> variants (spitz/akita/borzoi) and the 'gumstix' family of machines.
-> Both of these are supported by qemu, which can be helpful for completing
-> the DT conversion.
-> 
-> [...]
+USB_OHCI_SH is a dummy option that never builds any code, remove it.
 
-Applied to
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/usb/host/Kconfig | 11 -----------
+ 1 file changed, 11 deletions(-)
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
+index 8d799d23c476e1..ca5f657c092cf4 100644
+--- a/drivers/usb/host/Kconfig
++++ b/drivers/usb/host/Kconfig
+@@ -548,17 +548,6 @@ config USB_OHCI_HCD_SSB
+ 
+ 	  If unsure, say N.
+ 
+-config USB_OHCI_SH
+-	bool "OHCI support for SuperH USB controller (DEPRECATED)"
+-	depends on SUPERH || COMPILE_TEST
+-	select USB_OHCI_HCD_PLATFORM
+-	help
+-	  This option is deprecated now and the driver was removed, use
+-	  USB_OHCI_HCD_PLATFORM instead.
+-
+-	  Enables support for the on-chip OHCI controller on the SuperH.
+-	  If you use the PCI OHCI controller, this option is not necessary.
+-
+ config USB_OHCI_EXYNOS
+ 	tristate "OHCI support for Samsung S5P/Exynos SoC Series"
+ 	depends on ARCH_S5PV210 || ARCH_EXYNOS || COMPILE_TEST
+-- 
+2.39.0
 
-Thanks!
-
-[14/27] ASoC: PXA: make SND_PXA2XX_SOC_AC97 user-selectable
-        commit: 5eab9265759e2fb042aa452931c3d06ab7ab8dae
-[15/27] ASoC: pxa: remove unused board support
-        (no commit info)
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark

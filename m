@@ -2,130 +2,190 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75AB7C3DA78
-	for <linux-fbdev@archiver.kernel.org>; Fri, 13 Jan 2023 23:20:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79DCEC3DA78
+	for <linux-fbdev@archiver.kernel.org>; Sat, 14 Jan 2023 08:54:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231368AbjAMXUS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 13 Jan 2023 18:20:18 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34708 "EHLO
+        id S229742AbjANIyR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 14 Jan 2023 03:54:17 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44008 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229611AbjAMXUP (ORCPT
+        with ESMTP id S229519AbjANIyP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 13 Jan 2023 18:20:15 -0500
-Received: from mail-oa1-x29.google.com (mail-oa1-x29.google.com [IPv6:2001:4860:4864:20::29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63F367A921
-        for <linux-fbdev@vger.kernel.org>; Fri, 13 Jan 2023 15:20:12 -0800 (PST)
-Received: by mail-oa1-x29.google.com with SMTP id 586e51a60fabf-1322d768ba7so23911948fac.5
-        for <linux-fbdev@vger.kernel.org>; Fri, 13 Jan 2023 15:20:12 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=landley-net.20210112.gappssmtp.com; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=TQ9PrP3iNHpghVpkywhiMHcSFTwXN8kLEUSP7zNfGWk=;
-        b=HEeiDnUeOlaMmzrHg6LtTWNe2KIF6Q5d6PASMOjvpBnFNwlXnpxtBoyLsjdUSiFic5
-         Zy4GrupmECG1CN3m99XRInimzLkAyFlnAC1yFwr9ZV5WqZ8Mxia0axE41+SyDlpGZHOF
-         b9/hPmk9ZzrDZTerjRuPw9aOBuwmuFZgGCgGCyi5DNv5BOgrp6hpzWbx8PiSSS3PCS6S
-         UoJjpLq7r0mXx6nv8CL2PCVxH6W+Fc0fSdqCoguiOJxRwovXLajxMhMVOFQITRvWQd2L
-         +x8hdq/wHJdMhQD25h3cEnBEwX4srdIbxyBywCRXQlXO+4KVbgaam+X20emmeoxJCckb
-         5wPw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=TQ9PrP3iNHpghVpkywhiMHcSFTwXN8kLEUSP7zNfGWk=;
-        b=gJXSZf4tIitYnaCLARB2AxxSggCIFY/sYIJXDza153oqr/cjil18q7NFb1n54Z2c4C
-         MC6Uwbvmqf273fjf2M7rDB4pxMcUmBAK9pExLt0lLXKwSaP2zxBFiBdD/4Ga0kmUgpEt
-         wdJ5V1cSqEu9UTmPQdQ5sj2RMnZj6eaM6D8La0XO8a25E5FMwI5t23xB4UpsPjd43Aoj
-         puqLiF4NyW3M6wCYNuGKqkK1bLVvzPJB+mVu/VOEXEl3fk27p8T4gKRYVzyKph0iAxS+
-         K/Mr1dqVZnI5BKlNyMaHxJGokisdGr6ufKgQaiu4yMTPVAALdAIox1hflSV8ftnM4qFu
-         keHQ==
-X-Gm-Message-State: AFqh2kryIH0/bajm2lUs6WR/ma1B9vpYk60izpA7e/YNcrss70Q3pBzd
-        c3tMY+PZC1aQzuJSYmlqb7x35A==
-X-Google-Smtp-Source: AMrXdXu9HHEo/oiUtz2RMFCVU9bzsQZjZJ6cJq7QQE+EgrBS53y1RWYqF/4GpGuzhXIiUysKwMTRjQ==
-X-Received: by 2002:a05:6871:4090:b0:155:cb39:7325 with SMTP id kz16-20020a056871409000b00155cb397325mr16579350oab.6.1673652012126;
-        Fri, 13 Jan 2023 15:20:12 -0800 (PST)
-Received: from [192.168.86.224] ([136.62.38.22])
-        by smtp.gmail.com with ESMTPSA id z13-20020a056870738d00b0013ae39d0575sm11411907oam.15.2023.01.13.15.20.10
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 13 Jan 2023 15:20:11 -0800 (PST)
-Message-ID: <38200b53-c743-4396-6603-7274f4a29c86@landley.net>
-Date:   Fri, 13 Jan 2023 17:32:20 -0600
+        Sat, 14 Jan 2023 03:54:15 -0500
+Received: from smtp.smtpout.orange.fr (smtp-14.smtpout.orange.fr [80.12.242.14])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D7E9059DE
+        for <linux-fbdev@vger.kernel.org>; Sat, 14 Jan 2023 00:54:13 -0800 (PST)
+Received: from pop-os.home ([86.243.2.178])
+        by smtp.orange.fr with ESMTPA
+        id GcIkpkMKaFcd8GcIkpbxVz; Sat, 14 Jan 2023 09:54:11 +0100
+X-ME-Helo: pop-os.home
+X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
+X-ME-Date: Sat, 14 Jan 2023 09:54:11 +0100
+X-ME-IP: 86.243.2.178
+From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To:     Helge Deller <deller@gmx.de>
+Cc:     linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH v2] video: fbdev: omapfb: Use kstrtobool() instead of strtobool()
+Date:   Sat, 14 Jan 2023 09:54:04 +0100
+Message-Id: <b475ed9827ccef2081b557330a224f5fd8e6c8f3.1673686433.git.christophe.jaillet@wanadoo.fr>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.5.0
-Subject: Re: remove arch/sh
-Content-Language: en-US
-To:     John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-        Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Christoph Hellwig <hch@lst.de>,
-        Yoshinori Sato <ysato@users.sourceforge.jp>,
-        Rich Felker <dalias@libc.org>, Arnd Bergmann <arnd@arndb.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        linux-kernel@vger.kernel.org, linux-watchdog@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arch@vger.kernel.org,
-        dmaengine@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-renesas-soc@vger.kernel.org, linux-i2c@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
-        netdev@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-rtc@vger.kernel.org, linux-spi@vger.kernel.org,
-        linux-serial@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org,
-        linux-sh@vger.kernel.org
-References: <20230113062339.1909087-1-hch@lst.de>
- <11e2e0a8-eabe-2d8c-d612-9cdd4bcc3648@physik.fu-berlin.de>
- <CAMuHMdUcnP6a9Ch5=_CMPq-io-YWK5pshkOT2nZmP1hvNcwBAg@mail.gmail.com>
- <142532fb-5997-bdc1-0811-a80ae33f4ba4@physik.fu-berlin.de>
- <6891afb6-4190-6a52-0319-745b3f138d97@landley.net>
- <fe09d811-e290-821d-ec8b-75936b6583c2@physik.fu-berlin.de>
-From:   Rob Landley <rob@landley.net>
-In-Reply-To: <fe09d811-e290-821d-ec8b-75936b6583c2@physik.fu-berlin.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/13/23 13:05, John Paul Adrian Glaubitz wrote:
-> Hi Rob!
-> 
-> On 1/13/23 20:11, Rob Landley wrote:
->> There is definitely interest in this architecture. I'm aware Rich hasn't been
->> the most responsive maintainer. (I'm told he's on vacation with his family at
->> the moment, according to the text I got about this issue from the J-core
->> hardware guys in Japan.)
-> 
-> Well, maybe we can just give it a try together ...
+strtobool() is the same as kstrtobool().
+However, the latter is more used within the kernel.
 
-Jeff Dionne said he'd make himself available to answer hardware questions. (He
-said he maintained some Linux ports 20 years ago, but isn't current with Linux
-plumbing. Last month he was digging through the guts of vxworks, and the project
-before that was some sort of BSD I think?)
+In order to remove strtobool() and slightly simplify kstrtox.h, switch to
+the other function name.
 
-I _do_ maintain Linux patches, I just generally don't bother to repost them
-endlessly. Here's my "on top of 6.1" stack for example, each of which links to
-at least one time it was posted to linux-kernel:
+While at it, include the corresponding header file (<linux/kstrtox.h>)
 
-https://landley.net/toybox/downloads/binaries/mkroot/0.8.9/linux-patches/
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+This patch was already sent as a part of a serie ([1]) that axed all usages
+of strtobool().
+Most of the patches have been merged in -next.
 
->> The main reason we haven't converted everything to device tree is we only have
->> access to test hardware for a subset of the boards. Pruning the list of
->> supported boards and converting the rest to device tree might make sense. We can
->> always add/convert boards back later...
-> 
-> There is a patch by Yoshinori Sato which adds device tree support to SH. Maybe we
-> can revive it.
+I synch'ed with latest -next and re-send the remaining ones as individual
+patches.
 
-The turtle board is device tree and has been since it was merged. The
-infrastructure is there, the question is converting over boards and testing
-them, or deciding to prune them. Did Sato-san convert many boards? (I'm not
-finding his patch via google...)
+Changes in v2:
+  - No change
 
-> Adrian
+[1]: https://lore.kernel.org/all/cover.1667336095.git.christophe.jaillet@wanadoo.fr/
+---
+ drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c | 7 ++++---
+ drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c | 7 ++++---
+ drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c | 3 ++-
+ drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c      | 3 ++-
+ 4 files changed, 12 insertions(+), 8 deletions(-)
 
-Rob
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
+index bc5a44c2a144..ae937854403b 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
+@@ -10,6 +10,7 @@
+ #define DSS_SUBSYS_NAME "DISPLAY"
+ 
+ #include <linux/kernel.h>
++#include <linux/kstrtox.h>
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+ #include <linux/sysfs.h>
+@@ -36,7 +37,7 @@ static ssize_t display_enabled_store(struct omap_dss_device *dssdev,
+ 	int r;
+ 	bool enable;
+ 
+-	r = strtobool(buf, &enable);
++	r = kstrtobool(buf, &enable);
+ 	if (r)
+ 		return r;
+ 
+@@ -73,7 +74,7 @@ static ssize_t display_tear_store(struct omap_dss_device *dssdev,
+ 	if (!dssdev->driver->enable_te || !dssdev->driver->get_te)
+ 		return -ENOENT;
+ 
+-	r = strtobool(buf, &te);
++	r = kstrtobool(buf, &te);
+ 	if (r)
+ 		return r;
+ 
+@@ -183,7 +184,7 @@ static ssize_t display_mirror_store(struct omap_dss_device *dssdev,
+ 	if (!dssdev->driver->set_mirror || !dssdev->driver->get_mirror)
+ 		return -ENOENT;
+ 
+-	r = strtobool(buf, &mirror);
++	r = kstrtobool(buf, &mirror);
+ 	if (r)
+ 		return r;
+ 
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
+index ba21c4a2633d..1b644be5fe2e 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
+@@ -10,6 +10,7 @@
+ #define DSS_SUBSYS_NAME "MANAGER"
+ 
+ #include <linux/kernel.h>
++#include <linux/kstrtox.h>
+ #include <linux/slab.h>
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+@@ -246,7 +247,7 @@ static ssize_t manager_trans_key_enabled_store(struct omap_overlay_manager *mgr,
+ 	bool enable;
+ 	int r;
+ 
+-	r = strtobool(buf, &enable);
++	r = kstrtobool(buf, &enable);
+ 	if (r)
+ 		return r;
+ 
+@@ -290,7 +291,7 @@ static ssize_t manager_alpha_blending_enabled_store(
+ 	if(!dss_has_feature(FEAT_ALPHA_FIXED_ZORDER))
+ 		return -ENODEV;
+ 
+-	r = strtobool(buf, &enable);
++	r = kstrtobool(buf, &enable);
+ 	if (r)
+ 		return r;
+ 
+@@ -329,7 +330,7 @@ static ssize_t manager_cpr_enable_store(struct omap_overlay_manager *mgr,
+ 	if (!dss_has_feature(FEAT_CPR))
+ 		return -ENODEV;
+ 
+-	r = strtobool(buf, &enable);
++	r = kstrtobool(buf, &enable);
+ 	if (r)
+ 		return r;
+ 
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c
+index 601c0beb6de9..1da4fb1c77b4 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c
+@@ -13,6 +13,7 @@
+ #include <linux/err.h>
+ #include <linux/sysfs.h>
+ #include <linux/kobject.h>
++#include <linux/kstrtox.h>
+ #include <linux/platform_device.h>
+ 
+ #include <video/omapfb_dss.h>
+@@ -210,7 +211,7 @@ static ssize_t overlay_enabled_store(struct omap_overlay *ovl, const char *buf,
+ 	int r;
+ 	bool enable;
+ 
+-	r = strtobool(buf, &enable);
++	r = kstrtobool(buf, &enable);
+ 	if (r)
+ 		return r;
+ 
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c b/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
+index 06dc41aa0354..831b2c2fbdf9 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
+@@ -15,6 +15,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/platform_device.h>
+ #include <linux/kernel.h>
++#include <linux/kstrtox.h>
+ #include <linux/mm.h>
+ #include <linux/omapfb.h>
+ 
+@@ -96,7 +97,7 @@ static ssize_t store_mirror(struct device *dev,
+ 	int r;
+ 	struct fb_var_screeninfo new_var;
+ 
+-	r = strtobool(buf, &mirror);
++	r = kstrtobool(buf, &mirror);
+ 	if (r)
+ 		return r;
+ 
+-- 
+2.34.1
+

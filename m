@@ -2,190 +2,129 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79DCEC3DA78
-	for <linux-fbdev@archiver.kernel.org>; Sat, 14 Jan 2023 08:54:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 946B5C46467
+	for <linux-fbdev@archiver.kernel.org>; Sun, 15 Jan 2023 00:43:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229742AbjANIyR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 14 Jan 2023 03:54:17 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44008 "EHLO
+        id S229918AbjAOAnc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 14 Jan 2023 19:43:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51552 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229519AbjANIyP (ORCPT
+        with ESMTP id S229906AbjAOAnZ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 14 Jan 2023 03:54:15 -0500
-Received: from smtp.smtpout.orange.fr (smtp-14.smtpout.orange.fr [80.12.242.14])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D7E9059DE
-        for <linux-fbdev@vger.kernel.org>; Sat, 14 Jan 2023 00:54:13 -0800 (PST)
-Received: from pop-os.home ([86.243.2.178])
-        by smtp.orange.fr with ESMTPA
-        id GcIkpkMKaFcd8GcIkpbxVz; Sat, 14 Jan 2023 09:54:11 +0100
-X-ME-Helo: pop-os.home
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Sat, 14 Jan 2023 09:54:11 +0100
-X-ME-IP: 86.243.2.178
-From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To:     Helge Deller <deller@gmx.de>
-Cc:     linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-        linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: [PATCH v2] video: fbdev: omapfb: Use kstrtobool() instead of strtobool()
-Date:   Sat, 14 Jan 2023 09:54:04 +0100
-Message-Id: <b475ed9827ccef2081b557330a224f5fd8e6c8f3.1673686433.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.34.1
+        Sat, 14 Jan 2023 19:43:25 -0500
+Received: from mail-oi1-x229.google.com (mail-oi1-x229.google.com [IPv6:2607:f8b0:4864:20::229])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4175BBB6
+        for <linux-fbdev@vger.kernel.org>; Sat, 14 Jan 2023 16:43:22 -0800 (PST)
+Received: by mail-oi1-x229.google.com with SMTP id r9so9802149oie.13
+        for <linux-fbdev@vger.kernel.org>; Sat, 14 Jan 2023 16:43:22 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=landley-net.20210112.gappssmtp.com; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=VA+b6ERucM0SVhgS+CxkVoqDPdylXXEER7Oavou/n5c=;
+        b=AWOVJoTRCZIzDDPEVrLicc1SKpwl7KTn8Ol48utvExDUblpnjljkkxvHgz5x7ZXre+
+         8m1djuSOUoerjvNlDkOsvOoru5Slmn51JdtG4yWzqApm65GcAawUt0a4970Ve8qE/PbE
+         WIpzUe/igEignY6RXJsMefYQMCJguWlv4sRLkistNu2yHDIEgQ5le/hWruMQxtCBR8qR
+         R0Xe1ZeaqdcCUIm6QnssL2hDeKkpiOJ4cANGy/HkgZiIyg5h2uIoq1Znienu3k+LNYC0
+         mG/pqdest+Z0kWbWIAyWD+qrcbh4pkalGKoAU1Y3Z3G0iffow+5qADIIMc/6gwB/2uWn
+         mYPA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=VA+b6ERucM0SVhgS+CxkVoqDPdylXXEER7Oavou/n5c=;
+        b=e73sQJSgr9bwERF7wbl+Sqb7mA3yKs5+utQBhuRNGgRx3ita3Av0MkQWE/cPA6OviN
+         JhsL2tjYFVn6romjTncxUtqqfn4hBDE8MpwBw9XMRMPAELaH6Sk4qbDXZ1KZxbjFrPYC
+         vyvV6HCndLwjq2K5n6qZL2HrcQ2zcs7qDdaV3W81m04NIS8cS2/ARy4DN8SS8mBQaoi0
+         a96yHyeIlEMx6gktl49VZFWMD1pM4pNrSIyvMpl5tX7ny2e4SUGonEllojCc4wME3M8Z
+         bqpUn3axJd8amjJv5k7/9hetJYqkdxzK1va3dB2ywmjSIU6qAhihWkCZZs7ji+WyG0S+
+         NBYA==
+X-Gm-Message-State: AFqh2kpGdvRYBhjdIC/LY9Mid4pvW1KpNIDZcYIYUf8Z2CZJOklr+evl
+        iJliDVQ/dBa52BhnSiVB4zW13A==
+X-Google-Smtp-Source: AMrXdXtmlbzCnjvw02a750r61CcJJIRVFXhgi7CC+Te697GM+nVvImU+iajKPZiIXIE5Si7tn9Lk3Q==
+X-Received: by 2002:aca:c189:0:b0:35a:6005:3dc5 with SMTP id r131-20020acac189000000b0035a60053dc5mr35396207oif.51.1673743401843;
+        Sat, 14 Jan 2023 16:43:21 -0800 (PST)
+Received: from [192.168.86.224] ([136.62.38.22])
+        by smtp.gmail.com with ESMTPSA id l10-20020a056808020a00b00360e46a1edasm10935583oie.22.2023.01.14.16.43.20
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 14 Jan 2023 16:43:21 -0800 (PST)
+Message-ID: <fe206345-9445-f1be-02c1-b3cc39a533ef@landley.net>
+Date:   Sat, 14 Jan 2023 18:55:31 -0600
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.5.0
+Subject: Re: [PATCH 02/22] usb: remove the dead USB_OHCI_SH option
+Content-Language: en-US
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Christoph Hellwig <hch@lst.de>
+Cc:     Yoshinori Sato <ysato@users.sourceforge.jp>,
+        Rich Felker <dalias@libc.org>, Arnd Bergmann <arnd@arndb.de>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        linux-kernel@vger.kernel.org, linux-watchdog@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arch@vger.kernel.org,
+        dmaengine@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-renesas-soc@vger.kernel.org, linux-i2c@vger.kernel.org,
+        linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
+        netdev@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-rtc@vger.kernel.org, linux-spi@vger.kernel.org,
+        linux-serial@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org,
+        linux-sh@vger.kernel.org
+References: <20230113062339.1909087-1-hch@lst.de>
+ <20230113062339.1909087-3-hch@lst.de> <Y8EEbCP6PRMzWP5y@kroah.com>
+From:   Rob Landley <rob@landley.net>
+In-Reply-To: <Y8EEbCP6PRMzWP5y@kroah.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-strtobool() is the same as kstrtobool().
-However, the latter is more used within the kernel.
 
-In order to remove strtobool() and slightly simplify kstrtox.h, switch to
-the other function name.
 
-While at it, include the corresponding header file (<linux/kstrtox.h>)
+On 1/13/23 01:12, Greg Kroah-Hartman wrote:
+> On Fri, Jan 13, 2023 at 07:23:19AM +0100, Christoph Hellwig wrote:
+>> USB_OHCI_SH is a dummy option that never builds any code, remove it.
+>> 
+>> Signed-off-by: Christoph Hellwig <hch@lst.de>
+>> ---
+>>  drivers/usb/host/Kconfig | 11 -----------
+>>  1 file changed, 11 deletions(-)
+>> 
+>> diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
+>> index 8d799d23c476e1..ca5f657c092cf4 100644
+>> --- a/drivers/usb/host/Kconfig
+>> +++ b/drivers/usb/host/Kconfig
+>> @@ -548,17 +548,6 @@ config USB_OHCI_HCD_SSB
+>>  
+>>  	  If unsure, say N.
+>>  
+>> -config USB_OHCI_SH
+>> -	bool "OHCI support for SuperH USB controller (DEPRECATED)"
+>> -	depends on SUPERH || COMPILE_TEST
+>> -	select USB_OHCI_HCD_PLATFORM
+>> -	help
+>> -	  This option is deprecated now and the driver was removed, use
+>> -	  USB_OHCI_HCD_PLATFORM instead.
+>> -
+>> -	  Enables support for the on-chip OHCI controller on the SuperH.
+>> -	  If you use the PCI OHCI controller, this option is not necessary.
+>> -
+>>  config USB_OHCI_EXYNOS
+>>  	tristate "OHCI support for Samsung S5P/Exynos SoC Series"
+>>  	depends on ARCH_S5PV210 || ARCH_EXYNOS || COMPILE_TEST
+>> -- 
+>> 2.39.0
+>> 
+> 
+> Do you want all of these to go through a single tree, or can they go
+> through the different driver subsystem trees?
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-This patch was already sent as a part of a serie ([1]) that axed all usages
-of strtobool().
-Most of the patches have been merged in -next.
+Neither please. Multiple people are objecting.
 
-I synch'ed with latest -next and re-send the remaining ones as individual
-patches.
-
-Changes in v2:
-  - No change
-
-[1]: https://lore.kernel.org/all/cover.1667336095.git.christophe.jaillet@wanadoo.fr/
----
- drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c | 7 ++++---
- drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c | 7 ++++---
- drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c | 3 ++-
- drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c      | 3 ++-
- 4 files changed, 12 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
-index bc5a44c2a144..ae937854403b 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
-@@ -10,6 +10,7 @@
- #define DSS_SUBSYS_NAME "DISPLAY"
- 
- #include <linux/kernel.h>
-+#include <linux/kstrtox.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/sysfs.h>
-@@ -36,7 +37,7 @@ static ssize_t display_enabled_store(struct omap_dss_device *dssdev,
- 	int r;
- 	bool enable;
- 
--	r = strtobool(buf, &enable);
-+	r = kstrtobool(buf, &enable);
- 	if (r)
- 		return r;
- 
-@@ -73,7 +74,7 @@ static ssize_t display_tear_store(struct omap_dss_device *dssdev,
- 	if (!dssdev->driver->enable_te || !dssdev->driver->get_te)
- 		return -ENOENT;
- 
--	r = strtobool(buf, &te);
-+	r = kstrtobool(buf, &te);
- 	if (r)
- 		return r;
- 
-@@ -183,7 +184,7 @@ static ssize_t display_mirror_store(struct omap_dss_device *dssdev,
- 	if (!dssdev->driver->set_mirror || !dssdev->driver->get_mirror)
- 		return -ENOENT;
- 
--	r = strtobool(buf, &mirror);
-+	r = kstrtobool(buf, &mirror);
- 	if (r)
- 		return r;
- 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
-index ba21c4a2633d..1b644be5fe2e 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
-@@ -10,6 +10,7 @@
- #define DSS_SUBSYS_NAME "MANAGER"
- 
- #include <linux/kernel.h>
-+#include <linux/kstrtox.h>
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
-@@ -246,7 +247,7 @@ static ssize_t manager_trans_key_enabled_store(struct omap_overlay_manager *mgr,
- 	bool enable;
- 	int r;
- 
--	r = strtobool(buf, &enable);
-+	r = kstrtobool(buf, &enable);
- 	if (r)
- 		return r;
- 
-@@ -290,7 +291,7 @@ static ssize_t manager_alpha_blending_enabled_store(
- 	if(!dss_has_feature(FEAT_ALPHA_FIXED_ZORDER))
- 		return -ENODEV;
- 
--	r = strtobool(buf, &enable);
-+	r = kstrtobool(buf, &enable);
- 	if (r)
- 		return r;
- 
-@@ -329,7 +330,7 @@ static ssize_t manager_cpr_enable_store(struct omap_overlay_manager *mgr,
- 	if (!dss_has_feature(FEAT_CPR))
- 		return -ENODEV;
- 
--	r = strtobool(buf, &enable);
-+	r = kstrtobool(buf, &enable);
- 	if (r)
- 		return r;
- 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c
-index 601c0beb6de9..1da4fb1c77b4 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c
-@@ -13,6 +13,7 @@
- #include <linux/err.h>
- #include <linux/sysfs.h>
- #include <linux/kobject.h>
-+#include <linux/kstrtox.h>
- #include <linux/platform_device.h>
- 
- #include <video/omapfb_dss.h>
-@@ -210,7 +211,7 @@ static ssize_t overlay_enabled_store(struct omap_overlay *ovl, const char *buf,
- 	int r;
- 	bool enable;
- 
--	r = strtobool(buf, &enable);
-+	r = kstrtobool(buf, &enable);
- 	if (r)
- 		return r;
- 
-diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c b/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
-index 06dc41aa0354..831b2c2fbdf9 100644
---- a/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
-+++ b/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
-@@ -15,6 +15,7 @@
- #include <linux/uaccess.h>
- #include <linux/platform_device.h>
- #include <linux/kernel.h>
-+#include <linux/kstrtox.h>
- #include <linux/mm.h>
- #include <linux/omapfb.h>
- 
-@@ -96,7 +97,7 @@ static ssize_t store_mirror(struct device *dev,
- 	int r;
- 	struct fb_var_screeninfo new_var;
- 
--	r = strtobool(buf, &mirror);
-+	r = kstrtobool(buf, &mirror);
- 	if (r)
- 		return r;
- 
--- 
-2.34.1
-
+Rob

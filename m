@@ -2,121 +2,104 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D8BDC677F1
-	for <linux-fbdev@archiver.kernel.org>; Sun, 15 Jan 2023 20:46:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD282C3DA78
+	for <linux-fbdev@archiver.kernel.org>; Sun, 15 Jan 2023 20:53:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231488AbjAOUql (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 15 Jan 2023 15:46:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59754 "EHLO
+        id S231229AbjAOUxR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 15 Jan 2023 15:53:17 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33042 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231381AbjAOUqk (ORCPT
+        with ESMTP id S231391AbjAOUxQ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 15 Jan 2023 15:46:40 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA63413511;
-        Sun, 15 Jan 2023 12:46:38 -0800 (PST)
+        Sun, 15 Jan 2023 15:53:16 -0500
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0387CC09;
+        Sun, 15 Jan 2023 12:53:15 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1673815583; bh=DP/1nuJOTE9gH1Zhyg7I2is4AeYaxDt/PxArbptl+Xs=;
+        t=1673815983; bh=45L2L28GNcnhB3rxUq2EtpTvB5BL2cm6rdlZA5WHnTk=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=atG7FCQFYgQtTtBmJq9FYBNKK94PVv/fHkFie+e5rI5f3pYu00aMxSM4vsQZvbcy9
-         ZPd+/YlBVZBW34z9pjgFripPUNnCm/x4PzeiyVecMNhk2ywWYgY8zmzeWa5wv4CyZa
-         sjo4BLB4ccW85OYueS2yF4AsdWgmkQFJpvZOFBipDkWJ1W1F7sfTEnafCyT9jD5fKp
-         KYzbAVmti3Vb1xksmqlCRh71I8V3az8SPFNgxTnmsuFJzq4xks5x+rNRT5A+3UpUi5
-         GEMcxfTZKr9PNdLLYZLgOOzCP78/4+z6Jli/GRR44wrTa0lqMNtNmVrbRlJSaqKUED
-         22hI5MfmXl1Dg==
+        b=hyLrnCmZrUo6XGOoa8Xc8jZE7sZQykTLks/zhgmpuf/hBCxFI4PfoZtj2xxbh4f/A
+         uvy/FyscpwmrgCa5IgDYZzPrboKZoHaCvMANz73SIdW1b6rSdRMDIwpfo5iaBviDhB
+         nabOatXR3fdIFO1sv+amfvRPZ0vmfE5Im4X354kxrFHv10QUajJLQd/iuhTye0LeUc
+         0WiWyJTswc3+IWR8hgGmspsqXevpSE2MY96RkO++BLPSYxix1WTjl5z1bn3pmiS18W
+         ubTHCs1uvJq94S7/ndjd94l/57FIP4kQsyr8VkRcx2EAJ4jxDfGgROj/yy296Nuj0r
+         pJirXEZGJi6Kw==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.60] ([92.116.161.25]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mj8qj-1olggk2lj3-00f7nS; Sun, 15
- Jan 2023 21:46:23 +0100
-Message-ID: <a3e368c5-3b4c-fe05-394b-50d1a1c01389@gmx.de>
-Date:   Sun, 15 Jan 2023 21:46:21 +0100
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MxUrx-1oXKbu14mn-00xsS8; Sun, 15
+ Jan 2023 21:53:03 +0100
+Message-ID: <a336db6c-4168-d60a-df4e-0a9f718077ef@gmx.de>
+Date:   Sun, 15 Jan 2023 21:53:00 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.6.0
-Subject: Re: [PATCH] fbdev/g364fb: Fix a compilation issue
+Subject: Re: [PATCH] fbdev: fbmon: fix function name in kernel-doc
 Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>, xurui <xurui@kylinos.cn>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, trivial@kernel.org,
-        linux-mips@vger.kernel.org
-References: <20230105094039.1474255-1-xurui@kylinos.cn>
- <CAMuHMdX174erGgrCUBv2WdX67H=mig-hi=SOdeMJ=0__thC_fw@mail.gmail.com>
- <CAMuHMdVdCBxZ39BbtLDPeiMK9BK4M0W5hynrYLFx6+ibunyxGw@mail.gmail.com>
+To:     Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
+Cc:     Daniel Vetter <daniel@ffwll.ch>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+References: <20230113063639.6940-1-rdunlap@infradead.org>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <CAMuHMdVdCBxZ39BbtLDPeiMK9BK4M0W5hynrYLFx6+ibunyxGw@mail.gmail.com>
+In-Reply-To: <20230113063639.6940-1-rdunlap@infradead.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:Dv6Nk/b9mmPf1W7hYeG8O+pCiMM+daiwzKYotwx+ScqZyXtQjgX
- Z6GUo9bnwKFF5agwFfckUMINAbt8mJElX1DtdKYo+rc99J+x894aI/lWCcrUQ/Hr9q2A9nL
- FoqQmH2y8dFAuOyu1HyPQEtxecuThxtp37QTs4J4v4eeNaiBHuf0fHyTT2/g/hHUtt9XSMr
- 6QrvXdSxxWdOilXI8g/ZA==
-UI-OutboundReport: notjunk:1;M01:P0:JhfJtG26gX8=;CebJ7tLwaEfjeNX0T75Z3Ga6S7z
- tyuFPNI9Vk8Syp0h7QAeESs9MvMGs9gYgvkMms01AJ9ypOrBBwajeH4S2cJ939euZZYdj5Xuj
- Y1qzfOOZg7sRVogS7/xPMm4/Lgx7Q4/VW2UWZKBYLqYotMS7aVY8ZVJ4DuZIH0jB9otzyqCRT
- DhpdF3O2SjMAKW70WqmcxbpWe7cnJEY6evYFhaThc8R6sklfylJAQTVECv+qJ26/+2hbCINAm
- UeasWkmiQ/pVEPHWeLJ9Jw7GmiY8IRxhh7L0+FiKmlSZFHYd09j+Ca5CZg2Z7uOAxciCGIDDl
- TIuwUeqI+aO78ubqBdLWLjjpYh1xsJ0QolLFcKJeSMfWTuehM/zU+n11SAflN7Taa8wxcHmqX
- bjA1o5znJEmk2uEMp8Nqm3no6ZyJUXsl5yoOUS7/efLoLgp8tP9Sfn3j+7aJQ9YeHNW3AM/ZE
- H5tEFWEmZp/pFWLDbJ6l609e2HLzg3J6kZgNTy3MsuQG3XpqjlUu1NG/BpUnaSHmnQzeKQj2r
- jJnSY85hMri2TlPyTJEkAp7VjLbx+EhUseJVBc9FVigObR/Lk8dIofUzgNFmyYN2MvqewWgkk
- HATHaCI/efFCmThr0MrMnEJ6dYgrR0I6s35RbTVu6KIBw96HUHgZo4Yvah5H76BWXtnNNl8ug
- /j+xjm8FE5HiD8kekeLUA5tswzzdOryMKLSuvc/LC3XzUCB1KBn5ugsJ3QwDiMUJiFcpZafLT
- uZno9JP7pHzJvvo72j0FYNA5ngC7Dy0o2wGWHxdzDDLgt9kQjT6T1lmhESTe6X1jwDPTS9Y7H
- WRmMOj7EB6rmTMjDHnfdqW/8eMT+w8SvQdi9qP+858zF7Sx4T8ho6H9UxJARe/gNaQD3dsUTc
- qih88DeJdUuehmtmpjwsKlfsirdwe55NoYjius88o3c3pvUlpDt0l0XJGE968+/d0tP7Zg73L
- iCOQHg==
+X-Provags-ID: V03:K1:+FjCiif4xKJA/+y5TK8pRJVMqSAVpWh8PjH7iKrQiI2McE1lWdH
+ OtcR4Sc1bEuJdNDNglyfhzNSAWaVzNUgcNNkvokZDm5CJPAbEI+HXziQr4vlRLZO8wIYbpN
+ cnnAc2A2+eK1+iTt7TzOg2/Bbibx27kROCal69XYPyPkUEReqjQPRlUtwHhCZww/VW1f8I1
+ 4HGzCsWsdbABe9shjUJAw==
+UI-OutboundReport: notjunk:1;M01:P0:y4w7Y19c440=;XJhwBK/pdPpGXWdm9BLSRlm059J
+ eyv+Oby8QbrUjZpgtIviBn8D0sLjGCiNpSswf9Qf8lgR357Wm7yBDYf136tgmkophDpHokcOk
+ oBW+AvghBh947wWYQWniAFLJ3yYkWFA6vVNWl7js48IPUcmrD9H+WLiG6Acxcrdoisx99yf28
+ ICT5ExtI6vWpS7kkpDA7rxJ4UlhN47ppq2u/RR9/c3eJ3UQYa8OSKCoYv4cyieVlKTr7n9vGK
+ BPHI1Z+h71np2rxRdCF4sFe9cqn7AnSIbZ4Yeg8or8a5lyfgQGul/GP8Y2L7yqPnKlUOG8j1y
+ lQCofhU8VPv/tkKdu30Ez46fMclIE6i4H3WSzUNyc4iY/5RnBAo9DX9/ePbPDgIRF95ErygfB
+ miugrQnoMQjZZNFxnIrxUbStnv7rwzZ1bZXL2o09ceV8GbkjydGqH/9F0QP+bEQpwJfsdCMF2
+ HU2xlI/YG+tEfFh7kV3R3CWhRFoMKinsRUIgieZWKPdCKeMBddid01UHjtsj5qxL5N4HrT4Q7
+ z1D1tMyRnjuYLdX1wXflojCgx0KNMJkQu5yL+Z8+IK2kYaR1TN+jZGqtmHrih3eFUjXVoeqCQ
+ XREjRO33eQx0/dz9f5Xf0jEMRHptezK+0LR1gl7qUh7bJ0WIEIvEP9FMI4/UNWXq0iSpqaiWF
+ 0ChestTgs5vKfGAYNLtj8ndh2Wi/Jkm2mPOM55bAbPq/mHC5Agc3U8DWwXPizoY9R/gM/3FaQ
+ uSM5eJtCw1Zp7N6H+QpyMnQKJ0SmJnWdFbNg/bwlG+0cswrGeUp0iPvZ98Fck4ngPtSPq6wFa
+ J7/ZesiFNSDbUYAvbVP0b8IsUU40Fi0FDjkTof8olMQEJfh0FKrJdtIwMMVAO8QwhTZAFjmRX
+ byavQONuJnP55bekTEaBEfVCN8buhGtuW7KoPdlkyllxfVRRYQzNi+6PQ9m2w2MhW7WzOVYRa
+ qY4YRQ==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Xurui,
-
-On 1/9/23 11:04, Geert Uytterhoeven wrote:
-> This time with the new linux-mips mailing list address...
+On 1/13/23 07:36, Randy Dunlap wrote:
+> Fix a kernel-doc warning by correcting the function name in the
+> kernel-doc comment:
 >
-> On Mon, Jan 9, 2023 at 11:01 AM Geert Uytterhoeven <geert@linux-m68k.org=
-> wrote:
->>
->> Hi Xurui,
->>
->> On Thu, Jan 5, 2023 at 10:45 AM xurui <xurui@kylinos.cn> wrote:
->>> drivers/video/fbdev/g364fb.c:202:4: error: cast to pointer from intege=
-r of different size [-Werror=3Dint-to-pointer-cast]
->>>
->>> Signed-off-by: xurui <xurui@kylinos.cn>
->>
->> Thanks for your patch!
->>
->>> --- a/drivers/video/fbdev/g364fb.c
->>> +++ b/drivers/video/fbdev/g364fb.c
->>> @@ -175,7 +175,8 @@ int __init g364fb_init(void)
->>>   {
->>>          volatile unsigned int *curs_pal_ptr =3D
->>>              (volatile unsigned int *) CURS_PAL_REG;
->>> -       int mem, i;
->>> +       int mem;
->>> +       uintptr_t i;
->>
->> This doesn't look like the right fix to me.
->>
->> The line the compiler[1] complains about is:
->>
->>                  *(unsigned short *) (CURS_PAT_REG + i * 8) =3D 0;
->>
->> Interestingly, it doesn't complain about:
->>
->>          *(unsigned short *) (CURS_PAT_REG + 14 * 64) =3D 0xffff;
->>
->> This driver uses raw memory writes to write to hardware registers.
->> Probably it should use writel() instead.
+> drivers/video/fbdev/core/fbmon.c:1073: warning: expecting prototype for =
+fb_get_hblank_by_freq(). Prototype was for fb_get_hblank_by_hfreq() instea=
+d
+>
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Cc: Daniel Vetter <daniel@ffwll.ch>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
 
-Xurui, I'll drop this patch from fbdev git tree for now.
+applied.
 
-Please check if the driver can be converted to writel() or similiar.
-
-Thanks,
+Thanks!
 Helge
 
->> [1] mips64-linux-gnuabi64-gcc version 10.3.0 (Ubuntu 10.3.0-1ubuntu1)
->>      jazz_defconfig + CONFIG_64BIT=3Dy
+> ---
+>   drivers/video/fbdev/core/fbmon.c |    2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff -- a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fb=
+mon.c
+> --- a/drivers/video/fbdev/core/fbmon.c
+> +++ b/drivers/video/fbdev/core/fbmon.c
+> @@ -1050,7 +1050,7 @@ static u32 fb_get_vblank(u32 hfreq)
+>   }
+>
+>   /**
+> - * fb_get_hblank_by_freq - get horizontal blank time given hfreq
+> + * fb_get_hblank_by_hfreq - get horizontal blank time given hfreq
+>    * @hfreq: horizontal freq
+>    * @xres: horizontal resolution in pixels
+>    *
 

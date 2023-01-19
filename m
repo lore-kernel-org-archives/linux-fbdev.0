@@ -2,75 +2,67 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1F12C38159
-	for <linux-fbdev@archiver.kernel.org>; Fri, 20 Jan 2023 05:12:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B726C678D6
+	for <linux-fbdev@archiver.kernel.org>; Fri, 20 Jan 2023 05:24:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230215AbjATFMO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 20 Jan 2023 00:12:14 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45844 "EHLO
+        id S231327AbjATFYG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 20 Jan 2023 00:24:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56154 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230250AbjATFMC (ORCPT
+        with ESMTP id S229530AbjATFXn (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 20 Jan 2023 00:12:02 -0500
+        Fri, 20 Jan 2023 00:23:43 -0500
 Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D0FE1B2D2C;
-        Thu, 19 Jan 2023 20:59:45 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6AEE07AF37;
+        Thu, 19 Jan 2023 21:14:04 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 46826B82296;
-        Thu, 19 Jan 2023 14:51:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF61EC433D2;
-        Thu, 19 Jan 2023 14:51:22 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id E4E9CB82674;
+        Thu, 19 Jan 2023 21:39:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 902BBC433F0;
+        Thu, 19 Jan 2023 21:39:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1674139885;
-        bh=xtZhu85yI1u7Kgj39/pnsqD82RG/N8l/7M+Kp1PAgpw=;
+        s=k20201202; t=1674164375;
+        bh=yQT7vF8YUwj4dpk5uOYW6ZI2HJbDbf0PuVFcTzzBj/s=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=RBFMKN/XsXhcnvYft01O0rVKCwHsEGq1kUf5T2rFoUby4h2rVxesIEP3fvbTajexh
-         zoH0+uZk5FUlk5XemnYvlyXu17UGn4jOFBKqzetLSt47LztUzTly9OumOoX4j+R5NY
-         +8I2VpBkFPS11MUI9j440mjNm1z2V0/+XW1ub5hpN++J8VjD1D3oGLXF5a7T1479vg
-         81C6Xs1X79dvW7XUOBrRvLqKokcLUiD27D9RULp8pLy+mMs1B1daBOECXW678jvolK
-         C3rHNTsted3bQa12R4b8OOogiDyrtTSUIWpyhMWkeZArPNzKe38Z7M3PeICPyajEvx
-         MZQizlgN8HIew==
-Date:   Thu, 19 Jan 2023 14:51:19 +0000
+        b=pW/EJdAhnBZ70wuOAsx/7rczHPj006EtmoxDD+J6Ce2Zw+Nanrs7JqMej38VCsGfu
+         w8x7ze74AHlVv7fjBNnd+nHIqwQuL4mKA/e17XE0iav6L8XfugKQp8l15PAIYhd8Ec
+         WyCDvGyPoKvLRryTge0rzzAJqffxADf1pnrYgyfyBiAVhT34+Xek1K0eWTWns9lox6
+         udROIv+bL+htcolekcNqfSdqWzsI7UFO0CG/DAP8eODuq360y+JjrPCZMQIT2uph05
+         +q1i82sD8VBVDqp47gKyyb0CQmIzXAeOdmSVYY1Ltzws1lQr8EZxjHY625K13H1BFv
+         R3+Uo/3FdQXHA==
+Date:   Thu, 19 Jan 2023 21:39:30 +0000
 From:   Lee Jones <lee@kernel.org>
-To:     Randy Dunlap <rdunlap@infradead.org>
-Cc:     linux-kernel@vger.kernel.org,
-        Daniel Thompson <daniel.thompson@linaro.org>,
+To:     Stephen Kitt <steve@sk2.org>
+Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
         Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH] backlight: ili922x: fix kernel-doc warnings
-Message-ID: <Y8lY56324WB3Shlo@google.com>
-References: <20230113064108.29172-1-rdunlap@infradead.org>
+        Sam Ravnborg <sam@ravnborg.org>, Helge Deller <deller@gmx.de>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RESEND 3/4] backlight: ipaq_micro: Use backlight helper
+Message-ID: <Y8m4krH0nh6sh5NM@google.com>
+References: <20230106164856.1453819-4-steve@sk2.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230113064108.29172-1-rdunlap@infradead.org>
+In-Reply-To: <20230106164856.1453819-4-steve@sk2.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, 12 Jan 2023, Randy Dunlap wrote:
+On Fri, 06 Jan 2023, Stephen Kitt wrote:
 
-> Convert comments for START_BYTE() and CHECK_FREQ_REG() macros into
-> kernel-doc notation to avoid these kernel-doc warnings:
+> Instead of retrieving the backlight brightness in struct
+> backlight_properties manually, and then checking whether the backlight
+> should be on at all, use backlight_get_brightness() which does all
+> this and insulates this from future changes.
 > 
-> drivers/video/backlight/ili922x.c:85: warning: This comment starts with '/**', but isn't a kernel-doc comment. Refer Documentation/doc-guide/kernel-doc.rst
->  * START_BYTE(id, rs, rw)
-> drivers/video/backlight/ili922x.c:118: warning: expecting prototype for CHECK_FREQ_REG(spi_device s, spi_transfer x)(). Prototype was for CHECK_FREQ_REG() instead
-> 
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Lee Jones <lee@kernel.org>
-> Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> Cc: Jingoo Han <jingoohan1@gmail.com>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: linux-fbdev@vger.kernel.org
+> Signed-off-by: Stephen Kitt <steve@sk2.org>
 > ---
->  drivers/video/backlight/ili922x.c |   24 ++++++++++++------------
->  1 file changed, 12 insertions(+), 12 deletions(-)
+>  drivers/video/backlight/ipaq_micro_bl.c | 7 +------
+>  1 file changed, 1 insertion(+), 6 deletions(-)
 
 Applied, thanks
 

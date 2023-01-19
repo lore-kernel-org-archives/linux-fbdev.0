@@ -2,126 +2,167 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64FDEC678D4
-	for <linux-fbdev@archiver.kernel.org>; Thu, 19 Jan 2023 18:36:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DDE2C004D4
+	for <linux-fbdev@archiver.kernel.org>; Thu, 19 Jan 2023 20:14:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229773AbjASSgg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 19 Jan 2023 13:36:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57568 "EHLO
+        id S230266AbjASUOm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 19 Jan 2023 15:14:42 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35578 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229544AbjASSge (ORCPT
+        with ESMTP id S230218AbjASUOi (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 19 Jan 2023 13:36:34 -0500
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 22D2866033;
-        Thu, 19 Jan 2023 10:36:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1674153393; x=1705689393;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=zwVVjUESJIESReT22YjiSWRMur/H9GgTgPJMfoIT7L0=;
-  b=KWphWsiCioYMECx6nzJITeyUJJQuDX/swYpZgLsElr+y+knr6YER8gWU
-   2fExfoMTHUfJYfan5o1vdIw4nGW1hmvLejw61cF7l3Ks6Mc5dCG69qMHq
-   mEgphmjDSbMuzJNX8SftxL40XMSwGF4Y2fLhVbL54UUzlHNijhPLl6EJs
-   qv8SY0IqFQ+xa64hU1az9Fc/7jE8ZDM2H0P97+/KAVK77W4kH507EjBv5
-   41DUvK41HuC3ZLPIA/dn8DaEBVBQ8OIzRlsgf1HmBSnFQnpThYh8N3OID
-   5JLlT/+OcrEYeQMdZXlB80keCTAnDU8rEjEak6F/izI+ekTIM/eZrlV/z
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10595"; a="389895167"
-X-IronPort-AV: E=Sophos;i="5.97,229,1669104000"; 
-   d="scan'208";a="389895167"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Jan 2023 10:36:09 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10595"; a="768345053"
-X-IronPort-AV: E=Sophos;i="5.97,229,1669104000"; 
-   d="scan'208";a="768345053"
-Received: from lkp-server01.sh.intel.com (HELO 5646d64e7320) ([10.239.97.150])
-  by fmsmga002.fm.intel.com with ESMTP; 19 Jan 2023 10:36:06 -0800
-Received: from kbuild by 5646d64e7320 with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1pIZld-0001jS-1k;
-        Thu, 19 Jan 2023 18:36:05 +0000
-Date:   Fri, 20 Jan 2023 02:35:21 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     Jianhua Lu <lujianhua000@gmail.com>, Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Thu, 19 Jan 2023 15:14:38 -0500
+Received: from mx.sberdevices.ru (mx.sberdevices.ru [45.89.227.171])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F5E6951A1;
+        Thu, 19 Jan 2023 12:14:33 -0800 (PST)
+Received: from s-lin-edge02.sberdevices.ru (localhost [127.0.0.1])
+        by mx.sberdevices.ru (Postfix) with ESMTP id E94845FD0B;
+        Thu, 19 Jan 2023 23:14:28 +0300 (MSK)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sberdevices.ru;
+        s=mail; t=1674159269;
+        bh=aaR9evVc2lGAxgc1j/OH4BgiwZu8Sx2LjYz7IF3WmyE=;
+        h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type;
+        b=IVx6sMXPad9O6kUyupdXBr38dNNjeS2a9tD41LuD4fjg0SBi+eegOpmcl4idROZi8
+         Fj0ju5drKSGyEfmAIiRaxvRXYE9dUXnRl7iNpZDNJRsSWmmL1TqghFQ0DXGso8uxjP
+         jaCeVZRxvavFnXcGDusMsMHMMQKsQ+F7+KvXvZdUFbf9FHGzDtOzmJzfFeHBZ5K+rL
+         WhBddfYAXt817R0Yos21SaAuqpgqim/9KGZnlzx7r6buXEjO4rOSKRCZ+rJ23MOSwa
+         mrfYbzZ4VXevWpK0F4sDEHuBG1avsWWHVFIZtYkMpbAfmNWAkXfkZmhYwzNBQm47Np
+         QM1+cGt7qWMfg==
+Received: from S-MS-EXCH01.sberdevices.ru (S-MS-EXCH01.sberdevices.ru [172.16.1.4])
+        by mx.sberdevices.ru (Postfix) with ESMTP;
+        Thu, 19 Jan 2023 23:14:14 +0300 (MSK)
+Date:   Thu, 19 Jan 2023 23:14:14 +0300
+From:   Dmitry Rokosov <ddrokosov@sberdevices.ru>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+CC:     Lars-Peter Clausen <lars@metafoo.de>,
+        Michael Hennerich <Michael.Hennerich@analog.com>,
+        Jonathan Cameron <jic23@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Helge Deller <deller@gmx.de>
-Cc:     oe-kbuild-all@lists.linux.dev, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        Jianhua Lu <lujianhua000@gmail.com>
-Subject: Re: [PATCH v6 2/2] backlight: ktz8866: Add support for Kinetic
- KTZ8866 backlight
-Message-ID: <202301200239.m4ZDprWz-lkp@intel.com>
-References: <20230118131002.15453-2-lujianhua000@gmail.com>
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Lucas Stankus <lucas.p.stankus@gmail.com>,
+        Puranjay Mohan <puranjay12@gmail.com>,
+        Alexandru Tachici <alexandru.tachici@analog.com>,
+        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
+        Renato Lui Geh <renatogeh@gmail.com>,
+        Eugen Hristev <eugen.hristev@microchip.com>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>,
+        Andreas Klinger <ak@it-klinger.de>,
+        Marcus Folkesson <marcus.folkesson@gmail.com>,
+        Kent Gustavsson <kent@minoris.se>,
+        Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+        Alexandre Torgue <alexandre.torgue@foss.st.com>,
+        Oleksij Rempel <linux@rempel-privat.de>,
+        <kernel@pengutronix.de>,
+        Nuno =?utf-8?B?U8Oh?= <nuno.sa@analog.com>,
+        Nishant Malpani <nish.malpani25@gmail.com>,
+        Rui Miguel Silva <rmfrfs@gmail.com>,
+        Dragos Bogdan <dragos.bogdan@analog.com>,
+        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
+        Lorenzo Bianconi <lorenzo@kernel.org>,
+        Benson Leung <bleung@chromium.org>,
+        Guenter Roeck <groeck@chromium.org>,
+        Stefan Popa <stefan.popa@analog.com>,
+        Robert Yang <decatf@gmail.com>,
+        Sean Nyekjaer <sean@geanix.com>,
+        Artur Rojek <contact@artur-rojek.eu>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Philippe Reynes <tremyfr@yahoo.fr>,
+        Alexandru Lazar <alazar@startmail.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Caleb Connolly <caleb.connolly@linaro.org>,
+        Fabrice Gasnier <fabrice.gasnier@foss.st.com>,
+        Stefan Agner <stefan@agner.ch>,
+        Daniel Baluta <daniel.baluta@nxp.com>,
+        Harald Geyer <harald@ccbib.org>,
+        Eugene Zaikonnikov <ez@norophonic.com>,
+        Phil Reid <preid@electromag.com.au>,
+        Matt Ranostay <matt.ranostay@konsulko.com>,
+        Stephen Boyd <swboyd@chromium.org>,
+        Sankar Velliangiri <navin@linumiz.com>,
+        <linux-iio@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-fbdev@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-renesas-soc@vger.kernel.org>,
+        <linux-samsung-soc@vger.kernel.org>,
+        <linux-stm32@st-md-mailman.stormreply.com>,
+        <chrome-platform@lists.linux.dev>
+Subject: Re: [PATCH 1/5] dt-bindings: iio: drop unneeded quotes
+Message-ID: <20230119201414.2gt2lw2qozm7vyjh@CAB-WSD-L081021>
+References: <20230118184413.395820-1-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20230118131002.15453-2-lujianhua000@gmail.com>
+In-Reply-To: <20230118184413.395820-1-krzysztof.kozlowski@linaro.org>
+User-Agent: NeoMutt/20220415
+X-Originating-IP: [172.16.1.6]
+X-ClientProxiedBy: S-MS-EXCH02.sberdevices.ru (172.16.1.5) To
+ S-MS-EXCH01.sberdevices.ru (172.16.1.4)
+X-KSMG-Rule-ID: 4
+X-KSMG-Message-Action: clean
+X-KSMG-AntiSpam-Status: not scanned, disabled by settings
+X-KSMG-AntiSpam-Interceptor-Info: not scanned
+X-KSMG-AntiPhishing: not scanned, disabled by settings
+X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 1.1.2.30, bases: 2023/01/19 16:54:00 #20783955
+X-KSMG-AntiVirus-Status: Clean, skipped
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Jianhua,
+Dear Krzysztof,
 
-I love your patch! Perhaps something to improve:
+Thank you for the patch!
+I'm okay with changes to memsensing,msa311.yaml schema.
 
-[auto build test WARNING on lee-backlight/for-backlight-next]
-[also build test WARNING on lee-backlight/for-backlight-fixes lee-leds/for-leds-next pavel-leds/for-next linus/master v6.2-rc4 next-20230119]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+On Wed, Jan 18, 2023 at 07:44:09PM +0100, Krzysztof Kozlowski wrote:
+> Cleanup by removing unneeded quotes from refs and redundant blank lines.
+> No functional impact except adjusting to preferred coding style.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> ---
+>  .../devicetree/bindings/iio/accel/memsensing,msa311.yaml  | 5 ++---
+>  Documentation/devicetree/bindings/iio/adc/adi,ad7124.yaml | 2 +-
+>  Documentation/devicetree/bindings/iio/adc/adi,ad7292.yaml | 2 +-
+>  .../devicetree/bindings/iio/adc/atmel,sama5d2-adc.yaml    | 2 +-
+>  Documentation/devicetree/bindings/iio/adc/avia-hx711.yaml | 4 ++--
+>  .../devicetree/bindings/iio/adc/ingenic,adc.yaml          | 4 ++--
+>  .../devicetree/bindings/iio/adc/microchip,mcp3911.yaml    | 4 ++--
+>  .../devicetree/bindings/iio/adc/renesas,rzg2l-adc.yaml    | 2 +-
+>  .../devicetree/bindings/iio/adc/samsung,exynos-adc.yaml   | 2 +-
+>  .../devicetree/bindings/iio/adc/st,stm32-adc.yaml         | 8 ++++----
+>  .../devicetree/bindings/iio/adc/ti,ads131e08.yaml         | 2 +-
+>  Documentation/devicetree/bindings/iio/adc/ti,tsc2046.yaml | 2 +-
+>  .../devicetree/bindings/iio/dac/lltc,ltc1660.yaml         | 4 ++--
+>  .../devicetree/bindings/iio/dac/lltc,ltc2632.yaml         | 4 ++--
+>  .../devicetree/bindings/iio/dac/st,stm32-dac.yaml         | 4 ++--
+>  Documentation/devicetree/bindings/iio/imu/st,lsm6dsx.yaml | 2 +-
+>  .../devicetree/bindings/iio/temperature/ti,tmp117.yaml    | 6 +++---
+>  17 files changed, 29 insertions(+), 30 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/iio/accel/memsensing,msa311.yaml b/Documentation/devicetree/bindings/iio/accel/memsensing,msa311.yaml
+> index 23528dcaa073..d530ec041fe7 100644
+> --- a/Documentation/devicetree/bindings/iio/accel/memsensing,msa311.yaml
+> +++ b/Documentation/devicetree/bindings/iio/accel/memsensing,msa311.yaml
+> @@ -1,9 +1,8 @@
+>  # SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+> -
+>  %YAML 1.2
+>  ---
+> -$id: "http://devicetree.org/schemas/iio/accel/memsensing,msa311.yaml#"
+> -$schema: "http://devicetree.org/meta-schemas/core.yaml#"
+> +$id: http://devicetree.org/schemas/iio/accel/memsensing,msa311.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>  
+>  title: MEMSensing digital 3-Axis accelerometer
+>  
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Jianhua-Lu/backlight-ktz8866-Add-support-for-Kinetic-KTZ8866-backlight/20230118-214354
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git for-backlight-next
-patch link:    https://lore.kernel.org/r/20230118131002.15453-2-lujianhua000%40gmail.com
-patch subject: [PATCH v6 2/2] backlight: ktz8866: Add support for Kinetic KTZ8866 backlight
-config: parisc-randconfig-r031-20230119 (https://download.01.org/0day-ci/archive/20230120/202301200239.m4ZDprWz-lkp@intel.com/config)
-compiler: hppa-linux-gcc (GCC) 12.1.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/b862510e8bf9eb34db9d71a372b9de05682cb8ad
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Jianhua-Lu/backlight-ktz8866-Add-support-for-Kinetic-KTZ8866-backlight/20230118-214354
-        git checkout b862510e8bf9eb34db9d71a372b9de05682cb8ad
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=parisc olddefconfig
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=parisc SHELL=/bin/bash drivers/video/backlight/
+Reviewed-by: Dmitry Rokosov <ddrokosov@sberdevices.ru>
 
-If you fix the issue, kindly add following tag where applicable
-| Reported-by: kernel test robot <lkp@intel.com>
-
-All warnings (new ones prefixed by >>):
-
-   In file included from include/linux/bits.h:6,
-                    from include/linux/ratelimit_types.h:5,
-                    from include/linux/ratelimit.h:5,
-                    from include/linux/dev_printk.h:16,
-                    from include/linux/device.h:15,
-                    from include/linux/backlight.h:12,
-                    from drivers/video/backlight/ktz8866.c:8:
-   include/vdso/bits.h: In function 'ktz8866_init':
->> include/vdso/bits.h:7:40: warning: 'val' is used uninitialized [-Wuninitialized]
-       7 | #define BIT(nr)                 (UL(1) << (nr))
-         |                                        ^~
-   drivers/video/backlight/ktz8866.c:98:22: note: 'val' was declared here
-      98 |         unsigned int val;
-         |                      ^~~
-
-
-vim +/val +7 include/vdso/bits.h
-
-3945ff37d2f48d Vincenzo Frascino 2020-03-20  6  
-3945ff37d2f48d Vincenzo Frascino 2020-03-20 @7  #define BIT(nr)			(UL(1) << (nr))
-3945ff37d2f48d Vincenzo Frascino 2020-03-20  8  
+[...]
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+Thank you,
+Dmitry

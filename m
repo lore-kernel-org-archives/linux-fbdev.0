@@ -2,77 +2,126 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F7C1C004D4
-	for <linux-fbdev@archiver.kernel.org>; Thu, 19 Jan 2023 14:50:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64FDEC678D4
+	for <linux-fbdev@archiver.kernel.org>; Thu, 19 Jan 2023 18:36:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229724AbjASOuI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 19 Jan 2023 09:50:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39364 "EHLO
+        id S229773AbjASSgg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 19 Jan 2023 13:36:36 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57568 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231418AbjASOt6 (ORCPT
+        with ESMTP id S229544AbjASSge (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 19 Jan 2023 09:49:58 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5C6B26F304;
-        Thu, 19 Jan 2023 06:49:45 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id EAF7861B75;
-        Thu, 19 Jan 2023 14:49:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 29F10C433D2;
-        Thu, 19 Jan 2023 14:49:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1674139784;
-        bh=Nj0bt9bd3JDbtdvpPvykPH8iGTPAgO0G9hvoRoH1WvE=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=o3skYmbaykIsDQm0MwcnKr1N0B5E4FJTX8qU/BP4V4S+KQBewh9UpgUpEtj+BtCnK
-         jk9fUR3XI7DCmUDxh6+vDnQcUFs89GqjSKN/FsTfqLeDaCjPiikpNq3lvfOn8WQHx/
-         3UdBh8j8uHgE04Bw5/dZRERlT0/WqBs5IIA5mrtHs8iXu5CXopi651X6xY+MJ1sktt
-         jxhUrMKTxTFtfzy/bGgaDxWv3Kw5uaSELV1L3e2kKBTpiG+0aMVVUr/sX0DPk84dxh
-         mwLUGx7XV/BHORoyqt9dZez1csDTmEnE7hwEGMequ1icEY3mbolIlpvnArSpb4FOxn
-         uh4YDtDHPCZWg==
-Date:   Thu, 19 Jan 2023 14:49:38 +0000
-From:   Lee Jones <lee@kernel.org>
-To:     Randy Dunlap <rdunlap@infradead.org>
-Cc:     linux-kernel@vger.kernel.org,
+        Thu, 19 Jan 2023 13:36:34 -0500
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 22D2866033;
+        Thu, 19 Jan 2023 10:36:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1674153393; x=1705689393;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=zwVVjUESJIESReT22YjiSWRMur/H9GgTgPJMfoIT7L0=;
+  b=KWphWsiCioYMECx6nzJITeyUJJQuDX/swYpZgLsElr+y+knr6YER8gWU
+   2fExfoMTHUfJYfan5o1vdIw4nGW1hmvLejw61cF7l3Ks6Mc5dCG69qMHq
+   mEgphmjDSbMuzJNX8SftxL40XMSwGF4Y2fLhVbL54UUzlHNijhPLl6EJs
+   qv8SY0IqFQ+xa64hU1az9Fc/7jE8ZDM2H0P97+/KAVK77W4kH507EjBv5
+   41DUvK41HuC3ZLPIA/dn8DaEBVBQ8OIzRlsgf1HmBSnFQnpThYh8N3OID
+   5JLlT/+OcrEYeQMdZXlB80keCTAnDU8rEjEak6F/izI+ekTIM/eZrlV/z
+   w==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10595"; a="389895167"
+X-IronPort-AV: E=Sophos;i="5.97,229,1669104000"; 
+   d="scan'208";a="389895167"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Jan 2023 10:36:09 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10595"; a="768345053"
+X-IronPort-AV: E=Sophos;i="5.97,229,1669104000"; 
+   d="scan'208";a="768345053"
+Received: from lkp-server01.sh.intel.com (HELO 5646d64e7320) ([10.239.97.150])
+  by fmsmga002.fm.intel.com with ESMTP; 19 Jan 2023 10:36:06 -0800
+Received: from kbuild by 5646d64e7320 with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1pIZld-0001jS-1k;
+        Thu, 19 Jan 2023 18:36:05 +0000
+Date:   Fri, 20 Jan 2023 02:35:21 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Jianhua Lu <lujianhua000@gmail.com>, Lee Jones <lee@kernel.org>,
         Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH] backlight: sky81452: fix sky81452_bl_platform_data
- kernel-doc
-Message-ID: <Y8lYgv2LP1Ywbq7z@google.com>
-References: <20230113064118.30169-1-rdunlap@infradead.org>
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Helge Deller <deller@gmx.de>
+Cc:     oe-kbuild-all@lists.linux.dev, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        Jianhua Lu <lujianhua000@gmail.com>
+Subject: Re: [PATCH v6 2/2] backlight: ktz8866: Add support for Kinetic
+ KTZ8866 backlight
+Message-ID: <202301200239.m4ZDprWz-lkp@intel.com>
+References: <20230118131002.15453-2-lujianhua000@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230113064118.30169-1-rdunlap@infradead.org>
+In-Reply-To: <20230118131002.15453-2-lujianhua000@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, 12 Jan 2023, Randy Dunlap wrote:
+Hi Jianhua,
 
-> Correct the struct name and add a short struct description to fix the
-> kernel-doc notation.
-> 
-> Prevents this kernel-doc warning:
-> drivers/video/backlight/sky81452-backlight.c:64: warning: expecting prototype for struct sky81452_platform_data. Prototype was for struct sky81452_bl_platform_data instead
-> 
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Lee Jones <lee@kernel.org>
-> Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> Cc: Jingoo Han <jingoohan1@gmail.com>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: linux-fbdev@vger.kernel.org
-> ---
->  drivers/video/backlight/sky81452-backlight.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+I love your patch! Perhaps something to improve:
 
-Applied, thanks
+[auto build test WARNING on lee-backlight/for-backlight-next]
+[also build test WARNING on lee-backlight/for-backlight-fixes lee-leds/for-leds-next pavel-leds/for-next linus/master v6.2-rc4 next-20230119]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Jianhua-Lu/backlight-ktz8866-Add-support-for-Kinetic-KTZ8866-backlight/20230118-214354
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git for-backlight-next
+patch link:    https://lore.kernel.org/r/20230118131002.15453-2-lujianhua000%40gmail.com
+patch subject: [PATCH v6 2/2] backlight: ktz8866: Add support for Kinetic KTZ8866 backlight
+config: parisc-randconfig-r031-20230119 (https://download.01.org/0day-ci/archive/20230120/202301200239.m4ZDprWz-lkp@intel.com/config)
+compiler: hppa-linux-gcc (GCC) 12.1.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/intel-lab-lkp/linux/commit/b862510e8bf9eb34db9d71a372b9de05682cb8ad
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Jianhua-Lu/backlight-ktz8866-Add-support-for-Kinetic-KTZ8866-backlight/20230118-214354
+        git checkout b862510e8bf9eb34db9d71a372b9de05682cb8ad
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=parisc olddefconfig
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=parisc SHELL=/bin/bash drivers/video/backlight/
+
+If you fix the issue, kindly add following tag where applicable
+| Reported-by: kernel test robot <lkp@intel.com>
+
+All warnings (new ones prefixed by >>):
+
+   In file included from include/linux/bits.h:6,
+                    from include/linux/ratelimit_types.h:5,
+                    from include/linux/ratelimit.h:5,
+                    from include/linux/dev_printk.h:16,
+                    from include/linux/device.h:15,
+                    from include/linux/backlight.h:12,
+                    from drivers/video/backlight/ktz8866.c:8:
+   include/vdso/bits.h: In function 'ktz8866_init':
+>> include/vdso/bits.h:7:40: warning: 'val' is used uninitialized [-Wuninitialized]
+       7 | #define BIT(nr)                 (UL(1) << (nr))
+         |                                        ^~
+   drivers/video/backlight/ktz8866.c:98:22: note: 'val' was declared here
+      98 |         unsigned int val;
+         |                      ^~~
+
+
+vim +/val +7 include/vdso/bits.h
+
+3945ff37d2f48d Vincenzo Frascino 2020-03-20  6  
+3945ff37d2f48d Vincenzo Frascino 2020-03-20 @7  #define BIT(nr)			(UL(1) << (nr))
+3945ff37d2f48d Vincenzo Frascino 2020-03-20  8  
 
 -- 
-Lee Jones [李琼斯]
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests

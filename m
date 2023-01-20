@@ -2,155 +2,119 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33B04C25B4E
-	for <linux-fbdev@archiver.kernel.org>; Fri, 20 Jan 2023 12:00:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C2A7C05027
+	for <linux-fbdev@archiver.kernel.org>; Fri, 20 Jan 2023 12:09:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230036AbjATMAj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 20 Jan 2023 07:00:39 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39752 "EHLO
+        id S229985AbjATMJT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 20 Jan 2023 07:09:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44682 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230040AbjATMAi (ORCPT
+        with ESMTP id S229626AbjATMJT (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 20 Jan 2023 07:00:38 -0500
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C1C1A25B4
-        for <linux-fbdev@vger.kernel.org>; Fri, 20 Jan 2023 04:00:35 -0800 (PST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1pIq4F-0001AP-D5; Fri, 20 Jan 2023 13:00:23 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1pIq4E-007MQ3-8T; Fri, 20 Jan 2023 13:00:22 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1pIq4D-00ENg0-Hm; Fri, 20 Jan 2023 13:00:21 +0100
-From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-To:     Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Helge Deller <deller@gmx.de>, linux-pwm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        kernel@pengutronix.de
-Subject: [PATCH v2 2/2] backlight: pwm_bl: Don't rely on a disabled PWM emiting inactive state
-Date:   Fri, 20 Jan 2023 13:00:18 +0100
-Message-Id: <20230120120018.161103-3-u.kleine-koenig@pengutronix.de>
+        Fri, 20 Jan 2023 07:09:19 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 08D4BA5CFE
+        for <linux-fbdev@vger.kernel.org>; Fri, 20 Jan 2023 04:08:31 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1674216511;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=zizGqLgDtMjJvJ8Y3gxXr4ehRe41Dz0Ln+Ptew+d+Lc=;
+        b=eIZiPK+wIvIMWXlBtnGsbDSRXjGB5QLJaazXA9bMNv2lf+CVC6lQqzGRWadh2c8YVWWVLA
+        pgRqv6y0UYiJmo5fODVquOfBEroC3zhUuYgL1Txlv/zKU83nfhVUFCTKQTh9Gy6CY90ewJ
+        sPg/gViIzY7xB2NtBFQw4v+u6Dzdl4w=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-637-aLRPZDIlOfmR82igGrVs5g-1; Fri, 20 Jan 2023 07:08:30 -0500
+X-MC-Unique: aLRPZDIlOfmR82igGrVs5g-1
+Received: by mail-wm1-f69.google.com with SMTP id q19-20020a1cf313000000b003d96c95e2f9so1255294wmq.2
+        for <linux-fbdev@vger.kernel.org>; Fri, 20 Jan 2023 04:08:29 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=zizGqLgDtMjJvJ8Y3gxXr4ehRe41Dz0Ln+Ptew+d+Lc=;
+        b=BZVuoZcxCIEDN9jusekCRnqV23ZxbHZ1xqaD3+v8wwhdDYcv2lnC3Dgpe9DGqnWWbX
+         fZrD5Bov/6y2kt7n4F/hNM6h/gQNH+McSE0uMLP72KVkrWQ33noYbZtHLr29Ix/aCUlH
+         6CfR2+N2B0uIeSQfodE+QFzTC0YGT/QdmP39qUVlRforHXo+NBIHmBNCntb5raWATsAG
+         vyMmnjkhSjBG2l5DrfFTb+pr2yU6tR3ttLy7XNRWMsv7bQHJTmSRjIwsdJj9q3wnbca6
+         uEJix1mveyemKaoAQCu/nl17F50mJUUNnc9mT173fhjMVNIuqcA0qnapH3/aVyztc1Tb
+         Dc2A==
+X-Gm-Message-State: AFqh2koXRLsWoDUqQbVzmLUtktECvd6zteKG/mjolrSCgdxm/4G9RRSg
+        6Arw2TWlzZRu0AMCP3UW+s+SzsaGUcvOv2e4AnYg3JZ39Xyxbz8YVbYENAafwtZxa4lawYbtrUL
+        k6QFDZ40iAl9+Fm2gh6xid8k=
+X-Received: by 2002:a05:6000:178a:b0:2be:276c:fb60 with SMTP id e10-20020a056000178a00b002be276cfb60mr15613278wrg.64.1674216508963;
+        Fri, 20 Jan 2023 04:08:28 -0800 (PST)
+X-Google-Smtp-Source: AMrXdXviXDLfJrvvimx9Nj+OGPkScIhm/b1eowt9jkmdc00+VtEL6f75NCTIAkwUkDVqtpQmvMRwHg==
+X-Received: by 2002:a05:6000:178a:b0:2be:276c:fb60 with SMTP id e10-20020a056000178a00b002be276cfb60mr15613257wrg.64.1674216508766;
+        Fri, 20 Jan 2023 04:08:28 -0800 (PST)
+Received: from minerva.home (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id l4-20020a05600012c400b002bbb2d43f65sm32766336wrx.14.2023.01.20.04.08.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 20 Jan 2023 04:08:27 -0800 (PST)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Maxime Ripard <mripard@kernel.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+        Jaya Kumar <jayalk@intworks.biz>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH 1/3] fbdev: Remove unused struct fb_deferred_io .first_io field
+Date:   Fri, 20 Jan 2023 13:08:20 +0100
+Message-Id: <20230120120822.2536032-2-javierm@redhat.com>
 X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20230120120018.161103-1-u.kleine-koenig@pengutronix.de>
-References: <20230120120018.161103-1-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <20230120120822.2536032-1-javierm@redhat.com>
+References: <20230120120822.2536032-1-javierm@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3378; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=3M18JepJfTGb5m9P8ayAdk02ozkDerKKEZZRJa5QyAI=; b=owEBbQGS/pANAwAKAcH8FHityuwJAcsmYgBjyoJJt15jx6Kow8IBg/U6EFtJQCoxDIfgvjhFmyDp lLphq6mJATMEAAEKAB0WIQR+cioWkBis/z50pAvB/BR4rcrsCQUCY8qCSQAKCRDB/BR4rcrsCba/B/ 9BccL7O6OygZX40tqrIMZFJcxCFqDYsp1WQ2xg+Ag+GGW4eHBSOJI51XnGPp/Bje3wH4ZtAf7RCffS gQdyPbNWla2Vo3m5Zqk0qC0g7pknzOraRxrd4suD1s4s1xBIwoOnmJGVV3egHYiLSXd957QGs7BkTH 7mrpV61OUHQwEcJb+QYEZcrXkBtuG5T+6zK04qKR48kgENjz9JElhUMLJaI3zRdcqrYtXRZmnJmiMe X8FnYT1YlMycu0WHQ37Nmj5FP8PgmaGwZzUBrNLrJKEfr+plvrxwpkcBrAqIjdsOcCJL5GbKAt7DJ9 j11B6BSD1qrcLKa0d2kHxgvuOBfHQU
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Most but not all PWMs drive the PWM pin to its inactive state when
-disabled. However if there is no enable_gpio and no regulator the PWM
-must drive the inactive state to actually disable the backlight.
+This optional callback was added in the commit 1f45f9dbb392 ("fb_defio:
+add first_io callback") but it was never used by a driver. Let's remove
+it since it's unlikely that will be used after a decade that was added.
 
-So keep the PWM on in this case.
-
-Note that to determine if there is a regulator some effort is required
-because it might happen that there isn't actually one but the regulator
-core gave us a dummy. (A nice side effect is that this makes the
-regulator actually optional even on fully constrained systems.)
-
-This fixes backlight disabling e.g. on i.MX6 when an inverted PWM is
-used.
-
-Hint for the future: If this change results in a regression, the bug is
-in the lowlevel PWM driver.
-
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/video/backlight/pwm_bl.c | 30 ++++++++++++++++++++++--------
- 1 file changed, 22 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 0509fecd5715..fb388148d98f 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -45,9 +45,11 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb)
- 	if (pb->enabled)
- 		return;
+ drivers/video/fbdev/core/fb_defio.c | 4 ----
+ include/linux/fb.h                  | 1 -
+ 2 files changed, 5 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
+index c730253ab85c..1b680742b7f3 100644
+--- a/drivers/video/fbdev/core/fb_defio.c
++++ b/drivers/video/fbdev/core/fb_defio.c
+@@ -157,10 +157,6 @@ static vm_fault_t fb_deferred_io_track_page(struct fb_info *info, unsigned long
+ 	/* protect against the workqueue changing the page list */
+ 	mutex_lock(&fbdefio->lock);
  
--	err = regulator_enable(pb->power_supply);
--	if (err < 0)
--		dev_err(pb->dev, "failed to enable power supply\n");
-+	if (pb->power_supply) {
-+		err = regulator_enable(pb->power_supply);
-+		if (err < 0)
-+			dev_err(pb->dev, "failed to enable power supply\n");
-+	}
- 
- 	if (pb->post_pwm_on_delay)
- 		msleep(pb->post_pwm_on_delay);
-@@ -69,7 +71,8 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
- 	if (pb->pwm_off_delay)
- 		msleep(pb->pwm_off_delay);
- 
--	regulator_disable(pb->power_supply);
-+	if (pb->power_supply)
-+		regulator_disable(pb->power_supply);
- 	pb->enabled = false;
- }
- 
-@@ -109,8 +112,16 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
- 		pwm_backlight_power_off(pb);
- 
- 		pwm_get_state(pb->pwm, &state);
--		state.enabled = false;
- 		state.duty_cycle = 0;
-+		/*
-+		 * We cannot assume a disabled PWM to drive its output to the
-+		 * inactive state. If we have an enable GPIO and/or a regulator
-+		 * we assume that this isn't relevant and we can disable the PWM
-+		 * to save power. If however there is neither an enable GPIO nor
-+		 * a regulator keep the PWM on be sure to get a constant
-+		 * inactive output.
-+		 */
-+		state.enabled = !pb->power_supply && !pb->enable_gpio;
- 		pwm_apply_state(pb->pwm, &state);
- 	}
- 
-@@ -408,7 +419,7 @@ static int pwm_backlight_initial_power_state(const struct pwm_bl_data *pb)
- 	if (pb->enable_gpio && gpiod_get_value_cansleep(pb->enable_gpio) == 0)
- 		active = false;
- 
--	if (!regulator_is_enabled(pb->power_supply))
-+	if (pb->power_supply && !regulator_is_enabled(pb->power_supply))
- 		active = false;
- 
- 	if (!pwm_is_enabled(pb->pwm))
-@@ -489,10 +500,13 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 		goto err_alloc;
- 	}
- 
--	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
-+	pb->power_supply = devm_regulator_get_optional(&pdev->dev, "power");
- 	if (IS_ERR(pb->power_supply)) {
- 		ret = PTR_ERR(pb->power_supply);
--		goto err_alloc;
-+		if (ret == -ENODEV)
-+			pb->power_supply = NULL;
-+		else
-+			goto err_alloc;
- 	}
- 
- 	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
+-	/* first write in this cycle, notify the driver */
+-	if (fbdefio->first_io && list_empty(&fbdefio->pagereflist))
+-		fbdefio->first_io(info);
+-
+ 	pageref = fb_deferred_io_pageref_get(info, offset, page);
+ 	if (WARN_ON_ONCE(!pageref)) {
+ 		ret = VM_FAULT_OOM;
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 30183fd259ae..daf336385613 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -215,7 +215,6 @@ struct fb_deferred_io {
+ 	struct mutex lock; /* mutex that protects the pageref list */
+ 	struct list_head pagereflist; /* list of pagerefs for touched pages */
+ 	/* callback */
+-	void (*first_io)(struct fb_info *info);
+ 	void (*deferred_io)(struct fb_info *info, struct list_head *pagelist);
+ };
+ #endif
 -- 
 2.39.0
 

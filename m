@@ -2,161 +2,188 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50C22C25B50
-	for <linux-fbdev@archiver.kernel.org>; Fri, 20 Jan 2023 12:18:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79B78C25B4E
+	for <linux-fbdev@archiver.kernel.org>; Fri, 20 Jan 2023 12:40:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229500AbjATMSF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 20 Jan 2023 07:18:05 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49706 "EHLO
+        id S229612AbjATMkK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 20 Jan 2023 07:40:10 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37450 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229632AbjATMSE (ORCPT
+        with ESMTP id S229460AbjATMkJ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 20 Jan 2023 07:18:04 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F8AF8B303;
-        Fri, 20 Jan 2023 04:18:01 -0800 (PST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 3CC9D5F95D;
-        Fri, 20 Jan 2023 12:18:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1674217080; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=u+/VJGuYhUCQQXXN+d6ccIA04nnHUmUtUbhkDUXZRqw=;
-        b=PpqPzCoOTaZf5Gv37q9XfZTCESdFBMJxW+AWqsbS6oz/br2HAYNZHmV26UlTcpR/UMDXOI
-        F835RkQ5RxqWJ4oH84hW3WOxIC/nxcuKOGiRddfVK8XcXTs52HGy9td+Vley7xbY4CoYnz
-        b9YH7rRTPVlf98Vx1gHWw4LZleaks7Y=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1674217080;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=u+/VJGuYhUCQQXXN+d6ccIA04nnHUmUtUbhkDUXZRqw=;
-        b=rScskB1xbeSRFdWOgOlom2v6xIKguv6B2CCswdkubVq6xHJkQz5M3a7O9wMeSIlEjEB4Nw
-        1VneLLX5RhH4HcDA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 0AA161390C;
-        Fri, 20 Jan 2023 12:18:00 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id kniRAXiGymMIFAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Fri, 20 Jan 2023 12:18:00 +0000
-Message-ID: <cb48988f-a08b-72a6-fd61-b699cb47178b@suse.de>
-Date:   Fri, 20 Jan 2023 13:17:59 +0100
+        Fri, 20 Jan 2023 07:40:09 -0500
+Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com [IPv6:2607:f8b0:4864:20::102d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 559D9BD14C;
+        Fri, 20 Jan 2023 04:39:44 -0800 (PST)
+Received: by mail-pj1-x102d.google.com with SMTP id y3-20020a17090a390300b00229add7bb36so4751740pjb.4;
+        Fri, 20 Jan 2023 04:39:44 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=UwPb45S4zck4WbXwQFmAg4Xm6xKrl+WSTMeV0mCeNHE=;
+        b=RxsRwu6VwViLl0V73U0fHLgIp3yEFGAVMnnTPe/cqQ4kOTRAgbZivTpCQ75V6IjU85
+         L2y8uymJOmAiBUWpSy1gyrevBHjegZpZP7cYNnWQJ7Dapik5untY8wPtOHes4EH79JUd
+         o7hpVU/aJUS9qu0kuYostfxenVOHn+bIVpHsVVjhqlfHcf799MEJa5RXNP/fQEc1Shsa
+         LAKBZexvU/uhODmepBOqNEkEbox4UkflDQIN4eJyenO7r7fTJ99mxg3uABPp6bJMJhGN
+         AuyFZGSfjAwg0yHO/CKf6cNIOYX/BxFF2V1kHn4hjG7GK2H0LUqKk20meh9kGem9xJ05
+         Bwsw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=UwPb45S4zck4WbXwQFmAg4Xm6xKrl+WSTMeV0mCeNHE=;
+        b=7VuV39w1VsNAxdptWTl9XH5P+a7KBAzYM6kLjUmjbQ9sqh/yxV4RwVGzn2Bvbnu5xQ
+         taB2Cy/tzbTsb2xoL6DRwaBDh7D5f4k83heWChkQf9T03ngPKhgr4MfL0TtkVa4S55rh
+         X9ll3GVDPdPfAQ20TS2l0DSHg8k+/eTOxNN0sZMVxsIL3Nnm+C/2KBNGHKUDVkqlpOuu
+         xWRKKn0aVBwdindBs2tetTeqfpk7gzAvnwnTzZGynngotJgCoARMvBlV7LxNf232/Z9O
+         V1v+Y92CeS/ByhrCZ23Dm/DvNzXFXvlQx4u0x/mQOMWx1vgwMpKNMKRo6lVCD0MNo6A0
+         4lDg==
+X-Gm-Message-State: AFqh2ko/+fc1qzHv3luy21p6QEyF6h4aOMo2obmNAQItjrMe4fn97FKJ
+        Fi+5Q8PmpzvGIFbwBWs76v4=
+X-Google-Smtp-Source: AMrXdXu6pObqvl76QfZIflRoyTvuicFFnNoT0voDnB1PyYO8xPA+yC10yQ/nR2VUT7qpp3NkPdMWzg==
+X-Received: by 2002:a17:90b:4a0c:b0:22a:3c8:9d1 with SMTP id kk12-20020a17090b4a0c00b0022a03c809d1mr2832809pjb.32.1674218346867;
+        Fri, 20 Jan 2023 04:39:06 -0800 (PST)
+Received: from localhost.localdomain (n220246252084.netvigator.com. [220.246.252.84])
+        by smtp.gmail.com with ESMTPSA id p23-20020a17090a0e5700b002271b43e528sm1131044pja.33.2023.01.20.04.39.02
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 20 Jan 2023 04:39:06 -0800 (PST)
+From:   Jianhua Lu <lujianhua000@gmail.com>
+To:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Helge Deller <deller@gmx.de>
+Cc:     linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, Jianhua Lu <lujianhua000@gmail.com>
+Subject: [PATCH v8 1/2] dt-bindings: leds: backlight: Add Kinetic KTZ8866 backlight
+Date:   Fri, 20 Jan 2023 20:38:56 +0800
+Message-Id: <20230120123857.16124-1-lujianhua000@gmail.com>
+X-Mailer: git-send-email 2.39.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.1
-Subject: Re: [PATCH 1/3] fbdev: Remove unused struct fb_deferred_io .first_io
- field
-Content-Language: en-US
-To:     Javier Martinez Canillas <javierm@redhat.com>,
-        linux-kernel@vger.kernel.org
-Cc:     =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        Jaya Kumar <jayalk@intworks.biz>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20230120120822.2536032-1-javierm@redhat.com>
- <20230120120822.2536032-2-javierm@redhat.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20230120120822.2536032-2-javierm@redhat.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------WiBJJqCEHhufjvr78bYXfsH9"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------WiBJJqCEHhufjvr78bYXfsH9
-Content-Type: multipart/mixed; boundary="------------qnsZINDCEcl9MHDtmleRMUyX";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Javier Martinez Canillas <javierm@redhat.com>,
- linux-kernel@vger.kernel.org
-Cc: =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
- Maxime Ripard <mripard@kernel.org>, Daniel Vetter <daniel@ffwll.ch>,
- Helge Deller <deller@gmx.de>, Jaya Kumar <jayalk@intworks.biz>,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Message-ID: <cb48988f-a08b-72a6-fd61-b699cb47178b@suse.de>
-Subject: Re: [PATCH 1/3] fbdev: Remove unused struct fb_deferred_io .first_io
- field
-References: <20230120120822.2536032-1-javierm@redhat.com>
- <20230120120822.2536032-2-javierm@redhat.com>
-In-Reply-To: <20230120120822.2536032-2-javierm@redhat.com>
+Add Kinetic KTZ8866 backlight binding documentation.
 
---------------qnsZINDCEcl9MHDtmleRMUyX
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Signed-off-by: Jianhua Lu <lujianhua000@gmail.com>
+---
+Changes in v2:
+  - Remove "items" between "compatible" and "const: kinetic,ktz8866".
+  - Change "additionalProperties" to "unevaluatedProperties".
 
-DQoNCkFtIDIwLjAxLjIzIHVtIDEzOjA4IHNjaHJpZWIgSmF2aWVyIE1hcnRpbmV6IENhbmls
-bGFzOg0KPiBUaGlzIG9wdGlvbmFsIGNhbGxiYWNrIHdhcyBhZGRlZCBpbiB0aGUgY29tbWl0
-IDFmNDVmOWRiYjM5MiAoImZiX2RlZmlvOg0KPiBhZGQgZmlyc3RfaW8gY2FsbGJhY2siKSBi
-dXQgaXQgd2FzIG5ldmVyIHVzZWQgYnkgYSBkcml2ZXIuIExldCdzIHJlbW92ZQ0KPiBpdCBz
-aW5jZSBpdCdzIHVubGlrZWx5IHRoYXQgd2lsbCBiZSB1c2VkIGFmdGVyIGEgZGVjYWRlIHRo
-YXQgd2FzIGFkZGVkLg0KPiANCj4gU2lnbmVkLW9mZi1ieTogSmF2aWVyIE1hcnRpbmV6IENh
-bmlsbGFzIDxqYXZpZXJtQHJlZGhhdC5jb20+DQoNCkkgdmFndWVseSByZW1lbWJlciB0aGF0
-IHRoaXMgd2FzIGltcG9ydGFudCBhdCBzb21lIHBvaW50LiBNYXliZSBiZWZvcmUgDQp0aGUg
-YmlnIHJld29yayBvZiB0aGUgcGFnZWxpc3Q/IERvbid0IGtub3c7IGl0J3MgdW51c2VkIG5v
-dy4NCg0KUmV2aWV3ZWQtYnk6IFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNl
-LmRlPg0KDQo+IC0tLQ0KPiANCj4gICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJfZGVm
-aW8uYyB8IDQgLS0tLQ0KPiAgIGluY2x1ZGUvbGludXgvZmIuaCAgICAgICAgICAgICAgICAg
-IHwgMSAtDQo+ICAgMiBmaWxlcyBjaGFuZ2VkLCA1IGRlbGV0aW9ucygtKQ0KPiANCj4gZGlm
-ZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYl9kZWZpby5jIGIvZHJpdmVy
-cy92aWRlby9mYmRldi9jb3JlL2ZiX2RlZmlvLmMNCj4gaW5kZXggYzczMDI1M2FiODVjLi4x
-YjY4MDc0MmI3ZjMgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9m
-Yl9kZWZpby5jDQo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYl9kZWZpby5j
-DQo+IEBAIC0xNTcsMTAgKzE1Nyw2IEBAIHN0YXRpYyB2bV9mYXVsdF90IGZiX2RlZmVycmVk
-X2lvX3RyYWNrX3BhZ2Uoc3RydWN0IGZiX2luZm8gKmluZm8sIHVuc2lnbmVkIGxvbmcNCj4g
-ICAJLyogcHJvdGVjdCBhZ2FpbnN0IHRoZSB3b3JrcXVldWUgY2hhbmdpbmcgdGhlIHBhZ2Ug
-bGlzdCAqLw0KPiAgIAltdXRleF9sb2NrKCZmYmRlZmlvLT5sb2NrKTsNCj4gICANCj4gLQkv
-KiBmaXJzdCB3cml0ZSBpbiB0aGlzIGN5Y2xlLCBub3RpZnkgdGhlIGRyaXZlciAqLw0KPiAt
-CWlmIChmYmRlZmlvLT5maXJzdF9pbyAmJiBsaXN0X2VtcHR5KCZmYmRlZmlvLT5wYWdlcmVm
-bGlzdCkpDQo+IC0JCWZiZGVmaW8tPmZpcnN0X2lvKGluZm8pOw0KPiAtDQo+ICAgCXBhZ2Vy
-ZWYgPSBmYl9kZWZlcnJlZF9pb19wYWdlcmVmX2dldChpbmZvLCBvZmZzZXQsIHBhZ2UpOw0K
-PiAgIAlpZiAoV0FSTl9PTl9PTkNFKCFwYWdlcmVmKSkgew0KPiAgIAkJcmV0ID0gVk1fRkFV
-TFRfT09NOw0KPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9mYi5oIGIvaW5jbHVkZS9s
-aW51eC9mYi5oDQo+IGluZGV4IDMwMTgzZmQyNTlhZS4uZGFmMzM2Mzg1NjEzIDEwMDY0NA0K
-PiAtLS0gYS9pbmNsdWRlL2xpbnV4L2ZiLmgNCj4gKysrIGIvaW5jbHVkZS9saW51eC9mYi5o
-DQo+IEBAIC0yMTUsNyArMjE1LDYgQEAgc3RydWN0IGZiX2RlZmVycmVkX2lvIHsNCj4gICAJ
-c3RydWN0IG11dGV4IGxvY2s7IC8qIG11dGV4IHRoYXQgcHJvdGVjdHMgdGhlIHBhZ2VyZWYg
-bGlzdCAqLw0KPiAgIAlzdHJ1Y3QgbGlzdF9oZWFkIHBhZ2VyZWZsaXN0OyAvKiBsaXN0IG9m
-IHBhZ2VyZWZzIGZvciB0b3VjaGVkIHBhZ2VzICovDQo+ICAgCS8qIGNhbGxiYWNrICovDQo+
-IC0Jdm9pZCAoKmZpcnN0X2lvKShzdHJ1Y3QgZmJfaW5mbyAqaW5mbyk7DQo+ICAgCXZvaWQg
-KCpkZWZlcnJlZF9pbykoc3RydWN0IGZiX2luZm8gKmluZm8sIHN0cnVjdCBsaXN0X2hlYWQg
-KnBhZ2VsaXN0KTsNCj4gICB9Ow0KPiAgICNlbmRpZg0KDQotLSANClRob21hcyBaaW1tZXJt
-YW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9u
-cyBHZXJtYW55IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFu
-eQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBU
-b3Rldg0K
+Changes in v3:
+  - Add Krzysztof's R-b.
 
---------------qnsZINDCEcl9MHDtmleRMUyX--
+Changes in v4:
+  - Drop Krzysztof's R-b.
+  - Add some new properties.
 
---------------WiBJJqCEHhufjvr78bYXfsH9
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+Changes in v5:
+  - Add missing enum under property description.
+  - Rename uncorrect properties.
 
------BEGIN PGP SIGNATURE-----
+Changes in v6:
+  - Correct wrong property suffix and description.
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmPKhncFAwAAAAAACgkQlh/E3EQov+Aa
-vA//fuhnEoAEcWGWMQnHwx0j4rnc/dnQY1+Nys5OJX8tDMPx3vQGfdvx5CcCCwIshV0nWY4z2add
-xDkOox0VbhgWfrfeqSwQlSxIgsYp/aDJb0aDg59Qo+tMnGoRwK8w7enOqguEB7Szr77OhgR/WA4R
-bumztgrsK0HZag0dKZmwlsC1MD6moregjFjdhcMxjWBeZ2hJZAuASzQh4b7/3ZcVEi6SOAAZldim
-0vKtP+/6qHCM7sgYCHngmBUi22Xph6fJ9jpdIEtbB1E3sqvzNOWtxbJQH36L2ZjkSpWhPgUR6GvT
-IGeoPE8pQ7cQ0XZ4iSh7/0XsPra20/ar+nlFMCLr79iNoqM+48+4jGDHB0wZWEMh2EN+6wqn7/nQ
-n78M2W+aRqO18BSuH713rArVc3UyxgtiZTUiftdrSsGtw9twRrxcDKuJR3t+U43zBQAizCGGGqx/
-GgnFI/54lErdDmNqQ2AId6K8SmOQ/YE2dhugV2SP/BpARQjwZrejqpxXiomkTer+haos8sE5HbVu
-wrAVRnBmFWM0vQSdUNTj84j9PCthoAQUMH5xW2Iz3EXy1wrhkjzkd5/XQfRJWcP6UncCXAs2s+Ae
-L84B7rmoeNlVhr1I4xBpBJMQEqI1qspHQ0DmYWDM9o0IJ2xo2SJWf9ibufFlvsrHqXPLLtFfDSGQ
-zGE=
-=5o0V
------END PGP SIGNATURE-----
+Changes in v7:
+  - Add vddpos and vddeg supply.
+  - Use enable-gpios instead of defining enable pin.
 
---------------WiBJJqCEHhufjvr78bYXfsH9--
+Changes in v8:
+  - Rename current ramping time. 
+  - Rename led ramping time. 
+
+ .../leds/backlight/kinetic,ktz8866.yaml       | 74 +++++++++++++++++++
+ 1 file changed, 74 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/kinetic,ktz8866.yaml
+
+diff --git a/Documentation/devicetree/bindings/leds/backlight/kinetic,ktz8866.yaml b/Documentation/devicetree/bindings/leds/backlight/kinetic,ktz8866.yaml
+new file mode 100644
+index 000000000000..950d5d819b4d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/kinetic,ktz8866.yaml
+@@ -0,0 +1,74 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/backlight/kinetic,ktz8866.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Kinetic Technologies KTZ8866 backlight
++
++maintainers:
++  - Jianhua Lu <lujianhua000@gmail.com>
++
++description: |
++  The Kinetic Technologies KTZ8866 is a high efficiency 6-channels-current-sinks
++  led backlight with dual lcd bias power.
++  https://www.kinet-ic.com/ktz8866/
++
++allOf:
++  - $ref: common.yaml#
++
++properties:
++  compatible:
++    const: kinetic,ktz8866
++
++  vddpos-supply:
++    description: positive boost supply regulator.
++
++  vddneg-supply:
++    description: negative boost supply regulator.
++
++  enable-gpios:
++    description: GPIO to use to enable/disable the backlight (HWEN pin).
++    maxItems: 1
++
++  current-num-sinks:
++    description: number of the LED current sinks' channels.
++    enum: [1, 2, 3, 4, 5, 6]
++
++  kinetic,current-ramp-delay-ms:
++    description: LED current ramping delay time in milliseconds.
++    enum: [2, 4, 8, 16, 32, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640]
++
++  kinetic,led-enable-ramp-delay-ms:
++    description: |
++      LED on/off ramping delay time in milliseconds, note that the case 0 will be
++      mapped to 512μs because ktz8866 can't ramp faster than it.
++    enum: [0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384]
++
++  kinetic,enable-lcd-bias:
++    description: Set if we want to output bias power supply for LCD.
++    type: boolean
++
++required:
++  - compatible
++  - vddpos-supply
++  - vddneg-supply
++  - enable-gpios
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++
++    backlight {
++        compatible = "kinetic,ktz8866";
++
++        vddpos-supply = <&bl_vddpos_5p5>;
++        vddneg-supply = <&bl_vddneg_5p5>;
++        enable-gpios = <&tlmm 139 GPIO_ACTIVE_HIGH>;
++        current-num-sinks = <5>;
++        kinetic,current-ramp-delay-ms = <128>;
++        kinetic,led-enable-ramp-delay-ms = <1>;
++        kinetic,enable-lcd-bias;
++    };
+-- 
+2.39.1
+

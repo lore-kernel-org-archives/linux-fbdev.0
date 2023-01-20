@@ -2,88 +2,83 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1538C25B4E
-	for <linux-fbdev@archiver.kernel.org>; Fri, 20 Jan 2023 12:41:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5BB0C05027
+	for <linux-fbdev@archiver.kernel.org>; Fri, 20 Jan 2023 14:00:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229742AbjATMln (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 20 Jan 2023 07:41:43 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39258 "EHLO
+        id S229883AbjATOAl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 20 Jan 2023 09:00:41 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58272 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229606AbjATMlm (ORCPT
+        with ESMTP id S229974AbjATOAk (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 20 Jan 2023 07:41:42 -0500
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F59E1BC2
-        for <linux-fbdev@vger.kernel.org>; Fri, 20 Jan 2023 04:41:41 -0800 (PST)
-Received: by mail-wm1-x334.google.com with SMTP id c10-20020a05600c0a4a00b003db0636ff84so3605720wmq.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 20 Jan 2023 04:41:41 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=t9XjszmF/8qhTNMVuwNrRvWRLQzv4zG/c00mk2PH32o=;
-        b=zwYVWKeymyLDPGAhMwebRVizSWIuFyjkJQGM7f7yQ8reSiP+lA0ujMEGQuyugAGhY7
-         iKSap2wY46XvmlGSQkNI+nIyCkpJE1YXRlXJv8IIHqA4CGlLtavZwSZN4m8wzIE9KQ1Z
-         S1NDMEjEgDKAGH252dUZgKDcLruOR5VlBLMWLr36t2YC3V2JJkfIGaLajrIeo4mxYCer
-         BME8ng65YAtSoXL4GPNZBZDOqOLIu5hw5UL2OHFPc2HDxBR1S8pWRdR0fOaviH1tpbvO
-         FXiCdRmbxOVoFv3e+qb30PGkkoSGslp/SVzL4FpYSKVq7odm46JnOwo/zjTVS+agBEgr
-         wqkg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=t9XjszmF/8qhTNMVuwNrRvWRLQzv4zG/c00mk2PH32o=;
-        b=q0qGn2GTUwhrfYyjkqNabz09MHx9bQMDNqua97UFgkyV1YuqH1ZvcRXUtbssaZjZXu
-         kaov7Ij0tMMVcjq4Gly9A6gQB7WJNBP3FafV0+0O4lI4IJGw8ClhPLzGyunxgAMzXxOU
-         pCm320kiqahtIkNUh8x89r/pHqF8giFZd2jVOJl/h1PxpS3ubk2GJJXu1asNKItPmm5t
-         ob4mBiFTK6Swv4ShZezARjNoT3Qhwm/jf6NjErqDJsJEBIHF4+87gcv1/DxnLnBNBW6E
-         +88WYmbqn+dBkzE+RIXXIixNvCgG9+7gM1Cjm7JvUe03HLvoxeB+hFdCbdAJJvAzvCNR
-         16Gg==
-X-Gm-Message-State: AFqh2krf29732/akUnMjrTXsKAQKdaJ4jlFqhjhLdo8KWh0JJcqq1l56
-        y1npAznF++9fKbfLN8NvJUWjwQ==
-X-Google-Smtp-Source: AMrXdXtCnq9tonQJY2m5G5BpVoNm8ayoj+6Kt5jmzGEGo3iBBKKX+GncF/gsCodgvhIMAjlMrRZcRQ==
-X-Received: by 2002:a05:600c:4f86:b0:3db:66e:cfdd with SMTP id n6-20020a05600c4f8600b003db066ecfddmr12768043wmq.9.1674218499637;
-        Fri, 20 Jan 2023 04:41:39 -0800 (PST)
-Received: from [192.168.1.109] ([178.197.216.144])
-        by smtp.gmail.com with ESMTPSA id u3-20020a7bc043000000b003d1d5a83b2esm2163940wmc.35.2023.01.20.04.41.37
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 20 Jan 2023 04:41:39 -0800 (PST)
-Message-ID: <858a06e9-1141-4b1e-cd8c-75ca70330fc2@linaro.org>
-Date:   Fri, 20 Jan 2023 13:41:36 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.0
-Subject: Re: [PATCH v8 1/2] dt-bindings: leds: backlight: Add Kinetic KTZ8866
- backlight
-Content-Language: en-US
-To:     Jianhua Lu <lujianhua000@gmail.com>, Lee Jones <lee@kernel.org>,
+        Fri, 20 Jan 2023 09:00:40 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C926AC13F5;
+        Fri, 20 Jan 2023 06:00:39 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 6A78061F73;
+        Fri, 20 Jan 2023 14:00:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3ADF2C433A0;
+        Fri, 20 Jan 2023 14:00:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1674223238;
+        bh=ORrJE8vOco1eLw2jztPBELhptUUuXdkDMpLsQBHBOiY=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=P726KZlsuKXFXkFmDMRZtbhZTqgBevjzH5e1y1uThnsNMEjOmjRa1tHauvJgQX9Es
+         zV5b7lwXSFeztnsXwpZpC8oC2iW6Tb3N9sO33NMmgjtZETct3I+l/mjmGgqsr+piku
+         KbzA36OZFQzwGtIQ9AkvMEFiTq+Fa5HkqjbgYvwqKOyH85thDsAmwx4hlt43fEU1ik
+         rEG6ujm3PPniijsgEdTI9FNZejcSUjzSyOO40vWT78K6+Jh2mn1LBzJeRCN6NIibOx
+         IkJM/cCUOY+RDFRVN1k01ybr1tREBxougZ7juPfDGTJ2aBowBfO/+ULeEDHryTo7Im
+         j/KoxZulm3HtQ==
+Date:   Fri, 20 Jan 2023 14:00:32 +0000
+From:   Lee Jones <lee@kernel.org>
+To:     Arnd Bergmann <arnd@kernel.org>
+Cc:     Robert Jarzmik <robert.jarzmik@free.fr>,
+        Daniel Mack <daniel@zonque.org>,
+        Haojian Zhuang <haojian.zhuang@gmail.com>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        Arnd Bergmann <arnd@arndb.de>,
         Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Helge Deller <deller@gmx.de>
-Cc:     linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-fbdev@vger.kernel.org
-References: <20230120123857.16124-1-lujianhua000@gmail.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20230120123857.16124-1-lujianhua000@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH 09/27] backlight: remove pxa tosa support
+Message-ID: <Y8qegC966dxF7cE7@google.com>
+References: <20230105134622.254560-1-arnd@kernel.org>
+ <20230105134622.254560-10-arnd@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20230105134622.254560-10-arnd@kernel.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 20/01/2023 13:38, Jianhua Lu wrote:
-> Add Kinetic KTZ8866 backlight binding documentation.
+On Thu, 05 Jan 2023, Arnd Bergmann wrote:
+
+> From: Arnd Bergmann <arnd@arndb.de>
 > 
-> Signed-off-by: Jianhua Lu <lujianhua000@gmail.com>
+> The PXA tosa machine was removed, so this backlight driver is no
+> longer needed.
+> 
+> Cc: Lee Jones <lee@kernel.org>
+> Cc: Daniel Thompson <daniel.thompson@linaro.org>
+> Cc: Jingoo Han <jingoohan1@gmail.com>
+> Cc: linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER)
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 > ---
+>  drivers/video/backlight/Kconfig    |  14 --
+>  drivers/video/backlight/Makefile   |   2 -
+>  drivers/video/backlight/tosa_bl.c  | 172 -----------------
+>  drivers/video/backlight/tosa_bl.h  |   8 -
+>  drivers/video/backlight/tosa_lcd.c | 284 -----------------------------
+>  5 files changed, 480 deletions(-)
+>  delete mode 100644 drivers/video/backlight/tosa_bl.c
+>  delete mode 100644 drivers/video/backlight/tosa_bl.h
+>  delete mode 100644 drivers/video/backlight/tosa_lcd.c
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Applied, thanks
 
-Best regards,
-Krzysztof
-
+-- 
+Lee Jones [李琼斯]

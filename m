@@ -2,161 +2,122 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CECF9C38142
-	for <linux-fbdev@archiver.kernel.org>; Sat, 21 Jan 2023 18:31:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 055EBC25B50
+	for <linux-fbdev@archiver.kernel.org>; Sat, 21 Jan 2023 19:26:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229578AbjAUSbd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 21 Jan 2023 13:31:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42610 "EHLO
+        id S229559AbjAUT0U (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 21 Jan 2023 14:26:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57428 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229653AbjAUSbc (ORCPT
+        with ESMTP id S229578AbjAUT0P (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 21 Jan 2023 13:31:32 -0500
-Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6C84E1DB92
-        for <linux-fbdev@vger.kernel.org>; Sat, 21 Jan 2023 10:31:31 -0800 (PST)
-Received: by mail-wm1-x335.google.com with SMTP id l41-20020a05600c1d2900b003daf986faaeso5847370wms.3
-        for <linux-fbdev@vger.kernel.org>; Sat, 21 Jan 2023 10:31:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=ZwoDBvRhZ51HVwRruPaZJDCI07MDbJL4OZ/OSacJub4=;
-        b=DXZKAycNcbv1iXdoy5RHgDDWZYz4w+4tSZhy7uzlZ9WRKzJP0NHHQJfd+DVK6/tnoH
-         r0LTdWDEOFwGr8v5G0MY8ojjJ4DNAlLLqpbItFA0EFgwFJcEisGZ+af3rxoFmuCZIUy3
-         nX8GimRZPlWnpgUn/oFN7WktFnkdjfLqP4bWRObvDi/5Mj3sochYa7CCTEIjGWrZykPY
-         5eUcrPhUqIPQag//q7hEEA7V7NR/4nLP4zSA87Hd7j0GRbZxRbI7v8M8X64YSyad29En
-         O0cAi0zkhFgAu3eqbW5Fsxiirur0CXaQB1EGjsZnxMPQqNtW1i0Qs6cPKlj3pP9GeBfr
-         tVjw==
+        Sat, 21 Jan 2023 14:26:15 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 127F22B0AF
+        for <linux-fbdev@vger.kernel.org>; Sat, 21 Jan 2023 11:25:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1674329088;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=5yb3FH8jX0MWRXyzAKd1yTC1HwTjMT1KOtJHzdpTmLM=;
+        b=JoSuW22kD4TqqlrfuHNe42PBpjKHYTsC1g9ogMSXkOL6chSmXJuGZ8XYBNsyBPNrWiBJbT
+        0XbURgn32N0X58rZpypWRPxu9EyDUG78ZYWwyoU5hq8Fio5x9gNZVufHPcc/YT9FEuqbI/
+        Bte3HR08zhhdT1+7wrPcpiDMrpGv6M8=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-187-WbY8f10iMyaN3fcdWhfXGg-1; Sat, 21 Jan 2023 14:24:47 -0500
+X-MC-Unique: WbY8f10iMyaN3fcdWhfXGg-1
+Received: by mail-wr1-f70.google.com with SMTP id v15-20020adfe4cf000000b002bf9413bc50so627731wrm.16
+        for <linux-fbdev@vger.kernel.org>; Sat, 21 Jan 2023 11:24:46 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=ZwoDBvRhZ51HVwRruPaZJDCI07MDbJL4OZ/OSacJub4=;
-        b=ThuvYF/F6yrYGPWeUb9lZTmZ7AbYPyhvD/BC4zez9EoOWPIo6UWlqslxymkxgXSRsk
-         3Y4xwMiq7qVm7kLWl3TzXENJrA/jt/R0vmP2BSAzw1vRVNQ7ymi8XlQaK+Nz5035CSjV
-         +7Slh2BilPx58bcNiTX6sB8hUU8TZF8tYRvLxdB23qSgB5awQGijMZ4Lq6XgZ2jyA9yz
-         CBwHkuSXafE6yhzk3brrfd6oUQOMMZsu7gK7ZxnFYwowP9zlZ59oonq29UO1G0RCcMER
-         bku+kueLeKzBH+1M3Gtb5NcgTWfdS+4LEsPOw7yDx26b1vsEJWCSCpkJkhf4G6KhJOO0
-         sC/g==
-X-Gm-Message-State: AFqh2kokxB5GBpvUG5U5IfMFjJuRsFcifOb1tFcfjuvJEPhVf2n3rv2Q
-        QdEs3/NsoQIRTEKH5159k20UXw==
-X-Google-Smtp-Source: AMrXdXtzA0VhWJr5PaMDSwqlmcQOuGEVhWjqw2Lcr/7uvjQ2leyTYFBOPlCVPt9XkFdATbe08+PT5Q==
-X-Received: by 2002:a05:600c:5386:b0:3da:f670:a199 with SMTP id hg6-20020a05600c538600b003daf670a199mr18285088wmb.36.1674325889305;
-        Sat, 21 Jan 2023 10:31:29 -0800 (PST)
-Received: from [192.168.1.109] ([178.197.216.144])
-        by smtp.gmail.com with ESMTPSA id c2-20020a05600c0a4200b003daf6e3bc2fsm16026540wmq.1.2023.01.21.10.31.24
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 21 Jan 2023 10:31:28 -0800 (PST)
-Message-ID: <45b9b378-6619-c47a-b5ea-6b6b7edca785@linaro.org>
-Date:   Sat, 21 Jan 2023 19:31:23 +0100
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=5yb3FH8jX0MWRXyzAKd1yTC1HwTjMT1KOtJHzdpTmLM=;
+        b=qsOOsM+8mzlh5A8SvlfHNnRQ8odXdZedf/cjw7rkGrzP6oa9DTCYYzHIL7bGirioad
+         PZwtlUa56Qqn8V0U5ffrDNQS3TFhfKuqLGH7BHvU3VnZQxhd5Z63bWQfMo4Ji3ZQM2Gl
+         yB5LsY2CmYYVPPixTKqbc4ZNLkgq20yqeCsNVLc7ZqvPVH7w6HhspA5V7wHssHLubOrc
+         5zBCepBGC/6236YYhGYnVX/ADuI+WD7kvJ0acvGMMX1mm8NV/FLVT9bvAbT3rUKXtHT5
+         glD/HiZhX2iKZ5ctMGfyc9lprwUl556tl2ofXP04mvCyeL0pm19E63mQb7hJsPC243ep
+         IYrw==
+X-Gm-Message-State: AFqh2kplVu/Uu+j8yo581WFxQ1V4MmbH5bsoWMgLGznhWcLlO0uR8S7m
+        gNbQUXw+8AA07xRXTfVIM50Q0dJ94ePBrY9/SgMhnXGIbYJLaiVMrXQyjmZQPEaLH1lbVpI7Wjg
+        Wu36K7+vGZ9Num1Vregus1k0=
+X-Received: by 2002:a05:600c:2255:b0:3da:f950:8168 with SMTP id a21-20020a05600c225500b003daf9508168mr17593294wmm.35.1674329085898;
+        Sat, 21 Jan 2023 11:24:45 -0800 (PST)
+X-Google-Smtp-Source: AMrXdXu7/XGYvbQvHdPX4KdE971lVGAfQ0ExgfrXkYtLzVOSmg7BGN71xkjtA3ao8ZGPeTndCrBicQ==
+X-Received: by 2002:a05:600c:2255:b0:3da:f950:8168 with SMTP id a21-20020a05600c225500b003daf9508168mr17593290wmm.35.1674329085743;
+        Sat, 21 Jan 2023 11:24:45 -0800 (PST)
+Received: from minerva.home (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id f14-20020a05600c154e00b003daff80f16esm8544321wmg.27.2023.01.21.11.24.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 21 Jan 2023 11:24:45 -0800 (PST)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+        Jaya Kumar <jayalk@intworks.biz>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH v2 1/3] fbdev: Remove unused struct fb_deferred_io .first_io field
+Date:   Sat, 21 Jan 2023 20:24:16 +0100
+Message-Id: <20230121192418.2814955-2-javierm@redhat.com>
+X-Mailer: git-send-email 2.39.0
+In-Reply-To: <20230121192418.2814955-1-javierm@redhat.com>
+References: <20230121192418.2814955-1-javierm@redhat.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.0
-Subject: Re: [PATCH 3/5] dt-bindings: iio: correct node names in examples
-To:     Jonathan Cameron <jic23@kernel.org>
-Cc:     Lars-Peter Clausen <lars@metafoo.de>,
-        Michael Hennerich <Michael.Hennerich@analog.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Lucas Stankus <lucas.p.stankus@gmail.com>,
-        Puranjay Mohan <puranjay12@gmail.com>,
-        Dmitry Rokosov <ddrokosov@sberdevices.ru>,
-        Alexandru Tachici <alexandru.tachici@analog.com>,
-        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
-        Renato Lui Geh <renatogeh@gmail.com>,
-        Eugen Hristev <eugen.hristev@microchip.com>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        Andreas Klinger <ak@it-klinger.de>,
-        Marcus Folkesson <marcus.folkesson@gmail.com>,
-        Kent Gustavsson <kent@minoris.se>,
-        Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        Oleksij Rempel <linux@rempel-privat.de>, kernel@pengutronix.de,
-        =?UTF-8?Q?Nuno_S=c3=a1?= <nuno.sa@analog.com>,
-        Nishant Malpani <nish.malpani25@gmail.com>,
-        Rui Miguel Silva <rmfrfs@gmail.com>,
-        Dragos Bogdan <dragos.bogdan@analog.com>,
-        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
-        Lorenzo Bianconi <lorenzo@kernel.org>,
-        Benson Leung <bleung@chromium.org>,
-        Guenter Roeck <groeck@chromium.org>,
-        Stefan Popa <stefan.popa@analog.com>,
-        Robert Yang <decatf@gmail.com>,
-        Sean Nyekjaer <sean@geanix.com>,
-        Artur Rojek <contact@artur-rojek.eu>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Philippe Reynes <tremyfr@yahoo.fr>,
-        Alexandru Lazar <alazar@startmail.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Caleb Connolly <caleb.connolly@linaro.org>,
-        Fabrice Gasnier <fabrice.gasnier@foss.st.com>,
-        Stefan Agner <stefan@agner.ch>,
-        Daniel Baluta <daniel.baluta@nxp.com>,
-        Harald Geyer <harald@ccbib.org>,
-        Eugene Zaikonnikov <ez@norophonic.com>,
-        Phil Reid <preid@electromag.com.au>,
-        Matt Ranostay <matt.ranostay@konsulko.com>,
-        Stephen Boyd <swboyd@chromium.org>,
-        Sankar Velliangiri <navin@linumiz.com>,
-        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-renesas-soc@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        chrome-platform@lists.linux.dev
-References: <20230118184413.395820-1-krzysztof.kozlowski@linaro.org>
- <20230118184413.395820-3-krzysztof.kozlowski@linaro.org>
- <20230121171709.5eb75e94@jic23-huawei>
-Content-Language: en-US
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20230121171709.5eb75e94@jic23-huawei>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 21/01/2023 18:17, Jonathan Cameron wrote:
-> On Wed, 18 Jan 2023 19:44:11 +0100
-> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
-> 
->> Do not use underscores and unneeded suffixes (e.g. i2c0) in node name in
->> examples.
->>
->> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
->> ---
-> 
->> diff --git a/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml b/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml
->> index 6c5ad426a016..12f75ddc4a70 100644
->> --- a/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml
->> +++ b/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml
->> @@ -42,7 +42,7 @@ examples:
->>          #address-cells = <1>;
->>          #size-cells = <0>;
->>  
->> -        heart_mon@0 {
->> +        heart-rate@0 {
-> 
-> These are both heart-rate and pulse oximeters so measure more than just
-> the rate (oxygen saturation in the blood). Reality is they actually
-> measure light absorption over time, but you can calculate an estimate
-> of both rate and oxygen saturation from that.
-> 
-> I don't really mind simplifying that to heart-rate, but wanted to
-> call this out for possible discussion.
+This optional callback was added in the commit 1f45f9dbb392 ("fb_defio:
+add first_io callback") but it was never used by a driver. Let's remove
+it since it's unlikely that will be used after a decade that was added.
 
-They could be heart-mon. The fix is mostly around the underscore. I
-don't have any arguments for changing it to heart-rate, thus we can go
-with whatever you prefer.
+Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
 
-Best regards,
-Krzysztof
+(no changes since v1)
+
+ drivers/video/fbdev/core/fb_defio.c | 4 ----
+ include/linux/fb.h                  | 1 -
+ 2 files changed, 5 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
+index c730253ab85c..1b680742b7f3 100644
+--- a/drivers/video/fbdev/core/fb_defio.c
++++ b/drivers/video/fbdev/core/fb_defio.c
+@@ -157,10 +157,6 @@ static vm_fault_t fb_deferred_io_track_page(struct fb_info *info, unsigned long
+ 	/* protect against the workqueue changing the page list */
+ 	mutex_lock(&fbdefio->lock);
+ 
+-	/* first write in this cycle, notify the driver */
+-	if (fbdefio->first_io && list_empty(&fbdefio->pagereflist))
+-		fbdefio->first_io(info);
+-
+ 	pageref = fb_deferred_io_pageref_get(info, offset, page);
+ 	if (WARN_ON_ONCE(!pageref)) {
+ 		ret = VM_FAULT_OOM;
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 30183fd259ae..daf336385613 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -215,7 +215,6 @@ struct fb_deferred_io {
+ 	struct mutex lock; /* mutex that protects the pageref list */
+ 	struct list_head pagereflist; /* list of pagerefs for touched pages */
+ 	/* callback */
+-	void (*first_io)(struct fb_info *info);
+ 	void (*deferred_io)(struct fb_info *info, struct list_head *pagelist);
+ };
+ #endif
+-- 
+2.39.0
 

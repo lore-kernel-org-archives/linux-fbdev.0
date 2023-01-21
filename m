@@ -2,39 +2,61 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EA27C004D4
-	for <linux-fbdev@archiver.kernel.org>; Sat, 21 Jan 2023 17:03:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CECF9C38142
+	for <linux-fbdev@archiver.kernel.org>; Sat, 21 Jan 2023 18:31:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229980AbjAURDh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 21 Jan 2023 12:03:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42442 "EHLO
+        id S229578AbjAUSbd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 21 Jan 2023 13:31:33 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42610 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229463AbjAURDg (ORCPT
+        with ESMTP id S229653AbjAUSbc (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 21 Jan 2023 12:03:36 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2498B298D7;
-        Sat, 21 Jan 2023 09:03:35 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id D1C2AB80816;
-        Sat, 21 Jan 2023 17:03:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC6A7C433D2;
-        Sat, 21 Jan 2023 17:03:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1674320612;
-        bh=KDw/+vNJAi/mknOa0WX6Ng3Q/0RA2pHOSwGQq7+EYNo=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=HuAvhLjB/S0zc04GEtF9VGWcCB7qG5XdOX/vEN1tGnJurqUyU5Va8pjleX2BpqDMx
-         1DBYEjVEnjBFx5TMJxCJXI7zrpQMWIMOexR1+df1B4bLny8/4vt2pzpJZmJyEfGgpQ
-         VaalUoUBfg8Dg4BGmjUOzfEOW1RNNXiRf2hG+bdlbc+nqCoVFoQYaZC7SIcN3wQKYS
-         vl/n8mO8rxnNzKFz6fOMO41bk802GYjzq+d/1MlwM8VFj0YnJsDTSbb/R2tuxHnaxy
-         qtLkTzSJsB5UF4h5o5eq5Uixb94jhF7dkj3tZNB291jWt2N+6/jKr2Cl253RK7dQIq
-         Y9ouSKjMPjr8g==
-Date:   Sat, 21 Jan 2023 17:17:09 +0000
-From:   Jonathan Cameron <jic23@kernel.org>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+        Sat, 21 Jan 2023 13:31:32 -0500
+Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6C84E1DB92
+        for <linux-fbdev@vger.kernel.org>; Sat, 21 Jan 2023 10:31:31 -0800 (PST)
+Received: by mail-wm1-x335.google.com with SMTP id l41-20020a05600c1d2900b003daf986faaeso5847370wms.3
+        for <linux-fbdev@vger.kernel.org>; Sat, 21 Jan 2023 10:31:31 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=ZwoDBvRhZ51HVwRruPaZJDCI07MDbJL4OZ/OSacJub4=;
+        b=DXZKAycNcbv1iXdoy5RHgDDWZYz4w+4tSZhy7uzlZ9WRKzJP0NHHQJfd+DVK6/tnoH
+         r0LTdWDEOFwGr8v5G0MY8ojjJ4DNAlLLqpbItFA0EFgwFJcEisGZ+af3rxoFmuCZIUy3
+         nX8GimRZPlWnpgUn/oFN7WktFnkdjfLqP4bWRObvDi/5Mj3sochYa7CCTEIjGWrZykPY
+         5eUcrPhUqIPQag//q7hEEA7V7NR/4nLP4zSA87Hd7j0GRbZxRbI7v8M8X64YSyad29En
+         O0cAi0zkhFgAu3eqbW5Fsxiirur0CXaQB1EGjsZnxMPQqNtW1i0Qs6cPKlj3pP9GeBfr
+         tVjw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=ZwoDBvRhZ51HVwRruPaZJDCI07MDbJL4OZ/OSacJub4=;
+        b=ThuvYF/F6yrYGPWeUb9lZTmZ7AbYPyhvD/BC4zez9EoOWPIo6UWlqslxymkxgXSRsk
+         3Y4xwMiq7qVm7kLWl3TzXENJrA/jt/R0vmP2BSAzw1vRVNQ7ymi8XlQaK+Nz5035CSjV
+         +7Slh2BilPx58bcNiTX6sB8hUU8TZF8tYRvLxdB23qSgB5awQGijMZ4Lq6XgZ2jyA9yz
+         CBwHkuSXafE6yhzk3brrfd6oUQOMMZsu7gK7ZxnFYwowP9zlZ59oonq29UO1G0RCcMER
+         bku+kueLeKzBH+1M3Gtb5NcgTWfdS+4LEsPOw7yDx26b1vsEJWCSCpkJkhf4G6KhJOO0
+         sC/g==
+X-Gm-Message-State: AFqh2kokxB5GBpvUG5U5IfMFjJuRsFcifOb1tFcfjuvJEPhVf2n3rv2Q
+        QdEs3/NsoQIRTEKH5159k20UXw==
+X-Google-Smtp-Source: AMrXdXtzA0VhWJr5PaMDSwqlmcQOuGEVhWjqw2Lcr/7uvjQ2leyTYFBOPlCVPt9XkFdATbe08+PT5Q==
+X-Received: by 2002:a05:600c:5386:b0:3da:f670:a199 with SMTP id hg6-20020a05600c538600b003daf670a199mr18285088wmb.36.1674325889305;
+        Sat, 21 Jan 2023 10:31:29 -0800 (PST)
+Received: from [192.168.1.109] ([178.197.216.144])
+        by smtp.gmail.com with ESMTPSA id c2-20020a05600c0a4200b003daf6e3bc2fsm16026540wmq.1.2023.01.21.10.31.24
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 21 Jan 2023 10:31:28 -0800 (PST)
+Message-ID: <45b9b378-6619-c47a-b5ea-6b6b7edca785@linaro.org>
+Date:   Sat, 21 Jan 2023 19:31:23 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.7.0
+Subject: Re: [PATCH 3/5] dt-bindings: iio: correct node names in examples
+To:     Jonathan Cameron <jic23@kernel.org>
 Cc:     Lars-Peter Clausen <lars@metafoo.de>,
         Michael Hennerich <Michael.Hennerich@analog.com>,
         Rob Herring <robh+dt@kernel.org>,
@@ -57,7 +79,7 @@ Cc:     Lars-Peter Clausen <lars@metafoo.de>,
         Maxime Coquelin <mcoquelin.stm32@gmail.com>,
         Alexandre Torgue <alexandre.torgue@foss.st.com>,
         Oleksij Rempel <linux@rempel-privat.de>, kernel@pengutronix.de,
-        Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>,
+        =?UTF-8?Q?Nuno_S=c3=a1?= <nuno.sa@analog.com>,
         Nishant Malpani <nish.malpani25@gmail.com>,
         Rui Miguel Silva <rmfrfs@gmail.com>,
         Dragos Bogdan <dragos.bogdan@analog.com>,
@@ -90,66 +112,51 @@ Cc:     Lars-Peter Clausen <lars@metafoo.de>,
         linux-samsung-soc@vger.kernel.org,
         linux-stm32@st-md-mailman.stormreply.com,
         chrome-platform@lists.linux.dev
-Subject: Re: [PATCH 3/5] dt-bindings: iio: correct node names in examples
-Message-ID: <20230121171709.5eb75e94@jic23-huawei>
-In-Reply-To: <20230118184413.395820-3-krzysztof.kozlowski@linaro.org>
 References: <20230118184413.395820-1-krzysztof.kozlowski@linaro.org>
-        <20230118184413.395820-3-krzysztof.kozlowski@linaro.org>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.36; x86_64-pc-linux-gnu)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ <20230118184413.395820-3-krzysztof.kozlowski@linaro.org>
+ <20230121171709.5eb75e94@jic23-huawei>
+Content-Language: en-US
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20230121171709.5eb75e94@jic23-huawei>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 18 Jan 2023 19:44:11 +0100
-Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
-
-> Do not use underscores and unneeded suffixes (e.g. i2c0) in node name in
-> examples.
+On 21/01/2023 18:17, Jonathan Cameron wrote:
+> On Wed, 18 Jan 2023 19:44:11 +0100
+> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
 > 
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> ---
+>> Do not use underscores and unneeded suffixes (e.g. i2c0) in node name in
+>> examples.
+>>
+>> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+>> ---
+> 
+>> diff --git a/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml b/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml
+>> index 6c5ad426a016..12f75ddc4a70 100644
+>> --- a/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml
+>> +++ b/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml
+>> @@ -42,7 +42,7 @@ examples:
+>>          #address-cells = <1>;
+>>          #size-cells = <0>;
+>>  
+>> -        heart_mon@0 {
+>> +        heart-rate@0 {
+> 
+> These are both heart-rate and pulse oximeters so measure more than just
+> the rate (oxygen saturation in the blood). Reality is they actually
+> measure light absorption over time, but you can calculate an estimate
+> of both rate and oxygen saturation from that.
+> 
+> I don't really mind simplifying that to heart-rate, but wanted to
+> call this out for possible discussion.
 
-> diff --git a/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml b/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml
-> index 6c5ad426a016..12f75ddc4a70 100644
-> --- a/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml
-> +++ b/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml
-> @@ -42,7 +42,7 @@ examples:
->          #address-cells = <1>;
->          #size-cells = <0>;
->  
-> -        heart_mon@0 {
-> +        heart-rate@0 {
+They could be heart-mon. The fix is mostly around the underscore. I
+don't have any arguments for changing it to heart-rate, thus we can go
+with whatever you prefer.
 
-These are both heart-rate and pulse oximeters so measure more than just
-the rate (oxygen saturation in the blood). Reality is they actually
-measure light absorption over time, but you can calculate an estimate
-of both rate and oxygen saturation from that.
+Best regards,
+Krzysztof
 
-I don't really mind simplifying that to heart-rate, but wanted to
-call this out for possible discussion.
-
-
->              compatible = "ti,afe4403";
->              reg = <0>;
->              spi-max-frequency = <10000000>;
-> diff --git a/Documentation/devicetree/bindings/iio/health/ti,afe4404.yaml b/Documentation/devicetree/bindings/iio/health/ti,afe4404.yaml
-> index c0e815d9999e..b334f3e356ad 100644
-> --- a/Documentation/devicetree/bindings/iio/health/ti,afe4404.yaml
-> +++ b/Documentation/devicetree/bindings/iio/health/ti,afe4404.yaml
-> @@ -39,7 +39,7 @@ examples:
->          #address-cells = <1>;
->          #size-cells = <0>;
->  
-> -        heart_mon@58 {
-> +        heart-rate@58 {
->              compatible = "ti,afe4404";
->              reg = <0x58>;
->              tx-supply = <&vbat>;
-
-The rest are all fine.  If no one comments I'll pick this up as it is in a few
-days.
-
-Jonathan

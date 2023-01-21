@@ -2,167 +2,154 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A48AFC25B50
-	for <linux-fbdev@archiver.kernel.org>; Sat, 21 Jan 2023 15:36:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EA27C004D4
+	for <linux-fbdev@archiver.kernel.org>; Sat, 21 Jan 2023 17:03:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229687AbjAUPg0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 21 Jan 2023 10:36:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50850 "EHLO
+        id S229980AbjAURDh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 21 Jan 2023 12:03:37 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42442 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229540AbjAUPgZ (ORCPT
+        with ESMTP id S229463AbjAURDg (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 21 Jan 2023 10:36:25 -0500
-Received: from out2.migadu.com (out2.migadu.com [188.165.223.204])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF4C728D1C;
-        Sat, 21 Jan 2023 07:36:24 -0800 (PST)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ansari.sh; s=key1;
-        t=1674315383;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=A4c8WkU35Mq5MDZit6NsQwryhg7/hXEwGbhE/MTvXvA=;
-        b=EvhIzhnmrTwhMfdhF5oPG9UJeknkJw+xNAd4IY2QbS2p6vOSWTo3Vd/O8w2WbFbFBsWluL
-        1QeQXbrSZBOvaoXPV5eekY9OktKC0xJhhPNkva+47XL9au1Xw07raV6gnfCKtVlzQtfjT/
-        yAyoQ+DKnhhzoIun8OK5dz6sLBQl/x0=
-From:   Rayyan Ansari <rayyan@ansari.sh>
-To:     dri-devel@lists.freedesktop.org
-Cc:     ~postmarketos/upstreaming@lists.sr.ht, asahi@lists.linux.dev,
-        janne@jannau.net, Rayyan Ansari <rayyan@ansari.sh>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        David Airlie <airlied@gmail.com>, devicetree@vger.kernel.org,
-        Hans de Goede <hdegoede@redhat.com>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Sat, 21 Jan 2023 12:03:36 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2498B298D7;
+        Sat, 21 Jan 2023 09:03:35 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id D1C2AB80816;
+        Sat, 21 Jan 2023 17:03:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC6A7C433D2;
+        Sat, 21 Jan 2023 17:03:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1674320612;
+        bh=KDw/+vNJAi/mknOa0WX6Ng3Q/0RA2pHOSwGQq7+EYNo=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=HuAvhLjB/S0zc04GEtF9VGWcCB7qG5XdOX/vEN1tGnJurqUyU5Va8pjleX2BpqDMx
+         1DBYEjVEnjBFx5TMJxCJXI7zrpQMWIMOexR1+df1B4bLny8/4vt2pzpJZmJyEfGgpQ
+         VaalUoUBfg8Dg4BGmjUOzfEOW1RNNXiRf2hG+bdlbc+nqCoVFoQYaZC7SIcN3wQKYS
+         vl/n8mO8rxnNzKFz6fOMO41bk802GYjzq+d/1MlwM8VFj0YnJsDTSbb/R2tuxHnaxy
+         qtLkTzSJsB5UF4h5o5eq5Uixb94jhF7dkj3tZNB291jWt2N+6/jKr2Cl253RK7dQIq
+         Y9ouSKjMPjr8g==
+Date:   Sat, 21 Jan 2023 17:17:09 +0000
+From:   Jonathan Cameron <jic23@kernel.org>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc:     Lars-Peter Clausen <lars@metafoo.de>,
+        Michael Hennerich <Michael.Hennerich@analog.com>,
         Rob Herring <robh+dt@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 1/2] drm/simpledrm: Allow physical width and height configuration via DT
-Date:   Sat, 21 Jan 2023 15:35:43 +0000
-Message-Id: <20230121153544.467126-2-rayyan@ansari.sh>
-In-Reply-To: <20230121153544.467126-1-rayyan@ansari.sh>
-References: <20230121153544.467126-1-rayyan@ansari.sh>
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Lucas Stankus <lucas.p.stankus@gmail.com>,
+        Puranjay Mohan <puranjay12@gmail.com>,
+        Dmitry Rokosov <ddrokosov@sberdevices.ru>,
+        Alexandru Tachici <alexandru.tachici@analog.com>,
+        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
+        Renato Lui Geh <renatogeh@gmail.com>,
+        Eugen Hristev <eugen.hristev@microchip.com>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>,
+        Andreas Klinger <ak@it-klinger.de>,
+        Marcus Folkesson <marcus.folkesson@gmail.com>,
+        Kent Gustavsson <kent@minoris.se>,
+        Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+        Alexandre Torgue <alexandre.torgue@foss.st.com>,
+        Oleksij Rempel <linux@rempel-privat.de>, kernel@pengutronix.de,
+        Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>,
+        Nishant Malpani <nish.malpani25@gmail.com>,
+        Rui Miguel Silva <rmfrfs@gmail.com>,
+        Dragos Bogdan <dragos.bogdan@analog.com>,
+        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
+        Lorenzo Bianconi <lorenzo@kernel.org>,
+        Benson Leung <bleung@chromium.org>,
+        Guenter Roeck <groeck@chromium.org>,
+        Stefan Popa <stefan.popa@analog.com>,
+        Robert Yang <decatf@gmail.com>,
+        Sean Nyekjaer <sean@geanix.com>,
+        Artur Rojek <contact@artur-rojek.eu>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Philippe Reynes <tremyfr@yahoo.fr>,
+        Alexandru Lazar <alazar@startmail.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Caleb Connolly <caleb.connolly@linaro.org>,
+        Fabrice Gasnier <fabrice.gasnier@foss.st.com>,
+        Stefan Agner <stefan@agner.ch>,
+        Daniel Baluta <daniel.baluta@nxp.com>,
+        Harald Geyer <harald@ccbib.org>,
+        Eugene Zaikonnikov <ez@norophonic.com>,
+        Phil Reid <preid@electromag.com.au>,
+        Matt Ranostay <matt.ranostay@konsulko.com>,
+        Stephen Boyd <swboyd@chromium.org>,
+        Sankar Velliangiri <navin@linumiz.com>,
+        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-renesas-soc@vger.kernel.org,
+        linux-samsung-soc@vger.kernel.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        chrome-platform@lists.linux.dev
+Subject: Re: [PATCH 3/5] dt-bindings: iio: correct node names in examples
+Message-ID: <20230121171709.5eb75e94@jic23-huawei>
+In-Reply-To: <20230118184413.395820-3-krzysztof.kozlowski@linaro.org>
+References: <20230118184413.395820-1-krzysztof.kozlowski@linaro.org>
+        <20230118184413.395820-3-krzysztof.kozlowski@linaro.org>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.36; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Signed-off-by: Rayyan Ansari <rayyan@ansari.sh>
----
- drivers/gpu/drm/tiny/simpledrm.c | 60 +++++++++++++++++++++++++++-----
- 1 file changed, 51 insertions(+), 9 deletions(-)
+On Wed, 18 Jan 2023 19:44:11 +0100
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
 
-diff --git a/drivers/gpu/drm/tiny/simpledrm.c b/drivers/gpu/drm/tiny/simpledrm.c
-index 162eb44dcba8..7aab7fa572f0 100644
---- a/drivers/gpu/drm/tiny/simpledrm.c
-+++ b/drivers/gpu/drm/tiny/simpledrm.c
-@@ -128,6 +128,23 @@ simplefb_read_u32_of(struct drm_device *dev, struct device_node *of_node,
- 	return ret;
- }
- 
-+static int
-+simplefb_read_u32_of_opt(struct drm_device *dev, struct device_node *of_node,
-+			 const char *name, u32 *value)
-+{
-+	int ret = of_property_read_u32(of_node, name, value);
-+
-+	if (ret == -EINVAL) {
-+		*value = 0;
-+		ret = 0;
-+	} else if (ret) {
-+		drm_err(dev, "simplefb: cannot parse framebuffer %s: error %d\n",
-+			name, ret);
-+	}
-+
-+	return ret;
-+}
-+
- static int
- simplefb_read_string_of(struct drm_device *dev, struct device_node *of_node,
- 			const char *name, const char **value)
-@@ -184,6 +201,19 @@ simplefb_get_format_of(struct drm_device *dev, struct device_node *of_node)
- 	return simplefb_get_validated_format(dev, format);
- }
- 
-+static int
-+simplefb_get_mm_of(struct drm_device *dev, struct device_node *of_node,
-+		   const char *name)
-+{
-+	int mm;
-+	int ret = simplefb_read_u32_of_opt(dev, of_node, name, &mm);
-+
-+	if (ret)
-+		return ret;
-+	return simplefb_get_validated_int(dev, name, mm);
-+}
-+
-+
- /*
-  * Simple Framebuffer device
-  */
-@@ -599,16 +629,12 @@ static const struct drm_mode_config_funcs simpledrm_mode_config_funcs = {
-  */
- 
- static struct drm_display_mode simpledrm_mode(unsigned int width,
--					      unsigned int height)
-+					      unsigned int height,
-+					      unsigned int width_mm,
-+					      unsigned int height_mm)
- {
--	/*
--	 * Assume a monitor resolution of 96 dpi to
--	 * get a somewhat reasonable screen size.
--	 */
- 	const struct drm_display_mode mode = {
--		DRM_MODE_INIT(60, width, height,
--			      DRM_MODE_RES_MM(width, 96ul),
--			      DRM_MODE_RES_MM(height, 96ul))
-+		DRM_MODE_INIT(60, width, height, width_mm, height_mm)
- 	};
- 
- 	return mode;
-@@ -622,6 +648,7 @@ static struct simpledrm_device *simpledrm_device_create(struct drm_driver *drv,
- 	struct simpledrm_device *sdev;
- 	struct drm_device *dev;
- 	int width, height, stride;
-+	int width_mm = 0, height_mm = 0;
- 	const struct drm_format_info *format;
- 	struct resource *res, *mem;
- 	void __iomem *screen_base;
-@@ -676,6 +703,12 @@ static struct simpledrm_device *simpledrm_device_create(struct drm_driver *drv,
- 		format = simplefb_get_format_of(dev, of_node);
- 		if (IS_ERR(format))
- 			return ERR_CAST(format);
-+		width_mm = simplefb_get_mm_of(dev, of_node, "width-mm");
-+		if (width_mm < 0)
-+			return ERR_PTR(width_mm);
-+		height_mm = simplefb_get_mm_of(dev, of_node, "height-mm");
-+		if (height_mm < 0)
-+			return ERR_PTR(height_mm);
- 	} else {
- 		drm_err(dev, "no simplefb configuration found\n");
- 		return ERR_PTR(-ENODEV);
-@@ -686,7 +719,16 @@ static struct simpledrm_device *simpledrm_device_create(struct drm_driver *drv,
- 			return ERR_PTR(-EINVAL);
- 	}
- 
--	sdev->mode = simpledrm_mode(width, height);
-+	/*
-+	 * Assume a monitor resolution of 96 dpi if physical dimensions
-+	 * are not specified to get a somewhat reasonable screen size.
-+	 */
-+	if (!width_mm)
-+		width_mm = DRM_MODE_RES_MM(width, 96ul);
-+	if (!height_mm)
-+		height_mm = DRM_MODE_RES_MM(height, 96ul);
-+
-+	sdev->mode = simpledrm_mode(width, height, width_mm, height_mm);
- 	sdev->format = format;
- 	sdev->pitch = stride;
- 
--- 
-2.39.0
+> Do not use underscores and unneeded suffixes (e.g. i2c0) in node name in
+> examples.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> ---
 
+> diff --git a/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml b/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml
+> index 6c5ad426a016..12f75ddc4a70 100644
+> --- a/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml
+> +++ b/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml
+> @@ -42,7 +42,7 @@ examples:
+>          #address-cells = <1>;
+>          #size-cells = <0>;
+>  
+> -        heart_mon@0 {
+> +        heart-rate@0 {
+
+These are both heart-rate and pulse oximeters so measure more than just
+the rate (oxygen saturation in the blood). Reality is they actually
+measure light absorption over time, but you can calculate an estimate
+of both rate and oxygen saturation from that.
+
+I don't really mind simplifying that to heart-rate, but wanted to
+call this out for possible discussion.
+
+
+>              compatible = "ti,afe4403";
+>              reg = <0>;
+>              spi-max-frequency = <10000000>;
+> diff --git a/Documentation/devicetree/bindings/iio/health/ti,afe4404.yaml b/Documentation/devicetree/bindings/iio/health/ti,afe4404.yaml
+> index c0e815d9999e..b334f3e356ad 100644
+> --- a/Documentation/devicetree/bindings/iio/health/ti,afe4404.yaml
+> +++ b/Documentation/devicetree/bindings/iio/health/ti,afe4404.yaml
+> @@ -39,7 +39,7 @@ examples:
+>          #address-cells = <1>;
+>          #size-cells = <0>;
+>  
+> -        heart_mon@58 {
+> +        heart-rate@58 {
+>              compatible = "ti,afe4404";
+>              reg = <0x58>;
+>              tx-supply = <&vbat>;
+
+The rest are all fine.  If no one comments I'll pick this up as it is in a few
+days.
+
+Jonathan

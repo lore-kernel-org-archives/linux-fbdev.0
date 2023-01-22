@@ -2,113 +2,153 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1376CC27C76
-	for <linux-fbdev@archiver.kernel.org>; Sun, 22 Jan 2023 15:43:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A48BC25B4E
+	for <linux-fbdev@archiver.kernel.org>; Sun, 22 Jan 2023 16:47:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231501AbjAVPnS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 22 Jan 2023 10:43:18 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34260 "EHLO
+        id S229999AbjAVQrk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 22 Jan 2023 11:47:40 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52386 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230148AbjAVPnR (ORCPT
+        with ESMTP id S229895AbjAVQrj (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 22 Jan 2023 10:43:17 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E3B222032
-        for <linux-fbdev@vger.kernel.org>; Sun, 22 Jan 2023 07:42:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1674402154;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=IonFMa0lsWsZdfNk5QE4jBoQi/ruUQHMn+oqAHgqoH8=;
-        b=hvR1AOBnfzg+8s2xetfkwYYJuvSq5Oy5mctPpo+BivEm3uvzMGvVrd95NuRqyQWqbhUDVa
-        HUgUqjCUEhR+QmqAJmDd6m9s9cu452mPRzNhnp1X62+cwI6ZxctwVeaqIM/E9HZov5PsQB
-        zVtFRt37ivzGXyX7Ikx8LFM8/fY4df0=
-Received: from mail-ed1-f70.google.com (mail-ed1-f70.google.com
- [209.85.208.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-135-XMUo-QupM5CnOsB-0DYJeQ-1; Sun, 22 Jan 2023 10:42:25 -0500
-X-MC-Unique: XMUo-QupM5CnOsB-0DYJeQ-1
-Received: by mail-ed1-f70.google.com with SMTP id m12-20020a056402430c00b0049e4ac58509so6894508edc.16
-        for <linux-fbdev@vger.kernel.org>; Sun, 22 Jan 2023 07:42:24 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=IonFMa0lsWsZdfNk5QE4jBoQi/ruUQHMn+oqAHgqoH8=;
-        b=Nr9hq2/wLRC8syTWJttojnP6teIrDfsF+D4EWeBvfDHSscfyXN8scwBz2D1Ndqk/+C
-         kEdVl+zl/ch+jvUw/TFBHYynxoC5aOqLPUqV10aiA6pIbGYl/Qhe8moKYhQkPr5wqG8G
-         m1d09v3d9w1P8kAva4E+povTDmgAIeIFVtnYcHJ/yhOSLbmIRHHl4Nx7Mi3kPY7QKT7+
-         O/VH8IdirZ7kE2R/MyToN5m0nRD93hakbwo2KgIfkXsNoBgpKeAfQjexgO/jrfxMRsLw
-         HBkHvl09PFwUanoUeOi1DEXHuU+lhyyPAmhHfQA5siF8x00NxPILupUbTph7E5gyuORs
-         lcGQ==
-X-Gm-Message-State: AFqh2kpLkr/TPCZPxVhHv7aLClj0YOFwzk7KXI9nIuyF9uHiuvyC11iT
-        kzcMl48bwHCkk8uObvSg4iraopQcKO4bvoL+ta2rdMiFiNPzRUn6UwdqGh6CpqYIfxic08BMfse
-        JJyR9P3AB7hu79Rmek6b9rCM=
-X-Received: by 2002:a17:906:b317:b0:86e:5124:20b0 with SMTP id n23-20020a170906b31700b0086e512420b0mr24453774ejz.64.1674402144011;
-        Sun, 22 Jan 2023 07:42:24 -0800 (PST)
-X-Google-Smtp-Source: AMrXdXvxYtwlzriBymW6Z3D7aPp6YK0SgRgIwBhy9+XTG6Yr2FXU6lFqP+zhk9rsn87ItyMtBAKvXA==
-X-Received: by 2002:a17:906:b317:b0:86e:5124:20b0 with SMTP id n23-20020a170906b31700b0086e512420b0mr24453748ejz.64.1674402143767;
-        Sun, 22 Jan 2023 07:42:23 -0800 (PST)
-Received: from ?IPV6:2001:1c00:c32:7800:5bfa:a036:83f0:f9ec? (2001-1c00-0c32-7800-5bfa-a036-83f0-f9ec.cable.dynamic.v6.ziggo.nl. [2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
-        by smtp.gmail.com with ESMTPSA id mb9-20020a170906eb0900b0084d34eec68esm19871820ejb.213.2023.01.22.07.42.22
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 22 Jan 2023 07:42:23 -0800 (PST)
-Message-ID: <efcca646-5dc3-359a-5453-2fe241af8f8c@redhat.com>
-Date:   Sun, 22 Jan 2023 16:42:22 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.0
-Subject: Re: [PATCH v2 2/2] dt-bindings: display: simple-framebuffer: Document
- physical width and height properties
-Content-Language: en-US, nl
-To:     Rob Herring <robh+dt@kernel.org>, Rayyan Ansari <rayyan@ansari.sh>
-Cc:     dri-devel@lists.freedesktop.org,
-        ~postmarketos/upstreaming@lists.sr.ht, asahi@lists.linux.dev,
-        janne@jannau.net, Daniel Vetter <daniel@ffwll.ch>,
-        David Airlie <airlied@gmail.com>, devicetree@vger.kernel.org,
-        Javier Martinez Canillas <javierm@redhat.com>,
+        Sun, 22 Jan 2023 11:47:39 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2392E1C30E;
+        Sun, 22 Jan 2023 08:47:29 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id B17BF60C71;
+        Sun, 22 Jan 2023 16:47:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D688C433EF;
+        Sun, 22 Jan 2023 16:47:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1674406048;
+        bh=SvajHjiCSIBlcZUdVxMgRSWO0gJsGtBYT+mr1EHeu0o=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=HJZbJrnWcLLnDqOiDRQFyTuKeSBq7CbUfFHZzlhHwR68aZIpTBcnnH7lrVDHATIJ5
+         w/Mzn1otM7LO+JhZgcF1eRjNkHrIX6kH73HUxsbtJpGx+ipM17Qa0hyxxMfQoix/Tf
+         r1748utHDH2gwfl5+RJVcuDS4ArHPfoVaxwDRawNux1S9sdh2RCaapXMO7IYw2RywK
+         8xy5xC0S7ec1wTzznrVHpd5sWmDaTKeuBj9DX4zXAVFJbGtMB2BbVg9U+46uDVAwvb
+         mW3+T17DR98iKb/CTcKr2rU5fUJe4wEpXkmpsi/iTJG+Z0//Kr2KoAJJpvWkIqgRKh
+         kv6ZWW4lNc7Nw==
+Date:   Sun, 22 Jan 2023 17:01:05 +0000
+From:   Jonathan Cameron <jic23@kernel.org>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc:     Lars-Peter Clausen <lars@metafoo.de>,
+        Michael Hennerich <Michael.Hennerich@analog.com>,
+        Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-References: <20230121153544.467126-1-rayyan@ansari.sh>
- <20230121153544.467126-3-rayyan@ansari.sh>
- <CAL_JsqL+G=Cxkc2j_NowznpqNAnixrU+-6SdccFbpMaP6OYSqQ@mail.gmail.com>
-From:   Hans de Goede <hdegoede@redhat.com>
-In-Reply-To: <CAL_JsqL+G=Cxkc2j_NowznpqNAnixrU+-6SdccFbpMaP6OYSqQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+        Lucas Stankus <lucas.p.stankus@gmail.com>,
+        Puranjay Mohan <puranjay12@gmail.com>,
+        Dmitry Rokosov <ddrokosov@sberdevices.ru>,
+        Alexandru Tachici <alexandru.tachici@analog.com>,
+        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
+        Renato Lui Geh <renatogeh@gmail.com>,
+        Eugen Hristev <eugen.hristev@microchip.com>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>,
+        Andreas Klinger <ak@it-klinger.de>,
+        Marcus Folkesson <marcus.folkesson@gmail.com>,
+        Kent Gustavsson <kent@minoris.se>,
+        Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+        Alexandre Torgue <alexandre.torgue@foss.st.com>,
+        Oleksij Rempel <linux@rempel-privat.de>, kernel@pengutronix.de,
+        Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>,
+        Nishant Malpani <nish.malpani25@gmail.com>,
+        Rui Miguel Silva <rmfrfs@gmail.com>,
+        Dragos Bogdan <dragos.bogdan@analog.com>,
+        Jean-Baptiste Maneyrol <jmaneyrol@invensense.com>,
+        Lorenzo Bianconi <lorenzo@kernel.org>,
+        Benson Leung <bleung@chromium.org>,
+        Guenter Roeck <groeck@chromium.org>,
+        Stefan Popa <stefan.popa@analog.com>,
+        Robert Yang <decatf@gmail.com>,
+        Sean Nyekjaer <sean@geanix.com>,
+        Artur Rojek <contact@artur-rojek.eu>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Philippe Reynes <tremyfr@yahoo.fr>,
+        Alexandru Lazar <alazar@startmail.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Caleb Connolly <caleb.connolly@linaro.org>,
+        Fabrice Gasnier <fabrice.gasnier@foss.st.com>,
+        Stefan Agner <stefan@agner.ch>,
+        Daniel Baluta <daniel.baluta@nxp.com>,
+        Harald Geyer <harald@ccbib.org>,
+        Eugene Zaikonnikov <ez@norophonic.com>,
+        Phil Reid <preid@electromag.com.au>,
+        Matt Ranostay <matt.ranostay@konsulko.com>,
+        Stephen Boyd <swboyd@chromium.org>,
+        Sankar Velliangiri <navin@linumiz.com>,
+        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-renesas-soc@vger.kernel.org,
+        linux-samsung-soc@vger.kernel.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        chrome-platform@lists.linux.dev
+Subject: Re: [PATCH 3/5] dt-bindings: iio: correct node names in examples
+Message-ID: <20230122170105.6a1a9766@jic23-huawei>
+In-Reply-To: <45b9b378-6619-c47a-b5ea-6b6b7edca785@linaro.org>
+References: <20230118184413.395820-1-krzysztof.kozlowski@linaro.org>
+        <20230118184413.395820-3-krzysztof.kozlowski@linaro.org>
+        <20230121171709.5eb75e94@jic23-huawei>
+        <45b9b378-6619-c47a-b5ea-6b6b7edca785@linaro.org>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.36; x86_64-pc-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+On Sat, 21 Jan 2023 19:31:23 +0100
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
 
-On 1/22/23 16:36, Rob Herring wrote:
-> On Sat, Jan 21, 2023 at 9:36 AM Rayyan Ansari <rayyan@ansari.sh> wrote:
->>
+> On 21/01/2023 18:17, Jonathan Cameron wrote:
+> > On Wed, 18 Jan 2023 19:44:11 +0100
+> > Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> wrote:
+> >   
+> >> Do not use underscores and unneeded suffixes (e.g. i2c0) in node name in
+> >> examples.
+> >>
+> >> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> >> ---  
+> >   
+> >> diff --git a/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml b/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml
+> >> index 6c5ad426a016..12f75ddc4a70 100644
+> >> --- a/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml
+> >> +++ b/Documentation/devicetree/bindings/iio/health/ti,afe4403.yaml
+> >> @@ -42,7 +42,7 @@ examples:
+> >>          #address-cells = <1>;
+> >>          #size-cells = <0>;
+> >>  
+> >> -        heart_mon@0 {
+> >> +        heart-rate@0 {  
+> > 
+> > These are both heart-rate and pulse oximeters so measure more than just
+> > the rate (oxygen saturation in the blood). Reality is they actually
+> > measure light absorption over time, but you can calculate an estimate
+> > of both rate and oxygen saturation from that.
+> > 
+> > I don't really mind simplifying that to heart-rate, but wanted to
+> > call this out for possible discussion.  
 > 
-> Why do you need this change?
+> They could be heart-mon. The fix is mostly around the underscore. I
+> don't have any arguments for changing it to heart-rate, thus we can go
+> with whatever you prefer.
+I'm fine with either and as we have a patch with heart-rate that wins
+currently. I'll just let this sit for a little longer than
+normal to see if we get any other responses!
+
+Thanks,
+
+Jonathan
 > 
-> The 'simple-framebuffer' contains data on how the bootloader
-> configured the display. The bootloader doesn't configure the display
-> size, so this information doesn't belong here. The information should
-> already be in the panel node, so also no point in duplicating it here.
-
-The idea is that early boot code which uses the simplefb node (no more
-complex display driver loaded yet) knows the panel's DPI so that it can
-decide if hi-dpi rendering / scaling is necessary or not.
-
-This definitely is a useful feature to have.
-
-I guess that for dt systems an alternative approach could be to
-add a link to the panel node to the simplefb dt-node.
-
-Regards,
-
-Hans
-
-
+> Best regards,
+> Krzysztof
+> 
 

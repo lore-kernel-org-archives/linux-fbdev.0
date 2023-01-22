@@ -2,109 +2,106 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7C19C004D4
-	for <linux-fbdev@archiver.kernel.org>; Sat, 21 Jan 2023 19:26:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57673C25B4E
+	for <linux-fbdev@archiver.kernel.org>; Sun, 22 Jan 2023 15:31:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229766AbjAUT0V (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 21 Jan 2023 14:26:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57460 "EHLO
+        id S231475AbjAVPbq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 22 Jan 2023 10:31:46 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58418 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229967AbjAUT0R (ORCPT
+        with ESMTP id S231468AbjAVPbq (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 21 Jan 2023 14:26:17 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6E67029E02
-        for <linux-fbdev@vger.kernel.org>; Sat, 21 Jan 2023 11:25:09 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1674329097;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=t3hudovJHnxcneZUu+woal1qY/z5dLk/KSxEgxM2qkk=;
-        b=dMxE/Tu/fI30WOXMN8MsUIiZuZTQnQ/J6/5PdzzYlrINErdUGoWHizewAZ0+VTTaO3vzA1
-        t8Ir6DL8zm00FyzOMgHF6rJXmfuZq9mLWgApX3KIkW9lf30bxxdi5X5f0+6VI9srT2c0Wg
-        rIdV4y5BYYKl1shog/nL/CcO7kI03v0=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-18-0pEBg4oTMo-KKOhJwEJnKw-1; Sat, 21 Jan 2023 14:24:45 -0500
-X-MC-Unique: 0pEBg4oTMo-KKOhJwEJnKw-1
-Received: by mail-wr1-f70.google.com with SMTP id t26-20020adfa2da000000b002be9cd25e90so669874wra.11
-        for <linux-fbdev@vger.kernel.org>; Sat, 21 Jan 2023 11:24:45 -0800 (PST)
+        Sun, 22 Jan 2023 10:31:46 -0500
+Received: from mail-oi1-f173.google.com (mail-oi1-f173.google.com [209.85.167.173])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3126A23322;
+        Sun, 22 Jan 2023 07:31:38 -0800 (PST)
+Received: by mail-oi1-f173.google.com with SMTP id v17so8414401oie.5;
+        Sun, 22 Jan 2023 07:31:38 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=t3hudovJHnxcneZUu+woal1qY/z5dLk/KSxEgxM2qkk=;
-        b=fpWBK7tpob8d/TAwdrNEzDNy55wemR7RU/RADTeLK3E619jD0uWZxiQ4QxGBVTYkcN
-         K8rt0UFz/M22ulz1NU9jK57cfLSxq5RsO4zowRuwdiQ8fOkvXG+WgyRMLjHsh2VO0c1d
-         lPJW5zZeer6wh1BvkS3bntPDBA/jVBWtPfZy/hfSNmsBL2KQbMkH53apnkgLHoPFzE/L
-         Pkdym4hiKawUNa4QgWBfGQru3+d1bf6QWm9RbUWWOVBbZw9vJpKC5BLMYyLzzIu0rvH3
-         Hgz9jFjNBAE87bjuZu6mZ6IPLW/AQ+aNlk50CFLslN0MdV+RlrzWCEW+iZ+zI0ZACWDB
-         mppQ==
-X-Gm-Message-State: AFqh2kp2+QLTX7XVzlRHJsNCDogXvvguyBwdw2sU4+C71wI7RC26il/J
-        ljo2zlhKz84MHIqwSOo84obETcQvedRmAO/ogHZ3BNjJw60zO6Alcdj1YTiK2vqjRVIZjrFXQFa
-        7eWTdWYTzMnpHFua5OdIxw7U=
-X-Received: by 2002:a05:600c:3b91:b0:3d3:5c9e:6b27 with SMTP id n17-20020a05600c3b9100b003d35c9e6b27mr15020842wms.12.1674329084677;
-        Sat, 21 Jan 2023 11:24:44 -0800 (PST)
-X-Google-Smtp-Source: AMrXdXsX9USPEoSwU8E0lwBmJ+d/5/Wr2ac8HU57kLtvH6Q9yQcFpRhHXcnJcvHcD2LCoyGFM1bn+A==
-X-Received: by 2002:a05:600c:3b91:b0:3d3:5c9e:6b27 with SMTP id n17-20020a05600c3b9100b003d35c9e6b27mr15020826wms.12.1674329084475;
-        Sat, 21 Jan 2023 11:24:44 -0800 (PST)
-Received: from minerva.home (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id f14-20020a05600c154e00b003daff80f16esm8544321wmg.27.2023.01.21.11.24.43
+        h=date:subject:message-id:references:in-reply-to:cc:to:from
+         :mime-version:content-transfer-encoding:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=FZkzDMS1ZlJGneVFTqUpOfvr7Yi2qPmA1JudWoB5Wqg=;
+        b=nNKsSB5TugDXqkh8lLiYb739wt+tyIaR7+t9Ab8wFgX6BWz7oWmj8kXnrRujCMIHe+
+         qhRZItbGdsVKh0Rc+2yqEV7M5KNbv2CddLlHASGqCOAHxDlEhWqDRCVFgGARnKP9ej7E
+         1wEj6hIlEzB+I7Bj0VyjoQicjrw+oq69z2ouLDccmwKhd9zHUJ6lcYQq7hmE92nM5Cn1
+         TtAtAGqYEoFfWquQtz6aNlxfWnTgoNj8IH+xqFXEUqCtfjPEfS38mGzpVvHDTkQByBLI
+         rErgv6nZJqU71+5j9yod52ebQ7wdRq7C3tqGUFcd3zU07zkBeXdHaSTVGgZDhIyTFfE8
+         3a0A==
+X-Gm-Message-State: AFqh2kobre0RzGTBx/DiXcsws7po8pfDyi0xWyNrzXkymm3SpwyWisfK
+        9K1blrbFoRIPrORYVUq81Q==
+X-Google-Smtp-Source: AMrXdXs6x0mubg9C92n0oqZLWm6BQqgv4Go44B2qICGsMrS6njK5eu8A1Orc0x+NYVCJMr9qIjOXdQ==
+X-Received: by 2002:a05:6808:189d:b0:364:d523:e138 with SMTP id bi29-20020a056808189d00b00364d523e138mr11734098oib.32.1674401497338;
+        Sun, 22 Jan 2023 07:31:37 -0800 (PST)
+Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
+        by smtp.gmail.com with ESMTPSA id 2-20020aca0602000000b0036508145326sm10737337oig.9.2023.01.22.07.31.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 21 Jan 2023 11:24:43 -0800 (PST)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
-        Maxime Ripard <mripard@kernel.org>,
+        Sun, 22 Jan 2023 07:31:36 -0800 (PST)
+Received: (nullmailer pid 2288127 invoked by uid 1000);
+        Sun, 22 Jan 2023 15:31:35 -0000
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0
+From:   Rob Herring <robh@kernel.org>
+To:     Rayyan Ansari <rayyan@ansari.sh>
+Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        David Airlie <airlied@gmail.com>,
+        Hans de Goede <hdegoede@redhat.com>, janne@jannau.net,
+        asahi@lists.linux.dev,
         Javier Martinez Canillas <javierm@redhat.com>,
         Daniel Vetter <daniel@ffwll.ch>,
-        David Airlie <airlied@gmail.com>, Helge Deller <deller@gmx.de>,
-        Jaya Kumar <jayalk@intworks.biz>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH v2 0/3] Fixes and cleanup for DRM fbdev emulation and deferred I/O
-Date:   Sat, 21 Jan 2023 20:24:15 +0100
-Message-Id: <20230121192418.2814955-1-javierm@redhat.com>
-X-Mailer: git-send-email 2.39.0
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+        Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        dri-devel@lists.freedesktop.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+In-Reply-To: <20230121153544.467126-3-rayyan@ansari.sh>
+References: <20230121153544.467126-1-rayyan@ansari.sh>
+ <20230121153544.467126-3-rayyan@ansari.sh>
+Message-Id: <167440123887.2283488.2841716718270566192.robh@kernel.org>
+Subject: Re: [PATCH v2 2/2] dt-bindings: display: simple-framebuffer: Document
+ physical width and height properties
+Date:   Sun, 22 Jan 2023 09:31:35 -0600
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello,
 
-This patch series contains two fixes and a cleanup for things that I noticed
-while debugging a regression in the fbdev emulation for a DRM driver.
+On Sat, 21 Jan 2023 15:35:44 +0000, Rayyan Ansari wrote:
+> Signed-off-by: Rayyan Ansari <rayyan@ansari.sh>
+> ---
+>  .../devicetree/bindings/display/simple-framebuffer.yaml   | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
 
-The first two patches are trivial and shoulnd't be controversial, the third
-patch is less trivial, but it has been already reviewed by Thomas and I did
-test it to make sure that works as expected. With it, I got rid of the WARN
-that happened due a mutex used after it has been destroyed.
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
-Best regards,
-Javier
+yamllint warnings/errors:
 
-Changes in v2:
-- Re-introduce the CONFIG_FB_DEFERRED_IO ifdef guard for the @fbdefio field
-  declaration since the kernel test robot reported that's needed at the end.
+dtschema/dtc warnings/errors:
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/display/simple-framebuffer.yaml: properties:width-mm: '$ref' should not be valid under {'const': '$ref'}
+	hint: Standard unit suffix properties don't need a type $ref
+	from schema $id: http://devicetree.org/meta-schemas/core.yaml#
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/display/simple-framebuffer.yaml: properties:height-mm: '$ref' should not be valid under {'const': '$ref'}
+	hint: Standard unit suffix properties don't need a type $ref
+	from schema $id: http://devicetree.org/meta-schemas/core.yaml#
 
-Javier Martinez Canillas (3):
-  fbdev: Remove unused struct fb_deferred_io .first_io field
-  drm/fb-helper: Check fb_deferred_io_init() return value
-  drm/fb-helper: Use a per-driver FB deferred I/O handler
+doc reference errors (make refcheckdocs):
 
- drivers/gpu/drm/drm_fbdev_generic.c | 15 ++++++++-------
- drivers/video/fbdev/core/fb_defio.c |  4 ----
- include/drm/drm_fb_helper.h         | 12 ++++++++++++
- include/linux/fb.h                  |  1 -
- 4 files changed, 20 insertions(+), 12 deletions(-)
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20230121153544.467126-3-rayyan@ansari.sh
 
--- 
-2.39.0
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
 

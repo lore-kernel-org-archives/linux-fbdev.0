@@ -2,106 +2,79 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57673C25B4E
-	for <linux-fbdev@archiver.kernel.org>; Sun, 22 Jan 2023 15:31:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FF5DC25B4E
+	for <linux-fbdev@archiver.kernel.org>; Sun, 22 Jan 2023 15:37:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231475AbjAVPbq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 22 Jan 2023 10:31:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58418 "EHLO
+        id S230087AbjAVPhH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 22 Jan 2023 10:37:07 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60208 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231468AbjAVPbq (ORCPT
+        with ESMTP id S229879AbjAVPhG (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 22 Jan 2023 10:31:46 -0500
-Received: from mail-oi1-f173.google.com (mail-oi1-f173.google.com [209.85.167.173])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3126A23322;
-        Sun, 22 Jan 2023 07:31:38 -0800 (PST)
-Received: by mail-oi1-f173.google.com with SMTP id v17so8414401oie.5;
-        Sun, 22 Jan 2023 07:31:38 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=date:subject:message-id:references:in-reply-to:cc:to:from
-         :mime-version:content-transfer-encoding:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=FZkzDMS1ZlJGneVFTqUpOfvr7Yi2qPmA1JudWoB5Wqg=;
-        b=nNKsSB5TugDXqkh8lLiYb739wt+tyIaR7+t9Ab8wFgX6BWz7oWmj8kXnrRujCMIHe+
-         qhRZItbGdsVKh0Rc+2yqEV7M5KNbv2CddLlHASGqCOAHxDlEhWqDRCVFgGARnKP9ej7E
-         1wEj6hIlEzB+I7Bj0VyjoQicjrw+oq69z2ouLDccmwKhd9zHUJ6lcYQq7hmE92nM5Cn1
-         TtAtAGqYEoFfWquQtz6aNlxfWnTgoNj8IH+xqFXEUqCtfjPEfS38mGzpVvHDTkQByBLI
-         rErgv6nZJqU71+5j9yod52ebQ7wdRq7C3tqGUFcd3zU07zkBeXdHaSTVGgZDhIyTFfE8
-         3a0A==
-X-Gm-Message-State: AFqh2kobre0RzGTBx/DiXcsws7po8pfDyi0xWyNrzXkymm3SpwyWisfK
-        9K1blrbFoRIPrORYVUq81Q==
-X-Google-Smtp-Source: AMrXdXs6x0mubg9C92n0oqZLWm6BQqgv4Go44B2qICGsMrS6njK5eu8A1Orc0x+NYVCJMr9qIjOXdQ==
-X-Received: by 2002:a05:6808:189d:b0:364:d523:e138 with SMTP id bi29-20020a056808189d00b00364d523e138mr11734098oib.32.1674401497338;
-        Sun, 22 Jan 2023 07:31:37 -0800 (PST)
-Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id 2-20020aca0602000000b0036508145326sm10737337oig.9.2023.01.22.07.31.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 22 Jan 2023 07:31:36 -0800 (PST)
-Received: (nullmailer pid 2288127 invoked by uid 1000);
-        Sun, 22 Jan 2023 15:31:35 -0000
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+        Sun, 22 Jan 2023 10:37:06 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A48AE22788;
+        Sun, 22 Jan 2023 07:37:00 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id B157160C67;
+        Sun, 22 Jan 2023 15:36:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 17420C433A4;
+        Sun, 22 Jan 2023 15:36:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1674401819;
+        bh=RtN6VM53/AyRL0T6lTHmeEBHv7Z+IjaXe/djZ6ectng=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=D1qkKG4kb8gHNmXGAgMJ0NKzf1Jrt9kuF7IvFG41zjxEB07D6uK7E6qvHoEf3yAez
+         DL5zQsO9NNfp22miYOfawlS1pdkD1yU7+9Wdh+nZUNtDJdIIR5CP2WhwZNwoS09juN
+         mbrNTpp6kuhhwzXy3v4Z0Qys2YuVcojAZOdEwnUKmrk2Q7VKdpx+scIO7HbKT9bG2R
+         vi39XHLEPJY2xSPVyUQ+AzrUE6+ZA47tJArOW0tEg3jR5R9FpqPFmP86v3tC54ScCW
+         9Z7TUau7l5XMjxwyo1J+uTLvhCTQFsAPXGXJe9KkKUXGwu6Le9eZs1H3c6GvuBphSf
+         LX1519gywNuIQ==
+Received: by mail-ua1-f42.google.com with SMTP id a40so2323697uad.12;
+        Sun, 22 Jan 2023 07:36:59 -0800 (PST)
+X-Gm-Message-State: AFqh2kpy0I04yNUCBYvdh/fGu33+pHmvWXnhM9BdTCqKhxx4QWIlEOHY
+        sk2J65adtujZ7AhIqH9uJfcUn0Ng9PbqEdL0RA==
+X-Google-Smtp-Source: AMrXdXtaJGGPuSDntjhTa9IstN9+kYwGqE/HL9t8ofms18yBJ45Rqak284KVOWnfaIo98tIhMeiIZzEB2j+M3JIs2KM=
+X-Received: by 2002:ab0:1512:0:b0:5fc:a2ef:4b70 with SMTP id
+ o18-20020ab01512000000b005fca2ef4b70mr2269079uae.36.1674401817944; Sun, 22
+ Jan 2023 07:36:57 -0800 (PST)
 MIME-Version: 1.0
-From:   Rob Herring <robh@kernel.org>
-To:     Rayyan Ansari <rayyan@ansari.sh>
-Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        David Airlie <airlied@gmail.com>,
-        Hans de Goede <hdegoede@redhat.com>, janne@jannau.net,
-        asahi@lists.linux.dev,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht,
-        dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+References: <20230121153544.467126-1-rayyan@ansari.sh> <20230121153544.467126-3-rayyan@ansari.sh>
 In-Reply-To: <20230121153544.467126-3-rayyan@ansari.sh>
-References: <20230121153544.467126-1-rayyan@ansari.sh>
- <20230121153544.467126-3-rayyan@ansari.sh>
-Message-Id: <167440123887.2283488.2841716718270566192.robh@kernel.org>
+From:   Rob Herring <robh+dt@kernel.org>
+Date:   Sun, 22 Jan 2023 09:36:46 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqL+G=Cxkc2j_NowznpqNAnixrU+-6SdccFbpMaP6OYSqQ@mail.gmail.com>
+Message-ID: <CAL_JsqL+G=Cxkc2j_NowznpqNAnixrU+-6SdccFbpMaP6OYSqQ@mail.gmail.com>
 Subject: Re: [PATCH v2 2/2] dt-bindings: display: simple-framebuffer: Document
  physical width and height properties
-Date:   Sun, 22 Jan 2023 09:31:35 -0600
+To:     Rayyan Ansari <rayyan@ansari.sh>
+Cc:     dri-devel@lists.freedesktop.org,
+        ~postmarketos/upstreaming@lists.sr.ht, asahi@lists.linux.dev,
+        janne@jannau.net, Daniel Vetter <daniel@ffwll.ch>,
+        David Airlie <airlied@gmail.com>, devicetree@vger.kernel.org,
+        Hans de Goede <hdegoede@redhat.com>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+On Sat, Jan 21, 2023 at 9:36 AM Rayyan Ansari <rayyan@ansari.sh> wrote:
+>
 
-On Sat, 21 Jan 2023 15:35:44 +0000, Rayyan Ansari wrote:
+Why do you need this change?
+
+The 'simple-framebuffer' contains data on how the bootloader
+configured the display. The bootloader doesn't configure the display
+size, so this information doesn't belong here. The information should
+already be in the panel node, so also no point in duplicating it here.
+
 > Signed-off-by: Rayyan Ansari <rayyan@ansari.sh>
 > ---
 >  .../devicetree/bindings/display/simple-framebuffer.yaml   | 8 ++++++++
 >  1 file changed, 8 insertions(+)
-> 
-
-My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-on your patch (DT_CHECKER_FLAGS is new in v5.13):
-
-yamllint warnings/errors:
-
-dtschema/dtc warnings/errors:
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/display/simple-framebuffer.yaml: properties:width-mm: '$ref' should not be valid under {'const': '$ref'}
-	hint: Standard unit suffix properties don't need a type $ref
-	from schema $id: http://devicetree.org/meta-schemas/core.yaml#
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/display/simple-framebuffer.yaml: properties:height-mm: '$ref' should not be valid under {'const': '$ref'}
-	hint: Standard unit suffix properties don't need a type $ref
-	from schema $id: http://devicetree.org/meta-schemas/core.yaml#
-
-doc reference errors (make refcheckdocs):
-
-See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20230121153544.467126-3-rayyan@ansari.sh
-
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
-

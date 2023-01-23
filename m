@@ -2,89 +2,105 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 858BDC54E94
-	for <linux-fbdev@archiver.kernel.org>; Mon, 23 Jan 2023 15:10:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A87DC38142
+	for <linux-fbdev@archiver.kernel.org>; Mon, 23 Jan 2023 17:53:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231953AbjAWPKt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 23 Jan 2023 10:10:49 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37664 "EHLO
+        id S232711AbjAWRxp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 23 Jan 2023 12:53:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33042 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231547AbjAWPKt (ORCPT
+        with ESMTP id S230128AbjAWRxl (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 23 Jan 2023 10:10:49 -0500
-Received: from mail-yw1-f182.google.com (mail-yw1-f182.google.com [209.85.128.182])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D96B13521;
-        Mon, 23 Jan 2023 07:10:48 -0800 (PST)
-Received: by mail-yw1-f182.google.com with SMTP id 00721157ae682-50112511ba7so116666447b3.3;
-        Mon, 23 Jan 2023 07:10:48 -0800 (PST)
+        Mon, 23 Jan 2023 12:53:41 -0500
+Received: from mail-oa1-f41.google.com (mail-oa1-f41.google.com [209.85.160.41])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F0FA2B63F;
+        Mon, 23 Jan 2023 09:53:41 -0800 (PST)
+Received: by mail-oa1-f41.google.com with SMTP id 586e51a60fabf-15bb8ec196aso14857136fac.3;
+        Mon, 23 Jan 2023 09:53:41 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=h/bqJof5MO3pbg3UYX8cTuwpn5Rti6iDINf4SN3BEsI=;
-        b=S6dHBNTjgSrKbwbzKP6W65/OZ46qhS5oT7a6g8lmY3rxVi+FuXO3TDXs/2SMtaoxCs
-         s4U1ng/9R+a4IA4hI/+ASzollNZirnfhCIlHrIJUYMgIVsyiCf4kvYi02O43WsULwKpO
-         32kyuidA7cm4HdD33Hu2lU/IBB33db6gJ92Oey/VrmMB+XgNsmOiV1BFxSOyaExrMEgu
-         ZC9ynux3AygJqPPU+4P3Ql4IybHX9DA/1Q3fvx6tmNa1inDHKBBn6EDcvItkfvnSRzzK
-         VetiTuqYrhEnifjrEh8ATmyvcjZYkGsr0WbMs2hVGWj9gG6a/G/Xgl6cLdJiFL+dWwTX
-         acEQ==
-X-Gm-Message-State: AFqh2krnlmt+oXIcEuMsSjs8pyx9luOI0wNwk+Yj7b2a7GR1yOKwrKVB
-        NCLjawinTfYk9bwevU1zHK4M5GFGKsPVDQ==
-X-Google-Smtp-Source: AMrXdXuByoLCN6ljNUdv0ZqdUQ6MDymJvPowrThRFf9GPZtY4cNLskM6vvV1DIAAKTXvG3G+CsQHYQ==
-X-Received: by 2002:a05:7500:20ce:b0:f1:c647:cb45 with SMTP id u14-20020a05750020ce00b000f1c647cb45mr1869449gau.44.1674486647057;
-        Mon, 23 Jan 2023 07:10:47 -0800 (PST)
-Received: from mail-yw1-f179.google.com (mail-yw1-f179.google.com. [209.85.128.179])
-        by smtp.gmail.com with ESMTPSA id g16-20020a05620a40d000b006fc3fa1f589sm10371803qko.114.2023.01.23.07.10.46
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 23 Jan 2023 07:10:46 -0800 (PST)
-Received: by mail-yw1-f179.google.com with SMTP id 00721157ae682-4b718cab0e4so175660097b3.9;
-        Mon, 23 Jan 2023 07:10:46 -0800 (PST)
-X-Received: by 2002:a0d:e657:0:b0:4d9:3858:392 with SMTP id
- p84-20020a0de657000000b004d938580392mr2080328ywe.502.1674486646123; Mon, 23
- Jan 2023 07:10:46 -0800 (PST)
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=HezRXXIQxXPtMIWpEGs9XWajQCD0kCzEdwMP0szra1Y=;
+        b=3MGI6Q9b8sVl0hYcQnTxHzKE1KgPhH0TWtLA720zr1BCowOm0NGOsg8k8UCdg87XQz
+         J73MFFN77vEY6qd04/Ux+DXPT0hTgvenIUoCfoSSAnzp4DlvJpZw+50nAvLYQxfwfhO2
+         /8ba8OSJUqJGpTwU13cD0PcRhmtBjZKqg+z76hSuSV07e35PMaKDibG3C8i1PbFVOJUn
+         qnt2jEl23Ax1VIoh3Gy4wOa1KRCMXSG8wcYXDRdZJ3rs3Ed4VRXRwoR9u0Qm+rGvG/P0
+         35xu7itvDKjSMcItzDRRIKw+757xiFI0y9koHnsSC+k2xWgCZexQk+QrzlWGaXXqJkBz
+         gl1A==
+X-Gm-Message-State: AFqh2kp1aH2NzrX2RqxSp/CvqXGEJjWw2lurgke1J4QzlrjuYPlaD6g2
+        NCsYJkwLzFZsS3D+LuuIzA==
+X-Google-Smtp-Source: AMrXdXsdPNG8TH0x+2IAyk2abcc9M+PaIG7GDMdhZabCSwFyK7idZOfBF+6vwpZb+UKigpv5r9mK7g==
+X-Received: by 2002:a05:6870:494b:b0:143:e045:7082 with SMTP id fl11-20020a056870494b00b00143e0457082mr12913559oab.58.1674496420250;
+        Mon, 23 Jan 2023 09:53:40 -0800 (PST)
+Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
+        by smtp.gmail.com with ESMTPSA id bd36-20020a056808222400b00364ebf27363sm15742oib.0.2023.01.23.09.53.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 23 Jan 2023 09:53:39 -0800 (PST)
+Received: (nullmailer pid 2113958 invoked by uid 1000);
+        Mon, 23 Jan 2023 17:53:39 -0000
+Date:   Mon, 23 Jan 2023 11:53:39 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Rayyan Ansari <rayyan@ansari.sh>
+Cc:     dri-devel@lists.freedesktop.org,
+        ~postmarketos/upstreaming@lists.sr.ht, asahi@lists.linux.dev,
+        janne@jannau.net, Daniel Vetter <daniel@ffwll.ch>,
+        David Airlie <airlied@gmail.com>, devicetree@vger.kernel.org,
+        Hans de Goede <hdegoede@redhat.com>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH v2 2/2] dt-bindings: display: simple-framebuffer:
+ Document physical width and height properties
+Message-ID: <20230123175339.GA2019900-robh@kernel.org>
+References: <20230121153544.467126-1-rayyan@ansari.sh>
+ <20230121153544.467126-3-rayyan@ansari.sh>
+ <CAL_JsqL+G=Cxkc2j_NowznpqNAnixrU+-6SdccFbpMaP6OYSqQ@mail.gmail.com>
+ <cdf32cb0-4529-6bbd-fdda-ae641d141ee5@ansari.sh>
 MIME-Version: 1.0
-References: <cover.1669406380.git.geert@linux-m68k.org> <a9883a81-d909-09c5-708b-d598e030380e@physik.fu-berlin.de>
-In-Reply-To: <a9883a81-d909-09c5-708b-d598e030380e@physik.fu-berlin.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 23 Jan 2023 16:10:33 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdWHUnWBN7ddBow+fqmt8W--9wFe5x_YMeRg7GQ=BNAL2Q@mail.gmail.com>
-Message-ID: <CAMuHMdWHUnWBN7ddBow+fqmt8W--9wFe5x_YMeRg7GQ=BNAL2Q@mail.gmail.com>
-Subject: Re: [PATCH/RFC 0/3] Atari DRM driver
-To:     John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        Michael Schmitz <schmitzmic@gmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cdf32cb0-4529-6bbd-fdda-ae641d141ee5@ansari.sh>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Adrian,
+On Sun, Jan 22, 2023 at 05:25:38PM +0000, Rayyan Ansari wrote:
+> On 22/01/2023 15:36, Rob Herring wrote:
+> > On Sat, Jan 21, 2023 at 9:36 AM Rayyan Ansari <rayyan@ansari.sh> wrote:
+> > > 
+> > 
+> > Why do you need this change?
+> > 
+> > The 'simple-framebuffer' contains data on how the bootloader
+> > configured the display. The bootloader doesn't configure the display
+> > size, so this information doesn't belong here. The information should
+> > already be in the panel node, so also no point in duplicating it here.
+> > 
+> > > Signed-off-by: Rayyan Ansari <rayyan@ansari.sh>
+> > > ---
+> > >   .../devicetree/bindings/display/simple-framebuffer.yaml   | 8 ++++++++
+> > >   1 file changed, 8 insertions(+)
+> 
+> Hi Rob,
+> 
+> There is the usecase that Hans has mentioned, but I have also mentioned
+> another usecase previously.
+> 
+> Adding the width-mm and height-mm properties allows user interfaces such as
+> Phosh (https://puri.sm/posts/phosh-overview/) to scale correctly to the
+> screen. In my case, a panel node is not available and the aforementioned
+> interface is in fact running on the SimpleDRM driver (which binds to the
+> simple-framebuffer device).
 
-On Mon, Jan 23, 2023 at 4:09 PM John Paul Adrian Glaubitz
-<glaubitz@physik.fu-berlin.de> wrote:
-> On 11/25/22 21:31, Geert Uytterhoeven wrote:
-> > This RFC patch series adds a DRM driver for the good old Atari
-> > ST/TT/Falcon hardware.  It was developed and tested (only) on the ARAnyM
-> > emulator.
->
-> I just remembered this WIP driver. Has there been any progress?
+Why is the panel node not available? Why not add it? Presumably it is 
+not there because you aren't (yet) using the simple-panel driver (and 
+others that would need). But presumably you will eventually as I'd 
+imagine turning the screen off and back on might be a desired feature.
 
-So far no further progress.
+So why add a temporary DT property that's tied to your *current* kernel? 
+The DT should not be tightly coupled to the kernel.
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Rob

@@ -2,56 +2,65 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AFCDC05027
-	for <linux-fbdev@archiver.kernel.org>; Mon, 23 Jan 2023 20:47:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2637C61D97
+	for <linux-fbdev@archiver.kernel.org>; Tue, 24 Jan 2023 01:54:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231565AbjAWUrI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 23 Jan 2023 15:47:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47168 "EHLO
+        id S231848AbjAXByj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 23 Jan 2023 20:54:39 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34344 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229557AbjAWUrH (ORCPT
+        with ESMTP id S229627AbjAXByi (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 23 Jan 2023 15:47:07 -0500
-Received: from mail-oi1-f172.google.com (mail-oi1-f172.google.com [209.85.167.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0FAB330D8;
-        Mon, 23 Jan 2023 12:47:07 -0800 (PST)
-Received: by mail-oi1-f172.google.com with SMTP id o66so11495743oia.6;
-        Mon, 23 Jan 2023 12:47:07 -0800 (PST)
+        Mon, 23 Jan 2023 20:54:38 -0500
+Received: from mail-ot1-x333.google.com (mail-ot1-x333.google.com [IPv6:2607:f8b0:4864:20::333])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C7D1E39BA3;
+        Mon, 23 Jan 2023 17:54:31 -0800 (PST)
+Received: by mail-ot1-x333.google.com with SMTP id n24-20020a0568301e9800b006865671a9d5so8422067otr.6;
+        Mon, 23 Jan 2023 17:54:31 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=1SIlV76DVxeq/C35+t24zRKgN1DEZm4VgHWvTfe7RPk=;
+        b=l7NNGsr1JQuzUnc25Wtd9Awtmf42my7g2nvhiZ0bzAIgkjx6lp88NC5FHN7pPgY82k
+         G542R43Ae3PgKGJh1Cs5N3kgZrdwccgTwEquohn8UL+0w2Mm8KZoVhQLSiSAi+Ixjrix
+         Rjpo/AGoTe7VNNmIEOM8ujjMoLam1cMsaId4YrJ8TmzGR3PYNCO/lmyQgrKrtEnBIOpi
+         e6jWB0NLfojhUcOftYFok+T6clN0RR1YMmvzXpJlItmt6SMUsvBThcYtLLjkmGyD/1UG
+         6NUXH77gXICtHggfPzx/oCL65F+AdQkxevZSNAEDgXzCv2ifhndexxbmSk7RtPeqEn8T
+         e5xg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=+xLghjk06txc21TL6jUAE/A4E0QaZ29dI9auCG3vhDo=;
-        b=oTEcqczFiN5jxg/P7GcqsCUG+E4uilhYhyih43N+zQeTUegrU/X/UIED8NW1+m6GSL
-         6ys7T4K+hTLrMAYOqVNv4UwVOFegnKpOJ00DD8Y988aWRIXwtvDg+cvT3kaYg4XVRDvu
-         nunmchn65qGxqs6V8FJ1/G8oNKco3Somf3WQkr6mNgb+RmAchPLjHyPe3LB7RqafX/J0
-         NiMuaWbw9Khso4CA4Vmo7a5q9XKoIsBkQ9kBbW42bujezOJeda0rkBt72JorALYXUrAb
-         WrewJPvO2s3KieujwJzGQ4Ni0RQyf4ZIEQ/mMLA1IDwRoqXIPYUO91Gj5v6g0auqmqZi
-         7eHg==
-X-Gm-Message-State: AFqh2kqK0SUp3+h6u4AZ8hp4KHEcRyItfGAXnVzOSVdpe24hcslZpSnI
-        WIB8DJBEprTZuKdYJHE9sA==
-X-Google-Smtp-Source: AMrXdXs0GdZyBepqCdjPw6vuhi4kiXTC6MdsciMg0KU1dm35ma/15bsTbV/dQtJ+tboBuLEeFGalFQ==
-X-Received: by 2002:aca:6205:0:b0:365:648:3a5d with SMTP id w5-20020aca6205000000b0036506483a5dmr12623568oib.42.1674506826206;
-        Mon, 23 Jan 2023 12:47:06 -0800 (PST)
-Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id i11-20020aca2b0b000000b00369a721732asm155293oik.41.2023.01.23.12.47.03
+        bh=1SIlV76DVxeq/C35+t24zRKgN1DEZm4VgHWvTfe7RPk=;
+        b=bEedwFrNbgY5o0Ol8yMOPqAcRJkhMpNEIll8tsYchpsYEXBbgtXaoQNPucFqaktPWi
+         O+fKJuxyV/6qnTxMuAnWjU6EpkDz28apZMfiulD5KKErGjkVZr/o21INQDV+ldv9SvqH
+         +bKTvI4aGP1+FCoO365x/mIwfSLG0RE1FUelxi63QZlmPIhO6ogLYcrelx2FscdIdSGy
+         femZEfTVOLpOxBp4buuA0t8yZv9SX0QI7i5u2bYjqiRVFEV7JxL0lJUMAr4mrPvPZCvV
+         XSBb9yLWFviRHKem2wD5U4RIgCxr5I/abJfSRq8HS6LDgxXAGkyg1jOE+Pmxb3+97jgO
+         I7kg==
+X-Gm-Message-State: AFqh2kqOzV3j+j+odKnhYPQ7GT8lj8+Nn2/N86iQWyGM7RsKR5/vYMBC
+        jUdTb84CYOjkPRU/G6Rg5Zc=
+X-Google-Smtp-Source: AMrXdXv0I+2WnACwWrMr9nYYPOZnq5pzy3Uspbg1ghHol1K/v8O+Swkxm8uHb0X/rKx0GxMcZRtRrA==
+X-Received: by 2002:a05:6830:18e6:b0:67f:e4ff:2996 with SMTP id d6-20020a05683018e600b0067fe4ff2996mr11221961otf.12.1674525271116;
+        Mon, 23 Jan 2023 17:54:31 -0800 (PST)
+Received: from localhost ([2804:30c:b10:f300:3241:5b01:98c4:5294])
+        by smtp.gmail.com with ESMTPSA id s13-20020a05683004cd00b00686543d0f04sm393165otd.21.2023.01.23.17.54.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Jan 2023 12:47:05 -0800 (PST)
-Received: (nullmailer pid 2494593 invoked by uid 1000);
-        Mon, 23 Jan 2023 20:47:03 -0000
-Date:   Mon, 23 Jan 2023 14:47:03 -0600
-From:   Rob Herring <robh@kernel.org>
+        Mon, 23 Jan 2023 17:54:30 -0800 (PST)
+Date:   Mon, 23 Jan 2023 22:54:23 -0300
+From:   Marcelo Schmitt <marcelo.schmitt1@gmail.com>
 To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Cc:     Lars-Peter Clausen <lars@metafoo.de>,
         Michael Hennerich <Michael.Hennerich@analog.com>,
         Jonathan Cameron <jic23@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Lucas Stankus <lucas.p.stankus@gmail.com>,
         Puranjay Mohan <puranjay12@gmail.com>,
         Dmitry Rokosov <ddrokosov@sberdevices.ru>,
         Alexandru Tachici <alexandru.tachici@analog.com>,
-        Marcelo Schmitt <marcelo.schmitt1@gmail.com>,
         Renato Lui Geh <renatogeh@gmail.com>,
         Eugen Hristev <eugen.hristev@microchip.com>,
         Nicolas Ferre <nicolas.ferre@microchip.com>,
@@ -65,7 +74,7 @@ Cc:     Lars-Peter Clausen <lars@metafoo.de>,
         Maxime Coquelin <mcoquelin.stm32@gmail.com>,
         Alexandre Torgue <alexandre.torgue@foss.st.com>,
         Oleksij Rempel <linux@rempel-privat.de>, kernel@pengutronix.de,
-        =?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>,
+        Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
         Nishant Malpani <nish.malpani25@gmail.com>,
         Rui Miguel Silva <rmfrfs@gmail.com>,
         Dragos Bogdan <dragos.bogdan@analog.com>,
@@ -98,39 +107,42 @@ Cc:     Lars-Peter Clausen <lars@metafoo.de>,
         linux-samsung-soc@vger.kernel.org,
         linux-stm32@st-md-mailman.stormreply.com,
         chrome-platform@lists.linux.dev
-Subject: Re: [PATCH 5/5] dt-bindings: iio: cleanup examples - indentation
-Message-ID: <20230123204703.GA2479312-robh@kernel.org>
+Subject: Re: [PATCH 1/5] dt-bindings: iio: drop unneeded quotes
+Message-ID: <Y886T3/2Gu0k7XQN@marsc.168.1.7>
 References: <20230118184413.395820-1-krzysztof.kozlowski@linaro.org>
- <20230118184413.395820-5-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230118184413.395820-5-krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20230118184413.395820-1-krzysztof.kozlowski@linaro.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Jan 18, 2023 at 07:44:13PM +0100, Krzysztof Kozlowski wrote:
-> Use 4-space indentation (for cases when it is neither 4 not 2 space).
+On 01/18, Krzysztof Kozlowski wrote:
+> Cleanup by removing unneeded quotes from refs and redundant blank lines.
+> No functional impact except adjusting to preferred coding style.
 > 
 > Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 > ---
+>  .../devicetree/bindings/iio/accel/memsensing,msa311.yaml  | 5 ++---
+>  Documentation/devicetree/bindings/iio/adc/adi,ad7124.yaml | 2 +-
+>  Documentation/devicetree/bindings/iio/adc/adi,ad7292.yaml | 2 +-
+>  .../devicetree/bindings/iio/adc/atmel,sama5d2-adc.yaml    | 2 +-
+>  Documentation/devicetree/bindings/iio/adc/avia-hx711.yaml | 4 ++--
+>  .../devicetree/bindings/iio/adc/ingenic,adc.yaml          | 4 ++--
+>  .../devicetree/bindings/iio/adc/microchip,mcp3911.yaml    | 4 ++--
+>  .../devicetree/bindings/iio/adc/renesas,rzg2l-adc.yaml    | 2 +-
+>  .../devicetree/bindings/iio/adc/samsung,exynos-adc.yaml   | 2 +-
+>  .../devicetree/bindings/iio/adc/st,stm32-adc.yaml         | 8 ++++----
+>  .../devicetree/bindings/iio/adc/ti,ads131e08.yaml         | 2 +-
+>  Documentation/devicetree/bindings/iio/adc/ti,tsc2046.yaml | 2 +-
+>  .../devicetree/bindings/iio/dac/lltc,ltc1660.yaml         | 4 ++--
+>  .../devicetree/bindings/iio/dac/lltc,ltc2632.yaml         | 4 ++--
+>  .../devicetree/bindings/iio/dac/st,stm32-dac.yaml         | 4 ++--
+>  Documentation/devicetree/bindings/iio/imu/st,lsm6dsx.yaml | 2 +-
+>  .../devicetree/bindings/iio/temperature/ti,tmp117.yaml    | 6 +++---
+>  17 files changed, 29 insertions(+), 30 deletions(-)
+> 
 
-[...]
-
-> diff --git a/Documentation/devicetree/bindings/iio/adc/adi,ad7192.yaml b/Documentation/devicetree/bindings/iio/adc/adi,ad7192.yaml
-> index 1d965124c488..04b12146959e 100644
-> --- a/Documentation/devicetree/bindings/iio/adc/adi,ad7192.yaml
-> +++ b/Documentation/devicetree/bindings/iio/adc/adi,ad7192.yaml
-> @@ -120,5 +120,5 @@ examples:
->          adi,rejection-60-Hz-enable;
->          adi,buffer-enable;
->          adi,burnout-currents-enable;
-> -        };
-> +      };
-
-Indentation needs adjusting.
-
-Otherwise,
-
-Acked-by: Rob Herring <robh@kernel.org>
+For adi,ad7292.yaml
+Acked-by: Marcelo Schmitt <marcelo.schmitt1@gmail.com>

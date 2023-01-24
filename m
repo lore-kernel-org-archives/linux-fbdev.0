@@ -2,100 +2,91 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCBAEC25B4E
-	for <linux-fbdev@archiver.kernel.org>; Tue, 24 Jan 2023 10:10:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BEF1C54E94
+	for <linux-fbdev@archiver.kernel.org>; Tue, 24 Jan 2023 17:23:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233711AbjAXKK7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 24 Jan 2023 05:10:59 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50790 "EHLO
+        id S234481AbjAXRXx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 24 Jan 2023 12:23:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57224 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233709AbjAXKK6 (ORCPT
+        with ESMTP id S233776AbjAXRXw (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 24 Jan 2023 05:10:58 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5258F6EB3
-        for <linux-fbdev@vger.kernel.org>; Tue, 24 Jan 2023 02:10:05 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1674555004;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=bFDK+kFH8HIC/TzW1KCoOg355Vt7UsVPru6vlXZw2AA=;
-        b=RKYI5nJ54GYnhQr8K+8GVdM3m9W03/94vqw/V2YdN/sAqGpLmaAHsmER0G9LXMGUQzZ3qz
-        CaoATN2WkXqeomOxj+Fk2hd0AywoijUs3skh8Jlvllnl4pZ4uh7UD4n1WSJrp0uecMH0UB
-        URNiclil1qznMk+IjfS2kndwqfBDBDI=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-486-Cl4GuD4fOK6FCcpMreA7gg-1; Tue, 24 Jan 2023 05:10:02 -0500
-X-MC-Unique: Cl4GuD4fOK6FCcpMreA7gg-1
-Received: by mail-wm1-f70.google.com with SMTP id c7-20020a1c3507000000b003d355c13ba8so8950591wma.6
-        for <linux-fbdev@vger.kernel.org>; Tue, 24 Jan 2023 02:10:02 -0800 (PST)
+        Tue, 24 Jan 2023 12:23:52 -0500
+Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BEFDE4A1CD
+        for <linux-fbdev@vger.kernel.org>; Tue, 24 Jan 2023 09:23:51 -0800 (PST)
+Received: by mail-pf1-x42a.google.com with SMTP id 207so11670707pfv.5
+        for <linux-fbdev@vger.kernel.org>; Tue, 24 Jan 2023 09:23:51 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=cc:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=+0nNRfjCiY62cIhTLLxOILNdEmv43GkeGwDLJSgq+54=;
+        b=KERHFJmysDcwQBNOAlN+gp+2jnAw1CcO6J+pAe7fa0lKM6lW7VtVXnn4RZvxq0fiS0
+         0rtGgZP32STP5sXxbA2Vsy/jF1jcF1aDH0vWlP3WvE90aQyvLVtiAMo7Pzrx8osxm7fk
+         9JRWfI+N4FVB3ogvKeivLJbrht/WgeO13d93xTmHNm3vXsBQIN3cYlOQXjcI1zBIBUvT
+         p3cis2Kf8ytsKJgZhjlBRTSbLxhw4qBIPgIgfTtNi9Ncs0b/zOaAWatfRhggXrydj5sg
+         1JB7vPwGLEyY/OzQb+3nbtuNVKo6qamJNPS6Zj3QrVHUd5DTQg6DkWgF20IONQk12qM0
+         L6uA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=bFDK+kFH8HIC/TzW1KCoOg355Vt7UsVPru6vlXZw2AA=;
-        b=NuOfH5Yeb3ZHD0CfXZlFdJRVO2KwzFs6eHJB1LbxUM2pnwhvBb0fVCWCIMhaA1bIdz
-         J3ehN+MTM4TMBU8LUhwbjP8hgHQ42Jmy5oaXTrWNlrowhjkXEosGo+tAXLpJKPRL953c
-         5olI3tT/Yf6SDK0Q1o8/4eHAofXy1tKGnw8+egDjhmsBXerVFhK74VVpNISatppyTdFU
-         VfGgVcwtXw75ToQfJGILNmg4eBT+my+pTXacmFG7ouFBO/pc3C4jT36a+MO/2DyI7WQQ
-         9P+tvdzP+w6WAvHC9CxHh+A/micEO40v0rGXpz6NdOCA7wCrjvw5KFRY0iJwbOT82KnG
-         QPjQ==
-X-Gm-Message-State: AO0yUKWpb/Kuuu5hIshYmAmGnxdAJXo7XHVnfgnWKG4uwf3Jec+uIoJN
-        hSetPHIVnM1SoUs88svCL9eawNlMGaFJANhxUQEa9yDitpsVOxlH7HmH776Ylp2+cVy/HT0CwCO
-        p0f5JIXsy9C5XnOCFj4zJ7oE=
-X-Received: by 2002:adf:ce04:0:b0:2bf:ae15:5950 with SMTP id p4-20020adfce04000000b002bfae155950mr2064114wrn.20.1674555001389;
-        Tue, 24 Jan 2023 02:10:01 -0800 (PST)
-X-Google-Smtp-Source: AK7set8JCDaZ6+VVJYdKA3bFSsDgu6eawmj4lpdDSlBDI/rz3pyQULfDuvWJ7TNd2EQjXNI5XGujFw==
-X-Received: by 2002:adf:ce04:0:b0:2bf:ae15:5950 with SMTP id p4-20020adfce04000000b002bfae155950mr2064099wrn.20.1674555001179;
-        Tue, 24 Jan 2023 02:10:01 -0800 (PST)
-Received: from [192.168.1.130] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id j13-20020a5d604d000000b002bddd75a83fsm1538673wrt.8.2023.01.24.02.09.59
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 24 Jan 2023 02:10:00 -0800 (PST)
-Message-ID: <03881b6b-baeb-0e23-5e5d-e625b52366bd@redhat.com>
-Date:   Tue, 24 Jan 2023 11:09:59 +0100
+        h=cc:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=+0nNRfjCiY62cIhTLLxOILNdEmv43GkeGwDLJSgq+54=;
+        b=uNMj4kQJ0RfxDTT/1xdbHaJw5Lm7UsOkZ70uwqS8JstIHMhcNvv6z/9g/Oxx7E0x5D
+         sae+D/RAzoZkAqKCvIJJeIwzvHxYusiRt4QotylDtAKYaB5bJ4V85zpal6OTCh688AkF
+         /rl6TfcxeXLpEtkPxFr8IzIkpme8Mr/2r19S+FFa5MPpyldT36eyBFRNg7KlA41Awnji
+         dqstUq4WMZtDqx/2ZrTu5lQCmLfHmB4ja9NFLwgU7d8jXgIQyJQpv5yW4bz/6atSIoqd
+         EU2W5C9Z53RzNM6fj+dwd4NVrAtMKzOz0RfkuX2CeqsARsPSLuf4E8e2oaYz6a1g6LD4
+         snfA==
+X-Gm-Message-State: AFqh2kon9tKB/jC/Aew5aLPQjI7BLXRAuRFvDjrHjC22QTMed5GvWXjU
+        zTx+kG4/FCa6ggAMq9bLX/s5Fa4WxnmFd2fhQZQ=
+X-Received: by 2002:a05:6a00:b96:b0:58d:b8f6:6f6d with SMTP id
+ g22-20020a056a000b9600b0058db8f66f6dmt4962857pfj.32.1674581031297; Tue, 24
+ Jan 2023 09:23:51 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.0
-Subject: Re: [PATCH v2 1/3] fbdev: Remove unused struct fb_deferred_io
- .first_io field
-Content-Language: en-US
-To:     linux-kernel@vger.kernel.org
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        Jaya Kumar <jayalk@intworks.biz>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20230121192418.2814955-1-javierm@redhat.com>
- <20230121192418.2814955-2-javierm@redhat.com>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <20230121192418.2814955-2-javierm@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+From:   novenary <streetwalkermc@gmail.com>
+Date:   Tue, 24 Jan 2023 19:23:40 +0200
+Message-ID: <CANnEQ3Ef5-XRSVL=RCBuKKhR0oZF+SO2BSSiBigZOyjMeQ7f_g@mail.gmail.com>
+Subject: fbcon font is reset after GPU is loaded
+Cc:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+To:     unlisted-recipients:; (no To-header on input)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/21/23 20:24, Javier Martinez Canillas wrote:
-> This optional callback was added in the commit 1f45f9dbb392 ("fb_defio:
-> add first_io callback") but it was never used by a driver. Let's remove
-> it since it's unlikely that will be used after a decade that was added.
-> 
-> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
-> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
+Hi,
 
-Pushed this to drm-misc (drm-misc-next). Thanks!
+This appears to be a pretty common problem. systemd includes a udev
+rule[1] which loads a console font from userspace, using setfont from
+the kbd package, when a vtcon device is added. According to udev debug
+logs, this event only fires once.
 
--- 
-Best regards,
+This actually works fine all the way until the GPU driver is loaded,
+after which the console is reverted to the default kernel font. My
+understanding from skimming the code in fbcon.c is that fonts should
+be persisted from one instance to the next.
 
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+I can reproduce this on both of my machines, one with an AMD Polaris
+GPU, and one with Intel integrated graphics (Kaby Lake R).
 
+As discussed in [2], it seems the only reliable way to change the
+console font at the moment is to ensure that the graphics driver is
+loaded before udev starts, but I don't believe this is an acceptable
+or even correct solution.
+
+Am I missing something? It would be really helpful if someone could
+shed light on why this is happening.
+
+[1] https://github.com/systemd/systemd/blob/main/rules.d/90-vconsole.rules.in
+[2] https://github.com/NixOS/nixpkgs/issues/202846
+
+Thanks in advance,
+novenary

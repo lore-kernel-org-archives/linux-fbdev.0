@@ -2,91 +2,108 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BEF1C54E94
-	for <linux-fbdev@archiver.kernel.org>; Tue, 24 Jan 2023 17:23:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1EB4C54E94
+	for <linux-fbdev@archiver.kernel.org>; Tue, 24 Jan 2023 22:19:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234481AbjAXRXx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 24 Jan 2023 12:23:53 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57224 "EHLO
+        id S234431AbjAXWTQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 24 Jan 2023 17:19:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50516 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233776AbjAXRXw (ORCPT
+        with ESMTP id S229779AbjAXWTP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 24 Jan 2023 12:23:52 -0500
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BEFDE4A1CD
-        for <linux-fbdev@vger.kernel.org>; Tue, 24 Jan 2023 09:23:51 -0800 (PST)
-Received: by mail-pf1-x42a.google.com with SMTP id 207so11670707pfv.5
-        for <linux-fbdev@vger.kernel.org>; Tue, 24 Jan 2023 09:23:51 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=cc:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=+0nNRfjCiY62cIhTLLxOILNdEmv43GkeGwDLJSgq+54=;
-        b=KERHFJmysDcwQBNOAlN+gp+2jnAw1CcO6J+pAe7fa0lKM6lW7VtVXnn4RZvxq0fiS0
-         0rtGgZP32STP5sXxbA2Vsy/jF1jcF1aDH0vWlP3WvE90aQyvLVtiAMo7Pzrx8osxm7fk
-         9JRWfI+N4FVB3ogvKeivLJbrht/WgeO13d93xTmHNm3vXsBQIN3cYlOQXjcI1zBIBUvT
-         p3cis2Kf8ytsKJgZhjlBRTSbLxhw4qBIPgIgfTtNi9Ncs0b/zOaAWatfRhggXrydj5sg
-         1JB7vPwGLEyY/OzQb+3nbtuNVKo6qamJNPS6Zj3QrVHUd5DTQg6DkWgF20IONQk12qM0
-         L6uA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:subject:message-id:date:from:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=+0nNRfjCiY62cIhTLLxOILNdEmv43GkeGwDLJSgq+54=;
-        b=uNMj4kQJ0RfxDTT/1xdbHaJw5Lm7UsOkZ70uwqS8JstIHMhcNvv6z/9g/Oxx7E0x5D
-         sae+D/RAzoZkAqKCvIJJeIwzvHxYusiRt4QotylDtAKYaB5bJ4V85zpal6OTCh688AkF
-         /rl6TfcxeXLpEtkPxFr8IzIkpme8Mr/2r19S+FFa5MPpyldT36eyBFRNg7KlA41Awnji
-         dqstUq4WMZtDqx/2ZrTu5lQCmLfHmB4ja9NFLwgU7d8jXgIQyJQpv5yW4bz/6atSIoqd
-         EU2W5C9Z53RzNM6fj+dwd4NVrAtMKzOz0RfkuX2CeqsARsPSLuf4E8e2oaYz6a1g6LD4
-         snfA==
-X-Gm-Message-State: AFqh2kon9tKB/jC/Aew5aLPQjI7BLXRAuRFvDjrHjC22QTMed5GvWXjU
-        zTx+kG4/FCa6ggAMq9bLX/s5Fa4WxnmFd2fhQZQ=
-X-Received: by 2002:a05:6a00:b96:b0:58d:b8f6:6f6d with SMTP id
- g22-20020a056a000b9600b0058db8f66f6dmt4962857pfj.32.1674581031297; Tue, 24
- Jan 2023 09:23:51 -0800 (PST)
+        Tue, 24 Jan 2023 17:19:15 -0500
+Received: from out2.migadu.com (out2.migadu.com [188.165.223.204])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B03073E0B3;
+        Tue, 24 Jan 2023 14:19:13 -0800 (PST)
+Message-ID: <3d448210-e9d2-b0ee-e009-535bb0bb760d@ansari.sh>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ansari.sh; s=key1;
+        t=1674598751;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=K+v7CuIhOoILRppgHxxh5e1k2L4tbU2G1qFmuWYmc0o=;
+        b=CQ8g72/Wf+xIuT5nOyeQfhWCNcSF/isB0ieb/e5+Q/+bR1GXUaj5KYvoVTqC5yZqAP8wEt
+        cFD2I+uiPnRE7yqxGmG7kYtZ7PFY646XRm2ePLhEoOUFxxDSqiYFM1iINlIC4bQ62AVKGK
+        mTAkqoNStMMUcaVFHbv2+2gBy7un5iY=
+Date:   Tue, 24 Jan 2023 22:19:09 +0000
 MIME-Version: 1.0
-From:   novenary <streetwalkermc@gmail.com>
-Date:   Tue, 24 Jan 2023 19:23:40 +0200
-Message-ID: <CANnEQ3Ef5-XRSVL=RCBuKKhR0oZF+SO2BSSiBigZOyjMeQ7f_g@mail.gmail.com>
-Subject: fbcon font is reset after GPU is loaded
-Cc:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-To:     unlisted-recipients:; (no To-header on input)
+Subject: Re: [PATCH v2 2/2] dt-bindings: display: simple-framebuffer: Document
+ physical width and height properties
+Content-Language: en-US
+To:     Rob Herring <robh@kernel.org>
+Cc:     dri-devel@lists.freedesktop.org,
+        ~postmarketos/upstreaming@lists.sr.ht, asahi@lists.linux.dev,
+        janne@jannau.net, Daniel Vetter <daniel@ffwll.ch>,
+        David Airlie <airlied@gmail.com>, devicetree@vger.kernel.org,
+        Hans de Goede <hdegoede@redhat.com>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+References: <20230121153544.467126-1-rayyan@ansari.sh>
+ <20230121153544.467126-3-rayyan@ansari.sh>
+ <CAL_JsqL+G=Cxkc2j_NowznpqNAnixrU+-6SdccFbpMaP6OYSqQ@mail.gmail.com>
+ <cdf32cb0-4529-6bbd-fdda-ae641d141ee5@ansari.sh>
+ <20230123175339.GA2019900-robh@kernel.org>
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From:   Rayyan Ansari <rayyan@ansari.sh>
+In-Reply-To: <20230123175339.GA2019900-robh@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Migadu-Flow: FLOW_OUT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+On 23/01/2023 17:53, Rob Herring wrote:
+> On Sun, Jan 22, 2023 at 05:25:38PM +0000, Rayyan Ansari wrote:
+>> On 22/01/2023 15:36, Rob Herring wrote:
+>>> On Sat, Jan 21, 2023 at 9:36 AM Rayyan Ansari <rayyan@ansari.sh> wrote:
+>>>>
+>>>
+>>> Why do you need this change?
+>>>
+>>> The 'simple-framebuffer' contains data on how the bootloader
+>>> configured the display. The bootloader doesn't configure the display
+>>> size, so this information doesn't belong here. The information should
+>>> already be in the panel node, so also no point in duplicating it here.
+>>>
+>>>> Signed-off-by: Rayyan Ansari <rayyan@ansari.sh>
+>>>> ---
+>>>>    .../devicetree/bindings/display/simple-framebuffer.yaml   | 8 ++++++++
+>>>>    1 file changed, 8 insertions(+)
+>>
+>> Hi Rob,
+>>
+>> There is the usecase that Hans has mentioned, but I have also mentioned
+>> another usecase previously.
+>>
+>> Adding the width-mm and height-mm properties allows user interfaces such as
+>> Phosh (https://puri.sm/posts/phosh-overview/) to scale correctly to the
+>> screen. In my case, a panel node is not available and the aforementioned
+>> interface is in fact running on the SimpleDRM driver (which binds to the
+>> simple-framebuffer device).
+> 
+> Why is the panel node not available? Why not add it? Presumably it is
+> not there because you aren't (yet) using the simple-panel driver (and
+> others that would need). But presumably you will eventually as I'd
+> imagine turning the screen off and back on might be a desired feature.
 
-This appears to be a pretty common problem. systemd includes a udev
-rule[1] which loads a console font from userspace, using setfont from
-the kbd package, when a vtcon device is added. According to udev debug
-logs, this event only fires once.
+It requires more than using the simple-panel driver: first the SoC side 
+display hardware needs to be brought up, then a panel driver that 
+implements the proper DCS initialisation sequence needs to be written 
+(which is currently not fully known).
 
-This actually works fine all the way until the GPU driver is loaded,
-after which the console is reverted to the default kernel font. My
-understanding from skimming the code in fbcon.c is that fonts should
-be persisted from one instance to the next.
+> 
+> So why add a temporary DT property that's tied to your *current* kernel? > The DT should not be tightly coupled to the kernel.
 
-I can reproduce this on both of my machines, one with an AMD Polaris
-GPU, and one with Intel integrated graphics (Kaby Lake R).
+I'm not sure what you mean by it being "tightly coupled" to the kernel.
 
-As discussed in [2], it seems the only reliable way to change the
-console font at the moment is to ensure that the graphics driver is
-loaded before udev starts, but I don't believe this is an acceptable
-or even correct solution.
+> 
+> Rob
 
-Am I missing something? It would be really helpful if someone could
-shed light on why this is happening.
+-- 
+Rayyan Ansari
+https://ansari.sh
 
-[1] https://github.com/systemd/systemd/blob/main/rules.d/90-vconsole.rules.in
-[2] https://github.com/NixOS/nixpkgs/issues/202846
-
-Thanks in advance,
-novenary

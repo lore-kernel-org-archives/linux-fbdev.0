@@ -2,100 +2,109 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF958C54E94
-	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Jan 2023 07:43:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86202C05027
+	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Jan 2023 08:47:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233181AbjAZHnI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 26 Jan 2023 02:43:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56296 "EHLO
+        id S235496AbjAZIrL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 26 Jan 2023 03:47:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36520 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229630AbjAZHnH (ORCPT
+        with ESMTP id S233473AbjAZIrK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 26 Jan 2023 02:43:07 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 599BF1BAEB;
-        Wed, 25 Jan 2023 23:43:06 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id EA91B61755;
-        Thu, 26 Jan 2023 07:43:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 054B8C433EF;
-        Thu, 26 Jan 2023 07:43:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1674718985;
-        bh=qLBAZG/gbjpAF8cRofsMaVMSoAZk99jH0vp77Yjg1EQ=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=CCVJ9OZWp+IbuYSxY4Rhn4YdBs9okdhqwDqtpOVy68+MBd+rq1Ubx7+xi1unGSH32
-         5g4HSticgDfxZovx6bVoysxu6rzPSUFHNBgRONw3LjBp88gaW7vco2RyJD0AJp5+6T
-         2urMSXVL/wHFwqqo8juti32pvP4KMRGktnoitvv4=
-Date:   Thu, 26 Jan 2023 08:43:02 +0100
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Samuel Thibault <samuel.thibault@ens-lyon.org>
-Cc:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, stable@vger.kernel.org,
-        Sanan Hasanov <sanan.hasanov@knights.ucf.edu>
-Subject: Re: [PATCH] fbcon: Check font dimension limits
-Message-ID: <Y9IvBoAbmh27xl4B@kroah.com>
-References: <20230126004911.869923511@ens-lyon.org>
- <20230126004921.616264824@ens-lyon.org>
+        Thu, 26 Jan 2023 03:47:10 -0500
+Received: from mail-qt1-f172.google.com (mail-qt1-f172.google.com [209.85.160.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D64B18B22;
+        Thu, 26 Jan 2023 00:47:10 -0800 (PST)
+Received: by mail-qt1-f172.google.com with SMTP id g16so772712qtu.2;
+        Thu, 26 Jan 2023 00:47:10 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=uyvIiOs8TFT5QdDt56s5AZud5rN36NlIHxnKx2RxH+M=;
+        b=z5VQVQj2l/0Y4IAJi6pSC2tqdGbQ3r5MZL3TB+bRvecbWXbfLYivj9nwrAPnOeh+83
+         ocFxmEFXuhtQtpiu4OsmRm55blVyHy/b6BCikZGiPMHJcBxvvUbQTjpEMKurKbCHXnR1
+         qqmapMkdiMhrQyeIjZC2UE0wiHEKljgeanirpQSMDbYosw6Jsp5h0IZNThggXe5FIGP0
+         E90OhFgpVwkx1MZIhCVyyBINJMh+7PAjdFzND0D+jvDdfSKqyfA/e9Q04twQ/XdTF2r0
+         Uo3pebGuhyQT2PkVDtVtQRaydO3KR6j0AF3h9zdGKwjddVV/Cp0dXKkD9LcxbuZPqILS
+         TQCA==
+X-Gm-Message-State: AFqh2krB25Kc65Vez+ZjRNDViOy22qazmwADD+Gw/pYEms4OPy4FHQod
+        QxNlPeoScfMTl+AQ+g8Mt1022Mi6Omd3JA==
+X-Google-Smtp-Source: AMrXdXsIrvAqIzyGRdIbtJ55Ah+FjFDlwSZQCkO1edIw4lVoAxIN0o40T4G1211v6mXH3ejVwqxm9A==
+X-Received: by 2002:ac8:1008:0:b0:3ab:6a9a:aa8b with SMTP id z8-20020ac81008000000b003ab6a9aaa8bmr45157604qti.60.1674722828933;
+        Thu, 26 Jan 2023 00:47:08 -0800 (PST)
+Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com. [209.85.128.176])
+        by smtp.gmail.com with ESMTPSA id 2-20020ac85602000000b003b68c7aeebfsm421736qtr.3.2023.01.26.00.47.07
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 26 Jan 2023 00:47:08 -0800 (PST)
+Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-50660e2d2ffso14483657b3.1;
+        Thu, 26 Jan 2023 00:47:07 -0800 (PST)
+X-Received: by 2002:a0d:f281:0:b0:508:2f2c:8e5f with SMTP id
+ b123-20020a0df281000000b005082f2c8e5fmr253434ywf.384.1674722827384; Thu, 26
+ Jan 2023 00:47:07 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230126004921.616264824@ens-lyon.org>
+References: <IA1PR07MB98308653E259A6F2CE94A4AFABCE9@IA1PR07MB9830.namprd07.prod.outlook.com>
+In-Reply-To: <IA1PR07MB98308653E259A6F2CE94A4AFABCE9@IA1PR07MB9830.namprd07.prod.outlook.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Thu, 26 Jan 2023 09:46:55 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVbW7jmO-Q8=f1HicPNzxb70TPE57akkDCcqvrS=gA9Hg@mail.gmail.com>
+Message-ID: <CAMuHMdVbW7jmO-Q8=f1HicPNzxb70TPE57akkDCcqvrS=gA9Hg@mail.gmail.com>
+Subject: Re: UBSAN: shift-out-of-bounds in fbcon_set_font
+To:     Sanan Hasanov <sanan.hasanov@knights.ucf.edu>
+Cc:     "deller@gmx.de" <deller@gmx.de>,
+        "sam@ravnborg.org" <sam@ravnborg.org>,
+        "tzimmermann@suse.de" <tzimmermann@suse.de>,
+        "geert+renesas@glider.be" <geert+renesas@glider.be>,
+        "samuel.thibault@ens-lyon.org" <samuel.thibault@ens-lyon.org>,
+        "penguin-kernel@I-love.SAKURA.ne.jp" 
+        <penguin-kernel@i-love.sakura.ne.jp>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "contact@pgazz.com" <contact@pgazz.com>,
+        "syzkaller@googlegroups.com" <syzkaller@googlegroups.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Jan 26, 2023 at 01:49:12AM +0100, Samuel Thibault wrote:
-> blit_x and blit_y are uint32_t, so fbcon currently cannot support fonts
-> larger than 32x32.
+Hi Sanan,
 
-"u32" you mean, right?
-
-> The 32x32 case also needs shifting an unsigned int, to properly set bit
-> 31, otherwise we get "UBSAN: shift-out-of-bounds in fbcon_set_font",
-> as reported on
-> 
-> http://lore.kernel.org/all/IA1PR07MB98308653E259A6F2CE94A4AFABCE9@IA1PR07MB9830.namprd07.prod.outlook.com
-
-Odd blank line?
-
-
+On Thu, Jan 26, 2023 at 12:58 AM Sanan Hasanov
+<sanan.hasanov@knights.ucf.edu> wrote:
+> We found a bug using a modified kernel configuration file used by syzbot.
+>
+> We enhanced the coverage of the configuration file using our tool, klocalizer.
+>
 > Kernel Branch: 6.2.0-rc5-next-20230124
 > Kernel config: https://drive.google.com/file/d/1F-LszDAizEEH0ZX0HcSR06v5q8FPl2Uv/view?usp=sharing
 > Reproducer: https://drive.google.com/file/d/1mP1jcLBY7vWCNM60OMf-ogw-urQRjNrm/view?usp=sharing
+>
+> Thank you!
+>
+> Best regards,
+> Sanan Hasanov
+>
+> ================================================================================
+> UBSAN: shift-out-of-bounds in drivers/video/fbdev/core/fbcon.c:2489:33
+> shift exponent 35 is too large for 32-bit type 'int'
 
-What are all of these lines for?
+This looks valid to me: con_font_set() checks the font width and height
+against max_font_width (64) and max_font_height (128), but fbcon has
+stricter limits.
 
-> 
-> Reported-by: Sanan Hasanov <sanan.hasanov@Knights.ucf.edu>
-> Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+fbcon_set_font() should reject fonts with width > 32 or height > 32.
 
-What commit id does this fix?  Should it go to stable kernels?
+Thanks!
 
-> 
-> Index: linux-6.0/drivers/video/fbdev/core/fbcon.c
-> ===================================================================
-> --- linux-6.0.orig/drivers/video/fbdev/core/fbcon.c
-> +++ linux-6.0/drivers/video/fbdev/core/fbcon.c
-> @@ -2489,9 +2489,12 @@ static int fbcon_set_font(struct vc_data
->  	    h > FBCON_SWAP(info->var.rotate, info->var.yres, info->var.xres))
->  		return -EINVAL;
->  
-> +	if (font->width > 32 || font->height > 32)
-> +		return -EINVAL;
-> +
->  	/* Make sure drawing engine can handle the font */
-> -	if (!(info->pixmap.blit_x & (1 << (font->width - 1))) ||
-> -	    !(info->pixmap.blit_y & (1 << (font->height - 1))))
-> +	if (!(info->pixmap.blit_x & (1U << (font->width - 1))) ||
-> +	    !(info->pixmap.blit_y & (1U << (font->height - 1))))
+Gr{oetje,eeting}s,
 
-Are you sure this is still needed with the above check added?  If so,
-why?  What is the difference in the compiled code?
+                        Geert
 
-thanks,
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-greg k-h
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

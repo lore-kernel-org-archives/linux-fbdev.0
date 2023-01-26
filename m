@@ -2,88 +2,209 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EDDDC54E94
-	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Jan 2023 09:08:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE0D9C61DA2
+	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Jan 2023 09:18:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233264AbjAZJIM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 26 Jan 2023 04:08:12 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53436 "EHLO
+        id S236727AbjAZJSI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 26 Jan 2023 04:18:08 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56906 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230282AbjAZJIM (ORCPT
+        with ESMTP id S236703AbjAZJSG (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 26 Jan 2023 04:08:12 -0500
-Received: from mail-ed1-f53.google.com (mail-ed1-f53.google.com [209.85.208.53])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B2443EC40;
-        Thu, 26 Jan 2023 01:08:11 -0800 (PST)
-Received: by mail-ed1-f53.google.com with SMTP id y19so1272499edc.2;
-        Thu, 26 Jan 2023 01:08:11 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=hMr0xC0YhrqgD1viBDPP26FWvFPbPdmQWji8YbWNKZM=;
-        b=0X8L9XYz/Rmg2XuT+4nhIcHlumh9Tktx6U7JNIpS4wwqm/KeFNC1jX30GKxeEmWXYy
-         /C66Nc7/+kNypk1zDQJqEbidgd6FmCzFns3ctM7ZNMqDxRNOSeMFdg/BDwV+okwfrnz0
-         xSYT6M2oS9S0q4KSP39H5+id18BMLpl8aNyzDYXsMyuWMbHlZNz2PfVXiyG00FNS15Rc
-         qTwan3+LoROfMzqALPvfRJJF6OJc92zpA02i6W3iUXd/HX6x/zqyI63NIIYf4i+xYaAk
-         K+Z5larS6SWLLLOIXxkiLJRiuDlfAnXZqFwUQyXwi6SdlP7V00QfKYN4c0vpLP2/FwOl
-         VNSw==
-X-Gm-Message-State: AFqh2kr6wPP9B6K1mCd1MIiWWeSfpXZNUTnyWdP4FmXBGhjFp7DtrXv+
-        C6ccmfndrmzNcCs9LVkbSQ0DSoW0Xkg=
-X-Google-Smtp-Source: AMrXdXs7LccmnB0bZcinEZc6Pyw0tuNtDY8p4RYr8ArU3wqk/0+yiT/jtfRNjdsb9EbsAtxehuiZ3g==
-X-Received: by 2002:a05:6402:524f:b0:49e:498c:5e16 with SMTP id t15-20020a056402524f00b0049e498c5e16mr43666895edd.30.1674724089094;
-        Thu, 26 Jan 2023 01:08:09 -0800 (PST)
-Received: from ?IPV6:2a0b:e7c0:0:107::aaaa:49? ([2a0b:e7c0:0:107::aaaa:49])
-        by smtp.gmail.com with ESMTPSA id y11-20020a50eb0b000000b00467481df198sm434295edp.48.2023.01.26.01.08.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 26 Jan 2023 01:08:08 -0800 (PST)
-Message-ID: <edcf26d4-64a0-04ea-435c-17d9efde7dd9@kernel.org>
-Date:   Thu, 26 Jan 2023 10:08:07 +0100
+        Thu, 26 Jan 2023 04:18:06 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C30C13534;
+        Thu, 26 Jan 2023 01:18:05 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id CD93FB81D09;
+        Thu, 26 Jan 2023 09:18:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0B686C433EF;
+        Thu, 26 Jan 2023 09:17:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1674724682;
+        bh=A3jqgSV9WUxdb3ZkujtLcqAQwnfqkoU5ybDSQdNw5cg=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=sky5enLFwJr3DfJ9b2ymbv/d7rE2oypuJvDM2cNeWmTa68+LJkoJeMjxMVF911xjR
+         /p46Fe2/pbyCsXipax42/Hou3ZWrY6fA7yy3y0E4tly4hSn7A+WSEbwQZyXAjmF/fy
+         t3crMkotzOdGBKQN+I5JbdstqSnsQJbVUv4CaD/JnI/YsWTl+N0fRV5BPO+OqFre41
+         7ERJV1xNKFLVanuVeJ94drHEBHBdP99mIJAbLamNbCF2r05esRYyfEqSbQFmRXAtIl
+         xm2AXIIoDKu6q2SCf9/o5Ej3L+rCFY/nYnTN8yhQCyREfEIhRdSCFxGuw7sIOiHW7k
+         L6KyLx8xuXeew==
+Date:   Thu, 26 Jan 2023 11:17:09 +0200
+From:   Mike Rapoport <rppt@kernel.org>
+To:     Suren Baghdasaryan <surenb@google.com>
+Cc:     akpm@linux-foundation.org, michel@lespinasse.org,
+        jglisse@google.com, mhocko@suse.com, vbabka@suse.cz,
+        hannes@cmpxchg.org, mgorman@techsingularity.net, dave@stgolabs.net,
+        willy@infradead.org, liam.howlett@oracle.com, peterz@infradead.org,
+        ldufour@linux.ibm.com, paulmck@kernel.org, luto@kernel.org,
+        songliubraving@fb.com, peterx@redhat.com, david@redhat.com,
+        dhowells@redhat.com, hughd@google.com, bigeasy@linutronix.de,
+        kent.overstreet@linux.dev, punit.agrawal@bytedance.com,
+        lstoakes@gmail.com, peterjung1337@gmail.com, rientjes@google.com,
+        axelrasmussen@google.com, joelaf@google.com, minchan@google.com,
+        jannh@google.com, shakeelb@google.com, tatashin@google.com,
+        edumazet@google.com, gthelen@google.com, gurua@google.com,
+        arjunroy@google.com, soheil@google.com, hughlynch@google.com,
+        leewalsh@google.com, posk@google.com, will@kernel.org,
+        aneesh.kumar@linux.ibm.com, npiggin@gmail.com,
+        chenhuacai@kernel.org, tglx@linutronix.de, mingo@redhat.com,
+        bp@alien8.de, dave.hansen@linux.intel.com, richard@nod.at,
+        anton.ivanov@cambridgegreys.com, johannes@sipsolutions.net,
+        qianweili@huawei.com, wangzhou1@hisilicon.com,
+        herbert@gondor.apana.org.au, davem@davemloft.net, vkoul@kernel.org,
+        airlied@gmail.com, daniel@ffwll.ch,
+        maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+        tzimmermann@suse.de, l.stach@pengutronix.de,
+        krzysztof.kozlowski@linaro.org, patrik.r.jakobsson@gmail.com,
+        matthias.bgg@gmail.com, robdclark@gmail.com,
+        quic_abhinavk@quicinc.com, dmitry.baryshkov@linaro.org,
+        tomba@kernel.org, hjc@rock-chips.com, heiko@sntech.de,
+        ray.huang@amd.com, kraxel@redhat.com, sre@kernel.org,
+        mcoquelin.stm32@gmail.com, alexandre.torgue@foss.st.com,
+        tfiga@chromium.org, m.szyprowski@samsung.com, mchehab@kernel.org,
+        dimitri.sivanich@hpe.com, zhangfei.gao@linaro.org,
+        jejb@linux.ibm.com, martin.petersen@oracle.com,
+        dgilbert@interlog.com, hdegoede@redhat.com, mst@redhat.com,
+        jasowang@redhat.com, alex.williamson@redhat.com, deller@gmx.de,
+        jayalk@intworks.biz, viro@zeniv.linux.org.uk, nico@fluxnic.net,
+        xiang@kernel.org, chao@kernel.org, tytso@mit.edu,
+        adilger.kernel@dilger.ca, miklos@szeredi.hu,
+        mike.kravetz@oracle.com, muchun.song@linux.dev, bhe@redhat.com,
+        andrii@kernel.org, yoshfuji@linux-ipv6.org, dsahern@kernel.org,
+        kuba@kernel.org, pabeni@redhat.com, perex@perex.cz, tiwai@suse.com,
+        haojian.zhuang@gmail.com, robert.jarzmik@free.fr,
+        linux-mm@kvack.org, linux-arm-kernel@lists.infradead.org,
+        linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
+        linux-kernel@vger.kernel.org, linux-graphics-maintainer@vmware.com,
+        linux-ia64@vger.kernel.org, linux-arch@vger.kernel.org,
+        loongarch@lists.linux.dev, kvm@vger.kernel.org,
+        linux-s390@vger.kernel.org, linux-sgx@vger.kernel.org,
+        linux-um@lists.infradead.org, linux-acpi@vger.kernel.org,
+        linux-crypto@vger.kernel.org, nvdimm@lists.linux.dev,
+        dmaengine@vger.kernel.org, amd-gfx@lists.freedesktop.org,
+        dri-devel@lists.freedesktop.org, etnaviv@lists.freedesktop.org,
+        linux-samsung-soc@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+        linux-mediatek@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+        freedreno@lists.freedesktop.org,
+        linux-rockchip@lists.infradead.org, linux-tegra@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        xen-devel@lists.xenproject.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linux-rdma@vger.kernel.org, linux-media@vger.kernel.org,
+        linux-accelerators@lists.ozlabs.org, sparclinux@vger.kernel.org,
+        linux-scsi@vger.kernel.org, linux-staging@lists.linux.dev,
+        target-devel@vger.kernel.org, linux-usb@vger.kernel.org,
+        netdev@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-aio@kvack.org, linux-fsdevel@vger.kernel.org,
+        linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org,
+        devel@lists.orangefs.org, kexec@lists.infradead.org,
+        linux-xfs@vger.kernel.org, bpf@vger.kernel.org,
+        linux-perf-users@vger.kernel.org, kasan-dev@googlegroups.com,
+        selinux@vger.kernel.org, alsa-devel@alsa-project.org,
+        kernel-team@android.com
+Subject: Re: [PATCH v2 1/6] mm: introduce vma->vm_flags modifier functions
+Message-ID: <Y9JFFYjfJf9uDijE@kernel.org>
+References: <20230125083851.27759-1-surenb@google.com>
+ <20230125083851.27759-2-surenb@google.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.1
-Subject: Re: [PATCH] fbcon: Check font dimension limits
-Content-Language: en-US
-To:     Greg KH <gregkh@linuxfoundation.org>,
-        Samuel Thibault <samuel.thibault@ens-lyon.org>
-Cc:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, stable@vger.kernel.org,
-        Sanan Hasanov <sanan.hasanov@knights.ucf.edu>
-References: <20230126004911.869923511@ens-lyon.org>
- <20230126004921.616264824@ens-lyon.org> <Y9IvBoAbmh27xl4B@kroah.com>
-From:   Jiri Slaby <jirislaby@kernel.org>
-In-Reply-To: <Y9IvBoAbmh27xl4B@kroah.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230125083851.27759-2-surenb@google.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 26. 01. 23, 8:43, Greg KH wrote:
->> --- linux-6.0.orig/drivers/video/fbdev/core/fbcon.c
->> +++ linux-6.0/drivers/video/fbdev/core/fbcon.c
->> @@ -2489,9 +2489,12 @@ static int fbcon_set_font(struct vc_data
->>   	    h > FBCON_SWAP(info->var.rotate, info->var.yres, info->var.xres))
->>   		return -EINVAL;
->>   
->> +	if (font->width > 32 || font->height > 32)
->> +		return -EINVAL;
->> +
->>   	/* Make sure drawing engine can handle the font */
->> -	if (!(info->pixmap.blit_x & (1 << (font->width - 1))) ||
->> -	    !(info->pixmap.blit_y & (1 << (font->height - 1))))
->> +	if (!(info->pixmap.blit_x & (1U << (font->width - 1))) ||
->> +	    !(info->pixmap.blit_y & (1U << (font->height - 1))))
+On Wed, Jan 25, 2023 at 12:38:46AM -0800, Suren Baghdasaryan wrote:
+> vm_flags are among VMA attributes which affect decisions like VMA merging
+> and splitting. Therefore all vm_flags modifications are performed after
+> taking exclusive mmap_lock to prevent vm_flags updates racing with such
+> operations. Introduce modifier functions for vm_flags to be used whenever
+> flags are updated. This way we can better check and control correct
+> locking behavior during these updates.
 > 
-> Are you sure this is still needed with the above check added?  If so,
-> why?  What is the difference in the compiled code?
+> Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+> ---
+>  include/linux/mm.h       | 37 +++++++++++++++++++++++++++++++++++++
+>  include/linux/mm_types.h |  8 +++++++-
+>  2 files changed, 44 insertions(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index c2f62bdce134..b71f2809caac 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -627,6 +627,43 @@ static inline void vma_init(struct vm_area_struct *vma, struct mm_struct *mm)
+>  	INIT_LIST_HEAD(&vma->anon_vma_chain);
+>  }
+>  
+> +/* Use when VMA is not part of the VMA tree and needs no locking */
+> +static inline void init_vm_flags(struct vm_area_struct *vma,
+> +				 unsigned long flags)
 
-For font->{width,height} == 32, definitely. IMO, 1 << 31 is undefined as 
-1 << 31 cannot be represented by an (signed) int.
+I'd suggest to make it vm_flags_init() etc.
+Except that
 
--- 
-js
-suse labs
+Acked-by: Mike Rapoport (IBM) <rppt@kernel.org>
 
+> +{
+> +	vma->vm_flags = flags;
+> +}
+> +
+> +/* Use when VMA is part of the VMA tree and modifications need coordination */
+> +static inline void reset_vm_flags(struct vm_area_struct *vma,
+> +				  unsigned long flags)
+> +{
+> +	mmap_assert_write_locked(vma->vm_mm);
+> +	init_vm_flags(vma, flags);
+> +}
+> +
+> +static inline void set_vm_flags(struct vm_area_struct *vma,
+> +				unsigned long flags)
+> +{
+> +	mmap_assert_write_locked(vma->vm_mm);
+> +	vma->vm_flags |= flags;
+> +}
+> +
+> +static inline void clear_vm_flags(struct vm_area_struct *vma,
+> +				  unsigned long flags)
+> +{
+> +	mmap_assert_write_locked(vma->vm_mm);
+> +	vma->vm_flags &= ~flags;
+> +}
+> +
+> +static inline void mod_vm_flags(struct vm_area_struct *vma,
+> +				unsigned long set, unsigned long clear)
+> +{
+> +	mmap_assert_write_locked(vma->vm_mm);
+> +	vma->vm_flags |= set;
+> +	vma->vm_flags &= ~clear;
+> +}
+> +
+>  static inline void vma_set_anonymous(struct vm_area_struct *vma)
+>  {
+>  	vma->vm_ops = NULL;
+> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+> index 2d6d790d9bed..6c7c70bf50dd 100644
+> --- a/include/linux/mm_types.h
+> +++ b/include/linux/mm_types.h
+> @@ -491,7 +491,13 @@ struct vm_area_struct {
+>  	 * See vmf_insert_mixed_prot() for discussion.
+>  	 */
+>  	pgprot_t vm_page_prot;
+> -	unsigned long vm_flags;		/* Flags, see mm.h. */
+> +
+> +	/*
+> +	 * Flags, see mm.h.
+> +	 * WARNING! Do not modify directly.
+> +	 * Use {init|reset|set|clear|mod}_vm_flags() functions instead.
+> +	 */
+> +	unsigned long vm_flags;
+>  
+>  	/*
+>  	 * For areas with an address space and backing store,
+> -- 
+> 2.39.1
+> 
+> 

@@ -2,84 +2,100 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28103C54E94
-	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Jan 2023 14:28:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27AB0C05027
+	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Jan 2023 14:36:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231994AbjAZO2J (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 26 Jan 2023 09:28:09 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37574 "EHLO
+        id S230404AbjAZOgW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 26 Jan 2023 09:36:22 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44766 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232024AbjAZO2I (ORCPT
+        with ESMTP id S229639AbjAZOgV (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 26 Jan 2023 09:28:08 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E9FE266018;
-        Thu, 26 Jan 2023 06:27:41 -0800 (PST)
+        Thu, 26 Jan 2023 09:36:21 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 29E46222D4;
+        Thu, 26 Jan 2023 06:36:21 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 96EF46181D;
-        Thu, 26 Jan 2023 14:27:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6FE03C433EF;
-        Thu, 26 Jan 2023 14:27:30 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id C409EB81D0C;
+        Thu, 26 Jan 2023 14:36:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 575CEC433D2;
+        Thu, 26 Jan 2023 14:36:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1674743255;
-        bh=kyg287jVxNn5KSlNEsVGJfYboudO4DBm+FJvwry/P14=;
+        s=k20201202; t=1674743778;
+        bh=7nbBSRNGEontRbdD8GVbYdMCjS4jqmZWPhqfyLc7pEM=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=KWMMZa3enFGjyBvR2geXY/y1os9YbC/Uq6fvpBx147xoAci6F2dWQUwOp5qev7dqv
-         sDFzMt7hO6YpQHUbi6UXLJq/caD9FXOsVNgrL+IcDeaytcggK82q8G4TPARg46UQvR
-         qp4uxp3LOCVaFqBaaCiwljX3GBc1l6jZqUd5AJMLb2hOnEyztqjAXwXmyWbJDEosk5
-         fuPKSnnu2l0tBH3n5rSQm/zULLwOhCLeU2BQcHzouuw4T2jv6+uHjM+0xXK+iTmSzm
-         vld+2pv3ErucYbDOohg29FfZIjY619rILYR8g/bpIZoRx6/QTcILHFraOIiC5DP3WZ
-         c4HaAqCJIpw1A==
-Date:   Thu, 26 Jan 2023 14:27:26 +0000
+        b=TxHFTGU0QFjWNjwOLWt56/8FeklWCuXPdXfETgWP3wUbeqvj8yEvKsZZAekmtWSyV
+         mCrE/O9D+CeHSqfAmUwgAcZnGmb9/oL/Dcaojo3Y3i6mbJSxF4NXBFTWxA7ny/eT6p
+         kWPbQuZ6NQqYyw+Z5+EFopPz8xF1rQKsgM+2qW5t6u+yNcP/eoockpCacgqYhMPdHE
+         RJquKLmC6AEQpqq4w0F1wxsBxFdWyEbo5j6RwskPDDfoeTcE8MEPJWwgKEVEw+j4KX
+         GSQphhaZppAqC5Y4/9c4fLWOCm/lkm9VD49uvfUqbAYkmnNerT97G2Ve/GMytKdkvM
+         l4zAEtmpJqZVw==
+Date:   Thu, 26 Jan 2023 14:36:12 +0000
 From:   Lee Jones <lee@kernel.org>
-To:     sam@ravnborg.org
-Cc:     Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Helge Deller <deller@gmx.de>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        Antonino Daplas <adaplas@gmail.com>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Robin van der Gracht <robin@protonic.nl>,
-        Miguel Ojeda <ojeda@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-omap@vger.kernel.org, linux-staging@lists.linux.dev,
-        linuxppc-dev@lists.ozlabs.org, Stephen Kitt <steve@sk2.org>
-Subject: Re: [PATCH 15/15] backlight: backlight: Drop the deprecated fb_blank
- property
-Message-ID: <Y9KNziZJxMjCffbs@google.com>
-References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
- <20230107-sam-video-backlight-drop-fb_blank-v1-15-1bd9bafb351f@ravnborg.org>
+To:     Jianhua Lu <lujianhua000@gmail.com>
+Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: Re: [PATCH v9 1/2] dt-bindings: leds: backlight: Add Kinetic KTZ8866
+ backlight
+Message-ID: <Y9KP3K7Oup8hw21W@google.com>
+References: <20230120155018.15376-1-lujianhua000@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230107-sam-video-backlight-drop-fb_blank-v1-15-1bd9bafb351f@ravnborg.org>
+In-Reply-To: <20230120155018.15376-1-lujianhua000@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, 07 Jan 2023, Sam Ravnborg via B4 Submission Endpoint wrote:
+On Fri, 20 Jan 2023, Jianhua Lu wrote:
 
-> From: Sam Ravnborg <sam@ravnborg.org>
+> Add Kinetic KTZ8866 backlight binding documentation.
 > 
-> With all users gone remove the deprecated fb_blank member in
-> backlight_properties.
-> 
-> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Lee Jones <lee@kernel.org>
-> Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> Cc: Jingoo Han <jingoohan1@gmail.com>
+> Signed-off-by: Jianhua Lu <lujianhua000@gmail.com>
+> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 > ---
->  drivers/video/backlight/backlight.c |  2 --
->  include/linux/backlight.h           | 22 ----------------------
->  2 files changed, 24 deletions(-)
+> Changes in v2:
+>   - Remove "items" between "compatible" and "const: kinetic,ktz8866".
+>   - Change "additionalProperties" to "unevaluatedProperties".
+> 
+> Changes in v3:
+>   - Add Krzysztof's R-b.
+> 
+> Changes in v4:
+>   - Drop Krzysztof's R-b.
+>   - Add some new properties.
+> 
+> Changes in v5:
+>   - Add missing enum under property description.
+>   - Rename uncorrect properties.
+> 
+> Changes in v6:
+>   - Correct wrong property suffix and description.
+> 
+> Changes in v7:
+>   - Add vddpos and vddeg supply.
+>   - Use enable-gpios instead of defining enable pin.
+> 
+> Changes in v8:
+>   - Rename current ramping time. 
+>   - Rename led ramping time. 
+> 
+> Changes in v9:
+>   - Add Krzysztof's R-b.
+>   - Add missing 1μs to the enum of "kinetic,led-enable-ramp-delay-ms".
+> 
+>  .../leds/backlight/kinetic,ktz8866.yaml       | 76 +++++++++++++++++++
+>  1 file changed, 76 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/leds/backlight/kinetic,ktz8866.yaml
 
 Applied, thanks
 

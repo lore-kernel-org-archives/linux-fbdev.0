@@ -2,109 +2,103 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86202C05027
-	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Jan 2023 08:47:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1967DC05027
+	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Jan 2023 09:03:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235496AbjAZIrL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 26 Jan 2023 03:47:11 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36520 "EHLO
+        id S229641AbjAZJDG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 26 Jan 2023 04:03:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50334 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233473AbjAZIrK (ORCPT
+        with ESMTP id S236675AbjAZJDE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 26 Jan 2023 03:47:10 -0500
-Received: from mail-qt1-f172.google.com (mail-qt1-f172.google.com [209.85.160.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D64B18B22;
-        Thu, 26 Jan 2023 00:47:10 -0800 (PST)
-Received: by mail-qt1-f172.google.com with SMTP id g16so772712qtu.2;
-        Thu, 26 Jan 2023 00:47:10 -0800 (PST)
+        Thu, 26 Jan 2023 04:03:04 -0500
+Received: from mail-ej1-f52.google.com (mail-ej1-f52.google.com [209.85.218.52])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4707240BFC;
+        Thu, 26 Jan 2023 01:02:59 -0800 (PST)
+Received: by mail-ej1-f52.google.com with SMTP id ss4so3240702ejb.11;
+        Thu, 26 Jan 2023 01:02:59 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=uyvIiOs8TFT5QdDt56s5AZud5rN36NlIHxnKx2RxH+M=;
-        b=z5VQVQj2l/0Y4IAJi6pSC2tqdGbQ3r5MZL3TB+bRvecbWXbfLYivj9nwrAPnOeh+83
-         ocFxmEFXuhtQtpiu4OsmRm55blVyHy/b6BCikZGiPMHJcBxvvUbQTjpEMKurKbCHXnR1
-         qqmapMkdiMhrQyeIjZC2UE0wiHEKljgeanirpQSMDbYosw6Jsp5h0IZNThggXe5FIGP0
-         E90OhFgpVwkx1MZIhCVyyBINJMh+7PAjdFzND0D+jvDdfSKqyfA/e9Q04twQ/XdTF2r0
-         Uo3pebGuhyQT2PkVDtVtQRaydO3KR6j0AF3h9zdGKwjddVV/Cp0dXKkD9LcxbuZPqILS
-         TQCA==
-X-Gm-Message-State: AFqh2krB25Kc65Vez+ZjRNDViOy22qazmwADD+Gw/pYEms4OPy4FHQod
-        QxNlPeoScfMTl+AQ+g8Mt1022Mi6Omd3JA==
-X-Google-Smtp-Source: AMrXdXsIrvAqIzyGRdIbtJ55Ah+FjFDlwSZQCkO1edIw4lVoAxIN0o40T4G1211v6mXH3ejVwqxm9A==
-X-Received: by 2002:ac8:1008:0:b0:3ab:6a9a:aa8b with SMTP id z8-20020ac81008000000b003ab6a9aaa8bmr45157604qti.60.1674722828933;
-        Thu, 26 Jan 2023 00:47:08 -0800 (PST)
-Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com. [209.85.128.176])
-        by smtp.gmail.com with ESMTPSA id 2-20020ac85602000000b003b68c7aeebfsm421736qtr.3.2023.01.26.00.47.07
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=zpTA8PogrXlsIUarI4aY2hvRwCUuO/PnjHEhsl7Xlq8=;
+        b=i1r2T5tgBVD1TtXB2M8jXOV3bz0vQ5X/UWHAds/QfAQj5H/0NAijHjnFXLFr4fj7kP
+         6lS32m/cp7RiMUEpEShs1qvATSsIKcZzbSK0KU73LbchxSgu11MiC7TiGLDPavpUac5b
+         1Y/R++JXyRrdD/ydzJsHV4ODJcmOb2yr7pQB2fvCqVdj04KAh+DSU8Ibbw6K789dQItL
+         aSPPOThErHfaGXRnhP3T7Co63qDSeU03KWKmH3kJ8PD+2v9E3Xc4GvBXybPSgZKhc2pG
+         HHK5uYuGegy6fJ4f/JjG0rJ1NhJUDW3Ln2i4mH1Uc2ao6Vd4hXuZsJVUmJLoGdymCJOw
+         WKiA==
+X-Gm-Message-State: AFqh2kp79WoOC8c1+ftkVudNRugqTZJF+EXM9yMOYI5EDXqESb9+xHN9
+        yITErRMERyLbAi01F4xQFi4=
+X-Google-Smtp-Source: AMrXdXvZTr1bl/my1N+x4SHitbZ1MhWds08SNNOyDBFXgOff3S0BXuCoVCAZAMhJfKWBuQ1dj1pmtg==
+X-Received: by 2002:a17:907:2135:b0:86f:fe8a:be with SMTP id qo21-20020a170907213500b0086ffe8a00bemr35892174ejb.4.1674723777426;
+        Thu, 26 Jan 2023 01:02:57 -0800 (PST)
+Received: from [192.168.1.49] (185-219-167-24-static.vivo.cz. [185.219.167.24])
+        by smtp.gmail.com with ESMTPSA id a15-20020a170906244f00b00877de2def77sm294393ejb.31.2023.01.26.01.02.56
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 26 Jan 2023 00:47:08 -0800 (PST)
-Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-50660e2d2ffso14483657b3.1;
-        Thu, 26 Jan 2023 00:47:07 -0800 (PST)
-X-Received: by 2002:a0d:f281:0:b0:508:2f2c:8e5f with SMTP id
- b123-20020a0df281000000b005082f2c8e5fmr253434ywf.384.1674722827384; Thu, 26
- Jan 2023 00:47:07 -0800 (PST)
+        Thu, 26 Jan 2023 01:02:56 -0800 (PST)
+Message-ID: <3bcd9911-5fdd-2a1a-0a76-55e1b8f7642a@kernel.org>
+Date:   Thu, 26 Jan 2023 10:02:55 +0100
 MIME-Version: 1.0
-References: <IA1PR07MB98308653E259A6F2CE94A4AFABCE9@IA1PR07MB9830.namprd07.prod.outlook.com>
-In-Reply-To: <IA1PR07MB98308653E259A6F2CE94A4AFABCE9@IA1PR07MB9830.namprd07.prod.outlook.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Thu, 26 Jan 2023 09:46:55 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdVbW7jmO-Q8=f1HicPNzxb70TPE57akkDCcqvrS=gA9Hg@mail.gmail.com>
-Message-ID: <CAMuHMdVbW7jmO-Q8=f1HicPNzxb70TPE57akkDCcqvrS=gA9Hg@mail.gmail.com>
-Subject: Re: UBSAN: shift-out-of-bounds in fbcon_set_font
-To:     Sanan Hasanov <sanan.hasanov@knights.ucf.edu>
-Cc:     "deller@gmx.de" <deller@gmx.de>,
-        "sam@ravnborg.org" <sam@ravnborg.org>,
-        "tzimmermann@suse.de" <tzimmermann@suse.de>,
-        "geert+renesas@glider.be" <geert+renesas@glider.be>,
-        "samuel.thibault@ens-lyon.org" <samuel.thibault@ens-lyon.org>,
-        "penguin-kernel@I-love.SAKURA.ne.jp" 
-        <penguin-kernel@i-love.sakura.ne.jp>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "contact@pgazz.com" <contact@pgazz.com>,
-        "syzkaller@googlegroups.com" <syzkaller@googlegroups.com>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.1
+Subject: Re: [PATCH] fbcon: Check font dimension limits
+Content-Language: en-US
+To:     Samuel Thibault <samuel.thibault@ens-lyon.org>,
+        gregkh@linuxfoundation.org, Daniel Vetter <daniel@ffwll.ch>,
+        Helge Deller <deller@gmx.de>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+        Sanan Hasanov <sanan.hasanov@Knights.ucf.edu>
+References: <20230126004911.869923511@ens-lyon.org>
+ <20230126004921.616264824@ens-lyon.org>
+From:   Jiri Slaby <jirislaby@kernel.org>
+In-Reply-To: <20230126004921.616264824@ens-lyon.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Sanan,
-
-On Thu, Jan 26, 2023 at 12:58 AM Sanan Hasanov
-<sanan.hasanov@knights.ucf.edu> wrote:
-> We found a bug using a modified kernel configuration file used by syzbot.
->
-> We enhanced the coverage of the configuration file using our tool, klocalizer.
->
+On 26. 01. 23, 1:49, Samuel Thibault wrote:
+> blit_x and blit_y are uint32_t, so fbcon currently cannot support fonts
+> larger than 32x32.
+> 
+> The 32x32 case also needs shifting an unsigned int, to properly set bit
+> 31, otherwise we get "UBSAN: shift-out-of-bounds in fbcon_set_font",
+> as reported on
+> 
+> http://lore.kernel.org/all/IA1PR07MB98308653E259A6F2CE94A4AFABCE9@IA1PR07MB9830.namprd07.prod.outlook.com
 > Kernel Branch: 6.2.0-rc5-next-20230124
 > Kernel config: https://drive.google.com/file/d/1F-LszDAizEEH0ZX0HcSR06v5q8FPl2Uv/view?usp=sharing
 > Reproducer: https://drive.google.com/file/d/1mP1jcLBY7vWCNM60OMf-ogw-urQRjNrm/view?usp=sharing
->
-> Thank you!
->
-> Best regards,
-> Sanan Hasanov
->
-> ================================================================================
-> UBSAN: shift-out-of-bounds in drivers/video/fbdev/core/fbcon.c:2489:33
-> shift exponent 35 is too large for 32-bit type 'int'
+> 
+> Reported-by: Sanan Hasanov <sanan.hasanov@Knights.ucf.edu>
+> Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+> 
+> Index: linux-6.0/drivers/video/fbdev/core/fbcon.c
+> ===================================================================
+> --- linux-6.0.orig/drivers/video/fbdev/core/fbcon.c
+> +++ linux-6.0/drivers/video/fbdev/core/fbcon.c
+> @@ -2489,9 +2489,12 @@ static int fbcon_set_font(struct vc_data
+>   	    h > FBCON_SWAP(info->var.rotate, info->var.yres, info->var.xres))
+>   		return -EINVAL;
+>   
+> +	if (font->width > 32 || font->height > 32)
+> +		return -EINVAL;
+> +
+>   	/* Make sure drawing engine can handle the font */
+> -	if (!(info->pixmap.blit_x & (1 << (font->width - 1))) ||
+> -	    !(info->pixmap.blit_y & (1 << (font->height - 1))))
+> +	if (!(info->pixmap.blit_x & (1U << (font->width - 1))) ||
+> +	    !(info->pixmap.blit_y & (1U << (font->height - 1))))
 
-This looks valid to me: con_font_set() checks the font width and height
-against max_font_width (64) and max_font_height (128), but fbcon has
-stricter limits.
+So use BIT() properly then? That should be used in all these shifts 
+anyway. Exactly to avoid UB.
 
-fbcon_set_font() should reject fonts with width > 32 or height > 32.
+thanks,
+-- 
+js
+suse labs
 
-Thanks!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

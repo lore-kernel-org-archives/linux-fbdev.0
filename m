@@ -2,169 +2,139 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EE2CC636CC
-	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Jan 2023 10:49:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DC96C38142
+	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Jan 2023 13:33:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234309AbjA1Ks7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 28 Jan 2023 05:48:59 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51328 "EHLO
+        id S234309AbjA1NdQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 28 Jan 2023 08:33:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37320 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234320AbjA1Ksy (ORCPT
+        with ESMTP id S234376AbjA1NdL (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 28 Jan 2023 05:48:54 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4F9837963E;
-        Sat, 28 Jan 2023 02:48:38 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id C60C360B49;
-        Sat, 28 Jan 2023 10:48:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F057DC433D2;
-        Sat, 28 Jan 2023 10:48:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1674902917;
-        bh=Y432cQgFP5F34pSdT8J5cN2U4/Abh03N/7/nnZFsfgA=;
-        h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-        b=ucQIwNrYn1j82n5kEO9WaLijY1byLMow61bm47krLw9/rm4ppKVrlbLz6phB9zNbS
-         qYY9lfErpOzRey8+JWhrlP2K20ge8aTXRGAB1RaAXSma5mb3gsVcM7JjsMlaYHRq6p
-         5Sc6Wb+I4Y9+t6nEP7exbyKAI00PmKAmlmdPi+RpRtLkxQxgwEsoweOc60InbgtjXH
-         FqvZ8MvQZkaZTFpjHfucUR24TwuTg8tFdRbslI7LaInKzs0Rwp3ur5+5MyfOIl4uaR
-         6DEA3qekp8dP3oIUZTw+yBhAfVg6biPer6tOhWjPLMuQk2/uOpgUZPcQmhGK5/Sihz
-         AcjSu+HZd6TdA==
-From:   Mark Brown <broonie@kernel.org>
-To:     linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>
-Cc:     Jonathan Corbet <corbet@lwn.net>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>,
-        Russell King <linux@armlinux.org.uk>,
-        Jens Axboe <axboe@kernel.dk>,
-        Andrii Nakryiko <andrii@kernel.org>,
-        Alexei Starovoitov <ast@kernel.org>,
-        Daniel Borkmann <daniel@iogearbox.net>,
-        Vladimir Oltean <olteanv@gmail.com>,
-        Steffen Klassert <steffen.klassert@secunet.com>,
-        Daniel Jordan <daniel.m.jordan@oracle.com>,
-        Akinobu Mita <akinobu.mita@gmail.com>,
-        Helge Deller <deller@gmx.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Jiri Kosina <jikos@kernel.org>,
-        Benjamin Tissoires <benjamin.tissoires@redhat.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Wolfram Sang <wsa@kernel.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Henrik Rydberg <rydberg@bitmath.org>,
-        Karsten Keil <isdn@linux-pingi.de>,
-        Pavel Machek <pavel@ucw.cz>, Lee Jones <lee@kernel.org>,
-        Josh Poimboeuf <jpoimboe@kernel.org>,
-        Miroslav Benes <mbenes@suse.cz>,
-        Petr Mladek <pmladek@suse.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        =?utf-8?q?J=C3=A9r=C3=B4me_Glisse?= <jglisse@redhat.com>,
-        Naoya Horiguchi <naoya.horiguchi@nec.com>,
-        Miaohe Lin <linmiaohe@huawei.com>,
-        Jonas Bonn <jonas@southpole.se>,
-        Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
-        Stafford Horne <shorne@gmail.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Marc Zyngier <maz@kernel.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Len Brown <len.brown@intel.com>,
-        Heiko Carstens <hca@linux.ibm.com>,
-        Vasily Gorbik <gor@linux.ibm.com>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        David Howells <dhowells@redhat.com>,
-        Jarkko Sakkinen <jarkko@kernel.org>,
-        Paul Moore <paul@paul-moore.com>,
-        James Morris <jmorris@namei.org>,
-        "Serge E. Hallyn" <serge@hallyn.com>,
-        Jaroslav Kysela <perex@perex.cz>,
-        Takashi Iwai <tiwai@suse.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Daniel Bristot de Oliveira <bristot@kernel.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Masami Hiramatsu <mhiramat@kernel.org>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Evgeniy Polyakov <zbr@ioremap.net>,
-        Fenghua Yu <fenghua.yu@intel.com>,
-        Reinette Chatre <reinette.chatre@intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Borislav Petkov <bp@alien8.de>,
-        Chris Zankel <chris@zankel.net>,
-        Max Filippov <jcmvbkbc@gmail.com>, alsa-devel@alsa-project.org,
-        coresight@lists.linaro.org, bpf@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, isdn4linux@listserv.isdn4linux.de,
-        keyrings@vger.kernel.org, linux-acpi@vger.kernel.org,
-        linux-block@vger.kernel.org, linux-crypto@vger.kernel.org,
-        linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-i2c@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-leds@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linux-sgx@vger.kernel.org, linux-spi@vger.kernel.org,
-        linux-trace-devel@vger.kernel.org,
-        linux-trace-kernel@vger.kernel.org, live-patching@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-security-module@vger.kernel.org,
-        linux-usb@vger.kernel.org, netdev@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-mm@kvack.org,
-        openrisc@lists.librecores.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-xtensa@linux-xtensa.org, linuxppc-dev@lists.ozlabs.org,
-        x86@kernel.org
-In-Reply-To: <20230127064005.1558-1-rdunlap@infradead.org>
-References: <20230127064005.1558-1-rdunlap@infradead.org>
-Subject: Re: (subset) [PATCH 00/35] Documentation: correct lots of spelling
- errors (series 1)
-Message-Id: <167490289567.2145989.15703368734300500078.b4-ty@kernel.org>
-Date:   Sat, 28 Jan 2023 10:48:15 +0000
+        Sat, 28 Jan 2023 08:33:11 -0500
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E542B1CAE6
+        for <linux-fbdev@vger.kernel.org>; Sat, 28 Jan 2023 05:32:58 -0800 (PST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pLlKA-0002I2-QJ; Sat, 28 Jan 2023 14:32:54 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pLlKA-0011Kp-3X; Sat, 28 Jan 2023 14:32:53 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pLlK8-00GXdA-FG; Sat, 28 Jan 2023 14:32:52 +0100
+Date:   Sat, 28 Jan 2023 14:32:39 +0100
+From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To:     Jianhua Lu <lujianhua000@gmail.com>
+Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee@kernel.org>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        kernel@pengutronix.de
+Subject: Re: [PATCH] backlight: ktz8866: Convert to i2c's .probe_new()
+Message-ID: <20230128133239.ndanz4gzm73wwaiv@pengutronix.de>
+References: <20230127152639.1347229-1-u.kleine-koenig@pengutronix.de>
+ <Y9RuDM9VAMBzj4vd@Gentoo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.12.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="i2z6tfpcc3xmnfcs"
+Content-Disposition: inline
+In-Reply-To: <Y9RuDM9VAMBzj4vd@Gentoo>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, 26 Jan 2023 22:39:30 -0800, Randy Dunlap wrote:
-> Correct many spelling errors in Documentation/ as reported by codespell.
-> 
-> Maintainers of specific kernel subsystems are only Cc-ed on their
-> respective patches, not the entire series. [if all goes well]
-> 
-> These patches are based on linux-next-20230125.
-> 
-> [...]
 
-Applied to
+--i2z6tfpcc3xmnfcs
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-   broonie/spi.git for-next
+Hello,
 
-Thanks!
+On Sat, Jan 28, 2023 at 08:36:28AM +0800, Jianhua Lu wrote:
+> On Fri, Jan 27, 2023 at 04:26:39PM +0100, Uwe Kleine-K=F6nig wrote:
+> > The probe function doesn't make use of the i2c_device_id * parameter so
+> > it can be trivially converted.
+> >=20
+> > Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+> > ---
+> > Hello,
+> >=20
+> > there is an ongoing effort to convert all drivers to .probe_new to
+> > eventually drop .probe with the i2c_device_id parameter. This driver
+> > currently sits in next so wasn't on my radar before.
+> >=20
+> > My plan is to tackle that after the next merge window. So I ask you to
+> > either apply this patch during the next merge window or accept that it
+> > will go in via the i2c tree together with the patch that drops .probe().
+> >=20
+> > Best regards
+> > Uwe
+> >=20
+> >  drivers/video/backlight/ktz8866.c | 5 ++---
+> >  1 file changed, 2 insertions(+), 3 deletions(-)
+> >=20
+> > diff --git a/drivers/video/backlight/ktz8866.c b/drivers/video/backligh=
+t/ktz8866.c
+> > index 97b723719e13..d38c13ad39c7 100644
+> > --- a/drivers/video/backlight/ktz8866.c
+> > +++ b/drivers/video/backlight/ktz8866.c
+> > @@ -124,8 +124,7 @@ static void ktz8866_init(struct ktz8866 *ktz)
+> >  		ktz8866_write(ktz, LCD_BIAS_CFG1, LCD_BIAS_EN);
+> >  }
+> > =20
+> > -static int ktz8866_probe(struct i2c_client *client,
+> > -			 const struct i2c_device_id *id)
+> > +static int ktz8866_probe(struct i2c_client *client)
+> >  {
+> >  	struct backlight_device *backlight_dev;
+> >  	struct backlight_properties props;
+> > @@ -197,7 +196,7 @@ static struct i2c_driver ktz8866_driver =3D {
+> >  		.name =3D "ktz8866",
+> >  		.of_match_table =3D ktz8866_match_table,
+> >  	},
+> > -	.probe =3D ktz8866_probe,
+> > +	.probe_new =3D ktz8866_probe,
+>=20
+> I think .probe_new() will be renamed to new .probe() again when there are
+> patches dropping old .probe().
 
-[27/35] Documentation: spi: correct spelling
-        commit: 0f6d2cee58f1ff2ebf66f0bceb113d79f66ecb07
+Right, the plan is to reintroduce .probe with the prototype that
+=2Eprobe_new has today.
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
+> I prefer that you pack this commit to the i2c-tree commit that drops
+> old .probe().=20
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+That's fine for me. Can I interpret this as an Ack for this patch?
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
+Best regards
+Uwe
 
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
 
-Thanks,
-Mark
+--i2z6tfpcc3xmnfcs
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmPVI/QACgkQwfwUeK3K
+7Ak50Af/cZ56lGGlxAeINnOC9w5SHml5d6VS6RzfIFR1FEQ2ukiXhnjNoDHS3RZM
+PJMVbrkhb3Y1UxV+ujZ9GCA/fdNBHtmZU5LkvF6Hs0OTP3kGxa1VxqnmtJO0MRBg
+Fn4asbXSeBxEcLgqxS93yCKLPP7PWpW1FlfZ0qE6hOxxZmlkAmY/xxeNujhiJvbB
+Eq9sQhPJgAQQRwySPATiQvXR3LHLhw9Ez9wwYo+E3VRU8UMLkNzvBxnGAwaxblaf
+xesdA8F4bJ4gCpjeDGK0lAgpNlf031hl5YZ+o7T/vSomock18Mtr3vIdH16uSGHO
+bF5qSpDnsHnqblz/Q3pKfF3z5uGNQQ==
+=uzRg
+-----END PGP SIGNATURE-----
+
+--i2z6tfpcc3xmnfcs--

@@ -2,127 +2,117 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FA9EC61D97
-	for <linux-fbdev@archiver.kernel.org>; Sun, 29 Jan 2023 01:28:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED2ECC38142
+	for <linux-fbdev@archiver.kernel.org>; Sun, 29 Jan 2023 03:03:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230106AbjA2B2H (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 28 Jan 2023 20:28:07 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44336 "EHLO
+        id S231414AbjA2DDn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 28 Jan 2023 22:03:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38386 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230091AbjA2B2G (ORCPT
+        with ESMTP id S231289AbjA2DDm (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 28 Jan 2023 20:28:06 -0500
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C61129755;
-        Sat, 28 Jan 2023 17:28:04 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1674955684; x=1706491684;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=0Pf51/oAUaJshmIVcADxYnuxpSq3l3LnzVUDIQaSaQA=;
-  b=MmhPU0RgNl3j8T4pfw9ddEqIZirk0QBRicNi9IDf8eKAvIVZ83coBxza
-   J+E3e8LVEPAvXnn6pEOQH7GV/TVxkEBNKCBk76gbabzfu3NsHVUc80VD2
-   W+D8OSd7678Gd1tQ/ZUS6bLfsCKOeQ84NcIFkD+rxID7xO4Sv4mFbYL+G
-   AIykSaslm3j3jwVspQOWEhmfzwQQOkiArsE2aKZdF+H4QBNub0ab+RMWe
-   LFep52KNOJka4KbqFr3uu/gruZemg6RKzEAgd0KSvNC61vArbdWuZRv3k
-   zEmm4JR3Q+FhcCrS4ATgPhDXLPtSKSMZiyijHaJeS715+iVBb+TQztUqR
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10604"; a="325046615"
-X-IronPort-AV: E=Sophos;i="5.97,254,1669104000"; 
-   d="scan'208";a="325046615"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Jan 2023 17:28:04 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10604"; a="727093825"
-X-IronPort-AV: E=Sophos;i="5.97,254,1669104000"; 
-   d="scan'208";a="727093825"
-Received: from lkp-server01.sh.intel.com (HELO ffa7f14d1d0f) ([10.239.97.150])
-  by fmsmga008.fm.intel.com with ESMTP; 28 Jan 2023 17:28:01 -0800
-Received: from kbuild by ffa7f14d1d0f with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1pLwUD-0001J0-0i;
-        Sun, 29 Jan 2023 01:28:01 +0000
-Date:   Sun, 29 Jan 2023 09:27:21 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     Takashi Iwai <tiwai@suse.de>, Helge Deller <deller@gmx.de>
-Cc:     oe-kbuild-all@lists.linux.dev, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        Patrik Jakobsson <pjakobsson@suse.de>,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH] fbdev: Fix invalid page access after closing deferred
- I/O devices
-Message-ID: <202301290917.puRyNsug-lkp@intel.com>
-References: <20230127165834.11387-1-tiwai@suse.de>
+        Sat, 28 Jan 2023 22:03:42 -0500
+Received: from mail-io1-f70.google.com (mail-io1-f70.google.com [209.85.166.70])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F4EB8692
+        for <linux-fbdev@vger.kernel.org>; Sat, 28 Jan 2023 19:03:41 -0800 (PST)
+Received: by mail-io1-f70.google.com with SMTP id a2-20020a5d89c2000000b00717a8ac548cso1136688iot.9
+        for <linux-fbdev@vger.kernel.org>; Sat, 28 Jan 2023 19:03:41 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=ryCFObQuc4O2HwRd/dmaSGlzJNnOWNihc9/B5WYtqyw=;
+        b=jZMjOmUukcPXvG1aqeoS11dZX8w4L8VjAGDOd+7R1xCgyUC6stfyvrx2v7OzoorpCU
+         F+3p32dl7qjfVkfJAeGl+i54sRXzj82wXGMLFgzj6qE2rEQ/IYoxFpbvUl5YTs8QkRlJ
+         PCI+1Rbvv0a3nUK4XACF9iQyJEiDdfKvb8RWDdenQCMBXxgBnr6d1fLpEtb2rtnymk8N
+         rPpFjbRN9sEJTcWKhsplARczAfsTV2UwMaLQXKXLVw7wPcsx/HKp/q3r3I6EYhnYnyeZ
+         Q38hwaTuySsFKXvbtweAjNzDDz5xesx73E2qX9bBUfsY8z4GLdRWTKE31q9prw5lXGf6
+         cTnA==
+X-Gm-Message-State: AO0yUKXnyfhDLre1SMaCAzi7jEuGDGHFGaS6ntVnWwiaJhWZFBWkb5Yq
+        i7XqnOBotnpewr0UdjKFZ7uHLo+10/MrWt6GHdbUY0zM5KgE
+X-Google-Smtp-Source: AK7set/m7Nrs0ZW/eHVkON3NVLW5iUYbr4ZQFiO6ngLZ8Xp7lt/80ikJrRSnhsbwFC+bnTA5uylgw66zyVDl0jQZ4WBAWoTrwx09
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230127165834.11387-1-tiwai@suse.de>
+X-Received: by 2002:a02:9085:0:b0:3ae:ea73:3a2a with SMTP id
+ x5-20020a029085000000b003aeea733a2amr60103jaf.94.1674961420431; Sat, 28 Jan
+ 2023 19:03:40 -0800 (PST)
+Date:   Sat, 28 Jan 2023 19:03:40 -0800
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <0000000000007a391b05f35e5892@google.com>
+Subject: [syzbot] UBSAN: shift-out-of-bounds in fbcon_set_font
+From:   syzbot <syzbot+ac877d1de3aa7263e7f4@syzkaller.appspotmail.com>
+To:     daniel@ffwll.ch, deller@gmx.de, dri-devel@lists.freedesktop.org,
+        geert+renesas@glider.be, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, sam@ravnborg.org,
+        syzkaller-bugs@googlegroups.com, tzimmermann@suse.de
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Takashi,
+Hello,
 
-I love your patch! Yet something to improve:
+syzbot found the following issue on:
 
-[auto build test ERROR on drm-misc/drm-misc-next]
-[also build test ERROR on linus/master v6.2-rc5 next-20230127]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+HEAD commit:    691781f561e9 Add linux-next specific files for 20230123
+git tree:       linux-next
+console+strace: https://syzkaller.appspot.com/x/log.txt?x=148d1815480000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=804cddf7ddbc6c64
+dashboard link: https://syzkaller.appspot.com/bug?extid=ac877d1de3aa7263e7f4
+compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=12b92cb9480000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=169917fe480000
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Takashi-Iwai/fbdev-Fix-invalid-page-access-after-closing-deferred-I-O-devices/20230128-180330
-base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
-patch link:    https://lore.kernel.org/r/20230127165834.11387-1-tiwai%40suse.de
-patch subject: [PATCH] fbdev: Fix invalid page access after closing deferred I/O devices
-config: s390-defconfig (https://download.01.org/0day-ci/archive/20230129/202301290917.puRyNsug-lkp@intel.com/config)
-compiler: s390-linux-gcc (GCC) 12.1.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/f28e22b16f34068d07913fa5d4fb2c9683aa8dc4
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Takashi-Iwai/fbdev-Fix-invalid-page-access-after-closing-deferred-I-O-devices/20230128-180330
-        git checkout f28e22b16f34068d07913fa5d4fb2c9683aa8dc4
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=s390 olddefconfig
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=s390 SHELL=/bin/bash
+Downloadable assets:
+disk image: https://storage.googleapis.com/syzbot-assets/95b9320565c9/disk-691781f5.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/c5f3482fee79/vmlinux-691781f5.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/63516279b1a1/bzImage-691781f5.xz
 
-If you fix the issue, kindly add following tag where applicable
-| Reported-by: kernel test robot <lkp@intel.com>
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+ac877d1de3aa7263e7f4@syzkaller.appspotmail.com
 
-All errors (new ones prefixed by >>):
+================================================================================
+UBSAN: shift-out-of-bounds in drivers/video/fbdev/core/fbcon.c:2489:33
+shift exponent 38 is too large for 32-bit type 'int'
+CPU: 0 PID: 5087 Comm: syz-executor580 Not tainted 6.2.0-rc5-next-20230123-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/12/2023
+Call Trace:
+ <TASK>
+ __dump_stack lib/dump_stack.c:88 [inline]
+ dump_stack_lvl+0xd1/0x138 lib/dump_stack.c:106
+ ubsan_epilogue+0xa/0x31 lib/ubsan.c:151
+ __ubsan_handle_shift_out_of_bounds.cold+0xb1/0x187 lib/ubsan.c:321
+ fbcon_set_font.cold+0x19/0x3c drivers/video/fbdev/core/fbcon.c:2489
+ con_font_set drivers/tty/vt/vt.c:4624 [inline]
+ con_font_op+0xb52/0xf10 drivers/tty/vt/vt.c:4671
+ vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
+ vt_ioctl+0x620/0x2df0 drivers/tty/vt/vt_ioctl.c:752
+ tty_ioctl+0x762/0x1670 drivers/tty/tty_io.c:2777
+ vfs_ioctl fs/ioctl.c:51 [inline]
+ __do_sys_ioctl fs/ioctl.c:870 [inline]
+ __se_sys_ioctl fs/ioctl.c:856 [inline]
+ __x64_sys_ioctl+0x197/0x210 fs/ioctl.c:856
+ do_syscall_x64 arch/x86/entry/common.c:50 [inline]
+ do_syscall_64+0x39/0xb0 arch/x86/entry/common.c:80
+ entry_SYSCALL_64_after_hwframe+0x63/0xcd
+RIP: 0033:0x7fadea3c92c9
+Code: 28 c3 e8 2a 14 00 00 66 2e 0f 1f 84 00 00 00 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 c0 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007ffeb231fd88 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 00007fadea3c92c9
+RDX: 0000000020000040 RSI: 0000000000004b72 RDI: 0000000000000003
+RBP: 00007fadea38d0b0 R08: 000000000000000d R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 00007fadea38d140
+R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
+ </TASK>
+================================================================================
 
-   drivers/video/fbdev/core/fbmem.c: In function 'fb_release':
->> drivers/video/fbdev/core/fbmem.c:1456:17: error: 'struct fb_info' has no member named 'fbdefio'
-    1456 |         if (info->fbdefio)
-         |                 ^~
 
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-vim +1456 drivers/video/fbdev/core/fbmem.c
-
-  1447	
-  1448	static int
-  1449	fb_release(struct inode *inode, struct file *file)
-  1450	__acquires(&info->lock)
-  1451	__releases(&info->lock)
-  1452	{
-  1453		struct fb_info * const info = file->private_data;
-  1454	
-  1455		lock_fb_info(info);
-> 1456		if (info->fbdefio)
-  1457			fb_deferred_io_release(info);
-  1458		if (info->fbops->fb_release)
-  1459			info->fbops->fb_release(info,1);
-  1460		module_put(info->fbops->owner);
-  1461		unlock_fb_info(info);
-  1462		put_fb_info(info);
-  1463		return 0;
-  1464	}
-  1465	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+syzbot can test patches for this issue, for details see:
+https://goo.gl/tpsmEJ#testing-patches

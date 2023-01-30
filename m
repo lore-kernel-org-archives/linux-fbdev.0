@@ -2,219 +2,266 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3DB2C54EAA
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Jan 2023 08:28:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46E68C636CC
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Jan 2023 08:52:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235394AbjA3I2o (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 30 Jan 2023 03:28:44 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50810 "EHLO
+        id S231364AbjA3Iwr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 30 Jan 2023 03:52:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37968 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229741AbjA3I2n (ORCPT
+        with ESMTP id S234978AbjA3Iwq (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 30 Jan 2023 03:28:43 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5ED0417CD7;
-        Mon, 30 Jan 2023 00:28:39 -0800 (PST)
+        Mon, 30 Jan 2023 03:52:46 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 25DD3182;
+        Mon, 30 Jan 2023 00:52:45 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id C91571FD72;
-        Mon, 30 Jan 2023 08:28:37 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id C917B219A1;
+        Mon, 30 Jan 2023 08:52:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1675067317; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1675068763; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=GQRl6qbJGy3BJjmVIWe6bw8MUALqPOBomUoGDkU5lN0=;
-        b=ECNgzCF13FEo5Ws8LcAA/LS2HWXWCqPKyrnTdrGA+Ug772XBFIvI9XODq6KBwWS9MR2Sm0
-        20YeyFdDUUNyDUWLjtNbZh9oJ4gqLFEcUcEjdcSyFYzDFwPJUJNHOXyNKR4BxpWCZi1ywF
-        P724250MiW+SXWIodRvKm5GQ97qaiZc=
+        bh=gtERE7s48p1BfGEWy7TorFnIVgEGUjG2LCDHyNZ2AiY=;
+        b=PvdSQ9mC8jgSoT/MZO+0cNZHSLPMWG802vzSy9OdYlXqD+wyWYqLBaVw7Phs2YuXGxcWwW
+        7bNOofiNdyPdX6eIr7AbWUBBZQHUEBEummS1Nv2XleZF8aNwkfJACAf1xrDJRPwteQljaX
+        CgXxYcX2PVgC2qtEtAdAeg6xjQvdXDE=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1675067317;
+        s=susede2_ed25519; t=1675068763;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=GQRl6qbJGy3BJjmVIWe6bw8MUALqPOBomUoGDkU5lN0=;
-        b=UdeJ9ZcLcwXL19KSWLDusoHEZ3SLVYlpvdOMBzmahQp6zfxumhVF4WjOwM4XRG/wc8J6dW
-        uzf686lU6Z9FhHBg==
+        bh=gtERE7s48p1BfGEWy7TorFnIVgEGUjG2LCDHyNZ2AiY=;
+        b=ijMuV7opWzVH8xa2skOEsBcOxykrBu1m+my55uWqChA7mXcKxO9j+vVbPX0FTqSaxYJQZn
+        J+V2uEnV/Uab+BCg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 9D42813A06;
-        Mon, 30 Jan 2023 08:28:37 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id A5FCD13A06;
+        Mon, 30 Jan 2023 08:52:43 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id GHNBJbV/12PcTQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 30 Jan 2023 08:28:37 +0000
-Message-ID: <2a5b5059-9f60-a5bc-cbb7-8267349b2eac@suse.de>
-Date:   Mon, 30 Jan 2023 09:28:36 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.1
-Subject: Re: [PATCH v2] fbdev: Fix invalid page access after closing deferred
- I/O devices
-To:     Takashi Iwai <tiwai@suse.de>, Helge Deller <deller@gmx.de>
-Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        id ZM6yJ1uF12MGWgAAMHmgww
+        (envelope-from <tiwai@suse.de>); Mon, 30 Jan 2023 08:52:43 +0000
+Date:   Mon, 30 Jan 2023 09:52:43 +0100
+Message-ID: <87y1pkqu90.wl-tiwai@suse.de>
+From:   Takashi Iwai <tiwai@suse.de>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Takashi Iwai <tiwai@suse.de>, Helge Deller <deller@gmx.de>,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
         dri-devel@lists.freedesktop.org,
         Patrik Jakobsson <pjakobsson@suse.de>
+Subject: Re: [PATCH v2] fbdev: Fix invalid page access after closing deferred I/O devices
+In-Reply-To: <2a5b5059-9f60-a5bc-cbb7-8267349b2eac@suse.de>
 References: <20230129082856.22113-1-tiwai@suse.de>
-Content-Language: en-US
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20230129082856.22113-1-tiwai@suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------0Dho9ne5BT7ziIXF88vgRxWe"
+        <2a5b5059-9f60-a5bc-cbb7-8267349b2eac@suse.de>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/27.2 Mule/6.0
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+Content-Type: text/plain; charset=US-ASCII
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------0Dho9ne5BT7ziIXF88vgRxWe
-Content-Type: multipart/mixed; boundary="------------lRQQWQyhNpLducckKzzb6XKY";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Takashi Iwai <tiwai@suse.de>, Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, Patrik Jakobsson <pjakobsson@suse.de>
-Message-ID: <2a5b5059-9f60-a5bc-cbb7-8267349b2eac@suse.de>
-Subject: Re: [PATCH v2] fbdev: Fix invalid page access after closing deferred
- I/O devices
-References: <20230129082856.22113-1-tiwai@suse.de>
-In-Reply-To: <20230129082856.22113-1-tiwai@suse.de>
+On Mon, 30 Jan 2023 09:28:36 +0100,
+Thomas Zimmermann wrote:
+> 
+> Hi
+> 
+> Am 29.01.23 um 09:28 schrieb Takashi Iwai:
+> > When a fbdev with deferred I/O is once opened and closed, the dirty
+> > pages still remain queued in the pageref list, and eventually later
+> > those may be processed in the delayed work.  This may lead to a
+> > corruption of pages, hitting an Oops.
+> 
+> Do you have more information on this problem?
 
---------------lRQQWQyhNpLducckKzzb6XKY
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+The details are in SUSE bugzilla, but that's an internal bug entry
+(and you know the number :)  It happens at the following at least:
 
-SGkNCg0KQW0gMjkuMDEuMjMgdW0gMDk6Mjggc2NocmllYiBUYWthc2hpIEl3YWk6DQo+IFdo
-ZW4gYSBmYmRldiB3aXRoIGRlZmVycmVkIEkvTyBpcyBvbmNlIG9wZW5lZCBhbmQgY2xvc2Vk
-LCB0aGUgZGlydHkNCj4gcGFnZXMgc3RpbGwgcmVtYWluIHF1ZXVlZCBpbiB0aGUgcGFnZXJl
-ZiBsaXN0LCBhbmQgZXZlbnR1YWxseSBsYXRlcg0KPiB0aG9zZSBtYXkgYmUgcHJvY2Vzc2Vk
-IGluIHRoZSBkZWxheWVkIHdvcmsuICBUaGlzIG1heSBsZWFkIHRvIGENCj4gY29ycnVwdGlv
-biBvZiBwYWdlcywgaGl0dGluZyBhbiBPb3BzLg0KDQpEbyB5b3UgaGF2ZSBtb3JlIGluZm9y
-bWF0aW9uIG9uIHRoaXMgcHJvYmxlbT8NCg0KVGhlIG1tYXAnZWQgYnVmZmVyIG9mIHRoZSBm
-YmRldiBkZXZpY2UgY29tZXMgZnJvbSBhIHZtYWxsb2MgY2FsbC4gVGhhdCANCm1lbW9yeSdz
-IGxvY2F0aW9uIG5ldmVyIGNoYW5nZXM7IGV2ZW4gYWNyb3NzIHBhaXJzIG9mIG9wZW4vY2xv
-c2Ugb24gdGhlIA0KZGV2aWNlIGZpbGUuIEknbSBzdXJwcmlzZWQgdGhhdCBhIHBhZ2UgZW50
-cnkgYmVjb21lcyBpbnZhbGlkLg0KDQpJbiBkcm1fZmJkZXZfY2xlYW51cCgpLCB3ZSBmaXJz
-dCByZW1vdmUgdGhlIGZiZGVmaW8gYXQgWzFdIGFuZCB0aGVuIA0KdmZyZWUoKSB0aGUgc2hh
-ZG93IGJ1ZmZlci4gU28gdGhlIG1lbW9yeSBzaG91bGQgc3RpbGwgYmUgYXJvdW5kIHVudGls
-IA0KZmJkZXZpbyBpcyBnb25lLg0KDQpbMV0gDQpodHRwczovL2VsaXhpci5ib290bGluLmNv
-bS9saW51eC9sYXRlc3Qvc291cmNlL2RyaXZlcnMvZ3B1L2RybS9kcm1fZmJfaGVscGVyLmMj
-TDIxNDYNCg0KPiANCj4gVGhpcyBwYXRjaCBtYWtlcyBzdXJlIHRvIGNhbmNlbCB0aGUgZGVs
-YXllZCB3b3JrIGFuZCBjbGVhbiB1cCB0aGUNCj4gcGFnZXJlZiBsaXN0IGF0IGNsb3Npbmcg
-dGhlIGRldmljZSBmb3IgYWRkcmVzc2luZyB0aGUgYnVnLiAgQSBwYXJ0IG9mDQo+IHRoZSBj
-bGVhbnVwIGNvZGUgaXMgZmFjdG9yZWQgb3V0IGFzIGEgbmV3IGhlbHBlciBmdW5jdGlvbiB0
-aGF0IGlzDQo+IGNhbGxlZCBmcm9tIHRoZSBjb21tb24gZmJfcmVsZWFzZSgpLg0KDQpUaGUg
-ZGVsYXllZCB3b3JrIGlzIHJlcXVpcmVkIHRvIGNvcHkgdGhlIGZyYW1lYnVmZmVyIHRvIHRo
-ZSBkZXZpY2UgDQpvdXRwdXQuIFNvIGlmIGl0J3MganVzdCBjYW5jZWxlZCwgY291bGQgdGhp
-cyByZXN1bHQgaW4gbWlzc2luZyB1cGRhdGVzPw0KDQpUaGVyZSdzIGEgY2FsbCB0byBjYW5j
-ZWxfZGVsYXllZF93b3JrX3N5bmMoKSBpbiB0aGUgbmV3IGhlbHBlciANCmZiX2RlZmVycmVk
-X2lvX3JlbGVhc2UoKS4gSXMgdGhpcyB0aGUgcmlnaHQgZnVuY3Rpb24/IE1heWJlIA0KZmx1
-c2hfZGVsYXllZF93b3JrKCkgaXMgYSBiZXR0ZXIgY2hvaWNlLg0KDQo+IA0KPiBSZXZpZXdl
-ZC1ieTogUGF0cmlrIEpha29ic3NvbiA8cGF0cmlrLnIuamFrb2Jzc29uQGdtYWlsLmNvbT4N
-Cj4gQ2M6IDxzdGFibGVAdmdlci5rZXJuZWwub3JnPg0KPiBTaWduZWQtb2ZmLWJ5OiBUYWth
-c2hpIEl3YWkgPHRpd2FpQHN1c2UuZGU+DQoNClRoaXMgY291bGQgdXNlIGEgRml4ZXMgdGFn
-LiBJdCdzIG5vdCBleGFjdGx5IGNsZWFyIHRvIG1lIHdoZW4gdGhpcyANCnByb2JsZW0gZ290
-IG9yaWdpbmFsbHkgaW50cm9kdWNlZCwgYnV0IHRoZSByZWNlbnQgcmVmYWN0b3Jpbmcgc2Vl
-bXMgYSANCmNhbmRpZGF0ZS4NCg0KRml4ZXM6IDU2YzEzNGY3ZjFiNSAoImZiZGV2OiBUcmFj
-ayBkZWZlcnJlZC1JL08gcGFnZXMgaW4gcGFnZXJlZiBzdHJ1Y3QiKQ0KQ2M6IFRob21hcyBa
-aW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPg0KQ2M6IEphdmllciBNYXJ0aW5leiBD
-YW5pbGxhcyA8amF2aWVybUByZWRoYXQuY29tPg0KQ2M6IE1hYXJ0ZW4gTGFua2hvcnN0IDxt
-YWFydGVuLmxhbmtob3JzdEBsaW51eC5pbnRlbC5jb20+DQpDYzogTWF4aW1lIFJpcGFyZCA8
-bXJpcGFyZEBrZXJuZWwub3JnPg0KQ2M6IFphY2sgUnVzaW4gPHphY2tyQHZtd2FyZS5jb20+
-DQpDYzogVk13YXJlIEdyYXBoaWNzIFJldmlld2VycyA8bGludXgtZ3JhcGhpY3MtbWFpbnRh
-aW5lckB2bXdhcmUuY29tPg0KQ2M6IEpheWEgS3VtYXIgPGpheWFsa0BpbnR3b3Jrcy5iaXo+
-DQpDYzogRGFuaWVsIFZldHRlciA8ZGFuaWVsQGZmd2xsLmNoPg0KQ2M6ICJLLiBZLiBTcmlu
-aXZhc2FuIiA8a3lzQG1pY3Jvc29mdC5jb20+DQpDYzogSGFpeWFuZyBaaGFuZyA8aGFpeWFu
-Z3pAbWljcm9zb2Z0LmNvbT4NCkNjOiBXZWkgTGl1IDx3ZWkubGl1QGtlcm5lbC5vcmc+DQpD
-YzogRGV4dWFuIEN1aSA8ZGVjdWlAbWljcm9zb2Z0LmNvbT4NCkNjOiBTdGV2ZSBHbGVuZGlu
-bmluZyA8c3RldmUuZ2xlbmRpbm5pbmdAc2hhd2VsbC5uZXQ+DQpDYzogQmVybmllIFRob21w
-c29uIDxiZXJuaWVAcGx1Z2FibGUuY29tPg0KQ2M6IEhlbGdlIERlbGxlciA8ZGVsbGVyQGdt
-eC5kZT4NCkNjOiBBbmR5IFNoZXZjaGVua28gPGFuZHJpeS5zaGV2Y2hlbmtvQGxpbnV4Lmlu
-dGVsLmNvbT4NCkNjOiBHcmVnIEtyb2FoLUhhcnRtYW4gPGdyZWdraEBsaW51eGZvdW5kYXRp
-b24ub3JnPg0KQ2M6IFN0ZXBoZW4gS2l0dCA8c3RldmVAc2syLm9yZz4NCkNjOiBQZXRlciBT
-dXRpIDxwZXRlci5zdXRpQHN0cmVhbXVubGltaXRlZC5jb20+DQpDYzogU2FtIFJhdm5ib3Jn
-IDxzYW1AcmF2bmJvcmcub3JnPg0KQ2M6IEdlZXJ0IFV5dHRlcmhvZXZlbiA8Z2VlcnQrcmVu
-ZXNhc0BnbGlkZXIuYmU+DQpDYzogeWUgeGluZ2NoZW4gPHllLnhpbmdjaGVuQHp0ZS5jb20u
-Y24+DQpDYzogUGV0ciBNbGFkZWsgPHBtbGFkZWtAc3VzZS5jb20+DQpDYzogSm9obiBPZ25l
-c3MgPGpvaG4ub2duZXNzQGxpbnV0cm9uaXguZGU+DQpDYzogVG9tIFJpeCA8dHJpeEByZWRo
-YXQuY29tPg0KQ2M6IGRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcNCkNjOiBsaW51
-eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmcNCkNjOiBsaW51eC1oeXBlcnZAdmdlci5rZXJuZWwu
-b3JnDQpDYzogPHN0YWJsZUB2Z2VyLmtlcm5lbC5vcmc+ICMgdjUuMTkrDQoNCj4gLS0tDQo+
-IHYxLT52MjogRml4IGJ1aWxkIGVycm9yIHdpdGhvdXQgQ09ORklHX0ZCX0RFRkVSUkVEX0lP
-DQo+IA0KPiAgIGRyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYl9kZWZpby5jIHwgMTAgKysr
-KysrKysrLQ0KPiAgIGRyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYm1lbS5jICAgIHwgIDQg
-KysrKw0KPiAgIGluY2x1ZGUvbGludXgvZmIuaCAgICAgICAgICAgICAgICAgIHwgIDEgKw0K
-PiAgIDMgZmlsZXMgY2hhbmdlZCwgMTQgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0K
-PiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYl9kZWZpby5j
-IGIvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiX2RlZmlvLmMNCj4gaW5kZXggYzczMDI1
-M2FiODVjLi41ODNjYmNmMDk0NDYgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvdmlkZW8vZmJk
-ZXYvY29yZS9mYl9kZWZpby5jDQo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9m
-Yl9kZWZpby5jDQo+IEBAIC0zMTMsNyArMzEzLDcgQEAgdm9pZCBmYl9kZWZlcnJlZF9pb19v
-cGVuKHN0cnVjdCBmYl9pbmZvICppbmZvLA0KPiAgIH0NCj4gICBFWFBPUlRfU1lNQk9MX0dQ
-TChmYl9kZWZlcnJlZF9pb19vcGVuKTsNCj4gICANCj4gLXZvaWQgZmJfZGVmZXJyZWRfaW9f
-Y2xlYW51cChzdHJ1Y3QgZmJfaW5mbyAqaW5mbykNCj4gK3ZvaWQgZmJfZGVmZXJyZWRfaW9f
-cmVsZWFzZShzdHJ1Y3QgZmJfaW5mbyAqaW5mbykNCj4gICB7DQo+ICAgCXN0cnVjdCBmYl9k
-ZWZlcnJlZF9pbyAqZmJkZWZpbyA9IGluZm8tPmZiZGVmaW87DQo+ICAgCXN0cnVjdCBwYWdl
-ICpwYWdlOw0KPiBAQCAtMzI3LDYgKzMyNywxNCBAQCB2b2lkIGZiX2RlZmVycmVkX2lvX2Ns
-ZWFudXAoc3RydWN0IGZiX2luZm8gKmluZm8pDQo+ICAgCQlwYWdlID0gZmJfZGVmZXJyZWRf
-aW9fcGFnZShpbmZvLCBpKTsNCj4gICAJCXBhZ2UtPm1hcHBpbmcgPSBOVUxMOw0KPiAgIAl9
-DQo+ICt9DQo+ICtFWFBPUlRfU1lNQk9MX0dQTChmYl9kZWZlcnJlZF9pb19yZWxlYXNlKTsN
-Cg0KSXQncyBhbGwgaW4gdGhlIHNhbWUgbW9kdWxlLiBObyBuZWVkIHRvIGV4cG9ydCB0aGlz
-IHN5bWJvbC4NCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiArDQo+ICt2b2lkIGZiX2Rl
-ZmVycmVkX2lvX2NsZWFudXAoc3RydWN0IGZiX2luZm8gKmluZm8pDQo+ICt7DQo+ICsJc3Ry
-dWN0IGZiX2RlZmVycmVkX2lvICpmYmRlZmlvID0gaW5mby0+ZmJkZWZpbzsNCj4gKw0KPiAr
-CWZiX2RlZmVycmVkX2lvX3JlbGVhc2UoaW5mbyk7DQo+ICAgDQo+ICAgCWt2ZnJlZShpbmZv
-LT5wYWdlcmVmcyk7DQo+ICAgCW11dGV4X2Rlc3Ryb3koJmZiZGVmaW8tPmxvY2spOw0KPiBk
-aWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZibWVtLmMgYi9kcml2ZXJz
-L3ZpZGVvL2ZiZGV2L2NvcmUvZmJtZW0uYw0KPiBpbmRleCAzYTZjODQ1OGViOGQuLmFiMzU0
-NWEwMGFiYyAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZibWVt
-LmMNCj4gKysrIGIvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZibWVtLmMNCj4gQEAgLTE0
-NTQsNiArMTQ1NCwxMCBAQCBfX3JlbGVhc2VzKCZpbmZvLT5sb2NrKQ0KPiAgIAlzdHJ1Y3Qg
-ZmJfaW5mbyAqIGNvbnN0IGluZm8gPSBmaWxlLT5wcml2YXRlX2RhdGE7DQo+ICAgDQo+ICAg
-CWxvY2tfZmJfaW5mbyhpbmZvKTsNCj4gKyNpZiBJU19FTkFCTEVEKENPTkZJR19GQl9ERUZF
-UlJFRF9JTykNCj4gKwlpZiAoaW5mby0+ZmJkZWZpbykNCj4gKwkJZmJfZGVmZXJyZWRfaW9f
-cmVsZWFzZShpbmZvKTsNCj4gKyNlbmRpZg0KPiAgIAlpZiAoaW5mby0+ZmJvcHMtPmZiX3Jl
-bGVhc2UpDQo+ICAgCQlpbmZvLT5mYm9wcy0+ZmJfcmVsZWFzZShpbmZvLDEpOw0KDQoNCj4g
-ICAJbW9kdWxlX3B1dChpbmZvLT5mYm9wcy0+b3duZXIpOw0KPiBkaWZmIC0tZ2l0IGEvaW5j
-bHVkZS9saW51eC9mYi5oIGIvaW5jbHVkZS9saW51eC9mYi5oDQo+IGluZGV4IDk2Yjk2MzIz
-ZTljYi4uNzNlYjFmODVlYThlIDEwMDY0NA0KPiAtLS0gYS9pbmNsdWRlL2xpbnV4L2ZiLmgN
-Cj4gKysrIGIvaW5jbHVkZS9saW51eC9mYi5oDQo+IEBAIC02NjIsNiArNjYyLDcgQEAgZXh0
-ZXJuIGludCAgZmJfZGVmZXJyZWRfaW9faW5pdChzdHJ1Y3QgZmJfaW5mbyAqaW5mbyk7DQo+
-ICAgZXh0ZXJuIHZvaWQgZmJfZGVmZXJyZWRfaW9fb3BlbihzdHJ1Y3QgZmJfaW5mbyAqaW5m
-bywNCj4gICAJCQkJc3RydWN0IGlub2RlICppbm9kZSwNCj4gICAJCQkJc3RydWN0IGZpbGUg
-KmZpbGUpOw0KPiArZXh0ZXJuIHZvaWQgZmJfZGVmZXJyZWRfaW9fcmVsZWFzZShzdHJ1Y3Qg
-ZmJfaW5mbyAqaW5mbyk7DQo+ICAgZXh0ZXJuIHZvaWQgZmJfZGVmZXJyZWRfaW9fY2xlYW51
-cChzdHJ1Y3QgZmJfaW5mbyAqaW5mbyk7DQo+ICAgZXh0ZXJuIGludCBmYl9kZWZlcnJlZF9p
-b19mc3luYyhzdHJ1Y3QgZmlsZSAqZmlsZSwgbG9mZl90IHN0YXJ0LA0KPiAgIAkJCQlsb2Zm
-X3QgZW5kLCBpbnQgZGF0YXN5bmMpOw0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFw
-aGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55
-IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhSQiAz
-NjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
+- A VM is started with VGA console, no fb, on the installer
+- VM is switched to bochs drm
+- Start fbiterm on VT1, switching to the graphics mode on VT
+- Exit fbiterm, going back to the text mode on VT;
+  at this moment, it gets Oops like:
 
---------------lRQQWQyhNpLducckKzzb6XKY--
+[   42.338319][  T122] BUG: unable to handle page fault for address:
+ffffe570c1000030
+[   42.340063][  T122] #PF: supervisor read access in kernel mode
+[   42.340519][  T122] #PF: error_code(0x0000) - not-present page
+[   42.340979][  T122] PGD 34c38067 P4D 34c38067 PUD 34c37067 PMD 0 
+[   42.341456][  T122] Oops: 0000 [#1] PREEMPT SMP NOPTI
+[   42.341853][  T122] CPU: 1 PID: 122 Comm: kworker/1:2 Not tainted
+5.14.21-150500.5.g2ad24ee-default #1 SLE15-SP5 (unreleased)
+b7a28d028376a517e888a7ff28c5e5dede93267c
+[   42.343000][  T122] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996),
+BIOS rel-1.16.0-0-gd239552-rebuilt.opensuse.org 04/01/2014
+[   42.343929][  T122] Workqueue: events fb_deferred_io_work
+[   42.344355][  T122] RIP: 0010:page_mapped+0x5e/0x90
+[   42.344743][  T122] Code: a8 01 75 d7 8b 47 30 f7 d0 c1 e8 1f c3 cc cc cc cc
+48 89 df e8 33 9c 05 00 89 c1 31 c0 85 c9 74 13 eb d3 48 c1 e2 06 48 01 da <8b>
+42 30 85 c0 79 c0 83 c1 01 48 8b 33 48 63 d1 b8 01 00 00 00 f7
+[   42.346285][  T122] RSP: 0018:ffffb68640207e08 EFLAGS: 00010286
+[   42.346749][  T122] RAX: 00000000b3aea8f0 RBX: ffffe570c0f00000 RCX:
+0000000000004000
+[   42.347355][  T122] RDX: ffffe570c1000000 RSI: 000fffffc0010009 RDI:
+ffffe570c0f00000
+[   42.347960][  T122] RBP: ffffffffc0503050 R08: 0000000000000000 R09:
+0000000000000001
+[   42.348568][  T122] R10: 0000000000000000 R11: ffffb68640207c88 R12:
+ffffffffc0503020
+[   42.349180][  T122] R13: ffff921281dcdc00 R14: ffff9212bcf08000 R15:
+ffffe570c0f00000
+[   42.349789][  T122] FS:  0000000000000000(0000) GS:ffff9212b3b00000(0000)
+knlGS:0000000000000000
+[   42.350471][  T122] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[   42.350975][  T122] CR2: ffffe570c1000030 CR3: 000000001b810000 CR4:
+00000000000006e0
+[   42.351588][  T122] Call Trace:
+[   42.351845][  T122]  <TASK>
+[   42.352069][  T122]  page_mkclean+0x6e/0xc0
+[   42.352400][  T122]  ? page_referenced_one+0x190/0x190
+[   42.353714][  T122]  ? pmdp_collapse_flush+0x60/0x60
+[   42.354106][  T122]  fb_deferred_io_work+0x13d/0x190
+[   42.354496][  T122]  process_one_work+0x267/0x440
+[   42.354866][  T122]  ? process_one_work+0x440/0x440
+[   42.355247][  T122]  worker_thread+0x2d/0x3d0
+[   42.355590][  T122]  ? process_one_work+0x440/0x440
+[   42.355972][  T122]  kthread+0x156/0x180
+[   42.356281][  T122]  ? set_kthread_struct+0x50/0x50
+[   42.356662][  T122]  ret_from_fork+0x22/0x30
+[   42.357006][  T122]  </TASK>
 
---------------0Dho9ne5BT7ziIXF88vgRxWe
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+The page info shows that it's a compound page but it's somehow
+broken.  On VM, it's triggered reliably with the scenario above,
+always at the same position.
 
------BEGIN PGP SIGNATURE-----
+FWIW, the Oops is hit even if there is no rewrite on the screen.
+That is, another procedure is:
+- Start VM, run fbiterm on VT1
+- Switch to VT2, text mode
+- On VT2, kill fbiterm; the crash still happens even if no screen
+  change is performed
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmPXf7QFAwAAAAAACgkQlh/E3EQov+DO
-rg/9GhWCC/Z0NjP7E3yoSDWqJevVIkw4NKv+aImkqCuwEN1GxJn0V88dDf5gzTTFgOL1rDLoFit1
-sDprH+X0OVyY63lZ4tM0ao5JStTtRDuXhWHJXZF5R2Y4z4DdtPZlWOUSXqVm4BnhGkb+S/PZ8fug
-BHUHJ0GxA96QtjIu7VWTmkSM8jC5YtOWIq1aJzjXVKL/P0Muno0Q0RWaE9+Fr3DOJFmNrcT8vXxP
-Q7b1R2Yif2GcSNEBE7iQOzZelYxKmfRWBmMhqyWzY7LjJdMETfrA7YTnL+Z1djubBQ+9co1KK8Tf
-85fV2sXiDiBlVnY3Ev/BLYZ7KXjPciaJacOUI68QR+Ht8cWpxE/Zjq1yMlylY9RYFkH+36aXyTPu
-HLlgRMyXM8+CbDi/HiMngpyNGjaqTMXgq4tgXnJxi6kk01rFgBC+NdLqKUOlhycm0hMuH+FtIWSw
-rntBO5RRc7STVGwUoleePN7ZsaWsmGkjLOUpx3WyCFYpWMY0/+A1c53mMqGzJ1HWyALD3A8wTVE7
-070htioa/MlB+AMMJ4LUjFI4DY7LxkrBcp77an+sGjNAB+PcM4lt6pCKUGFpO1amEsZ8ZRbljFZw
-nGFj+JAy59U/ipt0ZB98TwiWeqnfWKQInIwEXPdS5jL/E1zxaTLbtoKYkrCQrBhPYbnkWezwAIy2
-MEI=
-=lPhs
------END PGP SIGNATURE-----
+> The mmap'ed buffer of the fbdev device comes from a vmalloc call. That
+> memory's location never changes; even across pairs of open/close on
+> the device file. I'm surprised that a page entry becomes invalid.
+> 
+> In drm_fbdev_cleanup(), we first remove the fbdefio at [1] and then
+> vfree() the shadow buffer. So the memory should still be around until
+> fbdevio is gone.
 
---------------0Dho9ne5BT7ziIXF88vgRxWe--
+Yes, that's the puzzling part, too.  Also, another thing is that the
+bug couldn't be triggered easily when the fb is started in a different
+way.  e.g. when you run fbiterm & exit on the VM that had efifb, it
+didn't hit.
+
+So, overall, it might be that I'm scratching a wrong surface.  But at
+least it "fixes" the problem above apparently, and the deferred io
+base code itself has certainly the potential problem in general as my
+patch suggests.
+
+> [1]
+> https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/drm_fb_helper.c#L2146
+> 
+> > 
+> > This patch makes sure to cancel the delayed work and clean up the
+> > pageref list at closing the device for addressing the bug.  A part of
+> > the cleanup code is factored out as a new helper function that is
+> > called from the common fb_release().
+> 
+> The delayed work is required to copy the framebuffer to the device
+> output. So if it's just canceled, could this result in missing
+> updates?
+> 
+> There's a call to cancel_delayed_work_sync() in the new helper
+> fb_deferred_io_release(). Is this the right function? Maybe
+> flush_delayed_work() is a better choice.
+
+I thought of that, but took a shorter path.
+OK, let's check whether this keeps working with that change.
+
+> > Reviewed-by: Patrik Jakobsson <patrik.r.jakobsson@gmail.com>
+> > Cc: <stable@vger.kernel.org>
+> > Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> 
+> This could use a Fixes tag. It's not exactly clear to me when this
+> problem got originally introduced, but the recent refactoring seems a
+> candidate.
+> 
+> Fixes: 56c134f7f1b5 ("fbdev: Track deferred-I/O pages in pageref struct")
+
+Hrm, this might be.  Maybe Patrik can test with the revert of this?
+
+> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Javier Martinez Canillas <javierm@redhat.com>
+> Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+> Cc: Maxime Ripard <mripard@kernel.org>
+> Cc: Zack Rusin <zackr@vmware.com>
+> Cc: VMware Graphics Reviewers <linux-graphics-maintainer@vmware.com>
+> Cc: Jaya Kumar <jayalk@intworks.biz>
+> Cc: Daniel Vetter <daniel@ffwll.ch>
+> Cc: "K. Y. Srinivasan" <kys@microsoft.com>
+> Cc: Haiyang Zhang <haiyangz@microsoft.com>
+> Cc: Wei Liu <wei.liu@kernel.org>
+> Cc: Dexuan Cui <decui@microsoft.com>
+> Cc: Steve Glendinning <steve.glendinning@shawell.net>
+> Cc: Bernie Thompson <bernie@plugable.com>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Stephen Kitt <steve@sk2.org>
+> Cc: Peter Suti <peter.suti@streamunlimited.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+> Cc: ye xingchen <ye.xingchen@zte.com.cn>
+> Cc: Petr Mladek <pmladek@suse.com>
+> Cc: John Ogness <john.ogness@linutronix.de>
+> Cc: Tom Rix <trix@redhat.com>
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: linux-hyperv@vger.kernel.org
+> Cc: <stable@vger.kernel.org> # v5.19+
+
+Nah, please don't.  Too many Cc's, literally a spam.
+
+> > ---
+> > v1->v2: Fix build error without CONFIG_FB_DEFERRED_IO
+> > 
+> >   drivers/video/fbdev/core/fb_defio.c | 10 +++++++++-
+> >   drivers/video/fbdev/core/fbmem.c    |  4 ++++
+> >   include/linux/fb.h                  |  1 +
+> >   3 files changed, 14 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
+> > index c730253ab85c..583cbcf09446 100644
+> > --- a/drivers/video/fbdev/core/fb_defio.c
+> > +++ b/drivers/video/fbdev/core/fb_defio.c
+> > @@ -313,7 +313,7 @@ void fb_deferred_io_open(struct fb_info *info,
+> >   }
+> >   EXPORT_SYMBOL_GPL(fb_deferred_io_open);
+> >   -void fb_deferred_io_cleanup(struct fb_info *info)
+> > +void fb_deferred_io_release(struct fb_info *info)
+> >   {
+> >   	struct fb_deferred_io *fbdefio = info->fbdefio;
+> >   	struct page *page;
+> > @@ -327,6 +327,14 @@ void fb_deferred_io_cleanup(struct fb_info *info)
+> >   		page = fb_deferred_io_page(info, i);
+> >   		page->mapping = NULL;
+> >   	}
+> > +}
+> > +EXPORT_SYMBOL_GPL(fb_deferred_io_release);
+> 
+> It's all in the same module. No need to export this symbol.
+
+I noticed it, too, but just keep the same style as other functions :)
+That said, the other exported symbols are also useless.  I can prepare
+another patch to clean it up.
+
+
+thanks,
+
+Takashi

@@ -2,136 +2,218 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D314C63797
-	for <linux-fbdev@archiver.kernel.org>; Tue, 31 Jan 2023 16:29:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3060DC636D4
+	for <linux-fbdev@archiver.kernel.org>; Tue, 31 Jan 2023 22:57:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230104AbjAaQ3y (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 31 Jan 2023 11:29:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39482 "EHLO
+        id S232041AbjAaW5Y (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 31 Jan 2023 17:57:24 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45886 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231998AbjAaQ3T (ORCPT
+        with ESMTP id S232108AbjAaW5P (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 31 Jan 2023 11:29:19 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 95B0E56488;
-        Tue, 31 Jan 2023 08:29:09 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 3F2E0B81DAE;
-        Tue, 31 Jan 2023 16:29:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 727A2C433EF;
-        Tue, 31 Jan 2023 16:28:50 +0000 (UTC)
-From:   Catalin Marinas <catalin.marinas@arm.com>
-To:     linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>
-Cc:     Will Deacon <will@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
-        Russell King <linux@armlinux.org.uk>,
-        Jens Axboe <axboe@kernel.dk>,
-        Andrii Nakryiko <andrii@kernel.org>,
-        Alexei Starovoitov <ast@kernel.org>,
-        Daniel Borkmann <daniel@iogearbox.net>,
-        Vladimir Oltean <olteanv@gmail.com>,
-        Steffen Klassert <steffen.klassert@secunet.com>,
-        Daniel Jordan <daniel.m.jordan@oracle.com>,
-        Akinobu Mita <akinobu.mita@gmail.com>,
-        Helge Deller <deller@gmx.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Jiri Kosina <jikos@kernel.org>,
-        Benjamin Tissoires <benjamin.tissoires@redhat.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Wolfram Sang <wsa@kernel.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Henrik Rydberg <rydberg@bitmath.org>,
-        Karsten Keil <isdn@linux-pingi.de>,
-        Pavel Machek <pavel@ucw.cz>, Lee Jones <lee@kernel.org>,
-        Josh Poimboeuf <jpoimboe@kernel.org>,
-        Miroslav Benes <mbenes@suse.cz>,
-        Petr Mladek <pmladek@suse.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
-        Naoya Horiguchi <naoya.horiguchi@nec.com>,
-        Miaohe Lin <linmiaohe@huawei.com>,
-        Jonas Bonn <jonas@southpole.se>,
-        Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
-        Stafford Horne <shorne@gmail.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Marc Zyngier <maz@kernel.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Len Brown <len.brown@intel.com>,
-        Heiko Carstens <hca@linux.ibm.com>,
-        Vasily Gorbik <gor@linux.ibm.com>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        David Howells <dhowells@redhat.com>,
-        Jarkko Sakkinen <jarkko@kernel.org>,
-        Paul Moore <paul@paul-moore.com>,
-        James Morris <jmorris@namei.org>,
-        "Serge E. Hallyn" <serge@hallyn.com>,
-        Jaroslav Kysela <perex@perex.cz>,
-        Takashi Iwai <tiwai@suse.com>, Mark Brown <broonie@kernel.org>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Daniel Bristot de Oliveira <bristot@kernel.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Masami Hiramatsu <mhiramat@kernel.org>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Evgeniy Polyakov <zbr@ioremap.net>,
-        Fenghua Yu <fenghua.yu@intel.com>,
-        Reinette Chatre <reinette.chatre@intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Borislav Petkov <bp@alien8.de>,
-        Chris Zankel <chris@zankel.net>,
-        Max Filippov <jcmvbkbc@gmail.com>, alsa-devel@alsa-project.org,
-        coresight@lists.linaro.org, bpf@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, isdn4linux@listserv.isdn4linux.de,
-        keyrings@vger.kernel.org, linux-acpi@vger.kernel.org,
-        linux-block@vger.kernel.org, linux-crypto@vger.kernel.org,
-        linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-i2c@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-leds@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linux-sgx@vger.kernel.org, linux-spi@vger.kernel.org,
-        linux-trace-devel@vger.kernel.org,
-        linux-trace-kernel@vger.kernel.org, live-patching@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-security-module@vger.kernel.org,
-        linux-usb@vger.kernel.org, netdev@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-mm@kvack.org,
-        openrisc@lists.librecores.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-xtensa@linux-xtensa.org, linuxppc-dev@lists.ozlabs.org,
-        x86@kernel.org
-Subject: Re: (subset) [PATCH 00/35] Documentation: correct lots of spelling errors (series 1)
-Date:   Tue, 31 Jan 2023 16:28:48 +0000
-Message-Id: <167518251202.582976.5415495075435902323.b4-ty@arm.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230127064005.1558-1-rdunlap@infradead.org>
-References: <20230127064005.1558-1-rdunlap@infradead.org>
+        Tue, 31 Jan 2023 17:57:15 -0500
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC4093C30;
+        Tue, 31 Jan 2023 14:57:13 -0800 (PST)
+Received: by mail-pj1-x102b.google.com with SMTP id n20-20020a17090aab9400b00229ca6a4636so212608pjq.0;
+        Tue, 31 Jan 2023 14:57:13 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=kpHHAw+i1ZP/EdJYy8iLuB5fyNZHOMf4w2HHkl2VS3k=;
+        b=aK7X6+aPOLty1cU5iJDPudo7Et/cOC8RejVJ0Z7h4CPmE3GCVqCrqoWmSWmjefY5fq
+         ToGJYbRfEFCB7CtQTbEPIczBYoRKPvnrooecqPfLMMo8/aBTcBvIdu+DFlf7vNKaV+ZO
+         ogA34MLPbXMnvLbh5EItV4TKxPGo/Fd93CCGjm+9tRKqJMRBYVAZx7k32GER2hkvsYRY
+         bXGDHOe39IOugodjLDAlYfvWg00kafQgtYdeCPO8TLw4DG2SnuRP55YJOYabyIpJDmyM
+         xc7oo+Tq/N0Q2WkNmURx0pIsIAemFzBnBDhVuyHW5ro4Aa1Z30iGidKMdtgtTZAaxaJ1
+         rNJg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=kpHHAw+i1ZP/EdJYy8iLuB5fyNZHOMf4w2HHkl2VS3k=;
+        b=YZaBqUAfVFTjdEm2we7w+MW/aUVlebj1NXAHHn2edVToPjWV0g/vRUczpGw6LsnZrP
+         Q3CyJv33bnGKkgzNFs8u0pCgQW8RGd68vFIXPRBh8qvyenkaGJWFGVfwrKPD9gqEpDvt
+         9voLA2v8Da/huRJxUTDLTqvcNVniCnR3428OJnUNqieL315FOVPnZ14mmDAEQaHrYW+A
+         RR921e6PPbUHosuOkUWHCQ037GhuSv2JlH3+CVNHF+8i6OynsqxMuygRLAKxalk6E2FD
+         EsqHUGMWfsYg6J+iBiSgT4zuG/l5g494qlB2Nm+NuG6LxkR5cQXRFErr0YSoon23X0ep
+         QCEg==
+X-Gm-Message-State: AO0yUKWG72XBU12St/hDtj948P5pmOQeYvXELD2Sh6knqicf1aAWTDIu
+        JayxC6phC/3dHh+nqUY6vbY=
+X-Google-Smtp-Source: AK7set+Ji9OBJYURmyAYP9SXKiCgfigEX/0ltPB+8ioE1R+p9GdDWYdYRNMDhDIUCGcMkMbFfgWA2w==
+X-Received: by 2002:a17:902:dac5:b0:195:e577:231c with SMTP id q5-20020a170902dac500b00195e577231cmr759984plx.31.1675205832830;
+        Tue, 31 Jan 2023 14:57:12 -0800 (PST)
+Received: from dtor-ws.mtv.corp.google.com ([2620:15c:9d:2:effb:a74f:225a:28ef])
+        by smtp.gmail.com with ESMTPSA id t3-20020a170902b20300b001963bc7bdb8sm10229945plr.274.2023.01.31.14.57.11
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 31 Jan 2023 14:57:12 -0800 (PST)
+From:   Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>
+Cc:     Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] backlight: hx8357: switch to using gpiod API
+Date:   Tue, 31 Jan 2023 14:57:06 -0800
+Message-Id: <20230131225707.3599889-1-dmitry.torokhov@gmail.com>
+X-Mailer: git-send-email 2.39.1.456.gfc5497dd1b-goog
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, 26 Jan 2023 22:39:30 -0800, Randy Dunlap wrote:
-> Correct many spelling errors in Documentation/ as reported by codespell.
-> 
-> Maintainers of specific kernel subsystems are only Cc-ed on their
-> respective patches, not the entire series. [if all goes well]
-> 
-> These patches are based on linux-next-20230125.
-> 
-> [...]
+Switch the driver from legacy gpio API that is deprecated to the newer
+gpiod API that respects line polarities described in ACPI/DT.
 
-Applied to arm64 (for-next/misc), thanks!
+This makes driver use standard property name for the reset gpio
+("reset-gpios" vs "gpios-reset"), however there is a quirk in gpiolib
+to also recognize the legacy name and keep compatibility with older
+DTSes.
 
-[01/35] Documentation: arm64: correct spelling
-        https://git.kernel.org/arm64/c/a70f00e7f1a3
+Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+---
 
+All preparation gpiolib work to handle legacy names and polarity quirks
+has landed in mainline...
+
+ drivers/video/backlight/hx8357.c | 82 ++++++++++++++------------------
+ 1 file changed, 37 insertions(+), 45 deletions(-)
+
+diff --git a/drivers/video/backlight/hx8357.c b/drivers/video/backlight/hx8357.c
+index 9b50bc96e00f..a93e14adb846 100644
+--- a/drivers/video/backlight/hx8357.c
++++ b/drivers/video/backlight/hx8357.c
+@@ -6,11 +6,12 @@
+  */
+ 
+ #include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/lcd.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
+-#include <linux/of_gpio.h>
+ #include <linux/spi/spi.h>
+ 
+ #define HX8357_NUM_IM_PINS	3
+@@ -83,8 +84,8 @@
+ #define HX8369_SET_GAMMA_CURVE_RELATED		0xe0
+ 
+ struct hx8357_data {
+-	unsigned		im_pins[HX8357_NUM_IM_PINS];
+-	unsigned		reset;
++	struct gpio_desc	*im_pins[HX8357_NUM_IM_PINS];
++	struct gpio_desc	*reset;
+ 	struct spi_device	*spi;
+ 	int			state;
+ 	bool			use_im_pins;
+@@ -321,11 +322,11 @@ static void hx8357_lcd_reset(struct lcd_device *lcdev)
+ 	struct hx8357_data *lcd = lcd_get_data(lcdev);
+ 
+ 	/* Reset the screen */
+-	gpio_set_value(lcd->reset, 1);
++	gpiod_set_value_cansleep(lcd->reset, 0);
+ 	usleep_range(10000, 12000);
+-	gpio_set_value(lcd->reset, 0);
++	gpiod_set_value_cansleep(lcd->reset, 1);
+ 	usleep_range(10000, 12000);
+-	gpio_set_value(lcd->reset, 1);
++	gpiod_set_value_cansleep(lcd->reset, 0);
+ 
+ 	/* The controller needs 120ms to recover from reset */
+ 	msleep(120);
+@@ -341,9 +342,9 @@ static int hx8357_lcd_init(struct lcd_device *lcdev)
+ 	 * wires
+ 	 */
+ 	if (lcd->use_im_pins) {
+-		gpio_set_value_cansleep(lcd->im_pins[0], 1);
+-		gpio_set_value_cansleep(lcd->im_pins[1], 0);
+-		gpio_set_value_cansleep(lcd->im_pins[2], 1);
++		gpiod_set_value_cansleep(lcd->im_pins[0], 1);
++		gpiod_set_value_cansleep(lcd->im_pins[1], 0);
++		gpiod_set_value_cansleep(lcd->im_pins[2], 1);
+ 	}
+ 
+ 	ret = hx8357_spi_write_array(lcdev, hx8357_seq_power,
+@@ -601,48 +602,39 @@ static int hx8357_probe(struct spi_device *spi)
+ 	if (!match || !match->data)
+ 		return -EINVAL;
+ 
+-	lcd->reset = of_get_named_gpio(spi->dev.of_node, "gpios-reset", 0);
+-	if (!gpio_is_valid(lcd->reset)) {
+-		dev_err(&spi->dev, "Missing dt property: gpios-reset\n");
+-		return -EINVAL;
+-	}
+-
+-	ret = devm_gpio_request_one(&spi->dev, lcd->reset,
+-				    GPIOF_OUT_INIT_HIGH,
+-				    "hx8357-reset");
++	lcd->reset = devm_gpiod_get(&spi->dev, "reset", GPIOD_OUT_LOW);
++	ret = PTR_ERR_OR_ZERO(lcd->reset);
+ 	if (ret) {
+-		dev_err(&spi->dev,
+-			"failed to request gpio %d: %d\n",
+-			lcd->reset, ret);
+-		return -EINVAL;
++		dev_err(&spi->dev, "failed to request reset gpio: %d\n", ret);
++		return ret;
+ 	}
+ 
+-	if (of_find_property(spi->dev.of_node, "im-gpios", NULL)) {
+-		lcd->use_im_pins = 1;
+-
+-		for (i = 0; i < HX8357_NUM_IM_PINS; i++) {
+-			lcd->im_pins[i] = of_get_named_gpio(spi->dev.of_node,
+-							    "im-gpios", i);
+-			if (lcd->im_pins[i] == -EPROBE_DEFER) {
+-				dev_info(&spi->dev, "GPIO requested is not here yet, deferring the probe\n");
+-				return -EPROBE_DEFER;
+-			}
+-			if (!gpio_is_valid(lcd->im_pins[i])) {
+-				dev_err(&spi->dev, "Missing dt property: im-gpios\n");
+-				return -EINVAL;
++	gpiod_set_consumer_name(lcd->reset, "hx8357-reset");
++
++	for (i = 0; i < HX8357_NUM_IM_PINS; i++) {
++		lcd->im_pins[i] = devm_gpiod_get_index(&spi->dev,
++						       "im", i, GPIOD_OUT_LOW);
++		ret = PTR_ERR_OR_ZERO(lcd->im_pins[i]);
++		if (ret) {
++			if (ret == -ENOENT) {
++				if (i == 0)
++					break;
++				dev_err(&spi->dev, "Missing im gpios[%d]\n", i);
++				ret = -EINVAL;
++			} if (ret == -EPROBE_DEFER) {
++				dev_info(&spi->dev, "im gpio[%d] is not here yet, deferring the probe\n",
++					 i);
++			} else {
++				dev_err(&spi->dev, "failed to request im gpio[%d]: %d\n",
++					i, ret);
+ 			}
+ 
+-			ret = devm_gpio_request_one(&spi->dev, lcd->im_pins[i],
+-						    GPIOF_OUT_INIT_LOW,
+-						    "im_pins");
+-			if (ret) {
+-				dev_err(&spi->dev, "failed to request gpio %d: %d\n",
+-					lcd->im_pins[i], ret);
+-				return -EINVAL;
+-			}
++			return ret;
+ 		}
+-	} else {
+-		lcd->use_im_pins = 0;
++
++		gpiod_set_consumer_name(lcd->im_pins[i], "im_pins");
++
++		lcd->use_im_pins = true;
+ 	}
+ 
+ 	lcdev = devm_lcd_device_register(&spi->dev, "mxsfb", &spi->dev, lcd,
 -- 
-Catalin
+2.39.1.456.gfc5497dd1b-goog
 

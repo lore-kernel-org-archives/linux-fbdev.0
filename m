@@ -2,132 +2,93 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2248FC38142
-	for <linux-fbdev@archiver.kernel.org>; Tue, 31 Jan 2023 22:57:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4016CC636D4
+	for <linux-fbdev@archiver.kernel.org>; Wed,  1 Feb 2023 22:30:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231859AbjAaW5Y (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 31 Jan 2023 17:57:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45884 "EHLO
+        id S230004AbjBAWai (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 1 Feb 2023 17:30:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51094 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232115AbjAaW5Q (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 31 Jan 2023 17:57:16 -0500
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D2ECA410AE;
-        Tue, 31 Jan 2023 14:57:15 -0800 (PST)
-Received: by mail-pl1-x633.google.com with SMTP id 5so16666849plo.3;
-        Tue, 31 Jan 2023 14:57:15 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Q69dgLqN6kO5gAwOLys8/HsP5kHBTFUQsrWWIDgTKOA=;
-        b=WlyQM2M1BRD/grSwpqjxowafQRbiTF3h/qMkf/UVUkLbjBuEdMjv/YbDWF3nXuur7J
-         JCEAelUYFgODW5vL5AuDv6QOf0M3DbsAD/JGdQPzHgmeE7ntQ5+7RGUhF/4zRQ90Wicq
-         n4jHkleJL3sHGKF/VrjyrrxqRNpKig2VyaDskDKO5fLtRJYZadqIYNMS0GHYQA+dRicp
-         LPV2tCE3RYgEdwlxXKY4TucbW1z0acQjT0v9qi9MmWqjZY0XwdhXjjErQCugoCq9+jHa
-         WGk7K3pdwkd0bkwOntpa0dCzo5qCLmdpYm03D8NPTFlk6NF8jwS67G0IcfsSt6bajPOJ
-         5NtA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Q69dgLqN6kO5gAwOLys8/HsP5kHBTFUQsrWWIDgTKOA=;
-        b=KCWvAg6lVeBCu+rO8Hzry20IZ40vAGuObSkEGTU6lzFUHQIOFlFbxN6sBH3O6nmuKu
-         rW3so0wYBJ1+zWmcTueOc8ydDfHbAGk4R4m78Efhb+R6YK5GqtMGN8yFKlwMVwsU2nh7
-         pxJJ3F/P7TK2g7ZOs+7ed49jpQxOeZm+kRtseAMKD68QuI/RaLGrTfuszUhWGDDDbEpu
-         aCEGHZf1sz/pNreGtiyS2iHkpn2+Ng5M80Q1mAjJpED9Xe2x8H1fZMh+mHtiqe6fR6+o
-         NJkbMxbkOggRPdbownEopCdLpfYkAfoSKzJnFdCWh5YLzH2CFmjB8YzDvsHrmfkjdkKb
-         1gcw==
-X-Gm-Message-State: AO0yUKX6yfwzB33i+s829htob6LhUcECkOKZoBEELP5Kg6GAwp6rN4wL
-        zze2humOWHtRVrkL72a+sEQ=
-X-Google-Smtp-Source: AK7set9PKo7V/pKdXXqVAGSTAu7KzGfvjB03OhbiIWYP7LFi7RALAmjSfrliCkYrGmvTRSQ1DeTDpw==
-X-Received: by 2002:a17:903:2053:b0:194:3cef:31 with SMTP id q19-20020a170903205300b001943cef0031mr487814pla.49.1675205835275;
-        Tue, 31 Jan 2023 14:57:15 -0800 (PST)
-Received: from dtor-ws.mtv.corp.google.com ([2620:15c:9d:2:effb:a74f:225a:28ef])
-        by smtp.gmail.com with ESMTPSA id t3-20020a170902b20300b001963bc7bdb8sm10229945plr.274.2023.01.31.14.57.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 31 Jan 2023 14:57:13 -0800 (PST)
-From:   Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To:     Daniel Thompson <daniel.thompson@linaro.org>,
-        Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>
-Cc:     Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] backlight: hx8357: stop using of-specific APIs
-Date:   Tue, 31 Jan 2023 14:57:07 -0800
-Message-Id: <20230131225707.3599889-2-dmitry.torokhov@gmail.com>
-X-Mailer: git-send-email 2.39.1.456.gfc5497dd1b-goog
-In-Reply-To: <20230131225707.3599889-1-dmitry.torokhov@gmail.com>
-References: <20230131225707.3599889-1-dmitry.torokhov@gmail.com>
+        with ESMTP id S229609AbjBAWah (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 1 Feb 2023 17:30:37 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8D3BB2FCFF;
+        Wed,  1 Feb 2023 14:30:36 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 390ECB82234;
+        Wed,  1 Feb 2023 22:30:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9AE91C433D2;
+        Wed,  1 Feb 2023 22:30:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1675290633;
+        bh=zot7qOvxCoMuk3Wa7msvKuV8ZKjBUkCftR+hKbpMvKg=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=G6BGYj8GNN1wSIw5qe4+JxQaJlNBaLF4nV7u7LDHOCEUorpic/7/hdux1jfRK8GLi
+         A06Jui8y/0k9u7PZfSQ/4XKzZHLAtiOB1JqkI779XfcWpCG16HNN0DcPQuNrfxlFmr
+         WNl3b4rzTYeL+opzUO7mcOv4QNbOPwHELFYPCLXUhAMrqrE5HS6jfe2XihaXjeJFiN
+         USV4kfR1Pj3w6nETSKBrEIqrKuHhaDYnVD0zdZ4f/T8nOW5TJxh3M5iXjVRjFapoYR
+         LrnpN1j+KST+snypzKs/4c7W2iD/v8aP4baRDDE6/pOtKwNLta62Bc1WdWrd8NMcpd
+         TgBKkJmvxp3zA==
+Date:   Wed, 1 Feb 2023 16:30:32 -0600
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
+        alsa-devel@alsa-project.org, regressions@lists.linux.dev,
+        Antonino Daplas <adaplas@gmail.com>,
+        Takashi Iwai <tiwai@suse.de>, linux-pci@vger.kernel.org,
+        Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        linux-fbdev@vger.kernel.org,
+        "Zeno R.R. Davatz" <zdavatz@gmail.com>,
+        Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: Re: [REGRESSION] [Bug 216859] New: PCI bridge to bus boot hang at
+ enumeration
+Message-ID: <20230201223032.GA1904036@bhelgaas>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230126121124.GA1258686@bhelgaas>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-There is no need for this driver to be OF-specific, so switch it to
-use device_get_match_data() and stop including various of-related
-headers.
+[+cc Geert]
 
-Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
----
- drivers/video/backlight/hx8357.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+On Thu, Jan 26, 2023 at 06:11:24AM -0600, Bjorn Helgaas wrote:
+> On Thu, Jan 12, 2023 at 02:08:19PM -0600, Bjorn Helgaas wrote:
+> > On Wed, Dec 28, 2022 at 06:02:48AM -0600, Bjorn Helgaas wrote:
+> > > On Wed, Dec 28, 2022 at 08:37:52AM +0000, bugzilla-daemon@kernel.org wrote:
+> > > > https://bugzilla.kernel.org/show_bug.cgi?id=216859
+> > > 
+> > > >            Summary: PCI bridge to bus boot hang at enumeration
+> > > >     Kernel Version: 6.1-rc1
+> > > > ...
+> > > 
+> > > > With Kernel 6.1-rc1 the enumeration process stopped working for me,
+> > > > see attachments.
+> > > > 
+> > > > The enumeration works fine with Kernel 6.0 and below.
+> > > > 
+> > > > Same problem still exists with v6.1. and v6.2.-rc1
+> 
+> This is a regression between v6.0 and v6.1-rc1.  Console output during
+> boot freezes after nvidiafb deactivates the VGA console.
+> 
+> It was a lot of work for Zeno, but we finally isolated this console
+> hang to 145eed48de27 ("fbdev: Remove conflicting devices on PCI bus").
+> 
+> The system actually does continue to boot and is accessible via ssh, 
+> but the console appears hung, at least for output.  More details in
+> the bugzilla starting at
+> https://bugzilla.kernel.org/show_bug.cgi?id=216859#c47 .
 
-diff --git a/drivers/video/backlight/hx8357.c b/drivers/video/backlight/hx8357.c
-index a93e14adb846..2e162a70c1ce 100644
---- a/drivers/video/backlight/hx8357.c
-+++ b/drivers/video/backlight/hx8357.c
-@@ -10,8 +10,8 @@
- #include <linux/gpio/consumer.h>
- #include <linux/lcd.h>
- #include <linux/module.h>
--#include <linux/of.h>
--#include <linux/of_device.h>
-+#include <linux/mod_devicetable.h>
-+#include <linux/property.h>
- #include <linux/spi/spi.h>
- 
- #define HX8357_NUM_IM_PINS	3
-@@ -581,11 +581,15 @@ MODULE_DEVICE_TABLE(of, hx8357_dt_ids);
- 
- static int hx8357_probe(struct spi_device *spi)
- {
-+	int (*lcd_init_fn)(struct lcd_device *);
- 	struct lcd_device *lcdev;
- 	struct hx8357_data *lcd;
--	const struct of_device_id *match;
- 	int i, ret;
- 
-+	lcd_init_fn = device_get_match_data(&spi->dev);
-+	if (!lcd_init_fn)
-+		return -EINVAL;
-+
- 	lcd = devm_kzalloc(&spi->dev, sizeof(*lcd), GFP_KERNEL);
- 	if (!lcd)
- 		return -ENOMEM;
-@@ -598,10 +602,6 @@ static int hx8357_probe(struct spi_device *spi)
- 
- 	lcd->spi = spi;
- 
--	match = of_match_device(hx8357_dt_ids, &spi->dev);
--	if (!match || !match->data)
--		return -EINVAL;
--
- 	lcd->reset = devm_gpiod_get(&spi->dev, "reset", GPIOD_OUT_LOW);
- 	ret = PTR_ERR_OR_ZERO(lcd->reset);
- 	if (ret) {
-@@ -647,7 +647,7 @@ static int hx8357_probe(struct spi_device *spi)
- 
- 	hx8357_lcd_reset(lcdev);
- 
--	ret = ((int (*)(struct lcd_device *))match->data)(lcdev);
-+	ret = lcd_init_fn(lcdev);
- 	if (ret) {
- 		dev_err(&spi->dev, "Couldn't initialize panel\n");
- 		return ret;
--- 
-2.39.1.456.gfc5497dd1b-goog
+145eed48de27 ("fbdev: Remove conflicting devices on PCI bus") doesn't
+say what the benefit is, or what would break if we reverted it.
 
+Does anybody have any clues?  It would be nice to resolve this
+regression before v6.2, which will probably be released 2/12 or 2/19.
+
+Bjorn

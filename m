@@ -2,68 +2,86 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4124EC636CD
-	for <linux-fbdev@archiver.kernel.org>; Sun,  5 Feb 2023 19:48:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C70FEC636D6
+	for <linux-fbdev@archiver.kernel.org>; Sun,  5 Feb 2023 20:08:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229615AbjBETsO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 5 Feb 2023 14:48:14 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38828 "EHLO
+        id S229509AbjBEUIQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 5 Feb 2023 15:08:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42708 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229619AbjBETsM (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 5 Feb 2023 14:48:12 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E38591B544;
-        Sun,  5 Feb 2023 11:48:09 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 818AE60C1E;
-        Sun,  5 Feb 2023 19:48:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id E76D6C4339B;
-        Sun,  5 Feb 2023 19:48:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1675626488;
-        bh=VKbHwO2+6Iqp6gG8oBSLqbcBjysNpgfoCeogyYqdH8Y=;
-        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=MPVeqSPDOU4bLpJAAyZRq910Z9JZYkvIZ42wWuVz8RU8fLVjBMv2PeFE3Is0M93sK
-         yz483bC5qVw188FyrfOZnpEf2qreay392/fVbCJjleT0jZxHlDgJe7Pwa/HDU3mdCh
-         TV3p9S4c2FDshas0DOvWdOsvGoplVXQmhfGCfcTJFUd3Q9PjGjBAtjiSnfnybCsWET
-         QDeYoIMyNeLSMKOYr5ddNjpWMDAqazXe0/2DJpzv8PqjDBf85Za4jk5vmJVX6V73cs
-         eTwcVleWJgNT5VFVbNSyBGn9Yi2jcrBqwI9TiBmpduCEgPZkScevPS4KmsJ9T1tifl
-         R/kmJT2BspdCw==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id D5681C4314C;
-        Sun,  5 Feb 2023 19:48:08 +0000 (UTC)
-Subject: Re: [GIT PULL] fbdev fixes for v6.2-rc7
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <Y996d9DJSOK3hT3A@ls3530>
-References: <Y996d9DJSOK3hT3A@ls3530>
-X-PR-Tracked-List-Id: <linux-fbdev.vger.kernel.org>
-X-PR-Tracked-Message-Id: <Y996d9DJSOK3hT3A@ls3530>
-X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.2-rc7
-X-PR-Tracked-Commit-Id: 2b09d5d364986f724f17001ccfe4126b9b43a0be
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 870c3a9a2bc48bea0f954172aaff7ed489acaf64
-Message-Id: <167562648886.9320.9476987893494229842.pr-tracker-bot@kernel.org>
-Date:   Sun, 05 Feb 2023 19:48:08 +0000
-To:     Helge Deller <deller@gmx.de>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
+        with ESMTP id S229500AbjBEUIQ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 5 Feb 2023 15:08:16 -0500
+Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com [IPv6:2a00:1450:4864:20::62e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 82A9F1B578;
+        Sun,  5 Feb 2023 12:08:14 -0800 (PST)
+Received: by mail-ej1-x62e.google.com with SMTP id m2so28805945ejb.8;
+        Sun, 05 Feb 2023 12:08:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=googlemail.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=GsVLR2sf69c/CgAcTxB0nwg0BCA+KrQO7cMi7O1TpOc=;
+        b=kdPtnC3Nm67ra02E0FY/apPVAsDq5FvlRQibSmmWtlSnL7cLhnZdrYa0uDk+SRtXnF
+         A9H+k+97bnIMAwfvANMRDOAnSJxF2Krs3F6gxwnUG49qNKyUMtRVxZO2j1G5/4gu61Ya
+         FyMPx1a+EkDJRTBFFjMZiS7PHCmhqMPUKpOPv3NrX5NvGtpzEB8NMXrM5ywF596fwrdz
+         tTsAy8UUh7JqA8TzTktMRMjAiwjxuvhPWxHI9rt5fdmU9aF1GK9yAvO1MFrt+LYQ+opq
+         PBowQ+TsC7OcYtBTLK5xF0qn/sRMC+Zof/PbAS/7x64SA54x+FTLtcEJIVPfKGJR+Dwj
+         9AVA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=GsVLR2sf69c/CgAcTxB0nwg0BCA+KrQO7cMi7O1TpOc=;
+        b=sV+wObCo1dWW1Sv9L6WHtM8NOfVOzgMwiekKxaEId+ikXKN90KhrJwrhYOu6Yk2wJz
+         gukMVdqiK38bmBvlErikgMN/a3CuoJvp2p2hk3Fotl1dbH/qBkRAi2IFFyFryvAXYz8v
+         kmE5ZDjv1qkCBOTRElS5qofq5OceYSYyxr9LlIQNZUA6ZPGftUZ7YLoXYq/p6LcWWdij
+         xQoIi57cax85aOTqETfwWTQIl9RfFtUg0tWsFJv3WtU09WWbjRmfGq+NAeb7uVnkCk+5
+         JwZQF0qKmxANB2CgOuga1l16Afpn9BKHOWN0jdwBEMs0AAJqm3fz6O2kUyFh0vtd9X4m
+         8nEA==
+X-Gm-Message-State: AO0yUKXo6A777zTGs3DjmKxzSsz/tdBOr/RHycR9BJSXx7JCgQsPiRhW
+        +fm300vQX9IBlmoedXswf5NwrHEiay3DOpz8ikhU52pMq8I=
+X-Google-Smtp-Source: AK7set+VcMDxX4TIo7IIQRR6wEoDguvHUogqbf+9V7cPTapAP9TPYeYfC5TT4FFqKE5b8/F1NSfghiFWTd0Ta3dZvBY=
+X-Received: by 2002:a17:907:9916:b0:886:2823:423e with SMTP id
+ ka22-20020a170907991600b008862823423emr4900277ejc.284.1675627692933; Sun, 05
+ Feb 2023 12:08:12 -0800 (PST)
+MIME-Version: 1.0
+References: <20230109223110.1165433-1-martin.blumenstingl@googlemail.com> <87lemai74d.fsf@intel.com>
+In-Reply-To: <87lemai74d.fsf@intel.com>
+From:   Martin Blumenstingl <martin.blumenstingl@googlemail.com>
+Date:   Sun, 5 Feb 2023 21:08:02 +0100
+Message-ID: <CAFBinCCObycVBfN0SjkYLo9BKYWGXxW6ErLoshjASNjR5-iqkQ@mail.gmail.com>
+Subject: Re: [PATCH v1 RFC] video/hdmi: Fix HDMI_VENDOR_INFOFRAME_SIZE
+To:     Jani Nikula <jani.nikula@linux.intel.com>,
+        ville.syrjala@linux.intel.com
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Bernard Zhao <bernard@vivo.com>, Helge Deller <deller@gmx.de>,
+        linux-kernel@vger.kernel.org, Hans Verkuil <hans.verkuil@cisco.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The pull request you sent on Sun, 5 Feb 2023 10:44:23 +0100:
+Hello Jani, Hello Ville,
 
-> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.2-rc7
+On Tue, Jan 10, 2023 at 7:20 PM Jani Nikula <jani.nikula@linux.intel.com> wrote:
+[...]
+> > I'm not an expert on this topic and I'm not sure if the size still
+> > depends on that if condition from long time ago. So please share your
+> > thoughts.
+>
+> I tried to look at this quickly, but it makes my brain hurt. I don't
+> think simply changing the size here is right either.
+I think I see what you're saying here: hdmi_vendor_infoframe_length()
+has logic to determine the "correct" size.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/870c3a9a2bc48bea0f954172aaff7ed489acaf64
+My idea here is to use the maximum possible size for
+HDMI_VENDOR_INFOFRAME_SIZE so it can be used with the
+HDMI_INFOFRAME_SIZE macro (just like the other _SIZE definitions right
+above the vendor infoframe one).
+If you have suggestions on my patch then please let me know.
 
-Thank you!
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+Best regards,
+Martin

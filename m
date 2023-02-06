@@ -2,76 +2,96 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF3D1C636D3
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Feb 2023 15:56:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99C0FC05027
+	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Feb 2023 20:00:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229982AbjBFP4y (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Feb 2023 10:56:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38338 "EHLO
+        id S230184AbjBFT74 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Feb 2023 14:59:56 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43230 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230084AbjBFP4x (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Feb 2023 10:56:53 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 455781E2B5;
-        Mon,  6 Feb 2023 07:56:52 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id D250D60DC0;
-        Mon,  6 Feb 2023 15:56:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 104B5C433EF;
-        Mon,  6 Feb 2023 15:56:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1675699011;
-        bh=BnMU2Vjrd6tRJvjN7xf5KorwAqVeIfdrGkW2yAZq9kQ=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:From;
-        b=ROhVM2Efz4vn2nh6kD6hb6VC89uKawXBwAHz5MXriaSHKM3TGp6uEWGs1ov1dLIBP
-         4AUw3NeaIg0tbdX7P5IJjuSdbVJlJEeIqhGLd8818ThIPLEOtDMjK86AoOBsG9mQ5y
-         bjHTjilv/6+C3nLLDiI114GMOQ2Ek4i/1J8nCf9VBgxIqtHvp+mR5LPP7zIrMksf+s
-         EXnP6pFXTiwpU7u7Nnhju4JP/TojbNXs8hW7sN+gOkyxrn8VA2O2idinA0TMpRPlY5
-         zM+fZOsT6nl/3k3xvNtpxlpr2LPs10GUGN1T3ctmJj8oOP2KG9FS9rDViCRb+QhibI
-         htvSjNWMXZcaA==
-Date:   Mon, 6 Feb 2023 09:56:49 -0600
-From:   Bjorn Helgaas <helgaas@kernel.org>
-To:     Dave Airlie <airlied@gmail.com>
-Cc:     linux-fbdev@vger.kernel.org, linux-pci@vger.kernel.org,
-        Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Zeno Davatz <zdavatz@gmail.com>
-Subject: Re: [PATCH] Revert "fbdev: Remove conflicting devices on PCI bus"
-Message-ID: <20230206155649.GA2212009@bhelgaas>
+        with ESMTP id S230167AbjBFT7z (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Feb 2023 14:59:55 -0500
+Received: from mail.z3ntu.xyz (mail.z3ntu.xyz [128.199.32.197])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 84D9825962;
+        Mon,  6 Feb 2023 11:59:49 -0800 (PST)
+Received: from [192.168.178.23] (unknown [62.108.10.64])
+        by mail.z3ntu.xyz (Postfix) with ESMTPSA id 040F5CD0C5;
+        Mon,  6 Feb 2023 19:59:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=z3ntu.xyz; s=z3ntu;
+        t=1675713557; bh=YAA9rHwEkOLJaOcAUYlj6+0wa5Hydp2D/H7mATvbTrs=;
+        h=From:Date:Subject:To:Cc;
+        b=tKqFR6U77OTqstAkqc4vo1XEPa6BWNizx4FrScJppofjOeX8oDMl1P6bDfm7AZo5P
+         5OeVH+6UfkHEj2+J6eFlls6yLabYd3AQTpmixZ0Mx3zouKbOVpQ4xghqYmzKpS2xcK
+         +HZryf651keyUQZrCSeaVEzqZ/y50dikqV8Mi4GQ=
+From:   Luca Weiss <luca@z3ntu.xyz>
+Date:   Mon, 06 Feb 2023 20:58:30 +0100
+Subject: [PATCH] backlight: qcom-wled: Add PMI8950 compatible
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAPM=9twrKFPkEXTFWousnmJoH-mEG1KvGEBwqYY2e0biw-h8bw@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20221226-msm8953-6-2-wled-v1-1-e318d4c71d05@z3ntu.xyz>
+X-B4-Tracking: v=1; b=H4sIAOVb4WMC/z2NQQrCMBAAv1L27JZka4P1K+IhaTZ2wUbJghZK/
+ 97Ug8eBGWYF5SKscG1WKPwRlVeuYE8NjJPPD0aJlYEMkSVyOOt8GfoOHRJ+nxyxT4NzIflzDB3
+ ULHhlDMXncTrCv9+a1ppDeBdOsvyet/u27XBJWt2DAAAA
+To:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
+Cc:     linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Luca Weiss <luca@z3ntu.xyz>
+X-Mailer: b4 0.12.1
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1141; i=luca@z3ntu.xyz;
+ h=from:subject:message-id; bh=YAA9rHwEkOLJaOcAUYlj6+0wa5Hydp2D/H7mATvbTrs=;
+ b=owEBbQKS/ZANAwAIAXLYQ7idTddWAcsmYgBj4VwQ1sqTedK0Bt8ocPrVnmBVs5dhpkKuSGowg
+ OkxPIbDK4eJAjMEAAEIAB0WIQQ5utIvCCzakboVj/py2EO4nU3XVgUCY+FcEAAKCRBy2EO4nU3X
+ VlXgD/9WAJwsC+gXcyebNw/UlnmkmjENHKMLER3oY+/btVXL6wnQI3snEaY1rFqi74RDsqZ3rj5
+ 2K8E+H4dxIoQaCK048FjXSXb8V0+9AEH1bBkFQ8bSNGXBGPEVnC1uzkY5JpBGvGQeXJgxF9FThI
+ f8cjkr0traDKBZWFSFJc6Kzj/h9dsrOSCt0pDoIxzFoyG9yeWet2H1UHYtsW0IeOPeEpGtQaWA/
+ 7a6WVB0TeE4FzShG0REzZI1vuEsaogFlf34T+C+GlccDtdv8BTFo78H7PO7rq6B6oBwXgIxqcQ7
+ EECX0f/e/unpMd4hsjK4ZNS54ZCLWUWdf39Env2wn7WP2ON4RvUz8t8TQWjhGOB6IM2jJ19K5qM
+ eQ4r553HXq77V0DAIDZkHxmutZe9AGxtaY6DSb7zfUJuhAgRofPbXq9uNx0nklPx/VXIRm8haAW
+ OogoMTgaZgUh5IP/AU0ZXgI0Z8e59s30P77ylKbwG8mXjL49Jr18Qe/hU6gw2QlXHQ/rwxlFORN
+ /88PN8GAes8kd1tUBRA1C51xpnlH2Ixd6D3wxKWVpoWP2n4dlpCz1hltVwA+coAVRtF7MAojRB3
+ VRVziIw9Q1SJ2pauruo6xToI/rkqKhsfuVKZHN6rgkmNxkZt2JV0gQb34/iit9CHyE27HPV5clF
+ 18SQD/mIOf2ZQoA==
+X-Developer-Key: i=luca@z3ntu.xyz; a=openpgp;
+ fpr=BD04DA24C971B8D587B2B8D7FAF69CF6CD2D02CD
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Feb 06, 2023 at 06:59:40AM +1000, Dave Airlie wrote:
-> On Sat, 4 Feb 2023 at 09:09, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> > From: Bjorn Helgaas <bhelgaas@google.com>
-> >
-> > This reverts commit 145eed48de278007f646b908fd70ac59d24ed81a.
-> >
-> > Zeno Davatz reported that 145eed48de27 ("fbdev: Remove conflicting devices
-> > on PCI bus") caused a console hang.  The machine was actually still usable
-> > via ssh, etc., but there was no activity on the console.
-> >
-> > Reverting 145eed48de27 for the nvidiafb on that system fixed the problem.
-> >
-> > Revert 145eed48de27 ("fbdev: Remove conflicting devices on PCI bus") since
-> > we don't know what caused the problem.
-> 
-> Why is the user using nvidiafb?
+PMI8950 contains WLED of version 4. Add support for it to the driver.
 
-I don't know, and of course, it really doesn't matter; we shouldn't
-regress a user's experience, and there's no hint to the user of where
-to look for a resolution.
+Signed-off-by: Luca Weiss <luca@z3ntu.xyz>
+---
+While adding dt-bindings and dts in a previous series I forgot to add the
+compatible to the driver. Fix that now.
+---
+ drivers/video/backlight/qcom-wled.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Thanks for working out a better fix!
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index 527210e85795..5f504883aca5 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -1731,6 +1731,7 @@ static int wled_remove(struct platform_device *pdev)
+ 
+ static const struct of_device_id wled_match_table[] = {
+ 	{ .compatible = "qcom,pm8941-wled", .data = (void *)3 },
++	{ .compatible = "qcom,pmi8950-wled", .data = (void *)4 },
+ 	{ .compatible = "qcom,pmi8994-wled", .data = (void *)4 },
+ 	{ .compatible = "qcom,pmi8998-wled", .data = (void *)4 },
+ 	{ .compatible = "qcom,pm660l-wled", .data = (void *)4 },
 
-Bjorn
+---
+base-commit: 1b929c02afd37871d5afb9d498426f83432e71c2
+change-id: 20221226-msm8953-6-2-wled-5f966bfa4db3
+
+Best regards,
+-- 
+Luca Weiss <luca@z3ntu.xyz>
+

@@ -2,119 +2,107 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4067BC636CD
-	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Feb 2023 10:14:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A49F0C636D4
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Feb 2023 16:05:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230515AbjBGKOQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 7 Feb 2023 05:14:16 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45480 "EHLO
+        id S232136AbjBGQFC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Feb 2023 11:05:02 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59874 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231515AbjBGKOI (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Feb 2023 05:14:08 -0500
-X-Greylist: delayed 452 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 07 Feb 2023 02:14:07 PST
-Received: from st43p00im-zteg10063501.me.com (st43p00im-zteg10063501.me.com [17.58.63.176])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CCA07868A
-        for <linux-fbdev@vger.kernel.org>; Tue,  7 Feb 2023 02:14:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icloud.com;
-        s=1a1hai; t=1675764394;
-        bh=uy/u/jBsLuDEhP7DZbXSmCIaVmd50OFJVFk6lVxCMTQ=;
-        h=From:To:Subject:Date:Message-Id:MIME-Version;
-        b=WE5GgMq/MzwH3oRueLocrSeoZKe//cptxsnNPSY1ZBvNgM05+hC8sEMOsNN5hBhzZ
-         C9i09bsvt7WkMCX0sjEZXoBP/Q6oG1v/9+ypNeEbIdjctQDhAIWH35s9pIcBtTbLkm
-         VhbMC5+z6c7FCo+wkYEReLGEbhrTFeIgrPVSS1hoIhDVmWQ6iZU7nNuxanUVep+sYn
-         Cwdn2HNfqRJKLV9vX79byWHAEuhdofpGC4UqjujvfUodn2d94kMJNWlzpStXiy/jk9
-         MWUqibOgw4NF+4jMyHdWnAXKbSphTdorNV5Wr3brrkUQJVta4TKuLuVBh0KdosMKDa
-         zBY/KIbGporHw==
-Received: from apollo.fritz.box (st43p00im-dlb-asmtp-mailmevip.me.com [17.42.251.41])
-        by st43p00im-zteg10063501.me.com (Postfix) with ESMTPSA id 308374C17A5;
-        Tue,  7 Feb 2023 10:06:33 +0000 (UTC)
-From:   Lucy Mielke <mielkesteven@icloud.com>
-To:     deller@gmx.de, linux-fbdev@vger.kernel.org,
-        linux-omap@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc:     linux-kernel@vger.kernel.org, arnd@arndb.de
-Subject: [PATCH] fbdev: omapfb: cleanup inconsistent indentation
-Date:   Tue,  7 Feb 2023 11:06:30 +0100
-Message-Id: <20230207100630.11644-1-mielkesteven@icloud.com>
-X-Mailer: git-send-email 2.39.1
+        with ESMTP id S232384AbjBGQEv (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Feb 2023 11:04:51 -0500
+Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB25693E2
+        for <linux-fbdev@vger.kernel.org>; Tue,  7 Feb 2023 08:04:49 -0800 (PST)
+Received: by mail-wr1-x430.google.com with SMTP id y1so14061196wru.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 07 Feb 2023 08:04:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=mkf6lOjY+w6DriQTsiaHaBfCPRbIUyjacQUodaIbLxU=;
+        b=IUBq3RMtPA3k2MKRTgAfydlMP2qwP0EC81gv4qLy8dAyOBq6pIXbsZ67OTGzT90+qw
+         ZAMttaxC9lrUZIQzT9IRp01AeJktYdQLMVNZuH9U4iNDZ2qRLSUJtcHr/MYgQ3Yrquq9
+         XYwK7y6inyycbsI07PRq87GMq0tGE062k1JN9+4vhrekZ+j3PDg6T/kjF23V31T+Wa/N
+         btSMmWetssqTLRpbKS+q8CNKaHnioeI7FBfNsoF+vOP1PcbvNWNn2aWA1sn0nDuTbVXv
+         PeheqzRFdrkj9Hvit6RfZ93rT+bzJNdiBc0Y2uibhh3sLv01uUdfz3mSPBXye/LL9cKC
+         kV6Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=mkf6lOjY+w6DriQTsiaHaBfCPRbIUyjacQUodaIbLxU=;
+        b=hWtsqHb9iAhl9V/S7vziJjuMFBTa9l7JALP39UvRwFJiP13Z/xc/UMCRr36yBoAru0
+         hmoj+UzBdDXTGoqkOUTinAyrdVgWH0WuYOcwrWtjPOeiqotVOh2H3WGpGpVhrqakxl/H
+         joXxfpkomxbVSB9P/wKftYoZ7W4bRVpl0rR5J6WzyJx61Pgb4mSdzPOvUlGOtgeLn4lr
+         YHHu0+BE3bhltEVtfw0OIeoS0s8l1uN5ctWJ4inNp11f0XVClMkbsm+JfkcemxzmKPL6
+         H07YQA7T5WYQrbT1NXby7EP+7CbBOtKC+mT4cegNVb9Ln+wBMcF7zJGX1Xpyow7EIcRZ
+         Vu8Q==
+X-Gm-Message-State: AO0yUKUMGbI6Dx3Oi79Uc1/D35AKKGD/l8F19ImPPeQSzzIAN/EkwRDN
+        CCOUksEYfhbUprUfF2u2KFKJ8w==
+X-Google-Smtp-Source: AK7set9LgoQq1EFwiHlPQBez/yjb5wqI/qwX7KEaVYJBXi2mBz0UnHVgxLE673PKnV0Mh116yXa5lA==
+X-Received: by 2002:adf:e0c1:0:b0:2bf:960b:7282 with SMTP id m1-20020adfe0c1000000b002bf960b7282mr3532660wri.44.1675785888336;
+        Tue, 07 Feb 2023 08:04:48 -0800 (PST)
+Received: from aspen.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
+        by smtp.gmail.com with ESMTPSA id bj24-20020a0560001e1800b002bded7da2b8sm11685999wrb.102.2023.02.07.08.04.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Feb 2023 08:04:47 -0800 (PST)
+Date:   Tue, 7 Feb 2023 16:04:45 +0000
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] backlight: hx8357: switch to using gpiod API
+Message-ID: <Y+J2nRyDpOE0ihfj@aspen.lan>
+References: <20230131225707.3599889-1-dmitry.torokhov@gmail.com>
+ <Y+DmBGiq9kvRBHLY@aspen.lan>
+ <Y+HQfDtiqUso7e9k@google.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: Gq_PqnEGhE0xunAGRdTHGMQPVdHOi2Vh
-X-Proofpoint-ORIG-GUID: Gq_PqnEGhE0xunAGRdTHGMQPVdHOi2Vh
-X-Proofpoint-Virus-Version: =?UTF-8?Q?vendor=3Dfsecure_engine=3D1.1.170-22c6f66c430a71ce266a39bfe25bc?=
- =?UTF-8?Q?2903e8d5c8f:6.0.425,18.0.572,17.11.62.513.0000000_definitions?=
- =?UTF-8?Q?=3D2022-01-14=5F01:2022-01-14=5F01,2020-02-14=5F11,2021-12-02?=
- =?UTF-8?Q?=5F01_signatures=3D0?=
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 mlxscore=0 clxscore=1015
- malwarescore=0 mlxlogscore=681 phishscore=0 bulkscore=0 suspectscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2209130000 definitions=main-2302070090
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Y+HQfDtiqUso7e9k@google.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This cleans up the indentation according to the Linux kernel coding
-style, and should fix the warning created by the kernel test robot.
+On Mon, Feb 06, 2023 at 08:15:56PM -0800, Dmitry Torokhov wrote:
+> On Mon, Feb 06, 2023 at 11:35:32AM +0000, Daniel Thompson wrote:
+> > On Tue, Jan 31, 2023 at 02:57:06PM -0800, Dmitry Torokhov wrote:
+> > > +				dev_info(&spi->dev, "im gpio[%d] is not here yet, deferring the probe\n",
+> > > +					 i);
+> > > +			} else {
+> > > +				dev_err(&spi->dev, "failed to request im gpio[%d]: %d\n",
+> > > +					i, ret);
+> > >  			}
+> >
+> > These last two clauses should be updated to return dev_err_probe(...)
+> > instead.
+> >
+> > With that change:
+> > Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+>
+> So you want to actually suppress the deferral message unless debug
+> printks are enabled? So you want this to read:
+>
+>
+> 		if (ret) {
+> 			if (ret == -ENOENT) {
+> 				if (i == 0)
+> 					break;
+>
+> 				dev_err(&spi->dev, "Missing im gpios[%d]\n", i);
+> 				return -EINVAL;
+> 			}
+>
+> 			return dev_err_probe(&spi->dev, ret,
+> 					     "failed to request im gpio[%d]\n", i);
+> 		}
+>
+> Did I get it right?
 
-Fixes: 8b08cf2b64f5a60594b07795b2ad518c6d044566 ("OMAP: add TI OMAP
-	framebuffer driver")
+LGTM.
 
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Lucy Mielke <mielkesteven@icloud.com>
----
- drivers/video/fbdev/omap/omapfb_main.c | 32 +++++++++++++++-----------
- 1 file changed, 19 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
-index 1f3df2055ff0..4b673daa32cb 100644
---- a/drivers/video/fbdev/omap/omapfb_main.c
-+++ b/drivers/video/fbdev/omap/omapfb_main.c
-@@ -78,7 +78,7 @@ static struct platform_device omapdss_device = {
- 	.name		= "omapdss_dss",
- 	.id		= -1,
- 	.dev            = {
--		.release = omapdss_release,
-+	.release	= omapdss_release,
- 	},
- };
- 
-@@ -544,19 +544,25 @@ static int set_fb_var(struct fb_info *fbi,
- 		var->yoffset = var->yres_virtual - var->yres;
- 
- 	if (plane->color_mode == OMAPFB_COLOR_RGB444) {
--		var->red.offset	  = 8; var->red.length	 = 4;
--						var->red.msb_right   = 0;
--		var->green.offset = 4; var->green.length = 4;
--						var->green.msb_right = 0;
--		var->blue.offset  = 0; var->blue.length  = 4;
--						var->blue.msb_right  = 0;
-+		var->red.offset		= 8; 
-+		var->red.length		= 4;
-+		var->red.msb_right	= 0;
-+		var->green.offset	= 4; 
-+		var->green.length	= 4;
-+		var->green.msb_right	= 0;
-+		var->blue.offset	= 0; 
-+		var->blue.length	= 4;
-+		var->blue.msb_right	= 0;
- 	} else {
--		var->red.offset	 = 11; var->red.length	 = 5;
--						var->red.msb_right   = 0;
--		var->green.offset = 5;  var->green.length = 6;
--						var->green.msb_right = 0;
--		var->blue.offset = 0;  var->blue.length  = 5;
--						var->blue.msb_right  = 0;
-+		var->red.offset		= 11; 
-+		var->red.length		= 5;
-+		var->red.msb_right	= 0;
-+		var->green.offset	= 5;  
-+		var->green.length	= 6;
-+		var->green.msb_right	= 0;
-+		var->blue.offset	= 0;
-+		var->blue.length	= 5;
-+		var->blue.msb_right	= 0;
- 	}
- 
- 	var->height		= -1;
--- 
-2.39.1
-
+Daniel.

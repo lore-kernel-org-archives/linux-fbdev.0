@@ -2,157 +2,92 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02692C636CD
-	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Feb 2023 04:16:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83B0BC636CC
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Feb 2023 09:07:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229665AbjBGEQC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Feb 2023 23:16:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38988 "EHLO
+        id S231366AbjBGJHM convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Feb 2023 04:07:12 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49380 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229608AbjBGEQB (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Feb 2023 23:16:01 -0500
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D52E6192;
-        Mon,  6 Feb 2023 20:16:00 -0800 (PST)
-Received: by mail-pl1-x62c.google.com with SMTP id z1so14392526plg.6;
-        Mon, 06 Feb 2023 20:16:00 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=2C5M2n2QmosP+JmwI3LMq0zuwLZPr4grwBdxmYTFAJk=;
-        b=ERileFf4lERt72Vv1Me4JBfKOrl1bjyYp8lFAwfFdhg7Mp/wn33iTwDReqYSyTv9UB
-         5eHk8gIUBaJK4PhdGk+7UePdArB703VNFZyfV1ZmqfCZZwDurRzGzl+jw+VPC2U02UV6
-         m08s0ZYUN9pvVNg/Ex6ftB34Y9ouyUaDBzAytsE8XdKRurccLkvAing22zFNIjTsHMH4
-         VS3yIJjxGMRULlKNUfOXMhbVCyEAIi84wAk0ZzTPZmJZEhIlbZV9VLvaD98m86R/84R1
-         5jf6GH8BG5VcPZaor07NVx5TBYxJdNTi/hz4GQG9MH2OiCillrOxG3wX4ld3YPCr6XlD
-         e3Qg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=2C5M2n2QmosP+JmwI3LMq0zuwLZPr4grwBdxmYTFAJk=;
-        b=DQezjfCbwv7UxuRmsDiZ3ilhQjvdPcVOq5AVd984RMZaT2xLsfuu6dqC+TZ4ikoVdt
-         BwhPR3opY8uMPqg5mOyQx8L0gfmd5UIy8jfofL6ZfV2GZloKmjHl6p0kYubxmsmLvRzz
-         GdH0X9xmV56mi5D2Fp2rRn5gFCczfi8Fx8dXGD5Dp4/zKrIZDe4YskSDKmc9uhfRODtj
-         hK2KYCOmcFbRv975glUgkE23eW7LSTWtNzIxOlg5CB4ShClpD0kK4JKQ7+gAC21fOQZG
-         W4myi7fPockNp/2shGQjhoOKZKtsVXwAFu3oaUrSf+CKbqd/aYjRyWWuSBJsB6yBgD/U
-         hJdA==
-X-Gm-Message-State: AO0yUKXau8PxV8YFKMWk0IFBZi5H4tGthWDBQyybt9+W6/yHqKfVS/WI
-        1qPPq/7Iti1ujO5Ty0NtpOk=
-X-Google-Smtp-Source: AK7set/fA+mhjJmmmjRqCn5WOKLa/XCg43FSX7iofX4GncywxkFyU/J+6RMjDO4H1P3Up/Fw8ofhaA==
-X-Received: by 2002:a17:90a:e7cb:b0:230:a49b:2e64 with SMTP id kb11-20020a17090ae7cb00b00230a49b2e64mr2356976pjb.29.1675743359769;
-        Mon, 06 Feb 2023 20:15:59 -0800 (PST)
-Received: from google.com ([2620:15c:9d:2:c930:81ab:3aec:b9cb])
-        by smtp.gmail.com with ESMTPSA id i6-20020a17090ac40600b00229b17bb1e8sm7120181pjt.34.2023.02.06.20.15.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 06 Feb 2023 20:15:59 -0800 (PST)
-Date:   Mon, 6 Feb 2023 20:15:56 -0800
-From:   Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To:     Daniel Thompson <daniel.thompson@linaro.org>
-Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] backlight: hx8357: switch to using gpiod API
-Message-ID: <Y+HQfDtiqUso7e9k@google.com>
-References: <20230131225707.3599889-1-dmitry.torokhov@gmail.com>
- <Y+DmBGiq9kvRBHLY@aspen.lan>
+        with ESMTP id S229690AbjBGJHM (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Feb 2023 04:07:12 -0500
+Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68931234DF;
+        Tue,  7 Feb 2023 01:07:08 -0800 (PST)
+Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
+          by outpost.zedat.fu-berlin.de (Exim 4.95)
+          with esmtps (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@zedat.fu-berlin.de>)
+          id 1pPJwG-001RJZ-JC; Tue, 07 Feb 2023 10:06:56 +0100
+Received: from p57bd9464.dip0.t-ipconnect.de ([87.189.148.100] helo=[192.168.178.81])
+          by inpost2.zedat.fu-berlin.de (Exim 4.95)
+          with esmtpsa (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@physik.fu-berlin.de>)
+          id 1pPJwE-000mCw-Hc; Tue, 07 Feb 2023 10:06:56 +0100
+Message-ID: <60ed320c8f5286e8dbbf71be29b760339fd25069.camel@physik.fu-berlin.de>
+Subject: Re: remove arch/sh
+From:   John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+To:     Christoph Hellwig <hch@lst.de>
+Cc:     Yoshinori Sato <ysato@users.sourceforge.jp>,
+        Rich Felker <dalias@libc.org>, Arnd Bergmann <arnd@arndb.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        linux-kernel@vger.kernel.org, linux-watchdog@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arch@vger.kernel.org,
+        dmaengine@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-renesas-soc@vger.kernel.org, linux-i2c@vger.kernel.org,
+        linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
+        netdev@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-rtc@vger.kernel.org, linux-spi@vger.kernel.org,
+        linux-serial@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org,
+        linux-sh@vger.kernel.org
+Date:   Tue, 07 Feb 2023 10:06:53 +0100
+In-Reply-To: <20230203071423.GA24833@lst.de>
+References: <20230113062339.1909087-1-hch@lst.de>
+         <11e2e0a8-eabe-2d8c-d612-9cdd4bcc3648@physik.fu-berlin.de>
+         <20230116071306.GA15848@lst.de>
+         <40dc1bc1-d9cd-d9be-188e-5167ebae235c@physik.fu-berlin.de>
+         <20230203071423.GA24833@lst.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+User-Agent: Evolution 3.46.3 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Y+DmBGiq9kvRBHLY@aspen.lan>
+X-Original-Sender: glaubitz@physik.fu-berlin.de
+X-Originating-IP: 87.189.148.100
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Feb 06, 2023 at 11:35:32AM +0000, Daniel Thompson wrote:
-> On Tue, Jan 31, 2023 at 02:57:06PM -0800, Dmitry Torokhov wrote:
-> > Switch the driver from legacy gpio API that is deprecated to the newer
-> > gpiod API that respects line polarities described in ACPI/DT.
-> >
-> > This makes driver use standard property name for the reset gpio
-> > ("reset-gpios" vs "gpios-reset"), however there is a quirk in gpiolib
-> > to also recognize the legacy name and keep compatibility with older
-> > DTSes.
-> >
-> > Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> > ---
-> >
-> > All preparation gpiolib work to handle legacy names and polarity quirks
-> > has landed in mainline...
-> >
-> >  drivers/video/backlight/hx8357.c | 82 ++++++++++++++------------------
-> >  1 file changed, 37 insertions(+), 45 deletions(-)
-> >
-> > diff --git a/drivers/video/backlight/hx8357.c b/drivers/video/backlight/hx8357.c
-> > index 9b50bc96e00f..a93e14adb846 100644
-> > --- a/drivers/video/backlight/hx8357.c
-> > +++ b/drivers/video/backlight/hx8357.c
-> > [snip]
-> > -	if (of_find_property(spi->dev.of_node, "im-gpios", NULL)) {
-> > -		lcd->use_im_pins = 1;
-> > -
-> > -		for (i = 0; i < HX8357_NUM_IM_PINS; i++) {
-> > -			lcd->im_pins[i] = of_get_named_gpio(spi->dev.of_node,
-> > -							    "im-gpios", i);
-> > -			if (lcd->im_pins[i] == -EPROBE_DEFER) {
-> > -				dev_info(&spi->dev, "GPIO requested is not here yet, deferring the probe\n");
-> > -				return -EPROBE_DEFER;
-> > -			}
-> > -			if (!gpio_is_valid(lcd->im_pins[i])) {
-> > -				dev_err(&spi->dev, "Missing dt property: im-gpios\n");
-> > -				return -EINVAL;
-> > +	gpiod_set_consumer_name(lcd->reset, "hx8357-reset");
-> > +
-> > +	for (i = 0; i < HX8357_NUM_IM_PINS; i++) {
-> > +		lcd->im_pins[i] = devm_gpiod_get_index(&spi->dev,
-> > +						       "im", i, GPIOD_OUT_LOW);
-> > +		ret = PTR_ERR_OR_ZERO(lcd->im_pins[i]);
-> > +		if (ret) {
-> > +			if (ret == -ENOENT) {
-> > +				if (i == 0)
-> > +					break;
-> > +				dev_err(&spi->dev, "Missing im gpios[%d]\n", i);
-> > +				ret = -EINVAL;
-> > +			} if (ret == -EPROBE_DEFER) {
+Hello Christoph!
 
-I see I miss "else" here...
-
-> > +				dev_info(&spi->dev, "im gpio[%d] is not here yet, deferring the probe\n",
-> > +					 i);
-> > +			} else {
-> > +				dev_err(&spi->dev, "failed to request im gpio[%d]: %d\n",
-> > +					i, ret);
-> >  			}
+On Fri, 2023-02-03 at 08:14 +0100, Christoph Hellwig wrote:
+> On Mon, Jan 16, 2023 at 09:52:10AM +0100, John Paul Adrian Glaubitz wrote:
+> > We have had a discussion between multiple people invested in the SuperH port and
+> > I have decided to volunteer as a co-maintainer of the port to support Rich Felker
+> > when he isn't available.
 > 
-> These last two clauses should be updated to return dev_err_probe(...)
-> instead.
-> 
-> With that change:
-> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> So, this still isn't reflected in MAINTAINERS in linux-next.  When
+> do you plan to take over?  What platforms will remain supported and
+> what can we start dropping due to being unused and unmaintained?
 
-So you want to actually suppress the deferral message unless debug
-printks are enabled? So you want this to read:
+I'm getting everything ready now with Geert's help and I have a probably dumb
+question regarding the MAINTAINERS file change: Shall I just add myself as an
+additional maintainer first or shall I also drop Yoshinori Sato?
 
+Also, is it desirable to add a "T:" entry for the kernel tree?
 
-		if (ret) {
-			if (ret == -ENOENT) {
-				if (i == 0)
-					break;
-
-				dev_err(&spi->dev, "Missing im gpios[%d]\n", i);
-				return -EINVAL;
-			}
-
-			return dev_err_probe(&spi->dev, ret,
-					     "failed to request im gpio[%d]\n", i);
-		}
-
-
-Did I get it right?
-
-Thanks.
+Thanks,
+Adrian
 
 -- 
-Dmitry
+ .''`.  John Paul Adrian Glaubitz
+: :' :  Debian Developer
+`. `'   Physicist
+  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913

@@ -2,96 +2,157 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99C0FC05027
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Feb 2023 20:00:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02692C636CD
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Feb 2023 04:16:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230184AbjBFT74 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Feb 2023 14:59:56 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43230 "EHLO
+        id S229665AbjBGEQC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Feb 2023 23:16:02 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38988 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230167AbjBFT7z (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Feb 2023 14:59:55 -0500
-Received: from mail.z3ntu.xyz (mail.z3ntu.xyz [128.199.32.197])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 84D9825962;
-        Mon,  6 Feb 2023 11:59:49 -0800 (PST)
-Received: from [192.168.178.23] (unknown [62.108.10.64])
-        by mail.z3ntu.xyz (Postfix) with ESMTPSA id 040F5CD0C5;
-        Mon,  6 Feb 2023 19:59:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=z3ntu.xyz; s=z3ntu;
-        t=1675713557; bh=YAA9rHwEkOLJaOcAUYlj6+0wa5Hydp2D/H7mATvbTrs=;
-        h=From:Date:Subject:To:Cc;
-        b=tKqFR6U77OTqstAkqc4vo1XEPa6BWNizx4FrScJppofjOeX8oDMl1P6bDfm7AZo5P
-         5OeVH+6UfkHEj2+J6eFlls6yLabYd3AQTpmixZ0Mx3zouKbOVpQ4xghqYmzKpS2xcK
-         +HZryf651keyUQZrCSeaVEzqZ/y50dikqV8Mi4GQ=
-From:   Luca Weiss <luca@z3ntu.xyz>
-Date:   Mon, 06 Feb 2023 20:58:30 +0100
-Subject: [PATCH] backlight: qcom-wled: Add PMI8950 compatible
+        with ESMTP id S229608AbjBGEQB (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Feb 2023 23:16:01 -0500
+Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D52E6192;
+        Mon,  6 Feb 2023 20:16:00 -0800 (PST)
+Received: by mail-pl1-x62c.google.com with SMTP id z1so14392526plg.6;
+        Mon, 06 Feb 2023 20:16:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=2C5M2n2QmosP+JmwI3LMq0zuwLZPr4grwBdxmYTFAJk=;
+        b=ERileFf4lERt72Vv1Me4JBfKOrl1bjyYp8lFAwfFdhg7Mp/wn33iTwDReqYSyTv9UB
+         5eHk8gIUBaJK4PhdGk+7UePdArB703VNFZyfV1ZmqfCZZwDurRzGzl+jw+VPC2U02UV6
+         m08s0ZYUN9pvVNg/Ex6ftB34Y9ouyUaDBzAytsE8XdKRurccLkvAing22zFNIjTsHMH4
+         VS3yIJjxGMRULlKNUfOXMhbVCyEAIi84wAk0ZzTPZmJZEhIlbZV9VLvaD98m86R/84R1
+         5jf6GH8BG5VcPZaor07NVx5TBYxJdNTi/hz4GQG9MH2OiCillrOxG3wX4ld3YPCr6XlD
+         e3Qg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=2C5M2n2QmosP+JmwI3LMq0zuwLZPr4grwBdxmYTFAJk=;
+        b=DQezjfCbwv7UxuRmsDiZ3ilhQjvdPcVOq5AVd984RMZaT2xLsfuu6dqC+TZ4ikoVdt
+         BwhPR3opY8uMPqg5mOyQx8L0gfmd5UIy8jfofL6ZfV2GZloKmjHl6p0kYubxmsmLvRzz
+         GdH0X9xmV56mi5D2Fp2rRn5gFCczfi8Fx8dXGD5Dp4/zKrIZDe4YskSDKmc9uhfRODtj
+         hK2KYCOmcFbRv975glUgkE23eW7LSTWtNzIxOlg5CB4ShClpD0kK4JKQ7+gAC21fOQZG
+         W4myi7fPockNp/2shGQjhoOKZKtsVXwAFu3oaUrSf+CKbqd/aYjRyWWuSBJsB6yBgD/U
+         hJdA==
+X-Gm-Message-State: AO0yUKXau8PxV8YFKMWk0IFBZi5H4tGthWDBQyybt9+W6/yHqKfVS/WI
+        1qPPq/7Iti1ujO5Ty0NtpOk=
+X-Google-Smtp-Source: AK7set/fA+mhjJmmmjRqCn5WOKLa/XCg43FSX7iofX4GncywxkFyU/J+6RMjDO4H1P3Up/Fw8ofhaA==
+X-Received: by 2002:a17:90a:e7cb:b0:230:a49b:2e64 with SMTP id kb11-20020a17090ae7cb00b00230a49b2e64mr2356976pjb.29.1675743359769;
+        Mon, 06 Feb 2023 20:15:59 -0800 (PST)
+Received: from google.com ([2620:15c:9d:2:c930:81ab:3aec:b9cb])
+        by smtp.gmail.com with ESMTPSA id i6-20020a17090ac40600b00229b17bb1e8sm7120181pjt.34.2023.02.06.20.15.58
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 06 Feb 2023 20:15:59 -0800 (PST)
+Date:   Mon, 6 Feb 2023 20:15:56 -0800
+From:   Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To:     Daniel Thompson <daniel.thompson@linaro.org>
+Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] backlight: hx8357: switch to using gpiod API
+Message-ID: <Y+HQfDtiqUso7e9k@google.com>
+References: <20230131225707.3599889-1-dmitry.torokhov@gmail.com>
+ <Y+DmBGiq9kvRBHLY@aspen.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20221226-msm8953-6-2-wled-v1-1-e318d4c71d05@z3ntu.xyz>
-X-B4-Tracking: v=1; b=H4sIAOVb4WMC/z2NQQrCMBAAv1L27JZka4P1K+IhaTZ2wUbJghZK/
- 97Ug8eBGWYF5SKscG1WKPwRlVeuYE8NjJPPD0aJlYEMkSVyOOt8GfoOHRJ+nxyxT4NzIflzDB3
- ULHhlDMXncTrCv9+a1ppDeBdOsvyet/u27XBJWt2DAAAA
-To:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
-Cc:     linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Luca Weiss <luca@z3ntu.xyz>
-X-Mailer: b4 0.12.1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1141; i=luca@z3ntu.xyz;
- h=from:subject:message-id; bh=YAA9rHwEkOLJaOcAUYlj6+0wa5Hydp2D/H7mATvbTrs=;
- b=owEBbQKS/ZANAwAIAXLYQ7idTddWAcsmYgBj4VwQ1sqTedK0Bt8ocPrVnmBVs5dhpkKuSGowg
- OkxPIbDK4eJAjMEAAEIAB0WIQQ5utIvCCzakboVj/py2EO4nU3XVgUCY+FcEAAKCRBy2EO4nU3X
- VlXgD/9WAJwsC+gXcyebNw/UlnmkmjENHKMLER3oY+/btVXL6wnQI3snEaY1rFqi74RDsqZ3rj5
- 2K8E+H4dxIoQaCK048FjXSXb8V0+9AEH1bBkFQ8bSNGXBGPEVnC1uzkY5JpBGvGQeXJgxF9FThI
- f8cjkr0traDKBZWFSFJc6Kzj/h9dsrOSCt0pDoIxzFoyG9yeWet2H1UHYtsW0IeOPeEpGtQaWA/
- 7a6WVB0TeE4FzShG0REzZI1vuEsaogFlf34T+C+GlccDtdv8BTFo78H7PO7rq6B6oBwXgIxqcQ7
- EECX0f/e/unpMd4hsjK4ZNS54ZCLWUWdf39Env2wn7WP2ON4RvUz8t8TQWjhGOB6IM2jJ19K5qM
- eQ4r553HXq77V0DAIDZkHxmutZe9AGxtaY6DSb7zfUJuhAgRofPbXq9uNx0nklPx/VXIRm8haAW
- OogoMTgaZgUh5IP/AU0ZXgI0Z8e59s30P77ylKbwG8mXjL49Jr18Qe/hU6gw2QlXHQ/rwxlFORN
- /88PN8GAes8kd1tUBRA1C51xpnlH2Ixd6D3wxKWVpoWP2n4dlpCz1hltVwA+coAVRtF7MAojRB3
- VRVziIw9Q1SJ2pauruo6xToI/rkqKhsfuVKZHN6rgkmNxkZt2JV0gQb34/iit9CHyE27HPV5clF
- 18SQD/mIOf2ZQoA==
-X-Developer-Key: i=luca@z3ntu.xyz; a=openpgp;
- fpr=BD04DA24C971B8D587B2B8D7FAF69CF6CD2D02CD
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Y+DmBGiq9kvRBHLY@aspen.lan>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-PMI8950 contains WLED of version 4. Add support for it to the driver.
+On Mon, Feb 06, 2023 at 11:35:32AM +0000, Daniel Thompson wrote:
+> On Tue, Jan 31, 2023 at 02:57:06PM -0800, Dmitry Torokhov wrote:
+> > Switch the driver from legacy gpio API that is deprecated to the newer
+> > gpiod API that respects line polarities described in ACPI/DT.
+> >
+> > This makes driver use standard property name for the reset gpio
+> > ("reset-gpios" vs "gpios-reset"), however there is a quirk in gpiolib
+> > to also recognize the legacy name and keep compatibility with older
+> > DTSes.
+> >
+> > Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> > ---
+> >
+> > All preparation gpiolib work to handle legacy names and polarity quirks
+> > has landed in mainline...
+> >
+> >  drivers/video/backlight/hx8357.c | 82 ++++++++++++++------------------
+> >  1 file changed, 37 insertions(+), 45 deletions(-)
+> >
+> > diff --git a/drivers/video/backlight/hx8357.c b/drivers/video/backlight/hx8357.c
+> > index 9b50bc96e00f..a93e14adb846 100644
+> > --- a/drivers/video/backlight/hx8357.c
+> > +++ b/drivers/video/backlight/hx8357.c
+> > [snip]
+> > -	if (of_find_property(spi->dev.of_node, "im-gpios", NULL)) {
+> > -		lcd->use_im_pins = 1;
+> > -
+> > -		for (i = 0; i < HX8357_NUM_IM_PINS; i++) {
+> > -			lcd->im_pins[i] = of_get_named_gpio(spi->dev.of_node,
+> > -							    "im-gpios", i);
+> > -			if (lcd->im_pins[i] == -EPROBE_DEFER) {
+> > -				dev_info(&spi->dev, "GPIO requested is not here yet, deferring the probe\n");
+> > -				return -EPROBE_DEFER;
+> > -			}
+> > -			if (!gpio_is_valid(lcd->im_pins[i])) {
+> > -				dev_err(&spi->dev, "Missing dt property: im-gpios\n");
+> > -				return -EINVAL;
+> > +	gpiod_set_consumer_name(lcd->reset, "hx8357-reset");
+> > +
+> > +	for (i = 0; i < HX8357_NUM_IM_PINS; i++) {
+> > +		lcd->im_pins[i] = devm_gpiod_get_index(&spi->dev,
+> > +						       "im", i, GPIOD_OUT_LOW);
+> > +		ret = PTR_ERR_OR_ZERO(lcd->im_pins[i]);
+> > +		if (ret) {
+> > +			if (ret == -ENOENT) {
+> > +				if (i == 0)
+> > +					break;
+> > +				dev_err(&spi->dev, "Missing im gpios[%d]\n", i);
+> > +				ret = -EINVAL;
+> > +			} if (ret == -EPROBE_DEFER) {
 
-Signed-off-by: Luca Weiss <luca@z3ntu.xyz>
----
-While adding dt-bindings and dts in a previous series I forgot to add the
-compatible to the driver. Fix that now.
----
- drivers/video/backlight/qcom-wled.c | 1 +
- 1 file changed, 1 insertion(+)
+I see I miss "else" here...
 
-diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-index 527210e85795..5f504883aca5 100644
---- a/drivers/video/backlight/qcom-wled.c
-+++ b/drivers/video/backlight/qcom-wled.c
-@@ -1731,6 +1731,7 @@ static int wled_remove(struct platform_device *pdev)
- 
- static const struct of_device_id wled_match_table[] = {
- 	{ .compatible = "qcom,pm8941-wled", .data = (void *)3 },
-+	{ .compatible = "qcom,pmi8950-wled", .data = (void *)4 },
- 	{ .compatible = "qcom,pmi8994-wled", .data = (void *)4 },
- 	{ .compatible = "qcom,pmi8998-wled", .data = (void *)4 },
- 	{ .compatible = "qcom,pm660l-wled", .data = (void *)4 },
+> > +				dev_info(&spi->dev, "im gpio[%d] is not here yet, deferring the probe\n",
+> > +					 i);
+> > +			} else {
+> > +				dev_err(&spi->dev, "failed to request im gpio[%d]: %d\n",
+> > +					i, ret);
+> >  			}
+> 
+> These last two clauses should be updated to return dev_err_probe(...)
+> instead.
+> 
+> With that change:
+> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
----
-base-commit: 1b929c02afd37871d5afb9d498426f83432e71c2
-change-id: 20221226-msm8953-6-2-wled-5f966bfa4db3
+So you want to actually suppress the deferral message unless debug
+printks are enabled? So you want this to read:
 
-Best regards,
+
+		if (ret) {
+			if (ret == -ENOENT) {
+				if (i == 0)
+					break;
+
+				dev_err(&spi->dev, "Missing im gpios[%d]\n", i);
+				return -EINVAL;
+			}
+
+			return dev_err_probe(&spi->dev, ret,
+					     "failed to request im gpio[%d]\n", i);
+		}
+
+
+Did I get it right?
+
+Thanks.
+
 -- 
-Luca Weiss <luca@z3ntu.xyz>
-
+Dmitry

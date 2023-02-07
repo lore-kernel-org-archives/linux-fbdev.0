@@ -2,92 +2,121 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83B0BC636CC
-	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Feb 2023 09:07:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D3E2C636CD
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Feb 2023 09:48:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231366AbjBGJHM convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 7 Feb 2023 04:07:12 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49380 "EHLO
+        id S231305AbjBGJsQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Feb 2023 04:48:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52890 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229690AbjBGJHM (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Feb 2023 04:07:12 -0500
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68931234DF;
-        Tue,  7 Feb 2023 01:07:08 -0800 (PST)
-Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
-          by outpost.zedat.fu-berlin.de (Exim 4.95)
-          with esmtps (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@zedat.fu-berlin.de>)
-          id 1pPJwG-001RJZ-JC; Tue, 07 Feb 2023 10:06:56 +0100
-Received: from p57bd9464.dip0.t-ipconnect.de ([87.189.148.100] helo=[192.168.178.81])
-          by inpost2.zedat.fu-berlin.de (Exim 4.95)
-          with esmtpsa (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@physik.fu-berlin.de>)
-          id 1pPJwE-000mCw-Hc; Tue, 07 Feb 2023 10:06:56 +0100
-Message-ID: <60ed320c8f5286e8dbbf71be29b760339fd25069.camel@physik.fu-berlin.de>
-Subject: Re: remove arch/sh
-From:   John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-To:     Christoph Hellwig <hch@lst.de>
-Cc:     Yoshinori Sato <ysato@users.sourceforge.jp>,
-        Rich Felker <dalias@libc.org>, Arnd Bergmann <arnd@arndb.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        linux-kernel@vger.kernel.org, linux-watchdog@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arch@vger.kernel.org,
-        dmaengine@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-renesas-soc@vger.kernel.org, linux-i2c@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
-        netdev@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-rtc@vger.kernel.org, linux-spi@vger.kernel.org,
-        linux-serial@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org,
-        linux-sh@vger.kernel.org
-Date:   Tue, 07 Feb 2023 10:06:53 +0100
-In-Reply-To: <20230203071423.GA24833@lst.de>
-References: <20230113062339.1909087-1-hch@lst.de>
-         <11e2e0a8-eabe-2d8c-d612-9cdd4bcc3648@physik.fu-berlin.de>
-         <20230116071306.GA15848@lst.de>
-         <40dc1bc1-d9cd-d9be-188e-5167ebae235c@physik.fu-berlin.de>
-         <20230203071423.GA24833@lst.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-User-Agent: Evolution 3.46.3 
+        with ESMTP id S231144AbjBGJsP (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Feb 2023 04:48:15 -0500
+X-Greylist: delayed 589 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 07 Feb 2023 01:48:10 PST
+Received: from mr85p00im-ztdg06011901.me.com (mr85p00im-ztdg06011901.me.com [17.58.23.198])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5064230198
+        for <linux-fbdev@vger.kernel.org>; Tue,  7 Feb 2023 01:48:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icloud.com;
+        s=1a1hai; t=1675762700;
+        bh=uy/u/jBsLuDEhP7DZbXSmCIaVmd50OFJVFk6lVxCMTQ=;
+        h=From:To:Subject:Date:Message-Id:MIME-Version;
+        b=IdNaGH+xWpP+bEltJRBGwq59N1vzX3jRcn7IhWiCvXkemsmknYb+6kk0LZu5kmHoj
+         tlq5PJLm8RNV99aLNv9gGEDlVFmfJM7Et5WeRxe9gnQpl++lhJFay1zpfTUhgNrET0
+         bQ+Z8ZDYaqVHIN3vYw8n8yIk5qEC3Ub3ORFS15RgKIXNOB4haO0SvnEDlzlneLeAoe
+         iVKYZ++43efkadZ8DQ/Wup4kDpw0xgTPIjDSkPGV9GJ9tlSNg0HKMy5jJyW9X3z7pc
+         1d/CzEEeK2m1yI6xwAGHoh2yVboWm8/MUf/EYUgOyiFasaysIiRJWLDyEnF6MSTqyP
+         ycyjMkjY6cDxw==
+Received: from apollo.fritz.box (mr38p00im-dlb-asmtp-mailmevip.me.com [17.57.152.18])
+        by mr85p00im-ztdg06011901.me.com (Postfix) with ESMTPSA id 9F4F790056A;
+        Tue,  7 Feb 2023 09:38:18 +0000 (UTC)
+From:   Lucy Mielke <mielkesteven@icloud.com>
+To:     deller@gmx.de, linux-fbdev@vger.kernel.org,
+        linux-omap@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc:     linux-kernel@vger.kernel.org, arnd@arndb.de,
+        Lucy Mielke <mielkesteven@icloud.com>,
+        kernel test robot <lkp@intel.com>
+Subject: [PATCH] fbdev: omapfb: cleanup inconsistent indentation
+Date:   Tue,  7 Feb 2023 10:36:11 +0100
+Message-Id: <20230207093611.9361-1-mielkesteven@icloud.com>
+X-Mailer: git-send-email 2.39.1
 MIME-Version: 1.0
-X-Original-Sender: glaubitz@physik.fu-berlin.de
-X-Originating-IP: 87.189.148.100
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-GUID: s1KjAHgi32XVWN0sMXv-uTz5FlrRyFXw
+X-Proofpoint-ORIG-GUID: s1KjAHgi32XVWN0sMXv-uTz5FlrRyFXw
+X-Proofpoint-Virus-Version: =?UTF-8?Q?vendor=3Dfsecure_engine=3D1.1.170-22c6f66c430a71ce266a39bfe25bc?=
+ =?UTF-8?Q?2903e8d5c8f:6.0.138,18.0.572,17.11.62.513.0000000_definitions?=
+ =?UTF-8?Q?=3D2020-02-14=5F11:2020-02-14=5F02,2020-02-14=5F11,2021-12-02?=
+ =?UTF-8?Q?=5F01_signatures=3D0?=
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0 spamscore=0 clxscore=1011
+ mlxlogscore=791 phishscore=0 malwarescore=0 suspectscore=0 adultscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2209130000 definitions=main-2302070086
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Christoph!
+This cleans up the indentation according to the Linux kernel coding
+style, and should fix the warning created by the kernel test robot.
 
-On Fri, 2023-02-03 at 08:14 +0100, Christoph Hellwig wrote:
-> On Mon, Jan 16, 2023 at 09:52:10AM +0100, John Paul Adrian Glaubitz wrote:
-> > We have had a discussion between multiple people invested in the SuperH port and
-> > I have decided to volunteer as a co-maintainer of the port to support Rich Felker
-> > when he isn't available.
-> 
-> So, this still isn't reflected in MAINTAINERS in linux-next.  When
-> do you plan to take over?  What platforms will remain supported and
-> what can we start dropping due to being unused and unmaintained?
+Fixes: 8b08cf2b64f5a60594b07795b2ad518c6d044566 ("OMAP: add TI OMAP
+	framebuffer driver")
 
-I'm getting everything ready now with Geert's help and I have a probably dumb
-question regarding the MAINTAINERS file change: Shall I just add myself as an
-additional maintainer first or shall I also drop Yoshinori Sato?
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Lucy Mielke <mielkesteven@icloud.com>
+---
+ drivers/video/fbdev/omap/omapfb_main.c | 32 +++++++++++++++-----------
+ 1 file changed, 19 insertions(+), 13 deletions(-)
 
-Also, is it desirable to add a "T:" entry for the kernel tree?
-
-Thanks,
-Adrian
-
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index 1f3df2055ff0..4b673daa32cb 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -78,7 +78,7 @@ static struct platform_device omapdss_device = {
+ 	.name		= "omapdss_dss",
+ 	.id		= -1,
+ 	.dev            = {
+-		.release = omapdss_release,
++	.release	= omapdss_release,
+ 	},
+ };
+ 
+@@ -544,19 +544,25 @@ static int set_fb_var(struct fb_info *fbi,
+ 		var->yoffset = var->yres_virtual - var->yres;
+ 
+ 	if (plane->color_mode == OMAPFB_COLOR_RGB444) {
+-		var->red.offset	  = 8; var->red.length	 = 4;
+-						var->red.msb_right   = 0;
+-		var->green.offset = 4; var->green.length = 4;
+-						var->green.msb_right = 0;
+-		var->blue.offset  = 0; var->blue.length  = 4;
+-						var->blue.msb_right  = 0;
++		var->red.offset		= 8; 
++		var->red.length		= 4;
++		var->red.msb_right	= 0;
++		var->green.offset	= 4; 
++		var->green.length	= 4;
++		var->green.msb_right	= 0;
++		var->blue.offset	= 0; 
++		var->blue.length	= 4;
++		var->blue.msb_right	= 0;
+ 	} else {
+-		var->red.offset	 = 11; var->red.length	 = 5;
+-						var->red.msb_right   = 0;
+-		var->green.offset = 5;  var->green.length = 6;
+-						var->green.msb_right = 0;
+-		var->blue.offset = 0;  var->blue.length  = 5;
+-						var->blue.msb_right  = 0;
++		var->red.offset		= 11; 
++		var->red.length		= 5;
++		var->red.msb_right	= 0;
++		var->green.offset	= 5;  
++		var->green.length	= 6;
++		var->green.msb_right	= 0;
++		var->blue.offset	= 0;
++		var->blue.length	= 5;
++		var->blue.msb_right	= 0;
+ 	}
+ 
+ 	var->height		= -1;
 -- 
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer
-`. `'   Physicist
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
+2.39.1
+

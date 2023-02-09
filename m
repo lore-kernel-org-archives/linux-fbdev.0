@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 38204C636D7
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Feb 2023 13:55:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C2FCC636D6
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Feb 2023 13:55:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230348AbjBINzY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Feb 2023 08:55:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54462 "EHLO
+        id S230401AbjBINz0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Feb 2023 08:55:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54464 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229915AbjBINzU (ORCPT
+        with ESMTP id S230413AbjBINzU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Feb 2023 08:55:20 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 21E02D539
-        for <linux-fbdev@vger.kernel.org>; Thu,  9 Feb 2023 05:55:16 -0800 (PST)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8624F5BA49
+        for <linux-fbdev@vger.kernel.org>; Thu,  9 Feb 2023 05:55:17 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id DF0E35D032;
-        Thu,  9 Feb 2023 13:55:14 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 8BBC45D033;
+        Thu,  9 Feb 2023 13:55:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1675950914; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1675950915; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=cc/wkb7CTrIJff5YFI4h23UKqUPZFJYr44axR8SHoNs=;
-        b=Gt5F6caPF2qChBJDy5VnxjBO/iiwDrvc+HWHA01om5JijVH0w8mETcvJjcd8qTpv5IhTaf
-        oPBpJACWKJLXcHCXd0ZKUU3C27Li1XyBcbEqmJVevcRkVjldk7oAoCld0Srg/WVy6wEAPp
-        IHCqgz7wduWxeB5MymKRO/R6Tf5+W/Q=
+        bh=LTaTXQl7Ph7tUuGylQ6ryNfXYsJmmkGD7j+C1k3qtoM=;
+        b=DtpLAvd9BKfp41MBStPAMWug8yr4+0J7aMLfMMm5Gx0JzM9FeD4hW1FZqYtxuJy+98D/Ct
+        vHW8tWp0O/LEE3S4hmuqevKRtwsnQK6peEV/L7inTePr7oImF9FJcAmFEqAJku12OH08jF
+        G5ZuveCfUT/zYWu2nBgxR4zPb/+OhEI=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1675950914;
+        s=susede2_ed25519; t=1675950915;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=cc/wkb7CTrIJff5YFI4h23UKqUPZFJYr44axR8SHoNs=;
-        b=IgTwud9Qm7Xo/p2iAptM9D+xs2u5m8g49x6bhlhnCKXJavD6OCPVoVW/EeB7GjF/hst2Js
-        k4UW4L4KgWIYsmDg==
+        bh=LTaTXQl7Ph7tUuGylQ6ryNfXYsJmmkGD7j+C1k3qtoM=;
+        b=Ko8a9NVaWGMHJqNrZNa6jjJJwkeMfyM6Yo5qJ0RWSG04fiXXKbTHJ627Eood7v2/xhEglM
+        v7Rjq2K47w3PrIAg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 92A84138E4;
-        Thu,  9 Feb 2023 13:55:14 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 43DCD138E4;
+        Thu,  9 Feb 2023 13:55:15 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id uCfQIkL75GNTfwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 09 Feb 2023 13:55:14 +0000
+        id iOqRD0P75GNTfwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 09 Feb 2023 13:55:15 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     daniel@ffwll.ch, airlied@gmail.com, deller@gmx.de,
         javierm@redhat.com, maarten.lankhorst@linux.intel.com,
@@ -56,9 +56,9 @@ To:     daniel@ffwll.ch, airlied@gmail.com, deller@gmx.de,
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 08/11] fbdev: Handle video= parameter in video/cmdline.c
-Date:   Thu,  9 Feb 2023 14:55:06 +0100
-Message-Id: <20230209135509.7786-9-tzimmermann@suse.de>
+Subject: [PATCH 10/11] drm: Include <video/cmdline.h> for mode parsing
+Date:   Thu,  9 Feb 2023 14:55:08 +0100
+Message-Id: <20230209135509.7786-11-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230209135509.7786-1-tzimmermann@suse.de>
 References: <20230209135509.7786-1-tzimmermann@suse.de>
@@ -68,403 +68,49 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Handle the command-line parameter video= in video/cmdline.c. Implement
-the fbdev helper fb_get_options() on top. Will allows to handle the
-kernel parameter in DRM without fbdev dependencies.
+Include <video/cmdline.h> in drm_connector.c to get video_get_options()
+and avoid the dependency on <linux/fb.h>. The replaced function
+fb_get_options() is just a tiny wrapper around video_get_opions(). No
+functional changes.
 
-Note that __video_get_options() has the meaning of its return value
-inverted compared to fb_get_options(). The new helper returns true if
-the adapter has been enabled, and false otherwise.
-
-There is the ofonly parameter, which disables output for non-OF-based
-framebuffers. It is only for offb and looks like a workaround. The actual
-purpose it not clear to me. Use 'video=off' or 'nomodeset' instead.
+Include <linux/property.h> to get fwnode_handle_put(), which had been
+provided via <linux/fb.h>.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/gpu/drm/Kconfig               |   2 +-
- drivers/video/Kconfig                 |   3 +
- drivers/video/Makefile                |   1 +
- drivers/video/cmdline.c               | 133 ++++++++++++++++++++++++++
- drivers/video/fbdev/Kconfig           |   5 +-
- drivers/video/fbdev/core/Makefile     |   3 +-
- drivers/video/fbdev/core/fb_cmdline.c |  93 +++---------------
- include/video/cmdline.h               |  20 ++++
- 8 files changed, 172 insertions(+), 88 deletions(-)
- create mode 100644 drivers/video/cmdline.c
- create mode 100644 include/video/cmdline.h
+ drivers/gpu/drm/drm_connector.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-index dc0f94f02a82..81c8a99c744a 100644
---- a/drivers/gpu/drm/Kconfig
-+++ b/drivers/gpu/drm/Kconfig
-@@ -10,13 +10,13 @@ menuconfig DRM
- 	depends on (AGP || AGP=n) && !EMULATED_CMPXCHG && HAS_DMA
- 	select DRM_PANEL_ORIENTATION_QUIRKS
- 	select HDMI
--	select FB_CMDLINE
- 	select I2C
- 	select DMA_SHARED_BUFFER
- 	select SYNC_FILE
- # gallium uses SYS_kcmp for os_same_file_description() to de-duplicate
- # device and dmabuf fd. Let's make sure that is available for our userspace.
- 	select KCMP
-+	select VIDEO_CMDLINE
- 	select VIDEO_NOMODESET
- 	help
- 	  Kernel-level support for the Direct Rendering Infrastructure (DRI)
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 6d2fde6c5d11..bf05363d8906 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -11,6 +11,9 @@ config APERTURE_HELPERS
- 	  Support tracking and hand-over of aperture ownership. Required
- 	  by graphics drivers for firmware-provided framebuffers.
+diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connector.c
+index 9d0250c28e9b..ca5fb54b7aab 100644
+--- a/drivers/gpu/drm/drm_connector.c
++++ b/drivers/gpu/drm/drm_connector.c
+@@ -33,9 +33,11 @@
+ #include <drm/drm_sysfs.h>
+ #include <drm/drm_utils.h>
  
-+config VIDEO_CMDLINE
-+	bool
-+
- config VIDEO_NOMODESET
- 	bool
- 	default n
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index a50eb528ed3c..831c9fa57a6c 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -2,6 +2,7 @@
- 
- obj-$(CONFIG_APERTURE_HELPERS)    += aperture.o
- obj-$(CONFIG_VGASTATE)            += vgastate.o
-+obj-$(CONFIG_VIDEO_CMDLINE)       += cmdline.o
- obj-$(CONFIG_VIDEO_NOMODESET)     += nomodeset.o
- obj-$(CONFIG_HDMI)                += hdmi.o
- 
-diff --git a/drivers/video/cmdline.c b/drivers/video/cmdline.c
-new file mode 100644
-index 000000000000..d3d257489c3d
---- /dev/null
-+++ b/drivers/video/cmdline.c
-@@ -0,0 +1,133 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Based on the fbdev code in drivers/video/fbdev/core/fb_cmdline:
-+ *
-+ *  Copyright (C) 2014 Intel Corp
-+ *  Copyright (C) 1994 Martin Schaller
-+ *
-+ *	2001 - Documented with DocBook
-+ *	- Brad Douglas <brad@neruo.com>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file COPYING in the main directory of this archive
-+ * for more details.
-+ *
-+ * Authors:
-+ *    Daniel Vetter <daniel.vetter@ffwll.ch>
-+ */
-+
-+#include <linux/fb.h> /* for FB_MAX */
-+#include <linux/init.h>
-+
-+#include <video/cmdline.h>
-+
-+/*
-+ * FB_MAX is the maximum number of framebuffer devices and also
-+ * the maximum number of video= parameters. Although not directly
-+ * related to each other, it makes sense to keep it that way.
-+ */
-+static const char *video_options[FB_MAX] __read_mostly;
-+static const char *video_option __read_mostly;
-+static int video_of_only __read_mostly;
-+
-+static const char *__video_get_option_string(const char *name)
-+{
-+	const char *options = NULL;
-+	size_t name_len = 0;
-+
-+	if (name)
-+		name_len = strlen(name);
-+
-+	if (name_len) {
-+		unsigned int i;
-+		const char *opt;
-+
-+		for (i = 0; i < ARRAY_SIZE(video_options); ++i) {
-+			if (!video_options[i])
-+				continue;
-+			if (video_options[i][0] == '\0')
-+				continue;
-+			opt = video_options[i];
-+			if (!strncmp(opt, name, name_len) && opt[name_len] == ':')
-+				options = opt + name_len + 1;
-+		}
-+	}
-+
-+	/* No match, return global options */
-+	if (!options)
-+		options = video_option;
-+
-+	return options;
-+}
-+
-+/**
-+ * video_get_options - get kernel boot parameters
-+ * @name:	name of the output as it would appear in the boot parameter
-+ *		line (video=<name>:<options>)
-+ *
-+ * Looks up the video= options for the given name. Names are connector
-+ * names with DRM, or driver names with fbdev. If no video option for
-+ * the name has been specified, the function returns the global video=
-+ * setting. A @name of NULL always returns the global video setting.
-+ *
-+ * Returns:
-+ * The string of video options for the given name, or NULL if no video
-+ * option has been specified.
-+ */
-+const char *video_get_options(const char *name)
-+{
-+	return __video_get_option_string(name);
-+}
-+EXPORT_SYMBOL(video_get_options);
-+
-+bool __video_get_options(const char *name, const char **options, bool is_of)
-+{
-+	bool enabled = true;
-+	const char *opt = NULL;
-+
-+	if (video_of_only && !is_of)
-+		enabled = false;
-+
-+	opt = __video_get_option_string(name);
-+
-+	if (options)
-+		*options = opt;
-+
-+	return enabled;
-+}
-+EXPORT_SYMBOL(__video_get_options);
-+
-+/*
-+ * Process command line options for video adapters. This function is
-+ * a __setup and __init function. It only stores the options. Drivers
-+ * have to call video_get_options() as necessary.
-+ */
-+static int __init video_setup(char *options)
-+{
-+	if (!options || !*options)
-+		goto out;
-+
-+	if (!strncmp(options, "ofonly", 6)) {
-+		video_of_only = true;
-+		goto out;
-+	}
-+
-+	if (strchr(options, ':')) {
-+		/* named */
-+		size_t i;
-+
-+		for (i = 0; i < ARRAY_SIZE(video_options); i++) {
-+			if (!video_options[i]) {
-+				video_options[i] = options;
-+				break;
-+			}
-+		}
-+	} else {
-+		/* global */
-+		video_option = options;
-+	}
-+
-+out:
-+	return 1;
-+}
-+__setup("video=", video_setup);
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index b2bed599e6c6..3623c1c0d34d 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -3,16 +3,13 @@
- # fbdev configuration
- #
- 
--config FB_CMDLINE
--	bool
--
- config FB_NOTIFY
- 	bool
- 
- menuconfig FB
- 	tristate "Support for frame buffer devices"
--	select FB_CMDLINE
- 	select FB_NOTIFY
-+	select VIDEO_CMDLINE
- 	help
- 	  The frame buffer device provides an abstraction for the graphics
- 	  hardware. It represents the frame buffer of some video hardware and
-diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
-index 26cbc965497c..08fabce76b74 100644
---- a/drivers/video/fbdev/core/Makefile
-+++ b/drivers/video/fbdev/core/Makefile
-@@ -1,9 +1,8 @@
- # SPDX-License-Identifier: GPL-2.0
--obj-$(CONFIG_FB_CMDLINE)          += fb_cmdline.o
- obj-$(CONFIG_FB_NOTIFY)           += fb_notify.o
- obj-$(CONFIG_FB)                  += fb.o
- fb-y                              := fbmem.o fbmon.o fbcmap.o fbsysfs.o \
--                                     modedb.o fbcvt.o
-+                                     modedb.o fbcvt.o fb_cmdline.o
- fb-$(CONFIG_FB_DEFERRED_IO)       += fb_defio.o
- 
- ifeq ($(CONFIG_FRAMEBUFFER_CONSOLE),y)
-diff --git a/drivers/video/fbdev/core/fb_cmdline.c b/drivers/video/fbdev/core/fb_cmdline.c
-index f811c7b679e1..4d1634c492ec 100644
---- a/drivers/video/fbdev/core/fb_cmdline.c
-+++ b/drivers/video/fbdev/core/fb_cmdline.c
-@@ -14,42 +14,12 @@
-  * Authors:
-  *    Daniel Vetter <daniel.vetter@ffwll.ch>
-  */
--#include <linux/init.h>
 -#include <linux/fb.h>
--
--static char *video_options[FB_MAX] __read_mostly;
--static const char *fb_mode_option __read_mostly;
--static int ofonly __read_mostly;
--
--static const char *__fb_get_options(const char *name)
--{
--	const char *options = NULL;
--	size_t name_len = 0;
--
--	if (name)
--		name_len = strlen(name);
++#include <linux/property.h>
+ #include <linux/uaccess.h>
  
--	if (name_len) {
--		unsigned int i;
--		const char *opt;
--
--		for (i = 0; i < ARRAY_SIZE(video_options); ++i) {
--			if (!video_options[i])
--				continue;
--			if (video_options[i][0] == '\0')
--				continue;
--			opt = video_options[i];
--			if (!strncmp(opt, name, name_len) && opt[name_len] == ':')
--				options = opt + name_len + 1;
--		}
--	}
-+#include <linux/export.h>
-+#include <linux/fb.h>
-+#include <linux/string.h>
- 
--	/* No match, return global options */
--	if (!options)
--		options = fb_mode_option;
--
--	return options;
--}
 +#include <video/cmdline.h>
++
+ #include "drm_crtc_internal.h"
+ #include "drm_internal.h"
  
- /**
-  * fb_get_options - get kernel boot parameters
-@@ -65,17 +35,18 @@ static const char *__fb_get_options(const char *name)
-  */
- int fb_get_options(const char *name, char **option)
+@@ -154,9 +156,10 @@ EXPORT_SYMBOL(drm_get_connector_type_name);
+ static void drm_connector_get_cmdline_mode(struct drm_connector *connector)
  {
--	int retval = 0;
--	const char *options;
-+	const char *options = NULL;
-+	bool is_of = false;
-+	bool enabled;
+ 	struct drm_cmdline_mode *mode = &connector->cmdline_mode;
+-	char *option = NULL;
++	const char *option;
  
--	if (name && ofonly && strncmp(name, "offb", 4))
--		retval = 1;
-+	if (name)
-+		is_of = strncmp(name, "offb", 4);
+-	if (fb_get_options(connector->name, &option))
++	option = video_get_options(connector->name);
++	if (!option)
+ 		return;
  
--	options = __fb_get_options(name);
-+	enabled = __video_get_options(name, &options, is_of);
- 
- 	if (options) {
- 		if (!strncmp(options, "off", 3))
--			retval = 1;
-+			enabled = false;
- 	}
- 
- 	if (option) {
-@@ -85,46 +56,6 @@ int fb_get_options(const char *name, char **option)
- 			*option = NULL;
- 	}
- 
--	return retval;
-+	return enabled ? 0 : 1; // 0 on success, 1 otherwise
- }
- EXPORT_SYMBOL(fb_get_options);
--
--/**
-- *	video_setup - process command line options
-- *	@options: string of options
-- *
-- *	Process command line options for frame buffer subsystem.
-- *
-- *	NOTE: This function is a __setup and __init function.
-- *            It only stores the options.  Drivers have to call
-- *            fb_get_options() as necessary.
-- */
--static int __init video_setup(char *options)
--{
--	if (!options || !*options)
--		goto out;
--
--	if (!strncmp(options, "ofonly", 6)) {
--		ofonly = 1;
--		goto out;
--	}
--
--	if (strchr(options, ':')) {
--		/* named */
--		int i;
--
--		for (i = 0; i < FB_MAX; i++) {
--			if (video_options[i] == NULL) {
--				video_options[i] = options;
--				break;
--			}
--		}
--	} else {
--		/* global */
--		fb_mode_option = options;
--	}
--
--out:
--	return 1;
--}
--__setup("video=", video_setup);
-diff --git a/include/video/cmdline.h b/include/video/cmdline.h
-new file mode 100644
-index 000000000000..26b80cdaef79
---- /dev/null
-+++ b/include/video/cmdline.h
-@@ -0,0 +1,20 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+
-+#ifndef VIDEO_CMDLINE_H
-+#define VIDEO_CMDLINE_H
-+
-+#include <linux/types.h>
-+
-+#if defined(CONFIG_VIDEO_CMDLINE)
-+const char *video_get_options(const char *name);
-+
-+/* exported for compatibility with fbdev; don't use in new code */
-+bool __video_get_options(const char *name, const char **option, bool is_of);
-+#else
-+static inline const char *video_get_options(const char *name)
-+{
-+	return NULL;
-+}
-+#endif
-+
-+#endif
+ 	if (!drm_mode_parse_command_line_for_connector(option,
 -- 
 2.39.1
 

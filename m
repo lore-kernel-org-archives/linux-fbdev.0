@@ -2,98 +2,110 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2826BC636CC
-	for <linux-fbdev@archiver.kernel.org>; Sat, 11 Feb 2023 20:44:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F726C61DA4
+	for <linux-fbdev@archiver.kernel.org>; Sat, 11 Feb 2023 23:05:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229630AbjBKUoF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 11 Feb 2023 15:44:05 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55194 "EHLO
+        id S229493AbjBKXF4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 11 Feb 2023 18:05:56 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40520 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229461AbjBKUoF (ORCPT
+        with ESMTP id S229461AbjBKXF4 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 11 Feb 2023 15:44:05 -0500
-Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com [IPv6:2a00:1450:4864:20::62e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2CD8815569;
-        Sat, 11 Feb 2023 12:44:02 -0800 (PST)
-Received: by mail-ej1-x62e.google.com with SMTP id jg8so23477303ejc.6;
-        Sat, 11 Feb 2023 12:44:02 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=googlemail.com; s=20210112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=p8zOtPlzHJyHxTzcrkWdaVbHH64HwzLCruk6URO7DX8=;
-        b=IxGtg6nk24e1PphBTr7tAA4k7Gzm7NpJH7BPGixZQjYkpp2AIPbZQLy78S6jSBPggW
-         VC+Nl4mc5RUv4ZR0zCeJcA27MjbtiKVv8fNbcaLDrwttWssNYdnIUNgrDjOn1l/slN8E
-         v5a6FURwBcW5GkOIk4upbVRIZE1hChJfzRyYzg2RYfjWKf9Xc1wMo7UcVcQkvRsk+5Sx
-         w5MbTVv/x5HgOZ/e8FuurF2wr+vS9rT//xnagN9L8r0Kc3Y6L/zuTyx6ReG+P3JXbFcQ
-         joWC3dIJvjRjlZQ5pHXCVSKaN/AyFUom++QNOhs4UrUvP0Sc7x7beGCS4oHNdDnxL9Kv
-         3Cew==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=p8zOtPlzHJyHxTzcrkWdaVbHH64HwzLCruk6URO7DX8=;
-        b=LIfR71i/aazikH78Lux4idOwBAoF4q+h9XHYjh9FSHZ3g5g4WdT3BC3pt4uO64NmtW
-         Ya1qWYfJPww7LnQlF2U5niLlB+hmYG6kpxnICVy5anBSVfbhnmd/FDQtKkXbhgtskTwC
-         SwnKK27yTH1WznhaVAuJcOSw69ZE8a++CGQbWR4CmeI2r9981mTapmWdKSbhmqtBnz4I
-         xHBMqeuOsGGjgd8Npi02o2JpoTrMoaD0mxzxzkeX+kFpnqGi8rkSMGVZUd2OXmx8D22A
-         3P3jcbw12uF0ACOsEDzurMiXBXrOXRAhc9HBSm2HsGdMjaHCJ37k2gTkiFPUv0VupXnu
-         2L/Q==
-X-Gm-Message-State: AO0yUKUoQO1Ql4VGEKiV8m4eqgxNfbb1NWPyv0SYIuY0AA+61QgwT5WG
-        iFZ84XSRVcDfmosLVQsOF9altU+pySlQjcQhuCE=
-X-Google-Smtp-Source: AK7set8Yu6t24lt4jzLsbMqeVxPWjxq7UB4zuraEzhHwkMfIvWsjOz/rR+qfggrbvg0BVZyEoM5EDMV541EyrpqAESA=
-X-Received: by 2002:a17:906:25d3:b0:878:6f5d:cecf with SMTP id
- n19-20020a17090625d300b008786f5dcecfmr2788745ejb.4.1676148241489; Sat, 11 Feb
- 2023 12:44:01 -0800 (PST)
+        Sat, 11 Feb 2023 18:05:56 -0500
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5AF3283D6
+        for <linux-fbdev@vger.kernel.org>; Sat, 11 Feb 2023 15:05:55 -0800 (PST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pQywK-0001tc-I5; Sun, 12 Feb 2023 00:05:52 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pQywI-004J3b-EI; Sun, 12 Feb 2023 00:05:51 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pQywI-002mD3-H7; Sun, 12 Feb 2023 00:05:50 +0100
+Date:   Sun, 12 Feb 2023 00:05:45 +0100
+From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To:     Lee Jones <lee@kernel.org>
+Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        Jianhua Lu <lujianhua000@gmail.com>, kernel@pengutronix.de
+Subject: Re: [PATCH] backlight: ktz8866: Convert to i2c's .probe_new()
+Message-ID: <20230211230545.lv5g2f376rojlwyc@pengutronix.de>
+References: <20230127152639.1347229-1-u.kleine-koenig@pengutronix.de>
+ <Y9eQ6QTngI18zUJn@google.com>
 MIME-Version: 1.0
-References: <20230109223110.1165433-1-martin.blumenstingl@googlemail.com> <Y+DPQjukgC0BELkN@intel.com>
-In-Reply-To: <Y+DPQjukgC0BELkN@intel.com>
-From:   Martin Blumenstingl <martin.blumenstingl@googlemail.com>
-Date:   Sat, 11 Feb 2023 21:43:50 +0100
-Message-ID: <CAFBinCBpbRu9xfCEfZJfT7t3doV=+CX03+h7W+HsoW5T4X0W0w@mail.gmail.com>
-Subject: Re: [PATCH v1 RFC] video/hdmi: Fix HDMI_VENDOR_INFOFRAME_SIZE
-To:     =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
-Cc:     dri-devel@lists.freedesktop.org, Helge Deller <deller@gmx.de>,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Hans Verkuil <hans.verkuil@cisco.com>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Bernard Zhao <bernard@vivo.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="qwkgf64vf5d6bpiz"
+Content-Disposition: inline
+In-Reply-To: <Y9eQ6QTngI18zUJn@google.com>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Ville.
 
-On Mon, Feb 6, 2023 at 10:58 AM Ville Syrj=C3=A4l=C3=A4
-<ville.syrjala@linux.intel.com> wrote:
-[...]
-> > Change HDMI_VENDOR_INFOFRAME_SIZE to 6 bytes so
-> > hdmi_vendor_infoframe_pack_only() can properly check the passed buffer
-> > size and avoid an out of bounds write to ptr[8] or ptr[9].
->
-> The function should return -ENOSPC if the caller didn't
-> provide a big enough buffer.
-Indeed, I'm not sure why I didn't notice when I sent the patch.
+--qwkgf64vf5d6bpiz
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Are you saying there are drivers that are passing a bogus size here?
-Thankfully not - at least when I checked the last time drivers passed
-a 10 byte - or bigger - buffer.
-My main concern is the HDMI_INFOFRAME_SIZE macro. It's used in various
-drivers like this:
-  u8 buffer[HDMI_INFOFRAME_SIZE(AVI)];
+Hello Lee,
 
-One could use HDMI_VENDOR_INFOFRAME_SIZE with this as well:
-  u8 buffer[HDMI_INFOFRAME_SIZE(VENDOR)];
-But it would only result in an 8 byte wide buffer.
-Nobody uses it like this yet.
+On Mon, Jan 30, 2023 at 09:42:01AM +0000, Lee Jones wrote:
+> On Fri, 27 Jan 2023, Uwe Kleine-K=F6nig wrote:
+>=20
+> > The probe function doesn't make use of the i2c_device_id * parameter so
+> > it can be trivially converted.
+> >=20
+> > Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+> > ---
+> > Hello,
+> >=20
+> > there is an ongoing effort to convert all drivers to .probe_new to
+> > eventually drop .probe with the i2c_device_id parameter. This driver
+> > currently sits in next so wasn't on my radar before.
+> >=20
+> > My plan is to tackle that after the next merge window. So I ask you to
+> > either apply this patch during the next merge window or accept that it
+> > will go in via the i2c tree together with the patch that drops .probe().
+> >=20
+> >  drivers/video/backlight/ktz8866.c | 5 ++---
+> >  1 file changed, 2 insertions(+), 3 deletions(-)
+>=20
+> Applied, thanks
 
-Do you see any reason why my patch could cause problems?
-If not then I want to re-send it with an updated description.
+Thanks, this patch didn't make it into next yet though. Is there a
+problem other than pending tests before you publish it in your tree that
+gets pulled into next?
 
+Best regards
+Uwe
 
-Best regards,
-Martin
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--qwkgf64vf5d6bpiz
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmPoH0YACgkQwfwUeK3K
+7AmvtQf8CZ1xnldsOEhsbgM0A3XY3DdZOaVJ6UTkFRkoBrJjoEl9SI6UdGczGNsI
++8lbaOfCTZc+cQ4zQlOYAgFBptunH40yJFp6hWo24VRcJPNt6VeflmF6ccv7/tJW
+lP+IDQgmGaXsd9jw48R/bHn4Hl7+pCIo1qczjq8jxsQoSPlCFw8yfmkTk3yWmDVm
+0WxHszd43dH67eMsr0dKhmT6VJUMr/KnJ0gUc3kaRbV9x9ei8drtsqhg33roi0lF
+KhYvpfhu3f5qkCmVxZN0H4pjWbftTxgG/nvpmd/GKu+9YHKUmEnHYhtral0N5pT7
+AGK69JeZtM/8AoYquZ/PHoGIdjWg8Q==
+=ZsI9
+-----END PGP SIGNATURE-----
+
+--qwkgf64vf5d6bpiz--

@@ -2,110 +2,98 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2940C636D4
-	for <linux-fbdev@archiver.kernel.org>; Sat, 11 Feb 2023 00:30:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2826BC636CC
+	for <linux-fbdev@archiver.kernel.org>; Sat, 11 Feb 2023 20:44:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229516AbjBKAaZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Feb 2023 19:30:25 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52614 "EHLO
+        id S229630AbjBKUoF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 11 Feb 2023 15:44:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55194 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229473AbjBKAaY (ORCPT
+        with ESMTP id S229461AbjBKUoF (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Feb 2023 19:30:24 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 30284FB;
-        Fri, 10 Feb 2023 16:30:23 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id DA162B82654;
-        Sat, 11 Feb 2023 00:30:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id A2D29C4339C;
-        Sat, 11 Feb 2023 00:30:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1676075420;
-        bh=XEnPFOJ4CxMJH7vgfkFyQKY4s2/0EUC8Eknfpc5jk+s=;
-        h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-        b=ax5Fd5J1UIn8ED+GyB4f+E8hJ9LztVDn7UWC4mXnOgmf1KRe9qg37VcP6B98kKnsO
-         LZzZNA4MyyMSEIeG7mqIPLuzuz9GmmbPPuWcsDH0Kn9CG/IJyeHa00w9d6VJpmGmI4
-         NXRL4d9rj/vrxhHmcYkuvvsfAImKsX22nRKpEN6IZm/ArT43ezp69CpPKFWLzONl7c
-         8gCOQZrkyi8vqNwPvy5MhnCJYm+ujIZHdOmgGLEGxaUbIkSFrVEqOIZ1FTpVoog4RF
-         TTYadPmdXwwh9e6QDAyw5jGTuEaFaEB2cc1S76SGjrhSDxS3EsrNV3ZLEUNm5ahnDy
-         xyu+Hg0HqKq8Q==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 740A6E21EC7;
-        Sat, 11 Feb 2023 00:30:20 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+        Sat, 11 Feb 2023 15:44:05 -0500
+Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com [IPv6:2a00:1450:4864:20::62e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2CD8815569;
+        Sat, 11 Feb 2023 12:44:02 -0800 (PST)
+Received: by mail-ej1-x62e.google.com with SMTP id jg8so23477303ejc.6;
+        Sat, 11 Feb 2023 12:44:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=googlemail.com; s=20210112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=p8zOtPlzHJyHxTzcrkWdaVbHH64HwzLCruk6URO7DX8=;
+        b=IxGtg6nk24e1PphBTr7tAA4k7Gzm7NpJH7BPGixZQjYkpp2AIPbZQLy78S6jSBPggW
+         VC+Nl4mc5RUv4ZR0zCeJcA27MjbtiKVv8fNbcaLDrwttWssNYdnIUNgrDjOn1l/slN8E
+         v5a6FURwBcW5GkOIk4upbVRIZE1hChJfzRyYzg2RYfjWKf9Xc1wMo7UcVcQkvRsk+5Sx
+         w5MbTVv/x5HgOZ/e8FuurF2wr+vS9rT//xnagN9L8r0Kc3Y6L/zuTyx6ReG+P3JXbFcQ
+         joWC3dIJvjRjlZQ5pHXCVSKaN/AyFUom++QNOhs4UrUvP0Sc7x7beGCS4oHNdDnxL9Kv
+         3Cew==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=p8zOtPlzHJyHxTzcrkWdaVbHH64HwzLCruk6URO7DX8=;
+        b=LIfR71i/aazikH78Lux4idOwBAoF4q+h9XHYjh9FSHZ3g5g4WdT3BC3pt4uO64NmtW
+         Ya1qWYfJPww7LnQlF2U5niLlB+hmYG6kpxnICVy5anBSVfbhnmd/FDQtKkXbhgtskTwC
+         SwnKK27yTH1WznhaVAuJcOSw69ZE8a++CGQbWR4CmeI2r9981mTapmWdKSbhmqtBnz4I
+         xHBMqeuOsGGjgd8Npi02o2JpoTrMoaD0mxzxzkeX+kFpnqGi8rkSMGVZUd2OXmx8D22A
+         3P3jcbw12uF0ACOsEDzurMiXBXrOXRAhc9HBSm2HsGdMjaHCJ37k2gTkiFPUv0VupXnu
+         2L/Q==
+X-Gm-Message-State: AO0yUKUoQO1Ql4VGEKiV8m4eqgxNfbb1NWPyv0SYIuY0AA+61QgwT5WG
+        iFZ84XSRVcDfmosLVQsOF9altU+pySlQjcQhuCE=
+X-Google-Smtp-Source: AK7set8Yu6t24lt4jzLsbMqeVxPWjxq7UB4zuraEzhHwkMfIvWsjOz/rR+qfggrbvg0BVZyEoM5EDMV541EyrpqAESA=
+X-Received: by 2002:a17:906:25d3:b0:878:6f5d:cecf with SMTP id
+ n19-20020a17090625d300b008786f5dcecfmr2788745ejb.4.1676148241489; Sat, 11 Feb
+ 2023 12:44:01 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH 00/24 v2] Documentation: correct lots of spelling errors
- (series 1)
-From:   patchwork-bot+netdevbpf@kernel.org
-Message-Id: <167607542046.32477.11523239261636548840.git-patchwork-notify@kernel.org>
-Date:   Sat, 11 Feb 2023 00:30:20 +0000
-References: <20230209071400.31476-1-rdunlap@infradead.org>
-In-Reply-To: <20230209071400.31476-1-rdunlap@infradead.org>
-To:     Randy Dunlap <rdunlap@infradead.org>
-Cc:     linux-kernel@vger.kernel.org, corbet@lwn.net,
-        linux@armlinux.org.uk, axboe@kernel.dk, olteanv@gmail.com,
-        steffen.klassert@secunet.com, daniel.m.jordan@oracle.com,
-        akinobu.mita@gmail.com, deller@gmx.de, dmitry.torokhov@gmail.com,
-        rydberg@bitmath.org, isdn@linux-pingi.de, jikos@kernel.org,
-        mbenes@suse.cz, pmladek@suse.com, jpoimboe@kernel.org,
-        peterz@infradead.org, mingo@redhat.com, will@kernel.org,
-        jglisse@redhat.com, naoya.horiguchi@nec.com, linmiaohe@huawei.com,
-        jonas@southpole.se, stefan.kristiansson@saunalahti.fi,
-        shorne@gmail.com, bhelgaas@google.com, lpieralisi@kernel.org,
-        maz@kernel.org, mpe@ellerman.id.au, hca@linux.ibm.com,
-        gor@linux.ibm.com, agordeev@linux.ibm.com, juri.lelli@redhat.com,
-        vincent.guittot@linaro.org, dhowells@redhat.com, jarkko@kernel.org,
-        paul@paul-moore.com, jmorris@namei.org, serge@hallyn.com,
-        bristot@kernel.org, rostedt@goodmis.org, mhiramat@kernel.org,
-        mathieu.poirier@linaro.org, suzuki.poulose@arm.com,
-        zbr@ioremap.net, fenghua.yu@intel.com, reinette.chatre@intel.com,
-        tglx@linutronix.de, bp@alien8.de, chris@zankel.net,
-        jcmvbkbc@gmail.com, coresight@lists.linaro.org,
-        dri-devel@lists.freedesktop.org, keyrings@vger.kernel.org,
-        linux-block@vger.kernel.org, linux-crypto@vger.kernel.org,
-        linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linux-sgx@vger.kernel.org, linux-trace-devel@vger.kernel.org,
-        linux-trace-kernel@vger.kernel.org, live-patching@vger.kernel.org,
-        linux-security-module@vger.kernel.org, linux-usb@vger.kernel.org,
-        netdev@vger.kernel.org, linux-mm@kvack.org,
-        openrisc@lists.librecores.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-xtensa@linux-xtensa.org, linuxppc-dev@lists.ozlabs.org,
-        x86@kernel.org
+References: <20230109223110.1165433-1-martin.blumenstingl@googlemail.com> <Y+DPQjukgC0BELkN@intel.com>
+In-Reply-To: <Y+DPQjukgC0BELkN@intel.com>
+From:   Martin Blumenstingl <martin.blumenstingl@googlemail.com>
+Date:   Sat, 11 Feb 2023 21:43:50 +0100
+Message-ID: <CAFBinCBpbRu9xfCEfZJfT7t3doV=+CX03+h7W+HsoW5T4X0W0w@mail.gmail.com>
+Subject: Re: [PATCH v1 RFC] video/hdmi: Fix HDMI_VENDOR_INFOFRAME_SIZE
+To:     =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
+Cc:     dri-devel@lists.freedesktop.org, Helge Deller <deller@gmx.de>,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Hans Verkuil <hans.verkuil@cisco.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Bernard Zhao <bernard@vivo.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello:
+Hello Ville.
 
-This series was applied to netdev/net-next.git (master)
-by Jakub Kicinski <kuba@kernel.org>:
+On Mon, Feb 6, 2023 at 10:58 AM Ville Syrj=C3=A4l=C3=A4
+<ville.syrjala@linux.intel.com> wrote:
+[...]
+> > Change HDMI_VENDOR_INFOFRAME_SIZE to 6 bytes so
+> > hdmi_vendor_infoframe_pack_only() can properly check the passed buffer
+> > size and avoid an out of bounds write to ptr[8] or ptr[9].
+>
+> The function should return -ENOSPC if the caller didn't
+> provide a big enough buffer.
+Indeed, I'm not sure why I didn't notice when I sent the patch.
 
-On Wed,  8 Feb 2023 23:13:36 -0800 you wrote:
-> Correct many spelling errors in Documentation/ as reported by codespell.
-> 
-> Maintainers of specific kernel subsystems are only Cc-ed on their
-> respective patches, not the entire series.
-> 
-> These patches are based on linux-next-20230209.
-> 
-> [...]
+> Are you saying there are drivers that are passing a bogus size here?
+Thankfully not - at least when I checked the last time drivers passed
+a 10 byte - or bigger - buffer.
+My main concern is the HDMI_INFOFRAME_SIZE macro. It's used in various
+drivers like this:
+  u8 buffer[HDMI_INFOFRAME_SIZE(AVI)];
 
-Here is the summary with links:
-  - [03/24] Documentation: core-api: correct spelling
-    (no matching commit)
-  - [08/24] Documentation: isdn: correct spelling
-    https://git.kernel.org/netdev/net-next/c/d12f9ad02806
+One could use HDMI_VENDOR_INFOFRAME_SIZE with this as well:
+  u8 buffer[HDMI_INFOFRAME_SIZE(VENDOR)];
+But it would only result in an 8 byte wide buffer.
+Nobody uses it like this yet.
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+Do you see any reason why my patch could cause problems?
+If not then I want to re-send it with an updated description.
 
 
+Best regards,
+Martin

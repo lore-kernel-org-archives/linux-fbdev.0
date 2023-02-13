@@ -2,113 +2,147 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 269BCC636D4
-	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Feb 2023 11:12:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D994C636CC
+	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Feb 2023 11:29:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230181AbjBMLMh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 13 Feb 2023 06:12:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51504 "EHLO
+        id S229696AbjBML34 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 13 Feb 2023 06:29:56 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40430 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230242AbjBMLMg (ORCPT
+        with ESMTP id S230095AbjBML3u (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 13 Feb 2023 06:12:36 -0500
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F119F1817A;
-        Mon, 13 Feb 2023 03:12:05 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1676286725; x=1707822725;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=5V7ibw1r5Bmu9z9b7YvauYuBzcaPkTNEeovkdnv9j0E=;
-  b=OE2SJpLIAjA1hDGVA/kNeDS0Fy9ahwiGVsJzibUasVvNCgtE1QflWLfT
-   xadNMmz7ZpLe6NQJOV8No5mz64AgJGI4d2mcp0KxbRuiypmqLWCGHjl+1
-   ETnq82GTXS+/qGUwz/Yorn0yzXg4+ZyQ6/+a+aOqaVwV3JEWcNLJyTAw1
-   TPoXfxuD8IdrCE+/U7HGWtc15t04zCNW27DYIiNMTl6v2pjkGEVNEdh7I
-   3lGa0lpIe3p47TUa31PEyNheyqgStfddTNVlAidWy2wsCJO67KLibISZ0
-   LbvFuBu34A9Wq8+azfvpBfXYV6feRd/osJBFkO3W29aDiE+/M/ljKek88
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10619"; a="311228732"
-X-IronPort-AV: E=Sophos;i="5.97,293,1669104000"; 
-   d="scan'208";a="311228732"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Feb 2023 03:11:40 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10619"; a="670785834"
-X-IronPort-AV: E=Sophos;i="5.97,293,1669104000"; 
-   d="scan'208";a="670785834"
-Received: from stinkpipe.fi.intel.com (HELO stinkbox) ([10.237.72.55])
-  by fmsmga007.fm.intel.com with SMTP; 13 Feb 2023 03:11:37 -0800
-Received: by stinkbox (sSMTP sendmail emulation); Mon, 13 Feb 2023 13:11:36 +0200
-Date:   Mon, 13 Feb 2023 13:11:36 +0200
-From:   Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
-To:     Martin Blumenstingl <martin.blumenstingl@googlemail.com>
-Cc:     dri-devel@lists.freedesktop.org, Helge Deller <deller@gmx.de>,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Hans Verkuil <hans.verkuil@cisco.com>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Bernard Zhao <bernard@vivo.com>
-Subject: Re: [PATCH v1 RFC] video/hdmi: Fix HDMI_VENDOR_INFOFRAME_SIZE
-Message-ID: <Y+oa6O6+s5UXvOP6@intel.com>
-References: <20230109223110.1165433-1-martin.blumenstingl@googlemail.com>
- <Y+DPQjukgC0BELkN@intel.com>
- <CAFBinCBpbRu9xfCEfZJfT7t3doV=+CX03+h7W+HsoW5T4X0W0w@mail.gmail.com>
+        Mon, 13 Feb 2023 06:29:50 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C56294ECF
+        for <linux-fbdev@vger.kernel.org>; Mon, 13 Feb 2023 03:29:49 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 6BD9E1FDD0;
+        Mon, 13 Feb 2023 11:29:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1676287788; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=duqsYYc06i4gLX3sYLYkIx0tFuQmGy6/uxJD+3QoXL0=;
+        b=cNjcr7RQamlxjuJE/F3p6ItNZws4ctn1w5WqugE3bQawd5TvVo7qedXrXV9tXTI1l6tY3m
+        WUyGsw+4+jetwrfhC9SWyj0SlmE31uWLAujMRKuGGKLIsfvMvE72KIAWXH6g9ugkBKrGx0
+        qh8OBPbcsvSJWJ1q+2zSIVQO8/f2HXg=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1676287788;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=duqsYYc06i4gLX3sYLYkIx0tFuQmGy6/uxJD+3QoXL0=;
+        b=SHfPB0jCw8jgCo98m6k1Ogov2+P8PJ8u9As/Z/pl+cGMnZNnQxZ7QQsM+/j+vzFpp0mVVg
+        RKt4vKvs87RkctBw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 280FF1391B;
+        Mon, 13 Feb 2023 11:29:48 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id bbCqCCwf6mPGHgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 13 Feb 2023 11:29:48 +0000
+Message-ID: <fedc746f-1685-a5a1-b847-7031b66c1fd2@suse.de>
+Date:   Mon, 13 Feb 2023 12:29:47 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAFBinCBpbRu9xfCEfZJfT7t3doV=+CX03+h7W+HsoW5T4X0W0w@mail.gmail.com>
-X-Patchwork-Hint: comment
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.1
+Subject: Re: [PATCH 04/11] drivers/ps3: Read video= option with
+ fb_get_option()
+To:     Geoff Levand <geoff@infradead.org>, daniel@ffwll.ch,
+        airlied@gmail.com, deller@gmx.de, javierm@redhat.com,
+        maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+        mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org
+References: <20230209135509.7786-1-tzimmermann@suse.de>
+ <20230209135509.7786-5-tzimmermann@suse.de>
+ <06917dd0-c4f1-c80a-16a7-f2baac47027d@infradead.org>
+Content-Language: en-US
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <06917dd0-c4f1-c80a-16a7-f2baac47027d@infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------yCCWD0exDdL5H6rPLKNTYS0G"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, Feb 11, 2023 at 09:43:50PM +0100, Martin Blumenstingl wrote:
-> Hello Ville.
-> 
-> On Mon, Feb 6, 2023 at 10:58 AM Ville Syrjälä
-> <ville.syrjala@linux.intel.com> wrote:
-> [...]
-> > > Change HDMI_VENDOR_INFOFRAME_SIZE to 6 bytes so
-> > > hdmi_vendor_infoframe_pack_only() can properly check the passed buffer
-> > > size and avoid an out of bounds write to ptr[8] or ptr[9].
-> >
-> > The function should return -ENOSPC if the caller didn't
-> > provide a big enough buffer.
-> Indeed, I'm not sure why I didn't notice when I sent the patch.
-> 
-> > Are you saying there are drivers that are passing a bogus size here?
-> Thankfully not - at least when I checked the last time drivers passed
-> a 10 byte - or bigger - buffer.
-> My main concern is the HDMI_INFOFRAME_SIZE macro. It's used in various
-> drivers like this:
->   u8 buffer[HDMI_INFOFRAME_SIZE(AVI)];
-> 
-> One could use HDMI_VENDOR_INFOFRAME_SIZE with this as well:
->   u8 buffer[HDMI_INFOFRAME_SIZE(VENDOR)];
-> But it would only result in an 8 byte wide buffer.
-> Nobody uses it like this yet.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------yCCWD0exDdL5H6rPLKNTYS0G
+Content-Type: multipart/mixed; boundary="------------W5mLJmvS7RAua9GDKVebrBjK";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Geoff Levand <geoff@infradead.org>, daniel@ffwll.ch, airlied@gmail.com,
+ deller@gmx.de, javierm@redhat.com, maarten.lankhorst@linux.intel.com,
+ mripard@kernel.org, mpe@ellerman.id.au, npiggin@gmail.com,
+ christophe.leroy@csgroup.eu
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Message-ID: <fedc746f-1685-a5a1-b847-7031b66c1fd2@suse.de>
+Subject: Re: [PATCH 04/11] drivers/ps3: Read video= option with
+ fb_get_option()
+References: <20230209135509.7786-1-tzimmermann@suse.de>
+ <20230209135509.7786-5-tzimmermann@suse.de>
+ <06917dd0-c4f1-c80a-16a7-f2baac47027d@infradead.org>
+In-Reply-To: <06917dd0-c4f1-c80a-16a7-f2baac47027d@infradead.org>
 
-Not sure that would make any sense since a vendor
-specific infoframe has no defined size until you
-figure out which vendor defined it (via the OUI).
+--------------W5mLJmvS7RAua9GDKVebrBjK
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-I suppose the current value of 4 is also a bit nonsense
-as well then, becasue that is a legal value for the
-HDMI 1.4 vendor specific infoframe, but might not be
-valid for any other infoframe.
+SGkNCg0KQW0gMTIuMDIuMjMgdW0gMTc6NTMgc2NocmllYiBHZW9mZiBMZXZhbmQ6DQo+IEhp
+IFRob21hcywNCj4gDQo+IE9uIDIvOS8yMyAwNTo1NSwgVGhvbWFzIFppbW1lcm1hbm4gd3Jv
+dGU6DQo+PiBHZXQgdGhlIGtlcm5lbCdzIGdsb2JhbCB2aWRlbz0gcGFyYW1ldGVyIHdpdGgg
+ZmJfZ2V0X29wdGlvbigpLiBEb25lDQo+PiB0byB1bmV4cG9ydCB0aGUgaW50ZXJuYWwgZmJk
+ZXYgc3RhdGUgZmJfbW9kZV9jb25maWcuIE5vIGZ1bmN0aW9uYWwNCj4+IGNoYW5nZXMuDQo+
+Pg0KPj4gU2lnbmVkLW9mZi1ieTogVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1
+c2UuZGU+DQo+PiAtLS0NCj4+ICAgZHJpdmVycy9wczMvcHMzYXYuYyB8IDExICsrKysrKysr
+Ky0tDQo+PiAgIDEgZmlsZSBjaGFuZ2VkLCA5IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25z
+KC0pDQo+IA0KPiBJIHdhbnRlZCB0byB0ZXN0IHRoZXNlIGNoYW5nZXMgb24gdGhlIFBTMywg
+YnV0IGdvdCB0aGlzDQo+IGVycm9yIHdoZW4gdHJ5aW5nIHRvIGFwcGx5IHRoaXMgcGF0Y2gg
+c2V0IHRvIExpbnV4LTYuMi1yYzc6DQo+IA0KPiAgICBBcHBseWluZzogZmJkZXY6IEhhbmRs
+ZSB2aWRlbz0gcGFyYW1ldGVyIGluIHZpZGVvL2NtZGxpbmUuYw0KPiAgICBlcnJvcjogcGF0
+Y2ggZmFpbGVkOiBkcml2ZXJzL2dwdS9kcm0vS2NvbmZpZzoxMA0KPiAgICBlcnJvcjogZHJp
+dmVycy9ncHUvZHJtL0tjb25maWc6IHBhdGNoIGRvZXMgbm90IGFwcGx5DQo+IA0KPiBJcyB0
+aGVyZSBhIExpbnV4IGtlcm5lbCByZXZpc2lvbiB0aGF0IHRoZXNlIHdpbGwgYXBwbHkgdG8s
+DQo+IG9yIGlzIHRoZXJlIGEgZ2l0IHJlcG9zaXRvcnkgSSBjYW4gcHVsbCB0aGVtIGZyb20/
+DQoNClRoYW5rcyBmb3IgdGVzdGluZy4gIE15IGJhc2UgdmVyc2lvbiBpcyBhIHJlY2VudCBE
+Uk0gZGV2ZWxvcG1lbnQgdHJlZS4gDQpUaGUgcmVwbyBpcyBhdCBodHRwczovL2NnaXQuZnJl
+ZWRlc2t0b3Aub3JnL2RybS9kcm0tdGlwLywgdGhlIGJyYW5jaCBpcyANCmRybS10aXAuDQoN
+CklmIGFjY2VwdGFibGUsIEknZCBsYXRlciBsaWtlIHRvIG1lcmdlIHRoZSBQUzMgcGF0Y2hl
+cyB0aHJvdWdoIERSTSB0cmVlcy4NCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiANCj4g
+LUdlb2ZmDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZl
+bG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0
+ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJl
+cmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
 
-We should perhaps just get rid of HDMI_VENDOR_INFOFRAME_SIZE
-entirely.
+--------------W5mLJmvS7RAua9GDKVebrBjK--
 
-> 
-> Do you see any reason why my patch could cause problems?
-> If not then I want to re-send it with an updated description.
-> 
-> 
-> Best regards,
-> Martin
+--------------yCCWD0exDdL5H6rPLKNTYS0G
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
--- 
-Ville Syrjälä
-Intel
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmPqHysFAwAAAAAACgkQlh/E3EQov+AP
+Xg/7Bct0gFS5T/lwv2UFvbQi5YiJYvvh3fp69WF5uEkgrxCBYT+/YjtZQhU51PS26gf1EIG/dVKj
+as3D+QDCgKR4UmsD8LpT1tJE17ccywfhDYseymqSaVAuwQB9W14svzkRmpBpJlXqYBf4JKDwTaSu
+sijzqXGeM6bpL+gmIpHpmp3Ef8axbP9ENzt+7hafhFHMFx/Hly3le1R6uVS+WQ2W4KqfJ39CTo7K
+e21VlTXbAvYbRzjES4znpD082tVKHvq5LcCksrJeCjxwrOiPCHV/zFQYR+91+DMHg3Ux6fiWQqBH
+V4pF9bO8dx4/UfioGZ92XpJzi5tCuYn1UkJhjMFpA1D7wV7PNB70IFSy05HeV1oPMilujOkz7bsK
+KSZeP+nRHIrhm2cznV6X23FdMJjPXJ7ClqSgV+0UgV3/3zJj8UAM38nTf3sTgfeM4j/iaKJiEJRw
+yb+FxELAg+9A0NYh2flM5jbmq0lZRMe0aocdYIJl8OLYqgXteLey9HjcOaULLVW6ztHBcJ/hEeLX
+f+DBAKy75nlr9YW4XHHFSaSinxy4TVOsI66+r6bCPcubDce5n2NqWqmcaQK57gslWxUl7kzXtKGD
+MRZ0izcT3w+DTSKTZGlxZYH+BJzMH9GemKeAu4MRw11vhfhmLHEFXCIybabEYCrWZKMWK2naINZN
+J/o=
+=hcCu
+-----END PGP SIGNATURE-----
+
+--------------yCCWD0exDdL5H6rPLKNTYS0G--

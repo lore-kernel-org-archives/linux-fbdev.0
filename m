@@ -2,147 +2,113 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D994C636CC
-	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Feb 2023 11:29:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97EBAC636CC
+	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Feb 2023 16:31:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229696AbjBML34 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 13 Feb 2023 06:29:56 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40430 "EHLO
+        id S230183AbjBMQbA convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 13 Feb 2023 11:31:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53822 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230095AbjBML3u (ORCPT
+        with ESMTP id S229815AbjBMQbA (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 13 Feb 2023 06:29:50 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C56294ECF
-        for <linux-fbdev@vger.kernel.org>; Mon, 13 Feb 2023 03:29:49 -0800 (PST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 6BD9E1FDD0;
-        Mon, 13 Feb 2023 11:29:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1676287788; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=duqsYYc06i4gLX3sYLYkIx0tFuQmGy6/uxJD+3QoXL0=;
-        b=cNjcr7RQamlxjuJE/F3p6ItNZws4ctn1w5WqugE3bQawd5TvVo7qedXrXV9tXTI1l6tY3m
-        WUyGsw+4+jetwrfhC9SWyj0SlmE31uWLAujMRKuGGKLIsfvMvE72KIAWXH6g9ugkBKrGx0
-        qh8OBPbcsvSJWJ1q+2zSIVQO8/f2HXg=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1676287788;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=duqsYYc06i4gLX3sYLYkIx0tFuQmGy6/uxJD+3QoXL0=;
-        b=SHfPB0jCw8jgCo98m6k1Ogov2+P8PJ8u9As/Z/pl+cGMnZNnQxZ7QQsM+/j+vzFpp0mVVg
-        RKt4vKvs87RkctBw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 280FF1391B;
-        Mon, 13 Feb 2023 11:29:48 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id bbCqCCwf6mPGHgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 13 Feb 2023 11:29:48 +0000
-Message-ID: <fedc746f-1685-a5a1-b847-7031b66c1fd2@suse.de>
-Date:   Mon, 13 Feb 2023 12:29:47 +0100
+        Mon, 13 Feb 2023 11:31:00 -0500
+Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 97041CA3E;
+        Mon, 13 Feb 2023 08:30:58 -0800 (PST)
+Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
+          by outpost.zedat.fu-berlin.de (Exim 4.95)
+          with esmtps (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@zedat.fu-berlin.de>)
+          id 1pRbiw-0043kT-S2; Mon, 13 Feb 2023 17:30:38 +0100
+Received: from p5b13aa49.dip0.t-ipconnect.de ([91.19.170.73] helo=[192.168.178.81])
+          by inpost2.zedat.fu-berlin.de (Exim 4.95)
+          with esmtpsa (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@physik.fu-berlin.de>)
+          id 1pRbiw-0046cc-HY; Mon, 13 Feb 2023 17:30:38 +0100
+Message-ID: <dbda1f6e1c280c13d963ad6e7f68a853a7741199.camel@physik.fu-berlin.de>
+Subject: Re: remove arch/sh
+From:   John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+To:     Stephen Rothwell <sfr@canb.auug.org.au>
+Cc:     Christoph Hellwig <hch@lst.de>,
+        Yoshinori Sato <ysato@users.sourceforge.jp>,
+        Rich Felker <dalias@libc.org>, Arnd Bergmann <arnd@arndb.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        linux-kernel@vger.kernel.org, linux-watchdog@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arch@vger.kernel.org,
+        dmaengine@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-renesas-soc@vger.kernel.org, linux-i2c@vger.kernel.org,
+        linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
+        netdev@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-rtc@vger.kernel.org, linux-spi@vger.kernel.org,
+        linux-serial@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org,
+        linux-sh@vger.kernel.org
+Date:   Mon, 13 Feb 2023 17:30:36 +0100
+In-Reply-To: <20230206100856.603a0f8f@canb.auug.org.au>
+References: <20230113062339.1909087-1-hch@lst.de>
+         <11e2e0a8-eabe-2d8c-d612-9cdd4bcc3648@physik.fu-berlin.de>
+         <20230116071306.GA15848@lst.de>
+         <40dc1bc1-d9cd-d9be-188e-5167ebae235c@physik.fu-berlin.de>
+         <20230203071423.GA24833@lst.de>
+         <afd056a95d21944db1dc0c9708f692dd1f7bb757.camel@physik.fu-berlin.de>
+         <20230203083037.GA30738@lst.de> <20230206100856.603a0f8f@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+User-Agent: Evolution 3.46.4 
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.1
-Subject: Re: [PATCH 04/11] drivers/ps3: Read video= option with
- fb_get_option()
-To:     Geoff Levand <geoff@infradead.org>, daniel@ffwll.ch,
-        airlied@gmail.com, deller@gmx.de, javierm@redhat.com,
-        maarten.lankhorst@linux.intel.com, mripard@kernel.org,
-        mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-References: <20230209135509.7786-1-tzimmermann@suse.de>
- <20230209135509.7786-5-tzimmermann@suse.de>
- <06917dd0-c4f1-c80a-16a7-f2baac47027d@infradead.org>
-Content-Language: en-US
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <06917dd0-c4f1-c80a-16a7-f2baac47027d@infradead.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------yCCWD0exDdL5H6rPLKNTYS0G"
+X-Original-Sender: glaubitz@physik.fu-berlin.de
+X-Originating-IP: 91.19.170.73
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------yCCWD0exDdL5H6rPLKNTYS0G
-Content-Type: multipart/mixed; boundary="------------W5mLJmvS7RAua9GDKVebrBjK";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Geoff Levand <geoff@infradead.org>, daniel@ffwll.ch, airlied@gmail.com,
- deller@gmx.de, javierm@redhat.com, maarten.lankhorst@linux.intel.com,
- mripard@kernel.org, mpe@ellerman.id.au, npiggin@gmail.com,
- christophe.leroy@csgroup.eu
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Message-ID: <fedc746f-1685-a5a1-b847-7031b66c1fd2@suse.de>
-Subject: Re: [PATCH 04/11] drivers/ps3: Read video= option with
- fb_get_option()
-References: <20230209135509.7786-1-tzimmermann@suse.de>
- <20230209135509.7786-5-tzimmermann@suse.de>
- <06917dd0-c4f1-c80a-16a7-f2baac47027d@infradead.org>
-In-Reply-To: <06917dd0-c4f1-c80a-16a7-f2baac47027d@infradead.org>
+Hi Steve!
 
---------------W5mLJmvS7RAua9GDKVebrBjK
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+On Mon, 2023-02-06 at 10:08 +1100, Stephen Rothwell wrote:
+> Hi,
+> 
+> On Fri, 3 Feb 2023 09:30:37 +0100 Christoph Hellwig <hch@lst.de> wrote:
+> > 
+> > On Fri, Feb 03, 2023 at 09:24:46AM +0100, John Paul Adrian Glaubitz wrote:
+> > > Since this is my very first time stepping up as a kernel maintainer, I was hoping
+> > > to get some pointers on what to do to make this happen.
+> > > 
+> > > So far, we have set up a new kernel tree and I have set up a local development and
+> > > test environment for SH kernels using my SH7785LCR board as the target platform.
+> > > 
+> > > Do I just need to send a patch asking to change the corresponding entry in the
+> > > MAINTAINERS file?  
+> > 
+> > I'm not sure a there is a document, but:
+> > 
+> >  - add the MAINTAINERS change to your tree
+> >  - ask Stephen to get your tree included in linux-next
+> 
+> And by "Stephen", Christoph means me.  When you are ready, please send
+> me a request to include your tree/branch in linux-next (usually the
+> branch is called something like "for-next" or just "next") telling me
+> the git URL, and the contacts I should send email to if there are
+> conflicts/build issues with the branch.  I will then fetch the branch
+> every time I create a new linux-next release (most work days), so all
+> you need to do is update that branch each time you are ready to publish
+> more commits.
 
-SGkNCg0KQW0gMTIuMDIuMjMgdW0gMTc6NTMgc2NocmllYiBHZW9mZiBMZXZhbmQ6DQo+IEhp
-IFRob21hcywNCj4gDQo+IE9uIDIvOS8yMyAwNTo1NSwgVGhvbWFzIFppbW1lcm1hbm4gd3Jv
-dGU6DQo+PiBHZXQgdGhlIGtlcm5lbCdzIGdsb2JhbCB2aWRlbz0gcGFyYW1ldGVyIHdpdGgg
-ZmJfZ2V0X29wdGlvbigpLiBEb25lDQo+PiB0byB1bmV4cG9ydCB0aGUgaW50ZXJuYWwgZmJk
-ZXYgc3RhdGUgZmJfbW9kZV9jb25maWcuIE5vIGZ1bmN0aW9uYWwNCj4+IGNoYW5nZXMuDQo+
-Pg0KPj4gU2lnbmVkLW9mZi1ieTogVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1
-c2UuZGU+DQo+PiAtLS0NCj4+ICAgZHJpdmVycy9wczMvcHMzYXYuYyB8IDExICsrKysrKysr
-Ky0tDQo+PiAgIDEgZmlsZSBjaGFuZ2VkLCA5IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25z
-KC0pDQo+IA0KPiBJIHdhbnRlZCB0byB0ZXN0IHRoZXNlIGNoYW5nZXMgb24gdGhlIFBTMywg
-YnV0IGdvdCB0aGlzDQo+IGVycm9yIHdoZW4gdHJ5aW5nIHRvIGFwcGx5IHRoaXMgcGF0Y2gg
-c2V0IHRvIExpbnV4LTYuMi1yYzc6DQo+IA0KPiAgICBBcHBseWluZzogZmJkZXY6IEhhbmRs
-ZSB2aWRlbz0gcGFyYW1ldGVyIGluIHZpZGVvL2NtZGxpbmUuYw0KPiAgICBlcnJvcjogcGF0
-Y2ggZmFpbGVkOiBkcml2ZXJzL2dwdS9kcm0vS2NvbmZpZzoxMA0KPiAgICBlcnJvcjogZHJp
-dmVycy9ncHUvZHJtL0tjb25maWc6IHBhdGNoIGRvZXMgbm90IGFwcGx5DQo+IA0KPiBJcyB0
-aGVyZSBhIExpbnV4IGtlcm5lbCByZXZpc2lvbiB0aGF0IHRoZXNlIHdpbGwgYXBwbHkgdG8s
-DQo+IG9yIGlzIHRoZXJlIGEgZ2l0IHJlcG9zaXRvcnkgSSBjYW4gcHVsbCB0aGVtIGZyb20/
-DQoNClRoYW5rcyBmb3IgdGVzdGluZy4gIE15IGJhc2UgdmVyc2lvbiBpcyBhIHJlY2VudCBE
-Uk0gZGV2ZWxvcG1lbnQgdHJlZS4gDQpUaGUgcmVwbyBpcyBhdCBodHRwczovL2NnaXQuZnJl
-ZWRlc2t0b3Aub3JnL2RybS9kcm0tdGlwLywgdGhlIGJyYW5jaCBpcyANCmRybS10aXAuDQoN
-CklmIGFjY2VwdGFibGUsIEknZCBsYXRlciBsaWtlIHRvIG1lcmdlIHRoZSBQUzMgcGF0Y2hl
-cyB0aHJvdWdoIERSTSB0cmVlcy4NCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiANCj4g
-LUdlb2ZmDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZl
-bG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0
-ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJl
-cmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
+I'm in the MAINTAINERS now in Linus' tree. I have requested a kernel.org
+account now and will hopefully have my trees set up later this week.
 
---------------W5mLJmvS7RAua9GDKVebrBjK--
+I'll let you know about the URLs as soon as possible.
 
---------------yCCWD0exDdL5H6rPLKNTYS0G
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+Adrian
 
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmPqHysFAwAAAAAACgkQlh/E3EQov+AP
-Xg/7Bct0gFS5T/lwv2UFvbQi5YiJYvvh3fp69WF5uEkgrxCBYT+/YjtZQhU51PS26gf1EIG/dVKj
-as3D+QDCgKR4UmsD8LpT1tJE17ccywfhDYseymqSaVAuwQB9W14svzkRmpBpJlXqYBf4JKDwTaSu
-sijzqXGeM6bpL+gmIpHpmp3Ef8axbP9ENzt+7hafhFHMFx/Hly3le1R6uVS+WQ2W4KqfJ39CTo7K
-e21VlTXbAvYbRzjES4znpD082tVKHvq5LcCksrJeCjxwrOiPCHV/zFQYR+91+DMHg3Ux6fiWQqBH
-V4pF9bO8dx4/UfioGZ92XpJzi5tCuYn1UkJhjMFpA1D7wV7PNB70IFSy05HeV1oPMilujOkz7bsK
-KSZeP+nRHIrhm2cznV6X23FdMJjPXJ7ClqSgV+0UgV3/3zJj8UAM38nTf3sTgfeM4j/iaKJiEJRw
-yb+FxELAg+9A0NYh2flM5jbmq0lZRMe0aocdYIJl8OLYqgXteLey9HjcOaULLVW6ztHBcJ/hEeLX
-f+DBAKy75nlr9YW4XHHFSaSinxy4TVOsI66+r6bCPcubDce5n2NqWqmcaQK57gslWxUl7kzXtKGD
-MRZ0izcT3w+DTSKTZGlxZYH+BJzMH9GemKeAu4MRw11vhfhmLHEFXCIybabEYCrWZKMWK2naINZN
-J/o=
-=hcCu
------END PGP SIGNATURE-----
-
---------------yCCWD0exDdL5H6rPLKNTYS0G--
+-- 
+ .''`.  John Paul Adrian Glaubitz
+: :' :  Debian Developer
+`. `'   Physicist
+  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913

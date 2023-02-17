@@ -2,58 +2,58 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C22FC636D4
-	for <linux-fbdev@archiver.kernel.org>; Fri, 17 Feb 2023 09:04:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2947C05027
+	for <linux-fbdev@archiver.kernel.org>; Fri, 17 Feb 2023 09:05:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229623AbjBQJEZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 17 Feb 2023 04:04:25 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37724 "EHLO
+        id S229482AbjBQJFI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 17 Feb 2023 04:05:08 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37776 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229482AbjBQJEY (ORCPT
+        with ESMTP id S229637AbjBQJFH (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 17 Feb 2023 04:04:24 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5299C5FBFE
-        for <linux-fbdev@vger.kernel.org>; Fri, 17 Feb 2023 01:03:36 -0800 (PST)
+        Fri, 17 Feb 2023 04:05:07 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 29325604FD
+        for <linux-fbdev@vger.kernel.org>; Fri, 17 Feb 2023 01:04:21 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1676624615;
+        s=mimecast20190719; t=1676624660;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=BhPN5mXNi0FwgA6Dw1wLPbnc9UnJcdK55RqJoCtSbCM=;
-        b=KzdQ1giy8S9nwHE5Csndl5Z1HY2OmJUtEbmK9ZR2FAevwkVGdQOlhdnYoCquXwzujELigL
-        klfBrmqpWGJ7Og2XVN/+W6UbtjdMHJbM+cpUJP1TigAX9MCP+Da/JXnMq55daoFv+WqXYs
-        ZcqbCa7AFwCa7qecPp+viw5isQzcMMQ=
+        bh=r/Vg/oi7sg0lEBjm9qSqwVJEQFFplyI3DAHqU5zgGyM=;
+        b=Ic29crjQhXdj+/58Dde0zupPGkQ5yEsSpu1IaQFE/Qk8ypYWggSSgVgFHO6IqjAEzIEXny
+        7TmVwQQoWg07Tr+GXbGy10CWTSMYVKJnx1vA12De0Zq5J/Y+VC8fQl8MEnJLDHpDmTLhFL
+        bVhc7aGsnPmSWXyvSWlzU7EyzAbttsw=
 Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
  [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-125-GUX4rG3lNGaevq8qrfhuug-1; Fri, 17 Feb 2023 04:03:34 -0500
-X-MC-Unique: GUX4rG3lNGaevq8qrfhuug-1
-Received: by mail-wm1-f72.google.com with SMTP id s10-20020a7bc38a000000b003dfecb98d38so272118wmj.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 17 Feb 2023 01:03:33 -0800 (PST)
+ us-mta-96-m_ywnrscMY6p7UmOcqA3CQ-1; Fri, 17 Feb 2023 04:04:19 -0500
+X-MC-Unique: m_ywnrscMY6p7UmOcqA3CQ-1
+Received: by mail-wm1-f72.google.com with SMTP id p30-20020a05600c1d9e00b003dffc7343c3so332949wms.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 17 Feb 2023 01:04:19 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
          :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=BhPN5mXNi0FwgA6Dw1wLPbnc9UnJcdK55RqJoCtSbCM=;
-        b=B9sjtDxNdcWdwYg2jreWz4TZ5xbVicSynCh8+MFMgNtNj1blmQOvLGmDeJ3cU6aWAU
-         s0zhL0Fw9wUVhaPWt8xPsa4wc+EgNEclAVyCWldliC2HuOYbLmrQOmMbNvcLTpNWbivr
-         y94H/DWGt4IB+D9wn0s595iRjPUELW1hMf/adn0vg0SkBvv2lSE3rtZBNaBJh1tiKzPM
-         ekkApXpABgBqaMbFvfGtDJ8x6Fc5TPjLSnArNT7i6bWd+cCVvLI5RpMcNyKjkjy33s8M
-         FjpGz5yRUXKsqRVGctPM0tcfxBETnGW+1E6u10YJwL0ADvYWY+vcJtlp2cR35WRP+89d
-         1rVA==
-X-Gm-Message-State: AO0yUKVXRxvNA7UpzPCpr3efIcfsT2tCwzFE/4u+LeKOiIGxZY18Mot4
-        tNZlCBmvGtba7nxHxCTWdp9dy3VT5Pgj4OBJTrH3xVA/BKwHFIL7xdSZ6J3V6fTwFD/Pqzvg5GJ
-        cxfk/tB7cGySRySaNQgUEGVQ=
-X-Received: by 2002:a05:600c:43d5:b0:3e2:1d1e:78d0 with SMTP id f21-20020a05600c43d500b003e21d1e78d0mr2417369wmn.22.1676624612972;
-        Fri, 17 Feb 2023 01:03:32 -0800 (PST)
-X-Google-Smtp-Source: AK7set9DaCWKnN1w1UtSO4QwVrREcTxPmS1GlzqesHtTH8itx7pHTxCmH391IDvaQDCHi/hMWPC/XA==
-X-Received: by 2002:a05:600c:43d5:b0:3e2:1d1e:78d0 with SMTP id f21-20020a05600c43d500b003e21d1e78d0mr2417345wmn.22.1676624612696;
-        Fri, 17 Feb 2023 01:03:32 -0800 (PST)
+        bh=r/Vg/oi7sg0lEBjm9qSqwVJEQFFplyI3DAHqU5zgGyM=;
+        b=OCFeHlO7JezOdw8uvqdhNZpwBSqF6HnGsOTDuTQddJHRbLv56UeaMCCrMcV6HU29i/
+         LQOcYnXnH5xHGe4r5O1wf1ZcL6UIKzy0RyWik55KCZ4y0z6EWj0ZubQuvrASWFr7QRgt
+         nnrcLqeLLuYNycVkrw/OFE6rxLMKvGqJB1Wl2CdQ4zJy+qteVxTjfhL3cAAVupscmAcW
+         5WGV5Ft9/h/sdGZrDBVzyLHZTBbsTkh5YBBLG9qiQ97KoCmZHUY+Mg1r6+aFNXiueQa3
+         AIPD49tKPPBj7yysMawOwhriURKFSyeknio3XqLTZjxeocpRhmj9vRmLNT0p+Kse27Q5
+         RBbA==
+X-Gm-Message-State: AO0yUKWoTxTVy+fCDzZbgNNgMxVpVsM4cGlNH/+JikzZoDcGjLMLTvHy
+        DQK+iTu/ETLdjDD0mSyNOh03DxgpR2AZl/lcE8FawRxmogSVA+Sqtu+T/HY48qce/MJ1mR9FYrQ
+        R8le1opxVGwgwKGstakeOfxU=
+X-Received: by 2002:a5d:5274:0:b0:2c5:6c26:1f73 with SMTP id l20-20020a5d5274000000b002c56c261f73mr7413163wrc.20.1676624658127;
+        Fri, 17 Feb 2023 01:04:18 -0800 (PST)
+X-Google-Smtp-Source: AK7set98GWM304I+yPyS58qtsFdfDQC0E6UdjQSZ+kNzg9KXWfZpJwMOLAHu6SxeCJt3DfODLkCIXA==
+X-Received: by 2002:a5d:5274:0:b0:2c5:6c26:1f73 with SMTP id l20-20020a5d5274000000b002c56c261f73mr7413138wrc.20.1676624657852;
+        Fri, 17 Feb 2023 01:04:17 -0800 (PST)
 Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id bi23-20020a05600c3d9700b003e200d3b2d1sm4400599wmb.38.2023.02.17.01.03.32
+        by smtp.gmail.com with ESMTPSA id w6-20020a5d6806000000b002c6d0462163sm965896wru.100.2023.02.17.01.04.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 17 Feb 2023 01:03:32 -0800 (PST)
+        Fri, 17 Feb 2023 01:04:17 -0800 (PST)
 From:   Javier Martinez Canillas <javierm@redhat.com>
 To:     Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
         airlied@gmail.com, deller@gmx.de,
@@ -63,12 +63,12 @@ To:     Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH 10/11] drm: Include <video/cmdline.h> for mode parsing
-In-Reply-To: <20230209135509.7786-11-tzimmermann@suse.de>
+Subject: Re: [PATCH 11/11] drm: Fix comment on mode parsing
+In-Reply-To: <20230209135509.7786-12-tzimmermann@suse.de>
 References: <20230209135509.7786-1-tzimmermann@suse.de>
- <20230209135509.7786-11-tzimmermann@suse.de>
-Date:   Fri, 17 Feb 2023 10:03:31 +0100
-Message-ID: <87k00gwtng.fsf@minerva.mail-host-address-is-not-set>
+ <20230209135509.7786-12-tzimmermann@suse.de>
+Date:   Fri, 17 Feb 2023 10:04:16 +0100
+Message-ID: <87h6vkwtm7.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
 Content-Type: text/plain
 Precedence: bulk
@@ -77,13 +77,8 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-> Include <video/cmdline.h> in drm_connector.c to get video_get_options()
-> and avoid the dependency on <linux/fb.h>. The replaced function
-> fb_get_options() is just a tiny wrapper around video_get_opions(). No
-> functional changes.
->
-> Include <linux/property.h> to get fwnode_handle_put(), which had been
-> provided via <linux/fb.h>.
+> Do not claim that there's a default mode in the video= option parser.
+> if no option string has been given, the parser does nothing.
 >
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---

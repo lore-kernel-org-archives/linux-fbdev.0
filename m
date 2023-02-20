@@ -2,96 +2,108 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DA3CC61DA4
-	for <linux-fbdev@archiver.kernel.org>; Sat, 18 Feb 2023 15:34:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 939A1C64ED8
+	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Feb 2023 12:26:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229441AbjBRPeK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 18 Feb 2023 10:34:10 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33154 "EHLO
+        id S232112AbjBTM0o (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 20 Feb 2023 07:26:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45912 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229476AbjBRPeJ (ORCPT
+        with ESMTP id S232078AbjBTM0j (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 18 Feb 2023 10:34:09 -0500
-Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com [IPv6:2a00:1450:4864:20::533])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E13A617153;
-        Sat, 18 Feb 2023 07:34:08 -0800 (PST)
-Received: by mail-ed1-x533.google.com with SMTP id eq13so3543877edb.11;
-        Sat, 18 Feb 2023 07:34:08 -0800 (PST)
+        Mon, 20 Feb 2023 07:26:39 -0500
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 56B4E1C30E
+        for <linux-fbdev@vger.kernel.org>; Mon, 20 Feb 2023 04:25:53 -0800 (PST)
+Received: by mail-wm1-x331.google.com with SMTP id j2-20020a05600c1c0200b003e1e754657aso923865wms.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 20 Feb 2023 04:25:53 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=googlemail.com; s=20210112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=whvjdDNL0YyihGiScLJpuUiNsWaIXqPHSQ+hAFVaT/o=;
-        b=hfCRopqQcvYe0p1NI/OnI0Asw7RK8dQG5GwB8iUEm7S86KQ3sogc8ptsBp/zppu7LU
-         i1siVZxe14sq04QMCn/k8ZBI6WN4yQe5KI2o019L4PbCIhP0CMtuotM/mJ/g4XVuAuKW
-         CJk3ESbIluAB34DjHZztYhby968kkDAqPqef7RBDePZ1sYc0b3DmHzrQRbw5CIzlDN5A
-         ArZMX2prYjp7oy43pO6ROeEvJYybyoOk86sNh018m5lDqNE25awOPeEZogPjk9e13LWv
-         DUQ8vBpgVqh5RhRK+LLvEAojVflWJbyML817mnm6dqGhApLMPxhjeX+zKUGKfzPcxJIe
-         e9yA==
+        d=linaro.org; s=google;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=ZhuNX7zk4hZihBAY5sZG0csyVV6AYylCGdugAnsAC6c=;
+        b=bPba3qLwuP3pL5YFqhCwvExtNWIznWHdFR4XAXSWPf0VlwLp3X4gk+vhiYZBF3OCJB
+         +4ozenOOlX3dJ/BMfSl1I7nbv+4Wwr8BGYHqFrEq6/zebScqZhGU7To/OG33/EIlPRT7
+         M+9e/UeO0I0d2UIeOy+DsB19ih2wSBOe8cRr0z1lTPt5VdBO5JdBzoebAvZnImBSg23A
+         yK4OMN0MfJlj0WW4lStMk5mkiowmWQnxJ7CXOZT7yMuChSPRjKzssAqWKgPqqP6loVUg
+         zuJEUUlNrRfJDRKiIE8sEXk2EDL6lrTw+gRTiWg1S6zzPItFUW1sJ/tohDunfoSjrsL8
+         biaw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=whvjdDNL0YyihGiScLJpuUiNsWaIXqPHSQ+hAFVaT/o=;
-        b=nOWOGwGMTD6vOU/iC3wDn1BwdqU3epC350wypTAkydS4yGizFBa/0iNlLiYuwJgf+W
-         M4wb8FSkEP7FwIKvozKRmiH1cBOZ8eE9ADGBxUJR7WdzvCZM+yc+7EbAibL+Ija3Z/6p
-         oGPSbecaAQ+36c9qtXZm1PP6tT0Isb93dPuIDvp9Q1GeFISGaSaZ26cUrHA0FBifVqMR
-         bxaccOCSGOqP56VreDN+qI9xFDurb5Gn4xZzQYxBpiAFUz7fxzRmBiVohA+URKtwrqiv
-         mCmjlvPxlO+4USw08IzmEUiEVaQnvu1RA2OqWvolExRItWPaqXGclNYTI/RxTxE8+jwM
-         mLrA==
-X-Gm-Message-State: AO0yUKVvp8arlHUMdOgctanYvdVUDSHWE5ouArQOe6O2UljNOR92PvXe
-        8+DcTGCMXEN4UJktnoHkNf2iv8gMOy+0HEng5ohYZAGWSyA=
-X-Google-Smtp-Source: AK7set9Tuyg7KuTgdoHJxdFQUaB/2dr0ffoue42nj2SuS5ryAeoWm2tBfUGhw5vYZutZ4hccrYOmriLPrj7eG6rP15w=
-X-Received: by 2002:a50:8add:0:b0:4ad:274:cf12 with SMTP id
- k29-20020a508add000000b004ad0274cf12mr253734edk.4.1676734447404; Sat, 18 Feb
- 2023 07:34:07 -0800 (PST)
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ZhuNX7zk4hZihBAY5sZG0csyVV6AYylCGdugAnsAC6c=;
+        b=s93D3ZZB593zBQNlQZVT7wj/xu5L/EDn6dSYSwefOYXFplP18Ftj+PtmFF5hz3EoF6
+         68FWBkMJ6ZoFdWGq2B4MFnTU/LXXlk0/uXCtYR2xlBcZXV0aT+uj/iqL24JxJHFJjA7n
+         +zrS29wbu9A3tAFdTvqLFR/B6ymLhAvsP7cFrGAJJSWsNrsZN51AlNe+pzAE2F1IngDg
+         f4UvSRztOiDoAO/rxn9gCi5iKkxqIttKY7cW/xinmJ4Oc+dN+fTqX+fCDixYFHXa8Mc/
+         FxvXbVF0iuxCQvv1Cx7z93epP6LanwCiKxWuO1v0QjpLzkFki+SZ1oKvn6+zSNYSYGpv
+         Q8fw==
+X-Gm-Message-State: AO0yUKW3FNLoFmbkw8BWQZmzyLDSJrGXIlEyjsTlCG3g6RGdZbpcH37i
+        IL39sK7GO+16ZYYF6p7WrLH4Zw==
+X-Google-Smtp-Source: AK7set8fM14qE0F61S6lht5sfkP3yhezdAmuiQBgst8exmUIwWFYJljR5sQgrg0d08gSACnwp/jIVA==
+X-Received: by 2002:a05:600c:1d9c:b0:3df:9858:c032 with SMTP id p28-20020a05600c1d9c00b003df9858c032mr716208wms.7.1676895945499;
+        Mon, 20 Feb 2023 04:25:45 -0800 (PST)
+Received: from aspen.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
+        by smtp.gmail.com with ESMTPSA id e16-20020adfe390000000b002c54c8e70b1sm1542169wrm.9.2023.02.20.04.25.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 20 Feb 2023 04:25:44 -0800 (PST)
+Date:   Mon, 20 Feb 2023 12:25:42 +0000
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Luca Weiss <luca@z3ntu.xyz>
+Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, linux-arm-msm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] backlight: qcom-wled: Add PMI8950 compatible
+Message-ID: <Y/NmxjZgo9V6Enad@aspen.lan>
+References: <20221226-msm8953-6-2-wled-v1-1-e318d4c71d05@z3ntu.xyz>
 MIME-Version: 1.0
-References: <20230109223110.1165433-1-martin.blumenstingl@googlemail.com>
- <Y+DPQjukgC0BELkN@intel.com> <CAFBinCBpbRu9xfCEfZJfT7t3doV=+CX03+h7W+HsoW5T4X0W0w@mail.gmail.com>
- <Y+oa6O6+s5UXvOP6@intel.com> <CAFBinCC6RRiN0=XYNw464omzjHrRcNZn39i3_Ztfq6M2xMpgRw@mail.gmail.com>
- <Y+v+jFKiQ3Rj2aYL@intel.com>
-In-Reply-To: <Y+v+jFKiQ3Rj2aYL@intel.com>
-From:   Martin Blumenstingl <martin.blumenstingl@googlemail.com>
-Date:   Sat, 18 Feb 2023 16:33:56 +0100
-Message-ID: <CAFBinCARqY5K6r_9WcKvBnVfUJuFv78ZYk6D0UiA7FYaA4Kkog@mail.gmail.com>
-Subject: Re: [PATCH v1 RFC] video/hdmi: Fix HDMI_VENDOR_INFOFRAME_SIZE
-To:     =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
-Cc:     dri-devel@lists.freedesktop.org, Helge Deller <deller@gmx.de>,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Hans Verkuil <hans.verkuil@cisco.com>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Bernard Zhao <bernard@vivo.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221226-msm8953-6-2-wled-v1-1-e318d4c71d05@z3ntu.xyz>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Feb 14, 2023 at 10:35 PM Ville Syrj=C3=A4l=C3=A4
-<ville.syrjala@linux.intel.com> wrote:
-[...]
-> > > We should perhaps just get rid of HDMI_VENDOR_INFOFRAME_SIZE
-> > > entirely.
-> > My thought was to make it the correct size for
-> > drm_hdmi_vendor_infoframe_from_display_mode(). Then developers using
-> > this "common" vendor infoframe don't have to worry much.
-> > If there's another vendor infoframe implementation (which I'm not
-> > aware of, but it may exist - since as you point out: it's vendor
-> > specific) then the driver code shouldn't use
-> > drm_hdmi_vendor_infoframe_from_display_mode() but rather implement
-> > something custom. At that point the person implementing that will also
-> > need to know their specific infoframe maximum size.
+On Mon, Feb 06, 2023 at 08:58:30PM +0100, Luca Weiss wrote:
+> PMI8950 contains WLED of version 4. Add support for it to the driver.
 >
-> Yes but that other infoframe will still have
-> type=3D=3DHDMI_INFOFRAME_TYPE_VENDOR, and
-> HDMI_INFOFRAME_SIZE(VENDOR) would again
-> give the wrong answer.
-So this means the way forward is to remove HDMI_VENDOR_INFOFRAME_SIZE?
-That means it's up to the (HDMI) driver developers to use a big enough
-buffer (by hard-coding the size). Last time I checked all drivers did.
+> Signed-off-by: Luca Weiss <luca@z3ntu.xyz>
+
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
 
-Best regards,
-Martin
+> ---
+> While adding dt-bindings and dts in a previous series I forgot to add the
+> compatible to the driver. Fix that now.
+> ---
+>  drivers/video/backlight/qcom-wled.c | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+> index 527210e85795..5f504883aca5 100644
+> --- a/drivers/video/backlight/qcom-wled.c
+> +++ b/drivers/video/backlight/qcom-wled.c
+> @@ -1731,6 +1731,7 @@ static int wled_remove(struct platform_device *pdev)
+>
+>  static const struct of_device_id wled_match_table[] = {
+>  	{ .compatible = "qcom,pm8941-wled", .data = (void *)3 },
+> +	{ .compatible = "qcom,pmi8950-wled", .data = (void *)4 },
+>  	{ .compatible = "qcom,pmi8994-wled", .data = (void *)4 },
+>  	{ .compatible = "qcom,pmi8998-wled", .data = (void *)4 },
+>  	{ .compatible = "qcom,pm660l-wled", .data = (void *)4 },
+>
+> ---
+> base-commit: 1b929c02afd37871d5afb9d498426f83432e71c2
+> change-id: 20221226-msm8953-6-2-wled-5f966bfa4db3
+>
+> Best regards,
+> --
+> Luca Weiss <luca@z3ntu.xyz>
+>

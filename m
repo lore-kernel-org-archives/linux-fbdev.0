@@ -2,120 +2,152 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B07FFC64ED8
-	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Feb 2023 10:33:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79C27C64ED8
+	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Feb 2023 11:10:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229558AbjB0Kdj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 27 Feb 2023 05:33:39 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42202 "EHLO
+        id S229682AbjB0LKz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 27 Feb 2023 06:10:55 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44320 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229548AbjB0Kdi (ORCPT
+        with ESMTP id S229658AbjB0LKz (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 27 Feb 2023 05:33:38 -0500
-Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E948F5275;
-        Mon, 27 Feb 2023 02:33:35 -0800 (PST)
-Received: by mail-wr1-x431.google.com with SMTP id q16so5670363wrw.2;
-        Mon, 27 Feb 2023 02:33:35 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=K9odxWzvzue9z1NrNjPL2bn7gUkLmctX3VvfrU8oiAk=;
-        b=dav+XCq3c710V4HBALG6vLCxdDuPp7pufLGks1XX8cO0PLFYMr1J0HuHDHUsvura72
-         oSt6KEUgkKLQ43IqrrrwqoWj8MPOm7E3JkZvYicVha2tqRUDRHyMGo9UQrVp+0kU/uMG
-         WOyaK0qXat3vhS4VJZv/BkmQSUn+zqc5sEZn2sPG1dVwbssa4kQlcuFOSlvp6hwOIWPA
-         gOcR2Su1+Hvrg2ep4CsA4qUo2gZUa0MTj2kwtx+tQR2i3ZUXQpAH4YAphiOs+57REEs3
-         D12dQ5f0cTaLgmWVfCj7EfwbnHGSyQpQv68W0AZe971j0+b7fHK3ft67fuu2+iLn7SLS
-         JbUQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=K9odxWzvzue9z1NrNjPL2bn7gUkLmctX3VvfrU8oiAk=;
-        b=5xepJ5BFa0P6+RnblyBOH2G8Tb4vgnk+CIpf+wU/b4iqmGJPpj8wa/gXieAzDHkJtM
-         oqOpGAzhiteT8WpsbKJTM0g2TYSrD8axcPZDlX0YWHYYnmnCHF65IjJDzaRrz5Ms4DkS
-         E8WAo1XqVNmE4Rr98pHyENGA5El8A5AqMi5XArmVLip+j/7LJjPGIl2fXLY+tewZ3CEn
-         nc49BuQ/8Kb2xD0fuppVBoRaMediHq5NmUEgJffUcGlDSJ9GiKYW1NyV/PZmGbDQwIbL
-         SdWg4WLbUD+fvxZMZ4hBg0SnzCIsmX3wWFvj7GMxqUlKLLBQBidFQyz0vIFTDxlkiMeD
-         0zIA==
-X-Gm-Message-State: AO0yUKUwD0x8WEsgSFyQMR8CSgVlBtaMMlV0Gbvx8rkT8e08XMZR19is
-        q+cZLFJVhSW1GTQU/gT/nZpSnNHNWXfIuA==
-X-Google-Smtp-Source: AK7set9+9zFd2aJkifJYbiHWR4I7Zsn9y0bCJ5P9tNnwHzorUqaB02E6KU0aYOs4YojoMt78neFgrA==
-X-Received: by 2002:adf:ef0d:0:b0:2c5:587e:75ba with SMTP id e13-20020adfef0d000000b002c5587e75bamr19380603wro.55.1677494014479;
-        Mon, 27 Feb 2023 02:33:34 -0800 (PST)
-Received: from localhost ([102.36.222.112])
-        by smtp.gmail.com with ESMTPSA id r1-20020a1c2b01000000b003e9ae2a8cbfsm8854770wmr.2.2023.02.27.02.33.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Feb 2023 02:33:33 -0800 (PST)
-Date:   Mon, 27 Feb 2023 13:33:30 +0300
-From:   Dan Carpenter <error27@gmail.com>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
+        Mon, 27 Feb 2023 06:10:55 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C9201C32C;
+        Mon, 27 Feb 2023 03:10:54 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 387B91FD63;
+        Mon, 27 Feb 2023 11:10:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1677496253; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=Sgrp7bglItceDNA5NDeN2N7hSQQ6SSeiUy5n/QEETjc=;
+        b=XaPKDu0aCtd60eZbM0xeoQ0AfTW1jGS0iaarzXy1GMECLZS+o5kV/JDQpY9DzRMC/T3Y6/
+        7kKGsQflwqT3haQU3L9cqY+J/RTBcpYOKnY404Ow0/AOI+daV8e3F5AoOFZeaoa8ftEZRp
+        wS+/x6zx36b3m0SmmSyeq3f9JsdwJsc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1677496253;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=Sgrp7bglItceDNA5NDeN2N7hSQQ6SSeiUy5n/QEETjc=;
+        b=NeNbMzuncMU80Bk1bmBOQLKPRb+P68/MMlyU7ukLe42T1xHdxSIUCbIeS77OwLm4z8vQTl
+        4dHz4asLrOg1GyAw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 14DB513912;
+        Mon, 27 Feb 2023 11:10:53 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id An0QBL2P/GN/EAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 27 Feb 2023 11:10:53 +0000
+Message-ID: <cc7dea99-c346-a7f8-3cec-b2394526cabe@suse.de>
+Date:   Mon, 27 Feb 2023 12:10:52 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH v2] fbdev: chipsfb: Fix error codes in chipsfb_pci_init()
+Content-Language: en-US
+To:     Dan Carpenter <error27@gmail.com>
 Cc:     Javier Martinez Canillas <javierm@redhat.com>,
         Yang Yingliang <yangyingliang@huawei.com>,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         kernel-janitors@vger.kernel.org
-Subject: [PATCH v2] fbdev: chipsfb: Fix error codes in chipsfb_pci_init()
-Message-ID: <Y/yG+sm2mhdJeTZW@kili>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Mailer: git-send-email haha only kidding
+References: <Y/yG+sm2mhdJeTZW@kili>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <Y/yG+sm2mhdJeTZW@kili>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------n4XmWhFeVRTENNAUCDfjcF2G"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The error codes are not set on these error paths.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------n4XmWhFeVRTENNAUCDfjcF2G
+Content-Type: multipart/mixed; boundary="------------1Mw693b2vLG1T9LWYhTL5ItN";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Dan Carpenter <error27@gmail.com>
+Cc: Javier Martinez Canillas <javierm@redhat.com>,
+ Yang Yingliang <yangyingliang@huawei.com>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, kernel-janitors@vger.kernel.org
+Message-ID: <cc7dea99-c346-a7f8-3cec-b2394526cabe@suse.de>
+Subject: Re: [PATCH v2] fbdev: chipsfb: Fix error codes in chipsfb_pci_init()
+References: <Y/yG+sm2mhdJeTZW@kili>
+In-Reply-To: <Y/yG+sm2mhdJeTZW@kili>
 
-Fixes: 145eed48de27 ("fbdev: Remove conflicting devices on PCI bus")
-Signed-off-by: Dan Carpenter <error27@gmail.com>
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
----
-v2: I accidentally returned -EINVAL instead -ENODEV.
-    Add Thomas's Reviewed-by tag.
+--------------1Mw693b2vLG1T9LWYhTL5ItN
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
- drivers/video/fbdev/chipsfb.c | 14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+SGkNCg0KQW0gMjcuMDIuMjMgdW0gMTE6MzMgc2NocmllYiBEYW4gQ2FycGVudGVyOg0KPiBU
+aGUgZXJyb3IgY29kZXMgYXJlIG5vdCBzZXQgb24gdGhlc2UgZXJyb3IgcGF0aHMuDQo+IA0K
+PiBGaXhlczogMTQ1ZWVkNDhkZTI3ICgiZmJkZXY6IFJlbW92ZSBjb25mbGljdGluZyBkZXZp
+Y2VzIG9uIFBDSSBidXMiKQ0KPiBTaWduZWQtb2ZmLWJ5OiBEYW4gQ2FycGVudGVyIDxlcnJv
+cjI3QGdtYWlsLmNvbT4NCj4gUmV2aWV3ZWQtYnk6IFRob21hcyBaaW1tZXJtYW5uIDx0emlt
+bWVybWFubkBzdXNlLmRlPg0KPiAtLS0NCj4gdjI6IEkgYWNjaWRlbnRhbGx5IHJldHVybmVk
+IC1FSU5WQUwgaW5zdGVhZCAtRU5PREVWLg0KPiAgICAgIEFkZCBUaG9tYXMncyBSZXZpZXdl
+ZC1ieSB0YWcuDQoNClRoYW5rcyBhIGxvdC4gVW5sZXNzIEhlbGdlIHRha2VzIGl0IGludG8g
+dGhlIGZiZGV2IGJyYW5jaCwgSSdsbCBtZXJnZSANCnlvdXIgcGF0Y2ggdGhyb3VnaCBEUk0g
+dHJlZXMgd2l0aGluIHRoZSBuZXh0IGRheXMuDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoN
+Cj4gDQo+ICAgZHJpdmVycy92aWRlby9mYmRldi9jaGlwc2ZiLmMgfCAxNCArKysrKysrKysr
+LS0tLQ0KPiAgIDEgZmlsZSBjaGFuZ2VkLCAxMCBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9u
+cygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY2hpcHNmYi5j
+IGIvZHJpdmVycy92aWRlby9mYmRldi9jaGlwc2ZiLmMNCj4gaW5kZXggY2MzN2VjM2Y4ZmMx
+Li43Nzk5ZDUyYTY1MWYgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY2hp
+cHNmYi5jDQo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY2hpcHNmYi5jDQo+IEBAIC0z
+NTgsMTYgKzM1OCwyMSBAQCBzdGF0aWMgaW50IGNoaXBzZmJfcGNpX2luaXQoc3RydWN0IHBj
+aV9kZXYgKmRwLCBjb25zdCBzdHJ1Y3QgcGNpX2RldmljZV9pZCAqZW50KQ0KPiAgIAlpZiAo
+cmMpDQo+ICAgCQlyZXR1cm4gcmM7DQo+ICAgDQo+IC0JaWYgKHBjaV9lbmFibGVfZGV2aWNl
+KGRwKSA8IDApIHsNCj4gKwlyYyA9IHBjaV9lbmFibGVfZGV2aWNlKGRwKTsNCj4gKwlpZiAo
+cmMgPCAwKSB7DQo+ICAgCQlkZXZfZXJyKCZkcC0+ZGV2LCAiQ2Fubm90IGVuYWJsZSBQQ0kg
+ZGV2aWNlXG4iKTsNCj4gICAJCWdvdG8gZXJyX291dDsNCj4gICAJfQ0KPiAgIA0KPiAtCWlm
+ICgoZHAtPnJlc291cmNlWzBdLmZsYWdzICYgSU9SRVNPVVJDRV9NRU0pID09IDApDQo+ICsJ
+aWYgKChkcC0+cmVzb3VyY2VbMF0uZmxhZ3MgJiBJT1JFU09VUkNFX01FTSkgPT0gMCkgew0K
+PiArCQlyYyA9IC1FTk9ERVY7DQo+ICAgCQlnb3RvIGVycl9kaXNhYmxlOw0KPiArCX0NCj4g
+ICAJYWRkciA9IHBjaV9yZXNvdXJjZV9zdGFydChkcCwgMCk7DQo+IC0JaWYgKGFkZHIgPT0g
+MCkNCj4gKwlpZiAoYWRkciA9PSAwKSB7DQo+ICsJCXJjID0gLUVOT0RFVjsNCj4gICAJCWdv
+dG8gZXJyX2Rpc2FibGU7DQo+ICsJfQ0KPiAgIA0KPiAgIAlwID0gZnJhbWVidWZmZXJfYWxs
+b2MoMCwgJmRwLT5kZXYpOw0KPiAgIAlpZiAocCA9PSBOVUxMKSB7DQo+IEBAIC00MTcsNyAr
+NDIyLDggQEAgc3RhdGljIGludCBjaGlwc2ZiX3BjaV9pbml0KHN0cnVjdCBwY2lfZGV2ICpk
+cCwgY29uc3Qgc3RydWN0IHBjaV9kZXZpY2VfaWQgKmVudCkNCj4gICANCj4gICAJaW5pdF9j
+aGlwcyhwLCBhZGRyKTsNCj4gICANCj4gLQlpZiAocmVnaXN0ZXJfZnJhbWVidWZmZXIocCkg
+PCAwKSB7DQo+ICsJcmMgPSByZWdpc3Rlcl9mcmFtZWJ1ZmZlcihwKTsNCj4gKwlpZiAocmMg
+PCAwKSB7DQo+ICAgCQlkZXZfZXJyKCZkcC0+ZGV2LCJDJlQgNjU1NTAgZnJhbWVidWZmZXIg
+ZmFpbGVkIHRvIHJlZ2lzdGVyXG4iKTsNCj4gICAJCWdvdG8gZXJyX3VubWFwOw0KPiAgIAl9
+DQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXIN
+ClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwg
+OTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpH
+ZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
 
-diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
-index cc37ec3f8fc1..7799d52a651f 100644
---- a/drivers/video/fbdev/chipsfb.c
-+++ b/drivers/video/fbdev/chipsfb.c
-@@ -358,16 +358,21 @@ static int chipsfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
- 	if (rc)
- 		return rc;
- 
--	if (pci_enable_device(dp) < 0) {
-+	rc = pci_enable_device(dp);
-+	if (rc < 0) {
- 		dev_err(&dp->dev, "Cannot enable PCI device\n");
- 		goto err_out;
- 	}
- 
--	if ((dp->resource[0].flags & IORESOURCE_MEM) == 0)
-+	if ((dp->resource[0].flags & IORESOURCE_MEM) == 0) {
-+		rc = -ENODEV;
- 		goto err_disable;
-+	}
- 	addr = pci_resource_start(dp, 0);
--	if (addr == 0)
-+	if (addr == 0) {
-+		rc = -ENODEV;
- 		goto err_disable;
-+	}
- 
- 	p = framebuffer_alloc(0, &dp->dev);
- 	if (p == NULL) {
-@@ -417,7 +422,8 @@ static int chipsfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
- 
- 	init_chips(p, addr);
- 
--	if (register_framebuffer(p) < 0) {
-+	rc = register_framebuffer(p);
-+	if (rc < 0) {
- 		dev_err(&dp->dev,"C&T 65550 framebuffer failed to register\n");
- 		goto err_unmap;
- 	}
--- 
-2.39.1
+--------------1Mw693b2vLG1T9LWYhTL5ItN--
 
+--------------n4XmWhFeVRTENNAUCDfjcF2G
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmP8j7wFAwAAAAAACgkQlh/E3EQov+DM
+JQ/+Nm8lUrqEHMgxeNTJ5NkEVzBVDbR0RtEqkwU5hhNPXn8WVTfnPsxiLNDJMOCVgdfxpWbYiSDH
+M+Wk7dmnUM/Wg7IIWX4PDMo7ZhDsgYaoV5f7Ns/gIfGliU7lg1qyKuMNxvsk228N4BnMLXDwgBu9
+Nsw1u8iuDoBxVwXVJt7dn+2vFvohXI29id4SAJftClL3P0PeJl6Iyq4Xqps2IF+we3NzYETVSyp3
+8chRqEZu7cdr/VbM0wDXDiUIyk4t/G+2daKSudE9TWMA/VKFd71+a4BK2awr4rxvc+833KsWb4Nj
+mlwGyJ6pAVl0C8sHiEB7S137vCvcZXItWsFYYcC1AiaF2EhhIMfOXETgdN3SSo6UqiKMrHRNyS5M
+HNVzM5DYTMspCIFw7JznbakVdEK8W4Fte/xLWFj3z5k6QYugwkTsy9HhIvtxrGsQUZpw/pOuoj/y
+WMihLfSYlxYYGBPkvL/cNx7qWY+efC2cP9CLo/ZaSf3eXt2iz2TVKTttRbQqSzqz+LxQ+pn1bcxr
+4dgF8yJIFjzP3B+qBCTwjTDXwDAZD/d+pOSqlJwzttbriLzfOV+qFPTlQmiHEdAqJa2TbWnyHQQI
+7y9qqvnUVntVAH420U69++/4Hq1SFhJVQ1NpODCOWhna07GenzYorien9c8CSH3rMWwvDVAGZGnF
+hM4=
+=zmPS
+-----END PGP SIGNATURE-----
+
+--------------n4XmWhFeVRTENNAUCDfjcF2G--

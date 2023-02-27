@@ -2,51 +2,50 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0829C7EE33
-	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Feb 2023 02:10:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AE60C7EE32
+	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Feb 2023 02:11:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229974AbjB0CKT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 26 Feb 2023 21:10:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58562 "EHLO
+        id S230431AbjB0CLE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 26 Feb 2023 21:11:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59610 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230249AbjB0CJn (ORCPT
+        with ESMTP id S231153AbjB0CKP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 26 Feb 2023 21:09:43 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0567E18171;
-        Sun, 26 Feb 2023 18:08:32 -0800 (PST)
+        Sun, 26 Feb 2023 21:10:15 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 15D1D1B310;
+        Sun, 26 Feb 2023 18:09:19 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 55702B80CBD;
-        Mon, 27 Feb 2023 02:05:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9E549C433D2;
-        Mon, 27 Feb 2023 02:05:53 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id E13CD60DC5;
+        Mon, 27 Feb 2023 02:09:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 053CDC433EF;
+        Mon, 27 Feb 2023 02:09:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1677463555;
-        bh=LUt1Js+1pEh1ZGmXeDicpjAGXUgNgNZx3wDyKOwqHFQ=;
+        s=k20201202; t=1677463758;
+        bh=//aJivlEzxmtFYlVV8/vSyGrZksn5HH4/Ocb6MqgP3s=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=AkMWbhyBLQHDx1Qou6TCJAiO+63yAg9Rxk2IbYiJLdZYY9Qa8Ua1WZFZpA1H5TFrV
-         AHDUx1qf5zkrWn+Ziy2fEgCuz0xdfXhA2skEeJhgqxGVMlJYtp6hN9UJ7cC9U81HhN
-         iAlu76QthH3rtGZ5UluZty/VnsZTwnpn5zb+MU/AHuGvQ9MjYVgM/fWw8ZUknAajC4
-         JB0h6mYEc866+IBdAF0U3DctAHnIKdAUsPlPucP/9vCem5hwE+0r2TufDkBjRyqio/
-         wq4NaYNYpfjPvlX/EAMK9NqyIj0sVAmjdtkkjBVs28hteD4czLIQmJIdvQ1k9RmsGa
-         RBnJcpQRFizNg==
+        b=CjgninZD6/z6UlwcJx6knetNmjjjEqRi5xSIp8NP/3ksCsiDr4y4vU89SlLu6/xd0
+         Ccjf9pvAeb8lXGMDkmtQ1nSLi0WttN2cZiDiRzwPh/o+Zp1eQh1cYY2Y+TE+90B0nH
+         mBk2GryBwLqJ0jITOzKmudWcULFQWqoIvIKKSuK4xq9Jqtr1/O2NDjKN87powz/Jbm
+         xcn0Mckd4EnX5XcARG5c6v1ZuZsv9OYFHl2TvBLtWPmykdbVKrSKftIYgeWvQn6Zil
+         pgCNC6kUofCnf7yCefQuYvT8+JrGQ84zb+jbbxnCL/+d/QtmLjjm26UQRDfChEDy42
+         k5TCR1kZadRfw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
         Javier Martinez Canillas <javierm@redhat.com>,
         Sasha Levin <sashal@kernel.org>, daniel@ffwll.ch,
-        deller@gmx.de, sam@ravnborg.org, geert+renesas@glider.be,
-        samuel.thibault@ens-lyon.org, penguin-kernel@I-love.SAKURA.ne.jp,
-        syoshida@redhat.com, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 6.1 14/58] Revert "fbcon: don't lose the console font across generic->chip driver switch"
-Date:   Sun, 26 Feb 2023 21:04:12 -0500
-Message-Id: <20230227020457.1048737-14-sashal@kernel.org>
+        deller@gmx.de, sam@ravnborg.org, samuel.thibault@ens-lyon.org,
+        penguin-kernel@I-love.SAKURA.ne.jp, syoshida@redhat.com,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 5.15 08/25] Revert "fbcon: don't lose the console font across generic->chip driver switch"
+Date:   Sun, 26 Feb 2023 21:08:31 -0500
+Message-Id: <20230227020855.1051605-8-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20230227020457.1048737-1-sashal@kernel.org>
-References: <20230227020457.1048737-1-sashal@kernel.org>
+In-Reply-To: <20230227020855.1051605-1-sashal@kernel.org>
+References: <20230227020855.1051605-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -95,10 +94,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 6 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 1b14c21af2b74..2bc8baa90c0f2 100644
+index d90d807c67561..b6712655ec1f0 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -958,7 +958,7 @@ static const char *fbcon_startup(void)
+@@ -989,7 +989,7 @@ static const char *fbcon_startup(void)
  	set_blitting_type(vc, info);
  
  	/* Setup default font */
@@ -107,7 +106,7 @@ index 1b14c21af2b74..2bc8baa90c0f2 100644
  		if (!fontname[0] || !(font = find_font(fontname)))
  			font = get_default_font(info->var.xres,
  						info->var.yres,
-@@ -968,8 +968,6 @@ static const char *fbcon_startup(void)
+@@ -999,8 +999,6 @@ static const char *fbcon_startup(void)
  		vc->vc_font.height = font->height;
  		vc->vc_font.data = (void *)(p->fontdata = font->data);
  		vc->vc_font.charcount = font->charcount;
@@ -116,7 +115,7 @@ index 1b14c21af2b74..2bc8baa90c0f2 100644
  	}
  
  	cols = FBCON_SWAP(ops->rotate, info->var.xres, info->var.yres);
-@@ -1135,9 +1133,9 @@ static void fbcon_init(struct vc_data *vc, int init)
+@@ -1167,9 +1165,9 @@ static void fbcon_init(struct vc_data *vc, int init)
  	ops->p = &fb_display[fg_console];
  }
  
@@ -128,7 +127,7 @@ index 1b14c21af2b74..2bc8baa90c0f2 100644
  		kfree(p->fontdata - FONT_EXTRA_WORDS * sizeof(int));
  	p->fontdata = NULL;
  	p->userfont = 0;
-@@ -1172,8 +1170,8 @@ static void fbcon_deinit(struct vc_data *vc)
+@@ -1183,8 +1181,8 @@ static void fbcon_deinit(struct vc_data *vc)
  	struct fb_info *info;
  	struct fbcon_ops *ops;
  	int idx;
@@ -138,7 +137,7 @@ index 1b14c21af2b74..2bc8baa90c0f2 100644
  	idx = con2fb_map[vc->vc_num];
  
  	if (idx == -1)
-@@ -1184,8 +1182,6 @@ static void fbcon_deinit(struct vc_data *vc)
+@@ -1195,8 +1193,6 @@ static void fbcon_deinit(struct vc_data *vc)
  	if (!info)
  		goto finished;
  
@@ -147,8 +146,8 @@ index 1b14c21af2b74..2bc8baa90c0f2 100644
  	ops = info->fbcon_par;
  
  	if (!ops)
-@@ -1197,9 +1193,8 @@ static void fbcon_deinit(struct vc_data *vc)
- 	ops->initialized = false;
+@@ -1208,9 +1204,8 @@ static void fbcon_deinit(struct vc_data *vc)
+ 	ops->flags &= ~FBCON_FLAGS_INIT;
  finished:
  
 -	fbcon_free_font(p, free_font);

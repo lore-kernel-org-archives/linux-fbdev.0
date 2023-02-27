@@ -2,135 +2,163 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6FD9C6FA8E
-	for <linux-fbdev@archiver.kernel.org>; Sat, 25 Feb 2023 18:10:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F17DDC7EE23
+	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Feb 2023 02:02:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229489AbjBYSKW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 25 Feb 2023 13:10:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50290 "EHLO
+        id S229869AbjB0CCW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 26 Feb 2023 21:02:22 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52364 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229482AbjBYSKV (ORCPT
+        with ESMTP id S229652AbjB0CCE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 25 Feb 2023 13:10:21 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF06815572;
-        Sat, 25 Feb 2023 10:10:19 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1677348610; i=deller@gmx.de;
-        bh=8AQPQfQvL5G8QfEl/0wQoBLSYF1PPBCUMr84ExrRXjc=;
-        h=X-UI-Sender-Class:Date:Subject:From:To:Cc:References:In-Reply-To;
-        b=Rs/zwFqTIQpeJW/174ocjrPK5VhCZbFVtO8gueyaCq23vwb0qqjCJZ5g7nGeY6PLf
-         vSKuKmBJ2jgtMAPJ53vJ5qs38sf6tTXcrdFC38NbiH/7lzWiJ8MwdKbObCIG8a+fsJ
-         19Hx2xW4ozPokmsW35ewlZeP+Eyj/F01JUbxOxiR6iDzdfUy7LCyWKo3USKpo4RZC3
-         x0YtZVNyDNIgPn9JQ3PjDf0mzovBKtjzXIJQnWuA8kfeXQLS1IEDSZl+SWCsFmI9l9
-         /ToTw5wgdsNtsWmc+CmBvOm30Ag5KpECGn78rRBhxBJr2eCGy7hKtirIH9IZJHd2AI
-         3C+tFbY17eZQQ==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([92.116.139.251]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MTABT-1p49xF1WSl-00UXkG; Sat, 25
- Feb 2023 19:10:10 +0100
-Message-ID: <97334439-5332-69e5-b36e-9f89e7b511bb@gmx.de>
-Date:   Sat, 25 Feb 2023 19:10:09 +0100
+        Sun, 26 Feb 2023 21:02:04 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 214BC16888;
+        Sun, 26 Feb 2023 18:01:48 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id B7A43B80CAA;
+        Mon, 27 Feb 2023 02:01:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18B47C433D2;
+        Mon, 27 Feb 2023 02:01:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1677463305;
+        bh=LUt1Js+1pEh1ZGmXeDicpjAGXUgNgNZx3wDyKOwqHFQ=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=TrbhaWcCu0G4Pbl85eAnRYVtxzYEqrzNRqvd+X/MBB9NP2VqhUzEmdw8SpEw+qqKf
+         fjYjXfTlLDSyVU/FsKEQHoKC/q8XmPACTLA2NYQ/BcP89uoZWaCqX1feHmmcMm8TtV
+         Yp2nkdUMxLLZbpYsoY2d/w21soEFPpMis2o9kiF1pxX8PtuOighUA1stcr8KYwrB8f
+         EK2sfk4odhVwbXfqhB5o0VqQ4HzcWUr3AMirPAAB+OeYRSciXWw71gTkWg+eaH49xB
+         1d5uPDl55sauzH9iNips0gQOGuRnJbxg+o9OZSR3Oz10CngY7YJDt9P686Dmrcpad9
+         1t43/ue8MZ96A==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Sasha Levin <sashal@kernel.org>, daniel@ffwll.ch,
+        deller@gmx.de, sam@ravnborg.org, geert+renesas@glider.be,
+        samuel.thibault@ens-lyon.org, penguin-kernel@I-love.SAKURA.ne.jp,
+        syoshida@redhat.com, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 6.2 14/60] Revert "fbcon: don't lose the console font across generic->chip driver switch"
+Date:   Sun, 26 Feb 2023 20:59:59 -0500
+Message-Id: <20230227020045.1045105-14-sashal@kernel.org>
+X-Mailer: git-send-email 2.39.0
+In-Reply-To: <20230227020045.1045105-1-sashal@kernel.org>
+References: <20230227020045.1045105-1-sashal@kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH] fbdev: omapfb: cleanup inconsistent indentation
-Content-Language: en-US
-From:   Helge Deller <deller@gmx.de>
-To:     Lucy Mielke <mielkesteven@icloud.com>, linux-fbdev@vger.kernel.org,
-        linux-omap@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc:     linux-kernel@vger.kernel.org, arnd@arndb.de
-References: <20230207100630.11644-1-mielkesteven@icloud.com>
- <eb6900d5-148f-85cb-eebc-c20d99802c75@gmx.de>
-In-Reply-To: <eb6900d5-148f-85cb-eebc-c20d99802c75@gmx.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
-X-Provags-ID: V03:K1:55AUYxC/gCo9Z8HrgVELUyMNGoIXLiZZlRJWj+20rZxhkk6T3Vy
- 8HigZ+zPDnF9ioyGxjtIzeeQ1kaqk2XGJDvgfNafCbWLH9AkwCfvjrs2GIMEEerU7xoYjae
- IATZnpbu77a4L6T3AflJqvA4mEGOWfLu1ejKty/Dc2YqklVqZy7zsrnSV5e2sWoiddXMOR0
- A4St7WcsBA8JCXpHWkTVQ==
-UI-OutboundReport: notjunk:1;M01:P0:0D5CXkyzZSk=;QUZ8EkUZsyoD7rl9N5P+yZOd/7A
- JgWK4OznnIPj3jcQiuvnhmtaEerOFX8FYyUo4MXhTQwZne4dCMAIoJYnLsEF/WFQ/vGATEnPf
- FKUZvsdw/xWSbkr3TbPFyeLY88qbNOrJNUF6RLiUWcKpGG8vRSZps+JWaeTCt45L1eXXidoF5
- gEIs6LXgfjAuwp/PjL610LL1RCU7V9YYvPEZmVXFpMbOCov+6LjuCi1QECxjwTL7AYvXqWD4i
- AQVsznofSvcU1/UIhN2+WBd6benFGrRFrF09ukYl60mNnpnOXVkrdP0BtX2Hj5lejMU7p+4dc
- 2aHnntlKqi+ssyc8XylAgrOHltrdIo4roKS2SEC2uuGKDjKZCr4gY9KwYoulgF1HEdN3UyxMi
- 6wH1m0oLPuweNjOKDyH/7B/UUh95PKIQ0X4YRM8+UIKSGdrYXHDd+irkkEZTEWjb5lmL8+5Yq
- UhJX2EI1NOkZ8z+FFnHeSB1BThQjgzVaHm+L6BOqJZwtv8DY6u8uxXOfZVfi0Xgds1GBfRwiB
- VWN98lw9MhFsPNKq0zV4oG4ZKp6YWzLP4UAVq9YVAdORhhmeQ7AKv4imia2g1jOuFkp7uO/L4
- k2et98kMrtVRubu6KJWF1tCz1LaMqSF4vzfUOoh+A5VP4Z5CN1Cic7ynbf3rSxYN8sazgCUNX
- cwsiHHzyshPTtwIsF5c7o5W3zL7H1HF0kutdcpqiA/9OkEuqO6y5IcZDCmjb3zFjLUI7YQh8D
- Q3hfEwEhbIGebNEMLhwwe0qGAViSUo2l3u5wNbpRnXWyhRUfsa+lPxS0+2aIBB3JGhSeriZsA
- VGEcAuPrwIFNLDP1OT05F/H3U7ZnkDUcbUl/fKd5o7yGAOqkmAOaPl9hCm8T2umGq9dM08/x9
- v3nxVPIqfVRzcMGpKHaUhVVN8LWJZuY/fTJHrR+m4iU08Lp5n/94/x7aJ0HRgtqGQtumy9wTd
- PvQ/hZ/NRH7rrnulQvPTb+dv3SU=
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-SGkgTHVjeSwNCg0KdGhlcmUgd2VyZSBzb21lIG1vcmUgdGhpbmdzIHdyb25nIGluIHlvdXIgcGF0
-Y2g6DQoNCk9uIDIvMjUvMjMgMTg6MjMsIEhlbGdlIERlbGxlciB3cm90ZToNCj4gT24gMi83LzIz
-IDExOjA2LCBMdWN5IE1pZWxrZSB3cm90ZToNCj4+IFRoaXMgY2xlYW5zIHVwIHRoZSBpbmRlbnRh
-dGlvbiBhY2NvcmRpbmcgdG8gdGhlIExpbnV4IGtlcm5lbCBjb2RpbmcNCj4+IHN0eWxlLCBhbmQg
-c2hvdWxkIGZpeCB0aGUgd2FybmluZyBjcmVhdGVkIGJ5IHRoZSBrZXJuZWwgdGVzdCByb2JvdC4N
-Cj4+DQo+PiBGaXhlczogOGIwOGNmMmI2NGY1YTYwNTk0YjA3Nzk1YjJhZDUxOGM2ZDA0NDU2NiAo
-Ik9NQVA6IGFkZCBUSSBPTUFQwqBmcmFtZWJ1ZmZlciBkcml2ZXIiKQ0KDQpQbGVhc2UgdXNlIG9u
-bHkgMTIgY2hhcnMgb2YgdGhlIHNoYTEgaW4gdGhlIEZpeGVzIHRhZy4NCg0KPj4gUmVwb3J0ZWQt
-Ynk6IGtlcm5lbCB0ZXN0IHJvYm90IDxsa3BAaW50ZWwuY29tPg0KPj4gU2lnbmVkLW9mZi1ieTog
-THVjeSBNaWVsa2UgPG1pZWxrZXN0ZXZlbkBpY2xvdWQuY29tPg0KPj4gLS0tDQo+PiDCoCBkcml2
-ZXJzL3ZpZGVvL2ZiZGV2L29tYXAvb21hcGZiX21haW4uYyB8IDMyICsrKysrKysrKysrKysrKy0t
-LS0tLS0tLS0tDQo+PiDCoCAxIGZpbGUgY2hhbmdlZCwgMTkgaW5zZXJ0aW9ucygrKSwgMTMgZGVs
-ZXRpb25zKC0pDQo+Pg0KPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvb21hcC9v
-bWFwZmJfbWFpbi5jIGIvZHJpdmVycy92aWRlby9mYmRldi9vbWFwL29tYXBmYl9tYWluLmMNCj4+
-IGluZGV4IDFmM2RmMjA1NWZmMC4uNGI2NzNkYWEzMmNiIDEwMDY0NA0KPj4gLS0tIGEvZHJpdmVy
-cy92aWRlby9mYmRldi9vbWFwL29tYXBmYl9tYWluLmMNCj4+ICsrKyBiL2RyaXZlcnMvdmlkZW8v
-ZmJkZXYvb21hcC9vbWFwZmJfbWFpbi5jDQo+PiBAQCAtNzgsNyArNzgsNyBAQCBzdGF0aWMgc3Ry
-dWN0IHBsYXRmb3JtX2RldmljZSBvbWFwZHNzX2RldmljZSA9IHsNCj4+IMKgwqDCoMKgwqAgLm5h
-bWXCoMKgwqDCoMKgwqDCoCA9ICJvbWFwZHNzX2RzcyIsDQo+PiDCoMKgwqDCoMKgIC5pZMKgwqDC
-oMKgwqDCoMKgID0gLTEsDQo+PiDCoMKgwqDCoMKgIC5kZXbCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-ID0gew0KPj4gLcKgwqDCoMKgwqDCoMKgIC5yZWxlYXNlID0gb21hcGRzc19yZWxlYXNlLA0KPj4g
-K8KgwqDCoCAucmVsZWFzZcKgwqDCoCA9IG9tYXBkc3NfcmVsZWFzZSw+wqDCoMKgwqDCoMKgIH0s
-DQo+IA0KPiBUaGlzIGlzIHdyb25nLiAicmVsZWFzZSIgYmVsb25ncyBpbnNpZGUgdGhlIC5kZXYN
-Cj4gdmFyaWFibGUsIHNvIHRoZSBwcmV2aW91cyBpbmRlbnRpbmcgaXMgY29ycmVjdC4NCj4gDQo+
-IFRoZSBjaGFuZ2VzIGJlbG93IHNlZW0gY29ycmVjdC4NCj4gDQo+IEhlbGdlDQo+IA0KPj4gwqAg
-fTsNCj4+DQo+PiBAQCAtNTQ0LDE5ICs1NDQsMjUgQEAgc3RhdGljIGludCBzZXRfZmJfdmFyKHN0
-cnVjdCBmYl9pbmZvICpmYmksDQo+PiDCoMKgwqDCoMKgwqDCoMKgwqAgdmFyLT55b2Zmc2V0ID0g
-dmFyLT55cmVzX3ZpcnR1YWwgLSB2YXItPnlyZXM7DQo+Pg0KPj4gwqDCoMKgwqDCoCBpZiAocGxh
-bmUtPmNvbG9yX21vZGUgPT0gT01BUEZCX0NPTE9SX1JHQjQ0NCkgew0KPj4gLcKgwqDCoMKgwqDC
-oMKgIHZhci0+cmVkLm9mZnNldMKgwqDCoMKgwqAgPSA4OyB2YXItPnJlZC5sZW5ndGjCoMKgwqDC
-oCA9IDQ7DQo+PiAtwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oCB2YXItPnJlZC5tc2JfcmlnaHTCoMKgID0gMDsNCj4+IC3CoMKgwqDCoMKgwqDCoCB2YXItPmdy
-ZWVuLm9mZnNldCA9IDQ7IHZhci0+Z3JlZW4ubGVuZ3RoID0gNDsNCj4+IC3CoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHZhci0+Z3JlZW4ubXNiX3JpZ2h0ID0g
-MDsNCj4+IC3CoMKgwqDCoMKgwqDCoCB2YXItPmJsdWUub2Zmc2V0wqAgPSAwOyB2YXItPmJsdWUu
-bGVuZ3RowqAgPSA0Ow0KPj4gLcKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqAgdmFyLT5ibHVlLm1zYl9yaWdodMKgID0gMDsNCj4+ICvCoMKgwqDCoMKgwqDCoCB2
-YXItPnJlZC5vZmZzZXTCoMKgwqDCoMKgwqDCoCA9IDg7DQo+PiArwqDCoMKgwqDCoMKgwqAgdmFy
-LT5yZWQubGVuZ3RowqDCoMKgwqDCoMKgwqAgPSA0Ow0KDQpBdCB2YXJpb3VzIG9mIHRob3NlIGxp
-bmVzIHlvdSBoYXZlIHRyYWlsaW5nIHdoaXRlc3BhY2VzLg0KDQoNCkkgZml4ZWQgdXAgdGhvc2Ug
-aXNzdWVzLCBkcm9wcGVkIHRoZSBmaXJzdCBwYXJ0IG9mIHlvdXIgcGF0Y2gNCmFuZCBhZGRlZCBp
-dCB0byB0aGUgZmJkZXYgdHJlZS4NCg0KSGVsZ2UNCg0KDQo+PiArwqDCoMKgwqDCoMKgwqAgdmFy
-LT5yZWQubXNiX3JpZ2h0wqDCoMKgID0gMDsNCj4+ICvCoMKgwqDCoMKgwqDCoCB2YXItPmdyZWVu
-Lm9mZnNldMKgwqDCoCA9IDQ7DQo+PiArwqDCoMKgwqDCoMKgwqAgdmFyLT5ncmVlbi5sZW5ndGjC
-oMKgwqAgPSA0Ow0KPj4gK8KgwqDCoMKgwqDCoMKgIHZhci0+Z3JlZW4ubXNiX3JpZ2h0wqDCoMKg
-ID0gMDsNCj4+ICvCoMKgwqDCoMKgwqDCoCB2YXItPmJsdWUub2Zmc2V0wqDCoMKgID0gMDsNCj4+
-ICvCoMKgwqDCoMKgwqDCoCB2YXItPmJsdWUubGVuZ3RowqDCoMKgID0gNDsNCj4+ICvCoMKgwqDC
-oMKgwqDCoCB2YXItPmJsdWUubXNiX3JpZ2h0wqDCoMKgID0gMDsNCj4+IMKgwqDCoMKgwqAgfSBl
-bHNlIHsNCj4+IC3CoMKgwqDCoMKgwqDCoCB2YXItPnJlZC5vZmZzZXTCoMKgwqDCoCA9IDExOyB2
-YXItPnJlZC5sZW5ndGjCoMKgwqDCoCA9IDU7DQo+PiAtwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoCB2YXItPnJlZC5tc2JfcmlnaHTCoMKgID0gMDsNCj4+IC3C
-oMKgwqDCoMKgwqDCoCB2YXItPmdyZWVuLm9mZnNldCA9IDU7wqAgdmFyLT5ncmVlbi5sZW5ndGgg
-PSA2Ow0KPj4gLcKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAg
-dmFyLT5ncmVlbi5tc2JfcmlnaHQgPSAwOw0KPj4gLcKgwqDCoMKgwqDCoMKgIHZhci0+Ymx1ZS5v
-ZmZzZXQgPSAwO8KgIHZhci0+Ymx1ZS5sZW5ndGjCoCA9IDU7DQo+PiAtwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCB2YXItPmJsdWUubXNiX3JpZ2h0wqAgPSAw
-Ow0KPj4gK8KgwqDCoMKgwqDCoMKgIHZhci0+cmVkLm9mZnNldMKgwqDCoMKgwqDCoMKgID0gMTE7
-DQo+PiArwqDCoMKgwqDCoMKgwqAgdmFyLT5yZWQubGVuZ3RowqDCoMKgwqDCoMKgwqAgPSA1Ow0K
-Pj4gK8KgwqDCoMKgwqDCoMKgIHZhci0+cmVkLm1zYl9yaWdodMKgwqDCoCA9IDA7DQo+PiArwqDC
-oMKgwqDCoMKgwqAgdmFyLT5ncmVlbi5vZmZzZXTCoMKgwqAgPSA1Ow0KPj4gK8KgwqDCoMKgwqDC
-oMKgIHZhci0+Z3JlZW4ubGVuZ3RowqDCoMKgID0gNjsNCj4+ICvCoMKgwqDCoMKgwqDCoCB2YXIt
-PmdyZWVuLm1zYl9yaWdodMKgwqDCoCA9IDA7DQo+PiArwqDCoMKgwqDCoMKgwqAgdmFyLT5ibHVl
-Lm9mZnNldMKgwqDCoCA9IDA7DQo+PiArwqDCoMKgwqDCoMKgwqAgdmFyLT5ibHVlLmxlbmd0aMKg
-wqDCoCA9IDU7DQo+PiArwqDCoMKgwqDCoMKgwqAgdmFyLT5ibHVlLm1zYl9yaWdodMKgwqDCoCA9
-IDA7DQo+PiDCoMKgwqDCoMKgIH0NCj4+DQo+PiDCoMKgwqDCoMKgIHZhci0+aGVpZ2h0wqDCoMKg
-wqDCoMKgwqAgPSAtMTsNCj4gDQoNCg==
+From: Thomas Zimmermann <tzimmermann@suse.de>
+
+[ Upstream commit 12d5796d55f9fd9e4b621003127c99e176665064 ]
+
+This reverts commit ae1287865f5361fa138d4d3b1b6277908b54eac9.
+
+Always free the console font when deinitializing the framebuffer
+console. Subsequent framebuffer consoles will then use the default
+font. Rely on userspace to load any user-configured font for these
+consoles.
+
+Commit ae1287865f53 ("fbcon: don't lose the console font across
+generic->chip driver switch") was introduced to work around losing
+the font during graphics-device handover. [1][2] It kept a dangling
+pointer with the font data between loading the two consoles, which is
+fairly adventurous hack. It also never covered cases when the other
+consoles, such as VGA text mode, where involved.
+
+The problem has meanwhile been solved in userspace. Systemd comes
+with a udev rule that re-installs the configured font when a console
+comes up. [3] So the kernel workaround can be removed.
+
+This also removes one of the two special cases triggered by setting
+FBINFO_MISC_FIRMWARE in an fbdev driver.
+
+Tested during device handover from efifb and simpledrm to radeon. Udev
+reloads the configured console font for the new driver's terminal.
+
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Link: https://bugzilla.redhat.com/show_bug.cgi?id=892340 # 1
+Link: https://bugzilla.redhat.com/show_bug.cgi?id=1074624 # 2
+Link: https://cgit.freedesktop.org/systemd/systemd/tree/src/vconsole/90-vconsole.rules.in?h=v222 # 3
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20221219160516.23436-3-tzimmermann@suse.de
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/core/fbcon.c | 17 ++++++-----------
+ 1 file changed, 6 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 1b14c21af2b74..2bc8baa90c0f2 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -958,7 +958,7 @@ static const char *fbcon_startup(void)
+ 	set_blitting_type(vc, info);
+ 
+ 	/* Setup default font */
+-	if (!p->fontdata && !vc->vc_font.data) {
++	if (!p->fontdata) {
+ 		if (!fontname[0] || !(font = find_font(fontname)))
+ 			font = get_default_font(info->var.xres,
+ 						info->var.yres,
+@@ -968,8 +968,6 @@ static const char *fbcon_startup(void)
+ 		vc->vc_font.height = font->height;
+ 		vc->vc_font.data = (void *)(p->fontdata = font->data);
+ 		vc->vc_font.charcount = font->charcount;
+-	} else {
+-		p->fontdata = vc->vc_font.data;
+ 	}
+ 
+ 	cols = FBCON_SWAP(ops->rotate, info->var.xres, info->var.yres);
+@@ -1135,9 +1133,9 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 	ops->p = &fb_display[fg_console];
+ }
+ 
+-static void fbcon_free_font(struct fbcon_display *p, bool freefont)
++static void fbcon_free_font(struct fbcon_display *p)
+ {
+-	if (freefont && p->userfont && p->fontdata && (--REFCOUNT(p->fontdata) == 0))
++	if (p->userfont && p->fontdata && (--REFCOUNT(p->fontdata) == 0))
+ 		kfree(p->fontdata - FONT_EXTRA_WORDS * sizeof(int));
+ 	p->fontdata = NULL;
+ 	p->userfont = 0;
+@@ -1172,8 +1170,8 @@ static void fbcon_deinit(struct vc_data *vc)
+ 	struct fb_info *info;
+ 	struct fbcon_ops *ops;
+ 	int idx;
+-	bool free_font = true;
+ 
++	fbcon_free_font(p);
+ 	idx = con2fb_map[vc->vc_num];
+ 
+ 	if (idx == -1)
+@@ -1184,8 +1182,6 @@ static void fbcon_deinit(struct vc_data *vc)
+ 	if (!info)
+ 		goto finished;
+ 
+-	if (info->flags & FBINFO_MISC_FIRMWARE)
+-		free_font = false;
+ 	ops = info->fbcon_par;
+ 
+ 	if (!ops)
+@@ -1197,9 +1193,8 @@ static void fbcon_deinit(struct vc_data *vc)
+ 	ops->initialized = false;
+ finished:
+ 
+-	fbcon_free_font(p, free_font);
+-	if (free_font)
+-		vc->vc_font.data = NULL;
++	fbcon_free_font(p);
++	vc->vc_font.data = NULL;
+ 
+ 	if (vc->vc_hi_font_mask && vc->vc_screenbuf)
+ 		set_vc_hi_font(vc, false);
+-- 
+2.39.0
+

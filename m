@@ -2,152 +2,112 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79C27C64ED8
-	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Feb 2023 11:10:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD3FBC64ED6
+	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Feb 2023 16:45:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229682AbjB0LKz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 27 Feb 2023 06:10:55 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44320 "EHLO
+        id S229804AbjB0QpG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 27 Feb 2023 11:45:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55486 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229658AbjB0LKz (ORCPT
+        with ESMTP id S229557AbjB0QpF (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 27 Feb 2023 06:10:55 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C9201C32C;
-        Mon, 27 Feb 2023 03:10:54 -0800 (PST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 387B91FD63;
-        Mon, 27 Feb 2023 11:10:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1677496253; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=Sgrp7bglItceDNA5NDeN2N7hSQQ6SSeiUy5n/QEETjc=;
-        b=XaPKDu0aCtd60eZbM0xeoQ0AfTW1jGS0iaarzXy1GMECLZS+o5kV/JDQpY9DzRMC/T3Y6/
-        7kKGsQflwqT3haQU3L9cqY+J/RTBcpYOKnY404Ow0/AOI+daV8e3F5AoOFZeaoa8ftEZRp
-        wS+/x6zx36b3m0SmmSyeq3f9JsdwJsc=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1677496253;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=Sgrp7bglItceDNA5NDeN2N7hSQQ6SSeiUy5n/QEETjc=;
-        b=NeNbMzuncMU80Bk1bmBOQLKPRb+P68/MMlyU7ukLe42T1xHdxSIUCbIeS77OwLm4z8vQTl
-        4dHz4asLrOg1GyAw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 14DB513912;
-        Mon, 27 Feb 2023 11:10:53 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id An0QBL2P/GN/EAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 27 Feb 2023 11:10:53 +0000
-Message-ID: <cc7dea99-c346-a7f8-3cec-b2394526cabe@suse.de>
-Date:   Mon, 27 Feb 2023 12:10:52 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH v2] fbdev: chipsfb: Fix error codes in chipsfb_pci_init()
-Content-Language: en-US
-To:     Dan Carpenter <error27@gmail.com>
+        Mon, 27 Feb 2023 11:45:05 -0500
+Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E2720F941;
+        Mon, 27 Feb 2023 08:45:03 -0800 (PST)
+Received: by mail-wm1-x334.google.com with SMTP id az36so4666072wmb.1;
+        Mon, 27 Feb 2023 08:45:03 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=FeOcTqXDkf0doKsprZO7fxvXxR/92ra2xU2rS73dpcc=;
+        b=N1OuYy7nsQ5OY3PZLh6lT9+FHQdTlvdZDP8GDtlTUNgnOwNTFQt7tOo3wv7yL5Ts9F
+         DPkFbelV+lIWaakHs5dPEL82nMCQlRW82iWwEYGe9fSvLEEKpn4w8JDyzopc2Wy0TS8U
+         agNNWNdy28WaZ27DqQYSH49e3wyvRviIxw7HeueW+jyu8jKhdm04d74rILX7LHlxI57C
+         5f3ai0AVdCThBRFJeH4PXh7j9haHSOccftRuBkBlRdnHeGWQLp+E6FWo1BmTiC0pH90z
+         687Z9Zedbw7yPM00fCk8M9/r3HnRH3uUObz0qsMH21WFpWUqgxfQPDQA+bSATQTCLhaD
+         PgRw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=FeOcTqXDkf0doKsprZO7fxvXxR/92ra2xU2rS73dpcc=;
+        b=MAQmHjMQ9o+cJLTWfj/tU+quxj4I+CnBSXdRvaEppYvUfuZk0bXMHnTMUuO3xcz68H
+         sq0ccQwOT+4TeMbDuUf75xq6asxOiBO47/NJTfgXTg5TzLmSqrMOVj2gEXgpeSQvwVcq
+         xjOD5M0v7UUqTG6csWv/CIPyVeVuGxTkMqPGuhoWcLLN+z8GjU8SNZ9te8UY3rCRwyPk
+         tKSiefLmx34ETzA1hu19V6ogqq7vRI7kVK+LWhnPx2YGuGWzjtNQUcoQOLlVdBQCY7un
+         H0tCNph840EecnbVXDiguEXHPWwR44IVhUexKALKJAxmA2Dn3SMkYUszvpctON4yIsWs
+         PJ7A==
+X-Gm-Message-State: AO0yUKVinndaw5sACoRq6E6lJBUWcXkayBzh9HOvdmT/0T7B+MmyPNOo
+        fXJT3znYhsTA6dteveAbTd8=
+X-Google-Smtp-Source: AK7set8HnVjiWkfm607XdfjPyYQyWoO811MLCbol1ln1f8JVz2wkg1XtQo2q9iMxPx0Avd+r1QUrfQ==
+X-Received: by 2002:a05:600c:a4c:b0:3ea:e582:48dd with SMTP id c12-20020a05600c0a4c00b003eae58248ddmr9905860wmq.34.1677516302316;
+        Mon, 27 Feb 2023 08:45:02 -0800 (PST)
+Received: from localhost ([102.36.222.112])
+        by smtp.gmail.com with ESMTPSA id t23-20020a1c7717000000b003daf672a616sm9546376wmi.22.2023.02.27.08.45.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 27 Feb 2023 08:45:01 -0800 (PST)
+Date:   Mon, 27 Feb 2023 13:27:53 +0300
+From:   Dan Carpenter <error27@gmail.com>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
 Cc:     Javier Martinez Canillas <javierm@redhat.com>,
         Yang Yingliang <yangyingliang@huawei.com>,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         kernel-janitors@vger.kernel.org
-References: <Y/yG+sm2mhdJeTZW@kili>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <Y/yG+sm2mhdJeTZW@kili>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------n4XmWhFeVRTENNAUCDfjcF2G"
+Subject: Re: [PATCH] fbdev: chipsfb: Fix error codes in chipsfb_pci_init()
+Message-ID: <Y/yFqWWbw7RsCN4v@kadam>
+References: <Y/yA53V/rW8g1Zlm@kili>
+ <2673f515-9516-de13-3e59-4d473165010d@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2673f515-9516-de13-3e59-4d473165010d@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------n4XmWhFeVRTENNAUCDfjcF2G
-Content-Type: multipart/mixed; boundary="------------1Mw693b2vLG1T9LWYhTL5ItN";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Dan Carpenter <error27@gmail.com>
-Cc: Javier Martinez Canillas <javierm@redhat.com>,
- Yang Yingliang <yangyingliang@huawei.com>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, kernel-janitors@vger.kernel.org
-Message-ID: <cc7dea99-c346-a7f8-3cec-b2394526cabe@suse.de>
-Subject: Re: [PATCH v2] fbdev: chipsfb: Fix error codes in chipsfb_pci_init()
-References: <Y/yG+sm2mhdJeTZW@kili>
-In-Reply-To: <Y/yG+sm2mhdJeTZW@kili>
+On Mon, Feb 27, 2023 at 11:13:19AM +0100, Thomas Zimmermann wrote:
+> Hi
+> 
+> Am 27.02.23 um 11:07 schrieb Dan Carpenter:
+> > The error codes are not set on these error paths.
+> > 
+> > Fixes: 145eed48de27 ("fbdev: Remove conflicting devices on PCI bus")
+> > Signed-off-by: Dan Carpenter <error27@gmail.com>
+> 
+> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+> 
+> with the comments below addressed.
+> 
+> > ---
+> >   drivers/video/fbdev/chipsfb.c | 14 ++++++++++----
+> >   1 file changed, 10 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
+> > index cc37ec3f8fc1..98398789528a 100644
+> > --- a/drivers/video/fbdev/chipsfb.c
+> > +++ b/drivers/video/fbdev/chipsfb.c
+> > @@ -358,16 +358,21 @@ static int chipsfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
+> >   	if (rc)
+> >   		return rc;
+> > -	if (pci_enable_device(dp) < 0) {
+> > +	rc = pci_enable_device(dp);
+> > +	if (rc < 0) {
+> >   		dev_err(&dp->dev, "Cannot enable PCI device\n");
+> >   		goto err_out;
+> >   	}
+> > -	if ((dp->resource[0].flags & IORESOURCE_MEM) == 0)
+> > +	if ((dp->resource[0].flags & IORESOURCE_MEM) == 0) {
+> > +		rc = -EINVAL;
+> 
+> I think ENODEV is more appropriate. And it's the default value from the
+> original code.
 
---------------1Mw693b2vLG1T9LWYhTL5ItN
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Sorry, I read the original code and my mind saw -EINVAL where it was
+actually -ENODEV as you say.  Will resend.
 
-SGkNCg0KQW0gMjcuMDIuMjMgdW0gMTE6MzMgc2NocmllYiBEYW4gQ2FycGVudGVyOg0KPiBU
-aGUgZXJyb3IgY29kZXMgYXJlIG5vdCBzZXQgb24gdGhlc2UgZXJyb3IgcGF0aHMuDQo+IA0K
-PiBGaXhlczogMTQ1ZWVkNDhkZTI3ICgiZmJkZXY6IFJlbW92ZSBjb25mbGljdGluZyBkZXZp
-Y2VzIG9uIFBDSSBidXMiKQ0KPiBTaWduZWQtb2ZmLWJ5OiBEYW4gQ2FycGVudGVyIDxlcnJv
-cjI3QGdtYWlsLmNvbT4NCj4gUmV2aWV3ZWQtYnk6IFRob21hcyBaaW1tZXJtYW5uIDx0emlt
-bWVybWFubkBzdXNlLmRlPg0KPiAtLS0NCj4gdjI6IEkgYWNjaWRlbnRhbGx5IHJldHVybmVk
-IC1FSU5WQUwgaW5zdGVhZCAtRU5PREVWLg0KPiAgICAgIEFkZCBUaG9tYXMncyBSZXZpZXdl
-ZC1ieSB0YWcuDQoNClRoYW5rcyBhIGxvdC4gVW5sZXNzIEhlbGdlIHRha2VzIGl0IGludG8g
-dGhlIGZiZGV2IGJyYW5jaCwgSSdsbCBtZXJnZSANCnlvdXIgcGF0Y2ggdGhyb3VnaCBEUk0g
-dHJlZXMgd2l0aGluIHRoZSBuZXh0IGRheXMuDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoN
-Cj4gDQo+ICAgZHJpdmVycy92aWRlby9mYmRldi9jaGlwc2ZiLmMgfCAxNCArKysrKysrKysr
-LS0tLQ0KPiAgIDEgZmlsZSBjaGFuZ2VkLCAxMCBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9u
-cygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY2hpcHNmYi5j
-IGIvZHJpdmVycy92aWRlby9mYmRldi9jaGlwc2ZiLmMNCj4gaW5kZXggY2MzN2VjM2Y4ZmMx
-Li43Nzk5ZDUyYTY1MWYgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY2hp
-cHNmYi5jDQo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY2hpcHNmYi5jDQo+IEBAIC0z
-NTgsMTYgKzM1OCwyMSBAQCBzdGF0aWMgaW50IGNoaXBzZmJfcGNpX2luaXQoc3RydWN0IHBj
-aV9kZXYgKmRwLCBjb25zdCBzdHJ1Y3QgcGNpX2RldmljZV9pZCAqZW50KQ0KPiAgIAlpZiAo
-cmMpDQo+ICAgCQlyZXR1cm4gcmM7DQo+ICAgDQo+IC0JaWYgKHBjaV9lbmFibGVfZGV2aWNl
-KGRwKSA8IDApIHsNCj4gKwlyYyA9IHBjaV9lbmFibGVfZGV2aWNlKGRwKTsNCj4gKwlpZiAo
-cmMgPCAwKSB7DQo+ICAgCQlkZXZfZXJyKCZkcC0+ZGV2LCAiQ2Fubm90IGVuYWJsZSBQQ0kg
-ZGV2aWNlXG4iKTsNCj4gICAJCWdvdG8gZXJyX291dDsNCj4gICAJfQ0KPiAgIA0KPiAtCWlm
-ICgoZHAtPnJlc291cmNlWzBdLmZsYWdzICYgSU9SRVNPVVJDRV9NRU0pID09IDApDQo+ICsJ
-aWYgKChkcC0+cmVzb3VyY2VbMF0uZmxhZ3MgJiBJT1JFU09VUkNFX01FTSkgPT0gMCkgew0K
-PiArCQlyYyA9IC1FTk9ERVY7DQo+ICAgCQlnb3RvIGVycl9kaXNhYmxlOw0KPiArCX0NCj4g
-ICAJYWRkciA9IHBjaV9yZXNvdXJjZV9zdGFydChkcCwgMCk7DQo+IC0JaWYgKGFkZHIgPT0g
-MCkNCj4gKwlpZiAoYWRkciA9PSAwKSB7DQo+ICsJCXJjID0gLUVOT0RFVjsNCj4gICAJCWdv
-dG8gZXJyX2Rpc2FibGU7DQo+ICsJfQ0KPiAgIA0KPiAgIAlwID0gZnJhbWVidWZmZXJfYWxs
-b2MoMCwgJmRwLT5kZXYpOw0KPiAgIAlpZiAocCA9PSBOVUxMKSB7DQo+IEBAIC00MTcsNyAr
-NDIyLDggQEAgc3RhdGljIGludCBjaGlwc2ZiX3BjaV9pbml0KHN0cnVjdCBwY2lfZGV2ICpk
-cCwgY29uc3Qgc3RydWN0IHBjaV9kZXZpY2VfaWQgKmVudCkNCj4gICANCj4gICAJaW5pdF9j
-aGlwcyhwLCBhZGRyKTsNCj4gICANCj4gLQlpZiAocmVnaXN0ZXJfZnJhbWVidWZmZXIocCkg
-PCAwKSB7DQo+ICsJcmMgPSByZWdpc3Rlcl9mcmFtZWJ1ZmZlcihwKTsNCj4gKwlpZiAocmMg
-PCAwKSB7DQo+ICAgCQlkZXZfZXJyKCZkcC0+ZGV2LCJDJlQgNjU1NTAgZnJhbWVidWZmZXIg
-ZmFpbGVkIHRvIHJlZ2lzdGVyXG4iKTsNCj4gICAJCWdvdG8gZXJyX3VubWFwOw0KPiAgIAl9
-DQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXIN
-ClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwg
-OTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpH
-ZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
+regards,
+dan carpenter
 
---------------1Mw693b2vLG1T9LWYhTL5ItN--
-
---------------n4XmWhFeVRTENNAUCDfjcF2G
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmP8j7wFAwAAAAAACgkQlh/E3EQov+DM
-JQ/+Nm8lUrqEHMgxeNTJ5NkEVzBVDbR0RtEqkwU5hhNPXn8WVTfnPsxiLNDJMOCVgdfxpWbYiSDH
-M+Wk7dmnUM/Wg7IIWX4PDMo7ZhDsgYaoV5f7Ns/gIfGliU7lg1qyKuMNxvsk228N4BnMLXDwgBu9
-Nsw1u8iuDoBxVwXVJt7dn+2vFvohXI29id4SAJftClL3P0PeJl6Iyq4Xqps2IF+we3NzYETVSyp3
-8chRqEZu7cdr/VbM0wDXDiUIyk4t/G+2daKSudE9TWMA/VKFd71+a4BK2awr4rxvc+833KsWb4Nj
-mlwGyJ6pAVl0C8sHiEB7S137vCvcZXItWsFYYcC1AiaF2EhhIMfOXETgdN3SSo6UqiKMrHRNyS5M
-HNVzM5DYTMspCIFw7JznbakVdEK8W4Fte/xLWFj3z5k6QYugwkTsy9HhIvtxrGsQUZpw/pOuoj/y
-WMihLfSYlxYYGBPkvL/cNx7qWY+efC2cP9CLo/ZaSf3eXt2iz2TVKTttRbQqSzqz+LxQ+pn1bcxr
-4dgF8yJIFjzP3B+qBCTwjTDXwDAZD/d+pOSqlJwzttbriLzfOV+qFPTlQmiHEdAqJa2TbWnyHQQI
-7y9qqvnUVntVAH420U69++/4Hq1SFhJVQ1NpODCOWhna07GenzYorien9c8CSH3rMWwvDVAGZGnF
-hM4=
-=zmPS
------END PGP SIGNATURE-----
-
---------------n4XmWhFeVRTENNAUCDfjcF2G--

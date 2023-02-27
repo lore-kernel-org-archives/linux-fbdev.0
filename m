@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F17DDC7EE23
-	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Feb 2023 02:02:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0829C7EE33
+	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Feb 2023 02:10:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229869AbjB0CCW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 26 Feb 2023 21:02:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52364 "EHLO
+        id S229974AbjB0CKT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 26 Feb 2023 21:10:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58562 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229652AbjB0CCE (ORCPT
+        with ESMTP id S230249AbjB0CJn (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 26 Feb 2023 21:02:04 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 214BC16888;
-        Sun, 26 Feb 2023 18:01:48 -0800 (PST)
+        Sun, 26 Feb 2023 21:09:43 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0567E18171;
+        Sun, 26 Feb 2023 18:08:32 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id B7A43B80CAA;
-        Mon, 27 Feb 2023 02:01:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18B47C433D2;
-        Mon, 27 Feb 2023 02:01:44 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 55702B80CBD;
+        Mon, 27 Feb 2023 02:05:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9E549C433D2;
+        Mon, 27 Feb 2023 02:05:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1677463305;
+        s=k20201202; t=1677463555;
         bh=LUt1Js+1pEh1ZGmXeDicpjAGXUgNgNZx3wDyKOwqHFQ=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=TrbhaWcCu0G4Pbl85eAnRYVtxzYEqrzNRqvd+X/MBB9NP2VqhUzEmdw8SpEw+qqKf
-         fjYjXfTlLDSyVU/FsKEQHoKC/q8XmPACTLA2NYQ/BcP89uoZWaCqX1feHmmcMm8TtV
-         Yp2nkdUMxLLZbpYsoY2d/w21soEFPpMis2o9kiF1pxX8PtuOighUA1stcr8KYwrB8f
-         EK2sfk4odhVwbXfqhB5o0VqQ4HzcWUr3AMirPAAB+OeYRSciXWw71gTkWg+eaH49xB
-         1d5uPDl55sauzH9iNips0gQOGuRnJbxg+o9OZSR3Oz10CngY7YJDt9P686Dmrcpad9
-         1t43/ue8MZ96A==
+        b=AkMWbhyBLQHDx1Qou6TCJAiO+63yAg9Rxk2IbYiJLdZYY9Qa8Ua1WZFZpA1H5TFrV
+         AHDUx1qf5zkrWn+Ziy2fEgCuz0xdfXhA2skEeJhgqxGVMlJYtp6hN9UJ7cC9U81HhN
+         iAlu76QthH3rtGZ5UluZty/VnsZTwnpn5zb+MU/AHuGvQ9MjYVgM/fWw8ZUknAajC4
+         JB0h6mYEc866+IBdAF0U3DctAHnIKdAUsPlPucP/9vCem5hwE+0r2TufDkBjRyqio/
+         wq4NaYNYpfjPvlX/EAMK9NqyIj0sVAmjdtkkjBVs28hteD4czLIQmJIdvQ1k9RmsGa
+         RBnJcpQRFizNg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
@@ -41,12 +41,12 @@ Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
         samuel.thibault@ens-lyon.org, penguin-kernel@I-love.SAKURA.ne.jp,
         syoshida@redhat.com, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 6.2 14/60] Revert "fbcon: don't lose the console font across generic->chip driver switch"
-Date:   Sun, 26 Feb 2023 20:59:59 -0500
-Message-Id: <20230227020045.1045105-14-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.1 14/58] Revert "fbcon: don't lose the console font across generic->chip driver switch"
+Date:   Sun, 26 Feb 2023 21:04:12 -0500
+Message-Id: <20230227020457.1048737-14-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20230227020045.1045105-1-sashal@kernel.org>
-References: <20230227020045.1045105-1-sashal@kernel.org>
+In-Reply-To: <20230227020457.1048737-1-sashal@kernel.org>
+References: <20230227020457.1048737-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore

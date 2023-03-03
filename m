@@ -2,103 +2,72 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03DAFC64ED6
-	for <linux-fbdev@archiver.kernel.org>; Wed,  1 Mar 2023 13:41:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB9E8C64EC4
+	for <linux-fbdev@archiver.kernel.org>; Fri,  3 Mar 2023 11:57:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229537AbjCANlp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 1 Mar 2023 08:41:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34962 "EHLO
+        id S231151AbjCCL5X (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 3 Mar 2023 06:57:23 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45946 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229445AbjCANlo (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 1 Mar 2023 08:41:44 -0500
-Received: from mail-io1-xd30.google.com (mail-io1-xd30.google.com [IPv6:2607:f8b0:4864:20::d30])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 144703E09A
-        for <linux-fbdev@vger.kernel.org>; Wed,  1 Mar 2023 05:41:44 -0800 (PST)
-Received: by mail-io1-xd30.google.com with SMTP id k17so146873iob.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 01 Mar 2023 05:41:44 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=Kq5OR9hoC260+bemchGBNuQjrNOZhrK9iuZRCuifkTs=;
-        b=RNGjW0fKHBPVSu32cnLyQ80bXdFmMDWGyWr8DyQlkX0JakbZI256w+r+tZD8H5sgLv
-         Mv93XNX6nbqefYx/euZAMec/fMtwLa6mGSn4k3ROmTxw2u0ojuqabJH+jtV4tzRPAMKB
-         Sf4KhzQY2gByZpvCMeUGD+L6zbuVQ94yycdGRyqLMeZsxotjVaKc1YYEOfw+n4dN1ZvQ
-         Fgf2sYQftnkmbDAqBSJbZxAR34gndmTIaEgKOwgBjqv+i0tZaPptUnvevGUMUG3iHXCh
-         bev3NxJ2B5iVDweZuR2h4Wenct2gS8Uo/P9mjYJ37PUqnG+cmME2c1cqJdMTE6E2Xg2W
-         lHkg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Kq5OR9hoC260+bemchGBNuQjrNOZhrK9iuZRCuifkTs=;
-        b=LuurM0gUWr8H5D6oiKpxhwWalrUrPbQMC29DHOqkU4yUlwIWzGs2Xd8REVHCWmBZj1
-         sGUAKwBZdUvv+kl35uHLuQZDiJdgjCbpfs7E1CulNS0m8m6xGX+Hgsji4p9pkGRItC0/
-         d0tGKkPpcSEv27x2hPhDqgVJ5QCC6rJMJnfXKa87qk9IOakeUDnLY9dqmA7egc6abaL9
-         bvaTfXFSbZNShYDzVmyNkv03Xrio3wxetIqz5oF/ElZSraWuvuXSB+anj5PThYaHkKxV
-         Tanfv4Ea2YFJ13gi24MInnX/v/ctzv2MSLOxGyWFefuP/dWVglQ2p4r95K4zMG4YECCu
-         KiVg==
-X-Gm-Message-State: AO0yUKUFus6bg+W0bUc9ysY5Zpzxx324RLmxdZfjfBBQQQy7m0i4sMRt
-        uvMIFlJY3JQhgWNg4iIxogydvE6oo041KAL+fONl2w==
-X-Google-Smtp-Source: AK7set+BWIITMwStn5iOknYU9Ytckv0R80OlViWQC7TNRL095p3FTuT9mKhGhMd4MFbc9GXISWxJtJVx+O7r52M/2LM=
-X-Received: by 2002:a02:85cb:0:b0:3c5:b47:539a with SMTP id
- d69-20020a0285cb000000b003c50b47539amr2818912jai.5.1677678103307; Wed, 01 Mar
- 2023 05:41:43 -0800 (PST)
+        with ESMTP id S230388AbjCCL5V (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 3 Mar 2023 06:57:21 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2763C5D880;
+        Fri,  3 Mar 2023 03:57:20 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id D9D81B818A1;
+        Fri,  3 Mar 2023 11:57:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0371FC433D2;
+        Fri,  3 Mar 2023 11:57:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1677844637;
+        bh=2Oz5PwF+1UGmgg2mfDe7VGnadXlhuUDsiuUacLQbwlg=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=GpkN8EZ3cwGZGF//9F7wi8vAoQudZqWs5k4iYi57eiHYRBE21tEwqGR3MHD1AErRm
+         rMMCUwxKNDUGH8lRhKuhD1dU71y65lcNG3ZKD0+B+2q/QTmnBaD/h08p1hfZqFLsvZ
+         DZZE0i0jUZxqjS6l4Xmv5pJCBcJQDbWUjMHKXvXewx1fTYIbZSfZ92kZLcJV6MaTzQ
+         znbZMj3qB2/r3qfq9asbqMnUiKXUa8+p0y5iOkVCIvljyMZ0h8Rtnr77kmclO/BdjD
+         9SzJvrpic7h7DW+Fa5FZnAhskpOjcq7LP80/jy9duW/zMITaIBJfJ03TkU/zW6PEIp
+         TYmsWRJp/8qlg==
+Date:   Fri, 3 Mar 2023 11:57:11 +0000
+From:   Lee Jones <lee@kernel.org>
+To:     Luca Weiss <luca@z3ntu.xyz>
+Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, linux-arm-msm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] backlight: qcom-wled: Add PMI8950 compatible
+Message-ID: <20230303115711.GI2420672@google.com>
+References: <20221226-msm8953-6-2-wled-v1-1-e318d4c71d05@z3ntu.xyz>
 MIME-Version: 1.0
-References: <cad03d25-0ea0-32c4-8173-fd1895314bce@I-love.SAKURA.ne.jp>
- <CAMuHMdUH4CU9EfoirSxjivg08FDimtstn7hizemzyQzYeq6b6g@mail.gmail.com>
- <86bdfea2-7125-2e54-c2c0-920f28ff80ce@I-love.SAKURA.ne.jp>
- <CAG_fn=VJrJDNSea6DksLt5uBe_sDu0+8Ofg+ifscOyDdMKj3XQ@mail.gmail.com>
- <Y7a6XkCNTkxxGMNC@phenom.ffwll.local> <032386fc-fffb-1f17-8cfd-94b35b6947ee@I-love.SAKURA.ne.jp>
-In-Reply-To: <032386fc-fffb-1f17-8cfd-94b35b6947ee@I-love.SAKURA.ne.jp>
-From:   Alexander Potapenko <glider@google.com>
-Date:   Wed, 1 Mar 2023 14:41:06 +0100
-Message-ID: <CAG_fn=V4-zzo+6HFG+wCbJRYHRh+Xx=r1weyCBJG-afpaG4Hag@mail.gmail.com>
-Subject: Re: [PATCH] fbcon: Use kzalloc() in fbcon_prepare_logo()
-To:     Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Marco Elver <elver@google.com>,
-        Dmitry Vyukov <dvyukov@google.com>,
-        kasan-dev <kasan-dev@googlegroups.com>,
-        Helge Deller <deller@gmx.de>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        DRI <dri-devel@lists.freedesktop.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Kees Cook <keescook@chromium.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20221226-msm8953-6-2-wled-v1-1-e318d4c71d05@z3ntu.xyz>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
->
-> I'd like to avoid touching per-arch asm/string.h files if possible.
->
-> Can't we do like below (i.e. keep asm implementations as-is, but
-> automatically redirect to __msan_memset()) ? If yes, we could move all
-> __msan_*() redirection from per-arch asm/string.h files to the common
-> linux/string.h file?
->
-> diff --git a/include/linux/string.h b/include/linux/string.h
-> index c062c581a98b..403813b04e00 100644
-> --- a/include/linux/string.h
-> +++ b/include/linux/string.h
-> @@ -360,4 +360,15 @@ static __always_inline size_t str_has_prefix(const char *str, const char *prefix
->         return strncmp(str, prefix, len) == 0 ? len : 0;
->  }
->
-> +#if defined(__SANITIZE_MEMORY__) && defined(__NO_FORTIFY)
-> +#undef memset
-> +#define memset(dest, src, count) __msan_memset((dest), (src), (count))
-> +#undef memset16
-> +#define memset16(dest, src, count) __msan_memset((dest), (src), (count) << 1)
-> +#undef memset32
-> +#define memset32(dest, src, count) __msan_memset((dest), (src), (count) << 2)
-> +#undef memset64
-> +#define memset64(dest, src, count) __msan_memset((dest), (src), (count) << 3)
-> +#endif
+On Mon, 06 Feb 2023, Luca Weiss wrote:
 
-The problem with this approach is that it can only work for
-memset/memcpy/memmove, whereas any function that is implemented in
-lib/string.c may require undefining the respective __HAVE_ARCH_FNAME
-so that KMSAN can instrument it.
+> PMI8950 contains WLED of version 4. Add support for it to the driver.
+> 
+> Signed-off-by: Luca Weiss <luca@z3ntu.xyz>
+> ---
+> While adding dt-bindings and dts in a previous series I forgot to add the
+> compatible to the driver. Fix that now.
+> ---
+>  drivers/video/backlight/qcom-wled.c | 1 +
+>  1 file changed, 1 insertion(+)
+
+Applied, thanks
+
+-- 
+Lee Jones [李琼斯]

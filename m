@@ -2,85 +2,143 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 312BEC64EC4
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 20:05:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C67DDC64EC4
+	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 21:13:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230202AbjCFUFi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 15:05:38 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46538 "EHLO
+        id S229833AbjCFVNn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 16:13:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36884 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230203AbjCFUFh (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 15:05:37 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85B2548E02;
-        Mon,  6 Mar 2023 12:05:36 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id E1875B81106;
-        Mon,  6 Mar 2023 20:05:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A122C433AC;
-        Mon,  6 Mar 2023 20:05:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1678133133;
-        bh=7aGV60npvHqtpD2KZbj09/ATSzY6ifh/i1if6W3gd4g=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=D1K+iOlR+AIRbRv93QXZnzeNuquqsYjjqN4/YcPp/fZ6sUbv8KhpRrgL+ncUSlD07
-         D5O0IYHWh7BRaLxbTo01mwwKB0TYCJcEd3QK3+aJpNXiycJtWiePMIzL/xVk3Tx2KN
-         rDVC5N/jeZ4Qk3HR+uye77zvmWXuoP9GV8lRNFAIHlZW0fjT6XDoAMW60SZrvApIU8
-         ksDqOYGBLmZ5OZRhMGA8udfSaAKU6ImROnXQ8rjbTAtadPkipuxhOQi5+WcxLIqEU8
-         s7Zf2By11p7YhjJLYz1fxcJZHcH2qx9lDHqG2fNREvzhRYG7NNlaWgA2fLb2szHoHY
-         mnf+BaH3AvHNA==
-Received: by mail-ed1-f53.google.com with SMTP id u9so43725029edd.2;
-        Mon, 06 Mar 2023 12:05:33 -0800 (PST)
-X-Gm-Message-State: AO0yUKX/3jxnP6Nq3r+7m98294HrMTkV7JnUnuC5Cl2cqWMWmmgUfN3w
-        F35ZeVmujacGssz0IYRJKCR6Acrnjy89iSjhmjs=
-X-Google-Smtp-Source: AK7set/1eKTbJwQDLH579qb/v4dU5t+rNalaL06DcZNQXB8YFSECcnZJKc8FFLD3DOzXqQpD5dLXg9oxaE3QLoFBwDs=
-X-Received: by 2002:a50:d581:0:b0:4bf:5fd5:da40 with SMTP id
- v1-20020a50d581000000b004bf5fd5da40mr6349414edi.4.1678133131533; Mon, 06 Mar
- 2023 12:05:31 -0800 (PST)
+        with ESMTP id S229715AbjCFVNm (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 16:13:42 -0500
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 183AF1D936;
+        Mon,  6 Mar 2023 13:13:41 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1678137221; x=1709673221;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=W+pwkRjL2XU/wrlakyvjwEDMpoQqOshgjsZ9AhZ+GLE=;
+  b=g2mQZcBWSeddtWICKUIqFDyx7ielFT+haAHo3TyfYHXWXmzaoraMo6tP
+   Iex3njjViLXjUAseZ/dSj+eqytnKrwbn/bapN9ytZsewAZy7JUw6LJrig
+   wlegQH6HsDb171LpT0Odk3P36DYauIvQb6lAqxuP0WrwOxuPaNeesWY16
+   B++ojBhPWsVSqKQEAcaYiyFlnfrCzSGvP1biyPyYTE902Fu6uBLeYnL7Q
+   9ka6msERDEFRzU6CZtxJQHBuVAiF3NAq9oriaS3t7TzM8cTa8cGFWiv+e
+   FCh/JUmbFqbs5nl/3zzCn428lzquYLvbZMhxLXRVLb/dPAZ87csT+exn+
+   w==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10641"; a="421952428"
+X-IronPort-AV: E=Sophos;i="5.98,238,1673942400"; 
+   d="scan'208";a="421952428"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Mar 2023 13:13:40 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10641"; a="740471266"
+X-IronPort-AV: E=Sophos;i="5.98,238,1673942400"; 
+   d="scan'208";a="740471266"
+Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
+  by fmsmga008.fm.intel.com with ESMTP; 06 Mar 2023 13:13:35 -0800
+Received: from kbuild by b613635ddfff with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1pZI9G-0000df-21;
+        Mon, 06 Mar 2023 21:13:34 +0000
+Date:   Tue, 7 Mar 2023 05:12:35 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
+        paulus@samba.org, benh@kernel.crashing.org, linux@armlinux.org.uk,
+        pjones@redhat.com, timur@kernel.org, adaplas@gmail.com,
+        s.hauer@pengutronix.de, shawnguo@kernel.org, mbroemme@libmpq.org,
+        thomas@winischhofer.net, James.Bottomley@hansenpartnership.com,
+        spock@gentoo.org, sudipm.mukherjee@gmail.com,
+        teddy.wang@siliconmotion.com, geert+renesas@glider.be,
+        corbet@lwn.net
+Cc:     llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH 08/99] fbdev/arkfb: Duplicate video-mode option string
+Message-ID: <202303070537.699fZDEm-lkp@intel.com>
+References: <20230306160016.4459-9-tzimmermann@suse.de>
 MIME-Version: 1.0
-References: <20230306160016.4459-1-tzimmermann@suse.de> <20230306160016.4459-23-tzimmermann@suse.de>
-In-Reply-To: <20230306160016.4459-23-tzimmermann@suse.de>
-From:   Timur Tabi <timur@kernel.org>
-Date:   Mon, 6 Mar 2023 14:04:54 -0600
-X-Gmail-Original-Message-ID: <CAOZdJXUtkyg5Gv3HYCK-U1pQpY0_QBk99wtqUvz5RVy2W3Ak9w@mail.gmail.com>
-Message-ID: <CAOZdJXUtkyg5Gv3HYCK-U1pQpY0_QBk99wtqUvz5RVy2W3Ak9w@mail.gmail.com>
-Subject: Re: [PATCH 22/99] fbdev/fsl-diu-fb: Duplicate video-mode option string
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
-        linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
-        adaplas@gmail.com, s.hauer@pengutronix.de, shawnguo@kernel.org,
-        mbroemme@libmpq.org, thomas@winischhofer.net,
-        James.Bottomley@hansenpartnership.com, spock@gentoo.org,
-        sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-        geert+renesas@glider.be, corbet@lwn.net,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230306160016.4459-9-tzimmermann@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Mar 6, 2023 at 10:01 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
->
-> Assume that the driver does not own the option string or its substrings
-> and hence duplicate the option string for the video mode. The driver only
-> parses the option string once as part of module initialization, so use
-> a static buffer to store the duplicated mode option. Linux automatically
-> frees the memory upon releasing the module.
+Hi Thomas,
 
-So after module_init is finished, mode_option_buf[] no longer exists?
+I love your patch! Yet something to improve:
 
-> +                       static char mode_option_buf[256];
-> +                       int ret;
-> +
-> +                       ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", opt);
-> +                       if (WARN(ret < 0, "fsl-diu-fb: ignoring invalid option, ret=%d\n", ret))
-> +                               continue;
-> +                       if (WARN(ret >= sizeof(mode_option_buf), "fsl-diu-fb: option too long\n"))
-> +                               continue;
-> +                       fb_mode = mode_option_buf;
+[auto build test ERROR on drm-misc/drm-misc-next]
+[also build test ERROR on linus/master v6.3-rc1 next-20230306]
+[cannot apply to deller-parisc/for-next]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-If so, then I'm not sure that's going to work.  fb_mode is used after
-module_init, in install_fb(), which is called by fsl_diu_probe().
+url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/lib-Add-option-iterator/20230307-000524
+base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
+patch link:    https://lore.kernel.org/r/20230306160016.4459-9-tzimmermann%40suse.de
+patch subject: [PATCH 08/99] fbdev/arkfb: Duplicate video-mode option string
+config: x86_64-randconfig-a016-20230306 (https://download.01.org/0day-ci/archive/20230307/202303070537.699fZDEm-lkp@intel.com/config)
+compiler: clang version 14.0.6 (https://github.com/llvm/llvm-project f28c006a5895fc0e329fe15fead81e37457cb1d1)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/intel-lab-lkp/linux/commit/f8a56fb51ff846d7daca02280ac0355e1a82264e
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Thomas-Zimmermann/lib-Add-option-iterator/20230307-000524
+        git checkout f8a56fb51ff846d7daca02280ac0355e1a82264e
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 olddefconfig
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash
+
+If you fix the issue, kindly add following tag where applicable
+| Reported-by: kernel test robot <lkp@intel.com>
+| Link: https://lore.kernel.org/oe-kbuild-all/202303070537.699fZDEm-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+>> drivers/video/fbdev/arkfb.c:1205:4: error: 'continue' statement not in loop statement
+                           continue;
+                           ^
+   drivers/video/fbdev/arkfb.c:1207:4: error: 'continue' statement not in loop statement
+                           continue;
+                           ^
+   2 errors generated.
+
+
+vim +/continue +1205 drivers/video/fbdev/arkfb.c
+
+  1191	
+  1192		if (fb_modesetting_disabled("arkfb"))
+  1193			return -ENODEV;
+  1194	
+  1195	#ifndef MODULE
+  1196		if (fb_get_options("arkfb", &option))
+  1197			return -ENODEV;
+  1198	
+  1199		if (option && *option) {
+  1200			static char mode_option_buf[256];
+  1201			int ret;
+  1202	
+  1203			ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", option);
+  1204			if (WARN(ret < 0, "arkfb: ignoring invalid option, ret=%d\n", ret))
+> 1205				continue;
+  1206			if (WARN(ret >= sizeof(mode_option_buf), "arkfb: option too long\n"))
+  1207				continue;
+  1208			mode_option = mode_option_buf;
+  1209		}
+  1210	#endif
+  1211	
+  1212		pr_debug("arkfb: initializing\n");
+  1213		return pci_register_driver(&arkfb_pci_driver);
+  1214	}
+  1215	
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests

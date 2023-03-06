@@ -2,96 +2,277 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EC3FC61DA4
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 09:49:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B34DFC6FA99
+	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:00:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229699AbjCFJt0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 04:49:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35926 "EHLO
+        id S230013AbjCFQAh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 11:00:37 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41164 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229540AbjCFJtZ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 04:49:25 -0500
-Received: from sonata.ens-lyon.org (sonata.ens-lyon.org [140.77.166.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AE608C651;
-        Mon,  6 Mar 2023 01:49:24 -0800 (PST)
-Received: from localhost (localhost [127.0.0.1])
-        by sonata.ens-lyon.org (Postfix) with ESMTP id BFA9E20137;
-        Mon,  6 Mar 2023 10:49:22 +0100 (CET)
-Received: from sonata.ens-lyon.org ([127.0.0.1])
-        by localhost (sonata.ens-lyon.org [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id hErAdg_uF3sj; Mon,  6 Mar 2023 10:49:22 +0100 (CET)
-Received: from begin (nat-inria-interne-52-gw-01-bso.bordeaux.inria.fr [194.199.1.52])
+        with ESMTP id S230215AbjCFQA1 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:27 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4661F25E09;
+        Mon,  6 Mar 2023 08:00:26 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by sonata.ens-lyon.org (Postfix) with ESMTPSA id 455092012C;
-        Mon,  6 Mar 2023 10:49:22 +0100 (CET)
-Received: from samy by begin with local (Exim 4.96)
-        (envelope-from <samuel.thibault@ens-lyon.org>)
-        id 1pZ7T7-0001Rf-1i;
-        Mon, 06 Mar 2023 10:49:21 +0100
-Date:   Mon, 6 Mar 2023 10:49:21 +0100
-From:   Samuel Thibault <samuel.thibault@ens-lyon.org>
-To:     gregkh@linuxfoundation.org
+        by smtp-out1.suse.de (Postfix) with ESMTPS id D8AA72236F;
+        Mon,  6 Mar 2023 16:00:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1678118424; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=RzHUCgyDVd1/vFJIVF/yHXdWWow6tO5+rSrZEBgBa/c=;
+        b=VyetxvZ3ORexkxsuy9ptjw4e5iKIRS6AtzM3owyFLAQtiKrEKVQ9OG/cR6tK3PRgu1sNRe
+        2i3fZa2NJQBfLehZT3TKF3vcS32wpe219jE6y7l2fYNtJL+CviITlg2rD8ml+KodbdSuUd
+        J1rNF4avXuY8yMuQ5WLGlmqgrbGFNjg=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1678118424;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=RzHUCgyDVd1/vFJIVF/yHXdWWow6tO5+rSrZEBgBa/c=;
+        b=GVWq0zHJQbDPUNtYod/JQRKJmUcCoDbJRr7rn6i6IULWpMZKZlGML5Vr/quQhC851qTigA
+        zZ/vYCslR9zsLOCQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8332F13A6A;
+        Mon,  6 Mar 2023 16:00:24 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id EA9EHxgOBmQ/PwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:24 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
+        linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
+        adaplas@gmail.com, s.hauer@pengutronix.de, shawnguo@kernel.org,
+        mbroemme@libmpq.org, thomas@winischhofer.net,
+        James.Bottomley@HansenPartnership.com, spock@gentoo.org,
+        sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+        geert+renesas@glider.be, corbet@lwn.net
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
-        Sanan Hasanov <sanan.hasanov@Knights.ucf.edu>,
-        Samuel Thibault <samuel.thibault@ens-lyon.org>,
-        keescook@chromium.org,
-        syzbot+3af17071816b61e807ed@syzkaller.appspotmail.com,
-        akpm@linux-foundation.org, linux-hardening@vger.kernel.org,
-        linux-mm@kvack.org, syzkaller-bugs@googlegroups.com,
-        Jiri Slaby <jirislaby@kernel.org>
-Subject: [PATCH] VT: Protect KD_FONT_OP_GET_TALL from unbound access
-Message-ID: <20230306094921.tik5ewne4ft6mfpo@begin>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-        gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        Sanan Hasanov <sanan.hasanov@Knights.ucf.edu>,
-        keescook@chromium.org,
-        syzbot+3af17071816b61e807ed@syzkaller.appspotmail.com,
-        akpm@linux-foundation.org, linux-hardening@vger.kernel.org,
-        linux-mm@kvack.org, syzkaller-bugs@googlegroups.com,
-        Jiri Slaby <jirislaby@kernel.org>
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 01/99] lib: Add option iterator
+Date:   Mon,  6 Mar 2023 16:58:38 +0100
+Message-Id: <20230306160016.4459-2-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230306160016.4459-1-tzimmermann@suse.de>
+References: <20230306160016.4459-1-tzimmermann@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: I am not organized
-User-Agent: NeoMutt/20170609 (1.8.3)
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-In ioctl(KD_FONT_OP_GET_TALL), userland tells through op->height which
-vpitch should be used to copy over the font. In con_font_get, we were
-not checking that it is within the maximum height value, and thus
-userland could make the vc->vc_sw->con_font_get(vc, &font, vpitch);
-call possibly overflow the allocated max_font_size bytes, and the
-copy_to_user(op->data, font.data, c) call possibly read out of that
-allocated buffer.
+Add struct option_iter and helpers that walk over individual options
+of an option string. Add documentation.
 
-By checking vpitch against max_font_height, the max_font_size buffer
-will always be large enough for the vc->vc_sw->con_font_get(vc, &font,
-vpitch) call (since we already prevent loading a font larger than that),
-and c = (font.width+7)/8 * vpitch * font.charcount will always remain
-below max_font_size.
+Kernel parameters often have the format of
 
-Fixes: 24d69384bcd3 ("VT: Add KD_FONT_OP_SET/GET_TALL operations")
-Reported-by: syzbot+3af17071816b61e807ed@syzkaller.appspotmail.com
-Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Reviewed-by: Jiri Slaby <jirislaby@kernel.org>
+  param=opt1,opt2:val,opt3
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 57a5c23b51d4..3c2ea9c098f7 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -4545,6 +4545,9 @@ static int con_font_get(struct vc_data *vc, struct console_font_op *op)
- 	int c;
- 	unsigned int vpitch = op->op == KD_FONT_OP_GET_TALL ? op->height : 32;
+where the option string contains a number of comma-separated options.
+Drivers usually use strsep() in a loop to extract individual options
+from the string. Each call to strsep() modifies the given string, so
+callers have to duplicate kernel parameters that are to be parsed
+multiple times.
+
+The new struct option_iter and its helpers wrap this code behind a
+clean interface. Drivers can iterate over the options without having
+to know the details of the option-string format. The iterator handles
+string memory internally without modifying the original options.
+
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ Documentation/core-api/kernel-api.rst |  9 +++
+ include/linux/cmdline.h               | 29 ++++++++
+ lib/Makefile                          |  2 +-
+ lib/cmdline_iter.c                    | 97 +++++++++++++++++++++++++++
+ 4 files changed, 136 insertions(+), 1 deletion(-)
+ create mode 100644 include/linux/cmdline.h
+ create mode 100644 lib/cmdline_iter.c
+
+diff --git a/Documentation/core-api/kernel-api.rst b/Documentation/core-api/kernel-api.rst
+index 62f961610773..cdc7ba8decf9 100644
+--- a/Documentation/core-api/kernel-api.rst
++++ b/Documentation/core-api/kernel-api.rst
+@@ -93,9 +93,18 @@ Bitmap Operations
+ Command-line Parsing
+ --------------------
  
-+	if (vpitch > max_font_height)
-+		return -EINVAL;
++.. kernel-doc:: lib/cmdline_iter.c
++   :doc: overview
 +
- 	if (op->data) {
- 		font.data = kvmalloc(max_font_size, GFP_KERNEL);
- 		if (!font.data)
+ .. kernel-doc:: lib/cmdline.c
+    :export:
+ 
++.. kernel-doc:: lib/cmdline_iter.c
++   :export:
++
++.. kernel-doc:: include/linux/cmdline.h
++   :internal:
++
+ Sorting
+ -------
+ 
+diff --git a/include/linux/cmdline.h b/include/linux/cmdline.h
+new file mode 100644
+index 000000000000..5d7e648e98a5
+--- /dev/null
++++ b/include/linux/cmdline.h
+@@ -0,0 +1,29 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++
++#ifndef LINUX_CMDLINE_H
++#define LINUX_CMDLINE_H
++
++/**
++ * struct option_iter - Iterates over string of kernel or module options
++ */
++struct option_iter {
++	char *optbuf;
++	char *next_opt;
++};
++
++void option_iter_init(struct option_iter *iter, const char *options);
++void option_iter_release(struct option_iter *iter);
++const char *option_iter_incr(struct option_iter *iter);
++
++/**
++ * option_iter_next - Loop condition to move over options
++ * @iter_:	the iterator
++ * @opt_:	the name of the option variable
++ *
++ * Iterates over option strings as part of a while loop and
++ * stores the current option in opt_.
++ */
++#define option_iter_next(iter_, opt_) \
++	(((opt_) = option_iter_incr(iter_)) != NULL)
++
++#endif
+diff --git a/lib/Makefile b/lib/Makefile
+index 4d9461bfea42..829ea6647d7a 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -27,7 +27,7 @@ KASAN_SANITIZE_string.o := n
+ CFLAGS_string.o += -fno-stack-protector
+ endif
+ 
+-lib-y := ctype.o string.o vsprintf.o cmdline.o \
++lib-y := ctype.o string.o vsprintf.o cmdline.o cmdline_iter.o \
+ 	 rbtree.o radix-tree.o timerqueue.o xarray.o \
+ 	 maple_tree.o idr.o extable.o irq_regs.o argv_split.o \
+ 	 flex_proportions.o ratelimit.o show_mem.o \
+diff --git a/lib/cmdline_iter.c b/lib/cmdline_iter.c
+new file mode 100644
+index 000000000000..d9371dfea08b
+--- /dev/null
++++ b/lib/cmdline_iter.c
+@@ -0,0 +1,97 @@
++// SPDX-License-Identifier: GPL-2.0-only
++
++#include <linux/cmdline.h>
++#include <linux/export.h>
++#include <linux/slab.h>
++
++/**
++ * DOC: overview
++ *
++ * A kernel parameter's option string can contain multiple comma-separated
++ * options. Modules can parse an option string with struct &option_iter and
++ * its helpers. After obtaining the string, initialize and instance of the
++ * option iterator and loop iver its content as show below.
++ *
++ * .. code-block:: c
++ *
++ *	const char *options = ...; // provided option string
++ *
++ *	struct option_iter iter;
++ *	const char *opt;
++ *
++ *	option_iter_init(&iter, options);
++ *
++ *	while (option_iter_next(&iter, &opt)) {
++ *		if (!strcmp(opt, "foo"))
++ *			...
++ *		else (strcmp(opt, "bar"))
++ *			...
++ *		else
++ *			pr_warn("unknown option %s\n", opt);
++ *	}
++ *
++ *	option_iter_release(&iter);
++ *
++ * The call to option_iter_init() initializes the iterator instance
++ * from the option string. The while loop walks over the individual
++ * options in the sting and returns each in the second argument. The
++ * returned memory is owned by the iterator instance and callers may
++ * not modify or free it. The call to option_iter_release() frees all
++ * resources of the iterator. This process does not modify the original
++ * option string. If the option string contains an empty option (i.e.,
++ * two commas next to each other), option_iter_next() skips the empty
++ * option automatically.
++ */
++
++/**
++ * option_iter_init - Initializes an option iterator
++ * @iter:	the iterator to initialize
++ * @options:	the options string
++ */
++void option_iter_init(struct option_iter *iter, const char *options)
++{
++	if (options && *options)
++		iter->optbuf = kstrdup(options, GFP_KERNEL); // can be NULL
++	else
++		iter->optbuf = NULL;
++	iter->next_opt = iter->optbuf;
++}
++EXPORT_SYMBOL(option_iter_init);
++
++/**
++ * option_iter_release - Releases an option iterator's resources
++ * @iter:	the iterator
++ */
++void option_iter_release(struct option_iter *iter)
++{
++	kfree(iter->optbuf);
++	iter->next_opt = NULL;
++}
++EXPORT_SYMBOL(option_iter_release);
++
++/**
++ * option_iter_incr - Return current option and advance to the next
++ * @iter:	the iterator
++ *
++ * Returns:
++ * The current option string, or NULL if there are no more options.
++ */
++const char *option_iter_incr(struct option_iter *iter)
++{
++	char *opt;
++
++	if (!iter->next_opt) { // can be OK if kstrdup failed
++		if (iter->optbuf) // iter has already been released; logic error
++			pr_err("Incrementing option iterator without string\n");
++		return NULL;
++	}
++
++	do {
++		opt = strsep(&iter->next_opt, ",");
++		if (!opt)
++			return NULL;
++	} while (!*opt); // found empty option string, try next
++
++	return opt;
++}
++EXPORT_SYMBOL(option_iter_incr);
+-- 
+2.39.2
+

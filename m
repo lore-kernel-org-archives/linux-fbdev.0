@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F338C76188
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B734BC76186
 	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:01:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231255AbjCFQAt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 11:00:49 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41294 "EHLO
+        id S231203AbjCFQAs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 11:00:48 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41394 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230309AbjCFQAc (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:32 -0500
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 434622E0FB;
-        Mon,  6 Mar 2023 08:00:30 -0800 (PST)
+        with ESMTP id S230396AbjCFQAf (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:35 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5D7A28879;
+        Mon,  6 Mar 2023 08:00:34 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id E6AC12238C;
-        Mon,  6 Mar 2023 16:00:28 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 3E68A1FDEB;
+        Mon,  6 Mar 2023 16:00:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678118428; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678118433; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=bnhNpr1q6ynVgPdSq73n4KSY0p/YpyM8o7Xonnxl/Dg=;
-        b=jUtNUaJ8dnpR1xVBjfP0lm3GvmxAswBIAVdLmqDMWNENAQjSa5c4+/7w9uc4zu0b8HPusq
-        i0wmWN9WqontNr9E+IvlGlDEsLhtogd7cc/AsPODgQuyElyt4dOxcnFLiMyHiJD8ewNUpd
-        znO1EbINjG2n8+qhZfuKPz8sQbCR8KU=
+        bh=Rlw6Y9HytpkB3h8X3sYp9Q/5dj2jl9fyg6laIqBFHmA=;
+        b=UA0AU+8JNLwhTqGrlpZIn9kcDz7Pgg2tC5sBRfYuOum/1ZRLNPGUgOobCxgPjF/b49X92m
+        X6VesbrhU3/K1VgbkEemX3jDIq9pyokGPfsW+8+AmMpIowBtz9z2WUGydPYIgwFjEXX6hx
+        QryOCn3keLR0ITMjl5mQKPsguZo2B4I=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678118428;
+        s=susede2_ed25519; t=1678118433;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=bnhNpr1q6ynVgPdSq73n4KSY0p/YpyM8o7Xonnxl/Dg=;
-        b=XSjb+z2ygn50wCcA1il3EK/j/icQ8Q6qbc45L1LzAgBEzRZnpSRLooMacpIFj+TNPalcm+
-        peVzwBPFe5NI60BA==
+        bh=Rlw6Y9HytpkB3h8X3sYp9Q/5dj2jl9fyg6laIqBFHmA=;
+        b=b8tJbPSYaNtJ/8Uk5mCRRx6gPRMZLLKvfcW2ZfPdtD11XP/hPD5110toEAPpfNQjnjhchb
+        JJZWioCGPKdTbxDQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8817C13A6A;
-        Mon,  6 Mar 2023 16:00:28 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id E36AC13513;
+        Mon,  6 Mar 2023 16:00:32 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id 8NFPIBwOBmQ/PwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:28 +0000
+        id EKPFNiAOBmQ/PwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:32 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
         linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 12/99] fbdev/aty: Parse option string with struct option_iter
-Date:   Mon,  6 Mar 2023 16:58:49 +0100
-Message-Id: <20230306160016.4459-13-tzimmermann@suse.de>
+Subject: [PATCH 24/99] fbdev/gbefb: Duplicate video-mode option string
+Date:   Mon,  6 Mar 2023 16:59:01 +0100
+Message-Id: <20230306160016.4459-25-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306160016.4459-1-tzimmermann@suse.de>
 References: <20230306160016.4459-1-tzimmermann@suse.de>
@@ -71,151 +71,54 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use struct option_iter to walk over the individual options in the
-driver's option string. Replaces the hand-written strsep() loop with
-a clean interface. The helpers for struct option_iter handle empty
-option strings and empty options transparently. The struct's _init
-and _release functions duplicate and release the option string's
-memory buffer as needed.
+Assume that the driver does not own the option string or its substrings
+and hence duplicate the option string for the video mode. Allocate the
+copy's memory with devm_kstrdup(), as the driver parses the option string
+once per probed device. Linux will automatically free the memory upon
+releasing the device.
 
-Done in preparation of constifying the option string.
+Done in preparation of switching the driver to struct option_iter and
+constifying the option string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/aty/aty128fb.c    | 14 +++++++++-----
- drivers/video/fbdev/aty/atyfb_base.c  | 14 +++++++++-----
- drivers/video/fbdev/aty/radeon_base.c | 17 +++++++++--------
- 3 files changed, 27 insertions(+), 18 deletions(-)
+ drivers/video/fbdev/gbefb.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
-index 3c08904a107f..4a200eabe80b 100644
---- a/drivers/video/fbdev/aty/aty128fb.c
-+++ b/drivers/video/fbdev/aty/aty128fb.c
-@@ -48,6 +48,7 @@
+diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
+index 000b4aa44241..5330aa6029ca 100644
+--- a/drivers/video/fbdev/gbefb.c
++++ b/drivers/video/fbdev/gbefb.c
+@@ -1083,7 +1083,7 @@ ATTRIBUTE_GROUPS(gbefb);
+  * Initialization
+  */
  
- 
- #include <linux/aperture.h>
-+#include <linux/cmdline.h>
- #include <linux/module.h>
- #include <linux/moduleparam.h>
- #include <linux/kernel.h>
-@@ -1673,14 +1674,14 @@ static int aty128fb_sync(struct fb_info *info)
- }
- 
- #ifndef MODULE
--static int aty128fb_setup(char *options)
-+static int aty128fb_setup(const char *options)
+-static int gbefb_setup(char *options)
++static int gbefb_setup(char *options, struct device *dev)
  {
--	char *this_opt;
-+	struct option_iter iter;
-+	const char *this_opt;
+ 	char *this_opt;
  
--	if (!options || !*options)
--		return 0;
-+	option_iter_init(&iter, options);
- 
--	while ((this_opt = strsep(&options, ",")) != NULL) {
-+	while (option_iter_next(&iter, this_opt)) {
- 		if (!strncmp(this_opt, "lcd:", 4)) {
- 			default_lcd_on = simple_strtoul(this_opt+4, NULL, 0);
- 			continue;
-@@ -1735,6 +1736,9 @@ static int aty128fb_setup(char *options)
- 			mode_option = mode_option_buf;
- 		}
+@@ -1108,8 +1108,9 @@ static int gbefb_setup(char *options)
+ 				gbe_mem_size = CONFIG_FB_GBE_MEM * 1024 * 1024;
+ 			if (gbe_mem_size < TILE_SIZE)
+ 				gbe_mem_size = TILE_SIZE;
+-		} else
+-			mode_option = this_opt;
++		} else {
++			mode_option = devm_kstrdup(dev, this_opt, GFP_KERNEL);
++		}
  	}
-+
-+	option_iter_release(&iter);
-+
  	return 0;
  }
- #endif  /*  MODULE  */
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index 5e6e83472c30..1920ee5c9a2a 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -49,6 +49,7 @@
- ******************************************************************************/
- 
- #include <linux/aperture.h>
-+#include <linux/cmdline.h>
- #include <linux/compat.h>
- #include <linux/module.h>
- #include <linux/moduleparam.h>
-@@ -3831,14 +3832,14 @@ static struct pci_driver atyfb_driver = {
- #endif /* CONFIG_PCI */
- 
- #ifndef MODULE
--static int __init atyfb_setup(char *options)
-+static int __init atyfb_setup(const char *options)
- {
--	char *this_opt;
-+	struct option_iter iter;
-+	const char *this_opt;
- 
--	if (!options || !*options)
--		return 0;
-+	option_iter_init(&iter, options);
- 
--	while ((this_opt = strsep(&options, ",")) != NULL) {
-+	while (option_iter_next(&iter, this_opt)) {
- 		if (!strncmp(this_opt, "noaccel", 7)) {
- 			noaccel = true;
- 		} else if (!strncmp(this_opt, "nomtrr", 6)) {
-@@ -3908,6 +3909,9 @@ static int __init atyfb_setup(char *options)
- 			mode = mode_option_buf;
- 		}
+@@ -1132,7 +1133,7 @@ static int gbefb_probe(struct platform_device *p_dev)
+ 		ret = -ENODEV;
+ 		goto out_release_framebuffer;
  	}
-+
-+	option_iter_release(&iter);
-+
- 	return 0;
- }
- #endif  /*  MODULE  */
-diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-index b885a7cc2424..185cd98ad59d 100644
---- a/drivers/video/fbdev/aty/radeon_base.c
-+++ b/drivers/video/fbdev/aty/radeon_base.c
-@@ -55,6 +55,7 @@
- #include "radeonfb.h"
+-	gbefb_setup(options);
++	gbefb_setup(options, &p_dev->dev);
+ #endif
  
- #include <linux/aperture.h>
-+#include <linux/cmdline.h>
- #include <linux/module.h>
- #include <linux/moduleparam.h>
- #include <linux/kernel.h>
-@@ -2561,17 +2562,14 @@ static struct pci_driver radeonfb_driver = {
- };
- 
- #ifndef MODULE
--static int __init radeonfb_setup (char *options)
-+static int __init radeonfb_setup (const char *options)
- {
--	char *this_opt;
-+	struct option_iter iter;
-+	const char *this_opt;
- 
--	if (!options || !*options)
--		return 0;
--
--	while ((this_opt = strsep (&options, ",")) != NULL) {
--		if (!*this_opt)
--			continue;
-+	option_iter_init(&iter, options);
- 
-+	while (option_iter_next(&iter, this_opt)) {
- 		if (!strncmp(this_opt, "noaccel", 7)) {
- 			noaccel = 1;
- 		} else if (!strncmp(this_opt, "mirror", 6)) {
-@@ -2608,6 +2606,9 @@ static int __init radeonfb_setup (char *options)
- 			mode_option = mode_option_buf;
- 		}
- 	}
-+
-+	option_iter_release(&iter);
-+
- 	return 0;
- }
- #endif  /*  MODULE  */
+ 	if (!request_mem_region(GBE_BASE, sizeof(struct sgi_gbe), "GBE")) {
 -- 
 2.39.2
 

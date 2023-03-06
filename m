@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1B2FC77B6F
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:01:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48B55C77B73
+	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:01:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231454AbjCFQA7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 11:00:59 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41468 "EHLO
+        id S231478AbjCFQBC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 11:01:02 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41488 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230036AbjCFQAh (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:37 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D40E92E0D3;
-        Mon,  6 Mar 2023 08:00:36 -0800 (PST)
+        with ESMTP id S230072AbjCFQAj (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:39 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A95F2E0FB;
+        Mon,  6 Mar 2023 08:00:38 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 8A86A1FE0E;
-        Mon,  6 Mar 2023 16:00:35 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 38EA41FE11;
+        Mon,  6 Mar 2023 16:00:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678118435; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678118437; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=cbqgFJuuPg76i7Tnxrt6nBFhBok7n+TE7fgC7SU4OZ0=;
-        b=Da0ENzwyFBTDsMLo3AswyCJ9nQ9MmJnvXIiRNIlgJMp8QxpKUpzomHhERtz7loGmLfN9/p
-        nF6oWsvZzIka7u2mWeUEC8hxpWZrWylGj5N2SlgXnao2CDocmqTHpMBB59YQh5B76luBMI
-        cE9fKUckWZT87SJ2zppW3J4HWEH8f04=
+        bh=lukZcQyFgWDteguAf6aIzOi0pRoWXRBd9Sx3zg4LSys=;
+        b=j334/7t8UKv88xr97Eho1ZNBsOoW8d/8AFnIxgGVPVLesvgg6veWoTc+DLTKmYuaQY7/Om
+        yJ8TKde/4H5rSdEbU11fCpuMWanbrTlYDkYYm5U/5noD5PTjL6aD0GfdoS3VWkYJsyjsrw
+        Y8JET6LHyuCk2jOtryMcII/88pTRKEM=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678118435;
+        s=susede2_ed25519; t=1678118437;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=cbqgFJuuPg76i7Tnxrt6nBFhBok7n+TE7fgC7SU4OZ0=;
-        b=YH3fqQmGKJmw+1YRRJcCgP64iONty98Zbul4QvaYMSkTYTluCtSrVH4Kb5bWog113QORMV
-        IJ9+FtaoXxj4QoDA==
+        bh=lukZcQyFgWDteguAf6aIzOi0pRoWXRBd9Sx3zg4LSys=;
+        b=AHFf8BXnpzkFU+mWXgBDdQ4KlD2Qqm4TCyLgAwt38K7Y6EVQdiK4botq9+WaP1DEHJVbAv
+        /Btqmrowjt+yp+AA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 2D16013513;
-        Mon,  6 Mar 2023 16:00:35 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C757D13A6A;
+        Mon,  6 Mar 2023 16:00:36 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id wO0pCiMOBmQ/PwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:35 +0000
+        id 6M+4LyQOBmQ/PwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:36 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
         linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 30/99] fbdev/gxt4500: Duplicate video-mode option string
-Date:   Mon,  6 Mar 2023 16:59:07 +0100
-Message-Id: <20230306160016.4459-31-tzimmermann@suse.de>
+Subject: [PATCH 34/99] fbdev/i810: Duplicate video-mode option string
+Date:   Mon,  6 Mar 2023 16:59:11 +0100
+Message-Id: <20230306160016.4459-35-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306160016.4459-1-tzimmermann@suse.de>
 References: <20230306160016.4459-1-tzimmermann@suse.de>
@@ -77,47 +77,38 @@ parses the option string once as part of module initialization, so use
 a static buffer to store the duplicated mode option. Linux automatically
 frees the memory upon releasing the module.
 
-Done in preparation of constifying the option string.
+Done in preparation of switching the driver to struct option_iter and
+constifying the option string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/gxt4500.c | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/i810/i810_main.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
-index 5f42d3d9d6ce..61bc714693f5 100644
---- a/drivers/video/fbdev/gxt4500.c
-+++ b/drivers/video/fbdev/gxt4500.c
-@@ -779,12 +779,28 @@ static struct pci_driver gxt4500_driver = {
- 
- static int gxt4500_init(void)
- {
-+#ifndef MODULE
-+	char *options;
-+#endif
+diff --git a/drivers/video/fbdev/i810/i810_main.c b/drivers/video/fbdev/i810/i810_main.c
+index 85abb65f07d7..66f94dfaef16 100644
+--- a/drivers/video/fbdev/i810/i810_main.c
++++ b/drivers/video/fbdev/i810/i810_main.c
+@@ -2002,8 +2002,17 @@ static int i810fb_setup(char *options)
+ 			dcolor = true;
+ 		else if (!strncmp(this_opt, "ddc3", 4))
+ 			ddc3 = true;
+-		else
+-			mode_option = this_opt;
++		else {
++			static char mode_option_buf[256];
++			int ret;
 +
- 	if (fb_modesetting_disabled("gxt4500"))
- 		return -ENODEV;
- 
- #ifndef MODULE
--	if (fb_get_options("gxt4500", &mode_option))
-+	if (fb_get_options("gxt4500", &options))
- 		return -ENODEV;
-+
-+	do {
-+		static char mode_option_buf[256];
-+		int ret;
-+
-+		ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", options);
-+		if (WARN(ret < 0, "gxt4500: ignoring invalid option, ret=%d\n", ret))
-+			break;
-+		if (WARN(ret >= sizeof(mode_option_buf), "gxt4500: option too long\n"))
-+			break;
-+		mode_option = mode_option_buf;
-+	} while (0);
- #endif
- 
- 	return pci_register_driver(&gxt4500_driver);
++			ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", this_opt);
++			if (WARN(ret < 0, "i810fb: ignoring invalid option, ret=%d\n", ret))
++				continue;
++			if (WARN(ret >= sizeof(mode_option_buf), "i810fb: option too long\n"))
++				continue;
++			mode_option = mode_option_buf;
++		}
+ 	}
+ 	return 0;
+ }
 -- 
 2.39.2
 

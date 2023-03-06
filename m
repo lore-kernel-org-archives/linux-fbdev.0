@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2316AC6FD1C
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7208C6FA99
 	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:02:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229753AbjCFQCN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 11:02:13 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42342 "EHLO
+        id S229651AbjCFQCO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 11:02:14 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42298 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231503AbjCFQBF (ORCPT
+        with ESMTP id S230283AbjCFQBF (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:01:05 -0500
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF56536088;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05F2334C3B;
         Mon,  6 Mar 2023 08:00:58 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id A29D51FEEB;
-        Mon,  6 Mar 2023 16:00:57 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id AFFB31FEE6;
+        Mon,  6 Mar 2023 16:00:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678118457; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678118456; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=mGQE+ZcGyuVNRtdwYQbikR9YEbMLrF150xmpu0jqFzU=;
-        b=DYymHttlVRncjdxkjgOcd/RypvLPIwkCs4865i0fRblDr+sWZVWwyhdQohkYcoFeyoHeZh
-        bVJQYnEx+cyBP6EcUYK8GFgBLnJjKRFVnat6u/EkAVO8V+lxFuh5CmiFuN9CTcIOyIM2hB
-        kbnlY0nueRouXYoypO7HF0o7UX8910A=
+        bh=OEolRl7Gtp6eBSHcZORJIpDzJ5v2DCmOHbu1CyAwA3Y=;
+        b=nSAPDps7b4eyqBSFBGX40iycf64sF9/x7zewiXbBXIgAwzGfjnbPkMl7H2bVusG+ypnnkQ
+        09gZjxZA1bTyL+96HyqwGXH5nBzyBnV3iyb4kTnylRUbHh/vqFqjrN5JhjY/thXIzgoWwV
+        hrmhdXkj6pM1gB8vff2/qhblJ37W5O4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678118457;
+        s=susede2_ed25519; t=1678118456;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=mGQE+ZcGyuVNRtdwYQbikR9YEbMLrF150xmpu0jqFzU=;
-        b=ncqaOhvDFT5fGJedOnieNRBQbXIgs8+ET12Fjq4Ckcj34fqN8R/Wln1EFgyXtrCXwYOepx
-        1Eb/9CH5SBfvtnDA==
+        bh=OEolRl7Gtp6eBSHcZORJIpDzJ5v2DCmOHbu1CyAwA3Y=;
+        b=MieZldQrprtTBsfNXL0KzOsqbmwfoQDjj+0/IPsyDelLittK1mvKIo3Odip4IXy8GCTDxc
+        7k+7tkeTmpW2x9CA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 2107913A6A;
-        Mon,  6 Mar 2023 16:00:57 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 3A63413A6A;
+        Mon,  6 Mar 2023 16:00:56 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id 0DI3BzkOBmQ/PwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:57 +0000
+        id oHFyDTgOBmQ/PwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:56 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
         linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 86/99] fbdev/tridentfb: Parse option string with struct option_iter
-Date:   Mon,  6 Mar 2023 17:00:03 +0100
-Message-Id: <20230306160016.4459-87-tzimmermann@suse.de>
+Subject: [PATCH 84/99] fbdev/tmiofb: Remove unused option string
+Date:   Mon,  6 Mar 2023 17:00:01 +0100
+Message-Id: <20230306160016.4459-85-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306160016.4459-1-tzimmermann@suse.de>
 References: <20230306160016.4459-1-tzimmermann@suse.de>
@@ -71,64 +71,60 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use struct option_iter to walk over the individual options in the
-driver's option string. Replaces the hand-written strsep() loop with
-a clean interface. The helpers for struct option_iter handle empty
-option strings and empty options transparently. The struct's _init
-and _release functions duplicate and release the option string's
-memory buffer as needed.
-
-Done in preparation of constifying the option string.
+The option string is unused. Remove the variable and a related
+helper function. No functional change.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/tridentfb.c | 18 +++++++++++-------
- 1 file changed, 11 insertions(+), 7 deletions(-)
+ drivers/video/fbdev/tmiofb.c | 24 ++----------------------
+ 1 file changed, 2 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
-index 21cee678047b..0b8d4bc514e2 100644
---- a/drivers/video/fbdev/tridentfb.c
-+++ b/drivers/video/fbdev/tridentfb.c
-@@ -17,6 +17,7 @@
+diff --git a/drivers/video/fbdev/tmiofb.c b/drivers/video/fbdev/tmiofb.c
+index 50111966c981..8920cee52d7f 100644
+--- a/drivers/video/fbdev/tmiofb.c
++++ b/drivers/video/fbdev/tmiofb.c
+@@ -11,6 +11,7 @@
+  *	code written by Sharp/Lineo for 2.4 kernels
   */
  
- #include <linux/aperture.h>
 +#include <linux/cmdline.h>
+ #include <linux/kernel.h>
  #include <linux/module.h>
- #include <linux/fb.h>
- #include <linux/init.h>
-@@ -1774,14 +1775,14 @@ static struct pci_driver tridentfb_pci_driver = {
-  *	video=trident:800x600,bpp=16,noaccel
-  */
- #ifndef MODULE
--static int __init tridentfb_setup(char *options)
-+static int __init tridentfb_setup(const char *options)
- {
--	char *opt;
+ #include <linux/platform_device.h>
+@@ -997,32 +998,11 @@ static struct platform_driver tmiofb_driver = {
+ 
+ /*--------------------------------------------------------------------------*/
+ 
+-#ifndef MODULE
+-static void __init tmiofb_setup(char *options)
+-{
+-	char *this_opt;
+-
 -	if (!options || !*options)
--		return 0;
--	while ((opt = strsep(&options, ",")) != NULL) {
--		if (!*opt)
+-		return;
+-
+-	while ((this_opt = strsep(&options, ",")) != NULL) {
+-		if (!*this_opt)
 -			continue;
-+	struct option_iter iter;
-+	const char *opt;
-+
-+	option_iter_init(&iter, options);
-+
-+	while (option_iter_next(&iter, opt)) {
- 		if (!strncmp(opt, "noaccel", 7))
- 			noaccel = 1;
- 		else if (!strncmp(opt, "fp", 2))
-@@ -1812,6 +1813,9 @@ static int __init tridentfb_setup(char *options)
- 			mode_option = mode_option_buf;
- 		}
- 	}
-+
-+	option_iter_release(&iter);
-+
- 	return 0;
- }
+-		/*
+-		 * FIXME
+-		 */
+-	}
+-}
+-#endif
+-
+ static int __init tmiofb_init(void)
+ {
+ #ifndef MODULE
+-	char *option = NULL;
+-
+-	if (fb_get_options("tmiofb", &option))
++	if (fb_get_options("tmiofb", NULL))
+ 		return -ENODEV;
+-	tmiofb_setup(option);
  #endif
+ 	return platform_driver_register(&tmiofb_driver);
+ }
 -- 
 2.39.2
 

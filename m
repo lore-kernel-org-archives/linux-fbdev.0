@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C425C74A4B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 363D6C678D4
 	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:01:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231174AbjCFQAr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 11:00:47 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41330 "EHLO
+        id S230459AbjCFQAo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 11:00:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41230 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230111AbjCFQAd (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:33 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 12A8C2410D;
-        Mon,  6 Mar 2023 08:00:32 -0800 (PST)
+        with ESMTP id S230248AbjCFQAa (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:30 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9055E2E820;
+        Mon,  6 Mar 2023 08:00:27 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 05B181FDF9;
-        Mon,  6 Mar 2023 16:00:30 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id E49BA22374;
+        Mon,  6 Mar 2023 16:00:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678118430; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678118425; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=7NWpiNTTADv8jaNfklTWFL4Y9dqUHmm40DnGgzqtQYo=;
-        b=CxbOhQdM0DmSSvSs4ws3YFEGRCq95427JdDIkqGjr3JXPgm8LNMlSjJzWXVjv7RdiUXlDg
-        3xK0HI3EBMbwz8QuyLjlRQ85o4TAIKmKFAm2V/3eU6fgvqyTKI34739C/DlpLYlhzJiCk6
-        fBRiMqqfb+mKNtoN4pn4MOJppqx0ZJU=
+        bh=zjVYDbqjwwkw2fXJsfJw/E5OA0vR4qLTqrFh9CEDVls=;
+        b=ZLVSod84jRFbPAgwcB/rSvYcuZWfcsxYuav+FTZqNFxsvnSfLRLU5huBmNGYVcvI8yno3A
+        LA6pDjPT9aLuYAnnxhNodGwZ0RQ01ADMXbwahNoCcOCLwr3EeuDzjnOQEDy0IJnIyWT0tF
+        87OwqsKqf6RZr2exDvFhk8cgBNc17fg=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678118430;
+        s=susede2_ed25519; t=1678118425;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=7NWpiNTTADv8jaNfklTWFL4Y9dqUHmm40DnGgzqtQYo=;
-        b=7ML7Gw2ReccPA0qqrfpdz0dm1kcgFqlbmBv2/WjBRkT6jfoGv9mWpQ59x49OFr1eCw3raH
-        jSq1pImIDYAqu8Dg==
+        bh=zjVYDbqjwwkw2fXJsfJw/E5OA0vR4qLTqrFh9CEDVls=;
+        b=1qLnPhqDZxTWyF1Se8kIFwwbvl09iQB96aeANdlPfciPamDkNnuZwA/St9n7mOre6S3RgJ
+        L7j9zubiyqevDiAw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id A6A4413513;
-        Mon,  6 Mar 2023 16:00:29 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 9116313513;
+        Mon,  6 Mar 2023 16:00:25 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id oPnjJx0OBmQ/PwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:29 +0000
+        id uF6yIhkOBmQ/PwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:25 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
         linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 15/99] fbdev/cirrusfb: Duplicate video-mode option string
-Date:   Mon,  6 Mar 2023 16:58:52 +0100
-Message-Id: <20230306160016.4459-16-tzimmermann@suse.de>
+Subject: [PATCH 04/99] fbdev/acornfb: Only init fb_info once
+Date:   Mon,  6 Mar 2023 16:58:41 +0100
+Message-Id: <20230306160016.4459-5-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306160016.4459-1-tzimmermann@suse.de>
 References: <20230306160016.4459-1-tzimmermann@suse.de>
@@ -71,49 +71,40 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Assume that the driver does not own the option string or its substrings
-and hence duplicate the option string for the video mode. The driver only
-parses the option string once as part of module initialization, so use
-a static buffer to store the duplicated mode option. Linux automatically
-frees the memory upon releasing the module.
-
-Done in preparation of switching the driver to struct option_iter and
-constifying the option string.
+Init the fb_info instance once before parsing options. The current
+code initializes the instance once again after parsing options, which
+clears any resolution settings that have been given in the options
+string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/cirrusfb.c | 18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/acornfb.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/cirrusfb.c b/drivers/video/fbdev/cirrusfb.c
-index ba45e2147c52..fbf9281a7004 100644
---- a/drivers/video/fbdev/cirrusfb.c
-+++ b/drivers/video/fbdev/cirrusfb.c
-@@ -2336,10 +2336,20 @@ static int __init cirrusfb_setup(char *options)
+diff --git a/drivers/video/fbdev/acornfb.c b/drivers/video/fbdev/acornfb.c
+index 1b72edc01cfb..8642136a6bdc 100644
+--- a/drivers/video/fbdev/acornfb.c
++++ b/drivers/video/fbdev/acornfb.c
+@@ -887,8 +887,6 @@ static int acornfb_setup(char *options)
+ 	if (!options || !*options)
+ 		return 0;
  
- 		if (!strcmp(this_opt, "noaccel"))
- 			noaccel = 1;
--		else if (!strncmp(this_opt, "mode:", 5))
--			mode_option = this_opt + 5;
--		else
--			mode_option = this_opt;
-+		else {
-+			static char mode_option_buf[256];
-+			int ret;
-+
-+			if (!strncmp(this_opt, "mode:", 5))
-+				this_opt += 5;
-+
-+			ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", this_opt);
-+			if (WARN(ret < 0, "cirrusfb: ignoring invalid option, ret=%d\n", ret))
-+				continue;
-+			if (WARN(ret >= sizeof(mode_option_buf), "cirrusfb: option too long\n"))
-+				continue;
-+			mode_option = mode_option_buf;
-+		}
- 	}
- 	return 0;
- }
+-	acornfb_init_fbinfo();
+-
+ 	while ((opt = strsep(&options, ",")) != NULL) {
+ 		if (!*opt)
+ 			continue;
+@@ -930,9 +928,8 @@ static int acornfb_probe(struct platform_device *dev)
+ 
+ 	if (fb_get_options("acornfb", &option))
+ 		return -ENODEV;
+-	acornfb_setup(option);
+-
+ 	acornfb_init_fbinfo();
++	acornfb_setup(option);
+ 
+ 	current_par.dev = &dev->dev;
+ 
 -- 
 2.39.2
 

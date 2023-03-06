@@ -2,124 +2,169 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B619C61DA4
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:24:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7EC0C61DA4
+	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 17:59:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230191AbjCFQYI convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 11:24:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53364 "EHLO
+        id S230308AbjCFR7f (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 12:59:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50276 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229665AbjCFQXd (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:23:33 -0500
-Received: from mail-oi1-f171.google.com (mail-oi1-f171.google.com [209.85.167.171])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CE81772A5;
-        Mon,  6 Mar 2023 08:22:12 -0800 (PST)
-Received: by mail-oi1-f171.google.com with SMTP id bk32so7441131oib.10;
-        Mon, 06 Mar 2023 08:22:12 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678119639;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=mupyAyevtyw777NCln3ZN8/0+T6wpA1bTYPrDt/CRuI=;
-        b=50QnuEUqBeNHikUseouP2vP/iBZsEM3nKIY5nIfU9YrzAmk3nQMxQnJ/xMXcVsDnD9
-         pYGjqSvmn85stmeHSqIKoq0sobzFFcuO+YKwNHNId/WV1+ruC2UQHpj/vvl0WMUD2XvO
-         j8EDdKCBwpmSSGTyXigy4fFpztXdA4oLXF3vmyhcMDjiP6Ow4453EthNSe8OYKj+3zcY
-         QE/FoOyFWT1WcAOu/5nXbXtciT6oUn7I7/ERp+aOtvnJ3serULj1+2cyfKTrEvIiI4iw
-         GGE+PZu5PDedyCe3WVY9DVkA/VigB8PBBz91cEXFXa0aB2mW8AYCvyQnbW6JX1ta+DCE
-         etfQ==
-X-Gm-Message-State: AO0yUKVyVOUtws71wsvX+RRqaYi14mG0+2sT4sn0UrtBXR8VjtSnuRQO
-        iMFUUFnUYdbO1wwZaXN6gJESVmpZylDF5Q==
-X-Google-Smtp-Source: AK7set8UAU+KItRxBGyr0qHHIdmVXj93pjZrIF0CuNssDBoZeFJ2wK0HnNJ/jyFKqt77s8rJEDCVHw==
-X-Received: by 2002:a05:6808:b2a:b0:37f:acda:9668 with SMTP id t10-20020a0568080b2a00b0037facda9668mr6432393oij.12.1678119638904;
-        Mon, 06 Mar 2023 08:20:38 -0800 (PST)
-Received: from mail-oa1-f47.google.com (mail-oa1-f47.google.com. [209.85.160.47])
-        by smtp.gmail.com with ESMTPSA id r64-20020acac143000000b0037834b1a20bsm4171130oif.0.2023.03.06.08.20.38
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 06 Mar 2023 08:20:38 -0800 (PST)
-Received: by mail-oa1-f47.google.com with SMTP id 586e51a60fabf-17671fb717cso10427795fac.8;
-        Mon, 06 Mar 2023 08:20:38 -0800 (PST)
-X-Received: by 2002:a5b:18e:0:b0:967:f8b2:7a42 with SMTP id
- r14-20020a5b018e000000b00967f8b27a42mr5167551ybl.7.1678119226571; Mon, 06 Mar
- 2023 08:13:46 -0800 (PST)
+        with ESMTP id S230412AbjCFR7R (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 12:59:17 -0500
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C95B46C6BF;
+        Mon,  6 Mar 2023 09:58:44 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1678125524; x=1709661524;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=Yt1JMNZEMwns8zPlPJmNRrMyNl9NvEHAApEp/Dn1mZs=;
+  b=Rit5wBk8X/WRtoEjxXdVkp0NoHWPoz72y/wN5fIH+WfKZtJS0y8MXD2r
+   /NRwkElNTYp4AyZSC/FggEN3QJa0N2mWqrJU2vCVxY42Y98Le/lmxX5yd
+   3ebNi4x68Xo4V4jsPCO7WCBhQM3hd9MOPJc/E0PZIAhwHEyQcsJNYKgNe
+   fQhkyUDyp5pP6+zjibpzPNAcQGPneLM+3k/3R7nQgSOHnahra+y1eRdAp
+   8xzpfciuQ+AfY/v2uRbyyStIl+lK/8gdDTONLIPaQTuLPwPvtULOlOfjU
+   n6Ts4NXyJSVPS2yCHUIq7bRp+rupaRvRDnMq6rh7r8pYAPrMcse39+UuY
+   A==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10641"; a="398210868"
+X-IronPort-AV: E=Sophos;i="5.98,238,1673942400"; 
+   d="scan'208";a="398210868"
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Mar 2023 09:57:33 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10641"; a="745160100"
+X-IronPort-AV: E=Sophos;i="5.98,238,1673942400"; 
+   d="scan'208";a="745160100"
+Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
+  by fmsmga004.fm.intel.com with ESMTP; 06 Mar 2023 09:57:29 -0800
+Received: from kbuild by b613635ddfff with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1pZF5U-0000Vq-1r;
+        Mon, 06 Mar 2023 17:57:28 +0000
+Date:   Tue, 7 Mar 2023 01:57:03 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
+        paulus@samba.org, benh@kernel.crashing.org, linux@armlinux.org.uk,
+        pjones@redhat.com, timur@kernel.org, adaplas@gmail.com,
+        s.hauer@pengutronix.de, shawnguo@kernel.org, mbroemme@libmpq.org,
+        thomas@winischhofer.net, James.Bottomley@hansenpartnership.com,
+        spock@gentoo.org, sudipm.mukherjee@gmail.com,
+        teddy.wang@siliconmotion.com, geert+renesas@glider.be,
+        corbet@lwn.net
+Cc:     oe-kbuild-all@lists.linux.dev,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH 07/99] fbdev/amifb: Parse option string with struct
+ option_iter
+Message-ID: <202303070108.gtLwdySM-lkp@intel.com>
+References: <20230306160016.4459-8-tzimmermann@suse.de>
 MIME-Version: 1.0
-References: <20230306160016.4459-1-tzimmermann@suse.de> <20230306160016.4459-12-tzimmermann@suse.de>
-In-Reply-To: <20230306160016.4459-12-tzimmermann@suse.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 6 Mar 2023 17:13:34 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdVDr19p3GtR4n_hJAtc_RX+VJwVfU1Mzvtka9er+WS8bg@mail.gmail.com>
-Message-ID: <CAMuHMdVDr19p3GtR4n_hJAtc_RX+VJwVfU1Mzvtka9er+WS8bg@mail.gmail.com>
-Subject: Re: [PATCH 11/99] fbdev/aty: Duplicate video-mode option string
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
-        linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
-        adaplas@gmail.com, s.hauer@pengutronix.de, shawnguo@kernel.org,
-        mbroemme@libmpq.org, thomas@winischhofer.net,
-        James.Bottomley@hansenpartnership.com, spock@gentoo.org,
-        sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-        geert+renesas@glider.be, corbet@lwn.net,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230306160016.4459-8-tzimmermann@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Hi Thomas,
 
-Thanks for your patch!
+I love your patch! Perhaps something to improve:
 
-On Mon, Mar 6, 2023 at 5:00 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> Assume that the driver does not own the option string or its substrings
-> and hence duplicate the option string for the video mode. The driver only
-> parses the option string once as part of module initialization, so use
-> a static buffer to store the duplicated mode option. Linux automatically
-> frees the memory upon releasing the module.
+[auto build test WARNING on drm-misc/drm-misc-next]
+[also build test WARNING on staging/staging-testing staging/staging-next staging/staging-linus linus/master v6.3-rc1 next-20230306]
+[cannot apply to deller-parisc/for-next]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Are you sure about that?
-All of this code is inside "#ifndef MODULE".
-In the aty128fb case, the function is not marked __init.
-Enabling these 3 drivers adds 3x256 bytes of static buffer, more
-if you enable more fbdev drivers.
+url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/lib-Add-option-iterator/20230307-000524
+base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
+patch link:    https://lore.kernel.org/r/20230306160016.4459-8-tzimmermann%40suse.de
+patch subject: [PATCH 07/99] fbdev/amifb: Parse option string with struct option_iter
+config: m68k-allyesconfig (https://download.01.org/0day-ci/archive/20230307/202303070108.gtLwdySM-lkp@intel.com/config)
+compiler: m68k-linux-gcc (GCC) 12.1.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/intel-lab-lkp/linux/commit/0b2c4af3b565e5ee830f7ed8e844d89237938f96
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Thomas-Zimmermann/lib-Add-option-iterator/20230307-000524
+        git checkout 0b2c4af3b565e5ee830f7ed8e844d89237938f96
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=m68k olddefconfig
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=m68k SHELL=/bin/bash drivers/video/fbdev/
 
-> Done in preparation of switching the driver to struct option_iter and
-> constifying the option string.
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+If you fix the issue, kindly add following tag where applicable
+| Reported-by: kernel test robot <lkp@intel.com>
+| Link: https://lore.kernel.org/oe-kbuild-all/202303070108.gtLwdySM-lkp@intel.com/
 
-> --- a/drivers/video/fbdev/aty/aty128fb.c
-> +++ b/drivers/video/fbdev/aty/aty128fb.c
-> @@ -1723,7 +1723,17 @@ static int aty128fb_setup(char *options)
->                         continue;
->                 }
->  #endif /* CONFIG_PPC_PMAC */
-> -               mode_option = this_opt;
-> +               {
-> +                       static char mode_option_buf[256];
-> +                       int ret;
-> +
-> +                       ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", this_opt);
-> +                       if (WARN(ret < 0, "aty128: ignoring invalid option, ret=%d\n", ret))
-> +                               continue;
-> +                       if (WARN(ret >= sizeof(mode_option_buf), "aty128fb: option too long\n"))
-> +                               continue;
-> +                       mode_option = mode_option_buf;
-> +               }
->         }
->         return 0;
->  }
-eturn 0;
->  }
+All warnings (new ones prefixed by >>):
 
-Gr{oetje,eeting}s,
+   drivers/video/fbdev/amifb.c: In function 'ami_decode_var':
+   drivers/video/fbdev/amifb.c:1134:23: warning: variable 'vtotal' set but not used [-Wunused-but-set-variable]
+    1134 |         u_int htotal, vtotal;
+         |                       ^~~~~~
+   drivers/video/fbdev/amifb.c:1134:15: warning: variable 'htotal' set but not used [-Wunused-but-set-variable]
+    1134 |         u_int htotal, vtotal;
+         |               ^~~~~~
+   drivers/video/fbdev/amifb.c: In function 'ami_get_var_cursorinfo':
+   drivers/video/fbdev/amifb.c:1855:19: warning: variable 'alloc' set but not used [-Wunused-but-set-variable]
+    1855 |         int size, alloc;
+         |                   ^~~~~
+   drivers/video/fbdev/amifb.c: In function 'amifb_setup':
+>> drivers/video/fbdev/amifb.c:2362:51: warning: passing argument 1 of 'amifb_setup_mcap' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+    2362 |                         amifb_setup_mcap(this_opt + 11);
+         |                                          ~~~~~~~~~^~~~
+   drivers/video/fbdev/amifb.c:2312:43: note: expected 'char *' but argument is of type 'const char *'
+    2312 | static void __init amifb_setup_mcap(char *spec)
+         |                                     ~~~~~~^~~~
 
-                        Geert
+
+vim +2362 drivers/video/fbdev/amifb.c
+
+f1cbb17ac739932 drivers/video/amifb.c       Geert Uytterhoeven 2011-11-21  2348  
+0b2c4af3b565e5e drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2349  static int __init amifb_setup(const char *options)
+^1da177e4c3f415 drivers/video/amifb.c       Linus Torvalds     2005-04-16  2350  {
+0b2c4af3b565e5e drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2351  	struct option_iter iter;
+0b2c4af3b565e5e drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2352  	const char *this_opt;
+f1cbb17ac739932 drivers/video/amifb.c       Geert Uytterhoeven 2011-11-21  2353  
+0b2c4af3b565e5e drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2354  	option_iter_init(&iter, options);
+f1cbb17ac739932 drivers/video/amifb.c       Geert Uytterhoeven 2011-11-21  2355  
+0b2c4af3b565e5e drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2356  	while (option_iter_next(&iter, this_opt)) {
+f1cbb17ac739932 drivers/video/amifb.c       Geert Uytterhoeven 2011-11-21  2357  		if (!strcmp(this_opt, "inverse")) {
+f1cbb17ac739932 drivers/video/amifb.c       Geert Uytterhoeven 2011-11-21  2358  			fb_invert_cmaps();
+f1cbb17ac739932 drivers/video/amifb.c       Geert Uytterhoeven 2011-11-21  2359  		} else if (!strcmp(this_opt, "ilbm"))
+f1cbb17ac739932 drivers/video/amifb.c       Geert Uytterhoeven 2011-11-21  2360  			amifb_ilbm = 1;
+f1cbb17ac739932 drivers/video/amifb.c       Geert Uytterhoeven 2011-11-21  2361  		else if (!strncmp(this_opt, "monitorcap:", 11))
+f1cbb17ac739932 drivers/video/amifb.c       Geert Uytterhoeven 2011-11-21 @2362  			amifb_setup_mcap(this_opt + 11);
+f1cbb17ac739932 drivers/video/amifb.c       Geert Uytterhoeven 2011-11-21  2363  		else if (!strncmp(this_opt, "fstart:", 7))
+f1cbb17ac739932 drivers/video/amifb.c       Geert Uytterhoeven 2011-11-21  2364  			min_fstrt = simple_strtoul(this_opt + 7, NULL, 0);
+d3d9f26ac65b035 drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2365  		else {
+d3d9f26ac65b035 drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2366  			static char mode_option_buf[256];
+d3d9f26ac65b035 drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2367  			int ret;
+d3d9f26ac65b035 drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2368  
+d3d9f26ac65b035 drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2369  			ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", this_opt);
+d3d9f26ac65b035 drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2370  			if (WARN(ret < 0, "amifb: ignoring invalid option, ret=%d\n", ret))
+d3d9f26ac65b035 drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2371  				continue;
+d3d9f26ac65b035 drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2372  			if (WARN(ret >= sizeof(mode_option_buf), "amifb: option too long\n"))
+d3d9f26ac65b035 drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2373  				continue;
+d3d9f26ac65b035 drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2374  			mode_option = mode_option_buf;
+d3d9f26ac65b035 drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2375  		}
+f1cbb17ac739932 drivers/video/amifb.c       Geert Uytterhoeven 2011-11-21  2376  	}
+f1cbb17ac739932 drivers/video/amifb.c       Geert Uytterhoeven 2011-11-21  2377  
+0b2c4af3b565e5e drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2378  	option_iter_release(&iter);
+0b2c4af3b565e5e drivers/video/fbdev/amifb.c Thomas Zimmermann  2023-03-06  2379  
+f1cbb17ac739932 drivers/video/amifb.c       Geert Uytterhoeven 2011-11-21  2380  	if (min_fstrt < 48)
+f1cbb17ac739932 drivers/video/amifb.c       Geert Uytterhoeven 2011-11-21  2381  		min_fstrt = 48;
+^1da177e4c3f415 drivers/video/amifb.c       Linus Torvalds     2005-04-16  2382  
+^1da177e4c3f415 drivers/video/amifb.c       Linus Torvalds     2005-04-16  2383  	return 0;
+^1da177e4c3f415 drivers/video/amifb.c       Linus Torvalds     2005-04-16  2384  }
+195197f408567b5 drivers/video/fbdev/amifb.c Randy Dunlap       2018-07-31  2385  #endif
+^1da177e4c3f415 drivers/video/amifb.c       Linus Torvalds     2005-04-16  2386  
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests

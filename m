@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EB64C77B79
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:01:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FBE2C678D4
+	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:02:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229757AbjCFQBg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 11:01:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42000 "EHLO
+        id S231542AbjCFQBj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 11:01:39 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42072 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231330AbjCFQAx (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:53 -0500
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0FD052A6D2;
-        Mon,  6 Mar 2023 08:00:50 -0800 (PST)
+        with ESMTP id S231381AbjCFQAz (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:55 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 22DDA2E0D3;
+        Mon,  6 Mar 2023 08:00:51 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id A129322417;
-        Mon,  6 Mar 2023 16:00:48 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id BC6DB2241C;
+        Mon,  6 Mar 2023 16:00:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678118448; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678118449; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=yk8NEEFyYFz7QCOnrJy+3UNVzVnSkFF9rUK/rTVstVw=;
-        b=ipn1oNoL8qgLXjs4f4GtU9f/Ri4YDt73X0/TvFnJ79CtWu9n8/hVZ440v9W1mRlrMiJY0m
-        ZaKok8Kf9WW9HIlqjzJnAy1fgeoNTaMoYA5kSIO1mxHfdyxUaObCQYCwdElfxm8sTp+Nrm
-        RIBwLREtIjf+l2gADtz4zYDiixiSOSo=
+        bh=KeAlevCWeWePabJAji9QriWw1Xre+Z3oHUn0cc9BQIk=;
+        b=YuTMjqOVPPTdnqtMm4Gjk1woVSERAG+XGK8+BhA2SIt+oqeiS5AnDwsmUkYc/oDXMLyscX
+        Xe1pwVJLCxD2lIVwLri1KFCvflZOgyQWJ4bMPxaLWn620+NNq/A/mNVztNMzFuOFk6h62B
+        F75u0lxPL1fwlfLAotKGkrQHBPUgHlg=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678118448;
+        s=susede2_ed25519; t=1678118449;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=yk8NEEFyYFz7QCOnrJy+3UNVzVnSkFF9rUK/rTVstVw=;
-        b=iC4cIbwtW1r3WfnatTA5zG+AxJ5q1hiAvjhOthUj8zVJkV1RQje56jvLmm06CSUTaLYgih
-        i8qNrh7K62zv6OCA==
+        bh=KeAlevCWeWePabJAji9QriWw1Xre+Z3oHUn0cc9BQIk=;
+        b=YbA/aSwezIiBCjAunUVSJQ9NmgQHQe2ttWpY9f+fGgvNk+79sYaAdYcIGtIw64N39e6hb0
+        W+Vjk8omi9rcJeAA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 4CC8513513;
-        Mon,  6 Mar 2023 16:00:48 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 61B3213A6A;
+        Mon,  6 Mar 2023 16:00:49 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id iJjmETAOBmQ/PwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:48 +0000
+        id iKEFFzEOBmQ/PwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:49 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
         linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 63/99] fbdev/pvr2fb: Duplicate video-mode option string
-Date:   Mon,  6 Mar 2023 16:59:40 +0100
-Message-Id: <20230306160016.4459-64-tzimmermann@suse.de>
+Subject: [PATCH 66/99] fbdev/rivafb: Duplicate video-mode option string
+Date:   Mon,  6 Mar 2023 16:59:43 +0100
+Message-Id: <20230306160016.4459-67-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306160016.4459-1-tzimmermann@suse.de>
 References: <20230306160016.4459-1-tzimmermann@suse.de>
@@ -82,30 +82,33 @@ constifying the option string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/pvr2fb.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/riva/fbdev.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
-index 6888127a5eb8..cd778f8753f1 100644
---- a/drivers/video/fbdev/pvr2fb.c
-+++ b/drivers/video/fbdev/pvr2fb.c
-@@ -1049,7 +1049,15 @@ static int __init pvr2fb_setup(char *options)
- 		} else if (!strncmp(this_opt, "nowrap", 6)) {
- 			nowrap = 1;
- 		} else {
+diff --git a/drivers/video/fbdev/riva/fbdev.c b/drivers/video/fbdev/riva/fbdev.c
+index 41edc6e79460..affb7c5ef69c 100644
+--- a/drivers/video/fbdev/riva/fbdev.c
++++ b/drivers/video/fbdev/riva/fbdev.c
+@@ -2132,8 +2132,17 @@ static int rivafb_setup(char *options)
+ 			strictmode = 1;
+ 		} else if (!strncmp(this_opt, "noaccel", 7)) {
+ 			noaccel = 1;
+-		} else
 -			mode_option = this_opt;
++		} else {
 +			static char mode_option_buf[256];
 +			int ret;
 +
 +			ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", this_opt);
-+			if (WARN(ret < 0, "pvr2fb: ignoring invalid option, ret=%d\n", ret))
++			if (WARN(ret < 0, "rivafb: ignoring invalid option, ret=%d\n", ret))
 +				continue;
-+			if (WARN(ret >= sizeof(mode_option_buf), "pvr2fb: option too long\n"))
++			if (WARN(ret >= sizeof(mode_option_buf), "rivafb: option too long\n"))
 +				continue;
 +			mode_option = mode_option_buf;
- 		}
++		}
  	}
- 
+ 	NVTRACE_LEAVE();
+ 	return 0;
 -- 
 2.39.2
 

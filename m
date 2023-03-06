@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A81DEC61DA4
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7470CC7619A
 	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:01:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231366AbjCFQAy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 11:00:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41332 "EHLO
+        id S231328AbjCFQAw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 11:00:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41182 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230368AbjCFQAd (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:33 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1CD5E25E09;
-        Mon,  6 Mar 2023 08:00:32 -0800 (PST)
+        with ESMTP id S230227AbjCFQA2 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:28 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B241C2E0D3;
+        Mon,  6 Mar 2023 08:00:26 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 61EDA1FDFA;
-        Mon,  6 Mar 2023 16:00:30 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 38BFA22373;
+        Mon,  6 Mar 2023 16:00:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678118430; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678118425; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=A8MiP+VX4JXynIvzGoNsVlxZWAdkD76B2oWa0k5ktfw=;
-        b=OxNyYdqNzGt/BVK1X2/BktdC9q8eovUASC6X7w7whA3TeiSQ1Eg67THvnHT6z3TpjtKSdK
-        39eYnVhldukJR1QK46DlFH0wkgeMKSTaFOsQas69ZsH+NSrBnO9kKWMqAnR9ay3jjSCRTv
-        O8oxHWZ90sVmZi5m/9c8N9QbqhpEehY=
+        bh=b6D8FQBTb2yaZRkjP/3Zmj8yOkLU5mYNE2Q1swliLUA=;
+        b=q8ROvjUcrSXURP4NQC4Zg3u4Gw4+An+KGI1Kz4tT1+pf8x6qL8wrC00mYNJwkdWcszbg5g
+        tX72pAJlWDzpAc3ZuKEDcoSMaLFrSB4WMxkUhjCTS+K/hDHXwL/pU/Y0dOgZhUUlsZLJPi
+        COMOQEwJ1WdVegCTBs0GtRQXm5JvkPg=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678118430;
+        s=susede2_ed25519; t=1678118425;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=A8MiP+VX4JXynIvzGoNsVlxZWAdkD76B2oWa0k5ktfw=;
-        b=ejH6bE6q/ijYlEpllX4MbYOZUgI01BzIBJJpB1eRZecRHFOKTTUsb92a3CP5cNJHfyao9R
-        /uVKyDuRc0jba+DA==
+        bh=b6D8FQBTb2yaZRkjP/3Zmj8yOkLU5mYNE2Q1swliLUA=;
+        b=qnWYoxjTuASWAY95x+RCGYYuVtszvqtS7n4BHovqz0pZaA2P3xj7tUmgp0+ovDNZcGaSto
+        nst+SnyK6AarT9AA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 0948713A6A;
-        Mon,  6 Mar 2023 16:00:30 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id DC4DB13513;
+        Mon,  6 Mar 2023 16:00:24 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id MGN6AR4OBmQ/PwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:30 +0000
+        id UBMDNRgOBmQ/PwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:24 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
         linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 16/99] fbdev/cirrusfb: Parse option string with struct option_iter
-Date:   Mon,  6 Mar 2023 16:58:53 +0100
-Message-Id: <20230306160016.4459-17-tzimmermann@suse.de>
+Subject: [PATCH 02/99] fbdev/68328fb: Remove trailing whitespaces
+Date:   Mon,  6 Mar 2023 16:58:39 +0100
+Message-Id: <20230306160016.4459-3-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306160016.4459-1-tzimmermann@suse.de>
 References: <20230306160016.4459-1-tzimmermann@suse.de>
@@ -71,65 +71,64 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use struct option_iter to walk over the individual options in the
-driver's option string. Replaces the hand-written strsep() loop with
-a clean interface. The helpers for struct option_iter handle empty
-option strings and empty options transparently. The struct's _init
-and _release functions duplicate and release the option string's
-memory buffer as needed.
-
-Done in preparation of constifying the option string.
+Fix coding style. No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/cirrusfb.c | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+ drivers/video/fbdev/68328fb.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/cirrusfb.c b/drivers/video/fbdev/cirrusfb.c
-index fbf9281a7004..c6882bff3862 100644
---- a/drivers/video/fbdev/cirrusfb.c
-+++ b/drivers/video/fbdev/cirrusfb.c
-@@ -35,6 +35,7 @@
-  */
+diff --git a/drivers/video/fbdev/68328fb.c b/drivers/video/fbdev/68328fb.c
+index 7db03ed77c76..7fe56ecbe4e6 100644
+--- a/drivers/video/fbdev/68328fb.c
++++ b/drivers/video/fbdev/68328fb.c
+@@ -123,7 +123,7 @@ static u_long get_line_length(int xres_virtual, int bpp)
+      *  First part, xxxfb_check_var, must not write anything
+      *  to hardware, it should only verify and adjust var.
+      *  This means it doesn't alter par but it does use hardware
+-     *  data from it to check this var. 
++     *  data from it to check this var.
+      */
  
- #include <linux/aperture.h>
-+#include <linux/cmdline.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-@@ -2323,17 +2324,14 @@ static struct zorro_driver cirrusfb_zorro_driver = {
- #endif /* CONFIG_ZORRO */
+ static int mc68x328fb_check_var(struct fb_var_screeninfo *var,
+@@ -181,7 +181,7 @@ static int mc68x328fb_check_var(struct fb_var_screeninfo *var,
  
- #ifndef MODULE
--static int __init cirrusfb_setup(char *options)
-+static int __init cirrusfb_setup(const char *options)
- {
--	char *this_opt;
-+	struct option_iter iter;
-+	const char *this_opt;
- 
--	if (!options || !*options)
--		return 0;
--
--	while ((this_opt = strsep(&options, ",")) != NULL) {
--		if (!*this_opt)
--			continue;
-+	option_iter_init(&iter, options);
- 
-+	while (option_iter_next(&iter, this_opt)) {
- 		if (!strcmp(this_opt, "noaccel"))
- 			noaccel = 1;
- 		else {
-@@ -2351,6 +2349,9 @@ static int __init cirrusfb_setup(char *options)
- 			mode_option = mode_option_buf;
- 		}
- 	}
-+
-+	option_iter_release(&iter);
-+
- 	return 0;
+ 	/*
+ 	 * Now that we checked it we alter var. The reason being is that the video
+-	 * mode passed in might not work but slight changes to it might make it 
++	 * mode passed in might not work but slight changes to it might make it
+ 	 * work. This way we let the user know what is acceptable.
+ 	 */
+ 	switch (var->bits_per_pixel) {
+@@ -256,8 +256,8 @@ static int mc68x328fb_check_var(struct fb_var_screeninfo *var,
  }
- #endif
+ 
+ /* This routine actually sets the video mode. It's in here where we
+- * the hardware state info->par and fix which can be affected by the 
+- * change in par. For this driver it doesn't do much. 
++ * the hardware state info->par and fix which can be affected by the
++ * change in par. For this driver it doesn't do much.
+  */
+ static int mc68x328fb_set_par(struct fb_info *info)
+ {
+@@ -294,7 +294,7 @@ static int mc68x328fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 	 *   {hardwarespecific} contains width of RAMDAC
+ 	 *   cmap[X] is programmed to (X << red.offset) | (X << green.offset) | (X << blue.offset)
+ 	 *   RAMDAC[X] is programmed to (red, green, blue)
+-	 * 
++	 *
+ 	 * Pseudocolor:
+ 	 *    uses offset = 0 && length = RAMDAC register width.
+ 	 *    var->{color}.offset is 0
+@@ -383,7 +383,7 @@ static int mc68x328fb_pan_display(struct fb_var_screeninfo *var,
+ }
+ 
+     /*
+-     *  Most drivers don't need their own mmap function 
++     *  Most drivers don't need their own mmap function
+      */
+ 
+ static int mc68x328fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
 -- 
 2.39.2
 

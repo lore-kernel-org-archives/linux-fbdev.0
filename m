@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B734BC76186
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C914FC7618A
 	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:01:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231203AbjCFQAs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 11:00:48 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41394 "EHLO
+        id S231265AbjCFQAt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 11:00:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41210 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230396AbjCFQAf (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:35 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5D7A28879;
-        Mon,  6 Mar 2023 08:00:34 -0800 (PST)
+        with ESMTP id S230244AbjCFQA3 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:29 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 167B42E807;
+        Mon,  6 Mar 2023 08:00:27 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 3E68A1FDEB;
-        Mon,  6 Mar 2023 16:00:33 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 8DEB21FDEC;
+        Mon,  6 Mar 2023 16:00:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678118433; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678118425; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Rlw6Y9HytpkB3h8X3sYp9Q/5dj2jl9fyg6laIqBFHmA=;
-        b=UA0AU+8JNLwhTqGrlpZIn9kcDz7Pgg2tC5sBRfYuOum/1ZRLNPGUgOobCxgPjF/b49X92m
-        X6VesbrhU3/K1VgbkEemX3jDIq9pyokGPfsW+8+AmMpIowBtz9z2WUGydPYIgwFjEXX6hx
-        QryOCn3keLR0ITMjl5mQKPsguZo2B4I=
+        bh=orZgFs2QhwCWX9f0KA+V1/nLVg0I8YGwHRr+Xo7enX4=;
+        b=PjMJpakJyWjNdOrVTyPj2whm1Q33z1V9wUnZWqwkUtjHSLFErYtTgTH2SHx5DFdTpOL8xh
+        6U9/pIC8C4gADDBCoL+OsiNYP2whZbl/yPCwxtP12ni0FEa5VlS+mDYeO1SguNBXEe9un4
+        RUVVb3a1EKcTEJz4P+MuOTPRCOXbNYU=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678118433;
+        s=susede2_ed25519; t=1678118425;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Rlw6Y9HytpkB3h8X3sYp9Q/5dj2jl9fyg6laIqBFHmA=;
-        b=b8tJbPSYaNtJ/8Uk5mCRRx6gPRMZLLKvfcW2ZfPdtD11XP/hPD5110toEAPpfNQjnjhchb
-        JJZWioCGPKdTbxDQ==
+        bh=orZgFs2QhwCWX9f0KA+V1/nLVg0I8YGwHRr+Xo7enX4=;
+        b=OmtTWYs01MYMpYFXZYpM+67wyYIDNpyh+TL9PhTnDhkL7aGA62VtvQqKMH7Uj5yneuLI6Q
+        OusXg2kuAvcWbfCA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id E36AC13513;
-        Mon,  6 Mar 2023 16:00:32 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 3C91913A6A;
+        Mon,  6 Mar 2023 16:00:25 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id EKPFNiAOBmQ/PwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:32 +0000
+        id 0FAIDhkOBmQ/PwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:25 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
         linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 24/99] fbdev/gbefb: Duplicate video-mode option string
-Date:   Mon,  6 Mar 2023 16:59:01 +0100
-Message-Id: <20230306160016.4459-25-tzimmermann@suse.de>
+Subject: [PATCH 03/99] fbdev/68328fb: Remove unused option string
+Date:   Mon,  6 Mar 2023 16:58:40 +0100
+Message-Id: <20230306160016.4459-4-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306160016.4459-1-tzimmermann@suse.de>
 References: <20230306160016.4459-1-tzimmermann@suse.de>
@@ -71,54 +71,45 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Assume that the driver does not own the option string or its substrings
-and hence duplicate the option string for the video mode. Allocate the
-copy's memory with devm_kstrdup(), as the driver parses the option string
-once per probed device. Linux will automatically free the memory upon
-releasing the device.
-
-Done in preparation of switching the driver to struct option_iter and
-constifying the option string.
+The option string is unused. Remove the variable and a related
+helper function. No functional change.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/gbefb.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/68328fb.c | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
-diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
-index 000b4aa44241..5330aa6029ca 100644
---- a/drivers/video/fbdev/gbefb.c
-+++ b/drivers/video/fbdev/gbefb.c
-@@ -1083,7 +1083,7 @@ ATTRIBUTE_GROUPS(gbefb);
-  * Initialization
-  */
- 
--static int gbefb_setup(char *options)
-+static int gbefb_setup(char *options, struct device *dev)
- {
- 	char *this_opt;
- 
-@@ -1108,8 +1108,9 @@ static int gbefb_setup(char *options)
- 				gbe_mem_size = CONFIG_FB_GBE_MEM * 1024 * 1024;
- 			if (gbe_mem_size < TILE_SIZE)
- 				gbe_mem_size = TILE_SIZE;
--		} else
--			mode_option = this_opt;
-+		} else {
-+			mode_option = devm_kstrdup(dev, this_opt, GFP_KERNEL);
-+		}
- 	}
- 	return 0;
- }
-@@ -1132,7 +1133,7 @@ static int gbefb_probe(struct platform_device *p_dev)
- 		ret = -ENODEV;
- 		goto out_release_framebuffer;
- 	}
--	gbefb_setup(options);
-+	gbefb_setup(options, &p_dev->dev);
+diff --git a/drivers/video/fbdev/68328fb.c b/drivers/video/fbdev/68328fb.c
+index 7fe56ecbe4e6..f2d70df4104b 100644
+--- a/drivers/video/fbdev/68328fb.c
++++ b/drivers/video/fbdev/68328fb.c
+@@ -400,13 +400,6 @@ static int mc68x328fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
  #endif
+ }
  
- 	if (!request_mem_region(GBE_BASE, sizeof(struct sgi_gbe), "GBE")) {
+-static int __init mc68x328fb_setup(char *options)
+-{
+-	if (!options || !*options)
+-		return 1;
+-	return 1;
+-}
+-
+     /*
+      *  Initialisation
+      */
+@@ -414,11 +407,8 @@ static int __init mc68x328fb_setup(char *options)
+ static int __init mc68x328fb_init(void)
+ {
+ #ifndef MODULE
+-	char *option = NULL;
+-
+-	if (fb_get_options("68328fb", &option))
++	if (fb_get_options("68328fb", NULL))
+ 		return -ENODEV;
+-	mc68x328fb_setup(option);
+ #endif
+ 	/*
+ 	 *  initialize the default mode from the LCD controller registers
 -- 
 2.39.2
 

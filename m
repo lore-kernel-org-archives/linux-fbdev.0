@@ -2,47 +2,47 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68F9DC61DA4
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 18:59:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5922EC61DA4
+	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 20:01:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229509AbjCFS7R (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 13:59:17 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42796 "EHLO
+        id S230098AbjCFUBJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 15:01:09 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39848 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229736AbjCFS7C (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 13:59:02 -0500
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ADECC6BC07;
-        Mon,  6 Mar 2023 10:58:37 -0800 (PST)
+        with ESMTP id S230176AbjCFUBG (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 15:01:06 -0500
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A80C2410B;
+        Mon,  6 Mar 2023 12:00:39 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1678129117; x=1709665117;
+  t=1678132840; x=1709668840;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=ZmaqDXp/EaKIUUy4Hbs1NMmgPjwFBqK6TGUz+/WvE5o=;
-  b=Oi/8kJ7Du1L57NAoINiCXgyYQzn6fsgwK1KLYt3Jofm6evzChn49G9q7
-   mn5ZHh+YOa0YNG4t+WlrLXFrjsUI9k8UpZAY6oZqObKXLdGi7PbXnOOkv
-   tCIhEgFiI7ylmann2bzlKhYjTLhCbqsrconEFC51QzjZnb9fhsLcEJgSW
-   b9VnNPEVFKBvr8am4VoT1sVMoc6XTnhfSeblyD4ddBAKLMJRKoMOdcM9n
-   nBa4EZK6SL7vLR5ba1XWXqTcoWSigz16hb+ZoXVv46RpYFO0iolYzf1mx
-   AO3zKlHfDQ1WRm2qJNTP7ZFuXMlBbqPfzZkDf4VFRWdK8fK4jijkmDjgK
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10641"; a="421920972"
+  bh=CRdF0Nkx+b/muGGcWZtuKc0UsZkRBH9ke4J5QaHxNnA=;
+  b=c4RGzCqSVlCNF74H5vgOMrhA6o6mxSqfux66a6kwhZZOTKYGCQJolkrG
+   Wd1FrGwGIERg4hO3kRHuZG3Y3a4DG6Umcm4ic4PLbhik8po9lk8S5E1tz
+   TY9pOpIY8OVYKM1FNppkTFrV/b8eSiDOKxHq7eFS2fgQ3umIltagZO9mt
+   cO93ijUV5Vg79FvMMKEiPjHy2iYYlxSJn7EGGYT3yU670I6t42YvHOcuN
+   KO/ec/1Yvb1+b3gZMtWNV8HAz3I0DPEEAf4xHPis4yVNpgNFLOqWykK4L
+   Yi8LLVJ+GPTqF+/9UCocFMkfWXA+eFJPWWVcpeIG6UtT4fBgKnerOY92p
+   w==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10641"; a="319488287"
 X-IronPort-AV: E=Sophos;i="5.98,238,1673942400"; 
-   d="scan'208";a="421920972"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Mar 2023 10:58:36 -0800
+   d="scan'208";a="319488287"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Mar 2023 12:00:38 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10641"; a="653699379"
+X-IronPort-AV: E=McAfee;i="6500,9779,10641"; a="626274597"
 X-IronPort-AV: E=Sophos;i="5.98,238,1673942400"; 
-   d="scan'208";a="653699379"
+   d="scan'208";a="626274597"
 Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
-  by orsmga006.jf.intel.com with ESMTP; 06 Mar 2023 10:58:31 -0800
+  by orsmga003.jf.intel.com with ESMTP; 06 Mar 2023 12:00:32 -0800
 Received: from kbuild by b613635ddfff with local (Exim 4.96)
         (envelope-from <lkp@intel.com>)
-        id 1pZG2Y-0000YZ-0V;
-        Mon, 06 Mar 2023 18:58:30 +0000
-Date:   Tue, 7 Mar 2023 02:58:28 +0800
+        id 1pZH0Z-0000ar-1d;
+        Mon, 06 Mar 2023 20:00:31 +0000
+Date:   Tue, 7 Mar 2023 04:00:26 +0800
 From:   kernel test robot <lkp@intel.com>
 To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
         paulus@samba.org, benh@kernel.crashing.org, linux@armlinux.org.uk,
@@ -52,18 +52,17 @@ To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
         spock@gentoo.org, sudipm.mukherjee@gmail.com,
         teddy.wang@siliconmotion.com, geert+renesas@glider.be,
         corbet@lwn.net
-Cc:     oe-kbuild-all@lists.linux.dev,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH 10/99] fbdev/atafb: Parse option string with struct
+Cc:     oe-kbuild-all@lists.linux.dev, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH 29/99] fbdev/grvga: Parse option string with struct
  option_iter
-Message-ID: <202303070232.fCaufe3z-lkp@intel.com>
-References: <20230306160016.4459-11-tzimmermann@suse.de>
+Message-ID: <202303070324.h15vDbVS-lkp@intel.com>
+References: <20230306160016.4459-30-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230306160016.4459-11-tzimmermann@suse.de>
+In-Reply-To: <20230306160016.4459-30-tzimmermann@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -81,253 +80,234 @@ https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
 url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/lib-Add-option-iterator/20230307-000524
 base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
-patch link:    https://lore.kernel.org/r/20230306160016.4459-11-tzimmermann%40suse.de
-patch subject: [PATCH 10/99] fbdev/atafb: Parse option string with struct option_iter
-config: m68k-allyesconfig (https://download.01.org/0day-ci/archive/20230307/202303070232.fCaufe3z-lkp@intel.com/config)
-compiler: m68k-linux-gcc (GCC) 12.1.0
+patch link:    https://lore.kernel.org/r/20230306160016.4459-30-tzimmermann%40suse.de
+patch subject: [PATCH 29/99] fbdev/grvga: Parse option string with struct option_iter
+config: sparc-allyesconfig (https://download.01.org/0day-ci/archive/20230307/202303070324.h15vDbVS-lkp@intel.com/config)
+compiler: sparc64-linux-gcc (GCC) 12.1.0
 reproduce (this is a W=1 build):
         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
         chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/c5b52a9aafa2bf0107e27c7c2aa66bee9a449521
+        # https://github.com/intel-lab-lkp/linux/commit/0d11862a5c27c6992c00d209c68a7c014f27165a
         git remote add linux-review https://github.com/intel-lab-lkp/linux
         git fetch --no-tags linux-review Thomas-Zimmermann/lib-Add-option-iterator/20230307-000524
-        git checkout c5b52a9aafa2bf0107e27c7c2aa66bee9a449521
+        git checkout 0d11862a5c27c6992c00d209c68a7c014f27165a
         # save the config file
         mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=m68k olddefconfig
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=m68k SHELL=/bin/bash drivers/video/fbdev/
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=sparc olddefconfig
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=sparc SHELL=/bin/bash drivers/video/fbdev/
 
 If you fix the issue, kindly add following tag where applicable
 | Reported-by: kernel test robot <lkp@intel.com>
-| Link: https://lore.kernel.org/oe-kbuild-all/202303070232.fCaufe3z-lkp@intel.com/
+| Link: https://lore.kernel.org/oe-kbuild-all/202303070324.h15vDbVS-lkp@intel.com/
 
 All warnings (new ones prefixed by >>):
 
-   drivers/video/fbdev/atafb.c: In function 'ext_setcolreg':
-   drivers/video/fbdev/atafb.c:2187:31: warning: variable 'tmp' set but not used [-Wunused-but-set-variable]
-    2187 |                 unsigned char tmp = INB(0x3da); \
-         |                               ^~~
-   drivers/video/fbdev/atafb.c:2210:17: note: in expansion of macro 'DACDelay'
-    2210 |                 DACDelay;
-         |                 ^~~~~~~~
-   drivers/video/fbdev/atafb.c:2187:31: warning: variable 'tmp' set but not used [-Wunused-but-set-variable]
-    2187 |                 unsigned char tmp = INB(0x3da); \
-         |                               ^~~
-   drivers/video/fbdev/atafb.c:2212:17: note: in expansion of macro 'DACDelay'
-    2212 |                 DACDelay;
-         |                 ^~~~~~~~
-   drivers/video/fbdev/atafb.c:2187:31: warning: variable 'tmp' set but not used [-Wunused-but-set-variable]
-    2187 |                 unsigned char tmp = INB(0x3da); \
-         |                               ^~~
-   drivers/video/fbdev/atafb.c:2214:17: note: in expansion of macro 'DACDelay'
-    2214 |                 DACDelay;
-         |                 ^~~~~~~~
-   drivers/video/fbdev/atafb.c:2187:31: warning: variable 'tmp' set but not used [-Wunused-but-set-variable]
-    2187 |                 unsigned char tmp = INB(0x3da); \
-         |                               ^~~
-   drivers/video/fbdev/atafb.c:2216:17: note: in expansion of macro 'DACDelay'
-    2216 |                 DACDelay;
-         |                 ^~~~~~~~
-   drivers/video/fbdev/atafb.c: In function 'atafb_copyarea':
-   drivers/video/fbdev/atafb.c:2464:13: warning: variable 'rev_copy' set but not used [-Wunused-but-set-variable]
-    2464 |         int rev_copy = 0;
-         |             ^~~~~~~~
-   drivers/video/fbdev/atafb.c: In function 'atafb_setup':
->> drivers/video/fbdev/atafb.c:2948:44: warning: passing argument 1 of 'get_video_mode' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-    2948 |                 if ((temp = get_video_mode(this_opt))) {
-         |                                            ^~~~~~~~
-   drivers/video/fbdev/atafb.c:529:33: note: expected 'char *' but argument is of type 'const char *'
-     529 | static int get_video_mode(char *vname)
-         |                           ~~~~~~^~~~~
->> drivers/video/fbdev/atafb.c:2973:50: warning: passing argument 1 of 'atafb_setup_ext' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-    2973 |                         atafb_setup_ext(this_opt + 9);
-         |                                         ~~~~~~~~~^~~
-   drivers/video/fbdev/atafb.c:2720:42: note: expected 'char *' but argument is of type 'const char *'
-    2720 | static void __init atafb_setup_ext(char *spec)
-         |                                    ~~~~~~^~~~
->> drivers/video/fbdev/atafb.c:2976:50: warning: passing argument 1 of 'atafb_setup_int' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-    2976 |                         atafb_setup_int(this_opt + 9);
-         |                                         ~~~~~~~~~^~~
-   drivers/video/fbdev/atafb.c:2837:42: note: expected 'char *' but argument is of type 'const char *'
-    2837 | static void __init atafb_setup_int(char *spec)
-         |                                    ~~~~~~^~~~
->> drivers/video/fbdev/atafb.c:2984:51: warning: passing argument 1 of 'atafb_setup_mcap' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-    2984 |                         atafb_setup_mcap(this_opt + 11);
-         |                                          ~~~~~~~~~^~~~
-   drivers/video/fbdev/atafb.c:2873:43: note: expected 'char *' but argument is of type 'const char *'
-    2873 | static void __init atafb_setup_mcap(char *spec)
-         |                                     ~~~~~~^~~~
->> drivers/video/fbdev/atafb.c:2989:51: warning: passing argument 1 of 'atafb_setup_user' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-    2989 |                         atafb_setup_user(this_opt + 1);
-         |                                          ~~~~~~~~~^~~
-   drivers/video/fbdev/atafb.c:2910:43: note: expected 'char *' but argument is of type 'const char *'
-    2910 | static void __init atafb_setup_user(char *spec)
-         |                                     ~~~~~~^~~~
+   drivers/video/fbdev/grvga.c: In function 'grvga_probe':
+>> drivers/video/fbdev/grvga.c:363:48: warning: passing argument 1 of 'grvga_parse_custom' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+     363 |                         if (grvga_parse_custom(this_opt, &info->var) < 0) {
+         |                                                ^~~~~~~~
+   drivers/video/fbdev/grvga.c:266:37: note: expected 'char *' but argument is of type 'const char *'
+     266 | static int grvga_parse_custom(char *options,
+         |                               ~~~~~~^~~~~~~
 
 
-vim +2948 drivers/video/fbdev/atafb.c
+vim +363 drivers/video/fbdev/grvga.c
 
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2836  
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16 @2837  static void __init atafb_setup_int(char *spec)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2838  {
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2839  	/* Format to config extended internal video hardware like OverScan:
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2840  	 * "internal:<xres>;<yres>;<xres_max>;<yres_max>;<offset>"
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2841  	 * Explanation:
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2842  	 * <xres>: x-resolution
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2843  	 * <yres>: y-resolution
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2844  	 * The following are only needed if you have an overscan which
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2845  	 * needs a black border:
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2846  	 * <xres_max>: max. length of a line in pixels your OverScan hardware would allow
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2847  	 * <yres_max>: max. number of lines your OverScan hardware would allow
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2848  	 * <offset>: Offset from physical beginning to visible beginning
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2849  	 *	  of screen in bytes
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2850  	 */
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2851  	int xres;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2852  	char *p;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2853  
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2854  	if (!(p = strsep(&spec, ";")) || !*p)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2855  		return;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2856  	xres = simple_strtoul(p, NULL, 10);
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2857  	if (!(p = strsep(&spec, ";")) || !*p)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2858  		return;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2859  	sttt_xres = xres;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2860  	tt_yres = st_yres = simple_strtoul(p, NULL, 10);
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2861  	if ((p = strsep(&spec, ";")) && *p)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2862  		sttt_xres_virtual = simple_strtoul(p, NULL, 10);
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2863  	if ((p = strsep(&spec, ";")) && *p)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2864  		sttt_yres_virtual = simple_strtoul(p, NULL, 0);
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2865  	if ((p = strsep(&spec, ";")) && *p)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2866  		ovsc_offset = simple_strtoul(p, NULL, 0);
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2867  
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2868  	if (ovsc_offset || (sttt_yres_virtual != st_yres))
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2869  		use_hwscroll = 0;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2870  }
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2871  
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2872  #ifdef ATAFB_FALCON
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2873  static void __init atafb_setup_mcap(char *spec)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2874  {
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2875  	char *p;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2876  	int vmin, vmax, hmin, hmax;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2877  
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2878  	/* Format for monitor capabilities is: <Vmin>;<Vmax>;<Hmin>;<Hmax>
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2879  	 * <V*> vertical freq. in Hz
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2880  	 * <H*> horizontal freq. in kHz
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2881  	 */
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2882  	if (!(p = strsep(&spec, ";")) || !*p)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2883  		return;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2884  	vmin = simple_strtoul(p, NULL, 10);
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2885  	if (vmin <= 0)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2886  		return;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2887  	if (!(p = strsep(&spec, ";")) || !*p)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2888  		return;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2889  	vmax = simple_strtoul(p, NULL, 10);
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2890  	if (vmax <= 0 || vmax <= vmin)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2891  		return;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2892  	if (!(p = strsep(&spec, ";")) || !*p)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2893  		return;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2894  	hmin = 1000 * simple_strtoul(p, NULL, 10);
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2895  	if (hmin <= 0)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2896  		return;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2897  	if (!(p = strsep(&spec, "")) || !*p)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2898  		return;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2899  	hmax = 1000 * simple_strtoul(p, NULL, 10);
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2900  	if (hmax <= 0 || hmax <= hmin)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2901  		return;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2902  
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2903  	fb_info.monspecs.vfmin = vmin;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2904  	fb_info.monspecs.vfmax = vmax;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2905  	fb_info.monspecs.hfmin = hmin;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2906  	fb_info.monspecs.hfmax = hmax;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2907  }
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2908  #endif /* ATAFB_FALCON */
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2909  
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2910  static void __init atafb_setup_user(char *spec)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2911  {
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2912  	/* Format of user defined video mode is: <xres>;<yres>;<depth>
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2913  	 */
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2914  	char *p;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2915  	int xres, yres, depth, temp;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2916  
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2917  	p = strsep(&spec, ";");
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2918  	if (!p || !*p)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2919  		return;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2920  	xres = simple_strtoul(p, NULL, 10);
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2921  	p = strsep(&spec, ";");
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2922  	if (!p || !*p)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2923  		return;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2924  	yres = simple_strtoul(p, NULL, 10);
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2925  	p = strsep(&spec, "");
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2926  	if (!p || !*p)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2927  		return;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2928  	depth = simple_strtoul(p, NULL, 10);
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2929  	temp = get_video_mode("user0");
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2930  	if (temp) {
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2931  		default_par = temp;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2932  		atafb_predefined[default_par - 1].xres = xres;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2933  		atafb_predefined[default_par - 1].yres = yres;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2934  		atafb_predefined[default_par - 1].bits_per_pixel = depth;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2935  	}
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2936  }
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2937  
-c5b52a9aafa2bf drivers/video/fbdev/atafb.c Thomas Zimmermann  2023-03-06  2938  static int __init atafb_setup(const char *options)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2939  {
-c5b52a9aafa2bf drivers/video/fbdev/atafb.c Thomas Zimmermann  2023-03-06  2940  	struct option_iter iter;
-c5b52a9aafa2bf drivers/video/fbdev/atafb.c Thomas Zimmermann  2023-03-06  2941  	const char *this_opt;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2942  	int temp;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2943  
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2944  	if (!options || !*options)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2945  		return 0;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2946  
-c5b52a9aafa2bf drivers/video/fbdev/atafb.c Thomas Zimmermann  2023-03-06  2947  	while (option_iter_next(&iter, this_opt)) {
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01 @2948  		if ((temp = get_video_mode(this_opt))) {
-1d84bc16e985b8 drivers/video/fbdev/atafb.c Thomas Zimmermann  2023-03-06  2949  			static char mode_option_buf[256];
-1d84bc16e985b8 drivers/video/fbdev/atafb.c Thomas Zimmermann  2023-03-06  2950  			int ret;
-1d84bc16e985b8 drivers/video/fbdev/atafb.c Thomas Zimmermann  2023-03-06  2951  
-1d84bc16e985b8 drivers/video/fbdev/atafb.c Thomas Zimmermann  2023-03-06  2952  			ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", this_opt);
-1d84bc16e985b8 drivers/video/fbdev/atafb.c Thomas Zimmermann  2023-03-06  2953  			if (WARN(ret < 0, "atafb: ignoring invalid option, ret=%d\n", ret))
-1d84bc16e985b8 drivers/video/fbdev/atafb.c Thomas Zimmermann  2023-03-06  2954  				continue;
-1d84bc16e985b8 drivers/video/fbdev/atafb.c Thomas Zimmermann  2023-03-06  2955  			if (WARN(ret >= sizeof(mode_option_buf), "atafb: option too long\n"))
-1d84bc16e985b8 drivers/video/fbdev/atafb.c Thomas Zimmermann  2023-03-06  2956  				continue;
-1d84bc16e985b8 drivers/video/fbdev/atafb.c Thomas Zimmermann  2023-03-06  2957  			mode_option = mode_option_buf;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2958  			default_par = temp;
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2959  		} else if (!strcmp(this_opt, "inverse"))
-c7ef5e285c842b drivers/video/fbdev/atafb.c Geert Uytterhoeven 2022-07-11  2960  			fb_invert_cmaps();
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2961  		else if (!strncmp(this_opt, "hwscroll_", 9)) {
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2962  			hwscroll = simple_strtoul(this_opt + 9, NULL, 10);
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2963  			if (hwscroll < 0)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2964  				hwscroll = 0;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2965  			if (hwscroll > 200)
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2966  				hwscroll = 200;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2967  		}
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2968  #ifdef ATAFB_EXT
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2969  		else if (!strcmp(this_opt, "mv300")) {
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2970  			external_bitspercol = 8;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2971  			external_card_type = IS_MV300;
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2972  		} else if (!strncmp(this_opt, "external:", 9))
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16 @2973  			atafb_setup_ext(this_opt + 9);
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2974  #endif
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2975  		else if (!strncmp(this_opt, "internal:", 9))
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16 @2976  			atafb_setup_int(this_opt + 9);
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2977  #ifdef ATAFB_FALCON
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2978  		else if (!strncmp(this_opt, "eclock:", 7)) {
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2979  			fext.f = simple_strtoul(this_opt + 7, NULL, 10);
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2980  			/* external pixelclock in kHz --> ps */
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2981  			fext.t = 1000000000 / fext.f;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2982  			fext.f *= 1000;
-a100501212f2e2 drivers/video/atafb.c       Michael Schmitz    2007-05-01  2983  		} else if (!strncmp(this_opt, "monitorcap:", 11))
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16 @2984  			atafb_setup_mcap(this_opt + 11);
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2985  #endif
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2986  		else if (!strcmp(this_opt, "keep"))
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2987  			DontCalcRes = 1;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2988  		else if (!strncmp(this_opt, "R", 1))
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16 @2989  			atafb_setup_user(this_opt + 1);
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2990  	}
-c5b52a9aafa2bf drivers/video/fbdev/atafb.c Thomas Zimmermann  2023-03-06  2991  
-c5b52a9aafa2bf drivers/video/fbdev/atafb.c Thomas Zimmermann  2023-03-06  2992  	option_iter_release(&iter);
-c5b52a9aafa2bf drivers/video/fbdev/atafb.c Thomas Zimmermann  2023-03-06  2993  
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2994  	return 0;
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2995  }
-^1da177e4c3f41 drivers/video/atafb.c       Linus Torvalds     2005-04-16  2996  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  327  
+48c68c4f1b5424 drivers/video/grvga.c       Greg Kroah-Hartman        2012-12-21  328  static int grvga_probe(struct platform_device *dev)
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  329  {
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  330  	struct fb_info *info;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  331  	int retval = -ENOMEM;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  332  	unsigned long virtual_start;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  333  	unsigned long grvga_fix_addr = 0;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  334  	unsigned long physical_start = 0;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  335  	unsigned long grvga_mem_size = 0;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  336  	struct grvga_par *par = NULL;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  337  	char *options = NULL, *mode_opt = NULL;
+0d11862a5c27c6 drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  338  	struct option_iter iter;
+0d11862a5c27c6 drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  339  	const char *this_opt;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  340  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  341  	info = framebuffer_alloc(sizeof(struct grvga_par), &dev->dev);
+0adcdbcb179624 drivers/video/fbdev/grvga.c Bartlomiej Zolnierkiewicz 2019-06-28  342  	if (!info)
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  343  		return -ENOMEM;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  344  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  345  	/* Expecting: "grvga: modestring, [addr:<framebuffer physical address>], [size:<framebuffer size>]
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  346  	 *
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  347  	 * If modestring is custom:<custom mode string> we parse the string which then contains all videoparameters
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  348  	 * If address is left out, we allocate memory,
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  349  	 * if size is left out we only allocate enough to support the given mode.
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  350  	 */
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  351  	if (fb_get_options("grvga", &options)) {
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  352  		retval = -ENODEV;
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  353  		goto free_fb;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  354  	}
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  355  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  356  	if (!options || !*options)
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  357  		options =  "640x480-8@60";
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  358  
+0d11862a5c27c6 drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  359  	option_iter_init(&iter, options);
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  360  
+0d11862a5c27c6 drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  361  	while (option_iter_next(&iter, this_opt)) {
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  362  		if (!strncmp(this_opt, "custom", 6)) {
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05 @363  			if (grvga_parse_custom(this_opt, &info->var) < 0) {
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  364  				dev_err(&dev->dev, "Failed to parse custom mode (%s).\n", this_opt);
+0d11862a5c27c6 drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  365  				option_iter_release(&iter);
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  366  				retval = -EINVAL;
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  367  				goto free_fb;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  368  			}
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  369  		} else if (!strncmp(this_opt, "addr", 4))
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  370  			grvga_fix_addr = simple_strtoul(this_opt + 5, NULL, 16);
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  371  		else if (!strncmp(this_opt, "size", 4))
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  372  			grvga_mem_size = simple_strtoul(this_opt + 5, NULL, 0);
+cdc70347167d9a drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  373  		else {
+cdc70347167d9a drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  374  			static char mode_option_buf[256];
+cdc70347167d9a drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  375  			int ret;
+cdc70347167d9a drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  376  
+cdc70347167d9a drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  377  			ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", this_opt);
+cdc70347167d9a drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  378  			if (WARN(ret < 0,
+cdc70347167d9a drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  379  				 "grlib-svgactrl: ignoring invalid option, ret=%d\n",
+cdc70347167d9a drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  380  				 ret))
+cdc70347167d9a drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  381  				continue;
+cdc70347167d9a drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  382  			if (WARN(ret >= sizeof(mode_option_buf),
+cdc70347167d9a drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  383  				 "grlib-svgactrl: option too long\n"))
+cdc70347167d9a drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  384  				continue;
+cdc70347167d9a drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  385  			mode_opt = mode_option_buf;
+cdc70347167d9a drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  386  		}
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  387  	}
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  388  
+0d11862a5c27c6 drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  389  	option_iter_release(&iter);
+0d11862a5c27c6 drivers/video/fbdev/grvga.c Thomas Zimmermann         2023-03-06  390  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  391  	par = info->par;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  392  	info->fbops = &grvga_ops;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  393  	info->fix = grvga_fix;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  394  	info->pseudo_palette = par->color_palette;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  395  	info->flags = FBINFO_DEFAULT | FBINFO_PARTIAL_PAN_OK | FBINFO_HWACCEL_YPAN;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  396  	info->fix.smem_len = grvga_mem_size;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  397  
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  398  	if (!devm_request_mem_region(&dev->dev, dev->resource[0].start,
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  399  		    resource_size(&dev->resource[0]), "grlib-svgactrl regs")) {
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  400  		dev_err(&dev->dev, "registers already mapped\n");
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  401  		retval = -EBUSY;
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  402  		goto free_fb;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  403  	}
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  404  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  405  	par->regs = of_ioremap(&dev->resource[0], 0,
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  406  			       resource_size(&dev->resource[0]),
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  407  			       "grlib-svgactrl regs");
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  408  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  409  	if (!par->regs) {
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  410  		dev_err(&dev->dev, "failed to map registers\n");
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  411  		retval = -ENOMEM;
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  412  		goto free_fb;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  413  	}
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  414  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  415  	retval = fb_alloc_cmap(&info->cmap, 256, 0);
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  416  	if (retval < 0) {
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  417  		dev_err(&dev->dev, "failed to allocate mem with fb_alloc_cmap\n");
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  418  		retval = -ENOMEM;
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  419  		goto unmap_regs;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  420  	}
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  421  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  422  	if (mode_opt) {
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  423  		retval = fb_find_mode(&info->var, info, mode_opt,
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  424  				      grvga_modedb, sizeof(grvga_modedb), &grvga_modedb[0], 8);
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  425  		if (!retval || retval == 4) {
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  426  			retval = -EINVAL;
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  427  			goto dealloc_cmap;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  428  		}
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  429  	}
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  430  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  431  	if (!grvga_mem_size)
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  432  		grvga_mem_size = info->var.xres_virtual * info->var.yres_virtual * info->var.bits_per_pixel/8;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  433  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  434  	if (grvga_fix_addr) {
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  435  		/* Got framebuffer base address from argument list */
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  436  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  437  		physical_start = grvga_fix_addr;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  438  
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  439  		if (!devm_request_mem_region(&dev->dev, physical_start,
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  440  					     grvga_mem_size, dev->name)) {
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  441  			dev_err(&dev->dev, "failed to request memory region\n");
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  442  			retval = -ENOMEM;
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  443  			goto dealloc_cmap;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  444  		}
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  445  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  446  		virtual_start = (unsigned long) ioremap(physical_start, grvga_mem_size);
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  447  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  448  		if (!virtual_start) {
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  449  			dev_err(&dev->dev, "error mapping framebuffer memory\n");
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  450  			retval = -ENOMEM;
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  451  			goto dealloc_cmap;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  452  		}
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  453  	} else {	/* Allocate frambuffer memory */
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  454  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  455  		unsigned long page;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  456  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  457  		virtual_start = (unsigned long) __get_free_pages(GFP_DMA,
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  458  								 get_order(grvga_mem_size));
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  459  		if (!virtual_start) {
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  460  			dev_err(&dev->dev,
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  461  				"unable to allocate framebuffer memory (%lu bytes)\n",
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  462  				grvga_mem_size);
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  463  			retval = -ENOMEM;
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  464  			goto dealloc_cmap;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  465  		}
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  466  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  467  		physical_start = dma_map_single(&dev->dev, (void *)virtual_start, grvga_mem_size, DMA_TO_DEVICE);
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  468  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  469  		/* Set page reserved so that mmap will work. This is necessary
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  470  		 * since we'll be remapping normal memory.
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  471  		 */
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  472  		for (page = virtual_start;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  473  		     page < PAGE_ALIGN(virtual_start + grvga_mem_size);
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  474  		     page += PAGE_SIZE) {
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  475  			SetPageReserved(virt_to_page(page));
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  476  		}
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  477  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  478  		par->fb_alloced = 1;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  479  	}
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  480  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  481  	memset((unsigned long *) virtual_start, 0, grvga_mem_size);
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  482  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  483  	info->screen_base = (char __iomem *) virtual_start;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  484  	info->fix.smem_start = physical_start;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  485  	info->fix.smem_len   = grvga_mem_size;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  486  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  487  	dev_set_drvdata(&dev->dev, info);
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  488  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  489  	dev_info(&dev->dev,
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  490  		 "Aeroflex Gaisler framebuffer device (fb%d), %dx%d-%d, using %luK of video memory @ %p\n",
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  491  		 info->node, info->var.xres, info->var.yres, info->var.bits_per_pixel,
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  492  		 grvga_mem_size >> 10, info->screen_base);
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  493  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  494  	retval = register_framebuffer(info);
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  495  	if (retval < 0) {
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  496  		dev_err(&dev->dev, "failed to register framebuffer\n");
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  497  		goto free_mem;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  498  	}
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  499  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  500  	__raw_writel(physical_start, &par->regs->fb_pos);
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  501  	__raw_writel(__raw_readl(&par->regs->status) | 1,  /* Enable framebuffer */
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  502  		     &par->regs->status);
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  503  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  504  	return 0;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  505  
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  506  free_mem:
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  507  	if (grvga_fix_addr)
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  508  		iounmap((void *)virtual_start);
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  509  	else
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  510  		kfree((void *)virtual_start);
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  511  dealloc_cmap:
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  512  	fb_dealloc_cmap(&info->cmap);
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  513  unmap_regs:
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  514  	of_iounmap(&dev->resource[0], par->regs,
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  515  		   resource_size(&dev->resource[0]));
+42eb317f7d089f drivers/video/grvga.c       Emil Goode                2012-06-26  516  free_fb:
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  517  	framebuffer_release(info);
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  518  
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  519  	return retval;
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  520  }
+a4b8f97a8fdeb9 drivers/video/grvga.c       Kristoffer Glembo         2011-07-05  521  
 
 -- 
 0-DAY CI Kernel Test Service

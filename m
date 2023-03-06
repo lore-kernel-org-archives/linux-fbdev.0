@@ -2,75 +2,96 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29B84C678D5
-	for <linux-fbdev@archiver.kernel.org>; Sat,  4 Mar 2023 04:36:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EC3FC61DA4
+	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 09:49:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229566AbjCDEgS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 3 Mar 2023 23:36:18 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33376 "EHLO
+        id S229699AbjCFJt0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 04:49:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35926 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229457AbjCDEgR (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 3 Mar 2023 23:36:17 -0500
-Received: from mail-il1-f198.google.com (mail-il1-f198.google.com [209.85.166.198])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C3CB91ABDE
-        for <linux-fbdev@vger.kernel.org>; Fri,  3 Mar 2023 20:36:16 -0800 (PST)
-Received: by mail-il1-f198.google.com with SMTP id t16-20020a92c0d0000000b00319bb6f4282so2342168ilf.20
-        for <linux-fbdev@vger.kernel.org>; Fri, 03 Mar 2023 20:36:16 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=to:from:subject:message-id:in-reply-to:date:mime-version
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=qBM8f3nfkQPiCUxCkC/1jIKN/CSWO63Mv0FZdwLHa7w=;
-        b=BJ15FhQ5IdjTCSyZTtJzPrmDUi9QOvkbdlkkhy+DclGNFUAxl4PHdp+XsRGX+2iPuo
-         ZDn/NAlwpBw0DvHi3AeALrTIToAZGnGpGUBG1vJxeaSXBUYW9bp/VvHdaHL9D0gzHd78
-         yiVITcHXPeCyuIwO/M1kPYppWG77xxgmGVDEoCT/7sQkJyhSJYhentf5qcKUvrlaY34D
-         gSPRksL1oAJOhPQ4GQA3kLYKjD1bRe9Xtj66UjY2W7Ds//6FPcpzsPMeDqOOTLwySSI2
-         0b+/jejPKMlGcO8++XGoY3lvdEJVuU5guZewIUVJn4VDjpmMXtlLC8mBzq50Gb/7TRDP
-         CSxw==
-X-Gm-Message-State: AO0yUKWqyyWImTJZA8R8f34h3jkXA2KcnfFrl+InGDaqDEHaoErnDJhk
-        ySwtDeYFf/KIqvcRfxRGXoHh/BHcn6dVzfnkC5TJVrPm9sK9
-X-Google-Smtp-Source: AK7set9ivc7a0hTa59+MlzQADnVR9rVesqaUQ/nvWX6Tgg9CYI6nEEqLldZZLLoEwGD8VgHEij9xXEv9mpDaSxPxdEDomAm6DdMV
+        with ESMTP id S229540AbjCFJtZ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 04:49:25 -0500
+Received: from sonata.ens-lyon.org (sonata.ens-lyon.org [140.77.166.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AE608C651;
+        Mon,  6 Mar 2023 01:49:24 -0800 (PST)
+Received: from localhost (localhost [127.0.0.1])
+        by sonata.ens-lyon.org (Postfix) with ESMTP id BFA9E20137;
+        Mon,  6 Mar 2023 10:49:22 +0100 (CET)
+Received: from sonata.ens-lyon.org ([127.0.0.1])
+        by localhost (sonata.ens-lyon.org [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id hErAdg_uF3sj; Mon,  6 Mar 2023 10:49:22 +0100 (CET)
+Received: from begin (nat-inria-interne-52-gw-01-bso.bordeaux.inria.fr [194.199.1.52])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        by sonata.ens-lyon.org (Postfix) with ESMTPSA id 455092012C;
+        Mon,  6 Mar 2023 10:49:22 +0100 (CET)
+Received: from samy by begin with local (Exim 4.96)
+        (envelope-from <samuel.thibault@ens-lyon.org>)
+        id 1pZ7T7-0001Rf-1i;
+        Mon, 06 Mar 2023 10:49:21 +0100
+Date:   Mon, 6 Mar 2023 10:49:21 +0100
+From:   Samuel Thibault <samuel.thibault@ens-lyon.org>
+To:     gregkh@linuxfoundation.org
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org,
+        Sanan Hasanov <sanan.hasanov@Knights.ucf.edu>,
+        Samuel Thibault <samuel.thibault@ens-lyon.org>,
+        keescook@chromium.org,
+        syzbot+3af17071816b61e807ed@syzkaller.appspotmail.com,
+        akpm@linux-foundation.org, linux-hardening@vger.kernel.org,
+        linux-mm@kvack.org, syzkaller-bugs@googlegroups.com,
+        Jiri Slaby <jirislaby@kernel.org>
+Subject: [PATCH] VT: Protect KD_FONT_OP_GET_TALL from unbound access
+Message-ID: <20230306094921.tik5ewne4ft6mfpo@begin>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+        gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Sanan Hasanov <sanan.hasanov@Knights.ucf.edu>,
+        keescook@chromium.org,
+        syzbot+3af17071816b61e807ed@syzkaller.appspotmail.com,
+        akpm@linux-foundation.org, linux-hardening@vger.kernel.org,
+        linux-mm@kvack.org, syzkaller-bugs@googlegroups.com,
+        Jiri Slaby <jirislaby@kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a02:94cd:0:b0:3e1:fb3d:4dce with SMTP id
- x71-20020a0294cd000000b003e1fb3d4dcemr1851215jah.0.1677904576128; Fri, 03 Mar
- 2023 20:36:16 -0800 (PST)
-Date:   Fri, 03 Mar 2023 20:36:16 -0800
-In-Reply-To: <0000000000001d1fb505f605c295@google.com>
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <0000000000003a2e5e05f60b9aff@google.com>
-Subject: Re: [syzbot] [hardening?] [mm?] BUG: bad usercopy in con_font_op
-From:   syzbot <syzbot+3af17071816b61e807ed@syzkaller.appspotmail.com>
-To:     akpm@linux-foundation.org, daniel@ffwll.ch, deller@gmx.de,
-        dri-devel@lists.freedesktop.org, gregkh@linuxfoundation.org,
-        jirislaby@kernel.org, keescook@chromium.org,
-        linux-fbdev@vger.kernel.org, linux-hardening@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-        samuel.thibault@ens-lyon.org, syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: I am not organized
+User-Agent: NeoMutt/20170609 (1.8.3)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-syzbot has bisected this issue to:
+In ioctl(KD_FONT_OP_GET_TALL), userland tells through op->height which
+vpitch should be used to copy over the font. In con_font_get, we were
+not checking that it is within the maximum height value, and thus
+userland could make the vc->vc_sw->con_font_get(vc, &font, vpitch);
+call possibly overflow the allocated max_font_size bytes, and the
+copy_to_user(op->data, font.data, c) call possibly read out of that
+allocated buffer.
 
-commit 24d69384bcd34b9dcaf5dab744bf7096e84d1abd
-Author: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Date:   Thu Jan 19 15:19:16 2023 +0000
+By checking vpitch against max_font_height, the max_font_size buffer
+will always be large enough for the vc->vc_sw->con_font_get(vc, &font,
+vpitch) call (since we already prevent loading a font larger than that),
+and c = (font.width+7)/8 * vpitch * font.charcount will always remain
+below max_font_size.
 
-    VT: Add KD_FONT_OP_SET/GET_TALL operations
-
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=120b3232c80000
-start commit:   2eb29d59ddf0 Merge tag 'drm-next-2023-03-03-1' of git://an..
-git tree:       upstream
-final oops:     https://syzkaller.appspot.com/x/report.txt?x=110b3232c80000
-console output: https://syzkaller.appspot.com/x/log.txt?x=160b3232c80000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=cab35c936731a347
-dashboard link: https://syzkaller.appspot.com/bug?extid=3af17071816b61e807ed
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=10b71504c80000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=16f02d9cc80000
-
-Reported-by: syzbot+3af17071816b61e807ed@syzkaller.appspotmail.com
 Fixes: 24d69384bcd3 ("VT: Add KD_FONT_OP_SET/GET_TALL operations")
+Reported-by: syzbot+3af17071816b61e807ed@syzkaller.appspotmail.com
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Reviewed-by: Jiri Slaby <jirislaby@kernel.org>
 
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index 57a5c23b51d4..3c2ea9c098f7 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -4545,6 +4545,9 @@ static int con_font_get(struct vc_data *vc, struct console_font_op *op)
+ 	int c;
+ 	unsigned int vpitch = op->op == KD_FONT_OP_GET_TALL ? op->height : 32;
+ 
++	if (vpitch > max_font_height)
++		return -EINVAL;
++
+ 	if (op->data) {
+ 		font.data = kvmalloc(max_font_size, GFP_KERNEL);
+ 		if (!font.data)

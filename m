@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E27E3C74A5B
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:02:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE2FDC761A6
+	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:02:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230382AbjCFQCU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 11:02:20 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42386 "EHLO
+        id S229509AbjCFQC0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 11:02:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42578 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231517AbjCFQBH (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:01:07 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E2C0E33463;
-        Mon,  6 Mar 2023 08:01:00 -0800 (PST)
+        with ESMTP id S230115AbjCFQBL (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:01:11 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E14242410D;
+        Mon,  6 Mar 2023 08:01:03 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 66A7B1FEFF;
-        Mon,  6 Mar 2023 16:00:59 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 8513B22464;
+        Mon,  6 Mar 2023 16:01:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678118459; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678118462; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=QCuFu5SU57CJHGfgdFQfRit83nbssA/Udz2hcttdwvo=;
-        b=W1nzjeHYtW6hzk14lqyszCbBcEyq+8sp1neVZkcFBMWzDWHpoD8hvd9fJ3XnrradACZnRR
-        V76iuXULIzy+1BbZuk5joOrpdRBBC4XeTuNp/6Oli/pO5cyLRKWRInJPHx7z8l5wz2cdNC
-        BHDp6sWJypFqjb5/34UCDmkWLRk1b/I=
+        bh=9yTAZ+fWm46H8QqfoRrnwlZTk5mIqjHDcgi+SJhTWtw=;
+        b=Br3YluVLuR6Ry7K8JR11i7Y6BwJ19Dy/SS6WvZZAGFao7VqxeQstljX9BKQYatqUH2U3rH
+        axSSd2rIfWBlmyfaMa12nNRbc/B5dJqqSdy25DF0nC1nEAOXc9jMTwPnxZ1BSMYnR/T49x
+        CPQiy+jEp9/hwLaVA9unYphnWPW5HHk=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678118459;
+        s=susede2_ed25519; t=1678118462;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=QCuFu5SU57CJHGfgdFQfRit83nbssA/Udz2hcttdwvo=;
-        b=P1f84vfZfPvK+9BrjhaXylpZL4FXUF/HeEJ+a5miwhRpk/t6QiJVhJ316MSaNST23ETt/X
-        OFH2X0fV9excSxDw==
+        bh=9yTAZ+fWm46H8QqfoRrnwlZTk5mIqjHDcgi+SJhTWtw=;
+        b=MLgmOCvBzQ+4wPhXhi5GV8EsH1wxUxxiGUfGTH6NUSq1yo7nucXwNLckj5yvLlXfHg6gu2
+        1YwmvZcohBoEQVCg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 0A93113A6A;
-        Mon,  6 Mar 2023 16:00:59 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 2C7AE13A6A;
+        Mon,  6 Mar 2023 16:01:02 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id CDilATsOBmQ/PwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:59 +0000
+        id uHMGCj4OBmQ/PwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:01:02 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
         linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 90/99] fbdev/valkyriefb: Parse option string with struct option_iter
-Date:   Mon,  6 Mar 2023 17:00:07 +0100
-Message-Id: <20230306160016.4459-91-tzimmermann@suse.de>
+Subject: [PATCH 98/99] staging/sm750fb: Parse option string with struct option_iter
+Date:   Mon,  6 Mar 2023 17:00:15 +0100
+Message-Id: <20230306160016.4459-99-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306160016.4459-1-tzimmermann@suse.de>
 References: <20230306160016.4459-1-tzimmermann@suse.de>
@@ -82,60 +82,115 @@ Done in preparation of constifying the option string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/valkyriefb.c | 16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 43 +++++++++++++++++----------------
+ 1 file changed, 22 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
-index b166b7cfe0e5..a787b0142d00 100644
---- a/drivers/video/fbdev/valkyriefb.c
-+++ b/drivers/video/fbdev/valkyriefb.c
-@@ -39,6 +39,7 @@
-  *  more details.
-  */
- 
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index effc7fcc3703..2eb223f0631e 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -1,5 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ #include <linux/aperture.h>
 +#include <linux/cmdline.h>
- #include <linux/module.h>
  #include <linux/kernel.h>
+ #include <linux/module.h>
  #include <linux/errno.h>
-@@ -90,7 +91,7 @@ struct fb_info_valkyrie {
- 	u32			pseudo_palette[16];
- };
- 
--static int valkyriefb_setup(char*);
-+static int valkyriefb_setup(const char *options);
- 
- static int valkyriefb_check_var(struct fb_var_screeninfo *var,
- 				struct fb_info *info);
-@@ -545,14 +546,14 @@ static int __init valkyrie_init_info(struct fb_info *info,
- /*
-  * Parse user specified options (`video=valkyriefb:')
-  */
--static int __init valkyriefb_setup(char *options)
-+static int __init valkyriefb_setup(const char *options)
- {
--	char *this_opt;
-+	struct option_iter iter;
-+	const char *this_opt;
- 
--	if (!options || !*options)
--		return 0;
-+	option_iter_init(&iter, options);
- 
--	while ((this_opt = strsep(&options, ",")) != NULL) {
-+	while (option_iter_next(&iter, this_opt)) {
- 		if (!strncmp(this_opt, "vmode:", 6)) {
- 	    		int vmode = simple_strtoul(this_opt+6, NULL, 0);
- 			if (vmode > 0 && vmode <= VMODE_MAX)
-@@ -571,6 +572,9 @@ static int __init valkyriefb_setup(char *options)
- 			}
- 		}
- 	}
-+
-+	option_iter_release(&iter);
-+
- 	return 0;
+@@ -867,9 +868,10 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
  }
  
+ /*	chip specific g_option configuration routine */
+-static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
++static void sm750fb_setup(struct sm750_dev *sm750_dev, const char *src)
+ {
+-	char *opt;
++	struct option_iter iter;
++	const char *opt;
+ 	int swap;
+ 
+ 	swap = 0;
+@@ -889,9 +891,12 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
+ 		goto NO_PARAM;
+ 	}
+ 
+-	while ((opt = strsep(&src, ":")) != NULL && *opt != 0) {
++	dev_info(&sm750_dev->pdev->dev, "src=%s\n", src);
++
++	option_iter_init(&iter, src);
++
++	while (option_iter_next(&iter, opt)) {
+ 		dev_info(&sm750_dev->pdev->dev, "opt=%s\n", opt);
+-		dev_info(&sm750_dev->pdev->dev, "src=%s\n", src);
+ 
+ 		if (!strncmp(opt, "swap", strlen("swap"))) {
+ 			swap = 1;
+@@ -924,6 +929,8 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
+ 		}
+ 	}
+ 
++	option_iter_release(&iter);
++
+ NO_PARAM:
+ 	if (sm750_dev->revid != SM750LE_REVISION_ID) {
+ 		if (sm750_dev->fb_count > 1) {
+@@ -1096,10 +1103,12 @@ static void lynxfb_pci_remove(struct pci_dev *pdev)
+ 	kfree(g_settings);
+ }
+ 
+-static int __init lynxfb_setup(char *options)
++static int __init lynxfb_setup(const char *options)
+ {
++	struct option_iter iter;
++	const char *opt;
+ 	int len;
+-	char *opt, *tmp;
++	char *tmp;
+ 
+ 	if (!options || !*options) {
+ 		pr_warn("no options.\n");
+@@ -1112,19 +1121,11 @@ static int __init lynxfb_setup(char *options)
+ 	g_settings = kzalloc(len, GFP_KERNEL);
+ 	if (!g_settings)
+ 		return -ENOMEM;
+-
+ 	tmp = g_settings;
+ 
+-	/*
+-	 * Notes:
+-	 * char * strsep(char **s,const char * ct);
+-	 * @s: the string to be searched
+-	 * @ct :the characters to search for
+-	 *
+-	 * strsep() updates @options to pointer after the first found token
+-	 * it also returns the pointer ahead the token.
+-	 */
+-	while ((opt = strsep(&options, ":")) != NULL) {
++	option_iter_init(&iter, options);
++
++	while (option_iter_next(&iter, opt)) {
+ 		/* options that mean for any lynx chips are configured here */
+ 		if (!strncmp(opt, "noaccel", strlen("noaccel"))) {
+ 			g_noaccel = 1;
+@@ -1133,15 +1134,15 @@ static int __init lynxfb_setup(char *options)
+ 		} else if (!strncmp(opt, "dual", strlen("dual"))) {
+ 			g_dualview = 1;
+ 		} else {
++			if (tmp != g_settings)
++				*tmp++ = ':'; // add separator
+ 			strcat(tmp, opt);
+ 			tmp += strlen(opt);
+-			if (options)
+-				*tmp++ = ':';
+-			else
+-				*tmp++ = 0;
+ 		}
+ 	}
+ 
++	option_iter_release(&iter);
++
+ 	/* misc g_settings are transport to chip specific routines */
+ 	pr_info("parameter left for chip specific analysis:%s\n", g_settings);
+ 	return 0;
 -- 
 2.39.2
 

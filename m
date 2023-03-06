@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B268C6FD1E
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF1A4C61DA4
 	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:02:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229732AbjCFQCA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 11:02:00 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42166 "EHLO
+        id S229772AbjCFQCE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 11:02:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42142 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231422AbjCFQA5 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:57 -0500
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 402102E813;
-        Mon,  6 Mar 2023 08:00:53 -0800 (PST)
+        with ESMTP id S231411AbjCFQA4 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:56 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9D3892FCDE;
+        Mon,  6 Mar 2023 08:00:52 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id F17472242C;
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 3A6591FECB;
         Mon,  6 Mar 2023 16:00:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
         t=1678118451; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=FHsw9G40HD12yWMfW+3kaONrrrxFvi6OorhBwRazvNw=;
-        b=jaLHBd2ZnCEawg3As+bdVniBuW//6UdlJDPreseZw6KPB5jjYCo604b2XU3tfyAff5vpfN
-        8ukpj6sTWj8zQN/fDtjdBHUBt4Vku22YPBNa/wlRkSLqpGeqevGiB+3EbCbR+pn/DI7n1+
-        lXD4UbfcWIw0ppSmyiXrmep2077pRDc=
+        bh=zIcCTHOdlnmOrevNPvQ6R5cfRaWzMuURTLQ3rJVomJ0=;
+        b=wakMHB6YSWHElv0eseFqAQJHSUDEpOKBQ2zXWLIvvfR4rSj30bH5MoLOUQ95H6yt3gKYuE
+        jwm6e1dhQNTPh4J37ezH7yIJ+7galbWoGDGi+1I24cwiHoqJSk/RKdQzHqfHqQBzSausPT
+        4gWnC37kChwr67oK+eeaciSpVvJbTEs=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
         s=susede2_ed25519; t=1678118451;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=FHsw9G40HD12yWMfW+3kaONrrrxFvi6OorhBwRazvNw=;
-        b=KoS8rLuFGGdDvRtgrX+jMTdBEh8GGfYNXVX0wj4gReGH1MfoyEZflEAyErznczRPIxhS+N
-        eVvjme4RGvyY9RAA==
+        bh=zIcCTHOdlnmOrevNPvQ6R5cfRaWzMuURTLQ3rJVomJ0=;
+        b=E6gREROODWoRv7Ps324DQe5AXbef2Hfx+MAaoNEyCdB+xYdSRcvobbwsjkMYjR7SypeMWz
+        rmH5CWOnl6qVUlDA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 9C20913A6A;
-        Mon,  6 Mar 2023 16:00:51 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D6D6913A6A;
+        Mon,  6 Mar 2023 16:00:50 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id KIVfJTMOBmQ/PwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:51 +0000
+        id kHKrMzIOBmQ/PwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:50 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
         linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 72/99] fbdev/sisfb: Constify mode string
-Date:   Mon,  6 Mar 2023 16:59:49 +0100
-Message-Id: <20230306160016.4459-73-tzimmermann@suse.de>
+Subject: [PATCH 70/99] fbdev/savagefb: Duplicate video-mode option string
+Date:   Mon,  6 Mar 2023 16:59:47 +0100
+Message-Id: <20230306160016.4459-71-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306160016.4459-1-tzimmermann@suse.de>
 References: <20230306160016.4459-1-tzimmermann@suse.de>
@@ -71,44 +71,41 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Constify the intenal video-mode string that is passed around among
-functions. The caller owns the memory and callees do not modify its
-content. This change will later allow to constify the option string.
-No functional changes.
+Assume that the driver does not own the option string or its substrings
+and hence duplicate the option string for the video mode. The driver only
+parses the option string once as part of module initialization, so use
+a static buffer to store the duplicated mode option. Linux automatically
+frees the memory upon releasing the module.
+
+Done in preparation of switching the driver to struct option_iter and
+constifying the option string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/sis/sis_main.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/savage/savagefb_driver.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
-index cfba776afcea..c16493d3ac4f 100644
---- a/drivers/video/fbdev/sis/sis_main.c
-+++ b/drivers/video/fbdev/sis/sis_main.c
-@@ -73,7 +73,7 @@ static int	sisfb_blank(int blank,
- static void sisfb_handle_command(struct sis_video_info *ivideo,
- 				 struct sisfb_cmd *sisfb_command);
+diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
+index 4a27b68798bf..19fffe0b6cdd 100644
+--- a/drivers/video/fbdev/savage/savagefb_driver.c
++++ b/drivers/video/fbdev/savage/savagefb_driver.c
+@@ -2544,7 +2544,15 @@ static int __init savagefb_setup(char *options)
+ 		return 0;
  
--static void	sisfb_search_mode(char *name, bool quiet);
-+static void	sisfb_search_mode(const char *name, bool quiet);
- static int	sisfb_validate_mode(struct sis_video_info *ivideo, int modeindex, u32 vbflags);
- static u8	sisfb_search_refresh_rate(struct sis_video_info *ivideo, unsigned int rate,
- 				int index);
-@@ -180,12 +180,12 @@ static void sisfb_search_vesamode(unsigned int vesamode, bool quiet)
- 		printk(KERN_ERR "sisfb: Invalid VESA mode 0x%x'\n", vesamode);
- }
- 
--static void sisfb_search_mode(char *name, bool quiet)
-+static void sisfb_search_mode(const char *name, bool quiet)
- {
- 	unsigned int j = 0, xres = 0, yres = 0, depth = 0, rate = 0;
- 	int i = 0;
- 	char strbuf[16], strbuf1[20];
--	char *nameptr = name;
-+	const char *nameptr = name;
- 
- 	/* We don't know the hardware specs yet and there is no ivideo */
- 
+ 	while ((this_opt = strsep(&options, ",")) != NULL) {
+-		mode_option = this_opt;
++		static char mode_option_buf[256];
++		int ret;
++
++		ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", this_opt);
++		if (WARN(ret < 0, "savagefb: ignoring invalid option, ret=%d\n", ret))
++			continue;
++		if (WARN(ret >= sizeof(mode_option_buf), "savagefb: option too long\n"))
++			continue;
++		mode_option = mode_option_buf;
+ 	}
+ #endif /* !MODULE */
+ 	return 0;
 -- 
 2.39.2
 

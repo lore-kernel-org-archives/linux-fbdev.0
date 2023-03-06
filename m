@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F5B0C6FD20
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C425C74A4B
 	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:01:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230497AbjCFQAp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 11:00:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41310 "EHLO
+        id S231174AbjCFQAr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 11:00:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41330 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229737AbjCFQAd (ORCPT
+        with ESMTP id S230111AbjCFQAd (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:33 -0500
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1751A2E820;
-        Mon,  6 Mar 2023 08:00:31 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 12A8C2410D;
+        Mon,  6 Mar 2023 08:00:32 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 824C71FDF5;
-        Mon,  6 Mar 2023 16:00:28 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 05B181FDF9;
+        Mon,  6 Mar 2023 16:00:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678118428; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678118430; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=R1ax0gZCP5GAWPA9U/Rv1SWExQ5i1ifVmYzOBqHKJsU=;
-        b=w8UTEzg3lOOZmlhZteJlDzIx7UNBzvedcr9T95EDZ7Y/lam6gJgF+xkLAFS6aEwT09PXoC
-        oRRaOpEUVqV5KL8hv9Deu3rbo1zZAkQ2oyCvAvX/KkOrS4FVFhwJCIIUDOsK/O0Akdso33
-        qvalyQ4JuHK2W2kcMiNhTwBGe9r9EUs=
+        bh=7NWpiNTTADv8jaNfklTWFL4Y9dqUHmm40DnGgzqtQYo=;
+        b=CxbOhQdM0DmSSvSs4ws3YFEGRCq95427JdDIkqGjr3JXPgm8LNMlSjJzWXVjv7RdiUXlDg
+        3xK0HI3EBMbwz8QuyLjlRQ85o4TAIKmKFAm2V/3eU6fgvqyTKI34739C/DlpLYlhzJiCk6
+        fBRiMqqfb+mKNtoN4pn4MOJppqx0ZJU=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678118428;
+        s=susede2_ed25519; t=1678118430;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=R1ax0gZCP5GAWPA9U/Rv1SWExQ5i1ifVmYzOBqHKJsU=;
-        b=8UHpl8Y7J9eEYZewQAqwQZ3O9M9Unph16qWNEYZOXqwsOgaOLscIn7V5hsjaMrd1ahtkco
-        4tbN42mNTR6bURAg==
+        bh=7NWpiNTTADv8jaNfklTWFL4Y9dqUHmm40DnGgzqtQYo=;
+        b=7ML7Gw2ReccPA0qqrfpdz0dm1kcgFqlbmBv2/WjBRkT6jfoGv9mWpQ59x49OFr1eCw3raH
+        jSq1pImIDYAqu8Dg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 26CD513513;
-        Mon,  6 Mar 2023 16:00:28 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id A6A4413513;
+        Mon,  6 Mar 2023 16:00:29 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id YI6GCBwOBmQ/PwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:28 +0000
+        id oPnjJx0OBmQ/PwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:29 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
         linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 11/99] fbdev/aty: Duplicate video-mode option string
-Date:   Mon,  6 Mar 2023 16:58:48 +0100
-Message-Id: <20230306160016.4459-12-tzimmermann@suse.de>
+Subject: [PATCH 15/99] fbdev/cirrusfb: Duplicate video-mode option string
+Date:   Mon,  6 Mar 2023 16:58:52 +0100
+Message-Id: <20230306160016.4459-16-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306160016.4459-1-tzimmermann@suse.de>
 References: <20230306160016.4459-1-tzimmermann@suse.de>
@@ -82,76 +82,32 @@ constifying the option string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/aty/aty128fb.c    | 12 +++++++++++-
- drivers/video/fbdev/aty/atyfb_base.c  | 13 +++++++++++--
- drivers/video/fbdev/aty/radeon_base.c | 13 +++++++++++--
- 3 files changed, 33 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/cirrusfb.c | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
-index 36a9ac05a340..3c08904a107f 100644
---- a/drivers/video/fbdev/aty/aty128fb.c
-+++ b/drivers/video/fbdev/aty/aty128fb.c
-@@ -1723,7 +1723,17 @@ static int aty128fb_setup(char *options)
- 			continue;
- 		}
- #endif /* CONFIG_PPC_PMAC */
--		mode_option = this_opt;
-+		{
-+			static char mode_option_buf[256];
-+			int ret;
-+
-+			ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", this_opt);
-+			if (WARN(ret < 0, "aty128: ignoring invalid option, ret=%d\n", ret))
-+				continue;
-+			if (WARN(ret >= sizeof(mode_option_buf), "aty128fb: option too long\n"))
-+				continue;
-+			mode_option = mode_option_buf;
-+		}
- 	}
- 	return 0;
- }
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index b02e4e645035..5e6e83472c30 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -3896,8 +3896,17 @@ static int __init atyfb_setup(char *options)
- 			}
- 		}
- #endif
+diff --git a/drivers/video/fbdev/cirrusfb.c b/drivers/video/fbdev/cirrusfb.c
+index ba45e2147c52..fbf9281a7004 100644
+--- a/drivers/video/fbdev/cirrusfb.c
++++ b/drivers/video/fbdev/cirrusfb.c
+@@ -2336,10 +2336,20 @@ static int __init cirrusfb_setup(char *options)
+ 
+ 		if (!strcmp(this_opt, "noaccel"))
+ 			noaccel = 1;
+-		else if (!strncmp(this_opt, "mode:", 5))
+-			mode_option = this_opt + 5;
 -		else
--			mode = this_opt;
+-			mode_option = this_opt;
 +		else {
 +			static char mode_option_buf[256];
 +			int ret;
 +
-+			ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", this_opt);
-+			if (WARN(ret < 0, "atyfb: ignoring invalid option, ret=%d\n", ret))
-+				continue;
-+			if (WARN(ret >= sizeof(mode_option_buf), "atyfb: option too long\n"))
-+				continue;
-+			mode = mode_option_buf;
-+		}
- 	}
- 	return 0;
- }
-diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-index 657064227de8..b885a7cc2424 100644
---- a/drivers/video/fbdev/aty/radeon_base.c
-+++ b/drivers/video/fbdev/aty/radeon_base.c
-@@ -2596,8 +2596,17 @@ static int __init radeonfb_setup (char *options)
- 		} else if (!strncmp(this_opt, "ignore_devlist", 14)) {
- 			ignore_devlist = 1;
- #endif
--		} else
--			mode_option = this_opt;
-+		} else {
-+			static char mode_option_buf[256];
-+			int ret;
++			if (!strncmp(this_opt, "mode:", 5))
++				this_opt += 5;
 +
 +			ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", this_opt);
-+			if (WARN(ret < 0, "radeonfb: ignoring invalid option, ret=%d\n", ret))
++			if (WARN(ret < 0, "cirrusfb: ignoring invalid option, ret=%d\n", ret))
 +				continue;
-+			if (WARN(ret >= sizeof(mode_option_buf), "radeonfb: option too long\n"))
++			if (WARN(ret >= sizeof(mode_option_buf), "cirrusfb: option too long\n"))
 +				continue;
 +			mode_option = mode_option_buf;
 +		}

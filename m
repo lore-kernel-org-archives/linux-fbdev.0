@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6057C76188
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97F24C74A4B
 	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:01:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230077AbjCFQBS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 11:01:18 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41778 "EHLO
+        id S230449AbjCFQBQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 11:01:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41678 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230465AbjCFQAo (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:44 -0500
+        with ESMTP id S230321AbjCFQAm (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:42 -0500
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3072125E09;
-        Mon,  6 Mar 2023 08:00:42 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6CDDD2FCDE;
+        Mon,  6 Mar 2023 08:00:41 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 95A25223E5;
-        Mon,  6 Mar 2023 16:00:41 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 10025223DC;
+        Mon,  6 Mar 2023 16:00:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678118441; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678118440; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=ZkQXjan0jowROvGRC5u3ioDg+jvgH6ZrVreFgORBrsc=;
-        b=p4dSG4UN0SvOYm7f+Ini5G3JxYDXizo15S+ZES2hM8gMpQ+3h0fPW1c3+zc8LfsqJ5uOAa
-        OFPVScXTSW0J1TU/x2+ApALnnvxl1elZCtpmtFZIlmXmV7n746WZB7lcdKoDAc/dsQotHo
-        JYY02IhBpZi7DNJVPKZmos1RkATJ2OQ=
+        bh=K0gGAw7ZqBoMZQQEk3RoG354RK+dTClSMJKbERgVuz8=;
+        b=QvMmCKNwXDv+cSg00PFI22+IxUxHLK5DLRZbbuZ7Jz3xMDPN8olle+TigcBeEyicia25DD
+        Jut0LD6tq+fjFP8aNsGs29r3vtZbGeOuaOD/G343DAf+MB7w9ZbH1ZAFFlMuQo+YOVd0RW
+        pIPAjIXHfM27OBAyk49NBjnyuUkE8M4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678118441;
+        s=susede2_ed25519; t=1678118440;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=ZkQXjan0jowROvGRC5u3ioDg+jvgH6ZrVreFgORBrsc=;
-        b=x+GPpd14JqLOBkBEeV+nlMqiuF81+O1WMnDaNkbDHairiMyBGsocqbASU5EH4OxvOuXOwO
-        C+wXHNWgKrawJdBQ==
+        bh=K0gGAw7ZqBoMZQQEk3RoG354RK+dTClSMJKbERgVuz8=;
+        b=5CRCQQCEKlKMirs1zh8B4JrZ1nWQZbgPPGMJJ3GDYDKTYcECCiXaqRdIMIsCZw4+V6toOx
+        V7/iz9RnNDnWfACw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 388EA13513;
-        Mon,  6 Mar 2023 16:00:41 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 9E85413513;
+        Mon,  6 Mar 2023 16:00:39 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id EDztDCkOBmQ/PwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:41 +0000
+        id cFzMJScOBmQ/PwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:39 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
         linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 45/99] fbdev/matroxfb: Parse option string with struct option_iter
-Date:   Mon,  6 Mar 2023 16:59:22 +0100
-Message-Id: <20230306160016.4459-46-tzimmermann@suse.de>
+Subject: [PATCH 41/99] fbdev/kyrofb: Duplicate video-mode option string
+Date:   Mon,  6 Mar 2023 16:59:18 +0100
+Message-Id: <20230306160016.4459-42-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306160016.4459-1-tzimmermann@suse.de>
 References: <20230306160016.4459-1-tzimmermann@suse.de>
@@ -71,65 +71,40 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use struct option_iter to walk over the individual options in the
-driver's option string. Replaces the hand-written strsep() loop with
-a clean interface. The helpers for struct option_iter handle empty
-option strings and empty options transparently. The struct's _init
-and _release functions duplicate and release the option string's
-memory buffer as needed.
+Assume that the driver does not own the option string or its substrings
+and hence duplicate the option string for the video mode. The driver only
+parses the option string once as part of module initialization, so use
+a static buffer to store the duplicated mode option. Linux automatically
+frees the memory upon releasing the module.
 
-Done in preparation of constifying the option string.
+Done in preparation of switching the driver to struct option_iter and
+constifying the option string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/matrox/matroxfb_base.c | 19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
+ drivers/video/fbdev/kyro/fbdev.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
-index a043a737ea9f..f690ee0c9b1f 100644
---- a/drivers/video/fbdev/matrox/matroxfb_base.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_base.c
-@@ -101,6 +101,7 @@
-  */
- 
- #include <linux/aperture.h>
-+#include <linux/cmdline.h>
- #include <linux/version.h>
- 
- #include "matroxfb_base.h"
-@@ -2333,17 +2334,14 @@ static void __exit matrox_done(void) {
- 
- /* ************************* init in-kernel code ************************** */
- 
--static int __init matroxfb_setup(char *options) {
--	char *this_opt;
--
--	DBG(__func__)
--
--	if (!options || !*options)
--		return 0;
-+static int __init matroxfb_setup(const char *options)
-+{
-+	struct option_iter iter;
-+	const char *this_opt;
- 
--	while ((this_opt = strsep(&options, ",")) != NULL) {
--		if (!*this_opt) continue;
-+	option_iter_init(&iter, options);
- 
-+	while (option_iter_next(&iter, this_opt)) {
- 		dprintk("matroxfb_setup: option %s\n", this_opt);
- 
- 		if (!strncmp(this_opt, "dev:", 4))
-@@ -2467,6 +2465,9 @@ static int __init matroxfb_setup(char *options) {
- 			}
+diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
+index 0596573ef140..a171f1119e4d 100644
+--- a/drivers/video/fbdev/kyro/fbdev.c
++++ b/drivers/video/fbdev/kyro/fbdev.c
+@@ -579,7 +579,15 @@ static int __init kyrofb_setup(char *options)
+ 		} else if (strcmp(this_opt, "nomtrr") == 0) {
+ 			nomtrr = 1;
+ 		} else {
+-			mode_option = this_opt;
++			static char mode_option_buf[256];
++			int ret;
++
++			ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", this_opt);
++			if (WARN(ret < 0, "kyrofb: ignoring invalid option, ret=%d\n", ret))
++				continue;
++			if (WARN(ret >= sizeof(mode_option_buf), "kyrofb: option too long\n"))
++				continue;
++			mode_option = mode_option_buf;
  		}
  	}
-+
-+	option_iter_release(&iter);
-+
- 	return 0;
- }
  
 -- 
 2.39.2

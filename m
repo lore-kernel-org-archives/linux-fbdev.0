@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11852C74A4B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 380B7C74A5B
 	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:02:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229754AbjCFQCC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 11:02:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42140 "EHLO
+        id S229797AbjCFQCE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 11:02:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42144 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231408AbjCFQA4 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:56 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 497713344C;
-        Mon,  6 Mar 2023 08:00:52 -0800 (PST)
+        with ESMTP id S231437AbjCFQA6 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:58 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F83533463;
+        Mon,  6 Mar 2023 08:00:54 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id D3B331FEBD;
-        Mon,  6 Mar 2023 16:00:50 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 159A022426;
+        Mon,  6 Mar 2023 16:00:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678118450; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678118453; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=1oaOTqhLqj27vSdh0cq11LIl0EI69h40CbQa7yd1/0g=;
-        b=ta6oVjgZxW6t2uTHz1oo+mZ03l6ueNVF5e+5aa9/k8MBRNjWrAYEgwvEWpIj/OsI/IkBIn
-        tsunLcrtobwQL0xw+96gozhnNAUOX2hBV4aZEIQCXKnrsPoEMj8bsL+mqsgtuhTGYWaN9F
-        qwuUTPTmR/C2/8XSTKprIb820NCcXX4=
+        bh=/mD4G4g5PKVnWJeJOlK/9atHL+s+VwLsA1DXPQcRuS8=;
+        b=QhmoVNA0HCmkwRTmuQWbJUa22zmn0hw9Tvp4xOZrt+mF/Jy3ccartVIqL+C736yGOoZCQJ
+        v8+/FKlprNw7JpxQ/4ewuXTd+DuZIf9ORq1J6l2zYKVh8/fF5z7Ib+lqhXF9lJT5SiJa4D
+        lIgNBXAcRXFIizXSk7eIFTULyflzKt0=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678118450;
+        s=susede2_ed25519; t=1678118453;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=1oaOTqhLqj27vSdh0cq11LIl0EI69h40CbQa7yd1/0g=;
-        b=L2UEvQOAkMesIGHLeKLp4JKRZPvuryBcCgJrdGiA/UW2xhuo43BLKKYDJpp7n6USvStaHM
-        c8Cg00NSdKVL+oDQ==
+        bh=/mD4G4g5PKVnWJeJOlK/9atHL+s+VwLsA1DXPQcRuS8=;
+        b=H6wjNmwq5kd9ML242yT/QOwXzkWG02v2KIZmiwsDi2TYAtNKEzdajdKN/N1p7FaTKrlaht
+        /VxpZsRL6ja619AQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 83FBF13513;
-        Mon,  6 Mar 2023 16:00:50 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id B3ACE13513;
+        Mon,  6 Mar 2023 16:00:52 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id 6MtyHzIOBmQ/PwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:50 +0000
+        id EG0WKzQOBmQ/PwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:52 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
         linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 69/99] fbdev/s3fb: Parse option string with struct option_iter
-Date:   Mon,  6 Mar 2023 16:59:46 +0100
-Message-Id: <20230306160016.4459-70-tzimmermann@suse.de>
+Subject: [PATCH 75/99] fbdev/sm712fb: Duplicate video-mode option string
+Date:   Mon,  6 Mar 2023 16:59:52 +0100
+Message-Id: <20230306160016.4459-76-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306160016.4459-1-tzimmermann@suse.de>
 References: <20230306160016.4459-1-tzimmermann@suse.de>
@@ -71,66 +71,47 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use struct option_iter to walk over the individual options in the
-driver's option string. Replaces the hand-written strsep() loop with
-a clean interface. The helpers for struct option_iter handle empty
-option strings and empty options transparently. The struct's _init
-and _release functions duplicate and release the option string's
-memory buffer as needed.
+Assume that the driver does not own the option string or its substrings
+and hence duplicate the option string for the video mode. The driver only
+parses the option string once as part of module initialization, so use
+a static buffer to store the duplicated mode option. Linux automatically
+frees the memory upon releasing the module.
 
 Done in preparation of constifying the option string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/s3fb.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/video/fbdev/sm712fb.c | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/s3fb.c b/drivers/video/fbdev/s3fb.c
-index 70aefd7224a1..f3bd7b1c2c9a 100644
---- a/drivers/video/fbdev/s3fb.c
-+++ b/drivers/video/fbdev/s3fb.c
-@@ -12,6 +12,7 @@
-  */
+diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
+index b528776c7612..b0f3898125f4 100644
+--- a/drivers/video/fbdev/sm712fb.c
++++ b/drivers/video/fbdev/sm712fb.c
+@@ -1761,8 +1761,21 @@ static int __init sm712fb_init(void)
  
- #include <linux/aperture.h>
-+#include <linux/cmdline.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-@@ -1520,18 +1521,15 @@ static struct pci_driver s3fb_pci_driver = {
- /* Parse user specified options */
- 
- #ifndef MODULE
--static int  __init s3fb_setup(char *options)
-+static int  __init s3fb_setup(const char *options)
- {
--	char *opt;
-+	struct option_iter iter;
-+	const char *opt;
- 
--	if (!options || !*options)
--		return 0;
--
--	while ((opt = strsep(&options, ",")) != NULL) {
-+	option_iter_init(&iter, options);
- 
--		if (!*opt)
--			continue;
--		else if (!strncmp(opt, "mtrr:", 5))
-+	while (option_iter_next(&iter, opt)) {
-+		if (!strncmp(opt, "mtrr:", 5))
- 			mtrr = simple_strtoul(opt + 5, NULL, 0);
- 		else if (!strncmp(opt, "fasttext:", 9))
- 			fasttext = simple_strtoul(opt + 9, NULL, 0);
-@@ -1548,6 +1546,8 @@ static int  __init s3fb_setup(char *options)
- 		}
- 	}
- 
-+	option_iter_release(&iter);
+ 	if (fb_get_options("sm712fb", &option))
+ 		return -ENODEV;
+-	if (option && *option)
+-		mode_option = option;
 +
- 	return 0;
- }
- #endif
++	if (option && *option) {
++		do {
++			static char mode_option_buf[256];
++			int ret;
++
++			ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", option);
++			if (WARN(ret < 0, "sm712fb: ignoring invalid option, ret=%d\n", ret))
++				continue;
++			if (WARN(ret >= sizeof(mode_option_buf), "sm712fb: option too long\n"))
++				continue;
++			mode_option = mode_option_buf;
++		} while (0);
++	}
++
+ 	sm7xx_vga_setup(mode_option);
+ 
+ 	return pci_register_driver(&smtcfb_driver);
 -- 
 2.39.2
 

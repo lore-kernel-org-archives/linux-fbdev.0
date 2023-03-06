@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA586C6FD1B
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:01:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40421C6FD1F
+	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:01:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230187AbjCFQBM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 11:01:12 -0500
+        id S230308AbjCFQBO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 11:01:14 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41490 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230214AbjCFQAl (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:41 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 13C232FCFD;
-        Mon,  6 Mar 2023 08:00:40 -0800 (PST)
+        with ESMTP id S230458AbjCFQAo (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:44 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 208893400A;
+        Mon,  6 Mar 2023 08:00:42 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id C62271FE6A;
-        Mon,  6 Mar 2023 16:00:38 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id CA1981FE85;
+        Mon,  6 Mar 2023 16:00:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678118438; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678118440; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=0mI5hxY6oQ2Q0qWcdERaw/gENN4eL71qVG14XGIWDCI=;
-        b=YDxqQDsMAp2UjoBTYs3dheGgn2s0QrRmSahZQmc9b99QUFQtkLLjYzwCOza3atJg8P3qNH
-        w0p6UElS0n3VFUx3Qw0xcRTINa4XFbhhnSkOQbG15WBIJN6z3330ZLNnhx1PQfov3Csx+Y
-        QIC3KuEFK1l+ee/LUE9ck4iOV+mqMRA=
+        bh=tdQ9Z0pKhccY3nAxYeCZXdxmClNrcqOqv/uxdQRKhl8=;
+        b=dDysJK5IsCuhM1q2UWLb5Ii5to5sS5Q4BZGGCGE2pS/9vfUfk8TWhygJI3GxRCBxiQXwPA
+        14gNMuSkMQG14LLNsdA/Oxqko5ax+4zmtSA0/fi4DV59JBXJsFyyl+NotQSNh+ym6cMPAn
+        I1rrLDYRDERoY5W5mLEBXXWyycCB4rE=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678118438;
+        s=susede2_ed25519; t=1678118440;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=0mI5hxY6oQ2Q0qWcdERaw/gENN4eL71qVG14XGIWDCI=;
-        b=G5QYY12iSeLUPhHPCh0//gAizWQw49VWoI4CZAvAG0KKVWPuNaDPYGe5vDkb9S29FvhGE9
-        mPj6MjKM7bBIv6CQ==
+        bh=tdQ9Z0pKhccY3nAxYeCZXdxmClNrcqOqv/uxdQRKhl8=;
+        b=Dv4YwkluAuGRzM30rb8v2sbxU0FROOq1braDVs1pbDI8FImUyWqXz/rnLm9cufyF5noEbq
+        XFU41H4GOayQQYAQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 68A7613A6A;
-        Mon,  6 Mar 2023 16:00:38 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 6C54A13513;
+        Mon,  6 Mar 2023 16:00:40 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id OO23GCYOBmQ/PwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:38 +0000
+        id 4MCfGSgOBmQ/PwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:40 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
         linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 38/99] fbdev/intelfb: Parse option string with struct option_iter
-Date:   Mon,  6 Mar 2023 16:59:15 +0100
-Message-Id: <20230306160016.4459-39-tzimmermann@suse.de>
+Subject: [PATCH 43/99] fbdev/macfb: Remove trailing whitespaces
+Date:   Mon,  6 Mar 2023 16:59:20 +0100
+Message-Id: <20230306160016.4459-44-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306160016.4459-1-tzimmermann@suse.de>
 References: <20230306160016.4459-1-tzimmermann@suse.de>
@@ -71,67 +71,62 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use struct option_iter to walk over the individual options in the
-driver's option string. Replaces the hand-written strsep() loop with
-a clean interface. The helpers for struct option_iter handle empty
-option strings and empty options transparently. The struct's _init
-and _release functions duplicate and release the option string's
-memory buffer as needed.
-
-Done in preparation of constifying the option string.
+Fix coding style. No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/intelfb/intelfbdrv.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/macfb.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/intelfb/intelfbdrv.c b/drivers/video/fbdev/intelfb/intelfbdrv.c
-index 896c2646e2ae..2d4e03b9e7fd 100644
---- a/drivers/video/fbdev/intelfb/intelfbdrv.c
-+++ b/drivers/video/fbdev/intelfb/intelfbdrv.c
-@@ -108,6 +108,7 @@
-  */
- 
- #include <linux/aperture.h>
-+#include <linux/cmdline.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-@@ -323,9 +324,10 @@ static __inline__ int get_opt_bool(const char *this_opt, const char *name,
- 	return 1;
- }
- 
--static int __init intelfb_setup(char *options)
-+static int __init intelfb_setup(const char *options)
+diff --git a/drivers/video/fbdev/macfb.c b/drivers/video/fbdev/macfb.c
+index 312e35c9aa6c..44ff860a3f37 100644
+--- a/drivers/video/fbdev/macfb.c
++++ b/drivers/video/fbdev/macfb.c
+@@ -339,7 +339,7 @@ static int civic_setpalette(unsigned int regno, unsigned int red,
  {
--	char *this_opt;
-+	struct option_iter iter;
-+	const char *this_opt;
+ 	unsigned long flags;
+ 	int clut_status;
+-	
++
+ 	local_irq_save(flags);
  
- 	DBG_MSG("intelfb_setup\n");
- 
-@@ -348,9 +350,9 @@ static int __init intelfb_setup(char *options)
- 	 *    video=intelfb:1024x768-16@75,accel=0
+ 	/* Set the register address */
+@@ -439,7 +439,7 @@ static int macfb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 	 * (according to the entries in the `var' structure).
+ 	 * Return non-zero for invalid regno.
  	 */
- 
--	while ((this_opt = strsep(&options, ","))) {
--		if (!*this_opt)
--			continue;
-+	option_iter_init(&iter, options);
+-	
 +
-+	while (option_iter_next(&iter, this_opt)) {
- 		if (get_opt_bool(this_opt, "accel", &accel))
- 			;
- 		else if (get_opt_int(this_opt, "vram", &vram))
-@@ -378,6 +380,8 @@ static int __init intelfb_setup(char *options)
- 		}
+ 	if (regno >= fb_info->cmap.len)
+ 		return 1;
+ 
+@@ -548,7 +548,7 @@ static int __init macfb_init(void)
+ 		return -ENODEV;
+ 	macfb_setup(option);
+ 
+-	if (!MACH_IS_MAC) 
++	if (!MACH_IS_MAC)
+ 		return -ENODEV;
+ 
+ 	if (mac_bi_data.id == MAC_MODEL_Q630 ||
+@@ -644,7 +644,7 @@ static int __init macfb_init(void)
+ 		err = -EINVAL;
+ 		goto fail_unmap;
  	}
- 
-+	option_iter_release(&iter);
+-	
 +
- 	return 0;
- }
+ 	/*
+ 	 * We take a wild guess that if the video physical address is
+ 	 * in nubus slot space, that the nubus card is driving video.
+@@ -774,7 +774,7 @@ static int __init macfb_init(void)
+ 			civic_cmap_regs = ioremap(CIVIC_BASE, 0x1000);
+ 			break;
  
+-		
++
+ 		/*
+ 		 * Assorted weirdos
+ 		 * We think this may be like the LC II
 -- 
 2.39.2
 

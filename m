@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3802AC77B78
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:01:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 596BDC77B6F
+	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 16:01:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231439AbjCFQBf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 11:01:35 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42024 "EHLO
+        id S231349AbjCFQB1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 11:01:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41764 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231343AbjCFQAx (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:53 -0500
+        with ESMTP id S231264AbjCFQAt (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 11:00:49 -0500
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68B692ED53;
-        Mon,  6 Mar 2023 08:00:50 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 08E762ED79;
+        Mon,  6 Mar 2023 08:00:48 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 05A501FEC1;
-        Mon,  6 Mar 2023 16:00:49 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id B48B71FEB2;
+        Mon,  6 Mar 2023 16:00:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678118449; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678118446; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=OWrkdVSEPMMK9cPjOGgBoOtcewGCxhSWSIMFGqazRc0=;
-        b=Goz1yKKxJT0Jr6x5BTkNtJr6vgGDw0pko1sUEqMhorQVy2CEnmdo7IqfwSwLtXzBLOUJIp
-        KYly7cott6YArzFVQmwOxKMS9p1NhLrSHepl2UshUvVyLflqPepjrn5BhayjT2rZJ0y3cj
-        YaXXA0liKLJl2aiOY4JoBKtgtYuxkjU=
+        bh=19VpuBm70vNXnliD8T8K9oFn9HFUwo8rA5qbZ2DfN+A=;
+        b=rineVMVSwgL0pJkgvD7v14B+v8/s4iidysofQdfX4Cb7Y6ElVbD2yxJf9R/DmY1MYGVds0
+        gBv8l8PpL9bIjpdckt9oeXD+CmygyvvgEGswoLRoRduIT7oTRRJXO63r1+TdfvvHx6jhhh
+        UYQrGM1o6yrDESqG2ViT92nlkO8AsXc=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678118449;
+        s=susede2_ed25519; t=1678118446;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=OWrkdVSEPMMK9cPjOGgBoOtcewGCxhSWSIMFGqazRc0=;
-        b=pfbJlJtyzM0O5KIBaoENIeDlueFBFEhTDijAwxcEZJivTdx6S7jlRDIgw2aPl4T9brVWH1
-        nwuXTIV2jya25RCA==
+        bh=19VpuBm70vNXnliD8T8K9oFn9HFUwo8rA5qbZ2DfN+A=;
+        b=brI7szavTzuLuj45bTppKinf8IxIal5TwelwYUJG2hsFok28choJKmfUrd/0sgxmoH1M67
+        o1XqPFLWOrt7B/CQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id A3C1213A6A;
-        Mon,  6 Mar 2023 16:00:48 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 56E9C13A6A;
+        Mon,  6 Mar 2023 16:00:46 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id cG8rJzAOBmQ/PwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:48 +0000
+        id cE9PFC4OBmQ/PwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 06 Mar 2023 16:00:46 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
         linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 64/99] fbdev/pvr2fb: Parse option string with struct option_iter
-Date:   Mon,  6 Mar 2023 16:59:41 +0100
-Message-Id: <20230306160016.4459-65-tzimmermann@suse.de>
+Subject: [PATCH 58/99] fbdev/pm2fb: Parse option string with struct option_iter
+Date:   Mon,  6 Mar 2023 16:59:35 +0100
+Message-Id: <20230306160016.4459-59-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306160016.4459-1-tzimmermann@suse.de>
 References: <20230306160016.4459-1-tzimmermann@suse.de>
@@ -82,57 +82,53 @@ Done in preparation of constifying the option string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/pvr2fb.c | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+ drivers/video/fbdev/pm2fb.c | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
-index cd778f8753f1..9255b3506b81 100644
---- a/drivers/video/fbdev/pvr2fb.c
-+++ b/drivers/video/fbdev/pvr2fb.c
-@@ -46,6 +46,7 @@
- #undef DEBUG
+diff --git a/drivers/video/fbdev/pm2fb.c b/drivers/video/fbdev/pm2fb.c
+index c6a117538fd8..a6a793efb0fe 100644
+--- a/drivers/video/fbdev/pm2fb.c
++++ b/drivers/video/fbdev/pm2fb.c
+@@ -28,6 +28,7 @@
+  */
  
  #include <linux/aperture.h>
 +#include <linux/cmdline.h>
  #include <linux/module.h>
+ #include <linux/moduleparam.h>
  #include <linux/kernel.h>
- #include <linux/errno.h>
-@@ -1024,20 +1025,18 @@ static void pvr2fb_pci_exit(void)
+@@ -1772,16 +1773,14 @@ MODULE_DEVICE_TABLE(pci, pm2fb_id_table);
+  *
+  * This is, comma-separated options following `video=pm2fb:'.
   */
- 
- #ifndef MODULE
--static int __init pvr2fb_setup(char *options)
-+static int __init pvr2fb_setup(const char *options)
+-static int __init pm2fb_setup(char *options)
++static int __init pm2fb_setup(const char *options)
  {
 -	char *this_opt;
- 	char cable_arg[80];
- 	char output_arg[80];
--
--	if (!options || !*options)
--		return 0;
 +	struct option_iter iter;
 +	const char *this_opt;
  
- 	cable_arg[0] = output_arg[0] = 0;
+-	if (!options || !*options)
+-		return 0;
++	option_iter_init(&iter, options);
  
--	while ((this_opt = strsep(&options, ","))) {
+-	while ((this_opt = strsep(&options, ",")) != NULL) {
 -		if (!*this_opt)
 -			continue;
-+	option_iter_init(&iter, options);
-+
 +	while (option_iter_next(&iter, this_opt)) {
- 		if (!strcmp(this_opt, "inverse")) {
- 			fb_invert_cmaps();
- 		} else if (!strncmp(this_opt, "cable:", 6)) {
-@@ -1061,6 +1060,8 @@ static int __init pvr2fb_setup(char *options)
+ 		if (!strcmp(this_opt, "lowhsync"))
+ 			lowhsync = 1;
+ 		else if (!strcmp(this_opt, "lowvsync"))
+@@ -1804,6 +1803,9 @@ static int __init pm2fb_setup(char *options)
+ 			mode_option = mode_option_buf;
  		}
  	}
- 
++
 +	option_iter_release(&iter);
 +
- 	if (*cable_arg)
- 		cable_type = pvr2_get_param_val(cables, cable_arg, 3);
- 	if (*output_arg)
+ 	return 0;
+ }
+ #endif
 -- 
 2.39.2
 

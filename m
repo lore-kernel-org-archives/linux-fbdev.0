@@ -2,58 +2,98 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2020AC678D5
-	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Mar 2023 10:55:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A82FC678D4
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Mar 2023 13:11:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230297AbjCGKzZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 7 Mar 2023 05:55:25 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41604 "EHLO
+        id S230198AbjCGNLo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Mar 2023 08:11:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50602 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230391AbjCGKzW (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Mar 2023 05:55:22 -0500
-X-Greylist: delayed 90602 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 07 Mar 2023 02:55:22 PST
-Received: from mail.ettrick.pl (mail.ettrick.pl [141.94.21.111])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1DB4D2726
-        for <linux-fbdev@vger.kernel.org>; Tue,  7 Mar 2023 02:55:21 -0800 (PST)
-Received: by mail.ettrick.pl (Postfix, from userid 1002)
-        id 3EE2FA47AF; Mon,  6 Mar 2023 09:06:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ettrick.pl; s=mail;
-        t=1678093566; bh=KHux3km3Civcx5ChslOYQZwQRBjoJa4kWJfGcMIuN6w=;
-        h=Date:From:To:Subject:From;
-        b=KXbKFCKun3YL0NCO3oeDnSX0VJnIukAKaIoGBKcwaRKi2lxpmjaTvF7qJVWElFLR7
-         xlny6cqK3rBYbY1aw7BYcI0aflfvWeMuLyoXuDCaT17XUE/mRlI7tvwQSboFdI+6oz
-         rvLmus5rxV2Vyo3WVcft5V5StIMB8cJMP62MEZBj5G0liDEWh2EOU6UHb6SAFtCwtb
-         IQmJ/xz/XFt2nSsHIbqiqdeJCyACrJyFt+S1RA9ByufoiCuUyygvecgLWtg9EbjHmb
-         +JAuQKTv9l+6DD+egrokoL/y8LvXDNQyMN0ENi9gbweUdx9ALyIi4LNJ7K65hHFw3T
-         ahAyH+EvAsT/w==
-Received: by mail.ettrick.pl for <linux-fbdev@vger.kernel.org>; Mon,  6 Mar 2023 09:05:52 GMT
-Message-ID: <20230306074500-0.1.97.3700l.0.oib3aumi5t@ettrick.pl>
-Date:   Mon,  6 Mar 2023 09:05:52 GMT
-From:   "Norbert Karecki" <norbert.karecki@ettrick.pl>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: Fotowoltaika - nowe warunki
-X-Mailer: mail.ettrick.pl
+        with ESMTP id S230232AbjCGNLY (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Mar 2023 08:11:24 -0500
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90DD37695;
+        Tue,  7 Mar 2023 05:10:00 -0800 (PST)
+Received: by mail-pl1-x62a.google.com with SMTP id u5so13943538plq.7;
+        Tue, 07 Mar 2023 05:10:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112; t=1678194542;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=KDSasO/7mKvPMuHhaJ5dSUZlltLYrJQeoPhaTJiDZfs=;
+        b=bmSSIW9KtOuI5eNLrnjoEZACB3ezrROssS5D2oU29FxEC+Rq/PHZCCckVcDHs3bLPK
+         m8ZKz6PCvzZlRkhAIpwYYkr2wdRk0Ni6V3SMiz434xU0AzLdLP6FlI5F3Kz91p7Xqay1
+         sFtr39ki8xM3n7OsY0BEmvQcdmIThIo0InXm6Vj5sSBisBybeBB1cdYhy6TL+jT1jgIO
+         4BYIAIDC/QXhMxtIIrEECSZZK87cS4q8YNJFOqbqtgn54SbIYBkJD2c8bzStIKMiAIpF
+         NMlFx9AH8ZWf/7ARyOcvmzmbcEyGI7RZ4KQ8VKGxZOmyLxtNwZs3pwr8fPUT7jmhXz2s
+         x6Qg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1678194542;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=KDSasO/7mKvPMuHhaJ5dSUZlltLYrJQeoPhaTJiDZfs=;
+        b=jp4uuS8+kGnKPo1dyLzq/5/737KOIIBlMBBmixH4pVjcme3uvMa5wlvxqlWeGHsduo
+         LZbiHF2Ktn9LrTYCIJ2rU8jKaAdpQvhIXYiS799v53QzHbPrH6P0AGfiLJ1hhQFTRJyi
+         Q/sHRtOlXT9uiV9ipCIE65aBKXXQwyp1S3C4mnFajrwWCpSOcJJU9YeB0mMFoa3DmVSV
+         eRpvUqi1L6k3xsaURbtez4hhuFryThFZoGQc+rbGIk0QI84wU1NHPKP1Y5O84CxG7b7I
+         2w8EonCJKTA+TAyXaZhFVjaLGQKBR66hFH/C68MpghzsgrIQhjOcBD3ezmEBsr9Dgnn2
+         fUxw==
+X-Gm-Message-State: AO0yUKUE30HC4XKaCge7Y1zmUQWJfTo1VwYnwCt+YvuHKuDDFZxNAeir
+        epCjWvmt7Ma8+v+I5fk0JcM=
+X-Google-Smtp-Source: AK7set/JbNt04raG3T5qoVOvWKW76KyCmnFyRTKZHkRGaWCu6DgctSZ48iDM0sCCnRF/zxEwnu0qcQ==
+X-Received: by 2002:a17:903:22c1:b0:19e:ba2c:27ec with SMTP id y1-20020a17090322c100b0019eba2c27ecmr10944767plg.11.1678194542116;
+        Tue, 07 Mar 2023 05:09:02 -0800 (PST)
+Received: from chcpu13.cse.ust.hk (191host119.mobilenet.cse.ust.hk. [143.89.191.119])
+        by smtp.gmail.com with ESMTPSA id y2-20020a170902ed4200b0019b0afc24e8sm8396190plb.250.2023.03.07.05.09.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Mar 2023 05:09:01 -0800 (PST)
+From:   harperchen <harperchen1110@gmail.com>
+To:     deller@gmx.de
+Cc:     javierm@redhat.com, tzimmermann@suse.de,
+        wsa+renesas@sang-engineering.com, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        harperchen <harperchen1110@gmail.com>
+Subject: [PATCH] fbdev: tgafb: Fix potential divide by zero
+Date:   Tue,  7 Mar 2023 13:08:56 +0000
+Message-Id: <20230307130856.2295182-1-harperchen1110@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,
+fb_set_var would by called when user invokes ioctl with cmd
+FBIOPUT_VSCREENINFO. User-provided data would finally reach
+tgafb_check_var. In case var->pixclock is assigned to zero,
+divide by zero would occur when checking whether reciprocal
+of var->pixclock is too high.
 
-chcia=C5=82bym poinformowa=C4=87, i=C5=BC mog=C4=85 Pa=C5=84stwo uzyska=C4=
-=87 dofinansowanie na systemy fotowoltaiczne w ramach nowej edycji progra=
-mu M=C3=B3j Pr=C4=85d.
+Similar crashes have happened in other fbdev drivers. There
+is no check and modification on var->pixclock along the call
+chain to tgafb_check_var. We believe it could also be triggered
+in driver tgafb from user site.
 
-Program zapewnia 6000 z=C5=82 dofinansowania na instalacj=C4=99 paneli i =
-16 000 z=C5=82 na magazyn energii, ni=C5=BCsze cen pr=C4=85du i mo=C5=BCl=
-iwo=C5=9B=C4=87 odliczenia koszt=C3=B3w zwi=C4=85zanych z instalacj=C4=85=
- fotowoltaiki w ramach rozliczenia PIT (tzw. ulga termomodernizacyjna).
+Signed-off-by: harperchen <harperchen1110@gmail.com>
+---
+ drivers/video/fbdev/tgafb.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Czy s=C4=85 Pa=C5=84stwo otwarci na wst=C4=99pn=C4=85 rozmow=C4=99 w tym =
-temacie?
+diff --git a/drivers/video/fbdev/tgafb.c b/drivers/video/fbdev/tgafb.c
+index 14d37c49633c..b44004880f0d 100644
+--- a/drivers/video/fbdev/tgafb.c
++++ b/drivers/video/fbdev/tgafb.c
+@@ -173,6 +173,9 @@ tgafb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+ 	struct tga_par *par = (struct tga_par *)info->par;
+ 
++	if (!var->pixclock)
++		return -EINVAL;
++
+ 	if (par->tga_type == TGA_TYPE_8PLANE) {
+ 		if (var->bits_per_pixel != 8)
+ 			return -EINVAL;
+-- 
+2.25.1
 
-
-Pozdrawiam,
-Norbert Karecki

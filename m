@@ -2,185 +2,155 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71CBEC678D4
-	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Mar 2023 08:41:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D3B5C6FD1B
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Mar 2023 08:58:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229840AbjCGIlC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 7 Mar 2023 03:41:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48658 "EHLO
+        id S229558AbjCGI6I convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Mar 2023 03:58:08 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39800 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229914AbjCGIk5 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Mar 2023 03:40:57 -0500
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E5DC04D28B;
-        Tue,  7 Mar 2023 00:40:50 -0800 (PST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 3282421A3E;
-        Tue,  7 Mar 2023 08:40:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678178449; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=rFbQNxGy0QynHBtPxQ552xe+WpYhwsKONED8QLWv8Eg=;
-        b=YgC8uAnStcWomNwrcjq9QnZdVM3q9b4Eu48IPQ80jAZKS98tO8DNnYOykoEuSWZHLJDSP+
-        uZKl+LekR3z0+DhPT2tfZdboXqJ5wqGpASE6pOkwmrMpNi74NndD+rdpQv41VY0PJkP+JS
-        mWcSJ/euslmmNmX4CYkRlQ6eedl2XIg=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678178449;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=rFbQNxGy0QynHBtPxQ552xe+WpYhwsKONED8QLWv8Eg=;
-        b=9qWkUyG0eTGXm35BG2eV5a9KsfqWL639kbsgJ9XjwF+LpqiolfH7t+FzzWDCmLbrVHtaoS
-        mvCu+tD4VFuo44DA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id CB17113440;
-        Tue,  7 Mar 2023 08:40:48 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id POqHMJD4BmTiHwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Tue, 07 Mar 2023 08:40:48 +0000
-Message-ID: <9784a0fd-4c9b-1c69-998d-8f8372f8acce@suse.de>
-Date:   Tue, 7 Mar 2023 09:40:48 +0100
+        with ESMTP id S229933AbjCGI6G (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Mar 2023 03:58:06 -0500
+Received: from mail-qt1-f173.google.com (mail-qt1-f173.google.com [209.85.160.173])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F8F23771E;
+        Tue,  7 Mar 2023 00:58:05 -0800 (PST)
+Received: by mail-qt1-f173.google.com with SMTP id s12so13549834qtq.11;
+        Tue, 07 Mar 2023 00:58:05 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1678179484;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=mf9D3mYUVq4IaTZ5HVptNWacWozv4toT5Gz07corxFA=;
+        b=ffk8EL3sdG3VkZS4APfVKnR1CQhIwPL4WP4Erd7vZGYROWwQ9tn9AVwTiDRTHU7H8U
+         wAMsBrCv+RDC4GfNZsL5Pi5RQrehG0Ae7mdCzFFwq2lEHgQE3+ymTVMXwthTR9glLwHg
+         c0kAm7FKDwRlDpN6LRFQo4HkB9i1azj809KykryHmhdKAysOfonVeLDN0kAvCMWc1Y3X
+         jkREM067RfpJVqV6afj6Dit2gvF2ZB/ofiHa+Lxoz+5H4IfOXoAF4h/yrzbkmFb4R5hi
+         89yX76BEA6LU2HttPxUT9Gxix/SfQ0Ih56kYol5ViD/AcV7AUyDiQQvD/QL5MNX0jYqg
+         kdOg==
+X-Gm-Message-State: AO0yUKV2kRwD5r1no58T6oOCfmoNR1eYhfrH1asARSdWYXrQH+QtqQ05
+        MklvnsMudyRzkZin7d5Gx577XBRpzLU2Yw==
+X-Google-Smtp-Source: AK7set9Px7/QAsJmiwp0nMg/ie2mPRbur1K0kO39/K80fBbviaq8CX7/UPNZ5bZvWwyhOQIWd/Fzxw==
+X-Received: by 2002:a05:622a:348:b0:3bf:dc2e:ce3f with SMTP id r8-20020a05622a034800b003bfdc2ece3fmr18741653qtw.16.1678179484426;
+        Tue, 07 Mar 2023 00:58:04 -0800 (PST)
+Received: from mail-yb1-f177.google.com (mail-yb1-f177.google.com. [209.85.219.177])
+        by smtp.gmail.com with ESMTPSA id q28-20020a05620a2a5c00b007422fd3009esm9267355qkp.20.2023.03.07.00.58.03
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 07 Mar 2023 00:58:03 -0800 (PST)
+Received: by mail-yb1-f177.google.com with SMTP id k199so10695679ybf.4;
+        Tue, 07 Mar 2023 00:58:03 -0800 (PST)
+X-Received: by 2002:a5b:542:0:b0:a67:c976:c910 with SMTP id
+ r2-20020a5b0542000000b00a67c976c910mr6389341ybp.7.1678179482859; Tue, 07 Mar
+ 2023 00:58:02 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH 01/99] lib: Add option iterator
-Content-Language: en-US
-To:     Randy Dunlap <rdunlap@infradead.org>, deller@gmx.de,
-        paulus@samba.org, benh@kernel.crashing.org, linux@armlinux.org.uk,
-        pjones@redhat.com, timur@kernel.org, adaplas@gmail.com,
-        s.hauer@pengutronix.de, shawnguo@kernel.org, mbroemme@libmpq.org,
-        thomas@winischhofer.net, James.Bottomley@HansenPartnership.com,
-        spock@gentoo.org, sudipm.mukherjee@gmail.com,
-        teddy.wang@siliconmotion.com, geert+renesas@glider.be,
-        corbet@lwn.net
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+References: <20230306160016.4459-1-tzimmermann@suse.de> <CAMuHMdU5AwE0pK=ppip4J81ByEye+jmvff1s8saeEuWZWZiqPw@mail.gmail.com>
+ <c560dd1c-03ac-1aa7-f3ac-2a2d9f411505@suse.de>
+In-Reply-To: <c560dd1c-03ac-1aa7-f3ac-2a2d9f411505@suse.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Tue, 7 Mar 2023 09:57:51 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdUWRwN7Ks1ougy81Lh=NKLD+y04Xr6O+Ee+3k5Z4QH2Rg@mail.gmail.com>
+Message-ID: <CAMuHMdUWRwN7Ks1ougy81Lh=NKLD+y04Xr6O+Ee+3k5Z4QH2Rg@mail.gmail.com>
+Subject: Re: [PATCH 00/99] fbdev: Fix memory leak in option parsing
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
+        linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
+        adaplas@gmail.com, s.hauer@pengutronix.de, shawnguo@kernel.org,
+        mbroemme@libmpq.org, thomas@winischhofer.net,
+        James.Bottomley@hansenpartnership.com, sudipm.mukherjee@gmail.com,
+        teddy.wang@siliconmotion.com, corbet@lwn.net,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org
-References: <20230306160016.4459-1-tzimmermann@suse.de>
- <20230306160016.4459-2-tzimmermann@suse.de>
- <570edde0-cfea-f560-fe83-6077f4f221e5@infradead.org>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <570edde0-cfea-f560-fe83-6077f4f221e5@infradead.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------pY5Sewy2Z94lIbK6is7THWpx"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------pY5Sewy2Z94lIbK6is7THWpx
-Content-Type: multipart/mixed; boundary="------------omnXe7ozu3W7c3QT2E3mLhqD";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Randy Dunlap <rdunlap@infradead.org>, deller@gmx.de, paulus@samba.org,
- benh@kernel.crashing.org, linux@armlinux.org.uk, pjones@redhat.com,
- timur@kernel.org, adaplas@gmail.com, s.hauer@pengutronix.de,
- shawnguo@kernel.org, mbroemme@libmpq.org, thomas@winischhofer.net,
- James.Bottomley@HansenPartnership.com, spock@gentoo.org,
- sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
- geert+renesas@glider.be, corbet@lwn.net
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-Message-ID: <9784a0fd-4c9b-1c69-998d-8f8372f8acce@suse.de>
-Subject: Re: [PATCH 01/99] lib: Add option iterator
-References: <20230306160016.4459-1-tzimmermann@suse.de>
- <20230306160016.4459-2-tzimmermann@suse.de>
- <570edde0-cfea-f560-fe83-6077f4f221e5@infradead.org>
-In-Reply-To: <570edde0-cfea-f560-fe83-6077f4f221e5@infradead.org>
+Hi Thomas,
 
---------------omnXe7ozu3W7c3QT2E3mLhqD
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+On Tue, Mar 7, 2023 at 9:23 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Am 07.03.23 um 08:53 schrieb Geert Uytterhoeven:
+> > On Mon, Mar 6, 2023 at 5:00 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> >> Introduce struct option_iter and helpers to parse command-line
+> >> options with comma-separated key-value pairs. Then convert fbdev
+> >> drivers to the new interface. Fixes a memory leak in the parsing of
+> >> the video= option.
+> >>
+> >> Before commit 73ce73c30ba9 ("fbdev: Transfer video= option strings to
+> >> caller; clarify ownership"), a call to fb_get_options() either
+> >> returned an internal string or a duplicated string; hence ownership of
+> >> the string's memory buffer was not well defined, but depended on how
+> >> users specified the video= option on the kernel command line. For
+> >> global settings, the caller owned the returned memory and for per-driver
+> >> settings, fb_get_options() owned the memory. As calling drivers were
+> >> unable to detect the case, the memory was leaked.
+> >>
+> >> Commit 73ce73c30ba9 ("fbdev: Transfer video= option strings to caller;
+> >> clarify ownership") changed sematics to caller-owned strings. Drivers
+> >> still leaked the memory, but at least ownership was clear.
+> >>
+> >> This patchset fixes the memory leak and changes string ownership back
+> >> to fb_get_options(). Patch 1 introduces struct option_iter and a few
+> >> helpers. The interface takes an option string, such as video=, in the
+> >> common form value1,key2:value2,value3 etc and returns the individial
+> >> comma-separated pairs. Various modules use this pattern, so the code
+> >> is located under lib/.
+> >>
+> >> Patches 2 to 98 go through fbdev drivers and convert them to the new
+> >> interface. This often requires a number of cleanups. A driver would
+> >> typically refer to the option string's video mode. Such strings are now
+> >> copied to driver-allocated memory so that drivers don't refer directly
+> >> to the option string's memory. The option iterator then replaces manual
+> >> parsing loops based on strsep(",").
+> >
+> > Thanks for your series!
+> >
+> > Unfortunately I cannot say I'm thrilled about this: you are replacing
+> > a single small dynamic memory leak by 36 larger static memory leaks.
+>
+> That's fair enough.
+>
+> > Am I missing something?
+>
+> The current size of the videomode buffers is ridiculously large. I just
+> needed something that could hold the string. A long mode description
+> might look like
+>
+>    1920x1080MR-32@120ime
+>
+> which has 21 characters. 32-byte buffers would probably be more than enough.
 
-SGkNCg0KQW0gMDYuMDMuMjMgdW0gMjM6Mzcgc2NocmllYiBSYW5keSBEdW5sYXA6DQpbLi4u
-XQ0KPj4gKyAqDQo+PiArICogVGhlIGNhbGwgdG8gb3B0aW9uX2l0ZXJfaW5pdCgpIGluaXRp
-YWxpemVzIHRoZSBpdGVyYXRvciBpbnN0YW5jZQ0KPj4gKyAqIGZyb20gdGhlIG9wdGlvbiBz
-dHJpbmcuIFRoZSB3aGlsZSBsb29wIHdhbGtzIG92ZXIgdGhlIGluZGl2aWR1YWwNCj4+ICsg
-KiBvcHRpb25zIGluIHRoZSBzdGluZyBhbmQgcmV0dXJucyBlYWNoIGluIHRoZSBzZWNvbmQg
-YXJndW1lbnQuIFRoZQ0KPj4gKyAqIHJldHVybmVkIG1lbW9yeSBpcyBvd25lZCBieSB0aGUg
-aXRlcmF0b3IgaW5zdGFuY2UgYW5kIGNhbGxlcnMgbWF5DQo+PiArICogbm90IG1vZGlmeSBv
-ciBmcmVlIGl0LiBUaGUgY2FsbCB0byBvcHRpb25faXRlcl9yZWxlYXNlKCkgZnJlZXMgYWxs
-DQo+PiArICogcmVzb3VyY2VzIG9mIHRoZSBpdGVyYXRvci4gVGhpcyBwcm9jZXNzIGRvZXMg
-bm90IG1vZGlmeSB0aGUgb3JpZ2luYWwNCj4+ICsgKiBvcHRpb24gc3RyaW5nLiBJZiB0aGUg
-b3B0aW9uIHN0cmluZyBjb250YWlucyBhbiBlbXB0eSBvcHRpb24gKGkuZS4sDQo+PiArICog
-dHdvIGNvbW1hcyBuZXh0IHRvIGVhY2ggb3RoZXIpLCBvcHRpb25faXRlcl9uZXh0KCkgc2tp
-cHMgdGhlIGVtcHR5DQo+PiArICogb3B0aW9uIGF1dG9tYXRpY2FsbHkuDQo+IA0KPiBJcyB0
-aGF0IGxhdHRlciBza2lwcGluZyBvdmVyIGEgIiwsIiBhdXRvbWF0aWNhbGx5IHNvbWV0aGlu
-ZyB0aGF0IHlvdSBoYXZlDQo+IG9ic2VydmVkIGFzIG5lZWRlZD8NCg0KSXQncyBub3Qgc3Ry
-aWN0bHkgbmVlZGVkIGZvciBjb3JyZWN0bmVzcywgYnV0IG1hbnkgb2YgdGhvc2UgZmJkZXYg
-DQpkcml2ZXJzIGNvbnRhaW4gY29kZSB0byBkbyB0aGF0LiBMaWtlIHRoaXMgb25lOg0KDQog
-DQpodHRwczovL2VsaXhpci5ib290bGluLmNvbS9saW51eC92Ni4yL3NvdXJjZS9kcml2ZXJz
-L3ZpZGVvL2ZiZGV2L3Zlc2FmYi5jI0wyMTcNCg0KU28gZG9pbmcgaXQgaW4gdGhlIF9pbmNy
-KCkgaGVscGVyIHNlZW1zIHVzZWZ1bA0KDQo+IEkgY2FuIGltYWdpbmUgYSBkcml2ZXIgb3Ig
-bW9kdWxlIHdhbnRpbmcgdG8ga25vdyB0aGF0IGFuIGVtcHR5IHN0cmluZw0KPiB3YXMgZW50
-ZXJlZCAoaS5lLiwgIiwsIikuDQoNCkkgb25seSBsb29rZWQgYXQgZmJkZXYgZHJpdmVycywg
-YnV0IG5vbmUgb2YgdGhlbSBjYXJlZCBhYm91dCBlbXB0eSANCnN0cmluZ3MuIFRoZXkgYWxs
-IGhhdmUgbmFtZWQgb3B0aW9ucyBhbmQvb3Iga2V5LXZhbHVlIHBhaXJzLg0KDQo+IA0KPj4g
-KyAqLw0KPj4gKw0KPj4gKy8qKg0KPj4gKyAqIG9wdGlvbl9pdGVyX2luaXQgLSBJbml0aWFs
-aXplcyBhbiBvcHRpb24gaXRlcmF0b3INCj4+ICsgKiBAaXRlcjoJdGhlIGl0ZXJhdG9yIHRv
-IGluaXRpYWxpemUNCj4+ICsgKiBAb3B0aW9uczoJdGhlIG9wdGlvbnMgc3RyaW5nDQo+PiAr
-ICovDQo+PiArdm9pZCBvcHRpb25faXRlcl9pbml0KHN0cnVjdCBvcHRpb25faXRlciAqaXRl
-ciwgY29uc3QgY2hhciAqb3B0aW9ucykNCj4+ICt7DQo+PiArCWlmIChvcHRpb25zICYmICpv
-cHRpb25zKQ0KPj4gKwkJaXRlci0+b3B0YnVmID0ga3N0cmR1cChvcHRpb25zLCBHRlBfS0VS
-TkVMKTsgLy8gY2FuIGJlIE5VTEwNCj4+ICsJZWxzZQ0KPj4gKwkJaXRlci0+b3B0YnVmID0g
-TlVMTDsNCj4+ICsJaXRlci0+bmV4dF9vcHQgPSBpdGVyLT5vcHRidWY7DQo+PiArfQ0KPj4g
-K0VYUE9SVF9TWU1CT0wob3B0aW9uX2l0ZXJfaW5pdCk7DQo+PiArDQo+PiArLyoqDQo+PiAr
-ICogb3B0aW9uX2l0ZXJfcmVsZWFzZSAtIFJlbGVhc2VzIGFuIG9wdGlvbiBpdGVyYXRvcidz
-IHJlc291cmNlcw0KPj4gKyAqIEBpdGVyOgl0aGUgaXRlcmF0b3INCj4+ICsgKi8NCj4+ICt2
-b2lkIG9wdGlvbl9pdGVyX3JlbGVhc2Uoc3RydWN0IG9wdGlvbl9pdGVyICppdGVyKQ0KPj4g
-K3sNCj4+ICsJa2ZyZWUoaXRlci0+b3B0YnVmKTsNCj4+ICsJaXRlci0+bmV4dF9vcHQgPSBO
-VUxMOw0KPj4gK30NCj4+ICtFWFBPUlRfU1lNQk9MKG9wdGlvbl9pdGVyX3JlbGVhc2UpOw0K
-Pj4gKw0KPj4gKy8qKg0KPj4gKyAqIG9wdGlvbl9pdGVyX2luY3IgLSBSZXR1cm4gY3VycmVu
-dCBvcHRpb24gYW5kIGFkdmFuY2UgdG8gdGhlIG5leHQNCj4+ICsgKiBAaXRlcjoJdGhlIGl0
-ZXJhdG9yDQo+PiArICoNCj4+ICsgKiBSZXR1cm5zOg0KPiANCj4gICAqIFJldHVybjoNCj4g
-bWF0Y2hlcyBrZXJuZWwtZG9jIG5vdGF0aW9uIGRvY3VtZW50YXRpb24uDQo+IA0KPj4gKyAq
-IFRoZSBjdXJyZW50IG9wdGlvbiBzdHJpbmcsIG9yIE5VTEwgaWYgdGhlcmUgYXJlIG5vIG1v
-cmUgb3B0aW9ucy4NCj4+ICsgKi8NCj4+ICtjb25zdCBjaGFyICpvcHRpb25faXRlcl9pbmNy
-KHN0cnVjdCBvcHRpb25faXRlciAqaXRlcikNCj4+ICt7DQo+PiArCWNoYXIgKm9wdDsNCj4+
-ICsNCj4+ICsJaWYgKCFpdGVyLT5uZXh0X29wdCkgeyAvLyBjYW4gYmUgT0sgaWYga3N0cmR1
-cCBmYWlsZWQNCj4+ICsJCWlmIChpdGVyLT5vcHRidWYpIC8vIGl0ZXIgaGFzIGFscmVhZHkg
-YmVlbiByZWxlYXNlZDsgbG9naWMgZXJyb3INCj4+ICsJCQlwcl9lcnIoIkluY3JlbWVudGlu
-ZyBvcHRpb24gaXRlcmF0b3Igd2l0aG91dCBzdHJpbmdcbiIpOw0KPj4gKwkJcmV0dXJuIE5V
-TEw7DQo+PiArCX0NCj4+ICsNCj4+ICsJZG8gew0KPj4gKwkJb3B0ID0gc3Ryc2VwKCZpdGVy
-LT5uZXh0X29wdCwgIiwiKTsNCj4+ICsJCWlmICghb3B0KQ0KPj4gKwkJCXJldHVybiBOVUxM
-Ow0KPj4gKwl9IHdoaWxlICghKm9wdCk7IC8vIGZvdW5kIGVtcHR5IG9wdGlvbiBzdHJpbmcs
-IHRyeSBuZXh0DQo+PiArDQo+PiArCXJldHVybiBvcHQ7DQo+PiArfQ0KPj4gK0VYUE9SVF9T
-WU1CT0wob3B0aW9uX2l0ZXJfaW5jcik7DQo+IA0KPiBMb29rcyB1c2VmdWwuIFRoYW5rcy4N
-Cg0KVGhhbmtzLg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KDQotLSANClRob21h
-cyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJl
-IFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVy
-ZywgR2VybWFueQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhy
-ZXI6IEl2byBUb3Rldg0K
+But there are a few exceptions...
 
---------------omnXe7ozu3W7c3QT2E3mLhqD--
+> I think it should also be possible to do a simple kstrdup() on the given
+> videomode string and free the copy in the module's _fini function.
 
---------------pY5Sewy2Z94lIbK6is7THWpx
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+That sounds like the sanest approach to me.
 
------BEGIN PGP SIGNATURE-----
+> That also brings up the question of these MODULE ifdefs. Almost all of
+> the fbdev drivers only parse the command-line option if they are not
+> build as a module. Do you know why? Because of the awkward semantics of
+> the old fb_get_options()?
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmQG+JAFAwAAAAAACgkQlh/E3EQov+CS
-cw//eS2VZQrnosSlaY42mWN41pyPfktluI0lehK+1Tmuxe/zUDOJjjiaSjiLhyuocu4t/NtqHptb
-XZiKMzBTXC2in6h3INs3/s/OkVA41tKsgY6dLoZEglpIGArhnJcuuwOGAkKvEIbiIJBlIZeeElke
-ikPBpKq6TLMkhOYHeD09EhwwJoLAH5rea62W9oSna4jWUBghOeC9hfiih3dQGBj9p0oYbzy5bEY7
-7bZVhjHwUZbIA6SdcP4Ovc0XYSCY90hdw52DnQ/5staIfgQAMc+uX2H6H9fqT28zBGGMhyolMtg9
-5TD2XGuPlu2LceYF5UWiJTvmfASCKFu6PGeqKW7n08duPf95nXYMop5QhCCk+fwOIQTsAFzyfjZI
-a88xObsVoLRO4XlNBndVcbvN5VWtNYqLSIrGdpv3r0IhdO/GF5sEeOXOGKknzCqD6IKh9r/mDFnK
-KU8wpmIPKEa2/dSdmUBHe4FehtIksB/Tc3dTDPpk6YxXXe2k0+MjsaAvCwmV1JptOM7gDFlecrGN
-Rar1RxsBGVupkhyGBMTIXKQyVPTgUSPlyeHajEHyLz2gSFQH0HkvYq+ktO6hPf4N6GqzBfASSd5y
-IPIHIxYBkBynPZNsXGdsFOXWSFuSmheYqE+gt7W1xvs6SF+EhzJTN3fDLtfIM/SQZuxOM8sC0kzS
-nA0=
-=CLWm
------END PGP SIGNATURE-----
+That's just historical: to get to see anything on the console (on
+the graphics hardware without VGA text mode that fbdev was originally
+developed for), you needed to have your main fbdev driver builtin.
+Drivers for secondary displays could be loadable modules, and using
+fbset for those offered more flexibility than a module parameter.
 
---------------pY5Sewy2Z94lIbK6is7THWpx--
+> I think this should be changed so that they
+> always respect the video= parameter.
+
+I agree that makes sense.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

@@ -2,269 +2,142 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3321C61DA4
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Mar 2023 22:38:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F22C2C61DA4
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Mar 2023 00:27:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230109AbjCFWi3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 17:38:29 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39980 "EHLO
+        id S229579AbjCGA1w (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Mar 2023 19:27:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60812 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230088AbjCFWiX (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 17:38:23 -0500
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5BBD43903;
-        Mon,  6 Mar 2023 14:38:10 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-        bh=8pMcsd5zsIOHP2arWm7jYscL1z+fEnP4qax0CfOy3r4=; b=PnxSE/Dk3QLU+/mO+vdwos9hVX
-        4RWt7WgP6zW0lX1R1VqwqVpS7t0HMBgJOWs5aRbkAB+v8RsRInvlLTop6DwSIwYmL3AIRoq57o6iq
-        r4GMIu0UwGyb/pHAX9uJJscdqU63acW31/osv0zO2qhyLGJIcSpk6a2Epci8QdXC282zp78Jq0aQN
-        4/qvwgU8EEEsDBEvyc1n9OIxZb1pbQC1dFuuPV+8ue1vBv0LfUlv49mnPXtlxTjHa465y7OsnpyWa
-        eDduJRuBoC7SApYMKR+AaQv1reBLM/++f3SDd8eg/iqVgmBS44TeeOrdvgOXjCGmqZ54h55uKPM3i
-        JRhK7Rew==;
-Received: from [2601:1c2:980:9ec0::df2f]
-        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1pZJSe-00FJDM-SF; Mon, 06 Mar 2023 22:37:41 +0000
-Message-ID: <570edde0-cfea-f560-fe83-6077f4f221e5@infradead.org>
-Date:   Mon, 6 Mar 2023 14:37:39 -0800
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH 01/99] lib: Add option iterator
-Content-Language: en-US
+        with ESMTP id S229742AbjCGA1v (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 19:27:51 -0500
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 95F0F6E683;
+        Mon,  6 Mar 2023 16:27:46 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1678148866; x=1709684866;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=qU7r/0l12H9VC3ijVZNrTHRPP+flag7/E09IYJm8+eY=;
+  b=Z3m+YfWWgQmfoQPBGZ6CwBRD5lPnKp/7+Nv7S2rZGAwCo3HQf3niiVU1
+   FrPJ+hKyv9zgyLgbRRTSlJ0vTKEUT8yMkIvToLrHADv38ldX+7O9l5yW9
+   hIFUuRm7NxwuB3WApm6xdvZoWxQX/UvC7R9yFkmWIoFJpgZZlfMgO2maQ
+   f1QZlpLVExxa5n8sCxv3JSxQzg31Af5dwYAuavlhixmD1EQtleQX1Hnn3
+   DH2ajgGOKnisnvtNt1zhjv322GoX8BKaaFu1jZYRk7NmY3BhPg7aHOUnk
+   GW9ax7aikDv/1kF/i0Fu9Xyg0ZZKPSOCH/cMKsoZpWllrzaPjHLOsk1nZ
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10641"; a="319548314"
+X-IronPort-AV: E=Sophos;i="5.98,238,1673942400"; 
+   d="scan'208";a="319548314"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Mar 2023 16:27:45 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10641"; a="706619626"
+X-IronPort-AV: E=Sophos;i="5.98,238,1673942400"; 
+   d="scan'208";a="706619626"
+Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
+  by orsmga008.jf.intel.com with ESMTP; 06 Mar 2023 16:27:41 -0800
+Received: from kbuild by b613635ddfff with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1pZLB6-0000lb-0A;
+        Tue, 07 Mar 2023 00:27:40 +0000
+Date:   Tue, 7 Mar 2023 08:26:53 +0800
+From:   kernel test robot <lkp@intel.com>
 To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
         paulus@samba.org, benh@kernel.crashing.org, linux@armlinux.org.uk,
         pjones@redhat.com, timur@kernel.org, adaplas@gmail.com,
         s.hauer@pengutronix.de, shawnguo@kernel.org, mbroemme@libmpq.org,
-        thomas@winischhofer.net, James.Bottomley@HansenPartnership.com,
+        thomas@winischhofer.net, James.Bottomley@hansenpartnership.com,
         spock@gentoo.org, sudipm.mukherjee@gmail.com,
         teddy.wang@siliconmotion.com, geert+renesas@glider.be,
         corbet@lwn.net
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-References: <20230306160016.4459-1-tzimmermann@suse.de>
- <20230306160016.4459-2-tzimmermann@suse.de>
-From:   Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20230306160016.4459-2-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Cc:     llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH 97/99] fbdev/vt8623fb: Duplicate video-mode option string
+Message-ID: <202303070859.8Y5URjpT-lkp@intel.com>
+References: <20230306160016.4459-98-tzimmermann@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230306160016.4459-98-tzimmermann@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+Hi Thomas,
 
-On 3/6/23 07:58, Thomas Zimmermann wrote:
-> Add struct option_iter and helpers that walk over individual options
-> of an option string. Add documentation.
-> 
-> Kernel parameters often have the format of
-> 
->   param=opt1,opt2:val,opt3
-> 
-> where the option string contains a number of comma-separated options.
-> Drivers usually use strsep() in a loop to extract individual options
-> from the string. Each call to strsep() modifies the given string, so
-> callers have to duplicate kernel parameters that are to be parsed
-> multiple times.
-> 
-> The new struct option_iter and its helpers wrap this code behind a
-> clean interface. Drivers can iterate over the options without having
-> to know the details of the option-string format. The iterator handles
-> string memory internally without modifying the original options.
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
->  Documentation/core-api/kernel-api.rst |  9 +++
->  include/linux/cmdline.h               | 29 ++++++++
->  lib/Makefile                          |  2 +-
->  lib/cmdline_iter.c                    | 97 +++++++++++++++++++++++++++
->  4 files changed, 136 insertions(+), 1 deletion(-)
->  create mode 100644 include/linux/cmdline.h
->  create mode 100644 lib/cmdline_iter.c
-> 
-> diff --git a/Documentation/core-api/kernel-api.rst b/Documentation/core-api/kernel-api.rst
-> index 62f961610773..cdc7ba8decf9 100644
-> --- a/Documentation/core-api/kernel-api.rst
-> +++ b/Documentation/core-api/kernel-api.rst
-> @@ -93,9 +93,18 @@ Bitmap Operations
->  Command-line Parsing
->  --------------------
->  
-> +.. kernel-doc:: lib/cmdline_iter.c
-> +   :doc: overview
-> +
->  .. kernel-doc:: lib/cmdline.c
->     :export:
->  
-> +.. kernel-doc:: lib/cmdline_iter.c
-> +   :export:
-> +
-> +.. kernel-doc:: include/linux/cmdline.h
-> +   :internal:
-> +
->  Sorting
->  -------
->  
-> diff --git a/include/linux/cmdline.h b/include/linux/cmdline.h
-> new file mode 100644
-> index 000000000000..5d7e648e98a5
-> --- /dev/null
-> +++ b/include/linux/cmdline.h
-> @@ -0,0 +1,29 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +
-> +#ifndef LINUX_CMDLINE_H
-> +#define LINUX_CMDLINE_H
-> +
-> +/**
-> + * struct option_iter - Iterates over string of kernel or module options
-> + */
-> +struct option_iter {
-> +	char *optbuf;
-> +	char *next_opt;
-> +};
-> +
-> +void option_iter_init(struct option_iter *iter, const char *options);
-> +void option_iter_release(struct option_iter *iter);
-> +const char *option_iter_incr(struct option_iter *iter);
-> +
-> +/**
-> + * option_iter_next - Loop condition to move over options
-> + * @iter_:	the iterator
-> + * @opt_:	the name of the option variable
-> + *
-> + * Iterates over option strings as part of a while loop and
-> + * stores the current option in opt_.
-> + */
-> +#define option_iter_next(iter_, opt_) \
-> +	(((opt_) = option_iter_incr(iter_)) != NULL)
-> +
-> +#endif
+I love your patch! Yet something to improve:
 
-> diff --git a/lib/cmdline_iter.c b/lib/cmdline_iter.c
-> new file mode 100644
-> index 000000000000..d9371dfea08b
-> --- /dev/null
-> +++ b/lib/cmdline_iter.c
-> @@ -0,0 +1,97 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +
-> +#include <linux/cmdline.h>
-> +#include <linux/export.h>
-> +#include <linux/slab.h>
-> +
-> +/**
-> + * DOC: overview
-> + *
-> + * A kernel parameter's option string can contain multiple comma-separated
-> + * options. Modules can parse an option string with struct &option_iter and
-> + * its helpers. After obtaining the string, initialize and instance of the
+[auto build test ERROR on drm-misc/drm-misc-next]
+[cannot apply to deller-parisc/for-next staging/staging-testing staging/staging-next staging/staging-linus linus/master v6.3-rc1 next-20230306]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-                                                          an instance
+url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/lib-Add-option-iterator/20230307-000524
+base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
+patch link:    https://lore.kernel.org/r/20230306160016.4459-98-tzimmermann%40suse.de
+patch subject: [PATCH 97/99] fbdev/vt8623fb: Duplicate video-mode option string
+config: x86_64-randconfig-a016-20230306 (https://download.01.org/0day-ci/archive/20230307/202303070859.8Y5URjpT-lkp@intel.com/config)
+compiler: clang version 14.0.6 (https://github.com/llvm/llvm-project f28c006a5895fc0e329fe15fead81e37457cb1d1)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/intel-lab-lkp/linux/commit/819a7fd9e1404efc4f2140bcb4c7e39643b7e4ab
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Thomas-Zimmermann/lib-Add-option-iterator/20230307-000524
+        git checkout 819a7fd9e1404efc4f2140bcb4c7e39643b7e4ab
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 olddefconfig
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash
 
-> + * option iterator and loop iver its content as show below.
+If you fix the issue, kindly add following tag where applicable
+| Reported-by: kernel test robot <lkp@intel.com>
+| Link: https://lore.kernel.org/oe-kbuild-all/202303070859.8Y5URjpT-lkp@intel.com/
 
-                               over
+All errors (new ones prefixed by >>):
 
-> + *
-> + * .. code-block:: c
-> + *
-> + *	const char *options = ...; // provided option string
-> + *
-> + *	struct option_iter iter;
-> + *	const char *opt;
-> + *
-> + *	option_iter_init(&iter, options);
-> + *
-> + *	while (option_iter_next(&iter, &opt)) {
-> + *		if (!strcmp(opt, "foo"))
-> + *			...
-> + *		else (strcmp(opt, "bar"))
-> + *			...
-> + *		else
-> + *			pr_warn("unknown option %s\n", opt);
-> + *	}
-> + *
-> + *	option_iter_release(&iter);
-> + *
-> + * The call to option_iter_init() initializes the iterator instance
-> + * from the option string. The while loop walks over the individual
-> + * options in the sting and returns each in the second argument. The
-> + * returned memory is owned by the iterator instance and callers may
-> + * not modify or free it. The call to option_iter_release() frees all
-> + * resources of the iterator. This process does not modify the original
-> + * option string. If the option string contains an empty option (i.e.,
-> + * two commas next to each other), option_iter_next() skips the empty
-> + * option automatically.
+>> drivers/video/fbdev/vt8623fb.c:938:4: error: 'break' statement not in loop or switch statement
+                           break;
+                           ^
+   drivers/video/fbdev/vt8623fb.c:940:4: error: 'break' statement not in loop or switch statement
+                           break;
+                           ^
+   2 errors generated.
 
-Is that latter skipping over a ",," automatically something that you have
-observed as needed?
-I can imagine a driver or module wanting to know that an empty string
-was entered (i.e., ",,").
 
-> + */
-> +
-> +/**
-> + * option_iter_init - Initializes an option iterator
-> + * @iter:	the iterator to initialize
-> + * @options:	the options string
-> + */
-> +void option_iter_init(struct option_iter *iter, const char *options)
-> +{
-> +	if (options && *options)
-> +		iter->optbuf = kstrdup(options, GFP_KERNEL); // can be NULL
-> +	else
-> +		iter->optbuf = NULL;
-> +	iter->next_opt = iter->optbuf;
-> +}
-> +EXPORT_SYMBOL(option_iter_init);
-> +
-> +/**
-> + * option_iter_release - Releases an option iterator's resources
-> + * @iter:	the iterator
-> + */
-> +void option_iter_release(struct option_iter *iter)
-> +{
-> +	kfree(iter->optbuf);
-> +	iter->next_opt = NULL;
-> +}
-> +EXPORT_SYMBOL(option_iter_release);
-> +
-> +/**
-> + * option_iter_incr - Return current option and advance to the next
-> + * @iter:	the iterator
-> + *
-> + * Returns:
+vim +/break +938 drivers/video/fbdev/vt8623fb.c
 
- * Return:
-matches kernel-doc notation documentation.
-
-> + * The current option string, or NULL if there are no more options.
-> + */
-> +const char *option_iter_incr(struct option_iter *iter)
-> +{
-> +	char *opt;
-> +
-> +	if (!iter->next_opt) { // can be OK if kstrdup failed
-> +		if (iter->optbuf) // iter has already been released; logic error
-> +			pr_err("Incrementing option iterator without string\n");
-> +		return NULL;
-> +	}
-> +
-> +	do {
-> +		opt = strsep(&iter->next_opt, ",");
-> +		if (!opt)
-> +			return NULL;
-> +	} while (!*opt); // found empty option string, try next
-> +
-> +	return opt;
-> +}
-> +EXPORT_SYMBOL(option_iter_incr);
-
-Looks useful. Thanks.
+   924	
+   925		if (fb_modesetting_disabled("vt8623fb"))
+   926			return -ENODEV;
+   927	
+   928	#ifndef MODULE
+   929		if (fb_get_options("vt8623fb", &option))
+   930			return -ENODEV;
+   931	
+   932		if (option && *option) {
+   933			static char mode_option_buf[256];
+   934			int ret;
+   935	
+   936			ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", option);
+   937			if (WARN(ret < 0, "vt8623fb: ignoring invalid option, ret=%d\n", ret))
+ > 938				break;
+   939			if (WARN(ret >= sizeof(mode_option_buf), "vt8623fb: option too long\n"))
+   940				break;
+   941			mode_option = mode_option_buf;
+   942		}
+   943	#endif
+   944	
+   945		pr_debug("vt8623fb: initializing\n");
+   946		return pci_register_driver(&vt8623fb_pci_driver);
+   947	}
+   948	
 
 -- 
-~Randy
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests

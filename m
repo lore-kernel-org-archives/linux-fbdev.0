@@ -2,142 +2,118 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F22C2C61DA4
-	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Mar 2023 00:27:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC5F7C678D4
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Mar 2023 07:54:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229579AbjCGA1w (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Mar 2023 19:27:52 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60812 "EHLO
+        id S229718AbjCGHyC convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Mar 2023 02:54:02 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52216 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229742AbjCGA1v (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Mar 2023 19:27:51 -0500
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 95F0F6E683;
-        Mon,  6 Mar 2023 16:27:46 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1678148866; x=1709684866;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=qU7r/0l12H9VC3ijVZNrTHRPP+flag7/E09IYJm8+eY=;
-  b=Z3m+YfWWgQmfoQPBGZ6CwBRD5lPnKp/7+Nv7S2rZGAwCo3HQf3niiVU1
-   FrPJ+hKyv9zgyLgbRRTSlJ0vTKEUT8yMkIvToLrHADv38ldX+7O9l5yW9
-   hIFUuRm7NxwuB3WApm6xdvZoWxQX/UvC7R9yFkmWIoFJpgZZlfMgO2maQ
-   f1QZlpLVExxa5n8sCxv3JSxQzg31Af5dwYAuavlhixmD1EQtleQX1Hnn3
-   DH2ajgGOKnisnvtNt1zhjv322GoX8BKaaFu1jZYRk7NmY3BhPg7aHOUnk
-   GW9ax7aikDv/1kF/i0Fu9Xyg0ZZKPSOCH/cMKsoZpWllrzaPjHLOsk1nZ
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10641"; a="319548314"
-X-IronPort-AV: E=Sophos;i="5.98,238,1673942400"; 
-   d="scan'208";a="319548314"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Mar 2023 16:27:45 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10641"; a="706619626"
-X-IronPort-AV: E=Sophos;i="5.98,238,1673942400"; 
-   d="scan'208";a="706619626"
-Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
-  by orsmga008.jf.intel.com with ESMTP; 06 Mar 2023 16:27:41 -0800
-Received: from kbuild by b613635ddfff with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1pZLB6-0000lb-0A;
-        Tue, 07 Mar 2023 00:27:40 +0000
-Date:   Tue, 7 Mar 2023 08:26:53 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
-        paulus@samba.org, benh@kernel.crashing.org, linux@armlinux.org.uk,
-        pjones@redhat.com, timur@kernel.org, adaplas@gmail.com,
-        s.hauer@pengutronix.de, shawnguo@kernel.org, mbroemme@libmpq.org,
-        thomas@winischhofer.net, James.Bottomley@hansenpartnership.com,
-        spock@gentoo.org, sudipm.mukherjee@gmail.com,
-        teddy.wang@siliconmotion.com, geert+renesas@glider.be,
-        corbet@lwn.net
-Cc:     llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH 97/99] fbdev/vt8623fb: Duplicate video-mode option string
-Message-ID: <202303070859.8Y5URjpT-lkp@intel.com>
-References: <20230306160016.4459-98-tzimmermann@suse.de>
+        with ESMTP id S229748AbjCGHyA (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Mar 2023 02:54:00 -0500
+Received: from mail-qt1-f177.google.com (mail-qt1-f177.google.com [209.85.160.177])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B67B53CE3D;
+        Mon,  6 Mar 2023 23:53:53 -0800 (PST)
+Received: by mail-qt1-f177.google.com with SMTP id l18so13523732qtp.1;
+        Mon, 06 Mar 2023 23:53:53 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1678175632;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=G6v56biJISo0k1NX6M3k2oB4vNanTMqcuoG+TH0gcNY=;
+        b=c/8yjuFspe4GjYgtNgkSMrDGwQTHRZ+nc6Mt1xleBwfGRs8Rdj68XerPyJhTZvorK2
+         47ZDHzdUfgvdNnlthz5fD7M/bajzIltqd2FPky/c25By/k5+0+YUI1/4z8H84URQmqV3
+         G/RhEVqhZqh7mk9aZqmC6MbodAZF0DaKSguh+vRN4givUlAoSjjCCvXXDqU/tz/B5bqm
+         57MOPHtGuBCp277GAKbCYx53d70Xc6o4XFsIdVgo4ukfGIug7qSc+XGeGeZoWcimz2oC
+         wuLXIytGVCx4ZfC1O4dKeKfTnR+Q8nmpv1mKcAtC4DGsz/RRJWogl7mTJcxrvdiQJZaB
+         YHMw==
+X-Gm-Message-State: AO0yUKUyRzQdq/2LEzuEyNr7DnwT85XmYy25WZ9alIQDipcTa8nxo7oh
+        P036SUeRVXzOcQd6UID6UP1hmNXA5kLeeg==
+X-Google-Smtp-Source: AK7set+TVCks7/4gD4tAAgJSTUEXz/p9U+wHelySvFvLuM+avD0iNsMbAm5KXXYd2wSw1RwWB8iFJg==
+X-Received: by 2002:ac8:7d84:0:b0:3b9:fb0e:adba with SMTP id c4-20020ac87d84000000b003b9fb0eadbamr22957757qtd.25.1678175632688;
+        Mon, 06 Mar 2023 23:53:52 -0800 (PST)
+Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com. [209.85.128.172])
+        by smtp.gmail.com with ESMTPSA id s4-20020a372c04000000b0074283b87a4esm8979351qkh.90.2023.03.06.23.53.50
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 06 Mar 2023 23:53:51 -0800 (PST)
+Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-536b7ffdd34so230419417b3.6;
+        Mon, 06 Mar 2023 23:53:50 -0800 (PST)
+X-Received: by 2002:a81:b61d:0:b0:52e:f66d:b70f with SMTP id
+ u29-20020a81b61d000000b0052ef66db70fmr8277658ywh.5.1678175630175; Mon, 06 Mar
+ 2023 23:53:50 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230306160016.4459-98-tzimmermann@suse.de>
+References: <20230306160016.4459-1-tzimmermann@suse.de>
+In-Reply-To: <20230306160016.4459-1-tzimmermann@suse.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Tue, 7 Mar 2023 08:53:39 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdU5AwE0pK=ppip4J81ByEye+jmvff1s8saeEuWZWZiqPw@mail.gmail.com>
+Message-ID: <CAMuHMdU5AwE0pK=ppip4J81ByEye+jmvff1s8saeEuWZWZiqPw@mail.gmail.com>
+Subject: Re: [PATCH 00/99] fbdev: Fix memory leak in option parsing
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
+        linux@armlinux.org.uk, pjones@redhat.com, timur@kernel.org,
+        adaplas@gmail.com, s.hauer@pengutronix.de, shawnguo@kernel.org,
+        mbroemme@libmpq.org, thomas@winischhofer.net,
+        James.Bottomley@hansenpartnership.com, spock@gentoo.org,
+        sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+        corbet@lwn.net, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Hi Thomas,
 
-I love your patch! Yet something to improve:
+On Mon, Mar 6, 2023 at 5:00 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Introduce struct option_iter and helpers to parse command-line
+> options with comma-separated key-value pairs. Then convert fbdev
+> drivers to the new interface. Fixes a memory leak in the parsing of
+> the video= option.
+>
+> Before commit 73ce73c30ba9 ("fbdev: Transfer video= option strings to
+> caller; clarify ownership"), a call to fb_get_options() either
+> returned an internal string or a duplicated string; hence ownership of
+> the string's memory buffer was not well defined, but depended on how
+> users specified the video= option on the kernel command line. For
+> global settings, the caller owned the returned memory and for per-driver
+> settings, fb_get_options() owned the memory. As calling drivers were
+> unable to detect the case, the memory was leaked.
+>
+> Commit 73ce73c30ba9 ("fbdev: Transfer video= option strings to caller;
+> clarify ownership") changed sematics to caller-owned strings. Drivers
+> still leaked the memory, but at least ownership was clear.
+>
+> This patchset fixes the memory leak and changes string ownership back
+> to fb_get_options(). Patch 1 introduces struct option_iter and a few
+> helpers. The interface takes an option string, such as video=, in the
+> common form value1,key2:value2,value3 etc and returns the individial
+> comma-separated pairs. Various modules use this pattern, so the code
+> is located under lib/.
+>
+> Patches 2 to 98 go through fbdev drivers and convert them to the new
+> interface. This often requires a number of cleanups. A driver would
+> typically refer to the option string's video mode. Such strings are now
+> copied to driver-allocated memory so that drivers don't refer directly
+> to the option string's memory. The option iterator then replaces manual
+> parsing loops based on strsep(",").
 
-[auto build test ERROR on drm-misc/drm-misc-next]
-[cannot apply to deller-parisc/for-next staging/staging-testing staging/staging-next staging/staging-linus linus/master v6.3-rc1 next-20230306]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Thanks for your series!
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/lib-Add-option-iterator/20230307-000524
-base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
-patch link:    https://lore.kernel.org/r/20230306160016.4459-98-tzimmermann%40suse.de
-patch subject: [PATCH 97/99] fbdev/vt8623fb: Duplicate video-mode option string
-config: x86_64-randconfig-a016-20230306 (https://download.01.org/0day-ci/archive/20230307/202303070859.8Y5URjpT-lkp@intel.com/config)
-compiler: clang version 14.0.6 (https://github.com/llvm/llvm-project f28c006a5895fc0e329fe15fead81e37457cb1d1)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/819a7fd9e1404efc4f2140bcb4c7e39643b7e4ab
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Thomas-Zimmermann/lib-Add-option-iterator/20230307-000524
-        git checkout 819a7fd9e1404efc4f2140bcb4c7e39643b7e4ab
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 olddefconfig
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash
+Unfortunately I cannot say I'm thrilled about this: you are replacing
+a single small dynamic memory leak by 36 larger static memory leaks.
+Am I missing something?
 
-If you fix the issue, kindly add following tag where applicable
-| Reported-by: kernel test robot <lkp@intel.com>
-| Link: https://lore.kernel.org/oe-kbuild-all/202303070859.8Y5URjpT-lkp@intel.com/
+Gr{oetje,eeting}s,
 
-All errors (new ones prefixed by >>):
-
->> drivers/video/fbdev/vt8623fb.c:938:4: error: 'break' statement not in loop or switch statement
-                           break;
-                           ^
-   drivers/video/fbdev/vt8623fb.c:940:4: error: 'break' statement not in loop or switch statement
-                           break;
-                           ^
-   2 errors generated.
-
-
-vim +/break +938 drivers/video/fbdev/vt8623fb.c
-
-   924	
-   925		if (fb_modesetting_disabled("vt8623fb"))
-   926			return -ENODEV;
-   927	
-   928	#ifndef MODULE
-   929		if (fb_get_options("vt8623fb", &option))
-   930			return -ENODEV;
-   931	
-   932		if (option && *option) {
-   933			static char mode_option_buf[256];
-   934			int ret;
-   935	
-   936			ret = snprintf(mode_option_buf, sizeof(mode_option_buf), "%s", option);
-   937			if (WARN(ret < 0, "vt8623fb: ignoring invalid option, ret=%d\n", ret))
- > 938				break;
-   939			if (WARN(ret >= sizeof(mode_option_buf), "vt8623fb: option too long\n"))
-   940				break;
-   941			mode_option = mode_option_buf;
-   942		}
-   943	#endif
-   944	
-   945		pr_debug("vt8623fb: initializing\n");
-   946		return pci_register_driver(&vt8623fb_pci_driver);
-   947	}
-   948	
+                        Geert
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

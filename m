@@ -2,83 +2,100 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6650C678D5
-	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 07:39:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BD72C64EC4
+	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 07:40:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229545AbjCHHjC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 8 Mar 2023 02:39:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40796 "EHLO
+        id S229513AbjCHHkk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 8 Mar 2023 02:40:40 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42492 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229614AbjCHHjA (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 02:39:00 -0500
-X-Greylist: delayed 241 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 07 Mar 2023 23:38:47 PST
-Received: from h-241.webit.at (h-241.webit.at [213.208.138.241])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 978632716
-        for <linux-fbdev@vger.kernel.org>; Tue,  7 Mar 2023 23:38:46 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=winischhofer.net; s=rsa1; h=Content-Transfer-Encoding:Content-Type:
-        In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
-        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=np2VeMjbFObtnEPKwHULGC9atl9R6YcO1ecS1ymUv9w=; b=NUwKJgdS/D7HyEhaJ8BQic2610
-        7+RzyW6H8ns30uSFexbfPEAN/sZmaUUhdOrMqW6MOsmLpfXt2V8OJ4TZN9gL6jmeInz+uWDFvoD76
-        ZH0lD4Cvw/nABr5LHHynklz8et3O2M0VWK53cd7qFfOeFvoXt3SGiPKiMlJdOT9IyMwU=;
-Message-ID: <59fee461-5aa5-dc66-2470-df55eaf0fe76@winischhofer.net>
-Date:   Wed, 8 Mar 2023 08:33:39 +0100
+        with ESMTP id S229896AbjCHHkg (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 02:40:36 -0500
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E8BCC59E8
+        for <linux-fbdev@vger.kernel.org>; Tue,  7 Mar 2023 23:39:56 -0800 (PST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pZoOt-0007OM-Ku; Wed, 08 Mar 2023 08:39:51 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pZoOs-002fID-VX; Wed, 08 Mar 2023 08:39:50 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pZoOs-003ELz-4C; Wed, 08 Mar 2023 08:39:50 +0100
+From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+To:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        kernel@pengutronix.de
+Subject: [PATCH 03/13] backlight: cr_bllcd: Convert to platform remove callback returning void
+Date:   Wed,  8 Mar 2023 08:39:35 +0100
+Message-Id: <20230308073945.2336302-4-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.39.1
+In-Reply-To: <20230308073945.2336302-1-u.kleine-koenig@pengutronix.de>
+References: <20230308073945.2336302-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:91.0)
- Gecko/20100101 Thunderbird/91.13.1
-Subject: Re: [PATCH] MAINTAINERS: orphan SIS FRAMEBUFFER DRIVER
-Content-Language: en-US
-To:     Lukas Bulwahn <lukas.bulwahn@gmail.com>,
-        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20230308071921.10963-1-lukas.bulwahn@gmail.com>
-From:   Thomas Winischhofer <thomas@winischhofer.net>
-In-Reply-To: <20230308071921.10963-1-lukas.bulwahn@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1715; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=y8vqN29Di5PVrbOEowmiQzdaiL6RCBenKXJql6Jvatk=; b=owEBbQGS/pANAwAKAcH8FHityuwJAcsmYgBkCDubkN1ZRPbIBrEHjp5fc3iKPta7T4R6JZRqv 9gAhDAsFUOJATMEAAEKAB0WIQR+cioWkBis/z50pAvB/BR4rcrsCQUCZAg7mwAKCRDB/BR4rcrs Cbl7CACaz76dYbu/gGCK/3DYJ8DN5YcESTe9HQ7T6A9YBnLdLR5ETJy8PhlWbNYld8zSS+7TLOm oZoODUcNhdF6lcKy30uJA+vh3Xm7Y6WqerR+GExQYa3z2ediCjoj4wWdrkQ3JKOv84gACypgTHk XWujA5b38trj9rV+9LatkpZ/Vl/RycWq8ChmNBAvv1Ukbrf0221txRs3Aw35Y4r+qt1nJxpmCF3 qAUP6tmt23lfG6Ztr/WmvGi9+UwzdsaMtHhXiDBSKLGHgBBfgzuh4oMq8QRsgC3ShTRbpzrQa1k YdtM5gcKiKkJE1my7wsqwsmPGOYjAp4MJkM+Gj+rYbOwiouP
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+The .remove() callback for a platform driver returns an int which makes
+many driver authors wrongly assume it's possible to do error handling by
+returning an error code. However the value returned is (mostly) ignored
+and this typically results in resource leaks. To improve here there is a
+quest to make the remove callback return void. In the first step of this
+quest all drivers are converted to .remove_new() which already returns
+void.
 
-Confirm.
+Trivially convert this driver from always returning zero in the remove
+callback to the void returning variant.
 
-/Thomas
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/video/backlight/cr_bllcd.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/video/backlight/cr_bllcd.c b/drivers/video/backlight/cr_bllcd.c
+index 4ad0a72531fe..781aeecc451d 100644
+--- a/drivers/video/backlight/cr_bllcd.c
++++ b/drivers/video/backlight/cr_bllcd.c
+@@ -210,7 +210,7 @@ static int cr_backlight_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int cr_backlight_remove(struct platform_device *pdev)
++static void cr_backlight_remove(struct platform_device *pdev)
+ {
+ 	struct cr_panel *crp = platform_get_drvdata(pdev);
+ 
+@@ -220,13 +220,11 @@ static int cr_backlight_remove(struct platform_device *pdev)
+ 	cr_backlight_set_intensity(crp->cr_backlight_device);
+ 	cr_lcd_set_power(crp->cr_lcd_device, FB_BLANK_POWERDOWN);
+ 	pci_dev_put(lpc_dev);
+-
+-	return 0;
+ }
+ 
+ static struct platform_driver cr_backlight_driver = {
+ 	.probe = cr_backlight_probe,
+-	.remove = cr_backlight_remove,
++	.remove_new = cr_backlight_remove,
+ 	.driver = {
+ 		   .name = "cr_backlight",
+ 		   },
+-- 
+2.39.1
 
-On 08.03.23 08:19, Lukas Bulwahn wrote:
-> This was triggered by the fact that the webpage:
-> 
->   http://www.winischhofer.net/linuxsisvga.shtml
-> 
-> cannot be reached anymore.
-> 
-> Thomas Winischhofer is still reachable at the given email address, but he
-> has not been active since 2005.
-> 
-> Mark the SIS FRAMEBUFFER DRIVER as orphan to reflect the current state.
-> 
-> Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
-> ---
->  MAINTAINERS | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 5d8f46f35aa4..354577534aef 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -19191,9 +19191,7 @@ W:	http://www.brownhat.org/sis900.html
->  F:	drivers/net/ethernet/sis/sis900.*
->  
->  SIS FRAMEBUFFER DRIVER
-> -M:	Thomas Winischhofer <thomas@winischhofer.net>
-> -S:	Maintained
-> -W:	http://www.winischhofer.net/linuxsisvga.shtml
-> +S:	Orphan
->  F:	Documentation/fb/sisfb.rst
->  F:	drivers/video/fbdev/sis/
->  F:	include/video/sisfb.h

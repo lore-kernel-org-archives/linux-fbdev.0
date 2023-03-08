@@ -2,108 +2,85 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FD9CC742A7
-	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 13:12:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D7A2C678D5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 16:28:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231629AbjCHNM0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 8 Mar 2023 08:12:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60718 "EHLO
+        id S230400AbjCHQ2U (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 8 Mar 2023 11:28:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39394 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229947AbjCHNLt (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 08:11:49 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF553C4883
-        for <linux-fbdev@vger.kernel.org>; Wed,  8 Mar 2023 05:09:04 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1678280849;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=uwBTGd8vP947AeUSF0iMuOil3XwvoXMLAawY3OLENFQ=;
-        b=NAw80EVSC7712NdXBtXng7FWL1il8fegbFjHgoUsYwgoLDJoisd4T28cbGMrDHAUu5iIP1
-        EWrf0Zbl8bhyAkXxmUzv+501gC6DF6Q3D+Og2N6vcul/C/pnFZuWrUYdVOO0dNbAJsPI8b
-        wnnDaIA/mk7lS6cBNPDKhDfe/Q2khHQ=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-595-QZ6zXcGKMfiG3-HnaItivQ-1; Wed, 08 Mar 2023 08:07:26 -0500
-X-MC-Unique: QZ6zXcGKMfiG3-HnaItivQ-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com [10.11.54.6])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        with ESMTP id S230427AbjCHQ1z (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 11:27:55 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6464BD2388;
+        Wed,  8 Mar 2023 08:27:16 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 4AEFF858F09;
-        Wed,  8 Mar 2023 13:07:25 +0000 (UTC)
-Received: from MiWiFi-R3L-srv.redhat.com (ovpn-12-137.pek2.redhat.com [10.72.12.137])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 914522166B26;
-        Wed,  8 Mar 2023 13:07:18 +0000 (UTC)
-From:   Baoquan He <bhe@redhat.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     linux-arch@vger.kernel.org, linux-mm@kvack.org, arnd@arndb.de,
-        mpe@ellerman.id.au, geert@linux-m68k.org, mcgrof@kernel.org,
-        hch@infradead.org, Baoquan He <bhe@redhat.com>,
-        Helge Deller <deller@gmx.de>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH v4 1/4] video: fbdev: atyfb: only use ioremap_uc() on i386 and ia64
-Date:   Wed,  8 Mar 2023 21:07:07 +0800
-Message-Id: <20230308130710.368085-2-bhe@redhat.com>
-In-Reply-To: <20230308130710.368085-1-bhe@redhat.com>
-References: <20230308130710.368085-1-bhe@redhat.com>
+        by ams.source.kernel.org (Postfix) with ESMTPS id 9CFC0B81DA4;
+        Wed,  8 Mar 2023 16:27:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 43349C43322;
+        Wed,  8 Mar 2023 16:27:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1678292833;
+        bh=JbxCyI0huIIANoxirPXgBTBH1si+npk+dR+RaZC1gzg=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=YBZP76Ad87hnY4xkxLVRdMFSnnkcSazWx7ctmmBO3jZVceNLqFo7l/o98Wy2QDQu8
+         KCm5hO2UoC4cgZ2At1VLFNv3t20NJCitR1wMZmwV6/Ijn6HFGydmu/pFkZA1hSQNaj
+         2IoTojH/fyvBOxze9JfDeWsadU+aHiRwP58joHNRgUBdsiX77E3Ma64odWj+Pzxy2W
+         pIKWg0AGt+xk1eakynuaU0yiixiUatM6EY+Enbosfw7gJ8C4PGlZRf8z9mkoDrZn9b
+         OnX2dP6smKxPO9ltvuAks+krZ/DgL4wVuOT1A2Ni0y9iNvezRHmB1fAWkKR+Uwt5tp
+         HipwG++0kQTKw==
+Received: by mail-ed1-f46.google.com with SMTP id s11so68017420edy.8;
+        Wed, 08 Mar 2023 08:27:13 -0800 (PST)
+X-Gm-Message-State: AO0yUKU0JnYsfKLvI7blA3gH0Q3YrCLyiUt4NiGybm6C8ca59uDTg7hL
+        pQrsWAh2lYdDJx3KUd5NVGP7PHukAruNxNMOvwQ=
+X-Google-Smtp-Source: AK7set8tv9oj0Cs64+dvjPmRThogjRBhvrPYlr0s1Jxp6xg8NhIzAjly/ShQhG8oQbSbN3jKigayPafGtW24VNutDRs=
+X-Received: by 2002:a17:906:9143:b0:8ad:d366:54c4 with SMTP id
+ y3-20020a170906914300b008add36654c4mr12974560ejw.4.1678292831332; Wed, 08 Mar
+ 2023 08:27:11 -0800 (PST)
 MIME-Version: 1.0
-Content-type: text/plain
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.6
+References: <20230306160016.4459-1-tzimmermann@suse.de> <20230306160016.4459-23-tzimmermann@suse.de>
+ <CAOZdJXUtkyg5Gv3HYCK-U1pQpY0_QBk99wtqUvz5RVy2W3Ak9w@mail.gmail.com> <aac88d8e-52e8-e2d5-2f41-bed7886bb3dc@suse.de>
+In-Reply-To: <aac88d8e-52e8-e2d5-2f41-bed7886bb3dc@suse.de>
+From:   Timur Tabi <timur@kernel.org>
+Date:   Wed, 8 Mar 2023 10:26:34 -0600
+X-Gmail-Original-Message-ID: <CAOZdJXWGNBHMPRmkBYeVL31=Q0Y=fLa8RG0KS668xQ9ozD+Xtg@mail.gmail.com>
+Message-ID: <CAOZdJXWGNBHMPRmkBYeVL31=Q0Y=fLa8RG0KS668xQ9ozD+Xtg@mail.gmail.com>
+Subject: Re: [PATCH 22/99] fbdev/fsl-diu-fb: Duplicate video-mode option string
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
+        linux@armlinux.org.uk, pjones@redhat.com, adaplas@gmail.com,
+        s.hauer@pengutronix.de, shawnguo@kernel.org, mbroemme@libmpq.org,
+        thomas@winischhofer.net, James.Bottomley@hansenpartnership.com,
+        spock@gentoo.org, sudipm.mukherjee@gmail.com,
+        teddy.wang@siliconmotion.com, geert+renesas@glider.be,
+        corbet@lwn.net, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
+On Tue, Mar 7, 2023 at 2:28=E2=80=AFAM Thomas Zimmermann <tzimmermann@suse.=
+de> wrote:
+> > So after module_init is finished, mode_option_buf[] no longer exists?
+>
+> Does the __init attribute on a function affect the static variables in
+> that function?
 
-ioremap_uc() is only meaningful on old x86-32 systems with the PAT
-extension, and on ia64 with its slightly unconventional ioremap()
-behavior, everywhere else this is the same as ioremap() anyway.
+That is an excellent question.
 
-Change the only driver that still references ioremap_uc() to only do so
-on x86-32/ia64 in order to allow removing that interface at some
-point in the future for the other architectures.
+https://stackoverflow.com/questions/64558614/what-happens-to-local-static-i=
+dentifiers-in-init-function
 
-On some architectures, ioremap_uc() just returns NULL, changing
-the driver to call ioremap() means that they now have a chance
-of working correctly.
+I don't think the compiler is naturally aware of whatever section a
+variable or function is placed in, so it can't really know that
+mode_option_buf[] is suppose to have a limited lifetime.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Baoquan He <bhe@redhat.com>
-Cc: Helge Deller <deller@gmx.de>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
----
- drivers/video/fbdev/aty/atyfb_base.c | 4 ++++
- 1 file changed, 4 insertions(+)
+Either way, the code seems wrong.  If mode_option_buf[] is marked as
+__initdata, then it will disappear before the probe() function is
+called.
 
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index b02e4e645035..6553c71b113f 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -3440,11 +3440,15 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
- 	}
- 
- 	info->fix.mmio_start = raddr;
-+#if defined(__i386__) || defined(__ia64__)
- 	/*
- 	 * By using strong UC we force the MTRR to never have an
- 	 * effect on the MMIO region on both non-PAT and PAT systems.
- 	 */
- 	par->ati_regbase = ioremap_uc(info->fix.mmio_start, 0x1000);
-+#else
-+	par->ati_regbase = ioremap(info->fix.mmio_start, 0x1000);
-+#endif
- 	if (par->ati_regbase == NULL)
- 		return -ENOMEM;
- 
--- 
-2.34.1
-
+If mode_option_buf[] remains resident, then we are wasting 256 bytes.

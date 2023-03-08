@@ -2,110 +2,108 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64A39C64EC4
-	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 22:03:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21297C678D5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 22:06:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229645AbjCHWDP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 8 Mar 2023 17:03:15 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40058 "EHLO
+        id S229497AbjCHWGG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 8 Mar 2023 17:06:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44204 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229462AbjCHWDO (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 17:03:14 -0500
+        with ESMTP id S229522AbjCHWGF (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 17:06:05 -0500
 Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E5E382ED46;
-        Wed,  8 Mar 2023 14:03:09 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AC51EC78F9;
+        Wed,  8 Mar 2023 14:06:00 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1678312981; i=deller@gmx.de;
-        bh=URLRtCYvCA2OfgePK0dWq7nXnf4urDizzWJ5/29Hrz8=;
+        t=1678313154; i=deller@gmx.de;
+        bh=KiCVvUYymv3ZDP5Dqv97SnkeHUGlZBmYwTatTeIiUko=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=WP8JmQN1foHTYW81fe2J8bKqCKZZ0E3SuwAPCuk9mCCQ1EOBOitwYn2waiV/lhM+Y
-         HkjWCkWVMHsqWVkMICOWJKG+/GVQ5vv7PUrND0/FuQ/f++uuohdua7obODUxWIJ6Xk
-         gBqRbpByUTVEuCKjwLThbudN6kZPCh7y4P3oe3vNOQus1W4TkKSM40ywb4/mDfANE+
-         ASG4vHH8Wxitbfz8uqRjVVUSsEGFnlgSB5NN/9tgTrMhQHyVScrH00B3orSgZRITJp
-         l+3stHKU1C7p4rCL4MItI5G3GQ2ZGlbldxvC29QPZ5w83eE8hJqDiB8VQKrIrh75KL
-         3zIK2oZffpHZg==
+        b=gRY81qv5Foi33FJWYnebdkpevVbHXg4100pUIu2LIyHygMxZTIFsBpgeXL/T/W35e
+         uryUpTAAmqswaPthJ3atVJjuGEId90rDTkMi7Y8Av0G0pugj1HnFLAueuFmk8O6zMZ
+         l6YBxWiEsVuxjTo+ajCoOwGaxjG3tIlSVRlAj2IUOR39At795eW3HS1GQsvfSn4MjV
+         XmK6Of2ukPYnwIwc2ZRxixi+zogUgBvQ43zKWFHGspzaq/78LjiOU3E/TMzqMQD5Nm
+         P/osPbECNrno/tBWTDKPmTYre01MDMQ4Rzotrg08s5AuFHSAxnNtdEwSZ7JAakhjMn
+         ZtAotrzarC7yw==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.60] ([94.134.151.44]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MYNNo-1q5UnP0E54-00VU3c; Wed, 08
- Mar 2023 23:03:01 +0100
-Message-ID: <53d85de3-3072-50e2-9ce8-1fd48a2cfd69@gmx.de>
-Date:   Wed, 8 Mar 2023 23:03:00 +0100
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MfHAH-1qBreD3FIR-00gmWh; Wed, 08
+ Mar 2023 23:05:54 +0100
+Message-ID: <123a52d8-baf0-e32b-3262-1e8619b1c3ad@gmx.de>
+Date:   Wed, 8 Mar 2023 23:05:54 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.8.0
-Subject: Re: [PATCH] MAINTAINERS: orphan SIS FRAMEBUFFER DRIVER
+Subject: Re: [PATCH] fbdev: tgafb: Fix potential divide by zero
 Content-Language: en-US
-To:     Lukas Bulwahn <lukas.bulwahn@gmail.com>,
-        Thomas Winischhofer <thomas@winischhofer.net>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20230308071921.10963-1-lukas.bulwahn@gmail.com>
+To:     harperchen <harperchen1110@gmail.com>
+Cc:     javierm@redhat.com, tzimmermann@suse.de,
+        wsa+renesas@sang-engineering.com, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+References: <20230307130856.2295182-1-harperchen1110@gmail.com>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20230308071921.10963-1-lukas.bulwahn@gmail.com>
+In-Reply-To: <20230307130856.2295182-1-harperchen1110@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:YAJsaXgvOu0OB9fOwoTOiZ/2PC23B/DNDuSZiQLGjU07wjsxQAl
- qd03dqtJO4F5q0zf2FXWuptrt4RJpXMT8Vv1EEogkxZ3n/nbynNOH3TxJzMdh+MlXKYuBzE
- 2DxQsF8p6tjUoC3Hhgm15bW3puUSfVeGj3PRwGMk2/Dpve6F3/dWQkvnPd59HUFH6F5R1Do
- Pi9Tq/HT/NiT9ybm37e3Q==
-UI-OutboundReport: notjunk:1;M01:P0:/hk/TkyoQ98=;e5NDFwsJ3f7fGsOUSw2qIsKpg+k
- yJM5wYNEbIUAePkbQ876OyFBHJu+NpvPto3JPqpjgHIAd5qf/e7GjRFRA/NnJCZAqXpdui4wW
- 2WvTRC7QQOhreRFsPIGqskl2bZp2AGRU2ItKrlK+jAlBx21gkLYKsaOtndQJzrjCfHe/zR7ed
- 5GEGL5OsA+h1NZfBfKwBaeu0JYy77W7IWOL5Td62Ry5/wAE+94MGa4vQVrggL0Qzhmn8DFGHS
- 3fz6w6SP/9gx7aW1/MAQPhqPkZkhtk/7BvmiwPFDg5LoqsW1esPv0VrvGEnHETae5JgWrGuoc
- zXiKPjtkzudN4zUGJ8o7+qrDZBSRl8oJMfkmIz0HEoBKPSVKHgKaUss+ZHvU6/i7d8HbrcabC
- Bis3RxmYGybOPqlp5K8Qok+KbqsdsRGmcMOp8aBGF+YX8Vh1T8Lh3MPOfuxOns65KsiS/MR11
- qBiFd+wgVpRkSiFP0KNiWwG80ba9C2b2g7fcEoAjNnvIvt3le8sGaDw/n4tKDkjXYmuSp0heC
- i+Lr/socogqSjdZ/rwrglN1jpoazN2UltdyMDIwIxY5EnvildsqG5qZgaHbrve3np+8IvNolg
- /lQSL9HatYpA2l+xqcPZNGLo/5UG0EZtfzPqACCDd0Af25mLr/1w0p055gDKXIz36AYoqQSfh
- R/cBLeo4L51faCiteXZFeip+EnBu/ryyy470Or+CiBirVmGewHfjVzRpNXxMvaJ7pLpOhSsEi
- jTps5QXABvCsZwaNgfvg6hmMMxEJLSm8dQCx1ym41RSdk7pHXgb7r71wO/Zg3O8GYpj3U9uYD
- qPjY7B/w8CzfjuyRqSjScLiXyavsytvJrTXfXP2tmai0q6Yr8OUKmBTitOvR8f/Jc0VyIjTr1
- iE4hq6gyKOFpZe9mV7HHcnfcUEjnOG0E9O0E71osoC2qaOjew9vjn7oNZ4L067lIRdY2FFfRQ
- 2tg+W3BvGr9lIpikmTge6TtvPAo=
+X-Provags-ID: V03:K1:IdUOlwZoj5bhTPGnl9poGNK8wqEf95a3RUGpT3QzZH6Y04qhfaU
+ VKPgXLA942WRURGMySDpqHMlIV8FWkRfnkGbcwTe0eV3GnycTqCFrM6fN3cKfjHFdIm7sJx
+ PX8cq+l4uUdmJ7evOd2QHlaUpTJ+Xf5O505MlnpdVd0SWZptr8LvG+fwlmHCYrZEZ54GfLd
+ 5egDILNkIqIPk2EGzDnRQ==
+UI-OutboundReport: notjunk:1;M01:P0:i15z1BQTo40=;Nnoeww3xvEHJ7JdrpRvKGdo54vG
+ ggP3lJnH9ihek46GgmRojfByeMJoPNQ5kNs2AB42895D8CPAaXieAG4MrFqY3SCnphwirO6sc
+ UKUj6D7H0c5OeGrRZ6aPlYiviHwbapsCV8dmEdFER2+UpTJ8a0B+hdI5kAczey022Aydx3pUz
+ K9dyIQERQgbeiKr0q8WajbH4zAOtH8O3G/FPRy5oEsWnO7bc8bDeaimi6u+pXQ3JLG3Yvts7J
+ Kk2CvhwPrf5deZ69mHLxfB70ps67iTw96nSeuRxZmqWZ9XzTtcWOssCaNN83vx2qp1kRUaYqy
+ RLSzi/xhZGrRk7UtGsLZ9TnErsxNzLzzVOvd1gc+UvaDD8M0jEoiDTm1bCi+w8LYgRsHbp17F
+ EdtwpkfqpCpY4FYEYkPc3+Y3+MrnoPFUYV5/pqDxGo0mPhVAe9M7NzG1sdz4vG0bLgXDxkoF7
+ 3DbqeEat8TyMBy9zyvtYVI49do+U3FGiOwwQC+xSIbh4c9cYA0tC5F3M5FHiUqzVD2Nq9MhTw
+ jtwpd6nRJeYulYT52jR6G3V9sQrokS1i6a8UDMlm8ccnR1vqwRm7UbyG1IlwVIww7LPINwKYt
+ NdmXTdx+seP2LqTB+fIw+e6gf0yQqmsv3OryVuDC7WVM6DEpNa86ccszNMvFi8O374nsPC6Ve
+ Sf4S2WId5qkrYJ871c0wm9h3xG79z/q/REf/fPch+dz/Bdc53YnOuUG5V3EnfMzXBUQAdhNNk
+ 0Ad/3XOT2h1LZsSNYGlRA9/syLrcQuDRTOZKD9xXOMprouORp8SDMBtkV6p3JII/7p1DlPtrl
+ nDOI00W6iLeF5DWV7XVZGGH42jrdfKstspOyn/sEbStF5SlcbMecBlmdLhf+z/YUTS2hgMI2Y
+ W7s3IZUfrR9y3vObkY5cUtnAQ+di4V2AN5RTfevKiMGEigZyMMvtz13MY7Z4YiTpm5k0rJrh8
+ yg78aDgiYCztvklWUW20lmO66sw=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 3/8/23 08:19, Lukas Bulwahn wrote:
-> This was triggered by the fact that the webpage:
+On 3/7/23 14:08, harperchen wrote:
+> fb_set_var would by called when user invokes ioctl with cmd
+> FBIOPUT_VSCREENINFO. User-provided data would finally reach
+> tgafb_check_var. In case var->pixclock is assigned to zero,
+> divide by zero would occur when checking whether reciprocal
+> of var->pixclock is too high.
 >
->    http://www.winischhofer.net/linuxsisvga.shtml
+> Similar crashes have happened in other fbdev drivers. There
+> is no check and modification on var->pixclock along the call
+> chain to tgafb_check_var. We believe it could also be triggered
+> in driver tgafb from user site.
 >
-> cannot be reached anymore.
->
-> Thomas Winischhofer is still reachable at the given email address, but h=
-e
-> has not been active since 2005.
->
-> Mark the SIS FRAMEBUFFER DRIVER as orphan to reflect the current state.
->
-> Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+> Signed-off-by: harperchen <harperchen1110@gmail.com>
 
-applied to fbdev git tree.
+Could you provide a real name?
+Otherwise applied to fbdev git tree.
 
 Thanks!
 Helge
 
-
-
 > ---
->   MAINTAINERS | 4 +---
->   1 file changed, 1 insertion(+), 3 deletions(-)
+>   drivers/video/fbdev/tgafb.c | 3 +++
+>   1 file changed, 3 insertions(+)
 >
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 5d8f46f35aa4..354577534aef 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -19191,9 +19191,7 @@ W:	http://www.brownhat.org/sis900.html
->   F:	drivers/net/ethernet/sis/sis900.*
+> diff --git a/drivers/video/fbdev/tgafb.c b/drivers/video/fbdev/tgafb.c
+> index 14d37c49633c..b44004880f0d 100644
+> --- a/drivers/video/fbdev/tgafb.c
+> +++ b/drivers/video/fbdev/tgafb.c
+> @@ -173,6 +173,9 @@ tgafb_check_var(struct fb_var_screeninfo *var, struc=
+t fb_info *info)
+>   {
+>   	struct tga_par *par =3D (struct tga_par *)info->par;
 >
->   SIS FRAMEBUFFER DRIVER
-> -M:	Thomas Winischhofer <thomas@winischhofer.net>
-> -S:	Maintained
-> -W:	http://www.winischhofer.net/linuxsisvga.shtml
-> +S:	Orphan
->   F:	Documentation/fb/sisfb.rst
->   F:	drivers/video/fbdev/sis/
->   F:	include/video/sisfb.h
+> +	if (!var->pixclock)
+> +		return -EINVAL;
+> +
+>   	if (par->tga_type =3D=3D TGA_TYPE_8PLANE) {
+>   		if (var->bits_per_pixel !=3D 8)
+>   			return -EINVAL;
 

@@ -2,202 +2,136 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BD0DC64EC4
-	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 09:35:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D137C678D5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 09:38:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229573AbjCHJfM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 8 Mar 2023 04:35:12 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43684 "EHLO
+        id S229755AbjCHJik (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 8 Mar 2023 04:38:40 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47762 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230217AbjCHJfF (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 04:35:05 -0500
-Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B08DB97FDE;
-        Wed,  8 Mar 2023 01:35:03 -0800 (PST)
-Received: by mail-pj1-x1031.google.com with SMTP id h17-20020a17090aea9100b0023739b10792so1330092pjz.1;
-        Wed, 08 Mar 2023 01:35:03 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112; t=1678268103;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=CIp47ayWe59+VWKhH9jfCtYK/GFGqKCWyjnngDque6c=;
-        b=Cc+E1Uks3GPCBi+uVQ8Q1bxA242495kRlYnjygJIcW0ttuukBE0hKfF/G4HtH0HGcw
-         ZSLSv3maU9K8fpsnB/lasDILBMu+G66n2g28h8UzQLfYaVtRE/v9BpJumos/l+xT0QSg
-         EXyKUlKn8IjZvK1CTaNIOI/O52HtQ0PEAlbcOBfjUrOyPuuW6qkh6//4YZSLROGOB62o
-         FcrwecFPUocDjdxj4BEWrjdFLGV3eWfpzdygoyrp7LQFhgOMNw9Fbb6zObt/VK7hnvCo
-         7bEyGflDAFixQfiteufSq2mu0o8ayAxucG6cpIGSMTxSCox6m8vnOMTIl3HVvsYAddbz
-         OhTA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678268103;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=CIp47ayWe59+VWKhH9jfCtYK/GFGqKCWyjnngDque6c=;
-        b=i0csjnuQUYW2WIE/Mxd0z8XjnowBAdW5ZtqwWm5EmPdOcjtanE685uNdqK1LfLa7rL
-         ODm0d9TBu0V4kxv8nTkGj0f6x8CqlFluF+3O780bCr6YBNNP4Cd+KiNsHO29O7PG5clw
-         QnggCUoXnmQH3XwF+GG1SmPKJr0FKrwjknQCu8gYx29OckVWBIoovxflZXyUtDK9KXZZ
-         5I6jnY24LF6YM4XA9MW7Ll2Gi2f8Lb4fyqP2yUsZ8y0fSvpYaSh4joNVzjorG/1QkDAp
-         YJDqqjDC11Mu4LYjGsAzhLwsMsFWu5XXSI3iICEMFRBSsLTyMRGKcJ4PaygRTrFg2RBV
-         gp8g==
-X-Gm-Message-State: AO0yUKWMkaOAvSGyXjBOnfLEMlY19ti5HLzidYUAgdXzzm1zTc4bwPHa
-        jZ25thBfOxyM+f0t2JOV6PgXcOxrgTpd773gqcQ=
-X-Google-Smtp-Source: AK7set+g9/JXVrtZuGiSSDbXHvja+DfYo0/TVYxq59r9hAEn3FcwO4JpGiYOFO8cgm5MHGSE0G+q3mCbuRrCnu4w3+0=
-X-Received: by 2002:a17:902:ab45:b0:19b:e4c:2039 with SMTP id
- ij5-20020a170902ab4500b0019b0e4c2039mr7130742plb.4.1678268103137; Wed, 08 Mar
- 2023 01:35:03 -0800 (PST)
+        with ESMTP id S230030AbjCHJij (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 04:38:39 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B5E981CE5;
+        Wed,  8 Mar 2023 01:38:35 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 041E521A01;
+        Wed,  8 Mar 2023 09:38:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1678268314; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=MFjwcD4Vp6zee18l/hOx+s0LnKajCjdYROBFnAJWXn8=;
+        b=06nbHXetL2+U8ybThhgCxE9ADDEQxGB6srtfy+202zHewUt8bM8MU5VEHPnXZ4smi9oT1S
+        iYej2uLtwQJCxgR88k1yaZzudj6hNLi07Z+UgDhAjlUvR7L/k15+3ZstMeUDHXYa5FcUGP
+        wbCZ8Mriw3df69T874Cpvw9HxMFC/DY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1678268314;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=MFjwcD4Vp6zee18l/hOx+s0LnKajCjdYROBFnAJWXn8=;
+        b=kxDkmpn61fYNatyGv6yEFn5yAb0Rg/+7q7eImlcAJFmcc6VukSeH/EFIdG/DC9vdH3VHqq
+        pjbJeTCaTJfs1WBg==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D28331391B;
+        Wed,  8 Mar 2023 09:38:33 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id SItDMplXCGQnQAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 08 Mar 2023 09:38:33 +0000
+Message-ID: <cf8135bc-a255-1f02-28df-dec42342fb71@suse.de>
+Date:   Wed, 8 Mar 2023 10:38:33 +0100
 MIME-Version: 1.0
-References: <20230308063628.15233-1-tiwai@suse.de> <CAMeQTsYSgXm=Sku99USE+Up+uuJHUFdE8zPj7_B=BUi5SH=6KQ@mail.gmail.com>
- <87v8jbhag1.wl-tiwai@suse.de>
-In-Reply-To: <87v8jbhag1.wl-tiwai@suse.de>
-From:   Patrik Jakobsson <patrik.r.jakobsson@gmail.com>
-Date:   Wed, 8 Mar 2023 10:34:51 +0100
-Message-ID: <CAMeQTsYuD=umBxom7yha89ZS2GtuapEua28Uo+K1Wb1ApKKT6Q@mail.gmail.com>
-Subject: Re: [PATCH] fbdev: Fix incorrect page mapping clearance at fb_deferred_io_release()
-To:     Takashi Iwai <tiwai@suse.de>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-fbdev@vger.kernel.org, Miko Larsson <mikoxyzzz@gmail.com>,
-        Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        Patrik Jakobsson <pjakobsson@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH] MAINTAINERS: orphan SIS FRAMEBUFFER DRIVER
+To:     Lukas Bulwahn <lukas.bulwahn@gmail.com>,
+        Thomas Winischhofer <thomas@winischhofer.net>,
+        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20230308071921.10963-1-lukas.bulwahn@gmail.com>
+Content-Language: en-US
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20230308071921.10963-1-lukas.bulwahn@gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------Fn5fYfi1pyf0sw01AuM9f1QD"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Mar 8, 2023 at 10:14=E2=80=AFAM Takashi Iwai <tiwai@suse.de> wrote:
->
-> On Wed, 08 Mar 2023 10:08:24 +0100,
-> Patrik Jakobsson wrote:
-> >
-> > On Wed, Mar 8, 2023 at 7:36=E2=80=AFAM Takashi Iwai <tiwai@suse.de> wro=
-te:
-> > >
-> > > The recent fix for the deferred I/O by the commit
-> > >   3efc61d95259 ("fbdev: Fix invalid page access after closing deferre=
-d I/O devices")
-> > > caused a regression when the same fb device is opened/closed while
-> > > it's being used.  It resulted in a frozen screen even if something
-> > > is redrawn there after the close.  The breakage is because the patch
-> > > was made under a wrong assumption of a single open; in the current
-> > > code, fb_deferred_io_release() cleans up the page mapping of the
-> > > pageref list and it calls cancel_delayed_work_sync() unconditionally,
-> > > where both are no correct behavior for multiple opens.
-> > >
-> > > This patch adds a refcount for the opens of the device, and applies
-> > > the cleanup only when all files get closed.
-> > >
-> > > Fixes: 3efc61d95259 ("fbdev: Fix invalid page access after closing de=
-ferred I/O devices")
-> > > Cc: <stable@vger.kernel.org>
-> > > Signed-off-by: Takashi Iwai <tiwai@suse.de>
-> > > ---
-> > >  drivers/video/fbdev/core/fb_defio.c | 16 +++++++++++++---
-> > >  include/linux/fb.h                  |  1 +
-> > >  2 files changed, 14 insertions(+), 3 deletions(-)
-> > >
-> > > diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbde=
-v/core/fb_defio.c
-> > > index aa5f059d0222..9dcec9e020b6 100644
-> > > --- a/drivers/video/fbdev/core/fb_defio.c
-> > > +++ b/drivers/video/fbdev/core/fb_defio.c
-> > > @@ -305,17 +305,19 @@ void fb_deferred_io_open(struct fb_info *info,
-> > >                          struct inode *inode,
-> > >                          struct file *file)
-> > >  {
-> > > +       struct fb_deferred_io *fbdefio =3D info->fbdefio;
-> > > +
-> > >         file->f_mapping->a_ops =3D &fb_deferred_io_aops;
-> > > +       fbdefio->opens++;
-> > >  }
-> > >  EXPORT_SYMBOL_GPL(fb_deferred_io_open);
-> > >
-> > > -void fb_deferred_io_release(struct fb_info *info)
-> > > +static void fb_deferred_io_release_internal(struct fb_info *info)
-> >
-> > Maybe a better name would be fb_deferred_io_lastclose() to be more in
-> > line with DRM?
->
-> Sounds good.
->
-> > >  {
-> > >         struct fb_deferred_io *fbdefio =3D info->fbdefio;
-> > >         struct page *page;
-> > >         int i;
-> > >
-> > > -       BUG_ON(!fbdefio);
-> >
-> > Should the BUG_ON be put back into fb_deferred_io_release()?
->
-> It can be, but honestly speaking, such a BUG_ON() is utterly useless.
-> It should be WARN_ON() and return, if the sanity check is inevitably
-> needed.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------Fn5fYfi1pyf0sw01AuM9f1QD
+Content-Type: multipart/mixed; boundary="------------DpXEUfGRdJxUN3aO8OlXX3ln";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Lukas Bulwahn <lukas.bulwahn@gmail.com>,
+ Thomas Winischhofer <thomas@winischhofer.net>, Helge Deller <deller@gmx.de>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-ID: <cf8135bc-a255-1f02-28df-dec42342fb71@suse.de>
+Subject: Re: [PATCH] MAINTAINERS: orphan SIS FRAMEBUFFER DRIVER
+References: <20230308071921.10963-1-lukas.bulwahn@gmail.com>
+In-Reply-To: <20230308071921.10963-1-lukas.bulwahn@gmail.com>
 
-I agree. It's rather pointless since it's already checked in fb_release().
+--------------DpXEUfGRdJxUN3aO8OlXX3ln
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
->
-> > >         cancel_delayed_work_sync(&info->deferred_work);
-> > >
-> > >         /* clear out the mapping that we setup */
-> > > @@ -324,13 +326,21 @@ void fb_deferred_io_release(struct fb_info *inf=
-o)
-> > >                 page->mapping =3D NULL;
-> > >         }
-> > >  }
-> > > +
-> > > +void fb_deferred_io_release(struct fb_info *info)
-> > > +{
-> > > +       struct fb_deferred_io *fbdefio =3D info->fbdefio;
-> > > +
-> > > +       if (!--fbdefio->opens)
-> > > +               fb_deferred_io_release_internal(info);
-> >
-> > I think this can race so we need locking.
->
-> This one is fine, as it's always called inside the fb lock in the
-> caller side.  Maybe worth to comment in the code.
+DQoNCkFtIDA4LjAzLjIzIHVtIDA4OjE5IHNjaHJpZWIgTHVrYXMgQnVsd2FobjoNCj4gVGhp
+cyB3YXMgdHJpZ2dlcmVkIGJ5IHRoZSBmYWN0IHRoYXQgdGhlIHdlYnBhZ2U6DQo+IA0KPiAg
+ICBodHRwOi8vd3d3LndpbmlzY2hob2Zlci5uZXQvbGludXhzaXN2Z2Euc2h0bWwNCj4gDQo+
+IGNhbm5vdCBiZSByZWFjaGVkIGFueW1vcmUuDQo+IA0KPiBUaG9tYXMgV2luaXNjaGhvZmVy
+IGlzIHN0aWxsIHJlYWNoYWJsZSBhdCB0aGUgZ2l2ZW4gZW1haWwgYWRkcmVzcywgYnV0IGhl
+DQo+IGhhcyBub3QgYmVlbiBhY3RpdmUgc2luY2UgMjAwNS4NCj4gDQo+IE1hcmsgdGhlIFNJ
+UyBGUkFNRUJVRkZFUiBEUklWRVIgYXMgb3JwaGFuIHRvIHJlZmxlY3QgdGhlIGN1cnJlbnQg
+c3RhdGUuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBMdWthcyBCdWx3YWhuIDxsdWthcy5idWx3
+YWhuQGdtYWlsLmNvbT4NCg0KQWNrZWQtYnk6IFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVy
+bWFubkBzdXNlLmRlPg0KDQo+IC0tLQ0KPiAgIE1BSU5UQUlORVJTIHwgNCArLS0tDQo+ICAg
+MSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspLCAzIGRlbGV0aW9ucygtKQ0KPiANCj4g
+ZGlmZiAtLWdpdCBhL01BSU5UQUlORVJTIGIvTUFJTlRBSU5FUlMNCj4gaW5kZXggNWQ4ZjQ2
+ZjM1YWE0Li4zNTQ1Nzc1MzRhZWYgMTAwNjQ0DQo+IC0tLSBhL01BSU5UQUlORVJTDQo+ICsr
+KyBiL01BSU5UQUlORVJTDQo+IEBAIC0xOTE5MSw5ICsxOTE5MSw3IEBAIFc6CWh0dHA6Ly93
+d3cuYnJvd25oYXQub3JnL3NpczkwMC5odG1sDQo+ICAgRjoJZHJpdmVycy9uZXQvZXRoZXJu
+ZXQvc2lzL3NpczkwMC4qDQo+ICAgDQo+ICAgU0lTIEZSQU1FQlVGRkVSIERSSVZFUg0KPiAt
+TToJVGhvbWFzIFdpbmlzY2hob2ZlciA8dGhvbWFzQHdpbmlzY2hob2Zlci5uZXQ+DQo+IC1T
+OglNYWludGFpbmVkDQo+IC1XOglodHRwOi8vd3d3LndpbmlzY2hob2Zlci5uZXQvbGludXhz
+aXN2Z2Euc2h0bWwNCj4gK1M6CU9ycGhhbg0KPiAgIEY6CURvY3VtZW50YXRpb24vZmIvc2lz
+ZmIucnN0DQo+ICAgRjoJZHJpdmVycy92aWRlby9mYmRldi9zaXMvDQo+ICAgRjoJaW5jbHVk
+ZS92aWRlby9zaXNmYi5oDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERy
+aXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0K
+TWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBB
+RyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
 
-Ah, yes, fb_release() locks around everything. Then we are fine. A
-comment would be nice.
+--------------DpXEUfGRdJxUN3aO8OlXX3ln--
 
->
-> > > +}
-> > >  EXPORT_SYMBOL_GPL(fb_deferred_io_release);
-> > >
-> > >  void fb_deferred_io_cleanup(struct fb_info *info)
-> > >  {
-> > >         struct fb_deferred_io *fbdefio =3D info->fbdefio;
-> > >
-> > > -       fb_deferred_io_release(info);
-> > > +       fb_deferred_io_release_internal(info);
-> > >
-> > >         kvfree(info->pagerefs);
-> > >         mutex_destroy(&fbdefio->lock);
-> > > diff --git a/include/linux/fb.h b/include/linux/fb.h
-> > > index d8d20514ea05..29674a29d1c4 100644
-> > > --- a/include/linux/fb.h
-> > > +++ b/include/linux/fb.h
-> > > @@ -212,6 +212,7 @@ struct fb_deferred_io {
-> > >         /* delay between mkwrite and deferred handler */
-> > >         unsigned long delay;
-> > >         bool sort_pagereflist; /* sort pagelist by offset */
-> > > +       int opens; /* number of opened files */
-> >
-> > I would prefer the name num_opens (or open_count as in DRM) instead of
-> > opens since it can be interpreted as a verb.
->
-> I don't mind either way.  I'd choose the latter.
->
-> > Also, don't we need it to be atomic_t?
->
-> It's always in the fb lock, so that should be fine with the standard
-> int.
+--------------Fn5fYfi1pyf0sw01AuM9f1QD
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-Yes
+-----BEGIN PGP SIGNATURE-----
 
->
->
-> thanks,
->
-> Takashi
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmQIV5kFAwAAAAAACgkQlh/E3EQov+Ct
+ZBAAyvCPSk+foGIpM75INZQNCaVicv9az/FZKN/zoESZFGvr5YKRR/G82Iu8EWUKnKGjJnsd5+v5
+0fV+AOpFUONNFPq9mPt4VYUtmvv4iZHF+u38uoxbDKCGAU5YWaJ6vE0fbN43Gj87DJ+8iSwMG1Pp
+Sjs37Z6atV2YhnLKPnoznXB5zoWuzqQPVCbwBJePGAUFNjTBWDKMVlJkEfuK6Abg2qGo04eXhNkp
+1dMure1a87vF1M0Xp5Xnq7cD0xJDOLmueXgrwhqp5+pJHG0z9x98RMiEd38tCln6ONhB3GIpfZ5/
+x2xBSMbofXaRcb2FwDOgbodvR55zGHnEENgwBENGfuk0E37wG1BOCipiCQjzGvW+RFAVwMqunMpu
+iYnup//IFSXdr6EEZu5dWEWqUxD/5eJOqpF0z2bXO1zfzoBV3icSz6LfPrlKBX4JbbqqmmcwyxaZ
+2SbvzLujU/oeOdQewwpklX+z8qt5p+cJ54ME53HE7GVuzlahhSAv4nK37kaVJJkibWLNuWk6xAL8
+IR0NWHqJfzFAlGZZ4gsYa8qa/Koil4SGGzsKB5whcVYUrPEIyRONhGAxoOTt4S+Gp0a6ZPUNrTfb
+1QrJ/oEh0/DBPnB8du8r951t025yIvPQgmRhf5h13ADR6U0h9ugA6aCWu2xt785bhXMrAwr3eAin
+bT0=
+=3WCc
+-----END PGP SIGNATURE-----
+
+--------------Fn5fYfi1pyf0sw01AuM9f1QD--

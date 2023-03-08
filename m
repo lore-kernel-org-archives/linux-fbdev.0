@@ -2,30 +2,30 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A66CC6FD1E
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF397C74A44
 	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 07:40:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229903AbjCHHkm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 8 Mar 2023 02:40:42 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42068 "EHLO
+        id S229911AbjCHHkn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 8 Mar 2023 02:40:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43486 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229911AbjCHHkh (ORCPT
+        with ESMTP id S229910AbjCHHkh (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 02:40:37 -0500
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1155DA102C
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52156A674E
         for <linux-fbdev@vger.kernel.org>; Tue,  7 Mar 2023 23:39:57 -0800 (PST)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1pZoOu-0007Od-6B; Wed, 08 Mar 2023 08:39:52 +0100
+        id 1pZoOu-0007Oa-5n; Wed, 08 Mar 2023 08:39:52 +0100
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1pZoOt-002fIO-HS; Wed, 08 Mar 2023 08:39:51 +0100
+        id 1pZoOt-002fIM-Fp; Wed, 08 Mar 2023 08:39:51 +0100
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1pZoOs-003EMB-Oe; Wed, 08 Mar 2023 08:39:50 +0100
+        id 1pZoOs-003EM7-HU; Wed, 08 Mar 2023 08:39:50 +0100
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
 To:     Lee Jones <lee@kernel.org>,
@@ -33,15 +33,15 @@ To:     Lee Jones <lee@kernel.org>,
         Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         kernel@pengutronix.de
-Subject: [PATCH 06/13] backlight: led_bl: Convert to platform remove callback returning void
-Date:   Wed,  8 Mar 2023 08:39:38 +0100
-Message-Id: <20230308073945.2336302-7-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 05/13] backlight: hp680_bl: Convert to platform remove callback returning void
+Date:   Wed,  8 Mar 2023 08:39:37 +0100
+Message-Id: <20230308073945.2336302-6-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230308073945.2336302-1-u.kleine-koenig@pengutronix.de>
 References: <20230308073945.2336302-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1793; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=mB88i139m4RUVwy9p8TF1hvkW5x2blrC0HYBE1vjxsA=; b=owEBbQGS/pANAwAKAcH8FHityuwJAcsmYgBkCDukwdRCFYgrAJSPEamSwdc8npPPXpi/YBvrO 0aDSJt/p6qJATMEAAEKAB0WIQR+cioWkBis/z50pAvB/BR4rcrsCQUCZAg7pAAKCRDB/BR4rcrs CYfWB/9zBwgW1eBdvUy/pGFMxGZwwjcSprqMPBMaGJXMPq6F4SLlpKhUECHUOYlLNVdvCrK+YL+ txcGvSRvIoHFZEW31l6tXPTmEP9kSijJUJ4ZOf6lriODniztppuBL5Qv6L6QdpyL1A7sj+U2Sxl UKbDwq0nUxhrJht8O+H+zvkiK03JlLX1nV8pE9T6eera4U7KAfZ6Z+/fi8w6AR5pmBdLb/G+PWz XzxGb5MKnByffJ4De36PtfcNSuihP/nKgbtGB1iB0zKU4xMLt9NV1n9KLiruqtGxgn6yee1sliC NYZZZC6+nzJ2B9vE1s05BnVIB4epcf5bTUiFgezyLQuc2VhO
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1559; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=M9dLITsn5zab+0bkWoonyWYbuduSYEK0hkgzj0jiwuo=; b=owEBbQGS/pANAwAKAcH8FHityuwJAcsmYgBkCDuhsi7kKTmv6O1V7PCdjHwDhkpge5FRgPUKu waPOjFYrZeJATMEAAEKAB0WIQR+cioWkBis/z50pAvB/BR4rcrsCQUCZAg7oQAKCRDB/BR4rcrs CTc1B/40zt5MoKd0deHo8laqokL7r//tNWnvly6124OUQrP4dSoC26YyVfV+QksHACK611UNIZQ bLvC+aRBfpj2xEGIK/czkVfwd+aj0zEMO9wLT18dlAzLvK167Qvcc7SdubIKLg04196XmiB2FLg l3Smd7AY3CDK3O/AXoQDhXDm0eSoKaep5w3RkGUgC6xjL5Yb0Bp6lAKHfdnw6Lw/3iQENpowwkt RH5ozFkmq4PqlaObH0IppmEm9ASLEwxLOta2V85diVO/kTSztcDy5UlciTWnmOxMDyPTIQPwiG+ nRFle7DOr+7nt5Pg4zWLzv6oW7N9eW2ysmUcJ4WGCYYon5rB
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -65,40 +65,36 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/video/backlight/led_bl.c | 6 ++----
+ drivers/video/backlight/hp680_bl.c | 6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/backlight/led_bl.c b/drivers/video/backlight/led_bl.c
-index f54d256e2d54..a1b6a2ad73a0 100644
---- a/drivers/video/backlight/led_bl.c
-+++ b/drivers/video/backlight/led_bl.c
-@@ -217,7 +217,7 @@ static int led_bl_probe(struct platform_device *pdev)
+diff --git a/drivers/video/backlight/hp680_bl.c b/drivers/video/backlight/hp680_bl.c
+index 9123c33def05..ddb7ab4df77e 100644
+--- a/drivers/video/backlight/hp680_bl.c
++++ b/drivers/video/backlight/hp680_bl.c
+@@ -119,20 +119,18 @@ static int hp680bl_probe(struct platform_device *pdev)
  	return 0;
  }
  
--static int led_bl_remove(struct platform_device *pdev)
-+static void led_bl_remove(struct platform_device *pdev)
+-static int hp680bl_remove(struct platform_device *pdev)
++static void hp680bl_remove(struct platform_device *pdev)
  {
- 	struct led_bl_data *priv = platform_get_drvdata(pdev);
- 	struct backlight_device *bl = priv->bl_dev;
-@@ -228,8 +228,6 @@ static int led_bl_remove(struct platform_device *pdev)
- 	led_bl_power_off(priv);
- 	for (i = 0; i < priv->nb_leds; i++)
- 		led_sysfs_enable(priv->leds[i]);
+ 	struct backlight_device *bd = platform_get_drvdata(pdev);
+ 
+ 	bd->props.brightness = 0;
+ 	bd->props.power = 0;
+ 	hp680bl_send_intensity(bd);
 -
 -	return 0;
  }
  
- static const struct of_device_id led_bl_of_match[] = {
-@@ -245,7 +243,7 @@ static struct platform_driver led_bl_driver = {
- 		.of_match_table	= of_match_ptr(led_bl_of_match),
- 	},
- 	.probe		= led_bl_probe,
--	.remove		= led_bl_remove,
-+	.remove_new	= led_bl_remove,
- };
- 
- module_platform_driver(led_bl_driver);
+ static struct platform_driver hp680bl_driver = {
+ 	.probe		= hp680bl_probe,
+-	.remove		= hp680bl_remove,
++	.remove_new	= hp680bl_remove,
+ 	.driver		= {
+ 		.name	= "hp680-bl",
+ 		.pm	= &hp680bl_pm_ops,
 -- 
 2.39.1
 

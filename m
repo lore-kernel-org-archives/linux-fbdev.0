@@ -2,115 +2,108 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C35EC64EC4
-	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 12:04:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FD9CC742A7
+	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 13:12:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230491AbjCHMEf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 8 Mar 2023 07:04:35 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44060 "EHLO
+        id S231629AbjCHNM0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 8 Mar 2023 08:12:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60718 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230367AbjCHMEe (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 07:04:34 -0500
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A6FF5B8625
-        for <linux-fbdev@vger.kernel.org>; Wed,  8 Mar 2023 04:04:30 -0800 (PST)
-Received: by mail-wm1-x32b.google.com with SMTP id p16so9644108wmq.5
-        for <linux-fbdev@vger.kernel.org>; Wed, 08 Mar 2023 04:04:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1678277069;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=amflx+MPu/55qREv7D1gpSWbJ6NWDsdR+AZRDR7ovnE=;
-        b=MXXuoAJ25BhikwDMJMbsOMMSMTpkbh236/a+M7b/jvA/yI2WL8SKcnJseSiiTCATdv
-         ygqlltiWCufIHuCEJMDnUjiNuXT+L46Bjff6zQncWfRMPoJRqeq88lx1I7fznBoo9f/C
-         5i+6ag5xC/vwCsuF5Llp00jNeH+zhHkBKjfiDq4sBIWepdUjQrCx9R1Y7oD5NklTCbmJ
-         uu9IEi6ZiZGowy4ePxMiVGKFpRPZwOhe8F5App/XMXzVlJkaC8zDAigwkr4vtC/8q2OT
-         54Gj6NJp2shY2QwYlupJrlElYNiF9bzE5fPZf015nbNbfc7C+vs4RmM1/yFmN77Rg97r
-         aZ+g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678277069;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=amflx+MPu/55qREv7D1gpSWbJ6NWDsdR+AZRDR7ovnE=;
-        b=IQKBmKvznbxKFBCt1sJFVlwRKDoxDErlrBtM118+O8ObUVmvMq9TaMZSotGwPRYAOh
-         7zpR1uGiQDRVM582UG2R8PDYaABqwUbX2cnx+t3Lpl3UEwR/gt6KZ9Zxk4NvCCGOeoON
-         lZANKM8jlQorfm7U0lJ669reJsNcGdwVVWBNQxGkz8u6CQRmSly4O6Hp7rRl/CzVjzIo
-         76q8AVpglydm/uUVbRnOqt3qiFc3b1wVCmL/io450zY5p4xQC6sS8+erNe1J/zo9p1cy
-         YNjNsJQZdnFVrB8RN10udWt3DTeJv5zGK258K+rqy7qI6vFKk8bSFZ7DOguja7o9ybTc
-         LKFw==
-X-Gm-Message-State: AO0yUKWmVXEb7SGvAPwUi7Fy/WsiIvMZo4EW6BYXmmJ6yq3XKoOlnvBG
-        B25/V5uLMx3FsPH3PS/lYw79/w==
-X-Google-Smtp-Source: AK7set+BQHFboi4QXgAYqrYtuSpR1zmoAeIuRNLA1tt4tiD/NZOIeUje28/bcJ5vKzbXewtLlkt13Q==
-X-Received: by 2002:a05:600c:3512:b0:3ea:e554:7815 with SMTP id h18-20020a05600c351200b003eae5547815mr16957712wmq.9.1678277068004;
-        Wed, 08 Mar 2023 04:04:28 -0800 (PST)
-Received: from aspen.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id x21-20020a05600c189500b003e71a6be279sm15336997wmp.37.2023.03.08.04.04.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 08 Mar 2023 04:04:27 -0800 (PST)
-Date:   Wed, 8 Mar 2023 12:04:25 +0000
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        with ESMTP id S229947AbjCHNLt (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 08:11:49 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF553C4883
+        for <linux-fbdev@vger.kernel.org>; Wed,  8 Mar 2023 05:09:04 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1678280849;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=uwBTGd8vP947AeUSF0iMuOil3XwvoXMLAawY3OLENFQ=;
+        b=NAw80EVSC7712NdXBtXng7FWL1il8fegbFjHgoUsYwgoLDJoisd4T28cbGMrDHAUu5iIP1
+        EWrf0Zbl8bhyAkXxmUzv+501gC6DF6Q3D+Og2N6vcul/C/pnFZuWrUYdVOO0dNbAJsPI8b
+        wnnDaIA/mk7lS6cBNPDKhDfe/Q2khHQ=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-595-QZ6zXcGKMfiG3-HnaItivQ-1; Wed, 08 Mar 2023 08:07:26 -0500
+X-MC-Unique: QZ6zXcGKMfiG3-HnaItivQ-1
+Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com [10.11.54.6])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 4AEFF858F09;
+        Wed,  8 Mar 2023 13:07:25 +0000 (UTC)
+Received: from MiWiFi-R3L-srv.redhat.com (ovpn-12-137.pek2.redhat.com [10.72.12.137])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 914522166B26;
+        Wed,  8 Mar 2023 13:07:18 +0000 (UTC)
+From:   Baoquan He <bhe@redhat.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     linux-arch@vger.kernel.org, linux-mm@kvack.org, arnd@arndb.de,
+        mpe@ellerman.id.au, geert@linux-m68k.org, mcgrof@kernel.org,
+        hch@infradead.org, Baoquan He <bhe@redhat.com>,
         Helge Deller <deller@gmx.de>,
-        Michael Hennerich <michael.hennerich@analog.com>,
-        Support Opensource <support.opensource@diasemi.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        kernel@pengutronix.de,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-pwm@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        linux-arm-msm@vger.kernel.org
-Subject: Re: [PATCH 00/13] backlight: Convert to platform remove callback
- returning void
-Message-ID: <20230308120425.GA6174@aspen.lan>
-References: <20230308073945.2336302-1-u.kleine-koenig@pengutronix.de>
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH v4 1/4] video: fbdev: atyfb: only use ioremap_uc() on i386 and ia64
+Date:   Wed,  8 Mar 2023 21:07:07 +0800
+Message-Id: <20230308130710.368085-2-bhe@redhat.com>
+In-Reply-To: <20230308130710.368085-1-bhe@redhat.com>
+References: <20230308130710.368085-1-bhe@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+Content-type: text/plain
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230308073945.2336302-1-u.kleine-koenig@pengutronix.de>
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.6
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Mar 08, 2023 at 08:39:32AM +0100, Uwe Kleine-König wrote:
-> Uwe Kleine-König (13):
->   backlight: aat2870_bl: Convert to platform remove callback returning
->     void
->   backlight: adp5520_bl: Convert to platform remove callback returning
->     void
->   backlight: cr_bllcd: Convert to platform remove callback returning
->     void
->   backlight: da9052_bl: Convert to platform remove callback returning
->     void
->   backlight: hp680_bl: Convert to platform remove callback returning
->     void
->   backlight: led_bl: Convert to platform remove callback returning void
->   backlight: lm3533_bl: Convert to platform remove callback returning
->     void
->   backlight: lp8788_bl: Convert to platform remove callback returning
->     void
->   backlight: mt6370-backlight: Convert to platform remove callback
->     returning void
->   backlight: pwm_bl: Convert to platform remove callback returning void
->   backlight: qcom-wled: Convert to platform remove callback returning
->     void
->   backlight: rt4831-backlight: Convert to platform remove callback
->     returning void
->   backlight: sky81452-backlight: Convert to platform remove callback
->     returning void
+From: Arnd Bergmann <arnd@arndb.de>
 
-Whole series is:
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+ioremap_uc() is only meaningful on old x86-32 systems with the PAT
+extension, and on ia64 with its slightly unconventional ioremap()
+behavior, everywhere else this is the same as ioremap() anyway.
 
+Change the only driver that still references ioremap_uc() to only do so
+on x86-32/ia64 in order to allow removing that interface at some
+point in the future for the other architectures.
 
-Thanks!
+On some architectures, ioremap_uc() just returns NULL, changing
+the driver to call ioremap() means that they now have a chance
+of working correctly.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Baoquan He <bhe@redhat.com>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+---
+ drivers/video/fbdev/aty/atyfb_base.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index b02e4e645035..6553c71b113f 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -3440,11 +3440,15 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
+ 	}
+ 
+ 	info->fix.mmio_start = raddr;
++#if defined(__i386__) || defined(__ia64__)
+ 	/*
+ 	 * By using strong UC we force the MTRR to never have an
+ 	 * effect on the MMIO region on both non-PAT and PAT systems.
+ 	 */
+ 	par->ati_regbase = ioremap_uc(info->fix.mmio_start, 0x1000);
++#else
++	par->ati_regbase = ioremap(info->fix.mmio_start, 0x1000);
++#endif
+ 	if (par->ati_regbase == NULL)
+ 		return -ENOMEM;
+ 
+-- 
+2.34.1
+

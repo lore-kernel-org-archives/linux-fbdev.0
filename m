@@ -2,134 +2,110 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7644BC64EC4
-	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 21:50:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64A39C64EC4
+	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 22:03:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229676AbjCHVuW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 8 Mar 2023 16:50:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52066 "EHLO
+        id S229645AbjCHWDP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 8 Mar 2023 17:03:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40058 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229657AbjCHVuV (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 16:50:21 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 359FA52F55;
-        Wed,  8 Mar 2023 13:50:18 -0800 (PST)
+        with ESMTP id S229462AbjCHWDO (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 17:03:14 -0500
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E5E382ED46;
+        Wed,  8 Mar 2023 14:03:09 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1678312190; i=deller@gmx.de;
-        bh=jgoW+riUHZiigAYb6wOad0OH+0PbUiPGc0lsDkfOFMQ=;
+        t=1678312981; i=deller@gmx.de;
+        bh=URLRtCYvCA2OfgePK0dWq7nXnf4urDizzWJ5/29Hrz8=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=CleEgxdgNqecF8/8u0t0m5mUC58mAQ4g7NYlPyknZ3H+4jKTKhedF8OmEE9NhCMCD
-         9wuhH6oaUGI0SwNlyturO96w47AmsBdZRlGx5zCiLaAFLyVpGF1/kXdTYyKG8IKj0+
-         JXVSS3k2yQZr24iTa6bJc/tIvr21JwjXXTL0uD04dMH/KcQx1EiH/P0ZUOHhtTZphr
-         Q+QWal7T6dNozoOYvHdMr5YIV9kVQ3f93d3wI8/JxDEKGvPCOuInjAiueIbp+lBd3B
-         ywaRFOLb+cJYzpOEeZcWTCeL+Dqh0d1PKCl21ENtVNh6RgQJOJ7LqzUJ1BbwpNWhHn
-         myGADBgO6D4YQ==
+        b=WP8JmQN1foHTYW81fe2J8bKqCKZZ0E3SuwAPCuk9mCCQ1EOBOitwYn2waiV/lhM+Y
+         HkjWCkWVMHsqWVkMICOWJKG+/GVQ5vv7PUrND0/FuQ/f++uuohdua7obODUxWIJ6Xk
+         gBqRbpByUTVEuCKjwLThbudN6kZPCh7y4P3oe3vNOQus1W4TkKSM40ywb4/mDfANE+
+         ASG4vHH8Wxitbfz8uqRjVVUSsEGFnlgSB5NN/9tgTrMhQHyVScrH00B3orSgZRITJp
+         l+3stHKU1C7p4rCL4MItI5G3GQ2ZGlbldxvC29QPZ5w83eE8hJqDiB8VQKrIrh75KL
+         3zIK2oZffpHZg==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.60] ([94.134.151.44]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MowKi-1qM4W01P5i-00qRAh; Wed, 08
- Mar 2023 22:49:50 +0100
-Message-ID: <8b04ebe9-4073-dcd9-8d42-1e84093e1633@gmx.de>
-Date:   Wed, 8 Mar 2023 22:49:47 +0100
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MYNNo-1q5UnP0E54-00VU3c; Wed, 08
+ Mar 2023 23:03:01 +0100
+Message-ID: <53d85de3-3072-50e2-9ce8-1fd48a2cfd69@gmx.de>
+Date:   Wed, 8 Mar 2023 23:03:00 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.8.0
-Subject: Re: [PATCH v4 1/4] video: fbdev: atyfb: only use ioremap_uc() on i386
- and ia64
+Subject: Re: [PATCH] MAINTAINERS: orphan SIS FRAMEBUFFER DRIVER
 Content-Language: en-US
-To:     Arnd Bergmann <arnd@arndb.de>,
-        Luis Chamberlain <mcgrof@kernel.org>,
-        Baoquan He <bhe@redhat.com>
-Cc:     linux-kernel@vger.kernel.org,
-        Linux-Arch <linux-arch@vger.kernel.org>, linux-mm@kvack.org,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Christoph Hellwig <hch@infradead.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
+To:     Lukas Bulwahn <lukas.bulwahn@gmail.com>,
+        Thomas Winischhofer <thomas@winischhofer.net>,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20230308130710.368085-1-bhe@redhat.com>
- <20230308130710.368085-2-bhe@redhat.com>
- <ZAjphWYHDoDw9sQS@bombadil.infradead.org>
- <74915109-446a-4c1f-91bc-95dc6e3be200@app.fastmail.com>
+Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20230308071921.10963-1-lukas.bulwahn@gmail.com>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <74915109-446a-4c1f-91bc-95dc6e3be200@app.fastmail.com>
+In-Reply-To: <20230308071921.10963-1-lukas.bulwahn@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:G75vQn6FwHhJiWr7cH1dVaVr5agnStDlmXhWFLJtvLq98ls7AoI
- RPhQq752jqv0SnRUVTDmjFt69rNbvlLOyvpORcjf2/cPbSJYQp83Sj7XbozrMYJlPsajDBX
- QCgzq2rXNHLuVo8f011/PeV9rWMyKXZJYVZcXc/7e4O6DauED6Ig5FyJRVsh3nJKxEd3lpc
- 8d/W3S1XHOGMut2uvZ8Hw==
-UI-OutboundReport: notjunk:1;M01:P0:613HBZ7HvUE=;hryudKXNhFIoRc2i8iFTI9XC0UK
- 4b6kMoUr1wHO19IjfCXiPfh3vaxOR5+X5/vvv/4Mp3QkLv8u0e3zwBxZ9JgY36ok2t2o3KYv+
- PAyAkNb9MUxgxaYWqdkGAUlkLdDn8tl6LwNC8psLfK+wB4yz7+OxfgWgQJNQMEhYq26p9KbZ9
- dwhbN6KR8ChJYzU76Aq7EWT6rK3Vnu9/84QXBUeGBenPcxgoQwfo+3B/S1+jEzeaqQQa5MBLV
- 3q7bGUtFoU3sR8j+O5Jxr021tF53TX0I0jso67pRi+mqErKs8IPEtcJyJ75AWMOKec7OV/Ll5
- Vvix5I2GIMznk1dc/iWgN7OiNDyNzGHUdDJlcXopNR6pGIn73EhBDlZk6dt6ldJS/FA+L0vst
- ZdFOANLDG20pwy+4GFDabgrhzm9+BOXVYUzU0i9E9ZF6+fn5u75P7a/TM8XuHrJlC3elGEb6m
- f7/L3OGuSpehl6YriqPh1dPae4IE/cWdWvZddVOgZH4Vwdm+mS6Y2g3CmXgAd6q/P8PbXe1r1
- 6rK2GQRn2SUs4sFyxJWPEwCCsZVS5vw2PZhxlX78GyyPHM3lbkXzSmKmGJKCxbLoi1R6hFott
- jwihGtwy1sshx7XBqoOLnpUiyv3yw0zZuJut+ZbHjFBsv/q5RtU2Et5oB9RRu7kfjaGHsWdfL
- IuRJ7r3b9sL8CDVdLGHlanAUXJxiXqVnkQq8LLNVAb/KO/GbdqBm/T65PC+zG0ayJtLsIx7cu
- 6H3scyv/s8BcSSiR7U1vlaoPA47d+KcMD7kvEC2UXhqL3dPZtjzis1fxcdxKCY/EBZGqDlTp+
- RKnwqwBN2raSeMEs/Z117F1mYdW0mJUOOUCJA03Tb/bnB7+/dkI96GbZCM+ggJmQUYSnDLKeN
- awdOQQoMISAgFIV3zvbwVoMA0ommjqq9la2X1P+vu2DnislHhxNKqWNyIgD6/dUPrgs7PfU55
- igV9VBkFlFINvuA17XazpY4UIRM=
+X-Provags-ID: V03:K1:YAJsaXgvOu0OB9fOwoTOiZ/2PC23B/DNDuSZiQLGjU07wjsxQAl
+ qd03dqtJO4F5q0zf2FXWuptrt4RJpXMT8Vv1EEogkxZ3n/nbynNOH3TxJzMdh+MlXKYuBzE
+ 2DxQsF8p6tjUoC3Hhgm15bW3puUSfVeGj3PRwGMk2/Dpve6F3/dWQkvnPd59HUFH6F5R1Do
+ Pi9Tq/HT/NiT9ybm37e3Q==
+UI-OutboundReport: notjunk:1;M01:P0:/hk/TkyoQ98=;e5NDFwsJ3f7fGsOUSw2qIsKpg+k
+ yJM5wYNEbIUAePkbQ876OyFBHJu+NpvPto3JPqpjgHIAd5qf/e7GjRFRA/NnJCZAqXpdui4wW
+ 2WvTRC7QQOhreRFsPIGqskl2bZp2AGRU2ItKrlK+jAlBx21gkLYKsaOtndQJzrjCfHe/zR7ed
+ 5GEGL5OsA+h1NZfBfKwBaeu0JYy77W7IWOL5Td62Ry5/wAE+94MGa4vQVrggL0Qzhmn8DFGHS
+ 3fz6w6SP/9gx7aW1/MAQPhqPkZkhtk/7BvmiwPFDg5LoqsW1esPv0VrvGEnHETae5JgWrGuoc
+ zXiKPjtkzudN4zUGJ8o7+qrDZBSRl8oJMfkmIz0HEoBKPSVKHgKaUss+ZHvU6/i7d8HbrcabC
+ Bis3RxmYGybOPqlp5K8Qok+KbqsdsRGmcMOp8aBGF+YX8Vh1T8Lh3MPOfuxOns65KsiS/MR11
+ qBiFd+wgVpRkSiFP0KNiWwG80ba9C2b2g7fcEoAjNnvIvt3le8sGaDw/n4tKDkjXYmuSp0heC
+ i+Lr/socogqSjdZ/rwrglN1jpoazN2UltdyMDIwIxY5EnvildsqG5qZgaHbrve3np+8IvNolg
+ /lQSL9HatYpA2l+xqcPZNGLo/5UG0EZtfzPqACCDd0Af25mLr/1w0p055gDKXIz36AYoqQSfh
+ R/cBLeo4L51faCiteXZFeip+EnBu/ryyy470Or+CiBirVmGewHfjVzRpNXxMvaJ7pLpOhSsEi
+ jTps5QXABvCsZwaNgfvg6hmMMxEJLSm8dQCx1ym41RSdk7pHXgb7r71wO/Zg3O8GYpj3U9uYD
+ qPjY7B/w8CzfjuyRqSjScLiXyavsytvJrTXfXP2tmai0q6Yr8OUKmBTitOvR8f/Jc0VyIjTr1
+ iE4hq6gyKOFpZe9mV7HHcnfcUEjnOG0E9O0E71osoC2qaOjew9vjn7oNZ4L067lIRdY2FFfRQ
+ 2tg+W3BvGr9lIpikmTge6TtvPAo=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 3/8/23 22:34, Arnd Bergmann wrote:
-> 0On Wed, Mar 8, 2023, at 21:01, Luis Chamberlain wrote:
->> On Wed, Mar 08, 2023 at 09:07:07PM +0800, Baoquan He wrote:
->>> From: Arnd Bergmann <arnd@arndb.de>
->>>
->>> ioremap_uc() is only meaningful on old x86-32 systems with the PAT
->>> extension, and on ia64 with its slightly unconventional ioremap()
->>> behavior, everywhere else this is the same as ioremap() anyway.
->>>
->>> Change the only driver that still references ioremap_uc() to only do s=
-o
->>> on x86-32/ia64 in order to allow removing that interface at some
->>> point in the future for the other architectures.
->>>
->>> On some architectures, ioremap_uc() just returns NULL, changing
->>> the driver to call ioremap() means that they now have a chance
->>> of working correctly.
->>>
->>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
->>> Signed-off-by: Baoquan He <bhe@redhat.com>
->>> Cc: Helge Deller <deller@gmx.de>
->>> Cc: Thomas Zimmermann <tzimmermann@suse.de>
->>> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
->>> Cc: linux-fbdev@vger.kernel.org
->>> Cc: dri-devel@lists.freedesktop.org
->>
->> Reviewed-by: Luis Chamberlain <mcgrof@kernel.org>
->>
->> Is anyone using this driver these days? How often do fbdev drivers get
->> audited to see what can be nuked?
+On 3/8/23 08:19, Lukas Bulwahn wrote:
+> This was triggered by the fact that the webpage:
 >
-> Geert already mentioned that this one is likely used on old
-> powermac systems.
+>    http://www.winischhofer.net/linuxsisvga.shtml
+>
+> cannot be reached anymore.
+>
+> Thomas Winischhofer is still reachable at the given email address, but h=
+e
+> has not been active since 2005.
+>
+> Mark the SIS FRAMEBUFFER DRIVER as orphan to reflect the current state.
+>
+> Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
 
-and the latest generation of parisc machines use it too.
+applied to fbdev git tree.
 
-In addition, on parisc machines it's also important to map all io-space
-memory uncacheable. Since ioremap() takes care of it anyway, the ioremap_u=
-c()
-was simply referencing the call to ioremap().
-
+Thanks!
 Helge
 
-> I think my arm boardfile removal orphaned
-> some other fbdev drivers though. I removed the ones that can
-> no longer be enabled, but think a bunch of other ones
-> are still selectable but have no platform_device definition
-> or DT support: FB_PXA168, FB_DA8XX, FB_MX3, and MMP_FB.
+
+
+> ---
+>   MAINTAINERS | 4 +---
+>   1 file changed, 1 insertion(+), 3 deletions(-)
 >
-> These four platforms are all still supported with DT, but
-> over time it gets less likely that anyone is still interested
-> in adding DT support to the fbdev drivers.
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 5d8f46f35aa4..354577534aef 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -19191,9 +19191,7 @@ W:	http://www.brownhat.org/sis900.html
+>   F:	drivers/net/ethernet/sis/sis900.*
 >
->      Arnd
+>   SIS FRAMEBUFFER DRIVER
+> -M:	Thomas Winischhofer <thomas@winischhofer.net>
+> -S:	Maintained
+> -W:	http://www.winischhofer.net/linuxsisvga.shtml
+> +S:	Orphan
+>   F:	Documentation/fb/sisfb.rst
+>   F:	drivers/video/fbdev/sis/
+>   F:	include/video/sisfb.h
 

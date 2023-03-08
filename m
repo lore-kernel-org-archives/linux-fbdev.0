@@ -2,85 +2,82 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D7A2C678D5
-	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 16:28:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7636EC64EC4
+	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 20:01:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230400AbjCHQ2U (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 8 Mar 2023 11:28:20 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39394 "EHLO
+        id S230013AbjCHUBQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 8 Mar 2023 15:01:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39916 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230427AbjCHQ1z (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 11:27:55 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6464BD2388;
-        Wed,  8 Mar 2023 08:27:16 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 9CFC0B81DA4;
-        Wed,  8 Mar 2023 16:27:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 43349C43322;
-        Wed,  8 Mar 2023 16:27:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1678292833;
-        bh=JbxCyI0huIIANoxirPXgBTBH1si+npk+dR+RaZC1gzg=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=YBZP76Ad87hnY4xkxLVRdMFSnnkcSazWx7ctmmBO3jZVceNLqFo7l/o98Wy2QDQu8
-         KCm5hO2UoC4cgZ2At1VLFNv3t20NJCitR1wMZmwV6/Ijn6HFGydmu/pFkZA1hSQNaj
-         2IoTojH/fyvBOxze9JfDeWsadU+aHiRwP58joHNRgUBdsiX77E3Ma64odWj+Pzxy2W
-         pIKWg0AGt+xk1eakynuaU0yiixiUatM6EY+Enbosfw7gJ8C4PGlZRf8z9mkoDrZn9b
-         OnX2dP6smKxPO9ltvuAks+krZ/DgL4wVuOT1A2Ni0y9iNvezRHmB1fAWkKR+Uwt5tp
-         HipwG++0kQTKw==
-Received: by mail-ed1-f46.google.com with SMTP id s11so68017420edy.8;
-        Wed, 08 Mar 2023 08:27:13 -0800 (PST)
-X-Gm-Message-State: AO0yUKU0JnYsfKLvI7blA3gH0Q3YrCLyiUt4NiGybm6C8ca59uDTg7hL
-        pQrsWAh2lYdDJx3KUd5NVGP7PHukAruNxNMOvwQ=
-X-Google-Smtp-Source: AK7set8tv9oj0Cs64+dvjPmRThogjRBhvrPYlr0s1Jxp6xg8NhIzAjly/ShQhG8oQbSbN3jKigayPafGtW24VNutDRs=
-X-Received: by 2002:a17:906:9143:b0:8ad:d366:54c4 with SMTP id
- y3-20020a170906914300b008add36654c4mr12974560ejw.4.1678292831332; Wed, 08 Mar
- 2023 08:27:11 -0800 (PST)
+        with ESMTP id S230102AbjCHUBN (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 15:01:13 -0500
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33D23BAEF1;
+        Wed,  8 Mar 2023 12:01:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Sender:In-Reply-To:Content-Type:
+        MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=VHBqNuY0x1wxfPhHVQhisSv8VveYnM+bpNzuUcj7maw=; b=QsbvVsbo95uqiUQ+u8JFvQ518z
+        V5F2rcstU9wf3BOZjyhsTy80HKciKLqA7C14qMCSfqBzZ1KHmQfO5BarLsBQjON8VhmhTfD4E8v8N
+        Ay1lYX9BjQwNAR/mvrNrDq+5gM49bap//5a/DKAB8Giq6IF3UlDstW9ya8c8i4jerLCVZ9uUtswrx
+        dEI6EPvcZckPC6tcmbgoHTJrrf3mrcCuf1ngncIgFqJJuRKlRqW4WKieMX0zO0Nd6mVDErZ2TwWib
+        wrqBsyJGkc+C/nbyErpVX/GVqfwMldJMf4Qilms8fJSjmgqZ+2ECdfmTnMHTr3ZmgT99hupAIshNB
+        8JBgY0QA==;
+Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1pZzyH-006cUe-Bn; Wed, 08 Mar 2023 20:01:09 +0000
+Date:   Wed, 8 Mar 2023 12:01:09 -0800
+From:   Luis Chamberlain <mcgrof@kernel.org>
+To:     Baoquan He <bhe@redhat.com>
+Cc:     linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+        linux-mm@kvack.org, arnd@arndb.de, mpe@ellerman.id.au,
+        geert@linux-m68k.org, hch@infradead.org,
+        Helge Deller <deller@gmx.de>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v4 1/4] video: fbdev: atyfb: only use ioremap_uc() on
+ i386 and ia64
+Message-ID: <ZAjphWYHDoDw9sQS@bombadil.infradead.org>
+References: <20230308130710.368085-1-bhe@redhat.com>
+ <20230308130710.368085-2-bhe@redhat.com>
 MIME-Version: 1.0
-References: <20230306160016.4459-1-tzimmermann@suse.de> <20230306160016.4459-23-tzimmermann@suse.de>
- <CAOZdJXUtkyg5Gv3HYCK-U1pQpY0_QBk99wtqUvz5RVy2W3Ak9w@mail.gmail.com> <aac88d8e-52e8-e2d5-2f41-bed7886bb3dc@suse.de>
-In-Reply-To: <aac88d8e-52e8-e2d5-2f41-bed7886bb3dc@suse.de>
-From:   Timur Tabi <timur@kernel.org>
-Date:   Wed, 8 Mar 2023 10:26:34 -0600
-X-Gmail-Original-Message-ID: <CAOZdJXWGNBHMPRmkBYeVL31=Q0Y=fLa8RG0KS668xQ9ozD+Xtg@mail.gmail.com>
-Message-ID: <CAOZdJXWGNBHMPRmkBYeVL31=Q0Y=fLa8RG0KS668xQ9ozD+Xtg@mail.gmail.com>
-Subject: Re: [PATCH 22/99] fbdev/fsl-diu-fb: Duplicate video-mode option string
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     deller@gmx.de, paulus@samba.org, benh@kernel.crashing.org,
-        linux@armlinux.org.uk, pjones@redhat.com, adaplas@gmail.com,
-        s.hauer@pengutronix.de, shawnguo@kernel.org, mbroemme@libmpq.org,
-        thomas@winischhofer.net, James.Bottomley@hansenpartnership.com,
-        spock@gentoo.org, sudipm.mukherjee@gmail.com,
-        teddy.wang@siliconmotion.com, geert+renesas@glider.be,
-        corbet@lwn.net, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230308130710.368085-2-bhe@redhat.com>
+Sender: Luis Chamberlain <mcgrof@infradead.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Mar 7, 2023 at 2:28=E2=80=AFAM Thomas Zimmermann <tzimmermann@suse.=
-de> wrote:
-> > So after module_init is finished, mode_option_buf[] no longer exists?
->
-> Does the __init attribute on a function affect the static variables in
-> that function?
+On Wed, Mar 08, 2023 at 09:07:07PM +0800, Baoquan He wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> ioremap_uc() is only meaningful on old x86-32 systems with the PAT
+> extension, and on ia64 with its slightly unconventional ioremap()
+> behavior, everywhere else this is the same as ioremap() anyway.
+> 
+> Change the only driver that still references ioremap_uc() to only do so
+> on x86-32/ia64 in order to allow removing that interface at some
+> point in the future for the other architectures.
+> 
+> On some architectures, ioremap_uc() just returns NULL, changing
+> the driver to call ioremap() means that they now have a chance
+> of working correctly.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Signed-off-by: Baoquan He <bhe@redhat.com>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
 
-That is an excellent question.
+Reviewed-by: Luis Chamberlain <mcgrof@kernel.org>
 
-https://stackoverflow.com/questions/64558614/what-happens-to-local-static-i=
-dentifiers-in-init-function
+Is anyone using this driver these days? How often do fbdev drivers get
+audited to see what can be nuked?
 
-I don't think the compiler is naturally aware of whatever section a
-variable or function is placed in, so it can't really know that
-mode_option_buf[] is suppose to have a limited lifetime.
 
-Either way, the code seems wrong.  If mode_option_buf[] is marked as
-__initdata, then it will disappear before the probe() function is
-called.
+  Luis
 
-If mode_option_buf[] remains resident, then we are wasting 256 bytes.

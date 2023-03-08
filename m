@@ -2,82 +2,129 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7636EC64EC4
-	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 20:01:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A588C64EC4
+	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 21:35:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230013AbjCHUBQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 8 Mar 2023 15:01:16 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39916 "EHLO
+        id S229659AbjCHVfZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 8 Mar 2023 16:35:25 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51818 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230102AbjCHUBN (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 15:01:13 -0500
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33D23BAEF1;
-        Wed,  8 Mar 2023 12:01:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Sender:In-Reply-To:Content-Type:
-        MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=VHBqNuY0x1wxfPhHVQhisSv8VveYnM+bpNzuUcj7maw=; b=QsbvVsbo95uqiUQ+u8JFvQ518z
-        V5F2rcstU9wf3BOZjyhsTy80HKciKLqA7C14qMCSfqBzZ1KHmQfO5BarLsBQjON8VhmhTfD4E8v8N
-        Ay1lYX9BjQwNAR/mvrNrDq+5gM49bap//5a/DKAB8Giq6IF3UlDstW9ya8c8i4jerLCVZ9uUtswrx
-        dEI6EPvcZckPC6tcmbgoHTJrrf3mrcCuf1ngncIgFqJJuRKlRqW4WKieMX0zO0Nd6mVDErZ2TwWib
-        wrqBsyJGkc+C/nbyErpVX/GVqfwMldJMf4Qilms8fJSjmgqZ+2ECdfmTnMHTr3ZmgT99hupAIshNB
-        8JBgY0QA==;
-Received: from mcgrof by bombadil.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1pZzyH-006cUe-Bn; Wed, 08 Mar 2023 20:01:09 +0000
-Date:   Wed, 8 Mar 2023 12:01:09 -0800
-From:   Luis Chamberlain <mcgrof@kernel.org>
-To:     Baoquan He <bhe@redhat.com>
-Cc:     linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-        linux-mm@kvack.org, arnd@arndb.de, mpe@ellerman.id.au,
-        geert@linux-m68k.org, hch@infradead.org,
-        Helge Deller <deller@gmx.de>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v4 1/4] video: fbdev: atyfb: only use ioremap_uc() on
- i386 and ia64
-Message-ID: <ZAjphWYHDoDw9sQS@bombadil.infradead.org>
+        with ESMTP id S229582AbjCHVfY (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 16:35:24 -0500
+Received: from wout5-smtp.messagingengine.com (wout5-smtp.messagingengine.com [64.147.123.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 00D4192704;
+        Wed,  8 Mar 2023 13:35:22 -0800 (PST)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
+        by mailout.west.internal (Postfix) with ESMTP id E12FF3200893;
+        Wed,  8 Mar 2023 16:35:19 -0500 (EST)
+Received: from imap51 ([10.202.2.101])
+  by compute6.internal (MEProxy); Wed, 08 Mar 2023 16:35:20 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+        :cc:content-type:content-type:date:date:from:from:in-reply-to
+        :in-reply-to:message-id:mime-version:references:reply-to:sender
+        :subject:subject:to:to; s=fm1; t=1678311319; x=1678397719; bh=3M
+        jqPl34s3Z0DxZ95SEFHFqhYpQWxX80N5mapvV1olM=; b=D774f+OS+fX5cAxotv
+        20JQC+4otb0th+n+4wcvY86S9jjTZNvssk8H7nRHmyjPe4Vjo0k3YaDiBMy+ENys
+        YGGJ3tZjpUPLC7PUUffVBNxV6x6MAxzPKKHnTR5S2t5aqmF4sNV4tz6hp1zRT+Yh
+        Q8it4dbcSs4+IlWVwQ9oGYRGAE97Sgfrf9z7PzbPUu9wy3PChkGK2jTsVBcxC7tk
+        XL2BhUX64Gx4UKBPeo6/nbq11cQiAt038aJrc3RzbhXKh99kLsVyGOBlxx3IfKEl
+        W+6QZ+6eIeZLMbbBPlqH0WbJ2DPsnLGmwdfkRZtF6l9dveKucmQaY1izxNhB2Ud6
+        n6EQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-type:content-type:date:date
+        :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+        :x-sasl-enc; s=fm1; t=1678311319; x=1678397719; bh=3MjqPl34s3Z0D
+        xZ95SEFHFqhYpQWxX80N5mapvV1olM=; b=sU2i1B0PgZASHrK4oSqIjXMY3C6oJ
+        juI6YpQbT1VDN7wtHTd2UeNclaos9/UVOJ+0BwrYgAd53flvOSkx2BxBGcvdTC3L
+        c/oOK9/xCMowr2YbfJYsGiOX3G/6l8lSih09mIylvGaFNzQgXemVXDgPNrt2X1i5
+        7atX89gN4zeQr4dAIecquhLSWcZvhNCd9dl/L3ZwP54STLon5z7EJ98fd45SKjJm
+        BHNlvwY+c6LNw7eGA/p50N8j6WfI0Nf1eXM41Qd72dbnVywzFoCRUAZE/BUdHC8k
+        uXgODE2UuNX0yHH01KRVIQCRi9d4uwI8sU6NPNwWfFuvY4YbtzXu9Q8xg==
+X-ME-Sender: <xms:lv8IZA1tOXVUQtPtleY3hiQBxGCr9d_Rncr1hKFCXmzX9rkApbr5Gg>
+    <xme:lv8IZLE4X5dazOcpmAEjnWQQ12zoXkvla3hMKkD5D9_Sb8lhGF-lWgr1YmHj2eXbu
+    agfmBE7YlsKm_3VBXA>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrvddufedguddtfecutefuodetggdotefrod
+    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfgh
+    necuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
+    enucfjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdet
+    rhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrg
+    htthgvrhhnpeffheeugeetiefhgeethfejgfdtuefggeejleehjeeutefhfeeggefhkedt
+    keetffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
+    grrhhnugesrghrnhgusgdruggv
+X-ME-Proxy: <xmx:lv8IZI6BBrkUHOLA1QEcbacVbVjAjvlIAsorK8j0FRdA247ZoPUOPQ>
+    <xmx:lv8IZJ0p9ndc4Nnaz6oY5NyU1R6evB7bhMb6sGhV-ib_sNHTxPwzPQ>
+    <xmx:lv8IZDGKMvxaB1nXpOGabWk-dlUyt4u00ekcK8gAZ23ub8bzyKq-rw>
+    <xmx:l_8IZL8KhPzeLvgFCsinpmEYV8ANhzIXWP7nmGrmqfONml54WtP77w>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+        id 4524AB60086; Wed,  8 Mar 2023 16:35:18 -0500 (EST)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-206-g57c8fdedf8-fm-20230227.001-g57c8fded
+Mime-Version: 1.0
+Message-Id: <74915109-446a-4c1f-91bc-95dc6e3be200@app.fastmail.com>
+In-Reply-To: <ZAjphWYHDoDw9sQS@bombadil.infradead.org>
 References: <20230308130710.368085-1-bhe@redhat.com>
  <20230308130710.368085-2-bhe@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230308130710.368085-2-bhe@redhat.com>
-Sender: Luis Chamberlain <mcgrof@infradead.org>
+ <ZAjphWYHDoDw9sQS@bombadil.infradead.org>
+Date:   Wed, 08 Mar 2023 22:34:57 +0100
+From:   "Arnd Bergmann" <arnd@arndb.de>
+To:     "Luis Chamberlain" <mcgrof@kernel.org>,
+        "Baoquan He" <bhe@redhat.com>
+Cc:     linux-kernel@vger.kernel.org,
+        Linux-Arch <linux-arch@vger.kernel.org>, linux-mm@kvack.org,
+        "Michael Ellerman" <mpe@ellerman.id.au>,
+        "Geert Uytterhoeven" <geert@linux-m68k.org>,
+        "Christoph Hellwig" <hch@infradead.org>,
+        "Helge Deller" <deller@gmx.de>,
+        "Thomas Zimmermann" <tzimmermann@suse.de>,
+        "Christophe Leroy" <christophe.leroy@csgroup.eu>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v4 1/4] video: fbdev: atyfb: only use ioremap_uc() on i386 and ia64
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Mar 08, 2023 at 09:07:07PM +0800, Baoquan He wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
-> 
-> ioremap_uc() is only meaningful on old x86-32 systems with the PAT
-> extension, and on ia64 with its slightly unconventional ioremap()
-> behavior, everywhere else this is the same as ioremap() anyway.
-> 
-> Change the only driver that still references ioremap_uc() to only do so
-> on x86-32/ia64 in order to allow removing that interface at some
-> point in the future for the other architectures.
-> 
-> On some architectures, ioremap_uc() just returns NULL, changing
-> the driver to call ioremap() means that they now have a chance
-> of working correctly.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Baoquan He <bhe@redhat.com>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: dri-devel@lists.freedesktop.org
+0On Wed, Mar 8, 2023, at 21:01, Luis Chamberlain wrote:
+> On Wed, Mar 08, 2023 at 09:07:07PM +0800, Baoquan He wrote:
+>> From: Arnd Bergmann <arnd@arndb.de>
+>> 
+>> ioremap_uc() is only meaningful on old x86-32 systems with the PAT
+>> extension, and on ia64 with its slightly unconventional ioremap()
+>> behavior, everywhere else this is the same as ioremap() anyway.
+>> 
+>> Change the only driver that still references ioremap_uc() to only do so
+>> on x86-32/ia64 in order to allow removing that interface at some
+>> point in the future for the other architectures.
+>> 
+>> On some architectures, ioremap_uc() just returns NULL, changing
+>> the driver to call ioremap() means that they now have a chance
+>> of working correctly.
+>> 
+>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>> Signed-off-by: Baoquan He <bhe@redhat.com>
+>> Cc: Helge Deller <deller@gmx.de>
+>> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+>> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+>> Cc: linux-fbdev@vger.kernel.org
+>> Cc: dri-devel@lists.freedesktop.org
+>
+> Reviewed-by: Luis Chamberlain <mcgrof@kernel.org>
+>
+> Is anyone using this driver these days? How often do fbdev drivers get
+> audited to see what can be nuked?
 
-Reviewed-by: Luis Chamberlain <mcgrof@kernel.org>
+Geert already mentioned that this one is likely used on old
+powermac systems. I think my arm boardfile removal orphaned
+some other fbdev drivers though. I removed the ones that can
+no longer be enabled, but think a bunch of other ones
+are still selectable but have no platform_device definition
+or DT support: FB_PXA168, FB_DA8XX, FB_MX3, and MMP_FB.
 
-Is anyone using this driver these days? How often do fbdev drivers get
-audited to see what can be nuked?
+These four platforms are all still supported with DT, but
+over time it gets less likely that anyone is still interested
+in adding DT support to the fbdev drivers.
 
-
-  Luis
-
+    Arnd

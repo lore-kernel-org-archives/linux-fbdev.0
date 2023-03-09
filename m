@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF4C1C761AF
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:05:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D061FC77B6D
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:05:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232178AbjCIQE7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Mar 2023 11:04:59 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48218 "EHLO
+        id S232235AbjCIQFG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Mar 2023 11:05:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47964 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231529AbjCIQCo (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:44 -0500
+        with ESMTP id S231834AbjCIQDR (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:03:17 -0500
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 50BC7F7ED7;
-        Thu,  9 Mar 2023 08:02:43 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BA282F7EDF;
+        Thu,  9 Mar 2023 08:02:46 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 6BC6922170;
-        Thu,  9 Mar 2023 16:02:41 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 3014E21CF8;
+        Thu,  9 Mar 2023 16:02:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678377761; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678377765; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Q00Utiwa/F841Bfuw5zq1QJNoc8fZ3VllqOH/C02QCE=;
-        b=0P8Tgh1FoQAhGrSiCMIv50ZZoyI5J3PnrRMmYmdVLK2Aq5JGua3ZkSiBLMlhMqVQ+1GYyU
-        QTXRyHEfrzzc7o9PZg3tJKC66D1cjWk/fzcRcudCTj1IFQbZ2y0100O0ipCGX8pcCpOIYZ
-        /3l9s/RWTmfgrz3Q8Tu1urzKjhCEz60=
+        bh=ALsO4IX+lXOr2/9jJ7xM7oWEJtpk0lY0JvNUM21acD0=;
+        b=ibeXiYlRwFX3kYpd0p9A7lMTdVMC9Fwe5CosSJaVaakK7R2YBZ3fXTlozkbl/UiL5jTS8y
+        xXFPFpQgBHAUE6pmwaV+xKG4iGnskk7Y/bPBzSTtL3W77qowzQ6ugXnIq17I+ZiAI5CtbK
+        U2JPW0KhaLVuLn52/QgPlViOuwijmU4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678377761;
+        s=susede2_ed25519; t=1678377765;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Q00Utiwa/F841Bfuw5zq1QJNoc8fZ3VllqOH/C02QCE=;
-        b=TB6WBT+lJi7vvrTaYSYiIbfmp1jlbBWpJme2pc8J3M+NesAZ0kjqd/m8JODdEtERVjV8tL
-        F5fkTgZRBKYTBeAg==
+        bh=ALsO4IX+lXOr2/9jJ7xM7oWEJtpk0lY0JvNUM21acD0=;
+        b=LWt569FfZOyzTosHPQg/ga7WhTjnw20OX+GhU9e53/rp4wj+b9RmbVDPnRjtEZlMaiCGP9
+        F9Wa7b7tLTzP6RAg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 0525013A73;
-        Thu,  9 Mar 2023 16:02:41 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C26901391B;
+        Thu,  9 Mar 2023 16:02:44 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id MAZRACEDCmQHbgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:41 +0000
+        id EDJ2LiQDCmQHbgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:44 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
         rdunlap@infradead.org, paulus@samba.org, benh@kernel.crashing.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 091/101] fbdev/vermilion: Remove unused option string
-Date:   Thu,  9 Mar 2023 17:01:51 +0100
-Message-Id: <20230309160201.5163-92-tzimmermann@suse.de>
+Subject: [PATCH v2 100/101] staging/sm750fb: Parse option string with struct option_iter
+Date:   Thu,  9 Mar 2023 17:02:00 +0100
+Message-Id: <20230309160201.5163-101-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309160201.5163-1-tzimmermann@suse.de>
 References: <20230309160201.5163-1-tzimmermann@suse.de>
@@ -71,36 +71,106 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The option string is unused. Remove the variable. No functional
-changes.
+Use struct option_iter to walk over the individual options in the
+driver's option string. Replaces the hand-written strsep() loop with
+a clean interface. The helpers for struct option_iter handle empty
+option strings and empty options transparently. The struct's _init
+and _release functions duplicate and release the option string's
+memory buffer as needed.
+
+Done in preparation of constifying the option string.
+
+v2:
+	* move string handling into separate patches
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/vermilion/vermilion.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 28 +++++++++++++++-------------
+ 1 file changed, 15 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/fbdev/vermilion/vermilion.c b/drivers/video/fbdev/vermilion/vermilion.c
-index 0374ee6b6d03..bea318504475 100644
---- a/drivers/video/fbdev/vermilion/vermilion.c
-+++ b/drivers/video/fbdev/vermilion/vermilion.c
-@@ -1056,16 +1056,11 @@ static void __exit vmlfb_cleanup(void)
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index f0dbf7535ca8..0e3712fcf0e0 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -1,5 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ #include <linux/aperture.h>
++#include <linux/cmdline.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/errno.h>
+@@ -867,8 +868,9 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ }
  
- static int __init vmlfb_init(void)
+ /*	chip specific g_option configuration routine */
+-static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
++static void sm750fb_setup(struct sm750_dev *sm750_dev, const char *src)
  {
--
--#ifndef MODULE
--	char *option = NULL;
--#endif
--
- 	if (fb_modesetting_disabled("vmlfb"))
- 		return -ENODEV;
++	struct option_iter iter;
+ 	char *opt;
+ 	int swap;
  
- #ifndef MODULE
--	if (fb_get_options(MODULE_NAME, &option))
-+	if (fb_get_options(MODULE_NAME, NULL))
- 		return -ENODEV;
- #endif
+@@ -889,7 +891,9 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
+ 		goto NO_PARAM;
+ 	}
  
+-	while ((opt = strsep(&src, ":")) != NULL && *opt != 0) {
++	option_iter_init(&iter, src);
++
++	while (option_iter_next(&iter, &opt)) {
+ 		dev_info(&sm750_dev->pdev->dev, "opt=%s\n", opt);
+ 		dev_info(&sm750_dev->pdev->dev, "src=%s\n", src);
+ 
+@@ -924,6 +928,8 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
+ 		}
+ 	}
+ 
++	option_iter_release(&iter);
++
+ NO_PARAM:
+ 	if (sm750_dev->revid != SM750LE_REVISION_ID) {
+ 		if (sm750_dev->fb_count > 1) {
+@@ -1095,9 +1101,10 @@ static void lynxfb_pci_remove(struct pci_dev *pdev)
+ 	iounmap(sm750_dev->pvMem);
+ }
+ 
+-static int __init lynxfb_setup(char *options)
++static int __init lynxfb_setup(const char *options)
+ {
+ 	size_t len;
++	struct option_iter iter;
+ 	char *opt, *outbuf;
+ 
+ 	if (!options || !*options) {
+@@ -1113,16 +1120,9 @@ static int __init lynxfb_setup(char *options)
+ 		return -ENOMEM;
+ 	g_settings = outbuf;
+ 
+-	/*
+-	 * Notes:
+-	 * char * strsep(char **s,const char * ct);
+-	 * @s: the string to be searched
+-	 * @ct :the characters to search for
+-	 *
+-	 * strsep() updates @options to pointer after the first found token
+-	 * it also returns the pointer ahead the token.
+-	 */
+-	while ((opt = strsep(&options, ":")) != NULL) {
++	option_iter_init(&iter, options);
++
++	while (option_iter_next(&iter, &opt)) {
+ 		/* options that mean for any lynx chips are configured here */
+ 		if (!strncmp(opt, "noaccel", strlen("noaccel"))) {
+ 			g_noaccel = 1;
+@@ -1139,6 +1139,8 @@ static int __init lynxfb_setup(char *options)
+ 		}
+ 	}
+ 
++	option_iter_release(&iter);
++
+ 	/* misc g_settings are transport to chip specific routines */
+ 	pr_info("parameter left for chip specific analysis:%s\n", g_settings);
+ 	return 0;
 -- 
 2.39.2
 

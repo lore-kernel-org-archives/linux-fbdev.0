@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36306C77B6C
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6F3DC77B70
 	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:03:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231429AbjCIQD3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Mar 2023 11:03:29 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47546 "EHLO
+        id S231958AbjCIQDf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Mar 2023 11:03:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47556 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231608AbjCIQCU (ORCPT
+        with ESMTP id S230462AbjCIQCU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:20 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB759F7EFE;
-        Thu,  9 Mar 2023 08:02:17 -0800 (PST)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BBCD1F3670;
+        Thu,  9 Mar 2023 08:02:18 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 2A09820186;
-        Thu,  9 Mar 2023 16:02:16 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 6ED1722152;
+        Thu,  9 Mar 2023 16:02:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678377736; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678377737; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=79twlirOUmPL24Yx299EScp7mDUr++Nf+Ag16S4Xxjs=;
-        b=J8/6/7EEKDakmOzjuqFZ+wJphKc8bmbN8uy81393+ZynnFwzLZQD1dOhcO2PNr4o877mX1
-        Ia2b9IHWAPHVVmBtaNcZQFHNcEY2T3j13kyfRIrVYsD4ldyscl1OxHI8F6KJ+gdXWhghZP
-        m9AIHZYMmWqx/hOTBqmxPRh+JA92IfA=
+        bh=8TOK4HErI/2h/odaJ3yQPBqDv7GClK8xHBQXOXIADoU=;
+        b=jBhUeHAiZtHj5w0OHCClBUsdhGNNr/Mpx36csnTC1VjalZbz/ujMyeQStVoWpcvitGc1p8
+        ywHU2HzIR2NcHa+P60b2S71DlryhFt0IrY0GderO0YUjbAICm9w593P5E6EVkzdZbWQjmf
+        4tNJ0CXzhbEQ5idJV7fZ1Dd0FltqjCo=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678377736;
+        s=susede2_ed25519; t=1678377737;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=79twlirOUmPL24Yx299EScp7mDUr++Nf+Ag16S4Xxjs=;
-        b=ysXUn8HbMlNrgNIfgiTqsz4EOHt+nWtL9fHeP6kDN6Cff9+KI5dfv41EtZS0h0lwn/TTgq
-        sbxm4h5lYYBZDXCA==
+        bh=8TOK4HErI/2h/odaJ3yQPBqDv7GClK8xHBQXOXIADoU=;
+        b=5lKnZxp2h7vlv0rHhmQcFlwWIUCOfpYmAYE3sc99d60+piWXHA9tnj6cR2/qUVaj1MeK/G
+        UTteoFXco8iT5BDA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id BBDC91391B;
-        Thu,  9 Mar 2023 16:02:15 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 0C16213A73;
+        Thu,  9 Mar 2023 16:02:17 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id EAnxLAcDCmQHbgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:15 +0000
+        id QBn1AQkDCmQHbgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:17 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
         rdunlap@infradead.org, paulus@samba.org, benh@kernel.crashing.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 028/101] fbdev/grvga: Duplicate video-mode option string
-Date:   Thu,  9 Mar 2023 17:00:48 +0100
-Message-Id: <20230309160201.5163-29-tzimmermann@suse.de>
+Subject: [PATCH v2 031/101] fbdev/hyperv_fb: Duplicate video-mode option string
+Date:   Thu,  9 Mar 2023 17:00:51 +0100
+Message-Id: <20230309160201.5163-32-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309160201.5163-1-tzimmermann@suse.de>
 References: <20230309160201.5163-1-tzimmermann@suse.de>
@@ -72,32 +72,67 @@ List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Assume that the driver does not own the option string or its substrings
-and hence duplicate the option string for the video mode. Allocate the
-copy's memory with devm_kstrdup(), as the driver parses the option string
-once per probed device. Linux will automatically free the memory upon
-releasing the device.
+and hence duplicate the option string for the video mode. As the driver
+implements a very simple mode parser in a fairly unstructured way, just
+duplicate the option string and parse the duplicated memory buffer. Free
+the buffer afterwards.
 
-Done in preparation of switching the driver to struct option_iter and
-constifying the option string.
+Done in preparation of constifying the option string and switching the
+driver to struct option_iter.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/grvga.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/hyperv_fb.c | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/grvga.c b/drivers/video/fbdev/grvga.c
-index 24818b276241..28c2e0e0763a 100644
---- a/drivers/video/fbdev/grvga.c
-+++ b/drivers/video/fbdev/grvga.c
-@@ -370,7 +370,7 @@ static int grvga_probe(struct platform_device *dev)
- 		else if (!strncmp(this_opt, "size", 4))
- 			grvga_mem_size = simple_strtoul(this_opt + 5, NULL, 0);
- 		else
--			mode_opt = this_opt;
-+			mode_opt = devm_kstrdup(&dev->dev, opt, GFP_KERNEL); // ignore errors
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index 4a6a3303b6b4..edb0555239c6 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -903,17 +903,23 @@ static const struct fb_ops hvfb_ops = {
+ static void hvfb_get_option(struct fb_info *info)
+ {
+ 	struct hvfb_par *par = info->par;
+-	char *opt = NULL, *p;
++	char *options = NULL;
++	char *optbuf, *opt, *p;
+ 	uint x = 0, y = 0;
+ 
+-	if (fb_get_options(KBUILD_MODNAME, &opt) || !opt || !*opt)
++	if (fb_get_options(KBUILD_MODNAME, &options) || !options || !*options)
+ 		return;
+ 
++	optbuf = kstrdup(options, GFP_KERNEL);
++	if (!optbuf)
++		return;
++	opt = optbuf;
++
+ 	p = strsep(&opt, "x");
+ 	if (!*p || kstrtouint(p, 0, &x) ||
+ 	    !opt || !*opt || kstrtouint(opt, 0, &y)) {
+ 		pr_err("Screen option is invalid: skipped\n");
+-		return;
++		goto out;
  	}
  
- 	par = info->par;
+ 	if (x < HVFB_WIDTH_MIN || y < HVFB_HEIGHT_MIN ||
+@@ -922,12 +928,14 @@ static void hvfb_get_option(struct fb_info *info)
+ 	    (par->synthvid_version == SYNTHVID_VERSION_WIN8 &&
+ 	     x * y * screen_depth / 8 > SYNTHVID_FB_SIZE_WIN8)) {
+ 		pr_err("Screen resolution option is out of range: skipped\n");
+-		return;
++		goto out;
+ 	}
+ 
+ 	screen_width = x;
+ 	screen_height = y;
+-	return;
++
++out:
++	kfree(optbuf);
+ }
+ 
+ /*
 -- 
 2.39.2
 

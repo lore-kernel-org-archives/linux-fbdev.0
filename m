@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42EFBC7618E
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25C79C76195
 	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:03:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231797AbjCIQDF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Mar 2023 11:03:05 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47332 "EHLO
+        id S230061AbjCIQDE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Mar 2023 11:03:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47314 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230286AbjCIQCM (ORCPT
+        with ESMTP id S231437AbjCIQCM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:12 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1EC5CF7EC6;
-        Thu,  9 Mar 2023 08:02:12 -0800 (PST)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2E6DBF4B43;
+        Thu,  9 Mar 2023 08:02:11 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id B6D902017E;
-        Thu,  9 Mar 2023 16:02:10 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id D9A1522140;
+        Thu,  9 Mar 2023 16:02:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678377730; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678377729; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=dDLfWugx/oPOz6pILs/JXlPMBz5A3FDUfG3kXQPg+jE=;
-        b=10+7N1KxIlvvKdllrJbUahxa/LQ75ZbLFlZVVLr7VD9pJtlR073sO6rv7I/YqFMa6lB4Ok
-        bIAY8IaxEgsaExB8N45YhTJ4oZLhdYKhrO80gW9ugwYYCXgn3bXNcVeV8bFwCvmZRQqLMS
-        WNWxVj7CVPsE3vjYH7XZ6eW5xex3mD4=
+        bh=BakC+qpuW38aK0OvnJ1f/WEGdxh5L35SOezAYZ73eHU=;
+        b=XFi7a4C45OfxOHx5jgZ+i0LKNg8gAwwfcG3ShZqKuRXRvUkqWivkW2ccfIGNTCXLYSoE4j
+        qNBQORlM3eqc2qAnUBVeuPmN1TspI/Kgo2IxshP2Nx3bHhJKiDOlw7/c2LJZWBB4tXC/xB
+        Ent68vf/FIDuj+AYJPa+IIcpSxHB0bM=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678377730;
+        s=susede2_ed25519; t=1678377729;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=dDLfWugx/oPOz6pILs/JXlPMBz5A3FDUfG3kXQPg+jE=;
-        b=ffHZR+Za2tyTYGAnEwADCX6f12QPIzo3WuhS/V+mV+h1tYUfmHyGDHFJ7YVHeQxV8FWUIt
-        gJ/d4jgTaNNdRMDg==
+        bh=BakC+qpuW38aK0OvnJ1f/WEGdxh5L35SOezAYZ73eHU=;
+        b=Ef6P6ITBLVfSGVJO3NvkatljcdmXt75pT+KY1K9qlZnnXcUypKQX1VufQCoBjDUfpvNt9r
+        pQ9vkEojb+plrEAA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 552E913A73;
-        Thu,  9 Mar 2023 16:02:10 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 7840613A73;
+        Thu,  9 Mar 2023 16:02:09 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id SITtEwIDCmQHbgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:10 +0000
+        id oNJwHAEDCmQHbgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:09 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
         rdunlap@infradead.org, paulus@samba.org, benh@kernel.crashing.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 015/101] fbdev/cirrusfb: Duplicate video-mode option string
-Date:   Thu,  9 Mar 2023 17:00:35 +0100
-Message-Id: <20230309160201.5163-16-tzimmermann@suse.de>
+Subject: [PATCH v2 013/101] fbdev/au1100fb: Parse option string with struct option_iter
+Date:   Thu,  9 Mar 2023 17:00:33 +0100
+Message-Id: <20230309160201.5163-14-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309160201.5163-1-tzimmermann@suse.de>
 References: <20230309160201.5163-1-tzimmermann@suse.de>
@@ -71,59 +71,66 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Assume that the driver does not own the option string or its substrings
-and hence duplicate the option string for the video mode. Allocate the
-copy's memory with kstrdup() and free it in the module's exit function.
+Use struct option_iter to walk over the individual options in the
+driver's option string. Replaces the hand-written strsep() loop with
+a clean interface. The helpers for struct option_iter handle empty
+option strings and empty options transparently. The struct's _init
+and _release functions duplicate and release the option string's
+memory buffer as needed.
 
-Done in preparation of switching the driver to struct option_iter and
-constifying the option string.
-
-v2:
-	* replace static memory with kstrdup()/kfree() (Geert)
+Done in preparation of constifying the option string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/cirrusfb.c | 13 +++++++++----
+ drivers/video/fbdev/au1100fb.c | 13 +++++++++----
  1 file changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/cirrusfb.c b/drivers/video/fbdev/cirrusfb.c
-index ba45e2147c52..85b9442031b3 100644
---- a/drivers/video/fbdev/cirrusfb.c
-+++ b/drivers/video/fbdev/cirrusfb.c
-@@ -367,6 +367,7 @@ struct cirrusfb_info {
- };
+diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100fb.c
+index 519313b8bb00..0c063c8e6312 100644
+--- a/drivers/video/fbdev/au1100fb.c
++++ b/drivers/video/fbdev/au1100fb.c
+@@ -42,6 +42,7 @@
+  *  675 Mass Ave, Cambridge, MA 02139, USA.
+  */
+ #include <linux/clk.h>
++#include <linux/cmdline.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/errno.h>
+@@ -365,7 +366,9 @@ static const struct fb_ops au1100fb_ops =
  
- static bool noaccel;
-+static char *mode_option_buf;
- static char *mode_option = "640x480@60";
+ static int au1100fb_setup(struct au1100fb_device *fbdev)
+ {
+-	char *this_opt, *options;
++	char *options;
++	struct option_iter iter;
++	char *this_opt;
+ 	int num_panels = ARRAY_SIZE(known_lcd_panels);
  
- /****************************************************************************/
-@@ -2336,10 +2337,13 @@ static int __init cirrusfb_setup(char *options)
+ 	if (num_panels <= 0) {
+@@ -375,10 +378,10 @@ static int au1100fb_setup(struct au1100fb_device *fbdev)
  
- 		if (!strcmp(this_opt, "noaccel"))
- 			noaccel = 1;
--		else if (!strncmp(this_opt, "mode:", 5))
--			mode_option = this_opt + 5;
--		else
--			mode_option = this_opt;
-+		else {
-+			if (!strncmp(this_opt, "mode:", 5))
-+				this_opt += 5;
-+			kfree(mode_option_buf);
-+			mode_option_buf = kstrdup(this_opt, GFP_KERNEL); // ignore errors
-+			mode_option = mode_option_buf;
-+		}
+ 	if (fb_get_options(DRIVER_NAME, &options))
+ 		return -ENODEV;
+-	if (!options)
+-		return -ENODEV;
+ 
+-	while ((this_opt = strsep(&options, ",")) != NULL) {
++	option_iter_init(&iter, options);
++
++	while (option_iter_next(&iter, &this_opt)) {
+ 		/* Panel option */
+ 		if (!strncmp(this_opt, "panel:", 6)) {
+ 			int i;
+@@ -401,6 +404,8 @@ static int au1100fb_setup(struct au1100fb_device *fbdev)
+ 			print_warn("Unsupported option \"%s\"", this_opt);
  	}
- 	return 0;
- }
-@@ -2387,6 +2391,7 @@ static void __exit cirrusfb_exit(void)
- #ifdef CONFIG_ZORRO
- 	zorro_unregister_driver(&cirrusfb_zorro_driver);
- #endif
-+	kfree(mode_option_buf);
- }
  
- module_init(cirrusfb_init);
++	option_iter_release(&iter);
++
+ 	print_info("Panel=%s", fbdev->panel->name);
+ 
+ 	return 0;
 -- 
 2.39.2
 

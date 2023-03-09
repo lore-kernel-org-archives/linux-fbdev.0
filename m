@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CA71C7618B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37759C76186
 	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:03:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231865AbjCIQDT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Mar 2023 11:03:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47522 "EHLO
+        id S231839AbjCIQDS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Mar 2023 11:03:18 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47492 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231583AbjCIQCT (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:19 -0500
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 58CFBF7EEB;
-        Thu,  9 Mar 2023 08:02:15 -0800 (PST)
+        with ESMTP id S231599AbjCIQCU (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:20 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 62BFDF7EF8;
+        Thu,  9 Mar 2023 08:02:16 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 130A922146;
+        by smtp-out2.suse.de (Postfix) with ESMTPS id DF52F20185;
         Thu,  9 Mar 2023 16:02:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
         t=1678377734; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=ThHqTav4uwh2rVs7lCpTQaurYmXorgnHNJfG5xnTYZU=;
-        b=JI/MM8UOj3mttyyvNxQT55J/DxrPlDbv/0caRtrtlq8Jc0peUKF8xVYKT2FaC1z4WrWpnU
-        vOiGRr6uyQzJmVzrMBXtTq1loGz9P5ib1QR66nxFPW5EPvfOU2RpqzEqvPKP+o0FTO+M5T
-        nQM5DVwKaki7iMgitGDhenysoa2oZrw=
+        bh=TLAbF/IxrYzQxfqgNl+fEpo2kh27uLHCXxP09jiRWPw=;
+        b=kj2x0IHOwQcNEXkOXVMEVAYq0EewgaGYxEERzn/eUbv3dzSYiIwsdTCp8d3VJPgZrl7NNB
+        Qw/yTygda3ZtiOgJ+5cD/md3t5yrORSJ2RH03DZaphZ9rWEPO2Tyff73AvkubvHTUITkC1
+        TVfM6Kf1/lomVGt9sGU8Q/UCRmzXfUk=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
         s=susede2_ed25519; t=1678377734;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=ThHqTav4uwh2rVs7lCpTQaurYmXorgnHNJfG5xnTYZU=;
-        b=v4AQH/idjIDBITGE+v54gw4Arl0gq7SNLszKCyHqthcol/GcusstzRAfHdaE7J9qA+5p1k
-        XL5jStaexJg5AqDQ==
+        bh=TLAbF/IxrYzQxfqgNl+fEpo2kh27uLHCXxP09jiRWPw=;
+        b=e2yv93PwS/2CiePmwpZz9ZSeF+8FyK/MqZwOhx/1thcc4CLcKfEXMIIF7PZqCAAHSRtMqB
+        H6wSXe69c+C35SBQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id A799D13A73;
-        Thu,  9 Mar 2023 16:02:13 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 7E2CF1391B;
+        Thu,  9 Mar 2023 16:02:14 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id YAPyJwUDCmQHbgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:13 +0000
+        id 8GzaHQYDCmQHbgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:14 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
         rdunlap@infradead.org, paulus@samba.org, benh@kernel.crashing.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 023/101] fbdev/fsl-diu-fb: Parse option string with struct option_iter
-Date:   Thu,  9 Mar 2023 17:00:43 +0100
-Message-Id: <20230309160201.5163-24-tzimmermann@suse.de>
+Subject: [PATCH v2 025/101] fbdev/gbefb: Parse option string with struct option_iter
+Date:   Thu,  9 Mar 2023 17:00:45 +0100
+Message-Id: <20230309160201.5163-26-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309160201.5163-1-tzimmermann@suse.de>
 References: <20230309160201.5163-1-tzimmermann@suse.de>
@@ -82,52 +82,59 @@ Done in preparation of constifying the option string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/fsl-diu-fb.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/gbefb.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
-index 033bbf0c40b7..78996995568c 100644
---- a/drivers/video/fbdev/fsl-diu-fb.c
-+++ b/drivers/video/fbdev/fsl-diu-fb.c
-@@ -12,6 +12,7 @@
-  *   Based on imxfb.c Copyright (C) 2004 S.Hauer, Pengutronix
+diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
+index 6afccd4ef0a8..d20ef48263f3 100644
+--- a/drivers/video/fbdev/gbefb.c
++++ b/drivers/video/fbdev/gbefb.c
+@@ -9,6 +9,7 @@
+  *  more details.
   */
  
 +#include <linux/cmdline.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-@@ -1843,17 +1844,15 @@ static int fsl_diu_remove(struct platform_device *pdev)
- }
+ #include <linux/delay.h>
+ #include <linux/platform_device.h>
+ #include <linux/dma-mapping.h>
+@@ -1083,14 +1084,14 @@ ATTRIBUTE_GROUPS(gbefb);
+  * Initialization
+  */
  
- #ifndef MODULE
--static int __init fsl_diu_setup(char *options)
-+static int __init fsl_diu_setup(const char *options)
+-static int gbefb_setup(char *options, struct device *dev)
++static int gbefb_setup(const char *options, struct device *dev)
  {
 +	struct option_iter iter;
- 	char *opt;
- 	unsigned long val;
+ 	char *this_opt;
  
 -	if (!options || !*options)
 -		return 0;
 +	option_iter_init(&iter, options);
  
--	while ((opt = strsep(&options, ",")) != NULL) {
--		if (!*opt)
--			continue;
-+	while (option_iter_next(&iter, &opt)) {
- 		if (!strncmp(opt, "monitor=", 8)) {
- 			monitor_port = fsl_diu_name_to_port(opt + 8);
- 		} else if (!strncmp(opt, "bpp=", 4)) {
-@@ -1866,6 +1865,8 @@ static int __init fsl_diu_setup(char *options)
+-	while ((this_opt = strsep(&options, ",")) != NULL) {
++	while (option_iter_next(&iter, &this_opt)) {
+ 		if (!strncmp(this_opt, "monitor:", 8)) {
+ 			if (!strncmp(this_opt + 8, "crt", 3)) {
+ 				flat_panel_enabled = 0;
+@@ -1103,7 +1104,7 @@ static int gbefb_setup(char *options, struct device *dev)
+ 				default_mode = &default_mode_LCD;
+ 			}
+ 		} else if (!strncmp(this_opt, "mem:", 4)) {
+-			gbe_mem_size = memparse(this_opt + 4, &this_opt);
++			gbe_mem_size = memparse(this_opt + 4, NULL);
+ 			if (gbe_mem_size > CONFIG_FB_GBE_MEM * 1024 * 1024)
+ 				gbe_mem_size = CONFIG_FB_GBE_MEM * 1024 * 1024;
+ 			if (gbe_mem_size < TILE_SIZE)
+@@ -1112,6 +1113,9 @@ static int gbefb_setup(char *options, struct device *dev)
+ 			mode_option = devm_kstrdup(dev, this_opt, GFP_KERNEL); // ignore errors
  		}
  	}
- 
++
 +	option_iter_release(&iter);
 +
  	return 0;
  }
- #endif
+ 
 -- 
 2.39.2
 

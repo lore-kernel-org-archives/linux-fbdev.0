@@ -2,79 +2,112 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20FBDC64EC4
-	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Mar 2023 23:13:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B73CC64EC4
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 06:11:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229772AbjCHXNr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 8 Mar 2023 18:13:47 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60384 "EHLO
+        id S229645AbjCIGLy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Mar 2023 01:11:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55930 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229659AbjCHXNq (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Mar 2023 18:13:46 -0500
-X-Greylist: delayed 897 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 08 Mar 2023 15:13:44 PST
-Received: from hosting.gsystem.sk (hosting.gsystem.sk [212.5.213.30])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 448F0F760;
-        Wed,  8 Mar 2023 15:13:44 -0800 (PST)
-Received: from [192.168.0.2] (chello089173232159.chello.sk [89.173.232.159])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by hosting.gsystem.sk (Postfix) with ESMTPSA id 631267A03E2;
-        Wed,  8 Mar 2023 23:48:33 +0100 (CET)
-From:   Ondrej Zary <linux@zary.sk>
-To:     Luis Chamberlain <mcgrof@kernel.org>
-Subject: Re: [PATCH v4 1/4] video: fbdev: atyfb: only use ioremap_uc() on i386 and ia64
-Date:   Wed, 8 Mar 2023 23:48:29 +0100
-User-Agent: KMail/1.9.10
-Cc:     Baoquan He <bhe@redhat.com>, linux-kernel@vger.kernel.org,
-        linux-arch@vger.kernel.org, linux-mm@kvack.org, arnd@arndb.de,
-        mpe@ellerman.id.au, geert@linux-m68k.org, hch@infradead.org,
-        Helge Deller <deller@gmx.de>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20230308130710.368085-1-bhe@redhat.com> <20230308130710.368085-2-bhe@redhat.com> <ZAjphWYHDoDw9sQS@bombadil.infradead.org>
-In-Reply-To: <ZAjphWYHDoDw9sQS@bombadil.infradead.org>
-X-KMail-QuotePrefix: > 
+        with ESMTP id S229459AbjCIGLw (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 01:11:52 -0500
+Received: from mail-vs1-xe2a.google.com (mail-vs1-xe2a.google.com [IPv6:2607:f8b0:4864:20::e2a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C4448C70BC;
+        Wed,  8 Mar 2023 22:11:51 -0800 (PST)
+Received: by mail-vs1-xe2a.google.com with SMTP id m10so697390vso.4;
+        Wed, 08 Mar 2023 22:11:51 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112; t=1678342311;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=DOzTOu7edVtxvcJFXb3EsqSUZ93p9slEkC3iI88cKoI=;
+        b=N30kyudSkCl3/te0Vn30Yn5Qu/oKErDE/QG0ofKinWC0NYLlcWzUagCP7fZZxpwpcs
+         ZIzjUnPO/18w0yiW4R868/2X0RJ14TPVNDPufKvQ/mPDQ5z4BtscMdyRuqQWVXyEa603
+         4tAdhqbRGHwBEBbbM9c9LCG74SyuSN4ifDJnajKWa47eU7ONQWi3x7tZNmD4PlgrlnqT
+         cuypy95LQVMKf/SOGvJNOncoK7H0SXAuNCxdIFpQPLOJdqSZefU+gQ15LNuKFKUeoW3o
+         8BMpU2jNQyV4DS/D1YHzfGb0To3j8MrD+okeVigtRwL5fvsdTNWANN/FFWP0h4jOowsD
+         h7tQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1678342311;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=DOzTOu7edVtxvcJFXb3EsqSUZ93p9slEkC3iI88cKoI=;
+        b=jH4j1xhnnZd6p51S1w9h8ac1/uzUpbOemXhE9YLN09r6qR/QIwxMj0RD+Puk8yPdJO
+         dsDQTZfBH7rZ/y2D+HyBQxEteGdARs2B1veD447KnZeDB3c5GYB31qpOupM3pwnZCgGd
+         xtbcAjsChdmibTZWwpCbOyHt5Rub5M/t+rztN3xO7k1bNv0GVSt8qMUsJCB9QIIqql4K
+         MV++R/nWsvVSAhaSYX/gJaW7FUoRyeOjMh4jp8m2jnF6Xq25+CQsnqYmANh7WzG6yRSF
+         E9TckxuQCJ3g0jEwDgNTQq/7OOqpbO8V3ZDysM1MldHGuhiRLMy6CTRavONsnoJnofT6
+         5QLQ==
+X-Gm-Message-State: AO0yUKUtBA8jJXZ3jFeEHZkPzlSsBes2KZPflY3pLlyCXmm05vHRTiqf
+        gs+z47CcK3WXBXaLgcFOCyaSBWrROsn0EJGRk3Y=
+X-Google-Smtp-Source: AK7set+pChHLpiXzjFwd9oKRlK2Hl+8a6uJ9CpwuwrCWNy+dbs7lk2te8UfH2A6eoG2JZv0/neHDZ4xE1qFYn3K+vOw=
+X-Received: by 2002:a67:7302:0:b0:414:2d02:6c96 with SMTP id
+ o2-20020a677302000000b004142d026c96mr13522386vsc.7.1678342310849; Wed, 08 Mar
+ 2023 22:11:50 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <202303082348.29416.linux@zary.sk>
+References: <20230307130856.2295182-1-harperchen1110@gmail.com> <123a52d8-baf0-e32b-3262-1e8619b1c3ad@gmx.de>
+In-Reply-To: <123a52d8-baf0-e32b-3262-1e8619b1c3ad@gmx.de>
+From:   Wei Chen <harperchen1110@gmail.com>
+Date:   Thu, 9 Mar 2023 14:11:14 +0800
+Message-ID: <CAO4mrfem6K99Qnj7F-2Yqf25gG5zLSqumaz0N176j_Ekn+m-nA@mail.gmail.com>
+Subject: Re: [PATCH] fbdev: tgafb: Fix potential divide by zero
+To:     Helge Deller <deller@gmx.de>
+Cc:     javierm@redhat.com, tzimmermann@suse.de,
+        wsa+renesas@sang-engineering.com, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wednesday 08 March 2023 21:01:09 Luis Chamberlain wrote:
-> On Wed, Mar 08, 2023 at 09:07:07PM +0800, Baoquan He wrote:
-> > From: Arnd Bergmann <arnd@arndb.de>
-> > 
-> > ioremap_uc() is only meaningful on old x86-32 systems with the PAT
-> > extension, and on ia64 with its slightly unconventional ioremap()
-> > behavior, everywhere else this is the same as ioremap() anyway.
-> > 
-> > Change the only driver that still references ioremap_uc() to only do so
-> > on x86-32/ia64 in order to allow removing that interface at some
-> > point in the future for the other architectures.
-> > 
-> > On some architectures, ioremap_uc() just returns NULL, changing
-> > the driver to call ioremap() means that they now have a chance
-> > of working correctly.
-> > 
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > Signed-off-by: Baoquan He <bhe@redhat.com>
-> > Cc: Helge Deller <deller@gmx.de>
-> > Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> > Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-> > Cc: linux-fbdev@vger.kernel.org
-> > Cc: dri-devel@lists.freedesktop.org
-> 
-> Reviewed-by: Luis Chamberlain <mcgrof@kernel.org>
-> 
-> Is anyone using this driver these days? How often do fbdev drivers get
-> audited to see what can be nuked?
+Dear Helge,
 
-Older servers have integrated ATI Rage XL chips and this is the only driver for it.
+Thank you for the kind words. My real name is Wei Chen.
 
--- 
-Ondrej Zary
+Please apply this patch to fbdev git tree if it is correct.
+
+Best,
+Wei
+
+On Thu, 9 Mar 2023 at 06:05, Helge Deller <deller@gmx.de> wrote:
+>
+> On 3/7/23 14:08, harperchen wrote:
+> > fb_set_var would by called when user invokes ioctl with cmd
+> > FBIOPUT_VSCREENINFO. User-provided data would finally reach
+> > tgafb_check_var. In case var->pixclock is assigned to zero,
+> > divide by zero would occur when checking whether reciprocal
+> > of var->pixclock is too high.
+> >
+> > Similar crashes have happened in other fbdev drivers. There
+> > is no check and modification on var->pixclock along the call
+> > chain to tgafb_check_var. We believe it could also be triggered
+> > in driver tgafb from user site.
+> >
+> > Signed-off-by: harperchen <harperchen1110@gmail.com>
+>
+> Could you provide a real name?
+> Otherwise applied to fbdev git tree.
+>
+> Thanks!
+> Helge
+>
+> > ---
+> >   drivers/video/fbdev/tgafb.c | 3 +++
+> >   1 file changed, 3 insertions(+)
+> >
+> > diff --git a/drivers/video/fbdev/tgafb.c b/drivers/video/fbdev/tgafb.c
+> > index 14d37c49633c..b44004880f0d 100644
+> > --- a/drivers/video/fbdev/tgafb.c
+> > +++ b/drivers/video/fbdev/tgafb.c
+> > @@ -173,6 +173,9 @@ tgafb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+> >   {
+> >       struct tga_par *par = (struct tga_par *)info->par;
+> >
+> > +     if (!var->pixclock)
+> > +             return -EINVAL;
+> > +
+> >       if (par->tga_type == TGA_TYPE_8PLANE) {
+> >               if (var->bits_per_pixel != 8)
+> >                       return -EINVAL;
+>

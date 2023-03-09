@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F921C74A44
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48BFBC742A7
 	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:05:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232132AbjCIQEu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Mar 2023 11:04:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47432 "EHLO
+        id S232111AbjCIQEr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Mar 2023 11:04:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47506 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231764AbjCIQCl (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:41 -0500
+        with ESMTP id S231747AbjCIQCi (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:38 -0500
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3252EF63A3;
-        Thu,  9 Mar 2023 08:02:40 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A94B7F7EC0;
+        Thu,  9 Mar 2023 08:02:37 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id DAF912216A;
-        Thu,  9 Mar 2023 16:02:38 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 624F322167;
+        Thu,  9 Mar 2023 16:02:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678377758; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678377756; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=vc3MhzDf1ytnsAQte0if7o8oovAVmX2ICQWxWSrkdIk=;
-        b=FiIMR8Ipp0/ClhsoBteb/TvJRP0rhUbP77FigucWxvGsSnBXDm5mji5cyXuX5Dgt1z54Aw
-        CEsrVTLMb3ftymT/7LOvI29Y/RpcTSYV+SULwqpDyPf+IoE82APXQYFfh8i9g0KstECaVl
-        OhkN5jXd7y617eM7cMxRmGHC6h+GUHE=
+        bh=LTM3CGrNdrXHYDt3uvNdE9HVmQsT5bWUcDXgP42T3Vw=;
+        b=aEwptXQdCCH+AJ6u2L2xYdN2fF80ZjhX3VqQxgndG0KrIdZF76bRLH07xcfggmBfj+K8HX
+        R5CIgQ3pkLkK+HaCIm8UbgRwSKMQvdAWI0xxPC625t6nY2jjWXS4XGhxRRGL0uRIdIp9C/
+        uFOSm+SYL+Nunq6xFZ5mX35ulJ/XGrg=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678377758;
+        s=susede2_ed25519; t=1678377756;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=vc3MhzDf1ytnsAQte0if7o8oovAVmX2ICQWxWSrkdIk=;
-        b=DpafcnkE6VWfFGcvZg5uAQpABZ6r8j3l67ZybvrYWYYSn5NnlszCl9POswvSGQpfn/LcKM
-        whxPMWE1BywtHAAQ==
+        bh=LTM3CGrNdrXHYDt3uvNdE9HVmQsT5bWUcDXgP42T3Vw=;
+        b=K7r4EOgkK1n3HkqGvnXwPSIxWAcooJM04yuU58O/ZH8Qm8g6hw+VEogus+YPrAqkcW3tFO
+        e6Yk9g42vXUNnQCA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 7E75F13A73;
-        Thu,  9 Mar 2023 16:02:38 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 0131613A73;
+        Thu,  9 Mar 2023 16:02:35 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id aBb6HR4DCmQHbgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:38 +0000
+        id OBb0OhsDCmQHbgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:35 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
         rdunlap@infradead.org, paulus@samba.org, benh@kernel.crashing.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 085/101] fbdev/tridentfb: Duplicate video-mode option string
-Date:   Thu,  9 Mar 2023 17:01:45 +0100
-Message-Id: <20230309160201.5163-86-tzimmermann@suse.de>
+Subject: [PATCH v2 079/101] fbdev/stifb: Constify option string
+Date:   Thu,  9 Mar 2023 17:01:39 +0100
+Message-Id: <20230309160201.5163-80-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309160201.5163-1-tzimmermann@suse.de>
 References: <20230309160201.5163-1-tzimmermann@suse.de>
@@ -71,55 +71,41 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Assume that the driver does not own the option string or its substrings
-and hence duplicate the option string for the video mode. Allocate the
-copy's memory with kstrdup() and free it in the module's exit function.
-
-Done in preparation of switching the driver to struct option_iter and
-constifying the option string.
+Constify the internal option string that is passed around among
+functions. The caller owns the memory and callees do not modify
+its content. This change will later allow to constify the caller's
+option string as well. No functional changes.
 
 v2:
-	* replace static memory with kstrdup()/kfree() (Geert)
+	* say 'stifb' and fix typos in commit message
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/tridentfb.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/stifb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
-index 6099b9768ba1..dbde64aef91f 100644
---- a/drivers/video/fbdev/tridentfb.c
-+++ b/drivers/video/fbdev/tridentfb.c
-@@ -61,6 +61,7 @@ static struct fb_fix_screeninfo tridentfb_fix = {
- /* defaults which are normally overriden by user values */
+diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
+index a151377f5b45..304ce8fcb9f8 100644
+--- a/drivers/video/fbdev/stifb.c
++++ b/drivers/video/fbdev/stifb.c
+@@ -1392,7 +1392,7 @@ static int __init stifb_init_fb(struct sti_struct *sti, int bpp_pref)
+ static int stifb_disabled __initdata;
  
- /* video mode */
-+static char *mode_option_buf;
- static char *mode_option;
- static int bpp = 8;
+ int __init
+-stifb_setup(char *options);
++stifb_setup(const char *options);
  
-@@ -1800,8 +1801,11 @@ static int __init tridentfb_setup(char *options)
- 			memdiff = simple_strtoul(opt + 8, NULL, 0);
- 		else if (!strncmp(opt, "nativex=", 8))
- 			nativex = simple_strtoul(opt + 8, NULL, 0);
--		else
--			mode_option = opt;
-+		else {
-+			kfree(mode_option_buf);
-+			mode_option_buf = kstrdup(opt, GFP_KERNEL); // ignore errors
-+			mode_option = mode_option_buf;
-+		}
- 	}
- 	return 0;
- }
-@@ -1827,6 +1831,7 @@ static int __init tridentfb_init(void)
- static void __exit tridentfb_exit(void)
+ static int __init stifb_init(void)
  {
- 	pci_unregister_driver(&tridentfb_pci_driver);
-+	kfree(mode_option_buf);
+@@ -1465,7 +1465,7 @@ stifb_cleanup(void)
  }
  
- module_init(tridentfb_init);
+ int __init
+-stifb_setup(char *options)
++stifb_setup(const char *options)
+ {
+ 	int i;
+ 
 -- 
 2.39.2
 

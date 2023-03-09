@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CAE05C77B6F
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:03:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79437C74A44
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:04:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231364AbjCIQDg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Mar 2023 11:03:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47430 "EHLO
+        id S231993AbjCIQDo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Mar 2023 11:03:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47536 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231629AbjCIQCV (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:21 -0500
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BA8B8F4002;
-        Thu,  9 Mar 2023 08:02:20 -0800 (PST)
+        with ESMTP id S231639AbjCIQCX (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:23 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1F49F7ECC;
+        Thu,  9 Mar 2023 08:02:21 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 6E17722154;
-        Thu,  9 Mar 2023 16:02:19 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id A14712017B;
+        Thu,  9 Mar 2023 16:02:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678377739; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678377740; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=AL2Wq5/miOGD6TwZBTlJlNXJ3vVAo4s/zJwjQWmdvKM=;
-        b=On41eD//q+Cf4q8tc82zPn6aQu87CEx5+0wW6oNOs4HOjNtYjvy116UWmzG6xJiYg3YKQ/
-        SCLSG7Qv8AyjVwZZM5YHLQx5s7KvJ+4DhHUxe0RIxDmZwYoomR3z714q/dcDIZoF5IN10R
-        /6fSPNoI0zVUtxZSJZw0QdN7c6TQ9Kw=
+        bh=MrW7pYFX5R5J7fTSEP6NHJNhtqFQ7aaj+PBS3SvPTGg=;
+        b=KMyi1ArSofl/bsuzaDcxSPA6St3dbkNeQtu4GG/uXz+mB3OSzgwPJRG/SVapYXPcoZudSI
+        F7o/npDk+E29i4ursyWn9ajqDmAW8KzUMZ5sl21zEJ+MJfjD2rNMX/sDmkl4m8npxWvwT+
+        86BW9xhw7Q2fbROUtPyJ1oSOxlM9pec=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678377739;
+        s=susede2_ed25519; t=1678377740;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=AL2Wq5/miOGD6TwZBTlJlNXJ3vVAo4s/zJwjQWmdvKM=;
-        b=usZ/URghjqA2NS/XJEW99fqSmd7LRgtp/k2eMSWn60TBvu/R3JRY6dhcw0jan9lmhTizwO
-        l/DJ6ZOoDT2xryDg==
+        bh=MrW7pYFX5R5J7fTSEP6NHJNhtqFQ7aaj+PBS3SvPTGg=;
+        b=lf0QPjtylGKlpjax3PSZ8yyUW9A+oDhATNg9XPu1acJ5HWImpCm+MTnRl0ICzIJB+Uv0s8
+        PgCWdEKJOhB0P4CA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 1160113A73;
-        Thu,  9 Mar 2023 16:02:19 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 4509513A73;
+        Thu,  9 Mar 2023 16:02:20 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id MHZWAwsDCmQHbgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:19 +0000
+        id iCHxDwwDCmQHbgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:20 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
         rdunlap@infradead.org, paulus@samba.org, benh@kernel.crashing.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 036/101] fbdev/imsttfb: Parse option string with struct option_iter
-Date:   Thu,  9 Mar 2023 17:00:56 +0100
-Message-Id: <20230309160201.5163-37-tzimmermann@suse.de>
+Subject: [PATCH v2 039/101] fbdev/imxfb: Duplicate video-mode option string
+Date:   Thu,  9 Mar 2023 17:00:59 +0100
+Message-Id: <20230309160201.5163-40-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309160201.5163-1-tzimmermann@suse.de>
 References: <20230309160201.5163-1-tzimmermann@suse.de>
@@ -71,63 +71,52 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use struct option_iter to walk over the individual options in the
-driver's option string. Replaces the hand-written strsep() loop with
-a clean interface. The helpers for struct option_iter handle empty
-option strings and empty options transparently. The struct's _init
-and _release functions duplicate and release the option string's
-memory buffer as needed.
+Assume that the driver does not own the option string or its substrings
+and hence duplicate the option string for the video mode. Allocate the
+copy's memory with devm_kstrdup(), as the driver parses the option string
+once per probed device. Linux will automatically free the memory upon
+releasing the device.
 
-Done in preparation of constifying the option string.
+Done in preparation of switching the driver to struct option_iter and
+constifying the option string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/imsttfb.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/imxfb.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
-index bea45647184e..1e2b45faa26b 100644
---- a/drivers/video/fbdev/imsttfb.c
-+++ b/drivers/video/fbdev/imsttfb.c
-@@ -17,6 +17,7 @@
-  */
+diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+index 51fde1b2a793..aad7d447385c 100644
+--- a/drivers/video/fbdev/imxfb.c
++++ b/drivers/video/fbdev/imxfb.c
+@@ -843,7 +843,7 @@ static struct lcd_ops imxfb_lcd_ops = {
+ 	.set_power	= imxfb_lcd_set_power,
+ };
  
- #include <linux/aperture.h>
-+#include <linux/cmdline.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-@@ -1560,16 +1561,16 @@ static void imsttfb_remove(struct pci_dev *pdev)
- 
- #ifndef MODULE
- static int __init
--imsttfb_setup(char *options)
-+imsttfb_setup(const char *options)
+-static int imxfb_setup(void)
++static int imxfb_setup(struct platform_device *pdev)
  {
-+	struct option_iter iter;
- 	char *this_opt;
+ 	char *opt, *options = NULL;
  
--	if (!options || !*options)
--		return 0;
-+	option_iter_init(&iter, options);
- 
--	while ((this_opt = strsep(&options, ",")) != NULL) {
-+	while (option_iter_next(&iter, &this_opt)) {
- 		if (!strncmp(this_opt, "font:", 5)) {
--			char *p;
-+			const char *p;
- 			int i;
- 
- 			p = this_opt + 5;
-@@ -1608,6 +1609,9 @@ imsttfb_setup(char *options)
- 		}
- #endif
+@@ -856,8 +856,8 @@ static int imxfb_setup(void)
+ 	while ((opt = strsep(&options, ",")) != NULL) {
+ 		if (!*opt)
+ 			continue;
+-		else
+-			fb_mode = opt;
++
++		fb_mode = devm_kstrdup(&pdev->dev, opt, GFP_KERNEL); // ignore errors
  	}
-+
-+	option_iter_release(&iter);
-+
+ 
  	return 0;
- }
+@@ -877,7 +877,7 @@ static int imxfb_probe(struct platform_device *pdev)
+ 
+ 	dev_info(&pdev->dev, "i.MX Framebuffer driver\n");
+ 
+-	ret = imxfb_setup();
++	ret = imxfb_setup(pdev);
+ 	if (ret < 0)
+ 		return ret;
  
 -- 
 2.39.2

@@ -2,51 +2,51 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21920C77B6C
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:05:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EBF65C77B61
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:05:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232217AbjCIQFE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Mar 2023 11:05:04 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49494 "EHLO
+        id S232197AbjCIQFB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Mar 2023 11:05:01 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48288 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231796AbjCIQDE (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:03:04 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AE631F8F0B;
-        Thu,  9 Mar 2023 08:02:45 -0800 (PST)
+        with ESMTP id S231765AbjCIQCp (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:45 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D72B4F7EE2;
+        Thu,  9 Mar 2023 08:02:44 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 577792019D;
-        Thu,  9 Mar 2023 16:02:44 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 7CB1622158;
+        Thu,  9 Mar 2023 16:02:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678377764; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678377763; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=qhLabhC1FIHHBl6vHn75Sdi6c+0lehlO1hOW2wnnzIk=;
-        b=nLLiHnJyAkWEMzDS6gjlT7FAdHKqeDNCtYCIowjWNGDofjK1AIIxp8zGGtJcR/KkquSxDT
-        PVrA32O9RAps2X653Z/8p6kX3gRKcE67DEmuX4qka13Y+AmhcKSVcHi/p1ACdn2OXJN8x/
-        DTPilzT4nPENL7eMgxCCo7c4CL9/Pj0=
+        bh=jWp/QupJ7lE9lZrkHkA8/CsL9Gj47AgqbuLGp0xrG1c=;
+        b=XRSsNo3dtACqfxy0a48JxdH15rwMVIHpG1l3WXc2kEYIigrEdk28EP+Nn76+l4FNgLwVHz
+        zr4pBxNmpg8zZTyVJdW3FoVYQg+Aihdd4UMunIwiMopFYYjQbpYBaNXdIYjZlzuQqsWjGn
+        6MRaiG04ik99uB6GQUFFFBsVk2U+7aQ=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678377764;
+        s=susede2_ed25519; t=1678377763;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=qhLabhC1FIHHBl6vHn75Sdi6c+0lehlO1hOW2wnnzIk=;
-        b=KoO3w/NPCYL06ZUt0wLOVphV7yy1GS9O2qp8D5I5nJAWbw9LROqi6LRRuxmQXywwjAWvyJ
-        xXny5w07zN9e80Bw==
+        bh=jWp/QupJ7lE9lZrkHkA8/CsL9Gj47AgqbuLGp0xrG1c=;
+        b=1VLdQckklPlS8Lm6AMQ7rfktOYxy4ECYo2JAc26tLf8sFvOswz6SWNJ+7EI3SRphcrBRsc
+        5Felkaa2IufKu6Dw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id EA5F81391B;
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 1B7D01391B;
         Thu,  9 Mar 2023 16:02:43 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id 4M1LOCMDCmQHbgAAMHmgww
+        id KKKyBSMDCmQHbgAAMHmgww
         (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:43 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 098/101] staging/sm750fb: Release g_settings in module-exit function
-Date:   Thu,  9 Mar 2023 17:01:58 +0100
-Message-Id: <20230309160201.5163-99-tzimmermann@suse.de>
+Subject: [PATCH v2 096/101] fbdev/viafb: Parse option string with struct option_iter
+Date:   Thu,  9 Mar 2023 17:01:56 +0100
+Message-Id: <20230309160201.5163-97-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309160201.5163-1-tzimmermann@suse.de>
 References: <20230309160201.5163-1-tzimmermann@suse.de>
@@ -71,84 +71,68 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Free g_settings in module-exit function for symmetry with its
-allocation in module-init function. Fixes a possible undefined
-dereference of the pointer.
+Use struct option_iter to walk over the individual options in the
+driver's option string. Replaces the hand-written strsep() loop with
+a clean interface. The helpers for struct option_iter handle empty
+option strings and empty options transparently. The struct's _init
+and _release functions duplicate and release the option string's
+memory buffer as needed.
 
-The string g_settings is initialized ifrom within the module-init
-function lynxfb_init() and used from within the PCI probe function.
-It is later freed in the PCI device's remove function. Probing another
-PCI device afterwards accesses g_settings in an undefined state.
-
-Fix this by freeing g_settings in lynxfb_exit(). Also streamline the
-code that creates g_settings in the first place.
+Done in preparation of constifying the option string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/staging/sm750fb/sm750.c | 24 +++++++++++-------------
- 1 file changed, 11 insertions(+), 13 deletions(-)
+ drivers/video/fbdev/via/viafbdev.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index effc7fcc3703..fa8ae20bb688 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -1093,13 +1093,12 @@ static void lynxfb_pci_remove(struct pci_dev *pdev)
+diff --git a/drivers/video/fbdev/via/viafbdev.c b/drivers/video/fbdev/via/viafbdev.c
+index 2d67c92c5774..749aee9f6c56 100644
+--- a/drivers/video/fbdev/via/viafbdev.c
++++ b/drivers/video/fbdev/via/viafbdev.c
+@@ -5,6 +5,7 @@
  
- 	iounmap(sm750_dev->pvReg);
- 	iounmap(sm750_dev->pvMem);
--	kfree(g_settings);
- }
+  */
  
- static int __init lynxfb_setup(char *options)
++#include <linux/cmdline.h>
+ #include <linux/compiler.h>
+ #include <linux/module.h>
+ #include <linux/seq_file.h>
+@@ -1922,21 +1923,18 @@ void via_fb_pci_remove(struct pci_dev *pdev)
+ #ifndef MODULE
+ static int __init viafb_setup(void)
  {
--	int len;
--	char *opt, *tmp;
-+	size_t len;
-+	char *opt, *outbuf;
+-	char *this_opt;
+ 	char *options;
++	struct option_iter iter;
++	char *this_opt;
  
- 	if (!options || !*options) {
- 		pr_warn("no options.\n");
-@@ -1109,11 +1108,10 @@ static int __init lynxfb_setup(char *options)
- 	pr_info("options:%s\n", options);
+ 	DEBUG_MSG(KERN_INFO "viafb_setup!\n");
  
- 	len = strlen(options) + 1;
--	g_settings = kzalloc(len, GFP_KERNEL);
--	if (!g_settings)
-+	outbuf = kzalloc(len, GFP_KERNEL);
-+	if (!outbuf)
- 		return -ENOMEM;
+ 	if (fb_get_options("viafb", &options))
+ 		return -ENODEV;
+ 
+-	if (!options || !*options)
+-		return 0;
 -
--	tmp = g_settings;
-+	g_settings = outbuf;
+-	while ((this_opt = strsep(&options, ",")) != NULL) {
+-		if (!*this_opt)
+-			continue;
++	option_iter_init(&iter, options);
  
- 	/*
- 	 * Notes:
-@@ -1133,12 +1131,11 @@ static int __init lynxfb_setup(char *options)
- 		} else if (!strncmp(opt, "dual", strlen("dual"))) {
- 			g_dualview = 1;
- 		} else {
--			strcat(tmp, opt);
--			tmp += strlen(opt);
--			if (options)
--				*tmp++ = ':';
--			else
--				*tmp++ = 0;
-+			if (outbuf != g_settings)
-+				*outbuf++ = ':'; // add separator
-+			len = strlen(opt);
-+			memcpy(outbuf, opt, len);
-+			outbuf += len;
++	while (option_iter_next(&iter, &this_opt)) {
+ 		if (!strncmp(this_opt, "viafb_mode1=", 12)) {
+ 			viafb_mode1 = kstrdup(this_opt + 12, GFP_KERNEL);
+ 			if (!viafb_mode1)
+@@ -2009,6 +2007,9 @@ static int __init viafb_setup(void)
+ 				return -ENOMEM;
  		}
  	}
- 
-@@ -1186,6 +1183,7 @@ module_init(lynxfb_init);
- static void __exit lynxfb_exit(void)
- {
- 	pci_unregister_driver(&lynxfb_driver);
-+	kfree(g_settings);
++
++	option_iter_release(&iter);
++
+ 	return 0;
  }
- module_exit(lynxfb_exit);
- 
+ #endif
 -- 
 2.39.2
 

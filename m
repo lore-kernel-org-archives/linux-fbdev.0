@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79437C74A44
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F31CCC74A5B
 	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:04:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231993AbjCIQDo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Mar 2023 11:03:44 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47536 "EHLO
+        id S231548AbjCIQDs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Mar 2023 11:03:48 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47492 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231639AbjCIQCX (ORCPT
+        with ESMTP id S231649AbjCIQCX (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:23 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1F49F7ECC;
-        Thu,  9 Mar 2023 08:02:21 -0800 (PST)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C90D2F786F;
+        Thu,  9 Mar 2023 08:02:22 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id A14712017B;
-        Thu,  9 Mar 2023 16:02:20 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 6E20322155;
+        Thu,  9 Mar 2023 16:02:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678377740; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678377741; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=MrW7pYFX5R5J7fTSEP6NHJNhtqFQ7aaj+PBS3SvPTGg=;
-        b=KMyi1ArSofl/bsuzaDcxSPA6St3dbkNeQtu4GG/uXz+mB3OSzgwPJRG/SVapYXPcoZudSI
-        F7o/npDk+E29i4ursyWn9ajqDmAW8KzUMZ5sl21zEJ+MJfjD2rNMX/sDmkl4m8npxWvwT+
-        86BW9xhw7Q2fbROUtPyJ1oSOxlM9pec=
+        bh=i5PgfaO6hx580hMewU4zouv2NIVdCtMZiQTH6Xeh3Y0=;
+        b=OxplyLZ8PZLhwMHdW9CSfy3+3/6UPfg4V0ga+qxHNiA+/tEAib/yIpRxC9NncZ3bI9EHok
+        3KkgvPls3saHo/wvZrG1YKCkendDAjEIlUBmN9gdGVqjsb5vAyxBtN/LpOwja2NkboYzbh
+        7na0S+K24HgdL1DpMBNn8MhFdGrMxJc=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678377740;
+        s=susede2_ed25519; t=1678377741;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=MrW7pYFX5R5J7fTSEP6NHJNhtqFQ7aaj+PBS3SvPTGg=;
-        b=lf0QPjtylGKlpjax3PSZ8yyUW9A+oDhATNg9XPu1acJ5HWImpCm+MTnRl0ICzIJB+Uv0s8
-        PgCWdEKJOhB0P4CA==
+        bh=i5PgfaO6hx580hMewU4zouv2NIVdCtMZiQTH6Xeh3Y0=;
+        b=4s08p0a2T6+MyG/KDAuw9YiK+s+lyGGLLBa9SNu/Ciee0vTt9foheCqlwknCIBVOBnvYem
+        1V1zhtFa9nZfoFAg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 4509513A73;
-        Thu,  9 Mar 2023 16:02:20 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 1262D13A73;
+        Thu,  9 Mar 2023 16:02:21 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id iCHxDwwDCmQHbgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:20 +0000
+        id qIInAw0DCmQHbgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:21 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
         rdunlap@infradead.org, paulus@samba.org, benh@kernel.crashing.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 039/101] fbdev/imxfb: Duplicate video-mode option string
-Date:   Thu,  9 Mar 2023 17:00:59 +0100
-Message-Id: <20230309160201.5163-40-tzimmermann@suse.de>
+Subject: [PATCH v2 041/101] fbdev/kyrofb: Duplicate video-mode option string
+Date:   Thu,  9 Mar 2023 17:01:01 +0100
+Message-Id: <20230309160201.5163-42-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309160201.5163-1-tzimmermann@suse.de>
 References: <20230309160201.5163-1-tzimmermann@suse.de>
@@ -73,51 +73,50 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Assume that the driver does not own the option string or its substrings
 and hence duplicate the option string for the video mode. Allocate the
-copy's memory with devm_kstrdup(), as the driver parses the option string
-once per probed device. Linux will automatically free the memory upon
-releasing the device.
+copy's memory with kstrdup() and free it in the module's exit function.
 
 Done in preparation of switching the driver to struct option_iter and
 constifying the option string.
 
+v2:
+	* replace static memory with kstrdup()/kfree() (Geert)
+
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/imxfb.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/kyro/fbdev.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-index 51fde1b2a793..aad7d447385c 100644
---- a/drivers/video/fbdev/imxfb.c
-+++ b/drivers/video/fbdev/imxfb.c
-@@ -843,7 +843,7 @@ static struct lcd_ops imxfb_lcd_ops = {
- 	.set_power	= imxfb_lcd_set_power,
- };
+diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
+index 0596573ef140..97f4d8995e36 100644
+--- a/drivers/video/fbdev/kyro/fbdev.c
++++ b/drivers/video/fbdev/kyro/fbdev.c
+@@ -79,6 +79,7 @@ typedef struct {
+ /* global graphics card info structure (one per card) */
+ static device_info_t deviceInfo;
  
--static int imxfb_setup(void)
-+static int imxfb_setup(struct platform_device *pdev)
- {
- 	char *opt, *options = NULL;
- 
-@@ -856,8 +856,8 @@ static int imxfb_setup(void)
- 	while ((opt = strsep(&options, ",")) != NULL) {
- 		if (!*opt)
- 			continue;
--		else
--			fb_mode = opt;
-+
-+		fb_mode = devm_kstrdup(&pdev->dev, opt, GFP_KERNEL); // ignore errors
++static char *mode_option_buf;
+ static char *mode_option = NULL;
+ static int nopan = 0;
+ static int nowrap = 1;
+@@ -579,7 +580,9 @@ static int __init kyrofb_setup(char *options)
+ 		} else if (strcmp(this_opt, "nomtrr") == 0) {
+ 			nomtrr = 1;
+ 		} else {
+-			mode_option = this_opt;
++			kfree(mode_option_buf);
++			mode_option_buf = kstrdup(this_opt, GFP_KERNEL); // ignore errors
++			mode_option = mode_option_buf;
+ 		}
  	}
  
- 	return 0;
-@@ -877,7 +877,7 @@ static int imxfb_probe(struct platform_device *pdev)
+@@ -805,6 +808,7 @@ static int __init kyrofb_init(void)
+ static void __exit kyrofb_exit(void)
+ {
+ 	pci_unregister_driver(&kyrofb_pci_driver);
++	kfree(mode_option_buf);
+ }
  
- 	dev_info(&pdev->dev, "i.MX Framebuffer driver\n");
- 
--	ret = imxfb_setup();
-+	ret = imxfb_setup(pdev);
- 	if (ret < 0)
- 		return ret;
- 
+ module_init(kyrofb_init);
 -- 
 2.39.2
 

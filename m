@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4534C77B6C
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:04:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42962C77B6D
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:04:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232016AbjCIQEE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Mar 2023 11:04:04 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47706 "EHLO
+        id S232020AbjCIQEG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Mar 2023 11:04:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47712 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231670AbjCIQC1 (ORCPT
+        with ESMTP id S231672AbjCIQC1 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:27 -0500
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F0533F7EF5;
-        Thu,  9 Mar 2023 08:02:25 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7EC6DF7EE0;
+        Thu,  9 Mar 2023 08:02:26 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 25DDE2214C;
+        by smtp-out1.suse.de (Postfix) with ESMTPS id EAF752215C;
         Thu,  9 Mar 2023 16:02:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
         t=1678377744; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=oiht1Q677qYpu9/3uJW+gjpB4dNDmWpMrYhgfn9g2bY=;
-        b=DxMk3p9pHKgXUCXSS9Kql+DZLobewJ5VeFW2S3TV7oTkGJbY95wtdOCPVMj7KBU8TDSSn0
-        jj913Ar5Psna5Ck6IhBstQTcKktCdX0kTxmq6ssOSjp0sE+kln31aSLeafAQHhlJy7IASM
-        oOqfk0BYxACG9UVMKmcJElhzndt2XEM=
+        bh=AEmjb0U5MuWqCkAOg6DDslP0tiDJ52eRVcjJgkB7ll8=;
+        b=JMxEG6FCTf6enGWwT1TPrS4+ts8GsZgGOwWGh3JfpppPZ80S9Fgn2+LA7srFwU2uDJhyl4
+        dMRgs6qUYLCMg1NwjmfVCNpm6dQi/pAMPk/8TAz8m8H0i+Np3Yj1eLXt/nx+jyZvoPFTfm
+        MxlO4bIxQXfd3eWsvyp/9a8Lfbw9B84=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
         s=susede2_ed25519; t=1678377744;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=oiht1Q677qYpu9/3uJW+gjpB4dNDmWpMrYhgfn9g2bY=;
-        b=4BMvzee+Y7GQI119psWkGbS3oWLO9HQ6S8ktySDte0nmC3x32D4oZtQHAaJB00NzzF6pDi
-        EZG1tCBuTByvxaCg==
+        bh=AEmjb0U5MuWqCkAOg6DDslP0tiDJ52eRVcjJgkB7ll8=;
+        b=2upOe/xQ6PSzZfw4H5ESkUIDirwNOxL9JcIZRVLqsPWEO2dzYBBo0U8F7h7EySBb1iLg+4
+        Gu3a2LXpv0460BDg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id B82951391B;
-        Thu,  9 Mar 2023 16:02:23 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8FA691391B;
+        Thu,  9 Mar 2023 16:02:24 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id uJIaLA8DCmQHbgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:23 +0000
+        id +Mo9IhADCmQHbgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:24 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
         rdunlap@infradead.org, paulus@samba.org, benh@kernel.crashing.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 048/101] fbdev/neofb: Duplicate video-mode option string
-Date:   Thu,  9 Mar 2023 17:01:08 +0100
-Message-Id: <20230309160201.5163-49-tzimmermann@suse.de>
+Subject: [PATCH v2 050/101] fbdev/nvidiafb: Duplicate video-mode option string
+Date:   Thu,  9 Mar 2023 17:01:10 +0100
+Message-Id: <20230309160201.5163-51-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309160201.5163-1-tzimmermann@suse.de>
 References: <20230309160201.5163-1-tzimmermann@suse.de>
@@ -83,43 +83,43 @@ v2:
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/neofb.c | 9 +++++++--
+ drivers/video/fbdev/nvidia/nvidia.c | 9 +++++++--
  1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
-index 39d8cdef5c97..98edb6822832 100644
---- a/drivers/video/fbdev/neofb.c
-+++ b/drivers/video/fbdev/neofb.c
-@@ -83,6 +83,7 @@ static bool external;
- static bool libretto;
- static bool nostretch;
- static bool nopciburst;
+diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
+index e60a276b4855..8ad4bcff84df 100644
+--- a/drivers/video/fbdev/nvidia/nvidia.c
++++ b/drivers/video/fbdev/nvidia/nvidia.c
+@@ -77,6 +77,7 @@ static int reverse_i2c;
+ static bool nomtrr = false;
+ static int backlight = IS_BUILTIN(CONFIG_PMAC_BACKLIGHT);
+ 
 +static char *mode_option_buf;
  static char *mode_option = NULL;
  
- #ifdef MODULE
-@@ -2198,8 +2199,11 @@ static int __init neofb_setup(char *options)
- 			nopciburst = 1;
- 		else if (!strncmp(this_opt, "libretto", 8))
- 			libretto = 1;
--		else
+ static struct fb_fix_screeninfo nvidiafb_fix = {
+@@ -1498,8 +1499,11 @@ static int nvidiafb_setup(char *options)
+ 			fpdither = simple_strtol(this_opt+9, NULL, 0);
+ 		} else if (!strncmp(this_opt, "bpp:", 4)) {
+ 			bpp = simple_strtoul(this_opt+4, NULL, 0);
+-		} else
 -			mode_option = this_opt;
-+		else {
++		} else {
 +			kfree(mode_option_buf);
 +			mode_option_buf = kstrdup(this_opt, GFP_KERNEL); // ignore errors
 +			mode_option = mode_option_buf;
 +		}
  	}
+ 	NVTRACE_LEAVE();
  	return 0;
- }
-@@ -2228,6 +2232,7 @@ module_init(neofb_init);
- static void __exit neofb_exit(void)
+@@ -1542,6 +1546,7 @@ module_init(nvidiafb_init);
+ static void __exit nvidiafb_exit(void)
  {
- 	pci_unregister_driver(&neofb_driver);
+ 	pci_unregister_driver(&nvidiafb_driver);
 +	kfree(mode_option_buf);
  }
  
- module_exit(neofb_exit);
+ module_exit(nvidiafb_exit);
 -- 
 2.39.2
 

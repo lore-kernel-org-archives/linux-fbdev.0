@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 198F7C7618B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4768AC7618D
 	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:05:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232155AbjCIQEw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Mar 2023 11:04:52 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48184 "EHLO
+        id S232161AbjCIQE4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Mar 2023 11:04:56 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48248 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231402AbjCIQCo (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:44 -0500
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A913BF8A6A;
-        Thu,  9 Mar 2023 08:02:42 -0800 (PST)
+        with ESMTP id S231594AbjCIQCp (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:45 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0194DF4B7A;
+        Thu,  9 Mar 2023 08:02:44 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 00FC72216F;
-        Thu,  9 Mar 2023 16:02:41 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id A5E3C2018E;
+        Thu,  9 Mar 2023 16:02:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678377761; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678377762; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Ahzg3qOQnqmKttHmLkku+DucBs/UrBngr7lLUmjxogk=;
-        b=dsmfX3KGntHoLUbrAb5ZH4Y5RErDBIpwAd9ocfT3wu+mIu6MZKjjfRe8/1VtyntpFS0r3x
-        Mg30vrvB/5N3vCIy5KfkrMS/3TA9fj7ISDo+mm47IwuFDor8aFMLZahcxdWhQqpijTqX1D
-        ASmtqkIbvurk0UvylHMeUp9XTY1pSGQ=
+        bh=KeY2ExOwmSx8zLHCGIHXA1tubiVzXH1BzWog2OAH98g=;
+        b=LZFm7R8Of8rUK0MPl8Rv51d9MNca4y4qBiUfwCYMAjb8Ez2GFtPGCqBZOI9FyEB1sWV60f
+        50vBojV0zeTvTjBJcFnwIW0RX2mB44FAJqfg4RWIWVz5sxsOaX+JZP6Wqy69YJasouluLv
+        jPbSywMOwccCbHhprxaXHud+yKVuxlU=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678377761;
+        s=susede2_ed25519; t=1678377762;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Ahzg3qOQnqmKttHmLkku+DucBs/UrBngr7lLUmjxogk=;
-        b=IKULeMJxZk8V041juSJKWX9+yvDz4Jltpvsy36rLCi+W8/Ps/PJD06/aKcM/yUeQoGjria
-        gSXhUGqwNlmrCVCw==
+        bh=KeY2ExOwmSx8zLHCGIHXA1tubiVzXH1BzWog2OAH98g=;
+        b=LwuaA/5VcZNBiLfHYsJBO6Ju3pNq48IVDuopszjyOASThdVEfJypODY6G6ri3qHb31UWkD
+        yWwOSR1FhQJDVFDA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 926871391B;
-        Thu,  9 Mar 2023 16:02:40 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 495E013A73;
+        Thu,  9 Mar 2023 16:02:42 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id eDLJIiADCmQHbgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:40 +0000
+        id +AAeESIDCmQHbgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:42 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
         rdunlap@infradead.org, paulus@samba.org, benh@kernel.crashing.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 090/101] fbdev/valkyriefb: Parse option string with struct option_iter
-Date:   Thu,  9 Mar 2023 17:01:50 +0100
-Message-Id: <20230309160201.5163-91-tzimmermann@suse.de>
+Subject: [PATCH v2 094/101] fbdev/vfb: Duplicate video-mode option string
+Date:   Thu,  9 Mar 2023 17:01:54 +0100
+Message-Id: <20230309160201.5163-95-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309160201.5163-1-tzimmermann@suse.de>
 References: <20230309160201.5163-1-tzimmermann@suse.de>
@@ -71,70 +71,55 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use struct option_iter to walk over the individual options in the
-driver's option string. Replaces the hand-written strsep() loop with
-a clean interface. The helpers for struct option_iter handle empty
-option strings and empty options transparently. The struct's _init
-and _release functions duplicate and release the option string's
-memory buffer as needed.
+Assume that the driver does not own the option string or its substrings
+and hence duplicate the option string for the video mode. Allocate the
+copy's memory with kstrdup() and free it in the module's exit function.
 
-Done in preparation of constifying the option string.
+Done in preparation of switching the driver to struct option_iter and
+constifying the option string.
+
+v2:
+	* replace static memory with kstrdup()/kfree() (Geert)
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/valkyriefb.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/vfb.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
-index b166b7cfe0e5..3c20f392370a 100644
---- a/drivers/video/fbdev/valkyriefb.c
-+++ b/drivers/video/fbdev/valkyriefb.c
-@@ -39,6 +39,7 @@
-  *  more details.
-  */
+diff --git a/drivers/video/fbdev/vfb.c b/drivers/video/fbdev/vfb.c
+index 680c88267ef4..de27fe84d820 100644
+--- a/drivers/video/fbdev/vfb.c
++++ b/drivers/video/fbdev/vfb.c
+@@ -37,6 +37,7 @@ static u_long videomemorysize = VIDEOMEMSIZE;
+ module_param(videomemorysize, ulong, 0);
+ MODULE_PARM_DESC(videomemorysize, "RAM available to frame buffer (in bytes)");
  
-+#include <linux/cmdline.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-@@ -90,7 +91,7 @@ struct fb_info_valkyrie {
- 	u32			pseudo_palette[16];
- };
- 
--static int valkyriefb_setup(char*);
-+static int valkyriefb_setup(const char *options);
- 
- static int valkyriefb_check_var(struct fb_var_screeninfo *var,
- 				struct fb_info *info);
-@@ -545,14 +546,14 @@ static int __init valkyrie_init_info(struct fb_info *info,
- /*
-  * Parse user specified options (`video=valkyriefb:')
-  */
--static int __init valkyriefb_setup(char *options)
-+static int __init valkyriefb_setup(const char *options)
- {
-+	struct option_iter iter;
- 	char *this_opt;
- 
--	if (!options || !*options)
--		return 0;
-+	option_iter_init(&iter, options);
- 
--	while ((this_opt = strsep(&options, ",")) != NULL) {
-+	while (option_iter_next(&iter, &this_opt)) {
- 		if (!strncmp(this_opt, "vmode:", 6)) {
- 	    		int vmode = simple_strtoul(this_opt+6, NULL, 0);
- 			if (vmode > 0 && vmode <= VMODE_MAX)
-@@ -571,6 +572,9 @@ static int __init valkyriefb_setup(char *options)
- 			}
- 		}
++static char *mode_option_buf;
+ static char *mode_option = NULL;
+ module_param(mode_option, charp, 0);
+ MODULE_PARM_DESC(mode_option, "Preferred video mode (e.g. 640x480-8@60)");
+@@ -412,8 +413,11 @@ static int __init vfb_setup(char *options)
+ 		/* Test disable for backwards compatibility */
+ 		if (!strcmp(this_opt, "disable"))
+ 			vfb_enable = 0;
+-		else
+-			mode_option = this_opt;
++		else {
++			kfree(mode_option_buf);
++			mode_option_buf = kstrdup(this_opt, GFP_KERNEL); // ignore errors
++			mode_option = mode_option_buf;
++		}
  	}
-+
-+	option_iter_release(&iter);
-+
- 	return 0;
+ 	return 1;
+ }
+@@ -543,6 +547,7 @@ static void __exit vfb_exit(void)
+ {
+ 	platform_device_unregister(vfb_device);
+ 	platform_driver_unregister(&vfb_driver);
++	kfree(mode_option_buf);
  }
  
+ module_exit(vfb_exit);
 -- 
 2.39.2
 

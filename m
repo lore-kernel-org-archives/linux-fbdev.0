@@ -2,51 +2,51 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F31CCC74A5B
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:04:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66317C7618A
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:04:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231548AbjCIQDs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Mar 2023 11:03:48 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47492 "EHLO
+        id S231707AbjCIQDt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Mar 2023 11:03:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47500 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231649AbjCIQCX (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:23 -0500
+        with ESMTP id S231657AbjCIQCY (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:24 -0500
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C90D2F786F;
-        Thu,  9 Mar 2023 08:02:22 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B3AC1F7EDF;
+        Thu,  9 Mar 2023 08:02:23 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 6E20322155;
-        Thu,  9 Mar 2023 16:02:21 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 3EDDB2214D;
+        Thu,  9 Mar 2023 16:02:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678377741; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678377742; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=i5PgfaO6hx580hMewU4zouv2NIVdCtMZiQTH6Xeh3Y0=;
-        b=OxplyLZ8PZLhwMHdW9CSfy3+3/6UPfg4V0ga+qxHNiA+/tEAib/yIpRxC9NncZ3bI9EHok
-        3KkgvPls3saHo/wvZrG1YKCkendDAjEIlUBmN9gdGVqjsb5vAyxBtN/LpOwja2NkboYzbh
-        7na0S+K24HgdL1DpMBNn8MhFdGrMxJc=
+        bh=tdQ9Z0pKhccY3nAxYeCZXdxmClNrcqOqv/uxdQRKhl8=;
+        b=1GOpxKfrjjGckfdWBckK8lTMMWjUiFaD2WxMxiMLn7VPCW+agT5PZwDUfFtXgQUXgYP8qR
+        39pNiP/D9YTBFcwtQsh/i8ws+abIYU5huxxDLLtqovGZFa5bhLdVgKks57abtUZdbPsC8u
+        oeRrrPseEbzJaCXGsr7VBwTtSMxWmXc=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678377741;
+        s=susede2_ed25519; t=1678377742;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=i5PgfaO6hx580hMewU4zouv2NIVdCtMZiQTH6Xeh3Y0=;
-        b=4s08p0a2T6+MyG/KDAuw9YiK+s+lyGGLLBa9SNu/Ciee0vTt9foheCqlwknCIBVOBnvYem
-        1V1zhtFa9nZfoFAg==
+        bh=tdQ9Z0pKhccY3nAxYeCZXdxmClNrcqOqv/uxdQRKhl8=;
+        b=9xjIyggr5kkLYDs+dyPnBfcVfnq0cuhQlKupTXSl2bzzfa99inGZUg3TUx4BhAPXNIVmzz
+        LOlvRmwdNDI6/mAw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 1262D13A73;
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D704713A73;
         Thu,  9 Mar 2023 16:02:21 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id qIInAw0DCmQHbgAAMHmgww
+        id SFucMw0DCmQHbgAAMHmgww
         (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:21 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 041/101] fbdev/kyrofb: Duplicate video-mode option string
-Date:   Thu,  9 Mar 2023 17:01:01 +0100
-Message-Id: <20230309160201.5163-42-tzimmermann@suse.de>
+Subject: [PATCH v2 043/101] fbdev/macfb: Remove trailing whitespaces
+Date:   Thu,  9 Mar 2023 17:01:03 +0100
+Message-Id: <20230309160201.5163-44-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309160201.5163-1-tzimmermann@suse.de>
 References: <20230309160201.5163-1-tzimmermann@suse.de>
@@ -71,52 +71,62 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Assume that the driver does not own the option string or its substrings
-and hence duplicate the option string for the video mode. Allocate the
-copy's memory with kstrdup() and free it in the module's exit function.
-
-Done in preparation of switching the driver to struct option_iter and
-constifying the option string.
-
-v2:
-	* replace static memory with kstrdup()/kfree() (Geert)
+Fix coding style. No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/kyro/fbdev.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/macfb.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
-index 0596573ef140..97f4d8995e36 100644
---- a/drivers/video/fbdev/kyro/fbdev.c
-+++ b/drivers/video/fbdev/kyro/fbdev.c
-@@ -79,6 +79,7 @@ typedef struct {
- /* global graphics card info structure (one per card) */
- static device_info_t deviceInfo;
- 
-+static char *mode_option_buf;
- static char *mode_option = NULL;
- static int nopan = 0;
- static int nowrap = 1;
-@@ -579,7 +580,9 @@ static int __init kyrofb_setup(char *options)
- 		} else if (strcmp(this_opt, "nomtrr") == 0) {
- 			nomtrr = 1;
- 		} else {
--			mode_option = this_opt;
-+			kfree(mode_option_buf);
-+			mode_option_buf = kstrdup(this_opt, GFP_KERNEL); // ignore errors
-+			mode_option = mode_option_buf;
- 		}
- 	}
- 
-@@ -805,6 +808,7 @@ static int __init kyrofb_init(void)
- static void __exit kyrofb_exit(void)
+diff --git a/drivers/video/fbdev/macfb.c b/drivers/video/fbdev/macfb.c
+index 312e35c9aa6c..44ff860a3f37 100644
+--- a/drivers/video/fbdev/macfb.c
++++ b/drivers/video/fbdev/macfb.c
+@@ -339,7 +339,7 @@ static int civic_setpalette(unsigned int regno, unsigned int red,
  {
- 	pci_unregister_driver(&kyrofb_pci_driver);
-+	kfree(mode_option_buf);
- }
+ 	unsigned long flags;
+ 	int clut_status;
+-	
++
+ 	local_irq_save(flags);
  
- module_init(kyrofb_init);
+ 	/* Set the register address */
+@@ -439,7 +439,7 @@ static int macfb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 	 * (according to the entries in the `var' structure).
+ 	 * Return non-zero for invalid regno.
+ 	 */
+-	
++
+ 	if (regno >= fb_info->cmap.len)
+ 		return 1;
+ 
+@@ -548,7 +548,7 @@ static int __init macfb_init(void)
+ 		return -ENODEV;
+ 	macfb_setup(option);
+ 
+-	if (!MACH_IS_MAC) 
++	if (!MACH_IS_MAC)
+ 		return -ENODEV;
+ 
+ 	if (mac_bi_data.id == MAC_MODEL_Q630 ||
+@@ -644,7 +644,7 @@ static int __init macfb_init(void)
+ 		err = -EINVAL;
+ 		goto fail_unmap;
+ 	}
+-	
++
+ 	/*
+ 	 * We take a wild guess that if the video physical address is
+ 	 * in nubus slot space, that the nubus card is driving video.
+@@ -774,7 +774,7 @@ static int __init macfb_init(void)
+ 			civic_cmap_regs = ioremap(CIVIC_BASE, 0x1000);
+ 			break;
+ 
+-		
++
+ 		/*
+ 		 * Assorted weirdos
+ 		 * We think this may be like the LC II
 -- 
 2.39.2
 

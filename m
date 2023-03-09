@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBF65C77B61
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:05:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 324C1C77B62
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:05:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232197AbjCIQFB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Mar 2023 11:05:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48288 "EHLO
+        id S232229AbjCIQFE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Mar 2023 11:05:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47506 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231765AbjCIQCp (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:45 -0500
+        with ESMTP id S231825AbjCIQDR (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:03:17 -0500
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D72B4F7EE2;
-        Thu,  9 Mar 2023 08:02:44 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 20889F8F12;
+        Thu,  9 Mar 2023 08:02:46 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 7CB1622158;
-        Thu,  9 Mar 2023 16:02:43 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id BD68421CCF;
+        Thu,  9 Mar 2023 16:02:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678377763; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678377764; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=jWp/QupJ7lE9lZrkHkA8/CsL9Gj47AgqbuLGp0xrG1c=;
-        b=XRSsNo3dtACqfxy0a48JxdH15rwMVIHpG1l3WXc2kEYIigrEdk28EP+Nn76+l4FNgLwVHz
-        zr4pBxNmpg8zZTyVJdW3FoVYQg+Aihdd4UMunIwiMopFYYjQbpYBaNXdIYjZlzuQqsWjGn
-        6MRaiG04ik99uB6GQUFFFBsVk2U+7aQ=
+        bh=g10CyGX8LN7jmhoB07O8PTYOwqUFbPdF+9x3En0LlPQ=;
+        b=qVY89Ub6EbFQOTKqDemyKSPew7jktkhiNjNPqV6mSd1tpTxpCzi6NY/O2SVA2FQQ1jjcem
+        BjcyTzaawenSa7gVGO8Uh//B/B5zelqoylpQSZfwWTUGlgzYmtB9kp9HEfBcBTe2WtNEXv
+        0DKXom4/6+gpTGMkZMuDwcOBugxSWvs=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678377763;
+        s=susede2_ed25519; t=1678377764;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=jWp/QupJ7lE9lZrkHkA8/CsL9Gj47AgqbuLGp0xrG1c=;
-        b=1VLdQckklPlS8Lm6AMQ7rfktOYxy4ECYo2JAc26tLf8sFvOswz6SWNJ+7EI3SRphcrBRsc
-        5Felkaa2IufKu6Dw==
+        bh=g10CyGX8LN7jmhoB07O8PTYOwqUFbPdF+9x3En0LlPQ=;
+        b=cLgZD6S21fT2maB/cW7YcTSSRfcn0OAQtMslOudmC3yWf0xgrJaMhlEI4LRnMeFFSe5Kai
+        q391y6SEol87MVBA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 1B7D01391B;
-        Thu,  9 Mar 2023 16:02:43 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 5B64B13A73;
+        Thu,  9 Mar 2023 16:02:44 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id KKKyBSMDCmQHbgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:43 +0000
+        id UKdXFSQDCmQHbgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:44 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
         rdunlap@infradead.org, paulus@samba.org, benh@kernel.crashing.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 096/101] fbdev/viafb: Parse option string with struct option_iter
-Date:   Thu,  9 Mar 2023 17:01:56 +0100
-Message-Id: <20230309160201.5163-97-tzimmermann@suse.de>
+Subject: [PATCH v2 099/101] staging/sm750fb: Duplicate video-mode option string
+Date:   Thu,  9 Mar 2023 17:01:59 +0100
+Message-Id: <20230309160201.5163-100-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309160201.5163-1-tzimmermann@suse.de>
 References: <20230309160201.5163-1-tzimmermann@suse.de>
@@ -71,68 +71,51 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use struct option_iter to walk over the individual options in the
-driver's option string. Replaces the hand-written strsep() loop with
-a clean interface. The helpers for struct option_iter handle empty
-option strings and empty options transparently. The struct's _init
-and _release functions duplicate and release the option string's
-memory buffer as needed.
+Assume that the driver does not own the option string or its substrings
+and hence duplicate the option stringis for the video mode. Allocate each
+copy's memory with kstrdup() and free it in the module's exit function.
 
-Done in preparation of constifying the option string.
+Done in preparation of switching the driver to struct option_iter and
+constifying the option string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/via/viafbdev.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/via/viafbdev.c b/drivers/video/fbdev/via/viafbdev.c
-index 2d67c92c5774..749aee9f6c56 100644
---- a/drivers/video/fbdev/via/viafbdev.c
-+++ b/drivers/video/fbdev/via/viafbdev.c
-@@ -5,6 +5,7 @@
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index fa8ae20bb688..f0dbf7535ca8 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -911,11 +911,11 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
+ 			g_hwcursor = 0;
+ 		} else {
+ 			if (!g_fbmode[0]) {
+-				g_fbmode[0] = opt;
++				g_fbmode[0] = kstrdup(opt, GFP_KERNEL); // ignore errors
+ 				dev_info(&sm750_dev->pdev->dev,
+ 					 "find fbmode0 : %s\n", g_fbmode[0]);
+ 			} else if (!g_fbmode[1]) {
+-				g_fbmode[1] = opt;
++				g_fbmode[1] = kstrdup(opt, GFP_KERNEL); // ignore errors
+ 				dev_info(&sm750_dev->pdev->dev,
+ 					 "find fbmode1 : %s\n", g_fbmode[1]);
+ 			} else {
+@@ -1182,7 +1182,14 @@ module_init(lynxfb_init);
  
-  */
- 
-+#include <linux/cmdline.h>
- #include <linux/compiler.h>
- #include <linux/module.h>
- #include <linux/seq_file.h>
-@@ -1922,21 +1923,18 @@ void via_fb_pci_remove(struct pci_dev *pdev)
- #ifndef MODULE
- static int __init viafb_setup(void)
+ static void __exit lynxfb_exit(void)
  {
--	char *this_opt;
- 	char *options;
-+	struct option_iter iter;
-+	char *this_opt;
- 
- 	DEBUG_MSG(KERN_INFO "viafb_setup!\n");
- 
- 	if (fb_get_options("viafb", &options))
- 		return -ENODEV;
- 
--	if (!options || !*options)
--		return 0;
--
--	while ((this_opt = strsep(&options, ",")) != NULL) {
--		if (!*this_opt)
--			continue;
-+	option_iter_init(&iter, options);
- 
-+	while (option_iter_next(&iter, &this_opt)) {
- 		if (!strncmp(this_opt, "viafb_mode1=", 12)) {
- 			viafb_mode1 = kstrdup(this_opt + 12, GFP_KERNEL);
- 			if (!viafb_mode1)
-@@ -2009,6 +2007,9 @@ static int __init viafb_setup(void)
- 				return -ENOMEM;
- 		}
- 	}
++	size_t i = ARRAY_SIZE(g_fbmode);
 +
-+	option_iter_release(&iter);
+ 	pci_unregister_driver(&lynxfb_driver);
 +
- 	return 0;
++	while (i) {
++		--i;
++		kfree(g_fbmode[i]);
++	}
+ 	kfree(g_settings);
  }
- #endif
+ module_exit(lynxfb_exit);
 -- 
 2.39.2
 

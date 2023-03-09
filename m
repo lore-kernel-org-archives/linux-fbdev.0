@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 581C8C74A5B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1939C77B6F
 	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:04:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232042AbjCIQEL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Mar 2023 11:04:11 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47674 "EHLO
+        id S232054AbjCIQEO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Mar 2023 11:04:14 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47512 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231717AbjCIQCc (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:32 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD06FF5AAA;
-        Thu,  9 Mar 2023 08:02:31 -0800 (PST)
+        with ESMTP id S231676AbjCIQC1 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:27 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0BD51F7EE1;
+        Thu,  9 Mar 2023 08:02:27 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 423EF20191;
-        Thu,  9 Mar 2023 16:02:30 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id B800E2017D;
+        Thu,  9 Mar 2023 16:02:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678377750; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678377745; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=wUduy0AuOjKoirEH3M4ZgQWRTKWt0MXYaCWhrGLsjaw=;
-        b=tvjhW16Wva/AA4h26PDcnH3qVIk7m64jqixdJMYwVnvZhbr+HoV8r8MvvgoiLUD4ZU8jgO
-        Hw6YKrCXDrrasvxTHac2Z7n6KCkmM5/wY5vzZlHBLORr/DqkeaadTp+8VGNfkxVbR4il59
-        YcmPUm5WT8xLjNrtVkDtT3VaBWTpMig=
+        bh=IF7qw7uSWJcZb5FaybgvSCxkEvHFzuPQ1jc0G69w/cE=;
+        b=vyel0prki1EuPSH1Aur9iWt58AApZgQdYoDnK+7lawNbPMnd6gizRh8aAQuZvVUPzjLW3x
+        ar480W7CDYfdPZEHdE3I3MLa+i+M5zNvsRc93qYFTzbFgGUvyIl83m85AozAgmg54qT2R8
+        BQJWohSIRBusBBa0bGa3OYq3Zr59okE=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678377750;
+        s=susede2_ed25519; t=1678377745;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=wUduy0AuOjKoirEH3M4ZgQWRTKWt0MXYaCWhrGLsjaw=;
-        b=L0zcwibam7U69C5b9SNulUE2ace4gMAgny98/CFfo6soy3LxgN2bPxaZT0dV5MXhTs718V
-        BENdEmvFEJf6izDg==
+        bh=IF7qw7uSWJcZb5FaybgvSCxkEvHFzuPQ1jc0G69w/cE=;
+        b=tFG2udPAxdaB+v6HFkVOi+IphiHjOGhCN5vhAn3XQAS3fmG/ZAJKRZwyNVtjr2Ck3t1SdK
+        bxtgTyssrE6x3lBA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id DC3E313A73;
-        Thu,  9 Mar 2023 16:02:29 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 601C113A73;
+        Thu,  9 Mar 2023 16:02:25 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id SKXdNBUDCmQHbgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:29 +0000
+        id kFeiFhEDCmQHbgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:25 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
         rdunlap@infradead.org, paulus@samba.org, benh@kernel.crashing.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 064/101] fbdev/pvr2fb: Parse option string with struct option_iter
-Date:   Thu,  9 Mar 2023 17:01:24 +0100
-Message-Id: <20230309160201.5163-65-tzimmermann@suse.de>
+Subject: [PATCH v2 052/101] fbdev/ocfb: Duplicate video-mode option string
+Date:   Thu,  9 Mar 2023 17:01:12 +0100
+Message-Id: <20230309160201.5163-53-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309160201.5163-1-tzimmermann@suse.de>
 References: <20230309160201.5163-1-tzimmermann@suse.de>
@@ -71,68 +71,53 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use struct option_iter to walk over the individual options in the
-driver's option string. Replaces the hand-written strsep() loop with
-a clean interface. The helpers for struct option_iter handle empty
-option strings and empty options transparently. The struct's _init
-and _release functions duplicate and release the option string's
-memory buffer as needed.
+Assume that the driver does not own the option string or its substrings
+and hence duplicate the option string for the video mode. Allocate the
+copy's memory with kstrdup() and free it in the module's exit function.
 
-Done in preparation of constifying the option string.
+Done in preparation of switching the driver to struct option_iter and
+constifying the option string.
+
+v2:
+	* replace static memory with kstrdup()/kfree() (Geert)
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/pvr2fb.c | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+ drivers/video/fbdev/ocfb.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
-index f6be2649840d..c332f2c38114 100644
---- a/drivers/video/fbdev/pvr2fb.c
-+++ b/drivers/video/fbdev/pvr2fb.c
-@@ -46,6 +46,7 @@
- #undef DEBUG
+diff --git a/drivers/video/fbdev/ocfb.c b/drivers/video/fbdev/ocfb.c
+index da7e1457e58f..9786c3641448 100644
+--- a/drivers/video/fbdev/ocfb.c
++++ b/drivers/video/fbdev/ocfb.c
+@@ -47,6 +47,7 @@
  
- #include <linux/aperture.h>
-+#include <linux/cmdline.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-@@ -1025,20 +1026,18 @@ static void pvr2fb_pci_exit(void)
-  */
+ #define OCFB_NAME	"OC VGA/LCD"
  
- #ifndef MODULE
--static int __init pvr2fb_setup(char *options)
-+static int __init pvr2fb_setup(const char *options)
- {
--	char *this_opt;
- 	char cable_arg[80];
- 	char output_arg[80];
--
--	if (!options || !*options)
--		return 0;
-+	struct option_iter iter;
-+	char *this_opt;
++static char *mode_option_buf;
+ static char *mode_option;
  
- 	cable_arg[0] = output_arg[0] = 0;
- 
--	while ((this_opt = strsep(&options, ","))) {
--		if (!*this_opt)
--			continue;
-+	option_iter_init(&iter, options);
+ static const struct fb_videomode default_mode = {
+@@ -77,7 +78,10 @@ static int __init ocfb_setup(char *options)
+ 	while ((curr_opt = strsep(&options, ",")) != NULL) {
+ 		if (!*curr_opt)
+ 			continue;
+-		mode_option = curr_opt;
 +
-+	while (option_iter_next(&iter, &this_opt)) {
- 		if (!strcmp(this_opt, "inverse")) {
- 			fb_invert_cmaps();
- 		} else if (!strncmp(this_opt, "cable:", 6)) {
-@@ -1056,6 +1055,8 @@ static int __init pvr2fb_setup(char *options)
- 		}
++		kfree(mode_option_buf);
++		mode_option_buf = kstrdup(curr_opt, GFP_KERNEL); // ignore errors
++		mode_option = mode_option_buf;
  	}
  
-+	option_iter_release(&iter);
-+
- 	if (*cable_arg)
- 		cable_type = pvr2_get_param_val(cables, cable_arg, 3);
- 	if (*output_arg)
+ 	return 0;
+@@ -420,6 +424,7 @@ static int __init ocfb_init(void)
+ static void __exit ocfb_exit(void)
+ {
+ 	platform_driver_unregister(&ocfb_driver);
++	kfree(mode_option_buf);
+ }
+ 
+ module_init(ocfb_init);
 -- 
 2.39.2
 

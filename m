@@ -2,51 +2,51 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BE1AC64EC4
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB828C742A7
 	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:03:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231761AbjCIQCl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Mar 2023 11:02:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47238 "EHLO
+        id S230382AbjCIQCn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Mar 2023 11:02:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47230 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230496AbjCIQCJ (ORCPT
+        with ESMTP id S230061AbjCIQCJ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:09 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC32AF6C5E;
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6CBCCF6C4F;
         Thu,  9 Mar 2023 08:02:08 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 5CC402017A;
-        Thu,  9 Mar 2023 16:02:07 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id EEFA822147;
+        Thu,  9 Mar 2023 16:02:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678377727; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678377726; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=fAKwWillpJMLRw6wMQPDlzuh9+KWUcuRQNAZe1IaSrQ=;
-        b=RSlu/cjSsyBJb0MNuFlWjDGlixOEHTWKfPF4CA+Rq/LSjRBhQiMJVX6fcb/RDWUtkmGaJN
-        WxBFUszBc4pRI2i7IhFqOz7kntSHcGEOqd8h7jajUJqkFhvJfHTAbVYvHPu+OszvS03e1r
-        uATh4kb07ZzFr8ryJzEhzb7B4hhjHxg=
+        bh=lqqiwJisVH/SAzHfF2Z9EuhM1jnh+DNN6yoV0M1wteU=;
+        b=xiFACuqremRu3gpC320ePcV8wZYe25+7E1u76jHQkErsmQu7yJlFnJNQGW5UYBZ9SQv5ot
+        bOJU2ibthwLG/3GRKurnyiM+5pGzEzNNXleZRAo7u2koBtXCfSlz5rL7e9u2+FabOmsT/d
+        A7lNPBm0yB0uEA2jxRkC1VxLlHOPhz4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678377727;
+        s=susede2_ed25519; t=1678377726;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=fAKwWillpJMLRw6wMQPDlzuh9+KWUcuRQNAZe1IaSrQ=;
-        b=AMAKtOMDSze1CiWVcaaE9i5u9eSGfP91ts9jiKv2c+WvFiqtTHhXEtSSpMJBfV7138SSHC
-        sERhL8+1fIr3VdDw==
+        bh=lqqiwJisVH/SAzHfF2Z9EuhM1jnh+DNN6yoV0M1wteU=;
+        b=c+5tBBtUF7Pe6+RmCA6axMVd3JFqEAs3odqujArmd2jPBkWAbsfx7CWjteAitmvohzjvmY
+        RhvH9JTrpfkHYdBw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id F35161391B;
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 92BC013A73;
         Thu,  9 Mar 2023 16:02:06 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id gBB2Ov4CCmQHbgAAMHmgww
+        id CEgAI/4CCmQHbgAAMHmgww
         (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:06 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 007/101] fbdev/amifb: Parse option string with struct option_iter
-Date:   Thu,  9 Mar 2023 17:00:27 +0100
-Message-Id: <20230309160201.5163-8-tzimmermann@suse.de>
+Subject: [PATCH v2 006/101] fbdev/amifb: Duplicate video-mode option string
+Date:   Thu,  9 Mar 2023 17:00:26 +0100
+Message-Id: <20230309160201.5163-7-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309160201.5163-1-tzimmermann@suse.de>
 References: <20230309160201.5163-1-tzimmermann@suse.de>
@@ -71,61 +71,54 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use struct option_iter to walk over the individual options in the
-driver's option string. Replaces the hand-written strsep() loop with
-a clean interface. The helpers for struct option_iter handle empty
-option strings and empty options transparently. The struct's _init
-and _release functions duplicate and release the option string's
-memory buffer as needed.
+Assume that the driver does not own the option string or its substrings
+and hence duplicate the option string for the video mode. Allocate the
+copy's memory with devm_kstrdup(), as the driver parses the option string
+once per probed device. Linux will automatically free the memory upon
+releasing the device.
 
-Done in preparation of constifying the option string.
+Done in preparation of switching the driver to struct option_iter and
+constifying the option string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/amifb.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/amifb.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/video/fbdev/amifb.c b/drivers/video/fbdev/amifb.c
-index 9517aa5bd2c0..a09edc576437 100644
+index d88265dbebf4..9517aa5bd2c0 100644
 --- a/drivers/video/fbdev/amifb.c
 +++ b/drivers/video/fbdev/amifb.c
-@@ -40,6 +40,7 @@
-  * for more details.
-  */
- 
-+#include <linux/cmdline.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-@@ -2345,16 +2346,14 @@ static void __init amifb_setup_mcap(char *spec)
+@@ -2345,7 +2345,7 @@ static void __init amifb_setup_mcap(char *spec)
  	amifb_vfmax = vmax;
  }
  
--static int __init amifb_setup(char *options, struct platform_device *pdev)
-+static int __init amifb_setup(const char *options, struct platform_device *pdev)
+-static int __init amifb_setup(char *options)
++static int __init amifb_setup(char *options, struct platform_device *pdev)
  {
-+	struct option_iter iter;
  	char *this_opt;
  
--	if (!options || !*options)
--		return 0;
-+	option_iter_init(&iter, options);
- 
--	while ((this_opt = strsep(&options, ",")) != NULL) {
--		if (!*this_opt)
--			continue;
-+	while (option_iter_next(&iter, &this_opt)) {
- 		if (!strcmp(this_opt, "inverse")) {
- 			fb_invert_cmaps();
- 		} else if (!strcmp(this_opt, "ilbm"))
-@@ -2369,6 +2368,8 @@ static int __init amifb_setup(char *options, struct platform_device *pdev)
- 		}
+@@ -2363,8 +2363,10 @@ static int __init amifb_setup(char *options)
+ 			amifb_setup_mcap(this_opt + 11);
+ 		else if (!strncmp(this_opt, "fstart:", 7))
+ 			min_fstrt = simple_strtoul(this_opt + 7, NULL, 0);
+-		else
+-			mode_option = this_opt;
++		else {
++			// ignore errors
++			mode_option = devm_kstrdup(&pdev->dev, this_opt, GFP_KERNEL);
++		}
  	}
  
-+	option_iter_release(&iter);
-+
  	if (min_fstrt < 48)
- 		min_fstrt = 48;
+@@ -3542,7 +3544,7 @@ static int __init amifb_probe(struct platform_device *pdev)
+ 		amifb_video_off();
+ 		return -ENODEV;
+ 	}
+-	amifb_setup(option);
++	amifb_setup(option, pdev);
+ #endif
+ 	custom.dmacon = DMAF_ALL | DMAF_MASTER;
  
 -- 
 2.39.2

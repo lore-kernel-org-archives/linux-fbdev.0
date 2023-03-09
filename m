@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0688BC76195
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:04:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB20FC76188
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Mar 2023 16:04:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231996AbjCIQD4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Mar 2023 11:03:56 -0500
+        id S231792AbjCIQDx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Mar 2023 11:03:53 -0500
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47502 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231705AbjCIQCb (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:31 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 10186F6C7A;
-        Thu,  9 Mar 2023 08:02:30 -0800 (PST)
+        with ESMTP id S231644AbjCIQCX (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Mar 2023 11:02:23 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6CD83F4B43;
+        Thu,  9 Mar 2023 08:02:22 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id BCD8420187;
-        Thu,  9 Mar 2023 16:02:28 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 0E85422144;
+        Thu,  9 Mar 2023 16:02:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678377748; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1678377741; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=K8bkfkzbWNgSDb6UtVHWjSzMDHH7LhwKp4EFJ55njm8=;
-        b=w4EIuTVBeN0feJKOOtNEj5vGW/wAZ+fU4ZpvjQMPvYoul6LP+doggvYb5Iie4fyBYmPZ1g
-        uZk2b/+YBRkClHSL+nK1+PryPFUi8JIXCJ4r5xPKGMc2sKz4rxq5FbgqY4yoBpxyztfUvs
-        toGZvC+a66chNsYFTtVL9ioCEtfuvnY=
+        bh=c7fzbHMZo/4t6EopunsYCvjOPtf7sTkieu2cfrSqxh4=;
+        b=AcjpdxWm5zvGSYbFoeuEUnP4boRb5za5KSjPBQem5PqUCIGbTC1YQyR0bzLfnSXfEcfp9S
+        vWozmmoOveM6DUzJIicy12AOaBWeCqhkuylaJ1kIHgqynt7NsGG5AeIERZ5raI1UEhL72P
+        wPGK+lXTR1+AXZKJkrDaAmewHFLLSfQ=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678377748;
+        s=susede2_ed25519; t=1678377741;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=K8bkfkzbWNgSDb6UtVHWjSzMDHH7LhwKp4EFJ55njm8=;
-        b=HwoRzadflSA9cICi6RZ2cgaMT22CIUrMkxkbxlmG4cqeCclu1b5QGcK585lZS0NI83UA3S
-        gxUBdX8kUW0yYgBQ==
+        bh=c7fzbHMZo/4t6EopunsYCvjOPtf7sTkieu2cfrSqxh4=;
+        b=zXFSwT+RVObgE93n73DBA0+4VkgBUJV055XbmNaTwRb7OgJFPKZRLUApY764qMPHJl8HXL
+        cL0gZLXVd47G5BAQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 669C213A73;
-        Thu,  9 Mar 2023 16:02:28 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id A79A01391B;
+        Thu,  9 Mar 2023 16:02:20 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id 2CA1GBQDCmQHbgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:28 +0000
+        id AJoaKAwDCmQHbgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 09 Mar 2023 16:02:20 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
         rdunlap@infradead.org, paulus@samba.org, benh@kernel.crashing.org,
@@ -59,9 +59,9 @@ To:     deller@gmx.de, geert+renesas@glider.be, timur@kernel.org,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 060/101] fbdev/pm3fb: Parse option string with struct option_iter
-Date:   Thu,  9 Mar 2023 17:01:20 +0100
-Message-Id: <20230309160201.5163-61-tzimmermann@suse.de>
+Subject: [PATCH v2 040/101] fbdev/imxfb: Parse option string with struct option_iter
+Date:   Thu,  9 Mar 2023 17:01:00 +0100
+Message-Id: <20230309160201.5163-41-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309160201.5163-1-tzimmermann@suse.de>
 References: <20230309160201.5163-1-tzimmermann@suse.de>
@@ -82,55 +82,50 @@ Done in preparation of constifying the option string.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/pm3fb.c | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ drivers/video/fbdev/imxfb.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/fbdev/pm3fb.c b/drivers/video/fbdev/pm3fb.c
-index b6b378e7554d..c4d4f08b4114 100644
---- a/drivers/video/fbdev/pm3fb.c
-+++ b/drivers/video/fbdev/pm3fb.c
-@@ -23,6 +23,7 @@
+diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+index aad7d447385c..d4e347aca0b0 100644
+--- a/drivers/video/fbdev/imxfb.c
++++ b/drivers/video/fbdev/imxfb.c
+@@ -14,6 +14,7 @@
+  *	linux-arm-kernel@lists.arm.linux.org.uk
   */
  
- #include <linux/aperture.h>
 +#include <linux/cmdline.h>
  #include <linux/module.h>
  #include <linux/kernel.h>
  #include <linux/errno.h>
-@@ -1510,18 +1511,16 @@ MODULE_DEVICE_TABLE(pci, pm3fb_id_table);
-  * Only necessary if your driver takes special options,
-  * otherwise we fall back on the generic fb_setup().
-  */
--static int __init pm3fb_setup(char *options)
-+static int __init pm3fb_setup(const char *options)
- {
-+	struct option_iter iter;
- 	char *this_opt;
+@@ -845,21 +846,21 @@ static struct lcd_ops imxfb_lcd_ops = {
  
- 	/* Parse user specified options (`video=pm3fb:') */
+ static int imxfb_setup(struct platform_device *pdev)
+ {
+-	char *opt, *options = NULL;
++	char *options = NULL;
++	struct option_iter iter;
++	char *opt;
+ 
+ 	if (fb_get_options("imxfb", &options))
+ 		return -ENODEV;
+ 
 -	if (!options || !*options)
 -		return 0;
+-
+-	while ((opt = strsep(&options, ",")) != NULL) {
+-		if (!*opt)
+-			continue;
 +	option_iter_init(&iter, options);
  
--	while ((this_opt = strsep(&options, ",")) != NULL) {
--		if (!*this_opt)
--			continue;
--		else if (!strncmp(this_opt, "noaccel", 7))
-+	while (option_iter_next(&iter, &this_opt)) {
-+		if (!strncmp(this_opt, "noaccel", 7))
- 			noaccel = 1;
- 		else if (!strncmp(this_opt, "hwcursor=", 9))
- 			hwcursor = simple_strtoul(this_opt + 9, NULL, 0);
-@@ -1533,6 +1532,9 @@ static int __init pm3fb_setup(char *options)
- 			mode_option = mode_option_buf;
- 		}
++	while (option_iter_next(&iter, &opt)) {
+ 		fb_mode = devm_kstrdup(&pdev->dev, opt, GFP_KERNEL); // ignore errors
  	}
-+
+ 
 +	option_iter_release(&iter);
 +
  	return 0;
  }
- #endif /* MODULE */
+ 
 -- 
 2.39.2
 

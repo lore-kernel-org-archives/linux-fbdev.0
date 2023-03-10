@@ -2,53 +2,53 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B495C6FD1F
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Mar 2023 14:51:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8CD0C742A7
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Mar 2023 14:51:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233416AbjCJOvX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Mar 2023 09:51:23 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42826 "EHLO
+        id S233477AbjCJOvv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 10 Mar 2023 09:51:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41980 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233188AbjCJOuK (ORCPT
+        with ESMTP id S233405AbjCJOvP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Mar 2023 09:50:10 -0500
-Received: from mail-oa1-f44.google.com (mail-oa1-f44.google.com [209.85.160.44])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1BC6D4AFC8;
-        Fri, 10 Mar 2023 06:48:09 -0800 (PST)
-Received: by mail-oa1-f44.google.com with SMTP id 586e51a60fabf-176b48a9a05so6137676fac.0;
-        Fri, 10 Mar 2023 06:48:09 -0800 (PST)
+        Fri, 10 Mar 2023 09:51:15 -0500
+Received: from mail-oa1-f42.google.com (mail-oa1-f42.google.com [209.85.160.42])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC0C822C82;
+        Fri, 10 Mar 2023 06:48:22 -0800 (PST)
+Received: by mail-oa1-f42.google.com with SMTP id 586e51a60fabf-176e43eb199so6065283fac.7;
+        Fri, 10 Mar 2023 06:48:22 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678459674;
+        d=1e100.net; s=20210112; t=1678459678;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=6cw44gWatMHAFXsp5Bf1XmtOCAdzF/BFR6Jh05S7SHc=;
-        b=pspoFOKlw7WaDoDaeAY5OAuw255rT+bwC8Qh48Zl6WlycYKE8K+8wfVODYeqzPfY1W
-         QHVEEfBeNmZMCcKGZj6S2wrcN1f+l04k/GuO/UyO1fZGdFHQGDBr8QD7KgJoZOL1xTwY
-         No9w/JSw9eLEbRXQZLJ3Wg9ia93mqzjut44eeCfjYxP10LBymTI7rJhVLlhPdy1jMhvr
-         YZXOzwg3cTQNIy10zwl1dXwNhh7MpMbWoZLWrmKsLE+zMpqcH2P6jorvVYvHRtwpS50H
-         RU4VwrpYWHykbfRSupGBAwFdMpIcEoD5N3n35rGr0RNy49D/WxIumvF+ChJ8rJ88J6MZ
-         Hl/Q==
-X-Gm-Message-State: AO0yUKWjDXWE9b6H+gIlS9onItg2VDqSTMNu4YyBf7GNhQ6WcQ0h9Dre
-        dkLTTTmAO8Q6b021+xvnfg==
-X-Google-Smtp-Source: AK7set+Zj6vvg/AmICk7/oD81/eKSnxwP1Wq1NCl/JJzCI3tJ2URV59x6Vj6oI0pjCaRj+pBsB4pjQ==
-X-Received: by 2002:a05:6870:9724:b0:176:4631:3c0d with SMTP id n36-20020a056870972400b0017646313c0dmr16556971oaq.34.1678459673974;
-        Fri, 10 Mar 2023 06:47:53 -0800 (PST)
+        bh=ETxKkA0CWLBgbyAgVLy9qpug2yXjisvnXqA0S7RLTqY=;
+        b=DJame3m7PqWK8sdB3UPaLWRzGJma/YN6N0VeQFs9Tl3DQijuIuo3+1kU5aVvDeU6H+
+         Dsnykr1axowfIPQn6PMV34wg4OyyMcpOQgEnIjUe+Uam+f/xrvwKzhZEr2aAKREmWuvP
+         eL7V7mWe2Bzt3U8xOc9+mMWxuxVazIrIUn/mLHRvv2u8I/ov+lPMgxNUq78sDWri+pAm
+         54HvuB1GZ7IfRBgXNQrn/Uc6iLYh49DWm/IAu6b/CvyXl3eItjNRdKiwPh37fAzlUcCp
+         rY3hXIfnlBdCEFdMbfXYAQc3AZmTw8XhNocHKrkphpM2wulBop8qpMLYGXT/NOPv5oeH
+         rbHA==
+X-Gm-Message-State: AO0yUKW3nJVMq7oUZecFa84DtS1FpAEvknI5ZtuJGHvEGdfH2QOBy19G
+        +G9AQ1EhCop9GXMSfaJLCw==
+X-Google-Smtp-Source: AK7set/1ag3y6dD1QRTKVA81xe6JG5qypBhJeLO+p+L0vkyaAbWPH0yMo54nh3CufsknS4wbkcE54A==
+X-Received: by 2002:a05:6870:219d:b0:163:b0c5:8730 with SMTP id l29-20020a056870219d00b00163b0c58730mr15337879oae.12.1678459678109;
+        Fri, 10 Mar 2023 06:47:58 -0800 (PST)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id j21-20020a056870d45500b0017697dfc20fsm118605oag.12.2023.03.10.06.47.53
+        by smtp.gmail.com with ESMTPSA id zf30-20020a0568716a9e00b0017299192eb1sm97370oab.25.2023.03.10.06.47.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Mar 2023 06:47:53 -0800 (PST)
-Received: (nullmailer pid 1546147 invoked by uid 1000);
-        Fri, 10 Mar 2023 14:47:30 -0000
+        Fri, 10 Mar 2023 06:47:57 -0800 (PST)
+Received: (nullmailer pid 1546216 invoked by uid 1000);
+        Fri, 10 Mar 2023 14:47:31 -0000
 From:   Rob Herring <robh@kernel.org>
 To:     Lee Jones <lee@kernel.org>,
         Daniel Thompson <daniel.thompson@linaro.org>,
         Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
 Cc:     devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] backlight: hx8357: Use of_property_present() for testing DT property presence
-Date:   Fri, 10 Mar 2023 08:47:30 -0600
-Message-Id: <20230310144730.1546101-1-robh@kernel.org>
+Subject: [PATCH] backlight: as3711: Use of_property_read_bool() for boolean properties
+Date:   Fri, 10 Mar 2023 08:47:31 -0600
+Message-Id: <20230310144731.1546190-1-robh@kernel.org>
 X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -58,29 +58,90 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 It is preferred to use typed property access functions (i.e.
 of_property_read_<type> functions) rather than low-level
-of_get_property/of_find_property functions for reading properties. As
-part of this, convert of_get_property/of_find_property calls to the
-recently added of_property_present() helper when we just want to test
-for presence of a property and nothing more.
+of_get_property/of_find_property functions for reading properties.
+Convert reading boolean properties to to of_property_read_bool().
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- drivers/video/backlight/hx8357.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/backlight/as3711_bl.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/backlight/hx8357.c b/drivers/video/backlight/hx8357.c
-index 9b50bc96e00f..f76d2469d490 100644
---- a/drivers/video/backlight/hx8357.c
-+++ b/drivers/video/backlight/hx8357.c
-@@ -617,7 +617,7 @@ static int hx8357_probe(struct spi_device *spi)
- 		return -EINVAL;
- 	}
+diff --git a/drivers/video/backlight/as3711_bl.c b/drivers/video/backlight/as3711_bl.c
+index 3b60019cdc2b..28437c2da0f5 100644
+--- a/drivers/video/backlight/as3711_bl.c
++++ b/drivers/video/backlight/as3711_bl.c
+@@ -286,23 +286,23 @@ static int as3711_backlight_parse_dt(struct device *dev)
+ 		if (ret < 0)
+ 			goto err_put_bl;
  
--	if (of_find_property(spi->dev.of_node, "im-gpios", NULL)) {
-+	if (of_property_present(spi->dev.of_node, "im-gpios")) {
- 		lcd->use_im_pins = 1;
+-		if (of_find_property(bl, "su2-feedback-voltage", NULL)) {
++		if (of_property_read_bool(bl, "su2-feedback-voltage")) {
+ 			pdata->su2_feedback = AS3711_SU2_VOLTAGE;
+ 			count++;
+ 		}
+-		if (of_find_property(bl, "su2-feedback-curr1", NULL)) {
++		if (of_property_read_bool(bl, "su2-feedback-curr1")) {
+ 			pdata->su2_feedback = AS3711_SU2_CURR1;
+ 			count++;
+ 		}
+-		if (of_find_property(bl, "su2-feedback-curr2", NULL)) {
++		if (of_property_read_bool(bl, "su2-feedback-curr2")) {
+ 			pdata->su2_feedback = AS3711_SU2_CURR2;
+ 			count++;
+ 		}
+-		if (of_find_property(bl, "su2-feedback-curr3", NULL)) {
++		if (of_property_read_bool(bl, "su2-feedback-curr3")) {
+ 			pdata->su2_feedback = AS3711_SU2_CURR3;
+ 			count++;
+ 		}
+-		if (of_find_property(bl, "su2-feedback-curr-auto", NULL)) {
++		if (of_property_read_bool(bl, "su2-feedback-curr-auto")) {
+ 			pdata->su2_feedback = AS3711_SU2_CURR_AUTO;
+ 			count++;
+ 		}
+@@ -312,19 +312,19 @@ static int as3711_backlight_parse_dt(struct device *dev)
+ 		}
  
- 		for (i = 0; i < HX8357_NUM_IM_PINS; i++) {
+ 		count = 0;
+-		if (of_find_property(bl, "su2-fbprot-lx-sd4", NULL)) {
++		if (of_property_read_bool(bl, "su2-fbprot-lx-sd4")) {
+ 			pdata->su2_fbprot = AS3711_SU2_LX_SD4;
+ 			count++;
+ 		}
+-		if (of_find_property(bl, "su2-fbprot-gpio2", NULL)) {
++		if (of_property_read_bool(bl, "su2-fbprot-gpio2")) {
+ 			pdata->su2_fbprot = AS3711_SU2_GPIO2;
+ 			count++;
+ 		}
+-		if (of_find_property(bl, "su2-fbprot-gpio3", NULL)) {
++		if (of_property_read_bool(bl, "su2-fbprot-gpio3")) {
+ 			pdata->su2_fbprot = AS3711_SU2_GPIO3;
+ 			count++;
+ 		}
+-		if (of_find_property(bl, "su2-fbprot-gpio4", NULL)) {
++		if (of_property_read_bool(bl, "su2-fbprot-gpio4")) {
+ 			pdata->su2_fbprot = AS3711_SU2_GPIO4;
+ 			count++;
+ 		}
+@@ -334,15 +334,15 @@ static int as3711_backlight_parse_dt(struct device *dev)
+ 		}
+ 
+ 		count = 0;
+-		if (of_find_property(bl, "su2-auto-curr1", NULL)) {
++		if (of_property_read_bool(bl, "su2-auto-curr1")) {
+ 			pdata->su2_auto_curr1 = true;
+ 			count++;
+ 		}
+-		if (of_find_property(bl, "su2-auto-curr2", NULL)) {
++		if (of_property_read_bool(bl, "su2-auto-curr2")) {
+ 			pdata->su2_auto_curr2 = true;
+ 			count++;
+ 		}
+-		if (of_find_property(bl, "su2-auto-curr3", NULL)) {
++		if (of_property_read_bool(bl, "su2-auto-curr3")) {
+ 			pdata->su2_auto_curr3 = true;
+ 			count++;
+ 		}
 -- 
 2.39.2
 

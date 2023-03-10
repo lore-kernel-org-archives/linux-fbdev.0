@@ -2,120 +2,176 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DFBAC64EC4
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Mar 2023 08:29:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61EE7C64EC4
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Mar 2023 12:18:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230417AbjCJI3d convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Mar 2023 03:29:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37284 "EHLO
+        id S230267AbjCJMSg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 10 Mar 2023 07:18:36 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49736 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230395AbjCJI3b (ORCPT
+        with ESMTP id S230258AbjCJMSf (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Mar 2023 03:29:31 -0500
-Received: from mail-ua1-f47.google.com (mail-ua1-f47.google.com [209.85.222.47])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E141E3CFA;
-        Fri, 10 Mar 2023 00:29:29 -0800 (PST)
-Received: by mail-ua1-f47.google.com with SMTP id p2so2999684uap.1;
-        Fri, 10 Mar 2023 00:29:29 -0800 (PST)
+        Fri, 10 Mar 2023 07:18:35 -0500
+Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com [IPv6:2607:f8b0:4864:20::534])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A137260430;
+        Fri, 10 Mar 2023 04:18:33 -0800 (PST)
+Received: by mail-pg1-x534.google.com with SMTP id d6so2924643pgu.2;
+        Fri, 10 Mar 2023 04:18:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112; t=1678450713;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=PQWRSFkOKg9T+y+gldqtOznj/eHaxJktJYeXp0a1CHE=;
+        b=X0m1GIXnFLZSnUIMC8tXN3MjJv2mxoBg8j2HZE1gg2EljBsDDqNYawAJnqQehG+RDZ
+         jREisZCDSP7uiTfTAzwc3iYvaxlipaIEe4mVodlCBoTZWs8w6U7akm8BvQ+aWBONC1Ma
+         eMo92jTbE2ZwwnlBKTpzCSdPq+/Jj5e6H3mNm1wDenRXdNr5rXW/7S/kmgvV/kVSOi0o
+         6NZsvabnM3diJ2x45r8E1KnETDQhbIW6zA367SagnJtl4kDNP1sDJGBjjMLF/D5uyxI7
+         /+xD6E14oxPxTw9wQu39kcQgH4J4ZORMsSrYgdK6smLGNG1OOVp4D3C2Vsqqtphi3ZCd
+         IHXg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678436968;
+        d=1e100.net; s=20210112; t=1678450713;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=eM9+oariG5AZHJb2flm0bcRsFcKIv5vHQs/p7YmsVBU=;
-        b=MrJbmo9fmzMDQpYESXD8O/vjEtBBGsw/cp5jZ/sftl1jD1pbE+NG98KNpu83xcR5/d
-         wKMffsnBILCa+mHlrEcVYwZVzk3CtjLNydnsvs9jKXrycNdcJ8uB6ZYxxxiCtTOsU0WS
-         5ijXYCQQFKqUlN+vwI7IkELM/mMNK8GNPTpo9X/pDeqIJ2hXC2mVbUSfrfHUTX7ETsBI
-         B6r2McN4U5zipdKOZqSBZxbICWO6I0MhRGan1OvABZH5NVPMPVJiEf2mxA1PvbAwZr3b
-         wS0o+QTxQoyyiXiq+7OCedM6uJjZCDMSowLPOp6axZ8aFhyDaIkODGQ2DOqMP6c6GJkq
-         Q7Cg==
-X-Gm-Message-State: AO0yUKWkmXxeWxazvZ6YQdjCBtQv4qiF6kiWXP6qQZ/syRbEtp9TzLI7
-        jNpop4Pt3TzkSQCYiPidx248NEVLQf6Fnw==
-X-Google-Smtp-Source: AK7set/LvhXjUnKtMSdmyQydiDygmsVdEciSZmELXYzCEVFsUvwbycIVYzDZoKe9a/8Z5BRsq5NohQ==
-X-Received: by 2002:a1f:98d7:0:b0:425:6873:303d with SMTP id a206-20020a1f98d7000000b004256873303dmr10534918vke.9.1678436967970;
-        Fri, 10 Mar 2023 00:29:27 -0800 (PST)
-Received: from mail-ua1-f54.google.com (mail-ua1-f54.google.com. [209.85.222.54])
-        by smtp.gmail.com with ESMTPSA id u185-20020a1f2ec2000000b00416c3a2be7bsm257032vku.25.2023.03.10.00.29.27
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 10 Mar 2023 00:29:27 -0800 (PST)
-Received: by mail-ua1-f54.google.com with SMTP id d12so2974847uak.10;
-        Fri, 10 Mar 2023 00:29:27 -0800 (PST)
-X-Received: by 2002:a81:4306:0:b0:538:49a4:b1e0 with SMTP id
- q6-20020a814306000000b0053849a4b1e0mr896811ywa.2.1678436489434; Fri, 10 Mar
- 2023 00:21:29 -0800 (PST)
+        bh=PQWRSFkOKg9T+y+gldqtOznj/eHaxJktJYeXp0a1CHE=;
+        b=pE4XLSkp8dXzH3Ojub9IboJoRX+Mp/aXsMsBs9vweqJ01eJFMwCvRLjN/gyaoTTuMj
+         LZBp4Olkhv+QfC0ap+Ii55m8nPH6RsT39VdxPwLddzUISlNWe5BfTAHR+AkYWmR0eQF7
+         c6dUPbmYODZA+Tp372wCcs94ua0rYqOzfB4R1YDwN9PlOqeagNoj3LGRhAiNPysfOhHF
+         tAKfKixly56QfIBOqG9peRvEpWu/Q2liKaX+rYynq2vrjwXBjQOS7/BhzXI+McBTeOMt
+         oVG3D3QVxpvr8QFqon/iSt+F9OCORMnm+Kl75y9LpqE9/By0j2NkdTHdzYWwirYbZrY0
+         4P0A==
+X-Gm-Message-State: AO0yUKV5hzj4W/7/kpgnBU89Gc41n+QulFcOuWOajCQFWEbMH806Dur1
+        QP3o70d9ZUmT1mImM++duZePM49IAM0De6Zxd6g=
+X-Google-Smtp-Source: AK7set+IE1/l1QhMtQeSm2c0wnMVPaxpSDAntt8hngJitI03+uAOBDkn81AVlY6BxhtlRQmUYaAGdEm2Y/elvAsSZTg=
+X-Received: by 2002:a62:cd83:0:b0:5e5:7675:88e3 with SMTP id
+ o125-20020a62cd83000000b005e5767588e3mr10322774pfg.5.1678450713012; Fri, 10
+ Mar 2023 04:18:33 -0800 (PST)
 MIME-Version: 1.0
-References: <20230309160201.5163-1-tzimmermann@suse.de> <20230309160201.5163-2-tzimmermann@suse.de>
-In-Reply-To: <20230309160201.5163-2-tzimmermann@suse.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Fri, 10 Mar 2023 09:21:17 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdXsj9RrqUkwLjoxF2rXKcy9UK4Rwv1RcB0cnJXMXJU97g@mail.gmail.com>
-Message-ID: <CAMuHMdXsj9RrqUkwLjoxF2rXKcy9UK4Rwv1RcB0cnJXMXJU97g@mail.gmail.com>
-Subject: Re: [PATCH v2 001/101] lib: Add option iterator
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     deller@gmx.de, timur@kernel.org, rdunlap@infradead.org,
-        paulus@samba.org, benh@kernel.crashing.org, linux@armlinux.org.uk,
-        pjones@redhat.com, adaplas@gmail.com, s.hauer@pengutronix.de,
-        shawnguo@kernel.org, mbroemme@libmpq.org, thomas@winischhofer.net,
-        James.Bottomley@hansenpartnership.com, sudipm.mukherjee@gmail.com,
-        teddy.wang@siliconmotion.com, corbet@lwn.net,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
+References: <20230308105012.1845-1-tiwai@suse.de>
+In-Reply-To: <20230308105012.1845-1-tiwai@suse.de>
+From:   Patrik Jakobsson <patrik.r.jakobsson@gmail.com>
+Date:   Fri, 10 Mar 2023 13:18:21 +0100
+Message-ID: <CAMeQTsbFuoP4KXmMm4xbwvXOjYw5CYJs6q2nnMuRYHsutrX0aw@mail.gmail.com>
+Subject: Re: [PATCH v2] fbdev: Fix incorrect page mapping clearance at fb_deferred_io_release()
+To:     Takashi Iwai <tiwai@suse.de>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        linux-fbdev@vger.kernel.org, Miko Larsson <mikoxyzzz@gmail.com>,
+        Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        Patrik Jakobsson <pjakobsson@suse.de>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
-
-On Thu, Mar 9, 2023 at 5:02 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> Add struct option_iter and helpers that walk over individual options
-> of an option string. Add documentation.
+On Wed, Mar 8, 2023 at 11:50=E2=80=AFAM Takashi Iwai <tiwai@suse.de> wrote:
 >
-> Kernel parameters often have the format of
+> The recent fix for the deferred I/O by the commit
+>   3efc61d95259 ("fbdev: Fix invalid page access after closing deferred I/=
+O devices")
+> caused a regression when the same fb device is opened/closed while
+> it's being used.  It resulted in a frozen screen even if something
+> is redrawn there after the close.  The breakage is because the patch
+> was made under a wrong assumption of a single open; in the current
+> code, fb_deferred_io_release() cleans up the page mapping of the
+> pageref list and it calls cancel_delayed_work_sync() unconditionally,
+> where both are no correct behavior for multiple opens.
 >
->   param=opt1,opt2:val,opt3
+> This patch adds a refcount for the opens of the device, and applies
+> the cleanup only when all files get closed.
 >
-> where the option string contains a number of comma-separated options.
-> Drivers usually use strsep() in a loop to extract individual options
-> from the string. Each call to strsep() modifies the given string, so
-> callers have to duplicate kernel parameters that are to be parsed
-> multiple times.
+> As both fb_deferred_io_open() and _close() are called always in the
+> fb_info lock (mutex), it's safe to use the normal int for the
+> refcounting.
 >
-> The new struct option_iter and its helpers wrap this code behind a
-> clean interface. Drivers can iterate over the options without having
-> to know the details of the option-string format. The iterator handles
-> string memory internally without modifying the original options.
+> Also, a useless BUG_ON() is dropped.
 >
-> v2:
->         * improve documentation (Randy)
->         * implement option_iter_next() as function
->         * allow modification of the returned options
+> Fixes: 3efc61d95259 ("fbdev: Fix invalid page access after closing deferr=
+ed I/O devices")
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Takashi Iwai <tiwai@suse.de>
+
+Looks good to me
+
+Reviewed-by: Patrik Jakobsson <patrik.r.jakobsson@gmail.com>
+
+> ---
+> v1->v2:
+> * Rename to fb_deferred_io_lastclose()
+> * Rename the new field from opens to open_count
+> * Removed unused variable
+> * More comments about fb_info locking
 >
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-
-Thanks for your patch!
-
-I> ---
->  Documentation/core-api/kernel-api.rst |   9 +++
->  include/linux/cmdline.h               |  36 +++++++++
->  lib/Makefile                          |   2 +-
->  lib/cmdline_iter.c                    | 109 ++++++++++++++++++++++++++
->  4 files changed, 155 insertions(+), 1 deletion(-)
->  create mode 100644 include/linux/cmdline.h
->  create mode 100644 lib/cmdline_iter.c
-
-Just wondering, is there any code that can be shared with/reused from
-the existing lib/cmdline.c?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+>  drivers/video/fbdev/core/fb_defio.c | 17 +++++++++++++----
+>  include/linux/fb.h                  |  1 +
+>  2 files changed, 14 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/co=
+re/fb_defio.c
+> index aa5f059d0222..274f5d0fa247 100644
+> --- a/drivers/video/fbdev/core/fb_defio.c
+> +++ b/drivers/video/fbdev/core/fb_defio.c
+> @@ -305,17 +305,18 @@ void fb_deferred_io_open(struct fb_info *info,
+>                          struct inode *inode,
+>                          struct file *file)
+>  {
+> +       struct fb_deferred_io *fbdefio =3D info->fbdefio;
+> +
+>         file->f_mapping->a_ops =3D &fb_deferred_io_aops;
+> +       fbdefio->open_count++;
+>  }
+>  EXPORT_SYMBOL_GPL(fb_deferred_io_open);
+>
+> -void fb_deferred_io_release(struct fb_info *info)
+> +static void fb_deferred_io_lastclose(struct fb_info *info)
+>  {
+> -       struct fb_deferred_io *fbdefio =3D info->fbdefio;
+>         struct page *page;
+>         int i;
+>
+> -       BUG_ON(!fbdefio);
+>         cancel_delayed_work_sync(&info->deferred_work);
+>
+>         /* clear out the mapping that we setup */
+> @@ -324,13 +325,21 @@ void fb_deferred_io_release(struct fb_info *info)
+>                 page->mapping =3D NULL;
+>         }
+>  }
+> +
+> +void fb_deferred_io_release(struct fb_info *info)
+> +{
+> +       struct fb_deferred_io *fbdefio =3D info->fbdefio;
+> +
+> +       if (!--fbdefio->open_count)
+> +               fb_deferred_io_lastclose(info);
+> +}
+>  EXPORT_SYMBOL_GPL(fb_deferred_io_release);
+>
+>  void fb_deferred_io_cleanup(struct fb_info *info)
+>  {
+>         struct fb_deferred_io *fbdefio =3D info->fbdefio;
+>
+> -       fb_deferred_io_release(info);
+> +       fb_deferred_io_lastclose(info);
+>
+>         kvfree(info->pagerefs);
+>         mutex_destroy(&fbdefio->lock);
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index d8d20514ea05..02d09cb57f6c 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -212,6 +212,7 @@ struct fb_deferred_io {
+>         /* delay between mkwrite and deferred handler */
+>         unsigned long delay;
+>         bool sort_pagereflist; /* sort pagelist by offset */
+> +       int open_count; /* number of opened files; protected by fb_info l=
+ock */
+>         struct mutex lock; /* mutex that protects the pageref list */
+>         struct list_head pagereflist; /* list of pagerefs for touched pag=
+es */
+>         /* callback */
+> --
+> 2.35.3
+>

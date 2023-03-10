@@ -2,53 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8CD0C742A7
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Mar 2023 14:51:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C59D9C74A5B
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Mar 2023 14:53:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233477AbjCJOvv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Mar 2023 09:51:51 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41980 "EHLO
+        id S233541AbjCJOxw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 10 Mar 2023 09:53:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57620 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233405AbjCJOvP (ORCPT
+        with ESMTP id S233403AbjCJOx2 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Mar 2023 09:51:15 -0500
-Received: from mail-oa1-f42.google.com (mail-oa1-f42.google.com [209.85.160.42])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC0C822C82;
-        Fri, 10 Mar 2023 06:48:22 -0800 (PST)
-Received: by mail-oa1-f42.google.com with SMTP id 586e51a60fabf-176e43eb199so6065283fac.7;
-        Fri, 10 Mar 2023 06:48:22 -0800 (PST)
+        Fri, 10 Mar 2023 09:53:28 -0500
+Received: from mail-oa1-f49.google.com (mail-oa1-f49.google.com [209.85.160.49])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B67B125AF9;
+        Fri, 10 Mar 2023 06:49:27 -0800 (PST)
+Received: by mail-oa1-f49.google.com with SMTP id 586e51a60fabf-17671fb717cso6053250fac.8;
+        Fri, 10 Mar 2023 06:49:27 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678459678;
+        d=1e100.net; s=20210112; t=1678459709;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=ETxKkA0CWLBgbyAgVLy9qpug2yXjisvnXqA0S7RLTqY=;
-        b=DJame3m7PqWK8sdB3UPaLWRzGJma/YN6N0VeQFs9Tl3DQijuIuo3+1kU5aVvDeU6H+
-         Dsnykr1axowfIPQn6PMV34wg4OyyMcpOQgEnIjUe+Uam+f/xrvwKzhZEr2aAKREmWuvP
-         eL7V7mWe2Bzt3U8xOc9+mMWxuxVazIrIUn/mLHRvv2u8I/ov+lPMgxNUq78sDWri+pAm
-         54HvuB1GZ7IfRBgXNQrn/Uc6iLYh49DWm/IAu6b/CvyXl3eItjNRdKiwPh37fAzlUcCp
-         rY3hXIfnlBdCEFdMbfXYAQc3AZmTw8XhNocHKrkphpM2wulBop8qpMLYGXT/NOPv5oeH
-         rbHA==
-X-Gm-Message-State: AO0yUKW3nJVMq7oUZecFa84DtS1FpAEvknI5ZtuJGHvEGdfH2QOBy19G
-        +G9AQ1EhCop9GXMSfaJLCw==
-X-Google-Smtp-Source: AK7set/1ag3y6dD1QRTKVA81xe6JG5qypBhJeLO+p+L0vkyaAbWPH0yMo54nh3CufsknS4wbkcE54A==
-X-Received: by 2002:a05:6870:219d:b0:163:b0c5:8730 with SMTP id l29-20020a056870219d00b00163b0c58730mr15337879oae.12.1678459678109;
-        Fri, 10 Mar 2023 06:47:58 -0800 (PST)
+        bh=5ABh9MagjDNyGivJ3oT/1DUZHeIg4J1qNxCI1uEPy4Q=;
+        b=xduS1bTaK+w0+UU0Zy70jd4Utq3VZsmT4t/6+RVgE2t9PaaGgjQAyrCJ1sfaMNbzsN
+         ETnHC6owPUuov1UUWfS30ivGbsOaFWv57M0/CvqxTyIgbQH9cGqdaF88er+Ix5e8g6s4
+         VNE8Yc8f4xZ6GOJ0uYhdeKHy8045VQtenTbWeGe8Y8bqYdgZuubm1DvWqHlIUJ1jJ/xX
+         2FnX3Gvaiaxe5hlNuYAH1E/yT4iuJN12H//Iuh0IAMYpg1+rA4R/PxcnWUIKxSxKjSx5
+         +qF1KVGcHB/wwTtV0QCJ4smmaVhmKMm9o1K+qwggIOI2ljGM9pHSQW747ttMWwLQ/Mb1
+         1m7Q==
+X-Gm-Message-State: AO0yUKVNpG0riEZo8LJljPV2I/in+4lScZ/rAT/MKVC6Sa4T6QIrdJpK
+        ydU291gcQeOIebN7cJjhCA==
+X-Google-Smtp-Source: AK7set/3qtl4P82g+jyKy/zqrO1gocYbHRAq7O166an25I6PVtSxchhQQDghw8aD3mFYHy2oBhVb6g==
+X-Received: by 2002:a05:6870:a68c:b0:16e:8d40:b5ec with SMTP id i12-20020a056870a68c00b0016e8d40b5ecmr16859362oam.50.1678459708772;
+        Fri, 10 Mar 2023 06:48:28 -0800 (PST)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id zf30-20020a0568716a9e00b0017299192eb1sm97370oab.25.2023.03.10.06.47.57
+        by smtp.gmail.com with ESMTPSA id z21-20020a056870515500b001728d38a41asm71779oak.55.2023.03.10.06.48.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Mar 2023 06:47:57 -0800 (PST)
-Received: (nullmailer pid 1546216 invoked by uid 1000);
-        Fri, 10 Mar 2023 14:47:31 -0000
+        Fri, 10 Mar 2023 06:48:28 -0800 (PST)
+Received: (nullmailer pid 1545988 invoked by uid 1000);
+        Fri, 10 Mar 2023 14:47:29 -0000
 From:   Rob Herring <robh@kernel.org>
-To:     Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
-Cc:     devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] backlight: as3711: Use of_property_read_bool() for boolean properties
-Date:   Fri, 10 Mar 2023 08:47:31 -0600
-Message-Id: <20230310144731.1546190-1-robh@kernel.org>
+To:     Russell King <linux@armlinux.org.uk>, Helge Deller <deller@gmx.de>
+Cc:     devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        linux-omap@vger.kernel.org
+Subject: [PATCH] fbdev: Use of_property_present() for testing DT property presence
+Date:   Fri, 10 Mar 2023 08:47:29 -0600
+Message-Id: <20230310144729.1545943-1-robh@kernel.org>
 X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -58,90 +57,71 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 It is preferred to use typed property access functions (i.e.
 of_property_read_<type> functions) rather than low-level
-of_get_property/of_find_property functions for reading properties.
-Convert reading boolean properties to to of_property_read_bool().
+of_get_property/of_find_property functions for reading properties. As
+part of this, convert of_get_property/of_find_property calls to the
+recently added of_property_present() helper when we just want to test
+for presence of a property and nothing more.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- drivers/video/backlight/as3711_bl.c | 24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+ drivers/video/fbdev/amba-clcd.c                          | 2 +-
+ drivers/video/fbdev/bw2.c                                | 2 +-
+ drivers/video/fbdev/cg3.c                                | 2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/omapdss-boot-init.c | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/backlight/as3711_bl.c b/drivers/video/backlight/as3711_bl.c
-index 3b60019cdc2b..28437c2da0f5 100644
---- a/drivers/video/backlight/as3711_bl.c
-+++ b/drivers/video/backlight/as3711_bl.c
-@@ -286,23 +286,23 @@ static int as3711_backlight_parse_dt(struct device *dev)
- 		if (ret < 0)
- 			goto err_put_bl;
+diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
+index f65c96d1394d..e45338227be6 100644
+--- a/drivers/video/fbdev/amba-clcd.c
++++ b/drivers/video/fbdev/amba-clcd.c
+@@ -854,7 +854,7 @@ static struct clcd_board *clcdfb_of_get_board(struct amba_device *dev)
+ 	board->caps = CLCD_CAP_ALL;
+ 	board->check = clcdfb_check;
+ 	board->decode = clcdfb_decode;
+-	if (of_find_property(node, "memory-region", NULL)) {
++	if (of_property_present(node, "memory-region")) {
+ 		board->setup = clcdfb_of_vram_setup;
+ 		board->mmap = clcdfb_of_vram_mmap;
+ 		board->remove = clcdfb_of_vram_remove;
+diff --git a/drivers/video/fbdev/bw2.c b/drivers/video/fbdev/bw2.c
+index 6403ae07970d..9cbadcd18b25 100644
+--- a/drivers/video/fbdev/bw2.c
++++ b/drivers/video/fbdev/bw2.c
+@@ -306,7 +306,7 @@ static int bw2_probe(struct platform_device *op)
+ 	if (!par->regs)
+ 		goto out_release_fb;
  
--		if (of_find_property(bl, "su2-feedback-voltage", NULL)) {
-+		if (of_property_read_bool(bl, "su2-feedback-voltage")) {
- 			pdata->su2_feedback = AS3711_SU2_VOLTAGE;
- 			count++;
- 		}
--		if (of_find_property(bl, "su2-feedback-curr1", NULL)) {
-+		if (of_property_read_bool(bl, "su2-feedback-curr1")) {
- 			pdata->su2_feedback = AS3711_SU2_CURR1;
- 			count++;
- 		}
--		if (of_find_property(bl, "su2-feedback-curr2", NULL)) {
-+		if (of_property_read_bool(bl, "su2-feedback-curr2")) {
- 			pdata->su2_feedback = AS3711_SU2_CURR2;
- 			count++;
- 		}
--		if (of_find_property(bl, "su2-feedback-curr3", NULL)) {
-+		if (of_property_read_bool(bl, "su2-feedback-curr3")) {
- 			pdata->su2_feedback = AS3711_SU2_CURR3;
- 			count++;
- 		}
--		if (of_find_property(bl, "su2-feedback-curr-auto", NULL)) {
-+		if (of_property_read_bool(bl, "su2-feedback-curr-auto")) {
- 			pdata->su2_feedback = AS3711_SU2_CURR_AUTO;
- 			count++;
- 		}
-@@ -312,19 +312,19 @@ static int as3711_backlight_parse_dt(struct device *dev)
- 		}
+-	if (!of_find_property(dp, "width", NULL)) {
++	if (!of_property_present(dp, "width")) {
+ 		err = bw2_do_default_mode(par, info, &linebytes);
+ 		if (err)
+ 			goto out_unmap_regs;
+diff --git a/drivers/video/fbdev/cg3.c b/drivers/video/fbdev/cg3.c
+index bdcc3f6ab666..3a37fff4df36 100644
+--- a/drivers/video/fbdev/cg3.c
++++ b/drivers/video/fbdev/cg3.c
+@@ -393,7 +393,7 @@ static int cg3_probe(struct platform_device *op)
  
- 		count = 0;
--		if (of_find_property(bl, "su2-fbprot-lx-sd4", NULL)) {
-+		if (of_property_read_bool(bl, "su2-fbprot-lx-sd4")) {
- 			pdata->su2_fbprot = AS3711_SU2_LX_SD4;
- 			count++;
- 		}
--		if (of_find_property(bl, "su2-fbprot-gpio2", NULL)) {
-+		if (of_property_read_bool(bl, "su2-fbprot-gpio2")) {
- 			pdata->su2_fbprot = AS3711_SU2_GPIO2;
- 			count++;
- 		}
--		if (of_find_property(bl, "su2-fbprot-gpio3", NULL)) {
-+		if (of_property_read_bool(bl, "su2-fbprot-gpio3")) {
- 			pdata->su2_fbprot = AS3711_SU2_GPIO3;
- 			count++;
- 		}
--		if (of_find_property(bl, "su2-fbprot-gpio4", NULL)) {
-+		if (of_property_read_bool(bl, "su2-fbprot-gpio4")) {
- 			pdata->su2_fbprot = AS3711_SU2_GPIO4;
- 			count++;
- 		}
-@@ -334,15 +334,15 @@ static int as3711_backlight_parse_dt(struct device *dev)
- 		}
+ 	cg3_blank(FB_BLANK_UNBLANK, info);
  
- 		count = 0;
--		if (of_find_property(bl, "su2-auto-curr1", NULL)) {
-+		if (of_property_read_bool(bl, "su2-auto-curr1")) {
- 			pdata->su2_auto_curr1 = true;
- 			count++;
- 		}
--		if (of_find_property(bl, "su2-auto-curr2", NULL)) {
-+		if (of_property_read_bool(bl, "su2-auto-curr2")) {
- 			pdata->su2_auto_curr2 = true;
- 			count++;
- 		}
--		if (of_find_property(bl, "su2-auto-curr3", NULL)) {
-+		if (of_property_read_bool(bl, "su2-auto-curr3")) {
- 			pdata->su2_auto_curr3 = true;
- 			count++;
- 		}
+-	if (!of_find_property(dp, "width", NULL)) {
++	if (!of_property_present(dp, "width")) {
+ 		err = cg3_do_default_mode(par);
+ 		if (err)
+ 			goto out_unmap_screen;
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/omapdss-boot-init.c b/drivers/video/fbdev/omap2/omapfb/dss/omapdss-boot-init.c
+index 0ae0cab252d3..09f719af0d0c 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/omapdss-boot-init.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/omapdss-boot-init.c
+@@ -192,7 +192,7 @@ static int __init omapdss_boot_init(void)
+ 	omapdss_walk_device(dss, true);
+ 
+ 	for_each_available_child_of_node(dss, child) {
+-		if (!of_find_property(child, "compatible", NULL))
++		if (!of_property_present(child, "compatible"))
+ 			continue;
+ 
+ 		omapdss_walk_device(child, true);
 -- 
 2.39.2
 

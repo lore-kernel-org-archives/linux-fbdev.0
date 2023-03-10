@@ -2,56 +2,56 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31A10C6FD19
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Mar 2023 08:18:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F897C6FD19
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Mar 2023 08:24:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229639AbjCJISc convert rfc822-to-8bit (ORCPT
+        id S230242AbjCJIYi convert rfc822-to-8bit (ORCPT
         <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Mar 2023 03:18:32 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45328 "EHLO
+        Fri, 10 Mar 2023 03:24:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56376 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229471AbjCJISa (ORCPT
+        with ESMTP id S229654AbjCJIYe (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Mar 2023 03:18:30 -0500
-Received: from mail-qt1-f179.google.com (mail-qt1-f179.google.com [209.85.160.179])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D7FAE3D914;
-        Fri, 10 Mar 2023 00:18:28 -0800 (PST)
-Received: by mail-qt1-f179.google.com with SMTP id r5so4917612qtp.4;
-        Fri, 10 Mar 2023 00:18:28 -0800 (PST)
+        Fri, 10 Mar 2023 03:24:34 -0500
+Received: from mail-qt1-f182.google.com (mail-qt1-f182.google.com [209.85.160.182])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E6E13104922;
+        Fri, 10 Mar 2023 00:24:32 -0800 (PST)
+Received: by mail-qt1-f182.google.com with SMTP id c19so4851598qtn.13;
+        Fri, 10 Mar 2023 00:24:32 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678436308;
+        d=1e100.net; s=20210112; t=1678436672;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=yspyhPwTEevuTgvrljFgxGQolMO4MrGaHvprikKC5aM=;
-        b=iiObsxCrqIQLjm231L19w91Alt5cuo96Iq/qRNifujk6O1mWdvljOumB3+aGe5Cnlr
-         md4yIq78NxMirVmF+7k3I0QjhN4sLruimRgIPLQneFX/ylE8Vff7GLa714D3ChylEPlP
-         RJDxxDtcbn01M+UE1wbmLAnonuIH2DIeor25qf/h73ilifM8XH5eD72y3BQcGYq4NtqX
-         z0+ZC/dllnfwPKkYRQQ9mC+5wmbVJzCnqthQrUpDR/PVwDHf3AOYyBchp1FyeSNuml8U
-         6DWqBfF1bPDhivde2VzMx/Rb0/U3A4xVjdb8JKaUOJg95uZnWhC6z2mdnWNnEK/dbl/L
-         TnoQ==
-X-Gm-Message-State: AO0yUKWunXW8Tp56kHULAU6qHemqmVcOn99w25jWPckBRmXzcC9GLD/O
-        pisVQHm/xvjFZRwIPR0NRJ90NxXnuDelVQ==
-X-Google-Smtp-Source: AK7set/10Cxoo3LbOg/aWY6ZjdFi5u3QlgRZJ2MrBBGOzvizbJGfS1eonnBM1rVTqXCghyGVCH3g8w==
-X-Received: by 2002:a05:622a:1d1:b0:3c0:14ec:bfb2 with SMTP id t17-20020a05622a01d100b003c014ecbfb2mr15773947qtw.20.1678436307794;
-        Fri, 10 Mar 2023 00:18:27 -0800 (PST)
-Received: from mail-yw1-f180.google.com (mail-yw1-f180.google.com. [209.85.128.180])
-        by smtp.gmail.com with ESMTPSA id c4-20020ac86604000000b003bfaae103f6sm949909qtp.89.2023.03.10.00.18.26
+        bh=6tbDlSIaO3/jiqD80O4ij9Gm4MwJA0fTC0h0kloiqAU=;
+        b=g52CT9PE7wafM3Eu2QUl0gEMz5UsyFFfAMc/VkVYqUqnshtWSgLP2l5Zvy7zUHaPbw
+         jRQX/zw0KzdiRuigYVsPKl+cxvXFi1zr4CJEkuxObiyShGkgGWbhdXuXHnKJ5tQ8cHnq
+         jErjbpuEk6lf8uUIimjL3LQo97vMpY062zONdAsKjk8X571SEF6S52DL7kCWLjIKCHkR
+         PD46cLN7Za1PTOeQVrmvOFjnpLzeK+q/39CEmciF26LdP0j10M+opKLcWFc8Zb6pLLGp
+         otkUvylPN/b/bcE3KiWSBzd2QRp2wdFvPmuxuBajP54S3ireKNjGbFc9p5V2XqBRHVC7
+         kJCw==
+X-Gm-Message-State: AO0yUKWfLzIKfM06vos91Rca2QqRy68pBUXu7YmLCU6928kspBZNxZtN
+        cnXxzoXrB0hrWc06yeAfCj62LTaiSvkz2A==
+X-Google-Smtp-Source: AK7set80WMOjUoKIX4Fgl0lTIXYXKtrZI63h3ZBLKe9GBDtH/QBVXOqsKret16zGtksw5p3xF5waIA==
+X-Received: by 2002:ac8:7c48:0:b0:3bf:abd5:f1ef with SMTP id o8-20020ac87c48000000b003bfabd5f1efmr8259735qtv.7.1678436671775;
+        Fri, 10 Mar 2023 00:24:31 -0800 (PST)
+Received: from mail-yb1-f181.google.com (mail-yb1-f181.google.com. [209.85.219.181])
+        by smtp.gmail.com with ESMTPSA id w10-20020ac86b0a000000b003bfad864e81sm965275qts.69.2023.03.10.00.24.29
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 10 Mar 2023 00:18:27 -0800 (PST)
-Received: by mail-yw1-f180.google.com with SMTP id 00721157ae682-536b7ffdd34so83697827b3.6;
-        Fri, 10 Mar 2023 00:18:26 -0800 (PST)
-X-Received: by 2002:a81:af4b:0:b0:533:91d2:9d94 with SMTP id
- x11-20020a81af4b000000b0053391d29d94mr16066861ywj.5.1678436306111; Fri, 10
- Mar 2023 00:18:26 -0800 (PST)
+        Fri, 10 Mar 2023 00:24:30 -0800 (PST)
+Received: by mail-yb1-f181.google.com with SMTP id i6so4475870ybu.8;
+        Fri, 10 Mar 2023 00:24:29 -0800 (PST)
+X-Received: by 2002:a05:6902:208:b0:acd:7374:f154 with SMTP id
+ j8-20020a056902020800b00acd7374f154mr15193253ybs.7.1678436669227; Fri, 10 Mar
+ 2023 00:24:29 -0800 (PST)
 MIME-Version: 1.0
-References: <20230309160201.5163-1-tzimmermann@suse.de> <20230309160201.5163-62-tzimmermann@suse.de>
-In-Reply-To: <20230309160201.5163-62-tzimmermann@suse.de>
+References: <20230309160201.5163-1-tzimmermann@suse.de>
+In-Reply-To: <20230309160201.5163-1-tzimmermann@suse.de>
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Fri, 10 Mar 2023 09:18:14 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdUi9s6TCyQMsMwFErmvgb_RppAMHjBuXNSRk7rEAuiGrA@mail.gmail.com>
-Message-ID: <CAMuHMdUi9s6TCyQMsMwFErmvgb_RppAMHjBuXNSRk7rEAuiGrA@mail.gmail.com>
-Subject: Re: [PATCH v2 061/101] fbdev/ps3fb: Duplicate video-mode option string
+Date:   Fri, 10 Mar 2023 09:24:16 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdX9mmPDvTpeHQWMoi1pAqoDn1go4in995pGkamOQmBXjA@mail.gmail.com>
+Message-ID: <CAMuHMdX9mmPDvTpeHQWMoi1pAqoDn1go4in995pGkamOQmBXjA@mail.gmail.com>
+Subject: Re: [PATCH v2 000/101] fbdev: Fix memory leak in option parsing
 To:     Thomas Zimmermann <tzimmermann@suse.de>
 Cc:     deller@gmx.de, timur@kernel.org, rdunlap@infradead.org,
         paulus@samba.org, benh@kernel.crashing.org, linux@armlinux.org.uk,
@@ -70,56 +70,60 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 Hi Thomas,
 
 On Thu, Mar 9, 2023 at 5:02 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> Assume that the driver does not own the option string or its substrings
-> and hence duplicate the option string for the video mode. Allocate the
-> copy's memory with kstrdup() and free it in the module's exit function.
+> Introduce struct option_iter and helpers to parse command-line
+> options with comma-separated key-value pairs. Then convert fbdev
+> drivers to the new interface. Fixes a memory leak in the parsing of
+> the video= option.
 >
-> Done in preparation of switching the driver to struct option_iter and
-> constifying the option string.
+> Before commit 73ce73c30ba9 ("fbdev: Transfer video= option strings to
+> caller; clarify ownership"), a call to fb_get_options() either
+> returned an internal string or a duplicated string; hence ownership of
+> the string's memory buffer was not well defined, but depended on how
+> users specified the video= option on the kernel command line. For
+> global settings, the caller owned the returned memory and for per-driver
+> settings, fb_get_options() owned the memory. As calling drivers were
+> unable to detect the case, they had no option but to leak the the memory.
+>
+> Commit 73ce73c30ba9 ("fbdev: Transfer video= option strings to caller;
+> clarify ownership") changed semantics to caller-owned strings. Drivers
+> still leaked the memory, but at least ownership was clear.
+
+While I can find the actual patch[1], I cannot find this commit?
+Where was it applied?
+
+[1] https://lore.kernel.org/all/20230209135509.7786-3-tzimmermann@suse.de
+
+> This patchset fixes the memory leak and changes string ownership back
+> to fb_get_options(). Patch 1 introduces struct option_iter and a few
+> helpers. The interface takes an option string, such as video=, in the
+> common form value1,key2:value2,value3 etc and returns the individual
+> comma-separated pairs. Various modules use this pattern, so the code
+> is located under lib/.
+>
+> Patches 2 to 100 go through fbdev drivers and convert them to the new
+> interface. This often requires a number of cleanups. A driver would
+> typically refer to the option string's video mode. Such strings are now
+> copied to driver-allocated memory so that drivers don't refer directly
+> to the option string's memory. The option iterator then replaces manual
+> parsing loops based on strsep(","). All driver-allocated memory is
+> released by removing the device or unloading the module.
+>
+> Patch 101 finally changes the ownership of the option string to be
+> internal to fb_get_option(); thereby fixing the memory leak. The option
+> iterator holds its own copy of the string and is not affected by the
+> change.
+>
+> Most fbdev drivers only support to parse option strings if they are
+> built-in. I assume that's because of the original fuzzy semantics of
+> fb_get_options(). A later patchset could change the driver to respect
+> video= settings in any configuration.
 >
 > v2:
->         * replace static memory with kstrdup()/kfree() (Geert)
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>         * use kstrdup()/kfree() for video strings (Geert, Timur)
+>         * fix iterator docs (Randy)
+>         * update iterator interface
 
-Thanks for the upodate!
-
-> --- a/drivers/video/fbdev/ps3fb.c
-> +++ b/drivers/video/fbdev/ps3fb.c
-> @@ -260,6 +260,7 @@ static const struct fb_videomode ps3fb_modedb[] = {
->  static int ps3fb_mode;
->  module_param(ps3fb_mode, int, 0);
->
-> +static char *mode_option_buf;
-
-Do you really need this variable? It contains the same value
-as mode_option below.
-This is a common pattern in several patches.
-
->  static char *mode_option;
->
->  static int ps3fb_cmp_mode(const struct fb_videomode *vmode,
-> @@ -1276,8 +1277,11 @@ static int __init ps3fb_setup(void)
->                         continue;
->                 if (!strncmp(this_opt, "mode:", 5))
->                         ps3fb_mode = simple_strtoul(this_opt + 5, NULL, 0);
-> -               else
-> -                       mode_option = this_opt;
-> +               else {
-> +                       kfree(mode_option_buf);
-> +                       mode_option_buf = kstrdup(this_opt, GFP_KERNEL); // ignore errors
-> +                       mode_option = mode_option_buf;
-> +               }
->         }
->         return 0;
->  }
-> @@ -1294,6 +1298,7 @@ static void __exit ps3fb_exit(void)
->  {
->         pr_debug(" -> %s:%d\n", __func__, __LINE__);
->         ps3_system_bus_driver_unregister(&ps3fb_driver);
-> +       kfree(mode_option_buf);
->         pr_debug(" <- %s:%d\n", __func__, __LINE__);
->  }
+Thanks for the update, this looks much better!
 
 Gr{oetje,eeting}s,
 

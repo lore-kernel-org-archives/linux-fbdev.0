@@ -2,176 +2,180 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61EE7C64EC4
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Mar 2023 12:18:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0353BC64EC4
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Mar 2023 12:21:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230267AbjCJMSg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Mar 2023 07:18:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49736 "EHLO
+        id S230296AbjCJMV4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 10 Mar 2023 07:21:56 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54936 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230258AbjCJMSf (ORCPT
+        with ESMTP id S230189AbjCJMVz (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Mar 2023 07:18:35 -0500
-Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com [IPv6:2607:f8b0:4864:20::534])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A137260430;
-        Fri, 10 Mar 2023 04:18:33 -0800 (PST)
-Received: by mail-pg1-x534.google.com with SMTP id d6so2924643pgu.2;
-        Fri, 10 Mar 2023 04:18:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112; t=1678450713;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=PQWRSFkOKg9T+y+gldqtOznj/eHaxJktJYeXp0a1CHE=;
-        b=X0m1GIXnFLZSnUIMC8tXN3MjJv2mxoBg8j2HZE1gg2EljBsDDqNYawAJnqQehG+RDZ
-         jREisZCDSP7uiTfTAzwc3iYvaxlipaIEe4mVodlCBoTZWs8w6U7akm8BvQ+aWBONC1Ma
-         eMo92jTbE2ZwwnlBKTpzCSdPq+/Jj5e6H3mNm1wDenRXdNr5rXW/7S/kmgvV/kVSOi0o
-         6NZsvabnM3diJ2x45r8E1KnETDQhbIW6zA367SagnJtl4kDNP1sDJGBjjMLF/D5uyxI7
-         /+xD6E14oxPxTw9wQu39kcQgH4J4ZORMsSrYgdK6smLGNG1OOVp4D3C2Vsqqtphi3ZCd
-         IHXg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678450713;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=PQWRSFkOKg9T+y+gldqtOznj/eHaxJktJYeXp0a1CHE=;
-        b=pE4XLSkp8dXzH3Ojub9IboJoRX+Mp/aXsMsBs9vweqJ01eJFMwCvRLjN/gyaoTTuMj
-         LZBp4Olkhv+QfC0ap+Ii55m8nPH6RsT39VdxPwLddzUISlNWe5BfTAHR+AkYWmR0eQF7
-         c6dUPbmYODZA+Tp372wCcs94ua0rYqOzfB4R1YDwN9PlOqeagNoj3LGRhAiNPysfOhHF
-         tAKfKixly56QfIBOqG9peRvEpWu/Q2liKaX+rYynq2vrjwXBjQOS7/BhzXI+McBTeOMt
-         oVG3D3QVxpvr8QFqon/iSt+F9OCORMnm+Kl75y9LpqE9/By0j2NkdTHdzYWwirYbZrY0
-         4P0A==
-X-Gm-Message-State: AO0yUKV5hzj4W/7/kpgnBU89Gc41n+QulFcOuWOajCQFWEbMH806Dur1
-        QP3o70d9ZUmT1mImM++duZePM49IAM0De6Zxd6g=
-X-Google-Smtp-Source: AK7set+IE1/l1QhMtQeSm2c0wnMVPaxpSDAntt8hngJitI03+uAOBDkn81AVlY6BxhtlRQmUYaAGdEm2Y/elvAsSZTg=
-X-Received: by 2002:a62:cd83:0:b0:5e5:7675:88e3 with SMTP id
- o125-20020a62cd83000000b005e5767588e3mr10322774pfg.5.1678450713012; Fri, 10
- Mar 2023 04:18:33 -0800 (PST)
+        Fri, 10 Mar 2023 07:21:55 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69E1B111691;
+        Fri, 10 Mar 2023 04:21:54 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 2694F210DD;
+        Fri, 10 Mar 2023 12:21:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1678450913; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=txdMXazJe/w2RiTmqoGGAR5d1Z3iQQ5FZ0iN2ESM4fg=;
+        b=lN9b2dVedKRNTqS8TafdVb3LDcVkPJjVcGjSiZWdKL3aKUAaYt2vPm1L8xKKy6OtNAW7lP
+        T7N+0gVKnJl2qpRL1dc4OQRqdO6TCr0RaMKUt1EhWGSwKWHO95D4U5gRImZB8chhGvbJa/
+        hs044rNmCXiFQ3dFlpspD4p4P9iYaxo=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1678450913;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=txdMXazJe/w2RiTmqoGGAR5d1Z3iQQ5FZ0iN2ESM4fg=;
+        b=8a5CKUXkJoMxzC0SRQBx2MRF2goHThVtixCEUQ55zH6KlBJJ8bxpH4CZhzEUyiA67z3jv7
+        xCU3ynwC/RUbHZDQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id B74F213592;
+        Fri, 10 Mar 2023 12:21:52 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id WtPPK+AgC2TeGwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Fri, 10 Mar 2023 12:21:52 +0000
+Message-ID: <ae4c373b-1f85-4f85-6fe5-70676de72b54@suse.de>
+Date:   Fri, 10 Mar 2023 13:21:51 +0100
 MIME-Version: 1.0
-References: <20230308105012.1845-1-tiwai@suse.de>
-In-Reply-To: <20230308105012.1845-1-tiwai@suse.de>
-From:   Patrik Jakobsson <patrik.r.jakobsson@gmail.com>
-Date:   Fri, 10 Mar 2023 13:18:21 +0100
-Message-ID: <CAMeQTsbFuoP4KXmMm4xbwvXOjYw5CYJs6q2nnMuRYHsutrX0aw@mail.gmail.com>
-Subject: Re: [PATCH v2] fbdev: Fix incorrect page mapping clearance at fb_deferred_io_release()
-To:     Takashi Iwai <tiwai@suse.de>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-fbdev@vger.kernel.org, Miko Larsson <mikoxyzzz@gmail.com>,
-        Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        Patrik Jakobsson <pjakobsson@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH v2 061/101] fbdev/ps3fb: Duplicate video-mode option
+ string
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     deller@gmx.de, timur@kernel.org, rdunlap@infradead.org,
+        paulus@samba.org, benh@kernel.crashing.org, linux@armlinux.org.uk,
+        pjones@redhat.com, adaplas@gmail.com, s.hauer@pengutronix.de,
+        shawnguo@kernel.org, mbroemme@libmpq.org, thomas@winischhofer.net,
+        James.Bottomley@hansenpartnership.com, sudipm.mukherjee@gmail.com,
+        teddy.wang@siliconmotion.com, corbet@lwn.net,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+References: <20230309160201.5163-1-tzimmermann@suse.de>
+ <20230309160201.5163-62-tzimmermann@suse.de>
+ <CAMuHMdUi9s6TCyQMsMwFErmvgb_RppAMHjBuXNSRk7rEAuiGrA@mail.gmail.com>
+Content-Language: en-US
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <CAMuHMdUi9s6TCyQMsMwFErmvgb_RppAMHjBuXNSRk7rEAuiGrA@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------v1i3Wd0vXURbZ1IAGhQJGqSe"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Mar 8, 2023 at 11:50=E2=80=AFAM Takashi Iwai <tiwai@suse.de> wrote:
->
-> The recent fix for the deferred I/O by the commit
->   3efc61d95259 ("fbdev: Fix invalid page access after closing deferred I/=
-O devices")
-> caused a regression when the same fb device is opened/closed while
-> it's being used.  It resulted in a frozen screen even if something
-> is redrawn there after the close.  The breakage is because the patch
-> was made under a wrong assumption of a single open; in the current
-> code, fb_deferred_io_release() cleans up the page mapping of the
-> pageref list and it calls cancel_delayed_work_sync() unconditionally,
-> where both are no correct behavior for multiple opens.
->
-> This patch adds a refcount for the opens of the device, and applies
-> the cleanup only when all files get closed.
->
-> As both fb_deferred_io_open() and _close() are called always in the
-> fb_info lock (mutex), it's safe to use the normal int for the
-> refcounting.
->
-> Also, a useless BUG_ON() is dropped.
->
-> Fixes: 3efc61d95259 ("fbdev: Fix invalid page access after closing deferr=
-ed I/O devices")
-> Cc: <stable@vger.kernel.org>
-> Signed-off-by: Takashi Iwai <tiwai@suse.de>
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------v1i3Wd0vXURbZ1IAGhQJGqSe
+Content-Type: multipart/mixed; boundary="------------mvuyIrYfCE0BpCUjVgrXik22";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: deller@gmx.de, timur@kernel.org, rdunlap@infradead.org, paulus@samba.org,
+ benh@kernel.crashing.org, linux@armlinux.org.uk, pjones@redhat.com,
+ adaplas@gmail.com, s.hauer@pengutronix.de, shawnguo@kernel.org,
+ mbroemme@libmpq.org, thomas@winischhofer.net,
+ James.Bottomley@hansenpartnership.com, sudipm.mukherjee@gmail.com,
+ teddy.wang@siliconmotion.com, corbet@lwn.net, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Message-ID: <ae4c373b-1f85-4f85-6fe5-70676de72b54@suse.de>
+Subject: Re: [PATCH v2 061/101] fbdev/ps3fb: Duplicate video-mode option
+ string
+References: <20230309160201.5163-1-tzimmermann@suse.de>
+ <20230309160201.5163-62-tzimmermann@suse.de>
+ <CAMuHMdUi9s6TCyQMsMwFErmvgb_RppAMHjBuXNSRk7rEAuiGrA@mail.gmail.com>
+In-Reply-To: <CAMuHMdUi9s6TCyQMsMwFErmvgb_RppAMHjBuXNSRk7rEAuiGrA@mail.gmail.com>
 
-Looks good to me
+--------------mvuyIrYfCE0BpCUjVgrXik22
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Reviewed-by: Patrik Jakobsson <patrik.r.jakobsson@gmail.com>
+SGkgR2VlcnQNCg0KQW0gMTAuMDMuMjMgdW0gMDk6MTggc2NocmllYiBHZWVydCBVeXR0ZXJo
+b2V2ZW46DQo+IEhpIFRob21hcywNCj4gDQo+IE9uIFRodSwgTWFyIDksIDIwMjMgYXQgNTow
+MuKAr1BNIFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPiB3cm90ZToN
+Cj4+IEFzc3VtZSB0aGF0IHRoZSBkcml2ZXIgZG9lcyBub3Qgb3duIHRoZSBvcHRpb24gc3Ry
+aW5nIG9yIGl0cyBzdWJzdHJpbmdzDQo+PiBhbmQgaGVuY2UgZHVwbGljYXRlIHRoZSBvcHRp
+b24gc3RyaW5nIGZvciB0aGUgdmlkZW8gbW9kZS4gQWxsb2NhdGUgdGhlDQo+PiBjb3B5J3Mg
+bWVtb3J5IHdpdGgga3N0cmR1cCgpIGFuZCBmcmVlIGl0IGluIHRoZSBtb2R1bGUncyBleGl0
+IGZ1bmN0aW9uLg0KPj4NCj4+IERvbmUgaW4gcHJlcGFyYXRpb24gb2Ygc3dpdGNoaW5nIHRo
+ZSBkcml2ZXIgdG8gc3RydWN0IG9wdGlvbl9pdGVyIGFuZA0KPj4gY29uc3RpZnlpbmcgdGhl
+IG9wdGlvbiBzdHJpbmcuDQo+Pg0KPj4gdjI6DQo+PiAgICAgICAgICAqIHJlcGxhY2Ugc3Rh
+dGljIG1lbW9yeSB3aXRoIGtzdHJkdXAoKS9rZnJlZSgpIChHZWVydCkNCj4+DQo+PiBTaWdu
+ZWQtb2ZmLWJ5OiBUaG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1hbm5Ac3VzZS5kZT4NCj4g
+DQo+IFRoYW5rcyBmb3IgdGhlIHVwb2RhdGUhDQo+IA0KPj4gLS0tIGEvZHJpdmVycy92aWRl
+by9mYmRldi9wczNmYi5jDQo+PiArKysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3BzM2ZiLmMN
+Cj4+IEBAIC0yNjAsNiArMjYwLDcgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCBmYl92aWRlb21v
+ZGUgcHMzZmJfbW9kZWRiW10gPSB7DQo+PiAgIHN0YXRpYyBpbnQgcHMzZmJfbW9kZTsNCj4+
+ICAgbW9kdWxlX3BhcmFtKHBzM2ZiX21vZGUsIGludCwgMCk7DQo+Pg0KPj4gK3N0YXRpYyBj
+aGFyICptb2RlX29wdGlvbl9idWY7DQo+IA0KPiBEbyB5b3UgcmVhbGx5IG5lZWQgdGhpcyB2
+YXJpYWJsZT8gSXQgY29udGFpbnMgdGhlIHNhbWUgdmFsdWUNCj4gYXMgbW9kZV9vcHRpb24g
+YmVsb3cuDQo+IFRoaXMgaXMgYSBjb21tb24gcGF0dGVybiBpbiBzZXZlcmFsIHBhdGNoZXMu
+DQoNCkluIG1vc3QgY2FzZXMsIHRoZSBleHRyYSB2YXJpYWJsZSBpcyBuZWNlc3NhcnkuIG1v
+ZGVfb3B0aW9uLCBvciBhIA0Kc2ltaWxhciB2YXJpYWJsZSwgaXMgb2Z0ZW4gYWxzbyB1c2Vk
+IHRvIHN0b3JlIG1vZHVsZSBwYXJhbWV0ZXJzIG9yIGlzIA0KaW5pdGlhbGl6ZWQgZnJvbSBh
+IHN0YXRpYyBzdHJpbmcuIEluIHRob3NlIGNhc2VzIHdlIG9idmlvdXNseSBjYW5ub3QgDQpm
+cmVlIHRoZSBtZW1vcnkuIEhlbmNlIHRoZSBhZGRpdGlvbmFsIHZhcmlhYmxlIGZvciB0aGUg
+ZnJlZWluZyB0aGUgDQphbGxvY2F0aW9uLg0KDQpJIHJldmlld2VkIHRoZSBwYXRjaGVzIGFu
+ZCBpdCBsb29rcyBsaWtlIGt5cm9mYiwgcHMzZmIsIGFuZCBzbTcxMmZiIA0KbWlnaHQgYmUg
+YWJsZSB0byB3b3JrIHdpdGhvdXQgdGhlIF9idWYgdmFyaWFibGUuIEknbGwgdHJ5IHRvIHVw
+ZGF0ZSB0aG9zZS4NCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiANCj4+ICAgc3RhdGlj
+IGNoYXIgKm1vZGVfb3B0aW9uOw0KPj4NCj4+ICAgc3RhdGljIGludCBwczNmYl9jbXBfbW9k
+ZShjb25zdCBzdHJ1Y3QgZmJfdmlkZW9tb2RlICp2bW9kZSwNCj4+IEBAIC0xMjc2LDggKzEy
+NzcsMTEgQEAgc3RhdGljIGludCBfX2luaXQgcHMzZmJfc2V0dXAodm9pZCkNCj4+ICAgICAg
+ICAgICAgICAgICAgICAgICAgICBjb250aW51ZTsNCj4+ICAgICAgICAgICAgICAgICAgaWYg
+KCFzdHJuY21wKHRoaXNfb3B0LCAibW9kZToiLCA1KSkNCj4+ICAgICAgICAgICAgICAgICAg
+ICAgICAgICBwczNmYl9tb2RlID0gc2ltcGxlX3N0cnRvdWwodGhpc19vcHQgKyA1LCBOVUxM
+LCAwKTsNCj4+IC0gICAgICAgICAgICAgICBlbHNlDQo+PiAtICAgICAgICAgICAgICAgICAg
+ICAgICBtb2RlX29wdGlvbiA9IHRoaXNfb3B0Ow0KPj4gKyAgICAgICAgICAgICAgIGVsc2Ug
+ew0KPj4gKyAgICAgICAgICAgICAgICAgICAgICAga2ZyZWUobW9kZV9vcHRpb25fYnVmKTsN
+Cj4+ICsgICAgICAgICAgICAgICAgICAgICAgIG1vZGVfb3B0aW9uX2J1ZiA9IGtzdHJkdXAo
+dGhpc19vcHQsIEdGUF9LRVJORUwpOyAvLyBpZ25vcmUgZXJyb3JzDQo+PiArICAgICAgICAg
+ICAgICAgICAgICAgICBtb2RlX29wdGlvbiA9IG1vZGVfb3B0aW9uX2J1ZjsNCj4+ICsgICAg
+ICAgICAgICAgICB9DQo+PiAgICAgICAgICB9DQo+PiAgICAgICAgICByZXR1cm4gMDsNCj4+
+ICAgfQ0KPj4gQEAgLTEyOTQsNiArMTI5OCw3IEBAIHN0YXRpYyB2b2lkIF9fZXhpdCBwczNm
+Yl9leGl0KHZvaWQpDQo+PiAgIHsNCj4+ICAgICAgICAgIHByX2RlYnVnKCIgLT4gJXM6JWRc
+biIsIF9fZnVuY19fLCBfX0xJTkVfXyk7DQo+PiAgICAgICAgICBwczNfc3lzdGVtX2J1c19k
+cml2ZXJfdW5yZWdpc3RlcigmcHMzZmJfZHJpdmVyKTsNCj4+ICsgICAgICAga2ZyZWUobW9k
+ZV9vcHRpb25fYnVmKTsNCj4+ICAgICAgICAgIHByX2RlYnVnKCIgPC0gJXM6JWRcbiIsIF9f
+ZnVuY19fLCBfX0xJTkVfXyk7DQo+PiAgIH0NCj4gDQo+IEdye29ldGplLGVldGluZ31zLA0K
+PiANCj4gICAgICAgICAgICAgICAgICAgICAgICAgIEdlZXJ0DQo+IA0KDQotLSANClRob21h
+cyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJl
+IFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVy
+ZywgR2VybWFueQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhy
+ZXI6IEl2byBUb3Rldg0K
 
-> ---
-> v1->v2:
-> * Rename to fb_deferred_io_lastclose()
-> * Rename the new field from opens to open_count
-> * Removed unused variable
-> * More comments about fb_info locking
->
->  drivers/video/fbdev/core/fb_defio.c | 17 +++++++++++++----
->  include/linux/fb.h                  |  1 +
->  2 files changed, 14 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/co=
-re/fb_defio.c
-> index aa5f059d0222..274f5d0fa247 100644
-> --- a/drivers/video/fbdev/core/fb_defio.c
-> +++ b/drivers/video/fbdev/core/fb_defio.c
-> @@ -305,17 +305,18 @@ void fb_deferred_io_open(struct fb_info *info,
->                          struct inode *inode,
->                          struct file *file)
->  {
-> +       struct fb_deferred_io *fbdefio =3D info->fbdefio;
-> +
->         file->f_mapping->a_ops =3D &fb_deferred_io_aops;
-> +       fbdefio->open_count++;
->  }
->  EXPORT_SYMBOL_GPL(fb_deferred_io_open);
->
-> -void fb_deferred_io_release(struct fb_info *info)
-> +static void fb_deferred_io_lastclose(struct fb_info *info)
->  {
-> -       struct fb_deferred_io *fbdefio =3D info->fbdefio;
->         struct page *page;
->         int i;
->
-> -       BUG_ON(!fbdefio);
->         cancel_delayed_work_sync(&info->deferred_work);
->
->         /* clear out the mapping that we setup */
-> @@ -324,13 +325,21 @@ void fb_deferred_io_release(struct fb_info *info)
->                 page->mapping =3D NULL;
->         }
->  }
-> +
-> +void fb_deferred_io_release(struct fb_info *info)
-> +{
-> +       struct fb_deferred_io *fbdefio =3D info->fbdefio;
-> +
-> +       if (!--fbdefio->open_count)
-> +               fb_deferred_io_lastclose(info);
-> +}
->  EXPORT_SYMBOL_GPL(fb_deferred_io_release);
->
->  void fb_deferred_io_cleanup(struct fb_info *info)
->  {
->         struct fb_deferred_io *fbdefio =3D info->fbdefio;
->
-> -       fb_deferred_io_release(info);
-> +       fb_deferred_io_lastclose(info);
->
->         kvfree(info->pagerefs);
->         mutex_destroy(&fbdefio->lock);
-> diff --git a/include/linux/fb.h b/include/linux/fb.h
-> index d8d20514ea05..02d09cb57f6c 100644
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -212,6 +212,7 @@ struct fb_deferred_io {
->         /* delay between mkwrite and deferred handler */
->         unsigned long delay;
->         bool sort_pagereflist; /* sort pagelist by offset */
-> +       int open_count; /* number of opened files; protected by fb_info l=
-ock */
->         struct mutex lock; /* mutex that protects the pageref list */
->         struct list_head pagereflist; /* list of pagerefs for touched pag=
-es */
->         /* callback */
-> --
-> 2.35.3
->
+--------------mvuyIrYfCE0BpCUjVgrXik22--
+
+--------------v1i3Wd0vXURbZ1IAGhQJGqSe
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmQLIN8FAwAAAAAACgkQlh/E3EQov+Cl
+Sw/8DkbaRxbYZF4tRwk2SgRLqzsf1/7VfsDs2PGgIe6PP4dRU9IgltLU7JfbeWhTcvf547hlnzZm
++LmtYvWuqpWO9+EVuWHVe0IFwth7reC1erBwiMZ/H5vahmT7yEzoaPRdAQ1aP0CL9qydv2h8sPtv
++8x24ITUfFtME+44eZD+PlEmZct8vWAa0BQe3MdZKeCSdqlaRQzdsYHvydf5YCKwY+f1fZZWvOAh
+DxAb/lC12MFlKQ6E9pK53ZiRzm9m5QZD6Zd+9zLEFb6ZqQv7c1r6RI/nU4y0OUYBjJ/tQNxmpGsC
+7QZlYYGQ1hqvY81k67C/9ph4lNAmDtRT/KoCSJQaZ7XnpKJtXLx/sEqqogs80YbiXwLYtLFeF3CQ
+K32XFQD7P+aAGX07tAZBonytJhSiunmTPvWwa9YENofnTN4ojFU5rMpWK7C/2ISBxJPVvNYxhHCV
+SS8tAa1ZHE+O5/128WVYIvnfPA4lZWox5a7eRw9wJHLMB9bYaRDBsdfogYWBi1XnRWm/W43KxlBc
+DlZ/BwqE3BNhZVj8T0YT/fBsNB4nUc2ByUNK3wi+RLr5UcWa3uULMN5bV9lC21A5pGaLzbu1KLrg
+UqnmwX2P1kyaqMszwNAWf+beA/6iz5f/YOMuyfP6kd7S1XN3tIkadfkRJsrZ0etYvz43pZPOl5VN
+NxI=
+=o9Wi
+-----END PGP SIGNATURE-----
+
+--------------v1i3Wd0vXURbZ1IAGhQJGqSe--

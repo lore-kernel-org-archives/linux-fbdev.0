@@ -2,189 +2,85 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00F9EC742A7
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Mar 2023 14:24:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B495C6FD1F
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Mar 2023 14:51:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232341AbjCJOY0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Mar 2023 09:24:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40420 "EHLO
+        id S233416AbjCJOvX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 10 Mar 2023 09:51:23 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42826 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232307AbjCJOYC (ORCPT
+        with ESMTP id S233188AbjCJOuK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Mar 2023 09:24:02 -0500
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D925222118;
-        Fri, 10 Mar 2023 06:23:12 -0800 (PST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id EA9DB21E0E;
-        Fri, 10 Mar 2023 14:23:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678458189; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=FJDTvuxhTkLLSmPLCWi9Bm1SOFEXifdFoDHTO4x6g8s=;
-        b=xQ7J2242aZMpvDO7f3UxdGfWHyPnIMq21SZ63vrnZqfaSeCwpZm5s/bj1vJglL4ngmFll2
-        tlMyEyEXkJdZnbYul7GXXv481a7tbCWZStrM/CGIIaSSvnenAWOiJfpd/8weOFGzfFsg3v
-        HCY0cTeZdjLvwfsWpaIfxXbRZi7m6/U=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678458189;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=FJDTvuxhTkLLSmPLCWi9Bm1SOFEXifdFoDHTO4x6g8s=;
-        b=IICZv/P3TNfBehXsq5arOMeYsWvkNlDLQQ6B17+1URYGTN8y2gMv3MO/9qb1i474fZGHf2
-        BG+iDlCXMRgC+dBQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 6FCE213592;
-        Fri, 10 Mar 2023 14:23:09 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id QmoMFU09C2TIXgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Fri, 10 Mar 2023 14:23:09 +0000
-Message-ID: <9860f1e9-5ad0-ea11-a098-2ff3eb4409f8@suse.de>
-Date:   Fri, 10 Mar 2023 15:23:08 +0100
+        Fri, 10 Mar 2023 09:50:10 -0500
+Received: from mail-oa1-f44.google.com (mail-oa1-f44.google.com [209.85.160.44])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1BC6D4AFC8;
+        Fri, 10 Mar 2023 06:48:09 -0800 (PST)
+Received: by mail-oa1-f44.google.com with SMTP id 586e51a60fabf-176b48a9a05so6137676fac.0;
+        Fri, 10 Mar 2023 06:48:09 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1678459674;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=6cw44gWatMHAFXsp5Bf1XmtOCAdzF/BFR6Jh05S7SHc=;
+        b=pspoFOKlw7WaDoDaeAY5OAuw255rT+bwC8Qh48Zl6WlycYKE8K+8wfVODYeqzPfY1W
+         QHVEEfBeNmZMCcKGZj6S2wrcN1f+l04k/GuO/UyO1fZGdFHQGDBr8QD7KgJoZOL1xTwY
+         No9w/JSw9eLEbRXQZLJ3Wg9ia93mqzjut44eeCfjYxP10LBymTI7rJhVLlhPdy1jMhvr
+         YZXOzwg3cTQNIy10zwl1dXwNhh7MpMbWoZLWrmKsLE+zMpqcH2P6jorvVYvHRtwpS50H
+         RU4VwrpYWHykbfRSupGBAwFdMpIcEoD5N3n35rGr0RNy49D/WxIumvF+ChJ8rJ88J6MZ
+         Hl/Q==
+X-Gm-Message-State: AO0yUKWjDXWE9b6H+gIlS9onItg2VDqSTMNu4YyBf7GNhQ6WcQ0h9Dre
+        dkLTTTmAO8Q6b021+xvnfg==
+X-Google-Smtp-Source: AK7set+Zj6vvg/AmICk7/oD81/eKSnxwP1Wq1NCl/JJzCI3tJ2URV59x6Vj6oI0pjCaRj+pBsB4pjQ==
+X-Received: by 2002:a05:6870:9724:b0:176:4631:3c0d with SMTP id n36-20020a056870972400b0017646313c0dmr16556971oaq.34.1678459673974;
+        Fri, 10 Mar 2023 06:47:53 -0800 (PST)
+Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
+        by smtp.gmail.com with ESMTPSA id j21-20020a056870d45500b0017697dfc20fsm118605oag.12.2023.03.10.06.47.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 10 Mar 2023 06:47:53 -0800 (PST)
+Received: (nullmailer pid 1546147 invoked by uid 1000);
+        Fri, 10 Mar 2023 14:47:30 -0000
+From:   Rob Herring <robh@kernel.org>
+To:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
+Cc:     devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] backlight: hx8357: Use of_property_present() for testing DT property presence
+Date:   Fri, 10 Mar 2023 08:47:30 -0600
+Message-Id: <20230310144730.1546101-1-robh@kernel.org>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH v2] fbdev: Fix incorrect page mapping clearance at
- fb_deferred_io_release()
-Content-Language: en-US
-To:     Takashi Iwai <tiwai@suse.de>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org,
-        Patrik Jakobsson <pjakobsson@suse.de>,
-        Helge Deller <deller@gmx.de>,
-        Miko Larsson <mikoxyzzz@gmail.com>
-References: <20230308105012.1845-1-tiwai@suse.de>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20230308105012.1845-1-tiwai@suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------WN90O91OjnVFzjRm0Unwppqp"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------WN90O91OjnVFzjRm0Unwppqp
-Content-Type: multipart/mixed; boundary="------------YpSIrhqbG8h9R53oB55Tn8ZY";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, Patrik Jakobsson <pjakobsson@suse.de>,
- Helge Deller <deller@gmx.de>, Miko Larsson <mikoxyzzz@gmail.com>
-Message-ID: <9860f1e9-5ad0-ea11-a098-2ff3eb4409f8@suse.de>
-Subject: Re: [PATCH v2] fbdev: Fix incorrect page mapping clearance at
- fb_deferred_io_release()
-References: <20230308105012.1845-1-tiwai@suse.de>
-In-Reply-To: <20230308105012.1845-1-tiwai@suse.de>
+It is preferred to use typed property access functions (i.e.
+of_property_read_<type> functions) rather than low-level
+of_get_property/of_find_property functions for reading properties. As
+part of this, convert of_get_property/of_find_property calls to the
+recently added of_property_present() helper when we just want to test
+for presence of a property and nothing more.
 
---------------YpSIrhqbG8h9R53oB55Tn8ZY
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+ drivers/video/backlight/hx8357.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-QWRkZWQgdG8gZHJtLW1pc2MtZml4ZXMuIFRoYW5rcyBhIGxvdCBmb3IgdGhlIHBhdGNoLg0K
-DQpBbSAwOC4wMy4yMyB1bSAxMTo1MCBzY2hyaWViIFRha2FzaGkgSXdhaToNCj4gVGhlIHJl
-Y2VudCBmaXggZm9yIHRoZSBkZWZlcnJlZCBJL08gYnkgdGhlIGNvbW1pdA0KPiAgICAzZWZj
-NjFkOTUyNTkgKCJmYmRldjogRml4IGludmFsaWQgcGFnZSBhY2Nlc3MgYWZ0ZXIgY2xvc2lu
-ZyBkZWZlcnJlZCBJL08gZGV2aWNlcyIpDQo+IGNhdXNlZCBhIHJlZ3Jlc3Npb24gd2hlbiB0
-aGUgc2FtZSBmYiBkZXZpY2UgaXMgb3BlbmVkL2Nsb3NlZCB3aGlsZQ0KPiBpdCdzIGJlaW5n
-IHVzZWQuICBJdCByZXN1bHRlZCBpbiBhIGZyb3plbiBzY3JlZW4gZXZlbiBpZiBzb21ldGhp
-bmcNCj4gaXMgcmVkcmF3biB0aGVyZSBhZnRlciB0aGUgY2xvc2UuICBUaGUgYnJlYWthZ2Ug
-aXMgYmVjYXVzZSB0aGUgcGF0Y2gNCj4gd2FzIG1hZGUgdW5kZXIgYSB3cm9uZyBhc3N1bXB0
-aW9uIG9mIGEgc2luZ2xlIG9wZW47IGluIHRoZSBjdXJyZW50DQo+IGNvZGUsIGZiX2RlZmVy
-cmVkX2lvX3JlbGVhc2UoKSBjbGVhbnMgdXAgdGhlIHBhZ2UgbWFwcGluZyBvZiB0aGUNCj4g
-cGFnZXJlZiBsaXN0IGFuZCBpdCBjYWxscyBjYW5jZWxfZGVsYXllZF93b3JrX3N5bmMoKSB1
-bmNvbmRpdGlvbmFsbHksDQo+IHdoZXJlIGJvdGggYXJlIG5vIGNvcnJlY3QgYmVoYXZpb3Ig
-Zm9yIG11bHRpcGxlIG9wZW5zLg0KPiANCj4gVGhpcyBwYXRjaCBhZGRzIGEgcmVmY291bnQg
-Zm9yIHRoZSBvcGVucyBvZiB0aGUgZGV2aWNlLCBhbmQgYXBwbGllcw0KPiB0aGUgY2xlYW51
-cCBvbmx5IHdoZW4gYWxsIGZpbGVzIGdldCBjbG9zZWQuDQo+IA0KPiBBcyBib3RoIGZiX2Rl
-ZmVycmVkX2lvX29wZW4oKSBhbmQgX2Nsb3NlKCkgYXJlIGNhbGxlZCBhbHdheXMgaW4gdGhl
-DQo+IGZiX2luZm8gbG9jayAobXV0ZXgpLCBpdCdzIHNhZmUgdG8gdXNlIHRoZSBub3JtYWwg
-aW50IGZvciB0aGUNCj4gcmVmY291bnRpbmcuDQo+IA0KPiBBbHNvLCBhIHVzZWxlc3MgQlVH
-X09OKCkgaXMgZHJvcHBlZC4NCj4gDQo+IEZpeGVzOiAzZWZjNjFkOTUyNTkgKCJmYmRldjog
-Rml4IGludmFsaWQgcGFnZSBhY2Nlc3MgYWZ0ZXIgY2xvc2luZyBkZWZlcnJlZCBJL08gZGV2
-aWNlcyIpDQo+IENjOiA8c3RhYmxlQHZnZXIua2VybmVsLm9yZz4NCj4gU2lnbmVkLW9mZi1i
-eTogVGFrYXNoaSBJd2FpIDx0aXdhaUBzdXNlLmRlPg0KPiAtLS0NCj4gdjEtPnYyOg0KPiAq
-IFJlbmFtZSB0byBmYl9kZWZlcnJlZF9pb19sYXN0Y2xvc2UoKQ0KPiAqIFJlbmFtZSB0aGUg
-bmV3IGZpZWxkIGZyb20gb3BlbnMgdG8gb3Blbl9jb3VudA0KPiAqIFJlbW92ZWQgdW51c2Vk
-IHZhcmlhYmxlDQo+ICogTW9yZSBjb21tZW50cyBhYm91dCBmYl9pbmZvIGxvY2tpbmcNCj4g
-DQo+ICAgZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiX2RlZmlvLmMgfCAxNyArKysrKysr
-KysrKysrLS0tLQ0KPiAgIGluY2x1ZGUvbGludXgvZmIuaCAgICAgICAgICAgICAgICAgIHwg
-IDEgKw0KPiAgIDIgZmlsZXMgY2hhbmdlZCwgMTQgaW5zZXJ0aW9ucygrKSwgNCBkZWxldGlv
-bnMoLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJf
-ZGVmaW8uYyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYl9kZWZpby5jDQo+IGluZGV4
-IGFhNWYwNTlkMDIyMi4uMjc0ZjVkMGZhMjQ3IDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3Zp
-ZGVvL2ZiZGV2L2NvcmUvZmJfZGVmaW8uYw0KPiArKysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2
-L2NvcmUvZmJfZGVmaW8uYw0KPiBAQCAtMzA1LDE3ICszMDUsMTggQEAgdm9pZCBmYl9kZWZl
-cnJlZF9pb19vcGVuKHN0cnVjdCBmYl9pbmZvICppbmZvLA0KPiAgIAkJCSBzdHJ1Y3QgaW5v
-ZGUgKmlub2RlLA0KPiAgIAkJCSBzdHJ1Y3QgZmlsZSAqZmlsZSkNCj4gICB7DQo+ICsJc3Ry
-dWN0IGZiX2RlZmVycmVkX2lvICpmYmRlZmlvID0gaW5mby0+ZmJkZWZpbzsNCj4gKw0KPiAg
-IAlmaWxlLT5mX21hcHBpbmctPmFfb3BzID0gJmZiX2RlZmVycmVkX2lvX2FvcHM7DQo+ICsJ
-ZmJkZWZpby0+b3Blbl9jb3VudCsrOw0KPiAgIH0NCj4gICBFWFBPUlRfU1lNQk9MX0dQTChm
-Yl9kZWZlcnJlZF9pb19vcGVuKTsNCj4gICANCj4gLXZvaWQgZmJfZGVmZXJyZWRfaW9fcmVs
-ZWFzZShzdHJ1Y3QgZmJfaW5mbyAqaW5mbykNCj4gK3N0YXRpYyB2b2lkIGZiX2RlZmVycmVk
-X2lvX2xhc3RjbG9zZShzdHJ1Y3QgZmJfaW5mbyAqaW5mbykNCj4gICB7DQo+IC0Jc3RydWN0
-IGZiX2RlZmVycmVkX2lvICpmYmRlZmlvID0gaW5mby0+ZmJkZWZpbzsNCj4gICAJc3RydWN0
-IHBhZ2UgKnBhZ2U7DQo+ICAgCWludCBpOw0KPiAgIA0KPiAtCUJVR19PTighZmJkZWZpbyk7
-DQo+ICAgCWNhbmNlbF9kZWxheWVkX3dvcmtfc3luYygmaW5mby0+ZGVmZXJyZWRfd29yayk7
-DQo+ICAgDQo+ICAgCS8qIGNsZWFyIG91dCB0aGUgbWFwcGluZyB0aGF0IHdlIHNldHVwICov
-DQo+IEBAIC0zMjQsMTMgKzMyNSwyMSBAQCB2b2lkIGZiX2RlZmVycmVkX2lvX3JlbGVhc2Uo
-c3RydWN0IGZiX2luZm8gKmluZm8pDQo+ICAgCQlwYWdlLT5tYXBwaW5nID0gTlVMTDsNCj4g
-ICAJfQ0KPiAgIH0NCj4gKw0KPiArdm9pZCBmYl9kZWZlcnJlZF9pb19yZWxlYXNlKHN0cnVj
-dCBmYl9pbmZvICppbmZvKQ0KPiArew0KPiArCXN0cnVjdCBmYl9kZWZlcnJlZF9pbyAqZmJk
-ZWZpbyA9IGluZm8tPmZiZGVmaW87DQo+ICsNCj4gKwlpZiAoIS0tZmJkZWZpby0+b3Blbl9j
-b3VudCkNCj4gKwkJZmJfZGVmZXJyZWRfaW9fbGFzdGNsb3NlKGluZm8pOw0KPiArfQ0KPiAg
-IEVYUE9SVF9TWU1CT0xfR1BMKGZiX2RlZmVycmVkX2lvX3JlbGVhc2UpOw0KPiAgIA0KPiAg
-IHZvaWQgZmJfZGVmZXJyZWRfaW9fY2xlYW51cChzdHJ1Y3QgZmJfaW5mbyAqaW5mbykNCj4g
-ICB7DQo+ICAgCXN0cnVjdCBmYl9kZWZlcnJlZF9pbyAqZmJkZWZpbyA9IGluZm8tPmZiZGVm
-aW87DQo+ICAgDQo+IC0JZmJfZGVmZXJyZWRfaW9fcmVsZWFzZShpbmZvKTsNCj4gKwlmYl9k
-ZWZlcnJlZF9pb19sYXN0Y2xvc2UoaW5mbyk7DQo+ICAgDQo+ICAgCWt2ZnJlZShpbmZvLT5w
-YWdlcmVmcyk7DQo+ICAgCW11dGV4X2Rlc3Ryb3koJmZiZGVmaW8tPmxvY2spOw0KPiBkaWZm
-IC0tZ2l0IGEvaW5jbHVkZS9saW51eC9mYi5oIGIvaW5jbHVkZS9saW51eC9mYi5oDQo+IGlu
-ZGV4IGQ4ZDIwNTE0ZWEwNS4uMDJkMDljYjU3ZjZjIDEwMDY0NA0KPiAtLS0gYS9pbmNsdWRl
-L2xpbnV4L2ZiLmgNCj4gKysrIGIvaW5jbHVkZS9saW51eC9mYi5oDQo+IEBAIC0yMTIsNiAr
-MjEyLDcgQEAgc3RydWN0IGZiX2RlZmVycmVkX2lvIHsNCj4gICAJLyogZGVsYXkgYmV0d2Vl
-biBta3dyaXRlIGFuZCBkZWZlcnJlZCBoYW5kbGVyICovDQo+ICAgCXVuc2lnbmVkIGxvbmcg
-ZGVsYXk7DQo+ICAgCWJvb2wgc29ydF9wYWdlcmVmbGlzdDsgLyogc29ydCBwYWdlbGlzdCBi
-eSBvZmZzZXQgKi8NCj4gKwlpbnQgb3Blbl9jb3VudDsgLyogbnVtYmVyIG9mIG9wZW5lZCBm
-aWxlczsgcHJvdGVjdGVkIGJ5IGZiX2luZm8gbG9jayAqLw0KPiAgIAlzdHJ1Y3QgbXV0ZXgg
-bG9jazsgLyogbXV0ZXggdGhhdCBwcm90ZWN0cyB0aGUgcGFnZXJlZiBsaXN0ICovDQo+ICAg
-CXN0cnVjdCBsaXN0X2hlYWQgcGFnZXJlZmxpc3Q7IC8qIGxpc3Qgb2YgcGFnZXJlZnMgZm9y
-IHRvdWNoZWQgcGFnZXMgKi8NCj4gICAJLyogY2FsbGJhY2sgKi8NCg0KLS0gDQpUaG9tYXMg
-WmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBT
-b2x1dGlvbnMgR2VybWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJlcmcs
-IEdlcm1hbnkNCihIUkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNmw7xocmVy
-OiBJdm8gVG90ZXYNCg==
+diff --git a/drivers/video/backlight/hx8357.c b/drivers/video/backlight/hx8357.c
+index 9b50bc96e00f..f76d2469d490 100644
+--- a/drivers/video/backlight/hx8357.c
++++ b/drivers/video/backlight/hx8357.c
+@@ -617,7 +617,7 @@ static int hx8357_probe(struct spi_device *spi)
+ 		return -EINVAL;
+ 	}
+ 
+-	if (of_find_property(spi->dev.of_node, "im-gpios", NULL)) {
++	if (of_property_present(spi->dev.of_node, "im-gpios")) {
+ 		lcd->use_im_pins = 1;
+ 
+ 		for (i = 0; i < HX8357_NUM_IM_PINS; i++) {
+-- 
+2.39.2
 
---------------YpSIrhqbG8h9R53oB55Tn8ZY--
-
---------------WN90O91OjnVFzjRm0Unwppqp
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmQLPUwFAwAAAAAACgkQlh/E3EQov+CU
-9Q//XjNw8h7KM1/IefFZ4loLe6NPkejow0rEyghdW+DM9YkUsnosuK0tbfVnBabd+j0JAKCXympk
-IGslIHqvyedTY4ZxR7gW6SasgQZnG+ObvWEWdPjbA7QRycNJFBnSV2pj09FHwyLgYKuIIDVoUXK6
-Ffp++AsfWj556Ou34ZufPsf0K6RE1ZIe0safWj2EMUnfTduHnut+UgJcccUD4fPkCVplas7mxcLs
-0WHHIn5540QPSplnQsox1mh3O11wg1oWW3U0l8MaSRMKzq+FqDOfN+d++pzNHZEogiwGwKivLnF5
-2uc4/isK9dXU+n+F1wOMwJMR+mNnjNAswYH8IxyXy/zfvrl6aoxhf3j39lqHn+2H9CWmyIgU7XLZ
-0+cv9TxcIEJ7knZkzK2fU1j3RS5aJJxAJQBi0W7SoiTIyZcEAom6KsRaQZIwXL0VsjS33lmm/uoi
-nDTCn5j/iVMhbZALi2CvK/xv6himXgs+i/6EsFIXFX7239nuT5Ub4HOQv9ylvD9ZLyNfvTOM8Chk
-qHp35noGo4cDYNC/POfpXPbRyrszwCCWkfJxOCe4fNWNT80ezsx0Z1/RuwscKGnOtnvt+eYcjFFb
-XtnuspYRPFjbAaidc/AvZP4JPC0AhHZp92BbAmph7UZWyq4wlEWL9jf74qdyist4L27rleaxw7bf
-JnA=
-=jxq2
------END PGP SIGNATURE-----
-
---------------WN90O91OjnVFzjRm0Unwppqp--

@@ -2,135 +2,149 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22A3BC761A6
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Mar 2023 14:56:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74BB1C74A44
+	for <linux-fbdev@archiver.kernel.org>; Sat, 11 Mar 2023 04:41:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233465AbjCJO4a (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Mar 2023 09:56:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59060 "EHLO
+        id S229589AbjCKElp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 10 Mar 2023 23:41:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52370 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233940AbjCJOzs (ORCPT
+        with ESMTP id S229530AbjCKElo (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Mar 2023 09:55:48 -0500
-Received: from mail-ot1-x32b.google.com (mail-ot1-x32b.google.com [IPv6:2607:f8b0:4864:20::32b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B00C10423;
-        Fri, 10 Mar 2023 06:51:10 -0800 (PST)
-Received: by mail-ot1-x32b.google.com with SMTP id m25-20020a05683026d900b006941a2838caso3034682otu.7;
-        Fri, 10 Mar 2023 06:51:10 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678459717;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Ps/svGZ6xWHVJQ0dMU8++7OD08k18rg46UI9xmEWbIc=;
-        b=SNOXjbDEuAAwDLrA7muF5z7WVZYKlwNXGLcOybgyHdpQu6/Mgyag4wd7EAN21mxPOs
-         +p0/D6L3s8ghpq8ixHlYfSFkobdTSCpGBz1qSetf2vjbUuF7030/6tMcnvrQPU2PNbfK
-         a4K/3wzfkE5bFru9dPK6+UwYszYT1e37g9vbeo0Wjai1PYkAYognTgw/Yv8eOkGTxeC9
-         qi8dpcmwLR5KRm7aYHn0J5QOdOkDfz9Z1/qx9IWA8tc8DnisG5jpWeCyJbX5mbbyPYCb
-         gouo2IoRg/ukG8Id5CAo+KaF8RtmJBQUikAqxbC/lJifL8zWmvyx3XJNcnZ2ch/hhyiO
-         Fu2A==
-X-Gm-Message-State: AO0yUKWdRygX88qmIbCEpiVJsnRAQxxaqnNLPP6LTkqmkW/GGgMsvw9U
-        pGZV2ZRuwEA4t19pAlpkSg==
-X-Google-Smtp-Source: AK7set9IVJnTY/EvHnm9u8/rDXJ25KPAa+oF7Itt6s3eH5A96+jOhMraQGJ1753yivMUYDLltPrUBA==
-X-Received: by 2002:a05:6830:3687:b0:693:d927:645e with SMTP id bk7-20020a056830368700b00693d927645emr13293296otb.6.1678459717375;
-        Fri, 10 Mar 2023 06:48:37 -0800 (PST)
-Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id 63-20020a9d0845000000b00690f6d9a737sm135685oty.8.2023.03.10.06.48.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Mar 2023 06:48:36 -0800 (PST)
-Received: (nullmailer pid 1546057 invoked by uid 1000);
-        Fri, 10 Mar 2023 14:47:30 -0000
-From:   Rob Herring <robh@kernel.org>
-To:     Helge Deller <deller@gmx.de>,
-        Michal Simek <michal.simek@xilinx.com>
-Cc:     devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: [PATCH] fbdev: Use of_property_read_bool() for boolean properties
-Date:   Fri, 10 Mar 2023 08:47:30 -0600
-Message-Id: <20230310144730.1546031-1-robh@kernel.org>
-X-Mailer: git-send-email 2.39.2
+        Fri, 10 Mar 2023 23:41:44 -0500
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 410E01C303;
+        Fri, 10 Mar 2023 20:41:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1678509703; x=1710045703;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=C+Y5bxY9qe45ry63psa0DIaiA7c2eI/wBZK0raAHYVQ=;
+  b=Duo1TnOZ4UAMdph5almpr8MOKGBcF7dCNbi5lf+2lAeQZdYETiUl7aly
+   DIDAI2jhMI/Oj3TDRAQ4P2cvTm3wFaJT/d6qb1FQP+1/8TgFIkKiiGA6P
+   /kXSePdF8Sl2ZMp+L94V2XHlS/fkpJSDvrMSLMoZ+qL5RTOlarr03rMoL
+   PndSgQ4vIzc+ZjzgYlj7Wc+g+dJld6Kl5xeLO+CEoPYW3nvysNa9Fb0BV
+   x00a/PIy1kia/+n+uS63JTIOB0ii/OKI3x5ZUns+Zra9PXZga9Jj0j+qR
+   SgEASVVimtQenwA47Pxl4W4DYZwnTEr/wyaWmsblFcUSysrk0O3P7yE0R
+   A==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10645"; a="316522271"
+X-IronPort-AV: E=Sophos;i="5.98,251,1673942400"; 
+   d="scan'208";a="316522271"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Mar 2023 20:41:42 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10645"; a="680435840"
+X-IronPort-AV: E=Sophos;i="5.98,251,1673942400"; 
+   d="scan'208";a="680435840"
+Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
+  by fmsmga007.fm.intel.com with ESMTP; 10 Mar 2023 20:41:40 -0800
+Received: from kbuild by b613635ddfff with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1par35-0004Kd-2k;
+        Sat, 11 Mar 2023 04:41:39 +0000
+Date:   Sat, 11 Mar 2023 12:40:53 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Rob Herring <robh@kernel.org>,
+        Russell King <linux@armlinux.org.uk>,
+        Helge Deller <deller@gmx.de>
+Cc:     llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH] fbdev: Use of_property_present() for testing DT property
+ presence
+Message-ID: <202303111229.3Uuc8JQV-lkp@intel.com>
+References: <20230310144729.1545943-1-robh@kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230310144729.1545943-1-robh@kernel.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-It is preferred to use typed property access functions (i.e.
-of_property_read_<type> functions) rather than low-level
-of_get_property/of_find_property functions for reading properties.
-Convert reading boolean properties to to of_property_read_bool().
+Hi Rob,
 
-Signed-off-by: Rob Herring <robh@kernel.org>
----
- drivers/video/fbdev/offb.c     | 4 ++--
- drivers/video/fbdev/sm501fb.c  | 4 ++--
- drivers/video/fbdev/tcx.c      | 3 +--
- drivers/video/fbdev/xilinxfb.c | 3 +--
- 4 files changed, 6 insertions(+), 8 deletions(-)
+I love your patch! Yet something to improve:
 
-diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
-index f7ad6bc9d02d..b97d251d894b 100644
---- a/drivers/video/fbdev/offb.c
-+++ b/drivers/video/fbdev/offb.c
-@@ -549,10 +549,10 @@ static void offb_init_nodriver(struct platform_device *parent, struct device_nod
- 	int foreign_endian = 0;
- 
- #ifdef __BIG_ENDIAN
--	if (of_get_property(dp, "little-endian", NULL))
-+	if (of_property_read_bool(dp, "little-endian"))
- 		foreign_endian = FBINFO_FOREIGN_ENDIAN;
- #else
--	if (of_get_property(dp, "big-endian", NULL))
-+	if (of_property_read_bool(dp, "big-endian"))
- 		foreign_endian = FBINFO_FOREIGN_ENDIAN;
- #endif
- 
-diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
-index f743bfbde2a6..1f3cbe723def 100644
---- a/drivers/video/fbdev/sm501fb.c
-+++ b/drivers/video/fbdev/sm501fb.c
-@@ -1737,10 +1737,10 @@ static int sm501fb_init_fb(struct fb_info *fb, enum sm501_controller head,
- 
- #if defined(CONFIG_OF)
- #ifdef __BIG_ENDIAN
--	if (of_get_property(info->dev->parent->of_node, "little-endian", NULL))
-+	if (of_property_read_bool(info->dev->parent->of_node, "little-endian"))
- 		fb->flags |= FBINFO_FOREIGN_ENDIAN;
- #else
--	if (of_get_property(info->dev->parent->of_node, "big-endian", NULL))
-+	if (of_property_read_bool(info->dev->parent->of_node, "big-endian"))
- 		fb->flags |= FBINFO_FOREIGN_ENDIAN;
- #endif
- #endif
-diff --git a/drivers/video/fbdev/tcx.c b/drivers/video/fbdev/tcx.c
-index 01d87f53324d..f2eaf6e7fff6 100644
---- a/drivers/video/fbdev/tcx.c
-+++ b/drivers/video/fbdev/tcx.c
-@@ -379,8 +379,7 @@ static int tcx_probe(struct platform_device *op)
- 
- 	spin_lock_init(&par->lock);
- 
--	par->lowdepth =
--		(of_find_property(dp, "tcx-8-bit", NULL) != NULL);
-+	par->lowdepth = of_property_read_bool(dp, "tcx-8-bit");
- 
- 	sbusfb_fill_var(&info->var, dp, 8);
- 	info->var.red.length = 8;
-diff --git a/drivers/video/fbdev/xilinxfb.c b/drivers/video/fbdev/xilinxfb.c
-index 1ac83900a21c..c17cfffd9a84 100644
---- a/drivers/video/fbdev/xilinxfb.c
-+++ b/drivers/video/fbdev/xilinxfb.c
-@@ -469,8 +469,7 @@ static int xilinxfb_of_probe(struct platform_device *pdev)
- 		pdata.yvirt = prop[1];
- 	}
- 
--	if (of_find_property(pdev->dev.of_node, "rotate-display", NULL))
--		pdata.rotate_screen = 1;
-+	pdata.rotate_screen = of_property_read_bool(pdev->dev.of_node, "rotate-display");
- 
- 	platform_set_drvdata(pdev, drvdata);
- 	return xilinxfb_assign(pdev, drvdata, &pdata);
+[auto build test ERROR on drm-misc/drm-misc-next]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Rob-Herring/fbdev-Use-of_property_present-for-testing-DT-property-presence/20230310-225754
+base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
+patch link:    https://lore.kernel.org/r/20230310144729.1545943-1-robh%40kernel.org
+patch subject: [PATCH] fbdev: Use of_property_present() for testing DT property presence
+config: arm64-randconfig-r032-20230310 (https://download.01.org/0day-ci/archive/20230311/202303111229.3Uuc8JQV-lkp@intel.com/config)
+compiler: clang version 17.0.0 (https://github.com/llvm/llvm-project 67409911353323ca5edf2049ef0df54132fa1ca7)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # install arm64 cross compiling tool for clang build
+        # apt-get install binutils-aarch64-linux-gnu
+        # https://github.com/intel-lab-lkp/linux/commit/c013f4111f36b0b4327e7fbf46c0dd93399e9209
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Rob-Herring/fbdev-Use-of_property_present-for-testing-DT-property-presence/20230310-225754
+        git checkout c013f4111f36b0b4327e7fbf46c0dd93399e9209
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=arm64 olddefconfig
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=arm64 SHELL=/bin/bash drivers/video/fbdev/
+
+If you fix the issue, kindly add following tag where applicable
+| Reported-by: kernel test robot <lkp@intel.com>
+| Link: https://lore.kernel.org/oe-kbuild-all/202303111229.3Uuc8JQV-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+>> drivers/video/fbdev/amba-clcd.c:857:6: error: call to undeclared function 'of_property_present'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+           if (of_property_present(node, "memory-region")) {
+               ^
+   drivers/video/fbdev/amba-clcd.c:857:6: note: did you mean 'fwnode_property_present'?
+   include/linux/property.h:59:6: note: 'fwnode_property_present' declared here
+   bool fwnode_property_present(const struct fwnode_handle *fwnode,
+        ^
+   1 error generated.
+
+
+vim +/of_property_present +857 drivers/video/fbdev/amba-clcd.c
+
+   843	
+   844	static struct clcd_board *clcdfb_of_get_board(struct amba_device *dev)
+   845	{
+   846		struct clcd_board *board = devm_kzalloc(&dev->dev, sizeof(*board),
+   847				GFP_KERNEL);
+   848		struct device_node *node = dev->dev.of_node;
+   849	
+   850		if (!board)
+   851			return NULL;
+   852	
+   853		board->name = of_node_full_name(node);
+   854		board->caps = CLCD_CAP_ALL;
+   855		board->check = clcdfb_check;
+   856		board->decode = clcdfb_decode;
+ > 857		if (of_property_present(node, "memory-region")) {
+   858			board->setup = clcdfb_of_vram_setup;
+   859			board->mmap = clcdfb_of_vram_mmap;
+   860			board->remove = clcdfb_of_vram_remove;
+   861		} else {
+   862			board->setup = clcdfb_of_dma_setup;
+   863			board->mmap = clcdfb_of_dma_mmap;
+   864			board->remove = clcdfb_of_dma_remove;
+   865		}
+   866	
+   867		return board;
+   868	}
+   869	#else
+   870	static struct clcd_board *clcdfb_of_get_board(struct amba_device *dev)
+   871	{
+   872		return NULL;
+   873	}
+   874	#endif
+   875	
+
 -- 
-2.39.2
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests

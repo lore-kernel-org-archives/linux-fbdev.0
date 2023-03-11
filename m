@@ -2,149 +2,105 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74BB1C74A44
-	for <linux-fbdev@archiver.kernel.org>; Sat, 11 Mar 2023 04:41:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00736C6FD1F
+	for <linux-fbdev@archiver.kernel.org>; Sat, 11 Mar 2023 11:57:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229589AbjCKElp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Mar 2023 23:41:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52370 "EHLO
+        id S229577AbjCKL5t (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 11 Mar 2023 06:57:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35920 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229530AbjCKElo (ORCPT
+        with ESMTP id S229469AbjCKL5r (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Mar 2023 23:41:44 -0500
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 410E01C303;
-        Fri, 10 Mar 2023 20:41:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1678509703; x=1710045703;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=C+Y5bxY9qe45ry63psa0DIaiA7c2eI/wBZK0raAHYVQ=;
-  b=Duo1TnOZ4UAMdph5almpr8MOKGBcF7dCNbi5lf+2lAeQZdYETiUl7aly
-   DIDAI2jhMI/Oj3TDRAQ4P2cvTm3wFaJT/d6qb1FQP+1/8TgFIkKiiGA6P
-   /kXSePdF8Sl2ZMp+L94V2XHlS/fkpJSDvrMSLMoZ+qL5RTOlarr03rMoL
-   PndSgQ4vIzc+ZjzgYlj7Wc+g+dJld6Kl5xeLO+CEoPYW3nvysNa9Fb0BV
-   x00a/PIy1kia/+n+uS63JTIOB0ii/OKI3x5ZUns+Zra9PXZga9Jj0j+qR
-   SgEASVVimtQenwA47Pxl4W4DYZwnTEr/wyaWmsblFcUSysrk0O3P7yE0R
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10645"; a="316522271"
-X-IronPort-AV: E=Sophos;i="5.98,251,1673942400"; 
-   d="scan'208";a="316522271"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Mar 2023 20:41:42 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10645"; a="680435840"
-X-IronPort-AV: E=Sophos;i="5.98,251,1673942400"; 
-   d="scan'208";a="680435840"
-Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
-  by fmsmga007.fm.intel.com with ESMTP; 10 Mar 2023 20:41:40 -0800
-Received: from kbuild by b613635ddfff with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1par35-0004Kd-2k;
-        Sat, 11 Mar 2023 04:41:39 +0000
-Date:   Sat, 11 Mar 2023 12:40:53 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     Rob Herring <robh@kernel.org>,
-        Russell King <linux@armlinux.org.uk>,
-        Helge Deller <deller@gmx.de>
-Cc:     llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH] fbdev: Use of_property_present() for testing DT property
- presence
-Message-ID: <202303111229.3Uuc8JQV-lkp@intel.com>
-References: <20230310144729.1545943-1-robh@kernel.org>
+        Sat, 11 Mar 2023 06:57:47 -0500
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E614E1165C3;
+        Sat, 11 Mar 2023 03:57:45 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1678535851; i=deller@gmx.de;
+        bh=yudQPl1VTUGzYuErIjGlx84Q61WYZUnkIuekSmPuDQU=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=mdFrjG3b44WUES3zvnhAzu6HcoYsur6qo0lD9Y/sSc1A4m9Im6JbCBKS9iglDeTgs
+         K3jP41Jdn6Ziec+/7nudibHJVYeENvv6r2aT/3olcadEYxkj2994LgoPSzQQG5X8ka
+         4ED/j7QD7/SQ1D5ZSNSoxa0WggrMm4jVaA9T9l6pUVK2qsiqk9Zl9HZSynPH5j3U2R
+         d9DLaNLYYNbDkHnyFl+k1//ee1yKHYVIrBMXbWk9KfkOUmhKj2EK9YiHdP0PySjCiU
+         IZ9uF2f0VTOCmjanWOSkIx/6dcj9QjEm39xPeHMNmjJc0dYMqnIuZd301EYQFVPJtA
+         50RnLLrtyukRA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.154.207]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MjS54-1qHPKj31a6-00kupN; Sat, 11
+ Mar 2023 12:57:31 +0100
+Message-ID: <6b7239e3-81f6-067e-1fd2-9dc62166d4da@gmx.de>
+Date:   Sat, 11 Mar 2023 12:57:30 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230310144729.1545943-1-robh@kernel.org>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH -next] fbdev/clps711x-fb: Use
+ devm_platform_get_and_ioremap_resource()
+Content-Language: en-US
+To:     Yang Li <yang.lee@linux.alibaba.com>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+References: <20230308054950.15164-1-yang.lee@linux.alibaba.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20230308054950.15164-1-yang.lee@linux.alibaba.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:+wet9JncmlnLThMtE15PZgB5TXAyuM5XdCu0BkHncFzjMoIYasa
+ wMAF7k4U8EiV6gmyM7HGE0W/SW8grUTRgYD4dhifvQJ1dlPhaiEgEcGWVoOZmLsqhcrIOUG
+ LrgLIVTIUEhFUHjwxlljrqpiJ4VFDCQdEGnqAU+hAA4hhfkJTyWrcpOIxVSYcvB/K35GVA6
+ yMSRei7Vl+85gdjrMVx+Q==
+UI-OutboundReport: notjunk:1;M01:P0:+ljmdtxQlKg=;BGKjGEsuVgcQ9eJ9p5eEuzOXbw/
+ HRBk+u/7qxQNMysDpxo3U+nJyvrlBgNdjH9AzoMesr+sZEJg8gQx0Bi+OyAskvIoRSqdmaQ/b
+ oroA8OkSpLFzvQ+erwOhMyGU1fvRm+6zT/pT//7x8pcqjPjzXvaJnuyITSCQR0i1ns4ACapSi
+ 01ZwFBAGccDFs1+PzK7gcsdBmGr8pCgfnmreOKLYGNBIwd+nw7C49K1oTEJ+maFAcTpmSn/Rd
+ uqZr+i30ASUVF5RejcoJKqZbtK513pG9BEJBOlCkWPwyN4rnKGQfa4QjoQC+8thM0/DYMgXxc
+ JAg8sX9qHEjmwUpNaMNxnJTYXqi6mZXwqTqy53yQWRNC89b2dMLXkiXoYyvkNn3CBoGZ+zhi5
+ YoT9UeUXvPE29j2+GmGPV7mr0z1BCqZvoYvuWvG5HzAkw94vlO+fhT8IAUGcxSvMo1cMC7Qow
+ ddmEFxHIt6nWsrxKBqnmGjDbEN4z3Uk0nsAqzE5dNExlofU5powy9SizFYD/pC+WYFxMG4cx9
+ tJJl/xS24JOPPPw1ku9ghjl9jBhMN59CZ/hFupNtHQsHnmWUyk0j5AI+TI8IOKEhDcFH2c8Gh
+ IrAUKligIdvSYfDEWKk4XPnotMlmcAiS2Ra0lPI+jNDCnErtsS/DNyEmECeN+zLIb+G1A1N1N
+ XtZM6GTvoe35IBF0IdfnTGrupoilHhQorTRiB6dAqdG5NaO8Q8zvwwMwxMBL/wd/DHPwPeHSE
+ 4+viCXqMv4Kh44R91jH+QkrnbFnV0Zl10J+4p3sn5wz1Qm0IL7taBB0ZADjYTKD05qgOqSbJE
+ bsMjd2S9xq+LtDY2LGiDnpEKmjLXoOsPco7HEkBMMbzohNCh06HOf6GXVCIqQYNEoO6005Hn3
+ Ng76rGWMvymT/o4gSE5Nq9HigG6yA0UtHm/xInOP3coDCKfnmVpXGODYP0avPZ8czG6BCmaKk
+ We0NTw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Rob,
+On 3/8/23 06:49, Yang Li wrote:
+> According to commit 890cc39a8799 ("drivers: provide
+> devm_platform_get_and_ioremap_resource()"), convert
+> platform_get_resource(), devm_ioremap_resource() to a single
+> call to devm_platform_get_and_ioremap_resource(), as this is exactly
+> what this function does.
+>
+> Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
 
-I love your patch! Yet something to improve:
+applied.
 
-[auto build test ERROR on drm-misc/drm-misc-next]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Thanks!
+Helge
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Rob-Herring/fbdev-Use-of_property_present-for-testing-DT-property-presence/20230310-225754
-base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
-patch link:    https://lore.kernel.org/r/20230310144729.1545943-1-robh%40kernel.org
-patch subject: [PATCH] fbdev: Use of_property_present() for testing DT property presence
-config: arm64-randconfig-r032-20230310 (https://download.01.org/0day-ci/archive/20230311/202303111229.3Uuc8JQV-lkp@intel.com/config)
-compiler: clang version 17.0.0 (https://github.com/llvm/llvm-project 67409911353323ca5edf2049ef0df54132fa1ca7)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # install arm64 cross compiling tool for clang build
-        # apt-get install binutils-aarch64-linux-gnu
-        # https://github.com/intel-lab-lkp/linux/commit/c013f4111f36b0b4327e7fbf46c0dd93399e9209
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Rob-Herring/fbdev-Use-of_property_present-for-testing-DT-property-presence/20230310-225754
-        git checkout c013f4111f36b0b4327e7fbf46c0dd93399e9209
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=arm64 olddefconfig
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=arm64 SHELL=/bin/bash drivers/video/fbdev/
+> ---
+>   drivers/video/fbdev/clps711x-fb.c | 3 +--
+>   1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/clps711x-fb.c b/drivers/video/fbdev/clp=
+s711x-fb.c
+> index 45c75ff01eca..c8bfc608bd9c 100644
+> --- a/drivers/video/fbdev/clps711x-fb.c
+> +++ b/drivers/video/fbdev/clps711x-fb.c
+> @@ -238,8 +238,7 @@ static int clps711x_fb_probe(struct platform_device =
+*pdev)
+>   	info->fix.mmio_start =3D res->start;
+>   	info->fix.mmio_len =3D resource_size(res);
+>
+> -	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 1);
+> -	info->screen_base =3D devm_ioremap_resource(dev, res);
+> +	info->screen_base =3D devm_platform_get_and_ioremap_resource(pdev, 1, =
+&res);
+>   	if (IS_ERR(info->screen_base)) {
+>   		ret =3D PTR_ERR(info->screen_base);
+>   		goto out_fb_release;
 
-If you fix the issue, kindly add following tag where applicable
-| Reported-by: kernel test robot <lkp@intel.com>
-| Link: https://lore.kernel.org/oe-kbuild-all/202303111229.3Uuc8JQV-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
->> drivers/video/fbdev/amba-clcd.c:857:6: error: call to undeclared function 'of_property_present'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-           if (of_property_present(node, "memory-region")) {
-               ^
-   drivers/video/fbdev/amba-clcd.c:857:6: note: did you mean 'fwnode_property_present'?
-   include/linux/property.h:59:6: note: 'fwnode_property_present' declared here
-   bool fwnode_property_present(const struct fwnode_handle *fwnode,
-        ^
-   1 error generated.
-
-
-vim +/of_property_present +857 drivers/video/fbdev/amba-clcd.c
-
-   843	
-   844	static struct clcd_board *clcdfb_of_get_board(struct amba_device *dev)
-   845	{
-   846		struct clcd_board *board = devm_kzalloc(&dev->dev, sizeof(*board),
-   847				GFP_KERNEL);
-   848		struct device_node *node = dev->dev.of_node;
-   849	
-   850		if (!board)
-   851			return NULL;
-   852	
-   853		board->name = of_node_full_name(node);
-   854		board->caps = CLCD_CAP_ALL;
-   855		board->check = clcdfb_check;
-   856		board->decode = clcdfb_decode;
- > 857		if (of_property_present(node, "memory-region")) {
-   858			board->setup = clcdfb_of_vram_setup;
-   859			board->mmap = clcdfb_of_vram_mmap;
-   860			board->remove = clcdfb_of_vram_remove;
-   861		} else {
-   862			board->setup = clcdfb_of_dma_setup;
-   863			board->mmap = clcdfb_of_dma_mmap;
-   864			board->remove = clcdfb_of_dma_remove;
-   865		}
-   866	
-   867		return board;
-   868	}
-   869	#else
-   870	static struct clcd_board *clcdfb_of_get_board(struct amba_device *dev)
-   871	{
-   872		return NULL;
-   873	}
-   874	#endif
-   875	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests

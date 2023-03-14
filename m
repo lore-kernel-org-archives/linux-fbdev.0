@@ -2,59 +2,61 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D93DEC61DA4
-	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Mar 2023 10:39:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF453C74A44
+	for <linux-fbdev@archiver.kernel.org>; Tue, 14 Mar 2023 05:42:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230087AbjCMKjA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 13 Mar 2023 06:39:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51478 "EHLO
+        id S229901AbjCNFm0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 14 Mar 2023 01:42:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33992 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230128AbjCMKi5 (ORCPT
+        with ESMTP id S229627AbjCNFmZ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 13 Mar 2023 06:38:57 -0400
-Received: from mail.workercentrum.pl (mail.workercentrum.pl [51.89.166.136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C0794C3A
-        for <linux-fbdev@vger.kernel.org>; Mon, 13 Mar 2023 03:38:42 -0700 (PDT)
-Received: by mail.workercentrum.pl (Postfix, from userid 1002)
-        id 7290CA299D; Mon, 13 Mar 2023 10:37:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=workercentrum.pl;
-        s=mail; t=1678703908;
-        bh=DQrvNxV4sbMtkGDNj/C7a2f11q8dNrBm5UPp1jE5GkY=;
-        h=Date:From:To:Subject:From;
-        b=XRwbK3+6MANUewIrdgTyZfJo9i+xkfaquDTor+dkBCyjKUMT2+byejIHrTt4GITCX
-         Sel5XpAncZDft0giQY9z6G1ZvBhMz1O9tRaGFfz6c+LAH9qUy8/HMP9ixTnklo1PyP
-         482K2ciHZxd84khkkune57DQoVnR8XhbgZf9o9T+oY+4ICqnr/LVn73pJRsvxGGiTG
-         bC9/xXTtj9y8hk7CHruwa/vNCBw0POSMbFsSjVPAYD/fJl78f+RxXmpuygLdDKvQlE
-         bR4ST+zx3L0UKMCE/C/0D9oCiFBtSh2cWXTWlOLE38cdudJDSNNf0vh843S+svLshM
-         a1ik0lN99+DoA==
-Received: by mail.workercentrum.pl for <linux-fbdev@vger.kernel.org>; Mon, 13 Mar 2023 10:37:32 GMT
-Message-ID: <20230313101216-0.1.7z.pib6.0.olax82glrg@workercentrum.pl>
-Date:   Mon, 13 Mar 2023 10:37:32 GMT
-From:   "Piotr Werner" <piotr.werner@workercentrum.pl>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: Panele fotowaltaiczne
-X-Mailer: mail.workercentrum.pl
+        Tue, 14 Mar 2023 01:42:25 -0400
+Received: from out30-100.freemail.mail.aliyun.com (out30-100.freemail.mail.aliyun.com [115.124.30.100])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A9CC134;
+        Mon, 13 Mar 2023 22:42:23 -0700 (PDT)
+Received: from localhost(mailfrom:yang.lee@linux.alibaba.com fp:SMTPD_---0VdqljXD_1678772540)
+          by smtp.aliyun-inc.com;
+          Tue, 14 Mar 2023 13:42:21 +0800
+From:   Yang Li <yang.lee@linux.alibaba.com>
+To:     deller@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, Yang Li <yang.lee@linux.alibaba.com>
+Subject: [PATCH -next 1/3] video: fbdev: pxa3xx-gcu: Use devm_platform_get_and_ioremap_resource()
+Date:   Tue, 14 Mar 2023 13:42:17 +0800
+Message-Id: <20230314054219.80441-1-yang.lee@linux.alibaba.com>
+X-Mailer: git-send-email 2.20.1.7.g153144c
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,
+According to commit 890cc39a8799 ("drivers: provide
+devm_platform_get_and_ioremap_resource()"), convert
+platform_get_resource(), devm_ioremap_resource() to a single
+call to devm_platform_get_and_ioremap_resource(), as this is exactly
+what this function does.
 
-Jeste=C5=9Bmy firm=C4=85 z wieloletnim do=C5=9Bwiadczeniem, kt=C3=B3ra sp=
-rawnie przygotuje dla Pa=C5=84stwa ofert=C4=99 i wszelkie formalno=C5=9Bc=
-i. Sam monta=C5=BC zaplanujemy na wiosn=C4=99.
+Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+---
+ drivers/video/fbdev/pxa3xx-gcu.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-O samych plusach fotowoltaiki czy pompach ciep=C5=82a na pewno ju=C5=BC P=
-a=C5=84stwo s=C5=82yszeli, dlatego teraz prosimy o zostawienie kontaktu, =
-aby nasz specjalista m=C3=B3g=C5=82 przedstawi=C4=87 ofert=C4=99 zgodn=C4=
-=85 z Waszymi potrzebami.
+diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-gcu.c
+index c3cd1e1cc01b..d16729215423 100644
+--- a/drivers/video/fbdev/pxa3xx-gcu.c
++++ b/drivers/video/fbdev/pxa3xx-gcu.c
+@@ -599,8 +599,7 @@ static int pxa3xx_gcu_probe(struct platform_device *pdev)
+ 	priv->misc_dev.fops	= &pxa3xx_gcu_miscdev_fops;
+ 
+ 	/* handle IO resources */
+-	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	priv->mmio_base = devm_ioremap_resource(dev, r);
++	priv->mmio_base = devm_platform_get_and_ioremap_resource(pdev, 0, &r);
+ 	if (IS_ERR(priv->mmio_base))
+ 		return PTR_ERR(priv->mmio_base);
+ 
+-- 
+2.20.1.7.g153144c
 
-Kiedy mogliby=C5=9Bmy z Pa=C5=84stwem um=C3=B3wi=C4=87 si=C4=99 na rozmow=
-=C4=99 w celu zbadania potrzeb?
-
-
-Pozdrawiam,
-Piotr Werner

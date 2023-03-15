@@ -2,138 +2,147 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A8B3C6FD1D
-	for <linux-fbdev@archiver.kernel.org>; Wed, 15 Mar 2023 10:25:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8900C6FD1D
+	for <linux-fbdev@archiver.kernel.org>; Wed, 15 Mar 2023 12:29:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231838AbjCOKZ6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 15 Mar 2023 06:25:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47082 "EHLO
+        id S232583AbjCOM3q (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 15 Mar 2023 08:29:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39196 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231536AbjCOKZ4 (ORCPT
+        with ESMTP id S232382AbjCOM3Z (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 15 Mar 2023 06:25:56 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1919433450;
-        Wed, 15 Mar 2023 03:25:55 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id BF1D42190B;
-        Wed, 15 Mar 2023 10:25:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1678875953; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=PVdllBdZTc9TJG4FCCzyxgIwvd4EqEzACHhmFnamwno=;
-        b=FHX7l7HcyvXr1n6xJlqF0y1ONaapvHcPgQYJxLMQqIzINXjoRjwY87IVYNz+qL0WQpsMbD
-        6IwDgZQKqTyWiXA9O27FKSbsk8HyTO3rm7JRX2M53G0qNryaOtsRG2+E7u04pbq0oYUrXE
-        M+UCa8HNQdhFObJer1Tv4QOa9B+Jl2M=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1678875953;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=PVdllBdZTc9TJG4FCCzyxgIwvd4EqEzACHhmFnamwno=;
-        b=1XZlNg1XVHSiD7OMJWDhb12jQLh8+fmmoOI1uMuCnOKa2Zh0iRNyDxmGd/KOdIdh/ljr7l
-        4fzPIJgIafAdZ2Dw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 9BD8913A2F;
-        Wed, 15 Mar 2023 10:25:53 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id uezKJDGdEWRuSAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Wed, 15 Mar 2023 10:25:53 +0000
-Message-ID: <360b814b-40e0-5444-8d6b-1e29719e4414@suse.de>
-Date:   Wed, 15 Mar 2023 11:25:52 +0100
+        Wed, 15 Mar 2023 08:29:25 -0400
+Received: from mail-vs1-xe31.google.com (mail-vs1-xe31.google.com [IPv6:2607:f8b0:4864:20::e31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AD81681CF7;
+        Wed, 15 Mar 2023 05:28:29 -0700 (PDT)
+Received: by mail-vs1-xe31.google.com with SMTP id o2so16765293vss.8;
+        Wed, 15 Mar 2023 05:28:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112; t=1678883303;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=KNVHjgACw5m4etYQygiQVMUCwIq83fKlHnf6HwLgnPY=;
+        b=ad+ZD6vU572cmzFO31pw7Da/rJHjF2M6YDbB43dD6IKR0DLEwLhhsaL9uRhQUhEdla
+         BSNhbkmUJeuz4Ehw4O8A6RSjkdzO4zZLbgxUyr1kF/v2xiKIw7ylA10xKBDHG8voFloC
+         gxwIQMCrYQ19lRMAxji4Jf1Msxj92IQYWN2DFJH+niMUknehluMj0kYRDBBjmVgeHB8M
+         B6vIOlw2HABR4gbYKqFoa0XffhHvpVI+LA1qd1MAasCDQVEiViF33Gd2NgL6bxMzNu1H
+         X/i6jsUcm3Iz9OYEwq1zPnrgaL6PqPHTwoVZaX6+BRQMyJwFrJPpPelOir99vnzrYlFQ
+         9+Jw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1678883303;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=KNVHjgACw5m4etYQygiQVMUCwIq83fKlHnf6HwLgnPY=;
+        b=v+rxquRghOKJFuJamF463z7O2TPiFWkv0SmXrvj2v6QIqhlNLUEBzEVV+ZoZqTUbsS
+         pMmEXODsDL9jmePTFy5YiUTU+HP8z8rqkGgyDz44FPikJLAjqxRZ37/JAAToZKzzQHxQ
+         LQGy6Q1yGJ6YLhBO4fX9HJFrvPna7e38G9gmlCYytljSFvDiMgIZ8gKEU1zq7YMrN/Q9
+         NYDxsAJihLqjNaypOItzdAyqnTU3BGxy1jEdh8A08qSOK988YGwd3O806GdWtqYrS0SL
+         QAHRCxDwzTd/c8zPgn0h1zL7k1wDY6DyRlXQL+J/YzFs/FjUD0jTC5wU4Ta/tPn6rE5r
+         r1oA==
+X-Gm-Message-State: AO0yUKXIhVIyMmva1wroIpEur6Ta1+9/iFep95N2ZGZgx1ub7GWf6Xbr
+        QTblLo7NdAtetjCOASG0DpUuiGvJJBvd2JQX7QPdQmEr86AwDAOM
+X-Google-Smtp-Source: AK7set8+bi06WRs0QVtLJ5jyk5rHeeEH3WrPrItgBraivb0Ap0YZTz3fIoZ3F94Lfx9Pie8xlJLbewg5Dto+lIfK40w=
+X-Received: by 2002:a67:c990:0:b0:414:4ef3:839 with SMTP id
+ y16-20020a67c990000000b004144ef30839mr26101454vsk.7.1678883303182; Wed, 15
+ Mar 2023 05:28:23 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
+References: <20230315092254.1042615-1-harperchen1110@gmail.com> <360b814b-40e0-5444-8d6b-1e29719e4414@suse.de>
+In-Reply-To: <360b814b-40e0-5444-8d6b-1e29719e4414@suse.de>
+From:   Wei Chen <harperchen1110@gmail.com>
+Date:   Wed, 15 Mar 2023 20:27:47 +0800
+Message-ID: <CAO4mrfeGWBic546QyDG=CwDuZ-ouCc8UUV_aH7syqO+WhbDBBw@mail.gmail.com>
 Subject: Re: [PATCH] fbdev: au1200fb: Fix potential divide by zero
-To:     Wei Chen <harperchen1110@gmail.com>, deller@gmx.de
+To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de
 Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-References: <20230315092254.1042615-1-harperchen1110@gmail.com>
-Content-Language: en-US
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20230315092254.1042615-1-harperchen1110@gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------oDSShgVebgcxBHZ6xUbeLWEI"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------oDSShgVebgcxBHZ6xUbeLWEI
-Content-Type: multipart/mixed; boundary="------------WDd0Lhtgw7Duf5JenF0OHZeU";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Wei Chen <harperchen1110@gmail.com>, deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org
-Message-ID: <360b814b-40e0-5444-8d6b-1e29719e4414@suse.de>
-Subject: Re: [PATCH] fbdev: au1200fb: Fix potential divide by zero
-References: <20230315092254.1042615-1-harperchen1110@gmail.com>
-In-Reply-To: <20230315092254.1042615-1-harperchen1110@gmail.com>
+Dear Thomas,
 
---------------WDd0Lhtgw7Duf5JenF0OHZeU
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Thank you for the kind advice.
 
-SGksDQoNCnRoYW5rcyBmb3IgbG9va2luZyB0aHJvdWdoIHRoZXNlIGRyaXZlcnMuDQoNCkFt
-IDE1LjAzLjIzIHVtIDEwOjIyIHNjaHJpZWIgV2VpIENoZW46DQo+IHZhci0+cGl4Y2xvY2sg
-Y2FuIGJlIGFzc2lnbmVkIHRvIHplcm8gYnkgdXNlci4gV2l0aG91dA0KPiBwcm9wZXIgY2hl
-Y2ssIGRpdmlkZSBieSB6ZXJvIHdvdWxkIG9jY3VyIHdoZW4gaW52b2tpbmcNCj4gbWFjcm8g
-UElDT1MyS0haIGluIGF1MTIwMGZiX2ZiX2NoZWNrX3Zhci4NCj4gDQo+IEVycm9yIG91dCBp
-ZiB2YXItPnBpeGNsb2NrIGlzIHplcm8uDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBXZWkgQ2hl
-biA8aGFycGVyY2hlbjExMTBAZ21haWwuY29tPg0KPiAtLS0NCj4gICBkcml2ZXJzL3ZpZGVv
-L2ZiZGV2L2F1MTIwMGZiLmMgfCAzICsrKw0KPiAgIDEgZmlsZSBjaGFuZ2VkLCAzIGluc2Vy
-dGlvbnMoKykNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2F1MTIw
-MGZiLmMgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2F1MTIwMGZiLmMNCj4gaW5kZXggODFjMzE1
-NDU0NDI4Li5iNmIyMmZhNGE4YTAgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvdmlkZW8vZmJk
-ZXYvYXUxMjAwZmIuYw0KPiArKysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2F1MTIwMGZiLmMN
-Cj4gQEAgLTEwNDAsNiArMTA0MCw5IEBAIHN0YXRpYyBpbnQgYXUxMjAwZmJfZmJfY2hlY2tf
-dmFyKHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbyAqdmFyLA0KPiAgIAl1MzIgcGl4Y2xvY2s7
-DQo+ICAgCWludCBzY3JlZW5fc2l6ZSwgcGxhbmU7DQo+ICAgDQo+ICsJaWYgKCF2YXItPnBp
-eGNsb2NrKQ0KPiArCQlyZXR1cm4gLUVJTlZBTDsNCj4gKw0KDQpJbnN0ZWFkIG9mIHRoZSB3
-aGFsZS1hLW1vbGUgYXBwcm9hY2ggb2YgZml4aW5nIGluZGl2aWR1YWwgZHJpdmVycywgY291
-bGQgDQp0aGlzIGJlIHNvbHZlZCBieSB0ZXN0aW5nIGluIGZiX3NldF92YXIgWzFdIGFuZCBm
-Yl90cnlfbW9kZS4/IFsyXQ0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQpbMV0gDQpodHRw
-czovL2VsaXhpci5ib290bGluLmNvbS9saW51eC9sYXRlc3Qvc291cmNlL2RyaXZlcnMvdmlk
-ZW8vZmJkZXYvY29yZS9mYm1lbS5jI0w5NTgNClsyXSANCmh0dHBzOi8vZWxpeGlyLmJvb3Rs
-aW4uY29tL2xpbnV4L2xhdGVzdC9zb3VyY2UvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL21v
-ZGVkYi5jI0w1NjcNCg0KPiAgIAlwbGFuZSA9IGZiZGV2LT5wbGFuZTsNCj4gICANCj4gICAJ
-LyogTWFrZSBzdXJlIHRoYXQgdGhlIG1vZGUgcmVzcGVjdCBhbGwgTENEIGNvbnRyb2xsZXIg
-YW5kDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9w
-ZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4g
-NSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcp
-DQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
+In fact, I notice there was a discussion regarding whether to put the
+check in each individual driver or solve this problem as a whole as
+you suggested. The conclusion is that it is better to keep the check per
+driver rather than in the caller.
 
---------------WDd0Lhtgw7Duf5JenF0OHZeU--
+Related discussions are here:
+https://lore.kernel.org/all/YXclZQGFTr1NFjbc@ravnborg.org/
+https://lore.kernel.org/all/YPgbHMtLQqb1kP0l@ravnborg.org/
+https://lore.kernel.org/all/20220404084723.79089-1-zheyuma97@gmail.com/
 
---------------oDSShgVebgcxBHZ6xUbeLWEI
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+Thanks,
+Wei
 
------BEGIN PGP SIGNATURE-----
+------ Original Message ------
+From "Thomas Zimmermann" <tzimmermann@suse.de>
+To "Wei Chen" <harperchen1110@gmail.com>; deller@gmx.de
+Cc linux-fbdev@vger.kernel.org; linux-kernel@vger.kernel.org;
+dri-devel@lists.freedesktop.org
+Date 2023/3/15 18:25:52
+Subject Re: [PATCH] fbdev: au1200fb: Fix potential divide by zero
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmQRnTAFAwAAAAAACgkQlh/E3EQov+CR
-xQ//bppyKi5hcSUvkpyLIY00pMPfYG/vWWDjMNu+3FYcg/na5v4hJj9htwg7jC3eVdq9ZoHj6Hav
-zDnVw01p/kzoXcHTNczf6OiMYUzJYD0UkuQ2bgHImk+RG5UhRt+TQdwbc0D7+bBVzadVIflFhE3e
-BVLU7qMXONuFb5JOSb0k66DUixE8pjO+bT8s8gUoZaIpYG3QbdoYTO6q9cX7uDGZbh93KfByTg1s
-DJG8MJivfC5xj+w1tbFe6WTgRlWVfG0lGHudHnpu482JBm/4qsgsg2OVcdCRkIUwrxxNo0wz/H3a
-VKG1IfEJ4YDnO12D/XQYsfox4Jbwpg8MhO2jaKZ8iqYC+Z5CTG/Hh/NAFIYlfA4P6TpUPkIOWCmG
-I2zo1DLUxOIJQoSem0kVbDMw7oqRTyqfJLSFI9LnCttMXwLUbQdYdICyBIOie+pdh3NaVD1iikyx
-2rri9Lied+LHsMyo5GKRSHSpuCikeNPqJ02QpqVUfk1iM1fvP7CIpb0+s6ytqz+bfwFoNo0e0Lxl
-EPZf0UkfNI0yWCAwa9ewJvJNDE/aq66bAknw3UX29+3MqFMxRe/CeF43nnwWjqZQufJ6126d5YCv
-Yl5LDQsVr7u9D0/l8x5Xmr4EM9oLPutcGMIHmDUBlKOYNHzDb4Eb7+HZKCQ8a/0gYTQt9iu48mDz
-Qmw=
-=sv0N
------END PGP SIGNATURE-----
 
---------------oDSShgVebgcxBHZ6xUbeLWEI--
+On Wed, 15 Mar 2023 at 18:25, Thomas Zimmermann <tzimmermann@suse.de> wrote=
+:
+>
+> Hi,
+>
+> thanks for looking through these drivers.
+>
+> Am 15.03.23 um 10:22 schrieb Wei Chen:
+> > var->pixclock can be assigned to zero by user. Without
+> > proper check, divide by zero would occur when invoking
+> > macro PICOS2KHZ in au1200fb_fb_check_var.
+> >
+> > Error out if var->pixclock is zero.
+> >
+> > Signed-off-by: Wei Chen <harperchen1110@gmail.com>
+> > ---
+> >   drivers/video/fbdev/au1200fb.c | 3 +++
+> >   1 file changed, 3 insertions(+)
+> >
+> > diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au120=
+0fb.c
+> > index 81c315454428..b6b22fa4a8a0 100644
+> > --- a/drivers/video/fbdev/au1200fb.c
+> > +++ b/drivers/video/fbdev/au1200fb.c
+> > @@ -1040,6 +1040,9 @@ static int au1200fb_fb_check_var(struct fb_var_sc=
+reeninfo *var,
+> >       u32 pixclock;
+> >       int screen_size, plane;
+> >
+> > +     if (!var->pixclock)
+> > +             return -EINVAL;
+> > +
+>
+> Instead of the whale-a-mole approach of fixing individual drivers, could
+> this be solved by testing in fb_set_var [1] and fb_try_mode.? [2]
+>
+> Best regards
+> Thomas
+>
+> [1]
+> https://elixir.bootlin.com/linux/latest/source/drivers/video/fbdev/core/f=
+bmem.c#L958
+> [2]
+> https://elixir.bootlin.com/linux/latest/source/drivers/video/fbdev/core/m=
+odedb.c#L567
+>
+> >       plane =3D fbdev->plane;
+> >
+> >       /* Make sure that the mode respect all LCD controller and
+>
+> --
+> Thomas Zimmermann
+> Graphics Driver Developer
+> SUSE Software Solutions Germany GmbH
+> Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
+> (HRB 36809, AG N=C3=BCrnberg)
+> Gesch=C3=A4ftsf=C3=BChrer: Ivo Totev

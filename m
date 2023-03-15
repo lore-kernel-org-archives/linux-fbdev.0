@@ -2,61 +2,60 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 331A3C6FD1D
-	for <linux-fbdev@archiver.kernel.org>; Wed, 15 Mar 2023 09:06:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F9C8C61DA4
+	for <linux-fbdev@archiver.kernel.org>; Wed, 15 Mar 2023 09:23:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231841AbjCOJGi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 15 Mar 2023 05:06:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50898 "EHLO
+        id S231842AbjCOJXK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 15 Mar 2023 05:23:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51776 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231854AbjCOJGI (ORCPT
+        with ESMTP id S231774AbjCOJXH (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 15 Mar 2023 05:06:08 -0400
-Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com [IPv6:2607:f8b0:4864:20::102f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 610AE76174;
-        Wed, 15 Mar 2023 02:05:27 -0700 (PDT)
-Received: by mail-pj1-x102f.google.com with SMTP id gp15-20020a17090adf0f00b0023d1bbd9f9eso1161332pjb.0;
-        Wed, 15 Mar 2023 02:05:27 -0700 (PDT)
+        Wed, 15 Mar 2023 05:23:07 -0400
+Received: from mail-oa1-x2c.google.com (mail-oa1-x2c.google.com [IPv6:2001:4860:4864:20::2c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3826A23316;
+        Wed, 15 Mar 2023 02:23:06 -0700 (PDT)
+Received: by mail-oa1-x2c.google.com with SMTP id 586e51a60fabf-17683b570b8so20251273fac.13;
+        Wed, 15 Mar 2023 02:23:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112; t=1678871124;
+        d=gmail.com; s=20210112; t=1678872185;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=ugYL4TNtZvwrVkLduJBp9Mq9b8UJmnrNVU/4mmVcPg0=;
-        b=RwYVOEKud4H6FfMOxVCyC7xeqK63iZXfuB7LiwcmKzNjZvLojhRlIgnoIK7pcdnv4G
-         xt31v1sDDk1UqkRWo4OBlJGOQ6XemZAuHfsNZBOdTGsK8/BIIixccCm0KpsR1HbaSNo8
-         zX/pljBKEo+XPpGyi1WY3UqFBzu5uCEDeDcMAYq1syaA8lA9cBDB3q6XAB91Df1lR+7H
-         rPajgmAZ7uk5/KDCA1nQjWRUq/truKiAWCuX6OEBYY7L+vkzqTr8Jp5x11hz/0fm3gTK
-         ucORaHf8rp4hyqSAxnztPqMQW4ilt8OrfVXDTBjf6qB2D+ZZ2Tcnln3NtdZcuttsUe+R
-         37aw==
+        bh=YIlDmOhHfzUv00AnBDlY+LrTEjW0fV7JmMX/NObYM/0=;
+        b=jMwS04iE8sVc508yTw9rVt892u9Rx8nIWzDE5QGMJFsTaUDANTrUlNIsCG6yP5o3pu
+         LDq2LfysPHaMkjGL3j9ODWL1DA3syFL55sDXFj70tGRHmR6FlSiD87AkrDjb3TPJqvjH
+         NyvgT/ZmlxD/mplejH8J3tRK9SroSe/gXIiUXr4kjiN6w3+4Js+9XZjU4XRY1TGZtfC1
+         V/xY2lkfNuaU6Xzsb1UT4vH9MPGKqL5KAkCNxKTSgucGvV3ratbp1Bn1e8d04rpmfE5j
+         V49tuMg/Be72TYhgkZymUVkjjrEPICEUok0rFpXWcTx1OGVG8kIQctvpTa934wxhR7Bt
+         nlVQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678871124;
+        d=1e100.net; s=20210112; t=1678872185;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=ugYL4TNtZvwrVkLduJBp9Mq9b8UJmnrNVU/4mmVcPg0=;
-        b=h2z4KjHLlTQ97/IbmQNlEOrwFcZ7hKLHMFpAslC5SQGamls8WilrHSEOmPgq0YP/Kj
-         IaQs8N3389R0/xR/DPz7vt3HURaiZZtx95k6GYERt1febuzbtfNVkxCsIdmK3VEkY5g5
-         ekbNbOKN2Gcgh0UfTGZJdZF/81pzaA8/Er3TN/VweJNmW/boPnw2dBxCyNenp6T2LWig
-         p+qSdG4E8VsU0IMnD3dpIPH5Ud4GtjiXPA8CgyIb89oWpad29eta7+8YPTWxN8fKiMht
-         9vBxWB4106ohAY0TO/nmoBLtVe3iVolfK3UdkzQOHopZfhLNGLdhH51mTB6e25QknsO+
-         9mHg==
-X-Gm-Message-State: AO0yUKXh50tweZrdoZ27ymk6pwRHKVEIxopS8t0btb4vPnacJbh92mKv
-        V6ceYYd04L6h161KIhy/9tk=
-X-Google-Smtp-Source: AK7set9XMoP5ypO0me4udx1ZPpoo3BETNGUFYvDOvil4trx5wm/3hqbffm4zvy4f71yn3y7FbxpyaQ==
-X-Received: by 2002:a05:6a20:4b0f:b0:d3:5c72:8fb4 with SMTP id fp15-20020a056a204b0f00b000d35c728fb4mr11757239pzb.60.1678871124369;
-        Wed, 15 Mar 2023 02:05:24 -0700 (PDT)
+        bh=YIlDmOhHfzUv00AnBDlY+LrTEjW0fV7JmMX/NObYM/0=;
+        b=gIKUIOQziX+Bz1UmAvZXa6PyuqTOniZxiM4fYUfghOWML3TRanmMuRRXc05naYmeJG
+         Vc22KcyWcUEQh0TzsQs7asFkx5feTdGj62WDrpwvjCEOAeohxQKLjXFESQYOPxOKcWyn
+         F4KcuM2vsjiUcuXku0Y+1DBOG/tZ/t4sLWnqmSViPvQsWwd6IHBD0Xh6hoTailx7aC1R
+         BdzR2LiNWFXSldLGMiZwPVt9ob9AiGI5DxXq9J2Koj5GBhRqPO1Q2nBFW2hAGiEJFxHB
+         U78yTESruFn/fhlO1d0gdYT57C+MDyh1eRf5vpokQJ535fxVfJLq0OIVHQoA+/YQ79C6
+         R55g==
+X-Gm-Message-State: AO0yUKXC9nIaXvxw7swIpef2iG7GeJEb5zQckBJbQg9Wj2RW51xVHbKP
+        qlHhK6wHwyQLvO/JokV2RN8=
+X-Google-Smtp-Source: AK7set8yMP0V/w7VMNSJFYtaq7Neq+UbYjbv3HegPrjxBGGWs99G4sBOjg56b7JQRhAyGxJeYGeFJw==
+X-Received: by 2002:a05:6870:a446:b0:17a:c38e:823f with SMTP id n6-20020a056870a44600b0017ac38e823fmr1205376oal.51.1678872185553;
+        Wed, 15 Mar 2023 02:23:05 -0700 (PDT)
 Received: from chcpu13.cse.ust.hk (191host119.mobilenet.cse.ust.hk. [143.89.191.119])
-        by smtp.gmail.com with ESMTPSA id q25-20020a62e119000000b005d6999eec90sm3006884pfh.120.2023.03.15.02.05.22
+        by smtp.gmail.com with ESMTPSA id v5-20020a056870e28500b00176209a6d6asm2037335oad.10.2023.03.15.02.23.03
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 15 Mar 2023 02:05:23 -0700 (PDT)
+        Wed, 15 Mar 2023 02:23:05 -0700 (PDT)
 From:   Wei Chen <harperchen1110@gmail.com>
-To:     dilinger@queued.net
-Cc:     deller@gmx.de, linux-geode@lists.infradead.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+To:     deller@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org, Wei Chen <harperchen1110@gmail.com>
-Subject: [PATCH] fbdev: lxfb: Fix potential divide by zero
-Date:   Wed, 15 Mar 2023 09:05:18 +0000
-Message-Id: <20230315090518.1037674-1-harperchen1110@gmail.com>
+Subject: [PATCH] fbdev: au1200fb: Fix potential divide by zero
+Date:   Wed, 15 Mar 2023 09:22:54 +0000
+Message-Id: <20230315092254.1042615-1-harperchen1110@gmail.com>
 X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -64,30 +63,31 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-var->pixclock can be assigned to zero by user. Without proper
-check, divide by zero would occur in lx_set_clock.
+var->pixclock can be assigned to zero by user. Without
+proper check, divide by zero would occur when invoking
+macro PICOS2KHZ in au1200fb_fb_check_var.
 
 Error out if var->pixclock is zero.
 
 Signed-off-by: Wei Chen <harperchen1110@gmail.com>
 ---
- drivers/video/fbdev/geode/lxfb_core.c | 3 +++
+ drivers/video/fbdev/au1200fb.c | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/geode/lxfb_core.c b/drivers/video/fbdev/geode/lxfb_core.c
-index 8130e9eee2b4..556d8b1a9e06 100644
---- a/drivers/video/fbdev/geode/lxfb_core.c
-+++ b/drivers/video/fbdev/geode/lxfb_core.c
-@@ -235,6 +235,9 @@ static void get_modedb(struct fb_videomode **modedb, unsigned int *size)
+diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
+index 81c315454428..b6b22fa4a8a0 100644
+--- a/drivers/video/fbdev/au1200fb.c
++++ b/drivers/video/fbdev/au1200fb.c
+@@ -1040,6 +1040,9 @@ static int au1200fb_fb_check_var(struct fb_var_screeninfo *var,
+ 	u32 pixclock;
+ 	int screen_size, plane;
  
- static int lxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
 +	if (!var->pixclock)
 +		return -EINVAL;
 +
- 	if (var->xres > 1920 || var->yres > 1440)
- 		return -EINVAL;
+ 	plane = fbdev->plane;
  
+ 	/* Make sure that the mode respect all LCD controller and
 -- 
 2.25.1
 

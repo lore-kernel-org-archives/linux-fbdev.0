@@ -2,227 +2,108 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F204C7618A
-	for <linux-fbdev@archiver.kernel.org>; Fri, 17 Mar 2023 18:51:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DB7DC74A5B
+	for <linux-fbdev@archiver.kernel.org>; Fri, 17 Mar 2023 20:53:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229543AbjCQSvx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 17 Mar 2023 14:51:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36356 "EHLO
+        id S229798AbjCQUxy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 17 Mar 2023 16:53:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43552 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229489AbjCQSvw (ORCPT
+        with ESMTP id S229680AbjCQUxy (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 17 Mar 2023 14:51:52 -0400
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 58AC9C563C;
-        Fri, 17 Mar 2023 11:51:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1679079111; x=1710615111;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=QrJv/rtBQ3bz415zpJxJeuw0At5q2bvQAoJvRLSgw1g=;
-  b=f3E+9tZpQPhi+kATcvBZb8+8DeWQ7OUf9/aYB8Xu3xf8/+4dpQd/iPZH
-   lViwtflxKzwNnX42zGjPaWFw8oG0dH0g4IqX+AIuJxLE1/7g/F2Hnx3Tt
-   C25ngG9O19Td/xz+qSZeS4zru3jgB1jXhaAKX4R/nacdrlcr36lYF5RPc
-   Eojs4YDn3d/fD85F/n+6IUh26Isel/UsyO+z5TCrzj889ZTE/bMtnqejf
-   IKWgPwwpt2adOD4JHzroFhdJ3pf38JEvuR+qagH1Leo+MR/1BoA36Xnvy
-   oYJaR8E3hra3fW6AdFhI72xwEzjicv3f1asKNaNbFacPlvfkYuvC3+jO4
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10652"; a="326700214"
-X-IronPort-AV: E=Sophos;i="5.98,268,1673942400"; 
-   d="scan'208";a="326700214"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Mar 2023 11:51:50 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10652"; a="712848563"
-X-IronPort-AV: E=Sophos;i="5.98,268,1673942400"; 
-   d="scan'208";a="712848563"
-Received: from black.fi.intel.com ([10.237.72.28])
-  by orsmga001.jf.intel.com with ESMTP; 17 Mar 2023 11:51:47 -0700
-Received: by black.fi.intel.com (Postfix, from userid 1003)
-        id A084F1CC; Fri, 17 Mar 2023 20:52:32 +0200 (EET)
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+        Fri, 17 Mar 2023 16:53:54 -0400
+Received: from mail-yb1-xb2c.google.com (mail-yb1-xb2c.google.com [IPv6:2607:f8b0:4864:20::b2c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A9E0F19C54
+        for <linux-fbdev@vger.kernel.org>; Fri, 17 Mar 2023 13:53:52 -0700 (PDT)
+Received: by mail-yb1-xb2c.google.com with SMTP id e194so7132217ybf.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 17 Mar 2023 13:53:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1679086432;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=81k/wsN5LJHSw7IMmKprz7MljTYWXfOO3qNXbhpMYDY=;
+        b=GbicmX698aU6P3ndLa71hM7B5bhfNOjyuIQiA9eX8PBOUq1/RzNGBMXbQ0iECrEv5q
+         Qs2X2vRlWaonAomu6hJyTwJyst53I6ZQ3AwexcFFxvypToqzgoHD0fkw2SQ2SPgYDhQR
+         9YJ8jnhRejBiis4ni0UupkquEUOOR9t1B4kTsa+LnMK4mG+TfWQwbJZmH+Ig8uje91Dh
+         9TageZMNT90SRCTnPZvM+X195DHkOewu9tGsi5ElbC+A16u6x8o1p0fGf+3NYX48p5Pm
+         3EYTdu4fPQ8e7qhaNJFLLBWfW480I1Nua6D65Pmpkq/ezNlYQ+TljEyo4C433zu+IWft
+         T1jg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1679086432;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=81k/wsN5LJHSw7IMmKprz7MljTYWXfOO3qNXbhpMYDY=;
+        b=CjiBSaLp39Ob0ZXS1vhq5NXX5mL+96gdquCrdBi0N0PZ29G+hRhAnKw8wszTD8Um/K
+         aA9SCXzPeDilAOKCeLsvPsg4uVc7c2W/7UPnUWENFifuavLBS+OqmGSzqRl0IpSwKwl4
+         2gKTKf+WPDSsZcXFqZxsl9CZ1t2gM7oRMMHiyC+7flm+UYdYN1GLuQzB2ygSaX/jiAkJ
+         oL44D83lZKvRlKHJPuLnDWMImbuTarLlJDxCnPlaWpKgl2ZxDtqPGObtFOV6tzp0We3+
+         ZLKku+tczKfRz3+faXAkP2vc7KR5pCnQ3iQwc+7HPGLxuImt1oy+TtCCs3Jsk4l0O9CF
+         fLkQ==
+X-Gm-Message-State: AO0yUKWieBnGSb3/7eA/j+8bPyUhOcQCKlTcUu9UUtYy8DYusfa9cWvp
+        z91bsK17EqcdccueR/AZZVUTA1nsOEvGOmmMyrdbKQ==
+X-Google-Smtp-Source: AK7set/xMcJB36hfzj7lWnW/tGG+jyb989JVS6ZTe5X+GsibjG7yhs/EkXgKMrPvyfaL3Ej3pxGpi4IcL7WRbw5L0/o=
+X-Received: by 2002:a5b:611:0:b0:b67:f07:d180 with SMTP id d17-20020a5b0611000000b00b670f07d180mr357039ybq.5.1679086431900;
+ Fri, 17 Mar 2023 13:53:51 -0700 (PDT)
+MIME-Version: 1.0
+References: <20230317185230.46189-1-andriy.shevchenko@linux.intel.com>
+In-Reply-To: <20230317185230.46189-1-andriy.shevchenko@linux.intel.com>
+From:   Linus Walleij <linus.walleij@linaro.org>
+Date:   Fri, 17 Mar 2023 21:53:40 +0100
+Message-ID: <CACRpkdYXTk2pzXEM9MTjt=oT-CbhENABSLeb9dN7ZvEy8oqiag@mail.gmail.com>
+Subject: Re: [PATCH v1 1/1] backlight: hx8357: Convert to agnostic GPIO API
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc:     Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
         Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc:     Linus Walleij <linus.walleij@linaro.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         Bartosz Golaszewski <brgl@bgdev.pl>,
         Lee Jones <lee@kernel.org>,
         Daniel Thompson <daniel.thompson@linaro.org>,
         Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
-Subject: [PATCH v1 1/1] backlight: hx8357: Convert to agnostic GPIO API
-Date:   Fri, 17 Mar 2023 20:52:30 +0200
-Message-Id: <20230317185230.46189-1-andriy.shevchenko@linux.intel.com>
-X-Mailer: git-send-email 2.39.2
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The of_gpio.h is going to be removed. In preparation of that convert
-the driver to the agnostic API.
+On Fri, Mar 17, 2023 at 7:51=E2=80=AFPM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/gpio/gpiolib-of.c        |  4 +-
- drivers/video/backlight/hx8357.c | 74 ++++++++++----------------------
- 2 files changed, 24 insertions(+), 54 deletions(-)
+> The of_gpio.h is going to be removed. In preparation of that convert
+> the driver to the agnostic API.
+>
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-diff --git a/drivers/gpio/gpiolib-of.c b/drivers/gpio/gpiolib-of.c
-index 1436cdb5fa26..cdd536a391be 100644
---- a/drivers/gpio/gpiolib-of.c
-+++ b/drivers/gpio/gpiolib-of.c
-@@ -184,7 +184,7 @@ static void of_gpio_try_fixup_polarity(const struct device_node *np,
- 		const char *propname;
- 		bool active_high;
- 	} gpios[] = {
--#if !IS_ENABLED(CONFIG_LCD_HX8357)
-+#if IS_ENABLED(CONFIG_LCD_HX8357)
- 		/*
- 		 * Himax LCD controllers used incorrectly named
- 		 * "gpios-reset" property and also specified wrong
-@@ -452,7 +452,7 @@ static struct gpio_desc *of_find_gpio_rename(struct device_node *np,
- 		 */
- 		const char *compatible;
- 	} gpios[] = {
--#if !IS_ENABLED(CONFIG_LCD_HX8357)
-+#if IS_ENABLED(CONFIG_LCD_HX8357)
- 		/* Himax LCD controllers used "gpios-reset" */
- 		{ "reset",	"gpios-reset",	"himax,hx8357" },
- 		{ "reset",	"gpios-reset",	"himax,hx8369" },
-diff --git a/drivers/video/backlight/hx8357.c b/drivers/video/backlight/hx8357.c
-index 9b50bc96e00f..d7298376cf74 100644
---- a/drivers/video/backlight/hx8357.c
-+++ b/drivers/video/backlight/hx8357.c
-@@ -6,11 +6,11 @@
-  */
- 
- #include <linux/delay.h>
-+#include <linux/gpio/consumer.h>
- #include <linux/lcd.h>
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/of_device.h>
--#include <linux/of_gpio.h>
- #include <linux/spi/spi.h>
- 
- #define HX8357_NUM_IM_PINS	3
-@@ -83,11 +83,10 @@
- #define HX8369_SET_GAMMA_CURVE_RELATED		0xe0
- 
- struct hx8357_data {
--	unsigned		im_pins[HX8357_NUM_IM_PINS];
--	unsigned		reset;
-+	struct gpio_descs	*im_pins;
-+	struct gpio_desc	*reset;
- 	struct spi_device	*spi;
- 	int			state;
--	bool			use_im_pins;
- };
- 
- static u8 hx8357_seq_power[] = {
-@@ -321,11 +320,11 @@ static void hx8357_lcd_reset(struct lcd_device *lcdev)
- 	struct hx8357_data *lcd = lcd_get_data(lcdev);
- 
- 	/* Reset the screen */
--	gpio_set_value(lcd->reset, 1);
-+	gpiod_set_value(lcd->reset, 0);
- 	usleep_range(10000, 12000);
--	gpio_set_value(lcd->reset, 0);
-+	gpiod_set_value(lcd->reset, 1);
- 	usleep_range(10000, 12000);
--	gpio_set_value(lcd->reset, 1);
-+	gpiod_set_value(lcd->reset, 0);
- 
- 	/* The controller needs 120ms to recover from reset */
- 	msleep(120);
-@@ -340,10 +339,10 @@ static int hx8357_lcd_init(struct lcd_device *lcdev)
- 	 * Set the interface selection pins to SPI mode, with three
- 	 * wires
- 	 */
--	if (lcd->use_im_pins) {
--		gpio_set_value_cansleep(lcd->im_pins[0], 1);
--		gpio_set_value_cansleep(lcd->im_pins[1], 0);
--		gpio_set_value_cansleep(lcd->im_pins[2], 1);
-+	if (lcd->im_pins) {
-+		gpiod_set_value_cansleep(lcd->im_pins->desc[0], 1);
-+		gpiod_set_value_cansleep(lcd->im_pins->desc[1], 0);
-+		gpiod_set_value_cansleep(lcd->im_pins->desc[2], 1);
- 	}
- 
- 	ret = hx8357_spi_write_array(lcdev, hx8357_seq_power,
-@@ -580,6 +579,7 @@ MODULE_DEVICE_TABLE(of, hx8357_dt_ids);
- 
- static int hx8357_probe(struct spi_device *spi)
- {
-+	struct device *dev = &spi->dev;
- 	struct lcd_device *lcdev;
- 	struct hx8357_data *lcd;
- 	const struct of_device_id *match;
-@@ -601,49 +601,19 @@ static int hx8357_probe(struct spi_device *spi)
- 	if (!match || !match->data)
- 		return -EINVAL;
- 
--	lcd->reset = of_get_named_gpio(spi->dev.of_node, "gpios-reset", 0);
--	if (!gpio_is_valid(lcd->reset)) {
--		dev_err(&spi->dev, "Missing dt property: gpios-reset\n");
--		return -EINVAL;
--	}
-+	lcd->reset = devm_gpiod_get(dev, "reset", GPIOD_OUT_LOW);
-+	if (IS_ERR(lcd->reset))
-+		return dev_err_probe(dev, PTR_ERR(lcd->reset), "failed to request reset GPIO\n");
-+	gpiod_set_consumer_name(lcd->reset, "hx8357-reset");
- 
--	ret = devm_gpio_request_one(&spi->dev, lcd->reset,
--				    GPIOF_OUT_INIT_HIGH,
--				    "hx8357-reset");
--	if (ret) {
--		dev_err(&spi->dev,
--			"failed to request gpio %d: %d\n",
--			lcd->reset, ret);
--		return -EINVAL;
--	}
-+	lcd->im_pins = devm_gpiod_get_array_optional(dev, "im", GPIOD_OUT_LOW);
-+	if (IS_ERR(lcd->im_pins))
-+		return dev_err_probe(dev, PTR_ERR(lcd->im_pins), "failed to request im GPIOs\n");
-+	if (lcd->im_pins->ndescs < HX8357_NUM_IM_PINS)
-+		return dev_err_probe(dev, -EINVAL, "not enough im GPIOs\n");
- 
--	if (of_find_property(spi->dev.of_node, "im-gpios", NULL)) {
--		lcd->use_im_pins = 1;
--
--		for (i = 0; i < HX8357_NUM_IM_PINS; i++) {
--			lcd->im_pins[i] = of_get_named_gpio(spi->dev.of_node,
--							    "im-gpios", i);
--			if (lcd->im_pins[i] == -EPROBE_DEFER) {
--				dev_info(&spi->dev, "GPIO requested is not here yet, deferring the probe\n");
--				return -EPROBE_DEFER;
--			}
--			if (!gpio_is_valid(lcd->im_pins[i])) {
--				dev_err(&spi->dev, "Missing dt property: im-gpios\n");
--				return -EINVAL;
--			}
--
--			ret = devm_gpio_request_one(&spi->dev, lcd->im_pins[i],
--						    GPIOF_OUT_INIT_LOW,
--						    "im_pins");
--			if (ret) {
--				dev_err(&spi->dev, "failed to request gpio %d: %d\n",
--					lcd->im_pins[i], ret);
--				return -EINVAL;
--			}
--		}
--	} else {
--		lcd->use_im_pins = 0;
--	}
-+	for (i = 0; i < HX8357_NUM_IM_PINS; i++)
-+		gpiod_set_consumer_name(lcd->im_pins->desc[i], "im_pins");
- 
- 	lcdev = devm_lcd_device_register(&spi->dev, "mxsfb", &spi->dev, lcd,
- 					&hx8357_ops);
--- 
-2.39.2
+Thanks for fixing this Andy!
 
+> -#if !IS_ENABLED(CONFIG_LCD_HX8357)
+> +#if IS_ENABLED(CONFIG_LCD_HX8357)
+>                 /*
+>                  * Himax LCD controllers used incorrectly named
+>                  * "gpios-reset" property and also specified wrong
+> @@ -452,7 +452,7 @@ static struct gpio_desc *of_find_gpio_rename(struct d=
+evice_node *np,
+>                  */
+>                 const char *compatible;
+>         } gpios[] =3D {
+> -#if !IS_ENABLED(CONFIG_LCD_HX8357)
+> +#if IS_ENABLED(CONFIG_LCD_HX8357)
+>                 /* Himax LCD controllers used "gpios-reset" */
+>                 { "reset",      "gpios-reset",  "himax,hx8357" },
+>                 { "reset",      "gpios-reset",  "himax,hx8369" },
+
+Eh what happened here .. it's even intuitively wrong.
+I would add
+Fixes: fbbbcd177a27 ("gpiolib: of: add quirk for locating reset lines
+with legacy bindings")
+
+It wasn't used until now it seems so not a regression and no
+need for a separate patch.
+
+Other than that it looks correct.
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+
+Yours,
+Linus Walleij

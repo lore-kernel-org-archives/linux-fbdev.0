@@ -2,47 +2,49 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 610FEC76196
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C35DEC74A5B
 	for <linux-fbdev@archiver.kernel.org>; Sat, 18 Mar 2023 23:55:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229808AbjCRXzJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 18 Mar 2023 19:55:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47004 "EHLO
+        id S229823AbjCRXzK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 18 Mar 2023 19:55:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47052 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229823AbjCRXyx (ORCPT
+        with ESMTP id S229828AbjCRXyy (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 18 Mar 2023 19:54:53 -0400
+        Sat, 18 Mar 2023 19:54:54 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D163A19699
-        for <linux-fbdev@vger.kernel.org>; Sat, 18 Mar 2023 16:54:52 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2E7511B572
+        for <linux-fbdev@vger.kernel.org>; Sat, 18 Mar 2023 16:54:53 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1pdgNt-0004Ie-SC; Sun, 19 Mar 2023 00:54:49 +0100
+        id 1pdgNr-0004EY-7d; Sun, 19 Mar 2023 00:54:47 +0100
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1pdgNt-0056ca-75; Sun, 19 Mar 2023 00:54:49 +0100
+        id 1pdgNq-0056bc-Ii; Sun, 19 Mar 2023 00:54:46 +0100
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1pdgNs-005zWF-8K; Sun, 19 Mar 2023 00:54:48 +0100
+        id 1pdgNp-005zVS-ND; Sun, 19 Mar 2023 00:54:45 +0100
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
 To:     Helge Deller <deller@gmx.de>,
-        Wolfram Sang <wsa+renesas@sang-engineering.com>,
-        Xuezhi Zhang <zhangxuezhi1@coolpad.com>
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Rob Herring <robh@kernel.org>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         kernel@pengutronix.de
-Subject: [PATCH 41/51] video: fbdev: sm501fb: Convert to platform remove callback returning void
-Date:   Sun, 19 Mar 2023 00:54:18 +0100
-Message-Id: <20230318235428.272091-42-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 29/51] video: fbdev: offb: Convert to platform remove callback returning void
+Date:   Sun, 19 Mar 2023 00:54:06 +0100
+Message-Id: <20230318235428.272091-30-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230318235428.272091-1-u.kleine-koenig@pengutronix.de>
 References: <20230318235428.272091-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1763; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=pDC/vxi7M1WVeJfw3LTq5g2jhyRxYY/G5blZT2oqmX8=; b=owGbwMvMwMXY3/A7olbonx/jabUkhhQxv79y5syMy5wkpDy5/SbLRulwpW04NWeTzc6/hv4u9 5aYFzh3MhqzMDByMciKKbLYN67JtKqSi+xc++8yzCBWJpApDFycAjCRXTrs/0ynBstZPLH4bRkx ydC6JytxMidPpaNY24rs/MSpX+ds1kndN/eL8nNuW9FJ6g2WySqpv9t+2S2Jdlz2POPpj2uMLE7 pjVEbzj4rPb1tqcoluV2xy1gfa21TWnb/mUT74oxt/1xaEyU5O6r1HNmXJMcn7jxQe7BoQcbXN7 HWcz48mRF4hX9vYyFXyufAh4vPn7V7Jplm9T4kkaHVdNd5u4gs39AfP83ObuOZXSEXNP1YstZ/T QffJ+5XzI7cOVnL12B3tDL91RFhX/OruxLCxP/f22osxqToqVJ1YHbWIn3uydtO2ydvzLe+fqRP 43z+Io+gNPczFrH7N7OafdaX/r2pc6Vn/DNxRsmrer1TAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1890; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=lM7DJP3rqO/O01i5ldb/xVqYOdKBmxyQQSGfKw8fSgI=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBkFk7HbDG7Kr2qUU0J+qizBK+pgPQ7KcH2TsMhp osbez4uY/+JATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZBZOxwAKCRCPgPtYfRL+ TrnuB/9MnlaJ4CugSGFM5+KI4NSWMpbbM1hGCK6nwSZq2iHg5Wz+mrvUX5z75U3AF5MHUoLgsV6 7nadWePX8NRqxoRFtMgYqyXbYWIg6fH4FqEY/XIU6BN5gYrJioGJ2P6dHIWVv1bNQDyxlDsoUH3 owpoYXQTk4D2J//pfyEA5Ap7fbGHEDjOEWEJWzO5hU4hqLOForp54j/dLWrXR/gW3q3vv3Bh+dY xApG0gkLEv0o4ZYJ8sejtKbLaCPZ6xrRlE0xoLbZMji09u8M4Sv+nMUTydU739H8F3whNcdN0ru pdjYCCC6SrBtUNtNs0Xgg6qPz4LIIMQANjkpXKCf+J7jJEXK
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -66,40 +68,47 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/video/fbdev/sm501fb.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/offb.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
-index f743bfbde2a6..9a95c21203ce 100644
---- a/drivers/video/fbdev/sm501fb.c
-+++ b/drivers/video/fbdev/sm501fb.c
-@@ -2045,7 +2045,7 @@ static int sm501fb_probe(struct platform_device *pdev)
- /*
-  *  Cleanup
-  */
--static int sm501fb_remove(struct platform_device *pdev)
-+static void sm501fb_remove(struct platform_device *pdev)
- {
- 	struct sm501fb_info *info = platform_get_drvdata(pdev);
- 	struct fb_info	   *fbinfo_crt = info->fb[0];
-@@ -2064,8 +2064,6 @@ static int sm501fb_remove(struct platform_device *pdev)
+diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
+index f7ad6bc9d02d..b18d8c851918 100644
+--- a/drivers/video/fbdev/offb.c
++++ b/drivers/video/fbdev/offb.c
+@@ -658,14 +658,12 @@ static void offb_init_nodriver(struct platform_device *parent, struct device_nod
+ 	}
+ }
  
- 	framebuffer_release(fbinfo_pnl);
- 	framebuffer_release(fbinfo_crt);
+-static int offb_remove(struct platform_device *pdev)
++static void offb_remove(struct platform_device *pdev)
+ {
+ 	struct fb_info *info = platform_get_drvdata(pdev);
+ 
+ 	if (info)
+ 		unregister_framebuffer(info);
 -
 -	return 0;
  }
  
- #ifdef CONFIG_PM
-@@ -2209,7 +2207,7 @@ static int sm501fb_resume(struct platform_device *pdev)
+ static int offb_probe_bootx_noscreen(struct platform_device *pdev)
+@@ -680,7 +678,7 @@ static struct platform_driver offb_driver_bootx_noscreen = {
+ 		.name = "bootx-noscreen",
+ 	},
+ 	.probe = offb_probe_bootx_noscreen,
+-	.remove = offb_remove,
++	.remove_new = offb_remove,
+ };
  
- static struct platform_driver sm501fb_driver = {
- 	.probe		= sm501fb_probe,
--	.remove		= sm501fb_remove,
-+	.remove_new	= sm501fb_remove,
- 	.suspend	= sm501fb_suspend,
- 	.resume		= sm501fb_resume,
- 	.driver		= {
+ static int offb_probe_display(struct platform_device *pdev)
+@@ -702,7 +700,7 @@ static struct platform_driver offb_driver_display = {
+ 		.of_match_table = offb_of_match_display,
+ 	},
+ 	.probe = offb_probe_display,
+-	.remove = offb_remove,
++	.remove_new = offb_remove,
+ };
+ 
+ static int __init offb_init(void)
 -- 
 2.39.2
 

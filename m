@@ -2,49 +2,46 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C35DEC74A5B
-	for <linux-fbdev@archiver.kernel.org>; Sat, 18 Mar 2023 23:55:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99556C761A6
+	for <linux-fbdev@archiver.kernel.org>; Sat, 18 Mar 2023 23:55:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229823AbjCRXzK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S229524AbjCRXzK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Sat, 18 Mar 2023 19:55:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47052 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47068 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229828AbjCRXyy (ORCPT
+        with ESMTP id S229832AbjCRXyy (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Sat, 18 Mar 2023 19:54:54 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2E7511B572
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3BF321BAC4
         for <linux-fbdev@vger.kernel.org>; Sat, 18 Mar 2023 16:54:53 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1pdgNr-0004EY-7d; Sun, 19 Mar 2023 00:54:47 +0100
+        id 1pdgNu-0004KH-FZ; Sun, 19 Mar 2023 00:54:50 +0100
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1pdgNq-0056bc-Ii; Sun, 19 Mar 2023 00:54:46 +0100
+        id 1pdgNt-0056cj-Hf; Sun, 19 Mar 2023 00:54:49 +0100
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1pdgNp-005zVS-ND; Sun, 19 Mar 2023 00:54:45 +0100
+        id 1pdgNs-005zWI-EN; Sun, 19 Mar 2023 00:54:48 +0100
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
 To:     Helge Deller <deller@gmx.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Rob Herring <robh@kernel.org>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>
+        Wolfram Sang <wsa+renesas@sang-engineering.com>
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         kernel@pengutronix.de
-Subject: [PATCH 29/51] video: fbdev: offb: Convert to platform remove callback returning void
-Date:   Sun, 19 Mar 2023 00:54:06 +0100
-Message-Id: <20230318235428.272091-30-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 42/51] video: fbdev: tcx: Convert to platform remove callback returning void
+Date:   Sun, 19 Mar 2023 00:54:19 +0100
+Message-Id: <20230318235428.272091-43-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230318235428.272091-1-u.kleine-koenig@pengutronix.de>
 References: <20230318235428.272091-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1890; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=lM7DJP3rqO/O01i5ldb/xVqYOdKBmxyQQSGfKw8fSgI=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBkFk7HbDG7Kr2qUU0J+qizBK+pgPQ7KcH2TsMhp osbez4uY/+JATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZBZOxwAKCRCPgPtYfRL+ TrnuB/9MnlaJ4CugSGFM5+KI4NSWMpbbM1hGCK6nwSZq2iHg5Wz+mrvUX5z75U3AF5MHUoLgsV6 7nadWePX8NRqxoRFtMgYqyXbYWIg6fH4FqEY/XIU6BN5gYrJioGJ2P6dHIWVv1bNQDyxlDsoUH3 owpoYXQTk4D2J//pfyEA5Ap7fbGHEDjOEWEJWzO5hU4hqLOForp54j/dLWrXR/gW3q3vv3Bh+dY xApG0gkLEv0o4ZYJ8sejtKbLaCPZ6xrRlE0xoLbZMji09u8M4Sv+nMUTydU739H8F3whNcdN0ru pdjYCCC6SrBtUNtNs0Xgg6qPz4LIIMQANjkpXKCf+J7jJEXK
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1644; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=5xWiQY/5bER2ZivM6AFLT96N4ugAZFFWdMFQKD74Y+A=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBkFk8DernaueoXw+RlfEYV8ABQTWbofG44K/Qwt BuE2CUawjqJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZBZPAwAKCRCPgPtYfRL+ TqkmB/9y+S/tGTseOiuL7qnohW3hsm2KXw4nu/0t57OK6r/bhdqQAyadXqjsujYgyUfQHkcsVGn OI5OGRrYRZnwSaT4pKBjMSPdsny+z+JsXWSVZbnLHAsIhp/GutpRPEfUWoBZqoJM32ntzjv8ssn cjInotIFnVrjl75h2LeLexqY7+M7CZ9+etb6Zzns6F2VGyCGMPqT3AR26C0Wv31BKmqHUS5M6Xb jHjrMsosBPRuR7AsL2mj6QHLxgw4Zn/lMU3Oc52+KKJYW/vl78KusG2gDg7i0NLUSTcAyJpJMib awjAw9BV/3fBgZVh8Z62Gjeco79D8+5x8lHL2IPOWjqW8r2k
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -68,47 +65,40 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/video/fbdev/offb.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/tcx.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
-index f7ad6bc9d02d..b18d8c851918 100644
---- a/drivers/video/fbdev/offb.c
-+++ b/drivers/video/fbdev/offb.c
-@@ -658,14 +658,12 @@ static void offb_init_nodriver(struct platform_device *parent, struct device_nod
- 	}
+diff --git a/drivers/video/fbdev/tcx.c b/drivers/video/fbdev/tcx.c
+index 01d87f53324d..30a460b6f204 100644
+--- a/drivers/video/fbdev/tcx.c
++++ b/drivers/video/fbdev/tcx.c
+@@ -487,7 +487,7 @@ static int tcx_probe(struct platform_device *op)
+ 	return err;
  }
  
--static int offb_remove(struct platform_device *pdev)
-+static void offb_remove(struct platform_device *pdev)
+-static int tcx_remove(struct platform_device *op)
++static void tcx_remove(struct platform_device *op)
  {
- 	struct fb_info *info = platform_get_drvdata(pdev);
+ 	struct fb_info *info = dev_get_drvdata(&op->dev);
+ 	struct tcx_par *par = info->par;
+@@ -498,8 +498,6 @@ static int tcx_remove(struct platform_device *op)
+ 	tcx_unmap_regs(op, info, par);
  
- 	if (info)
- 		unregister_framebuffer(info);
+ 	framebuffer_release(info);
 -
 -	return 0;
  }
  
- static int offb_probe_bootx_noscreen(struct platform_device *pdev)
-@@ -680,7 +678,7 @@ static struct platform_driver offb_driver_bootx_noscreen = {
- 		.name = "bootx-noscreen",
+ static const struct of_device_id tcx_match[] = {
+@@ -516,7 +514,7 @@ static struct platform_driver tcx_driver = {
+ 		.of_match_table = tcx_match,
  	},
- 	.probe = offb_probe_bootx_noscreen,
--	.remove = offb_remove,
-+	.remove_new = offb_remove,
+ 	.probe		= tcx_probe,
+-	.remove		= tcx_remove,
++	.remove_new	= tcx_remove,
  };
  
- static int offb_probe_display(struct platform_device *pdev)
-@@ -702,7 +700,7 @@ static struct platform_driver offb_driver_display = {
- 		.of_match_table = offb_of_match_display,
- 	},
- 	.probe = offb_probe_display,
--	.remove = offb_remove,
-+	.remove_new = offb_remove,
- };
- 
- static int __init offb_init(void)
+ static int __init tcx_init(void)
 -- 
 2.39.2
 

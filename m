@@ -2,116 +2,163 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67F02C7618A
-	for <linux-fbdev@archiver.kernel.org>; Sun, 19 Mar 2023 18:44:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66D19C6FD1F
+	for <linux-fbdev@archiver.kernel.org>; Sun, 19 Mar 2023 21:09:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229700AbjCSSo1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 19 Mar 2023 14:44:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49388 "EHLO
+        id S230157AbjCSVJz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 19 Mar 2023 17:09:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53950 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229824AbjCSSoU (ORCPT
+        with ESMTP id S230232AbjCSVJy (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 19 Mar 2023 14:44:20 -0400
-Received: from mailrelay1-1.pub.mailoutpod2-cph3.one.com (mailrelay1-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:400::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 62A6B168B6
-        for <linux-fbdev@vger.kernel.org>; Sun, 19 Mar 2023 11:44:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=rsa2;
-        h=in-reply-to:content-transfer-encoding:content-type:mime-version:references:
-         message-id:subject:cc:to:from:date:from;
-        bh=55TQw3vmH2ewB+u+Nx+NoaqSvHlaHxAFdFOoflwM9FY=;
-        b=cFGyvjChe1mTdtFdX6pdqz0ATMgdpW3fT1KkwUrUkpNalQQDaqFU5vN7VKBddGpYLXta2DpkFI55w
-         MogWKlXdSXzNrrC5bGiSlpq5Do4A2sQNeWaCmqIlEimeq9x1gl80wZc6zJUzkUhAOW1N6R5wz8ZVPd
-         leZt4y4mpQn+ssBwEd/MBYswMDehgShJ7ooPBMIBmdbptpzJcDOW8EWJG0l7LOHAdSdye4j/hTjl2J
-         OAiIf/mCrmSOrSub6eIq5J9qMPc36zFTeLyCvrYO7OvVztiKoy8rmG/+Gwak6H+EiJ+PByU8MKo+X5
-         +j1pgZ4jnJU00weICutVZqABC1PMCAw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=ed2;
-        h=in-reply-to:content-transfer-encoding:content-type:mime-version:references:
-         message-id:subject:cc:to:from:date:from;
-        bh=55TQw3vmH2ewB+u+Nx+NoaqSvHlaHxAFdFOoflwM9FY=;
-        b=z5JZS1uRC8yuO9NKyeQdfLOOcdSuevOdrmWZPSc3Ui+aGG0zuuit9OrsPex0yW9dEql1YHNHq7Q2U
-         ZbTuEn0DQ==
-X-HalOne-ID: 0b8d9806-c686-11ed-a42d-11abd97b9443
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-        by mailrelay1 (Halon) with ESMTPSA
-        id 0b8d9806-c686-11ed-a42d-11abd97b9443;
-        Sun, 19 Mar 2023 18:44:15 +0000 (UTC)
-Date:   Sun, 19 Mar 2023 19:44:13 +0100
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Stephen Kitt <steve@sk2.org>
-Cc:     Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        Paul Mackerras <paulus@samba.org>,
+        Sun, 19 Mar 2023 17:09:54 -0400
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65F9518172
+        for <linux-fbdev@vger.kernel.org>; Sun, 19 Mar 2023 14:09:53 -0700 (PDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pe0GL-0002OT-MM; Sun, 19 Mar 2023 22:08:21 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pe0G8-005Ikp-Ii; Sun, 19 Mar 2023 22:08:08 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pe0G7-006FDZ-Jd; Sun, 19 Mar 2023 22:08:07 +0100
+Date:   Sun, 19 Mar 2023 22:08:08 +0100
+From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To:     Helge Deller <deller@gmx.de>
+Cc:     Yihao Han <hanyihao@vivo.com>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Wolfram Sang <wsa+renesas@sang-engineering.com>,
+        Alexander Shiyan <shc_work@mail.ru>,
+        Dongliang Mu <dzm91@hust.edu.cn>,
+        Peter Jones <pjones@redhat.com>,
+        Gaosheng Cui <cuigaosheng1@huawei.com>,
+        Timur Tabi <timur@kernel.org>,
+        Xuezhi Zhang <zhangxuezhi1@coolpad.com>,
+        Jiasheng Jiang <jiasheng@iscas.ac.cn>,
+        Ferenc Bakonyi <fero@drama.obuda.kando.hu>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        Stephen Kitt <steve@sk2.org>,
         Daniel Thompson <daniel.thompson@linaro.org>,
-        Helge Deller <deller@gmx.de>, Lee Jones <lee@kernel.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Miguel Ojeda <ojeda@kernel.org>,
-        Antonino Daplas <adaplas@gmail.com>,
-        linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Tony Lindgren <tony@atomide.com>,
+        Jiapeng Chong <jiapeng.chong@linux.alibaba.com>,
+        Yu Zhe <yuzhe@nfschina.com>, Xu Panda <xu.panda@zte.com.cn>,
+        Zhang Qilong <zhangqilong3@huawei.com>,
+        Hyunwoo Kim <imv4bel@gmail.com>,
+        Yang Yingliang <yangyingliang@huawei.com>,
+        Robert Jarzmik <robert.jarzmik@free.fr>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Wang Qing <wangqing@vivo.com>,
+        Kristoffer Ericson <kristoffer.ericson@gmail.com>,
         Jingoo Han <jingoohan1@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
-        Robin van der Gracht <robin@protonic.nl>,
-        linuxppc-dev@lists.ozlabs.org,
-        Claudiu Beznea <claudiu.beznea@microchip.com>
-Subject: Re: [PATCH 12/15] auxdisplay: ht16k33: Introduce
- backlight_get_brightness()
-Message-ID: <ZBdX/YlexhyVzIRf@ravnborg.org>
-References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
- <20230107-sam-video-backlight-drop-fb_blank-v1-12-1bd9bafb351f@ravnborg.org>
- <CANiq72mFMJuec+r=T6xYtLpuU+a1rOrAhrHiecy_1Jpj2m4J=g@mail.gmail.com>
- <Y7qM+ZlG5gQiOW4K@ravnborg.org>
- <2857575f6ec206f79cc21d423fde7d17@protonic.nl>
- <20230319144408.03045c50@heffalump.sk2.org>
+        ye xingchen <ye.xingchen@zte.com.cn>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Zeng Heng <zengheng4@huawei.com>,
+        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+        Michal Simek <michal.simek@xilinx.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        NXP Linux Team <linux-imx@nxp.com>, kernel@pengutronix.de,
+        linux-nvidia@lists.surfsouth.com, linux-omap@vger.kernel.org,
+        Fabio Estevam <festevam@gmail.com>,
+        linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 00/51] video: fbdev: Convert to platform remove callback
+ returning void
+Message-ID: <20230319210808.apsba7oj32kt7ree@pengutronix.de>
+References: <20230318235428.272091-1-u.kleine-koenig@pengutronix.de>
+ <ff758418-f1da-e297-1829-251b8a5b1ec3@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="wzczx3bc4ifbxgea"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230319144408.03045c50@heffalump.sk2.org>
+In-Reply-To: <ff758418-f1da-e297-1829-251b8a5b1ec3@gmx.de>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, Mar 19, 2023 at 02:44:08PM +0100, Stephen Kitt wrote:
-> Hi,
-> 
-> On Mon, 09 Jan 2023 11:12:02 +0100, Robin van der Gracht <robin@protonic.nl>
-> wrote:
-> > On 2023-01-08 10:29, Sam Ravnborg wrote:
-> > > On Sat, Jan 07, 2023 at 10:02:38PM +0100, Miguel Ojeda wrote:  
-> > >> On Sat, Jan 7, 2023 at 7:26 PM Sam Ravnborg via B4 Submission Endpoint
-> > >> <devnull+sam.ravnborg.org@kernel.org> wrote:  
-> > >> >
-> > >> > Introduce backlight_get_brightness() to simplify logic
-> > >> > and avoid direct access to backlight properties.  
-> > >> 
-> > >> Note: Stephen sent this one too a while ago (with some more details in
-> > >> the commit message, which is always nice); and then he sent yesterday
-> > >> v2 [1] (to mention the functional change with `BL_CORE_SUSPENDED`
-> > >> [2]).  
-> > > Thanks for the pointers. I will try to move forward with Stephen's
-> > > patches.  
-> > >> 
-> > >> Anyway, if it goes via drm-misc, feel free to have my:
-> > >> 
-> > >>     Acked-by: Miguel Ojeda <ojeda@kernel.org>
-> > >> 
-> > >> Though it would be nice to have Robin test the change.  
-> > > 
-> > > Robin - can I get your ack to apply Stephen's original v2 patch to
-> > > drm-misc?  
-> > 
-> > done! see: 
-> > https://lore.kernel.org/lkml/0b16391f997e6ed005a326e4e48f2033@protonic.nl/
-> 
-> As far as I can tell, this never got applied to drm-misc, and I don’t see it
-> anywhere else. I guess it slipped through the cracks ;-)
 
-Yes, I have been busy with a lot of other stuff lately, and cannot
-promise when I get back to do Linux work.
-So if someone else could pick it up that would be nice.
+--wzczx3bc4ifbxgea
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	Sam
+Hello,
+
+[Dropped Bartlomiej Zolnierkiewicz and Michal Januszewski from Cc, their
+email addresses bounced]
+
+On Sun, Mar 19, 2023 at 07:04:54PM +0100, Helge Deller wrote:
+> Hello Uwe,
+>=20
+> On 3/19/23 00:53, Uwe Kleine-K=F6nig wrote:
+> > this series adapts the platform drivers below drivers/video/fbdev to us=
+e the
+> > .remove_new() callback. Compared to the traditional .remove() callback
+> > .remove_new() returns no value. This is a good thing because the driver=
+ core
+> > doesn't (and cannot) cope for errors during remove. The only effect of a
+> > non-zero return value in .remove() is that the driver core emits a warn=
+ing. The
+> > device is removed anyhow and an early return from .remove() usually yie=
+lds a
+> > resource leak.
+> >=20
+> > By changing the remove callback to return void driver authors cannot
+> > reasonably assume any more that there is some kind of cleanup later.
+> >=20
+> > The first patch simplifies the remove callback of one driver to obvious=
+ly
+> > always return zero. After that all drivers are converted trivially to
+> > .remove_new().
+>=20
+> Thanks for that patch series. It's a nice cleanup.
+> I've applied it to the fbdev "for-next" git tree for now to get some comp=
+ile testing.
+> I hope that's ok for you.
+>=20
+> Regarding the new "remove_new" struct member I'd prefer a better name but=
+ don't
+> have any idea yet...
+
+Ideally we won't have to life with it for long. The eventual plan is to
+switch back to "remove" once all drivers are converted. So I didn't
+think intensively about a better name. Did you know that struct
+i2c_driver has a "temporary" .probe_new() callback since 2016?
+
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--wzczx3bc4ifbxgea
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmQXebcACgkQj4D7WH0S
+/k6QzAf9FFe2XXai/3YyjlJCEmMUktQCnGsZAQL0Q6KlNzN/QDhFin/mK+//+AWd
+fr9WI9Gvg8J2cb9k0wI5/gp/8qNlttscKB+YgE5GrE/Cph4oZg3CKWx3SBYQewPf
+kaVGx0cjiL/TCMe2/aDf7c8RshaJdKgeiY0L4g7MEaH6OSU/cR2jwZyjKzodH8bj
+nNJPVJviqsma1znGkf1odS40YiHP5VqDGvPmSXz/6Z3P/CMb4/WymZULgameRAdm
+O3MaikHNKGY72mqrQgM4W5UYNWBRFVYf2XuGQF9CV423/8O1hqQ5/cxXXblKBCRJ
+OiI7uoY3VVdDKivhWmJyIZDJkfdWEg==
+=s2rT
+-----END PGP SIGNATURE-----
+
+--wzczx3bc4ifbxgea--

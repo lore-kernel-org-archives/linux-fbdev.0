@@ -2,110 +2,111 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03513C6FD1F
-	for <linux-fbdev@archiver.kernel.org>; Sun, 19 Mar 2023 16:11:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F211C76195
+	for <linux-fbdev@archiver.kernel.org>; Sun, 19 Mar 2023 16:33:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230468AbjCSQLh convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 19 Mar 2023 12:11:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48176 "EHLO
+        id S231153AbjCSQdZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 19 Mar 2023 12:33:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37774 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229652AbjCSQLe (ORCPT
+        with ESMTP id S231181AbjCSQdO (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 19 Mar 2023 12:11:34 -0400
-X-Greylist: delayed 7798 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Sun, 19 Mar 2023 09:11:20 PDT
-Received: from 2.mo581.mail-out.ovh.net (2.mo581.mail-out.ovh.net [87.98.143.68])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2BEDE20D3F
-        for <linux-fbdev@vger.kernel.org>; Sun, 19 Mar 2023 09:11:19 -0700 (PDT)
-Received: from director10.ghost.mail-out.ovh.net (unknown [10.108.16.108])
-        by mo581.mail-out.ovh.net (Postfix) with ESMTP id 770E625A6F
-        for <linux-fbdev@vger.kernel.org>; Sun, 19 Mar 2023 13:44:13 +0000 (UTC)
-Received: from ghost-submission-6684bf9d7b-vk2nn (unknown [10.110.103.232])
-        by director10.ghost.mail-out.ovh.net (Postfix) with ESMTPS id A395D1FE33;
-        Sun, 19 Mar 2023 13:44:09 +0000 (UTC)
-Received: from sk2.org ([37.59.142.105])
-        by ghost-submission-6684bf9d7b-vk2nn with ESMTPSA
-        id IxRwI6kRF2SLKQEA5A//1w
-        (envelope-from <steve@sk2.org>); Sun, 19 Mar 2023 13:44:09 +0000
-Authentication-Results: garm.ovh; auth=pass (GARM-105G006adb33e03-d5be-4371-a698-f6a54d8109e0,
-                    9CCC51F2D7DAB1FB7350B438D1071C8867680B66) smtp.auth=steve@sk2.org
-X-OVh-ClientIp: 82.65.25.201
-Date:   Sun, 19 Mar 2023 14:44:08 +0100
-From:   Stephen Kitt <steve@sk2.org>
-To:     Sam Ravnborg <sam@ravnborg.org>
-Cc:     Robin van der Gracht <robin@protonic.nl>,
-        Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Helge Deller <deller@gmx.de>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        Antonino Daplas <adaplas@gmail.com>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Miguel Ojeda <ojeda@kernel.org>, Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-omap@vger.kernel.org, linux-staging@lists.linux.dev,
-        linuxppc-dev@lists.ozlabs.org,
-        Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 12/15] auxdisplay: ht16k33: Introduce
- backlight_get_brightness()
-Message-ID: <20230319144408.03045c50@heffalump.sk2.org>
-In-Reply-To: <2857575f6ec206f79cc21d423fde7d17@protonic.nl>
-References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
-        <20230107-sam-video-backlight-drop-fb_blank-v1-12-1bd9bafb351f@ravnborg.org>
-        <CANiq72mFMJuec+r=T6xYtLpuU+a1rOrAhrHiecy_1Jpj2m4J=g@mail.gmail.com>
-        <Y7qM+ZlG5gQiOW4K@ravnborg.org>
-        <2857575f6ec206f79cc21d423fde7d17@protonic.nl>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+        Sun, 19 Mar 2023 12:33:14 -0400
+Received: from mail-il1-f171.google.com (mail-il1-f171.google.com [209.85.166.171])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65A1A211D9;
+        Sun, 19 Mar 2023 09:32:48 -0700 (PDT)
+Received: by mail-il1-f171.google.com with SMTP id s7so5395371ilv.12;
+        Sun, 19 Mar 2023 09:32:48 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1679243567;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=rE9pu/DRfAdXm95rr3VepAwA/+9JYYjjkqTbdSZh0/k=;
+        b=Yw6gBHVQxFSAzAwO3Ftwxn1teQ52tS7RTbnRv7AqvZtX/C0/wsa0p+5rrCD0HswzJT
+         IudppGTWSkZRpaFxlqsJuxGvfCc3Mc08j9QTv6V4KmnXflqWDjl2QKapulH1K+cju2Uy
+         lFWyv5lDAqx8yKpC1vlERTgrGKkYKtTGWQYBaW6qFggMd20v75Di6JjyyOaREAdKdA3j
+         rdp+hY18aVzu1F/loX1ls3x5Fm2DatwZPCYb4FvRCXlQQ6HWTaL1NQoB+fzidfVSmkkk
+         6FYzIX4uG6+XyO1lsAT3wywMFg9EM5Yza+j2kXtOMzBQ5fDapMuyA5NWTiOKQ3hLULqa
+         SyRw==
+X-Gm-Message-State: AO0yUKUDL4jjD3JGS0xbPLd/BtpI0zt0FmTTAM2wkWIrtzbH/7cPNgvP
+        0EC7AioYvpaAgZRQwDa97g==
+X-Google-Smtp-Source: AK7set8TmV5UVPTkReQlgL09w24MdyyWUQneS0fdD4520jOIVQTiqM8e0NB/f35ify8j+9IAH9zL9A==
+X-Received: by 2002:a92:ce50:0:b0:31a:1554:b0a with SMTP id a16-20020a92ce50000000b0031a15540b0amr3905365ilr.10.1679243567618;
+        Sun, 19 Mar 2023 09:32:47 -0700 (PDT)
+Received: from robh_at_kernel.org ([2605:ef80:80c7:2689:137d:d795:47e4:3de1])
+        by smtp.gmail.com with ESMTPSA id n18-20020a922612000000b00316dc3afe57sm2150373ile.86.2023.03.19.09.32.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 19 Mar 2023 09:32:47 -0700 (PDT)
+Received: (nullmailer pid 227058 invoked by uid 1000);
+        Sun, 19 Mar 2023 16:32:44 -0000
+From:   Rob Herring <robh@kernel.org>
+To:     Russell King <linux@armlinux.org.uk>, Helge Deller <deller@gmx.de>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] video: ARM CLCD: Use of_address_to_resource()
+Date:   Sun, 19 Mar 2023 11:32:41 -0500
+Message-Id: <20230319163241.226984-1-robh@kernel.org>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Ovh-Tracer-Id: 1273674272938165894
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrvdefiedgheekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepfffhvfevuffkjghfofggtgfgsehtqhertdertdejnecuhfhrohhmpefuthgvphhhvghnucfmihhtthcuoehsthgvvhgvsehskhdvrdhorhhgqeenucggtffrrghtthgvrhhnpeeludetkeehffejieetveeltddttdeftedtvdegkeffueefvefgieetvddtieehfeenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeduvdejrddtrddtrddupdefjedrheelrddugedvrddutdehnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepuddvjedrtddrtddruddpmhgrihhlfhhrohhmpeeoshhtvghvvgesshhkvddrohhrgheqpdhnsggprhgtphhtthhopedupdhrtghpthhtoheplhhinhhugidqfhgsuggvvhesvhhgvghrrdhkvghrnhgvlhdrohhrghdpoffvtefjohhsthepmhhoheekuddpmhhouggvpehsmhhtphhouhht
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+Replace of_get_address() and of_translate_address() with single call
+to of_address_to_resource(). With this, use ioremap() instead of
+of_iomap() which would parse "reg" a second time.
 
-On Mon, 09 Jan 2023 11:12:02 +0100, Robin van der Gracht <robin@protonic.nl>
-wrote:
-> On 2023-01-08 10:29, Sam Ravnborg wrote:
-> > On Sat, Jan 07, 2023 at 10:02:38PM +0100, Miguel Ojeda wrote:  
-> >> On Sat, Jan 7, 2023 at 7:26 PM Sam Ravnborg via B4 Submission Endpoint
-> >> <devnull+sam.ravnborg.org@kernel.org> wrote:  
-> >> >
-> >> > Introduce backlight_get_brightness() to simplify logic
-> >> > and avoid direct access to backlight properties.  
-> >> 
-> >> Note: Stephen sent this one too a while ago (with some more details in
-> >> the commit message, which is always nice); and then he sent yesterday
-> >> v2 [1] (to mention the functional change with `BL_CORE_SUSPENDED`
-> >> [2]).  
-> > Thanks for the pointers. I will try to move forward with Stephen's
-> > patches.  
-> >> 
-> >> Anyway, if it goes via drm-misc, feel free to have my:
-> >> 
-> >>     Acked-by: Miguel Ojeda <ojeda@kernel.org>
-> >> 
-> >> Though it would be nice to have Robin test the change.  
-> > 
-> > Robin - can I get your ack to apply Stephen's original v2 patch to
-> > drm-misc?  
-> 
-> done! see: 
-> https://lore.kernel.org/lkml/0b16391f997e6ed005a326e4e48f2033@protonic.nl/
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+ drivers/video/fbdev/amba-clcd.c | 24 +++++++++++++-----------
+ 1 file changed, 13 insertions(+), 11 deletions(-)
 
-As far as I can tell, this never got applied to drm-misc, and I don’t see it
-anywhere else. I guess it slipped through the cracks ;-)
+diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
+index f65c96d1394d..1289bfe6e872 100644
+--- a/drivers/video/fbdev/amba-clcd.c
++++ b/drivers/video/fbdev/amba-clcd.c
+@@ -759,7 +759,7 @@ static int clcdfb_of_vram_setup(struct clcd_fb *fb)
+ {
+ 	int err;
+ 	struct device_node *memory;
+-	u64 size;
++	struct resource res;
+ 
+ 	err = clcdfb_of_init_display(fb);
+ 	if (err)
+@@ -769,18 +769,20 @@ static int clcdfb_of_vram_setup(struct clcd_fb *fb)
+ 	if (!memory)
+ 		return -ENODEV;
+ 
+-	fb->fb.screen_base = of_iomap(memory, 0);
+-	if (!fb->fb.screen_base) {
+-		of_node_put(memory);
+-		return -ENOMEM;
+-	}
+ 
+-	fb->fb.fix.smem_start = of_translate_address(memory,
+-			of_get_address(memory, 0, &size, NULL));
+-	fb->fb.fix.smem_len = size;
+-	of_node_put(memory);
++	err = of_address_to_resource(memory, 0, &res);
++	if (err)
++		goto out;
+ 
+-	return 0;
++	fb->fb.screen_base = ioremap(res.start, resource_size(&res));
++	if (!fb->fb.screen_base)
++		goto out;
++
++	fb->fb.fix.smem_start = res.start;
++	fb->fb.fix.smem_len = resource_size(&res);
++out:
++	of_node_put(memory);
++	return err;
+ }
+ 
+ static int clcdfb_of_vram_mmap(struct clcd_fb *fb, struct vm_area_struct *vma)
+-- 
+2.39.2
 
-Regards,
-
-Stephen

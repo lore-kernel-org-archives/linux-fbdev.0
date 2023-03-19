@@ -2,111 +2,133 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F211C76195
-	for <linux-fbdev@archiver.kernel.org>; Sun, 19 Mar 2023 16:33:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C67DC7618A
+	for <linux-fbdev@archiver.kernel.org>; Sun, 19 Mar 2023 17:28:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231153AbjCSQdZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 19 Mar 2023 12:33:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37774 "EHLO
+        id S229481AbjCSR2B (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 19 Mar 2023 13:28:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38744 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231181AbjCSQdO (ORCPT
+        with ESMTP id S229448AbjCSR2A (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 19 Mar 2023 12:33:14 -0400
-Received: from mail-il1-f171.google.com (mail-il1-f171.google.com [209.85.166.171])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65A1A211D9;
-        Sun, 19 Mar 2023 09:32:48 -0700 (PDT)
-Received: by mail-il1-f171.google.com with SMTP id s7so5395371ilv.12;
-        Sun, 19 Mar 2023 09:32:48 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1679243567;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=rE9pu/DRfAdXm95rr3VepAwA/+9JYYjjkqTbdSZh0/k=;
-        b=Yw6gBHVQxFSAzAwO3Ftwxn1teQ52tS7RTbnRv7AqvZtX/C0/wsa0p+5rrCD0HswzJT
-         IudppGTWSkZRpaFxlqsJuxGvfCc3Mc08j9QTv6V4KmnXflqWDjl2QKapulH1K+cju2Uy
-         lFWyv5lDAqx8yKpC1vlERTgrGKkYKtTGWQYBaW6qFggMd20v75Di6JjyyOaREAdKdA3j
-         rdp+hY18aVzu1F/loX1ls3x5Fm2DatwZPCYb4FvRCXlQQ6HWTaL1NQoB+fzidfVSmkkk
-         6FYzIX4uG6+XyO1lsAT3wywMFg9EM5Yza+j2kXtOMzBQ5fDapMuyA5NWTiOKQ3hLULqa
-         SyRw==
-X-Gm-Message-State: AO0yUKUDL4jjD3JGS0xbPLd/BtpI0zt0FmTTAM2wkWIrtzbH/7cPNgvP
-        0EC7AioYvpaAgZRQwDa97g==
-X-Google-Smtp-Source: AK7set8TmV5UVPTkReQlgL09w24MdyyWUQneS0fdD4520jOIVQTiqM8e0NB/f35ify8j+9IAH9zL9A==
-X-Received: by 2002:a92:ce50:0:b0:31a:1554:b0a with SMTP id a16-20020a92ce50000000b0031a15540b0amr3905365ilr.10.1679243567618;
-        Sun, 19 Mar 2023 09:32:47 -0700 (PDT)
-Received: from robh_at_kernel.org ([2605:ef80:80c7:2689:137d:d795:47e4:3de1])
-        by smtp.gmail.com with ESMTPSA id n18-20020a922612000000b00316dc3afe57sm2150373ile.86.2023.03.19.09.32.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 19 Mar 2023 09:32:47 -0700 (PDT)
-Received: (nullmailer pid 227058 invoked by uid 1000);
-        Sun, 19 Mar 2023 16:32:44 -0000
-From:   Rob Herring <robh@kernel.org>
-To:     Russell King <linux@armlinux.org.uk>, Helge Deller <deller@gmx.de>
+        Sun, 19 Mar 2023 13:28:00 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D0E2C4C24;
+        Sun, 19 Mar 2023 10:27:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1679246870; i=deller@gmx.de;
+        bh=pGgSjCEmWeDil7zrhTyjLq3b1K8MW/82h+HLFgzvdGw=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=G0eoyGz54Ard7r5tc1yXVag3ZAclH2inRTJ3vtTh//ncM/7PpcURBbtBQElTREKJL
+         suuGBeMm1+agJIbaSRXR5cvVmo5zgWt2iaKej8S3TXOLmZrAy5ehPmTBnltr2daHdC
+         jtdb4cer6z2yAb90OI1GvrXlTZIjfTd5fRH0WZTVCY3NvMjnVeXzdMVVCXrhvNJC0h
+         VxZ1RvaDCdiEeauLwPSgtoW4CdyY0TPkhz7YV+0VFMK72/f+jbqIF6oH4P6e/AhfAL
+         WfACfUsHPaKm4UQ/usrP9+IBJrA9fnJTRLPxk/Rx1/cYmVRRFNPOoyFSozkRukAZhs
+         QNejggK/ZKsJQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.150.189]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MQe9s-1ppRI00jhu-00NmMi; Sun, 19
+ Mar 2023 18:27:50 +0100
+Message-ID: <ea59e85a-5d0f-e51d-6175-60713664ceb2@gmx.de>
+Date:   Sun, 19 Mar 2023 18:27:49 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH] video: ARM CLCD: Use of_address_to_resource()
+Content-Language: en-US
+To:     Rob Herring <robh@kernel.org>, Russell King <linux@armlinux.org.uk>
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH] video: ARM CLCD: Use of_address_to_resource()
-Date:   Sun, 19 Mar 2023 11:32:41 -0500
-Message-Id: <20230319163241.226984-1-robh@kernel.org>
-X-Mailer: git-send-email 2.39.2
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20230319163241.226984-1-robh@kernel.org>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20230319163241.226984-1-robh@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:xUXmNB+W6FxYtcdyXxshqnZDIpBervrOU4jbTnwZ0hnLYM/TRei
+ hnfUBeq53PrnQ2w2/qgv41PBDQ+AGd4h7JWotvFFbz7ka//KLhzn53n6ZJEC9ZeINd6Cys3
+ RBBjsne65fXGhQBuMKXPz3TFT/cbtOzDIQThjTHxEfQU/uwgbTVedGRNfrYBj/8WGT99j/J
+ 2O86jKMUgmGusnOG56WNg==
+UI-OutboundReport: notjunk:1;M01:P0:6BcQ5ovVnyo=;orot5fBFxHGC9d86342vTEEufgn
+ EOyGxo0laYA4It9x/tV0hH9uA8s7g8D9CnIGVGREZjH6cNgcelDbjp7hkhDGyatXvE8E5GdlM
+ ryQxFwUck7DaQcf+bl7nZkWABvI6aRmTZHj8c+fRPPs+oPIOrfJ5feM1t1WXzWQzD0gTZ1bLc
+ vTUoUKKPOvjc8Dm9K8PC12b3wnIiyx3lDuebJk/MCYeemivZRPKawWuThMjWZCSMWE/N9DIGD
+ Z8Qm9CftbGFEL6FS8rRjKj+j30EKdxTSD/qkTRj9MKe2MX8hS1zqkxsK2jZ1xE3V+Gj2yGx3M
+ DIiwSCqAEhHQ2gct7byS2Spg3ZM5nLWUhHMhavu/UahfW5Ze8wfiAz9kGsycKriGl62bJsm2t
+ RqhDwI5fsNFrb3Nxzz+A/aELa588OZn8ydpnoOZ4nDJhPTMVNNRdEgVgY58PVxqACG/41i4Yn
+ 4LB55kmRNVQ8d8sTIlkME1CyBHqfV603UXSABg0TOSFqwduu1sl3DvsVQsAb9UDWSeKoLtC/l
+ 8ifsJjFZWvx0AARoO34PL0meQ9GtwdeXU55k53Ix3en5NyQ2ONZxzdIjWHCroLjvGDeQnI2EN
+ dQh6T2cbs/FBQsSCJiwEpDDP+5QEi0E59J8iF6wauyuZnWypsz1IGaj0jXVdV5vQ0Yr9q5G3e
+ 6sXxYMm/dj8j4We34B1TJNoad6nUJxIAYvVuRPASXiIBr//9bEUBMjxtzcAO/rJqJ+8nTenVC
+ ivfByro7y2HghuOL3pjEZ6PipJJTQ4yvMRthAFUqQsZnlms5L8ZuePGIHO11fnME4wbV+NdO7
+ 2FSmwGGuX5UPsnNuIKdwnZJBRCVWsejTiVp57skhoVN5lV4aDx/4G/EKql1Se91dzfhdxd76C
+ pP5yQ53dsd3ZS7Gh1/Z6artqJP0rKODtHdbC8LIQF7hMHP3jBL4ZyKEWnp3ya6h2kcYoeO4Fb
+ knkGpEr1r1bkebVf8sDMf1URJB4=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Replace of_get_address() and of_translate_address() with single call
-to of_address_to_resource(). With this, use ioremap() instead of
-of_iomap() which would parse "reg" a second time.
+On 3/19/23 17:32, Rob Herring wrote:
+> Replace of_get_address() and of_translate_address() with single call
+> to of_address_to_resource(). With this, use ioremap() instead of
+> of_iomap() which would parse "reg" a second time.
+>
+> Signed-off-by: Rob Herring <robh@kernel.org>
 
-Signed-off-by: Rob Herring <robh@kernel.org>
----
- drivers/video/fbdev/amba-clcd.c | 24 +++++++++++++-----------
- 1 file changed, 13 insertions(+), 11 deletions(-)
+applied.
 
-diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
-index f65c96d1394d..1289bfe6e872 100644
---- a/drivers/video/fbdev/amba-clcd.c
-+++ b/drivers/video/fbdev/amba-clcd.c
-@@ -759,7 +759,7 @@ static int clcdfb_of_vram_setup(struct clcd_fb *fb)
- {
- 	int err;
- 	struct device_node *memory;
--	u64 size;
-+	struct resource res;
- 
- 	err = clcdfb_of_init_display(fb);
- 	if (err)
-@@ -769,18 +769,20 @@ static int clcdfb_of_vram_setup(struct clcd_fb *fb)
- 	if (!memory)
- 		return -ENODEV;
- 
--	fb->fb.screen_base = of_iomap(memory, 0);
--	if (!fb->fb.screen_base) {
--		of_node_put(memory);
--		return -ENOMEM;
--	}
- 
--	fb->fb.fix.smem_start = of_translate_address(memory,
--			of_get_address(memory, 0, &size, NULL));
--	fb->fb.fix.smem_len = size;
--	of_node_put(memory);
-+	err = of_address_to_resource(memory, 0, &res);
-+	if (err)
-+		goto out;
- 
--	return 0;
-+	fb->fb.screen_base = ioremap(res.start, resource_size(&res));
-+	if (!fb->fb.screen_base)
-+		goto out;
-+
-+	fb->fb.fix.smem_start = res.start;
-+	fb->fb.fix.smem_len = resource_size(&res);
-+out:
-+	of_node_put(memory);
-+	return err;
- }
- 
- static int clcdfb_of_vram_mmap(struct clcd_fb *fb, struct vm_area_struct *vma)
--- 
-2.39.2
+Thanks!
+Helge
+
+
+> ---
+>   drivers/video/fbdev/amba-clcd.c | 24 +++++++++++++-----------
+>   1 file changed, 13 insertions(+), 11 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-=
+clcd.c
+> index f65c96d1394d..1289bfe6e872 100644
+> --- a/drivers/video/fbdev/amba-clcd.c
+> +++ b/drivers/video/fbdev/amba-clcd.c
+> @@ -759,7 +759,7 @@ static int clcdfb_of_vram_setup(struct clcd_fb *fb)
+>   {
+>   	int err;
+>   	struct device_node *memory;
+> -	u64 size;
+> +	struct resource res;
+>
+>   	err =3D clcdfb_of_init_display(fb);
+>   	if (err)
+> @@ -769,18 +769,20 @@ static int clcdfb_of_vram_setup(struct clcd_fb *fb=
+)
+>   	if (!memory)
+>   		return -ENODEV;
+>
+> -	fb->fb.screen_base =3D of_iomap(memory, 0);
+> -	if (!fb->fb.screen_base) {
+> -		of_node_put(memory);
+> -		return -ENOMEM;
+> -	}
+>
+> -	fb->fb.fix.smem_start =3D of_translate_address(memory,
+> -			of_get_address(memory, 0, &size, NULL));
+> -	fb->fb.fix.smem_len =3D size;
+> -	of_node_put(memory);
+> +	err =3D of_address_to_resource(memory, 0, &res);
+> +	if (err)
+> +		goto out;
+>
+> -	return 0;
+> +	fb->fb.screen_base =3D ioremap(res.start, resource_size(&res));
+> +	if (!fb->fb.screen_base)
+> +		goto out;
+> +
+> +	fb->fb.fix.smem_start =3D res.start;
+> +	fb->fb.fix.smem_len =3D resource_size(&res);
+> +out:
+> +	of_node_put(memory);
+> +	return err;
+>   }
+>
+>   static int clcdfb_of_vram_mmap(struct clcd_fb *fb, struct vm_area_stru=
+ct *vma)
 

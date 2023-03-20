@@ -2,126 +2,125 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1D5EC6FD1D
-	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Mar 2023 11:54:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EEC7C7618E
+	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Mar 2023 12:13:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231295AbjCTLyl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 20 Mar 2023 07:54:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38822 "EHLO
+        id S230289AbjCTMNi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 20 Mar 2023 08:13:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36446 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231300AbjCTLyj (ORCPT
+        with ESMTP id S231199AbjCTMNg (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 20 Mar 2023 07:54:39 -0400
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BA5A810435;
-        Mon, 20 Mar 2023 04:54:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1679313272; x=1710849272;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=tSGuRyYCkEG5apEu/urBdXyfINko5BoAavDLnCG0vqA=;
-  b=S9O9o4hmdt1CkPO/rM1kpZ7MFVwLUalPk+GFzsdeGSudrtCeoxGtMFoE
-   uC6CFzmuFhkRzutilHkBYv7tLBx8GrqjcFwFWqtL/X11U1vOfTBQ8GD/z
-   vMtO8EzVKsia1yBh2KVg1/6TiJWMSCPRCl+i6tx0LxIWP5JkILbjbGY2z
-   Rby5wGiUBmlU6t2rTcQyxAT7URKVuf/SP8jbzLwg07+XH/RB0xAbfWfFF
-   u8paG+Ekof/pFs30ZpmS2MeoKi8/erM4H+mb+Vbb+p6OjxtV2a6X3lNAQ
-   hPVdQ/mR0B19zblLflJLI8lNfMHi4sDzA03fOAWbl/XmV5cj4QeVbHr1h
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10654"; a="319040997"
-X-IronPort-AV: E=Sophos;i="5.98,274,1673942400"; 
-   d="scan'208";a="319040997"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2023 04:54:32 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10654"; a="804880875"
-X-IronPort-AV: E=Sophos;i="5.98,274,1673942400"; 
-   d="scan'208";a="804880875"
-Received: from smile.fi.intel.com ([10.237.72.54])
-  by orsmga004.jf.intel.com with ESMTP; 20 Mar 2023 04:54:28 -0700
-Received: from andy by smile.fi.intel.com with local (Exim 4.96)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1peE5q-006Fq3-2q;
-        Mon, 20 Mar 2023 13:54:26 +0200
-Date:   Mon, 20 Mar 2023 13:54:26 +0200
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Linus Walleij <linus.walleij@linaro.org>
-Cc:     Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH v1 1/1] backlight: hx8357: Convert to agnostic GPIO API
-Message-ID: <ZBhJctqSkdtoUmBi@smile.fi.intel.com>
-References: <20230317185230.46189-1-andriy.shevchenko@linux.intel.com>
- <CACRpkdYXTk2pzXEM9MTjt=oT-CbhENABSLeb9dN7ZvEy8oqiag@mail.gmail.com>
+        Mon, 20 Mar 2023 08:13:36 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1966F27990
+        for <linux-fbdev@vger.kernel.org>; Mon, 20 Mar 2023 05:12:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1679314364;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=XDRN9XADCHW4KobnBjZyGXmUoJLZGTdT1A6DRUh7Iug=;
+        b=AnamrtCy0ec9Jjrq4nAb2ognJwUBYo//j6Zgv8qtemnQbSUZVLZZjlPGPaUckt3XUk0wJa
+        A05bPkaFBOorfgXOAX3g9qy85k1E/7RFoGj6g+Cy4XHq8UJKSwyKnAwt6dmQLcw4p/RFCp
+        haMj9VxFswiKcPh6CIZZth9xBj5iZdg=
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-575-r6IpMMlgOQOctT57BSzF7g-1; Mon, 20 Mar 2023 08:12:43 -0400
+X-MC-Unique: r6IpMMlgOQOctT57BSzF7g-1
+Received: by mail-wm1-f70.google.com with SMTP id v8-20020a05600c470800b003ed3b575374so5430536wmo.7
+        for <linux-fbdev@vger.kernel.org>; Mon, 20 Mar 2023 05:12:42 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1679314361;
+        h=content-transfer-encoding:mime-version:message-id:date:references
+         :in-reply-to:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=XDRN9XADCHW4KobnBjZyGXmUoJLZGTdT1A6DRUh7Iug=;
+        b=IJBkbEM02yztF3WAJubVJZYYh4J+X2UCOvRbb/IVsAtsR0Ju+yqKxDFdzGiKbaixJm
+         3/fT7/KwgYICFscIHi2G1Iwyj9xhE2GmLpOv4xw/zaspd0+Ucfz8wTlp8LR8EsGkPYep
+         Q38AsVnzTGb7BrCb2V92RyE+HHXuJ4dMviPIgdrS4/4daCK6qI5FL16E8fTYBqi37twP
+         /XsuFVH3raH9fQXMOCB2Lpc1b8ypXXsS1WzlcpX2wnxDhniVWYJKPCG0ak8Jnbr03SuD
+         8g5J9A2SQubOuWS8o3T/qR9EkA3yDgRVHOpFVSVtzVhAfiOvv95jVI2L0qTUF/LICvx4
+         4W9A==
+X-Gm-Message-State: AO0yUKWekFZjVEYIdhmrM3yByBmZUOPkizT4TyeErKrSppP+BGnGy6tB
+        xa6u/1EaMHnGJwc+updKuAGIY4iJEHXRdaqKFeWTngzaucijhCoKWDiTJqQSrJyIPSjvUhOMyin
+        dJ25P3T2EP6ygSM2EGO4iihE=
+X-Received: by 2002:a05:600c:2299:b0:3ee:da1:135f with SMTP id 25-20020a05600c229900b003ee0da1135fmr1095237wmf.7.1679314361793;
+        Mon, 20 Mar 2023 05:12:41 -0700 (PDT)
+X-Google-Smtp-Source: AK7set+umOOuG5X2xVwy2+bTR0qTb8LXpCVn0AZ49wk1ROM/wu6oxM+7I2UIaZAV5omtJqUkTfXqew==
+X-Received: by 2002:a05:600c:2299:b0:3ee:da1:135f with SMTP id 25-20020a05600c229900b003ee0da1135fmr1095226wmf.7.1679314361535;
+        Mon, 20 Mar 2023 05:12:41 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id f20-20020a7bcd14000000b003e203681b26sm10324306wmj.29.2023.03.20.05.12.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 20 Mar 2023 05:12:41 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Samuel =?utf-8?Q?=C4=8Cavoj?= <samuel@cavoj.net>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
+        daniel@ffwll.ch, sam@ravnborg.org, maxime@cerno.tech,
+        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        dri-devel@lists.freedesktop.org, Zack Rusin <zackr@vmware.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Zhen Lei <thunder.leizhen@huawei.com>,
+        Changcheng Deng <deng.changcheng@zte.com.cn>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>
+Subject: Re: [PATCH v2 07/11] video/aperture: Disable and unregister sysfb
+ devices via aperture helpers
+In-Reply-To: <87706a167c1e490a12371e2edf0f34e3@cavoj.net>
+References: <20220718072322.8927-1-tzimmermann@suse.de>
+ <20220718072322.8927-8-tzimmermann@suse.de>
+ <9f682c15a5484b4a94f63e20d41f67d0@cavoj.net>
+ <e881f6d6-0d2b-5775-68f2-35cc4d666d63@suse.de>
+ <874jqfpw7k.fsf@minerva.mail-host-address-is-not-set>
+ <87706a167c1e490a12371e2edf0f34e3@cavoj.net>
+Date:   Mon, 20 Mar 2023 13:12:40 +0100
+Message-ID: <87v8ivoc3r.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CACRpkdYXTk2pzXEM9MTjt=oT-CbhENABSLeb9dN7ZvEy8oqiag@mail.gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Mar 17, 2023 at 09:53:40PM +0100, Linus Walleij wrote:
-> On Fri, Mar 17, 2023 at 7:51 PM Andy Shevchenko
-> <andriy.shevchenko@linux.intel.com> wrote:
-> 
-> > The of_gpio.h is going to be removed. In preparation of that convert
-> > the driver to the agnostic API.
-> >
-> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> 
-> Thanks for fixing this Andy!
-> 
-> > -#if !IS_ENABLED(CONFIG_LCD_HX8357)
-> > +#if IS_ENABLED(CONFIG_LCD_HX8357)
-> >                 /*
-> >                  * Himax LCD controllers used incorrectly named
-> >                  * "gpios-reset" property and also specified wrong
-> > @@ -452,7 +452,7 @@ static struct gpio_desc *of_find_gpio_rename(struct device_node *np,
-> >                  */
-> >                 const char *compatible;
-> >         } gpios[] = {
-> > -#if !IS_ENABLED(CONFIG_LCD_HX8357)
-> > +#if IS_ENABLED(CONFIG_LCD_HX8357)
-> >                 /* Himax LCD controllers used "gpios-reset" */
-> >                 { "reset",      "gpios-reset",  "himax,hx8357" },
-> >                 { "reset",      "gpios-reset",  "himax,hx8369" },
-> 
-> Eh what happened here .. it's even intuitively wrong.
+Samuel =C4=8Cavoj <samuel@cavoj.net> writes:
 
-I believe it had to be something  like
+[...]
 
-	#if 0 && IS_ENABLED()
+>>>> This call to sysfb_disable() has been causing trouble with regard to
+>>>> VFIO. VFIO has been calling aperture_remove_conflicting_pci_devices=20
+>>>> to
+>>>> get rid of any console drivers (d173780620792c) using the device in
+>>>> question, but now even unrelated drivers are getting killed. Example
+>>>> situation:
+>>>=20
+>>> Which drivers do you use?
+>
+> This happens with either no drivers loaded or the proprietary nvidia
+> driver. Nouveau is fine as it doesn't rely on efifb but brings its own.
+>
 
-to show that this change is for the future.
-Currently it does something unneeded for the kernels with that option off.
+Which is what all DRM drivers should do. If they want to make sure that a
+fbdev will be present after the DRM driver probes, then should register an
+emulated fbdev.
 
-> I would add
-> Fixes: fbbbcd177a27 ("gpiolib: of: add quirk for locating reset lines
-> with legacy bindings")
+There was an attempt to workaround that in [0], in particular patch [1]
+but that effort was not continued since the only DRM driver that would be
+affected is the Nvidia proprietary driver that relies on efifb/simpledrm
+to have a VT.
 
-I'm not sure. But it's fine, I can add it. Just want to double confirm
-you really want this Fixes tag.
+[0]: https://patchwork.kernel.org/project/dri-devel/list/?series=3D711019&a=
+rchive=3Dboth
+[1]: https://patchwork.kernel.org/project/dri-devel/patch/20230111154112.90=
+575-11-daniel.vetter@ffwll.ch/
 
-> It wasn't used until now it seems so not a regression and no
-> need for a separate patch.
+--=20
+Best regards,
 
-Exactly why I'm not sure about the tag :-)
-
-> Other than that it looks correct.
-> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-
-Thank you!
-
--- 
-With Best Regards,
-Andy Shevchenko
-
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 

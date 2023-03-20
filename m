@@ -2,43 +2,62 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD82AC6FD1F
-	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Mar 2023 01:51:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9533AC7618D
+	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Mar 2023 09:47:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229490AbjCTBvR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 19 Mar 2023 21:51:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44894 "EHLO
+        id S231159AbjCTJrJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 20 Mar 2023 05:47:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38976 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229449AbjCTBvQ (ORCPT
+        with ESMTP id S231279AbjCTJrG (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 19 Mar 2023 21:51:16 -0400
-X-Greylist: delayed 239 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Sun, 19 Mar 2023 18:51:14 PDT
-Received: from lithium.sammserver.com (lithium.sammserver.com [168.119.122.30])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D9CD94C23
-        for <linux-fbdev@vger.kernel.org>; Sun, 19 Mar 2023 18:51:14 -0700 (PDT)
-Received: from mail.sammserver.com (sammserver.wg [10.32.40.1])
+        Mon, 20 Mar 2023 05:47:06 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 674EE21957
+        for <linux-fbdev@vger.kernel.org>; Mon, 20 Mar 2023 02:47:00 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (Client did not present a certificate)
-        by lithium.sammserver.com (Postfix) with ESMTPS id 2F39031181CC;
-        Mon, 20 Mar 2023 02:47:14 +0100 (CET)
-Received: from mail.sammserver.com (localhost.localdomain [127.0.0.1])
-        by mail.sammserver.com (Postfix) with ESMTP id CD23635E3C;
-        Mon, 20 Mar 2023 02:47:13 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cavoj.net; s=email;
-        t=1679276833; bh=pC4qvrrK/n9fka/sqI1Yp3RNW0hirkEvh7yvqE7rqXI=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=Hf+5u2neIxkqhJimC7+VGAmEA0gmSS8+wRYjRLD9BP/IPlSJxpTxfm51f/UShFr/5
-         Ru5sw9BozbNptmpJ0PSWO69lqI/QEssU8jgn3NEZlJPg1Ir9mBQSbaQXQB4vq/vr3Z
-         ZzrwbcI9LgqIK/7suVlk0rGRW9KRG7kRJz8ScxOs=
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 615371F45F;
+        Mon, 20 Mar 2023 09:46:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1679305618; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=ryJN6nyMsBI4dTDnpcnuwnm2LidX60A3gO/ACot2SjQ=;
+        b=k63Xc4Hx9xOYVz5gvZvRBqRnJv63FVvqaiW30YjFOr4XjNS8ic7bPGlqopdPKFVZN1lVZ6
+        v22yWFcSIOFypEAWV1gzyizUf9W+KkEe4mAW4J/5YxIwmIOTIPN00eZOpoLeYpDkkdGfut
+        JX1z9oghFP9u1CN3qKCMv0MqS1CIk7s=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1679305618;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=ryJN6nyMsBI4dTDnpcnuwnm2LidX60A3gO/ACot2SjQ=;
+        b=qBjzm9ZRdsqPTtcsIZA8eyakwXRTxC3q3upW9s0YeWgC62Bb/+OtEacEvNkPiSCLbCVLEu
+        NbxylEMfiWA7QwBQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 0A11A13A00;
+        Mon, 20 Mar 2023 09:46:57 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id CUgdL5ErGGTtegAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 20 Mar 2023 09:46:57 +0000
+Message-ID: <e881f6d6-0d2b-5775-68f2-35cc4d666d63@suse.de>
+Date:   Mon, 20 Mar 2023 10:46:56 +0100
 MIME-Version: 1.0
-Date:   Mon, 20 Mar 2023 01:47:13 +0000
-From:   =?UTF-8?Q?Samuel_=C4=8Cavoj?= <samuel@cavoj.net>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.9.0
+Subject: Re: [PATCH v2 07/11] video/aperture: Disable and unregister sysfb
+ devices via aperture helpers
+To:     =?UTF-8?Q?Samuel_=c4=8cavoj?= <samuel@cavoj.net>
 Cc:     javierm@redhat.com, deller@gmx.de, daniel@ffwll.ch,
         sam@ravnborg.org, maxime@cerno.tech, linux-fbdev@vger.kernel.org,
         linux-staging@lists.linux.dev, dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
         Zack Rusin <zackr@vmware.com>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
         Alex Deucher <alexander.deucher@amd.com>,
@@ -46,74 +65,117 @@ Cc:     javierm@redhat.com, deller@gmx.de, daniel@ffwll.ch,
         Changcheng Deng <deng.changcheng@zte.com.cn>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>
-Subject: Re: [PATCH v2 07/11] video/aperture: Disable and unregister sysfb
- devices via aperture helpers
-In-Reply-To: <20220718072322.8927-8-tzimmermann@suse.de>
 References: <20220718072322.8927-1-tzimmermann@suse.de>
  <20220718072322.8927-8-tzimmermann@suse.de>
-Message-ID: <9f682c15a5484b4a94f63e20d41f67d0@cavoj.net>
-X-Sender: samuel@cavoj.net
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+ <9f682c15a5484b4a94f63e20d41f67d0@cavoj.net>
+Content-Language: en-US
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <9f682c15a5484b4a94f63e20d41f67d0@cavoj.net>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------xnpeKByV8t1F9ODVmz7UUn99"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------xnpeKByV8t1F9ODVmz7UUn99
+Content-Type: multipart/mixed; boundary="------------9G0JSQJfuGFGMVTgqrADj50t";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: =?UTF-8?Q?Samuel_=c4=8cavoj?= <samuel@cavoj.net>
+Cc: javierm@redhat.com, deller@gmx.de, daniel@ffwll.ch, sam@ravnborg.org,
+ maxime@cerno.tech, linux-fbdev@vger.kernel.org,
+ linux-staging@lists.linux.dev, dri-devel@lists.freedesktop.org,
+ Zack Rusin <zackr@vmware.com>, Daniel Vetter <daniel.vetter@ffwll.ch>,
+ Alex Deucher <alexander.deucher@amd.com>,
+ Zhen Lei <thunder.leizhen@huawei.com>,
+ Changcheng Deng <deng.changcheng@zte.com.cn>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>
+Message-ID: <e881f6d6-0d2b-5775-68f2-35cc4d666d63@suse.de>
+Subject: Re: [PATCH v2 07/11] video/aperture: Disable and unregister sysfb
+ devices via aperture helpers
+References: <20220718072322.8927-1-tzimmermann@suse.de>
+ <20220718072322.8927-8-tzimmermann@suse.de>
+ <9f682c15a5484b4a94f63e20d41f67d0@cavoj.net>
+In-Reply-To: <9f682c15a5484b4a94f63e20d41f67d0@cavoj.net>
 
-> diff --git a/drivers/video/aperture.c b/drivers/video/aperture.c
-> index f42a0d8bc211..101e13c2cf41 100644
-> --- a/drivers/video/aperture.c
-> +++ b/drivers/video/aperture.c
-> @@ -8,6 +8,7 @@
->  #include <linux/pci.h>
->  #include <linux/platform_device.h>
->  #include <linux/slab.h>
-> +#include <linux/sysfb.h>
->  #include <linux/types.h>
->  #include <linux/vgaarb.h>
-> 
-> @@ -286,7 +287,20 @@ int 
-> aperture_remove_conflicting_devices(resource_size_t base, 
-> resource_size_t si
->  #if IS_REACHABLE(CONFIG_FB)
->  	struct apertures_struct *a;
->  	int ret;
-> +#endif
-> +
-> +	/*
-> +	 * If a driver asked to unregister a platform device registered by
-> +	 * sysfb, then can be assumed that this is a driver for a display
-> +	 * that is set up by the system firmware and has a generic driver.
-> +	 *
-> +	 * Drivers for devices that don't have a generic driver will never
-> +	 * ask for this, so let's assume that a real driver for the display
-> +	 * was already probed and prevent sysfb to register devices later.
-> +	 */
-> +	sysfb_disable();
+--------------9G0JSQJfuGFGMVTgqrADj50t
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-This call to sysfb_disable() has been causing trouble with regard to
-VFIO. VFIO has been calling aperture_remove_conflicting_pci_devices to
-get rid of any console drivers (d173780620792c) using the device in
-question, but now even unrelated drivers are getting killed. Example
-situation:
+SGkNCg0KQW0gMjAuMDMuMjMgdW0gMDI6NDcgc2NocmllYiBTYW11ZWwgxIxhdm9qOg0KPiBI
+aSwNCj4gDQo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9hcGVydHVyZS5jIGIvZHJp
+dmVycy92aWRlby9hcGVydHVyZS5jDQo+PiBpbmRleCBmNDJhMGQ4YmMyMTEuLjEwMWUxM2My
+Y2Y0MSAxMDA2NDQNCj4+IC0tLSBhL2RyaXZlcnMvdmlkZW8vYXBlcnR1cmUuYw0KPj4gKysr
+IGIvZHJpdmVycy92aWRlby9hcGVydHVyZS5jDQo+PiBAQCAtOCw2ICs4LDcgQEANCj4+IMKg
+I2luY2x1ZGUgPGxpbnV4L3BjaS5oPg0KPj4gwqAjaW5jbHVkZSA8bGludXgvcGxhdGZvcm1f
+ZGV2aWNlLmg+DQo+PiDCoCNpbmNsdWRlIDxsaW51eC9zbGFiLmg+DQo+PiArI2luY2x1ZGUg
+PGxpbnV4L3N5c2ZiLmg+DQo+PiDCoCNpbmNsdWRlIDxsaW51eC90eXBlcy5oPg0KPj4gwqAj
+aW5jbHVkZSA8bGludXgvdmdhYXJiLmg+DQo+Pg0KPj4gQEAgLTI4Niw3ICsyODcsMjAgQEAg
+aW50IA0KPj4gYXBlcnR1cmVfcmVtb3ZlX2NvbmZsaWN0aW5nX2RldmljZXMocmVzb3VyY2Vf
+c2l6ZV90IGJhc2UsIA0KPj4gcmVzb3VyY2Vfc2l6ZV90IHNpDQo+PiDCoCNpZiBJU19SRUFD
+SEFCTEUoQ09ORklHX0ZCKQ0KPj4gwqDCoMKgwqAgc3RydWN0IGFwZXJ0dXJlc19zdHJ1Y3Qg
+KmE7DQo+PiDCoMKgwqDCoCBpbnQgcmV0Ow0KPj4gKyNlbmRpZg0KPj4gKw0KPj4gK8KgwqDC
+oCAvKg0KPj4gK8KgwqDCoMKgICogSWYgYSBkcml2ZXIgYXNrZWQgdG8gdW5yZWdpc3RlciBh
+IHBsYXRmb3JtIGRldmljZSByZWdpc3RlcmVkIGJ5DQo+PiArwqDCoMKgwqAgKiBzeXNmYiwg
+dGhlbiBjYW4gYmUgYXNzdW1lZCB0aGF0IHRoaXMgaXMgYSBkcml2ZXIgZm9yIGEgZGlzcGxh
+eQ0KPj4gK8KgwqDCoMKgICogdGhhdCBpcyBzZXQgdXAgYnkgdGhlIHN5c3RlbSBmaXJtd2Fy
+ZSBhbmQgaGFzIGEgZ2VuZXJpYyBkcml2ZXIuDQo+PiArwqDCoMKgwqAgKg0KPj4gK8KgwqDC
+oMKgICogRHJpdmVycyBmb3IgZGV2aWNlcyB0aGF0IGRvbid0IGhhdmUgYSBnZW5lcmljIGRy
+aXZlciB3aWxsIG5ldmVyDQo+PiArwqDCoMKgwqAgKiBhc2sgZm9yIHRoaXMsIHNvIGxldCdz
+IGFzc3VtZSB0aGF0IGEgcmVhbCBkcml2ZXIgZm9yIHRoZSBkaXNwbGF5DQo+PiArwqDCoMKg
+wqAgKiB3YXMgYWxyZWFkeSBwcm9iZWQgYW5kIHByZXZlbnQgc3lzZmIgdG8gcmVnaXN0ZXIg
+ZGV2aWNlcyBsYXRlci4NCj4+ICvCoMKgwqDCoCAqLw0KPj4gK8KgwqDCoCBzeXNmYl9kaXNh
+YmxlKCk7DQo+IA0KPiBUaGlzIGNhbGwgdG8gc3lzZmJfZGlzYWJsZSgpIGhhcyBiZWVuIGNh
+dXNpbmcgdHJvdWJsZSB3aXRoIHJlZ2FyZCB0bw0KPiBWRklPLiBWRklPIGhhcyBiZWVuIGNh
+bGxpbmcgYXBlcnR1cmVfcmVtb3ZlX2NvbmZsaWN0aW5nX3BjaV9kZXZpY2VzIHRvDQo+IGdl
+dCByaWQgb2YgYW55IGNvbnNvbGUgZHJpdmVycyAoZDE3Mzc4MDYyMDc5MmMpIHVzaW5nIHRo
+ZSBkZXZpY2UgaW4NCj4gcXVlc3Rpb24sIGJ1dCBub3cgZXZlbiB1bnJlbGF0ZWQgZHJpdmVy
+cyBhcmUgZ2V0dGluZyBraWxsZWQuIEV4YW1wbGUNCj4gc2l0dWF0aW9uOg0KDQpXaGljaCBk
+cml2ZXJzIGRvIHlvdSB1c2U/DQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4gDQo+IE1h
+Y2hpbmUgaGFzIHR3byBHUFVzIGFuZCB1c2VzIGVmaWZiIGZvciB0aGUgY29uc29sZS4gRWZp
+ZmIgcmVnaXN0ZXJzDQo+IHdpdGggdGhlIGFwZXJ0dXJlIHN5c3RlbSB0aGUgZWZpIGZyYW1l
+YnVmZmVyIHJlZ2lvbiwgd2hpY2ggaXMgY292ZXJlZA0KPiBieSBhIEJBUiByZXNvdXJjZSBv
+ZiBHUFUgMS4gVkZJTyBncmFicyBHUFUgMiBhbmQgY2FsbHMNCj4gYXBlcnR1cmVfcmVtb3Zl
+X2NvbmZsaWN0aW5nX3BjaV9kZXZpY2VzKEdQVSAyKS4gR1BVIDIgaGFzIG5vIG92ZXJsYXAN
+Cj4gd2l0aCB0aGUgZWZpZmIgb24gR1BVMSBidXQgdGhlIGVmaWZiIGlzIGtpbGxlZCByZWdh
+cmRsZXNzIGR1ZSB0bw0KPiB0aGUgdW5jb25kaXRpb25hbCBjYWxsIHRvIHN5c2ZiX2Rpc2Fi
+bGUoKS4gVGhlIGNvbnNvbGUgc3dpdGNoZXMNCj4gdG8gZHVtbXkgYW5kIGxvY2tzIHVwIGZy
+b20gdGhlIHVzZXIgcGVyc3BlY3RpdmUuDQo+IFRoaXMgc2VlbXMgdW5uZWNlc3NhcnksIGFz
+IHRoZSBkZXZpY2UgaXMgdW5yZWxhdGVkLg0KPiANCj4gSSBkbyBub3QgcXVpdGUgdW5kZXJz
+dGFuZCB0aGUgY29tbWVudCBqdXN0aWZ5aW5nIHRoZSBjYWxsLg0KPiANCj4gU29tZSBkaXNj
+dXNzaW9ucyB3aXRoIHdvcmthcm91bmRzOg0KPiBodHRwczovL29sZC5yZWRkaXQuY29tL3Iv
+VkZJTy9jb21tZW50cy8xMXFlaTR0L2ZyYW1lYnVmZmVyX2RvZXNudF93b3JrX2FueW1vcmVf
+YWZ0ZXJfcGFzc3Rocm91Z2gvDQo+IGh0dHBzOi8vYmJzLmFyY2hsaW51eC5vcmcvdmlld3Rv
+cGljLnBocD9pZD0yODA1MTINCj4gDQo+IA0KPiBUaGFua3MsDQo+IFNhbXVlbA0KDQotLSAN
+ClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNv
+ZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7D
+vHJuYmVyZywgR2VybWFueQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0
+c2bDvGhyZXI6IEl2byBUb3Rldg0K
 
-Machine has two GPUs and uses efifb for the console. Efifb registers
-with the aperture system the efi framebuffer region, which is covered
-by a BAR resource of GPU 1. VFIO grabs GPU 2 and calls
-aperture_remove_conflicting_pci_devices(GPU 2). GPU 2 has no overlap
-with the efifb on GPU1 but the efifb is killed regardless due to
-the unconditional call to sysfb_disable(). The console switches
-to dummy and locks up from the user perspective.
-This seems unnecessary, as the device is unrelated.
+--------------9G0JSQJfuGFGMVTgqrADj50t--
 
-I do not quite understand the comment justifying the call.
+--------------xnpeKByV8t1F9ODVmz7UUn99
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-Some discussions with workarounds:
-https://old.reddit.com/r/VFIO/comments/11qei4t/framebuffer_doesnt_work_anymore_after_passthrough/
-https://bbs.archlinux.org/viewtopic.php?id=280512
+-----BEGIN PGP SIGNATURE-----
 
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmQYK5AFAwAAAAAACgkQlh/E3EQov+Dv
+qBAA0BnqOu5qzZgy3VMJzoT18J6zhO54Lv9mrJExurzfsW14ZlSJFnBTz3uDs51CGvnuiAdoPfwY
+VTtvLkII3LguqIlXEZ9eiCEGHzrvO5lKKlnnG0B5KYH3Z+AQK+I5Yf0X2fUPzNugwEHj5rBa1uH0
+CuJShCC/HJ6gvET11NjqvykHZuSgSqCtewk3rwims3xHeHjFgMIqNIKSQnuNNBrCg0RW1LzHosan
+SHCqSjf1GwYOO0sQYgsarBnxZy7Yd19tXQ28oteBh3TNCayr4fSYF/5jg9IqU8203uap4KMi29oz
+vPRnydDTr3p+7knjeEHg7FSAyCMBFNyveAD7fGXihdWknJBE54iy07JXOMVEAuV3vJgh9jc3RbxC
+6SxIsNHgp3zTUsmsvR+kCLQln/QHMq7mNLdsBKRV0IcNnNadHs3EBwtO5mjotJA25dJODDeXpr4j
+rJTc/SP1CUq57JgJUJh5YbuU+Ay+Csz9o5jgNUJVCL/IXBreCgd/MjKD+ou/hA8Y97EKHzXhc8So
+Fn2qS5LrvbeI5qZeFVAeQIHG3rij5zGG8Yec+6PHQsIYCcZxNixGOzmLwqQcdVHvbp7e4/mFvQ4B
+tbljPK5OBHPR8QgnAL4yEyzTljb5fjmoHfRg08ztdqIvf8BtWPKq7NlEDgZ1wxa9Iwt09LMTqy1c
+lBM=
+=FLCc
+-----END PGP SIGNATURE-----
 
-Thanks,
-Samuel
+--------------xnpeKByV8t1F9ODVmz7UUn99--

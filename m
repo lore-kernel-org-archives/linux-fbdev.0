@@ -2,44 +2,45 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 727D0C6FD1F
-	for <linux-fbdev@archiver.kernel.org>; Wed, 22 Mar 2023 20:10:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33907C77B60
+	for <linux-fbdev@archiver.kernel.org>; Wed, 22 Mar 2023 20:10:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232011AbjCVUKy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 22 Mar 2023 16:10:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50680 "EHLO
+        id S232034AbjCVUK4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 22 Mar 2023 16:10:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50978 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232154AbjCVUKL (ORCPT
+        with ESMTP id S232173AbjCVUKM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 22 Mar 2023 16:10:11 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 42CC96A1F2;
-        Wed, 22 Mar 2023 13:03:33 -0700 (PDT)
+        Wed, 22 Mar 2023 16:10:12 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E9C656BC35;
+        Wed, 22 Mar 2023 13:03:34 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id C4494622B8;
-        Wed, 22 Mar 2023 20:02:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 712A8C4339E;
-        Wed, 22 Mar 2023 20:02:31 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 72674622CB;
+        Wed, 22 Mar 2023 20:02:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DFD75C433EF;
+        Wed, 22 Mar 2023 20:02:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1679515352;
-        bh=L0ppsVkM3L1IhzDIY/wbSoHkSWthJizIcAiKa9RNvfk=;
+        s=k20201202; t=1679515346;
+        bh=424IzOqQEgqNHPP35M94Ry7+wAFUjP2L6M6RBIzUo8E=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=nH0cBNi7YCouv7ksIzIAmZkiLAoUsQAyBWKnzqEbcAcWzpEplotiW2ZJTmcE+Dq52
-         wzMAR29MtA4DrmoedbmAYOYoLJhUJQmnzMR12jlFo56HRWv6kP2XBaYhNDe4dLNo68
-         KIw62krylHt/+TwSzlRRfEdekLrfvxX3ltOm8wJY5G0fMP5IeR4rK2NhHElE1LPWBa
-         wiCFN0lDDI9uiAf34IdOQCs2bIQGt9miaj/e6F7DFKTegZgwo1YWlw95Xi2dF2aQ+X
-         zJdGWvrvp9bag2HAzjtykeYr1T7cc8aLoW1kqQE5bGsOgdd1Mott59490n3KYfWCm1
-         COLmwv0NjK2ng==
+        b=d5h2oIuqCPE+6BgAa1iVKNf/n81AslRKVQSwdfEMKkMBvAyp7t6BcJjNzqS1lULpg
+         9nwVlMcPi8FCcNmz/MKn+ORWPwxkjgJWuHq5FBxeBe8MufDYW67Kg1Ro9+QKDrKTWB
+         9PxTbQjEhDl1mQ4hOsCNWu5uYLGq4WtFYZRtdqRxUlevtML8qk3XbdaUARJ8OTe8jL
+         PvbbwL2Q5dIIKnYjrVELxyCgKBzvAUcZzm4u0vSIoxOzEyWFgvaRPTl73RRw8jI3hf
+         n2tRhdz+q+nu/knD/AWrjU5+IBqArsDaa0ESFw2PwvefHtTpfWAOSFpX19SHDV97i8
+         2w/su9TnEdaGg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Wei Chen <harperchen1110@gmail.com>, Helge Deller <deller@gmx.de>,
-        Sasha Levin <sashal@kernel.org>, adaplas@gmail.com,
+        Sasha Levin <sashal@kernel.org>, javierm@redhat.com,
+        tzimmermann@suse.de, wsa+renesas@sang-engineering.com,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 5.10 07/12] fbdev: nvidia: Fix potential divide by zero
-Date:   Wed, 22 Mar 2023 16:02:01 -0400
-Message-Id: <20230322200207.1997367-7-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 05/12] fbdev: tgafb: Fix potential divide by zero
+Date:   Wed, 22 Mar 2023 16:01:59 -0400
+Message-Id: <20230322200207.1997367-5-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230322200207.1997367-1-sashal@kernel.org>
 References: <20230322200207.1997367-1-sashal@kernel.org>
@@ -53,36 +54,40 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Wei Chen <harperchen1110@gmail.com>
 
-[ Upstream commit 92e2a00f2987483e1f9253625828622edd442e61 ]
+[ Upstream commit f90bd245de82c095187d8c2cabb8b488a39eaecc ]
 
-variable var->pixclock can be set by user. In case it
-equals to zero, divide by zero would occur in nvidiafb_set_par.
+fb_set_var would by called when user invokes ioctl with cmd
+FBIOPUT_VSCREENINFO. User-provided data would finally reach
+tgafb_check_var. In case var->pixclock is assigned to zero,
+divide by zero would occur when checking whether reciprocal
+of var->pixclock is too high.
 
 Similar crashes have happened in other fbdev drivers. There
 is no check and modification on var->pixclock along the call
-chain to nvidia_check_var and nvidiafb_set_par. We believe it
-could also be triggered in driver nvidia from user site.
+chain to tgafb_check_var. We believe it could also be triggered
+in driver tgafb from user site.
 
 Signed-off-by: Wei Chen <harperchen1110@gmail.com>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/nvidia/nvidia.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/tgafb.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
-index a372a183c1f01..f9c388a8c10e3 100644
---- a/drivers/video/fbdev/nvidia/nvidia.c
-+++ b/drivers/video/fbdev/nvidia/nvidia.c
-@@ -763,6 +763,8 @@ static int nvidiafb_check_var(struct fb_var_screeninfo *var,
- 	int pitch, err = 0;
+diff --git a/drivers/video/fbdev/tgafb.c b/drivers/video/fbdev/tgafb.c
+index 666fbe2f671c9..98a2977fd4271 100644
+--- a/drivers/video/fbdev/tgafb.c
++++ b/drivers/video/fbdev/tgafb.c
+@@ -166,6 +166,9 @@ tgafb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+ 	struct tga_par *par = (struct tga_par *)info->par;
  
- 	NVTRACE_ENTER();
 +	if (!var->pixclock)
 +		return -EINVAL;
- 
- 	var->transp.offset = 0;
- 	var->transp.length = 0;
++
+ 	if (par->tga_type == TGA_TYPE_8PLANE) {
+ 		if (var->bits_per_pixel != 8)
+ 			return -EINVAL;
 -- 
 2.39.2
 

@@ -2,44 +2,44 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 649AFC76196
-	for <linux-fbdev@archiver.kernel.org>; Wed, 22 Mar 2023 20:08:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5A2EC7619A
+	for <linux-fbdev@archiver.kernel.org>; Wed, 22 Mar 2023 20:08:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231876AbjCVUIr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 22 Mar 2023 16:08:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50022 "EHLO
+        id S229931AbjCVUIt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 22 Mar 2023 16:08:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51360 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231835AbjCVUIM (ORCPT
+        with ESMTP id S231880AbjCVUIN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 22 Mar 2023 16:08:12 -0400
+        Wed, 22 Mar 2023 16:08:13 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52C226B95A;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB00C6B95E;
         Wed, 22 Mar 2023 13:02:12 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 4EE03622C8;
-        Wed, 22 Mar 2023 20:01:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6454C433A1;
-        Wed, 22 Mar 2023 20:01:08 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 19E1D622CA;
+        Wed, 22 Mar 2023 20:01:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CE279C433D2;
+        Wed, 22 Mar 2023 20:01:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1679515269;
-        bh=ptpGmAS8u/6+zxN4lYnWnUq3KGp2DFwMEbw0d+MA0lc=;
+        s=k20201202; t=1679515275;
+        bh=eMWDS+3wZyH867vHh4eJhuV+Y41uSSa2FKh5pK+WX4w=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=GFeP3j8HaSD1bCvFBfHrLvAfNnMD9PXLZ2GvruQeuybfDNcjjdmRnL/M0/t/4R0Z3
-         glvjiQ4L/3IHMtDSgUiUwZJp1F5gTh26MH/ekU79lx4K25VQuHOyhLY0NuCXurx+Bv
-         dch8LibTAzP+etj52LOsdbNTApeOk70M0xNrqPgjUlU3m/T+U6gDBa5v9OD9dEyczD
-         PIQoRe/70573zZXhbiMY5vdc+H4LS6l1aB7QIhgkOCezbYbZmz5YXCOriMBw79wvkX
-         crN2+BNamHhCBVpTkcvSvgdJA+Fe3+ELOtTN5SMxWOfozasRHDcBXy5tNpTxiryrMH
-         UffSBsXfhR1bw==
+        b=PcKFqSnc3k7sxgRGaz9e32zVyZIg9WGlNSXqTBfVvVAhchJDDc0OnB+ukKcVD7/hR
+         l9OIyvX0EQPBLw23nkUuxPdzwDlDotF/Jlsao6R99JdH1cSg7Q1ydEqjTXt1Xrto90
+         qhEcJs0qyaVgCsuvyDi2CefgMVQfpDqetRAH1SCCVF+OBPMj8/9w+xnhnqF/2JvDIX
+         iwj/SE6qcjn5uRSoedY6GPsJHULUmdzx96VoseLndjD6rDtX9tZ4DPva07ClFJFarP
+         VqFe064fO43QAEA9iuklo0JQGb4ecoboz8cJDbhrJetyzr8/h0F99HGDAwISjHN/ON
+         vQ96crw/5GA1w==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Wei Chen <harperchen1110@gmail.com>, Helge Deller <deller@gmx.de>,
-        Sasha Levin <sashal@kernel.org>, adaplas@gmail.com,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 6.1 28/34] fbdev: nvidia: Fix potential divide by zero
-Date:   Wed, 22 Mar 2023 15:59:20 -0400
-Message-Id: <20230322195926.1996699-28-sashal@kernel.org>
+        Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 6.1 31/34] fbdev: au1200fb: Fix potential divide by zero
+Date:   Wed, 22 Mar 2023 15:59:23 -0400
+Message-Id: <20230322195926.1996699-31-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230322195926.1996699-1-sashal@kernel.org>
 References: <20230322195926.1996699-1-sashal@kernel.org>
@@ -53,36 +53,35 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Wei Chen <harperchen1110@gmail.com>
 
-[ Upstream commit 92e2a00f2987483e1f9253625828622edd442e61 ]
+[ Upstream commit 44a3b36b42acfc433aaaf526191dd12fbb919fdb ]
 
-variable var->pixclock can be set by user. In case it
-equals to zero, divide by zero would occur in nvidiafb_set_par.
+var->pixclock can be assigned to zero by user. Without
+proper check, divide by zero would occur when invoking
+macro PICOS2KHZ in au1200fb_fb_check_var.
 
-Similar crashes have happened in other fbdev drivers. There
-is no check and modification on var->pixclock along the call
-chain to nvidia_check_var and nvidiafb_set_par. We believe it
-could also be triggered in driver nvidia from user site.
+Error out if var->pixclock is zero.
 
 Signed-off-by: Wei Chen <harperchen1110@gmail.com>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/nvidia/nvidia.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/au1200fb.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
-index a6c3bc2222463..1b8904824ad83 100644
---- a/drivers/video/fbdev/nvidia/nvidia.c
-+++ b/drivers/video/fbdev/nvidia/nvidia.c
-@@ -764,6 +764,8 @@ static int nvidiafb_check_var(struct fb_var_screeninfo *var,
- 	int pitch, err = 0;
+diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
+index 81c3154544287..b6b22fa4a8a01 100644
+--- a/drivers/video/fbdev/au1200fb.c
++++ b/drivers/video/fbdev/au1200fb.c
+@@ -1040,6 +1040,9 @@ static int au1200fb_fb_check_var(struct fb_var_screeninfo *var,
+ 	u32 pixclock;
+ 	int screen_size, plane;
  
- 	NVTRACE_ENTER();
 +	if (!var->pixclock)
 +		return -EINVAL;
++
+ 	plane = fbdev->plane;
  
- 	var->transp.offset = 0;
- 	var->transp.length = 0;
+ 	/* Make sure that the mode respect all LCD controller and
 -- 
 2.39.2
 

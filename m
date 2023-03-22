@@ -2,48 +2,47 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33907C77B60
-	for <linux-fbdev@archiver.kernel.org>; Wed, 22 Mar 2023 20:10:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DA8BC7619A
+	for <linux-fbdev@archiver.kernel.org>; Wed, 22 Mar 2023 20:10:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232034AbjCVUK4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 22 Mar 2023 16:10:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50978 "EHLO
+        id S232023AbjCVUKz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 22 Mar 2023 16:10:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50934 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232173AbjCVUKM (ORCPT
+        with ESMTP id S232165AbjCVUKM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Wed, 22 Mar 2023 16:10:12 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E9C656BC35;
-        Wed, 22 Mar 2023 13:03:34 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 89BDC6A079;
+        Wed, 22 Mar 2023 13:03:32 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 72674622CB;
-        Wed, 22 Mar 2023 20:02:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DFD75C433EF;
-        Wed, 22 Mar 2023 20:02:25 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id D3247622B6;
+        Wed, 22 Mar 2023 20:01:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78331C4339E;
+        Wed, 22 Mar 2023 20:01:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1679515346;
-        bh=424IzOqQEgqNHPP35M94Ry7+wAFUjP2L6M6RBIzUo8E=;
+        s=k20201202; t=1679515316;
+        bh=gwZeTobWjHLpgBTWbj4APQvG09DaIVkhU3OdBi/H7V4=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=d5h2oIuqCPE+6BgAa1iVKNf/n81AslRKVQSwdfEMKkMBvAyp7t6BcJjNzqS1lULpg
-         9nwVlMcPi8FCcNmz/MKn+ORWPwxkjgJWuHq5FBxeBe8MufDYW67Kg1Ro9+QKDrKTWB
-         9PxTbQjEhDl1mQ4hOsCNWu5uYLGq4WtFYZRtdqRxUlevtML8qk3XbdaUARJ8OTe8jL
-         PvbbwL2Q5dIIKnYjrVELxyCgKBzvAUcZzm4u0vSIoxOzEyWFgvaRPTl73RRw8jI3hf
-         n2tRhdz+q+nu/knD/AWrjU5+IBqArsDaa0ESFw2PwvefHtTpfWAOSFpX19SHDV97i8
-         2w/su9TnEdaGg==
+        b=BTgvfUTxLw/yKv60Z54HXxpWNaSUMaS3IzCPH8J2a99Nx4jMf2tZBIr2Y/TCI2yem
+         YrzGNYzYxBaCk1s4ET3rg04555wiY4W5DkwuN8qxgF1fWqQCmsf9fL84PWpIeJsEdU
+         Lbgy9t7PTXS176VQ505zX/+XA/WBPjax2m6gWvSPBJeUe+Uh+Df44pfHc0pBlsf/iy
+         n7am/o/+q+GGxpVMrlfPSqBs0Hb+ZWcC50a/iN8IpAYFZamIhAU5q90H9czu7LzUfH
+         5SKPlG778EigMEURxB4En90jMs+UXlEPMEdelKHf+IS06i6C9+YpY6UY5BFlnOfwT6
+         XbbOMhXyMuN6w==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Wei Chen <harperchen1110@gmail.com>, Helge Deller <deller@gmx.de>,
-        Sasha Levin <sashal@kernel.org>, javierm@redhat.com,
-        tzimmermann@suse.de, wsa+renesas@sang-engineering.com,
+        Sasha Levin <sashal@kernel.org>, mbroemme@libmpq.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 5.10 05/12] fbdev: tgafb: Fix potential divide by zero
-Date:   Wed, 22 Mar 2023 16:01:59 -0400
-Message-Id: <20230322200207.1997367-5-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 11/16] fbdev: intelfb: Fix potential divide by zero
+Date:   Wed, 22 Mar 2023 16:01:15 -0400
+Message-Id: <20230322200121.1997157-11-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230322200207.1997367-1-sashal@kernel.org>
-References: <20230322200207.1997367-1-sashal@kernel.org>
+In-Reply-To: <20230322200121.1997157-1-sashal@kernel.org>
+References: <20230322200121.1997157-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -54,40 +53,35 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Wei Chen <harperchen1110@gmail.com>
 
-[ Upstream commit f90bd245de82c095187d8c2cabb8b488a39eaecc ]
+[ Upstream commit d823685486a3446d061fed7c7d2f80af984f119a ]
 
-fb_set_var would by called when user invokes ioctl with cmd
-FBIOPUT_VSCREENINFO. User-provided data would finally reach
-tgafb_check_var. In case var->pixclock is assigned to zero,
-divide by zero would occur when checking whether reciprocal
-of var->pixclock is too high.
+Variable var->pixclock is controlled by user and can be assigned
+to zero. Without proper check, divide by zero would occur in
+intelfbhw_validate_mode and intelfbhw_mode_to_hw.
 
-Similar crashes have happened in other fbdev drivers. There
-is no check and modification on var->pixclock along the call
-chain to tgafb_check_var. We believe it could also be triggered
-in driver tgafb from user site.
+Error out if var->pixclock is zero.
 
 Signed-off-by: Wei Chen <harperchen1110@gmail.com>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/tgafb.c | 3 +++
+ drivers/video/fbdev/intelfb/intelfbdrv.c | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/tgafb.c b/drivers/video/fbdev/tgafb.c
-index 666fbe2f671c9..98a2977fd4271 100644
---- a/drivers/video/fbdev/tgafb.c
-+++ b/drivers/video/fbdev/tgafb.c
-@@ -166,6 +166,9 @@ tgafb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
- 	struct tga_par *par = (struct tga_par *)info->par;
+diff --git a/drivers/video/fbdev/intelfb/intelfbdrv.c b/drivers/video/fbdev/intelfb/intelfbdrv.c
+index a9579964eaba8..8a703adfa9360 100644
+--- a/drivers/video/fbdev/intelfb/intelfbdrv.c
++++ b/drivers/video/fbdev/intelfb/intelfbdrv.c
+@@ -1214,6 +1214,9 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
+ 
+ 	dinfo = GET_DINFO(info);
  
 +	if (!var->pixclock)
 +		return -EINVAL;
 +
- 	if (par->tga_type == TGA_TYPE_8PLANE) {
- 		if (var->bits_per_pixel != 8)
- 			return -EINVAL;
+ 	/* update the pitch */
+ 	if (intelfbhw_validate_mode(dinfo, var) != 0)
+ 		return -EINVAL;
 -- 
 2.39.2
 

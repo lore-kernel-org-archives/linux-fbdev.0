@@ -2,133 +2,136 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 834E0C761AF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Mar 2023 17:04:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B05B4C6FD1F
+	for <linux-fbdev@archiver.kernel.org>; Wed, 22 Mar 2023 07:04:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229905AbjCUREG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 21 Mar 2023 13:04:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56682 "EHLO
+        id S229656AbjCVHEF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 22 Mar 2023 03:04:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56754 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230311AbjCUREC (ORCPT
+        with ESMTP id S229541AbjCVHEE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 21 Mar 2023 13:04:02 -0400
-Received: from mail-il1-f197.google.com (mail-il1-f197.google.com [209.85.166.197])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F113E1A4BF
-        for <linux-fbdev@vger.kernel.org>; Tue, 21 Mar 2023 10:03:57 -0700 (PDT)
-Received: by mail-il1-f197.google.com with SMTP id w8-20020a92db48000000b00322124084f3so8024484ilq.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 21 Mar 2023 10:03:57 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1679418235;
-        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=iQJQrb9mny4qoyxwqwRsccNTiZVnDvEPXFwh94AIcx4=;
-        b=wQty7id0orWeXbfR5TXzWU0ciA0jgyXmOcz/EkN9+PQIQ6Vj7eanYTGPDJC5ITXS/9
-         PKecUdWHN0hGecKMni9CNQIVkt6EvO5Em+B/O0Pv9RlblktMf+CCT0gdRCcsTL0ewI7I
-         FEUZyuRJe5/bjjbZrO6sIpJZBWQPvu1UGSKFYd+m7bQfP8+goJlYTMxTsedUI4skvc39
-         yrS986v6mayO1yXeDF/nV4uGIYsfbLjwrqdZXEL3rTtX7mdNwJugiUorOQXb1dg+rgE1
-         6nrGOLU/KcVg+iA8VyeNbax54DY9yO03Re/L0MzfhbQNHd1C3hTiTyD77hPqWfzOMhOj
-         N34Q==
-X-Gm-Message-State: AO0yUKV3rFy5471CatvARF1IZsulWVAfSE3uFcNoq8N1CM4h9qg44QKt
-        Ib8p6/XTpt3rzu/Q7BoydIsqrJ0/5wwJPin/joPhxS4Xyu9n
-X-Google-Smtp-Source: AK7set+fiYdL/20PbMmGdByHO7Cgctxr2BNWMLEy39OP9mKD0YmSO0FLCepsjH3LZ27U6vkan+fXqNh6Qfv4AI9Do0zrUEpqe020
+        Wed, 22 Mar 2023 03:04:04 -0400
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 234F12BEED
+        for <linux-fbdev@vger.kernel.org>; Wed, 22 Mar 2023 00:04:04 -0700 (PDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pesVo-0007oC-Ef; Wed, 22 Mar 2023 08:03:56 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pesVm-005rNb-PK; Wed, 22 Mar 2023 08:03:54 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pesVl-006z71-Sy; Wed, 22 Mar 2023 08:03:53 +0100
+Date:   Wed, 22 Mar 2023 08:03:52 +0100
+From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To:     Aisheng Dong <aisheng.dong@nxp.com>
+Cc:     "daniel.thompson@linaro.org" <daniel.thompson@linaro.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        "deller@gmx.de" <deller@gmx.de>, "lee@kernel.org" <lee@kernel.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "thierry.reding@gmail.com" <thierry.reding@gmail.com>,
+        "kernel@pengutronix.de" <kernel@pengutronix.de>
+Subject: Regression in deaeeda2051f ("backlight: pwm_bl: Don't rely on a
+ disabled PWM emiting inactive state")
+Message-ID: <20230322070352.xfwmnqyrao3mifuu@pengutronix.de>
+References: <DB9PR04MB84779AF9758B7FE747C6693D80869@DB9PR04MB8477.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
-X-Received: by 2002:a6b:5d0b:0:b0:74e:7a27:d183 with SMTP id
- r11-20020a6b5d0b000000b0074e7a27d183mr1242791iob.2.1679418235745; Tue, 21 Mar
- 2023 10:03:55 -0700 (PDT)
-Date:   Tue, 21 Mar 2023 10:03:55 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <0000000000005f023705f76c075c@google.com>
-Subject: [syzbot] [fbdev?] KASAN: use-after-free Write in fbcon_get_font
-From:   syzbot <syzbot+5a04eb16db96950bb112@syzkaller.appspotmail.com>
-To:     daniel@ffwll.ch, deller@gmx.de, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="34rk2z2khodqsv3a"
+Content-Disposition: inline
+In-Reply-To: <DB9PR04MB84779AF9758B7FE747C6693D80869@DB9PR04MB8477.eurprd04.prod.outlook.com>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+
+--34rk2z2khodqsv3a
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
 Hello,
 
-syzbot found the following issue on:
+hmm, the subject is wrong, this is about commit deaeeda2051f
+("backlight: pwm_bl: Don't rely on a disabled PWM emiting inactive
+state") and not 00e7e698bff1 ("backlight: pwm_bl: Configure pwm only
+once per backlight toggle"). I fixed it accordingly.
 
-HEAD commit:    fe15c26ee26e Linux 6.3-rc1
-git tree:       git://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux.git for-kernelci
-console output: https://syzkaller.appspot.com/x/log.txt?x=11bc9c16c80000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=7573cbcd881a88c9
-dashboard link: https://syzkaller.appspot.com/bug?extid=5a04eb16db96950bb112
-compiler:       Debian clang version 15.0.7, GNU ld (GNU Binutils for Debian) 2.35.2
-userspace arch: arm64
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=135becbac80000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1182c9d2c80000
+On Wed, Mar 22, 2023 at 05:13:24AM +0000, Aisheng Dong wrote:
+> It seems this patch changed the behavior of pwm_backlight_suspend a littl=
+e bit in
+> pwm_backlight_power_off() that pwm state keep unchanged during suspend.
+> Then pwm_imx_tpm_suspend() will return -Ebusy due to tpm->enable_count > =
+0.
+> Was this intended behavior? Should we fix pwm core or the driver?
 
-Downloadable assets:
-disk image: https://storage.googleapis.com/syzbot-assets/89d41abd07bd/disk-fe15c26e.raw.xz
-vmlinux: https://storage.googleapis.com/syzbot-assets/fa75f5030ade/vmlinux-fe15c26e.xz
-kernel image: https://storage.googleapis.com/syzbot-assets/590d0f5903ee/Image-fe15c26e.gz.xz
+A I see. The problem is the combination of the following facts:
 
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+5a04eb16db96950bb112@syzkaller.appspotmail.com
+ - Some PWMs don't emit a constant inactive signal when disabled, so a
+   consumer who wants a constant inactive signal must not disable the
+   PWM.
 
-==================================================================
-BUG: KASAN: use-after-free in fbcon_get_font+0x240/0x8cc drivers/video/fbdev/core/fbcon.c:2290
-Write of size 22062 at addr ffff0000e1bfabd6 by task syz-executor329/5944
+ - A used PWM is supposed to be disabled by its consumer on suspend.
+   (This is right IMHO because on suspend the PWM is likely to stop
+   oscillating and if the consumer requested some output wave form a
+   suspend usually stops to adhere to the consumer's request.)
 
-CPU: 0 PID: 5944 Comm: syz-executor329 Not tainted 6.3.0-rc1-syzkaller-gfe15c26ee26e #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 03/02/2023
-Call trace:
- dump_backtrace+0x1c8/0x1f4 arch/arm64/kernel/stacktrace.c:158
- show_stack+0x2c/0x3c arch/arm64/kernel/stacktrace.c:165
- __dump_stack lib/dump_stack.c:88 [inline]
- dump_stack_lvl+0xd0/0x124 lib/dump_stack.c:106
- print_address_description mm/kasan/report.c:319 [inline]
- print_report+0x174/0x514 mm/kasan/report.c:430
- kasan_report+0xd4/0x130 mm/kasan/report.c:536
- kasan_check_range+0x264/0x2a4 mm/kasan/generic.c:187
- __asan_memset+0x40/0x70 mm/kasan/shadow.c:84
- fbcon_get_font+0x240/0x8cc drivers/video/fbdev/core/fbcon.c:2290
- con_font_get drivers/tty/vt/vt.c:4559 [inline]
- con_font_op+0x468/0xfa0 drivers/tty/vt/vt.c:4674
- vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
- vt_ioctl+0x1a90/0x252c drivers/tty/vt/vt_ioctl.c:752
- tty_ioctl+0x8a4/0xd8c drivers/tty/tty_io.c:2777
- vfs_ioctl fs/ioctl.c:51 [inline]
- __do_sys_ioctl fs/ioctl.c:870 [inline]
- __se_sys_ioctl fs/ioctl.c:856 [inline]
- __arm64_sys_ioctl+0x14c/0x1c8 fs/ioctl.c:856
- __invoke_syscall arch/arm64/kernel/syscall.c:38 [inline]
- invoke_syscall+0x98/0x2c0 arch/arm64/kernel/syscall.c:52
- el0_svc_common+0x138/0x258 arch/arm64/kernel/syscall.c:142
- do_el0_svc+0x64/0x198 arch/arm64/kernel/syscall.c:193
- el0_svc+0x58/0x168 arch/arm64/kernel/entry-common.c:637
- el0t_64_sync_handler+0x84/0xf0 arch/arm64/kernel/entry-common.c:655
- el0t_64_sync+0x190/0x194 arch/arm64/kernel/entry.S:591
+So the options to fix this are (in order of my preference):
 
-The buggy address belongs to the physical page:
-page:00000000c3c989b0 refcount:1 mapcount:0 mapping:0000000000000000 index:0x0 pfn:0x121800
-head:00000000c3c989b0 order:10 entire_mapcount:0 nr_pages_mapped:0 pincount:0
-flags: 0x5ffc00000010000(head|node=0|zone=2|lastcpupid=0x7ff)
-raw: 05ffc00000010000 0000000000000000 dead000000000122 0000000000000000
-raw: 0000000000000000 0000000000000000 00000001ffffffff 0000000000000000
-page dumped because: kasan: bad access detected
+ a) Improve the check in the pwm_bl driver when it's safe to disable the
+    PWM.
 
-Memory state around the buggy address:
- ffff0000e1bfff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- ffff0000e1bfff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
->ffff0000e1c00000: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-                   ^
- ffff0000e1c00080: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
- ffff0000e1c00100: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-==================================================================
+ b) Disable the PWM on suspend in the pwm_bl driver.
 
+ c) If the pwm-imx-tpm's PWM output is configured with duty_cycle =3D 0 and
+    is known not to continue driving a constant inactive signal on
+    suspend, it might continue to suspend.
 
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+I think a) is not possible in general. To determine that: Which machine
+do you experience this regression on?
 
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
-syzbot can test patches for this issue, for details see:
-https://goo.gl/tpsmEJ#testing-patches
+b) is the right one from the PWM framework's POV. If you have a PWM like
+pwm-imx27 that might result in the backlight going on on suspend. That's
+bad, but compared to the pre-deaeeda2051f state it's still an
+improvement (as there the backlight went on on disable *and* suspend).
+Depending on the machine the backlight might or might not go off again
+later when suspend progresses.
+
+c) isn't that nice because that's an a bit special behaviour and people
+who intend to write code that is correct for all PWMs but only have an
+pwm-imx-tpm to test might fail to do so.
+
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--34rk2z2khodqsv3a
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmQaqFcACgkQj4D7WH0S
+/k5suAgAmpZJvcEqnAqbYWdSB4WE5JEZE786KVSowcw/mmcCDcmRlWJ94Glr7Yei
+qBA1qAC8rCJjSgbqgQ0zSZUPdjDdpcCmjO6mTvHGWZjVqQc2PYOBkg3quGBeN/Jl
+OTW5SHJUAGrmtxsOM/upc8NhbmgiYTegRM7PCIAhzr/kGCpPmywMJymA6b3aGid6
+9xFd67RUs9oE6xVe6t8JDRmby4OGTe1DAxmrlw0wtx8YAozqWWCWgeaYUc7O4icr
+5AwoVkRIRk3xr8VvEwWI7HnHrTXxcd3DCfWZTRq19tC+xxH4io7n3PL4OsqNeANO
+XiWTmxDZwOPBYnP2CwsA/xlbzuH4jQ==
+=CCM+
+-----END PGP SIGNATURE-----
+
+--34rk2z2khodqsv3a--

@@ -2,44 +2,44 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E52DC6FD1F
-	for <linux-fbdev@archiver.kernel.org>; Wed, 22 Mar 2023 20:11:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6DC3C6FD1F
+	for <linux-fbdev@archiver.kernel.org>; Wed, 22 Mar 2023 20:11:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232086AbjCVULN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 22 Mar 2023 16:11:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50022 "EHLO
+        id S232069AbjCVULx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 22 Mar 2023 16:11:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53542 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232221AbjCVUKU (ORCPT
+        with ESMTP id S231428AbjCVULO (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 22 Mar 2023 16:10:20 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A24217B3B8;
-        Wed, 22 Mar 2023 13:03:38 -0700 (PDT)
+        Wed, 22 Mar 2023 16:11:14 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B8646B313;
+        Wed, 22 Mar 2023 13:03:54 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id A3DD8B81DF5;
-        Wed, 22 Mar 2023 20:02:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A68D7C433EF;
-        Wed, 22 Mar 2023 20:02:32 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 7F6B5622C4;
+        Wed, 22 Mar 2023 20:02:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 42ECEC433D2;
+        Wed, 22 Mar 2023 20:02:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1679515353;
-        bh=gwZeTobWjHLpgBTWbj4APQvG09DaIVkhU3OdBi/H7V4=;
+        s=k20201202; t=1679515358;
+        bh=JTe0xHkN5NnrhCWXW2Eb6l1XG+VkIj9iPS/H5Nvw5dc=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=S1ylc4uJWLltMkXmh88RBUhbUH1aa3iynlid8iR2gJNkDuNOupvLWFnSlAituKXQq
-         crCzL4eKmZykcE8O6K5Ot9lGrkgPSUOtnZsOGb9g6BWL3QVd9NZaMpa90TyfnELBUq
-         s4QIyvdUAyYTj6gy7gBoOtUOl6PMjqDH+jPmp0tYmvlmElr3XQFEZfEKtm6A77MMH0
-         pZQIC+2iDvao5t0VAZiLgybF3JrAoRMj11ogVkdysIdaxtBDP2llsKKh7eISdlM3OT
-         KZYVZ9zBWA3PHsVOy6XdTJYz0S7mOAVSm4vfEEHaJJvMrmrqCp43b5dj1lpmyc/sjW
-         fgb5iNhSJX/uA==
+        b=fgmHK9KcwqdTH0kSl0gvgaLYI8UimEifKJ0nFt1ku2q758N5ZF1pa5IRty05rmqMf
+         7V8i3Thw5l4u9kXJdZ7BS68RTH9rnaUk3g054aKprOjwm4BFpwoDQA3db1so9DgAWr
+         5+6nXkr2UlUD26j/02hoBpMXphi4rsfE03O6PNolSNiKQx67JC9ZCPluWE2y3uTj0y
+         K5qhmMuSxbQdkIqlCzCoHtXdbXj+qd3lByTnGVMBKT32uBNHjKKvxLzOOl5UAdYh3e
+         lR/hB6yN0n0c0oaC6xlqInyJLfNu801jziCSgpLQS5V3TDqGvoFB6qZG+DtIbEU9Qj
+         5JLxUwb9cvQvQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Wei Chen <harperchen1110@gmail.com>, Helge Deller <deller@gmx.de>,
-        Sasha Levin <sashal@kernel.org>, mbroemme@libmpq.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 5.10 08/12] fbdev: intelfb: Fix potential divide by zero
-Date:   Wed, 22 Mar 2023 16:02:02 -0400
-Message-Id: <20230322200207.1997367-8-sashal@kernel.org>
+        Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 5.10 10/12] fbdev: au1200fb: Fix potential divide by zero
+Date:   Wed, 22 Mar 2023 16:02:04 -0400
+Message-Id: <20230322200207.1997367-10-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230322200207.1997367-1-sashal@kernel.org>
 References: <20230322200207.1997367-1-sashal@kernel.org>
@@ -53,11 +53,11 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Wei Chen <harperchen1110@gmail.com>
 
-[ Upstream commit d823685486a3446d061fed7c7d2f80af984f119a ]
+[ Upstream commit 44a3b36b42acfc433aaaf526191dd12fbb919fdb ]
 
-Variable var->pixclock is controlled by user and can be assigned
-to zero. Without proper check, divide by zero would occur in
-intelfbhw_validate_mode and intelfbhw_mode_to_hw.
+var->pixclock can be assigned to zero by user. Without
+proper check, divide by zero would occur when invoking
+macro PICOS2KHZ in au1200fb_fb_check_var.
 
 Error out if var->pixclock is zero.
 
@@ -65,23 +65,23 @@ Signed-off-by: Wei Chen <harperchen1110@gmail.com>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/intelfb/intelfbdrv.c | 3 +++
+ drivers/video/fbdev/au1200fb.c | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/intelfb/intelfbdrv.c b/drivers/video/fbdev/intelfb/intelfbdrv.c
-index a9579964eaba8..8a703adfa9360 100644
---- a/drivers/video/fbdev/intelfb/intelfbdrv.c
-+++ b/drivers/video/fbdev/intelfb/intelfbdrv.c
-@@ -1214,6 +1214,9 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
- 
- 	dinfo = GET_DINFO(info);
+diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
+index c00e01a173685..a8a0a448cdb5e 100644
+--- a/drivers/video/fbdev/au1200fb.c
++++ b/drivers/video/fbdev/au1200fb.c
+@@ -1040,6 +1040,9 @@ static int au1200fb_fb_check_var(struct fb_var_screeninfo *var,
+ 	u32 pixclock;
+ 	int screen_size, plane;
  
 +	if (!var->pixclock)
 +		return -EINVAL;
 +
- 	/* update the pitch */
- 	if (intelfbhw_validate_mode(dinfo, var) != 0)
- 		return -EINVAL;
+ 	plane = fbdev->plane;
+ 
+ 	/* Make sure that the mode respect all LCD controller and
 -- 
 2.39.2
 

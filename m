@@ -2,137 +2,107 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A2ECC77B60
-	for <linux-fbdev@archiver.kernel.org>; Thu, 23 Mar 2023 16:09:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50CD5C76195
+	for <linux-fbdev@archiver.kernel.org>; Fri, 24 Mar 2023 20:21:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231298AbjCWQJh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 23 Mar 2023 12:09:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59934 "EHLO
+        id S229943AbjCXUVj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 24 Mar 2023 16:21:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34184 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231209AbjCWQJf (ORCPT
+        with ESMTP id S229551AbjCXUVi (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 23 Mar 2023 12:09:35 -0400
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BB7BD32CCF;
-        Thu, 23 Mar 2023 09:09:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1679587764; x=1711123764;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=oqSdem/sOUPFA6LJjb47XXFK2yU7aMg4ahHIKQNpGhA=;
-  b=A6OB1ziWY98bUcoTF0iMFohkk+yPuAVoixJURXM2iRc1n5pjzupm/E/p
-   k0zVXbCCNrcEPwZTLGRPzWvc4RlZcF9SAjz96Row8AiLOiXQutQhzmLwS
-   0PBUi3SFikayrPxcZcOphXi56DF4XorAemfY6D6XbWXrRpoFpCUFjX1jC
-   grnDup1fjR7ywFx4grnw5tdJnk9yLJDFXhxdoP4HvxaJiB4jZJZGqYu12
-   DDAPajZHXBt2d1xzj2LX3ivs4KrRaFtpEJ+/tGk3cfBCGIbv8rpmgf3wd
-   TJW64cC2mzWo5TDE+CyiemhfnIPmxt1zkz84+4/H896uZdpWVRPfrrXc+
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10658"; a="323400518"
-X-IronPort-AV: E=Sophos;i="5.98,285,1673942400"; 
-   d="scan'208";a="323400518"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Mar 2023 09:08:15 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10658"; a="714869188"
-X-IronPort-AV: E=Sophos;i="5.98,285,1673942400"; 
-   d="scan'208";a="714869188"
-Received: from stinkpipe.fi.intel.com (HELO stinkbox) ([10.237.72.70])
-  by orsmga001.jf.intel.com with SMTP; 23 Mar 2023 09:08:09 -0700
-Received: by stinkbox (sSMTP sendmail emulation); Thu, 23 Mar 2023 18:08:08 +0200
-Date:   Thu, 23 Mar 2023 18:08:08 +0200
-From:   Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
-To:     Niklas Schnelle <schnelle@linux.ibm.com>
-Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        linux-arch@vger.kernel.org, Arnd Bergmann <arnd@kernel.org>,
-        linux-fbdev@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>,
-        Arnd Bergmann <arnd@arndb.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Helge Deller <deller@gmx.de>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        Alan Stern <stern@rowland.harvard.edu>,
-        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>
-Subject: Re: [PATCH v3 35/38] video: handle HAS_IOPORT dependencies
-Message-ID: <ZBx5aLo5h546BzBt@intel.com>
-References: <20230314121216.413434-1-schnelle@linux.ibm.com>
- <20230314121216.413434-36-schnelle@linux.ibm.com>
- <CAMuHMdW4f8GJ-kFDPg6Ao=g3ZAXq79u9nUZ_dW1LonHu+vxk8Q@mail.gmail.com>
- <ZBGbxDWEhqr8hhgU@intel.com>
- <917b95c9af1b80843b8a361d1b7fa337a25105e7.camel@linux.ibm.com>
+        Fri, 24 Mar 2023 16:21:38 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A1801A94D;
+        Fri, 24 Mar 2023 13:21:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1679689293; i=deller@gmx.de;
+        bh=E9BMqo9lBZGXEwg2PUb0Zufl02v4+CAcR/9rAdCuTUU=;
+        h=X-UI-Sender-Class:Date:From:To:Cc:Subject;
+        b=rtNnsKXNR64Pzgw/a8nT0xvJ0NWGxWwoSk3qIViU6UHlo/7mJrI7w5difThLpAEM9
+         bQRDW94pMyg+H0a32mD2NjE5KxadqT40VK9DKVS7svcZJMkph5e0nLHSZFD/Nu1cYp
+         cJ87uSBYVOJHusoQLRMwMG+e1eTYh0tbKTkGS4YPSUAmmn/m6TKm3xeO53AVRLP64+
+         2ppgebuXEaqiY7VM0Hr4Mr07C1yDBdYWtpOKhtCOqMwJXXlqovfqusU6YEnWXZp/5A
+         ZLIQgnd/e4BWKwlk4SgnE+b1TwItl73txdKdcFkGgPAjdLBH2E+qLkk6CM+pYzzHgL
+         eUkwuGbZYSSHw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from ls3530 ([94.134.154.70]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MTzay-1q5klT0CsU-00Qy5D; Fri, 24
+ Mar 2023 21:21:33 +0100
+Date:   Fri, 24 Mar 2023 21:21:31 +0100
+From:   Helge Deller <deller@gmx.de>
+To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc:     linux-parisc@vger.kernel.org
+Subject: [PATCH] fbdev: modedb: Fix kernel crash in fb_videomode_to_var()
+Message-ID: <ZB4GS3zT3oh/afkf@ls3530>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <917b95c9af1b80843b8a361d1b7fa337a25105e7.camel@linux.ibm.com>
-X-Patchwork-Hint: comment
+X-Provags-ID: V03:K1:U3wALWmYIslI01ZBe08wACKIFNWaCEIkUTnXCVATCKjTXfG6lys
+ dPojHvfjJx6aNmBq50m5P+UF7GcHBUxPVK5wD3ZGw5Y8cWXrTqF3MCeUJJ5iO11zvmEw+JF
+ eeRAIqTgvgMcBgNg/RPrMbdhk+tM8D+ppb7wRZCrj+OUbtYtNGBhHgWdNszKt9viGkt2lvt
+ PFelu2PazE9m96Gd75kSA==
+UI-OutboundReport: notjunk:1;M01:P0:fFGlGxGjhSs=;O/MptMQ3RhfzKS1K8sE29eEhuIh
+ gwc3OxI+7hqWiAwsw0AObRGgq5XBEjiZ7qeobdPgQIksAKmKrF93J8mpo+MBHuHUjNFnoXzmn
+ S6vqwe/Kl/Ddx/vGK2Z1VE7qrw17w0AT4VzX8u3TsnHxhbwOTrCQECHZlvqs3XBg7eK6ujUFj
+ mRqZnaxh3vRw8yv1zQAnNkNBQaWDiSZhJP8NtgD6Q/Mw0IW/ILVMv+dzUX1ij6sfAJjgCSfDt
+ BPNl+u28ktrglIwDIrr62oN1vEau+6vax/0kr5yuaGEaCXtWjVqPtS+al+1BNXgVTtXjLw4vy
+ Bbv8vFcU/JsgTBwvEf1sELH6YlonHN8mD1ahZydNCWvik92i4ZDlB1eFYSxwwsnZ4kq6bLczw
+ K0OiSL+DbEaMo336V7gmxbynmiYpWRA2Y3g7OwXehr20Ykb1AP2O22jo14h7WIm3ATciSL3WS
+ B/opMwYLBSlNCpwJV+GJmZZTOXdUV6PcM+UEgR5Y1VwmBNm1R9E/p8X1s69zwKHlkcWcvRXvH
+ hHwuHrPwk3pUa09hBjeF6Qqi2LcAoNKZ1sqcUQEufcnvmZZ3zV6XDLTt0GCD0HPauYgth4zoO
+ zHjj8h0bDwEHTcq3BchZbFNOE6Y0U0nS7DGva6FB5GhjCAIEgdVT6ncgQ0YLdK+kFNwEGTiWx
+ +sv9x8r8kdNmcysTGVGxs1r8Kp5f5z9PkKIpVVStH1uXJvAi/B4sZGn0bsn5l4rdN/+h3xXMb
+ mtFmUdvTNAOux6uJSzT2khDmrH6I2hc2WlY7SKhnlGeW+p6CIWD1bR7YPZNg3Erf8WV3cxzAi
+ nML9EPKhvn9Atlqh8X84LQ3gqlg4DqlVWFcbr5L/A8MeOy2A6jei7mcg3pMvzkr9VJMho12R2
+ 2U8vIiH8b+gxheLvPV0IwLoiIiY9hFNONjnAJe3olju7+xk9JBjSuKUneclx5IJcj/j/z13vH
+ gAWyNkWzgqscWTX+5OOyKJJ1k6I=
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Mar 23, 2023 at 03:17:38PM +0100, Niklas Schnelle wrote:
-> On Wed, 2023-03-15 at 12:19 +0200, Ville Syrjälä wrote:
-> > On Wed, Mar 15, 2023 at 09:16:50AM +0100, Geert Uytterhoeven wrote:
-> > > Hi Niklas,
-> > > 
-> > > On Tue, Mar 14, 2023 at 1:13 PM Niklas Schnelle <schnelle@linux.ibm.com> wrote:
-> > > > In a future patch HAS_IOPORT=n will result in inb()/outb() and friends
-> > > > not being declared. We thus need to add HAS_IOPORT as dependency for
-> > > > those drivers using them and guard inline code in headers.
-> > > > 
-> > > > Co-developed-by: Arnd Bergmann <arnd@kernel.org>
-> > > > Signed-off-by: Niklas Schnelle <schnelle@linux.ibm.com>
-> > > 
-> > > Thanks for your patch!
-> > > 
-> > > > --- a/drivers/video/fbdev/Kconfig
-> > > > +++ b/drivers/video/fbdev/Kconfig
-> > > 
-> > > > @@ -1284,7 +1285,7 @@ config FB_ATY128_BACKLIGHT
-> > > > 
-> > > >  config FB_ATY
-> > > >         tristate "ATI Mach64 display support" if PCI || ATARI
-> > > > -       depends on FB && !SPARC32
-> > > > +       depends on FB && HAS_IOPORT && !SPARC32
-> > > 
-> > > On Atari, this works without ATARI_ROM_ISA, hence it must not depend
-> > > on HAS_IOPORT.
-> > > The only call to inb() is inside a section protected by #ifdef
-> > > CONFIG_PCI. So:
-> > 
-> > That piece of code is a nop anyway. We immediately overwrite
-> > clk_wr_offset with a hardcoded selection after the register reads.
-> > So if you nuke that nop code then no IOPORT dependency required
-> > at all.
-> > 
-> 
-> I agree this "looks" like a nop but are we sure the inb() doesn't have
-> side effects? 
+Fix a kernel crash in the fbdev modedb code which can happen if you boot
+a system without any graphic card driver, in which case the dummycon
+driver takes the console. If you then load a fbdev graphics driver and
+start a the X11-fbdev the kernel will crash with a backtrace:
 
-Yes. It's just trying to check which PLL dividers/etc. are currently
-used. In VGA mode it gets it from a the GENMO and in non-VGA mode from
-CLOCK_CNTL. And then it says "screw that" and just uses index 3 instead.
+  IAOQ[0]: fb_videomode_to_var+0xc/0x88
+ Backtrace:
+  [<10582ff8>] display_to_var+0x28/0xe8
+  [<1058584c>] fbcon_switch+0x15c/0x55c
+  [<105a8a1c>] redraw_screen+0xdc/0x228
+  [<1059d6f8>] complete_change_console+0x50/0x140
+  [<1059eae0>] change_console+0x6c/0xdc
+  [<105ab4f4>] console_callback+0x1a0/0x1a8
+  [<101cb5e8>] process_one_work+0x1c4/0x3cc
+  [<101cb978>] worker_thread+0x188/0x4b4
+  [<101d5a94>] kthread+0xec/0xf4
+  [<1018801c>] ret_from_kernel_thread+0x1c/0x24
 
-Though I must say that mach64 GX seems to use that clk_wr_offset
-very differently so I'm not sure the PCI+GX combo is even working
-currently, assuming those even exist. I don't think I have anything
-older than a PCI mach64 VT myself.
+The problem is, that the dummycon driver may not have a valid monitor
+mode defined (which is ok for that driver), so the mode field in
+fbcon_display can be NULL.
 
-> (for reference drivers/video/fbdev/aty/aty/atyfb_base.c:
-> atyfb_setup_generc() towards the end)
-> 
-> It does feel a bit out of scope for this series but if it's really a
-> nop nuking it surely is the cleaner solution.
-> 
-> Thanks,
-> Niklas
+Fix the crash by simply returning from fb_var_to_videomode()
+if the video mode field is NULL.
 
--- 
-Ville Syrjälä
-Intel
+Signed-off-by: Helge Deller <deller@gmx.de>
+Cc: stable <stable@kernel.org>
+
+=2D--
+
+diff --git a/drivers/video/fbdev/core/modedb.c b/drivers/video/fbdev/core/=
+modedb.c
+index 6473e0dfe146..6a670b9dbcb4 100644
+=2D-- a/drivers/video/fbdev/core/modedb.c
++++ b/drivers/video/fbdev/core/modedb.c
+@@ -893,6 +893,8 @@ void fb_var_to_videomode(struct fb_videomode *mode,
+ void fb_videomode_to_var(struct fb_var_screeninfo *var,
+ 			 const struct fb_videomode *mode)
+ {
++	if (!mode)
++		return;
+ 	var->xres =3D mode->xres;
+ 	var->yres =3D mode->yres;
+ 	var->xres_virtual =3D mode->xres;

@@ -2,92 +2,57 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57045C6FD1C
-	for <linux-fbdev@archiver.kernel.org>; Sun, 26 Mar 2023 10:42:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66C17C76195
+	for <linux-fbdev@archiver.kernel.org>; Tue, 28 Mar 2023 07:43:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229763AbjCZKms (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 26 Mar 2023 06:42:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59680 "EHLO
+        id S231929AbjC1Hnn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 28 Mar 2023 03:43:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58966 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229483AbjCZKmr (ORCPT
+        with ESMTP id S232132AbjC1Hnm (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 26 Mar 2023 06:42:47 -0400
-Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D09017EDB
-        for <linux-fbdev@vger.kernel.org>; Sun, 26 Mar 2023 03:42:42 -0700 (PDT)
-Received: from ramsan.of.borg ([84.195.187.55])
-        by xavier.telenet-ops.be with bizsmtp
-        id cyif290091C8whw01yifpp; Sun, 26 Mar 2023 12:42:39 +0200
-Received: from rox.of.borg ([192.168.97.57])
-        by ramsan.of.borg with esmtp (Exim 4.95)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1pgNox-00Et68-TB;
-        Sun, 26 Mar 2023 12:42:39 +0200
-Received: from geert by rox.of.borg with local (Exim 4.95)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1pgNpf-00D0Fi-6J;
-        Sun, 26 Mar 2023 12:42:39 +0200
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-To:     linux-fbdev@vger.kernel.org
-Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Helge Deller <deller@gmx.de>
-Subject: [PATCH fbtest] pnmtohex: Optionally use pkg-config for netpbm
-Date:   Sun, 26 Mar 2023 12:42:32 +0200
-Message-Id: <20230326104232.3099222-1-geert@linux-m68k.org>
-X-Mailer: git-send-email 2.34.1
+        Tue, 28 Mar 2023 03:43:42 -0400
+Received: from mail.lokoho.com (mail.lokoho.com [217.61.105.98])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 22D1E35A5
+        for <linux-fbdev@vger.kernel.org>; Tue, 28 Mar 2023 00:43:42 -0700 (PDT)
+Received: by mail.lokoho.com (Postfix, from userid 1001)
+        id 75317833E4; Tue, 28 Mar 2023 08:42:20 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=lokoho.com; s=mail;
+        t=1679989420; bh=Z0N5VlX9/JlryGOL5I747Le9USomZJCRNNGRT3LbbKc=;
+        h=Date:From:To:Subject:From;
+        b=dGaSF9CrFpj2a2YPyvKEDwhsuCacwU2UT590X1ehDImvtZZMT3/w+s0Apuwoy+KFr
+         XOVLeuPDud0yhs9VQEU8IdbPY9FMbBpbhWM1WnvukMQwe9FwwAfmQWyMwiJJEYGkDO
+         JtC/iKir95kQPcCqZcxnijvmngBMNSMvyYDxXxva1ms+8nEdZ23i/z/JXPzWr9YXgE
+         SM1iDcvAWYzlfzEwilt3cSmRoz3bKf8UkBHEMZF1gXvulOwYCE+Mltqcx7KrbnrxaO
+         yhp8CW/VhnrfDySKSDsY0bho3/x0XWGLt7CRkxekA86TPjU9LnD7DfDiOa7mZNAXN1
+         5XtlJp5/8t6ag==
+Received: by mail.lokoho.com for <linux-fbdev@vger.kernel.org>; Tue, 28 Mar 2023 07:40:50 GMT
+Message-ID: <20230328074501-0.1.4x.1n08l.0.hrw6jni4xl@lokoho.com>
+Date:   Tue, 28 Mar 2023 07:40:50 GMT
+From:   "Adam Charachuta" <adam.charachuta@lokoho.com>
+To:     <linux-fbdev@vger.kernel.org>
+Subject: =?UTF-8?Q?S=C5=82owa_kluczowe_do_wypozycjonowania?=
+X-Mailer: mail.lokoho.com
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-As of libnetpbm11 in Debian/Ubuntu, the netpbm header files are no
-longer located in the root include directory, but in a netbpm
-subdirectory.  Fortunately the same version added support for
-pkg-config.
+Dzie=C5=84 dobry,
 
-Support both old and new systems by using pkg-config, when available.
+zapozna=C5=82em si=C4=99 z Pa=C5=84stwa ofert=C4=85 i z przyjemno=C5=9Bci=
+=C4=85 przyznaj=C4=99, =C5=BCe przyci=C4=85ga uwag=C4=99 i zach=C4=99ca d=
+o dalszych rozm=C3=B3w.=20
 
-Reported-by: Helge Deller <deller@gmx.de>
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
-Helge: Does this fix the issue for you. I don't have a system with
-       libnetpbm11 handy yet.
+Pomy=C5=9Bla=C5=82em, =C5=BCe mo=C5=BCe m=C3=B3g=C5=82bym mie=C4=87 sw=C3=
+=B3j wk=C5=82ad w Pa=C5=84stwa rozw=C3=B3j i pom=C3=B3c dotrze=C4=87 z t=C4=
+=85 ofert=C4=85 do wi=C4=99kszego grona odbiorc=C3=B3w. Pozycjonuj=C4=99 =
+strony www, dzi=C4=99ki czemu generuj=C4=85 =C5=9Bwietny ruch w sieci.
 
- Rules.make        | 2 +-
- pnmtohex/Makefile | 3 +++
- 2 files changed, 4 insertions(+), 1 deletion(-)
+Mo=C5=BCemy porozmawia=C4=87 w najbli=C5=BCszym czasie?
 
-diff --git a/Rules.make b/Rules.make
-index 51c4e9431699d2f3..b9a098d5e0f409cb 100644
---- a/Rules.make
-+++ b/Rules.make
-@@ -5,7 +5,7 @@ HOSTCC = gcc
- IFLAGS = -I$(TOPDIR)/include
- #DFLAGS = -g
- OFLAGS = -O3 -fomit-frame-pointer
--CFLAGS = -Wall -Werror $(IFLAGS) $(DFLAGS) $(OFLAGS)
-+CFLAGS += -Wall -Werror $(IFLAGS) $(DFLAGS) $(OFLAGS)
- 
- SRCS += $(wildcard *.c)
- OBJS += $(subst .c,.o,$(SRCS))
-diff --git a/pnmtohex/Makefile b/pnmtohex/Makefile
-index d89c8e448db0c527..642a26f0c10c3bc2 100644
---- a/pnmtohex/Makefile
-+++ b/pnmtohex/Makefile
-@@ -3,9 +3,12 @@ TOPDIR = ..
- 
- HOST_TARGET = pnmtohex
- 
-+CFLAGS += $(shell pkg-config --exists netpbm && pkg-config --cflags netpbm)
-+
- # Modern distro's (e.g. Debian, Fedora Core) seem to have -lnetpbm only
- #LIBS += -lnetpnm -lnetpbm -lnetpgm -lnetppm
- LIBS += -lnetpbm
-+LIBS += $(shell pkg-config --exists netpbm && pkg-config --libs netpbm)
- 
- include $(TOPDIR)/Rules.make
- 
--- 
-2.34.1
 
+Pozdrawiam
+Adam Charachuta

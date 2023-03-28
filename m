@@ -2,115 +2,116 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 384F3C76196
-	for <linux-fbdev@archiver.kernel.org>; Tue, 28 Mar 2023 12:20:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 700C9C76196
+	for <linux-fbdev@archiver.kernel.org>; Tue, 28 Mar 2023 15:30:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229664AbjC1MUN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 28 Mar 2023 08:20:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54372 "EHLO
+        id S233491AbjC1Pay (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 28 Mar 2023 11:30:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60890 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230381AbjC1MUM (ORCPT
+        with ESMTP id S233913AbjC1Pak (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 28 Mar 2023 08:20:12 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3DC5E3ABF
-        for <linux-fbdev@vger.kernel.org>; Tue, 28 Mar 2023 05:20:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1680006008; i=deller@gmx.de;
-        bh=hAxrajVXBaUtN9HJQ5DY3rfiIP8VPQro+37qLEvimg4=;
-        h=X-UI-Sender-Class:Date:From:To:Subject:References:In-Reply-To;
-        b=O1TVduqROlFdGzhRg7Iudahuazdhia+cpbDPtXSYjDwM7WzdF4tjTNH0udPsP1ZLN
-         fGfKKTJYSfdzQG9wsFkqw5y1ylvey+tT03sgTuu+wOokMrFSTcCBhC9kulUw78qPvE
-         TOtRZGkb2+4csLerqcm/AXGlP75pyOvsEbbjokTAKRdsqvYCqLy8dvfgOHFIe+OxQW
-         lFmPqCTdKebvUjCNy0SyDymnJFAvXcQbGz0sWlE5ip7UJXJT4Oc5v2Vyd43CmkluYD
-         TOxE0qABC1kgZ/26wM3yw64bP7sG/P3LJs8j2hjIWbFG2nUkVftSYDb9uhVrCzUksP
-         TP1ejE28xtpTQ==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from ls3530 ([94.134.150.147]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MA7Ka-1pa0UU06XK-00BfUF; Tue, 28
- Mar 2023 14:20:08 +0200
-Date:   Tue, 28 Mar 2023 14:20:06 +0200
-From:   Helge Deller <deller@gmx.de>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH fbtest] pnmtohex: Optionally use pkg-config for netpbm
-Message-ID: <ZCLbduJjX0KS/kJx@ls3530>
-References: <20230326104232.3099222-1-geert@linux-m68k.org>
+        Tue, 28 Mar 2023 11:30:40 -0400
+Received: from lithium.sammserver.com (lithium.sammserver.com [168.119.122.30])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63457EB7D
+        for <linux-fbdev@vger.kernel.org>; Tue, 28 Mar 2023 08:29:21 -0700 (PDT)
+Received: from mail.sammserver.com (sammserver.wg [10.32.40.1])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (Client did not present a certificate)
+        by lithium.sammserver.com (Postfix) with ESMTPS id D8A6631181F0;
+        Tue, 28 Mar 2023 17:19:19 +0200 (CEST)
+Received: from mail.sammserver.com (localhost.localdomain [127.0.0.1])
+        by mail.sammserver.com (Postfix) with ESMTP id 8312D3E17F;
+        Tue, 28 Mar 2023 17:19:19 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cavoj.net; s=email;
+        t=1680016759; bh=mx/mn5CmoZNPWNQJv9YYiJHtkwhLf6qkZR5KBmJi3Dw=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=cq32m56zKkA6Mwb43Kwsrsip7a9NnTfnGWY9T3bsU/kd9pMPmfZdzrsVqBvNlyu/D
+         uS7uRBfQKhh3ndMbl608cbdtqS9EkbcwkxeMLRt2E+rFm/sF3DE6G5amj7y4mA48Ue
+         UzSD5GjxVjnu8cLQG/barPlWhn1eJG3MLEkmB1c8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230326104232.3099222-1-geert@linux-m68k.org>
-X-Provags-ID: V03:K1:1P1sD5HlADpUk/9WMzh8QR+smA0xC3tO69OX/9HjNQYul6Ysl6o
- xbuXhCoFtRQXZFOke7VK/BjoNzbHy4X9an1xbrERwnB9QV0NdK+3N+Tn+fV7fwcmR0es8zN
- JeMB2EJCNlzD8Ld6U3xcxsfK2Rho0oyNkgcGUBJ4cR2AGDdM7lv1I64KOI/MVR3q/ZprkSE
- IviY5PXOSpR+AulzQYuMQ==
-UI-OutboundReport: notjunk:1;M01:P0:spO6BEic68Y=;/wE5p+lx304E9PQDAr/PUnBXikD
- 9Hal0x78p157yJz3iGoihNI4+WYNKwFU8jLp86BFYvwK935Al7idy9ZdQdSD1OMsnOKrzCsdo
- R/QeGy9a0IvYo2/tpblrb16wv8ytxlTAXmnQ3ilmGQMVm6GUYTrfY3QsVdMUhP+nBKnGulpHz
- i0D7C7NoM1lKklmjQEZ3vjpDDvPkC7qxV6ahKbCDDBKzDYQPUEfrHeEgm6PbpwWHMtn+TDDxX
- Ne3dU+O5OCgg2cvlETQp8mnFWSgHjI9o4PnsH0pLpY+xkBTh6npkPDFj5scNmfBypxj/8Vgj0
- wPn2fQ3YllgbqtvYWQz9XcDEZAIE232zITJvfEJ/Q2HvPNoxQk7BrPrY+L1NNNnE+bDZ/IlK4
- /iwp6P/8mO7AwpGrHX8uiCTYIzwX3t3xraZGqAvcj80b9bSfaAfuInvsxOP6qmp4pMWw+yUA+
- AnRUWJZ6VMrKru+KohfyqhUyukc+X/SV/+7HI5rUEf5bpsmYVm33VSfQgu84XJLn4ke8HOQp3
- MeLeT4JktOKUVyWGgWiciAyE0q9zPxZ8cVw95YFpj7g3PYCkijdbh4j59/fGB3RsL75DUF+9S
- IT57FwDiy/rTFsqI2C+UzJAc1rzc66Z40nwL8XAgMzp8oEmnDFq+KLfPbcSiz/vfCNAM+iwUC
- owdg94zOPgqFAS29vSwqAHCY8lopoT4+edWG8D4hHIPcfNjsSGE/AatFG2GQmY+54xKuBqtv7
- kQ91dzHaJ4fYgLoEDmg2uRTnushQmUj+ikYkCcAAaBX0T6Rzot35ZHVZv0IaawV/suY+8rZwr
- 5wZx3A20YO6p7BJFhCmx3At418sLcVnuMN8nORjRfuYXbtb6bLL6lcEFdpRo6t0NYk4+wJm5q
- x18CF1xL+DTceHMDbUPZlVfMIBdPAiv6iuRVcvo//MrWgMPuzNE95dWS6Os4rY6v14aPgtZ76
- 8rV4cnDAj2a208FWtIWbJPTlSBM=
-Content-Transfer-Encoding: quoted-printable
+Date:   Tue, 28 Mar 2023 17:19:19 +0200
+From:   =?UTF-8?Q?Samuel_=C4=8Cavoj?= <samuel@cavoj.net>
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
+        daniel@ffwll.ch, sam@ravnborg.org, maxime@cerno.tech,
+        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        dri-devel@lists.freedesktop.org, Zack Rusin <zackr@vmware.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Zhen Lei <thunder.leizhen@huawei.com>,
+        Changcheng Deng <deng.changcheng@zte.com.cn>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>
+Subject: Re: [PATCH v2 07/11] video/aperture: Disable and unregister sysfb
+ devices via aperture helpers
+In-Reply-To: <87v8ivoc3r.fsf@minerva.mail-host-address-is-not-set>
+References: <20220718072322.8927-1-tzimmermann@suse.de>
+ <20220718072322.8927-8-tzimmermann@suse.de>
+ <9f682c15a5484b4a94f63e20d41f67d0@cavoj.net>
+ <e881f6d6-0d2b-5775-68f2-35cc4d666d63@suse.de>
+ <874jqfpw7k.fsf@minerva.mail-host-address-is-not-set>
+ <87706a167c1e490a12371e2edf0f34e3@cavoj.net>
+ <87v8ivoc3r.fsf@minerva.mail-host-address-is-not-set>
+Message-ID: <e556191a3cc9730f3d83c7aaea7d3b3e@cavoj.net>
+X-Sender: samuel@cavoj.net
+Content-Type: text/plain; charset=UTF-8;
+ format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-* Geert Uytterhoeven <geert@linux-m68k.org>:
-> As of libnetpbm11 in Debian/Ubuntu, the netpbm header files are no
-> longer located in the root include directory, but in a netbpm
-> subdirectory.  Fortunately the same version added support for
-> pkg-config.
->
-> Support both old and new systems by using pkg-config, when available.
->
-> Reported-by: Helge Deller <deller@gmx.de>
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
-> Helge: Does this fix the issue for you. I don't have a system with
->        libnetpbm11 handy yet.
+On 2023-03-20 13:12, Javier Martinez Canillas wrote:
+> Samuel Čavoj <samuel@cavoj.net> writes:
+> 
+> [...]
+> 
+>>>>> This call to sysfb_disable() has been causing trouble with regard 
+>>>>> to
+>>>>> VFIO. VFIO has been calling aperture_remove_conflicting_pci_devices
+>>>>> to
+>>>>> get rid of any console drivers (d173780620792c) using the device in
+>>>>> question, but now even unrelated drivers are getting killed. 
+>>>>> Example
+>>>>> situation:
+>>>> 
+>>>> Which drivers do you use?
+>> 
+>> This happens with either no drivers loaded or the proprietary nvidia
+>> driver. Nouveau is fine as it doesn't rely on efifb but brings its 
+>> own.
+>> 
+> 
+> Which is what all DRM drivers should do. If they want to make sure that 
+> a
+> fbdev will be present after the DRM driver probes, then should register 
+> an
+> emulated fbdev.
 
-Yes, thanks a lot!
+I don't see how this is specific to Nvidia or DRM drivers.
 
-That fixes the build on parisc on Debian 12.0 for me.
-You may add:
-Tested-by: Helge Deller <deller@gmx.de>
+The efifb is killed if vfio-pci (or another driver which uses the
+aperture system to remove conflicting drivers) is bound to ANY pci
+device, regardless of whether it's nvidia's fault for not implementing
+a framebuffer. Fair enough, I agree that they should, but
+I for one expect my efifb to not die at a random time
+when a random unrelated driver does a random thing with another
+unrelated GPU.
 
-I tried on my Fedora 36/x86_64 as well, and there netpbm-devel
-sadly comes without pkg-config. Nevertheless, based on top of
-your patch by hacking in the include path fixed the issue there
-as well.
-Maybe you can consider applying below patch on top of yours as too?
+Or is the efifb considered a stop-gap solution the only purpose of
+which is early boot--before another GPU driver is loaded?
 
-Helge
-=2D--------
-
-[PATCH] Add netpbm to include search patch
-
-Netpbm on Fedora 36 comes without pkg-config, so
-manually add the include path.
-
-Signed-off-by: Helge Deller <deller@gmx.de>
-=2D--
-
-diff --git a/pnmtohex/Makefile b/pnmtohex/Makefile
-index 642a26f..d8925a9 100644
-=2D-- a/pnmtohex/Makefile
-+++ b/pnmtohex/Makefile
-@@ -4,6 +4,7 @@ TOPDIR =3D ..
- HOST_TARGET =3D pnmtohex
-
- CFLAGS +=3D $(shell pkg-config --exists netpbm && pkg-config --cflags net=
-pbm)
-+CFLAGS +=3D -I/usr/include/netpbm
-
- # Modern distro's (e.g. Debian, Fedora Core) seem to have -lnetpbm only
- #LIBS +=3D -lnetpnm -lnetpbm -lnetpgm -lnetppm
+> 
+> There was an attempt to workaround that in [0], in particular patch [1]
+> but that effort was not continued since the only DRM driver that would 
+> be
+> affected is the Nvidia proprietary driver that relies on 
+> efifb/simpledrm
+> to have a VT.
+> 
+> [0]: 
+> https://patchwork.kernel.org/project/dri-devel/list/?series=711019&archive=both
+> [1]: 
+> https://patchwork.kernel.org/project/dri-devel/patch/20230111154112.90575-11-daniel.vetter@ffwll.ch/

@@ -2,60 +2,60 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 38DF4C6FD18
-	for <linux-fbdev@archiver.kernel.org>; Fri, 31 Mar 2023 09:23:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43B30C76196
+	for <linux-fbdev@archiver.kernel.org>; Fri, 31 Mar 2023 09:23:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230302AbjCaJX0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 31 Mar 2023 05:23:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54624 "EHLO
+        id S230063AbjCaJX1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 31 Mar 2023 05:23:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54646 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230063AbjCaJXX (ORCPT
+        with ESMTP id S230160AbjCaJXX (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Fri, 31 Mar 2023 05:23:23 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B741DBBA9
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 09F74113F0
         for <linux-fbdev@vger.kernel.org>; Fri, 31 Mar 2023 02:23:18 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 594D721B2C;
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 93A461FE98;
         Fri, 31 Mar 2023 09:23:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
         t=1680254597; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=H1JUY7hQ9yooHzfyDwSWt/fVH2cK5biziQnSLuCJhyM=;
-        b=hrUvJ2giiDTxjpWoMtOJczQnrFE7Lg4XFcJYjGV+1VdflN3rTunvuuh4l7CrEk8m3bzLc1
-        D0h4VgtdQSU4JOXo4gVl0QFm6HocpW6k0Apd1KeNTtmPB2Udh/qKBAQgHx/0nszsqQ8Sa4
-        RNSmbTTNRmRQp5vahDqaaVUL4mdDgRE=
+        bh=IJcSgdFmnfHrJ0ZpRg1xALi+u5FWWw3afSDEFFON944=;
+        b=zN/ymXKRSusdwLtH16DRQEN1rStQXkM6RDSphAYIculyHnWg+RLsnDiE0ESSLvsTtlwLgd
+        gVAKGGAynEcDg1bKCGZO3WDYQn9/1ER9xH2px3OkfrBCmwD4QJZ9Kx6H8XimVShfxKewHA
+        3DTg1QJfrUdR0ADRu8Badppco8sbA3A=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
         s=susede2_ed25519; t=1680254597;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=H1JUY7hQ9yooHzfyDwSWt/fVH2cK5biziQnSLuCJhyM=;
-        b=LApDcHIMetVVGQ2UgdJ+YUNvHkOpToS6aYUcIQCaaA6zXK0pomMp2z+PtSF9rKERLR19Fm
-        hSBmrSZylHsdfrAw==
+        bh=IJcSgdFmnfHrJ0ZpRg1xALi+u5FWWw3afSDEFFON944=;
+        b=OjRzprPPhRZlmUsuwAQaYv0OA65D0eDZMiswbRFpIkDhrEkVe26DmOGzenqnycMOEVirFq
+        yL69c0SOdH/2PHCg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 3A731133B6;
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 787E9133B6;
         Fri, 31 Mar 2023 09:23:17 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id MK9PDYWmJmTsOwAAMHmgww
+        id iC2hHIWmJmTsOwAAMHmgww
         (envelope-from <tzimmermann@suse.de>); Fri, 31 Mar 2023 09:23:17 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 05/15] fbdev/g364fb: Remove trailing whitespaces
-Date:   Fri, 31 Mar 2023 11:23:04 +0200
-Message-Id: <20230331092314.2209-6-tzimmermann@suse.de>
+Subject: [PATCH 07/15] fbdev/hpfb: Remove trailing whitespaces
+Date:   Fri, 31 Mar 2023 11:23:06 +0200
+Message-Id: <20230331092314.2209-8-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.40.0
 In-Reply-To: <20230331092314.2209-1-tzimmermann@suse.de>
 References: <20230331092314.2209-1-tzimmermann@suse.de>
@@ -69,40 +69,49 @@ Fix coding style. No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/g364fb.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/hpfb.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/g364fb.c b/drivers/video/fbdev/g364fb.c
-index 05837a3b985c..c5b7673ddc6c 100644
---- a/drivers/video/fbdev/g364fb.c
-+++ b/drivers/video/fbdev/g364fb.c
-@@ -6,7 +6,7 @@
-  *
-  *  This driver is based on tgafb.c
-  *
-- *	Copyright (C) 1997 Geert Uytterhoeven 
-+ *	Copyright (C) 1997 Geert Uytterhoeven
-  *	Copyright (C) 1995  Jay Estabrook
-  *
-  *  This file is subject to the terms and conditions of the GNU General Public
-@@ -28,7 +28,7 @@
- #include <asm/io.h>
- #include <asm/jazz.h>
+diff --git a/drivers/video/fbdev/hpfb.c b/drivers/video/fbdev/hpfb.c
+index cdd44e5deafe..77fbff47b1a8 100644
+--- a/drivers/video/fbdev/hpfb.c
++++ b/drivers/video/fbdev/hpfb.c
+@@ -92,7 +92,7 @@ static int hpfb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 
+ 	if (regno >= info->cmap.len)
+ 		return 1;
+-	
++
+ 	while (in_be16(fb_regs + 0x6002) & 0x4) udelay(1);
+ 
+ 	out_be16(fb_regs + 0x60ba, 0xff);
+@@ -143,7 +143,7 @@ static void topcat_blit(int x0, int y0, int x1, int y1, int w, int h, int rr)
+ 	out_8(fb_regs + WMOVE, fb_bitmask);
+ }
+ 
+-static void hpfb_copyarea(struct fb_info *info, const struct fb_copyarea *area) 
++static void hpfb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+ {
+ 	topcat_blit(area->sx, area->sy, area->dx, area->dy, area->width, area->height, RR_COPY);
+ }
+@@ -315,7 +315,7 @@ static int hpfb_init_one(unsigned long phys_base, unsigned long virt_base)
+ 	return ret;
+ }
  
 -/* 
 +/*
-  * Various defines for the G364
+  * Check that the secondary ID indicates that we have some hope of working with this
+  * framebuffer.  The catseye boards are pretty much like topcats and we can muddle through.
   */
- #define G364_MEM_BASE   0xe4400000
-@@ -125,7 +125,7 @@ static const struct fb_ops g364fb_ops = {
-  *
-  *  This call looks only at xoffset, yoffset and the FB_VMODE_YWRAP flag
+@@ -323,7 +323,7 @@ static int hpfb_init_one(unsigned long phys_base, unsigned long virt_base)
+ #define topcat_sid_ok(x)  (((x) == DIO_ID2_LRCATSEYE) || ((x) == DIO_ID2_HRCCATSEYE)    \
+ 			   || ((x) == DIO_ID2_HRMCATSEYE) || ((x) == DIO_ID2_TOPCAT))
+ 
+-/* 
++/*
+  * Initialise the framebuffer
   */
--static int g364fb_pan_display(struct fb_var_screeninfo *var, 
-+static int g364fb_pan_display(struct fb_var_screeninfo *var,
- 			      struct fb_info *info)
- {
- 	if (var->xoffset ||
+ static int hpfb_dio_probe(struct dio_dev *d, const struct dio_device_id *ent)
 -- 
 2.40.0
 

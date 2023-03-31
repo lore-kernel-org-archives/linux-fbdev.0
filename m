@@ -2,60 +2,60 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43B30C76196
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B02BC77B6F
 	for <linux-fbdev@archiver.kernel.org>; Fri, 31 Mar 2023 09:23:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230063AbjCaJX1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 31 Mar 2023 05:23:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54646 "EHLO
+        id S230400AbjCaJX2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 31 Mar 2023 05:23:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54648 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230160AbjCaJXX (ORCPT
+        with ESMTP id S230171AbjCaJXX (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Fri, 31 Mar 2023 05:23:23 -0400
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 09F74113F0
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0A1611A442
         for <linux-fbdev@vger.kernel.org>; Fri, 31 Mar 2023 02:23:18 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 93A461FE98;
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 75D501FE97;
         Fri, 31 Mar 2023 09:23:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
         t=1680254597; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=IJcSgdFmnfHrJ0ZpRg1xALi+u5FWWw3afSDEFFON944=;
-        b=zN/ymXKRSusdwLtH16DRQEN1rStQXkM6RDSphAYIculyHnWg+RLsnDiE0ESSLvsTtlwLgd
-        gVAKGGAynEcDg1bKCGZO3WDYQn9/1ER9xH2px3OkfrBCmwD4QJZ9Kx6H8XimVShfxKewHA
-        3DTg1QJfrUdR0ADRu8Badppco8sbA3A=
+        bh=RaPNae8vbLlIwRgnHfTO+X5kPSqhUm9FfKexGbHO6bY=;
+        b=1+SMHPvUTzBFAsRqEu8VQntd3MbykZ5BHEM8JwYDjOU1f37GEYYM3GkKvhU+WQMFSmsjF7
+        tFVv3CCJSa1Pdot3v9jYPQWpEsZmTaO2BW+WciEGEoAb476QXay/jPuAUBnmmDEbEUsc6x
+        LQO2zzSnfTffHNdwV3sjk+JZ79KYlzI=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
         s=susede2_ed25519; t=1680254597;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=IJcSgdFmnfHrJ0ZpRg1xALi+u5FWWw3afSDEFFON944=;
-        b=OjRzprPPhRZlmUsuwAQaYv0OA65D0eDZMiswbRFpIkDhrEkVe26DmOGzenqnycMOEVirFq
-        yL69c0SOdH/2PHCg==
+        bh=RaPNae8vbLlIwRgnHfTO+X5kPSqhUm9FfKexGbHO6bY=;
+        b=ohA0PXWkK2Am7xIMUCh+tA0fX1Uy6T704XY6itpfG1FJabE3zEmWzSPhztYrPf6DjNuDGB
+        GeWk4VMEhUYuKLBg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 787E9133B6;
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 5B81813A0E;
         Fri, 31 Mar 2023 09:23:17 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id iC2hHIWmJmTsOwAAMHmgww
+        id qGaQFYWmJmTsOwAAMHmgww
         (envelope-from <tzimmermann@suse.de>); Fri, 31 Mar 2023 09:23:17 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 07/15] fbdev/hpfb: Remove trailing whitespaces
-Date:   Fri, 31 Mar 2023 11:23:06 +0200
-Message-Id: <20230331092314.2209-8-tzimmermann@suse.de>
+Subject: [PATCH 06/15] fbdev/hgafb: Remove trailing whitespaces
+Date:   Fri, 31 Mar 2023 11:23:05 +0200
+Message-Id: <20230331092314.2209-7-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.40.0
 In-Reply-To: <20230331092314.2209-1-tzimmermann@suse.de>
 References: <20230331092314.2209-1-tzimmermann@suse.de>
@@ -69,49 +69,143 @@ Fix coding style. No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/hpfb.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/hgafb.c | 36 ++++++++++++++++++------------------
+ 1 file changed, 18 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/video/fbdev/hpfb.c b/drivers/video/fbdev/hpfb.c
-index cdd44e5deafe..77fbff47b1a8 100644
---- a/drivers/video/fbdev/hpfb.c
-+++ b/drivers/video/fbdev/hpfb.c
-@@ -92,7 +92,7 @@ static int hpfb_setcolreg(unsigned regno, unsigned red, unsigned green,
+diff --git a/drivers/video/fbdev/hgafb.c b/drivers/video/fbdev/hgafb.c
+index bd3d07aa4f0e..40879d9facdf 100644
+--- a/drivers/video/fbdev/hgafb.c
++++ b/drivers/video/fbdev/hgafb.c
+@@ -1,6 +1,6 @@
+ /*
+  * linux/drivers/video/hgafb.c -- Hercules graphics adaptor frame buffer device
+- * 
++ *
+  *      Created 25 Nov 1999 by Ferenc Bakonyi (fero@drama.obuda.kando.hu)
+  *      Based on skeletonfb.c by Geert Uytterhoeven and
+  *               mdacon.c by Andrew Apted
+@@ -8,14 +8,14 @@
+  * History:
+  *
+  * - Revision 0.1.8 (23 Oct 2002): Ported to new framebuffer api.
+- * 
+- * - Revision 0.1.7 (23 Jan 2001): fix crash resulting from MDA only cards 
++ *
++ * - Revision 0.1.7 (23 Jan 2001): fix crash resulting from MDA only cards
+  *				   being detected as Hercules.	 (Paul G.)
+  * - Revision 0.1.6 (17 Aug 2000): new style structs
+  *                                 documentation
+  * - Revision 0.1.5 (13 Mar 2000): spinlocks instead of saveflags();cli();etc
+  *                                 minor fixes
+- * - Revision 0.1.4 (24 Jan 2000): fixed a bug in hga_card_detect() for 
++ * - Revision 0.1.4 (24 Jan 2000): fixed a bug in hga_card_detect() for
+  *                                  HGA-only systems
+  * - Revision 0.1.3 (22 Jan 2000): modified for the new fb_info structure
+  *                                 screen is cleared after rmmod
+@@ -143,7 +143,7 @@ static bool nologo = 0;
  
- 	if (regno >= info->cmap.len)
- 		return 1;
+ static void write_hga_b(unsigned int val, unsigned char reg)
+ {
+-	outb_p(reg, HGA_INDEX_PORT); 
++	outb_p(reg, HGA_INDEX_PORT);
+ 	outb_p(val, HGA_VALUE_PORT);
+ }
+ 
+@@ -155,7 +155,7 @@ static void write_hga_w(unsigned int val, unsigned char reg)
+ 
+ static int test_hga_b(unsigned char val, unsigned char reg)
+ {
+-	outb_p(reg, HGA_INDEX_PORT); 
++	outb_p(reg, HGA_INDEX_PORT);
+ 	outb  (val, HGA_VALUE_PORT);
+ 	udelay(20); val = (inb_p(HGA_VALUE_PORT) == val);
+ 	return val;
+@@ -244,7 +244,7 @@ static void hga_show_logo(struct fb_info *info)
+ 	void __iomem *dest = hga_vram;
+ 	char *logo = linux_logo_bw;
+ 	int x, y;
 -	
 +
- 	while (in_be16(fb_regs + 0x6002) & 0x4) udelay(1);
- 
- 	out_be16(fb_regs + 0x60ba, 0xff);
-@@ -143,7 +143,7 @@ static void topcat_blit(int x0, int y0, int x1, int y1, int w, int h, int rr)
- 	out_8(fb_regs + WMOVE, fb_bitmask);
- }
- 
--static void hpfb_copyarea(struct fb_info *info, const struct fb_copyarea *area) 
-+static void hpfb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+ 	for (y = 134; y < 134 + 80 ; y++) * this needs some cleanup *
+ 		for (x = 0; x < 10 ; x++)
+ 			writeb(~*(logo++),(dest + HGA_ROWADDR(y) + x + 40));
+@@ -255,7 +255,7 @@ static void hga_pan(unsigned int xoffset, unsigned int yoffset)
  {
- 	topcat_blit(area->sx, area->sy, area->dx, area->dy, area->width, area->height, RR_COPY);
- }
-@@ -315,7 +315,7 @@ static int hpfb_init_one(unsigned long phys_base, unsigned long virt_base)
- 	return ret;
- }
+ 	unsigned int base;
+ 	unsigned long flags;
+-	
++
+ 	base = (yoffset / 8) * 90 + xoffset;
+ 	spin_lock_irqsave(&hga_reg_lock, flags);
+ 	write_hga_w(base, 0x0c);	/* start address */
+@@ -310,7 +310,7 @@ static int hga_card_detect(void)
+ 	/* Ok, there is definitely a card registering at the correct
+ 	 * memory location, so now we do an I/O port test.
+ 	 */
+-	
++
+ 	if (!test_hga_b(0x66, 0x0f))	    /* cursor low register */
+ 		goto error;
  
--/* 
-+/*
-  * Check that the secondary ID indicates that we have some hope of working with this
-  * framebuffer.  The catseye boards are pretty much like topcats and we can muddle through.
-  */
-@@ -323,7 +323,7 @@ static int hpfb_init_one(unsigned long phys_base, unsigned long virt_base)
- #define topcat_sid_ok(x)  (((x) == DIO_ID2_LRCATSEYE) || ((x) == DIO_ID2_HRCCATSEYE)    \
- 			   || ((x) == DIO_ID2_HRMCATSEYE) || ((x) == DIO_ID2_TOPCAT))
+@@ -321,7 +321,7 @@ static int hga_card_detect(void)
+ 	 * bit of the status register is changing.  This test lasts for
+ 	 * approximately 1/10th of a second.
+ 	 */
+-	
++
+ 	p_save = q_save = inb_p(HGA_STATUS_PORT) & HGA_STATUS_VSYNC;
  
--/* 
-+/*
-  * Initialise the framebuffer
+ 	for (count=0; count < 50000 && p_save == q_save; count++) {
+@@ -329,7 +329,7 @@ static int hga_card_detect(void)
+ 		udelay(2);
+ 	}
+ 
+-	if (p_save == q_save) 
++	if (p_save == q_save)
+ 		goto error;
+ 
+ 	switch (inb_p(HGA_STATUS_PORT) & 0x70) {
+@@ -415,7 +415,7 @@ static int hgafb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+  *	@info:pointer to fb_info object containing info for current hga board
+  *
+  *	This function looks only at xoffset, yoffset and the %FB_VMODE_YWRAP
+- *	flag in @var. If input parameters are correct it calls hga_pan() to 
++ *	flag in @var. If input parameters are correct it calls hga_pan() to
+  *	program the hardware. @info->var is updated to the new values.
+  *	A zero is returned on success and %-EINVAL for failure.
   */
- static int hpfb_dio_probe(struct dio_dev *d, const struct dio_device_id *ent)
+@@ -442,9 +442,9 @@ static int hgafb_pan_display(struct fb_var_screeninfo *var,
+  *	hgafb_blank - (un)blank the screen
+  *	@blank_mode:blanking method to use
+  *	@info:unused
+- *	
+- *	Blank the screen if blank_mode != 0, else unblank. 
+- *	Implements VESA suspend and powerdown modes on hardware that supports 
++ *
++ *	Blank the screen if blank_mode != 0, else unblank.
++ *	Implements VESA suspend and powerdown modes on hardware that supports
+  *	disabling hsync/vsync:
+  *		@blank_mode == 2 means suspend vsync,
+  *		@blank_mode == 3 means suspend hsync,
+@@ -539,15 +539,15 @@ static const struct fb_ops hgafb_ops = {
+ 	.fb_copyarea	= hgafb_copyarea,
+ 	.fb_imageblit	= hgafb_imageblit,
+ };
+-		
++
+ /* ------------------------------------------------------------------------- *
+  *
+  * Functions in fb_info
+- * 
++ *
+  * ------------------------------------------------------------------------- */
+ 
+ /* ------------------------------------------------------------------------- */
+-    
++
+ 	/*
+ 	 *  Initialization
+ 	 */
 -- 
 2.40.0
 

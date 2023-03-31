@@ -2,128 +2,101 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D7DBC6FD18
-	for <linux-fbdev@archiver.kernel.org>; Fri, 31 Mar 2023 09:23:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E937BC6FD18
+	for <linux-fbdev@archiver.kernel.org>; Fri, 31 Mar 2023 09:23:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229529AbjCaJXU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 31 Mar 2023 05:23:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54556 "EHLO
+        id S230264AbjCaJXY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 31 Mar 2023 05:23:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54614 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229448AbjCaJXT (ORCPT
+        with ESMTP id S229643AbjCaJXX (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 31 Mar 2023 05:23:19 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F035D1FD0
-        for <linux-fbdev@vger.kernel.org>; Fri, 31 Mar 2023 02:23:17 -0700 (PDT)
+        Fri, 31 Mar 2023 05:23:23 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 92A101996
+        for <linux-fbdev@vger.kernel.org>; Fri, 31 Mar 2023 02:23:18 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id B1D4A1FE96;
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 91FAF219E2;
         Fri, 31 Mar 2023 09:23:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
         t=1680254596; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=4Tabfd7e/Ntkw4i7UZRlapjalgZa7F0HjC0jz39mMqg=;
-        b=jQ7z07waxkXrp6v6g+eyh2t8zAsBYzeERYj9gnFkqFD0x9d2IMG7ixy55fF1DL/2uHDi3q
-        aNxo7VtDbiJJp9MEe4fQZU6diLYGvEMJvC9aKUZxkLcOK75onZqeYzaL0GC8PgHYfTe6kX
-        GWGxLPCXSvXbPvx1E53pZb3Q2uCU9Zc=
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=THVDIzxfv+axPfaNnFDnYiZYOvM2JA4pGYw+Lk8Hr3k=;
+        b=bcPbu9bRnFVQli9TYWvqZ1MpyzGGhN5lIk/59C5/FPxzO8UtsdgdEtHzZvuK6xqRhpRuZy
+        Tw8MaOzvaF6ZLvede3kjvNWjIQkmCUFnXmZJkw03qGlJ/vf2LqoYM7FLdfZuIimYsC6kjn
+        XTZesz71JKLuDXlDfpOucmDLSZ+rG4U=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
         s=susede2_ed25519; t=1680254596;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=4Tabfd7e/Ntkw4i7UZRlapjalgZa7F0HjC0jz39mMqg=;
-        b=V+NojafnfORGyDk+x+MdKf+m8B9/hf1oT4rCQg6qaujDB432cCxCChotAFI0GEeBWknjyv
-        93yyd0rqif9gZjBg==
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=THVDIzxfv+axPfaNnFDnYiZYOvM2JA4pGYw+Lk8Hr3k=;
+        b=iuQEkjaqS89C0ZKcvrR+UQBi6iKQr5XZNamdW+TvIHZbq+acdliD7x34ZGbCKX+9YahhmF
+        RemTG79PRMeEGUAQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 969BC13A0E;
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 6EB49133B6;
         Fri, 31 Mar 2023 09:23:16 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id ODbSI4SmJmTsOwAAMHmgww
+        id lbHPGYSmJmTsOwAAMHmgww
         (envelope-from <tzimmermann@suse.de>); Fri, 31 Mar 2023 09:23:16 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 01/15] fbdev/68328fb: Remove trailing whitespaces
-Date:   Fri, 31 Mar 2023 11:23:00 +0200
-Message-Id: <20230331092314.2209-2-tzimmermann@suse.de>
+Subject: [PATCH 00/15] fbdev: Remove trailing whitespaces
+Date:   Fri, 31 Mar 2023 11:22:59 +0200
+Message-Id: <20230331092314.2209-1-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.40.0
-In-Reply-To: <20230331092314.2209-1-tzimmermann@suse.de>
-References: <20230331092314.2209-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fix coding style. No functional changes.
+The trailing whitespaces are annoying. So remove them. No
+functional changes. Some of the patches has already been
+acked by Helge.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Acked-by: Helge Deller <deller@gmx.de>
----
- drivers/video/fbdev/68328fb.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+Thomas Zimmermann (15):
+  fbdev/68328fb: Remove trailing whitespaces
+  fbdev/atmel_lcdfb: Remove trailing whitespaces
+  fbdev/cg14: Remove trailing whitespaces
+  fbdev/controlfb: Remove trailing whitespaces
+  fbdev/g364fb: Remove trailing whitespaces
+  fbdev/hgafb: Remove trailing whitespaces
+  fbdev/hpfb: Remove trailing whitespaces
+  fbdev/macfb: Remove trailing whitespaces
+  fbdev/maxinefb: Remove trailing whitespaces
+  fbdev/p9100: Remove trailing whitespaces
+  fbdev/platinumfb: Remove trailing whitespaces
+  fbdev/sa1100fb: Remove trailing whitespaces
+  fbdev/stifb: Remove trailing whitespaces
+  fbdev/valkyriefb: Remove trailing whitespaces
+  fbdev/vfb: Remove trailing whitespaces
 
-diff --git a/drivers/video/fbdev/68328fb.c b/drivers/video/fbdev/68328fb.c
-index 41df61b37a18..ef49cdfb7dd2 100644
---- a/drivers/video/fbdev/68328fb.c
-+++ b/drivers/video/fbdev/68328fb.c
-@@ -123,7 +123,7 @@ static u_long get_line_length(int xres_virtual, int bpp)
-      *  First part, xxxfb_check_var, must not write anything
-      *  to hardware, it should only verify and adjust var.
-      *  This means it doesn't alter par but it does use hardware
--     *  data from it to check this var. 
-+     *  data from it to check this var.
-      */
- 
- static int mc68x328fb_check_var(struct fb_var_screeninfo *var,
-@@ -181,7 +181,7 @@ static int mc68x328fb_check_var(struct fb_var_screeninfo *var,
- 
- 	/*
- 	 * Now that we checked it we alter var. The reason being is that the video
--	 * mode passed in might not work but slight changes to it might make it 
-+	 * mode passed in might not work but slight changes to it might make it
- 	 * work. This way we let the user know what is acceptable.
- 	 */
- 	switch (var->bits_per_pixel) {
-@@ -256,8 +256,8 @@ static int mc68x328fb_check_var(struct fb_var_screeninfo *var,
- }
- 
- /* This routine actually sets the video mode. It's in here where we
-- * the hardware state info->par and fix which can be affected by the 
-- * change in par. For this driver it doesn't do much. 
-+ * the hardware state info->par and fix which can be affected by the
-+ * change in par. For this driver it doesn't do much.
-  */
- static int mc68x328fb_set_par(struct fb_info *info)
- {
-@@ -294,7 +294,7 @@ static int mc68x328fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- 	 *   {hardwarespecific} contains width of RAMDAC
- 	 *   cmap[X] is programmed to (X << red.offset) | (X << green.offset) | (X << blue.offset)
- 	 *   RAMDAC[X] is programmed to (red, green, blue)
--	 * 
-+	 *
- 	 * Pseudocolor:
- 	 *    uses offset = 0 && length = RAMDAC register width.
- 	 *    var->{color}.offset is 0
-@@ -383,7 +383,7 @@ static int mc68x328fb_pan_display(struct fb_var_screeninfo *var,
- }
- 
-     /*
--     *  Most drivers don't need their own mmap function 
-+     *  Most drivers don't need their own mmap function
-      */
- 
- static int mc68x328fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ drivers/video/fbdev/68328fb.c     |  12 +--
+ drivers/video/fbdev/atmel_lcdfb.c |   2 +-
+ drivers/video/fbdev/cg14.c        |   2 +-
+ drivers/video/fbdev/controlfb.c   |  34 +++----
+ drivers/video/fbdev/g364fb.c      |   6 +-
+ drivers/video/fbdev/hgafb.c       |  36 +++----
+ drivers/video/fbdev/hpfb.c        |   8 +-
+ drivers/video/fbdev/macfb.c       |  10 +-
+ drivers/video/fbdev/maxinefb.c    |   2 +-
+ drivers/video/fbdev/p9100.c       |   4 +-
+ drivers/video/fbdev/platinumfb.c  |  30 +++---
+ drivers/video/fbdev/sa1100fb.c    |  32 +++---
+ drivers/video/fbdev/stifb.c       | 156 +++++++++++++++---------------
+ drivers/video/fbdev/valkyriefb.c  |  14 +--
+ drivers/video/fbdev/vfb.c         |  10 +-
+ 15 files changed, 179 insertions(+), 179 deletions(-)
+
 -- 
 2.40.0
 

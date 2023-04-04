@@ -2,143 +2,62 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05176C6FD1D
-	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Apr 2023 15:20:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E318C761A6
+	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Apr 2023 17:18:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235602AbjDDPUu convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 4 Apr 2023 11:20:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37580 "EHLO
+        id S235710AbjDDRSt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 4 Apr 2023 13:18:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44584 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235618AbjDDPUt (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Apr 2023 11:20:49 -0400
-Received: from mail-yb1-f169.google.com (mail-yb1-f169.google.com [209.85.219.169])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 74B9340CD;
-        Tue,  4 Apr 2023 08:20:48 -0700 (PDT)
-Received: by mail-yb1-f169.google.com with SMTP id m16so18791731ybk.0;
-        Tue, 04 Apr 2023 08:20:48 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680621647;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=RwpxyD/L/JdRbsDbYgifY/Bzo8+RV7g8PvhEjly15kU=;
-        b=R6lmXyIAkkTsrqGKETrIHPf1+RPGMatsUicAqE5PIJsEOIOf/mkxr6LQsh6axvKUv7
-         OeXjQFUUXDrjKE3oY5F/PiMt5KldisX0bc8PJv77VeQYCc33oY3rXeO24C+u+Efs2d73
-         8ShCTy2GS5RzLXUA8AZezQJ0ciwCJLOA762QA/0MVaQkoNBz+FIgrZJzgFJr2REa99/p
-         Mk3az4gWuBUrUrJJY/yg3K5I1K/FVcCOaCQc1ZHwNjkT5CcIR120FyVSUZ8s9trfCTz8
-         +F0Y+Z7UlL2ULLbvJEpCHt0loBwaXFIuYSeTtVEUTjNJKtRfKZbiQuYtS/JAg2VzYh5b
-         048A==
-X-Gm-Message-State: AAQBX9fbDkA2QQIr+SkDtC5X6QTgGLepPZ9n+o8p8W5b6BVFC4amD2GH
-        Bh8qcC19AcOL+i3veG9t8GVxjf7349E5bTRU
-X-Google-Smtp-Source: AKy350bu8q8dQfxRkGCj/JF4FZ4ecJo+4xVzLiTPZzdaL08859XR5aSqsv0u8/cKUQ+a+sY//gNs6A==
-X-Received: by 2002:a05:6902:154d:b0:b73:ef29:bcdd with SMTP id r13-20020a056902154d00b00b73ef29bcddmr3989263ybu.38.1680621647350;
-        Tue, 04 Apr 2023 08:20:47 -0700 (PDT)
-Received: from mail-yb1-f176.google.com (mail-yb1-f176.google.com. [209.85.219.176])
-        by smtp.gmail.com with ESMTPSA id 127-20020a251285000000b00b7767ca7486sm3386804ybs.35.2023.04.04.08.20.47
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 04 Apr 2023 08:20:47 -0700 (PDT)
-Received: by mail-yb1-f176.google.com with SMTP id p204so39116190ybc.12;
-        Tue, 04 Apr 2023 08:20:47 -0700 (PDT)
-X-Received: by 2002:a25:734d:0:b0:b67:d295:d614 with SMTP id
- o74-20020a25734d000000b00b67d295d614mr1786237ybc.12.1680621646854; Tue, 04
- Apr 2023 08:20:46 -0700 (PDT)
+        with ESMTP id S235868AbjDDRSq (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Apr 2023 13:18:46 -0400
+X-Greylist: delayed 4183 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 04 Apr 2023 10:18:22 PDT
+Received: from mail.feshiecree.pl (mail.feshiecree.pl [89.40.114.103])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D9E81BD7
+        for <linux-fbdev@vger.kernel.org>; Tue,  4 Apr 2023 10:18:22 -0700 (PDT)
+Received: by mail.feshiecree.pl (Postfix, from userid 1001)
+        id C031C88666; Tue,  4 Apr 2023 08:50:27 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=feshiecree.pl;
+        s=mail; t=1680594628;
+        bh=hFxZwVw4rIL+JwfEOGI47p+fdoVOAeqVswP6NWoHSHQ=;
+        h=Date:From:To:Subject:From;
+        b=BdI1g1Ez1QVhQQNE658dgio2E4ztnO5VS0i8wPiiw71EFJSnAHwYxiTsnh+2u8jPd
+         NTsW48m+x+88o7DQrZ43sxDATFvToU/UNLI16mCFgz68FUoc2y/CLl7v6KYZdtVpuK
+         0Ul5vPYJYgmbfoUu32G/6Ab+J48hefY3EvEJDXfpYE8zc34N/jI5kx6baQJ9U+GwaL
+         lgULCVbOldCY+66eHE6pnfpu2yxQlbaap9Qjvx4GekRExH5KghZW95ZjcuERGTNNNp
+         r7zzeZYsDmNy2p72n/Q1GNfvUVsKKu22Em5sp4RIAtChbQQkE2sSP+K9CGG9xVKyLY
+         ScIHa8ju9NSZQ==
+Received: by feshiecree.pl for <linux-fbdev@vger.kernel.org>; Tue,  4 Apr 2023 07:50:27 GMT
+Message-ID: <20230404074504-0.1.1t.5mtt.0.igeaby2hi3@feshiecree.pl>
+Date:   Tue,  4 Apr 2023 07:50:27 GMT
+From:   "Krystian Wieczorek" <krystian.wieczorek@feshiecree.pl>
+To:     <linux-fbdev@vger.kernel.org>
+Subject: W sprawie samochodu
+X-Mailer: mail.feshiecree.pl
 MIME-Version: 1.0
-References: <20220629105658.1373770-1-geert@linux-m68k.org>
- <d27c08a3-0f2f-c0f2-143f-482a33a6a4ce@gmx.de> <YvJ3R2HnTSXDF7lx@phenom.ffwll.local>
-In-Reply-To: <YvJ3R2HnTSXDF7lx@phenom.ffwll.local>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 4 Apr 2023 17:20:35 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdUaHd1jgrsCSxCqF-HP2rAo2ODM_ZOjhk7Q4vjuqvt36w@mail.gmail.com>
-Message-ID: <CAMuHMdUaHd1jgrsCSxCqF-HP2rAo2ODM_ZOjhk7Q4vjuqvt36w@mail.gmail.com>
-Subject: Re: [PATCH] drm/fb-helper: Remove helpers to change frame buffer config
-To:     Daniel Vetter <daniel@ffwll.ch>
-Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Jani Nikula <jani.nikula@linux.intel.com>,
-        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-        Tomi Valkeinen <tomba@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Daniel,
+Dzie=C5=84 dobry,
 
-On Tue, Aug 9, 2022 at 5:03 PM Daniel Vetter <daniel@ffwll.ch> wrote:
-> On Sat, Jul 02, 2022 at 08:05:54PM +0200, Helge Deller wrote:
-> > On 6/29/22 12:56, Geert Uytterhoeven wrote:
-> > > The DRM fbdev emulation layer does not support pushing back
-> > > changes to fb_var_screeninfo to KMS.
-> > >
-> > > However, drm_fb_helper still implements the fb_ops.fb_check_var() and
-> > > fb_ops.fb_set_par() callbacks, but the former fails to validate various
-> > > parameters passed from userspace.  Hence unsanitized and possible
-> > > invaled values are passed up through the fbdev, fbcon, and console
-> > > stack, which has become an endless source of security issues reported
-> > > against fbdev.
-> > >
-> > > Fix this by not populating the fb_ops.fb_check_var() and
-> > > fb_ops.fb_set_par() callbacks, as there is no point in providing them if
-> > > the frame buffer config cannot be changed anyway.  This makes the fbdev
-> > > core aware that making changes to the frame buffer config is not
-> > > supported, so it will always return the current config.
-> > >
-> > > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> >
-> > It's unfortunate that DRM currently isn't able to switch resolutions
-> > at runtime.
-> >
-> > With that in mind I agree with Geert that it's probably better to
-> > disable (or drop) that code until DRM can cope with fbdev's
-> > interface to switch resolutions.
-> >
-> > Furthermore, with the upcoming patches to fbcon (which prevents crashes on
-> > invalid userspace input), you will face a kernel WARNING if you call fbset
-> > to switch screen resolutions with DRM drivers.
-> >
-> > So, from my side (although I'd prefer a better fix for DRM):
-> >
-> > Acked-by: Helge Deller <deller@gmx.de>
->
-> So maybe I'm missing something, but I think this breaks a lot of stuff.
-> The issue is that fbdev is only a subordinate owner of the kms device, if
-> there's a real drm kms owner around that wins.
->
-> Which means when you switch back then set_par needs to restore the fbdev
-> framebuffer. So that might break some recovery/use-cases.
+chcieliby=C5=9Bmy zapewni=C4=87 Pa=C5=84stwu kompleksowe rozwi=C4=85zania=
+, je=C5=9Bli chodzi o system monitoringu GPS.
 
-Upon closer look, I think I was a bit too over-eager, and we can keep
-the implementation of fb_ops.fb_set_par().
+Precyzyjne monitorowanie pojazd=C3=B3w na mapach cyfrowych, =C5=9Bledzeni=
+e ich parametr=C3=B3w eksploatacyjnych w czasie rzeczywistym oraz kontrol=
+a paliwa to kluczowe funkcjonalno=C5=9Bci naszego systemu.=20
 
-> The other thing is that I think this also breaks the scanout offset, and
-> people do use that for double-buffering on top of fbdev on top of drm
-> drivers. So we can't just nuke it completely.
+Organizowanie pracy pracownik=C3=B3w jest dzi=C4=99ki temu prostsze i bar=
+dziej efektywne, a oszcz=C4=99dno=C5=9Bci i optymalizacja w zakresie pono=
+szonych koszt=C3=B3w, maj=C4=85 dla ka=C5=BCdego przedsi=C4=99biorcy ogro=
+mne znaczenie.
 
-You mean panning? That does not need fb_ops.fb_check_var(), as it
-should be done through fb_ops.fb_pan_display().
+Dopasujemy nasz=C4=85 ofert=C4=99 do Pa=C5=84stwa oczekiwa=C5=84 i potrze=
+b organizacji. Czy mogliby=C5=9Bmy porozmawia=C4=87 o naszej propozycji?
 
-> For better or worse I think we need to keep playing the whack-a-mole game.
-> Or do I miss something here?
 
-With the above fixed, we can continue whacking the drm bugs in
-implementing the fbdev API?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Pozdrawiam
+Krystian Wieczorek

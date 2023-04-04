@@ -2,160 +2,167 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB69CC761AF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Apr 2023 11:09:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF648C761A6
+	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Apr 2023 11:38:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234660AbjDDLJb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 4 Apr 2023 07:09:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42736 "EHLO
+        id S235027AbjDDLiC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 4 Apr 2023 07:38:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39310 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234659AbjDDLJQ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Apr 2023 07:09:16 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1179030D2;
-        Tue,  4 Apr 2023 04:08:47 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id B47BD2054A;
-        Tue,  4 Apr 2023 11:08:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1680606525; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
+        with ESMTP id S234379AbjDDLhv (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Apr 2023 07:37:51 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46B0F2D50
+        for <linux-fbdev@vger.kernel.org>; Tue,  4 Apr 2023 04:36:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1680608216;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=eQp2+ZkrkLyFVDUuOKrEQGz/vEMvHB61W6Nom/UO5Nc=;
-        b=0LGvStjeD7p18YX1YMUVfYGpMQA/8mK/NDETaBkuENH0GGWgjII0VO9njhjG9fgD/IyFD7
-        K75uucgZ1VAx45itF8CFw4rHuFLWqhVNNMsyctzK3vLQibCw0Yqxiq3Az79ZaYtB+cb5hC
-        eK+G2GGTbfcPG77wo8YKeEdFgJdePJA=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1680606525;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=eQp2+ZkrkLyFVDUuOKrEQGz/vEMvHB61W6Nom/UO5Nc=;
-        b=7F/QTBn1rQAnLBz/4jphWEFnf/MCLG28VeE8vGZTfsdKVJzyMthrRYVEyxGDkDnrwBEZ2i
-        TRSbUveanzkKxDAg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 7443313920;
-        Tue,  4 Apr 2023 11:08:45 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id 5whlGz0FLGSVcgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Tue, 04 Apr 2023 11:08:45 +0000
-Message-ID: <bf2aedc8-5055-a931-65bc-e153f74e737c@suse.de>
-Date:   Tue, 4 Apr 2023 13:08:45 +0200
+        bh=ojOFhnhp4SsyD0rEUsce5/2jxSoNGXx6ELi80cUBriI=;
+        b=HecprYlwZfQjFmqpf0j/Nesxxxat5EDyEJQLU4VgHEUogzoFL5p4SNP2Y2b4OFTH3njfSV
+        1A+1Dplh+U12F0/sMZeRJn2qe7J09X6NNp3RfEUXunwSkdsNZKiwB7yPxaYs52pXNvlZkM
+        mEtPESWb2WYU5SCq2s7jmFMC5auK2r0=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-247-rqBij4z7Pl-zlEFKTyy88g-1; Tue, 04 Apr 2023 07:36:45 -0400
+X-MC-Unique: rqBij4z7Pl-zlEFKTyy88g-1
+Received: by mail-wm1-f71.google.com with SMTP id m21-20020a05600c3b1500b003f05f614318so604949wms.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 04 Apr 2023 04:36:45 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1680608204;
+        h=content-transfer-encoding:mime-version:message-id:date:references
+         :in-reply-to:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=ojOFhnhp4SsyD0rEUsce5/2jxSoNGXx6ELi80cUBriI=;
+        b=aEcOISgi+UkP0TFWZLCuLiEMUTrOy55ma52j+ynrivROCGv4jqWhQboc65v/0QnAts
+         GqMwKQKbhkdKMih0idZRKBXXOqr9HTPOpz9iHLK98LXV8MzPSUQI6wIYy4FFrXPGAAWc
+         GeHR/BTgeYoKxNURpRpY/UE4hktrQhPJmHuofFZI+3idSbf0OO1SP7cI/VcHMOlbd7My
+         5LUj4s8Ymc8SmPgZKW5PJ/lUKDsZZlFjMRG3Z1n/RVUFtNIYvEnRFTbLRjAhGg2g0NXf
+         Bv1BtoC/RjEdMr8Bh/3RbOCfuoorQpvbkqjXkT7BGnLvm4JgUNsoybu85f33ubF1xQUi
+         UupQ==
+X-Gm-Message-State: AAQBX9d9eGk3oppUacuBGcRop58b/0U7vXe9ErnRLHB/NsE609ZlOk6e
+        S0IIy/gdFptD8kPL1cEMgO9uE0oEJHZqe1RFI2LO716+LHAg0VXyTqsRoFmU54YcfFVQLHiIhCz
+        LnuvH/088UXDJh2MdgAPULPE=
+X-Received: by 2002:a7b:ce99:0:b0:3ea:e4f8:be09 with SMTP id q25-20020a7bce99000000b003eae4f8be09mr1997458wmj.30.1680608204167;
+        Tue, 04 Apr 2023 04:36:44 -0700 (PDT)
+X-Google-Smtp-Source: AKy350ZBl7sxG9qT96buUn7fCxResMaGdQnJeglH7Vd76qcVabWIRkxQ82wcbXV5wbZuVW0Aj/hJaw==
+X-Received: by 2002:a7b:ce99:0:b0:3ea:e4f8:be09 with SMTP id q25-20020a7bce99000000b003eae4f8be09mr1997442wmj.30.1680608203876;
+        Tue, 04 Apr 2023 04:36:43 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id y5-20020a05600c364500b003ee0d191539sm15036395wmq.10.2023.04.04.04.36.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 04 Apr 2023 04:36:43 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Samuel =?utf-8?Q?=C4=8Cavoj?= <samuel@cavoj.net>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
+        daniel@ffwll.ch, sam@ravnborg.org, maxime@cerno.tech,
+        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        dri-devel@lists.freedesktop.org, Zack Rusin <zackr@vmware.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Zhen Lei <thunder.leizhen@huawei.com>,
+        Changcheng Deng <deng.changcheng@zte.com.cn>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>
+Subject: Re: [PATCH v2 07/11] video/aperture: Disable and unregister sysfb
+ devices via aperture helpers
+In-Reply-To: <e556191a3cc9730f3d83c7aaea7d3b3e@cavoj.net>
+References: <20220718072322.8927-1-tzimmermann@suse.de>
+ <20220718072322.8927-8-tzimmermann@suse.de>
+ <9f682c15a5484b4a94f63e20d41f67d0@cavoj.net>
+ <e881f6d6-0d2b-5775-68f2-35cc4d666d63@suse.de>
+ <874jqfpw7k.fsf@minerva.mail-host-address-is-not-set>
+ <87706a167c1e490a12371e2edf0f34e3@cavoj.net>
+ <87v8ivoc3r.fsf@minerva.mail-host-address-is-not-set>
+ <e556191a3cc9730f3d83c7aaea7d3b3e@cavoj.net>
+Date:   Tue, 04 Apr 2023 13:36:42 +0200
+Message-ID: <87wn2rdgl1.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.9.0
-Subject: Re: [PATCH] video/aperture: fix typos
-Content-Language: en-US
-To:     Javier Martinez Canillas <javierm@redhat.com>,
-        Sui Jingfeng <suijingfeng@loongson.cn>,
-        Maxime Ripard <mripard@kernel.org>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>, Li Yi <liyi@loongson.cn>,
-        Christian Koenig <christian.koenig@amd.com>,
-        Helge Deller <deller@gmx.de>,
-        Lucas De Marchi <lucas.demarchi@intel.com>
-Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-References: <20230404040101.2165600-1-suijingfeng@loongson.cn>
- <0ad03743-0224-b154-a149-e3e4d54b252d@suse.de>
- <87355fex1f.fsf@minerva.mail-host-address-is-not-set>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <87355fex1f.fsf@minerva.mail-host-address-is-not-set>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------QjgX0S8Djl0gmC5dJU0tzbOC"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------QjgX0S8Djl0gmC5dJU0tzbOC
-Content-Type: multipart/mixed; boundary="------------RuVZdtasVFMi1nARy25z2lWY";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Javier Martinez Canillas <javierm@redhat.com>,
- Sui Jingfeng <suijingfeng@loongson.cn>, Maxime Ripard <mripard@kernel.org>,
- David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
- Li Yi <liyi@loongson.cn>, Christian Koenig <christian.koenig@amd.com>,
- Helge Deller <deller@gmx.de>, Lucas De Marchi <lucas.demarchi@intel.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org
-Message-ID: <bf2aedc8-5055-a931-65bc-e153f74e737c@suse.de>
-Subject: Re: [PATCH] video/aperture: fix typos
-References: <20230404040101.2165600-1-suijingfeng@loongson.cn>
- <0ad03743-0224-b154-a149-e3e4d54b252d@suse.de>
- <87355fex1f.fsf@minerva.mail-host-address-is-not-set>
-In-Reply-To: <87355fex1f.fsf@minerva.mail-host-address-is-not-set>
+Samuel =C4=8Cavoj <samuel@cavoj.net> writes:
 
---------------RuVZdtasVFMi1nARy25z2lWY
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Hello Samuel,
 
-SGkNCg0KQW0gMDQuMDQuMjMgdW0gMTI6NTUgc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
-aWxsYXM6DQo+IFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPiB3cml0
-ZXM6DQo+IA0KPiBIZWxsbyBUaG9tYXMsDQo+IA0KPiBTb3JyeSwgSSBqdXN0IGFwcGxpZWQg
-dGhpcyBwYXRjaCBhbmQgZGlkbid0IHNlZSB5b3VyIGVtYWlsIGJlZm9yZS4uLg0KPiANCj4+
-IEhpDQo+Pg0KPj4gQW0gMDQuMDQuMjMgdW0gMDY6MDEgc2NocmllYiBTdWkgSmluZ2Zlbmc6
-DQo+Pj4gICAgRUZJIEZCLCBWRVNBIEZCIG9yIFZHQSBGQiBldGMgYXJlIGJlbG9uZyB0byBm
-aXJtd2FyZSBiYXNlZCBmcmFtZWJ1ZmZlcg0KPj4+ICAgIGRyaXZlci4NCj4+DQo+PiBObyB3
-aGl0ZXNwYWNlcyBhdCB0aGUgYmVnaW5uaW5nIG9mIHRoZSBsaW5lcy4NCj4+DQo+IA0KPiBJ
-IGZpeGVkIHRoYXQgYmVmb3JlIGFwcGx5aW5nLCBhbHNvIHJlbW92ZWQgdGhlICJhcmUiIGlu
-IHRoZSBzZW50ZW5jZQ0KPiBhYm92ZSwgc2luY2UgaXQgc291bmRlZCBvZmYgYW5kIHJlcGhh
-cnNlZCBzdWJqZWN0IGxpbmUgYXMgIkZpeCB0eXBvcw0KPiBpbiBjb21tZW50cyIuDQo+IA0K
-PiBbLi4uXQ0KPiANCj4+PiAgICAJLyoNCj4+PiAgICAJICogUmVtb3ZlIHRoZSBkZXZpY2Ug
-ZnJvbSB0aGUgZGV2aWNlIGhpZXJhcmNoeS4gVGhpcyBpcyB0aGUgcmlnaHQgdGhpbmcNCj4+
-PiAtCSAqIHRvIGRvIGZvciBmaXJtd2FyZS1iYXNlZCBEUk0gZHJpdmVycywgc3VjaCBhcyBF
-RkksIFZFU0Egb3IgVkdBLiBBZnRlcg0KPj4+ICsJICogdG8gZG8gZm9yIGZpcm13YXJlLWJh
-c2VkIGZiIGRyaXZlcnMsIHN1Y2ggYXMgRUZJLCBWRVNBIG9yIFZHQS4gQWZ0ZXINCj4+DQo+
-PiBUaGF0IHNlbnRlbmNlcyBpcyBub3Qgd2VsbCBwaHJhc2VkLiBNYXliZSBzYXkgJ1RoaXMg
-aXMgcmVxdWlyZWQgZm9yDQo+PiBmaXJtd2FyZS1wcm92aWRlZCBncmFwaGljcywgc3VjaCBh
-cyBFRkksIFZFU0Egb3IgVkdBLicNCj4+DQo+IA0KPiBHcmFwaGljIGRyaXZlcnMgb3IgZGlz
-cGxheSBkcml2ZXJzIHdvdWxkIGluZGVlZCBiZSBtb3JlIGFjY3VyYXRlIGhlcmUuIEJ1dA0K
-PiBJIHRoaW5rIHRoYXQgImZiIGRyaXZlcnMiIGlzIHN0aWxsIHdlbGwgcGhhcnNlZCBzaW5j
-ZSB0aGUgYXJlIG90aGVyIHBsYWNlcw0KPiB3aGVyZSBlaXRoZXIgZmJkZXYgb3IgRFJNIGRy
-aXZlcnMgZm9yIGZpcm13YXJlLXByb3ZpZGVkIGZyYW1lYnVmZmVycyBhcmUNCj4gbmFtZWQg
-bGlrZSB0aGF0Lg0KDQpJIG1lYW50IG15IG9yaWdpbmFsIGNvbW1lbnQgd2hlbiBJIHNhaWQg
-J25vdCB3ZWxsIHBocmFzZWQnLiBJdCdzIG5vdCANCkppbmdmZW5nJ3MgZmF1bHQsIGJ1dCBp
-biBteSBvcmlnaW5hbCB0ZXh0LiBSZW1vdmluZyB0aGUgZGV2aWNlIGlzIA0KcmVxdWlyZWQg
-Zm9yIHNjYW5vdXQgYnVmZmVycyB0aGF0IGhhdmUgYmVlbiBwcm92aWRlZCBieSB0aGUgZmly
-bXdhcmUuIA0KVGhlIGF0dGFjaGVkIGdyYXBoaWNzIGRyaXZlciBpcyBzZWNvbmRhcnkgdG8g
-dGhpcy4gQnV0IEknbSBzdHJ1Z2dsaW5nIHRvIA0KZmluZCBhIHNpbXBsZSBzZW50ZW5jZSB0
-byBleHByZXNzIHRoaXMuIDovDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4gDQo+IEZv
-ciBleGFtcGxlLCBpbiB0aGUgc3lzZmIgcGxhdGZvcm0gY29kZSBhbmQgS2NvbmZpZyBzeW1i
-b2wgaGVscCB0ZXh0Lg0KPiANCj4+IEJlc3QgcmVnYXJkcw0KPj4gVGhvbWFzDQo+Pg0KPiAN
-Cg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0K
-U1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5
-MDQwOSBOw7xybmJlcmcsIEdlcm1hbnkNCihIUkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdl
-c2Now6RmdHNmw7xocmVyOiBJdm8gVG90ZXYNCg==
+> On 2023-03-20 13:12, Javier Martinez Canillas wrote:
+>> Samuel =C4=8Cavoj <samuel@cavoj.net> writes:
+>>=20
+>> [...]
+>>=20
+>>>>>> This call to sysfb_disable() has been causing trouble with regard=20
+>>>>>> to
+>>>>>> VFIO. VFIO has been calling aperture_remove_conflicting_pci_devices
+>>>>>> to
+>>>>>> get rid of any console drivers (d173780620792c) using the device in
+>>>>>> question, but now even unrelated drivers are getting killed.=20
+>>>>>> Example
+>>>>>> situation:
+>>>>>=20
+>>>>> Which drivers do you use?
+>>>=20
+>>> This happens with either no drivers loaded or the proprietary nvidia
+>>> driver. Nouveau is fine as it doesn't rely on efifb but brings its=20
+>>> own.
+>>>=20
+>>=20
+>> Which is what all DRM drivers should do. If they want to make sure that=
+=20
+>> a
+>> fbdev will be present after the DRM driver probes, then should register=
+=20
+>> an
+>> emulated fbdev.
+>
+> I don't see how this is specific to Nvidia or DRM drivers.
+>
 
---------------RuVZdtasVFMi1nARy25z2lWY--
+Not specific to Nvidia per se but as mentioned it only affected Nvidia due
+that driver relying on a different graphics driver to get a VT console.
 
---------------QjgX0S8Djl0gmC5dJU0tzbOC
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+> The efifb is killed if vfio-pci (or another driver which uses the
+> aperture system to remove conflicting drivers) is bound to ANY pci
+> device, regardless of whether it's nvidia's fault for not implementing
+> a framebuffer. Fair enough, I agree that they should, but
+> I for one expect my efifb to not die at a random time
+> when a random unrelated driver does a random thing with another
+> unrelated GPU.
+>
 
------BEGIN PGP SIGNATURE-----
+There was a patch series to address that:
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmQsBT0FAwAAAAAACgkQlh/E3EQov+B1
-txAAjm62li/0mEB1aT6gsNUdRSUmqAHhz0JXnF8ld+2RFSzHSG1CTD76VjHRHWUAFQY5zMxzD0NB
-fDaOLTMRx1b4Ybci17iCaYfW77VhCMjRe3RcRSkJK3ZdKvQwW5SBbuMTOcwh50gi9kTEPdxzyJT6
-4nWSX2VR08wDM9nh+AByPiMFxPoSQXaeeCy9ZUBJsketCJXAT5UoU+TR1dPNwpnW+e1y4qJGq+DD
-D0QORAbQVkgce+jCHfxJ7Ijd7e9Kurskt9FqZuy1MZXjMBZeW6uDvuVWSO7KAX10pFwhiabVjbz7
-2wggBLeECNtX02QJZEe9Bocd83fPpTgV8VLwy9+GZ+opb1nWuTcqv/+d3ivrzSQXn2+Rq62Cd4oc
-+ng98lGk+gy2QwRkBN9PmavMDOMu2CuUujTqEdzlXipfknRGfMV51a2N9e9yx/Kp0nfXg//jYh9P
-V1wM/UbjBa6NtTEpdWXyS7ogXRIkV7e2U7zDGSxbAgee9NeBISDp4+CcYvuuMy/EbGvL2Z4qy0Xr
-6RgG5Dlnjyd7ZqbHC+nrT8wiAkk9H4pZgSwMjj0ha4bbjwFt9x29FjHPZSBxmZMEK1+BT3XkSCQP
-W0xpvFYkJJsuHK/Ur27XbnFs7Hd9UHC7Krr9IYBFu/y+D+98cxm1pka99IckY3p8hqRekNK+JBW5
-FWs=
-=+YjY
------END PGP SIGNATURE-----
+https://patchwork.kernel.org/project/dri-devel/list/?series=3D711019&archiv=
+e=3Dboth
 
---------------QjgX0S8Djl0gmC5dJU0tzbOC--
+In particular, this patch:
+
+https://patchwork.kernel.org/project/dri-devel/patch/20230111154112.90575-1=
+1-daniel.vetter@ffwll.ch/
+
+> Or is the efifb considered a stop-gap solution the only purpose of
+> which is early boot--before another GPU driver is loaded?
+>
+
+All the firmware-provided graphics drivers are really a best effort IMO,
+that is something only to be used to get early video output and any in the
+case of "nomodeset" (i.e: some distros have a "Safe graphics mode" boot
+entry that prevents DRM drivers to be loaded but used for troubleshooting.
+
+But as soon as a real DRM driver is probed (either in the host or a guest
+when the device is passed-through), I believe that is very likely that it
+won't work anymore. In other words, is not a robust way to get output and
+is just a best effort.
+
+--=20
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
+

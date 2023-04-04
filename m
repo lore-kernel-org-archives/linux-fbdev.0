@@ -2,50 +2,50 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D108EC77B60
-	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Apr 2023 20:18:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77CFEC77B6E
+	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Apr 2023 20:18:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235627AbjDDUSw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 4 Apr 2023 16:18:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34784 "EHLO
+        id S235521AbjDDUSx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 4 Apr 2023 16:18:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34838 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229457AbjDDUSt (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Apr 2023 16:18:49 -0400
-Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6C6C3C2F
-        for <linux-fbdev@vger.kernel.org>; Tue,  4 Apr 2023 13:18:47 -0700 (PDT)
-Received: by mail-ed1-x531.google.com with SMTP id ek18so135542423edb.6
-        for <linux-fbdev@vger.kernel.org>; Tue, 04 Apr 2023 13:18:47 -0700 (PDT)
+        with ESMTP id S235377AbjDDUSv (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Apr 2023 16:18:51 -0400
+Received: from mail-ed1-x530.google.com (mail-ed1-x530.google.com [IPv6:2a00:1450:4864:20::530])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F51F40FD
+        for <linux-fbdev@vger.kernel.org>; Tue,  4 Apr 2023 13:18:49 -0700 (PDT)
+Received: by mail-ed1-x530.google.com with SMTP id r11so135523521edd.5
+        for <linux-fbdev@vger.kernel.org>; Tue, 04 Apr 2023 13:18:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google; t=1680639526; x=1683231526;
+        d=ffwll.ch; s=google; t=1680639528; x=1683231528;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=5MZa0e2p52RHNNaMAn/2wj3W9qMp65gnnoyA0NTZCP4=;
-        b=CoSPQJt42ro+4a4YP2wPk5oP0t8kFcASyg1i/RD+KQU8wn7S5u5k0ytH2+LT/sZgSB
-         U/X+GErEZKjoTADfg6UYvPHBT3pqFkkNUjhwY+4nmqaVhvmwQNwdEx2fynay/AnEYona
-         B34z7CsvPnzjORTxWLJflzMCHj3jBdxWxDH5A=
+        bh=uqZDoQFwLADtMnBtNxdxK9p4TWtkU10tx8tohL83pCs=;
+        b=XaJU8sLM4wNDMz/DnkBo4IsRCNJhdOLI8hKhFK4bdDC9psxDRT7+0jIiZXorXw9RIK
+         hzgkzrlF4Y0eBfz1IjRl1Ep9FIxjejhq5J5sT+ZBg8LGMr5Sa9Z5Wh8J8gyABm68wkby
+         KpwDB7GbvVE/9JCoj/Tge9PJkDrwDxA2jWPDk=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680639526; x=1683231526;
+        d=1e100.net; s=20210112; t=1680639528; x=1683231528;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=5MZa0e2p52RHNNaMAn/2wj3W9qMp65gnnoyA0NTZCP4=;
-        b=5J+zSiUpnQOQgOuFnbk6h+674ITLc+gsCfNHwRT9lMBjcmjIBeiRIDNvrPDjPFaYld
-         bjwd0mJGO+mBA+xT088jT9llikgEgKILx2ngq1OsExZRp4dwSes6QGPojP4hsa4aEKzV
-         Yfu0UfYzFSPEEU4Ok/r8jbseH1uIIWX/HYC1hz+qyhMD+FfVlQLFjyf9tjl6KfPBrv0+
-         RbtDDZQS2Hq10gYAlF90hWGPVI2kX1Fge4H8DHQilKe7oXiP3wVQZ/MKnCNDD+pFG5hH
-         4yTPnttRwevaNQt5AQ/jbtucj04WnTg0jvZ4CMU+SrTDUR+I6Oz4LzAJyP+OlU+s1sjL
-         1DXg==
-X-Gm-Message-State: AAQBX9d1H8Rir2FTAQlW0fmzoww+ZB/7rpNuqdm90/LfFXQhqA0ejh6z
-        CrjXJjiBRe6ZLUyoEmAaMlHUJw==
-X-Google-Smtp-Source: AKy350ZnfPw4c6pAaVa/xwHrgaYlcXeWJKqvkS29UkrwIQFXMDl77h/Os+FjIxNOo2HVYEVXwpmHUg==
-X-Received: by 2002:a05:6402:268e:b0:502:ffd:74a1 with SMTP id w14-20020a056402268e00b005020ffd74a1mr41884edd.2.1680639526318;
-        Tue, 04 Apr 2023 13:18:46 -0700 (PDT)
+        bh=uqZDoQFwLADtMnBtNxdxK9p4TWtkU10tx8tohL83pCs=;
+        b=SRIGtUucyy7U8eEAd1qkziQ8FCLBbw08MqjQw23VOcwFyKO+vNWs9tBaIYoeZCJeOz
+         7sfnvnSdVtcsgI2EeGKm26VdC83+i57MNJAy1TdOBCESa6u67PaZQF1RwM+uChkXJ91f
+         8TkqtymW+n7eSZp9QOj+GAWgjg83D7VGYf6dQCiydS/Z1qpeDDHqZzklaDjhyCrbalnA
+         LYhHTwac6JWdN7WFVxkn4R/aVIUyp2A0phAL+ADSMaVS/BrajH9jWE6ZaqhuzDBRlFyP
+         /rQ5qybFRTqfZuTzgSBkjZwWKxCYOQqJLaC8G+YOPsfJrVR2KtZnODtzlEEB/XQzGBSh
+         eqLg==
+X-Gm-Message-State: AAQBX9dut5izlqM4KnDoSpFNZoBc7js1KtZufm65ITuvMU2LAJ1Tgl5I
+        edc1X8buURKbAe4eP3B4cSiVLQ==
+X-Google-Smtp-Source: AKy350acmaUwpjPBTn+dd4wIoYoC/vBQsq9f/Fcnf1fdPDCrTSCrW+/E+C1vVPofPrARR1z/KiBevw==
+X-Received: by 2002:a05:6402:268e:b0:502:ffd:74a1 with SMTP id w14-20020a056402268e00b005020ffd74a1mr41930edd.2.1680639528186;
+        Tue, 04 Apr 2023 13:18:48 -0700 (PDT)
 Received: from phenom.ffwll.local (212-51-149-33.fiber7.init7.net. [212.51.149.33])
-        by smtp.gmail.com with ESMTPSA id u12-20020a50c04c000000b004d8d2735251sm6367986edd.43.2023.04.04.13.18.45
+        by smtp.gmail.com with ESMTPSA id u12-20020a50c04c000000b004d8d2735251sm6367986edd.43.2023.04.04.13.18.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 04 Apr 2023 13:18:45 -0700 (PDT)
+        Tue, 04 Apr 2023 13:18:47 -0700 (PDT)
 From:   Daniel Vetter <daniel.vetter@ffwll.ch>
 To:     DRI Development <dri-devel@lists.freedesktop.org>
 Cc:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
@@ -53,11 +53,10 @@ Cc:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
         Daniel Vetter <daniel.vetter@intel.com>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Javier Martinez Canillas <javierm@redhat.com>,
-        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org
-Subject: [PATCH 2/8] video/aperture: use generic code to figure out the vga default device
-Date:   Tue,  4 Apr 2023 22:18:36 +0200
-Message-Id: <20230404201842.567344-2-daniel.vetter@ffwll.ch>
+        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org
+Subject: [PATCH 4/8] video/aperture: Only kick vgacon when the pdev is decoding vga
+Date:   Tue,  4 Apr 2023 22:18:38 +0200
+Message-Id: <20230404201842.567344-4-daniel.vetter@ffwll.ch>
 X-Mailer: git-send-email 2.40.0
 In-Reply-To: <20230404201842.567344-1-daniel.vetter@ffwll.ch>
 References: <20230404201842.567344-1-daniel.vetter@ffwll.ch>
@@ -67,71 +66,51 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Since vgaarb has been promoted to be a core piece of the pci subsystem
-we don't have to open code random guesses anymore, we actually know
-this in a platform agnostic way, and there's no need for an x86
-specific hack. See also 1d38fe6ee6a8 ("PCI/VGA: Move vgaarb to
-drivers/pci")
+Otherwise it's bit silly, and we might throw out the driver for the
+screen the user is actually looking at. I haven't found a bug report
+for this case yet, but we did get bug reports for the analog case
+where we're throwing out the efifb driver.
 
-This should not result in any functional change, and the non-x86
-multi-gpu pci systems are probably rare enough to not matter (I don't
-know of any tbh). But it's a nice cleanup, so let's do it.
+v2: Flip the check around to make it clear it's a special case for
+kicking out the vgacon driver only (Thomas)
 
-There's been a few questions on previous iterations on dri-devel and
-irc:
-
-- fb_is_primary_device() seems to be yet another implementation of
-  this theme, and at least on x86 it checks for both
-  vga_default_device OR rom shadowing. There shouldn't ever be a case
-  where rom shadowing gives any additional hints about the boot vga
-  device, but if there is then the default vga selection in vgaarb
-  should probably be fixed. And not special-case checks replicated all
-  over.
-
-- Thomas also brought up that on most !x86 systems
-  fb_is_primary_device() returns 0, except on sparc/parisc. But these
-  2 special cases are about platform specific devices and not pci, so
-  shouldn't have any interactions.
-
-- Furthermore fb_is_primary_device() is a bit a red herring since it's
-  only used to select the right fbdev driver for fbcon, and not for
-  the fw handover dance which the aperture helpers handle. At least
-  for x86 we might want to look into unifying them, but that's a
-  separate thing.
-
-v2: Extend commit message trying to summarize various discussions.
-
+References: https://bugzilla.kernel.org/show_bug.cgi?id=216303
 Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
 Cc: Thomas Zimmermann <tzimmermann@suse.de>
 Cc: Javier Martinez Canillas <javierm@redhat.com>
 Cc: Helge Deller <deller@gmx.de>
 Cc: linux-fbdev@vger.kernel.org
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: linux-pci@vger.kernel.org
 ---
- drivers/video/aperture.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/video/aperture.c | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/video/aperture.c b/drivers/video/aperture.c
-index b009468ffdff..8835d3bc39bf 100644
+index 8835d3bc39bf..552cffdb827b 100644
 --- a/drivers/video/aperture.c
 +++ b/drivers/video/aperture.c
-@@ -324,13 +324,11 @@ EXPORT_SYMBOL(aperture_remove_conflicting_devices);
-  */
- int aperture_remove_conflicting_pci_devices(struct pci_dev *pdev, const char *name)
- {
--	bool primary = false;
-+	bool primary;
- 	resource_size_t base, size;
- 	int bar, ret;
+@@ -341,13 +341,15 @@ int aperture_remove_conflicting_pci_devices(struct pci_dev *pdev, const char *na
+ 			return ret;
+ 	}
  
--#ifdef CONFIG_X86
--	primary = pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
--#endif
-+	primary = pdev == vga_default_device();
+-	/*
+-	 * WARNING: Apparently we must kick fbdev drivers before vgacon,
+-	 * otherwise the vga fbdev driver falls over.
+-	 */
+-	ret = vga_remove_vgacon(pdev);
+-	if (ret)
+-		return ret;
++	if (primary) {
++		/*
++		 * WARNING: Apparently we must kick fbdev drivers before vgacon,
++		 * otherwise the vga fbdev driver falls over.
++		 */
++		ret = vga_remove_vgacon(pdev);
++		if (ret)
++			return ret;
++	}
  
- 	for (bar = 0; bar < PCI_STD_NUM_BARS; ++bar) {
- 		if (!(pci_resource_flags(pdev, bar) & IORESOURCE_MEM))
+ 	return 0;
+ 
 -- 
 2.40.0
 

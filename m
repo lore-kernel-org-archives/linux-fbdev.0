@@ -2,111 +2,114 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A059C761A6
-	for <linux-fbdev@archiver.kernel.org>; Mon,  3 Apr 2023 09:11:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C208C6FD1D
+	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Apr 2023 04:01:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230332AbjDCJLk convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 3 Apr 2023 05:11:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59852 "EHLO
+        id S229761AbjDDEBK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 4 Apr 2023 00:01:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53616 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231202AbjDCJLj (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 3 Apr 2023 05:11:39 -0400
-Received: from mail-yb1-f176.google.com (mail-yb1-f176.google.com [209.85.219.176])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC9667692
-        for <linux-fbdev@vger.kernel.org>; Mon,  3 Apr 2023 02:11:38 -0700 (PDT)
-Received: by mail-yb1-f176.google.com with SMTP id p203so33854648ybb.13
-        for <linux-fbdev@vger.kernel.org>; Mon, 03 Apr 2023 02:11:38 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680513098;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ZI0/oicn8lXf0Q9UzLqg2frlhxOUQe0sP4P2QRpVzMs=;
-        b=Bqs+me2RBcN2seWWo3ykDAsuzZBjbapjt3DXuKXwDKcREQLc28JtVn5XMa5uWBPD2d
-         MtHAb2x3JVQsO5FZI37zS2hFYt1K8uXYscY9N+6g/ZzYgedBvbs9soXRdiIZrnDo3bxi
-         R7ABE9qG96DUbeZJFTpx++fFiRS17beEgN1qQlktTeJEnEwzlG/EdnaRBe+hWxvheC+3
-         3wbONuY04D55BUEG+PnCXOM6OwDgBHY4QGVs8XIBugqRCLUSBL4MV5bMkMuscigTNopk
-         AJUmhewaRd11I2w0zOY9nZXfr1Uh7HXAaQn1Mt3WkHmC4omFfQWS9j6JW5e6f33DuMtP
-         UnxA==
-X-Gm-Message-State: AAQBX9f/+Y1WhTcVEXro9/HUps9nMWJQrt6SNis26FBYrV1mZYwutwE0
-        sjFmBAWY+HcsY1sE/H7038kqPBv3uCBj+4HN
-X-Google-Smtp-Source: AKy350Z2hyCOPrtwg90ezhMCXO9EgCo1MSwWeZzIUlmOnu5FEY53FtevoaEPgrv2qL2RBn9s+jdD0g==
-X-Received: by 2002:a25:2205:0:b0:b7d:d397:5c51 with SMTP id i5-20020a252205000000b00b7dd3975c51mr16216140ybi.17.1680513097861;
-        Mon, 03 Apr 2023 02:11:37 -0700 (PDT)
-Received: from mail-yb1-f169.google.com (mail-yb1-f169.google.com. [209.85.219.169])
-        by smtp.gmail.com with ESMTPSA id e185-20020a81a7c2000000b00545a08184cesm2374332ywh.94.2023.04.03.02.11.37
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 03 Apr 2023 02:11:37 -0700 (PDT)
-Received: by mail-yb1-f169.google.com with SMTP id j7so33926007ybg.4
-        for <linux-fbdev@vger.kernel.org>; Mon, 03 Apr 2023 02:11:37 -0700 (PDT)
-X-Received: by 2002:a25:2749:0:b0:a99:de9d:d504 with SMTP id
- n70-20020a252749000000b00a99de9dd504mr22689985ybn.12.1680513097268; Mon, 03
- Apr 2023 02:11:37 -0700 (PDT)
+        with ESMTP id S229446AbjDDEBJ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Apr 2023 00:01:09 -0400
+Received: from loongson.cn (mail.loongson.cn [114.242.206.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 64D8319F;
+        Mon,  3 Apr 2023 21:01:04 -0700 (PDT)
+Received: from loongson.cn (unknown [10.20.42.133])
+        by gateway (Coremail) with SMTP id _____8DxE0z+oCtk2E8WAA--.34589S3;
+        Tue, 04 Apr 2023 12:01:02 +0800 (CST)
+Received: from openarena.loongson.cn (unknown [10.20.42.133])
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8Cxur39oCtkMO4UAA--.18983S2;
+        Tue, 04 Apr 2023 12:01:01 +0800 (CST)
+From:   Sui Jingfeng <suijingfeng@loongson.cn>
+To:     Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Sui Jingfeng <suijingfeng@loongson.cn>,
+        Li Yi <liyi@loongson.cn>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Christian Koenig <christian.koenig@amd.com>,
+        Helge Deller <deller@gmx.de>,
+        Lucas De Marchi <lucas.demarchi@intel.com>
+Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH] video/aperture: fix typos
+Date:   Tue,  4 Apr 2023 12:01:01 +0800
+Message-Id: <20230404040101.2165600-1-suijingfeng@loongson.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-References: <20230326104232.3099222-1-geert@linux-m68k.org> <ZCLbduJjX0KS/kJx@ls3530>
-In-Reply-To: <ZCLbduJjX0KS/kJx@ls3530>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 3 Apr 2023 11:11:26 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdUJ_Prt-JeukNJSfKC7f7X_WTz1Wc+hR77vHPGqJ0quaw@mail.gmail.com>
-Message-ID: <CAMuHMdUJ_Prt-JeukNJSfKC7f7X_WTz1Wc+hR77vHPGqJ0quaw@mail.gmail.com>
-Subject: Re: [PATCH fbtest] pnmtohex: Optionally use pkg-config for netpbm
-To:     Helge Deller <deller@gmx.de>
-Cc:     linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: AQAAf8Cxur39oCtkMO4UAA--.18983S2
+X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
+X-Coremail-Antispam: 1Uk129KBjvJXoW7AF1UZrW7CryrAF17KFyrtFb_yoW8tw4rpF
+        sYgFyUCr1DKr4jgayj9a10yFyrWa93Xay5KFyUA3ya9wn8Ca4rXrWUGFWkG3WDJryku3Wa
+        vFn8Zr18CF4DZrJanT9S1TB71UUUUjJqnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
+        qI5I8CrVACY4xI64kE6c02F40Ex7xfYxn0WfASr-VFAUDa7-sFnT9fnUUIcSsGvfJTRUUU
+        bSxYFVCjjxCrM7AC8VAFwI0_Jr0_Gr1l1xkIjI8I6I8E6xAIw20EY4v20xvaj40_Wr0E3s
+        1l1IIY67AEw4v_Jrv_JF1l8cAvFVAK0II2c7xJM28CjxkF64kEwVA0rcxSw2x7M28EF7xv
+        wVC0I7IYx2IY67AKxVW8JVW5JwA2z4x0Y4vE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwA2z4
+        x0Y4vEx4A2jsIE14v26r4UJVWxJr1l84ACjcxK6I8E87Iv6xkF7I0E14v26r4UJVWxJr1l
+        n4kS14v26r126r1DM2AIxVAIcxkEcVAq07x20xvEncxIr21l57IF6xkI12xvs2x26I8E6x
+        ACxx1l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r126r1DMcIj6I8E
+        87Iv67AKxVW8JVWxJwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41lc7CjxV
+        Aaw2AFwI0_JF0_Jw1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1l4IxY
+        O2xFxVAFwI0_JF0_Jw1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGV
+        WUWwC2zVAF1VAY17CE14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_
+        JFI_Gr1lIxAIcVC0I7IYx2IY6xkF7I0E14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rV
+        WUJVWUCwCI42IY6I8E87Iv67AKxVW8JVWxJwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4U
+        JbIYCTnIWIevJa73UjIFyTuYvjxU4SoGDUUUU
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Mar 28, 2023 at 2:20 PM Helge Deller <deller@gmx.de> wrote:
-> * Geert Uytterhoeven <geert@linux-m68k.org>:
-> > As of libnetpbm11 in Debian/Ubuntu, the netpbm header files are no
-> > longer located in the root include directory, but in a netbpm
-> > subdirectory.  Fortunately the same version added support for
-> > pkg-config.
-> >
-> > Support both old and new systems by using pkg-config, when available.
-> >
-> > Reported-by: Helge Deller <deller@gmx.de>
-> > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> > ---
-> > Helge: Does this fix the issue for you. I don't have a system with
-> >        libnetpbm11 handy yet.
->
-> Yes, thanks a lot!
->
-> That fixes the build on parisc on Debian 12.0 for me.
-> You may add:
-> Tested-by: Helge Deller <deller@gmx.de>
->
-> I tried on my Fedora 36/x86_64 as well, and there netpbm-devel
-> sadly comes without pkg-config. Nevertheless, based on top of
-> your patch by hacking in the include path fixed the issue there
-> as well.
-> Maybe you can consider applying below patch on top of yours as too?
->
-> Helge
-> ---------
->
-> [PATCH] Add netpbm to include search patch
->
-> Netpbm on Fedora 36 comes without pkg-config, so
-> manually add the include path.
->
-> Signed-off-by: Helge Deller <deller@gmx.de>
+ EFI FB, VESA FB or VGA FB etc are belong to firmware based framebuffer
+ driver.
 
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-and applying.
+Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
+---
+ drivers/video/aperture.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
+diff --git a/drivers/video/aperture.c b/drivers/video/aperture.c
+index 41e77de1ea82..b009468ffdff 100644
+--- a/drivers/video/aperture.c
++++ b/drivers/video/aperture.c
+@@ -20,7 +20,7 @@
+  * driver can be active at any given time. Many systems load a generic
+  * graphics drivers, such as EFI-GOP or VESA, early during the boot process.
+  * During later boot stages, they replace the generic driver with a dedicated,
+- * hardware-specific driver. To take over the device the dedicated driver
++ * hardware-specific driver. To take over the device, the dedicated driver
+  * first has to remove the generic driver. Aperture functions manage
+  * ownership of framebuffer memory and hand-over between drivers.
+  *
+@@ -76,7 +76,7 @@
+  * generic EFI or VESA drivers, have to register themselves as owners of their
+  * framebuffer apertures. Ownership of the framebuffer memory is achieved
+  * by calling devm_aperture_acquire_for_platform_device(). If successful, the
+- * driveris the owner of the framebuffer range. The function fails if the
++ * driver is the owner of the framebuffer range. The function fails if the
+  * framebuffer is already owned by another driver. See below for an example.
+  *
+  * .. code-block:: c
+@@ -126,7 +126,7 @@
+  * et al for the registered framebuffer range, the aperture helpers call
+  * platform_device_unregister() and the generic driver unloads itself. The
+  * generic driver also has to provide a remove function to make this work.
+- * Once hot unplugged fro mhardware, it may not access the device's
++ * Once hot unplugged from hardware, it may not access the device's
+  * registers, framebuffer memory, ROM, etc afterwards.
+  */
+ 
+@@ -203,7 +203,7 @@ static void aperture_detach_platform_device(struct device *dev)
+ 
+ 	/*
+ 	 * Remove the device from the device hierarchy. This is the right thing
+-	 * to do for firmware-based DRM drivers, such as EFI, VESA or VGA. After
++	 * to do for firmware-based fb drivers, such as EFI, VESA or VGA. After
+ 	 * the new driver takes over the hardware, the firmware device's state
+ 	 * will be lost.
+ 	 *
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.25.1
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

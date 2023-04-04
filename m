@@ -2,62 +2,138 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E318C761A6
-	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Apr 2023 17:18:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A90EC6FD1D
+	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Apr 2023 19:39:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235710AbjDDRSt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 4 Apr 2023 13:18:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44584 "EHLO
+        id S235693AbjDDTjt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 4 Apr 2023 15:39:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37290 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235868AbjDDRSq (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Apr 2023 13:18:46 -0400
-X-Greylist: delayed 4183 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 04 Apr 2023 10:18:22 PDT
-Received: from mail.feshiecree.pl (mail.feshiecree.pl [89.40.114.103])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D9E81BD7
-        for <linux-fbdev@vger.kernel.org>; Tue,  4 Apr 2023 10:18:22 -0700 (PDT)
-Received: by mail.feshiecree.pl (Postfix, from userid 1001)
-        id C031C88666; Tue,  4 Apr 2023 08:50:27 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=feshiecree.pl;
-        s=mail; t=1680594628;
-        bh=hFxZwVw4rIL+JwfEOGI47p+fdoVOAeqVswP6NWoHSHQ=;
-        h=Date:From:To:Subject:From;
-        b=BdI1g1Ez1QVhQQNE658dgio2E4ztnO5VS0i8wPiiw71EFJSnAHwYxiTsnh+2u8jPd
-         NTsW48m+x+88o7DQrZ43sxDATFvToU/UNLI16mCFgz68FUoc2y/CLl7v6KYZdtVpuK
-         0Ul5vPYJYgmbfoUu32G/6Ab+J48hefY3EvEJDXfpYE8zc34N/jI5kx6baQJ9U+GwaL
-         lgULCVbOldCY+66eHE6pnfpu2yxQlbaap9Qjvx4GekRExH5KghZW95ZjcuERGTNNNp
-         r7zzeZYsDmNy2p72n/Q1GNfvUVsKKu22Em5sp4RIAtChbQQkE2sSP+K9CGG9xVKyLY
-         ScIHa8ju9NSZQ==
-Received: by feshiecree.pl for <linux-fbdev@vger.kernel.org>; Tue,  4 Apr 2023 07:50:27 GMT
-Message-ID: <20230404074504-0.1.1t.5mtt.0.igeaby2hi3@feshiecree.pl>
-Date:   Tue,  4 Apr 2023 07:50:27 GMT
-From:   "Krystian Wieczorek" <krystian.wieczorek@feshiecree.pl>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: W sprawie samochodu
-X-Mailer: mail.feshiecree.pl
+        with ESMTP id S235350AbjDDTjs (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Apr 2023 15:39:48 -0400
+Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com [IPv6:2a00:1450:4864:20::636])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6285040D9
+        for <linux-fbdev@vger.kernel.org>; Tue,  4 Apr 2023 12:39:47 -0700 (PDT)
+Received: by mail-ej1-x636.google.com with SMTP id a640c23a62f3a-947a47eb908so43988866b.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 04 Apr 2023 12:39:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google; t=1680637186;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=mrNIWGuvU8yOmyqKo15r+2UzOPnnoKtvW2Ll77+OFto=;
+        b=gSzrUwfdoR5VtsIY8A4GpMgcBhLgJG7OwQRLOmZBsmJngmydike2cIXmpAYWdtGjOs
+         QYJv6h5zYjueik2anibn1olQB0taAkHxLT8CbHFd9VGYpoESaX9RTA8NKfXwqtorXp8n
+         jT6m2vL4ewcxbv3cQZfFMU292dfCO9Oc90YDE=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1680637186;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=mrNIWGuvU8yOmyqKo15r+2UzOPnnoKtvW2Ll77+OFto=;
+        b=5Fp5D/jGf3Gx9fNJRUnDtdeIrUAVn5pHnixupyV8hlcgS67z5dzwhtNfwR9arbaAwg
+         klu79h80sc05LktqgiNrDH6PCIMsPdUqTtbSBJK5bCqruSemZlYXks1heAylHGFS3mfZ
+         Y9CE+EjppvESzli2kKrXZP/LI9YnSjN2FSr2aexVpHQROX5PP3RmQkuL7It32sgbTLql
+         pm72YDCI1sHpoBVhs7yetGjec+X7E8VJ69yk+bWcaVEOpNsHEYsImUO0mE/iKAPdG5Xy
+         lRdbQrleGZQ5HDkkuqqBrSiA7R4PC3SVR0/n81yERaM2cg44Q65T36+kJN2CNsMaIlmq
+         PuOQ==
+X-Gm-Message-State: AAQBX9d59saA2AcAYskTr71LZvPYvvpneTpXizFsZzDg59IgjXSnUbpj
+        QunRn8Euud9l3F+NXBJIk9W97Q==
+X-Google-Smtp-Source: AKy350beChT3SpPqih5hlkUZBblDzme1WlDy3x/T4nEeCCijX3y5G1sD2OZRfpdDWTc7CwOJLUToEw==
+X-Received: by 2002:a17:906:5195:b0:92c:fc0:b229 with SMTP id y21-20020a170906519500b0092c0fc0b229mr748920ejk.0.1680637185857;
+        Tue, 04 Apr 2023 12:39:45 -0700 (PDT)
+Received: from phenom.ffwll.local (212-51-149-33.fiber7.init7.net. [212.51.149.33])
+        by smtp.gmail.com with ESMTPSA id mc3-20020a170906eb4300b009334d87d106sm6428730ejb.147.2023.04.04.12.39.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 04 Apr 2023 12:39:45 -0700 (PDT)
+From:   Daniel Vetter <daniel.vetter@ffwll.ch>
+To:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>
+Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Alex Deucher <alexander.deucher@amd.com>, shlomo@fastmail.com,
+        =?UTF-8?q?Michel=20D=C3=A4nzer?= <michel@daenzer.net>,
+        =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        dri-devel@lists.freedesktop.org, stable@vger.kernel.org,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Nathan Chancellor <natechancellor@gmail.com>,
+        Qiujun Huang <hqjagain@gmail.com>,
+        Peter Rosin <peda@axentia.se>, linux-fbdev@vger.kernel.org,
+        Helge Deller <deller@gmx.de>, Sam Ravnborg <sam@ravnborg.org>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Samuel Thibault <samuel.thibault@ens-lyon.org>,
+        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+        Shigeru Yoshida <syoshida@redhat.com>
+Subject: [PATCH] fbmem: Reject FB_ACTIVATE_KD_TEXT from userspace
+Date:   Tue,  4 Apr 2023 21:39:34 +0200
+Message-Id: <20230404193934.472457-1-daniel.vetter@ffwll.ch>
+X-Mailer: git-send-email 2.40.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,
+This is an oversight from dc5bdb68b5b3 ("drm/fb-helper: Fix vt
+restore") - I failed to realize that nasty userspace could set this.
 
-chcieliby=C5=9Bmy zapewni=C4=87 Pa=C5=84stwu kompleksowe rozwi=C4=85zania=
-, je=C5=9Bli chodzi o system monitoringu GPS.
+It's not pretty to mix up kernel-internal and userspace uapi flags
+like this, but since the entire fb_var_screeninfo structure is uapi
+we'd need to either add a new parameter to the ->fb_set_par callback
+and fb_set_par() function, which has a _lot_ of users. Or some other
+fairly ugly side-channel int fb_info. Neither is a pretty prospect.
 
-Precyzyjne monitorowanie pojazd=C3=B3w na mapach cyfrowych, =C5=9Bledzeni=
-e ich parametr=C3=B3w eksploatacyjnych w czasie rzeczywistym oraz kontrol=
-a paliwa to kluczowe funkcjonalno=C5=9Bci naszego systemu.=20
+Instead just correct the issue at hand by filtering out this
+kernel-internal flag in the ioctl handling code.
 
-Organizowanie pracy pracownik=C3=B3w jest dzi=C4=99ki temu prostsze i bar=
-dziej efektywne, a oszcz=C4=99dno=C5=9Bci i optymalizacja w zakresie pono=
-szonych koszt=C3=B3w, maj=C4=85 dla ka=C5=BCdego przedsi=C4=99biorcy ogro=
-mne znaczenie.
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Fixes: dc5bdb68b5b3 ("drm/fb-helper: Fix vt restore")
+Cc: Alex Deucher <alexander.deucher@amd.com>
+Cc: shlomo@fastmail.com
+Cc: Michel Dänzer <michel@daenzer.net>
+Cc: Noralf Trønnes <noralf@tronnes.org>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Daniel Vetter <daniel.vetter@intel.com>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Maxime Ripard <mripard@kernel.org>
+Cc: David Airlie <airlied@linux.ie>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: dri-devel@lists.freedesktop.org
+Cc: <stable@vger.kernel.org> # v5.7+
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Nathan Chancellor <natechancellor@gmail.com>
+Cc: Qiujun Huang <hqjagain@gmail.com>
+Cc: Peter Rosin <peda@axentia.se>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Helge Deller <deller@gmx.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: Shigeru Yoshida <syoshida@redhat.com>
+---
+ drivers/video/fbdev/core/fbmem.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Dopasujemy nasz=C4=85 ofert=C4=99 do Pa=C5=84stwa oczekiwa=C5=84 i potrze=
-b organizacji. Czy mogliby=C5=9Bmy porozmawia=C4=87 o naszej propozycji?
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 875541ff185b..3fd95a79e4c3 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1116,6 +1116,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 	case FBIOPUT_VSCREENINFO:
+ 		if (copy_from_user(&var, argp, sizeof(var)))
+ 			return -EFAULT;
++		/* only for kernel-internal use */
++		var.activate &= ~FB_ACTIVATE_KD_TEXT;
+ 		console_lock();
+ 		lock_fb_info(info);
+ 		ret = fbcon_modechange_possible(info, &var);
+-- 
+2.40.0
 
-
-Pozdrawiam
-Krystian Wieczorek

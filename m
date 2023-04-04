@@ -2,114 +2,96 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C208C6FD1D
-	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Apr 2023 04:01:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E75C4C761A6
+	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Apr 2023 10:06:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229761AbjDDEBK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 4 Apr 2023 00:01:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53616 "EHLO
+        id S234132AbjDDKGa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 4 Apr 2023 06:06:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34796 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229446AbjDDEBJ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Apr 2023 00:01:09 -0400
-Received: from loongson.cn (mail.loongson.cn [114.242.206.163])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 64D8319F;
-        Mon,  3 Apr 2023 21:01:04 -0700 (PDT)
-Received: from loongson.cn (unknown [10.20.42.133])
-        by gateway (Coremail) with SMTP id _____8DxE0z+oCtk2E8WAA--.34589S3;
-        Tue, 04 Apr 2023 12:01:02 +0800 (CST)
-Received: from openarena.loongson.cn (unknown [10.20.42.133])
-        by localhost.localdomain (Coremail) with SMTP id AQAAf8Cxur39oCtkMO4UAA--.18983S2;
-        Tue, 04 Apr 2023 12:01:01 +0800 (CST)
-From:   Sui Jingfeng <suijingfeng@loongson.cn>
-To:     Maxime Ripard <mripard@kernel.org>,
+        with ESMTP id S234339AbjDDKG2 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Apr 2023 06:06:28 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5383E19AE
+        for <linux-fbdev@vger.kernel.org>; Tue,  4 Apr 2023 03:05:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1680602740;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=UMCzWKaut/dN2TteOQeTt4t+0LoKg/jXl68FDuqkqUg=;
+        b=D6CT/czG2494BcUHXKKnDkCkCKiXnTKbZBLzELPvwCREYxINCpqvdOrWPsPqi4LX8sWVZo
+        q3grfCEDjn9f/AaE86pYq+JZqa1ICKVhwuFt3FMBrf70chmcfCklZIjb0wNmf9kJxsIL8d
+        lIIphGV7UJJYCOOfqexHlIfjGN+4Fn4=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-198-GkFof7yOPNyk_d9whKjdJw-1; Tue, 04 Apr 2023 06:05:39 -0400
+X-MC-Unique: GkFof7yOPNyk_d9whKjdJw-1
+Received: by mail-wm1-f69.google.com with SMTP id n11-20020a05600c3b8b00b003f04739b77aso5609852wms.9
+        for <linux-fbdev@vger.kernel.org>; Tue, 04 Apr 2023 03:05:38 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1680602738;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=UMCzWKaut/dN2TteOQeTt4t+0LoKg/jXl68FDuqkqUg=;
+        b=ZsKsbokyDJ0ZSatGZRix6AyTIUfEe2soUtFXQsrL8/YTNHKphP846fUellhyfLttsP
+         csyy5afJX33XjjjX4nOxPWKsTb71G8m20j1Rwk2A7D1/oohlqnIixIjXYk//IUVE8mHg
+         pzF4noHHoBCEmBJdLtAiQhujx9sTdCAtR/RdNeFnJSEl6TaX8IIqWgppYBcRHyBt6Eex
+         SpoDCvEpTCyb7RYdyxRpTcr6eJJi9wcxyzVSDPGOU2xD5ffEeYnup7jVHkWLuofdj+RV
+         42Nm8ocfW+b6llaSdrVDPzoOUdhipTTM0UxTzRhrDABgn057p+brydRAU3OLzncwQ0Sq
+         i8Xg==
+X-Gm-Message-State: AAQBX9cKVQIHw8H6adRmn5JtCMLjWsNL/yS6UMlUhD0UGAjJDN7qwtAK
+        QnFLcZMLOmhrPwz5WdgyIJMtVIPn3xZZw99smyxKdlsDk1buSngMD5Ug+C4wcy2wPFgwPehTOso
+        86DDGSQzdJAk8UD07bX4FPMs=
+X-Received: by 2002:a05:600c:2304:b0:3eb:383c:1870 with SMTP id 4-20020a05600c230400b003eb383c1870mr1736138wmo.11.1680602738075;
+        Tue, 04 Apr 2023 03:05:38 -0700 (PDT)
+X-Google-Smtp-Source: AKy350YDNcJtl8vS0GQ3xwhc4h9mR4/DZ4CsaVtJuVBEk4OvhBOdtLF2QHnh3n/hwDWqXrOpPWKP1w==
+X-Received: by 2002:a05:600c:2304:b0:3eb:383c:1870 with SMTP id 4-20020a05600c230400b003eb383c1870mr1736121wmo.11.1680602737684;
+        Tue, 04 Apr 2023 03:05:37 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id n2-20020a05600c4f8200b003ef5e5f93f5sm22001437wmq.19.2023.04.04.03.05.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 04 Apr 2023 03:05:37 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Sui Jingfeng <suijingfeng@loongson.cn>,
+        Maxime Ripard <mripard@kernel.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         David Airlie <airlied@gmail.com>,
         Daniel Vetter <daniel@ffwll.ch>,
         Sui Jingfeng <suijingfeng@loongson.cn>,
         Li Yi <liyi@loongson.cn>,
-        Javier Martinez Canillas <javierm@redhat.com>,
         Christian Koenig <christian.koenig@amd.com>,
         Helge Deller <deller@gmx.de>,
         Lucas De Marchi <lucas.demarchi@intel.com>
 Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [PATCH] video/aperture: fix typos
-Date:   Tue,  4 Apr 2023 12:01:01 +0800
-Message-Id: <20230404040101.2165600-1-suijingfeng@loongson.cn>
-X-Mailer: git-send-email 2.25.1
+Subject: Re: [PATCH] video/aperture: fix typos
+In-Reply-To: <20230404040101.2165600-1-suijingfeng@loongson.cn>
+References: <20230404040101.2165600-1-suijingfeng@loongson.cn>
+Date:   Tue, 04 Apr 2023 12:05:36 +0200
+Message-ID: <878rf8dksv.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: AQAAf8Cxur39oCtkMO4UAA--.18983S2
-X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
-X-Coremail-Antispam: 1Uk129KBjvJXoW7AF1UZrW7CryrAF17KFyrtFb_yoW8tw4rpF
-        sYgFyUCr1DKr4jgayj9a10yFyrWa93Xay5KFyUA3ya9wn8Ca4rXrWUGFWkG3WDJryku3Wa
-        vFn8Zr18CF4DZrJanT9S1TB71UUUUjJqnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
-        qI5I8CrVACY4xI64kE6c02F40Ex7xfYxn0WfASr-VFAUDa7-sFnT9fnUUIcSsGvfJTRUUU
-        bSxYFVCjjxCrM7AC8VAFwI0_Jr0_Gr1l1xkIjI8I6I8E6xAIw20EY4v20xvaj40_Wr0E3s
-        1l1IIY67AEw4v_Jrv_JF1l8cAvFVAK0II2c7xJM28CjxkF64kEwVA0rcxSw2x7M28EF7xv
-        wVC0I7IYx2IY67AKxVW8JVW5JwA2z4x0Y4vE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwA2z4
-        x0Y4vEx4A2jsIE14v26r4UJVWxJr1l84ACjcxK6I8E87Iv6xkF7I0E14v26r4UJVWxJr1l
-        n4kS14v26r126r1DM2AIxVAIcxkEcVAq07x20xvEncxIr21l57IF6xkI12xvs2x26I8E6x
-        ACxx1l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r126r1DMcIj6I8E
-        87Iv67AKxVW8JVWxJwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41lc7CjxV
-        Aaw2AFwI0_JF0_Jw1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1l4IxY
-        O2xFxVAFwI0_JF0_Jw1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGV
-        WUWwC2zVAF1VAY17CE14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_
-        JFI_Gr1lIxAIcVC0I7IYx2IY6xkF7I0E14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rV
-        WUJVWUCwCI42IY6I8E87Iv67AKxVW8JVWxJwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4U
-        JbIYCTnIWIevJa73UjIFyTuYvjxU4SoGDUUUU
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
- EFI FB, VESA FB or VGA FB etc are belong to firmware based framebuffer
- driver.
 
-Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
----
- drivers/video/aperture.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Sui Jingfeng <suijingfeng@loongson.cn> writes:
 
-diff --git a/drivers/video/aperture.c b/drivers/video/aperture.c
-index 41e77de1ea82..b009468ffdff 100644
---- a/drivers/video/aperture.c
-+++ b/drivers/video/aperture.c
-@@ -20,7 +20,7 @@
-  * driver can be active at any given time. Many systems load a generic
-  * graphics drivers, such as EFI-GOP or VESA, early during the boot process.
-  * During later boot stages, they replace the generic driver with a dedicated,
-- * hardware-specific driver. To take over the device the dedicated driver
-+ * hardware-specific driver. To take over the device, the dedicated driver
-  * first has to remove the generic driver. Aperture functions manage
-  * ownership of framebuffer memory and hand-over between drivers.
-  *
-@@ -76,7 +76,7 @@
-  * generic EFI or VESA drivers, have to register themselves as owners of their
-  * framebuffer apertures. Ownership of the framebuffer memory is achieved
-  * by calling devm_aperture_acquire_for_platform_device(). If successful, the
-- * driveris the owner of the framebuffer range. The function fails if the
-+ * driver is the owner of the framebuffer range. The function fails if the
-  * framebuffer is already owned by another driver. See below for an example.
-  *
-  * .. code-block:: c
-@@ -126,7 +126,7 @@
-  * et al for the registered framebuffer range, the aperture helpers call
-  * platform_device_unregister() and the generic driver unloads itself. The
-  * generic driver also has to provide a remove function to make this work.
-- * Once hot unplugged fro mhardware, it may not access the device's
-+ * Once hot unplugged from hardware, it may not access the device's
-  * registers, framebuffer memory, ROM, etc afterwards.
-  */
- 
-@@ -203,7 +203,7 @@ static void aperture_detach_platform_device(struct device *dev)
- 
- 	/*
- 	 * Remove the device from the device hierarchy. This is the right thing
--	 * to do for firmware-based DRM drivers, such as EFI, VESA or VGA. After
-+	 * to do for firmware-based fb drivers, such as EFI, VESA or VGA. After
- 	 * the new driver takes over the hardware, the firmware device's state
- 	 * will be lost.
- 	 *
+>  EFI FB, VESA FB or VGA FB etc are belong to firmware based framebuffer
+>  driver.
+>
+> Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
+> ---
+
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+
 -- 
-2.25.1
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 

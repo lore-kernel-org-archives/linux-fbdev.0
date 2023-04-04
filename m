@@ -2,138 +2,136 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A90EC6FD1D
-	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Apr 2023 19:39:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D108EC77B60
+	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Apr 2023 20:18:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235693AbjDDTjt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 4 Apr 2023 15:39:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37290 "EHLO
+        id S235627AbjDDUSw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 4 Apr 2023 16:18:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34784 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235350AbjDDTjs (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Apr 2023 15:39:48 -0400
-Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com [IPv6:2a00:1450:4864:20::636])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6285040D9
-        for <linux-fbdev@vger.kernel.org>; Tue,  4 Apr 2023 12:39:47 -0700 (PDT)
-Received: by mail-ej1-x636.google.com with SMTP id a640c23a62f3a-947a47eb908so43988866b.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 04 Apr 2023 12:39:47 -0700 (PDT)
+        with ESMTP id S229457AbjDDUSt (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Apr 2023 16:18:49 -0400
+Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6C6C3C2F
+        for <linux-fbdev@vger.kernel.org>; Tue,  4 Apr 2023 13:18:47 -0700 (PDT)
+Received: by mail-ed1-x531.google.com with SMTP id ek18so135542423edb.6
+        for <linux-fbdev@vger.kernel.org>; Tue, 04 Apr 2023 13:18:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google; t=1680637186;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=mrNIWGuvU8yOmyqKo15r+2UzOPnnoKtvW2Ll77+OFto=;
-        b=gSzrUwfdoR5VtsIY8A4GpMgcBhLgJG7OwQRLOmZBsmJngmydike2cIXmpAYWdtGjOs
-         QYJv6h5zYjueik2anibn1olQB0taAkHxLT8CbHFd9VGYpoESaX9RTA8NKfXwqtorXp8n
-         jT6m2vL4ewcxbv3cQZfFMU292dfCO9Oc90YDE=
+        d=ffwll.ch; s=google; t=1680639526; x=1683231526;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=5MZa0e2p52RHNNaMAn/2wj3W9qMp65gnnoyA0NTZCP4=;
+        b=CoSPQJt42ro+4a4YP2wPk5oP0t8kFcASyg1i/RD+KQU8wn7S5u5k0ytH2+LT/sZgSB
+         U/X+GErEZKjoTADfg6UYvPHBT3pqFkkNUjhwY+4nmqaVhvmwQNwdEx2fynay/AnEYona
+         B34z7CsvPnzjORTxWLJflzMCHj3jBdxWxDH5A=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680637186;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=mrNIWGuvU8yOmyqKo15r+2UzOPnnoKtvW2Ll77+OFto=;
-        b=5Fp5D/jGf3Gx9fNJRUnDtdeIrUAVn5pHnixupyV8hlcgS67z5dzwhtNfwR9arbaAwg
-         klu79h80sc05LktqgiNrDH6PCIMsPdUqTtbSBJK5bCqruSemZlYXks1heAylHGFS3mfZ
-         Y9CE+EjppvESzli2kKrXZP/LI9YnSjN2FSr2aexVpHQROX5PP3RmQkuL7It32sgbTLql
-         pm72YDCI1sHpoBVhs7yetGjec+X7E8VJ69yk+bWcaVEOpNsHEYsImUO0mE/iKAPdG5Xy
-         lRdbQrleGZQ5HDkkuqqBrSiA7R4PC3SVR0/n81yERaM2cg44Q65T36+kJN2CNsMaIlmq
-         PuOQ==
-X-Gm-Message-State: AAQBX9d59saA2AcAYskTr71LZvPYvvpneTpXizFsZzDg59IgjXSnUbpj
-        QunRn8Euud9l3F+NXBJIk9W97Q==
-X-Google-Smtp-Source: AKy350beChT3SpPqih5hlkUZBblDzme1WlDy3x/T4nEeCCijX3y5G1sD2OZRfpdDWTc7CwOJLUToEw==
-X-Received: by 2002:a17:906:5195:b0:92c:fc0:b229 with SMTP id y21-20020a170906519500b0092c0fc0b229mr748920ejk.0.1680637185857;
-        Tue, 04 Apr 2023 12:39:45 -0700 (PDT)
+        d=1e100.net; s=20210112; t=1680639526; x=1683231526;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=5MZa0e2p52RHNNaMAn/2wj3W9qMp65gnnoyA0NTZCP4=;
+        b=5J+zSiUpnQOQgOuFnbk6h+674ITLc+gsCfNHwRT9lMBjcmjIBeiRIDNvrPDjPFaYld
+         bjwd0mJGO+mBA+xT088jT9llikgEgKILx2ngq1OsExZRp4dwSes6QGPojP4hsa4aEKzV
+         Yfu0UfYzFSPEEU4Ok/r8jbseH1uIIWX/HYC1hz+qyhMD+FfVlQLFjyf9tjl6KfPBrv0+
+         RbtDDZQS2Hq10gYAlF90hWGPVI2kX1Fge4H8DHQilKe7oXiP3wVQZ/MKnCNDD+pFG5hH
+         4yTPnttRwevaNQt5AQ/jbtucj04WnTg0jvZ4CMU+SrTDUR+I6Oz4LzAJyP+OlU+s1sjL
+         1DXg==
+X-Gm-Message-State: AAQBX9d1H8Rir2FTAQlW0fmzoww+ZB/7rpNuqdm90/LfFXQhqA0ejh6z
+        CrjXJjiBRe6ZLUyoEmAaMlHUJw==
+X-Google-Smtp-Source: AKy350ZnfPw4c6pAaVa/xwHrgaYlcXeWJKqvkS29UkrwIQFXMDl77h/Os+FjIxNOo2HVYEVXwpmHUg==
+X-Received: by 2002:a05:6402:268e:b0:502:ffd:74a1 with SMTP id w14-20020a056402268e00b005020ffd74a1mr41884edd.2.1680639526318;
+        Tue, 04 Apr 2023 13:18:46 -0700 (PDT)
 Received: from phenom.ffwll.local (212-51-149-33.fiber7.init7.net. [212.51.149.33])
-        by smtp.gmail.com with ESMTPSA id mc3-20020a170906eb4300b009334d87d106sm6428730ejb.147.2023.04.04.12.39.44
+        by smtp.gmail.com with ESMTPSA id u12-20020a50c04c000000b004d8d2735251sm6367986edd.43.2023.04.04.13.18.45
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 04 Apr 2023 12:39:45 -0700 (PDT)
+        Tue, 04 Apr 2023 13:18:45 -0700 (PDT)
 From:   Daniel Vetter <daniel.vetter@ffwll.ch>
-To:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>
-Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+To:     DRI Development <dri-devel@lists.freedesktop.org>
+Cc:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
         Daniel Vetter <daniel.vetter@intel.com>,
-        Alex Deucher <alexander.deucher@amd.com>, shlomo@fastmail.com,
-        =?UTF-8?q?Michel=20D=C3=A4nzer?= <michel@daenzer.net>,
-        =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        dri-devel@lists.freedesktop.org, stable@vger.kernel.org,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Nathan Chancellor <natechancellor@gmail.com>,
-        Qiujun Huang <hqjagain@gmail.com>,
-        Peter Rosin <peda@axentia.se>, linux-fbdev@vger.kernel.org,
-        Helge Deller <deller@gmx.de>, Sam Ravnborg <sam@ravnborg.org>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Samuel Thibault <samuel.thibault@ens-lyon.org>,
-        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-        Shigeru Yoshida <syoshida@redhat.com>
-Subject: [PATCH] fbmem: Reject FB_ACTIVATE_KD_TEXT from userspace
-Date:   Tue,  4 Apr 2023 21:39:34 +0200
-Message-Id: <20230404193934.472457-1-daniel.vetter@ffwll.ch>
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org
+Subject: [PATCH 2/8] video/aperture: use generic code to figure out the vga default device
+Date:   Tue,  4 Apr 2023 22:18:36 +0200
+Message-Id: <20230404201842.567344-2-daniel.vetter@ffwll.ch>
 X-Mailer: git-send-email 2.40.0
+In-Reply-To: <20230404201842.567344-1-daniel.vetter@ffwll.ch>
+References: <20230404201842.567344-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an oversight from dc5bdb68b5b3 ("drm/fb-helper: Fix vt
-restore") - I failed to realize that nasty userspace could set this.
+Since vgaarb has been promoted to be a core piece of the pci subsystem
+we don't have to open code random guesses anymore, we actually know
+this in a platform agnostic way, and there's no need for an x86
+specific hack. See also 1d38fe6ee6a8 ("PCI/VGA: Move vgaarb to
+drivers/pci")
 
-It's not pretty to mix up kernel-internal and userspace uapi flags
-like this, but since the entire fb_var_screeninfo structure is uapi
-we'd need to either add a new parameter to the ->fb_set_par callback
-and fb_set_par() function, which has a _lot_ of users. Or some other
-fairly ugly side-channel int fb_info. Neither is a pretty prospect.
+This should not result in any functional change, and the non-x86
+multi-gpu pci systems are probably rare enough to not matter (I don't
+know of any tbh). But it's a nice cleanup, so let's do it.
 
-Instead just correct the issue at hand by filtering out this
-kernel-internal flag in the ioctl handling code.
+There's been a few questions on previous iterations on dri-devel and
+irc:
+
+- fb_is_primary_device() seems to be yet another implementation of
+  this theme, and at least on x86 it checks for both
+  vga_default_device OR rom shadowing. There shouldn't ever be a case
+  where rom shadowing gives any additional hints about the boot vga
+  device, but if there is then the default vga selection in vgaarb
+  should probably be fixed. And not special-case checks replicated all
+  over.
+
+- Thomas also brought up that on most !x86 systems
+  fb_is_primary_device() returns 0, except on sparc/parisc. But these
+  2 special cases are about platform specific devices and not pci, so
+  shouldn't have any interactions.
+
+- Furthermore fb_is_primary_device() is a bit a red herring since it's
+  only used to select the right fbdev driver for fbcon, and not for
+  the fw handover dance which the aperture helpers handle. At least
+  for x86 we might want to look into unifying them, but that's a
+  separate thing.
+
+v2: Extend commit message trying to summarize various discussions.
 
 Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-Fixes: dc5bdb68b5b3 ("drm/fb-helper: Fix vt restore")
-Cc: Alex Deucher <alexander.deucher@amd.com>
-Cc: shlomo@fastmail.com
-Cc: Michel Dänzer <michel@daenzer.net>
-Cc: Noralf Trønnes <noralf@tronnes.org>
 Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Daniel Vetter <daniel.vetter@intel.com>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Maxime Ripard <mripard@kernel.org>
-Cc: David Airlie <airlied@linux.ie>
-Cc: Daniel Vetter <daniel@ffwll.ch>
-Cc: dri-devel@lists.freedesktop.org
-Cc: <stable@vger.kernel.org> # v5.7+
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Nathan Chancellor <natechancellor@gmail.com>
-Cc: Qiujun Huang <hqjagain@gmail.com>
-Cc: Peter Rosin <peda@axentia.se>
-Cc: linux-fbdev@vger.kernel.org
+Cc: Javier Martinez Canillas <javierm@redhat.com>
 Cc: Helge Deller <deller@gmx.de>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: Shigeru Yoshida <syoshida@redhat.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: linux-pci@vger.kernel.org
 ---
- drivers/video/fbdev/core/fbmem.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/aperture.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 875541ff185b..3fd95a79e4c3 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1116,6 +1116,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 	case FBIOPUT_VSCREENINFO:
- 		if (copy_from_user(&var, argp, sizeof(var)))
- 			return -EFAULT;
-+		/* only for kernel-internal use */
-+		var.activate &= ~FB_ACTIVATE_KD_TEXT;
- 		console_lock();
- 		lock_fb_info(info);
- 		ret = fbcon_modechange_possible(info, &var);
+diff --git a/drivers/video/aperture.c b/drivers/video/aperture.c
+index b009468ffdff..8835d3bc39bf 100644
+--- a/drivers/video/aperture.c
++++ b/drivers/video/aperture.c
+@@ -324,13 +324,11 @@ EXPORT_SYMBOL(aperture_remove_conflicting_devices);
+  */
+ int aperture_remove_conflicting_pci_devices(struct pci_dev *pdev, const char *name)
+ {
+-	bool primary = false;
++	bool primary;
+ 	resource_size_t base, size;
+ 	int bar, ret;
+ 
+-#ifdef CONFIG_X86
+-	primary = pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
+-#endif
++	primary = pdev == vga_default_device();
+ 
+ 	for (bar = 0; bar < PCI_STD_NUM_BARS; ++bar) {
+ 		if (!(pci_resource_flags(pdev, bar) & IORESOURCE_MEM))
 -- 
 2.40.0
 

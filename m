@@ -2,62 +2,61 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A48F5C76196
-	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Apr 2023 08:32:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA761C77B71
+	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Apr 2023 08:32:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236235AbjDFIcq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 6 Apr 2023 04:32:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49286 "EHLO
+        id S236210AbjDFIcr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 6 Apr 2023 04:32:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49296 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235345AbjDFIcp (ORCPT
+        with ESMTP id S235523AbjDFIcp (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Apr 2023 04:32:45 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 19B9744B6;
-        Thu,  6 Apr 2023 01:32:44 -0700 (PDT)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A632A61A5
+        for <linux-fbdev@vger.kernel.org>; Thu,  6 Apr 2023 01:32:44 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 9578621EEA;
-        Thu,  6 Apr 2023 08:32:42 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 49F592002A;
+        Thu,  6 Apr 2023 08:32:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1680769962; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1680769963; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=BVq5xku2YBPP1JrbSkNVMy9kEwLyhKOdjOkmRaST3jE=;
-        b=PJNxcaHu5Kha0XNE5ZRbGedAD7nqNmmJMW4cHu2dfKLL1HYrHOHEXaaZ8b3l4/TqcZnplL
-        i0Y0s/D2J7yORbByHAQ5evfs0NC7FO5eQcADhqvE3/WzN3nJMcwxqdS2sZ4bKeML89aADa
-        9P1qktAhzazuuwVm10FucY6cUtTRFMU=
+        bh=KaShc993LNkjZcNwQ6aZrFlf6Qao0qtDy5fAIl/7F6o=;
+        b=DfXJMVxDGabIy+t1Y21paS/LMSGM82N1QaP8sNuWLdKzR6YXa/dj9LzrA4qoStLq67G0VV
+        CQFS03ppExqa5h2sbDzIwvEJUIySMGv82HzqWA1N3+vfcXPAzXuj3BVfjDFZ/B/7GmxemC
+        p3k6Ry2BsCw0GuSgLmSScXVPXvbgheY=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1680769962;
+        s=susede2_ed25519; t=1680769963;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=BVq5xku2YBPP1JrbSkNVMy9kEwLyhKOdjOkmRaST3jE=;
-        b=vo42XOpWAa7gRyO6SwVMuZKnIlZ8IXFEV7lPzmAWbgn4d8KMX4xvWnCruR8vCUmYS0/WIq
-        UZd2ic6NEunf9PBg==
+        bh=KaShc993LNkjZcNwQ6aZrFlf6Qao0qtDy5fAIl/7F6o=;
+        b=zW11np+mIyozWGXwfXFmjR1MhpT6dvlwDQv+i8MqlIrrTXQrr61U73zI3Hnn2b8EKEyb9q
+        3lk2zzT4N4jkMnAA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 62E2A133E5;
-        Thu,  6 Apr 2023 08:32:42 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 2394113A1D;
+        Thu,  6 Apr 2023 08:32:43 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id SBsrF6qDLmQZZgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 06 Apr 2023 08:32:42 +0000
+        id sCapB6uDLmQZZgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 06 Apr 2023 08:32:43 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     javierm@redhat.com, daniel.vetter@ffwll.ch,
         patrik.r.jakobsson@gmail.com
 Cc:     dri-devel@lists.freedesktop.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org
-Subject: [PATCH v4 2/9] video/aperture: use generic code to figure out the vga default device
-Date:   Thu,  6 Apr 2023 10:32:33 +0200
-Message-Id: <20230406083240.14031-3-tzimmermann@suse.de>
+        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org
+Subject: [PATCH v4 4/9] video/aperture: Only kick vgacon when the pdev is decoding vga
+Date:   Thu,  6 Apr 2023 10:32:35 +0200
+Message-Id: <20230406083240.14031-5-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.40.0
 In-Reply-To: <20230406083240.14031-1-tzimmermann@suse.de>
 References: <20230406083240.14031-1-tzimmermann@suse.de>
@@ -69,73 +68,56 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
 
-Since vgaarb has been promoted to be a core piece of the pci subsystem
-we don't have to open code random guesses anymore, we actually know
-this in a platform agnostic way, and there's no need for an x86
-specific hack. See also commit 1d38fe6ee6a8 ("PCI/VGA: Move vgaarb to
-drivers/pci")
+Otherwise it's a bit silly, and we might throw out the driver for the
+screen the user is actually looking at. I haven't found a bug report
+for this case yet, but we did get bug reports for the analog case
+where we're throwing out the efifb driver.
 
-This should not result in any functional change, and the non-x86
-multi-gpu pci systems are probably rare enough to not matter (I don't
-know of any tbh). But it's a nice cleanup, so let's do it.
-
-There's been a few questions on previous iterations on dri-devel and
-irc:
-
-- fb_is_primary_device() seems to be yet another implementation of
-  this theme, and at least on x86 it checks for both
-  vga_default_device OR rom shadowing. There shouldn't ever be a case
-  where rom shadowing gives any additional hints about the boot vga
-  device, but if there is then the default vga selection in vgaarb
-  should probably be fixed. And not special-case checks replicated all
-  over.
-
-- Thomas also brought up that on most !x86 systems
-  fb_is_primary_device() returns 0, except on sparc/parisc. But these
-  2 special cases are about platform specific devices and not pci, so
-  shouldn't have any interactions.
-
-- Furthermore fb_is_primary_device() is a bit a red herring since it's
-  only used to select the right fbdev driver for fbcon, and not for
-  the fw handover dance which the aperture helpers handle. At least
-  for x86 we might want to look into unifying them, but that's a
-  separate thing.
-
-v2: Extend commit message trying to summarize various discussions.
+v2: Flip the check around to make it clear it's a special case for
+kicking out the vgacon driver only (Thomas)
 
 v4:
-- make the test for the primary device easier to read (Javier)
-- fix commit message style (i.e., commit 1234 ("..."))
+- fixes to commit message
 - fix Daniel's S-o-b address
 
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=216303
 Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 Cc: Thomas Zimmermann <tzimmermann@suse.de>
 Cc: Javier Martinez Canillas <javierm@redhat.com>
 Cc: Helge Deller <deller@gmx.de>
 Cc: linux-fbdev@vger.kernel.org
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: linux-pci@vger.kernel.org
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/video/aperture.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/video/aperture.c | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/video/aperture.c b/drivers/video/aperture.c
-index 41e77de1ea82..d0eccc4ed60b 100644
+index d0eccc4ed60b..26bdba6b2725 100644
 --- a/drivers/video/aperture.c
 +++ b/drivers/video/aperture.c
-@@ -328,9 +328,8 @@ int aperture_remove_conflicting_pci_devices(struct pci_dev *pdev, const char *na
- 	resource_size_t base, size;
- 	int bar, ret;
+@@ -342,13 +342,15 @@ int aperture_remove_conflicting_pci_devices(struct pci_dev *pdev, const char *na
+ 			return ret;
+ 	}
  
--#ifdef CONFIG_X86
--	primary = pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
--#endif
-+	if (pdev == vga_default_device())
-+		primary = true;
+-	/*
+-	 * WARNING: Apparently we must kick fbdev drivers before vgacon,
+-	 * otherwise the vga fbdev driver falls over.
+-	 */
+-	ret = vga_remove_vgacon(pdev);
+-	if (ret)
+-		return ret;
++	if (primary) {
++		/*
++		 * WARNING: Apparently we must kick fbdev drivers before vgacon,
++		 * otherwise the vga fbdev driver falls over.
++		 */
++		ret = vga_remove_vgacon(pdev);
++		if (ret)
++			return ret;
++	}
  
- 	for (bar = 0; bar < PCI_STD_NUM_BARS; ++bar) {
- 		if (!(pci_resource_flags(pdev, bar) & IORESOURCE_MEM))
+ 	return 0;
+ 
 -- 
 2.40.0
 

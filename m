@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC4E1C87FE1
-	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Apr 2023 14:30:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 067D6C77B72
+	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Apr 2023 14:30:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239254AbjDFOap (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 6 Apr 2023 10:30:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49786 "EHLO
+        id S239261AbjDFOaq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 6 Apr 2023 10:30:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49834 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239042AbjDFOaZ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Apr 2023 10:30:25 -0400
+        with ESMTP id S239109AbjDFOa0 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Apr 2023 10:30:26 -0400
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AE0158A5B;
-        Thu,  6 Apr 2023 07:30:24 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A0ECD9747;
+        Thu,  6 Apr 2023 07:30:25 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 1744A1FE1E;
-        Thu,  6 Apr 2023 14:30:23 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 452611FE30;
+        Thu,  6 Apr 2023 14:30:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1680791423; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1680791424; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=At66nEDRzuoU1LRYd6qgBrLOlPke0TNb1Y9N/Qc/BME=;
-        b=iNMCrSQIwiJHVQf7PM0uFhC83gkzbhe2RqWahZG27kSCAxOjtJ+ld+DWv14eqOzmI5ifz3
-        8ZHzjdwdPNdxyUiWBddlfMDsnMYKK/Ha+JCwpdEZnB4nNLz8jFUTkOT7VNdZLw1VFWNySe
-        f9HlbZiEjpTGeYpWivvOCaR9V61mQYI=
+        bh=+46qFTFMNcdHLr7CFpxgNQZLup0NYTKzSP4VBItIjug=;
+        b=pyCgUmovT6q4il8l+8jwHCjU+r2dumG5cOIbYgn6QwKo5mjPKoyXEkL6mn/JOa7jmitEUE
+        1nNmmdoYhFfSAYM/vq7EO8I3Z7C6xxUA1gdTXL41iMqFe5RQfPbKRYzzG0BjlT9PQX6QHB
+        bSlHzmOx8rDRrDsEWcchZmco18KKYjE=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1680791423;
+        s=susede2_ed25519; t=1680791424;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=At66nEDRzuoU1LRYd6qgBrLOlPke0TNb1Y9N/Qc/BME=;
-        b=fUEUbVz2MjiMzgk3WPj9Sy8/Z428nLdFQ4S0K6WwUamkXan+lp02uDi+Ecz7n2N/KHST3h
-        6py6tNH3XqRd/7AQ==
+        bh=+46qFTFMNcdHLr7CFpxgNQZLup0NYTKzSP4VBItIjug=;
+        b=Y9HAV9prH3F81NWxZhDDga/ToiVk5bNBuJD+zfFrt4Kjiw8AjQuqnNHtPPk4xIOreovs3r
+        AQ4ONMQQQGGVsGCQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id A89241351F;
-        Thu,  6 Apr 2023 14:30:22 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id DCEF713A1D;
+        Thu,  6 Apr 2023 14:30:23 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id wJVUKH7XLmS4LgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 06 Apr 2023 14:30:22 +0000
+        id QEQeNX/XLmS4LgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 06 Apr 2023 14:30:23 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     arnd@arndb.de, daniel.vetter@ffwll.ch, deller@gmx.de,
         javierm@redhat.com, gregkh@linuxfoundation.org
@@ -59,12 +59,10 @@ Cc:     linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org,
         linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
         sparclinux@vger.kernel.org, x86@kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>
-Subject: [PATCH v2 04/19] arch/arm64: Implement <asm/fb.h> with generic helpers
-Date:   Thu,  6 Apr 2023 16:30:04 +0200
-Message-Id: <20230406143019.6709-5-tzimmermann@suse.de>
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v2 07/19] arch/m68k: Merge variants of fb_pgprotect() into single function
+Date:   Thu,  6 Apr 2023 16:30:07 +0200
+Message-Id: <20230406143019.6709-8-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.40.0
 In-Reply-To: <20230406143019.6709-1-tzimmermann@suse.de>
 References: <20230406143019.6709-1-tzimmermann@suse.de>
@@ -74,44 +72,53 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Replace the architecture's fbdev helpers with the generic
-ones from <asm-generic/fb.h>. No functional changes.
-
-v2:
-	* use default implementation for fb_pgprotect() (Arnd)
+Merge all variants of fb_pgprotect() into a single function body.
+There are two different cases for MMU systems. For non-MMU systems,
+the function body will be empty. No functional changes, but this
+will help with the switch to <asm-generic/fb.h>.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will@kernel.org>
 ---
- arch/arm64/include/asm/fb.h | 15 +--------------
- 1 file changed, 1 insertion(+), 14 deletions(-)
+ arch/m68k/include/asm/fb.h | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm64/include/asm/fb.h b/arch/arm64/include/asm/fb.h
-index bdc735ee1f67..1a495d8fb2ce 100644
---- a/arch/arm64/include/asm/fb.h
-+++ b/arch/arm64/include/asm/fb.h
-@@ -5,19 +5,6 @@
- #ifndef __ASM_FB_H_
- #define __ASM_FB_H_
+diff --git a/arch/m68k/include/asm/fb.h b/arch/m68k/include/asm/fb.h
+index b86c6e2e26dd..4f96989922af 100644
+--- a/arch/m68k/include/asm/fb.h
++++ b/arch/m68k/include/asm/fb.h
+@@ -7,17 +7,13 @@
+ #include <asm/page.h>
+ #include <asm/setup.h>
  
--#include <linux/fb.h>
--#include <linux/fs.h>
--#include <asm/page.h>
--
+-#ifdef CONFIG_MMU
+-#ifdef CONFIG_SUN3
+ static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
+ 				unsigned long off)
+ {
++#ifdef CONFIG_MMU
++#ifdef CONFIG_SUN3
+ 	pgprot_val(vma->vm_page_prot) |= SUN3_PAGE_NOCACHE;
+-}
+ #else
 -static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
 -				unsigned long off)
 -{
--	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+ 	if (CPU_IS_020_OR_030)
+ 		pgprot_val(vma->vm_page_prot) |= _PAGE_NOCACHE030;
+ 	if (CPU_IS_040_OR_060) {
+@@ -25,11 +21,9 @@ static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
+ 		/* Use no-cache mode, serialized */
+ 		pgprot_val(vma->vm_page_prot) |= _PAGE_NOCACHE_S;
+ 	}
 -}
--
--static inline int fb_is_primary_device(struct fb_info *info)
--{
--	return 0;
--}
-+#include <asm-generic/fb.h>
+ #endif /* CONFIG_SUN3 */
+-#else
+-#define fb_pgprotect(...) do {} while (0)
+ #endif /* CONFIG_MMU */
++}
  
- #endif /* __ASM_FB_H_ */
+ static inline int fb_is_primary_device(struct fb_info *info)
+ {
 -- 
 2.40.0
 

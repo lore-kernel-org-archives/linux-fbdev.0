@@ -2,120 +2,118 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3515C77B6C
-	for <linux-fbdev@archiver.kernel.org>; Sat,  8 Apr 2023 17:27:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01116C77B61
+	for <linux-fbdev@archiver.kernel.org>; Sun,  9 Apr 2023 12:16:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229724AbjDHR1K (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 8 Apr 2023 13:27:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33784 "EHLO
+        id S229510AbjDIMQB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 9 Apr 2023 08:16:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40210 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229497AbjDHR1J (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 8 Apr 2023 13:27:09 -0400
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 627FE212C;
-        Sat,  8 Apr 2023 10:27:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1680974828; x=1712510828;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=20Gp8Ob9sY0l7Q3kLwGChvRjnxAHs9YuVEd44YUhsWE=;
-  b=KwT1e59dSzu6B5HHy8L27MPtJ+dPtxm8ocGOf3c6zFtJ7F/pgJPRsKPn
-   Y4YIjXwnh35ofbD7IHDopoTDgMvdUSYq3NAw32r0YeiSQCLEcVox7jfxz
-   GF9xX/pUedsw3vgdQ85lBgu5jdA40pGnlNX8kwW7TW+ExjjnJBrEwZ9VS
-   v1iGnlzzxpT4JlCBKvNLqsF2P/HUcRCmJcFR8E+F8ifK7iTqUFbD/g1fE
-   5UN7s+Th8Xp5ZmgwNSCnMuhr52gkhLfjHVFmbpQNxG151s0WvToYsyIjI
-   OtIzAJPdxDaaI+j7EauQCWG3l4p1GbOk25HiH8gjJst+L4kuX8aUzyizF
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10674"; a="322789169"
-X-IronPort-AV: E=Sophos;i="5.98,329,1673942400"; 
-   d="scan'208";a="322789169"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Apr 2023 10:27:07 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10674"; a="681311839"
-X-IronPort-AV: E=Sophos;i="5.98,329,1673942400"; 
-   d="scan'208";a="681311839"
-Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
-  by orsmga007.jf.intel.com with ESMTP; 08 Apr 2023 10:27:04 -0700
-Received: from kbuild by b613635ddfff with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1plCLA-000Twb-01;
-        Sat, 08 Apr 2023 17:27:04 +0000
-Date:   Sun, 9 Apr 2023 01:26:13 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     Deepanshu Kartikey <kartikey406@gmail.com>,
-        gregkh@linuxfoundation.org
-Cc:     oe-kbuild-all@lists.linux.dev, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org,
-        Deepanshu Kartikey <kartikey406@gmail.com>
-Subject: Re: [PATCH] staging: fbtft: fbtft-bus.c added params
-Message-ID: <202304090139.b8XZpHpu-lkp@intel.com>
-References: <20230408081817.81562-1-kartikey406@gmail.com>
+        with ESMTP id S229445AbjDIMQA (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 9 Apr 2023 08:16:00 -0400
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 611CE2727;
+        Sun,  9 Apr 2023 05:15:59 -0700 (PDT)
+Received: by mail-pj1-x102b.google.com with SMTP id w11so2302073pjh.5;
+        Sun, 09 Apr 2023 05:15:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112; t=1681042559;
+        h=content-disposition:mime-version:message-id:subject:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=2t1G48wxCUMMNbti7GgTNE7UH21GayHo7SYoWCZ/eD4=;
+        b=Tbvt+HdVNbYiGq7fDUN4njsb312cRhqX1XfVQwj94qBSr7Zlg51ZZ0j2h9zEAYDD8p
+         n+dJCTsqC4IJgwX4WVSijqh89bsh8yYQxHMuGN518SK25WfGKACYJ/W2wiZF76e2zIVU
+         vAMmf3VEfDlPO3NMGWrw4YlcZF00ygEWpT2X+mB5WBiiaecNIeUEhlIRM6wqk64nt5ho
+         LXvlHYUvDeSULNTXSdpLImpJn8WPNjXoGcCvkobJqmD9ewbQOaDHeRn8FwxbqVrnWZw/
+         HHlDlCqojRU9DgBe8Cw4oKfzVHwneJljrw8jMZ30lFm2sX54aa4KjiD7vH+KdAmycyG2
+         HLbg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1681042559;
+        h=content-disposition:mime-version:message-id:subject:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=2t1G48wxCUMMNbti7GgTNE7UH21GayHo7SYoWCZ/eD4=;
+        b=uTscLPFJLX5Z4VXNmL2+ZeM9LWk3IaHs2Krs1UdCnFnMyeQ4YhBqCqbmNVbbYxlGLj
+         bfGQX/QLjmsv8BznOi7+8heR6xSVtn0rBSX2yoS0y2AHsGNfVDCQRnW8S+yxbP1+htgj
+         FJBzcJ3ygO0pe1hxLUuY8P48v8SNLbqnwmgrV843o5TDbY03/3jaViLBXe+8Pnlllh5e
+         L0/O09G1c+80e7TFkHkn0rqYOOW7wm5SLEAVchy20xO+BpMn06r+nrU6OegK1YZvI/Me
+         e9p+Q5QSAcY5yUeHkaXZMYbDoZUTTTY6qbm2SzSFgU5DQhiuCeVboFqrydE2arsNhZDb
+         sPmA==
+X-Gm-Message-State: AAQBX9cijWNVNSUGXuaucFmlrnzi7krF0xxRDuAmOhPDnXSLpFwDc5wP
+        ozec+7NUZ3+D2/jArykqSBmFg+Qe5VE=
+X-Google-Smtp-Source: AKy350b6EIoszL0MLK9VxD/SyGuJSu3zGGhxXa7DggjtZSCA8l2yRe9zb1npycWT30wpm5/jlC4v7g==
+X-Received: by 2002:a17:90b:390a:b0:244:b000:d8e3 with SMTP id ob10-20020a17090b390a00b00244b000d8e3mr10163647pjb.45.1681042558567;
+        Sun, 09 Apr 2023 05:15:58 -0700 (PDT)
+Received: from dragonet (dragonet.kaist.ac.kr. [143.248.133.220])
+        by smtp.gmail.com with ESMTPSA id g9-20020a1709026b4900b0019fea4d61c9sm5777925plt.198.2023.04.09.05.15.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 09 Apr 2023 05:15:58 -0700 (PDT)
+Date:   Sun, 9 Apr 2023 21:15:54 +0900
+From:   "Dae R. Jeong" <threeearcat@gmail.com>
+To:     daniel@ffwll.ch, deller@gmx.de, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Subject: KASAN: null-ptr-deref Read in soft_cursor
+Message-ID: <ZDKsev8m5ShO_z0j@dragonet>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230408081817.81562-1-kartikey406@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Deepanshu,
+Hi,
 
-kernel test robot noticed the following build warnings:
+We observed an issue "KASAN: null-ptr-deref in soft_cursor" during fuzzing.
 
-[auto build test WARNING on staging/staging-testing]
+We acknowledge that this issue is a bit old, and we are sorry for
+reporting this late. And unfortunately, we have not found a reproducer
+for the crash yet. We will inform you if we have any update on this
+crash.  Detailed crash information is attached below.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Deepanshu-Kartikey/staging-fbtft-fbtft-bus-c-added-params/20230408-161947
-patch link:    https://lore.kernel.org/r/20230408081817.81562-1-kartikey406%40gmail.com
-patch subject: [PATCH] staging: fbtft: fbtft-bus.c added params
-config: i386-randconfig-s001-20230403 (https://download.01.org/0day-ci/archive/20230409/202304090139.b8XZpHpu-lkp@intel.com/config)
-compiler: gcc-11 (Debian 11.3.0-8) 11.3.0
-reproduce:
-        # apt-get install sparse
-        # sparse version: v0.6.4-39-gce1a6720-dirty
-        # https://github.com/intel-lab-lkp/linux/commit/038bedbb2c34ffc5e5ce77d5f49811778be8d631
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Deepanshu-Kartikey/staging-fbtft-fbtft-bus-c-added-params/20230408-161947
-        git checkout 038bedbb2c34ffc5e5ce77d5f49811778be8d631
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        make W=1 C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__' O=build_dir ARCH=i386 olddefconfig
-        make W=1 C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__' O=build_dir ARCH=i386 SHELL=/bin/bash drivers/staging/fbtft/
+Best regards,
+Dae R. Jeong
 
-If you fix the issue, kindly add following tag where applicable
-| Reported-by: kernel test robot <lkp@intel.com>
-| Link: https://lore.kernel.org/oe-kbuild-all/202304090139.b8XZpHpu-lkp@intel.com/
+-----
+- Kernel version:
+6.2-rc1
 
-sparse warnings: (new ones prefixed by >>)
->> drivers/staging/fbtft/fbtft-bus.c:65:1: sparse: sparse: incorrect type in assignment (different base types) @@     expected unsigned char [usertype] @@     got restricted __be16 [usertype] @@
-   drivers/staging/fbtft/fbtft-bus.c:65:1: sparse:     expected unsigned char [usertype]
-   drivers/staging/fbtft/fbtft-bus.c:65:1: sparse:     got restricted __be16 [usertype]
->> drivers/staging/fbtft/fbtft-bus.c:65:1: sparse: sparse: incorrect type in assignment (different base types) @@     expected unsigned char [usertype] @@     got restricted __be16 [usertype] @@
-   drivers/staging/fbtft/fbtft-bus.c:65:1: sparse:     expected unsigned char [usertype]
-   drivers/staging/fbtft/fbtft-bus.c:65:1: sparse:     got restricted __be16 [usertype]
->> drivers/staging/fbtft/fbtft-bus.c:65:1: sparse: sparse: incorrect type in assignment (different base types) @@     expected unsigned char [usertype] @@     got restricted __be16 [usertype] @@
-   drivers/staging/fbtft/fbtft-bus.c:65:1: sparse:     expected unsigned char [usertype]
-   drivers/staging/fbtft/fbtft-bus.c:65:1: sparse:     got restricted __be16 [usertype]
-   drivers/staging/fbtft/fbtft-bus.c:67:1: sparse: sparse: incorrect type in assignment (different base types) @@     expected unsigned short [usertype] @@     got restricted __be16 [usertype] @@
-   drivers/staging/fbtft/fbtft-bus.c:67:1: sparse:     expected unsigned short [usertype]
-   drivers/staging/fbtft/fbtft-bus.c:67:1: sparse:     got restricted __be16 [usertype]
-   drivers/staging/fbtft/fbtft-bus.c:67:1: sparse: sparse: incorrect type in assignment (different base types) @@     expected unsigned short [usertype] @@     got restricted __be16 [usertype] @@
-   drivers/staging/fbtft/fbtft-bus.c:67:1: sparse:     expected unsigned short [usertype]
-   drivers/staging/fbtft/fbtft-bus.c:67:1: sparse:     got restricted __be16 [usertype]
-   drivers/staging/fbtft/fbtft-bus.c:67:1: sparse: sparse: incorrect type in assignment (different base types) @@     expected unsigned short [usertype] @@     got restricted __be16 [usertype] @@
-   drivers/staging/fbtft/fbtft-bus.c:67:1: sparse:     expected unsigned short [usertype]
-   drivers/staging/fbtft/fbtft-bus.c:67:1: sparse:     got restricted __be16 [usertype]
+- Crash report:
+==================================================================
+BUG: KASAN: null-ptr-deref in soft_cursor+0x420/0xe80 drivers/video/fbdev/core/softcursor.c:70
+Read of size 16 at addr 0000000000000200 by task systemd/1
 
-vim +65 drivers/staging/fbtft/fbtft-bus.c
-
-    64	
-  > 65	define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, cpu_to_be16);
-    66	define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16);
-    67	define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, cpu_to_be16);
-    68	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+CPU: 2 PID: 1 Comm: systemd Not tainted 6.2.0-rc1-30092-gc55e2cce6a18-dirty #1
+Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS rel-1.14.0-0-g155821a1990b-prebuilt.qemu.org 04/01/2014
+Call Trace:
+ <TASK>
+ __dump_stack lib/dump_stack.c:88 [inline]
+ dump_stack_lvl+0x1cf/0x2c0 lib/dump_stack.c:106
+ print_report+0xed/0x1f0 mm/kasan/report.c:420
+ kasan_report+0xef/0x120 mm/kasan/report.c:517
+ kasan_check_range+0x2b5/0x2f0 mm/kasan/generic.c:189
+ memcpy+0x25/0x60 mm/kasan/shadow.c:65
+ soft_cursor+0x420/0xe80 drivers/video/fbdev/core/softcursor.c:70
+ bit_cursor+0x1c95/0x2710 drivers/video/fbdev/core/bitblit.c:377
+ hide_cursor+0x95/0x3f0 drivers/tty/vt/vt.c:907
+ do_con_write+0x216/0xf270 drivers/tty/vt/vt.c:2927
+ con_write+0x20/0x40 drivers/tty/vt/vt.c:3295
+ process_output_block drivers/tty/n_tty.c:586 [inline]
+ n_tty_write+0xef3/0x1420 drivers/tty/n_tty.c:2350
+ do_tty_write drivers/tty/tty_io.c:1018 [inline]
+ file_tty_write+0x625/0xa30 drivers/tty/tty_io.c:1089
+ call_write_iter include/linux/fs.h:2186 [inline]
+ new_sync_write fs/read_write.c:491 [inline]
+ vfs_write+0x848/0xd90 fs/read_write.c:584
+ ksys_write+0x182/0x2c0 fs/read_write.c:637
+ do_syscall_x64 arch/x86/entry/common.c:51 [inline]
+ do_syscall_64+0x4e/0xa0 arch/x86/entry/common.c:82
+ entry_SYSCALL_64_after_hwframe+0x63/0xcd
+RIP: 0033:0x7fa7860101b0
+Code: 2e 0f 1f 84 00 00 00 00 00 90 48 8b 05 19 7e 20 00 c3 0f 1f 84 00 00 00 00 00 83 3d 19 c2 20 00 00 75 10 b8 01 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 31 c3 48 83 ec 08 e8 ae fc ff ff 48 89 04 24
+RSP: 002b:00007ffea5a37dd8 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 000000000000000a RCX: 00007fa7860101b0
+RDX: 000000000000000a RSI: 00007fa78853ccbe RDI: 0000000000000013
+RBP: 00007fa78853ccbe R08: 00007ffea5a37d90 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000013
+R13: 0000000000000000 R14: ffffffffffffffff R15: 00005626fb929250
+ </TASK>
+==================================================================

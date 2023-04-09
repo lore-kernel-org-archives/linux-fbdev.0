@@ -2,118 +2,130 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01116C77B61
-	for <linux-fbdev@archiver.kernel.org>; Sun,  9 Apr 2023 12:16:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F36A2C77B70
+	for <linux-fbdev@archiver.kernel.org>; Sun,  9 Apr 2023 13:21:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229510AbjDIMQB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 9 Apr 2023 08:16:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40210 "EHLO
+        id S229552AbjDINVS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 9 Apr 2023 09:21:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33528 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229445AbjDIMQA (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 9 Apr 2023 08:16:00 -0400
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 611CE2727;
-        Sun,  9 Apr 2023 05:15:59 -0700 (PDT)
-Received: by mail-pj1-x102b.google.com with SMTP id w11so2302073pjh.5;
-        Sun, 09 Apr 2023 05:15:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112; t=1681042559;
-        h=content-disposition:mime-version:message-id:subject:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=2t1G48wxCUMMNbti7GgTNE7UH21GayHo7SYoWCZ/eD4=;
-        b=Tbvt+HdVNbYiGq7fDUN4njsb312cRhqX1XfVQwj94qBSr7Zlg51ZZ0j2h9zEAYDD8p
-         n+dJCTsqC4IJgwX4WVSijqh89bsh8yYQxHMuGN518SK25WfGKACYJ/W2wiZF76e2zIVU
-         vAMmf3VEfDlPO3NMGWrw4YlcZF00ygEWpT2X+mB5WBiiaecNIeUEhlIRM6wqk64nt5ho
-         LXvlHYUvDeSULNTXSdpLImpJn8WPNjXoGcCvkobJqmD9ewbQOaDHeRn8FwxbqVrnWZw/
-         HHlDlCqojRU9DgBe8Cw4oKfzVHwneJljrw8jMZ30lFm2sX54aa4KjiD7vH+KdAmycyG2
-         HLbg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1681042559;
-        h=content-disposition:mime-version:message-id:subject:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=2t1G48wxCUMMNbti7GgTNE7UH21GayHo7SYoWCZ/eD4=;
-        b=uTscLPFJLX5Z4VXNmL2+ZeM9LWk3IaHs2Krs1UdCnFnMyeQ4YhBqCqbmNVbbYxlGLj
-         bfGQX/QLjmsv8BznOi7+8heR6xSVtn0rBSX2yoS0y2AHsGNfVDCQRnW8S+yxbP1+htgj
-         FJBzcJ3ygO0pe1hxLUuY8P48v8SNLbqnwmgrV843o5TDbY03/3jaViLBXe+8Pnlllh5e
-         L0/O09G1c+80e7TFkHkn0rqYOOW7wm5SLEAVchy20xO+BpMn06r+nrU6OegK1YZvI/Me
-         e9p+Q5QSAcY5yUeHkaXZMYbDoZUTTTY6qbm2SzSFgU5DQhiuCeVboFqrydE2arsNhZDb
-         sPmA==
-X-Gm-Message-State: AAQBX9cijWNVNSUGXuaucFmlrnzi7krF0xxRDuAmOhPDnXSLpFwDc5wP
-        ozec+7NUZ3+D2/jArykqSBmFg+Qe5VE=
-X-Google-Smtp-Source: AKy350b6EIoszL0MLK9VxD/SyGuJSu3zGGhxXa7DggjtZSCA8l2yRe9zb1npycWT30wpm5/jlC4v7g==
-X-Received: by 2002:a17:90b:390a:b0:244:b000:d8e3 with SMTP id ob10-20020a17090b390a00b00244b000d8e3mr10163647pjb.45.1681042558567;
-        Sun, 09 Apr 2023 05:15:58 -0700 (PDT)
-Received: from dragonet (dragonet.kaist.ac.kr. [143.248.133.220])
-        by smtp.gmail.com with ESMTPSA id g9-20020a1709026b4900b0019fea4d61c9sm5777925plt.198.2023.04.09.05.15.56
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 09 Apr 2023 05:15:58 -0700 (PDT)
-Date:   Sun, 9 Apr 2023 21:15:54 +0900
-From:   "Dae R. Jeong" <threeearcat@gmail.com>
-To:     daniel@ffwll.ch, deller@gmx.de, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Subject: KASAN: null-ptr-deref Read in soft_cursor
-Message-ID: <ZDKsev8m5ShO_z0j@dragonet>
+        with ESMTP id S229462AbjDINVR (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 9 Apr 2023 09:21:17 -0400
+Received: from 189.cn (ptr.189.cn [183.61.185.101])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 7353B422F;
+        Sun,  9 Apr 2023 06:21:15 -0700 (PDT)
+HMM_SOURCE_IP: 10.64.8.41:37240.250830095
+HMM_ATTACHE_NUM: 0000
+HMM_SOURCE_TYPE: SMTP
+Received: from clientip-114.242.206.180 (unknown [10.64.8.41])
+        by 189.cn (HERMES) with SMTP id 183631001F8;
+        Sun,  9 Apr 2023 21:21:13 +0800 (CST)
+Received: from  ([114.242.206.180])
+        by gateway-151646-dep-7b48884fd-bkw2h with ESMTP id dcd59a4b78b04d9ea815ada68b5e12f9 for maarten.lankhorst@linux.intel.com;
+        Sun, 09 Apr 2023 21:21:14 CST
+X-Transaction-ID: dcd59a4b78b04d9ea815ada68b5e12f9
+X-Real-From: 15330273260@189.cn
+X-Receive-IP: 114.242.206.180
+X-MEDUSA-Status: 0
+Sender: 15330273260@189.cn
+From:   Sui Jingfeng <15330273260@189.cn>
+To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Sui Jingfeng <suijingfeng@loongson.cn>,
+        Li Yi <liyi@loongson.cn>, Helge Deller <deller@gmx.de>,
+        Lucas De Marchi <lucas.demarchi@intel.com>
+Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
+Subject: [PATCH] drm/fbdev-generic: fix potential out-of-bounds access
+Date:   Sun,  9 Apr 2023 21:21:10 +0800
+Message-Id: <20230409132110.494630-1-15330273260@189.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+From: Sui Jingfeng <suijingfeng@loongson.cn>
 
-We observed an issue "KASAN: null-ptr-deref in soft_cursor" during fuzzing.
+We should setting the screen buffer size according to the screen's actual
+size, rather than the size of the GEM object backing the front framebuffer.
+The size of GEM buffer is page size aligned, while the size of active area
+of a specific screen is *NOT* necessarily page size aliged. For example,
+1680x1050, 1600x900, 1440x900, 800x6000 etc. In those case, the damage rect
+computed by drm_fb_helper_memory_range_to_clip() goes out of bottom bounds
+of the display.
 
-We acknowledge that this issue is a bit old, and we are sorry for
-reporting this late. And unfortunately, we have not found a reproducer
-for the crash yet. We will inform you if we have any update on this
-crash.  Detailed crash information is attached below.
+Run fbdev test of IGT on a x86+ast2400 platform with 1680x1050 resolution
+will cause the system hang with the following call trace:
 
-Best regards,
-Dae R. Jeong
+  Oops: 0000 [#1] PREEMPT SMP PTI
+  [IGT] fbdev: starting subtest eof
+  Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
+  [IGT] fbdev: starting subtest nullptr
 
------
-- Kernel version:
-6.2-rc1
+  RIP: 0010:memcpy_erms+0xa/0x20
+  RSP: 0018:ffffa17d40167d98 EFLAGS: 00010246
+  RAX: ffffa17d4eb7fa80 RBX: ffffa17d40e0aa80 RCX: 00000000000014c0
+  RDX: 0000000000001a40 RSI: ffffa17d40e0b000 RDI: ffffa17d4eb80000
+  RBP: ffffa17d40167e20 R08: 0000000000000000 R09: ffff89522ecff8c0
+  R10: ffffa17d4e4c5000 R11: 0000000000000000 R12: ffffa17d4eb7fa80
+  R13: 0000000000001a40 R14: 000000000000041a R15: ffffa17d40167e30
+  FS:  0000000000000000(0000) GS:ffff895257380000(0000) knlGS:0000000000000000
+  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+  CR2: ffffa17d40e0b000 CR3: 00000001eaeca006 CR4: 00000000001706e0
+  Call Trace:
+   <TASK>
+   ? drm_fbdev_generic_helper_fb_dirty+0x207/0x330 [drm_kms_helper]
+   drm_fb_helper_damage_work+0x8f/0x170 [drm_kms_helper]
+   process_one_work+0x21f/0x430
+   worker_thread+0x4e/0x3c0
+   ? __pfx_worker_thread+0x10/0x10
+   kthread+0xf4/0x120
+   ? __pfx_kthread+0x10/0x10
+   ret_from_fork+0x2c/0x50
+   </TASK>
+  CR2: ffffa17d40e0b000
+  ---[ end trace 0000000000000000 ]---
 
-- Crash report:
-==================================================================
-BUG: KASAN: null-ptr-deref in soft_cursor+0x420/0xe80 drivers/video/fbdev/core/softcursor.c:70
-Read of size 16 at addr 0000000000000200 by task systemd/1
+We also add trival code in this patch to restrict the damage rect beyond
+the last line of the framebuffer.
 
-CPU: 2 PID: 1 Comm: systemd Not tainted 6.2.0-rc1-30092-gc55e2cce6a18-dirty #1
-Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS rel-1.14.0-0-g155821a1990b-prebuilt.qemu.org 04/01/2014
-Call Trace:
- <TASK>
- __dump_stack lib/dump_stack.c:88 [inline]
- dump_stack_lvl+0x1cf/0x2c0 lib/dump_stack.c:106
- print_report+0xed/0x1f0 mm/kasan/report.c:420
- kasan_report+0xef/0x120 mm/kasan/report.c:517
- kasan_check_range+0x2b5/0x2f0 mm/kasan/generic.c:189
- memcpy+0x25/0x60 mm/kasan/shadow.c:65
- soft_cursor+0x420/0xe80 drivers/video/fbdev/core/softcursor.c:70
- bit_cursor+0x1c95/0x2710 drivers/video/fbdev/core/bitblit.c:377
- hide_cursor+0x95/0x3f0 drivers/tty/vt/vt.c:907
- do_con_write+0x216/0xf270 drivers/tty/vt/vt.c:2927
- con_write+0x20/0x40 drivers/tty/vt/vt.c:3295
- process_output_block drivers/tty/n_tty.c:586 [inline]
- n_tty_write+0xef3/0x1420 drivers/tty/n_tty.c:2350
- do_tty_write drivers/tty/tty_io.c:1018 [inline]
- file_tty_write+0x625/0xa30 drivers/tty/tty_io.c:1089
- call_write_iter include/linux/fs.h:2186 [inline]
- new_sync_write fs/read_write.c:491 [inline]
- vfs_write+0x848/0xd90 fs/read_write.c:584
- ksys_write+0x182/0x2c0 fs/read_write.c:637
- do_syscall_x64 arch/x86/entry/common.c:51 [inline]
- do_syscall_64+0x4e/0xa0 arch/x86/entry/common.c:82
- entry_SYSCALL_64_after_hwframe+0x63/0xcd
-RIP: 0033:0x7fa7860101b0
-Code: 2e 0f 1f 84 00 00 00 00 00 90 48 8b 05 19 7e 20 00 c3 0f 1f 84 00 00 00 00 00 83 3d 19 c2 20 00 00 75 10 b8 01 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 31 c3 48 83 ec 08 e8 ae fc ff ff 48 89 04 24
-RSP: 002b:00007ffea5a37dd8 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
-RAX: ffffffffffffffda RBX: 000000000000000a RCX: 00007fa7860101b0
-RDX: 000000000000000a RSI: 00007fa78853ccbe RDI: 0000000000000013
-RBP: 00007fa78853ccbe R08: 00007ffea5a37d90 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000013
-R13: 0000000000000000 R14: ffffffffffffffff R15: 00005626fb929250
- </TASK>
-==================================================================
+Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
+---
+ drivers/gpu/drm/drm_fb_helper.c     | 2 +-
+ drivers/gpu/drm/drm_fbdev_generic.c | 2 ++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index 64458982be40..a2b749372759 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -645,7 +645,7 @@ static void drm_fb_helper_memory_range_to_clip(struct fb_info *info, off_t off,
+ 	u32 x1 = 0;
+ 	u32 y1 = off / info->fix.line_length;
+ 	u32 x2 = info->var.xres;
+-	u32 y2 = DIV_ROUND_UP(end, info->fix.line_length);
++	u32 y2 = min_t(u32, DIV_ROUND_UP(end, info->fix.line_length), info->var.yres);
+ 
+ 	if ((y2 - y1) == 1) {
+ 		/*
+diff --git a/drivers/gpu/drm/drm_fbdev_generic.c b/drivers/gpu/drm/drm_fbdev_generic.c
+index 8e5148bf40bb..a6daecb5f640 100644
+--- a/drivers/gpu/drm/drm_fbdev_generic.c
++++ b/drivers/gpu/drm/drm_fbdev_generic.c
+@@ -95,6 +95,8 @@ static int drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
+ 	fb_helper->fb = buffer->fb;
+ 
+ 	screen_size = buffer->gem->size;
++	screen_size = sizes->surface_height * buffer->fb->pitches[0];
++
+ 	screen_buffer = vzalloc(screen_size);
+ 	if (!screen_buffer) {
+ 		ret = -ENOMEM;
+-- 
+2.25.1
+

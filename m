@@ -2,64 +2,60 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 364BBC77B6F
-	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Apr 2023 13:44:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80205C77B6F
+	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Apr 2023 13:59:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229776AbjDKNor (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 11 Apr 2023 09:44:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59470 "EHLO
+        id S231175AbjDKN7a (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 11 Apr 2023 09:59:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47440 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229641AbjDKNor (ORCPT
+        with ESMTP id S231151AbjDKN70 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 11 Apr 2023 09:44:47 -0400
-Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0300E196
-        for <linux-fbdev@vger.kernel.org>; Tue, 11 Apr 2023 06:44:46 -0700 (PDT)
-Received: by mail-wr1-x42c.google.com with SMTP id ffacd0b85a97d-2ef70620b9dso629688f8f.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 11 Apr 2023 06:44:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google; t=1681220684;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=Fp4rlXw79VcdA2AOoSPpOfYMZ9IUxLVJ3GocVp0+rN4=;
-        b=M9knvb6pdlQ3GyWNetTLlteC0E2mKH0SdNXMypNKBJFlpJlMUu/DAbcHTr3bPsR5/j
-         SYTEq1F7tMMx5SHTYY5XlnULPEZTieVTqnT8C0O3s0CkL5VdHz5t4JArJWpMaQkA5Fn0
-         XzQAO5LxvhoZrBJ0SJWrPvOpZEdfUbU/abbRI=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1681220684;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Fp4rlXw79VcdA2AOoSPpOfYMZ9IUxLVJ3GocVp0+rN4=;
-        b=im1FI4fbN0YV7Hd55f0vfiza5A/ZL2mC6T5j43b5QQLG/YAgdfJYxOB1wBzDZenIDD
-         iLPbyr29fHUkKd/NYza884/LqwoJS3dGaOuYi6PqVQy/9ugapw03FduZBm2GrXV1Dbb8
-         F9SUoUMnEkO5bgxffCS+uvmYCZySreX1aOZsRIcOOIQh8TkKpuUdYJcAq0xbu1peHl1e
-         NlPwTudjDqymm3ZVuInOAaEMVx8vt1ZIWfLkeEmsdygCt/VDF5JmB6eMzfQcNLH4eiE1
-         7MReQC+j12SDYbVuHZtoYBy12Nn4yr8a7vw0dkf6kJjSpv1BWlu0+0leZ6sWGoiJKel1
-         lXqw==
-X-Gm-Message-State: AAQBX9dWUrQKYVvM6MRMT134gwlzMrYtwMq7plRHH7gSxuL5JxpsWqpA
-        jyiPITm2zv16xrYdCw5nvdA7lw==
-X-Google-Smtp-Source: AKy350aG4k+mNBiF8l8fXL2dxJrJEyAlXU5HH05sc8I796zTIROU200GENXBJcM9/TJ/mqG0FF1ycQ==
-X-Received: by 2002:a5d:54c9:0:b0:2e4:c9ac:c492 with SMTP id x9-20020a5d54c9000000b002e4c9acc492mr6788945wrv.1.1681220684488;
-        Tue, 11 Apr 2023 06:44:44 -0700 (PDT)
-Received: from phenom.ffwll.local (212-51-149-33.fiber7.init7.net. [212.51.149.33])
-        by smtp.gmail.com with ESMTPSA id c14-20020a5d4cce000000b002f2782978d8sm4178312wrt.20.2023.04.11.06.44.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Apr 2023 06:44:44 -0700 (PDT)
-Date:   Tue, 11 Apr 2023 15:44:41 +0200
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>
+        Tue, 11 Apr 2023 09:59:26 -0400
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B77FC40CE;
+        Tue, 11 Apr 2023 06:59:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681221554; x=1712757554;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=yexL/N1m4BbU3jFepRVc09D3Ftt41ycmTKQzelkjxfo=;
+  b=eEqedvlnyUbjWlpg+Fu5jE96i/WefevCsqy2QJ5QQqWq7KVwJ4HYrAxm
+   Ay/kuqIjIx76u6XUwF240cZ75rSD6fwcJ+CT84GDdhO6yfnmo+DCoAuMs
+   1WjESU3cwwbmSFbGYJGhQ/kix9F5d/09toxAWUndX7fikSUYnDSvtjvmk
+   bJGoiRiXbHz8ayxtWdb2K3DyM5wbgMfdMVuroScbxzJW9LTTSmQu0aw35
+   ckah5ly4lbNtxVEccoyTFoKHNVCQ0ZRiR+aDhdBTFHqoXqvbjLNWnjdcZ
+   9jvcSbmjukZz8ndc/kBYqj63/HV81S4Z8S+rcNgIG8qrK3CeHD+gSJjrU
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10677"; a="323982905"
+X-IronPort-AV: E=Sophos;i="5.98,336,1673942400"; 
+   d="scan'208";a="323982905"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Apr 2023 06:58:48 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10677"; a="777919862"
+X-IronPort-AV: E=Sophos;i="5.98,336,1673942400"; 
+   d="scan'208";a="777919862"
+Received: from aburgsta-mobl.ger.corp.intel.com (HELO [10.252.45.152]) ([10.252.45.152])
+  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Apr 2023 06:58:43 -0700
+Message-ID: <8cef35ad-881e-3db3-5c7a-e27ff9968b77@linux.intel.com>
+Date:   Tue, 11 Apr 2023 15:58:41 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Firefox/102.0 Thunderbird/102.9.1
+Subject: Re: [PATCH] fbmem: Reject FB_ACTIVATE_KD_TEXT from userspace
+Content-Language: en-US
+To:     Daniel Vetter <daniel@ffwll.ch>,
+        Intel Graphics Development <intel-gfx@lists.freedesktop.org>
 Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
         Daniel Vetter <daniel.vetter@intel.com>,
         Alex Deucher <alexander.deucher@amd.com>, shlomo@fastmail.com,
-        Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>,
-        Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
+        =?UTF-8?Q?Michel_D=c3=a4nzer?= <michel@daenzer.net>,
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
         David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
         dri-devel@lists.freedesktop.org, stable@vger.kernel.org,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
@@ -71,86 +67,57 @@ Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
         Samuel Thibault <samuel.thibault@ens-lyon.org>,
         Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
         Shigeru Yoshida <syoshida@redhat.com>
-Subject: Re: [PATCH] fbmem: Reject FB_ACTIVATE_KD_TEXT from userspace
-Message-ID: <ZDVkSaskEvwix8Bz@phenom.ffwll.local>
 References: <20230404193934.472457-1-daniel.vetter@ffwll.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+ <ZDVkSaskEvwix8Bz@phenom.ffwll.local>
+From:   Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+In-Reply-To: <ZDVkSaskEvwix8Bz@phenom.ffwll.local>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230404193934.472457-1-daniel.vetter@ffwll.ch>
-X-Operating-System: Linux phenom 6.1.0-7-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Apr 04, 2023 at 09:39:34PM +0200, Daniel Vetter wrote:
-> This is an oversight from dc5bdb68b5b3 ("drm/fb-helper: Fix vt
-> restore") - I failed to realize that nasty userspace could set this.
-> 
-> It's not pretty to mix up kernel-internal and userspace uapi flags
-> like this, but since the entire fb_var_screeninfo structure is uapi
-> we'd need to either add a new parameter to the ->fb_set_par callback
-> and fb_set_par() function, which has a _lot_ of users. Or some other
-> fairly ugly side-channel int fb_info. Neither is a pretty prospect.
-> 
-> Instead just correct the issue at hand by filtering out this
-> kernel-internal flag in the ioctl handling code.
-> 
-> Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-> Fixes: dc5bdb68b5b3 ("drm/fb-helper: Fix vt restore")
-> Cc: Alex Deucher <alexander.deucher@amd.com>
-> Cc: shlomo@fastmail.com
-> Cc: Michel Dänzer <michel@daenzer.net>
-> Cc: Noralf Trønnes <noralf@tronnes.org>
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Daniel Vetter <daniel.vetter@intel.com>
-> Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-> Cc: Maxime Ripard <mripard@kernel.org>
-> Cc: David Airlie <airlied@linux.ie>
-> Cc: Daniel Vetter <daniel@ffwll.ch>
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: <stable@vger.kernel.org> # v5.7+
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Nathan Chancellor <natechancellor@gmail.com>
-> Cc: Qiujun Huang <hqjagain@gmail.com>
-> Cc: Peter Rosin <peda@axentia.se>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Geert Uytterhoeven <geert+renesas@glider.be>
-> Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>
-> Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-> Cc: Shigeru Yoshida <syoshida@redhat.com>
 
-An Ack on this (or a better idea) would be great, so I can stuff it into
--fixes.
-
-Thanks, Daniel
-
-> ---
->  drivers/video/fbdev/core/fbmem.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-> index 875541ff185b..3fd95a79e4c3 100644
-> --- a/drivers/video/fbdev/core/fbmem.c
-> +++ b/drivers/video/fbdev/core/fbmem.c
-> @@ -1116,6 +1116,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
->  	case FBIOPUT_VSCREENINFO:
->  		if (copy_from_user(&var, argp, sizeof(var)))
->  			return -EFAULT;
-> +		/* only for kernel-internal use */
-> +		var.activate &= ~FB_ACTIVATE_KD_TEXT;
->  		console_lock();
->  		lock_fb_info(info);
->  		ret = fbcon_modechange_possible(info, &var);
-> -- 
-> 2.40.0
-> 
-
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+On 2023-04-11 15:44, Daniel Vetter wrote:
+> On Tue, Apr 04, 2023 at 09:39:34PM +0200, Daniel Vetter wrote:
+>> This is an oversight from dc5bdb68b5b3 ("drm/fb-helper: Fix vt
+>> restore") - I failed to realize that nasty userspace could set this.
+>>
+>> It's not pretty to mix up kernel-internal and userspace uapi flags
+>> like this, but since the entire fb_var_screeninfo structure is uapi
+>> we'd need to either add a new parameter to the ->fb_set_par callback
+>> and fb_set_par() function, which has a _lot_ of users. Or some other
+>> fairly ugly side-channel int fb_info. Neither is a pretty prospect.
+>>
+>> Instead just correct the issue at hand by filtering out this
+>> kernel-internal flag in the ioctl handling code.
+>>
+>> Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+>> Fixes: dc5bdb68b5b3 ("drm/fb-helper: Fix vt restore")
+>> Cc: Alex Deucher <alexander.deucher@amd.com>
+>> Cc: shlomo@fastmail.com
+>> Cc: Michel DÃ¤nzer <michel@daenzer.net>
+>> Cc: Noralf TrÃ¸nnes <noralf@tronnes.org>
+>> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+>> Cc: Daniel Vetter <daniel.vetter@intel.com>
+>> Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+>> Cc: Maxime Ripard <mripard@kernel.org>
+>> Cc: David Airlie <airlied@linux.ie>
+>> Cc: Daniel Vetter <daniel@ffwll.ch>
+>> Cc: dri-devel@lists.freedesktop.org
+>> Cc: <stable@vger.kernel.org> # v5.7+
+>> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+>> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+>> Cc: Nathan Chancellor <natechancellor@gmail.com>
+>> Cc: Qiujun Huang <hqjagain@gmail.com>
+>> Cc: Peter Rosin <peda@axentia.se>
+>> Cc: linux-fbdev@vger.kernel.org
+>> Cc: Helge Deller <deller@gmx.de>
+>> Cc: Sam Ravnborg <sam@ravnborg.org>
+>> Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+>> Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>
+>> Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+>> Cc: Shigeru Yoshida <syoshida@redhat.com>
+> An Ack on this (or a better idea) would be great, so I can stuff it into
+> -fixes.
+Acked-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>

@@ -2,92 +2,155 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDABBC77B6F
-	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Apr 2023 08:21:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 364BBC77B6F
+	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Apr 2023 13:44:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230415AbjDKIV4 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 11 Apr 2023 04:21:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57604 "EHLO
+        id S229776AbjDKNor (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 11 Apr 2023 09:44:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59470 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230212AbjDKIVb (ORCPT
+        with ESMTP id S229641AbjDKNor (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 11 Apr 2023 04:21:31 -0400
-Received: from mail-yw1-f179.google.com (mail-yw1-f179.google.com [209.85.128.179])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4311440D1;
-        Tue, 11 Apr 2023 01:20:23 -0700 (PDT)
-Received: by mail-yw1-f179.google.com with SMTP id 00721157ae682-54ee17a659bso145692187b3.4;
-        Tue, 11 Apr 2023 01:20:23 -0700 (PDT)
+        Tue, 11 Apr 2023 09:44:47 -0400
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0300E196
+        for <linux-fbdev@vger.kernel.org>; Tue, 11 Apr 2023 06:44:46 -0700 (PDT)
+Received: by mail-wr1-x42c.google.com with SMTP id ffacd0b85a97d-2ef70620b9dso629688f8f.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 11 Apr 2023 06:44:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google; t=1681220684;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=Fp4rlXw79VcdA2AOoSPpOfYMZ9IUxLVJ3GocVp0+rN4=;
+        b=M9knvb6pdlQ3GyWNetTLlteC0E2mKH0SdNXMypNKBJFlpJlMUu/DAbcHTr3bPsR5/j
+         SYTEq1F7tMMx5SHTYY5XlnULPEZTieVTqnT8C0O3s0CkL5VdHz5t4JArJWpMaQkA5Fn0
+         XzQAO5LxvhoZrBJ0SJWrPvOpZEdfUbU/abbRI=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1681201215;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=KOXdqLxEHLBZ7hy/2mM/9REbA1X5ZreSZtF+7etv6Sw=;
-        b=0iG9RzYMgEOTW+MRirY8tCfK6rpiSQCy2il7J6ptrHPhkhDKMaPjU8WOVFqgz7F876
-         ZIjqDi1aE1NMRaoJIYNLs6RR6QHB5tEiFn5Vhghsnc/YV2Hz4M40NYOYnwAEzcY9m2l7
-         TeyF5gPttiiXGEQBT6iqJbpKg/YLNecva2rDNwjFR+MZosdS12kEDT3vRx0PG7MuGGBV
-         YuYZk4NDVMzLHOOx45+wXHgrkiDUFpWXOkRtfbRDsWxqY0KcpUGlq5P8i/fOBM+Ar+D9
-         3w8O11FFTHPWVesziw6aefuLniatjfakJd4g2VgZDRoJyV1coUS2RLpm7xURmZks9CxV
-         vKVQ==
-X-Gm-Message-State: AAQBX9fUKMTVVqyQPRbiq7UYaZ9xESruPkGLjlrdyrd2HX/oxHxpCpVN
-        NSlNsr8RxujpKP+jnzrxKlO33KFl6JjKyg==
-X-Google-Smtp-Source: AKy350Y7EQFkQbSZA8SAtnnSPk/NknwPKAitFGCqkgGdgtkwcxLQiQgb0Iv6Zv/nOSM40z0Y9lDDBw==
-X-Received: by 2002:a81:5b86:0:b0:541:9464:40f1 with SMTP id p128-20020a815b86000000b00541946440f1mr1359319ywb.18.1681201214845;
-        Tue, 11 Apr 2023 01:20:14 -0700 (PDT)
-Received: from mail-yb1-f171.google.com (mail-yb1-f171.google.com. [209.85.219.171])
-        by smtp.gmail.com with ESMTPSA id y76-20020a81a14f000000b005460e4170e4sm3337593ywg.129.2023.04.11.01.20.13
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 11 Apr 2023 01:20:13 -0700 (PDT)
-Received: by mail-yb1-f171.google.com with SMTP id q5so10018292ybk.7;
-        Tue, 11 Apr 2023 01:20:13 -0700 (PDT)
-X-Received: by 2002:a25:d447:0:b0:b75:9519:dbcd with SMTP id
- m68-20020a25d447000000b00b759519dbcdmr960089ybf.12.1681201212819; Tue, 11 Apr
- 2023 01:20:12 -0700 (PDT)
+        d=1e100.net; s=20210112; t=1681220684;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Fp4rlXw79VcdA2AOoSPpOfYMZ9IUxLVJ3GocVp0+rN4=;
+        b=im1FI4fbN0YV7Hd55f0vfiza5A/ZL2mC6T5j43b5QQLG/YAgdfJYxOB1wBzDZenIDD
+         iLPbyr29fHUkKd/NYza884/LqwoJS3dGaOuYi6PqVQy/9ugapw03FduZBm2GrXV1Dbb8
+         F9SUoUMnEkO5bgxffCS+uvmYCZySreX1aOZsRIcOOIQh8TkKpuUdYJcAq0xbu1peHl1e
+         NlPwTudjDqymm3ZVuInOAaEMVx8vt1ZIWfLkeEmsdygCt/VDF5JmB6eMzfQcNLH4eiE1
+         7MReQC+j12SDYbVuHZtoYBy12Nn4yr8a7vw0dkf6kJjSpv1BWlu0+0leZ6sWGoiJKel1
+         lXqw==
+X-Gm-Message-State: AAQBX9dWUrQKYVvM6MRMT134gwlzMrYtwMq7plRHH7gSxuL5JxpsWqpA
+        jyiPITm2zv16xrYdCw5nvdA7lw==
+X-Google-Smtp-Source: AKy350aG4k+mNBiF8l8fXL2dxJrJEyAlXU5HH05sc8I796zTIROU200GENXBJcM9/TJ/mqG0FF1ycQ==
+X-Received: by 2002:a5d:54c9:0:b0:2e4:c9ac:c492 with SMTP id x9-20020a5d54c9000000b002e4c9acc492mr6788945wrv.1.1681220684488;
+        Tue, 11 Apr 2023 06:44:44 -0700 (PDT)
+Received: from phenom.ffwll.local (212-51-149-33.fiber7.init7.net. [212.51.149.33])
+        by smtp.gmail.com with ESMTPSA id c14-20020a5d4cce000000b002f2782978d8sm4178312wrt.20.2023.04.11.06.44.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 11 Apr 2023 06:44:44 -0700 (PDT)
+Date:   Tue, 11 Apr 2023 15:44:41 +0200
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>
+Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Alex Deucher <alexander.deucher@amd.com>, shlomo@fastmail.com,
+        Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>,
+        Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        dri-devel@lists.freedesktop.org, stable@vger.kernel.org,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Nathan Chancellor <natechancellor@gmail.com>,
+        Qiujun Huang <hqjagain@gmail.com>,
+        Peter Rosin <peda@axentia.se>, linux-fbdev@vger.kernel.org,
+        Helge Deller <deller@gmx.de>, Sam Ravnborg <sam@ravnborg.org>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Samuel Thibault <samuel.thibault@ens-lyon.org>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        Shigeru Yoshida <syoshida@redhat.com>
+Subject: Re: [PATCH] fbmem: Reject FB_ACTIVATE_KD_TEXT from userspace
+Message-ID: <ZDVkSaskEvwix8Bz@phenom.ffwll.local>
+References: <20230404193934.472457-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
-References: <20230406143019.6709-1-tzimmermann@suse.de> <20230406143019.6709-9-tzimmermann@suse.de>
-In-Reply-To: <20230406143019.6709-9-tzimmermann@suse.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 11 Apr 2023 10:20:00 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdVmZ2GRKqEnZgQKzJ1-Hy-Cz8yoUOhD0TMMqZriH82-tQ@mail.gmail.com>
-Message-ID: <CAMuHMdVmZ2GRKqEnZgQKzJ1-Hy-Cz8yoUOhD0TMMqZriH82-tQ@mail.gmail.com>
-Subject: Re: [PATCH v2 08/19] arch/m68k: Implement <asm/fb.h> with generic helpers
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     arnd@arndb.de, daniel.vetter@ffwll.ch, deller@gmx.de,
-        javierm@redhat.com, gregkh@linuxfoundation.org,
-        linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        linux-snps-arc@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
-        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
-        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
-        sparclinux@vger.kernel.org, x86@kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20230404193934.472457-1-daniel.vetter@ffwll.ch>
+X-Operating-System: Linux phenom 6.1.0-7-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Apr 6, 2023 at 4:30â€¯PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> Replace the architecture's fb_is_primary_device() with the generic
-> one from <asm-generic/fb.h>. No functional changes.
->
-> v2:
->         * provide empty fb_pgprotect() on non-MMU systems
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+On Tue, Apr 04, 2023 at 09:39:34PM +0200, Daniel Vetter wrote:
+> This is an oversight from dc5bdb68b5b3 ("drm/fb-helper: Fix vt
+> restore") - I failed to realize that nasty userspace could set this.
+> 
+> It's not pretty to mix up kernel-internal and userspace uapi flags
+> like this, but since the entire fb_var_screeninfo structure is uapi
+> we'd need to either add a new parameter to the ->fb_set_par callback
+> and fb_set_par() function, which has a _lot_ of users. Or some other
+> fairly ugly side-channel int fb_info. Neither is a pretty prospect.
+> 
+> Instead just correct the issue at hand by filtering out this
+> kernel-internal flag in the ioctl handling code.
+> 
+> Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+> Fixes: dc5bdb68b5b3 ("drm/fb-helper: Fix vt restore")
+> Cc: Alex Deucher <alexander.deucher@amd.com>
+> Cc: shlomo@fastmail.com
+> Cc: Michel Dänzer <michel@daenzer.net>
+> Cc: Noralf Trønnes <noralf@tronnes.org>
+> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Daniel Vetter <daniel.vetter@intel.com>
+> Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+> Cc: Maxime Ripard <mripard@kernel.org>
+> Cc: David Airlie <airlied@linux.ie>
+> Cc: Daniel Vetter <daniel@ffwll.ch>
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: <stable@vger.kernel.org> # v5.7+
+> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 > Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: Nathan Chancellor <natechancellor@gmail.com>
+> Cc: Qiujun Huang <hqjagain@gmail.com>
+> Cc: Peter Rosin <peda@axentia.se>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+> Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>
+> Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> Cc: Shigeru Yoshida <syoshida@redhat.com>
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+An Ack on this (or a better idea) would be great, so I can stuff it into
+-fixes.
 
-Gr{oetje,eeting}s,
+Thanks, Daniel
 
-                        Geert
+> ---
+>  drivers/video/fbdev/core/fbmem.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+> index 875541ff185b..3fd95a79e4c3 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -1116,6 +1116,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+>  	case FBIOPUT_VSCREENINFO:
+>  		if (copy_from_user(&var, argp, sizeof(var)))
+>  			return -EFAULT;
+> +		/* only for kernel-internal use */
+> +		var.activate &= ~FB_ACTIVATE_KD_TEXT;
+>  		console_lock();
+>  		lock_fb_info(info);
+>  		ret = fbcon_modechange_possible(info, &var);
+> -- 
+> 2.40.0
+> 
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

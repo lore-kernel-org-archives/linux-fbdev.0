@@ -2,145 +2,127 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6F69C77B6F
-	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Apr 2023 15:26:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D8FBC76196
+	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Apr 2023 15:58:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230110AbjDKP0f (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 11 Apr 2023 11:26:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42912 "EHLO
+        id S229700AbjDKP6H convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 11 Apr 2023 11:58:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48640 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230116AbjDKP0Y (ORCPT
+        with ESMTP id S230218AbjDKP6E (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 11 Apr 2023 11:26:24 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7550461B7;
-        Tue, 11 Apr 2023 08:26:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1681226748; i=deller@gmx.de;
-        bh=Wot2htN65pbIUsBwaKdvp7Q73WtMX1vVsGGvd6Rr4+A=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=OeNP3IYRJ5e68Wd6JAVzEFB0jyLgQ1CjOW2uGEjoJxkq++FEubmxfDc2z/Nr6kxnW
-         fpESzhm+p9QvyQVw/cSVdVhV8fd4LQ51M3PQPKyBW0bjGLVfHztVgq+P/n/K1TDKGd
-         xtrgHIKWGoQqOH4c72eP1py/aKflLZW66DEv8POqMO4XZ7Axp6e8Ps0VtuugIq1mQB
-         /VEX+WBboG+5pX+WWvBdsM0FZejsGZu3YP3WHjgrabt9xhhsR/qFnwswTXH8Ty+jiR
-         YoCV6DTa4/cCS+5lX+d4aJQyx16tCxcF2bhLfRzKu1OPQn4Un6WG+zN14gkJENGyqo
-         CoYeZdWJU12Sg==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.155.12]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MMGNC-1q3ElO2diI-00JHXo; Tue, 11
- Apr 2023 17:25:48 +0200
-Message-ID: <83acd60f-4a42-25a9-afee-ca7919ee42a9@gmx.de>
-Date:   Tue, 11 Apr 2023 17:25:47 +0200
+        Tue, 11 Apr 2023 11:58:04 -0400
+Received: from mail-yw1-f171.google.com (mail-yw1-f171.google.com [209.85.128.171])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB0CFE59;
+        Tue, 11 Apr 2023 08:58:01 -0700 (PDT)
+Received: by mail-yw1-f171.google.com with SMTP id 00721157ae682-54f6a796bd0so51666827b3.12;
+        Tue, 11 Apr 2023 08:58:01 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1681228681;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=f+3w89leq3eEIkwoZcDVhq9F0DoH4q/Sj2floJIfCG0=;
+        b=b9hehx53Rg1EmjVFQKFOlDYTgMzfZofyjGHtV0ndEj55dn89EllA85Aom8EwOYhVCu
+         my3dyoOmI5qiqEygWwSkJkm5Nkbp6MqvsufxT9U1u8rGpVQsM9KwllGzyDNSN5QhFsMR
+         u2Z5XNGfnMplnsdh3r28I7D6ooZYTU7ExBZVnKpuktkmvPz4tc5e9LxCppiTnr+t6QXj
+         ygYXge5T22CRuKa4YYMjV0u2/Z3tH/1tEwQL1BqhvA087agkxE2oe1U6KNdMXu6pUQiV
+         e3zB6mLFUTVBByfSUUXQtQKPutPqmKox6k+nmwyxN8i0UmHBnKgqOGbbtsrmvdlfAs/v
+         16mA==
+X-Gm-Message-State: AAQBX9eB+24gNh4orGEYLNl8L+Uz5gvo91G0YMZDq3rDuID2KfMuJZGS
+        xDF/99C7M+8zz0+8EnMkDojSE7YcHOsrAQ==
+X-Google-Smtp-Source: AKy350aq7hf0rfi34qVVccbfpKSa6XDOF8m7qcps4XHyA956RA44VLNIX8EXuK/mJncZPV5K12GKjg==
+X-Received: by 2002:a0d:ddcc:0:b0:54f:baa:2c with SMTP id g195-20020a0dddcc000000b0054f0baa002cmr2455815ywe.0.1681228680749;
+        Tue, 11 Apr 2023 08:58:00 -0700 (PDT)
+Received: from mail-yb1-f172.google.com (mail-yb1-f172.google.com. [209.85.219.172])
+        by smtp.gmail.com with ESMTPSA id s189-20020a819bc6000000b00545a0818483sm3592683ywg.19.2023.04.11.08.57.58
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 11 Apr 2023 08:57:58 -0700 (PDT)
+Received: by mail-yb1-f172.google.com with SMTP id a13so8716783ybl.11;
+        Tue, 11 Apr 2023 08:57:58 -0700 (PDT)
+X-Received: by 2002:a25:7654:0:b0:b8e:e0db:5b9d with SMTP id
+ r81-20020a257654000000b00b8ee0db5b9dmr4304677ybc.12.1681228677832; Tue, 11
+ Apr 2023 08:57:57 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH v5 2/9] video/aperture: use generic code to figure out the
- vga default device
-Content-Language: en-US
+References: <20230404193934.472457-1-daniel.vetter@ffwll.ch> <ZDVkSaskEvwix8Bz@phenom.ffwll.local>
+In-Reply-To: <ZDVkSaskEvwix8Bz@phenom.ffwll.local>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Tue, 11 Apr 2023 17:57:44 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUVME6RnXkq-0FsUdH6-hqe5BqeT2UzgtW1uK+sg0GsQg@mail.gmail.com>
+Message-ID: <CAMuHMdUVME6RnXkq-0FsUdH6-hqe5BqeT2UzgtW1uK+sg0GsQg@mail.gmail.com>
+Subject: Re: [PATCH] fbmem: Reject FB_ACTIVATE_KD_TEXT from userspace
 To:     Daniel Vetter <daniel@ffwll.ch>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
-        daniel.vetter@ffwll.ch, patrik.r.jakobsson@gmail.com,
-        dri-devel@lists.freedesktop.org,
+Cc:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
         Daniel Vetter <daniel.vetter@intel.com>,
-        linux-fbdev@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
-        linux-pci@vger.kernel.org
-References: <20230406132109.32050-1-tzimmermann@suse.de>
- <20230406132109.32050-3-tzimmermann@suse.de>
- <85282243-33a6-a311-0b50-a7edfc4c4c6e@gmx.de>
- <ZDVwa44NvIXWKWrv@phenom.ffwll.local>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <ZDVwa44NvIXWKWrv@phenom.ffwll.local>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:wNk8ymIJSnVUrrqOZhsgajV/p+XgewfUYGi4BYlBes3eXTxJ6JD
- 3aW3iyQpEElp8WZw0lfO8er5i+WeW0pZMxOVQYmEnw23WyqZp9pWgKmYRq94o70W5CkPvFL
- frwMCORlSD7WsvrY1MLyYUVC2KV4P2Njd8Kk7hVu0loqaL5jI3gMkqcnWB73GBlrU9DQXMf
- Z7GjRHTED3tOBCsI8smqw==
-UI-OutboundReport: notjunk:1;M01:P0:Kl8LYog+ef0=;yv+I94+n3Xs+A96TwW2Va34/QX0
- P+hHhnccnHj2FpuogIbSMU7F+kQHxX04OYc+Doarg6lYazKQ/cyciCqzYq5Zn4i/xMugevjuU
- KfAV2R1Pp6esI5x2O3mj0xWiHVoiVOYLItVn/L9QbU8mwGHZWHhfGPG586C7Jx/lYaE+dZE5f
- tCK1ci8uIWN0ulUzOWI58Qv78RFZ8kPYV10uf/tYmHyoqblBg2vvG+JqVeFxvCkof4QP1Ol1E
- 8/jJvrqCqSOc+sJAFQiVYg6a39HPq5fSxoXQRnqbfFedm4D2fVzmuYMH00jXzgNNHHRGJmMvA
- 8nWUVgyEX6NkEU5bTXzOOglTOBPaaShxPDS4O1B2NmSJvPGFE0CKnPGCn5L/RTmVw/ebcwgKY
- YwG3W8btksDSk7aaI2doBUd0NEgkblD5qMfqbgcN8Zm6mNXPVv3Iqhr4ihfKQrGfvcUTXinfF
- hiTPuhlIi4ieHU+iLtvyWeBTmCyj4k0Bz7yeECJrNFuV2zMB2TBzcb74OXnwNaJS2j7iZTMMb
- NohVPUvsmDaxq5EuCKIi8lnspvkUBxS2kTogB41gDT0kbBjV37W664UHY8O8pjcyOpM060LCB
- 38gjTx074myGrDanZ+06POTTNNeUOu21WetLckErqL0Q/UTtFjOIBRe/HELTxnoyOHt63olGi
- 1RjTGvPAEJcgvKkdKW4XVAG0uOtg2T0mImcorne8EosTBpFYdYeyB/yKGWHu3A9SpPZZsmI6f
- luZ/RQl0sKs/HAAmx5ZkJKLZBEkxGWuISgEnZo1zSL/1lxvXGaXmgeCFkx9nOCT2bjKMjSeZN
- WEpMehtBNW+9+pKDaMjZ8UaEhc6w2tOIRkPgB7OBTSCJMjfjQv2vKA2HQv7K6nQrXvQa/kEy7
- 5y08qsBZXwrF8myL0T49LmqWYSn86S8xuyOBO8ns91Z24RY6VPcZuxtBOAWjwQbk+WejNmhZk
- H+ptpw==
+        Alex Deucher <alexander.deucher@amd.com>, shlomo@fastmail.com,
+        =?UTF-8?Q?Michel_D=C3=A4nzer?= <michel@daenzer.net>,
+        =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        David Airlie <airlied@linux.ie>,
+        dri-devel@lists.freedesktop.org, stable@vger.kernel.org,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Nathan Chancellor <natechancellor@gmail.com>,
+        Qiujun Huang <hqjagain@gmail.com>,
+        Peter Rosin <peda@axentia.se>, linux-fbdev@vger.kernel.org,
+        Helge Deller <deller@gmx.de>, Sam Ravnborg <sam@ravnborg.org>,
+        Samuel Thibault <samuel.thibault@ens-lyon.org>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        Shigeru Yoshida <syoshida@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 4/11/23 16:36, Daniel Vetter wrote:
-> On Fri, Apr 07, 2023 at 10:54:00PM +0200, Helge Deller wrote:
->> On 4/6/23 15:21, Thomas Zimmermann wrote:
->>> From: Daniel Vetter <daniel.vetter@ffwll.ch>
->>>
->>> Since vgaarb has been promoted to be a core piece of the pci subsystem
->>> we don't have to open code random guesses anymore, we actually know
->>> this in a platform agnostic way, and there's no need for an x86
->>> specific hack. See also commit 1d38fe6ee6a8 ("PCI/VGA: Move vgaarb to
->>> drivers/pci")
->>>
->>> This should not result in any functional change, and the non-x86
->>> multi-gpu pci systems are probably rare enough to not matter (I don't
->>> know of any tbh). But it's a nice cleanup, so let's do it.
->>>
->>> There's been a few questions on previous iterations on dri-devel and
->>> irc:
->>>
->>> - fb_is_primary_device() seems to be yet another implementation of
->>>     this theme, and at least on x86 it checks for both
->>>     vga_default_device OR rom shadowing. There shouldn't ever be a cas=
-e
->>>     where rom shadowing gives any additional hints about the boot vga
->>>     device, but if there is then the default vga selection in vgaarb
->>>     should probably be fixed. And not special-case checks replicated a=
-ll
->>>     over.
->>>
->>> - Thomas also brought up that on most !x86 systems
->>>     fb_is_primary_device() returns 0, except on sparc/parisc. But thes=
-e
->>>     2 special cases are about platform specific devices and not pci, s=
-o
->>>     shouldn't have any interactions.
->>
->> Nearly all graphics cards on parisc machines are actually PCI cards,
->> but the way we handle the handover to graphics mode with STIcore doesn'=
-t
->> conflicts with your planned aperture changes.
->> So no problem as far as I can see for parisc...
->
-> Ah I thought sticore was some very special bus, if those can be pci card=
-s
+Hi Daniel,
 
-STI stands for "Standard Text Interface" [1], which is a API of ROM functi=
-ons
-to output text chars on a console. It's comparable to the text output func=
-tions
-in a PC-BIOS on x86 and dependend on the ROM it drives any supported card =
-which has
-a parisc ROM. So, STI supports cards on PCI & AGP busses, as well on older=
- GSC busses.
-[1] https://parisc.wiki.kernel.org/images-parisc/e/e3/Sti.pdf
+On Tue, Apr 11, 2023 at 3:44 PM Daniel Vetter <daniel@ffwll.ch> wrote:
+> On Tue, Apr 04, 2023 at 09:39:34PM +0200, Daniel Vetter wrote:
+> > This is an oversight from dc5bdb68b5b3 ("drm/fb-helper: Fix vt
+> > restore") - I failed to realize that nasty userspace could set this.
+> >
+> > It's not pretty to mix up kernel-internal and userspace uapi flags
+> > like this, but since the entire fb_var_screeninfo structure is uapi
+> > we'd need to either add a new parameter to the ->fb_set_par callback
+> > and fb_set_par() function, which has a _lot_ of users. Or some other
+> > fairly ugly side-channel int fb_info. Neither is a pretty prospect.
+> >
+> > Instead just correct the issue at hand by filtering out this
+> > kernel-internal flag in the ioctl handling code.
+> >
+> > Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+> > Fixes: dc5bdb68b5b3 ("drm/fb-helper: Fix vt restore")
 
-> underneath then I guess some cleanup eventually might be a good idea? Fo=
-r
-> anything with a pci bus it's rather strange when vgaarb and
-> fb_is_primary_device() aren't a match ...
+> An Ack on this (or a better idea) would be great, so I can stuff it into
+> -fixes.
 
-There is no VGA on parisc, so there is no conflict. Cards come either with
-a parisc STI ROM to support text mode, or they will only be used as second=
-ary
-cards only.  The graphics mode is only done in userspace by specific drive=
-rs, e.g.
-by the X11 server in HP-UX.
-Even on x86 the BIOS will only show text output if the graphics card comes
-with a VGA-compatible BIOS.
+I don't understand what the original commit this fixes is doing anyway...
 
-Helge
+> > --- a/drivers/video/fbdev/core/fbmem.c
+> > +++ b/drivers/video/fbdev/core/fbmem.c
+> > @@ -1116,6 +1116,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+> >       case FBIOPUT_VSCREENINFO:
+> >               if (copy_from_user(&var, argp, sizeof(var)))
+> >                       return -EFAULT;
+> > +             /* only for kernel-internal use */
+> > +             var.activate &= ~FB_ACTIVATE_KD_TEXT;
+> >               console_lock();
+> >               lock_fb_info(info);
+> >               ret = fbcon_modechange_possible(info, &var);
+
+Perhaps FB_ACTIVATE_KD_TEXT should be removed (marked as
+reserved) from include/uapi/linux/fb.h, too?
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

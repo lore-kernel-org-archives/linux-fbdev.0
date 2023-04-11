@@ -2,200 +2,145 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48731C77B73
-	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Apr 2023 14:53:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6F69C77B6F
+	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Apr 2023 15:26:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229533AbjDKOxI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 11 Apr 2023 10:53:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44838 "EHLO
+        id S230110AbjDKP0f (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 11 Apr 2023 11:26:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42912 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229619AbjDKOxG (ORCPT
+        with ESMTP id S230116AbjDKP0Y (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 11 Apr 2023 10:53:06 -0400
-Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8CE8E2100
-        for <linux-fbdev@vger.kernel.org>; Tue, 11 Apr 2023 07:53:05 -0700 (PDT)
-Received: by mail-wr1-x432.google.com with SMTP id ffacd0b85a97d-2efbab42639so249113f8f.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 11 Apr 2023 07:53:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google; t=1681224784;
-        h=in-reply-to:content-disposition:mime-version:references
-         :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=8wYfQRjYQR6KiiVsiMP38j6p1H2avcNgJgbhRyR77o0=;
-        b=Xrye9L6+egunrS8ZViLvX9DoIvxBqXggrm776aN7Ob4wJVwBFrhEKLj4opV8fDjSBz
-         mOMPeojKmV34tE4YLN/oXHAoXqd9bgqOi85L5Nk6eWgQ8brYD5hLYdpNXHoWjBGIi4nI
-         NVtFnxcPtBnYlgYJVn1ID3/1mQkNEPTeVKZQw=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1681224784;
-        h=in-reply-to:content-disposition:mime-version:references
-         :mail-followup-to:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=8wYfQRjYQR6KiiVsiMP38j6p1H2avcNgJgbhRyR77o0=;
-        b=0GhQNazc6va/YeJAxyM7beJjc/lmEpA1YBNPtAjALlL/jBo90OnMS00TYvBlCtudpp
-         DCtG6dU0epWCbrMcNPliThosWODPtuBTpDVdqe/fMTIRWJRdsRaL04p58mrw2qAkcbEd
-         29fs0XY947Y7YayMnXDhdHVSZxSKEz1HieOpMMYs11ggNycFuURBhk4c17wrOb0/pSgm
-         rYrmQHj8O+2GqXkp29vvnCAMTFRhGhHCRzkmzV5NSUgVNR2UYNY86NhWVE1lZQj0piNr
-         eZ2X7Ru10SGZz5UoCZ6GNbzqj84h3N2kWSjcagKxy4V50BW49Hx9azZqg/C2FI/HvGsI
-         nCWA==
-X-Gm-Message-State: AAQBX9cLFAZkI67vg0chozgQq3c683oFUfaQy+EdKjYH/ayyqU23B3P7
-        vtSaQUPBL2QEBqrgdLch+GDF7w==
-X-Google-Smtp-Source: AKy350Z0+iYl0S2VFbfg+ISrGECyQpMtKqiE6vrnqkgiYcvblOEzIXfyXFOcNul0uFsvGltqNUYovw==
-X-Received: by 2002:a05:600c:3b06:b0:3f0:7652:dbb8 with SMTP id m6-20020a05600c3b0600b003f07652dbb8mr7978122wms.2.1681224783935;
-        Tue, 11 Apr 2023 07:53:03 -0700 (PDT)
-Received: from phenom.ffwll.local (212-51-149-33.fiber7.init7.net. [212.51.149.33])
-        by smtp.gmail.com with ESMTPSA id v18-20020a05600c471200b003ef71d7d64asm21446444wmo.6.2023.04.11.07.53.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Apr 2023 07:53:03 -0700 (PDT)
-Date:   Tue, 11 Apr 2023 16:53:01 +0200
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Sui Jingfeng <15330273260@189.cn>
-Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Sui Jingfeng <suijingfeng@loongson.cn>,
-        Li Yi <liyi@loongson.cn>, Helge Deller <deller@gmx.de>,
-        Lucas De Marchi <lucas.demarchi@intel.com>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
-Subject: Re: [PATCH] drm/fbdev-generic: fix potential out-of-bounds access
-Message-ID: <ZDV0Te65tSh4Q/vc@phenom.ffwll.local>
-Mail-Followup-To: Sui Jingfeng <15330273260@189.cn>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@gmail.com>,
-        Sui Jingfeng <suijingfeng@loongson.cn>, Li Yi <liyi@loongson.cn>,
-        Helge Deller <deller@gmx.de>,
-        Lucas De Marchi <lucas.demarchi@intel.com>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
-References: <20230409132110.494630-1-15330273260@189.cn>
+        Tue, 11 Apr 2023 11:26:24 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7550461B7;
+        Tue, 11 Apr 2023 08:26:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1681226748; i=deller@gmx.de;
+        bh=Wot2htN65pbIUsBwaKdvp7Q73WtMX1vVsGGvd6Rr4+A=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=OeNP3IYRJ5e68Wd6JAVzEFB0jyLgQ1CjOW2uGEjoJxkq++FEubmxfDc2z/Nr6kxnW
+         fpESzhm+p9QvyQVw/cSVdVhV8fd4LQ51M3PQPKyBW0bjGLVfHztVgq+P/n/K1TDKGd
+         xtrgHIKWGoQqOH4c72eP1py/aKflLZW66DEv8POqMO4XZ7Axp6e8Ps0VtuugIq1mQB
+         /VEX+WBboG+5pX+WWvBdsM0FZejsGZu3YP3WHjgrabt9xhhsR/qFnwswTXH8Ty+jiR
+         YoCV6DTa4/cCS+5lX+d4aJQyx16tCxcF2bhLfRzKu1OPQn4Un6WG+zN14gkJENGyqo
+         CoYeZdWJU12Sg==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.155.12]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MMGNC-1q3ElO2diI-00JHXo; Tue, 11
+ Apr 2023 17:25:48 +0200
+Message-ID: <83acd60f-4a42-25a9-afee-ca7919ee42a9@gmx.de>
+Date:   Tue, 11 Apr 2023 17:25:47 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230409132110.494630-1-15330273260@189.cn>
-X-Operating-System: Linux phenom 6.1.0-7-amd64 
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH v5 2/9] video/aperture: use generic code to figure out the
+ vga default device
+Content-Language: en-US
+To:     Daniel Vetter <daniel@ffwll.ch>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
+        daniel.vetter@ffwll.ch, patrik.r.jakobsson@gmail.com,
+        dri-devel@lists.freedesktop.org,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        linux-fbdev@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
+        linux-pci@vger.kernel.org
+References: <20230406132109.32050-1-tzimmermann@suse.de>
+ <20230406132109.32050-3-tzimmermann@suse.de>
+ <85282243-33a6-a311-0b50-a7edfc4c4c6e@gmx.de>
+ <ZDVwa44NvIXWKWrv@phenom.ffwll.local>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <ZDVwa44NvIXWKWrv@phenom.ffwll.local>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:wNk8ymIJSnVUrrqOZhsgajV/p+XgewfUYGi4BYlBes3eXTxJ6JD
+ 3aW3iyQpEElp8WZw0lfO8er5i+WeW0pZMxOVQYmEnw23WyqZp9pWgKmYRq94o70W5CkPvFL
+ frwMCORlSD7WsvrY1MLyYUVC2KV4P2Njd8Kk7hVu0loqaL5jI3gMkqcnWB73GBlrU9DQXMf
+ Z7GjRHTED3tOBCsI8smqw==
+UI-OutboundReport: notjunk:1;M01:P0:Kl8LYog+ef0=;yv+I94+n3Xs+A96TwW2Va34/QX0
+ P+hHhnccnHj2FpuogIbSMU7F+kQHxX04OYc+Doarg6lYazKQ/cyciCqzYq5Zn4i/xMugevjuU
+ KfAV2R1Pp6esI5x2O3mj0xWiHVoiVOYLItVn/L9QbU8mwGHZWHhfGPG586C7Jx/lYaE+dZE5f
+ tCK1ci8uIWN0ulUzOWI58Qv78RFZ8kPYV10uf/tYmHyoqblBg2vvG+JqVeFxvCkof4QP1Ol1E
+ 8/jJvrqCqSOc+sJAFQiVYg6a39HPq5fSxoXQRnqbfFedm4D2fVzmuYMH00jXzgNNHHRGJmMvA
+ 8nWUVgyEX6NkEU5bTXzOOglTOBPaaShxPDS4O1B2NmSJvPGFE0CKnPGCn5L/RTmVw/ebcwgKY
+ YwG3W8btksDSk7aaI2doBUd0NEgkblD5qMfqbgcN8Zm6mNXPVv3Iqhr4ihfKQrGfvcUTXinfF
+ hiTPuhlIi4ieHU+iLtvyWeBTmCyj4k0Bz7yeECJrNFuV2zMB2TBzcb74OXnwNaJS2j7iZTMMb
+ NohVPUvsmDaxq5EuCKIi8lnspvkUBxS2kTogB41gDT0kbBjV37W664UHY8O8pjcyOpM060LCB
+ 38gjTx074myGrDanZ+06POTTNNeUOu21WetLckErqL0Q/UTtFjOIBRe/HELTxnoyOHt63olGi
+ 1RjTGvPAEJcgvKkdKW4XVAG0uOtg2T0mImcorne8EosTBpFYdYeyB/yKGWHu3A9SpPZZsmI6f
+ luZ/RQl0sKs/HAAmx5ZkJKLZBEkxGWuISgEnZo1zSL/1lxvXGaXmgeCFkx9nOCT2bjKMjSeZN
+ WEpMehtBNW+9+pKDaMjZ8UaEhc6w2tOIRkPgB7OBTSCJMjfjQv2vKA2HQv7K6nQrXvQa/kEy7
+ 5y08qsBZXwrF8myL0T49LmqWYSn86S8xuyOBO8ns91Z24RY6VPcZuxtBOAWjwQbk+WejNmhZk
+ H+ptpw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, Apr 09, 2023 at 09:21:10PM +0800, Sui Jingfeng wrote:
-> From: Sui Jingfeng <suijingfeng@loongson.cn>
-> 
-> We should setting the screen buffer size according to the screen's actual
-> size, rather than the size of the GEM object backing the front framebuffer.
-> The size of GEM buffer is page size aligned, while the size of active area
-> of a specific screen is *NOT* necessarily page size aliged. For example,
-> 1680x1050, 1600x900, 1440x900, 800x6000 etc. In those case, the damage rect
-> computed by drm_fb_helper_memory_range_to_clip() goes out of bottom bounds
-> of the display.
-> 
-> Run fbdev test of IGT on a x86+ast2400 platform with 1680x1050 resolution
-> will cause the system hang with the following call trace:
-> 
->   Oops: 0000 [#1] PREEMPT SMP PTI
->   [IGT] fbdev: starting subtest eof
->   Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
->   [IGT] fbdev: starting subtest nullptr
-> 
->   RIP: 0010:memcpy_erms+0xa/0x20
->   RSP: 0018:ffffa17d40167d98 EFLAGS: 00010246
->   RAX: ffffa17d4eb7fa80 RBX: ffffa17d40e0aa80 RCX: 00000000000014c0
->   RDX: 0000000000001a40 RSI: ffffa17d40e0b000 RDI: ffffa17d4eb80000
->   RBP: ffffa17d40167e20 R08: 0000000000000000 R09: ffff89522ecff8c0
->   R10: ffffa17d4e4c5000 R11: 0000000000000000 R12: ffffa17d4eb7fa80
->   R13: 0000000000001a40 R14: 000000000000041a R15: ffffa17d40167e30
->   FS:  0000000000000000(0000) GS:ffff895257380000(0000) knlGS:0000000000000000
->   CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
->   CR2: ffffa17d40e0b000 CR3: 00000001eaeca006 CR4: 00000000001706e0
->   Call Trace:
->    <TASK>
->    ? drm_fbdev_generic_helper_fb_dirty+0x207/0x330 [drm_kms_helper]
->    drm_fb_helper_damage_work+0x8f/0x170 [drm_kms_helper]
->    process_one_work+0x21f/0x430
->    worker_thread+0x4e/0x3c0
->    ? __pfx_worker_thread+0x10/0x10
->    kthread+0xf4/0x120
->    ? __pfx_kthread+0x10/0x10
->    ret_from_fork+0x2c/0x50
->    </TASK>
->   CR2: ffffa17d40e0b000
->   ---[ end trace 0000000000000000 ]---
-> 
-> We also add trival code in this patch to restrict the damage rect beyond
-> the last line of the framebuffer.
+On 4/11/23 16:36, Daniel Vetter wrote:
+> On Fri, Apr 07, 2023 at 10:54:00PM +0200, Helge Deller wrote:
+>> On 4/6/23 15:21, Thomas Zimmermann wrote:
+>>> From: Daniel Vetter <daniel.vetter@ffwll.ch>
+>>>
+>>> Since vgaarb has been promoted to be a core piece of the pci subsystem
+>>> we don't have to open code random guesses anymore, we actually know
+>>> this in a platform agnostic way, and there's no need for an x86
+>>> specific hack. See also commit 1d38fe6ee6a8 ("PCI/VGA: Move vgaarb to
+>>> drivers/pci")
+>>>
+>>> This should not result in any functional change, and the non-x86
+>>> multi-gpu pci systems are probably rare enough to not matter (I don't
+>>> know of any tbh). But it's a nice cleanup, so let's do it.
+>>>
+>>> There's been a few questions on previous iterations on dri-devel and
+>>> irc:
+>>>
+>>> - fb_is_primary_device() seems to be yet another implementation of
+>>>     this theme, and at least on x86 it checks for both
+>>>     vga_default_device OR rom shadowing. There shouldn't ever be a cas=
+e
+>>>     where rom shadowing gives any additional hints about the boot vga
+>>>     device, but if there is then the default vga selection in vgaarb
+>>>     should probably be fixed. And not special-case checks replicated a=
+ll
+>>>     over.
+>>>
+>>> - Thomas also brought up that on most !x86 systems
+>>>     fb_is_primary_device() returns 0, except on sparc/parisc. But thes=
+e
+>>>     2 special cases are about platform specific devices and not pci, s=
+o
+>>>     shouldn't have any interactions.
+>>
+>> Nearly all graphics cards on parisc machines are actually PCI cards,
+>> but the way we handle the handover to graphics mode with STIcore doesn'=
+t
+>> conflicts with your planned aperture changes.
+>> So no problem as far as I can see for parisc...
+>
+> Ah I thought sticore was some very special bus, if those can be pci card=
+s
 
-Nice catch!
+STI stands for "Standard Text Interface" [1], which is a API of ROM functi=
+ons
+to output text chars on a console. It's comparable to the text output func=
+tions
+in a PC-BIOS on x86 and dependend on the ROM it drives any supported card =
+which has
+a parisc ROM. So, STI supports cards on PCI & AGP busses, as well on older=
+ GSC busses.
+[1] https://parisc.wiki.kernel.org/images-parisc/e/e3/Sti.pdf
 
-> 
-> Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
-> ---
->  drivers/gpu/drm/drm_fb_helper.c     | 2 +-
->  drivers/gpu/drm/drm_fbdev_generic.c | 2 ++
->  2 files changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-> index 64458982be40..a2b749372759 100644
-> --- a/drivers/gpu/drm/drm_fb_helper.c
-> +++ b/drivers/gpu/drm/drm_fb_helper.c
-> @@ -645,7 +645,7 @@ static void drm_fb_helper_memory_range_to_clip(struct fb_info *info, off_t off,
->  	u32 x1 = 0;
->  	u32 y1 = off / info->fix.line_length;
->  	u32 x2 = info->var.xres;
-> -	u32 y2 = DIV_ROUND_UP(end, info->fix.line_length);
-> +	u32 y2 = min_t(u32, DIV_ROUND_UP(end, info->fix.line_length), info->var.yres);
+> underneath then I guess some cleanup eventually might be a good idea? Fo=
+r
+> anything with a pci bus it's rather strange when vgaarb and
+> fb_is_primary_device() aren't a match ...
 
-So for additional robustness I think it'd be good if we change the entire
-computation here to use drm_framebuffer data and not fb_info data, because
-fundamentally that's what the drm kms code consumes. It should all match
-anyway, but I think it makes the code more obviously correct.
+There is no VGA on parisc, so there is no conflict. Cards come either with
+a parisc STI ROM to support text mode, or they will only be used as second=
+ary
+cards only.  The graphics mode is only done in userspace by specific drive=
+rs, e.g.
+by the X11 server in HP-UX.
+Even on x86 the BIOS will only show text output if the graphics card comes
+with a VGA-compatible BIOS.
 
-So in the entire function instead of looking at fb_info->fix we should
-probably look at
-
-	struct drm_fb_helper *helper = info->par;
-
-And then helper->fb->pitches[0] and helper->fb->height.
-
-If you agree would be great if you can please respin with that (and the
-commit message augmented to explain why we do the change)?
->  
->  	if ((y2 - y1) == 1) {
->  		/*
-> diff --git a/drivers/gpu/drm/drm_fbdev_generic.c b/drivers/gpu/drm/drm_fbdev_generic.c
-> index 8e5148bf40bb..a6daecb5f640 100644
-> --- a/drivers/gpu/drm/drm_fbdev_generic.c
-> +++ b/drivers/gpu/drm/drm_fbdev_generic.c
-> @@ -95,6 +95,8 @@ static int drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
->  	fb_helper->fb = buffer->fb;
->  
->  	screen_size = buffer->gem->size;
-
-I guess you forgot to remove this line here? Also I'm not understanding
-why this matters, I think you're fix only needs the above chunk, not this
-one? If I got this right then please drop this part, there's drivers which
-only use drm_fb_helper.c but not drm_fbdev_generic.c, and from what I can
-tell they all still set the gem buffer size here.
-
-If otoh we need this too, then there's a few more places that need to be
-fixed.
-
-> +	screen_size = sizes->surface_height * buffer->fb->pitches[0];
-> +
->  	screen_buffer = vzalloc(screen_size);
->  	if (!screen_buffer) {
->  		ret = -ENOMEM;
-
-Cheers, Daniel
-
-> -- 
-> 2.25.1
-> 
-
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Helge

@@ -2,134 +2,114 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34C96C76196
-	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Apr 2023 14:25:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22314C76196
+	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Apr 2023 14:36:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230124AbjDKOZm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 11 Apr 2023 10:25:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34656 "EHLO
+        id S229885AbjDKOge (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 11 Apr 2023 10:36:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52088 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229725AbjDKOZl (ORCPT
+        with ESMTP id S229903AbjDKOgd (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 11 Apr 2023 10:25:41 -0400
-Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com [IPv6:2a00:1450:4864:20::32d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 40559448B
-        for <linux-fbdev@vger.kernel.org>; Tue, 11 Apr 2023 07:25:28 -0700 (PDT)
-Received: by mail-wm1-x32d.google.com with SMTP id 5b1f17b1804b1-3f05f61adbeso1567105e9.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 11 Apr 2023 07:25:28 -0700 (PDT)
+        Tue, 11 Apr 2023 10:36:33 -0400
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9BC562134
+        for <linux-fbdev@vger.kernel.org>; Tue, 11 Apr 2023 07:36:31 -0700 (PDT)
+Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-3f05f61adbeso1576345e9.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 11 Apr 2023 07:36:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google; t=1681223127;
+        d=ffwll.ch; s=google; t=1681223790;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=nPl52zwZFqxFoLbQW3KmJiSTSJqHgYxpwyxrA8GGUVI=;
-        b=aou7CDIrnNiNpRZ9vrXCkgg9JQSL8DyPPKGiBu7gOtvSFEu3i1aIK7uo7jYY9nu5PL
-         QViPwUe67gMScvFwVG6h0pAT1DdDtr4aiabj0CRfwzxcoNGWEfqyeYQUWcFMZOpdvnT1
-         2/EqP3ka6kgSyVhAt0WKyAEB41yaTZN+aerf4=
+        bh=F/9s4MmBtHe5NsXKH5rsLF1epbFuabZfYBtz2rgF3IM=;
+        b=AmK+ahYjvW6kcPI+mQhwW8Y+6uTX+p+DedJ4+XA7DXU/ms+JuRXcnfZNXaardwQqvD
+         omIQWsGFb5a6X0Jz/KzGa+xx3SOV0eokfeDpfRppsTp41xyU8QY+T708i2wn/nIl6Hcn
+         qt6f4PBGTeqm84d54siqW6hzbkWAscgeGzHQQ=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1681223127;
+        d=1e100.net; s=20210112; t=1681223790;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=nPl52zwZFqxFoLbQW3KmJiSTSJqHgYxpwyxrA8GGUVI=;
-        b=QqVTp2MVYpKby3wgTobynUCRiQ1Byjy16zMmdtRAbg+clXj6yRrVpV3zJJ6irPXXmM
-         au6k1MhWrp1372kdHtoM+1CYEXXUBmC7MnkWEhI+qq39HITa4EKcb3hWcIM/A8ZpmvEj
-         olYpiEr690DXAcq5UYR+g+LmTCbvlXsHHBfggBKVVkTfNwSysRkoh5LeKvCJH1jWRHOb
-         3pEeCgb2opP3Wsj+nHFRNp/+ffkJzls9ZPo1U2NNxDt6tdLzaWkMW4B1SecyAsw5J9vf
-         MrY05tmA5Sm81rb+boTY5cS6IwC8YDvdgw/7/9U8nnFlxcGo6TjiPKDXvFpcMGBPMBaI
-         hGLA==
-X-Gm-Message-State: AAQBX9cPEqA5Jw0uBYIocAXTK8Gvam4ghUoX5aKkDbh5KEA17f3hiI8q
-        mCzXpYU8aee5cfrry3X54iG/sA==
-X-Google-Smtp-Source: AKy350bVqa3FiK6rDx8e6zZqGaQGSFUXTkbWlEiv8uT/S5y7XR09QNJJqNpC+LA2Z2yQSacn3USH9w==
-X-Received: by 2002:a05:600c:4709:b0:3f0:84b7:22cf with SMTP id v9-20020a05600c470900b003f084b722cfmr6036840wmo.2.1681223126745;
-        Tue, 11 Apr 2023 07:25:26 -0700 (PDT)
+        bh=F/9s4MmBtHe5NsXKH5rsLF1epbFuabZfYBtz2rgF3IM=;
+        b=HGLMjYu2qSFdm//xIZOHhLlOVTNIG7GqrMwyYUsYorpJIWVAL9V9BbenN94Gu/JmJg
+         rRocb0X8YApf0mvOaw4iIVSDqK/RNdgMb/4IJyqmVtIxGAvZCnD/WVMA0+/1k4s7OqRO
+         hDFfcQT4cBOEdoSP+Ii9N50hF7yPR3HlMX1R0SA0UJ9sUPMCOnvaFGV9VPesCb6Z3044
+         DiIbgvrPFgvcOjKFsWuAAmBWIh8tKNqAVc3jG3nquhkr0vDI7ssTzaUs0lvNVhensamd
+         wFWItsZDGPZMUmKm/3f2hqUf931nfxhxYQHhAu/lFCsyw6b9knqvd8mqcIo0p+8Lgue7
+         kJow==
+X-Gm-Message-State: AAQBX9dp0dHXq5kZ+qXtKqR52WwgtNtWl1PoIERY8XuRCdEaPo812+EZ
+        cBeD6ARJP+O0t5d2pTHCgWuLnw==
+X-Google-Smtp-Source: AKy350ZhwGv7Q0l6A1XUuXwX4y+iD6ltzBT4TmO43D5j7OgvC2eOzix0bm6ngX4Kwlgmlg1Fl/4AfA==
+X-Received: by 2002:a05:600c:1c1e:b0:3f0:5a8c:fee4 with SMTP id j30-20020a05600c1c1e00b003f05a8cfee4mr8043334wms.4.1681223790085;
+        Tue, 11 Apr 2023 07:36:30 -0700 (PDT)
 Received: from phenom.ffwll.local (212-51-149-33.fiber7.init7.net. [212.51.149.33])
-        by smtp.gmail.com with ESMTPSA id g6-20020a05600c4ec600b003edc4788fa0sm21560834wmq.2.2023.04.11.07.25.25
+        by smtp.gmail.com with ESMTPSA id h18-20020a05600c315200b003ef6708bc1esm21612534wmo.43.2023.04.11.07.36.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Apr 2023 07:25:26 -0700 (PDT)
-Date:   Tue, 11 Apr 2023 16:25:24 +0200
+        Tue, 11 Apr 2023 07:36:29 -0700 (PDT)
+Date:   Tue, 11 Apr 2023 16:36:27 +0200
 From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
-        linux-fbdev@vger.kernel.org, Shigeru Yoshida <syoshida@redhat.com>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        David Airlie <airlied@linux.ie>,
+To:     Helge Deller <deller@gmx.de>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
+        daniel.vetter@ffwll.ch, patrik.r.jakobsson@gmail.com,
         dri-devel@lists.freedesktop.org,
         Daniel Vetter <daniel.vetter@intel.com>,
-        Sam Ravnborg <sam@ravnborg.org>, Helge Deller <deller@gmx.de>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Samuel Thibault <samuel.thibault@ens-lyon.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>,
-        shlomo@fastmail.com, Nathan Chancellor <natechancellor@gmail.com>,
-        stable@vger.kernel.org,
-        Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Peter Rosin <peda@axentia.se>,
-        Qiujun Huang <hqjagain@gmail.com>
-Subject: Re: [PATCH] fbmem: Reject FB_ACTIVATE_KD_TEXT from userspace
-Message-ID: <ZDVt1Koi39w7aQE8@phenom.ffwll.local>
-References: <20230404193934.472457-1-daniel.vetter@ffwll.ch>
- <874jpmtt1v.fsf@minerva.mail-host-address-is-not-set>
+        linux-fbdev@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
+        linux-pci@vger.kernel.org
+Subject: Re: [PATCH v5 2/9] video/aperture: use generic code to figure out
+ the vga default device
+Message-ID: <ZDVwa44NvIXWKWrv@phenom.ffwll.local>
+References: <20230406132109.32050-1-tzimmermann@suse.de>
+ <20230406132109.32050-3-tzimmermann@suse.de>
+ <85282243-33a6-a311-0b50-a7edfc4c4c6e@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <874jpmtt1v.fsf@minerva.mail-host-address-is-not-set>
+In-Reply-To: <85282243-33a6-a311-0b50-a7edfc4c4c6e@gmx.de>
 X-Operating-System: Linux phenom 6.1.0-7-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Apr 11, 2023 at 04:03:24PM +0200, Javier Martinez Canillas wrote:
-> Daniel Vetter <daniel.vetter@ffwll.ch> writes:
+On Fri, Apr 07, 2023 at 10:54:00PM +0200, Helge Deller wrote:
+> On 4/6/23 15:21, Thomas Zimmermann wrote:
+> > From: Daniel Vetter <daniel.vetter@ffwll.ch>
+> > 
+> > Since vgaarb has been promoted to be a core piece of the pci subsystem
+> > we don't have to open code random guesses anymore, we actually know
+> > this in a platform agnostic way, and there's no need for an x86
+> > specific hack. See also commit 1d38fe6ee6a8 ("PCI/VGA: Move vgaarb to
+> > drivers/pci")
+> > 
+> > This should not result in any functional change, and the non-x86
+> > multi-gpu pci systems are probably rare enough to not matter (I don't
+> > know of any tbh). But it's a nice cleanup, so let's do it.
+> > 
+> > There's been a few questions on previous iterations on dri-devel and
+> > irc:
+> > 
+> > - fb_is_primary_device() seems to be yet another implementation of
+> >    this theme, and at least on x86 it checks for both
+> >    vga_default_device OR rom shadowing. There shouldn't ever be a case
+> >    where rom shadowing gives any additional hints about the boot vga
+> >    device, but if there is then the default vga selection in vgaarb
+> >    should probably be fixed. And not special-case checks replicated all
+> >    over.
+> > 
+> > - Thomas also brought up that on most !x86 systems
+> >    fb_is_primary_device() returns 0, except on sparc/parisc. But these
+> >    2 special cases are about platform specific devices and not pci, so
+> >    shouldn't have any interactions.
 > 
-> > This is an oversight from dc5bdb68b5b3 ("drm/fb-helper: Fix vt
-> > restore") - I failed to realize that nasty userspace could set this.
-> >
-> > It's not pretty to mix up kernel-internal and userspace uapi flags
-> > like this, but since the entire fb_var_screeninfo structure is uapi
-> > we'd need to either add a new parameter to the ->fb_set_par callback
-> > and fb_set_par() function, which has a _lot_ of users. Or some other
-> > fairly ugly side-channel int fb_info. Neither is a pretty prospect.
-> >
-> > Instead just correct the issue at hand by filtering out this
-> > kernel-internal flag in the ioctl handling code.
-> >
-> > Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-> > Fixes: dc5bdb68b5b3 ("drm/fb-helper: Fix vt restore")
-> 
-> [..]
-> 
-> > diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-> > index 875541ff185b..3fd95a79e4c3 100644
-> > --- a/drivers/video/fbdev/core/fbmem.c
-> > +++ b/drivers/video/fbdev/core/fbmem.c
-> > @@ -1116,6 +1116,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
-> >  	case FBIOPUT_VSCREENINFO:
-> >  		if (copy_from_user(&var, argp, sizeof(var)))
-> >  			return -EFAULT;
-> > +		/* only for kernel-internal use */
-> > +		var.activate &= ~FB_ACTIVATE_KD_TEXT;
-> >  		console_lock();
-> 
-> I don't have a better idea on how to fix this and as you said the whole
-> struct fb_var_screeninfo is an uAPI anyways...
-> 
-> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+> Nearly all graphics cards on parisc machines are actually PCI cards,
+> but the way we handle the handover to graphics mode with STIcore doesn't
+> conflicts with your planned aperture changes.
+> So no problem as far as I can see for parisc...
 
-Thanks for taking a look, merged to drm-misc-fixes.
-
-> 
-> -- 
-> Best regards,
-> 
-> Javier Martinez Canillas
-> Core Platforms
-> Red Hat
-> 
-
+Ah I thought sticore was some very special bus, if those can be pci cards
+underneath then I guess some cleanup eventually might be a good idea? For
+anything with a pci bus it's rather strange when vgaarb and
+fb_is_primary_device() aren't a match ...
+-Daniel
 -- 
 Daniel Vetter
 Software Engineer, Intel Corporation

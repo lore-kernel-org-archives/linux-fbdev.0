@@ -2,130 +2,140 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F36A2C77B70
-	for <linux-fbdev@archiver.kernel.org>; Sun,  9 Apr 2023 13:21:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3866EC7619A
+	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Apr 2023 08:09:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229552AbjDINVS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 9 Apr 2023 09:21:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33528 "EHLO
+        id S229916AbjDKIJG convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 11 Apr 2023 04:09:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47450 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229462AbjDINVR (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 9 Apr 2023 09:21:17 -0400
-Received: from 189.cn (ptr.189.cn [183.61.185.101])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 7353B422F;
-        Sun,  9 Apr 2023 06:21:15 -0700 (PDT)
-HMM_SOURCE_IP: 10.64.8.41:37240.250830095
-HMM_ATTACHE_NUM: 0000
-HMM_SOURCE_TYPE: SMTP
-Received: from clientip-114.242.206.180 (unknown [10.64.8.41])
-        by 189.cn (HERMES) with SMTP id 183631001F8;
-        Sun,  9 Apr 2023 21:21:13 +0800 (CST)
-Received: from  ([114.242.206.180])
-        by gateway-151646-dep-7b48884fd-bkw2h with ESMTP id dcd59a4b78b04d9ea815ada68b5e12f9 for maarten.lankhorst@linux.intel.com;
-        Sun, 09 Apr 2023 21:21:14 CST
-X-Transaction-ID: dcd59a4b78b04d9ea815ada68b5e12f9
-X-Real-From: 15330273260@189.cn
-X-Receive-IP: 114.242.206.180
-X-MEDUSA-Status: 0
-Sender: 15330273260@189.cn
-From:   Sui Jingfeng <15330273260@189.cn>
-To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Sui Jingfeng <suijingfeng@loongson.cn>,
-        Li Yi <liyi@loongson.cn>, Helge Deller <deller@gmx.de>,
-        Lucas De Marchi <lucas.demarchi@intel.com>
-Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
-Subject: [PATCH] drm/fbdev-generic: fix potential out-of-bounds access
-Date:   Sun,  9 Apr 2023 21:21:10 +0800
-Message-Id: <20230409132110.494630-1-15330273260@189.cn>
-X-Mailer: git-send-email 2.25.1
+        with ESMTP id S229794AbjDKIJF (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 11 Apr 2023 04:09:05 -0400
+Received: from mail-yb1-f175.google.com (mail-yb1-f175.google.com [209.85.219.175])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DCCA030D6;
+        Tue, 11 Apr 2023 01:09:01 -0700 (PDT)
+Received: by mail-yb1-f175.google.com with SMTP id z9so7150298ybs.9;
+        Tue, 11 Apr 2023 01:09:01 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1681200541;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=hALJfm4jnccIo090MDgna4b/Z74t0kji7w+cuP7uYXI=;
+        b=diOdfJ+5MEbvvS+d4irokqTEqdfQy/cDAeLGlnQpYEBJRVx+fwr91Clxi5Dbl6Zbd2
+         KQynU9XXtmCnAGJ3FSZbWyMsCNJtu+w8vFeb28fqPFiWd6a7zgA6o31yc/3oQ+gRwtRb
+         CT9C+lVrZuo0vT5ewGl2ycmwjIQG8zCH0Vz02aIpfTFliF7t8CEzd1uDL1M4V3vMen1y
+         6uKN6mi4lnW0WG45shxTfttZUwN8rzLoWzTDAMWrWDj5HQufTEvCZZEzgKxtfrGI8EgM
+         SEl5isF62Hn/ozwwKCAG5V4c3Epb/4gg785CaSH9hSn7mwTaoT6gen9fIJFQlTkcKVIx
+         9U9A==
+X-Gm-Message-State: AAQBX9eR0O7zjPzIIyfdViK5jTktrSRJ/1x278OX0tGZPITcw259ZK4n
+        eoL5i+jnbaPwfqwDZ54cnicJOMp+zztoUg==
+X-Google-Smtp-Source: AKy350ZKl290x9Uv5XUDA4jbcsgDvbpvRrqTTEJs0QkosRLBLV3Bj5NjStNJthQd6VGt+sQ4vVGl0Q==
+X-Received: by 2002:a05:6902:102c:b0:b8c:4e00:2136 with SMTP id x12-20020a056902102c00b00b8c4e002136mr8450910ybt.27.1681200540827;
+        Tue, 11 Apr 2023 01:09:00 -0700 (PDT)
+Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com. [209.85.128.176])
+        by smtp.gmail.com with ESMTPSA id d191-20020a25e6c8000000b00b784b00772esm3503422ybh.50.2023.04.11.01.09.00
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 11 Apr 2023 01:09:00 -0700 (PDT)
+Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-54ee108142eso146195987b3.2;
+        Tue, 11 Apr 2023 01:09:00 -0700 (PDT)
+X-Received: by 2002:a81:e401:0:b0:54c:19a6:480 with SMTP id
+ r1-20020a81e401000000b0054c19a60480mr7173247ywl.4.1681200539960; Tue, 11 Apr
+ 2023 01:08:59 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20230406143019.6709-1-tzimmermann@suse.de> <20230406143019.6709-2-tzimmermann@suse.de>
+In-Reply-To: <20230406143019.6709-2-tzimmermann@suse.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Tue, 11 Apr 2023 10:08:47 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUfViWzPbB+GcGUwxmGNxAohfq71Jed3DzS=Cb+gBzotg@mail.gmail.com>
+Message-ID: <CAMuHMdUfViWzPbB+GcGUwxmGNxAohfq71Jed3DzS=Cb+gBzotg@mail.gmail.com>
+Subject: Re: [PATCH v2 01/19] fbdev: Prepare generic architecture helpers
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     arnd@arndb.de, daniel.vetter@ffwll.ch, deller@gmx.de,
+        javierm@redhat.com, gregkh@linuxfoundation.org,
+        linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        linux-snps-arc@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+        sparclinux@vger.kernel.org, x86@kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Sui Jingfeng <suijingfeng@loongson.cn>
+Hi Thomas,
 
-We should setting the screen buffer size according to the screen's actual
-size, rather than the size of the GEM object backing the front framebuffer.
-The size of GEM buffer is page size aligned, while the size of active area
-of a specific screen is *NOT* necessarily page size aliged. For example,
-1680x1050, 1600x900, 1440x900, 800x6000 etc. In those case, the damage rect
-computed by drm_fb_helper_memory_range_to_clip() goes out of bottom bounds
-of the display.
+On Thu, Apr 6, 2023 at 4:30 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Generic implementations of fb_pgprotect() and fb_is_primary_device()
+> have been in the source code for a long time. Prepare the header file
+> to make use of them.
+>
+> Improve the code by using an inline function for fb_pgprotect()
+> and by removing include statements. The default mode set by
+> fb_pgprotect() is now writecombine, which is what most platforms
+> want.
+>
+> Symbols are protected by preprocessor guards. Architectures that
+> provide a symbol need to define a preprocessor token of the same
+> name and value. Otherwise the header file will provide a generic
+> implementation. This pattern has been taken from <asm/io.h>.
+>
+> v2:
+>         *  use writecombine mappings by default (Arnd)
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-Run fbdev test of IGT on a x86+ast2400 platform with 1680x1050 resolution
-will cause the system hang with the following call trace:
+Thanks for your patch!
 
-  Oops: 0000 [#1] PREEMPT SMP PTI
-  [IGT] fbdev: starting subtest eof
-  Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
-  [IGT] fbdev: starting subtest nullptr
+> --- a/include/asm-generic/fb.h
+> +++ b/include/asm-generic/fb.h
+> @@ -1,13 +1,32 @@
+>  /* SPDX-License-Identifier: GPL-2.0 */
+> +
+>  #ifndef __ASM_GENERIC_FB_H_
+>  #define __ASM_GENERIC_FB_H_
+> -#include <linux/fb.h>
+>
+> -#define fb_pgprotect(...) do {} while (0)
+> +/*
+> + * Only include this header file from your architecture's <asm/fb.h>.
+> + */
+> +
+> +#include <asm/page.h>
+> +
+> +struct fb_info;
+> +struct file;
+> +
+> +#ifndef fb_pgprotect
+> +#define fb_pgprotect fb_pgprotect
+> +static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
+> +                               unsigned long off)
 
-  RIP: 0010:memcpy_erms+0xa/0x20
-  RSP: 0018:ffffa17d40167d98 EFLAGS: 00010246
-  RAX: ffffa17d4eb7fa80 RBX: ffffa17d40e0aa80 RCX: 00000000000014c0
-  RDX: 0000000000001a40 RSI: ffffa17d40e0b000 RDI: ffffa17d4eb80000
-  RBP: ffffa17d40167e20 R08: 0000000000000000 R09: ffff89522ecff8c0
-  R10: ffffa17d4e4c5000 R11: 0000000000000000 R12: ffffa17d4eb7fa80
-  R13: 0000000000001a40 R14: 000000000000041a R15: ffffa17d40167e30
-  FS:  0000000000000000(0000) GS:ffff895257380000(0000) knlGS:0000000000000000
-  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-  CR2: ffffa17d40e0b000 CR3: 00000001eaeca006 CR4: 00000000001706e0
-  Call Trace:
-   <TASK>
-   ? drm_fbdev_generic_helper_fb_dirty+0x207/0x330 [drm_kms_helper]
-   drm_fb_helper_damage_work+0x8f/0x170 [drm_kms_helper]
-   process_one_work+0x21f/0x430
-   worker_thread+0x4e/0x3c0
-   ? __pfx_worker_thread+0x10/0x10
-   kthread+0xf4/0x120
-   ? __pfx_kthread+0x10/0x10
-   ret_from_fork+0x2c/0x50
-   </TASK>
-  CR2: ffffa17d40e0b000
-  ---[ end trace 0000000000000000 ]---
+Does this affect any noMMU platforms that relied on fb_pgprotect()
+doing nothing before?
+Perhaps the body below should be protected by "#ifdef CONFIG_MMU"?
 
-We also add trival code in this patch to restrict the damage rect beyond
-the last line of the framebuffer.
+> +{
+> +       vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
 
-Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
----
- drivers/gpu/drm/drm_fb_helper.c     | 2 +-
- drivers/gpu/drm/drm_fbdev_generic.c | 2 ++
- 2 files changed, 3 insertions(+), 1 deletion(-)
+Shouldn't this use the pgprot_val() wrapper?
 
-diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index 64458982be40..a2b749372759 100644
---- a/drivers/gpu/drm/drm_fb_helper.c
-+++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -645,7 +645,7 @@ static void drm_fb_helper_memory_range_to_clip(struct fb_info *info, off_t off,
- 	u32 x1 = 0;
- 	u32 y1 = off / info->fix.line_length;
- 	u32 x2 = info->var.xres;
--	u32 y2 = DIV_ROUND_UP(end, info->fix.line_length);
-+	u32 y2 = min_t(u32, DIV_ROUND_UP(end, info->fix.line_length), info->var.yres);
- 
- 	if ((y2 - y1) == 1) {
- 		/*
-diff --git a/drivers/gpu/drm/drm_fbdev_generic.c b/drivers/gpu/drm/drm_fbdev_generic.c
-index 8e5148bf40bb..a6daecb5f640 100644
---- a/drivers/gpu/drm/drm_fbdev_generic.c
-+++ b/drivers/gpu/drm/drm_fbdev_generic.c
-@@ -95,6 +95,8 @@ static int drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
- 	fb_helper->fb = buffer->fb;
- 
- 	screen_size = buffer->gem->size;
-+	screen_size = sizes->surface_height * buffer->fb->pitches[0];
-+
- 	screen_buffer = vzalloc(screen_size);
- 	if (!screen_buffer) {
- 		ret = -ENOMEM;
+> +}
+> +#endif
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.25.1
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

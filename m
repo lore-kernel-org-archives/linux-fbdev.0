@@ -2,127 +2,107 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D8FBC76196
-	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Apr 2023 15:58:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72FCBC7619A
+	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Apr 2023 06:18:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229700AbjDKP6H convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 11 Apr 2023 11:58:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48640 "EHLO
+        id S229604AbjDLGSQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 12 Apr 2023 02:18:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40460 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230218AbjDKP6E (ORCPT
+        with ESMTP id S229638AbjDLGSO (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 11 Apr 2023 11:58:04 -0400
-Received: from mail-yw1-f171.google.com (mail-yw1-f171.google.com [209.85.128.171])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB0CFE59;
-        Tue, 11 Apr 2023 08:58:01 -0700 (PDT)
-Received: by mail-yw1-f171.google.com with SMTP id 00721157ae682-54f6a796bd0so51666827b3.12;
-        Tue, 11 Apr 2023 08:58:01 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1681228681;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=f+3w89leq3eEIkwoZcDVhq9F0DoH4q/Sj2floJIfCG0=;
-        b=b9hehx53Rg1EmjVFQKFOlDYTgMzfZofyjGHtV0ndEj55dn89EllA85Aom8EwOYhVCu
-         my3dyoOmI5qiqEygWwSkJkm5Nkbp6MqvsufxT9U1u8rGpVQsM9KwllGzyDNSN5QhFsMR
-         u2Z5XNGfnMplnsdh3r28I7D6ooZYTU7ExBZVnKpuktkmvPz4tc5e9LxCppiTnr+t6QXj
-         ygYXge5T22CRuKa4YYMjV0u2/Z3tH/1tEwQL1BqhvA087agkxE2oe1U6KNdMXu6pUQiV
-         e3zB6mLFUTVBByfSUUXQtQKPutPqmKox6k+nmwyxN8i0UmHBnKgqOGbbtsrmvdlfAs/v
-         16mA==
-X-Gm-Message-State: AAQBX9eB+24gNh4orGEYLNl8L+Uz5gvo91G0YMZDq3rDuID2KfMuJZGS
-        xDF/99C7M+8zz0+8EnMkDojSE7YcHOsrAQ==
-X-Google-Smtp-Source: AKy350aq7hf0rfi34qVVccbfpKSa6XDOF8m7qcps4XHyA956RA44VLNIX8EXuK/mJncZPV5K12GKjg==
-X-Received: by 2002:a0d:ddcc:0:b0:54f:baa:2c with SMTP id g195-20020a0dddcc000000b0054f0baa002cmr2455815ywe.0.1681228680749;
-        Tue, 11 Apr 2023 08:58:00 -0700 (PDT)
-Received: from mail-yb1-f172.google.com (mail-yb1-f172.google.com. [209.85.219.172])
-        by smtp.gmail.com with ESMTPSA id s189-20020a819bc6000000b00545a0818483sm3592683ywg.19.2023.04.11.08.57.58
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 11 Apr 2023 08:57:58 -0700 (PDT)
-Received: by mail-yb1-f172.google.com with SMTP id a13so8716783ybl.11;
-        Tue, 11 Apr 2023 08:57:58 -0700 (PDT)
-X-Received: by 2002:a25:7654:0:b0:b8e:e0db:5b9d with SMTP id
- r81-20020a257654000000b00b8ee0db5b9dmr4304677ybc.12.1681228677832; Tue, 11
- Apr 2023 08:57:57 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230404193934.472457-1-daniel.vetter@ffwll.ch> <ZDVkSaskEvwix8Bz@phenom.ffwll.local>
-In-Reply-To: <ZDVkSaskEvwix8Bz@phenom.ffwll.local>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 11 Apr 2023 17:57:44 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdUVME6RnXkq-0FsUdH6-hqe5BqeT2UzgtW1uK+sg0GsQg@mail.gmail.com>
-Message-ID: <CAMuHMdUVME6RnXkq-0FsUdH6-hqe5BqeT2UzgtW1uK+sg0GsQg@mail.gmail.com>
-Subject: Re: [PATCH] fbmem: Reject FB_ACTIVATE_KD_TEXT from userspace
-To:     Daniel Vetter <daniel@ffwll.ch>
-Cc:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Alex Deucher <alexander.deucher@amd.com>, shlomo@fastmail.com,
-        =?UTF-8?Q?Michel_D=C3=A4nzer?= <michel@daenzer.net>,
-        =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        Wed, 12 Apr 2023 02:18:14 -0400
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C99AA527A;
+        Tue, 11 Apr 2023 23:18:07 -0700 (PDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        by mail.ozlabs.org (Postfix) with ESMTPSA id 4PxCF401xjz4xFj;
+        Wed, 12 Apr 2023 16:17:59 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+        s=201909; t=1681280282;
+        bh=mVus6VBYhH8GmWv60JhlJfNhVtxbImSRmEm6BDRrW3s=;
+        h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+        b=lTZEAUAJ2QZsc9UPHGoexeIDhivQg0OZP2tQ8N178oguDiIOjU/GS5yjDEkHA0ZQY
+         UoSdL/mLxTXV/wa3HPEVjblwcxsdx2c+OnuyDK5Tv1Pbg7hiKGkpXXQYiHyY9ZXKUK
+         6CSwY02DKtu+cGQJMahEUbmjJakfBQLvnLNWdj1LScutIwzO/9mPiHZFRCutiHgFFy
+         LDNwBaVtxl/OmcZoIc9q0YGGvsTAR4vPp6o9KxvHWYHacDs55AZq5ZD42D7HmgmLSM
+         12TeMwxecBFtXBTtmtuIhlm5OkckoQGJYZdQPchk2E7CbMKkKzVuJ/odBCPWTELN7l
+         5ijFDMn/S4fVA==
+From:   Michael Ellerman <mpe@ellerman.id.au>
+To:     Thomas Zimmermann <tzimmermann@suse.de>, arnd@arndb.de,
+        daniel.vetter@ffwll.ch, deller@gmx.de, javierm@redhat.com,
+        gregkh@linuxfoundation.org
+Cc:     linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        linux-snps-arc@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+        sparclinux@vger.kernel.org, x86@kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        David Airlie <airlied@linux.ie>,
-        dri-devel@lists.freedesktop.org, stable@vger.kernel.org,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Nathan Chancellor <natechancellor@gmail.com>,
-        Qiujun Huang <hqjagain@gmail.com>,
-        Peter Rosin <peda@axentia.se>, linux-fbdev@vger.kernel.org,
-        Helge Deller <deller@gmx.de>, Sam Ravnborg <sam@ravnborg.org>,
-        Samuel Thibault <samuel.thibault@ens-lyon.org>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Shigeru Yoshida <syoshida@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+        Nicholas Piggin <npiggin@gmail.com>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v2 15/19] arch/powerpc: Implement <asm/fb.h> with
+ generic helpers
+In-Reply-To: <20230406143019.6709-16-tzimmermann@suse.de>
+References: <20230406143019.6709-1-tzimmermann@suse.de>
+ <20230406143019.6709-16-tzimmermann@suse.de>
+Date:   Wed, 12 Apr 2023 16:17:59 +1000
+Message-ID: <87r0spipyg.fsf@mpe.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Daniel,
+Thomas Zimmermann <tzimmermann@suse.de> writes:
+> Replace the architecture's fb_is_primary_device() with the generic
+> one from <asm-generic/fb.h>. No functional changes.
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Nicholas Piggin <npiggin@gmail.com>
+> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>  arch/powerpc/include/asm/fb.h | 8 +++-----
+>  1 file changed, 3 insertions(+), 5 deletions(-)
 
-On Tue, Apr 11, 2023 at 3:44 PM Daniel Vetter <daniel@ffwll.ch> wrote:
-> On Tue, Apr 04, 2023 at 09:39:34PM +0200, Daniel Vetter wrote:
-> > This is an oversight from dc5bdb68b5b3 ("drm/fb-helper: Fix vt
-> > restore") - I failed to realize that nasty userspace could set this.
-> >
-> > It's not pretty to mix up kernel-internal and userspace uapi flags
-> > like this, but since the entire fb_var_screeninfo structure is uapi
-> > we'd need to either add a new parameter to the ->fb_set_par callback
-> > and fb_set_par() function, which has a _lot_ of users. Or some other
-> > fairly ugly side-channel int fb_info. Neither is a pretty prospect.
-> >
-> > Instead just correct the issue at hand by filtering out this
-> > kernel-internal flag in the ioctl handling code.
-> >
-> > Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-> > Fixes: dc5bdb68b5b3 ("drm/fb-helper: Fix vt restore")
+Looks fine.
 
-> An Ack on this (or a better idea) would be great, so I can stuff it into
-> -fixes.
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
-I don't understand what the original commit this fixes is doing anyway...
+cheers
 
-> > --- a/drivers/video/fbdev/core/fbmem.c
-> > +++ b/drivers/video/fbdev/core/fbmem.c
-> > @@ -1116,6 +1116,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
-> >       case FBIOPUT_VSCREENINFO:
-> >               if (copy_from_user(&var, argp, sizeof(var)))
-> >                       return -EFAULT;
-> > +             /* only for kernel-internal use */
-> > +             var.activate &= ~FB_ACTIVATE_KD_TEXT;
-> >               console_lock();
-> >               lock_fb_info(info);
-> >               ret = fbcon_modechange_possible(info, &var);
-
-Perhaps FB_ACTIVATE_KD_TEXT should be removed (marked as
-reserved) from include/uapi/linux/fb.h, too?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> diff --git a/arch/powerpc/include/asm/fb.h b/arch/powerpc/include/asm/fb.h
+> index 6541ab77c5b9..5f1a2e5f7654 100644
+> --- a/arch/powerpc/include/asm/fb.h
+> +++ b/arch/powerpc/include/asm/fb.h
+> @@ -2,8 +2,8 @@
+>  #ifndef _ASM_FB_H_
+>  #define _ASM_FB_H_
+>  
+> -#include <linux/fb.h>
+>  #include <linux/fs.h>
+> +
+>  #include <asm/page.h>
+>  
+>  static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
+> @@ -13,10 +13,8 @@ static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
+>  						 vma->vm_end - vma->vm_start,
+>  						 vma->vm_page_prot);
+>  }
+> +#define fb_pgprotect fb_pgprotect
+>  
+> -static inline int fb_is_primary_device(struct fb_info *info)
+> -{
+> -	return 0;
+> -}
+> +#include <asm-generic/fb.h>
+>  
+>  #endif /* _ASM_FB_H_ */
+> -- 
+> 2.40.0

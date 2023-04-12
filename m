@@ -2,304 +2,168 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77024C77B6F
-	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Apr 2023 17:44:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D26BCC77B6F
+	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Apr 2023 18:27:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229878AbjDLRos (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 12 Apr 2023 13:44:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46444 "EHLO
+        id S229900AbjDLS1b (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 12 Apr 2023 14:27:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42592 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229491AbjDLRor (ORCPT
+        with ESMTP id S229503AbjDLS13 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 12 Apr 2023 13:44:47 -0400
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 108782697
-        for <linux-fbdev@vger.kernel.org>; Wed, 12 Apr 2023 10:44:46 -0700 (PDT)
-Received: by mail-wm1-x330.google.com with SMTP id 5b1f17b1804b1-3f0968734f6so1970285e9.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 12 Apr 2023 10:44:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google; t=1681321484; x=1683913484;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:mail-followup-to:message-id:subject:cc:to
-         :from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=2E0Nnkjs6iVqwiEdn+EifW7LQwJ4sdMIYsZcK2qTBrM=;
-        b=Zz4FH4NvcRfFdyp5S5sewPtFadS9p8YCpfkoqjhRUiDQjek6rZF9KLoBKSZtGQO0UN
-         8xvH+hMM6jtHRPVF/5/fsTUV4DtrrgoIEEZkRj8LT9GP7frmZyeURDkXwdsVoVf2nd8b
-         5RzU1whlc2WCsmvQFNwHgeZ1HfZ3UT2QK7r3w=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1681321484; x=1683913484;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:mail-followup-to:message-id:subject:cc:to
-         :from:date:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=2E0Nnkjs6iVqwiEdn+EifW7LQwJ4sdMIYsZcK2qTBrM=;
-        b=cCpBkXTSTiv7yV9WNoxAaBjBuMaXJh88ZYjIX4RJSn7Mnh4RHAWqp8XXkeGvOXE4gw
-         Cf/yRZsqT8PwAKPPIRfpdaGX/IPoSy2alLcercG51XLnIXoIguL291AFkUtigX3uU7lR
-         9DX+LW8hwBYfn0eJHEPZFmjMdLDb3rFlTTfhr3FDktO0DDxER8gcyGnZHmcTGquJs5no
-         5/FaO8eMOOwsW9CrrolCzP3aPuJcQ8YP9O4VPG3WWoTdkTmKZcfVi7z7WWevP28SyrGg
-         9JfRF7XNxKu7WNntU7V6bEOC/3YUXmyyPCULJXiI+BdHaIgv7yioZ5S5NKyF21w6hPHZ
-         ur3w==
-X-Gm-Message-State: AAQBX9eVXBknCD2CtmYuWJ+6pX4H/tYgzi+W51mtPl1LoXmrbJBB+At/
-        /qxsUu4hbqpwDwrvW55ojEOx2g==
-X-Google-Smtp-Source: AKy350Y+XWemTa+mLbLg/mxf9bQ1L3pmRsAspFQVVFKFppaJ5qUP0XyY8xP4nBnfCCgkjj9Cs7PDtw==
-X-Received: by 2002:a5d:664e:0:b0:2c7:1c72:699f with SMTP id f14-20020a5d664e000000b002c71c72699fmr2458605wrw.4.1681321484469;
-        Wed, 12 Apr 2023 10:44:44 -0700 (PDT)
-Received: from phenom.ffwll.local (212-51-149-33.fiber7.init7.net. [212.51.149.33])
-        by smtp.gmail.com with ESMTPSA id m3-20020adfdc43000000b002c5691f13eesm17760896wrj.50.2023.04.12.10.44.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 12 Apr 2023 10:44:44 -0700 (PDT)
-Date:   Wed, 12 Apr 2023 19:44:41 +0200
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Sui Jingfeng <15330273260@189.cn>
-Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
+        Wed, 12 Apr 2023 14:27:29 -0400
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 355D240D7;
+        Wed, 12 Apr 2023 11:27:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681324048; x=1712860048;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=cqKO9TziOmEEhE0gbMgiPkWcojaHbnVzNzEhpsuxk3A=;
+  b=K91t95DziJTYAB42d3jGi3THhWvPbuepNtDpiEcofje+BhqqdMlvIacb
+   WbpJXV1TYDw0x8dqURClCwx4BzeVyPTx5HR3s6fwrdH3FncMOIlKDiZez
+   eveMkCBQXmUp04eO+ZyFVg0X6P8ZZKg2ta9ZLCmn5ayFIDbYjh6AELGrs
+   Deykxph1UFQfF85F9BMGpkcWuTinEq40RH7I4dsohdiNcsAyHPiPVLYh5
+   isiR0lVkM93+KTILXzFUPvSB5fo0TWGAWV7zp5O4tqfpHmxlx4MeBBzmG
+   N8hx0/p/35MpDn8Ara+YnbNxSrTUTU37CFR/8VU2wcBMv3bcaPiEZvFxF
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10678"; a="328099187"
+X-IronPort-AV: E=Sophos;i="5.98,339,1673942400"; 
+   d="scan'208";a="328099187"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Apr 2023 11:27:27 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10678"; a="753646682"
+X-IronPort-AV: E=Sophos;i="5.98,339,1673942400"; 
+   d="scan'208";a="753646682"
+Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
+  by fmsmga008.fm.intel.com with ESMTP; 12 Apr 2023 11:27:21 -0700
+Received: from kbuild by b613635ddfff with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1pmfBg-000Xyx-2P;
+        Wed, 12 Apr 2023 18:27:20 +0000
+Date:   Thu, 13 Apr 2023 02:27:20 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Nikita Zhandarovich <n.zhandarovich@fintech.ru>,
+        David Airlie <airlied@gmail.com>
+Cc:     llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+        linux-fbdev@vger.kernel.org, lvc-project@linuxtesting.org,
+        dri-devel@lists.freedesktop.org,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Helge Deller <deller@gmx.de>, amd-gfx@lists.freedesktop.org,
+        Nikita Zhandarovich <n.zhandarovich@fintech.ru>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@gmail.com>,
-        Sui Jingfeng <suijingfeng@loongson.cn>,
-        Li Yi <liyi@loongson.cn>, Helge Deller <deller@gmx.de>,
-        Lucas De Marchi <lucas.demarchi@intel.com>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
-Subject: Re: [PATCH] drm/fbdev-generic: fix potential out-of-bounds access
-Message-ID: <ZDbuCWKfFlWyiOGp@phenom.ffwll.local>
-Mail-Followup-To: Sui Jingfeng <15330273260@189.cn>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@gmail.com>,
-        Sui Jingfeng <suijingfeng@loongson.cn>, Li Yi <liyi@loongson.cn>,
-        Helge Deller <deller@gmx.de>,
-        Lucas De Marchi <lucas.demarchi@intel.com>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
-References: <20230409132110.494630-1-15330273260@189.cn>
- <ZDV0Te65tSh4Q/vc@phenom.ffwll.local>
- <42f16d0d-4e1a-a016-f4cc-af24efa75f1c@189.cn>
+        intel-gfx@lists.freedesktop.org,
+        linux-mediatek@lists.infradead.org,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>,
+        linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] video/hdmi: minor fixes for *_infoframe_init functions
+Message-ID: <202304130224.59cNkdgV-lkp@intel.com>
+References: <20230412152910.9486-1-n.zhandarovich@fintech.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <42f16d0d-4e1a-a016-f4cc-af24efa75f1c@189.cn>
-X-Operating-System: Linux phenom 6.1.0-7-amd64 
+In-Reply-To: <20230412152910.9486-1-n.zhandarovich@fintech.ru>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Apr 13, 2023 at 01:13:37AM +0800, Sui Jingfeng wrote:
-> Hi,
-> 
-> On 2023/4/11 22:53, Daniel Vetter wrote:
-> > On Sun, Apr 09, 2023 at 09:21:10PM +0800, Sui Jingfeng wrote:
-> > > From: Sui Jingfeng <suijingfeng@loongson.cn>
-> > > 
-> > > We should setting the screen buffer size according to the screen's actual
-> > > size, rather than the size of the GEM object backing the front framebuffer.
-> > > The size of GEM buffer is page size aligned, while the size of active area
-> > > of a specific screen is *NOT* necessarily page size aliged. For example,
-> > > 1680x1050, 1600x900, 1440x900, 800x6000 etc. In those case, the damage rect
-> > > computed by drm_fb_helper_memory_range_to_clip() goes out of bottom bounds
-> > > of the display.
-> > > 
-> > > Run fbdev test of IGT on a x86+ast2400 platform with 1680x1050 resolution
-> > > will cause the system hang with the following call trace:
-> > > 
-> > >    Oops: 0000 [#1] PREEMPT SMP PTI
-> > >    [IGT] fbdev: starting subtest eof
-> > >    Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
-> > >    [IGT] fbdev: starting subtest nullptr
-> > > 
-> > >    RIP: 0010:memcpy_erms+0xa/0x20
-> > >    RSP: 0018:ffffa17d40167d98 EFLAGS: 00010246
-> > >    RAX: ffffa17d4eb7fa80 RBX: ffffa17d40e0aa80 RCX: 00000000000014c0
-> > >    RDX: 0000000000001a40 RSI: ffffa17d40e0b000 RDI: ffffa17d4eb80000
-> > >    RBP: ffffa17d40167e20 R08: 0000000000000000 R09: ffff89522ecff8c0
-> > >    R10: ffffa17d4e4c5000 R11: 0000000000000000 R12: ffffa17d4eb7fa80
-> > >    R13: 0000000000001a40 R14: 000000000000041a R15: ffffa17d40167e30
-> > >    FS:  0000000000000000(0000) GS:ffff895257380000(0000) knlGS:0000000000000000
-> > >    CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> > >    CR2: ffffa17d40e0b000 CR3: 00000001eaeca006 CR4: 00000000001706e0
-> > >    Call Trace:
-> > >     <TASK>
-> > >     ? drm_fbdev_generic_helper_fb_dirty+0x207/0x330 [drm_kms_helper]
-> > >     drm_fb_helper_damage_work+0x8f/0x170 [drm_kms_helper]
-> > >     process_one_work+0x21f/0x430
-> > >     worker_thread+0x4e/0x3c0
-> > >     ? __pfx_worker_thread+0x10/0x10
-> > >     kthread+0xf4/0x120
-> > >     ? __pfx_kthread+0x10/0x10
-> > >     ret_from_fork+0x2c/0x50
-> > >     </TASK>
-> > >    CR2: ffffa17d40e0b000
-> > >    ---[ end trace 0000000000000000 ]---
-> > > 
-> > > We also add trival code in this patch to restrict the damage rect beyond
-> > > the last line of the framebuffer.
-> > Nice catch!
->  :)
-> > > Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
-> > > ---
-> > >   drivers/gpu/drm/drm_fb_helper.c     | 2 +-
-> > >   drivers/gpu/drm/drm_fbdev_generic.c | 2 ++
-> > >   2 files changed, 3 insertions(+), 1 deletion(-)
-> > > 
-> > > diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-> > > index 64458982be40..a2b749372759 100644
-> > > --- a/drivers/gpu/drm/drm_fb_helper.c
-> > > +++ b/drivers/gpu/drm/drm_fb_helper.c
-> > > @@ -645,7 +645,7 @@ static void drm_fb_helper_memory_range_to_clip(struct fb_info *info, off_t off,
-> > >   	u32 x1 = 0;
-> > >   	u32 y1 = off / info->fix.line_length;
-> > >   	u32 x2 = info->var.xres;
-> > > -	u32 y2 = DIV_ROUND_UP(end, info->fix.line_length);
-> > > +	u32 y2 = min_t(u32, DIV_ROUND_UP(end, info->fix.line_length), info->var.yres);
-> > So for additional robustness I think it'd be good if we change the entire
-> > computation here to use drm_framebuffer data and not fb_info data, because
-> > fundamentally that's what the drm kms code consumes. It should all match
-> > anyway, but I think it makes the code more obviously correct.
-> > 
-> > So in the entire function instead of looking at fb_info->fix we should
-> > probably look at
-> > 
-> > 	struct drm_fb_helper *helper = info->par;
-> > 
-> > And then helper->fb->pitches[0] and helper->fb->height.
-> > 
-> > If you agree would be great if you can please respin with that (and the
-> > commit message augmented to explain why we do the change)?
-> 
-> Yes, I'm agree.
-> 
-> Thank you for guidance, I will refine this patch with `helper = info->par`.
-> 
-> I will send a v2 when I finished.
-> 
-> > >   	if ((y2 - y1) == 1) {
-> > >   		/*
-> > > diff --git a/drivers/gpu/drm/drm_fbdev_generic.c b/drivers/gpu/drm/drm_fbdev_generic.c
-> > > index 8e5148bf40bb..a6daecb5f640 100644
-> > > --- a/drivers/gpu/drm/drm_fbdev_generic.c
-> > > +++ b/drivers/gpu/drm/drm_fbdev_generic.c
-> > > @@ -95,6 +95,8 @@ static int drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
-> > >   	fb_helper->fb = buffer->fb;
-> > >   	screen_size = buffer->gem->size;
-> > I guess you forgot to remove this line here?
-> 
-> Yes, this line should be removed in this patch. I overlooked this, sorry.
-> 
-> > Also I'm not understanding
-> > why this matters, I think you're fix only needs the above chunk, not this
-> > one? If I got this right then please drop this part, there's drivers which
-> > only use drm_fb_helper.c but not drm_fbdev_generic.c, and from what I can
-> > tell they all still set the gem buffer size here.
-> > 
-> > If otoh we need this too, then there's a few more places that need to be
-> > fixed.
-> 
-> I think we need this line, otherwise wrapped around will be happen.
-> 
-> Because I found that the value of variable`y1` will be larger in number than
-> the variable `y2` by 1,
-> 
-> which are computed  in drm_fb_helper_memory_range_to_clip().
-> 
-> 
-> This phenomenon will emerged on platforms with large page size or
-> 
-> non page size divisiable display resolution case. Take the LoongArch and
-> Mips as an example,
-> 
-> the default page size is 16KB(to avoid cache alias).  Even with the most
-> frequently used
-> 
-> 1920x1080 screen, the screen_size can not be divided exactly.
-> 
-> The total size of the shadow buffer is 1920x1080x4 bytes, 1920x1080x4 /
-> 16384 = 506.25
-> 
-> TTM manage the vram in the term of pages, so TTM will allocate 507 pages for
-> us.
-> 
-> 507x16384 = 8306688 bytes.
-> 
-> 
-> drm_fb_helper_memory_range_to_clip() will be called when running fbdev eof
-> test in the IGT.
-> 
-> with 8306688 as its second parameter. while 8306688 / (1920x4) = 1081, this
-> cause y1 out of bound.
-> 
-> Simply restrict y2 with a min_t() function yeild 1080 in this case, but y2 -
-> y1 cause *wrap around* here.
-> 
-> because they are both unsigned number.
-> 
-> 
-> drm_rect_init() function cast this unsigned int type to int type in end of
-> drm_fb_helper_memory_range_to_clip(),
-> 
-> but the last argument of drm_fb_helper_damage() function is a u32 type,
-> 
-> it cast the return value of  drm_rect_height(&damage_area) back to unsigned
-> type.
-> 
-> Yet, another wrapped around with truncation happened in
-> drm_fb_helper_add_damage_clip()
-> 
-> called by subsequent drm_fb_helper_damage() function.
-> 
-> I finally got reject by drm_fbdev_generic_helper_fb_dirty() with follow
-> code:
-> 
-> ```
-> 
->     /* Call damage handlers only if necessary */
->     if (!(clip->x1 < clip->x2 && clip->y1 < clip->y2))
->         return 0;
-> 
-> ```
-> 
-> On x86-64 platform, because 1920x1080x4 dumb buffer is lucky, it be divided
-> exactly by 4KB(page size).
-> 
-> But other resolution will not as luck as this one. Right, fbdev test will be
-> pasted, but wrap around
-> 
-> happens many time.
-> 
-> Therefore, as long as a larger buffer is allowed to exposed to the
-> user-space.
-> 
-> A chance is given to the user-space,  to go beyond of the bottom bound of
-> the actual active display area.
-> 
-> I not sure if this is intended, I feel it should not be allowable by
-> intuition.
+Hi Nikita,
 
-Ah yes, thanks for the in-depth explanation. But I think we need a
-different fix, by also limiting y1. Otherwise for really big page sizes
-(64k on arm64 iirc) and really small screens (there's i2c panels with just
-a few lines) we might still run into the issue of y1 being too large.
+kernel test robot noticed the following build warnings:
 
-So we need to limit both y1 and y2. I think it's ok to let y1 == y2 slip
-through, since as you point out that's filtered later on.
+[auto build test WARNING on drm-misc/drm-misc-next]
+[also build test WARNING on tegra/for-next drm-intel/for-linux-next drm-intel/for-linux-next-fixes linus/master v6.3-rc6 next-20230412]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-The userspace api is that we should expose the full fbdev buffer and allow
-writes into the entire thing. It's just that for the explicit upload with
-damage rects we need to make sure we're staying within the real buffer.
--Daniel
+url:    https://github.com/intel-lab-lkp/linux/commits/Nikita-Zhandarovich/video-hdmi-minor-fixes-for-_infoframe_init-functions/20230412-232947
+base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
+patch link:    https://lore.kernel.org/r/20230412152910.9486-1-n.zhandarovich%40fintech.ru
+patch subject: [PATCH] video/hdmi: minor fixes for *_infoframe_init functions
+config: i386-randconfig-a005-20230410 (https://download.01.org/0day-ci/archive/20230413/202304130224.59cNkdgV-lkp@intel.com/config)
+compiler: clang version 14.0.6 (https://github.com/llvm/llvm-project f28c006a5895fc0e329fe15fead81e37457cb1d1)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/intel-lab-lkp/linux/commit/36210f5b0ac3046f4c1c1d0c6e392eab40811699
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Nikita-Zhandarovich/video-hdmi-minor-fixes-for-_infoframe_init-functions/20230412-232947
+        git checkout 36210f5b0ac3046f4c1c1d0c6e392eab40811699
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=i386 olddefconfig
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=i386 SHELL=/bin/bash drivers/gpu/drm/i915/
 
-> > > +	screen_size = sizes->surface_height * buffer->fb->pitches[0];
-> > > +
-> > >   	screen_buffer = vzalloc(screen_size);
-> > >   	if (!screen_buffer) {
-> > >   		ret = -ENOMEM;
-> > Cheers, Daniel
-> > 
-> > > -- 
-> > > 2.25.1
-> > > 
+If you fix the issue, kindly add following tag where applicable
+| Reported-by: kernel test robot <lkp@intel.com>
+| Link: https://lore.kernel.org/oe-kbuild-all/202304130224.59cNkdgV-lkp@intel.com/
+
+All warnings (new ones prefixed by >>):
+
+>> drivers/gpu/drm/i915/display/intel_hdmi.c:769:37: warning: variable 'ret' is uninitialized when used here [-Wuninitialized]
+           if (drm_WARN_ON(encoder->base.dev, ret))
+                                              ^~~
+   include/drm/drm_print.h:630:19: note: expanded from macro 'drm_WARN_ON'
+           drm_WARN((drm), (x), "%s",                                      \
+                            ^
+   include/drm/drm_print.h:620:7: note: expanded from macro 'drm_WARN'
+           WARN(condition, "%s %s: " format,                               \
+                ^~~~~~~~~
+   include/asm-generic/bug.h:131:25: note: expanded from macro 'WARN'
+           int __ret_warn_on = !!(condition);                              \
+                                  ^~~~~~~~~
+   drivers/gpu/drm/i915/display/intel_hdmi.c:756:9: note: initialize the variable 'ret' to silence this warning
+           int ret;
+                  ^
+                   = 0
+   1 warning generated.
+
+
+vim +/ret +769 drivers/gpu/drm/i915/display/intel_hdmi.c
+
+b055c8f3ef9f7b drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-07-08  748  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  749  static bool
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  750  intel_hdmi_compute_spd_infoframe(struct intel_encoder *encoder,
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  751  				 struct intel_crtc_state *crtc_state,
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  752  				 struct drm_connector_state *conn_state)
+c0864cb39c6869 drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-08-03  753  {
+7d1675dcb5a16c drivers/gpu/drm/i915/display/intel_hdmi.c Taylor, Clinton A   2022-11-29  754  	struct drm_i915_private *i915 = to_i915(encoder->base.dev);
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  755  	struct hdmi_spd_infoframe *frame = &crtc_state->infoframes.spd.spd;
+5adaea799c1c2c drivers/gpu/drm/i915/intel_hdmi.c         Damien Lespiau      2013-08-06  756  	int ret;
+5adaea799c1c2c drivers/gpu/drm/i915/intel_hdmi.c         Damien Lespiau      2013-08-06  757  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  758  	if (!crtc_state->has_infoframe)
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  759  		return true;
+c0864cb39c6869 drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-08-03  760  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  761  	crtc_state->infoframes.enable |=
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  762  		intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_SPD);
+c0864cb39c6869 drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-08-03  763  
+7d1675dcb5a16c drivers/gpu/drm/i915/display/intel_hdmi.c Taylor, Clinton A   2022-11-29  764  	if (IS_DGFX(i915))
+36210f5b0ac304 drivers/gpu/drm/i915/display/intel_hdmi.c Nikita Zhandarovich 2023-04-12  765  		hdmi_spd_infoframe_init(frame, "Intel", "Discrete gfx");
+7d1675dcb5a16c drivers/gpu/drm/i915/display/intel_hdmi.c Taylor, Clinton A   2022-11-29  766  	else
+36210f5b0ac304 drivers/gpu/drm/i915/display/intel_hdmi.c Nikita Zhandarovich 2023-04-12  767  		hdmi_spd_infoframe_init(frame, "Intel", "Integrated gfx");
+7d1675dcb5a16c drivers/gpu/drm/i915/display/intel_hdmi.c Taylor, Clinton A   2022-11-29  768  
+3a47ae201e0749 drivers/gpu/drm/i915/display/intel_hdmi.c Pankaj Bharadiya    2020-01-15 @769  	if (drm_WARN_ON(encoder->base.dev, ret))
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  770  		return false;
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  771  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  772  	frame->sdi = HDMI_SPD_SDI_PC;
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  773  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  774  	ret = hdmi_spd_infoframe_check(frame);
+3a47ae201e0749 drivers/gpu/drm/i915/display/intel_hdmi.c Pankaj Bharadiya    2020-01-15  775  	if (drm_WARN_ON(encoder->base.dev, ret))
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  776  		return false;
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  777  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  778  	return true;
+c0864cb39c6869 drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-08-03  779  }
+c0864cb39c6869 drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-08-03  780  
 
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests

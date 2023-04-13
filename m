@@ -2,378 +2,232 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3FDEC77B61
-	for <linux-fbdev@archiver.kernel.org>; Thu, 13 Apr 2023 18:56:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2778C77B73
+	for <linux-fbdev@archiver.kernel.org>; Thu, 13 Apr 2023 19:16:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229703AbjDMS4e (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 13 Apr 2023 14:56:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45594 "EHLO
+        id S229899AbjDMTQq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 13 Apr 2023 15:16:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55880 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229561AbjDMS4d (ORCPT
+        with ESMTP id S229920AbjDMTQo (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 13 Apr 2023 14:56:33 -0400
-Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4BD4519C
-        for <linux-fbdev@vger.kernel.org>; Thu, 13 Apr 2023 11:56:31 -0700 (PDT)
-Received: by mail-wm1-x329.google.com with SMTP id 5b1f17b1804b1-3f0769b0699so2153515e9.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 13 Apr 2023 11:56:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google; t=1681412190; x=1684004190;
-        h=in-reply-to:content-disposition:mime-version:references
-         :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=bkJNTvo612O3fWPNxDWPyC+FD+8b0uBSCjcq43SbtsE=;
-        b=YiUfmAiJM2xaeT7CytI2caKY70Osw04D9HzW1DTEH2IGvYMYJ7cVIh+hWKEm/YPtYs
-         sE+pqMCfcvmg3BGr33SJZpahD/md3CAWd6uDZ/9n6hq7LWjmXK+MdVBcjFXve5NqVX1a
-         Fc9XBEe0bPmUBeQYenQG39TSzDlpGHeN54n0o=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1681412190; x=1684004190;
-        h=in-reply-to:content-disposition:mime-version:references
-         :mail-followup-to:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=bkJNTvo612O3fWPNxDWPyC+FD+8b0uBSCjcq43SbtsE=;
-        b=Llh+5xTjF7xBm4nPEGDwKKJXGE5vuDedo10o39yfWNaDPB0LdHZyBha1gIT4j8AsKw
-         /CqzWZhtlpTYXmFxL6yqRngx4Ry7I5rkFjjoAUDmwYoFXS48LbALahqLIaKANia8U3D7
-         z4HcASkERizG8LTL6lobzlPguYJnD7Qd0sDQLLFrR6HdDZtgtQUrO1MSmuo+7Yj2Vlg8
-         1KC30xCkYnNqXmSMGkYZp8yyRk+0LXE/3ZWpSiv2CbXTw4/YXBGkQVnsy9CgIlJ7I0A0
-         OrJyq4+RaIHkS1tnShvbRoMPnf6ADm+FnqFqWx9JWdVMCN+jDIPPgjZma0E9lZN6Pd3J
-         FyYw==
-X-Gm-Message-State: AAQBX9cek2QKIV4KV+SWlT/z3B/lMnjO+4DArPrhCzBWa1L0n/aa7CF6
-        mOdlornoiGq91z1A3IhCPE4MYg==
-X-Google-Smtp-Source: AKy350Z+Pymx86muavguR0EXMVTzX6DncBOK2+EuJpP1eStBdguGNte0pXr9DSRj/ZSjARALqxBwDQ==
-X-Received: by 2002:adf:e98f:0:b0:2c9:8b81:bd04 with SMTP id h15-20020adfe98f000000b002c98b81bd04mr2046863wrm.0.1681412189731;
-        Thu, 13 Apr 2023 11:56:29 -0700 (PDT)
-Received: from phenom.ffwll.local (212-51-149-33.fiber7.init7.net. [212.51.149.33])
-        by smtp.gmail.com with ESMTPSA id w16-20020a5d6810000000b002e5ff05765esm1853474wru.73.2023.04.13.11.56.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 13 Apr 2023 11:56:29 -0700 (PDT)
-Date:   Thu, 13 Apr 2023 20:56:27 +0200
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Sui Jingfeng <15330273260@189.cn>
-Cc:     Daniel Vetter <daniel@ffwll.ch>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@gmail.com>, Li Yi <liyi@loongson.cn>,
-        Helge Deller <deller@gmx.de>,
-        Lucas De Marchi <lucas.demarchi@intel.com>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
-Subject: Re: [PATCH] drm/fbdev-generic: fix potential out-of-bounds access
-Message-ID: <ZDhQW6El6ztyHK4M@phenom.ffwll.local>
-Mail-Followup-To: Sui Jingfeng <15330273260@189.cn>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@gmail.com>, Li Yi <liyi@loongson.cn>,
-        Helge Deller <deller@gmx.de>,
-        Lucas De Marchi <lucas.demarchi@intel.com>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
-References: <20230409132110.494630-1-15330273260@189.cn>
- <ZDV0Te65tSh4Q/vc@phenom.ffwll.local>
- <42f16d0d-4e1a-a016-f4cc-af24efa75f1c@189.cn>
- <ZDbuCWKfFlWyiOGp@phenom.ffwll.local>
- <dbac96b2-0fea-591b-517d-2a23cc36b8de@189.cn>
- <CAKMK7uG_h7htCDARudZpHOOMG4iOOLZmz0_WskvWGf+DKGwU1w@mail.gmail.com>
- <531f0bdf-2ae8-0361-183b-57b40df6345f@189.cn>
+        Thu, 13 Apr 2023 15:16:44 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 349D218D;
+        Thu, 13 Apr 2023 12:16:37 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id BA1801FD70;
+        Thu, 13 Apr 2023 19:16:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1681413395; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=UZ84NE6eHS0P+kUbcSWEbvYAi0L3z1iClyO7JQPD/Jc=;
+        b=xqNMquoXQgo7bR11bNel3jqCX+5LrtqZEpY5hWASAvpfxeE7QFFs7jv4d0uEcxyNT7NXbP
+        /VzNwTMMIIPOOG/HFEppfPTcXXQ1s3MS08P8iiLYwe5GkZM+cUecRo5Zd93c/qbUlC1flx
+        vu6u12dzYS6wqDKGJKD//pAsgqHHE7o=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1681413395;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=UZ84NE6eHS0P+kUbcSWEbvYAi0L3z1iClyO7JQPD/Jc=;
+        b=qCAfbImmBE8Et0mV2OyAjUTTcKdPZrgOVL+MdLgB9FaZMgufFtRA/VqwueOxrHcLZ+CQgj
+        v/Ty5/juwcWhHhBA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 606331390E;
+        Thu, 13 Apr 2023 19:16:35 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id m1cwFhNVOGRMRAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 13 Apr 2023 19:16:35 +0000
+Message-ID: <fccc494f-0e52-5fdf-0e40-acc29177c73c@suse.de>
+Date:   Thu, 13 Apr 2023 21:16:34 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <531f0bdf-2ae8-0361-183b-57b40df6345f@189.cn>
-X-Operating-System: Linux phenom 6.1.0-7-amd64 
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.9.0
+Subject: Re: [PATCH v2] drm/fbdev-generic: prohibit potential out-of-bounds
+ access
+To:     Sui Jingfeng <15330273260@189.cn>,
+        Maxime Ripard <mripard@kernel.org>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Sui Jingfeng <suijingfeng@loongson.cn>,
+        Li Yi <liyi@loongson.cn>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Helge Deller <deller@gmx.de>,
+        Lucas De Marchi <lucas.demarchi@intel.com>
+Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
+References: <20230413180622.1014016-1-15330273260@189.cn>
+Content-Language: en-US
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20230413180622.1014016-1-15330273260@189.cn>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------kw7iFhKw13vJ7UmbMcAblKY4"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Apr 14, 2023 at 01:00:07AM +0800, Sui Jingfeng wrote:
-> 
-> On 2023/4/13 23:56, Daniel Vetter wrote:
-> > On Thu, 13 Apr 2023 at 17:35, Sui Jingfeng <15330273260@189.cn> wrote:
-> > > Hi,
-> > > 
-> > > On 2023/4/13 01:44, Daniel Vetter wrote:
-> > > > On Thu, Apr 13, 2023 at 01:13:37AM +0800, Sui Jingfeng wrote:
-> > > > > Hi,
-> > > > > 
-> > > > > On 2023/4/11 22:53, Daniel Vetter wrote:
-> > > > > > On Sun, Apr 09, 2023 at 09:21:10PM +0800, Sui Jingfeng wrote:
-> > > > > > > From: Sui Jingfeng <suijingfeng@loongson.cn>
-> > > > > > > 
-> > > > > > > We should setting the screen buffer size according to the screen's actual
-> > > > > > > size, rather than the size of the GEM object backing the front framebuffer.
-> > > > > > > The size of GEM buffer is page size aligned, while the size of active area
-> > > > > > > of a specific screen is *NOT* necessarily page size aliged. For example,
-> > > > > > > 1680x1050, 1600x900, 1440x900, 800x6000 etc. In those case, the damage rect
-> > > > > > > computed by drm_fb_helper_memory_range_to_clip() goes out of bottom bounds
-> > > > > > > of the display.
-> > > > > > > 
-> > > > > > > Run fbdev test of IGT on a x86+ast2400 platform with 1680x1050 resolution
-> > > > > > > will cause the system hang with the following call trace:
-> > > > > > > 
-> > > > > > >      Oops: 0000 [#1] PREEMPT SMP PTI
-> > > > > > >      [IGT] fbdev: starting subtest eof
-> > > > > > >      Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
-> > > > > > >      [IGT] fbdev: starting subtest nullptr
-> > > > > > > 
-> > > > > > >      RIP: 0010:memcpy_erms+0xa/0x20
-> > > > > > >      RSP: 0018:ffffa17d40167d98 EFLAGS: 00010246
-> > > > > > >      RAX: ffffa17d4eb7fa80 RBX: ffffa17d40e0aa80 RCX: 00000000000014c0
-> > > > > > >      RDX: 0000000000001a40 RSI: ffffa17d40e0b000 RDI: ffffa17d4eb80000
-> > > > > > >      RBP: ffffa17d40167e20 R08: 0000000000000000 R09: ffff89522ecff8c0
-> > > > > > >      R10: ffffa17d4e4c5000 R11: 0000000000000000 R12: ffffa17d4eb7fa80
-> > > > > > >      R13: 0000000000001a40 R14: 000000000000041a R15: ffffa17d40167e30
-> > > > > > >      FS:  0000000000000000(0000) GS:ffff895257380000(0000) knlGS:0000000000000000
-> > > > > > >      CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> > > > > > >      CR2: ffffa17d40e0b000 CR3: 00000001eaeca006 CR4: 00000000001706e0
-> > > > > > >      Call Trace:
-> > > > > > >       <TASK>
-> > > > > > >       ? drm_fbdev_generic_helper_fb_dirty+0x207/0x330 [drm_kms_helper]
-> > > > > > >       drm_fb_helper_damage_work+0x8f/0x170 [drm_kms_helper]
-> > > > > > >       process_one_work+0x21f/0x430
-> > > > > > >       worker_thread+0x4e/0x3c0
-> > > > > > >       ? __pfx_worker_thread+0x10/0x10
-> > > > > > >       kthread+0xf4/0x120
-> > > > > > >       ? __pfx_kthread+0x10/0x10
-> > > > > > >       ret_from_fork+0x2c/0x50
-> > > > > > >       </TASK>
-> > > > > > >      CR2: ffffa17d40e0b000
-> > > > > > >      ---[ end trace 0000000000000000 ]---
-> > > > > > > 
-> > > > > > > We also add trival code in this patch to restrict the damage rect beyond
-> > > > > > > the last line of the framebuffer.
-> > > > > > Nice catch!
-> > > > >    :)
-> > > > > > > Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
-> > > > > > > ---
-> > > > > > >     drivers/gpu/drm/drm_fb_helper.c     | 2 +-
-> > > > > > >     drivers/gpu/drm/drm_fbdev_generic.c | 2 ++
-> > > > > > >     2 files changed, 3 insertions(+), 1 deletion(-)
-> > > > > > > 
-> > > > > > > diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-> > > > > > > index 64458982be40..a2b749372759 100644
-> > > > > > > --- a/drivers/gpu/drm/drm_fb_helper.c
-> > > > > > > +++ b/drivers/gpu/drm/drm_fb_helper.c
-> > > > > > > @@ -645,7 +645,7 @@ static void drm_fb_helper_memory_range_to_clip(struct fb_info *info, off_t off,
-> > > > > > >             u32 x1 = 0;
-> > > > > > >             u32 y1 = off / info->fix.line_length;
-> > > > > > >             u32 x2 = info->var.xres;
-> > > > > > > -  u32 y2 = DIV_ROUND_UP(end, info->fix.line_length);
-> > > > > > > +  u32 y2 = min_t(u32, DIV_ROUND_UP(end, info->fix.line_length), info->var.yres);
-> > > > > > So for additional robustness I think it'd be good if we change the entire
-> > > > > > computation here to use drm_framebuffer data and not fb_info data, because
-> > > > > > fundamentally that's what the drm kms code consumes. It should all match
-> > > > > > anyway, but I think it makes the code more obviously correct.
-> > > > > > 
-> > > > > > So in the entire function instead of looking at fb_info->fix we should
-> > > > > > probably look at
-> > > > > > 
-> > > > > >      struct drm_fb_helper *helper = info->par;
-> > > > > > 
-> > > > > > And then helper->fb->pitches[0] and helper->fb->height.
-> > > > > > 
-> > > > > > If you agree would be great if you can please respin with that (and the
-> > > > > > commit message augmented to explain why we do the change)?
-> > > > > Yes, I'm agree.
-> > > > > 
-> > > > > Thank you for guidance, I will refine this patch with `helper = info->par`.
-> > > > > 
-> > > > > I will send a v2 when I finished.
-> > > > > 
-> > > > > > >             if ((y2 - y1) == 1) {
-> > > > > > >                     /*
-> > > > > > > diff --git a/drivers/gpu/drm/drm_fbdev_generic.c b/drivers/gpu/drm/drm_fbdev_generic.c
-> > > > > > > index 8e5148bf40bb..a6daecb5f640 100644
-> > > > > > > --- a/drivers/gpu/drm/drm_fbdev_generic.c
-> > > > > > > +++ b/drivers/gpu/drm/drm_fbdev_generic.c
-> > > > > > > @@ -95,6 +95,8 @@ static int drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
-> > > > > > >             fb_helper->fb = buffer->fb;
-> > > > > > >             screen_size = buffer->gem->size;
-> > > > > > I guess you forgot to remove this line here?
-> > > > > Yes, this line should be removed in this patch. I overlooked this, sorry.
-> > > > > 
-> > > > > > Also I'm not understanding
-> > > > > > why this matters, I think you're fix only needs the above chunk, not this
-> > > > > > one? If I got this right then please drop this part, there's drivers which
-> > > > > > only use drm_fb_helper.c but not drm_fbdev_generic.c, and from what I can
-> > > > > > tell they all still set the gem buffer size here.
-> > > > > > 
-> > > > > > If otoh we need this too, then there's a few more places that need to be
-> > > > > > fixed.
-> > > > > I think we need this line, otherwise wrapped around will be happen.
-> > > > > 
-> > > > > Because I found that the value of variable`y1` will be larger in number than
-> > > > > the variable `y2` by 1,
-> > > > > 
-> > > > > which are computed  in drm_fb_helper_memory_range_to_clip().
-> > > > > 
-> > > > > 
-> > > > > This phenomenon will emerged on platforms with large page size or
-> > > > > 
-> > > > > non page size divisiable display resolution case. Take the LoongArch and
-> > > > > Mips as an example,
-> > > > > 
-> > > > > the default page size is 16KB(to avoid cache alias).  Even with the most
-> > > > > frequently used
-> > > > > 
-> > > > > 1920x1080 screen, the screen_size can not be divided exactly.
-> > > > > 
-> > > > > The total size of the shadow buffer is 1920x1080x4 bytes, 1920x1080x4 /
-> > > > > 16384 = 506.25
-> > > > > 
-> > > > > TTM manage the vram in the term of pages, so TTM will allocate 507 pages for
-> > > > > us.
-> > > > > 
-> > > > > 507x16384 = 8306688 bytes.
-> > > > > 
-> > > > > 
-> > > > > drm_fb_helper_memory_range_to_clip() will be called when running fbdev eof
-> > > > > test in the IGT.
-> > > > > 
-> > > > > with 8306688 as its second parameter. while 8306688 / (1920x4) = 1081, this
-> > > > > cause y1 out of bound.
-> > > > > 
-> > > > > Simply restrict y2 with a min_t() function yeild 1080 in this case, but y2 -
-> > > > > y1 cause *wrap around* here.
-> > > > > 
-> > > > > because they are both unsigned number.
-> > > > > 
-> > > > > 
-> > > > > drm_rect_init() function cast this unsigned int type to int type in end of
-> > > > > drm_fb_helper_memory_range_to_clip(),
-> > > > > 
-> > > > > but the last argument of drm_fb_helper_damage() function is a u32 type,
-> > > > > 
-> > > > > it cast the return value of  drm_rect_height(&damage_area) back to unsigned
-> > > > > type.
-> > > > > 
-> > > > > Yet, another wrapped around with truncation happened in
-> > > > > drm_fb_helper_add_damage_clip()
-> > > > > 
-> > > > > called by subsequent drm_fb_helper_damage() function.
-> > > > > 
-> > > > > I finally got reject by drm_fbdev_generic_helper_fb_dirty() with follow
-> > > > > code:
-> > > > > 
-> > > > > ```
-> > > > > 
-> > > > >       /* Call damage handlers only if necessary */
-> > > > >       if (!(clip->x1 < clip->x2 && clip->y1 < clip->y2))
-> > > > >           return 0;
-> > > > > 
-> > > > > ```
-> > > > > 
-> > > > > On x86-64 platform, because 1920x1080x4 dumb buffer is lucky, it be divided
-> > > > > exactly by 4KB(page size).
-> > > > > 
-> > > > > But other resolution will not as luck as this one. Right, fbdev test will be
-> > > > > pasted, but wrap around
-> > > > > 
-> > > > > happens many time.
-> > > > > 
-> > > > > Therefore, as long as a larger buffer is allowed to exposed to the
-> > > > > user-space.
-> > > > > 
-> > > > > A chance is given to the user-space,  to go beyond of the bottom bound of
-> > > > > the actual active display area.
-> > > > > 
-> > > > > I not sure if this is intended, I feel it should not be allowable by
-> > > > > intuition.
-> > > > Ah yes, thanks for the in-depth explanation. But I think we need a
-> > > > different fix, by also limiting y1. Otherwise for really big page sizes
-> > > > (64k on arm64 iirc) and really small screens (there's i2c panels with just
-> > > > a few lines) we might still run into the issue of y1 being too large.
-> > > > 
-> > > > So we need to limit both y1 and y2. I think it's ok to let y1 == y2 slip
-> > > > through, since as you point out that's filtered later on.
-> > > > 
-> > > > The userspace api is that we should expose the full fbdev buffer and allow
-> > > > writes into the entire thing. It's just that for the explicit upload with
-> > > > damage rects we need to make sure we're staying within the real buffer.
-> > > > -Daniel
-> > > > 
-> > > Limiting y1 is easy, and this is necessary, because it is the crazy
-> > > fbdev test of IGT writing after EOF intentionally.
-> > > 
-> > > But there some difficulties for me to avoid using info->fix and info->var ,
-> > > 
-> > > I found all other functions are surrounding the info->fix and info-var.
-> > > 
-> > > There seems no good variable to replace info->var related data structure.
-> > > 
-> > > Partially replacement may introduce confusion, this somewhat beyond my
-> > > ability.
-> > > 
-> > > I'm afraid of introducing out-of-bound in horizontal direction for
-> > > multi-screen case.
-> > > 
-> > > Using fb_info->fix is still more safe.
-> > > 
-> > > Can I  respin my patch by still using fb_info->fix here?
-> > Which one do you have an issue with finding the right drm variable? I
-> > can help with that.
-> > -Daniel
-> 
-> The info->var.xres and info->var.bits_per_pixel in
-> drm_fb_helper_memory_range_to_clip() function.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------kw7iFhKw13vJ7UmbMcAblKY4
+Content-Type: multipart/mixed; boundary="------------6vEJ0gbTbdJmFYokKbgtqE9W";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Sui Jingfeng <15330273260@189.cn>, Maxime Ripard <mripard@kernel.org>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Sui Jingfeng <suijingfeng@loongson.cn>, Li Yi <liyi@loongson.cn>,
+ Javier Martinez Canillas <javierm@redhat.com>, Helge Deller <deller@gmx.de>,
+ Lucas De Marchi <lucas.demarchi@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
+Message-ID: <fccc494f-0e52-5fdf-0e40-acc29177c73c@suse.de>
+Subject: Re: [PATCH v2] drm/fbdev-generic: prohibit potential out-of-bounds
+ access
+References: <20230413180622.1014016-1-15330273260@189.cn>
+In-Reply-To: <20230413180622.1014016-1-15330273260@189.cn>
 
-This should switch the existing code over to using drm_framebuffer instead
-of fbdev:
+--------------6vEJ0gbTbdJmFYokKbgtqE9W
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
+SGksDQoNCnRoYW5rcyBmb3IgdGhlIHBhdGNoLiBUaGlzIGlzIGVmZmVjdGl2ZWx5IGEgcmV2
+ZXJ0IG9mIGNvbW1pdCANCjhmYmM5YWY1NWRlMCAoImRybS9mYmRldi1nZW5lcmljOiBTZXQg
+c2NyZWVuIHNpemUgdG8gc2l6ZSBvZiBHRU0gDQpidWZmZXIiKS4gUGxlYXNlIGFkZCBhIEZp
+eGVzIHRhZy4NCg0KQW0gMTMuMDQuMjMgdW0gMjA6MDYgc2NocmllYiBTdWkgSmluZ2Zlbmc6
+DQo+IEZyb206IFN1aSBKaW5nZmVuZyA8c3VpamluZ2ZlbmdAbG9vbmdzb24uY24+DQo+IA0K
+PiBUaGUgY3JhenkgZmJkZXYgdGVzdCBvZiBJR1QgbWF5IHdyaXRlIGFmdGVyIEVPRiwgd2hp
+Y2ggbGVhZCB0byBvdXQtb2YtYm91bmQNCg0KUGxlYXNlIGRyb3AgJ2NyYXp5Jy4gOikNCg0K
+PiBhY2Nlc3MgZm9yIHRoZSBkcm0gZHJpdmVycyB1c2luZyBmYmRldi1nZW5lcmljLiBGb3Ig
+ZXhhbXBsZSwgcnVuIGZiZGV2IHRlc3QNCj4gb24gYSB4ODYtNjQrYXN0MjQwMCBwbGF0Zm9y
+bSB3aXRoIDE2ODB4MTA1MCByZXNvbHV0aW9uIHdpbGwgY2F1c2UgdGhlIGxpbnV4DQo+IGtl
+cm5lbCBoYW5nIHdpdGggZm9sbG93aW5nIGNhbGwgdHJhY2U6DQo+IA0KPiAgICBPb3BzOiAw
+MDAwIFsjMV0gUFJFRU1QVCBTTVAgUFRJDQo+ICAgIFtJR1RdIGZiZGV2OiBzdGFydGluZyBz
+dWJ0ZXN0IGVvZg0KPiAgICBXb3JrcXVldWU6IGV2ZW50cyBkcm1fZmJfaGVscGVyX2RhbWFn
+ZV93b3JrIFtkcm1fa21zX2hlbHBlcl0NCj4gICAgW0lHVF0gZmJkZXY6IHN0YXJ0aW5nIHN1
+YnRlc3QgbnVsbHB0cg0KPiANCj4gICAgUklQOiAwMDEwOm1lbWNweV9lcm1zKzB4YS8weDIw
+DQo+ICAgIFJTUDogMDAxODpmZmZmYTE3ZDQwMTY3ZDk4IEVGTEFHUzogMDAwMTAyNDYNCj4g
+ICAgUkFYOiBmZmZmYTE3ZDRlYjdmYTgwIFJCWDogZmZmZmExN2Q0MGUwYWE4MCBSQ1g6IDAw
+MDAwMDAwMDAwMDE0YzANCj4gICAgUkRYOiAwMDAwMDAwMDAwMDAxYTQwIFJTSTogZmZmZmEx
+N2Q0MGUwYjAwMCBSREk6IGZmZmZhMTdkNGViODAwMDANCj4gICAgUkJQOiBmZmZmYTE3ZDQw
+MTY3ZTIwIFIwODogMDAwMDAwMDAwMDAwMDAwMCBSMDk6IGZmZmY4OTUyMmVjZmY4YzANCj4g
+ICAgUjEwOiBmZmZmYTE3ZDRlNGM1MDAwIFIxMTogMDAwMDAwMDAwMDAwMDAwMCBSMTI6IGZm
+ZmZhMTdkNGViN2ZhODANCj4gICAgUjEzOiAwMDAwMDAwMDAwMDAxYTQwIFIxNDogMDAwMDAw
+MDAwMDAwMDQxYSBSMTU6IGZmZmZhMTdkNDAxNjdlMzANCj4gICAgRlM6ICAwMDAwMDAwMDAw
+MDAwMDAwKDAwMDApIEdTOmZmZmY4OTUyNTczODAwMDAoMDAwMCkga25sR1M6MDAwMDAwMDAw
+MDAwMDAwMA0KPiAgICBDUzogIDAwMTAgRFM6IDAwMDAgRVM6IDAwMDAgQ1IwOiAwMDAwMDAw
+MDgwMDUwMDMzDQo+ICAgIENSMjogZmZmZmExN2Q0MGUwYjAwMCBDUjM6IDAwMDAwMDAxZWFl
+Y2EwMDYgQ1I0OiAwMDAwMDAwMDAwMTcwNmUwDQo+ICAgIENhbGwgVHJhY2U6DQo+ICAgICA8
+VEFTSz4NCj4gICAgID8gZHJtX2ZiZGV2X2dlbmVyaWNfaGVscGVyX2ZiX2RpcnR5KzB4MjA3
+LzB4MzMwIFtkcm1fa21zX2hlbHBlcl0NCj4gICAgIGRybV9mYl9oZWxwZXJfZGFtYWdlX3dv
+cmsrMHg4Zi8weDE3MCBbZHJtX2ttc19oZWxwZXJdDQo+ICAgICBwcm9jZXNzX29uZV93b3Jr
+KzB4MjFmLzB4NDMwDQo+ICAgICB3b3JrZXJfdGhyZWFkKzB4NGUvMHgzYzANCj4gICAgID8g
+X19wZnhfd29ya2VyX3RocmVhZCsweDEwLzB4MTANCj4gICAgIGt0aHJlYWQrMHhmNC8weDEy
+MA0KPiAgICAgPyBfX3BmeF9rdGhyZWFkKzB4MTAvMHgxMA0KPiAgICAgcmV0X2Zyb21fZm9y
+aysweDJjLzB4NTANCj4gICAgIDwvVEFTSz4NCj4gICAgQ1IyOiBmZmZmYTE3ZDQwZTBiMDAw
+DQo+ICAgIC0tLVsgZW5kIHRyYWNlIDAwMDAwMDAwMDAwMDAwMDAgXS0tLQ0KPiANCj4gVGhl
+IGluZGlyZWN0IHJlYXNvbiBpcyBkcm1fZmJfaGVscGVyX21lbW9yeV9yYW5nZV90b19jbGlw
+KCkgZ2VuZXJhdGUgZGFtYWdlDQo+IHJlY3RhbmdsZXMgd2hpY2ggcGFydGlhbGx5IG9yIGNv
+bXBsZXRlbHkgZ28gb3V0IG9mIHRoZSBhY3RpdmUgZGlzcGxheSBhcmVhLg0KPiBUaGUgc2Vj
+b25kIG9mIGFyZ3VtZW50ICdvZmYnIGlzIHBhc3NpbmcgZnJvbSB0aGUgdXNlci1zcGFjZSwg
+dGhpcyB3aWxsIGxlYWQNCj4gdG8gdGhlIG91dC1vZi1ib3VuZCBpZiBpdCBpcyBsYXJnZSB0
+aGFuIChmYl9oZWlnaHQgKyAxKSAqIGZiX3BpdGNoZXM7IHdoaWxlDQo+IERJVl9ST1VORF9V
+UCgpIG1heSBhbHNvIGNvbnRyb2J1dGUgdG8gZXJyb3IgYnkgMS4NCj4gDQo+IFRoaXMgcGF0
+Y2ggd2lsbCBhZGQgY29kZSB0byByZXN0cmljdCB0aGUgZGFtYWdlIHJlY3QgY29tcHV0ZWQg
+Z28gYmV5b25kIG9mDQo+IHRoZSBsYXN0IGxpbmUgb2YgdGhlIGZyYW1lYnVmZmVyLg0KPiAN
+Cj4gU2lnbmVkLW9mZi1ieTogU3VpIEppbmdmZW5nIDxzdWlqaW5nZmVuZ0Bsb29uZ3Nvbi5j
+bj4NCj4gLS0tDQo+ICAgZHJpdmVycy9ncHUvZHJtL2RybV9mYl9oZWxwZXIuYyAgICAgfCAx
+NiArKysrKysrKysrKystLS0tDQo+ICAgZHJpdmVycy9ncHUvZHJtL2RybV9mYmRldl9nZW5l
+cmljLmMgfCAgMiArLQ0KPiAgIDIgZmlsZXMgY2hhbmdlZCwgMTMgaW5zZXJ0aW9ucygrKSwg
+NSBkZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vZHJt
+X2ZiX2hlbHBlci5jIGIvZHJpdmVycy9ncHUvZHJtL2RybV9mYl9oZWxwZXIuYw0KPiBpbmRl
+eCA2NDQ1ODk4MmJlNDAuLjZiYjFiOGIyN2Q3YSAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9n
+cHUvZHJtL2RybV9mYl9oZWxwZXIuYw0KPiArKysgYi9kcml2ZXJzL2dwdS9kcm0vZHJtX2Zi
+X2hlbHBlci5jDQo+IEBAIC02NDEsMTkgKzY0MSwyNyBAQCBzdGF0aWMgdm9pZCBkcm1fZmJf
+aGVscGVyX2RhbWFnZShzdHJ1Y3QgZHJtX2ZiX2hlbHBlciAqaGVscGVyLCB1MzIgeCwgdTMy
+IHksDQo+ICAgc3RhdGljIHZvaWQgZHJtX2ZiX2hlbHBlcl9tZW1vcnlfcmFuZ2VfdG9fY2xp
+cChzdHJ1Y3QgZmJfaW5mbyAqaW5mbywgb2ZmX3Qgb2ZmLCBzaXplX3QgbGVuLA0KPiAgIAkJ
+CQkJICAgICAgIHN0cnVjdCBkcm1fcmVjdCAqY2xpcCkNCj4gICB7DQo+ICsJdTMyIGxpbmVf
+bGVuZ3RoID0gaW5mby0+Zml4LmxpbmVfbGVuZ3RoOw0KPiArCXUzMiBmYl9oZWlnaHQgPSBp
+bmZvLT52YXIueXJlczsNCj4gICAJb2ZmX3QgZW5kID0gb2ZmICsgbGVuOw0KPiAgIAl1MzIg
+eDEgPSAwOw0KPiAtCXUzMiB5MSA9IG9mZiAvIGluZm8tPmZpeC5saW5lX2xlbmd0aDsNCj4g
+Kwl1MzIgeTEgPSBvZmYgLyBsaW5lX2xlbmd0aDsNCj4gICAJdTMyIHgyID0gaW5mby0+dmFy
+LnhyZXM7DQo+IC0JdTMyIHkyID0gRElWX1JPVU5EX1VQKGVuZCwgaW5mby0+Zml4LmxpbmVf
+bGVuZ3RoKTsNCj4gKwl1MzIgeTIgPSBESVZfUk9VTkRfVVAoZW5kLCBsaW5lX2xlbmd0aCk7
+DQo+ICsNCj4gKwkvKiBEb24ndCBhbGxvdyBhbnkgb2YgdGhlbSBiZXlvbmQgdGhlIGJvdHRv
+bSBib3VuZCBvZiBkaXNwbGF5IGFyZWEgKi8NCj4gKwlpZiAoeTEgPiBmYl9oZWlnaHQpDQo+
+ICsJCXkxID0gZmJfaGVpZ2h0Ow0KPiArCWlmICh5MiA+IGZiX2hlaWdodCkNCj4gKwkJeTIg
+PSBmYl9oZWlnaHQ7DQo+ICAgDQo+ICAgCWlmICgoeTIgLSB5MSkgPT0gMSkgew0KPiAgIAkJ
+LyoNCj4gICAJCSAqIFdlJ3ZlIG9ubHkgd3JpdHRlbiB0byBhIHNpbmdsZSBzY2FubGluZS4g
+VHJ5IHRvIHJlZHVjZQ0KPiAgIAkJICogdGhlIG51bWJlciBvZiBob3Jpem9udGFsIHBpeGVs
+cyB0aGF0IG5lZWQgYW4gdXBkYXRlLg0KPiAgIAkJICovDQo+IC0JCW9mZl90IGJpdF9vZmYg
+PSAob2ZmICUgaW5mby0+Zml4LmxpbmVfbGVuZ3RoKSAqIDg7DQo+IC0JCW9mZl90IGJpdF9l
+bmQgPSAoZW5kICUgaW5mby0+Zml4LmxpbmVfbGVuZ3RoKSAqIDg7DQo+ICsJCW9mZl90IGJp
+dF9vZmYgPSAob2ZmICUgbGluZV9sZW5ndGgpICogODsNCj4gKwkJb2ZmX3QgYml0X2VuZCA9
+IChlbmQgJSBsaW5lX2xlbmd0aCkgKiA4Ow0KDQpQbGVhc2Ugc2NyYXRjaCBhbGwgdGhlc2Ug
+Y2hhbmdlcy4gVGhlIGN1cnJlbnQgY29kZSBzaG91bGQgd29yayBhcyANCmludGVuZGVkLiBP
+bmx5IHRoZSBnZW5lcmljIGZiZGV2IGVtdWxhdGlvbiB1c2VzIHRoaXMgY29kZSBhbmQgaXQg
+c2hvdWxkIA0KcmVhbGx5IGJlIG1vdmVkIHRoZXJlIGF0IHNvbWUgcG9pbnQuDQoNCj4gICAN
+Cj4gICAJCXgxID0gYml0X29mZiAvIGluZm8tPnZhci5iaXRzX3Blcl9waXhlbDsNCj4gICAJ
+CXgyID0gRElWX1JPVU5EX1VQKGJpdF9lbmQsIGluZm8tPnZhci5iaXRzX3Blcl9waXhlbCk7
+DQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vZHJtX2ZiZGV2X2dlbmVyaWMuYyBi
+L2RyaXZlcnMvZ3B1L2RybS9kcm1fZmJkZXZfZ2VuZXJpYy5jDQo+IGluZGV4IDhlNTE0OGJm
+NDBiYi4uYjA1N2NmYmJhOTM4IDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL2dwdS9kcm0vZHJt
+X2ZiZGV2X2dlbmVyaWMuYw0KPiArKysgYi9kcml2ZXJzL2dwdS9kcm0vZHJtX2ZiZGV2X2dl
+bmVyaWMuYw0KPiBAQCAtOTQsNyArOTQsNyBAQCBzdGF0aWMgaW50IGRybV9mYmRldl9nZW5l
+cmljX2hlbHBlcl9mYl9wcm9iZShzdHJ1Y3QgZHJtX2ZiX2hlbHBlciAqZmJfaGVscGVyLA0K
+PiAgIAlmYl9oZWxwZXItPmJ1ZmZlciA9IGJ1ZmZlcjsNCj4gICAJZmJfaGVscGVyLT5mYiA9
+IGJ1ZmZlci0+ZmI7DQo+ICAgDQo+IC0Jc2NyZWVuX3NpemUgPSBidWZmZXItPmdlbS0+c2l6
+ZTsNCj4gKwlzY3JlZW5fc2l6ZSA9IHNpemVzLT5zdXJmYWNlX2hlaWdodCAqIGJ1ZmZlci0+
+ZmItPnBpdGNoZXNbMF07DQoNCkkgZ3Vlc3Mgd2Ugc2ltcGx5IGdvIGJhY2sgdG8gdGhpcyBs
+aW5lLiBJJ2QgUi1iIGEgcGF0Y2ggdGhhdCBkb2VzIA0KZXhhY3RseSB0aGlzLg0KDQpCdXQg
+c29tZSBleHBsYW5hdGlvbiBpcyBpbiBvcmRlci4gTWF5YmUgeW91IGNhbiBhZGQgdGhpcyBh
+cyBhIGNvbW1lbnQgdG8gDQp0aGUgY29tcHV0YXRpb24sIGFzIGl0J3Mgbm90IG9idmlvdXM6
+DQoNClRoZSB2YWx1ZSBvZiBzY3JlZW5fc2l6ZSBzaG91bGQgYWN0dWFsbHkgYmUgdGhlIHNp
+emUgb2YgdGhlIGdlbSBidWZmZXIuIA0KSW4gYSBwaHlzaWNhbCBmcmFtZWJ1ZmZlciAoaS5l
+LiwgdmlkZW8gbWVtb3J5KSwgdGhlIHNpemUgd291bGQgYmUgYSANCm11bHRpcGxlIG9mIHRo
+ZSBwYWdlIHNpemUsIGJ1dCBub3QgbmVjZXNzYXJpbHkgYSBtdWx0aXBsZSBvZiB0aGUgc2Ny
+ZWVuIA0KcmVzb2x1dGlvbi4gVGhlcmUgYXJlIGFsc28gcGFuIGZiZGV2J3Mgb3BlcmF0aW9u
+cywgYW5kIHdlIGNvdWxkIHBvc3NpYmx5IA0KdXNlIERSTSBidWZmZXJzIHRoYXQgYXJlIG5v
+dCBtdWx0aXBsZXMgb2YgdGhlIHNjcmVlbiB3aWR0aC4gQnV0IHRoZSANCnVwZGF0ZSBjb2Rl
+IHJlcXVpcmVzIHRoZSB1c2Ugb2YgZHJtX2ZyYW1lYnVmZmVyX2Z1bmNzLmRpcnR5LCB3aGlj
+aCB0YWtlcyANCmEgY2xpcHBpbmcgcmVjdGFuZ2xlIGFuZCB0aGVyZWZvcmUgZG9lc24ndCB3
+b3JrIHdlbGwgd2l0aCB0aGVzZSBvZGQgDQp2YWx1ZXMgZm9yIHNjcmVlbl9zaXplLg0KDQpC
+ZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+ICAgCXNjcmVlbl9idWZmZXIgPSB2emFsbG9jKHNj
+cmVlbl9zaXplKTsNCj4gICAJaWYgKCFzY3JlZW5fYnVmZmVyKSB7DQo+ICAgCQlyZXQgPSAt
+RU5PTUVNOw0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2
+ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCk1heGZlbGRz
+dHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5i
+ZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
 
-diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index ef4eb8b12766..99ca69dd432f 100644
---- a/drivers/gpu/drm/drm_fb_helper.c
-+++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -647,22 +647,26 @@ static void drm_fb_helper_damage(struct drm_fb_helper *helper, u32 x, u32 y,
- static void drm_fb_helper_memory_range_to_clip(struct fb_info *info, off_t off, size_t len,
- 					       struct drm_rect *clip)
- {
-+	struct drm_fb_helper *helper = info->par;
-+
- 	off_t end = off + len;
- 	u32 x1 = 0;
- 	u32 y1 = off / info->fix.line_length;
--	u32 x2 = info->var.xres;
--	u32 y2 = DIV_ROUND_UP(end, info->fix.line_length);
-+	u32 x2 = helper->fb->height;
-+	unsigned stride = helper->fb->pitches[0];
-+	u32 y2 = DIV_ROUND_UP(end, stride);
-+	int bpp = drm_format_info_bpp(helper->fb->format, 0);
- 
- 	if ((y2 - y1) == 1) {
- 		/*
- 		 * We've only written to a single scanline. Try to reduce
- 		 * the number of horizontal pixels that need an update.
- 		 */
--		off_t bit_off = (off % info->fix.line_length) * 8;
--		off_t bit_end = (end % info->fix.line_length) * 8;
-+		off_t bit_off = (off % stride) * 8;
-+		off_t bit_end = (end % stride) * 8;
- 
--		x1 = bit_off / info->var.bits_per_pixel;
--		x2 = DIV_ROUND_UP(bit_end, info->var.bits_per_pixel);
-+		x1 = bit_off / bpp;
-+		x2 = DIV_ROUND_UP(bit_end, bpp);
- 	}
- 
- 	drm_rect_init(clip, x1, y1, x2 - x1, y2 - y1);
+--------------6vEJ0gbTbdJmFYokKbgtqE9W--
 
-> 
-> > > > > > > +  screen_size = sizes->surface_height * buffer->fb->pitches[0];
-> > > > > > > +
-> > > > > > >             screen_buffer = vzalloc(screen_size);
-> > > > > > >             if (!screen_buffer) {
-> > > > > > >                     ret = -ENOMEM;
-> > > > > > Cheers, Daniel
-> > > > > > 
-> > > > > > > --
-> > > > > > > 2.25.1
-> > > > > > > 
-> > 
-> > 
+--------------kw7iFhKw13vJ7UmbMcAblKY4
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmQ4VRIFAwAAAAAACgkQlh/E3EQov+D5
+fhAAtlkvm3QifdYSU3GGDiC4377tsnVWUM7Pw/L9a2NQSFYF8SlXpV4cnW3+0Cdz/q47h0bGmI/+
+LfZqD44wd0JT+K4VEmlEgGulfSQPQU0F23ZZq2a2bTlCSqBS9gvSQI9mLZ8SgT6hoIKTrA9ja2La
+hJrba9LNkiwmLVICbT1BC9sZpBfPvGM6Umh5g43GLy6OOh9zSBu7XK3cBL1NhHpO9/ci7PmVPVQt
+XA89IFh/M3WJxF2ZewI2n9UFWEsvbRhQdOE5YmAAYh8Ghp+YXa1wUaNL7V0MCZJt6QDwj5kyX1lW
+vbwrRLBWJNR8W2OHx/XCqdxusXxVRK+2ILj+0atgvEzPwvjH241ZxrtsVI0iEnyM9dFGUnDv0XGH
+DVYz5njRxpykJ4yhyIczoKN4MloZiqqWuopMD+Yz8TEONXHl5EXvBIwPP9uC+Z9SaQNIUDO8Qa6E
+TVhV1M8+xQrRaNioYFMqRDmyaIBYqQKBXcKZA8YhGcT4d416Oyn6Tc7LQJTS8Y1G2AdSkzsiXSvA
+U0fQFvYJHM/cEMDi/dxKPO5UqFh19EiDP65cW4NOYdHXKTAYswPyVL6J12A5dwfPOvtsaWU7aGrF
+TNV9jQpiNttosyn0GBX8vkaZSZszGVXKRXVxzsAlfjqcYQbLrgRk9T7v8UAGyR0P4R9m4TizI96X
+UWo=
+=8CUH
+-----END PGP SIGNATURE-----
+
+--------------kw7iFhKw13vJ7UmbMcAblKY4--

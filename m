@@ -2,138 +2,168 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B9D5C77B73
-	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Apr 2023 20:05:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B6ACC77B61
+	for <linux-fbdev@archiver.kernel.org>; Thu, 13 Apr 2023 04:17:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229521AbjDLUFU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 12 Apr 2023 16:05:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54628 "EHLO
+        id S230161AbjDMER5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 13 Apr 2023 00:17:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45152 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229499AbjDLUFT (ORCPT
+        with ESMTP id S230147AbjDMERX (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 12 Apr 2023 16:05:19 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E7451B7;
-        Wed, 12 Apr 2023 13:05:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1681329912; i=deller@gmx.de;
-        bh=DhiBhSI+RKwKHjN5fzhNl0KOn0kW2D3gA0VJTq059aw=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=llgcc53DMxxE6lpZd5HyuAX1EYgvG3AyV0ww1S/ozYH6kLhL7wp+j6n2wNq0+3W4L
-         vCQWpBCwaYbW4CD1LZO7ws9qHj5VSjkjO8gu0CMR4DAzp0xsf7qgpdfUlocN0FdbhT
-         PdEcuQuawOnPFSr/GtELlAw/i5neuudZC6PRAsf6AX5aDBkYUgsU+xLo7EpDAbYplL
-         CiO5l0DaYU0VPZTRFo/kckeeVV27/WbQAwtYp4i9NZNY0fa8Ud0zdfmHQQTk02BKRy
-         +8MsVFODiP6amZKil2Z1Z6LiE6N2T3dXIBppyGDG2DLqKy1rUBju61fNz2/+ri9aHB
-         ZNgAmGyrN8W1g==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.156.74]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MMofc-1q3Fd61ygm-00ImUk; Wed, 12
- Apr 2023 22:05:12 +0200
-Message-ID: <9d0c09c0-73ff-d655-d5d2-17c90b3e69ec@gmx.de>
-Date:   Wed, 12 Apr 2023 22:05:12 +0200
+        Thu, 13 Apr 2023 00:17:23 -0400
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 39DC386AA;
+        Wed, 12 Apr 2023 21:15:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681359341; x=1712895341;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=Hud/tEH/bO4ykSDB5vwIzW+i0/5nC8j5l6CjYVfUw8w=;
+  b=VGx1BflOdGoAqLNxc5jgyPNY1mkFT7S+FaTloPX+lkhFLpFEXvGouXtD
+   6rNF8b8CIe7oHl8HHQJbHs8O57SxWO/xnU4j863aa2Bgiflar8BcKLlLP
+   6pAamFfNMIQfJMXyegBraYV9IA71zQVVkLc9l+zSSMkLgeiv+tn5clt8q
+   ClHoRVO6eJn1ckN/0YMUTpeGEySFzp/haRpjtIw+adnU8cOphBk/qJH8w
+   KSftDcCPX3m4Rei0hu49wRCj4XkTt+SW5tdjYnUY2zNJ5sEgGK77kj4sO
+   nUUPaiiIeXY7dg/AnqH6L8cvxwauVeF6I6cbB6rGSYekNNhYcK46qmAFS
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10678"; a="406919607"
+X-IronPort-AV: E=Sophos;i="5.98,339,1673942400"; 
+   d="scan'208";a="406919607"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Apr 2023 21:15:40 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10678"; a="682736293"
+X-IronPort-AV: E=Sophos;i="5.98,339,1673942400"; 
+   d="scan'208";a="682736293"
+Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
+  by orsmga007.jf.intel.com with ESMTP; 12 Apr 2023 21:15:34 -0700
+Received: from kbuild by b613635ddfff with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1pmoMv-000YKr-2w;
+        Thu, 13 Apr 2023 04:15:33 +0000
+Date:   Thu, 13 Apr 2023 12:15:09 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Nikita Zhandarovich <n.zhandarovich@fintech.ru>,
+        David Airlie <airlied@gmail.com>
+Cc:     llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+        linux-fbdev@vger.kernel.org, lvc-project@linuxtesting.org,
+        dri-devel@lists.freedesktop.org,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Helge Deller <deller@gmx.de>, amd-gfx@lists.freedesktop.org,
+        Nikita Zhandarovich <n.zhandarovich@fintech.ru>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        intel-gfx@lists.freedesktop.org,
+        linux-mediatek@lists.infradead.org,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>,
+        linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] video/hdmi: minor fixes for *_infoframe_init functions
+Message-ID: <202304131234.hT3mzkju-lkp@intel.com>
+References: <20230412152910.9486-1-n.zhandarovich@fintech.ru>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH] fbdev: modedb: Fix kernel crash in fb_videomode_to_var()
-Content-Language: en-US
-To:     Daniel Vetter <daniel@ffwll.ch>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-parisc@vger.kernel.org
-References: <ZB4GS3zT3oh/afkf@ls3530> <ZDb6IF6Jj0xtVlme@phenom.ffwll.local>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <ZDb6IF6Jj0xtVlme@phenom.ffwll.local>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:3jgaTRHzRGNrj0o+HV3TGa0EqKAIuiqEQiypQJXVw2r6YHDpUjN
- 5IqVgbeqHbvWMGCsU8CiZkS6uCydMwnV2LuikyGBKTR8J6azhwPiQPL9a63g49T9ldT+tPy
- kNXwZdrPGXnGXQd5c+u+nuEN21SoPi491Y1sFrZY96rm/gubGYjzYWxqtOvi4rBwpXw565M
- jz8L9HmaIymVrTYPwGvnw==
-UI-OutboundReport: notjunk:1;M01:P0:fTaMX4pGaiQ=;GlzweesCCZ9Rclzl/v7IJobYtvL
- SRDIN3kr7Y18uN/DgIuCcKJl9BEmECkMd31L4jGx7ICRDCeva3ouZjpajYcZKXHVJ69QoiKO5
- z/lgijr1ytdwOfDgHuIGpvQ3RfG1m+c09CAMoF6J57jJJWSYb3zVjFFlfh81wgs1RVj4xKTE4
- LAOblf8ENfgxrloggfD/nsUmahonIkMq626q5FtK5qwROmJVxUevTsvkA9Vri0HvnLgodIitq
- oK42O120SA0iBHFU+dn5YOstXQghZSoOC4CzZDUoA8WfvUrRUYiqJfaJUWEN28b/gIEn+v7sT
- s45YJfxEX7OHi4RvI1W6G1a+EH0hmgQgouVsCF3/NMmoWcP/yRvmtHtYG2spZPr8fvqrz6P+O
- K3/T20BEB9A51Ub+Qv99WjZ8fynodtFe5CUCrhQxyQXy562sdXj7NnixFGfpPpgIak/EXZL0I
- A9n+wHYembAjfdh4eHcqtmmPGZHs6Bs8m4cVXoUjI1Gy8/Ba4qETcl8hEhvGRFOvFZ1zPWywk
- A8V/GMjSEh2VIEbkkWk8ZaHt1p32tcLLnpueencVzk8bmWhosPNqiimz+ZQ9bxbQQMTWU3cJe
- 67qf3fyxdvWkDlDhqNtUI6B54DPU0uHcHWTUCBOzbK/UMR80/42tUpr2Jpd8J77MPKzHU2rFB
- Yow2h/XHevAkkUPGrhWZnrh3vkW9PW+jhc8tuRBKsSHNqVOvyIXfu2Z8wEAgEIQjFv/ngbiyM
- Ulr0ykrWxb06KTOXlNIlVX664nTxvWm336oepLakr1sQ7GEVLj2fu1d0LFrvkYoIvK68fZL+p
- 1ba+YdsFxzZJimuXVKDKmj6ZNcSoHq70dysRfW5VRAo1gLZPTjwY8NMQkjpczz2CnF4AqgIyo
- 6Zo2tYMQWYCvE9uMer8P9bwTwImnp/XntVn0hDDiKeO50cXFJg5JDwyfdAajPAve7+CQrz2sg
- oFrqoQ==
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20230412152910.9486-1-n.zhandarovich@fintech.ru>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 4/12/23 20:36, Daniel Vetter wrote:
-> On Fri, Mar 24, 2023 at 09:21:31PM +0100, Helge Deller wrote:
->> Fix a kernel crash in the fbdev modedb code which can happen if you boo=
-t
->> a system without any graphic card driver, in which case the dummycon
->> driver takes the console. If you then load a fbdev graphics driver and
->> start a the X11-fbdev the kernel will crash with a backtrace:
->>
->>    IAOQ[0]: fb_videomode_to_var+0xc/0x88
->>   Backtrace:
->>    [<10582ff8>] display_to_var+0x28/0xe8
->>    [<1058584c>] fbcon_switch+0x15c/0x55c
->>    [<105a8a1c>] redraw_screen+0xdc/0x228
->>    [<1059d6f8>] complete_change_console+0x50/0x140
->>    [<1059eae0>] change_console+0x6c/0xdc
->>    [<105ab4f4>] console_callback+0x1a0/0x1a8
->>    [<101cb5e8>] process_one_work+0x1c4/0x3cc
->>    [<101cb978>] worker_thread+0x188/0x4b4
->>    [<101d5a94>] kthread+0xec/0xf4
->>    [<1018801c>] ret_from_kernel_thread+0x1c/0x24
->>
->> The problem is, that the dummycon driver may not have a valid monitor
->> mode defined (which is ok for that driver), so the mode field in
->> fbcon_display can be NULL.
->>
->> Fix the crash by simply returning from fb_var_to_videomode()
->> if the video mode field is NULL.
->>
->> Signed-off-by: Helge Deller <deller@gmx.de>
->> Cc: stable <stable@kernel.org>
->
-> Also here since the other thread is private: I don't think this makes
-> sense, and it shouldn't happen that disp->mode is bogus when we have an
-> fbdev bound for that vc.
->
-> I think the below might work, I spotted this while auditing code around
-> this (but it turned out to be a dead-end for the bug I was chasing):
->
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core=
-/fbcon.c
-> index eb565a10e5cd..1f2ab00ec6d4 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -2684,8 +2684,8 @@ static void fbcon_modechanged(struct fb_info *info=
-)
->   	p =3D &fb_display[vc->vc_num];
->   	set_blitting_type(vc, info);
->
-> +	var_to_display(p, &info->var, info);
->   	if (con_is_visible(vc)) {
-> -		var_to_display(p, &info->var, info);
->   		cols =3D FBCON_SWAP(ops->rotate, info->var.xres, info->var.yres);
->   		rows =3D FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
->   		cols /=3D vc->vc_font.width;
->
-> If this works I can bake it into a real patch.
+Hi Nikita,
 
-Daniel, thanks for your suggested patch!
-Actually I currently can't reproduce my original problem any longer.
-It happened with a specific fbdev driver which I'm currenlty working on, a=
-nd
-in which I probably missed to set a valid video mode, which then led to th=
-e patch
-I originally sent.
-So, for now just ignore my patch.
+kernel test robot noticed the following build errors:
 
-If it happens again I'll test your patch and report back.
+[auto build test ERROR on drm-misc/drm-misc-next]
+[also build test ERROR on tegra/for-next drm-intel/for-linux-next drm-intel/for-linux-next-fixes linus/master v6.3-rc6 next-20230412]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Thanks!
-Helge
+url:    https://github.com/intel-lab-lkp/linux/commits/Nikita-Zhandarovich/video-hdmi-minor-fixes-for-_infoframe_init-functions/20230412-232947
+base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
+patch link:    https://lore.kernel.org/r/20230412152910.9486-1-n.zhandarovich%40fintech.ru
+patch subject: [PATCH] video/hdmi: minor fixes for *_infoframe_init functions
+config: x86_64-randconfig-a005-20230410 (https://download.01.org/0day-ci/archive/20230413/202304131234.hT3mzkju-lkp@intel.com/config)
+compiler: clang version 14.0.6 (https://github.com/llvm/llvm-project f28c006a5895fc0e329fe15fead81e37457cb1d1)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/intel-lab-lkp/linux/commit/36210f5b0ac3046f4c1c1d0c6e392eab40811699
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Nikita-Zhandarovich/video-hdmi-minor-fixes-for-_infoframe_init-functions/20230412-232947
+        git checkout 36210f5b0ac3046f4c1c1d0c6e392eab40811699
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 olddefconfig
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash drivers/gpu/drm/i915/
+
+If you fix the issue, kindly add following tag where applicable
+| Reported-by: kernel test robot <lkp@intel.com>
+| Link: https://lore.kernel.org/oe-kbuild-all/202304131234.hT3mzkju-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+>> drivers/gpu/drm/i915/display/intel_hdmi.c:769:37: error: variable 'ret' is uninitialized when used here [-Werror,-Wuninitialized]
+           if (drm_WARN_ON(encoder->base.dev, ret))
+                                              ^~~
+   include/drm/drm_print.h:630:19: note: expanded from macro 'drm_WARN_ON'
+           drm_WARN((drm), (x), "%s",                                      \
+                            ^
+   include/drm/drm_print.h:620:7: note: expanded from macro 'drm_WARN'
+           WARN(condition, "%s %s: " format,                               \
+                ^~~~~~~~~
+   include/asm-generic/bug.h:131:25: note: expanded from macro 'WARN'
+           int __ret_warn_on = !!(condition);                              \
+                                  ^~~~~~~~~
+   drivers/gpu/drm/i915/display/intel_hdmi.c:756:9: note: initialize the variable 'ret' to silence this warning
+           int ret;
+                  ^
+                   = 0
+   1 error generated.
+
+
+vim +/ret +769 drivers/gpu/drm/i915/display/intel_hdmi.c
+
+b055c8f3ef9f7b drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-07-08  748  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  749  static bool
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  750  intel_hdmi_compute_spd_infoframe(struct intel_encoder *encoder,
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  751  				 struct intel_crtc_state *crtc_state,
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  752  				 struct drm_connector_state *conn_state)
+c0864cb39c6869 drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-08-03  753  {
+7d1675dcb5a16c drivers/gpu/drm/i915/display/intel_hdmi.c Taylor, Clinton A   2022-11-29  754  	struct drm_i915_private *i915 = to_i915(encoder->base.dev);
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  755  	struct hdmi_spd_infoframe *frame = &crtc_state->infoframes.spd.spd;
+5adaea799c1c2c drivers/gpu/drm/i915/intel_hdmi.c         Damien Lespiau      2013-08-06  756  	int ret;
+5adaea799c1c2c drivers/gpu/drm/i915/intel_hdmi.c         Damien Lespiau      2013-08-06  757  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  758  	if (!crtc_state->has_infoframe)
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  759  		return true;
+c0864cb39c6869 drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-08-03  760  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  761  	crtc_state->infoframes.enable |=
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  762  		intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_SPD);
+c0864cb39c6869 drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-08-03  763  
+7d1675dcb5a16c drivers/gpu/drm/i915/display/intel_hdmi.c Taylor, Clinton A   2022-11-29  764  	if (IS_DGFX(i915))
+36210f5b0ac304 drivers/gpu/drm/i915/display/intel_hdmi.c Nikita Zhandarovich 2023-04-12  765  		hdmi_spd_infoframe_init(frame, "Intel", "Discrete gfx");
+7d1675dcb5a16c drivers/gpu/drm/i915/display/intel_hdmi.c Taylor, Clinton A   2022-11-29  766  	else
+36210f5b0ac304 drivers/gpu/drm/i915/display/intel_hdmi.c Nikita Zhandarovich 2023-04-12  767  		hdmi_spd_infoframe_init(frame, "Intel", "Integrated gfx");
+7d1675dcb5a16c drivers/gpu/drm/i915/display/intel_hdmi.c Taylor, Clinton A   2022-11-29  768  
+3a47ae201e0749 drivers/gpu/drm/i915/display/intel_hdmi.c Pankaj Bharadiya    2020-01-15 @769  	if (drm_WARN_ON(encoder->base.dev, ret))
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  770  		return false;
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  771  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  772  	frame->sdi = HDMI_SPD_SDI_PC;
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  773  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  774  	ret = hdmi_spd_infoframe_check(frame);
+3a47ae201e0749 drivers/gpu/drm/i915/display/intel_hdmi.c Pankaj Bharadiya    2020-01-15  775  	if (drm_WARN_ON(encoder->base.dev, ret))
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  776  		return false;
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  777  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  778  	return true;
+c0864cb39c6869 drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-08-03  779  }
+c0864cb39c6869 drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-08-03  780  
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests

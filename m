@@ -2,128 +2,135 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C312CC77B70
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Apr 2023 09:32:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24D84C77B70
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Apr 2023 11:40:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230102AbjDQJcw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 Apr 2023 05:32:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34192 "EHLO
+        id S229542AbjDQLkJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 Apr 2023 07:40:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59936 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229655AbjDQJcv (ORCPT
+        with ESMTP id S229498AbjDQLkI (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 Apr 2023 05:32:51 -0400
-X-Greylist: delayed 538 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 17 Apr 2023 02:32:08 PDT
-Received: from wnew2-smtp.messagingengine.com (wnew2-smtp.messagingengine.com [64.147.123.27])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CEE5F5FDF;
-        Mon, 17 Apr 2023 02:32:07 -0700 (PDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-        by mailnew.west.internal (Postfix) with ESMTP id DD2C02B066BA;
-        Mon, 17 Apr 2023 05:22:47 -0400 (EDT)
-Received: from imap51 ([10.202.2.101])
-  by compute6.internal (MEProxy); Mon, 17 Apr 2023 05:22:49 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-        :cc:content-transfer-encoding:content-type:content-type:date
-        :date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-        :references:reply-to:sender:subject:subject:to:to; s=fm2; t=
-        1681723367; x=1681730567; bh=peYP/lOIqmvTTJ2GJZFK05PdIeVxfQrMTMT
-        dWlxN2bY=; b=hoxslnOKq5L0fgq1KZ5uwFxkfCsDUbQoEitttD9Gb157/4VvDaL
-        fzRTYgwNrKhMTGBEWYk5kV4pCoKxj3IQV0FpUtGeddLg5GfVlMhZex8QF6mhL8p9
-        gvwX4MSUzxesv1YcnaqKaa4Hf8aEonHOEB+LqYDIenoy4k9B5AvOOz7WXYv6rPww
-        vauHxzq0EC93J9INj8HpYFP0uokUJZlvJ0DGwXpWQ8LUcqRJMmLECR08O/Gg7C4C
-        FExoluX3ejusbKwfN3AFnDxBNc0Jh1L5n5E2k8MJ529jR2BSvuckTFMjwePw4/jA
-        IVxKZIBctylYcZmrJ3YTpI6yusKyhHnhjmw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-transfer-encoding
-        :content-type:content-type:date:date:feedback-id:feedback-id
-        :from:from:in-reply-to:in-reply-to:message-id:mime-version
-        :references:reply-to:sender:subject:subject:to:to:x-me-proxy
-        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=
-        1681723367; x=1681730567; bh=peYP/lOIqmvTTJ2GJZFK05PdIeVxfQrMTMT
-        dWlxN2bY=; b=MR4yxKuz3/tjr23pAzsFitwD0Txq7SZ+LasC5Fyh1rdL9W+5uLQ
-        QWuTkcsnaN+XbFlYxewK49c7zL/ltjC0cAxyGzvY+pAqila9tzloSXls1fSGTLU8
-        83j+ql9LP2Am/jKxSL+2eFTD9s2a+pAHNF1s4l+85O8VFC4gAEQAX/IiexVaT7mA
-        1njCOrvD++JH4RDb7rqDNfo30GjQVpEJWnie2UNVdXN3+HoTO7VAHqni1UoK4zJb
-        K0nmV8AH3mMhRqTjxdJcDOoA4dxU/4N4+juQYM/HVijErDhMcN+7kkXCY9vJtEKX
-        A6hZ5WwaK7trmU2l173N30Rm9x+GYS13Hyg==
-X-ME-Sender: <xms:5g89ZGh1XGEKu3GOwuyxUAI_aRj0-gXb1yU9cH41yOyGtrZXXEBRxw>
-    <xme:5g89ZHCJrzk8kcvbfI9uoi9xOXxIpgIcnUMY2tPn_xA8atud9UMgflJi8xJj_xxVr
-    3CIR7jk9VrljLNWmYA>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrvdeliedguddvucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepofgfggfkjghffffhvfevufgtgfesthhqredtreerjeenucfhrhhomhepfdet
-    rhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrg
-    htthgvrhhnpeegfeejhedvledvffeijeeijeeivddvhfeliedvleevheejleetgedukedt
-    gfejveenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
-    grrhhnugesrghrnhgusgdruggv
-X-ME-Proxy: <xmx:5g89ZOF82A9szmMdiIKfUdndIY5Y_J2WWepzSI164UFVULZ600rDfg>
-    <xmx:5g89ZPS9rsGZ3-6dQW4K4hejhxqnpa-f-mX9DnhlkCPRmeMFlap6YA>
-    <xmx:5g89ZDzdQ2ec3Pn4h3UEvgarbJnSwOf3ZSGbcWd6YhZnAMBHYJ805Q>
-    <xmx:5w89ZEqvqQ-8qIHbFuXLaLZUzpDWtqOdQ0aVq4skLKD0cgTZu8vkwIppGeY>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-        id 2AD08B60086; Mon, 17 Apr 2023 05:22:46 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.9.0-alpha0-334-g8c072af647-fm-20230330.001-g8c072af6
-Mime-Version: 1.0
-Message-Id: <55abd7af-acb8-47ce-89db-1722bcf0cb9c@app.fastmail.com>
-In-Reply-To: <2b4f75b8-aa83-8e41-7c99-7c8d573c0f31@suse.de>
-References: <20230406143019.6709-1-tzimmermann@suse.de>
- <20230406143019.6709-2-tzimmermann@suse.de>
- <CAMuHMdUfViWzPbB+GcGUwxmGNxAohfq71Jed3DzS=Cb+gBzotg@mail.gmail.com>
- <2b4f75b8-aa83-8e41-7c99-7c8d573c0f31@suse.de>
-Date:   Mon, 17 Apr 2023 11:22:24 +0200
-From:   "Arnd Bergmann" <arnd@arndb.de>
-To:     "Thomas Zimmermann" <tzimmermann@suse.de>,
-        "Geert Uytterhoeven" <geert@linux-m68k.org>
-Cc:     "Daniel Vetter" <daniel.vetter@ffwll.ch>,
-        "Helge Deller" <deller@gmx.de>,
-        "Javier Martinez Canillas" <javierm@redhat.com>,
-        "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
-        Linux-Arch <linux-arch@vger.kernel.org>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-snps-arc@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
-        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
-        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
-        sparclinux@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH v2 01/19] fbdev: Prepare generic architecture helpers
-Content-Type: text/plain;charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+        Mon, 17 Apr 2023 07:40:08 -0400
+Received: from loongson.cn (mail.loongson.cn [114.242.206.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 205741706;
+        Mon, 17 Apr 2023 04:39:18 -0700 (PDT)
+Received: from loongson.cn (unknown [10.20.42.43])
+        by gateway (Coremail) with SMTP id _____8AxEk5ILj1kOO0dAA--.34881S3;
+        Mon, 17 Apr 2023 19:32:24 +0800 (CST)
+Received: from openarena.loongson.cn (unknown [10.20.42.43])
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8Cx97xDLj1kB8AqAA--.48515S2;
+        Mon, 17 Apr 2023 19:32:21 +0800 (CST)
+From:   Sui Jingfeng <suijingfeng@loongson.cn>
+To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Sui Jingfeng <suijingfeng@loongson.cn>,
+        Li Yi <liyi@loongson.cn>, Helge Deller <deller@gmx.de>,
+        Lucas De Marchi <lucas.demarchi@intel.com>
+Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
+Subject: [PATCH v3] drm/fbdev-generic: prohibit potential out-of-bounds access
+Date:   Mon, 17 Apr 2023 19:32:19 +0800
+Message-Id: <20230417113219.1354078-1-suijingfeng@loongson.cn>
+X-Mailer: git-send-email 2.25.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: AQAAf8Cx97xDLj1kB8AqAA--.48515S2
+X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
+X-Coremail-Antispam: 1Uk129KBjvJXoWxCF17tr43CFWDJF1UGw17Wrg_yoW5ZrWxpF
+        WfKFWUKr4kJFn8Xr47A3WUJw1UAanrZFWxurWxKryjyFyYy3429ryjyrWUWFy5Gr18Jr13
+        trn093W0kr1qyaUanT9S1TB71UUUUjJqnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
+        qI5I8CrVACY4xI64kE6c02F40Ex7xfYxn0WfASr-VFAUDa7-sFnT9fnUUIcSsGvfJTRUUU
+        bf8YFVCjjxCrM7AC8VAFwI0_Jr0_Gr1l1xkIjI8I6I8E6xAIw20EY4v20xvaj40_Wr0E3s
+        1l1IIY67AEw4v_Jrv_JF1l8cAvFVAK0II2c7xJM28CjxkF64kEwVA0rcxSw2x7M28EF7xv
+        wVC0I7IYx2IY67AKxVW5JVW7JwA2z4x0Y4vE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwA2z4
+        x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AKxVW0oVCq3wAaw2AF
+        wI0_JF0_Jw1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqjxCEc2xF0cIa020Ex4CE44I27w
+        Aqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_JF0_Jw1lYx0Ex4A2jsIE
+        14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwCY1x0262kKe7
+        AKxVWUAVWUtwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwCFI7km07C2
+        67AKxVWUAVWUtwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI
+        8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUCVW8
+        JwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Jr0_Gr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r
+        1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Jr0_GrUvcSsG
+        vfC2KfnxnUUI43ZEXa7IU8Dl1DUUUUU==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Apr 17, 2023, at 11:03, Thomas Zimmermann wrote:
-> Am 11.04.23 um 10:08 schrieb Geert Uytterhoeven:
->> On Thu, Apr 6, 2023 at 4:30=E2=80=AFPM Thomas Zimmermann <tzimmermann=
-@suse.de> wrote:
+The fbdev test of IGT may write after EOF, which lead to out-of-bound
+access for the drm drivers using fbdev-generic. For example, on a x86
++ aspeed bmc card platform, with a 1680x1050 resolution display, running
+fbdev test if IGT will cause the linux kernel hang with the following
+call trace:
 
->>> +#ifndef fb_pgprotect
->>> +#define fb_pgprotect fb_pgprotect
->>> +static inline void fb_pgprotect(struct file *file, struct vm_area_s=
-truct *vma,
->>> +                               unsigned long off)
->>=20
->> Does this affect any noMMU platforms that relied on fb_pgprotect()
->> doing nothing before?
->> Perhaps the body below should be protected by "#ifdef CONFIG_MMU"?
->
-> I cannot conclusively answer this question, but I did some grep'ing=20
-> ('git grep ndef | grep CONFIG_MMU'):
->
-> Only the architectures in this patchset provide <asm/fb.h> but nothing=20
-> anywhere uses <asm-generic/fb.h> yet. And of those architectures, only=20
-> arm and m68k have !CONFIG_MMU cases. Those are handled in the rsp=20
-> patches. I think we're good.
+  Oops: 0000 [#1] PREEMPT SMP PTI
+  [IGT] fbdev: starting subtest eof
+  Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
+  [IGT] fbdev: starting subtest nullptr
 
-Agreed. The generic version is just a more elaborate way to do
-nothing here, as the=20
+  RIP: 0010:memcpy_erms+0xa/0x20
+  RSP: 0018:ffffa17d40167d98 EFLAGS: 00010246
+  RAX: ffffa17d4eb7fa80 RBX: ffffa17d40e0aa80 RCX: 00000000000014c0
+  RDX: 0000000000001a40 RSI: ffffa17d40e0b000 RDI: ffffa17d4eb80000
+  RBP: ffffa17d40167e20 R08: 0000000000000000 R09: ffff89522ecff8c0
+  R10: ffffa17d4e4c5000 R11: 0000000000000000 R12: ffffa17d4eb7fa80
+  R13: 0000000000001a40 R14: 000000000000041a R15: ffffa17d40167e30
+  FS:  0000000000000000(0000) GS:ffff895257380000(0000) knlGS:0000000000000000
+  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+  CR2: ffffa17d40e0b000 CR3: 00000001eaeca006 CR4: 00000000001706e0
+  Call Trace:
+   <TASK>
+   ? drm_fbdev_generic_helper_fb_dirty+0x207/0x330 [drm_kms_helper]
+   drm_fb_helper_damage_work+0x8f/0x170 [drm_kms_helper]
+   process_one_work+0x21f/0x430
+   worker_thread+0x4e/0x3c0
+   ? __pfx_worker_thread+0x10/0x10
+   kthread+0xf4/0x120
+   ? __pfx_kthread+0x10/0x10
+   ret_from_fork+0x2c/0x50
+   </TASK>
+  CR2: ffffa17d40e0b000
+  ---[ end trace 0000000000000000 ]---
 
-     vma->vm_page_prot =3D pgprot_writecombine(vma->vm_page_prot);
+The direct reason is that damage rectange computed by
+drm_fb_helper_memory_range_to_clip() does not guaranteed to be in-bound.
+It is already results in workaround code populate to elsewhere. Another
+reason is that exposing a larger buffer size than the actual needed help
+to trigger this bug intrinsic in drm_fb_helper_memory_range_to_clip().
 
-line on nommu just turns into a self-assignment of the same member
-that was set the line before.
+Others fbdev emulation solutions write to the GEM buffer directly, they
+won't reproduce this bug because the .fb_dirty function callback do not
+being hooked, so no chance is given to drm_fb_helper_memory_range_to_clip()
+to generate a out-of-bound when drm_fb_helper_sys_write() is called.
 
-     Arnd
+This patch break the trigger condition of this bug by shrinking the shadow
+buffer size to sizes->surface_height * buffer->fb->pitches[0].
+
+Fixes: '8fbc9af55de0 ("drm/fbdev-generic: Set screen size to size of GEM
+buffer")'
+
+Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
+---
+ drivers/gpu/drm/drm_fbdev_generic.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/drm_fbdev_generic.c b/drivers/gpu/drm/drm_fbdev_generic.c
+index 8e5148bf40bb..b057cfbba938 100644
+--- a/drivers/gpu/drm/drm_fbdev_generic.c
++++ b/drivers/gpu/drm/drm_fbdev_generic.c
+@@ -94,7 +94,7 @@ static int drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
+ 	fb_helper->buffer = buffer;
+ 	fb_helper->fb = buffer->fb;
+ 
+-	screen_size = buffer->gem->size;
++	screen_size = sizes->surface_height * buffer->fb->pitches[0];
+ 	screen_buffer = vzalloc(screen_size);
+ 	if (!screen_buffer) {
+ 		ret = -ENOMEM;
+-- 
+2.25.1
+

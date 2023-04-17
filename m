@@ -2,291 +2,180 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59724C77B70
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Apr 2023 08:43:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC644C77B7C
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Apr 2023 09:03:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229461AbjDQInD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 Apr 2023 04:43:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52364 "EHLO
+        id S229627AbjDQJDv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 Apr 2023 05:03:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35202 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229504AbjDQInC (ORCPT
+        with ESMTP id S230042AbjDQJDu (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 Apr 2023 04:43:02 -0400
-Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C79AD5595
-        for <linux-fbdev@vger.kernel.org>; Mon, 17 Apr 2023 01:42:39 -0700 (PDT)
-Received: by mail-ed1-x531.google.com with SMTP id 4fb4d7f45d1cf-50445d911c5so510200a12.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 17 Apr 2023 01:42:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google; t=1681720958; x=1684312958;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:mail-followup-to:message-id:subject:cc:to
-         :from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=jlip5XEyfopxeYY6dYtXb4T2DhyFncJYyC75GRGWD18=;
-        b=krxbqVqJ5eJkq+3Ix4xzb5zDbIvhAEzyWLufmLKGtJ1GSbIjVbWlPOM64qaid6v1en
-         CdQqVgqTRPkkslBT6mU0gA/T8H1DcYfiVo3+FisIg5iTlB5DxasbDAa7QAOsXU8MyZp8
-         SD7t7lwr2ceBtl87KRM/eCWPB7lzRz16SFGOo=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1681720958; x=1684312958;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:mail-followup-to:message-id:subject:cc:to
-         :from:date:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=jlip5XEyfopxeYY6dYtXb4T2DhyFncJYyC75GRGWD18=;
-        b=bYDrfCRvarkS7IV5P8AmOUx2X+bW4Xjxxm8hTZypuGmIQ1rQVMSAAomNsJYPTifeY1
-         ZgIsesdfKGllP1IEM+7ImnEmw03mPxjrwZ578bnQYk+VNtmvHyijUCo9FKyaz5G74qhP
-         5YDjJZ0Z8RpxbYT43GJS9v4o33FtnlJmgBKzZjnALW04/9ECXPGCfu+33SDnCe1GVn6U
-         e/ZIZOcyd+WlZRoQ46+PPeCuilMwnYFedqBkkVJ9GQCmiwE+STkwaqe3/5SYfimlkFLd
-         9xO1i0y+w565yF1E+RJhnf9f+pNn4Zhz2fNcgo9IK0fSq86K0VaUfNBpyCCNE234UY7N
-         NJCQ==
-X-Gm-Message-State: AAQBX9fiYPQ+t78lEJfHGpLAd3ZCqCldXw3aQLBgqmRRHhZMPRTG3rqw
-        ZMpTSHTEg+RhGm6P5mswlUFiGA==
-X-Google-Smtp-Source: AKy350Z2IkICzZW4vLGnCazx952jTuC+nIsFgIEtilhuIj8V7oaAs+NlKm7fH7IYGWEPTj7Nn5NPYA==
-X-Received: by 2002:a05:6402:2691:b0:504:8a10:b699 with SMTP id w17-20020a056402269100b005048a10b699mr10134437edd.4.1681720958185;
-        Mon, 17 Apr 2023 01:42:38 -0700 (PDT)
-Received: from phenom.ffwll.local (212-51-149-33.fiber7.init7.net. [212.51.149.33])
-        by smtp.gmail.com with ESMTPSA id g25-20020a056402115900b004c4eed3fe20sm5552210edw.5.2023.04.17.01.42.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 17 Apr 2023 01:42:37 -0700 (PDT)
-Date:   Mon, 17 Apr 2023 10:42:35 +0200
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     Sui Jingfeng <15330273260@189.cn>,
-        Maxime Ripard <mripard@kernel.org>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Sui Jingfeng <suijingfeng@loongson.cn>,
-        Li Yi <liyi@loongson.cn>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Helge Deller <deller@gmx.de>,
-        Lucas De Marchi <lucas.demarchi@intel.com>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
-Subject: Re: [PATCH v2] drm/fbdev-generic: prohibit potential out-of-bounds
- access
-Message-ID: <ZD0Ge6C8GUv9/t1d@phenom.ffwll.local>
-Mail-Followup-To: Thomas Zimmermann <tzimmermann@suse.de>,
-        Sui Jingfeng <15330273260@189.cn>,
-        Maxime Ripard <mripard@kernel.org>,
-        David Airlie <airlied@gmail.com>,
-        Sui Jingfeng <suijingfeng@loongson.cn>, Li Yi <liyi@loongson.cn>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Helge Deller <deller@gmx.de>,
-        Lucas De Marchi <lucas.demarchi@intel.com>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
-References: <20230413180622.1014016-1-15330273260@189.cn>
- <fccc494f-0e52-5fdf-0e40-acc29177c73c@suse.de>
- <32a1510e-d38a-ffb6-8e8d-026f8b3aa17a@189.cn>
- <fab85750-dcb7-0eeb-cabc-8fcfcc84b11c@suse.de>
+        Mon, 17 Apr 2023 05:03:50 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A4CA199F;
+        Mon, 17 Apr 2023 02:03:48 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 0A8891F381;
+        Mon, 17 Apr 2023 09:03:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1681722227; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=d8A2ZUy/lVcriOnB4f9oVvXNmiXwKTFdxYnQjf9J06M=;
+        b=BkMeIzsCaz/1qsCpBY3shJ9SdbEY8+WDuXDejoaHRIauiQ2ZOOMwTBr7sRPMgY8XWExQeE
+        oeCrwHYTYBgYmcqDhb9i/RVyMXUqnNzgaV8Lrfz+FCwVBVppBXYyvlHsYTdNvHtkOehmlb
+        M2dFpk9G2vIhcI9oPzCLoNiIE4hntOA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1681722227;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=d8A2ZUy/lVcriOnB4f9oVvXNmiXwKTFdxYnQjf9J06M=;
+        b=LAFt+Vockryc+5LBbO/a8ZoTBFoaqimB5HQI5t71BPiB2N2EMs4YZO59LSiealCh9tV0AW
+        T27q/nNszvC8H3BQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8F46113319;
+        Mon, 17 Apr 2023 09:03:46 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id pcOfIXILPWTNVgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 17 Apr 2023 09:03:46 +0000
+Message-ID: <2b4f75b8-aa83-8e41-7c99-7c8d573c0f31@suse.de>
+Date:   Mon, 17 Apr 2023 11:03:46 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <fab85750-dcb7-0eeb-cabc-8fcfcc84b11c@suse.de>
-X-Operating-System: Linux phenom 6.1.0-7-amd64 
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Subject: Re: [PATCH v2 01/19] fbdev: Prepare generic architecture helpers
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     arnd@arndb.de, daniel.vetter@ffwll.ch, deller@gmx.de,
+        javierm@redhat.com, gregkh@linuxfoundation.org,
+        linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        linux-snps-arc@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+        sparclinux@vger.kernel.org, x86@kernel.org
+References: <20230406143019.6709-1-tzimmermann@suse.de>
+ <20230406143019.6709-2-tzimmermann@suse.de>
+ <CAMuHMdUfViWzPbB+GcGUwxmGNxAohfq71Jed3DzS=Cb+gBzotg@mail.gmail.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <CAMuHMdUfViWzPbB+GcGUwxmGNxAohfq71Jed3DzS=Cb+gBzotg@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------xWwPiIYmrlcSVPwysV4e9Klk"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Apr 17, 2023 at 09:29:07AM +0200, Thomas Zimmermann wrote:
-> Hi
-> 
-> Am 14.04.23 um 12:58 schrieb Sui Jingfeng:
-> > Hi,
-> > 
-> > On 2023/4/14 03:16, Thomas Zimmermann wrote:
-> > > Hi,
-> > > 
-> > > thanks for the patch. This is effectively a revert of commit
-> > > 8fbc9af55de0 ("drm/fbdev-generic: Set screen size to size of GEM
-> > > buffer"). Please add a Fixes tag.
-> > > 
-> > > Am 13.04.23 um 20:06 schrieb Sui Jingfeng:
-> > > > From: Sui Jingfeng <suijingfeng@loongson.cn>
-> > > > 
-> > > > The crazy fbdev test of IGT may write after EOF, which lead to
-> > > > out-of-bound
-> > > 
-> > > Please drop 'crazy'. :)
-> > 
-> > This is OK.
-> > 
-> > By using the world 'crazy',
-> > 
-> > I meant that the test is very good and maybe it is written by
-> > professional  peoples
-> > 
-> > with the guidance by  experienced  engineer. So that even the corner get
-> > tested.
-> > 
-> > 
-> > > 
-> > > > access for the drm drivers using fbdev-generic. For example, run
-> > > > fbdev test
-> > > > on a x86-64+ast2400 platform with 1680x1050 resolution will
-> > > > cause the linux
-> > > > kernel hang with following call trace:
-> > > > 
-> > > >    Oops: 0000 [#1] PREEMPT SMP PTI
-> > > >    [IGT] fbdev: starting subtest eof
-> > > >    Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
-> > > >    [IGT] fbdev: starting subtest nullptr
-> > > > 
-> > > >    RIP: 0010:memcpy_erms+0xa/0x20
-> > > >    RSP: 0018:ffffa17d40167d98 EFLAGS: 00010246
-> > > >    RAX: ffffa17d4eb7fa80 RBX: ffffa17d40e0aa80 RCX: 00000000000014c0
-> > > >    RDX: 0000000000001a40 RSI: ffffa17d40e0b000 RDI: ffffa17d4eb80000
-> > > >    RBP: ffffa17d40167e20 R08: 0000000000000000 R09: ffff89522ecff8c0
-> > > >    R10: ffffa17d4e4c5000 R11: 0000000000000000 R12: ffffa17d4eb7fa80
-> > > >    R13: 0000000000001a40 R14: 000000000000041a R15: ffffa17d40167e30
-> > > >    FS:  0000000000000000(0000) GS:ffff895257380000(0000)
-> > > > knlGS:0000000000000000
-> > > >    CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> > > >    CR2: ffffa17d40e0b000 CR3: 00000001eaeca006 CR4: 00000000001706e0
-> > > >    Call Trace:
-> > > >     <TASK>
-> > > >     ? drm_fbdev_generic_helper_fb_dirty+0x207/0x330 [drm_kms_helper]
-> > > >     drm_fb_helper_damage_work+0x8f/0x170 [drm_kms_helper]
-> > > >     process_one_work+0x21f/0x430
-> > > >     worker_thread+0x4e/0x3c0
-> > > >     ? __pfx_worker_thread+0x10/0x10
-> > > >     kthread+0xf4/0x120
-> > > >     ? __pfx_kthread+0x10/0x10
-> > > >     ret_from_fork+0x2c/0x50
-> > > >     </TASK>
-> > > >    CR2: ffffa17d40e0b000
-> > > >    ---[ end trace 0000000000000000 ]---
-> > > > 
-> > > > The indirect reason is drm_fb_helper_memory_range_to_clip()
-> > > > generate damage
-> > > > rectangles which partially or completely go out of the active
-> > > > display area.
-> > > > The second of argument 'off' is passing from the user-space,
-> > > > this will lead
-> > > > to the out-of-bound if it is large than (fb_height + 1) *
-> > > > fb_pitches; while
-> > > > DIV_ROUND_UP() may also controbute to error by 1.
-> > > > 
-> > > > This patch will add code to restrict the damage rect computed go
-> > > > beyond of
-> > > > the last line of the framebuffer.
-> > > > 
-> > > > Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
-> > > > ---
-> > > >   drivers/gpu/drm/drm_fb_helper.c     | 16 ++++++++++++----
-> > > >   drivers/gpu/drm/drm_fbdev_generic.c |  2 +-
-> > > >   2 files changed, 13 insertions(+), 5 deletions(-)
-> > > > 
-> > > > diff --git a/drivers/gpu/drm/drm_fb_helper.c
-> > > > b/drivers/gpu/drm/drm_fb_helper.c
-> > > > index 64458982be40..6bb1b8b27d7a 100644
-> > > > --- a/drivers/gpu/drm/drm_fb_helper.c
-> > > > +++ b/drivers/gpu/drm/drm_fb_helper.c
-> > > > @@ -641,19 +641,27 @@ static void drm_fb_helper_damage(struct
-> > > > drm_fb_helper *helper, u32 x, u32 y,
-> > > >   static void drm_fb_helper_memory_range_to_clip(struct fb_info
-> > > > *info, off_t off, size_t len,
-> > > >                              struct drm_rect *clip)
-> > > >   {
-> > > > +    u32 line_length = info->fix.line_length;
-> > > > +    u32 fb_height = info->var.yres;
-> > > >       off_t end = off + len;
-> > > >       u32 x1 = 0;
-> > > > -    u32 y1 = off / info->fix.line_length;
-> > > > +    u32 y1 = off / line_length;
-> > > >       u32 x2 = info->var.xres;
-> > > > -    u32 y2 = DIV_ROUND_UP(end, info->fix.line_length);
-> > > > +    u32 y2 = DIV_ROUND_UP(end, line_length);
-> > > > +
-> > > > +    /* Don't allow any of them beyond the bottom bound of
-> > > > display area */
-> > > > +    if (y1 > fb_height)
-> > > > +        y1 = fb_height;
-> > > > +    if (y2 > fb_height)
-> > > > +        y2 = fb_height;
-> > > >         if ((y2 - y1) == 1) {
-> > > >           /*
-> > > >            * We've only written to a single scanline. Try to reduce
-> > > >            * the number of horizontal pixels that need an update.
-> > > >            */
-> > > > -        off_t bit_off = (off % info->fix.line_length) * 8;
-> > > > -        off_t bit_end = (end % info->fix.line_length) * 8;
-> > > > +        off_t bit_off = (off % line_length) * 8;
-> > > > +        off_t bit_end = (end % line_length) * 8;
-> > > 
-> > > Please scratch all these changes. The current code should work as
-> > > intended. Only the generic fbdev emulation uses this code and it
-> > > should really be moved there at some point.
-> > 
-> > 
-> > Are you meant  that we should remove all these changes in
-> > drivers/gpu/drm/drm_fb_helper.c ?
-> 
-> As Daniel mentioned, there's the discussion in the other thread. I don't
-> want to reopen it here. Just to summarize: I'm not convinced that this
-> should be DRM code because it can be shared with other fbdev drivers.
-> 
-> [...]
-> 
-> > > > diff --git a/drivers/gpu/drm/drm_fbdev_generic.c
-> > > > b/drivers/gpu/drm/drm_fbdev_generic.c
-> > > > index 8e5148bf40bb..b057cfbba938 100644
-> > > > --- a/drivers/gpu/drm/drm_fbdev_generic.c
-> > > > +++ b/drivers/gpu/drm/drm_fbdev_generic.c
-> > > > @@ -94,7 +94,7 @@ static int
-> > > > drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper
-> > > > *fb_helper,
-> > > >       fb_helper->buffer = buffer;
-> > > >       fb_helper->fb = buffer->fb;
-> > > >   -    screen_size = buffer->gem->size;
-> > > > +    screen_size = sizes->surface_height * buffer->fb->pitches[0];
-> 
-> This has been bothering me over the weekend. And I think it's because what
-> we want the screen_size to be heigth * pitch,  but the mmap'ed memory is
-> still at page granularity. Therefore...
-> 
-> [...]
-> > > 
-> > > >       screen_buffer = vzalloc(screen_size);
-> 
-> ... this line should explicitly allocate multiples of pages. Something like
-> 
->     /* allocate page-size multiples for mmap */
->     vzalloc(PAGE_ALIGN(screen_size))
-> 
-> It has not been a bug so far because vzalloc() always returns full pages
-> IIRC. It's still worth fixing.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------xWwPiIYmrlcSVPwysV4e9Klk
+Content-Type: multipart/mixed; boundary="------------8LwHOmqVih1SSnC0wxvh5ylS";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: arnd@arndb.de, daniel.vetter@ffwll.ch, deller@gmx.de, javierm@redhat.com,
+ gregkh@linuxfoundation.org, linux-arch@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-snps-arc@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+ loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+ linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, x86@kernel.org
+Message-ID: <2b4f75b8-aa83-8e41-7c99-7c8d573c0f31@suse.de>
+Subject: Re: [PATCH v2 01/19] fbdev: Prepare generic architecture helpers
+References: <20230406143019.6709-1-tzimmermann@suse.de>
+ <20230406143019.6709-2-tzimmermann@suse.de>
+ <CAMuHMdUfViWzPbB+GcGUwxmGNxAohfq71Jed3DzS=Cb+gBzotg@mail.gmail.com>
+In-Reply-To: <CAMuHMdUfViWzPbB+GcGUwxmGNxAohfq71Jed3DzS=Cb+gBzotg@mail.gmail.com>
 
-So gem_bo are supposed to be at least PAGE_SIZE aligned. So maybe we just
-put a comment in here why this assumption holds, and reinforce it with a
-WARN_ON? I think that would address the concerns here?
+--------------8LwHOmqVih1SSnC0wxvh5ylS
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-But I concur with Sui that this is a separate issue which should be sorted
-out in a separate patch.
--Daniel
+SGkgR2VlcnQNCg0KQW0gMTEuMDQuMjMgdW0gMTA6MDggc2NocmllYiBHZWVydCBVeXR0ZXJo
+b2V2ZW46DQo+IEhpIFRob21hcywNCj4gDQo+IE9uIFRodSwgQXByIDYsIDIwMjMgYXQgNDoz
+MOKAr1BNIFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPiB3cm90ZToN
+Cj4+IEdlbmVyaWMgaW1wbGVtZW50YXRpb25zIG9mIGZiX3BncHJvdGVjdCgpIGFuZCBmYl9p
+c19wcmltYXJ5X2RldmljZSgpDQo+PiBoYXZlIGJlZW4gaW4gdGhlIHNvdXJjZSBjb2RlIGZv
+ciBhIGxvbmcgdGltZS4gUHJlcGFyZSB0aGUgaGVhZGVyIGZpbGUNCj4+IHRvIG1ha2UgdXNl
+IG9mIHRoZW0uDQo+Pg0KPj4gSW1wcm92ZSB0aGUgY29kZSBieSB1c2luZyBhbiBpbmxpbmUg
+ZnVuY3Rpb24gZm9yIGZiX3BncHJvdGVjdCgpDQo+PiBhbmQgYnkgcmVtb3ZpbmcgaW5jbHVk
+ZSBzdGF0ZW1lbnRzLiBUaGUgZGVmYXVsdCBtb2RlIHNldCBieQ0KPj4gZmJfcGdwcm90ZWN0
+KCkgaXMgbm93IHdyaXRlY29tYmluZSwgd2hpY2ggaXMgd2hhdCBtb3N0IHBsYXRmb3Jtcw0K
+Pj4gd2FudC4NCj4+DQo+PiBTeW1ib2xzIGFyZSBwcm90ZWN0ZWQgYnkgcHJlcHJvY2Vzc29y
+IGd1YXJkcy4gQXJjaGl0ZWN0dXJlcyB0aGF0DQo+PiBwcm92aWRlIGEgc3ltYm9sIG5lZWQg
+dG8gZGVmaW5lIGEgcHJlcHJvY2Vzc29yIHRva2VuIG9mIHRoZSBzYW1lDQo+PiBuYW1lIGFu
+ZCB2YWx1ZS4gT3RoZXJ3aXNlIHRoZSBoZWFkZXIgZmlsZSB3aWxsIHByb3ZpZGUgYSBnZW5l
+cmljDQo+PiBpbXBsZW1lbnRhdGlvbi4gVGhpcyBwYXR0ZXJuIGhhcyBiZWVuIHRha2VuIGZy
+b20gPGFzbS9pby5oPi4NCj4+DQo+PiB2MjoNCj4+ICAgICAgICAgICogIHVzZSB3cml0ZWNv
+bWJpbmUgbWFwcGluZ3MgYnkgZGVmYXVsdCAoQXJuZCkNCj4+DQo+PiBTaWduZWQtb2ZmLWJ5
+OiBUaG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1hbm5Ac3VzZS5kZT4NCj4gDQo+IFRoYW5r
+cyBmb3IgeW91ciBwYXRjaCENCj4gDQo+PiAtLS0gYS9pbmNsdWRlL2FzbS1nZW5lcmljL2Zi
+LmgNCj4+ICsrKyBiL2luY2x1ZGUvYXNtLWdlbmVyaWMvZmIuaA0KPj4gQEAgLTEsMTMgKzEs
+MzIgQEANCj4+ICAgLyogU1BEWC1MaWNlbnNlLUlkZW50aWZpZXI6IEdQTC0yLjAgKi8NCj4+
+ICsNCj4+ICAgI2lmbmRlZiBfX0FTTV9HRU5FUklDX0ZCX0hfDQo+PiAgICNkZWZpbmUgX19B
+U01fR0VORVJJQ19GQl9IXw0KPj4gLSNpbmNsdWRlIDxsaW51eC9mYi5oPg0KPj4NCj4+IC0j
+ZGVmaW5lIGZiX3BncHJvdGVjdCguLi4pIGRvIHt9IHdoaWxlICgwKQ0KPj4gKy8qDQo+PiAr
+ICogT25seSBpbmNsdWRlIHRoaXMgaGVhZGVyIGZpbGUgZnJvbSB5b3VyIGFyY2hpdGVjdHVy
+ZSdzIDxhc20vZmIuaD4uDQo+PiArICovDQo+PiArDQo+PiArI2luY2x1ZGUgPGFzbS9wYWdl
+Lmg+DQo+PiArDQo+PiArc3RydWN0IGZiX2luZm87DQo+PiArc3RydWN0IGZpbGU7DQo+PiAr
+DQo+PiArI2lmbmRlZiBmYl9wZ3Byb3RlY3QNCj4+ICsjZGVmaW5lIGZiX3BncHJvdGVjdCBm
+Yl9wZ3Byb3RlY3QNCj4+ICtzdGF0aWMgaW5saW5lIHZvaWQgZmJfcGdwcm90ZWN0KHN0cnVj
+dCBmaWxlICpmaWxlLCBzdHJ1Y3Qgdm1fYXJlYV9zdHJ1Y3QgKnZtYSwNCj4+ICsgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgdW5zaWduZWQgbG9uZyBvZmYpDQo+IA0KPiBEb2Vz
+IHRoaXMgYWZmZWN0IGFueSBub01NVSBwbGF0Zm9ybXMgdGhhdCByZWxpZWQgb24gZmJfcGdw
+cm90ZWN0KCkNCj4gZG9pbmcgbm90aGluZyBiZWZvcmU/DQo+IFBlcmhhcHMgdGhlIGJvZHkg
+YmVsb3cgc2hvdWxkIGJlIHByb3RlY3RlZCBieSAiI2lmZGVmIENPTkZJR19NTVUiPw0KDQpJ
+IGNhbm5vdCBjb25jbHVzaXZlbHkgYW5zd2VyIHRoaXMgcXVlc3Rpb24sIGJ1dCBJIGRpZCBz
+b21lIGdyZXAnaW5nIA0KKCdnaXQgZ3JlcCBuZGVmIHwgZ3JlcCBDT05GSUdfTU1VJyk6DQoN
+Ck9ubHkgdGhlIGFyY2hpdGVjdHVyZXMgaW4gdGhpcyBwYXRjaHNldCBwcm92aWRlIDxhc20v
+ZmIuaD4gYnV0IG5vdGhpbmcgDQphbnl3aGVyZSB1c2VzIDxhc20tZ2VuZXJpYy9mYi5oPiB5
+ZXQuIEFuZCBvZiB0aG9zZSBhcmNoaXRlY3R1cmVzLCBvbmx5IA0KYXJtIGFuZCBtNjhrIGhh
+dmUgIUNPTkZJR19NTVUgY2FzZXMuIFRob3NlIGFyZSBoYW5kbGVkIGluIHRoZSByc3AgDQpw
+YXRjaGVzLiBJIHRoaW5rIHdlJ3JlIGdvb2QuDQoNCj4gDQo+PiArew0KPj4gKyAgICAgICB2
+bWEtPnZtX3BhZ2VfcHJvdCA9IHBncHJvdF93cml0ZWNvbWJpbmUodm1hLT52bV9wYWdlX3By
+b3QpOw0KPiANCj4gU2hvdWxkbid0IHRoaXMgdXNlIHRoZSBwZ3Byb3RfdmFsKCkgd3JhcHBl
+cj8NCg0KTm8sIEkgdGhpbmsuIEdyZXAnaW5nIGZvciB2bV9wYWdlX3Byb3QsIEknbSBub3Qg
+c2VlaW5nIGl0IGJlaW5nIHVzZWQgaW4gDQpzdWNoIGFzc2lnbm1lbnRzLg0KDQpCZXN0IHJl
+Z2FyZHMNClRob21hcw0KDQo+IA0KPj4gK30NCj4+ICsjZW5kaWYNCj4gDQo+IEdye29ldGpl
+LGVldGluZ31zLA0KPiANCj4gICAgICAgICAgICAgICAgICAgICAgICAgIEdlZXJ0DQo+IA0K
+DQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpT
+VVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkw
+NDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2Vz
+Y2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
 
-> 
-> Best regards
-> Thomas
-> 
-> 
-> > > >       if (!screen_buffer) {
-> > > >           ret = -ENOMEM;
-> > > 
-> 
-> -- 
-> Thomas Zimmermann
-> Graphics Driver Developer
-> SUSE Software Solutions Germany GmbH
-> Maxfeldstr. 5, 90409 Nürnberg, Germany
-> (HRB 36809, AG Nürnberg)
-> Geschäftsführer: Ivo Totev
+--------------8LwHOmqVih1SSnC0wxvh5ylS--
 
+--------------xWwPiIYmrlcSVPwysV4e9Klk
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
+-----BEGIN PGP SIGNATURE-----
 
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmQ9C3IFAwAAAAAACgkQlh/E3EQov+Cm
+UBAAp1ZwVmrz8T2+3vZ7ZpV1ctroomnDLRbTJNv29Sy/VKoywyu1xmGePsWLIqjuhReXF1xbOWtq
+6Ue7vAdNub4kTqGjoZy70Ct7WQAmjozmebI6ZRJEEq7aFTji2pVlikWgChEQwLMiDpsYF1vgB8vp
+8I0sP1t8Cu3HRGRyybCR2Y6WpsEk4lB4mrJxlflHRmOvFQDMZB+Y38C24LwGO6SsLIybsqB0am6d
+QrsVdKA0ByFWKQ47LhJ8tfzdpekveM9t0yR5QLhQ/9Mg1+KiyuNjcIs2dkgIoRPwEG5dkGGJ3YCy
+W12J2+Gehydj2i/55iYwpKKB0abS5Bj4vFXHqvvV2xcyrxOmdCktMRD3UR7yxs9Aa24LC1qbpZxv
+1Qk+Y/SMMZj/Nm3nIxYkobOrLgSJwEZYSbjXxVaQ7ViK6lQsMesVjAh1DFRXyTuohxVbP8onI2CU
+KL5SMAALHxHJPdG60K+/+L07gXuB5nyJFejrDlCVP9aPcJafeoWP3t/qN1xJUR4LMRyuIFgFF8qM
++5slKCT46KthVsu6GI5dsqbhQnDMAPrjlY+6GFc0jQMERh1v4J2Ev2l6o4Cy75Ru18WqY+FzcXMV
+Cr2lTlxPDrR9nUC7bONXRlrB9N2sm0RYhhZ1fpZ+sXFRah0tYDBoAIfCGzzvzjOJb/6TDxhYrza8
+bkQ=
+=Y3tV
+-----END PGP SIGNATURE-----
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+--------------xWwPiIYmrlcSVPwysV4e9Klk--

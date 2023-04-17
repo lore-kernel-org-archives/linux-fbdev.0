@@ -2,190 +2,163 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6205C77B76
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Apr 2023 11:55:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 777D6C77B7E
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Apr 2023 12:57:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229542AbjDQLzk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 Apr 2023 07:55:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43822 "EHLO
+        id S231341AbjDQM5V (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 Apr 2023 08:57:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47666 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229697AbjDQLzj (ORCPT
+        with ESMTP id S229738AbjDQM5R (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 Apr 2023 07:55:39 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 908E31FCE;
-        Mon, 17 Apr 2023 04:54:37 -0700 (PDT)
+        Mon, 17 Apr 2023 08:57:17 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DAEB1210C;
+        Mon, 17 Apr 2023 05:56:59 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id C548C21A4A;
-        Mon, 17 Apr 2023 11:54:12 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 65ACA1F86C;
+        Mon, 17 Apr 2023 12:56:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1681732452; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=seBtqa2MvCsisDOd9YNWm0x+EnP+1UCUGTeC9Mmglgg=;
-        b=QIYE6cimxpfTa/cKx33ptlCRtu9C9r0pPHGIlpGsz/kSRyRmN/nIjTtSIhiRD/pL2AJJ1a
-        x+s1K1RT0STJJI9sAnscXb/4wh1gViP2zfLTr1fAAvXT+62TfYlHvPqwTI5BVsgpiTtPHL
-        ePeFTt8bzPRbEaIMx3l8cSSZ6Sas8TI=
+        t=1681736218; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=TjKFT65nFde0KHYwvUCAIbizOxCNdL0ntslOVRl87lE=;
+        b=qU6w2kY5MzqEXwd8TMNs58RhCH9e5hAM3giF5jjQmYT6lBuIWGXS/c+WHrP5T+pN3SY2vp
+        NA5N6GTN/+zI0Nkuz0JjvVnZJyhucRMUl5SOITpu5xAQg48nvBBYq194+Km0t5IwM18z2J
+        BTyIpDo3bUNDxPWIkyVoQeOFNoGNWP4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1681732452;
+        s=susede2_ed25519; t=1681736218;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=seBtqa2MvCsisDOd9YNWm0x+EnP+1UCUGTeC9Mmglgg=;
-        b=ZEWbTTVF8cC4Af9+C9wdoJA39zBfyrWKPnh6QY/hMbUf07+tTJ22e5INxO5dkXt+P+JRhh
-        T8bI5ueQnu8KeTCg==
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=TjKFT65nFde0KHYwvUCAIbizOxCNdL0ntslOVRl87lE=;
+        b=oVQCEIp+Zsfrb6hp9far1l809Ib3e3nbzdCxJOOQ2f8MndGptEVdK0mKoxA4OcCHq1YcqT
+        IcKcAyErDVaEE+AQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8819A13319;
-        Mon, 17 Apr 2023 11:54:12 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id E43D31390E;
+        Mon, 17 Apr 2023 12:56:57 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id CwBVIGQzPWTONwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 17 Apr 2023 11:54:12 +0000
-Message-ID: <1a46142f-b7bc-d11f-1ad2-7433aafd0976@suse.de>
-Date:   Mon, 17 Apr 2023 13:54:12 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH v3] drm/fbdev-generic: prohibit potential out-of-bounds
- access
-Content-Language: en-US
-To:     Sui Jingfeng <suijingfeng@loongson.cn>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>, Li Yi <liyi@loongson.cn>,
-        Helge Deller <deller@gmx.de>,
-        Lucas De Marchi <lucas.demarchi@intel.com>
-Cc:     loongson-kernel@lists.loongnix.cn, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20230417113219.1354078-1-suijingfeng@loongson.cn>
+        id yBGhNhlCPWToWwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 17 Apr 2023 12:56:57 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20230417113219.1354078-1-suijingfeng@loongson.cn>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------APO00WSf8RVAKDBuCNqXIP9l"
+To:     arnd@arndb.de, daniel.vetter@ffwll.ch, deller@gmx.de,
+        javierm@redhat.com, gregkh@linuxfoundation.org
+Cc:     linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        linux-snps-arc@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+        sparclinux@vger.kernel.org, x86@kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v3 00/19] arch: Consolidate <asm/fb.h>
+Date:   Mon, 17 Apr 2023 14:56:32 +0200
+Message-Id: <20230417125651.25126-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.40.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------APO00WSf8RVAKDBuCNqXIP9l
-Content-Type: multipart/mixed; boundary="------------w289ehKlxbP1df468BandQ6F";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Sui Jingfeng <suijingfeng@loongson.cn>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
- Daniel Vetter <daniel@ffwll.ch>, Li Yi <liyi@loongson.cn>,
- Helge Deller <deller@gmx.de>, Lucas De Marchi <lucas.demarchi@intel.com>
-Cc: loongson-kernel@lists.loongnix.cn, linux-fbdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-Message-ID: <1a46142f-b7bc-d11f-1ad2-7433aafd0976@suse.de>
-Subject: Re: [PATCH v3] drm/fbdev-generic: prohibit potential out-of-bounds
- access
-References: <20230417113219.1354078-1-suijingfeng@loongson.cn>
-In-Reply-To: <20230417113219.1354078-1-suijingfeng@loongson.cn>
+Various architectures provide <asm/fb.h> with helpers for fbdev
+framebuffer devices. Share the contained code where possible. There
+is already <asm-generic/fb.h>, which implements generic (as in
+'empty') functions of the fbdev helpers. The header was added in
+commit aafe4dbed0bf ("asm-generic: add generic versions of common
+headers"), but never used.
 
---------------w289ehKlxbP1df468BandQ6F
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Each per-architecture header file declares and/or implements fbdev
+helpers and defines a preprocessor token for each. The generic
+header then provides the remaining helpers. It works like the I/O
+helpers in <asm/io.h>.
 
-SGkNCg0KQW0gMTcuMDQuMjMgdW0gMTM6MzIgc2NocmllYiBTdWkgSmluZ2Zlbmc6DQo+IFRo
-ZSBmYmRldiB0ZXN0IG9mIElHVCBtYXkgd3JpdGUgYWZ0ZXIgRU9GLCB3aGljaCBsZWFkIHRv
-IG91dC1vZi1ib3VuZA0KPiBhY2Nlc3MgZm9yIHRoZSBkcm0gZHJpdmVycyB1c2luZyBmYmRl
-di1nZW5lcmljLiBGb3IgZXhhbXBsZSwgb24gYSB4ODYNCj4gKyBhc3BlZWQgYm1jIGNhcmQg
-cGxhdGZvcm0sIHdpdGggYSAxNjgweDEwNTAgcmVzb2x1dGlvbiBkaXNwbGF5LCBydW5uaW5n
-DQo+IGZiZGV2IHRlc3QgaWYgSUdUIHdpbGwgY2F1c2UgdGhlIGxpbnV4IGtlcm5lbCBoYW5n
-IHdpdGggdGhlIGZvbGxvd2luZw0KPiBjYWxsIHRyYWNlOg0KPiANCj4gICAgT29wczogMDAw
-MCBbIzFdIFBSRUVNUFQgU01QIFBUSQ0KPiAgICBbSUdUXSBmYmRldjogc3RhcnRpbmcgc3Vi
-dGVzdCBlb2YNCj4gICAgV29ya3F1ZXVlOiBldmVudHMgZHJtX2ZiX2hlbHBlcl9kYW1hZ2Vf
-d29yayBbZHJtX2ttc19oZWxwZXJdDQo+ICAgIFtJR1RdIGZiZGV2OiBzdGFydGluZyBzdWJ0
-ZXN0IG51bGxwdHINCj4gDQo+ICAgIFJJUDogMDAxMDptZW1jcHlfZXJtcysweGEvMHgyMA0K
-PiAgICBSU1A6IDAwMTg6ZmZmZmExN2Q0MDE2N2Q5OCBFRkxBR1M6IDAwMDEwMjQ2DQo+ICAg
-IFJBWDogZmZmZmExN2Q0ZWI3ZmE4MCBSQlg6IGZmZmZhMTdkNDBlMGFhODAgUkNYOiAwMDAw
-MDAwMDAwMDAxNGMwDQo+ICAgIFJEWDogMDAwMDAwMDAwMDAwMWE0MCBSU0k6IGZmZmZhMTdk
-NDBlMGIwMDAgUkRJOiBmZmZmYTE3ZDRlYjgwMDAwDQo+ICAgIFJCUDogZmZmZmExN2Q0MDE2
-N2UyMCBSMDg6IDAwMDAwMDAwMDAwMDAwMDAgUjA5OiBmZmZmODk1MjJlY2ZmOGMwDQo+ICAg
-IFIxMDogZmZmZmExN2Q0ZTRjNTAwMCBSMTE6IDAwMDAwMDAwMDAwMDAwMDAgUjEyOiBmZmZm
-YTE3ZDRlYjdmYTgwDQo+ICAgIFIxMzogMDAwMDAwMDAwMDAwMWE0MCBSMTQ6IDAwMDAwMDAw
-MDAwMDA0MWEgUjE1OiBmZmZmYTE3ZDQwMTY3ZTMwDQo+ICAgIEZTOiAgMDAwMDAwMDAwMDAw
-MDAwMCgwMDAwKSBHUzpmZmZmODk1MjU3MzgwMDAwKDAwMDApIGtubEdTOjAwMDAwMDAwMDAw
-MDAwMDANCj4gICAgQ1M6ICAwMDEwIERTOiAwMDAwIEVTOiAwMDAwIENSMDogMDAwMDAwMDA4
-MDA1MDAzMw0KPiAgICBDUjI6IGZmZmZhMTdkNDBlMGIwMDAgQ1IzOiAwMDAwMDAwMWVhZWNh
-MDA2IENSNDogMDAwMDAwMDAwMDE3MDZlMA0KPiAgICBDYWxsIFRyYWNlOg0KPiAgICAgPFRB
-U0s+DQo+ICAgICA/IGRybV9mYmRldl9nZW5lcmljX2hlbHBlcl9mYl9kaXJ0eSsweDIwNy8w
-eDMzMCBbZHJtX2ttc19oZWxwZXJdDQo+ICAgICBkcm1fZmJfaGVscGVyX2RhbWFnZV93b3Jr
-KzB4OGYvMHgxNzAgW2RybV9rbXNfaGVscGVyXQ0KPiAgICAgcHJvY2Vzc19vbmVfd29yaysw
-eDIxZi8weDQzMA0KPiAgICAgd29ya2VyX3RocmVhZCsweDRlLzB4M2MwDQo+ICAgICA/IF9f
-cGZ4X3dvcmtlcl90aHJlYWQrMHgxMC8weDEwDQo+ICAgICBrdGhyZWFkKzB4ZjQvMHgxMjAN
-Cj4gICAgID8gX19wZnhfa3RocmVhZCsweDEwLzB4MTANCj4gICAgIHJldF9mcm9tX2Zvcmsr
-MHgyYy8weDUwDQo+ICAgICA8L1RBU0s+DQo+ICAgIENSMjogZmZmZmExN2Q0MGUwYjAwMA0K
-PiAgICAtLS1bIGVuZCB0cmFjZSAwMDAwMDAwMDAwMDAwMDAwIF0tLS0NCj4gDQo+IFRoZSBk
-aXJlY3QgcmVhc29uIGlzIHRoYXQgZGFtYWdlIHJlY3RhbmdlIGNvbXB1dGVkIGJ5DQo+IGRy
-bV9mYl9oZWxwZXJfbWVtb3J5X3JhbmdlX3RvX2NsaXAoKSBkb2VzIG5vdCBndWFyYW50ZWVk
-IHRvIGJlIGluLWJvdW5kLg0KPiBJdCBpcyBhbHJlYWR5IHJlc3VsdHMgaW4gd29ya2Fyb3Vu
-ZCBjb2RlIHBvcHVsYXRlIHRvIGVsc2V3aGVyZS4gQW5vdGhlcg0KPiByZWFzb24gaXMgdGhh
-dCBleHBvc2luZyBhIGxhcmdlciBidWZmZXIgc2l6ZSB0aGFuIHRoZSBhY3R1YWwgbmVlZGVk
-IGhlbHANCj4gdG8gdHJpZ2dlciB0aGlzIGJ1ZyBpbnRyaW5zaWMgaW4gZHJtX2ZiX2hlbHBl
-cl9tZW1vcnlfcmFuZ2VfdG9fY2xpcCgpLg0KPiANCj4gT3RoZXJzIGZiZGV2IGVtdWxhdGlv
-biBzb2x1dGlvbnMgd3JpdGUgdG8gdGhlIEdFTSBidWZmZXIgZGlyZWN0bHksIHRoZXkNCj4g
-d29uJ3QgcmVwcm9kdWNlIHRoaXMgYnVnIGJlY2F1c2UgdGhlIC5mYl9kaXJ0eSBmdW5jdGlv
-biBjYWxsYmFjayBkbyBub3QNCj4gYmVpbmcgaG9va2VkLCBzbyBubyBjaGFuY2UgaXMgZ2l2
-ZW4gdG8gZHJtX2ZiX2hlbHBlcl9tZW1vcnlfcmFuZ2VfdG9fY2xpcCgpDQo+IHRvIGdlbmVy
-YXRlIGEgb3V0LW9mLWJvdW5kIHdoZW4gZHJtX2ZiX2hlbHBlcl9zeXNfd3JpdGUoKSBpcyBj
-YWxsZWQuDQo+IA0KPiBUaGlzIHBhdGNoIGJyZWFrIHRoZSB0cmlnZ2VyIGNvbmRpdGlvbiBv
-ZiB0aGlzIGJ1ZyBieSBzaHJpbmtpbmcgdGhlIHNoYWRvdw0KPiBidWZmZXIgc2l6ZSB0byBz
-aXplcy0+c3VyZmFjZV9oZWlnaHQgKiBidWZmZXItPmZiLT5waXRjaGVzWzBdLg0KPiANCj4g
-Rml4ZXM6ICc4ZmJjOWFmNTVkZTAgKCJkcm0vZmJkZXYtZ2VuZXJpYzogU2V0IHNjcmVlbiBz
-aXplIHRvIHNpemUgb2YgR0VNDQo+IGJ1ZmZlciIpJw0KPiANCj4gU2lnbmVkLW9mZi1ieTog
-U3VpIEppbmdmZW5nIDxzdWlqaW5nZmVuZ0Bsb29uZ3Nvbi5jbj4NCj4gLS0tDQo+ICAgZHJp
-dmVycy9ncHUvZHJtL2RybV9mYmRldl9nZW5lcmljLmMgfCAyICstDQo+ICAgMSBmaWxlIGNo
-YW5nZWQsIDEgaW5zZXJ0aW9uKCspLCAxIGRlbGV0aW9uKC0pDQo+IA0KPiBkaWZmIC0tZ2l0
-IGEvZHJpdmVycy9ncHUvZHJtL2RybV9mYmRldl9nZW5lcmljLmMgYi9kcml2ZXJzL2dwdS9k
-cm0vZHJtX2ZiZGV2X2dlbmVyaWMuYw0KPiBpbmRleCA4ZTUxNDhiZjQwYmIuLmIwNTdjZmJi
-YTkzOCAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL2RybV9mYmRldl9nZW5lcmlj
-LmMNCj4gKysrIGIvZHJpdmVycy9ncHUvZHJtL2RybV9mYmRldl9nZW5lcmljLmMNCj4gQEAg
-LTk0LDcgKzk0LDcgQEAgc3RhdGljIGludCBkcm1fZmJkZXZfZ2VuZXJpY19oZWxwZXJfZmJf
-cHJvYmUoc3RydWN0IGRybV9mYl9oZWxwZXIgKmZiX2hlbHBlciwNCj4gICAJZmJfaGVscGVy
-LT5idWZmZXIgPSBidWZmZXI7DQo+ICAgCWZiX2hlbHBlci0+ZmIgPSBidWZmZXItPmZiOw0K
-PiAgIA0KPiAtCXNjcmVlbl9zaXplID0gYnVmZmVyLT5nZW0tPnNpemU7DQo+ICsJc2NyZWVu
-X3NpemUgPSBzaXplcy0+c3VyZmFjZV9oZWlnaHQgKiBidWZmZXItPmZiLT5waXRjaGVzWzBd
-Ow0KUmV2aWV3ZWQtYnk6IFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRl
-Pg0KDQpUaGFua3MgYSBsb3QgZm9yIHRoZSBidWdmaXguDQoNCkJlc3QgcmVnYXJkcw0KVGhv
-bWFzDQoNCj4gICAJc2NyZWVuX2J1ZmZlciA9IHZ6YWxsb2Moc2NyZWVuX3NpemUpOw0KPiAg
-IAlpZiAoIXNjcmVlbl9idWZmZXIpIHsNCj4gICAJCXJldCA9IC1FTk9NRU07DQoNCi0tIA0K
-VGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29m
-dHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8
-cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRz
-ZsO8aHJlcjogSXZvIFRvdGV2DQo=
+For PARISC, the architecture helpers are mixed up with helpers
+for the system's STI graphics firmware. We first move the STI code
+to appropriate locations under video/ and then move the architecture
+helper under arch/parisc.
 
---------------w289ehKlxbP1df468BandQ6F--
+For Sparc, there's an additional patch that moves the implementation
+from the header into a source file. This allows to avoid some include
+statements in the header file.
 
---------------APO00WSf8RVAKDBuCNqXIP9l
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+Built on arm, arm64, m68k, mips, parisc, powerpc, sparc and x86.
 
------BEGIN PGP SIGNATURE-----
+v3:
+	* use default fb_pgprotect() on arc, parisc, sparc64 (Arnd)
+	* fix includes in generic fb.h
+v2:
+	* make writecombine the default mapping mode (Arnd)
+	* rework fb_pgprotect() on m68k
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmQ9M2QFAwAAAAAACgkQlh/E3EQov+Ba
-ug/+J3K85UkSdAkcKHawzQNvwpgdAsMi3SeFWz6+Wr7CVt9Vd3HwhO9cYIBKOPzvbMtcEA2LS1cB
-u0KnxAbytpjQ8g7UhnN/AtfdKkagj8f8UxgtXQ40YYhjASsrbyXsMWoULio+zD8scx/jztIB6R7q
-aJtwYKTpjc5mYI8fJmTt1Cj8w6L9UM8ZEiFajDH84RuwSaEQKfhgZcuxko3tM67rd2Ota4KT1wP2
-z1VoERvX5CPvi/kF0X+pEGGR9TNbkcNAb2aNgSbVecj5qngxD66vVmcKqlKYxZCRz7l3R1R39wAP
-lecK9xpNPOlmhn52/NnpRbeQG65we68/ndijBAABfChP+wzkCNO2WPvJYwMubwhZjIAP/G/ZlXE8
-Y83kQ1teQLKfxZGZYp5ll80pDrg4TrUVnxKadVCqgZItxx0fRRC4qQbMq5e4wwbZ+Y/CoZfrOaNW
-eCPtyeJM+G982mONSpnXRBV3GbP4qNVr0fzIEGsGzKZTmDoZfWhEGXRcrzRTXaFINntpbswhibau
-HfGkIyQqNmWS4YlsREVflK+68fUUDoG809lr/OzR9AVtegmtFC8VPnNejLscFO1S+smSq8fy3QzL
-DibvMhLcaLYDrhIAWz613tR7Hk2sa0U6hficLFj4YzotVhlSVUrhcRNSa/qgmBR1coLkJZEaTsJu
-j60=
-=rMEV
------END PGP SIGNATURE-----
+Thomas Zimmermann (19):
+  fbdev: Prepare generic architecture helpers
+  arch/arc: Implement <asm/fb.h> with generic helpers
+  arch/arm: Implement <asm/fb.h> with generic helpers
+  arch/arm64: Implement <asm/fb.h> with generic helpers
+  arch/ia64: Implement <asm/fb.h> with generic helpers
+  arch/loongarch: Implement <asm/fb.h> with generic helpers
+  arch/m68k: Merge variants of fb_pgprotect() into single function
+  arch/m68k: Implement <asm/fb.h> with generic helpers
+  arch/mips: Implement <asm/fb.h> with generic helpers
+  video: Remove trailing whitespaces
+  video: Move HP PARISC STI core code to shared location
+  arch/parisc: Remove trailing whitespaces
+  arch/parisc: Implement fb_is_primary_device() under arch/parisc
+  arch/parisc: Implement <asm/fb.h> with generic helpers
+  arch/powerpc: Implement <asm/fb.h> with generic helpers
+  arch/sh: Implement <asm/fb.h> with generic helpers
+  arch/sparc: Implement fb_is_primary_device() in source file
+  arch/sparc: Implement <asm/fb.h> with generic helpers
+  arch/x86: Implement <asm/fb.h> with generic helpers
 
---------------APO00WSf8RVAKDBuCNqXIP9l--
+ arch/arc/include/asm/fb.h                     |  16 +-
+ arch/arm/include/asm/fb.h                     |  15 +-
+ arch/arm64/include/asm/fb.h                   |  15 +-
+ arch/ia64/include/asm/fb.h                    |  11 +-
+ arch/loongarch/include/asm/fb.h               |  15 +-
+ arch/m68k/include/asm/fb.h                    |  22 +--
+ arch/mips/include/asm/fb.h                    |  10 +-
+ arch/parisc/Makefile                          |   4 +-
+ arch/parisc/include/asm/fb.h                  |  20 +--
+ arch/parisc/video/Makefile                    |   3 +
+ arch/parisc/video/fbdev.c                     |  27 +++
+ arch/powerpc/include/asm/fb.h                 |   8 +-
+ arch/sh/include/asm/fb.h                      |  15 +-
+ arch/sparc/Makefile                           |   1 +
+ arch/sparc/include/asm/fb.h                   |  33 ++--
+ arch/sparc/video/Makefile                     |   3 +
+ arch/sparc/video/fbdev.c                      |  24 +++
+ arch/x86/include/asm/fb.h                     |  11 +-
+ drivers/video/Kconfig                         |   7 +
+ drivers/video/Makefile                        |   1 +
+ drivers/video/console/Kconfig                 |   1 +
+ drivers/video/console/Makefile                |   4 +-
+ drivers/video/console/sticon.c                |   6 +-
+ drivers/video/fbdev/Kconfig                   |   3 +-
+ drivers/video/fbdev/stifb.c                   | 158 +++++++++---------
+ drivers/video/{console => }/sticore.c         | 123 ++++++--------
+ include/asm-generic/fb.h                      |  24 ++-
+ .../video/fbdev => include/video}/sticore.h   |  16 +-
+ 28 files changed, 285 insertions(+), 311 deletions(-)
+ create mode 100644 arch/parisc/video/Makefile
+ create mode 100644 arch/parisc/video/fbdev.c
+ create mode 100644 arch/sparc/video/Makefile
+ create mode 100644 arch/sparc/video/fbdev.c
+ rename drivers/video/{console => }/sticore.c (95%)
+ rename {drivers/video/fbdev => include/video}/sticore.h (99%)
+
+
+base-commit: c7cfe0c7215db9556ffe7ce33d1f60f768336cfd
+prerequisite-patch-id: 0aa359f6144c4015c140c8a6750be19099c676fb
+prerequisite-patch-id: c67e5d886a47b7d0266d81100837557fda34cb24
+prerequisite-patch-id: cbc453ee02fae02af22fbfdce56ab732c7a88c36
+-- 
+2.40.0
+

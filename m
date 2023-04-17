@@ -2,42 +2,56 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C776BC77B70
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Apr 2023 08:09:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59724C77B70
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Apr 2023 08:43:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230072AbjDQIJG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 Apr 2023 04:09:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54786 "EHLO
+        id S229461AbjDQInD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 Apr 2023 04:43:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52364 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229478AbjDQIJF (ORCPT
+        with ESMTP id S229504AbjDQInC (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 Apr 2023 04:09:05 -0400
-Received: from 189.cn (ptr.189.cn [183.61.185.102])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 47AD9527C;
-        Mon, 17 Apr 2023 01:08:52 -0700 (PDT)
-HMM_SOURCE_IP: 10.64.8.41:58916.227953132
-HMM_ATTACHE_NUM: 0000
-HMM_SOURCE_TYPE: SMTP
-Received: from clientip-114.242.206.180 (unknown [10.64.8.41])
-        by 189.cn (HERMES) with SMTP id 24C8B1002DD;
-        Mon, 17 Apr 2023 16:08:49 +0800 (CST)
-Received: from  ([114.242.206.180])
-        by gateway-151646-dep-7b48884fd-bkw2h with ESMTP id 17d70599d5ee46a997f18cc8ddf504cf for tzimmermann@suse.de;
-        Mon, 17 Apr 2023 16:08:51 CST
-X-Transaction-ID: 17d70599d5ee46a997f18cc8ddf504cf
-X-Real-From: 15330273260@189.cn
-X-Receive-IP: 114.242.206.180
-X-MEDUSA-Status: 0
-Sender: 15330273260@189.cn
-Message-ID: <df49dc72-3165-8e50-e36d-61d311c311a9@189.cn>
-Date:   Mon, 17 Apr 2023 16:08:48 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH v2] drm/fbdev-generic: prohibit potential out-of-bounds
- access
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Mon, 17 Apr 2023 04:43:02 -0400
+Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C79AD5595
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 Apr 2023 01:42:39 -0700 (PDT)
+Received: by mail-ed1-x531.google.com with SMTP id 4fb4d7f45d1cf-50445d911c5so510200a12.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 Apr 2023 01:42:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google; t=1681720958; x=1684312958;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:mail-followup-to:message-id:subject:cc:to
+         :from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=jlip5XEyfopxeYY6dYtXb4T2DhyFncJYyC75GRGWD18=;
+        b=krxbqVqJ5eJkq+3Ix4xzb5zDbIvhAEzyWLufmLKGtJ1GSbIjVbWlPOM64qaid6v1en
+         CdQqVgqTRPkkslBT6mU0gA/T8H1DcYfiVo3+FisIg5iTlB5DxasbDAa7QAOsXU8MyZp8
+         SD7t7lwr2ceBtl87KRM/eCWPB7lzRz16SFGOo=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1681720958; x=1684312958;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:mail-followup-to:message-id:subject:cc:to
+         :from:date:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=jlip5XEyfopxeYY6dYtXb4T2DhyFncJYyC75GRGWD18=;
+        b=bYDrfCRvarkS7IV5P8AmOUx2X+bW4Xjxxm8hTZypuGmIQ1rQVMSAAomNsJYPTifeY1
+         ZgIsesdfKGllP1IEM+7ImnEmw03mPxjrwZ578bnQYk+VNtmvHyijUCo9FKyaz5G74qhP
+         5YDjJZ0Z8RpxbYT43GJS9v4o33FtnlJmgBKzZjnALW04/9ECXPGCfu+33SDnCe1GVn6U
+         e/ZIZOcyd+WlZRoQ46+PPeCuilMwnYFedqBkkVJ9GQCmiwE+STkwaqe3/5SYfimlkFLd
+         9xO1i0y+w565yF1E+RJhnf9f+pNn4Zhz2fNcgo9IK0fSq86K0VaUfNBpyCCNE234UY7N
+         NJCQ==
+X-Gm-Message-State: AAQBX9fiYPQ+t78lEJfHGpLAd3ZCqCldXw3aQLBgqmRRHhZMPRTG3rqw
+        ZMpTSHTEg+RhGm6P5mswlUFiGA==
+X-Google-Smtp-Source: AKy350Z2IkICzZW4vLGnCazx952jTuC+nIsFgIEtilhuIj8V7oaAs+NlKm7fH7IYGWEPTj7Nn5NPYA==
+X-Received: by 2002:a05:6402:2691:b0:504:8a10:b699 with SMTP id w17-20020a056402269100b005048a10b699mr10134437edd.4.1681720958185;
+        Mon, 17 Apr 2023 01:42:38 -0700 (PDT)
+Received: from phenom.ffwll.local (212-51-149-33.fiber7.init7.net. [212.51.149.33])
+        by smtp.gmail.com with ESMTPSA id g25-20020a056402115900b004c4eed3fe20sm5552210edw.5.2023.04.17.01.42.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 17 Apr 2023 01:42:37 -0700 (PDT)
+Date:   Mon, 17 Apr 2023 10:42:35 +0200
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Sui Jingfeng <15330273260@189.cn>,
         Maxime Ripard <mripard@kernel.org>,
         David Airlie <airlied@gmail.com>,
         Daniel Vetter <daniel@ffwll.ch>,
@@ -45,204 +59,234 @@ To:     Thomas Zimmermann <tzimmermann@suse.de>,
         Li Yi <liyi@loongson.cn>,
         Javier Martinez Canillas <javierm@redhat.com>,
         Helge Deller <deller@gmx.de>,
-        Lucas De Marchi <lucas.demarchi@intel.com>
-Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        Lucas De Marchi <lucas.demarchi@intel.com>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
+Subject: Re: [PATCH v2] drm/fbdev-generic: prohibit potential out-of-bounds
+ access
+Message-ID: <ZD0Ge6C8GUv9/t1d@phenom.ffwll.local>
+Mail-Followup-To: Thomas Zimmermann <tzimmermann@suse.de>,
+        Sui Jingfeng <15330273260@189.cn>,
+        Maxime Ripard <mripard@kernel.org>,
+        David Airlie <airlied@gmail.com>,
+        Sui Jingfeng <suijingfeng@loongson.cn>, Li Yi <liyi@loongson.cn>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Helge Deller <deller@gmx.de>,
+        Lucas De Marchi <lucas.demarchi@intel.com>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
 References: <20230413180622.1014016-1-15330273260@189.cn>
  <fccc494f-0e52-5fdf-0e40-acc29177c73c@suse.de>
  <32a1510e-d38a-ffb6-8e8d-026f8b3aa17a@189.cn>
  <fab85750-dcb7-0eeb-cabc-8fcfcc84b11c@suse.de>
-From:   Sui Jingfeng <15330273260@189.cn>
-In-Reply-To: <fab85750-dcb7-0eeb-cabc-8fcfcc84b11c@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <fab85750-dcb7-0eeb-cabc-8fcfcc84b11c@suse.de>
+X-Operating-System: Linux phenom 6.1.0-7-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
-
-On 2023/4/17 15:29, Thomas Zimmermann wrote:
+On Mon, Apr 17, 2023 at 09:29:07AM +0200, Thomas Zimmermann wrote:
 > Hi
->
+> 
 > Am 14.04.23 um 12:58 schrieb Sui Jingfeng:
->> Hi,
->>
->> On 2023/4/14 03:16, Thomas Zimmermann wrote:
->>> Hi,
->>>
->>> thanks for the patch. This is effectively a revert of commit 
->>> 8fbc9af55de0 ("drm/fbdev-generic: Set screen size to size of GEM 
->>> buffer"). Please add a Fixes tag.
->>>
->>> Am 13.04.23 um 20:06 schrieb Sui Jingfeng:
->>>> From: Sui Jingfeng <suijingfeng@loongson.cn>
->>>>
->>>> The crazy fbdev test of IGT may write after EOF, which lead to 
->>>> out-of-bound
->>>
->>> Please drop 'crazy'. :)
->>
->> This is OK.
->>
->> By using the world 'crazy',
->>
->> I meant that the test is very good and maybe it is written by 
->> professionalÂ  peoples
->>
->> with the guidance byÂ  experiencedÂ  engineer. So that even the corner 
->> get tested.
->>
->>
->>>
->>>> access for the drm drivers using fbdev-generic. For example, run 
->>>> fbdev test
->>>> on a x86-64+ast2400 platform with 1680x1050 resolution will cause 
->>>> the linux
->>>> kernel hang with following call trace:
->>>>
->>>> Â Â  Oops: 0000 [#1] PREEMPT SMP PTI
->>>> Â Â  [IGT] fbdev: starting subtest eof
->>>> Â Â  Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
->>>> Â Â  [IGT] fbdev: starting subtest nullptr
->>>>
->>>> Â Â  RIP: 0010:memcpy_erms+0xa/0x20
->>>> Â Â  RSP: 0018:ffffa17d40167d98 EFLAGS: 00010246
->>>> Â Â  RAX: ffffa17d4eb7fa80 RBX: ffffa17d40e0aa80 RCX: 00000000000014c0
->>>> Â Â  RDX: 0000000000001a40 RSI: ffffa17d40e0b000 RDI: ffffa17d4eb80000
->>>> Â Â  RBP: ffffa17d40167e20 R08: 0000000000000000 R09: ffff89522ecff8c0
->>>> Â Â  R10: ffffa17d4e4c5000 R11: 0000000000000000 R12: ffffa17d4eb7fa80
->>>> Â Â  R13: 0000000000001a40 R14: 000000000000041a R15: ffffa17d40167e30
->>>> Â Â  FS:Â  0000000000000000(0000) GS:ffff895257380000(0000) 
->>>> knlGS:0000000000000000
->>>> Â Â  CS:Â  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
->>>> Â Â  CR2: ffffa17d40e0b000 CR3: 00000001eaeca006 CR4: 00000000001706e0
->>>> Â Â  Call Trace:
->>>> Â Â Â  <TASK>
->>>> Â Â Â  ? drm_fbdev_generic_helper_fb_dirty+0x207/0x330 [drm_kms_helper]
->>>> Â Â Â  drm_fb_helper_damage_work+0x8f/0x170 [drm_kms_helper]
->>>> Â Â Â  process_one_work+0x21f/0x430
->>>> Â Â Â  worker_thread+0x4e/0x3c0
->>>> Â Â Â  ? __pfx_worker_thread+0x10/0x10
->>>> Â Â Â  kthread+0xf4/0x120
->>>> Â Â Â  ? __pfx_kthread+0x10/0x10
->>>> Â Â Â  ret_from_fork+0x2c/0x50
->>>> Â Â Â  </TASK>
->>>> Â Â  CR2: ffffa17d40e0b000
->>>> Â Â  ---[ end trace 0000000000000000 ]---
->>>>
->>>> The indirect reason is drm_fb_helper_memory_range_to_clip() 
->>>> generate damage
->>>> rectangles which partially or completely go out of the active 
->>>> display area.
->>>> The second of argument 'off' is passing from the user-space, this 
->>>> will lead
->>>> to the out-of-bound if it is large than (fb_height + 1) * 
->>>> fb_pitches; while
->>>> DIV_ROUND_UP() may also controbute to error by 1.
->>>>
->>>> This patch will add code to restrict the damage rect computed go 
->>>> beyond of
->>>> the last line of the framebuffer.
->>>>
->>>> Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
->>>> ---
->>>> Â  drivers/gpu/drm/drm_fb_helper.cÂ Â Â Â  | 16 ++++++++++++----
->>>> Â  drivers/gpu/drm/drm_fbdev_generic.c |Â  2 +-
->>>> Â  2 files changed, 13 insertions(+), 5 deletions(-)
->>>>
->>>> diff --git a/drivers/gpu/drm/drm_fb_helper.c 
->>>> b/drivers/gpu/drm/drm_fb_helper.c
->>>> index 64458982be40..6bb1b8b27d7a 100644
->>>> --- a/drivers/gpu/drm/drm_fb_helper.c
->>>> +++ b/drivers/gpu/drm/drm_fb_helper.c
->>>> @@ -641,19 +641,27 @@ static void drm_fb_helper_damage(struct 
->>>> drm_fb_helper *helper, u32 x, u32 y,
->>>> Â  static void drm_fb_helper_memory_range_to_clip(struct fb_info 
->>>> *info, off_t off, size_t len,
->>>> Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  struct drm_rect *clip)
->>>> Â  {
->>>> +Â Â Â  u32 line_length = info->fix.line_length;
->>>> +Â Â Â  u32 fb_height = info->var.yres;
->>>> Â Â Â Â Â  off_t end = off + len;
->>>> Â Â Â Â Â  u32 x1 = 0;
->>>> -Â Â Â  u32 y1 = off / info->fix.line_length;
->>>> +Â Â Â  u32 y1 = off / line_length;
->>>> Â Â Â Â Â  u32 x2 = info->var.xres;
->>>> -Â Â Â  u32 y2 = DIV_ROUND_UP(end, info->fix.line_length);
->>>> +Â Â Â  u32 y2 = DIV_ROUND_UP(end, line_length);
->>>> +
->>>> +Â Â Â  /* Don't allow any of them beyond the bottom bound of display 
->>>> area */
->>>> +Â Â Â  if (y1 > fb_height)
->>>> +Â Â Â Â Â Â Â  y1 = fb_height;
->>>> +Â Â Â  if (y2 > fb_height)
->>>> +Â Â Â Â Â Â Â  y2 = fb_height;
->>>> Â  Â Â Â Â Â  if ((y2 - y1) == 1) {
->>>> Â Â Â Â Â Â Â Â Â  /*
->>>> Â Â Â Â Â Â Â Â Â Â  * We've only written to a single scanline. Try to reduce
->>>> Â Â Â Â Â Â Â Â Â Â  * the number of horizontal pixels that need an update.
->>>> Â Â Â Â Â Â Â Â Â Â  */
->>>> -Â Â Â Â Â Â Â  off_t bit_off = (off % info->fix.line_length) * 8;
->>>> -Â Â Â Â Â Â Â  off_t bit_end = (end % info->fix.line_length) * 8;
->>>> +Â Â Â Â Â Â Â  off_t bit_off = (off % line_length) * 8;
->>>> +Â Â Â Â Â Â Â  off_t bit_end = (end % line_length) * 8;
->>>
->>> Please scratch all these changes. The current code should work as 
->>> intended. Only the generic fbdev emulation uses this code and it 
->>> should really be moved there at some point.
->>
->>
->> Are you meantÂ  that we should remove all these changes in 
->> drivers/gpu/drm/drm_fb_helper.c ?
->
-> As Daniel mentioned, there's the discussion in the other thread. I 
-> don't want to reopen it here. Just to summarize: I'm not convinced 
-> that this should be DRM code because it can be shared with other fbdev 
-> drivers.
->
+> > Hi,
+> > 
+> > On 2023/4/14 03:16, Thomas Zimmermann wrote:
+> > > Hi,
+> > > 
+> > > thanks for the patch. This is effectively a revert of commit
+> > > 8fbc9af55de0 ("drm/fbdev-generic: Set screen size to size of GEM
+> > > buffer"). Please add a Fixes tag.
+> > > 
+> > > Am 13.04.23 um 20:06 schrieb Sui Jingfeng:
+> > > > From: Sui Jingfeng <suijingfeng@loongson.cn>
+> > > > 
+> > > > The crazy fbdev test of IGT may write after EOF, which lead to
+> > > > out-of-bound
+> > > 
+> > > Please drop 'crazy'. :)
+> > 
+> > This is OK.
+> > 
+> > By using the world 'crazy',
+> > 
+> > I meant that the test is very good and maybe it is written by
+> > professional  peoples
+> > 
+> > with the guidance by  experienced  engineer. So that even the corner get
+> > tested.
+> > 
+> > 
+> > > 
+> > > > access for the drm drivers using fbdev-generic. For example, run
+> > > > fbdev test
+> > > > on a x86-64+ast2400 platform with 1680x1050 resolution will
+> > > > cause the linux
+> > > > kernel hang with following call trace:
+> > > > 
+> > > >    Oops: 0000 [#1] PREEMPT SMP PTI
+> > > >    [IGT] fbdev: starting subtest eof
+> > > >    Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
+> > > >    [IGT] fbdev: starting subtest nullptr
+> > > > 
+> > > >    RIP: 0010:memcpy_erms+0xa/0x20
+> > > >    RSP: 0018:ffffa17d40167d98 EFLAGS: 00010246
+> > > >    RAX: ffffa17d4eb7fa80 RBX: ffffa17d40e0aa80 RCX: 00000000000014c0
+> > > >    RDX: 0000000000001a40 RSI: ffffa17d40e0b000 RDI: ffffa17d4eb80000
+> > > >    RBP: ffffa17d40167e20 R08: 0000000000000000 R09: ffff89522ecff8c0
+> > > >    R10: ffffa17d4e4c5000 R11: 0000000000000000 R12: ffffa17d4eb7fa80
+> > > >    R13: 0000000000001a40 R14: 000000000000041a R15: ffffa17d40167e30
+> > > >    FS:  0000000000000000(0000) GS:ffff895257380000(0000)
+> > > > knlGS:0000000000000000
+> > > >    CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> > > >    CR2: ffffa17d40e0b000 CR3: 00000001eaeca006 CR4: 00000000001706e0
+> > > >    Call Trace:
+> > > >     <TASK>
+> > > >     ? drm_fbdev_generic_helper_fb_dirty+0x207/0x330 [drm_kms_helper]
+> > > >     drm_fb_helper_damage_work+0x8f/0x170 [drm_kms_helper]
+> > > >     process_one_work+0x21f/0x430
+> > > >     worker_thread+0x4e/0x3c0
+> > > >     ? __pfx_worker_thread+0x10/0x10
+> > > >     kthread+0xf4/0x120
+> > > >     ? __pfx_kthread+0x10/0x10
+> > > >     ret_from_fork+0x2c/0x50
+> > > >     </TASK>
+> > > >    CR2: ffffa17d40e0b000
+> > > >    ---[ end trace 0000000000000000 ]---
+> > > > 
+> > > > The indirect reason is drm_fb_helper_memory_range_to_clip()
+> > > > generate damage
+> > > > rectangles which partially or completely go out of the active
+> > > > display area.
+> > > > The second of argument 'off' is passing from the user-space,
+> > > > this will lead
+> > > > to the out-of-bound if it is large than (fb_height + 1) *
+> > > > fb_pitches; while
+> > > > DIV_ROUND_UP() may also controbute to error by 1.
+> > > > 
+> > > > This patch will add code to restrict the damage rect computed go
+> > > > beyond of
+> > > > the last line of the framebuffer.
+> > > > 
+> > > > Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
+> > > > ---
+> > > >   drivers/gpu/drm/drm_fb_helper.c     | 16 ++++++++++++----
+> > > >   drivers/gpu/drm/drm_fbdev_generic.c |  2 +-
+> > > >   2 files changed, 13 insertions(+), 5 deletions(-)
+> > > > 
+> > > > diff --git a/drivers/gpu/drm/drm_fb_helper.c
+> > > > b/drivers/gpu/drm/drm_fb_helper.c
+> > > > index 64458982be40..6bb1b8b27d7a 100644
+> > > > --- a/drivers/gpu/drm/drm_fb_helper.c
+> > > > +++ b/drivers/gpu/drm/drm_fb_helper.c
+> > > > @@ -641,19 +641,27 @@ static void drm_fb_helper_damage(struct
+> > > > drm_fb_helper *helper, u32 x, u32 y,
+> > > >   static void drm_fb_helper_memory_range_to_clip(struct fb_info
+> > > > *info, off_t off, size_t len,
+> > > >                              struct drm_rect *clip)
+> > > >   {
+> > > > +    u32 line_length = info->fix.line_length;
+> > > > +    u32 fb_height = info->var.yres;
+> > > >       off_t end = off + len;
+> > > >       u32 x1 = 0;
+> > > > -    u32 y1 = off / info->fix.line_length;
+> > > > +    u32 y1 = off / line_length;
+> > > >       u32 x2 = info->var.xres;
+> > > > -    u32 y2 = DIV_ROUND_UP(end, info->fix.line_length);
+> > > > +    u32 y2 = DIV_ROUND_UP(end, line_length);
+> > > > +
+> > > > +    /* Don't allow any of them beyond the bottom bound of
+> > > > display area */
+> > > > +    if (y1 > fb_height)
+> > > > +        y1 = fb_height;
+> > > > +    if (y2 > fb_height)
+> > > > +        y2 = fb_height;
+> > > >         if ((y2 - y1) == 1) {
+> > > >           /*
+> > > >            * We've only written to a single scanline. Try to reduce
+> > > >            * the number of horizontal pixels that need an update.
+> > > >            */
+> > > > -        off_t bit_off = (off % info->fix.line_length) * 8;
+> > > > -        off_t bit_end = (end % info->fix.line_length) * 8;
+> > > > +        off_t bit_off = (off % line_length) * 8;
+> > > > +        off_t bit_end = (end % line_length) * 8;
+> > > 
+> > > Please scratch all these changes. The current code should work as
+> > > intended. Only the generic fbdev emulation uses this code and it
+> > > should really be moved there at some point.
+> > 
+> > 
+> > Are you meant  that we should remove all these changes in
+> > drivers/gpu/drm/drm_fb_helper.c ?
+> 
+> As Daniel mentioned, there's the discussion in the other thread. I don't
+> want to reopen it here. Just to summarize: I'm not convinced that this
+> should be DRM code because it can be shared with other fbdev drivers.
+> 
 > [...]
->
->>>> diff --git a/drivers/gpu/drm/drm_fbdev_generic.c 
->>>> b/drivers/gpu/drm/drm_fbdev_generic.c
->>>> index 8e5148bf40bb..b057cfbba938 100644
->>>> --- a/drivers/gpu/drm/drm_fbdev_generic.c
->>>> +++ b/drivers/gpu/drm/drm_fbdev_generic.c
->>>> @@ -94,7 +94,7 @@ static int 
->>>> drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
->>>> Â Â Â Â Â  fb_helper->buffer = buffer;
->>>> Â Â Â Â Â  fb_helper->fb = buffer->fb;
->>>> Â  -Â Â Â  screen_size = buffer->gem->size;
->>>> +Â Â Â  screen_size = sizes->surface_height * buffer->fb->pitches[0];
->
-> This has been bothering me over the weekend. And I think it's because 
-> what we want the screen_size to be heigth * pitch,Â  but the mmap'ed 
-> memory is still at page granularity. Therefore...
->
-Yeah, this bug is not that simple as it seems,Â  I will drop the 
-controversy part, leave it there, it may need more time to rethink about 
-it.
-
-Thanks for reviewing, don't be so tired...
-
+> 
+> > > > diff --git a/drivers/gpu/drm/drm_fbdev_generic.c
+> > > > b/drivers/gpu/drm/drm_fbdev_generic.c
+> > > > index 8e5148bf40bb..b057cfbba938 100644
+> > > > --- a/drivers/gpu/drm/drm_fbdev_generic.c
+> > > > +++ b/drivers/gpu/drm/drm_fbdev_generic.c
+> > > > @@ -94,7 +94,7 @@ static int
+> > > > drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper
+> > > > *fb_helper,
+> > > >       fb_helper->buffer = buffer;
+> > > >       fb_helper->fb = buffer->fb;
+> > > >   -    screen_size = buffer->gem->size;
+> > > > +    screen_size = sizes->surface_height * buffer->fb->pitches[0];
+> 
+> This has been bothering me over the weekend. And I think it's because what
+> we want the screen_size to be heigth * pitch,  but the mmap'ed memory is
+> still at page granularity. Therefore...
+> 
 > [...]
->>>
->>>> Â Â Â Â Â  screen_buffer = vzalloc(screen_size);
->
-> ... this line should explicitly allocate multiples of pages. Something 
-> like
->
-> Â Â Â  /* allocate page-size multiples for mmap */
-> Â Â Â  vzalloc(PAGE_ALIGN(screen_size))
->
-> It has not been a bug so far because vzalloc() always returns full 
-> pages IIRC. It's still worth fixing.
->
+> > > 
+> > > >       screen_buffer = vzalloc(screen_size);
+> 
+> ... this line should explicitly allocate multiples of pages. Something like
+> 
+>     /* allocate page-size multiples for mmap */
+>     vzalloc(PAGE_ALIGN(screen_size))
+> 
+> It has not been a bug so far because vzalloc() always returns full pages
+> IIRC. It's still worth fixing.
+
+So gem_bo are supposed to be at least PAGE_SIZE aligned. So maybe we just
+put a comment in here why this assumption holds, and reinforce it with a
+WARN_ON? I think that would address the concerns here?
+
+But I concur with Sui that this is a separate issue which should be sorted
+out in a separate patch.
+-Daniel
+
+> 
 > Best regards
 > Thomas
->
->
->>>> Â Â Â Â Â  if (!screen_buffer) {
->>>> Â Â Â Â Â Â Â Â Â  ret = -ENOMEM;
->>>
->
+> 
+> 
+> > > >       if (!screen_buffer) {
+> > > >           ret = -ENOMEM;
+> > > 
+> 
+> -- 
+> Thomas Zimmermann
+> Graphics Driver Developer
+> SUSE Software Solutions Germany GmbH
+> Maxfeldstr. 5, 90409 Nürnberg, Germany
+> (HRB 36809, AG Nürnberg)
+> Geschäftsführer: Ivo Totev
+
+
+
+
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

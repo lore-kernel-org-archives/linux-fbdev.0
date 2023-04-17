@@ -2,135 +2,190 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24D84C77B70
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Apr 2023 11:40:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6205C77B76
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Apr 2023 11:55:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229542AbjDQLkJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 Apr 2023 07:40:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59936 "EHLO
+        id S229542AbjDQLzk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 Apr 2023 07:55:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43822 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229498AbjDQLkI (ORCPT
+        with ESMTP id S229697AbjDQLzj (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 Apr 2023 07:40:08 -0400
-Received: from loongson.cn (mail.loongson.cn [114.242.206.163])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 205741706;
-        Mon, 17 Apr 2023 04:39:18 -0700 (PDT)
-Received: from loongson.cn (unknown [10.20.42.43])
-        by gateway (Coremail) with SMTP id _____8AxEk5ILj1kOO0dAA--.34881S3;
-        Mon, 17 Apr 2023 19:32:24 +0800 (CST)
-Received: from openarena.loongson.cn (unknown [10.20.42.43])
-        by localhost.localdomain (Coremail) with SMTP id AQAAf8Cx97xDLj1kB8AqAA--.48515S2;
-        Mon, 17 Apr 2023 19:32:21 +0800 (CST)
-From:   Sui Jingfeng <suijingfeng@loongson.cn>
-To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Sui Jingfeng <suijingfeng@loongson.cn>,
-        Li Yi <liyi@loongson.cn>, Helge Deller <deller@gmx.de>,
-        Lucas De Marchi <lucas.demarchi@intel.com>
-Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
-Subject: [PATCH v3] drm/fbdev-generic: prohibit potential out-of-bounds access
-Date:   Mon, 17 Apr 2023 19:32:19 +0800
-Message-Id: <20230417113219.1354078-1-suijingfeng@loongson.cn>
-X-Mailer: git-send-email 2.25.1
+        Mon, 17 Apr 2023 07:55:39 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 908E31FCE;
+        Mon, 17 Apr 2023 04:54:37 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id C548C21A4A;
+        Mon, 17 Apr 2023 11:54:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1681732452; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=seBtqa2MvCsisDOd9YNWm0x+EnP+1UCUGTeC9Mmglgg=;
+        b=QIYE6cimxpfTa/cKx33ptlCRtu9C9r0pPHGIlpGsz/kSRyRmN/nIjTtSIhiRD/pL2AJJ1a
+        x+s1K1RT0STJJI9sAnscXb/4wh1gViP2zfLTr1fAAvXT+62TfYlHvPqwTI5BVsgpiTtPHL
+        ePeFTt8bzPRbEaIMx3l8cSSZ6Sas8TI=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1681732452;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=seBtqa2MvCsisDOd9YNWm0x+EnP+1UCUGTeC9Mmglgg=;
+        b=ZEWbTTVF8cC4Af9+C9wdoJA39zBfyrWKPnh6QY/hMbUf07+tTJ22e5INxO5dkXt+P+JRhh
+        T8bI5ueQnu8KeTCg==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8819A13319;
+        Mon, 17 Apr 2023 11:54:12 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id CwBVIGQzPWTONwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 17 Apr 2023 11:54:12 +0000
+Message-ID: <1a46142f-b7bc-d11f-1ad2-7433aafd0976@suse.de>
+Date:   Mon, 17 Apr 2023 13:54:12 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: AQAAf8Cx97xDLj1kB8AqAA--.48515S2
-X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
-X-Coremail-Antispam: 1Uk129KBjvJXoWxCF17tr43CFWDJF1UGw17Wrg_yoW5ZrWxpF
-        WfKFWUKr4kJFn8Xr47A3WUJw1UAanrZFWxurWxKryjyFyYy3429ryjyrWUWFy5Gr18Jr13
-        trn093W0kr1qyaUanT9S1TB71UUUUjJqnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
-        qI5I8CrVACY4xI64kE6c02F40Ex7xfYxn0WfASr-VFAUDa7-sFnT9fnUUIcSsGvfJTRUUU
-        bf8YFVCjjxCrM7AC8VAFwI0_Jr0_Gr1l1xkIjI8I6I8E6xAIw20EY4v20xvaj40_Wr0E3s
-        1l1IIY67AEw4v_Jrv_JF1l8cAvFVAK0II2c7xJM28CjxkF64kEwVA0rcxSw2x7M28EF7xv
-        wVC0I7IYx2IY67AKxVW5JVW7JwA2z4x0Y4vE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwA2z4
-        x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AKxVW0oVCq3wAaw2AF
-        wI0_JF0_Jw1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqjxCEc2xF0cIa020Ex4CE44I27w
-        Aqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_JF0_Jw1lYx0Ex4A2jsIE
-        14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwCY1x0262kKe7
-        AKxVWUAVWUtwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwCFI7km07C2
-        67AKxVWUAVWUtwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI
-        8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUCVW8
-        JwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Jr0_Gr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r
-        1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Jr0_GrUvcSsG
-        vfC2KfnxnUUI43ZEXa7IU8Dl1DUUUUU==
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Subject: Re: [PATCH v3] drm/fbdev-generic: prohibit potential out-of-bounds
+ access
+Content-Language: en-US
+To:     Sui Jingfeng <suijingfeng@loongson.cn>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>, Li Yi <liyi@loongson.cn>,
+        Helge Deller <deller@gmx.de>,
+        Lucas De Marchi <lucas.demarchi@intel.com>
+Cc:     loongson-kernel@lists.loongnix.cn, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <20230417113219.1354078-1-suijingfeng@loongson.cn>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20230417113219.1354078-1-suijingfeng@loongson.cn>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------APO00WSf8RVAKDBuCNqXIP9l"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The fbdev test of IGT may write after EOF, which lead to out-of-bound
-access for the drm drivers using fbdev-generic. For example, on a x86
-+ aspeed bmc card platform, with a 1680x1050 resolution display, running
-fbdev test if IGT will cause the linux kernel hang with the following
-call trace:
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------APO00WSf8RVAKDBuCNqXIP9l
+Content-Type: multipart/mixed; boundary="------------w289ehKlxbP1df468BandQ6F";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Sui Jingfeng <suijingfeng@loongson.cn>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
+ Daniel Vetter <daniel@ffwll.ch>, Li Yi <liyi@loongson.cn>,
+ Helge Deller <deller@gmx.de>, Lucas De Marchi <lucas.demarchi@intel.com>
+Cc: loongson-kernel@lists.loongnix.cn, linux-fbdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Message-ID: <1a46142f-b7bc-d11f-1ad2-7433aafd0976@suse.de>
+Subject: Re: [PATCH v3] drm/fbdev-generic: prohibit potential out-of-bounds
+ access
+References: <20230417113219.1354078-1-suijingfeng@loongson.cn>
+In-Reply-To: <20230417113219.1354078-1-suijingfeng@loongson.cn>
 
-  Oops: 0000 [#1] PREEMPT SMP PTI
-  [IGT] fbdev: starting subtest eof
-  Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
-  [IGT] fbdev: starting subtest nullptr
+--------------w289ehKlxbP1df468BandQ6F
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-  RIP: 0010:memcpy_erms+0xa/0x20
-  RSP: 0018:ffffa17d40167d98 EFLAGS: 00010246
-  RAX: ffffa17d4eb7fa80 RBX: ffffa17d40e0aa80 RCX: 00000000000014c0
-  RDX: 0000000000001a40 RSI: ffffa17d40e0b000 RDI: ffffa17d4eb80000
-  RBP: ffffa17d40167e20 R08: 0000000000000000 R09: ffff89522ecff8c0
-  R10: ffffa17d4e4c5000 R11: 0000000000000000 R12: ffffa17d4eb7fa80
-  R13: 0000000000001a40 R14: 000000000000041a R15: ffffa17d40167e30
-  FS:  0000000000000000(0000) GS:ffff895257380000(0000) knlGS:0000000000000000
-  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-  CR2: ffffa17d40e0b000 CR3: 00000001eaeca006 CR4: 00000000001706e0
-  Call Trace:
-   <TASK>
-   ? drm_fbdev_generic_helper_fb_dirty+0x207/0x330 [drm_kms_helper]
-   drm_fb_helper_damage_work+0x8f/0x170 [drm_kms_helper]
-   process_one_work+0x21f/0x430
-   worker_thread+0x4e/0x3c0
-   ? __pfx_worker_thread+0x10/0x10
-   kthread+0xf4/0x120
-   ? __pfx_kthread+0x10/0x10
-   ret_from_fork+0x2c/0x50
-   </TASK>
-  CR2: ffffa17d40e0b000
-  ---[ end trace 0000000000000000 ]---
+SGkNCg0KQW0gMTcuMDQuMjMgdW0gMTM6MzIgc2NocmllYiBTdWkgSmluZ2Zlbmc6DQo+IFRo
+ZSBmYmRldiB0ZXN0IG9mIElHVCBtYXkgd3JpdGUgYWZ0ZXIgRU9GLCB3aGljaCBsZWFkIHRv
+IG91dC1vZi1ib3VuZA0KPiBhY2Nlc3MgZm9yIHRoZSBkcm0gZHJpdmVycyB1c2luZyBmYmRl
+di1nZW5lcmljLiBGb3IgZXhhbXBsZSwgb24gYSB4ODYNCj4gKyBhc3BlZWQgYm1jIGNhcmQg
+cGxhdGZvcm0sIHdpdGggYSAxNjgweDEwNTAgcmVzb2x1dGlvbiBkaXNwbGF5LCBydW5uaW5n
+DQo+IGZiZGV2IHRlc3QgaWYgSUdUIHdpbGwgY2F1c2UgdGhlIGxpbnV4IGtlcm5lbCBoYW5n
+IHdpdGggdGhlIGZvbGxvd2luZw0KPiBjYWxsIHRyYWNlOg0KPiANCj4gICAgT29wczogMDAw
+MCBbIzFdIFBSRUVNUFQgU01QIFBUSQ0KPiAgICBbSUdUXSBmYmRldjogc3RhcnRpbmcgc3Vi
+dGVzdCBlb2YNCj4gICAgV29ya3F1ZXVlOiBldmVudHMgZHJtX2ZiX2hlbHBlcl9kYW1hZ2Vf
+d29yayBbZHJtX2ttc19oZWxwZXJdDQo+ICAgIFtJR1RdIGZiZGV2OiBzdGFydGluZyBzdWJ0
+ZXN0IG51bGxwdHINCj4gDQo+ICAgIFJJUDogMDAxMDptZW1jcHlfZXJtcysweGEvMHgyMA0K
+PiAgICBSU1A6IDAwMTg6ZmZmZmExN2Q0MDE2N2Q5OCBFRkxBR1M6IDAwMDEwMjQ2DQo+ICAg
+IFJBWDogZmZmZmExN2Q0ZWI3ZmE4MCBSQlg6IGZmZmZhMTdkNDBlMGFhODAgUkNYOiAwMDAw
+MDAwMDAwMDAxNGMwDQo+ICAgIFJEWDogMDAwMDAwMDAwMDAwMWE0MCBSU0k6IGZmZmZhMTdk
+NDBlMGIwMDAgUkRJOiBmZmZmYTE3ZDRlYjgwMDAwDQo+ICAgIFJCUDogZmZmZmExN2Q0MDE2
+N2UyMCBSMDg6IDAwMDAwMDAwMDAwMDAwMDAgUjA5OiBmZmZmODk1MjJlY2ZmOGMwDQo+ICAg
+IFIxMDogZmZmZmExN2Q0ZTRjNTAwMCBSMTE6IDAwMDAwMDAwMDAwMDAwMDAgUjEyOiBmZmZm
+YTE3ZDRlYjdmYTgwDQo+ICAgIFIxMzogMDAwMDAwMDAwMDAwMWE0MCBSMTQ6IDAwMDAwMDAw
+MDAwMDA0MWEgUjE1OiBmZmZmYTE3ZDQwMTY3ZTMwDQo+ICAgIEZTOiAgMDAwMDAwMDAwMDAw
+MDAwMCgwMDAwKSBHUzpmZmZmODk1MjU3MzgwMDAwKDAwMDApIGtubEdTOjAwMDAwMDAwMDAw
+MDAwMDANCj4gICAgQ1M6ICAwMDEwIERTOiAwMDAwIEVTOiAwMDAwIENSMDogMDAwMDAwMDA4
+MDA1MDAzMw0KPiAgICBDUjI6IGZmZmZhMTdkNDBlMGIwMDAgQ1IzOiAwMDAwMDAwMWVhZWNh
+MDA2IENSNDogMDAwMDAwMDAwMDE3MDZlMA0KPiAgICBDYWxsIFRyYWNlOg0KPiAgICAgPFRB
+U0s+DQo+ICAgICA/IGRybV9mYmRldl9nZW5lcmljX2hlbHBlcl9mYl9kaXJ0eSsweDIwNy8w
+eDMzMCBbZHJtX2ttc19oZWxwZXJdDQo+ICAgICBkcm1fZmJfaGVscGVyX2RhbWFnZV93b3Jr
+KzB4OGYvMHgxNzAgW2RybV9rbXNfaGVscGVyXQ0KPiAgICAgcHJvY2Vzc19vbmVfd29yaysw
+eDIxZi8weDQzMA0KPiAgICAgd29ya2VyX3RocmVhZCsweDRlLzB4M2MwDQo+ICAgICA/IF9f
+cGZ4X3dvcmtlcl90aHJlYWQrMHgxMC8weDEwDQo+ICAgICBrdGhyZWFkKzB4ZjQvMHgxMjAN
+Cj4gICAgID8gX19wZnhfa3RocmVhZCsweDEwLzB4MTANCj4gICAgIHJldF9mcm9tX2Zvcmsr
+MHgyYy8weDUwDQo+ICAgICA8L1RBU0s+DQo+ICAgIENSMjogZmZmZmExN2Q0MGUwYjAwMA0K
+PiAgICAtLS1bIGVuZCB0cmFjZSAwMDAwMDAwMDAwMDAwMDAwIF0tLS0NCj4gDQo+IFRoZSBk
+aXJlY3QgcmVhc29uIGlzIHRoYXQgZGFtYWdlIHJlY3RhbmdlIGNvbXB1dGVkIGJ5DQo+IGRy
+bV9mYl9oZWxwZXJfbWVtb3J5X3JhbmdlX3RvX2NsaXAoKSBkb2VzIG5vdCBndWFyYW50ZWVk
+IHRvIGJlIGluLWJvdW5kLg0KPiBJdCBpcyBhbHJlYWR5IHJlc3VsdHMgaW4gd29ya2Fyb3Vu
+ZCBjb2RlIHBvcHVsYXRlIHRvIGVsc2V3aGVyZS4gQW5vdGhlcg0KPiByZWFzb24gaXMgdGhh
+dCBleHBvc2luZyBhIGxhcmdlciBidWZmZXIgc2l6ZSB0aGFuIHRoZSBhY3R1YWwgbmVlZGVk
+IGhlbHANCj4gdG8gdHJpZ2dlciB0aGlzIGJ1ZyBpbnRyaW5zaWMgaW4gZHJtX2ZiX2hlbHBl
+cl9tZW1vcnlfcmFuZ2VfdG9fY2xpcCgpLg0KPiANCj4gT3RoZXJzIGZiZGV2IGVtdWxhdGlv
+biBzb2x1dGlvbnMgd3JpdGUgdG8gdGhlIEdFTSBidWZmZXIgZGlyZWN0bHksIHRoZXkNCj4g
+d29uJ3QgcmVwcm9kdWNlIHRoaXMgYnVnIGJlY2F1c2UgdGhlIC5mYl9kaXJ0eSBmdW5jdGlv
+biBjYWxsYmFjayBkbyBub3QNCj4gYmVpbmcgaG9va2VkLCBzbyBubyBjaGFuY2UgaXMgZ2l2
+ZW4gdG8gZHJtX2ZiX2hlbHBlcl9tZW1vcnlfcmFuZ2VfdG9fY2xpcCgpDQo+IHRvIGdlbmVy
+YXRlIGEgb3V0LW9mLWJvdW5kIHdoZW4gZHJtX2ZiX2hlbHBlcl9zeXNfd3JpdGUoKSBpcyBj
+YWxsZWQuDQo+IA0KPiBUaGlzIHBhdGNoIGJyZWFrIHRoZSB0cmlnZ2VyIGNvbmRpdGlvbiBv
+ZiB0aGlzIGJ1ZyBieSBzaHJpbmtpbmcgdGhlIHNoYWRvdw0KPiBidWZmZXIgc2l6ZSB0byBz
+aXplcy0+c3VyZmFjZV9oZWlnaHQgKiBidWZmZXItPmZiLT5waXRjaGVzWzBdLg0KPiANCj4g
+Rml4ZXM6ICc4ZmJjOWFmNTVkZTAgKCJkcm0vZmJkZXYtZ2VuZXJpYzogU2V0IHNjcmVlbiBz
+aXplIHRvIHNpemUgb2YgR0VNDQo+IGJ1ZmZlciIpJw0KPiANCj4gU2lnbmVkLW9mZi1ieTog
+U3VpIEppbmdmZW5nIDxzdWlqaW5nZmVuZ0Bsb29uZ3Nvbi5jbj4NCj4gLS0tDQo+ICAgZHJp
+dmVycy9ncHUvZHJtL2RybV9mYmRldl9nZW5lcmljLmMgfCAyICstDQo+ICAgMSBmaWxlIGNo
+YW5nZWQsIDEgaW5zZXJ0aW9uKCspLCAxIGRlbGV0aW9uKC0pDQo+IA0KPiBkaWZmIC0tZ2l0
+IGEvZHJpdmVycy9ncHUvZHJtL2RybV9mYmRldl9nZW5lcmljLmMgYi9kcml2ZXJzL2dwdS9k
+cm0vZHJtX2ZiZGV2X2dlbmVyaWMuYw0KPiBpbmRleCA4ZTUxNDhiZjQwYmIuLmIwNTdjZmJi
+YTkzOCAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL2RybV9mYmRldl9nZW5lcmlj
+LmMNCj4gKysrIGIvZHJpdmVycy9ncHUvZHJtL2RybV9mYmRldl9nZW5lcmljLmMNCj4gQEAg
+LTk0LDcgKzk0LDcgQEAgc3RhdGljIGludCBkcm1fZmJkZXZfZ2VuZXJpY19oZWxwZXJfZmJf
+cHJvYmUoc3RydWN0IGRybV9mYl9oZWxwZXIgKmZiX2hlbHBlciwNCj4gICAJZmJfaGVscGVy
+LT5idWZmZXIgPSBidWZmZXI7DQo+ICAgCWZiX2hlbHBlci0+ZmIgPSBidWZmZXItPmZiOw0K
+PiAgIA0KPiAtCXNjcmVlbl9zaXplID0gYnVmZmVyLT5nZW0tPnNpemU7DQo+ICsJc2NyZWVu
+X3NpemUgPSBzaXplcy0+c3VyZmFjZV9oZWlnaHQgKiBidWZmZXItPmZiLT5waXRjaGVzWzBd
+Ow0KUmV2aWV3ZWQtYnk6IFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRl
+Pg0KDQpUaGFua3MgYSBsb3QgZm9yIHRoZSBidWdmaXguDQoNCkJlc3QgcmVnYXJkcw0KVGhv
+bWFzDQoNCj4gICAJc2NyZWVuX2J1ZmZlciA9IHZ6YWxsb2Moc2NyZWVuX3NpemUpOw0KPiAg
+IAlpZiAoIXNjcmVlbl9idWZmZXIpIHsNCj4gICAJCXJldCA9IC1FTk9NRU07DQoNCi0tIA0K
+VGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29m
+dHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8
+cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRz
+ZsO8aHJlcjogSXZvIFRvdGV2DQo=
 
-The direct reason is that damage rectange computed by
-drm_fb_helper_memory_range_to_clip() does not guaranteed to be in-bound.
-It is already results in workaround code populate to elsewhere. Another
-reason is that exposing a larger buffer size than the actual needed help
-to trigger this bug intrinsic in drm_fb_helper_memory_range_to_clip().
+--------------w289ehKlxbP1df468BandQ6F--
 
-Others fbdev emulation solutions write to the GEM buffer directly, they
-won't reproduce this bug because the .fb_dirty function callback do not
-being hooked, so no chance is given to drm_fb_helper_memory_range_to_clip()
-to generate a out-of-bound when drm_fb_helper_sys_write() is called.
+--------------APO00WSf8RVAKDBuCNqXIP9l
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-This patch break the trigger condition of this bug by shrinking the shadow
-buffer size to sizes->surface_height * buffer->fb->pitches[0].
+-----BEGIN PGP SIGNATURE-----
 
-Fixes: '8fbc9af55de0 ("drm/fbdev-generic: Set screen size to size of GEM
-buffer")'
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmQ9M2QFAwAAAAAACgkQlh/E3EQov+Ba
+ug/+J3K85UkSdAkcKHawzQNvwpgdAsMi3SeFWz6+Wr7CVt9Vd3HwhO9cYIBKOPzvbMtcEA2LS1cB
+u0KnxAbytpjQ8g7UhnN/AtfdKkagj8f8UxgtXQ40YYhjASsrbyXsMWoULio+zD8scx/jztIB6R7q
+aJtwYKTpjc5mYI8fJmTt1Cj8w6L9UM8ZEiFajDH84RuwSaEQKfhgZcuxko3tM67rd2Ota4KT1wP2
+z1VoERvX5CPvi/kF0X+pEGGR9TNbkcNAb2aNgSbVecj5qngxD66vVmcKqlKYxZCRz7l3R1R39wAP
+lecK9xpNPOlmhn52/NnpRbeQG65we68/ndijBAABfChP+wzkCNO2WPvJYwMubwhZjIAP/G/ZlXE8
+Y83kQ1teQLKfxZGZYp5ll80pDrg4TrUVnxKadVCqgZItxx0fRRC4qQbMq5e4wwbZ+Y/CoZfrOaNW
+eCPtyeJM+G982mONSpnXRBV3GbP4qNVr0fzIEGsGzKZTmDoZfWhEGXRcrzRTXaFINntpbswhibau
+HfGkIyQqNmWS4YlsREVflK+68fUUDoG809lr/OzR9AVtegmtFC8VPnNejLscFO1S+smSq8fy3QzL
+DibvMhLcaLYDrhIAWz613tR7Hk2sa0U6hficLFj4YzotVhlSVUrhcRNSa/qgmBR1coLkJZEaTsJu
+j60=
+=rMEV
+-----END PGP SIGNATURE-----
 
-Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
----
- drivers/gpu/drm/drm_fbdev_generic.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/gpu/drm/drm_fbdev_generic.c b/drivers/gpu/drm/drm_fbdev_generic.c
-index 8e5148bf40bb..b057cfbba938 100644
---- a/drivers/gpu/drm/drm_fbdev_generic.c
-+++ b/drivers/gpu/drm/drm_fbdev_generic.c
-@@ -94,7 +94,7 @@ static int drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
- 	fb_helper->buffer = buffer;
- 	fb_helper->fb = buffer->fb;
- 
--	screen_size = buffer->gem->size;
-+	screen_size = sizes->surface_height * buffer->fb->pitches[0];
- 	screen_buffer = vzalloc(screen_size);
- 	if (!screen_buffer) {
- 		ret = -ENOMEM;
--- 
-2.25.1
-
+--------------APO00WSf8RVAKDBuCNqXIP9l--

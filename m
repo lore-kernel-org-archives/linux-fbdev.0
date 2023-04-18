@@ -2,152 +2,195 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54596C77B76
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Apr 2023 07:45:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19847C77B75
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Apr 2023 08:32:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230211AbjDRHpE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Apr 2023 03:45:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52582 "EHLO
+        id S231352AbjDRIcz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Apr 2023 04:32:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40640 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229498AbjDRHpD (ORCPT
+        with ESMTP id S231478AbjDRIcm (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Apr 2023 03:45:03 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 678AD10D0;
-        Tue, 18 Apr 2023 00:45:01 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 1CEA11F8D5;
-        Tue, 18 Apr 2023 07:45:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1681803900; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=k4kCGiDu7eZCY2kHWyBi9arEU5jU+OwaWl9LlmgBgTo=;
-        b=01AbIdbC2ZN0fhxv/iYxLgj8ciDX6tD9uCd3cIhELGAw4YSRK9w6/GGAiuAaLtZg7KlYip
-        UPvsdBcpWNtNJ71zbqUvLKTD1lA83nSqPPrphOIt3mJsfodK1zfwzqX4BEKAaXkUnOToit
-        aPED/mfiOl6WMMIYqzVnNBr0VoJ5y+A=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1681803900;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=k4kCGiDu7eZCY2kHWyBi9arEU5jU+OwaWl9LlmgBgTo=;
-        b=Rmm87b7uMzS061Xyb6C7LuYQh7WlZOBtlpx0lMkwJOlh/1UTUlnJfZxcIJZTcTRQYKl8ZJ
-        E719xeledovycCBA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id B324C139CC;
-        Tue, 18 Apr 2023 07:44:59 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id lXeyKntKPmTxagAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Tue, 18 Apr 2023 07:44:59 +0000
-Message-ID: <5fa98536-a4b0-7b71-7342-9ba05158062f@suse.de>
-Date:   Tue, 18 Apr 2023 09:44:59 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH v3 00/19] arch: Consolidate <asm/fb.h>
-Content-Language: en-US
-To:     Arnd Bergmann <arnd@arndb.de>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Tue, 18 Apr 2023 04:32:42 -0400
+Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4876F7D87
+        for <linux-fbdev@vger.kernel.org>; Tue, 18 Apr 2023 01:32:08 -0700 (PDT)
+Received: by mail-wm1-x32a.google.com with SMTP id 5b1f17b1804b1-3f16f792384so5112795e9.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 18 Apr 2023 01:32:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google; t=1681806726; x=1684398726;
+        h=in-reply-to:content-disposition:mime-version:references
+         :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=3WLSH8gwfIPleEeUUt5WgJYFcEuj6q3wMvZ3h+Vy7zo=;
+        b=DTErbNOZ6G5TtRTr1+Lqoa3G5VNpvbkPZ5Y2ydixzoTjpc+cB5ykDY4fhGum1tkO7W
+         vUdDjH4tSMqLMG4ES4s5sI5zyELRrWLUfYP/iJvG4KnD22STeHJl1MgahB2bnOSLoByV
+         xW5mxiKTI9dwC4XWOmpDDTJBqpi/nnKIaxl7o=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1681806726; x=1684398726;
+        h=in-reply-to:content-disposition:mime-version:references
+         :mail-followup-to:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=3WLSH8gwfIPleEeUUt5WgJYFcEuj6q3wMvZ3h+Vy7zo=;
+        b=joVKCADB4pHxEQN5fKU2iiIjdeFHRT2wo0ndg4cR7g9uDEuzNvap0Zl6fn43OIoByG
+         m+in9wy2qAyjzS1Ql7KI1ZPMco1VSKXIuVRY5O0rlsx21Pnw9yOlqeRpDgwKDvWuiRxY
+         OyCZ0HNMkxiRV6RNqfqRxHn0EDD2qt4rH5xHJxjVEbBXnK/T4CowUxQB4pIliD6717HZ
+         E23WYqgfsPG0YliAO7MprSSv3acFAvfdi1hbR1BbUsgdlL3cGflB+oJTXdjM2pyL+/Tn
+         wZm2rrbXD5MnaEdmd4XhZIVY8BtO0ZyskF7YPHa7eCZk+IfSnWQGjUeBfh1ygkG2PL1y
+         tYWA==
+X-Gm-Message-State: AAQBX9dgSMEdywBX0MBNs/TyOl58Hmb/XIGmYBwX5WBlqEsk0b8kuIy+
+        FS3IIKD2quh1gX/e56Guki03GA==
+X-Google-Smtp-Source: AKy350Zb3S0UjaCxbuQFx+pYjJEjeuZKam0MNlGMGdZ51RvByjcZnxHf0dc3aGErX2sxXyBWXrQ6Vw==
+X-Received: by 2002:a05:600c:1e12:b0:3f1:727f:1967 with SMTP id ay18-20020a05600c1e1200b003f1727f1967mr5443586wmb.4.1681806726244;
+        Tue, 18 Apr 2023 01:32:06 -0700 (PDT)
+Received: from phenom.ffwll.local (212-51-149-33.fiber7.init7.net. [212.51.149.33])
+        by smtp.gmail.com with ESMTPSA id 26-20020a05600c021a00b003f17848673fsm1806427wmi.27.2023.04.18.01.32.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 18 Apr 2023 01:32:05 -0700 (PDT)
+Date:   Tue, 18 Apr 2023 10:32:03 +0200
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Sui Jingfeng <suijingfeng@loongson.cn>
+Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>, Li Yi <liyi@loongson.cn>,
         Helge Deller <deller@gmx.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     Linux-Arch <linux-arch@vger.kernel.org>,
-        linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org,
-        linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org,
-        x86@kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org,
-        linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev,
-        sparclinux@vger.kernel.org, linux-snps-arc@lists.infradead.org,
-        linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-References: <20230417125651.25126-1-tzimmermann@suse.de>
- <1641007d-7953-426a-a3de-ca9c90f6c5a9@app.fastmail.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <1641007d-7953-426a-a3de-ca9c90f6c5a9@app.fastmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------rFRj0NtGM3Zijx0xyHfeKvB1"
+        Lucas De Marchi <lucas.demarchi@intel.com>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
+Subject: Re: [PATCH v3] drm/fbdev-generic: prohibit potential out-of-bounds
+ access
+Message-ID: <ZD5Vgx9Txaiz7Bun@phenom.ffwll.local>
+Mail-Followup-To: Sui Jingfeng <suijingfeng@loongson.cn>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@gmail.com>, Li Yi <liyi@loongson.cn>,
+        Helge Deller <deller@gmx.de>,
+        Lucas De Marchi <lucas.demarchi@intel.com>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
+References: <20230417113219.1354078-1-suijingfeng@loongson.cn>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230417113219.1354078-1-suijingfeng@loongson.cn>
+X-Operating-System: Linux phenom 6.1.0-7-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------rFRj0NtGM3Zijx0xyHfeKvB1
-Content-Type: multipart/mixed; boundary="------------18o4xqtdrHnA7yRGq0Gjgi9D";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Arnd Bergmann <arnd@arndb.de>, Daniel Vetter <daniel.vetter@ffwll.ch>,
- Helge Deller <deller@gmx.de>, Javier Martinez Canillas <javierm@redhat.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-fbdev@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev,
- sparclinux@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Message-ID: <5fa98536-a4b0-7b71-7342-9ba05158062f@suse.de>
-Subject: Re: [PATCH v3 00/19] arch: Consolidate <asm/fb.h>
-References: <20230417125651.25126-1-tzimmermann@suse.de>
- <1641007d-7953-426a-a3de-ca9c90f6c5a9@app.fastmail.com>
-In-Reply-To: <1641007d-7953-426a-a3de-ca9c90f6c5a9@app.fastmail.com>
+On Mon, Apr 17, 2023 at 07:32:19PM +0800, Sui Jingfeng wrote:
+> The fbdev test of IGT may write after EOF, which lead to out-of-bound
+> access for the drm drivers using fbdev-generic. For example, on a x86
+> + aspeed bmc card platform, with a 1680x1050 resolution display, running
+> fbdev test if IGT will cause the linux kernel hang with the following
+> call trace:
+> 
+>   Oops: 0000 [#1] PREEMPT SMP PTI
+>   [IGT] fbdev: starting subtest eof
+>   Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
+>   [IGT] fbdev: starting subtest nullptr
+> 
+>   RIP: 0010:memcpy_erms+0xa/0x20
+>   RSP: 0018:ffffa17d40167d98 EFLAGS: 00010246
+>   RAX: ffffa17d4eb7fa80 RBX: ffffa17d40e0aa80 RCX: 00000000000014c0
+>   RDX: 0000000000001a40 RSI: ffffa17d40e0b000 RDI: ffffa17d4eb80000
+>   RBP: ffffa17d40167e20 R08: 0000000000000000 R09: ffff89522ecff8c0
+>   R10: ffffa17d4e4c5000 R11: 0000000000000000 R12: ffffa17d4eb7fa80
+>   R13: 0000000000001a40 R14: 000000000000041a R15: ffffa17d40167e30
+>   FS:  0000000000000000(0000) GS:ffff895257380000(0000) knlGS:0000000000000000
+>   CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+>   CR2: ffffa17d40e0b000 CR3: 00000001eaeca006 CR4: 00000000001706e0
+>   Call Trace:
+>    <TASK>
+>    ? drm_fbdev_generic_helper_fb_dirty+0x207/0x330 [drm_kms_helper]
+>    drm_fb_helper_damage_work+0x8f/0x170 [drm_kms_helper]
+>    process_one_work+0x21f/0x430
+>    worker_thread+0x4e/0x3c0
+>    ? __pfx_worker_thread+0x10/0x10
+>    kthread+0xf4/0x120
+>    ? __pfx_kthread+0x10/0x10
+>    ret_from_fork+0x2c/0x50
+>    </TASK>
+>   CR2: ffffa17d40e0b000
+>   ---[ end trace 0000000000000000 ]---
+> 
+> The direct reason is that damage rectange computed by
+> drm_fb_helper_memory_range_to_clip() does not guaranteed to be in-bound.
+> It is already results in workaround code populate to elsewhere. Another
+> reason is that exposing a larger buffer size than the actual needed help
+> to trigger this bug intrinsic in drm_fb_helper_memory_range_to_clip().
+> 
+> Others fbdev emulation solutions write to the GEM buffer directly, they
+> won't reproduce this bug because the .fb_dirty function callback do not
+> being hooked, so no chance is given to drm_fb_helper_memory_range_to_clip()
+> to generate a out-of-bound when drm_fb_helper_sys_write() is called.
+> 
+> This patch break the trigger condition of this bug by shrinking the shadow
+> buffer size to sizes->surface_height * buffer->fb->pitches[0].
+> 
+> Fixes: '8fbc9af55de0 ("drm/fbdev-generic: Set screen size to size of GEM
+> buffer")'
+> 
+> Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
+> ---
+>  drivers/gpu/drm/drm_fbdev_generic.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/gpu/drm/drm_fbdev_generic.c b/drivers/gpu/drm/drm_fbdev_generic.c
+> index 8e5148bf40bb..b057cfbba938 100644
+> --- a/drivers/gpu/drm/drm_fbdev_generic.c
+> +++ b/drivers/gpu/drm/drm_fbdev_generic.c
+> @@ -94,7 +94,7 @@ static int drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
+>  	fb_helper->buffer = buffer;
+>  	fb_helper->fb = buffer->fb;
+>  
+> -	screen_size = buffer->gem->size;
+> +	screen_size = sizes->surface_height * buffer->fb->pitches[0];
 
---------------18o4xqtdrHnA7yRGq0Gjgi9D
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+So I read core some more and stumbled over drm_fb_helper_deferred_io().
+Which has all the code and comments about this, including limiting.
 
-SGkNCg0KQW0gMTcuMDQuMjMgdW0gMTY6MTIgc2NocmllYiBBcm5kIEJlcmdtYW5uOg0KPiBP
-biBNb24sIEFwciAxNywgMjAyMywgYXQgMTQ6NTYsIFRob21hcyBaaW1tZXJtYW5uIHdyb3Rl
-Og0KPj4gVmFyaW91cyBhcmNoaXRlY3R1cmVzIHByb3ZpZGUgPGFzbS9mYi5oPiB3aXRoIGhl
-bHBlcnMgZm9yIGZiZGV2DQo+PiBmcmFtZWJ1ZmZlciBkZXZpY2VzLiBTaGFyZSB0aGUgY29u
-dGFpbmVkIGNvZGUgd2hlcmUgcG9zc2libGUuIFRoZXJlDQo+PiBpcyBhbHJlYWR5IDxhc20t
-Z2VuZXJpYy9mYi5oPiwgd2hpY2ggaW1wbGVtZW50cyBnZW5lcmljIChhcyBpbg0KPj4gJ2Vt
-cHR5JykgZnVuY3Rpb25zIG9mIHRoZSBmYmRldiBoZWxwZXJzLiBUaGUgaGVhZGVyIHdhcyBh
-ZGRlZCBpbg0KPj4gY29tbWl0IGFhZmU0ZGJlZDBiZiAoImFzbS1nZW5lcmljOiBhZGQgZ2Vu
-ZXJpYyB2ZXJzaW9ucyBvZiBjb21tb24NCj4+IGhlYWRlcnMiKSwgYnV0IG5ldmVyIHVzZWQu
-DQo+Pg0KPj4gRWFjaCBwZXItYXJjaGl0ZWN0dXJlIGhlYWRlciBmaWxlIGRlY2xhcmVzIGFu
-ZC9vciBpbXBsZW1lbnRzIGZiZGV2DQo+PiBoZWxwZXJzIGFuZCBkZWZpbmVzIGEgcHJlcHJv
-Y2Vzc29yIHRva2VuIGZvciBlYWNoLiBUaGUgZ2VuZXJpYw0KPj4gaGVhZGVyIHRoZW4gcHJv
-dmlkZXMgdGhlIHJlbWFpbmluZyBoZWxwZXJzLiBJdCB3b3JrcyBsaWtlIHRoZSBJL08NCj4+
-IGhlbHBlcnMgaW4gPGFzbS9pby5oPi4NCj4gDQo+IExvb2tzIGFsbCBnb29kIHRvIG1lLA0K
-PiANCj4gQWNrZWQtYnk6IEFybmQgQmVyZ21hbm4gPGFybmRAYXJuZGIuZGU+DQoNClRoYW5r
-cyBhIGxvdC4gSSBrbm93IHRoYXQgSGVsZ2Ugd2FudHMgdG8gdGVzdCB0aGUgUEFSSVNDIGNo
-YW5nZXMsIHNvIA0KSSdsbCBrZWVwIHRoaXMgc2VyaWVzIHBlbmRpbmcgZm9yIGEgYml0IGxv
-bmdlci4gSSdkIGxpa2UgdG8gbWVyZ2UgdGhlIA0KcGF0Y2hlcyB0aHJvdWdoIHRoZSBEUk0g
-dHJlZSwgaWYgbm8gb25lIG9iamVjdHMuDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4g
-DQo+ICAgICAgIEFybmQNCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJp
-dmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpN
-YXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJlcmcsIEdlcm1hbnkNCihIUkIgMzY4MDksIEFH
-IE7DvHJuYmVyZykNCkdlc2Now6RmdHNmw7xocmVyOiBJdm8gVG90ZXYNCg==
+I think it would be clearer if we fix the issue there, instead of passing
+limits around in obscure places that then again get broken? The thing is,
+Thomas both authored the limit checks in drm_fb_helper_deferred_io() and
+the patch which broken them again, so clearly this isn't very obvious. I'm
+thinking of something like this:
 
---------------18o4xqtdrHnA7yRGq0Gjgi9D--
 
---------------rFRj0NtGM3Zijx0xyHfeKvB1
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index ef4eb8b12766..726dab67c359 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -697,10 +697,7 @@ void drm_fb_helper_deferred_io(struct fb_info *info, struct list_head *pagerefli
+ 	 * of the screen and account for non-existing scanlines. Hence,
+ 	 * keep the covered memory area within the screen buffer.
+ 	 */
+-	if (info->screen_size)
+-		total_size = info->screen_size;
+-	else
+-		total_size = info->fix.smem_len;
++	total_size = helper->fb->height * helper->fb->pitches[0];
+ 	max_off = min(max_off, total_size);
+ 
+ 	if (min_off < max_off) {
 
------BEGIN PGP SIGNATURE-----
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmQ+SnsFAwAAAAAACgkQlh/E3EQov+Dd
-XQ//Zqe+Ke6gkghrBiUGQ20ACZc8VRAA3V1KtkJbElUAoQFaUum7w/yrlS81UEEJjoRMuX1FFcG+
-Rgbn5SQ/UepB6HwWPDfLlwvC4oUfNthoc8c95PMqnBG4qC6ln8pmzQf0Kh3KqcP7JSLUCZQ5hk0S
-UQ5o4XBTJvdwLDkcwaKIk8l4Up8BSKjx4CtpCLiplMu6raS6B2gHyKJ4Z5JRPPQBfR8XmfJKoBGA
-cJaPYTFMY4Nds0+lkFOgVFZeXpMuhIEt+jScoLwoDxb/2Ee+uaacWl7kCE2BQ8Hdhtm5Z18SDIUv
-oI7I2ASXRLCQbUMl+7R2paUr8KyYfV3f3FOq9KIfU0GiZP07CCLHEkojxcdp001KJV4Y8/u91nqe
-XPAjD+qEVK/Dqfe8J1nSZESRHsy3f30yr4kUhVBpZpeqdt205SA3Aa3z8Wa+bbk8vJ+7hqoc1pXp
-OAwdl1qf48I5AvxZiDdJ9d3lAJBhzEzStBvilwdb+hloJ1vlt/N7eG9d10qCSvEfHdMOma7ym+da
-0cHlXkncuXTzhVUj4UWbF/qWakRRElf7lGym4/Ns7gdxWb5/sHGmamxH8cT7lu16UXcGO6JyKi8J
-GT7X/bWqUKOYRFUujmWoafHadee1TGvLnPd3nI9GHLZ9WIH6fz8EopcK3bOx3WIBF3E/KBhrZYHH
-Nvk=
-=wq7p
------END PGP SIGNATURE-----
+I think that would make it utmost clear on what we're doing and why.
+Otherwise we're just going to re-create the same bug again, like we've
+done already :-)
+-Daniel
 
---------------rFRj0NtGM3Zijx0xyHfeKvB1--
+>  	screen_buffer = vzalloc(screen_size);
+>  	if (!screen_buffer) {
+>  		ret = -ENOMEM;
+> -- 
+> 2.25.1
+> 
+
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

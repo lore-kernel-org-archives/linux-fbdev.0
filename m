@@ -2,33 +2,33 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0FAFC77B75
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Apr 2023 12:43:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15354C77B75
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Apr 2023 12:48:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229568AbjDRMnc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Apr 2023 08:43:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60658 "EHLO
+        id S232072AbjDRMs1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Apr 2023 08:48:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39674 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230149AbjDRMna (ORCPT
+        with ESMTP id S232096AbjDRMsW (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Apr 2023 08:43:30 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6BEB530C8;
-        Tue, 18 Apr 2023 05:43:28 -0700 (PDT)
+        Tue, 18 Apr 2023 08:48:22 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E443313877;
+        Tue, 18 Apr 2023 05:48:13 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 07FFE6334C;
-        Tue, 18 Apr 2023 12:43:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E8373C433D2;
-        Tue, 18 Apr 2023 12:43:26 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id C4B5B633D3;
+        Tue, 18 Apr 2023 12:48:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF790C4339B;
+        Tue, 18 Apr 2023 12:48:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1681821807;
-        bh=LkLjjrdrNcSZoog8BccI0/bNZif/7gwQA9/l7dNVEEc=;
+        s=korg; t=1681822093;
+        bh=h7FEIe8ca7zvfq0mrRQUgHsit2vQHJj7yXRHnFW3K+8=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=bgROn9FxnRlDqkGDhkg0tlensH5kd+FOx2zEIzdtDqjGR2x54oLGj5nt7E37cO9ot
-         erZ6p4poSiaVw40+MzSPfF47vNzOZ9NRwpaav9O5VRykk9plLNDM5BiVwtLgIDIgp3
-         stnStqvTy+XxRvQIQcLzrZBZk2r5MLY67/bhLqV0=
+        b=FRvu5hM4c+E6o9PoWHxvZkPuXCw3znbhSd2Yw+VN7iZARyPCLjDQuqJ12qIDpTpWp
+         B/u3BCWVK2E+4YyvieOMc7Leb5e4ajQErP8c+3wTIoV+qKxPSzEtkDMBITTzCZGA0a
+         QV+FVO6nGFFD3eXqPveuVA4u94V5hq0MVswXPv7M=
 From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To:     stable@vger.kernel.org
 Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -54,12 +54,12 @@ Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Samuel Thibault <samuel.thibault@ens-lyon.org>,
         Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
         Shigeru Yoshida <syoshida@redhat.com>
-Subject: [PATCH 6.1 019/134] fbmem: Reject FB_ACTIVATE_KD_TEXT from userspace
-Date:   Tue, 18 Apr 2023 14:21:15 +0200
-Message-Id: <20230418120313.660214330@linuxfoundation.org>
+Subject: [PATCH 6.2 020/139] fbmem: Reject FB_ACTIVATE_KD_TEXT from userspace
+Date:   Tue, 18 Apr 2023 14:21:25 +0200
+Message-Id: <20230418120314.413344564@linuxfoundation.org>
 X-Mailer: git-send-email 2.40.0
-In-Reply-To: <20230418120313.001025904@linuxfoundation.org>
-References: <20230418120313.001025904@linuxfoundation.org>
+In-Reply-To: <20230418120313.725598495@linuxfoundation.org>
+References: <20230418120313.725598495@linuxfoundation.org>
 User-Agent: quilt/0.67
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -120,7 +120,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 --- a/drivers/video/fbdev/core/fbmem.c
 +++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1116,6 +1116,8 @@ static long do_fb_ioctl(struct fb_info *
+@@ -1117,6 +1117,8 @@ static long do_fb_ioctl(struct fb_info *
  	case FBIOPUT_VSCREENINFO:
  		if (copy_from_user(&var, argp, sizeof(var)))
  			return -EFAULT;

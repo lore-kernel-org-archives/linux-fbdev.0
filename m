@@ -2,111 +2,409 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C93EFC6FD18
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Apr 2023 17:23:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F4C6C6FD18
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Apr 2023 17:57:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229558AbjDSRX1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Apr 2023 13:23:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38272 "EHLO
+        id S229624AbjDSR50 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Apr 2023 13:57:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52722 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232271AbjDSRXZ (ORCPT
+        with ESMTP id S229514AbjDSR5Z (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Apr 2023 13:23:25 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB90A659B;
-        Wed, 19 Apr 2023 10:23:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1681924974; i=deller@gmx.de;
-        bh=C5yrQi1O5H/ZJ6i2wZhc9S+TYhhPSe8koYmOSkrsxpg=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=refzFEX/nVgK8/0c/yNY2CyfC3AdkpdTH+IYk+xIV5Q+38dlY1vRhZEFTmpMyUDc/
-         9kvkEZP0kVR01Hn28FwdYcvQkmsX1L9UWL+i8vZhz0goEWhOLvIAIfwTtlVmCjbgUD
-         u0lHmNPk61xpVh/6OWDJbveUXhuyj8lAjtP3C/VV7CHk+16/4VihPYwuUHEvivlYBw
-         UlL1VdmKWD8uIdo0Aoh5XASGCGmlY7GyOYsX3ffFnBo5KedAYvGh4FHhvglxT+KgCd
-         xQN6ABCnavylRmWcBFmE/lQHqF7hO3CioLhryov1vpJhVvImQ4wtSXMt4z9yTImXug
-         5i3ajdU7cJ5LA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.144.134]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MatVb-1qRYCj0P8t-00cRzi; Wed, 19
- Apr 2023 19:22:54 +0200
-Message-ID: <b1f90fa4-85c7-e785-ba14-f32962f87d5e@gmx.de>
-Date:   Wed, 19 Apr 2023 19:22:50 +0200
+        Wed, 19 Apr 2023 13:57:25 -0400
+Received: from 189.cn (ptr.189.cn [183.61.185.102])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E6C3A40CA;
+        Wed, 19 Apr 2023 10:57:21 -0700 (PDT)
+HMM_SOURCE_IP: 10.64.8.43:38310.561340762
+HMM_ATTACHE_NUM: 0000
+HMM_SOURCE_TYPE: SMTP
+Received: from clientip-114.242.206.180 (unknown [10.64.8.43])
+        by 189.cn (HERMES) with SMTP id 158D81002B3;
+        Thu, 20 Apr 2023 01:57:10 +0800 (CST)
+Received: from  ([114.242.206.180])
+        by gateway-151646-dep-7b48884fd-tj646 with ESMTP id 19960dcd9ab4431f9716e26ed0475c2c for maarten.lankhorst@linux.intel.com;
+        Thu, 20 Apr 2023 01:57:21 CST
+X-Transaction-ID: 19960dcd9ab4431f9716e26ed0475c2c
+X-Real-From: 15330273260@189.cn
+X-Receive-IP: 114.242.206.180
+X-MEDUSA-Status: 0
+Sender: 15330273260@189.cn
+Message-ID: <b8f8b909-e0bb-e070-4542-7c4a06444f46@189.cn>
+Date:   Thu, 20 Apr 2023 01:57:06 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH v3 00/19] arch: Consolidate <asm/fb.h>
+ Thunderbird/102.10.0
+Subject: Re: [PATCH v3] drm/fbdev-generic: prohibit potential out-of-bounds
+ access
 Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     Linux-Arch <linux-arch@vger.kernel.org>,
-        linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org,
-        linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org,
-        x86@kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org,
-        linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev,
-        sparclinux@vger.kernel.org, linux-snps-arc@lists.infradead.org,
-        linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-References: <20230417125651.25126-1-tzimmermann@suse.de>
- <1641007d-7953-426a-a3de-ca9c90f6c5a9@app.fastmail.com>
- <5fa98536-a4b0-7b71-7342-9ba05158062f@suse.de>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <5fa98536-a4b0-7b71-7342-9ba05158062f@suse.de>
+To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@gmail.com>, Li Yi <liyi@loongson.cn>,
+        Helge Deller <deller@gmx.de>,
+        Lucas De Marchi <lucas.demarchi@intel.com>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
+References: <20230417113219.1354078-1-suijingfeng@loongson.cn>
+ <ZD5Vgx9Txaiz7Bun@phenom.ffwll.local>
+ <139c9398-488d-df19-9ae2-2b4b47ef64f4@189.cn>
+ <86a8b262-cbf2-b75f-9972-491f557edf74@189.cn>
+ <CAKMK7uE-azFT02Sp2FDfMGTc57eYJEn8iM8Wk1mt5ucPs1qM-w@mail.gmail.com>
+ <ad44df29-3241-0d9e-e708-b0338bf3c623@189.cn>
+ <ZEAXSM/a0IuFnhwn@phenom.ffwll.local>
+From:   Sui Jingfeng <15330273260@189.cn>
+In-Reply-To: <ZEAXSM/a0IuFnhwn@phenom.ffwll.local>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:H9qZXkCOPDN+3vsO7z+9ttDKPCRSFaiF/4cDmiO5ovofGlBxTzT
- kMlRPG3r4Q6KYGeHBb//fU40kwtmWj1gVkdx7p7FELLCFOD5Nql8qYPGjnWefhzsS88zNIK
- xaqD2s84khdceDbFsitlOpU2HidQYYXlykQQ9SD+p1IgyfdLRLZnqUmFoBDr2Oq3uB/Hpmu
- vy6bniwylk05WNGd4sCJg==
-UI-OutboundReport: notjunk:1;M01:P0:5ox/8AYo9cY=;DXfWBLw0Wfb00Me5ctwgZzfIUZ/
- 1GcLaW7zyF+rDR6gv5OFGKt/ECtMI2VLnGHaGgup0zhzHr7BbEMURzdNk4ut1hQ/I1Ur1dsc0
- 1JvQBABCmnEIVKxSHIzxSDISBJC4Qap+OiyTLFMWZ9un0xA1yRdsUs2M1yt+a2EqGcCluQlae
- 19JYqGAwJcB9zy4M2luWaDfLR+ZKhj9ZKj8YSY34zxXwBPDgYmXrjwHYmJ4VTpPq9lQoP7XYz
- zFNmrhEsoPBmtBzXWAha6jdgOhp/DgbHDRiAP61aoHFFNbzRmhAGM4NsKuWZgVMGEWTXl21UX
- RWqLtp/2wf2qeOu3egFZaXc8jYCWg1NlAIcF9HZ3295DdF25gExyuV9did7VXP77oNQQ+QXPc
- fhCOeNGtft8Mand8MEWSS+3kWNhuIfz07igr9+fsGtxP3ysYKTaY3WPhXV0YMVT8Bep0brJsz
- it0ElaUn+GMQsDuKpgWJIn6dE2RbkRjrP0KTWEny7DHSk8JEWgia6+A8qE0EY++w+1sCntVun
- q6L6YvL6bob4Q1BUg6FQGSTaWbEOj1aXk0c3aEh6x+vXVvTOLaLYYUvW1lFtPoRMygYgZx4wQ
- rJN3kennM/9oLujbd5BqjhpxyFEKAHVCVXS45wO+oSJnirRTWt+IU+XGjNEY0ptfkn3mN4x/q
- kvGcY6cnurtogkHbIzoeA9JDtK7wJr1dYuVhIbxaw4ROiwNGBzb/BR3lIpmxi2xnCf7zxwLP8
- po9pTOMtKhkJLo/DaIoVdM7R07TLStHRQWeCtVEbKyLKDvKxPjppGZ6s5Tz5A6AXYgiSFhuW4
- cGKpK8tRgRhTmcAGp6W5xqVoysF2XWyW46xmjytoEwKEd8r8g4J//wzQ3dLfMvZ9GduabVyKy
- Tq5+OYpXodvPTj/P2JbKEivhf9ZtS7PrHr8f0DO4nsV7nYIV9I/xwMZ3jymGdPYzWNpnTiyox
- UXVSng==
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+Hi,
 
-> Am 17.04.23 um 16:12 schrieb Arnd Bergmann:>> On Mon, Apr 17, 2023, at 1=
-4:56, Thomas Zimmermann wrote:
->>> Various architectures provide <asm/fb.h> with helpers for fbdev
->>> framebuffer devices. Share the contained code where possible. There
->>> is already <asm-generic/fb.h>, which implements generic (as in
->>> 'empty') functions of the fbdev helpers. The header was added in
->>> commit aafe4dbed0bf ("asm-generic: add generic versions of common
->>> headers"), but never used.
->>>
->>> Each per-architecture header file declares and/or implements fbdev
->>> helpers and defines a preprocessor token for each. The generic
->>> header then provides the remaining helpers. It works like the I/O
->>> helpers in <asm/io.h>.
+On 2023/4/20 00:31, Daniel Vetter wrote:
+> On Thu, Apr 20, 2023 at 12:00:41AM +0800, Sui Jingfeng wrote:
+>> Hi,
 >>
->> Looks all good to me,
+>> Sorry about reply to you so late,
 >>
->> Acked-by: Arnd Bergmann <arnd@arndb.de>
+>> our  downstream (product kernel side) userspace GPU/DC driver
+>>
+>> has been tested out a few bugs, I'm asking to fulfill my duty to that part
+>> all days.
+>>
+>> I may slow to reply, but I really love to reply.
+>>
+>>
+>> On 2023/4/19 23:09, Daniel Vetter wrote:
+>>> On Tue, 18 Apr 2023 at 20:16, Sui Jingfeng <15330273260@189.cn> wrote:
+>>>> Hi,
+>>>>
+>>>> On 2023/4/19 01:52, Sui Jingfeng wrote:
+>>>>> Hi,
+>>>>>
+>>>>> On 2023/4/18 16:32, Daniel Vetter wrote:
+>>>>>> On Mon, Apr 17, 2023 at 07:32:19PM +0800, Sui Jingfeng wrote:
+>>>>>>> The fbdev test of IGT may write after EOF, which lead to out-of-bound
+>>>>>>> access for the drm drivers using fbdev-generic. For example, on a x86
+>>>>>>> + aspeed bmc card platform, with a 1680x1050 resolution display,
+>>>>>>> running
+>>>>>>> fbdev test if IGT will cause the linux kernel hang with the following
+>>>>>>> call trace:
+>>>>>>>
+>>>>>>>      Oops: 0000 [#1] PREEMPT SMP PTI
+>>>>>>>      [IGT] fbdev: starting subtest eof
+>>>>>>>      Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
+>>>>>>>      [IGT] fbdev: starting subtest nullptr
+>>>>>>>
+>>>>>>>      RIP: 0010:memcpy_erms+0xa/0x20
+>>>>>>>      RSP: 0018:ffffa17d40167d98 EFLAGS: 00010246
+>>>>>>>      RAX: ffffa17d4eb7fa80 RBX: ffffa17d40e0aa80 RCX: 00000000000014c0
+>>>>>>>      RDX: 0000000000001a40 RSI: ffffa17d40e0b000 RDI: ffffa17d4eb80000
+>>>>>>>      RBP: ffffa17d40167e20 R08: 0000000000000000 R09: ffff89522ecff8c0
+>>>>>>>      R10: ffffa17d4e4c5000 R11: 0000000000000000 R12: ffffa17d4eb7fa80
+>>>>>>>      R13: 0000000000001a40 R14: 000000000000041a R15: ffffa17d40167e30
+>>>>>>>      FS:  0000000000000000(0000) GS:ffff895257380000(0000)
+>>>>>>> knlGS:0000000000000000
+>>>>>>>      CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+>>>>>>>      CR2: ffffa17d40e0b000 CR3: 00000001eaeca006 CR4: 00000000001706e0
+>>>>>>>      Call Trace:
+>>>>>>>       <TASK>
+>>>>>>>       ? drm_fbdev_generic_helper_fb_dirty+0x207/0x330 [drm_kms_helper]
+>>>>>>>       drm_fb_helper_damage_work+0x8f/0x170 [drm_kms_helper]
+>>>>>>>       process_one_work+0x21f/0x430
+>>>>>>>       worker_thread+0x4e/0x3c0
+>>>>>>>       ? __pfx_worker_thread+0x10/0x10
+>>>>>>>       kthread+0xf4/0x120
+>>>>>>>       ? __pfx_kthread+0x10/0x10
+>>>>>>>       ret_from_fork+0x2c/0x50
+>>>>>>>       </TASK>
+>>>>>>>      CR2: ffffa17d40e0b000
+>>>>>>>      ---[ end trace 0000000000000000 ]---
+>>>>>>>
+>>>>>>> The direct reason is that damage rectange computed by
+>>>>>>> drm_fb_helper_memory_range_to_clip() does not guaranteed to be
+>>>>>>> in-bound.
+>>>>>>> It is already results in workaround code populate to elsewhere. Another
+>>>>>>> reason is that exposing a larger buffer size than the actual needed
+>>>>>>> help
+>>>>>>> to trigger this bug intrinsic in drm_fb_helper_memory_range_to_clip().
+>>>>>>>
+>>>>>>> Others fbdev emulation solutions write to the GEM buffer directly, they
+>>>>>>> won't reproduce this bug because the .fb_dirty function callback do not
+>>>>>>> being hooked, so no chance is given to
+>>>>>>> drm_fb_helper_memory_range_to_clip()
+>>>>>>> to generate a out-of-bound when drm_fb_helper_sys_write() is called.
+>>>>>>>
+>>>>>>> This patch break the trigger condition of this bug by shrinking the
+>>>>>>> shadow
+>>>>>>> buffer size to sizes->surface_height * buffer->fb->pitches[0].
+>>>>>>>
+>>>>>>> Fixes: '8fbc9af55de0 ("drm/fbdev-generic: Set screen size to size of
+>>>>>>> GEM
+>>>>>>> buffer")'
+>>>>>>>
+>>>>>>> Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
+>>>>>>> ---
+>>>>>>>     drivers/gpu/drm/drm_fbdev_generic.c | 2 +-
+>>>>>>>     1 file changed, 1 insertion(+), 1 deletion(-)
+>>>>>>>
+>>>>>>> diff --git a/drivers/gpu/drm/drm_fbdev_generic.c
+>>>>>>> b/drivers/gpu/drm/drm_fbdev_generic.c
+>>>>>>> index 8e5148bf40bb..b057cfbba938 100644
+>>>>>>> --- a/drivers/gpu/drm/drm_fbdev_generic.c
+>>>>>>> +++ b/drivers/gpu/drm/drm_fbdev_generic.c
+>>>>>>> @@ -94,7 +94,7 @@ static int
+>>>>>>> drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
+>>>>>>>         fb_helper->buffer = buffer;
+>>>>>>>         fb_helper->fb = buffer->fb;
+>>>>>>>     -    screen_size = buffer->gem->size;
+>>>>>>> +    screen_size = sizes->surface_height * buffer->fb->pitches[0];
+>>>>>> So I read core some more and stumbled over drm_fb_helper_deferred_io().
+>>>>>> Which has all the code and comments about this, including limiting.
+>>>>>>
+>>>>>> I think it would be clearer if we fix the issue there, instead of
+>>>>>> passing
+>>>>>> limits around in obscure places that then again get broken?
+>>>>> No, it is more obscure doing that way...
+>>>>>
+>>>>>
+>>>>> As the size of the shadow screen buffer will be exposed to userspace.
+>>>>>
+>>>>> The size 'helper->fb->height * helper->fb->pitches[0]' is a
+>>>>> exactly(best) fit,
+>>>>>
+>>>>> You are guaranteed to waste at lease one byte by increasing one byte,
+>>>>>
+>>>>> and can not store all pixels by decreasing one byte (In the case where
+>>>>> `helper->fb->pitches[0] = helper->fb->width * 4`).
+>>>>>
+>>>>> It implicitly tell the userspace do not go beyond that boundary.
+>>>>>
+>>>>> although userspace program can still choose to write  after EOF,
+>>>>>
+>>>>> But it is for test purpose, to test the kernel if it can return a
+>>>>> -EFBIG or not.
+>>>>>
+>>>>>> The thing is,
+>>>>>> Thomas both authored the limit checks in drm_fb_helper_deferred_io() and
+>>>>>> the patch which broken them again, so clearly this isn't very
+>>>>>> obvious. I'm
+>>>>>> thinking of something like this:
+>>>>>>
+>>>>>>
+>>>>>> diff --git a/drivers/gpu/drm/drm_fb_helper.c
+>>>>>> b/drivers/gpu/drm/drm_fb_helper.c
+>>>>>> index ef4eb8b12766..726dab67c359 100644
+>>>>>> --- a/drivers/gpu/drm/drm_fb_helper.c
+>>>>>> +++ b/drivers/gpu/drm/drm_fb_helper.c
+>>>>>> @@ -697,10 +697,7 @@ void drm_fb_helper_deferred_io(struct fb_info
+>>>>>> *info, struct list_head *pagerefli
+>>>>>>          * of the screen and account for non-existing scanlines. Hence,
+>>>>>>          * keep the covered memory area within the screen buffer.
+>>>>>>          */
+>>>>>> -    if (info->screen_size)
+>>>>>> -        total_size = info->screen_size;
+>>>>>> -    else
+>>>>>> -        total_size = info->fix.smem_len;
+>>>>>> +    total_size = helper->fb->height * helper->fb->pitches[0];
+>>>>> This is just to mitigate the mistakes already has been made,
+>>>>>
+>>>>> because it  do not do a good splitting between the *clip* part and the
+>>>>> *damage update* part.
+>>>>>
+>>>>> An ideal clipping do not obscure its updating backend with a
+>>>>> out-of-bound damage rectangle.
+>>>>>
+>>>>> Why did the drm_fb_helper_memory_range_to_clip() can not do a good job
+>>>>> in all case
+>>>>>
+>>>>> to pass its backend a always meaningful damage rect ?
+>>>>>
+>>>>>>         max_off = min(max_off, total_size);
+>>>>>>           if (min_off < max_off) {
+>>>>>>
+>>>>>>
+>>>>>> I think that would make it utmost clear on what we're doing and why.
+>>>>>> Otherwise we're just going to re-create the same bug again, like we've
+>>>>>> done already :-)
+>>>>> No, we create no bugs, we fix one.
+>>>>>
+>>>>> Thanks.
+>>>>>
+>>>> But honestly I do not have strong feel toward this, I just type what I'm
+>>>> understand without seeing you resend a V3.
+>>>>
+>>>> It's OK in overall,  I will help to test this tomorrow.  :-)
+>>> Apologies for making you jump around all the time and doing different
+>>> versions of the same bugfix :-/
+>> No,  I do not mind.  I'm wondering if you are testing me.
+> Nah I'm really not any clearer on this than you :-/
 >
-> Thanks a lot. I know that Helge wants to test the PARISC changes, so
-> I'll keep this series pending for a bit longer. I'd like to merge the
-> patches through the DRM tree, if no one objects.
+>>> I think this one here is ok to merge,
+>> NO,  to be honest,  this version is not ok.
+>>
+>> I have just tested it on LoongArch . It does not prevent out-of-bound on
+>> LoongArch.
+>>
+>> bellow is the call trace when running the fbdev test of IGT.
+>>
+>>
+>> [  369.628841] Console: switching to colour dummy device 80x25
+>> [  369.634440] [IGT] fbdev: executing
+>> [  369.654684] [IGT] fbdev: starting subtest info
+>> [  369.659173] [IGT] fbdev: starting subtest pan
+>> [  369.722093] [IGT] fbdev: starting subtest read
+>> [  369.737795] [IGT] fbdev: starting subtest unaligned-read
+>> [  369.745695] [IGT] fbdev: starting subtest write
+>> [  369.753154] CPU 3 Unable to handle kernel paging request at virtual address ffff800034bd0000, era == 9000000000223d5c, ra == ffff8000020d75a8
+>> [  369.774570] [IGT] fbdev: starting subtest unaligned-write
+>> [  369.779960] Oops[#1]:
+>> [  369.782215] CPU: 3 PID: 504 Comm: kworker/3:3 Not tainted 6.3.0-rc5+ #377
+>> [  369.782219] Hardware name: Loongson Loongson-3A5000-HV-7A2000-1w-V0.1-EVB/Loongson-LS3A5000-7A2000-1w-EVB-V1.21, BIOS Loongson-UDK2018-V4.0.05383-beta10 1
+>> [  369.782223] Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
+>> [  369.802706] $ 0   : 0000000000000000 ffff8000020d75a8 90000001367fc000 90000001367ffcf0
+>> [  369.809368] $ 4   : ffff80003a3ec000 ffff800034bcee00 0000000000001e00 9000000001160000
+>> [  369.825275] $ 8   : ffff80003a3ebfff 0000000000000040 0000000000000000 ffff80000214f20c
+>> [  369.825280] $12   : ffff80003a3ecc00 ffff800034bd0000 0000000000000000 0000000000001e00
+>> [  369.841188] $16   : 9000000107490800 9000000001a24000 9000000001a28000 00000e00207ec000
+>> [  369.849152] $20   : fffffffffe000000 900000010684cec0 0000000000000439 90000001367ffd90
+>> [  369.849165] $24   : 9000000106bc5200 ffff8000020de000 ffff800034bcee00 0000000000001e00
+>> [  369.865072] $28   : 90000001076d4400 0000000000000001 900000010553c000 ffff80003a3eae00
+>> [  369.865078] era   : 9000000000223d5c __memcpy_toio+0x4c/0x90
+>> [  369.878651] ra    : ffff8000020d75a8 drm_fbdev_generic_helper_fb_dirty+0x1cc/0x300 [drm_kms_helper]
+>> [  369.878762] [IGT] fbdev: starting subtest eof
+>> [  369.887679] CSR crmd: 000000b0
+>> [  369.887680] CSR prmd: 00000004
+>> [  369.887682] CSR euen: 00000000
+>> [  369.887683] CSR ecfg: 00071c1c
+>> [  369.901340] CSR estat: 00010000
+>> [  369.901342] ExcCode : 1 (SubCode 0)
+>> [  369.901344] BadVA : ffff800034bd0000
+>> [  369.914659] PrId  : 0014c011 (Loongson-64bit)
+>> [  369.914660] Modules linked in: uas usb_storage snd_seq_dummy snd_seq snd_seq_device ip_set rfkill nf_tables nfnetlink vfat fat loongson ttm acpi_ipmi drm_kms_helper syscopyarea sysfillrect ipmi_si ipmi_devintf sysimgblt ipmi_msghandler fuse efivarfs
+>> [  369.919013] Process kworker/3:3 (pid: 504, threadinfo=00000000a1234af0, task=000000004e2cde6f)
+>> [  369.949519] Stack : 9000000106bc5318 900000010684cec0 9000000107afd470 ffff800039c00000
+>> [  369.949535] [IGT] fbdev: starting subtest nullptr
+>> [  369.957476]         0000000000000001 0000000000000000 0000000000000000 76e0ff420f8eaeab
+>> [  369.957481]         9000000001712000 fffffffffffffffb 9000000100161080 0000000000000003
+>> [  369.970105]         900000000980ba05 900000000980ba00 9000000106bc5200 9000000106bc52d4
+>> [  369.978062]         ffff8000020de000 9000000106bc52d8 9000000110664b40 ffff8000020d78e4
+>> [  369.986018]         043a078000000000 76e0ff420f8eaeab 900000000980be00 9000000009807400
+>> [  370.001926]         0000000000000000 9000000110664b40 9000000106bc52d8 9000000000256dbc
+>> [  370.001931]         900000000170e000 9000000107afce00 0000000000000001 900000000170e000
+>> [  370.009888]         9000000009807428 9000000110664b70 9000000009807400 900000000025737c
+>> [  370.025797]         9000000100161080 9000000001148080 9000000107afce00 0000000000000003
+>> [  370.026543] [IGT] fbdev: exiting, ret=0
+>> [  370.033753]         ...
+>> [  370.033756] Call Trace:
+>> [  370.033757] [<9000000000223d5c>] __memcpy_toio+0x4c/0x90
+>> [  370.047681] [<ffff8000020d75a8>] drm_fbdev_generic_helper_fb_dirty+0x1cc/0x300 [drm_kms_helper]
+>> [  370.056354] [<ffff8000020d78e4>] drm_fb_helper_damage_work+0xa4/0x1d0 [drm_kms_helper]
+>> [  370.056381] [<9000000000256dbc>] process_one_work+0x1ec/0x35c
+>> [  370.056385] [<900000000025737c>] worker_thread+0x88/0x428
+>> [  370.056387] [<900000000025f4bc>] kthread+0x114/0x120
+>> [  370.056392] [<90000000002215a8>] ret_from_kernel_thread+0xc/0xa4
+>> [  370.056395]
+>> [  370.056396] Code: 00410def  0010bc8c  001500ad <260001ae> 02c02084  02c021ad  29ffe08e  5ffff184  03401cc6
+>> [  370.056406]
+>> [  370.056421] fbcon_init: detected unhandled fb_set_par error, error code -16
+>> [  370.056482] ---[ end trace 0000000000000000 ]---
+>> [  370.066620] Console: switching to colour frame buffer device 240x67
+>>
+>>
+>>> I just thought when looking at
+>>> the history that we revert the exact patch without any other changes
+>>> or comments,
+>> Other part of that patch(except this line) may still useful, at least for
+>> cleanup purpose.
+>>> and usually that means someone will come up with the same
+>>> cleanup idea again, and then we'll have a bug again. So maybe a
+>>> comment or a WARN_ON or something else would be good.
+>> A  WARN_ON is acceptable.
+>>
+>>> I guess we could also do your patch, but put a WARN_ON that the
+>>> computed total_size is never bigger than the drm_fb size into
+>>> drm_fb_helper_deferred_io()? That would also make sure that this bug
+>>> doesn't get resurrected again.
+>> Best to merge V2 [1] of this series, that is what I am really fixed.
+>>
+>> Maybe somebody can help to refine it, to add a better description about this
+>> question and so on.
+>>
+>> [1] https://patchwork.freedesktop.org/patch/532143/?series=116454&rev=1
+> Ok, I guess this really is the safest one. For that patch, do we need the
+> change to screen_size in drm_fbdev_generic_helper_fb_probe()?
 
-Yes, patch is good and I've tested it on parisc. Thanks!
+With that patch, we can expose a larger screen_size to userspace,
 
-You may add:
-Acked-by: Helge Deller <deller@gmx.de>
-to the series and take it through the drm tree.
+change screen_size to `helper->fb->height * helper->fb->pitches[0]` is *NOT* necessary.
 
-Helge
+
+But I though it maybe better to keep it line with the counter part in 
+drm_fbdev_dma_helper_fb_probe().
+
+make it double security.
+
+
+>   I'm still
+> not entirely clear.
+
+Because  drm_fb_helper_memory_range_to_clip() function will also be 
+called by
+
+drm_fb_helper_sys_write() function(in drm_fb_helper.c) when running 
+fbdev test.
+
+
+Put restriction in drm_fb_helper_deferred_io() function solely is not 
+enough,  because
+
+drm_fb_helper_deferred_io() is for mmap code path to writing the shadow 
+buffer.
+
+It relative fast, because it does not need another copy from user.
+
+
+However , drm_fb_helper_sys_write() is another code path to write to the 
+shadow screen buffer.
+
+it need copy from user to the kernel first, then copy to the shadow 
+screen buffer,
+
+and finally copy from the shadow to the real gem buffer.   Every time 
+you want to write
+
+the screen buffer, you have to issue a system call.
+
+
+But for the mmap code path, I only need map it to userspace address 
+space once.
+
+Yeah, only once, with write-combine page table caching property for 
+video ram.
+
+but for the shadow buffer in system ram, using cached is more fast and 
+reliable
+
+because of cache coherent  related concerns...
+
+So, we have two ways to writing the shadow(screen) buffer in the system ram.
+
+
+> If it works without that change I think that's clearer
+> for a minimal bugfix, if so can you send that out as v4 please?
+
+OK. But I still want to fix the two by one shot.
+
+It makes me feel comfortable.
+
+> Also please Cc: Geert on whatever you're resubmitting, so he can test too
+> and we can make sure it's still fixing the shmob issue he's seeing.
+>
+> And finally please include a link to this discussion here with a note that
+> just reverting the screen_size changes is not enough:
+>
+> https://lore.kernel.org/dri-devel/ad44df29-3241-0d9e-e708-b0338bf3c623@189.cn/
+> Thanks a lot!
+> -Daniel

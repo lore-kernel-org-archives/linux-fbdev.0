@@ -2,62 +2,45 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89397C77B73
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Apr 2023 15:48:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32AADC77B7A
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Apr 2023 16:01:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233529AbjDSPsR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Apr 2023 11:48:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40134 "EHLO
+        id S232781AbjDSQBC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Apr 2023 12:01:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50312 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233240AbjDSPsQ (ORCPT
+        with ESMTP id S229833AbjDSQBA (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Apr 2023 11:48:16 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F7908A45;
-        Wed, 19 Apr 2023 08:47:18 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 90C79219A7;
-        Wed, 19 Apr 2023 15:46:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1681919219; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=dzg0yyEK/G+AHP6c27ETXi5WurpAVzxvxrhky/Hvm6Y=;
-        b=pjiogoJSl1wJlxjqn+EnOwbhAEMumAbx+Q5mfAgc0sMD7Ad8eUs6xufNy1iZfei3bggmM5
-        pv2THX9AmeYDJbO2uPiB9otkQBCzkyyHNmDocD/L0xXEkmaCKeR/mMXOOJlfIYpJlnKrzA
-        kmV872//Ckc2mWaGHnlSVDirmk6IUgs=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1681919219;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=dzg0yyEK/G+AHP6c27ETXi5WurpAVzxvxrhky/Hvm6Y=;
-        b=/RXcW+rhFPsbT0VT+hakdNG16nxX6DgUH/bTloVMNEOCCuCV+U0p4jojGH1giORKLdGdBf
-        wGNldvvkSSvzDUAw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 510F41390E;
-        Wed, 19 Apr 2023 15:46:59 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id z72tEvMMQGQSHwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Wed, 19 Apr 2023 15:46:59 +0000
-Message-ID: <59dff860-9d1f-ec66-cd87-28693aa1fad2@suse.de>
-Date:   Wed, 19 Apr 2023 17:46:58 +0200
+        Wed, 19 Apr 2023 12:01:00 -0400
+Received: from 189.cn (ptr.189.cn [183.61.185.103])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 61A5B86AC;
+        Wed, 19 Apr 2023 09:00:54 -0700 (PDT)
+HMM_SOURCE_IP: 10.64.8.41:60812.1889620050
+HMM_ATTACHE_NUM: 0000
+HMM_SOURCE_TYPE: SMTP
+Received: from clientip-114.242.206.180 (unknown [10.64.8.41])
+        by 189.cn (HERMES) with SMTP id 3E71E1001F7;
+        Thu, 20 Apr 2023 00:00:43 +0800 (CST)
+Received: from  ([114.242.206.180])
+        by gateway-151646-dep-7b48884fd-ljp89 with ESMTP id 3eeb43b13fa24365b32365172a6ade10 for daniel@ffwll.ch;
+        Thu, 20 Apr 2023 00:00:46 CST
+X-Transaction-ID: 3eeb43b13fa24365b32365172a6ade10
+X-Real-From: 15330273260@189.cn
+X-Receive-IP: 114.242.206.180
+X-MEDUSA-Status: 0
+Sender: 15330273260@189.cn
+Message-ID: <ad44df29-3241-0d9e-e708-b0338bf3c623@189.cn>
+Date:   Thu, 20 Apr 2023 00:00:41 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.10.0
 Subject: Re: [PATCH v3] drm/fbdev-generic: prohibit potential out-of-bounds
  access
 Content-Language: en-US
-To:     Daniel Vetter <daniel@ffwll.ch>, Sui Jingfeng <15330273260@189.cn>
+To:     Daniel Vetter <daniel@ffwll.ch>
 Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
         David Airlie <airlied@gmail.com>, Li Yi <liyi@loongson.cn>,
         Helge Deller <deller@gmx.de>,
         Lucas De Marchi <lucas.demarchi@intel.com>,
@@ -68,212 +51,285 @@ References: <20230417113219.1354078-1-suijingfeng@loongson.cn>
  <139c9398-488d-df19-9ae2-2b4b47ef64f4@189.cn>
  <86a8b262-cbf2-b75f-9972-491f557edf74@189.cn>
  <CAKMK7uE-azFT02Sp2FDfMGTc57eYJEn8iM8Wk1mt5ucPs1qM-w@mail.gmail.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
+From:   Sui Jingfeng <15330273260@189.cn>
 In-Reply-To: <CAKMK7uE-azFT02Sp2FDfMGTc57eYJEn8iM8Wk1mt5ucPs1qM-w@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------aUupdK3iiU9kA09uMon7zmMw"
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------aUupdK3iiU9kA09uMon7zmMw
-Content-Type: multipart/mixed; boundary="------------vsDmT30ohTb5iq0hp9vs5VPf";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Daniel Vetter <daniel@ffwll.ch>, Sui Jingfeng <15330273260@189.cn>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
- Li Yi <liyi@loongson.cn>, Helge Deller <deller@gmx.de>,
- Lucas De Marchi <lucas.demarchi@intel.com>, linux-kernel@vger.kernel.org,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- loongson-kernel@lists.loongnix.cn
-Message-ID: <59dff860-9d1f-ec66-cd87-28693aa1fad2@suse.de>
-Subject: Re: [PATCH v3] drm/fbdev-generic: prohibit potential out-of-bounds
- access
-References: <20230417113219.1354078-1-suijingfeng@loongson.cn>
- <ZD5Vgx9Txaiz7Bun@phenom.ffwll.local>
- <139c9398-488d-df19-9ae2-2b4b47ef64f4@189.cn>
- <86a8b262-cbf2-b75f-9972-491f557edf74@189.cn>
- <CAKMK7uE-azFT02Sp2FDfMGTc57eYJEn8iM8Wk1mt5ucPs1qM-w@mail.gmail.com>
-In-Reply-To: <CAKMK7uE-azFT02Sp2FDfMGTc57eYJEn8iM8Wk1mt5ucPs1qM-w@mail.gmail.com>
+Hi,
 
---------------vsDmT30ohTb5iq0hp9vs5VPf
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Sorry about reply to you so late,
 
-SGkNCg0KQW0gMTkuMDQuMjMgdW0gMTc6MDkgc2NocmllYiBEYW5pZWwgVmV0dGVyOg0KPiBP
-biBUdWUsIDE4IEFwciAyMDIzIGF0IDIwOjE2LCBTdWkgSmluZ2ZlbmcgPDE1MzMwMjczMjYw
-QDE4OS5jbj4gd3JvdGU6DQo+Pg0KPj4gSGksDQo+Pg0KPj4gT24gMjAyMy80LzE5IDAxOjUy
-LCBTdWkgSmluZ2Zlbmcgd3JvdGU6DQo+Pj4gSGksDQo+Pj4NCj4+PiBPbiAyMDIzLzQvMTgg
-MTY6MzIsIERhbmllbCBWZXR0ZXIgd3JvdGU6DQo+Pj4+IE9uIE1vbiwgQXByIDE3LCAyMDIz
-IGF0IDA3OjMyOjE5UE0gKzA4MDAsIFN1aSBKaW5nZmVuZyB3cm90ZToNCj4+Pj4+IFRoZSBm
-YmRldiB0ZXN0IG9mIElHVCBtYXkgd3JpdGUgYWZ0ZXIgRU9GLCB3aGljaCBsZWFkIHRvIG91
-dC1vZi1ib3VuZA0KPj4+Pj4gYWNjZXNzIGZvciB0aGUgZHJtIGRyaXZlcnMgdXNpbmcgZmJk
-ZXYtZ2VuZXJpYy4gRm9yIGV4YW1wbGUsIG9uIGEgeDg2DQo+Pj4+PiArIGFzcGVlZCBibWMg
-Y2FyZCBwbGF0Zm9ybSwgd2l0aCBhIDE2ODB4MTA1MCByZXNvbHV0aW9uIGRpc3BsYXksDQo+
-Pj4+PiBydW5uaW5nDQo+Pj4+PiBmYmRldiB0ZXN0IGlmIElHVCB3aWxsIGNhdXNlIHRoZSBs
-aW51eCBrZXJuZWwgaGFuZyB3aXRoIHRoZSBmb2xsb3dpbmcNCj4+Pj4+IGNhbGwgdHJhY2U6
-DQo+Pj4+Pg0KPj4+Pj4gICAgIE9vcHM6IDAwMDAgWyMxXSBQUkVFTVBUIFNNUCBQVEkNCj4+
-Pj4+ICAgICBbSUdUXSBmYmRldjogc3RhcnRpbmcgc3VidGVzdCBlb2YNCj4+Pj4+ICAgICBX
-b3JrcXVldWU6IGV2ZW50cyBkcm1fZmJfaGVscGVyX2RhbWFnZV93b3JrIFtkcm1fa21zX2hl
-bHBlcl0NCj4+Pj4+ICAgICBbSUdUXSBmYmRldjogc3RhcnRpbmcgc3VidGVzdCBudWxscHRy
-DQo+Pj4+Pg0KPj4+Pj4gICAgIFJJUDogMDAxMDptZW1jcHlfZXJtcysweGEvMHgyMA0KPj4+
-Pj4gICAgIFJTUDogMDAxODpmZmZmYTE3ZDQwMTY3ZDk4IEVGTEFHUzogMDAwMTAyNDYNCj4+
-Pj4+ICAgICBSQVg6IGZmZmZhMTdkNGViN2ZhODAgUkJYOiBmZmZmYTE3ZDQwZTBhYTgwIFJD
-WDogMDAwMDAwMDAwMDAwMTRjMA0KPj4+Pj4gICAgIFJEWDogMDAwMDAwMDAwMDAwMWE0MCBS
-U0k6IGZmZmZhMTdkNDBlMGIwMDAgUkRJOiBmZmZmYTE3ZDRlYjgwMDAwDQo+Pj4+PiAgICAg
-UkJQOiBmZmZmYTE3ZDQwMTY3ZTIwIFIwODogMDAwMDAwMDAwMDAwMDAwMCBSMDk6IGZmZmY4
-OTUyMmVjZmY4YzANCj4+Pj4+ICAgICBSMTA6IGZmZmZhMTdkNGU0YzUwMDAgUjExOiAwMDAw
-MDAwMDAwMDAwMDAwIFIxMjogZmZmZmExN2Q0ZWI3ZmE4MA0KPj4+Pj4gICAgIFIxMzogMDAw
-MDAwMDAwMDAwMWE0MCBSMTQ6IDAwMDAwMDAwMDAwMDA0MWEgUjE1OiBmZmZmYTE3ZDQwMTY3
-ZTMwDQo+Pj4+PiAgICAgRlM6ICAwMDAwMDAwMDAwMDAwMDAwKDAwMDApIEdTOmZmZmY4OTUy
-NTczODAwMDAoMDAwMCkNCj4+Pj4+IGtubEdTOjAwMDAwMDAwMDAwMDAwMDANCj4+Pj4+ICAg
-ICBDUzogIDAwMTAgRFM6IDAwMDAgRVM6IDAwMDAgQ1IwOiAwMDAwMDAwMDgwMDUwMDMzDQo+
-Pj4+PiAgICAgQ1IyOiBmZmZmYTE3ZDQwZTBiMDAwIENSMzogMDAwMDAwMDFlYWVjYTAwNiBD
-UjQ6IDAwMDAwMDAwMDAxNzA2ZTANCj4+Pj4+ICAgICBDYWxsIFRyYWNlOg0KPj4+Pj4gICAg
-ICA8VEFTSz4NCj4+Pj4+ICAgICAgPyBkcm1fZmJkZXZfZ2VuZXJpY19oZWxwZXJfZmJfZGly
-dHkrMHgyMDcvMHgzMzAgW2RybV9rbXNfaGVscGVyXQ0KPj4+Pj4gICAgICBkcm1fZmJfaGVs
-cGVyX2RhbWFnZV93b3JrKzB4OGYvMHgxNzAgW2RybV9rbXNfaGVscGVyXQ0KPj4+Pj4gICAg
-ICBwcm9jZXNzX29uZV93b3JrKzB4MjFmLzB4NDMwDQo+Pj4+PiAgICAgIHdvcmtlcl90aHJl
-YWQrMHg0ZS8weDNjMA0KPj4+Pj4gICAgICA/IF9fcGZ4X3dvcmtlcl90aHJlYWQrMHgxMC8w
-eDEwDQo+Pj4+PiAgICAgIGt0aHJlYWQrMHhmNC8weDEyMA0KPj4+Pj4gICAgICA/IF9fcGZ4
-X2t0aHJlYWQrMHgxMC8weDEwDQo+Pj4+PiAgICAgIHJldF9mcm9tX2ZvcmsrMHgyYy8weDUw
-DQo+Pj4+PiAgICAgIDwvVEFTSz4NCj4+Pj4+ICAgICBDUjI6IGZmZmZhMTdkNDBlMGIwMDAN
-Cj4+Pj4+ICAgICAtLS1bIGVuZCB0cmFjZSAwMDAwMDAwMDAwMDAwMDAwIF0tLS0NCj4+Pj4+
-DQo+Pj4+PiBUaGUgZGlyZWN0IHJlYXNvbiBpcyB0aGF0IGRhbWFnZSByZWN0YW5nZSBjb21w
-dXRlZCBieQ0KPj4+Pj4gZHJtX2ZiX2hlbHBlcl9tZW1vcnlfcmFuZ2VfdG9fY2xpcCgpIGRv
-ZXMgbm90IGd1YXJhbnRlZWQgdG8gYmUNCj4+Pj4+IGluLWJvdW5kLg0KPj4+Pj4gSXQgaXMg
-YWxyZWFkeSByZXN1bHRzIGluIHdvcmthcm91bmQgY29kZSBwb3B1bGF0ZSB0byBlbHNld2hl
-cmUuIEFub3RoZXINCj4+Pj4+IHJlYXNvbiBpcyB0aGF0IGV4cG9zaW5nIGEgbGFyZ2VyIGJ1
-ZmZlciBzaXplIHRoYW4gdGhlIGFjdHVhbCBuZWVkZWQNCj4+Pj4+IGhlbHANCj4+Pj4+IHRv
-IHRyaWdnZXIgdGhpcyBidWcgaW50cmluc2ljIGluIGRybV9mYl9oZWxwZXJfbWVtb3J5X3Jh
-bmdlX3RvX2NsaXAoKS4NCj4+Pj4+DQo+Pj4+PiBPdGhlcnMgZmJkZXYgZW11bGF0aW9uIHNv
-bHV0aW9ucyB3cml0ZSB0byB0aGUgR0VNIGJ1ZmZlciBkaXJlY3RseSwgdGhleQ0KPj4+Pj4g
-d29uJ3QgcmVwcm9kdWNlIHRoaXMgYnVnIGJlY2F1c2UgdGhlIC5mYl9kaXJ0eSBmdW5jdGlv
-biBjYWxsYmFjayBkbyBub3QNCj4+Pj4+IGJlaW5nIGhvb2tlZCwgc28gbm8gY2hhbmNlIGlz
-IGdpdmVuIHRvDQo+Pj4+PiBkcm1fZmJfaGVscGVyX21lbW9yeV9yYW5nZV90b19jbGlwKCkN
-Cj4+Pj4+IHRvIGdlbmVyYXRlIGEgb3V0LW9mLWJvdW5kIHdoZW4gZHJtX2ZiX2hlbHBlcl9z
-eXNfd3JpdGUoKSBpcyBjYWxsZWQuDQo+Pj4+Pg0KPj4+Pj4gVGhpcyBwYXRjaCBicmVhayB0
-aGUgdHJpZ2dlciBjb25kaXRpb24gb2YgdGhpcyBidWcgYnkgc2hyaW5raW5nIHRoZQ0KPj4+
-Pj4gc2hhZG93DQo+Pj4+PiBidWZmZXIgc2l6ZSB0byBzaXplcy0+c3VyZmFjZV9oZWlnaHQg
-KiBidWZmZXItPmZiLT5waXRjaGVzWzBdLg0KPj4+Pj4NCj4+Pj4+IEZpeGVzOiAnOGZiYzlh
-ZjU1ZGUwICgiZHJtL2ZiZGV2LWdlbmVyaWM6IFNldCBzY3JlZW4gc2l6ZSB0byBzaXplIG9m
-DQo+Pj4+PiBHRU0NCj4+Pj4+IGJ1ZmZlciIpJw0KPj4+Pj4NCj4+Pj4+IFNpZ25lZC1vZmYt
-Ynk6IFN1aSBKaW5nZmVuZyA8c3VpamluZ2ZlbmdAbG9vbmdzb24uY24+DQo+Pj4+PiAtLS0N
-Cj4+Pj4+ICAgIGRyaXZlcnMvZ3B1L2RybS9kcm1fZmJkZXZfZ2VuZXJpYy5jIHwgMiArLQ0K
-Pj4+Pj4gICAgMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspLCAxIGRlbGV0aW9uKC0p
-DQo+Pj4+Pg0KPj4+Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2RybS9kcm1fZmJkZXZf
-Z2VuZXJpYy5jDQo+Pj4+PiBiL2RyaXZlcnMvZ3B1L2RybS9kcm1fZmJkZXZfZ2VuZXJpYy5j
-DQo+Pj4+PiBpbmRleCA4ZTUxNDhiZjQwYmIuLmIwNTdjZmJiYTkzOCAxMDA2NDQNCj4+Pj4+
-IC0tLSBhL2RyaXZlcnMvZ3B1L2RybS9kcm1fZmJkZXZfZ2VuZXJpYy5jDQo+Pj4+PiArKysg
-Yi9kcml2ZXJzL2dwdS9kcm0vZHJtX2ZiZGV2X2dlbmVyaWMuYw0KPj4+Pj4gQEAgLTk0LDcg
-Kzk0LDcgQEAgc3RhdGljIGludA0KPj4+Pj4gZHJtX2ZiZGV2X2dlbmVyaWNfaGVscGVyX2Zi
-X3Byb2JlKHN0cnVjdCBkcm1fZmJfaGVscGVyICpmYl9oZWxwZXIsDQo+Pj4+PiAgICAgICAg
-ZmJfaGVscGVyLT5idWZmZXIgPSBidWZmZXI7DQo+Pj4+PiAgICAgICAgZmJfaGVscGVyLT5m
-YiA9IGJ1ZmZlci0+ZmI7DQo+Pj4+PiAgICAtICAgIHNjcmVlbl9zaXplID0gYnVmZmVyLT5n
-ZW0tPnNpemU7DQo+Pj4+PiArICAgIHNjcmVlbl9zaXplID0gc2l6ZXMtPnN1cmZhY2VfaGVp
-Z2h0ICogYnVmZmVyLT5mYi0+cGl0Y2hlc1swXTsNCj4+Pj4gU28gSSByZWFkIGNvcmUgc29t
-ZSBtb3JlIGFuZCBzdHVtYmxlZCBvdmVyIGRybV9mYl9oZWxwZXJfZGVmZXJyZWRfaW8oKS4N
-Cj4+Pj4gV2hpY2ggaGFzIGFsbCB0aGUgY29kZSBhbmQgY29tbWVudHMgYWJvdXQgdGhpcywg
-aW5jbHVkaW5nIGxpbWl0aW5nLg0KPj4+Pg0KPj4+PiBJIHRoaW5rIGl0IHdvdWxkIGJlIGNs
-ZWFyZXIgaWYgd2UgZml4IHRoZSBpc3N1ZSB0aGVyZSwgaW5zdGVhZCBvZg0KPj4+PiBwYXNz
-aW5nDQo+Pj4+IGxpbWl0cyBhcm91bmQgaW4gb2JzY3VyZSBwbGFjZXMgdGhhdCB0aGVuIGFn
-YWluIGdldCBicm9rZW4/DQo+Pj4NCj4+PiBObywgaXQgaXMgbW9yZSBvYnNjdXJlIGRvaW5n
-IHRoYXQgd2F5Li4uDQo+Pj4NCj4+Pg0KPj4+IEFzIHRoZSBzaXplIG9mIHRoZSBzaGFkb3cg
-c2NyZWVuIGJ1ZmZlciB3aWxsIGJlIGV4cG9zZWQgdG8gdXNlcnNwYWNlLg0KPj4+DQo+Pj4g
-VGhlIHNpemUgJ2hlbHBlci0+ZmItPmhlaWdodCAqIGhlbHBlci0+ZmItPnBpdGNoZXNbMF0n
-IGlzIGENCj4+PiBleGFjdGx5KGJlc3QpIGZpdCwNCj4+Pg0KPj4+IFlvdSBhcmUgZ3VhcmFu
-dGVlZCB0byB3YXN0ZSBhdCBsZWFzZSBvbmUgYnl0ZSBieSBpbmNyZWFzaW5nIG9uZSBieXRl
-LA0KPj4+DQo+Pj4gYW5kIGNhbiBub3Qgc3RvcmUgYWxsIHBpeGVscyBieSBkZWNyZWFzaW5n
-IG9uZSBieXRlIChJbiB0aGUgY2FzZSB3aGVyZQ0KPj4+IGBoZWxwZXItPmZiLT5waXRjaGVz
-WzBdID0gaGVscGVyLT5mYi0+d2lkdGggKiA0YCkuDQo+Pj4NCj4+PiBJdCBpbXBsaWNpdGx5
-IHRlbGwgdGhlIHVzZXJzcGFjZSBkbyBub3QgZ28gYmV5b25kIHRoYXQgYm91bmRhcnkuDQo+
-Pj4NCj4+PiBhbHRob3VnaCB1c2Vyc3BhY2UgcHJvZ3JhbSBjYW4gc3RpbGwgY2hvb3NlIHRv
-IHdyaXRlICBhZnRlciBFT0YsDQo+Pj4NCj4+PiBCdXQgaXQgaXMgZm9yIHRlc3QgcHVycG9z
-ZSwgdG8gdGVzdCB0aGUga2VybmVsIGlmIGl0IGNhbiByZXR1cm4gYQ0KPj4+IC1FRkJJRyBv
-ciBub3QuDQo+Pj4NCj4+Pj4gVGhlIHRoaW5nIGlzLA0KPj4+PiBUaG9tYXMgYm90aCBhdXRo
-b3JlZCB0aGUgbGltaXQgY2hlY2tzIGluIGRybV9mYl9oZWxwZXJfZGVmZXJyZWRfaW8oKSBh
-bmQNCj4+Pj4gdGhlIHBhdGNoIHdoaWNoIGJyb2tlbiB0aGVtIGFnYWluLCBzbyBjbGVhcmx5
-IHRoaXMgaXNuJ3QgdmVyeQ0KPj4+PiBvYnZpb3VzLiBJJ20NCj4+Pj4gdGhpbmtpbmcgb2Yg
-c29tZXRoaW5nIGxpa2UgdGhpczoNCj4+Pj4NCj4+Pj4NCj4+Pj4gZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvZ3B1L2RybS9kcm1fZmJfaGVscGVyLmMNCj4+Pj4gYi9kcml2ZXJzL2dwdS9kcm0v
-ZHJtX2ZiX2hlbHBlci5jDQo+Pj4+IGluZGV4IGVmNGViOGIxMjc2Ni4uNzI2ZGFiNjdjMzU5
-IDEwMDY0NA0KPj4+PiAtLS0gYS9kcml2ZXJzL2dwdS9kcm0vZHJtX2ZiX2hlbHBlci5jDQo+
-Pj4+ICsrKyBiL2RyaXZlcnMvZ3B1L2RybS9kcm1fZmJfaGVscGVyLmMNCj4+Pj4gQEAgLTY5
-NywxMCArNjk3LDcgQEAgdm9pZCBkcm1fZmJfaGVscGVyX2RlZmVycmVkX2lvKHN0cnVjdCBm
-Yl9pbmZvDQo+Pj4+ICppbmZvLCBzdHJ1Y3QgbGlzdF9oZWFkICpwYWdlcmVmbGkNCj4+Pj4g
-ICAgICAgICAqIG9mIHRoZSBzY3JlZW4gYW5kIGFjY291bnQgZm9yIG5vbi1leGlzdGluZyBz
-Y2FubGluZXMuIEhlbmNlLA0KPj4+PiAgICAgICAgICoga2VlcCB0aGUgY292ZXJlZCBtZW1v
-cnkgYXJlYSB3aXRoaW4gdGhlIHNjcmVlbiBidWZmZXIuDQo+Pj4+ICAgICAgICAgKi8NCj4+
-Pj4gLSAgICBpZiAoaW5mby0+c2NyZWVuX3NpemUpDQo+Pj4+IC0gICAgICAgIHRvdGFsX3Np
-emUgPSBpbmZvLT5zY3JlZW5fc2l6ZTsNCj4+Pj4gLSAgICBlbHNlDQo+Pj4+IC0gICAgICAg
-IHRvdGFsX3NpemUgPSBpbmZvLT5maXguc21lbV9sZW47DQo+Pj4+ICsgICAgdG90YWxfc2l6
-ZSA9IGhlbHBlci0+ZmItPmhlaWdodCAqIGhlbHBlci0+ZmItPnBpdGNoZXNbMF07DQo+Pj4N
-Cj4+PiBUaGlzIGlzIGp1c3QgdG8gbWl0aWdhdGUgdGhlIG1pc3Rha2VzIGFscmVhZHkgaGFz
-IGJlZW4gbWFkZSwNCj4+Pg0KPj4+IGJlY2F1c2UgaXQgIGRvIG5vdCBkbyBhIGdvb2Qgc3Bs
-aXR0aW5nIGJldHdlZW4gdGhlICpjbGlwKiBwYXJ0IGFuZCB0aGUNCj4+PiAqZGFtYWdlIHVw
-ZGF0ZSogcGFydC4NCj4+Pg0KPj4+IEFuIGlkZWFsIGNsaXBwaW5nIGRvIG5vdCBvYnNjdXJl
-IGl0cyB1cGRhdGluZyBiYWNrZW5kIHdpdGggYQ0KPj4+IG91dC1vZi1ib3VuZCBkYW1hZ2Ug
-cmVjdGFuZ2xlLg0KPj4+DQo+Pj4gV2h5IGRpZCB0aGUgZHJtX2ZiX2hlbHBlcl9tZW1vcnlf
-cmFuZ2VfdG9fY2xpcCgpIGNhbiBub3QgZG8gYSBnb29kIGpvYg0KPj4+IGluIGFsbCBjYXNl
-DQo+Pj4NCj4+PiB0byBwYXNzIGl0cyBiYWNrZW5kIGEgYWx3YXlzIG1lYW5pbmdmdWwgZGFt
-YWdlIHJlY3QgPw0KPj4+DQo+Pj4+ICAgICAgICBtYXhfb2ZmID0gbWluKG1heF9vZmYsIHRv
-dGFsX3NpemUpOw0KPj4+PiAgICAgICAgICBpZiAobWluX29mZiA8IG1heF9vZmYpIHsNCj4+
-Pj4NCj4+Pj4NCj4+Pj4gSSB0aGluayB0aGF0IHdvdWxkIG1ha2UgaXQgdXRtb3N0IGNsZWFy
-IG9uIHdoYXQgd2UncmUgZG9pbmcgYW5kIHdoeS4NCj4+Pj4gT3RoZXJ3aXNlIHdlJ3JlIGp1
-c3QgZ29pbmcgdG8gcmUtY3JlYXRlIHRoZSBzYW1lIGJ1ZyBhZ2FpbiwgbGlrZSB3ZSd2ZQ0K
-Pj4+PiBkb25lIGFscmVhZHkgOi0pDQo+Pj4NCj4+PiBObywgd2UgY3JlYXRlIG5vIGJ1Z3Ms
-IHdlIGZpeCBvbmUuDQo+Pj4NCj4+PiBUaGFua3MuDQo+Pj4NCj4+IEJ1dCBob25lc3RseSBJ
-IGRvIG5vdCBoYXZlIHN0cm9uZyBmZWVsIHRvd2FyZCB0aGlzLCBJIGp1c3QgdHlwZSB3aGF0
-IEknbQ0KPj4gdW5kZXJzdGFuZCB3aXRob3V0IHNlZWluZyB5b3UgcmVzZW5kIGEgVjMuDQo+
-Pg0KPj4gSXQncyBPSyBpbiBvdmVyYWxsLCAgSSB3aWxsIGhlbHAgdG8gdGVzdCB0aGlzIHRv
-bW9ycm93LiAgOi0pDQo+IA0KPiBBcG9sb2dpZXMgZm9yIG1ha2luZyB5b3UganVtcCBhcm91
-bmQgYWxsIHRoZSB0aW1lIGFuZCBkb2luZyBkaWZmZXJlbnQNCj4gdmVyc2lvbnMgb2YgdGhl
-IHNhbWUgYnVnZml4IDotLw0KPiANCj4gSSB0aGluayB0aGlzIG9uZSBoZXJlIGlzIG9rIHRv
-IG1lcmdlLCBJIGp1c3QgdGhvdWdodCB3aGVuIGxvb2tpbmcgYXQNCj4gdGhlIGhpc3Rvcnkg
-dGhhdCB3ZSByZXZlcnQgdGhlIGV4YWN0IHBhdGNoIHdpdGhvdXQgYW55IG90aGVyIGNoYW5n
-ZXMNCj4gb3IgY29tbWVudHMsIGFuZCB1c3VhbGx5IHRoYXQgbWVhbnMgc29tZW9uZSB3aWxs
-IGNvbWUgdXAgd2l0aCB0aGUgc2FtZQ0KPiBjbGVhbnVwIGlkZWEgYWdhaW4sIGFuZCB0aGVu
-IHdlJ2xsIGhhdmUgYSBidWcgYWdhaW4uIFNvIG1heWJlIGENCj4gY29tbWVudCBvciBhIFdB
-Uk5fT04gb3Igc29tZXRoaW5nIGVsc2Ugd291bGQgYmUgZ29vZC4NCj4gDQo+IEkgZ3Vlc3Mg
-d2UgY291bGQgYWxzbyBkbyB5b3VyIHBhdGNoLCBidXQgcHV0IGEgV0FSTl9PTiB0aGF0IHRo
-ZQ0KPiBjb21wdXRlZCB0b3RhbF9zaXplIGlzIG5ldmVyIGJpZ2dlciB0aGFuIHRoZSBkcm1f
-ZmIgc2l6ZSBpbnRvDQo+IGRybV9mYl9oZWxwZXJfZGVmZXJyZWRfaW8oKT8gVGhhdCB3b3Vs
-ZCBhbHNvIG1ha2Ugc3VyZSB0aGF0IHRoaXMgYnVnDQo+IGRvZXNuJ3QgZ2V0IHJlc3VycmVj
-dGVkIGFnYWluLg0KDQpXZSdkIGhhdmUgdG8gcHV0IHRoaXMgdGVzdCBpbnRvIGRybV9mYmRl
-dl9nZW5lcmljLmMuIE90aGVyd2lzZSB3ZSdsbCANCmJyZWFrIGk5MTUsIHdoaWNoIGFsc28g
-dXNlcyBkZWZlcnJlZCBJL08sIGJ1dCB3aXRob3V0IHNoYWRvdyBidWZmZXJpbmcuLiANCk1h
-eWJlIHRlc3QgaW4gZHJtX2ZiZGV2X2dlbmVyaWNfaGVscGVyX2ZiX2RpcnR5KCkgaWYgdGhl
-IGNsaXAgcmVjdGFuZ2xlIA0KZXh0ZW5kcyB0aGUgZnJhbWVidWZmZXIgc2l6ZS4NCg0KQmVz
-dCByZWdhcmRzDQpUaG9tYXMNCg0KPiAtRGFuaWVsDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1h
-bm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25z
-IEdlcm1hbnkgR21iSA0KRnJhbmtlbnN0cmFzc2UgMTQ2LCA5MDQ2MSBOdWVybmJlcmcsIEdl
-cm1hbnkNCkdGOiBJdm8gVG90ZXYsIEFuZHJldyBNeWVycywgQW5kcmV3IE1jRG9uYWxkLCBC
-b3VkaWVuIE1vZXJtYW4NCkhSQiAzNjgwOSAoQUcgTnVlcm5iZXJnKQ0K
+our  downstream (product kernel side) userspace GPU/DC driver
 
---------------vsDmT30ohTb5iq0hp9vs5VPf--
+has been tested out a few bugs, I'm asking to fulfill my duty to that 
+part all days.
 
---------------aUupdK3iiU9kA09uMon7zmMw
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+I may slow to reply, but I really love to reply.
 
------BEGIN PGP SIGNATURE-----
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmRADPIFAwAAAAAACgkQlh/E3EQov+BX
-FA//RF5y/sKwWkuZ/6VuWhXxXl4zPjXjjHi7Gnef3Bj3b35r/cpo8cYZkG2rbq/i34gQ8kAtFCmu
-rBzteOh913WXkkuXcH4YxjjYMcG1TU5pn+7yne+4eL+P74ZFqsgWqLLpw1q5sMjhdYuWMEtulZFo
-QRrVe8jZTbsUPXnIhgooZVN+oG8F4Y2CzdfhHqePKmC2Pzij9kaNp2CIL9GDWcNPAZQVzGis/Wx7
-IVN6JYHx3yxS5xmBSOyPB8V/lCFGRKgWLg10VOgAmoLPDOPpKrgcELhzdZaZmr6ycnn83viFY8/E
-IRBwihWIxPkr8jOwBkT2EA42MnMgNvrHlKPHjIkIUAkTXu5yrR7xMXuUkwSIt3RUCjMS8CxS6c6I
-QMjntAqVmVwGq8LRXot4gLK1ddgN0pgVOqggxppshvB0V4MPMFReKFcs7e8EEJKytiXmnui/TsOu
-DoSBJOar1+p7xqeuSAkhW5sI5p1SbjirSCJkc99b7azXxLXh36dcKzuTzpvJdbJ1amiArt9BHpMk
-0E2cVUyzLccDS2HGzKWC4Y7wzqN9MIU4THXTwianPBVENvgQPF/q+FdDFwucvw3jpUmIXu0sYHal
-M5xiU8EGfGp/AMizqfQfHqwcwrB+A/TmqaFC36eVYr5ckoshqm1F8eVlQzjVziHsKNKUFvtZEJHx
-o3I=
-=wAhQ
------END PGP SIGNATURE-----
+On 2023/4/19 23:09, Daniel Vetter wrote:
+> On Tue, 18 Apr 2023 at 20:16, Sui Jingfeng <15330273260@189.cn> wrote:
+>> Hi,
+>>
+>> On 2023/4/19 01:52, Sui Jingfeng wrote:
+>>> Hi,
+>>>
+>>> On 2023/4/18 16:32, Daniel Vetter wrote:
+>>>> On Mon, Apr 17, 2023 at 07:32:19PM +0800, Sui Jingfeng wrote:
+>>>>> The fbdev test of IGT may write after EOF, which lead to out-of-bound
+>>>>> access for the drm drivers using fbdev-generic. For example, on a x86
+>>>>> + aspeed bmc card platform, with a 1680x1050 resolution display,
+>>>>> running
+>>>>> fbdev test if IGT will cause the linux kernel hang with the following
+>>>>> call trace:
+>>>>>
+>>>>>     Oops: 0000 [#1] PREEMPT SMP PTI
+>>>>>     [IGT] fbdev: starting subtest eof
+>>>>>     Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
+>>>>>     [IGT] fbdev: starting subtest nullptr
+>>>>>
+>>>>>     RIP: 0010:memcpy_erms+0xa/0x20
+>>>>>     RSP: 0018:ffffa17d40167d98 EFLAGS: 00010246
+>>>>>     RAX: ffffa17d4eb7fa80 RBX: ffffa17d40e0aa80 RCX: 00000000000014c0
+>>>>>     RDX: 0000000000001a40 RSI: ffffa17d40e0b000 RDI: ffffa17d4eb80000
+>>>>>     RBP: ffffa17d40167e20 R08: 0000000000000000 R09: ffff89522ecff8c0
+>>>>>     R10: ffffa17d4e4c5000 R11: 0000000000000000 R12: ffffa17d4eb7fa80
+>>>>>     R13: 0000000000001a40 R14: 000000000000041a R15: ffffa17d40167e30
+>>>>>     FS:  0000000000000000(0000) GS:ffff895257380000(0000)
+>>>>> knlGS:0000000000000000
+>>>>>     CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+>>>>>     CR2: ffffa17d40e0b000 CR3: 00000001eaeca006 CR4: 00000000001706e0
+>>>>>     Call Trace:
+>>>>>      <TASK>
+>>>>>      ? drm_fbdev_generic_helper_fb_dirty+0x207/0x330 [drm_kms_helper]
+>>>>>      drm_fb_helper_damage_work+0x8f/0x170 [drm_kms_helper]
+>>>>>      process_one_work+0x21f/0x430
+>>>>>      worker_thread+0x4e/0x3c0
+>>>>>      ? __pfx_worker_thread+0x10/0x10
+>>>>>      kthread+0xf4/0x120
+>>>>>      ? __pfx_kthread+0x10/0x10
+>>>>>      ret_from_fork+0x2c/0x50
+>>>>>      </TASK>
+>>>>>     CR2: ffffa17d40e0b000
+>>>>>     ---[ end trace 0000000000000000 ]---
+>>>>>
+>>>>> The direct reason is that damage rectange computed by
+>>>>> drm_fb_helper_memory_range_to_clip() does not guaranteed to be
+>>>>> in-bound.
+>>>>> It is already results in workaround code populate to elsewhere. Another
+>>>>> reason is that exposing a larger buffer size than the actual needed
+>>>>> help
+>>>>> to trigger this bug intrinsic in drm_fb_helper_memory_range_to_clip().
+>>>>>
+>>>>> Others fbdev emulation solutions write to the GEM buffer directly, they
+>>>>> won't reproduce this bug because the .fb_dirty function callback do not
+>>>>> being hooked, so no chance is given to
+>>>>> drm_fb_helper_memory_range_to_clip()
+>>>>> to generate a out-of-bound when drm_fb_helper_sys_write() is called.
+>>>>>
+>>>>> This patch break the trigger condition of this bug by shrinking the
+>>>>> shadow
+>>>>> buffer size to sizes->surface_height * buffer->fb->pitches[0].
+>>>>>
+>>>>> Fixes: '8fbc9af55de0 ("drm/fbdev-generic: Set screen size to size of
+>>>>> GEM
+>>>>> buffer")'
+>>>>>
+>>>>> Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
+>>>>> ---
+>>>>>    drivers/gpu/drm/drm_fbdev_generic.c | 2 +-
+>>>>>    1 file changed, 1 insertion(+), 1 deletion(-)
+>>>>>
+>>>>> diff --git a/drivers/gpu/drm/drm_fbdev_generic.c
+>>>>> b/drivers/gpu/drm/drm_fbdev_generic.c
+>>>>> index 8e5148bf40bb..b057cfbba938 100644
+>>>>> --- a/drivers/gpu/drm/drm_fbdev_generic.c
+>>>>> +++ b/drivers/gpu/drm/drm_fbdev_generic.c
+>>>>> @@ -94,7 +94,7 @@ static int
+>>>>> drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
+>>>>>        fb_helper->buffer = buffer;
+>>>>>        fb_helper->fb = buffer->fb;
+>>>>>    -    screen_size = buffer->gem->size;
+>>>>> +    screen_size = sizes->surface_height * buffer->fb->pitches[0];
+>>>> So I read core some more and stumbled over drm_fb_helper_deferred_io().
+>>>> Which has all the code and comments about this, including limiting.
+>>>>
+>>>> I think it would be clearer if we fix the issue there, instead of
+>>>> passing
+>>>> limits around in obscure places that then again get broken?
+>>> No, it is more obscure doing that way...
+>>>
+>>>
+>>> As the size of the shadow screen buffer will be exposed to userspace.
+>>>
+>>> The size 'helper->fb->height * helper->fb->pitches[0]' is a
+>>> exactly(best) fit,
+>>>
+>>> You are guaranteed to waste at lease one byte by increasing one byte,
+>>>
+>>> and can not store all pixels by decreasing one byte (In the case where
+>>> `helper->fb->pitches[0] = helper->fb->width * 4`).
+>>>
+>>> It implicitly tell the userspace do not go beyond that boundary.
+>>>
+>>> although userspace program can still choose to write  after EOF,
+>>>
+>>> But it is for test purpose, to test the kernel if it can return a
+>>> -EFBIG or not.
+>>>
+>>>> The thing is,
+>>>> Thomas both authored the limit checks in drm_fb_helper_deferred_io() and
+>>>> the patch which broken them again, so clearly this isn't very
+>>>> obvious. I'm
+>>>> thinking of something like this:
+>>>>
+>>>>
+>>>> diff --git a/drivers/gpu/drm/drm_fb_helper.c
+>>>> b/drivers/gpu/drm/drm_fb_helper.c
+>>>> index ef4eb8b12766..726dab67c359 100644
+>>>> --- a/drivers/gpu/drm/drm_fb_helper.c
+>>>> +++ b/drivers/gpu/drm/drm_fb_helper.c
+>>>> @@ -697,10 +697,7 @@ void drm_fb_helper_deferred_io(struct fb_info
+>>>> *info, struct list_head *pagerefli
+>>>>         * of the screen and account for non-existing scanlines. Hence,
+>>>>         * keep the covered memory area within the screen buffer.
+>>>>         */
+>>>> -    if (info->screen_size)
+>>>> -        total_size = info->screen_size;
+>>>> -    else
+>>>> -        total_size = info->fix.smem_len;
+>>>> +    total_size = helper->fb->height * helper->fb->pitches[0];
+>>> This is just to mitigate the mistakes already has been made,
+>>>
+>>> because it  do not do a good splitting between the *clip* part and the
+>>> *damage update* part.
+>>>
+>>> An ideal clipping do not obscure its updating backend with a
+>>> out-of-bound damage rectangle.
+>>>
+>>> Why did the drm_fb_helper_memory_range_to_clip() can not do a good job
+>>> in all case
+>>>
+>>> to pass its backend a always meaningful damage rect ?
+>>>
+>>>>        max_off = min(max_off, total_size);
+>>>>          if (min_off < max_off) {
+>>>>
+>>>>
+>>>> I think that would make it utmost clear on what we're doing and why.
+>>>> Otherwise we're just going to re-create the same bug again, like we've
+>>>> done already :-)
+>>> No, we create no bugs, we fix one.
+>>>
+>>> Thanks.
+>>>
+>> But honestly I do not have strong feel toward this, I just type what I'm
+>> understand without seeing you resend a V3.
+>>
+>> It's OK in overall,  I will help to test this tomorrow.  :-)
+> Apologies for making you jump around all the time and doing different
+> versions of the same bugfix :-/
 
---------------aUupdK3iiU9kA09uMon7zmMw--
+No,  I do not mind.  I'm wondering if you are testing me.
+
+> I think this one here is ok to merge,
+
+NO,  to be honest,  this version is not ok.
+
+I have just tested it on LoongArch . It does not prevent out-of-bound on 
+LoongArch.
+
+bellow is the call trace when running the fbdev test of IGT.
+
+
+[  369.628841] Console: switching to colour dummy device 80x25
+[  369.634440] [IGT] fbdev: executing
+[  369.654684] [IGT] fbdev: starting subtest info
+[  369.659173] [IGT] fbdev: starting subtest pan
+[  369.722093] [IGT] fbdev: starting subtest read
+[  369.737795] [IGT] fbdev: starting subtest unaligned-read
+[  369.745695] [IGT] fbdev: starting subtest write
+[  369.753154] CPU 3 Unable to handle kernel paging request at virtual address ffff800034bd0000, era == 9000000000223d5c, ra == ffff8000020d75a8
+[  369.774570] [IGT] fbdev: starting subtest unaligned-write
+[  369.779960] Oops[#1]:
+[  369.782215] CPU: 3 PID: 504 Comm: kworker/3:3 Not tainted 6.3.0-rc5+ #377
+[  369.782219] Hardware name: Loongson Loongson-3A5000-HV-7A2000-1w-V0.1-EVB/Loongson-LS3A5000-7A2000-1w-EVB-V1.21, BIOS Loongson-UDK2018-V4.0.05383-beta10 1
+[  369.782223] Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
+[  369.802706] $ 0   : 0000000000000000 ffff8000020d75a8 90000001367fc000 90000001367ffcf0
+[  369.809368] $ 4   : ffff80003a3ec000 ffff800034bcee00 0000000000001e00 9000000001160000
+[  369.825275] $ 8   : ffff80003a3ebfff 0000000000000040 0000000000000000 ffff80000214f20c
+[  369.825280] $12   : ffff80003a3ecc00 ffff800034bd0000 0000000000000000 0000000000001e00
+[  369.841188] $16   : 9000000107490800 9000000001a24000 9000000001a28000 00000e00207ec000
+[  369.849152] $20   : fffffffffe000000 900000010684cec0 0000000000000439 90000001367ffd90
+[  369.849165] $24   : 9000000106bc5200 ffff8000020de000 ffff800034bcee00 0000000000001e00
+[  369.865072] $28   : 90000001076d4400 0000000000000001 900000010553c000 ffff80003a3eae00
+[  369.865078] era   : 9000000000223d5c __memcpy_toio+0x4c/0x90
+[  369.878651] ra    : ffff8000020d75a8 drm_fbdev_generic_helper_fb_dirty+0x1cc/0x300 [drm_kms_helper]
+[  369.878762] [IGT] fbdev: starting subtest eof
+[  369.887679] CSR crmd: 000000b0
+[  369.887680] CSR prmd: 00000004
+[  369.887682] CSR euen: 00000000
+[  369.887683] CSR ecfg: 00071c1c
+[  369.901340] CSR estat: 00010000
+[  369.901342] ExcCode : 1 (SubCode 0)
+[  369.901344] BadVA : ffff800034bd0000
+[  369.914659] PrId  : 0014c011 (Loongson-64bit)
+[  369.914660] Modules linked in: uas usb_storage snd_seq_dummy snd_seq snd_seq_device ip_set rfkill nf_tables nfnetlink vfat fat loongson ttm acpi_ipmi drm_kms_helper syscopyarea sysfillrect ipmi_si ipmi_devintf sysimgblt ipmi_msghandler fuse efivarfs
+[  369.919013] Process kworker/3:3 (pid: 504, threadinfo=00000000a1234af0, task=000000004e2cde6f)
+[  369.949519] Stack : 9000000106bc5318 900000010684cec0 9000000107afd470 ffff800039c00000
+[  369.949535] [IGT] fbdev: starting subtest nullptr
+[  369.957476]         0000000000000001 0000000000000000 0000000000000000 76e0ff420f8eaeab
+[  369.957481]         9000000001712000 fffffffffffffffb 9000000100161080 0000000000000003
+[  369.970105]         900000000980ba05 900000000980ba00 9000000106bc5200 9000000106bc52d4
+[  369.978062]         ffff8000020de000 9000000106bc52d8 9000000110664b40 ffff8000020d78e4
+[  369.986018]         043a078000000000 76e0ff420f8eaeab 900000000980be00 9000000009807400
+[  370.001926]         0000000000000000 9000000110664b40 9000000106bc52d8 9000000000256dbc
+[  370.001931]         900000000170e000 9000000107afce00 0000000000000001 900000000170e000
+[  370.009888]         9000000009807428 9000000110664b70 9000000009807400 900000000025737c
+[  370.025797]         9000000100161080 9000000001148080 9000000107afce00 0000000000000003
+[  370.026543] [IGT] fbdev: exiting, ret=0
+[  370.033753]         ...
+[  370.033756] Call Trace:
+[  370.033757] [<9000000000223d5c>] __memcpy_toio+0x4c/0x90
+[  370.047681] [<ffff8000020d75a8>] drm_fbdev_generic_helper_fb_dirty+0x1cc/0x300 [drm_kms_helper]
+[  370.056354] [<ffff8000020d78e4>] drm_fb_helper_damage_work+0xa4/0x1d0 [drm_kms_helper]
+[  370.056381] [<9000000000256dbc>] process_one_work+0x1ec/0x35c
+[  370.056385] [<900000000025737c>] worker_thread+0x88/0x428
+[  370.056387] [<900000000025f4bc>] kthread+0x114/0x120
+[  370.056392] [<90000000002215a8>] ret_from_kernel_thread+0xc/0xa4
+[  370.056395]
+[  370.056396] Code: 00410def  0010bc8c  001500ad <260001ae> 02c02084  02c021ad  29ffe08e  5ffff184  03401cc6
+[  370.056406]
+[  370.056421] fbcon_init: detected unhandled fb_set_par error, error code -16
+[  370.056482] ---[ end trace 0000000000000000 ]---
+[  370.066620] Console: switching to colour frame buffer device 240x67
+
+
+> I just thought when looking at
+> the history that we revert the exact patch without any other changes
+> or comments,
+Other part of that patch(except this line) may still useful, at least 
+for cleanup purpose.
+> and usually that means someone will come up with the same
+> cleanup idea again, and then we'll have a bug again. So maybe a
+> comment or a WARN_ON or something else would be good.
+
+A  WARN_ON is acceptable.
+
+> I guess we could also do your patch, but put a WARN_ON that the
+> computed total_size is never bigger than the drm_fb size into
+> drm_fb_helper_deferred_io()? That would also make sure that this bug
+> doesn't get resurrected again.
+
+Best to merge V2 [1] of this series, that is what I am really fixed.
+
+Maybe somebody can help to refine it, to add a better description about 
+this question and so on.
+
+[1] https://patchwork.freedesktop.org/patch/532143/?series=116454&rev=1
+
+> -Daniel

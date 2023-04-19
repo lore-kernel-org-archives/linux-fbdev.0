@@ -2,123 +2,99 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 209E1C77B78
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Apr 2023 18:47:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADC4EC77B73
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Apr 2023 04:59:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232582AbjDRSrX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Apr 2023 14:47:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39312 "EHLO
+        id S231210AbjDSE7c (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Apr 2023 00:59:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36238 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232632AbjDRSrU (ORCPT
+        with ESMTP id S230033AbjDSE7c (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Apr 2023 14:47:20 -0400
-Received: from laurent.telenet-ops.be (laurent.telenet-ops.be [IPv6:2a02:1800:110:4::f00:19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C2A8CE77
-        for <linux-fbdev@vger.kernel.org>; Tue, 18 Apr 2023 11:47:18 -0700 (PDT)
-Received: from ramsan.of.borg ([84.195.187.55])
-        by laurent.telenet-ops.be with bizsmtp
-        id mJnE290011C8whw01JnE6D; Tue, 18 Apr 2023 20:47:15 +0200
-Received: from rox.of.borg ([192.168.97.57])
-        by ramsan.of.borg with esmtp (Exim 4.95)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1poqH5-00H8P4-E9;
-        Tue, 18 Apr 2023 20:42:51 +0200
-Received: from geert by rox.of.borg with local (Exim 4.95)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1poqHz-00EGQt-IY;
-        Tue, 18 Apr 2023 20:42:51 +0200
-From:   Geert Uytterhoeven <geert+renesas@glider.be>
-To:     Daniel Vetter <daniel@ffwll.ch>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@gmail.com>,
-        Javier Martinez Canillas <javierm@redhat.com>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH] drm/fb-helper: Fix height, width, and accel_flags in fb_var
-Date:   Tue, 18 Apr 2023 20:42:46 +0200
-Message-Id: <2b6073d9c2d869c6a4eac6edebd616e0568dec91.1681843245.git.geert+renesas@glider.be>
-X-Mailer: git-send-email 2.34.1
+        Wed, 19 Apr 2023 00:59:32 -0400
+Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 38FBC49F2;
+        Tue, 18 Apr 2023 21:59:31 -0700 (PDT)
+Received: by mail-wm1-x333.google.com with SMTP id 5b1f17b1804b1-3f178da21afso8623725e9.1;
+        Tue, 18 Apr 2023 21:59:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1681880369; x=1684472369;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=x4h9mgi4PzKesSJC7XIsTMZkcYL8dBVXESTqkBCdQKM=;
+        b=m82flReCGw1X6m+CoV2VKD+wwl0j8lhmJJMb1tzlpP7xDwbIRKqHgdxpEyWmt/mY4c
+         XTijt6KK4i7rlCf0Bnj157U2I6rx/K8al9Ebeg7iTvyf4oiJEfF60ppFAsaF5FjDVEeA
+         zB1HnTygglUtV62FVkt9TLP/s+qGZZ6saHHf9USTP8BR5TUYQHvSugtytraVJzt0LFcB
+         cGFIDy9zaPi/LVaLiTLtbxuqs/itW/h8gqKWGs95B1OkGL6j+zzs7EGYRt1iHO2ErVZ2
+         V4Q97TWS3RGDSmi08ihhwflvQ09RLq8kjZ37HMbANMMr16yhhlrrhYdDEX1neMaNBNeo
+         kLeQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1681880369; x=1684472369;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=x4h9mgi4PzKesSJC7XIsTMZkcYL8dBVXESTqkBCdQKM=;
+        b=MQB0pD5tAMxkR4U/NAjOVaFCuXYxVEBHHj6zGhTkduTFkXm5ZF0GIWpQMs95tOnc6g
+         haI/M8mkD4FubgVjiYGYzIh4aX2mTngkSSVd5MvxUm5L/8S37yRbWJaThBI/NnWP/V4h
+         dIxmfKIbO4g0sQdJXInjHHejqzXJ5UQo/SfJes8UAAXtl5DtcUMUAHo662qhn6m7xFJW
+         K8OLyj8/a35ZDQZUQ30I70XylrmMbr0klLuHIBTvn/JpKjPO8075pJypKLTRp4L5a0Cd
+         bStIdVNxDKeRKM8iX4jxxU4IIuChl2owT7+TBJtWmmr/M4+3je0GMbOrdmKYY/MQKm1f
+         4tcw==
+X-Gm-Message-State: AAQBX9evQPVJkh+ZusyQwk/AIvLF2fz2JxGrmBEiAdBmgvDl6av2DEaA
+        x91C1yE+Tm0pArJU4EYeRq0=
+X-Google-Smtp-Source: AKy350bukf4oJKo+btPlV5rCqL74IzCRSna9IqwXsdE6vXBZNGYK2s177m//3AXWr3mxuIcjhn5NNw==
+X-Received: by 2002:adf:cd05:0:b0:2f0:df59:1ea7 with SMTP id w5-20020adfcd05000000b002f0df591ea7mr3621918wrm.31.1681880369662;
+        Tue, 18 Apr 2023 21:59:29 -0700 (PDT)
+Received: from localhost ([102.36.222.112])
+        by smtp.gmail.com with ESMTPSA id i15-20020a5d630f000000b002f27dd92643sm14487616wru.99.2023.04.18.21.59.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 18 Apr 2023 21:59:29 -0700 (PDT)
+Date:   Wed, 19 Apr 2023 07:59:25 +0300
+From:   Dan Carpenter <error27@gmail.com>
+To:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Cc:     Helge Deller <deller@gmx.de>, Cai Huoqing <cai.huoqing@linux.dev>,
+        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH] video: fbdev: mmp: Fix deferred clk handling in
+ mmphw_probe()
+Message-ID: <a7c75eb0-857c-4755-aa23-0a4a96a6d2ca@kili.mountain>
+References: <685f452cacc74f4983aaff2bc28a02a95e8aa8b7.1681414375.git.christophe.jaillet@wanadoo.fr>
+ <67353089-4966-424c-99c2-8524818f0e37@kili.mountain>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <67353089-4966-424c-99c2-8524818f0e37@kili.mountain>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fbtest contains some very simple validation of the fbdev userspace API
-contract.  When used with shmob-drm, it reports the following warnings
-and errors:
+On Sat, Apr 15, 2023 at 04:09:03PM +0300, Dan Carpenter wrote:
+> On Thu, Apr 13, 2023 at 09:33:17PM +0200, Christophe JAILLET wrote:
+> > When dev_err_probe() is called, 'ret' holds the value of the previous
+> > successful devm_request_irq() call.
+> > 'ret' should be assigned with a meaningful value before being used in
+> > dev_err_probe().
+> > 
+> > While at it, use and return "PTR_ERR(ctrl->clk)" instead of a hard-coded
+> > "-ENOENT" so that -EPROBE_DEFER is handled and propagated correctly.
+> > 
+> > Fixes: 81b63420564d ("video: fbdev: mmp: Make use of the helper function dev_err_probe()")
+> > Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> > ---
+> 
+> Presumably you already wrote a Coccinelle script for this but I've added
+> it to Smatch as well.
 
-    height changed from 68 to 0
-    height was rounded down
-    width changed from 111 to 0
-    width was rounded down
-    accel_flags changed from 0 to 1
+Here is this warning:
+drivers/video/fbdev/mmp/hw/mmp_ctrl.c:518 mmphw_probe() warn: passing zero to 'dev_err_probe'
 
-The first part happens because __fill_var() resets the physical
-dimensions of the first connector, as filled in by drm_setup_crtcs_fb().
-Fix this by retaining the original values.
+Other warnings.  All five are interesting.
+drivers/power/supply/rt9467-charger.c:1026 rt9467_request_interrupt() warn: passing zero to 'dev_err_probe'
+drivers/pci/controller/dwc/pcie-bt1.c:601 bt1_pcie_add_port() warn: passing zero to 'dev_err_probe'
+drivers/spi/spi-sprd-adi.c:570 sprd_adi_probe() warn: passing zero to 'dev_err_probe'
+drivers/soc/qcom/icc-bwmon.c:776 bwmon_probe() warn: passing zero to 'dev_err_probe'
+drivers/soc/qcom/icc-bwmon.c:781 bwmon_probe() warn: passing zero to 'dev_err_probe'
 
-The last part happens because __fill_var() forces the FB_ACCELF_TEXT
-flag on, while fbtest disables all acceleration on purpose, so it can
-draw safely to the frame buffer.  Fix this by setting accel_flags to
-zero, as DRM does not implement any text console acceleration.
-Note that this issue can also be seen in the output of fbset, which
-reports "accel true".
-
-Fixes: ee4cce0a8f03a333 ("drm/fb-helper: fix input validation gaps in check_var")
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- drivers/gpu/drm/drm_fb_helper.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index 64458982be40c468..ed6ad787915f0b8f 100644
---- a/drivers/gpu/drm/drm_fb_helper.c
-+++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -1537,17 +1537,19 @@ static void drm_fb_helper_fill_pixel_fmt(struct fb_var_screeninfo *var,
- 	}
- }
- 
--static void __fill_var(struct fb_var_screeninfo *var,
-+static void __fill_var(struct fb_var_screeninfo *var, struct fb_info *info,
- 		       struct drm_framebuffer *fb)
- {
- 	int i;
- 
- 	var->xres_virtual = fb->width;
- 	var->yres_virtual = fb->height;
--	var->accel_flags = FB_ACCELF_TEXT;
-+	var->accel_flags = 0;
- 	var->bits_per_pixel = drm_format_info_bpp(fb->format, 0);
- 
--	var->height = var->width = 0;
-+	var->height = info->var.height;
-+	var->width = info->var.width;
-+
- 	var->left_margin = var->right_margin = 0;
- 	var->upper_margin = var->lower_margin = 0;
- 	var->hsync_len = var->vsync_len = 0;
-@@ -1610,7 +1612,7 @@ int drm_fb_helper_check_var(struct fb_var_screeninfo *var,
- 		return -EINVAL;
- 	}
- 
--	__fill_var(var, fb);
-+	__fill_var(var, info, fb);
- 
- 	/*
- 	 * fb_pan_display() validates this, but fb_set_par() doesn't and just
-@@ -2066,7 +2068,7 @@ static void drm_fb_helper_fill_var(struct fb_info *info,
- 	info->pseudo_palette = fb_helper->pseudo_palette;
- 	info->var.xoffset = 0;
- 	info->var.yoffset = 0;
--	__fill_var(&info->var, fb);
-+	__fill_var(&info->var, info, fb);
- 	info->var.activate = FB_ACTIVATE_NOW;
- 
- 	drm_fb_helper_fill_pixel_fmt(&info->var, format);
--- 
-2.34.1
+regards,
+dan carpenter
 

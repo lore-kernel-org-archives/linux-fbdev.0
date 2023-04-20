@@ -2,169 +2,135 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D457C77B73
-	for <linux-fbdev@archiver.kernel.org>; Thu, 20 Apr 2023 09:09:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7164BC77B78
+	for <linux-fbdev@archiver.kernel.org>; Thu, 20 Apr 2023 09:15:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233691AbjDTJI7 convert rfc822-to-8bit (ORCPT
+        id S233918AbjDTJPq convert rfc822-to-8bit (ORCPT
         <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 20 Apr 2023 05:08:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54716 "EHLO
+        Thu, 20 Apr 2023 05:15:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36408 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234568AbjDTJIP (ORCPT
+        with ESMTP id S229913AbjDTJPp (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 20 Apr 2023 05:08:15 -0400
-Received: from mail-yb1-f179.google.com (mail-yb1-f179.google.com [209.85.219.179])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 469636A4C;
-        Thu, 20 Apr 2023 02:04:25 -0700 (PDT)
-Received: by mail-yb1-f179.google.com with SMTP id b10so1670076ybk.9;
-        Thu, 20 Apr 2023 02:04:25 -0700 (PDT)
+        Thu, 20 Apr 2023 05:15:45 -0400
+Received: from mail-lf1-f48.google.com (mail-lf1-f48.google.com [209.85.167.48])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1B15C5;
+        Thu, 20 Apr 2023 02:15:43 -0700 (PDT)
+Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-4ec8da7aaf8so416805e87.2;
+        Thu, 20 Apr 2023 02:15:43 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1681981464; x=1684573464;
+        d=1e100.net; s=20221208; t=1681982139; x=1684574139;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=wKtBzMUV9hqGJdb9Z5c6Q0amkNjCy+P79xURFwU+I0A=;
-        b=RDIhJ/XZ8jYakOfYxBVL0fRe/azaxvvFeI/Zq5Y+RknY5ec5Zz20wge+ltJZxSsbXd
-         kEX/qhet4ZBDij9RCwYhEw/T0TSzxmgH/40J67UTzRFs9DxL5N+ScgSJg2hdBxhFnmI+
-         CtakY1+orxMuvb/wzxu5uEjAY74B+w284FdMgp4whPiD1wcu3IykHCs8Xl6WX8dHvExk
-         nLu9ZrKjCHMyR027WMpHFz72QurUaVcqj/+fs4g5//WRC/NykJmNIuZ6szJ9Vd20NkTI
-         cZyFFoA6MJ9ogHSbNFq6ncalLUEDsoA+7QEnyUmJJAwm0DMV594Qfoal5Hx+MgbJ3TBK
-         M9+Q==
-X-Gm-Message-State: AAQBX9dRiN9AWmRtMog0AfTy3rv5nUvfAme3ZSMawEjlylLTz3Yo3qMs
-        JSMrX4nD5k7/GMu8MxdGFr3w8OeQ5so+ng==
-X-Google-Smtp-Source: AKy350ZIh34cpgU2rQKHhKLhOpegiG2PH2phwkEs1rVUqRpWQEd4a6gG96YJhPDumiiy4AYnoQstig==
-X-Received: by 2002:a25:aa4d:0:b0:b8e:c965:2111 with SMTP id s71-20020a25aa4d000000b00b8ec9652111mr716408ybi.55.1681981464166;
-        Thu, 20 Apr 2023 02:04:24 -0700 (PDT)
-Received: from mail-yw1-f182.google.com (mail-yw1-f182.google.com. [209.85.128.182])
-        by smtp.gmail.com with ESMTPSA id 206-20020a2505d7000000b00b7767ca746fsm212128ybf.12.2023.04.20.02.04.23
+        bh=s2/e9Dnl7P2o+B8qqamMNBV5IQwfpE3QNjICNgU+vyo=;
+        b=XbBM46hspq57fUo/TOu+O/f1byHvHFBsRfMRXXOiLDSlnLaHcKQipeW7+KvYhgFeAq
+         XzlVgnGmYGQdCk2PSkd+Re+I/amdUIvrNhyirpRrFwnpiNaWBcUA7WshvCxPMCQMuUhn
+         a774h24jb868EPXKveU9XNa7gp1ODGUnmGYJx4AjGM1lZ/FKbb+1dAJn/4QasH1gTGOT
+         5TUoeNsuIoz1pn14HKY0Io27tVuQkF4dTsSkPvNR5sd6lwykflAaPaqMAE5baqdiLz99
+         vA47qT5mAqqLS0v6T5RgLlOnUAMZaG5mHJGQJiszgxoxUck0GNzTwQEnwt7ZSUHDuDfp
+         xceA==
+X-Gm-Message-State: AAQBX9fzHM1EHmqx6sjO/AYfiGpXQt0Aw1ALffl+gUopaO9lzrFyoIgm
+        +LssEDTpjyVCQk8JBuSxwlAp+QP9TUL5IGRr
+X-Google-Smtp-Source: AKy350bGcijv6ZW0ovellOf8n0e/W0662yts4u2cOuqzLdfEh9KEPqS7IDNhJaj6qWHyu7qvPWOaKw==
+X-Received: by 2002:ac2:5988:0:b0:4ed:b83a:5a69 with SMTP id w8-20020ac25988000000b004edb83a5a69mr249864lfn.62.1681982139400;
+        Thu, 20 Apr 2023 02:15:39 -0700 (PDT)
+Received: from mail-lj1-f178.google.com (mail-lj1-f178.google.com. [209.85.208.178])
+        by smtp.gmail.com with ESMTPSA id q17-20020ac24a71000000b004eca18ed506sm150028lfp.306.2023.04.20.02.15.38
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 20 Apr 2023 02:04:23 -0700 (PDT)
-Received: by mail-yw1-f182.google.com with SMTP id 00721157ae682-54fbb713301so31017237b3.11;
-        Thu, 20 Apr 2023 02:04:23 -0700 (PDT)
-X-Received: by 2002:a81:a1d5:0:b0:54f:c1c1:199a with SMTP id
- y204-20020a81a1d5000000b0054fc1c1199amr290622ywg.18.1681981461935; Thu, 20
- Apr 2023 02:04:21 -0700 (PDT)
+        Thu, 20 Apr 2023 02:15:38 -0700 (PDT)
+Received: by mail-lj1-f178.google.com with SMTP id k15so2037862ljq.4;
+        Thu, 20 Apr 2023 02:15:38 -0700 (PDT)
+X-Received: by 2002:a2e:a17b:0:b0:2a8:baf7:4e60 with SMTP id
+ u27-20020a2ea17b000000b002a8baf74e60mr157071ljl.9.1681982137873; Thu, 20 Apr
+ 2023 02:15:37 -0700 (PDT)
 MIME-Version: 1.0
-References: <20230420030500.1578756-1-suijingfeng@loongson.cn>
-In-Reply-To: <20230420030500.1578756-1-suijingfeng@loongson.cn>
+References: <2b6073d9c2d869c6a4eac6edebd616e0568dec91.1681843245.git.geert+renesas@glider.be>
+ <ZEAY5Sf/V10ipDZk@phenom.ffwll.local>
+In-Reply-To: <ZEAY5Sf/V10ipDZk@phenom.ffwll.local>
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Thu, 20 Apr 2023 11:04:10 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdUZoBZEM73fo8-PitSae8wgv-m6sez3nA8J3RFMAtOyOQ@mail.gmail.com>
-Message-ID: <CAMuHMdUZoBZEM73fo8-PitSae8wgv-m6sez3nA8J3RFMAtOyOQ@mail.gmail.com>
-Subject: Re: [PATCH v5] drm/fbdev-generic: prohibit potential out-of-bounds access
-To:     Sui Jingfeng <suijingfeng@loongson.cn>
+Date:   Thu, 20 Apr 2023 11:15:24 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdWbsFHP7Amoz16o5ge5a=wv5u2x0B+yP7e-0bRJufqrQQ@mail.gmail.com>
+Message-ID: <CAMuHMdWbsFHP7Amoz16o5ge5a=wv5u2x0B+yP7e-0bRJufqrQQ@mail.gmail.com>
+Subject: Re: [PATCH] drm/fb-helper: Fix height, width, and accel_flags in fb_var
+To:     Daniel Vetter <daniel@ffwll.ch>
 Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>, Li Yi <liyi@loongson.cn>,
-        Helge Deller <deller@gmx.de>,
-        Lucas De Marchi <lucas.demarchi@intel.com>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
+        Javier Martinez Canillas <javierm@redhat.com>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Sui,
+Hi Daniel,
 
-On Thu, Apr 20, 2023 at 5:09 AM Sui Jingfeng <suijingfeng@loongson.cn> wrote:
-> The fbdev test of IGT may write after EOF, which lead to out-of-bound
-> access for drm drivers hire fbdev-generic. For example, run fbdev test
-> on a x86+ast2400 platform, with 1680x1050 resolution, will cause the
-> linux kernel hang with the following call trace:
->
->   Oops: 0000 [#1] PREEMPT SMP PTI
->   [IGT] fbdev: starting subtest eof
->   Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
->   [IGT] fbdev: starting subtest nullptr
->
->   RIP: 0010:memcpy_erms+0xa/0x20
->   RSP: 0018:ffffa17d40167d98 EFLAGS: 00010246
->   RAX: ffffa17d4eb7fa80 RBX: ffffa17d40e0aa80 RCX: 00000000000014c0
->   RDX: 0000000000001a40 RSI: ffffa17d40e0b000 RDI: ffffa17d4eb80000
->   RBP: ffffa17d40167e20 R08: 0000000000000000 R09: ffff89522ecff8c0
->   R10: ffffa17d4e4c5000 R11: 0000000000000000 R12: ffffa17d4eb7fa80
->   R13: 0000000000001a40 R14: 000000000000041a R15: ffffa17d40167e30
->   FS:  0000000000000000(0000) GS:ffff895257380000(0000) knlGS:0000000000000000
->   CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
->   CR2: ffffa17d40e0b000 CR3: 00000001eaeca006 CR4: 00000000001706e0
->   Call Trace:
->    <TASK>
->    ? drm_fbdev_generic_helper_fb_dirty+0x207/0x330 [drm_kms_helper]
->    drm_fb_helper_damage_work+0x8f/0x170 [drm_kms_helper]
->    process_one_work+0x21f/0x430
->    worker_thread+0x4e/0x3c0
->    ? __pfx_worker_thread+0x10/0x10
->    kthread+0xf4/0x120
->    ? __pfx_kthread+0x10/0x10
->    ret_from_fork+0x2c/0x50
->    </TASK>
->   CR2: ffffa17d40e0b000
->   ---[ end trace 0000000000000000 ]---
->
-> The is because damage rectangles computed by
-> drm_fb_helper_memory_range_to_clip() function does not guaranteed to be
-> bound in the screen's active display area. Possible reasons are:
->
-> 1) Buffers are allocated in the granularity of page size, for mmap system
->    call support. The shadow screen buffer consumed by fbdev emulation may
->    also choosed be page size aligned.
->
-> 2) The DIV_ROUND_UP() used in drm_fb_helper_memory_range_to_clip()
->    will introduce off-by-one error.
->
-> For example, on a 16KB page size system, in order to store a 1920x1080
-> XRGB framebuffer, we need allocate 507 pages. Unfortunately, the size
-> 1920*1080*4 can not be divided exactly by 16KB.
->
->  1920 * 1080 * 4 = 8294400 bytes
->  506 * 16 * 1024 = 8290304 bytes
->  507 * 16 * 1024 = 8306688 bytes
->
->  line_length = 1920*4 = 7680 bytes
->
->  507 * 16 * 1024 / 7680 = 1081.6
->
->  off / line_length = 507 * 16 * 1024 / 7680 = 1081
->  DIV_ROUND_UP(507 * 16 * 1024, 7680) will yeild 1082
->
-> memcpy_toio() typically issue the copy line by line, when copy the last
-> line, out-of-bound access will be happen. Because:
->
->  1082 * line_length = 1082 * 7680 = 8309760, and 8309760 > 8306688
->
-> Note that userspace may stil write to the invisiable area if a larger
-> buffer than width x stride is exposed. But it is not a big issue as
-> long as there still have memory resolve the access if not drafting so
-> far.
->
->  - Also limit the y1 (Daniel)
->  - keep fix patch it to minimal (Daniel)
->  - screen_size is page size aligned because of it need mmap (Thomas)
->  - Adding fixes tag (Thomas)
->
-> Fixes: aa15c677cc34 ("drm/fb-helper: Fix vertical damage clipping")
->
-> Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
-> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+On Wed, Apr 19, 2023 at 6:38 PM Daniel Vetter <daniel@ffwll.ch> wrote:
+> On Tue, Apr 18, 2023 at 08:42:46PM +0200, Geert Uytterhoeven wrote:
+> > Fbtest contains some very simple validation of the fbdev userspace API
+> > contract.  When used with shmob-drm, it reports the following warnings
+> > and errors:
+> >
+> >     height changed from 68 to 0
+> >     height was rounded down
+> >     width changed from 111 to 0
+> >     width was rounded down
+> >     accel_flags changed from 0 to 1
+> >
+> > The first part happens because __fill_var() resets the physical
+> > dimensions of the first connector, as filled in by drm_setup_crtcs_fb().
+> > Fix this by retaining the original values.
+> >
+> > The last part happens because __fill_var() forces the FB_ACCELF_TEXT
+> > flag on, while fbtest disables all acceleration on purpose, so it can
+> > draw safely to the frame buffer.  Fix this by setting accel_flags to
+> > zero, as DRM does not implement any text console acceleration.
+> > Note that this issue can also be seen in the output of fbset, which
+> > reports "accel true".
+> >
+> > Fixes: ee4cce0a8f03a333 ("drm/fb-helper: fix input validation gaps in check_var")
+> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Thanks for the update!  This v5 is completely different from the v3
-I tested before, so keeping my Tested-by is not really appropriate...
+> > --- a/drivers/gpu/drm/drm_fb_helper.c
+> > +++ b/drivers/gpu/drm/drm_fb_helper.c
+> > @@ -2066,7 +2068,7 @@ static void drm_fb_helper_fill_var(struct fb_info *info,
+> >       info->pseudo_palette = fb_helper->pseudo_palette;
+> >       info->var.xoffset = 0;
+> >       info->var.yoffset = 0;
+> > -     __fill_var(&info->var, fb);
+> > +     __fill_var(&info->var, info, fb);
+>
+> Bit a bikeshed since it zeroed-allocated anyway, but I'd pass NULL here
+> for info and catch that in __fill_var and then keep the explicit = 0;
 
-I have retested fbtest with shmob-drm on Armadillo-800-EVA
-(800x480@RG16, i.e. 187.5 pages), and fortunately this version still
-works fine, so
-Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Yeah, it's a bit unfortunate this is done in two places, and
+info->var.{height,width} are initialized by drm_setup_crtcs_fb()
+only later.
+
+Most of the var contents cannot change as mode changes are not
+supported, so drm_fb_helper_check_var() should just do
+
+    if (var->foo > info->var.foo)
+            return -EINVAL;
+    var->foo = info->var.foo;
+
+For the parts that can change, based on earlier discussions I saw pass
+by, I believe there should be a call into atomic try-modesetting at
+the end of drm_fb_helper_check_var()?
+
+> Either way Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+
+Thanks!
 
 Gr{oetje,eeting}s,
 
                         Geert
 
---
+-- 
 Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
 In personal conversations with technical people, I call myself a hacker. But

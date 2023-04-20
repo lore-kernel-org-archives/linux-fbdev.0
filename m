@@ -2,42 +2,60 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FAECC77B73
-	for <linux-fbdev@archiver.kernel.org>; Thu, 20 Apr 2023 10:27:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C595FC77B72
+	for <linux-fbdev@archiver.kernel.org>; Thu, 20 Apr 2023 11:16:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234635AbjDTK1x (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 20 Apr 2023 06:27:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41588 "EHLO
+        id S235084AbjDTLQQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 20 Apr 2023 07:16:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43048 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234786AbjDTK1U (ORCPT
+        with ESMTP id S235918AbjDTLP4 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 20 Apr 2023 06:27:20 -0400
-Received: from 189.cn (ptr.189.cn [183.61.185.103])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 607D51724;
-        Thu, 20 Apr 2023 03:26:12 -0700 (PDT)
-HMM_SOURCE_IP: 10.64.8.41:58840.974464883
-HMM_ATTACHE_NUM: 0000
-HMM_SOURCE_TYPE: SMTP
-Received: from clientip-114.242.206.180 (unknown [10.64.8.41])
-        by 189.cn (HERMES) with SMTP id F176E1001A9;
-        Thu, 20 Apr 2023 18:26:07 +0800 (CST)
-Received: from  ([114.242.206.180])
-        by gateway-151646-dep-7b48884fd-bkw2h with ESMTP id d33a56f28d0d407a8e99f4579a587bba for tzimmermann@suse.de;
-        Thu, 20 Apr 2023 18:26:10 CST
-X-Transaction-ID: d33a56f28d0d407a8e99f4579a587bba
-X-Real-From: 15330273260@189.cn
-X-Receive-IP: 114.242.206.180
-X-MEDUSA-Status: 0
-Sender: 15330273260@189.cn
-Message-ID: <3cf7b510-6257-d6ec-3280-b63e2ddf1f3c@189.cn>
-Date:   Thu, 20 Apr 2023 18:26:06 +0800
+        Thu, 20 Apr 2023 07:15:56 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9774E9ECC;
+        Thu, 20 Apr 2023 04:11:57 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 1B0F6219C9;
+        Thu, 20 Apr 2023 11:10:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1681989036; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=87bCnKHZgHCqKUbW1GM1B1++Jl0CmcT5Ix2jgEz2ud8=;
+        b=fL/C8Sr4LkktXslGzN9Yq6J98UMB/WmY38EVeLD39vFmo5NcBcYzGfhzSsDjJYBtNhh3Zz
+        4S/AJLt8nztc6LLiVNizNSm65fylqbtIldbsRpKOqfqISJlFq4AnHUGHScbXoPRr08wg5N
+        2QdCXXINxsCDrFIQAjrKFe7Elp0FlgI=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1681989036;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=87bCnKHZgHCqKUbW1GM1B1++Jl0CmcT5Ix2jgEz2ud8=;
+        b=vzgucqLVTppaHH3t3MA+WUcoV/okrDoJry7Kq5AghmKZ77PMC5EGPB43G/CIxP11d1yb5E
+        nbajkbePtZkJm5Aw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C358913584;
+        Thu, 20 Apr 2023 11:10:35 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id +o3eLqsdQWRoSwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 20 Apr 2023 11:10:35 +0000
+Message-ID: <f541018f-bb7f-ac58-bbb8-797069e49c3f@suse.de>
+Date:   Thu, 20 Apr 2023 13:10:35 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.10.0
 Subject: Re: [PATCH v5] drm/fbdev-generic: prohibit potential out-of-bounds
  access
 Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
+To:     Sui Jingfeng <15330273260@189.cn>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
         David Airlie <airlied@gmail.com>,
@@ -49,162 +67,214 @@ Cc:     loongson-kernel@lists.loongnix.cn, linux-fbdev@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 References: <20230420030500.1578756-1-suijingfeng@loongson.cn>
  <8ec3734b-4bc2-ad8f-fc17-3002f22d1fc9@suse.de>
-From:   Sui Jingfeng <15330273260@189.cn>
-In-Reply-To: <8ec3734b-4bc2-ad8f-fc17-3002f22d1fc9@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+ <12c8efaa-7266-5436-dc53-009a0d23b53f@suse.de>
+ <4a0fdbe0-cd4f-9c87-f73a-6d27f5c497bb@189.cn>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <4a0fdbe0-cd4f-9c87-f73a-6d27f5c497bb@189.cn>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------T73U97w4DKfFyB4LYy0jSttm"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------T73U97w4DKfFyB4LYy0jSttm
+Content-Type: multipart/mixed; boundary="------------wZTu9SsP2f3Rtcb1u2kr0OKl";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Sui Jingfeng <15330273260@189.cn>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
+ Daniel Vetter <daniel@ffwll.ch>, Geert Uytterhoeven
+ <geert+renesas@glider.be>, Li Yi <liyi@loongson.cn>,
+ Helge Deller <deller@gmx.de>, Lucas De Marchi <lucas.demarchi@intel.com>
+Cc: loongson-kernel@lists.loongnix.cn, linux-fbdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Message-ID: <f541018f-bb7f-ac58-bbb8-797069e49c3f@suse.de>
+Subject: Re: [PATCH v5] drm/fbdev-generic: prohibit potential out-of-bounds
+ access
+References: <20230420030500.1578756-1-suijingfeng@loongson.cn>
+ <8ec3734b-4bc2-ad8f-fc17-3002f22d1fc9@suse.de>
+ <12c8efaa-7266-5436-dc53-009a0d23b53f@suse.de>
+ <4a0fdbe0-cd4f-9c87-f73a-6d27f5c497bb@189.cn>
+In-Reply-To: <4a0fdbe0-cd4f-9c87-f73a-6d27f5c497bb@189.cn>
 
-On 2023/4/20 15:04, Thomas Zimmermann wrote:
-> Hi,
->
-> this patch looks to me good and I'd like to merge it, if no one objects.
->
-> In the near future, after i915 has switched to struct drm_client, I 
-> intend to move DRM's deferred-I/O helpers into fbdev-generic and i915. 
+--------------wZTu9SsP2f3Rtcb1u2kr0OKl
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
+SGkNCg0KQW0gMjAuMDQuMjMgdW0gMTI6MDQgc2NocmllYiBTdWkgSmluZ2Zlbmc6DQo+IEhp
+DQo+IA0KPiBPbiAyMDIzLzQvMjAgMTU6MDcsIFRob21hcyBaaW1tZXJtYW5uIHdyb3RlOg0K
+Pj4gSGkNCj4+DQo+PiBBbSAyMC4wNC4yMyB1bSAwOTowNCBzY2hyaWViIFRob21hcyBaaW1t
+ZXJtYW5uOg0KPj4+IEhpLA0KPj4+DQo+Pj4gdGhpcyBwYXRjaCBsb29rcyB0byBtZSBnb29k
+IGFuZCBJJ2QgbGlrZSB0byBtZXJnZSBpdCwgaWYgbm8gb25lIG9iamVjdHMuDQo+Pg0KPj4g
+UmVyZWFkaW5nIGl0LCBJIG1pZ2h0IGhhdmUgYmVlbiB0b28gZWFnZXIuIFdoYXQgaGFwcGVu
+ZWQgdG8gdGhlIA0KPj4gc2V0dGluZyBvZiBzY3JlZW5fc2l6ZSA9IGJ1ZmZlci0+Z2VtLT5z
+aXplID/CoCBJdCBpcyBub3QgcmVsZXZhbnQ/DQo+Pg0KPiBTaG9ydCBhbnN3ZXIgaXMgdGhh
+dCBpdCBpcyBub3QgcmVsZXZhbnQuDQo+IA0KPiBBcyBsb25nIGFzIHRoZSBjb21wdXRlZCBk
+YW1hZ2UgcmVjdGFuZ2xlIGlzIHNhbmUsIGl0J3MgT0sgdG8gYWxsb2NhdGUgYSANCj4gYml0
+IG1vcmUgdGhhbiBuZWVkZWQuDQo+IA0KPiBJIHRoaW5rIGl0J3MgdHVybiBvdXQgdG8gYmUg
+KmNvcnJlY3QqLCBpZiBub3QgZXh0cmVtZWx5Lg0KPiANCj4gQmVjYXVzZSBpdCBpcyBwYWdl
+IHNpemUgYWxpZ25lZCzCoCB3cml0aW5nIHRvIGludmlzaWJsZSBhcmVhIGZvciBzb21lIA0K
+PiBjYXNlIGlzIG5vdCBhIHNlcnZlIGlzc3VlLg0KPiANCj4gSXQgYWxzbyBndWFyYW50ZWUg
+dGhhdCB0aGUgc2l6ZSBvZiBzaGFkb3cgc2NyZWVuIGJ1ZmZlciBpcyBleGFjdGx5IHRoZSAN
+Cj4gc2FtZSBzaXplIHdpdGggaXRzIEdFTSBjb3VudGVycGFydC4NCg0KVGhhdCdzIGdvb2Qg
+ZW5vdWdoIGZvciBtZS4gOikNCg0KPiANCj4gDQo+IE90aGVyd2lzZSBJIGhhdmUgdG8gYW5z
+d2VyIHRoZSBxdWVzdGlvbg0KPiANCj4gV2hhdCB3aWxsIGhhcHBlbiBpZiB0aGUgJ3NjcmVl
+bl9zaXplJyBpcyBub3QgcGFnZV9zaXplIGFsaWduZWQgYW5kIG1tYXAgDQo+IHdpbGwgbWFw
+cGluZyBpbiB0aGUgZ3JhbnVsYXJpdHkgb2YgcGFnZXMgPw0KDQpZb3UgbmVlZCB0byBtYXAg
+YXQgcGFnZSBncmFudWxhcml0eS4gSWYgc2NyZWVuX3NpemUgaXMgbm90IHBhZ2Utc2l6ZSAN
+CmFsaWduZWQsIHRoZXJlJ3MgdGhpcyB0cmFpbGluZyBidWZmZXIgdGhhdCBpcyBhY2Nlc3Np
+YmxlLCBidXQgY2Fubm90IGJlIA0KZGlzcGxheWVkLiBCdXQgdXNlcnNwYWNlIGhhcyBubyBk
+aXJlY3Qgd2F5IG9mIGtub3dpbmcgdGhhdCwgc28gbGV0J3MgDQppZ25vcmUgdGhhdCBwcm9i
+bGVtIGZvciBub3cuDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4gDQo+IA0KPiBJIHNl
+ZSBlZmlmYiBhbHNvIGFsaWduIHRoZSBidWZmZXIgZ29pbmcgdG8gYmUgbWFwcGVkIHdpdGgg
+cGFnZSBzaXplLg0KPiANCj4gDQo+PiBCZXN0IHJlZ2FyZHMNCj4+IFRob21hcw0KPj4NCj4+
+Pg0KPj4+IEluIHRoZSBuZWFyIGZ1dHVyZSwgYWZ0ZXIgaTkxNSBoYXMgc3dpdGNoZWQgdG8g
+c3RydWN0IGRybV9jbGllbnQsIEkgDQo+Pj4gaW50ZW5kIHRvIG1vdmUgRFJNJ3MgZGVmZXJy
+ZWQtSS9PIGhlbHBlcnMgaW50byBmYmRldi1nZW5lcmljIGFuZCANCj4+PiBpOTE1LiBUaG9z
+ZSBhcmUgdGhlIHR3byB1c2VycywgYnV0IHRoZXkgYXJlIGZhaXJseSBkaWZmZXJlbnQuIFRo
+ZXkgDQo+Pj4gY2FuIHRoZW4gYm90aCBoYXZlIHNvbWV0aGluZyB0YWlsb3JlZCB0b3dhcmRz
+IHRoZWlyIG5lZWRzLg0KPj4+DQo+Pj4gQmVzdCByZWdhcmRzDQo+Pj4gVGhvbWFzDQo+Pj4N
+Cj4+PiBBbSAyMC4wNC4yMyB1bSAwNTowNSBzY2hyaWViIFN1aSBKaW5nZmVuZzoNCj4+Pj4g
+VGhlIGZiZGV2IHRlc3Qgb2YgSUdUIG1heSB3cml0ZSBhZnRlciBFT0YsIHdoaWNoIGxlYWQg
+dG8gb3V0LW9mLWJvdW5kDQo+Pj4+IGFjY2VzcyBmb3IgZHJtIGRyaXZlcnMgaGlyZSBmYmRl
+di1nZW5lcmljLiBGb3IgZXhhbXBsZSwgcnVuIGZiZGV2IHRlc3QNCj4+Pj4gb24gYSB4ODYr
+YXN0MjQwMCBwbGF0Zm9ybSwgd2l0aCAxNjgweDEwNTAgcmVzb2x1dGlvbiwgd2lsbCBjYXVz
+ZSB0aGUNCj4+Pj4gbGludXgga2VybmVsIGhhbmcgd2l0aCB0aGUgZm9sbG93aW5nIGNhbGwg
+dHJhY2U6DQo+Pj4+DQo+Pj4+IMKgwqAgT29wczogMDAwMCBbIzFdIFBSRUVNUFQgU01QIFBU
+SQ0KPj4+PiDCoMKgIFtJR1RdIGZiZGV2OiBzdGFydGluZyBzdWJ0ZXN0IGVvZg0KPj4+PiDC
+oMKgIFdvcmtxdWV1ZTogZXZlbnRzIGRybV9mYl9oZWxwZXJfZGFtYWdlX3dvcmsgW2RybV9r
+bXNfaGVscGVyXQ0KPj4+PiDCoMKgIFtJR1RdIGZiZGV2OiBzdGFydGluZyBzdWJ0ZXN0IG51
+bGxwdHINCj4+Pj4NCj4+Pj4gwqDCoCBSSVA6IDAwMTA6bWVtY3B5X2VybXMrMHhhLzB4MjAN
+Cj4+Pj4gwqDCoCBSU1A6IDAwMTg6ZmZmZmExN2Q0MDE2N2Q5OCBFRkxBR1M6IDAwMDEwMjQ2
+DQo+Pj4+IMKgwqAgUkFYOiBmZmZmYTE3ZDRlYjdmYTgwIFJCWDogZmZmZmExN2Q0MGUwYWE4
+MCBSQ1g6IDAwMDAwMDAwMDAwMDE0YzANCj4+Pj4gwqDCoCBSRFg6IDAwMDAwMDAwMDAwMDFh
+NDAgUlNJOiBmZmZmYTE3ZDQwZTBiMDAwIFJESTogZmZmZmExN2Q0ZWI4MDAwMA0KPj4+PiDC
+oMKgIFJCUDogZmZmZmExN2Q0MDE2N2UyMCBSMDg6IDAwMDAwMDAwMDAwMDAwMDAgUjA5OiBm
+ZmZmODk1MjJlY2ZmOGMwDQo+Pj4+IMKgwqAgUjEwOiBmZmZmYTE3ZDRlNGM1MDAwIFIxMTog
+MDAwMDAwMDAwMDAwMDAwMCBSMTI6IGZmZmZhMTdkNGViN2ZhODANCj4+Pj4gwqDCoCBSMTM6
+IDAwMDAwMDAwMDAwMDFhNDAgUjE0OiAwMDAwMDAwMDAwMDAwNDFhIFIxNTogZmZmZmExN2Q0
+MDE2N2UzMA0KPj4+PiDCoMKgIEZTOsKgIDAwMDAwMDAwMDAwMDAwMDAoMDAwMCkgR1M6ZmZm
+Zjg5NTI1NzM4MDAwMCgwMDAwKSANCj4+Pj4ga25sR1M6MDAwMDAwMDAwMDAwMDAwMA0KPj4+
+PiDCoMKgIENTOsKgIDAwMTAgRFM6IDAwMDAgRVM6IDAwMDAgQ1IwOiAwMDAwMDAwMDgwMDUw
+MDMzDQo+Pj4+IMKgwqAgQ1IyOiBmZmZmYTE3ZDQwZTBiMDAwIENSMzogMDAwMDAwMDFlYWVj
+YTAwNiBDUjQ6IDAwMDAwMDAwMDAxNzA2ZTANCj4+Pj4gwqDCoCBDYWxsIFRyYWNlOg0KPj4+
+PiDCoMKgwqAgPFRBU0s+DQo+Pj4+IMKgwqDCoCA/IGRybV9mYmRldl9nZW5lcmljX2hlbHBl
+cl9mYl9kaXJ0eSsweDIwNy8weDMzMCBbZHJtX2ttc19oZWxwZXJdDQo+Pj4+IMKgwqDCoCBk
+cm1fZmJfaGVscGVyX2RhbWFnZV93b3JrKzB4OGYvMHgxNzAgW2RybV9rbXNfaGVscGVyXQ0K
+Pj4+PiDCoMKgwqAgcHJvY2Vzc19vbmVfd29yaysweDIxZi8weDQzMA0KPj4+PiDCoMKgwqAg
+d29ya2VyX3RocmVhZCsweDRlLzB4M2MwDQo+Pj4+IMKgwqDCoCA/IF9fcGZ4X3dvcmtlcl90
+aHJlYWQrMHgxMC8weDEwDQo+Pj4+IMKgwqDCoCBrdGhyZWFkKzB4ZjQvMHgxMjANCj4+Pj4g
+wqDCoMKgID8gX19wZnhfa3RocmVhZCsweDEwLzB4MTANCj4+Pj4gwqDCoMKgIHJldF9mcm9t
+X2ZvcmsrMHgyYy8weDUwDQo+Pj4+IMKgwqDCoCA8L1RBU0s+DQo+Pj4+IMKgwqAgQ1IyOiBm
+ZmZmYTE3ZDQwZTBiMDAwDQo+Pj4+IMKgwqAgLS0tWyBlbmQgdHJhY2UgMDAwMDAwMDAwMDAw
+MDAwMCBdLS0tDQo+Pj4+DQo+Pj4+IFRoZSBpcyBiZWNhdXNlIGRhbWFnZSByZWN0YW5nbGVz
+IGNvbXB1dGVkIGJ5DQo+Pj4+IGRybV9mYl9oZWxwZXJfbWVtb3J5X3JhbmdlX3RvX2NsaXAo
+KSBmdW5jdGlvbiBkb2VzIG5vdCBndWFyYW50ZWVkIHRvIGJlDQo+Pj4+IGJvdW5kIGluIHRo
+ZSBzY3JlZW4ncyBhY3RpdmUgZGlzcGxheSBhcmVhLiBQb3NzaWJsZSByZWFzb25zIGFyZToN
+Cj4+Pj4NCj4+Pj4gMSkgQnVmZmVycyBhcmUgYWxsb2NhdGVkIGluIHRoZSBncmFudWxhcml0
+eSBvZiBwYWdlIHNpemUsIGZvciBtbWFwIA0KPj4+PiBzeXN0ZW0NCj4+Pj4gwqDCoMKgIGNh
+bGwgc3VwcG9ydC4gVGhlIHNoYWRvdyBzY3JlZW4gYnVmZmVyIGNvbnN1bWVkIGJ5IGZiZGV2
+IA0KPj4+PiBlbXVsYXRpb24gbWF5DQo+Pj4+IMKgwqDCoCBhbHNvIGNob29zZWQgYmUgcGFn
+ZSBzaXplIGFsaWduZWQuDQo+Pj4+DQo+Pj4+IDIpIFRoZSBESVZfUk9VTkRfVVAoKSB1c2Vk
+IGluIGRybV9mYl9oZWxwZXJfbWVtb3J5X3JhbmdlX3RvX2NsaXAoKQ0KPj4+PiDCoMKgwqAg
+d2lsbCBpbnRyb2R1Y2Ugb2ZmLWJ5LW9uZSBlcnJvci4NCj4+Pj4NCj4+Pj4gRm9yIGV4YW1w
+bGUsIG9uIGEgMTZLQiBwYWdlIHNpemUgc3lzdGVtLCBpbiBvcmRlciB0byBzdG9yZSBhIDE5
+MjB4MTA4MA0KPj4+PiBYUkdCIGZyYW1lYnVmZmVyLCB3ZSBuZWVkIGFsbG9jYXRlIDUwNyBw
+YWdlcy4gVW5mb3J0dW5hdGVseSwgdGhlIHNpemUNCj4+Pj4gMTkyMCoxMDgwKjQgY2FuIG5v
+dCBiZSBkaXZpZGVkIGV4YWN0bHkgYnkgMTZLQi4NCj4+Pj4NCj4+Pj4gwqAgMTkyMCAqIDEw
+ODAgKiA0ID0gODI5NDQwMCBieXRlcw0KPj4+PiDCoCA1MDYgKiAxNiAqIDEwMjQgPSA4Mjkw
+MzA0IGJ5dGVzDQo+Pj4+IMKgIDUwNyAqIDE2ICogMTAyNCA9IDgzMDY2ODggYnl0ZXMNCj4+
+Pj4NCj4+Pj4gwqAgbGluZV9sZW5ndGggPSAxOTIwKjQgPSA3NjgwIGJ5dGVzDQo+Pj4+DQo+
+Pj4+IMKgIDUwNyAqIDE2ICogMTAyNCAvIDc2ODAgPSAxMDgxLjYNCj4+Pj4NCj4+Pj4gwqAg
+b2ZmIC8gbGluZV9sZW5ndGggPSA1MDcgKiAxNiAqIDEwMjQgLyA3NjgwID0gMTA4MQ0KPj4+
+PiDCoCBESVZfUk9VTkRfVVAoNTA3ICogMTYgKiAxMDI0LCA3NjgwKSB3aWxsIHllaWxkIDEw
+ODINCj4+Pj4NCj4+Pj4gbWVtY3B5X3RvaW8oKSB0eXBpY2FsbHkgaXNzdWUgdGhlIGNvcHkg
+bGluZSBieSBsaW5lLCB3aGVuIGNvcHkgdGhlIGxhc3QNCj4+Pj4gbGluZSwgb3V0LW9mLWJv
+dW5kIGFjY2VzcyB3aWxsIGJlIGhhcHBlbi4gQmVjYXVzZToNCj4+Pj4NCj4+Pj4gwqAgMTA4
+MiAqIGxpbmVfbGVuZ3RoID0gMTA4MiAqIDc2ODAgPSA4MzA5NzYwLCBhbmQgODMwOTc2MCA+
+IDgzMDY2ODgNCj4+Pj4NCj4+Pj4gTm90ZSB0aGF0IHVzZXJzcGFjZSBtYXkgc3RpbCB3cml0
+ZSB0byB0aGUgaW52aXNpYWJsZSBhcmVhIGlmIGEgbGFyZ2VyDQo+Pj4+IGJ1ZmZlciB0aGFu
+IHdpZHRoIHggc3RyaWRlIGlzIGV4cG9zZWQuIEJ1dCBpdCBpcyBub3QgYSBiaWcgaXNzdWUg
+YXMNCj4+Pj4gbG9uZyBhcyB0aGVyZSBzdGlsbCBoYXZlIG1lbW9yeSByZXNvbHZlIHRoZSBh
+Y2Nlc3MgaWYgbm90IGRyYWZ0aW5nIHNvDQo+Pj4+IGZhci4NCj4+Pj4NCj4+Pj4gwqAgLSBB
+bHNvIGxpbWl0IHRoZSB5MSAoRGFuaWVsKQ0KPj4+PiDCoCAtIGtlZXAgZml4IHBhdGNoIGl0
+IHRvIG1pbmltYWwgKERhbmllbCkNCj4+Pj4gwqAgLSBzY3JlZW5fc2l6ZSBpcyBwYWdlIHNp
+emUgYWxpZ25lZCBiZWNhdXNlIG9mIGl0IG5lZWQgbW1hcCAoVGhvbWFzKQ0KPj4+PiDCoCAt
+IEFkZGluZyBmaXhlcyB0YWcgKFRob21hcykNCj4+Pj4NCj4+Pj4gRml4ZXM6IGFhMTVjNjc3
+Y2MzNCAoImRybS9mYi1oZWxwZXI6IEZpeCB2ZXJ0aWNhbCBkYW1hZ2UgY2xpcHBpbmciKQ0K
+Pj4+Pg0KPj4+PiBTaWduZWQtb2ZmLWJ5OiBTdWkgSmluZ2ZlbmcgPHN1aWppbmdmZW5nQGxv
+b25nc29uLmNuPg0KPj4+PiBSZXZpZXdlZC1ieTogVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1t
+ZXJtYW5uQHN1c2UuZGU+DQo+Pj4+IFRlc3RlZC1ieTogR2VlcnQgVXl0dGVyaG9ldmVuIDxn
+ZWVydCtyZW5lc2FzQGdsaWRlci5iZT4NCj4+Pj4gTGluazogDQo+Pj4+IGh0dHBzOi8vbG9y
+ZS5rZXJuZWwub3JnL2RyaS1kZXZlbC9hZDQ0ZGYyOS0zMjQxLTBkOWUtZTcwOC1iMDMzOGJm
+M2M2MjNAMTg5LmNuLw0KPj4+PiAtLS0NCj4+Pj4gwqAgZHJpdmVycy9ncHUvZHJtL2RybV9m
+Yl9oZWxwZXIuYyB8IDE2ICsrKysrKysrKysrKy0tLS0NCj4+Pj4gwqAgMSBmaWxlIGNoYW5n
+ZWQsIDEyIGluc2VydGlvbnMoKyksIDQgZGVsZXRpb25zKC0pDQo+Pj4+DQo+Pj4+IGRpZmYg
+LS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vZHJtX2ZiX2hlbHBlci5jIA0KPj4+PiBiL2RyaXZl
+cnMvZ3B1L2RybS9kcm1fZmJfaGVscGVyLmMNCj4+Pj4gaW5kZXggNjQ0NTg5ODJiZTQwLi42
+YmIxYjhiMjdkN2EgMTAwNjQ0DQo+Pj4+IC0tLSBhL2RyaXZlcnMvZ3B1L2RybS9kcm1fZmJf
+aGVscGVyLmMNCj4+Pj4gKysrIGIvZHJpdmVycy9ncHUvZHJtL2RybV9mYl9oZWxwZXIuYw0K
+Pj4+PiBAQCAtNjQxLDE5ICs2NDEsMjcgQEAgc3RhdGljIHZvaWQgZHJtX2ZiX2hlbHBlcl9k
+YW1hZ2Uoc3RydWN0IA0KPj4+PiBkcm1fZmJfaGVscGVyICpoZWxwZXIsIHUzMiB4LCB1MzIg
+eSwNCj4+Pj4gwqAgc3RhdGljIHZvaWQgZHJtX2ZiX2hlbHBlcl9tZW1vcnlfcmFuZ2VfdG9f
+Y2xpcChzdHJ1Y3QgZmJfaW5mbyANCj4+Pj4gKmluZm8sIG9mZl90IG9mZiwgc2l6ZV90IGxl
+biwNCj4+Pj4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqAgc3RydWN0IGRybV9yZWN0ICpjbGlwKQ0KPj4+PiDCoCB7DQo+Pj4+ICvC
+oMKgwqAgdTMyIGxpbmVfbGVuZ3RoID0gaW5mby0+Zml4LmxpbmVfbGVuZ3RoOw0KPj4+PiAr
+wqDCoMKgIHUzMiBmYl9oZWlnaHQgPSBpbmZvLT52YXIueXJlczsNCj4+Pj4gwqDCoMKgwqDC
+oCBvZmZfdCBlbmQgPSBvZmYgKyBsZW47DQo+Pj4+IMKgwqDCoMKgwqAgdTMyIHgxID0gMDsN
+Cj4+Pj4gLcKgwqDCoCB1MzIgeTEgPSBvZmYgLyBpbmZvLT5maXgubGluZV9sZW5ndGg7DQo+
+Pj4+ICvCoMKgwqAgdTMyIHkxID0gb2ZmIC8gbGluZV9sZW5ndGg7DQo+Pj4+IMKgwqDCoMKg
+wqAgdTMyIHgyID0gaW5mby0+dmFyLnhyZXM7DQo+Pj4+IC3CoMKgwqAgdTMyIHkyID0gRElW
+X1JPVU5EX1VQKGVuZCwgaW5mby0+Zml4LmxpbmVfbGVuZ3RoKTsNCj4+Pj4gK8KgwqDCoCB1
+MzIgeTIgPSBESVZfUk9VTkRfVVAoZW5kLCBsaW5lX2xlbmd0aCk7DQo+Pj4+ICsNCj4+Pj4g
+K8KgwqDCoCAvKiBEb24ndCBhbGxvdyBhbnkgb2YgdGhlbSBiZXlvbmQgdGhlIGJvdHRvbSBi
+b3VuZCBvZiBkaXNwbGF5IA0KPj4+PiBhcmVhICovDQo+Pj4+ICvCoMKgwqAgaWYgKHkxID4g
+ZmJfaGVpZ2h0KQ0KPj4+PiArwqDCoMKgwqDCoMKgwqAgeTEgPSBmYl9oZWlnaHQ7DQo+Pj4+
+ICvCoMKgwqAgaWYgKHkyID4gZmJfaGVpZ2h0KQ0KPj4+PiArwqDCoMKgwqDCoMKgwqAgeTIg
+PSBmYl9oZWlnaHQ7DQo+Pj4+IMKgwqDCoMKgwqAgaWYgKCh5MiAtIHkxKSA9PSAxKSB7DQo+
+Pj4+IMKgwqDCoMKgwqDCoMKgwqDCoCAvKg0KPj4+PiDCoMKgwqDCoMKgwqDCoMKgwqDCoCAq
+IFdlJ3ZlIG9ubHkgd3JpdHRlbiB0byBhIHNpbmdsZSBzY2FubGluZS4gVHJ5IHRvIHJlZHVj
+ZQ0KPj4+PiDCoMKgwqDCoMKgwqDCoMKgwqDCoCAqIHRoZSBudW1iZXIgb2YgaG9yaXpvbnRh
+bCBwaXhlbHMgdGhhdCBuZWVkIGFuIHVwZGF0ZS4NCj4+Pj4gwqDCoMKgwqDCoMKgwqDCoMKg
+wqAgKi8NCj4+Pj4gLcKgwqDCoMKgwqDCoMKgIG9mZl90IGJpdF9vZmYgPSAob2ZmICUgaW5m
+by0+Zml4LmxpbmVfbGVuZ3RoKSAqIDg7DQo+Pj4+IC3CoMKgwqDCoMKgwqDCoCBvZmZfdCBi
+aXRfZW5kID0gKGVuZCAlIGluZm8tPmZpeC5saW5lX2xlbmd0aCkgKiA4Ow0KPj4+PiArwqDC
+oMKgwqDCoMKgwqAgb2ZmX3QgYml0X29mZiA9IChvZmYgJSBsaW5lX2xlbmd0aCkgKiA4Ow0K
+Pj4+PiArwqDCoMKgwqDCoMKgwqAgb2ZmX3QgYml0X2VuZCA9IChlbmQgJSBsaW5lX2xlbmd0
+aCkgKiA4Ow0KPj4+PiDCoMKgwqDCoMKgwqDCoMKgwqAgeDEgPSBiaXRfb2ZmIC8gaW5mby0+
+dmFyLmJpdHNfcGVyX3BpeGVsOw0KPj4+PiDCoMKgwqDCoMKgwqDCoMKgwqAgeDIgPSBESVZf
+Uk9VTkRfVVAoYml0X2VuZCwgaW5mby0+dmFyLmJpdHNfcGVyX3BpeGVsKTsNCj4+Pg0KPj4N
+Cg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0K
+U1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpGcmFua2Vuc3RyYXNzZSAx
+NDYsIDkwNDYxIE51ZXJuYmVyZywgR2VybWFueQ0KR0Y6IEl2byBUb3RldiwgQW5kcmV3IE15
+ZXJzLCBBbmRyZXcgTWNEb25hbGQsIEJvdWRpZW4gTW9lcm1hbg0KSFJCIDM2ODA5IChBRyBO
+dWVybmJlcmcpDQo=
 
-That sound fine,  I can help to test then.
+--------------wZTu9SsP2f3Rtcb1u2kr0OKl--
 
-But I think,  it may better to make it a 100% DRM function?
+--------------T73U97w4DKfFyB4LYy0jSttm
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
+-----BEGIN PGP SIGNATURE-----
 
-> Those are the two users, but they are fairly different. They can then 
-> both have something tailored towards their needs.
->
-> Best regards
-> Thomas
->
-> Am 20.04.23 um 05:05 schrieb Sui Jingfeng:
->> The fbdev test of IGT may write after EOF, which lead to out-of-bound
->> access for drm drivers hire fbdev-generic. For example, run fbdev test
->> on a x86+ast2400 platform, with 1680x1050 resolution, will cause the
->> linux kernel hang with the following call trace:
->>
->>    Oops: 0000 [#1] PREEMPT SMP PTI
->>    [IGT] fbdev: starting subtest eof
->>    Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
->>    [IGT] fbdev: starting subtest nullptr
->>
->>    RIP: 0010:memcpy_erms+0xa/0x20
->>    RSP: 0018:ffffa17d40167d98 EFLAGS: 00010246
->>    RAX: ffffa17d4eb7fa80 RBX: ffffa17d40e0aa80 RCX: 00000000000014c0
->>    RDX: 0000000000001a40 RSI: ffffa17d40e0b000 RDI: ffffa17d4eb80000
->>    RBP: ffffa17d40167e20 R08: 0000000000000000 R09: ffff89522ecff8c0
->>    R10: ffffa17d4e4c5000 R11: 0000000000000000 R12: ffffa17d4eb7fa80
->>    R13: 0000000000001a40 R14: 000000000000041a R15: ffffa17d40167e30
->>    FS:  0000000000000000(0000) GS:ffff895257380000(0000) 
->> knlGS:0000000000000000
->>    CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
->>    CR2: ffffa17d40e0b000 CR3: 00000001eaeca006 CR4: 00000000001706e0
->>    Call Trace:
->>     <TASK>
->>     ? drm_fbdev_generic_helper_fb_dirty+0x207/0x330 [drm_kms_helper]
->>     drm_fb_helper_damage_work+0x8f/0x170 [drm_kms_helper]
->>     process_one_work+0x21f/0x430
->>     worker_thread+0x4e/0x3c0
->>     ? __pfx_worker_thread+0x10/0x10
->>     kthread+0xf4/0x120
->>     ? __pfx_kthread+0x10/0x10
->>     ret_from_fork+0x2c/0x50
->>     </TASK>
->>    CR2: ffffa17d40e0b000
->>    ---[ end trace 0000000000000000 ]---
->>
->> The is because damage rectangles computed by
->> drm_fb_helper_memory_range_to_clip() function does not guaranteed to be
->> bound in the screen's active display area. Possible reasons are:
->>
->> 1) Buffers are allocated in the granularity of page size, for mmap 
->> system
->>     call support. The shadow screen buffer consumed by fbdev 
->> emulation may
->>     also choosed be page size aligned.
->>
->> 2) The DIV_ROUND_UP() used in drm_fb_helper_memory_range_to_clip()
->>     will introduce off-by-one error.
->>
->> For example, on a 16KB page size system, in order to store a 1920x1080
->> XRGB framebuffer, we need allocate 507 pages. Unfortunately, the size
->> 1920*1080*4 can not be divided exactly by 16KB.
->>
->>   1920 * 1080 * 4 = 8294400 bytes
->>   506 * 16 * 1024 = 8290304 bytes
->>   507 * 16 * 1024 = 8306688 bytes
->>
->>   line_length = 1920*4 = 7680 bytes
->>
->>   507 * 16 * 1024 / 7680 = 1081.6
->>
->>   off / line_length = 507 * 16 * 1024 / 7680 = 1081
->>   DIV_ROUND_UP(507 * 16 * 1024, 7680) will yeild 1082
->>
->> memcpy_toio() typically issue the copy line by line, when copy the last
->> line, out-of-bound access will be happen. Because:
->>
->>   1082 * line_length = 1082 * 7680 = 8309760, and 8309760 > 8306688
->>
->> Note that userspace may stil write to the invisiable area if a larger
->> buffer than width x stride is exposed. But it is not a big issue as
->> long as there still have memory resolve the access if not drafting so
->> far.
->>
->>   - Also limit the y1 (Daniel)
->>   - keep fix patch it to minimal (Daniel)
->>   - screen_size is page size aligned because of it need mmap (Thomas)
->>   - Adding fixes tag (Thomas)
->>
->> Fixes: aa15c677cc34 ("drm/fb-helper: Fix vertical damage clipping")
->>
->> Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
->> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
->> Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
->> Link: 
->> https://lore.kernel.org/dri-devel/ad44df29-3241-0d9e-e708-b0338bf3c623@189.cn/
->> ---
->>   drivers/gpu/drm/drm_fb_helper.c | 16 ++++++++++++----
->>   1 file changed, 12 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/gpu/drm/drm_fb_helper.c 
->> b/drivers/gpu/drm/drm_fb_helper.c
->> index 64458982be40..6bb1b8b27d7a 100644
->> --- a/drivers/gpu/drm/drm_fb_helper.c
->> +++ b/drivers/gpu/drm/drm_fb_helper.c
->> @@ -641,19 +641,27 @@ static void drm_fb_helper_damage(struct 
->> drm_fb_helper *helper, u32 x, u32 y,
->>   static void drm_fb_helper_memory_range_to_clip(struct fb_info 
->> *info, off_t off, size_t len,
->>                              struct drm_rect *clip)
->>   {
->> +    u32 line_length = info->fix.line_length;
->> +    u32 fb_height = info->var.yres;
->>       off_t end = off + len;
->>       u32 x1 = 0;
->> -    u32 y1 = off / info->fix.line_length;
->> +    u32 y1 = off / line_length;
->>       u32 x2 = info->var.xres;
->> -    u32 y2 = DIV_ROUND_UP(end, info->fix.line_length);
->> +    u32 y2 = DIV_ROUND_UP(end, line_length);
->> +
->> +    /* Don't allow any of them beyond the bottom bound of display 
->> area */
->> +    if (y1 > fb_height)
->> +        y1 = fb_height;
->> +    if (y2 > fb_height)
->> +        y2 = fb_height;
->>         if ((y2 - y1) == 1) {
->>           /*
->>            * We've only written to a single scanline. Try to reduce
->>            * the number of horizontal pixels that need an update.
->>            */
->> -        off_t bit_off = (off % info->fix.line_length) * 8;
->> -        off_t bit_end = (end % info->fix.line_length) * 8;
->> +        off_t bit_off = (off % line_length) * 8;
->> +        off_t bit_end = (end % line_length) * 8;
->>             x1 = bit_off / info->var.bits_per_pixel;
->>           x2 = DIV_ROUND_UP(bit_end, info->var.bits_per_pixel);
->
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmRBHasFAwAAAAAACgkQlh/E3EQov+AE
+Qw/+Jpd+9o0DCQndIWwwOBBa59Q2GfJdMtHB2v1bz2y/rn5RzC55T8YFUK2I9JPZFf2tq1BT8ZU3
+GFikZrKj3wHLql4FpSbtYJ6sdbOqhqjr3P7Yvx0SEbByk1WSFnuNQmCLeemVXupAZWABGNp3Oi/G
+O1+pHqIbVtguoSwAfYzIOqkK0IPp5QvCFCGSXTmxwiRlxTd6H1fg4qGR2Jn8h8JIfJLar4JMi3Ie
+iUEKpbBkpHthu1Z3Hbfp2Q3HK2wI2oK3xk0lkb5RlnZm1R8a9PnBtYF4AKg1CuLnb+loD0vSo3oY
+F2hvIwUrmGUCZfCAQl5VEY91wMzI/OR/6jKRtAjVT1Ndt5WlbokwFATFJpzIvcL1mp3xOINgY1YZ
+GY84gz8pso1clvRlH0tLWgWZZqFvpv1b6GxE5zeNlI25pIwSK2n99e9RzhBSWbgE4Bgt1GDqEPwd
+i86RHywAClHg6L7gZPfLHPDGNGWL0UvzOLU4i7angXBuOxgpCQ7Jfugiks6Qn2Ocmgwr4qUNNbPD
+cZiMq41ZdZ+qVkA5/5HJmKjuCZmvAJJCrcDrkQYX6miNGZkL7Z3tbCRlmc6aYofjeMM6dxkK//0m
+ApFRjT5tnbzhV9tziaXG5Osnlyi/mDiTpOCmBQ4WU0/p3HvaT9yMKHBCYF8lPBFvm9wnVRCWzqL8
+a5o=
+=Av7D
+-----END PGP SIGNATURE-----
+
+--------------T73U97w4DKfFyB4LYy0jSttm--

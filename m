@@ -2,153 +2,116 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D91EC77B73
-	for <linux-fbdev@archiver.kernel.org>; Thu, 20 Apr 2023 12:59:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26741C77B73
+	for <linux-fbdev@archiver.kernel.org>; Thu, 20 Apr 2023 14:22:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229681AbjDTM7V (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 20 Apr 2023 08:59:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47374 "EHLO
+        id S229761AbjDTOWA convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 20 Apr 2023 10:22:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46072 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229521AbjDTM7U (ORCPT
+        with ESMTP id S230045AbjDTOV7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 20 Apr 2023 08:59:20 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2ADDB1B9;
-        Thu, 20 Apr 2023 05:59:19 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id DF9AE1FDBA;
-        Thu, 20 Apr 2023 12:59:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1681995557; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=DEGj41opAhdIvCdRlBTEBs0zP1XeW2Gj6H6gpuRHYkQ=;
-        b=CUQS5+t4cUdS9r1q78kbhfp62M3cC6a92x1sc0dj8t2vCxFqW0F/aoeOuoFR8K1b3lq2Zm
-        eCddnf9oOHZBFbcnx9dFFnY9P8BJcajXwKfLPenGqz/MZ56VoYmyFBga2wf9AcxqKgt5DV
-        RiEKY+ECeZrWkXdOwnRDOa+gYG3DIhM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1681995557;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=DEGj41opAhdIvCdRlBTEBs0zP1XeW2Gj6H6gpuRHYkQ=;
-        b=yh4XmG2hOajy19+PImwlZtnncgRRn6sVqmmXrSJESFIV/WMAroxaoLmLu/N+7VIjng/kCV
-        mymYxv3zsWidk2Cg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id ADE8C1333C;
-        Thu, 20 Apr 2023 12:59:17 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id 175kKSU3QWSGDAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 20 Apr 2023 12:59:17 +0000
-Message-ID: <3d455074-bd51-51a0-7692-a0b4ca961355@suse.de>
-Date:   Thu, 20 Apr 2023 14:59:17 +0200
+        Thu, 20 Apr 2023 10:21:59 -0400
+Received: from mail-lf1-f50.google.com (mail-lf1-f50.google.com [209.85.167.50])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69C4A61A8;
+        Thu, 20 Apr 2023 07:21:51 -0700 (PDT)
+Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-4eed6ddcae1so2800703e87.0;
+        Thu, 20 Apr 2023 07:21:51 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1682000509; x=1684592509;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=v+ntSNli+3961rRN83tx2G/slCSVpZgHaGQlcoQLCYo=;
+        b=lQvPNWJmGGwtMzjPUGq/4D0NzJtsxs6Pmk/NIU6HT6cP5prFQk+0PiqYI0SDNO/8GU
+         OJa5elomqh75sR3QgAzuxcoCl+bCo1yCYn6yZJzx20VNceAu9s9SvLMT36sdmxv+7M1p
+         zgDtPgEn/DdSBoQ6DenjHIpj4QrbHOEyX3aSid3M8gPt0Jx4+O48mWuDTETlD396jNQh
+         AflQnksst//wO3VUBJesN1GJ5BiTWFtc3pCK6IRYXvKPfDSh0jHiR/HOz067iP/LbRj5
+         HmhiCosLrVCMwqdrtBlt6ZEM/NbM9xYVLaSL4gyoq3H+1Fmp29JI8Yg/3UINB7ygYRug
+         8UOA==
+X-Gm-Message-State: AAQBX9eOYiWkaHiVliFZ+0HeZ21fW2RDilChL4akrb5Mt2g4ihznOi58
+        XUeElFiUtWfkTOxJuGoV7Bc9INOrsZf3FL2A
+X-Google-Smtp-Source: AKy350brUzgFmXIzx22PvebSV88Jle3hfk/pWR/BkKBIgc6ZulxhVjTAOzLVBj8BYjLfG32uEjm7Uw==
+X-Received: by 2002:a05:6512:3b9e:b0:4eb:2b62:134f with SMTP id g30-20020a0565123b9e00b004eb2b62134fmr1909742lfv.16.1682000508927;
+        Thu, 20 Apr 2023 07:21:48 -0700 (PDT)
+Received: from mail-lf1-f47.google.com (mail-lf1-f47.google.com. [209.85.167.47])
+        by smtp.gmail.com with ESMTPSA id q13-20020ac25a0d000000b004ec4f3810dcsm231860lfn.109.2023.04.20.07.21.47
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 20 Apr 2023 07:21:47 -0700 (PDT)
+Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-4eed6ddcae1so2800576e87.0;
+        Thu, 20 Apr 2023 07:21:47 -0700 (PDT)
+X-Received: by 2002:ac2:5339:0:b0:4ed:d542:6f65 with SMTP id
+ f25-20020ac25339000000b004edd5426f65mr515553lfh.5.1682000507607; Thu, 20 Apr
+ 2023 07:21:47 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH v5] drm/fbdev-generic: prohibit potential out-of-bounds
- access
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
+References: <20230420030500.1578756-1-suijingfeng@loongson.cn>
+ <8ec3734b-4bc2-ad8f-fc17-3002f22d1fc9@suse.de> <12c8efaa-7266-5436-dc53-009a0d23b53f@suse.de>
+ <4a0fdbe0-cd4f-9c87-f73a-6d27f5c497bb@189.cn> <f541018f-bb7f-ac58-bbb8-797069e49c3f@suse.de>
+ <CAMuHMdVGtvgcQuTR9bfMh1cM86TYXSByxJzW5eJtF9A0ZLRF3w@mail.gmail.com> <3d455074-bd51-51a0-7692-a0b4ca961355@suse.de>
+In-Reply-To: <3d455074-bd51-51a0-7692-a0b4ca961355@suse.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Thu, 20 Apr 2023 16:21:33 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdXHMeiaew7wbj-aNL0oZ=X3gfoSBkMYAbbdyfe6bVZcfQ@mail.gmail.com>
+Message-ID: <CAMuHMdXHMeiaew7wbj-aNL0oZ=X3gfoSBkMYAbbdyfe6bVZcfQ@mail.gmail.com>
+Subject: Re: [PATCH v5] drm/fbdev-generic: prohibit potential out-of-bounds access
+To:     Thomas Zimmermann <tzimmermann@suse.de>
 Cc:     Lucas De Marchi <lucas.demarchi@intel.com>,
         linux-fbdev@vger.kernel.org, Li Yi <liyi@loongson.cn>,
         Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
         Sui Jingfeng <15330273260@189.cn>,
         loongson-kernel@lists.loongnix.cn, dri-devel@lists.freedesktop.org
-References: <20230420030500.1578756-1-suijingfeng@loongson.cn>
- <8ec3734b-4bc2-ad8f-fc17-3002f22d1fc9@suse.de>
- <12c8efaa-7266-5436-dc53-009a0d23b53f@suse.de>
- <4a0fdbe0-cd4f-9c87-f73a-6d27f5c497bb@189.cn>
- <f541018f-bb7f-ac58-bbb8-797069e49c3f@suse.de>
- <CAMuHMdVGtvgcQuTR9bfMh1cM86TYXSByxJzW5eJtF9A0ZLRF3w@mail.gmail.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <CAMuHMdVGtvgcQuTR9bfMh1cM86TYXSByxJzW5eJtF9A0ZLRF3w@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------5DhebwLARl0HpDFRqz9Vb7lQ"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------5DhebwLARl0HpDFRqz9Vb7lQ
-Content-Type: multipart/mixed; boundary="------------yi8Lvwk9kZfir66Sw5gmggKi";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Lucas De Marchi <lucas.demarchi@intel.com>, linux-fbdev@vger.kernel.org,
- Li Yi <liyi@loongson.cn>, Helge Deller <deller@gmx.de>,
- linux-kernel@vger.kernel.org, Sui Jingfeng <15330273260@189.cn>,
- loongson-kernel@lists.loongnix.cn, dri-devel@lists.freedesktop.org
-Message-ID: <3d455074-bd51-51a0-7692-a0b4ca961355@suse.de>
-Subject: Re: [PATCH v5] drm/fbdev-generic: prohibit potential out-of-bounds
- access
-References: <20230420030500.1578756-1-suijingfeng@loongson.cn>
- <8ec3734b-4bc2-ad8f-fc17-3002f22d1fc9@suse.de>
- <12c8efaa-7266-5436-dc53-009a0d23b53f@suse.de>
- <4a0fdbe0-cd4f-9c87-f73a-6d27f5c497bb@189.cn>
- <f541018f-bb7f-ac58-bbb8-797069e49c3f@suse.de>
- <CAMuHMdVGtvgcQuTR9bfMh1cM86TYXSByxJzW5eJtF9A0ZLRF3w@mail.gmail.com>
-In-Reply-To: <CAMuHMdVGtvgcQuTR9bfMh1cM86TYXSByxJzW5eJtF9A0ZLRF3w@mail.gmail.com>
+Hi Thomas,
 
---------------yi8Lvwk9kZfir66Sw5gmggKi
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+On Thu, Apr 20, 2023 at 2:59 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Am 20.04.23 um 14:25 schrieb Geert Uytterhoeven:
+> > On Thu, Apr 20, 2023 at 1:10 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> >> Am 20.04.23 um 12:04 schrieb Sui Jingfeng:
+> >>> What will happen if the 'screen_size' is not page_size aligned and mmap
+> >>> will mapping in the granularity of pages ?
+> >>
+> >> You need to map at page granularity. If screen_size is not page-size
+> >> aligned, there's this trailing buffer that is accessible, but cannot be
+> >> displayed. But userspace has no direct way of knowing that, so let's
+> >> ignore that problem for now.
+> >
+> > Userspace can know, if fb_fix_screeninfo.smem_{start,len} match
+> > the actual offset and size.
+>
+> Can you elaborate? How can userspace detect/compute the actually usable
+> space?
 
-SGkNCg0KQW0gMjAuMDQuMjMgdW0gMTQ6MjUgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
-DQo+IEhpIFRob21hcywNCj4gDQo+IE9uIFRodSwgQXByIDIwLCAyMDIzIGF0IDE6MTDigK9Q
-TSBUaG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1hbm5Ac3VzZS5kZT4gd3JvdGU6DQo+PiBB
-bSAyMC4wNC4yMyB1bSAxMjowNCBzY2hyaWViIFN1aSBKaW5nZmVuZzoNCj4+PiBXaGF0IHdp
-bGwgaGFwcGVuIGlmIHRoZSAnc2NyZWVuX3NpemUnIGlzIG5vdCBwYWdlX3NpemUgYWxpZ25l
-ZCBhbmQgbW1hcA0KPj4+IHdpbGwgbWFwcGluZyBpbiB0aGUgZ3JhbnVsYXJpdHkgb2YgcGFn
-ZXMgPw0KPj4NCj4+IFlvdSBuZWVkIHRvIG1hcCBhdCBwYWdlIGdyYW51bGFyaXR5LiBJZiBz
-Y3JlZW5fc2l6ZSBpcyBub3QgcGFnZS1zaXplDQo+PiBhbGlnbmVkLCB0aGVyZSdzIHRoaXMg
-dHJhaWxpbmcgYnVmZmVyIHRoYXQgaXMgYWNjZXNzaWJsZSwgYnV0IGNhbm5vdCBiZQ0KPj4g
-ZGlzcGxheWVkLiBCdXQgdXNlcnNwYWNlIGhhcyBubyBkaXJlY3Qgd2F5IG9mIGtub3dpbmcg
-dGhhdCwgc28gbGV0J3MNCj4+IGlnbm9yZSB0aGF0IHByb2JsZW0gZm9yIG5vdy4NCj4gDQo+
-IFVzZXJzcGFjZSBjYW4ga25vdywgaWYgZmJfZml4X3NjcmVlbmluZm8uc21lbV97c3RhcnQs
-bGVufSBtYXRjaA0KPiB0aGUgYWN0dWFsIG9mZnNldCBhbmQgc2l6ZS4NCg0KQ2FuIHlvdSBl
-bGFib3JhdGU/IEhvdyBjYW4gdXNlcnNwYWNlIGRldGVjdC9jb21wdXRlIHRoZSBhY3R1YWxs
-eSB1c2FibGUgDQpzcGFjZT8NCg0KIEZyb20gZ3JlcCdpbmcgZmJkZXYgZHJpdmVycywgc21l
-bV9sZW4gYXBwZWFycyB0byBiZSBhIG11bHRpcGxlIG9mIHRoZSANCnBhZ2VzaXplLiAoPykg
-c2NyZWVuX3NpemUgaXMgbm90IGV4cG9ydGVkIGFuZCBsaW5lX2xlbmd0aCBpbiB0aGUgZml4
-ZWQgDQpwb3J0aW9uLiBPciBjYW4gbGluZV9sZW5ndGggY2hhbmdlIGJldHdlZW4gbW9kZXM/
-IEluIHRoYXQgY2FzZSBpdCBzaG91bGQgDQpiZSAoeXJlc192aXJ0dWFsICogbGluZV9sZW5n
-dGgpLCByaWdodD8NCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KDQo+IA0KPiBHcntvZXRq
-ZSxlZXRpbmd9cywNCj4gDQo+ICAgICAgICAgICAgICAgICAgICAgICAgICBHZWVydA0KPiAN
-Cg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0K
-U1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpGcmFua2Vuc3RyYXNzZSAx
-NDYsIDkwNDYxIE51ZXJuYmVyZywgR2VybWFueQ0KR0Y6IEl2byBUb3RldiwgQW5kcmV3IE15
-ZXJzLCBBbmRyZXcgTWNEb25hbGQsIEJvdWRpZW4gTW9lcm1hbg0KSFJCIDM2ODA5IChBRyBO
-dWVybmJlcmcpDQo=
+By looking at fb_fix_screeninfo.smem_{start,len}, which are the (physical)
+address and length of the frame buffer.
 
---------------yi8Lvwk9kZfir66Sw5gmggKi--
+>  From grep'ing fbdev drivers, smem_len appears to be a multiple of the
+> pagesize. (?) screen_size is not exported and line_length in the fixed
+>
+> portion. Or can line_length change between modes? In that case it should
+> be (yres_virtual * line_length), right?
 
---------------5DhebwLARl0HpDFRqz9Vb7lQ
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+smem_{start,len} are not guaranteed to be page-aligned.
+Fbtest[1] and Xorg should handle that fine.
 
------BEGIN PGP SIGNATURE-----
+line_length can change between modes.  It's part of fb_fix_screeninfo,
+because it's fixed in the sense that it depends on the video mode, and
+the user cannot specify its value.
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmRBNyUFAwAAAAAACgkQlh/E3EQov+CR
-ShAAziz4j1u3V33PmhNJDF/Bzb9R1EABKp7Vweon2oLdgChJHqBvit4LBX+92CeLFtqY53hYmZSw
-xjW2gYP7zjlt7xrm/0qAreEC1aKRfDb0L2i2MIZMS6YerUCJJlkRCCp+7WwvskcY3M8Qm5SjG1ca
-re2G1JJKAa9U6NiYzwO43OYUT28yv1cEvX4xTJg5FbeHczs+GDpCd5HI8SSFDTlE4frEFFcDkOlf
-dEfs+C11fppW68/DMDLg/Sgsi//2EED1lxF/vNpYKzw0XMCHZQsGUMXTcwnq2fZBMaIE9nm4U4Oq
-z6JUeZX6HdgoMwJR2hM656f4VVMZC62NU+54OWgNGbBIDS6ooKXnazBqin6uqowUzIc+vZ0MCb4q
-GwEZma3FypiKj0ZLUxQSu/v59B7KhjyFRZd8I2eJ00D1/UmrNe1VA9G/VLFyl0GWiAPvGxpkI5lJ
-PQrUHPAD6YCieSlIUk3AsrAGd+dWZ3YmBkuPGqTaaWFJUplI/YE5OkaHmFLJTOQo+jXQUoXnHG2k
-KZg4yTRb7MEslOfr6V2zNbOjilmLUjRWSlqg3guJu9V8ntF1eR89IX9skn+neQLG7eOWXdTHYA5Y
-Gn5KtDnLHRqXJu0MrRgBuw6kfpNoD61DRWkpiYQ5MTYIWSB3Mc7Ff5kHUen9SwzIQ0o3Kj1P47MZ
-mw8=
-=40QI
------END PGP SIGNATURE-----
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/geert/fbtest.git/tree/fb.c#n199
 
---------------5DhebwLARl0HpDFRqz9Vb7lQ--
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

@@ -2,25 +2,25 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0FDCC77B73
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Apr 2023 20:08:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D897C6FD18
+	for <linux-fbdev@archiver.kernel.org>; Thu, 20 Apr 2023 03:05:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231228AbjDSUIC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Apr 2023 16:08:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33944 "EHLO
+        id S233726AbjDTDFL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Apr 2023 23:05:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54362 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231490AbjDSUIB (ORCPT
+        with ESMTP id S232955AbjDTDFI (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Apr 2023 16:08:01 -0400
+        Wed, 19 Apr 2023 23:05:08 -0400
 Received: from loongson.cn (mail.loongson.cn [114.242.206.163])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 4AB44526F;
-        Wed, 19 Apr 2023 13:07:56 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 0CA662103;
+        Wed, 19 Apr 2023 20:05:05 -0700 (PDT)
 Received: from loongson.cn (unknown [10.20.42.43])
-        by gateway (Coremail) with SMTP id _____8CxjdobSkBkLhcfAA--.37226S3;
-        Thu, 20 Apr 2023 04:07:55 +0800 (CST)
+        by gateway (Coremail) with SMTP id _____8BxONngq0Bkd0MfAA--.48810S3;
+        Thu, 20 Apr 2023 11:05:04 +0800 (CST)
 Received: from openarena.loongson.cn (unknown [10.20.42.43])
-        by localhost.localdomain (Coremail) with SMTP id AQAAf8Cxfb4XSkBkM88vAA--.17264S2;
-        Thu, 20 Apr 2023 04:07:51 +0800 (CST)
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8CxKLLeq0Bkc3AwAA--.68S2;
+        Thu, 20 Apr 2023 11:05:02 +0800 (CST)
 From:   Sui Jingfeng <suijingfeng@loongson.cn>
 To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
@@ -33,38 +33,38 @@ To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Lucas De Marchi <lucas.demarchi@intel.com>
 Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
-Subject: [PATCH v4] drm/fbdev-generic: prohibit potential out-of-bounds access
-Date:   Thu, 20 Apr 2023 04:07:42 +0800
-Message-Id: <20230419200742.1571818-1-suijingfeng@loongson.cn>
+Subject: [PATCH v5] drm/fbdev-generic: prohibit potential out-of-bounds access
+Date:   Thu, 20 Apr 2023 11:05:00 +0800
+Message-Id: <20230420030500.1578756-1-suijingfeng@loongson.cn>
 X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: AQAAf8Cxfb4XSkBkM88vAA--.17264S2
+X-CM-TRANSID: AQAAf8CxKLLeq0Bkc3AwAA--.68S2
 X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
-X-Coremail-Antispam: 1Uk129KBjvJXoWxCF1rXFWUCw1DtrWrZF13Jwb_yoWrAr4fpF
-        W7GayDKr4kJFn8WrWxA3WUAw15Zan7ZFWIqrZ7G348ZF45A3ZF9F1UGF4UWry5Jr1xZr13
-        twn0yw1jkr1qkaDanT9S1TB71UUUUb7qnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
+X-Coremail-Antispam: 1Uk129KBjvJXoWxCF15Kr1fuF1kKw43Aw1UJrb_yoWrKF4fpa
+        y7Ga1UKrsYqF1DWrW7A3WrAw15Wan7AFyIgr97G342vF43A3Z29FyUKF4jgFy5Jr1fZr1a
+        qws09w1I9r12kaUanT9S1TB71UUUUbUqnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
         qI5I8CrVACY4xI64kE6c02F40Ex7xfYxn0WfASr-VFAUDa7-sFnT9fnUUIcSsGvfJTRUUU
-        bfkYFVCjjxCrM7AC8VAFwI0_Jr0_Gr1l1xkIjI8I6I8E6xAIw20EY4v20xvaj40_Wr0E3s
+        bSkYFVCjjxCrM7AC8VAFwI0_Jr0_Gr1l1xkIjI8I6I8E6xAIw20EY4v20xvaj40_Wr0E3s
         1l1IIY67AEw4v_Jrv_JF1l8cAvFVAK0II2c7xJM28CjxkF64kEwVA0rcxSw2x7M28EF7xv
-        wVC0I7IYx2IY67AKxVW8JVW5JwA2z4x0Y4vE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwA2z4
-        x0Y4vEx4A2jsIE14v26r4j6F4UM28EF7xvwVC2z280aVCY1x0267AKxVW8JVW8Jr1ln4kS
-        14v26r1q6r43M2AIxVAIcxkEcVAq07x20xvEncxIr21l57IF6xkI12xvs2x26I8E6xACxx
-        1l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1q6rW5McIj6I8E87Iv
-        67AKxVW8JVWxJwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41lc7CjxVAaw2
-        AFwI0_Jw0_GFyl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1l4IxYO2xF
-        xVAFwI0_Jw0_GFylx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWw
-        C2zVAF1VAY17CE14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_JFI_
-        Gr1lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJV
-        WUCwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIY
-        CTnIWIevJa73UjIFyTuYvjxUstxhDUUUU
+        wVC0I7IYx2IY67AKxVWDJVCq3wA2z4x0Y4vE2Ix0cI8IcVCY1x0267AKxVW8Jr0_Cr1UM2
+        8EF7xvwVC2z280aVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Cr1j6rxd
+        M2kKe7AKxVWUAVWUtwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07AIYIkI8VC2zV
+        CFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUtVWrXwAv7VC2
+        z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JMxkF7I
+        0En4kS14v26r126r1DMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMxCI
+        bckI1I0E14v26r126r1DMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_Jr
+        I_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v2
+        6r1I6r4UMIIF0xvE2Ix0cI8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj4
+        0_Jr0_JF4lIxAIcVC2z280aVAFwI0_Gr0_Cr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8
+        JrUvcSsGvfC2KfnxnUUI43ZEXa7IU8_gA5UUUUU==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 The fbdev test of IGT may write after EOF, which lead to out-of-bound
-access for the drm drivers hire fbdev-generic. However, run fbdev test
-on x86 +ast2400 platform, with 1680x1050 resolution, will cause the
+access for drm drivers hire fbdev-generic. For example, run fbdev test
+on a x86+ast2400 platform, with 1680x1050 resolution, will cause the
 linux kernel hang with the following call trace:
 
   Oops: 0000 [#1] PREEMPT SMP PTI
@@ -96,22 +96,46 @@ linux kernel hang with the following call trace:
   CR2: ffffa17d40e0b000
   ---[ end trace 0000000000000000 ]---
 
-The is because damage rectangle rectange computed by
-drm_fb_helper_memory_range_to_clip() does not guaranteed to be bound in the
-screen's active display area. In details, we typically allocate buffers in
-the granularity of the page-size for mmap system call support.
+The is because damage rectangles computed by
+drm_fb_helper_memory_range_to_clip() function does not guaranteed to be
+bound in the screen's active display area. Possible reasons are:
 
-Exporting bit larger buffer in size than the size of active display to user
-space do allow the userspace write below the bottom of the display, it is
-not a big issue because there still have memory resolve the access.
+1) Buffers are allocated in the granularity of page size, for mmap system
+   call support. The shadow screen buffer consumed by fbdev emulation may
+   also choosed be page size aligned.
 
-Yet, draft too far from the boundary is dangerious. Because such a access
-put the system in the situation of out-of-bound access. The root cause is
-that we do not do the validation, also DIV_ROUND_UP() may also introduce
-off-by-one error.
+2) The DIV_ROUND_UP() used in drm_fb_helper_memory_range_to_clip()
+   will introduce off-by-one error.
 
-This patch add logic to restrict the damage rectangle dract out of the
-visiable boundary.
+For example, on a 16KB page size system, in order to store a 1920x1080
+XRGB framebuffer, we need allocate 507 pages. Unfortunately, the size
+1920*1080*4 can not be divided exactly by 16KB.
+
+ 1920 * 1080 * 4 = 8294400 bytes
+ 506 * 16 * 1024 = 8290304 bytes
+ 507 * 16 * 1024 = 8306688 bytes
+
+ line_length = 1920*4 = 7680 bytes
+
+ 507 * 16 * 1024 / 7680 = 1081.6
+
+ off / line_length = 507 * 16 * 1024 / 7680 = 1081
+ DIV_ROUND_UP(507 * 16 * 1024, 7680) will yeild 1082
+
+memcpy_toio() typically issue the copy line by line, when copy the last
+line, out-of-bound access will be happen. Because:
+
+ 1082 * line_length = 1082 * 7680 = 8309760, and 8309760 > 8306688
+
+Note that userspace may stil write to the invisiable area if a larger
+buffer than width x stride is exposed. But it is not a big issue as
+long as there still have memory resolve the access if not drafting so
+far.
+
+ - Also limit the y1 (Daniel)
+ - keep fix patch it to minimal (Daniel)
+ - screen_size is page size aligned because of it need mmap (Thomas)
+ - Adding fixes tag (Thomas)
 
 Fixes: aa15c677cc34 ("drm/fb-helper: Fix vertical damage clipping")
 

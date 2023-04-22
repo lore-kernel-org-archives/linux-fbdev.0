@@ -2,117 +2,166 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A5C7C7618E
-	for <linux-fbdev@archiver.kernel.org>; Sat, 22 Apr 2023 09:50:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00F47C77B7E
+	for <linux-fbdev@archiver.kernel.org>; Sat, 22 Apr 2023 21:18:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229539AbjDVJug (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 22 Apr 2023 05:50:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36136 "EHLO
+        id S229668AbjDVVSC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 22 Apr 2023 17:18:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57064 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229451AbjDVJuf (ORCPT
+        with ESMTP id S229551AbjDVVSA (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 22 Apr 2023 05:50:35 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F2D3C1987;
-        Sat, 22 Apr 2023 02:50:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1682157023; i=deller@gmx.de;
-        bh=LinhArFfnf7KGQs8kxbfvg2R3rvrChV9Pz18t9V6fps=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=GtrZhGJCWkZj6IhoDJn5F0r5esIH6WhD1wBiethk8ztvVgbycemkEw+TvHxXDFqm1
-         zAfDBDRN9998n9P47ZJvp8QtZn9RHNRNtZhrCTMd/bfBRU+XE+xcTSx2slHoixqRM9
-         3i9FJ1o9/3i4GOcviWORwONKVSu17I98j4cYlPCxwKkK3j27+2lVGeKM4k32EWr7LQ
-         VQoWcZ5SuW8tWm7uC/jk7f8EXVfuMYP4n3UBGOG5vBcxhLCOeIlzLGOpIbjR1jVIpP
-         VIqHFvL84+80LPlJ/6TmuYEx1/L5ehJz8I4XQ0VJ/mfvfBeBzs3jxLgIxeB8bgMJob
-         bm/FU2aWPYRRw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.157.94]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MDysg-1q01Fr0jIK-009to4; Sat, 22
- Apr 2023 11:50:23 +0200
-Message-ID: <9f6547e5-ba5d-11bf-3646-2f65b4a6a2ea@gmx.de>
-Date:   Sat, 22 Apr 2023 11:50:22 +0200
+        Sat, 22 Apr 2023 17:18:00 -0400
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 09B0511D;
+        Sat, 22 Apr 2023 14:17:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1682198279; x=1713734279;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=eTYnPvF9fN3o1kgqHDQFSMFOfgmWEAjhvZwZlajfpiI=;
+  b=hBaMxrxEhPzWMSoxgMCJEFCKboomI6JZoYla4QmgbDZTjITud7Mair3c
+   3wMRaPHdHYDaAMA1f/jvlBcgItWRU3J497aKWktTxXGsmK8XSKYYiGRxn
+   zqJF/YdY2BBHp5M5kGKIw99muiaowgIwHVEG8yPHt9cvLhf4VDF51JNN1
+   ui9QpPuihECZdRB5RnDDnvNAA+OCIByl7BwKGttvqNrcorSKdrCWCItD4
+   y+/4g+Q3AjmoZR8lxJ+DZUQQTmFTDB5veFY13pVwxDKGM0jhd51Owtu09
+   scszn0oDbjQxGo9Nu2JvG3M3HpKdk1Gjkp+5mKHtLiLg4482oDEBTS0pw
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10688"; a="346219345"
+X-IronPort-AV: E=Sophos;i="5.99,219,1677571200"; 
+   d="scan'208";a="346219345"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Apr 2023 14:17:58 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10688"; a="836504025"
+X-IronPort-AV: E=Sophos;i="5.99,219,1677571200"; 
+   d="scan'208";a="836504025"
+Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
+  by fmsmga001.fm.intel.com with ESMTP; 22 Apr 2023 14:17:53 -0700
+Received: from kbuild by b613635ddfff with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1pqKcC-000hVU-2Q;
+        Sat, 22 Apr 2023 21:17:52 +0000
+Date:   Sun, 23 Apr 2023 05:17:07 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Nikita Zhandarovich <n.zhandarovich@fintech.ru>,
+        David Airlie <airlied@gmail.com>
+Cc:     llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+        linux-fbdev@vger.kernel.org, lvc-project@linuxtesting.org,
+        dri-devel@lists.freedesktop.org,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Helge Deller <deller@gmx.de>, amd-gfx@lists.freedesktop.org,
+        Nikita Zhandarovich <n.zhandarovich@fintech.ru>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        intel-gfx@lists.freedesktop.org,
+        Maxime Ripard <mripard@kernel.org>,
+        linux-mediatek@lists.infradead.org,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>,
+        linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        linux-kernel@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>
+Subject: Re: [Intel-gfx] [PATCH] video/hdmi: minor fixes for *_infoframe_init
+ functions
+Message-ID: <202304230527.lMhdvedk-lkp@intel.com>
+References: <20230412152910.9486-1-n.zhandarovich@fintech.ru>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH 1/2] fbdev/offb: Update expected device name
-Content-Language: en-US
-To:     Cyril Brulebois <cyril@debamax.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Rob Herring <robh@kernel.org>,
-        Michal Suchanek <msuchanek@suse.de>,
-        linux-kernel@vger.kernel.org, stable@vger.kernel.org
-References: <20230412095509.2196162-1-cyril@debamax.com>
- <20230412095509.2196162-2-cyril@debamax.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20230412095509.2196162-2-cyril@debamax.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:H6SNLZBC93QHTP8rBnvbbn8eavBf7kTQSVkEbnwzBzmtG2S5hM7
- kpH2H3Fye7vMU2MUkYkH5FL8r/WH3zBMaD5TZGgmZ/s2TARfPAwlyTL5rg0rqSOmO0A61Ll
- PowLcApDXINEb1WPol75OD5Q4HkGq5WxtMi3RVoBzjDBavFbyo26kXBgbMAHziiQpM4GSx9
- Oyhrm7IxF/6Em1xfXj7HA==
-UI-OutboundReport: notjunk:1;M01:P0:y38Rp/jC5iw=;OoilsxTUaVzuVBE/eSPC9mDIJuS
- 0SFsSqkyASTfSUVd2yKX8krnYZLx8qYNjsgehKRYHPTysreQF6cB7YSceiSuJwyQ5jJ3EXfJf
- DBWj7GQovPx6t8HlUH9Iq7IAcIniT1HCtq7tOdvNVkG2oSASirxyWm31t5BPbJEq2H9/bclFw
- grXBvB6y9l32jUMqLN4SV2X+k3r1A7GQxhsT9d/iNQmhHSOWD7Mni/JAU3dEJPnOEWJ6AORwz
- nAwoPR+tgToE7JeaqvGhhdupQYpcffqzJmMlzQ/JVd6SHiaqlzwFpcvPgfgoipcZxsN81A8oc
- wjLc1Tone5fh3oSMcKcSvSENKqsmgP8G077WxgxksE/rCVJZBDxWbRTihWdJDdhbIhBpkx4sv
- vkvTu59GH69InrSoF9drVOHsjo5nvTQMIh0SvmVwFgtienUZKS8TF2d1Ewv0+W34nlgzwCVhK
- nZdVUIForkcc4Zkgqe3TucgQiggUcJDQPzLxi6xI6HOe0Y81MweWvKLow4DjGUiVXLvZzzaFI
- ujmcvXpWNRtvYZXDv784t7En5ewNsiGSfNt4/8cTWIPQbfEyO0nEmJvmAMf7AJN0g0W2qdV3N
- cs768pEpQdrmAAjYdPa6VAmrB0Yh2+lKMCCysEZQTfqi7+xKECQWkJ6YiY93MA7U85gOgpUEx
- bQaqpSv5nhnWvxCpu5wyDuYTzyo/+qqIZP1dW5XljX1k1KvF2hlsPV+JH+Ted+3KVE5Ak99gy
- r9r048VS46HVx6uqJTWZzIqnJZzq8k6LSV+DoQ/LyaNgS3Hh1PPmX5T+T9ZXJrPjSjaAry83V
- 2f3sO88vufkYyWLb5sx91ZYq/9jls3yW0IioH65rzXv0f8rtSMxG1L90GopXv7XUEAde7JThR
- H0fjYoSmJW6lRYeWH/pQqc89wcQ4TzFNVCWsjhPQZ2ydnGTwzkY1QLvxgDUNMabmLC3KlItvY
- 5KNmPf9wziT85PODFJ6M6Nf3CGk=
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20230412152910.9486-1-n.zhandarovich@fintech.ru>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 4/12/23 11:55, Cyril Brulebois wrote:
-> Since commit 241d2fb56a18 ("of: Make OF framebuffer device names unique"=
-),
-> as spotted by Fr=C3=A9d=C3=A9ric Bonnard, the historical "of-display" de=
-vice is
-> gone: the updated logic creates "of-display.0" instead, then as many
-> "of-display.N" as required.
->
-> This means that offb no longer finds the expected device, which prevents
-> the Debian Installer from setting up its interface, at least on ppc64el.
->
-> It might be better to iterate on all possible nodes, but updating the
-> hardcoded device from "of-display" to "of-display.0" is confirmed to fix
-> the Debian Installer at the very least.
->
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=3D217328
-> Link: https://bugs.debian.org/1033058
-> Fixes: 241d2fb56a18 ("of: Make OF framebuffer device names unique")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Cyril Brulebois <cyril@debamax.com>
+Hi Nikita,
 
-I've applied the series (2 patches, one of them in drm) to the fbdev git t=
-ree.
+kernel test robot noticed the following build errors:
 
-Thanks!
-Helge
+[auto build test ERROR on drm-tip/drm-tip]
 
-> ---
->   drivers/video/fbdev/offb.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
-> index b97d251d894b..6264c7184457 100644
-> --- a/drivers/video/fbdev/offb.c
-> +++ b/drivers/video/fbdev/offb.c
-> @@ -698,7 +698,7 @@ MODULE_DEVICE_TABLE(of, offb_of_match_display);
->
->   static struct platform_driver offb_driver_display =3D {
->   	.driver =3D {
-> -		.name =3D "of-display",
-> +		.name =3D "of-display.0",
->   		.of_match_table =3D offb_of_match_display,
->   	},
->   	.probe =3D offb_probe_display,
+url:    https://github.com/intel-lab-lkp/linux/commits/Nikita-Zhandarovich/video-hdmi-minor-fixes-for-_infoframe_init-functions/20230421-221128
+base:   git://anongit.freedesktop.org/drm/drm-tip drm-tip
+patch link:    https://lore.kernel.org/r/20230412152910.9486-1-n.zhandarovich%40fintech.ru
+patch subject: [Intel-gfx] [PATCH] video/hdmi: minor fixes for *_infoframe_init functions
+config: x86_64-allmodconfig (https://download.01.org/0day-ci/archive/20230423/202304230527.lMhdvedk-lkp@intel.com/config)
+compiler: clang version 14.0.6 (https://github.com/llvm/llvm-project f28c006a5895fc0e329fe15fead81e37457cb1d1)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/intel-lab-lkp/linux/commit/63c44f02ae13a5f50eadc26f5b45d4ade624f20c
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Nikita-Zhandarovich/video-hdmi-minor-fixes-for-_infoframe_init-functions/20230421-221128
+        git checkout 63c44f02ae13a5f50eadc26f5b45d4ade624f20c
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 olddefconfig
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash arch/x86/xen/ drivers/gpu/drm/i915/ drivers/power/supply/ drivers/vdpa/mlx5/
 
+If you fix the issue, kindly add following tag where applicable
+| Reported-by: kernel test robot <lkp@intel.com>
+| Link: https://lore.kernel.org/oe-kbuild-all/202304230527.lMhdvedk-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+>> drivers/gpu/drm/i915/display/intel_hdmi.c:769:37: error: variable 'ret' is uninitialized when used here [-Werror,-Wuninitialized]
+           if (drm_WARN_ON(encoder->base.dev, ret))
+                                              ^~~
+   include/drm/drm_print.h:630:19: note: expanded from macro 'drm_WARN_ON'
+           drm_WARN((drm), (x), "%s",                                      \
+                            ^
+   include/drm/drm_print.h:620:7: note: expanded from macro 'drm_WARN'
+           WARN(condition, "%s %s: " format,                               \
+                ^~~~~~~~~
+   include/asm-generic/bug.h:131:25: note: expanded from macro 'WARN'
+           int __ret_warn_on = !!(condition);                              \
+                                  ^~~~~~~~~
+   drivers/gpu/drm/i915/display/intel_hdmi.c:756:9: note: initialize the variable 'ret' to silence this warning
+           int ret;
+                  ^
+                   = 0
+   1 error generated.
+
+
+vim +/ret +769 drivers/gpu/drm/i915/display/intel_hdmi.c
+
+b055c8f3ef9f7b drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-07-08  748  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  749  static bool
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  750  intel_hdmi_compute_spd_infoframe(struct intel_encoder *encoder,
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  751  				 struct intel_crtc_state *crtc_state,
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  752  				 struct drm_connector_state *conn_state)
+c0864cb39c6869 drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-08-03  753  {
+7d1675dcb5a16c drivers/gpu/drm/i915/display/intel_hdmi.c Taylor, Clinton A   2022-11-29  754  	struct drm_i915_private *i915 = to_i915(encoder->base.dev);
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  755  	struct hdmi_spd_infoframe *frame = &crtc_state->infoframes.spd.spd;
+5adaea799c1c2c drivers/gpu/drm/i915/intel_hdmi.c         Damien Lespiau      2013-08-06  756  	int ret;
+5adaea799c1c2c drivers/gpu/drm/i915/intel_hdmi.c         Damien Lespiau      2013-08-06  757  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  758  	if (!crtc_state->has_infoframe)
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  759  		return true;
+c0864cb39c6869 drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-08-03  760  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  761  	crtc_state->infoframes.enable |=
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  762  		intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_SPD);
+c0864cb39c6869 drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-08-03  763  
+7d1675dcb5a16c drivers/gpu/drm/i915/display/intel_hdmi.c Taylor, Clinton A   2022-11-29  764  	if (IS_DGFX(i915))
+63c44f02ae13a5 drivers/gpu/drm/i915/display/intel_hdmi.c Nikita Zhandarovich 2023-04-12  765  		hdmi_spd_infoframe_init(frame, "Intel", "Discrete gfx");
+7d1675dcb5a16c drivers/gpu/drm/i915/display/intel_hdmi.c Taylor, Clinton A   2022-11-29  766  	else
+63c44f02ae13a5 drivers/gpu/drm/i915/display/intel_hdmi.c Nikita Zhandarovich 2023-04-12  767  		hdmi_spd_infoframe_init(frame, "Intel", "Integrated gfx");
+7d1675dcb5a16c drivers/gpu/drm/i915/display/intel_hdmi.c Taylor, Clinton A   2022-11-29  768  
+3a47ae201e0749 drivers/gpu/drm/i915/display/intel_hdmi.c Pankaj Bharadiya    2020-01-15 @769  	if (drm_WARN_ON(encoder->base.dev, ret))
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  770  		return false;
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  771  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  772  	frame->sdi = HDMI_SPD_SDI_PC;
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  773  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  774  	ret = hdmi_spd_infoframe_check(frame);
+3a47ae201e0749 drivers/gpu/drm/i915/display/intel_hdmi.c Pankaj Bharadiya    2020-01-15  775  	if (drm_WARN_ON(encoder->base.dev, ret))
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  776  		return false;
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  777  
+fbf08556ed4344 drivers/gpu/drm/i915/intel_hdmi.c         Ville Syrjälä       2019-02-25  778  	return true;
+c0864cb39c6869 drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-08-03  779  }
+c0864cb39c6869 drivers/gpu/drm/i915/intel_hdmi.c         Jesse Barnes        2011-08-03  780  
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests

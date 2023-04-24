@@ -2,91 +2,99 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78CB0C77B61
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Apr 2023 09:44:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CD52C77B61
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Apr 2023 09:46:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230476AbjDXJoF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Apr 2023 05:44:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40544 "EHLO
+        id S231410AbjDXJqy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Apr 2023 05:46:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44186 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229658AbjDXJoE (ORCPT
+        with ESMTP id S231436AbjDXJqy (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Apr 2023 05:44:04 -0400
+        Mon, 24 Apr 2023 05:46:54 -0400
 Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D0A6630E2
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Apr 2023 02:43:58 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6FFC13C11;
+        Mon, 24 Apr 2023 02:46:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1682329429; i=deller@gmx.de;
-        bh=FHjYBg4NiAOiwz2WyLL8oych2ductNrKsA7W77JnpvY=;
+        t=1682329558; i=deller@gmx.de;
+        bh=r8d1kBsYn2Vsg1ZsATwHy91SjqfepNuA5xgDrCumwfk=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=fI/x9hKE8J/nrtLbh0AvQAHxcyTyCKmPFoEwfLiantaRQ+lRbnj/8zSJCBiZjOUMP
-         DuRZnHHmLFiB2LXxCkDDm0lD/3SG+nzf06WObmafSFTCxTGhlSUJ9+fG3R+aQe7JRk
-         uqF4PdjS394lFaY16k7DJ9L4gMR2JnGEt80UuH7/xmHAP6jo6X5Xw8S4RdejVANwQQ
-         A0QK5p9GU3vc5rOtR8+VuKQJBN8sg67PH4dpWpfmD1gkn/P/BfHYLCd2dUXdWBEL5O
-         VBtY/MNLNWaNNv9fFW7pqSxVt/HDVdS33P36BaZ/A4a6PjITXiyOazOR+aqcPMGhkH
-         oks1hKbTwKm+A==
+        b=dRDV8HlXQrskUZk9ZO2np4z+diAwOGcC0PhuyIKt4VM1A3ztdn3ya6zR9865/lqWU
+         ALgbODoXl7r5IJyA/S7UzHQigKEV8C3Di+U46VmgYozZI6X+w7uw5PRRuteq9rxwCF
+         q9rRF1LkdH0HQsf1Mlv3IAUtDQuCsx8OBIsFqtu+FfTWenIhercIoGj2Kf7uDw0hdE
+         QXS8RrSdf7eUxvt29JIxXV8yCrFzzaHwEUzz7FDoMyiQCjdx9yd4L9SB8GImDEjApD
+         RZKHjha64fCzyxldolpw+PVi3fzTND8EmyXEcC+Py2R//SGZa0h6WiJWtk7RHIB/EJ
+         7sww68a60woCA==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.60] ([94.134.153.242]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mr9Bu-1qboPL3G6Q-00oHvR; Mon, 24
- Apr 2023 11:43:49 +0200
-Message-ID: <8027fd8f-6e99-aae7-85a1-3be4c9fac8a0@gmx.de>
-Date:   Mon, 24 Apr 2023 11:43:48 +0200
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MHXFx-1q4PIa3mQz-00DZsq; Mon, 24
+ Apr 2023 11:45:57 +0200
+Message-ID: <838c028d-92fe-df48-739e-d097ec2630c1@gmx.de>
+Date:   Mon, 24 Apr 2023 11:45:57 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.8.0
-Subject: Re: [PATCH 0/3] fbdev: Set missing owner fields in fb_ops
+Subject: Re: [PATCH] MAINTAINERS: Remove rage128 framebuffer driver maintainer
 Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, mpe@ellerman.id.au,
-        npiggin@gmail.com, christophe.leroy@csgroup.eu,
-        geert@linux-m68k.org
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linuxppc-dev@lists.ozlabs.org
-References: <20230424085825.18287-1-tzimmermann@suse.de>
+To:     Paul Mackerras <paulus@ozlabs.org>, linux-fbdev@vger.kernel.org
+Cc:     linux-kernel@vger.kernel.org,
+        Michael Ellerman <michael@ellerman.id.au>
+References: <ZEW4REOoU8XuT6sS@cleo>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20230424085825.18287-1-tzimmermann@suse.de>
+In-Reply-To: <ZEW4REOoU8XuT6sS@cleo>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:43f3kKWCK86xmG24dJC4dDpRYwSwsqvLizGYnCgPkKnX1Sb4VLQ
- iMOlKOWhPrx1piaDxup49hJej0rDnfB59oa08xyxTbuxuIkoP6aJj3VQQd+p5KteZpouVOx
- 3WDisypXG6Rua3Soolst+8QjhMSWXWUrM9hiplejTPf/2IUWgOgsQ7cq86sYKe7K8uUk0ce
- Ip0fwALjlYjbr5r+0F5RQ==
-UI-OutboundReport: notjunk:1;M01:P0:1WWx4g9Ba3M=;bwBSUAj+ZXwoKoEmLNzkH2p6dzv
- TuleNe3F64OudF81OhNYHB6wpej9TYJPm6oML7hNpoj/HaTapwkLb3AgfO6b+MLU9Kvu8s5Ev
- 1J9/liOcr73nu6JD36kyMP5/GtP1omrL9FQcDjTdmD/rMGAlURV9LEMGUbKllkrYYctchG6xk
- +yNbMyLT/hBLeCsuhyvMVOYgblRzq550esbgvl4HheG8YWb78NR8FB3yP8W7ko2BNY2LG+pL1
- ai9J3mAqOTns2WLN8Oi5+24iznNZMEqVQTMydLVV+ZnfFsI/zvy+fc5QDPaq0wB7/90wB7hkP
- kNGPo2ii4XJy1BEAp5Cxb70NWbVTKveMGGVwRSJg0qdmxwZz1VXjo7o9BeNXt5AF68FnPpaXE
- 4jBKrId/dcgJJ9fVQ2rYya4AWYB67GITH3vUBwfFXQouyTDJFZh8tqba7cAxADzOADP/GVMC5
- fj9iuH7E1wGlq6mZneKuQ9m2FNu3ryvzT3SSc28biaATpzK8hpzBKcTRD76H7NyavbOOQmI7s
- v628RfbstuNW9q+sB3bmEgaaFmocRQERL2o5NbnLVzoam3MXyAS9J3kF1dWH5MW60uRMVxjXo
- 7N81mN5s+C5EEUi7/JRJXmB41+bW4Agz3o6q27QYQ8AZYRCZ13HYo1EdK3wsIZFsmgLRGxULE
- BjE1pj/5uJXUEd0aIRTv1pPb9j+UobcZVOt45AWTx+MoN9qpw24tOO0+L8U4ugAozGI/yTrB9
- 1vuw4mbXKv/KbOiKezQwuTCL85nRwwPNcn0tmuVnrii7iS97Nq0Xcs6eVHzmv1dZ+WeEo23hm
- vNWNYqrceYDF3FzCXZL0eAgFDQhZm86ZNHTTXxAj013EBL4YDoDodnx2ugIM2v3Nrula2HOcc
- EUwwATy4V56ZssoHRLCM1Ix13+bJUk4hYujdUwoIu/GYjeebMp8Q2i4CDjlKbeh+JUSgLqSRI
- u6zsqGIztDPJNR4SRmhhZC9ZlYQ=
+X-Provags-ID: V03:K1:IhVTtWYWLo15a0H4EdmZfeiNy6lP3gADo9lTVBufmIyu5b5SqJM
+ mfWtfIzZhMBacVTbAHAMljACfe33kb0o4xPvTN+4Y8Ikv/n+HFKIgCTuy5FtQpJMgSQYklb
+ JPHFE4PFcr1x/qLPE7ZUFPoQDxai9C8VOzl+C9JEnLQMkJ5MaDJEqwx45+mrYJk1fwrbDLd
+ thwWbwuZy5AMSwir/XJwg==
+UI-OutboundReport: notjunk:1;M01:P0:gQVko6niNME=;HvAg/wG+HJsCeIfrVvEemQ6KIo+
+ 5kNhhBP1wOLbbk0TLPx6WadSitADpEF1JKNQIK8vSN1gd5ZyNaSJmcoBo6wYSQUE0/oSNY6Pi
+ 7R9t/LMA5nwVOaeeqs2W/WPmklNwWR2QF5+JfW+2BaVnp8ME1UE6xQm9fOLdRY6EHxr7DAkub
+ vztRVmB59EdDnzSlPRUQwzmy2S46fHZ38v0pIRWbfecV2EwQakrtPp790LBcaZBnxwHyIUSX5
+ Vr5p0ypq2ZV43DeK3M0bsFUz7BXGiSiXPLdenw68t035s7kpekjI+7n4dwYOX8PH7QFI561Xl
+ TQwnl4u7nfTBM8hunMSoVl9vuHtW4QNL38RTkaii5QzcquXmJ1yYB5/qZotzCG1hHub0p/xqn
+ O/NvtWK5iQp4a8AxgtfwlmxVUVjBgTMlvuBiNueudvYGat9UCa1Iv3rKAldFUtWH2dxK02NLm
+ QTDXIupi005ZrDb+obKxNglGlptCjrvyMab24VHdxYjl1httAf/7pTub7hNKdk8g8LpA2zlKq
+ Tls/iXfWOj91M4QJjY3n629WqdrQm0+lknC7hpWG5rbPN4gR2cqgSN3a4DRCFOQOT55R7tPKP
+ pHt6Q2Og3T8zgLwACnQUUbjZ3BQ8qqpxhELQfOxB0YC4Sp9fRofxEpFlVPQEmRKSfoFpDtdDD
+ X7/U40fhUD1Fz83SoiO9mwuh4Q6qTkOee4Ss+QY+2Cw4oWDU+6HCBgmwMvtTBfzdnWS3e+YWm
+ ++ekZqlDYKFSK4IcfGr5ogLiruh8jIjwkVBS2jS8zU8WSwqsrShBem3fBIeAZUk96FF1saZ/e
+ TvKtTgqeSq3YaZP8tO5Vg2wrugtk4CAszwq/1xmaFJBNm0i1m0Q/jVgpwoPhbAONUgoGbWqOh
+ V6FwHRsx8ikiU4n59jjSLbTGuWyQlCiv+ZIaU/Nz/h0jcLNMQ/g8NNwxHYw/QyfjiTQSVXA+w
+ QMjQy0gh43teEJEQ/VcqVJHCypQ=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 4/24/23 10:58, Thomas Zimmermann wrote:
-> Set the owner field of various drivers' fb_ops instance. The
-> setting is required by fbcon, which acquires a reference on the
-> fbdev driver's module. Otherwise, users could attempt to unload
-> the module while it's still in use.
+On 4/24/23 00:59, Paul Mackerras wrote:
+> I have not worked on this code for years, so remove my name as
+> maintainer.
 >
-> Thomas Zimmermann (3):
->    fbdev/68328fb: Init owner field of struct fb_ops
->    fbdev/ps3fb: Init owner field of struct fb_ops
->    fbdev/vfb: Init owner field of struct fb_ops
->
->   drivers/video/fbdev/68328fb.c | 1 +
->   drivers/video/fbdev/ps3fb.c   | 1 +
->   drivers/video/fbdev/vfb.c     | 1 +
->   3 files changed, 3 insertions(+)
->
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 
-Series applied.
+applied.
 
-Thank you!
+Thanks!
 Helge
+
+> ---
+>   MAINTAINERS | 3 +--
+>   1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index c6545eb54104..d79bae5590f8 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -17462,9 +17462,8 @@ F:	drivers/block/rbd.c
+>   F:	drivers/block/rbd_types.h
+>
+>   RAGE128 FRAMEBUFFER DISPLAY DRIVER
+> -M:	Paul Mackerras <paulus@samba.org>
+>   L:	linux-fbdev@vger.kernel.org
+> -S:	Maintained
+> +S:	Orphan
+>   F:	drivers/video/fbdev/aty/aty128fb.c
+>
+>   RAINSHADOW-CEC DRIVER
+

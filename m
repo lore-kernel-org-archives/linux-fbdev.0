@@ -2,122 +2,158 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E76CC7618E
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Apr 2023 07:33:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B583FC7618E
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Apr 2023 08:48:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230260AbjDXHds convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Apr 2023 03:33:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54916 "EHLO
+        id S231131AbjDXIsC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Apr 2023 04:48:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38024 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230358AbjDXHdr (ORCPT
+        with ESMTP id S230516AbjDXIsB (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Apr 2023 03:33:47 -0400
-Received: from mail-yb1-f173.google.com (mail-yb1-f173.google.com [209.85.219.173])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C1DCAE46;
-        Mon, 24 Apr 2023 00:33:45 -0700 (PDT)
-Received: by mail-yb1-f173.google.com with SMTP id 3f1490d57ef6-b980e16b27bso2748583276.2;
-        Mon, 24 Apr 2023 00:33:45 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1682321625; x=1684913625;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=DaY5onaWw+pL1z9HGbzp+KYK0d+t+vOPMGHk+vaMImM=;
-        b=NAhFApzQmwW836yoAmw5Q2RH5mpUt209f9fhM8b5MY3+mhj8XNqbiH6P3rCKjaOKjt
-         cilr8hX8lPSZ6wtipQMk/NAs7BL78T0jMQ1/vOD8O6JJStZHR9dNCEJhCoxejkdAeBAe
-         mETTEONVS64cMDXoFiT4oppwyEGTGHpEOelGAY4PK7Vh980DEnL5e9hGTdlgCdqHdgam
-         crj4RWF7cfiDKT9av6bweGmnnYQdc2UZg62E91rzIpZVfdTZeBNJQ1f/QiYTdO6h44oZ
-         iLn4y9hg8NxbWtjslRfygY0PmficM09ogWbNRt+BFRkyNVO+P3h2yQDehip1A64+yJSy
-         226Q==
-X-Gm-Message-State: AAQBX9cVT3QaPFllw3sVfEqXDOubasAv9GBH82aF2ZC7lmHbayKRcsni
-        VW2uEqBr1M8n40el36/9rVxrQIAQdTfJZQ==
-X-Google-Smtp-Source: AKy350ZD8C++bze1uT/TjyLaZsi+tSacC66gNzblXt+2k/3SvZVV3idUrsUxNwS25QKRuP98Z+N/Fg==
-X-Received: by 2002:a25:ae51:0:b0:b8e:ef6c:fe5 with SMTP id g17-20020a25ae51000000b00b8eef6c0fe5mr8696188ybe.20.1682321624601;
-        Mon, 24 Apr 2023 00:33:44 -0700 (PDT)
-Received: from mail-yb1-f171.google.com (mail-yb1-f171.google.com. [209.85.219.171])
-        by smtp.gmail.com with ESMTPSA id u44-20020a25ab2f000000b00b999ed81794sm482160ybi.0.2023.04.24.00.33.44
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 24 Apr 2023 00:33:44 -0700 (PDT)
-Received: by mail-yb1-f171.google.com with SMTP id 3f1490d57ef6-b99489836aaso1622625276.0;
-        Mon, 24 Apr 2023 00:33:44 -0700 (PDT)
-X-Received: by 2002:a25:2786:0:b0:b96:5262:ea40 with SMTP id
- n128-20020a252786000000b00b965262ea40mr7094245ybn.24.1682321624116; Mon, 24
- Apr 2023 00:33:44 -0700 (PDT)
+        Mon, 24 Apr 2023 04:48:01 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 003EF131;
+        Mon, 24 Apr 2023 01:47:54 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 894071FD7D;
+        Mon, 24 Apr 2023 08:47:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1682326073; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=Ms5T3XZYu1VTvsowncWRC+NA0acUncB1fOJ3TJZ4Grs=;
+        b=0SZ3+YX8QlYHS0KNQPHDeKSfu8S6mCc0r66paFPRDggLXgUsYdSUxuokv3EW+pXh1I9mRz
+        yjcEy9AxTKcImaxu3BFClOXJbKjOnHoGjhqe0OnkFNhPWt/H7ubdutz2ikRrfwHNDTAzGZ
+        Z9NEW1IjVo9lk+JWGC0DybCNUVis1SU=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1682326073;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=Ms5T3XZYu1VTvsowncWRC+NA0acUncB1fOJ3TJZ4Grs=;
+        b=pOQ5+SklUdE0ENCPlrMvulDfFnW2H8CmSyb3dKLdJdxZ1MAOdJ5y/xL+BZnTeVXaCWcx+D
+        rVReR/NhZosJS7Dw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 3A7C213780;
+        Mon, 24 Apr 2023 08:47:53 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id RahFDTlCRmRDcwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 24 Apr 2023 08:47:53 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
+        dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
+        deller@gmx.de, arnd@arndb.de, daniel.vetter@ffwll.ch,
+        javierm@redhat.com
+Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH] arch/x86: Include <asm/fb.h> in fbdev source file
+Date:   Mon, 24 Apr 2023 10:47:51 +0200
+Message-Id: <20230424084751.14641-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.40.0
 MIME-Version: 1.0
-References: <20230412095509.2196162-1-cyril@debamax.com> <20230412095509.2196162-3-cyril@debamax.com>
-In-Reply-To: <20230412095509.2196162-3-cyril@debamax.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 24 Apr 2023 09:33:32 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdW4rZn4p=gQZRWQQSEbQPmzZUd5eN+kP_Yr7bLgTHyvig@mail.gmail.com>
-Message-ID: <CAMuHMdW4rZn4p=gQZRWQQSEbQPmzZUd5eN+kP_Yr7bLgTHyvig@mail.gmail.com>
-Subject: Re: [PATCH 2/2] drm/ofdrm: Update expected device name
-To:     Cyril Brulebois <cyril@debamax.com>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Rob Herring <robh@kernel.org>,
-        Michal Suchanek <msuchanek@suse.de>,
-        linux-kernel@vger.kernel.org, stable@vger.kernel.org,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Cyril,
+Move the implementation of fb_pgprotect() to fbdev.c and include
+<asm/fb.h>. Fixes the following warning:
 
-CC DT
+  ../arch/x86/video/fbdev.c:14:5: warning: no previous prototype for 'fb_is_primary_device' [-Wmissing-prototypes]
+     14 | int fb_is_primary_device(struct fb_info *info)
+        |     ^~~~~~~~~~~~~~~~~~~~
 
-On Wed, Apr 12, 2023 at 12:05 PM Cyril Brulebois <cyril@debamax.com> wrote:
-> Since commit 241d2fb56a18 ("of: Make OF framebuffer device names unique"),
-> as spotted by Frédéric Bonnard, the historical "of-display" device is
-> gone: the updated logic creates "of-display.0" instead, then as many
-> "of-display.N" as required.
->
-> This means that offb no longer finds the expected device, which prevents
-> the Debian Installer from setting up its interface, at least on ppc64el.
->
-> Given the code similarity it is likely to affect ofdrm in the same way.
->
-> It might be better to iterate on all possible nodes, but updating the
-> hardcoded device from "of-display" to "of-display.0" is likely to help
-> as a first step.
->
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=217328
-> Link: https://bugs.debian.org/1033058
-> Fixes: 241d2fb56a18 ("of: Make OF framebuffer device names unique")
-> Cc: stable@vger.kernel.org # v6.2+
-> Signed-off-by: Cyril Brulebois <cyril@debamax.com>
+Just including <asm/fb.h> results in a number of built-in errors
+about undefined function. Moving fb_pgprotect() to the source file
+avoids the required include statements in the header. The function
+is only called occasionally from fb_mmap(), so having it as static
+inline had no benefit.
 
-Thanks for your patch, which is now commit 3a9d8ea2539ebebd
-("drm/ofdrm: Update expected device name") in fbdev/for-next.
+While at it, fix the codying style in fbdev.c.
 
-> --- a/drivers/gpu/drm/tiny/ofdrm.c
-> +++ b/drivers/gpu/drm/tiny/ofdrm.c
-> @@ -1390,7 +1390,7 @@ MODULE_DEVICE_TABLE(of, ofdrm_of_match_display);
->
->  static struct platform_driver ofdrm_platform_driver = {
->         .driver = {
-> -               .name = "of-display",
-> +               .name = "of-display.0",
->                 .of_match_table = ofdrm_of_match_display,
->         },
->         .probe = ofdrm_probe,
+Link: https://elixir.bootlin.com/linux/v6.3-rc7/source/drivers/video/fbdev/core/fbmem.c#L1404
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ arch/x86/include/asm/fb.h | 14 ++------------
+ arch/x86/video/fbdev.c    | 17 ++++++++++++++++-
+ 2 files changed, 18 insertions(+), 13 deletions(-)
 
-Same comment as for "[PATCH 1/2] fbdev/offb: Update expected device
-name".
+diff --git a/arch/x86/include/asm/fb.h b/arch/x86/include/asm/fb.h
+index a3fb801f12f1..23873da8fb77 100644
+--- a/arch/x86/include/asm/fb.h
++++ b/arch/x86/include/asm/fb.h
+@@ -2,21 +2,11 @@
+ #ifndef _ASM_X86_FB_H
+ #define _ASM_X86_FB_H
+ 
+-#include <asm/page.h>
+-
+ struct fb_info;
+ struct file;
++struct vm_area_struct;
+ 
+-static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
+-				unsigned long off)
+-{
+-	unsigned long prot;
+-
+-	prot = pgprot_val(vma->vm_page_prot) & ~_PAGE_CACHE_MASK;
+-	if (boot_cpu_data.x86 > 3)
+-		pgprot_val(vma->vm_page_prot) =
+-			prot | cachemode2protval(_PAGE_CACHE_MODE_UC_MINUS);
+-}
++void fb_pgprotect(struct file *file, struct vm_area_struct *vma, unsigned long off);
+ #define fb_pgprotect fb_pgprotect
+ 
+ int fb_is_primary_device(struct fb_info *info);
+diff --git a/arch/x86/video/fbdev.c b/arch/x86/video/fbdev.c
+index 5ec4eafbb981..57ee3c158f97 100644
+--- a/arch/x86/video/fbdev.c
++++ b/arch/x86/video/fbdev.c
+@@ -6,11 +6,25 @@
+  * for more details.
+  *
+  */
++
++#include <asm/fb.h>
++
+ #include <linux/fb.h>
+-#include <linux/pci.h>
+ #include <linux/module.h>
++#include <linux/pci.h>
+ #include <linux/vgaarb.h>
+ 
++void fb_pgprotect(struct file *file, struct vm_area_struct *vma, unsigned long off)
++{
++	unsigned long prot;
++
++	prot = pgprot_val(vma->vm_page_prot) & ~_PAGE_CACHE_MASK;
++	if (boot_cpu_data.x86 > 3)
++		pgprot_val(vma->vm_page_prot) =
++			prot | cachemode2protval(_PAGE_CACHE_MODE_UC_MINUS);
++}
++EXPORT_SYMBOL(fb_pgprotect);
++
+ int fb_is_primary_device(struct fb_info *info)
+ {
+ 	struct device *device = info->device;
+@@ -26,4 +40,5 @@ int fb_is_primary_device(struct fb_info *info)
+ 	return 0;
+ }
+ EXPORT_SYMBOL(fb_is_primary_device);
++
+ MODULE_LICENSE("GPL");
 
-https://lore.kernel.org/r/CAMuHMdVGEeAsmb4tAuuqqGJ-4+BBETwEwYJA+M9NyJv0BJ_hNg@mail.gmail.com
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
+base-commit: d2639bb054c42db5ff15c56902d1113303f5b655
+prerequisite-patch-id: 0aa359f6144c4015c140c8a6750be19099c676fb
+prerequisite-patch-id: c67e5d886a47b7d0266d81100837557fda34cb24
+prerequisite-patch-id: cbc453ee02fae02af22fbfdce56ab732c7a88c36
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.40.0
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

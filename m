@@ -2,68 +2,123 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44508C6FD18
-	for <linux-fbdev@archiver.kernel.org>; Sun, 23 Apr 2023 23:03:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE430C7618E
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Apr 2023 07:31:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229507AbjDWXDu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 23 Apr 2023 19:03:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38022 "EHLO
+        id S230500AbjDXHbj convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Apr 2023 03:31:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52864 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229458AbjDWXDt (ORCPT
+        with ESMTP id S230319AbjDXHbi (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 23 Apr 2023 19:03:49 -0400
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B9B8CE7F;
-        Sun, 23 Apr 2023 16:03:47 -0700 (PDT)
-Received: by gandalf.ozlabs.org (Postfix, from userid 1003)
-        id 4Q4P2R2Qg3z4xFh; Mon, 24 Apr 2023 09:03:43 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ozlabs.org;
-        s=201707; t=1682291023;
-        bh=VYkkgpvSfhfSaj5MZGaTDNMdwOg0eL/EKXCZb281p2c=;
-        h=Date:From:To:Cc:Subject:From;
-        b=UH1Vqb8xF5YQAIUUee8HJQPfaNDaKbqtS12kniSXIQA26EQ/zbnovifX6EJ8SdWqd
-         asD2oLcZWIqWthr6TgxfyOO54UeMZKIW9qlgSJVk2aGGeGQnRxkXR1xh+69ODF9Egr
-         vdVUXqdk46U78n85I0mfduozNur+Z8U2fAWNLZY/+7vV6yJ3YLGM+9ev+iuVsgH6/J
-         qDabpn1BK1jI8bYgWxaWopOi1aWVA+wwen+tAxEGDsmcUBAurfDuBkPssNYr8DGByM
-         e1YHEjhCwWcSM1P+7AlguBcin862VwnTXi/qYbbwA6OPHSTSm4oMwyXzMTx0ZxvKqO
-         PbuY/yY4esHRg==
-Date:   Mon, 24 Apr 2023 08:59:16 +1000
-From:   Paul Mackerras <paulus@ozlabs.org>
-To:     linux-fbdev@vger.kernel.org
-Cc:     linux-kernel@vger.kernel.org,
-        Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] MAINTAINERS: Remove rage128 framebuffer driver maintainer
-Message-ID: <ZEW4REOoU8XuT6sS@cleo>
+        Mon, 24 Apr 2023 03:31:38 -0400
+Received: from mail-yw1-f171.google.com (mail-yw1-f171.google.com [209.85.128.171])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2BC7DE53;
+        Mon, 24 Apr 2023 00:31:37 -0700 (PDT)
+Received: by mail-yw1-f171.google.com with SMTP id 00721157ae682-54fb8a8a597so47517507b3.0;
+        Mon, 24 Apr 2023 00:31:37 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1682321496; x=1684913496;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=qVjrUBePw3Nq2ZtrxyHKPMRQvOHRrO/KkUf1wauFdNw=;
+        b=ea2MBIlaqIwk5Lfmy+zqkz4+NFguM+X1843WzISN/DWq3Uok+unGyaHDs5so0PC1K2
+         eij6nrkhckidB3wpuYNdexEZQd3GJOQrCvCAzd4nZVBgEKZRvYTuMCI9f5oyuS2z/AXF
+         s2+WNi3dDWw6rLghaHXI/W1uL7v28cV6qdONYQrRnA+iO2ruytkTX93JVNAmeb+uqIIk
+         nXxnFgLW751wgVRyY/tm+y6ciqgcz2BPPjp/t3dlKgBT3ZvMi1u4lvZ8wZ4KHAWpjQjX
+         Rtaq8LAlwsxvPNe3gtEDU1CWDEU0QE84HjFgmz1cJ9QD7xGyiGu4hpHZ5mQ27SrHoZYT
+         rJJQ==
+X-Gm-Message-State: AAQBX9dyu3NZuNXrw3909YGmfRuovOO6bfjXgndS/GIezGR/X/IwOAXc
+        eflLg7afVCIVd8S15ZXbvYoyL/nSqNGatg==
+X-Google-Smtp-Source: AKy350ZgTk5EZ9Q6HUOqqPstIxZQjg22N4lWhyH1GKFCi8CeFD5n+BzYT2bnzDD31KRqdMj06OEOtA==
+X-Received: by 2002:a81:a0cb:0:b0:54f:8cf7:c114 with SMTP id x194-20020a81a0cb000000b0054f8cf7c114mr7497255ywg.46.1682321495654;
+        Mon, 24 Apr 2023 00:31:35 -0700 (PDT)
+Received: from mail-yw1-f175.google.com (mail-yw1-f175.google.com. [209.85.128.175])
+        by smtp.gmail.com with ESMTPSA id s2-20020a817702000000b00545a08184b5sm2748529ywc.69.2023.04.24.00.31.35
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Apr 2023 00:31:35 -0700 (PDT)
+Received: by mail-yw1-f175.google.com with SMTP id 00721157ae682-54f9d6eccf3so47456937b3.2;
+        Mon, 24 Apr 2023 00:31:35 -0700 (PDT)
+X-Received: by 2002:a81:6d93:0:b0:54f:e2ae:21e1 with SMTP id
+ i141-20020a816d93000000b0054fe2ae21e1mr6851865ywc.36.1682321494895; Mon, 24
+ Apr 2023 00:31:34 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+References: <20230412095509.2196162-1-cyril@debamax.com> <20230412095509.2196162-2-cyril@debamax.com>
+In-Reply-To: <20230412095509.2196162-2-cyril@debamax.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Mon, 24 Apr 2023 09:31:22 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVGEeAsmb4tAuuqqGJ-4+BBETwEwYJA+M9NyJv0BJ_hNg@mail.gmail.com>
+Message-ID: <CAMuHMdVGEeAsmb4tAuuqqGJ-4+BBETwEwYJA+M9NyJv0BJ_hNg@mail.gmail.com>
+Subject: Re: [PATCH 1/2] fbdev/offb: Update expected device name
+To:     Cyril Brulebois <cyril@debamax.com>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Rob Herring <robh@kernel.org>,
+        Michal Suchanek <msuchanek@suse.de>,
+        linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-I have not worked on this code for years, so remove my name as
-maintainer.
+Hi Cyril,
 
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
- MAINTAINERS | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+CC DT
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index c6545eb54104..d79bae5590f8 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -17462,9 +17462,8 @@ F:	drivers/block/rbd.c
- F:	drivers/block/rbd_types.h
- 
- RAGE128 FRAMEBUFFER DISPLAY DRIVER
--M:	Paul Mackerras <paulus@samba.org>
- L:	linux-fbdev@vger.kernel.org
--S:	Maintained
-+S:	Orphan
- F:	drivers/video/fbdev/aty/aty128fb.c
- 
- RAINSHADOW-CEC DRIVER
+On Wed, Apr 12, 2023 at 12:05 PM Cyril Brulebois <cyril@debamax.com> wrote:
+> Since commit 241d2fb56a18 ("of: Make OF framebuffer device names unique"),
+> as spotted by Frédéric Bonnard, the historical "of-display" device is
+> gone: the updated logic creates "of-display.0" instead, then as many
+> "of-display.N" as required.
+>
+> This means that offb no longer finds the expected device, which prevents
+> the Debian Installer from setting up its interface, at least on ppc64el.
+>
+> It might be better to iterate on all possible nodes, but updating the
+> hardcoded device from "of-display" to "of-display.0" is confirmed to fix
+> the Debian Installer at the very least.
+>
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=217328
+> Link: https://bugs.debian.org/1033058
+> Fixes: 241d2fb56a18 ("of: Make OF framebuffer device names unique")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Cyril Brulebois <cyril@debamax.com>
+
+Thanks for your patch, which is now commit 27c74ea74be805cc
+("fbdev/offb: Update expected device name") in fbdev/for-next
+
+> --- a/drivers/video/fbdev/offb.c
+> +++ b/drivers/video/fbdev/offb.c
+> @@ -698,7 +698,7 @@ MODULE_DEVICE_TABLE(of, offb_of_match_display);
+>
+>  static struct platform_driver offb_driver_display = {
+>         .driver = {
+> -               .name = "of-display",
+> +               .name = "of-display.0",
+>                 .of_match_table = offb_of_match_display,
+>         },
+>         .probe = offb_probe_display,
+
+This looks like the wrong fix for me: platform drivers' names must
+not contain the device index, and DT-based devices are probed using
+the compatible value (which is "display") instead of the node name.
+
+I think the problem is with the of_platform_default_populate_init()
+function, which should create proper name@unit-address device nodes,
+with unique unit addresses, and with the correct compatible value.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.39.2
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

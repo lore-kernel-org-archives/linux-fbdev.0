@@ -2,59 +2,58 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B583FC7618E
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Apr 2023 08:48:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF0C2C77B61
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Apr 2023 08:58:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231131AbjDXIsC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Apr 2023 04:48:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38024 "EHLO
+        id S230422AbjDXI6a (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Apr 2023 04:58:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41420 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230516AbjDXIsB (ORCPT
+        with ESMTP id S229458AbjDXI63 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Apr 2023 04:48:01 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 003EF131;
-        Mon, 24 Apr 2023 01:47:54 -0700 (PDT)
+        Mon, 24 Apr 2023 04:58:29 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D9BC5E55
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Apr 2023 01:58:28 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 894071FD7D;
-        Mon, 24 Apr 2023 08:47:53 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 7513121A14;
+        Mon, 24 Apr 2023 08:58:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1682326073; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1682326707; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-        bh=Ms5T3XZYu1VTvsowncWRC+NA0acUncB1fOJ3TJZ4Grs=;
-        b=0SZ3+YX8QlYHS0KNQPHDeKSfu8S6mCc0r66paFPRDggLXgUsYdSUxuokv3EW+pXh1I9mRz
-        yjcEy9AxTKcImaxu3BFClOXJbKjOnHoGjhqe0OnkFNhPWt/H7ubdutz2ikRrfwHNDTAzGZ
-        Z9NEW1IjVo9lk+JWGC0DybCNUVis1SU=
+        bh=+XJKKs849sQThStkQBOzc9zUGVmnw3q29MM/bZVqjno=;
+        b=sTHEbv0Qsj31NwYUZzEROdQpCSS5LV/X6EuZYOl8EJ/bnEQLJc2J8oV6QktbiKtYcaJuuu
+        bBnHLvNYCglfbu5XkDrmY/YYnMwCjos6qAXMMu6vvsD24subW2YeAo3U/UBSrLftjgjYjW
+        711In0IAbrsSC3ikIF9+94JqNbFPsPo=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1682326073;
+        s=susede2_ed25519; t=1682326707;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-        bh=Ms5T3XZYu1VTvsowncWRC+NA0acUncB1fOJ3TJZ4Grs=;
-        b=pOQ5+SklUdE0ENCPlrMvulDfFnW2H8CmSyb3dKLdJdxZ1MAOdJ5y/xL+BZnTeVXaCWcx+D
-        rVReR/NhZosJS7Dw==
+        bh=+XJKKs849sQThStkQBOzc9zUGVmnw3q29MM/bZVqjno=;
+        b=v8+j+2rycJN/3aArKwUvpMuDbTcryq8BQGXsbwDQWcVhH5EDTbrMI2eMMxAJgCq6OQwUBV
+        jxp5mg9z0y66loDQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 3A7C213780;
-        Mon, 24 Apr 2023 08:47:53 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 39AB513780;
+        Mon, 24 Apr 2023 08:58:27 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id RahFDTlCRmRDcwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 24 Apr 2023 08:47:53 +0000
+        id t0TQDLNERmQneQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 24 Apr 2023 08:58:27 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
-To:     tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
-        dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
-        deller@gmx.de, arnd@arndb.de, daniel.vetter@ffwll.ch,
-        javierm@redhat.com
-Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+To:     deller@gmx.de, mpe@ellerman.id.au, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu, geert@linux-m68k.org
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linuxppc-dev@lists.ozlabs.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH] arch/x86: Include <asm/fb.h> in fbdev source file
-Date:   Mon, 24 Apr 2023 10:47:51 +0200
-Message-Id: <20230424084751.14641-1-tzimmermann@suse.de>
+Subject: [PATCH 0/3] fbdev: Set missing owner fields in fb_ops
+Date:   Mon, 24 Apr 2023 10:58:22 +0200
+Message-Id: <20230424085825.18287-1-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.40.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -62,98 +61,21 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Move the implementation of fb_pgprotect() to fbdev.c and include
-<asm/fb.h>. Fixes the following warning:
+Set the owner field of various drivers' fb_ops instance. The
+setting is required by fbcon, which acquires a reference on the
+fbdev driver's module. Otherwise, users could attempt to unload
+the module while it's still in use.
 
-  ../arch/x86/video/fbdev.c:14:5: warning: no previous prototype for 'fb_is_primary_device' [-Wmissing-prototypes]
-     14 | int fb_is_primary_device(struct fb_info *info)
-        |     ^~~~~~~~~~~~~~~~~~~~
+Thomas Zimmermann (3):
+  fbdev/68328fb: Init owner field of struct fb_ops
+  fbdev/ps3fb: Init owner field of struct fb_ops
+  fbdev/vfb: Init owner field of struct fb_ops
 
-Just including <asm/fb.h> results in a number of built-in errors
-about undefined function. Moving fb_pgprotect() to the source file
-avoids the required include statements in the header. The function
-is only called occasionally from fb_mmap(), so having it as static
-inline had no benefit.
+ drivers/video/fbdev/68328fb.c | 1 +
+ drivers/video/fbdev/ps3fb.c   | 1 +
+ drivers/video/fbdev/vfb.c     | 1 +
+ 3 files changed, 3 insertions(+)
 
-While at it, fix the codying style in fbdev.c.
-
-Link: https://elixir.bootlin.com/linux/v6.3-rc7/source/drivers/video/fbdev/core/fbmem.c#L1404
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- arch/x86/include/asm/fb.h | 14 ++------------
- arch/x86/video/fbdev.c    | 17 ++++++++++++++++-
- 2 files changed, 18 insertions(+), 13 deletions(-)
-
-diff --git a/arch/x86/include/asm/fb.h b/arch/x86/include/asm/fb.h
-index a3fb801f12f1..23873da8fb77 100644
---- a/arch/x86/include/asm/fb.h
-+++ b/arch/x86/include/asm/fb.h
-@@ -2,21 +2,11 @@
- #ifndef _ASM_X86_FB_H
- #define _ASM_X86_FB_H
- 
--#include <asm/page.h>
--
- struct fb_info;
- struct file;
-+struct vm_area_struct;
- 
--static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
--				unsigned long off)
--{
--	unsigned long prot;
--
--	prot = pgprot_val(vma->vm_page_prot) & ~_PAGE_CACHE_MASK;
--	if (boot_cpu_data.x86 > 3)
--		pgprot_val(vma->vm_page_prot) =
--			prot | cachemode2protval(_PAGE_CACHE_MODE_UC_MINUS);
--}
-+void fb_pgprotect(struct file *file, struct vm_area_struct *vma, unsigned long off);
- #define fb_pgprotect fb_pgprotect
- 
- int fb_is_primary_device(struct fb_info *info);
-diff --git a/arch/x86/video/fbdev.c b/arch/x86/video/fbdev.c
-index 5ec4eafbb981..57ee3c158f97 100644
---- a/arch/x86/video/fbdev.c
-+++ b/arch/x86/video/fbdev.c
-@@ -6,11 +6,25 @@
-  * for more details.
-  *
-  */
-+
-+#include <asm/fb.h>
-+
- #include <linux/fb.h>
--#include <linux/pci.h>
- #include <linux/module.h>
-+#include <linux/pci.h>
- #include <linux/vgaarb.h>
- 
-+void fb_pgprotect(struct file *file, struct vm_area_struct *vma, unsigned long off)
-+{
-+	unsigned long prot;
-+
-+	prot = pgprot_val(vma->vm_page_prot) & ~_PAGE_CACHE_MASK;
-+	if (boot_cpu_data.x86 > 3)
-+		pgprot_val(vma->vm_page_prot) =
-+			prot | cachemode2protval(_PAGE_CACHE_MODE_UC_MINUS);
-+}
-+EXPORT_SYMBOL(fb_pgprotect);
-+
- int fb_is_primary_device(struct fb_info *info)
- {
- 	struct device *device = info->device;
-@@ -26,4 +40,5 @@ int fb_is_primary_device(struct fb_info *info)
- 	return 0;
- }
- EXPORT_SYMBOL(fb_is_primary_device);
-+
- MODULE_LICENSE("GPL");
-
-base-commit: d2639bb054c42db5ff15c56902d1113303f5b655
-prerequisite-patch-id: 0aa359f6144c4015c140c8a6750be19099c676fb
-prerequisite-patch-id: c67e5d886a47b7d0266d81100837557fda34cb24
-prerequisite-patch-id: cbc453ee02fae02af22fbfdce56ab732c7a88c36
 -- 
 2.40.0
 

@@ -2,150 +2,91 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 316C4C77B61
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Apr 2023 09:36:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78CB0C77B61
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Apr 2023 09:44:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229625AbjDXJf7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Apr 2023 05:35:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35476 "EHLO
+        id S230476AbjDXJoF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Apr 2023 05:44:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40544 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229610AbjDXJf6 (ORCPT
+        with ESMTP id S229658AbjDXJoE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Apr 2023 05:35:58 -0400
+        Mon, 24 Apr 2023 05:44:04 -0400
 Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0DEA5A9;
-        Mon, 24 Apr 2023 02:35:55 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D0A6630E2
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Apr 2023 02:43:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1682328942; i=deller@gmx.de;
-        bh=yTHDRa5GrOM5P/U7F/tlSANNP9N/Y9bFvN20rrCdkPQ=;
+        t=1682329429; i=deller@gmx.de;
+        bh=FHjYBg4NiAOiwz2WyLL8oych2ductNrKsA7W77JnpvY=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=F3rPQi1+I4gmF+pOG2S0LNoxKXTRzShZijkV9aqCVuXR6vpFa8DHkPNxKNVmwwWYJ
-         QTDRlVPZO7JxFI9UnQSkbVlmAXwnpJxqSUJsxTjaCSwyViL9f7BuwsBpKdc8gRyRnR
-         F4TZX/Y+9vKbeJTK84gmHE50nFPgRMcbz+y27c/5K/LMq41MS4Ew+upmZ1QRVnplBo
-         UM5oHwUGD+LhVtlUuwCxhNSxbya7JK8XeRxNlaQ0geYUiCinJZCRkHkU7IlS+eRIKu
-         ZOXARPnQ8hZFOsUYbwUNgukki9HTC9yNvdbocwMoa+t8WPXDTftrgA7y1F/eHdy77A
-         oHB6gf+F58uDA==
+        b=fI/x9hKE8J/nrtLbh0AvQAHxcyTyCKmPFoEwfLiantaRQ+lRbnj/8zSJCBiZjOUMP
+         DuRZnHHmLFiB2LXxCkDDm0lD/3SG+nzf06WObmafSFTCxTGhlSUJ9+fG3R+aQe7JRk
+         uqF4PdjS394lFaY16k7DJ9L4gMR2JnGEt80UuH7/xmHAP6jo6X5Xw8S4RdejVANwQQ
+         A0QK5p9GU3vc5rOtR8+VuKQJBN8sg67PH4dpWpfmD1gkn/P/BfHYLCd2dUXdWBEL5O
+         VBtY/MNLNWaNNv9fFW7pqSxVt/HDVdS33P36BaZ/A4a6PjITXiyOazOR+aqcPMGhkH
+         oks1hKbTwKm+A==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.153.242]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MmlXK-1qXOga2qn8-00jovs; Mon, 24
- Apr 2023 11:35:42 +0200
-Message-ID: <10077a22-3055-75dd-2168-310468618f99@gmx.de>
-Date:   Mon, 24 Apr 2023 11:35:41 +0200
+Received: from [192.168.20.60] ([94.134.153.242]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mr9Bu-1qboPL3G6Q-00oHvR; Mon, 24
+ Apr 2023 11:43:49 +0200
+Message-ID: <8027fd8f-6e99-aae7-85a1-3be4c9fac8a0@gmx.de>
+Date:   Mon, 24 Apr 2023 11:43:48 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.8.0
-Subject: Re: [PATCH 2/2] drm/ofdrm: Update expected device name
+Subject: Re: [PATCH 0/3] fbdev: Set missing owner fields in fb_ops
 Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Cyril Brulebois <cyril@debamax.com>
+To:     Thomas Zimmermann <tzimmermann@suse.de>, mpe@ellerman.id.au,
+        npiggin@gmail.com, christophe.leroy@csgroup.eu,
+        geert@linux-m68k.org
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Rob Herring <robh@kernel.org>,
-        Michal Suchanek <msuchanek@suse.de>,
-        linux-kernel@vger.kernel.org, stable@vger.kernel.org,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>
-References: <20230412095509.2196162-1-cyril@debamax.com>
- <20230412095509.2196162-3-cyril@debamax.com>
- <CAMuHMdW4rZn4p=gQZRWQQSEbQPmzZUd5eN+kP_Yr7bLgTHyvig@mail.gmail.com>
- <5694a9ab-d474-c101-9398-eea55aab29df@suse.de>
+        linuxppc-dev@lists.ozlabs.org
+References: <20230424085825.18287-1-tzimmermann@suse.de>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <5694a9ab-d474-c101-9398-eea55aab29df@suse.de>
+In-Reply-To: <20230424085825.18287-1-tzimmermann@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:3kP7ktou073M4fKwqgFVglqpXsTOVkudI9TiAb2jmS61p79Utkj
- bfKy597ABOj5a6ia0vbIHLBRiCPzRO3TO4d8iV7ihpFva7jJulDIVLkHIhpab/XObR5Izkb
- mgQfkyaFnCx9VGQABpm9RG9LFkRBEhZhZUJux+Bmo1XmparDwkl0Z45YcHxCliiT2VpfBoE
- cpM1B5JUmxQk9WZ5qX9Tg==
-UI-OutboundReport: notjunk:1;M01:P0:efosCe5Ci2I=;fSTK6kN/XxzU8cnmLNXQ8yrbYW9
- bIuYXFo/RQFlNaXx2v+Cs3VzcUlxdioipOp8IoCiyur5pCgM0ejBNU++WZ9jm18gx4S+DiZtF
- A9z2pxIyP2UYptCogM3hOTzD4sbMCLLWn6tNPAuxrupIaRVQQUGjdP3LW1BPVp2H5QEFXEk7j
- qp3doz4Zu+E+VD7l+7m9wAWFsridFWVvk0Fbu87zKM7lEfsyO/zzdnbQJlCNZEDjHDI7Khcfw
- wI7pCLtjk8K5Uc4SzTvIfPL1bus6D1GzkVBP/IqVMy79sScMiAYAat9UyoFgtPEEYW7O7IBS6
- 9XhF2luW4u+zULDATwMQ+3FNBPSgyFmeFIBUro9KrvNWTvKlbgvrd4pZXYjQ5iXUx+aARFOXD
- wcohb4sUCZg8jZST2ISbtbnxiBlAtmDyDj1PNi57CtdeaWW0rZE8whJ91ucwlB037WB1HyiZv
- ChEIT49J+n7JSvG5FZf5t/dmdHk7rK6iTjxZfzLwiD41NMS8rN6aeLu/rXsLJZ0PbKwGxwODw
- 0avi1Go6Pt0Vh4S7U+au6mIwL7LxBgcFyP7+fFw5VXo9zU2/E0EtNDN3QQmgiN1y6EwyphFiT
- gRaP/vM2hdUjNQRseJsOP6NxCpgKQ5AHGK5JFi3w+EKddp3Ch2VMIjxWKACBJvB6FJpDsaDvN
- CeAW5cG8Avhj1x8dGT+pgMXLvhav7GvLlWFKhwQcjp2pV91wittAgxzzixr7y+jusEwlFM0ZI
- /B5WylxOR94G2LONBhSOas8v6/8v78IgVrlb/15/V23Q3wq5mjVoABQXz9DFR7HiH9t2lRgOD
- menH8eLaeHnQHaAqQR+6XYiC1RhAsV6GOquabipihSAvGi3aFh35PHrwpVUqOzUfLawkQ4NCp
- sl8NziNDVkv/YMB1W8axAtcuIUKJmldg4qEuSC5AKnnfMqO2xTgJWqECVBMzF/Fr4iNTEDMVo
- bBcX7VmIYqL5gwxFuGg7mNIHSWE=
+X-Provags-ID: V03:K1:43f3kKWCK86xmG24dJC4dDpRYwSwsqvLizGYnCgPkKnX1Sb4VLQ
+ iMOlKOWhPrx1piaDxup49hJej0rDnfB59oa08xyxTbuxuIkoP6aJj3VQQd+p5KteZpouVOx
+ 3WDisypXG6Rua3Soolst+8QjhMSWXWUrM9hiplejTPf/2IUWgOgsQ7cq86sYKe7K8uUk0ce
+ Ip0fwALjlYjbr5r+0F5RQ==
+UI-OutboundReport: notjunk:1;M01:P0:1WWx4g9Ba3M=;bwBSUAj+ZXwoKoEmLNzkH2p6dzv
+ TuleNe3F64OudF81OhNYHB6wpej9TYJPm6oML7hNpoj/HaTapwkLb3AgfO6b+MLU9Kvu8s5Ev
+ 1J9/liOcr73nu6JD36kyMP5/GtP1omrL9FQcDjTdmD/rMGAlURV9LEMGUbKllkrYYctchG6xk
+ +yNbMyLT/hBLeCsuhyvMVOYgblRzq550esbgvl4HheG8YWb78NR8FB3yP8W7ko2BNY2LG+pL1
+ ai9J3mAqOTns2WLN8Oi5+24iznNZMEqVQTMydLVV+ZnfFsI/zvy+fc5QDPaq0wB7/90wB7hkP
+ kNGPo2ii4XJy1BEAp5Cxb70NWbVTKveMGGVwRSJg0qdmxwZz1VXjo7o9BeNXt5AF68FnPpaXE
+ 4jBKrId/dcgJJ9fVQ2rYya4AWYB67GITH3vUBwfFXQouyTDJFZh8tqba7cAxADzOADP/GVMC5
+ fj9iuH7E1wGlq6mZneKuQ9m2FNu3ryvzT3SSc28biaATpzK8hpzBKcTRD76H7NyavbOOQmI7s
+ v628RfbstuNW9q+sB3bmEgaaFmocRQERL2o5NbnLVzoam3MXyAS9J3kF1dWH5MW60uRMVxjXo
+ 7N81mN5s+C5EEUi7/JRJXmB41+bW4Agz3o6q27QYQ8AZYRCZ13HYo1EdK3wsIZFsmgLRGxULE
+ BjE1pj/5uJXUEd0aIRTv1pPb9j+UobcZVOt45AWTx+MoN9qpw24tOO0+L8U4ugAozGI/yTrB9
+ 1vuw4mbXKv/KbOiKezQwuTCL85nRwwPNcn0tmuVnrii7iS97Nq0Xcs6eVHzmv1dZ+WeEo23hm
+ vNWNYqrceYDF3FzCXZL0eAgFDQhZm86ZNHTTXxAj013EBL4YDoDodnx2ugIM2v3Nrula2HOcc
+ EUwwATy4V56ZssoHRLCM1Ix13+bJUk4hYujdUwoIu/GYjeebMp8Q2i4CDjlKbeh+JUSgLqSRI
+ u6zsqGIztDPJNR4SRmhhZC9ZlYQ=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 4/24/23 11:07, Thomas Zimmermann wrote:
-> Hi
+On 4/24/23 10:58, Thomas Zimmermann wrote:
+> Set the owner field of various drivers' fb_ops instance. The
+> setting is required by fbcon, which acquires a reference on the
+> fbdev driver's module. Otherwise, users could attempt to unload
+> the module while it's still in use.
 >
-> Am 24.04.23 um 09:33 schrieb Geert Uytterhoeven:
->> Hi Cyril,
->>
->> CC DT
->>
->> On Wed, Apr 12, 2023 at 12:05=E2=80=AFPM Cyril Brulebois <cyril@debamax=
-.com> wrote:
->>> Since commit 241d2fb56a18 ("of: Make OF framebuffer device names uniqu=
-e"),
->>> as spotted by Fr=C3=A9d=C3=A9ric Bonnard, the historical "of-display" =
-device is
->>> gone: the updated logic creates "of-display.0" instead, then as many
->>> "of-display.N" as required.
->>>
->>> This means that offb no longer finds the expected device, which preven=
-ts
->>> the Debian Installer from setting up its interface, at least on ppc64e=
-l.
->>>
->>> Given the code similarity it is likely to affect ofdrm in the same way=
-.
->>>
->>> It might be better to iterate on all possible nodes, but updating the
->>> hardcoded device from "of-display" to "of-display.0" is likely to help
->>> as a first step.
->>>
->>> Link: https://bugzilla.kernel.org/show_bug.cgi?id=3D217328
->>> Link: https://bugs.debian.org/1033058
->>> Fixes: 241d2fb56a18 ("of: Make OF framebuffer device names unique")
->>> Cc: stable@vger.kernel.org # v6.2+
->>> Signed-off-by: Cyril Brulebois <cyril@debamax.com>
->>
->> Thanks for your patch, which is now commit 3a9d8ea2539ebebd
->> ("drm/ofdrm: Update expected device name") in fbdev/for-next.
->>
->>> --- a/drivers/gpu/drm/tiny/ofdrm.c
->>> +++ b/drivers/gpu/drm/tiny/ofdrm.c
->>> @@ -1390,7 +1390,7 @@ MODULE_DEVICE_TABLE(of, ofdrm_of_match_display);
->>>
->>> =C2=A0 static struct platform_driver ofdrm_platform_driver =3D {
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .driver =3D {
->>> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0 .name =3D "of-display",
->>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0 .name =3D "of-display.0",
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0 .of_match_table =3D ofdrm_of_match_display,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 },
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .probe =3D ofdrm_prob=
-e,
->>
->> Same comment as for "[PATCH 1/2] fbdev/offb: Update expected device
->> name".
->>
->> https://lore.kernel.org/r/CAMuHMdVGEeAsmb4tAuuqqGJ-4+BBETwEwYJA+M9NyJv0=
-BJ_hNg@mail.gmail.com
+> Thomas Zimmermann (3):
+>    fbdev/68328fb: Init owner field of struct fb_ops
+>    fbdev/ps3fb: Init owner field of struct fb_ops
+>    fbdev/vfb: Init owner field of struct fb_ops
 >
-> Sorry that I missed this patch. I agree that it's probably not
-> correct. At least in ofdrm, we want to be able to use multiple
-> framebuffers at the same time; a feature that has been broken by this
-> change.
+>   drivers/video/fbdev/68328fb.c | 1 +
+>   drivers/video/fbdev/ps3fb.c   | 1 +
+>   drivers/video/fbdev/vfb.c     | 1 +
+>   3 files changed, 3 insertions(+)
+>
 
-Geert & Thomas, thanks for the review!
+Series applied.
 
-I've dropped both patches from fbdev tree for now.
-Would be great to find another good solution though, as it breaks the debi=
-an
-installer.
-
+Thank you!
 Helge

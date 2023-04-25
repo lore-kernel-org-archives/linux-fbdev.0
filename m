@@ -2,99 +2,57 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CD52C77B61
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Apr 2023 09:46:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D1DCC6FD18
+	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Apr 2023 09:46:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231410AbjDXJqy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Apr 2023 05:46:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44186 "EHLO
+        id S233696AbjDYJqB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 25 Apr 2023 05:46:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42380 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231436AbjDXJqy (ORCPT
+        with ESMTP id S233715AbjDYJpj (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Apr 2023 05:46:54 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6FFC13C11;
-        Mon, 24 Apr 2023 02:46:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1682329558; i=deller@gmx.de;
-        bh=r8d1kBsYn2Vsg1ZsATwHy91SjqfepNuA5xgDrCumwfk=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=dRDV8HlXQrskUZk9ZO2np4z+diAwOGcC0PhuyIKt4VM1A3ztdn3ya6zR9865/lqWU
-         ALgbODoXl7r5IJyA/S7UzHQigKEV8C3Di+U46VmgYozZI6X+w7uw5PRRuteq9rxwCF
-         q9rRF1LkdH0HQsf1Mlv3IAUtDQuCsx8OBIsFqtu+FfTWenIhercIoGj2Kf7uDw0hdE
-         QXS8RrSdf7eUxvt29JIxXV8yCrFzzaHwEUzz7FDoMyiQCjdx9yd4L9SB8GImDEjApD
-         RZKHjha64fCzyxldolpw+PVi3fzTND8EmyXEcC+Py2R//SGZa0h6WiJWtk7RHIB/EJ
-         7sww68a60woCA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.153.242]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MHXFx-1q4PIa3mQz-00DZsq; Mon, 24
- Apr 2023 11:45:57 +0200
-Message-ID: <838c028d-92fe-df48-739e-d097ec2630c1@gmx.de>
-Date:   Mon, 24 Apr 2023 11:45:57 +0200
+        Tue, 25 Apr 2023 05:45:39 -0400
+Received: from mail.lokoho.com (mail.lokoho.com [217.61.105.98])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 51B38C17D
+        for <linux-fbdev@vger.kernel.org>; Tue, 25 Apr 2023 02:45:38 -0700 (PDT)
+Received: by mail.lokoho.com (Postfix, from userid 1001)
+        id BE77A830E9; Tue, 25 Apr 2023 10:44:48 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=lokoho.com; s=mail;
+        t=1682415930; bh=Z0N5VlX9/JlryGOL5I747Le9USomZJCRNNGRT3LbbKc=;
+        h=Date:From:To:Subject:From;
+        b=BRT/q37eQxC95xJ7AiDGRndOW1b+Ji9GpH62Dp+RX6Ky3F6r8N/6pjkD8p4fwZSHR
+         6B6RkKp86vefDPpAYCQjWgGnuvaxQbg86lBoP/w2j3LITwrHQ3fuNCOCP18OPnOlIA
+         oU+Tlr0vS1WY5E7WfHJLYqqTN/mnMxsEbv+7zq+UnFPeviSoX2RBMKkBxPiUqhExJ3
+         2D+ADHm15XBf1AvPSTNytMp7u6cacKHwRLw9YfLYZU51ihGtZ5o5pdTJ9FT0/ZaKwI
+         Z5P0DHTxvpAetSHpFaJvQ4EqrZgpzbn39LUXSdD9L9343j4Qoeb9YAyNO7CUJkIES6
+         nQHeXSJxL+jBg==
+Received: by mail.lokoho.com for <linux-fbdev@vger.kernel.org>; Tue, 25 Apr 2023 09:42:51 GMT
+Message-ID: <20230425102243-0.1.5k.201wi.0.i6zk3rcq7c@lokoho.com>
+Date:   Tue, 25 Apr 2023 09:42:51 GMT
+From:   "Adam Charachuta" <adam.charachuta@lokoho.com>
+To:     <linux-fbdev@vger.kernel.org>
+Subject: =?UTF-8?Q?S=C5=82owa_kluczowe_do_wypozycjonowania?=
+X-Mailer: mail.lokoho.com
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH] MAINTAINERS: Remove rage128 framebuffer driver maintainer
-Content-Language: en-US
-To:     Paul Mackerras <paulus@ozlabs.org>, linux-fbdev@vger.kernel.org
-Cc:     linux-kernel@vger.kernel.org,
-        Michael Ellerman <michael@ellerman.id.au>
-References: <ZEW4REOoU8XuT6sS@cleo>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <ZEW4REOoU8XuT6sS@cleo>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:IhVTtWYWLo15a0H4EdmZfeiNy6lP3gADo9lTVBufmIyu5b5SqJM
- mfWtfIzZhMBacVTbAHAMljACfe33kb0o4xPvTN+4Y8Ikv/n+HFKIgCTuy5FtQpJMgSQYklb
- JPHFE4PFcr1x/qLPE7ZUFPoQDxai9C8VOzl+C9JEnLQMkJ5MaDJEqwx45+mrYJk1fwrbDLd
- thwWbwuZy5AMSwir/XJwg==
-UI-OutboundReport: notjunk:1;M01:P0:gQVko6niNME=;HvAg/wG+HJsCeIfrVvEemQ6KIo+
- 5kNhhBP1wOLbbk0TLPx6WadSitADpEF1JKNQIK8vSN1gd5ZyNaSJmcoBo6wYSQUE0/oSNY6Pi
- 7R9t/LMA5nwVOaeeqs2W/WPmklNwWR2QF5+JfW+2BaVnp8ME1UE6xQm9fOLdRY6EHxr7DAkub
- vztRVmB59EdDnzSlPRUQwzmy2S46fHZ38v0pIRWbfecV2EwQakrtPp790LBcaZBnxwHyIUSX5
- Vr5p0ypq2ZV43DeK3M0bsFUz7BXGiSiXPLdenw68t035s7kpekjI+7n4dwYOX8PH7QFI561Xl
- TQwnl4u7nfTBM8hunMSoVl9vuHtW4QNL38RTkaii5QzcquXmJ1yYB5/qZotzCG1hHub0p/xqn
- O/NvtWK5iQp4a8AxgtfwlmxVUVjBgTMlvuBiNueudvYGat9UCa1Iv3rKAldFUtWH2dxK02NLm
- QTDXIupi005ZrDb+obKxNglGlptCjrvyMab24VHdxYjl1httAf/7pTub7hNKdk8g8LpA2zlKq
- Tls/iXfWOj91M4QJjY3n629WqdrQm0+lknC7hpWG5rbPN4gR2cqgSN3a4DRCFOQOT55R7tPKP
- pHt6Q2Og3T8zgLwACnQUUbjZ3BQ8qqpxhELQfOxB0YC4Sp9fRofxEpFlVPQEmRKSfoFpDtdDD
- X7/U40fhUD1Fz83SoiO9mwuh4Q6qTkOee4Ss+QY+2Cw4oWDU+6HCBgmwMvtTBfzdnWS3e+YWm
- ++ekZqlDYKFSK4IcfGr5ogLiruh8jIjwkVBS2jS8zU8WSwqsrShBem3fBIeAZUk96FF1saZ/e
- TvKtTgqeSq3YaZP8tO5Vg2wrugtk4CAszwq/1xmaFJBNm0i1m0Q/jVgpwoPhbAONUgoGbWqOh
- V6FwHRsx8ikiU4n59jjSLbTGuWyQlCiv+ZIaU/Nz/h0jcLNMQ/g8NNwxHYw/QyfjiTQSVXA+w
- QMjQy0gh43teEJEQ/VcqVJHCypQ=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 4/24/23 00:59, Paul Mackerras wrote:
-> I have not worked on this code for years, so remove my name as
-> maintainer.
->
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+Dzie=C5=84 dobry,
 
-applied.
+zapozna=C5=82em si=C4=99 z Pa=C5=84stwa ofert=C4=85 i z przyjemno=C5=9Bci=
+=C4=85 przyznaj=C4=99, =C5=BCe przyci=C4=85ga uwag=C4=99 i zach=C4=99ca d=
+o dalszych rozm=C3=B3w.=20
 
-Thanks!
-Helge
+Pomy=C5=9Bla=C5=82em, =C5=BCe mo=C5=BCe m=C3=B3g=C5=82bym mie=C4=87 sw=C3=
+=B3j wk=C5=82ad w Pa=C5=84stwa rozw=C3=B3j i pom=C3=B3c dotrze=C4=87 z t=C4=
+=85 ofert=C4=85 do wi=C4=99kszego grona odbiorc=C3=B3w. Pozycjonuj=C4=99 =
+strony www, dzi=C4=99ki czemu generuj=C4=85 =C5=9Bwietny ruch w sieci.
 
-> ---
->   MAINTAINERS | 3 +--
->   1 file changed, 1 insertion(+), 2 deletions(-)
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index c6545eb54104..d79bae5590f8 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -17462,9 +17462,8 @@ F:	drivers/block/rbd.c
->   F:	drivers/block/rbd_types.h
->
->   RAGE128 FRAMEBUFFER DISPLAY DRIVER
-> -M:	Paul Mackerras <paulus@samba.org>
->   L:	linux-fbdev@vger.kernel.org
-> -S:	Maintained
-> +S:	Orphan
->   F:	drivers/video/fbdev/aty/aty128fb.c
->
->   RAINSHADOW-CEC DRIVER
+Mo=C5=BCemy porozmawia=C4=87 w najbli=C5=BCszym czasie?
 
+
+Pozdrawiam
+Adam Charachuta

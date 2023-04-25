@@ -2,118 +2,124 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CB13C6FD18
-	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Apr 2023 16:57:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8994CC77B61
+	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Apr 2023 19:18:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234813AbjDYQ5S (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 25 Apr 2023 12:57:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45718 "EHLO
+        id S234279AbjDYTSP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 25 Apr 2023 15:18:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40170 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234835AbjDYQ5R (ORCPT
+        with ESMTP id S233992AbjDYTSO (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 25 Apr 2023 12:57:17 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 21DEC14446
-        for <linux-fbdev@vger.kernel.org>; Tue, 25 Apr 2023 09:56:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1682441790;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=QgrFF00z2wCMViqatkmG+CLp0kBJ37AT7atyuO0HEqU=;
-        b=M4uOXzTO+2yf2CI3o0TufyLu+ARkDR/XvGdWYiWmXXFTg4IANV6eKgEXYt1hHv1y9RDZ5u
-        ZvfdcCeVwyIiBPOiyu1dFrqv0XiGG6gQENkogFhYPhxKgkPGrJ7eaJndbG66rSEBYWzuTf
-        jBOmGiVfzpIIs1Htgj85c7LUzVMKQLg=
-Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
- [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-595-mvaRXII_MbKXxwkCMQgSGg-1; Tue, 25 Apr 2023 12:56:29 -0400
-X-MC-Unique: mvaRXII_MbKXxwkCMQgSGg-1
-Received: by mail-wr1-f71.google.com with SMTP id ffacd0b85a97d-2f6632b85fcso1837378f8f.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 25 Apr 2023 09:56:28 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1682441788; x=1685033788;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=QgrFF00z2wCMViqatkmG+CLp0kBJ37AT7atyuO0HEqU=;
-        b=BNx88GPgjHGDI9ZAppwL0HzcNDym0D0TYYsSUiC+nBoClCrOkBJrEYjCpSHgAd6+gn
-         21/zVxg6MNPQ0VNZi/PcVF9ADu6+eRYrSv8lpJ1MB2rfrWQGAYqTURgR/5EtzdA4Zeaf
-         a46VpwR6ln5cqO99E+qTi9jNON4V1dSAmdJBY1DUEDKEvcdBSCgwck7BYLO94HTl2jMv
-         y79Vus21kw1zLzx2i4CTTpzpEp4r3EWSCPfnaDRD444PZfFGL9OL2hEY0+MXAJc7nlGZ
-         r4bfpmQS2sKiBUqvIc6RfObV9msRXWHgEUQ7A11W5wR334ZgnZY1stB9y720Pq0LKOWF
-         aZvw==
-X-Gm-Message-State: AC+VfDzsZtFRSE1HWMXIO94venLRBHb8OVNIpmL/zCVcqJ/+1JSVSu4A
-        CneexMvjpU/kLl6OwFhdap2X/QM8YRX0CuO5fTfmsJmY2vpyRIZp4mgweJoHLeTE8bbDIGpPVbn
-        bva1cG01NVGoYu5C5isM1iVc=
-X-Received: by 2002:a5d:48ca:0:b0:304:7ff3:9b2 with SMTP id p10-20020a5d48ca000000b003047ff309b2mr3900203wrs.39.1682441787969;
-        Tue, 25 Apr 2023 09:56:27 -0700 (PDT)
-X-Google-Smtp-Source: ACHHUZ7MeNC8cJ9OH2Zuh38sAFoM69kuwhsPNczCEv8GrTcsCUMsmycijC69SXBl8Qf/CgPBx366KQ==
-X-Received: by 2002:a5d:48ca:0:b0:304:7ff3:9b2 with SMTP id p10-20020a5d48ca000000b003047ff309b2mr3900186wrs.39.1682441787586;
-        Tue, 25 Apr 2023 09:56:27 -0700 (PDT)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id k5-20020adff5c5000000b002f103ca90cdsm13473182wrp.101.2023.04.25.09.56.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 25 Apr 2023 09:56:27 -0700 (PDT)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     Thomas Zimmermann <tzimmermann@suse.de>, tglx@linutronix.de,
-        mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com,
-        x86@kernel.org, hpa@zytor.com, deller@gmx.de, arnd@arndb.de,
-        daniel.vetter@ffwll.ch
-Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH] arch/x86: Include <asm/fb.h> in fbdev source file
-In-Reply-To: <20230424084751.14641-1-tzimmermann@suse.de>
-References: <20230424084751.14641-1-tzimmermann@suse.de>
-Date:   Tue, 25 Apr 2023 18:56:26 +0200
-Message-ID: <87v8hjhpdx.fsf@minerva.mail-host-address-is-not-set>
+        Tue, 25 Apr 2023 15:18:14 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2057114F43
+        for <linux-fbdev@vger.kernel.org>; Tue, 25 Apr 2023 12:18:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1682450268; i=deller@gmx.de;
+        bh=YZTXGD6FzTSq+OduEPk9TQoYc+8PPyDXkEDQr097ZTY=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=bZPLFsEGD3knDGOX+/wHedGvUIpGw6emBaHGKdfJcWiwVtOtsdRIiRCpN1rCwKTZh
+         feh/x9d9Y0b4pIk/u3cRCYUXIM2PO2ejqhHStIuOD9PZ5ft33AymOWy0PXoBe5yctC
+         cu8MpFAFJY3DEnb9caWOofUMhT5U+SgJJawFFIs6eS59d7iGK4OJtd348zsi0yHdF6
+         qQGlHeNLiThXNQXH4ap1/tKLtrHiQ5AHlM+j8kh68RtAB7jNEtogCBrLoKN7K0Kjl2
+         mxrY/UAsjCU6eTmbAZfUe1e/siBwbHP7QJzMmmMQnpwfZ2xZL3gWyZa76Oa+IOH1bB
+         0cp8vCkXA7D3Q==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.147.194]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1Mof5H-1qbzOf0iCX-00p7k3; Tue, 25
+ Apr 2023 21:17:48 +0200
+Message-ID: <1231a974-a1d7-4226-c225-bc8ef2092d0f@gmx.de>
+Date:   Tue, 25 Apr 2023 21:17:45 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH 0/6] drm,fbdev: Use fbdev's I/O helpers
+Content-Language: en-US
+To:     Thomas Zimmermann <tzimmermann@suse.de>,
+        maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+        airlied@gmail.com, daniel@ffwll.ch, javierm@redhat.com,
+        geert@linux-m68k.org, sudipm.mukherjee@gmail.com,
+        teddy.wang@siliconmotion.com
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+References: <20230425142846.730-1-tzimmermann@suse.de>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20230425142846.730-1-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:9VLfaJAG6NWP/mvARw5exkEz6oRb75+oQe9tqtfVzgEnuX2HYdh
+ mw8mL+3pyTLG8V16+7kMKXksFviOKPl0nk+xvOaUi2gObhHmebyY4hFM/jVi7ck32nYh1Dl
+ kUyy1Ek9TLS267KJiqIHOYum1HQNI7Ox0H6Qid9XXcsSdH/ZE7004N/NVHTzj8vJDA08ObC
+ OlkWrGHN6LME6H2K1zEMQ==
+UI-OutboundReport: notjunk:1;M01:P0:PeS6ZhxiAX0=;CkZ8QpZCnhW4ccnlH4tVo/5EhVC
+ +7kSUt6q9CQA6SLkCQbwLbyCv9Vpy32bCQQSXs/L/MC6JkDY3CJlTRSE3fAO3yIAXc4IQbF0V
+ x3r4fl4EB0KzdsiC5NQGlbo5BxqDNd1XmC8lez+6KUuTQi0neIY4H7gVwGKKOujM89pw5EOF7
+ tSiG3tjTNEvwikeZ7ERbMzG7+69le8fOCH6/AB687CZoRKBBn3ynzlcfip4EOaXUrACUtPosJ
+ +yUVDVnHCtsVdIzLhfPpWAWsWQZkOld+zx5lnh/oWLPjYuYpjYwzzNrqivyWJK+MAuEoB0R8W
+ xX/SvgQK/351DNdRNu4TigwmWl6hzSUm98ErvfemFuGOKWdh98l/xweL7iWIzZYFHMZsjKxGQ
+ fuJXaZ8YKS3qrsRPA1yb/sVTeqnfvChfPBt3UiNYxKdVTcFZZiaw34M61ItZ/+qMepp4l7+Zc
+ v/HHyFMhiUSFw8b3tmuuZr2zdTE6pNOZ4kEN93omtqXhE2/YFA8NaS6zIZjMH8cihR9NT431l
+ G0SWHqky/ZqGENPIZwp9zTBgq+CoO4KerO7tSHb30lFDQ2wx+5bMJY04cccnNBAf9hdbVzL03
+ p83TscYCot/6AlvzXJNzz9mvETzVquQ6Oor0QckC/j8BmIjdoVv2ZuZgGK2pdfiEseKD50MyY
+ UIvzvR4KML1y/k2Vm5WMIcoJxmRuXzEOD/MPOj4QkG0ucB0zpd03faAtLKy2wKkdp8VLFCPUy
+ +pjlSLhmwPOqwYYrWqlL1wS/eFfr3nwHSSvSy+ZjX4rlK9Vw04Dg6xEK4vg4KV+NkuJm/eBba
+ UJub07vckmLw18+Qw/8kdhPVP1se5WZzoDkxbFoZEXAdoPMNUICrs6nkI+AYmXfZ122b1wa+a
+ WkuS6XiSCc51ChNHi12OXM1E6UQN4gxHIMpTDbVApoMzoKq17B0utCuqNvXuA/QOgt6SdyZCq
+ bmiDY96Gz26u/siSHay5Y1GGGbw=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Thomas Zimmermann <tzimmermann@suse.de> writes:
-
-> Move the implementation of fb_pgprotect() to fbdev.c and include
-> <asm/fb.h>. Fixes the following warning:
+On 4/25/23 16:28, Thomas Zimmermann wrote:
+> Make fbdev's built-in helpers for reading and writing I/O and system
+> memory available to DRM. Replace DRM's internal helpers.
 >
->   ../arch/x86/video/fbdev.c:14:5: warning: no previous prototype for 'fb_is_primary_device' [-Wmissing-prototypes]
->      14 | int fb_is_primary_device(struct fb_info *info)
->         |     ^~~~~~~~~~~~~~~~~~~~
+> The first patch resolves a bug that's been in the fbdev code for
+> more than 15 years. Makes the read/write helpers work successfully
+> with the IGT tests.
 >
-> Just including <asm/fb.h> results in a number of built-in errors
-> about undefined function. Moving fb_pgprotect() to the source file
-> avoids the required include statements in the header. The function
-> is only called occasionally from fb_mmap(), so having it as static
-> inline had no benefit.
+> Patches 2 to 4 streamline fbdev's file-I/O code and remove a few
+> duplicate checks.
 >
-> While at it, fix the codying style in fbdev.c.
+> Patch 5 moves the default-I/O code into the new helpers fb_cfb_read()
+> and fb_cfb_write(); patch 6 uses them in DRM. This allows us to remove
+> quite a bit of code from DRM's internal fbdev helpers.
 >
-> Link: https://elixir.bootlin.com/linux/v6.3-rc7/source/drivers/video/fbdev/core/fbmem.c#L1404
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
+> Tested with i915 and simpledrm.
+>
+> The next step here is to remove the drm_fb_helper_{cfb,sys}_*()
+> entirely. They where mostly introduced because fbdev doesn't protect
+> it's public interfaces with an CONFIG_FB preprocessor guards. But all
+> of DRM driver's fbdev emulation won't be build without CONFIG_FB, so
+> this is not an issue in practice. Removing the DRM wrappers will
+> further simplify the DRM code.
 
-Looks good to me.
+This series does a very nice cleanup!
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+You may add:
+Acked-by: Helge Deller <deller@gmx.de>
 
-[...]
+Thanks!
+Helge
 
-> base-commit: d2639bb054c42db5ff15c56902d1113303f5b655
-> prerequisite-patch-id: 0aa359f6144c4015c140c8a6750be19099c676fb
-> prerequisite-patch-id: c67e5d886a47b7d0266d81100837557fda34cb24
-> prerequisite-patch-id: cbc453ee02fae02af22fbfdce56ab732c7a88c36
-> -- 
-
-This is a disadvantage of format.useAutoBase = true. I find that have to
-do `git branch --set-upstream-to=$foo` more often than I would like...
-
-At least it seems that patchwork ignores these so that's OK.
-
--- 
-Best regards,
-
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+>
+> Thomas Zimmermann (6):
+>    fbdev: Return number of bytes read or written
+>    fbdev: Use screen_buffer in fb_sys_{read,write}()
+>    fbdev: Don't re-validate info->state in fb_ops implementations
+>    fbdev: Validate info->screen_{base,buffer} in fb_ops implementations
+>    fbdev: Move CFB read and write code into helper functions
+>    drm/fb-helper: Use fb_{cfb,sys}_{read, write}()
+>
+>   drivers/gpu/drm/drm_fb_helper.c        | 174 +------------------------
+>   drivers/video/fbdev/cobalt_lcdfb.c     |   6 +
+>   drivers/video/fbdev/core/Makefile      |   2 +-
+>   drivers/video/fbdev/core/fb_cfb_fops.c | 126 ++++++++++++++++++
+>   drivers/video/fbdev/core/fb_sys_fops.c |  36 ++---
+>   drivers/video/fbdev/core/fbmem.c       | 111 +---------------
+>   drivers/video/fbdev/sm712fb.c          |  10 +-
+>   include/linux/fb.h                     |  10 ++
+>   8 files changed, 173 insertions(+), 302 deletions(-)
+>   create mode 100644 drivers/video/fbdev/core/fb_cfb_fops.c
+>
 

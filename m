@@ -2,124 +2,224 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8994CC77B61
-	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Apr 2023 19:18:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E10DC77B60
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Apr 2023 05:16:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234279AbjDYTSP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 25 Apr 2023 15:18:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40170 "EHLO
+        id S239175AbjDZFQn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Apr 2023 01:16:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45964 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233992AbjDYTSO (ORCPT
+        with ESMTP id S229537AbjDZFQm (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 25 Apr 2023 15:18:14 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2057114F43
-        for <linux-fbdev@vger.kernel.org>; Tue, 25 Apr 2023 12:18:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1682450268; i=deller@gmx.de;
-        bh=YZTXGD6FzTSq+OduEPk9TQoYc+8PPyDXkEDQr097ZTY=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=bZPLFsEGD3knDGOX+/wHedGvUIpGw6emBaHGKdfJcWiwVtOtsdRIiRCpN1rCwKTZh
-         feh/x9d9Y0b4pIk/u3cRCYUXIM2PO2ejqhHStIuOD9PZ5ft33AymOWy0PXoBe5yctC
-         cu8MpFAFJY3DEnb9caWOofUMhT5U+SgJJawFFIs6eS59d7iGK4OJtd348zsi0yHdF6
-         qQGlHeNLiThXNQXH4ap1/tKLtrHiQ5AHlM+j8kh68RtAB7jNEtogCBrLoKN7K0Kjl2
-         mxrY/UAsjCU6eTmbAZfUe1e/siBwbHP7QJzMmmMQnpwfZ2xZL3gWyZa76Oa+IOH1bB
-         0cp8vCkXA7D3Q==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.147.194]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1Mof5H-1qbzOf0iCX-00p7k3; Tue, 25
- Apr 2023 21:17:48 +0200
-Message-ID: <1231a974-a1d7-4226-c225-bc8ef2092d0f@gmx.de>
-Date:   Tue, 25 Apr 2023 21:17:45 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH 0/6] drm,fbdev: Use fbdev's I/O helpers
-Content-Language: en-US
+        Wed, 26 Apr 2023 01:16:42 -0400
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 804D72712
+        for <linux-fbdev@vger.kernel.org>; Tue, 25 Apr 2023 22:16:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1682486201; x=1714022201;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=O9zsEosO/FK7+3TIvJmvUBbaVy87+VNS2qbkAH9L/00=;
+  b=HGgyT6p3rGG0HbYRm2/yurimX8zCprjvNCrHCdcuiAX/cyPUGSuj6gEA
+   53vF8D82Zr1/4lg7VwCaATjpWbmCfi4IRSnk2c35Xd5wyxoSb85gYfMxt
+   VR/xvo6skN45m/wqAoyFI5elEZJxEJQ3HqaD9m8Gr0fsRTl+nHs5uzhkc
+   tGxNfkHvzGXa7Ll/ku28wFIpe00ObgctwPTWCYfNz3y5bBmth2SIjVz8K
+   jq0hiRb/C+0Py8YKaxkZqzxbvsVV2eLJRKLMk0khxcwqld+JLVyIIVTv3
+   NuxI40w3OMVOykcgLOQhR86ZcKkVANWcqf4/jS1OVOXC5Z9MIHZGIh8lZ
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10691"; a="433277069"
+X-IronPort-AV: E=Sophos;i="5.99,227,1677571200"; 
+   d="scan'208";a="433277069"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Apr 2023 22:16:41 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10691"; a="758455017"
+X-IronPort-AV: E=Sophos;i="5.99,227,1677571200"; 
+   d="scan'208";a="758455017"
+Received: from lkp-server01.sh.intel.com (HELO 98ee5a99fc83) ([10.239.97.150])
+  by fmsmga008.fm.intel.com with ESMTP; 25 Apr 2023 22:16:38 -0700
+Received: from kbuild by 98ee5a99fc83 with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1prXW4-00008i-12;
+        Wed, 26 Apr 2023 05:16:32 +0000
+Date:   Wed, 26 Apr 2023 13:16:10 +0800
+From:   kernel test robot <lkp@intel.com>
 To:     Thomas Zimmermann <tzimmermann@suse.de>,
         maarten.lankhorst@linux.intel.com, mripard@kernel.org,
         airlied@gmail.com, daniel@ffwll.ch, javierm@redhat.com,
-        geert@linux-m68k.org, sudipm.mukherjee@gmail.com,
+        deller@gmx.de, geert@linux-m68k.org, sudipm.mukherjee@gmail.com,
         teddy.wang@siliconmotion.com
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20230425142846.730-1-tzimmermann@suse.de>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20230425142846.730-1-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:9VLfaJAG6NWP/mvARw5exkEz6oRb75+oQe9tqtfVzgEnuX2HYdh
- mw8mL+3pyTLG8V16+7kMKXksFviOKPl0nk+xvOaUi2gObhHmebyY4hFM/jVi7ck32nYh1Dl
- kUyy1Ek9TLS267KJiqIHOYum1HQNI7Ox0H6Qid9XXcsSdH/ZE7004N/NVHTzj8vJDA08ObC
- OlkWrGHN6LME6H2K1zEMQ==
-UI-OutboundReport: notjunk:1;M01:P0:PeS6ZhxiAX0=;CkZ8QpZCnhW4ccnlH4tVo/5EhVC
- +7kSUt6q9CQA6SLkCQbwLbyCv9Vpy32bCQQSXs/L/MC6JkDY3CJlTRSE3fAO3yIAXc4IQbF0V
- x3r4fl4EB0KzdsiC5NQGlbo5BxqDNd1XmC8lez+6KUuTQi0neIY4H7gVwGKKOujM89pw5EOF7
- tSiG3tjTNEvwikeZ7ERbMzG7+69le8fOCH6/AB687CZoRKBBn3ynzlcfip4EOaXUrACUtPosJ
- +yUVDVnHCtsVdIzLhfPpWAWsWQZkOld+zx5lnh/oWLPjYuYpjYwzzNrqivyWJK+MAuEoB0R8W
- xX/SvgQK/351DNdRNu4TigwmWl6hzSUm98ErvfemFuGOKWdh98l/xweL7iWIzZYFHMZsjKxGQ
- fuJXaZ8YKS3qrsRPA1yb/sVTeqnfvChfPBt3UiNYxKdVTcFZZiaw34M61ItZ/+qMepp4l7+Zc
- v/HHyFMhiUSFw8b3tmuuZr2zdTE6pNOZ4kEN93omtqXhE2/YFA8NaS6zIZjMH8cihR9NT431l
- G0SWHqky/ZqGENPIZwp9zTBgq+CoO4KerO7tSHb30lFDQ2wx+5bMJY04cccnNBAf9hdbVzL03
- p83TscYCot/6AlvzXJNzz9mvETzVquQ6Oor0QckC/j8BmIjdoVv2ZuZgGK2pdfiEseKD50MyY
- UIvzvR4KML1y/k2Vm5WMIcoJxmRuXzEOD/MPOj4QkG0ucB0zpd03faAtLKy2wKkdp8VLFCPUy
- +pjlSLhmwPOqwYYrWqlL1wS/eFfr3nwHSSvSy+ZjX4rlK9Vw04Dg6xEK4vg4KV+NkuJm/eBba
- UJub07vckmLw18+Qw/8kdhPVP1se5WZzoDkxbFoZEXAdoPMNUICrs6nkI+AYmXfZ122b1wa+a
- WkuS6XiSCc51ChNHi12OXM1E6UQN4gxHIMpTDbVApoMzoKq17B0utCuqNvXuA/QOgt6SdyZCq
- bmiDY96Gz26u/siSHay5Y1GGGbw=
+Cc:     oe-kbuild-all@lists.linux.dev, linux-fbdev@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH 5/6] fbdev: Move CFB read and write code into helper
+ functions
+Message-ID: <202304261317.QAEwArcB-lkp@intel.com>
+References: <20230425142846.730-6-tzimmermann@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230425142846.730-6-tzimmermann@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 4/25/23 16:28, Thomas Zimmermann wrote:
-> Make fbdev's built-in helpers for reading and writing I/O and system
-> memory available to DRM. Replace DRM's internal helpers.
->
-> The first patch resolves a bug that's been in the fbdev code for
-> more than 15 years. Makes the read/write helpers work successfully
-> with the IGT tests.
->
-> Patches 2 to 4 streamline fbdev's file-I/O code and remove a few
-> duplicate checks.
->
-> Patch 5 moves the default-I/O code into the new helpers fb_cfb_read()
-> and fb_cfb_write(); patch 6 uses them in DRM. This allows us to remove
-> quite a bit of code from DRM's internal fbdev helpers.
->
-> Tested with i915 and simpledrm.
->
-> The next step here is to remove the drm_fb_helper_{cfb,sys}_*()
-> entirely. They where mostly introduced because fbdev doesn't protect
-> it's public interfaces with an CONFIG_FB preprocessor guards. But all
-> of DRM driver's fbdev emulation won't be build without CONFIG_FB, so
-> this is not an issue in practice. Removing the DRM wrappers will
-> further simplify the DRM code.
+Hi Thomas,
 
-This series does a very nice cleanup!
+kernel test robot noticed the following build warnings:
 
-You may add:
-Acked-by: Helge Deller <deller@gmx.de>
+[auto build test WARNING on drm-misc/drm-misc-next]
+[also build test WARNING on linus/master next-20230425]
+[cannot apply to v6.3]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Thanks!
-Helge
+url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/fbdev-Return-number-of-bytes-read-or-written/20230425-223011
+base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
+patch link:    https://lore.kernel.org/r/20230425142846.730-6-tzimmermann%40suse.de
+patch subject: [PATCH 5/6] fbdev: Move CFB read and write code into helper functions
+config: riscv-randconfig-s033-20230423 (https://download.01.org/0day-ci/archive/20230426/202304261317.QAEwArcB-lkp@intel.com/config)
+compiler: riscv64-linux-gcc (GCC) 12.1.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # apt-get install sparse
+        # sparse version: v0.6.4-39-gce1a6720-dirty
+        # https://github.com/intel-lab-lkp/linux/commit/d4a150f3dfa8e73f2e92f1c7efc9271e17632cc2
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Thomas-Zimmermann/fbdev-Return-number-of-bytes-read-or-written/20230425-223011
+        git checkout d4a150f3dfa8e73f2e92f1c7efc9271e17632cc2
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__' O=build_dir ARCH=riscv olddefconfig
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__' O=build_dir ARCH=riscv SHELL=/bin/bash drivers/video/fbdev/core/
 
->
-> Thomas Zimmermann (6):
->    fbdev: Return number of bytes read or written
->    fbdev: Use screen_buffer in fb_sys_{read,write}()
->    fbdev: Don't re-validate info->state in fb_ops implementations
->    fbdev: Validate info->screen_{base,buffer} in fb_ops implementations
->    fbdev: Move CFB read and write code into helper functions
->    drm/fb-helper: Use fb_{cfb,sys}_{read, write}()
->
->   drivers/gpu/drm/drm_fb_helper.c        | 174 +------------------------
->   drivers/video/fbdev/cobalt_lcdfb.c     |   6 +
->   drivers/video/fbdev/core/Makefile      |   2 +-
->   drivers/video/fbdev/core/fb_cfb_fops.c | 126 ++++++++++++++++++
->   drivers/video/fbdev/core/fb_sys_fops.c |  36 ++---
->   drivers/video/fbdev/core/fbmem.c       | 111 +---------------
->   drivers/video/fbdev/sm712fb.c          |  10 +-
->   include/linux/fb.h                     |  10 ++
->   8 files changed, 173 insertions(+), 302 deletions(-)
->   create mode 100644 drivers/video/fbdev/core/fb_cfb_fops.c
->
+If you fix the issue, kindly add following tag where applicable
+| Reported-by: kernel test robot <lkp@intel.com>
+| Link: https://lore.kernel.org/oe-kbuild-all/202304261317.QAEwArcB-lkp@intel.com/
 
+sparse warnings: (new ones prefixed by >>)
+   WARNING: invalid argument to '-march': '_zihintpause'
+>> drivers/video/fbdev/core/fb_cfb_fops.c:44:39: sparse: sparse: incorrect type in argument 2 (different address spaces) @@     expected void const * @@     got unsigned char [noderef] [usertype] __iomem *[assigned] src @@
+   drivers/video/fbdev/core/fb_cfb_fops.c:44:39: sparse:     expected void const *
+   drivers/video/fbdev/core/fb_cfb_fops.c:44:39: sparse:     got unsigned char [noderef] [usertype] __iomem *[assigned] src
+>> drivers/video/fbdev/core/fb_cfb_fops.c:113:32: sparse: sparse: incorrect type in argument 1 (different address spaces) @@     expected void * @@     got unsigned char [noderef] [usertype] __iomem *[assigned] dst @@
+   drivers/video/fbdev/core/fb_cfb_fops.c:113:32: sparse:     expected void *
+   drivers/video/fbdev/core/fb_cfb_fops.c:113:32: sparse:     got unsigned char [noderef] [usertype] __iomem *[assigned] dst
+
+vim +44 drivers/video/fbdev/core/fb_cfb_fops.c
+
+     6	
+     7	ssize_t fb_cfb_read(struct fb_info *info, char __user *buf, size_t count, loff_t *ppos)
+     8	{
+     9		unsigned long p = *ppos;
+    10		u8 *buffer, *dst;
+    11		u8 __iomem *src;
+    12		int c, cnt = 0, err = 0;
+    13		unsigned long total_size;
+    14	
+    15		if (!info->screen_base)
+    16			return -ENODEV;
+    17	
+    18		total_size = info->screen_size;
+    19	
+    20		if (total_size == 0)
+    21			total_size = info->fix.smem_len;
+    22	
+    23		if (p >= total_size)
+    24			return 0;
+    25	
+    26		if (count >= total_size)
+    27			count = total_size;
+    28	
+    29		if (count + p > total_size)
+    30			count = total_size - p;
+    31	
+    32		buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count, GFP_KERNEL);
+    33		if (!buffer)
+    34			return -ENOMEM;
+    35	
+    36		src = (u8 __iomem *)(info->screen_base + p);
+    37	
+    38		if (info->fbops->fb_sync)
+    39			info->fbops->fb_sync(info);
+    40	
+    41		while (count) {
+    42			c  = (count > PAGE_SIZE) ? PAGE_SIZE : count;
+    43			dst = buffer;
+  > 44			fb_memcpy_fromfb(dst, src, c);
+    45			dst += c;
+    46			src += c;
+    47	
+    48			if (copy_to_user(buf, buffer, c)) {
+    49				err = -EFAULT;
+    50				break;
+    51			}
+    52			*ppos += c;
+    53			buf += c;
+    54			cnt += c;
+    55			count -= c;
+    56		}
+    57	
+    58		kfree(buffer);
+    59	
+    60		return cnt ? cnt : err;
+    61	}
+    62	EXPORT_SYMBOL(fb_cfb_read);
+    63	
+    64	ssize_t fb_cfb_write(struct fb_info *info, const char __user *buf, size_t count, loff_t *ppos)
+    65	{
+    66		unsigned long p = *ppos;
+    67		u8 *buffer, *src;
+    68		u8 __iomem *dst;
+    69		int c, cnt = 0, err = 0;
+    70		unsigned long total_size;
+    71	
+    72		if (!info->screen_base)
+    73			return -ENODEV;
+    74	
+    75		total_size = info->screen_size;
+    76	
+    77		if (total_size == 0)
+    78			total_size = info->fix.smem_len;
+    79	
+    80		if (p > total_size)
+    81			return -EFBIG;
+    82	
+    83		if (count > total_size) {
+    84			err = -EFBIG;
+    85			count = total_size;
+    86		}
+    87	
+    88		if (count + p > total_size) {
+    89			if (!err)
+    90				err = -ENOSPC;
+    91	
+    92			count = total_size - p;
+    93		}
+    94	
+    95		buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count, GFP_KERNEL);
+    96		if (!buffer)
+    97			return -ENOMEM;
+    98	
+    99		dst = (u8 __iomem *)(info->screen_base + p);
+   100	
+   101		if (info->fbops->fb_sync)
+   102			info->fbops->fb_sync(info);
+   103	
+   104		while (count) {
+   105			c = (count > PAGE_SIZE) ? PAGE_SIZE : count;
+   106			src = buffer;
+   107	
+   108			if (copy_from_user(src, buf, c)) {
+   109				err = -EFAULT;
+   110				break;
+   111			}
+   112	
+ > 113			fb_memcpy_tofb(dst, src, c);
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests

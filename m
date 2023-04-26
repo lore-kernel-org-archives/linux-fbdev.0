@@ -2,167 +2,153 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 428D7C77B78
-	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Apr 2023 15:01:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32731C7618E
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Apr 2023 15:01:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241226AbjDZPBr convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Apr 2023 11:01:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56612 "EHLO
+        id S240920AbjDZPBy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Apr 2023 11:01:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56822 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240775AbjDZPBm (ORCPT
+        with ESMTP id S240775AbjDZPBx (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Apr 2023 11:01:42 -0400
-Received: from mail-yw1-f179.google.com (mail-yw1-f179.google.com [209.85.128.179])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C07B419BF
-        for <linux-fbdev@vger.kernel.org>; Wed, 26 Apr 2023 08:01:40 -0700 (PDT)
-Received: by mail-yw1-f179.google.com with SMTP id 00721157ae682-54fbee69fc4so83065377b3.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 26 Apr 2023 08:01:40 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1682521300; x=1685113300;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=InRK/SXUr8n9eTPGJfhjR3lsiyg7RVplSp0EEYbdwVU=;
-        b=jacVlgvyq2Efk+1BjkHa6625qjVV2bKvv7Zh1OY2tTSl/jfeUlg8bsq3mQJWNxV/w1
-         dhMRpQk5QUzXimngRlXqEoW8AJPgnYFLfySUZGqIo/cN4jBm2wLbLP/aMOM07trNL5Ef
-         RbzZrmfcAIiSZ7QsvE5vRIvSXUYKPiQ7PrjZSZfzf4uHhMag4j/wkUol8oHmEqGWoDMD
-         O5S739871Mama0Pcfl3YC6sMEmgbVAik1zG4+Gp51fUA8zK5ILWMG/vwCjCbQBAPuuP8
-         t0xNYee0qDpzyBFaNtsWAyXcTFXOTGaiGQYDNBGE5RNKSIbArMdmuhQW4dtf+R5YjGQ9
-         VQhw==
-X-Gm-Message-State: AAQBX9fccocGZaxCPGTlvm/dGRm1wCu6DDjz9rodVRWKSruY2cRk0Naq
-        LND1mb9lfjDC57iG/LSOUwNV977yA6Phvg==
-X-Google-Smtp-Source: AKy350bJJkThPL5rB9hsCOgmhTobO+vIhfzqFEzNPBadbFgsTcmijMxqun69wPgyZWgIpKNutJCeig==
-X-Received: by 2002:a81:4e8d:0:b0:540:c99d:efc1 with SMTP id c135-20020a814e8d000000b00540c99defc1mr13191349ywb.35.1682521299606;
-        Wed, 26 Apr 2023 08:01:39 -0700 (PDT)
-Received: from mail-yw1-f179.google.com (mail-yw1-f179.google.com. [209.85.128.179])
-        by smtp.gmail.com with ESMTPSA id b129-20020a816787000000b0054fb2ab8782sm4248412ywc.50.2023.04.26.08.01.38
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 26 Apr 2023 08:01:38 -0700 (PDT)
-Received: by mail-yw1-f179.google.com with SMTP id 00721157ae682-555c8a12b26so83551317b3.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 26 Apr 2023 08:01:38 -0700 (PDT)
-X-Received: by 2002:a81:7104:0:b0:54f:b6af:ac15 with SMTP id
- m4-20020a817104000000b0054fb6afac15mr11853502ywc.51.1682521298213; Wed, 26
- Apr 2023 08:01:38 -0700 (PDT)
+        Wed, 26 Apr 2023 11:01:53 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 25AEB19BF
+        for <linux-fbdev@vger.kernel.org>; Wed, 26 Apr 2023 08:01:52 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 6CAD51FDD1;
+        Wed, 26 Apr 2023 15:01:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1682521310; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=RQSFVHVOoRHRUw8fHhZjYmJzL02ujbgo5LxbCfRcENY=;
+        b=J83HeokaXTJbycgYxym8PIVl6vcTLrffYms0AmouufncXqMCJyDK+kZaQDYzoA8sn13lyB
+        Xo5l08tH7WzdAap3lx68+puwtCXfSIX3qEYPf/gt0P9kRMVwtanvdphoM2BKlpJQo1nWs5
+        m81jRMy8a0P9MHHY5yDuvI1bHes8CvY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1682521310;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=RQSFVHVOoRHRUw8fHhZjYmJzL02ujbgo5LxbCfRcENY=;
+        b=sCWCCMFQyEqzjuT1fXyixgcdZmjL+nfNLmGnE+Dd+XcICUHH1WkEVBFfcygCmZhRnM8aRk
+        +S91pO3GjmHxqtDg==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 3211B13421;
+        Wed, 26 Apr 2023 15:01:50 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id 2j0zC948SWTidAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 26 Apr 2023 15:01:50 +0000
+Message-ID: <c6cf2f7c-ef32-287c-2b3a-e08a96176af5@suse.de>
+Date:   Wed, 26 Apr 2023 17:01:49 +0200
 MIME-Version: 1.0
-References: <20230425142846.730-1-tzimmermann@suse.de> <20230425142846.730-6-tzimmermann@suse.de>
-In-Reply-To: <20230425142846.730-6-tzimmermann@suse.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 26 Apr 2023 17:01:25 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdU-_w9yQHYhOCD3cz4CEY6ag-dTXjuHSLnzty0hAMBbXw@mail.gmail.com>
-Message-ID: <CAMuHMdU-_w9yQHYhOCD3cz4CEY6ag-dTXjuHSLnzty0hAMBbXw@mail.gmail.com>
-Subject: Re: [PATCH 5/6] fbdev: Move CFB read and write code into helper functions
-To:     Thomas Zimmermann <tzimmermann@suse.de>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Subject: Re: [PATCH 1/6] fbdev: Return number of bytes read or written
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
 Cc:     maarten.lankhorst@linux.intel.com, mripard@kernel.org,
         airlied@gmail.com, daniel@ffwll.ch, javierm@redhat.com,
         deller@gmx.de, sudipm.mukherjee@gmail.com,
         teddy.wang@siliconmotion.com, dri-devel@lists.freedesktop.org,
         linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+References: <20230425142846.730-1-tzimmermann@suse.de>
+ <20230425142846.730-2-tzimmermann@suse.de>
+ <CAMuHMdUUO3oC5+f9G=scwcySr17puO3ozrW746xcuhAkWGy8tg@mail.gmail.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <CAMuHMdUUO3oC5+f9G=scwcySr17puO3ozrW746xcuhAkWGy8tg@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------uofbEGIb9XqGLbtFxtnyA1HZ"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------uofbEGIb9XqGLbtFxtnyA1HZ
+Content-Type: multipart/mixed; boundary="------------1YFCLrKUn5J6j7Iaewa96rm0";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: maarten.lankhorst@linux.intel.com, mripard@kernel.org, airlied@gmail.com,
+ daniel@ffwll.ch, javierm@redhat.com, deller@gmx.de,
+ sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Message-ID: <c6cf2f7c-ef32-287c-2b3a-e08a96176af5@suse.de>
+Subject: Re: [PATCH 1/6] fbdev: Return number of bytes read or written
+References: <20230425142846.730-1-tzimmermann@suse.de>
+ <20230425142846.730-2-tzimmermann@suse.de>
+ <CAMuHMdUUO3oC5+f9G=scwcySr17puO3ozrW746xcuhAkWGy8tg@mail.gmail.com>
+In-Reply-To: <CAMuHMdUUO3oC5+f9G=scwcySr17puO3ozrW746xcuhAkWGy8tg@mail.gmail.com>
 
-On Tue, Apr 25, 2023 at 4:28 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> Move the existing CFB read and write code for I/O memory into
-> the new helpers fb_cfb_read() and fb_cfb_write(). Make them the
-> default fp_ops. No functional changes.
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
->  drivers/video/fbdev/core/Makefile      |   2 +-
->  drivers/video/fbdev/core/fb_cfb_fops.c | 126 +++++++++++++++++++++++++
->  drivers/video/fbdev/core/fbmem.c       | 113 +---------------------
->  include/linux/fb.h                     |  10 ++
->  4 files changed, 139 insertions(+), 112 deletions(-)
->  create mode 100644 drivers/video/fbdev/core/fb_cfb_fops.c
+--------------1YFCLrKUn5J6j7Iaewa96rm0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-While the general idea is fine, please do not call any of this "cfb",
-as it is not related to chunky color frame buffer formats.
-All of these operate on the raw frame buffer contents.
+SGkNCg0KQW0gMjYuMDQuMjMgdW0gMTY6NDEgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
+DQo+IEhpIFRob21hcywNCj4gDQo+IE9uIFR1ZSwgQXByIDI1LCAyMDIzIGF0IDQ6MjjigK9Q
+TSBUaG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1hbm5Ac3VzZS5kZT4gd3JvdGU6DQo+PiBB
+bHdheXMgcmV0dXJuIHRoZSBudW1iZXIgb2YgYnl0ZXMgcmVhZCBvciB3cml0dGVuIHdpdGhp
+biB0aGUNCj4+IGZyYW1lYnVmZmVyLiBPbmx5IHJldHVybiBhbiBlcnJubyBjb2RlIGlmIGZy
+YW1lYnVmZmVyIG1lbW9yeQ0KPj4gd2FzIG5vdCB0b3VjaGVkLiBUaGlzIGlzIHRoZSBzZW1h
+bnRpY3MgcmVxdWlyZWQgYnkgUE9TSVggYW5kDQo+PiBtYWtlcyBmYl9yZWFkKCkgYW5kIGZi
+X3dyaXRlKCkgY29tcGF0aWJsZSB3aXRoIElHVCB0ZXN0cy4gWzFdDQo+Pg0KPj4gVGhpcyBi
+dWcgaGFzIGJlZW4gZml4ZWQgZm9yIGZiX3dyaXRlKCkgbG9uZyBhZ28gYnkNCj4+IGNvbW1p
+dCA2YTJhODg2NjhlOTAgKCJbUEFUQ0hdIGZiZGV2OiBGaXggcmV0dXJuIGVycm9yIG9mDQo+
+PiBmYl93cml0ZSIpLiBUaGUgY29kZSBpbiBmYl9yZWFkKCkgYW5kIHRoZSBjb3JyZXNwb25k
+aW5nIGZiX3N5c18oKQ0KPj4gaGVscGVycyB3YXMgZm9yZ290dGVuLg0KPj4NCj4+IFNpZ25l
+ZC1vZmYtYnk6IFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPg0KPj4g
+TGluazogaHR0cHM6Ly9naXRsYWIuZnJlZWRlc2t0b3Aub3JnL2RybS9pZ3QtZ3B1LXRvb2xz
+Ly0vYmxvYi9tYXN0ZXIvdGVzdHMvZmJkZXYuYyAjIDENCj4gDQo+IFRoYW5rcyBmb3IgeW91
+ciBwYXRjaCENCj4gDQo+PiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJtZW0u
+Yw0KPj4gKysrIGIvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZibWVtLmMNCj4+IEBAIC04
+MjAsNyArODIwLDcgQEAgZmJfcmVhZChzdHJ1Y3QgZmlsZSAqZmlsZSwgY2hhciBfX3VzZXIg
+KmJ1Ziwgc2l6ZV90IGNvdW50LCBsb2ZmX3QgKnBwb3MpDQo+Pg0KPj4gICAgICAgICAga2Zy
+ZWUoYnVmZmVyKTsNCj4+DQo+PiAtICAgICAgIHJldHVybiAoZXJyKSA/IGVyciA6IGNudDsN
+Cj4+ICsgICAgICAgcmV0dXJuIGNudCA/IGNudCA6IGVycjsNCj4+ICAgfQ0KPiANCj4gTG9v
+a3MgYWxsIGdvb2QgdG8gbWUsIHNvDQo+IFJldmlld2VkLWJ5OiBHZWVydCBVeXR0ZXJob2V2
+ZW4gPGdlZXJ0K3JlbmVzYXNAZ2xpZGVyLmJlPg0KPiANCj4gSG93ZXZlciwgc2hvdWxkbid0
+IHRoZSBjb3B5X3RvX3VzZXIoKSBoYW5kbGluZyBpbiBmYl9yZWFkKCkgYmUgZml4ZWQsDQo+
+IHRvbz8NCg0KVGhhdCdzIGEgZ29vZCBwb2ludC4gSXQgZG9lc24ndCBuZWNlc3NhcmlseSBj
+b3B5IGFsbCBnaXZlbiBieXRlcyBhbmQgY2FuIA0KdGh1cyByZXR1cm4gdGhlIHdyb25nIHJl
+c3VsdC4gVGhlIElHVCB0ZXN0cyBwYXNzZWQgYW55d2F5LCBidXQgSSdsbCBmaXggDQppdCBp
+biB2Mi4NCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiANCj4gR3J7b2V0amUsZWV0aW5n
+fXMsDQo+IA0KPiAgICAgICAgICAgICAgICAgICAgICAgICAgR2VlcnQNCj4gDQoNCi0tIA0K
+VGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29m
+dHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KRnJhbmtlbnN0cmFzc2UgMTQ2LCA5MDQ2
+MSBOdWVybmJlcmcsIEdlcm1hbnkNCkdGOiBJdm8gVG90ZXYsIEFuZHJldyBNeWVycywgQW5k
+cmV3IE1jRG9uYWxkLCBCb3VkaWVuIE1vZXJtYW4NCkhSQiAzNjgwOSAoQUcgTnVlcm5iZXJn
+KQ0K
 
-> --- /dev/null
-> +++ b/drivers/video/fbdev/core/fb_cfb_fops.c
-> @@ -0,0 +1,126 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +
-> +#include <linux/fb.h>
-> +#include <linux/module.h>
-> +#include <linux/uaccess.h>
-> +
-> +ssize_t fb_cfb_read(struct fb_info *info, char __user *buf, size_t count, loff_t *ppos)
-> +{
+--------------1YFCLrKUn5J6j7Iaewa96rm0--
 
-[...]
+--------------uofbEGIb9XqGLbtFxtnyA1HZ
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-> +       while (count) {
-> +               c  = (count > PAGE_SIZE) ? PAGE_SIZE : count;
-> +               dst = buffer;
-> +               fb_memcpy_fromfb(dst, src, c);
-> +               dst += c;
-> +               src += c;
-> +
-> +               if (copy_to_user(buf, buffer, c)) {
+-----BEGIN PGP SIGNATURE-----
 
-So here's still the buggy copy_to_user() handling, copied from fb_read().
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmRJPN0FAwAAAAAACgkQlh/E3EQov+Ba
+hQ//dzAWG0xHdkaF0Yqj1p6qZo9r+mSgyZ4NcxH0Hr53UQqzMEOCO66FUcDMGWelBWU1hiDC3ihJ
+TVk+e2E4Y+ZNFiVVxoti6zEz/MsQ1ZYvd9bOML3kw4uyMb2DsyVft8XQAkRAooTomELnqIm+VUJR
+NmiR2LDZ9HZDSG4r5uKDELaAtJ+gMD8nwmlTeBnIotm/dBcYXjynWSmbVXgA06wtE3YY5WhgwoiB
+rW0H7n/5dGPQ1hDYpAvKm3uXnIO5M8zcFBHhIHnpYBBDM4B/aKWLHgel7S3hFxC1sucjkMn770Wf
+57CKw/f4eBxXleIJnE6qjwQe4YBuIFbXic23HNzx2dfhNi8sjhba8dOh2beAupmAu9++6y2WmDwP
+I4BijVeLnzZE7qgzsN9Wd2I0c6ZBw4CoXG7GTECFzpgOJ6lY0aZMemQjgFokwyL/3cT/mEQljde/
+ULxJQepBq709/O7siN+LWVBWFx677TsMrg00m9v7ewt/AOTNHCRQ/KZltMKafG9RLhTUI94LzwGB
+MQC60OGltmKkqeNW/keM9hj0y+s7IZw+sq2NTqBL/2OdAjnlhU+7gzrcivkfWUYmOfBV6zJPXy7s
+YK+Mce8WirGqsJqL/0eViSBAL/3FZdoRBV1bUMV+gOP8zEG+sv1PcZEYm+ALWAZ4Eqaa+ZOa/qOK
+jzM=
+=ai4+
+-----END PGP SIGNATURE-----
 
-> +                       err = -EFAULT;
-> +                       break;
-> +               }
-> +               *ppos += c;
-> +               buf += c;
-> +               cnt += c;
-> +               count -= c;
-> +       }
-> +
-> +       kfree(buffer);
-> +
-> +       return cnt ? cnt : err;
-> +}
-> +EXPORT_SYMBOL(fb_cfb_read);
-> +
-> +ssize_t fb_cfb_write(struct fb_info *info, const char __user *buf, size_t count, loff_t *ppos)
-> +{
-
-[...]
-
-> +       while (count) {
-> +               c = (count > PAGE_SIZE) ? PAGE_SIZE : count;
-> +               src = buffer;
-> +
-> +               if (copy_from_user(src, buf, c)) {
-
-And copy_from_user(), too...
-
-> +                       err = -EFAULT;
-> +                       break;
-> +               }
-> +
-> +               fb_memcpy_tofb(dst, src, c);
-> +               dst += c;
-> +               src += c;
-> +               *ppos += c;
-> +               buf += c;
-> +               cnt += c;
-> +               count -= c;
-> +       }
-> +
-> +       kfree(buffer);
-> +
-> +       return (cnt) ? cnt : err;
-> +}
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+--------------uofbEGIb9XqGLbtFxtnyA1HZ--

@@ -2,110 +2,239 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B886AC77B7C
-	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Apr 2023 15:21:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3176FC77B78
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Apr 2023 18:40:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241142AbjDZPVy convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Apr 2023 11:21:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43208 "EHLO
+        id S232785AbjDZSkT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Apr 2023 14:40:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54594 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231848AbjDZPVx (ORCPT
+        with ESMTP id S231377AbjDZSkR (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Apr 2023 11:21:53 -0400
-Received: from mail-yw1-f173.google.com (mail-yw1-f173.google.com [209.85.128.173])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C09D63AA5
-        for <linux-fbdev@vger.kernel.org>; Wed, 26 Apr 2023 08:21:52 -0700 (PDT)
-Received: by mail-yw1-f173.google.com with SMTP id 00721157ae682-555e853d3c5so55772297b3.2
-        for <linux-fbdev@vger.kernel.org>; Wed, 26 Apr 2023 08:21:52 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1682522512; x=1685114512;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=fNU02MgisC2DVRfyuqUz0GaaJRwku9M+1H+Ra/NSpEw=;
-        b=g63HN8Qt4tb82thwOdIxyHnZMTI7PBUEXVjXs0bTO2UssOilhvyjtdMpPUhVg35sTQ
-         zqADnY+x8Atq5r0NLnaQWNldVmB1D6+YHcn2wZe3R+9GCAhDuy2g5C9vumKZefONcCJI
-         saaSYtUYWbxz4khM5A0bHKaam+2XPavmFFINH41Ad0BdQ0GoH/KOxpecAT8uGTAtPiT/
-         ND1xd8FPIpDckT+Rmi57vvtLpSmxcdwnZ3tFG2IQyFBWXvYwwFdTb2WHVG42CAgKUEML
-         3FG4QQDM8UFayFxMYO3hmY0xGIH5EaytFD/T6BUOpAjG5QX1DhIgwwh3vzbwegDwi5hK
-         b7fw==
-X-Gm-Message-State: AC+VfDw1Bi7/fNIMGJ4NaZi23EZCKxx5d818cmF2oKJHDyGovWSkeK0Q
-        RetK9kdAclWelO+Cu2QtirMhoATgNvJ4BA==
-X-Google-Smtp-Source: ACHHUZ6eOyOKI4yGaNjHY+ikgkgVKn5QtI+b9Mts9sTzMaxAzwQA8bUXVOcyWKdl5aSaWIluFP20pw==
-X-Received: by 2002:a81:89c5:0:b0:556:b029:e101 with SMTP id z188-20020a8189c5000000b00556b029e101mr5976362ywf.19.1682522511823;
-        Wed, 26 Apr 2023 08:21:51 -0700 (PDT)
-Received: from mail-yw1-f179.google.com (mail-yw1-f179.google.com. [209.85.128.179])
-        by smtp.gmail.com with ESMTPSA id k187-20020a816fc4000000b00545a08184b9sm4234606ywc.73.2023.04.26.08.21.50
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 26 Apr 2023 08:21:50 -0700 (PDT)
-Received: by mail-yw1-f179.google.com with SMTP id 00721157ae682-54f9e41dfa7so55813037b3.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 26 Apr 2023 08:21:50 -0700 (PDT)
-X-Received: by 2002:a0d:c606:0:b0:54f:e33d:f1d1 with SMTP id
- i6-20020a0dc606000000b0054fe33df1d1mr12872900ywd.13.1682522510366; Wed, 26
- Apr 2023 08:21:50 -0700 (PDT)
+        Wed, 26 Apr 2023 14:40:17 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0A972173C;
+        Wed, 26 Apr 2023 11:40:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1682534409; i=deller@gmx.de;
+        bh=3/idmjlkYQnQ8PWvJhQzEugXCooeMcxuUiAXbdpczjU=;
+        h=X-UI-Sender-Class:Date:From:To:Subject;
+        b=EcBdEO6mz/orCZLbOKFbyTm4rRDHUXvh1teITtY3HvdCO99QJaAR1JB+BOB25yWXg
+         +kyrH2E1Y4Hyzu1fPa1i1EL1nDivLRFO6fhEQkhWQbVmcd6SPigRWW627IcHgpP2Ec
+         vTnmcNgSMTkYwOTAN4W1zDt2ZMS+WMU010qbr2EWZ+gU8f1lrjAsVOYc8qLSTO+tFQ
+         WsfUfkMfYT92PSKlubkhARScwoEqAGDOgwLGASFCLEsUD+xeQp4C5xcE2bpVOYLJZu
+         MAKM4ND76/qy0RyaqLI+b5neYTO0ZMKSJL6jR7ps0qDK8Ltwm0Cev5PZwZ+t8n4rNG
+         RnVlOBH0pmpgw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from ls3530 ([94.134.157.68]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MoO2E-1qc2BF0UY4-00ori7; Wed, 26
+ Apr 2023 20:40:09 +0200
+Date:   Wed, 26 Apr 2023 20:40:07 +0200
+From:   Helge Deller <deller@gmx.de>
+To:     Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev fixes and updates for v6.4-rc1
+Message-ID: <ZElwB2/zlXli1QwA@ls3530>
 MIME-Version: 1.0
-References: <20230425142846.730-1-tzimmermann@suse.de> <20230425142846.730-6-tzimmermann@suse.de>
- <CAMuHMdU-_w9yQHYhOCD3cz4CEY6ag-dTXjuHSLnzty0hAMBbXw@mail.gmail.com> <1d81e4cc-5079-12a7-4cf5-c31879396e56@suse.de>
-In-Reply-To: <1d81e4cc-5079-12a7-4cf5-c31879396e56@suse.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 26 Apr 2023 17:21:37 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWDyabYxtRHtvuNZy8BjoukRdycAMK2jX+qmgc51HU5Xw@mail.gmail.com>
-Message-ID: <CAMuHMdWDyabYxtRHtvuNZy8BjoukRdycAMK2jX+qmgc51HU5Xw@mail.gmail.com>
-Subject: Re: [PATCH 5/6] fbdev: Move CFB read and write code into helper functions
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     maarten.lankhorst@linux.intel.com, mripard@kernel.org,
-        airlied@gmail.com, daniel@ffwll.ch, javierm@redhat.com,
-        deller@gmx.de, sudipm.mukherjee@gmail.com,
-        teddy.wang@siliconmotion.com, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:BVkxNRdQChXfv8LUMeg9FmQA7jsIGj4IDi1yP7gIopD3vVhxfvd
+ LJF7K7BlNatHlQoRbs0TetFchfcrK6Agi/WaD8UCFvUpJ+B91NUlcS26ViWQOrH8SsgoNRj
+ jYV0vIL4CITxl4YbwtbQIXp/bfyHuKD5c1NcsXjWEGDkYAe+g8638q53fElXd2L5LkV/OTd
+ BEgLC98KkK1MM6Nu9xqEg==
+UI-OutboundReport: notjunk:1;M01:P0:IKDWcD3kPWU=;v2eXmqlRseCUu3KbYvc+/uDu+XB
+ 7Ojd8V61DECiHMUM7/K5k2Oh7aLZIJI2AQ1wJBbnl+58Vam6NU2w6kyCxJdvW7EF5mXgeq+z/
+ LshzFWFzWPFdnJenF8leH6fe/qJURFfrRx/id/JtnMc3Y6HHC5AhoKec0xS2qdCoVF8hkhYlJ
+ TmZDGgeaaJTZlIi93I42nE/0KJLyZOEl2ZkxYD7qxFTWp7SZSlbt4N0CxoMWh7awmT+zrnNMT
+ Xo2pOdjdGFNlWkPdXHQOClyryTvZp51d4yZW7qwI0Y96KXqb63U3q2wIlDIJptxMKScPY3Ypa
+ tReMj2TpMoEFtLFmFPJuxuQiwqtqNKxyVvnhbdDbz+KNwR//MF2hfVVj0iTo6gbD5Bd+HbJ07
+ Zp0oew3Ludlf+8dZVdk3TEWI7fiABDIuvJEqpFspjd7vcCPUK7vMWv+x6SGILFgErCs4WocVu
+ smw0NPCul2CVHGh0laPI8s7dUeGWtKUi3Q9KjT9bOieOXKVPul5fVvhobgGPq6ezSuVYMLJja
+ ecYen5nCBmShRKTIUXdplAavFXFnpm9O/CyYo0VZErYsszPVkZwXPLZIB8EapvgaE1ZTlWuP5
+ Mvfenup8kueGbjJ9wUI6G7l6FD5b9Bthjrlvi0cysht1m7g+wpDx3bfyr6x5fElWvm3RZW5/9
+ RQwjj+gWX7QzXwMfR8XcufshDjzd/fcOleoOwFGTLmaAyWrWFQEIP5t4Um3bjS986Vk15TeD2
+ vZubzA2kgISIT27H2SFIZRint03KTv2jQ4YcVV46j8gQstMiliudrWRcME1URda8ZK0IGpq2S
+ VYsWD51DikvOtzPYF8lkggWw7OMER/uFZdkLNjN2MKG+2HcOuEENVWhr/ykkBbGBO2jzV9scc
+ UVPzWmW6CSDQn7K5Ryt4Dc6FUb+zSIcXskzxs6jFq6dp3wx58i5TZT4H2j7xfTKQWiRdUFfr7
+ udmmVQ==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+Hi Linus,
 
-On Wed, Apr 26, 2023 at 5:06 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> Am 26.04.23 um 17:01 schrieb Geert Uytterhoeven:
-> > On Tue, Apr 25, 2023 at 4:28 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> >> Move the existing CFB read and write code for I/O memory into
-> >> the new helpers fb_cfb_read() and fb_cfb_write(). Make them the
-> >> default fp_ops. No functional changes.
-> >>
-> >> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> >> ---
-> >>   drivers/video/fbdev/core/Makefile      |   2 +-
-> >>   drivers/video/fbdev/core/fb_cfb_fops.c | 126 +++++++++++++++++++++++++
-> >>   drivers/video/fbdev/core/fbmem.c       | 113 +---------------------
-> >>   include/linux/fb.h                     |  10 ++
-> >>   4 files changed, 139 insertions(+), 112 deletions(-)
-> >>   create mode 100644 drivers/video/fbdev/core/fb_cfb_fops.c
-> >
-> > While the general idea is fine, please do not call any of this "cfb",
-> > as it is not related to chunky color frame buffer formats.
-> > All of these operate on the raw frame buffer contents.
->
-> Shall I call it fb_raw_() or fb_io_()?
+please pull the fbdev updates for v6.4-rc1.
 
-Given fb_memcpy_fromfb() is mapped to memcpy_fromio() on
-most architectures, I'd go for fb_io_*().
+Nothing really exiting in here. The majority of lines changed is
+due to Uwe's preparation patches to change the return value of the
+.remove() callback to void.
 
-> CFB is used by the drawing helpers, which are usually used together with
-> this code. Hence the current naming.
+Thanks!
+Helge
 
-That's because your drawing helpers operate (only) on chunky color
-frame buffer formats ;-)
 
-Gr{oetje,eeting}s,
 
-                        Geert
+The following changes since commit e8d018dd0257f744ca50a729e3d042cf2ec9da6=
+5:
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+  Linux 6.3-rc3 (2023-03-19 13:27:55 -0700)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+are available in the Git repository at:
+
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git ta=
+gs/fbdev-for-6.4-rc1
+
+for you to fetch changes up to 60ed3cd85b95184936bce70ed7f9e76a6a54a5e1:
+
+  MAINTAINERS: Remove rage128 framebuffer driver maintainer (2023-04-24 11=
+:48:47 +0200)
+
+=2D---------------------------------------------------------------
+fbdev updates for kernel 6.4-rc1:
+
+- vt_buffer.h: Fix build on alpha (Randy Dunlap)
+- mmp: Clock handling fix (Christophe JAILLET)
+- 68328fb, ps3fb, vfb: Init .owner field of struct fb_ops (Thomas Zimmerma=
+nn)
+- Preparation patches to convert drivers to return void in .remove() callb=
+ack
+  (Uwe Kleine-K=F6nig)
+- Drop Paul Mackerras as rage128 maintainer
+
+=2D---------------------------------------------------------------
+Christophe JAILLET (1):
+      fbdev: mmp: Fix deferred clk handling in mmphw_probe()
+
+Paul Mackerras (1):
+      MAINTAINERS: Remove rage128 framebuffer driver maintainer
+
+Randy Dunlap (1):
+      linux/vt_buffer.h: allow either builtin or modular for macros
+
+Thomas Zimmermann (3):
+      fbdev: 68328fb: Init owner field of struct fb_ops
+      fbdev: ps3fb: Init owner field of struct fb_ops
+      fbdev: vfb: Init owner field of struct fb_ops
+
+Uwe Kleine-K=F6nig (45):
+      fbdev: cg14: Convert to platform remove callback returning void
+      fbdev: cg3: Convert to platform remove callback returning void
+      fbdev: cg6: Convert to platform remove callback returning void
+      fbdev: clps711x-fb: Convert to platform remove callback returning vo=
+id
+      fbdev: cobalt_lcdfb: Convert to platform remove callback returning v=
+oid
+      fbdev: da8xx-fb: Convert to platform remove callback returning void
+      fbdev: efifb: Convert to platform remove callback returning void
+      fbdev: ep93xx-fb: Convert to platform remove callback returning void
+      fbdev: ffb: Convert to platform remove callback returning void
+      fbdev: fsl-diu-fb: Convert to platform remove callback returning voi=
+d
+      fbdev: gbefb: Convert to platform remove callback returning void
+      fbdev: goldfishfb: Convert to platform remove callback returning voi=
+d
+      fbdev: grvga: Convert to platform remove callback returning void
+      fbdev: hecubafb: Convert to platform remove callback returning void
+      fbdev: hgafb: Convert to platform remove callback returning void
+      fbdev: hitfb: Convert to platform remove callback returning void
+      fbdev: imxfb: Convert to platform remove callback returning void
+      fbdev: leo: Convert to platform remove callback returning void
+      fbdev: mb862xx: Convert to platform remove callback returning void
+      fbdev: metronomefb: Convert to platform remove callback returning vo=
+id
+      fbdev: mx3fb: Convert to platform remove callback returning void
+      fbdev: ocfb: Convert to platform remove callback returning void
+      fbdev: offb: Convert to platform remove callback returning void
+      fbdev: omapfb: Convert to platform remove callback returning void
+      fbdev: p9100: Convert to platform remove callback returning void
+      fbdev: platinumfb: Convert to platform remove callback returning voi=
+d
+      fbdev: pxa168fb: Convert to platform remove callback returning void
+      fbdev: pxa3xx-gcu: Convert to platform remove callback returning voi=
+d
+      fbdev: pxafb: Convert to platform remove callback returning void
+      fbdev: s1d13xxxfb: Convert to platform remove callback returning voi=
+d
+      fbdev: s3c-fb: Convert to platform remove callback returning void
+      fbdev: sh7760fb: Convert to platform remove callback returning void
+      fbdev: sh_mobile_lcdcfb: Convert to platform remove callback returni=
+ng void
+      fbdev: simplefb: Convert to platform remove callback returning void
+      fbdev: sm501fb: Convert to platform remove callback returning void
+      fbdev: tcx: Convert to platform remove callback returning void
+      fbdev: uvesafb: Convert to platform remove callback returning void
+      fbdev: vesafb: Convert to platform remove callback returning void
+      fbdev: vfb: Convert to platform remove callback returning void
+      fbdev: vga16fb: Convert to platform remove callback returning void
+      fbdev: via: Convert to platform remove callback returning void
+      fbdev: vt8500lcdfb: Convert to platform remove callback returning vo=
+id
+      fbdev: wm8505fb: Convert to platform remove callback returning void
+      fbdev: wmt_ge_rops: Convert to platform remove callback returning vo=
+id
+      fbdev: xilinxfb: Convert to platform remove callback returning void
+
+ MAINTAINERS                                    | 3 +--
+ drivers/video/fbdev/68328fb.c                  | 1 +
+ drivers/video/fbdev/cg14.c                     | 6 ++----
+ drivers/video/fbdev/cg3.c                      | 6 ++----
+ drivers/video/fbdev/cg6.c                      | 6 ++----
+ drivers/video/fbdev/clps711x-fb.c              | 6 ++----
+ drivers/video/fbdev/cobalt_lcdfb.c             | 6 ++----
+ drivers/video/fbdev/da8xx-fb.c                 | 6 ++----
+ drivers/video/fbdev/efifb.c                    | 6 ++----
+ drivers/video/fbdev/ep93xx-fb.c                | 6 ++----
+ drivers/video/fbdev/ffb.c                      | 6 ++----
+ drivers/video/fbdev/fsl-diu-fb.c               | 6 ++----
+ drivers/video/fbdev/gbefb.c                    | 6 ++----
+ drivers/video/fbdev/goldfishfb.c               | 5 ++---
+ drivers/video/fbdev/grvga.c                    | 6 ++----
+ drivers/video/fbdev/hecubafb.c                 | 5 ++---
+ drivers/video/fbdev/hgafb.c                    | 6 ++----
+ drivers/video/fbdev/hitfb.c                    | 6 ++----
+ drivers/video/fbdev/imxfb.c                    | 6 ++----
+ drivers/video/fbdev/leo.c                      | 6 ++----
+ drivers/video/fbdev/mb862xx/mb862xxfbdrv.c     | 5 ++---
+ drivers/video/fbdev/metronomefb.c              | 5 ++---
+ drivers/video/fbdev/mmp/hw/mmp_ctrl.c          | 2 +-
+ drivers/video/fbdev/mx3fb.c                    | 5 ++---
+ drivers/video/fbdev/ocfb.c                     | 6 ++----
+ drivers/video/fbdev/offb.c                     | 8 +++-----
+ drivers/video/fbdev/omap/omapfb_main.c         | 6 ++----
+ drivers/video/fbdev/omap2/omapfb/dss/core.c    | 6 ++----
+ drivers/video/fbdev/omap2/omapfb/dss/dispc.c   | 5 ++---
+ drivers/video/fbdev/omap2/omapfb/dss/dpi.c     | 5 ++---
+ drivers/video/fbdev/omap2/omapfb/dss/dsi.c     | 5 ++---
+ drivers/video/fbdev/omap2/omapfb/dss/dss.c     | 5 ++---
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c   | 5 ++---
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c   | 5 ++---
+ drivers/video/fbdev/omap2/omapfb/dss/sdi.c     | 5 ++---
+ drivers/video/fbdev/omap2/omapfb/dss/venc.c    | 5 ++---
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 6 ++----
+ drivers/video/fbdev/p9100.c                    | 6 ++----
+ drivers/video/fbdev/platinumfb.c               | 6 ++----
+ drivers/video/fbdev/ps3fb.c                    | 1 +
+ drivers/video/fbdev/pxa168fb.c                 | 8 +++-----
+ drivers/video/fbdev/pxa3xx-gcu.c               | 6 ++----
+ drivers/video/fbdev/pxafb.c                    | 8 +++-----
+ drivers/video/fbdev/s1d13xxxfb.c               | 5 ++---
+ drivers/video/fbdev/s3c-fb.c                   | 6 ++----
+ drivers/video/fbdev/sh7760fb.c                 | 6 ++----
+ drivers/video/fbdev/sh_mobile_lcdcfb.c         | 5 ++---
+ drivers/video/fbdev/simplefb.c                 | 6 ++----
+ drivers/video/fbdev/sm501fb.c                  | 6 ++----
+ drivers/video/fbdev/tcx.c                      | 6 ++----
+ drivers/video/fbdev/uvesafb.c                  | 6 ++----
+ drivers/video/fbdev/vesafb.c                   | 6 ++----
+ drivers/video/fbdev/vfb.c                      | 6 +++---
+ drivers/video/fbdev/vga16fb.c                  | 6 ++----
+ drivers/video/fbdev/via/via-gpio.c             | 5 ++---
+ drivers/video/fbdev/via/via_i2c.c              | 5 ++---
+ drivers/video/fbdev/vt8500lcdfb.c              | 6 ++----
+ drivers/video/fbdev/wm8505fb.c                 | 6 ++----
+ drivers/video/fbdev/wmt_ge_rops.c              | 5 ++---
+ drivers/video/fbdev/xilinxfb.c                 | 6 ++----
+ include/linux/vt_buffer.h                      | 2 +-
+ 61 files changed, 121 insertions(+), 212 deletions(-)

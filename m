@@ -2,149 +2,114 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2A5EC77B61
-	for <linux-fbdev@archiver.kernel.org>; Thu, 27 Apr 2023 13:54:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93FEFC7EE21
+	for <linux-fbdev@archiver.kernel.org>; Thu, 27 Apr 2023 17:18:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243457AbjD0Nyh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 27 Apr 2023 09:54:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54550 "EHLO
+        id S244051AbjD0RSk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 27 Apr 2023 13:18:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59802 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243218AbjD0Nyg (ORCPT
+        with ESMTP id S243883AbjD0RSi (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 27 Apr 2023 09:54:36 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5CEFA2103
-        for <linux-fbdev@vger.kernel.org>; Thu, 27 Apr 2023 06:54:35 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 1570321A4E;
-        Thu, 27 Apr 2023 13:54:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1682603674; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=AZ5CXx61DlIwnory3L9+QYP6+SkR5bSvBqmjWzUPpJc=;
-        b=BOfFSIDyQXWnW6DSjZ/+t4HzKjtGqOoVWeGnNzl07CZqO2FJvGGZA4fIuQmqoasU0lbvGY
-        KkiUm/vHvFVAjxIXM4J7c49JdRIYKPrph81heoKz5rzzOLmfyCTjHa+kCFbiAG9krwkRJP
-        QrpsrOKZ8BM+fjHZZZ68GHjheBAQfCc=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1682603674;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=AZ5CXx61DlIwnory3L9+QYP6+SkR5bSvBqmjWzUPpJc=;
-        b=84QEalb8HiJ31bHdApYvMREU6FVrr33PK+K10HBKfCC6HPNjHGkKPc2x70y/D9fVOpmA88
-        C1EdPmhu4wrNL8Bg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id CB49B138F9;
-        Thu, 27 Apr 2023 13:54:33 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id S80eMJl+SmS+BQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 27 Apr 2023 13:54:33 +0000
-Message-ID: <a579ef4b-2183-0456-0aeb-379abf216a3d@suse.de>
-Date:   Thu, 27 Apr 2023 15:54:33 +0200
+        Thu, 27 Apr 2023 13:18:38 -0400
+X-Greylist: delayed 78980 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 27 Apr 2023 10:18:36 PDT
+Received: from mailrelay5-1.pub.mailoutpod2-cph3.one.com (mailrelay5-1.pub.mailoutpod2-cph3.one.com [46.30.211.180])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 64622106
+        for <linux-fbdev@vger.kernel.org>; Thu, 27 Apr 2023 10:18:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=rsa1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=3aPWmuilP5wLRilofoqbOrLGxKBwB7pAtJ4SXkaLvoc=;
+        b=TLJMIi0RX8F2D4MECviwMXYvEcVb0lEsEy3+u8aUlSP8SU8rlCRGlNNmsB/nVOCzgK5pBrkqJQZ1F
+         4Pk0P0hLFN1/gQl0wOoX80yo5LMFFkY8AFk8tIjenbcNtBTjLcrXTVOu35BU0ZgXdWnnSf7qi6nZ3E
+         orNHCnRqwI7LiLkgzVpEQaOMbxTZLeop5dV4q915EpZK5kidlhmu8EBhfMffenaiZSY9k7inpdXkTU
+         Jqtqf/GAdMoncZ0gbyd6bbDaxV/c7d0xakYFi8MhdcA4DCSizJdUq7VgNEnQ2ErW0+f+L1lpNilWl3
+         /TH/k1Te5r34DMQFVMUEym1QgkeLrjQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=ed1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=3aPWmuilP5wLRilofoqbOrLGxKBwB7pAtJ4SXkaLvoc=;
+        b=G5LZPAqKFgpnZqaJfT/ouJ07IZWuTH9E70Iw4lwAnH6U6PTleuFBBWfBI+H0sNsJGesQJZYrDGZOe
+         rwUJGIwDg==
+X-HalOne-ID: 62b9268b-e51f-11ed-ad1f-231b2edd0ed2
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+        by mailrelay5 (Halon) with ESMTPSA
+        id 62b9268b-e51f-11ed-ad1f-231b2edd0ed2;
+        Thu, 27 Apr 2023 17:17:31 +0000 (UTC)
+Date:   Thu, 27 Apr 2023 19:17:29 +0200
+From:   Sam Ravnborg <sam@ravnborg.org>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     deller@gmx.de, geert@linux-m68k.org, javierm@redhat.com,
+        daniel@ffwll.ch, vgupta@kernel.org, chenhuacai@kernel.org,
+        kernel@xen0n.name, davem@davemloft.net,
+        James.Bottomley@hansenpartnership.com, arnd@arndb.de,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arch@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+        sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-parisc@vger.kernel.org
+Subject: Re: [PATCH 0/5] fbdev: Move framebuffer I/O helpers to <asm/fb.h>
+Message-ID: <20230427171729.GA3899979@ravnborg.org>
+References: <20230426130420.19942-1-tzimmermann@suse.de>
+ <20230426192110.GA3791243@ravnborg.org>
+ <3e33ab1d-b478-fdf5-6fbe-6580000182d1@suse.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH 4/6] fbdev: Validate info->screen_{base,buffer} in fb_ops
- implementations
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     maarten.lankhorst@linux.intel.com, mripard@kernel.org,
-        airlied@gmail.com, daniel@ffwll.ch, javierm@redhat.com,
-        deller@gmx.de, sudipm.mukherjee@gmail.com,
-        teddy.wang@siliconmotion.com, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org
-References: <20230425142846.730-1-tzimmermann@suse.de>
- <20230425142846.730-5-tzimmermann@suse.de>
- <CAMuHMdX8A_5Kd_D4qQfmYLbECekLWHFzrcK-xMTeyBaz=T_a-A@mail.gmail.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <CAMuHMdX8A_5Kd_D4qQfmYLbECekLWHFzrcK-xMTeyBaz=T_a-A@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------PXdOtrP30q7JG6OOhMDyo9Ud"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3e33ab1d-b478-fdf5-6fbe-6580000182d1@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------PXdOtrP30q7JG6OOhMDyo9Ud
-Content-Type: multipart/mixed; boundary="------------plRhPPhYgITRq5CDLVqcy4qF";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: maarten.lankhorst@linux.intel.com, mripard@kernel.org, airlied@gmail.com,
- daniel@ffwll.ch, javierm@redhat.com, deller@gmx.de,
- sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Message-ID: <a579ef4b-2183-0456-0aeb-379abf216a3d@suse.de>
-Subject: Re: [PATCH 4/6] fbdev: Validate info->screen_{base,buffer} in fb_ops
- implementations
-References: <20230425142846.730-1-tzimmermann@suse.de>
- <20230425142846.730-5-tzimmermann@suse.de>
- <CAMuHMdX8A_5Kd_D4qQfmYLbECekLWHFzrcK-xMTeyBaz=T_a-A@mail.gmail.com>
-In-Reply-To: <CAMuHMdX8A_5Kd_D4qQfmYLbECekLWHFzrcK-xMTeyBaz=T_a-A@mail.gmail.com>
+Hi Thomas,
 
---------------plRhPPhYgITRq5CDLVqcy4qF
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+On Thu, Apr 27, 2023 at 09:22:47AM +0200, Thomas Zimmermann wrote:
+> Hi Sam
+> 
+> Am 26.04.23 um 21:21 schrieb Sam Ravnborg:
+> > Hi Thomas.
+> > 
+> > On Wed, Apr 26, 2023 at 03:04:15PM +0200, Thomas Zimmermann wrote:
+> > > Fbdev provides helpers for framebuffer I/O, such as fb_readl(),
+> > > fb_writel() or fb_memcpy_to_fb(). The implementation of each helper
+> > > depends on the architecture. It's still all located in fbdev's main
+> > > header file <linux/fb.h>. Move all of it into each archtecture's
+> > > <asm/fb.h>, with shared code in <asm-generic/fb.h>.
+> > 
+> > For once I think this cleanup is moving things in the wrong direction.
+> > 
+> > The fb_* helpers predates the generic io.h support and try to
+> > add a generic layer for read read / write operations.
+> > 
+> > The right fix would be to migrate fb_* to use the io helpers
+> > we have today - so we use the existing way to handle the architecture
+> > specific details.
+> 
+> I looked through the existing versions of the fb_() I/O helpers. They can
+> apparently be implemented with the regular helpers of similar names.
+> 
+> I'm not sure, but even Sparc looks compatible. At least these sbus_
+> functions seem to be equivalent to the __raw_() I/O helpers of similar
+> names.
 
-SGkNCg0KQW0gMjYuMDQuMjMgdW0gMTY6NTYgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
-DQo+IEhpIFRob21hcywNCj4gDQo+IA0KPiBPbiBUdWUsIEFwciAyNSwgMjAyMyBhdCA0OjI4
-4oCvUE0gVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+IHdyb3RlOg0K
-Pj4gUHVzaCB0aGUgdGVzdCBmb3IgaW5mby0+c2NyZWVuX2Jhc2UgZnJvbSBmYl9yZWFkKCkg
-YW5kIGZiX3dyaXRlKCkgaW50bw0KPj4gdGhlIGltcGxlbWVudGF0aW9ucyBvZiBzdHJ1Y3Qg
-ZmJfb3BzLntmYl9yZWFkLGZiX3dyaXRlfS4gSW4gY2FzZXMgd2hlcmUNCj4+IHRoZSBkcml2
-ZXIgb3BlcmF0ZXMgb24gaW5mby0+c2NyZWVuX2J1ZmZlciwgdGVzdCB0aGlzIGZpZWxkIGlu
-c3RlYWQuDQo+Pg0KPj4gU2lnbmVkLW9mZi1ieTogVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1t
-ZXJtYW5uQHN1c2UuZGU+DQo+IA0KPiBUaGFua3MgZm9yIHlvdXIgcGF0Y2ghDQo+IFlvdSBm
-b3Jnb3QgdG8gbWVudGlvbiB3aHkgaXQgaXMgYSBnb29kIGlkZWEgdG8gZHVwbGljYXRlIHRo
-aXMgaW4gYWxsDQo+IHRoZSBpbXBsZW1lbnRhdGlvbnMsIGluc3RlYWQgb2YgZG9pbmcgaXQg
-b25jZSBpbiB0aGUgY29yZT8NCj4gDQo+PiAgIGRyaXZlcnMvdmlkZW8vZmJkZXYvY29iYWx0
-X2xjZGZiLmMgICAgIHwgIDYgKysrKysrDQo+PiAgIGRyaXZlcnMvdmlkZW8vZmJkZXYvY29y
-ZS9mYl9zeXNfZm9wcy5jIHwgIDYgKysrKysrDQo+PiAgIGRyaXZlcnMvdmlkZW8vZmJkZXYv
-Y29yZS9mYm1lbS5jICAgICAgIHwgMTAgKysrKysrKystLQ0KPj4gICBkcml2ZXJzL3ZpZGVv
-L2ZiZGV2L3NtNzEyZmIuYyAgICAgICAgICB8ICA0ICsrLS0NCj4+ICAgNCBmaWxlcyBjaGFu
-Z2VkLCAyMiBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQ0KPiANCj4gQXJlbid0IHRo
-ZXJlIG1vcmUgZmJkZXYgZHJpdmVycyB0byBmaXgsIGJlZm9yZSB5b3UgY2FuIG1vdmUgdGhl
-IGNoZWNrcw0KPiBpbiBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJtZW0uYz8NCg0KSSd2
-ZSBmb3VuZCBhIGZldy4gQW5kIEkndmUgYWxzbyBmb3VuZCBxdWl0ZSBhIG51bWJlciBvZiBk
-cml2ZXJzIHRoYXQgdXNlIA0Kc2NyZWVuX2Jhc2Ugd2hlbiB0aGV5IHNob3VsZCB1c2Ugc2Ny
-ZWVuX2J1ZmZlciBpbnN0ZWFkLiBJJ2xsIGZpeCB0aGVtIGFzIA0Kd2VsbC4NCg0KQmVzdCBy
-ZWdhcmRzDQpUaG9tYXMNCg0KPiANCj4gR3J7b2V0amUsZWV0aW5nfXMsDQo+IA0KPiAgICAg
-ICAgICAgICAgICAgICAgICAgICAgR2VlcnQNCj4gDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1h
-bm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25z
-IEdlcm1hbnkgR21iSA0KRnJhbmtlbnN0cmFzc2UgMTQ2LCA5MDQ2MSBOdWVybmJlcmcsIEdl
-cm1hbnkNCkdGOiBJdm8gVG90ZXYsIEFuZHJldyBNeWVycywgQW5kcmV3IE1jRG9uYWxkLCBC
-b3VkaWVuIE1vZXJtYW4NCkhSQiAzNjgwOSAoQUcgTnVlcm5iZXJnKQ0K
+> Do you still have that Sparc emulator?
+I used qemu the last time I played with sparc and saved the instructions
+somewhere how to redo it - but that would use to bohcs driver only I think.
+I have saprc machines, but none of these are easy to get operational.
+We can always ask on sparclinux to get some testing feedback.
 
---------------plRhPPhYgITRq5CDLVqcy4qF--
+> 
+> > 
+> >  From a quick look there seems to be some challenges but the current
+> > helpers that re-do part of io.h is not the way forward and hiding them
+> > in arch/include/asm/fb.h seems counter productive.
+> 
+> Which challenges did you see?
+sparc was the main thing - but maybe I did not look close enough.
+And then I tried to map the macros to some of the more highlevel ones
+from io.h, but as Arnd says the __raw* is the way to go here.
 
---------------PXdOtrP30q7JG6OOhMDyo9Ud
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmRKfpkFAwAAAAAACgkQlh/E3EQov+Dc
-+A/+LFpIMFm2aGDGSMuIrNjfMrYxv3fMZFZjHJxFy0H10uosDMAHyb6KDAy0vn0Z+fjQfeni0Aas
-n3H/fEjo1XIm8mn/KU+2OIDpwDVbHplAN6WmWg3B+qCHwZmSKCBcF221HY6mRCAM7N6v8Q1HADLs
-OmHx/k/4vAq5oaAxBrxpPS4Y/rPXbnnKq+kWYPF3fYaicdIRGkrioxMCnlFrGnzgSgtZh6eJp2fJ
-2AzggGEIG+do4fwiZlAh99n673+oc+MWUdsPDWegXkv+e12gx9OCz0R5ueGM2Q/nG1Nu933s9hK0
-CYJlYrJAUpshK1avEVsrelTDgp2Bf0Y5/SUNjGrsJ9dZ3bp2QONGdTxeB5XpN3aB6WXdCFHL9pEc
-JhK/45TrGnn+qUFkMcX1gPjUMVQFOPjp1QBmzNVktXs13iadxosivrkhp6HI3MAemMLORxRUDvI9
-9MIiW8+ZdBl4+ZwSXnzPEhG13RX9tBRT2USSEMsG3f9uacKHpJW4DKu3g+Jgu3g25DZShiYUgBxh
-aXKBWU/J8VvlwZk6NHbO89rSZzij07qG1g5jVviK/Qrb85WjryLwjCEZ6OQAx8eYSjYFIbUrRN4s
-2Nc4v8ShUNkCrjy+uLxLovB+fDZVmVUkJhx4B1oM/k4i7jFcyhfnACNR5fMXpN6DUw6aQN4SKMRW
-nkc=
-=XiIQ
------END PGP SIGNATURE-----
-
---------------PXdOtrP30q7JG6OOhMDyo9Ud--
+	Sam

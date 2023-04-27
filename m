@@ -2,86 +2,104 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 155B6C7EE22
-	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Apr 2023 19:37:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29893C77B60
+	for <linux-fbdev@archiver.kernel.org>; Thu, 27 Apr 2023 03:04:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233500AbjDZThX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Apr 2023 15:37:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32796 "EHLO
+        id S242755AbjD0DEo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Apr 2023 23:04:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42940 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233622AbjDZThU (ORCPT
+        with ESMTP id S233414AbjD0DEm (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Apr 2023 15:37:20 -0400
-X-Greylist: delayed 964 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 26 Apr 2023 12:37:18 PDT
-Received: from mailrelay6-1.pub.mailoutpod2-cph3.one.com (mailrelay6-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:405::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 11A2B1735
-        for <linux-fbdev@vger.kernel.org>; Wed, 26 Apr 2023 12:37:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=rsa1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=eVeo2+G0wfE7Th9mpMzqAlZwNjPXsqF5qhbG8BjXhfs=;
-        b=cAOCLgpYeIgd+SmmPnle/bw2nmkoV/Wcu/JfousxXCWTrIQvRkzjoJkXzUu5C1+v5pjh9PiCe2CkM
-         Qhz+tS62TbtvfjoewZNnQsVIohf5Lh6j3eeLb8oGMplSAWtWY4RmGoC8NWdegN1XZLMnR9ogqNkoQQ
-         uXc2S1EUvclv9hfY33OezLtHys0IF70fCqjzu+pHztUy/Iv8rfBGvFIDt/l34oUk1uqmoZp0TRedDb
-         n3a+nAhUaclrLH2tNkgZu49/49pwlw+NVupLOTPMnq2rs+LzYaCkGqNPvf12SGaHEpL638nDRGgYoM
-         zGAQT7MBPP3QhvGMAQLLL8egMyK3MZg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=ed1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=eVeo2+G0wfE7Th9mpMzqAlZwNjPXsqF5qhbG8BjXhfs=;
-        b=do/hY8c+tmgFEa4FnPVB0BzaGeCw1ybrSgm/bAII+A4jObIR152O0J//1DGI4vY4Rp4c904oVYBoa
-         GD/PMttDA==
-X-HalOne-ID: 7fc0ec5f-e467-11ed-9e8c-6f01c1d0a443
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-        by mailrelay6 (Halon) with ESMTPSA
-        id 7fc0ec5f-e467-11ed-9e8c-6f01c1d0a443;
-        Wed, 26 Apr 2023 19:21:11 +0000 (UTC)
-Date:   Wed, 26 Apr 2023 21:21:10 +0200
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     deller@gmx.de, geert@linux-m68k.org, javierm@redhat.com,
-        daniel@ffwll.ch, vgupta@kernel.org, chenhuacai@kernel.org,
-        kernel@xen0n.name, davem@davemloft.net,
-        James.Bottomley@hansenpartnership.com, arnd@arndb.de,
+        Wed, 26 Apr 2023 23:04:42 -0400
+Received: from m12.mail.163.com (m12.mail.163.com [220.181.12.197])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 0497335A6;
+        Wed, 26 Apr 2023 20:04:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=Oz51J
+        k6YUdX9xqityJ6AuFrqweYlAXeUQMqAYe93B1k=; b=fDzhYnwGt4S7mcuGlYphK
+        xBCfNn/3BYbjbeC5idZbuTUiWgLPnqZDBq/nIE34DY6zWIAKLPpiaLr/4xicQ8qq
+        c7g3iwxa2rnVIcCj6iDVabnsCs+V4Njq4KW4ootAgHYfN2EkkPJxNMirky/jg12Z
+        VlYKe8nSe3stgmQzZ1HKB4=
+Received: from leanderwang-LC2.localdomain (unknown [111.206.145.21])
+        by zwqz-smtp-mta-g1-4 (Coremail) with SMTP id _____wBnn3ct5klkwL3sAA--.55775S2;
+        Thu, 27 Apr 2023 11:04:13 +0800 (CST)
+From:   Zheng Wang <zyytlz.wz@163.com>
+To:     deller@gmx.de
+Cc:     javierm@redhat.com, tzimmermann@suse.de,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-arch@vger.kernel.org, linux-snps-arc@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
-        sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-parisc@vger.kernel.org
-Subject: Re: [PATCH 0/5] fbdev: Move framebuffer I/O helpers to <asm/fb.h>
-Message-ID: <20230426192110.GA3791243@ravnborg.org>
-References: <20230426130420.19942-1-tzimmermann@suse.de>
+        linux-kernel@vger.kernel.org, hackerzheng666@gmail.com,
+        1395428693sheep@gmail.com, alex000young@gmail.com,
+        Zheng Wang <zyytlz.wz@163.com>
+Subject: [PATCH] video: imsttfb: Fix use after free bug in imsttfb_probe due  to lack of error-handling of init_imstt
+Date:   Thu, 27 Apr 2023 11:04:11 +0800
+Message-Id: <20230427030411.2375978-1-zyytlz.wz@163.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230426130420.19942-1-tzimmermann@suse.de>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: _____wBnn3ct5klkwL3sAA--.55775S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7KFWxKr18uF1kur4rJr4ruFg_yoW8AFWDpF
+        45A3Z8JrZrJF48Gw4kAF4UAF43K3Z7Kr9IgrW7K3sayF15CFWFgr1xJa42yrZ3JrZ7Jr13
+        XF4kt34UC3WUuFDanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+        9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0zi-eOJUUUUU=
+X-Originating-IP: [111.206.145.21]
+X-CM-SenderInfo: h2113zf2oz6qqrwthudrp/1tbiXRFeU1WBpY8fjAAAss
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas.
+A use-after-free bug may occur if init_imstt invokes framebuffer_release
+and free the info ptr. The caller, imsttfb_probe didn't notice that and
+still keeps the ptr as private data in pdev.
 
-On Wed, Apr 26, 2023 at 03:04:15PM +0200, Thomas Zimmermann wrote:
-> Fbdev provides helpers for framebuffer I/O, such as fb_readl(),
-> fb_writel() or fb_memcpy_to_fb(). The implementation of each helper
-> depends on the architecture. It's still all located in fbdev's main
-> header file <linux/fb.h>. Move all of it into each archtecture's
-> <asm/fb.h>, with shared code in <asm-generic/fb.h>.
+If we remove the driver which will call imsttfb_remove to make cleanup,
+UAF happens.
 
-For once I think this cleanup is moving things in the wrong direction.
+Fix it by return error code if bad case happens in init_imstt.
 
-The fb_* helpers predates the generic io.h support and try to
-add a generic layer for read read / write operations.
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Signed-off-by: Zheng Wang <zyytlz.wz@163.com>
+---
+ drivers/video/fbdev/imsttfb.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-The right fix would be to migrate fb_* to use the io helpers
-we have today - so we use the existing way to handle the architecture
-specific details.
+diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
+index bea45647184e..92b0c5833bda 100644
+--- a/drivers/video/fbdev/imsttfb.c
++++ b/drivers/video/fbdev/imsttfb.c
+@@ -1347,7 +1347,7 @@ static const struct fb_ops imsttfb_ops = {
+ 	.fb_ioctl 	= imsttfb_ioctl,
+ };
+ 
+-static void init_imstt(struct fb_info *info)
++static int init_imstt(struct fb_info *info)
+ {
+ 	struct imstt_par *par = info->par;
+ 	__u32 i, tmp, *ip, *end;
+@@ -1420,7 +1420,7 @@ static void init_imstt(struct fb_info *info)
+ 	    || !(compute_imstt_regvals(par, info->var.xres, info->var.yres))) {
+ 		printk("imsttfb: %ux%ux%u not supported\n", info->var.xres, info->var.yres, info->var.bits_per_pixel);
+ 		framebuffer_release(info);
+-		return;
++		return -ENODEV;
+ 	}
+ 
+ 	sprintf(info->fix.id, "IMS TT (%s)", par->ramdac == IBM ? "IBM" : "TVP");
+@@ -1529,10 +1529,10 @@ static int imsttfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (!par->cmap_regs)
+ 		goto error;
+ 	info->pseudo_palette = par->palette;
+-	init_imstt(info);
+-
+-	pci_set_drvdata(pdev, info);
+-	return 0;
++	ret = init_imstt(info);
++	if (!ret)
++		pci_set_drvdata(pdev, info);
++	return ret;
+ 
+ error:
+ 	if (par->dc_regs)
+-- 
+2.25.1
 
-From a quick look there seems to be some challenges but the current
-helpers that re-do part of io.h is not the way forward and hiding them
-in arch/include/asm/fb.h seems counter productive.
-
-	Sam

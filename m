@@ -2,114 +2,69 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93FEFC7EE21
-	for <linux-fbdev@archiver.kernel.org>; Thu, 27 Apr 2023 17:18:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 862FDC7EE21
+	for <linux-fbdev@archiver.kernel.org>; Thu, 27 Apr 2023 19:20:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244051AbjD0RSk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 27 Apr 2023 13:18:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59802 "EHLO
+        id S245103AbjD0TUY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 27 Apr 2023 15:20:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47406 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243883AbjD0RSi (ORCPT
+        with ESMTP id S245138AbjD0TUP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 27 Apr 2023 13:18:38 -0400
-X-Greylist: delayed 78980 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 27 Apr 2023 10:18:36 PDT
-Received: from mailrelay5-1.pub.mailoutpod2-cph3.one.com (mailrelay5-1.pub.mailoutpod2-cph3.one.com [46.30.211.180])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 64622106
-        for <linux-fbdev@vger.kernel.org>; Thu, 27 Apr 2023 10:18:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=rsa1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=3aPWmuilP5wLRilofoqbOrLGxKBwB7pAtJ4SXkaLvoc=;
-        b=TLJMIi0RX8F2D4MECviwMXYvEcVb0lEsEy3+u8aUlSP8SU8rlCRGlNNmsB/nVOCzgK5pBrkqJQZ1F
-         4Pk0P0hLFN1/gQl0wOoX80yo5LMFFkY8AFk8tIjenbcNtBTjLcrXTVOu35BU0ZgXdWnnSf7qi6nZ3E
-         orNHCnRqwI7LiLkgzVpEQaOMbxTZLeop5dV4q915EpZK5kidlhmu8EBhfMffenaiZSY9k7inpdXkTU
-         Jqtqf/GAdMoncZ0gbyd6bbDaxV/c7d0xakYFi8MhdcA4DCSizJdUq7VgNEnQ2ErW0+f+L1lpNilWl3
-         /TH/k1Te5r34DMQFVMUEym1QgkeLrjQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=ed1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=3aPWmuilP5wLRilofoqbOrLGxKBwB7pAtJ4SXkaLvoc=;
-        b=G5LZPAqKFgpnZqaJfT/ouJ07IZWuTH9E70Iw4lwAnH6U6PTleuFBBWfBI+H0sNsJGesQJZYrDGZOe
-         rwUJGIwDg==
-X-HalOne-ID: 62b9268b-e51f-11ed-ad1f-231b2edd0ed2
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-        by mailrelay5 (Halon) with ESMTPSA
-        id 62b9268b-e51f-11ed-ad1f-231b2edd0ed2;
-        Thu, 27 Apr 2023 17:17:31 +0000 (UTC)
-Date:   Thu, 27 Apr 2023 19:17:29 +0200
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     deller@gmx.de, geert@linux-m68k.org, javierm@redhat.com,
-        daniel@ffwll.ch, vgupta@kernel.org, chenhuacai@kernel.org,
-        kernel@xen0n.name, davem@davemloft.net,
-        James.Bottomley@hansenpartnership.com, arnd@arndb.de,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-arch@vger.kernel.org, linux-snps-arc@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
-        sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-parisc@vger.kernel.org
-Subject: Re: [PATCH 0/5] fbdev: Move framebuffer I/O helpers to <asm/fb.h>
-Message-ID: <20230427171729.GA3899979@ravnborg.org>
-References: <20230426130420.19942-1-tzimmermann@suse.de>
- <20230426192110.GA3791243@ravnborg.org>
- <3e33ab1d-b478-fdf5-6fbe-6580000182d1@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3e33ab1d-b478-fdf5-6fbe-6580000182d1@suse.de>
+        Thu, 27 Apr 2023 15:20:15 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06E104EF4;
+        Thu, 27 Apr 2023 12:20:10 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id CEC2163F60;
+        Thu, 27 Apr 2023 19:20:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 3B6BCC4339C;
+        Thu, 27 Apr 2023 19:20:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1682623209;
+        bh=llgbZY8QBJvHc8W2Po9uvZOLTiJ4fKPIqNmux7EuE1s=;
+        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+        b=YCi6mS0OhIwH4k9UkAahoZK4W8wdx++nhRLE6B7O3ieP7h7NGLFiLUaJGZhKAAl3r
+         T091CcW5jHGYWV8vUwiVSbCRNx/37Gfrz6iOPNTsumwGOjNIC67SuQmzinKFjju0rd
+         TH/MZ9oTgxMuMpGWbRYDQwRKmZFG0/T1E3eLPpqJhyODkDprELypAPPpYy4QDL13Sa
+         5MbWyt15ylxSI7RRHNnIa5s/f2DF2bwVDfVeHYaCt1jMlddFR8uBb6Z/SYUgpKTTl4
+         efClEsVzpeThAv4R4dyPUHhNB5pmSkkmY6Vg0wyS1fSCKIoPoQ+qvxcDuYaBORf/C+
+         ORBWj5E6yHKWA==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 1AAD8C43158;
+        Thu, 27 Apr 2023 19:20:09 +0000 (UTC)
+Subject: Re: [GIT PULL] fbdev fixes and updates for v6.4-rc1
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <ZElwB2/zlXli1QwA@ls3530>
+References: <ZElwB2/zlXli1QwA@ls3530>
+X-PR-Tracked-List-Id: <linux-fbdev.vger.kernel.org>
+X-PR-Tracked-Message-Id: <ZElwB2/zlXli1QwA@ls3530>
+X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.4-rc1
+X-PR-Tracked-Commit-Id: 60ed3cd85b95184936bce70ed7f9e76a6a54a5e1
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 725a345b2ee3c24f9ac2078eb73667e22a1b7214
+Message-Id: <168262320910.21394.8747899965112171337.pr-tracker-bot@kernel.org>
+Date:   Thu, 27 Apr 2023 19:20:09 +0000
+To:     Helge Deller <deller@gmx.de>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+The pull request you sent on Wed, 26 Apr 2023 20:40:07 +0200:
 
-On Thu, Apr 27, 2023 at 09:22:47AM +0200, Thomas Zimmermann wrote:
-> Hi Sam
-> 
-> Am 26.04.23 um 21:21 schrieb Sam Ravnborg:
-> > Hi Thomas.
-> > 
-> > On Wed, Apr 26, 2023 at 03:04:15PM +0200, Thomas Zimmermann wrote:
-> > > Fbdev provides helpers for framebuffer I/O, such as fb_readl(),
-> > > fb_writel() or fb_memcpy_to_fb(). The implementation of each helper
-> > > depends on the architecture. It's still all located in fbdev's main
-> > > header file <linux/fb.h>. Move all of it into each archtecture's
-> > > <asm/fb.h>, with shared code in <asm-generic/fb.h>.
-> > 
-> > For once I think this cleanup is moving things in the wrong direction.
-> > 
-> > The fb_* helpers predates the generic io.h support and try to
-> > add a generic layer for read read / write operations.
-> > 
-> > The right fix would be to migrate fb_* to use the io helpers
-> > we have today - so we use the existing way to handle the architecture
-> > specific details.
-> 
-> I looked through the existing versions of the fb_() I/O helpers. They can
-> apparently be implemented with the regular helpers of similar names.
-> 
-> I'm not sure, but even Sparc looks compatible. At least these sbus_
-> functions seem to be equivalent to the __raw_() I/O helpers of similar
-> names.
+> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.4-rc1
 
-> Do you still have that Sparc emulator?
-I used qemu the last time I played with sparc and saved the instructions
-somewhere how to redo it - but that would use to bohcs driver only I think.
-I have saprc machines, but none of these are easy to get operational.
-We can always ask on sparclinux to get some testing feedback.
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/725a345b2ee3c24f9ac2078eb73667e22a1b7214
 
-> 
-> > 
-> >  From a quick look there seems to be some challenges but the current
-> > helpers that re-do part of io.h is not the way forward and hiding them
-> > in arch/include/asm/fb.h seems counter productive.
-> 
-> Which challenges did you see?
-sparc was the main thing - but maybe I did not look close enough.
-And then I tried to map the macros to some of the more highlevel ones
-from io.h, but as Arnd says the __raw* is the way to go here.
+Thank you!
 
-	Sam
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html

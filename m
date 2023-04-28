@@ -2,53 +2,53 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97D13C77B7F
-	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Apr 2023 12:25:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3866C77B7C
+	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Apr 2023 12:25:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230248AbjD1MZC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 28 Apr 2023 08:25:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34414 "EHLO
+        id S1345946AbjD1MZE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 28 Apr 2023 08:25:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34412 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346096AbjD1MZA (ORCPT
+        with ESMTP id S1346087AbjD1MY7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 28 Apr 2023 08:25:00 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F13B270A
-        for <linux-fbdev@vger.kernel.org>; Fri, 28 Apr 2023 05:24:59 -0700 (PDT)
+        Fri, 28 Apr 2023 08:24:59 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3A8924699
+        for <linux-fbdev@vger.kernel.org>; Fri, 28 Apr 2023 05:24:58 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 41B272008B;
-        Fri, 28 Apr 2023 12:24:58 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id D229521F58;
+        Fri, 28 Apr 2023 12:24:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1682684698; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1682684696; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Ht2sX/GgfWs/nLE3JvKaUqmOG3/3TmdFw8dueDM8Hyc=;
-        b=TAKv5qSp9/GmhrVKLPwYqQhLsWHAe5V6WkSHmmSRfsKeX8FfeEzrV/wAYoDCs1cfnmD+zE
-        Hs0CZERgw60eTcw6AQdDN4CXRVBhkBgx5RThuUJuaEt5AUhu5Jx96EXPYgavjscSA1SU7g
-        RE1+W4xub8K/X6DVKEh4Ru/C845FoBU=
+        bh=wLWuGCUCtLFjHCc+Azt5ygcchweoqpbB1KeKuZbqua4=;
+        b=xCi+dWd/o4Ijb0RqswEuDZTQ4boaVuMS0605usGbdwfF3hL/D1Z6QfMTH2NbatQlvyebQP
+        y4oAjFmw/HMxPokARhZriB2v4WsvTarGaBymmciKV1lG/AfdKJMu8RA51tGIBOACdTOO9B
+        GVg0uAp39yI0ESh58k4X7xLv4vRqYVI=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1682684698;
+        s=susede2_ed25519; t=1682684696;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Ht2sX/GgfWs/nLE3JvKaUqmOG3/3TmdFw8dueDM8Hyc=;
-        b=Cdlu4icMhk+04e5s3NexwbdTkGcKc1EjTfBK/4DVHTnNX/J4Bk48S4POwC8vWLtCVyZVCr
-        r6hgYKWDETrRyhDg==
+        bh=wLWuGCUCtLFjHCc+Azt5ygcchweoqpbB1KeKuZbqua4=;
+        b=y0c/jgfjY2bsav2KS8eyKFAzPeJd9qm53OhcstdGoWo2yVBdvmcCFA+pNDbYRd77AIgKi/
+        pJ7MHLKNdgC4IHCg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 07EA7139C3;
-        Fri, 28 Apr 2023 12:24:58 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 902B21390E;
+        Fri, 28 Apr 2023 12:24:56 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id YP7NABq7S2RgeAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Fri, 28 Apr 2023 12:24:58 +0000
+        id AFJKIhi7S2RgeAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Fri, 28 Apr 2023 12:24:56 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     maarten.lankhorst@linux.intel.com, mripard@kernel.org,
         airlied@gmail.com, daniel@ffwll.ch, javierm@redhat.com,
@@ -56,9 +56,9 @@ To:     maarten.lankhorst@linux.intel.com, mripard@kernel.org,
         teddy.wang@siliconmotion.com
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 09/19] fbdev/ps3fb: Use struct fb_info.screen_buffer
-Date:   Fri, 28 Apr 2023 14:24:42 +0200
-Message-Id: <20230428122452.4856-10-tzimmermann@suse.de>
+Subject: [PATCH v2 04/19] fbdev/arcfb: Use struct fb_info.screen_buffer
+Date:   Fri, 28 Apr 2023 14:24:37 +0200
+Message-Id: <20230428122452.4856-5-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.40.0
 In-Reply-To: <20230428122452.4856-1-tzimmermann@suse.de>
 References: <20230428122452.4856-1-tzimmermann@suse.de>
@@ -81,31 +81,49 @@ rid of casting needed due to not using the correct data type.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/ps3fb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/arcfb.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
-index 98aaa330a193..d4abcf8aff75 100644
---- a/drivers/video/fbdev/ps3fb.c
-+++ b/drivers/video/fbdev/ps3fb.c
-@@ -650,7 +650,7 @@ static int ps3fb_set_par(struct fb_info *info)
+diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
+index 45e64016db32..088c4b30fd31 100644
+--- a/drivers/video/fbdev/arcfb.c
++++ b/drivers/video/fbdev/arcfb.c
+@@ -260,7 +260,7 @@ static void arcfb_lcd_update_page(struct arcfb_par *par, unsigned int upper,
+ 	ks108_set_yaddr(par, chipindex, upper/8);
+ 
+ 	linesize = par->info->var.xres/8;
+-	src = (unsigned char __force *) par->info->screen_base + (left/8) +
++	src = (unsigned char *)par->info->screen_buffer + (left/8) +
+ 		(upper * linesize);
+ 	ks108_set_xaddr(par, chipindex, left);
+ 
+@@ -468,7 +468,7 @@ static ssize_t arcfb_write(struct fb_info *info, const char __user *buf,
+ 	if (count) {
+ 		char *base_addr;
+ 
+-		base_addr = (char __force *)info->screen_base;
++		base_addr = info->screen_buffer;
+ 		count -= copy_from_user(base_addr + p, buf, count);
+ 		*ppos += count;
+ 		err = -EFAULT;
+@@ -525,7 +525,7 @@ static int arcfb_probe(struct platform_device *dev)
+ 	if (!info)
+ 		goto err;
+ 
+-	info->screen_base = (char __iomem *)videomemory;
++	info->screen_buffer = videomemory;
+ 	info->fbops = &arcfb_ops;
+ 
+ 	info->var = arcfb_var;
+@@ -595,7 +595,7 @@ static int arcfb_remove(struct platform_device *dev)
+ 		unregister_framebuffer(info);
+ 		if (irq)
+ 			free_irq(((struct arcfb_par *)(info->par))->irq, info);
+-		vfree((void __force *)info->screen_base);
++		vfree(info->screen_buffer);
+ 		framebuffer_release(info);
  	}
- 
- 	/* Clear XDR frame buffer memory */
--	memset((void __force *)info->screen_base, 0, info->fix.smem_len);
-+	memset(info->screen_buffer, 0, info->fix.smem_len);
- 
- 	/* Clear DDR frame buffer memory */
- 	lines = vmode->yres * par->num_frames;
-@@ -1140,7 +1140,7 @@ static int ps3fb_probe(struct ps3_system_bus_device *dev)
- 	 * memory
- 	 */
- 	fb_start = ps3fb_videomemory.address + GPU_FB_START;
--	info->screen_base = (char __force __iomem *)fb_start;
-+	info->screen_buffer = fb_start;
- 	info->fix.smem_start = __pa(fb_start);
- 	info->fix.smem_len = ps3fb_videomemory.size - GPU_FB_START;
- 
+ 	return 0;
 -- 
 2.40.0
 

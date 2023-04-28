@@ -2,163 +2,176 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31D01C77B61
-	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Apr 2023 11:25:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75EB6C77B61
+	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Apr 2023 12:19:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232224AbjD1LZj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 28 Apr 2023 07:25:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53274 "EHLO
+        id S1345799AbjD1MTq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 28 Apr 2023 08:19:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58864 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232019AbjD1LZh (ORCPT
+        with ESMTP id S229707AbjD1MTp (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 28 Apr 2023 07:25:37 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9272E5587
-        for <linux-fbdev@vger.kernel.org>; Fri, 28 Apr 2023 04:25:36 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 1476520065;
-        Fri, 28 Apr 2023 11:25:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1682681135; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=BEN9REyCBqZHieYcmzMVHdo7PZZ14yso6XVayqOiqeI=;
-        b=uhfdCIH1dXH/+v0PUPgHFfgb9RD4/IxO8A3NGDHJ7o9nID5rmpl7UIar1RvcWW/CI/V/82
-        rXJIcf6ewXhplttqGulAp44ByIdhYk3I35NKnrhrVAfLKtTumVYtDE2QHjuTPT32X1gEQE
-        LJ/MR28kBhPcczSV95vltiEoz2ueKDo=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1682681135;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=BEN9REyCBqZHieYcmzMVHdo7PZZ14yso6XVayqOiqeI=;
-        b=FqY44D3XTkRdo0PWPE8Q62tOho7YBMd8NfKwMQGAO+hitKnERnW9UrPEsNCO9A0i14khbU
-        e8J43bZKe9HD4vAg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D0E92138FA;
-        Fri, 28 Apr 2023 11:25:34 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id nQQBMi6tS2TuVwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Fri, 28 Apr 2023 11:25:34 +0000
-Message-ID: <44b5d355-f565-527e-f63a-f06136dc25b4@suse.de>
-Date:   Fri, 28 Apr 2023 13:25:34 +0200
+        Fri, 28 Apr 2023 08:19:45 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id AB3216A48;
+        Fri, 28 Apr 2023 05:19:03 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C037CC14;
+        Fri, 28 Apr 2023 05:19:35 -0700 (PDT)
+Received: from [10.57.21.5] (unknown [10.57.21.5])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D12E73F5A1;
+        Fri, 28 Apr 2023 05:18:47 -0700 (PDT)
+Message-ID: <430c73f0-45f4-f81e-6506-bc8cc955d936@arm.com>
+Date:   Fri, 28 Apr 2023 13:18:42 +0100
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH 6/6] drm/fb-helper: Use fb_{cfb,sys}_{read, write}()
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     maarten.lankhorst@linux.intel.com, mripard@kernel.org,
-        airlied@gmail.com, daniel@ffwll.ch, javierm@redhat.com,
-        deller@gmx.de, sudipm.mukherjee@gmail.com,
-        teddy.wang@siliconmotion.com, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org
-References: <20230425142846.730-1-tzimmermann@suse.de>
- <20230425142846.730-7-tzimmermann@suse.de>
- <CAMuHMdWDRB8kyLb39rku2FJ3uKid__O=jmBXJ_85cct1zFkaYA@mail.gmail.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <CAMuHMdWDRB8kyLb39rku2FJ3uKid__O=jmBXJ_85cct1zFkaYA@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------87IkghRKsdKRjZqWO75TGlDV"
+User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.1
+Subject: Re: [PATCH v2 5/5] fbdev: Define framebuffer I/O from Linux' I/O
+ functions
+Content-Language: en-GB
+To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
+        geert@linux-m68k.org, javierm@redhat.com, daniel@ffwll.ch,
+        vgupta@kernel.org, chenhuacai@kernel.org, kernel@xen0n.name,
+        davem@davemloft.net, James.Bottomley@HansenPartnership.com,
+        arnd@arndb.de, sam@ravnborg.org
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arch@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+        sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-parisc@vger.kernel.org
+References: <20230428092711.406-1-tzimmermann@suse.de>
+ <20230428092711.406-6-tzimmermann@suse.de>
+From:   Robin Murphy <robin.murphy@arm.com>
+In-Reply-To: <20230428092711.406-6-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------87IkghRKsdKRjZqWO75TGlDV
-Content-Type: multipart/mixed; boundary="------------bTUVJb9SBXD2CTMv0Fw0nv0b";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: maarten.lankhorst@linux.intel.com, mripard@kernel.org, airlied@gmail.com,
- daniel@ffwll.ch, javierm@redhat.com, deller@gmx.de,
- sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Message-ID: <44b5d355-f565-527e-f63a-f06136dc25b4@suse.de>
-Subject: Re: [PATCH 6/6] drm/fb-helper: Use fb_{cfb,sys}_{read, write}()
-References: <20230425142846.730-1-tzimmermann@suse.de>
- <20230425142846.730-7-tzimmermann@suse.de>
- <CAMuHMdWDRB8kyLb39rku2FJ3uKid__O=jmBXJ_85cct1zFkaYA@mail.gmail.com>
-In-Reply-To: <CAMuHMdWDRB8kyLb39rku2FJ3uKid__O=jmBXJ_85cct1zFkaYA@mail.gmail.com>
+On 2023-04-28 10:27, Thomas Zimmermann wrote:
+> Implement framebuffer I/O helpers, such as fb_read*() and fb_write*()
+> with Linux' regular I/O functions. Remove all ifdef cases for the
+> various architectures.
+> 
+> Most of the supported architectures use __raw_() I/O functions or treat
+> framebuffer memory like regular memory. This is also implemented by the
+> architectures' I/O function, so we can use them instead.
+> 
+> Sparc uses SBus to connect to framebuffer devices. It provides respective
+> implementations of the framebuffer I/O helpers. The involved sbus_()
+> I/O helpers map to the same code as Sparc's regular I/O functions. As
+> with other platforms, we can use those instead.
+> 
+> We leave a TODO item to replace all fb_() functions with their regular
+> I/O counterparts throughout the fbdev drivers.
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
+>   include/linux/fb.h | 63 +++++++++++-----------------------------------
+>   1 file changed, 15 insertions(+), 48 deletions(-)
+> 
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index 08cb47da71f8..4aa9e90edd17 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -15,7 +15,6 @@
+>   #include <linux/list.h>
+>   #include <linux/backlight.h>
+>   #include <linux/slab.h>
+> -#include <asm/io.h>
+>   
+>   struct vm_area_struct;
+>   struct fb_info;
+> @@ -511,58 +510,26 @@ struct fb_info {
+>    */
+>   #define STUPID_ACCELF_TEXT_SHIT
+>   
+> -// This will go away
+> -#if defined(__sparc__)
+> -
+> -/* We map all of our framebuffers such that big-endian accesses
+> - * are what we want, so the following is sufficient.
+> +/*
+> + * TODO: Update fbdev drivers to call the I/O helpers directly and
+> + *       remove the fb_() tokens.
+>    */
+> -
+> -// This will go away
+> -#define fb_readb sbus_readb
+> -#define fb_readw sbus_readw
+> -#define fb_readl sbus_readl
+> -#define fb_readq sbus_readq
+> -#define fb_writeb sbus_writeb
+> -#define fb_writew sbus_writew
+> -#define fb_writel sbus_writel
+> -#define fb_writeq sbus_writeq
+> -#define fb_memset sbus_memset_io
+> -#define fb_memcpy_fromfb sbus_memcpy_fromio
+> -#define fb_memcpy_tofb sbus_memcpy_toio
+> -
+> -#elif defined(__i386__) || defined(__alpha__) || defined(__x86_64__) ||	\
+> -	defined(__hppa__) || defined(__sh__) || defined(__powerpc__) ||	\
+> -	defined(__arm__) || defined(__aarch64__) || defined(__mips__)
+> -
+> -#define fb_readb __raw_readb
+> -#define fb_readw __raw_readw
+> -#define fb_readl __raw_readl
+> -#define fb_readq __raw_readq
+> -#define fb_writeb __raw_writeb
+> -#define fb_writew __raw_writew
+> -#define fb_writel __raw_writel
+> -#define fb_writeq __raw_writeq
 
---------------bTUVJb9SBXD2CTMv0Fw0nv0b
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Note that on at least some architectures, the __raw variants are 
+native-endian, whereas the regular accessors are explicitly 
+little-endian, so there is a slight risk of inadvertently changing 
+behaviour on big-endian systems (MIPS most likely, but a few old ARM 
+platforms run BE as well).
 
-SGkNCg0KQW0gMjYuMDQuMjMgdW0gMTc6MTUgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
-DQo+IEhpIFRob21hcywNCj4gDQo+IE9uIFR1ZSwgQXByIDI1LCAyMDIzIGF0IDQ6MjjigK9Q
-TSBUaG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1hbm5Ac3VzZS5kZT4gd3JvdGU6DQo+PiBJ
-bXBsZW1lbnQgRFJNIGZiZGV2IGhlbHBlcnMgZm9yIHJlYWRpbmcgYW5kIHdyaXRpbmcgZnJh
-bWVidWZmZXINCj4+IG1lbW9yeSB3aXRoIHRoZSByZXNwZWN0aXZlIGZiZGV2IGZ1bmN0aW9u
-cy4gUmVtb3ZlcyBkdXBsaWNhdGUNCj4+IGNvZGUuDQo+Pg0KPj4gU2lnbmVkLW9mZi1ieTog
-VGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+DQo+IA0KPiBUaGFua3Mg
-Zm9yIHlvdXIgcGF0Y2ghDQo+IA0KPj4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL2RybV9mYl9o
-ZWxwZXIuYw0KPj4gKysrIGIvZHJpdmVycy9ncHUvZHJtL2RybV9mYl9oZWxwZXIuYw0KPiAN
-Cj4+IEBAIC04MTYsMjEgKzcyNywxMCBAQCBzdGF0aWMgc3NpemVfdCBkcm1fZmJfaGVscGVy
-X3JlYWRfc2NyZWVuX2J1ZmZlcihzdHJ1Y3QgZmJfaW5mbyAqaW5mbywgY2hhciBfX3VzZQ0K
-Pj4gICBzc2l6ZV90IGRybV9mYl9oZWxwZXJfc3lzX3JlYWQoc3RydWN0IGZiX2luZm8gKmlu
-Zm8sIGNoYXIgX191c2VyICpidWYsDQo+PiAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgIHNpemVfdCBjb3VudCwgbG9mZl90ICpwcG9zKQ0KPj4gICB7DQo+PiAtICAgICAgIHJl
-dHVybiBfX2RybV9mYl9oZWxwZXJfcmVhZChpbmZvLCBidWYsIGNvdW50LCBwcG9zLCBkcm1f
-ZmJfaGVscGVyX3JlYWRfc2NyZWVuX2J1ZmZlcik7DQo+PiArICAgICAgIHJldHVybiBmYl9z
-eXNfcmVhZChpbmZvLCBidWYsIGNvdW50LCBwcG9zKTsNCj4+ICAgfQ0KPj4gICBFWFBPUlRf
-U1lNQk9MKGRybV9mYl9oZWxwZXJfc3lzX3JlYWQpOw0KPiANCj4gSSBndWVzcyBkcm1fZmJf
-aGVscGVyX3N5c19yZWFkKCkgY2FuIGp1c3QgYmUgcmVtb3ZlZD8NCg0KWWVzLCBzb29uLg0K
-DQo+IA0KPj4gQEAgLTg0OSw3ICs3NDksNyBAQCBzc2l6ZV90IGRybV9mYl9oZWxwZXJfc3lz
-X3dyaXRlKHN0cnVjdCBmYl9pbmZvICppbmZvLCBjb25zdCBjaGFyIF9fdXNlciAqYnVmLA0K
-Pj4gICAgICAgICAgc3NpemVfdCByZXQ7DQo+PiAgICAgICAgICBzdHJ1Y3QgZHJtX3JlY3Qg
-ZGFtYWdlX2FyZWE7DQo+Pg0KPj4gLSAgICAgICByZXQgPSBfX2RybV9mYl9oZWxwZXJfd3Jp
-dGUoaW5mbywgYnVmLCBjb3VudCwgcHBvcywgZHJtX2ZiX2hlbHBlcl93cml0ZV9zY3JlZW5f
-YnVmZmVyKTsNCj4+ICsgICAgICAgcmV0ID0gZmJfc3lzX3dyaXRlKGluZm8sIGJ1ZiwgY291
-bnQsIHBwb3MpOw0KPj4gICAgICAgICAgaWYgKHJldCA8PSAwKQ0KPj4gICAgICAgICAgICAg
-ICAgICByZXR1cm4gcmV0Ow0KPj4NCj4gDQo+IGRybV9mYl9oZWxwZXJfc3lzX3dyaXRlKCkg
-Y2Fubm90IGJlIHJlbW92ZWQgeWV0LCBiZWNhdXNlIGl0IGRvZXMgZGFtYWdlDQo+IGhhbmRs
-aW5nIGJlbG93LiAgSWYgdGhlIGZiX29wcy5mYl9zeW5jKCkgY2FsbGJhY2sgd291bGQgYmUg
-ZW5oYW5jZWQgdG8gcGFzcw0KPiBhIHJlZ2lvbiwgZHJtX2ZiX2hlbHBlciBjb3VsZCBpbXBs
-ZW1lbnQgLmZiX3N5bmMoKSBpbnN0ZWFkIG9mIC5mYl93cml0ZSgpLg0KDQpNb3N0IERSTSdz
-IGZiZGV2IHN1cHBvcnQgY2FuIHNvb24gdXNlIHJlZ3VsYXIgZmJkZXYgaGVscGVycyBmcm9t
-IHRoaXMgDQpwYXRjaHNldC4gT25seSBEUk0ncyBpOTE1IGFuZCB0aGUgZ2VuZXJpYyBmYmRl
-diBuZWVkIGRhbWFnZSBoYW5kbGluZy4gDQpCdXQgdGhleSBhcmUgYm90aCBzcGVjaWFsIGlu
-IHRoZWlyIG93biB3YXksIHNvIGVhY2ggd2lsbCBnZXQgaXRzIG93biANCmltcGxlbWVudGF0
-aW9uLiBJIGhhdmUgcHJvdG90eXBlIHBhdGNoZXMgdG8gbWFrZSB0aGlzIGhhcHBlbi4NCg0K
-QmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiANCj4gTGlrZXdpc2UgZm9yIHRoZSAiY2ZiIiAo
-d2hpY2ggaXMgYSBtaXNub21lcikgdmFyaWFudHMgYmVsb3cuDQo+IA0KPiBHcntvZXRqZSxl
-ZXRpbmd9cywNCj4gDQo+ICAgICAgICAgICAgICAgICAgICAgICAgICBHZWVydA0KPiANCg0K
-LS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VT
-RSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpGcmFua2Vuc3RyYXNzZSAxNDYs
-IDkwNDYxIE51ZXJuYmVyZywgR2VybWFueQ0KR0Y6IEl2byBUb3RldiwgQW5kcmV3IE15ZXJz
-LCBBbmRyZXcgTWNEb25hbGQsIEJvdWRpZW4gTW9lcm1hbg0KSFJCIDM2ODA5IChBRyBOdWVy
-bmJlcmcpDQo=
+> +#define fb_readb readb
+> +#define fb_readw readw
+> +#define fb_readl readl
+> +#if defined(CONFIG_64BIT)
+> +#define fb_readq readq
+> +#endif
 
---------------bTUVJb9SBXD2CTMv0Fw0nv0b--
+You probably don't need to bother making these conditional - 32-bit 
+architectures aren't forbidden from providing readq/writeq if they 
+really want to, and drivers can also use the io-64-nonatomic headers for 
+portability. The build will still fail in a sufficiently obvious manner 
+if neither is true.
 
---------------87IkghRKsdKRjZqWO75TGlDV
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+Thanks,
+Robin.
 
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmRLrS4FAwAAAAAACgkQlh/E3EQov+Cx
-Pg//f1WikGc/qCQ2WGkHxtJDJitZb0JXX0Iw9ekoUdunMADXHB70EwG+jrsz9Lfrh2YPB9MGCqG9
-jD66pt988Bn0uQPeCr9A/pSTPzuSnbNFuHwtiEW3PuFtYqS1K8sZ/iBPy/gddShbjIZyZikKJ2No
-5LDcg+tuzaLzc484jraQ9/IHf/rl9SiXvnl1AvQkH0BGL8e9g6Pp7q9x1PfIFPrMSXFNpV+T85cf
-9g19m1zH3vio9v4iSCzSYX8WcUaOChd4cbzjHs1nkRilRWqEp6BpNptIs84q+dREhnmeG3y7Yc71
-KTwCYfD/ROUFKOyVe1JbQJBKn6bSGGS1jHxh9F2O5NeFxgGk0iVdugFZI7JAnxPXnNEi3dGzhCb1
-fOTzV1HWmPMEC0Dj+Xk7Pd9f0/aQbpvSrsf2kktPkZJj2bSxD6ssfz3Ef1KNHs+jAOtAIm4NipXE
-vh2RZTnhlFSXHormO9F0RAyaiqbYiPuHNv26cvcN2nxRSQ3mrm5A0QcjiueBp9BVfXOUL4wCoimI
-j58dwXnz4/1S+hdAl67H0Xm2Azczkgl3dYLTpzEyvplZzyWT3SfWhBTUQoRJz1aVe8YNs3CQ7zVr
-mqysAti92B45NnGGvcSMD39bO5UALmoC4DjA7e045KwCaVfadhoLjTKn4vQYywAS5orevm+mu4tv
-Ies=
-=IZU1
------END PGP SIGNATURE-----
-
---------------87IkghRKsdKRjZqWO75TGlDV--
+> +#define fb_writeb writeb
+> +#define fb_writew writew
+> +#define fb_writel writel
+> +#if defined(CONFIG_64BIT)
+> +#define fb_writeq writeq
+> +#endif
+>   #define fb_memset memset_io
+>   #define fb_memcpy_fromfb memcpy_fromio
+>   #define fb_memcpy_tofb memcpy_toio
+>   
+> -#else
+> -
+> -#define fb_readb(addr) (*(volatile u8 *) (addr))
+> -#define fb_readw(addr) (*(volatile u16 *) (addr))
+> -#define fb_readl(addr) (*(volatile u32 *) (addr))
+> -#define fb_readq(addr) (*(volatile u64 *) (addr))
+> -#define fb_writeb(b,addr) (*(volatile u8 *) (addr) = (b))
+> -#define fb_writew(b,addr) (*(volatile u16 *) (addr) = (b))
+> -#define fb_writel(b,addr) (*(volatile u32 *) (addr) = (b))
+> -#define fb_writeq(b,addr) (*(volatile u64 *) (addr) = (b))
+> -#define fb_memset memset
+> -#define fb_memcpy_fromfb memcpy
+> -#define fb_memcpy_tofb memcpy
+> -
+> -#endif
+> -
+>   #define FB_LEFT_POS(p, bpp)          (fb_be_math(p) ? (32 - (bpp)) : 0)
+>   #define FB_SHIFT_HIGH(p, val, bits)  (fb_be_math(p) ? (val) >> (bits) : \
+>   						      (val) << (bits))

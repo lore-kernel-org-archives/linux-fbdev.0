@@ -2,144 +2,101 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BF65C7EE22
-	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Apr 2023 13:17:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F174C77B60
+	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Apr 2023 13:34:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346220AbjD1NRa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 28 Apr 2023 09:17:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60954 "EHLO
+        id S1346300AbjD1Ne2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 28 Apr 2023 09:34:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43622 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229811AbjD1NRX (ORCPT
+        with ESMTP id S1346247AbjD1Ne2 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 28 Apr 2023 09:17:23 -0400
-Received: from out4-smtp.messagingengine.com (out4-smtp.messagingengine.com [66.111.4.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D32541BC5;
-        Fri, 28 Apr 2023 06:17:20 -0700 (PDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-        by mailout.nyi.internal (Postfix) with ESMTP id AB7305C00BE;
-        Fri, 28 Apr 2023 09:17:17 -0400 (EDT)
-Received: from imap51 ([10.202.2.101])
-  by compute6.internal (MEProxy); Fri, 28 Apr 2023 09:17:17 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-        :cc:content-transfer-encoding:content-type:content-type:date
-        :date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-        :references:reply-to:sender:subject:subject:to:to; s=fm2; t=
-        1682687837; x=1682774237; bh=PcHVTECY0DTSklc3ILW7xV/aJ7/Nau9fSJX
-        oavdaK3A=; b=eUdK2nJGUj2ojcq/iN8+k9NH/YFehW26tD8EuLHi59mfHw77XBh
-        fsxNlrmYAQkqxYxfq6y27vgAktDmUq34FmXwMFdqTfPO9loKN1XNr+UVkGw680qV
-        BX4/DYfgCMWrAxE4Wow3ZwgWlN0ZNzHHEAtYzaMI7xLQjVEHla6fM+TZ1yvnzX8P
-        E9OEYJ2zcL1QVyo974JDoFI3uCjuLc0KDC60ytqogt91Vrtguy8dOzwcDADe8Q8K
-        wwGN7a6AzKt12/FKaJ6yE4xZxx1mfSbCRrBkh1w9kOWf+J/cSrAHTesLpKGIXn3y
-        r/ezr2uqH7xDgE1v6IYlgXMzGM/v2wMUp7w==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-transfer-encoding
-        :content-type:content-type:date:date:feedback-id:feedback-id
-        :from:from:in-reply-to:in-reply-to:message-id:mime-version
-        :references:reply-to:sender:subject:subject:to:to:x-me-proxy
-        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=
-        1682687837; x=1682774237; bh=PcHVTECY0DTSklc3ILW7xV/aJ7/Nau9fSJX
-        oavdaK3A=; b=UHAR/6bgsNPLLEMAvooCE2Mz7rvShUkiKAolMysUv1eAD0G8pRJ
-        Axt2cEsFq+HL0Sk84JLCYXyIoo4UY6iWfrU5QyWSoznl6Dl9up0oJPS8fmgZCkKN
-        EmUFVujWaEm9kpXEdbpvXC1srFotbipILlqEP+BJC/wZA/MRDDmTDOObpyzAXcfr
-        P5fPwPdeW2skiNrFbXI8pS1Fet/chSbd2eiKQ8NJCdOODy4lMW1yCHqd7i+2kw0m
-        kkAAHSUBJawkS7oRrDqwSvWgWl0YC4FGX0wEe7mqbkV7MbyF4ZFqT2f9EaWXdta5
-        UEG6fShDzo25wuyIzYe0uuavmo6nS5Qe20w==
-X-ME-Sender: <xms:W8dLZGx3L9IVhQ2Z-Dm1gEY_dwHGXe32-QXDVpGxL4oZOrgre8krDA>
-    <xme:W8dLZCT9BitiC8iWSIbkWjDY3CQ3ktYEHuCqF4lu4DEpLRIH__A8UyQjFfr8K3-Q_
-    Hql-wi5bFWVO6i97bQ>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrfedukedgieefucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepofgfggfkjghffffhvfevufgtgfesthhqredtreerjeenucfhrhhomhepfdet
-    rhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrg
-    htthgvrhhnpeegfeejhedvledvffeijeeijeeivddvhfeliedvleevheejleetgedukedt
-    gfejveenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
-    grrhhnugesrghrnhgusgdruggv
-X-ME-Proxy: <xmx:W8dLZIV4-CWeJ_MAEkYa-T1q9H3_MDecIqHVzquAXQO4y7Xxr-G-sA>
-    <xmx:W8dLZMg6khyrtIk2_xVeJ0jwab7q97YJj0EgH88Gpq1BMDBeqvzniA>
-    <xmx:W8dLZIB7tmcXPfPCpXuu_s8_Ujf8-kwPj0DVIS5NrKHqzYp1SN7Ggg>
-    <xmx:XcdLZPBenYiA6kEk2QhVgO0DBNH2txmCkaSu9NuYz9QpUDkjGGj7IA>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-        id A158DB60086; Fri, 28 Apr 2023 09:17:15 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.9.0-alpha0-374-g72c94f7a42-fm-20230417.001-g72c94f7a
-Mime-Version: 1.0
-Message-Id: <f612c682-5767-4a58-82f6-f4a4d1b592a1@app.fastmail.com>
-In-Reply-To: <CAMuHMdUGjtiAR37L4_e0_p8ee2=gxoUj7+e7rqMLTBK+vpV4yw@mail.gmail.com>
-References: <20230428092711.406-1-tzimmermann@suse.de>
- <20230428092711.406-6-tzimmermann@suse.de>
- <430c73f0-45f4-f81e-6506-bc8cc955d936@arm.com>
- <CAMuHMdUGjtiAR37L4_e0_p8ee2=gxoUj7+e7rqMLTBK+vpV4yw@mail.gmail.com>
-Date:   Fri, 28 Apr 2023 14:17:24 +0100
-From:   "Arnd Bergmann" <arnd@arndb.de>
-To:     "Geert Uytterhoeven" <geert@linux-m68k.org>,
-        "Robin Murphy" <robin.murphy@arm.com>
-Cc:     "Thomas Zimmermann" <tzimmermann@suse.de>,
-        "Helge Deller" <deller@gmx.de>,
-        "Javier Martinez Canillas" <javierm@redhat.com>,
-        "Daniel Vetter" <daniel@ffwll.ch>,
-        "Vineet Gupta" <vgupta@kernel.org>,
-        "Huacai Chen" <chenhuacai@kernel.org>,
-        "WANG Xuerui" <kernel@xen0n.name>,
-        "David S . Miller" <davem@davemloft.net>,
-        "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
-        "Sam Ravnborg" <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        Linux-Arch <linux-arch@vger.kernel.org>,
-        linux-snps-arc@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-ia64@vger.kernel.org, loongarch@lists.linux.dev,
-        linux-m68k@lists.linux-m68k.org, sparclinux@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org
-Subject: Re: [PATCH v2 5/5] fbdev: Define framebuffer I/O from Linux' I/O functions
-Content-Type: text/plain;charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+        Fri, 28 Apr 2023 09:34:28 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C141F210B
+        for <linux-fbdev@vger.kernel.org>; Fri, 28 Apr 2023 06:33:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1682688821;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=T6nMtf6Gzq3uJ6hYj+VP/gNrA7S63KDC0HhAUOQNVRE=;
+        b=YiRvuylMP4szzd0TVhNqNQ7nYMerMd1mUkjDIthTtSfj3VI9Q90zomKysdudIindgRbCLd
+        bkbBDxW3tbcm6tlXL/QKySmim14hmYA3KIEPBFuFn5Xd0PPkcVona/9r9qJEMZpKEY1Fup
+        Tn+uaLlKCMkS4KyXlsFhpGmqO74m9bA=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-425-AH2XKY4VMFaQmJXaGiVrtQ-1; Fri, 28 Apr 2023 09:33:39 -0400
+X-MC-Unique: AH2XKY4VMFaQmJXaGiVrtQ-1
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-3f187a7a626so35560845e9.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 28 Apr 2023 06:33:38 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1682688817; x=1685280817;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=T6nMtf6Gzq3uJ6hYj+VP/gNrA7S63KDC0HhAUOQNVRE=;
+        b=NK3q2ZRhRSW50EuEsmN+Tc+CiA4FBjpUkT3stX1XKI+8E6Mz6BuJeBa51+DpdgGYu2
+         jptQXkuMSg1h2rwS4VJ06kVcuioZWzZfx2vXz7apr+LJPq/WuhhkhM8kQtpG8de5Chqo
+         /ufUhSUylVuqwAR455+te8QaEvVPb7g97p752YgwUg9hhXP1Q9Qqa2DxuaupoLizs3Eq
+         /bF7vYIaO384KG8nuJwkg7QZD+1K29+S5q60vyUelETJ2gPs6oqetETdYkXMc3Y4W6sR
+         Xpv9MqsbqV1XEhyVS1e1WSduRItD4cKHhzLIwsBQrAV90xQvAGJWwS42d2y1LbTcnaCX
+         QjWg==
+X-Gm-Message-State: AC+VfDyRh4943RiUIM2O2+arIFnO1BV6JS4tP5Eyvm3Mlryhu38CcKS/
+        AoKGhp+Q3qpT5vrI1uDA4B71KiPCSyPaM7rpJ2RUVYP7If5fzluY9wk0DHTAVSEJDtzejGW5zFm
+        wic6t8phVpFkZJ1F/sVdzLIU=
+X-Received: by 2002:a5d:54cb:0:b0:2f4:f727:14b9 with SMTP id x11-20020a5d54cb000000b002f4f72714b9mr3754762wrv.43.1682688817682;
+        Fri, 28 Apr 2023 06:33:37 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ4aoS11M0VcXzkzoTNNDPlJ9yq5eLNx4vXdbKR1p77ehBhl3fOopeYeVOMj3at8BjlbnCOB3Q==
+X-Received: by 2002:a5d:54cb:0:b0:2f4:f727:14b9 with SMTP id x11-20020a5d54cb000000b002f4f72714b9mr3754743wrv.43.1682688817385;
+        Fri, 28 Apr 2023 06:33:37 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id l18-20020a05600012d200b002ceacff44c7sm21198449wrx.83.2023.04.28.06.33.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 28 Apr 2023 06:33:37 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Thomas Zimmermann <tzimmermann@suse.de>,
+        maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+        airlied@gmail.com, daniel@ffwll.ch, deller@gmx.de,
+        geert@linux-m68k.org, sudipm.mukherjee@gmail.com,
+        teddy.wang@siliconmotion.com
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH v2 01/19] auxdisplay/cfag12864bfb: Use struct
+ fb_info.screen_buffer
+In-Reply-To: <20230428122452.4856-2-tzimmermann@suse.de>
+References: <20230428122452.4856-1-tzimmermann@suse.de>
+ <20230428122452.4856-2-tzimmermann@suse.de>
+Date:   Fri, 28 Apr 2023 15:33:36 +0200
+Message-ID: <87ildggmhb.fsf@minerva.mail-host-address-is-not-set>
+MIME-Version: 1.0
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Apr 28, 2023, at 13:27, Geert Uytterhoeven wrote:
-> On Fri, Apr 28, 2023 at 2:18=E2=80=AFPM Robin Murphy <robin.murphy@arm=
-.com> wrote:
->> On 2023-04-28 10:27, Thomas Zimmermann wrote:
+Thomas Zimmermann <tzimmermann@suse.de> writes:
 
->> > -
->> > -#elif defined(__i386__) || defined(__alpha__) || defined(__x86_64_=
-_) ||      \
->> > -     defined(__hppa__) || defined(__sh__) || defined(__powerpc__) =
-|| \
->> > -     defined(__arm__) || defined(__aarch64__) || defined(__mips__)
->> > -
->> > -#define fb_readb __raw_readb
->> > -#define fb_readw __raw_readw
->> > -#define fb_readl __raw_readl
->> > -#define fb_readq __raw_readq
->> > -#define fb_writeb __raw_writeb
->> > -#define fb_writew __raw_writew
->> > -#define fb_writel __raw_writel
->> > -#define fb_writeq __raw_writeq
->>
->> Note that on at least some architectures, the __raw variants are
->> native-endian, whereas the regular accessors are explicitly
->> little-endian, so there is a slight risk of inadvertently changing
->> behaviour on big-endian systems (MIPS most likely, but a few old ARM
->> platforms run BE as well).
+> Use info->screen_buffer when reading and writing framebuffers in
+> system memory. It's the correct pointer for this address space.
 >
-> Also on m68k, when ISA or PCI are enabled.
+> The struct fb_info has a union to store the framebuffer memory. This can
+> either be info->screen_base if the framebuffer is stored in I/O memory,
+> or info->screen_buffer if the framebuffer is stored in system memory.
 >
-> In addition, the non-raw variants may do some extras to guarantee
-> ordering, which you do not need on a frame buffer.
+> As the driver operates on the latter address space, it is wrong to use
+> .screen_base and .screen_buffer must be used instead. This also gets
+> rid of casting needed due to not using the correct data type.
 >
-> So I'd go for the __raw_*() variants everywhere.
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
 
-The only implementations in fbdev are
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
- 1) sparc sbus
- 2) __raw_writel
- 3) direct pointer dereference
+-- 
+Best regards,
 
-But none use the byte-swapping writel() implementations, and
-the only ones that use the direct pointer dereference or sbus
-are the ones on which these are defined the same as __raw_writel
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 
-      Arnd

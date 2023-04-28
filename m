@@ -2,269 +2,137 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A00E1C7EE22
-	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Apr 2023 08:09:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9C22C77B7C
+	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Apr 2023 09:27:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345449AbjD1IJF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 28 Apr 2023 04:09:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43686 "EHLO
+        id S1345349AbjD1J1Q (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 28 Apr 2023 05:27:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48782 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229993AbjD1IJD (ORCPT
+        with ESMTP id S229680AbjD1J1Q (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 28 Apr 2023 04:09:03 -0400
-Received: from 189.cn (ptr.189.cn [183.61.185.103])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 4952D1BF3;
-        Fri, 28 Apr 2023 01:09:00 -0700 (PDT)
-HMM_SOURCE_IP: 10.64.8.31:56220.1166601949
-HMM_ATTACHE_NUM: 0000
-HMM_SOURCE_TYPE: SMTP
-Received: from clientip-114.242.206.180 (unknown [10.64.8.31])
-        by 189.cn (HERMES) with SMTP id D2D49100237;
-        Fri, 28 Apr 2023 16:08:56 +0800 (CST)
-Received: from  ([114.242.206.180])
-        by gateway-151646-dep-85667d6c59-lhcrq with ESMTP id b7a89ae67736480d9bfae214343db7a0 for 15330273260@189.cn;
-        Fri, 28 Apr 2023 16:08:58 CST
-X-Transaction-ID: b7a89ae67736480d9bfae214343db7a0
-X-Real-From: 15330273260@189.cn
-X-Receive-IP: 114.242.206.180
-X-MEDUSA-Status: 0
-Sender: 15330273260@189.cn
-Message-ID: <d788894c-0afa-d5cf-a2f8-cbf201200db6@189.cn>
-Date:   Fri, 28 Apr 2023 16:08:54 +0800
+        Fri, 28 Apr 2023 05:27:16 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B52232709;
+        Fri, 28 Apr 2023 02:27:14 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 3BA8221A2D;
+        Fri, 28 Apr 2023 09:27:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1682674033; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=H634jX8sSYMwnQT1vLr7vYP2Eo6TaCU+J3gzKVsIAq4=;
+        b=VbHHcK4793S8Ps7niwJ/Fwfmq+pXThNJc0kyX1jeLNE6xy35UoTR3ljF9sLnSM3cZintOy
+        YdHtZSHPLoPgN1oikxQp2DXNqWBiENQRuP0ROqwzpUBiK1jRzN3nwlptu1ijUTjf0zvy/d
+        zq4KTdTSkchp187Tn9tNbgxtKTUcp6U=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1682674033;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=H634jX8sSYMwnQT1vLr7vYP2Eo6TaCU+J3gzKVsIAq4=;
+        b=DW2G43drDfPSAccNnQi6KBQ7vl1Fmv8Co40ZZveXyfpskVMHp3yPMtZ6tOE7+kr7M00llZ
+        MhFKTW90T3B8rDAQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C0F21138FA;
+        Fri, 28 Apr 2023 09:27:12 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id jkouLnCRS2ReFwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Fri, 28 Apr 2023 09:27:12 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     deller@gmx.de, geert@linux-m68k.org, javierm@redhat.com,
+        daniel@ffwll.ch, vgupta@kernel.org, chenhuacai@kernel.org,
+        kernel@xen0n.name, davem@davemloft.net,
+        James.Bottomley@HansenPartnership.com, arnd@arndb.de,
+        sam@ravnborg.org
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arch@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+        sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-parisc@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v2 0/5] fbdev: Use regular I/O function for framebuffers
+Date:   Fri, 28 Apr 2023 11:27:06 +0200
+Message-Id: <20230428092711.406-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.40.0
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH v2] drm/fbdev-generic: prohibit potential out-of-bounds
- access
-To:     Sui Jingfeng <15330273260@189.cn>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Maxime Ripard <mripard@kernel.org>,
-        David Airlie <airlied@gmail.com>, Li Yi <liyi@loongson.cn>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Helge Deller <deller@gmx.de>,
-        Lucas De Marchi <lucas.demarchi@intel.com>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, loongson-kernel@lists.loongnix.cn
-References: <20230413180622.1014016-1-15330273260@189.cn>
- <fccc494f-0e52-5fdf-0e40-acc29177c73c@suse.de>
- <32a1510e-d38a-ffb6-8e8d-026f8b3aa17a@189.cn>
- <fab85750-dcb7-0eeb-cabc-8fcfcc84b11c@suse.de>
- <95ef7589-9775-5ad4-f09c-43bcd696823a@189.cn>
- <ZEpBmkf8CWMwZ/gr@phenom.ffwll.local>
-Content-Language: en-US
-From:   Sui Jingfeng <15330273260@189.cn>
-In-Reply-To: <ZEpBmkf8CWMwZ/gr@phenom.ffwll.local>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+(was: fbdev: Move framebuffer I/O helpers to <asm/fb.h>)
 
-On 2023/4/27 17:34, Daniel Vetter wrote:
-> On Thu, Apr 20, 2023 at 02:47:24AM +0800, Sui Jingfeng wrote:
->> Hi,
->>
->> On 2023/4/17 15:29, Thomas Zimmermann wrote:
->>> Hi
->>>
->>> Am 14.04.23 um 12:58 schrieb Sui Jingfeng:
->>>> Hi,
->>>>
->>>> On 2023/4/14 03:16, Thomas Zimmermann wrote:
->>>>> Hi,
->>>>>
->>>>> thanks for the patch. This is effectively a revert of commit
->>>>> 8fbc9af55de0 ("drm/fbdev-generic: Set screen size to size of GEM
->>>>> buffer"). Please add a Fixes tag.
->>>>>
->>>>> Am 13.04.23 um 20:06 schrieb Sui Jingfeng:
->>>>>> From: Sui Jingfeng <suijingfeng@loongson.cn>
->>>>>>
->>>>>> The crazy fbdev test of IGT may write after EOF, which lead
->>>>>> to out-of-bound
->>>>> Please drop 'crazy'. :)
->>>> This is OK.
->>>>
->>>> By using the world 'crazy',
->>>>
->>>> I meant that the test is very good and maybe it is written by
->>>> professional  peoples
->>>>
->>>> with the guidance by  experienced  engineer. So that even the corner
->>>> get tested.
->>>>
->>>>
->>>>>> access for the drm drivers using fbdev-generic. For example,
->>>>>> run fbdev test
->>>>>> on a x86-64+ast2400 platform with 1680x1050 resolution will
->>>>>> cause the linux
->>>>>> kernel hang with following call trace:
->>>>>>
->>>>>>     Oops: 0000 [#1] PREEMPT SMP PTI
->>>>>>     [IGT] fbdev: starting subtest eof
->>>>>>     Workqueue: events drm_fb_helper_damage_work [drm_kms_helper]
->>>>>>     [IGT] fbdev: starting subtest nullptr
->>>>>>
->>>>>>     RIP: 0010:memcpy_erms+0xa/0x20
->>>>>>     RSP: 0018:ffffa17d40167d98 EFLAGS: 00010246
->>>>>>     RAX: ffffa17d4eb7fa80 RBX: ffffa17d40e0aa80 RCX: 00000000000014c0
->>>>>>     RDX: 0000000000001a40 RSI: ffffa17d40e0b000 RDI: ffffa17d4eb80000
->>>>>>     RBP: ffffa17d40167e20 R08: 0000000000000000 R09: ffff89522ecff8c0
->>>>>>     R10: ffffa17d4e4c5000 R11: 0000000000000000 R12: ffffa17d4eb7fa80
->>>>>>     R13: 0000000000001a40 R14: 000000000000041a R15: ffffa17d40167e30
->>>>>>     FS:  0000000000000000(0000) GS:ffff895257380000(0000)
->>>>>> knlGS:0000000000000000
->>>>>>     CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
->>>>>>     CR2: ffffa17d40e0b000 CR3: 00000001eaeca006 CR4: 00000000001706e0
->>>>>>     Call Trace:
->>>>>>      <TASK>
->>>>>>      ? drm_fbdev_generic_helper_fb_dirty+0x207/0x330 [drm_kms_helper]
->>>>>>      drm_fb_helper_damage_work+0x8f/0x170 [drm_kms_helper]
->>>>>>      process_one_work+0x21f/0x430
->>>>>>      worker_thread+0x4e/0x3c0
->>>>>>      ? __pfx_worker_thread+0x10/0x10
->>>>>>      kthread+0xf4/0x120
->>>>>>      ? __pfx_kthread+0x10/0x10
->>>>>>      ret_from_fork+0x2c/0x50
->>>>>>      </TASK>
->>>>>>     CR2: ffffa17d40e0b000
->>>>>>     ---[ end trace 0000000000000000 ]---
->>>>>>
->>>>>> The indirect reason is drm_fb_helper_memory_range_to_clip()
->>>>>> generate damage
->>>>>> rectangles which partially or completely go out of the
->>>>>> active display area.
->>>>>> The second of argument 'off' is passing from the user-space,
->>>>>> this will lead
->>>>>> to the out-of-bound if it is large than (fb_height + 1) *
->>>>>> fb_pitches; while
->>>>>> DIV_ROUND_UP() may also controbute to error by 1.
->>>>>>
->>>>>> This patch will add code to restrict the damage rect
->>>>>> computed go beyond of
->>>>>> the last line of the framebuffer.
->>>>>>
->>>>>> Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
->>>>>> ---
->>>>>>    drivers/gpu/drm/drm_fb_helper.c     | 16 ++++++++++++----
->>>>>>    drivers/gpu/drm/drm_fbdev_generic.c |  2 +-
->>>>>>    2 files changed, 13 insertions(+), 5 deletions(-)
->>>>>>
->>>>>> diff --git a/drivers/gpu/drm/drm_fb_helper.c
->>>>>> b/drivers/gpu/drm/drm_fb_helper.c
->>>>>> index 64458982be40..6bb1b8b27d7a 100644
->>>>>> --- a/drivers/gpu/drm/drm_fb_helper.c
->>>>>> +++ b/drivers/gpu/drm/drm_fb_helper.c
->>>>>> @@ -641,19 +641,27 @@ static void
->>>>>> drm_fb_helper_damage(struct drm_fb_helper *helper, u32 x,
->>>>>> u32 y,
->>>>>>    static void drm_fb_helper_memory_range_to_clip(struct
->>>>>> fb_info *info, off_t off, size_t len,
->>>>>>                               struct drm_rect *clip)
->>>>>>    {
->>>>>> +    u32 line_length = info->fix.line_length;
->>>>>> +    u32 fb_height = info->var.yres;
->>>>>>        off_t end = off + len;
->>>>>>        u32 x1 = 0;
->>>>>> -    u32 y1 = off / info->fix.line_length;
->>>>>> +    u32 y1 = off / line_length;
->>>>>>        u32 x2 = info->var.xres;
->>>>>> -    u32 y2 = DIV_ROUND_UP(end, info->fix.line_length);
->>>>>> +    u32 y2 = DIV_ROUND_UP(end, line_length);
->>>>>> +
->>>>>> +    /* Don't allow any of them beyond the bottom bound of
->>>>>> display area */
->>>>>> +    if (y1 > fb_height)
->>>>>> +        y1 = fb_height;
->>>>>> +    if (y2 > fb_height)
->>>>>> +        y2 = fb_height;
->>>>>>          if ((y2 - y1) == 1) {
->>>>>>            /*
->>>>>>             * We've only written to a single scanline. Try to reduce
->>>>>>             * the number of horizontal pixels that need an update.
->>>>>>             */
->>>>>> -        off_t bit_off = (off % info->fix.line_length) * 8;
->>>>>> -        off_t bit_end = (end % info->fix.line_length) * 8;
->>>>>> +        off_t bit_off = (off % line_length) * 8;
->>>>>> +        off_t bit_end = (end % line_length) * 8;
->>>>> Please scratch all these changes. The current code should work
->>>>> as intended. Only the generic fbdev emulation uses this code and
->>>>> it should really be moved there at some point.
->>>>
->>>> Are you meant  that we should remove all these changes in
->>>> drivers/gpu/drm/drm_fb_helper.c ?
->>> As Daniel mentioned, there's the discussion in the other thread. I don't
->>> want to reopen it here. Just to summarize: I'm not convinced that this
->>> should be DRM code because it can be shared with other fbdev drivers.
->>>
->>> [...]
->>>
->>>>>> diff --git a/drivers/gpu/drm/drm_fbdev_generic.c
->>>>>> b/drivers/gpu/drm/drm_fbdev_generic.c
->>>>>> index 8e5148bf40bb..b057cfbba938 100644
->>>>>> --- a/drivers/gpu/drm/drm_fbdev_generic.c
->>>>>> +++ b/drivers/gpu/drm/drm_fbdev_generic.c
->>>>>> @@ -94,7 +94,7 @@ static int
->>>>>> drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper
->>>>>> *fb_helper,
->>>>>>        fb_helper->buffer = buffer;
->>>>>>        fb_helper->fb = buffer->fb;
->>>>>>    -    screen_size = buffer->gem->size;
->>>>>> +    screen_size = sizes->surface_height * buffer->fb->pitches[0];
->>> This has been bothering me over the weekend. And I think it's because
->>> what we want the screen_size to be heigth * pitch,  but the mmap'ed
->>> memory is still at page granularity. Therefore...
->>>
->>> [...]
->>>>>>        screen_buffer = vzalloc(screen_size);
->>> ... this line should explicitly allocate multiples of pages. Something
->>> like
->>>
->>>      /* allocate page-size multiples for mmap */
->>>      vzalloc(PAGE_ALIGN(screen_size))
->>>
->> I just thought about your instruction at here, thanks!
->>
->> But it is already page size aligned if we don't tough it.
->>
->> It is guaranteed by the GEM memory manger,
->>
->> so a previous patch tested by me, is turn out to be a extremely correct?
->>
->> We exposed a  page size aligned buffer(even though it is larger than needed)
->> is actually for mmap ?
-> mmap() is always page aligned, because that's the smallest size the cpu
-> pagetables can map. So there's fundamentally always a bit of memory at the
-> end of the buffer which logically is not part of the framebuffer memory.
-> And somehow we need to handle that to make sure we don't overflow.
-> -Daniel
+Fbdev provides helpers for framebuffer I/O, such as fb_readl(),
+fb_writel() or fb_memcpy_to_fb(). The implementation of each helper
+depends on the architecture, but they all come down to regular I/O
+functions of similar names. So use the regular functions instead.
 
-Yeah, buffer allocating should be page size aligned,
+The first patch a simple whitespace cleanup.
 
-A single page share the same caching property.
+Until now, <linux/fb.h> contained an include of <asm/io.h>. As this
+will go away patches 2 to 4 prepare include statements in the various
+drivers. Source files that use regular I/O helpers, such as readl(),
+now include <linux/io.h>. Source files that use framebuffer I/O
+helpers, such as fb_readl(), also include <linux/io.h>.
 
+Patch 5 replaces the architecture-based if-else branching in 
+<linux/fb.h> by define statements that map to Linux' I/O fucntions.
 
-fbdev test use the `smem_len` member of `fix_info` to know the true size 
-of the shadow screen buffer.
+After this change has been merged and included in a few release
+without complains, we can update the drivers to regular I/O functions
+and remove the fbdev-specific defines.
 
-Exposing a large one actually allow the test writing to somewhere beyond 
-the logically visible area.
+The patchset has been built for a variety of platforms, such as x86-64,
+arm, aarch64, ppc64, parisc, m64k, mips and sparc.
 
+v2:
+	* use Linux I/O helpers (Sam, Arnd)
 
-I need to learn more and testing more to verify if there are still 
-risks, I'll take a look.
+Thomas Zimmermann (5):
+  fbdev/matrox: Remove trailing whitespaces
+  ipu-v3: Include <linux/io.h>
+  fbdev: Include <linux/io.h> in various drivers
+  fbdev: Include <linux/io.h> in drivers
+  fbdev: Define framebuffer I/O from Linux' I/O functions
 
-Thanks for sharing the knowledge.
+ drivers/gpu/ipu-v3/ipu-prv.h                |  1 +
+ drivers/video/fbdev/arcfb.c                 |  1 +
+ drivers/video/fbdev/arkfb.c                 |  1 +
+ drivers/video/fbdev/aty/atyfb.h             |  2 +
+ drivers/video/fbdev/aty/mach64_cursor.c     |  3 +-
+ drivers/video/fbdev/chipsfb.c               |  1 +
+ drivers/video/fbdev/cirrusfb.c              |  1 +
+ drivers/video/fbdev/core/cfbcopyarea.c      |  2 +-
+ drivers/video/fbdev/core/cfbfillrect.c      |  2 +
+ drivers/video/fbdev/core/cfbimgblt.c        |  2 +
+ drivers/video/fbdev/core/fbmem.c            |  1 +
+ drivers/video/fbdev/core/svgalib.c          |  2 +-
+ drivers/video/fbdev/hgafb.c                 |  2 +-
+ drivers/video/fbdev/hitfb.c                 |  2 +-
+ drivers/video/fbdev/kyro/fbdev.c            |  2 +-
+ drivers/video/fbdev/matrox/matroxfb_accel.c |  8 ++-
+ drivers/video/fbdev/matrox/matroxfb_base.h  |  6 +-
+ drivers/video/fbdev/pm2fb.c                 |  1 +
+ drivers/video/fbdev/pm3fb.c                 |  1 +
+ drivers/video/fbdev/pvr2fb.c                |  1 +
+ drivers/video/fbdev/s3fb.c                  |  1 +
+ drivers/video/fbdev/sstfb.c                 |  2 +-
+ drivers/video/fbdev/tdfxfb.c                |  2 +-
+ drivers/video/fbdev/tridentfb.c             |  1 +
+ drivers/video/fbdev/vga16fb.c               |  2 +-
+ drivers/video/fbdev/vt8623fb.c              |  1 +
+ drivers/video/fbdev/wmt_ge_rops.c           |  2 +
+ include/linux/fb.h                          | 63 +++++----------------
+ 28 files changed, 52 insertions(+), 64 deletions(-)
 
->>
->>> It has not been a bug so far because vzalloc() always returns full pages
->>> IIRC. It's still worth fixing.
->>>
->>> Best regards
->>> Thomas
->>>
->>>
->>>>>>        if (!screen_buffer) {
->>>>>>            ret = -ENOMEM;
+-- 
+2.40.0
+

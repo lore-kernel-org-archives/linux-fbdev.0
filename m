@@ -2,58 +2,58 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14E62C77B61
-	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Apr 2023 15:13:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49957C77B60
+	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Apr 2023 15:14:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346313AbjD1PNV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 28 Apr 2023 11:13:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32834 "EHLO
+        id S1346347AbjD1POM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 28 Apr 2023 11:14:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33044 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346289AbjD1PNU (ORCPT
+        with ESMTP id S1346146AbjD1POG (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 28 Apr 2023 11:13:20 -0400
+        Fri, 28 Apr 2023 11:14:06 -0400
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6CBF61FDB
-        for <linux-fbdev@vger.kernel.org>; Fri, 28 Apr 2023 08:12:37 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 42B841FDC
+        for <linux-fbdev@vger.kernel.org>; Fri, 28 Apr 2023 08:13:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1682694756;
+        s=mimecast20190719; t=1682694802;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
         bh=T6nMtf6Gzq3uJ6hYj+VP/gNrA7S63KDC0HhAUOQNVRE=;
-        b=Oz1etwE6qW0i+8FnYcVq9tVNQ4UteRozK3okCMA/rzp25Rcgi37jxYlQELlkoIRcbRjKii
-        gTsIQtHuPrGhAiHGm7fdMQuwILolNSEZcoI3i5WLCKubWt8BuKuV64LWf2I5aIb/YV+6Qe
-        8TaJt1JXPl8DanAW0Hp3NMe/r7SzABs=
+        b=ca9KjtbgbH6hjRMuDhhwwhwVTK+xxD/UtfRP/1bemgDCwksOI4agoF8eWxgnOUUdXWx+IF
+        tQlYuVMi99AEJ9J6T+f0/1CB7vhD+krXFFm/LXci7/zN07Ces+5DwHnr0qpvTnC0ZsBt5v
+        p6qBS63691dZlQehHO6cwe+pwKVqveo=
 Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
  [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-180-nN-vqKWfMN6yfGZ4pcuWPQ-1; Fri, 28 Apr 2023 11:12:26 -0400
-X-MC-Unique: nN-vqKWfMN6yfGZ4pcuWPQ-1
-Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-2fe3fb8e32aso3708590f8f.1
-        for <linux-fbdev@vger.kernel.org>; Fri, 28 Apr 2023 08:12:09 -0700 (PDT)
+ us-mta-636-w2hCYr5WM2ai9enFviDc7A-1; Fri, 28 Apr 2023 11:13:02 -0400
+X-MC-Unique: w2hCYr5WM2ai9enFviDc7A-1
+Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-30479b764f9so2401516f8f.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 28 Apr 2023 08:12:53 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1682694729; x=1685286729;
+        d=1e100.net; s=20221208; t=1682694773; x=1685286773;
         h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
          :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
         bh=T6nMtf6Gzq3uJ6hYj+VP/gNrA7S63KDC0HhAUOQNVRE=;
-        b=lnItFHCA45PcwHKQ/k+HIKXL1QSpvYSqsXKbvMefT3hmkH5u6gq6N1ljgeaJvMN4DS
-         I/Rrtsu7RUuX+kre2trqc86o7h+0AHCAgIq1NaBBDHKTp4oeDclx+ZTD9WWISpciDWAB
-         bekwc+PCcJ094cJgREiNyaaoKGKkw0YieT3/1zQ9gtPbdW/jsxNO5L+KAVGWyeV8NHmZ
-         UgLnokf4vBr8jZkKBqg3Zmq0A/RFWxCxqT8nZJQZmR3Y/t5Ib7/8qSH8SZVE9ZhNvkVU
-         7FaWa16VWZEyuLRie1a8JEKlqKPsdV0JOKj0xeC0nB+yQnPzXoXE0fqh2GoQn0EMN72y
-         +UVw==
-X-Gm-Message-State: AC+VfDyJYjSb2+Km6h5wq8FcOHDvKQAQ2Dk5FLNRa7kAScVYSR9bR/dv
-        TngCoC2A40lTawbJdMhAxqT+OqPXigMZTJG9IdqkoSaFWMwU5/On2/IzePUCiBA2EOKGtI0NcBi
-        H43Ot5B1SQVJ19UwaK1Awyiw=
-X-Received: by 2002:adf:e689:0:b0:304:760c:6474 with SMTP id r9-20020adfe689000000b00304760c6474mr4572628wrm.10.1682694728864;
-        Fri, 28 Apr 2023 08:12:08 -0700 (PDT)
-X-Google-Smtp-Source: ACHHUZ44bsNLFtYJtMnmm9jFzKFRATuTWPXEJOmr7ScTjElY9MxGn1aNvKFBPBprMOJgW6uVbp7bQw==
-X-Received: by 2002:adf:e689:0:b0:304:760c:6474 with SMTP id r9-20020adfe689000000b00304760c6474mr4572608wrm.10.1682694728534;
-        Fri, 28 Apr 2023 08:12:08 -0700 (PDT)
+        b=DkAzUM0EUeVkNcPj+AxbRg77zpd04alQz2OZ8EOz8EBO7H/Gupv8b9SJvej87OhFWX
+         +ANYe1Q55A03NsUqjzeltmBbsUg/VrEGjR/D1K7//ardPCf3IFFd6RZgTx6x4Tiz7NTS
+         MO3N4W0ZSqrqdJgnZAjw0SaEqaq6YbInvZsVhggO1fYiQWaopwKtsJixw6xCdWIbS/WR
+         x/uto2cJ+Diz5TKYr3vMxVZy7eZkn308c1KAeEvb6PbRD6RuMi8Am5IfeeOANYtiK0td
+         vS8mxAnYI0XkkgmyqQ3iBNmRwGcLh+LENeIkt9Ie/tWOksiz4WFa2PthS6KNlHLB2hA9
+         fqDQ==
+X-Gm-Message-State: AC+VfDxtWmZG/BmAJFuaeA+mAXKJvv6WY/Wu+6U8N+zMqAHPmn2yxGeJ
+        lyDkYsv4kX0GC4681s3zZ+78yNcQeDdZZxPZekM2vN1O2k14su4y4XUXo/+16dBDBBsFLH70xD5
+        eZCkVtVJG2LXo+FBjy2WRq1U=
+X-Received: by 2002:a5d:4b50:0:b0:2fb:703d:1915 with SMTP id w16-20020a5d4b50000000b002fb703d1915mr4104086wrs.43.1682694772851;
+        Fri, 28 Apr 2023 08:12:52 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ6YdjOvC7WPDQ+9GUn7fvYiqZ4HGFmEtMgoi3hW034RMkk1O2I0swh4tQ23ze2AgO9qMYdW6w==
+X-Received: by 2002:a5d:4b50:0:b0:2fb:703d:1915 with SMTP id w16-20020a5d4b50000000b002fb703d1915mr4104063wrs.43.1682694772545;
+        Fri, 28 Apr 2023 08:12:52 -0700 (PDT)
 Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id h19-20020a05600c351300b003f1958eeadcsm20815145wmq.17.2023.04.28.08.12.07
+        by smtp.gmail.com with ESMTPSA id e16-20020a5d5950000000b0030490c8ccafsm9345789wri.52.2023.04.28.08.12.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 28 Apr 2023 08:12:08 -0700 (PDT)
+        Fri, 28 Apr 2023 08:12:52 -0700 (PDT)
 From:   Javier Martinez Canillas <javierm@redhat.com>
 To:     Thomas Zimmermann <tzimmermann@suse.de>,
         maarten.lankhorst@linux.intel.com, mripard@kernel.org,
@@ -62,12 +62,12 @@ To:     Thomas Zimmermann <tzimmermann@suse.de>,
         teddy.wang@siliconmotion.com
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH v2 11/19] fbdev/udlfb: Use struct fb_info.screen_buffer
-In-Reply-To: <20230428122452.4856-12-tzimmermann@suse.de>
+Subject: Re: [PATCH v2 12/19] fbdev/vfb: Use struct fb_info.screen_buffer
+In-Reply-To: <20230428122452.4856-13-tzimmermann@suse.de>
 References: <20230428122452.4856-1-tzimmermann@suse.de>
- <20230428122452.4856-12-tzimmermann@suse.de>
-Date:   Fri, 28 Apr 2023 17:12:07 +0200
-Message-ID: <87o7n8f3co.fsf@minerva.mail-host-address-is-not-set>
+ <20230428122452.4856-13-tzimmermann@suse.de>
+Date:   Fri, 28 Apr 2023 17:12:51 +0200
+Message-ID: <87leicf3bg.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
 Content-Type: text/plain
 Precedence: bulk

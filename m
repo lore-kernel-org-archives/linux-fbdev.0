@@ -2,176 +2,125 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75EB6C77B61
-	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Apr 2023 12:19:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 229BCC77B61
+	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Apr 2023 12:20:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345799AbjD1MTq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 28 Apr 2023 08:19:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58864 "EHLO
+        id S229707AbjD1MUk convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 28 Apr 2023 08:20:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59686 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229707AbjD1MTp (ORCPT
+        with ESMTP id S1346055AbjD1MUg (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 28 Apr 2023 08:19:45 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id AB3216A48;
-        Fri, 28 Apr 2023 05:19:03 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C037CC14;
-        Fri, 28 Apr 2023 05:19:35 -0700 (PDT)
-Received: from [10.57.21.5] (unknown [10.57.21.5])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D12E73F5A1;
-        Fri, 28 Apr 2023 05:18:47 -0700 (PDT)
-Message-ID: <430c73f0-45f4-f81e-6506-bc8cc955d936@arm.com>
-Date:   Fri, 28 Apr 2023 13:18:42 +0100
+        Fri, 28 Apr 2023 08:20:36 -0400
+Received: from mail-yw1-f169.google.com (mail-yw1-f169.google.com [209.85.128.169])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 783F85FD0
+        for <linux-fbdev@vger.kernel.org>; Fri, 28 Apr 2023 05:20:20 -0700 (PDT)
+Received: by mail-yw1-f169.google.com with SMTP id 00721157ae682-54fc1824f0bso113187437b3.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 28 Apr 2023 05:20:20 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1682684419; x=1685276419;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=7o32H4PTL3mzxqBzaVY0LbmteAecqwupnN7CxCbojaQ=;
+        b=NJVXG1YEct+w15MNlyCPFT1p0Km7Jgiqs/hjkjohK3c6KUVFkG5NMCqUj1RaQB7ixE
+         EK/ry00SS8lrHWifuCO5yAn7fiygta0WVfTupElsalNXd4qxTwvwX2ulWkfownkG2Fad
+         GsLqCqwdfvdkNnpEwemfnGdhckPUiXN6xv/46IUhbR/vuBRTXxARwkBDI3FR5Go3UqMF
+         Hc0y8vt1NHSKAVHsSLoYkK/cS2rA0yTqVWtszOMmNPU/CcZMP0KSDNGvjeamc9+bIhvW
+         Xgf50SHEfIrGSYQMpcNuj0g1YxHUErNtwYKAXzU5OH1fB6MAfSR1IzNqgY63mwtBLzGN
+         W47w==
+X-Gm-Message-State: AC+VfDzsH/KNT9cEhziW78aTvAOHTvJUJyvKhVUAoTnvDuc9kkqSkgw+
+        N2INH9/tNoSxyp7mvtoQ6jEXRBgfxlA7pg==
+X-Google-Smtp-Source: ACHHUZ7WZAwnuo9qhG7p6+Pvz/Gx932Ml6UZPMjpGP2Zqd4kW4kFka+dcIIf3XxuYEiuMErOKzsMrA==
+X-Received: by 2002:a81:8782:0:b0:54f:e1ac:96a with SMTP id x124-20020a818782000000b0054fe1ac096amr3811757ywf.7.1682684419356;
+        Fri, 28 Apr 2023 05:20:19 -0700 (PDT)
+Received: from mail-yb1-f169.google.com (mail-yb1-f169.google.com. [209.85.219.169])
+        by smtp.gmail.com with ESMTPSA id w202-20020a0dd4d3000000b00545a081848bsm5401422ywd.27.2023.04.28.05.20.18
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 28 Apr 2023 05:20:18 -0700 (PDT)
+Received: by mail-yb1-f169.google.com with SMTP id 3f1490d57ef6-b8f5121503eso14625888276.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 28 Apr 2023 05:20:18 -0700 (PDT)
+X-Received: by 2002:a25:782:0:b0:b97:1e2e:a4e5 with SMTP id
+ 124-20020a250782000000b00b971e2ea4e5mr3739275ybh.40.1682684417838; Fri, 28
+ Apr 2023 05:20:17 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101
- Thunderbird/102.10.1
-Subject: Re: [PATCH v2 5/5] fbdev: Define framebuffer I/O from Linux' I/O
- functions
-Content-Language: en-GB
-To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
-        geert@linux-m68k.org, javierm@redhat.com, daniel@ffwll.ch,
-        vgupta@kernel.org, chenhuacai@kernel.org, kernel@xen0n.name,
-        davem@davemloft.net, James.Bottomley@HansenPartnership.com,
-        arnd@arndb.de, sam@ravnborg.org
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-arch@vger.kernel.org, linux-snps-arc@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
-        sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-parisc@vger.kernel.org
-References: <20230428092711.406-1-tzimmermann@suse.de>
- <20230428092711.406-6-tzimmermann@suse.de>
-From:   Robin Murphy <robin.murphy@arm.com>
-In-Reply-To: <20230428092711.406-6-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20230425142846.730-1-tzimmermann@suse.de> <20230425142846.730-6-tzimmermann@suse.de>
+ <CAMuHMdU-_w9yQHYhOCD3cz4CEY6ag-dTXjuHSLnzty0hAMBbXw@mail.gmail.com>
+ <1d81e4cc-5079-12a7-4cf5-c31879396e56@suse.de> <CAMuHMdWDyabYxtRHtvuNZy8BjoukRdycAMK2jX+qmgc51HU5Xw@mail.gmail.com>
+ <b7c09aa8-ce41-9c9a-062f-e652ea92f8a8@suse.de>
+In-Reply-To: <b7c09aa8-ce41-9c9a-062f-e652ea92f8a8@suse.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Fri, 28 Apr 2023 14:20:03 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUq_bkCWQJfe=j+RAC8s6Ce9KPROy7RxaoPGpUX70+EXw@mail.gmail.com>
+Message-ID: <CAMuHMdUq_bkCWQJfe=j+RAC8s6Ce9KPROy7RxaoPGpUX70+EXw@mail.gmail.com>
+Subject: Re: [PATCH 5/6] fbdev: Move CFB read and write code into helper functions
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+        airlied@gmail.com, daniel@ffwll.ch, javierm@redhat.com,
+        deller@gmx.de, sudipm.mukherjee@gmail.com,
+        teddy.wang@siliconmotion.com, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2023-04-28 10:27, Thomas Zimmermann wrote:
-> Implement framebuffer I/O helpers, such as fb_read*() and fb_write*()
-> with Linux' regular I/O functions. Remove all ifdef cases for the
-> various architectures.
-> 
-> Most of the supported architectures use __raw_() I/O functions or treat
-> framebuffer memory like regular memory. This is also implemented by the
-> architectures' I/O function, so we can use them instead.
-> 
-> Sparc uses SBus to connect to framebuffer devices. It provides respective
-> implementations of the framebuffer I/O helpers. The involved sbus_()
-> I/O helpers map to the same code as Sparc's regular I/O functions. As
-> with other platforms, we can use those instead.
-> 
-> We leave a TODO item to replace all fb_() functions with their regular
-> I/O counterparts throughout the fbdev drivers.
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
->   include/linux/fb.h | 63 +++++++++++-----------------------------------
->   1 file changed, 15 insertions(+), 48 deletions(-)
-> 
-> diff --git a/include/linux/fb.h b/include/linux/fb.h
-> index 08cb47da71f8..4aa9e90edd17 100644
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -15,7 +15,6 @@
->   #include <linux/list.h>
->   #include <linux/backlight.h>
->   #include <linux/slab.h>
-> -#include <asm/io.h>
->   
->   struct vm_area_struct;
->   struct fb_info;
-> @@ -511,58 +510,26 @@ struct fb_info {
->    */
->   #define STUPID_ACCELF_TEXT_SHIT
->   
-> -// This will go away
-> -#if defined(__sparc__)
-> -
-> -/* We map all of our framebuffers such that big-endian accesses
-> - * are what we want, so the following is sufficient.
-> +/*
-> + * TODO: Update fbdev drivers to call the I/O helpers directly and
-> + *       remove the fb_() tokens.
->    */
-> -
-> -// This will go away
-> -#define fb_readb sbus_readb
-> -#define fb_readw sbus_readw
-> -#define fb_readl sbus_readl
-> -#define fb_readq sbus_readq
-> -#define fb_writeb sbus_writeb
-> -#define fb_writew sbus_writew
-> -#define fb_writel sbus_writel
-> -#define fb_writeq sbus_writeq
-> -#define fb_memset sbus_memset_io
-> -#define fb_memcpy_fromfb sbus_memcpy_fromio
-> -#define fb_memcpy_tofb sbus_memcpy_toio
-> -
-> -#elif defined(__i386__) || defined(__alpha__) || defined(__x86_64__) ||	\
-> -	defined(__hppa__) || defined(__sh__) || defined(__powerpc__) ||	\
-> -	defined(__arm__) || defined(__aarch64__) || defined(__mips__)
-> -
-> -#define fb_readb __raw_readb
-> -#define fb_readw __raw_readw
-> -#define fb_readl __raw_readl
-> -#define fb_readq __raw_readq
-> -#define fb_writeb __raw_writeb
-> -#define fb_writew __raw_writew
-> -#define fb_writel __raw_writel
-> -#define fb_writeq __raw_writeq
+Hi Thomas,
 
-Note that on at least some architectures, the __raw variants are 
-native-endian, whereas the regular accessors are explicitly 
-little-endian, so there is a slight risk of inadvertently changing 
-behaviour on big-endian systems (MIPS most likely, but a few old ARM 
-platforms run BE as well).
+On Fri, Apr 28, 2023 at 1:20 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Am 26.04.23 um 17:21 schrieb Geert Uytterhoeven:
+> > On Wed, Apr 26, 2023 at 5:06 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> >> Am 26.04.23 um 17:01 schrieb Geert Uytterhoeven:
+> >>> On Tue, Apr 25, 2023 at 4:28 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> >>>> Move the existing CFB read and write code for I/O memory into
+> >>>> the new helpers fb_cfb_read() and fb_cfb_write(). Make them the
+> >>>> default fp_ops. No functional changes.
+> >>>>
+> >>>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> >>>> ---
+> >>>>    drivers/video/fbdev/core/Makefile      |   2 +-
+> >>>>    drivers/video/fbdev/core/fb_cfb_fops.c | 126 +++++++++++++++++++++++++
+> >>>>    drivers/video/fbdev/core/fbmem.c       | 113 +---------------------
+> >>>>    include/linux/fb.h                     |  10 ++
+> >>>>    4 files changed, 139 insertions(+), 112 deletions(-)
+> >>>>    create mode 100644 drivers/video/fbdev/core/fb_cfb_fops.c
+> >>>
+> >>> While the general idea is fine, please do not call any of this "cfb",
+> >>> as it is not related to chunky color frame buffer formats.
+> >>> All of these operate on the raw frame buffer contents.
+> >>
+> >> Shall I call it fb_raw_() or fb_io_()?
+> >
+> > Given fb_memcpy_fromfb() is mapped to memcpy_fromio() on
+> > most architectures, I'd go for fb_io_*().
+>
+> Ok, makes sense.
+>
+> >> CFB is used by the drawing helpers, which are usually used together with
+> >> this code. Hence the current naming.
+> >
+> > That's because your drawing helpers operate (only) on chunky color
+> > frame buffer formats ;-)
+>
+> Should we rename the CFB drawing functions to fb_io_ then? AFAICT they
+> are the same algorithms as in the fb_sys_ functions; just with I/O memory.
 
-> +#define fb_readb readb
-> +#define fb_readw readw
-> +#define fb_readl readl
-> +#if defined(CONFIG_64BIT)
-> +#define fb_readq readq
-> +#endif
+I don't know if that's worth the churn.
+Historically, the frame buffer was usually located in dedicated memory,
+hence the drawing operations operated on I/O memory.
+With the advent of unified memory architectures, the fb_sys_*()
+functions were introduced.
 
-You probably don't need to bother making these conditional - 32-bit 
-architectures aren't forbidden from providing readq/writeq if they 
-really want to, and drivers can also use the io-64-nonatomic headers for 
-portability. The build will still fail in a sufficiently obvious manner 
-if neither is true.
+Gr{oetje,eeting}s,
 
-Thanks,
-Robin.
+                        Geert
 
-> +#define fb_writeb writeb
-> +#define fb_writew writew
-> +#define fb_writel writel
-> +#if defined(CONFIG_64BIT)
-> +#define fb_writeq writeq
-> +#endif
->   #define fb_memset memset_io
->   #define fb_memcpy_fromfb memcpy_fromio
->   #define fb_memcpy_tofb memcpy_toio
->   
-> -#else
-> -
-> -#define fb_readb(addr) (*(volatile u8 *) (addr))
-> -#define fb_readw(addr) (*(volatile u16 *) (addr))
-> -#define fb_readl(addr) (*(volatile u32 *) (addr))
-> -#define fb_readq(addr) (*(volatile u64 *) (addr))
-> -#define fb_writeb(b,addr) (*(volatile u8 *) (addr) = (b))
-> -#define fb_writew(b,addr) (*(volatile u16 *) (addr) = (b))
-> -#define fb_writel(b,addr) (*(volatile u32 *) (addr) = (b))
-> -#define fb_writeq(b,addr) (*(volatile u64 *) (addr) = (b))
-> -#define fb_memset memset
-> -#define fb_memcpy_fromfb memcpy
-> -#define fb_memcpy_tofb memcpy
-> -
-> -#endif
-> -
->   #define FB_LEFT_POS(p, bpp)          (fb_be_math(p) ? (32 - (bpp)) : 0)
->   #define FB_SHIFT_HIGH(p, val, bits)  (fb_be_math(p) ? (val) >> (bits) : \
->   						      (val) << (bits))
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

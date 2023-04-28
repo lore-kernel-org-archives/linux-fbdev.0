@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7281DC77B7C
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1E85C77B61
 	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Apr 2023 12:25:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345820AbjD1MZO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S230207AbjD1MZO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Fri, 28 Apr 2023 08:25:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34476 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34414 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230258AbjD1MZC (ORCPT
+        with ESMTP id S230365AbjD1MZD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 28 Apr 2023 08:25:02 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E55FC46A0
-        for <linux-fbdev@vger.kernel.org>; Fri, 28 Apr 2023 05:25:00 -0700 (PDT)
+        Fri, 28 Apr 2023 08:25:03 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C4FE46B8
+        for <linux-fbdev@vger.kernel.org>; Fri, 28 Apr 2023 05:25:01 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 9548F2008E;
-        Fri, 28 Apr 2023 12:24:59 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 3161F2008F;
+        Fri, 28 Apr 2023 12:25:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1682684699; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1682684700; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=fUpeEc+p8pjbvFmXDSuyyAeCukrDF8AJNFWwmyCsI/8=;
-        b=SFqVcQ11riEh2b0jyXAWrXGO+H2uKbcPVaMeFz1IvqFsmgxt4ayQfVZrpEvRBSOp5Q3zHO
-        Ma7kJj+dHjyq551UcX1SkDmfY6agC1TY8A0Yr6EcGnFIpQ2E9JcbcKxZOcXq+pZmk6TZKQ
-        Jtu0mYQ2bU3AsMyisXtWmMy008Ww8uI=
+        bh=jZcBrX85X9D4JYEqK4P+onn+XI0Hc3Cl8Gd19NFQU5o=;
+        b=CrEA+kxiVCmmkPWYWXwsnqzBiITp4bZos97PqEEUj2kKuyfHZquvsC/26qMbHy2QMzjJPa
+        p2ONuyzpuETvL13NaunetRnRcGLyo4TQ3lbYKecV8nMZQ27lbr2Xpp3oqzIcUkPZW7uQ3f
+        /gRqkJABwJ/9GHdzwml+P2Al9MYzRwc=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1682684699;
+        s=susede2_ed25519; t=1682684700;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=fUpeEc+p8pjbvFmXDSuyyAeCukrDF8AJNFWwmyCsI/8=;
-        b=GjpbXoY9/krwUPK0yAla+PdzgFCSjVod2x0lTJ3WwAJbikAExxXb1Y1FxkqoF6B1m7wAn7
-        Q7ZP3rYPuxrvkvAg==
+        bh=jZcBrX85X9D4JYEqK4P+onn+XI0Hc3Cl8Gd19NFQU5o=;
+        b=IHlfY4+MoF5u5stpi88bjDgt+BQRrimWnnUbCL63Lt/jM56R4cpXA0tAjR4KSpY4orlaGt
+        BtJfZ/scnHmUi1Dg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 4D2781390E;
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id E576D139C3;
         Fri, 28 Apr 2023 12:24:59 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id mPKfERu7S2RgeAAAMHmgww
+        id 2L4xNxu7S2RgeAAAMHmgww
         (envelope-from <tzimmermann@suse.de>); Fri, 28 Apr 2023 12:24:59 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     maarten.lankhorst@linux.intel.com, mripard@kernel.org,
@@ -58,9 +58,9 @@ Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Sui Jingfeng <suijingfeng@loongson.cn>,
         Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 14/19] fbdev: Return number of bytes read or written
-Date:   Fri, 28 Apr 2023 14:24:47 +0200
-Message-Id: <20230428122452.4856-15-tzimmermann@suse.de>
+Subject: [PATCH v2 16/19] fbdev: Don't re-validate info->state in fb_ops implementations
+Date:   Fri, 28 Apr 2023 14:24:49 +0200
+Message-Id: <20230428122452.4856-17-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.40.0
 In-Reply-To: <20230428122452.4856-1-tzimmermann@suse.de>
 References: <20230428122452.4856-1-tzimmermann@suse.de>
@@ -70,156 +70,132 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Always return the number of bytes read or written within the
-framebuffer. Only return an errno code if framebuffer memory
-was not touched. This is the semantics required by POSIX and
-makes fb_read() and fb_write() compatible with IGT tests. [1]
-
-This bug has been fixed for fb_write() long ago by
-commit 6a2a88668e90 ("[PATCH] fbdev: Fix return error of
-fb_write"). The code in fb_read() and the corresponding fb_sys_()
-helpers was forgotten.
-
-It can happen that copy_{from, to}_user() only partially copies
-the given buffer. Take this into account when calculating the
-number of bytes.
+The file-op entry points fb_read() and fb_write() verify that
+info->state has been set to FBINFO_STATE_RUNNING. Remove the same
+test from the implementations of struct fb_ops.{fb_read,fb_write}.
 
 v2:
-	* consider return value from copy_{from,to}_user() (Geert)
+	* also remove test from ivtvfb, braodsheetfb, hecubafb and
+	  metronomefb (Geert)
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Tested-by: Sui Jingfeng <suijingfeng@loongson.cn>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Acked-by: Helge Deller <deller@gmx.de>
-Link: https://gitlab.freedesktop.org/drm/igt-gpu-tools/-/blob/master/tests/fbdev.c # 1
 ---
- drivers/video/fbdev/core/fb_sys_fops.c | 24 ++++++++++++++----------
- drivers/video/fbdev/core/fbmem.c       | 15 ++++++++++-----
- 2 files changed, 24 insertions(+), 15 deletions(-)
+ drivers/media/pci/ivtv/ivtvfb.c        | 3 ---
+ drivers/video/fbdev/broadsheetfb.c     | 3 ---
+ drivers/video/fbdev/core/fb_sys_fops.c | 6 ------
+ drivers/video/fbdev/hecubafb.c         | 3 ---
+ drivers/video/fbdev/metronomefb.c      | 3 ---
+ drivers/video/fbdev/sm712fb.c          | 6 ------
+ 6 files changed, 24 deletions(-)
 
+diff --git a/drivers/media/pci/ivtv/ivtvfb.c b/drivers/media/pci/ivtv/ivtvfb.c
+index 00ac94d4ab19..22123a25daea 100644
+--- a/drivers/media/pci/ivtv/ivtvfb.c
++++ b/drivers/media/pci/ivtv/ivtvfb.c
+@@ -378,9 +378,6 @@ static ssize_t ivtvfb_write(struct fb_info *info, const char __user *buf,
+ 	unsigned long dma_size;
+ 	u16 lead = 0, tail = 0;
+ 
+-	if (info->state != FBINFO_STATE_RUNNING)
+-		return -EPERM;
+-
+ 	total_size = info->screen_size;
+ 
+ 	if (total_size == 0)
+diff --git a/drivers/video/fbdev/broadsheetfb.c b/drivers/video/fbdev/broadsheetfb.c
+index 65dc86b7081e..691de5df581b 100644
+--- a/drivers/video/fbdev/broadsheetfb.c
++++ b/drivers/video/fbdev/broadsheetfb.c
+@@ -1013,9 +1013,6 @@ static ssize_t broadsheetfb_write(struct fb_info *info, const char __user *buf,
+ 	int err = 0;
+ 	unsigned long total_size;
+ 
+-	if (info->state != FBINFO_STATE_RUNNING)
+-		return -EPERM;
+-
+ 	total_size = info->fix.smem_len;
+ 
+ 	if (p > total_size)
 diff --git a/drivers/video/fbdev/core/fb_sys_fops.c b/drivers/video/fbdev/core/fb_sys_fops.c
-index ff275d7f3eaf..cefb77b9546d 100644
+index 6589123f4127..7dee5d3c7fb1 100644
 --- a/drivers/video/fbdev/core/fb_sys_fops.c
 +++ b/drivers/video/fbdev/core/fb_sys_fops.c
-@@ -19,7 +19,8 @@ ssize_t fb_sys_read(struct fb_info *info, char __user *buf, size_t count,
- 	unsigned long p = *ppos;
- 	void *src;
+@@ -22,9 +22,6 @@ ssize_t fb_sys_read(struct fb_info *info, char __user *buf, size_t count,
+ 	unsigned long total_size, c;
+ 	ssize_t ret;
+ 
+-	if (info->state != FBINFO_STATE_RUNNING)
+-		return -EPERM;
+-
+ 	total_size = info->screen_size;
+ 
+ 	if (total_size == 0)
+@@ -64,9 +61,6 @@ ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
+ 	unsigned long total_size, c;
+ 	size_t ret;
+ 
+-	if (info->state != FBINFO_STATE_RUNNING)
+-		return -EPERM;
+-
+ 	total_size = info->screen_size;
+ 
+ 	if (total_size == 0)
+diff --git a/drivers/video/fbdev/hecubafb.c b/drivers/video/fbdev/hecubafb.c
+index ddfa2853cc41..a2996d39f918 100644
+--- a/drivers/video/fbdev/hecubafb.c
++++ b/drivers/video/fbdev/hecubafb.c
+@@ -163,9 +163,6 @@ static ssize_t hecubafb_write(struct fb_info *info, const char __user *buf,
  	int err = 0;
--	unsigned long total_size;
-+	unsigned long total_size, c;
-+	ssize_t ret;
+ 	unsigned long total_size;
  
- 	if (info->state != FBINFO_STATE_RUNNING)
- 		return -EPERM;
-@@ -43,13 +44,14 @@ ssize_t fb_sys_read(struct fb_info *info, char __user *buf, size_t count,
- 	if (info->fbops->fb_sync)
- 		info->fbops->fb_sync(info);
+-	if (info->state != FBINFO_STATE_RUNNING)
+-		return -EPERM;
+-
+ 	total_size = info->fix.smem_len;
  
--	if (copy_to_user(buf, src, count))
-+	c = copy_to_user(buf, src, count);
-+	if (c)
- 		err = -EFAULT;
-+	ret = count - c;
- 
--	if  (!err)
--		*ppos += count;
-+	*ppos += ret;
- 
--	return (err) ? err : count;
-+	return ret ? ret : err;
- }
- EXPORT_SYMBOL_GPL(fb_sys_read);
- 
-@@ -59,7 +61,8 @@ ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
- 	unsigned long p = *ppos;
- 	void *dst;
+ 	if (p > total_size)
+diff --git a/drivers/video/fbdev/metronomefb.c b/drivers/video/fbdev/metronomefb.c
+index afa9b41f5a87..2bb068cadac6 100644
+--- a/drivers/video/fbdev/metronomefb.c
++++ b/drivers/video/fbdev/metronomefb.c
+@@ -523,9 +523,6 @@ static ssize_t metronomefb_write(struct fb_info *info, const char __user *buf,
  	int err = 0;
--	unsigned long total_size;
-+	unsigned long total_size, c;
-+	size_t ret;
+ 	unsigned long total_size;
  
- 	if (info->state != FBINFO_STATE_RUNNING)
- 		return -EPERM;
-@@ -89,13 +92,14 @@ ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
- 	if (info->fbops->fb_sync)
- 		info->fbops->fb_sync(info);
+-	if (info->state != FBINFO_STATE_RUNNING)
+-		return -EPERM;
+-
+ 	total_size = info->fix.smem_len;
  
--	if (copy_from_user(dst, buf, count))
-+	c = copy_from_user(dst, buf, count);
-+	if (c)
- 		err = -EFAULT;
-+	ret = count - c;
- 
--	if  (!err)
--		*ppos += count;
-+	*ppos += ret;
- 
--	return (err) ? err : count;
-+	return ret ? ret : err;
- }
- EXPORT_SYMBOL_GPL(fb_sys_write);
- 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 3fd95a79e4c3..b0881348c27f 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -766,7 +766,7 @@ fb_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
- 	u8 *buffer, *dst;
- 	u8 __iomem *src;
- 	int c, cnt = 0, err = 0;
--	unsigned long total_size;
-+	unsigned long total_size, trailing;
- 
- 	if (!info || ! info->screen_base)
- 		return -ENODEV;
-@@ -808,10 +808,13 @@ fb_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
- 		dst += c;
- 		src += c;
- 
--		if (copy_to_user(buf, buffer, c)) {
-+		trailing = copy_to_user(buf, buffer, c);
-+		if (trailing == c) {
- 			err = -EFAULT;
- 			break;
- 		}
-+		c -= trailing;
-+
- 		*ppos += c;
- 		buf += c;
- 		cnt += c;
-@@ -820,7 +823,7 @@ fb_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
- 
- 	kfree(buffer);
- 
--	return (err) ? err : cnt;
-+	return cnt ? cnt : err;
- }
- 
- static ssize_t
-@@ -831,7 +834,7 @@ fb_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
- 	u8 *buffer, *src;
- 	u8 __iomem *dst;
- 	int c, cnt = 0, err = 0;
--	unsigned long total_size;
-+	unsigned long total_size, trailing;
- 
+ 	if (p > total_size)
+diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
+index b528776c7612..6f852cd756c5 100644
+--- a/drivers/video/fbdev/sm712fb.c
++++ b/drivers/video/fbdev/sm712fb.c
+@@ -1031,9 +1031,6 @@ static ssize_t smtcfb_read(struct fb_info *info, char __user *buf,
  	if (!info || !info->screen_base)
  		return -ENODEV;
-@@ -876,10 +879,12 @@ fb_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
- 		c = (count > PAGE_SIZE) ? PAGE_SIZE : count;
- 		src = buffer;
  
--		if (copy_from_user(src, buf, c)) {
-+		trailing = copy_from_user(src, buf, c);
-+		if (trailing == c) {
- 			err = -EFAULT;
- 			break;
- 		}
-+		c -= trailing;
+-	if (info->state != FBINFO_STATE_RUNNING)
+-		return -EPERM;
+-
+ 	total_size = info->screen_size;
  
- 		fb_memcpy_tofb(dst, src, c);
- 		dst += c;
+ 	if (total_size == 0)
+@@ -1097,9 +1094,6 @@ static ssize_t smtcfb_write(struct fb_info *info, const char __user *buf,
+ 	if (!info || !info->screen_base)
+ 		return -ENODEV;
+ 
+-	if (info->state != FBINFO_STATE_RUNNING)
+-		return -EPERM;
+-
+ 	total_size = info->screen_size;
+ 
+ 	if (total_size == 0)
 -- 
 2.40.0
 

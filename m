@@ -2,53 +2,53 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D072FC7EE2E
-	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Apr 2023 09:27:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DF94C77B61
+	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Apr 2023 09:27:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345726AbjD1J11 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 28 Apr 2023 05:27:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48850 "EHLO
+        id S1345728AbjD1J12 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 28 Apr 2023 05:27:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48796 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345627AbjD1J1T (ORCPT
+        with ESMTP id S229823AbjD1J1Q (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 28 Apr 2023 05:27:19 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 879C02709;
-        Fri, 28 Apr 2023 02:27:16 -0700 (PDT)
+        Fri, 28 Apr 2023 05:27:16 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 244D930D2;
+        Fri, 28 Apr 2023 02:27:15 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id EA67421ED4;
-        Fri, 28 Apr 2023 09:27:14 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 9E3EC21E77;
+        Fri, 28 Apr 2023 09:27:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1682674034; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1682674033; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=dttAvrB3jWpgJtm9agssOOqjg81G8y/0rvJLga4TX2Y=;
-        b=FwzEoVEM5ZiVwRaUsiqsC8uRZWBO0MENeFjb4KljMvyGhacHJZV47m4LttrCa9k5i29zKI
-        xxUxXlg9OZD9SuPtOvr4jNFpkKAsJb0LFp87xP9gLubAV/zYUIjbsTTt6iBGig6rU6tMIO
-        G+/8q4UnnFtv1Cm3+83jYcyPbY686PM=
+        bh=R/tS9JBmx3EXdW6NzCCqF9BfBp/DOJu84iEDqCwvGtE=;
+        b=wKxtEH3AScg58g5NxG0UbfbNTtkJ6JeTguhi0yuaWoVWndHRO9PO2Cf2ngyyGZzklX0dlO
+        rhmnAwE7AgpYoQ4Eo2vXMaT2+AzViZ8qqjtoGII7az2G3WnAitfDMDl2xQ5klB9iTSkfwE
+        b8WC6nl9qEmBzJMny3Akxy9v19U7+9M=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1682674034;
+        s=susede2_ed25519; t=1682674033;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=dttAvrB3jWpgJtm9agssOOqjg81G8y/0rvJLga4TX2Y=;
-        b=f7CADmYihbbC+E9Kv+aJQGm6+DtR2PPa8qKUuBrxYkngL6XlfxSm3GzLAv8xtNoxkFsWvI
-        rWwz6lNTNlGzLVDQ==
+        bh=R/tS9JBmx3EXdW6NzCCqF9BfBp/DOJu84iEDqCwvGtE=;
+        b=B8IcnCwTx9BI4HcJ/KMkG8g3A2nmCE6/2KeuB/KX+ZyJL+mELGUWP9cxf9z9UYuIKVsN/x
+        hrdnpVdBZlAPwVDA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 820FA138FA;
-        Fri, 28 Apr 2023 09:27:14 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 3D5DD139C3;
+        Fri, 28 Apr 2023 09:27:13 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id AJPpHnKRS2ReFwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Fri, 28 Apr 2023 09:27:14 +0000
+        id oC0kDnGRS2ReFwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Fri, 28 Apr 2023 09:27:13 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, geert@linux-m68k.org, javierm@redhat.com,
         daniel@ffwll.ch, vgupta@kernel.org, chenhuacai@kernel.org,
@@ -62,9 +62,9 @@ Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-parisc@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 4/5] fbdev: Include <linux/io.h> in drivers
-Date:   Fri, 28 Apr 2023 11:27:10 +0200
-Message-Id: <20230428092711.406-5-tzimmermann@suse.de>
+Subject: [PATCH v2 1/5] fbdev/matrox: Remove trailing whitespaces
+Date:   Fri, 28 Apr 2023 11:27:07 +0200
+Message-Id: <20230428092711.406-2-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.40.0
 In-Reply-To: <20230428092711.406-1-tzimmermann@suse.de>
 References: <20230428092711.406-1-tzimmermann@suse.de>
@@ -74,352 +74,61 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fbdev's main header file, <linux/fb.h>, includes <asm/io.h> to get
-declarations of I/O helper functions. From these declaratons, it later
-defines framebuffer I/O helpers, such as fb_{read,write}[bwlq]() or
-fb_memset().
-
-The framebuffer I/O helpers pre-date Linux' current I/O code and will
-be replaced by regular I/O helpers. Prepare this change by adding an
-include statement for <linux/io.h> to all source files that use the
-framebuffer I/O helpers. They will still get declarations of the I/O
-functions even after <linux/fb.h> has been cleaned up. Driver source
-files that already include <asm/io.h> convert to <linux/io.h>.
+Fix coding style. No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/arkfb.c                 | 1 +
- drivers/video/fbdev/aty/mach64_cursor.c     | 3 +--
- drivers/video/fbdev/chipsfb.c               | 1 +
- drivers/video/fbdev/cirrusfb.c              | 1 +
- drivers/video/fbdev/core/cfbcopyarea.c      | 2 +-
- drivers/video/fbdev/core/cfbfillrect.c      | 2 ++
- drivers/video/fbdev/core/cfbimgblt.c        | 2 ++
- drivers/video/fbdev/core/fbmem.c            | 1 +
- drivers/video/fbdev/core/svgalib.c          | 2 +-
- drivers/video/fbdev/hgafb.c                 | 2 +-
- drivers/video/fbdev/hitfb.c                 | 2 +-
- drivers/video/fbdev/kyro/fbdev.c            | 2 +-
- drivers/video/fbdev/matrox/matroxfb_accel.c | 2 ++
- drivers/video/fbdev/matrox/matroxfb_base.h  | 2 +-
- drivers/video/fbdev/pm2fb.c                 | 1 +
- drivers/video/fbdev/pm3fb.c                 | 1 +
- drivers/video/fbdev/pvr2fb.c                | 1 +
- drivers/video/fbdev/s3fb.c                  | 1 +
- drivers/video/fbdev/sstfb.c                 | 2 +-
- drivers/video/fbdev/tdfxfb.c                | 2 +-
- drivers/video/fbdev/tridentfb.c             | 1 +
- drivers/video/fbdev/vga16fb.c               | 2 +-
- drivers/video/fbdev/vt8623fb.c              | 1 +
- 23 files changed, 26 insertions(+), 11 deletions(-)
+ drivers/video/fbdev/matrox/matroxfb_accel.c | 6 +++---
+ drivers/video/fbdev/matrox/matroxfb_base.h  | 4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
-index 60a96fdb5dd8..c254ab6fbb7d 100644
---- a/drivers/video/fbdev/arkfb.c
-+++ b/drivers/video/fbdev/arkfb.c
-@@ -23,6 +23,7 @@
- #include <linux/fb.h>
- #include <linux/svga.h>
- #include <linux/init.h>
-+#include <linux/io.h>
- #include <linux/pci.h>
- #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
- #include <video/vga.h>
-diff --git a/drivers/video/fbdev/aty/mach64_cursor.c b/drivers/video/fbdev/aty/mach64_cursor.c
-index 4ad0331a8c57..c1347c37a146 100644
---- a/drivers/video/fbdev/aty/mach64_cursor.c
-+++ b/drivers/video/fbdev/aty/mach64_cursor.c
-@@ -5,11 +5,10 @@
- 
- #include <linux/fb.h>
- #include <linux/init.h>
-+#include <linux/io.h>
- #include <linux/string.h>
- #include "../core/fb_draw.h"
- 
--#include <asm/io.h>
--
- #ifdef __sparc__
- #include <asm/fbio.h>
- #endif
-diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
-index 7799d52a651f..9cb719afe033 100644
---- a/drivers/video/fbdev/chipsfb.c
-+++ b/drivers/video/fbdev/chipsfb.c
-@@ -26,6 +26,7 @@
- #include <linux/fb.h>
- #include <linux/pm.h>
- #include <linux/init.h>
-+#include <linux/io.h>
- #include <linux/pci.h>
- #include <linux/console.h>
- 
-diff --git a/drivers/video/fbdev/cirrusfb.c b/drivers/video/fbdev/cirrusfb.c
-index ba45e2147c52..89366a78b010 100644
---- a/drivers/video/fbdev/cirrusfb.c
-+++ b/drivers/video/fbdev/cirrusfb.c
-@@ -43,6 +43,7 @@
- #include <linux/delay.h>
- #include <linux/fb.h>
- #include <linux/init.h>
-+#include <linux/io.h>
- 
- #ifdef CONFIG_ZORRO
- #include <linux/zorro.h>
-diff --git a/drivers/video/fbdev/core/cfbcopyarea.c b/drivers/video/fbdev/core/cfbcopyarea.c
-index 6d4bfeecee35..fc3a99a50266 100644
---- a/drivers/video/fbdev/core/cfbcopyarea.c
-+++ b/drivers/video/fbdev/core/cfbcopyarea.c
-@@ -26,8 +26,8 @@
- #include <linux/kernel.h>
- #include <linux/string.h>
- #include <linux/fb.h>
-+#include <linux/io.h>
- #include <asm/types.h>
--#include <asm/io.h>
- #include "fb_draw.h"
- 
- #if BITS_PER_LONG == 32
-diff --git a/drivers/video/fbdev/core/cfbfillrect.c b/drivers/video/fbdev/core/cfbfillrect.c
-index ba9f58b2a5e8..15fd4927a031 100644
---- a/drivers/video/fbdev/core/cfbfillrect.c
-+++ b/drivers/video/fbdev/core/cfbfillrect.c
-@@ -13,6 +13,8 @@
-  *  the native cpu endians. I also need to deal with MSB position in the word.
-  *
-  */
-+
-+#include <linux/io.h>
- #include <linux/module.h>
- #include <linux/string.h>
- #include <linux/fb.h>
-diff --git a/drivers/video/fbdev/core/cfbimgblt.c b/drivers/video/fbdev/core/cfbimgblt.c
-index 9ebda4e0dc7a..e8c957f51fd4 100644
---- a/drivers/video/fbdev/core/cfbimgblt.c
-+++ b/drivers/video/fbdev/core/cfbimgblt.c
-@@ -29,6 +29,8 @@
-  *  Also need to add code to deal with cards endians that are different than
-  *  the native cpu endians. I also need to deal with MSB position in the word.
-  */
-+
-+#include <linux/io.h>
- #include <linux/module.h>
- #include <linux/string.h>
- #include <linux/fb.h>
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 3fd95a79e4c3..2047bffe4a6c 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -23,6 +23,7 @@
- #include <linux/mman.h>
- #include <linux/vt.h>
- #include <linux/init.h>
-+#include <linux/io.h>
- #include <linux/linux_logo.h>
- #include <linux/proc_fs.h>
- #include <linux/platform_device.h>
-diff --git a/drivers/video/fbdev/core/svgalib.c b/drivers/video/fbdev/core/svgalib.c
-index 9e01322fabe3..c4731b95a36d 100644
---- a/drivers/video/fbdev/core/svgalib.c
-+++ b/drivers/video/fbdev/core/svgalib.c
-@@ -15,8 +15,8 @@
- #include <linux/string.h>
- #include <linux/fb.h>
- #include <linux/svga.h>
-+#include <linux/io.h>
- #include <asm/types.h>
--#include <asm/io.h>
- 
- 
- /* Write a CRT register value spread across multiple registers */
-diff --git a/drivers/video/fbdev/hgafb.c b/drivers/video/fbdev/hgafb.c
-index 40879d9facdf..c83ac13f50b1 100644
---- a/drivers/video/fbdev/hgafb.c
-+++ b/drivers/video/fbdev/hgafb.c
-@@ -41,7 +41,7 @@
- #include <linux/init.h>
- #include <linux/ioport.h>
- #include <linux/platform_device.h>
--#include <asm/io.h>
-+#include <linux/io.h>
- #include <asm/vga.h>
- 
- #if 0
-diff --git a/drivers/video/fbdev/hitfb.c b/drivers/video/fbdev/hitfb.c
-index bbb0f1d953cc..8509a5ad77cb 100644
---- a/drivers/video/fbdev/hitfb.c
-+++ b/drivers/video/fbdev/hitfb.c
-@@ -23,7 +23,7 @@
- 
- #include <asm/machvec.h>
- #include <linux/uaccess.h>
--#include <asm/io.h>
-+#include <linux/io.h>
- #include <asm/hd64461.h>
- #include <cpu/dac.h>
- 
-diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
-index 0596573ef140..281fd26a5694 100644
---- a/drivers/video/fbdev/kyro/fbdev.c
-+++ b/drivers/video/fbdev/kyro/fbdev.c
-@@ -21,7 +21,7 @@
- #include <linux/ioctl.h>
- #include <linux/init.h>
- #include <linux/pci.h>
--#include <asm/io.h>
-+#include <linux/io.h>
- #include <linux/uaccess.h>
- 
- #include <video/kyro.h>
 diff --git a/drivers/video/fbdev/matrox/matroxfb_accel.c b/drivers/video/fbdev/matrox/matroxfb_accel.c
-index ce51227798a1..271c7839f66f 100644
+index 9cb0685feddd..ce51227798a1 100644
 --- a/drivers/video/fbdev/matrox/matroxfb_accel.c
 +++ b/drivers/video/fbdev/matrox/matroxfb_accel.c
-@@ -77,6 +77,8 @@
-  *
-  */
+@@ -88,7 +88,7 @@
  
-+#include <linux/io.h>
+ static inline void matrox_cfb4_pal(u_int32_t* pal) {
+ 	unsigned int i;
+-	
 +
- #include "matroxfb_accel.h"
- #include "matroxfb_DAC1064.h"
- #include "matroxfb_Ti3026.h"
+ 	for (i = 0; i < 16; i++) {
+ 		pal[i] = i * 0x11111111U;
+ 	}
+@@ -96,7 +96,7 @@ static inline void matrox_cfb4_pal(u_int32_t* pal) {
+ 
+ static inline void matrox_cfb8_pal(u_int32_t* pal) {
+ 	unsigned int i;
+-	
++
+ 	for (i = 0; i < 16; i++) {
+ 		pal[i] = i * 0x01010101U;
+ 	}
+@@ -482,7 +482,7 @@ static void matroxfb_1bpp_imageblit(struct matrox_fb_info *minfo, u_int32_t fgx,
+ 			/* Tell... well, why bother... */
+ 			while (height--) {
+ 				size_t i;
+-				
++
+ 				for (i = 0; i < step; i += 4) {
+ 					/* Hope that there are at least three readable bytes beyond the end of bitmap */
+ 					fb_writel(get_unaligned((u_int32_t*)(chardata + i)),mmio.vaddr);
 diff --git a/drivers/video/fbdev/matrox/matroxfb_base.h b/drivers/video/fbdev/matrox/matroxfb_base.h
-index c93c69bbcd57..2cd7c82ce307 100644
+index 958be6805f87..c93c69bbcd57 100644
 --- a/drivers/video/fbdev/matrox/matroxfb_base.h
 +++ b/drivers/video/fbdev/matrox/matroxfb_base.h
-@@ -36,6 +36,7 @@
- #include <linux/fb.h>
- #include <linux/console.h>
- #include <linux/selection.h>
-+#include <linux/io.h>
- #include <linux/ioport.h>
- #include <linux/init.h>
- #include <linux/timer.h>
-@@ -43,7 +44,6 @@
- #include <linux/spinlock.h>
- #include <linux/kd.h>
+@@ -301,9 +301,9 @@ struct matrox_altout {
+ 	int		(*verifymode)(void* altout_dev, u_int32_t mode);
+ 	int		(*getqueryctrl)(void* altout_dev,
+ 					struct v4l2_queryctrl* ctrl);
+-	int		(*getctrl)(void* altout_dev, 
++	int		(*getctrl)(void *altout_dev,
+ 				   struct v4l2_control* ctrl);
+-	int		(*setctrl)(void* altout_dev, 
++	int		(*setctrl)(void *altout_dev,
+ 				   struct v4l2_control* ctrl);
+ };
  
--#include <asm/io.h>
- #include <asm/unaligned.h>
- 
- #if defined(CONFIG_PPC_PMAC)
-diff --git a/drivers/video/fbdev/pm2fb.c b/drivers/video/fbdev/pm2fb.c
-index 47d212944f30..297abac721ea 100644
---- a/drivers/video/fbdev/pm2fb.c
-+++ b/drivers/video/fbdev/pm2fb.c
-@@ -38,6 +38,7 @@
- #include <linux/delay.h>
- #include <linux/fb.h>
- #include <linux/init.h>
-+#include <linux/io.h>
- #include <linux/pci.h>
- #include <video/permedia2.h>
- #include <video/cvisionppc.h>
-diff --git a/drivers/video/fbdev/pm3fb.c b/drivers/video/fbdev/pm3fb.c
-index b46a471df9ae..78df01b1a507 100644
---- a/drivers/video/fbdev/pm3fb.c
-+++ b/drivers/video/fbdev/pm3fb.c
-@@ -32,6 +32,7 @@
- #include <linux/delay.h>
- #include <linux/fb.h>
- #include <linux/init.h>
-+#include <linux/io.h>
- #include <linux/pci.h>
- 
- #include <video/pm3fb.h>
-diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
-index 6888127a5eb8..6aeb26293c70 100644
---- a/drivers/video/fbdev/pvr2fb.c
-+++ b/drivers/video/fbdev/pvr2fb.c
-@@ -56,6 +56,7 @@
- #include <linux/interrupt.h>
- #include <linux/fb.h>
- #include <linux/init.h>
-+#include <linux/io.h>
- #include <linux/pci.h>
- 
- #ifdef CONFIG_SH_DREAMCAST
-diff --git a/drivers/video/fbdev/s3fb.c b/drivers/video/fbdev/s3fb.c
-index 7d257489edcc..1efddb2ef6da 100644
---- a/drivers/video/fbdev/s3fb.c
-+++ b/drivers/video/fbdev/s3fb.c
-@@ -22,6 +22,7 @@
- #include <linux/fb.h>
- #include <linux/svga.h>
- #include <linux/init.h>
-+#include <linux/io.h>
- #include <linux/pci.h>
- #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
- #include <video/vga.h>
-diff --git a/drivers/video/fbdev/sstfb.c b/drivers/video/fbdev/sstfb.c
-index da296b2ab54a..f07c646aa2d1 100644
---- a/drivers/video/fbdev/sstfb.c
-+++ b/drivers/video/fbdev/sstfb.c
-@@ -88,7 +88,7 @@
- #include <linux/pci.h>
- #include <linux/delay.h>
- #include <linux/init.h>
--#include <asm/io.h>
-+#include <linux/io.h>
- #include <linux/uaccess.h>
- #include <video/sstfb.h>
- 
-diff --git a/drivers/video/fbdev/tdfxfb.c b/drivers/video/fbdev/tdfxfb.c
-index d17e5e1472aa..096a8cfd8d6d 100644
---- a/drivers/video/fbdev/tdfxfb.c
-+++ b/drivers/video/fbdev/tdfxfb.c
-@@ -74,7 +74,7 @@
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/pci.h>
--#include <asm/io.h>
-+#include <linux/io.h>
- 
- #include <video/tdfx.h>
- 
-diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
-index 6099b9768ba1..28e7647bdf82 100644
---- a/drivers/video/fbdev/tridentfb.c
-+++ b/drivers/video/fbdev/tridentfb.c
-@@ -20,6 +20,7 @@
- #include <linux/module.h>
- #include <linux/fb.h>
- #include <linux/init.h>
-+#include <linux/io.h>
- #include <linux/pci.h>
- #include <linux/slab.h>
- 
-diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
-index 1a8ffdb2be26..2d185dbb839b 100644
---- a/drivers/video/fbdev/vga16fb.c
-+++ b/drivers/video/fbdev/vga16fb.c
-@@ -18,12 +18,12 @@
- #include <linux/mm.h>
- #include <linux/delay.h>
- #include <linux/fb.h>
-+#include <linux/io.h>
- #include <linux/ioport.h>
- #include <linux/init.h>
- #include <linux/platform_device.h>
- #include <linux/screen_info.h>
- 
--#include <asm/io.h>
- #include <video/vga.h>
- 
- #define MODE_SKIP4	1
-diff --git a/drivers/video/fbdev/vt8623fb.c b/drivers/video/fbdev/vt8623fb.c
-index 034333ee6e45..1d4aee10a653 100644
---- a/drivers/video/fbdev/vt8623fb.c
-+++ b/drivers/video/fbdev/vt8623fb.c
-@@ -23,6 +23,7 @@
- #include <linux/fb.h>
- #include <linux/svga.h>
- #include <linux/init.h>
-+#include <linux/io.h>
- #include <linux/pci.h>
- #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
- #include <video/vga.h>
 -- 
 2.40.0
 

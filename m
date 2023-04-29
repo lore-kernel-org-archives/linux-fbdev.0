@@ -2,146 +2,107 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83ED9C7618E
-	for <linux-fbdev@archiver.kernel.org>; Sat, 29 Apr 2023 03:45:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20E14C7EE24
+	for <linux-fbdev@archiver.kernel.org>; Sat, 29 Apr 2023 10:46:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230468AbjD2Dpw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 28 Apr 2023 23:45:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47512 "EHLO
+        id S231126AbjD2Kp5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 29 Apr 2023 06:45:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51646 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229498AbjD2Dpv (ORCPT
+        with ESMTP id S229507AbjD2Kp4 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 28 Apr 2023 23:45:51 -0400
-Received: from 189.cn (ptr.189.cn [183.61.185.104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 17CC22680;
-        Fri, 28 Apr 2023 20:45:49 -0700 (PDT)
-HMM_SOURCE_IP: 10.64.8.43:49174.1309328384
-HMM_ATTACHE_NUM: 0000
-HMM_SOURCE_TYPE: SMTP
-Received: from clientip-114.242.206.180 (unknown [10.64.8.43])
-        by 189.cn (HERMES) with SMTP id A7CD410023C;
-        Sat, 29 Apr 2023 11:45:43 +0800 (CST)
-Received: from  ([114.242.206.180])
-        by gateway-151646-dep-85667d6c59-fm8l8 with ESMTP id c58e0e2cda1648ceab62faa32009eb89 for geert+renesas@glider.be;
-        Sat, 29 Apr 2023 11:45:47 CST
-X-Transaction-ID: c58e0e2cda1648ceab62faa32009eb89
-X-Real-From: 15330273260@189.cn
-X-Receive-IP: 114.242.206.180
-X-MEDUSA-Status: 0
-Sender: 15330273260@189.cn
-Message-ID: <ce073f1d-0f40-aad9-5509-1f44d3887984@189.cn>
-Date:   Sat, 29 Apr 2023 11:45:42 +0800
+        Sat, 29 Apr 2023 06:45:56 -0400
+Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 58A5F1FCD;
+        Sat, 29 Apr 2023 03:45:55 -0700 (PDT)
+Received: by mail-ed1-x536.google.com with SMTP id 4fb4d7f45d1cf-506b2a08877so1150534a12.2;
+        Sat, 29 Apr 2023 03:45:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1682765153; x=1685357153;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=WTQTEbLPt4h9veixLWM+5ZtwRhk8Wsy+ewL1TGUe3D0=;
+        b=oH5Kvm5drzQdcOXTiqEwKZhd7EmXTc4PzAK03AaVxM3T9Y3Z4v02nzKRQw+JKmLXDa
+         hHfP3cVaROpARK80o9Px6dby16oN8U2ony8aEDqo8HHSJYrw5t9GKqy0MYpUDPsSctle
+         CB5SFrTFkL7WFcReoHDaLQ+ZnfqxjD9ApSysyxIZqU9aGCQTW2yGDXSgWl+dwsvJesdi
+         o3Ip7JbO0A3s2iZ9i4dUvZ2Whyo6X392jfNqd8+xo4TXHXLJUPAeM5t4MwR6TarTO9Uu
+         aTa8+CWtcK4O+7PvC/eVLW87vMxxlDlsx4436E1Hf3iuF1Fbl8XLaxy6kbTgA48kCq1x
+         A1gg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1682765153; x=1685357153;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=WTQTEbLPt4h9veixLWM+5ZtwRhk8Wsy+ewL1TGUe3D0=;
+        b=KJKcNnQz/K4qo840e0i52cHK5FBN8Fecfg/r38iaC5aQ3ec41FXYatMVJkW7h5Uqef
+         pbu+SDVnJCowHLQ2qSRIoayA5f5tP1KP+epa5hqXtGXhS8E0pMpYqOenUJUmxQLaGnM7
+         +Te6ogx6Nm6k8Brz346mlf8l4gKNIYAK6rJzkaXDysVtY+IT9Did4WO7qdxUIEVzFW8s
+         sBt9Zku8dav7a8BxRtX/nUivEht+t279Np1THpbq3g7dV6p0amHmfJe06VAWsRkFkzOS
+         aH4dq+O8zke96l9YJhQCeUsE1vplqIo52nI1h5tzowKOu3Dod6WhgaUx0VyOURM7tN15
+         7maQ==
+X-Gm-Message-State: AC+VfDyzEAU3nO6bLZynWFVHn/JL7bQid25mB06bP6P25V3U8zra/aWG
+        W9HUlDSCE8shR7Cym+COV9E=
+X-Google-Smtp-Source: ACHHUZ4x/Gdg5OzSrpmM9phfXhSpLi+EARAapUnJz09J7J4N94Z160t6oxkz+44oNxD3ND2gGUwSvg==
+X-Received: by 2002:aa7:d547:0:b0:4fc:709f:7abd with SMTP id u7-20020aa7d547000000b004fc709f7abdmr1241415edr.2.1682765153465;
+        Sat, 29 Apr 2023 03:45:53 -0700 (PDT)
+Received: from localhost.my.domain (83.8.115.30.ipv4.supernova.orange.pl. [83.8.115.30])
+        by smtp.gmail.com with ESMTPSA id b11-20020a056402138b00b004bd6e3ed196sm9952522edv.86.2023.04.29.03.45.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 29 Apr 2023 03:45:53 -0700 (PDT)
+From:   Artur Weber <aweber.kernel@gmail.com>
+To:     Lee Jones <lee@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Helge Deller <deller@gmx.de>,
+        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>,
+        Artur Weber <aweber.kernel@gmail.com>,
+        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht
+Subject: [PATCH 0/4] video: backlight: lp855x: modernize bindings
+Date:   Sat, 29 Apr 2023 12:45:30 +0200
+Message-Id: <20230429104534.28943-1-aweber.kernel@gmail.com>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: drm/fb-helper: Fix height, width, and accel_flags in fb_var
-To:     Geert Uytterhoeven <geert+renesas@glider.be>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@gmail.com>,
-        Javier Martinez Canillas <javierm@redhat.com>
-Cc:     linux-renesas-soc@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <2b6073d9c2d869c6a4eac6edebd616e0568dec91.1681843245.git.geert+renesas@glider.be>
-Content-Language: en-US
-From:   Sui Jingfeng <15330273260@189.cn>
-In-Reply-To: <2b6073d9c2d869c6a4eac6edebd616e0568dec91.1681843245.git.geert+renesas@glider.be>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+Convert TI LP855X backlight controller bindings from TXT to YAML and,
+while we're at it, rework some of the code related to PWM handling.
+Also correct existing DTS files to avoid introducing new dtb_check
+errors.
 
-I have just tested this patch on a LoongArch(3a5000+ls7a2000 evb) machine,
+Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
 
-both fbtest and the fbdev test of IGT finished.
+Artur Weber (4):
+  dt-bindings: backlight: lp855x: convert to YAML and modernize
+  video: backlight: lp855x: get PWM for PWM mode during probe
+  ARM: dts: adapt to LP855X bindings changes
+  arm64: dts: adapt to LP855X bindings changes
+
+ .../leds/backlight/lp855x-backlight.yaml      | 148 ++++++++++++++++++
+ .../bindings/leds/backlight/lp855x.txt        |  72 ---------
+ .../dts/qcom-apq8026-samsung-matisse-wifi.dts |   1 -
+ ...-msm8974pro-sony-xperia-shinano-castor.dts |  23 +--
+ .../boot/dts/nvidia/tegra210-p2371-2180.dts   |   6 +-
+ drivers/video/backlight/lp855x_bl.c           |  48 +++---
+ 6 files changed, 188 insertions(+), 110 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/lp855x-backlight.yaml
+ delete mode 100644 Documentation/devicetree/bindings/leds/backlight/lp855x.txt
 
 
-fbtest say test001: ~ test013: PASSED,
+base-commit: e154a338e16cc3b3bbd54c891253319d22383746
+-- 
+2.40.1
 
-After apply your patch, the warn log `accel_flags changed from 0 to 1` 
-disappeared while  running it.
-
-So,
-
-
-Tested-by: Sui Jingfeng <suijingfeng@loongson.cn>
-
-
-On 2023/4/19 02:42, Geert Uytterhoeven wrote:
-> Fbtest contains some very simple validation of the fbdev userspace API
-> contract.  When used with shmob-drm, it reports the following warnings
-> and errors:
->
->      height changed from 68 to 0
->      height was rounded down
->      width changed from 111 to 0
->      width was rounded down
->      accel_flags changed from 0 to 1
->
-> The first part happens because __fill_var() resets the physical
-> dimensions of the first connector, as filled in by drm_setup_crtcs_fb().
-> Fix this by retaining the original values.
->
-> The last part happens because __fill_var() forces the FB_ACCELF_TEXT
-> flag on, while fbtest disables all acceleration on purpose, so it can
-> draw safely to the frame buffer.  Fix this by setting accel_flags to
-> zero, as DRM does not implement any text console acceleration.
-> Note that this issue can also be seen in the output of fbset, which
-> reports "accel true".
->
-> Fixes: ee4cce0a8f03a333 ("drm/fb-helper: fix input validation gaps in check_var")
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
->   drivers/gpu/drm/drm_fb_helper.c | 12 +++++++-----
->   1 file changed, 7 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-> index 64458982be40c468..ed6ad787915f0b8f 100644
-> --- a/drivers/gpu/drm/drm_fb_helper.c
-> +++ b/drivers/gpu/drm/drm_fb_helper.c
-> @@ -1537,17 +1537,19 @@ static void drm_fb_helper_fill_pixel_fmt(struct fb_var_screeninfo *var,
->   	}
->   }
->   
-> -static void __fill_var(struct fb_var_screeninfo *var,
-> +static void __fill_var(struct fb_var_screeninfo *var, struct fb_info *info,
->   		       struct drm_framebuffer *fb)
->   {
->   	int i;
->   
->   	var->xres_virtual = fb->width;
->   	var->yres_virtual = fb->height;
-> -	var->accel_flags = FB_ACCELF_TEXT;
-> +	var->accel_flags = 0;
->   	var->bits_per_pixel = drm_format_info_bpp(fb->format, 0);
->   
-> -	var->height = var->width = 0;
-> +	var->height = info->var.height;
-> +	var->width = info->var.width;
-> +
->   	var->left_margin = var->right_margin = 0;
->   	var->upper_margin = var->lower_margin = 0;
->   	var->hsync_len = var->vsync_len = 0;
-> @@ -1610,7 +1612,7 @@ int drm_fb_helper_check_var(struct fb_var_screeninfo *var,
->   		return -EINVAL;
->   	}
->   
-> -	__fill_var(var, fb);
-> +	__fill_var(var, info, fb);
->   
->   	/*
->   	 * fb_pan_display() validates this, but fb_set_par() doesn't and just
-> @@ -2066,7 +2068,7 @@ static void drm_fb_helper_fill_var(struct fb_info *info,
->   	info->pseudo_palette = fb_helper->pseudo_palette;
->   	info->var.xoffset = 0;
->   	info->var.yoffset = 0;
-> -	__fill_var(&info->var, fb);
-> +	__fill_var(&info->var, info, fb);
->   	info->var.activate = FB_ACTIVATE_NOW;
->   
->   	drm_fb_helper_fill_pixel_fmt(&info->var, format);

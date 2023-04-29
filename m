@@ -2,81 +2,146 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44D60C7EE22
-	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Apr 2023 16:54:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83ED9C7618E
+	for <linux-fbdev@archiver.kernel.org>; Sat, 29 Apr 2023 03:45:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346408AbjD1QyZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 28 Apr 2023 12:54:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37788 "EHLO
+        id S230468AbjD2Dpw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 28 Apr 2023 23:45:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47512 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345943AbjD1QyY (ORCPT
+        with ESMTP id S229498AbjD2Dpv (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 28 Apr 2023 12:54:24 -0400
-Received: from mailrelay2-1.pub.mailoutpod2-cph3.one.com (mailrelay2-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:401::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F13865BBE
-        for <linux-fbdev@vger.kernel.org>; Fri, 28 Apr 2023 09:54:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=rsa1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=4h2Y9ZZQ14tdvAGC5hFpqIKQWvmB0qe68pQRnQlSShc=;
-        b=IrdAXdZPKho0zoQxG/scktRALZpl2c237XlKLT5EIx0ja7nZb83hqvUgOuyY55pNvHYqH3FsErtl1
-         5jx6Clb6lkPL8TkUqCtTnSvfCnAc1GKTQxpoyL9YYmuFWy6pRl3ovRobT6YFtqeLlVGxUM3+fK10GW
-         26P+hLCnm+zpPHV7tOv/ibW1ECpjZ4qETcRhhPvrkIFIONhGHQGcxNm6MxcY5BEqj85CuJqzXS5rce
-         1Inl5d47E3sR2kFuS+NTw8OWDudvX6hThvyhlLeRI9ruUhs5QS1y61KsI01ISxy6adAYh2hLAOXbIt
-         t6mRhKxKsnm9awtbASezT6BrkUMBpFA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=ed1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=4h2Y9ZZQ14tdvAGC5hFpqIKQWvmB0qe68pQRnQlSShc=;
-        b=2sOyzdZRm0G5akePNgNy9pFImOAXPUTPUHEcB6iUeB7W+50cDIuX1agx3ldJaHWZog9XyDftdQu09
-         P8qxcwNCA==
-X-HalOne-ID: 4d02a9c5-e5e5-11ed-9bd2-13111ccb208d
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-        by mailrelay2 (Halon) with ESMTPSA
-        id 4d02a9c5-e5e5-11ed-9bd2-13111ccb208d;
-        Fri, 28 Apr 2023 16:54:14 +0000 (UTC)
-Date:   Fri, 28 Apr 2023 18:54:12 +0200
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     deller@gmx.de, geert@linux-m68k.org, javierm@redhat.com,
-        daniel@ffwll.ch, vgupta@kernel.org, chenhuacai@kernel.org,
-        kernel@xen0n.name, davem@davemloft.net,
-        James.Bottomley@hansenpartnership.com, arnd@arndb.de,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-arch@vger.kernel.org, linux-snps-arc@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
-        sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-parisc@vger.kernel.org
-Subject: Re: [PATCH v2 5/5] fbdev: Define framebuffer I/O from Linux' I/O
- functions
-Message-ID: <20230428165412.GA4010212@ravnborg.org>
-References: <20230428092711.406-1-tzimmermann@suse.de>
- <20230428092711.406-6-tzimmermann@suse.de>
- <20230428131221.GE3995435@ravnborg.org>
- <900eaf1c-4d29-2c26-c220-6b4e089d9b94@suse.de>
+        Fri, 28 Apr 2023 23:45:51 -0400
+Received: from 189.cn (ptr.189.cn [183.61.185.104])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 17CC22680;
+        Fri, 28 Apr 2023 20:45:49 -0700 (PDT)
+HMM_SOURCE_IP: 10.64.8.43:49174.1309328384
+HMM_ATTACHE_NUM: 0000
+HMM_SOURCE_TYPE: SMTP
+Received: from clientip-114.242.206.180 (unknown [10.64.8.43])
+        by 189.cn (HERMES) with SMTP id A7CD410023C;
+        Sat, 29 Apr 2023 11:45:43 +0800 (CST)
+Received: from  ([114.242.206.180])
+        by gateway-151646-dep-85667d6c59-fm8l8 with ESMTP id c58e0e2cda1648ceab62faa32009eb89 for geert+renesas@glider.be;
+        Sat, 29 Apr 2023 11:45:47 CST
+X-Transaction-ID: c58e0e2cda1648ceab62faa32009eb89
+X-Real-From: 15330273260@189.cn
+X-Receive-IP: 114.242.206.180
+X-MEDUSA-Status: 0
+Sender: 15330273260@189.cn
+Message-ID: <ce073f1d-0f40-aad9-5509-1f44d3887984@189.cn>
+Date:   Sat, 29 Apr 2023 11:45:42 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <900eaf1c-4d29-2c26-c220-6b4e089d9b94@suse.de>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Subject: Re: drm/fb-helper: Fix height, width, and accel_flags in fb_var
+To:     Geert Uytterhoeven <geert+renesas@glider.be>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@gmail.com>,
+        Javier Martinez Canillas <javierm@redhat.com>
+Cc:     linux-renesas-soc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <2b6073d9c2d869c6a4eac6edebd616e0568dec91.1681843245.git.geert+renesas@glider.be>
+Content-Language: en-US
+From:   Sui Jingfeng <15330273260@189.cn>
+In-Reply-To: <2b6073d9c2d869c6a4eac6edebd616e0568dec91.1681843245.git.geert+renesas@glider.be>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+Hi,
 
-On Fri, Apr 28, 2023 at 04:18:38PM +0200, Thomas Zimmermann wrote:
-> I'd be happy to have fb_() wrappers that are I/O helpers without
-> ordering guarantees. I'd just wouldn't want them in <linux/fb.h>
+I have just tested this patch on a LoongArch(3a5000+ls7a2000 evb) machine,
 
-How about throwing them into a new drm_fb.h header file.
-This header file could be the home for all the fb stuff that is
-shared between drm and the legacy fbdev.
+both fbtest and the fbdev test of IGT finished.
 
-Then we may slowly migrate more fbdev stuff to drm and let the legacy
-fbdev stuff use the maintained drm stuff.
-Dunno, the pain may not be worth it.
 
-	Sam
+fbtest say test001: ~ test013: PASSED,
+
+After apply your patch, the warn log `accel_flags changed from 0 to 1` 
+disappeared while  running it.
+
+So,
+
+
+Tested-by: Sui Jingfeng <suijingfeng@loongson.cn>
+
+
+On 2023/4/19 02:42, Geert Uytterhoeven wrote:
+> Fbtest contains some very simple validation of the fbdev userspace API
+> contract.  When used with shmob-drm, it reports the following warnings
+> and errors:
+>
+>      height changed from 68 to 0
+>      height was rounded down
+>      width changed from 111 to 0
+>      width was rounded down
+>      accel_flags changed from 0 to 1
+>
+> The first part happens because __fill_var() resets the physical
+> dimensions of the first connector, as filled in by drm_setup_crtcs_fb().
+> Fix this by retaining the original values.
+>
+> The last part happens because __fill_var() forces the FB_ACCELF_TEXT
+> flag on, while fbtest disables all acceleration on purpose, so it can
+> draw safely to the frame buffer.  Fix this by setting accel_flags to
+> zero, as DRM does not implement any text console acceleration.
+> Note that this issue can also be seen in the output of fbset, which
+> reports "accel true".
+>
+> Fixes: ee4cce0a8f03a333 ("drm/fb-helper: fix input validation gaps in check_var")
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+>   drivers/gpu/drm/drm_fb_helper.c | 12 +++++++-----
+>   1 file changed, 7 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+> index 64458982be40c468..ed6ad787915f0b8f 100644
+> --- a/drivers/gpu/drm/drm_fb_helper.c
+> +++ b/drivers/gpu/drm/drm_fb_helper.c
+> @@ -1537,17 +1537,19 @@ static void drm_fb_helper_fill_pixel_fmt(struct fb_var_screeninfo *var,
+>   	}
+>   }
+>   
+> -static void __fill_var(struct fb_var_screeninfo *var,
+> +static void __fill_var(struct fb_var_screeninfo *var, struct fb_info *info,
+>   		       struct drm_framebuffer *fb)
+>   {
+>   	int i;
+>   
+>   	var->xres_virtual = fb->width;
+>   	var->yres_virtual = fb->height;
+> -	var->accel_flags = FB_ACCELF_TEXT;
+> +	var->accel_flags = 0;
+>   	var->bits_per_pixel = drm_format_info_bpp(fb->format, 0);
+>   
+> -	var->height = var->width = 0;
+> +	var->height = info->var.height;
+> +	var->width = info->var.width;
+> +
+>   	var->left_margin = var->right_margin = 0;
+>   	var->upper_margin = var->lower_margin = 0;
+>   	var->hsync_len = var->vsync_len = 0;
+> @@ -1610,7 +1612,7 @@ int drm_fb_helper_check_var(struct fb_var_screeninfo *var,
+>   		return -EINVAL;
+>   	}
+>   
+> -	__fill_var(var, fb);
+> +	__fill_var(var, info, fb);
+>   
+>   	/*
+>   	 * fb_pan_display() validates this, but fb_set_par() doesn't and just
+> @@ -2066,7 +2068,7 @@ static void drm_fb_helper_fill_var(struct fb_info *info,
+>   	info->pseudo_palette = fb_helper->pseudo_palette;
+>   	info->var.xoffset = 0;
+>   	info->var.yoffset = 0;
+> -	__fill_var(&info->var, fb);
+> +	__fill_var(&info->var, info, fb);
+>   	info->var.activate = FB_ACTIVATE_NOW;
+>   
+>   	drm_fb_helper_fill_pixel_fmt(&info->var, format);

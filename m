@@ -2,458 +2,438 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E29C5C77B7C
-	for <linux-fbdev@archiver.kernel.org>; Sun, 30 Apr 2023 09:24:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9545EC77B60
+	for <linux-fbdev@archiver.kernel.org>; Sun, 30 Apr 2023 18:14:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229665AbjD3JY3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 30 Apr 2023 05:24:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51982 "EHLO
+        id S229704AbjD3SOV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 30 Apr 2023 14:14:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34020 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229904AbjD3JW1 (ORCPT
+        with ESMTP id S229513AbjD3SOT (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 30 Apr 2023 05:22:27 -0400
-Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 84CE01BD5
-        for <linux-fbdev@vger.kernel.org>; Sun, 30 Apr 2023 02:22:23 -0700 (PDT)
-Received: by mail-lf1-x12a.google.com with SMTP id 2adb3069b0e04-4f11d267d8bso173868e87.2
-        for <linux-fbdev@vger.kernel.org>; Sun, 30 Apr 2023 02:22:23 -0700 (PDT)
+        Sun, 30 Apr 2023 14:14:19 -0400
+Received: from mailrelay3-1.pub.mailoutpod2-cph3.one.com (mailrelay3-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:402::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BAE7410EF
+        for <linux-fbdev@vger.kernel.org>; Sun, 30 Apr 2023 11:14:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1682846541; x=1685438541;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=MO4MVEkCRoQWtee4bTJ5XBsgtvahJQmdgRrlQieUdb0=;
-        b=LLF7F1qjYH1rVSm5U0ilTAVVD2cXVdY5xaPVnSViM+PKDd4zmmqkDmhuhNyk6kJ/0Z
-         LdSmf247h1YPSfLumXoeEHmwkqDztozn6F7fAOunUX9oh/Vse1mfXm5laTVSSFDlf/bX
-         HuFAWd1eunYlCiaOHRV8ErPIY6hU6wC90YNGomegn7M0MB9NfoFRxASFr9KgJfU+a/B7
-         Zf9S/84AVx5H/yiEqr4aEeABkVbMVts7XDL+Cw5cwWQPxg/bF9DdMAfHXgQKLy9iYXOD
-         vwKp7RZCoPJn1IFvDQ/0z9sIWTljetdlWqNZ7S8OU4EfSMkTU6wca+UZX8giaC7sqtUP
-         /NbQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1682846541; x=1685438541;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=MO4MVEkCRoQWtee4bTJ5XBsgtvahJQmdgRrlQieUdb0=;
-        b=OsZ9EEUwI3r793r6zb3eS+v6Sg23DOWrxtcT8bwSScB4k5/0xU7QV2a+/ZYNw6D9l5
-         0sIHawSiE/AEzz3A4ovjnJx6Yg89csu/6DbXEKVjMMGAKaG+IKMxqwczjt9K9RGfJ/Z7
-         zvnqfZcQcJzrwxwHCCixqG3Yxo3NCGa/esvR/BhC4ak1dAT195OvNC7R0FVg08bi94b9
-         k+W26mqQWr5p5i1jodcZ3TDKhiV+qHNDaLiuMWFqDmjao93FOt1MkrlKJKHl1h0pb1o6
-         gdO1YQ9Y4sZd3s1r1wJ3wBYVTshqAwPmkP1B4TFbz4KmzM2bQr6xDvWXrdPvVnXviy0p
-         9VXg==
-X-Gm-Message-State: AC+VfDwF0lmmQWTxko7xlubnEwSGI49Ezd1W7O/QsYpyhYLz+x7XLJnH
-        pUcaYcn4OtDP3gTkofRtS9YiYA==
-X-Google-Smtp-Source: ACHHUZ6+DbqyNLS3XC0I799/VFM9TVzmgAGev+naJmNFtLrxPLDUzNJqSwOV91oIoxC3xJgNuK+DCQ==
-X-Received: by 2002:a05:6512:98d:b0:4ef:f01d:5aa0 with SMTP id w13-20020a056512098d00b004eff01d5aa0mr2508246lft.29.1682846541478;
-        Sun, 30 Apr 2023 02:22:21 -0700 (PDT)
-Received: from [127.0.1.1] ([85.235.12.238])
-        by smtp.gmail.com with ESMTPSA id o2-20020a05651238a200b004ec62d9a7f9sm4077327lft.62.2023.04.30.02.22.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 30 Apr 2023 02:22:21 -0700 (PDT)
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Sun, 30 Apr 2023 11:22:18 +0200
-Subject: [PATCH 3/4] ARM/mmc: Convert old mmci-omap to GPIO descriptors
+        d=ravnborg.org; s=rsa1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=3bP98+/T/VWavd6NhadLCYQfXGcQO58cktoQlTxuIwE=;
+        b=Z95VCIHYyr8ZcDytHivp/WD56Hc/tKzKSiycR+y0a2hSgcRbCfVxSRs3F/5XYOW7lIyc/kE8h8TWx
+         IgqQlBNvz6cgv4PgMo6c8zDiZV0bLpm8m6kGlXjZMnuf9ZIZaeX3ZeRQs0+3j0WccGdzf2PP2YIkfO
+         5SLlt+e0fYOEi/9vsGfh4Mt0j0aufGztLDz47s7ffHlaGYTgB0uhQYqcAQC35GMLy3MhOmQ4+rf1OA
+         GBBeZfBoPqoEVRwaMcmA0QB7xX/gNmV7IHtmxZ8RlXmxskd+3yeP5iGTWueh8P2vobdMCDkzU1dgv8
+         8Wy6N16ro1sTBXRNrY9ECw3969ni65g==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=ed1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=3bP98+/T/VWavd6NhadLCYQfXGcQO58cktoQlTxuIwE=;
+        b=JM++HrY8l1cpYzxcbCuRaHjuiytW9QFGkbwaRGAuor2HBdhXN/6B6oK19ljsb65gnw+0TxtpyDuLm
+         Ny5BGSzAw==
+X-HalOne-ID: cf39b0a6-e782-11ed-ba40-b90637070a9d
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+        by mailrelay3 (Halon) with ESMTPSA
+        id cf39b0a6-e782-11ed-ba40-b90637070a9d;
+        Sun, 30 Apr 2023 18:14:14 +0000 (UTC)
+Date:   Sun, 30 Apr 2023 20:14:12 +0200
+From:   Sam Ravnborg <sam@ravnborg.org>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+        airlied@gmail.com, daniel@ffwll.ch, javierm@redhat.com,
+        deller@gmx.de, geert@linux-m68k.org, sudipm.mukherjee@gmail.com,
+        teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org,
+        Sui Jingfeng <suijingfeng@loongson.cn>,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v2 18/19] fbdev: Move I/O read and write code into helper
+ functions
+Message-ID: <20230430181412.GA96757@ravnborg.org>
+References: <20230428122452.4856-1-tzimmermann@suse.de>
+ <20230428122452.4856-19-tzimmermann@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230430-nokia770-regression-v1-3-97704e36b094@linaro.org>
-References: <20230430-nokia770-regression-v1-0-97704e36b094@linaro.org>
-In-Reply-To: <20230430-nokia770-regression-v1-0-97704e36b094@linaro.org>
-To:     Aaro Koskinen <aaro.koskinen@iki.fi>,
-        Janusz Krzysztofik <jmkrzyszt@gmail.com>,
-        Tony Lindgren <tony@atomide.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Daniel Mack <daniel@zonque.org>,
-        Haojian Zhuang <haojian.zhuang@gmail.com>,
-        Robert Jarzmik <robert.jarzmik@free.fr>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
-        Andreas Kemnade <andreas@kemnade.info>,
-        Helge Deller <deller@gmx.de>,
-        Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-spi@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-mmc@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>
-X-Mailer: b4 0.12.1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230428122452.4856-19-tzimmermann@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-A recent change to the OMAP driver making it use a dynamic GPIO
-base created problems with some old OMAP1 board files, among
-them Nokia 770, SX1 and also the OMAP2 Nokia n8x0.
+Hi Thomas,
 
-Fix up all instances of GPIOs being used for the MMC driver
-by pushing the handling of power, slot selection and MMC
-"cover" into the driver as optional GPIOs.
+On Fri, Apr 28, 2023 at 02:24:51PM +0200, Thomas Zimmermann wrote:
+> Move the existing I/O read and write code for I/O memory into
+> the new helpers fb_cfb_read() and fb_cfb_write(). Make them the
+You may want to update the changelog to mention the new names.
 
-This is maybe not the most perfect solution as the MMC
-framework have some central handlers for some of the
-stuff, but it at least makes the situtation better and
-solves the immediate issue.
+A few comments below, but reading it once more I realize this are
+all comments to the original code, so not something to fix in this
+patch.
 
-Fixes: 92bf78b33b0b ("gpio: omap: use dynamic allocation of base")
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
----
- arch/arm/mach-omap1/board-nokia770.c   | 43 ++++++-----------
- arch/arm/mach-omap1/board-sx1-mmc.c    |  1 -
- arch/arm/mach-omap2/board-n8x0.c       | 85 +++++++++++-----------------------
- drivers/mmc/host/omap.c                | 46 +++++++++++++++++-
- include/linux/platform_data/mmc-omap.h |  2 -
- 5 files changed, 83 insertions(+), 94 deletions(-)
 
-diff --git a/arch/arm/mach-omap1/board-nokia770.c b/arch/arm/mach-omap1/board-nokia770.c
-index 509afcd42823..53a4a44d5f4a 100644
---- a/arch/arm/mach-omap1/board-nokia770.c
-+++ b/arch/arm/mach-omap1/board-nokia770.c
-@@ -162,27 +162,23 @@ static struct omap_usb_config nokia770_usb_config __initdata = {
- 
- #if IS_ENABLED(CONFIG_MMC_OMAP)
- 
--#define NOKIA770_GPIO_MMC_POWER		41
--#define NOKIA770_GPIO_MMC_SWITCH	23
--
--static int nokia770_mmc_set_power(struct device *dev, int slot, int power_on,
--				int vdd)
--{
--	gpio_set_value(NOKIA770_GPIO_MMC_POWER, power_on);
--	return 0;
--}
--
--static int nokia770_mmc_get_cover_state(struct device *dev, int slot)
--{
--	return gpio_get_value(NOKIA770_GPIO_MMC_SWITCH);
--}
-+static struct gpiod_lookup_table nokia770_mmc_gpio_table = {
-+	.dev_id = "mmci-omap",
-+	.table = {
-+		/* Slot index 0, VSD power, GPIO 41 */
-+		GPIO_LOOKUP_IDX("gpio-32-47", 9,
-+				"vsd", 0, GPIO_ACTIVE_HIGH),
-+		/* Slot index 0, switch, GPIO 23 */
-+		GPIO_LOOKUP_IDX("gpio-16-31", 7,
-+				"cover", 0, GPIO_ACTIVE_HIGH),
-+		{ }
-+	},
-+};
- 
- static struct omap_mmc_platform_data nokia770_mmc2_data = {
- 	.nr_slots                       = 1,
- 	.max_freq                       = 12000000,
- 	.slots[0]       = {
--		.set_power		= nokia770_mmc_set_power,
--		.get_cover_state	= nokia770_mmc_get_cover_state,
- 		.ocr_mask               = MMC_VDD_32_33|MMC_VDD_33_34,
- 		.name                   = "mmcblk",
- 	},
-@@ -192,20 +188,7 @@ static struct omap_mmc_platform_data *nokia770_mmc_data[OMAP16XX_NR_MMC];
- 
- static void __init nokia770_mmc_init(void)
- {
--	int ret;
--
--	ret = gpio_request(NOKIA770_GPIO_MMC_POWER, "MMC power");
--	if (ret < 0)
--		return;
--	gpio_direction_output(NOKIA770_GPIO_MMC_POWER, 0);
--
--	ret = gpio_request(NOKIA770_GPIO_MMC_SWITCH, "MMC cover");
--	if (ret < 0) {
--		gpio_free(NOKIA770_GPIO_MMC_POWER);
--		return;
--	}
--	gpio_direction_input(NOKIA770_GPIO_MMC_SWITCH);
--
-+	gpiod_add_lookup_table(&nokia770_mmc_gpio_table);
- 	/* Only the second MMC controller is used */
- 	nokia770_mmc_data[1] = &nokia770_mmc2_data;
- 	omap1_init_mmc(nokia770_mmc_data, OMAP16XX_NR_MMC);
-diff --git a/arch/arm/mach-omap1/board-sx1-mmc.c b/arch/arm/mach-omap1/board-sx1-mmc.c
-index f1c160924dfe..f183a8448a7b 100644
---- a/arch/arm/mach-omap1/board-sx1-mmc.c
-+++ b/arch/arm/mach-omap1/board-sx1-mmc.c
-@@ -9,7 +9,6 @@
-  * Copyright (C) 2007 Instituto Nokia de Tecnologia - INdT
-  */
- 
--#include <linux/gpio.h>
- #include <linux/platform_device.h>
- 
- #include "hardware.h"
-diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
-index 3353b0a923d9..baa2f0341aed 100644
---- a/arch/arm/mach-omap2/board-n8x0.c
-+++ b/arch/arm/mach-omap2/board-n8x0.c
-@@ -11,6 +11,7 @@
- #include <linux/clk.h>
- #include <linux/delay.h>
- #include <linux/gpio.h>
-+#include <linux/gpio/machine.h>
- #include <linux/init.h>
- #include <linux/io.h>
- #include <linux/irq.h>
-@@ -170,22 +171,32 @@ static struct spi_board_info n800_spi_board_info[] __initdata = {
-  * GPIO23 and GPIO9		slot 2 EMMC on N810
-  *
-  */
--#define N8X0_SLOT_SWITCH_GPIO	96
--#define N810_EMMC_VSD_GPIO	23
--#define N810_EMMC_VIO_GPIO	9
--
- static int slot1_cover_open;
- static int slot2_cover_open;
- static struct device *mmc_device;
- 
--static int n8x0_mmc_switch_slot(struct device *dev, int slot)
--{
--#ifdef CONFIG_MMC_DEBUG
--	dev_dbg(dev, "Choose slot %d\n", slot + 1);
--#endif
--	gpio_set_value(N8X0_SLOT_SWITCH_GPIO, slot);
--	return 0;
--}
-+static struct gpiod_lookup_table nokia8xx_mmc_gpio_table = {
-+	.dev_id = "mmci-omap",
-+	.table = {
-+		/* Slot switch, GPIO 96 */
-+		GPIO_LOOKUP("gpio-80-111", 16,
-+			    "switch", GPIO_ACTIVE_HIGH),
-+		{ }
-+	},
-+};
-+
-+static struct gpiod_lookup_table nokia810_mmc_gpio_table = {
-+	.dev_id = "mmci-omap",
-+	.table = {
-+		/* Slot index 1, VSD power, GPIO 23 */
-+		GPIO_LOOKUP_IDX("gpio-16-31", 7,
-+				"vsd", 1, GPIO_ACTIVE_HIGH),
-+		/* Slot index 1, VIO power, GPIO 9 */
-+		GPIO_LOOKUP_IDX("gpio-0-15", 9,
-+				"vsd", 1, GPIO_ACTIVE_HIGH),
-+		{ }
-+	},
-+};
- 
- static int n8x0_mmc_set_power_menelaus(struct device *dev, int slot,
- 					int power_on, int vdd)
-@@ -256,31 +267,13 @@ static int n8x0_mmc_set_power_menelaus(struct device *dev, int slot,
- 	return 0;
- }
- 
--static void n810_set_power_emmc(struct device *dev,
--					 int power_on)
--{
--	dev_dbg(dev, "Set EMMC power %s\n", power_on ? "on" : "off");
--
--	if (power_on) {
--		gpio_set_value(N810_EMMC_VSD_GPIO, 1);
--		msleep(1);
--		gpio_set_value(N810_EMMC_VIO_GPIO, 1);
--		msleep(1);
--	} else {
--		gpio_set_value(N810_EMMC_VIO_GPIO, 0);
--		msleep(50);
--		gpio_set_value(N810_EMMC_VSD_GPIO, 0);
--		msleep(50);
--	}
--}
--
- static int n8x0_mmc_set_power(struct device *dev, int slot, int power_on,
- 			      int vdd)
- {
- 	if (board_is_n800() || slot == 0)
- 		return n8x0_mmc_set_power_menelaus(dev, slot, power_on, vdd);
- 
--	n810_set_power_emmc(dev, power_on);
-+	/* The n810 power will be handled by GPIO code in the driver */
- 
- 	return 0;
- }
-@@ -418,13 +411,6 @@ static void n8x0_mmc_shutdown(struct device *dev)
- static void n8x0_mmc_cleanup(struct device *dev)
- {
- 	menelaus_unregister_mmc_callback();
--
--	gpio_free(N8X0_SLOT_SWITCH_GPIO);
--
--	if (board_is_n810()) {
--		gpio_free(N810_EMMC_VSD_GPIO);
--		gpio_free(N810_EMMC_VIO_GPIO);
--	}
- }
- 
- /*
-@@ -433,7 +419,6 @@ static void n8x0_mmc_cleanup(struct device *dev)
-  */
- static struct omap_mmc_platform_data mmc1_data = {
- 	.nr_slots			= 0,
--	.switch_slot			= n8x0_mmc_switch_slot,
- 	.init				= n8x0_mmc_late_init,
- 	.cleanup			= n8x0_mmc_cleanup,
- 	.shutdown			= n8x0_mmc_shutdown,
-@@ -463,14 +448,9 @@ static struct omap_mmc_platform_data mmc1_data = {
- 
- static struct omap_mmc_platform_data *mmc_data[OMAP24XX_NR_MMC];
- 
--static struct gpio n810_emmc_gpios[] __initdata = {
--	{ N810_EMMC_VSD_GPIO, GPIOF_OUT_INIT_LOW,  "MMC slot 2 Vddf" },
--	{ N810_EMMC_VIO_GPIO, GPIOF_OUT_INIT_LOW,  "MMC slot 2 Vdd"  },
--};
--
- static void __init n8x0_mmc_init(void)
- {
--	int err;
-+	gpiod_add_lookup_table(&nokia8xx_mmc_gpio_table);
- 
- 	if (board_is_n810()) {
- 		mmc1_data.slots[0].name = "external";
-@@ -483,20 +463,7 @@ static void __init n8x0_mmc_init(void)
- 		 */
- 		mmc1_data.slots[1].name = "internal";
- 		mmc1_data.slots[1].ban_openended = 1;
--	}
--
--	err = gpio_request_one(N8X0_SLOT_SWITCH_GPIO, GPIOF_OUT_INIT_LOW,
--			       "MMC slot switch");
--	if (err)
--		return;
--
--	if (board_is_n810()) {
--		err = gpio_request_array(n810_emmc_gpios,
--					 ARRAY_SIZE(n810_emmc_gpios));
--		if (err) {
--			gpio_free(N8X0_SLOT_SWITCH_GPIO);
--			return;
--		}
-+		gpiod_add_lookup_table(&nokia810_mmc_gpio_table);
- 	}
- 
- 	mmc1_data.nr_slots = 2;
-diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
-index ce78edfb402b..a14af21f12da 100644
---- a/drivers/mmc/host/omap.c
-+++ b/drivers/mmc/host/omap.c
-@@ -26,6 +26,7 @@
- #include <linux/clk.h>
- #include <linux/scatterlist.h>
- #include <linux/slab.h>
-+#include <linux/gpio/consumer.h>
- #include <linux/platform_data/mmc-omap.h>
- 
- 
-@@ -111,6 +112,9 @@ struct mmc_omap_slot {
- 	struct mmc_request      *mrq;
- 	struct mmc_omap_host    *host;
- 	struct mmc_host		*mmc;
-+	struct gpio_desc	*vsd;
-+	struct gpio_desc	*vio;
-+	struct gpio_desc	*cover;
- 	struct omap_mmc_slot_data *pdata;
- };
- 
-@@ -133,6 +137,7 @@ struct mmc_omap_host {
- 	int			irq;
- 	unsigned char		bus_mode;
- 	unsigned int		reg_shift;
-+	struct gpio_desc	*slot_switch;
- 
- 	struct work_struct	cmd_abort_work;
- 	unsigned		abort:1;
-@@ -216,8 +221,13 @@ static void mmc_omap_select_slot(struct mmc_omap_slot *slot, int claimed)
- 
- 	if (host->current_slot != slot) {
- 		OMAP_MMC_WRITE(host, CON, slot->saved_con & 0xFC00);
--		if (host->pdata->switch_slot != NULL)
--			host->pdata->switch_slot(mmc_dev(slot->mmc), slot->id);
-+		if (host->slot_switch)
-+			/*
-+			 * With two slots and a simple GPIO switch, setting
-+			 * the GPIO to 0 selects slot ID 0, setting it to 1
-+			 * selects slot ID 1.
-+			 */
-+			gpiod_set_value(host->slot_switch, slot->id);
- 		host->current_slot = slot;
- 	}
- 
-@@ -297,6 +307,9 @@ static void mmc_omap_release_slot(struct mmc_omap_slot *slot, int clk_enabled)
- static inline
- int mmc_omap_cover_is_open(struct mmc_omap_slot *slot)
- {
-+	/* If we have a GPIO then use that */
-+	if (slot->cover)
-+		return gpiod_get_value(slot->cover);
- 	if (slot->pdata->get_cover_state)
- 		return slot->pdata->get_cover_state(mmc_dev(slot->mmc),
- 						    slot->id);
-@@ -1106,6 +1119,11 @@ static void mmc_omap_set_power(struct mmc_omap_slot *slot, int power_on,
- 
- 	host = slot->host;
- 
-+	if (slot->vsd)
-+		gpiod_set_value(slot->vsd, power_on);
-+	if (slot->vio)
-+		gpiod_set_value(slot->vio, power_on);
-+
- 	if (slot->pdata->set_power != NULL)
- 		slot->pdata->set_power(mmc_dev(slot->mmc), slot->id, power_on,
- 					vdd);
-@@ -1240,6 +1258,23 @@ static int mmc_omap_new_slot(struct mmc_omap_host *host, int id)
- 	slot->power_mode = MMC_POWER_UNDEFINED;
- 	slot->pdata = &host->pdata->slots[id];
- 
-+	/* Check for some optional GPIO controls */
-+	slot->vsd = gpiod_get_index_optional(host->dev, "vsd",
-+					     id, GPIOD_OUT_LOW);
-+	if (IS_ERR(slot->vsd))
-+		return dev_err_probe(host->dev, PTR_ERR(slot->vsd),
-+				     "error looking up VSD GPIO\n");
-+	slot->vio = gpiod_get_index_optional(host->dev, "vio",
-+					     id, GPIOD_OUT_LOW);
-+	if (IS_ERR(slot->vio))
-+		return dev_err_probe(host->dev, PTR_ERR(slot->vio),
-+				     "error looking up VIO GPIO\n");
-+	slot->cover = gpiod_get_index_optional(host->dev, "cover",
-+						id, GPIOD_IN);
-+	if (IS_ERR(slot->cover))
-+		return dev_err_probe(host->dev, PTR_ERR(slot->cover),
-+				     "error looking up cover switch GPIO\n");
-+
- 	host->slots[id] = slot;
- 
- 	mmc->caps = 0;
-@@ -1349,6 +1384,13 @@ static int mmc_omap_probe(struct platform_device *pdev)
- 	if (IS_ERR(host->virt_base))
- 		return PTR_ERR(host->virt_base);
- 
-+	host->slot_switch = gpiod_get_optional(host->dev, "switch",
-+					       GPIOD_OUT_LOW);
-+	if (IS_ERR(host->slot_switch))
-+		return dev_err_probe(host->dev, PTR_ERR(host->slot_switch),
-+				     "error looking up slot switch GPIO\n");
-+
-+
- 	INIT_WORK(&host->slot_release_work, mmc_omap_slot_release_work);
- 	INIT_WORK(&host->send_stop_work, mmc_omap_send_stop_work);
- 
-diff --git a/include/linux/platform_data/mmc-omap.h b/include/linux/platform_data/mmc-omap.h
-index 91051e9907f3..054d0c3c5ec5 100644
---- a/include/linux/platform_data/mmc-omap.h
-+++ b/include/linux/platform_data/mmc-omap.h
-@@ -20,8 +20,6 @@ struct omap_mmc_platform_data {
- 	 * maximum frequency on the MMC bus */
- 	unsigned int max_freq;
- 
--	/* switch the bus to a new slot */
--	int (*switch_slot)(struct device *dev, int slot);
- 	/* initialize board-specific MMC functionality, can be NULL if
- 	 * not supported */
- 	int (*init)(struct device *dev);
+> default fp_ops. No functional changes.
+> 
+> In the near term, the new functions will be useful to the DRM
+> subsystem, which currently provides it's own implementation. It
+> can then use the shared code. In the longer term, it might make
+> sense to revise the I/O helper's default status and make them
+> opt-in by the driver. Systems that don't use them would not
+> contain the code any longer.
+> 
+> v2:
+> 	* add detailed commit message (Javier)
+> 	* rename fb_cfb_() to fb_io_() (Geert)
+> 	* add fixes that got lost while moving the code (Geert)
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Tested-by: Sui Jingfeng <suijingfeng@loongson.cn>
+> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+> Acked-by: Helge Deller <deller@gmx.de>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+> ---
+>  drivers/video/fbdev/core/Makefile     |   2 +-
+>  drivers/video/fbdev/core/fb_io_fops.c | 133 ++++++++++++++++++++++++++
+>  drivers/video/fbdev/core/fbmem.c      | 118 +----------------------
+>  include/linux/fb.h                    |  10 ++
+>  4 files changed, 146 insertions(+), 117 deletions(-)
+>  create mode 100644 drivers/video/fbdev/core/fb_io_fops.c
+> 
+> diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
+> index 08fabce76b74..8f0060160ffb 100644
+> --- a/drivers/video/fbdev/core/Makefile
+> +++ b/drivers/video/fbdev/core/Makefile
+> @@ -2,7 +2,7 @@
+>  obj-$(CONFIG_FB_NOTIFY)           += fb_notify.o
+>  obj-$(CONFIG_FB)                  += fb.o
+>  fb-y                              := fbmem.o fbmon.o fbcmap.o fbsysfs.o \
+> -                                     modedb.o fbcvt.o fb_cmdline.o
+> +                                     modedb.o fbcvt.o fb_cmdline.o fb_io_fops.o
+>  fb-$(CONFIG_FB_DEFERRED_IO)       += fb_defio.o
+>  
+>  ifeq ($(CONFIG_FRAMEBUFFER_CONSOLE),y)
+> diff --git a/drivers/video/fbdev/core/fb_io_fops.c b/drivers/video/fbdev/core/fb_io_fops.c
+> new file mode 100644
+> index 000000000000..f5299d50f33b
+> --- /dev/null
+> +++ b/drivers/video/fbdev/core/fb_io_fops.c
+> @@ -0,0 +1,133 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +
+> +#include <linux/fb.h>
+> +#include <linux/module.h>
+> +#include <linux/uaccess.h>
+> +
+> +ssize_t fb_io_read(struct fb_info *info, char __user *buf, size_t count, loff_t *ppos)
+> +{
+> +	unsigned long p = *ppos;
+> +	u8 *buffer, *dst;
+> +	u8 __iomem *src;
+> +	int c, cnt = 0, err = 0;
+> +	unsigned long total_size, trailing;
+> +
+> +	if (!info->screen_base)
+> +		return -ENODEV;
+> +
+> +	total_size = info->screen_size;
+> +
+> +	if (total_size == 0)
+> +		total_size = info->fix.smem_len;
+> +
+> +	if (p >= total_size)
+> +		return 0;
+> +
+> +	if (count >= total_size)
+> +		count = total_size;
+> +
+> +	if (count + p > total_size)
+> +		count = total_size - p;
+> +
+> +	buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count,
+> +			 GFP_KERNEL);
+> +	if (!buffer)
+> +		return -ENOMEM;
+> +
+> +	src = (u8 __iomem *) (info->screen_base + p);
+screen_base is char __iomem *, so I think the cast can go away.
+> +
+> +	if (info->fbops->fb_sync)
+> +		info->fbops->fb_sync(info);
+> +
+> +	while (count) {
+> +		c  = (count > PAGE_SIZE) ? PAGE_SIZE : count;
+> +		dst = buffer;
+> +		fb_memcpy_fromfb(dst, src, c);
+> +		dst += c;
+I see no reason to use dst here, as it is always equal to buffer when
+used.
+But this is copied from the original code, so it would be wrong to
+change this in the current patch. I just noticed.
 
--- 
-2.34.1
+> +		src += c;
+> +
+> +		trailing = copy_to_user(buf, buffer, c);
+> +		if (trailing == c) {
+> +			err = -EFAULT;
+> +			break;
+> +		}
+> +		c -= trailing;
+> +
+> +		*ppos += c;
+> +		buf += c;
+> +		cnt += c;
+> +		count -= c;
+> +	}
+> +
+> +	kfree(buffer);
+> +
+> +	return cnt ? cnt : err;
+> +}
+> +EXPORT_SYMBOL(fb_io_read);
+> +
+> +ssize_t fb_io_write(struct fb_info *info, const char __user *buf, size_t count, loff_t *ppos)
+> +{
+> +	unsigned long p = *ppos;
+> +	u8 *buffer, *src;
+> +	u8 __iomem *dst;
+> +	int c, cnt = 0, err = 0;
+> +	unsigned long total_size, trailing;
+> +
+> +	if (!info->screen_base)
+> +		return -ENODEV;
+> +
+> +	total_size = info->screen_size;
+> +
+> +	if (total_size == 0)
+> +		total_size = info->fix.smem_len;
+> +
+> +	if (p > total_size)
+> +		return -EFBIG;
+> +
+> +	if (count > total_size) {
+> +		err = -EFBIG;
+> +		count = total_size;
+> +	}
+> +
+> +	if (count + p > total_size) {
+> +		if (!err)
+> +			err = -ENOSPC;
+> +
+> +		count = total_size - p;
+> +	}
+> +
+> +	buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count,
+> +			 GFP_KERNEL);
+> +	if (!buffer)
+> +		return -ENOMEM;
+> +
+> +	dst = (u8 __iomem *) (info->screen_base + p);
+Cast can go away.
 
+> +
+> +	if (info->fbops->fb_sync)
+> +		info->fbops->fb_sync(info);
+> +
+> +	while (count) {
+> +		c = (count > PAGE_SIZE) ? PAGE_SIZE : count;
+> +		src = buffer;
+> +
+> +		trailing = copy_from_user(src, buf, c);
+> +		if (trailing == c) {
+> +			err = -EFAULT;
+> +			break;
+> +		}
+> +		c -= trailing;
+> +
+> +		fb_memcpy_tofb(dst, src, c);
+> +		dst += c;
+> +		src += c;
+src is incremented here, but the value are not used.
+Again, from the original code so not something to change here.
+
+> +		*ppos += c;
+> +		buf += c;
+> +		cnt += c;
+> +		count -= c;
+> +	}
+> +
+> +	kfree(buffer);
+> +
+> +	return (cnt) ? cnt : err;
+> +}
+> +EXPORT_SYMBOL(fb_io_write);
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+> index 3a80d13afd26..4035a57df116 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -761,12 +761,7 @@ static struct fb_info *file_fb_info(struct file *file)
+>  static ssize_t
+>  fb_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+>  {
+> -	unsigned long p = *ppos;
+>  	struct fb_info *info = file_fb_info(file);
+> -	u8 *buffer, *dst;
+> -	u8 __iomem *src;
+> -	int c, cnt = 0, err = 0;
+> -	unsigned long total_size, trailing;
+>  
+>  	if (!info)
+>  		return -ENODEV;
+> @@ -777,67 +772,13 @@ fb_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+>  	if (info->fbops->fb_read)
+>  		return info->fbops->fb_read(info, buf, count, ppos);
+>  
+> -	if (!info->screen_base)
+> -		return -ENODEV;
+> -
+> -	total_size = info->screen_size;
+> -
+> -	if (total_size == 0)
+> -		total_size = info->fix.smem_len;
+> -
+> -	if (p >= total_size)
+> -		return 0;
+> -
+> -	if (count >= total_size)
+> -		count = total_size;
+> -
+> -	if (count + p > total_size)
+> -		count = total_size - p;
+> -
+> -	buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count,
+> -			 GFP_KERNEL);
+> -	if (!buffer)
+> -		return -ENOMEM;
+> -
+> -	src = (u8 __iomem *) (info->screen_base + p);
+> -
+> -	if (info->fbops->fb_sync)
+> -		info->fbops->fb_sync(info);
+> -
+> -	while (count) {
+> -		c  = (count > PAGE_SIZE) ? PAGE_SIZE : count;
+> -		dst = buffer;
+> -		fb_memcpy_fromfb(dst, src, c);
+> -		dst += c;
+> -		src += c;
+> -
+> -		trailing = copy_to_user(buf, buffer, c);
+> -		if (trailing == c) {
+> -			err = -EFAULT;
+> -			break;
+> -		}
+> -		c -= trailing;
+> -
+> -		*ppos += c;
+> -		buf += c;
+> -		cnt += c;
+> -		count -= c;
+> -	}
+> -
+> -	kfree(buffer);
+> -
+> -	return cnt ? cnt : err;
+> +	return fb_io_read(info, buf, count, ppos);
+>  }
+>  
+>  static ssize_t
+>  fb_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
+>  {
+> -	unsigned long p = *ppos;
+>  	struct fb_info *info = file_fb_info(file);
+> -	u8 *buffer, *src;
+> -	u8 __iomem *dst;
+> -	int c, cnt = 0, err = 0;
+> -	unsigned long total_size, trailing;
+>  
+>  	if (!info)
+>  		return -ENODEV;
+> @@ -848,62 +789,7 @@ fb_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
+>  	if (info->fbops->fb_write)
+>  		return info->fbops->fb_write(info, buf, count, ppos);
+>  
+> -	if (!info->screen_base)
+> -		return -ENODEV;
+> -
+> -	total_size = info->screen_size;
+> -
+> -	if (total_size == 0)
+> -		total_size = info->fix.smem_len;
+> -
+> -	if (p > total_size)
+> -		return -EFBIG;
+> -
+> -	if (count > total_size) {
+> -		err = -EFBIG;
+> -		count = total_size;
+> -	}
+> -
+> -	if (count + p > total_size) {
+> -		if (!err)
+> -			err = -ENOSPC;
+> -
+> -		count = total_size - p;
+> -	}
+> -
+> -	buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count,
+> -			 GFP_KERNEL);
+> -	if (!buffer)
+> -		return -ENOMEM;
+> -
+> -	dst = (u8 __iomem *) (info->screen_base + p);
+> -
+> -	if (info->fbops->fb_sync)
+> -		info->fbops->fb_sync(info);
+> -
+> -	while (count) {
+> -		c = (count > PAGE_SIZE) ? PAGE_SIZE : count;
+> -		src = buffer;
+> -
+> -		trailing = copy_from_user(src, buf, c);
+> -		if (trailing == c) {
+> -			err = -EFAULT;
+> -			break;
+> -		}
+> -		c -= trailing;
+> -
+> -		fb_memcpy_tofb(dst, src, c);
+> -		dst += c;
+> -		src += c;
+> -		*ppos += c;
+> -		buf += c;
+> -		cnt += c;
+> -		count -= c;
+> -	}
+> -
+> -	kfree(buffer);
+> -
+> -	return (cnt) ? cnt : err;
+> +	return fb_io_write(info, buf, count, ppos);
+>  }
+>  
+>  int
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index 08cb47da71f8..ec978a4969a9 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -576,9 +576,19 @@ struct fb_info {
+>  extern int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var);
+>  extern int fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var);
+>  extern int fb_blank(struct fb_info *info, int blank);
+> +
+> +/*
+> + * Drawing operations where framebuffer is in I/O memory
+> + */
+> +
+>  extern void cfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
+>  extern void cfb_copyarea(struct fb_info *info, const struct fb_copyarea *area);
+>  extern void cfb_imageblit(struct fb_info *info, const struct fb_image *image);
+> +extern ssize_t fb_io_read(struct fb_info *info, char __user *buf,
+> +			  size_t count, loff_t *ppos);
+> +extern ssize_t fb_io_write(struct fb_info *info, const char __user *buf,
+> +			   size_t count, loff_t *ppos);
+> +
+>  /*
+>   * Drawing operations where framebuffer is in system RAM
+>   */
+> -- 
+> 2.40.0

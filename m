@@ -2,61 +2,61 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 007BEC77B73
-	for <linux-fbdev@archiver.kernel.org>; Sun, 30 Apr 2023 09:24:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D66EC77B60
+	for <linux-fbdev@archiver.kernel.org>; Sun, 30 Apr 2023 09:24:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229596AbjD3JY2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S229663AbjD3JY2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Sun, 30 Apr 2023 05:24:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51936 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52004 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230093AbjD3JWZ (ORCPT
+        with ESMTP id S230016AbjD3JW2 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 30 Apr 2023 05:22:25 -0400
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5889D2D49
-        for <linux-fbdev@vger.kernel.org>; Sun, 30 Apr 2023 02:22:22 -0700 (PDT)
-Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-4efefbd2c5eso1911855e87.0
-        for <linux-fbdev@vger.kernel.org>; Sun, 30 Apr 2023 02:22:22 -0700 (PDT)
+        Sun, 30 Apr 2023 05:22:28 -0400
+Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C9032D67
+        for <linux-fbdev@vger.kernel.org>; Sun, 30 Apr 2023 02:22:24 -0700 (PDT)
+Received: by mail-lf1-x12a.google.com with SMTP id 2adb3069b0e04-4efeea05936so1821645e87.2
+        for <linux-fbdev@vger.kernel.org>; Sun, 30 Apr 2023 02:22:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1682846540; x=1685438540;
+        d=linaro.org; s=google; t=1682846542; x=1685438542;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=Pp3PRNYbx/fsurHzrjtHyOhBV0+Rw2cfHp2A04u+CvU=;
-        b=ogQG1hefbBUDibvfB660K9VwHo/1OzVvHE9PYhoOMrc9ljBQ3pCYMW7AQs03a5VytT
-         Oo39k1OhdlbJ8mN63PexAX76k7B7o58cm359+ZnPCpx3lP1hX1OfDrTqK7AsWDdAkgiB
-         ctMqx+48GAYHEcbP5sfbbDIWdM+6j93MG48Qd7TJdJ/CXnbvQXvDfS03L0OPtOMeReHe
-         ip9H5x+po165jWyRLTpHhBLgTpeszBChgkatvewFfHh8EVXCencQPduCr2c6OY0RFwfR
-         RaoDYI3LRcfOqbM0aL1hh5bmAEoLq/6ucphw66KAEQ1Px0rNTsTS0RZc47HlH3mkJxO/
-         qYMg==
+        bh=9UX6W3UfSa5ZRp8RtlXOP3rbOwpTJRUHBAtacedapPA=;
+        b=K49pIBACcTBJG+8wY+XctIYgz9m7hvVAvkXHtirsNX1ThzYgORxbx9rX9y7bDg627F
+         mMW0TZh+HkrJYpQd/8zq04wIXaEtOWBVeIM4rn3TJpDH2yhr3bdhyiJyEh0qSVHqzi6d
+         2zs4vO4b+FCDUt5qIku+KLEstriZcrdvZc5AbUuu1WV9UdovzGC3PFvs+t3i6seXaqnY
+         p0sQi4CwZkttlYGoa39lFp5VY8koR9AYKxXsRiSE6t8MRXXVPyLT9ALlm51k6z0Bx7ly
+         FwwJ198X1DrVW3P1xrYn15boUZNNeZcFV7xIERKC4JRjleyhnWFOw55+3ygY3FV+5GEw
+         PhtA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1682846540; x=1685438540;
+        d=1e100.net; s=20221208; t=1682846542; x=1685438542;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=Pp3PRNYbx/fsurHzrjtHyOhBV0+Rw2cfHp2A04u+CvU=;
-        b=LxEjb5opVUNNugLKJoVW4gUzBqj17uROriZsdBGHs5zBpeFZPit8Ki5HgkffnaIfRF
-         VZz+zhKO+W3QfnU3vcSYmvdiBILqQyj6m9mwzIHDVrIbDAt/KKleOngClzdikL//7+3w
-         Un5IcREcc2O4YMgTxcWLJH13GMTEPoA2jN103o7kDukpHNje03nsNN6xU5p5cVkClwdo
-         tNQB8+e9Jvybwn+mlK8dODqJZtcT4rtzS3uzQKvMm77kiT2+U9RkIwh7niNxnYZh1hcN
-         EuxSe9Ey2pyDTKhe5hEjKaz0fsj5COmSffj4YUWe+HeBPksm3OkqDbeoBuej16R42Acg
-         wlCQ==
-X-Gm-Message-State: AC+VfDytCiZYfy3HUmUc+fLFdBKclmU+5OhfbenbfIEJ1ESd6019Kcco
-        y9AYtRhzblXiQgta63WtIVP/zA==
-X-Google-Smtp-Source: ACHHUZ5qSx+bMQGVLRRHnfcdwsy1zCxobKTnDm6GAMGf84RnuSnGIlaEUsssFScThYQ8Ui2ipQzb4w==
-X-Received: by 2002:ac2:528a:0:b0:4ee:d562:5752 with SMTP id q10-20020ac2528a000000b004eed5625752mr2748859lfm.27.1682846540332;
-        Sun, 30 Apr 2023 02:22:20 -0700 (PDT)
+        bh=9UX6W3UfSa5ZRp8RtlXOP3rbOwpTJRUHBAtacedapPA=;
+        b=EQXJ7H+s+VcOb7bt6G6vGHc20hlqHcVFz+7rGGd4P1yCUmgt6QQzuMEcwb7QRT2lq7
+         BIhIjrqIbXYWoNVK/i6XAAj+nLVfW1M4oy0kusGqh1Jhx+1sJRnGiFqI/WMK2TZ6g44a
+         pkTG6PY1tmUVRh8exiOhoP5vMo2DcqGBkMHQbA5lfaseyuFUUauBqJcQwPbx6g24+el1
+         LC1LnezggWWo+SFDksB281ur6iJFQm67IMr4eKMe2C+ZZIKcyplNhZca5/jwN7hXy3p/
+         OXj2XL+IVKF6DPlFUSGI6iiTFPLw+FYZUzt5sJeXs5qWdnsED3DhdS47pJCdXT8qLJ6m
+         9gqQ==
+X-Gm-Message-State: AC+VfDy86PwkvGcko6Ck6FeohMsGWUrN4lmsDcv7VFclrC7wkZuW7X6b
+        H45Qs96ogAkbf+wJMfQiEYmNHQ==
+X-Google-Smtp-Source: ACHHUZ5i1Hj12zld7832+ke0HKZEkcsm8zXYiACzaklV8NXfluT1ZrnmFfA5iGMDU41OJkgYcqf1fQ==
+X-Received: by 2002:ac2:51ae:0:b0:4ea:fabb:4db1 with SMTP id f14-20020ac251ae000000b004eafabb4db1mr2646875lfk.1.1682846542681;
+        Sun, 30 Apr 2023 02:22:22 -0700 (PDT)
 Received: from [127.0.1.1] ([85.235.12.238])
-        by smtp.gmail.com with ESMTPSA id o2-20020a05651238a200b004ec62d9a7f9sm4077327lft.62.2023.04.30.02.22.19
+        by smtp.gmail.com with ESMTPSA id o2-20020a05651238a200b004ec62d9a7f9sm4077327lft.62.2023.04.30.02.22.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 30 Apr 2023 02:22:19 -0700 (PDT)
+        Sun, 30 Apr 2023 02:22:22 -0700 (PDT)
 From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Sun, 30 Apr 2023 11:22:17 +0200
-Subject: [PATCH 2/4] fbdev/ARM: Fix up LCD MIPID GPIO usage
+Date:   Sun, 30 Apr 2023 11:22:19 +0200
+Subject: [PATCH 4/4] ARM: omap1: Fix up the Nokia 770 board device IRQs
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230430-nokia770-regression-v1-2-97704e36b094@linaro.org>
+Message-Id: <20230430-nokia770-regression-v1-4-97704e36b094@linaro.org>
 References: <20230430-nokia770-regression-v1-0-97704e36b094@linaro.org>
 In-Reply-To: <20230430-nokia770-regression-v1-0-97704e36b094@linaro.org>
 To:     Aaro Koskinen <aaro.koskinen@iki.fi>,
@@ -83,123 +83,121 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The Nokia 770 is using GPIOs from the global numberspace to pass
-down to the LCD controller. This regresses when we let the OMAP
-GPIO driver use dynamic GPIO base.
+The platform devices on the Nokia 770 is using some
+board-specific IRQs that get statically assigned to platform
+devices in the boardfile.
 
-As this is the only user of LCD MIPID we can easily augment the
-driver to use a GPIO descriptor instead and resolve the issue.
+This does not work with dynamic IRQ chip bases.
 
-The platform data .shutdown() callback wasn't even used in the
-code, but we encode a shutdown asserting RESET in the remove()
-callback for completeness sake.
+Utilize the NULL device to define some board-specific
+GPIO lookups and use these to immediately look up the
+same GPIOs, convert to IRQ numbers and pass as resources
+to the devices. This is ugly but should work.
 
 Fixes: 92bf78b33b0b ("gpio: omap: use dynamic allocation of base")
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- arch/arm/mach-omap1/board-nokia770.c    | 23 ++++++++++-------------
- drivers/video/fbdev/omap/lcd_mipid.c    | 10 ++++++++++
- include/linux/platform_data/lcd-mipid.h |  2 --
- 3 files changed, 20 insertions(+), 15 deletions(-)
+ arch/arm/mach-omap1/board-nokia770.c | 58 +++++++++++++++++++++++++++---------
+ 1 file changed, 44 insertions(+), 14 deletions(-)
 
 diff --git a/arch/arm/mach-omap1/board-nokia770.c b/arch/arm/mach-omap1/board-nokia770.c
-index eb7652670447..509afcd42823 100644
+index 53a4a44d5f4a..18a63c5a3dee 100644
 --- a/arch/arm/mach-omap1/board-nokia770.c
 +++ b/arch/arm/mach-omap1/board-nokia770.c
-@@ -85,26 +85,23 @@ static struct platform_device *nokia770_devices[] __initdata = {
- 	&nokia770_kp_device,
- };
+@@ -6,8 +6,8 @@
+  */
+ #include <linux/clkdev.h>
+ #include <linux/irq.h>
+-#include <linux/gpio.h>
+ #include <linux/gpio/machine.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/mutex.h>
+@@ -227,21 +227,28 @@ static struct i2c_board_info nokia770_i2c_board_info_2[] __initdata = {
  
--static void mipid_shutdown(struct mipid_platform_data *pdata)
--{
--	if (pdata->nreset_gpio != -1) {
--		printk(KERN_INFO "shutdown LCD\n");
--		gpio_set_value(pdata->nreset_gpio, 0);
--		msleep(120);
--	}
--}
+ static void __init nokia770_cbus_init(void)
+ {
+-	const int retu_irq_gpio = 62;
+-	const int tahvo_irq_gpio = 40;
 -
--static struct mipid_platform_data nokia770_mipid_platform_data = {
--	.shutdown = mipid_shutdown,
--};
-+static struct mipid_platform_data nokia770_mipid_platform_data = { };
+-	if (gpio_request_one(retu_irq_gpio, GPIOF_IN, "Retu IRQ"))
+-		return;
+-	if (gpio_request_one(tahvo_irq_gpio, GPIOF_IN, "Tahvo IRQ")) {
+-		gpio_free(retu_irq_gpio);
+-		return;
++	struct gpio_desc *d;
++	int irq;
++
++	d = gpiod_get(NULL, "retu_irq", GPIOD_IN);
++	if (IS_ERR(d)) {
++		pr_err("Unable to get CBUS Retu IRQ GPIO descriptor\n");
++	} else {
++		irq = gpiod_to_irq(d);
++		irq_set_irq_type(irq, IRQ_TYPE_EDGE_RISING);
++		nokia770_i2c_board_info_2[0].irq = irq;
++	}
++	d = gpiod_get(NULL, "tahvo_irq", GPIOD_IN);
++	if (IS_ERR(d)) {
++		pr_err("Unable to get CBUS Tahvo IRQ GPIO descriptor\n");
++	} else {
++		irq = gpiod_to_irq(d);
++		irq_set_irq_type(irq, IRQ_TYPE_EDGE_RISING);
++		nokia770_i2c_board_info_2[1].irq = irq;
+ 	}
+-	irq_set_irq_type(gpio_to_irq(retu_irq_gpio), IRQ_TYPE_EDGE_RISING);
+-	irq_set_irq_type(gpio_to_irq(tahvo_irq_gpio), IRQ_TYPE_EDGE_RISING);
+-	nokia770_i2c_board_info_2[0].irq = gpio_to_irq(retu_irq_gpio);
+-	nokia770_i2c_board_info_2[1].irq = gpio_to_irq(tahvo_irq_gpio);
+ 	i2c_register_board_info(2, nokia770_i2c_board_info_2,
+ 				ARRAY_SIZE(nokia770_i2c_board_info_2));
++
+ 	gpiod_add_lookup_table(&nokia770_cbus_gpio_table);
+ 	platform_device_register(&nokia770_cbus_device);
+ }
+@@ -251,8 +258,25 @@ static void __init nokia770_cbus_init(void)
+ }
+ #endif /* CONFIG_I2C_CBUS_GPIO */
  
- static const struct omap_lcd_config nokia770_lcd_config __initconst = {
- 	.ctrl_name	= "hwa742",
- };
- 
-+static struct gpiod_lookup_table nokia770_lcd_gpio_table = {
-+	.dev_id = "lcd_mipid",
++static struct gpiod_lookup_table nokia770_irq_gpio_table = {
++	.dev_id = NULL,
 +	.table = {
-+		GPIO_LOOKUP("gpio-0-15", 13, "reset", GPIO_ACTIVE_LOW),
-+		{ }
++		/* GPIO used by SPI device 1 */
++		GPIO_LOOKUP("gpio-0-15", 15, "ads7846_irq",
++			    GPIO_ACTIVE_HIGH),
++		/* GPIO used for retu IRQ */
++		GPIO_LOOKUP("gpio-48-63", 15, "retu_irq",
++			    GPIO_ACTIVE_HIGH),
++		/* GPIO used for tahvo IRQ */
++		GPIO_LOOKUP("gpio-32-47", 8, "tahvo_irq",
++			    GPIO_ACTIVE_HIGH),
 +	},
 +};
 +
- static void __init mipid_dev_init(void)
+ static void __init omap_nokia770_init(void)
  {
--	nokia770_mipid_platform_data.nreset_gpio = 13;
-+	gpiod_add_lookup_table(&nokia770_lcd_gpio_table);
- 	nokia770_mipid_platform_data.data_lines = 16;
- 
- 	omapfb_set_lcd_config(&nokia770_lcd_config);
-diff --git a/drivers/video/fbdev/omap/lcd_mipid.c b/drivers/video/fbdev/omap/lcd_mipid.c
-index 03cff39d392d..e4a7f0b824ff 100644
---- a/drivers/video/fbdev/omap/lcd_mipid.c
-+++ b/drivers/video/fbdev/omap/lcd_mipid.c
-@@ -7,6 +7,7 @@
-  */
- #include <linux/device.h>
- #include <linux/delay.h>
-+#include <linux/gpio/consumer.h>
- #include <linux/slab.h>
- #include <linux/workqueue.h>
- #include <linux/spi/spi.h>
-@@ -41,6 +42,7 @@ struct mipid_device {
- 						   when we can issue the
- 						   next sleep in/out command */
- 	unsigned long	hw_guard_wait;		/* max guard time in jiffies */
-+	struct gpio_desc	*reset;
- 
- 	struct omapfb_device	*fbdev;
- 	struct spi_device	*spi;
-@@ -556,6 +558,12 @@ static int mipid_spi_probe(struct spi_device *spi)
- 		return -ENOMEM;
- 	}
- 
-+	/* This will de-assert RESET if active */
-+	md->reset = gpiod_get(&spi->dev, "reset", GPIOD_OUT_LOW);
-+	if (IS_ERR(md->reset))
-+		return dev_err_probe(&spi->dev, PTR_ERR(md->reset),
-+				     "no reset GPIO line\n");
++	struct gpio_desc *d;
 +
- 	spi->mode = SPI_MODE_0;
- 	md->spi = spi;
- 	dev_set_drvdata(&spi->dev, md);
-@@ -574,6 +582,8 @@ static void mipid_spi_remove(struct spi_device *spi)
- {
- 	struct mipid_device *md = dev_get_drvdata(&spi->dev);
+ 	/* On Nokia 770, the SleepX signal is masked with an
+ 	 * MPUIO line by default.  It has to be unmasked for it
+ 	 * to become functional */
+@@ -262,9 +286,15 @@ static void __init omap_nokia770_init(void)
+ 	/* Unmask SleepX signal */
+ 	omap_writew((omap_readw(0xfffb5004) & ~2), 0xfffb5004);
  
-+	/* Asserts RESET */
-+	gpiod_set_value(md->reset, 1);
- 	mipid_disable(&md->panel);
- 	kfree(md);
- }
-diff --git a/include/linux/platform_data/lcd-mipid.h b/include/linux/platform_data/lcd-mipid.h
-index 63f05eb23827..4927cfc5158c 100644
---- a/include/linux/platform_data/lcd-mipid.h
-+++ b/include/linux/platform_data/lcd-mipid.h
-@@ -15,10 +15,8 @@ enum mipid_test_result {
- #ifdef __KERNEL__
- 
- struct mipid_platform_data {
--	int	nreset_gpio;
- 	int	data_lines;
- 
--	void	(*shutdown)(struct mipid_platform_data *pdata);
- 	void	(*set_bklight_level)(struct mipid_platform_data *pdata,
- 				     int level);
- 	int	(*get_bklight_level)(struct mipid_platform_data *pdata);
++	gpiod_add_lookup_table(&nokia770_irq_gpio_table);
+ 	platform_add_devices(nokia770_devices, ARRAY_SIZE(nokia770_devices));
+ 	gpiod_add_lookup_table(&nokia770_ads7846_gpio_table);
+-	nokia770_spi_board_info[1].irq = gpio_to_irq(15);
++
++	d = gpiod_get(NULL, "ads7846_irq", GPIOD_IN);
++	if (IS_ERR(d))
++		pr_err("Unable to get ADS7846 IRQ GPIO descriptor\n");
++	else
++		nokia770_spi_board_info[1].irq = gpiod_to_irq(d);
+ 	spi_register_board_info(nokia770_spi_board_info,
+ 				ARRAY_SIZE(nokia770_spi_board_info));
+ 	omap_serial_init();
 
 -- 
 2.34.1

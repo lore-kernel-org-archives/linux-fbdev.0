@@ -2,460 +2,333 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3343FC7EE23
-	for <linux-fbdev@archiver.kernel.org>; Tue,  2 May 2023 14:26:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8992BC77B7E
+	for <linux-fbdev@archiver.kernel.org>; Tue,  2 May 2023 16:42:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234001AbjEBO0Z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 2 May 2023 10:26:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43160 "EHLO
+        id S233753AbjEBQmU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 2 May 2023 12:42:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34956 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232885AbjEBO0Y (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 2 May 2023 10:26:24 -0400
-Received: from mail-yb1-xb31.google.com (mail-yb1-xb31.google.com [IPv6:2607:f8b0:4864:20::b31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2783EE52
-        for <linux-fbdev@vger.kernel.org>; Tue,  2 May 2023 07:26:17 -0700 (PDT)
-Received: by mail-yb1-xb31.google.com with SMTP id 3f1490d57ef6-b9a6f17f2b6so25189485276.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 02 May 2023 07:26:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1683037576; x=1685629576;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=GJdz+RxMdVbJfQQ04WAtIoaksa7fGjauI7FBWcJ4zT8=;
-        b=fLmmlpOLSHmSSYQvnGknXVafSYdvnSejtO7b6qmBLSMwdCrv6qcQpF5845o8c+DKjX
-         vv//8SLu3umpEJB3dK1YwSFIvXd0jtrkErA7+4ZZB0lJ/q+HGLEpaasCayoRAoxxDKis
-         WCKbeLMWuA/P9N3UaY0yunUz6mFN4OxaOVOQmkQG1Camnu/kGZNnSNK6Eo6gl9FAiW8Y
-         TpWG5klHdTubxGUjJXfMZPsNqgAg2pujVG0O0RZQp6p3PFzcDvamIQtfGTnH7YeGqzNn
-         psm8lP3EKThtuSztfp18zn0CO32ETdf/khXwh+gOmrlYvz/nHWtiOlOKCiC2I3exnfx4
-         wPWA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1683037576; x=1685629576;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=GJdz+RxMdVbJfQQ04WAtIoaksa7fGjauI7FBWcJ4zT8=;
-        b=NjvLQwJkc1qCKwqarZMpitUdfk86hxmliDI4fcNJrcZvcj2sndwmhojSBhun8DjKd3
-         DunN2KrHaJl35B63xL/BWaIh0VtmvMuZknHzMHuWBvInzsgyejsFk8R+sh/G2lahunFe
-         /LAkRBCIOvHWoOwJlYpvei9ZjQfbtYQtrkn+FKA8Z5nDzEp3ioRBIgZSGvH5u7NO7AWP
-         KHOjLUXuP/s5Hzn3lU4rnqpklHlem2FZxYfIflxkLvuKt9u8st4wE/o0us6MsVCUZTls
-         tHyh9mPP2yuO5LwLbOpXThBj8dC1+85VUQqBsMR6d0hg/6SqWVSsFgnXITT+u7wtcOzE
-         Qc2Q==
-X-Gm-Message-State: AC+VfDyp1WrtMVE6WEHqXzrUDRijUXjr5H52erZsUskil2zwvbc2332K
-        yoPuORoZAT3EEb0kmZ4ya+dfgIAgmmfQ9o4uVo5nKw==
-X-Google-Smtp-Source: ACHHUZ4cOPkpEByei84s84MHYL126xdaDpBoG4kKIuHgRC/VdknKRU8MQ5+5xRLu/hQbcf5g2r09NnYyS7atmgjuQnA=
-X-Received: by 2002:a81:92cf:0:b0:54f:6831:fe08 with SMTP id
- j198-20020a8192cf000000b0054f6831fe08mr15274102ywg.14.1683037576174; Tue, 02
- May 2023 07:26:16 -0700 (PDT)
+        with ESMTP id S233196AbjEBQmT (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 2 May 2023 12:42:19 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 07A45E1
+        for <linux-fbdev@vger.kernel.org>; Tue,  2 May 2023 09:42:16 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id A1AD8220A3;
+        Tue,  2 May 2023 16:42:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1683045735; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=apg+7M1QUH14YzyR7LCyuAsVjiWoLRmo9tVmoXPUdZo=;
+        b=fzb5StbSLjzDHx6xy86kgdZv6OdeLLf9EiWosyfs41PyaVzvjWIdb20lgxRaBx/X/y2WLu
+        +ekMPai4OdcYNRIgq5LG33n2/vs8kXbzUO+x4GhQlvcElL9fTUgQmt2M2Fi+sIfoEps3Ff
+        o/pNXjJZ1voLN6LWAbGnjvrzRtJlBDg=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1683045735;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=apg+7M1QUH14YzyR7LCyuAsVjiWoLRmo9tVmoXPUdZo=;
+        b=VC8+Itqj8mYtLoHgw7GyKlmZhFIHiEJM29GPIvGn7HldFcRd63zGswFrUYbLSNqQfg8o7h
+        HNBLcYCrhYxL+cCA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 386F4139C3;
+        Tue,  2 May 2023 16:42:15 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id KS1ZDGc9UWSKSAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Tue, 02 May 2023 16:42:15 +0000
+Message-ID: <5607420d-9b0f-807d-fd5e-af063d9b4786@suse.de>
+Date:   Tue, 2 May 2023 18:42:14 +0200
 MIME-Version: 1.0
-References: <20230430-nokia770-regression-v1-0-97704e36b094@linaro.org> <20230430-nokia770-regression-v1-3-97704e36b094@linaro.org>
-In-Reply-To: <20230430-nokia770-regression-v1-3-97704e36b094@linaro.org>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Tue, 2 May 2023 16:25:39 +0200
-Message-ID: <CAPDyKFoPa3PZGFBO4njSfEd6H0rdc6KKwPFvE1x6Xx13thKv8g@mail.gmail.com>
-Subject: Re: [PATCH 3/4] ARM/mmc: Convert old mmci-omap to GPIO descriptors
-To:     Linus Walleij <linus.walleij@linaro.org>
-Cc:     Aaro Koskinen <aaro.koskinen@iki.fi>,
-        Janusz Krzysztofik <jmkrzyszt@gmail.com>,
-        Tony Lindgren <tony@atomide.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Daniel Mack <daniel@zonque.org>,
-        Haojian Zhuang <haojian.zhuang@gmail.com>,
-        Robert Jarzmik <robert.jarzmik@free.fr>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
-        Andreas Kemnade <andreas@kemnade.info>,
-        Helge Deller <deller@gmx.de>, linux-omap@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-mips@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-mmc@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Subject: Re: [PATCH v2 18/19] fbdev: Move I/O read and write code into helper
+ functions
+Content-Language: en-US
+To:     Sam Ravnborg <sam@ravnborg.org>
+Cc:     linux-fbdev@vger.kernel.org,
+        Sui Jingfeng <suijingfeng@loongson.cn>,
+        teddy.wang@siliconmotion.com, deller@gmx.de, javierm@redhat.com,
+        geert@linux-m68k.org, dri-devel@lists.freedesktop.org,
+        sudipm.mukherjee@gmail.com
+References: <20230428122452.4856-1-tzimmermann@suse.de>
+ <20230428122452.4856-19-tzimmermann@suse.de>
+ <20230430181412.GA96757@ravnborg.org>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20230430181412.GA96757@ravnborg.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------0MCCNacSYYSJdxP1iApbbUNY"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, 30 Apr 2023 at 11:22, Linus Walleij <linus.walleij@linaro.org> wrote:
->
-> A recent change to the OMAP driver making it use a dynamic GPIO
-> base created problems with some old OMAP1 board files, among
-> them Nokia 770, SX1 and also the OMAP2 Nokia n8x0.
->
-> Fix up all instances of GPIOs being used for the MMC driver
-> by pushing the handling of power, slot selection and MMC
-> "cover" into the driver as optional GPIOs.
->
-> This is maybe not the most perfect solution as the MMC
-> framework have some central handlers for some of the
-> stuff, but it at least makes the situtation better and
-> solves the immediate issue.
->
-> Fixes: 92bf78b33b0b ("gpio: omap: use dynamic allocation of base")
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------0MCCNacSYYSJdxP1iApbbUNY
+Content-Type: multipart/mixed; boundary="------------f9qdT5YULVFXHdaaIm3gBMS1";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-fbdev@vger.kernel.org, Sui Jingfeng <suijingfeng@loongson.cn>,
+ teddy.wang@siliconmotion.com, deller@gmx.de, javierm@redhat.com,
+ geert@linux-m68k.org, dri-devel@lists.freedesktop.org,
+ sudipm.mukherjee@gmail.com
+Message-ID: <5607420d-9b0f-807d-fd5e-af063d9b4786@suse.de>
+Subject: Re: [PATCH v2 18/19] fbdev: Move I/O read and write code into helper
+ functions
+References: <20230428122452.4856-1-tzimmermann@suse.de>
+ <20230428122452.4856-19-tzimmermann@suse.de>
+ <20230430181412.GA96757@ravnborg.org>
+In-Reply-To: <20230430181412.GA96757@ravnborg.org>
 
-This looks like it's best funneled through the soc maintainer's tree(s), right?
+--------------f9qdT5YULVFXHdaaIm3gBMS1
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+SGkgU2FtDQoNCkFtIDMwLjA0LjIzIHVtIDIwOjE0IHNjaHJpZWIgU2FtIFJhdm5ib3JnOg0K
+PiBIaSBUaG9tYXMsDQo+IA0KPiBPbiBGcmksIEFwciAyOCwgMjAyMyBhdCAwMjoyNDo1MVBN
+ICswMjAwLCBUaG9tYXMgWmltbWVybWFubiB3cm90ZToNCj4+IE1vdmUgdGhlIGV4aXN0aW5n
+IEkvTyByZWFkIGFuZCB3cml0ZSBjb2RlIGZvciBJL08gbWVtb3J5IGludG8NCj4+IHRoZSBu
+ZXcgaGVscGVycyBmYl9jZmJfcmVhZCgpIGFuZCBmYl9jZmJfd3JpdGUoKS4gTWFrZSB0aGVt
+IHRoZQ0KPiBZb3UgbWF5IHdhbnQgdG8gdXBkYXRlIHRoZSBjaGFuZ2Vsb2cgdG8gbWVudGlv
+biB0aGUgbmV3IG5hbWVzLg0KPiANCj4gQSBmZXcgY29tbWVudHMgYmVsb3csIGJ1dCByZWFk
+aW5nIGl0IG9uY2UgbW9yZSBJIHJlYWxpemUgdGhpcyBhcmUNCj4gYWxsIGNvbW1lbnRzIHRv
+IHRoZSBvcmlnaW5hbCBjb2RlLCBzbyBub3Qgc29tZXRoaW5nIHRvIGZpeCBpbiB0aGlzDQo+
+IHBhdGNoLg0KDQpZZXMsIGl0J3MgcHJvYmFibHkgd29ydGggYSBmb2xsb3ctdXAgcGF0Y2gu
+DQoNCj4gDQo+IA0KPj4gZGVmYXVsdCBmcF9vcHMuIE5vIGZ1bmN0aW9uYWwgY2hhbmdlcy4N
+Cj4+DQo+PiBJbiB0aGUgbmVhciB0ZXJtLCB0aGUgbmV3IGZ1bmN0aW9ucyB3aWxsIGJlIHVz
+ZWZ1bCB0byB0aGUgRFJNDQo+PiBzdWJzeXN0ZW0sIHdoaWNoIGN1cnJlbnRseSBwcm92aWRl
+cyBpdCdzIG93biBpbXBsZW1lbnRhdGlvbi4gSXQNCj4+IGNhbiB0aGVuIHVzZSB0aGUgc2hh
+cmVkIGNvZGUuIEluIHRoZSBsb25nZXIgdGVybSwgaXQgbWlnaHQgbWFrZQ0KPj4gc2Vuc2Ug
+dG8gcmV2aXNlIHRoZSBJL08gaGVscGVyJ3MgZGVmYXVsdCBzdGF0dXMgYW5kIG1ha2UgdGhl
+bQ0KPj4gb3B0LWluIGJ5IHRoZSBkcml2ZXIuIFN5c3RlbXMgdGhhdCBkb24ndCB1c2UgdGhl
+bSB3b3VsZCBub3QNCj4+IGNvbnRhaW4gdGhlIGNvZGUgYW55IGxvbmdlci4NCj4+DQo+PiB2
+MjoNCj4+IAkqIGFkZCBkZXRhaWxlZCBjb21taXQgbWVzc2FnZSAoSmF2aWVyKQ0KPj4gCSog
+cmVuYW1lIGZiX2NmYl8oKSB0byBmYl9pb18oKSAoR2VlcnQpDQo+PiAJKiBhZGQgZml4ZXMg
+dGhhdCBnb3QgbG9zdCB3aGlsZSBtb3ZpbmcgdGhlIGNvZGUgKEdlZXJ0KQ0KPj4NCj4+IFNp
+Z25lZC1vZmYtYnk6IFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPg0K
+Pj4gVGVzdGVkLWJ5OiBTdWkgSmluZ2ZlbmcgPHN1aWppbmdmZW5nQGxvb25nc29uLmNuPg0K
+Pj4gUmV2aWV3ZWQtYnk6IEphdmllciBNYXJ0aW5leiBDYW5pbGxhcyA8amF2aWVybUByZWRo
+YXQuY29tPg0KPj4gQWNrZWQtYnk6IEhlbGdlIERlbGxlciA8ZGVsbGVyQGdteC5kZT4NCj4g
+UmV2aWV3ZWQtYnk6IFNhbSBSYXZuYm9yZyA8c2FtQHJhdm5ib3JnLm9yZz4NCg0KVGhhbmtz
+IGZvciByZXZpZXdpbmcuIElmIG5vdGhpbmcgZWxzZSBjb21lcyBpbiwgSSdsbCBwcm9iYWJs
+eSBtZXJnZSB0aGlzIA0Kc2VyaWVzIGluIHRoZSBuZXh0IGZldyBkYXlzLg0KDQpCZXN0IHJl
+Z2FyZHMNClRob21hcw0KDQo+PiAtLS0NCj4+ICAgZHJpdmVycy92aWRlby9mYmRldi9jb3Jl
+L01ha2VmaWxlICAgICB8ICAgMiArLQ0KPj4gICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUv
+ZmJfaW9fZm9wcy5jIHwgMTMzICsrKysrKysrKysrKysrKysrKysrKysrKysrDQo+PiAgIGRy
+aXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYm1lbS5jICAgICAgfCAxMTggKy0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0NCj4+ICAgaW5jbHVkZS9saW51eC9mYi5oICAgICAgICAgICAgICAgICAg
+ICB8ICAxMCArKw0KPj4gICA0IGZpbGVzIGNoYW5nZWQsIDE0NiBpbnNlcnRpb25zKCspLCAx
+MTcgZGVsZXRpb25zKC0pDQo+PiAgIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3ZpZGVv
+L2ZiZGV2L2NvcmUvZmJfaW9fZm9wcy5jDQo+Pg0KPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
+dmlkZW8vZmJkZXYvY29yZS9NYWtlZmlsZSBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9N
+YWtlZmlsZQ0KPj4gaW5kZXggMDhmYWJjZTc2Yjc0Li44ZjAwNjAxNjBmZmIgMTAwNjQ0DQo+
+PiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvTWFrZWZpbGUNCj4+ICsrKyBiL2Ry
+aXZlcnMvdmlkZW8vZmJkZXYvY29yZS9NYWtlZmlsZQ0KPj4gQEAgLTIsNyArMiw3IEBADQo+
+PiAgIG9iai0kKENPTkZJR19GQl9OT1RJRlkpICAgICAgICAgICArPSBmYl9ub3RpZnkubw0K
+Pj4gICBvYmotJChDT05GSUdfRkIpICAgICAgICAgICAgICAgICAgKz0gZmIubw0KPj4gICBm
+Yi15ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgOj0gZmJtZW0ubyBmYm1vbi5vIGZi
+Y21hcC5vIGZic3lzZnMubyBcDQo+PiAtICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIG1vZGVkYi5vIGZiY3Z0Lm8gZmJfY21kbGluZS5vDQo+PiArICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIG1vZGVkYi5vIGZiY3Z0Lm8gZmJfY21kbGluZS5v
+IGZiX2lvX2ZvcHMubw0KPj4gICBmYi0kKENPTkZJR19GQl9ERUZFUlJFRF9JTykgICAgICAg
+Kz0gZmJfZGVmaW8ubw0KPj4gICANCj4+ICAgaWZlcSAoJChDT05GSUdfRlJBTUVCVUZGRVJf
+Q09OU09MRSkseSkNCj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUv
+ZmJfaW9fZm9wcy5jIGIvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiX2lvX2ZvcHMuYw0K
+Pj4gbmV3IGZpbGUgbW9kZSAxMDA2NDQNCj4+IGluZGV4IDAwMDAwMDAwMDAwMC4uZjUyOTlk
+NTBmMzNiDQo+PiAtLS0gL2Rldi9udWxsDQo+PiArKysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2
+L2NvcmUvZmJfaW9fZm9wcy5jDQo+PiBAQCAtMCwwICsxLDEzMyBAQA0KPj4gKy8vIFNQRFgt
+TGljZW5zZS1JZGVudGlmaWVyOiBHUEwtMi4wDQo+PiArDQo+PiArI2luY2x1ZGUgPGxpbnV4
+L2ZiLmg+DQo+PiArI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPg0KPj4gKyNpbmNsdWRlIDxs
+aW51eC91YWNjZXNzLmg+DQo+PiArDQo+PiArc3NpemVfdCBmYl9pb19yZWFkKHN0cnVjdCBm
+Yl9pbmZvICppbmZvLCBjaGFyIF9fdXNlciAqYnVmLCBzaXplX3QgY291bnQsIGxvZmZfdCAq
+cHBvcykNCj4+ICt7DQo+PiArCXVuc2lnbmVkIGxvbmcgcCA9ICpwcG9zOw0KPj4gKwl1OCAq
+YnVmZmVyLCAqZHN0Ow0KPj4gKwl1OCBfX2lvbWVtICpzcmM7DQo+PiArCWludCBjLCBjbnQg
+PSAwLCBlcnIgPSAwOw0KPj4gKwl1bnNpZ25lZCBsb25nIHRvdGFsX3NpemUsIHRyYWlsaW5n
+Ow0KPj4gKw0KPj4gKwlpZiAoIWluZm8tPnNjcmVlbl9iYXNlKQ0KPj4gKwkJcmV0dXJuIC1F
+Tk9ERVY7DQo+PiArDQo+PiArCXRvdGFsX3NpemUgPSBpbmZvLT5zY3JlZW5fc2l6ZTsNCj4+
+ICsNCj4+ICsJaWYgKHRvdGFsX3NpemUgPT0gMCkNCj4+ICsJCXRvdGFsX3NpemUgPSBpbmZv
+LT5maXguc21lbV9sZW47DQo+PiArDQo+PiArCWlmIChwID49IHRvdGFsX3NpemUpDQo+PiAr
+CQlyZXR1cm4gMDsNCj4+ICsNCj4+ICsJaWYgKGNvdW50ID49IHRvdGFsX3NpemUpDQo+PiAr
+CQljb3VudCA9IHRvdGFsX3NpemU7DQo+PiArDQo+PiArCWlmIChjb3VudCArIHAgPiB0b3Rh
+bF9zaXplKQ0KPj4gKwkJY291bnQgPSB0b3RhbF9zaXplIC0gcDsNCj4+ICsNCj4+ICsJYnVm
+ZmVyID0ga21hbGxvYygoY291bnQgPiBQQUdFX1NJWkUpID8gUEFHRV9TSVpFIDogY291bnQs
+DQo+PiArCQkJIEdGUF9LRVJORUwpOw0KPj4gKwlpZiAoIWJ1ZmZlcikNCj4+ICsJCXJldHVy
+biAtRU5PTUVNOw0KPj4gKw0KPj4gKwlzcmMgPSAodTggX19pb21lbSAqKSAoaW5mby0+c2Ny
+ZWVuX2Jhc2UgKyBwKTsNCj4gc2NyZWVuX2Jhc2UgaXMgY2hhciBfX2lvbWVtICosIHNvIEkg
+dGhpbmsgdGhlIGNhc3QgY2FuIGdvIGF3YXkuDQo+PiArDQo+PiArCWlmIChpbmZvLT5mYm9w
+cy0+ZmJfc3luYykNCj4+ICsJCWluZm8tPmZib3BzLT5mYl9zeW5jKGluZm8pOw0KPj4gKw0K
+Pj4gKwl3aGlsZSAoY291bnQpIHsNCj4+ICsJCWMgID0gKGNvdW50ID4gUEFHRV9TSVpFKSA/
+IFBBR0VfU0laRSA6IGNvdW50Ow0KPj4gKwkJZHN0ID0gYnVmZmVyOw0KPj4gKwkJZmJfbWVt
+Y3B5X2Zyb21mYihkc3QsIHNyYywgYyk7DQo+PiArCQlkc3QgKz0gYzsNCj4gSSBzZWUgbm8g
+cmVhc29uIHRvIHVzZSBkc3QgaGVyZSwgYXMgaXQgaXMgYWx3YXlzIGVxdWFsIHRvIGJ1ZmZl
+ciB3aGVuDQo+IHVzZWQuDQo+IEJ1dCB0aGlzIGlzIGNvcGllZCBmcm9tIHRoZSBvcmlnaW5h
+bCBjb2RlLCBzbyBpdCB3b3VsZCBiZSB3cm9uZyB0bw0KPiBjaGFuZ2UgdGhpcyBpbiB0aGUg
+Y3VycmVudCBwYXRjaC4gSSBqdXN0IG5vdGljZWQuDQo+IA0KPj4gKwkJc3JjICs9IGM7DQo+
+PiArDQo+PiArCQl0cmFpbGluZyA9IGNvcHlfdG9fdXNlcihidWYsIGJ1ZmZlciwgYyk7DQo+
+PiArCQlpZiAodHJhaWxpbmcgPT0gYykgew0KPj4gKwkJCWVyciA9IC1FRkFVTFQ7DQo+PiAr
+CQkJYnJlYWs7DQo+PiArCQl9DQo+PiArCQljIC09IHRyYWlsaW5nOw0KPj4gKw0KPj4gKwkJ
+KnBwb3MgKz0gYzsNCj4+ICsJCWJ1ZiArPSBjOw0KPj4gKwkJY250ICs9IGM7DQo+PiArCQlj
+b3VudCAtPSBjOw0KPj4gKwl9DQo+PiArDQo+PiArCWtmcmVlKGJ1ZmZlcik7DQo+PiArDQo+
+PiArCXJldHVybiBjbnQgPyBjbnQgOiBlcnI7DQo+PiArfQ0KPj4gK0VYUE9SVF9TWU1CT0wo
+ZmJfaW9fcmVhZCk7DQo+PiArDQo+PiArc3NpemVfdCBmYl9pb193cml0ZShzdHJ1Y3QgZmJf
+aW5mbyAqaW5mbywgY29uc3QgY2hhciBfX3VzZXIgKmJ1Ziwgc2l6ZV90IGNvdW50LCBsb2Zm
+X3QgKnBwb3MpDQo+PiArew0KPj4gKwl1bnNpZ25lZCBsb25nIHAgPSAqcHBvczsNCj4+ICsJ
+dTggKmJ1ZmZlciwgKnNyYzsNCj4+ICsJdTggX19pb21lbSAqZHN0Ow0KPj4gKwlpbnQgYywg
+Y250ID0gMCwgZXJyID0gMDsNCj4+ICsJdW5zaWduZWQgbG9uZyB0b3RhbF9zaXplLCB0cmFp
+bGluZzsNCj4+ICsNCj4+ICsJaWYgKCFpbmZvLT5zY3JlZW5fYmFzZSkNCj4+ICsJCXJldHVy
+biAtRU5PREVWOw0KPj4gKw0KPj4gKwl0b3RhbF9zaXplID0gaW5mby0+c2NyZWVuX3NpemU7
+DQo+PiArDQo+PiArCWlmICh0b3RhbF9zaXplID09IDApDQo+PiArCQl0b3RhbF9zaXplID0g
+aW5mby0+Zml4LnNtZW1fbGVuOw0KPj4gKw0KPj4gKwlpZiAocCA+IHRvdGFsX3NpemUpDQo+
+PiArCQlyZXR1cm4gLUVGQklHOw0KPj4gKw0KPj4gKwlpZiAoY291bnQgPiB0b3RhbF9zaXpl
+KSB7DQo+PiArCQllcnIgPSAtRUZCSUc7DQo+PiArCQljb3VudCA9IHRvdGFsX3NpemU7DQo+
+PiArCX0NCj4+ICsNCj4+ICsJaWYgKGNvdW50ICsgcCA+IHRvdGFsX3NpemUpIHsNCj4+ICsJ
+CWlmICghZXJyKQ0KPj4gKwkJCWVyciA9IC1FTk9TUEM7DQo+PiArDQo+PiArCQljb3VudCA9
+IHRvdGFsX3NpemUgLSBwOw0KPj4gKwl9DQo+PiArDQo+PiArCWJ1ZmZlciA9IGttYWxsb2Mo
+KGNvdW50ID4gUEFHRV9TSVpFKSA/IFBBR0VfU0laRSA6IGNvdW50LA0KPj4gKwkJCSBHRlBf
+S0VSTkVMKTsNCj4+ICsJaWYgKCFidWZmZXIpDQo+PiArCQlyZXR1cm4gLUVOT01FTTsNCj4+
+ICsNCj4+ICsJZHN0ID0gKHU4IF9faW9tZW0gKikgKGluZm8tPnNjcmVlbl9iYXNlICsgcCk7
+DQo+IENhc3QgY2FuIGdvIGF3YXkuDQo+IA0KPj4gKw0KPj4gKwlpZiAoaW5mby0+ZmJvcHMt
+PmZiX3N5bmMpDQo+PiArCQlpbmZvLT5mYm9wcy0+ZmJfc3luYyhpbmZvKTsNCj4+ICsNCj4+
+ICsJd2hpbGUgKGNvdW50KSB7DQo+PiArCQljID0gKGNvdW50ID4gUEFHRV9TSVpFKSA/IFBB
+R0VfU0laRSA6IGNvdW50Ow0KPj4gKwkJc3JjID0gYnVmZmVyOw0KPj4gKw0KPj4gKwkJdHJh
+aWxpbmcgPSBjb3B5X2Zyb21fdXNlcihzcmMsIGJ1ZiwgYyk7DQo+PiArCQlpZiAodHJhaWxp
+bmcgPT0gYykgew0KPj4gKwkJCWVyciA9IC1FRkFVTFQ7DQo+PiArCQkJYnJlYWs7DQo+PiAr
+CQl9DQo+PiArCQljIC09IHRyYWlsaW5nOw0KPj4gKw0KPj4gKwkJZmJfbWVtY3B5X3RvZmIo
+ZHN0LCBzcmMsIGMpOw0KPj4gKwkJZHN0ICs9IGM7DQo+PiArCQlzcmMgKz0gYzsNCj4gc3Jj
+IGlzIGluY3JlbWVudGVkIGhlcmUsIGJ1dCB0aGUgdmFsdWUgYXJlIG5vdCB1c2VkLg0KPiBB
+Z2FpbiwgZnJvbSB0aGUgb3JpZ2luYWwgY29kZSBzbyBub3Qgc29tZXRoaW5nIHRvIGNoYW5n
+ZSBoZXJlLg0KPiANCj4+ICsJCSpwcG9zICs9IGM7DQo+PiArCQlidWYgKz0gYzsNCj4+ICsJ
+CWNudCArPSBjOw0KPj4gKwkJY291bnQgLT0gYzsNCj4+ICsJfQ0KPj4gKw0KPj4gKwlrZnJl
+ZShidWZmZXIpOw0KPj4gKw0KPj4gKwlyZXR1cm4gKGNudCkgPyBjbnQgOiBlcnI7DQo+PiAr
+fQ0KPj4gK0VYUE9SVF9TWU1CT0woZmJfaW9fd3JpdGUpOw0KPj4gZGlmZiAtLWdpdCBhL2Ry
+aXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYm1lbS5jIGIvZHJpdmVycy92aWRlby9mYmRldi9j
+b3JlL2ZibWVtLmMNCj4+IGluZGV4IDNhODBkMTNhZmQyNi4uNDAzNWE1N2RmMTE2IDEwMDY0
+NA0KPj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZibWVtLmMNCj4+ICsrKyBi
+L2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYm1lbS5jDQo+PiBAQCAtNzYxLDEyICs3NjEs
+NyBAQCBzdGF0aWMgc3RydWN0IGZiX2luZm8gKmZpbGVfZmJfaW5mbyhzdHJ1Y3QgZmlsZSAq
+ZmlsZSkNCj4+ICAgc3RhdGljIHNzaXplX3QNCj4+ICAgZmJfcmVhZChzdHJ1Y3QgZmlsZSAq
+ZmlsZSwgY2hhciBfX3VzZXIgKmJ1Ziwgc2l6ZV90IGNvdW50LCBsb2ZmX3QgKnBwb3MpDQo+
+PiAgIHsNCj4+IC0JdW5zaWduZWQgbG9uZyBwID0gKnBwb3M7DQo+PiAgIAlzdHJ1Y3QgZmJf
+aW5mbyAqaW5mbyA9IGZpbGVfZmJfaW5mbyhmaWxlKTsNCj4+IC0JdTggKmJ1ZmZlciwgKmRz
+dDsNCj4+IC0JdTggX19pb21lbSAqc3JjOw0KPj4gLQlpbnQgYywgY250ID0gMCwgZXJyID0g
+MDsNCj4+IC0JdW5zaWduZWQgbG9uZyB0b3RhbF9zaXplLCB0cmFpbGluZzsNCj4+ICAgDQo+
+PiAgIAlpZiAoIWluZm8pDQo+PiAgIAkJcmV0dXJuIC1FTk9ERVY7DQo+PiBAQCAtNzc3LDY3
+ICs3NzIsMTMgQEAgZmJfcmVhZChzdHJ1Y3QgZmlsZSAqZmlsZSwgY2hhciBfX3VzZXIgKmJ1
+Ziwgc2l6ZV90IGNvdW50LCBsb2ZmX3QgKnBwb3MpDQo+PiAgIAlpZiAoaW5mby0+ZmJvcHMt
+PmZiX3JlYWQpDQo+PiAgIAkJcmV0dXJuIGluZm8tPmZib3BzLT5mYl9yZWFkKGluZm8sIGJ1
+ZiwgY291bnQsIHBwb3MpOw0KPj4gICANCj4+IC0JaWYgKCFpbmZvLT5zY3JlZW5fYmFzZSkN
+Cj4+IC0JCXJldHVybiAtRU5PREVWOw0KPj4gLQ0KPj4gLQl0b3RhbF9zaXplID0gaW5mby0+
+c2NyZWVuX3NpemU7DQo+PiAtDQo+PiAtCWlmICh0b3RhbF9zaXplID09IDApDQo+PiAtCQl0
+b3RhbF9zaXplID0gaW5mby0+Zml4LnNtZW1fbGVuOw0KPj4gLQ0KPj4gLQlpZiAocCA+PSB0
+b3RhbF9zaXplKQ0KPj4gLQkJcmV0dXJuIDA7DQo+PiAtDQo+PiAtCWlmIChjb3VudCA+PSB0
+b3RhbF9zaXplKQ0KPj4gLQkJY291bnQgPSB0b3RhbF9zaXplOw0KPj4gLQ0KPj4gLQlpZiAo
+Y291bnQgKyBwID4gdG90YWxfc2l6ZSkNCj4+IC0JCWNvdW50ID0gdG90YWxfc2l6ZSAtIHA7
+DQo+PiAtDQo+PiAtCWJ1ZmZlciA9IGttYWxsb2MoKGNvdW50ID4gUEFHRV9TSVpFKSA/IFBB
+R0VfU0laRSA6IGNvdW50LA0KPj4gLQkJCSBHRlBfS0VSTkVMKTsNCj4+IC0JaWYgKCFidWZm
+ZXIpDQo+PiAtCQlyZXR1cm4gLUVOT01FTTsNCj4+IC0NCj4+IC0Jc3JjID0gKHU4IF9faW9t
+ZW0gKikgKGluZm8tPnNjcmVlbl9iYXNlICsgcCk7DQo+PiAtDQo+PiAtCWlmIChpbmZvLT5m
+Ym9wcy0+ZmJfc3luYykNCj4+IC0JCWluZm8tPmZib3BzLT5mYl9zeW5jKGluZm8pOw0KPj4g
+LQ0KPj4gLQl3aGlsZSAoY291bnQpIHsNCj4+IC0JCWMgID0gKGNvdW50ID4gUEFHRV9TSVpF
+KSA/IFBBR0VfU0laRSA6IGNvdW50Ow0KPj4gLQkJZHN0ID0gYnVmZmVyOw0KPj4gLQkJZmJf
+bWVtY3B5X2Zyb21mYihkc3QsIHNyYywgYyk7DQo+PiAtCQlkc3QgKz0gYzsNCj4+IC0JCXNy
+YyArPSBjOw0KPj4gLQ0KPj4gLQkJdHJhaWxpbmcgPSBjb3B5X3RvX3VzZXIoYnVmLCBidWZm
+ZXIsIGMpOw0KPj4gLQkJaWYgKHRyYWlsaW5nID09IGMpIHsNCj4+IC0JCQllcnIgPSAtRUZB
+VUxUOw0KPj4gLQkJCWJyZWFrOw0KPj4gLQkJfQ0KPj4gLQkJYyAtPSB0cmFpbGluZzsNCj4+
+IC0NCj4+IC0JCSpwcG9zICs9IGM7DQo+PiAtCQlidWYgKz0gYzsNCj4+IC0JCWNudCArPSBj
+Ow0KPj4gLQkJY291bnQgLT0gYzsNCj4+IC0JfQ0KPj4gLQ0KPj4gLQlrZnJlZShidWZmZXIp
+Ow0KPj4gLQ0KPj4gLQlyZXR1cm4gY250ID8gY250IDogZXJyOw0KPj4gKwlyZXR1cm4gZmJf
+aW9fcmVhZChpbmZvLCBidWYsIGNvdW50LCBwcG9zKTsNCj4+ICAgfQ0KPj4gICANCj4+ICAg
+c3RhdGljIHNzaXplX3QNCj4+ICAgZmJfd3JpdGUoc3RydWN0IGZpbGUgKmZpbGUsIGNvbnN0
+IGNoYXIgX191c2VyICpidWYsIHNpemVfdCBjb3VudCwgbG9mZl90ICpwcG9zKQ0KPj4gICB7
+DQo+PiAtCXVuc2lnbmVkIGxvbmcgcCA9ICpwcG9zOw0KPj4gICAJc3RydWN0IGZiX2luZm8g
+KmluZm8gPSBmaWxlX2ZiX2luZm8oZmlsZSk7DQo+PiAtCXU4ICpidWZmZXIsICpzcmM7DQo+
+PiAtCXU4IF9faW9tZW0gKmRzdDsNCj4+IC0JaW50IGMsIGNudCA9IDAsIGVyciA9IDA7DQo+
+PiAtCXVuc2lnbmVkIGxvbmcgdG90YWxfc2l6ZSwgdHJhaWxpbmc7DQo+PiAgIA0KPj4gICAJ
+aWYgKCFpbmZvKQ0KPj4gICAJCXJldHVybiAtRU5PREVWOw0KPj4gQEAgLTg0OCw2MiArNzg5
+LDcgQEAgZmJfd3JpdGUoc3RydWN0IGZpbGUgKmZpbGUsIGNvbnN0IGNoYXIgX191c2VyICpi
+dWYsIHNpemVfdCBjb3VudCwgbG9mZl90ICpwcG9zKQ0KPj4gICAJaWYgKGluZm8tPmZib3Bz
+LT5mYl93cml0ZSkNCj4+ICAgCQlyZXR1cm4gaW5mby0+ZmJvcHMtPmZiX3dyaXRlKGluZm8s
+IGJ1ZiwgY291bnQsIHBwb3MpOw0KPj4gICANCj4+IC0JaWYgKCFpbmZvLT5zY3JlZW5fYmFz
+ZSkNCj4+IC0JCXJldHVybiAtRU5PREVWOw0KPj4gLQ0KPj4gLQl0b3RhbF9zaXplID0gaW5m
+by0+c2NyZWVuX3NpemU7DQo+PiAtDQo+PiAtCWlmICh0b3RhbF9zaXplID09IDApDQo+PiAt
+CQl0b3RhbF9zaXplID0gaW5mby0+Zml4LnNtZW1fbGVuOw0KPj4gLQ0KPj4gLQlpZiAocCA+
+IHRvdGFsX3NpemUpDQo+PiAtCQlyZXR1cm4gLUVGQklHOw0KPj4gLQ0KPj4gLQlpZiAoY291
+bnQgPiB0b3RhbF9zaXplKSB7DQo+PiAtCQllcnIgPSAtRUZCSUc7DQo+PiAtCQljb3VudCA9
+IHRvdGFsX3NpemU7DQo+PiAtCX0NCj4+IC0NCj4+IC0JaWYgKGNvdW50ICsgcCA+IHRvdGFs
+X3NpemUpIHsNCj4+IC0JCWlmICghZXJyKQ0KPj4gLQkJCWVyciA9IC1FTk9TUEM7DQo+PiAt
+DQo+PiAtCQljb3VudCA9IHRvdGFsX3NpemUgLSBwOw0KPj4gLQl9DQo+PiAtDQo+PiAtCWJ1
+ZmZlciA9IGttYWxsb2MoKGNvdW50ID4gUEFHRV9TSVpFKSA/IFBBR0VfU0laRSA6IGNvdW50
+LA0KPj4gLQkJCSBHRlBfS0VSTkVMKTsNCj4+IC0JaWYgKCFidWZmZXIpDQo+PiAtCQlyZXR1
+cm4gLUVOT01FTTsNCj4+IC0NCj4+IC0JZHN0ID0gKHU4IF9faW9tZW0gKikgKGluZm8tPnNj
+cmVlbl9iYXNlICsgcCk7DQo+PiAtDQo+PiAtCWlmIChpbmZvLT5mYm9wcy0+ZmJfc3luYykN
+Cj4+IC0JCWluZm8tPmZib3BzLT5mYl9zeW5jKGluZm8pOw0KPj4gLQ0KPj4gLQl3aGlsZSAo
+Y291bnQpIHsNCj4+IC0JCWMgPSAoY291bnQgPiBQQUdFX1NJWkUpID8gUEFHRV9TSVpFIDog
+Y291bnQ7DQo+PiAtCQlzcmMgPSBidWZmZXI7DQo+PiAtDQo+PiAtCQl0cmFpbGluZyA9IGNv
+cHlfZnJvbV91c2VyKHNyYywgYnVmLCBjKTsNCj4+IC0JCWlmICh0cmFpbGluZyA9PSBjKSB7
+DQo+PiAtCQkJZXJyID0gLUVGQVVMVDsNCj4+IC0JCQlicmVhazsNCj4+IC0JCX0NCj4+IC0J
+CWMgLT0gdHJhaWxpbmc7DQo+PiAtDQo+PiAtCQlmYl9tZW1jcHlfdG9mYihkc3QsIHNyYywg
+Yyk7DQo+PiAtCQlkc3QgKz0gYzsNCj4+IC0JCXNyYyArPSBjOw0KPj4gLQkJKnBwb3MgKz0g
+YzsNCj4+IC0JCWJ1ZiArPSBjOw0KPj4gLQkJY250ICs9IGM7DQo+PiAtCQljb3VudCAtPSBj
+Ow0KPj4gLQl9DQo+PiAtDQo+PiAtCWtmcmVlKGJ1ZmZlcik7DQo+PiAtDQo+PiAtCXJldHVy
+biAoY250KSA/IGNudCA6IGVycjsNCj4+ICsJcmV0dXJuIGZiX2lvX3dyaXRlKGluZm8sIGJ1
+ZiwgY291bnQsIHBwb3MpOw0KPj4gICB9DQo+PiAgIA0KPj4gICBpbnQNCj4+IGRpZmYgLS1n
+aXQgYS9pbmNsdWRlL2xpbnV4L2ZiLmggYi9pbmNsdWRlL2xpbnV4L2ZiLmgNCj4+IGluZGV4
+IDA4Y2I0N2RhNzFmOC4uZWM5NzhhNDk2OWE5IDEwMDY0NA0KPj4gLS0tIGEvaW5jbHVkZS9s
+aW51eC9mYi5oDQo+PiArKysgYi9pbmNsdWRlL2xpbnV4L2ZiLmgNCj4+IEBAIC01NzYsOSAr
+NTc2LDE5IEBAIHN0cnVjdCBmYl9pbmZvIHsNCj4+ICAgZXh0ZXJuIGludCBmYl9zZXRfdmFy
+KHN0cnVjdCBmYl9pbmZvICppbmZvLCBzdHJ1Y3QgZmJfdmFyX3NjcmVlbmluZm8gKnZhcik7
+DQo+PiAgIGV4dGVybiBpbnQgZmJfcGFuX2Rpc3BsYXkoc3RydWN0IGZiX2luZm8gKmluZm8s
+IHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbyAqdmFyKTsNCj4+ICAgZXh0ZXJuIGludCBmYl9i
+bGFuayhzdHJ1Y3QgZmJfaW5mbyAqaW5mbywgaW50IGJsYW5rKTsNCj4+ICsNCj4+ICsvKg0K
+Pj4gKyAqIERyYXdpbmcgb3BlcmF0aW9ucyB3aGVyZSBmcmFtZWJ1ZmZlciBpcyBpbiBJL08g
+bWVtb3J5DQo+PiArICovDQo+PiArDQo+PiAgIGV4dGVybiB2b2lkIGNmYl9maWxscmVjdChz
+dHJ1Y3QgZmJfaW5mbyAqaW5mbywgY29uc3Qgc3RydWN0IGZiX2ZpbGxyZWN0ICpyZWN0KTsN
+Cj4+ICAgZXh0ZXJuIHZvaWQgY2ZiX2NvcHlhcmVhKHN0cnVjdCBmYl9pbmZvICppbmZvLCBj
+b25zdCBzdHJ1Y3QgZmJfY29weWFyZWEgKmFyZWEpOw0KPj4gICBleHRlcm4gdm9pZCBjZmJf
+aW1hZ2VibGl0KHN0cnVjdCBmYl9pbmZvICppbmZvLCBjb25zdCBzdHJ1Y3QgZmJfaW1hZ2Ug
+KmltYWdlKTsNCj4+ICtleHRlcm4gc3NpemVfdCBmYl9pb19yZWFkKHN0cnVjdCBmYl9pbmZv
+ICppbmZvLCBjaGFyIF9fdXNlciAqYnVmLA0KPj4gKwkJCSAgc2l6ZV90IGNvdW50LCBsb2Zm
+X3QgKnBwb3MpOw0KPj4gK2V4dGVybiBzc2l6ZV90IGZiX2lvX3dyaXRlKHN0cnVjdCBmYl9p
+bmZvICppbmZvLCBjb25zdCBjaGFyIF9fdXNlciAqYnVmLA0KPj4gKwkJCSAgIHNpemVfdCBj
+b3VudCwgbG9mZl90ICpwcG9zKTsNCj4+ICsNCj4+ICAgLyoNCj4+ICAgICogRHJhd2luZyBv
+cGVyYXRpb25zIHdoZXJlIGZyYW1lYnVmZmVyIGlzIGluIHN5c3RlbSBSQU0NCj4+ICAgICov
+DQo+PiAtLSANCj4+IDIuNDAuMA0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGlj
+cyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdt
+YkgNCkZyYW5rZW5zdHJhc3NlIDE0NiwgOTA0NjEgTnVlcm5iZXJnLCBHZXJtYW55DQpHRjog
+SXZvIFRvdGV2LCBBbmRyZXcgTXllcnMsIEFuZHJldyBNY0RvbmFsZCwgQm91ZGllbiBNb2Vy
+bWFuDQpIUkIgMzY4MDkgKEFHIE51ZXJuYmVyZykNCg==
 
-Kind regards
-Uffe
+--------------f9qdT5YULVFXHdaaIm3gBMS1--
 
-> ---
->  arch/arm/mach-omap1/board-nokia770.c   | 43 ++++++-----------
->  arch/arm/mach-omap1/board-sx1-mmc.c    |  1 -
->  arch/arm/mach-omap2/board-n8x0.c       | 85 +++++++++++-----------------------
->  drivers/mmc/host/omap.c                | 46 +++++++++++++++++-
->  include/linux/platform_data/mmc-omap.h |  2 -
->  5 files changed, 83 insertions(+), 94 deletions(-)
->
-> diff --git a/arch/arm/mach-omap1/board-nokia770.c b/arch/arm/mach-omap1/board-nokia770.c
-> index 509afcd42823..53a4a44d5f4a 100644
-> --- a/arch/arm/mach-omap1/board-nokia770.c
-> +++ b/arch/arm/mach-omap1/board-nokia770.c
-> @@ -162,27 +162,23 @@ static struct omap_usb_config nokia770_usb_config __initdata = {
->
->  #if IS_ENABLED(CONFIG_MMC_OMAP)
->
-> -#define NOKIA770_GPIO_MMC_POWER                41
-> -#define NOKIA770_GPIO_MMC_SWITCH       23
-> -
-> -static int nokia770_mmc_set_power(struct device *dev, int slot, int power_on,
-> -                               int vdd)
-> -{
-> -       gpio_set_value(NOKIA770_GPIO_MMC_POWER, power_on);
-> -       return 0;
-> -}
-> -
-> -static int nokia770_mmc_get_cover_state(struct device *dev, int slot)
-> -{
-> -       return gpio_get_value(NOKIA770_GPIO_MMC_SWITCH);
-> -}
-> +static struct gpiod_lookup_table nokia770_mmc_gpio_table = {
-> +       .dev_id = "mmci-omap",
-> +       .table = {
-> +               /* Slot index 0, VSD power, GPIO 41 */
-> +               GPIO_LOOKUP_IDX("gpio-32-47", 9,
-> +                               "vsd", 0, GPIO_ACTIVE_HIGH),
-> +               /* Slot index 0, switch, GPIO 23 */
-> +               GPIO_LOOKUP_IDX("gpio-16-31", 7,
-> +                               "cover", 0, GPIO_ACTIVE_HIGH),
-> +               { }
-> +       },
-> +};
->
->  static struct omap_mmc_platform_data nokia770_mmc2_data = {
->         .nr_slots                       = 1,
->         .max_freq                       = 12000000,
->         .slots[0]       = {
-> -               .set_power              = nokia770_mmc_set_power,
-> -               .get_cover_state        = nokia770_mmc_get_cover_state,
->                 .ocr_mask               = MMC_VDD_32_33|MMC_VDD_33_34,
->                 .name                   = "mmcblk",
->         },
-> @@ -192,20 +188,7 @@ static struct omap_mmc_platform_data *nokia770_mmc_data[OMAP16XX_NR_MMC];
->
->  static void __init nokia770_mmc_init(void)
->  {
-> -       int ret;
-> -
-> -       ret = gpio_request(NOKIA770_GPIO_MMC_POWER, "MMC power");
-> -       if (ret < 0)
-> -               return;
-> -       gpio_direction_output(NOKIA770_GPIO_MMC_POWER, 0);
-> -
-> -       ret = gpio_request(NOKIA770_GPIO_MMC_SWITCH, "MMC cover");
-> -       if (ret < 0) {
-> -               gpio_free(NOKIA770_GPIO_MMC_POWER);
-> -               return;
-> -       }
-> -       gpio_direction_input(NOKIA770_GPIO_MMC_SWITCH);
-> -
-> +       gpiod_add_lookup_table(&nokia770_mmc_gpio_table);
->         /* Only the second MMC controller is used */
->         nokia770_mmc_data[1] = &nokia770_mmc2_data;
->         omap1_init_mmc(nokia770_mmc_data, OMAP16XX_NR_MMC);
-> diff --git a/arch/arm/mach-omap1/board-sx1-mmc.c b/arch/arm/mach-omap1/board-sx1-mmc.c
-> index f1c160924dfe..f183a8448a7b 100644
-> --- a/arch/arm/mach-omap1/board-sx1-mmc.c
-> +++ b/arch/arm/mach-omap1/board-sx1-mmc.c
-> @@ -9,7 +9,6 @@
->   * Copyright (C) 2007 Instituto Nokia de Tecnologia - INdT
->   */
->
-> -#include <linux/gpio.h>
->  #include <linux/platform_device.h>
->
->  #include "hardware.h"
-> diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
-> index 3353b0a923d9..baa2f0341aed 100644
-> --- a/arch/arm/mach-omap2/board-n8x0.c
-> +++ b/arch/arm/mach-omap2/board-n8x0.c
-> @@ -11,6 +11,7 @@
->  #include <linux/clk.h>
->  #include <linux/delay.h>
->  #include <linux/gpio.h>
-> +#include <linux/gpio/machine.h>
->  #include <linux/init.h>
->  #include <linux/io.h>
->  #include <linux/irq.h>
-> @@ -170,22 +171,32 @@ static struct spi_board_info n800_spi_board_info[] __initdata = {
->   * GPIO23 and GPIO9            slot 2 EMMC on N810
->   *
->   */
-> -#define N8X0_SLOT_SWITCH_GPIO  96
-> -#define N810_EMMC_VSD_GPIO     23
-> -#define N810_EMMC_VIO_GPIO     9
-> -
->  static int slot1_cover_open;
->  static int slot2_cover_open;
->  static struct device *mmc_device;
->
-> -static int n8x0_mmc_switch_slot(struct device *dev, int slot)
-> -{
-> -#ifdef CONFIG_MMC_DEBUG
-> -       dev_dbg(dev, "Choose slot %d\n", slot + 1);
-> -#endif
-> -       gpio_set_value(N8X0_SLOT_SWITCH_GPIO, slot);
-> -       return 0;
-> -}
-> +static struct gpiod_lookup_table nokia8xx_mmc_gpio_table = {
-> +       .dev_id = "mmci-omap",
-> +       .table = {
-> +               /* Slot switch, GPIO 96 */
-> +               GPIO_LOOKUP("gpio-80-111", 16,
-> +                           "switch", GPIO_ACTIVE_HIGH),
-> +               { }
-> +       },
-> +};
-> +
-> +static struct gpiod_lookup_table nokia810_mmc_gpio_table = {
-> +       .dev_id = "mmci-omap",
-> +       .table = {
-> +               /* Slot index 1, VSD power, GPIO 23 */
-> +               GPIO_LOOKUP_IDX("gpio-16-31", 7,
-> +                               "vsd", 1, GPIO_ACTIVE_HIGH),
-> +               /* Slot index 1, VIO power, GPIO 9 */
-> +               GPIO_LOOKUP_IDX("gpio-0-15", 9,
-> +                               "vsd", 1, GPIO_ACTIVE_HIGH),
-> +               { }
-> +       },
-> +};
->
->  static int n8x0_mmc_set_power_menelaus(struct device *dev, int slot,
->                                         int power_on, int vdd)
-> @@ -256,31 +267,13 @@ static int n8x0_mmc_set_power_menelaus(struct device *dev, int slot,
->         return 0;
->  }
->
-> -static void n810_set_power_emmc(struct device *dev,
-> -                                        int power_on)
-> -{
-> -       dev_dbg(dev, "Set EMMC power %s\n", power_on ? "on" : "off");
-> -
-> -       if (power_on) {
-> -               gpio_set_value(N810_EMMC_VSD_GPIO, 1);
-> -               msleep(1);
-> -               gpio_set_value(N810_EMMC_VIO_GPIO, 1);
-> -               msleep(1);
-> -       } else {
-> -               gpio_set_value(N810_EMMC_VIO_GPIO, 0);
-> -               msleep(50);
-> -               gpio_set_value(N810_EMMC_VSD_GPIO, 0);
-> -               msleep(50);
-> -       }
-> -}
-> -
->  static int n8x0_mmc_set_power(struct device *dev, int slot, int power_on,
->                               int vdd)
->  {
->         if (board_is_n800() || slot == 0)
->                 return n8x0_mmc_set_power_menelaus(dev, slot, power_on, vdd);
->
-> -       n810_set_power_emmc(dev, power_on);
-> +       /* The n810 power will be handled by GPIO code in the driver */
->
->         return 0;
->  }
-> @@ -418,13 +411,6 @@ static void n8x0_mmc_shutdown(struct device *dev)
->  static void n8x0_mmc_cleanup(struct device *dev)
->  {
->         menelaus_unregister_mmc_callback();
-> -
-> -       gpio_free(N8X0_SLOT_SWITCH_GPIO);
-> -
-> -       if (board_is_n810()) {
-> -               gpio_free(N810_EMMC_VSD_GPIO);
-> -               gpio_free(N810_EMMC_VIO_GPIO);
-> -       }
->  }
->
->  /*
-> @@ -433,7 +419,6 @@ static void n8x0_mmc_cleanup(struct device *dev)
->   */
->  static struct omap_mmc_platform_data mmc1_data = {
->         .nr_slots                       = 0,
-> -       .switch_slot                    = n8x0_mmc_switch_slot,
->         .init                           = n8x0_mmc_late_init,
->         .cleanup                        = n8x0_mmc_cleanup,
->         .shutdown                       = n8x0_mmc_shutdown,
-> @@ -463,14 +448,9 @@ static struct omap_mmc_platform_data mmc1_data = {
->
->  static struct omap_mmc_platform_data *mmc_data[OMAP24XX_NR_MMC];
->
-> -static struct gpio n810_emmc_gpios[] __initdata = {
-> -       { N810_EMMC_VSD_GPIO, GPIOF_OUT_INIT_LOW,  "MMC slot 2 Vddf" },
-> -       { N810_EMMC_VIO_GPIO, GPIOF_OUT_INIT_LOW,  "MMC slot 2 Vdd"  },
-> -};
-> -
->  static void __init n8x0_mmc_init(void)
->  {
-> -       int err;
-> +       gpiod_add_lookup_table(&nokia8xx_mmc_gpio_table);
->
->         if (board_is_n810()) {
->                 mmc1_data.slots[0].name = "external";
-> @@ -483,20 +463,7 @@ static void __init n8x0_mmc_init(void)
->                  */
->                 mmc1_data.slots[1].name = "internal";
->                 mmc1_data.slots[1].ban_openended = 1;
-> -       }
-> -
-> -       err = gpio_request_one(N8X0_SLOT_SWITCH_GPIO, GPIOF_OUT_INIT_LOW,
-> -                              "MMC slot switch");
-> -       if (err)
-> -               return;
-> -
-> -       if (board_is_n810()) {
-> -               err = gpio_request_array(n810_emmc_gpios,
-> -                                        ARRAY_SIZE(n810_emmc_gpios));
-> -               if (err) {
-> -                       gpio_free(N8X0_SLOT_SWITCH_GPIO);
-> -                       return;
-> -               }
-> +               gpiod_add_lookup_table(&nokia810_mmc_gpio_table);
->         }
->
->         mmc1_data.nr_slots = 2;
-> diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
-> index ce78edfb402b..a14af21f12da 100644
-> --- a/drivers/mmc/host/omap.c
-> +++ b/drivers/mmc/host/omap.c
-> @@ -26,6 +26,7 @@
->  #include <linux/clk.h>
->  #include <linux/scatterlist.h>
->  #include <linux/slab.h>
-> +#include <linux/gpio/consumer.h>
->  #include <linux/platform_data/mmc-omap.h>
->
->
-> @@ -111,6 +112,9 @@ struct mmc_omap_slot {
->         struct mmc_request      *mrq;
->         struct mmc_omap_host    *host;
->         struct mmc_host         *mmc;
-> +       struct gpio_desc        *vsd;
-> +       struct gpio_desc        *vio;
-> +       struct gpio_desc        *cover;
->         struct omap_mmc_slot_data *pdata;
->  };
->
-> @@ -133,6 +137,7 @@ struct mmc_omap_host {
->         int                     irq;
->         unsigned char           bus_mode;
->         unsigned int            reg_shift;
-> +       struct gpio_desc        *slot_switch;
->
->         struct work_struct      cmd_abort_work;
->         unsigned                abort:1;
-> @@ -216,8 +221,13 @@ static void mmc_omap_select_slot(struct mmc_omap_slot *slot, int claimed)
->
->         if (host->current_slot != slot) {
->                 OMAP_MMC_WRITE(host, CON, slot->saved_con & 0xFC00);
-> -               if (host->pdata->switch_slot != NULL)
-> -                       host->pdata->switch_slot(mmc_dev(slot->mmc), slot->id);
-> +               if (host->slot_switch)
-> +                       /*
-> +                        * With two slots and a simple GPIO switch, setting
-> +                        * the GPIO to 0 selects slot ID 0, setting it to 1
-> +                        * selects slot ID 1.
-> +                        */
-> +                       gpiod_set_value(host->slot_switch, slot->id);
->                 host->current_slot = slot;
->         }
->
-> @@ -297,6 +307,9 @@ static void mmc_omap_release_slot(struct mmc_omap_slot *slot, int clk_enabled)
->  static inline
->  int mmc_omap_cover_is_open(struct mmc_omap_slot *slot)
->  {
-> +       /* If we have a GPIO then use that */
-> +       if (slot->cover)
-> +               return gpiod_get_value(slot->cover);
->         if (slot->pdata->get_cover_state)
->                 return slot->pdata->get_cover_state(mmc_dev(slot->mmc),
->                                                     slot->id);
-> @@ -1106,6 +1119,11 @@ static void mmc_omap_set_power(struct mmc_omap_slot *slot, int power_on,
->
->         host = slot->host;
->
-> +       if (slot->vsd)
-> +               gpiod_set_value(slot->vsd, power_on);
-> +       if (slot->vio)
-> +               gpiod_set_value(slot->vio, power_on);
-> +
->         if (slot->pdata->set_power != NULL)
->                 slot->pdata->set_power(mmc_dev(slot->mmc), slot->id, power_on,
->                                         vdd);
-> @@ -1240,6 +1258,23 @@ static int mmc_omap_new_slot(struct mmc_omap_host *host, int id)
->         slot->power_mode = MMC_POWER_UNDEFINED;
->         slot->pdata = &host->pdata->slots[id];
->
-> +       /* Check for some optional GPIO controls */
-> +       slot->vsd = gpiod_get_index_optional(host->dev, "vsd",
-> +                                            id, GPIOD_OUT_LOW);
-> +       if (IS_ERR(slot->vsd))
-> +               return dev_err_probe(host->dev, PTR_ERR(slot->vsd),
-> +                                    "error looking up VSD GPIO\n");
-> +       slot->vio = gpiod_get_index_optional(host->dev, "vio",
-> +                                            id, GPIOD_OUT_LOW);
-> +       if (IS_ERR(slot->vio))
-> +               return dev_err_probe(host->dev, PTR_ERR(slot->vio),
-> +                                    "error looking up VIO GPIO\n");
-> +       slot->cover = gpiod_get_index_optional(host->dev, "cover",
-> +                                               id, GPIOD_IN);
-> +       if (IS_ERR(slot->cover))
-> +               return dev_err_probe(host->dev, PTR_ERR(slot->cover),
-> +                                    "error looking up cover switch GPIO\n");
-> +
->         host->slots[id] = slot;
->
->         mmc->caps = 0;
-> @@ -1349,6 +1384,13 @@ static int mmc_omap_probe(struct platform_device *pdev)
->         if (IS_ERR(host->virt_base))
->                 return PTR_ERR(host->virt_base);
->
-> +       host->slot_switch = gpiod_get_optional(host->dev, "switch",
-> +                                              GPIOD_OUT_LOW);
-> +       if (IS_ERR(host->slot_switch))
-> +               return dev_err_probe(host->dev, PTR_ERR(host->slot_switch),
-> +                                    "error looking up slot switch GPIO\n");
-> +
-> +
->         INIT_WORK(&host->slot_release_work, mmc_omap_slot_release_work);
->         INIT_WORK(&host->send_stop_work, mmc_omap_send_stop_work);
->
-> diff --git a/include/linux/platform_data/mmc-omap.h b/include/linux/platform_data/mmc-omap.h
-> index 91051e9907f3..054d0c3c5ec5 100644
-> --- a/include/linux/platform_data/mmc-omap.h
-> +++ b/include/linux/platform_data/mmc-omap.h
-> @@ -20,8 +20,6 @@ struct omap_mmc_platform_data {
->          * maximum frequency on the MMC bus */
->         unsigned int max_freq;
->
-> -       /* switch the bus to a new slot */
-> -       int (*switch_slot)(struct device *dev, int slot);
->         /* initialize board-specific MMC functionality, can be NULL if
->          * not supported */
->         int (*init)(struct device *dev);
->
-> --
-> 2.34.1
->
+--------------0MCCNacSYYSJdxP1iApbbUNY
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmRRPWYFAwAAAAAACgkQlh/E3EQov+BW
+ag//Ues+b3oU4DKxfNDCPfkQoLzJPCsLvy18G8U/cwoNQODCj6gJyZcewvxKeDFXwSMah+NRsjVy
+/FQP8j6cFkQS74kQMbY7SF5ZWDQOhfFPay9Jvvkr0FsmtvujodtrTGgSOKo0CqzhB/KtH46u+bi8
+xjCUv3A332Z2z1n/kCiTzoOnRHxYinC5vZK4qm0bEwf8mG9GpgjwVAYwfOU207v99CcKKhmSwk5m
++DElEKxPUGQPo6fpOtmJbtgF8HK5Js6ApeVtIM8K1/iOS1YDgoJvpvfEp1efnX0pYZig6zHjNjm6
+UOtxLQ7w433O5kG3zkDKgSb69jxt+XlvGSi3nB4np33mR15zptu/8WT2ElKR7pToWCxcrpKsBv8x
+wUn+62S40cdXATKLHDG7aXYmg+PEg42dUurVI863YyAi+di0yemEblVwMAru5hmfVT73qBKyAD1P
+Wzwk/sC4Tvx76jeMNfP3bXR4TpgmYn96tnbhCBneYWOAVACmR7Stggfkt9p/xgETZYRhgx50FvGn
+fn4y68KFnM5XBpRkcjqXWidCl7Ork9AtjREcN+cYlEI/3dcjabRlyOOebxRxup/G/IvO9mbHHhGY
+fehLToon+jerx7XnlYE0VOqnkvTIgO7c+WMj+ymIWwc18fPZtAjpH3b7nN/dsKSDqnOdULnFslSF
+ODk=
+=eyQG
+-----END PGP SIGNATURE-----
+
+--------------0MCCNacSYYSJdxP1iApbbUNY--

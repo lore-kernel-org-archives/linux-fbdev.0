@@ -2,482 +2,460 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85816C77B73
-	for <linux-fbdev@archiver.kernel.org>; Tue,  2 May 2023 13:03:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3343FC7EE23
+	for <linux-fbdev@archiver.kernel.org>; Tue,  2 May 2023 14:26:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234367AbjEBNDD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 2 May 2023 09:03:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41882 "EHLO
+        id S234001AbjEBO0Z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 2 May 2023 10:26:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43160 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234326AbjEBNCk (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 2 May 2023 09:02:40 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D009B59E7;
-        Tue,  2 May 2023 06:02:29 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 6DE9F21FB2;
-        Tue,  2 May 2023 13:02:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1683032547; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=NiIe+W8/KVk4z+vQoB0merwIWEmbGtuxPyODzPQCCGc=;
-        b=QWtuhR4wHDzswQBv4us+KwZsspyvFqq8TFjtcaOayh9THdP2cguppKX8nC+aRceMm8P+FF
-        JrHhaatkjNZ1dA9Ks+5lf8g4ySLnR6hXwcK7j/XOlj1oUzw26XTyVNijcWxjYuMcaP5uaj
-        Fv8xpMzWqDNjyOyufGljFRopU6wsJHE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1683032547;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=NiIe+W8/KVk4z+vQoB0merwIWEmbGtuxPyODzPQCCGc=;
-        b=Ac0QGkIf+AHVVsCtosvAEY750LHyRzsNI0FrsKxRfR4yEfgVTdSdteFuSj8zRQy7oPHQZJ
-        A1iogSzzBRE+iFAA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 0A664134FB;
-        Tue,  2 May 2023 13:02:27 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id cEnCAeMJUWRYTQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Tue, 02 May 2023 13:02:27 +0000
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-To:     deller@gmx.de, geert@linux-m68k.org, javierm@redhat.com,
-        daniel@ffwll.ch, vgupta@kernel.org, chenhuacai@kernel.org,
-        kernel@xen0n.name, davem@davemloft.net,
-        James.Bottomley@HansenPartnership.com, arnd@arndb.de,
-        sam@ravnborg.org
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-arch@vger.kernel.org, linux-snps-arc@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
-        sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-parisc@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v3 4/6] fbdev: Include <linux/io.h> via <asm/fb.h>
-Date:   Tue,  2 May 2023 15:02:21 +0200
-Message-Id: <20230502130223.14719-5-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230502130223.14719-1-tzimmermann@suse.de>
-References: <20230502130223.14719-1-tzimmermann@suse.de>
+        with ESMTP id S232885AbjEBO0Y (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 2 May 2023 10:26:24 -0400
+Received: from mail-yb1-xb31.google.com (mail-yb1-xb31.google.com [IPv6:2607:f8b0:4864:20::b31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2783EE52
+        for <linux-fbdev@vger.kernel.org>; Tue,  2 May 2023 07:26:17 -0700 (PDT)
+Received: by mail-yb1-xb31.google.com with SMTP id 3f1490d57ef6-b9a6f17f2b6so25189485276.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 02 May 2023 07:26:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1683037576; x=1685629576;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=GJdz+RxMdVbJfQQ04WAtIoaksa7fGjauI7FBWcJ4zT8=;
+        b=fLmmlpOLSHmSSYQvnGknXVafSYdvnSejtO7b6qmBLSMwdCrv6qcQpF5845o8c+DKjX
+         vv//8SLu3umpEJB3dK1YwSFIvXd0jtrkErA7+4ZZB0lJ/q+HGLEpaasCayoRAoxxDKis
+         WCKbeLMWuA/P9N3UaY0yunUz6mFN4OxaOVOQmkQG1Camnu/kGZNnSNK6Eo6gl9FAiW8Y
+         TpWG5klHdTubxGUjJXfMZPsNqgAg2pujVG0O0RZQp6p3PFzcDvamIQtfGTnH7YeGqzNn
+         psm8lP3EKThtuSztfp18zn0CO32ETdf/khXwh+gOmrlYvz/nHWtiOlOKCiC2I3exnfx4
+         wPWA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1683037576; x=1685629576;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=GJdz+RxMdVbJfQQ04WAtIoaksa7fGjauI7FBWcJ4zT8=;
+        b=NjvLQwJkc1qCKwqarZMpitUdfk86hxmliDI4fcNJrcZvcj2sndwmhojSBhun8DjKd3
+         DunN2KrHaJl35B63xL/BWaIh0VtmvMuZknHzMHuWBvInzsgyejsFk8R+sh/G2lahunFe
+         /LAkRBCIOvHWoOwJlYpvei9ZjQfbtYQtrkn+FKA8Z5nDzEp3ioRBIgZSGvH5u7NO7AWP
+         KHOjLUXuP/s5Hzn3lU4rnqpklHlem2FZxYfIflxkLvuKt9u8st4wE/o0us6MsVCUZTls
+         tHyh9mPP2yuO5LwLbOpXThBj8dC1+85VUQqBsMR6d0hg/6SqWVSsFgnXITT+u7wtcOzE
+         Qc2Q==
+X-Gm-Message-State: AC+VfDyp1WrtMVE6WEHqXzrUDRijUXjr5H52erZsUskil2zwvbc2332K
+        yoPuORoZAT3EEb0kmZ4ya+dfgIAgmmfQ9o4uVo5nKw==
+X-Google-Smtp-Source: ACHHUZ4cOPkpEByei84s84MHYL126xdaDpBoG4kKIuHgRC/VdknKRU8MQ5+5xRLu/hQbcf5g2r09NnYyS7atmgjuQnA=
+X-Received: by 2002:a81:92cf:0:b0:54f:6831:fe08 with SMTP id
+ j198-20020a8192cf000000b0054f6831fe08mr15274102ywg.14.1683037576174; Tue, 02
+ May 2023 07:26:16 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20230430-nokia770-regression-v1-0-97704e36b094@linaro.org> <20230430-nokia770-regression-v1-3-97704e36b094@linaro.org>
+In-Reply-To: <20230430-nokia770-regression-v1-3-97704e36b094@linaro.org>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Tue, 2 May 2023 16:25:39 +0200
+Message-ID: <CAPDyKFoPa3PZGFBO4njSfEd6H0rdc6KKwPFvE1x6Xx13thKv8g@mail.gmail.com>
+Subject: Re: [PATCH 3/4] ARM/mmc: Convert old mmci-omap to GPIO descriptors
+To:     Linus Walleij <linus.walleij@linaro.org>
+Cc:     Aaro Koskinen <aaro.koskinen@iki.fi>,
+        Janusz Krzysztofik <jmkrzyszt@gmail.com>,
+        Tony Lindgren <tony@atomide.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Daniel Mack <daniel@zonque.org>,
+        Haojian Zhuang <haojian.zhuang@gmail.com>,
+        Robert Jarzmik <robert.jarzmik@free.fr>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+        Andreas Kemnade <andreas@kemnade.info>,
+        Helge Deller <deller@gmx.de>, linux-omap@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-mips@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-mmc@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fbdev's main header file, <linux/fb.h>, includes <asm/io.h> to get
-declarations for I/O helper functions. From these declarations, it
-later defines framebuffer I/O helpers, such as fb_{read,write}[bwlq]()
-or fb_memset().
+On Sun, 30 Apr 2023 at 11:22, Linus Walleij <linus.walleij@linaro.org> wrote:
+>
+> A recent change to the OMAP driver making it use a dynamic GPIO
+> base created problems with some old OMAP1 board files, among
+> them Nokia 770, SX1 and also the OMAP2 Nokia n8x0.
+>
+> Fix up all instances of GPIOs being used for the MMC driver
+> by pushing the handling of power, slot selection and MMC
+> "cover" into the driver as optional GPIOs.
+>
+> This is maybe not the most perfect solution as the MMC
+> framework have some central handlers for some of the
+> stuff, but it at least makes the situtation better and
+> solves the immediate issue.
+>
+> Fixes: 92bf78b33b0b ("gpio: omap: use dynamic allocation of base")
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 
-The framebuffer I/O helpers depend on the system architecture and
-will therefore be moved into <asm/fb.h>. Prepare this change by first
-adding an include statement for <linux/io.h> to <asm-generic/fb.h>.
-Include <asm/fb.h> in all source files that use the framebuffer I/O
-helpers, so that they still get the necessary I/O functions.
+This looks like it's best funneled through the soc maintainer's tree(s), right?
 
-v3:
-	* fix grammar in commit message
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- drivers/video/fbdev/arkfb.c                 | 2 ++
- drivers/video/fbdev/aty/mach64_cursor.c     | 2 +-
- drivers/video/fbdev/chipsfb.c               | 1 +
- drivers/video/fbdev/cirrusfb.c              | 2 ++
- drivers/video/fbdev/core/cfbcopyarea.c      | 2 +-
- drivers/video/fbdev/core/cfbfillrect.c      | 1 +
- drivers/video/fbdev/core/cfbimgblt.c        | 1 +
- drivers/video/fbdev/core/svgalib.c          | 3 +--
- drivers/video/fbdev/cyber2000fb.c           | 2 ++
- drivers/video/fbdev/ep93xx-fb.c             | 2 ++
- drivers/video/fbdev/hgafb.c                 | 3 ++-
- drivers/video/fbdev/hitfb.c                 | 2 +-
- drivers/video/fbdev/kyro/fbdev.c            | 3 ++-
- drivers/video/fbdev/matrox/matroxfb_accel.c | 2 ++
- drivers/video/fbdev/matrox/matroxfb_base.h  | 2 +-
- drivers/video/fbdev/pm2fb.c                 | 3 +++
- drivers/video/fbdev/pm3fb.c                 | 2 ++
- drivers/video/fbdev/pvr2fb.c                | 2 ++
- drivers/video/fbdev/s3fb.c                  | 2 ++
- drivers/video/fbdev/sm712fb.c               | 2 ++
- drivers/video/fbdev/sstfb.c                 | 2 +-
- drivers/video/fbdev/stifb.c                 | 2 ++
- drivers/video/fbdev/tdfxfb.c                | 3 ++-
- drivers/video/fbdev/tridentfb.c             | 2 ++
- drivers/video/fbdev/vga16fb.c               | 3 ++-
- drivers/video/fbdev/vt8623fb.c              | 2 ++
- include/asm-generic/fb.h                    | 1 +
- 27 files changed, 45 insertions(+), 11 deletions(-)
+Kind regards
+Uffe
 
-diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
-index 60a96fdb5dd8..fd38e8a073b8 100644
---- a/drivers/video/fbdev/arkfb.c
-+++ b/drivers/video/fbdev/arkfb.c
-@@ -27,6 +27,8 @@
- #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
- #include <video/vga.h>
- 
-+#include <asm/fb.h>
-+
- struct arkfb_info {
- 	int mclk_freq;
- 	int wc_cookie;
-diff --git a/drivers/video/fbdev/aty/mach64_cursor.c b/drivers/video/fbdev/aty/mach64_cursor.c
-index 4ad0331a8c57..a848aaff510c 100644
---- a/drivers/video/fbdev/aty/mach64_cursor.c
-+++ b/drivers/video/fbdev/aty/mach64_cursor.c
-@@ -8,7 +8,7 @@
- #include <linux/string.h>
- #include "../core/fb_draw.h"
- 
--#include <asm/io.h>
-+#include <asm/fb.h>
- 
- #ifdef __sparc__
- #include <asm/fbio.h>
-diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
-index 7799d52a651f..9f9ee13ba2be 100644
---- a/drivers/video/fbdev/chipsfb.c
-+++ b/drivers/video/fbdev/chipsfb.c
-@@ -32,6 +32,7 @@
- #ifdef CONFIG_PMAC_BACKLIGHT
- #include <asm/backlight.h>
- #endif
-+#include <asm/fb.h>
- 
- /*
-  * Since we access the display with inb/outb to fixed port numbers,
-diff --git a/drivers/video/fbdev/cirrusfb.c b/drivers/video/fbdev/cirrusfb.c
-index ba45e2147c52..cc306b3733e2 100644
---- a/drivers/video/fbdev/cirrusfb.c
-+++ b/drivers/video/fbdev/cirrusfb.c
-@@ -57,6 +57,8 @@
- #include <video/vga.h>
- #include <video/cirrus.h>
- 
-+#include <asm/fb.h>
-+
- /*****************************************************************
-  *
-  * debugging and utility macros
-diff --git a/drivers/video/fbdev/core/cfbcopyarea.c b/drivers/video/fbdev/core/cfbcopyarea.c
-index 6d4bfeecee35..128fdd0cdcdc 100644
---- a/drivers/video/fbdev/core/cfbcopyarea.c
-+++ b/drivers/video/fbdev/core/cfbcopyarea.c
-@@ -26,8 +26,8 @@
- #include <linux/kernel.h>
- #include <linux/string.h>
- #include <linux/fb.h>
-+#include <asm/fb.h>
- #include <asm/types.h>
--#include <asm/io.h>
- #include "fb_draw.h"
- 
- #if BITS_PER_LONG == 32
-diff --git a/drivers/video/fbdev/core/cfbfillrect.c b/drivers/video/fbdev/core/cfbfillrect.c
-index ba9f58b2a5e8..2c6aac987786 100644
---- a/drivers/video/fbdev/core/cfbfillrect.c
-+++ b/drivers/video/fbdev/core/cfbfillrect.c
-@@ -16,6 +16,7 @@
- #include <linux/module.h>
- #include <linux/string.h>
- #include <linux/fb.h>
-+#include <asm/fb.h>
- #include <asm/types.h>
- #include "fb_draw.h"
- 
-diff --git a/drivers/video/fbdev/core/cfbimgblt.c b/drivers/video/fbdev/core/cfbimgblt.c
-index 9ebda4e0dc7a..d1e071148a4b 100644
---- a/drivers/video/fbdev/core/cfbimgblt.c
-+++ b/drivers/video/fbdev/core/cfbimgblt.c
-@@ -32,6 +32,7 @@
- #include <linux/module.h>
- #include <linux/string.h>
- #include <linux/fb.h>
-+#include <asm/fb.h>
- #include <asm/types.h>
- #include "fb_draw.h"
- 
-diff --git a/drivers/video/fbdev/core/svgalib.c b/drivers/video/fbdev/core/svgalib.c
-index 9e01322fabe3..5ddd498024a8 100644
---- a/drivers/video/fbdev/core/svgalib.c
-+++ b/drivers/video/fbdev/core/svgalib.c
-@@ -15,9 +15,8 @@
- #include <linux/string.h>
- #include <linux/fb.h>
- #include <linux/svga.h>
-+#include <asm/fb.h>
- #include <asm/types.h>
--#include <asm/io.h>
--
- 
- /* Write a CRT register value spread across multiple registers */
- void svga_wcrt_multi(void __iomem *regbase, const struct vga_regset *regset, u32 value)
-diff --git a/drivers/video/fbdev/cyber2000fb.c b/drivers/video/fbdev/cyber2000fb.c
-index 38c0a6866d76..9fbc0994b3ae 100644
---- a/drivers/video/fbdev/cyber2000fb.c
-+++ b/drivers/video/fbdev/cyber2000fb.c
-@@ -48,6 +48,8 @@
- #include <linux/i2c.h>
- #include <linux/i2c-algo-bit.h>
- 
-+#include <asm/fb.h>
-+
- #ifdef __arm__
- #include <asm/mach-types.h>
- #endif
-diff --git a/drivers/video/fbdev/ep93xx-fb.c b/drivers/video/fbdev/ep93xx-fb.c
-index 305f1587bd89..5dce00500f0a 100644
---- a/drivers/video/fbdev/ep93xx-fb.c
-+++ b/drivers/video/fbdev/ep93xx-fb.c
-@@ -23,6 +23,8 @@
- 
- #include <linux/platform_data/video-ep93xx.h>
- 
-+#include <asm/fb.h>
-+
- /* Vertical Frame Timing Registers */
- #define EP93XXFB_VLINES_TOTAL			0x0000	/* SW locked */
- #define EP93XXFB_VSYNC				0x0004	/* SW locked */
-diff --git a/drivers/video/fbdev/hgafb.c b/drivers/video/fbdev/hgafb.c
-index 40879d9facdf..b15271c52d05 100644
---- a/drivers/video/fbdev/hgafb.c
-+++ b/drivers/video/fbdev/hgafb.c
-@@ -41,7 +41,8 @@
- #include <linux/init.h>
- #include <linux/ioport.h>
- #include <linux/platform_device.h>
--#include <asm/io.h>
-+
-+#include <asm/fb.h>
- #include <asm/vga.h>
- 
- #if 0
-diff --git a/drivers/video/fbdev/hitfb.c b/drivers/video/fbdev/hitfb.c
-index bbb0f1d953cc..a2b5c58f7b7c 100644
---- a/drivers/video/fbdev/hitfb.c
-+++ b/drivers/video/fbdev/hitfb.c
-@@ -23,7 +23,7 @@
- 
- #include <asm/machvec.h>
- #include <linux/uaccess.h>
--#include <asm/io.h>
-+#include <asm/fb.h>
- #include <asm/hd64461.h>
- #include <cpu/dac.h>
- 
-diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
-index 0596573ef140..8b6c3318bf8c 100644
---- a/drivers/video/fbdev/kyro/fbdev.c
-+++ b/drivers/video/fbdev/kyro/fbdev.c
-@@ -21,9 +21,10 @@
- #include <linux/ioctl.h>
- #include <linux/init.h>
- #include <linux/pci.h>
--#include <asm/io.h>
- #include <linux/uaccess.h>
- 
-+#include <asm/fb.h>
-+
- #include <video/kyro.h>
- 
- #include "STG4000Reg.h"
-diff --git a/drivers/video/fbdev/matrox/matroxfb_accel.c b/drivers/video/fbdev/matrox/matroxfb_accel.c
-index ce51227798a1..c982cfe68ab8 100644
---- a/drivers/video/fbdev/matrox/matroxfb_accel.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_accel.c
-@@ -82,6 +82,8 @@
- #include "matroxfb_Ti3026.h"
- #include "matroxfb_misc.h"
- 
-+#include <asm/fb.h>
-+
- #define curr_ydstorg(x)	((x)->curr.ydstorg.pixels)
- 
- #define mga_ydstlen(y,l) mga_outl(M_YDSTLEN | M_EXEC, ((y) << 16) | (l))
-diff --git a/drivers/video/fbdev/matrox/matroxfb_base.h b/drivers/video/fbdev/matrox/matroxfb_base.h
-index c93c69bbcd57..184a6d733b93 100644
---- a/drivers/video/fbdev/matrox/matroxfb_base.h
-+++ b/drivers/video/fbdev/matrox/matroxfb_base.h
-@@ -43,7 +43,7 @@
- #include <linux/spinlock.h>
- #include <linux/kd.h>
- 
--#include <asm/io.h>
-+#include <asm/fb.h>
- #include <asm/unaligned.h>
- 
- #if defined(CONFIG_PPC_PMAC)
-diff --git a/drivers/video/fbdev/pm2fb.c b/drivers/video/fbdev/pm2fb.c
-index 47d212944f30..b6a37aff057e 100644
---- a/drivers/video/fbdev/pm2fb.c
-+++ b/drivers/video/fbdev/pm2fb.c
-@@ -39,6 +39,9 @@
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/pci.h>
-+
-+#include <asm/fb.h>
-+
- #include <video/permedia2.h>
- #include <video/cvisionppc.h>
- 
-diff --git a/drivers/video/fbdev/pm3fb.c b/drivers/video/fbdev/pm3fb.c
-index b46a471df9ae..95e152969d30 100644
---- a/drivers/video/fbdev/pm3fb.c
-+++ b/drivers/video/fbdev/pm3fb.c
-@@ -34,6 +34,8 @@
- #include <linux/init.h>
- #include <linux/pci.h>
- 
-+#include <asm/fb.h>
-+
- #include <video/pm3fb.h>
- 
- #if !defined(CONFIG_PCI)
-diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
-index 6888127a5eb8..1dfb75b15eea 100644
---- a/drivers/video/fbdev/pvr2fb.c
-+++ b/drivers/video/fbdev/pvr2fb.c
-@@ -74,6 +74,8 @@
- #include <cpu/sq.h>
- #endif
- 
-+#include <asm/fb.h>
-+
- #ifndef PCI_DEVICE_ID_NEC_NEON250
- #  define PCI_DEVICE_ID_NEC_NEON250	0x0067
- #endif
-diff --git a/drivers/video/fbdev/s3fb.c b/drivers/video/fbdev/s3fb.c
-index 7d257489edcc..eb16beba10c5 100644
---- a/drivers/video/fbdev/s3fb.c
-+++ b/drivers/video/fbdev/s3fb.c
-@@ -29,6 +29,8 @@
- #include <linux/i2c.h>
- #include <linux/i2c-algo-bit.h>
- 
-+#include <asm/fb.h>
-+
- struct s3fb_info {
- 	int chip, rev, mclk_freq;
- 	int wc_cookie;
-diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
-index b528776c7612..ca15938ce603 100644
---- a/drivers/video/fbdev/sm712fb.c
-+++ b/drivers/video/fbdev/sm712fb.c
-@@ -31,6 +31,8 @@
- 
- #include <linux/pm.h>
- 
-+#include <asm/fb.h>
-+
- #include "sm712.h"
- 
- /*
-diff --git a/drivers/video/fbdev/sstfb.c b/drivers/video/fbdev/sstfb.c
-index da296b2ab54a..1ee4bea467b4 100644
---- a/drivers/video/fbdev/sstfb.c
-+++ b/drivers/video/fbdev/sstfb.c
-@@ -88,10 +88,10 @@
- #include <linux/pci.h>
- #include <linux/delay.h>
- #include <linux/init.h>
--#include <asm/io.h>
- #include <linux/uaccess.h>
- #include <video/sstfb.h>
- 
-+#include <asm/fb.h>
- 
- /* initialized by setup */
- 
-diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
-index baca6974e288..a3b837a5fb81 100644
---- a/drivers/video/fbdev/stifb.c
-+++ b/drivers/video/fbdev/stifb.c
-@@ -69,6 +69,8 @@
- #include <asm/grfioctl.h>	/* for HP-UX compatibility */
- #include <linux/uaccess.h>
- 
-+#include <asm/fb.h>
-+
- #include <video/sticore.h>
- 
- /* REGION_BASE(fb_info, index) returns the virtual address for region <index> */
-diff --git a/drivers/video/fbdev/tdfxfb.c b/drivers/video/fbdev/tdfxfb.c
-index d17e5e1472aa..5ed8f670f51c 100644
---- a/drivers/video/fbdev/tdfxfb.c
-+++ b/drivers/video/fbdev/tdfxfb.c
-@@ -74,7 +74,8 @@
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/pci.h>
--#include <asm/io.h>
-+
-+#include <asm/fb.h>
- 
- #include <video/tdfx.h>
- 
-diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
-index 6099b9768ba1..1bd12606c9e0 100644
---- a/drivers/video/fbdev/tridentfb.c
-+++ b/drivers/video/fbdev/tridentfb.c
-@@ -30,6 +30,8 @@
- #include <linux/i2c.h>
- #include <linux/i2c-algo-bit.h>
- 
-+#include <asm/fb.h>
-+
- struct tridentfb_par {
- 	void __iomem *io_virt;	/* iospace virtual memory address */
- 	u32 pseudo_pal[16];
-diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
-index 1a8ffdb2be26..2899d4ce0f6f 100644
---- a/drivers/video/fbdev/vga16fb.c
-+++ b/drivers/video/fbdev/vga16fb.c
-@@ -23,7 +23,8 @@
- #include <linux/platform_device.h>
- #include <linux/screen_info.h>
- 
--#include <asm/io.h>
-+#include <asm/fb.h>
-+
- #include <video/vga.h>
- 
- #define MODE_SKIP4	1
-diff --git a/drivers/video/fbdev/vt8623fb.c b/drivers/video/fbdev/vt8623fb.c
-index 034333ee6e45..bc345d4fee9e 100644
---- a/drivers/video/fbdev/vt8623fb.c
-+++ b/drivers/video/fbdev/vt8623fb.c
-@@ -27,6 +27,8 @@
- #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
- #include <video/vga.h>
- 
-+#include <asm/fb.h>
-+
- struct vt8623fb_info {
- 	char __iomem *mmio_base;
- 	int wc_cookie;
-diff --git a/include/asm-generic/fb.h b/include/asm-generic/fb.h
-index c8af99f5a535..6922dd248c51 100644
---- a/include/asm-generic/fb.h
-+++ b/include/asm-generic/fb.h
-@@ -7,6 +7,7 @@
-  * Only include this header file from your architecture's <asm/fb.h>.
-  */
- 
-+#include <linux/io.h>
- #include <linux/mm_types.h>
- #include <linux/pgtable.h>
- 
--- 
-2.40.1
-
+> ---
+>  arch/arm/mach-omap1/board-nokia770.c   | 43 ++++++-----------
+>  arch/arm/mach-omap1/board-sx1-mmc.c    |  1 -
+>  arch/arm/mach-omap2/board-n8x0.c       | 85 +++++++++++-----------------------
+>  drivers/mmc/host/omap.c                | 46 +++++++++++++++++-
+>  include/linux/platform_data/mmc-omap.h |  2 -
+>  5 files changed, 83 insertions(+), 94 deletions(-)
+>
+> diff --git a/arch/arm/mach-omap1/board-nokia770.c b/arch/arm/mach-omap1/board-nokia770.c
+> index 509afcd42823..53a4a44d5f4a 100644
+> --- a/arch/arm/mach-omap1/board-nokia770.c
+> +++ b/arch/arm/mach-omap1/board-nokia770.c
+> @@ -162,27 +162,23 @@ static struct omap_usb_config nokia770_usb_config __initdata = {
+>
+>  #if IS_ENABLED(CONFIG_MMC_OMAP)
+>
+> -#define NOKIA770_GPIO_MMC_POWER                41
+> -#define NOKIA770_GPIO_MMC_SWITCH       23
+> -
+> -static int nokia770_mmc_set_power(struct device *dev, int slot, int power_on,
+> -                               int vdd)
+> -{
+> -       gpio_set_value(NOKIA770_GPIO_MMC_POWER, power_on);
+> -       return 0;
+> -}
+> -
+> -static int nokia770_mmc_get_cover_state(struct device *dev, int slot)
+> -{
+> -       return gpio_get_value(NOKIA770_GPIO_MMC_SWITCH);
+> -}
+> +static struct gpiod_lookup_table nokia770_mmc_gpio_table = {
+> +       .dev_id = "mmci-omap",
+> +       .table = {
+> +               /* Slot index 0, VSD power, GPIO 41 */
+> +               GPIO_LOOKUP_IDX("gpio-32-47", 9,
+> +                               "vsd", 0, GPIO_ACTIVE_HIGH),
+> +               /* Slot index 0, switch, GPIO 23 */
+> +               GPIO_LOOKUP_IDX("gpio-16-31", 7,
+> +                               "cover", 0, GPIO_ACTIVE_HIGH),
+> +               { }
+> +       },
+> +};
+>
+>  static struct omap_mmc_platform_data nokia770_mmc2_data = {
+>         .nr_slots                       = 1,
+>         .max_freq                       = 12000000,
+>         .slots[0]       = {
+> -               .set_power              = nokia770_mmc_set_power,
+> -               .get_cover_state        = nokia770_mmc_get_cover_state,
+>                 .ocr_mask               = MMC_VDD_32_33|MMC_VDD_33_34,
+>                 .name                   = "mmcblk",
+>         },
+> @@ -192,20 +188,7 @@ static struct omap_mmc_platform_data *nokia770_mmc_data[OMAP16XX_NR_MMC];
+>
+>  static void __init nokia770_mmc_init(void)
+>  {
+> -       int ret;
+> -
+> -       ret = gpio_request(NOKIA770_GPIO_MMC_POWER, "MMC power");
+> -       if (ret < 0)
+> -               return;
+> -       gpio_direction_output(NOKIA770_GPIO_MMC_POWER, 0);
+> -
+> -       ret = gpio_request(NOKIA770_GPIO_MMC_SWITCH, "MMC cover");
+> -       if (ret < 0) {
+> -               gpio_free(NOKIA770_GPIO_MMC_POWER);
+> -               return;
+> -       }
+> -       gpio_direction_input(NOKIA770_GPIO_MMC_SWITCH);
+> -
+> +       gpiod_add_lookup_table(&nokia770_mmc_gpio_table);
+>         /* Only the second MMC controller is used */
+>         nokia770_mmc_data[1] = &nokia770_mmc2_data;
+>         omap1_init_mmc(nokia770_mmc_data, OMAP16XX_NR_MMC);
+> diff --git a/arch/arm/mach-omap1/board-sx1-mmc.c b/arch/arm/mach-omap1/board-sx1-mmc.c
+> index f1c160924dfe..f183a8448a7b 100644
+> --- a/arch/arm/mach-omap1/board-sx1-mmc.c
+> +++ b/arch/arm/mach-omap1/board-sx1-mmc.c
+> @@ -9,7 +9,6 @@
+>   * Copyright (C) 2007 Instituto Nokia de Tecnologia - INdT
+>   */
+>
+> -#include <linux/gpio.h>
+>  #include <linux/platform_device.h>
+>
+>  #include "hardware.h"
+> diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
+> index 3353b0a923d9..baa2f0341aed 100644
+> --- a/arch/arm/mach-omap2/board-n8x0.c
+> +++ b/arch/arm/mach-omap2/board-n8x0.c
+> @@ -11,6 +11,7 @@
+>  #include <linux/clk.h>
+>  #include <linux/delay.h>
+>  #include <linux/gpio.h>
+> +#include <linux/gpio/machine.h>
+>  #include <linux/init.h>
+>  #include <linux/io.h>
+>  #include <linux/irq.h>
+> @@ -170,22 +171,32 @@ static struct spi_board_info n800_spi_board_info[] __initdata = {
+>   * GPIO23 and GPIO9            slot 2 EMMC on N810
+>   *
+>   */
+> -#define N8X0_SLOT_SWITCH_GPIO  96
+> -#define N810_EMMC_VSD_GPIO     23
+> -#define N810_EMMC_VIO_GPIO     9
+> -
+>  static int slot1_cover_open;
+>  static int slot2_cover_open;
+>  static struct device *mmc_device;
+>
+> -static int n8x0_mmc_switch_slot(struct device *dev, int slot)
+> -{
+> -#ifdef CONFIG_MMC_DEBUG
+> -       dev_dbg(dev, "Choose slot %d\n", slot + 1);
+> -#endif
+> -       gpio_set_value(N8X0_SLOT_SWITCH_GPIO, slot);
+> -       return 0;
+> -}
+> +static struct gpiod_lookup_table nokia8xx_mmc_gpio_table = {
+> +       .dev_id = "mmci-omap",
+> +       .table = {
+> +               /* Slot switch, GPIO 96 */
+> +               GPIO_LOOKUP("gpio-80-111", 16,
+> +                           "switch", GPIO_ACTIVE_HIGH),
+> +               { }
+> +       },
+> +};
+> +
+> +static struct gpiod_lookup_table nokia810_mmc_gpio_table = {
+> +       .dev_id = "mmci-omap",
+> +       .table = {
+> +               /* Slot index 1, VSD power, GPIO 23 */
+> +               GPIO_LOOKUP_IDX("gpio-16-31", 7,
+> +                               "vsd", 1, GPIO_ACTIVE_HIGH),
+> +               /* Slot index 1, VIO power, GPIO 9 */
+> +               GPIO_LOOKUP_IDX("gpio-0-15", 9,
+> +                               "vsd", 1, GPIO_ACTIVE_HIGH),
+> +               { }
+> +       },
+> +};
+>
+>  static int n8x0_mmc_set_power_menelaus(struct device *dev, int slot,
+>                                         int power_on, int vdd)
+> @@ -256,31 +267,13 @@ static int n8x0_mmc_set_power_menelaus(struct device *dev, int slot,
+>         return 0;
+>  }
+>
+> -static void n810_set_power_emmc(struct device *dev,
+> -                                        int power_on)
+> -{
+> -       dev_dbg(dev, "Set EMMC power %s\n", power_on ? "on" : "off");
+> -
+> -       if (power_on) {
+> -               gpio_set_value(N810_EMMC_VSD_GPIO, 1);
+> -               msleep(1);
+> -               gpio_set_value(N810_EMMC_VIO_GPIO, 1);
+> -               msleep(1);
+> -       } else {
+> -               gpio_set_value(N810_EMMC_VIO_GPIO, 0);
+> -               msleep(50);
+> -               gpio_set_value(N810_EMMC_VSD_GPIO, 0);
+> -               msleep(50);
+> -       }
+> -}
+> -
+>  static int n8x0_mmc_set_power(struct device *dev, int slot, int power_on,
+>                               int vdd)
+>  {
+>         if (board_is_n800() || slot == 0)
+>                 return n8x0_mmc_set_power_menelaus(dev, slot, power_on, vdd);
+>
+> -       n810_set_power_emmc(dev, power_on);
+> +       /* The n810 power will be handled by GPIO code in the driver */
+>
+>         return 0;
+>  }
+> @@ -418,13 +411,6 @@ static void n8x0_mmc_shutdown(struct device *dev)
+>  static void n8x0_mmc_cleanup(struct device *dev)
+>  {
+>         menelaus_unregister_mmc_callback();
+> -
+> -       gpio_free(N8X0_SLOT_SWITCH_GPIO);
+> -
+> -       if (board_is_n810()) {
+> -               gpio_free(N810_EMMC_VSD_GPIO);
+> -               gpio_free(N810_EMMC_VIO_GPIO);
+> -       }
+>  }
+>
+>  /*
+> @@ -433,7 +419,6 @@ static void n8x0_mmc_cleanup(struct device *dev)
+>   */
+>  static struct omap_mmc_platform_data mmc1_data = {
+>         .nr_slots                       = 0,
+> -       .switch_slot                    = n8x0_mmc_switch_slot,
+>         .init                           = n8x0_mmc_late_init,
+>         .cleanup                        = n8x0_mmc_cleanup,
+>         .shutdown                       = n8x0_mmc_shutdown,
+> @@ -463,14 +448,9 @@ static struct omap_mmc_platform_data mmc1_data = {
+>
+>  static struct omap_mmc_platform_data *mmc_data[OMAP24XX_NR_MMC];
+>
+> -static struct gpio n810_emmc_gpios[] __initdata = {
+> -       { N810_EMMC_VSD_GPIO, GPIOF_OUT_INIT_LOW,  "MMC slot 2 Vddf" },
+> -       { N810_EMMC_VIO_GPIO, GPIOF_OUT_INIT_LOW,  "MMC slot 2 Vdd"  },
+> -};
+> -
+>  static void __init n8x0_mmc_init(void)
+>  {
+> -       int err;
+> +       gpiod_add_lookup_table(&nokia8xx_mmc_gpio_table);
+>
+>         if (board_is_n810()) {
+>                 mmc1_data.slots[0].name = "external";
+> @@ -483,20 +463,7 @@ static void __init n8x0_mmc_init(void)
+>                  */
+>                 mmc1_data.slots[1].name = "internal";
+>                 mmc1_data.slots[1].ban_openended = 1;
+> -       }
+> -
+> -       err = gpio_request_one(N8X0_SLOT_SWITCH_GPIO, GPIOF_OUT_INIT_LOW,
+> -                              "MMC slot switch");
+> -       if (err)
+> -               return;
+> -
+> -       if (board_is_n810()) {
+> -               err = gpio_request_array(n810_emmc_gpios,
+> -                                        ARRAY_SIZE(n810_emmc_gpios));
+> -               if (err) {
+> -                       gpio_free(N8X0_SLOT_SWITCH_GPIO);
+> -                       return;
+> -               }
+> +               gpiod_add_lookup_table(&nokia810_mmc_gpio_table);
+>         }
+>
+>         mmc1_data.nr_slots = 2;
+> diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
+> index ce78edfb402b..a14af21f12da 100644
+> --- a/drivers/mmc/host/omap.c
+> +++ b/drivers/mmc/host/omap.c
+> @@ -26,6 +26,7 @@
+>  #include <linux/clk.h>
+>  #include <linux/scatterlist.h>
+>  #include <linux/slab.h>
+> +#include <linux/gpio/consumer.h>
+>  #include <linux/platform_data/mmc-omap.h>
+>
+>
+> @@ -111,6 +112,9 @@ struct mmc_omap_slot {
+>         struct mmc_request      *mrq;
+>         struct mmc_omap_host    *host;
+>         struct mmc_host         *mmc;
+> +       struct gpio_desc        *vsd;
+> +       struct gpio_desc        *vio;
+> +       struct gpio_desc        *cover;
+>         struct omap_mmc_slot_data *pdata;
+>  };
+>
+> @@ -133,6 +137,7 @@ struct mmc_omap_host {
+>         int                     irq;
+>         unsigned char           bus_mode;
+>         unsigned int            reg_shift;
+> +       struct gpio_desc        *slot_switch;
+>
+>         struct work_struct      cmd_abort_work;
+>         unsigned                abort:1;
+> @@ -216,8 +221,13 @@ static void mmc_omap_select_slot(struct mmc_omap_slot *slot, int claimed)
+>
+>         if (host->current_slot != slot) {
+>                 OMAP_MMC_WRITE(host, CON, slot->saved_con & 0xFC00);
+> -               if (host->pdata->switch_slot != NULL)
+> -                       host->pdata->switch_slot(mmc_dev(slot->mmc), slot->id);
+> +               if (host->slot_switch)
+> +                       /*
+> +                        * With two slots and a simple GPIO switch, setting
+> +                        * the GPIO to 0 selects slot ID 0, setting it to 1
+> +                        * selects slot ID 1.
+> +                        */
+> +                       gpiod_set_value(host->slot_switch, slot->id);
+>                 host->current_slot = slot;
+>         }
+>
+> @@ -297,6 +307,9 @@ static void mmc_omap_release_slot(struct mmc_omap_slot *slot, int clk_enabled)
+>  static inline
+>  int mmc_omap_cover_is_open(struct mmc_omap_slot *slot)
+>  {
+> +       /* If we have a GPIO then use that */
+> +       if (slot->cover)
+> +               return gpiod_get_value(slot->cover);
+>         if (slot->pdata->get_cover_state)
+>                 return slot->pdata->get_cover_state(mmc_dev(slot->mmc),
+>                                                     slot->id);
+> @@ -1106,6 +1119,11 @@ static void mmc_omap_set_power(struct mmc_omap_slot *slot, int power_on,
+>
+>         host = slot->host;
+>
+> +       if (slot->vsd)
+> +               gpiod_set_value(slot->vsd, power_on);
+> +       if (slot->vio)
+> +               gpiod_set_value(slot->vio, power_on);
+> +
+>         if (slot->pdata->set_power != NULL)
+>                 slot->pdata->set_power(mmc_dev(slot->mmc), slot->id, power_on,
+>                                         vdd);
+> @@ -1240,6 +1258,23 @@ static int mmc_omap_new_slot(struct mmc_omap_host *host, int id)
+>         slot->power_mode = MMC_POWER_UNDEFINED;
+>         slot->pdata = &host->pdata->slots[id];
+>
+> +       /* Check for some optional GPIO controls */
+> +       slot->vsd = gpiod_get_index_optional(host->dev, "vsd",
+> +                                            id, GPIOD_OUT_LOW);
+> +       if (IS_ERR(slot->vsd))
+> +               return dev_err_probe(host->dev, PTR_ERR(slot->vsd),
+> +                                    "error looking up VSD GPIO\n");
+> +       slot->vio = gpiod_get_index_optional(host->dev, "vio",
+> +                                            id, GPIOD_OUT_LOW);
+> +       if (IS_ERR(slot->vio))
+> +               return dev_err_probe(host->dev, PTR_ERR(slot->vio),
+> +                                    "error looking up VIO GPIO\n");
+> +       slot->cover = gpiod_get_index_optional(host->dev, "cover",
+> +                                               id, GPIOD_IN);
+> +       if (IS_ERR(slot->cover))
+> +               return dev_err_probe(host->dev, PTR_ERR(slot->cover),
+> +                                    "error looking up cover switch GPIO\n");
+> +
+>         host->slots[id] = slot;
+>
+>         mmc->caps = 0;
+> @@ -1349,6 +1384,13 @@ static int mmc_omap_probe(struct platform_device *pdev)
+>         if (IS_ERR(host->virt_base))
+>                 return PTR_ERR(host->virt_base);
+>
+> +       host->slot_switch = gpiod_get_optional(host->dev, "switch",
+> +                                              GPIOD_OUT_LOW);
+> +       if (IS_ERR(host->slot_switch))
+> +               return dev_err_probe(host->dev, PTR_ERR(host->slot_switch),
+> +                                    "error looking up slot switch GPIO\n");
+> +
+> +
+>         INIT_WORK(&host->slot_release_work, mmc_omap_slot_release_work);
+>         INIT_WORK(&host->send_stop_work, mmc_omap_send_stop_work);
+>
+> diff --git a/include/linux/platform_data/mmc-omap.h b/include/linux/platform_data/mmc-omap.h
+> index 91051e9907f3..054d0c3c5ec5 100644
+> --- a/include/linux/platform_data/mmc-omap.h
+> +++ b/include/linux/platform_data/mmc-omap.h
+> @@ -20,8 +20,6 @@ struct omap_mmc_platform_data {
+>          * maximum frequency on the MMC bus */
+>         unsigned int max_freq;
+>
+> -       /* switch the bus to a new slot */
+> -       int (*switch_slot)(struct device *dev, int slot);
+>         /* initialize board-specific MMC functionality, can be NULL if
+>          * not supported */
+>         int (*init)(struct device *dev);
+>
+> --
+> 2.34.1
+>

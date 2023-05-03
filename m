@@ -2,103 +2,111 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6646EC77B78
-	for <linux-fbdev@archiver.kernel.org>; Wed,  3 May 2023 15:02:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9752AC7EE23
+	for <linux-fbdev@archiver.kernel.org>; Wed,  3 May 2023 15:07:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230055AbjECPCT convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 3 May 2023 11:02:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38732 "EHLO
+        id S230240AbjECPHF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 3 May 2023 11:07:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40244 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229873AbjECPCS (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 3 May 2023 11:02:18 -0400
-Received: from mail-yw1-f175.google.com (mail-yw1-f175.google.com [209.85.128.175])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 553D349F9
-        for <linux-fbdev@vger.kernel.org>; Wed,  3 May 2023 08:02:17 -0700 (PDT)
-Received: by mail-yw1-f175.google.com with SMTP id 00721157ae682-55a1462f9f6so40050067b3.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 03 May 2023 08:02:17 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1683126136; x=1685718136;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=NOlHKfxuJYPRynZEw9AN6Z+6KcLUXuz7CAX0Jz+d/Q8=;
-        b=dzN1iRCzT9Zc3025bSkKnoS3o2fgWzjwUo2fiG5LG1mHmoe3/ei9jD4yElrxIMASw8
-         w8iApCUXxa6FMOMQjShJfYjofdFCYObI0LhMB9BjgfkbdEXH03ty2J+dolKnytNRtkBL
-         YQrQYwRwcAavXUlRP8UgM3cxM9cN6wCAQizAJM+QCrchxxBKZdkQFyReI9fsEdBMGyx2
-         1Ib3h8x81MR4IjwDaum6GJpPGr7WvcjrvRwfU04HG/KF7sUS1wCEFiJ8TxgXmoubkgxf
-         JOqoJXHYjZj0+0zIIU7tV00gnRz/FvRrpT+fAnuPV7DpZDYAmiLyIYbIU1+fqr0IncVh
-         chbw==
-X-Gm-Message-State: AC+VfDyqvFf2YDwn91ThTbujXJwiqLQB8AqWyxp1jOszIXbqwBE9joFz
-        JQ63oCVjlQic5n06Gq8Yn03AKkFu8XQr8Q==
-X-Google-Smtp-Source: ACHHUZ7pyynixsVFqMXSRrJ9ZgtpIGrmNha8covUTUZr3HSx/Z9ZhutIGrG5DqiQaGJQvG8yy8QLqw==
-X-Received: by 2002:a81:52c5:0:b0:55d:6b67:f478 with SMTP id g188-20020a8152c5000000b0055d6b67f478mr173999ywb.4.1683126135653;
-        Wed, 03 May 2023 08:02:15 -0700 (PDT)
-Received: from mail-yb1-f182.google.com (mail-yb1-f182.google.com. [209.85.219.182])
-        by smtp.gmail.com with ESMTPSA id a3-20020a818a03000000b00545a08184edsm176070ywg.125.2023.05.03.08.02.14
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 03 May 2023 08:02:15 -0700 (PDT)
-Received: by mail-yb1-f182.google.com with SMTP id 3f1490d57ef6-b99489836aaso4448671276.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 03 May 2023 08:02:14 -0700 (PDT)
-X-Received: by 2002:a05:6902:723:b0:b99:8359:b485 with SMTP id
- l3-20020a056902072300b00b998359b485mr23672462ybt.18.1683126134306; Wed, 03
- May 2023 08:02:14 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230428122452.4856-1-tzimmermann@suse.de> <20230428122452.4856-18-tzimmermann@suse.de>
- <CAMuHMdUgsUsNaCvSA+jUNrOvZU3O2xF0b=MnA_GyL-HvAeZy5Q@mail.gmail.com> <310b1de3-589d-189b-e6b7-1e146a86f185@suse.de>
-In-Reply-To: <310b1de3-589d-189b-e6b7-1e146a86f185@suse.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 3 May 2023 17:02:01 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXD85QqpH5JN=-8bj-8Hsb_opiM1xF0Vu7Cc3_4r2kRAA@mail.gmail.com>
-Message-ID: <CAMuHMdXD85QqpH5JN=-8bj-8Hsb_opiM1xF0Vu7Cc3_4r2kRAA@mail.gmail.com>
-Subject: Re: [PATCH v2 17/19] fbdev: Validate info->screen_{base,buffer} in
- fb_ops implementations
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     linux-fbdev@vger.kernel.org,
-        Sui Jingfeng <suijingfeng@loongson.cn>,
-        teddy.wang@siliconmotion.com, deller@gmx.de, javierm@redhat.com,
-        dri-devel@lists.freedesktop.org, sudipm.mukherjee@gmail.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+        with ESMTP id S230175AbjECPHE (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 3 May 2023 11:07:04 -0400
+Received: from new3-smtp.messagingengine.com (new3-smtp.messagingengine.com [66.111.4.229])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F413A4C15;
+        Wed,  3 May 2023 08:07:02 -0700 (PDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
+        by mailnew.nyi.internal (Postfix) with ESMTP id D7C39580192;
+        Wed,  3 May 2023 11:06:59 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute6.internal (MEProxy); Wed, 03 May 2023 11:06:59 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+        :cc:content-type:content-type:date:date:from:from:in-reply-to
+        :in-reply-to:message-id:mime-version:references:reply-to:sender
+        :subject:subject:to:to; s=fm3; t=1683126419; x=1683133619; bh=VJ
+        t2NCaR1dSCR48usj7TiL9m0aFyTQB4ngpTHc/wzNQ=; b=fWJmhJIQIjPfE0lPmm
+        2UUUsui9hK1EONioNtG6XwBvLEDBvBxWfFLQ9N1tFGkGwliU9yz6nObIhjKeToCC
+        bOuSHwnPUFWVc1GvN6m/EdkHVQKkpb604IurKdO/9InTVd5vTzU5d2iVigisoIm9
+        4gq2jLPIug5jHmpZc0rslk2Xj4l3SvhsCZPAjlEXGarhG7krdPhI3x8NitksJAfo
+        tYDl+DHnKp88gZ0zrjylkyygbSAqCJ34r3G+WSX8xRpLvbG35Kxyh2gNtLoHTEbZ
+        J9eceuXp5T7bkpNuwlU2Nn9ZVhzBpBEZ65RYAxta21HkybOMf+rDE6vuOkjpbFmd
+        k70g==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-type:content-type:date:date
+        :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+        :x-sasl-enc; s=fm3; t=1683126419; x=1683133619; bh=VJt2NCaR1dSCR
+        48usj7TiL9m0aFyTQB4ngpTHc/wzNQ=; b=iwh/U6vLmswIa3ZMz2TyphQ0p3mxw
+        /PfsOG0YBvIFJiK0YdJok8ez88E84BqeEydOwuMsHbERhRnQWa1jVmo9N6PU0wXj
+        v1msIiMaTbFwQAVnj/LnGQHSHJ4VT2tvqtnNPzD3/1/sQnuUSFnWdyVEggJNwF3i
+        GhqmBsRhzAf61JR15C0WdazOIg1Z9a9ASX/7rHQg8LseB6Ch/Fd+zJUxkqJZWliN
+        A6mPn/RBrGbW1t7grbGpAiFDLa8+UOCaaegmxhtITsCQ/+nqhKZSDww627LKvrLR
+        Akf6DAcnHjAniziM/oUzZ6HGvBtIvoek+KBdspGK9Usi69nxEi00tJLKg==
+X-ME-Sender: <xms:kXhSZN-9H5s1bhLJ6A4BrSSA8u23bM9KPdG9aZBVi6Vx7ttWzwFj4g>
+    <xme:kXhSZBtOpEQrvQSpGvqieF5mg9zfO9L78_hVsMKITr2FmH2UMwYQTD0RcbxdHK-LE
+    fjd2wqoShzKWEE9HP8>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrfedvkedgkeduucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
+    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
+    htvghrnhepffehueegteeihfegtefhjefgtdeugfegjeelheejueethfefgeeghfektdek
+    teffnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
+    hrnhgusegrrhhnuggsrdguvg
+X-ME-Proxy: <xmx:kXhSZLDbZTo8b8vLn4_1sIrA2TKPplauxliuy1lkEmJlepSP7t9PIw>
+    <xmx:kXhSZBcW4sv-KQYA40dQFN8qx_vykn6TAKbj5-otIqOh7yBd6gwTfQ>
+    <xmx:kXhSZCPWk3peePgjhptjqH3qDnIMxLup6tjVPNovu7IcIqvBdhS8MA>
+    <xmx:k3hSZLyNTBeb8R9B8Rjvb47iNEFyVIScCzaPoMQcfpENafp15C45lQ>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+        id 10509B60086; Wed,  3 May 2023 11:06:56 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-386-g2404815117-fm-20230425.001-g24048151
+Mime-Version: 1.0
+Message-Id: <2054ae6a-dcf9-42a3-9850-dd2587d40c58@app.fastmail.com>
+In-Reply-To: <dd921bae-0145-09e2-24b1-f08d89a78eba@suse.de>
+References: <20230502130223.14719-1-tzimmermann@suse.de>
+ <20230502130223.14719-6-tzimmermann@suse.de>
+ <67d6a188-041f-4604-99a3-548c41af0693@app.fastmail.com>
+ <dd921bae-0145-09e2-24b1-f08d89a78eba@suse.de>
+Date:   Wed, 03 May 2023 17:06:36 +0200
+From:   "Arnd Bergmann" <arnd@arndb.de>
+To:     "Thomas Zimmermann" <tzimmermann@suse.de>,
+        "Helge Deller" <deller@gmx.de>,
+        "Geert Uytterhoeven" <geert@linux-m68k.org>,
+        "Javier Martinez Canillas" <javierm@redhat.com>,
+        "Daniel Vetter" <daniel@ffwll.ch>,
+        "Vineet Gupta" <vgupta@kernel.org>,
+        "Huacai Chen" <chenhuacai@kernel.org>,
+        "WANG Xuerui" <kernel@xen0n.name>,
+        "David S . Miller" <davem@davemloft.net>,
+        "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+        "Sam Ravnborg" <sam@ravnborg.org>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Linux-Arch <linux-arch@vger.kernel.org>,
+        linux-snps-arc@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-ia64@vger.kernel.org, loongarch@lists.linux.dev,
+        linux-m68k@lists.linux-m68k.org, sparclinux@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org
+Subject: Re: [PATCH v3 5/6] fbdev: Move framebuffer I/O helpers into <asm/fb.h>
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+On Wed, May 3, 2023, at 16:55, Thomas Zimmermann wrote:
+> Am 02.05.23 um 22:06 schrieb Arnd Bergmann:
 
-On Wed, May 3, 2023 at 4:30 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> Am 03.05.23 um 11:51 schrieb Geert Uytterhoeven:
-> > On Fri, Apr 28, 2023 at 2:26 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> >> Push the test for info->screen_base from fb_read() and fb_write() into
-> >> the implementations of struct fb_ops.{fb_read,fb_write}. In cases where
-> >> the driver operates on info->screen_buffer, test this field instead.
-> >>
-> >> While bothi fields, screen_base and screen_buffer, are stored in the
-> >
-> > both
-> >
-> >> same location, they refer to different address spaces. For correctness,
-> >> we want to test each field in exactly the code that uses it.
-> >
-> > Not a direct comment for this patch: and later the union can be split
-> > in two separate fields, to protect against misuse?
+>> It's probably safe to deal with all the above by either adding
+>> architecture specific overrides to the current version, or
+>> by doing the semantic changes before the move to asm/fb.h, but
+>> one way or the other I'd prefer this to be separate from the
+>> consolidation patch that should not have any changes in behavior.
 >
-> No idea. Currently we have sparse that warns about mismatching address
-> spaces if the fields are mixed up. That's good enough, as far I'm concerned.
+> I think I'll add architecture overrides that contain the current code, 
+> even if they contain some force-casting wrt __iomem. If anyone wants to 
+> fix the issues, they can then address them easily.
 
-The potential issue that is still present is that an fbdev driver uses
-fb_info.screen_base, and configures the use of drawing ops that use
-fb_info.screen_buffer (or vice-versa), which will happily use the wrong
-type of pointer.  Sparse doesn't protect against that.
+Ok, sounds good,
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+     Arnd

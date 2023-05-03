@@ -2,158 +2,279 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05A64C77B75
-	for <linux-fbdev@archiver.kernel.org>; Wed,  3 May 2023 18:21:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D1E2C7EE21
+	for <linux-fbdev@archiver.kernel.org>; Wed,  3 May 2023 18:44:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229730AbjECSVQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 3 May 2023 14:21:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57458 "EHLO
+        id S229613AbjECSoE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 3 May 2023 14:44:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45262 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229581AbjECSVO (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 3 May 2023 14:21:14 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 058334237
-        for <linux-fbdev@vger.kernel.org>; Wed,  3 May 2023 11:21:13 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id B354F22B82;
-        Wed,  3 May 2023 18:21:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1683138071; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=eJkcdlJ8uYOoL34KmPnx41oYkLy6xV5MCThO6fxInHk=;
-        b=bn9L2IUbTrp7RzYFsdchd5d3sPSaKXfygfQoqKIUxYsqdIugCvmb/jMmdwQd09hLsp29k5
-        4yajZMpIBbUs7xx9HJ0CDM79/Dl9l07fMkYX1wpkHj/X2li6KUsRUfYHKQi1g0WDbPJHf7
-        cJR3dABD80P/aoIX+RyEIptPLcbOlZ4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1683138071;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=eJkcdlJ8uYOoL34KmPnx41oYkLy6xV5MCThO6fxInHk=;
-        b=NbCxZEr/SPYo4lTnX1E4gHsgslerXGkVgrU+AwsxWMxHRS/yRCBD3c6J/7FiYEOH7mmlOs
-        Zl2Tg58SupW69cDA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8A55C13584;
-        Wed,  3 May 2023 18:21:11 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id WebOIBemUmQdPgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Wed, 03 May 2023 18:21:11 +0000
-Message-ID: <8e8bc38f-2481-777c-97f4-37bd226556b2@suse.de>
-Date:   Wed, 3 May 2023 20:21:11 +0200
+        with ESMTP id S229901AbjECSnl (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 3 May 2023 14:43:41 -0400
+Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F28168A56;
+        Wed,  3 May 2023 11:41:17 -0700 (PDT)
+Received: by mail-pf1-x42a.google.com with SMTP id d2e1a72fcca58-64115eef620so7041575b3a.1;
+        Wed, 03 May 2023 11:41:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1683139273; x=1685731273;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=ffwvzJo3AetlasPY6gczdMsVH/amBSlWs9nz5GwhjKo=;
+        b=BUwgoBPWsCmvVQYmmuOOxZi2Vjm5BAQyRtgpsU3UIjTvN96QrVGClIjRjcrP3CO/4a
+         vKPHya5vUObcTcf2qbpwCNwRVZMrIV+yCVJicmSnLfRDLn5GQo/JRwoN1DO3YOSQXwKw
+         iTAE8nywvJqc3X4JuNhaHD964flox43stbpb97fQN0E7Bxtn/8umJjl2LH4UIxG2OOcM
+         OU3dtgxTlljLyDb8zW5dVcu9Z3K9tuUx97r8/sIHdEFDsXiEzvkgCK0Bb1yl6edwJbWy
+         mNKTap/DotcsrKzDAnEMi4WxSoK+qQADqP8Rb7nxvikR7yfBfesjPELVdkU5rg+QH5ts
+         w+7A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1683139273; x=1685731273;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ffwvzJo3AetlasPY6gczdMsVH/amBSlWs9nz5GwhjKo=;
+        b=gt8vu529Ix1+8ZiUYJ61V+5PLvyAXVE8YCROqXXStS5Qj20Izp3WI5KEMvaLs2/lBc
+         PybZCgzYbxIAGluj6/mXma1cCk1ay0H6/Dh0CRxUMmW4hO0yOrQVpckLHcJzevZRrV0I
+         H6tIqn/WbxhAcKc1/OjuynlGnxOj3yOfNc+Jz0H4FaoA9wE5TUJouEx+4nQ1WM1mpLJ6
+         p9ME/sx/XMGtFTAFyiuBaek/MEMRHfDIghTM6QF2TGzh6F6ReWw6Fc2OC68YtVoM/EsP
+         RD5JfyWbQx05DO/0tYfIvy/yY1NxcIgUxK1Tiftx8nO4Ib9CLqWhecoMwBvOtPnRsdUG
+         ZuFA==
+X-Gm-Message-State: AC+VfDxpHjZddTEVmiz9ZZgWTR+63Lll8hDyaBqeSCLQDlvCjYB3TSv+
+        yCQ9TaC5Fk0PlUog6JSTk4g=
+X-Google-Smtp-Source: ACHHUZ4sGR2VzM/n/g6q/XijzKKMV6zu0D1LXBCdpHQIraxKFbmxB3ILwUBxWRATGPgJ4Z6CrVyxeQ==
+X-Received: by 2002:a05:6a00:14c6:b0:636:e0fb:8c45 with SMTP id w6-20020a056a0014c600b00636e0fb8c45mr3611728pfu.16.1683139272680;
+        Wed, 03 May 2023 11:41:12 -0700 (PDT)
+Received: from google.com ([2620:15c:9d:2:9390:e396:49ef:54dc])
+        by smtp.gmail.com with ESMTPSA id q10-20020a63d60a000000b0051eff0a70d7sm19998800pgg.94.2023.05.03.11.41.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 03 May 2023 11:41:11 -0700 (PDT)
+Date:   Wed, 3 May 2023 11:41:08 -0700
+From:   Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To:     Linus Walleij <linus.walleij@linaro.org>
+Cc:     Aaro Koskinen <aaro.koskinen@iki.fi>,
+        Janusz Krzysztofik <jmkrzyszt@gmail.com>,
+        Tony Lindgren <tony@atomide.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Daniel Mack <daniel@zonque.org>,
+        Haojian Zhuang <haojian.zhuang@gmail.com>,
+        Robert Jarzmik <robert.jarzmik@free.fr>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Mark Brown <broonie@kernel.org>,
+        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+        Andreas Kemnade <andreas@kemnade.info>,
+        Helge Deller <deller@gmx.de>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
+        linux-input@vger.kernel.org, linux-spi@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-mmc@vger.kernel.org
+Subject: Re: [PATCH 1/4] Input/ARM: ads7846: Get pendown IRQ from descriptors
+Message-ID: <ZFKqxNA9m9Kge1oo@google.com>
+References: <20230430-nokia770-regression-v1-0-97704e36b094@linaro.org>
+ <20230430-nokia770-regression-v1-1-97704e36b094@linaro.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH v2 17/19] fbdev: Validate info->screen_{base,buffer} in
- fb_ops implementations
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     linux-fbdev@vger.kernel.org,
-        Sui Jingfeng <suijingfeng@loongson.cn>,
-        teddy.wang@siliconmotion.com, deller@gmx.de, javierm@redhat.com,
-        dri-devel@lists.freedesktop.org, sudipm.mukherjee@gmail.com
-References: <20230428122452.4856-1-tzimmermann@suse.de>
- <20230428122452.4856-18-tzimmermann@suse.de>
- <CAMuHMdUgsUsNaCvSA+jUNrOvZU3O2xF0b=MnA_GyL-HvAeZy5Q@mail.gmail.com>
- <310b1de3-589d-189b-e6b7-1e146a86f185@suse.de>
- <CAMuHMdXD85QqpH5JN=-8bj-8Hsb_opiM1xF0Vu7Cc3_4r2kRAA@mail.gmail.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <CAMuHMdXD85QqpH5JN=-8bj-8Hsb_opiM1xF0Vu7Cc3_4r2kRAA@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------9mzxVxtDURkET6jTpp4WXiZ4"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230430-nokia770-regression-v1-1-97704e36b094@linaro.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------9mzxVxtDURkET6jTpp4WXiZ4
-Content-Type: multipart/mixed; boundary="------------LtvMHykG0vTjj8cI1bsdZUpQ";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-fbdev@vger.kernel.org, Sui Jingfeng <suijingfeng@loongson.cn>,
- teddy.wang@siliconmotion.com, deller@gmx.de, javierm@redhat.com,
- dri-devel@lists.freedesktop.org, sudipm.mukherjee@gmail.com
-Message-ID: <8e8bc38f-2481-777c-97f4-37bd226556b2@suse.de>
-Subject: Re: [PATCH v2 17/19] fbdev: Validate info->screen_{base,buffer} in
- fb_ops implementations
-References: <20230428122452.4856-1-tzimmermann@suse.de>
- <20230428122452.4856-18-tzimmermann@suse.de>
- <CAMuHMdUgsUsNaCvSA+jUNrOvZU3O2xF0b=MnA_GyL-HvAeZy5Q@mail.gmail.com>
- <310b1de3-589d-189b-e6b7-1e146a86f185@suse.de>
- <CAMuHMdXD85QqpH5JN=-8bj-8Hsb_opiM1xF0Vu7Cc3_4r2kRAA@mail.gmail.com>
-In-Reply-To: <CAMuHMdXD85QqpH5JN=-8bj-8Hsb_opiM1xF0Vu7Cc3_4r2kRAA@mail.gmail.com>
+On Sun, Apr 30, 2023 at 11:22:16AM +0200, Linus Walleij wrote:
+> The ADS7846 has some limited support for using GPIO descriptors,
+> let's convert it over completely and fix all users to provide
+> GPIOs in descriptor tables.
+> 
+> The Nokia 770 now has dynamic allocation of IRQ numbers, so this
+> needs to be fixed for it to work.
+> 
+> Fixes: 92bf78b33b0b ("gpio: omap: use dynamic allocation of base")
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+> ---
+>  arch/arm/mach-omap1/board-nokia770.c | 12 +++++++++++-
+>  arch/arm/mach-pxa/spitz.c            | 11 ++++++++++-
+>  arch/mips/alchemy/devboards/db1000.c | 11 ++++++++++-
+>  drivers/input/touchscreen/ads7846.c  | 32 ++++++++------------------------
+>  include/linux/spi/ads7846.h          |  2 --
+>  5 files changed, 39 insertions(+), 29 deletions(-)
+> 
+> diff --git a/arch/arm/mach-omap1/board-nokia770.c b/arch/arm/mach-omap1/board-nokia770.c
+> index a501a473ffd6..eb7652670447 100644
+> --- a/arch/arm/mach-omap1/board-nokia770.c
+> +++ b/arch/arm/mach-omap1/board-nokia770.c
+> @@ -118,7 +118,16 @@ static struct ads7846_platform_data nokia770_ads7846_platform_data __initdata =
+>  	.debounce_max	= 10,
+>  	.debounce_tol	= 3,
+>  	.debounce_rep	= 1,
+> -	.gpio_pendown	= ADS7846_PENDOWN_GPIO,
+> +};
+> +
+> +static struct gpiod_lookup_table nokia770_ads7846_gpio_table = {
+> +	/* SPI bus 2, device with chip select 0 */
+> +	.dev_id = "spi2.0",
+> +	.table = {
+> +		GPIO_LOOKUP("gpio-0-15", ADS7846_PENDOWN_GPIO,
+> +			    "pendown", GPIO_ACTIVE_HIGH),
+> +		{ }
+> +	},
+>  };
 
---------------LtvMHykG0vTjj8cI1bsdZUpQ
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+I would like to eventually get rid of GPIO_LOOKUP in favor of
+PROPERTY_ENTRY_GPIO. Can we try something like the draft below (just
+typed, not even compiled):
 
-SGkNCg0KQW0gMDMuMDUuMjMgdW0gMTc6MDIgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
-DQo+IEhpIFRob21hcywNCj4gDQo+IE9uIFdlZCwgTWF5IDMsIDIwMjMgYXQgNDozMOKAr1BN
-IFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPiB3cm90ZToNCj4+IEFt
-IDAzLjA1LjIzIHVtIDExOjUxIHNjaHJpZWIgR2VlcnQgVXl0dGVyaG9ldmVuOg0KPj4+IE9u
-IEZyaSwgQXByIDI4LCAyMDIzIGF0IDI6MjbigK9QTSBUaG9tYXMgWmltbWVybWFubiA8dHpp
-bW1lcm1hbm5Ac3VzZS5kZT4gd3JvdGU6DQo+Pj4+IFB1c2ggdGhlIHRlc3QgZm9yIGluZm8t
-PnNjcmVlbl9iYXNlIGZyb20gZmJfcmVhZCgpIGFuZCBmYl93cml0ZSgpIGludG8NCj4+Pj4g
-dGhlIGltcGxlbWVudGF0aW9ucyBvZiBzdHJ1Y3QgZmJfb3BzLntmYl9yZWFkLGZiX3dyaXRl
-fS4gSW4gY2FzZXMgd2hlcmUNCj4+Pj4gdGhlIGRyaXZlciBvcGVyYXRlcyBvbiBpbmZvLT5z
-Y3JlZW5fYnVmZmVyLCB0ZXN0IHRoaXMgZmllbGQgaW5zdGVhZC4NCj4+Pj4NCj4+Pj4gV2hp
-bGUgYm90aGkgZmllbGRzLCBzY3JlZW5fYmFzZSBhbmQgc2NyZWVuX2J1ZmZlciwgYXJlIHN0
-b3JlZCBpbiB0aGUNCj4+Pg0KPj4+IGJvdGgNCj4+Pg0KPj4+PiBzYW1lIGxvY2F0aW9uLCB0
-aGV5IHJlZmVyIHRvIGRpZmZlcmVudCBhZGRyZXNzIHNwYWNlcy4gRm9yIGNvcnJlY3RuZXNz
-LA0KPj4+PiB3ZSB3YW50IHRvIHRlc3QgZWFjaCBmaWVsZCBpbiBleGFjdGx5IHRoZSBjb2Rl
-IHRoYXQgdXNlcyBpdC4NCj4+Pg0KPj4+IE5vdCBhIGRpcmVjdCBjb21tZW50IGZvciB0aGlz
-IHBhdGNoOiBhbmQgbGF0ZXIgdGhlIHVuaW9uIGNhbiBiZSBzcGxpdA0KPj4+IGluIHR3byBz
-ZXBhcmF0ZSBmaWVsZHMsIHRvIHByb3RlY3QgYWdhaW5zdCBtaXN1c2U/DQo+Pg0KPj4gTm8g
-aWRlYS4gQ3VycmVudGx5IHdlIGhhdmUgc3BhcnNlIHRoYXQgd2FybnMgYWJvdXQgbWlzbWF0
-Y2hpbmcgYWRkcmVzcw0KPj4gc3BhY2VzIGlmIHRoZSBmaWVsZHMgYXJlIG1peGVkIHVwLiBU
-aGF0J3MgZ29vZCBlbm91Z2gsIGFzIGZhciBJJ20gY29uY2VybmVkLg0KPiANCj4gVGhlIHBv
-dGVudGlhbCBpc3N1ZSB0aGF0IGlzIHN0aWxsIHByZXNlbnQgaXMgdGhhdCBhbiBmYmRldiBk
-cml2ZXIgdXNlcw0KPiBmYl9pbmZvLnNjcmVlbl9iYXNlLCBhbmQgY29uZmlndXJlcyB0aGUg
-dXNlIG9mIGRyYXdpbmcgb3BzIHRoYXQgdXNlDQo+IGZiX2luZm8uc2NyZWVuX2J1ZmZlciAo
-b3IgdmljZS12ZXJzYSksIHdoaWNoIHdpbGwgaGFwcGlseSB1c2UgdGhlIHdyb25nDQo+IHR5
-cGUgb2YgcG9pbnRlci4gIFNwYXJzZSBkb2Vzbid0IHByb3RlY3QgYWdhaW5zdCB0aGF0Lg0K
-DQpSaWdodC4gRnJvbSBhIHF1aWNrIGdyZXAsIEkndmUgZm91bmQgcXVpdGUgYSBjYXNlcyB3
-aGVyZSBjZmJfIGZ1bmN0aW9ucyANCm9wZXJhdGUgb24gbm9uLV9faW9tZW0gbWVtb3J5LiBJ
-J20gc3VyZSB0aGF0IHRoZSBvcHBvc2l0ZSB3aXRoIHN5c18gDQpmdW5jdGlvbnMgZXhpc3Rz
-IGFzIHdlbGwuIEZpeGluZyB0aGlzIHdpbGwgYmUgYSBnb29kIGZvbGxvdy11cCBwYXRjaHNl
-dC4gDQpUaGFua3MgZm9yIHRoZSBzdWdnZXN0aW9uLg0KDQpCZXN0IHJlZ2FyZHMNClRob21h
-cw0KDQo+IA0KPiBHcntvZXRqZSxlZXRpbmd9cywNCj4gDQo+ICAgICAgICAgICAgICAgICAg
-ICAgICAgICBHZWVydA0KPiANCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3Mg
-RHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJI
-DQpGcmFua2Vuc3RyYXNzZSAxNDYsIDkwNDYxIE51ZXJuYmVyZywgR2VybWFueQ0KR0Y6IEl2
-byBUb3RldiwgQW5kcmV3IE15ZXJzLCBBbmRyZXcgTWNEb25hbGQsIEJvdWRpZW4gTW9lcm1h
-bg0KSFJCIDM2ODA5IChBRyBOdWVybmJlcmcpDQo=
+diff --git a/arch/arm/mach-omap1/board-nokia770.c b/arch/arm/mach-omap1/board-nokia770.c
+index a501a473ffd6..34b8e392b917 100644
+--- a/arch/arm/mach-omap1/board-nokia770.c
++++ b/arch/arm/mach-omap1/board-nokia770.c
+@@ -12,6 +12,7 @@
+ #include <linux/init.h>
+ #include <linux/mutex.h>
+ #include <linux/platform_device.h>
++#include <linux/property.h>
+ #include <linux/input.h>
+ #include <linux/omapfb.h>
+ 
+@@ -35,6 +36,24 @@
+ #include "clock.h"
+ #include "mmc.h"
+ 
++static const struct software_node nokia770_mpuio_gpiochip_node = {
++	.name = "mpuio",
++};
++
++static const struct software_node nokia770_gpiochip1_node = {
++	.name = "gpio-0-15",
++};
++
++static const struct software_node nokia770_gpiochip2_node = {
++	.name = "gpio-16-31",
++};
++
++static const struct software_node nokia770_gpiochip_nodes[] = {
++	&nokia770_mpuio_gpiochip_node
++	&nokia770_gpiochip1_node,
++	&nokia770_gpiochip2_node,
++};
++
+ #define ADS7846_PENDOWN_GPIO	15
+ 
+ static const unsigned int nokia770_keymap[] = {
+@@ -102,6 +121,17 @@ static const struct omap_lcd_config nokia770_lcd_config __initconst = {
+ 	.ctrl_name	= "hwa742",
+ };
+ 
++static const struct property_entry nokia770_mipid_props[] = {
++	PROPERTY_ENTRY_GPIO("reset-gpios", &nokia770_gpiochip1_node,
++			    13, GPIO_ACTIVE_LOW),
++	{ }
++};
++
++static const struct software_node nokia770_mipid_swnode = {
++	.name = "lcd_mipid",
++	.properties = nokia770_mipid_props,
++};
++
+ static void __init mipid_dev_init(void)
+ {
+ 	nokia770_mipid_platform_data.nreset_gpio = 13;
+@@ -110,15 +140,22 @@ static void __init mipid_dev_init(void)
+ 	omapfb_set_lcd_config(&nokia770_lcd_config);
+ }
+ 
+-static struct ads7846_platform_data nokia770_ads7846_platform_data __initdata = {
+-	.x_max		= 0x0fff,
+-	.y_max		= 0x0fff,
+-	.x_plate_ohms	= 180,
+-	.pressure_max	= 255,
+-	.debounce_max	= 10,
+-	.debounce_tol	= 3,
+-	.debounce_rep	= 1,
+-	.gpio_pendown	= ADS7846_PENDOWN_GPIO,
++static const struct property_entry nokia770_ads7846_props[] = {
++	PROPERTY_ENTRY_U32("touchscreen-size-x", 4096),
++	PROPERTY_ENTRY_U32("touchscreen-size-y", 4096),
++	PROPERTY_ENTRY_U32("touchscreen-max-pressure", 256),
++	PROPERTY_ENTRY_U32("touchscreen-average-samples", 10),
++	PROPERTY_ENTRY_U16("ti,x-plate-ohms", 180),
++	PROPERTY_ENTRY_U16("ti,debounce-tol", 3),
++	PROPERTY_ENTRY_U16("ti,debounce-rep", 1),
++	PROPERTY_ENTRY_GPIO("pendown-gpios", &nokia770_gpiochip1_node,
++			    ADS7846_PENDOWN_GPIO, GPIO_ACTIVE_HIGH),
++	{ }
++};
++
++static const struct software_node nokia770_ads7846_swnode = {
++	.name = "ads7846",
++	.properties = nokia770_ads7846_props,
+ };
+ 
+ static struct spi_board_info nokia770_spi_board_info[] __initdata = {
+@@ -128,13 +165,14 @@ static struct spi_board_info nokia770_spi_board_info[] __initdata = {
+ 		.chip_select    = 3,
+ 		.max_speed_hz   = 12000000,
+ 		.platform_data	= &nokia770_mipid_platform_data,
++		.swnode		= &nokia770_mipid_swnode,
+ 	},
+ 	[1] = {
+ 		.modalias       = "ads7846",
+ 		.bus_num        = 2,
+ 		.chip_select    = 0,
+ 		.max_speed_hz   = 2500000,
+-		.platform_data	= &nokia770_ads7846_platform_data,
++		.swnode		= &nokia770_ads7846_swnode,
+ 	},
+ };
+ 
+@@ -212,14 +250,15 @@ static inline void nokia770_mmc_init(void)
+ #endif
+ 
+ #if IS_ENABLED(CONFIG_I2C_CBUS_GPIO)
+-static struct gpiod_lookup_table nokia770_cbus_gpio_table = {
+-	.dev_id = "i2c-cbus-gpio.2",
+-	.table = {
+-		GPIO_LOOKUP_IDX("mpuio", 9, NULL, 0, 0), /* clk */
+-		GPIO_LOOKUP_IDX("mpuio", 10, NULL, 1, 0), /* dat */
+-		GPIO_LOOKUP_IDX("mpuio", 11, NULL, 2, 0), /* sel */
+-		{ },
+-	},
++static const struct software_node_ref_args nokia770_cbus_gpio_refs[] = {
++	SOFTWARE_NODE_REFERENCE(&nokia770_mpuio_gpiochip_swnode, 9, 0),
++	SOFTWARE_NODE_REFERENCE(&nokia770_mpuio_gpiochip_swnode, 10, 0),
++	SOFTWARE_NODE_REFERENCE(&nokia770_mpuio_gpiochip_swnode, 11, 0),
++};
++
++static const struct property_entry nokia770_ads7846_props[] = {
++	PROPERTY_ENTRY_REF_ARRAY("gpios", nokia770_cbus_gpio_refs),
++	{ }
+ };
+ 
+ static struct platform_device nokia770_cbus_device = {
+@@ -253,7 +292,8 @@ static void __init nokia770_cbus_init(void)
+ 	nokia770_i2c_board_info_2[1].irq = gpio_to_irq(tahvo_irq_gpio);
+ 	i2c_register_board_info(2, nokia770_i2c_board_info_2,
+ 				ARRAY_SIZE(nokia770_i2c_board_info_2));
+-	gpiod_add_lookup_table(&nokia770_cbus_gpio_table);
++	device_create_managed_software_node(&nokia770_cbus_device.dev,
++					    nokia770_cbus_props, NULL);
+ 	platform_device_register(&nokia770_cbus_device);
+ }
+ #else /* CONFIG_I2C_CBUS_GPIO */
+@@ -273,6 +313,7 @@ static void __init omap_nokia770_init(void)
+ 	/* Unmask SleepX signal */
+ 	omap_writew((omap_readw(0xfffb5004) & ~2), 0xfffb5004);
+ 
++	software_node_register_node_group(nokia770_gpiochip_swnodes);
+ 	platform_add_devices(nokia770_devices, ARRAY_SIZE(nokia770_devices));
+ 	nokia770_spi_board_info[1].irq = gpio_to_irq(15);
+ 	spi_register_board_info(nokia770_spi_board_info,
 
---------------LtvMHykG0vTjj8cI1bsdZUpQ--
 
---------------9mzxVxtDURkET6jTpp4WXiZ4
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+This will need switching ads7846.c from using of_property* to
+device_property* so that it can parse software nodes.
 
------BEGIN PGP SIGNATURE-----
+Thanks.
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmRSphcFAwAAAAAACgkQlh/E3EQov+BE
-Cw/8CadnxaAGPZYY8T1GYhs5B/NTg0V+d/3Y3zuDdM4de2DB5V/JNeenRFucNRkOzXZ2Gr0X1GkV
-5F3cj6AyAz4PhNYScyJIbtkNhYO2ee/+EzkqSrJnOZVsO2uA+YMatgJha8ifaOTLgzSh3FEpTmqq
-dnR80f5jBI158x0b9PeQ4at//i4mz+ztTzlKDc/hiQV1S4JApUL6HA9LTmEyMp0nloFEQRxyQ+t+
-Ik5hnV/xhFDa3ttmA+x7L9NtGZHvXRQJtKkt//azY7VsHO3rLent1pWNKlelDD3BtgwKBy/2iZci
-AJd7TYs89X+o7bmk/JCZ5btnXf45HHezaxmh5FgRPgmozYCfRSNC8+gPY30ELPQSo42MvELJ6Czw
-wgZ15GEshuP5r/BBtugq73WCYfhnuLUDLfaGjxIoOJu+3OtlDqfb1pKSS0EAyUVRAnFUI30NYQha
-E0r9/GphcqWjsiz4F9kn+AyrfdcguDMq/hhnk3mrBMexr6q/BUY5pEH5U4YIuPZOcpKUJco9NCgo
-9WN9dzfrrcwgynbP+DUjP1r3fPIcFQ6APzkelfw0tdLuuzf+Jt+CzLZcDpfyk5w5/+19OSn5z2QY
-VpSwIbNX5DGdtHWTALj5u/+cCapBAuzvZ9ejaQx+IeyK0E2ka8icTEKNAT4BxfcylrFaImRHq1db
-8CQ=
-=7O9P
------END PGP SIGNATURE-----
-
---------------9mzxVxtDURkET6jTpp4WXiZ4--
+-- 
+Dmitry

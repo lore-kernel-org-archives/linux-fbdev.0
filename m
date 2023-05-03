@@ -2,118 +2,92 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59112C77B7F
-	for <linux-fbdev@archiver.kernel.org>; Wed,  3 May 2023 08:53:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7513C77B75
+	for <linux-fbdev@archiver.kernel.org>; Wed,  3 May 2023 09:53:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229865AbjECIxY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 3 May 2023 04:53:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40306 "EHLO
+        id S229486AbjECJxE convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 3 May 2023 05:53:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48734 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229887AbjECIxP (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 3 May 2023 04:53:15 -0400
-Received: from wnew2-smtp.messagingengine.com (wnew2-smtp.messagingengine.com [64.147.123.27])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB138E57;
-        Wed,  3 May 2023 01:52:59 -0700 (PDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-        by mailnew.west.internal (Postfix) with ESMTP id E927C2B0695E;
-        Wed,  3 May 2023 04:52:55 -0400 (EDT)
-Received: from imap51 ([10.202.2.101])
-  by compute6.internal (MEProxy); Wed, 03 May 2023 04:52:57 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-        :cc:content-type:content-type:date:date:from:from:in-reply-to
-        :in-reply-to:message-id:mime-version:references:reply-to:sender
-        :subject:subject:to:to; s=fm3; t=1683103975; x=1683111175; bh=IS
-        4EM5wdsuSjV61ICnK1JWQzvfZmpsEGvr2M9gQsBDg=; b=xFunroi/7DC9ShYZYF
-        0mkS1O4uFFPq6Ixts8x5XfA1TtFTRvtgFMSPwmY/QxmzmL4BwSEk1AAGZOWlkaw8
-        G/Qp1sWYevvX+sFvbpTZcf3rjLOBulkJ8Uiuvi16V7J3DjTqeQNEK8iP4a9KjnGf
-        AZFDczkFoeVbNFRXPynwrYtDmJgetJTY2yHzUYvc3J0ZzuF1bobFPZSiPlRGEuYf
-        3e67ij/DjoLjlsBxu1+3uM5MYZv9w2R9m7KD9LMhSly7TtZLqeq0jrg0Gls3kupf
-        1G1xcF49uh5fi9NgbQILKNzf3cG1mEsLRM3xpKbKP5GH0OST4rDQ5eyIyIPDKIcL
-        OBAQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-type:content-type:date:date
-        :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-        :message-id:mime-version:references:reply-to:sender:subject
-        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-        :x-sasl-enc; s=fm3; t=1683103975; x=1683111175; bh=IS4EM5wdsuSjV
-        61ICnK1JWQzvfZmpsEGvr2M9gQsBDg=; b=fOZ/xI4I2hlVOsmaVXohE0GxuJ/WQ
-        5W+sIMqjJ3nKPDW8LmKpdh2luVCCtpTNFkUrKdi1fAsUK6C/2B6+1tLefS1ddRsr
-        MmMAFZgcqtocNbZny1ua3NZ6+E5xbqP8/5bWqckB5cYLDA5DGxh9x+UY8Pw2fq+p
-        S79jlVyAhJjFWrlrypp8EpWc1dMwsc5a9hw/oePA/lCbQIxkR5ZeY/6Xsftlhc+l
-        Htz3SpG1C/s3uhEXjE4MxVAJDLcu8PvU5jAfsiTFb/NVUr9dk100g0e4uViCzcCf
-        84BNNVhGsrK57sej9W1I7Khq+NtVWqm5iYASgfRGRnF5bgsaTBk7l9gdA==
-X-ME-Sender: <xms:5iBSZB6waEbkoZSuAcdjwPbQtxZjM_QjNWuH9Z89bJoEVoKZECP9XQ>
-    <xme:5iBSZO4MbLBKe8qyXRGJZconrK-wkSHbbvOY5Nn3ucu39n3eNmHGgS9BbDQks5mVi
-    9deu1Go1vvXng1b94w>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrfedvkedgtdekucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
-    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
-    htvghrnhepffehueegteeihfegtefhjefgtdeugfegjeelheejueethfefgeeghfektdek
-    teffnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
-    hrnhgusegrrhhnuggsrdguvg
-X-ME-Proxy: <xmx:5iBSZIetZ3io1_WwWrG5A5y-vWMtX6jG-iRLHYUbU3H91u2JRZxyIg>
-    <xmx:5iBSZKKYY7kwklx5HX9jBu4cyX4FKYnhz1QuC9yZ8w_mnITQhCunaw>
-    <xmx:5iBSZFJNJdiIT89CdIrMdBTAeYA7OFOs9bKV0VCjpS-TfgXa9njB7Q>
-    <xmx:5yBSZKCtfTyRWweziCf0h6B7K9kpLs7LYO6VLyOu5dz5_qpxplsAo3N_Uvk>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-        id 45BA2B60086; Wed,  3 May 2023 04:52:54 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.9.0-alpha0-386-g2404815117-fm-20230425.001-g24048151
-Mime-Version: 1.0
-Message-Id: <0ecbc92c-7e42-4958-988b-abc265f039bf@app.fastmail.com>
-In-Reply-To: <97bbdb2f-6245-caf2-c0f6-d628873bd6db@suse.de>
-References: <20230502130223.14719-1-tzimmermann@suse.de>
- <20230502130223.14719-5-tzimmermann@suse.de>
- <20230502195429.GA319489@ravnborg.org>
- <563673c0-799d-e353-974c-91b1ab881a22@suse.de>
- <87354dyj9i.fsf@minerva.mail-host-address-is-not-set>
- <97bbdb2f-6245-caf2-c0f6-d628873bd6db@suse.de>
-Date:   Wed, 03 May 2023 10:52:34 +0200
-From:   "Arnd Bergmann" <arnd@arndb.de>
-To:     "Thomas Zimmermann" <tzimmermann@suse.de>,
-        "Javier Martinez Canillas" <javierm@redhat.com>,
-        "Sam Ravnborg" <sam@ravnborg.org>
-Cc:     Linux-Arch <linux-arch@vger.kernel.org>,
-        linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org,
-        linux-parisc@vger.kernel.org, "Helge Deller" <deller@gmx.de>,
-        "Huacai Chen" <chenhuacai@kernel.org>,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
-        linux-m68k@lists.linux-m68k.org,
-        "Geert Uytterhoeven" <geert@linux-m68k.org>,
-        loongarch@lists.linux.dev, "Vineet Gupta" <vgupta@kernel.org>,
-        sparclinux@vger.kernel.org, "WANG Xuerui" <kernel@xen0n.name>,
-        linux-snps-arc@lists.infradead.org,
-        "David S . Miller" <davem@davemloft.net>,
-        linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v3 4/6] fbdev: Include <linux/io.h> via <asm/fb.h>
-Content-Type: text/plain
+        with ESMTP id S229735AbjECJwR (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 3 May 2023 05:52:17 -0400
+Received: from mail-yw1-f174.google.com (mail-yw1-f174.google.com [209.85.128.174])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1EECA5B97
+        for <linux-fbdev@vger.kernel.org>; Wed,  3 May 2023 02:51:25 -0700 (PDT)
+Received: by mail-yw1-f174.google.com with SMTP id 00721157ae682-55a64f0053fso43330957b3.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 03 May 2023 02:51:25 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1683107484; x=1685699484;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=dkwA2SG4jNMgczQ03V/PwVcxgOK6BA7kr8exPJlpnkE=;
+        b=a501mlZUInYwOGHoIyzDR81cMFGG+4vZOHVhmQwep09M1DKpC5be9RbxPluYaAT1C4
+         jgSil8B7/8GAkABn8LlVQ7M/kXZ9j1bCLvw7qNlL4jLj/SaLXxSy9I5xiTxpcjgXHUcI
+         mowu3Yxw6yOJ03ENND5meE48oHWHVYtbVmb5nZ253vfjgz1xaWWWkLx2FkZ8aDajIlMn
+         FduyZyAtGLLDXYcDbOA0O/lFMQcf6RdqIbVEil9iX8hBKrkMdIZSHh+tAt4aWGJdPzEi
+         FuvbmkwqnGmSVWDrGg31TuA6ViHXlNQ57r28hcOf7GViXVwaNLfv7ZQcFzJMIr5OmjDL
+         cIiQ==
+X-Gm-Message-State: AC+VfDxyuB1BaoE0OyZTuraDHMv8SJA6II4Xlk5+/CLjb1uHQrxqrmEj
+        /a98gIOVBsQKschtUo9Flt3o3SidEdy79w==
+X-Google-Smtp-Source: ACHHUZ5funMPPdWU7kUDVZCZoTLGM8XIA8LHcThQe/lNqoXymVmzdiaBt/nw4AW+QRvguhH/Pl2hDg==
+X-Received: by 2002:a0d:d5c5:0:b0:55a:a1dd:3f04 with SMTP id x188-20020a0dd5c5000000b0055aa1dd3f04mr4297872ywd.30.1683107483989;
+        Wed, 03 May 2023 02:51:23 -0700 (PDT)
+Received: from mail-yb1-f178.google.com (mail-yb1-f178.google.com. [209.85.219.178])
+        by smtp.gmail.com with ESMTPSA id h1-20020a81b401000000b0054f80928ea4sm8444540ywi.140.2023.05.03.02.51.22
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 03 May 2023 02:51:23 -0700 (PDT)
+Received: by mail-yb1-f178.google.com with SMTP id 3f1490d57ef6-b9d8730fe5aso7223500276.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 03 May 2023 02:51:22 -0700 (PDT)
+X-Received: by 2002:a25:4c84:0:b0:b9e:5006:42af with SMTP id
+ z126-20020a254c84000000b00b9e500642afmr5825920yba.58.1683107482458; Wed, 03
+ May 2023 02:51:22 -0700 (PDT)
+MIME-Version: 1.0
+References: <20230428122452.4856-1-tzimmermann@suse.de> <20230428122452.4856-18-tzimmermann@suse.de>
+In-Reply-To: <20230428122452.4856-18-tzimmermann@suse.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Wed, 3 May 2023 11:51:11 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUgsUsNaCvSA+jUNrOvZU3O2xF0b=MnA_GyL-HvAeZy5Q@mail.gmail.com>
+Message-ID: <CAMuHMdUgsUsNaCvSA+jUNrOvZU3O2xF0b=MnA_GyL-HvAeZy5Q@mail.gmail.com>
+Subject: Re: [PATCH v2 17/19] fbdev: Validate info->screen_{base,buffer} in
+ fb_ops implementations
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+        airlied@gmail.com, daniel@ffwll.ch, javierm@redhat.com,
+        deller@gmx.de, sudipm.mukherjee@gmail.com,
+        teddy.wang@siliconmotion.com, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, Sui Jingfeng <suijingfeng@loongson.cn>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, May 3, 2023, at 10:12, Thomas Zimmermann wrote:
-> Am 03.05.23 um 09:19 schrieb Javier Martinez Canillas:
->> Thomas Zimmermann <tzimmermann@suse.de> writes:
->>>>
->>>> There are countless examples where the above are not followed,
->>>> but to my best understanding the above it the preferred way to do it.
->>>
->>> Where did youher this? I only know about this in the case of asm/io.h
->>> vs. linux/io.h.
->>>
->> 
->> I understand that's the case too. I believe even checkpatch.pl complains
->> about it? (not that the script always get right, but just as an example).
+On Fri, Apr 28, 2023 at 2:26 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Push the test for info->screen_base from fb_read() and fb_write() into
+> the implementations of struct fb_ops.{fb_read,fb_write}. In cases where
+> the driver operates on info->screen_buffer, test this field instead.
 >
-> Do you know if that's the general rule? If so, we might want to 
-> repurpose <asm/fbio.h> for the framebuffer I/O functions.
+> While bothi fields, screen_base and screen_buffer, are stored in the
 
-It's certainly the general trend across all of the kernel to have
-drivers prefer including linux/*.h, and to move stuff from asm/*.h
-to linux/*.h as it gets generalized across architectures.
+both
 
-     Arnd
+> same location, they refer to different address spaces. For correctness,
+> we want to test each field in exactly the code that uses it.
+
+Not a direct comment for this patch: and later the union can be split
+in two separate fields, to protect against misuse?
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

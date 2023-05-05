@@ -2,142 +2,111 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9536C77B7F
-	for <linux-fbdev@archiver.kernel.org>; Fri,  5 May 2023 18:08:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20B6BC77B7F
+	for <linux-fbdev@archiver.kernel.org>; Fri,  5 May 2023 18:58:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232692AbjEESI6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 5 May 2023 14:08:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36206 "EHLO
+        id S233400AbjEES6R (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 5 May 2023 14:58:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35884 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230473AbjEESI5 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 May 2023 14:08:57 -0400
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3353E1A1FD;
-        Fri,  5 May 2023 11:08:56 -0700 (PDT)
-Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-64115eef620so21468643b3a.1;
-        Fri, 05 May 2023 11:08:56 -0700 (PDT)
+        with ESMTP id S233401AbjEES6Q (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 May 2023 14:58:16 -0400
+Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 60B912074A;
+        Fri,  5 May 2023 11:58:11 -0700 (PDT)
+Received: by mail-wm1-x330.google.com with SMTP id 5b1f17b1804b1-3f4000ec71dso15026915e9.2;
+        Fri, 05 May 2023 11:58:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1683310135; x=1685902135;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=3jmjCmOGhJKcTExgQHxoFdrZdNhIimvrG1KlJ+O2CnA=;
-        b=K0PiobN2K0CD1x/aK0LGxU/27Ndiiy3fP21rS2BmtRQcHEefRBzEKjTsRLJYEahi6T
-         0p6efnM3dGeXACImp1TH/0sv7ROoQguhATGB15wUfaJqt6NnRkN4yS4tvwXkq6JfGvKb
-         d6QPkljAU+BM2MzUZJLhEOlAA23YvvJKD6IPmyzANrbKlv6Vcsq1o67/Z2h4ICSmHJU9
-         pZmZk0xCt3FMh5MDlyo49MrZFNEQ6eoBpv4J2oFk+YjFJpqrfuLYbhBguRIZm3bztujZ
-         wSGZQkiG5PKBU9dUjNN//Zm+y0wc6Jj3mMr45r8z60uFXLcgftWIyJIku59qkOuRtlg/
-         3Qbw==
+        d=gmail.com; s=20221208; t=1683313090; x=1685905090;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=1b+OLvSRoYfyljr8mg5KeVPnX55ONCXJ476XEVumh/s=;
+        b=oY2AQu9BVNjD3rwPFri5qbdOkPAjl7SrIGW9Ei9AmmSOu2oV2+G/beYc90CDGkjJIN
+         WTSL3cPsucYZ447qlImb2JtqhI6aty5P2Z/LTF8ZWp3nVzA9CJDqRupN8sd2FekjDFJO
+         9v/iVdx5Uch4kEmRJk9vqtfsQ57sPvHCJQu6TfiPCDF1TbBgygBgNH0QX/P2G8lFDjuX
+         W+oT5yq+4tQ/0FSzEbBY3gVSJnboeZhLFywzBA+nw1N30AeE16ltvStZwUWIvPCR/usj
+         7Bcvo/acWnikPWTiY/YPx/Tgin/jDb8fHkoV24523JrUt2zj1dBEEqWGNccwnS/1JA0/
+         70cw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1683310135; x=1685902135;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=3jmjCmOGhJKcTExgQHxoFdrZdNhIimvrG1KlJ+O2CnA=;
-        b=KhGL17LwJmYny7XEnOb3tueFnBGnYJnfnZhT2tdbZ7ceccVBXYobc/4QVk/OGH5+yr
-         KmCHTeMdU5qRftI/3q7nGulUxMaZBTpr7RCfK+25X89OuR900aOj2mCtHC/ikb57VpSl
-         fLyL2R5ECGp0zq8KKFEWcgm5mcs7UaTxhe0MTOJ+pKHIYxdcAv05yvEPiiUgHeOsZExT
-         ECR7F4Hp4iX6LXC9hbtCJSXvwwY/JY8NlkLwv0v/TV8gCkZLkg/8BKTVQJGP1oEOeYwh
-         GdfgEVm86MxvEqeO8XDEEBDYoeIs4xBebr2g/tPC4GksLorqL0TYuKtMVhbGSaF7tP5l
-         6ubA==
-X-Gm-Message-State: AC+VfDyqxIWRBJH0F0XSXxTqNMmTo8nSILW2l5e8zYQO4iG+GWu2Iki3
-        tPwyMIG38m4Kssyhfs4s3WCbq+GsIpI=
-X-Google-Smtp-Source: ACHHUZ7Li5NhkqOE1+eiPls/+snjqcBfxl+Gcf+qRka4n1VUPtkhMwlUzgkzNuivRGulByJQdOt0tA==
-X-Received: by 2002:a17:90a:a595:b0:247:14ac:4d3a with SMTP id b21-20020a17090aa59500b0024714ac4d3amr2917795pjq.20.1683310135403;
-        Fri, 05 May 2023 11:08:55 -0700 (PDT)
-Received: from google.com ([2620:15c:9d:2:5658:95c:e1cf:a1b0])
-        by smtp.gmail.com with ESMTPSA id j6-20020a17090aeb0600b002500df72713sm3186230pjz.7.2023.05.05.11.08.53
+        d=1e100.net; s=20221208; t=1683313090; x=1685905090;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=1b+OLvSRoYfyljr8mg5KeVPnX55ONCXJ476XEVumh/s=;
+        b=LyV0KHm7AWUVhLb8rcnpcyXw+CcU/GCEKv5F0azL9diK5W4m71/2eQ/16CgebOXxQ7
+         E8j6UsjooJXxJxWzScN4WxdqXPaogDi6oef72cuo/q72emO6VnWNfCqk5oXUe7sfFpd/
+         aGSw1R+yevaA/An7HmhSPYf1zzJtQwrlg3MmedvShEfECjPSi3ML2tRgD3ZKLEZYoabl
+         qTxuN0BdoKODEpTP3hU62ER8NUZS1el/qp2CPvI13xDkhYiLMqvS6sivhptdTpcBeXVA
+         8DHWowQgq8EU0+K/eZmUHhiTgoAmq3LDeSBzFvUq+vRo2uzcNldGgVKbVrUPGYzVns55
+         tJnQ==
+X-Gm-Message-State: AC+VfDy0vmg49dCD5EL8moPtJm9negXYnpG+P/7MLsyJeanIQuwwEjVF
+        BK75pD4x5mdpWREK4AmDtPU=
+X-Google-Smtp-Source: ACHHUZ6fJO8vyrwjBhFmq93Y3W8Pkix0SQ38ShAcZelUn741btCGidGkn5mGRo4vUfDutDIFv5ll7Q==
+X-Received: by 2002:a05:600c:d7:b0:3f1:82d5:997b with SMTP id u23-20020a05600c00d700b003f182d5997bmr1773498wmm.18.1683313089697;
+        Fri, 05 May 2023 11:58:09 -0700 (PDT)
+Received: from koko.localdomain (cgn-89-1-213-9.nc.de. [89.1.213.9])
+        by smtp.gmail.com with ESMTPSA id z9-20020a05600c114900b003f4069417absm5825061wmz.24.2023.05.05.11.58.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 05 May 2023 11:08:54 -0700 (PDT)
-Date:   Fri, 5 May 2023 11:08:50 -0700
-From:   Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To:     Linus Walleij <linus.walleij@linaro.org>
-Cc:     Aaro Koskinen <aaro.koskinen@iki.fi>,
-        Janusz Krzysztofik <jmkrzyszt@gmail.com>,
-        Tony Lindgren <tony@atomide.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Daniel Mack <daniel@zonque.org>,
-        Haojian Zhuang <haojian.zhuang@gmail.com>,
-        Robert Jarzmik <robert.jarzmik@free.fr>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Mark Brown <broonie@kernel.org>,
-        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
-        Andreas Kemnade <andreas@kemnade.info>,
+        Fri, 05 May 2023 11:58:09 -0700 (PDT)
+From:   Maximilian Weigand <mweigand2017@gmail.com>
+To:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
         Helge Deller <deller@gmx.de>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-spi@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-mmc@vger.kernel.org
-Subject: Re: [PATCH v3 1/3] Input: ads7846 - Convert to use software nodes
-Message-ID: <ZFVGMiuRT+e2eVXw@google.com>
-References: <20230430-nokia770-regression-v3-0-a6d0a89ffa8b@linaro.org>
- <20230430-nokia770-regression-v3-1-a6d0a89ffa8b@linaro.org>
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pwm@vger.kernel.org
+Cc:     Maximilian Weigand <mweigand@mweigand.net>
+Subject: [PATCH v1] backlight: lm3630a: turn off both led strings when display is blank
+Date:   Fri,  5 May 2023 20:57:52 +0200
+Message-Id: <20230505185752.969476-1-mweigand2017@gmail.com>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230430-nokia770-regression-v3-1-a6d0a89ffa8b@linaro.org>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Linus,
-On Fri, May 05, 2023 at 01:16:55PM +0200, Linus Walleij wrote:
-> 
-> Populate the devices on the Nokia 770 CBUS I2C using software
-> nodes instead of platform data quirks. This includes the LCD
-> and the ADS7846 touchscreen so the conversion just brings the LCD
-> along with it as software nodes is an all-or-nothing design
-> pattern.
+From: Maximilian Weigand <mweigand@mweigand.net>
 
-Wow, so that worked , awesome!
+Use display_is_blank() to determine if the led strings should be turned
+off in the update_status() functions of both strings.
 
-> +static const struct property_entry nokia770_ads7846_props[] = {
-> +	PROPERTY_ENTRY_U32("touchscreen-size-x", 4096),
-> +	PROPERTY_ENTRY_U32("touchscreen-size-y", 4096),
-> +	PROPERTY_ENTRY_U32("touchscreen-max-pressure", 256),
-> +	PROPERTY_ENTRY_U32("touchscreen-average-samples", 10),
-> +	PROPERTY_ENTRY_U16("ti,x-plate-ohms", 180),
-> +	PROPERTY_ENTRY_U16("ti,debounce-tol", 3),
-> +	PROPERTY_ENTRY_U16("ti,debounce-rep", 1),
-> +	PROPERTY_ENTRY_GPIO("pendown-gpios", &nokia770_gpiochip1_node,
-> +			    ADS7846_PENDOWN_GPIO, GPIO_ACTIVE_HIGH),
+Signed-off-by: Maximilian Weigand <mweigand@mweigand.net>
+---
+ drivers/video/backlight/lm3630a_bl.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-Looking at the driver this actually needs to be GPIO_ACTIVE_LOW.
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index d8c42acecb5d..5498b57329f9 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -202,7 +202,9 @@ static int lm3630a_bank_a_update_status(struct backlight_device *bl)
+ 	usleep_range(1000, 2000);
+ 	/* minimum brightness is 0x04 */
+ 	ret = lm3630a_write(pchip, REG_BRT_A, bl->props.brightness);
+-	if (bl->props.brightness < 0x4)
++
++	if (backlight_is_blank(bl) || (bl->props.brightness < 0x4))
++		/* turn the string off  */
+ 		ret |= lm3630a_update(pchip, REG_CTRL, LM3630A_LEDA_ENABLE, 0);
+ 	else
+ 		ret |= lm3630a_update(pchip, REG_CTRL,
+@@ -277,7 +279,9 @@ static int lm3630a_bank_b_update_status(struct backlight_device *bl)
+ 	usleep_range(1000, 2000);
+ 	/* minimum brightness is 0x04 */
+ 	ret = lm3630a_write(pchip, REG_BRT_B, bl->props.brightness);
+-	if (bl->props.brightness < 0x4)
++
++	if (backlight_is_blank(bl) || (bl->props.brightness < 0x4))
++		/* turn the string off  */
+ 		ret |= lm3630a_update(pchip, REG_CTRL, LM3630A_LEDB_ENABLE, 0);
+ 	else
+ 		ret |= lm3630a_update(pchip, REG_CTRL,
 
->  
-> +static struct gpiod_lookup_table spitz_ads7846_gpio_table = {
-> +	.dev_id = "spi2.0",
-> +	.table = {
-> +		GPIO_LOOKUP("gpio-pxa", SPITZ_GPIO_TP_INT,
-> +			    "pendown", GPIO_ACTIVE_HIGH),
+base-commit: 457391b0380335d5e9a5babdec90ac53928b23b4
+--
+2.39.2
 
-GPIO_ACTIVE_LOW here too.
-
-> +static struct gpiod_lookup_table db1100_touch_gpio_table = {
-> +	.dev_id = "spi0.0",
-> +	.table = {
-> +		GPIO_LOOKUP("alchemy-gpio2", 21,
-> +			    "pendown", GPIO_ACTIVE_HIGH),
-
-And here as well.
-
-> @@ -223,7 +220,7 @@ static int get_pendown_state(struct ads7846 *ts)
->  	if (ts->get_pendown_state)
->  		return ts->get_pendown_state();
->  
-> -	return !gpio_get_value(ts->gpio_pendown);
-> +	return !gpiod_get_value(ts->gpio_pendown);
-
-This needs to be
-
-	return !gpiod_get_value_raw(ts->gpio_pendown);
-
-I looked at various DTSes we have and they use a mix of active high and
-active low annotations, so we have to go with the "raw" variant for now,
-and then update to normal one once we update bad DTSes.
-
-Thanks!
-
--- 
-Dmitry

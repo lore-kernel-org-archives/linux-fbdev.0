@@ -2,32 +2,32 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35C99C77B73
-	for <linux-fbdev@archiver.kernel.org>; Mon,  8 May 2023 10:11:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54854C7EE23
+	for <linux-fbdev@archiver.kernel.org>; Mon,  8 May 2023 10:45:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234192AbjEHKL0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 8 May 2023 06:11:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39228 "EHLO
+        id S235058AbjEHKpS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 8 May 2023 06:45:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47706 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234184AbjEHKLV (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 8 May 2023 06:11:21 -0400
+        with ESMTP id S235075AbjEHKox (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 8 May 2023 06:44:53 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EEC7D398AA;
-        Mon,  8 May 2023 03:11:19 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8908619D4B;
+        Mon,  8 May 2023 03:43:30 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 87451623D8;
-        Mon,  8 May 2023 10:11:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A9BCC433D2;
-        Mon,  8 May 2023 10:11:18 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id E31936287A;
+        Mon,  8 May 2023 10:43:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D42F6C433EF;
+        Mon,  8 May 2023 10:43:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1683540679;
+        s=korg; t=1683542609;
         bh=GnuTKGySGlfr07daI7HAiFk0boCdBF/4zjHSMFSEV+4=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=NRFObisIsURNT3JDo6mxk7FgptcJ6gBAkYJVaYihtDHGApWPMQdswu7+zR1kLHIt/
-         KWyuJB6c8rhdLnE/kLP2HPUFEjFTzAE9crmq+sIUNRics6Ky4hTm7vf7GzAbQDDYx5
-         8DJKCOClXV2efZwy0htjtBnQ0YuY/S0pTSgzkPa0=
+        b=h3/LHtu1ozRR7W7tnEZitWUqWZpJf74bOPkgUT9iSPHOcDARrOV+E4yD6mcmsqVm0
+         /2aLkT8ip9mfyYUAodd1n2wEH5FB8ZfySCtT6pUuRKg3Bzo0R4HMxH0EZ5MIxMgmJP
+         iRIOthgNqzJqrkxnBDmXe+lM7UMVIMGaOe0NbxF4=
 From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To:     stable@vger.kernel.org
 Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -35,12 +35,12 @@ Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Jiri Slaby <jirislaby@kernel.org>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.1 415/611] linux/vt_buffer.h: allow either builtin or modular for macros
-Date:   Mon,  8 May 2023 11:44:17 +0200
-Message-Id: <20230508094435.716421365@linuxfoundation.org>
+Subject: [PATCH 6.2 458/663] linux/vt_buffer.h: allow either builtin or modular for macros
+Date:   Mon,  8 May 2023 11:44:44 +0200
+Message-Id: <20230508094442.979541492@linuxfoundation.org>
 X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230508094421.513073170@linuxfoundation.org>
-References: <20230508094421.513073170@linuxfoundation.org>
+In-Reply-To: <20230508094428.384831245@linuxfoundation.org>
+References: <20230508094428.384831245@linuxfoundation.org>
 User-Agent: quilt/0.67
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8

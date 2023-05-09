@@ -2,72 +2,153 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05112C77B7C
-	for <linux-fbdev@archiver.kernel.org>; Tue,  9 May 2023 06:50:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6595AC7EE24
+	for <linux-fbdev@archiver.kernel.org>; Tue,  9 May 2023 08:04:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235025AbjEIGtv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 9 May 2023 02:49:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52532 "EHLO
+        id S235093AbjEIIEK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 9 May 2023 04:04:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46120 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235041AbjEIGto (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 9 May 2023 02:49:44 -0400
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9D86810EA;
-        Mon,  8 May 2023 23:49:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=PbZUIlEwLxdApfWlTodlcMm6K5WCErVJpDX/q+SYV/o=; b=P6C0II8T3ToIDwdqzyhUAGJI/D
-        ZCNC7WWDlvhvS9TP8hS5heFGY2y1fn4CvmpBwZRLK/SUhz7LqJX/4Qa45fz11oJU8k/AMFOhAHEr3
-        +EWXJyg4O3XLRiADhyF/ipdHNeGii9lWT9BzHXZHp5pkptpBYBW632Ra0BctIfX/yhlj0k+Agmbuu
-        LnutvhNKYS+hmxC+61WS22dWlvIlP1iAdbPbzVHNi/48lEfafUa14tSUupbJbAoyuFdZn3h3yMAsC
-        ibLMeiZxLLk++miuJUDtabe5m1vwyoCbIE9NkFMB3XCQMNvk3dPsbTLKInjxivBc8zcfYlbVarwGF
-        n4DvmLgg==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1pwHA6-0060xC-0Z;
-        Tue, 09 May 2023 06:49:26 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
-        (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 04BA530026A;
-        Tue,  9 May 2023 08:49:25 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-        id E121A2B0DE80F; Tue,  9 May 2023 08:49:24 +0200 (CEST)
-Date:   Tue, 9 May 2023 08:49:24 +0200
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     Corentin Labbe <clabbe.montjoie@gmail.com>
-Cc:     tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
-        dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
-        pjones@redhat.com, deller@gmx.de, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: Cannot boot an i386-UEFI thinkpad lenovo tablet-2
-Message-ID: <20230509064924.GB2065796@hirez.programming.kicks-ass.net>
-References: <ZFnoXiZGGhuWDl2S@Red>
+        with ESMTP id S235127AbjEIIDx (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 9 May 2023 04:03:53 -0400
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA44FDC69;
+        Tue,  9 May 2023 01:02:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1683619364; x=1715155364;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=M8ldeZ8wYKyjh5+JLiPdYoonZd0SIk7CsE32UJHMbgg=;
+  b=PvQfWnT/MKPtrLGm0AZn3zDSbOtxcwirnY6FRA2PIZnBob8953MdAGhK
+   SQ7S8+bnClvOxVFRnKDrI0Ek9K6b8ivNOk1hwzdsc6Og0pDXYnqkNeRdY
+   3P3voeZ7goldfzSSCt1uyqfgUJP7KziS0OLkG8jozwsAzvrsuf/bpuZFr
+   tBSK/ekvk2vHlM2n/ImvVD/M76PxZP2Vbwsuf18BKwiz55LoD7lWnoLSp
+   8s+wrauzf/guh34mFvCYrdioECCI5SheXkr0caebGXr3/+9Lfg8g3fkQ7
+   uOJhnxdiU7M5kBvZEgKXvR7ksZqob8K8uoK9A56X/n99oLqfd26hB++5Z
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10704"; a="413102456"
+X-IronPort-AV: E=Sophos;i="5.99,261,1677571200"; 
+   d="scan'208";a="413102456"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 May 2023 01:00:36 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10704"; a="763719607"
+X-IronPort-AV: E=Sophos;i="5.99,261,1677571200"; 
+   d="scan'208";a="763719607"
+Received: from lkp-server01.sh.intel.com (HELO dea6d5a4f140) ([10.239.97.150])
+  by fmsmga008.fm.intel.com with ESMTP; 09 May 2023 01:00:31 -0700
+Received: from kbuild by dea6d5a4f140 with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1pwIGs-0001xM-2i;
+        Tue, 09 May 2023 08:00:30 +0000
+Date:   Tue, 9 May 2023 15:59:42 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
+        geert@linux-m68k.org, javierm@redhat.com, daniel@ffwll.ch,
+        vgupta@kernel.org, chenhuacai@kernel.org, kernel@xen0n.name,
+        davem@davemloft.net, James.Bottomley@hansenpartnership.com,
+        arnd@arndb.de, sam@ravnborg.org, suijingfeng@loongson.cn
+Cc:     oe-kbuild-all@lists.linux.dev, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org,
+        linux-snps-arc@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-ia64@vger.kernel.org, loongarch@lists.linux.dev,
+        linux-m68k@lists.linux-m68k.org, sparclinux@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH v5 5/6] fbdev: Move framebuffer I/O helpers into
+ <asm/fb.h>
+Message-ID: <202305091533.3zBlgYkC-lkp@intel.com>
+References: <20230508114830.28182-6-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ZFnoXiZGGhuWDl2S@Red>
+In-Reply-To: <20230508114830.28182-6-tzimmermann@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, May 09, 2023 at 08:29:50AM +0200, Corentin Labbe wrote:
+Hi Thomas,
 
-> The bios speak about a debug port, but I found nothing which seems a
-> physical debug port output.  I tried to wire the microusb power port
-> on a USB host, but the host fail to enumerate any device (I tried also
-> a spetial USB cable with data/power separated to be sure the problem
-> was not the host failling to give enough power)
-> 
-> The tablet has only one port, so I use a hub for keyboard and USB key.
+kernel test robot noticed the following build errors:
 
-USB debug port is probably that one port, USB debug also does not work
-through a hub :/
+[auto build test ERROR on drm-misc/drm-misc-next]
+[cannot apply to deller-parisc/for-next arnd-asm-generic/master linus/master v6.4-rc1 next-20230509]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-USB debug in general is a giant pain in the rear and I've never had much
-luck with is. If it's that old to still need a i386 kernel then it's
-probably USB2 at best and that requires a special magical cable too :-(
+url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/fbdev-matrox-Remove-trailing-whitespaces/20230508-195052
+base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
+patch link:    https://lore.kernel.org/r/20230508114830.28182-6-tzimmermann%40suse.de
+patch subject: [PATCH v5 5/6] fbdev: Move framebuffer I/O helpers into <asm/fb.h>
+config: mips-randconfig-r016-20230507 (https://download.01.org/0day-ci/archive/20230509/202305091533.3zBlgYkC-lkp@intel.com/config)
+compiler: mips64-linux-gcc (GCC) 12.1.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/intel-lab-lkp/linux/commit/c64dc7f407b3faa85d4e81ec762407388c5813c1
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Thomas-Zimmermann/fbdev-matrox-Remove-trailing-whitespaces/20230508-195052
+        git checkout c64dc7f407b3faa85d4e81ec762407388c5813c1
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=mips olddefconfig
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=mips SHELL=/bin/bash drivers/video/fbdev/core/
 
+If you fix the issue, kindly add following tag where applicable
+| Reported-by: kernel test robot <lkp@intel.com>
+| Link: https://lore.kernel.org/oe-kbuild-all/202305091533.3zBlgYkC-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+   drivers/video/fbdev/core/cfbfillrect.c: In function 'bitfill_aligned':
+>> drivers/video/fbdev/core/cfbfillrect.c:26:21: error: implicit declaration of function 'fb_writeq'; did you mean 'fb_writel'? [-Werror=implicit-function-declaration]
+      26 | #  define FB_WRITEL fb_writeq
+         |                     ^~~~~~~~~
+   drivers/video/fbdev/core/cfbfillrect.c:50:17: note: in expansion of macro 'FB_WRITEL'
+      50 |                 FB_WRITEL(comp(pat, FB_READL(dst), first), dst);
+         |                 ^~~~~~~~~
+>> drivers/video/fbdev/core/cfbfillrect.c:27:21: error: implicit declaration of function 'fb_readq'; did you mean 'fb_readl'? [-Werror=implicit-function-declaration]
+      27 | #  define FB_READL  fb_readq
+         |                     ^~~~~~~~
+   drivers/video/fbdev/core/cfbfillrect.c:50:37: note: in expansion of macro 'FB_READL'
+      50 |                 FB_WRITEL(comp(pat, FB_READL(dst), first), dst);
+         |                                     ^~~~~~~~
+   cc1: some warnings being treated as errors
+--
+   drivers/video/fbdev/core/cfbcopyarea.c: In function 'bitcpy':
+>> drivers/video/fbdev/core/cfbcopyarea.c:37:21: error: implicit declaration of function 'fb_writeq'; did you mean 'fb_writel'? [-Werror=implicit-function-declaration]
+      37 | #  define FB_WRITEL fb_writeq
+         |                     ^~~~~~~~~
+   drivers/video/fbdev/core/cfbcopyarea.c:73:25: note: in expansion of macro 'FB_WRITEL'
+      73 |                         FB_WRITEL( comp( FB_READL(src), FB_READL(dst), first), dst);
+         |                         ^~~~~~~~~
+>> drivers/video/fbdev/core/cfbcopyarea.c:38:21: error: implicit declaration of function 'fb_readq'; did you mean 'fb_readl'? [-Werror=implicit-function-declaration]
+      38 | #  define FB_READL  fb_readq
+         |                     ^~~~~~~~
+   drivers/video/fbdev/core/cfbcopyarea.c:73:42: note: in expansion of macro 'FB_READL'
+      73 |                         FB_WRITEL( comp( FB_READL(src), FB_READL(dst), first), dst);
+         |                                          ^~~~~~~~
+   cc1: some warnings being treated as errors
+
+
+vim +26 drivers/video/fbdev/core/cfbfillrect.c
+
+^1da177e4c3f41 drivers/video/cfbfillrect.c Linus Torvalds 2005-04-16  21  
+^1da177e4c3f41 drivers/video/cfbfillrect.c Linus Torvalds 2005-04-16  22  #if BITS_PER_LONG == 32
+^1da177e4c3f41 drivers/video/cfbfillrect.c Linus Torvalds 2005-04-16  23  #  define FB_WRITEL fb_writel
+^1da177e4c3f41 drivers/video/cfbfillrect.c Linus Torvalds 2005-04-16  24  #  define FB_READL  fb_readl
+^1da177e4c3f41 drivers/video/cfbfillrect.c Linus Torvalds 2005-04-16  25  #else
+^1da177e4c3f41 drivers/video/cfbfillrect.c Linus Torvalds 2005-04-16 @26  #  define FB_WRITEL fb_writeq
+^1da177e4c3f41 drivers/video/cfbfillrect.c Linus Torvalds 2005-04-16 @27  #  define FB_READL  fb_readq
+^1da177e4c3f41 drivers/video/cfbfillrect.c Linus Torvalds 2005-04-16  28  #endif
+^1da177e4c3f41 drivers/video/cfbfillrect.c Linus Torvalds 2005-04-16  29  
+^1da177e4c3f41 drivers/video/cfbfillrect.c Linus Torvalds 2005-04-16  30      /*
+^1da177e4c3f41 drivers/video/cfbfillrect.c Linus Torvalds 2005-04-16  31       *  Aligned pattern fill using 32/64-bit memory accesses
+^1da177e4c3f41 drivers/video/cfbfillrect.c Linus Torvalds 2005-04-16  32       */
+^1da177e4c3f41 drivers/video/cfbfillrect.c Linus Torvalds 2005-04-16  33  
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests

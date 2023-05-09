@@ -2,85 +2,72 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68B04C77B7C
-	for <linux-fbdev@archiver.kernel.org>; Tue,  9 May 2023 06:29:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05112C77B7C
+	for <linux-fbdev@archiver.kernel.org>; Tue,  9 May 2023 06:50:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234872AbjEIG36 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 9 May 2023 02:29:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39258 "EHLO
+        id S235025AbjEIGtv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 9 May 2023 02:49:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52532 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234633AbjEIG35 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 9 May 2023 02:29:57 -0400
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BEA6DAD09;
-        Mon,  8 May 2023 23:29:55 -0700 (PDT)
-Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-3f315712406so194369875e9.0;
-        Mon, 08 May 2023 23:29:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1683613794; x=1686205794;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=2bhxEJKjUvBujC/ThatqEJctZ1NjSn/LfyG3wTurPWU=;
-        b=SCH37qt3RtAf/9u5T5O3yEGPmZRB6XxdkozAX7KIcMPybWDM2ZKCtEz54VFlaHbH5E
-         P6ZStEs/bDXdQnK7NKub+xM+jSDZj0rerUKwKyxWsqbUTVpKuyGpmuXhx0qlufhf6uYG
-         pmq5kAvjbXIDTANP1sozzJTzU0IGLhzyG2Et/XksR7eAm68VpmXx1Q789K85yE3LJ13b
-         a8VY4Ky6Nm5qkjTcJcQJYbVlFEIQSiK5eNWWo1zvRM0EqUPg9hwV3nZ+oFJnkBA8kAyk
-         ZRxMqN/9CEyiJ2TKfaLKNEgnw/c8BKCTjeq0CZE6twEHCMORIrfNPgd6XepfQXbbL4TH
-         TEzA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1683613794; x=1686205794;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=2bhxEJKjUvBujC/ThatqEJctZ1NjSn/LfyG3wTurPWU=;
-        b=PSDXPDbFwkQCW7bzPgWE0RqQpeeByDwfGPY7LmlEP2UnrEAph8XSE5LoXnXAKBZJqm
-         PBeuXj9T8LkwwPmt4+IDSm+PlJZE+DUVEaAxZeYnuO+MSLjfk+rA268F5bTaPYJNk9b5
-         SJerfWRuoTyx/v+C1hhWRPjf6A1nYnGV6kiCGko/FgR+8hnsq7B2xu8PA0iE9yO0Yd8A
-         xyseKNwqDT20ar3FCqKPvqZe3EUNCK4LEGI4cLaso4AqxGeIfolps5MPm3hSkdQK48vN
-         3XE67tk0XemsM78eNBe/1TSiCnPJxVlvi71k8QswlhEPI2ZuJyIUOsYLnhHVCP+3+P4t
-         4qwg==
-X-Gm-Message-State: AC+VfDwrCbPAD2OFT6yS5/xtZMx6J3e5lOEo2sJdjuP8lNHk0bSzTMJ+
-        XqJCUIXzzAnSKshvJzScXLjLeN/Ovyw=
-X-Google-Smtp-Source: ACHHUZ4HrbUetNqnOcwGqklyN5gI2ongm11Ou+MzBoDK3aUvtcn0bn+WBQqDPNN/AjFZpRMO5Goepg==
-X-Received: by 2002:a05:6000:c7:b0:307:9081:d355 with SMTP id q7-20020a05600000c700b003079081d355mr4284791wrx.26.1683613793985;
-        Mon, 08 May 2023 23:29:53 -0700 (PDT)
-Received: from Red ([2a01:cb1d:3d5:a100:4a02:2aff:fe07:1efc])
-        by smtp.googlemail.com with ESMTPSA id a14-20020a5d53ce000000b0030732d6e104sm13228671wrw.105.2023.05.08.23.29.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 08 May 2023 23:29:53 -0700 (PDT)
-Date:   Tue, 9 May 2023 08:29:50 +0200
-From:   Corentin Labbe <clabbe.montjoie@gmail.com>
-To:     tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
+        with ESMTP id S235041AbjEIGto (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 9 May 2023 02:49:44 -0400
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9D86810EA;
+        Mon,  8 May 2023 23:49:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=PbZUIlEwLxdApfWlTodlcMm6K5WCErVJpDX/q+SYV/o=; b=P6C0II8T3ToIDwdqzyhUAGJI/D
+        ZCNC7WWDlvhvS9TP8hS5heFGY2y1fn4CvmpBwZRLK/SUhz7LqJX/4Qa45fz11oJU8k/AMFOhAHEr3
+        +EWXJyg4O3XLRiADhyF/ipdHNeGii9lWT9BzHXZHp5pkptpBYBW632Ra0BctIfX/yhlj0k+Agmbuu
+        LnutvhNKYS+hmxC+61WS22dWlvIlP1iAdbPbzVHNi/48lEfafUa14tSUupbJbAoyuFdZn3h3yMAsC
+        ibLMeiZxLLk++miuJUDtabe5m1vwyoCbIE9NkFMB3XCQMNvk3dPsbTLKInjxivBc8zcfYlbVarwGF
+        n4DvmLgg==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1pwHA6-0060xC-0Z;
+        Tue, 09 May 2023 06:49:26 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 04BA530026A;
+        Tue,  9 May 2023 08:49:25 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id E121A2B0DE80F; Tue,  9 May 2023 08:49:24 +0200 (CEST)
+Date:   Tue, 9 May 2023 08:49:24 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     Corentin Labbe <clabbe.montjoie@gmail.com>
+Cc:     tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
         dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
-        pjones@redhat.com, deller@gmx.de
-Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Cannot boot an i386-UEFI thinkpad lenovo tablet-2
-Message-ID: <ZFnoXiZGGhuWDl2S@Red>
+        pjones@redhat.com, deller@gmx.de, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: Cannot boot an i386-UEFI thinkpad lenovo tablet-2
+Message-ID: <20230509064924.GB2065796@hirez.programming.kicks-ass.net>
+References: <ZFnoXiZGGhuWDl2S@Red>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <ZFnoXiZGGhuWDl2S@Red>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello
+On Tue, May 09, 2023 at 08:29:50AM +0200, Corentin Labbe wrote:
 
-I have an old i386 lenovo thinpad tablet-2 currently windows 8.
-After disabling secure boot, I tried to install a Linux on it but all my tries fail.
-Grub is loading correclty.
-Memtest86 run on it without problem.
-( I also tried some BSD but since it is an i386 UEFI only, no BSD seems to support this)
+> The bios speak about a debug port, but I found nothing which seems a
+> physical debug port output.  I tried to wire the microusb power port
+> on a USB host, but the host fail to enumerate any device (I tried also
+> a spetial USB cable with data/power separated to be sure the problem
+> was not the host failling to give enough power)
+> 
+> The tablet has only one port, so I use a hub for keyboard and USB key.
 
-But the Linux kernel fail to boot on it, black screen (in case of debian installer, the screen is stuck with the install choice), no more info.
-Since this is a tablet, there are no ethernet port. (I wanted to boot it blindly)
-The bios speak about a debug port, but I found nothing which seems a physical debug port output.
-I tried to wire the microusb power port on a USB host, but the host fail to enumerate any device (I tried also a spetial USB cable with data/power separated to be sure the problem was not the host failling to give enough power)
+USB debug port is probably that one port, USB debug also does not work
+through a hub :/
 
-The tablet has only one port, so I use a hub for keyboard and USB key.
-Immediatly after booting Linux, all hub port light goes to off.
+USB debug in general is a giant pain in the rear and I've never had much
+luck with is. If it's that old to still need a i386 kernel then it's
+probably USB2 at best and that requires a special magical cable too :-(
 
-I tried different own made kernel with different choice about CONFIG_FB, selecting all INTEL options, etc... no change
-I tried to change video resolution via vga=ask or video=640x480 but no change.
-
-Any clue on how debug further ?
-
-Thanks

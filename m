@@ -2,111 +2,85 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 347A2C7EE26
-	for <linux-fbdev@archiver.kernel.org>; Mon,  8 May 2023 21:31:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68B04C77B7C
+	for <linux-fbdev@archiver.kernel.org>; Tue,  9 May 2023 06:29:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233912AbjEHVbW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 8 May 2023 17:31:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42890 "EHLO
+        id S234872AbjEIG36 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 9 May 2023 02:29:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39258 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233954AbjEHVbU (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 8 May 2023 17:31:20 -0400
-Received: from mail-yb1-xb2b.google.com (mail-yb1-xb2b.google.com [IPv6:2607:f8b0:4864:20::b2b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52CD5868B
-        for <linux-fbdev@vger.kernel.org>; Mon,  8 May 2023 14:31:18 -0700 (PDT)
-Received: by mail-yb1-xb2b.google.com with SMTP id 3f1490d57ef6-b9a6eec8611so27425106276.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 08 May 2023 14:31:18 -0700 (PDT)
+        with ESMTP id S234633AbjEIG35 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 9 May 2023 02:29:57 -0400
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BEA6DAD09;
+        Mon,  8 May 2023 23:29:55 -0700 (PDT)
+Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-3f315712406so194369875e9.0;
+        Mon, 08 May 2023 23:29:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1683581477; x=1686173477;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=mOJR/20LVKyz48EAyeHc1+jVArD8eFRaiPVz2llKJYw=;
-        b=xnPwIs1cwDo2FfYER/sCJ/da+7w70ojR2vcIjoTIwWXCv32mMF1zm1BD4+lfb2YBZM
-         a2JVJMgplb8WbXqgCdHgK8Kp72gs89jO2wf+8i72UAlWKsMEO+QAvE2kzbL6W+zsK4XX
-         5Z8iTG2eG+u2fgFxWPNmnpwDmCvRMpfx0fMcptbYfNamY9350JY8Gd4qdqq2mPQh9kC0
-         +x56ZfIKBMwAlE8P63WHOLZVXUP3U77r1pEjelQEPWycVNYaZZsW7RV6EqwWY1pIciet
-         mUJNXjEV6P9b/N9Sms+auwR08F+s4xsHpxn7JhrpRdBY15Z66VnYReC0HO7LXkTpsCWj
-         0ulg==
+        d=gmail.com; s=20221208; t=1683613794; x=1686205794;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=2bhxEJKjUvBujC/ThatqEJctZ1NjSn/LfyG3wTurPWU=;
+        b=SCH37qt3RtAf/9u5T5O3yEGPmZRB6XxdkozAX7KIcMPybWDM2ZKCtEz54VFlaHbH5E
+         P6ZStEs/bDXdQnK7NKub+xM+jSDZj0rerUKwKyxWsqbUTVpKuyGpmuXhx0qlufhf6uYG
+         pmq5kAvjbXIDTANP1sozzJTzU0IGLhzyG2Et/XksR7eAm68VpmXx1Q789K85yE3LJ13b
+         a8VY4Ky6Nm5qkjTcJcQJYbVlFEIQSiK5eNWWo1zvRM0EqUPg9hwV3nZ+oFJnkBA8kAyk
+         ZRxMqN/9CEyiJ2TKfaLKNEgnw/c8BKCTjeq0CZE6twEHCMORIrfNPgd6XepfQXbbL4TH
+         TEzA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1683581477; x=1686173477;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=mOJR/20LVKyz48EAyeHc1+jVArD8eFRaiPVz2llKJYw=;
-        b=W+PoCvksPdRmcsYPPpWi0B0QCPrFoxF8aprEM0GOV0sJC1R4XixefJZ7VPQE0SCgOC
-         qXxCOJ5qNjlUVJvfkcHHspVCHZ++qHXmJZaE0QjYcX1KSSlGSoeYCCrEvBVjym3sNK1c
-         sjLSl+0NEWOJWbuhpYvrzuwpmrXsvu1MUDxy6rtmf+L2ZW6IuuLMLoxcxiYJer3SqluA
-         mv35QzO4wcoB5Vm1OyHYDtDZD20plSBgsdaY7Pdlxm4sx26D1gWNOyHjII5JCkmAieqv
-         mCUTBACZ0mBQKSVxSAQAQh+QVBY9vc6wMGkJ7PYKtIh2vhWFS8LK6cxdPwOKx23FlA0F
-         evGA==
-X-Gm-Message-State: AC+VfDwQK/IX2aoyv2Udo9QG+i8w6dALz+QR51hqEZUelMfBiQlOrznx
-        pFcmVgXREEio3o8n9cu1a1rKp5+vED6RCa8fqC8cgQ==
-X-Google-Smtp-Source: ACHHUZ58fReQQ4pRCBtoCz9Lw0P3GVuCrDW/FKsG0+nk/YgPWCXp8EO7CBeqYU//QyxCun6JDuY2iPWmdeq6/W2Qfd0=
-X-Received: by 2002:a81:4c4c:0:b0:54f:54c5:70d with SMTP id
- z73-20020a814c4c000000b0054f54c5070dmr13840092ywa.20.1683581477497; Mon, 08
- May 2023 14:31:17 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1683613794; x=1686205794;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=2bhxEJKjUvBujC/ThatqEJctZ1NjSn/LfyG3wTurPWU=;
+        b=PSDXPDbFwkQCW7bzPgWE0RqQpeeByDwfGPY7LmlEP2UnrEAph8XSE5LoXnXAKBZJqm
+         PBeuXj9T8LkwwPmt4+IDSm+PlJZE+DUVEaAxZeYnuO+MSLjfk+rA268F5bTaPYJNk9b5
+         SJerfWRuoTyx/v+C1hhWRPjf6A1nYnGV6kiCGko/FgR+8hnsq7B2xu8PA0iE9yO0Yd8A
+         xyseKNwqDT20ar3FCqKPvqZe3EUNCK4LEGI4cLaso4AqxGeIfolps5MPm3hSkdQK48vN
+         3XE67tk0XemsM78eNBe/1TSiCnPJxVlvi71k8QswlhEPI2ZuJyIUOsYLnhHVCP+3+P4t
+         4qwg==
+X-Gm-Message-State: AC+VfDwrCbPAD2OFT6yS5/xtZMx6J3e5lOEo2sJdjuP8lNHk0bSzTMJ+
+        XqJCUIXzzAnSKshvJzScXLjLeN/Ovyw=
+X-Google-Smtp-Source: ACHHUZ4HrbUetNqnOcwGqklyN5gI2ongm11Ou+MzBoDK3aUvtcn0bn+WBQqDPNN/AjFZpRMO5Goepg==
+X-Received: by 2002:a05:6000:c7:b0:307:9081:d355 with SMTP id q7-20020a05600000c700b003079081d355mr4284791wrx.26.1683613793985;
+        Mon, 08 May 2023 23:29:53 -0700 (PDT)
+Received: from Red ([2a01:cb1d:3d5:a100:4a02:2aff:fe07:1efc])
+        by smtp.googlemail.com with ESMTPSA id a14-20020a5d53ce000000b0030732d6e104sm13228671wrw.105.2023.05.08.23.29.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 08 May 2023 23:29:53 -0700 (PDT)
+Date:   Tue, 9 May 2023 08:29:50 +0200
+From:   Corentin Labbe <clabbe.montjoie@gmail.com>
+To:     tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
+        dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
+        pjones@redhat.com, deller@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Cannot boot an i386-UEFI thinkpad lenovo tablet-2
+Message-ID: <ZFnoXiZGGhuWDl2S@Red>
 MIME-Version: 1.0
-References: <20230430-nokia770-regression-v3-0-a6d0a89ffa8b@linaro.org>
- <20230430-nokia770-regression-v3-1-a6d0a89ffa8b@linaro.org>
- <ZFVGMiuRT+e2eVXw@google.com> <CACRpkdZUXOTOK9CObdXuHQx4PMD3ykMKco8X5ijchkZ8cEmQvA@mail.gmail.com>
- <ZFlpYff6I5V6JiH1@google.com>
-In-Reply-To: <ZFlpYff6I5V6JiH1@google.com>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Mon, 8 May 2023 23:31:06 +0200
-Message-ID: <CACRpkdae4+0vsJS71G6dR5PEpMw13JGJAJr9Jyf2T+Z8gOgoxQ@mail.gmail.com>
-Subject: Re: [PATCH v3 1/3] Input: ads7846 - Convert to use software nodes
-To:     Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc:     Aaro Koskinen <aaro.koskinen@iki.fi>,
-        Janusz Krzysztofik <jmkrzyszt@gmail.com>,
-        Tony Lindgren <tony@atomide.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Daniel Mack <daniel@zonque.org>,
-        Haojian Zhuang <haojian.zhuang@gmail.com>,
-        Robert Jarzmik <robert.jarzmik@free.fr>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Mark Brown <broonie@kernel.org>,
-        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
-        Andreas Kemnade <andreas@kemnade.info>,
-        Helge Deller <deller@gmx.de>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-spi@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-mmc@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, May 8, 2023 at 11:28=E2=80=AFPM Dmitry Torokhov
-<dmitry.torokhov@gmail.com> wrote:
-> On Mon, May 08, 2023 at 11:23:44PM +0200, Linus Walleij wrote:
+Hello
 
-> > > This needs to be
-> > >
-> > >         return !gpiod_get_value_raw(ts->gpio_pendown);
-> >
-> > There is no such function. The gpio descriptor runpath simply assumes t=
-hat
-> > device trees can be trusted.
->
-> Sorry, this was supposed to be gpiod_get_raw_value():
->
-> https://elixir.bootlin.com/linux/latest/source/drivers/gpio/gpiolib.c#L28=
-54
+I have an old i386 lenovo thinpad tablet-2 currently windows 8.
+After disabling secure boot, I tried to install a Linux on it but all my tries fail.
+Grub is loading correclty.
+Memtest86 run on it without problem.
+( I also tried some BSD but since it is an i386 UEFI only, no BSD seems to support this)
 
-I missed it, I should have very well understood you meant that one...
-I just read the file too sloppily.
+But the Linux kernel fail to boot on it, black screen (in case of debian installer, the screen is stuck with the install choice), no more info.
+Since this is a tablet, there are no ethernet port. (I wanted to boot it blindly)
+The bios speak about a debug port, but I found nothing which seems a physical debug port output.
+I tried to wire the microusb power port on a USB host, but the host fail to enumerate any device (I tried also a spetial USB cable with data/power separated to be sure the problem was not the host failling to give enough power)
 
-> Yeah, we we can land the DT fixes ahead of the driver change that would
-> be great. Otherwise we need a temporary application of
-> gpiod_get_raw_value().
+The tablet has only one port, so I use a hub for keyboard and USB key.
+Immediatly after booting Linux, all hub port light goes to off.
 
-If the patch is fine I will send it to the SoC tree and ask for it to be
-applied as a fix.
+I tried different own made kernel with different choice about CONFIG_FB, selecting all INTEL options, etc... no change
+I tried to change video resolution via vga=ask or video=640x480 but no change.
 
-Yours,
-Linus Walleij
+Any clue on how debug further ?
+
+Thanks

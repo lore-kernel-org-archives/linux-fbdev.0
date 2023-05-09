@@ -2,61 +2,108 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A475C77B7C
-	for <linux-fbdev@archiver.kernel.org>; Tue,  9 May 2023 08:22:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59991C7EE22
+	for <linux-fbdev@archiver.kernel.org>; Tue,  9 May 2023 11:28:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234758AbjEIIWM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 9 May 2023 04:22:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38356 "EHLO
+        id S235366AbjEIL2i (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 9 May 2023 07:28:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47434 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234793AbjEIIWK (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 9 May 2023 04:22:10 -0400
-X-Greylist: delayed 88201 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 09 May 2023 01:22:07 PDT
-Received: from mail.rawlinsfis.com (mail.rawlinsfis.com [89.40.118.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7ABFBF4
-        for <linux-fbdev@vger.kernel.org>; Tue,  9 May 2023 01:22:07 -0700 (PDT)
-Received: by mail.rawlinsfis.com (Postfix, from userid 1001)
-        id 5733181EED; Mon,  8 May 2023 08:46:02 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rawlinsfis.com;
-        s=mail; t=1683531965;
-        bh=lDo1OjfzzJ3sOfR9tSDg5RMmT4aDyBP45hIVJCLtIrE=;
-        h=Date:From:To:Subject:From;
-        b=lnlznuurYqozeJDxcEIyUnYlsGybe2dUZDaGZy7t8yCCBNeAAfQsYuuRaKHdqoTE3
-         JzkYWpX49HPBUnDowBdqdW1N60KZ8g7OvmeTAKjSXWvwoDSDdivamzoExxguI2OUBn
-         Ic03GJGICw3IghDvFHi7wIXwy21hKbhneTS8Em+KWDBg74ki6Ns6CC0rXIW9HDGgb+
-         Ml6yHXq4klZDTQSVf6klg1uia7HldIIuA2cfqbzhe7YljBuYnFVOnz0A55bymsU6Wk
-         H3TODMazkQy28XWBQcAmBSCelCp45mRmsrB7y6Z1zR9HWqNBA7dlMISvmUACna0ES+
-         1azyJbWrAZbHQ==
-Received: by mail.rawlinsfis.com for <linux-fbdev@vger.kernel.org>; Mon,  8 May 2023 07:45:54 GMT
-Message-ID: <20230508074500-0.1.3d.5min.0.jay9j12lh5@rawlinsfis.com>
-Date:   Mon,  8 May 2023 07:45:54 GMT
-From:   "Damian Hordych" <damian.hordych@rawlinsfis.com>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: =?UTF-8?Q?Pompy_ciep=C5=82a_-_nowe_warunki_?=
-X-Mailer: mail.rawlinsfis.com
+        with ESMTP id S235429AbjEIL2h (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 9 May 2023 07:28:37 -0400
+Received: from hust.edu.cn (unknown [202.114.0.240])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B256E2D78;
+        Tue,  9 May 2023 04:28:36 -0700 (PDT)
+Received: from dd-virtual-machine.localdomain ([183.202.113.128])
+        (user=u202112089@hust.edu.cn mech=LOGIN bits=0)
+        by mx1.hust.edu.cn  with ESMTP id 349BRnLs027222-349BRnLt027222
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NO);
+        Tue, 9 May 2023 19:27:54 +0800
+From:   Zongjie Li <u202112089@hust.edu.cn>
+To:     Jaya Kumar <jayalk@intworks.biz>, Helge Deller <deller@gmx.de>,
+        Andrew Morton <akpm@osdl.org>
+Cc:     hust-os-kernel-patches@googlegroups.com,
+        Zongjie Li <u202112089@hust.edu.cn>,
+        Dongliang Mu <dzm91@hust.edu.cn>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] drivers: fbdev: arcfb: Fix error handling in arcfb_probe()
+Date:   Tue,  9 May 2023 19:27:26 +0800
+Message-Id: <20230509112727.3899-1-u202112089@hust.edu.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-FEAS-AUTH-USER: u202112089@hust.edu.cn
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,
+Smatch complains that:
+arcfb_probe() warn: 'irq' from request_irq() not released on lines: 587.
 
-w ramach nowej edycji programu Czyste Powietrze dla klient=C3=B3w indywid=
-ualnych mog=C4=85 otrzyma=C4=87 Pa=C5=84stwo do 135 tys. z=C5=82 wsparcia=
- na zakup pompy ciep=C5=82a.
+Fix error handling in the arcfb_probe() function. If IO addresses are 
+not provided or framebuffer registration fails, the code will jump to 
+the err_addr or err_register_fb label to release resources. 
+If IRQ request fails, previously allocated resources will be freed.
 
-Pr=C3=B3cz wy=C5=BCszego dofinansowania program zak=C5=82ada m.in. podwy=C5=
-=BCszenie prog=C3=B3w dochodowych oraz mo=C5=BCliwo=C5=9B=C4=87 z=C5=82o=C5=
-=BCenia kolejnego wniosku o dofinansowanie dla tych, kt=C3=B3rzy ju=C5=BC=
- wcze=C5=9Bniej skorzystali z Programu.
+Fixes: 1154ea7dcd8e ("[PATCH] Framebuffer driver for Arc LCD board")
+Signed-off-by: Zongjie Li <u202112089@hust.edu.cn>
+Reviewed-by: Dongliang Mu <dzm91@hust.edu.cn>
+---
+ drivers/video/fbdev/arcfb.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
-Jako firma specjalizuj=C4=85ca si=C4=99 w dostawie, monta=C5=BCu i serwis=
-ie pomp ciep=C5=82a pomo=C5=BCemy Pa=C5=84stwu w uzyskaniu dofinansowania=
- wraz z kompleksow=C4=85 realizacj=C4=85 ca=C5=82ego projektu.
+diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
+index 45e64016db32..024d0ee4f04f 100644
+--- a/drivers/video/fbdev/arcfb.c
++++ b/drivers/video/fbdev/arcfb.c
+@@ -523,7 +523,7 @@ static int arcfb_probe(struct platform_device *dev)
+ 
+ 	info = framebuffer_alloc(sizeof(struct arcfb_par), &dev->dev);
+ 	if (!info)
+-		goto err;
++		goto err_fb_alloc;
+ 
+ 	info->screen_base = (char __iomem *)videomemory;
+ 	info->fbops = &arcfb_ops;
+@@ -535,7 +535,7 @@ static int arcfb_probe(struct platform_device *dev)
+ 
+ 	if (!dio_addr || !cio_addr || !c2io_addr) {
+ 		printk(KERN_WARNING "no IO addresses supplied\n");
+-		goto err1;
++		goto err_addr;
+ 	}
+ 	par->dio_addr = dio_addr;
+ 	par->cio_addr = cio_addr;
+@@ -551,12 +551,12 @@ static int arcfb_probe(struct platform_device *dev)
+ 			printk(KERN_INFO
+ 				"arcfb: Failed req IRQ %d\n", par->irq);
+ 			retval = -EBUSY;
+-			goto err1;
++			goto err_addr;
+ 		}
+ 	}
+ 	retval = register_framebuffer(info);
+ 	if (retval < 0)
+-		goto err1;
++		goto err_register_fb;
+ 	platform_set_drvdata(dev, info);
+ 	fb_info(info, "Arc frame buffer device, using %dK of video memory\n",
+ 		videomemorysize >> 10);
+@@ -580,9 +580,12 @@ static int arcfb_probe(struct platform_device *dev)
+ 	}
+ 
+ 	return 0;
+-err1:
++
++err_register_fb:
++	free_irq(par->irq, info);
++err_addr:
+ 	framebuffer_release(info);
+-err:
++err_fb_alloc:
+ 	vfree(videomemory);
+ 	return retval;
+ }
+-- 
+2.25.1
 
-S=C4=85 Pa=C5=84stwo zainteresowani?
-
-Pozdrawiam
-Damian Hordych

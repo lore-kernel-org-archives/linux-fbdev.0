@@ -2,67 +2,101 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2C1DC77B7C
-	for <linux-fbdev@archiver.kernel.org>; Tue,  9 May 2023 14:01:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC96EC77B7C
+	for <linux-fbdev@archiver.kernel.org>; Tue,  9 May 2023 16:52:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235231AbjEIOBI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 9 May 2023 10:01:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45130 "EHLO
+        id S229539AbjEIQwq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 9 May 2023 12:52:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35282 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229699AbjEIOBH (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 9 May 2023 10:01:07 -0400
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 02FBF83;
-        Tue,  9 May 2023 07:01:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1683640866; x=1715176866;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=EHKsvTdHCdNCK1HuRWa7ynsK0osfnVqDf2droaNtqyY=;
-  b=H6+xzbeCK+V+hjeC9nQn+1efJZLJf+pJBOinOa9DV/TF4O2nyjBhBMtF
-   4CHW5mx/Ya3RYKGKBPra8gN9Vv5cq6Fq1vCd81JgKQNQUT06nn+Dr4oVT
-   pHYD9PHhQcT+RICSw1yr6i799MZotKp7xbV6W52nsOF5/uh108e60x3fZ
-   DrYY33qq2angysAGVobCH3HfzigetaPRmDfZqtttAH3TpiTnuTXYpTbj3
-   2OZrsIEbnJrk0OtJPXUZTpq+BLUVeQpDSMEUYH0Wch/Hn0i/F6v2zy8bO
-   /YST4DiwXq7IYWEXxucet7vefwA8hzXPvr5jLoloHNnl4SqXwuBS5QujD
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10705"; a="352997100"
-X-IronPort-AV: E=Sophos;i="5.99,262,1677571200"; 
-   d="scan'208";a="352997100"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 May 2023 07:01:03 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10705"; a="768503018"
-X-IronPort-AV: E=Sophos;i="5.99,262,1677571200"; 
-   d="scan'208";a="768503018"
-Received: from dcourtn1-desk1.amr.corp.intel.com (HELO [10.212.182.218]) ([10.212.182.218])
-  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 May 2023 07:01:03 -0700
-Message-ID: <af88a590-e20a-0669-c0d8-e073cc6e109f@intel.com>
-Date:   Tue, 9 May 2023 07:01:02 -0700
+        with ESMTP id S234580AbjEIQwn (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 9 May 2023 12:52:43 -0400
+Received: from mailrelay6-1.pub.mailoutpod2-cph3.one.com (mailrelay6-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:405::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 995824C16
+        for <linux-fbdev@vger.kernel.org>; Tue,  9 May 2023 09:52:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=rsa1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=cOysKkMBNzDpcv5J2MsGIrd6IfUZXEEIlgYWc9yAK1I=;
+        b=Amwj4o2W9+x26XSYidQ/xfjam9GfElktepI4/ezdc6Di/JAz0kJvOa7H9OAIf56tAysvU/tXe3M3v
+         TL6HeGLz5FevtuATssXRb92xxS76qq6gZToR06QaFb/wP8fAXgXV0m9im8bvPTRqoSyBZK7HyKGK6S
+         CuHuha/2o4ihYd9eE2fi8mtqptzxnx18mq0BWuzXNryagE+Xu8OrA2aAHo4jK/aUX/qJco4VJThz9+
+         mndVlUyRZiPAzF55bOhzBkfWYjGCUpnED5au0AGdjZFJzKJsAaxFdL9HpOJeNPcfxXWwBAfmvBNwgi
+         djeMx/mSgSVtHhAVDZ8hmQeuwErhIow==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=ed1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=cOysKkMBNzDpcv5J2MsGIrd6IfUZXEEIlgYWc9yAK1I=;
+        b=qafW83QT/OqXnpLt+q4/N/9s/XB8IE/qbub0+3tIQ4iXiI+0eetRFTeoUfa7/wjKNHSdig+xPcFDo
+         bqfTGNdCQ==
+X-HalOne-ID: e4221e17-ee89-11ed-90db-6f01c1d0a443
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+        by mailrelay6 (Halon) with ESMTPSA
+        id e4221e17-ee89-11ed-90db-6f01c1d0a443;
+        Tue, 09 May 2023 16:52:34 +0000 (UTC)
+Date:   Tue, 9 May 2023 18:52:32 +0200
+From:   Sam Ravnborg <sam@ravnborg.org>
+To:     Maximilian Weigand <mweigand2017@gmail.com>
+Cc:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pwm@vger.kernel.org,
+        Maximilian Weigand <mweigand@mweigand.net>
+Subject: Re: [PATCH v1] backlight: lm3630a: turn off both led strings when
+ display is blank
+Message-ID: <20230509165232.GA1072872@ravnborg.org>
+References: <20230505185752.969476-1-mweigand2017@gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: Cannot boot an i386-UEFI thinkpad lenovo tablet-2
-Content-Language: en-US
-To:     Corentin Labbe <clabbe.montjoie@gmail.com>, tglx@linutronix.de,
-        mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com,
-        x86@kernel.org, hpa@zytor.com, pjones@redhat.com, deller@gmx.de
-Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <ZFnoXiZGGhuWDl2S@Red>
-From:   Dave Hansen <dave.hansen@intel.com>
-In-Reply-To: <ZFnoXiZGGhuWDl2S@Red>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230505185752.969476-1-mweigand2017@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 5/8/23 23:29, Corentin Labbe wrote:
-> The tablet has only one port, so I use a hub for keyboard and USB key.
-> Immediatly after booting Linux, all hub port light goes to off.
+On Fri, May 05, 2023 at 08:57:52PM +0200, Maximilian Weigand wrote:
+> From: Maximilian Weigand <mweigand@mweigand.net>
+> 
+> Use display_is_blank() to determine if the led strings should be turned
+> off in the update_status() functions of both strings.
+> 
+> Signed-off-by: Maximilian Weigand <mweigand@mweigand.net>
+> ---
+>  drivers/video/backlight/lm3630a_bl.c | 8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+> index d8c42acecb5d..5498b57329f9 100644
+> --- a/drivers/video/backlight/lm3630a_bl.c
+> +++ b/drivers/video/backlight/lm3630a_bl.c
+> @@ -202,7 +202,9 @@ static int lm3630a_bank_a_update_status(struct backlight_device *bl)
+>  	usleep_range(1000, 2000);
+>  	/* minimum brightness is 0x04 */
+>  	ret = lm3630a_write(pchip, REG_BRT_A, bl->props.brightness);
+> -	if (bl->props.brightness < 0x4)
+> +
+> +	if (backlight_is_blank(bl) || (bl->props.brightness < 0x4))
+You could replace bl->props.brightness with backlight_get_brightness(bl)
+to avoid direct access to the properties.
 
-If it's dying in the installer, can you boot it to a shell or rescue
-media?  Are you getting any kernel messages on the screen before the
-installer?
+> +		/* turn the string off  */
+>  		ret |= lm3630a_update(pchip, REG_CTRL, LM3630A_LEDA_ENABLE, 0);
+>  	else
+>  		ret |= lm3630a_update(pchip, REG_CTRL,
+> @@ -277,7 +279,9 @@ static int lm3630a_bank_b_update_status(struct backlight_device *bl)
+>  	usleep_range(1000, 2000);
+>  	/* minimum brightness is 0x04 */
+>  	ret = lm3630a_write(pchip, REG_BRT_B, bl->props.brightness);
+> -	if (bl->props.brightness < 0x4)
+> +
+> +	if (backlight_is_blank(bl) || (bl->props.brightness < 0x4))
+Same here
 
+	Sam

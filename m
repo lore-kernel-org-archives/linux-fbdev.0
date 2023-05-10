@@ -2,91 +2,84 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3B9EC7EE22
-	for <linux-fbdev@archiver.kernel.org>; Tue,  9 May 2023 20:48:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5543C7EE22
+	for <linux-fbdev@archiver.kernel.org>; Wed, 10 May 2023 08:52:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229650AbjEIUsa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 9 May 2023 16:48:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39254 "EHLO
+        id S236639AbjEJIwW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 10 May 2023 04:52:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40300 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229511AbjEIUs2 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 9 May 2023 16:48:28 -0400
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B37C34499;
-        Tue,  9 May 2023 13:48:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1683665307; x=1715201307;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=+zV+uAS4q9V32crYnr8Zbb8CSTAhYVLj34nEaMyWUkM=;
-  b=Apq6WWu/uZ19Au6lw86qGjCQqNHzW7Siz4s/ejGaIO1y3y8muxuBKgAx
-   Rhm1y+2u7sDiqiWHtbTp/kme8smxwKZf+yiPF0QOJOVdml3qk2X2lAIjP
-   9sduhV8NF/1kPtBHIi13/haAPsBafMm0KkvQ3rgHbuZ/o/r+OWB4X6gFb
-   4aEslZhTb0rTHGprwtf/AUtE0nZDYP2AjBcPJIZxHx3M6jODvFHhbb6tL
-   V/AR7Z6PssS9IBGBDsvNXYZGqkYZ8VLiFpyOyKnLzWWmHU1HgOEgjwRSr
-   4MLLJHYc0GeAvV+sqriN5owe6cpltC5y84bNFDt9NBlncjXl9pF4karYL
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10705"; a="436368772"
-X-IronPort-AV: E=Sophos;i="5.99,262,1677571200"; 
-   d="scan'208";a="436368772"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 May 2023 13:48:27 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10705"; a="788658880"
-X-IronPort-AV: E=Sophos;i="5.99,262,1677571200"; 
-   d="scan'208";a="788658880"
-Received: from dcourtn1-desk1.amr.corp.intel.com (HELO [10.212.182.218]) ([10.212.182.218])
-  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 May 2023 13:48:26 -0700
-Message-ID: <055b41e9-b345-03fe-755c-cdcb08e4098b@intel.com>
-Date:   Tue, 9 May 2023 13:48:26 -0700
+        with ESMTP id S236767AbjEJIwK (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 10 May 2023 04:52:10 -0400
+Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 549FC7ED5;
+        Wed, 10 May 2023 01:51:39 -0700 (PDT)
+Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-3f195b164c4so45553435e9.1;
+        Wed, 10 May 2023 01:51:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1683708698; x=1686300698;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Dlbrk4ZPhxYJQ2iwlQYUgs1YMic9U6ZFVKSub2IU5aA=;
+        b=Yp8TzKP3TmqtoNZ+fCizpDtzsNuLZntoDVf8jYnpn9qBGzOCC7t/hwHmQBX3wV/ns8
+         kySBKurqNOP4UJQGYmQ0WaW/LSziLYl5JVvzVzJwXkdxR2U44bplU/5IGsy+VoN0frEM
+         gMooL/sEXvab+yLWktPd+iW7AQKIcBzV1nIupZqU5wnqlDFXJJAR33zfGr+1fPCdWiys
+         LYNtW4YfILFX/wB5JuvE+Im8c7O7XbHODq4wDlxObrLPR9PHnww+Sn5SAgGB5bXud38u
+         MTlB8+FvvuCbMP5zDJ+mHQilzaSyS5DEU4k7as1Q9Rd1Aj8Fe1VZORR7Gy58EBUwFFha
+         UcWg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1683708698; x=1686300698;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Dlbrk4ZPhxYJQ2iwlQYUgs1YMic9U6ZFVKSub2IU5aA=;
+        b=VQuV522rrBxZlQrm/mBYGYrV3cAEhvTEkSyVpdDHTCgk85TN4fgUuGafwoz9vftzut
+         bsRI7gURVAodFZtw74r7AzEMqBuicOQ6J6NyZ9OAx723E2/NR5TILTVwVKqcaTbiLc3D
+         qxoMOZxZj21AHGQBjTjPcJ9ocMrKJdH9lIZ/6tZ4r1/E1mX+d/fWXUbDJ5EH/K6aBRt3
+         2blv+fEb+G8O0bbFDK9w4kAHbRInSz1zkEo1WWNU9yS5qH84EafnONs5s3SsPvr45LAX
+         rw59u87gv8SAQ4Z5hk3iq7XViC47b/SqLAdUeqP0Qj4dFgHIdC2KIrLxeFr/y90so5jl
+         rueA==
+X-Gm-Message-State: AC+VfDxPDmRqCGGmfEQyfaKc0+Whbk/RH20Q7Kzg/N2ygLTfz89PijEF
+        mY/pGL8yp0KaUhYxIFaPW8U=
+X-Google-Smtp-Source: ACHHUZ4AeXulhEHTiTvL5HA71WfLqKjAEc3fIwJyAKBWxzr5/LME6Z9PVS3weTa+vNfic/xkXytfZw==
+X-Received: by 2002:a7b:ca4c:0:b0:3f4:2819:7777 with SMTP id m12-20020a7bca4c000000b003f428197777mr5585021wml.38.1683708697661;
+        Wed, 10 May 2023 01:51:37 -0700 (PDT)
+Received: from [192.168.1.131] (cgn-89-1-213-9.nc.de. [89.1.213.9])
+        by smtp.gmail.com with ESMTPSA id h1-20020a5d5481000000b0030647d1f34bsm16850080wrv.1.2023.05.10.01.51.36
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 10 May 2023 01:51:37 -0700 (PDT)
+Message-ID: <9b89164a-bd8a-bdea-2c17-101428aba98f@gmail.com>
+Date:   Wed, 10 May 2023 10:51:34 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.10.0
-Subject: Re: Cannot boot an i386-UEFI thinkpad lenovo tablet-2
+Subject: Re: [PATCH v1] backlight: lm3630a: turn off both led strings when
+ display is blank
 Content-Language: en-US
-To:     Corentin Labbe <clabbe.montjoie@gmail.com>
-Cc:     tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
-        dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
-        pjones@redhat.com, deller@gmx.de, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <ZFnoXiZGGhuWDl2S@Red>
- <af88a590-e20a-0669-c0d8-e073cc6e109f@intel.com> <ZFqvCeNxKJDOYDaT@Red>
-From:   Dave Hansen <dave.hansen@intel.com>
-In-Reply-To: <ZFqvCeNxKJDOYDaT@Red>
+To:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Maximilian Weigand <mweigand2017@gmail.com>
+Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org
+References: <20230505185752.969476-1-mweigand2017@gmail.com>
+ <20230509132735.GA31274@aspen.lan>
+From:   Maximilian Weigand <mweigand2017@gmail.com>
+In-Reply-To: <20230509132735.GA31274@aspen.lan>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 5/9/23 13:37, Corentin Labbe wrote:
-> Le Tue, May 09, 2023 at 07:01:02AM -0700, Dave Hansen a écrit :
->> On 5/8/23 23:29, Corentin Labbe wrote:
->>> The tablet has only one port, so I use a hub for keyboard and USB key.
->>> Immediatly after booting Linux, all hub port light goes to off.
->> If it's dying in the installer, can you boot it to a shell or rescue
->> media?  Are you getting any kernel messages on the screen before the
->> installer?
->>
-> Sorry my sentence was not precise ("after booting linux"),
+
+
+>> Use display_is_blank() to determine if the led strings should be turned
 > 
-> It die after pressing enter on grub menu.
-> No kernel message, nothing new on screen.
-> Only visible change are USB light off.
-> 
-> I have really no clue.
+> Shouldn't this be backlight_is_blank()?
 
-A lot of distros set the 'quiet' option to _keep_ the kernel from
-spewing messages at boot.  Ubuntu sets "quiet splash", for instance.
-
-Going into the grub menu and killing the 'quiet' and replacing it with
-'debug' is a good place to start.  earlyprintk=vga can also help if
-things are still blank at that point.  I thought we used to have an
-earlyprintk=efi, but it seems to have vanished at some point.
-
-But, you've got a bit of oddball hardware.  It's from the _far_ extreme
-end of 32-bit-only hardware.  The fact that it had Windows on it isn't a
-great sign.  There could be a BIOS bug that trips Linux up but Windows
-is perfectly happy with.  There was definitely a sad period of time
-where folks were not interested in fixing issues like that.
+Yes, indeed. Thanks for pointing this out. Fixed in v2.

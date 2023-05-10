@@ -2,118 +2,145 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 442EDC7EE22
-	for <linux-fbdev@archiver.kernel.org>; Wed, 10 May 2023 08:53:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11194C7EE26
+	for <linux-fbdev@archiver.kernel.org>; Wed, 10 May 2023 11:06:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236887AbjEJIx0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 10 May 2023 04:53:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43176 "EHLO
+        id S236366AbjEJLGK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 10 May 2023 07:06:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34850 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236892AbjEJIxH (ORCPT
+        with ESMTP id S230205AbjEJLGJ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 10 May 2023 04:53:07 -0400
-Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A333140F6;
-        Wed, 10 May 2023 01:52:51 -0700 (PDT)
-Received: by mail-wr1-x436.google.com with SMTP id ffacd0b85a97d-306dbad5182so4441705f8f.1;
-        Wed, 10 May 2023 01:52:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1683708770; x=1686300770;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=sRhXhkL36qHDCTJUPZJ0gK4JtbzzIKwrgaPUffLmcS4=;
-        b=oG8mhrPN17kkUirhBiS9xZM7Nax7ezuXWWn0z7PndTZ7BTrMJoaOch4OdduhXkfI/f
-         F1tcjT9OW1w49Za65TxRxLWsa9AL+CNPIfkH/jdoiHdrE6d0se+xpilb9SaU/rerV+Wt
-         4GFVTbr+8REGG65ejKLrTU1YW1y+aLP4O00vl9Bh8M5xPYuySq67zgv6JW+bn7harRR+
-         oLOzsTjCdD0tHiDuZeOM9QnRzJR5PXNTlGnUH7wrqVbXaQqk0WXabCF5fX8h+zMKdVm1
-         WferQ9/7qxOGapUd9MCkFIUIyz7ci2aXsW9lKl6Ou1AO7idtk9agds/AY87tU/a901/B
-         Zy5A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1683708770; x=1686300770;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=sRhXhkL36qHDCTJUPZJ0gK4JtbzzIKwrgaPUffLmcS4=;
-        b=gwbkbrZdxKlQ/EXfSIsKq4tK+cGod9UBwLn0NxBp3zMMXC/SqPVzz0n0g5RWRB1rPo
-         1XU6+exWP81GuJkpdifnJGmL0QWMeQUbgnaGLtgFTZ4dGfWD/JhXfUXFBQOR1sSi0hPK
-         l+excmylyn+JpsK+EqZNUWU5sH825tgXDLSNeczD5ngE8MjFBlUM3gnGEXRLOgYJEOBF
-         4ozuXGteAcjLoV6Gpz6Wz9CxRDAKzSnS15Y7VjXFtkbiJKdLdOargyWj/3JeVtMiJtst
-         W2+n7ts5j/x0ZT5+r44NyfjCLuIOPBTwSjFaA46vHmFQpMhmwjA6K+eQOzryIVt3kGCx
-         FsZw==
-X-Gm-Message-State: AC+VfDx7KYYr6mr+cIVw9BBpQUm8dh/ONmTWm61fBashYtqQE6e/ctHj
-        x/cj0sKB4GpfiicPodba4Oo=
-X-Google-Smtp-Source: ACHHUZ7ih61hE9Yfr+pU8+QPzsVKR+QvTP+Uv980w8E1G8xoVAtDcpQ/O5PinNK/Mlk2eFtDJjKS/g==
-X-Received: by 2002:a5d:5082:0:b0:307:a36b:e7a5 with SMTP id a2-20020a5d5082000000b00307a36be7a5mr3554624wrt.60.1683708769923;
-        Wed, 10 May 2023 01:52:49 -0700 (PDT)
-Received: from koko.localdomain (cgn-89-1-213-9.nc.de. [89.1.213.9])
-        by smtp.gmail.com with ESMTPSA id e15-20020a5d4e8f000000b0030629536e64sm16730766wru.30.2023.05.10.01.52.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 10 May 2023 01:52:49 -0700 (PDT)
-From:   Maximilian Weigand <mweigand2017@gmail.com>
-To:     Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pwm@vger.kernel.org
-Cc:     Maximilian Weigand <mweigand@mweigand.net>
-Subject: [PATCH v2] backlight: lm3630a: turn off both led strings when display is blank
-Date:   Wed, 10 May 2023 10:52:39 +0200
-Message-Id: <20230510085239.1253896-1-mweigand2017@gmail.com>
-X-Mailer: git-send-email 2.39.2
+        Wed, 10 May 2023 07:06:09 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4880719B;
+        Wed, 10 May 2023 04:06:07 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id B2BA11F388;
+        Wed, 10 May 2023 11:06:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1683716765; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=8W+Q+r0g3mw6ipQ9VB8oBVPwJD25yg38F3zvEI0QrWI=;
+        b=xsqTAyRUUHiT1tcTopM9KBzj2+MMqQbkJhsuxa0/vyp3il1j+EufLJjTLSNhmwY736dymt
+        beipLzXFzi2x06B170786gLMc00/aufz0q+zQ9JJ2aR9U29J6fLzaZ3ENrPtnxG+X7OjKg
+        NqFl67xrzCTyQ/5vVpXGiOsoNWbZsL4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1683716765;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=8W+Q+r0g3mw6ipQ9VB8oBVPwJD25yg38F3zvEI0QrWI=;
+        b=S3VjVYLm7fDDz6TEUjM2HUYJgPdTN/ojk7o3k5n/zTMAV6d6H21pXszVtOT1O1zccafNDB
+        +4CWx0QCUD0RTCCQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 42DE713519;
+        Wed, 10 May 2023 11:06:05 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id bC02D516W2QfRAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 10 May 2023 11:06:05 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     deller@gmx.de, geert@linux-m68k.org, javierm@redhat.com,
+        daniel@ffwll.ch, vgupta@kernel.org, chenhuacai@kernel.org,
+        kernel@xen0n.name, davem@davemloft.net,
+        James.Bottomley@HansenPartnership.com, arnd@arndb.de,
+        sam@ravnborg.org, suijingfeng@loongson.cn
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arch@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+        sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-parisc@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v6 0/6] fbdev: Move framebuffer I/O helpers to <asm/fb.h>
+Date:   Wed, 10 May 2023 13:05:51 +0200
+Message-Id: <20230510110557.14343-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Maximilian Weigand <mweigand@mweigand.net>
+Fbdev provides helpers for framebuffer I/O, such as fb_readl(),
+fb_writel() or fb_memcpy_to_fb(). The implementation of each helper
+depends on the architecture, but they are all equivalent to regular
+I/O functions of similar names. So use regular functions instead and
+move all helpers into <asm-generic/fb.h>
 
-Use backlight_is_blank() to determine if the led strings should be turned
-off in the update_status() functions of both strings.
+The first patch a simple whitespace cleanup.
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-Signed-off-by: Maximilian Weigand <mweigand@mweigand.net>
----
-Changes in v2:
-- fix description, replace display_is_black() with backlight_is_black()
-- use backlight_get_brightness() instead of accessing the property
-  directly
+Until now, <linux/fb.h> contained an include of <asm/io.h>. As this
+will go away, patches 2 to 4 prepare include statements in the various
+drivers. Source files that use regular I/O helpers, such as readl(),
+now include <linux/io.h>. Source files that use framebuffer I/O
+helpers, such as fb_readl(), now include <linux/fb.h>.
 
- drivers/video/backlight/lm3630a_bl.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+Patch 5 replaces the architecture-based if-else branching in 
+<linux/fb.h> by helpers in <asm-generic/fb.h>. All helpers use Linux'
+existing I/O functions.
 
-diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-index d8c42acecb5d..faf92c8d70c1 100644
---- a/drivers/video/backlight/lm3630a_bl.c
-+++ b/drivers/video/backlight/lm3630a_bl.c
-@@ -202,7 +202,9 @@ static int lm3630a_bank_a_update_status(struct backlight_device *bl)
- 	usleep_range(1000, 2000);
- 	/* minimum brightness is 0x04 */
- 	ret = lm3630a_write(pchip, REG_BRT_A, bl->props.brightness);
--	if (bl->props.brightness < 0x4)
-+
-+	if (backlight_is_blank(bl) || (backlight_get_brightness(bl) < 0x4))
-+		/* turn the string off  */
- 		ret |= lm3630a_update(pchip, REG_CTRL, LM3630A_LEDA_ENABLE, 0);
- 	else
- 		ret |= lm3630a_update(pchip, REG_CTRL,
-@@ -277,7 +279,9 @@ static int lm3630a_bank_b_update_status(struct backlight_device *bl)
- 	usleep_range(1000, 2000);
- 	/* minimum brightness is 0x04 */
- 	ret = lm3630a_write(pchip, REG_BRT_B, bl->props.brightness);
--	if (bl->props.brightness < 0x4)
-+
-+	if (backlight_is_blank(bl) || (backlight_get_brightness(bl) < 0x4))
-+		/* turn the string off  */
- 		ret |= lm3630a_update(pchip, REG_CTRL, LM3630A_LEDB_ENABLE, 0);
- 	else
- 		ret |= lm3630a_update(pchip, REG_CTRL,
+Patch 6 harmonizes naming among fbdev and existing I/O functions.
 
-base-commit: ac9a78681b921877518763ba0e89202254349d1b
---
-2.39.2
+The patchset has been built for a variety of platforms, such as x86-64,
+arm, aarch64, ppc64, parisc, m64k, mips and sparc.
+
+v6:
+	* fix build on 64-bit mips (kernel test robot)
+	* update fb_io_fops.c
+v5:
+      	* fix build on s390
+v4:
+	* keep fb_mem*() as-is on ia64, loongarch, sparc64 (Arnd)
+	* don't include <asm/fb.h> (Sam)
+v3:
+	* add the new helpers in <asm-generic/fb.h>
+	* support reordering and native byte order (Geert, Arnd)
+v2:
+	* use Linux I/O helpers (Sam, Arnd)
+
+Thomas Zimmermann (6):
+  fbdev/matrox: Remove trailing whitespaces
+  ipu-v3: Include <linux/io.h>
+  fbdev: Include <linux/io.h> in various drivers
+  fbdev: Include <linux/fb.h> instead of <asm/fb.h>
+  fbdev: Move framebuffer I/O helpers into <asm/fb.h>
+  fbdev: Rename fb_mem*() helpers
+
+ arch/ia64/include/asm/fb.h                  |  20 ++++
+ arch/loongarch/include/asm/fb.h             |  21 ++++
+ arch/mips/include/asm/fb.h                  |  22 +++++
+ arch/parisc/video/fbdev.c                   |   3 +-
+ arch/sparc/include/asm/fb.h                 |  20 ++++
+ arch/sparc/video/fbdev.c                    |   1 -
+ arch/x86/video/fbdev.c                      |   2 -
+ drivers/gpu/ipu-v3/ipu-prv.h                |   1 +
+ drivers/staging/sm750fb/sm750.c             |   2 +-
+ drivers/video/fbdev/arcfb.c                 |   1 +
+ drivers/video/fbdev/aty/atyfb.h             |   2 +
+ drivers/video/fbdev/aty/mach64_cursor.c     |   2 +-
+ drivers/video/fbdev/chipsfb.c               |   2 +-
+ drivers/video/fbdev/core/fb_io_fops.c       |   4 +-
+ drivers/video/fbdev/core/fbcon.c            |   1 -
+ drivers/video/fbdev/core/fbmem.c            |   2 -
+ drivers/video/fbdev/kyro/fbdev.c            |   2 +-
+ drivers/video/fbdev/matrox/matroxfb_accel.c |   6 +-
+ drivers/video/fbdev/matrox/matroxfb_base.h  |   4 +-
+ drivers/video/fbdev/pvr2fb.c                |   2 +-
+ drivers/video/fbdev/sstfb.c                 |   2 +-
+ drivers/video/fbdev/stifb.c                 |   4 +-
+ drivers/video/fbdev/tdfxfb.c                |   2 +-
+ drivers/video/fbdev/wmt_ge_rops.c           |   2 +
+ include/asm-generic/fb.h                    | 102 ++++++++++++++++++++
+ include/linux/fb.h                          |  55 +----------
+ 26 files changed, 210 insertions(+), 77 deletions(-)
+
+-- 
+2.40.1
 

@@ -2,163 +2,113 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A53EC7EE22
-	for <linux-fbdev@archiver.kernel.org>; Thu, 11 May 2023 13:06:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12612C7EE2F
+	for <linux-fbdev@archiver.kernel.org>; Thu, 11 May 2023 13:11:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237736AbjEKNGO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 11 May 2023 09:06:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54822 "EHLO
+        id S238051AbjEKNLY convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 11 May 2023 09:11:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58488 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237910AbjEKNGM (ORCPT
+        with ESMTP id S236695AbjEKNLB (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 11 May 2023 09:06:12 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 852C76A76
-        for <linux-fbdev@vger.kernel.org>; Thu, 11 May 2023 06:06:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1683810358; i=deller@gmx.de;
-        bh=d40ZGve7zR+dGqvSjkDls2rBkKGgMLVsgb8ctJYfyUM=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=Ris4jwkUNOSDvhabAQDdhR1fwOJDxdNSeVvDDQ2y39degXD7Ydn+b/A7eNxJcIbWh
-         hOvcBoQkXpOMzrycHWnrwTY49gEG9WP5KsBhyHlnR3jkM/j+M9wYWeUeOdahf5G1kM
-         OraN062btXV8F8ph3Ivsy5flVSl+dulzZMQh3lE1y21htqLmLTLcDUhWglkTqueaEE
-         rCyE4wFmwUyYfL7v6jG3TYcg6BrMOAgMTK5Vl4MWzhaWz0Jo6BPCWVmx4lrDg0ao1V
-         tVRvUmNThvyMiXALKCvOeBcnha6Ckqyq9ttfGnjwp1DZKkAhBn2yQ/yz+z6hZAxXDB
-         P0OYx0vkIyoqw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.77.61] ([109.43.178.145]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MpUUw-1qXEc60mKa-00py8M; Thu, 11
- May 2023 15:05:58 +0200
-Message-ID: <459c28bb-3104-8b53-970f-27995d3ea858@gmx.de>
-Date:   Thu, 11 May 2023 15:05:56 +0200
+        Thu, 11 May 2023 09:11:01 -0400
+Received: from mail-yw1-f179.google.com (mail-yw1-f179.google.com [209.85.128.179])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B643440ED;
+        Thu, 11 May 2023 06:10:57 -0700 (PDT)
+Received: by mail-yw1-f179.google.com with SMTP id 00721157ae682-55a00da4e53so153651357b3.0;
+        Thu, 11 May 2023 06:10:57 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1683810657; x=1686402657;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=XFpq6TfFDkhgvBTK4lDV32kTv2wLv5jHDb1iGqYi2iA=;
+        b=SYJrVUjqVBrvmAiE0paABwMvCIR57g9q8r/1uuOaS6oW+wejYfYSJaYJre8lx1Utoo
+         1s2PvAqooBs15dRB7NhlkcX56nyntFeeT3kVYbPMDYEcn7XIyMvBihskHrKiiAKITdY5
+         GNwUupMQJVvcEi6tc2wsp9BDTYdXRobXr/H7HMmZIEqhTgbJxrjgXuYyeAt7Fi4rXBGC
+         6WtjyqDw7AyWJVviow57c9BYe6taGvTOkQ9LNXSye4Iy3viISQCtAcvyxAPQf16sCNsb
+         e9lrV6Q60ZaFzjnlh1dbiYzKPaL3k9Yaz8ekb59jOg7UrFwiPKDYF6GQE2ZZTNaHIbw4
+         VbIg==
+X-Gm-Message-State: AC+VfDx1WMqIveGhONIvPKrGcM2fP0UHMU+1PaWy55OYiLMMkJVzh/Hb
+        GajYp5IebsSld1GzGQjg59R41LEmuo+9oA==
+X-Google-Smtp-Source: ACHHUZ4xoBrFJrG29LJfzdFL3U0IPY913sxscaao7G6y2auDH+vr1IkUtjGXEFsnOWBo+VIQ4wBiMg==
+X-Received: by 2002:a81:5b54:0:b0:559:f52b:7c5f with SMTP id p81-20020a815b54000000b00559f52b7c5fmr21667863ywb.17.1683810656706;
+        Thu, 11 May 2023 06:10:56 -0700 (PDT)
+Received: from mail-yb1-f171.google.com (mail-yb1-f171.google.com. [209.85.219.171])
+        by smtp.gmail.com with ESMTPSA id d201-20020a0ddbd2000000b0055a777e3c50sm4841077ywe.62.2023.05.11.06.10.54
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 11 May 2023 06:10:54 -0700 (PDT)
+Received: by mail-yb1-f171.google.com with SMTP id 3f1490d57ef6-b9e2b65d006so12577616276.3;
+        Thu, 11 May 2023 06:10:54 -0700 (PDT)
+X-Received: by 2002:a25:3792:0:b0:ba1:e7bb:a3a6 with SMTP id
+ e140-20020a253792000000b00ba1e7bba3a6mr17227303yba.18.1683810654067; Thu, 11
+ May 2023 06:10:54 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH 00/15] fbdev: Remove trailing whitespaces
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Javier Martinez Canillas <javierm@redhat.com>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20230331092314.2209-1-tzimmermann@suse.de>
- <e2f54d17-debc-62f4-3644-8baea4a88b10@suse.de>
- <752f0e2b-e069-6221-1ee0-99306f2c718a@gmx.de>
- <5a0a1ed1-3aa2-0026-52f7-60bd5dcba8b8@suse.de>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <5a0a1ed1-3aa2-0026-52f7-60bd5dcba8b8@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:V2K152GscDiiBxzZHHGwjYEDtGjlEX3qOUmqH1NUIb98boqYGac
- +yzxzOp4zVlpplTInStdElfuE1oSaDsOPlWr5pn94c7no1Uzds7zQIrZfmo1jpWPcYiA0pJ
- wapwA2xmjiojo+gSud//oSoGfLErYp7PNEC5o1qTQ99nBN54jLQYFA9Puq0nwEAg12o/pJ0
- MhVVg8PTr4jZzNx9jgLkg==
-UI-OutboundReport: notjunk:1;M01:P0:FZyQVIiMDhw=;IbBi+C98Wtv7EfFh9lyIn8AF4KD
- bMHYJP05J/aO8UEV3u2C2IUr116hsb1LIF5IXmjZzHnhJS4kKun9f/98w4r5tnfGZJkHZ/VMY
- RGVxbCZdLHGLCZgUSSTyQr91sOIF0KZPyEKzFqB6rqkKBbhYvjGan93XJ203l2xtzZXwwb3LI
- xraZ2Ip74GPO9mzkqEd/i7SDaN4jMp0+/j0SnFNdIfnvVP38QM1naG/n8+OaQc7wFMTY3PldB
- R9iZuyjXf081I8O+rpi6OxnODEBjv+ghAxddOn4ohVGgVEAau12sJ96w+gtqhFMMkby7u+e36
- oBCfxiyOgfcSg0ORmFk0ftvpVmIgsHc1HLc46YwByq/93JUrxkqcuZG0leYA/N3AM5G5J4ZlK
- F4+WwGpYrvgXOWuHOPFmekypH0ORyTJLwk8QP4bYBncBPTCHTuFgBVbbD3BDviakU8b2MulIf
- 1JwlvQiv3AqAmayXGVb3jxBlNVNZx4C8LMvtsps0XjV18SuIc6R5qjsL/Ood3g7aQKpvOn+km
- zUXOzwr3hkCwO5D842SWzj40lok5oumGh6d57u1A16g2fp+nT3Ro9ycjB6LwhFiEUK7oGufcx
- 4li9LCsXxEAz4InbIew1F0LqNe5r+aW16cLTfNI4DwsexTrXH61herXf8q6Gqec3PwVgSylHR
- +DNCDWZ9NWdZmKXwgmU+RaxHQV0BWzvbyzUbCwP+CGOPS//jRPQKdEhRu8CzSISgL3hJ/4eLu
- I4K3toVnVj4g/q+ARmNQlMf9ZoYQK1TyIvxehKSiLFrHI/SXUasrWbknj/cswjpbvhXCnzyzy
- F8z1FAN7+eCUDYEIPqR+mXAsnDM98HI+AfFnOK563lPVqfgWlQsUe8NF1RN/jnsXuTIlIppJw
- 4JGPyHfNDhyyl5XlPPmx9S882THs/Ql9B84866hadOyfM1xm4vmE4R3VAgX7PcHC4fss1Bmvr
- Vo+ciA==
+References: <20230510110557.14343-1-tzimmermann@suse.de> <20230510110557.14343-2-tzimmermann@suse.de>
+ <0e13efbf-9a48-6e70-fdf3-8290f28c6dc7@189.cn> <a2315b9a-0747-1f0f-1f0a-1c6773931db4@suse.de>
+ <15fe1489-f0fa-bbf6-ec08-a270bd4f1559@gmx.de>
+In-Reply-To: <15fe1489-f0fa-bbf6-ec08-a270bd4f1559@gmx.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Thu, 11 May 2023 15:10:41 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdX8piLhEbV+pcWvdn1OEGH9N5FwDOQcqNcEjBx3=ThjXA@mail.gmail.com>
+Message-ID: <CAMuHMdX8piLhEbV+pcWvdn1OEGH9N5FwDOQcqNcEjBx3=ThjXA@mail.gmail.com>
+Subject: Re: [PATCH v6 1/6] fbdev/matrox: Remove trailing whitespaces
+To:     Helge Deller <deller@gmx.de>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Sui Jingfeng <15330273260@189.cn>, javierm@redhat.com,
+        daniel@ffwll.ch, vgupta@kernel.org, chenhuacai@kernel.org,
+        kernel@xen0n.name, davem@davemloft.net, arnd@arndb.de,
+        sam@ravnborg.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org,
+        linux-snps-arc@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-ia64@vger.kernel.org, loongarch@lists.linux.dev,
+        linux-m68k@lists.linux-m68k.org, sparclinux@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 5/11/23 14:53, Thomas Zimmermann wrote:
-> Hi
->
-> Am 11.05.23 um 14:51 schrieb Helge Deller:
->> Hi Thomas,
->>
->> On 5/11/23 14:08, Thomas Zimmermann wrote:
->>> I thought these patches would go through the fbdev tree, but I could
->>> not find them v6.4-rc1. Please review the remaining ones, so that I
->>> can merge them via drm-misc.
->>
->> Sorry, I thought you had planned to take them through drm-misc anyway,
->> so I didn't applied them.
->>
->> I just reviewed them again, and you may add my
->> Acked-by: Helge Deller <deller@gmx.de>
->>
->> Alternatively I can apply them now to fbdev and send them for -rc2.
->> Just let me know your preference.
->
-> Please do. Having them in -rc2 is even better.
+Hi Helge,
 
-Ok.
-
-Helge
-
+On Thu, May 11, 2023 at 3:05 PM Helge Deller <deller@gmx.de> wrote:
+> On 5/11/23 09:55, Thomas Zimmermann wrote:
+> > But the work I do within fbdev is mostly for improving DRM.
 >
-> Best regards
-> Thomas
+> Sure.
 >
->>
->> Helge
->>
->>
->>>
->>> Best regards
->>> Thomas
->>>
->>> Am 31.03.23 um 11:22 schrieb Thomas Zimmermann:
->>>> The trailing whitespaces are annoying. So remove them. No
->>>> functional changes. Some of the patches has already been
->>>> acked by Helge.
->>>>
->>>> Thomas Zimmermann (15):
->>>> =C2=A0=C2=A0 fbdev/68328fb: Remove trailing whitespaces
->>>> =C2=A0=C2=A0 fbdev/atmel_lcdfb: Remove trailing whitespaces
->>>> =C2=A0=C2=A0 fbdev/cg14: Remove trailing whitespaces
->>>> =C2=A0=C2=A0 fbdev/controlfb: Remove trailing whitespaces
->>>> =C2=A0=C2=A0 fbdev/g364fb: Remove trailing whitespaces
->>>> =C2=A0=C2=A0 fbdev/hgafb: Remove trailing whitespaces
->>>> =C2=A0=C2=A0 fbdev/hpfb: Remove trailing whitespaces
->>>> =C2=A0=C2=A0 fbdev/macfb: Remove trailing whitespaces
->>>> =C2=A0=C2=A0 fbdev/maxinefb: Remove trailing whitespaces
->>>> =C2=A0=C2=A0 fbdev/p9100: Remove trailing whitespaces
->>>> =C2=A0=C2=A0 fbdev/platinumfb: Remove trailing whitespaces
->>>> =C2=A0=C2=A0 fbdev/sa1100fb: Remove trailing whitespaces
->>>> =C2=A0=C2=A0 fbdev/stifb: Remove trailing whitespaces
->>>> =C2=A0=C2=A0 fbdev/valkyriefb: Remove trailing whitespaces
->>>> =C2=A0=C2=A0 fbdev/vfb: Remove trailing whitespaces
->>>>
->>>> =C2=A0 drivers/video/fbdev/68328fb.c=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 =
-12 +--
->>>> =C2=A0 drivers/video/fbdev/atmel_lcdfb.c |=C2=A0=C2=A0 2 +-
->>>> =C2=A0 drivers/video/fbdev/cg14.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0 |=C2=A0=C2=A0 2 +-
->>>> =C2=A0 drivers/video/fbdev/controlfb.c=C2=A0=C2=A0 |=C2=A0 34 +++----
->>>> =C2=A0 drivers/video/fbdev/g364fb.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=
-=C2=A0=C2=A0 6 +-
->>>> =C2=A0 drivers/video/fbdev/hgafb.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0 |=C2=A0 36 +++----
->>>> =C2=A0 drivers/video/fbdev/hpfb.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0 |=C2=A0=C2=A0 8 +-
->>>> =C2=A0 drivers/video/fbdev/macfb.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0 |=C2=A0 10 +-
->>>> =C2=A0 drivers/video/fbdev/maxinefb.c=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0=
- 2 +-
->>>> =C2=A0 drivers/video/fbdev/p9100.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0 |=C2=A0=C2=A0 4 +-
->>>> =C2=A0 drivers/video/fbdev/platinumfb.c=C2=A0 |=C2=A0 30 +++---
->>>> =C2=A0 drivers/video/fbdev/sa1100fb.c=C2=A0=C2=A0=C2=A0 |=C2=A0 32 ++=
-+---
->>>> =C2=A0 drivers/video/fbdev/stifb.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0 | 156 +++++++++++++++---------------
->>>> =C2=A0 drivers/video/fbdev/valkyriefb.c=C2=A0 |=C2=A0 14 +--
->>>> =C2=A0 drivers/video/fbdev/vfb.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0 |=C2=A0 10 +-
->>>> =C2=A0 15 files changed, 179 insertions(+), 179 deletions(-)
->>>>
->>>
->>
+> > For the
+> > other issues in this file, I don't think that matroxfb should even be
+> > around any longer. Fbdev has been deprecated for a long time. But a
+> > small number of drivers are still in use and we still need its
+> > framebuffer console. So someone should either put significant effort
+> > into maintaining fbdev, or it should be phased out. But neither is
+> > happening.
 >
+> You're wrong.
+>
+> You don't mention that for most older machines DRM isn't an acceptable
+> way to go due to it's limitations, e.g. it's low-speed due to missing
+> 2D-acceleration for older cards and and it's incapability to change screen
+> resolution at runtime (just to name two of the bigger limitations here).
+> So, unless we somehow find a good way to move such drivers over to DRM
+> (with a set of minimal 2D acceleration), they are still important.
 
+DRM can change resolution at runtime, just not through the fbdev API.
+
+Or do you mean the resolution of the text console, akin to
+"fbset <mode>"? I have to admit I do not know if there is a command
+line tool to do that...
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

@@ -2,110 +2,114 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14511C77B7F
-	for <linux-fbdev@archiver.kernel.org>; Fri, 12 May 2023 09:01:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80343C7EE25
+	for <linux-fbdev@archiver.kernel.org>; Fri, 12 May 2023 10:05:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240072AbjELJBd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 12 May 2023 05:01:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37544 "EHLO
+        id S240598AbjELKFl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 12 May 2023 06:05:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60668 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240262AbjELJBc (ORCPT
+        with ESMTP id S240559AbjELKFS (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 12 May 2023 05:01:32 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD168E43
-        for <linux-fbdev@vger.kernel.org>; Fri, 12 May 2023 02:01:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1683882078; i=deller@gmx.de;
-        bh=4D3XUSWnCSSAWlF6+7uZxsWEXBLcmrqEjFR7ovNJzz0=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=p4o7z/lHuR4e5+N2TnvWcvMexpVyywYzIRxPyTBjbaHI3VSgvAQ6tDVTI9pQwUJsF
-         ah05MDTwysUro9rEgJwFZggpP547H8D9vJQWuUmf+bAYslKgUTjHBAVhXFXtfvTEZs
-         EzLEogogvO1+xLQQBC4fe96Gh4qUhC/pPnnodyA6cUlOUzedhrG9SRUcZiOzusymYO
-         b8vsLy8T4Twve/08dulqQKsrKmX6pzJUNPZ1DQoe+0M5RQBzP9vrc6vxceZYDn1nWb
-         UOucdM3xf07YIxC1LacRTbT21I8bc9vyqN/Rfvl/bIziLomqd/sZfLk9CJSAiscy1+
-         dx3BcXhMaM/yg==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.159.185]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1M3UZG-1pwqgW3Xpy-000aqJ; Fri, 12
- May 2023 11:01:18 +0200
-Message-ID: <eae112c1-4bb7-bdbe-9382-e8fbb6f1df2e@gmx.de>
-Date:   Fri, 12 May 2023 11:01:18 +0200
+        Fri, 12 May 2023 06:05:18 -0400
+Received: from new4-smtp.messagingengine.com (new4-smtp.messagingengine.com [66.111.4.230])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2ED391160F;
+        Fri, 12 May 2023 03:04:57 -0700 (PDT)
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+        by mailnew.nyi.internal (Postfix) with ESMTP id 35DA05803BB;
+        Fri, 12 May 2023 06:04:57 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute3.internal (MEProxy); Fri, 12 May 2023 06:04:57 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-type:content-type:date:date
+        :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+        :x-sasl-enc; s=fm1; t=1683885897; x=1683893097; bh=Sy9HnHCUR0wgx
+        XvXSub8VPhHbi3glugACk+bWVmVgIc=; b=WhVQmtMRWmrKfxLLyfJfFe1tMkKp7
+        g6eq0i3azbYbNCGWf+UMTGhcfp6yhbpptBIs4OqEAtA4vGLMFHBgeMZ94UwEy1/Q
+        frKlmEBriuLTrWnQ2Zy4Tp/dXSYwpun1+4Yl9lHF77De6XwTJqxU0pcwSSrriFEw
+        yGSrY7ACNFxiIciWY0lnexIltUq/sgF2oTYXOhWeqBkSnJZlOy0hvX+5SdfF5iP4
+        lLpBuBDXP58/5HFV2w9nifKxszItYlsFk7aULlJfIJCUzOBdSps4bdVQDparXGg8
+        HQRYSsVcF/3WNSaPigWgAJKd+HcUzPk3A8wtldh0Zv9fOY2cXUATQBdzw==
+X-ME-Sender: <xms:Rw9eZN4u3iw-extBaYZWahWQIPn2TyHW_-Tr2mANrdjf7MvkMDA4Zw>
+    <xme:Rw9eZK6EU7nC4b3LD3PHu-kTmrubf5DuKNExHZZD1mncoiuA0TMips9BZxL_yVjTb
+    v4xRqLxBxsAJa__lQ4>
+X-ME-Received: <xmr:Rw9eZEcqjB2aT9_uW8KK8InceO94NMww_1B_vB-QKARGge1inQuJyxOwqOjxo5WEY23XzEeXPb5je35qF9lx2nuV_yKH05nwAg8>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrfeehtddgvdefucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepfffhvfevufgjkfhfgggtsehttdertddttddvnecuhfhrohhmpefhihhnnhcu
+    vfhhrghinhcuoehfthhhrghinheslhhinhhugidqmheikehkrdhorhhgqeenucggtffrrg
+    htthgvrhhnpeelueehleehkefgueevtdevteejkefhffekfeffffdtgfejveekgeefvdeu
+    heeuleenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
+    hfthhhrghinheslhhinhhugidqmheikehkrdhorhhg
+X-ME-Proxy: <xmx:Rw9eZGI2AVN261Gh5tsyKTOl-BDY9RqG_dZkG6P7jvBKjRMncxs_eQ>
+    <xmx:Rw9eZBL4-8ibaIgszFf3DoCpMiQxiYir7_v9MLCz_ETSUaNtIWk4QQ>
+    <xmx:Rw9eZPxnp8EZedlf1COCSe4CgtYjyh2lxNRLIn1Hgaj6Fm0hhsA8gw>
+    <xmx:SQ9eZJLRHRSCwZK28BFKNsWtPD-yftzvlsnR-XMW0AqnAUxKarRGRA>
+Feedback-ID: i58a146ae:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Fri,
+ 12 May 2023 06:04:54 -0400 (EDT)
+Date:   Fri, 12 May 2023 20:04:48 +1000 (AEST)
+From:   Finn Thain <fthain@linux-m68k.org>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+cc:     Helge Deller <deller@gmx.de>, Sui Jingfeng <15330273260@189.cn>,
+        geert@linux-m68k.org, javierm@redhat.com, daniel@ffwll.ch,
+        vgupta@kernel.org, chenhuacai@kernel.org, kernel@xen0n.name,
+        davem@davemloft.net, arnd@arndb.de, sam@ravnborg.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arch@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+        sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-parisc@vger.kernel.org
+Subject: Re: [PATCH v6 1/6] fbdev/matrox: Remove trailing whitespaces
+In-Reply-To: <e7bd021c-1a6b-6e47-143a-36ae2fd2fe6b@suse.de>
+Message-ID: <7c2a6687-9c4e-efed-5e25-774b582e9a27@linux-m68k.org>
+References: <20230510110557.14343-1-tzimmermann@suse.de> <20230510110557.14343-2-tzimmermann@suse.de> <0e13efbf-9a48-6e70-fdf3-8290f28c6dc7@189.cn> <a2315b9a-0747-1f0f-1f0a-1c6773931db4@suse.de> <15fe1489-f0fa-bbf6-ec08-a270bd4f1559@gmx.de>
+ <e7bd021c-1a6b-6e47-143a-36ae2fd2fe6b@suse.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH] fbdev: modedb: Add a 1920x1080 at 60 Hz video mode
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <ZERQiub7tuTxHCUy@p100>
- <CAMuHMdXZuqj=vwTmHmnBHgZ975dD_m_Gk6Q1=CsGCqzcfcMbsA@mail.gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <CAMuHMdXZuqj=vwTmHmnBHgZ975dD_m_Gk6Q1=CsGCqzcfcMbsA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:/FSbBnpOCtQci8GgTe0RrJpYbl9jib6+W0hicI8ggItdZsaHn73
- q11zd6P/10dltWj4vdkx1G8fAfJgibSc1TKOnp65dCuXEJzp551hCO8zBsyKW1gg+hWMWY1
- nnxYztWNu7saVCqqKFNax5gdWXERblaek2zv8NlvzJABMlUo+mmjVGAcFT/Dd65PpWso6c5
- U4oMOGN4xRgz4pfKM9zlA==
-UI-OutboundReport: notjunk:1;M01:P0:Hckivzs+PdU=;Uqh4VQb5JJy6GheIxR4SNyg1ioD
- 5O3/QOWZ6lR8n2FlkxVz3+3Am8dbgvcJoRVlb6taldNX1azbmNR7YSr9DOKqF0VBClbT6G/sD
- sl7JCy68w9mE+s5BvyZlh6x097shyUZNthQ2p06urtM4dYBkG7TDeAyskJmSPiHg1CXkS0Pbw
- B17CgEs/uyEBa1TxFln2ze/1nmh+NC/CdYAz9Er8wjDWVShpBUSoGUey3TR//+jRBRs8TERGW
- hxMvGhm2/Ao+5vr+84KFpErdh2SbU2VLJ1BXbGvBlji93Flq+F0YyiJnW0GqKnu33I6KAQW1L
- if6gFpwpbE1Rbj8i7UKm4MiIfk1qm+fJN//iBIP+V6bZ0oSXs8HuYaiQWv3Y2BK2UEsDKrQe6
- R7aVN4m14wt8p6DX202hv5A+OFTcJHG20ZddDtgxur6ofbXH0W2u0Q+ebieUdCLB968wJYa+j
- 5OmsxHzaEbm4Vkl/x4h5r2nqlu/iRKfIzbOoXdZCOjTEIdrTTtpJo4sZ/QSd5EFjQq4+Napv9
- YLVKigrFYEZUmar9WRNx8xb6GcngGcgLjnKp0lzzL9Ct2IrCUR/jBzrU292bby7ooqsW8iQCC
- f7/9tMkA4pm/m9gUX0KTs7uYoDm0uds4fK4AkFdqZOFqXZ59ajNpCTKswAKMq8vsu9voAb3cM
- LRKYMtKmopXeBYgWzAIb3OO87x7YL4a6C9ukGykglVRW3k6lunw5Grouwttd+hz4nmpfAtAoQ
- foIPCgALeM4TLSAX4mfXJMo25mUh4YBKn6HExfDLQeTIpexas5DU+HT5vrfOUv6pK15buMb1Q
- 1+pIEsaVbysvQb150DzslrWTA/ydmDz50oEU2UmnKSbGF5zLXDokNOsVUZYhYLS8ES9CvhjUS
- P0q8zA+GMO2lC9DJaXizB1UFCtr0n9wBclKFZfk8cmd9qSEM9+Ax0v6woGLdFsHubmxNedGsP
- DW64G7vMLQQR/AecHnNIGs0gHU4=
+Content-Type: text/plain; charset=US-ASCII
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 5/12/23 09:44, Geert Uytterhoeven wrote:
-> Hi Helge,
->
-> On Sat, Apr 22, 2023 at 11:27=E2=80=AFPM Helge Deller <deller@gmx.de> wr=
-ote:
->> Add typical resolution for Full-HD monitors.
->>
->> Signed-off-by: Helge Deller <deller@gmx.de>
->
->> --- a/drivers/video/fbdev/core/modedb.c
->> +++ b/drivers/video/fbdev/core/modedb.c
->> @@ -257,6 +257,10 @@ static const struct fb_videomode modedb[] =3D {
->>          { NULL, 72, 480, 300, 33386, 40, 24, 11, 19, 80, 3, 0,
->>                  FB_VMODE_DOUBLE },
->>
->> +       /* 1920x1080 @ 60 Hz, 67.3 kHz hsync */
->> +       { NULL, 60, 1920, 1080, 6734, 148, 88, 63, 4, 44, 5, 0,
->> +               FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT },
->
-> This matches [1], except for the "63", which looks like a typo for "36"
-> (total number of lines should be 1125, not 1152).
+On Thu, 11 May 2023, Thomas Zimmermann wrote:
 
-Thanks Geert!
+> But I'd really like to see most of these drivers being moved into 
+> staging and deleted soon afterwards. Users will complain about those 
+> drivers that are really still required. Those might be worth to spend 
+> effort on.
+> 
 
-I fixed it in the git tree.
+That strategy is not going to find out what functionality is required. 
+Instead it will find out which beneficiaries are capable of overcoming all 
+of the hurdles to reverting deletion:
 
-Helge
+ - Find out how to report a regression correctly.
+ - Gather all the necessary information.
+ - Obtain buy-in from a sympathetic developer.
+ - Build a patched kernel, test it and provide the results. (And possibly 
+   repeat the same until neglected code becomes accepted.)
+ - Wait for the relevant distro to release the relevant kernel update. 
 
->
->> +
->>          /* 1920x1200 @ 60 Hz, 74.5 Khz hsync */
->>          { NULL, 60, 1920, 1200, 5177, 128, 336, 1, 38, 208, 3,
->>                  FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
->
-> [1] https://projectf.io/posts/video-timings-vga-720p-1080p/#hd-1920x1080=
--60-hz
->
-> Gr{oetje,eeting}s,
->
->                          Geert
->
+Developers tend to overlook the burden of process because it's ostensibly 
+done to raise code quality. But it seems to me that affected users are 
+more likely to seek a workaround than undertake the process.
 
+So deletion doesn't discover end-user requirements. What it does is 
+advertise a vacancy for an unpaid adoptive maintainer, somehow presumed to 
+be found amongst a very well remunerated and very small pool of talent.
+
+The way I look at it, the maintainence of old code is the price of a 
+so-called "right to repair". But there ain't no free lunch and if we want 
+that right we should seek ways to reduce that price. For example, by 
+making a larger talent pool more effective, by re-using more code and by 
+improving the tooling and automation.
+
+The code I'd delete first wouldn't be a small amount of old code in need 
+of sponsorship. Or even the most buggy code. The first to go would be that 
+code which will never find an actual end user because some portion of the 
+code required to actually use certain platforms was never mainlined by the 
+vendor -- and never will be without some push-back.

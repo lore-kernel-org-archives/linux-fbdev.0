@@ -2,106 +2,136 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52705C77B75
-	for <linux-fbdev@archiver.kernel.org>; Mon, 15 May 2023 18:02:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC21EC7EE23
+	for <linux-fbdev@archiver.kernel.org>; Tue, 16 May 2023 11:04:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243983AbjEOSCa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 15 May 2023 14:02:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60844 "EHLO
+        id S232742AbjEPLEc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 16 May 2023 07:04:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54068 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242467AbjEOSCJ (ORCPT
+        with ESMTP id S232704AbjEPLEA (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 15 May 2023 14:02:09 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E8E51B752;
-        Mon, 15 May 2023 10:59:27 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id CF3306301D;
-        Mon, 15 May 2023 17:59:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AAD6EC433EF;
-        Mon, 15 May 2023 17:59:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1684173549;
-        bh=GnuTKGySGlfr07daI7HAiFk0boCdBF/4zjHSMFSEV+4=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=jij7zj5KEpEI467gjBQD3hAdZuZZHtySCfzefVlMWCuyo/lr0HHx7AMy61WN2G5Dm
-         P97dgzTK8L8qgVHVRUEGkKBVULocz6eQlBN7ZkhLmFsj5JFkU4cEgc2xOLoK7+SwIv
-         aGFmywExHFXNqErfqrK08HNWqU5GJSanq/yUw9xU=
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     stable@vger.kernel.org
+        Tue, 16 May 2023 07:04:00 -0400
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 50AEB76B1;
+        Tue, 16 May 2023 04:02:03 -0700 (PDT)
+Received: from pps.filterd (m0353723.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34GAqubG008652;
+        Tue, 16 May 2023 11:01:20 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=OHDQiiEJroO0i+y82hrgSvcy7FLDy/xxm28oD5scI9A=;
+ b=d4oOyb+urNbv4NnIHFxSpFXGPAWlQUKoJZ5q6AUueUY22R8dAnOQs4o6cd+Eq1QqXrHN
+ zVoEgukcuadeRETmubrUq7tkV5Ib8x+dpiPLNEO4xMChtmc8Mxco4KmQm3WcY8KEyJs0
+ r1bJcBOTyTjs/Bj1/pcjKYjotm/irIcNMWxuGrEF4Er6cMLpj+fAfgCZhgH4PJdL8vHz
+ qgSwJya1XgYkGIbIf0agj2pjsqvTrz6tKmVj4GJ1Jd4gO1LaAUnYZhnLQAv8TH8tAfWd
+ MaUbVI2PgfcSv0/NaEGkDhvudZloE0KQCmM3q2fx1OGtiJkVautgtjaP0j8onMskBanJ EQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qm8fbg73w-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 16 May 2023 11:01:20 +0000
+Received: from m0353723.ppops.net (m0353723.ppops.net [127.0.0.1])
+        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 34GAwNMt029904;
+        Tue, 16 May 2023 11:01:19 GMT
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+        by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qm8fbg72a-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 16 May 2023 11:01:19 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+        by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 34G4ZOP8014025;
+        Tue, 16 May 2023 11:01:16 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+        by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3qj264sjvp-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 16 May 2023 11:01:16 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+        by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34GB1D2l22413898
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 16 May 2023 11:01:13 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 1EF1A20063;
+        Tue, 16 May 2023 11:01:13 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id B8BF72004B;
+        Tue, 16 May 2023 11:01:12 +0000 (GMT)
+Received: from tuxmaker.boeblingen.de.ibm.com (unknown [9.152.85.9])
+        by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+        Tue, 16 May 2023 11:01:12 +0000 (GMT)
+From:   Niklas Schnelle <schnelle@linux.ibm.com>
+To:     Arnd Bergmann <arnd@arndb.de>, Helge Deller <deller@gmx.de>
 Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        patches@lists.linux.dev, Randy Dunlap <rdunlap@infradead.org>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 5.4 130/282] linux/vt_buffer.h: allow either builtin or modular for macros
-Date:   Mon, 15 May 2023 18:28:28 +0200
-Message-Id: <20230515161726.123094846@linuxfoundation.org>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230515161722.146344674@linuxfoundation.org>
-References: <20230515161722.146344674@linuxfoundation.org>
-User-Agent: quilt/0.67
-MIME-Version: 1.0
+        Bjorn Helgaas <bhelgaas@google.com>,
+        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Alan Stern <stern@rowland.harvard.edu>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Paul Walmsley <paul.walmsley@sifive.com>,
+        Palmer Dabbelt <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>,
+        linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+        linux-pci@vger.kernel.org,
+        =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= 
+        <ville.syrjala@linux.intel.com>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH v4 37/41] fbdev: atyfb: Remove unused clock determination
+Date:   Tue, 16 May 2023 13:00:33 +0200
+Message-Id: <20230516110038.2413224-38-schnelle@linux.ibm.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230516110038.2413224-1-schnelle@linux.ibm.com>
+References: <20230516110038.2413224-1-schnelle@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 1yaS_CGaroKGuNMhMhwrIJKLlrHZkWea
+X-Proofpoint-GUID: 3Sv0jLznQWCfM5wFfxteAoWtQqAbwtHk
 Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-05-16_04,2023-05-16_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 phishscore=0
+ mlxscore=0 clxscore=1015 adultscore=0 malwarescore=0 lowpriorityscore=0
+ mlxlogscore=999 impostorscore=0 priorityscore=1501 spamscore=0 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2304280000
+ definitions=main-2305160089
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Randy Dunlap <rdunlap@infradead.org>
+Just below the removed lines par->clk_wr_offset is hard coded to 3 so
+there is no use in determining a different clock just to then ignore it
+anyway. This also removes the only I/O port use remaining in the driver
+allowing it to be built without CONFIG_HAS_IOPORT.
 
-[ Upstream commit 2b76ffe81e32afd6d318dc4547e2ba8c46207b77 ]
-
-Fix build errors on ARCH=alpha when CONFIG_MDA_CONSOLE=m.
-This allows the ARCH macros to be the only ones defined.
-
-In file included from ../drivers/video/console/mdacon.c:37:
-../arch/alpha/include/asm/vga.h:17:40: error: expected identifier or '(' before 'volatile'
-   17 | static inline void scr_writew(u16 val, volatile u16 *addr)
-      |                                        ^~~~~~~~
-../include/linux/vt_buffer.h:24:34: note: in definition of macro 'scr_writew'
-   24 | #define scr_writew(val, addr) (*(addr) = (val))
-      |                                  ^~~~
-../include/linux/vt_buffer.h:24:40: error: expected ')' before '=' token
-   24 | #define scr_writew(val, addr) (*(addr) = (val))
-      |                                        ^
-../arch/alpha/include/asm/vga.h:17:20: note: in expansion of macro 'scr_writew'
-   17 | static inline void scr_writew(u16 val, volatile u16 *addr)
-      |                    ^~~~~~~~~~
-../arch/alpha/include/asm/vga.h:25:29: error: expected identifier or '(' before 'volatile'
-   25 | static inline u16 scr_readw(volatile const u16 *addr)
-      |                             ^~~~~~~~
-
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jiri Slaby <jirislaby@kernel.org>
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org
-Link: https://lore.kernel.org/r/20230329021529.16188-1-rdunlap@infradead.org
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Link: https://lore.kernel.org/all/ZBx5aLo5h546BzBt@intel.com/
+Suggested-by: Ville Syrjälä <ville.syrjala@linux.intel.com>
+Signed-off-by: Niklas Schnelle <schnelle@linux.ibm.com>
 ---
- include/linux/vt_buffer.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Note: The HAS_IOPORT Kconfig option was added in v6.4-rc1 so
+      per-subsystem patches may be applied independently
 
-diff --git a/include/linux/vt_buffer.h b/include/linux/vt_buffer.h
-index 848db1b1569ff..919d999a8c1db 100644
---- a/include/linux/vt_buffer.h
-+++ b/include/linux/vt_buffer.h
-@@ -16,7 +16,7 @@
- 
- #include <linux/string.h>
- 
--#if defined(CONFIG_VGA_CONSOLE) || defined(CONFIG_MDA_CONSOLE)
-+#if IS_ENABLED(CONFIG_VGA_CONSOLE) || IS_ENABLED(CONFIG_MDA_CONSOLE)
- #include <asm/vga.h>
+ drivers/video/fbdev/aty/atyfb_base.c | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index b02e4e645035..cba2b113b28b 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -3498,11 +3498,6 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
+ 	if (ret)
+ 		goto atyfb_setup_generic_fail;
  #endif
+-	if (!(aty_ld_le32(CRTC_GEN_CNTL, par) & CRTC_EXT_DISP_EN))
+-		par->clk_wr_offset = (inb(R_GENMO) & 0x0CU) >> 2;
+-	else
+-		par->clk_wr_offset = aty_ld_8(CLOCK_CNTL, par) & 0x03U;
+-
+ 	/* according to ATI, we should use clock 3 for acelerated mode */
+ 	par->clk_wr_offset = 3;
  
 -- 
 2.39.2
-
-
 

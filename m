@@ -2,245 +2,399 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57BA4C77B7A
-	for <linux-fbdev@archiver.kernel.org>; Tue, 16 May 2023 17:21:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1A3AC7EE25
+	for <linux-fbdev@archiver.kernel.org>; Tue, 16 May 2023 17:45:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231489AbjEPRV3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 16 May 2023 13:21:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49450 "EHLO
+        id S229717AbjEPRpO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 16 May 2023 13:45:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34434 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231448AbjEPRV3 (ORCPT
+        with ESMTP id S229520AbjEPRpN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 16 May 2023 13:21:29 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4191683E4;
-        Tue, 16 May 2023 10:21:03 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id E6C2321ECA;
-        Tue, 16 May 2023 17:21:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1684257661; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=F4QLYEcz1xYVcgrdV750aUkRSdjMRItCdQ3OQri0yZg=;
-        b=MNgnYKgEWd5OiUWO0o16WlIGkqab9zuhFQ9pWssBc0GKmppX7F0jhEGbZCY0axBkj6WvjJ
-        us5L+aC/O9KNiMj+6Sgw2IphZzry0FjHiaDXd6wNl0cGF7qJBtttHxa63pcF3QWzspvFRz
-        QOlusgEJ3bD+D3GrByEIWd7YziWFkN8=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1684257661;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=F4QLYEcz1xYVcgrdV750aUkRSdjMRItCdQ3OQri0yZg=;
-        b=0VRi30thqkprhcexw7kSG3kceIqLO3Q+1PxngwUJ1L0JyxBdPTfaBYRBbdhJJyzEfVNIC7
-        sYTg30Nr0/Sj5BDw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 7CD03138F9;
-        Tue, 16 May 2023 17:21:01 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id JsfvHH27Y2R/OgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Tue, 16 May 2023 17:21:01 +0000
-Message-ID: <87ba918b-214b-a58a-ecc4-17b0bd00e8f8@suse.de>
-Date:   Tue, 16 May 2023 19:21:01 +0200
+        Tue, 16 May 2023 13:45:13 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B9039FC;
+        Tue, 16 May 2023 10:45:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1684259054; i=deller@gmx.de;
+        bh=28Q2XTKI3jOrWHGJRY35mfdpvNOlP9oZTBSK7WL8Bjk=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=eXaGMvBKqACcsFqkTyYRfQM2481JQl71DzQiEIaVDzUVH1aDV1H4R33xqAwl3T9xg
+         WyGs2k/8xP0S2HR/CekXsMf6yLBmqry4QSYxr4BvpJva3Ks/s2ycdHnF+/EoAr+h6u
+         NIoYxuVUMWztf2AdYwAzRMjkS9hI8Pd8dMPpn7VuHOMlyOdCyXRmWCYoqqSUxHBvmw
+         evV8w3qjZaKNyexAvtHeNQIrjaAsxgulFEKp3nDKkDglGurFZX71jPAWLjfTwmgGYG
+         s4H5RwDK7jPGN43mnLsgqXe6Vt8DhM5WO+h9lRK2vxVHJEwQX4XP6bFslTwNi3OGd0
+         TeuNvCu0UJvAw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.150.20]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N5mKP-1qDPOg4AKR-017Dz0; Tue, 16
+ May 2023 19:44:14 +0200
+Message-ID: <df527e53-3148-02f0-241b-fbc5e28b1618@gmx.de>
+Date:   Tue, 16 May 2023 19:44:09 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.1
-Subject: Re: [PATCH v4 38/41] video: handle HAS_IOPORT dependencies
+ Thunderbird/102.10.0
+Subject: Re: [PATCH v7 1/7] fbdev/hitfb: Cast I/O offset to address
 Content-Language: en-US
-To:     Niklas Schnelle <schnelle@linux.ibm.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Helge Deller <deller@gmx.de>
-Cc:     linux-arch@vger.kernel.org, Arnd Bergmann <arnd@kernel.org>,
-        linux-fbdev@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>,
-        "Rafael J. Wysocki" <rafael@kernel.org>, linux-pci@vger.kernel.org,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Alan Stern <stern@rowland.harvard.edu>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Palmer Dabbelt <palmer@dabbelt.com>
-References: <20230516110038.2413224-1-schnelle@linux.ibm.com>
- <20230516110038.2413224-39-schnelle@linux.ibm.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20230516110038.2413224-39-schnelle@linux.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------ySL0ieJRKTzqaUT2isTOi2rw"
+To:     Thomas Zimmermann <tzimmermann@suse.de>, geert@linux-m68k.org,
+        javierm@redhat.com, daniel@ffwll.ch, vgupta@kernel.org,
+        chenhuacai@kernel.org, kernel@xen0n.name, davem@davemloft.net,
+        James.Bottomley@HansenPartnership.com, arnd@arndb.de,
+        sam@ravnborg.org, suijingfeng@loongson.cn
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arch@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+        sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-parisc@vger.kernel.org, kernel test robot <lkp@intel.com>,
+        Artur Rojek <contact@artur-rojek.eu>
+References: <20230512102444.5438-1-tzimmermann@suse.de>
+ <20230512102444.5438-2-tzimmermann@suse.de>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20230512102444.5438-2-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:rSOrO+0jt4O4RzM9l14Bz6wfGEKXucA0j3Waundj3xcBKFDFc52
+ MmW0hsb8NLlq0rH9mMz/XUMz+PTuDsa6n+7OMeP7elMOy6xV14Nc64lHY1vMLN09t7CrUAU
+ aro3xE6YuZBtr5yHHhTsC4g3TbNooxbmvDC+2u1zgRm2sKkzCxIS3lxPvtY+OC7z04Uhti5
+ 72FlfAhLCIiPZ2ZVXmmOQ==
+UI-OutboundReport: notjunk:1;M01:P0:ecBgGlwkX5Y=;oQwXswBOboXoEMT5pniOW9e5zDy
+ TDc0juyT2oeDOAYSymZ4Yve6mAwtAQYgC4JulDpsWI54/lpT/3D7R4HTWQBItkMqSmELB7Tfh
+ k/xHSW5SHoW+vvUk5sL4+IR5vxCspl8eKgpH3nyPYnge684GFJK7ApwoTiF0bEeuMEPeE0f98
+ 5nKB5Ki2nXvssTP6YWZstlRi9vmm7UDfKmr6dJC7XQRSdL459sxpPqb6y5Py+VeOtrwRswQ9b
+ mgX6Q416C2OMUv1g2qvDpI/CUwPMRZVR7PdDu0s1ziJFjAoZ4bpAU0a2Amuhqx8ipGBYPgxy9
+ 8K9IWqbt6vD0urHXico4zJpR6rXjjdvRQeMftW7c4y+Mn7o+Gzt+zxbKNHywWhVRr/GF+ybXC
+ yB72kKK2MPCb8Ol4bxPSD2qxRs+u6yR+B5tS0PfJiS96Acllk7UA/0W8kS5K14nUpMPF1nBjW
+ SgGVsJmvnSiuIjlbaZLisaUJpWXTZIYL9DjVqv50wqiLFUrTuaMcFH8IXzLv29VjHSZNEOpBo
+ DUYeBfYKUtlMQjLEL/KhlDZ//O00ulUgDkRDV3l+HMC3KDxM4w1qVuyk9g6rR1gHVFvtRMw4B
+ pKUdaCegbB6YWC3baOTepNotkyxry/FsXyBxefzaocIcXxJipYn7OyR61jwcy7DFoul70oAn1
+ 0a2ZvSp2XLUaT8vIUNhNrNECPa3NCDdrWfNByBWiFrW8o/WVtK5oM6zVT1IzOnAYuzrkDTjAD
+ uoZnelK3f6VSOHLd7t16PWGRCXk7M6eV8Pew6pM1LwlLxJGYb0XchPIobzDo+3uuXqgw8k1x/
+ qfxDOSuCv3W9gkj/I6aq7QqrnHkYz1J9yv4wny00fCDTmiez/GMrUxjchUPzeZj1hpyqCP4Kg
+ AodCMcCoACTsxxNkm24VDBz4N08R7D9G25UWZxxPaXTBo0szFnbZxYJX0JCcEfySdyg7jco/x
+ Rp2dTA==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------ySL0ieJRKTzqaUT2isTOi2rw
-Content-Type: multipart/mixed; boundary="------------MGmXOWCcVW1HE0tyqq4jbyie";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Niklas Schnelle <schnelle@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>
-Cc: linux-arch@vger.kernel.org, Arnd Bergmann <arnd@kernel.org>,
- linux-fbdev@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>,
- "Rafael J. Wysocki" <rafael@kernel.org>, linux-pci@vger.kernel.org,
- Paul Walmsley <paul.walmsley@sifive.com>, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, Geert Uytterhoeven <geert@linux-m68k.org>,
- =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
- Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>
-Message-ID: <87ba918b-214b-a58a-ecc4-17b0bd00e8f8@suse.de>
-Subject: Re: [PATCH v4 38/41] video: handle HAS_IOPORT dependencies
-References: <20230516110038.2413224-1-schnelle@linux.ibm.com>
- <20230516110038.2413224-39-schnelle@linux.ibm.com>
-In-Reply-To: <20230516110038.2413224-39-schnelle@linux.ibm.com>
+On 5/12/23 12:24, Thomas Zimmermann wrote:
+> Cast I/O offsets to pointers to use them with I/O functions. The I/O
+> functions expect pointers of type 'volatile void __iomem *', but the
+> offsets are plain integers. Build warnings are
+>
+>    ../drivers/video/fbdev/hitfb.c: In function 'hitfb_accel_wait':
+>    ../arch/x86/include/asm/hd64461.h:18:33: warning: passing argument 1 =
+of 'fb_readw' makes pointer from integer without a cast [-Wint-conversion]
+>     18 | #define HD64461_IO_OFFSET(x)    (HD64461_IOBASE + (x))
+>        |                                 ^~~~~~~~~~~~~~~~~~~~~~
+>        |                                 |
+>        |                                 unsigned int
+>    ../arch/x86/include/asm/hd64461.h:93:33: note: in expansion of macro =
+'HD64461_IO_OFFSET'
+>     93 | #define HD64461_GRCFGR          HD64461_IO_OFFSET(0x1044)      =
+ /* Accelerator Configuration Register */
+>        |                                 ^~~~~~~~~~~~~~~~~
+>    ../drivers/video/fbdev/hitfb.c:47:25: note: in expansion of macro 'HD=
+64461_GRCFGR'
+>     47 |         while (fb_readw(HD64461_GRCFGR) & HD64461_GRCFGR_ACCSTA=
+TUS) ;
+>        |                         ^~~~~~~~~~~~~~
+>    In file included from ../arch/x86/include/asm/fb.h:15,
+>    from ../include/linux/fb.h:19,
+>    from ../drivers/video/fbdev/hitfb.c:22:
+>    ../include/asm-generic/fb.h:52:57: note: expected 'const volatile voi=
+d *' but argument is of type 'unsigned int'
+>     52 | static inline u16 fb_readw(const volatile void __iomem *addr)
+>        |                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~
+>
+> This patch only fixes the build warnings. It's not clear if the I/O
+> offsets can legally be passed to the I/O helpers. It was apparently
+> broken in 2007 when custom inw()/outw() helpers got removed by
+> commit 34a780a0afeb ("sh: hp6xx pata_platform support."). Fixing the
+> driver would require setting the I/O base address.
 
---------------MGmXOWCcVW1HE0tyqq4jbyie
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+I think your patch is the best you can do for now... So...
 
-SGkNCg0KQW0gMTYuMDUuMjMgdW0gMTM6MDAgc2NocmllYiBOaWtsYXMgU2NobmVsbGU6DQo+
-IEluIGEgZnV0dXJlIHBhdGNoIEhBU19JT1BPUlQ9biB3aWxsIHJlc3VsdCBpbiBpbmIoKS9v
-dXRiKCkgYW5kIGZyaWVuZHMNCj4gbm90IGJlaW5nIGRlY2xhcmVkLiBXZSB0aHVzIG5lZWQg
-dG8gYWRkIEhBU19JT1BPUlQgYXMgZGVwZW5kZW5jeSBmb3INCj4gdGhvc2UgZHJpdmVycyB1
-c2luZyB0aGVtIGFuZCBndWFyZCBpbmxpbmUgY29kZSBpbiBoZWFkZXJzLg0KPiANCj4gQ28t
-ZGV2ZWxvcGVkLWJ5OiBBcm5kIEJlcmdtYW5uIDxhcm5kQGtlcm5lbC5vcmc+DQo+IFNpZ25l
-ZC1vZmYtYnk6IEFybmQgQmVyZ21hbm4gPGFybmRAa2VybmVsLm9yZz4NCj4gU2lnbmVkLW9m
-Zi1ieTogTmlrbGFzIFNjaG5lbGxlIDxzY2huZWxsZUBsaW51eC5pYm0uY29tPg0KPiAtLS0N
-Cj4gTm90ZTogVGhlIEhBU19JT1BPUlQgS2NvbmZpZyBvcHRpb24gd2FzIGFkZGVkIGluIHY2
-LjQtcmMxIHNvDQo+ICAgICAgICBwZXItc3Vic3lzdGVtIHBhdGNoZXMgbWF5IGJlIGFwcGxp
-ZWQgaW5kZXBlbmRlbnRseQ0KPiANCj4gICBkcml2ZXJzL3ZpZGVvL2NvbnNvbGUvS2NvbmZp
-ZyB8ICAxICsNCj4gICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L0tjb25maWcgICB8IDIxICsrKysr
-KysrKysrLS0tLS0tLS0tLQ0KPiAgIGluY2x1ZGUvdmlkZW8vdmdhLmggICAgICAgICAgIHwg
-IDggKysrKysrKysNCg0KVGhvc2UgYXJlIDMgZGlmZmVyZW50IHRoaW5ncy4gSXQgbWlnaHQg
-YmUgcHJlZmVyYWJsZSB0byBub3QgaGFuZGxlIHRoZW0gDQp1bmRlciB0aGUgdmlkZW8vIHVt
-YnJlbGxhLg0KDQo+ICAgMyBmaWxlcyBjaGFuZ2VkLCAyMCBpbnNlcnRpb25zKCspLCAxMCBk
-ZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2NvbnNvbGUv
-S2NvbmZpZyBiL2RyaXZlcnMvdmlkZW8vY29uc29sZS9LY29uZmlnDQo+IGluZGV4IDIyY2Vh
-NTA4MmFjNC4uNjQ5NzRlYWEzYWM1IDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2Nv
-bnNvbGUvS2NvbmZpZw0KPiArKysgYi9kcml2ZXJzL3ZpZGVvL2NvbnNvbGUvS2NvbmZpZw0K
-PiBAQCAtMTAsNiArMTAsNyBAQCBjb25maWcgVkdBX0NPTlNPTEUNCj4gICAJZGVwZW5kcyBv
-biAhNHh4ICYmICFQUENfOHh4ICYmICFTUEFSQyAmJiAhTTY4SyAmJiAhUEFSSVNDICYmICAh
-U1VQRVJIICYmIFwNCj4gICAJCSghQVJNIHx8IEFSQ0hfRk9PVEJSSURHRSB8fCBBUkNIX0lO
-VEVHUkFUT1IgfHwgQVJDSF9ORVRXSU5ERVIpICYmIFwNCj4gICAJCSFBUk02NCAmJiAhQVJD
-ICYmICFNSUNST0JMQVpFICYmICFPUEVOUklTQyAmJiAhUzM5MCAmJiAhVU1MDQo+ICsJZGVw
-ZW5kcyBvbiBIQVNfSU9QT1JUDQo+ICAgCXNlbGVjdCBBUEVSVFVSRV9IRUxQRVJTIGlmIChE
-Uk0gfHwgRkIgfHwgVkZJT19QQ0lfQ09SRSkNCj4gICAJZGVmYXVsdCB5DQo+ICAgCWhlbHAN
-Cj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvS2NvbmZpZyBiL2RyaXZlcnMv
-dmlkZW8vZmJkZXYvS2NvbmZpZw0KPiBpbmRleCA5NmU5MTU3MGNkZDMuLmE1NmM1N2RkODM5
-YiAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9LY29uZmlnDQo+ICsrKyBi
-L2RyaXZlcnMvdmlkZW8vZmJkZXYvS2NvbmZpZw0KPiBAQCAtMzM1LDcgKzMzNSw3IEBAIGNv
-bmZpZyBGQl9JTVgNCj4gICANCj4gICBjb25maWcgRkJfQ1lCRVIyMDAwDQo+ICAgCXRyaXN0
-YXRlICJDeWJlclBybyAyMDAwLzIwMTAvNTAwMCBzdXBwb3J0Ig0KPiAtCWRlcGVuZHMgb24g
-RkIgJiYgUENJICYmIChCUk9LRU4gfHwgIVNQQVJDNjQpDQo+ICsJZGVwZW5kcyBvbiBGQiAm
-JiBQQ0kgJiYgSEFTX0lPUE9SVCAmJiAoQlJPS0VOIHx8ICFTUEFSQzY0KQ0KPiAgIAlzZWxl
-Y3QgRkJfQ0ZCX0ZJTExSRUNUDQo+ICAgCXNlbGVjdCBGQl9DRkJfQ09QWUFSRUENCj4gICAJ
-c2VsZWN0IEZCX0NGQl9JTUFHRUJMSVQNCj4gQEAgLTQyOSw2ICs0MjksNyBAQCBjb25maWcg
-RkJfRk0yDQo+ICAgY29uZmlnIEZCX0FSQw0KPiAgIAl0cmlzdGF0ZSAiQXJjIE1vbm9jaHJv
-bWUgTENEIGJvYXJkIHN1cHBvcnQiDQo+ICAgCWRlcGVuZHMgb24gRkIgJiYgKFg4NiB8fCBD
-T01QSUxFX1RFU1QpDQo+ICsJZGVwZW5kcyBvbiBIQVNfSU9QT1JUDQo+ICAgCXNlbGVjdCBG
-Ql9TWVNfRklMTFJFQ1QNCj4gICAJc2VsZWN0IEZCX1NZU19DT1BZQVJFQQ0KPiAgIAlzZWxl
-Y3QgRkJfU1lTX0lNQUdFQkxJVA0KPiBAQCAtMTMzMiw3ICsxMzMzLDcgQEAgY29uZmlnIEZC
-X0FUWV9CQUNLTElHSFQNCj4gICANCj4gICBjb25maWcgRkJfUzMNCj4gICAJdHJpc3RhdGUg
-IlMzIFRyaW8vVmlyZ2Ugc3VwcG9ydCINCj4gLQlkZXBlbmRzIG9uIEZCICYmIFBDSQ0KPiAr
-CWRlcGVuZHMgb24gRkIgJiYgUENJICYmIEhBU19JT1BPUlQNCj4gICAJc2VsZWN0IEZCX0NG
-Ql9GSUxMUkVDVA0KPiAgIAlzZWxlY3QgRkJfQ0ZCX0NPUFlBUkVBDQo+ICAgCXNlbGVjdCBG
-Ql9DRkJfSU1BR0VCTElUDQo+IEBAIC0xMzkzLDcgKzEzOTQsNyBAQCBjb25maWcgRkJfU0FW
-QUdFX0FDQ0VMDQo+ICAgDQo+ICAgY29uZmlnIEZCX1NJUw0KPiAgIAl0cmlzdGF0ZSAiU2lT
-L1hHSSBkaXNwbGF5IHN1cHBvcnQiDQo+IC0JZGVwZW5kcyBvbiBGQiAmJiBQQ0kNCj4gKwlk
-ZXBlbmRzIG9uIEZCICYmIFBDSSAmJiBIQVNfSU9QT1JUDQo+ICAgCXNlbGVjdCBGQl9DRkJf
-RklMTFJFQ1QNCj4gICAJc2VsZWN0IEZCX0NGQl9DT1BZQVJFQQ0KPiAgIAlzZWxlY3QgRkJf
-Q0ZCX0lNQUdFQkxJVA0KPiBAQCAtMTQyNCw3ICsxNDI1LDcgQEAgY29uZmlnIEZCX1NJU18z
-MTUNCj4gICANCj4gICBjb25maWcgRkJfVklBDQo+ICAgCXRyaXN0YXRlICJWSUEgVW5pQ2hy
-b21lIChQcm8pIGFuZCBDaHJvbWU5IGRpc3BsYXkgc3VwcG9ydCINCj4gLQlkZXBlbmRzIG9u
-IEZCICYmIFBDSSAmJiBHUElPTElCICYmIEkyQyAmJiAoWDg2IHx8IENPTVBJTEVfVEVTVCkN
-Cj4gKwlkZXBlbmRzIG9uIEZCICYmIFBDSSAmJiBHUElPTElCICYmIEkyQyAmJiBIQVNfSU9Q
-T1JUICYmIChYODYgfHwgQ09NUElMRV9URVNUKQ0KPiAgIAlzZWxlY3QgRkJfQ0ZCX0ZJTExS
-RUNUDQo+ICAgCXNlbGVjdCBGQl9DRkJfQ09QWUFSRUENCj4gICAJc2VsZWN0IEZCX0NGQl9J
-TUFHRUJMSVQNCj4gQEAgLTE0NjMsNyArMTQ2NCw3IEBAIGVuZGlmDQo+ICAgDQo+ICAgY29u
-ZmlnIEZCX05FT01BR0lDDQo+ICAgCXRyaXN0YXRlICJOZW9NYWdpYyBkaXNwbGF5IHN1cHBv
-cnQiDQo+IC0JZGVwZW5kcyBvbiBGQiAmJiBQQ0kNCj4gKwlkZXBlbmRzIG9uIEZCICYmIFBD
-SSAmJiBIQVNfSU9QT1JUDQo+ICAgCXNlbGVjdCBGQl9NT0RFX0hFTFBFUlMNCj4gICAJc2Vs
-ZWN0IEZCX0NGQl9GSUxMUkVDVA0KPiAgIAlzZWxlY3QgRkJfQ0ZCX0NPUFlBUkVBDQo+IEBA
-IC0xNDkzLDcgKzE0OTQsNyBAQCBjb25maWcgRkJfS1lSTw0KPiAgIA0KPiAgIGNvbmZpZyBG
-Ql8zREZYDQo+ICAgCXRyaXN0YXRlICIzRGZ4IEJhbnNoZWUvVm9vZG9vMy9Wb29kb281IGRp
-c3BsYXkgc3VwcG9ydCINCj4gLQlkZXBlbmRzIG9uIEZCICYmIFBDSQ0KPiArCWRlcGVuZHMg
-b24gRkIgJiYgUENJICYmIEhBU19JT1BPUlQNCj4gICAJc2VsZWN0IEZCX0NGQl9JTUFHRUJM
-SVQNCj4gICAJc2VsZWN0IEZCX0NGQl9GSUxMUkVDVA0KPiAgIAlzZWxlY3QgRkJfQ0ZCX0NP
-UFlBUkVBDQo+IEBAIC0xNTQzLDcgKzE1NDQsNyBAQCBjb25maWcgRkJfVk9PRE9PMQ0KPiAg
-IA0KPiAgIGNvbmZpZyBGQl9WVDg2MjMNCj4gICAJdHJpc3RhdGUgIlZJQSBWVDg2MjMgc3Vw
-cG9ydCINCj4gLQlkZXBlbmRzIG9uIEZCICYmIFBDSQ0KPiArCWRlcGVuZHMgb24gRkIgJiYg
-UENJICYmIEhBU19JT1BPUlQNCj4gICAJc2VsZWN0IEZCX0NGQl9GSUxMUkVDVA0KPiAgIAlz
-ZWxlY3QgRkJfQ0ZCX0NPUFlBUkVBDQo+ICAgCXNlbGVjdCBGQl9DRkJfSU1BR0VCTElUDQo+
-IEBAIC0xNTU4LDcgKzE1NTksNyBAQCBjb25maWcgRkJfVlQ4NjIzDQo+ICAgDQo+ICAgY29u
-ZmlnIEZCX1RSSURFTlQNCj4gICAJdHJpc3RhdGUgIlRyaWRlbnQvQ3liZXJYWFgvQ3liZXJC
-bGFkZSBzdXBwb3J0Ig0KPiAtCWRlcGVuZHMgb24gRkIgJiYgUENJDQo+ICsJZGVwZW5kcyBv
-biBGQiAmJiBQQ0kgJiYgSEFTX0lPUE9SVA0KPiAgIAlzZWxlY3QgRkJfQ0ZCX0ZJTExSRUNU
-DQo+ICAgCXNlbGVjdCBGQl9DRkJfQ09QWUFSRUENCj4gICAJc2VsZWN0IEZCX0NGQl9JTUFH
-RUJMSVQNCj4gQEAgLTE1ODEsNyArMTU4Miw3IEBAIGNvbmZpZyBGQl9UUklERU5UDQo+ICAg
-DQo+ICAgY29uZmlnIEZCX0FSSw0KPiAgIAl0cmlzdGF0ZSAiQVJLIDIwMDBQViBzdXBwb3J0
-Ig0KPiAtCWRlcGVuZHMgb24gRkIgJiYgUENJDQo+ICsJZGVwZW5kcyBvbiBGQiAmJiBQQ0kg
-JiYgSEFTX0lPUE9SVA0KPiAgIAlzZWxlY3QgRkJfQ0ZCX0ZJTExSRUNUDQo+ICAgCXNlbGVj
-dCBGQl9DRkJfQ09QWUFSRUENCj4gICAJc2VsZWN0IEZCX0NGQl9JTUFHRUJMSVQNCj4gQEAg
-LTIxOTUsNyArMjE5Niw3IEBAIGNvbmZpZyBGQl9TU0QxMzA3DQo+ICAgDQo+ICAgY29uZmln
-IEZCX1NNNzEyDQo+ICAgCXRyaXN0YXRlICJTaWxpY29uIE1vdGlvbiBTTTcxMiBmcmFtZWJ1
-ZmZlciBzdXBwb3J0Ig0KPiAtCWRlcGVuZHMgb24gRkIgJiYgUENJDQo+ICsJZGVwZW5kcyBv
-biBGQiAmJiBQQ0kgJiYgSEFTX0lPUE9SVA0KPiAgIAlzZWxlY3QgRkJfQ0ZCX0ZJTExSRUNU
-DQo+ICAgCXNlbGVjdCBGQl9DRkJfQ09QWUFSRUENCj4gICAJc2VsZWN0IEZCX0NGQl9JTUFH
-RUJMSVQNCj4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvdmlkZW8vdmdhLmggYi9pbmNsdWRlL3Zp
-ZGVvL3ZnYS5oDQo+IGluZGV4IDk0N2MwYWJkMDRlZi4uZjRiODA2Yjg1Yzg2IDEwMDY0NA0K
-PiAtLS0gYS9pbmNsdWRlL3ZpZGVvL3ZnYS5oDQo+ICsrKyBiL2luY2x1ZGUvdmlkZW8vdmdh
-LmgNCj4gQEAgLTIwMywxOCArMjAzLDI2IEBAIGV4dGVybiBpbnQgcmVzdG9yZV92Z2Eoc3Ry
-dWN0IHZnYXN0YXRlICpzdGF0ZSk7DQo+ICAgDQo+ICAgc3RhdGljIGlubGluZSB1bnNpZ25l
-ZCBjaGFyIHZnYV9pb19yICh1bnNpZ25lZCBzaG9ydCBwb3J0KQ0KPiAgIHsNCj4gKyNpZmRl
-ZiBDT05GSUdfSEFTX0lPUE9SVA0KPiAgIAlyZXR1cm4gaW5iX3AocG9ydCk7DQo+ICsjZWxz
-ZQ0KPiArCXJldHVybiAweGZmOw0KPiArI2VuZGlmDQo+ICAgfQ0KPiAgIA0KPiAgIHN0YXRp
-YyBpbmxpbmUgdm9pZCB2Z2FfaW9fdyAodW5zaWduZWQgc2hvcnQgcG9ydCwgdW5zaWduZWQg
-Y2hhciB2YWwpDQo+ICAgew0KPiArI2lmZGVmIENPTkZJR19IQVNfSU9QT1JUDQo+ICAgCW91
-dGJfcCh2YWwsIHBvcnQpOw0KPiArI2VuZGlmDQo+ICAgfQ0KPiAgIA0KPiAgIHN0YXRpYyBp
-bmxpbmUgdm9pZCB2Z2FfaW9fd19mYXN0ICh1bnNpZ25lZCBzaG9ydCBwb3J0LCB1bnNpZ25l
-ZCBjaGFyIHJlZywNCj4gICAJCQkJICB1bnNpZ25lZCBjaGFyIHZhbCkNCj4gICB7DQo+ICsj
-aWZkZWYgQ09ORklHX0hBU19JT1BPUlQNCj4gICAJb3V0dyhWR0FfT1VUMTZWQUwgKHZhbCwg
-cmVnKSwgcG9ydCk7DQo+ICsjZW5kaWYNCj4gICB9DQoNCkl0IGZlZWxzIHdyb25nIHRoYXQg
-dGhlc2UgaGVscGVycyBzaWxlbnRseSBkbyBub3RoaW5nLiBJJ2QgZW5jbG9zZSB0aGVtIA0K
-aW4gQ09ORklHX0hBU19JT1BPUlQgZW50aXJlbHkuIFRoZSBkcml2ZXJzIHRoYXQgdXNlIHRo
-ZW0gdW5jb25kaXRpb25hbGx5IA0Kd291bGQgdGhlbiBmYWlsIHRvIGJ1aWxkLg0KDQpCZXN0
-IHJlZ2FyZHMNClRob21hcw0KDQo+ICAgDQo+ICAgc3RhdGljIGlubGluZSB1bnNpZ25lZCBj
-aGFyIHZnYV9tbV9yICh2b2lkIF9faW9tZW0gKnJlZ2Jhc2UsIHVuc2lnbmVkIHNob3J0IHBv
-cnQpDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9w
-ZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KRnJhbmtlbnN0cmFz
-c2UgMTQ2LCA5MDQ2MSBOdWVybmJlcmcsIEdlcm1hbnkNCkdGOiBJdm8gVG90ZXYsIEFuZHJl
-dyBNeWVycywgQW5kcmV3IE1jRG9uYWxkLCBCb3VkaWVuIE1vZXJtYW4NCkhSQiAzNjgwOSAo
-QUcgTnVlcm5iZXJnKQ0K
+Acked-by: Helge Deller <deller@gmx.de>
 
---------------MGmXOWCcVW1HE0tyqq4jbyie--
+Thanks!
+Helge
 
---------------ySL0ieJRKTzqaUT2isTOi2rw
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
 
------BEGIN PGP SIGNATURE-----
+> Reported-by: kernel test robot <lkp@intel.com>
+> Closes: https://lore.kernel.org/oe-kbuild-all/202305102136.eMjTSPwH-lkp@=
+intel.com/
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Artur Rojek <contact@artur-rojek.eu>
+> ---
+>   drivers/video/fbdev/hitfb.c | 122 ++++++++++++++++++++----------------
+>   1 file changed, 69 insertions(+), 53 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/hitfb.c b/drivers/video/fbdev/hitfb.c
+> index 3033f5056976..7737923b7a0a 100644
+> --- a/drivers/video/fbdev/hitfb.c
+> +++ b/drivers/video/fbdev/hitfb.c
+> @@ -42,17 +42,33 @@ static struct fb_fix_screeninfo hitfb_fix =3D {
+>   	.accel		=3D FB_ACCEL_NONE,
+>   };
+>
+> +static volatile void __iomem *hitfb_offset_to_addr(unsigned int offset)
+> +{
+> +	return (__force volatile void __iomem *)(uintptr_t)offset;
+> +}
+> +
+> +static u16 hitfb_readw(unsigned int offset)
+> +{
+> +	return fb_readw(hitfb_offset_to_addr(offset));
+> +}
+> +
+> +static void hitfb_writew(u16 value, unsigned int offset)
+> +{
+> +	fb_writew(value, hitfb_offset_to_addr(offset));
+> +}
+> +
+>   static inline void hitfb_accel_wait(void)
+>   {
+> -	while (fb_readw(HD64461_GRCFGR) & HD64461_GRCFGR_ACCSTATUS) ;
+> +	while (hitfb_readw(HD64461_GRCFGR) & HD64461_GRCFGR_ACCSTATUS)
+> +		;
+>   }
+>
+>   static inline void hitfb_accel_start(int truecolor)
+>   {
+>   	if (truecolor) {
+> -		fb_writew(6, HD64461_GRCFGR);
+> +		hitfb_writew(6, HD64461_GRCFGR);
+>   	} else {
+> -		fb_writew(7, HD64461_GRCFGR);
+> +		hitfb_writew(7, HD64461_GRCFGR);
+>   	}
+>   }
+>
+> @@ -63,11 +79,11 @@ static inline void hitfb_accel_set_dest(int truecolo=
+r, u16 dx, u16 dy,
+>   	if (truecolor)
+>   		saddr <<=3D 1;
+>
+> -	fb_writew(width-1, HD64461_BBTDWR);
+> -	fb_writew(height-1, HD64461_BBTDHR);
+> +	hitfb_writew(width-1, HD64461_BBTDWR);
+> +	hitfb_writew(height-1, HD64461_BBTDHR);
+>
+> -	fb_writew(saddr & 0xffff, HD64461_BBTDSARL);
+> -	fb_writew(saddr >> 16, HD64461_BBTDSARH);
+> +	hitfb_writew(saddr & 0xffff, HD64461_BBTDSARL);
+> +	hitfb_writew(saddr >> 16, HD64461_BBTDSARH);
+>
+>   }
+>
+> @@ -80,7 +96,7 @@ static inline void hitfb_accel_bitblt(int truecolor, u=
+16 sx, u16 sy, u16 dx,
+>
+>   	height--;
+>   	width--;
+> -	fb_writew(rop, HD64461_BBTROPR);
+> +	hitfb_writew(rop, HD64461_BBTROPR);
+>   	if ((sy < dy) || ((sy =3D=3D dy) && (sx <=3D dx))) {
+>   		saddr =3D WIDTH * (sy + height) + sx + width;
+>   		daddr =3D WIDTH * (dy + height) + dx + width;
+> @@ -91,32 +107,32 @@ static inline void hitfb_accel_bitblt(int truecolor=
+, u16 sx, u16 sy, u16 dx,
+>   				maddr =3D
+>   				    (((width >> 4) + 1) * (height + 1) - 1) * 2;
+>
+> -			fb_writew((1 << 5) | 1, HD64461_BBTMDR);
+> +			hitfb_writew((1 << 5) | 1, HD64461_BBTMDR);
+>   		} else
+> -			fb_writew(1, HD64461_BBTMDR);
+> +			hitfb_writew(1, HD64461_BBTMDR);
+>   	} else {
+>   		saddr =3D WIDTH * sy + sx;
+>   		daddr =3D WIDTH * dy + dx;
+>   		if (mask_addr) {
+> -			fb_writew((1 << 5), HD64461_BBTMDR);
+> +			hitfb_writew((1 << 5), HD64461_BBTMDR);
+>   		} else {
+> -			fb_writew(0, HD64461_BBTMDR);
+> +			hitfb_writew(0, HD64461_BBTMDR);
+>   		}
+>   	}
+>   	if (truecolor) {
+>   		saddr <<=3D 1;
+>   		daddr <<=3D 1;
+>   	}
+> -	fb_writew(width, HD64461_BBTDWR);
+> -	fb_writew(height, HD64461_BBTDHR);
+> -	fb_writew(saddr & 0xffff, HD64461_BBTSSARL);
+> -	fb_writew(saddr >> 16, HD64461_BBTSSARH);
+> -	fb_writew(daddr & 0xffff, HD64461_BBTDSARL);
+> -	fb_writew(daddr >> 16, HD64461_BBTDSARH);
+> +	hitfb_writew(width, HD64461_BBTDWR);
+> +	hitfb_writew(height, HD64461_BBTDHR);
+> +	hitfb_writew(saddr & 0xffff, HD64461_BBTSSARL);
+> +	hitfb_writew(saddr >> 16, HD64461_BBTSSARH);
+> +	hitfb_writew(daddr & 0xffff, HD64461_BBTDSARL);
+> +	hitfb_writew(daddr >> 16, HD64461_BBTDSARH);
+>   	if (mask_addr) {
+>   		maddr +=3D mask_addr;
+> -		fb_writew(maddr & 0xffff, HD64461_BBTMARL);
+> -		fb_writew(maddr >> 16, HD64461_BBTMARH);
+> +		hitfb_writew(maddr & 0xffff, HD64461_BBTMARL);
+> +		hitfb_writew(maddr >> 16, HD64461_BBTMARH);
+>   	}
+>   	hitfb_accel_start(truecolor);
+>   }
+> @@ -127,17 +143,17 @@ static void hitfb_fillrect(struct fb_info *p, cons=
+t struct fb_fillrect *rect)
+>   		cfb_fillrect(p, rect);
+>   	else {
+>   		hitfb_accel_wait();
+> -		fb_writew(0x00f0, HD64461_BBTROPR);
+> -		fb_writew(16, HD64461_BBTMDR);
+> +		hitfb_writew(0x00f0, HD64461_BBTROPR);
+> +		hitfb_writew(16, HD64461_BBTMDR);
+>
+>   		if (p->var.bits_per_pixel =3D=3D 16) {
+> -			fb_writew(((u32 *) (p->pseudo_palette))[rect->color],
+> +			hitfb_writew(((u32 *) (p->pseudo_palette))[rect->color],
+>   				  HD64461_GRSCR);
+>   			hitfb_accel_set_dest(1, rect->dx, rect->dy, rect->width,
+>   					     rect->height);
+>   			hitfb_accel_start(1);
+>   		} else {
+> -			fb_writew(rect->color, HD64461_GRSCR);
+> +			hitfb_writew(rect->color, HD64461_GRSCR);
+>   			hitfb_accel_set_dest(0, rect->dx, rect->dy, rect->width,
+>   					     rect->height);
+>   			hitfb_accel_start(0);
+> @@ -162,7 +178,7 @@ static int hitfb_pan_display(struct fb_var_screeninf=
+o *var,
+>   	if (xoffset !=3D 0)
+>   		return -EINVAL;
+>
+> -	fb_writew((yoffset*info->fix.line_length)>>10, HD64461_LCDCBAR);
+> +	hitfb_writew((yoffset*info->fix.line_length)>>10, HD64461_LCDCBAR);
+>
+>   	return 0;
+>   }
+> @@ -172,33 +188,33 @@ int hitfb_blank(int blank_mode, struct fb_info *in=
+fo)
+>   	unsigned short v;
+>
+>   	if (blank_mode) {
+> -		v =3D fb_readw(HD64461_LDR1);
+> +		v =3D hitfb_readw(HD64461_LDR1);
+>   		v &=3D ~HD64461_LDR1_DON;
+> -		fb_writew(v, HD64461_LDR1);
+> +		hitfb_writew(v, HD64461_LDR1);
+>
+> -		v =3D fb_readw(HD64461_LCDCCR);
+> +		v =3D hitfb_readw(HD64461_LCDCCR);
+>   		v |=3D HD64461_LCDCCR_MOFF;
+> -		fb_writew(v, HD64461_LCDCCR);
+> +		hitfb_writew(v, HD64461_LCDCCR);
+>
+> -		v =3D fb_readw(HD64461_STBCR);
+> +		v =3D hitfb_readw(HD64461_STBCR);
+>   		v |=3D HD64461_STBCR_SLCDST;
+> -		fb_writew(v, HD64461_STBCR);
+> +		hitfb_writew(v, HD64461_STBCR);
+>   	} else {
+> -		v =3D fb_readw(HD64461_STBCR);
+> +		v =3D hitfb_readw(HD64461_STBCR);
+>   		v &=3D ~HD64461_STBCR_SLCDST;
+> -		fb_writew(v, HD64461_STBCR);
+> +		hitfb_writew(v, HD64461_STBCR);
+>
+> -		v =3D fb_readw(HD64461_LCDCCR);
+> +		v =3D hitfb_readw(HD64461_LCDCCR);
+>   		v &=3D ~(HD64461_LCDCCR_MOFF | HD64461_LCDCCR_STREQ);
+> -		fb_writew(v, HD64461_LCDCCR);
+> +		hitfb_writew(v, HD64461_LCDCCR);
+>
+>   		do {
+> -		    v =3D fb_readw(HD64461_LCDCCR);
+> +		    v =3D hitfb_readw(HD64461_LCDCCR);
+>   		} while(v&HD64461_LCDCCR_STBACK);
+>
+> -		v =3D fb_readw(HD64461_LDR1);
+> +		v =3D hitfb_readw(HD64461_LDR1);
+>   		v |=3D HD64461_LDR1_DON;
+> -		fb_writew(v, HD64461_LDR1);
+> +		hitfb_writew(v, HD64461_LDR1);
+>   	}
+>   	return 0;
+>   }
+> @@ -211,10 +227,10 @@ static int hitfb_setcolreg(unsigned regno, unsigne=
+d red, unsigned green,
+>
+>   	switch (info->var.bits_per_pixel) {
+>   	case 8:
+> -		fb_writew(regno << 8, HD64461_CPTWAR);
+> -		fb_writew(red >> 10, HD64461_CPTWDR);
+> -		fb_writew(green >> 10, HD64461_CPTWDR);
+> -		fb_writew(blue >> 10, HD64461_CPTWDR);
+> +		hitfb_writew(regno << 8, HD64461_CPTWAR);
+> +		hitfb_writew(red >> 10, HD64461_CPTWDR);
+> +		hitfb_writew(green >> 10, HD64461_CPTWDR);
+> +		hitfb_writew(blue >> 10, HD64461_CPTWDR);
+>   		break;
+>   	case 16:
+>   		if (regno >=3D 16)
+> @@ -302,11 +318,11 @@ static int hitfb_set_par(struct fb_info *info)
+>   		break;
+>   	}
+>
+> -	fb_writew(info->fix.line_length, HD64461_LCDCLOR);
+> -	ldr3 =3D fb_readw(HD64461_LDR3);
+> +	hitfb_writew(info->fix.line_length, HD64461_LCDCLOR);
+> +	ldr3 =3D hitfb_readw(HD64461_LDR3);
+>   	ldr3 &=3D ~15;
+>   	ldr3 |=3D (info->var.bits_per_pixel =3D=3D 8) ? 4 : 8;
+> -	fb_writew(ldr3, HD64461_LDR3);
+> +	hitfb_writew(ldr3, HD64461_LDR3);
+>   	return 0;
+>   }
+>
+> @@ -337,9 +353,9 @@ static int hitfb_probe(struct platform_device *dev)
+>   	hitfb_fix.smem_start =3D HD64461_IO_OFFSET(0x02000000);
+>   	hitfb_fix.smem_len =3D 512 * 1024;
+>
+> -	lcdclor =3D fb_readw(HD64461_LCDCLOR);
+> -	ldvndr =3D fb_readw(HD64461_LDVNDR);
+> -	ldr3 =3D fb_readw(HD64461_LDR3);
+> +	lcdclor =3D hitfb_readw(HD64461_LCDCLOR);
+> +	ldvndr =3D hitfb_readw(HD64461_LDVNDR);
+> +	ldr3 =3D hitfb_readw(HD64461_LDR3);
+>
+>   	switch (ldr3 & 15) {
+>   	default:
+> @@ -429,9 +445,9 @@ static int hitfb_suspend(struct device *dev)
+>   	u16 v;
+>
+>   	hitfb_blank(1,0);
+> -	v =3D fb_readw(HD64461_STBCR);
+> +	v =3D hitfb_readw(HD64461_STBCR);
+>   	v |=3D HD64461_STBCR_SLCKE_IST;
+> -	fb_writew(v, HD64461_STBCR);
+> +	hitfb_writew(v, HD64461_STBCR);
+>
+>   	return 0;
+>   }
+> @@ -440,12 +456,12 @@ static int hitfb_resume(struct device *dev)
+>   {
+>   	u16 v;
+>
+> -	v =3D fb_readw(HD64461_STBCR);
+> +	v =3D hitfb_readw(HD64461_STBCR);
+>   	v &=3D ~HD64461_STBCR_SLCKE_OST;
+>   	msleep(100);
+> -	v =3D fb_readw(HD64461_STBCR);
+> +	v =3D hitfb_readw(HD64461_STBCR);
+>   	v &=3D ~HD64461_STBCR_SLCKE_IST;
+> -	fb_writew(v, HD64461_STBCR);
+> +	hitfb_writew(v, HD64461_STBCR);
+>   	hitfb_blank(0,0);
+>
+>   	return 0;
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmRju30FAwAAAAAACgkQlh/E3EQov+CF
-PBAAvjMIb1oGDJVpeY0CGY5lPnPATKDg5s5tmrfuCFa4BV4Nz9xbO7icWIjvwOGIglUeX+JoJIOj
-/jw1/4a1wHT6AA2b8NGf3MgF6NLdD+4XUh8CEDhLIeD81U4crqeEkV/cj4KxnY47kzwisFRDMm4C
-4xb1shU/lWKzfpk5EGuuPleqQxWsp09BIf52hiJpe/TKF2r/FdXb1Z/f3N7rAEOB8MYgWmQKVaqq
-3jKPLuSk4wMCp8gxSycfNKfWWoR1RhTV8L1QUp5E+1tCeN9OdAwnAuSGmQ0Yz5WD8LQYfzcESoH5
-4PIRErIVFtTfA5uYCl565d/569kSqidWqy9qid1lUuxzp3ojfjVqy2g3raO0iPXoEQ1UMJ3Z/X9C
-cXUlbWyXVJ4VPyduB8S1NMRz3hbWhVSZjJt0C7PJuAvI86XbXNeksrGMuqzy6wfEnmS1AHUWy4CQ
-ZGXU3Zj3klVC1+XRkhYMk724XGDrPlFGeUHGqTj0zd2j82ynYdSnKdL2GnMk7eXt9WjRkMOiCP2+
-YRIpIaeqUeb0VjQa/ZjTObD9eUSUC6BvtgmI0JGyIYXr/IRFIfMHNP7hNZFXaeySswPyTu6ebhnF
-zWvptwDGKBHZP5+O/NOddSMx3nMWaMwEWjp1SumCezc2HabMHpbXkqkML+EJ5pf8O5QiIXW9MTyz
-d1Q=
-=KM9V
------END PGP SIGNATURE-----
-
---------------ySL0ieJRKTzqaUT2isTOi2rw--

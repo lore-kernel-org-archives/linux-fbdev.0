@@ -2,110 +2,70 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4193BC7EE2A
-	for <linux-fbdev@archiver.kernel.org>; Thu, 18 May 2023 20:36:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77DAAC77B7D
+	for <linux-fbdev@archiver.kernel.org>; Thu, 18 May 2023 21:08:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229498AbjERUfL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 18 May 2023 16:35:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51218 "EHLO
+        id S230060AbjERVIa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 18 May 2023 17:08:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39278 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229941AbjERUfL (ORCPT
+        with ESMTP id S229973AbjERVIa (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 18 May 2023 16:35:11 -0400
-Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
-        by lindbergh.monkeyblade.net (Postfix) with SMTP id F041410CF
-        for <linux-fbdev@vger.kernel.org>; Thu, 18 May 2023 13:35:08 -0700 (PDT)
-Received: (qmail 17442 invoked by uid 1000); 18 May 2023 16:35:07 -0400
-Date:   Thu, 18 May 2023 16:35:07 -0400
-From:   Alan Stern <stern@rowland.harvard.edu>
-To:     Helge Deller <deller@gmx.de>
-Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        syzbot <syzbot+0e22d63dcebb802b9bc8@syzkaller.appspotmail.com>,
-        bernie@plugable.com, linux-usb@vger.kernel.org,
-        syzkaller-bugs@googlegroups.com
-Subject: Re: [syzbot] [fbdev?] [usb?] WARNING in
- dlfb_submit_urb/usb_submit_urb (2)
-Message-ID: <c7b8e69a-cabe-4e17-a511-66179259d1d7@rowland.harvard.edu>
-References: <0000000000004a222005fbf00461@google.com>
- <ZGXVANMhn5j/jObU@ls3530>
- <4cd17511-2b60-4c37-baf3-c477cf6d1761@rowland.harvard.edu>
- <be824fbc-cde4-9a2a-8fb4-1ca23f498dca@gmx.de>
- <2905a85f-4a3b-4a4f-b8fb-a4d037d6c591@rowland.harvard.edu>
- <ZGZ3JPLqxCxA2UB6@ls3530>
+        Thu, 18 May 2023 17:08:30 -0400
+Received: from mail-il1-f198.google.com (mail-il1-f198.google.com [209.85.166.198])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5235B10DF
+        for <linux-fbdev@vger.kernel.org>; Thu, 18 May 2023 14:08:27 -0700 (PDT)
+Received: by mail-il1-f198.google.com with SMTP id e9e14a558f8ab-3381de222c3so20462385ab.2
+        for <linux-fbdev@vger.kernel.org>; Thu, 18 May 2023 14:08:27 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1684444106; x=1687036106;
+        h=to:from:subject:message-id:in-reply-to:date:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=oCJmZhikEGgvshSFtgr79kh24UyNzZUnmc8l6fNAyog=;
+        b=O26aD1NUMZ2pNwJib4/WgOg4U2sXg2F3kJCubaAVEFGdY9cwiKxqmCL5I+jDYKS3Hq
+         QJ/BhpoyFuIT/nAuC9vClh1cwK7VgV/OjhutnrzuUc0OO6QP+em4d+s9vU4NMV4HdbwU
+         I4qCGNsd74IqXMBSaOXnWzVQDgbHn3iEz5mL1eZoQJnh7U2nqtg3H4CSq3joqt+rPwx1
+         P87vx+s9VaE0um70jHhTtybN3UzfzyTbvygPunvzLWG7vqvSftkV+kI7jcgaowr+p4Zs
+         Vlx2GKfoVG6O7irQO9/lkUKo+PiLPpGyFTIUYruI1/HEzmmjIax4DiX4MN5zCNHwyWkC
+         3smA==
+X-Gm-Message-State: AC+VfDwhUSs5ZCTFAnyPJQ1ApKjLsXLQuCBLfHPlgFSmoWMu46MP4tWG
+        cfyBpG+nEgsW1e3ThGW3UzuAbNdy9Bje6kj/m3eN1B9VmR/4
+X-Google-Smtp-Source: ACHHUZ6O+AwC9jQ6/HWx9bF4gsIW4ateeFT9tlEiAvl6X0cm+bMtLLafLfqIApH9fHqyJCPWOSItmHrhVXZe54RUpchQdppkkfQY
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ZGZ3JPLqxCxA2UB6@ls3530>
+X-Received: by 2002:a02:93c7:0:b0:416:5d0f:f494 with SMTP id
+ z65-20020a0293c7000000b004165d0ff494mr1952410jah.5.1684444106608; Thu, 18 May
+ 2023 14:08:26 -0700 (PDT)
+Date:   Thu, 18 May 2023 14:08:26 -0700
+In-Reply-To: <c7b8e69a-cabe-4e17-a511-66179259d1d7@rowland.harvard.edu>
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <0000000000009e5a1c05fbfe34c5@google.com>
+Subject: Re: [syzbot] [fbdev?] [usb?] WARNING in dlfb_submit_urb/usb_submit_urb
+ (2)
+From:   syzbot <syzbot+0e22d63dcebb802b9bc8@syzkaller.appspotmail.com>
+To:     bernie@plugable.com, deller@gmx.de,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+        stern@rowland.harvard.edu, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, May 18, 2023 at 09:06:12PM +0200, Helge Deller wrote:
-> * Alan Stern <stern@rowland.harvard.edu>:
-> > On Thu, May 18, 2023 at 04:16:33PM +0200, Helge Deller wrote:
-> > > On 5/18/23 15:54, Alan Stern wrote:
-> > > > In this case it looks like dlfb_usb_probe() or one of the routines it
-> > > > calls is wrong; it assumes that an endpoint has the expected type
-> > > > without checking.  More precisely, it thinks an endpoint is BULK when
-> > > > actually it is INTERRUPT.  That's what needs to be fixed.
-> > >
-> > > Maybe usb_submit_urb() should return an error so that drivers can
-> > > react on it, instead of adding the same kind of checks to all drivers?
-> >
-> > Feel free to submit a patch doing this.
-> 
-> As you wrote above, this may break other drivers too, so I'd leave that
-> discussion & decision to the USB maintainers (like you).
-> 
-> > But the checks should be added
-> > in any case; without them the drivers are simply wrong.
-> 
-> I pushed the hackish patch below through the syz tests which gives this log:
-> (see https://syzkaller.appspot.com/text?tag=CrashLog&x=160b7509280000)
-> [   77.559566][    T9] usb 1-1: Unable to get valid EDID from device/display
-> [   77.587021][    T9] WARNING: BOGUS urb xfer, pipe 3 != type 1 (fix driver to choose correct endpoint)
-> [   77.596448][    T9] usb 1-1: dlfb_urb_completion - nonzero write bulk status received: -115
-> [   77.605308][    T9] usb 1-1: submit urb error: -22
-> [   77.613225][    T9] udlfb: probe of 1-1:0.52 failed with error -22
-> 
-> So, basically there is no urgent fix needed for the dlfb fbdev driver,
-> as it will gracefully fail as is (which is correct).
-> 
-> What do you suggest we should do with this syzkaller-bug ?
-> I'd rate it as false-alarm, but it will continue to complain because of
-> the dev_WARN() in urb.c
+Hello,
 
-Let's try this patch instead.  It might contain a stupid error because I 
-haven't even tried to compile it, but it ought to fix the real problem.
+syzbot has tested the proposed patch and the reproducer did not trigger any issue:
 
-Alan Stern
+Reported-and-tested-by: syzbot+0e22d63dcebb802b9bc8@syzkaller.appspotmail.com
 
-#syz test: https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb.git a4422ff22142
+Tested on:
 
-Index: usb-devel/drivers/video/fbdev/udlfb.c
-===================================================================
---- usb-devel.orig/drivers/video/fbdev/udlfb.c
-+++ usb-devel/drivers/video/fbdev/udlfb.c
-@@ -1652,7 +1652,7 @@ static int dlfb_usb_probe(struct usb_int
- 	struct fb_info *info;
- 	int retval;
- 	struct usb_device *usbdev = interface_to_usbdev(intf);
--	struct usb_endpoint_descriptor *out;
-+	static u8 out_ep[] = {1 + USB_DIR_OUT, 0};
- 
- 	/* usb initialization */
- 	dlfb = kzalloc(sizeof(*dlfb), GFP_KERNEL);
-@@ -1666,9 +1666,9 @@ static int dlfb_usb_probe(struct usb_int
- 	dlfb->udev = usb_get_dev(usbdev);
- 	usb_set_intfdata(intf, dlfb);
- 
--	retval = usb_find_common_endpoints(intf->cur_altsetting, NULL, &out, NULL, NULL);
--	if (retval) {
--		dev_err(&intf->dev, "Device should have at lease 1 bulk endpoint!\n");
-+	if (!usb_check_bulk_endpoints(intf, out_ep)) {
-+		dev_err(&intf->dev, "Invalid DisplayLink device!\n");
-+		retval = -EINVAL;
- 		goto error;
- 	}
- 
+commit:         a4422ff2 usb: typec: qcom: Add Qualcomm PMIC Type-C dr..
+git tree:       https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb.git
+console output: https://syzkaller.appspot.com/x/log.txt?x=10b6b9a6280000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=2414a945e4542ec1
+dashboard link: https://syzkaller.appspot.com/bug?extid=0e22d63dcebb802b9bc8
+compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2
+patch:          https://syzkaller.appspot.com/x/patch.diff?x=1374e5a6280000
+
+Note: testing is done by a robot and is best-effort only.

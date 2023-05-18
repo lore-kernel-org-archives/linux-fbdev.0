@@ -2,98 +2,158 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB0CEC7EE22
-	for <linux-fbdev@archiver.kernel.org>; Wed, 17 May 2023 21:36:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AA3AC77B7A
+	for <linux-fbdev@archiver.kernel.org>; Thu, 18 May 2023 04:12:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229678AbjEQVgl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 17 May 2023 17:36:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45190 "EHLO
+        id S229878AbjEREMw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 18 May 2023 00:12:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34230 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229436AbjEQVgk (ORCPT
+        with ESMTP id S229973AbjEREMt (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 17 May 2023 17:36:40 -0400
-Received: from mail-yw1-x1133.google.com (mail-yw1-x1133.google.com [IPv6:2607:f8b0:4864:20::1133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 22F78DA
-        for <linux-fbdev@vger.kernel.org>; Wed, 17 May 2023 14:36:39 -0700 (PDT)
-Received: by mail-yw1-x1133.google.com with SMTP id 00721157ae682-56186035b61so15608967b3.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 17 May 2023 14:36:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1684359398; x=1686951398;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=cY/eQ57fs7dlsVatS+jhyTGHg7yG2gHeDPH1M03tXUo=;
-        b=irhJRAZwAa+Gz1ebjP8wNR2BRjZ5Zj07hEtQe4UvjcUFgzjGovspvZeA/w3QdqXsS+
-         lJJbkj+3CaoQ+fAEvdkw4718cc3C3dx6NYhWfOJ1i8oYKYlkR9TPkLuiYZLgdW8hsG8t
-         XWe9WwmmeT20MQwLbZ6Q3D3vHXl93BrmscrfPN0tDA1Tx+CkAI/aN+Ci8Ak6Rl0iS9Pn
-         idxE4AUkf+FVu7lfpHsVt+wtoFI81duKbgfNn3xHbH5V+Me84d6ISJVf37U5UU+1m4AU
-         ieEV8WtukMZAEkzoJzomR6uwI8vYg8OVdyOorRQU3YNGZ11A8/p8eTt9YQEojj4/AEWh
-         F5Mw==
+        Thu, 18 May 2023 00:12:49 -0400
+Received: from mail-il1-f206.google.com (mail-il1-f206.google.com [209.85.166.206])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D66AE35BE
+        for <linux-fbdev@vger.kernel.org>; Wed, 17 May 2023 21:12:46 -0700 (PDT)
+Received: by mail-il1-f206.google.com with SMTP id e9e14a558f8ab-33826fb9d0fso11379415ab.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 17 May 2023 21:12:46 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1684359398; x=1686951398;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=cY/eQ57fs7dlsVatS+jhyTGHg7yG2gHeDPH1M03tXUo=;
-        b=a+mxood+Y18+OjVV0iHs6YU3JCo6vHpQ5Zb2rXq0o16Kuu/+qT5vVoPUt8KHhOhW4p
-         2elvLMcaTBSc6trU33zwVyq8dt0YaFg4SBcDyP8PCwwcqxlLqOZYm/XBahrLZZdmHxkb
-         gEDMVLbJMAjuTVP/gSYISXOKDd/MKU6eT+2C55bdaehmCv/EX+XIKClXcbBEhVJN4ev8
-         G7iMBnavGgkjf45TWQVLUgg0C8ZgD7+7JjX0bVLnRVJU12KfzMHWpohMwK9gcLjzU35Z
-         71Eqf8bqn4JhFtOj6Vje/+M4APskqMId8ENFzP8EcPnyuNII2Kd136YPH1IclCZc9Twp
-         hOjw==
-X-Gm-Message-State: AC+VfDwVKF+WZdY3CBtV3OE+2A99QtvVebSFB9g2k1WNBTUs63QXyk7m
-        Ita4MmO4PAcMXep9EoBxRwIxHtaqNxkPXy4O89i36A==
-X-Google-Smtp-Source: ACHHUZ4pIBn19+BLD6UElqlgO1dKdZPd0Ga1Aky4aWI+i3dEfXBJQZ1abYF5itannmQlr0DCkYCOVvzdFktxBrZVq/A=
-X-Received: by 2002:a0d:cc56:0:b0:561:e7bb:1b20 with SMTP id
- o83-20020a0dcc56000000b00561e7bb1b20mr1351592ywd.34.1684359398379; Wed, 17
- May 2023 14:36:38 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1684383166; x=1686975166;
+        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Ad68lj4j6xqtAEDpxc6cTTyJqlISj7andYukqr+rtKQ=;
+        b=l8nGwgdFUagVFX35vQcixNHH0X3T3tz0VFTORFHqFtwfylVS/9j6B9+QGrjUBn+tGC
+         KpNUf3B3bxvjwpExAQ0E06hx0Bh/4DU+CzzMjlDt7aysvJu5UR+1rUXIBXsHzVPiL6CP
+         E73OXPmUhWZpkZwFx0toJ+AGXSX+bq87F43lk7UNvKP5MvV+hgawW4jBgGecdJqeDTDy
+         h3cEzX0B4WnWhpuMlf+EFjb/LMl2cYIBB8AskuoNncgZf95WPQYJeN7Zzt5FvR3XmRow
+         ovBFUYbXnPfnkHaOPOolfVyzGgR7VkoNc+Hp7ecUPnV7uRe0VByFY3Xjfq5uvGm9PiwM
+         MZOA==
+X-Gm-Message-State: AC+VfDxe7aA5Vc9JRqj0C0n4xcmmWIGl7Im0izufo4+p+BruuI/rFcPC
+        s8SZfAXhBMUiFaQvtjjCxl4SNSKTgJLHCxNy2B8dcy6wSg6e
+X-Google-Smtp-Source: ACHHUZ5u+S4OP8f/Ud+k9vjwXAsEJfXmAwXGq+cz/5NQAfGKCVRKR69HrAcQvze56oKsJKuKyiMIHraZQcL2339fMeX/WgGW6BiT
 MIME-Version: 1.0
-References: <20230430-nokia770-regression-v4-0-9b6dc5536b17@linaro.org>
- <20230430-nokia770-regression-v4-2-9b6dc5536b17@linaro.org> <20230517203011.GH271152@darkstar.musicnaut.iki.fi>
-In-Reply-To: <20230517203011.GH271152@darkstar.musicnaut.iki.fi>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Wed, 17 May 2023 23:36:26 +0200
-Message-ID: <CACRpkdb0uSkfQZxZ_mpesGSjvf0gZzaZyw5iV1haAovH8cfngA@mail.gmail.com>
-Subject: Re: [PATCH v4 2/4] ARM/mmc: Convert old mmci-omap to GPIO descriptors
-To:     Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc:     Janusz Krzysztofik <jmkrzyszt@gmail.com>,
-        Tony Lindgren <tony@atomide.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Daniel Mack <daniel@zonque.org>,
-        Haojian Zhuang <haojian.zhuang@gmail.com>,
-        Robert Jarzmik <robert.jarzmik@free.fr>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
-        Andreas Kemnade <andreas@kemnade.info>,
-        Helge Deller <deller@gmx.de>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-spi@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-mmc@vger.kernel.org
+X-Received: by 2002:a92:d086:0:b0:335:de72:23d7 with SMTP id
+ h6-20020a92d086000000b00335de7223d7mr2485125ilh.3.1684383166240; Wed, 17 May
+ 2023 21:12:46 -0700 (PDT)
+Date:   Wed, 17 May 2023 21:12:46 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <0000000000004a222005fbf00461@google.com>
+Subject: [syzbot] [fbdev?] [usb?] WARNING in dlfb_submit_urb/usb_submit_urb (2)
+From:   syzbot <syzbot+0e22d63dcebb802b9bc8@syzkaller.appspotmail.com>
+To:     bernie@plugable.com, deller@gmx.de,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+        syzkaller-bugs@googlegroups.com
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, May 17, 2023 at 10:30=E2=80=AFPM Aaro Koskinen <aaro.koskinen@iki.f=
-i> wrote:
+Hello,
 
-> This one has some issue as mmci-omap is unable to find the GPIOs on 770.
->
-> On Mon, May 08, 2023 at 11:20:07PM +0200, Linus Walleij wrote:
-> > +static struct gpiod_lookup_table nokia770_mmc_gpio_table =3D {
-> > +     .dev_id =3D "mmci-omap",
->
-> Changing this to "mmci-omap.1" helped, not sure if that is a correct way.
-> Most likely N800 and N810 are broken as well.
+syzbot found the following issue on:
 
-Yep looked over it, OMAP1 has mmci-omap.1 and OMAP2 has
-mmci-omap.0.
+HEAD commit:    a4422ff22142 usb: typec: qcom: Add Qualcomm PMIC Type-C dr..
+git tree:       https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb.git usb-testing
+console output: https://syzkaller.appspot.com/x/log.txt?x=15245566280000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=2414a945e4542ec1
+dashboard link: https://syzkaller.appspot.com/bug?extid=0e22d63dcebb802b9bc8
+compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=1720fd3a280000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=171a73ea280000
 
-Yours,
-Linus Walleij
+Downloadable assets:
+disk image: https://storage.googleapis.com/syzbot-assets/414817142fb7/disk-a4422ff2.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/448dba0d344e/vmlinux-a4422ff2.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/d0ad9fe848e2/bzImage-a4422ff2.xz
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+0e22d63dcebb802b9bc8@syzkaller.appspotmail.com
+
+usb 1-1: Read EDID byte 0 failed: -71
+usb 1-1: Unable to get valid EDID from device/display
+------------[ cut here ]------------
+usb 1-1: BOGUS urb xfer, pipe 3 != type 1
+WARNING: CPU: 0 PID: 9 at drivers/usb/core/urb.c:504 usb_submit_urb+0xed6/0x1880 drivers/usb/core/urb.c:504
+Modules linked in:
+CPU: 0 PID: 9 Comm: kworker/0:1 Not tainted 6.4.0-rc1-syzkaller-00016-ga4422ff22142 #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 04/28/2023
+Workqueue: usb_hub_wq hub_event
+RIP: 0010:usb_submit_urb+0xed6/0x1880 drivers/usb/core/urb.c:504
+Code: 7c 24 18 e8 7c dc 5a fd 48 8b 7c 24 18 e8 42 ca 0b ff 41 89 d8 44 89 e1 4c 89 ea 48 89 c6 48 c7 c7 60 34 cc 86 e8 0a fa 25 fd <0f> 0b e9 58 f8 ff ff e8 4e dc 5a fd 48 81 c5 b8 05 00 00 e9 84 f7
+RSP: 0018:ffffc9000009ed48 EFLAGS: 00010282
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 0000000000000000
+RDX: ffff888103650000 RSI: ffffffff81163677 RDI: 0000000000000001
+RBP: ffff88810cb32940 R08: 0000000000000001 R09: 0000000000000000
+R10: 0000000000000001 R11: 0000000000000001 R12: 0000000000000003
+R13: ffff88810cf426b8 R14: 0000000000000003 R15: ffff888104272100
+FS:  0000000000000000(0000) GS:ffff8881f6600000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 0000562147be3b70 CR3: 0000000110380000 CR4: 00000000003506f0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+Call Trace:
+ <TASK>
+ dlfb_submit_urb+0x92/0x180 drivers/video/fbdev/udlfb.c:1980
+ dlfb_set_video_mode+0x21f0/0x2950 drivers/video/fbdev/udlfb.c:315
+ dlfb_ops_set_par+0x2a7/0x8d0 drivers/video/fbdev/udlfb.c:1111
+ dlfb_usb_probe+0x149a/0x2710 drivers/video/fbdev/udlfb.c:1743
+ usb_probe_interface+0x30f/0x960 drivers/usb/core/driver.c:396
+ call_driver_probe drivers/base/dd.c:579 [inline]
+ really_probe+0x240/0xca0 drivers/base/dd.c:658
+ __driver_probe_device+0x1df/0x4b0 drivers/base/dd.c:800
+ driver_probe_device+0x4c/0x1a0 drivers/base/dd.c:830
+ __device_attach_driver+0x1d4/0x2e0 drivers/base/dd.c:958
+ bus_for_each_drv+0x149/0x1d0 drivers/base/bus.c:457
+ __device_attach+0x1e4/0x4b0 drivers/base/dd.c:1030
+ bus_probe_device+0x17c/0x1c0 drivers/base/bus.c:532
+ device_add+0x112d/0x1a40 drivers/base/core.c:3625
+ usb_set_configuration+0x1196/0x1bc0 drivers/usb/core/message.c:2211
+ usb_generic_driver_probe+0xcf/0x130 drivers/usb/core/generic.c:238
+ usb_probe_device+0xd8/0x2c0 drivers/usb/core/driver.c:293
+ call_driver_probe drivers/base/dd.c:579 [inline]
+ really_probe+0x240/0xca0 drivers/base/dd.c:658
+ __driver_probe_device+0x1df/0x4b0 drivers/base/dd.c:800
+ driver_probe_device+0x4c/0x1a0 drivers/base/dd.c:830
+ __device_attach_driver+0x1d4/0x2e0 drivers/base/dd.c:958
+ bus_for_each_drv+0x149/0x1d0 drivers/base/bus.c:457
+ __device_attach+0x1e4/0x4b0 drivers/base/dd.c:1030
+ bus_probe_device+0x17c/0x1c0 drivers/base/bus.c:532
+ device_add+0x112d/0x1a40 drivers/base/core.c:3625
+ usb_new_device+0xcb2/0x19d0 drivers/usb/core/hub.c:2575
+ hub_port_connect drivers/usb/core/hub.c:5407 [inline]
+ hub_port_connect_change drivers/usb/core/hub.c:5551 [inline]
+ port_event drivers/usb/core/hub.c:5711 [inline]
+ hub_event+0x2e3d/0x4ed0 drivers/usb/core/hub.c:5793
+ process_one_work+0x99a/0x15e0 kernel/workqueue.c:2405
+ worker_thread+0x67d/0x10c0 kernel/workqueue.c:2552
+ kthread+0x344/0x440 kernel/kthread.c:379
+ ret_from_fork+0x1f/0x30 arch/x86/entry/entry_64.S:308
+ </TASK>
+
+
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+
+If the bug is already fixed, let syzbot know by replying with:
+#syz fix: exact-commit-title
+
+If you want syzbot to run the reproducer, reply with:
+#syz test: git://repo/address.git branch-or-commit-hash
+If you attach or paste a git patch, syzbot will apply it before testing.
+
+If you want to change bug's subsystems, reply with:
+#syz set subsystems: new-subsystem
+(See the list of subsystem names on the web dashboard)
+
+If the bug is a duplicate of another bug, reply with:
+#syz dup: exact-subject-of-another-report
+
+If you want to undo deduplication, reply with:
+#syz undup

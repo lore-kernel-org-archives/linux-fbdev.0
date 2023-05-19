@@ -2,184 +2,113 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18A18C7EE26
-	for <linux-fbdev@archiver.kernel.org>; Fri, 19 May 2023 19:51:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3187AC7EE2A
+	for <linux-fbdev@archiver.kernel.org>; Fri, 19 May 2023 20:05:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229944AbjESTvK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 19 May 2023 15:51:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42498 "EHLO
+        id S229807AbjESUFi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 19 May 2023 16:05:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48040 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229871AbjESTvJ (ORCPT
+        with ESMTP id S229627AbjESUFi (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 19 May 2023 15:51:09 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BE52119F;
-        Fri, 19 May 2023 12:51:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1684525865; i=deller@gmx.de;
-        bh=H6STKmzio8wQ/9nszlIYRCGj043sdMCLWcO3ddWn0Z0=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=lDuh+9xYqXsr38elftu5I4w1pwy0b7pCiKeaDnljWUUlsNVSeTUKmC4zwlEsnmASl
-         xy3DE7YF5SUBLngwm/K/Fw7PnGXDBWoDqqtNmbsLtSjGKjx4E8rf2LtIc/E2YsVvlv
-         kqe3b/TbF/udm8gL5ha/KQIB/1NrimwVw24M6hbdruER70ZaIntzNwHQKNrQTaXc7S
-         Ro+r2Wveb3nRVHYPcSTLBN11OeuseUKc2yCX7aloznwUEkwlm4eY1RH8+j4npsq065
-         QmUPYh5rbbvMEQdi+bqLvZ10FGaCAP2/wtIqx7GKjJJSoQM38iBsjf77fMaMEgPQLE
-         IuWU4X9Ab74cA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.152.232]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MhU9j-1qciGw0X8V-00ea61; Fri, 19
- May 2023 21:51:05 +0200
-Message-ID: <66b03070-08b0-0fb1-8693-aed77543b93e@gmx.de>
-Date:   Fri, 19 May 2023 21:51:04 +0200
+        Fri, 19 May 2023 16:05:38 -0400
+Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F2DBFB
+        for <linux-fbdev@vger.kernel.org>; Fri, 19 May 2023 13:05:35 -0700 (PDT)
+Received: by mail-wm1-x332.google.com with SMTP id 5b1f17b1804b1-3f475366522so23397675e9.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 19 May 2023 13:05:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=shruggie-ro.20221208.gappssmtp.com; s=20221208; t=1684526734; x=1687118734;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=unGGcWMXSxlIkISO/XPChAGC5INeHx+xymr7hphOHTk=;
+        b=k5Guw/07AnhDpxjKB8UcXAAmZWcQ5O3JowQVJ8laPyua71EN/rsYssN/IFPaFpkVpI
+         TNQ3Unj6O43cAdOO+OlJb/KWDnruigOlVvcsww9kNmV0PUazy0v2IbPDWbOOOPXT46IK
+         gb2tn8Hf/7Bg0Lu5ehkHUxiwM3yKMAO1UQ2MwV2DKEkEB946eY0I3G1Gxks2hY+Ydn7W
+         ecXUt3qg+NzSrGI0M2vHUQcH7ryHNXhU1MzhxtbmTvYxXhHlz6txRv/tGxamizDCnjzp
+         i2DRuPB/RPO5+nSINoDpkwQxIm/dOb0kmar0qY5Mm/EYGnDK2PDeXlgtmjuPcYIxJN/+
+         M8uA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1684526734; x=1687118734;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=unGGcWMXSxlIkISO/XPChAGC5INeHx+xymr7hphOHTk=;
+        b=I8q+MI5CDxVyvh4lnzbYrahxySqokQzjRiJwnOposTQAOD4Wb+V9nc6bDBZwBAAX5E
+         Mn+qeQB8GFAwMQikuPDakpJVhWvNyI2Wv+uPlIg4Cf4RftqRpzxjSWlvGt4XShp/c0Is
+         kHa7hiLGRA7LSkUm7Mpf16/8s7e30yMBwDE2KOu9vfakjzPVAOsyL/ZsaSn0bQy6rmzN
+         Mv8fbL3U/4TWGqGjcPakCM1oO80CKLUlHnGRvcYxWC0Ns2H03j1zl4PhybmCs3NNdRWn
+         2TFwTuIsP6F39RyursdZPeVMF8zd8C+CsijzPkQyltBzlv7u2NGb3zdeLCGWjgqKTVa0
+         UQtA==
+X-Gm-Message-State: AC+VfDwo76Q2O+dD+lRtqJExXJZfhugLo8z0BpWioqSLkpyc86nIEqnC
+        x2H3wCY8nzR7ztNqAvzHQk98tA==
+X-Google-Smtp-Source: ACHHUZ7ga4CZxLiQQKfdmi4Xqh4DykUfMWEgzKKffEXW7eHm0kD86vFODcQqOLeT733JRNm32EOAfA==
+X-Received: by 2002:a1c:7303:0:b0:3f1:9acf:8682 with SMTP id d3-20020a1c7303000000b003f19acf8682mr2044341wmb.17.1684526733947;
+        Fri, 19 May 2023 13:05:33 -0700 (PDT)
+Received: from localhost.localdomain ([188.27.132.2])
+        by smtp.gmail.com with ESMTPSA id q3-20020adfea03000000b002fe96f0b3acsm6220329wrm.63.2023.05.19.13.05.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 19 May 2023 13:05:33 -0700 (PDT)
+From:   Alexandru Ardelean <alex@shruggie.ro>
+To:     dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-fbdev@vger.kernel.org
+Cc:     lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com,
+        pavel@ucw.cz, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
+        deller@gmx.de, Yannick Fertre <yannick.fertre@foss.st.com>,
+        Philippe CORNU <philippe.cornu@foss.st.com>,
+        Alexandru Ardelean <alex@shruggie.ro>
+Subject: [PATCH 1/2] backlight: gpio_backlight: add new property default-brightness-level
+Date:   Fri, 19 May 2023 23:05:19 +0300
+Message-Id: <20230519200520.10657-1-alex@shruggie.ro>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH] video: udlfb: Fix endpoint check
-Content-Language: en-US
-To:     Alan Stern <stern@rowland.harvard.edu>
-Cc:     linux-fbdev@vger.kernel.org, linux-usb@vger.kernel.org,
-        syzkaller-bugs@googlegroups.com
-References: <0000000000004a222005fbf00461@google.com>
- <ZGXVANMhn5j/jObU@ls3530>
- <4cd17511-2b60-4c37-baf3-c477cf6d1761@rowland.harvard.edu>
- <be824fbc-cde4-9a2a-8fb4-1ca23f498dca@gmx.de>
- <2905a85f-4a3b-4a4f-b8fb-a4d037d6c591@rowland.harvard.edu>
- <ZGZ3JPLqxCxA2UB6@ls3530>
- <c7b8e69a-cabe-4e17-a511-66179259d1d7@rowland.harvard.edu>
- <6e93305a-2d70-d411-3e36-c536449295dd@gmx.de>
- <c1cf7ff1-c204-4afc-aa9d-890e07d5ec72@rowland.harvard.edu>
- <eff05b97-6cf0-7688-15cb-08b5b4d9276f@gmx.de>
- <0894f7ac-509f-435f-90ce-b55838ead65c@rowland.harvard.edu>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <0894f7ac-509f-435f-90ce-b55838ead65c@rowland.harvard.edu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:wyQHu02hKK0YppOi5OcMsNPytwMiNDJhGweppX7eOiuNWq9FMAr
- teacAMO6oMUy/cSQsrxV+tpwzV4u2vAm3YBexYytrHAgn/Lxthug7E/RunqEvsxHmwe1DpP
- 3VcoM/ydZ1dFqA+NbIugHS8B8hl/g9l0yRsJcr0r4jMR6yU+QNL3UwMgAMJ40vBhkHymqug
- H5w7hxKoUW5ghDuBIagQg==
-UI-OutboundReport: notjunk:1;M01:P0:Fu0LbfH4XAg=;zMKdeRCW7Y4NQEJzWSWSeseQAjE
- 7U7C/8eokIA1W+zADQbB60olaaYhBTMXW/HPhF7xFhr4vpCE9a5ooybxqhwWMlMl0DK4eIuO+
- inlsNLRiWygi2E9/Y8lSMADiWBcxIay94GOonbOEp8SQoE+8MiY/0oeImRhjSkq+cYen76ZwL
- QWLQu8cS3kvZSnnG6n+EJwOKEUx69t8NRFc+f5AohP2uONvgXG1dYK4EnPyJUyvQ5xoHfJjYt
- ofCGRHpJR9qOTuZ27DmUmRCTU/m8NidaZ7TI03HMMPK/OnXn5ptfTRXaKfNwosDF8+EEeFWIG
- ztm9BPFCSi4ZKyHwiw1cG9DIMKOuZD6tpgnzUzsbTXdQQ1GPKeNy341vYc+5FgwjnpusyUOAn
- Ed6ieZHja8cYQK2COkc4UdiEoP4D6dTfklxV5yIfTejhJEJM7SvW9w+VCqEnAjCR0IYj6fMNM
- h6Ie/gwNAWk1xBah9WIXtTpa/bSB07VzRxMWeydb1kyqofnLqisVRrwoqlS3qqCxeSHp2J3sW
- y70IS9IOb0JYA4atmpSiBPL3cuQ3HRlGwsWD4IOB4RqsFVXzqVDa6YTdfQOByhIbPj0Fjexkv
- kFyt/j4MD7WhE/qz4bPLVknvlvlvJldNQlwumbGlzDb4Kv+3w5M3ttQTFuY+mVFVtdmtT2a93
- sHwbZ6cZYyKC7QugSBUoK3pooVlfxO1ZJnKmJmX+ULcFsoceP8ZwtMPEsPgAHMvX4te71/hpT
- WOlqa1CPVHMbr++iiRjrMRpFAFnz4rkC+fruDdt0CeEC3UsepgKbzkGRwRzpK6CGzoEHuPOX1
- K2Sv98my3uIynMG1VAhVQxjxQ4YUBdOlsjEQPIAsPfRIlEYIJGJ3Sh0uaKBg/PhvubT7Dz6M0
- ONQEitx3naCKJXnUl16w2Y/PlRwkCFFwbj+W3U3qi0VBkL7oeKC8gTcUpUoNAy4uRT3U3KkOX
- /XU8B0mXxhhgoSD/l4ISfwt8tUY=
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 5/19/23 21:32, Alan Stern wrote:
-> The syzbot fuzzer detected a problem in the udlfb driver, caused by an
-> endpoint not having the expected type:
->
->
-> usb 1-1: Read EDID byte 0 failed: -71
-> usb 1-1: Unable to get valid EDID from device/display
-> ------------[ cut here ]------------
-> usb 1-1: BOGUS urb xfer, pipe 3 !=3D type 1
-> WARNING: CPU: 0 PID: 9 at drivers/usb/core/urb.c:504 usb_submit_urb+0xed=
-6/0x1880
-> drivers/usb/core/urb.c:504
-> Modules linked in:
-> CPU: 0 PID: 9 Comm: kworker/0:1 Not tainted
-> 6.4.0-rc1-syzkaller-00016-ga4422ff22142 #0
-> Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS =
-Google
-> 04/28/2023
-> Workqueue: usb_hub_wq hub_event
-> RIP: 0010:usb_submit_urb+0xed6/0x1880 drivers/usb/core/urb.c:504
-> ...
-> Call Trace:
->   <TASK>
->   dlfb_submit_urb+0x92/0x180 drivers/video/fbdev/udlfb.c:1980
->   dlfb_set_video_mode+0x21f0/0x2950 drivers/video/fbdev/udlfb.c:315
->   dlfb_ops_set_par+0x2a7/0x8d0 drivers/video/fbdev/udlfb.c:1111
->   dlfb_usb_probe+0x149a/0x2710 drivers/video/fbdev/udlfb.c:1743
->
->
-> The current approach for this issue failed to catch the problem
-> because it only checks for the existence of a bulk-OUT endpoint; it
-> doesn't check whether this endpoint is the one that the driver will
-> actually use.
->
-> We can fix the problem by instead checking that the endpoint used by
-> the driver does exist and is bulk-OUT.
->
-> Reported-and-tested-by: syzbot+0e22d63dcebb802b9bc8@syzkaller.appspotmai=
-l.com
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> CC: Pavel Skripkin <paskripkin@gmail.com>
-> Fixes: aaf7dbe07385 ("video: fbdev: udlfb: properly check endpoint type"=
-)
-> CC: <stable@vger.kernel.org>
+From: Yannick Fertre <yannick.fertre@foss.st.com>
 
-applied to fbdev git tree.
+Add new property to set a brightness by default at probe.
 
-Thanks!
-Helge
+Reviewed-by: Philippe CORNU <philippe.cornu@foss.st.com>
+Signed-off-by: Yannick Fertre <yannick.fertre@foss.st.com>
+Signed-off-by: Alexandru Ardelean <alex@shruggie.ro>
+---
 
->
-> ---
->
->   drivers/video/fbdev/udlfb.c |   13 ++++++++-----
->   1 file changed, 8 insertions(+), 5 deletions(-)
->
-> Index: usb-devel/drivers/video/fbdev/udlfb.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- usb-devel.orig/drivers/video/fbdev/udlfb.c
-> +++ usb-devel/drivers/video/fbdev/udlfb.c
-> @@ -27,6 +27,8 @@
->   #include <video/udlfb.h>
->   #include "edid.h"
->
-> +#define OUT_EP_NUM	1	/* The endpoint number we will use */
-> +
->   static const struct fb_fix_screeninfo dlfb_fix =3D {
->   	.id =3D           "udlfb",
->   	.type =3D         FB_TYPE_PACKED_PIXELS,
-> @@ -1652,7 +1654,7 @@ static int dlfb_usb_probe(struct usb_int
->   	struct fb_info *info;
->   	int retval;
->   	struct usb_device *usbdev =3D interface_to_usbdev(intf);
-> -	struct usb_endpoint_descriptor *out;
-> +	static u8 out_ep[] =3D {OUT_EP_NUM + USB_DIR_OUT, 0};
->
->   	/* usb initialization */
->   	dlfb =3D kzalloc(sizeof(*dlfb), GFP_KERNEL);
-> @@ -1666,9 +1668,9 @@ static int dlfb_usb_probe(struct usb_int
->   	dlfb->udev =3D usb_get_dev(usbdev);
->   	usb_set_intfdata(intf, dlfb);
->
-> -	retval =3D usb_find_common_endpoints(intf->cur_altsetting, NULL, &out,=
- NULL, NULL);
-> -	if (retval) {
-> -		dev_err(&intf->dev, "Device should have at lease 1 bulk endpoint!\n")=
-;
-> +	if (!usb_check_bulk_endpoints(intf, out_ep)) {
-> +		dev_err(&intf->dev, "Invalid DisplayLink device!\n");
-> +		retval =3D -EINVAL;
->   		goto error;
->   	}
->
-> @@ -1927,7 +1929,8 @@ retry:
->   		}
->
->   		/* urb->transfer_buffer_length set to actual before submit */
-> -		usb_fill_bulk_urb(urb, dlfb->udev, usb_sndbulkpipe(dlfb->udev, 1),
-> +		usb_fill_bulk_urb(urb, dlfb->udev,
-> +			usb_sndbulkpipe(dlfb->udev, OUT_EP_NUM),
->   			buf, size, dlfb_urb_completion, unode);
->   		urb->transfer_flags |=3D URB_NO_TRANSFER_DMA_MAP;
->
+Link to original patch:
+  https://github.com/STMicroelectronics/linux/commit/c4067d7bd883c6fa14ffd49892c4ce663cdafe98
+
+ drivers/video/backlight/gpio_backlight.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index 6f78d928f054..d3fa3a8bef4d 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -53,6 +53,7 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 	struct backlight_device *bl;
+ 	struct gpio_backlight *gbl;
+ 	int ret, init_brightness, def_value;
++	u32 value;
+ 
+ 	gbl = devm_kzalloc(dev, sizeof(*gbl), GFP_KERNEL);
+ 	if (gbl == NULL)
+@@ -93,7 +94,11 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 	else
+ 		bl->props.power = FB_BLANK_UNBLANK;
+ 
+-	bl->props.brightness = 1;
++	ret = device_property_read_u32(dev, "default-brightness-level", &value);
++	if (!ret && value <= props.max_brightness)
++		bl->props.brightness = value;
++	else
++		bl->props.brightness = 1;
+ 
+ 	init_brightness = backlight_get_brightness(bl);
+ 	ret = gpiod_direction_output(gbl->gpiod, init_brightness);
+-- 
+2.40.1
 

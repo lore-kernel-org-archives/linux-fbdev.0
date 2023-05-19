@@ -2,105 +2,101 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54139C77B7F
-	for <linux-fbdev@archiver.kernel.org>; Fri, 19 May 2023 14:13:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EC7CC77B7A
+	for <linux-fbdev@archiver.kernel.org>; Fri, 19 May 2023 14:34:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231860AbjESONB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 19 May 2023 10:13:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41952 "EHLO
+        id S230443AbjESOec (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 19 May 2023 10:34:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55284 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230116AbjESONB (ORCPT
+        with ESMTP id S231867AbjESOea (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 19 May 2023 10:13:01 -0400
+        Fri, 19 May 2023 10:34:30 -0400
 Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4C9E0A3;
-        Fri, 19 May 2023 07:12:57 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 92C251B3;
+        Fri, 19 May 2023 07:34:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1684505573; i=deller@gmx.de;
-        bh=tbCcr/2mh99Kp/T8oPTjqL/r2ONKQOr37+TIk6y2YvU=;
+        t=1684506838; i=deller@gmx.de;
+        bh=w7YcoaOaP2N+PmbApERP+wrQNejz5mO0AaxhtqBD/Ao=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=QU3rSZnyziskHwpFiMvdLKp5YBwf+mDuFOKF2b9yKtQDrqCd9HdARJlKLsX6b1FpT
-         ufahe5XBrB5bF8QWMY8TT34Aq4UlAFZlU8Q5FrOVNudcCl4/5Xk/xExoGLvOq8XwDa
-         mduTZFYQTi2FnR/tdfkdEfQw765C2p28Q0oZ0mr+uXTJxFS8C1f1+GttT+Xvxf4/sl
-         GsbjHMAJzlYbwch+oKVhadqd48ZdfcCd2b+7Mbi7RXQvWr4t9KaZevR7rJEagN9rx4
-         X90LAg0G1Z6q+U2ninmOijB1kSMv2MTLnPFqHY+vnpwDWbPUTwEVes2zarxgkzx799
-         jAm6hyZQNAdtw==
+        b=gmWgCQofgv7RF/MilB/+J+UCAJBKwzF8rtN/15cMbENhIQWIXE8SDt0WkZ9p3HIz4
+         0EAYWrorwtchZcDiGkL+pvqTsKbB/iKCxnFh9XuN558DFAk/leoe061aBsJpPCjwAB
+         Comrgpy5l0NqhPEP17kwLH9nAdFa19MAc968hxaGzBa4uRynqMT5GLFzuu/3ikBDj4
+         l2XNg/Z9LNpXszquS4bwoVdeh1gww3WxUXf8lYCUJhoJVAnNfHfI2lyvKCR7s+k8eX
+         q3oyWBcaykGguRlkqjlaiPH6ChQzwmifspt9FAENZ0wye8NX9MNJsYH48apfI/5HT/
+         QOcutxVNRhshw==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.152.232]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MtOGU-1qI6Qt1MQo-00urQa; Fri, 19
- May 2023 16:12:53 +0200
-Message-ID: <3f3878f0-70c6-1f87-2257-30dfce8411e6@gmx.de>
-Date:   Fri, 19 May 2023 16:12:52 +0200
+Received: from [192.168.20.60] ([94.134.152.232]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mw9UK-1qGS4A0EVA-00s8ic; Fri, 19
+ May 2023 16:33:58 +0200
+Message-ID: <76a47786-f1e5-80d8-807d-1ab6fa02ebf3@gmx.de>
+Date:   Fri, 19 May 2023 16:33:54 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.10.0
-Subject: Re: [PATCH] fbdev: omapfb: panel-tpo-td043mtea1: fix error code in
- probe()
+Subject: Re: [PATCH] fbdev: i810: include i810_main.h in i810_dvt.c
 Content-Language: en-US
-To:     Dan Carpenter <dan.carpenter@linaro.org>,
-        Cai Huoqing <cai.huoqing@linux.dev>
-Cc:     Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        kernel-janitors@vger.kernel.org
-References: <6f80089a-9223-4434-8da1-c071dd9367b5@kili.mountain>
+To:     Jani Nikula <jani.nikula@linux.intel.com>,
+        Arnd Bergmann <arnd@kernel.org>,
+        Antonino Daplas <adaplas@gmail.com>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
+References: <20230516202814.561262-1-arnd@kernel.org>
+ <87lehngxbr.fsf@intel.com>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <6f80089a-9223-4434-8da1-c071dd9367b5@kili.mountain>
+In-Reply-To: <87lehngxbr.fsf@intel.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:SW9PeyO7xD6f74VQh7991XhZwZncZqqfMuIV/Dw7/bDivEfCyfj
- BcLXCaIVITjdqwhFGe5/OJ4Sn5849L2C8SJFeFbLhaX/t2J5rwDWOgdrQkfkPg8+qFiPsAs
- hJFlsh3/wK79LWiuBvplR6t/RO2bIhU1UiVxBcnP6OLivXHtw2mm4+KbBpJajU3JkIkmPcO
- b48qKRFnk/KmT1wguYUWA==
-UI-OutboundReport: notjunk:1;M01:P0:Z7TPJaraKlQ=;ZC+NnIOEKEAP0RToH8ucaYAC7oP
- h2vRmVC49MXbQkTcgg1rl4zOZ5nn6eVWqo4mzWPaLAvnvllGneDqglToZVMqacotmzfFDpQ3v
- 4TUAZveJk2NKiTwOsuoxgrE0szrb5ZOGx1KoN4GXA0B3JxS15MlLUUs3OBJHl1e/Rz6s1Qpcf
- kkKtjggT9zZyzCwXxpQcmsOiirKZPgjAadJ9mJTQI4PvIVgLuxqIO+c7BVEDMtISy0B/+YKJX
- Qzt71JrzdiVb5oc/UNRLi19b1wf2FFTZDiNscQpVjmhm+yfK7OJs+nqNHmeTf8PxPWKjfsyw/
- lVT1b9mDlF5NN6ZcOdx+6FCsOxNl0HfZYZi7hPPPubkJtK9Sy2dc5jGGxBgUMVLu4tEiPUGMu
- 8mlHJsju3yyV828KEtdvJRlfZ4oxMLoj7U3v+JW1N2qKDPB6KmGWIY6zXFTLWl8XskMoMZQi2
- mpNrwujxFdA0ASzMnF7tdQEfjtnsIY9bt7aPlx9lX9ChLbhTefhL3FRou38bcZ6HPttFEUVk6
- Zsby1PQmCpDnHOsXAvwJzy/VYeHh6p5721LDXYVLSsbNO0vBcGjKTz/EiNhbMbf4MW/TKPhXH
- 9Jna7TGF12GzZOdJDNHQa506nJ33FSXEjuqKrahho/eGp6v2Oqpo/466rwy4qlTMsA+ojkNdI
- H4N7GW3+7irmpv5NEgiPKm7VTGhiBY4Zp6F74HrWnFOg1L9hr4UanPeQecVgOdfY5gAgll3pc
- y6MMjMxLg5kMY48yekfbUdCaq/P89MzPYzSskhHoXLwdANtsTEeUNBKL/DtaNolnc/IU7PMOg
- 9bOi7SG5Gzv1VD4Tw3Wu5ZO2WxU2hKe97KX0qVoIBMTwLleRbbpOjb7cq3bFOl0kNBaVos3yj
- ATDYcRtVmJAY+q9xsyUAlvau0G0Puz7XFmXnH6gp6SJHMMx5ofTNjsFw0tlqyWmW5XdpxQfct
- rFUKrKVcEPUEMfkmmcDRcrHRac4=
+X-Provags-ID: V03:K1:sMvSrVoGkC+EFAh0XcLJmR+jt1VRufyMEAEA8KP+Z4hYvqiNNjW
+ c1Rz3EhgDf607LznAh4fD31eR/ITGWz/DRitjr3Ssz/HSWtt4XiqV9ObyhhmWgWC73FpUTq
+ uxak5H4vzPdNn3+H76SF4B04XVL/OzLdW3dLPVQLB92KD4ecE30TqtK6XVl5HP+fDSxyVWB
+ GevsrpwavzH/FYvIsAs5A==
+UI-OutboundReport: notjunk:1;M01:P0:ZtCenKypFwE=;0mS62XZeXZOrgQSTNbQXrL7nRxm
+ Ciafs2dOZQTAORGhafcMiyIcR1cTMe5VfWrP8fN4uxpWwtvydip7LLEy2ufOIzZibXDgXIFLD
+ F/iJd7HlkMkLhuYIMDLRLQRpPSJ1Vo+QetQBANmiKHzChpjdOwWG8El3TqvbI+7dPhwbtbbYu
+ vbWDscGc6v60REC823k0cwLFXnatWxbeIi55icTNoyMUhYCXtmH483xcrJZCofp8rtzTCx6ue
+ kz4OHJSlrfkaLhGz44OEpUAxSjLAyEATKk7vavoh+AafuTFpBHdsAmQXWGCx3zXFpjM9jndYK
+ g0SFbUEYKnbS02spYIrtY8LGeELPY28FFbzBYUxwZBhx/NPLg1PIUDZ2b1FvpZCxOJWifR6lK
+ UBwkjRPe5q8QOjH6VJojh2eT4Pp4CsbmxUJT21TIQJwhhGxdrpVmiN6G2ELttdE5fvu7NsebL
+ CdeYdEtK7IkNyrvKPMESH5P0kk84kbkwo4Ogx0cCTWUcpBpFmZQ1CWtdJOr7ythlYtGksIoCg
+ Z9KoNN3cAdaULf+hwEdYOlgHnM9wIpyE0p92xNHgkecNfz6sSjDibewfsAHbjil+MzNCsc/ms
+ GcT7r9FGwqcLjgPGR3ZB+LElXc+C/e8hhrTpDje1ZQhJg+hGsE4EeDFzlW9Pu1OES+qlZsJVy
+ OQOZ0XsuVZvSHDl1eN2w+NtkdtGxLq4QvFl0BD/Fymr1G1DydUOQ7Q6xnIejDBS1dMt2malph
+ nJ21Majmp9qFmQ1zVMF1rtGtmqQhyIgMbTUtzC8d6GHSs7JPKacIn81506HRa9b9s+EH1y1KM
+ YhU0B5cfv5bCyAlqgPDctDHQn2U8WMnn+eN9QzpUIRMrDJE9AZH0SMWilqSShK/M8S5l1Ozsc
+ D3U2O2NfsNmdsJFzuFbEKvICAbMHicRgXrk8geIVzG6NbPYOM0cLwscWtEVGoo6+/jnYJQbZO
+ m7jQNWJuBtYTlDIQMz3oXLcUV0s=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 5/15/23 12:32, Dan Carpenter wrote:
-> This was using the wrong variable, "r", instead of "ddata->vcc_reg", so
-> it returned success instead of a negative error code.
+On 5/17/23 10:46, Jani Nikula wrote:
+> On Tue, 16 May 2023, Arnd Bergmann <arnd@kernel.org> wrote:
+>> From: Arnd Bergmann <arnd@arndb.de>
+>>
+>> Building with W=3D1 shows that a header needs to be included to
+>> make the prototypes visible:
+>>
+>> drivers/video/fbdev/i810/i810_dvt.c:194:6: error: no previous prototype=
+ for 'round_off_xres' [-Werror=3Dmissing-prototypes]
+>> drivers/video/fbdev/i810/i810_dvt.c:233:6: error: no previous prototype=
+ for 'i810fb_encode_registers' [-Werror=3Dmissing-prototypes]
+>> drivers/video/fbdev/i810/i810_dvt.c:245:6: error: no previous prototype=
+ for 'i810fb_fill_var_timings' [-Werror=3Dmissing-prototypes]
+>> drivers/video/fbdev/i810/i810_dvt.c:279:5: error: no previous prototype=
+ for 'i810_get_watermark' [-Werror=3Dmissing-prototypes]
+>>
+>> Adding the header leads to another warning from a mismatched
+>> prototype, so fix this as well:
+>>
+>> drivers/video/fbdev/i810/i810_dvt.c:280:5: error: conflicting types for=
+ 'i810_get_watermark'; have 'u32(struct fb_var_screeninfo *,
 >
-> Fixes: 0d3dbeb8142a ("video: fbdev: omapfb: panel-tpo-td043mtea1: Make u=
-se of the helper function dev_err_probe()")
-> Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
-> ---
->   .../video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c   | 3 ++-
->   1 file changed, 2 insertions(+), 1 deletion(-)
+> Changes here look fine,
+>
+> Reviewed-by: Jani Nikula <jani.nikula@intel.com>
 
-applied.
+applied to fbdev tree.
 
 Thanks!
 Helge
-
->
-> diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mt=
-ea1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-> index 1eaa35c27835..477789cff8e0 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-> @@ -491,7 +491,8 @@ static int tpo_td043_probe(struct spi_device *spi)
->
->   	ddata->vcc_reg =3D devm_regulator_get(&spi->dev, "vcc");
->   	if (IS_ERR(ddata->vcc_reg)) {
-> -		r =3D dev_err_probe(&spi->dev, r, "failed to get LCD VCC regulator\n"=
-);
-> +		r =3D dev_err_probe(&spi->dev, PTR_ERR(ddata->vcc_reg),
-> +				  "failed to get LCD VCC regulator\n");
->   		goto err_regulator;
->   	}
->
-

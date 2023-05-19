@@ -2,59 +2,110 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BB48C77B7A
-	for <linux-fbdev@archiver.kernel.org>; Fri, 19 May 2023 15:42:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AECA0C7EE2D
+	for <linux-fbdev@archiver.kernel.org>; Fri, 19 May 2023 18:09:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232125AbjESPmz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 19 May 2023 11:42:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57784 "EHLO
+        id S229970AbjESSJR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 19 May 2023 14:09:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57918 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229546AbjESPmy (ORCPT
+        with ESMTP id S229456AbjESSJR (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 19 May 2023 11:42:54 -0400
-Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
-        by lindbergh.monkeyblade.net (Postfix) with SMTP id C2C541A6
-        for <linux-fbdev@vger.kernel.org>; Fri, 19 May 2023 08:42:52 -0700 (PDT)
-Received: (qmail 42012 invoked by uid 1000); 19 May 2023 11:42:52 -0400
-Date:   Fri, 19 May 2023 11:42:52 -0400
-From:   Alan Stern <stern@rowland.harvard.edu>
-To:     Helge Deller <deller@gmx.de>
-Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        syzbot <syzbot+0e22d63dcebb802b9bc8@syzkaller.appspotmail.com>,
-        bernie@plugable.com, linux-usb@vger.kernel.org,
-        syzkaller-bugs@googlegroups.com
-Subject: Re: [syzbot] [fbdev?] [usb?] WARNING in
- dlfb_submit_urb/usb_submit_urb (2)
-Message-ID: <c1cf7ff1-c204-4afc-aa9d-890e07d5ec72@rowland.harvard.edu>
-References: <0000000000004a222005fbf00461@google.com>
- <ZGXVANMhn5j/jObU@ls3530>
- <4cd17511-2b60-4c37-baf3-c477cf6d1761@rowland.harvard.edu>
- <be824fbc-cde4-9a2a-8fb4-1ca23f498dca@gmx.de>
- <2905a85f-4a3b-4a4f-b8fb-a4d037d6c591@rowland.harvard.edu>
- <ZGZ3JPLqxCxA2UB6@ls3530>
- <c7b8e69a-cabe-4e17-a511-66179259d1d7@rowland.harvard.edu>
- <6e93305a-2d70-d411-3e36-c536449295dd@gmx.de>
+        Fri, 19 May 2023 14:09:17 -0400
+Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com [IPv6:2a00:1450:4864:20::529])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D405C107;
+        Fri, 19 May 2023 11:09:15 -0700 (PDT)
+Received: by mail-ed1-x529.google.com with SMTP id 4fb4d7f45d1cf-510dabb3989so5415495a12.0;
+        Fri, 19 May 2023 11:09:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1684519754; x=1687111754;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=8o05QKrR9i4VTufIFRtl+AkR5mq9b5z62LFHT8IgVfw=;
+        b=aNrpVUMvMUZrfYK8lfSebmNQYE99vsyydV1N10nkuzsz9DUJKm80hRtutMT81CQ/v1
+         erlLrLCFEXvUHu/3uUhhbpbghSv5bwZ+8TMFNzun5FCWpaWmZjOnmptTd3qkUrwhmt5O
+         FfhqPY8IcOd1FM9R/q00TxXX9eAQbHmNXSwp32D8gjp+kN/FOrHK8Cxr3Uvm5ux5dGsY
+         ExChZOjnPNs28nvEl7HsDVYGM4eXf5T6jZxxneuqtn5Q7p1mkSenltRNq0ufI8Pj9YWv
+         zxkaJ6UR+/j+X5Z0VlaIjleiwsjCvChv0Uv/YqSkgyWNsjYs0Qq4Z2N7Ryxx9mzHG/0P
+         bqfg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1684519754; x=1687111754;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=8o05QKrR9i4VTufIFRtl+AkR5mq9b5z62LFHT8IgVfw=;
+        b=TvWQilo/16Zu8bETHM15cGMpuYq2dI1YAefj0bPxfZWR0crygEaIp9buG709u51u9/
+         ZtOtVpy2t18kewJdJSiMi+S9woG4O8QtwkwaMlAH5S0MZfP/xivENxa3oaRs5EApP08j
+         kCrCVv0ROrkGCaOeVHKaXxkTl8dZA3KXtB3V+oyJIytLhpm1QnLMzT3av0HIfKJmpjP9
+         318H7FQR11u4vEfXbdCQYe3yvlcxqvH2lugwgG/p7BYQpzRguMwCPhseue2+8v166gFC
+         Zy0b7gbDQRzEuKV+sZntkp9htlkd3+ipF9BYJoe0fJb2+yO4EK1BXk/hPIbOB5LjEB5S
+         WXqg==
+X-Gm-Message-State: AC+VfDwGIC7vhKU43+Cluc3yw1AH70HqPdR0WLjJZ5IFdvlYOmWZLhRA
+        MuZ9zKPpK3McylEVan3g4Ag=
+X-Google-Smtp-Source: ACHHUZ4QuWMsmHNjfxTEGVqbmvSkwEgThKA2QEo9J/htJiK0EVr0kMRbpREmzY4yQ1LotTfnAwMbxQ==
+X-Received: by 2002:aa7:d9c3:0:b0:50b:cae1:d7a3 with SMTP id v3-20020aa7d9c3000000b0050bcae1d7a3mr2639608eds.14.1684519754252;
+        Fri, 19 May 2023 11:09:14 -0700 (PDT)
+Received: from localhost.my.domain (83.11.222.198.ipv4.supernova.orange.pl. [83.11.222.198])
+        by smtp.gmail.com with ESMTPSA id g26-20020aa7c85a000000b0050690bc07a3sm19824edt.18.2023.05.19.11.09.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 19 May 2023 11:09:13 -0700 (PDT)
+From:   Artur Weber <aweber.kernel@gmail.com>
+To:     Lee Jones <lee@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Helge Deller <deller@gmx.de>,
+        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>, Luca Weiss <luca@z3ntu.xyz>,
+        Artur Weber <aweber.kernel@gmail.com>,
+        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht
+Subject: [PATCH v2 0/4] video: backlight: lp855x: modernize bindings
+Date:   Fri, 19 May 2023 20:07:24 +0200
+Message-Id: <20230519180728.2281-1-aweber.kernel@gmail.com>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6e93305a-2d70-d411-3e36-c536449295dd@gmx.de>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, May 19, 2023 at 12:38:15PM +0200, Helge Deller wrote:
-> Patch looks good and survived the test.
-> 
-> Will you send a proper patch to the fbdev mailing list, so that I can
-> include it?
+Convert TI LP855X backlight controller bindings from TXT to YAML and,
+while we're at it, rework some of the code related to PWM handling.
+Also correct existing DTS files to avoid introducing new dtb_check
+errors.
 
-Will do.
+Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
 
-While you're working on this driver, here's a suggestion for another 
-improvement you can make.  The temporary buffer allocations and calls to 
-usb_control_msg() in dlfb_get_edid() and dlfb_select_std_channel() can 
-be replaced with calls to usb_control_msg_recv() and 
-usb_control_msg_send() respectively.
+Changed in v2:
+ - Added additionalProperties to ROM patternProperties in DT binding
 
-Alan Stern
+Artur Weber (4):
+  dt-bindings: backlight: lp855x: convert to YAML and modernize
+  video: backlight: lp855x: get PWM for PWM mode during probe
+  ARM: dts: adapt to LP855X bindings changes
+  arm64: dts: adapt to LP855X bindings changes
+
+ .../leds/backlight/lp855x-backlight.yaml      | 149 ++++++++++++++++++
+ .../bindings/leds/backlight/lp855x.txt        |  72 ---------
+ .../dts/qcom-apq8026-samsung-matisse-wifi.dts |   1 -
+ ...-msm8974pro-sony-xperia-shinano-castor.dts |  23 +--
+ .../boot/dts/nvidia/tegra210-p2371-2180.dts   |   6 +-
+ drivers/video/backlight/lp855x_bl.c           |  48 +++---
+ 6 files changed, 189 insertions(+), 110 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/lp855x-backlight.yaml
+ delete mode 100644 Documentation/devicetree/bindings/leds/backlight/lp855x.txt
+
+
+base-commit: fb200218b40b7864f64f1a47de61e035d8934e92
+-- 
+2.40.1
+

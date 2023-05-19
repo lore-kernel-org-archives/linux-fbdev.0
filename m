@@ -2,167 +2,105 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1C88C77B7A
-	for <linux-fbdev@archiver.kernel.org>; Fri, 19 May 2023 10:40:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54139C77B7F
+	for <linux-fbdev@archiver.kernel.org>; Fri, 19 May 2023 14:13:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231240AbjESKkP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 19 May 2023 06:40:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59622 "EHLO
+        id S231860AbjESONB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 19 May 2023 10:13:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41952 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231281AbjESKkO (ORCPT
+        with ESMTP id S230116AbjESONB (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 19 May 2023 06:40:14 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 261BCE7F;
-        Fri, 19 May 2023 03:39:53 -0700 (PDT)
+        Fri, 19 May 2023 10:13:01 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4C9E0A3;
+        Fri, 19 May 2023 07:12:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1684492696; i=deller@gmx.de;
-        bh=ms3RDIelSxdWVnz+v+z9XPddozX1qPFluv8VIGAgkDE=;
+        t=1684505573; i=deller@gmx.de;
+        bh=tbCcr/2mh99Kp/T8oPTjqL/r2ONKQOr37+TIk6y2YvU=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=T02R7bIGOTjrA0+bwrttwkuIhtYTzk0tJZNRAXFCIz+zOaqee8vviwJSA95WJs7qc
-         xNxYASFkiRIf8V6K1R439W0HsdShTw4Tt3L7JgQ5/gCSro9OfW1rS7KCykCXmhudt2
-         by3Q/pwiHvN/faSpC0j6lT8pOSRG11vi7rIT0XD6U/QjZmKH6CRKS7xzowreF9KG3y
-         2PvYYHR/DOS3pqT7La7ok4tNegNa3iRduGEwQPewcF93UeM3eiLPQrXjp1HxY+DPNb
-         X3OqUUPmyOtUajxkkhJeIFDyW9hVBu0iwx9S3hKzXPLGHAgcf7HMlLWPsRC4LOj52E
-         cLOWRHqKIRA5w==
+        b=QU3rSZnyziskHwpFiMvdLKp5YBwf+mDuFOKF2b9yKtQDrqCd9HdARJlKLsX6b1FpT
+         ufahe5XBrB5bF8QWMY8TT34Aq4UlAFZlU8Q5FrOVNudcCl4/5Xk/xExoGLvOq8XwDa
+         mduTZFYQTi2FnR/tdfkdEfQw765C2p28Q0oZ0mr+uXTJxFS8C1f1+GttT+Xvxf4/sl
+         GsbjHMAJzlYbwch+oKVhadqd48ZdfcCd2b+7Mbi7RXQvWr4t9KaZevR7rJEagN9rx4
+         X90LAg0G1Z6q+U2ninmOijB1kSMv2MTLnPFqHY+vnpwDWbPUTwEVes2zarxgkzx799
+         jAm6hyZQNAdtw==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.152.232]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1N0XCw-1qKuey0oT6-00wT8I; Fri, 19
- May 2023 12:38:16 +0200
-Message-ID: <6e93305a-2d70-d411-3e36-c536449295dd@gmx.de>
-Date:   Fri, 19 May 2023 12:38:15 +0200
+Received: from [192.168.20.60] ([94.134.152.232]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MtOGU-1qI6Qt1MQo-00urQa; Fri, 19
+ May 2023 16:12:53 +0200
+Message-ID: <3f3878f0-70c6-1f87-2257-30dfce8411e6@gmx.de>
+Date:   Fri, 19 May 2023 16:12:52 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.10.0
-Subject: Re: [syzbot] [fbdev?] [usb?] WARNING in
- dlfb_submit_urb/usb_submit_urb (2)
+Subject: Re: [PATCH] fbdev: omapfb: panel-tpo-td043mtea1: fix error code in
+ probe()
 Content-Language: en-US
-To:     Alan Stern <stern@rowland.harvard.edu>
-Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        syzbot <syzbot+0e22d63dcebb802b9bc8@syzkaller.appspotmail.com>,
-        bernie@plugable.com, linux-usb@vger.kernel.org,
-        syzkaller-bugs@googlegroups.com
-References: <0000000000004a222005fbf00461@google.com>
- <ZGXVANMhn5j/jObU@ls3530>
- <4cd17511-2b60-4c37-baf3-c477cf6d1761@rowland.harvard.edu>
- <be824fbc-cde4-9a2a-8fb4-1ca23f498dca@gmx.de>
- <2905a85f-4a3b-4a4f-b8fb-a4d037d6c591@rowland.harvard.edu>
- <ZGZ3JPLqxCxA2UB6@ls3530>
- <c7b8e69a-cabe-4e17-a511-66179259d1d7@rowland.harvard.edu>
+To:     Dan Carpenter <dan.carpenter@linaro.org>,
+        Cai Huoqing <cai.huoqing@linux.dev>
+Cc:     Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        kernel-janitors@vger.kernel.org
+References: <6f80089a-9223-4434-8da1-c071dd9367b5@kili.mountain>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <c7b8e69a-cabe-4e17-a511-66179259d1d7@rowland.harvard.edu>
+In-Reply-To: <6f80089a-9223-4434-8da1-c071dd9367b5@kili.mountain>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:ZXXu5QJebCOL1y2vAej2hv25kqaBHNpllfPqeQk61VVfGfN0uxj
- rDbNuPXhmZwoO8Bh77jibdYml7o85GpkNC7HYIrxf/4FEbTPQVnh1opEZf98chq3X+aR6ev
- LkejgSggZvP+FjMllSTwWbL8ZouKcGtCaN/sWsDCnzz/Yp1NXMqrBrpSPVwidXHKOHdCBiS
- 8+iqe/D/ZWJug/U5YVTNQ==
-UI-OutboundReport: notjunk:1;M01:P0:uqAs2hR1cdI=;axiGn9AtPsyxX55BDtk41QN+dea
- aio/2fcCaOf+DcmhcJkyiQ7+En7Aq3W1TAU2aqDa/wrP+J+JpisZwaqQdi44sstBvclOwdbi2
- zb4vKVdGG15AZktv2D1hv2Zw/ouNMD71FMYhyUsXXrMta409xPlNvaE0pIN5npEfnB01rkhmL
- 4ixo1Gcz0242fgSwcj7KQlGEMr/TBnWdlDc9H57rAfK6jFEy+IiHa9yDUtySZ2LvyP8VyywRu
- dFsiMAgapHiKB90cPBTXUPVJboVMnr11qtHxmb6Ku7NZk1pYbExcMUOG5BvY6U481sruYSZDJ
- WBOiRRA5MJtcNmahBpSOnzZePkABldMJ8LPBVhl7RX1Zwn/LKRqy+pdKs+Qevivjz3d8hqpsG
- nj1PlPXZLT09NEuUks9eCGhVJEHciuszQL+NJ5h9E0IL1l6j8ceYby2XnS48YTp2MNlr99GnH
- zcx9WFG9cu5OAv5PvHggwg+1YnktKRvyKAbOwQFsgSSBE6gqh8wPAnaFZiu1ltII9QPKskHqn
- Nb7Rf4Wm22JRCEb5w/FP77CmvrEKAkUmXdAmM5YXwhPtAZbK2XcUoy83WNKTbNv+nwDUpYnvY
- 42Zw/A4aGCw75ea2kNfVN8XvSuvKhh72SxwGvFI4e2bs6QEl7G8U93JRqXzIywyMpyne/kjxs
- QoSXyNK8RMwxQWdv626drSD3A5pGfyvsS29i9MxoKRhhszX1bANb58P4WsrI+YZoxXVHx/inU
- Zu6YB6LVTKZstsPyC6F0eTUtKiolPMwXqjpLhZN2DQ4HQWNa5tKJ31x/gVUSmQTRr7ge+mI76
- y66ip4z5emYhIaJ7iVKkxPuKd59KfjzYM1sZTEmu0AP0fjZi5baPCC+ciNQJjZEdTAEw+88R/
- bpMsCjIv5pKW0IbkcX7obAGJz7WOds8IG8Os1lSVsZNG3yyLI+PYFcDna6uBtPXW6fBFCrDo+
- ioeVbg==
+X-Provags-ID: V03:K1:SW9PeyO7xD6f74VQh7991XhZwZncZqqfMuIV/Dw7/bDivEfCyfj
+ BcLXCaIVITjdqwhFGe5/OJ4Sn5849L2C8SJFeFbLhaX/t2J5rwDWOgdrQkfkPg8+qFiPsAs
+ hJFlsh3/wK79LWiuBvplR6t/RO2bIhU1UiVxBcnP6OLivXHtw2mm4+KbBpJajU3JkIkmPcO
+ b48qKRFnk/KmT1wguYUWA==
+UI-OutboundReport: notjunk:1;M01:P0:Z7TPJaraKlQ=;ZC+NnIOEKEAP0RToH8ucaYAC7oP
+ h2vRmVC49MXbQkTcgg1rl4zOZ5nn6eVWqo4mzWPaLAvnvllGneDqglToZVMqacotmzfFDpQ3v
+ 4TUAZveJk2NKiTwOsuoxgrE0szrb5ZOGx1KoN4GXA0B3JxS15MlLUUs3OBJHl1e/Rz6s1Qpcf
+ kkKtjggT9zZyzCwXxpQcmsOiirKZPgjAadJ9mJTQI4PvIVgLuxqIO+c7BVEDMtISy0B/+YKJX
+ Qzt71JrzdiVb5oc/UNRLi19b1wf2FFTZDiNscQpVjmhm+yfK7OJs+nqNHmeTf8PxPWKjfsyw/
+ lVT1b9mDlF5NN6ZcOdx+6FCsOxNl0HfZYZi7hPPPubkJtK9Sy2dc5jGGxBgUMVLu4tEiPUGMu
+ 8mlHJsju3yyV828KEtdvJRlfZ4oxMLoj7U3v+JW1N2qKDPB6KmGWIY6zXFTLWl8XskMoMZQi2
+ mpNrwujxFdA0ASzMnF7tdQEfjtnsIY9bt7aPlx9lX9ChLbhTefhL3FRou38bcZ6HPttFEUVk6
+ Zsby1PQmCpDnHOsXAvwJzy/VYeHh6p5721LDXYVLSsbNO0vBcGjKTz/EiNhbMbf4MW/TKPhXH
+ 9Jna7TGF12GzZOdJDNHQa506nJ33FSXEjuqKrahho/eGp6v2Oqpo/466rwy4qlTMsA+ojkNdI
+ H4N7GW3+7irmpv5NEgiPKm7VTGhiBY4Zp6F74HrWnFOg1L9hr4UanPeQecVgOdfY5gAgll3pc
+ y6MMjMxLg5kMY48yekfbUdCaq/P89MzPYzSskhHoXLwdANtsTEeUNBKL/DtaNolnc/IU7PMOg
+ 9bOi7SG5Gzv1VD4Tw3Wu5ZO2WxU2hKe97KX0qVoIBMTwLleRbbpOjb7cq3bFOl0kNBaVos3yj
+ ATDYcRtVmJAY+q9xsyUAlvau0G0Puz7XFmXnH6gp6SJHMMx5ofTNjsFw0tlqyWmW5XdpxQfct
+ rFUKrKVcEPUEMfkmmcDRcrHRac4=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 5/18/23 22:35, Alan Stern wrote:
-> On Thu, May 18, 2023 at 09:06:12PM +0200, Helge Deller wrote:
->> * Alan Stern <stern@rowland.harvard.edu>:
->>> On Thu, May 18, 2023 at 04:16:33PM +0200, Helge Deller wrote:
->>>> On 5/18/23 15:54, Alan Stern wrote:
->>>>> In this case it looks like dlfb_usb_probe() or one of the routines i=
-t
->>>>> calls is wrong; it assumes that an endpoint has the expected type
->>>>> without checking.  More precisely, it thinks an endpoint is BULK whe=
-n
->>>>> actually it is INTERRUPT.  That's what needs to be fixed.
->>>>
->>>> Maybe usb_submit_urb() should return an error so that drivers can
->>>> react on it, instead of adding the same kind of checks to all drivers=
-?
->>>
->>> Feel free to submit a patch doing this.
->>
->> As you wrote above, this may break other drivers too, so I'd leave that
->> discussion & decision to the USB maintainers (like you).
->>
->>> But the checks should be added
->>> in any case; without them the drivers are simply wrong.
->>
->> I pushed the hackish patch below through the syz tests which gives this=
- log:
->> (see https://syzkaller.appspot.com/text?tag=3DCrashLog&x=3D160b75092800=
-00)
->> [   77.559566][    T9] usb 1-1: Unable to get valid EDID from device/di=
-splay
->> [   77.587021][    T9] WARNING: BOGUS urb xfer, pipe 3 !=3D type 1 (fix=
- driver to choose correct endpoint)
->> [   77.596448][    T9] usb 1-1: dlfb_urb_completion - nonzero write bul=
-k status received: -115
->> [   77.605308][    T9] usb 1-1: submit urb error: -22
->> [   77.613225][    T9] udlfb: probe of 1-1:0.52 failed with error -22
->>
->> So, basically there is no urgent fix needed for the dlfb fbdev driver,
->> as it will gracefully fail as is (which is correct).
->>
->> What do you suggest we should do with this syzkaller-bug ?
->> I'd rate it as false-alarm, but it will continue to complain because of
->> the dev_WARN() in urb.c
+On 5/15/23 12:32, Dan Carpenter wrote:
+> This was using the wrong variable, "r", instead of "ddata->vcc_reg", so
+> it returned success instead of a negative error code.
 >
-> Let's try this patch instead.  It might contain a stupid error because I
-> haven't even tried to compile it, but it ought to fix the real problem.
+> Fixes: 0d3dbeb8142a ("video: fbdev: omapfb: panel-tpo-td043mtea1: Make u=
+se of the helper function dev_err_probe()")
+> Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
+> ---
+>   .../video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c   | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
 
-Patch looks good and survived the test.
+applied.
 
-Will you send a proper patch to the fbdev mailing list, so that I can
-include it?
-
+Thanks!
 Helge
 
 >
-> #syz test: https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb.gi=
-t a4422ff22142
+> diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mt=
+ea1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
+> index 1eaa35c27835..477789cff8e0 100644
+> --- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
+> +++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
+> @@ -491,7 +491,8 @@ static int tpo_td043_probe(struct spi_device *spi)
 >
-> Index: usb-devel/drivers/video/fbdev/udlfb.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- usb-devel.orig/drivers/video/fbdev/udlfb.c
-> +++ usb-devel/drivers/video/fbdev/udlfb.c
-> @@ -1652,7 +1652,7 @@ static int dlfb_usb_probe(struct usb_int
->   	struct fb_info *info;
->   	int retval;
->   	struct usb_device *usbdev =3D interface_to_usbdev(intf);
-> -	struct usb_endpoint_descriptor *out;
-> +	static u8 out_ep[] =3D {1 + USB_DIR_OUT, 0};
->
->   	/* usb initialization */
->   	dlfb =3D kzalloc(sizeof(*dlfb), GFP_KERNEL);
-> @@ -1666,9 +1666,9 @@ static int dlfb_usb_probe(struct usb_int
->   	dlfb->udev =3D usb_get_dev(usbdev);
->   	usb_set_intfdata(intf, dlfb);
->
-> -	retval =3D usb_find_common_endpoints(intf->cur_altsetting, NULL, &out,=
- NULL, NULL);
-> -	if (retval) {
-> -		dev_err(&intf->dev, "Device should have at lease 1 bulk endpoint!\n")=
-;
-> +	if (!usb_check_bulk_endpoints(intf, out_ep)) {
-> +		dev_err(&intf->dev, "Invalid DisplayLink device!\n");
-> +		retval =3D -EINVAL;
->   		goto error;
+>   	ddata->vcc_reg =3D devm_regulator_get(&spi->dev, "vcc");
+>   	if (IS_ERR(ddata->vcc_reg)) {
+> -		r =3D dev_err_probe(&spi->dev, r, "failed to get LCD VCC regulator\n"=
+);
+> +		r =3D dev_err_probe(&spi->dev, PTR_ERR(ddata->vcc_reg),
+> +				  "failed to get LCD VCC regulator\n");
+>   		goto err_regulator;
 >   	}
 >
 

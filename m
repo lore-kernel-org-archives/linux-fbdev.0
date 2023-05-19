@@ -2,119 +2,105 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 30849C7EE2A
-	for <linux-fbdev@archiver.kernel.org>; Fri, 19 May 2023 18:09:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 938D8C77B75
+	for <linux-fbdev@archiver.kernel.org>; Fri, 19 May 2023 18:40:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231655AbjESSJd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 19 May 2023 14:09:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58102 "EHLO
+        id S229644AbjESSk7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 19 May 2023 14:40:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41358 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231758AbjESSJb (ORCPT
+        with ESMTP id S229568AbjESSk6 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 19 May 2023 14:09:31 -0400
-Received: from mail-ej1-x634.google.com (mail-ej1-x634.google.com [IPv6:2a00:1450:4864:20::634])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 75515121;
-        Fri, 19 May 2023 11:09:29 -0700 (PDT)
-Received: by mail-ej1-x634.google.com with SMTP id a640c23a62f3a-94a342f7c4cso678047466b.0;
-        Fri, 19 May 2023 11:09:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1684519768; x=1687111768;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=MF33tdMj9iVHCsjXUVoEa1ZEru2AhDHukTYWsA8encE=;
-        b=bm7RAQh6sbBla4vNjrqGC5WqJ+/w35iby80F2IEn4lfhiajLAQZK8zrOwn+VUdYVc1
-         5vr8TZGpub1V6modDXJzHvOZm0KbrmORsP201upDRJncrMrqBosCAR+X9RgXdNHqmb+g
-         rHSuzRcNajsuOLEms/pFWpK1/OApbZ5gCIsILsO62ev4+PcjrKnb+Hcgzstco3XI3iSH
-         IBhm3MZq1H9zNQACcIOfw8whprOqQPTb8ueGk5h/YB4wHDMqc9f/TkAnINdLJAP+TBZX
-         HrtkKrictRIJZnCHsUinUGfIYj8HkDYfcdU5oj/Py6Gojc0cZMXl12wyiArGpvkIo43Y
-         31fA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1684519768; x=1687111768;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=MF33tdMj9iVHCsjXUVoEa1ZEru2AhDHukTYWsA8encE=;
-        b=KU4YXpDm7vrO7kjR8EIXWiwdG641LLHs/fciMXpA6h9KhZyEvZc5zqOoIeEFrym9bc
-         HGt2e7RV1rXYO/30FKeJJ0XKHApMSYUFT9HiYWlzaGNEqNlVaSSOuoKE46RgUvLkC6iq
-         fRFpDyWePQbSp885aqjmJD6EFJH/jNSsJx5oIe0V7v7oNcCsDQ7jMyepPlvfK7osSw1m
-         ju5HzweRCNY38pDt8BMfQmmuF+AfY96ESgCqf++fO4wLaqXGMUbDli8Q7jlcgmWNT9qT
-         1giDoddDH/tEYkmgI5sbqTHZ68wJ8DjxO2sU2ZeKQwSGOxqNLIhlk4sVqM+M3VcT+oya
-         z4oA==
-X-Gm-Message-State: AC+VfDwsk6wUgCV5ucdeRCpNHjCKQw5vgwZa2WmMSOHR+LA6kIrfw2rL
-        umqlWOGSzz6tVaBof1RMkqk=
-X-Google-Smtp-Source: ACHHUZ6SJoTanHKm7kR2LK1v+KjCScFJDXFOZCH/ufqcyH+1iKc+sO94xdQxG9FrUnCxyLb6Q97YqQ==
-X-Received: by 2002:a17:906:fe41:b0:96a:138:c1a0 with SMTP id wz1-20020a170906fe4100b0096a0138c1a0mr2982368ejb.9.1684519767821;
-        Fri, 19 May 2023 11:09:27 -0700 (PDT)
-Received: from localhost.my.domain (83.11.222.198.ipv4.supernova.orange.pl. [83.11.222.198])
-        by smtp.gmail.com with ESMTPSA id g26-20020aa7c85a000000b0050690bc07a3sm19824edt.18.2023.05.19.11.09.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 19 May 2023 11:09:27 -0700 (PDT)
-From:   Artur Weber <aweber.kernel@gmail.com>
-To:     Lee Jones <lee@kernel.org>, Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Helge Deller <deller@gmx.de>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>, Luca Weiss <luca@z3ntu.xyz>,
-        Artur Weber <aweber.kernel@gmail.com>,
-        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht
-Subject: [PATCH v2 4/4] arm64: dts: adapt to LP855X bindings changes
-Date:   Fri, 19 May 2023 20:07:28 +0200
-Message-Id: <20230519180728.2281-5-aweber.kernel@gmail.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230519180728.2281-1-aweber.kernel@gmail.com>
-References: <20230519180728.2281-1-aweber.kernel@gmail.com>
+        Fri, 19 May 2023 14:40:58 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 977F11A6;
+        Fri, 19 May 2023 11:40:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1684521649; i=deller@gmx.de;
+        bh=b+2AGrbT2iCTCz3OFlX/jcH1rlY52mlE7sdXnwb37J0=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=D63Jx5htebFUiCuP0eHJDQ2JalzBrzn5N05/n3wXx50DobMiodLI01Czz+IZOdimb
+         sPABCBOw+G98zrfJQ0vRIOwdJA0ThcackLAKzoMk8XvA872A4eBFLgm2b8sn+enB2A
+         bdcQZIdsdBIgfmmUppiIEbkQzWyi5oR77XxASlNkxRm6nEgoUz8WMsZ0PDkmjPmN3o
+         1BU31b2h7BgmsZtUz84Gzl8ngojNNbfG9noSXluxvSeo20f373AdiDMgE1X76gL/q+
+         aaZBs+YjSmxx9xCg2/z0yFbSt8TL3EpkXDF0vABxgt6DNB0vAUfb0rK5NScphBI/NQ
+         R96s+viwRUSuQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.152.232]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1My32F-1qMAzG2kXv-00zaOV; Fri, 19
+ May 2023 20:40:49 +0200
+Message-ID: <eff05b97-6cf0-7688-15cb-08b5b4d9276f@gmx.de>
+Date:   Fri, 19 May 2023 20:40:48 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Subject: Re: [syzbot] [fbdev?] [usb?] WARNING in
+ dlfb_submit_urb/usb_submit_urb (2)
+Content-Language: en-US
+To:     Alan Stern <stern@rowland.harvard.edu>
+Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        syzbot <syzbot+0e22d63dcebb802b9bc8@syzkaller.appspotmail.com>,
+        bernie@plugable.com, linux-usb@vger.kernel.org,
+        syzkaller-bugs@googlegroups.com
+References: <0000000000004a222005fbf00461@google.com>
+ <ZGXVANMhn5j/jObU@ls3530>
+ <4cd17511-2b60-4c37-baf3-c477cf6d1761@rowland.harvard.edu>
+ <be824fbc-cde4-9a2a-8fb4-1ca23f498dca@gmx.de>
+ <2905a85f-4a3b-4a4f-b8fb-a4d037d6c591@rowland.harvard.edu>
+ <ZGZ3JPLqxCxA2UB6@ls3530>
+ <c7b8e69a-cabe-4e17-a511-66179259d1d7@rowland.harvard.edu>
+ <6e93305a-2d70-d411-3e36-c536449295dd@gmx.de>
+ <c1cf7ff1-c204-4afc-aa9d-890e07d5ec72@rowland.harvard.edu>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <c1cf7ff1-c204-4afc-aa9d-890e07d5ec72@rowland.harvard.edu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:4OSxPdmlj77MjVIkbZlxVMdcdHlkd7bQa5kIjxoT5UkSSavXw8P
+ r/1MvPs6oFo7/9oJ1tZ/vn1qp33N5lgNVmW430/JnQbM/tc142tE8mqtWChgfWHhVTuXa6J
+ 3at1vK6qbrH/XHrChM5qim8oE5Rx+rXsOCWF6EjbN5mYVpldlNxjQifWTHf3+R+Lm9jZVAo
+ MIKOpaxzikMhn1/iRP2sQ==
+UI-OutboundReport: notjunk:1;M01:P0:61dTdC5bWHo=;zjMSoS1U0kXpSMcGr82RaoSzznO
+ zkG4jMkeN8aPFM7PgBR/hk+wI9KhLRHbV8YUx9/ekIywlmHNk++HbGu0jsvWFsSDqGipt32pT
+ b6QrAj29Y6WsDLurgq1udmnbADM+bWp8ad8jcZ1o6mhUAGgw3TUuRPuzgamovQB+n/EX+UsoK
+ aAudo94B3OxrJk9feX2NcfIk0bZwbQMY27k0a0ycwLqvplIGXROeo+ayHjFXtA0sXIW8nliXv
+ ecR+A/SxjU2906nq0IkMB6XHXTyX6NeCeVEorekGHwdxLflu7h6d8H+gzDROXkM/JNd03BgBM
+ eyD+2xQgih2CBo92XGM5AC1oLD4/7Ckk1iFirDBrMErocnDHNYx0F/DPn12Cux3g4n4dojuq1
+ JsDL/ZM88cIJA0Dn8x8ETQhGIOajxV4Q4YSNLKI/qEyfnIZVeOSMnBK7Hf/V4qFbfKU1EHUp8
+ MrGEezMTRHxqwy4p8v/mLJlpY0L6dFXsEFGbAn+5LNNjgCPUnT5Fhz3wb0E2gKBSnTQYckg/T
+ U1Sz9r/4b8Im3q4XlX8Ot2FWdA+fe3I1S1paxvmOGWK0dL48gTfEm9vU2Hqxkgc27XZuBfH4C
+ d2DdibSJkVuhJ/CMuBqJlCC7SFHKGEP5F6ogwhTjz7p66tWQcBpQhEcA5bFStsEA6hD/AWojX
+ KUXFOY+yhGSJ20ZogQsJqs9ngKRytnEBMMvWypFtiSNNniBCjqwIAd4DgNiADFJ2u8R4p+9vB
+ QvO+WCDihnE5g5iivaNYru73VQxzXyxoZdL0BpPa4agv9rKkGZ1kbOqw2e2h7sVcfZ+61pwzn
+ /LbXZZMdvSdnLKtlt120Uz76qut7/oA25Q9LVqMXHfmWuVPZ0vBgrJKkdEK/mf8HSOqE31fBx
+ L/U+RGakcuPREMsUeqxZpHGEUbaA5InQlTGglZ06BFB1nUQxtdb7drVq48LSi7HMV57Gc9Szd
+ CxjcyS1QxUJO+le8HNF2fYZkA14=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Change underscores in ROM node names to dashes, and remove deprecated
-pwm-period property.
+On 5/19/23 17:42, Alan Stern wrote:
+> On Fri, May 19, 2023 at 12:38:15PM +0200, Helge Deller wrote:
+>> Patch looks good and survived the test.
+>>
+>> Will you send a proper patch to the fbdev mailing list, so that I can
+>> include it?
+>
+> Will do.
 
-Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
----
- arch/arm64/boot/dts/nvidia/tegra210-p2371-2180.dts | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+Great! Thanks!
 
-diff --git a/arch/arm64/boot/dts/nvidia/tegra210-p2371-2180.dts b/arch/arm64/boot/dts/nvidia/tegra210-p2371-2180.dts
-index 38f4ff229bef..a6a58e51822d 100644
---- a/arch/arm64/boot/dts/nvidia/tegra210-p2371-2180.dts
-+++ b/arch/arm64/boot/dts/nvidia/tegra210-p2371-2180.dts
-@@ -58,19 +58,17 @@ backlight: backlight@2c {
- 			dev-ctrl = /bits/ 8 <0x80>;
- 			init-brt = /bits/ 8 <0xff>;
- 
--			pwm-period = <29334>;
--
- 			pwms = <&pwm 0 29334>;
- 			pwm-names = "lp8557";
- 
- 			/* boost frequency 1 MHz */
--			rom_13h {
-+			rom-13h {
- 				rom-addr = /bits/ 8 <0x13>;
- 				rom-val = /bits/ 8 <0x01>;
- 			};
- 
- 			/* 3 LED string */
--			rom_14h {
-+			rom-14h {
- 				rom-addr = /bits/ 8 <0x14>;
- 				rom-val = /bits/ 8 <0x87>;
- 			};
--- 
-2.40.1
+> While you're working on this driver,
 
+I'm not working on that driver. Just looked into it because of this
+sysbot issue. I even don't have that hardware to test.
+
+> here's a suggestion for another
+> improvement you can make.  The temporary buffer allocations and calls to
+> usb_control_msg() in dlfb_get_edid() and dlfb_select_std_channel() can
+> be replaced with calls to usb_control_msg_recv() and
+> usb_control_msg_send() respectively.
+
+Ok, I'll look into it.
+
+Helge

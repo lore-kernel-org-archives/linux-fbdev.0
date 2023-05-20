@@ -2,45 +2,45 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89F66C7EE2A
-	for <linux-fbdev@archiver.kernel.org>; Sat, 20 May 2023 18:22:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27908C77B7D
+	for <linux-fbdev@archiver.kernel.org>; Sat, 20 May 2023 18:24:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232070AbjETSWm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 20 May 2023 14:22:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43770 "EHLO
+        id S232105AbjETSYV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 20 May 2023 14:24:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43450 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231949AbjETSWT (ORCPT
+        with ESMTP id S232119AbjETSX6 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 20 May 2023 14:22:19 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 063A4E7E;
-        Sat, 20 May 2023 11:21:57 -0700 (PDT)
+        Sat, 20 May 2023 14:23:58 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CD6611982;
+        Sat, 20 May 2023 11:23:22 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id C20AF60F1A;
-        Sat, 20 May 2023 18:21:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 38303C433EF;
-        Sat, 20 May 2023 18:21:56 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id C5D7C60C16;
+        Sat, 20 May 2023 18:22:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B279C433D2;
+        Sat, 20 May 2023 18:22:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1684606917;
-        bh=YidXSXZuVQGVC88iQewwQq9ZpUUZJBtypV01GQdCanc=;
+        s=k20201202; t=1684606929;
+        bh=IxY9yD28x09t6EP3qwL6MxSZUKwa8NFQn8cpurereZI=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=ugaG6ZgyUdn+ITrCUqHkwsInqZDRgv5Dn1MvptHYmnB/H86jKhDK5U+28jT0eYGza
-         pVgzeCAn6jqtqzsJAhRRcvXDrTFIXbvWLRyZWsCF7Ot8sMFA856AptGt1VhgXhR6a2
-         t3ZZzSxMJbDdUT7GA8+aKuuGo7ROtRoyyG2HLXq89fwP/M6lhtcbgIrsMJDl4om0sQ
-         +zc96ICxXfIZFertJ+CTpZ24ZlmLcXUUQr5tdV30iNuat4hN9Y2Ws2nHOTV11XGZFA
-         94Jc2NXmpmZmo+aF7Msp3APh64ODwRdBBadNMiGkTcZkvo4bFj+k3J8lJEODS2+sdO
-         6ZxNiua326PTg==
+        b=dg9CN/jMyU963Y7e3O1+ipWdE4sXJZjiwCq4lxY6Cu+Pc/KyTuKQ3NQGw5cr9q96m
+         gqEGRDxWlUwEIusW9fetjUTCQTCx0Zx8oHP6t01rG1ru1GWCVN4OIt+/wRPnf2Q3tu
+         xVounEyA83Y3/5dNbnn6JQqyOZh7A1puAvdBGHY+Nw/cNCQFbN2HotQTvWZdELJYWy
+         uq2XBM+wDBQoGhA8vmIzwESurfm+vwzRIKoAFDNJFE5EKW+xSO5LRJwkKf3vOUcxuF
+         ZZvg9+8D+x8fnOSQvZvRJpqmr7lyXWtGMWj5Wug34iIZ/HGwRbMtoLS+JRrPVKLiJB
+         E3sLKgo/YUsaA==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Zheng Wang <zyytlz.wz@163.com>, Helge Deller <deller@gmx.de>,
-        Sasha Levin <sashal@kernel.org>, javierm@redhat.com,
-        tzimmermann@suse.de, linux-fbdev@vger.kernel.org,
+Cc:     Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
+        James.Bottomley@HansenPartnership.com,
+        linux-parisc@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 6.1 10/14] fbdev: imsttfb: Fix use after free bug in imsttfb_probe
-Date:   Sat, 20 May 2023 14:20:38 -0400
-Message-Id: <20230520182044.836702-10-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.1 12/14] fbdev: stifb: Fix info entry in sti_struct on error path
+Date:   Sat, 20 May 2023 14:20:40 -0400
+Message-Id: <20230520182044.836702-12-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230520182044.836702-1-sashal@kernel.org>
 References: <20230520182044.836702-1-sashal@kernel.org>
@@ -52,78 +52,30 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Zheng Wang <zyytlz.wz@163.com>
+From: Helge Deller <deller@gmx.de>
 
-[ Upstream commit c75f5a55061091030a13fef71b9995b89bc86213 ]
+[ Upstream commit 0bdf1ad8d10bd4e50a8b1a2c53d15984165f7fea ]
 
-A use-after-free bug may occur if init_imstt invokes framebuffer_release
-and free the info ptr. The caller, imsttfb_probe didn't notice that and
-still keep the ptr as private data in pdev.
+Minor fix to reset the info field to NULL in case of error.
 
-If we remove the driver which will call imsttfb_remove to make cleanup,
-UAF happens.
-
-Fix it by return error code if bad case happens in init_imstt.
-
-Signed-off-by: Zheng Wang <zyytlz.wz@163.com>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/imsttfb.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ drivers/video/fbdev/stifb.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
-index d7edb9c5d3a3f..e6adb2890ecfe 100644
---- a/drivers/video/fbdev/imsttfb.c
-+++ b/drivers/video/fbdev/imsttfb.c
-@@ -1347,7 +1347,7 @@ static const struct fb_ops imsttfb_ops = {
- 	.fb_ioctl 	= imsttfb_ioctl,
- };
- 
--static void init_imstt(struct fb_info *info)
-+static int init_imstt(struct fb_info *info)
- {
- 	struct imstt_par *par = info->par;
- 	__u32 i, tmp, *ip, *end;
-@@ -1420,7 +1420,7 @@ static void init_imstt(struct fb_info *info)
- 	    || !(compute_imstt_regvals(par, info->var.xres, info->var.yres))) {
- 		printk("imsttfb: %ux%ux%u not supported\n", info->var.xres, info->var.yres, info->var.bits_per_pixel);
- 		framebuffer_release(info);
--		return;
-+		return -ENODEV;
- 	}
- 
- 	sprintf(info->fix.id, "IMS TT (%s)", par->ramdac == IBM ? "IBM" : "TVP");
-@@ -1456,12 +1456,13 @@ static void init_imstt(struct fb_info *info)
- 
- 	if (register_framebuffer(info) < 0) {
- 		framebuffer_release(info);
--		return;
-+		return -ENODEV;
- 	}
- 
- 	tmp = (read_reg_le32(par->dc_regs, SSTATUS) & 0x0f00) >> 8;
- 	fb_info(info, "%s frame buffer; %uMB vram; chip version %u\n",
- 		info->fix.id, info->fix.smem_len >> 20, tmp);
-+	return 0;
+diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
+index ef8a4c5fc6875..63f51783352dc 100644
+--- a/drivers/video/fbdev/stifb.c
++++ b/drivers/video/fbdev/stifb.c
+@@ -1413,6 +1413,7 @@ static int __init stifb_init_fb(struct sti_struct *sti, int bpp_pref)
+ 	iounmap(info->screen_base);
+ out_err0:
+ 	kfree(fb);
++	sti->info = NULL;
+ 	return -ENXIO;
  }
  
- static int imsttfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
-@@ -1529,10 +1530,10 @@ static int imsttfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (!par->cmap_regs)
- 		goto error;
- 	info->pseudo_palette = par->palette;
--	init_imstt(info);
--
--	pci_set_drvdata(pdev, info);
--	return 0;
-+	ret = init_imstt(info);
-+	if (!ret)
-+		pci_set_drvdata(pdev, info);
-+	return ret;
- 
- error:
- 	if (par->dc_regs)
 -- 
 2.39.2
 

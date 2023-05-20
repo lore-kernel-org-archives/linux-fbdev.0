@@ -2,59 +2,75 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98212C7EE26
-	for <linux-fbdev@archiver.kernel.org>; Sat, 20 May 2023 08:54:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3154C77B7D
+	for <linux-fbdev@archiver.kernel.org>; Sat, 20 May 2023 14:46:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229595AbjETIy4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 20 May 2023 04:54:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36820 "EHLO
+        id S229523AbjETOq5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 20 May 2023 10:46:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52748 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230113AbjETIyz (ORCPT
+        with ESMTP id S229464AbjETOq4 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 20 May 2023 04:54:55 -0400
-X-Greylist: delayed 86702 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Sat, 20 May 2023 01:54:51 PDT
-Received: from mail.corrib.pl (mail.corrib.pl [185.58.226.145])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A9F7186
-        for <linux-fbdev@vger.kernel.org>; Sat, 20 May 2023 01:54:51 -0700 (PDT)
-Received: by mail.corrib.pl (Postfix, from userid 1001)
-        id CD17BA4FB3; Fri, 19 May 2023 09:06:18 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=corrib.pl; s=mail;
-        t=1684483582; bh=85MOfYTjIHwki6Ys5IeFKzEzX5V7umZoL3TytLG0W/k=;
-        h=Date:From:To:Subject:From;
-        b=mbJRewZhnBW0oyY80E6n4S6PcDyZokuwcUnzTH9wFvF6yrBmmN6QMT+RGGmn1rWWj
-         8ATeg5A+a+HHQAe0t+CFb2fYWKFQJLP1ThzCR/kPXMJjKYr2D02NrZmSVSToxMq8Fb
-         6llUew+Pqeg/o0SDwpC7Hhqg3ZgclEB2lkHhAbQT72DE1fWbzJnqsLDABAh88SjV3i
-         mVVsXWWqtuzyotyvm0O8xTRHhzj8qww6Ygu/OFMN7YbwW9Tf5MBEiTT+GCOPHvkGwW
-         zItrooxO7mksqbCJOEFBaiyQQvCljwuJ0Eo0euknUIfSnJKruAgC/3CmA8QBPAf28m
-         +VR1Rybl90M7g==
-Received: by mail.corrib.pl for <linux-fbdev@vger.kernel.org>; Fri, 19 May 2023 08:06:12 GMT
-Message-ID: <20230519074500-0.1.7b.of8x.0.rfv4myhl89@corrib.pl>
-Date:   Fri, 19 May 2023 08:06:12 GMT
-From:   "Szczepan Andryszczuk" <szczepan.andryszczuk@corrib.pl>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: Faktoring
-X-Mailer: mail.corrib.pl
+        Sat, 20 May 2023 10:46:56 -0400
+Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
+        by lindbergh.monkeyblade.net (Postfix) with SMTP id 0528D110
+        for <linux-fbdev@vger.kernel.org>; Sat, 20 May 2023 07:46:54 -0700 (PDT)
+Received: (qmail 73303 invoked by uid 1000); 20 May 2023 10:46:54 -0400
+Date:   Sat, 20 May 2023 10:46:54 -0400
+From:   Alan Stern <stern@rowland.harvard.edu>
+To:     Helge Deller <deller@gmx.de>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH] fbdev: udlfb: Use usb_control_msg_send()
+Message-ID: <2093306b-1d12-4f10-8dbd-c9ae149d50e3@rowland.harvard.edu>
+References: <20230519211625.1072966-1-deller@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230519211625.1072966-1-deller@gmx.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,
+On Fri, May 19, 2023 at 11:16:25PM +0200, Helge Deller wrote:
+> Use the newly introduced usb_control_msg_send() instead of usb_control_msg()
+> when selecting the channel.
+> 
+> Signed-off-by: Helge Deller <deller@gmx.de>
+> ---
+>  drivers/video/fbdev/udlfb.c | 14 +++-----------
+>  1 file changed, 3 insertions(+), 11 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+> index 256d9b61f4ea..dabc30a09f96 100644
+> --- a/drivers/video/fbdev/udlfb.c
+> +++ b/drivers/video/fbdev/udlfb.c
+> @@ -1543,24 +1543,16 @@ static const struct device_attribute fb_device_attrs[] = {
+>  static int dlfb_select_std_channel(struct dlfb_data *dlfb)
+>  {
+>  	int ret;
+> -	void *buf;
+>  	static const u8 set_def_chn[] = {
+>  				0x57, 0xCD, 0xDC, 0xA7,
+>  				0x1C, 0x88, 0x5E, 0x15,
+>  				0x60, 0xFE, 0xC6, 0x97,
+>  				0x16, 0x3D, 0x47, 0xF2  };
+> 
+> -	buf = kmemdup(set_def_chn, sizeof(set_def_chn), GFP_KERNEL);
+> -
+> -	if (!buf)
+> -		return -ENOMEM;
+> -
+> -	ret = usb_control_msg(dlfb->udev, usb_sndctrlpipe(dlfb->udev, 0),
+> -			NR_USB_REQUEST_CHANNEL,
+> +	ret = usb_control_msg_send(dlfb->udev, 0, NR_USB_REQUEST_CHANNEL,
+>  			(USB_DIR_OUT | USB_TYPE_VENDOR), 0, 0,
+> -			buf, sizeof(set_def_chn), USB_CTRL_SET_TIMEOUT);
+> -
+> -	kfree(buf);
+> +			&set_def_chn, sizeof(set_def_chn), USB_CTRL_SET_TIMEOUT,
+> +			GFP_KERNEL);
+> 
+>  	return ret;
+>  }
 
-rozwa=C5=BCali Pa=C5=84stwo wyb=C3=B3r finansowania, kt=C3=B3re spe=C5=82=
-ni potrzeby firmy, zapewniaj=C4=85c natychmiastowy dost=C4=99p do got=C3=B3=
-wki, bez zb=C4=99dnych przestoj=C3=B3w?=20
-
-Przygotowali=C5=9Bmy rozwi=C4=85zania faktoringowe dopasowane do Pa=C5=84=
-stwa bran=C5=BCy i wielko=C5=9Bci firmy, dzi=C4=99ki kt=C3=B3rym, nie mus=
-z=C4=85 Pa=C5=84stwo martwi=C4=87 si=C4=99 o niewyp=C5=82acalno=C5=9B=C4=87=
- kontrahent=C3=B3w, poniewa=C5=BC transakcje s=C4=85 zabezpieczone i posi=
-adaj=C4=85 gwarancj=C4=99 sp=C5=82aty.=20
-
-Chc=C4=85 Pa=C5=84stwo przeanalizowa=C4=87 dost=C4=99pne opcje?
-
-
-Pozdrawiam
-Szczepan Andryszczuk
+Reviewed-by: Alan Stern <stern@rowland.harvard.edu>

@@ -2,80 +2,117 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CDB3C77B7D
-	for <linux-fbdev@archiver.kernel.org>; Sat, 20 May 2023 18:28:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 472AEC7EE23
+	for <linux-fbdev@archiver.kernel.org>; Sun, 21 May 2023 10:25:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232034AbjETS2X (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 20 May 2023 14:28:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49108 "EHLO
+        id S231215AbjEUKZn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 21 May 2023 06:25:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34466 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232255AbjETS1e (ORCPT
+        with ESMTP id S230305AbjEUKIg (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 20 May 2023 14:27:34 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 680FEE49;
-        Sat, 20 May 2023 11:26:55 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 7AB0E60ECC;
-        Sat, 20 May 2023 18:24:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1FCE5C4339B;
-        Sat, 20 May 2023 18:24:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1684607083;
-        bh=VkzKi7wqEKvjxhQtJcHeYKgd7dMVMtJz1Ug+wtlkdoc=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Fy72TrvJ7J784cjRgxWA2SpvpOvsHX1sfYZtOmTTE8vbR38hne3SXsean/1ptmXQo
-         2xWZXczujirZ1j1bq7Hdzyp8xrNBqaxa21c0df7V3a6oyrvhQrjdvbMDZJUu/0Xt8v
-         Pbe8DCSvmrm5AzNyJDfkmyUd4808ZDfPTJQotDFmgDIfpqlxUMOxFbp2/KItmpTVoD
-         LkCuLqhFtEgGp97NzMIzX3vn/zV1kW7noUtk8CJdeC7knGa3ZvS0HQKZguxW1i8aka
-         supxom6QhVxO3oreMwtqVfe6KTU5Oi+/t24nFiw6/EJxnkv0KF3CmFL60I2bfsJzlR
-         3iR4rT2XePYdw==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
-        James.Bottomley@HansenPartnership.com,
-        linux-parisc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        Sun, 21 May 2023 06:08:36 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7FAC2133;
+        Sun, 21 May 2023 03:08:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1684663700; i=deller@gmx.de;
+        bh=7dOW0KNGBHjgNBej3yVcF5xElC1oRb0G/4mWcnYShDU=;
+        h=X-UI-Sender-Class:Date:From:To:Subject;
+        b=HFvFdjvQMZV9SdTOKNDeTxzv6EJ1lNeyAM0VBV18cQvPb58rMVcSnJbej6ayTb5Dx
+         DgfZVr3ZdgljxwmlBg3oQkZbB64ScmAl4gcog7ah2Tt4Za04z3E6A1Ps4uh7kQ32Rn
+         bLYyB72EUV9m2Mw4u3/aqNujVLPjoZpnahK+CxOcSbSnX9msKKLAiwptMSiKlwv1+2
+         60IcemkohzfNx4TQptL9/MEz93alXZMnRgbskv6mHZOth3Xmg2RM02/JYlj9Et2jV1
+         5kcXjZ168ot2l3WlVaWCCtR4pavuzBlxXTzuEeHgRGw+GUlnEKngsCOD/Ny/ngpSLH
+         qpw7Wu+mSoUKw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from ls3530 ([94.134.156.224]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mgeo8-1qd2XQ1fnY-00h3m1; Sun, 21
+ May 2023 12:08:20 +0200
+Date:   Sun, 21 May 2023 12:08:18 +0200
+From:   Helge Deller <deller@gmx.de>
+To:     Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 4.14 3/4] fbdev: stifb: Fix info entry in sti_struct on error path
-Date:   Sat, 20 May 2023 14:24:28 -0400
-Message-Id: <20230520182432.866012-3-sashal@kernel.org>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230520182432.866012-1-sashal@kernel.org>
-References: <20230520182432.866012-1-sashal@kernel.org>
+Subject: [GIT PULL] fbdev fixes for v6.4-rc3
+Message-ID: <ZGntkmg6v2G8Fnfn@ls3530>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Provags-ID: V03:K1:cewIcdm73Z6sou7df0uOWE8D2JFRT9yHPtKirtyTKx5a8/KmcN6
+ vEvjUGqTO+8bMqWgzPgSxgq5PVYQ2VnKiL5iykN+R1lfFD31h52w4z2woyzr6ASybLFYgW0
+ MCVkqDilknQg38+K5iFttFuRd8nNoR2Vp/dEBEMVGoBbKCqJ3amiPao/LlIMQj0A/I8UmMj
+ J50BCr+dc7Znv805+VeFg==
+UI-OutboundReport: notjunk:1;M01:P0:DRN+2WeeLWw=;Xk6U3Qjx3DEbQ5fgZbhkUTX6onG
+ UgANFf8sq8Zw/Rf6/ovVk5Ir15s/lj8wAjUfEC3UPx5VDS1ZPst8le/MmW3vMC8phCX9EEw19
+ /3vJ+BaUpWJXK+oBgD1LLGozldLXcdXsveQq6djiGZaxDTMVP/rKHvy7SdwcWKtG6/o/it/l8
+ TgZi6yrb9PLO8GXfFMSiIk4DrFgNivkM/LcJ0fXQyyjvm2y/g6gk4jv5FOCEx4gPANPQ6T568
+ GZ6sW17Zw0FwGt3MsuXWuet+BMifAzcok8ukyHrxaT1KdmWGg/8x6wfBtEAtlp4QqMJIhUXWR
+ dzajIOix478FFtnhp04zv6e2niAUA79xChFJMiZRVGOGwU5b7lm2SXypqZU9zsAwz4WnobM8m
+ 29IclP18AwZJEAVbNorDhjFus6c/WVgkNaffKrZhfGl/JNPk+LVsEQnzcQTkU3zxeJzUZjqZ0
+ M0Yf+R6rrGpGQsLsG+PQzrq4KvKoSULRWUpgSKUuueDtdQ+5K9bNFp7XSC+LKITlVcVzdZEKf
+ Wr38gQwxXXyvuvmRfKccaGL1IFGBcqZWqTdFLvnEZFCV4HSkWew8IU9kuJmVad+IAwfzugClR
+ q6Vb2XRL3DHPvUnqNHrHwHrO/plN4dY1m81P8f3zOYLHvbvWLjGtUggNILQ8rsw8HryNodcfX
+ K62+DRTyAc/HliTkztNDXnmLLH3Kntz3omY4ixPimvMo+PqoBhdlQdV1WzRKJdIXz0p/oZdXQ
+ yo8dLLShOwGgN1aUy0ewrdwNZE8wde/yXwe+6sBixx1C8Th0RlGr4QZJgjbI/sB+vsEN5ZWUY
+ sDFDyvxlRZadIn5vpZ5s1ftAh0ZsYxk8lG0+4V+tQn1c3tj7jUQ6FJpsUg4oy0/pZXfeC3feh
+ 9mdDCu3/C7NQSwVSX7/VkI7NRAcW+QvwpFAu6oYn5IWHQezbzAIGXBcDBgO3/LHGnkIvM7N0j
+ JS8aHOrKnO2x9buBkMo1LvDYsxc=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Helge Deller <deller@gmx.de>
+Hi Linus,
 
-[ Upstream commit 0bdf1ad8d10bd4e50a8b1a2c53d15984165f7fea ]
+please pull a few small unspectacular fbdev fixes.
 
-Minor fix to reset the info field to NULL in case of error.
+Thanks!
+Helge
 
-Signed-off-by: Helge Deller <deller@gmx.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/stifb.c | 1 +
- 1 file changed, 1 insertion(+)
+--------------
+The following changes since commit f1fcbaa18b28dec10281551dfe6ed3a3ed80e3d6:
 
-diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
-index 9313562e739e1..16eed250fd8f3 100644
---- a/drivers/video/fbdev/stifb.c
-+++ b/drivers/video/fbdev/stifb.c
-@@ -1373,6 +1373,7 @@ static int __init stifb_init_fb(struct sti_struct *sti, int bpp_pref)
- 	iounmap(info->screen_base);
- out_err0:
- 	kfree(fb);
-+	sti->info = NULL;
- 	return -ENXIO;
- }
- 
--- 
-2.39.2
+  Linux 6.4-rc2 (2023-05-14 12:51:40 -0700)
 
+are available in the Git repository at:
+
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.4-rc3
+
+for you to fetch changes up to d9a45969abeb641c5fb8cf3591f63f827f9932b5:
+
+  fbdev: stifb: Whitespace cleanups (2023-05-20 22:48:46 +0200)
+
+----------------------------------------------------------------
+fbdev fixes for kernel 6.4-rc3:
+
+- Fix for USB endpoint check in udlfb (found by syzbot fuzzer)
+- Small fix in error code path in omapfb
+- compiler warning fixes in fbmem & i810
+- code removal and whitespace cleanups in stifb and atyfb
+
+----------------------------------------------------------------
+Alan Stern (1):
+      fbdev: udlfb: Fix endpoint check
+
+Arnd Bergmann (2):
+      fbdev: fbmem: mark get_fb_unmapped_area() static
+      fbdev: i810: include i810_main.h in i810_dvt.c
+
+Dan Carpenter (1):
+      fbdev: omapfb: panel-tpo-td043mtea1: fix error code in probe()
+
+Helge Deller (2):
+      fbdev: udlfb: Use usb_control_msg_send()
+      fbdev: stifb: Whitespace cleanups
+
+Niklas Schnelle (1):
+      fbdev: atyfb: Remove unused clock determination
+
+ drivers/video/fbdev/Kconfig                        |  2 +-
+ drivers/video/fbdev/aty/atyfb_base.c               |  5 ----
+ drivers/video/fbdev/core/fbmem.c                   |  2 +-
+ drivers/video/fbdev/i810/i810_dvt.c                |  3 ++-
+ .../omap2/omapfb/displays/panel-tpo-td043mtea1.c   |  3 ++-
+ drivers/video/fbdev/stifb.c                        |  6 ++---
+ drivers/video/fbdev/udlfb.c                        | 27 +++++++++-------------
+ 7 files changed, 20 insertions(+), 28 deletions(-)

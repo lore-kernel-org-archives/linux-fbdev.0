@@ -2,143 +2,151 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EB5EC77B73
-	for <linux-fbdev@archiver.kernel.org>; Mon, 22 May 2023 14:04:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89EFDC77B73
+	for <linux-fbdev@archiver.kernel.org>; Mon, 22 May 2023 15:36:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230515AbjEVOER (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 22 May 2023 10:04:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40818 "EHLO
+        id S233263AbjEVPgU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 22 May 2023 11:36:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36700 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234403AbjEVOD5 (ORCPT
+        with ESMTP id S233727AbjEVPgT (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 22 May 2023 10:03:57 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB904E47
-        for <linux-fbdev@vger.kernel.org>; Mon, 22 May 2023 07:03:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1684764216; i=deller@gmx.de;
-        bh=+zC3D8AvSEx830CUZFTlFVLy1JxPYYFXGv+HoGh9Av0=;
-        h=X-UI-Sender-Class:From:To:Subject:Date:In-Reply-To:References;
-        b=a9iDEbzShA8bBr7LMGvEO8WLAaOEvqjBYoz2BvSqvoZQPRF5xBDbGkHcpn6w9FC/9
-         oREalkbpeQcWFxpbiapFfGjv7rmm/lYMxzCTLy61KAqmBomOkn57zC3kvFB/vDA/oh
-         5l2zSSuzZCC92WoJJchoA5rYZn6cRp4Le/wGdb+c0H4myDw5BVIkJxYPUl7/to3Uav
-         oAebxDQbvOXYB61T3TDCe/Na7e1th1Q5Rgn0vkKYMVQQjiEWpxUOsEqfeqmObWhMtC
-         1jMnaPwwFLjKQBQuJtMZMUntfYY2LlijB1iJOsxZqJ+SyzdKo18gjLQay0qnJDVF7W
-         dPqTpXGiOCT0w==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from ls3530.fritz.box ([94.134.144.112]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1N5VHM-1qBZZq2PyU-016swh; Mon, 22
- May 2023 15:58:16 +0200
-From:   Helge Deller <deller@gmx.de>
-To:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH 1/2] sticon/parisc: Allow 64-bit STI calls in PDC firmware abstration
-Date:   Mon, 22 May 2023 15:58:14 +0200
-Message-Id: <20230522135815.38949-2-deller@gmx.de>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230522135815.38949-1-deller@gmx.de>
-References: <20230522135815.38949-1-deller@gmx.de>
+        Mon, 22 May 2023 11:36:19 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B5848E6;
+        Mon, 22 May 2023 08:36:17 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id EF42821DBE;
+        Mon, 22 May 2023 15:36:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+        t=1684769775; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=iEa6ByHMD623qHdjGarG7iVgdLGI+kaMd16hqcmW7QI=;
+        b=sRqxQ2+YaLANOe2qUgIzs3LqzgEyl/OocAWmOohRcyCEWjY1yVOtkolXxoxEx1F6afx7Wu
+        v7TI1WctNtjMWYldDK8y9Yvp0n/6LyLuQeen1xLN2x1Hy84ddvbrLnynfPD+QknmO9qNH7
+        C9ljZlAZPmj+ZDcOt7GCmtbwmivjT5o=
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C35A113776;
+        Mon, 22 May 2023 15:36:15 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id sT7jLu+La2RtRgAAMHmgww
+        (envelope-from <mkoutny@suse.com>); Mon, 22 May 2023 15:36:15 +0000
+Date:   Mon, 22 May 2023 17:36:14 +0200
+From:   Michal =?utf-8?Q?Koutn=C3=BD?= <mkoutny@suse.com>
+To:     Zheng Wang <zyytlz.wz@163.com>
+Cc:     deller@gmx.de, alex000young@gmail.com, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, hackerzheng666@gmail.com,
+        dri-devel@lists.freedesktop.org, javierm@redhat.com,
+        1395428693sheep@gmail.com, tzimmermann@suse.de
+Subject: Re: [PATCH v2] video: imsttfb: Fix use after free bug in
+ imsttfb_probe due to lack of error-handling of init_imstt
+Message-ID: <34gbv2k3lc5dl4nbivslizfuor6qc34j63idiiuc35qkk3iohs@7bshmqu2ue7a>
+References: <20230427030841.2384157-1-zyytlz.wz@163.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:f1rA2fw3o3HqeljaA7TXJFVJnsDxEKN8ALDvRtFYdQqvhGK7TJR
- WAMAW80wBSfg/ugKwoty8NCbhaskr5iKroDTPv+pV6pwsX9bDFOFfobVQ3qr4sTwc1TiPbt
- eQb68ZSn1Ot31ZjE1CeSPoE39yVioHugIU/3hH9MvUgZ4s3wITlkDOmwyl9wXijRVEZJLEL
- LedjFFisSK1m57lxVmulw==
-UI-OutboundReport: notjunk:1;M01:P0:kb2X3MvJQZg=;13NWqEfR732j7d4vX6xf7euVhVp
- 2oAaAQ8TJ+Tzcv2vewIV4wRLM1FFHOLxvEwMU+blPWWOjsJL9hIO4ALyYf0V3O71ZTRBiqY5j
- WbCEjxkBVABsmIqd1QV9XIq3tzRKVzgWjtPO1XQzRpa8RZg/uYdRb7He8HHbOmEZIGfDlXAxC
- 7ofCxkt17r67urxQZYOQRtzCl/OMP/uHlIBkRc3+VnX4FcnHrpSLA1bGG7k85M0feOAJGoi01
- 2Nh284VaJGsejEorDS2gPcwX9yPKDrUV+QMGg+Qo7RrMXjb++WX8StvjT9VWHBnuM+eKlGywR
- NmxiJE1+SkGTr7F3lGy3+Iz55PKdMejYPpQ2h8P56I2CYgYIZ7sjqm4+bwwAQtjQz2/DuqB0f
- 3RFVE9X4rdB+h8zhW6zaJhF2QXruuupPVmxZgC/YOUOgL35R9a9BlGUWHg4zUkvInm3q5DALz
- i/CNCqwZm4hu9nL6DfFJdJktpJGfg3dXXkGT5zNauDdyzAGMcRJ4fX0kKbPMQ9HcSCF6ycegu
- it3O2AWuebMv7R+sPJiznrs1HlTlQpmYtaW/SU84QbK8UlKRNFrEluG1aJPIHpfUg8DKKpgbY
- FXdCl7+PFq62pD3e5y5XnV6gvJWy5NlqRZoD9OLn0zd3pu5ASj8ZXBFrH5uAOV8eeSP+D12Y9
- L46l+7YkHFN9k/YyUQUlkfIa3GbTNytNN6vGdWHmdWpagBspN5hPB50x5Wu9RcTnTfcdRRnTQ
- vP6W+C5P5irNfb3C+jBTXHWm0KKt7hPU74erjXnFJhoILtz2vL/tpD9I+ENEJaKHi7pcde1y+
- /MDuueCuoDT1PT9XYjTZ9e06YJnwKZ2gm/Ccs9xkLAdoOvGIn2K06Rrz8/KSqxB5s5+AQ/6PX
- hr3ZfbcngAUY9/5RZF+hnKvUlZNnQs7pPZGuiYpjuL5z4+G10g/8pjn9u2ZRHrJNG67ePJ9xI
- mTbmZw==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="rze7mjqamibzdgst"
+Content-Disposition: inline
+In-Reply-To: <20230427030841.2384157-1-zyytlz.wz@163.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Some 64-bit machines require us to call the STI ROM in 64-bit mode, e.g.
-with the VisFXe graphic card.
-This patch allows drivers to use such 64-bit calling conventions.
 
-Signed-off-by: Helge Deller <deller@gmx.de>
-=2D--
- arch/parisc/include/asm/pdc.h |  4 ++--
- arch/parisc/kernel/firmware.c | 21 ++++++++++++++-------
- drivers/video/sticore.c       |  2 +-
- 3 files changed, 17 insertions(+), 10 deletions(-)
+--rze7mjqamibzdgst
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/parisc/include/asm/pdc.h b/arch/parisc/include/asm/pdc.h
-index 2b4fad8328e8..269b9a159f01 100644
-=2D-- a/arch/parisc/include/asm/pdc.h
-+++ b/arch/parisc/include/asm/pdc.h
-@@ -88,8 +88,8 @@ int pdc_iodc_print(const unsigned char *str, unsigned co=
-unt);
+Hello.
 
- void pdc_emergency_unlock(void);
- int pdc_sti_call(unsigned long func, unsigned long flags,
--                 unsigned long inptr, unsigned long outputr,
--                 unsigned long glob_cfg);
-+		unsigned long inptr, unsigned long outputr,
-+		unsigned long glob_cfg, int do_call64);
+On Thu, Apr 27, 2023 at 11:08:41AM +0800, Zheng Wang <zyytlz.wz@163.com> wr=
+ote:
+>  static int imsttfb_probe(struct pci_dev *pdev, const struct pci_device_i=
+d *ent)
+> @@ -1529,10 +1530,10 @@ static int imsttfb_probe(struct pci_dev *pdev, co=
+nst struct pci_device_id *ent)
+>  	if (!par->cmap_regs)
+>  		goto error;
+>  	info->pseudo_palette =3D par->palette;
+> -	init_imstt(info);
+> -
+> -	pci_set_drvdata(pdev, info);
+> -	return 0;
+> +	ret =3D init_imstt(info);
+> +	if (!ret)
+> +		pci_set_drvdata(pdev, info);
+> +	return ret;
+> =20
+>  error:
+>  	if (par->dc_regs)
 
- int __pdc_cpu_rendezvous(void);
- void pdc_cpu_rendezvous_lock(void);
-diff --git a/arch/parisc/kernel/firmware.c b/arch/parisc/kernel/firmware.c
-index cc124d9f1f7f..71ef1640db5a 100644
-=2D-- a/arch/parisc/kernel/firmware.c
-+++ b/arch/parisc/kernel/firmware.c
-@@ -1389,17 +1389,24 @@ int pdc_iodc_getc(void)
- }
+This part caught my eye -- shouldn't the -ENODEV from init_imstt go
+through the standard error with proper cleanup? (It seems like a leak
+=66rom my 30000 ft view, i.e. not sure about imsttfb_{probe,remove}
+pairing.)
 
- int pdc_sti_call(unsigned long func, unsigned long flags,
--                 unsigned long inptr, unsigned long outputr,
--                 unsigned long glob_cfg)
-+		unsigned long inptr, unsigned long outputr,
-+		unsigned long glob_cfg, int do_call64)
- {
--        int retval;
-+	int retval =3D 0;
- 	unsigned long irqflags;
+Shouldn't there be something like the diff below on top of the existing cod=
+e?
 
--        spin_lock_irqsave(&pdc_lock, irqflags);
--        retval =3D real32_call(func, flags, inptr, outputr, glob_cfg);
--        spin_unlock_irqrestore(&pdc_lock, irqflags);
-+	spin_lock_irqsave(&pdc_lock, irqflags);
-+	if (IS_ENABLED(CONFIG_64BIT) && do_call64) {
-+#ifdef CONFIG_64BIT
-+		retval =3D real64_call(func, flags, inptr, outputr, glob_cfg);
-+#else
-+		WARN_ON(1);
-+#endif
-+	} else
-+		retval =3D real32_call(func, flags, inptr, outputr, glob_cfg);
-+	spin_unlock_irqrestore(&pdc_lock, irqflags);
+Regards,
+Michal
 
--        return retval;
-+	return retval;
- }
- EXPORT_SYMBOL(pdc_sti_call);
-
-diff --git a/drivers/video/sticore.c b/drivers/video/sticore.c
-index 7eb925f2ba9c..60ba3ab5b6cc 100644
-=2D-- a/drivers/video/sticore.c
-+++ b/drivers/video/sticore.c
-@@ -1142,7 +1142,7 @@ int sti_call(const struct sti_struct *sti, unsigned =
-long func,
- 		return -1;
- #endif
-
--	ret =3D pdc_sti_call(func, _flags, _inptr, _outptr, _glob_cfg);
-+	ret =3D pdc_sti_call(func, _flags, _inptr, _outptr, _glob_cfg, 0);
-
+diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
+index 975dd682fae4..a116ac8ca020 100644
+--- a/drivers/video/fbdev/imsttfb.c
++++ b/drivers/video/fbdev/imsttfb.c
+@@ -1419,7 +1419,6 @@ static int init_imstt(struct fb_info *info)
+ 	if ((info->var.xres * info->var.yres) * (info->var.bits_per_pixel >> 3) >=
+ info->fix.smem_len
+ 	    || !(compute_imstt_regvals(par, info->var.xres, info->var.yres))) {
+ 		printk("imsttfb: %ux%ux%u not supported\n", info->var.xres, info->var.yr=
+es, info->var.bits_per_pixel);
+-		framebuffer_release(info);
+ 		return -ENODEV;
+ 	}
+=20
+@@ -1455,7 +1454,6 @@ static int init_imstt(struct fb_info *info)
+ 	fb_alloc_cmap(&info->cmap, 0, 0);
+=20
+ 	if (register_framebuffer(info) < 0) {
+-		framebuffer_release(info);
+ 		return -ENODEV;
+ 	}
+=20
+@@ -1531,8 +1529,10 @@ static int imsttfb_probe(struct pci_dev *pdev, const=
+ struct pci_device_id *ent)
+ 		goto error;
+ 	info->pseudo_palette =3D par->palette;
+ 	ret =3D init_imstt(info);
+-	if (!ret)
+-		pci_set_drvdata(pdev, info);
++	if (ret)
++		goto error;
++
++	pci_set_drvdata(pdev, info);
  	return ret;
- }
-=2D-
-2.40.1
+=20
+ error:
 
+
+
+--rze7mjqamibzdgst
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQTrXXag4J0QvXXBmkMkDQmsBEOquQUCZGuL6wAKCRAkDQmsBEOq
+ucOZAP9eACOa+x8XFhfGm7icBBpVmtJLnxaAuj4pG874Tqf53wEAwyYW+IG7SR3D
+bfpnLJNb4kEm101zRkgWoaGv6mH4iw0=
+=Tk4a
+-----END PGP SIGNATURE-----
+
+--rze7mjqamibzdgst--

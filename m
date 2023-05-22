@@ -2,263 +2,135 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B45A8C7EE2A
-	for <linux-fbdev@archiver.kernel.org>; Mon, 22 May 2023 10:55:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFF2CC77B75
+	for <linux-fbdev@archiver.kernel.org>; Mon, 22 May 2023 11:44:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233150AbjEVKzK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 22 May 2023 06:55:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41464 "EHLO
+        id S233348AbjEVLog (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 22 May 2023 07:44:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52994 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233039AbjEVKxN (ORCPT
+        with ESMTP id S232427AbjEVLog (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 22 May 2023 06:53:13 -0400
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 058D410E3;
-        Mon, 22 May 2023 03:51:44 -0700 (PDT)
-Received: from pps.filterd (m0353724.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34M9cOMb010125;
-        Mon, 22 May 2023 10:51:33 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=qmqZ2dzPdtkRlhXTjRuzY7WKokNnKKADgdzmzf+kY2s=;
- b=TVlBtofktuuhAfuStTioKB59TYbFzM5sGU82AzY8n6IJJXn0PQwTzyW0He+Bri5HIrCr
- zv5wj7JkLvkbXgdIEtMV2+bTEQvdi1l6uBMprorAfQ5WQurU2zHtmdD3kyS3TMqF08M9
- F0rrdCLj21kJ6y64A2szlhDqNHDt+S+zGg1GHD3Nwg88Ott63v0st9tgCR+1EOZZPGiF
- Kpfyae5Fg/rL1ijobWL8r/emVY9NZbnMb3IHitEnyfntLjuCU5oKyaCyfPISLPPH2EGz
- 35KGkE9UKIZNguOaEqPl1qoXpZpt4Sqs6PysZoITHMDtpK/EQxXjYOTF6pLQ1q6Kjyed Rw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qqee6tdwu-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 22 May 2023 10:51:33 +0000
-Received: from m0353724.ppops.net (m0353724.ppops.net [127.0.0.1])
-        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 34MAb9Ob012230;
-        Mon, 22 May 2023 10:51:32 GMT
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
-        by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3qqee6tdw2-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 22 May 2023 10:51:32 +0000
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
-        by ppma04fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 34M7buZh013811;
-        Mon, 22 May 2023 10:51:30 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-        by ppma04fra.de.ibm.com (PPS) with ESMTPS id 3qppcf0rtq-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 22 May 2023 10:51:29 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-        by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 34MApRop20447944
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Mon, 22 May 2023 10:51:27 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 5C20F20043;
-        Mon, 22 May 2023 10:51:27 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 03D7A20040;
-        Mon, 22 May 2023 10:51:27 +0000 (GMT)
-Received: from tuxmaker.boeblingen.de.ibm.com (unknown [9.152.85.9])
-        by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-        Mon, 22 May 2023 10:51:26 +0000 (GMT)
-From:   Niklas Schnelle <schnelle@linux.ibm.com>
-To:     Arnd Bergmann <arnd@arndb.de>, Helge Deller <deller@gmx.de>
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Alan Stern <stern@rowland.harvard.edu>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Albert Ou <aou@eecs.berkeley.edu>,
-        linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-        linux-pci@vger.kernel.org, Arnd Bergmann <arnd@kernel.org>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH v5 41/44] video: Handle HAS_IOPORT dependencies
-Date:   Mon, 22 May 2023 12:50:46 +0200
-Message-Id: <20230522105049.1467313-42-schnelle@linux.ibm.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230522105049.1467313-1-schnelle@linux.ibm.com>
-References: <20230522105049.1467313-1-schnelle@linux.ibm.com>
+        Mon, 22 May 2023 07:44:36 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7F0A299;
+        Mon, 22 May 2023 04:44:33 -0700 (PDT)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+        by smtp-out2.suse.de (Postfix) with ESMTP id 2645C1FE83;
+        Mon, 22 May 2023 11:44:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1684755872; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=RXgpxboI1bw9eXRQKxoN/Zr/TelBo2erFp+oCAN6jQ4=;
+        b=xshnHi/ZPGtf5PnerhW07I/ZJ3gtuXaQXOMW1lqWJPHulL6JCwemBTdT6hrFHwIIHSed4v
+        ea2F1eVZy8EXq+1FsNxVQTtwHaY1yz1Ptq/ScwtUkJim3RYiBlETvetX0UbmO4Ety9M0ni
+        hwzOSYQrMj/LOTJYuPl9EjduENWCBiQ=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1684755872;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=RXgpxboI1bw9eXRQKxoN/Zr/TelBo2erFp+oCAN6jQ4=;
+        b=VCaQEPWIJMQFKfvjU2QqgEyFocOltgb1T0Aku6lMo9jnDOFeFltWYrRg398m5sQNJb9NTE
+        E4mo0IqKd9uklYBQ==
+Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by relay2.suse.de (Postfix) with ESMTPS id D0A092C141;
+        Mon, 22 May 2023 11:44:31 +0000 (UTC)
+Date:   Mon, 22 May 2023 13:44:30 +0200
+From:   Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Cyril Brulebois <cyril@debamax.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Rob Herring <robh@kernel.org>, linux-kernel@vger.kernel.org,
+        stable@vger.kernel.org,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>
+Subject: Re: [PATCH 2/2] drm/ofdrm: Update expected device name
+Message-ID: <20230522114430.GA15906@kitsune.suse.cz>
+References: <20230412095509.2196162-1-cyril@debamax.com>
+ <20230412095509.2196162-3-cyril@debamax.com>
+ <CAMuHMdW4rZn4p=gQZRWQQSEbQPmzZUd5eN+kP_Yr7bLgTHyvig@mail.gmail.com>
+ <5694a9ab-d474-c101-9398-eea55aab29df@suse.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: YSVnudY5LoiPrehiDDA48ZmhtF42DqFq
-X-Proofpoint-ORIG-GUID: 0bPc3KvQ1cvHgEMXH0Z13Qdgd1gM95gI
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-05-22_06,2023-05-22_03,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 suspectscore=0
- phishscore=0 adultscore=0 bulkscore=0 malwarescore=0 lowpriorityscore=0
- priorityscore=1501 mlxlogscore=760 clxscore=1015 impostorscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2304280000 definitions=main-2305220089
+In-Reply-To: <5694a9ab-d474-c101-9398-eea55aab29df@suse.de>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-In a future patch HAS_IOPORT=n will result in inb()/outb() and friends
-not being declared. We thus need to #ifdef functions and their callsites
-which unconditionally use these I/O accessors. In the
-include/video/vga.h these are conveniently all those functions with the
-vga_io_* prefix.
+On Mon, Apr 24, 2023 at 11:07:45AM +0200, Thomas Zimmermann wrote:
+> Hi
+> 
+> Am 24.04.23 um 09:33 schrieb Geert Uytterhoeven:
+> > Hi Cyril,
+> > 
+> > CC DT
+> > 
+> > On Wed, Apr 12, 2023 at 12:05 PM Cyril Brulebois <cyril@debamax.com> wrote:
+> > > Since commit 241d2fb56a18 ("of: Make OF framebuffer device names unique"),
+> > > as spotted by Frédéric Bonnard, the historical "of-display" device is
+> > > gone: the updated logic creates "of-display.0" instead, then as many
+> > > "of-display.N" as required.
+> > > 
+> > > This means that offb no longer finds the expected device, which prevents
+> > > the Debian Installer from setting up its interface, at least on ppc64el.
+> > > 
+> > > Given the code similarity it is likely to affect ofdrm in the same way.
+> > > 
+> > > It might be better to iterate on all possible nodes, but updating the
+> > > hardcoded device from "of-display" to "of-display.0" is likely to help
+> > > as a first step.
+> > > 
+> > > Link: https://bugzilla.kernel.org/show_bug.cgi?id=217328
+> > > Link: https://bugs.debian.org/1033058
+> > > Fixes: 241d2fb56a18 ("of: Make OF framebuffer device names unique")
+> > > Cc: stable@vger.kernel.org # v6.2+
+> > > Signed-off-by: Cyril Brulebois <cyril@debamax.com>
+> > 
+> > Thanks for your patch, which is now commit 3a9d8ea2539ebebd
+> > ("drm/ofdrm: Update expected device name") in fbdev/for-next.
+> > 
+> > > --- a/drivers/gpu/drm/tiny/ofdrm.c
+> > > +++ b/drivers/gpu/drm/tiny/ofdrm.c
+> > > @@ -1390,7 +1390,7 @@ MODULE_DEVICE_TABLE(of, ofdrm_of_match_display);
+> > > 
+> > >   static struct platform_driver ofdrm_platform_driver = {
+> > >          .driver = {
+> > > -               .name = "of-display",
+> > > +               .name = "of-display.0",
+> > >                  .of_match_table = ofdrm_of_match_display,
+> > >          },
+> > >          .probe = ofdrm_probe,
+> > 
+> > Same comment as for "[PATCH 1/2] fbdev/offb: Update expected device
+> > name".
+> > 
+> > https://lore.kernel.org/r/CAMuHMdVGEeAsmb4tAuuqqGJ-4+BBETwEwYJA+M9NyJv0BJ_hNg@mail.gmail.com
+> 
+> Sorry that I missed this patch. I agree that it's probably not correct. At
+> least in ofdrm, we want to be able to use multiple framebuffers at the same
+> time; a feature that has been broken by this change.
 
-Co-developed-by: Arnd Bergmann <arnd@kernel.org>
-Signed-off-by: Arnd Bergmann <arnd@kernel.org>
-Signed-off-by: Niklas Schnelle <schnelle@linux.ibm.com>
----
- drivers/video/fbdev/Kconfig |  3 ++-
- include/video/vga.h         | 35 +++++++++++++++++++++++++----------
- 2 files changed, 27 insertions(+), 11 deletions(-)
+How did it work before, though?
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 4eea398ebbfe..598d06bddf6a 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -532,7 +532,8 @@ config FB_IMSTT
- 
- config FB_VGA16
- 	tristate "VGA 16-color graphics support"
--	depends on FB && HAS_IOPORT
-+	depends on FB && (X86 || PPC)
-+	depends on HAS_IOPORT
- 	select APERTURE_HELPERS
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
-diff --git a/include/video/vga.h b/include/video/vga.h
-index 947c0abd04ef..ed89295941c4 100644
---- a/include/video/vga.h
-+++ b/include/video/vga.h
-@@ -201,6 +201,7 @@ extern int restore_vga(struct vgastate *state);
-  * generic VGA port read/write
-  */
- 
-+#ifdef CONFIG_HAS_IOPORT
- static inline unsigned char vga_io_r (unsigned short port)
- {
- 	return inb_p(port);
-@@ -210,12 +211,12 @@ static inline void vga_io_w (unsigned short port, unsigned char val)
- {
- 	outb_p(val, port);
- }
--
- static inline void vga_io_w_fast (unsigned short port, unsigned char reg,
- 				  unsigned char val)
- {
- 	outw(VGA_OUT16VAL (val, reg), port);
- }
-+#endif /* CONFIG_HAS_IOPORT */
- 
- static inline unsigned char vga_mm_r (void __iomem *regbase, unsigned short port)
- {
-@@ -235,28 +236,34 @@ static inline void vga_mm_w_fast (void __iomem *regbase, unsigned short port,
- 
- static inline unsigned char vga_r (void __iomem *regbase, unsigned short port)
- {
--	if (regbase)
--		return vga_mm_r (regbase, port);
--	else
-+#ifdef CONFIG_HAS_IOPORT
-+	if (!regbase)
- 		return vga_io_r (port);
-+	else
-+#endif /* CONFIG_HAS_IOPORT */
-+		return vga_mm_r (regbase, port);
- }
- 
- static inline void vga_w (void __iomem *regbase, unsigned short port, unsigned char val)
- {
--	if (regbase)
--		vga_mm_w (regbase, port, val);
--	else
-+#ifdef CONFIG_HAS_IOPORT
-+	if (!regbase)
- 		vga_io_w (port, val);
-+	else
-+#endif /* CONFIG_HAS_IOPORT */
-+		vga_mm_w (regbase, port, val);
- }
- 
- 
- static inline void vga_w_fast (void __iomem *regbase, unsigned short port,
- 			       unsigned char reg, unsigned char val)
- {
--	if (regbase)
--		vga_mm_w_fast (regbase, port, reg, val);
--	else
-+#ifdef CONFIG_HAS_IOPORT
-+	if (!regbase)
- 		vga_io_w_fast (port, reg, val);
-+	else
-+#endif /* CONFIG_HAS_IOPORT */
-+		vga_mm_w_fast (regbase, port, reg, val);
- }
- 
- 
-@@ -280,6 +287,7 @@ static inline void vga_wcrt (void __iomem *regbase, unsigned char reg, unsigned
- #endif /* VGA_OUTW_WRITE */
- }
- 
-+#ifdef CONFIG_HAS_IOPORT
- static inline unsigned char vga_io_rcrt (unsigned char reg)
- {
-         vga_io_w (VGA_CRT_IC, reg);
-@@ -295,6 +303,7 @@ static inline void vga_io_wcrt (unsigned char reg, unsigned char val)
-         vga_io_w (VGA_CRT_DC, val);
- #endif /* VGA_OUTW_WRITE */
- }
-+#endif /* CONFIG_HAS_IOPORT */
- 
- static inline unsigned char vga_mm_rcrt (void __iomem *regbase, unsigned char reg)
- {
-@@ -333,6 +342,7 @@ static inline void vga_wseq (void __iomem *regbase, unsigned char reg, unsigned
- #endif /* VGA_OUTW_WRITE */
- }
- 
-+#ifdef CONFIG_HAS_IOPORT
- static inline unsigned char vga_io_rseq (unsigned char reg)
- {
-         vga_io_w (VGA_SEQ_I, reg);
-@@ -348,6 +358,7 @@ static inline void vga_io_wseq (unsigned char reg, unsigned char val)
-         vga_io_w (VGA_SEQ_D, val);
- #endif /* VGA_OUTW_WRITE */
- }
-+#endif /* CONFIG_HAS_IOPORT */
- 
- static inline unsigned char vga_mm_rseq (void __iomem *regbase, unsigned char reg)
- {
-@@ -385,6 +396,7 @@ static inline void vga_wgfx (void __iomem *regbase, unsigned char reg, unsigned
- #endif /* VGA_OUTW_WRITE */
- }
- 
-+#ifdef CONFIG_HAS_IOPORT
- static inline unsigned char vga_io_rgfx (unsigned char reg)
- {
-         vga_io_w (VGA_GFX_I, reg);
-@@ -400,6 +412,7 @@ static inline void vga_io_wgfx (unsigned char reg, unsigned char val)
-         vga_io_w (VGA_GFX_D, val);
- #endif /* VGA_OUTW_WRITE */
- }
-+#endif /* CONFIG_HAS_IOPORT */
- 
- static inline unsigned char vga_mm_rgfx (void __iomem *regbase, unsigned char reg)
- {
-@@ -434,6 +447,7 @@ static inline void vga_wattr (void __iomem *regbase, unsigned char reg, unsigned
-         vga_w (regbase, VGA_ATT_W, val);
- }
- 
-+#ifdef CONFIG_HAS_IOPORT
- static inline unsigned char vga_io_rattr (unsigned char reg)
- {
-         vga_io_w (VGA_ATT_IW, reg);
-@@ -445,6 +459,7 @@ static inline void vga_io_wattr (unsigned char reg, unsigned char val)
-         vga_io_w (VGA_ATT_IW, reg);
-         vga_io_w (VGA_ATT_W, val);
- }
-+#endif /* CONFIG_HAS_IOPORT */
- 
- static inline unsigned char vga_mm_rattr (void __iomem *regbase, unsigned char reg)
- {
--- 
-2.39.2
+We did not have this device name clash, then we did, and it was solved
+by renaming the devices to numnered.
 
+Now matching the first device should restore the previously available
+functionality, mathing any of the numbered devices would potentially
+allow to use multiple devices.
+
+Or am I missing something?
+
+Thanks
+
+Michal

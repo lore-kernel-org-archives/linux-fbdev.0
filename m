@@ -2,69 +2,134 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BD6DC77B73
-	for <linux-fbdev@archiver.kernel.org>; Sun, 21 May 2023 18:58:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD522C77B73
+	for <linux-fbdev@archiver.kernel.org>; Mon, 22 May 2023 09:38:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230186AbjEUS6o (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 21 May 2023 14:58:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58948 "EHLO
+        id S232391AbjEVJiS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 22 May 2023 05:38:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36146 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230327AbjEUS6n (ORCPT
+        with ESMTP id S232386AbjEVJiQ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 21 May 2023 14:58:43 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF71ABA;
-        Sun, 21 May 2023 11:58:42 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 6353460C94;
-        Sun, 21 May 2023 18:58:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id BEE28C433EF;
-        Sun, 21 May 2023 18:58:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1684695521;
-        bh=K7ZK4zHn4uirKvLOevRh5+9Q/FRdGxhkhisJHm8IzWE=;
-        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=MbQ0QozEK4JQiNITiDxrKayETe7O5t9WbsdPaJb+iVB+eHQKDCG4X/W0Yu/S2r/uJ
-         4tB/6p6FQbZ9gWlOpQb9A/m3igfO4sqAKDaoG0yFsGYO9dUjUsZPXrK8Boiofc1J3V
-         EfsedEOPb8IBko4nxRRWdrIgYO/ZXne537AcVeWSXSfjwSCbvxDY+reZ0Zeckjoyyv
-         HiEtNi8XJFIk5DPDyQ1a3VB5AlPwlaO7OS1ZkE9LN5dJzCn4+zvmxDknjXq92xopfZ
-         G8w6uwRRlFpxT5YLnk5jfldMN6KlOXwY02tuIOD4jt+yGs8kvodZAdBKJ2Ili/w069
-         qrFdfD/dGYjGg==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id A794EC73FE2;
-        Sun, 21 May 2023 18:58:41 +0000 (UTC)
-Subject: Re: [GIT PULL] fbdev fixes for v6.4-rc3
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <ZGntkmg6v2G8Fnfn@ls3530>
-References: <ZGntkmg6v2G8Fnfn@ls3530>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <ZGntkmg6v2G8Fnfn@ls3530>
-X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.4-rc3
-X-PR-Tracked-Commit-Id: d9a45969abeb641c5fb8cf3591f63f827f9932b5
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 70e137e3840e1bc2deab32492316653c956a5c6b
-Message-Id: <168469552168.22409.11989432771083785902.pr-tracker-bot@kernel.org>
-Date:   Sun, 21 May 2023 18:58:41 +0000
-To:     Helge Deller <deller@gmx.de>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
+        Mon, 22 May 2023 05:38:16 -0400
+Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de [80.237.130.52])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 857271AD;
+        Mon, 22 May 2023 02:37:48 -0700 (PDT)
+Received: from [2a02:8108:8980:2478:8cde:aa2c:f324:937e]; authenticated
+        by wp530.webpack.hosteurope.de running ExIM with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        id 1q11yt-0007Y3-RF; Mon, 22 May 2023 11:37:31 +0200
+Message-ID: <d1aee7d3-05f6-0920-b8e1-4ed5cf3f9f70@leemhuis.info>
+Date:   Mon, 22 May 2023 11:37:31 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Reply-To: Linux regressions mailing list <regressions@lists.linux.dev>
+Subject: Re: [PATCH 2/2] drm/ofdrm: Update expected device name
+Content-Language: en-US, de-DE
+To:     Helge Deller <deller@gmx.de>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Cyril Brulebois <cyril@debamax.com>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Rob Herring <robh@kernel.org>,
+        Michal Suchanek <msuchanek@suse.de>,
+        linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>,
+        Linux kernel regressions list <regressions@lists.linux.dev>
+References: <20230412095509.2196162-1-cyril@debamax.com>
+ <20230412095509.2196162-3-cyril@debamax.com>
+ <CAMuHMdW4rZn4p=gQZRWQQSEbQPmzZUd5eN+kP_Yr7bLgTHyvig@mail.gmail.com>
+ <5694a9ab-d474-c101-9398-eea55aab29df@suse.de>
+ <10077a22-3055-75dd-2168-310468618f99@gmx.de>
+From:   "Linux regression tracking (Thorsten Leemhuis)" 
+        <regressions@leemhuis.info>
+In-Reply-To: <10077a22-3055-75dd-2168-310468618f99@gmx.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-bounce-key: webpack.hosteurope.de;regressions@leemhuis.info;1684748268;4b478383;
+X-HE-SMSGID: 1q11yt-0007Y3-RF
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The pull request you sent on Sun, 21 May 2023 12:08:18 +0200:
+Hi, Thorsten here, the Linux kernel's regression tracker. Top-posting
+for once, to make this easily accessible to everyone.
 
-> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.4-rc3
+Was a proper solution for the regression the initial mail in this thread
+is about ever found? Doesn't look like it for here, but maybe I'm
+missing something.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/70e137e3840e1bc2deab32492316653c956a5c6b
+Reminder, the problem afaik is caused by 241d2fb56a ("of: Make OF
+framebuffer device names unique") [merged for v6.2-rc8, authored by
+Michal Suchanek; committed by Rob Herring].
 
-Thank you!
+Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
+--
+Everything you wanna know about Linux kernel regression tracking:
+https://linux-regtracking.leemhuis.info/about/#tldr
+If I did something stupid, please tell me, as explained on that page.
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+#regzbot poke
+
+On 24.04.23 11:35, Helge Deller wrote:
+> On 4/24/23 11:07, Thomas Zimmermann wrote:
+>> Am 24.04.23 um 09:33 schrieb Geert Uytterhoeven:
+>>> On Wed, Apr 12, 2023 at 12:05 PM Cyril Brulebois <cyril@debamax.com>
+>>> wrote:
+>>>> Since commit 241d2fb56a18 ("of: Make OF framebuffer device names
+>>>> unique"),
+>>>> as spotted by Frédéric Bonnard, the historical "of-display" device is
+>>>> gone: the updated logic creates "of-display.0" instead, then as many
+>>>> "of-display.N" as required.
+>>>>
+>>>> This means that offb no longer finds the expected device, which
+>>>> prevents
+>>>> the Debian Installer from setting up its interface, at least on
+>>>> ppc64el.
+>>>>
+>>>> Given the code similarity it is likely to affect ofdrm in the same way.
+>>>>
+>>>> It might be better to iterate on all possible nodes, but updating the
+>>>> hardcoded device from "of-display" to "of-display.0" is likely to help
+>>>> as a first step.
+>>>>
+>>>> Link: https://bugzilla.kernel.org/show_bug.cgi?id=217328
+>>>> Link: https://bugs.debian.org/1033058
+>>>> Fixes: 241d2fb56a18 ("of: Make OF framebuffer device names unique")
+>>>> Cc: stable@vger.kernel.org # v6.2+
+>>>> Signed-off-by: Cyril Brulebois <cyril@debamax.com>
+>>>
+>>> Thanks for your patch, which is now commit 3a9d8ea2539ebebd
+>>> ("drm/ofdrm: Update expected device name") in fbdev/for-next.
+>>>
+>>>> --- a/drivers/gpu/drm/tiny/ofdrm.c
+>>>> +++ b/drivers/gpu/drm/tiny/ofdrm.c
+>>>> @@ -1390,7 +1390,7 @@ MODULE_DEVICE_TABLE(of, ofdrm_of_match_display);
+>>>>
+>>>>   static struct platform_driver ofdrm_platform_driver = {
+>>>>          .driver = {
+>>>> -               .name = "of-display",
+>>>> +               .name = "of-display.0",
+>>>>                  .of_match_table = ofdrm_of_match_display,
+>>>>          },
+>>>>          .probe = ofdrm_probe,
+>>>
+>>> Same comment as for "[PATCH 1/2] fbdev/offb: Update expected device
+>>> name".
+>>>
+>>> https://lore.kernel.org/r/CAMuHMdVGEeAsmb4tAuuqqGJ-4+BBETwEwYJA+M9NyJv0BJ_hNg@mail.gmail.com
+>>
+>> Sorry that I missed this patch. I agree that it's probably not
+>> correct. At least in ofdrm, we want to be able to use multiple
+>> framebuffers at the same time; a feature that has been broken by this
+>> change.
+> 
+> Geert & Thomas, thanks for the review!
+> 
+> I've dropped both patches from fbdev tree for now.
+> Would be great to find another good solution though, as it breaks the
+> debian
+> installer.
+> 
+> Helge

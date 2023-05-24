@@ -2,40 +2,39 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 748F8C77B73
-	for <linux-fbdev@archiver.kernel.org>; Wed, 24 May 2023 18:11:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 414EAC77B7A
+	for <linux-fbdev@archiver.kernel.org>; Wed, 24 May 2023 18:20:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231446AbjEXSLr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 24 May 2023 14:11:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46450 "EHLO
+        id S231526AbjEXSU2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 24 May 2023 14:20:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51260 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233219AbjEXSLq (ORCPT
+        with ESMTP id S229742AbjEXSU2 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 24 May 2023 14:11:46 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1873098;
-        Wed, 24 May 2023 11:11:44 -0700 (PDT)
+        Wed, 24 May 2023 14:20:28 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ED92DE7;
+        Wed, 24 May 2023 11:20:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1684951892; i=deller@gmx.de;
-        bh=vYF4rxhK78UkwtODl6bqMtSb44Y+lQ/HCY7sfkZcbS8=;
+        t=1684952412; i=deller@gmx.de;
+        bh=WG+hAFG6SEqXxehKbXada6K5tJh0Wir0acFKWq+QDkw=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=ZYn2zqPaBgoLl/eyE6v34K9o5YkJ940ZepXfCWsk3Z0S1/+IwraZb/OrUu2iv/umK
-         VGYfyIzB72VsRDdjZ9fMMp7fjN5HRZk1280ehPukXbVKjXNAR+gvRyuk0RF3FbMjmO
-         7gTls4OsSLi/H7VCfcP04utVQoLZDyMeot5xh/tjRXJedBlIlP2KsCsIwmGaPHXDOB
-         gDxNpOZisOd1O2EMNLeBhc2RTUtGw69u0dDKLjXPCptxciwMpM1TiZWo3brF2sksoG
-         UYdb9l+Zl7WzkC9E4dv9WWDx3zVI8M6yRkvKsIYgGO2cHAtR3b5rzid077QdL40NyH
-         +9ZglOt9TgW3w==
+        b=c8kE61iUyxR982QVAOXYSZ1lUUPesqKNJ9fBPljDhDpd/P8qCc/m1jJfP5dBqt56l
+         pvd2dkey9aAmeTeihGFkzp1JwmuG49t/Otd6hc3ALQWni0f/kHHSmwyES6n+74UkEz
+         EcPaiBg6xYgr+Smti1OVgceXGk0XtegRcvIhf8JglUyI4Fq6aJxvhWFyNe+xnP7679
+         KRYkV0bE6AW/zr4mYK7oKh9ak0X/P9RDxpiXOBp4EnLaAZo5k+tQv04LSAAMLoxQmE
+         N2htGNHM3BFJL8MOIN4XMmTdcSxCjXP4lUANhQ4vCMgtaJCKZ7RnpzJ5cMdeYfINbV
+         g1fQljGwM0vGg==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.145.4]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1Mlw3N-1qSB6N1o7n-00j3Km; Wed, 24
- May 2023 20:11:32 +0200
-Message-ID: <a4b406f1-5395-1187-a27a-26fc4a5a00c5@gmx.de>
-Date:   Wed, 24 May 2023 20:11:31 +0200
+Received: from [192.168.20.60] ([94.134.145.4]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1M9Wuk-1q5ALI2lQS-005akz; Wed, 24
+ May 2023 20:20:12 +0200
+Message-ID: <7e5643de-5d64-272e-cb36-bbe1e5c187ec@gmx.de>
+Date:   Wed, 24 May 2023 20:20:11 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.10.0
-Subject: Re: [PATCH 3/4] fbdev: imsttfb: Move a variable assignment for an
- error code in imsttfb_probe()
+Subject: Re: [PATCH 1/4] fbdev: imsttfb: Fix error handling in init_imstt()
 Content-Language: en-US
 To:     Markus Elfring <Markus.Elfring@web.de>,
         kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org,
@@ -49,79 +48,123 @@ Cc:     LKML <linux-kernel@vger.kernel.org>, cocci@inria.fr,
         hackerzheng666@gmail.com
 References: <069f2f78-01f3-9476-d860-2b695c122649@gmx.de>
  <97807a2d-ccf2-1fbf-06f7-085bb1bdf451@web.de>
- <38cd2e4b-3df4-6c69-b790-5762d24e2c29@web.de>
+ <c551c670-7458-ed50-eb2f-5a2b7ba421a8@web.de>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <38cd2e4b-3df4-6c69-b790-5762d24e2c29@web.de>
+In-Reply-To: <c551c670-7458-ed50-eb2f-5a2b7ba421a8@web.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:kwyZx7UVkFvtxjWPnX2J8lIg0jAOScX6U8y+gyILOdLeImC40ps
- TzDm8sPK06FrP28YUAkhqhEo5hszE0JgnmP4BdDPeMs+rLIVD11rvp7zO4SDa6UlPDQExXv
- uh9og1moIlqbrFWyDp1WKn9vKNdAsNuSsl/Ypk/z83bxy9TWJg1G0rcXur2WF0wZGvCsuna
- EL/HKfFVycHCIkYVTSc6A==
-UI-OutboundReport: notjunk:1;M01:P0:wlg3kCL+FKU=;ZHDw2WCNMHfZo4y5j9oFG5UkHnM
- oJj1BhnsmIZb+t2fnLt4xMxL+rbWcb9+5v4P6ptVsiXQWpUKPsKJDrXwRUo1aOomZbrEunCwV
- wVkXoxbfti/xYronrpDJgPi3rDwyxoBQSJQIgArkBXom6TNa7/XrHYxwid9Pj1Z4tXOQk4Sgz
- j52juP2nzx55hk6TSNftSMUnuEVHu6UA74u6bVGzmY5UZ29DlFdS65w94RLu0sCs/t+k4ptfx
- +kwqi/yQe+wgVOPNYGcYI1+iriIedeokdZWOnsUO53H3ap7/a9+ktRMbK8aJ1HxUkErN4RtSv
- +3qYAtrqcldSLOtucesHtXQqjdIN4bzoYFmnR6rK0PdUGEoePaqXzLbEWyBpKOPKCtVfGwrz4
- Q6APQn0La4RxJ/oJNC+OHb+bKp6oRTKUfxokVl0GjKMefeF625jUqvKwNUeeS9o1Ohqw0ykgZ
- StzY9fV/SVoieEy8Ye+OOiCbLx0UvUI1qaR2ocMOONbf1ynQEEHKrX7ufiVdLoxcCbdKNIuOd
- txMhg9IVk2alVl/IqfvTAawAwNmEHEtqJrc1vWFn6K81M2vGDvG7nCAuEvlbcGbAsh+EjnGiH
- Xn91rQ+2j3jhMavivXmt4WkfrkOYt6CIROyP5ci1x1ghvbmY3Q5iSWBHF3gqUJxfe5esdoamM
- LvIvFbzsG42fJ/jWQwZuOlh2zREnE/7rJM6zXSjgw2dfCUDo3Xq43RQrDqZ1dpfoRRx7KVER6
- NMSKR7uMaPWS5/yTYd3HYESw3rFhQky6yFkcMmPT6x8fcY8MvoKem3QnKHxyerh9Tp6XN77Nq
- R8MIrirb22ydmpruABLrYlMSFEzo/LuMDT7Xa6tS9jCdlbQv9qtyJfe/ek63r+/Y1DDVfTszA
- ZvGLFfVoWmIJE68f5Ux3Mi0U+VOQeF4qBh2tRGPdE+QvSFKqNUcLqAOHADPIGqqprcypzPphl
- ofS29g==
+X-Provags-ID: V03:K1:25L6+tdLvR4JdvEn3uP+W2huNpRBdOtgMf3hNVOXNlS8iHzDWLl
+ dwlVc8x1mOgG/YP+IbLRva/kxwk8YRsFr0g+oGyEbvW/2mlu/c7HFLAb+YCEwYNhqWkRJOf
+ A+aOPeqcWy613Hk2U4Ophw9PQAQJgIzfv2cVEE3YteWoKLY2MUhamhxzmaIMmrizmCZ/8uw
+ KX121419r/X+/eMQ/L9+g==
+UI-OutboundReport: notjunk:1;M01:P0:LIBBXwL4Mpc=;wGLcB2nki+J2zLaqM56D3MfI3ik
+ 4WuVQeBGN+TpSXMsre4dHsLrKrQj3c0wtcHsO8e2jA1Sl7lOv5kdctLwlM15e4r6dhGmxr4dM
+ VgrjoUiMwNFwEbEo2fEXVyxo5NPgNfO9W7momdfWv28jZ3DLTTJQ2XKqiXvEKrmAM5xRRHxLC
+ Pe0vFK1fa994OKWM2Y7HP+kOJb65040qmo1kYxatIaVOA2RoE5+JYGKIt7Ehgf/2sbGKIUpfl
+ DadgCyqv7R9ic1xHp604qKx0m2e3In6FGGtPpGoYRZjGWN+CKSgFlGjECBqlbUnurbAy10jVs
+ mmG4jJ6L0Eaz91eeSW1HhankzDQNzj6/Dvl1reneMGBcs9Eg9uBUlOcT6O5p1LHKmJCL3Sbwt
+ tjfOvWfGqrnm58+bKVk/amzeqoDpwawoAulJ6UAfJyEefuJSWXjlPJVoNsPyNl3OPFighbewL
+ JY3pirmnAQV99MDTIhmHmIiQsMgEZcIxVtD5iP4DKCYItaGans6gkTsU0pRVobODzgCxmVB1K
+ eKxqeBXdaMPLipOvx42QgrWmeGupp72V+nouU7lQaGcdto9CQHM8TKuGNpPvvLCdKkwteSDzd
+ ey+kI6Fm1r3TixAJ5eSg37GmwZ3P6YhEstrCGNTGlu/IJwxqZAiG9nlCKCbtYe2MChdyGeBaG
+ GaEwDtyLRdP4pB0iMN49gbaHmnvBc0CTkp2Nz96Fx9ML63IVrTYIXR2aBqBxd9trjTKsV7Z+n
+ EVFPmLlglWuztNxm2s1E64Ao8dBPxupQ8mtoNLLgmJZXdkNgzaqYrPsCtsacqGR0sx2TFAIaR
+ KlPkK0VeQpFM8RSxDZj/WMW41rSPjzXQV+6VR9+/X4Z5NSRX/+VDhqIPyWCVi7d0NJ/dthRGH
+ 4LcXZGZJ8nNW/qMI6c9X7Kkq/6m2KD2U2ms1R8/T7AR1CyclMmOh289BKOciFPsZe7kqT+KAk
+ 6HvK+SuJCIH9ofv+JVrv7wlwE+Y=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 5/23/23 19:42, Markus Elfring wrote:
+On 5/23/23 19:38, Markus Elfring wrote:
 > From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Tue, 23 May 2023 18:30:26 +0200
+> Date: Tue, 23 May 2023 14:32:39 +0200
 >
-> The value =E2=80=9C-ENOMEM=E2=80=9D was assigned to the variable =E2=80=
-=9Cret=E2=80=9D
-> at the beginning.
-> Move this statement directly before the first ioremap() call.
-
-Please do not move such variables without real need.
-It makes backporting (of this and maybe follow-up patches) much more
-complicated and the compiler will optimize it anyway.
-
-Thanks!
-Helge
-
+> The return value was overlooked from a call of
+> the function =E2=80=9Cfb_alloc_cmap=E2=80=9D.
 >
+> * Thus use a corresponding error check.
+>
+> * Add two jump targets so that a bit of exception handling
+>    can be better reused at the end of this function.
+>
+>
+> Reported-by: Helge Deller <deller@gmx.de>
+> Link: https://lore.kernel.org/dri-devel/069f2f78-01f3-9476-d860-2b695c12=
+2649@gmx.de/
+> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+> Fixes: c75f5a550610 ("fbdev: imsttfb: Fix use after free bug in imsttfb_=
+probe")
 > Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 > ---
->   drivers/video/fbdev/imsttfb.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+>   drivers/video/fbdev/imsttfb.c | 18 +++++++++++++-----
+>   1 file changed, 13 insertions(+), 5 deletions(-)
 >
 > diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb=
 .c
-> index 6490f544f8eb..90c72428e8d7 100644
+> index 975dd682fae4..d3532def4707 100644
 > --- a/drivers/video/fbdev/imsttfb.c
 > +++ b/drivers/video/fbdev/imsttfb.c
-> @@ -1484,7 +1484,6 @@ static int imsttfb_probe(struct pci_dev *pdev, con=
-st struct pci_device_id *ent)
->   	ret =3D aperture_remove_conflicting_pci_devices(pdev, "imsttfb");
->   	if (ret)
->   		return ret;
-> -	ret =3D -ENOMEM;
+> @@ -1351,6 +1351,7 @@ static int init_imstt(struct fb_info *info)
+>   {
+>   	struct imstt_par *par =3D info->par;
+>   	__u32 i, tmp, *ip, *end;
+> +	int ret;
 >
->   	dp =3D pci_device_to_OF_node(pdev);
->   	if(dp)
-> @@ -1525,6 +1524,7 @@ static int imsttfb_probe(struct pci_dev *pdev, con=
-st struct pci_device_id *ent)
+>   	tmp =3D read_reg_le32(par->dc_regs, PRC);
+>   	if (par->ramdac =3D=3D IBM)
+> @@ -1419,8 +1420,7 @@ static int init_imstt(struct fb_info *info)
+>   	if ((info->var.xres * info->var.yres) * (info->var.bits_per_pixel >> =
+3) > info->fix.smem_len
+>   	    || !(compute_imstt_regvals(par, info->var.xres, info->var.yres)))=
+ {
+>   		printk("imsttfb: %ux%ux%u not supported\n", info->var.xres, info->va=
+r.yres, info->var.bits_per_pixel);
+> -		framebuffer_release(info);
+> -		return -ENODEV;
+> +		goto e_nodev;
 >   	}
 >
->   	info->fix.smem_start =3D addr;
-> +	ret =3D -ENOMEM;
->   	info->screen_base =3D (__u8 *)ioremap(addr, par->ramdac =3D=3D IBM ?
->   					    0x400000 : 0x800000);
->   	if (!info->screen_base)
+>   	sprintf(info->fix.id, "IMS TT (%s)", par->ramdac =3D=3D IBM ? "IBM" :=
+ "TVP");
+> @@ -1452,17 +1452,25 @@ static int init_imstt(struct fb_info *info)
+>   	              FBINFO_HWACCEL_FILLRECT |
+>   	              FBINFO_HWACCEL_YPAN;
+>
+> -	fb_alloc_cmap(&info->cmap, 0, 0);
+> +	ret =3D fb_alloc_cmap(&info->cmap, 0, 0);
+> +	if (ret)
+> +		goto release_framebuffer;
+>
+>   	if (register_framebuffer(info) < 0) {
+> -		framebuffer_release(info);
+> -		return -ENODEV;
+> +		fb_dealloc_cmap(&info->cmap);
+> +		goto e_nodev;
+>   	}
+>
+>   	tmp =3D (read_reg_le32(par->dc_regs, SSTATUS) & 0x0f00) >> 8;
+>   	fb_info(info, "%s frame buffer; %uMB vram; chip version %u\n",
+>   		info->fix.id, info->fix.smem_len >> 20, tmp);
+>   	return 0;
+> +
+> +e_nodev:
+> +	ret =3D -ENODEV;
+
+I think the return value isn't checked at all, so you could
+simply return below "-ENODEV" for all cases (instead of "return ret").
+Then you don't need the e_nodev label and can simplify the flow.
+
+Helge
+
+
+> +release_framebuffer:
+> +	framebuffer_release(info);
+> +	return ret;
+>   }
+>
+>   static int imsttfb_probe(struct pci_dev *pdev, const struct pci_device=
+_id *ent)
 > --
 > 2.40.1
 >

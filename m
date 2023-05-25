@@ -2,170 +2,126 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 414EAC77B7A
-	for <linux-fbdev@archiver.kernel.org>; Wed, 24 May 2023 18:20:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A39B2C7EE2C
+	for <linux-fbdev@archiver.kernel.org>; Thu, 25 May 2023 10:52:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231526AbjEXSU2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 24 May 2023 14:20:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51260 "EHLO
+        id S240522AbjEYKwL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 25 May 2023 06:52:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37460 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229742AbjEXSU2 (ORCPT
+        with ESMTP id S238970AbjEYKwK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 24 May 2023 14:20:28 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ED92DE7;
-        Wed, 24 May 2023 11:20:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1684952412; i=deller@gmx.de;
-        bh=WG+hAFG6SEqXxehKbXada6K5tJh0Wir0acFKWq+QDkw=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=c8kE61iUyxR982QVAOXYSZ1lUUPesqKNJ9fBPljDhDpd/P8qCc/m1jJfP5dBqt56l
-         pvd2dkey9aAmeTeihGFkzp1JwmuG49t/Otd6hc3ALQWni0f/kHHSmwyES6n+74UkEz
-         EcPaiBg6xYgr+Smti1OVgceXGk0XtegRcvIhf8JglUyI4Fq6aJxvhWFyNe+xnP7679
-         KRYkV0bE6AW/zr4mYK7oKh9ak0X/P9RDxpiXOBp4EnLaAZo5k+tQv04LSAAMLoxQmE
-         N2htGNHM3BFJL8MOIN4XMmTdcSxCjXP4lUANhQ4vCMgtaJCKZ7RnpzJ5cMdeYfINbV
-         g1fQljGwM0vGg==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.145.4]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1M9Wuk-1q5ALI2lQS-005akz; Wed, 24
- May 2023 20:20:12 +0200
-Message-ID: <7e5643de-5d64-272e-cb36-bbe1e5c187ec@gmx.de>
-Date:   Wed, 24 May 2023 20:20:11 +0200
+        Thu, 25 May 2023 06:52:10 -0400
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8EA5290;
+        Thu, 25 May 2023 03:52:09 -0700 (PDT)
+Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-64d293746e0so2319693b3a.2;
+        Thu, 25 May 2023 03:52:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1685011929; x=1687603929;
+        h=content-transfer-encoding:cc:to:subject:from:content-language
+         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=uKxz95HpCbuh/D0m8xyBwXgcATYmLHxvtvHZsmTAjvM=;
+        b=MWrsouSOOS/cmfHAbtaBDlA5hu/Zsz8eQpc0ejq/r1lHJ6zWF379v3eijhTI/KVTpS
+         1C7+Mciljxexh94Kx57j0geBMnJLzmolaCy026y9US7G8p/pc8tDP4gaZVSg3nQmUFMb
+         p5YhDE5Om+Vw35b25srQIuABNbDm+ziiuaseIo2mPO6ROWPkW6HwVKyj5sGXWePXNU7o
+         w2ZeKQfs+OykPZX63MPepCJC4yqk/MewWKh8NxfCDfUMDTC84lt1Cpi96jkU22ukBHN9
+         CJyDZLXT5XP7ODQyj9PFsd08PcGDBEiyW4SohPSK/SPmau/sPhFcfOkgbpSUuxA4KIgs
+         CFmA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1685011929; x=1687603929;
+        h=content-transfer-encoding:cc:to:subject:from:content-language
+         :user-agent:mime-version:date:message-id:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=uKxz95HpCbuh/D0m8xyBwXgcATYmLHxvtvHZsmTAjvM=;
+        b=fYyNxyGUqvLzsIX+Cydtj7t/ziVlz+A04GfeaVq6qr7EJJISkDdwUwkmzPNZNyNEgw
+         UG7v4boVGp1RdjbqqapEUIIwE9CqGITlOZgLfhxi5HhFmqXNPa1pJN9H2b7Aith9XKTQ
+         be+jo2CRgl9zPD+M/2aZgAzcgdxERb2hmi0Elw1tatxTCFhMTSwm+Tgh0ZZcEWYouYWD
+         53WRyIChzrVIMJOZI50nIk49uLoecuhVb/W5i7SicDZOl3CBiZrjLJg1N8kwql8jMuMu
+         QSaYynoq7v1WiDf5ll8GVINsPcHY0Q4qz18mWmmNyTKC+pyx/e5REKILWyk0y7/wa8gD
+         ciqA==
+X-Gm-Message-State: AC+VfDwkfmxgSnxWQjFdM0fN718bphre0P0VKsE8Q4PKdn4BT6RkuGcy
+        8/RIQU58RpYdaZQq/7XiA1uATVxVwhM=
+X-Google-Smtp-Source: ACHHUZ4t3SiYOJoolZUCHAT1XgTAYYbV/XtXlsKSF3tKEyR9blhYcZ1CFakdTFQ200+G0aZdshBR9g==
+X-Received: by 2002:a05:6a20:8413:b0:10c:5ff4:8bb9 with SMTP id c19-20020a056a20841300b0010c5ff48bb9mr10574335pzd.58.1685011928691;
+        Thu, 25 May 2023 03:52:08 -0700 (PDT)
+Received: from [192.168.43.80] (subs02-180-214-232-68.three.co.id. [180.214.232.68])
+        by smtp.gmail.com with ESMTPSA id 18-20020a630012000000b0052c9d1533b6sm905392pga.56.2023.05.25.03.52.05
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 25 May 2023 03:52:08 -0700 (PDT)
+Message-ID: <e8f93560-a2f6-8e9f-031a-88d333482a31@gmail.com>
+Date:   Thu, 25 May 2023 17:52:02 +0700
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH 1/4] fbdev: imsttfb: Fix error handling in init_imstt()
+ Thunderbird/102.11.0
 Content-Language: en-US
-To:     Markus Elfring <Markus.Elfring@web.de>,
-        kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        =?UTF-8?Q?Michal_Koutn=c3=bd?= <mkoutny@suse.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Zheng Wang <zyytlz.wz@163.com>
-Cc:     LKML <linux-kernel@vger.kernel.org>, cocci@inria.fr,
-        1395428693sheep@gmail.com, alex000young@gmail.com,
-        hackerzheng666@gmail.com
-References: <069f2f78-01f3-9476-d860-2b695c122649@gmx.de>
- <97807a2d-ccf2-1fbf-06f7-085bb1bdf451@web.de>
- <c551c670-7458-ed50-eb2f-5a2b7ba421a8@web.de>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <c551c670-7458-ed50-eb2f-5a2b7ba421a8@web.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:25L6+tdLvR4JdvEn3uP+W2huNpRBdOtgMf3hNVOXNlS8iHzDWLl
- dwlVc8x1mOgG/YP+IbLRva/kxwk8YRsFr0g+oGyEbvW/2mlu/c7HFLAb+YCEwYNhqWkRJOf
- A+aOPeqcWy613Hk2U4Ophw9PQAQJgIzfv2cVEE3YteWoKLY2MUhamhxzmaIMmrizmCZ/8uw
- KX121419r/X+/eMQ/L9+g==
-UI-OutboundReport: notjunk:1;M01:P0:LIBBXwL4Mpc=;wGLcB2nki+J2zLaqM56D3MfI3ik
- 4WuVQeBGN+TpSXMsre4dHsLrKrQj3c0wtcHsO8e2jA1Sl7lOv5kdctLwlM15e4r6dhGmxr4dM
- VgrjoUiMwNFwEbEo2fEXVyxo5NPgNfO9W7momdfWv28jZ3DLTTJQ2XKqiXvEKrmAM5xRRHxLC
- Pe0vFK1fa994OKWM2Y7HP+kOJb65040qmo1kYxatIaVOA2RoE5+JYGKIt7Ehgf/2sbGKIUpfl
- DadgCyqv7R9ic1xHp604qKx0m2e3In6FGGtPpGoYRZjGWN+CKSgFlGjECBqlbUnurbAy10jVs
- mmG4jJ6L0Eaz91eeSW1HhankzDQNzj6/Dvl1reneMGBcs9Eg9uBUlOcT6O5p1LHKmJCL3Sbwt
- tjfOvWfGqrnm58+bKVk/amzeqoDpwawoAulJ6UAfJyEefuJSWXjlPJVoNsPyNl3OPFighbewL
- JY3pirmnAQV99MDTIhmHmIiQsMgEZcIxVtD5iP4DKCYItaGans6gkTsU0pRVobODzgCxmVB1K
- eKxqeBXdaMPLipOvx42QgrWmeGupp72V+nouU7lQaGcdto9CQHM8TKuGNpPvvLCdKkwteSDzd
- ey+kI6Fm1r3TixAJ5eSg37GmwZ3P6YhEstrCGNTGlu/IJwxqZAiG9nlCKCbtYe2MChdyGeBaG
- GaEwDtyLRdP4pB0iMN49gbaHmnvBc0CTkp2Nz96Fx9ML63IVrTYIXR2aBqBxd9trjTKsV7Z+n
- EVFPmLlglWuztNxm2s1E64Ao8dBPxupQ8mtoNLLgmJZXdkNgzaqYrPsCtsacqGR0sx2TFAIaR
- KlPkK0VeQpFM8RSxDZj/WMW41rSPjzXQV+6VR9+/X4Z5NSRX/+VDhqIPyWCVi7d0NJ/dthRGH
- 4LcXZGZJ8nNW/qMI6c9X7Kkq/6m2KD2U2ms1R8/T7AR1CyclMmOh289BKOciFPsZe7kqT+KAk
- 6HvK+SuJCIH9ofv+JVrv7wlwE+Y=
+From:   Bagas Sanjaya <bagasdotme@gmail.com>
+Subject: Fwd: absent both plymouth, and video= on linu lines, vtty[1-6]
+ framebuffers produce vast raster right and bottom borders on the larger
+ resolution of two displays
+To:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux Regressions <regressions@lists.linux.dev>,
+        Linux Framebuffer <linux-fbdev@vger.kernel.org>,
+        DRI Development List <dri-devel@lists.freedesktop.org>,
+        Linux Nouveau/NVIDIA <nouveau@lists.freedesktop.org>,
+        Linux Stable <stable@vger.kernel.org>
+Cc:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+        Antonino Daplas <adaplas@gmail.com>,
+        Ben Skeggs <bskeggs@redhat.com>,
+        Karol Herbst <kherbst@redhat.com>,
+        Lyude Paul <lyude@redhat.com>,
+        Felix Miata <mrmazda@earthlink.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 5/23/23 19:38, Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Tue, 23 May 2023 14:32:39 +0200
->
-> The return value was overlooked from a call of
-> the function =E2=80=9Cfb_alloc_cmap=E2=80=9D.
->
-> * Thus use a corresponding error check.
->
-> * Add two jump targets so that a bit of exception handling
->    can be better reused at the end of this function.
->
->
-> Reported-by: Helge Deller <deller@gmx.de>
-> Link: https://lore.kernel.org/dri-devel/069f2f78-01f3-9476-d860-2b695c12=
-2649@gmx.de/
-> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-> Fixes: c75f5a550610 ("fbdev: imsttfb: Fix use after free bug in imsttfb_=
-probe")
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> ---
->   drivers/video/fbdev/imsttfb.c | 18 +++++++++++++-----
->   1 file changed, 13 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb=
-.c
-> index 975dd682fae4..d3532def4707 100644
-> --- a/drivers/video/fbdev/imsttfb.c
-> +++ b/drivers/video/fbdev/imsttfb.c
-> @@ -1351,6 +1351,7 @@ static int init_imstt(struct fb_info *info)
->   {
->   	struct imstt_par *par =3D info->par;
->   	__u32 i, tmp, *ip, *end;
-> +	int ret;
->
->   	tmp =3D read_reg_le32(par->dc_regs, PRC);
->   	if (par->ramdac =3D=3D IBM)
-> @@ -1419,8 +1420,7 @@ static int init_imstt(struct fb_info *info)
->   	if ((info->var.xres * info->var.yres) * (info->var.bits_per_pixel >> =
-3) > info->fix.smem_len
->   	    || !(compute_imstt_regvals(par, info->var.xres, info->var.yres)))=
- {
->   		printk("imsttfb: %ux%ux%u not supported\n", info->var.xres, info->va=
-r.yres, info->var.bits_per_pixel);
-> -		framebuffer_release(info);
-> -		return -ENODEV;
-> +		goto e_nodev;
->   	}
->
->   	sprintf(info->fix.id, "IMS TT (%s)", par->ramdac =3D=3D IBM ? "IBM" :=
- "TVP");
-> @@ -1452,17 +1452,25 @@ static int init_imstt(struct fb_info *info)
->   	              FBINFO_HWACCEL_FILLRECT |
->   	              FBINFO_HWACCEL_YPAN;
->
-> -	fb_alloc_cmap(&info->cmap, 0, 0);
-> +	ret =3D fb_alloc_cmap(&info->cmap, 0, 0);
-> +	if (ret)
-> +		goto release_framebuffer;
->
->   	if (register_framebuffer(info) < 0) {
-> -		framebuffer_release(info);
-> -		return -ENODEV;
-> +		fb_dealloc_cmap(&info->cmap);
-> +		goto e_nodev;
->   	}
->
->   	tmp =3D (read_reg_le32(par->dc_regs, SSTATUS) & 0x0f00) >> 8;
->   	fb_info(info, "%s frame buffer; %uMB vram; chip version %u\n",
->   		info->fix.id, info->fix.smem_len >> 20, tmp);
->   	return 0;
-> +
-> +e_nodev:
-> +	ret =3D -ENODEV;
+Hi,
 
-I think the return value isn't checked at all, so you could
-simply return below "-ENODEV" for all cases (instead of "return ret").
-Then you don't need the e_nodev label and can simplify the flow.
+I notice a regression report on Bugzilla [1]. Quoting from it:
 
-Helge
+> Original Summary:
+> absent both plymouth, and video= on linu lines, vtty[1-6] framebuffers produce vast raster right and bottom borders on the larger resolution of two displays
+> 
+> To reproduce:
+> 1-connect two unequal native resolution displays to a Tesla or Firmi GPU
+> 2-don't have plymouth in use (I don't ever have it installed, so don't know whether it impacts)
+> 3-don't include e.g. video=1440x900@60 directive on Grub's linu lines
+> 4-boot Tumbleweed or Fedora 38
+> 5-switch to a vtty, e.g. Ctrl-Alt-F3
+> 
+> Actual behavior:
+> 1-Both displays utilize the resolution (same pixel grid) of the lower resolution display
+> 2-Lower resolution display behaves as expected (light text on black background)
+> 3-Higher resolution display uses same pixels as lower resolution display, with light text on black background, leaving right side and bottom raster instead of black
+> 
+> Expected behavior:
+> 1-Both displays utilize the resolution (same pixel grid) of the lower resolution display
+> 2-Lower resolution display behaves as expected
+> 3-Entire higher resolution display's background is black instead of portions in raster
+> 
+> Workaround: add e.g. video=1440x900@60 to Grub's linu lines, which causes both displays to use the same nominal mode on the full display space.
+> 
+> Typical other linu line options:
+> noresume consoleblank=0 net.ifnames=0 ipv6.disable=1 preempt=full mitigations=none
+> 
+> My Tesla has HDMI and DVI outputs, tested with 1920x1200 and 1680x1050 displays.
+> My Fermi has dual DisplayPort, tested with 2560x1440 and 1680x1050 displays.
+> Occurs Tumbleweed with 6.3.2 and 6.2.12 kernel-default, and with 6.2.15 on Fedora 38, and (partially with Tesla, right side only) with 6.2.12 and 6.3.3 on Mageia 9.
+> Does not occur with 6.1.12 kernel-default on NVidia, or with AMD Caicos (Terascale2) GPU, or with Intel Eaglelake GPU.
+> Tested only on legacy booting (no UEFI support).
+> Others might describe what I call "raster" as multicolored snow.
 
+See bugzilla for the full thread and attached dmesg.
 
-> +release_framebuffer:
-> +	framebuffer_release(info);
-> +	return ret;
->   }
->
->   static int imsttfb_probe(struct pci_dev *pdev, const struct pci_device=
-_id *ent)
-> --
-> 2.40.1
->
+Anyway, I'm adding it to regzbot:
 
+#regzbot introduced: v6.1.12..v6.2.12
+#regzbot title: vast raster right and bottom borders on larger display (two displays with inequal resolution) unless forcing resolution with video= parameter
+
+Thanks.
+
+-- 
+An old man doll... just what I always wanted! - Clara

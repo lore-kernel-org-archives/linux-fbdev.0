@@ -2,121 +2,89 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3212C7EE2D
-	for <linux-fbdev@archiver.kernel.org>; Thu, 25 May 2023 11:17:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56DBBC77B7A
+	for <linux-fbdev@archiver.kernel.org>; Thu, 25 May 2023 11:24:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240522AbjEYLR4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 25 May 2023 07:17:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48018 "EHLO
+        id S230389AbjEYLYw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 25 May 2023 07:24:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52264 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240442AbjEYLRz (ORCPT
+        with ESMTP id S240373AbjEYLYs (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 25 May 2023 07:17:55 -0400
-Received: from mail-io1-f78.google.com (mail-io1-f78.google.com [209.85.166.78])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 731B813A
-        for <linux-fbdev@vger.kernel.org>; Thu, 25 May 2023 04:17:52 -0700 (PDT)
-Received: by mail-io1-f78.google.com with SMTP id ca18e2360f4ac-76c48b53e16so220044539f.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 25 May 2023 04:17:52 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685013471; x=1687605471;
-        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=X298Rc6iJqA17+C3fEuxgsgZ0gAoLhGbhdBxE9t9JP0=;
-        b=VgtZISDI/Eiyh2Jsj49HljaJWTBH9G1Xl8fvv/1K9+S1R+ftG7ySbxGj8Z8lMQMcPw
-         HwEBaEqiNBw+U0j0aMbkMey272Z6peZox9HP8sm+/WVfJHx8o950pz5knBedyoM0oUoE
-         jT1h6TbcF8jmru9GcPnAZ41c17WWhxSvE9FANDbp9TDYLUl+1EcZp0HG0TUBSFqprpKN
-         53fqHy9zJO8dE8mUi7Ot9sprZKGlPg4fdlbuNb3B0oXKQVHoJpxDqCmJNYKurLgPEFED
-         sDzIbryD8Ez0pVONgCIxQ2IbVpEfoPCSCVir198h8r3NM3cSkzgMBeEtdA3NdQLRzY6N
-         hV0w==
-X-Gm-Message-State: AC+VfDwGsiUMyn3dDM8LKHco83znrWAlGEXO85ag/C3c+aPEAz4e6mD/
-        Yy0fV/ieAyXLsmlXRZxLlYmLXZyiILHG52rIKQCaAs27On9A
-X-Google-Smtp-Source: ACHHUZ4HIfP2C+p5FhyX7nJFUXa85Ukb1CVy/LCs92Nq5pA7XAcFawjYQVX1u9Q165xmWVNMyLgAaPGaWhRMgDNSg6H3a82OR7vO
+        Thu, 25 May 2023 07:24:48 -0400
+Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de [80.237.130.52])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C27ECA3;
+        Thu, 25 May 2023 04:24:46 -0700 (PDT)
+Received: from [2a02:8108:8980:2478:8cde:aa2c:f324:937e]; authenticated
+        by wp530.webpack.hosteurope.de running ExIM with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        id 1q295H-0007uO-Dj; Thu, 25 May 2023 13:24:43 +0200
+Message-ID: <d4879ff1-b9ac-0373-ceb2-beaa645fba23@leemhuis.info>
+Date:   Thu, 25 May 2023 13:24:42 +0200
 MIME-Version: 1.0
-X-Received: by 2002:a02:a10b:0:b0:416:5d0f:f494 with SMTP id
- f11-20020a02a10b000000b004165d0ff494mr11021293jag.5.1685013471329; Thu, 25
- May 2023 04:17:51 -0700 (PDT)
-Date:   Thu, 25 May 2023 04:17:51 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <00000000000066852605fc82c577@google.com>
-Subject: [syzbot] [fbdev?] memory leak in fbcon_set_font (3)
-From:   syzbot <syzbot+6fda7f092994bd03fad1@syzkaller.appspotmail.com>
-To:     daniel@ffwll.ch, deller@gmx.de, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Subject: Re: [Nouveau] Fwd: absent both plymouth, and video= on linu lines,
+ vtty[1-6] framebuffers produce vast raster right and bottom borders on the
+ larger resolution of two displays
+Content-Language: en-US, de-DE
+To:     Bagas Sanjaya <bagasdotme@gmail.com>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux Regressions <regressions@lists.linux.dev>,
+        Linux Framebuffer <linux-fbdev@vger.kernel.org>,
+        DRI Development List <dri-devel@lists.freedesktop.org>,
+        Linux Nouveau/NVIDIA <nouveau@lists.freedesktop.org>,
+        Linux Stable <stable@vger.kernel.org>
+Cc:     Antonino Daplas <adaplas@gmail.com>, Helge Deller <deller@gmx.de>,
+        Felix Miata <mrmazda@earthlink.net>,
+        Ben Skeggs <bskeggs@redhat.com>,
+        Daniel Vetter <daniel@ffwll.ch>
+References: <e8f93560-a2f6-8e9f-031a-88d333482a31@gmail.com>
+ <585f36f8-431a-e929-0a04-ffb65f02e9df@gmail.com>
+From:   Thorsten Leemhuis <regressions@leemhuis.info>
+In-Reply-To: <585f36f8-431a-e929-0a04-ffb65f02e9df@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-bounce-key: webpack.hosteurope.de;regressions@leemhuis.info;1685013886;17d9fab6;
+X-HE-SMSGID: 1q295H-0007uO-Dj
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello,
+On 25.05.23 12:55, Bagas Sanjaya wrote:
+> On 5/25/23 17:52, Bagas Sanjaya wrote:
+>>
+>> I notice a regression report on Bugzilla [1]. Quoting from it:
+>> [...]
+>> Anyway, I'm adding it to regzbot:
+>>
+>> #regzbot introduced: v6.1.12..v6.2.12
+>> #regzbot title: vast raster right and bottom borders on larger display (two displays with inequal resolution) unless forcing resolution with video= parameter
 
-syzbot found the following issue on:
+Bagas, thx again for your efforts, much appreciated. But I guess for drm
+drivers that have a line like
 
-HEAD commit:    0dd2a6fb1e34 Merge tag 'tty-6.4-rc3' of git://git.kernel.o..
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=12f15641280000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=8944c5b480b57ee6
-dashboard link: https://syzkaller.appspot.com/bug?extid=6fda7f092994bd03fad1
-compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=17c2cf09280000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=16325819280000
+B: https://gitlab.freedesktop.org/drm/[...]
 
-Downloadable assets:
-disk image: https://storage.googleapis.com/syzbot-assets/2961112b4460/disk-0dd2a6fb.raw.xz
-vmlinux: https://storage.googleapis.com/syzbot-assets/8ef8e1887351/vmlinux-0dd2a6fb.xz
-kernel image: https://storage.googleapis.com/syzbot-assets/4a1c984d6f73/bzImage-0dd2a6fb.xz
+in MAINTAINERS (which includes all the popular drm drivers) this just
+creates a lot of confusion for everyone, as one issue will likely end up
+being discussed in two or three places in parallel (bugzilla,
+freedesktop, email). Better tell reporters to move their issue to the
+freedesktop drm tracker and close the ticket in bugzilla. And don't get
+regzbot involved, as it for now it sadly is unable to monitor the
+freedesktop drm tracker (sooner or later I'll fix that, but for now it's
+a blind spot :-/).
 
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+6fda7f092994bd03fad1@syzkaller.appspotmail.com
+Pretty sure none of the DRM developers will disagree, but if I'm wrong,
+please holler.
 
-BUG: memory leak
-unreferenced object 0xffff88810eb60000 (size 26640):
-  comm "syz-executor100", pid 4988, jiffies 4294944215 (age 14.910s)
-  hex dump (first 32 bytes):
-    03 cc 4b ef 00 00 00 00 00 68 00 00 01 00 00 00  ..K......h......
-    0d e4 73 70 56 3e d4 50 e7 4f ba 9e e1 5c c0 c3  ..spV>.P.O...\..
-  backtrace:
-    [<ffffffff815460d7>] __do_kmalloc_node mm/slab_common.c:954 [inline]
-    [<ffffffff815460d7>] __kmalloc+0xb7/0x120 mm/slab_common.c:979
-    [<ffffffff826405bd>] kmalloc include/linux/slab.h:563 [inline]
-    [<ffffffff826405bd>] fbcon_set_font+0x1ed/0x4a0 drivers/video/fbdev/core/fbcon.c:2502
-    [<ffffffff8278ad5e>] con_font_set drivers/tty/vt/vt.c:4626 [inline]
-    [<ffffffff8278ad5e>] con_font_op+0x5ae/0x730 drivers/tty/vt/vt.c:4673
-    [<ffffffff82774b78>] vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
-    [<ffffffff82774b78>] vt_ioctl+0x468/0x1d90 drivers/tty/vt/vt_ioctl.c:752
-    [<ffffffff82757161>] tty_ioctl+0x4c1/0xd00 drivers/tty/tty_io.c:2777
-    [<ffffffff8167fa80>] vfs_ioctl fs/ioctl.c:51 [inline]
-    [<ffffffff8167fa80>] __do_sys_ioctl fs/ioctl.c:870 [inline]
-    [<ffffffff8167fa80>] __se_sys_ioctl fs/ioctl.c:856 [inline]
-    [<ffffffff8167fa80>] __x64_sys_ioctl+0x100/0x140 fs/ioctl.c:856
-    [<ffffffff84a14749>] do_syscall_x64 arch/x86/entry/common.c:50 [inline]
-    [<ffffffff84a14749>] do_syscall_64+0x39/0xb0 arch/x86/entry/common.c:80
-    [<ffffffff84c0008b>] entry_SYSCALL_64_after_hwframe+0x63/0xcd
+> Oops, I forget to add bugzilla link:
+> 
+> #regzbot introduced: v6.1.12..v6.2.12 https://bugzilla.kernel.org/show_bug.cgi?id=217479
+> #regzbot from: Felix Miata <mrmazda@earthlink.net>
 
+Side note: that currently does not work with regzbot. :-/ Whatever, I'll
+remove it from the tracking due to above reasons:
 
+#regzbot inconclusive: sadly not tracked for now
 
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
-
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
-
-If the bug is already fixed, let syzbot know by replying with:
-#syz fix: exact-commit-title
-
-If you want syzbot to run the reproducer, reply with:
-#syz test: git://repo/address.git branch-or-commit-hash
-If you attach or paste a git patch, syzbot will apply it before testing.
-
-If you want to change bug's subsystems, reply with:
-#syz set subsystems: new-subsystem
-(See the list of subsystem names on the web dashboard)
-
-If the bug is a duplicate of another bug, reply with:
-#syz dup: exact-subject-of-another-report
-
-If you want to undo deduplication, reply with:
-#syz undup
+Ciao, Thorsten

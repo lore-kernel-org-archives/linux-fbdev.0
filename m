@@ -2,122 +2,129 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE94CC77B7A
-	for <linux-fbdev@archiver.kernel.org>; Thu, 25 May 2023 14:06:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84BC6C7EE29
+	for <linux-fbdev@archiver.kernel.org>; Thu, 25 May 2023 17:39:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241346AbjEYOGZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 25 May 2023 10:06:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46106 "EHLO
+        id S240529AbjEYRjj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 25 May 2023 13:39:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46616 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241442AbjEYOGY (ORCPT
+        with ESMTP id S235487AbjEYRje (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 25 May 2023 10:06:24 -0400
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A78AE6A;
-        Thu, 25 May 2023 07:05:59 -0700 (PDT)
-Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-64d3578c25bso2595210b3a.3;
-        Thu, 25 May 2023 07:05:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1685023558; x=1687615558;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=nPgjNadYh8O7MO97+r7j/d1jHMHXaP+jYO/Oxgqowkw=;
-        b=ommVYYHtLu2Vj/VFDhve63ednPa4iUIK0BRPyAFZDujd9Xt3JeLe+O3NF8Q8zlzkb3
-         aAXyFBFxNP7JQq+72gNtmddn2k/TBovdx3V+3Yz9YMyNttqh+BBSrX9Zfb+xSFw/gPcr
-         BySOJjvCUI6vMlc6mRMYWDZ+Bz5xuY2eUtxI3YpE7E65jL0TVHE+nwtzVcrukf3bLDrr
-         aYfWvmJT/hI+RvF9yWEnRe3yTezD0hZVbSYP6jgO+d8W8pYSJmwv8Pa6LscCpMrOyENV
-         GSXMHLuYp0SDMYbwBePjskTW1ktJ+ZlqbpP6qGOjnYHcjksb8MXfpQE2C4NJhDVIE7dj
-         sYqg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685023558; x=1687615558;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=nPgjNadYh8O7MO97+r7j/d1jHMHXaP+jYO/Oxgqowkw=;
-        b=Cmxz6pJvSUpWszFnKuVqD05YlOemhtt4zKesOjGpSN3Vg+Li9xbNIoK+DFdqVxUeW7
-         dje+mKXaQa8KerJWMx+hsd5oxdc/QxExmE1KLFRR1qzIGoafN4uolGdmUq7O3L/FEG4a
-         KjvpVQgmZkTJCedwBs5Plo5ik3qfXwnm2OUgO/m7WBunkpY3wfD4wx5LaKGGGdw8mHr9
-         H5U5Yj0iwTUVr/vUh/L9kfoVk72fJVrIK4PvMqxB9lwmbvfENcbw7xLtks69M0seOxMe
-         xaBoQ6qBtXPeCqsgP10l04ZCjkMFQdizcySGjPmFoI/a/5uMUf0+rLubrQfpdXBqnRQ8
-         cbnA==
-X-Gm-Message-State: AC+VfDwBr+vX+LS763oS6Lt6WMje1PG8T4jSJNM58012s7SWHoyXGQph
-        lE9TAGJOKwkMlFZCtAIeLGI=
-X-Google-Smtp-Source: ACHHUZ47Dl0L7k8F6DW64BTj9LkTtrQ2DbW8Gx4wNp/sPCbMg+J5frhhwcYCQPMqLQmTxkr+7BdQlQ==
-X-Received: by 2002:a05:6a00:1a0f:b0:64d:42f6:4c7b with SMTP id g15-20020a056a001a0f00b0064d42f64c7bmr8027787pfv.27.1685023557843;
-        Thu, 25 May 2023 07:05:57 -0700 (PDT)
-Received: from debian.me (subs03-180-214-233-28.three.co.id. [180.214.233.28])
-        by smtp.gmail.com with ESMTPSA id s5-20020a62e705000000b0063b7f3250e9sm1242426pfh.7.2023.05.25.07.05.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 25 May 2023 07:05:57 -0700 (PDT)
-Received: by debian.me (Postfix, from userid 1000)
-        id BF66B1068F8; Thu, 25 May 2023 21:05:54 +0700 (WIB)
-Date:   Thu, 25 May 2023 21:05:54 +0700
-From:   Bagas Sanjaya <bagasdotme@gmail.com>
-To:     Thorsten Leemhuis <regressions@leemhuis.info>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux Regressions <regressions@lists.linux.dev>,
-        Linux Framebuffer <linux-fbdev@vger.kernel.org>,
-        DRI Development List <dri-devel@lists.freedesktop.org>,
-        Linux Nouveau/NVIDIA <nouveau@lists.freedesktop.org>,
-        Linux Stable <stable@vger.kernel.org>
-Cc:     Antonino Daplas <adaplas@gmail.com>, Helge Deller <deller@gmx.de>,
-        Felix Miata <mrmazda@earthlink.net>,
-        Ben Skeggs <bskeggs@redhat.com>,
-        Daniel Vetter <daniel@ffwll.ch>
-Subject: Re: [Nouveau] Fwd: absent both plymouth, and video= on linu lines,
- vtty[1-6] framebuffers produce vast raster right and bottom borders on the
- larger resolution of two displays
-Message-ID: <ZG9rQmIs1W8IcEcY@debian.me>
-References: <e8f93560-a2f6-8e9f-031a-88d333482a31@gmail.com>
- <585f36f8-431a-e929-0a04-ffb65f02e9df@gmail.com>
- <d4879ff1-b9ac-0373-ceb2-beaa645fba23@leemhuis.info>
+        Thu, 25 May 2023 13:39:34 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B57841AC;
+        Thu, 25 May 2023 10:39:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1685036357; i=deller@gmx.de;
+        bh=dGkmEijQeyVfl8qKQ3M1K+a+v3j8D4UMsrjdQ/Ss0sI=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=UUDeXFx3knYs5BBPJ7mK/9QTOWMigsc9rLrbXHiPKKK4lZjFJy92EccdvOlBmY+Wq
+         /lslfThyMM1zDqzv1QKijxR3M1qe9rIHA8VeOsI5vEqkdAiQAZLwdw2ExG2BfSKJH7
+         MhenVry1VBe3m221xFPq33sXarDMtYUk+7WiZZ522hDHtF2PDReJfSINvsizXEkQNS
+         /h82rsQQfTMAobTUVIJoWfLocCOeueonp4njpvSHotrnxkXsrndvDKCp+mpKTbciK9
+         pTNVFSr4d+mgYyAUuQSEFnXsbCXMDryJTWeLl8tJd9jhddTWDw9lnxzouA+0JiusfA
+         ASiQse66rKqmw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.157.173]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MEFvj-1ps5vV3Y2v-00AGSS; Thu, 25
+ May 2023 19:39:16 +0200
+Message-ID: <446a2a2a-155b-1fe3-44f3-89033b80ad34@gmx.de>
+Date:   Thu, 25 May 2023 19:39:15 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="grvaiosJJE1u57Uo"
-Content-Disposition: inline
-In-Reply-To: <d4879ff1-b9ac-0373-ceb2-beaa645fba23@leemhuis.info>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Subject: Re: [PATCH 1/4] fbdev: imsttfb: Fix error handling in init_imstt()
+Content-Language: en-US
+To:     Markus Elfring <Markus.Elfring@web.de>,
+        kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        =?UTF-8?Q?Michal_Koutn=c3=bd?= <mkoutny@suse.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Zheng Wang <zyytlz.wz@163.com>
+Cc:     LKML <linux-kernel@vger.kernel.org>, cocci@inria.fr,
+        1395428693sheep@gmail.com, alex000young@gmail.com,
+        hackerzheng666@gmail.com
+References: <069f2f78-01f3-9476-d860-2b695c122649@gmx.de>
+ <97807a2d-ccf2-1fbf-06f7-085bb1bdf451@web.de>
+ <c551c670-7458-ed50-eb2f-5a2b7ba421a8@web.de>
+ <7e5643de-5d64-272e-cb36-bbe1e5c187ec@gmx.de>
+ <1d7228fb-f1f8-364c-aa29-5719a9da1fc6@web.de>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <1d7228fb-f1f8-364c-aa29-5719a9da1fc6@web.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:TZV0p5eR83WJ51IM6S8Z0c5/DcY/szlYHtkBeYayMx+sEbjb6My
+ DV/Q6f9kG5eqKkBd9sUxpzbN8Z806wMD/0i3mQRazFtVl67vWNEc6TCWQBG+n6F2R3jSNin
+ stzbyz/uP15JcKuo6tAaXbEL6KAQ+vMGV54I6eRafI8+Tq+ozR0BX/Rn/aQfAMID6K/0UgK
+ ROMzh1r+oUXPU/Sqi+qqA==
+UI-OutboundReport: notjunk:1;M01:P0:nLsrtoL4Elw=;2eCOJwl1hLmLBmRzJDNX32Y+1pA
+ nJumhqLPU7a5u3RK7xtr0K2hWRICnR8tP1oMYJj746mNJw6et4VQsWPLTLFUCZt3BRE8vP7c5
+ +ESNogAvyRrZR15Y2BCoAlD6DTYzyCoyQSZ1bosqWJUcFNRYiK76XSWRaOt7vNwVHk3tr/IHb
+ xED8Aw/zs7SCQmPJpLRlbYpwyUIIX7ENEySVci7bV+tUAwgPJLyuNTQM6iV5owc9xBFgVnXwX
+ 2dpCQoI5WaFhS5fYeGW0FsyS3Qb/e2COrRcU8M0M/CguPH8+ZlQkrNBV+/10sItEXYItccRRR
+ D4Cw1aVVBN5pIvdnNvRA2FP/7hwn9g4kcUTM37kkI+WoZ9mR8yE3KgBXBrtPvlYkL7xlVCu96
+ RcWWn7FFxuiDeRnqBLvvIwINRhUcjdEcqr0roxg20v/oh22fvIQCnD4rWI5XcatE/RSdqagXW
+ wdC7K0Xfueiypc1xNrotZjPHyUuSMChfaHfpy9Ze/8QZiiXsgaDXs8U7KJHDjxE8vOosOAGS+
+ dXKPYbHbN1oRM77y0uy8LxJPsIMwmTmrSOxoschKt19IVg3N9HZsDNJKvJrFthv8TRZqzZ2Pr
+ lpbwpiyhPbQATVWJQWZonCF06M3HYfG8l3SRaC8o+v4O7LvXmpVMHBPQzUO40qXciCysQuMde
+ fluTUS3aEhQcSYT5lUVMmI9Ro9OJkPggEsdz6uaLZHgSKs4+5tLYeOxP7Q9U0zTK0RnxQxamz
+ qBPYFtP7+Ji0Cd/M7LeMlLtRp8ZFTpaW7K1vMozvHiamtX8sAv9yzWqko6H1c2jIaKeSr9GwJ
+ OsB8yP5+3hAQdG5bhUyuxEVG1r90TaudaHY07f0dNU9BMixje0JmgVXr9wu4KxefkN5y/CUgv
+ eGgInMNBhkI25Gd2NdQYrtRB+k6PLM6K45NMIah2bMm3ZJ7GMcd/bjUljtpmTZ/gGnXYU6D7U
+ EyL+tTRolD2Y/d++riwdRp3eS90=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+On 5/25/23 07:33, Markus Elfring wrote:
+>>> The return value was overlooked from a call of
+>>> the function =E2=80=9Cfb_alloc_cmap=E2=80=9D.
+>>>
+>>> * Thus use a corresponding error check.
+>>>
+>>> * Add two jump targets so that a bit of exception handling
+>>>  =C2=A0=C2=A0 can be better reused at the end of this function.
+> =E2=80=A6
+>>> +++ b/drivers/video/fbdev/imsttfb.c
+> =E2=80=A6
+>>> @@ -1452,17 +1452,25 @@ static int init_imstt(struct fb_info *info)
+>>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 FBINFO_HWACCEL_FILLRECT |
+>>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 FBINFO_HWACCEL_YPAN;
+>>>
+>>> -=C2=A0=C2=A0=C2=A0 fb_alloc_cmap(&info->cmap, 0, 0);
+>>> +=C2=A0=C2=A0=C2=A0 ret =3D fb_alloc_cmap(&info->cmap, 0, 0);
+>>> +=C2=A0=C2=A0=C2=A0 if (ret)
+>>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 goto release_framebuffer;
+>>>
+>>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (register_framebuffer(info) < 0) {
+>>> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 framebuffer_release(info);
+>>> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return -ENODEV;
+>>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 fb_dealloc_cmap(&info->cma=
+p);
+>>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 goto e_nodev;
+>>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 }
+>>>
+>>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 tmp =3D (read_reg_le32(par->dc_regs, S=
+STATUS) & 0x0f00) >> 8;
+>>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 fb_info(info, "%s frame buffer; %uMB v=
+ram; chip version %u\n",
+>>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 info->fix.id, =
+info->fix.smem_len >> 20, tmp);
+>>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return 0;
+>>> +
+>>> +e_nodev:
+>>> +=C2=A0=C2=A0=C2=A0 ret =3D -ENODEV;
+>>
+>> I think the return value isn't checked at all, so you could
+>> simply return below "-ENODEV" for all cases (instead of "return ret").
+>> Then you don't need the e_nodev label and can simplify the flow.
+>
+> Can it be helpful to distinguish involved error codes better?
 
---grvaiosJJE1u57Uo
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+No.
 
-On Thu, May 25, 2023 at 01:24:42PM +0200, Thorsten Leemhuis wrote:
-> Bagas, thx again for your efforts, much appreciated. But I guess for drm
-> drivers that have a line like
->=20
-> B: https://gitlab.freedesktop.org/drm/[...]
->=20
-> in MAINTAINERS (which includes all the popular drm drivers) this just
-> creates a lot of confusion for everyone, as one issue will likely end up
-> being discussed in two or three places in parallel (bugzilla,
-> freedesktop, email). Better tell reporters to move their issue to the
-> freedesktop drm tracker and close the ticket in bugzilla. And don't get
-> regzbot involved, as it for now it sadly is unable to monitor the
-> freedesktop drm tracker (sooner or later I'll fix that, but for now it's
-> a blind spot :-/).
->=20
-> Pretty sure none of the DRM developers will disagree, but if I'm wrong,
-> please holler.
-
-OK, thanks!
-
---=20
-An old man doll... just what I always wanted! - Clara
-
---grvaiosJJE1u57Uo
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQSSYQ6Cy7oyFNCHrUH2uYlJVVFOowUCZG9rQgAKCRD2uYlJVVFO
-o2q1AP0at4ur6rVluyiWwI+vlx6EPDtqu5dzAi4NoyxwtVFJuwEArRNKmZCx78ih
-F/NmfUXKN6TG2PwPATDa1cn4Qwp+9g8=
-=9SOh
------END PGP SIGNATURE-----
-
---grvaiosJJE1u57Uo--
+Helge

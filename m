@@ -2,89 +2,100 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56DBBC77B7A
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B88B0C77B7E
 	for <linux-fbdev@archiver.kernel.org>; Thu, 25 May 2023 11:24:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230389AbjEYLYw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 25 May 2023 07:24:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52264 "EHLO
+        id S234189AbjEYLYx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 25 May 2023 07:24:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52272 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240373AbjEYLYs (ORCPT
+        with ESMTP id S240404AbjEYLYs (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Thu, 25 May 2023 07:24:48 -0400
-Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de [80.237.130.52])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C27ECA3;
-        Thu, 25 May 2023 04:24:46 -0700 (PDT)
-Received: from [2a02:8108:8980:2478:8cde:aa2c:f324:937e]; authenticated
-        by wp530.webpack.hosteurope.de running ExIM with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        id 1q295H-0007uO-Dj; Thu, 25 May 2023 13:24:43 +0200
-Message-ID: <d4879ff1-b9ac-0373-ceb2-beaa645fba23@leemhuis.info>
-Date:   Thu, 25 May 2023 13:24:42 +0200
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C678E10B
+        for <linux-fbdev@vger.kernel.org>; Thu, 25 May 2023 04:24:47 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 59D6C63C4D
+        for <linux-fbdev@vger.kernel.org>; Thu, 25 May 2023 11:24:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BE7B9C433D2;
+        Thu, 25 May 2023 11:24:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1685013886;
+        bh=btjnOS5QBQbH1TK+krstl7WoC4pjCk/EvZ5Dl24yVkA=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=BlGx7vULqkX0U0Lhjy84XofXnfTD4UM/yoGBln0OrkvrvDEn0HUQSoIOr+qBE/IoV
+         IfLOZRRxCuy6N+sOfAuh4HwbZ+/7rUFiDri3KIW4+OlURootsv1ifFpFlrRnyCCT7h
+         Pziwa+ibAp+ajH6tLKnml66xH20j1DcV00A3swnTXpemCyhDFf5ojGi6MMv1O3fDyr
+         fJowxDn7KA0eXO+1AvBe81+VoOWr+QflNJAJugIiv3HOWmHaYq8bYArtET2vMcYUd2
+         lWc3TmhPnIQsSe5g99na91nQ3aWL+/C7gXSpQ58gLUpAiUB2lBCB/jaGgzTMnYcRZy
+         LSB3eQaqcrBAA==
+Date:   Thu, 25 May 2023 12:24:41 +0100
+From:   Lee Jones <lee@kernel.org>
+To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Michael Hennerich <michael.hennerich@analog.com>,
+        Helge Deller <deller@gmx.de>,
+        Jianhua Lu <lujianhua000@gmail.com>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        kernel@pengutronix.de
+Subject: Re: [PATCH] backlight: Switch i2c drivers back to use .probe()
+Message-ID: <20230525112441.GA423913@google.com>
+References: <20230521143844.375244-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [Nouveau] Fwd: absent both plymouth, and video= on linu lines,
- vtty[1-6] framebuffers produce vast raster right and bottom borders on the
- larger resolution of two displays
-Content-Language: en-US, de-DE
-To:     Bagas Sanjaya <bagasdotme@gmail.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux Regressions <regressions@lists.linux.dev>,
-        Linux Framebuffer <linux-fbdev@vger.kernel.org>,
-        DRI Development List <dri-devel@lists.freedesktop.org>,
-        Linux Nouveau/NVIDIA <nouveau@lists.freedesktop.org>,
-        Linux Stable <stable@vger.kernel.org>
-Cc:     Antonino Daplas <adaplas@gmail.com>, Helge Deller <deller@gmx.de>,
-        Felix Miata <mrmazda@earthlink.net>,
-        Ben Skeggs <bskeggs@redhat.com>,
-        Daniel Vetter <daniel@ffwll.ch>
-References: <e8f93560-a2f6-8e9f-031a-88d333482a31@gmail.com>
- <585f36f8-431a-e929-0a04-ffb65f02e9df@gmail.com>
-From:   Thorsten Leemhuis <regressions@leemhuis.info>
-In-Reply-To: <585f36f8-431a-e929-0a04-ffb65f02e9df@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-bounce-key: webpack.hosteurope.de;regressions@leemhuis.info;1685013886;17d9fab6;
-X-HE-SMSGID: 1q295H-0007uO-Dj
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20230521143844.375244-1-u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 25.05.23 12:55, Bagas Sanjaya wrote:
-> On 5/25/23 17:52, Bagas Sanjaya wrote:
->>
->> I notice a regression report on Bugzilla [1]. Quoting from it:
->> [...]
->> Anyway, I'm adding it to regzbot:
->>
->> #regzbot introduced: v6.1.12..v6.2.12
->> #regzbot title: vast raster right and bottom borders on larger display (two displays with inequal resolution) unless forcing resolution with video= parameter
+On Sun, 21 May 2023, Uwe Kleine-König wrote:
 
-Bagas, thx again for your efforts, much appreciated. But I guess for drm
-drivers that have a line like
-
-B: https://gitlab.freedesktop.org/drm/[...]
-
-in MAINTAINERS (which includes all the popular drm drivers) this just
-creates a lot of confusion for everyone, as one issue will likely end up
-being discussed in two or three places in parallel (bugzilla,
-freedesktop, email). Better tell reporters to move their issue to the
-freedesktop drm tracker and close the ticket in bugzilla. And don't get
-regzbot involved, as it for now it sadly is unable to monitor the
-freedesktop drm tracker (sooner or later I'll fix that, but for now it's
-a blind spot :-/).
-
-Pretty sure none of the DRM developers will disagree, but if I'm wrong,
-please holler.
-
-> Oops, I forget to add bugzilla link:
+> After commit b8a1a4cd5a98 ("i2c: Provide a temporary .probe_new()
+> call-back type"), all drivers being converted to .probe_new() and then
+> 03c835f498b5 ("i2c: Switch .probe() to not take an id parameter") convert
+> back to (the new) .probe() to be able to eventually drop .probe_new() from
+> struct i2c_driver.
 > 
-> #regzbot introduced: v6.1.12..v6.2.12 https://bugzilla.kernel.org/show_bug.cgi?id=217479
-> #regzbot from: Felix Miata <mrmazda@earthlink.net>
+> Also fix two indention inconsistencies in the neighbourhood.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> ---
+> Hello,
+> 
+> this patch was generated using coccinelle, but I aligned the result to
+> the per-file indention.
+> 
+> This is one patch for the whole backlight subsystem. If you want it
+> split per driver for improved patch count numbers, please tell me.
+> 
+> Currently there are no changes to drivers/video/backlight in next, so
+> the change should apply fine. If however there are other changes that
+> result in conflicts, feel free to just drop the hunks in the relevant
+> files and apply anyhow. I'll care about the fallout later.
+> 
+> Best regards
+> Uwe
+> 
+> 
+>  drivers/video/backlight/adp8860_bl.c | 4 ++--
+>  drivers/video/backlight/adp8870_bl.c | 4 ++--
+>  drivers/video/backlight/arcxcnn_bl.c | 2 +-
+>  drivers/video/backlight/bd6107.c     | 2 +-
+>  drivers/video/backlight/ktz8866.c    | 2 +-
+>  drivers/video/backlight/lm3630a_bl.c | 2 +-
+>  drivers/video/backlight/lm3639_bl.c  | 2 +-
+>  drivers/video/backlight/lp855x_bl.c  | 2 +-
+>  drivers/video/backlight/lv5207lp.c   | 2 +-
+>  9 files changed, 11 insertions(+), 11 deletions(-)
 
-Side note: that currently does not work with regzbot. :-/ Whatever, I'll
-remove it from the tracking due to above reasons:
+Applied, thanks
 
-#regzbot inconclusive: sadly not tracked for now
-
-Ciao, Thorsten
+-- 
+Lee Jones [李琼斯]

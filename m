@@ -2,142 +2,139 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D0C6C77B7C
-	for <linux-fbdev@archiver.kernel.org>; Sat, 27 May 2023 17:27:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C28EC7EE2F
+	for <linux-fbdev@archiver.kernel.org>; Mon, 29 May 2023 07:02:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229497AbjE0R1B (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 27 May 2023 13:27:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34264 "EHLO
+        id S229584AbjE2HCk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 29 May 2023 03:02:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39522 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229494AbjE0R1A (ORCPT
+        with ESMTP id S229615AbjE2HCj (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 27 May 2023 13:27:00 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8DFD5BC
-        for <linux-fbdev@vger.kernel.org>; Sat, 27 May 2023 10:26:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-        t=1685208412; i=deller@gmx.de;
-        bh=MP+V7n8HZDO6zeXPSrSzsBRBz9rwIYjzdbH3Nohh+ek=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=rXkVL3srN4037ZtImgjIDhULRJgc8FRC0Y6jgnnFaSGJmqcIxK60jH9LIAAAm72Wd
-         M0m1FN+7RZU9RtCzGuupRcXd0qKIfrbv9PqoRIgTqMu1C/sxukwLUVeQ0fjExbvrBZ
-         4ToSlnCOS8gxAVgL6JUE6yTWC72DvRnRf8+ZMZtxG4Jm53Mtcpzfx3AFlpjaXh3Rq1
-         XvtTivD72BU/bvjojq6aXzDfYWcCk97iv8a6GcpsHJWrybmEmN31FwMXiWgJwKCsgn
-         a9rXy9rHbdDs6IneDfz4bEWCzx3kZkvpyzddxrObluTblTPpmDeoa0A4+7ROe47gfx
-         HU9JdEi86hQww==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.159.182]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1M3UUy-1q2Pj43BWk-000d7n; Sat, 27
- May 2023 19:26:52 +0200
-Message-ID: <ffe2dc05-b099-107b-adf0-593f2df12bea@gmx.de>
-Date:   Sat, 27 May 2023 19:26:52 +0200
+        Mon, 29 May 2023 03:02:39 -0400
+Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF22FAD
+        for <linux-fbdev@vger.kernel.org>; Mon, 29 May 2023 00:02:34 -0700 (PDT)
+Received: by mail-lf1-x12c.google.com with SMTP id 2adb3069b0e04-4f4c264f6c6so3283732e87.3
+        for <linux-fbdev@vger.kernel.org>; Mon, 29 May 2023 00:02:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=shruggie-ro.20221208.gappssmtp.com; s=20221208; t=1685343753; x=1687935753;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=cJB5+P4xgPilKMJQyTk3eAPDV8GpHyt2fP+7h44nDNs=;
+        b=FGhKiz8dBWwr9/+R+reQipeYxNB1gcmYsJ7bZbWgP8vpD+0Js4lgYwersF0bhlBFfx
+         AoBv3t60BEjDsQ+//F6gNfJL7TKCuKtbj0JZY91qkazqTzob+IFBzGrNq5fvEJgkX67W
+         y+qzGQyohlsogF2BSjAWqXcmUTFY4fEXNADyl2U7gc1c+xNSymu2Tu9tPcquM7DB6a6L
+         riSRw20OAF0VAmq08GHr9Kr2aUzUiKiaI/5QFnc7BO7OqnJgspihpwvULSi1tTJvEBf/
+         f24Gl6irXXG2dDmzNTQUJOdBeI0zsO6HQViONoOYQkZZs1g9+txWx4YM53xWgvRg43Os
+         Z0xA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1685343753; x=1687935753;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=cJB5+P4xgPilKMJQyTk3eAPDV8GpHyt2fP+7h44nDNs=;
+        b=mFyrCAnt3/SaI77xF7oSiNpK5+sSQktFzeU+nhOocwTSos7Rku3Pw6BHQtUIw5Q9D1
+         AlJbyS7stRKTGffE7n22x0r3HJpQkob4JQdw0mQIkD7KinXiLZHpjV01SfDS1mcRX+4z
+         BHPbXSu73eKttfnTgIDRQjCxb/T93ACRZsBVvvicd4mzJHc58WQDQ03sgEp54t+wzigY
+         PdQjebKEuMiCO/CclCUezDKOEXgSqbIWaFHfWWUaKv+Gm9Ldp47I/9hK9I9VPuw6Kwjf
+         DvoNAjUHhv+NaqVePhCglF7pBB8YgFnAoFsk7zYdNARJHS5Tr0r9g0oTJNubuyUbEJB9
+         jqyQ==
+X-Gm-Message-State: AC+VfDz22kdX3qQZUc3Wk5XL/d+MY/Pp1XRzF6dxeMwV/8wyBnT8r0L2
+        N35uJk8Lb8j2bpferk8QCD/LHyLmdXi39FTGuX435Q==
+X-Google-Smtp-Source: ACHHUZ6dy/tVjeBZf9nbJfVYzPM3W/IXKBY1aEH8eswJWC6FweeAzZtsDZnpj8P70hH4TPm2Olzs1bvP+3NW6NNxhSE=
+X-Received: by 2002:a05:6512:40b:b0:4f4:d710:12d4 with SMTP id
+ u11-20020a056512040b00b004f4d71012d4mr3426221lfk.17.1685343752776; Mon, 29
+ May 2023 00:02:32 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH] fbcon: Avoid showing softcursor if font not available
-Content-Language: en-US
-To:     Sam Ravnborg <sam@ravnborg.org>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <ZHHLBpGkHBmIpGT9@ls3530> <20230527101807.GA1101718@ravnborg.org>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20230527101807.GA1101718@ravnborg.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+References: <20230519200520.10657-1-alex@shruggie.ro> <d7fc3df2-aae7-d3b2-ea29-14d266289d1d@foss.st.com>
+In-Reply-To: <d7fc3df2-aae7-d3b2-ea29-14d266289d1d@foss.st.com>
+From:   Alexandru Ardelean <alex@shruggie.ro>
+Date:   Mon, 29 May 2023 10:02:21 +0300
+Message-ID: <CAH3L5Qo51dVV_FsYTLKNcmYL5VbD+9S54VYuNbhZUunHOTi_aA@mail.gmail.com>
+Subject: Re: [PATCH 1/2] backlight: gpio_backlight: add new property default-brightness-level
+To:     Philippe CORNU <philippe.cornu@foss.st.com>
+Cc:     dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, lee@kernel.org,
+        daniel.thompson@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
+        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        conor+dt@kernel.org, deller@gmx.de,
+        Yannick Fertre <yannick.fertre@foss.st.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:9kuJ2lJp6Y5s4hBiZvOIPkQTq4FR+BogjUd5bYXwn2eiAHoHmtK
- jvKZFs/Bk113Jg3x8tDj4zQD4g4c279PTSXlq/WXUT3XK2MpifLrzYDebmKFqh+zdmAg+/L
- 3KySMC0QjkxrVhOYSwuPT7Qv5UyjLvq9qqcm8Vwc2ZXCrmjVAYjbxCALFIqRSiHD/7utAeZ
- MtFHItGUpHQOZDp2k0K3g==
-UI-OutboundReport: notjunk:1;M01:P0:beMtHZ4I0Gc=;swyUAfsrnpVng0SlwH8uA0JrLsJ
- +VJgzdCXmq0Fd1QtAfRffJ9VhMNBGUy4TGbfIMB+Yw+1SzHNP1OYTfUxQzInP7JEaGyplXTtr
- nHv4uL7RdSRGMFfb4cS0XtpXV7jHIARJkadEvVth6zDI281mmDpsTtOpOP96DU6ofnv0l1ga6
- Fzc2hqk1o7BDfYjDlqiLVVxQPuUxRhg9bdYsCgWuIdsm13z2AOr9kQBH05s1k5LduAo5ttaeZ
- HfambOirdEYOu9tA+4XKvL3GmIBLPaBwrFraC5295OJOn3fBSQDeWI2iv+TMFvsmtPxG8tarn
- QemkHNiQnx2I16fg4TStun1S1D44I02OfnK+CVnCONa/pstAW2QOU1+zkeHzGRVdoxZgkwUUl
- E0FEQKhzu6F+KmVX/KU9bDsMF4cxd/uzXJ16xPtF1dtFa9Ai20kGGuppyUOI+NBhrf86wc/ep
- wbtbISaandz31S2ZOweBRkwIbl93kqcRRcQBHFM6em0kEOmbR8IRXl4FMNBfCJPlH1bh6pUC0
- DYGi2I5fdtVgNIUQ6o9uc2EKYvc2n8qHLg0Vw9Nr74KJ+HN/0vobWq+sP+UPrJbMHSpkZIbML
- ZWbpVKc5Jgk4CPWWkRoC5W54EEMoY64XHzkHQEp26F4N/TgQLbYHMMEDAXr6KGVxg32u3Qz5F
- 3H7fVmf4QNV7kUbcAajGHFBNPLYL5G5tk5ULWInqrVPcA/nHrfrJ2gHEXRmhlNDKVC92pnljf
- Xp8gwHc2OSk38ZQoPdSMGbkjPrY6VVJDks7tbXdPqVd+dBZE6o6fAoklrOl7AdEZLgAjs6eSL
- +/l84xnwdWix0EsGu/Sf7ETgwT/YdVliEfV1X4ccEqnIJ/PWGeCy4fGqGmZbq0lhUivN/OimZ
- GZwVZ+AThqk5YIMa+97TBASt74u2Q7IqCnZk48OhdYrx3W7iLEcHwnLvVhAixPn+CX07zeAAx
- cW0aXg==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 5/27/23 12:18, Sam Ravnborg wrote:
-> Hi Helge,
+On Fri, May 26, 2023 at 3:04=E2=80=AFPM Philippe CORNU
+<philippe.cornu@foss.st.com> wrote:
 >
-> On Sat, May 27, 2023 at 11:19:02AM +0200, Helge Deller wrote:
->> syzbot repored this bug in the softcursor code:
->>
->> BUG: KASAN: null-ptr-deref in soft_cursor+0x384/0x6b4 drivers/video/fbd=
-ev/core/softcursor.c:70
->> Read of size 16 at addr 0000000000000200 by task kworker/u4:1/12
->>
->> CPU: 0 PID: 12 Comm: kworker/u4:1 Not tainted 6.4.0-rc3-syzkaller-geb0f=
-1697d729 #0
->> Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS=
- Google 04/28/2023
->> Workqueue: events_power_efficient fb_flashcursor
->> Call trace:
->>   dump_backtrace+0x1b8/0x1e4 arch/arm64/kernel/stacktrace.c:233
->>   show_stack+0x2c/0x44 arch/arm64/kernel/stacktrace.c:240
->>   __dump_stack lib/dump_stack.c:88 [inline]
->>   dump_stack_lvl+0xd0/0x124 lib/dump_stack.c:106
->>   print_report+0xe4/0x514 mm/kasan/report.c:465
->>   kasan_report+0xd4/0x130 mm/kasan/report.c:572
->>   kasan_check_range+0x264/0x2a4 mm/kasan/generic.c:187
->>   __asan_memcpy+0x3c/0x84 mm/kasan/shadow.c:105
->>   soft_cursor+0x384/0x6b4 drivers/video/fbdev/core/softcursor.c:70
->>   bit_cursor+0x113c/0x1a64 drivers/video/fbdev/core/bitblit.c:377
->>   fb_flashcursor+0x35c/0x54c drivers/video/fbdev/core/fbcon.c:380
->>   process_one_work+0x788/0x12d4 kernel/workqueue.c:2405
->>   worker_thread+0x8e0/0xfe8 kernel/workqueue.c:2552
->>   kthread+0x288/0x310 kernel/kthread.c:379
->>   ret_from_fork+0x10/0x20 arch/arm64/kernel/entry.S:853
->>
->> This fix let bit_cursor() bail out early when a font bitmap
->> isn't available yet.
->>
->> Signed-off-by: Helge Deller <deller@gmx.de>
->> Cc: stable@kernel.org
->> Reported-by: syzbot+d910bd780e6efac35869@syzkaller.appspotmail.com
->> ---
->>   drivers/video/fbdev/core/bitblit.c | 3 +++
->>   1 file changed, 3 insertions(+)
->>
->> diff --git a/drivers/video/fbdev/core/bitblit.c b/drivers/video/fbdev/c=
-ore/bitblit.c
->> index f98e8f298bc1..8587c9da0670 100644
->> --- a/drivers/video/fbdev/core/bitblit.c
->> +++ b/drivers/video/fbdev/core/bitblit.c
->> @@ -247,6 +247,9 @@ static void bit_cursor(struct vc_data *vc, struct f=
-b_info *info, int mode,
->>
->>   	cursor.set =3D 0;
->>
->> +	if (!vc->vc_font.data)
->> +		return;
->> +
->>    	c =3D scr_readw((u16 *) vc->vc_pos);
->>   	attribute =3D get_attribute(info, c);
->>   	src =3D vc->vc_font.data + ((c & charmask) * (w * vc->vc_font.height=
-));
 >
-> When browsing the code I noticed another use of vc->vc_font.data.
+> On 5/19/23 22:05, Alexandru Ardelean wrote:
+> > From: Yannick Fertre <yannick.fertre@foss.st.com>
+> >
+> > Add new property to set a brightness by default at probe.
+> >
+> > Reviewed-by: Philippe CORNU <philippe.cornu@foss.st.com>
 >
-> bit_putcs_{un}aligned() access vc->vc_font.data too, so I wonder if
-> bit_putcs() should also check for vc->vc_font.data?
-> bit_putcs() is the only user of bit_putcs_{un}aligned.
+> Hi Alexandru,
+>
+> Many thanks for your patch.
+>
+> You have sent a patch originally pushed on the STMicroelectronics github
+> as mentioned in your commit message (no problem with that :-). But, the
+> "Reviewed-by" inside this github patch is linked to our gerrit STM
+> internal server so you can not use it directly for mainlining this patch.
+>
+> So please, re-send your this patch without my "Reviewed-by".
 
-I think the font is set before any char is printed, so we should
-probably be safe there.
+ack
+will do
 
-> The actual patch here looks good from a quick browsing around, but I
-> cannot claim I did a review. But you have my:
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
-
-Thank you!
-Helge
+>
+> Many thanks
+> Philippe :-)
+>
+>
+> > Signed-off-by: Yannick Fertre <yannick.fertre@foss.st.com>
+> > Signed-off-by: Alexandru Ardelean <alex@shruggie.ro>
+> > ---
+> >
+> > Link to original patch:
+> >    https://github.com/STMicroelectronics/linux/commit/c4067d7bd883c6fa1=
+4ffd49892c4ce663cdafe98
+> >
+> >   drivers/video/backlight/gpio_backlight.c | 7 ++++++-
+> >   1 file changed, 6 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/b=
+acklight/gpio_backlight.c
+> > index 6f78d928f054..d3fa3a8bef4d 100644
+> > --- a/drivers/video/backlight/gpio_backlight.c
+> > +++ b/drivers/video/backlight/gpio_backlight.c
+> > @@ -53,6 +53,7 @@ static int gpio_backlight_probe(struct platform_devic=
+e *pdev)
+> >       struct backlight_device *bl;
+> >       struct gpio_backlight *gbl;
+> >       int ret, init_brightness, def_value;
+> > +     u32 value;
+> >
+> >       gbl =3D devm_kzalloc(dev, sizeof(*gbl), GFP_KERNEL);
+> >       if (gbl =3D=3D NULL)
+> > @@ -93,7 +94,11 @@ static int gpio_backlight_probe(struct platform_devi=
+ce *pdev)
+> >       else
+> >               bl->props.power =3D FB_BLANK_UNBLANK;
+> >
+> > -     bl->props.brightness =3D 1;
+> > +     ret =3D device_property_read_u32(dev, "default-brightness-level",=
+ &value);
+> > +     if (!ret && value <=3D props.max_brightness)
+> > +             bl->props.brightness =3D value;
+> > +     else
+> > +             bl->props.brightness =3D 1;
+> >
+> >       init_brightness =3D backlight_get_brightness(bl);
+> >       ret =3D gpiod_direction_output(gbl->gpiod, init_brightness);

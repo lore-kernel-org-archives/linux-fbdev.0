@@ -2,34 +2,40 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32A60C77B73
-	for <linux-fbdev@archiver.kernel.org>; Tue, 30 May 2023 14:05:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D8A8C7EE2E
+	for <linux-fbdev@archiver.kernel.org>; Tue, 30 May 2023 16:15:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232887AbjE3OFU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 30 May 2023 10:05:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49728 "EHLO
+        id S233404AbjE3QPU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 30 May 2023 12:15:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32928 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232554AbjE3OFT (ORCPT
+        with ESMTP id S233549AbjE3QPR (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 30 May 2023 10:05:19 -0400
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52AE0EA
-        for <linux-fbdev@vger.kernel.org>; Tue, 30 May 2023 07:05:18 -0700 (PDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1q3zwD-0003Sh-GG; Tue, 30 May 2023 16:03:01 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1q3zvu-003tca-VI; Tue, 30 May 2023 16:02:42 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1q3zvt-009WG3-VA; Tue, 30 May 2023 16:02:41 +0200
-Date:   Tue, 30 May 2023 16:02:39 +0200
-From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To:     Helge Deller <deller@gmx.de>
+        Tue, 30 May 2023 12:15:17 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC7BB1BC;
+        Tue, 30 May 2023 09:14:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+        t=1685463140; i=deller@gmx.de;
+        bh=rF0T2SlfmaNOFE5TtSeATbyrpJF607QsdHymKDcZe6w=;
+        h=X-UI-Sender-Class:Date:To:Cc:References:From:Subject:In-Reply-To;
+        b=Ofr1y6INZLK2Lq55e/CkySJxvH7vwZAPKdvq4xk2Vx5+4YWoAhB+YTaVH4trzwxPP
+         vcumSSEASDINXACtNCS2oQ3dLXOw4c2UMlYv24HrKUWgUbxHv8aBoJTTG790nomccC
+         4S3vsdpRVJPK8Sh5Kc+bVjtP12LypiN8f0MYjYAwdvgsqaK5J4OhQ5I1f3YtoaHoWP
+         ZSSlUB0xc/314WQ2qoJrJRJnYvvHBm8l+C1bbz1zAiaF9nOVyVXLjD0rClb9eabEML
+         Ohkv+sEbFWJUUG99l4FS4uJ4DfE5o6MYvsTMuEd5HBpKLeNl/zBie6AINla9ord6Rb
+         KA7S1cnX0W8kA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.145.122]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MLzBj-1pmmBh22cL-00Hvo6; Tue, 30
+ May 2023 18:12:20 +0200
+Message-ID: <3010bce3-cc66-4ad6-50b1-7bc66bd532d4@gmx.de>
+Date:   Tue, 30 May 2023 18:12:09 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Content-Language: en-US
+To:     =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>
 Cc:     Yihao Han <hanyihao@vivo.com>,
         Javier Martinez Canillas <javierm@redhat.com>,
         Thomas Zimmermann <tzimmermann@suse.de>,
@@ -70,84 +76,89 @@ Cc:     Yihao Han <hanyihao@vivo.com>,
         NXP Linux Team <linux-imx@nxp.com>, kernel@pengutronix.de,
         linux-omap@vger.kernel.org, Fabio Estevam <festevam@gmail.com>,
         linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 00/51] video: fbdev: Convert to platform remove callback
- returning void
-Message-ID: <20230530140239.qevvxcuaqufv6hwj@pengutronix.de>
 References: <20230318235428.272091-1-u.kleine-koenig@pengutronix.de>
  <ff758418-f1da-e297-1829-251b8a5b1ec3@gmx.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="bnfkrholsive5e6z"
-Content-Disposition: inline
-In-Reply-To: <ff758418-f1da-e297-1829-251b8a5b1ec3@gmx.de>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+ <20230530140239.qevvxcuaqufv6hwj@pengutronix.de>
+From:   Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH 00/51] video: fbdev: Convert to platform remove callback
+ returning void
+In-Reply-To: <20230530140239.qevvxcuaqufv6hwj@pengutronix.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:ZvZTPkbNvOksiJGgd4YpFec+cdJOC5Jo0ZP9OE45DFbFKd82/fu
+ SWHmWpeJd8pXruTGDp6oEutnPqDX94T9vh8mLYiYiRsB5jMmNmy3kx595OIdUBP6ZGVJvNU
+ x2ryzwcpOABdT+2OGsVQ8R9291TuriLeCt7Gu5NnyHU9VteCo9hSeXB1I41u0pWP50TJXJJ
+ Jq4IWEgWR0VhAYXKKpwGQ==
+UI-OutboundReport: notjunk:1;M01:P0:m0U2H1UF0ds=;OMxT2hGQ08PswwOdvigdBNqadDh
+ ZOItP1jUeQkEBiUHqKNF8cp8Ov8kCca5s8G0pYJVSOUGoANIrhqdxfzJVqumoXrZhlaup9rdD
+ b9Ff15jdWFpK2w2mxxB4Mtt0H3c/q0h6qPgS8IjiyIKo5H7MTSTZreZ7vBWLYZT6RObylfQYm
+ KhzsDbdHHlb1Rk3aI6Ol2WmLU2lsofI+OLXh1KZwB1k7P541W3aDolE6nWPtM+S4jAdKHuI64
+ 903PsIm5O4Ly/CBHaw1vAWtnxs7QAGuu7k/gTLbtAVnT0XGp3homd1KOi7yyr5XMQ8oRaNQnk
+ vrouZaQVm4FpW/G9AMZlK38pXrbddXZorRjMVOKJaUuSFLNECFTJb6/HhujY2t4LnEXcWI+g9
+ yc+8sEKL9NPfVKtRkeuwYGX3E4jybQUf7f5UQHhfIvdjE/yBOa2HVZ5QCjfQEV4lC68rNMMRT
+ wGzMcu1e7+xtikoqcz/GImnx4T7gjPhpUKJJGXxbLH94jjm2Jvw3CddmTwlKU/ZkdBa5HVbFU
+ XclhcPF4E67URgoO8JIu5yArpGWS29nxSvPM1DXdfko2mrflK2TmBjI+LP2JO4WQujgQpHeyd
+ 8AeNCJWfC0/fqxnZ4hNpfVb2xjqAtDXvE7+MzcnzVJmjBYcdBuVwVdWUi0bXqDfQ2UYbZVyEj
+ wGsOdoZx4St/XiAcGQT0pmb+LteqLJmO54j10goLkCwrW5KfZzub/FwdpGGCEmR/ucMB3cS6/
+ gFlwNvviVfuvZrt3BswRj55HXyfaDzR5soeSXlgo5o7wcJrKwq+XYdidTKNxfiC1+Ekv1b2/8
+ 06Wess1Yig8d9b7qqKxAcoTdK/MDFdfBOXSrBFWPBzsKFJN1Gy9wqgmz5gbp994LOUQ4g6ldJ
+ NxhZ/gJdgkNxvGaopw4h0TaTKmNKHow1M3fBUEyZzAYrpZgviMG+0RQ+NKUQ4NPqvFHj2EMim
+ OXxqPBc8OOEbZML5P8ecUwbFhQw=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Hi Uwe,
 
---bnfkrholsive5e6z
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 5/30/23 16:02, Uwe Kleine-K=C3=B6nig wrote:
+> On Sun, Mar 19, 2023 at 07:04:54PM +0100, Helge Deller wrote:
+>> On 3/19/23 00:53, Uwe Kleine-K=C3=B6nig wrote:
+>>> this series adapts the platform drivers below drivers/video/fbdev to u=
+se the
+>>> .remove_new() callback. Compared to the traditional .remove() callback
+>>> .remove_new() returns no value. This is a good thing because the drive=
+r core
+>>> doesn't (and cannot) cope for errors during remove. The only effect of=
+ a
+>>> non-zero return value in .remove() is that the driver core emits a war=
+ning. The
+>>> device is removed anyhow and an early return from .remove() usually yi=
+elds a
+>>> resource leak.
+>>>
+>>> By changing the remove callback to return void driver authors cannot
+>>> reasonably assume any more that there is some kind of cleanup later.
+>>>
+>>> The first patch simplifies the remove callback of one driver to obviou=
+sly
+>>> always return zero. After that all drivers are converted trivially to
+>>> .remove_new().
+>>
+>> Thanks for that patch series. It's a nice cleanup.
+>> I've applied it to the fbdev "for-next" git tree for now to get some co=
+mpile testing.
+>> I hope that's ok for you.
+>
+> I found patches #7 up to #51 in next, but the first 6 patches are
+> missing. I guess this wasn't' done on purpose?
 
-[Dropped a few recipents that resulted in bounces before]
+Strange. I don't know why I didn't applied those.
 
-Hello,
+Anyway, I've just added them now:
 
-On Sun, Mar 19, 2023 at 07:04:54PM +0100, Helge Deller wrote:
-> On 3/19/23 00:53, Uwe Kleine-K=F6nig wrote:
-> > this series adapts the platform drivers below drivers/video/fbdev to us=
-e the
-> > .remove_new() callback. Compared to the traditional .remove() callback
-> > .remove_new() returns no value. This is a good thing because the driver=
- core
-> > doesn't (and cannot) cope for errors during remove. The only effect of a
-> > non-zero return value in .remove() is that the driver core emits a warn=
-ing. The
-> > device is removed anyhow and an early return from .remove() usually yie=
-lds a
-> > resource leak.
-> >=20
-> > By changing the remove callback to return void driver authors cannot
-> > reasonably assume any more that there is some kind of cleanup later.
-> >=20
-> > The first patch simplifies the remove callback of one driver to obvious=
-ly
-> > always return zero. After that all drivers are converted trivially to
-> > .remove_new().
->=20
-> Thanks for that patch series. It's a nice cleanup.
-> I've applied it to the fbdev "for-next" git tree for now to get some comp=
-ile testing.
-> I hope that's ok for you.
+Applying: video: fbdev: au1100fb: Drop if with an always false condition
+Applying: video: fbdev: arcfb: Convert to platform remove callback returni=
+ng void
+Applying: video: fbdev: au1100fb: Convert to platform remove callback retu=
+rning void
+Applying: video: fbdev: au1200fb: Convert to platform remove callback retu=
+rning void
+Applying: video: fbdev: broadsheetfb: Convert to platform remove callback =
+returning void
+Applying: video: fbdev: bw2: Convert to platform remove callback returning=
+ void
 
-I found patches #7 up to #51 in next, but the first 6 patches are
-missing. I guess this wasn't' done on purpose?
+Thanks!
+Helge
 
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---bnfkrholsive5e6z
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmR2Af4ACgkQj4D7WH0S
-/k7fcAgAhQtUQep3ieXfPdx48MXj3Vo7YHNUrrshT5bmWhmUNobb6zbidQ0oXZgm
-U3/So+jY9f4ckmvcciAXhCOWyS4nTmtz37ll49zN64lGaNx52FcdlXJTO0yXCsHH
-mCJ6kYJTujB5SPN8HX1qutW6YPBXQU/NDVfwKVtL+rKtyIBILPjvYPr1oR1b7yqG
-ctGm0FrYfsTWt0QxtJ9RKIZ0K3aS4KVw3MIYhrU2Ia0WnOp7kDX8pHTodWmSa1Mo
-4Q94Li8myjIht2cen4KYlfUYb5HjbPkoW3WaDMuTCDgMWiPZLvLHRyUGmhgj5IVz
-b5F2RVP5DKQuSRcfK6b2i3tG6/wN7Q==
-=RqLu
------END PGP SIGNATURE-----
-
---bnfkrholsive5e6z--
+Btw... I cleaned up some minor whitespace issues in patch 3 (au1100fb).

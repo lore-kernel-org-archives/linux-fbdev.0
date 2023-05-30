@@ -2,131 +2,152 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C2FCC77B7E
-	for <linux-fbdev@archiver.kernel.org>; Mon, 29 May 2023 07:04:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32A60C77B73
+	for <linux-fbdev@archiver.kernel.org>; Tue, 30 May 2023 14:05:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229521AbjE2HEr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 29 May 2023 03:04:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40586 "EHLO
+        id S232887AbjE3OFU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 30 May 2023 10:05:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49728 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229584AbjE2HEp (ORCPT
+        with ESMTP id S232554AbjE3OFT (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 29 May 2023 03:04:45 -0400
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2AC86EA
-        for <linux-fbdev@vger.kernel.org>; Mon, 29 May 2023 00:03:40 -0700 (PDT)
-Received: by mail-lf1-x12c.google.com with SMTP id 2adb3069b0e04-4f4b0a0b557so3149222e87.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 29 May 2023 00:03:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=shruggie-ro.20221208.gappssmtp.com; s=20221208; t=1685343818; x=1687935818;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Ktk43I3ESCcl+4luTfcpacoXkK0rOIgacSkU1dOgQfA=;
-        b=EzVaURV3PRKZ1IXRJ20SKWyI2R3+cbBKjkEDiWxGuhXDEs4tYnYXxcmcG5TWdUw+q1
-         JlEeNlM+mHBU7+DOoZqm+tBjhkOifHP1AsCo1tDsqPHHr/XlHBr9QoOqORH4P+lZw+5O
-         dmHKET4mthkLuOTwi0yJJ+Mcz4uyXC4TIvQaAlE7AD0k5LaBcXXifSf8/pbPE7aUh26Z
-         ZA3c8gDgyVhDf24nQQyh8Bf99q1L0NtrjfeBqJT+FQHgJO6VGJrqIFrJMCMnnVBA1KjI
-         1HfSoT34FV/E0bjV7QblXJA1taCMNKAHRREduGMGSHwxb7KqkhCubTTC6w6jYdNcnJxf
-         Erzw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685343818; x=1687935818;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Ktk43I3ESCcl+4luTfcpacoXkK0rOIgacSkU1dOgQfA=;
-        b=E+s0uJJHl1JAz8ZzA8HcosdBucTpVmthfXNJirJ+xc506Ta5T0paNqDSQ3I1yNO5M8
-         SdcTeKwlZYDVYl2sTZk91uaitzpFRKni5ouNNA5vOsfFgK0/UTfnw7GUJOhygYM9PLmU
-         uHsqmMNI6IEMiqHZ4qmz+EVIJd7GWRBCQPovTlPFRF1ySILYCVPozYYkLZ56tpDvIOHR
-         +zpR6+9t1WFe7rsPClHS2LAqlK1PuqiHXSC9CIGN+cQQoMauWv715Ok3gwxdW6zsfxbe
-         0h0UB3aF9UUT0rTzwOjbmEAjp30TMdMqFxybHlWvFjWAt59YwTWSCde14GBB3sZC0hhx
-         41ug==
-X-Gm-Message-State: AC+VfDwSfeT0iPVZJcMO4yUPGGDMGhuZSkmqcGh9mnMeQKbznFimztEm
-        ks1rjWZrmgme3HYPkNQ1zZuOqCaDNEAacM10joBb7A==
-X-Google-Smtp-Source: ACHHUZ4VkOxh0fNxPG1zh86fdppD/WvIcYVQsx7Tso8mCQBz019IqnPTS//0K6ZRb1vNKJxSPmxN81F9XNk7zNJRGYk=
-X-Received: by 2002:ac2:46d2:0:b0:4f1:3d7d:409e with SMTP id
- p18-20020ac246d2000000b004f13d7d409emr3772539lfo.0.1685343818417; Mon, 29 May
- 2023 00:03:38 -0700 (PDT)
+        Tue, 30 May 2023 10:05:19 -0400
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52AE0EA
+        for <linux-fbdev@vger.kernel.org>; Tue, 30 May 2023 07:05:18 -0700 (PDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1q3zwD-0003Sh-GG; Tue, 30 May 2023 16:03:01 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1q3zvu-003tca-VI; Tue, 30 May 2023 16:02:42 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1q3zvt-009WG3-VA; Tue, 30 May 2023 16:02:41 +0200
+Date:   Tue, 30 May 2023 16:02:39 +0200
+From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To:     Helge Deller <deller@gmx.de>
+Cc:     Yihao Han <hanyihao@vivo.com>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Wolfram Sang <wsa+renesas@sang-engineering.com>,
+        Alexander Shiyan <shc_work@mail.ru>,
+        Dongliang Mu <dzm91@hust.edu.cn>,
+        Peter Jones <pjones@redhat.com>,
+        Gaosheng Cui <cuigaosheng1@huawei.com>,
+        Timur Tabi <timur@kernel.org>,
+        Xuezhi Zhang <zhangxuezhi1@coolpad.com>,
+        Jiasheng Jiang <jiasheng@iscas.ac.cn>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        Stephen Kitt <steve@sk2.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Tony Lindgren <tony@atomide.com>,
+        Jiapeng Chong <jiapeng.chong@linux.alibaba.com>,
+        Yu Zhe <yuzhe@nfschina.com>, Xu Panda <xu.panda@zte.com.cn>,
+        Zhang Qilong <zhangqilong3@huawei.com>,
+        Hyunwoo Kim <imv4bel@gmail.com>,
+        Yang Yingliang <yangyingliang@huawei.com>,
+        Robert Jarzmik <robert.jarzmik@free.fr>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Wang Qing <wangqing@vivo.com>,
+        Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        ye xingchen <ye.xingchen@zte.com.cn>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Zeng Heng <zengheng4@huawei.com>,
+        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+        Michal Simek <michal.simek@xilinx.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        NXP Linux Team <linux-imx@nxp.com>, kernel@pengutronix.de,
+        linux-omap@vger.kernel.org, Fabio Estevam <festevam@gmail.com>,
+        linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 00/51] video: fbdev: Convert to platform remove callback
+ returning void
+Message-ID: <20230530140239.qevvxcuaqufv6hwj@pengutronix.de>
+References: <20230318235428.272091-1-u.kleine-koenig@pengutronix.de>
+ <ff758418-f1da-e297-1829-251b8a5b1ec3@gmx.de>
 MIME-Version: 1.0
-References: <20230519200520.10657-1-alex@shruggie.ro> <20230519200520.10657-2-alex@shruggie.ro>
- <9faab8c9-a38b-3f06-c2fb-6c7803b22eb1@foss.st.com>
-In-Reply-To: <9faab8c9-a38b-3f06-c2fb-6c7803b22eb1@foss.st.com>
-From:   Alexandru Ardelean <alex@shruggie.ro>
-Date:   Mon, 29 May 2023 10:03:27 +0300
-Message-ID: <CAH3L5Qpo6j9XdpfY5dPbYM3prLRPbrFPODPubnaNqu_4pQeaow@mail.gmail.com>
-Subject: Re: [PATCH 2/2] dt-bindings: backlight: document new property default-brightness-level
-To:     Philippe CORNU <philippe.cornu@foss.st.com>
-Cc:     dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, lee@kernel.org,
-        daniel.thompson@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        conor+dt@kernel.org, deller@gmx.de,
-        Yannick Fertre <yannick.fertre@foss.st.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="bnfkrholsive5e6z"
+Content-Disposition: inline
+In-Reply-To: <ff758418-f1da-e297-1829-251b8a5b1ec3@gmx.de>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, May 26, 2023 at 3:05=E2=80=AFPM Philippe CORNU
-<philippe.cornu@foss.st.com> wrote:
->
->
->
-> On 5/19/23 22:05, Alexandru Ardelean wrote:
-> > From: Yannick Fertre <yannick.fertre@foss.st.com>
-> >
-> > Add documentation for new default-brightness-level property.
-> >
-> > Reviewed-by: Philippe CORNU <philippe.cornu@foss.st.com>
->
-> Hi Alexandru,
-> same comments as for the 1/2 patch.
 
-Ack
+--bnfkrholsive5e6z
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Will do
-Thanks
-Alexandru
+[Dropped a few recipents that resulted in bounces before]
 
-> Many thanks
-> Philippe :-)
->
-> > Signed-off-by: Yannick Fertre <yannick.fertre@foss.st.com>
-> > Signed-off-by: Alexandru Ardelean <alex@shruggie.ro>
-> > ---
-> >
-> > Link to original patch:
-> >    https://github.com/STMicroelectronics/linux/commit/c4067d7bd883c6fa1=
-4ffd49892c4ce663cdafe98
-> >
-> >   .../bindings/leds/backlight/gpio-backlight.yaml          | 9 ++++++++=
-+
-> >   1 file changed, 9 insertions(+)
-> >
-> > diff --git a/Documentation/devicetree/bindings/leds/backlight/gpio-back=
-light.yaml b/Documentation/devicetree/bindings/leds/backlight/gpio-backligh=
-t.yaml
-> > index 584030b6b0b9..b96c08cff0f0 100644
-> > --- a/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.y=
-aml
-> > +++ b/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.y=
-aml
-> > @@ -23,6 +23,15 @@ properties:
-> >       description: enable the backlight at boot.
-> >       type: boolean
-> >
-> > +  default-brightness-level:
-> > +    description:
-> > +      The default brightness level (index into the array defined by th=
-e
-> > +      "brightness-levels" property).
-> > +    $ref: /schemas/types.yaml#/definitions/uint32
-> > +
-> > +dependencies:
-> > +  default-brightness-level: [ "brightness-levels" ]
-> > +
-> >   required:
-> >     - compatible
-> >     - gpios
+Hello,
+
+On Sun, Mar 19, 2023 at 07:04:54PM +0100, Helge Deller wrote:
+> On 3/19/23 00:53, Uwe Kleine-K=F6nig wrote:
+> > this series adapts the platform drivers below drivers/video/fbdev to us=
+e the
+> > .remove_new() callback. Compared to the traditional .remove() callback
+> > .remove_new() returns no value. This is a good thing because the driver=
+ core
+> > doesn't (and cannot) cope for errors during remove. The only effect of a
+> > non-zero return value in .remove() is that the driver core emits a warn=
+ing. The
+> > device is removed anyhow and an early return from .remove() usually yie=
+lds a
+> > resource leak.
+> >=20
+> > By changing the remove callback to return void driver authors cannot
+> > reasonably assume any more that there is some kind of cleanup later.
+> >=20
+> > The first patch simplifies the remove callback of one driver to obvious=
+ly
+> > always return zero. After that all drivers are converted trivially to
+> > .remove_new().
+>=20
+> Thanks for that patch series. It's a nice cleanup.
+> I've applied it to the fbdev "for-next" git tree for now to get some comp=
+ile testing.
+> I hope that's ok for you.
+
+I found patches #7 up to #51 in next, but the first 6 patches are
+missing. I guess this wasn't' done on purpose?
+
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--bnfkrholsive5e6z
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmR2Af4ACgkQj4D7WH0S
+/k7fcAgAhQtUQep3ieXfPdx48MXj3Vo7YHNUrrshT5bmWhmUNobb6zbidQ0oXZgm
+U3/So+jY9f4ckmvcciAXhCOWyS4nTmtz37ll49zN64lGaNx52FcdlXJTO0yXCsHH
+mCJ6kYJTujB5SPN8HX1qutW6YPBXQU/NDVfwKVtL+rKtyIBILPjvYPr1oR1b7yqG
+ctGm0FrYfsTWt0QxtJ9RKIZ0K3aS4KVw3MIYhrU2Ia0WnOp7kDX8pHTodWmSa1Mo
+4Q94Li8myjIht2cen4KYlfUYb5HjbPkoW3WaDMuTCDgMWiPZLvLHRyUGmhgj5IVz
+b5F2RVP5DKQuSRcfK6b2i3tG6/wN7Q==
+=RqLu
+-----END PGP SIGNATURE-----
+
+--bnfkrholsive5e6z--

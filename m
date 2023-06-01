@@ -2,122 +2,69 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6392BC7EE23
-	for <linux-fbdev@archiver.kernel.org>; Thu,  1 Jun 2023 19:28:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F844C7EE23
+	for <linux-fbdev@archiver.kernel.org>; Thu,  1 Jun 2023 22:04:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229651AbjFAT2e (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 1 Jun 2023 15:28:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59688 "EHLO
+        id S230525AbjFAWE1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 1 Jun 2023 18:04:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37732 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229554AbjFAT2e (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 1 Jun 2023 15:28:34 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 745EC186;
-        Thu,  1 Jun 2023 12:28:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1685647707; x=1686252507; i=deller@gmx.de;
- bh=95xZi3c0zdCPEBKapIlN/abEMmJTEkPxC05zhfjB1nI=;
- h=X-UI-Sender-Class:Date:From:To:Subject;
- b=e+BOwJPsM1V+EPmIoDwLYh3XBZkCX7K4rbwI+cSKndnzNC6V+nFAQZRFT70FGQ3UTCn9j0R
- wOHLne68BxNHhy3H8QNpk/yHMc0N8dW7/vqqHEvl1jmWj5+b4/QfH4Z32OUToQmNPNadgw7j5
- jwYIgiWti4xWjnp3LaFe8y/qpGQPCvitWfJTMcqc+cS2k6JDrBsv9BXzpuQ5VFqNCJkBjRB+H
- 2uzZf+zNuBnZ3OJgvfdhrwYDpQCegd/W6MhbuRJqUx8KepLlJgDy/tjQ8/uldEPurpilKoMJN
- OCj3VjHidd4zil824cOTeh4oaZqTl/HareIMm8ElrV2+ssAn+/5Q==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from ls3530 ([109.43.49.30]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1M1psI-1q2c6t1cxk-002DzB; Thu, 01
- Jun 2023 21:28:27 +0200
-Date:   Thu, 1 Jun 2023 21:28:24 +0200
-From:   Helge Deller <deller@gmx.de>
-To:     Linus Torvalds <torvalds@linux-foundation.org>,
+        with ESMTP id S232214AbjFAWE1 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 1 Jun 2023 18:04:27 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5264B180;
+        Thu,  1 Jun 2023 15:04:26 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id E394C64A49;
+        Thu,  1 Jun 2023 22:04:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 54181C433D2;
+        Thu,  1 Jun 2023 22:04:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1685657065;
+        bh=7YTN2WfTPgVZX2vsLyH6XjyAXtEu2bLhn1YBxDETeF8=;
+        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+        b=NFtAwIsl3zebHiP/Bb+9qu5LrE9rxaomMpHZ/ELkmCUh70/eEpMVWJzF+0HBsIqC5
+         KqhhdZ3xe6fJtWxTC/zTsb/NPXugHtCs83aWE7O42jyHbDEAYfvDCQOtrkzLCNaTvd
+         If23d5NZf2hYb+mh10jUS/JnOUH2e9enCNVghEZkrsXzmp9HQW0IsC6nuQFwDOnBFd
+         bfn12Rv0UjcdgCevxq6nqbHAuItpb9qFDPdIPGN8rh8Sa7srXyUKdeniuMhg6z9D0S
+         MpPlxzEq8CHXZD4pl7pcKpvhz82qvhBHHIz5hFpGEEhkgw8A5e2W0xdoncDX4oI4D1
+         2LfZ4QEdv0r0A==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 41D25E52C02;
+        Thu,  1 Jun 2023 22:04:25 +0000 (UTC)
+Subject: Re: [GIT PULL] fbdev fixes for v6.4-rc5
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <ZHjxWNRjTIk6HyT5@ls3530>
+References: <ZHjxWNRjTIk6HyT5@ls3530>
+X-PR-Tracked-List-Id: Direct Rendering Infrastructure - Development
+ <dri-devel.lists.freedesktop.org>
+X-PR-Tracked-Message-Id: <ZHjxWNRjTIk6HyT5@ls3530>
+X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.4-rc5
+X-PR-Tracked-Commit-Id: d19663edc91de65ae85eea9902addc9d04b0ceb6
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 9e87b63ed37e202c77aa17d4112da6ae0c7c097c
+Message-Id: <168565706526.29061.17436079990405893976.pr-tracker-bot@kernel.org>
+Date:   Thu, 01 Jun 2023 22:04:25 +0000
+To:     Helge Deller <deller@gmx.de>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
         linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [GIT PULL] fbdev fixes for v6.4-rc5
-Message-ID: <ZHjxWNRjTIk6HyT5@ls3530>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:tMC3QL7tU5dhhqXf5Ri3NzMwcNVaPxfW6hk3Tq8abKk2RWjhEnF
- 2BZrVLNfZzqZQBEtrUVfjWo20GLXPIApZmsORnVCB/GWTRphu5LEK5aHT4rw5WhMkEcGkox
- NmCnXO5s4O2r3sm/uzMOoaWo/GEx/rzr51pnnMhBRCMcrBS8MveTFQym8naxCVHkfJxXbdO
- oN6BQwD0sU7eH5JE8FwqQ==
-UI-OutboundReport: notjunk:1;M01:P0:3z3eF5z7XD4=;VsJ34xVH0nS6mJxG1O4h6LFSpec
- FoSdw3ai3d4nK5egTnFX5CnV5ElqClnhGo1iTVEwghS5pBfjxuHIKoJwRtRr8vznbUqLvx5V+
- k0v63/JFavdUMhQxmqb4Q+I7+j0zdeIAn9A2KUkIOYXq+vZ5p7zzGs44wvjAcPGfbLOY27hgW
- zpa6kDuQqIbBCsWcB0JZOO+GxMf8zuFHj+vH5pcGUHPivkdppPKKqgoUtj45ljuBtTdy1hF6b
- c6LxeEYuYKrek5S/aAtutrln3L20D/ptL948UOUKmXrtxRm/JINPfKFi638/iCcIcldwJUHOe
- cspQGjGN/0Y1EttP6UjSCGK7yTLbE0M7Jjpj1kBUtCgcvAYmLD7s3N1zojHylDDwB+z6v9PdJ
- P1x2dS7lKWNT66kiAz1CrYRcYUYVMEvCX0/N+jdELotzpardD7oRfw+NjibVdrebobv2Xa6Go
- afJ5NLv/uFSkFxthKuew0JolIaInB726KHp/lYYgJHDBCZqFF88+oLdXtXa6jshjfvPkExcf4
- gGh3vLMfAklNtG+CO/eekp2jGK8Jv7V7EPDd1E9WrXjwxGHN8QhIxbBl6SOWMHRgJAQl0zoyM
- YnKvau8Q0wcHZ3LRamgrZttcLE3DxU75x2//Du++lYdo5R0X9trWktuxj++6Gpa4PAGhaawFs
- bsKRB5kV2ZyXulyj0yMD0NVYmPyMHiGVuj3alzuc9R9iB/All80wxz999kDsHfo99yH3o3LWS
- hiMhwqVkyQirjRcVcRhyZrTOaG8Uj29bxis6eiy/CylznU0ClF2YkAxpu6ZlA86zHD+ByuWmd
- a49J/VmxqD5NQSfdRNsAV2ntnA8c+gEj/J80Y7GSjK+jCzh1yDa1el6A/ku8N2BJpeSWPtoxj
- h1LL3Li/ckz+QCw9eAa85aaqeeDup50ASCHC1JoqWicdNsCKwpyIfOiQ66xRVqw/vEUGV2l1V
- xkteBg==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Linus,
+The pull request you sent on Thu, 1 Jun 2023 21:28:24 +0200:
 
-please pull some fbdev fixes & cleanups for kernel 6.4-rc5.
-Most noteably is a fix for a null-ptr-deref in fbcon's soft_cursor functio=
-n
-which was found by syzbot.
+> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.4-rc5
 
-Thanks!
-Helge
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/9e87b63ed37e202c77aa17d4112da6ae0c7c097c
 
-=2D-------------
+Thank you!
 
-The following changes since commit 44c026a73be8038f03dbdeef028b642880cf151=
-1:
-
-  Linux 6.4-rc3 (2023-05-21 14:05:48 -0700)
-
-are available in the Git repository at:
-
-  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git ta=
-gs/fbdev-for-6.4-rc5
-
-for you to fetch changes up to d19663edc91de65ae85eea9902addc9d04b0ceb6:
-
-  fbdev: bw2: Convert to platform remove callback returning void (2023-05-=
-30 18:33:25 +0200)
-
-=2D---------------------------------------------------------------
-fbdev fixes for kernel 6.4-rc5:
-
-- Fix null-ptr-deref in soft_cursor
-- various remove callback conversions
-- error path fixes in imsttfb
-
-=2D---------------------------------------------------------------
-Helge Deller (3):
-      fbdev: imsttfb: Release framebuffer and dealloc cmap on error path
-      fbdev: imsttfb: Fix error path of imsttfb_probe()
-      fbcon: Fix null-ptr-deref in soft_cursor
-
-Uwe Kleine-K=F6nig (7):
-      fbdev: matroxfb ssd1307fb: Switch i2c drivers back to use .probe()
-      fbdev: au1100fb: Drop if with an always false condition
-      fbdev: arcfb: Convert to platform remove callback returning void
-      fbdev: au1100fb: Convert to platform remove callback returning void
-      fbdev: au1200fb: Convert to platform remove callback returning void
-      fbdev: broadsheetfb: Convert to platform remove callback returning v=
-oid
-      fbdev: bw2: Convert to platform remove callback returning void
-
- drivers/video/fbdev/arcfb.c                 |  5 ++---
- drivers/video/fbdev/au1100fb.c              | 11 +++--------
- drivers/video/fbdev/au1200fb.c              |  6 ++----
- drivers/video/fbdev/broadsheetfb.c          |  5 ++---
- drivers/video/fbdev/bw2.c                   |  6 ++----
- drivers/video/fbdev/core/bitblit.c          |  3 +++
- drivers/video/fbdev/imsttfb.c               | 12 +++++++++---
- drivers/video/fbdev/matrox/matroxfb_maven.c |  2 +-
- drivers/video/fbdev/ssd1307fb.c             |  2 +-
- 9 files changed, 25 insertions(+), 27 deletions(-)
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html

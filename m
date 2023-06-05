@@ -2,110 +2,115 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80D10C77B73
-	for <linux-fbdev@archiver.kernel.org>; Mon,  5 Jun 2023 09:36:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CBDDBC77B73
+	for <linux-fbdev@archiver.kernel.org>; Mon,  5 Jun 2023 14:48:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230322AbjFEJgL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 5 Jun 2023 05:36:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56460 "EHLO
+        id S233866AbjFEOsS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 5 Jun 2023 10:48:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36088 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229572AbjFEJgJ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 5 Jun 2023 05:36:09 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EB066D3;
-        Mon,  5 Jun 2023 02:36:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1685957758; x=1686562558; i=deller@gmx.de;
- bh=4aZGFNHaqYts9HJGEBYu/SzlFrcSqs2ONdbIPv8h5ts=;
- h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=r+z4B2tupxVHJ63m3lXNOwXDv699zPSioDJ/oxQ5xFu2aTUX5146vaOrLKh47Lp3+qGQUo9
- OpOojKAaC8qwv2KkgOhLsrjAFQl/vLMeXes1RBy1F6zIujFqtvMLpQqSct/9PB9w8mWplGC8z
- m9TAbFcgnV/WRBVm9LA/kRbO+Vv8dZAgMQnEuFWOL6kQDRnzmJBDI3TWeP0Wn0AzvNjSPVt6a
- eN6PS0gxAUrpL3ASnlHToctdozh9CbA6k0+1QHiCc8VvC++HCTcWKcg97Aj1rwMH/8l/AZSXx
- aeSUtl1GS5ALxFhCDmQSPGmC8/ofE6j0jaYb1zae1j/hKB6xq2Lw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.56.61] ([109.43.115.72]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MiacH-1qZxSj0dCJ-00flAb; Mon, 05
- Jun 2023 11:35:58 +0200
-Message-ID: <848956d2-cf95-bd6a-1292-272438b0d860@gmx.de>
-Date:   Mon, 5 Jun 2023 11:35:54 +0200
+        with ESMTP id S232342AbjFEOsR (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 5 Jun 2023 10:48:17 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9DA5A100;
+        Mon,  5 Jun 2023 07:48:16 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 2F7B81FD66;
+        Mon,  5 Jun 2023 14:48:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1685976495; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=ZC4xx7emTv2a2UFR6kQdaFCgwhbw6bVXOEez8CyU1/c=;
+        b=mUzZuiZ6aF053sDvpp4FriypRbZ4TZ5GdiOy2xTbj9VKtUMMmhdTXgcN8c3PA7c2K3imX3
+        cq6bfAO85IQEGENNR41HhCw7IpyjuYnF6pZOFGAt0xDD8RiltH3hWX3Jpwn8YNLY7mOxqb
+        cwekQorakSqzsWB6uuoBwWcMXNn9gO4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1685976495;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=ZC4xx7emTv2a2UFR6kQdaFCgwhbw6bVXOEez8CyU1/c=;
+        b=sCYgZIOX2i3BAehRDWCz4hGErmxZ7qxx9Yatn/fm2L/IYlhHfdUbHWsAfo2jhPyNyhIf4N
+        oXX7REdgDNPP24AQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id DF6D013A3C;
+        Mon,  5 Jun 2023 14:48:14 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id YFCmNa71fWQvXwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 05 Jun 2023 14:48:14 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     daniel@ffwll.ch, javierm@redhat.com, sam@ravnborg.org,
+        deller@gmx.de, geert+renesas@glider.be, lee@kernel.org,
+        daniel.thompson@linaro.org, jingoohan1@gmail.com
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-sh@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-staging@lists.linux.dev,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 01/30] backlight/bd6107: Compare against struct fb_info.device
+Date:   Mon,  5 Jun 2023 16:47:43 +0200
+Message-Id: <20230605144812.15241-2-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230605144812.15241-1-tzimmermann@suse.de>
+References: <20230605144812.15241-1-tzimmermann@suse.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH] video: fbdev: omapfb: lcd_mipid: Fix an error handling
- path in mipid_spi_probe()
-To:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-        Imre Deak <imre.deak@nokia.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Krzysztof Helt <krzysztof.h1@wp.pl>,
-        Juha Yrjola <juha.yrjola@solidboot.com>
-Cc:     linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-References: <f17221571f619c0829db56354f2b74d22f6702a7.1685893329.git.christophe.jaillet@wanadoo.fr>
-Content-Language: en-US
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <f17221571f619c0829db56354f2b74d22f6702a7.1685893329.git.christophe.jaillet@wanadoo.fr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:O8jINPdRRRhdW6K/VPuIluO4TUz2RA7GWy7BS61PiwwjuaBm3oe
- xRlo+MX+oafQs54E/0uFtXBCfZw5grNtmkqDxHj6wY9m9btw8xD6T7Olg2so3cLBrN/Zo74
- cCewQOuFiAiYVTs/LQHBGZLCdQtHbocA0NpihSdNtkGutMHBukCis8UDnmtGt9UOLFweO98
- a0PowgyQXZCQkLEk0eJng==
-UI-OutboundReport: notjunk:1;M01:P0:v7du267JY28=;ZwxfR0dFKojHp9ugRWseiTBAr+f
- 23jU7ZfKH2FbkJvd9851IpoF7wmhSZj80LleRmWrnnMt4/7HyEz8L3a+y9CC4doJl9NGY0epA
- BiOhlf94atBk8WYxMVeBVIijVG3DMRNzPQK0rBevUF5h+VYN/5yQnVAXm+ORvF2NmkKFPYA3Z
- RsisHuM8OaM2mD+C+HD1UyAWdsWFYNyZtEZ6tuY0wNqiyNTBy3FGYuApK0HRM4l/Wlx4DY+/r
- NHsd+z3DN9/oNIWNNF/8SdyaTQqUqNpFcbgs+zD+s6cXbYSaZLo/GMaWnvzQvtTNyMZgInDSr
- 4YeeUIyx08aVcXmByeMsErm5Z5PAFw/ZC4/3o2qdAmNVqxRM74O677Vvspzhyg6i7BZ7px1os
- /iGiaCsvKzVunj7ZQx1uMC5Fa1ZDZmSG2JKT0mi55fvEICsd20Ef1kiTtawoAjEz5vxKEQeK0
- 76ql7QWVFZk1Fe2lsd7pym7UoE8e3liOFBK/ohkCnRJqdMbmi96Smj3qqkFlcuW/JFCG9qItI
- ZO58VAnaUg0gwQIi9bRo1oV6O618aCdmkbtdGs0xASCK6HYNpq1qCrhxGZP0zxq3QNm1tBspa
- MSDa3Ma6RazZqbSOE/nqKuMurQh75cX6KvRB5K32lpGER5YLkEzuXRh/c1Fdxa8yxLHWW6BjM
- 7N2khHDlI5cNnW+6FP79RTBa9/QCPffMZ9SfMiYol0JedxLb/GsfXSfTc/k2daPXxsKqHllxR
- F5blRYIkhnVqAVnQW6tRCqIE4UQbhsYM6MzpLs97eGwMs0J5rqqLpZD4V+Tb/ADTWmiab+rsH
- O23y4a0T0T4kX8kfOOLwO25LTf9ZrogjxGGxXvGcJ4xvdLvrScEdMSYo7KtJdp+G66HP6AIF7
- Pww05UlUo/yqMcikZKE9l/tJY+3daL5vncoQKyoZ44NFGrLL804cs/gwinhUyWfkqLAhitnKK
- g9Tn3r41ZqctGPMTgzZGiZC1++Q=
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 6/4/23 17:42, Christophe JAILLET wrote:
-> If 'mipid_detect()' fails, we must free 'md' to avoid a memory leak.
->
-> Fixes: 66d2f99d0bb5 ("omapfb: add support for MIPI-DCS compatible LCDs")
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Struct bd6107_platform_data refers to a platform device within
+the Linux device hierarchy. The test in bd6107_backlight_check_fb()
+compares it against the fbdev device in struct fb_info.dev, which
+is different. Fix the test by comparing to struct fb_info.device.
 
-applied.
+Fixes a bug in the backlight driver and prepares fbdev for making
+struct fb_info.dev optional.
 
-Thanks!
-Helge
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Lee Jones <lee@kernel.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Jingoo Han <jingoohan1@gmail.com>
+---
+ drivers/video/backlight/bd6107.c     | 2 +-
+ include/linux/platform_data/bd6107.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-> ---
->   drivers/video/fbdev/omap/lcd_mipid.c | 6 +++++-
->   1 file changed, 5 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/video/fbdev/omap/lcd_mipid.c b/drivers/video/fbdev/=
-omap/lcd_mipid.c
-> index e4a7f0b824ff..a0fc4570403b 100644
-> --- a/drivers/video/fbdev/omap/lcd_mipid.c
-> +++ b/drivers/video/fbdev/omap/lcd_mipid.c
-> @@ -571,11 +571,15 @@ static int mipid_spi_probe(struct spi_device *spi)
->
->   	r =3D mipid_detect(md);
->   	if (r < 0)
-> -		return r;
-> +		goto free_md;
->
->   	omapfb_register_panel(&md->panel);
->
->   	return 0;
-> +
-> +free_md:
-> +	kfree(md);
-> +	return r;
->   }
->
->   static void mipid_spi_remove(struct spi_device *spi)
+diff --git a/drivers/video/backlight/bd6107.c b/drivers/video/backlight/bd6107.c
+index f4db6c064635..fa3dd45c8f9d 100644
+--- a/drivers/video/backlight/bd6107.c
++++ b/drivers/video/backlight/bd6107.c
+@@ -104,7 +104,7 @@ static int bd6107_backlight_check_fb(struct backlight_device *backlight,
+ {
+ 	struct bd6107 *bd = bl_get_data(backlight);
+ 
+-	return bd->pdata->fbdev == NULL || bd->pdata->fbdev == info->dev;
++	return !bd->pdata->dev || bd->pdata->dev == info->device;
+ }
+ 
+ static const struct backlight_ops bd6107_backlight_ops = {
+diff --git a/include/linux/platform_data/bd6107.h b/include/linux/platform_data/bd6107.h
+index 54a06a4d2618..596ca4f95cfa 100644
+--- a/include/linux/platform_data/bd6107.h
++++ b/include/linux/platform_data/bd6107.h
+@@ -8,7 +8,7 @@
+ struct device;
+ 
+ struct bd6107_platform_data {
+-	struct device *fbdev;
++	struct device *dev;
+ 	unsigned int def_value;
+ };
+ 
+-- 
+2.40.1
 

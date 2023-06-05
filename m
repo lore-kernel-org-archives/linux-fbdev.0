@@ -2,51 +2,51 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A683DC87FE7
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F121BC88C84
 	for <linux-fbdev@archiver.kernel.org>; Mon,  5 Jun 2023 14:48:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234217AbjFEOsY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 5 Jun 2023 10:48:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36158 "EHLO
+        id S234461AbjFEOsZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 5 Jun 2023 10:48:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36112 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234214AbjFEOsT (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 5 Jun 2023 10:48:19 -0400
+        with ESMTP id S233898AbjFEOsU (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 5 Jun 2023 10:48:20 -0400
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 11136FD;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B01FC106;
         Mon,  5 Jun 2023 07:48:18 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id ACCD01FE64;
-        Mon,  5 Jun 2023 14:48:16 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 3B1101FE67;
+        Mon,  5 Jun 2023 14:48:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1685976496; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1685976497; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=aNOsnTCXGxo4lhDmbd6GlKilpcUQ1gl7UIJ+9Mi53Zo=;
-        b=W3jfr2dIowXlbSQkDVjLDSEu+Ru5M/278EqRF6xi06kuxa4ADpThoAFT8+FgvJw8iGiRvU
-        S9xhKlKuQiuwJH6NxfsXXGw7ovirOo4BOD73rh5nDvEFc1n0e08/IGdnSNdouVYy0fBBzm
-        +PKcQXm0Bh8kOOZorozqohzSR2l/tBw=
+        bh=7fXCeGayswbRa4n5Bq4gPzRcbgkQ+/kxTRiftd6E8SI=;
+        b=lCrrbzudHur7FR9jlI8IQi8KANzeQsKq1QukvB+zGqj8UOT73iR2yjttLsCvV3B67PuBHQ
+        x1oz5449YqaBtYJhTrp+tVk1Wsis7B+1giHJOjr2wydvki6zkDovMBbpZYGXWlH0Ye8qM/
+        wj7VaAH2xdFp0WcXu9S4ilPFEtgKkeU=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1685976496;
+        s=susede2_ed25519; t=1685976497;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=aNOsnTCXGxo4lhDmbd6GlKilpcUQ1gl7UIJ+9Mi53Zo=;
-        b=fkAPy2DV8cqrdHbwkvk9CDox1RCsN+s3JJ3L7nkRMbOQr09KUgWyNngKT9hfkqxMmm2U1t
-        CFRLjRA9kaUKOqAg==
+        bh=7fXCeGayswbRa4n5Bq4gPzRcbgkQ+/kxTRiftd6E8SI=;
+        b=Xxc3nGIZOoKfJIbomg/jDPkjTX6wYzPl+BcnJIL4XaMTzjfZ0sqoAynjk4Yu6t6Ao16pF2
+        e5a9S+RcyAcmUmCg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 6CD6113A3C;
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id F1C6713A3C;
         Mon,  5 Jun 2023 14:48:16 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id oPO7GbD1fWQvXwAAMHmgww
+        id ACMqOrD1fWQvXwAAMHmgww
         (envelope-from <tzimmermann@suse.de>); Mon, 05 Jun 2023 14:48:16 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     daniel@ffwll.ch, javierm@redhat.com, sam@ravnborg.org,
@@ -56,9 +56,9 @@ Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-sh@vger.kernel.org, linux-omap@vger.kernel.org,
         linux-staging@lists.linux.dev,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 06/30] fbdev/aty128fb: Reorder backlight and framebuffer init/cleanup
-Date:   Mon,  5 Jun 2023 16:47:48 +0200
-Message-Id: <20230605144812.15241-7-tzimmermann@suse.de>
+Subject: [PATCH 08/30] fbdev/broadsheetfb: Call device_remove_file() with hardware device
+Date:   Mon,  5 Jun 2023 16:47:50 +0200
+Message-Id: <20230605144812.15241-9-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230605144812.15241-1-tzimmermann@suse.de>
 References: <20230605144812.15241-1-tzimmermann@suse.de>
@@ -68,52 +68,29 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The driver's backlight code requires the framebuffer to be
-registered. Therefore reorder the init and cleanup calls for
-both data structures.
+Call device_remove_file() with the same device that has been used
+for device_create_file(), which is the hardware device stored in
+struct fb_info.device. Prepares fbdev for making struct fb_info.dev
+optional.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/aty/aty128fb.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/broadsheetfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
-index 36a9ac05a340..b4a49068a522 100644
---- a/drivers/video/fbdev/aty/aty128fb.c
-+++ b/drivers/video/fbdev/aty/aty128fb.c
-@@ -2028,14 +2028,14 @@ static int aty128_init(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	par->asleep = 0;
- 	par->lock_blank = 0;
+diff --git a/drivers/video/fbdev/broadsheetfb.c b/drivers/video/fbdev/broadsheetfb.c
+index e9c5d5c04062..72743a3e8772 100644
+--- a/drivers/video/fbdev/broadsheetfb.c
++++ b/drivers/video/fbdev/broadsheetfb.c
+@@ -1200,7 +1200,7 @@ static int broadsheetfb_remove(struct platform_device *dev)
+ 	if (info) {
+ 		struct broadsheetfb_par *par = info->par;
  
-+	if (register_framebuffer(info) < 0)
-+		return 0;
-+
- #ifdef CONFIG_FB_ATY128_BACKLIGHT
- 	if (backlight)
- 		aty128_bl_init(par);
- #endif
- 
--	if (register_framebuffer(info) < 0)
--		return 0;
--
- 	fb_info(info, "%s frame buffer device on %s\n",
- 		info->fix.id, video_card);
- 
-@@ -2167,12 +2167,12 @@ static void aty128_remove(struct pci_dev *pdev)
- 
- 	par = info->par;
- 
--	unregister_framebuffer(info);
--
- #ifdef CONFIG_FB_ATY128_BACKLIGHT
- 	aty128_bl_exit(info->bl_dev);
- #endif
- 
-+	unregister_framebuffer(info);
-+
- 	arch_phys_wc_del(par->wc_cookie);
- 	iounmap(par->regbase);
- 	iounmap(info->screen_base);
+-		device_remove_file(info->dev, &dev_attr_loadstore_waveform);
++		device_remove_file(info->device, &dev_attr_loadstore_waveform);
+ 		unregister_framebuffer(info);
+ 		fb_deferred_io_cleanup(info);
+ 		par->board->cleanup(par);
 -- 
 2.40.1
 

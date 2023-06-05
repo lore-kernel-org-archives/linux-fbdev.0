@@ -2,67 +2,129 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C76CC77B73
-	for <linux-fbdev@archiver.kernel.org>; Mon,  5 Jun 2023 15:03:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 515E4C7EE2D
+	for <linux-fbdev@archiver.kernel.org>; Mon,  5 Jun 2023 16:08:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232720AbjFEPDz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 5 Jun 2023 11:03:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46574 "EHLO
+        id S231254AbjFEQIH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 5 Jun 2023 12:08:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34142 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231945AbjFEPDy (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 5 Jun 2023 11:03:54 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0540DDA;
-        Mon,  5 Jun 2023 08:03:54 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 8EDC262097;
-        Mon,  5 Jun 2023 15:03:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 87A3BC433D2;
-        Mon,  5 Jun 2023 15:03:52 +0000 (UTC)
-Date:   Mon, 5 Jun 2023 17:03:50 +0200
-From:   Greg KH <greg@kroah.com>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     daniel@ffwll.ch, javierm@redhat.com, sam@ravnborg.org,
-        deller@gmx.de, geert+renesas@glider.be, lee@kernel.org,
-        daniel.thompson@linaro.org, jingoohan1@gmail.com,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-sh@vger.kernel.org, linux-omap@vger.kernel.org,
-        linux-staging@lists.linux.dev
-Subject: Re: [PATCH 30/30] fbdev: Make support for userspace interfaces
- configurable
-Message-ID: <2023060542-daydream-dares-d494@gregkh>
-References: <20230605144812.15241-1-tzimmermann@suse.de>
- <20230605144812.15241-31-tzimmermann@suse.de>
+        with ESMTP id S234071AbjFEQIE (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 5 Jun 2023 12:08:04 -0400
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC59DCD;
+        Mon,  5 Jun 2023 09:08:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1685981283; x=1717517283;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=WsTl8q/03NmXvbUZeuZjP7EEn4sjQ1TeIpWAboty3qg=;
+  b=JkfGarj8L3HN/9CQak14EE/0Xfa2x9MdPDXmJnGnodPLqv+DvMeYQWUM
+   rNZ4iSq+UdlZ8Ugo8oJwhjsfCilVShQLmzvA6wPHuPzvaH2eQLvPglz9F
+   qtRJYWoq2/1ELV4kOOu5JogO6bLkjfkjKBFTkNe87cJH34SjT11NcrrvH
+   7LxFIEC3Bi5aiUvOWYxGkui7BSS+lmvTzUGOm0UATXCy2G+wGEhw1bqMg
+   ZS5jjxxQdpQOyAaWfdeXaRHAUNJLbi6YEZDhiEr8JkwxDYnu6Kr0O0f2x
+   1lEMx9xq2MRhSODxdzPQiqH9d/hHreMjG/ENE2uT8ZIiXEM6MeeZu3r6q
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10732"; a="353898984"
+X-IronPort-AV: E=Sophos;i="6.00,217,1681196400"; 
+   d="scan'208";a="353898984"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Jun 2023 09:07:30 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10732"; a="738411169"
+X-IronPort-AV: E=Sophos;i="6.00,217,1681196400"; 
+   d="scan'208";a="738411169"
+Received: from smile.fi.intel.com ([10.237.72.54])
+  by orsmga008.jf.intel.com with ESMTP; 05 Jun 2023 09:07:26 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.96)
+        (envelope-from <andriy.shevchenko@linux.intel.com>)
+        id 1q6Cjs-001PpH-2k;
+        Mon, 05 Jun 2023 19:07:24 +0300
+Date:   Mon, 5 Jun 2023 19:07:24 +0300
+From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To:     Linus Walleij <linus.walleij@linaro.org>
+Cc:     Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Bartosz Golaszewski <brgl@bgdev.pl>,
+        Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH v1 1/1] backlight: hx8357: Convert to agnostic GPIO API
+Message-ID: <ZH4IPJuPoX3gi5Ga@smile.fi.intel.com>
+References: <20230317185230.46189-1-andriy.shevchenko@linux.intel.com>
+ <CACRpkdYXTk2pzXEM9MTjt=oT-CbhENABSLeb9dN7ZvEy8oqiag@mail.gmail.com>
+ <ZBhJctqSkdtoUmBi@smile.fi.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20230605144812.15241-31-tzimmermann@suse.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ZBhJctqSkdtoUmBi@smile.fi.intel.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Jun 05, 2023 at 04:48:12PM +0200, Thomas Zimmermann wrote:
-> Add Kconfig option CONFIG_FB_DEVICE and make the virtual fbdev
-> device optional. If the new option has not been selected, fbdev
-> does not create a files in devfs or sysfs.
+On Mon, Mar 20, 2023 at 01:54:26PM +0200, Andy Shevchenko wrote:
+> On Fri, Mar 17, 2023 at 09:53:40PM +0100, Linus Walleij wrote:
+> > On Fri, Mar 17, 2023 at 7:51 PM Andy Shevchenko
+> > <andriy.shevchenko@linux.intel.com> wrote:
+> > 
+> > > The of_gpio.h is going to be removed. In preparation of that convert
+> > > the driver to the agnostic API.
+> > >
+> > > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > 
+> > Thanks for fixing this Andy!
+> > 
+> > > -#if !IS_ENABLED(CONFIG_LCD_HX8357)
+> > > +#if IS_ENABLED(CONFIG_LCD_HX8357)
+> > >                 /*
+> > >                  * Himax LCD controllers used incorrectly named
+> > >                  * "gpios-reset" property and also specified wrong
+> > > @@ -452,7 +452,7 @@ static struct gpio_desc *of_find_gpio_rename(struct device_node *np,
+> > >                  */
+> > >                 const char *compatible;
+> > >         } gpios[] = {
+> > > -#if !IS_ENABLED(CONFIG_LCD_HX8357)
+> > > +#if IS_ENABLED(CONFIG_LCD_HX8357)
+> > >                 /* Himax LCD controllers used "gpios-reset" */
+> > >                 { "reset",      "gpios-reset",  "himax,hx8357" },
+> > >                 { "reset",      "gpios-reset",  "himax,hx8369" },
+> > 
+> > Eh what happened here .. it's even intuitively wrong.
 > 
-> Most modern Linux systems run a DRM-based graphics stack that uses
-> the kernel's framebuffer console, but has otherwise deprecated fbdev
-> support. Yet fbdev userspace interfaces are still present.
+> I believe it had to be something  like
 > 
-> The option makes it possible to use the fbdev subsystem as console
-> implementation without support for userspace. This closes potential
-> entry points to manipulate kernel or I/O memory via framebuffers. It
-> also prevents the execution of driver code via ioctl or sysfs, both
-> of which might allow malicious software to exploit bugs in the fbdev
-> code.
+> 	#if 0 && IS_ENABLED()
 > 
-> A small number of fbdev drivers require struct fbinfo.dev to be
-> initialized, usually for the support of sysfs interface. Make these
-> drivers depend on FB_DEVICE. They can later be fixed if necessary.
+> to show that this change is for the future.
+> Currently it does something unneeded for the kernels with that option off.
 > 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> > I would add
+> > Fixes: fbbbcd177a27 ("gpiolib: of: add quirk for locating reset lines
+> > with legacy bindings")
+> 
+> I'm not sure. But it's fine, I can add it. Just want to double confirm
+> you really want this Fixes tag.
+> 
+> > It wasn't used until now it seems so not a regression and no
+> > need for a separate patch.
+> 
+> Exactly why I'm not sure about the tag :-)
+> 
+> > Other than that it looks correct.
+> > Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+> 
+> Thank you!
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Lee, is anything I can do here to move this forward?
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+

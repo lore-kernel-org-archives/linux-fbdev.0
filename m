@@ -2,197 +2,138 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CC65C7EE24
-	for <linux-fbdev@archiver.kernel.org>; Tue,  6 Jun 2023 08:05:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99D76C7EE24
+	for <linux-fbdev@archiver.kernel.org>; Tue,  6 Jun 2023 08:18:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232252AbjFFIFe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 6 Jun 2023 04:05:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40226 "EHLO
+        id S235936AbjFFISE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 6 Jun 2023 04:18:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45644 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232402AbjFFIFd (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 6 Jun 2023 04:05:33 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C002E8;
-        Tue,  6 Jun 2023 01:05:31 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 2A6AF1FD63;
-        Tue,  6 Jun 2023 08:05:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1686038730; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=XndozJCgoZNXI3aAYUD133YM+XIBF5aNLUt6SIsorvY=;
-        b=QVKNx4V6ee3EJzbcqWn5MCRpWpFNmUpKkIRvdfq2Ov7CdaMShfwOLe6RH/IGh3Advikykk
-        13++0bSs/UuPnDl27jQ0H/Niu0FI/69HIQ9v9j9GK6eH3U3nXWm7eVOFGYRSJDY78X4VlQ
-        HmDe1nW27S4DsdycXlVwBxmEJ2Hbm6Q=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1686038730;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=XndozJCgoZNXI3aAYUD133YM+XIBF5aNLUt6SIsorvY=;
-        b=1FCBJ8lyuOx0Tc1/0eX+hg63jCXor0WJUBn9NE7s5AjFvuPnYUM07axxo7GwXLpv9iO/iS
-        cjsuop8KteAu3zAA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C9DEF13519;
-        Tue,  6 Jun 2023 08:05:29 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id RNM3MMnofmSTIwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Tue, 06 Jun 2023 08:05:29 +0000
-Message-ID: <37860c28-8b9b-448f-98d3-80ad427d1315@suse.de>
-Date:   Tue, 6 Jun 2023 10:05:29 +0200
+        with ESMTP id S235891AbjFFISB (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 6 Jun 2023 04:18:01 -0400
+Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 86CED11B
+        for <linux-fbdev@vger.kernel.org>; Tue,  6 Jun 2023 01:17:58 -0700 (PDT)
+Received: by mail-wr1-x434.google.com with SMTP id ffacd0b85a97d-30b023b0068so4158589f8f.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 06 Jun 2023 01:17:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1686039477; x=1688631477;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=cSpRJEPqPVqhoSAFcxKLrdKHmoUN6BNCQfphia1KCDc=;
+        b=Mpc+MQI1MneytiHZlBGaFATUvZ2D7UN1Dd8CesjFWTyP49rsZyjD8jnaaR2NWOdDYa
+         ipHtgV6xxEWHjDPiqr2vBbciA3+K0fJJ7K1xXjC7+LEEVocVIIUJi94ZOqHXXoTSgzrG
+         mxeqOJel8vvWWKD6+i5csIDgelH/jVykDsjgcbudQFFfZ7CAf/f920BH4IoknBSQ53hq
+         hYHtrf7a3GRFH2D0iZ/WCyHV6yJHs8gv/lj4ehZmceJwESSII8vcD1ixg8gZhNul0KKy
+         68n7AIGGrWW/DnIWzedWWopU6PP+9paqpLoKdw2Qdi7FG3cHOBeBfAZJZ1pCvU6/Hl6d
+         tABg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686039477; x=1688631477;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=cSpRJEPqPVqhoSAFcxKLrdKHmoUN6BNCQfphia1KCDc=;
+        b=A27T1li8gQVMoekVr90Dbm6pqesJLDQWEHrRsaNOsN0BziQ4NZKeq9EQ0dnBYYkFWI
+         58cQK+gDrb8NCKEZ//oLynuqr+1fwL06RqztE5BCWSW3RI2zbkrxC4sobt1BmeUcLzO1
+         nQTw2gg0aDu06ken+UpmxaPmuy/af6e+y3o92tiBZrQbESSbaTtQWe+R8M8R9AXs/m5j
+         0ui7mf5Zd8KmGfabpWRxi8WhFWMvo1lSw4V/jas/9yy3gpYV/q95tJeBd/jpKi+YwM9W
+         HBZj8yIJ+LOY1sf7ABVSP1Bj7cpTJNnQBzCVFyYJ9nsNpQTeGh5v6Nar9svsuD/Xxvko
+         ZYbw==
+X-Gm-Message-State: AC+VfDx8CL1tbeMLxGhfEKiYsfkjpLc7HdswpZTI+xlqqV3YonTIowAL
+        2Kh44bREhuRKkA/JI02yOWhJBg==
+X-Google-Smtp-Source: ACHHUZ7IXBOZigfcocE6Us3xOMsMk/mjRsDKCskt5eDsJGA9seSXJvit+vkIb+CpvRFtcFD997m2jg==
+X-Received: by 2002:adf:e446:0:b0:2fe:e455:666c with SMTP id t6-20020adfe446000000b002fee455666cmr8811328wrm.33.1686039476965;
+        Tue, 06 Jun 2023 01:17:56 -0700 (PDT)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id c1-20020a5d4cc1000000b002fda1b12a0bsm11907760wrt.2.2023.06.06.01.17.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 06 Jun 2023 01:17:56 -0700 (PDT)
+Date:   Tue, 6 Jun 2023 09:17:54 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc:     Linus Walleij <linus.walleij@linaro.org>,
+        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Bartosz Golaszewski <brgl@bgdev.pl>,
+        Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH v1 1/1] backlight: hx8357: Convert to agnostic GPIO API
+Message-ID: <20230606081754.GA218497@aspen.lan>
+References: <20230317185230.46189-1-andriy.shevchenko@linux.intel.com>
+ <CACRpkdYXTk2pzXEM9MTjt=oT-CbhENABSLeb9dN7ZvEy8oqiag@mail.gmail.com>
+ <ZBhJctqSkdtoUmBi@smile.fi.intel.com>
+ <ZH4IPJuPoX3gi5Ga@smile.fi.intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.2
-Subject: Re: [PATCH 02/30] backlight/gpio_backlight: Compare against struct
- fb_info.device
-Content-Language: en-US
-To:     Dan Carpenter <dan.carpenter@linaro.org>
-Cc:     "Ruhl, Michael J" <michael.j.ruhl@intel.com>,
-        "daniel@ffwll.ch" <daniel@ffwll.ch>,
-        "javierm@redhat.com" <javierm@redhat.com>,
-        "sam@ravnborg.org" <sam@ravnborg.org>,
-        "deller@gmx.de" <deller@gmx.de>,
-        "geert+renesas@glider.be" <geert+renesas@glider.be>,
-        "lee@kernel.org" <lee@kernel.org>,
-        "daniel.thompson@linaro.org" <daniel.thompson@linaro.org>,
-        "jingoohan1@gmail.com" <jingoohan1@gmail.com>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        Rich Felker <dalias@libc.org>,
-        "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
-        "linux-staging@lists.linux.dev" <linux-staging@lists.linux.dev>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-        "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-References: <20230605144812.15241-1-tzimmermann@suse.de>
- <20230605144812.15241-3-tzimmermann@suse.de>
- <IA1PR11MB641847841A33FE16F9B96BA7C14DA@IA1PR11MB6418.namprd11.prod.outlook.com>
- <7d4e340c-e20a-5824-4d59-b93bc1ba4153@suse.de>
- <9ed217b1-3a05-4daf-9e6f-52453a8b5f3e@kadam.mountain>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <9ed217b1-3a05-4daf-9e6f-52453a8b5f3e@kadam.mountain>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------FT645muoP4UYsk8x6zGzU9g1"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ZH4IPJuPoX3gi5Ga@smile.fi.intel.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------FT645muoP4UYsk8x6zGzU9g1
-Content-Type: multipart/mixed; boundary="------------eqU8fPQ0Xbx8jOyzxNNlYeqm";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Dan Carpenter <dan.carpenter@linaro.org>
-Cc: "Ruhl, Michael J" <michael.j.ruhl@intel.com>,
- "daniel@ffwll.ch" <daniel@ffwll.ch>, "javierm@redhat.com"
- <javierm@redhat.com>, "sam@ravnborg.org" <sam@ravnborg.org>,
- "deller@gmx.de" <deller@gmx.de>,
- "geert+renesas@glider.be" <geert+renesas@glider.be>,
- "lee@kernel.org" <lee@kernel.org>,
- "daniel.thompson@linaro.org" <daniel.thompson@linaro.org>,
- "jingoohan1@gmail.com" <jingoohan1@gmail.com>,
- "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
- Rich Felker <dalias@libc.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "linux-staging@lists.linux.dev" <linux-staging@lists.linux.dev>,
- "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Message-ID: <37860c28-8b9b-448f-98d3-80ad427d1315@suse.de>
-Subject: Re: [PATCH 02/30] backlight/gpio_backlight: Compare against struct
- fb_info.device
-References: <20230605144812.15241-1-tzimmermann@suse.de>
- <20230605144812.15241-3-tzimmermann@suse.de>
- <IA1PR11MB641847841A33FE16F9B96BA7C14DA@IA1PR11MB6418.namprd11.prod.outlook.com>
- <7d4e340c-e20a-5824-4d59-b93bc1ba4153@suse.de>
- <9ed217b1-3a05-4daf-9e6f-52453a8b5f3e@kadam.mountain>
-In-Reply-To: <9ed217b1-3a05-4daf-9e6f-52453a8b5f3e@kadam.mountain>
+On Mon, Jun 05, 2023 at 07:07:24PM +0300, Andy Shevchenko wrote:
+> On Mon, Mar 20, 2023 at 01:54:26PM +0200, Andy Shevchenko wrote:
+> > On Fri, Mar 17, 2023 at 09:53:40PM +0100, Linus Walleij wrote:
+> > > On Fri, Mar 17, 2023 at 7:51 PM Andy Shevchenko
+> > > <andriy.shevchenko@linux.intel.com> wrote:
+> > >
+> > > > The of_gpio.h is going to be removed. In preparation of that convert
+> > > > the driver to the agnostic API.
+> > > >
+> > > > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > >
+> > > Thanks for fixing this Andy!
+> > >
+> > > > -#if !IS_ENABLED(CONFIG_LCD_HX8357)
+> > > > +#if IS_ENABLED(CONFIG_LCD_HX8357)
+> > > >                 /*
+> > > >                  * Himax LCD controllers used incorrectly named
+> > > >                  * "gpios-reset" property and also specified wrong
+> > > > @@ -452,7 +452,7 @@ static struct gpio_desc *of_find_gpio_rename(struct device_node *np,
+> > > >                  */
+> > > >                 const char *compatible;
+> > > >         } gpios[] = {
+> > > > -#if !IS_ENABLED(CONFIG_LCD_HX8357)
+> > > > +#if IS_ENABLED(CONFIG_LCD_HX8357)
+> > > >                 /* Himax LCD controllers used "gpios-reset" */
+> > > >                 { "reset",      "gpios-reset",  "himax,hx8357" },
+> > > >                 { "reset",      "gpios-reset",  "himax,hx8369" },
+> > >
+> > > Eh what happened here .. it's even intuitively wrong.
+> >
+> > I believe it had to be something  like
+> >
+> > 	#if 0 && IS_ENABLED()
+> >
+> > to show that this change is for the future.
+> > Currently it does something unneeded for the kernels with that option off.
+> >
+> > > I would add
+> > > Fixes: fbbbcd177a27 ("gpiolib: of: add quirk for locating reset lines
+> > > with legacy bindings")
+> >
+> > I'm not sure. But it's fine, I can add it. Just want to double confirm
+> > you really want this Fixes tag.
+> >
+> > > It wasn't used until now it seems so not a regression and no
+> > > need for a separate patch.
+> >
+> > Exactly why I'm not sure about the tag :-)
+> >
+> > > Other than that it looks correct.
+> > > Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+> >
+> > Thank you!
+>
+> Lee, is anything I can do here to move this forward?
 
---------------eqU8fPQ0Xbx8jOyzxNNlYeqm
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Backlight code looks OK to me (although I might regard the Fixes:
+discussion as unresolved)there is an unresolved):
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
-SGkNCg0KQW0gMDYuMDYuMjMgdW0gMDk6NDkgc2NocmllYiBEYW4gQ2FycGVudGVyOg0KPiBP
-biBUdWUsIEp1biAwNiwgMjAyMyBhdCAwOToyNDo0OEFNICswMjAwLCBUaG9tYXMgWmltbWVy
-bWFubiB3cm90ZToNCj4+IEhpDQo+Pg0KPj4gQW0gMDUuMDYuMjMgdW0gMjI6MTkgc2Nocmll
-YiBSdWhsLCBNaWNoYWVsIEo6DQo+Pj4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+
-Pj4+IEZyb206IGRyaS1kZXZlbCA8ZHJpLWRldmVsLWJvdW5jZXNAbGlzdHMuZnJlZWRlc2t0
-b3Aub3JnPiBPbiBCZWhhbGYgT2YNCj4+Pj4gVGhvbWFzIFppbW1lcm1hbm4NCj4+Pj4gU2Vu
-dDogTW9uZGF5LCBKdW5lIDUsIDIwMjMgMTA6NDggQU0NCj4+Pj4gVG86IGRhbmllbEBmZnds
-bC5jaDsgamF2aWVybUByZWRoYXQuY29tOyBzYW1AcmF2bmJvcmcub3JnOw0KPj4+PiBkZWxs
-ZXJAZ214LmRlOyBnZWVydCtyZW5lc2FzQGdsaWRlci5iZTsgbGVlQGtlcm5lbC5vcmc7DQo+
-Pj4+IGRhbmllbC50aG9tcHNvbkBsaW5hcm8ub3JnOyBqaW5nb29oYW4xQGdtYWlsLmNvbQ0K
-Pj4+PiBDYzogbGludXgtZmJkZXZAdmdlci5rZXJuZWwub3JnOyBSaWNoIEZlbGtlciA8ZGFs
-aWFzQGxpYmMub3JnPjsgbGludXgtDQo+Pj4+IHNoQHZnZXIua2VybmVsLm9yZzsgbGludXgt
-c3RhZ2luZ0BsaXN0cy5saW51eC5kZXY7IGRyaS0NCj4+Pj4gZGV2ZWxAbGlzdHMuZnJlZWRl
-c2t0b3Aub3JnOyBUaG9tYXMgWmltbWVybWFubg0KPj4+PiA8dHppbW1lcm1hbm5Ac3VzZS5k
-ZT47IEpvaG4gUGF1bCBBZHJpYW4gR2xhdWJpdHogPGdsYXViaXR6QHBoeXNpay5mdS0NCj4+
-Pj4gYmVybGluLmRlPjsgbGludXgtb21hcEB2Z2VyLmtlcm5lbC5vcmcNCj4+Pj4gU3ViamVj
-dDogW1BBVENIIDAyLzMwXSBiYWNrbGlnaHQvZ3Bpb19iYWNrbGlnaHQ6IENvbXBhcmUgYWdh
-aW5zdCBzdHJ1Y3QNCj4+Pj4gZmJfaW5mby5kZXZpY2UNCj4+Pj4NCj4+Pj4gU3RydWN0IGdw
-aW9fYmFja2xpZ2h0X3BsYXRmb3JtX2RhdGEgcmVmZXJzIHRvIGEgcGxhdGZvcm0gZGV2aWNl
-IHdpdGhpbg0KPj4+PiB0aGUgTGludXggZGV2aWNlIGhpZXJhcmNoeS4gVGhlIHRlc3QgaW4g
-Z3Bpb19iYWNrbGlnaHRfY2hlY2tfZmIoKQ0KPj4+PiBjb21wYXJlcyBpdCBhZ2FpbnN0IHRo
-ZSBmYmRldiBkZXZpY2UgaW4gc3RydWN0IGZiX2luZm8uZGV2LCB3aGljaA0KPj4+PiBpcyBk
-aWZmZXJlbnQuIEZpeCB0aGUgdGVzdCBieSBjb21wYXJpbmcgdG8gc3RydWN0IGZiX2luZm8u
-ZGV2aWNlLg0KPj4+Pg0KPj4+PiBGaXhlcyBhIGJ1ZyBpbiB0aGUgYmFja2xpZ2h0IGRyaXZl
-ciBhbmQgcHJlcGFyZXMgZmJkZXYgZm9yIG1ha2luZw0KPj4+PiBzdHJ1Y3QgZmJfaW5mby5k
-ZXYgb3B0aW9uYWwuDQo+Pj4NCj4+PiBJIG9ubHkgc2VlIGEgcmVuYW1lIGZyb20gZmJkZXYg
-IHRvIGRldi4uLg0KPj4+DQo+Pj4gSXMgdGhlcmUgbWlzc2luZyBjb2RlPw0KPj4NCj4+IEFz
-IFNhbSBzYWlkLCB0aGUgY29tcGFyZSBvcGVyYXRpb24gdXNlZCB0aGUgd3JvbmcgZGV2aWNl
-IGZyb20gZmJfaW5mby4NCj4+DQo+PiBJIGFsc28gY2hhbmdlZCB0aGUgbmFtaW5nIG9mIGEg
-ZmV3IGZpZWxkcyBpbiB0aGVzZSBiYWNrbGlnaHQgZHJpdmVycy4gSQ0KPj4gY291bGQgbW92
-ZSB0aGVzZSByZW5hbWVzIGludG8gYSBzZXBhcmF0ZSBwYXRjaCBpZiB0aGF0IG1ha2VzIHRo
-aW5ncyBlYXNpZXINCj4+IGZvciByZXZpZXdlcnMuDQo+Pg0KPj4+DQo+Pj4gV291bGQgIGEg
-Zml4ZXM6IGJlIHVzZWZ1bD8NCj4+DQo+PiBUaGF0IHdvdWxkIGJlIGNvbW1pdCA4Yjc3MGUz
-Yzk4MjQgKCJiYWNrbGlnaHQ6IEFkZCBHUElPLWJhc2VkIGJhY2tsaWdodA0KPj4gZHJpdmVy
-IikgZnJvbSAyMDEzLiBNYXliZSBhIGJpdCBvbGQgYWxyZWFkeSwgYnV0IEkgY2FuIHN1cmVs
-eSBhZGQgaXQuDQo+IA0KPiBEb24ndCBhZGQgdGhlIEZpeGVzIHRhZyB0byB0aGlzIG9uZSBi
-ZWNhdXNlIGl0IGRvZXNuJ3QgZml4IGFueXRoaW5nLCBpdA0KPiBqdXN0IHJlbmFtZXMgc3R1
-ZmYuICBUaGUgcmVhbCBmaXggaXMgbGF0ZXI/ICBUbyBiZSBob25lc3QsIGl0IHdhcyBraW5k
-DQo+IG9mIGRpZmZpY3VsdCB0byBzZWUgd2hlcmUgdGhlIGFjdHVhbCBmaXggd2FzLg0KPiAN
-Cj4gRml4ZXMgdGFncyBmb3Igb2xkIGNvZGUgaXMgZmluZS4uLiAgSSBsaWtlIHRvIGtub3cg
-d2h5IGJ1Z3MgYXJlDQo+IGludHJvZHVjZWQuICBXYXMgaXQgYWRkaW5nIGEgZmVhdHVyZSBv
-ciBwYXJ0IG9mIGZpeCBmb3Igc29tZXRoaW5nIGVsc2UNCj4gb3IgYSBjbGVhbnVwPw0KDQpZ
-b3UncmUgbm90IHRoZSBmaXJzdCB0byBjb21wbGFpbiBhYm91dCB0aGUgcmVuYW1pbmcuIEkn
-bGwgc3BsaXQgZWFjaCANCmJhY2tsaWdodCBwYXRjaCBpbnRvIGEgYnVnLWZpeCBhbmQgYSBy
-ZW5hbWUgcGF0Y2ggdGhlbi4gVGhlIGJ1Z2ZpeCB3aWxsIA0KZ2V0IHRoZSBGaXhlcyB0YWcu
-DQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4gDQo+IHJlZ2FyZHMsDQo+IGRhbiBjYXJw
-ZW50ZXINCj4gDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBE
-ZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KRnJhbmtl
-bnN0cmFzc2UgMTQ2LCA5MDQ2MSBOdWVybmJlcmcsIEdlcm1hbnkNCkdGOiBJdm8gVG90ZXYs
-IEFuZHJldyBNeWVycywgQW5kcmV3IE1jRG9uYWxkLCBCb3VkaWVuIE1vZXJtYW4NCkhSQiAz
-NjgwOSAoQUcgTnVlcm5iZXJnKQ0K
 
---------------eqU8fPQ0Xbx8jOyzxNNlYeqm--
-
---------------FT645muoP4UYsk8x6zGzU9g1
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmR+6MkFAwAAAAAACgkQlh/E3EQov+DU
-4xAAkjuOkq4QAb/E99uDAHmtnDEX1Fcy31zIYeV3X7NMCN0d1FVH0F10L9/dlSiULgm0Lm70J/M1
-jmTryNBB/aHBj14hQg1AlwxJb8UMtmOVp5/iInDRS1yxVatxYsrJTzkmzQKR3goBhFP7NlGctqwH
-CRUlQkVCQQSL78hvwL1iv6D162QnXxCzJqMKLRIyHgPve610jIw/LGLhij5I4vr8r/ReQVcQ9Nt9
-qyNPpqzN+aC4ZpOCQqIXAM5s8Yp27P/Gd283dQaDdrZPJPExsh6a+x4fTBzvizSHM4SWBeX/Eggq
-0fVgzuSDTnu7IEGAXuXNIbP0TaUsQpgggDboirpLmsFV6IxLtIke2bG7ke884gPn4Dl6n7eG+vQF
-JHVZli52cVY2WWu6QQpLLFO9JVxLLBZAJ7ZWQ+Z7jy2U+3D+JIpo1+wQBJ/cDAQSyj1/KjvxAwxp
-SxkUhVOs+WAZW/Wk7ck+gtPB3EcWzfuozjZN58zR5DaKEF/0MVEuAMRSrpkCuhBtz4DKe0tXfGx0
-iOwUp9dRfcZBr7F0xEUbxIgTI8J0V06APXdCcj9FMUs8S76pG25IT5z6s+7BxP75v2aUux5qC3Nx
-rySglS/nku1sGOy5yHZpLt5LNSCbwhryhX90bpPA+EzSMiOPbtFZXWG8xBt68YcI9c8NuIlNjnHm
-IRQ=
-=2KVc
------END PGP SIGNATURE-----
-
---------------FT645muoP4UYsk8x6zGzU9g1--
+Daniel.

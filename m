@@ -2,101 +2,181 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71EAAC7EE2F
-	for <linux-fbdev@archiver.kernel.org>; Tue,  6 Jun 2023 10:43:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77A80C7EE24
+	for <linux-fbdev@archiver.kernel.org>; Tue,  6 Jun 2023 12:35:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237325AbjFFKnR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 6 Jun 2023 06:43:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59970 "EHLO
+        id S237390AbjFFMfP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 6 Jun 2023 08:35:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35772 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231626AbjFFKmY (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 6 Jun 2023 06:42:24 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B9681BC7;
-        Tue,  6 Jun 2023 03:41:01 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id CE4621FD67;
-        Tue,  6 Jun 2023 10:40:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1686048059; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=RCdWkYIApbrbN3XIAOkaX0ST5l1P0QNhDjNAcytAn5E=;
-        b=Ij0YycoE9UtSviJPMS+QFaV3g/tWu+hR7gjEr3YOddZaQACP7h0oSbu9BagLCPzdZBkMs8
-        ls8BruMDLOAz41UT83fqn9rvNuGsSnGo91CVgeMxuh13MBCM4oibcuATm2xAzLx4K9sPv1
-        cUHVA9bru7Zs9OKiSL5UXTSrEf1+qkY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1686048059;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=RCdWkYIApbrbN3XIAOkaX0ST5l1P0QNhDjNAcytAn5E=;
-        b=UIPVtLv3bTCbN1qQSnRQYUgG0ZI3Y0Wm38OSvj5ub48keUmkiLU4qgA/MxzBwyyd4HCj6M
-        /rEM4tloPSX9OPBw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id AC37113A47;
-        Tue,  6 Jun 2023 10:40:59 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id 0IFDKTsNf2SHewAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Tue, 06 Jun 2023 10:40:59 +0000
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-To:     deller@gmx.de, David.Laight@ACULAB.COM
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-sh@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 3/3] fbdev/hitfb: Use NULL for pointers
-Date:   Tue,  6 Jun 2023 12:40:56 +0200
-Message-Id: <20230606104056.29553-4-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230606104056.29553-1-tzimmermann@suse.de>
+        with ESMTP id S237376AbjFFMfN (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 6 Jun 2023 08:35:13 -0400
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C4569E62;
+        Tue,  6 Jun 2023 05:35:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1686054908; x=1717590908;
+  h=from:to:cc:subject:date:message-id:references:
+   in-reply-to:content-transfer-encoding:mime-version;
+  bh=rjS4jvJns154qZ6I8xu6Bq13yhy9RXKxCE/EzGmYIsk=;
+  b=PLJXcelBuTYDgEMECoIWREQM4CJfvGcrrcrhZdX68/XUV+uHn6s2B/E1
+   2SCNcTMJtYDeJ2DG5MWG1V3fCyGF/YELaQUwuHkd3KlEJyOqIKzR3iHzz
+   2SHtDNOb8H8FL7KHjoOwtPzskZAgjS7Poz+ZxNTQRJ4zKYRSuJvFx6sHZ
+   Ep80gLvkNBOWb3gYlGL5PI+q/dnGikpnkgDkpgyhByu+yBcL6ITjiQhCR
+   yJjjpIm1myj+k8HcvWYJWSnG9c73ZQA3LBDkaLQf9YnEmQ9BB8Ctehu4h
+   2iW/kQXg6re/Xa/AghXg1ZRaZBRSQhdNGPzwjyY0DUpUuuiWE/rzUM7Ph
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10732"; a="346254524"
+X-IronPort-AV: E=Sophos;i="6.00,221,1681196400"; 
+   d="scan'208";a="346254524"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Jun 2023 05:35:08 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10732"; a="833208154"
+X-IronPort-AV: E=Sophos;i="6.00,221,1681196400"; 
+   d="scan'208";a="833208154"
+Received: from fmsmsx603.amr.corp.intel.com ([10.18.126.83])
+  by orsmga004.jf.intel.com with ESMTP; 06 Jun 2023 05:35:07 -0700
+Received: from fmsmsx612.amr.corp.intel.com (10.18.126.92) by
+ fmsmsx603.amr.corp.intel.com (10.18.126.83) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Tue, 6 Jun 2023 05:35:07 -0700
+Received: from fmsmsx602.amr.corp.intel.com (10.18.126.82) by
+ fmsmsx612.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Tue, 6 Jun 2023 05:35:06 -0700
+Received: from fmsedg602.ED.cps.intel.com (10.1.192.136) by
+ fmsmsx602.amr.corp.intel.com (10.18.126.82) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23 via Frontend Transport; Tue, 6 Jun 2023 05:35:06 -0700
+Received: from NAM10-MW2-obe.outbound.protection.outlook.com (104.47.55.104)
+ by edgegateway.intel.com (192.55.55.71) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.23; Tue, 6 Jun 2023 05:35:06 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=fMcXjFBdH0Z6vAvgDJdL4RcG7dZ/wofQbigB8ZBa1I9/XNVZLIvH5AznmkA9DJi35vaQw4HdMHMziPvzLzUfz9DaPcyhVkijPXKbzXg1X2LDZNY5JYsdZ7iA3DVly7Z6FTeIKzI3ioKfS/0KpYnqfPt+lcM4Lr8xwm4Hmg/OOhmY5AI8etnNzuhnwhbbkCJr51o0Fzcf9hWYSggzA7rnXLPXBCnR1++D+1Eut3Ga3Ku2RDr6fCeqb14Db6hze3XxPDAlMsVODPXIH21YEG/iUcreHLsX0lcyBmIK8/AhzAfa/eedzhIolYupYU5X2EAVxEp8rHdWMnQcllg8V63qdw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=LA4AkgDPlwY2jFgPQUuwCvzCRWq9+c5XAMXurFIJEDs=;
+ b=kTXy3N6l145A3yRl+Y1lYDlTlUDMcnV1Twb0HewHf2aBFuRxKmkt7cwrSmvzl/B34hIqUamDsYNdBcYzQc7eunHSH3ZeOj6pEEfy3MhdVNtUYPTd03aahrFw8xMqc3TM9WI7DNPxDvml2WfxhknTRxv1XVNcZcSUIujbfj+OUXlxhfhATnMMg5V3vXkO7VQPiJUV+q++z2bN5N7BNNFzjM0Uz4qjMDcLLFSjP+IdhcbcY8rdIOaakaqHb17v16EfBkE8vX06cOiG9JesM5iWHQV7iRmNSa+5enajAp5AR5aA+jOKaemPXdIPm9FKUKlI6Yr5ZV+tr01is8oyRmN20A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from IA1PR11MB6418.namprd11.prod.outlook.com (2603:10b6:208:3aa::18)
+ by MN0PR11MB6088.namprd11.prod.outlook.com (2603:10b6:208:3cc::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6455.27; Tue, 6 Jun
+ 2023 12:35:04 +0000
+Received: from IA1PR11MB6418.namprd11.prod.outlook.com
+ ([fe80::2728:b097:ff42:bd19]) by IA1PR11MB6418.namprd11.prod.outlook.com
+ ([fe80::2728:b097:ff42:bd19%4]) with mapi id 15.20.6455.030; Tue, 6 Jun 2023
+ 12:35:04 +0000
+From:   "Ruhl, Michael J" <michael.j.ruhl@intel.com>
+To:     Thomas Zimmermann <tzimmermann@suse.de>,
+        "deller@gmx.de" <deller@gmx.de>,
+        "David.Laight@ACULAB.COM" <David.Laight@ACULAB.COM>
+CC:     "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>
+Subject: RE: [PATCH 0/3] fbdev/hitfb: Various fixes
+Thread-Topic: [PATCH 0/3] fbdev/hitfb: Various fixes
+Thread-Index: AQHZmGN2I72MSwXIBk+R7pCImqEsCK99tZjg
+Date:   Tue, 6 Jun 2023 12:35:04 +0000
+Message-ID: <IA1PR11MB641863EB1C3839123D9D0BDBC152A@IA1PR11MB6418.namprd11.prod.outlook.com>
 References: <20230606104056.29553-1-tzimmermann@suse.de>
+In-Reply-To: <20230606104056.29553-1-tzimmermann@suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: IA1PR11MB6418:EE_|MN0PR11MB6088:EE_
+x-ms-office365-filtering-correlation-id: 57d55cba-7a11-452b-a193-08db668a744b
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: u3Mhs4fT1O7u5j5Qi/DK5+waWwWw/zErtIVpw3iNaRqdOhX+QEy3WmurkccP11o9mQyCzcPHqJ3ZVEsYugSldnIgXnaFT2FpFnlKBMT/W0ElgFErOK8EoHgLfgKz4h3BkskotEtEGJH0ECsg89H9l2Vh6DBzlEl0ZNsFvU5uNE4v2QPjAoh4Z7uid2hNR7NW7jqQ+LTnZ1P96CCCioePE/Au9uz55j+/mZk4S724939JNandU8PRZArNqCcDpRQhZS660zmvuoT3T5TawhlQRKZoON5cGMbXrfM3S8BgQSGA1FYMUdCXxafNeucHxIT639to4B2dDF9Pd2tchaxk5j6ku8eDkebiZmjPYW4o3Zts2ilq7o9M8Bsi0ukjAXwYjwcpXuQc6a4M2oEcOHNnrJq9kaH8cL+L+I8x1ZjoK5g53bY+u6BakVl/cKJ/exBEc3YZ2Sp2KQHEJ/fTzVjXbie/m+s2c5d6FBaKo7ZiFoktOAlqpug+wn6uGtvjqDlnfH2mKxmttFsLrwgOu2wcR7rcWM1YsKoIz4JpO92qYRKOup/j9egYKEPggGx5858pMTK9gSKFeR2bmgNv1m4TrEnIEDV2TbuzV++NkVyC9k5UV0/n31ZHlelKQyTJWMiT
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA1PR11MB6418.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(39860400002)(396003)(136003)(376002)(366004)(346002)(451199021)(478600001)(4744005)(2906002)(7696005)(26005)(71200400001)(33656002)(38070700005)(83380400001)(9686003)(86362001)(186003)(122000001)(6506007)(82960400001)(38100700002)(55016003)(52536014)(5660300002)(8936002)(8676002)(41300700001)(66556008)(76116006)(64756008)(4326008)(66476007)(66446008)(66946007)(316002)(54906003)(110136005);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?oKRwJVWCmjUq+4oZUZdeIHAr2RX2bB1XHCDE5m+VfHPh6F/YyZZW26I8nt2p?=
+ =?us-ascii?Q?QhdYfdcVkIgIMEhyLG4gh/LctNF2D5GfXExL92H7B5N1tIuKC1gGkS7/7TNj?=
+ =?us-ascii?Q?Zd2SpfBbFiMWui9c8dLlZOO4KrJ0ydr++at0IwsIVtIiFbficLU9oQmdzmLj?=
+ =?us-ascii?Q?RW55ZejB5of5d578PcUk65gtpsfOOD6kpu73vcdUHPK0ot4o7wz8ciCHwK7R?=
+ =?us-ascii?Q?/i5mQPUcutqjcrmu3krHiG8sY8Sfi8Jrqu2LzJ0c9RlH3s3vj2wexcqlg3Qv?=
+ =?us-ascii?Q?M5pH7EDZNIWj0P2Zs2XsTxaTfrYUe8qZg7PDG1mLCf0h7sIUrUL5GWHjidvN?=
+ =?us-ascii?Q?mWhtPv1Kq6iJSi8ocKF83v3kbZnVbV48WlQRIbJrXT9HyfXxp5Z7IiECcebB?=
+ =?us-ascii?Q?RPqmQDW+e5H7daU3M0a1RaZJhYIxfdeWj8GcowYRIr6U+OZu4UcX+psAJwGV?=
+ =?us-ascii?Q?kfPhSNt0BboNcxclY/VbY5sRfGjFmtDxfI5BVNuI0dUT7IT4Ed06+verHIQ9?=
+ =?us-ascii?Q?l+INAkjddiHB/4i8nUpJEUs6hYxkKw+78tUygvQcWoSjfyvpmTeifFVaHTXi?=
+ =?us-ascii?Q?Kvp9NAT5Hjhb0WqNf4QA5G22trxSkKurdpplaYh8d3mh9lsXMFWJNQfk5zbU?=
+ =?us-ascii?Q?H28hvw+io13GzlGAmePUlSQpJG9voZGaNUlvPG+uTKxjZnuJ7mmZWJ2B3HlU?=
+ =?us-ascii?Q?NbqEAF812gb7DAza1gW4JdDF5Go3WfEIljf/9cR+XngDED44pH0aJDJHxQll?=
+ =?us-ascii?Q?tzBJS6fnj7YnCC15rnfeYdAryyJeJlEcO/UPyU10lg7azl/9UXtdteo/BXII?=
+ =?us-ascii?Q?DNk7uJWP+lWNjkIslqmnyvDHVwL8xSI40ps/2cdF5/lmrGdKBXIOHHa3jF03?=
+ =?us-ascii?Q?8HZplbklFIfAJAtpH5PN0SerzGUqtrQKuEl5ptxWvJ8VjLBVhHkEpJ7jlAmZ?=
+ =?us-ascii?Q?zZGWiinhJIm7eG0+bJCcKh/mGJPrPt62C/LhMn5af2E1iOrSKQganljdLvWO?=
+ =?us-ascii?Q?RrlyGOZzaZjlwcXRFbNjTii3Xg9d2pkZPEnUaM2AqS4m3+DJnJeYcR+moCL9?=
+ =?us-ascii?Q?WYOkhLRxR4ePb7bLRJLQOOqZh51Npfo+jNalIdwqt1/fx/HILwaE09QhtT9a?=
+ =?us-ascii?Q?xxHuJt98Zuf4yxT75CtcvALhosMearIENJ888kH2SKLyHsoF1RSadi5IWsqS?=
+ =?us-ascii?Q?jvVXo0oUOhi3zrsiEvvE2lwS1sLgjvCTYb81wNAwWwLPrucq9AcjlWhIxpjW?=
+ =?us-ascii?Q?0EBjv4aa3Ay84YNrrOE3Vss/JBJfsYdDwxrHE+YJqsp1pdzTP8wEWhICmkRV?=
+ =?us-ascii?Q?svooHRYwlKD5OZjesCZwsdWTL5nF6+FXGuDCvdt+fS5GSplp7+V4mpLoHgv6?=
+ =?us-ascii?Q?GD5TN+rIo0yz3QciNRiT+H1m2cItVnLm2WfSPJOCokgusw19b6raMYnSeZLx?=
+ =?us-ascii?Q?fYRg7kqZI3ZxxaWVskLTjGhZZDvYQ0vl2enB0uqUAf4IEhkf+9GrFACF1cMS?=
+ =?us-ascii?Q?AQqKpGwmqGf+4ZtDIwmaHiL1DVcu4TNQNBIuxgIGCCMZR++xSOyNwFivihc1?=
+ =?us-ascii?Q?bIc/9gLhrx0LDM95FANfVNjeWBTepdahGwOzETv6?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: IA1PR11MB6418.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 57d55cba-7a11-452b-a193-08db668a744b
+X-MS-Exchange-CrossTenant-originalarrivaltime: 06 Jun 2023 12:35:04.5091
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: tHwKfiGJYFEIsGPX1/WR6VTliZFmHI4Vr1U6ptSRUhj0Xg4598lxIYWo2M7Cw/EdqPdunts6PgeRKHKtcJ+ntluJO+fCUnGzX5Jwom8G6J4=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN0PR11MB6088
+X-OriginatorOrg: intel.com
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Replace integer constants with NULL. Resolves the following
-warnings:
+>-----Original Message-----
+>From: dri-devel <dri-devel-bounces@lists.freedesktop.org> On Behalf Of
+>Thomas Zimmermann
+>Sent: Tuesday, June 6, 2023 6:41 AM
+>To: deller@gmx.de; David.Laight@ACULAB.COM
+>Cc: linux-fbdev@vger.kernel.org; Thomas Zimmermann
+><tzimmermann@suse.de>; dri-devel@lists.freedesktop.org; linux-
+>sh@vger.kernel.org
+>Subject: [PATCH 0/3] fbdev/hitfb: Various fixes
+>
+>Fix a number of minor warnings in the hitfb driver. I discovered
+>them while working on bb47f218fd01 ("fbdev/hitfb: Cast I/O offset
+>to address").
+>
+>Thomas Zimmermann (3):
+>  fbdev/hitfb: Declare hitfb_blank() as static
+>  fbdev/hitfb: Fix integer-to-pointer cast
+>  fbdev/hitfb: Use NULL for pointers
 
-../drivers/video/fbdev/hitfb.c:447:23: warning: Using plain integer as NULL pointer
-../drivers/video/fbdev/hitfb.c:465:23: warning: Using plain integer as NULL pointer
+These look reasonable to me.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- drivers/video/fbdev/hitfb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+For the series:
 
-diff --git a/drivers/video/fbdev/hitfb.c b/drivers/video/fbdev/hitfb.c
-index 1ee3aa3d3fc7..c6b3d9f38c01 100644
---- a/drivers/video/fbdev/hitfb.c
-+++ b/drivers/video/fbdev/hitfb.c
-@@ -444,7 +444,7 @@ static int hitfb_suspend(struct device *dev)
- {
- 	u16 v;
- 
--	hitfb_blank(1,0);
-+	hitfb_blank(1, NULL);
- 	v = hitfb_readw(HD64461_STBCR);
- 	v |= HD64461_STBCR_SLCKE_IST;
- 	hitfb_writew(v, HD64461_STBCR);
-@@ -462,7 +462,7 @@ static int hitfb_resume(struct device *dev)
- 	v = hitfb_readw(HD64461_STBCR);
- 	v &= ~HD64461_STBCR_SLCKE_IST;
- 	hitfb_writew(v, HD64461_STBCR);
--	hitfb_blank(0,0);
-+	hitfb_blank(0, NULL);
- 
- 	return 0;
- }
--- 
-2.40.1
+Reviewed-by: Michael J. Ruhl <michael.j.ruhl@intel.com>
+
+> drivers/video/fbdev/hitfb.c | 8 ++++----
+> 1 file changed, 4 insertions(+), 4 deletions(-)
+>
+>
+>base-commit: 29c0f369e17ba0abf08c65ca065417aebab208c6
+>--
+>2.40.1
 

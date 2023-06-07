@@ -2,111 +2,106 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A091C7EE23
-	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Jun 2023 15:26:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84332C7EE23
+	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Jun 2023 19:25:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241436AbjFGP0F convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 7 Jun 2023 11:26:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33802 "EHLO
+        id S230178AbjFGTZf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 7 Jun 2023 15:25:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45654 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241079AbjFGPZd (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 7 Jun 2023 11:25:33 -0400
-Received: from mail-yb1-f180.google.com (mail-yb1-f180.google.com [209.85.219.180])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 388A72715;
-        Wed,  7 Jun 2023 08:25:11 -0700 (PDT)
-Received: by mail-yb1-f180.google.com with SMTP id 3f1490d57ef6-ba8151a744fso8656731276.2;
-        Wed, 07 Jun 2023 08:25:11 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686151462; x=1688743462;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=EQN/vgm9QEjhz2CmAuEj3hHoQIOxHnpZb3XEwqj7JAE=;
-        b=BhoJONJB89aWQLa8PPpUz7j2h1iUSUQgV28+VYxYzxmPQSep/0bBOErdHW1zHLr5tR
-         /HwC4h2nm78YvOPiDlq4ecZ+oa16McDI6XodAI8M5cr7dpoIOe+sqkYnMYlWH0ucdzzG
-         9EcF7C0bdindUAl4UbIjQ0Ulqvw8nF3fxMVa5zacA4wMjY2f9eWPO53DoCVH+fNnrVOJ
-         poaLyrgdXIXJexhTQaWAbTvuKWIEbMn7MsleUtD3+fG/dzCMxXj+a91TECwtG0k8LPvw
-         3GWBGW2ypDU+cLy4AZqhsKPTa0S8E+khIMGAfTcpJ8pGp68GX75XBs3nwuShDg07Yap6
-         R8sg==
-X-Gm-Message-State: AC+VfDxJCZBuX65sDCpEgWDUrdRZ8thNxUVqkEQMAGZndAziuRAUgxIC
-        +fOAn0E5RNvCAXFZezlz16I01sAfdx7s+g==
-X-Google-Smtp-Source: ACHHUZ4hZ5mQV9UZxtOfx7Xp52RJIhgGUFeWy1THCvMb3QQmVkJx6lBLEdNQIkLBlEfHNPn6TtQBTw==
-X-Received: by 2002:a0d:d7cf:0:b0:565:dff1:d1e2 with SMTP id z198-20020a0dd7cf000000b00565dff1d1e2mr7634371ywd.18.1686151462189;
-        Wed, 07 Jun 2023 08:24:22 -0700 (PDT)
-Received: from mail-yw1-f175.google.com (mail-yw1-f175.google.com. [209.85.128.175])
-        by smtp.gmail.com with ESMTPSA id j188-20020a0df9c5000000b0055a07e36659sm4777371ywf.145.2023.06.07.08.24.21
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 07 Jun 2023 08:24:21 -0700 (PDT)
-Received: by mail-yw1-f175.google.com with SMTP id 00721157ae682-565ba53f434so84021437b3.3;
-        Wed, 07 Jun 2023 08:24:21 -0700 (PDT)
-X-Received: by 2002:a0d:d44b:0:b0:565:8c16:a0e1 with SMTP id
- w72-20020a0dd44b000000b005658c16a0e1mr8139475ywd.13.1686151460917; Wed, 07
- Jun 2023 08:24:20 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230605144812.15241-1-tzimmermann@suse.de> <20230605144812.15241-31-tzimmermann@suse.de>
- <CAMuHMdVP2hrgXaZvASnHJ4M+VXaTCtfbeVXrq2dsEJqcs3G6ZA@mail.gmail.com> <e5d88ca8-66fe-b5ee-cb6b-2dc8f3a3fb26@suse.de>
-In-Reply-To: <e5d88ca8-66fe-b5ee-cb6b-2dc8f3a3fb26@suse.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 7 Jun 2023 17:24:09 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWBUKTgfCD9VLDFh_Tm1J-NJQHpxODs-TuYM7V-dtmGjA@mail.gmail.com>
-Message-ID: <CAMuHMdWBUKTgfCD9VLDFh_Tm1J-NJQHpxODs-TuYM7V-dtmGjA@mail.gmail.com>
-Subject: Re: [PATCH 30/30] fbdev: Make support for userspace interfaces configurable
+        with ESMTP id S230143AbjFGTZe (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 7 Jun 2023 15:25:34 -0400
+Received: from mailrelay3-1.pub.mailoutpod2-cph3.one.com (mailrelay3-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:402::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B41911FDA
+        for <linux-fbdev@vger.kernel.org>; Wed,  7 Jun 2023 12:25:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=rsa1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=kSzGrhZeHHFA6vfrZ2LR8W+Xuz6bQ2NOc+2ymmMNnM0=;
+        b=h76YaDkQ9KEY86SkBJIK7Zu4Enw0wNpHBcVhmUgBpVjydT2hAS48Fnof+OaILkoaBDq1/iv2MvciJ
+         zFCHwPg6zxBLmjCVK1BOiWPQVAvcYJ1j2+T+aKRUj1xG8LbcxWtzm/CWEskimaYbT6ZDM5BH2jkIH7
+         lTx51IzydhS8dOzNDsY42jQSYhHtemMvMZiA2KUS3Bqg3P+WgHnX4Hk0pEbysfuGF4JkfCrO5TMz50
+         s7n8laMYfpl3dbdP2H3sV1/u76Zan9yUfQ1bJACzSxpks406V0+UvNp2GZnvf3RAlLlyxVyo5SBxO7
+         fbuBjGDL7jRpFlpn29TGdyQNE+2YITA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=ed1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=kSzGrhZeHHFA6vfrZ2LR8W+Xuz6bQ2NOc+2ymmMNnM0=;
+        b=vboEswhlVEDQlrEBHy9SKyPCu7hxQ/FQGvK2EVLt3AfPI8xQHLCiCGcuYD0YlmIxPuNcTUIsJMfSB
+         1ypYZxqAg==
+X-HalOne-ID: 0f4d33df-0569-11ee-8726-b90637070a9d
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+        by mailrelay3 (Halon) with ESMTPSA
+        id 0f4d33df-0569-11ee-8726-b90637070a9d;
+        Wed, 07 Jun 2023 19:25:29 +0000 (UTC)
+Date:   Wed, 7 Jun 2023 21:25:28 +0200
+From:   Sam Ravnborg <sam@ravnborg.org>
 To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     daniel@ffwll.ch, javierm@redhat.com, sam@ravnborg.org,
-        deller@gmx.de, lee@kernel.org, daniel.thompson@linaro.org,
-        jingoohan1@gmail.com, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-sh@vger.kernel.org,
-        linux-omap@vger.kernel.org, linux-staging@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Cc:     daniel@ffwll.ch, javierm@redhat.com, deller@gmx.de,
+        geert+renesas@glider.be, lee@kernel.org,
+        daniel.thompson@linaro.org, jingoohan1@gmail.com,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-sh@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-staging@lists.linux.dev,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 24/30] fbdev/core: Pass Linux device to pm_vt_switch_*()
+ functions
+Message-ID: <20230607192528.GA670717@ravnborg.org>
+References: <20230605144812.15241-1-tzimmermann@suse.de>
+ <20230605144812.15241-25-tzimmermann@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230605144812.15241-25-tzimmermann@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
-
-On Wed, Jun 7, 2023 at 5:15 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> Am 07.06.23 um 10:48 schrieb Geert Uytterhoeven:
-> > On Mon, Jun 5, 2023 at 4:48 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> >> --- a/drivers/video/fbdev/Kconfig
-> >> +++ b/drivers/video/fbdev/Kconfig
-> >> @@ -57,6 +57,15 @@ config FIRMWARE_EDID
-> >>            combination with certain motherboards and monitors are known to
-> >>            suffer from this problem.
-> >>
-> >> +config FB_DEVICE
-> >> +        bool "Provide legacy /dev/fb* device"
-> >
-> > Perhaps "default y if !DRM", although that does not help for a
-> > mixed drm/fbdev kernel build?
->
-> We could simply set it to "default y".  But OTOH is it worth making it a
-> default? Distributions will set it to the value they need/want. The very
-> few people that build their own kernels to get certain fbdev drivers
-> will certainly be able to enable the option by hand as well.
-
-Defaulting to "n" (the default) means causing regressions when these
-few people use an existing defconfig.
-
-> > Or reserve "FB" for real fbdev drivers, and introduce a new FB_CORE,
-> > to be selected by both FB and DRM_FBDEV_EMULATION?
-> > Then FB_DEVICE can depend on FB_CORE, and default to y if FB.
->
-> That wouldn't work. In Tumbleweed, we still have efifb and vesafb
-> enabled under certain conditions; merely for the kernel console. We'd
-> have to enable CONFIG_FB, which would bring back the device.
-
-"Default y" does not mean that you cannot disable FB_DEVICE, so
-you are not forced to bring back the device?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+On Mon, Jun 05, 2023 at 04:48:06PM +0200, Thomas Zimmermann wrote:
+> Pass the Linux device to pm_vt_switch_*() instead of the virtual
+> fbdev device. Prepares fbdev for making struct fb_info.dev optional.
+> 
+> The type of device that is passed to the PM functions does not matter
+> much. It is only a token within the internal list of known devices.
+> The PM functions do not refer to any of the device's properties or its
+> type.
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: linux-pm@vger.kernel.org
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+> ---
+>  drivers/video/fbdev/core/fbmem.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+> index 329d16e49a90..f91ae7d4c94d 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -1478,9 +1478,9 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+>  		INIT_LIST_HEAD(&fb_info->modelist);
+>  
+>  	if (fb_info->skip_vt_switch)
+> -		pm_vt_switch_required(fb_info->dev, false);
+> +		pm_vt_switch_required(fb_info->device, false);
+>  	else
+> -		pm_vt_switch_required(fb_info->dev, true);
+> +		pm_vt_switch_required(fb_info->device, true);
+>  
+>  	fb_var_to_videomode(&mode, &fb_info->var);
+>  	fb_add_videomode(&mode, &fb_info->modelist);
+> @@ -1520,7 +1520,7 @@ static void unlink_framebuffer(struct fb_info *fb_info)
+>  
+>  	device_destroy(fb_class, MKDEV(FB_MAJOR, i));
+>  
+> -	pm_vt_switch_unregister(fb_info->dev);
+> +	pm_vt_switch_unregister(fb_info->device);
+>  
+>  	unbind_console(fb_info);
+>  
+> -- 
+> 2.40.1

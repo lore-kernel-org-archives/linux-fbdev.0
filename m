@@ -2,216 +2,94 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C44D2C83003
-	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Jun 2023 20:51:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB548C77B7A
+	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Jun 2023 22:26:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235160AbjFGUvg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 7 Jun 2023 16:51:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52184 "EHLO
+        id S231376AbjFGW0K (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 7 Jun 2023 18:26:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40454 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235162AbjFGUvf (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 7 Jun 2023 16:51:35 -0400
-Received: from mailrelay2-1.pub.mailoutpod2-cph3.one.com (mailrelay2-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:401::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7A5E42109
-        for <linux-fbdev@vger.kernel.org>; Wed,  7 Jun 2023 13:51:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=rsa1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=QP5DggRAkMsWzHr2Ezj3giodZW+XWKbFWz/uitrZ/GM=;
-        b=CFJCPMV8DkYl0NfKiDYsXDM4+h0ssRKM63b//X1CKGSmCZ5wCxZgY86itJdIZDdylDYIMwLYSf6Z9
-         5j7b04bP1D11uq3PnKnZ5LkRA8P+P7wu9rTZYcFbM483JX/tx+MDlzMmpqRYslo0new66RxjV6KB3x
-         wL2kL9rtFLI+gr0aw5qUyWXKUgj77uOEKpTlydPH58G6NTFlQyIFzOHpUMxHp97XFh+5EQ6dB4HiFy
-         EX4QHtZmvaGkFoosOKS3jeniI6asUsEhR9Uacyvu6k5/h8fN7d6kn4pd+SE0nhB2CA5Y5xgmbLB8oe
-         1ShgWjb8t6X7kZi72Gm0icQpB8QX9nQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=ed1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=QP5DggRAkMsWzHr2Ezj3giodZW+XWKbFWz/uitrZ/GM=;
-        b=TtlDT3wuRSZ4OzGHBiWlvspLkENTW3F6U1FtKpLI/Ob1sE71L0vVMxI9FbGHRln3IA7VGu4w1tP1B
-         5p+5ow/CA==
-X-HalOne-ID: 05e381b2-0575-11ee-b726-13111ccb208d
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-        by mailrelay2 (Halon) with ESMTPSA
-        id 05e381b2-0575-11ee-b726-13111ccb208d;
-        Wed, 07 Jun 2023 20:51:09 +0000 (UTC)
-Date:   Wed, 7 Jun 2023 22:51:07 +0200
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     daniel@ffwll.ch, javierm@redhat.com, deller@gmx.de,
-        geert+renesas@glider.be, lee@kernel.org,
-        daniel.thompson@linaro.org, jingoohan1@gmail.com,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        with ESMTP id S230299AbjFGW0J (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 7 Jun 2023 18:26:09 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3A99A2718
+        for <linux-fbdev@vger.kernel.org>; Wed,  7 Jun 2023 15:24:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1686176611;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=m3wnM605gKMmCudt2hcJJr2EFLF4uSnPgF/R0Xs7/Z4=;
+        b=f2In9eu0fcJlyEfFJZrs+XUR8lUfcGNlW8tcJ0idu7lCXQHZpvDOUJf2ylTRDD+f/5m5Od
+        rtzLAeD+OqiYXe7KU1YvIEmGMy+qkS8Etwd3sMp8riXhLYEzW7Cs1f3/9WDtWR+cAbI6K/
+        x1sQ65IK7z46Lkql8W2+M+afvSYNk0I=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-282-0PWxlvB_M1C4XiiKqScLYQ-1; Wed, 07 Jun 2023 18:23:30 -0400
+X-MC-Unique: 0PWxlvB_M1C4XiiKqScLYQ-1
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-3f7ebe8523eso9671805e9.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 07 Jun 2023 15:23:30 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686176609; x=1688768609;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=m3wnM605gKMmCudt2hcJJr2EFLF4uSnPgF/R0Xs7/Z4=;
+        b=fuURbyK51Rz8hnTAtw6qFWtdlNIY6+QN32d4NxtSEqhAAR5e+Ie58pJdELQPGUrerb
+         XtB7IdZIuoobiJAjuZ0NLALy4D8Cldse6W0Qa07K/tgYmHo8WD37T6/DjFdw5AXYeoqJ
+         DrDhfeOObyLYfHQTndkQMMcEBI7sTlnt3zl+kvfA8QwHaDu/5k8o58cxG9iEWJNdyIU0
+         gX68TO0FS4WIuQDlkHQi3J5WoHgJQYaVuusx3Sfe8yMpZ2GcRcy5T0EFkZ4sMTTSz+s9
+         yvvJQ1QdxNsMkxT/g0Z2zlgakM6hUZl2Wr18BQ0VQZ589SgeluC3sGwZmirVO2SefY8O
+         Mo0g==
+X-Gm-Message-State: AC+VfDxVgJ01yMw553SI1e1p0GDvX9X/uoBOcESj9Oa4tPsUnxTLUaFE
+        sPYqi5mdBwLaSZBrpfaFmBHbm1VoNoOzFip9vHqNBdL4pEKKxgOYeHT8V4M749bcWBL0oOuUzwC
+        p2IBzcgRqOIq3WCV1DG6kzDs=
+X-Received: by 2002:a05:600c:230c:b0:3f7:f4bc:ebf3 with SMTP id 12-20020a05600c230c00b003f7f4bcebf3mr1544752wmo.36.1686176609315;
+        Wed, 07 Jun 2023 15:23:29 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ46AO52oYq6hkZwI7LskizRRuqd6gfq8mv/AQFd6xOXiRAiGoamovfGXQJy96q8ipeUPGiuUw==
+X-Received: by 2002:a05:600c:230c:b0:3f7:f4bc:ebf3 with SMTP id 12-20020a05600c230c00b003f7f4bcebf3mr1544739wmo.36.1686176608968;
+        Wed, 07 Jun 2023 15:23:28 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id d10-20020a1c730a000000b003f42158288dsm3313271wmb.20.2023.06.07.15.23.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 07 Jun 2023 15:23:28 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
+        sam@ravnborg.org, deller@gmx.de, geert+renesas@glider.be,
+        lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-sh@vger.kernel.org, linux-omap@vger.kernel.org,
-        linux-staging@lists.linux.dev
-Subject: Re: [PATCH 29/30] fbdev/core: Rework fb init code
-Message-ID: <20230607205107.GF670717@ravnborg.org>
+        linux-staging@lists.linux.dev,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH 23/30] fbdev/tdfxfb: Set i2c adapter parent to hardware
+ device
+In-Reply-To: <20230605144812.15241-24-tzimmermann@suse.de>
 References: <20230605144812.15241-1-tzimmermann@suse.de>
- <20230605144812.15241-30-tzimmermann@suse.de>
+ <20230605144812.15241-24-tzimmermann@suse.de>
+Date:   Thu, 08 Jun 2023 00:23:27 +0200
+Message-ID: <87bkhqewtc.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230605144812.15241-30-tzimmermann@suse.de>
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas.
+Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-On Mon, Jun 05, 2023 at 04:48:11PM +0200, Thomas Zimmermann wrote:
-> Init the class "graphics" before the rest of fbdev. Later steps, such
-> as the sysfs code, depend on the class. Also arrange the module's exit
-> code in reverse order.
-> 
-> Unexport the global variable fb_class, which is only shared internally
-> within the fbdev core module.
-> 
+> Use the 3dfx hardware device from the Linux device hierarchy as
+> parent device of the i2c adapter. Aligns the driver with the rest
+> of the codebase and prepares fbdev for making struct fb_info.dev
+> optional.
+>
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
 > ---
->  drivers/video/fbdev/core/fb_internal.h |  1 +
->  drivers/video/fbdev/core/fbcon.c       |  1 +
->  drivers/video/fbdev/core/fbmem.c       | 52 ++++++++++----------------
->  include/linux/fb.h                     |  1 -
->  4 files changed, 22 insertions(+), 33 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/core/fb_internal.h b/drivers/video/fbdev/core/fb_internal.h
-> index abe06c9da36e..0b43c0cd5096 100644
-> --- a/drivers/video/fbdev/core/fb_internal.h
-> +++ b/drivers/video/fbdev/core/fb_internal.h
-> @@ -11,6 +11,7 @@ int fb_register_chrdev(void);
->  void fb_unregister_chrdev(void);
->  
->  /* fbmem.c */
-> +extern struct class *fb_class;
->  extern struct mutex registration_lock;
->  extern struct fb_info *registered_fb[FB_MAX];
->  extern int num_registered_fb;
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-> index c6c9d040bdec..8e76bc246b38 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -78,6 +78,7 @@
->  #include <asm/irq.h>
->  
->  #include "fbcon.h"
-> +#include "fb_internal.h"
->  
->  /*
->   * FIXME: Locking
-> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-> index 2d26ac46337b..b21b66017c01 100644
-> --- a/drivers/video/fbdev/core/fbmem.c
-> +++ b/drivers/video/fbdev/core/fbmem.c
-> @@ -45,6 +45,8 @@
->  
->  #define FBPIXMAPSIZE	(1024 * 8)
->  
-> +struct class *fb_class;
-> +
->  DEFINE_MUTEX(registration_lock);
->  struct fb_info *registered_fb[FB_MAX] __read_mostly;
->  int num_registered_fb __read_mostly;
-> @@ -897,9 +899,6 @@ fb_blank(struct fb_info *info, int blank)
->  }
->  EXPORT_SYMBOL(fb_blank);
->  
-> -struct class *fb_class;
-> -EXPORT_SYMBOL(fb_class);
-> -
->  static int fb_check_foreignness(struct fb_info *fi)
->  {
->  	const bool foreign_endian = fi->flags & FBINFO_FOREIGN_ENDIAN;
-> @@ -1106,59 +1105,48 @@ void fb_set_suspend(struct fb_info *info, int state)
->  }
->  EXPORT_SYMBOL(fb_set_suspend);
->  
-> -/**
-> - *	fbmem_init - init frame buffer subsystem
-> - *
-> - *	Initialize the frame buffer subsystem.
-> - *
-> - *	NOTE: This function is _only_ to be called by drivers/char/mem.c.
-> - *
-> - */
-> -
-> -static int __init
-> -fbmem_init(void)
-> +static int __init fbmem_init(void)
->  {
->  	int ret;
->  
-> +	fb_class = class_create("graphics");
-> +	if (IS_ERR(fb_class)) {
-> +		ret = PTR_ERR(fb_class);
-> +		pr_err("Unable to create fb class; errno = %d\n", ret);
-> +		goto err_fb_class;
-> +	}
-> +
->  	ret = fb_init_procfs();
->  	if (ret)
-> -		return ret;
-> +		goto err_class_destroy;
->  
->  	ret = fb_register_chrdev();
->  	if (ret)
-> -		goto err_chrdev;
-> -
-> -	fb_class = class_create("graphics");
-> -	if (IS_ERR(fb_class)) {
-> -		ret = PTR_ERR(fb_class);
-> -		pr_warn("Unable to create fb class; errno = %d\n", ret);
-> -		fb_class = NULL;
-> -		goto err_class;
-> -	}
-> +		goto err_fb_cleanup_procfs;
->  
->  	fb_console_init();
->  
->  	return 0;
->  
-> -err_class:
-> -	fb_unregister_chrdev();
-> -err_chrdev:
-> +err_fb_cleanup_procfs:
->  	fb_cleanup_procfs();
-> +err_class_destroy:
-> +	class_destroy(fb_class);
-> +err_fb_class:
-> +	fb_class = NULL;
->  	return ret;
->  }
->  
->  #ifdef MODULE
-> -module_init(fbmem_init);
-> -static void __exit
-> -fbmem_exit(void)
-> +static void __exit fbmem_exit(void)
->  {
->  	fb_console_exit();
-> -
-> +	fb_unregister_chrdev();
->  	fb_cleanup_procfs();
->  	class_destroy(fb_class);
-> -	fb_unregister_chrdev();
->  }
->  
-> +module_init(fbmem_init);
->  module_exit(fbmem_exit);
->  MODULE_LICENSE("GPL");
->  MODULE_DESCRIPTION("Framebuffer base");
-> diff --git a/include/linux/fb.h b/include/linux/fb.h
-> index 1988d11f78bc..541a0e3ce21f 100644
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -609,7 +609,6 @@ extern int fb_new_modelist(struct fb_info *info);
->  
->  extern bool fb_center_logo;
->  extern int fb_logo_count;
-> -extern struct class *fb_class;
->  
->  static inline void lock_fb_info(struct fb_info *info)
->  {
-> -- 
-> 2.40.1
+
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+
+-- 
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
+

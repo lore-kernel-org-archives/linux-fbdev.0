@@ -2,105 +2,283 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EC4EC7EE25
-	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Jun 2023 11:28:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07573C7EE23
+	for <linux-fbdev@archiver.kernel.org>; Sun, 11 Jun 2023 16:37:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229703AbjFIL2N (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 9 Jun 2023 07:28:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35700 "EHLO
+        id S229784AbjFKQhZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 11 Jun 2023 12:37:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39288 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230523AbjFIL15 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 9 Jun 2023 07:27:57 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B05A92712
-        for <linux-fbdev@vger.kernel.org>; Fri,  9 Jun 2023 04:27:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1686310033;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=Aq1HmhmHxt8U2DdHW6bpTJ6Q+ZwtPsKU6Rb33d5Ew+Q=;
-        b=jEQUIkK/gucjVugNCDvsozoARj6YxcZWEQbiWI9zoJqAz0xS/BRy0rAik6wOEbHMUtUL+p
-        P8WrIk/weEPEj4x0C4+FfgEcvJpC1r8ymvuVFpktXOvxfcZ4kzYzOP+WdcPfdYtT6nPMKu
-        L+apyijlMfnGe38VgWgpyMM69eSqyDk=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-180-pIWWMxqgNL-RTbJ8QW591Q-1; Fri, 09 Jun 2023 07:27:12 -0400
-X-MC-Unique: pIWWMxqgNL-RTbJ8QW591Q-1
-Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-3f7e6582938so27769385e9.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 09 Jun 2023 04:27:12 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686310031; x=1688902031;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Aq1HmhmHxt8U2DdHW6bpTJ6Q+ZwtPsKU6Rb33d5Ew+Q=;
-        b=DNUuulVhCRM0LsQFCuqOgM3OwzXVeI+l1EegLVFRXM8EkAJOvUW7huyXluL7p6lHR7
-         g55tUR8l1CG/5nw1uiEoaSbF3LeT6AiVwCA2rkqIv/ekPNOG/NHfSeWrv636xBG7ko6D
-         zu6iGCrCtDKZjwtdFcHSeoHkLXFmM9H2hHQV7/4W9OPOehSwQziOAK/x2mHl0d0c9TQD
-         PS1pkuopFZ7MrIV5oHDlNZ5/7YpiRsd4G/HwsVkVLb5BKqvVJlhVz7RHjkd5UX37coMD
-         BMX7RpUu1Hkw58kblmPg4IcntZXBHAhVNCTYsXnA4x32iO8iV560O9fL5QnNNGXeKHuG
-         W3aA==
-X-Gm-Message-State: AC+VfDwbiGhHtLw0cxckv/qmNlIhKn3qbpX0PGTSfkpC7+5nqBCFLTA7
-        o3VLrNIy5kf3erHNF5MZKszDlBHxNdP784/jOAGlOuXbZ6mhN98WBexP5Qwg3Bn7u9T94erNErL
-        sZ3xorY0dZpMtsxDVi3uG7Kc=
-X-Received: by 2002:a1c:4b0f:0:b0:3f5:6e5:1689 with SMTP id y15-20020a1c4b0f000000b003f506e51689mr962604wma.17.1686310031581;
-        Fri, 09 Jun 2023 04:27:11 -0700 (PDT)
-X-Google-Smtp-Source: ACHHUZ6w7LsURM3swKe92CefNektpkFsYqmjCbB+q5BkwoFvHxCz92JpRifnJNOzeTnxZcxMM5HBOg==
-X-Received: by 2002:a1c:4b0f:0:b0:3f5:6e5:1689 with SMTP id y15-20020a1c4b0f000000b003f506e51689mr962588wma.17.1686310031334;
-        Fri, 09 Jun 2023 04:27:11 -0700 (PDT)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id p4-20020a5d48c4000000b0030903d44dbcsm4191258wrs.33.2023.06.09.04.27.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 09 Jun 2023 04:27:11 -0700 (PDT)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     daniel.thompson@linaro.org, linux-staging@lists.linux.dev,
-        linux-sh@vger.kernel.org, jingoohan1@gmail.com, deller@gmx.de,
-        lee@kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
-        sam@ravnborg.org
+        with ESMTP id S229441AbjFKQhY (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Sun, 11 Jun 2023 12:37:24 -0400
+Received: from mailrelay3-1.pub.mailoutpod2-cph3.one.com (mailrelay3-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:402::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1FE64120
+        for <linux-fbdev@vger.kernel.org>; Sun, 11 Jun 2023 09:37:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=rsa1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=1Ohyt1AlJn0Mp2/mDQGGAD9NP5MHu4FOQ0UuwC+3UBc=;
+        b=G4V10oNnxckq/1jCAnMQxEb1BT7kvT96mb2s+7CaklcxIPHDMinZ/r2iqrxz3PS6R5bwI1cNikOG+
+         mb8FtOBvf+jRqKHFb+woLX/JR/UUo/F0V9ciYJXFt964a7n0m6nqxnPK8rnr7Gvg9fB9IETo4kzG3h
+         azHld3l+pAS4Y3ghpv9upOLcGzZvfke4pwYmBWwM7xQIsBufgwRE7ClZ8l3NMU+Bxs7sw2wWK6mpcB
+         540+DM5eE/kP5qaNsHp24GF8cEQIyZRPjoRG5R3TY2isM2LWWC1LkEOStAoVk/lxpTexz7aXNkLkp/
+         0utpzxZTpjzh/tiLoPzKOXCFRo1Oydg==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=ed1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=1Ohyt1AlJn0Mp2/mDQGGAD9NP5MHu4FOQ0UuwC+3UBc=;
+        b=qugGThFyRP8Sfv/kfH5cK/XAmQSBcp5TWEMF/jte+aGQCWEZp35/a86b+uQB7GR8S2Ir0jT5FNPwv
+         vDxRIuaAQ==
+X-HalOne-ID: 39927900-0876-11ee-827c-b90637070a9d
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+        by mailrelay3 (Halon) with ESMTPSA
+        id 39927900-0876-11ee-827c-b90637070a9d;
+        Sun, 11 Jun 2023 16:37:17 +0000 (UTC)
+Date:   Sun, 11 Jun 2023 18:37:16 +0200
+From:   Sam Ravnborg <sam@ravnborg.org>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     daniel@ffwll.ch, javierm@redhat.com, deller@gmx.de,
+        geert+renesas@glider.be, lee@kernel.org,
+        daniel.thompson@linaro.org, jingoohan1@gmail.com,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-sh@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-staging@lists.linux.dev
 Subject: Re: [PATCH 30/30] fbdev: Make support for userspace interfaces
  configurable
-In-Reply-To: <4df23439-462f-47da-890d-2dd2092eea35@suse.de>
+Message-ID: <20230611163716.GA1139759@ravnborg.org>
 References: <20230605144812.15241-1-tzimmermann@suse.de>
  <20230605144812.15241-31-tzimmermann@suse.de>
- <CAMuHMdVP2hrgXaZvASnHJ4M+VXaTCtfbeVXrq2dsEJqcs3G6ZA@mail.gmail.com>
- <e5d88ca8-66fe-b5ee-cb6b-2dc8f3a3fb26@suse.de>
- <CAMuHMdWBUKTgfCD9VLDFh_Tm1J-NJQHpxODs-TuYM7V-dtmGjA@mail.gmail.com>
- <873532eurg.fsf@minerva.mail-host-address-is-not-set>
- <77252bc9-e08e-fcee-d140-2b78ab768b42@suse.de>
- <CAMuHMdWUkZDcYfndf1A+cgcN5Fz1hmst4LrpA7iYCFqWSRTNDA@mail.gmail.com>
- <4df23439-462f-47da-890d-2dd2092eea35@suse.de>
-Date:   Fri, 09 Jun 2023 13:27:10 +0200
-Message-ID: <87o7lodgfl.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230605144812.15241-31-tzimmermann@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Thomas Zimmermann <tzimmermann@suse.de> writes:
+Hi Thomas,
 
-[...]
+On Mon, Jun 05, 2023 at 04:48:12PM +0200, Thomas Zimmermann wrote:
+> Add Kconfig option CONFIG_FB_DEVICE and make the virtual fbdev
+> device optional. If the new option has not been selected, fbdev
+> does not create a files in devfs or sysfs.
+s/ a//
+> 
+> Most modern Linux systems run a DRM-based graphics stack that uses
+> the kernel's framebuffer console, but has otherwise deprecated fbdev
+> support. Yet fbdev userspace interfaces are still present.
+> 
+> The option makes it possible to use the fbdev subsystem as console
+> implementation without support for userspace. This closes potential
+> entry points to manipulate kernel or I/O memory via framebuffers. It
+> also prevents the execution of driver code via ioctl or sysfs, both
+> of which might allow malicious software to exploit bugs in the fbdev
+> code.
+> 
+> A small number of fbdev drivers require struct fbinfo.dev to be
+> initialized, usually for the support of sysfs interface. Make these
+> drivers depend on FB_DEVICE. They can later be fixed if necessary.
+Should that be a TODO in gpu/todo.rst?
+Otherwise the amount of people knowing about this
+is very close to 1.
+As an alternative add a TODO to each Kconfig file.
 
->> 
->> So with FB_CORE, you can have default y if you have a real fbdev driver,
->> and default n if you have only DRM drivers.
->> 
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
+>  drivers/staging/fbtft/Kconfig            |  1 +
+>  drivers/video/fbdev/Kconfig              | 12 +++++++++
+>  drivers/video/fbdev/core/Makefile        |  7 +++---
+>  drivers/video/fbdev/core/fb_internal.h   | 32 ++++++++++++++++++++++++
+>  drivers/video/fbdev/omap2/omapfb/Kconfig |  2 +-
+>  include/linux/fb.h                       |  2 ++
+>  6 files changed, 52 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/staging/fbtft/Kconfig b/drivers/staging/fbtft/Kconfig
+> index 4d29e8c1014e..5dda3c65a38e 100644
+> --- a/drivers/staging/fbtft/Kconfig
+> +++ b/drivers/staging/fbtft/Kconfig
+> @@ -2,6 +2,7 @@
+>  menuconfig FB_TFT
+>  	tristate "Support for small TFT LCD display modules"
+>  	depends on FB && SPI
+> +	depends on FB_DEVICE
+>  	depends on GPIOLIB || COMPILE_TEST
+>  	select FB_SYS_FILLRECT
+>  	select FB_SYS_COPYAREA
+> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+> index 6df9bd09454a..48d9a14f889c 100644
+> --- a/drivers/video/fbdev/Kconfig
+> +++ b/drivers/video/fbdev/Kconfig
+> @@ -57,6 +57,15 @@ config FIRMWARE_EDID
+>  	  combination with certain motherboards and monitors are known to
+>  	  suffer from this problem.
+>  
+> +config FB_DEVICE
+> +        bool "Provide legacy /dev/fb* device"
+> +        depends on FB
+> +        help
+> +	  Say Y here if you want the legacy /dev/fb* device file. It's
+> +	  only required if you have userspace programs that depend on
+> +	  fbdev for graphics output. This does not effect the framebuffer
+> +	  console.
+tabs to spaces to indent the above correct.
 
-All this discussion about FB_CORE is unrelated to your series though and
-that is covered by enabling CONFIG_FB_DEVICE. I think that there's value
-on a FB_CORE option to allow disabling all the fbdev drivers with a single
-option but still keep DRM_FBDEV_EMULATION enabled.
+> +
+>  config FB_DDC
+>  	tristate
+>  	depends on FB
+> @@ -1545,6 +1554,7 @@ config FB_3DFX_I2C
+>  config FB_VOODOO1
+>  	tristate "3Dfx Voodoo Graphics (sst1) support"
+>  	depends on FB && PCI
+> +	depends on FB_DEVICE
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+>  	select FB_CFB_IMAGEBLIT
+> @@ -1862,6 +1872,7 @@ config FB_SH_MOBILE_LCDC
+>  	tristate "SuperH Mobile LCDC framebuffer support"
+>  	depends on FB && HAVE_CLK && HAS_IOMEM
+>  	depends on SUPERH || ARCH_RENESAS || COMPILE_TEST
+> +	depends on FB_DEVICE
+>  	select FB_SYS_FILLRECT
+>  	select FB_SYS_COPYAREA
+>  	select FB_SYS_IMAGEBLIT
+> @@ -1930,6 +1941,7 @@ config FB_SMSCUFX
+>  config FB_UDL
+>  	tristate "Displaylink USB Framebuffer support"
+>  	depends on FB && USB
+> +	depends on FB_DEVICE
+>  	select FB_MODE_HELPERS
+>  	select FB_SYS_FILLRECT
+>  	select FB_SYS_COPYAREA
+> diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
+> index 125d24f50c36..d5e8772620f8 100644
+> --- a/drivers/video/fbdev/core/Makefile
+> +++ b/drivers/video/fbdev/core/Makefile
+> @@ -2,12 +2,13 @@
+>  obj-$(CONFIG_FB_NOTIFY)           += fb_notify.o
+>  obj-$(CONFIG_FB)                  += fb.o
+>  fb-y                              := fb_backlight.o \
+> -                                     fb_devfs.o \
+>                                       fb_info.o \
+> -                                     fb_procfs.o \
+> -                                     fbmem.o fbmon.o fbcmap.o fbsysfs.o \
+> +                                     fbmem.o fbmon.o fbcmap.o \
+>                                       modedb.o fbcvt.o fb_cmdline.o fb_io_fops.o
+>  fb-$(CONFIG_FB_DEFERRED_IO)       += fb_defio.o
+> +fb-$(CONFIG_FB_DEVICE)            += fb_devfs.o \
+> +                                     fb_procfs.o \
+> +                                     fbsysfs.o
+Maybe change this to one line to avoid '\'?
 
-But I can repost my old series on top of this patch-set once it lands.
+>  
+>  ifeq ($(CONFIG_FRAMEBUFFER_CONSOLE),y)
+>  fb-y				  += fbcon.o bitblit.o softcursor.o
+> diff --git a/drivers/video/fbdev/core/fb_internal.h b/drivers/video/fbdev/core/fb_internal.h
+> index 0b43c0cd5096..b8a28466db79 100644
+> --- a/drivers/video/fbdev/core/fb_internal.h
+> +++ b/drivers/video/fbdev/core/fb_internal.h
+> @@ -3,12 +3,22 @@
+>  #ifndef _FB_INTERNAL_H
+>  #define _FB_INTERNAL_H
+>  
+> +#include <linux/device.h>
+>  #include <linux/fb.h>
+>  #include <linux/mutex.h>
+>  
+>  /* fb_devfs.c */
+> +#if defined(CONFIG_FB_DEVICE)
+>  int fb_register_chrdev(void);
+>  void fb_unregister_chrdev(void);
+> +#else
+> +static inline int fb_register_chrdev(void)
+> +{
+> +	return 0;
+> +}
+> +static inline void fb_unregister_chrdev(void)
+> +{ }
+> +#endif
+>  
+>  /* fbmem.c */
+>  extern struct class *fb_class;
+> @@ -19,11 +29,33 @@ struct fb_info *get_fb_info(unsigned int idx);
+>  void put_fb_info(struct fb_info *fb_info);
+>  
+>  /* fb_procfs.c */
+> +#if defined(CONFIG_FB_DEVICE)
+>  int fb_init_procfs(void);
+>  void fb_cleanup_procfs(void);
+> +#else
+> +static inline int fb_init_procfs(void)
+> +{
+> +	return 0;
+> +}
+> +static inline void fb_cleanup_procfs(void)
+> +{ }
+> +#endif
+>  
+>  /* fbsysfs.c */
+> +#if defined(CONFIG_FB_DEVICE)
+>  int fb_device_create(struct fb_info *fb_info);
+>  void fb_device_destroy(struct fb_info *fb_info);
+> +#else
+> +static inline int fb_device_create(struct fb_info *fb_info)
+> +{
+> +	get_device(fb_info->device); // as in device_add()
+> +
+> +	return 0;
+> +}
+> +static inline void fb_device_destroy(struct fb_info *fb_info)
+> +{
+> +	put_device(fb_info->device); // as in device_del()
+> +}
+> +#endif
+I do not see why fb_device_{create,destroy} needs to call
+{get,put}_device - and it is not explained.
+A short explanation in the commit maybe?
 
--- 
-Best regards,
+With my comments addressed:
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
 
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+Note: I do not engage in the thread about the best Kconfig
+solution - I trust the involved people will find a good solution.
 
+	Sam
+
+>  
+>  #endif
+> diff --git a/drivers/video/fbdev/omap2/omapfb/Kconfig b/drivers/video/fbdev/omap2/omapfb/Kconfig
+> index 69f9cb03507e..21069fdb7cc2 100644
+> --- a/drivers/video/fbdev/omap2/omapfb/Kconfig
+> +++ b/drivers/video/fbdev/omap2/omapfb/Kconfig
+> @@ -5,9 +5,9 @@ config OMAP2_VRFB
+>  menuconfig FB_OMAP2
+>  	tristate "OMAP2+ frame buffer support"
+>  	depends on FB
+> +	depends on FB_DEVICE
+>  	depends on DRM_OMAP = n
+>  	depends on GPIOLIB
+> -
+>  	select FB_OMAP2_DSS
+>  	select OMAP2_VRFB if ARCH_OMAP2 || ARCH_OMAP3
+>  	select FB_CFB_FILLRECT
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index 541a0e3ce21f..40ed1028160c 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -481,7 +481,9 @@ struct fb_info {
+>  
+>  	const struct fb_ops *fbops;
+>  	struct device *device;		/* This is the parent */
+> +#if defined(CONFIG_FB_DEVICE)
+>  	struct device *dev;		/* This is this fb device */
+> +#endif
+>  	int class_flag;                    /* private sysfs flags */
+>  #ifdef CONFIG_FB_TILEBLITTING
+>  	struct fb_tile_ops *tileops;    /* Tile Blitting */
+> -- 
+> 2.40.1

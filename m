@@ -2,109 +2,117 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52246C88CB2
-	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jun 2023 16:05:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05096C7EE43
+	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jun 2023 22:23:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231488AbjFLQFM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 12 Jun 2023 12:05:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47658 "EHLO
+        id S232149AbjFLWXZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 12 Jun 2023 18:23:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43504 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237351AbjFLQFL (ORCPT
+        with ESMTP id S232956AbjFLWXY (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 12 Jun 2023 12:05:11 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 96CB7E5
-        for <linux-fbdev@vger.kernel.org>; Mon, 12 Jun 2023 09:04:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1686585866;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=uuCdplsPmJlzp+kH6QUrWWOm1LK9xg7d6ONJhnkdacI=;
-        b=SRuj9uobVSzwZXP/Efxh7eb8p3Nh/gQ0oQImpt6eS/Npp6XMUAe3arqeMBL3Rbxdtp7vlq
-        eU3lNcNIt1TVC5nBzxfTCHy1veC7sOwJnywUxAptOaoJ/D/jlUuWSmy2PdPIqRUr6+78bS
-        2r0MjvmjQ4WG/6Qa9viNJRumZbvrnUc=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-9-wkLe6JW5OVKvT_9kcspvyQ-1; Mon, 12 Jun 2023 12:04:21 -0400
-X-MC-Unique: wkLe6JW5OVKvT_9kcspvyQ-1
-Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-30fbaeec4c1so1002668f8f.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 12 Jun 2023 09:04:21 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686585859; x=1689177859;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=uuCdplsPmJlzp+kH6QUrWWOm1LK9xg7d6ONJhnkdacI=;
-        b=ZtMGA3TcUNqua0naSps5vzEwu9ePgZiib62WttYwO3NSYs4CDow/Ny/jCftGSatWEU
-         hSl8eaJySrAPfKf2rsUWwIFWwnOueI/NjZrSUdLOvjkBV6zvtMJJOKxgPpQGq+5Uh56W
-         0cm38+rMI6J6RJ9ezbZXRnrF7gXdsF145TdT/hIzILNh5AgtfoVj5xsXkYKOixN2Y3jj
-         lwK1/NvpsDSysfxM2daavP8SYOklk7P/IKFcfEiAFQHqUSYwilkBrJrmzEKwdvxv6UKK
-         9ondeOB/HhxbgkzgwMbLsZ8hFKoAMafVQhGvXJJratNdzFa+zwCNi29vjvwtgHgkuQ0f
-         rzAg==
-X-Gm-Message-State: AC+VfDx3s5NXo78GvY6NqxoIz9OPiY/VDki/hex4isy80FIewHyocSic
-        1Vc75G/qZFzf3Uzl1eMjMUV9MVnM8bmnmtG6JFaF+EzzMWQSrTyY5s3+ASUx1xDEoFy3+9wZE0e
-        j8UzsMKzDKo2S6Reo7pEiKVk=
-X-Received: by 2002:adf:e984:0:b0:30a:bf2b:e020 with SMTP id h4-20020adfe984000000b0030abf2be020mr5819480wrm.45.1686585859688;
-        Mon, 12 Jun 2023 09:04:19 -0700 (PDT)
-X-Google-Smtp-Source: ACHHUZ4owFNKmEWmuPb++u0T0aPDLLPsp/xgXSi0mOTbIfVKTyTKs1oJaK7lKDIf+8APpdspTz1ouQ==
-X-Received: by 2002:adf:e984:0:b0:30a:bf2b:e020 with SMTP id h4-20020adfe984000000b0030abf2be020mr5819445wrm.45.1686585859272;
-        Mon, 12 Jun 2023 09:04:19 -0700 (PDT)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id c1-20020a5d5281000000b0030aded83385sm12896655wrv.27.2023.06.12.09.04.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 12 Jun 2023 09:04:18 -0700 (PDT)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     Sam Ravnborg <sam@ravnborg.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     daniel@ffwll.ch, deller@gmx.de, geert+renesas@glider.be,
-        lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com,
-        dan.carpenter@linaro.org, michael.j.ruhl@intel.com,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-sh@vger.kernel.org, linux-omap@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 00/38] fbdev: Make userspace interfaces optional
-In-Reply-To: <20230612155601.GC1243864@ravnborg.org>
-References: <20230612141352.29939-1-tzimmermann@suse.de>
- <20230612155601.GC1243864@ravnborg.org>
-Date:   Mon, 12 Jun 2023 18:04:17 +0200
-Message-ID: <87jzw83bwe.fsf@minerva.mail-host-address-is-not-set>
+        Mon, 12 Jun 2023 18:23:24 -0400
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2672210D5;
+        Mon, 12 Jun 2023 15:23:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1686608603; x=1718144603;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=Z7lMnWLVZUtIABsHb5EnGYpPZQF8Q7ziKnufPLXzAeY=;
+  b=XTUSRpviH4ERXFd3H33gMTpNTLLKkSs0R4W4z1yB/9UpIP1yOzwXMUDz
+   0ISBVAaqbxCNUj9d0gjvU+kT/ywS46TnDb/g9ucbYU2ibWbHEWQ9NkBxF
+   KVrV5yEu2SPJ+XI3Hh88y43p1JV601hzLr3d8kdTdplxBl9Z1xxn8aMxL
+   JdR1ud2F3A9iR34su9JrCaqJjauIJpEjx9It+zASZhhP8IUnJOuuXtaFd
+   JV+i2pbQVAuu+Y/oK4AkEOqYhQ3IBB45gL+9mOHEW9zzldzfebvbppP7J
+   OVgqytLpVvRGIBqQeSuHe0LiivTlWivV9Bhhz6wQi/aidtym2tIFnaiJ7
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10739"; a="338534547"
+X-IronPort-AV: E=Sophos;i="6.00,238,1681196400"; 
+   d="scan'208";a="338534547"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jun 2023 15:23:22 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10739"; a="705550334"
+X-IronPort-AV: E=Sophos;i="6.00,238,1681196400"; 
+   d="scan'208";a="705550334"
+Received: from lkp-server01.sh.intel.com (HELO 211f47bdb1cb) ([10.239.97.150])
+  by orsmga007.jf.intel.com with ESMTP; 12 Jun 2023 15:23:19 -0700
+Received: from kbuild by 211f47bdb1cb with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1q8pwU-0000nP-1S;
+        Mon, 12 Jun 2023 22:23:18 +0000
+Date:   Tue, 13 Jun 2023 06:23:06 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Linus Walleij <linus.walleij@linaro.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Helge Deller <deller@gmx.de>
+Cc:     llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+        linux-media@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH] fbdev/media: Use GPIO descriptors for VIA GPIO
+Message-ID: <202306130650.BS2fQAUp-lkp@intel.com>
+References: <20230612134500.249178-1-linus.walleij@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230612134500.249178-1-linus.walleij@linaro.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Sam Ravnborg <sam@ravnborg.org> writes:
+Hi Linus,
 
-Hello Sam,
+kernel test robot noticed the following build errors:
 
-> Hi Thomas,
->
-> Nice series, quite some preparations.
->
-> On Mon, Jun 12, 2023 at 04:07:38PM +0200, Thomas Zimmermann wrote:
+[auto build test ERROR on media-tree/master]
+[also build test ERROR on linus/master v6.4-rc6 next-20230609]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-[...]
+url:    https://github.com/intel-lab-lkp/linux/commits/Linus-Walleij/fbdev-media-Use-GPIO-descriptors-for-VIA-GPIO/20230612-214746
+base:   git://linuxtv.org/media_tree.git master
+patch link:    https://lore.kernel.org/r/20230612134500.249178-1-linus.walleij%40linaro.org
+patch subject: [PATCH] fbdev/media: Use GPIO descriptors for VIA GPIO
+config: i386-randconfig-r034-20230612 (https://download.01.org/0day-ci/archive/20230613/202306130650.BS2fQAUp-lkp@intel.com/config)
+compiler: clang version 15.0.7 (https://github.com/llvm/llvm-project.git 8dfdcc7b7bf66834a761bd8de445840ef68e4d1a)
+reproduce (this is a W=1 build):
+        mkdir -p ~/bin
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git remote add media-tree git://linuxtv.org/media_tree.git
+        git fetch media-tree master
+        git checkout media-tree/master
+        b4 shazam https://lore.kernel.org/r/20230612134500.249178-1-linus.walleij@linaro.org
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang ~/bin/make.cross W=1 O=build_dir ARCH=i386 olddefconfig
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang ~/bin/make.cross W=1 O=build_dir ARCH=i386 SHELL=/bin/bash
 
->>   fbdev/smscufx: Detect registered fb_info from refcount
-> I did not try to understand the code, so others must review.
->
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202306130650.BS2fQAUp-lkp@intel.com/
 
-No worries, I already reviewed that one.
+All errors (new ones prefixed by >>):
 
->>   fbdev/ep93xx-fb: Alloc DMA memory from hardware device
->>   fbdev/sh7760fb: Alloc DMA memory from hardware device
-> This smells like bug-fixes, and I do not see what impact the change has.
-> So again, someone else needs to provide review here.
->
+>> drivers/video/fbdev/via/via-gpio.c:13:10: fatal error: 'linux/via-gpio.h' file not found
+   #include <linux/via-gpio.h>
+            ^~~~~~~~~~~~~~~~~~
+   1 error generated.
 
-And same for these.
+
+vim +13 drivers/video/fbdev/via/via-gpio.c
+
+ec66841e495b9a drivers/video/via/via-gpio.c Jonathan Corbet 2010-05-05 @13  #include <linux/via-gpio.h>
+a8a359318530a7 drivers/video/via/via-gpio.c Paul Gortmaker  2011-07-10  14  #include <linux/export.h>
+7e0de022680f78 drivers/video/via/via-gpio.c Jonathan Corbet 2009-12-01  15  
 
 -- 
-Best regards,
-
-Javier Martinez Canillas
-Core Platforms
-Red Hat
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

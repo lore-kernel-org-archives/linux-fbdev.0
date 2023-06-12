@@ -2,53 +2,53 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9AC8CA9EAE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jun 2023 14:14:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 630E0C88CBB
+	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jun 2023 14:14:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237540AbjFLOOW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 12 Jun 2023 10:14:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55150 "EHLO
+        id S237551AbjFLOOX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 12 Jun 2023 10:14:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55290 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237373AbjFLOOI (ORCPT
+        with ESMTP id S237378AbjFLOOI (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Mon, 12 Jun 2023 10:14:08 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2712510F3;
-        Mon, 12 Jun 2023 07:14:02 -0700 (PDT)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 19F0E10FF;
+        Mon, 12 Jun 2023 07:14:03 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 9B52E2048B;
-        Mon, 12 Jun 2023 14:14:00 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id B6B6822850;
+        Mon, 12 Jun 2023 14:14:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1686579240; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1686579241; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=PbUjj/PueO+Es73bAqXH5DD3UCVS6BRl+fKU1vkiyGY=;
-        b=KEJxLICdhH0tm46UM+vGa6MA1q5H4k2lbtjGIeYeHGiMAy5XIAQurXLAbBIeDClzC6V6nV
-        XqjzvBAeknCZEAY5CTfk34VoO1dFdI6LyV7pJzlophEfJatxJva0cxSBSxdfRbF22sl39z
-        IGpqe4k5O1D/vXJUfxnIbwZKtSIhOX0=
+        bh=NeJmBMc+qN1qkXnt7g1RgqrFwwNflzArnjihi3rx4yI=;
+        b=gFIK1qv7+3u09sRVdTlSN5i09/FxajAi9k1XcX9W9wJtKgypvNDNKBjpr+FOUC/NJqMWB7
+        em0yUyIGDQPuQSO9qp8XcdMexBu08G4vF679LV3ISLJoCvt1Ag+5BMT/YTKSupbuJA6oe8
+        UN+BI9+CsGTbb4bvxIdBbcM4UAhwxX8=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1686579240;
+        s=susede2_ed25519; t=1686579241;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=PbUjj/PueO+Es73bAqXH5DD3UCVS6BRl+fKU1vkiyGY=;
-        b=TOnbRsF5IjIS4iot6RtRpIrgIU3/ZxJuA71pk2pYhnF/DMQix38TToCkmp8DZZ0hJx2XM5
-        I5U66om943pHYIBQ==
+        bh=NeJmBMc+qN1qkXnt7g1RgqrFwwNflzArnjihi3rx4yI=;
+        b=UZGQhraaK4JGeU/nXzIZQfBQi9ePVMq7ByjtD5xJoq08BQMjbwViCPjbhuns9T0rayM7n/
+        EheOXx5OIeI2dWDQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 4B9321357F;
-        Mon, 12 Jun 2023 14:14:00 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 6535F1357F;
+        Mon, 12 Jun 2023 14:14:01 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id YJ53ESgoh2RwGQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 12 Jun 2023 14:14:00 +0000
+        id 8By4Fykoh2RwGQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 12 Jun 2023 14:14:01 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     daniel@ffwll.ch, javierm@redhat.com, sam@ravnborg.org,
         deller@gmx.de, geert+renesas@glider.be, lee@kernel.org,
@@ -58,9 +58,9 @@ Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-sh@vger.kernel.org, linux-omap@vger.kernel.org,
         linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 17/38] fbdev/metronomefb: Use hardware device for dev_err()
-Date:   Mon, 12 Jun 2023 16:07:55 +0200
-Message-ID: <20230612141352.29939-18-tzimmermann@suse.de>
+Subject: [PATCH v2 20/38] fbdev/pxa168fb: Do not assign to struct fb_info.dev
+Date:   Mon, 12 Jun 2023 16:07:58 +0200
+Message-ID: <20230612141352.29939-21-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230612141352.29939-1-tzimmermann@suse.de>
 References: <20230612141352.29939-1-tzimmermann@suse.de>
@@ -70,33 +70,28 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Replace the use of the fbdev software device, stored in struct
-fb_info.dev, with the hardware device from struct fb_info.device
-in load_waveform(). The device is only used for printing errors
-with dev_err().
-
-This change aligns load_waveform() with the rest of the driver and
-prepares fbdev for making struct fb_info.dev optional.
+Do not assign the hardware device to struct fb_info.dev. The
+field references the fbdev software device, which is unrelated.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/video/fbdev/metronomefb.c | 2 +-
+ drivers/video/fbdev/pxa168fb.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/metronomefb.c b/drivers/video/fbdev/metronomefb.c
-index bac255c749e78..3e1daca76e114 100644
---- a/drivers/video/fbdev/metronomefb.c
-+++ b/drivers/video/fbdev/metronomefb.c
-@@ -181,7 +181,7 @@ static int load_waveform(u8 *mem, size_t size, int m, int t,
- 	int mem_idx = 0;
- 	struct waveform_hdr *wfm_hdr;
- 	u8 *metromem = par->metromem_wfm;
--	struct device *dev = par->info->dev;
-+	struct device *dev = par->info->device;
- 
- 	if (user_wfm_size)
- 		epd_frame_table[par->dt].wfm_size = user_wfm_size;
+diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
+index 79f3384630926..82cb9ffe52908 100644
+--- a/drivers/video/fbdev/pxa168fb.c
++++ b/drivers/video/fbdev/pxa168fb.c
+@@ -629,7 +629,7 @@ static int pxa168fb_probe(struct platform_device *pdev)
+ 	fbi = info->par;
+ 	fbi->info = info;
+ 	fbi->clk = clk;
+-	fbi->dev = info->dev = &pdev->dev;
++	fbi->dev = &pdev->dev;
+ 	fbi->panel_rbswap = mi->panel_rbswap;
+ 	fbi->is_blanked = 0;
+ 	fbi->active = mi->active;
 -- 
 2.41.0
 

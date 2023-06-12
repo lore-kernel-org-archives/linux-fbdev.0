@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4013ACA9EA5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jun 2023 14:14:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 118A2C7EE2F
+	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jun 2023 14:14:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237278AbjFLOO1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 12 Jun 2023 10:14:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55312 "EHLO
+        id S237639AbjFLOOf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 12 Jun 2023 10:14:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55394 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237397AbjFLOOJ (ORCPT
+        with ESMTP id S237421AbjFLOOL (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 12 Jun 2023 10:14:09 -0400
+        Mon, 12 Jun 2023 10:14:11 -0400
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DDED51708;
-        Mon, 12 Jun 2023 07:14:03 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B82161711;
+        Mon, 12 Jun 2023 07:14:04 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 7362F22856;
-        Mon, 12 Jun 2023 14:14:02 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 2D58022859;
+        Mon, 12 Jun 2023 14:14:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1686579242; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1686579243; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=UsebDHSV0686iKDtOa3+K4KQd5u0zTEsehYLUTkowCU=;
-        b=md6CS79uOCzoNRJQpJIztowdXlegBRjZ/G6jneCH5LaLc+N5P959eOCA/pCytA0Bgmn8Wa
-        JtXIUDkVeNKlOK2Ej1UYzGnpHyAYuZEoVvbF4D/JtiflnNXW+EZ3s70du9HvVgzIq8sL04
-        R4ClSMxY01kuR35k0ZYQeibGmlGNxBs=
+        bh=H9xGin3ru74Snz2HAHBj8XYQnAfDRQus2W3VflWxivI=;
+        b=qDLMVhTjZov9X373CAg3/IEe008qLw1ohdsGPy65RpQKyK3XBCyzEXEyb80l7GkGtzHIgD
+        RVT2PZ8aC9UzHcOm0f6l9qjsgj1itISjbkEXKgQWjIGv925C7zzkElGsSfXuWoJRIuN8M0
+        PRGRHbI4hmC97SQzNNPO+TdHrSlogI4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1686579242;
+        s=susede2_ed25519; t=1686579243;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=UsebDHSV0686iKDtOa3+K4KQd5u0zTEsehYLUTkowCU=;
-        b=Ml52e9jhZGXtTAT6aarzm32UJgIGjTspVtKTQ049aew4ibgamu8ZNEcxwXzy8k4nT9NYLg
-        lI2vtJQzCuX+gICw==
+        bh=H9xGin3ru74Snz2HAHBj8XYQnAfDRQus2W3VflWxivI=;
+        b=Hxi3puzarx3ZHXEsSCyds+IilPqXL3nJ/227/LW6komZKjUVwQbW8JG6qpHgc2o20SJNEg
+        SWuF4CGLVXHf7lBw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 20E1A1357F;
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id CEB4D13A67;
         Mon, 12 Jun 2023 14:14:02 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id KCwTByooh2RwGQAAMHmgww
+        id qBybMSooh2RwGQAAMHmgww
         (envelope-from <tzimmermann@suse.de>); Mon, 12 Jun 2023 14:14:02 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     daniel@ffwll.ch, javierm@redhat.com, sam@ravnborg.org,
@@ -58,10 +58,10 @@ Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-sh@vger.kernel.org, linux-omap@vger.kernel.org,
         linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 22/38] fbdev/radeonfb: Use hardware device as backlight parent
-Date:   Mon, 12 Jun 2023 16:08:00 +0200
-Message-ID: <20230612141352.29939-23-tzimmermann@suse.de>
+        Antonino Daplas <adaplas@gmail.com>
+Subject: [PATCH v2 24/38] fbdev/rivafb: Use hardware device as backlight parent
+Date:   Mon, 12 Jun 2023 16:08:02 +0200
+Message-ID: <20230612141352.29939-25-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230612141352.29939-1-tzimmermann@suse.de>
 References: <20230612141352.29939-1-tzimmermann@suse.de>
@@ -75,29 +75,26 @@ Use the hardware device in struct fb_info.device as parent of the
 backlight device. Aligns the driver with the rest of the codebase
 and prepares fbdev for making struct fb_info.dev optional.
 
-v2:
-	* add Cc: tag (Dan)
-
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Antonino Daplas <adaplas@gmail.com>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/video/fbdev/aty/radeon_backlight.c | 2 +-
+ drivers/video/fbdev/riva/fbdev.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/aty/radeon_backlight.c b/drivers/video/fbdev/aty/radeon_backlight.c
-index 427adc838f77e..23a38c3f3977e 100644
---- a/drivers/video/fbdev/aty/radeon_backlight.c
-+++ b/drivers/video/fbdev/aty/radeon_backlight.c
-@@ -147,7 +147,7 @@ void radeonfb_bl_init(struct radeonfb_info *rinfo)
+diff --git a/drivers/video/fbdev/riva/fbdev.c b/drivers/video/fbdev/riva/fbdev.c
+index e328b2d39e2b6..6ade8de5df4a0 100644
+--- a/drivers/video/fbdev/riva/fbdev.c
++++ b/drivers/video/fbdev/riva/fbdev.c
+@@ -333,7 +333,7 @@ static void riva_bl_init(struct riva_par *par)
  	memset(&props, 0, sizeof(struct backlight_properties));
  	props.type = BACKLIGHT_RAW;
  	props.max_brightness = FB_BACKLIGHT_LEVELS - 1;
--	bd = backlight_device_register(name, rinfo->info->dev, pdata,
-+	bd = backlight_device_register(name, rinfo->info->device, pdata,
- 				       &radeon_bl_data, &props);
+-	bd = backlight_device_register(name, info->dev, par, &riva_bl_ops,
++	bd = backlight_device_register(name, info->device, par, &riva_bl_ops,
+ 				       &props);
  	if (IS_ERR(bd)) {
- 		rinfo->info->bl_dev = NULL;
+ 		info->bl_dev = NULL;
 -- 
 2.41.0
 

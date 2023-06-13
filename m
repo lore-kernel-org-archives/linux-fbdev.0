@@ -2,113 +2,108 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9293C7EE43
-	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jun 2023 23:37:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC734C7EE2F
+	for <linux-fbdev@archiver.kernel.org>; Tue, 13 Jun 2023 03:00:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237568AbjFLXh3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 12 Jun 2023 19:37:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39776 "EHLO
+        id S239036AbjFMDAq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 12 Jun 2023 23:00:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51424 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237529AbjFLXh2 (ORCPT
+        with ESMTP id S238922AbjFMDAn (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 12 Jun 2023 19:37:28 -0400
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C22E5124;
-        Mon, 12 Jun 2023 16:37:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1686613047; x=1718149047;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=2Z52hCVOR7DJUTPlLD7xaPNXC1JoIJf4cVIpOC5zfkY=;
-  b=esFWek8zX50g5NNJV+VbZMZeN/+2VAxNs/XL2a2EmE5SUGks/hx3kVs2
-   75jXRzUTsqEak01nH4Inbce/Yu6BnmThXOS4/cLF1W3F1sHkg7AbsAGlj
-   sBTRB6Xn1yCH/uBy7TYGCODU7FA8Sod4ftnReQoNI9NXd4vDYknb1O5B3
-   JAxJmCjnLuR8K0gcxaU5HKuh84g6fG97mL9LVug7vclMoljzQPlG3HEMY
-   HaXiAnYoD90YCoVmFSJRBBfgSHJB4s3+QUc/cyb6TT6Gpa7/GW6H1r2iP
-   Y01hANP4VDjD1GLACXomu6/wWcXJUjbe/IzhTGsXg2w8vaK59WAwP++a7
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10739"; a="361552038"
-X-IronPort-AV: E=Sophos;i="6.00,238,1681196400"; 
-   d="scan'208";a="361552038"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jun 2023 16:37:26 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10739"; a="801209462"
-X-IronPort-AV: E=Sophos;i="6.00,238,1681196400"; 
-   d="scan'208";a="801209462"
-Received: from lkp-server01.sh.intel.com (HELO 211f47bdb1cb) ([10.239.97.150])
-  by FMSMGA003.fm.intel.com with ESMTP; 12 Jun 2023 16:37:21 -0700
-Received: from kbuild by 211f47bdb1cb with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1q8r68-0000qK-1B;
-        Mon, 12 Jun 2023 23:37:20 +0000
-Date:   Tue, 13 Jun 2023 07:36:27 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     Linus Walleij <linus.walleij@linaro.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Helge Deller <deller@gmx.de>
-Cc:     oe-kbuild-all@lists.linux.dev, linux-media@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH] fbdev/media: Use GPIO descriptors for VIA GPIO
-Message-ID: <202306130745.DRBLkZcT-lkp@intel.com>
-References: <20230612134500.249178-1-linus.walleij@linaro.org>
+        Mon, 12 Jun 2023 23:00:43 -0400
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 4E245172B;
+        Mon, 12 Jun 2023 20:00:39 -0700 (PDT)
+Received: from loongson.cn (unknown [10.20.42.43])
+        by gateway (Coremail) with SMTP id _____8AxnOrV24dkQ2MEAA--.9295S3;
+        Tue, 13 Jun 2023 11:00:37 +0800 (CST)
+Received: from openarena.loongson.cn (unknown [10.20.42.43])
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8BxC8rV24dkOkAYAA--.60391S2;
+        Tue, 13 Jun 2023 11:00:37 +0800 (CST)
+From:   Sui Jingfeng <suijingfeng@loongson.cn>
+To:     Bjorn Helgaas <bhelgaas@google.com>
+Cc:     amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+        nouveau@lists.freedesktop.org, linux-pci@vger.kernel.org,
+        kvm@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        Sui Jingfeng <15330273260@189.cn>
+Subject: [PATCH v7 0/8] PCI/VGA: Introduce is_boot_device function callback to vga_client_register
+Date:   Tue, 13 Jun 2023 11:00:27 +0800
+Message-Id: <20230613030035.216556-1-suijingfeng@loongson.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230612134500.249178-1-linus.walleij@linaro.org>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: AQAAf8BxC8rV24dkOkAYAA--.60391S2
+X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
+X-Coremail-Antispam: 1Uk129KBj93XoW7ZrWUZF45Zr4kur18tFW3XFc_yoW8trWkpF
+        45KF9xAr95JF4akry7Aw4xZFy5Zan7CayfKr9rCw1a93W5Cry8trWqyFWrK34DJrWxAF4r
+        tr9xKry7GF1qvrXCm3ZEXasCq-sJn29KB7ZKAUJUUUU5529EdanIXcx71UUUUU7KY7ZEXa
+        sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+        0xBIdaVrnRJUUUvIb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+        IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+        e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Jr0_JF4l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+        0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVWxJVW8Jr1l84ACjcxK6I8E87Iv6xkF7I0E14v2
+        6r4UJVWxJr1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqjxCEc2xF0cIa020Ex4CE44I27w
+        Aqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jrv_JF1lYx0Ex4A2jsIE
+        14v26r4j6F4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwCY1x0262kKe7
+        AKxVWUAVWUtwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02
+        F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GF
+        ylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7Cj
+        xVAFwI0_Jr0_Gr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r
+        4j6F4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x07jr
+        eOLUUUUU=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Linus,
+From: Sui Jingfeng <15330273260@189.cn>
 
-kernel test robot noticed the following build errors:
+The vga_is_firmware_default() function is arch-dependent, it's probably
+wrong if we simply remove the arch guard. As the VRAM BAR which contains
+firmware framebuffer may move, while the lfb_base and lfb_size members of
+the screen_info does not change accordingly. In short, it should take the
+re-allocation of the PCI BAR into consideration.
 
-[auto build test ERROR on media-tree/master]
-[also build test ERROR on linus/master v6.4-rc6 next-20230609]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+With the observation that device drivers or video aperture helpers may
+have better knowledge about which PCI bar contains the firmware fb,
+which could avoid the need to iterate all of the PCI BARs. But as a PCI
+function at pci/vgaarb.c, vga_is_firmware_default() is not suitable to
+make such an optimization since it is loaded too early.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Linus-Walleij/fbdev-media-Use-GPIO-descriptors-for-VIA-GPIO/20230612-214746
-base:   git://linuxtv.org/media_tree.git master
-patch link:    https://lore.kernel.org/r/20230612134500.249178-1-linus.walleij%40linaro.org
-patch subject: [PATCH] fbdev/media: Use GPIO descriptors for VIA GPIO
-config: i386-allyesconfig (https://download.01.org/0day-ci/archive/20230613/202306130745.DRBLkZcT-lkp@intel.com/config)
-compiler: gcc-12 (Debian 12.2.0-14) 12.2.0
-reproduce (this is a W=1 build):
-        git remote add media-tree git://linuxtv.org/media_tree.git
-        git fetch media-tree master
-        git checkout media-tree/master
-        b4 shazam https://lore.kernel.org/r/20230612134500.249178-1-linus.walleij@linaro.org
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        make W=1 O=build_dir ARCH=i386 olddefconfig
-        make W=1 O=build_dir ARCH=i386 SHELL=/bin/bash
+There are PCI display controllers that don't have a dedicated VRAM bar,
+this function will lose its effectiveness in such a case. Luckily, the
+device driver can provide an accurate workaround.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202306130745.DRBLkZcT-lkp@intel.com/
+Therefore, this patch introduces a callback that allows the device driver
+to tell the VGAARB if the device is the default boot device. Also honor
+the comment: "Clients have two callback mechanisms they can use"
 
-All errors (new ones prefixed by >>):
+Sui Jingfeng (8):
+  PCI/VGA: Use unsigned type for the io_state variable
+  PCI/VGA: Deal only with VGA class devices
+  PCI/VGA: Tidy up the code and comment format
+  PCI/VGA: Replace full MIT license text with SPDX identifier
+  video/aperture: Add a helper to detect if an aperture contains
+    firmware FB
+  PCI/VGA: Introduce is_boot_device function callback to
+    vga_client_register
+  drm/amdgpu: Implement the is_boot_device callback function
+  drm/radeon: Implement the is_boot_device callback function
 
->> drivers/video/fbdev/via/via-gpio.c:13:10: fatal error: linux/via-gpio.h: No such file or directory
-      13 | #include <linux/via-gpio.h>
-         |          ^~~~~~~~~~~~~~~~~~
-   compilation terminated.
-
-
-vim +13 drivers/video/fbdev/via/via-gpio.c
-
-ec66841e495b9a drivers/video/via/via-gpio.c Jonathan Corbet 2010-05-05 @13  #include <linux/via-gpio.h>
-a8a359318530a7 drivers/video/via/via-gpio.c Paul Gortmaker  2011-07-10  14  #include <linux/export.h>
-7e0de022680f78 drivers/video/via/via-gpio.c Jonathan Corbet 2009-12-01  15  
+ drivers/gpu/drm/amd/amdgpu/amdgpu_device.c |  12 +-
+ drivers/gpu/drm/drm_aperture.c             |  16 +++
+ drivers/gpu/drm/i915/display/intel_vga.c   |   3 +-
+ drivers/gpu/drm/nouveau/nouveau_vga.c      |   2 +-
+ drivers/gpu/drm/radeon/radeon_device.c     |  12 +-
+ drivers/pci/vgaarb.c                       | 153 +++++++++++++--------
+ drivers/vfio/pci/vfio_pci_core.c           |   2 +-
+ drivers/video/aperture.c                   |  29 ++++
+ include/drm/drm_aperture.h                 |   2 +
+ include/linux/aperture.h                   |   7 +
+ include/linux/vgaarb.h                     |  35 ++---
+ 11 files changed, 184 insertions(+), 89 deletions(-)
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.25.1
+

@@ -2,208 +2,82 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A574CA9EAF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 13 Jun 2023 11:21:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5911EEB64DC
+	for <linux-fbdev@archiver.kernel.org>; Tue, 13 Jun 2023 22:27:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238349AbjFMLVW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 13 Jun 2023 07:21:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49084 "EHLO
+        id S232151AbjFMW1Q (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 13 Jun 2023 18:27:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60580 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239944AbjFMLJ6 (ORCPT
+        with ESMTP id S231429AbjFMW1P (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 13 Jun 2023 07:09:58 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7516D92;
-        Tue, 13 Jun 2023 04:09:57 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        Tue, 13 Jun 2023 18:27:15 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA2FA19B1;
+        Tue, 13 Jun 2023 15:27:13 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 2208021F68;
-        Tue, 13 Jun 2023 11:09:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1686654596; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-        bh=oUnRIcTHa6H21oE7GPa4lsZpMo92bpwHeZ6bJJavWlw=;
-        b=mSFRUqUQbobGhmnqkYx1dFDc+8egV6lSkFz8oTUcuAgIW/a0sHg8EbQrLNlcz2tos7TbuM
-        9P+DoYiKfYEfEZIQB1Rj68ZNJG7AUJ6HxzrI989CLUnGna5m0xJiB7Pu5DxwALPesk7NJc
-        h5s0uM94kiFYMXiGJt91iL3BE2PgZso=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1686654596;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-        bh=oUnRIcTHa6H21oE7GPa4lsZpMo92bpwHeZ6bJJavWlw=;
-        b=aHIwfug4LNQ6Xoi6MIZKcbspYR4gs2kbPTjLgVJNLJt8bpAk4E+k+WOwc8HjKmfvZpB2ZM
-        951tW79c3qBmZ+Cw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C0B6F13483;
-        Tue, 13 Jun 2023 11:09:55 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id CcMKLoNOiGR8CQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Tue, 13 Jun 2023 11:09:55 +0000
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-To:     daniel@ffwll.ch, javierm@redhat.com, sam@ravnborg.org,
-        deller@gmx.de, geert+renesas@glider.be, lee@kernel.org,
-        daniel.thompson@linaro.org, jingoohan1@gmail.com,
-        dan.carpenter@linaro.org, michael.j.ruhl@intel.com
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-sh@vger.kernel.org, linux-omap@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v3 00/38] fbdev: Make userspace interfaces optional
-Date:   Tue, 13 Jun 2023 13:06:35 +0200
-Message-ID: <20230613110953.24176-1-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.41.0
+        by dfw.source.kernel.org (Postfix) with ESMTPS id AE03463B91;
+        Tue, 13 Jun 2023 22:27:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8C3AEC433CC;
+        Tue, 13 Jun 2023 22:27:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1686695232;
+        bh=tRJQBbwZtaJ6NQT1/dC04nb57z6Mm49syrgZQgiFZKQ=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=X0pHg8OA3PIfY7MEpiGS4CnR5QMTkebIhMLdLJmHcRcpVHwREOR1oYpB7Wggf+kZw
+         avODGCtlWEgJ4Y1b5LG31rvjyNps2PmPgKHclDT8EBRJ4K0TWlVvrrfYeAP4bfTuKS
+         Wmq8In4o92ccnRshzFA4bCKgC/If8ceFCzCEWzWr7jKG4g025woNc7wDw5ZZUABIho
+         awV0MmSL5+NGCve9LrduhLoQDS4DK1uQf19VDD4NIP7xk3uBuw23WSecOHoD+UIkiT
+         /ju2/cYcamhhlwUk7qqik25+aRhWlb87XNJgR7in1HU0DUuq+ogDvZWIIMy2qGRbE9
+         rrtnTp2wxtdlQ==
+From:   Bjorn Andersson <andersson@kernel.org>
+To:     Artur Weber <aweber.kernel@gmail.com>, Lee Jones <lee@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>
+Cc:     Jingoo Han <jingoohan1@gmail.com>, linux-tegra@vger.kernel.org,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-pwm@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht, linux-leds@vger.kernel.org,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Pavel Machek <pavel@ucw.cz>,
+        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>, Helge Deller <deller@gmx.de>,
+        linux-kernel@vger.kernel.org, Luca Weiss <luca@z3ntu.xyz>,
+        Andy Gross <agross@kernel.org>, devicetree@vger.kernel.org
+Subject: Re: (subset) [PATCH v2 0/4] video: backlight: lp855x: modernize bindings
+Date:   Tue, 13 Jun 2023 15:30:10 -0700
+Message-Id: <168669542896.1315701.6764382551599027707.b4-ty@kernel.org>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230519180728.2281-1-aweber.kernel@gmail.com>
+References: <20230519180728.2281-1-aweber.kernel@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Add the new config option FB_DEVICE. If enabled, fbdev provides
-traditional userspace interfaces in devfs, sysfs and procfs, such
-as /dev/fb0 or /proc/fb.
+On Fri, 19 May 2023 20:07:24 +0200, Artur Weber wrote:
+> Convert TI LP855X backlight controller bindings from TXT to YAML and,
+> while we're at it, rework some of the code related to PWM handling.
+> Also correct existing DTS files to avoid introducing new dtb_check
+> errors.
+> 
+> Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
+> 
+> [...]
 
-Modern Linux distrobutions have adopted DRM drivers for graphics
-output and use fbdev only for the kernel's framebuffer console.
-Userspace has also moved on, with no new fbdev code being written
-and existing support being removed.
+Applied, thanks!
 
-OTOH, fbdev provides userspace a way of accessing kernel or I/O
-memory, which might compromise the system's security. See the recent
-commit c8687694bb1f ("drm/fbdev-generic: prohibit potential
-out-of-bounds access") for an example. Disabling fbdev userspace
-interfaces is therefore a useful feature to limit unnecessary
-exposure of fbdev code to processes of low privilegues.
+[4/4] arm64: dts: adapt to LP855X bindings changes
+      commit: ebdcfc8c42c2b9d5ca1b27d8ee558eefb3e904d8
 
-Patches 1 to 31 fix various bugs and issues in fbdev-related code.
-In most cases the code uses the fbdev device where it should use
-the Linux hardware device or something else. Most of these patches
-fix existing problems and should therefore be considered in any case.
-
-Patches 32 to 37 refactor the fbdev core code. The patches move
-support for backlights, sysfs, procfs and devfs into separate files
-and hide it behind simple interfaces. These changes will allow to
-easily build the userspace support conditionally.
-
-Patch 38 introduces the config option FB_DEVICE and adapts the fbdev
-core to support it. The field struct fb_info.dev is now optional,
-hence the name of the config option.
-
-Tested on simpledrm and i915, including the device handover.
-
-Future directions: With the support for disabling fbdev userspace
-interfaces in place, it will be possible to make most fbdev drivers'
-file-I/O code in struct fb_ops optional as well. 
-
-v3:
-	* add missing file fb_chrdev.c
-	* fix typo in Kconfig help (Daniel)
-v2:
-	* fix fsl-diu-fb and sh7760fb
-	* split backlight patches
-	* set 'default y' for FB_CONFIG
-	* minor fixes and corrections
-
-Thomas Zimmermann (38):
-  backlight/bd6107: Compare against struct fb_info.device
-  backlight/bd6107: Rename struct bd6107_platform_data.fbdev to 'dev'
-  backlight/gpio_backlight: Compare against struct fb_info.device
-  backlight/gpio_backlight: Rename field 'fbdev' to 'dev'
-  backlight/lv5207lp: Compare against struct fb_info.device
-  backlight/lv5207lp: Rename struct lv5207lp_platform_data.fbdev to
-    'dev'
-  fbdev/atyfb: Reorder backlight and framebuffer init/cleanup
-  fbdev/atyfb: Use hardware device as backlight parent
-  fbdev/aty128fb: Reorder backlight and framebuffer init/cleanup
-  fbdev/aty128fb: Use hardware device as backlight parent
-  fbdev/broadsheetfb: Call device_remove_file() with hardware device
-  fbdev/ep93xx-fb: Alloc DMA memory from hardware device
-  fbdev/ep93xx-fb: Output messages with fb_info() and fb_err()
-  fbdev/ep93xx-fb: Do not assign to struct fb_info.dev
-  fbdev/fsl-diu-fb: Output messages with fb_*() helpers
-  fbdev/mb862xxfb: Output messages with fb_dbg()
-  fbdev/metronomefb: Use hardware device for dev_err()
-  fbdev/nvidiafb: Reorder backlight and framebuffer init/cleanup
-  fbdev/nvidiafb: Use hardware device as backlight parent
-  fbdev/pxa168fb: Do not assign to struct fb_info.dev
-  fbdev/radeonfb: Reorder backlight and framebuffer cleanup
-  fbdev/radeonfb: Use hardware device as backlight parent
-  fbdev/rivafb: Reorder backlight and framebuffer init/cleanup
-  fbdev/rivafb: Use hardware device as backlight parent
-  fbdev/sh7760fb: Use fb_dbg() in sh7760fb_get_color_info()
-  fbdev/sh7760fb: Output messages with fb_dbg()
-  fbdev/sh7760fb: Alloc DMA memory from hardware device
-  fbdev/sh7760fb: Use hardware device with dev_() output during probe
-  fbdev/sm501fb: Output message with fb_err()
-  fbdev/smscufx: Detect registered fb_info from refcount
-  fbdev/tdfxfb: Set i2c adapter parent to hardware device
-  fbdev/core: Pass Linux device to pm_vt_switch_*() functions
-  fbdev/core: Move framebuffer and backlight helpers into separate files
-  fbdev/core: Add fb_device_{create,destroy}()
-  fbdev/core: Move procfs code to separate file
-  fbdev/core: Move file-I/O code into separate file
-  fbdev/core: Rework fb init code
-  fbdev: Make support for userspace interfaces configurable
-
- Documentation/gpu/todo.rst                   |  13 +
- arch/sh/boards/mach-ecovec24/setup.c         |   2 +-
- arch/sh/boards/mach-kfr2r09/setup.c          |   2 +-
- drivers/staging/fbtft/Kconfig                |   1 +
- drivers/video/backlight/bd6107.c             |   2 +-
- drivers/video/backlight/gpio_backlight.c     |   6 +-
- drivers/video/backlight/lv5207lp.c           |   2 +-
- drivers/video/fbdev/Kconfig                  |  13 +
- drivers/video/fbdev/aty/aty128fb.c           |  12 +-
- drivers/video/fbdev/aty/atyfb_base.c         |  18 +-
- drivers/video/fbdev/aty/radeon_backlight.c   |   2 +-
- drivers/video/fbdev/aty/radeon_base.c        |   3 +-
- drivers/video/fbdev/broadsheetfb.c           |   2 +-
- drivers/video/fbdev/core/Makefile            |   7 +-
- drivers/video/fbdev/core/fb_backlight.c      |  33 ++
- drivers/video/fbdev/core/fb_chrdev.c         | 485 +++++++++++++++
- drivers/video/fbdev/core/fb_info.c           |  78 +++
- drivers/video/fbdev/core/fb_internal.h       |  67 +++
- drivers/video/fbdev/core/fb_procfs.c         |  62 ++
- drivers/video/fbdev/core/fbcon.c             |   1 +
- drivers/video/fbdev/core/fbmem.c             | 592 +------------------
- drivers/video/fbdev/core/fbsysfs.c           | 134 +----
- drivers/video/fbdev/ep93xx-fb.c              |  21 +-
- drivers/video/fbdev/fsl-diu-fb.c             |  26 +-
- drivers/video/fbdev/mb862xx/mb862xxfbdrv.c   |   9 +-
- drivers/video/fbdev/metronomefb.c            |   2 +-
- drivers/video/fbdev/nvidia/nv_backlight.c    |   2 +-
- drivers/video/fbdev/nvidia/nvidia.c          |   8 +-
- drivers/video/fbdev/omap2/omapfb/Kconfig     |   2 +-
- drivers/video/fbdev/pxa168fb.c               |   2 +-
- drivers/video/fbdev/riva/fbdev.c             |  10 +-
- drivers/video/fbdev/sh7760fb.c               |  50 +-
- drivers/video/fbdev/sm501fb.c                |   2 +-
- drivers/video/fbdev/smscufx.c                |   4 +-
- drivers/video/fbdev/tdfxfb.c                 |   4 +-
- include/linux/fb.h                           |   6 +-
- include/linux/platform_data/bd6107.h         |   2 +-
- include/linux/platform_data/gpio_backlight.h |   2 +-
- include/linux/platform_data/lv5207lp.h       |   2 +-
- 39 files changed, 922 insertions(+), 769 deletions(-)
- create mode 100644 drivers/video/fbdev/core/fb_backlight.c
- create mode 100644 drivers/video/fbdev/core/fb_chrdev.c
- create mode 100644 drivers/video/fbdev/core/fb_info.c
- create mode 100644 drivers/video/fbdev/core/fb_internal.h
- create mode 100644 drivers/video/fbdev/core/fb_procfs.c
-
-
-base-commit: 63a468ec7c7652afa80e3fa6ad203f9e64d04e83
-prerequisite-patch-id: 0aa359f6144c4015c140c8a6750be19099c676fb
-prerequisite-patch-id: c67e5d886a47b7d0266d81100837557fda34cb24
-prerequisite-patch-id: cbc453ee02fae02af22fbfdce56ab732c7a88c36
-prerequisite-patch-id: 7c401614cf55c033f742bced317575b9f5b77bb1
-prerequisite-patch-id: d3145eae4b35a1290199af6ff6cd5abfebc82033
-prerequisite-patch-id: 242b6bc45675f1f1a62572542d75c89d4864f15a
+Best regards,
 -- 
-2.41.0
-
+Bjorn Andersson <andersson@kernel.org>

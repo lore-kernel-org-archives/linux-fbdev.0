@@ -2,103 +2,92 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61DE5EB64D8
-	for <linux-fbdev@archiver.kernel.org>; Wed, 14 Jun 2023 13:13:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 551CCEB64D9
+	for <linux-fbdev@archiver.kernel.org>; Wed, 14 Jun 2023 13:52:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234964AbjFNNNv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 14 Jun 2023 09:13:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34912 "EHLO
+        id S245248AbjFNNwR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 14 Jun 2023 09:52:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56510 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244911AbjFNNNt (ORCPT
+        with ESMTP id S245251AbjFNNwM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 14 Jun 2023 09:13:49 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 138541FF7
-        for <linux-fbdev@vger.kernel.org>; Wed, 14 Jun 2023 06:13:18 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        Wed, 14 Jun 2023 09:52:12 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 579142684;
+        Wed, 14 Jun 2023 06:52:06 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 0A1A72253C;
-        Wed, 14 Jun 2023 13:12:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1686748378; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=NowBNHYm1j2pm0/04DLXGS/RJgQBaug3LwNNgtMoY80=;
-        b=glTK7zrMsJmcWs0ZjCgJiDxyaUC+EE1DvQVdNqldwLb2FC1v/gCcRylZuGCKF1bjGi/YsU
-        w0GWbXihHeQNXJyLmtxW9re1KO6+e3e8YRV5KzZx00/N9aH+Aw/GYLBtgWrfLilDdVaPfI
-        iw1cUJXx7t9+i5oYw4L7/II5dWSw+cs=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1686748378;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=NowBNHYm1j2pm0/04DLXGS/RJgQBaug3LwNNgtMoY80=;
-        b=y+ch78RgGWXplwWjv3k6PnrNIeBC7aGodjEjYGXOYrCgUv3Ni5gya6YG1hBqnnXqr5J92R
-        ObJrE1+IPZy95EAg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id CDF261357F;
-        Wed, 14 Jun 2023 13:12:57 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id Ev44Mdm8iWR9VAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Wed, 14 Jun 2023 13:12:57 +0000
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-To:     sam@ravnborg.org, deller@gmx.de, ckoenig.leichtzumerken@gmail.com
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH] fbdev: Use /* */ comment in initializer macro
-Date:   Wed, 14 Jun 2023 15:12:12 +0200
-Message-ID: <20230614131253.10208-1-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.41.0
+        by dfw.source.kernel.org (Postfix) with ESMTPS id CB4D860F06;
+        Wed, 14 Jun 2023 13:52:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51FC5C433C0;
+        Wed, 14 Jun 2023 13:52:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1686750725;
+        bh=CO5xc8YPPQWPDb40OvDsmBIPZj3o5j1/a0jNwh4QVN4=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=dMU49nXfjD0xUXILvTvlDXF8NMUb2VlD+tfLPuwxXKPYNwvghwaxBU+9u2dFQKFMo
+         XG+fJzMiwNtoO0PTs068LLyp6fKUG1EThsNPAAUJAhH3cSh2dtIxXzlGd88HQv484/
+         ZAlAl83NY+7EBAOlT+shnVTY6WCtv7JBz6vvP95GR1zrwO/OawUrUrsW1MuGojBZsU
+         ioUn869QlwHx9xsO4FSJtFNrH+83l/Y//XX2lHjKyHDmUnW2nJ8wKCVlv7fkPfS+Te
+         paPKw8aaxdheBAC+5kYRLZAtm7ruqPpKky4hXCGyPIRxJST++sKSPrIR2izAJsgq5m
+         lVIOfM71BDihA==
+Date:   Wed, 14 Jun 2023 14:51:57 +0100
+From:   Lee Jones <lee@kernel.org>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     daniel@ffwll.ch, javierm@redhat.com, sam@ravnborg.org,
+        deller@gmx.de, geert+renesas@glider.be, daniel.thompson@linaro.org,
+        jingoohan1@gmail.com, dan.carpenter@linaro.org,
+        michael.j.ruhl@intel.com, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-sh@vger.kernel.org,
+        linux-omap@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-kernel@vger.kernel.org,
+        Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
+        stable@vger.kernel.org
+Subject: Re: [PATCH v3 01/38] backlight/bd6107: Compare against struct
+ fb_info.device
+Message-ID: <20230614135157.GU3635807@google.com>
+References: <20230613110953.24176-1-tzimmermann@suse.de>
+ <20230613110953.24176-2-tzimmermann@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20230613110953.24176-2-tzimmermann@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use /* */ in initializer macro to avoid out-commenting the comma
-at the end of the line.
+On Tue, 13 Jun 2023, Thomas Zimmermann wrote:
 
-Reported-by: Christian König <ckoenig.leichtzumerken@gmail.com>
-Closes: https://lore.kernel.org/dri-devel/20230530150253.22758-1-tzimmermann@suse.de/T/#m356cda2679c17d7a01f30ce2b5282cd9046ea6d4
-Fixes: f1061fa641b8 ("fbdev: Add initializer macros for struct fb_ops")
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- include/linux/fb.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> Struct bd6107_platform_data refers to a platform device within
+> the Linux device hierarchy. The test in bd6107_backlight_check_fb()
+> compares it against the fbdev device in struct fb_info.dev, which
+> is different. Fix the test by comparing to struct fb_info.device.
+> 
+> Fixes a bug in the backlight driver and prepares fbdev for making
+> struct fb_info.dev optional.
+> 
+> v2:
+> 	* move renames into separate patch (Javier, Sam, Michael)
+> 
+> Fixes: 67b43e590415 ("backlight: Add ROHM BD6107 backlight driver")
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+> Cc: Lee Jones <lee@kernel.org>
+> Cc: Daniel Thompson <daniel.thompson@linaro.org>
+> Cc: Jingoo Han <jingoohan1@gmail.com>
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: <stable@vger.kernel.org> # v3.12+
+> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+> Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> ---
+>  drivers/video/backlight/bd6107.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index ce6823e157e6b..ce7d588edc3e6 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -552,7 +552,7 @@ extern ssize_t fb_io_write(struct fb_info *info, const char __user *buf,
- 	.fb_imageblit	= cfb_imageblit
- 
- #define __FB_DEFAULT_IO_OPS_MMAP \
--	.fb_mmap	= NULL // default implementation
-+	.fb_mmap	= NULL /* default implementation */
- 
- #define FB_DEFAULT_IO_OPS \
- 	__FB_DEFAULT_IO_OPS_RDWR, \
-@@ -585,7 +585,7 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
- 	.fb_imageblit	= sys_imageblit
- 
- #define __FB_DEFAULT_SYS_OPS_MMAP \
--	.fb_mmap	= NULL // default implementation
-+	.fb_mmap	= NULL /* default implementation */
- 
- #define FB_DEFAULT_SYS_OPS \
- 	__FB_DEFAULT_SYS_OPS_RDWR, \
+Can the Backlight patches be applied without the others and visa versa?
+
 -- 
-2.41.0
-
+Lee Jones [李琼斯]

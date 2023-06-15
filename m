@@ -2,137 +2,95 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED28EEB64DB
-	for <linux-fbdev@archiver.kernel.org>; Thu, 15 Jun 2023 13:21:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23A76EB64DB
+	for <linux-fbdev@archiver.kernel.org>; Thu, 15 Jun 2023 16:38:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343902AbjFONVP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 15 Jun 2023 09:21:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37330 "EHLO
+        id S232137AbjFOQil (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 15 Jun 2023 12:38:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40508 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343910AbjFONVO (ORCPT
+        with ESMTP id S229567AbjFOQik (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 15 Jun 2023 09:21:14 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5567F270A;
-        Thu, 15 Jun 2023 06:21:11 -0700 (PDT)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
-        by smtp-out2.suse.de (Postfix) with ESMTP id F03FC1FE25;
-        Thu, 15 Jun 2023 13:21:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1686835269; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=TrVNR5YBg7mfkrE02t70Ms3cyqfx5tB2TFuYK+7EJkI=;
-        b=x/BdWHOHkWe2WasV/pUvs6obH6QCcDJL6X4sZDdDzsGJKh2/QN5RP6/uKkrzcdxOfmGx6G
-        ZAkzuMFtKPlPuSMKANhspyGgv80chC6Ev7l+XKI6XkB0zI/872e1MTOJdpiut6a+xBa57H
-        494DAKP8zoffySmOZZw3ByypJtZqviY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1686835269;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=TrVNR5YBg7mfkrE02t70Ms3cyqfx5tB2TFuYK+7EJkI=;
-        b=+xll9ijtwX96g7AzQiIdJfrQ3zYgYisepLW5uvPXb0b3Xqsa3KMdadP8uVU1OHh9Nrhjho
-        X5Mrj6byHVxCJtAQ==
-Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        Thu, 15 Jun 2023 12:38:40 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BFECFE69;
+        Thu, 15 Jun 2023 09:38:39 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
         (No client certificate requested)
-        by relay2.suse.de (Postfix) with ESMTPS id 279FF2C141;
-        Thu, 15 Jun 2023 13:21:09 +0000 (UTC)
-Date:   Thu, 15 Jun 2023 15:21:07 +0200
-From:   Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     Linux regressions mailing list <regressions@lists.linux.dev>,
-        Salvatore Bonaccorso <carnil@debian.org>,
-        Cyril Brulebois <cyril@debamax.com>,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, stable@vger.kernel.org
-Subject: Re: [PATCH 1/2] fbdev/offb: Update expected device name
-Message-ID: <20230615132107.GA9196@kitsune.suse.cz>
-References: <20230412095509.2196162-1-cyril@debamax.com>
- <20230412095509.2196162-2-cyril@debamax.com>
- <ZDvrY7X9mpJ7WZ3z@eldamar.lan>
- <11b342dc-1a46-d1be-5fdd-c6eee661e15a@leemhuis.info>
- <fe3b90b0-b52f-9677-0245-a201975c3e0c@suse.de>
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 549D361999;
+        Thu, 15 Jun 2023 16:38:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 32A5EC433C8;
+        Thu, 15 Jun 2023 16:38:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1686847118;
+        bh=F22bVWQutuqXY4+tXA/ymZHSWuT7v9Xwt1AL5BPn/Ug=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=TgMX6Ci6I/OTSdrWAA8xWQSNewYLAz7PSAhLvL3XEzyiVsdb+fa57gAMuSUwJ+VEi
+         D8peYgh/500K9tDptketizD2OyA11Z9hhQs6EfhuUskeux0oqWl1R+mCVtTf1/81+v
+         WtdrbmquTupacBXtvNEhXwID/vFmAChiMbU0Rd9+1KgutYzZej0tuI5WzYw2H6i9In
+         hUnf6QzByudzLsdKs41jDQEcyW2DSllNSYGdAsXV6+gMhklsyGScmJxqcOZc49zGMt
+         429G5Mod+R821/wtV1v4dEzJH3zLalqcpx+xvhGYorAq+EMGOoQMFmMzKLHwX5UXZT
+         aOuOAZMjJ/hMQ==
+Date:   Thu, 15 Jun 2023 09:41:58 -0700
+From:   Bjorn Andersson <andersson@kernel.org>
+To:     Artur Weber <aweber.kernel@gmail.com>, Lee Jones <lee@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>
+Cc:     Jingoo Han <jingoohan1@gmail.com>, linux-tegra@vger.kernel.org,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-pwm@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht, linux-leds@vger.kernel.org,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Pavel Machek <pavel@ucw.cz>,
+        Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>, Helge Deller <deller@gmx.de>,
+        linux-kernel@vger.kernel.org, Luca Weiss <luca@z3ntu.xyz>,
+        Andy Gross <agross@kernel.org>, devicetree@vger.kernel.org
+Subject: Re: (subset) [PATCH v2 0/4] video: backlight: lp855x: modernize
+ bindings
+Message-ID: <20230615164158.6tpsd766mqx3o7y4@ripper>
+References: <20230519180728.2281-1-aweber.kernel@gmail.com>
+ <168669542896.1315701.6764382551599027707.b4-ty@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <fe3b90b0-b52f-9677-0245-a201975c3e0c@suse.de>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <168669542896.1315701.6764382551599027707.b4-ty@kernel.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello,
-
-On Thu, Jun 15, 2023 at 03:06:28PM +0200, Thomas Zimmermann wrote:
-> Hi
-> 
-> Am 15.06.23 um 15:03 schrieb Linux regression tracking (Thorsten Leemhuis):
-> > On 16.04.23 14:34, Salvatore Bonaccorso wrote:
-> > > 
-> > > On Wed, Apr 12, 2023 at 11:55:08AM +0200, Cyril Brulebois wrote:
-> > > > Since commit 241d2fb56a18 ("of: Make OF framebuffer device names unique"),
-> > > > as spotted by Frédéric Bonnard, the historical "of-display" device is
-> > > > gone: the updated logic creates "of-display.0" instead, then as many
-> > > > "of-display.N" as required.
-> > > > 
-> > > > This means that offb no longer finds the expected device, which prevents
-> > > > the Debian Installer from setting up its interface, at least on ppc64el.
-> > > > 
-> > > > It might be better to iterate on all possible nodes, but updating the
-> > > > hardcoded device from "of-display" to "of-display.0" is confirmed to fix
-> > > > the Debian Installer at the very least.
-
-At the time this was proposed it was said that "of-display", is wrong,
-and that "of-display.0" must be used for the first device instead, and
-if something breaks an alias can be provided.
-
-So how does one provide an alias so that offb can find "of-display.0" as
-"of-display"?
-
-Thanks
-
-Michal
-
-> > > [...]
-> > > #regzbot ^introduced 241d2fb56a18
-> > > #regzbot title: Open Firmware framebuffer cannot find of-display
-> > > #regzbot link: https://bugzilla.kernel.org/show_bug.cgi?id=217328
-> > > #regzbot link: https://lore.kernel.org/all/20230412095509.2196162-1-cyril@debamax.com/T/#m34493480243a2cad2ae359abfd9db5e755f41add
-> > > #regzbot link: https://bugs.debian.org/1033058
+On Tue, Jun 13, 2023 at 03:30:10PM -0700, Bjorn Andersson wrote:
+> On Fri, 19 May 2023 20:07:24 +0200, Artur Weber wrote:
+> > Convert TI LP855X backlight controller bindings from TXT to YAML and,
+> > while we're at it, rework some of the code related to PWM handling.
+> > Also correct existing DTS files to avoid introducing new dtb_check
+> > errors.
 > > 
-> > No reply to my status inquiry[1] a few weeks ago, so I have to assume
-> > nobody cares anymore. If somebody still cares, holler!
-> 
-> I'd take a look if anyone can point me to an example of Geert's proposal.
-> 
-> Best regards
-> Thomas
-> 
+> > Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
 > > 
-> > #regzbot inconclusive: no answer to a status inquiry
-> > #regzbot ignore-activity
-> > 
-> > [1]
-> > https://lore.kernel.org/lkml/d1aee7d3-05f6-0920-b8e1-4ed5cf3f9f70@leemhuis.info/
-> > 
-> > Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
-> > --
-> > Everything you wanna know about Linux kernel regression tracking:
-> > https://linux-regtracking.leemhuis.info/about/#tldr
-> > If I did something stupid, please tell me, as explained on that page.
+> > [...]
 > 
+> Applied, thanks!
+> 
+> [4/4] arm64: dts: adapt to LP855X bindings changes
+>       commit: ebdcfc8c42c2b9d5ca1b27d8ee558eefb3e904d8
+> 
+
+Sorry, that was not for me to pick up. So I've dropped this change
+again.
+
+Please note that all other changes to the affected file is prefixed
+"arm64: tegra:". Following this is a good idea, and would have helped me
+not accidentally pick this change.
+
+Regards,
+Bjorn
+
+> Best regards,
 > -- 
-> Thomas Zimmermann
-> Graphics Driver Developer
-> SUSE Software Solutions Germany GmbH
-> Frankenstrasse 146, 90461 Nuernberg, Germany
-> GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-> HRB 36809 (AG Nuernberg)
-
-
-
+> Bjorn Andersson <andersson@kernel.org>

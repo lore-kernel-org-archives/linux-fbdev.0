@@ -2,57 +2,88 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A64FFC001DC
-	for <linux-fbdev@archiver.kernel.org>; Thu, 15 Jun 2023 09:28:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F221C0015E
+	for <linux-fbdev@archiver.kernel.org>; Thu, 15 Jun 2023 11:46:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243155AbjFOJ2x (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 15 Jun 2023 05:28:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59168 "EHLO
+        id S1344228AbjFOLqK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 15 Jun 2023 07:46:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58878 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244746AbjFOJ2g (ORCPT
+        with ESMTP id S1344531AbjFOLn7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 15 Jun 2023 05:28:36 -0400
-Received: from mail.lokoho.com (mail.lokoho.com [217.61.105.98])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 94F5C211C
-        for <linux-fbdev@vger.kernel.org>; Thu, 15 Jun 2023 02:28:35 -0700 (PDT)
-Received: by mail.lokoho.com (Postfix, from userid 1001)
-        id D6B50874BD; Thu, 15 Jun 2023 10:26:24 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=lokoho.com; s=mail;
-        t=1686821189; bh=Z0N5VlX9/JlryGOL5I747Le9USomZJCRNNGRT3LbbKc=;
-        h=Date:From:To:Subject:From;
-        b=J19tu1QQYJQK6nywAvv/8BCrJUFTPBG20fUJr/8L4mvSUEqCHkx7u2s/Utd1dxHnM
-         IlJ2pSMOM8Br7fhcZvdALRb6T4kzQKOHBFxsohmqj7S8adoCGvJ+qvJ4L4Qfm2099I
-         u4SMOgLBsF8ILdZZRpeWpH/Tu30CyRS2NxBpQx0YhJv8mLZGaAPwl3H7txUHG+xHkK
-         +kQdhy+bp0+ShRxqUOXSs1wLuqiKGeY9M6bYsFmynCR7vSM91WQUInjNVthQDXDO8k
-         PcLs85WZBEdYwWmaECUNOeQjgvmge9cy+Wji4cIn5lw8M77wtEeEBrjuwGhxHn7vrZ
-         To6+ugjoSiH+w==
-Received: by mail.lokoho.com for <linux-fbdev@vger.kernel.org>; Thu, 15 Jun 2023 09:26:02 GMT
-Message-ID: <20230615094301-0.1.6n.2md8p.0.jjaai7mzri@lokoho.com>
-Date:   Thu, 15 Jun 2023 09:26:02 GMT
-From:   "Adam Charachuta" <adam.charachuta@lokoho.com>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: =?UTF-8?Q?S=C5=82owa_kluczowe_do_wypozycjonowania?=
-X-Mailer: mail.lokoho.com
+        Thu, 15 Jun 2023 07:43:59 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 78CC3469D;
+        Thu, 15 Jun 2023 04:40:29 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 10A51639BD;
+        Thu, 15 Jun 2023 11:40:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98CA0C433D9;
+        Thu, 15 Jun 2023 11:40:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1686829228;
+        bh=cu7YdInQVwlBR8BC09ytCG19a+Ch8gkY/lmCKo8J1k0=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=jR88JGtOIqc/ey7y694yO54WlVdLXdtbBlO7e96GbP5s8oeQdXSSwlobaGaJ/E+b6
+         07dCLrSn4f6w3jiOhHm+kWgZqqbe/vezXDB854pJgpZR1cNypgwyoFt5zj+P6O1WtB
+         8FVRBmVsEBdW+wCWiUnDCjCLMtg47ZQd+fvv7CN0G5y54cjPDN2H/l29PNb08ArHDj
+         V5A12gkR9oWti5uHdWqW0J0ffvLG4qRKTHESRzxf5d0O9Y1Wwk8RbJPfNvnFCRvY2R
+         P+1B2ZEj6QdY7au89/m7/p4MoyC6EK4gjQSKfdNhCf8HHJQQUpyLbLft5b6e3+rn8l
+         +BaCbW6EpS45w==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
+        javierm@redhat.com, tzimmermann@suse.de, zyytlz.wz@163.com,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 4.14 5/6] fbdev: imsttfb: Release framebuffer and dealloc cmap on error path
+Date:   Thu, 15 Jun 2023 07:40:13 -0400
+Message-Id: <20230615114016.649846-5-sashal@kernel.org>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230615114016.649846-1-sashal@kernel.org>
+References: <20230615114016.649846-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 4.14.318
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,
+From: Helge Deller <deller@gmx.de>
 
-zapozna=C5=82em si=C4=99 z Pa=C5=84stwa ofert=C4=85 i z przyjemno=C5=9Bci=
-=C4=85 przyznaj=C4=99, =C5=BCe przyci=C4=85ga uwag=C4=99 i zach=C4=99ca d=
-o dalszych rozm=C3=B3w.=20
+[ Upstream commit 5cf9a090a39c97f4506b7b53739d469b1c05a7e9 ]
 
-Pomy=C5=9Bla=C5=82em, =C5=BCe mo=C5=BCe m=C3=B3g=C5=82bym mie=C4=87 sw=C3=
-=B3j wk=C5=82ad w Pa=C5=84stwa rozw=C3=B3j i pom=C3=B3c dotrze=C4=87 z t=C4=
-=85 ofert=C4=85 do wi=C4=99kszego grona odbiorc=C3=B3w. Pozycjonuj=C4=99 =
-strony www, dzi=C4=99ki czemu generuj=C4=85 =C5=9Bwietny ruch w sieci.
+Add missing cleanups in error path.
 
-Mo=C5=BCemy porozmawia=C4=87 w najbli=C5=BCszym czasie?
+Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/imsttfb.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
+index ecdcf358ad5ea..6589d5f0a5a40 100644
+--- a/drivers/video/fbdev/imsttfb.c
++++ b/drivers/video/fbdev/imsttfb.c
+@@ -1452,9 +1452,13 @@ static void init_imstt(struct fb_info *info)
+ 	              FBINFO_HWACCEL_FILLRECT |
+ 	              FBINFO_HWACCEL_YPAN;
+ 
+-	fb_alloc_cmap(&info->cmap, 0, 0);
++	if (fb_alloc_cmap(&info->cmap, 0, 0)) {
++		framebuffer_release(info);
++		return -ENODEV;
++	}
+ 
+ 	if (register_framebuffer(info) < 0) {
++		fb_dealloc_cmap(&info->cmap);
+ 		framebuffer_release(info);
+ 		return;
+ 	}
+-- 
+2.39.2
 
-Pozdrawiam
-Adam Charachuta

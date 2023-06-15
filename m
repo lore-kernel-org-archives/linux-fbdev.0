@@ -2,95 +2,117 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23A76EB64DB
-	for <linux-fbdev@archiver.kernel.org>; Thu, 15 Jun 2023 16:38:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8511EEB64DA
+	for <linux-fbdev@archiver.kernel.org>; Thu, 15 Jun 2023 20:09:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232137AbjFOQil (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 15 Jun 2023 12:38:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40508 "EHLO
+        id S231479AbjFOUJH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 15 Jun 2023 16:09:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36120 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229567AbjFOQik (ORCPT
+        with ESMTP id S229653AbjFOUJG (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 15 Jun 2023 12:38:40 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BFECFE69;
-        Thu, 15 Jun 2023 09:38:39 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 549D361999;
-        Thu, 15 Jun 2023 16:38:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 32A5EC433C8;
-        Thu, 15 Jun 2023 16:38:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1686847118;
-        bh=F22bVWQutuqXY4+tXA/ymZHSWuT7v9Xwt1AL5BPn/Ug=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=TgMX6Ci6I/OTSdrWAA8xWQSNewYLAz7PSAhLvL3XEzyiVsdb+fa57gAMuSUwJ+VEi
-         D8peYgh/500K9tDptketizD2OyA11Z9hhQs6EfhuUskeux0oqWl1R+mCVtTf1/81+v
-         WtdrbmquTupacBXtvNEhXwID/vFmAChiMbU0Rd9+1KgutYzZej0tuI5WzYw2H6i9In
-         hUnf6QzByudzLsdKs41jDQEcyW2DSllNSYGdAsXV6+gMhklsyGScmJxqcOZc49zGMt
-         429G5Mod+R821/wtV1v4dEzJH3zLalqcpx+xvhGYorAq+EMGOoQMFmMzKLHwX5UXZT
-         aOuOAZMjJ/hMQ==
-Date:   Thu, 15 Jun 2023 09:41:58 -0700
-From:   Bjorn Andersson <andersson@kernel.org>
-To:     Artur Weber <aweber.kernel@gmail.com>, Lee Jones <lee@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>
-Cc:     Jingoo Han <jingoohan1@gmail.com>, linux-tegra@vger.kernel.org,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-pwm@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht, linux-leds@vger.kernel.org,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>, Helge Deller <deller@gmx.de>,
-        linux-kernel@vger.kernel.org, Luca Weiss <luca@z3ntu.xyz>,
-        Andy Gross <agross@kernel.org>, devicetree@vger.kernel.org
-Subject: Re: (subset) [PATCH v2 0/4] video: backlight: lp855x: modernize
- bindings
-Message-ID: <20230615164158.6tpsd766mqx3o7y4@ripper>
-References: <20230519180728.2281-1-aweber.kernel@gmail.com>
- <168669542896.1315701.6764382551599027707.b4-ty@kernel.org>
+        Thu, 15 Jun 2023 16:09:06 -0400
+Received: from mail-il1-f182.google.com (mail-il1-f182.google.com [209.85.166.182])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF2E81FD7;
+        Thu, 15 Jun 2023 13:09:04 -0700 (PDT)
+Received: by mail-il1-f182.google.com with SMTP id e9e14a558f8ab-340bdf36dd9so7929335ab.3;
+        Thu, 15 Jun 2023 13:09:04 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686859744; x=1689451744;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=aTfjaS0IPEiXuHhWcjsCm7WS5mqkvAN6gaYW2Bcvzz4=;
+        b=HKsyIAlc1gychI1Iug+BOUo7rfqrlvPgWzjmTRztywf8iehrXgMOdF86aEO0jUIkrC
+         rXilVZpDf+EWKRgpU+bDIQvbkoDlyp+GiMMseNqzLGl6kzfhgNj7uf0LncjdVYnufWvr
+         IaJ+IMuxTL9Njv8ZrE+sjbHjF3JMWj+ltaxH9ikmvUm/d7L0t5ueDI/Fo4j5etlEaziB
+         XnQg3pj2xV7tH9RCdkXMP5ZpSELHHfiHg7ZPpoXQTldoHQs2dCchUEUCEDrnTOPzvjq+
+         7Sz3rLhJaX9Asz5xGzbfxxXYRCSJub7hCUuvKcGFQM/eqJrUP/l6FTAAwEjUE9y3JZKW
+         /56w==
+X-Gm-Message-State: AC+VfDzW5OuMjZjgI6L4jw00cTSUvzydQ8beLOZtsS5zF6YK1WG+o0Ue
+        bT3GJXCLd/Z8JhUTf4SsB701X/9NRg==
+X-Google-Smtp-Source: ACHHUZ79LfJp9RkPNTpyZJ5OtyEoIgIYPICSHb+vRi8hTHwBhSpMqkvv/DethS+ipksLPiMZ71fxMQ==
+X-Received: by 2002:a92:d3c3:0:b0:340:6984:cc6f with SMTP id c3-20020a92d3c3000000b003406984cc6fmr478157ilh.3.1686859744059;
+        Thu, 15 Jun 2023 13:09:04 -0700 (PDT)
+Received: from robh_at_kernel.org ([64.188.179.250])
+        by smtp.gmail.com with ESMTPSA id g24-20020a056638061800b004166c24e30dsm5685797jar.32.2023.06.15.13.09.02
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 15 Jun 2023 13:09:03 -0700 (PDT)
+Received: (nullmailer pid 1586553 invoked by uid 1000);
+        Thu, 15 Jun 2023 20:09:01 -0000
+Date:   Thu, 15 Jun 2023 14:09:01 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Linux regressions mailing list <regressions@lists.linux.dev>,
+        Salvatore Bonaccorso <carnil@debian.org>,
+        Cyril Brulebois <cyril@debamax.com>,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, stable@vger.kernel.org
+Subject: Re: [PATCH 1/2] fbdev/offb: Update expected device name
+Message-ID: <20230615200901.GA1572644-robh@kernel.org>
+References: <20230412095509.2196162-1-cyril@debamax.com>
+ <20230412095509.2196162-2-cyril@debamax.com>
+ <ZDvrY7X9mpJ7WZ3z@eldamar.lan>
+ <11b342dc-1a46-d1be-5fdd-c6eee661e15a@leemhuis.info>
+ <fe3b90b0-b52f-9677-0245-a201975c3e0c@suse.de>
+ <20230615132107.GA9196@kitsune.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <168669542896.1315701.6764382551599027707.b4-ty@kernel.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20230615132107.GA9196@kitsune.suse.cz>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Jun 13, 2023 at 03:30:10PM -0700, Bjorn Andersson wrote:
-> On Fri, 19 May 2023 20:07:24 +0200, Artur Weber wrote:
-> > Convert TI LP855X backlight controller bindings from TXT to YAML and,
-> > while we're at it, rework some of the code related to PWM handling.
-> > Also correct existing DTS files to avoid introducing new dtb_check
-> > errors.
+On Thu, Jun 15, 2023 at 03:21:07PM +0200, Michal Suchánek wrote:
+> Hello,
+> 
+> On Thu, Jun 15, 2023 at 03:06:28PM +0200, Thomas Zimmermann wrote:
+> > Hi
 > > 
-> > Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
-> > 
-> > [...]
+> > Am 15.06.23 um 15:03 schrieb Linux regression tracking (Thorsten Leemhuis):
+> > > On 16.04.23 14:34, Salvatore Bonaccorso wrote:
+> > > > 
+> > > > On Wed, Apr 12, 2023 at 11:55:08AM +0200, Cyril Brulebois wrote:
+> > > > > Since commit 241d2fb56a18 ("of: Make OF framebuffer device names unique"),
+> > > > > as spotted by Frédéric Bonnard, the historical "of-display" device is
+> > > > > gone: the updated logic creates "of-display.0" instead, then as many
+> > > > > "of-display.N" as required.
+> > > > > 
+> > > > > This means that offb no longer finds the expected device, which prevents
+> > > > > the Debian Installer from setting up its interface, at least on ppc64el.
+> > > > > 
+> > > > > It might be better to iterate on all possible nodes, but updating the
+> > > > > hardcoded device from "of-display" to "of-display.0" is confirmed to fix
+> > > > > the Debian Installer at the very least.
 > 
-> Applied, thanks!
+> At the time this was proposed it was said that "of-display", is wrong,
+> and that "of-display.0" must be used for the first device instead, and
+> if something breaks an alias can be provided.
 > 
-> [4/4] arm64: dts: adapt to LP855X bindings changes
->       commit: ebdcfc8c42c2b9d5ca1b27d8ee558eefb3e904d8
-> 
+> So how does one provide an alias so that offb can find "of-display.0" as
+> "of-display"?
 
-Sorry, that was not for me to pick up. So I've dropped this change
-again.
+I'm not aware of any way. There isn't because device names and paths are 
+not considered ABI. There are mechanisms for getting stable class device 
+indices (e.g. i2c0, mmcblk0, fb0, fb1, etc.) though not implemented for 
+fbN (and please don't add it). 
 
-Please note that all other changes to the affected file is prefixed
-"arm64: tegra:". Following this is a good idea, and would have helped me
-not accidentally pick this change.
+In any case, this should be an easy fix. Though if "linux,opened" or 
+"linux,boot-display" is not set, then you'd still get "of-display.0":
 
-Regards,
-Bjorn
-
-> Best regards,
-> -- 
-> Bjorn Andersson <andersson@kernel.org>
+diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+index 78ae84187449..e46482cef9c7 100644
+--- a/drivers/of/platform.c
++++ b/drivers/of/platform.c
+@@ -553,7 +553,7 @@ static int __init of_platform_default_populate_init(void)
+                        if (!of_get_property(node, "linux,opened", NULL) ||
+                            !of_get_property(node, "linux,boot-display", NULL))
+                                continue;
+-                       dev = of_platform_device_create(node, "of-display.0", NULL);
++                       dev = of_platform_device_create(node, "of-display", NULL);
+                        of_node_put(node);
+                        if (WARN_ON(!dev))
+                                return -ENOMEM;

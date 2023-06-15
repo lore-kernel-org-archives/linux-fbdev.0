@@ -2,113 +2,196 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7014AC001B1
-	for <linux-fbdev@archiver.kernel.org>; Wed, 14 Jun 2023 19:09:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44A58EB64DB
+	for <linux-fbdev@archiver.kernel.org>; Thu, 15 Jun 2023 06:53:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236006AbjFNTJd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 14 Jun 2023 15:09:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42112 "EHLO
+        id S244534AbjFOGxp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 15 Jun 2023 02:53:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56170 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235333AbjFNTJI (ORCPT
+        with ESMTP id S243555AbjFOGxL (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 14 Jun 2023 15:09:08 -0400
-Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4384D213F;
-        Wed, 14 Jun 2023 12:09:05 -0700 (PDT)
-Received: by mail-wr1-x42c.google.com with SMTP id ffacd0b85a97d-30fba11b1ceso4329611f8f.1;
-        Wed, 14 Jun 2023 12:09:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1686769743; x=1689361743;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=5u9vHxVGrzBlNg97U37WfCH1VZYMHPccfRdk0EIgi0Q=;
-        b=CpgQ+Kp063bXwmLKcP1EEsFKM93bGnY15ULSzxfxUlpJLR6gAyb4oeXYPjqoQUm1Qh
-         kHc+Ueb4SiOE+/bHeahP/YzEp4jLn6ikXcfMAlgRRiQV+sBkHYwFpjdNXjkOsMvCRpUi
-         2Jb1+Go+ysqeLQxKvH0let+oPsNKRlCFj1nQL9S5ZsjhYwW+J7uflIfyuyXjNdTLvfzG
-         0Q3jbptnO63W0s2Kp2zPcEmszKHZ4i4SAg6G7taC8/t7agm9MGmGOJWKsg0iNceDD1Yi
-         xnjkmJNOjCwEz+99cd4NwBByCBeI0xLzscMFpyO9RUZzCr2+s4nj7LRAa3JSvCc/Aohl
-         0Bfw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686769743; x=1689361743;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=5u9vHxVGrzBlNg97U37WfCH1VZYMHPccfRdk0EIgi0Q=;
-        b=hB8oMvaHCA/hFk8/wttd6jkFXrFhEZHC0Okhpo9R4bCPwxSAuD3DFkztGcbm5rVeM1
-         Rl8bI8vU8VD5gJPmXc5QB37AVwEe5/iD2bVeMQJbjGMO9rWraA6p1HYanTuz7jEqWCRq
-         teAsTy/coETMqpXFVaRB8aGh32AGgTpB2wtF4ToL8hrz5yXG3tvceIoMzuQHVkY9LAi5
-         e6ZwXqx3V9s5M/Q1lgZebajL2/rc3qDqEuMWiCBWzQjSrCMoMgPT8S9XA8501io8R+4Q
-         C6A1mxR8Fu6aQutk7kBFfVwPaBpu0TVlnBnuNnygDBBIjZCdC0gb0GX2xbAOpzCaD9BQ
-         SjbA==
-X-Gm-Message-State: AC+VfDxDadHYx/O98tUhhQXuw5zdYSWank2WpSHaOpqk9PzrlIQhjiD8
-        iMRmB38AACg/e8IEv8WNXnE=
-X-Google-Smtp-Source: ACHHUZ4WcZukf0p1Xe7srG7EpSfRIc8i1xLVw2rVsv9fLH+mSROtW2rbeQ6y/IwrGmrmgOtHgQBd0Q==
-X-Received: by 2002:a5d:4009:0:b0:30d:673e:1547 with SMTP id n9-20020a5d4009000000b0030d673e1547mr12367726wrp.41.1686769743534;
-        Wed, 14 Jun 2023 12:09:03 -0700 (PDT)
-Received: from [127.0.1.1] (2001-4dd6-393b-ff-f59e-4402-63f8-7ff5.ipv6dyn.netcologne.de. [2001:4dd6:393b:ff:f59e:4402:63f8:7ff5])
-        by smtp.gmail.com with ESMTPSA id e6-20020a5d5306000000b003110ab70a4fsm2341094wrv.83.2023.06.14.12.09.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Jun 2023 12:09:03 -0700 (PDT)
-From:   Maximilian Weigand <mweigand2017@gmail.com>
-Date:   Wed, 14 Jun 2023 21:08:54 +0200
-Subject: [PATCH 3/3] arm64: dts: rockchip: shift boost frequency for
- rk3566-pinenote backlight
+        Thu, 15 Jun 2023 02:53:11 -0400
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id CF76B2704;
+        Wed, 14 Jun 2023 23:51:52 -0700 (PDT)
+Received: from loongson.cn (unknown [10.20.42.43])
+        by gateway (Coremail) with SMTP id _____8AxV+kGtYpkcXYFAA--.9690S3;
+        Thu, 15 Jun 2023 14:51:50 +0800 (CST)
+Received: from [10.20.42.43] (unknown [10.20.42.43])
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8CxhuQFtYpkQKEbAA--.13222S3;
+        Thu, 15 Jun 2023 14:51:49 +0800 (CST)
+Message-ID: <1b5e3b60-28dc-60f1-b963-2eab2c787244@loongson.cn>
+Date:   Thu, 15 Jun 2023 14:51:49 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230602-lm3630a_boost_frequency-v1-3-076472036d1a@mweigand.net>
-References: <20230602-lm3630a_boost_frequency-v1-0-076472036d1a@mweigand.net>
-In-Reply-To: <20230602-lm3630a_boost_frequency-v1-0-076472036d1a@mweigand.net>
-To:     Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Heiko Stuebner <heiko@sntech.de>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-rockchip@lists.infradead.org,
-        Maximilian Weigand <mweigand@mweigand.net>
-X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1686769738; l=833;
- i=mweigand@mweigand.net; s=20230601; h=from:subject:message-id;
- bh=68FCYhe2/70pszTO5OdRKpvXw9/fY4xli3NXD6/hP14=;
- b=S4CP5nzsXth0E8aD8pqpP1sl8cO7kQrQEa7HRD5BrzLuryOjSI3/PCNUZyOKG9OtVCheLd/e+
- i6pmW/zckRjBf6ve1+/wKCo4UP/YGxbpdycIp3O6ibe+0ai9w0SVaYb
-X-Developer-Key: i=mweigand@mweigand.net; a=ed25519;
- pk=Tjuj6PXmCCxzGTRw+9suZuZ41q/etgDHrIbPdkAaTpM=
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.11.0
+Subject: Re: [PATCH v7 7/8] drm/amdgpu: Implement the is_boot_device callback
+ function
+To:     Sui Jingfeng <15330273260@189.cn>,
+        Bjorn Helgaas <bhelgaas@google.com>
+Cc:     amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+        nouveau@lists.freedesktop.org, linux-pci@vger.kernel.org,
+        kvm@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Christian Konig <christian.koenig@amd.com>,
+        Pan Xinhui <Xinhui.Pan@amd.com>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Hawking Zhang <Hawking.Zhang@amd.com>,
+        Mario Limonciello <mario.limonciello@amd.com>,
+        Lijo Lazar <lijo.lazar@amd.com>,
+        YiPeng Chai <YiPeng.Chai@amd.com>,
+        Bokun Zhang <Bokun.Zhang@amd.com>,
+        Likun Gao <Likun.Gao@amd.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>
+References: <20230613030151.216625-1-15330273260@189.cn>
+ <20230613030151.216625-8-15330273260@189.cn>
+Content-Language: en-US
+From:   Sui Jingfeng <suijingfeng@loongson.cn>
+Organization: Loongson
+In-Reply-To: <20230613030151.216625-8-15330273260@189.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: AQAAf8CxhuQFtYpkQKEbAA--.13222S3
+X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
+X-Coremail-Antispam: 1Uk129KBj93XoWxArWUWw17ZFWDCrWDuF4rJFc_yoWrurW5pw
+        48Ga13Wr48Jr1Skryj9Fn8GF1Y9F95AayDArn7tw18Cr47Ka10qF9Iqa1Yg3ZxAr4IvrnI
+        qrn2y340y34DZagCm3ZEXasCq-sJn29KB7ZKAUJUUUUx529EdanIXcx71UUUUU7KY7ZEXa
+        sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+        0xBIdaVrnRJUUUPab4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+        IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+        e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+        0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AK
+        xVW8Jr0_Cr1UM2kKe7AKxVWUAVWUtwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07
+        AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWU
+        AVWUtwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcVAKI4
+        8JMxk0xIA0c2IEe2xFo4CEbIxvr21lc7CjxVAaw2AFwI0_Jw0_GFyl42xK82IYc2Ij64vI
+        r41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1l4IxYO2xFxVAFwI0_JF0_Jw1lx2IqxVAqx4xG67
+        AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r4a6rW5MIIY
+        rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_JFI_Gr1lIxAIcVC0I7IYx2IY6xkF7I0E14
+        v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVW8JVWx
+        JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjxUcApnDU
+        UUU
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Maximilian Weigand <mweigand@mweigand.net>
+Hi,
 
-The PineNote exhibits visible flickering of its backlight for certain
-brightness settings. Alleviate this by enabling a frequency shift from
-500 kHz to 560 kHz for the boost converter of the led driver.
 
-Signed-off-by: Maximilian Weigand <mweigand@mweigand.net>
----
- arch/arm64/boot/dts/rockchip/rk3566-pinenote.dtsi | 1 +
- 1 file changed, 1 insertion(+)
+Does anyone has the bandwidth to review this?
 
-diff --git a/arch/arm64/boot/dts/rockchip/rk3566-pinenote.dtsi b/arch/arm64/boot/dts/rockchip/rk3566-pinenote.dtsi
-index 8d61f824c12d..4e4b3bbaa157 100644
---- a/arch/arm64/boot/dts/rockchip/rk3566-pinenote.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3566-pinenote.dtsi
-@@ -453,6 +453,7 @@ led-controller@36 {
- 		pinctrl-names = "default";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-+		ti,boost_frequency_shift;
- 
- 		led@0 {
- 			reg = <0>;
+I provide more additional information here, hope it helps.
+
+
+On a non-x86 multiple platform, the discrete AMDGPU fails to override 
+the integrated one.
+
+because the PCI BAR 0 of the AMDGPU gets moved.
+
+Below is the log of 'dmesg | grep vgaarb'.
+
+So relaying on screen_info is not always reliable.
+
+
+[    0.361928] pci 0000:00:06.1: vgaarb: setting as boot VGA device
+[    0.361932] pci 0000:00:06.1: vgaarb: bridge control possible
+[    0.361933] pci 0000:00:06.1: vgaarb: VGA device added: decodes=io+mem,owns=io+mem,locks=none
+[    0.361940] pci 0000:05:00.0: vgaarb: bridge control possible
+[    0.361941] pci 0000:05:00.0: vgaarb: VGA device added: decodes=io+mem,owns=none,locks=none
+[    0.361943] vgaarb: loaded
+[   11.352087] amdgpu 0000:05:00.0: vgaarb: Set as boot device (dictated by driver)
+[   11.575505] loongson 0000:00:06.1: vgaarb: changed VGA decodes: olddecodes=io+mem,decodes=none:owns=io+mem
+[   11.585100] amdgpu 0000:05:00.0: vgaarb: changed VGA decodes: olddecodes=io+mem,decodes=none:owns=none
+
+
+dmesg | grep efifb:
+
+
+[    0.356355] pci 0000:05:00.0: BAR 0: assigned to efifb
+[    0.375793] efifb: probing for efifb
+[    0.375795] pci 0000:05:00.0: BAR has moved, updating efifb address
+[    0.375803] efifb: framebuffer at 0xe0030000000, using 976k, total 975k
+[    0.375805] efifb: mode is 800x600x16, linelength=1664, pages=1
+[    0.375806] efifb: scrolling: redraw
+[    0.375808] efifb: Truecolor: size=0:5:6:5, shift=0:11:5:0
+
+
+efifb can also prove that "BAR has been moved"
+
+
+ From dmesg |  grep "pci 0000:05:00.0":
+
+
+[    0.356286] pci 0000:05:00.0: [1002:699f] type 00 class 0x030000
+[    0.356303] pci 0000:05:00.0: reg 0x10: [mem 
+0xe0020000000-0xe002fffffff 64bit pref]
+[    0.356315] pci 0000:05:00.0: reg 0x18: [mem 
+0xe0030000000-0xe00301fffff 64bit pref]
+[    0.356323] pci 0000:05:00.0: reg 0x20: [io  0x40000-0x400ff]
+[    0.356331] pci 0000:05:00.0: reg 0x24: [mem 0xe0053100000-0xe005313ffff]
+[    0.356339] pci 0000:05:00.0: reg 0x30: [mem 0xfffe0000-0xffffffff pref]
+[    0.356346] pci 0000:05:00.0: enabling Extended Tags
+[    0.356355] pci 0000:05:00.0: BAR 0: assigned to efifb
+[    0.356421] pci 0000:05:00.0: supports D1 D2
+[    0.356422] pci 0000:05:00.0: PME# supported from D1 D2 D3hot D3cold
+[    0.356858] pci 0000:05:00.0: BAR 0: assigned [mem 
+0xe0030000000-0xe003fffffff 64bit pref]
+[    0.356866] pci 0000:05:00.0: BAR 2: assigned [mem 
+0xe0040000000-0xe00401fffff 64bit pref]
+[    0.356875] pci 0000:05:00.0: BAR 5: assigned [mem 
+0xe0049000000-0xe004903ffff]
+[    0.356878] pci 0000:05:00.0: BAR 6: assigned [mem 
+0xe0049040000-0xe004905ffff pref]
+[    0.356889] pci 0000:05:00.0: BAR 4: assigned [io 0x4000-0x40ff]
+[    0.361940] pci 0000:05:00.0: vgaarb: bridge control possible
+[    0.361941] pci 0000:05:00.0: vgaarb: VGA device added: 
+decodes=io+mem,owns=none,locks=none
+[    0.375795] pci 0000:05:00.0: BAR has moved, updating efifb address
+
+We can see that the Bar 0 of AMDGPU
+
+moved from '0xe0020000000-0xe002fffffff'  to '0xe0030000000-0xe003fffffff'
+
+while the fb location information recorded by the screen_info still 
+belong to '0xe0020000000-0xe002fffffff'
+
+
+I suspect this is also the reason that video/aperture don't relay on the 
+information provided by screen_info
+
+in the contrast, it require the firmware framebuffer driver(efifb) to call
+
+devm_aperture_acquire_from_firmware() function, only in this way 
+video/aperture
+
+could record the correct information about the aperture being used the 
+by the firmware framebuffe.
+
+
+While vgaarb is loaded too early, even before efifb.
+
+so that we can only relay on the pci_notifier call back to us.
+
+
+On 2023/6/13 11:01, Sui Jingfeng wrote:
+> From: Sui Jingfeng <suijingfeng@loongson.cn>
+>
+> [why]
+>
+> The vga_is_firmware_default() defined in drivers/pci/vgaarb.c is
+> arch-dependent, it's a dummy on non-x86 architectures currently.
+> This made VGAARB lost an important condition for the arbitration.
+> It could still be wrong even if we remove the #ifdef and #endif guards.
+> because the PCI bar will move (resource re-allocation).
+>
+> [how]
+>
+> The device that owns the firmware framebuffer should be the default boot
+> device. This patch adds an arch-independent function to enforce this rule
 
 -- 
-2.39.2
+Jingfeng
 

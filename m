@@ -2,254 +2,94 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 607A5EB64D7
-	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Jun 2023 07:11:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65055EB64DA
+	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Jun 2023 12:05:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244286AbjFPHLo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 16 Jun 2023 03:11:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53968 "EHLO
+        id S1345045AbjFPMFn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 16 Jun 2023 08:05:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48492 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234495AbjFPHLM (ORCPT
+        with ESMTP id S1344705AbjFPMFn (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 16 Jun 2023 03:11:12 -0400
-Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id A59E3170E;
-        Fri, 16 Jun 2023 00:11:09 -0700 (PDT)
-Received: from loongson.cn (unknown [10.20.42.43])
-        by gateway (Coremail) with SMTP id _____8Cx+ekMC4xkouAFAA--.12557S3;
-        Fri, 16 Jun 2023 15:11:08 +0800 (CST)
-Received: from [10.20.42.43] (unknown [10.20.42.43])
-        by localhost.localdomain (Coremail) with SMTP id AQAAf8AxZuQLC4xk+_0cAA--.16734S3;
-        Fri, 16 Jun 2023 15:11:07 +0800 (CST)
-Message-ID: <3c1c86ab-96ea-aa1c-c9c5-9a4012644fd6@loongson.cn>
-Date:   Fri, 16 Jun 2023 15:11:07 +0800
+        Fri, 16 Jun 2023 08:05:43 -0400
+Received: from smtp-relay-internal-1.canonical.com (smtp-relay-internal-1.canonical.com [185.125.188.123])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9339D30E0
+        for <linux-fbdev@vger.kernel.org>; Fri, 16 Jun 2023 05:05:40 -0700 (PDT)
+Received: from mail-lj1-f198.google.com (mail-lj1-f198.google.com [209.85.208.198])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id 1FB283F120
+        for <linux-fbdev@vger.kernel.org>; Fri, 16 Jun 2023 12:05:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
+        s=20210705; t=1686917139;
+        bh=m7ySH3JrcTV8+yw7ueBFG47cxZsJ9e+MajPgheIKd1w=;
+        h=From:To:Cc:Subject:Date:Message-Id:MIME-Version;
+        b=sgvBiES5LemzjKmE5arXKRcu7Tc5bUYOste+4GM84XMboqjj399vY+XAcF+GxVqLr
+         J+YhN/FibZAZUhdkseItgGZNB74pE+o9t5A1zcfycYX693rh1/o3FEUO3vtohA+2gj
+         nR/MiSi480xNUKe0zUl6e7TJ5aOFeKJAIpDpn1y4khNo17oF0GhXVeSP4rcQ8J5Dfx
+         fO4p2VvrUTT0GA966CJ5h8efNMnbqq6hlWRABd+W42PBKcrmRU3P+0oQttw8UhZHkU
+         CQLIuLC0SCH4EqQ/BMgCwPjJOxJYswOuti07KghoNB3bUZxCUaBCJxhZAGRLxryCdD
+         F/h6C/LSKDUQw==
+Received: by mail-lj1-f198.google.com with SMTP id 38308e7fff4ca-2b1b1693338so4759051fa.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 16 Jun 2023 05:05:39 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686917138; x=1689509138;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=m7ySH3JrcTV8+yw7ueBFG47cxZsJ9e+MajPgheIKd1w=;
+        b=ikoxv3b6PO+xYHrtdUro8meGULMaIr6NqsHzRNz3d8GoTsD2vblZ/+jh965bS3Xqe1
+         fOC05YD3zC1P0nVQU4PKccBnP75zvvDfWMMzsIV8HB4xzLlU2FH8B9fKhdP+ETQuTsAb
+         7FKOn3D3dvT5izTQgbzo7b/d6q1BlDiqRe/Va0gKX8FBz6mxhTk9rcbE7VCyPVyLeGWp
+         ZTTFmRkUuiJRF2jwTGzx+jurEUa5JZKC11eybs9Dni97tuCjWs+Ugs8PLygXl772Ee6B
+         Y6ML+O9bXR32HsnKsRsExiS70hq036f04Y+iOtpNIVjcYl7qP6/Clog6DQVu7ltZsgL5
+         REkw==
+X-Gm-Message-State: AC+VfDyU3BonA8axcuv9MUnjRauXtSsExFTWeToo2h9mX2Ge4k30fl/3
+        6Xv6tPz+JM6LPxTgf/YpAjDqfeP3OAi9OCjLs4IIu5qBKJiGhD+cFSFRfz04SvL6851KftJZ5y5
+        cTvgWXrjsKGOOM4sAOZBdoyooQ7cjS5/7aA7jLvMtBltgCeSJdNc=
+X-Received: by 2002:ac2:5f9b:0:b0:4f3:78c2:2a6d with SMTP id r27-20020ac25f9b000000b004f378c22a6dmr1288648lfe.3.1686917138630;
+        Fri, 16 Jun 2023 05:05:38 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ75fXyeKCuznl3pidwrqckduT+X32ZYDJY7P5oHI98szTnf3jjwPSD9DqOJGAXHWnqzY1XyWA==
+X-Received: by 2002:ac2:5f9b:0:b0:4f3:78c2:2a6d with SMTP id r27-20020ac25f9b000000b004f378c22a6dmr1288629lfe.3.1686917138336;
+        Fri, 16 Jun 2023 05:05:38 -0700 (PDT)
+Received: from localhost ([194.191.244.86])
+        by smtp.gmail.com with ESMTPSA id c25-20020a05600c0ad900b003f18b942338sm2068082wmr.3.2023.06.16.05.05.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 16 Jun 2023 05:05:37 -0700 (PDT)
+From:   Juerg Haefliger <juerg.haefliger@canonical.com>
+To:     deller@gmx.de, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Cc:     linux-kernel@vger.kernel.org, juerg.haefliger@canonical.com,
+        u.kleine-koenig@pengutronix.de
+Subject: [PATCH] fbdev: metronomefb: Add MODULE_FIRMWARE macro
+Date:   Fri, 16 Jun 2023 14:05:29 +0200
+Message-Id: <20230616120529.1028798-1-juerg.haefliger@canonical.com>
+X-Mailer: git-send-email 2.37.2
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Subject: Re: [PATCH v7 2/8] PCI/VGA: Deal only with VGA class devices
-Content-Language: en-US
-To:     Alex Deucher <alexdeucher@gmail.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     Sui Jingfeng <15330273260@189.cn>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        linux-fbdev@vger.kernel.org, kvm@vger.kernel.org,
-        nouveau@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        amd-gfx@lists.freedesktop.org, linux-pci@vger.kernel.org
-References: <20230613030151.216625-1-15330273260@189.cn>
- <20230613030151.216625-3-15330273260@189.cn>
- <dbf0d89f-717a-1f78-aef2-f30506751d4d@loongson.cn>
- <CADnq5_N6vVtzH6tzguZdHnP_TdRoG1G-Cr94O+X03jvtk=vhag@mail.gmail.com>
-From:   Sui Jingfeng <suijingfeng@loongson.cn>
-Organization: Loongson
-In-Reply-To: <CADnq5_N6vVtzH6tzguZdHnP_TdRoG1G-Cr94O+X03jvtk=vhag@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: AQAAf8AxZuQLC4xk+_0cAA--.16734S3
-X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
-X-Coremail-Antispam: 1Uk129KBj93XoW3Xw1Utryrury5AF4rCFyrKrX_yoW7Ar48pF
-        WrCay5KrW8JFy7C342qr1kXFyYv3sYya4rJF4rK3sakFZ0yr98WryrKry5u3yxGrZ5GF1I
-        vw4UJF9rua9YqagCm3ZEXasCq-sJn29KB7ZKAUJUUUUr529EdanIXcx71UUUUU7KY7ZEXa
-        sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
-        0xBIdaVrnRJUUUPIb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
-        IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
-        e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
-        0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AK
-        xVW8Jr0_Cr1UM2kKe7AKxVWUXVWUAwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07
-        AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWU
-        XVWUAwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcVAKI4
-        8JMxk0xIA0c2IEe2xFo4CEbIxvr21lc7CjxVAaw2AFwI0_JF0_Jw1l42xK82IYc2Ij64vI
-        r41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1l4IxYO2xFxVAFwI0_Jrv_JF1lx2IqxVAqx4xG67
-        AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIY
-        rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14
-        v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8
-        JwCI42IY6I8E87Iv6xkF7I0E14v26r1j6r4UYxBIdaVFxhVjvjDU0xZFpf9x07jOa93UUU
-        UU=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+The module loads firmware so add a MODULE_FIRMWARE macro to provide that
+information via modinfo.
 
-On 2023/6/16 05:11, Alex Deucher wrote:
-> On Wed, Jun 14, 2023 at 6:50 AM Sui Jingfeng <suijingfeng@loongson.cn> wrote:
->> Hi,
->>
->> On 2023/6/13 11:01, Sui Jingfeng wrote:
->>> From: Sui Jingfeng <suijingfeng@loongson.cn>
->>>
->>> Deal only with the VGA devcie(pdev->class == 0x0300), so replace the
->>> pci_get_subsys() function with pci_get_class(). Filter the non-PCI display
->>> device(pdev->class != 0x0300) out. There no need to process the non-display
->>> PCI device.
->>>
->>> Cc: Bjorn Helgaas <bhelgaas@google.com>
->>> Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
->>> ---
->>>    drivers/pci/vgaarb.c | 22 ++++++++++++----------
->>>    1 file changed, 12 insertions(+), 10 deletions(-)
->>>
->>> diff --git a/drivers/pci/vgaarb.c b/drivers/pci/vgaarb.c
->>> index c1bc6c983932..22a505e877dc 100644
->>> --- a/drivers/pci/vgaarb.c
->>> +++ b/drivers/pci/vgaarb.c
->>> @@ -754,10 +754,6 @@ static bool vga_arbiter_add_pci_device(struct pci_dev *pdev)
->>>        struct pci_dev *bridge;
->>>        u16 cmd;
->>>
->>> -     /* Only deal with VGA class devices */
->>> -     if ((pdev->class >> 8) != PCI_CLASS_DISPLAY_VGA)
->>> -             return false;
->>> -
->> Hi, here is probably a bug fixing.
->>
->> For an example, nvidia render only GPU typically has 0x0380.
->>
->> as its PCI class number, but render only GPU should not participate in
->> the arbitration.
->>
->> As it shouldn't snoop the legacy fixed VGA address.
->>
->> It(render only GPU) can not display anything.
->>
->>
->> But 0x0380 >> 8 = 0x03, the filter  failed.
->>
->>
->>>        /* Allocate structure */
->>>        vgadev = kzalloc(sizeof(struct vga_device), GFP_KERNEL);
->>>        if (vgadev == NULL) {
->>> @@ -1500,7 +1496,9 @@ static int pci_notify(struct notifier_block *nb, unsigned long action,
->>>        struct pci_dev *pdev = to_pci_dev(dev);
->>>        bool notify = false;
->>>
->>> -     vgaarb_dbg(dev, "%s\n", __func__);
->>> +     /* Only deal with VGA class devices */
->>> +     if (pdev->class != PCI_CLASS_DISPLAY_VGA << 8)
->>> +             return 0;
->> So here we only care 0x0300, my initial intent is to make an optimization,
->>
->> nowadays sane display graphic card should all has 0x0300 as its PCI
->> class number, is this complete right?
->>
->> ```
->>
->> #define PCI_BASE_CLASS_DISPLAY        0x03
->> #define PCI_CLASS_DISPLAY_VGA        0x0300
->> #define PCI_CLASS_DISPLAY_XGA        0x0301
->> #define PCI_CLASS_DISPLAY_3D        0x0302
->> #define PCI_CLASS_DISPLAY_OTHER        0x0380
->>
->> ```
->>
->> Any ideas ?
-> I'm not quite sure what you are asking about here.
+Signed-off-by: Juerg Haefliger <juerg.haefliger@canonical.com>
+---
+ drivers/video/fbdev/metronomefb.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-To be honest, I'm worried about the PCI devices which has a
-
-PCI_CLASS_DISPLAY_XGA as its PCI class number.
-
-As those devices are very uncommon in the real world.
-
-
-$ find . -name "*.c" -type f | xargs grep "PCI_CLASS_DISPLAY_XGA"
-
-
-Grep the "PCI_CLASS_DISPLAY_XGA" in the linux kernel tree got ZERO,
-
-there no code reference this macro. So I think it seems safe to ignore 
-the XGA ?
-
-
-PCI_CLASS_DISPLAY_3D and PCI_CLASS_DISPLAY_OTHER are used to annotate 
-the render-only GPU.
-
-And render-only GPU can't decode the fixed VGA address space, it is safe 
-to ignore them.
-
-
->   For vga_arb, we
-> only care about VGA class devices since those should be on the only
-> ones that might have VGA routed to them.
-
->   However, as VGA gets deprecated,
-
-We need the vgaarb for a system with multiple video card.
-
-Not only because some Legacy VGA devices implemented
-
-on PCI will typically have the same "hard-decoded" addresses;
-
-But also these video card need to participate in the arbitration,
-
-determine the default boot device.
-
-
-Nowadays, the 'VGA devices' here is stand for the Graphics card
-
-which is capable of display something on the screen.
-
-We still need vgaarb to select the default boot device.
-
-
-> you'll have more non VGA PCI classes for devices which
-> could be the pre-OS console device.
-
-Ah, we still want  do this(by applying this patch) first,
-
-and then we will have the opportunity to see who will crying if 
-something is broken. Will know more then.
-
-But drop this patch or revise it with more consideration is also 
-acceptable.
-
-
-I asking about suggestion and/or review.
-
-> Alex
->
->>>        /* For now we're only intereted in devices added and removed. I didn't
->>>         * test this thing here, so someone needs to double check for the
->>> @@ -1510,6 +1508,8 @@ static int pci_notify(struct notifier_block *nb, unsigned long action,
->>>        else if (action == BUS_NOTIFY_DEL_DEVICE)
->>>                notify = vga_arbiter_del_pci_device(pdev);
->>>
->>> +     vgaarb_dbg(dev, "%s: action = %lu\n", __func__, action);
->>> +
->>>        if (notify)
->>>                vga_arbiter_notify_clients();
->>>        return 0;
->>> @@ -1534,8 +1534,8 @@ static struct miscdevice vga_arb_device = {
->>>
->>>    static int __init vga_arb_device_init(void)
->>>    {
->>> +     struct pci_dev *pdev = NULL;
->>>        int rc;
->>> -     struct pci_dev *pdev;
->>>
->>>        rc = misc_register(&vga_arb_device);
->>>        if (rc < 0)
->>> @@ -1545,11 +1545,13 @@ static int __init vga_arb_device_init(void)
->>>
->>>        /* We add all PCI devices satisfying VGA class in the arbiter by
->>>         * default */
->>> -     pdev = NULL;
->>> -     while ((pdev =
->>> -             pci_get_subsys(PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
->>> -                            PCI_ANY_ID, pdev)) != NULL)
->>> +     while (1) {
->>> +             pdev = pci_get_class(PCI_CLASS_DISPLAY_VGA << 8, pdev);
->>> +             if (!pdev)
->>> +                     break;
->>> +
->>>                vga_arbiter_add_pci_device(pdev);
->>> +     }
->>>
->>>        pr_info("loaded\n");
->>>        return rc;
->> --
->> Jingfeng
->>
+diff --git a/drivers/video/fbdev/metronomefb.c b/drivers/video/fbdev/metronomefb.c
+index bbdbf463f0c8..4e50882d080c 100644
+--- a/drivers/video/fbdev/metronomefb.c
++++ b/drivers/video/fbdev/metronomefb.c
+@@ -778,3 +778,5 @@ MODULE_PARM_DESC(user_wfm_size, "Set custom waveform size");
+ MODULE_DESCRIPTION("fbdev driver for Metronome controller");
+ MODULE_AUTHOR("Jaya Kumar");
+ MODULE_LICENSE("GPL");
++
++MODULE_FIRMWARE("metronome.wbf");
 -- 
-Jingfeng
+2.37.2
 

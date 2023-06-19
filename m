@@ -2,100 +2,95 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2210BEB64DA
-	for <linux-fbdev@archiver.kernel.org>; Mon, 19 Jun 2023 03:45:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE838EB64DB
+	for <linux-fbdev@archiver.kernel.org>; Mon, 19 Jun 2023 06:11:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229584AbjFSDph (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 18 Jun 2023 23:45:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37124 "EHLO
+        id S229904AbjFSGLe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 19 Jun 2023 02:11:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37636 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229554AbjFSDpg (ORCPT
+        with ESMTP id S229500AbjFSGLd (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 18 Jun 2023 23:45:36 -0400
-Received: from 189.cn (ptr.189.cn [183.61.185.103])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id EB454114;
-        Sun, 18 Jun 2023 20:45:33 -0700 (PDT)
-HMM_SOURCE_IP: 10.64.8.43:57978.1471128269
-HMM_ATTACHE_NUM: 0000
-HMM_SOURCE_TYPE: SMTP
-Received: from clientip-114.242.206.180 (unknown [10.64.8.43])
-        by 189.cn (HERMES) with SMTP id 505FA10029B;
-        Mon, 19 Jun 2023 11:45:30 +0800 (CST)
-Received: from  ([114.242.206.180])
-        by gateway-151646-dep-75648544bd-7vx9t with ESMTP id 7239e2ea64ab49028b0edbdbd8b976d0 for macro@orcam.me.uk;
-        Mon, 19 Jun 2023 11:45:32 CST
-X-Transaction-ID: 7239e2ea64ab49028b0edbdbd8b976d0
-X-Real-From: 15330273260@189.cn
-X-Receive-IP: 114.242.206.180
-X-MEDUSA-Status: 0
-Sender: 15330273260@189.cn
-Message-ID: <c53476a4-fbc9-00e9-d47d-51a4ce5b9259@189.cn>
-Date:   Mon, 19 Jun 2023 11:45:30 +0800
+        Mon, 19 Jun 2023 02:11:33 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4256983;
+        Sun, 18 Jun 2023 23:11:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
+ s=s31663417; t=1687155086; x=1687759886; i=deller@gmx.de;
+ bh=P+Esof1YkoJviOw/O1LMFwIZDYvJjAHEzRBugaxqQ08=;
+ h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+ b=BePiKZC93rn8fb3tdbAg2dfQTQDxM6OtIMabvFnND5NRxQw6VZJb13KN4qydEIBwaWhzg/A
+ 7tIqj/ORg5X9/EuzaJCTIxMFpWd2E4BQqEhxd/CxItD5CrezVgnPqteX73hVcGhpicPyYTcw9
+ 8QjVD3qMKtJoUBeyKfzgI2TG1hJVTGT2tmT/i7yPHrF/jQ2Zcgceq+5sPgX//0JykMWXupXOY
+ pqkl8PiSLisNPWmpwd9q/jJ3NowUA2ZdqYJTGtr4C/VDrQ/2TOTW4bNHQSDcLMOIcWubvPV3V
+ JEMT8cf48Yke8Awy1ZRodTcazyDEtLVRQNmRJew29K3YkBMNfRew==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.144.204]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MacSY-1pZ3Su09tK-00c7D5; Mon, 19
+ Jun 2023 08:11:26 +0200
+Message-ID: <761b02d9-d2a8-ffd0-d7aa-0b3160fc9e5c@gmx.de>
+Date:   Mon, 19 Jun 2023 08:11:25 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Subject: Re: [PATCH v7 2/8] PCI/VGA: Deal only with VGA class devices
+ Thunderbird/102.10.0
+Subject: Re: [PATCH] fbdev: broadsheetfb: Add MODULE_FIRMWARE macro
 Content-Language: en-US
-To:     "Maciej W. Rozycki" <macro@orcam.me.uk>
-Cc:     Bjorn Helgaas <bhelgaas@google.com>, amd-gfx@lists.freedesktop.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        intel-gfx@lists.freedesktop.org, nouveau@lists.freedesktop.org,
-        linux-pci@vger.kernel.org, kvm@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, Sui Jingfeng <suijingfeng@loongson.cn>
-References: <20230613030151.216625-1-15330273260@189.cn>
- <20230613030151.216625-3-15330273260@189.cn>
- <alpine.DEB.2.21.2306190339590.14084@angie.orcam.me.uk>
-From:   Sui Jingfeng <15330273260@189.cn>
-In-Reply-To: <alpine.DEB.2.21.2306190339590.14084@angie.orcam.me.uk>
+To:     Juerg Haefliger <juerg.haefliger@canonical.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc:     linux-kernel@vger.kernel.org, u.kleine-koenig@pengutronix.de
+References: <20230616120705.1030177-1-juerg.haefliger@canonical.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20230616120705.1030177-1-juerg.haefliger@canonical.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:hfcVO7x5PoJ9wUPo2VY6PYhbeY5iIVs48mMTqC1se1qLyRYGVMI
+ v8u+3EYAQ4/jGacPPv9n/hkejCM6bFQ0WP225Gx1wOHL44MfTzupQevSiIgHIj0viuFGCvk
+ GUzWPx5+a0gb4RaW7dYPclN5U78ijHXyuwrb06P3edefeA6cXni1L3FZ5qFhvjTlh0Mj9Lj
+ ues2EfwxB03uyM3NNZIWA==
+UI-OutboundReport: notjunk:1;M01:P0:0Ag5jfjhGsQ=;qdlVMD8TfhfR7aT+8a6uoU3+c1H
+ JI+t0bkgiHlhSYEKHpnTmj8Cjh9NtQXIkeWKVn2DFp7DxSkXdGHF1Lqn0yhcKNYProLIx5CsD
+ Y6UyQJv7uULHiLZjd2LK9z/eyFZ3QJxmwxSHpk+3Ws3kKI9sODia9gGgX3nSzyVGtgN2cBJxd
+ vmPIjkFlw5hc88iuHL19BV1mxIDtXeRlqzYJRIHhqLVJPPvcXznerkGcO6YnOq1ZPogFUztli
+ n7ntROY2iiU+dKQuDIS0svPWcKtmgjMit9io52puP8yrHWqBo1KUCKfmKNnD6X40d4lqfv5Kr
+ Nfuc9jVj3hq7iSY40VYSjt+G20DjnqmxYHEHuA/JFuaQXOI6ZFf2ioU5jyoGd7fF+gXhDiIQK
+ +w5uzdtPlC5Ljz+zbBuOyMI4K8tChIyqdKNi9RBnBHdh6JYyGnPlxATCTfccscMui6QJRHfHk
+ qOYx7XG9OBDVQ6FlQIyqMIoXs+uE4xhDNTUoe6YgI+Z/jLyhpsdTtFvRBP5LD40oAqyNd9LQF
+ PXlngLbpZTy+vXqH1jko3m0azI230OPJtg5kX5oMK624iioGwPVRw4rax//p8ZJrdD4z8QwAd
+ Zk+C9HajA38ODObt4fuc+ThWoFm3TVBxiyYst8wEnn6HURNknW2XlXyQCVKVwgPymgmaJk7Ki
+ ZftUXPFR5jWoXdQZDYZ8qGdnFWVds1cNbnTwdmvqyjXiV+qhChHJsZozSHNz3WFMhbMe3SLvM
+ xO9dvv1sD0Usae6aScmJ8gKBFFJwWYZ/0RedWX6vVGFcwnMQNRq80I3M68v6tIap2mNcMLSRO
+ MTkw/534DZc71UVMWQxL0+XvMU0LOZOXgLpx5dGiW79b+OxRfZ8kBGo/n/e83nQjgHyIWLp4a
+ S9bMSu71pugLRQSqgTEJXRiLB5nArYPa0/YeXQCLXj6/s8vUcHGnpkVVKa7eQphjYly13994P
+ SCL9xo3RdX4rWlQV9Oqv/X74ozo=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
-
-On 2023/6/19 11:02, Maciej W. Rozycki wrote:
-> On Tue, 13 Jun 2023, Sui Jingfeng wrote:
+On 6/16/23 14:07, Juerg Haefliger wrote:
+> The module loads firmware so add a MODULE_FIRMWARE macro to provide that
+> information via modinfo.
 >
->> Deal only with the VGA devcie(pdev->class == 0x0300), so replace the
->   Typo here: s/devcie/device/.
-Thanks a lot,
->> pci_get_subsys() function with pci_get_class(). Filter the non-PCI display
->> device(pdev->class != 0x0300) out. There no need to process the non-display
->> PCI device.
->   I've only come across this patch series now.  Without diving into what
-> this code actually does I have just one question as a matter of interest.
+> Signed-off-by: Juerg Haefliger <juerg.haefliger@canonical.com>
+
+I applied both of your patches to the fbdev git tree.
+
+Thanks!
+Helge
+
+
+> ---
+>   drivers/video/fbdev/broadsheetfb.c | 2 ++
+>   1 file changed, 2 insertions(+)
 >
->> diff --git a/drivers/pci/vgaarb.c b/drivers/pci/vgaarb.c
->> index c1bc6c983932..22a505e877dc 100644
->> --- a/drivers/pci/vgaarb.c
->> +++ b/drivers/pci/vgaarb.c
->> @@ -1500,7 +1496,9 @@ static int pci_notify(struct notifier_block *nb, unsigned long action,
->>   	struct pci_dev *pdev = to_pci_dev(dev);
->>   	bool notify = false;
->>   
->> -	vgaarb_dbg(dev, "%s\n", __func__);
->> +	/* Only deal with VGA class devices */
->> +	if (pdev->class != PCI_CLASS_DISPLAY_VGA << 8)
->> +		return 0;
->   Hmm, shouldn't this also handle PCI_CLASS_NOT_DEFINED_VGA?
+> diff --git a/drivers/video/fbdev/broadsheetfb.c b/drivers/video/fbdev/br=
+oadsheetfb.c
+> index b518cacbf7cd..678d182d187d 100644
+> --- a/drivers/video/fbdev/broadsheetfb.c
+> +++ b/drivers/video/fbdev/broadsheetfb.c
+> @@ -1223,3 +1223,5 @@ module_platform_driver(broadsheetfb_driver);
+>   MODULE_DESCRIPTION("fbdev driver for Broadsheet controller");
+>   MODULE_AUTHOR("Jaya Kumar");
+>   MODULE_LICENSE("GPL");
+> +
+> +MODULE_FIRMWARE("broadsheet.wbf");
 
-If your machine have only one such a VGA card, it probably don't hurt.
-
-But, such a card will also get ignored originally (before applying this 
-patch).
-
->   As far as I
-> know it is the equivalent of PCI_CLASS_DISPLAY_VGA for PCI <= 2.0 devices
-> that were implemented before the idea of PCI device classes has developed
-> into its current form.
-
-If multiple video card problems on your machine is matter,
-
-then I think it do deserve another patch to clarify this issue and to 
-explain the rationale.
-
->   I may have such a VGA device somewhere.
->
->    Maciej

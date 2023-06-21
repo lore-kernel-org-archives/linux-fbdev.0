@@ -2,136 +2,345 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BEE2EB64DB
-	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jun 2023 08:04:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74CD4EB64DD
+	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Jun 2023 07:33:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230383AbjFTIEj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 20 Jun 2023 04:04:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58856 "EHLO
+        id S229696AbjFUHdf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 21 Jun 2023 03:33:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60610 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229462AbjFTIEi (ORCPT
+        with ESMTP id S229470AbjFUHde (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 20 Jun 2023 04:04:38 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D737B1;
-        Tue, 20 Jun 2023 01:04:37 -0700 (PDT)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
-        by smtp-out2.suse.de (Postfix) with ESMTP id 33FFE1F37C;
-        Tue, 20 Jun 2023 08:04:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1687248276; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=7OJL+2ljSAsX+K1gdyXTKpGUjBVDC+iSX2Dkj5l9F1E=;
-        b=VwbYO1I6T2fGkPwnvn8GfJx+WUb0vQY9rr31AUTLpwwKOPrVZv8b7Lp3E8scFLga/iXhKF
-        4J+n9bzh5K7KoTqbMZDkhu7GRdzExRvH+v0jCYnNgOIj1A9ICZgQA2qTZm/+h/rOYZVw+w
-        7EVW6DSk9IQie8tiGFoGvneGqoe5GKU=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1687248276;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=7OJL+2ljSAsX+K1gdyXTKpGUjBVDC+iSX2Dkj5l9F1E=;
-        b=UCMTO8CD/webcRI2Fo5EoQLq/NF5sqXQ42k43dTN1pLahxxl7WrTimou6gZWuLATpKgGBV
-        vidFDbrvfCFwdHCg==
-Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by relay2.suse.de (Postfix) with ESMTPS id B94712C141;
-        Tue, 20 Jun 2023 08:04:35 +0000 (UTC)
-Date:   Tue, 20 Jun 2023 10:04:34 +0200
-From:   Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To:     Helge Deller <deller@gmx.de>
-Cc:     Cyril Brulebois <cyril@debamax.com>, Rob Herring <robh@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Linux regressions mailing list <regressions@lists.linux.dev>,
-        Salvatore Bonaccorso <carnil@debian.org>,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, stable@vger.kernel.org
-Subject: Re: [PATCH 1/2] fbdev/offb: Update expected device name
-Message-ID: <20230620080434.GD9196@kitsune.suse.cz>
-References: <20230412095509.2196162-1-cyril@debamax.com>
- <20230412095509.2196162-2-cyril@debamax.com>
- <ZDvrY7X9mpJ7WZ3z@eldamar.lan>
- <11b342dc-1a46-d1be-5fdd-c6eee661e15a@leemhuis.info>
- <fe3b90b0-b52f-9677-0245-a201975c3e0c@suse.de>
- <20230615132107.GA9196@kitsune.suse.cz>
- <20230615200901.GA1572644-robh@kernel.org>
- <20230615211924.cf2qs52cfaf7m3f7@debamax.com>
- <3d8c3a8c-68be-422a-c4ff-6d2e99c3f01b@gmx.de>
+        Wed, 21 Jun 2023 03:33:34 -0400
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id BC0761B6;
+        Wed, 21 Jun 2023 00:33:31 -0700 (PDT)
+Received: from loongson.cn (unknown [10.20.42.43])
+        by gateway (Coremail) with SMTP id _____8Dxc8TKp5JkDgwAAA--.75S3;
+        Wed, 21 Jun 2023 15:33:30 +0800 (CST)
+Received: from [10.20.42.43] (unknown [10.20.42.43])
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8Ax8uTIp5JkoToAAA--.1446S3;
+        Wed, 21 Jun 2023 15:33:29 +0800 (CST)
+Message-ID: <4cdc3d68-8bd6-fbc4-b9c6-ca41e6d132ad@loongson.cn>
+Date:   Wed, 21 Jun 2023 15:33:28 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.11.0
+Subject: Re: [PATCH v7 2/8] PCI/VGA: Deal only with VGA class devices
+Content-Language: en-US
+To:     Alex Deucher <alexdeucher@gmail.com>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Sui Jingfeng <15330273260@189.cn>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        linux-fbdev@vger.kernel.org, kvm@vger.kernel.org,
+        nouveau@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        amd-gfx@lists.freedesktop.org, linux-pci@vger.kernel.org
+References: <20230613030151.216625-1-15330273260@189.cn>
+ <20230613030151.216625-3-15330273260@189.cn>
+ <dbf0d89f-717a-1f78-aef2-f30506751d4d@loongson.cn>
+ <CADnq5_N6vVtzH6tzguZdHnP_TdRoG1G-Cr94O+X03jvtk=vhag@mail.gmail.com>
+ <3c1c86ab-96ea-aa1c-c9c5-9a4012644fd6@loongson.cn>
+ <CADnq5_Px-HWfwetv8LZsCnCeV7SMt_uqtLwMVK7648ZQiP2RCQ@mail.gmail.com>
+ <f08b6a76-6c90-b59b-ff43-c779ef759d09@loongson.cn>
+ <CADnq5_PFoM2O8mCd6+VFfu9Nc-Hg_HTnwEMxrq0FGRpva1kKiA@mail.gmail.com>
+From:   Sui Jingfeng <suijingfeng@loongson.cn>
+Organization: Loongson
+In-Reply-To: <CADnq5_PFoM2O8mCd6+VFfu9Nc-Hg_HTnwEMxrq0FGRpva1kKiA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <3d8c3a8c-68be-422a-c4ff-6d2e99c3f01b@gmx.de>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+X-CM-TRANSID: AQAAf8Ax8uTIp5JkoToAAA--.1446S3
+X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
+X-Coremail-Antispam: 1Uk129KBj93XoW3JF4UJr45GrW3trWrJFyUtwc_yoWfCw1kpF
+        WrGFW5KF4DJr17Gr12qw1UXFyYvryrJF1rXr1rJw1Ykrn0yr1UGryrGr45C34xXrs5Gr12
+        vr4UJry7uF15XagCm3ZEXasCq-sJn29KB7ZKAUJUUUUr529EdanIXcx71UUUUU7KY7ZEXa
+        sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+        0xBIdaVrnRJUUUPIb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+        IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+        e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+        0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AK
+        xVW8Jr0_Cr1UM2kKe7AKxVWUXVWUAwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07
+        AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWU
+        XVWUAwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcVAKI4
+        8JMxk0xIA0c2IEe2xFo4CEbIxvr21lc7CjxVAaw2AFwI0_JF0_Jw1l42xK82IYc2Ij64vI
+        r41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1l4IxYO2xFxVAFwI0_Jrv_JF1lx2IqxVAqx4xG67
+        AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIY
+        rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14
+        v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8
+        JwCI42IY6I8E87Iv6xkF7I0E14v26r1j6r4UYxBIdaVFxhVjvjDU0xZFpf9x07jOa93UUU
+        UU=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Jun 20, 2023 at 08:24:34AM +0200, Helge Deller wrote:
-> On 6/15/23 23:19, Cyril Brulebois wrote:
-> > Hi Rob,
-> > 
-> > Rob Herring <robh@kernel.org> (2023-06-15):
-> > > On Thu, Jun 15, 2023 at 03:21:07PM +0200, Michal Such�nek wrote:
-> > > > At the time this was proposed it was said that "of-display", is wrong,
-> > > > and that "of-display.0" must be used for the first device instead, and
-> > > > if something breaks an alias can be provided.
-> > > > 
-> > > > So how does one provide an alias so that offb can find "of-display.0"
-> > > > as "of-display"?
-> > > 
-> > > I'm not aware of any way. There isn't because device names and paths are
-> > > not considered ABI. There are mechanisms for getting stable class device
-> > > indices (e.g. i2c0, mmcblk0, fb0, fb1, etc.) though not implemented for
-> > > fbN (and please don't add it).
-> > > 
-> > > In any case, this should be an easy fix. Though if "linux,opened" or
-> > > "linux,boot-display" is not set, then you'd still get "of-display.0":
-> > > 
-> > > diff --git a/drivers/of/platform.c b/drivers/of/platform.c
-> > > index 78ae84187449..e46482cef9c7 100644
-> > > --- a/drivers/of/platform.c
-> > > +++ b/drivers/of/platform.c
-> > > @@ -553,7 +553,7 @@ static int __init of_platform_default_populate_init(void)
-> > >                          if (!of_get_property(node, "linux,opened", NULL) ||
-> > >                              !of_get_property(node, "linux,boot-display", NULL))
-> > >                                  continue;
-> > > -                       dev = of_platform_device_create(node, "of-display.0", NULL);
-> > > +                       dev = of_platform_device_create(node, "of-display", NULL);
-> > >                          of_node_put(node);
-> > >                          if (WARN_ON(!dev))
-> > >                                  return -ENOMEM;
-> 
-> Michal, does that patch look correct?
-> I don't have that hardware, but that way the boot-display gets named
-> "of-display" while all others get "of-display.x"....
+Hi,
 
-Yes, that's inconsistent, and IIRC it's what I originally proposed to
-preserve compatibility as much as possible.
+On 2023/6/16 22:34, Alex Deucher wrote:
+> On Fri, Jun 16, 2023 at 10:22 AM Sui Jingfeng <suijingfeng@loongson.cn> wrote:
+>>
+>> On 2023/6/16 21:41, Alex Deucher wrote:
+>>> On Fri, Jun 16, 2023 at 3:11 AM Sui Jingfeng <suijingfeng@loongson.cn> wrote:
+>>>> Hi,
+>>>>
+>>>> On 2023/6/16 05:11, Alex Deucher wrote:
+>>>>> On Wed, Jun 14, 2023 at 6:50 AM Sui Jingfeng <suijingfeng@loongson.cn> wrote:
+>>>>>> Hi,
+>>>>>>
+>>>>>> On 2023/6/13 11:01, Sui Jingfeng wrote:
+>>>>>>> From: Sui Jingfeng <suijingfeng@loongson.cn>
+>>>>>>>
+>>>>>>> Deal only with the VGA devcie(pdev->class == 0x0300), so replace the
+>>>>>>> pci_get_subsys() function with pci_get_class(). Filter the non-PCI display
+>>>>>>> device(pdev->class != 0x0300) out. There no need to process the non-display
+>>>>>>> PCI device.
+>>>>>>>
+>>>>>>> Cc: Bjorn Helgaas <bhelgaas@google.com>
+>>>>>>> Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
+>>>>>>> ---
+>>>>>>>      drivers/pci/vgaarb.c | 22 ++++++++++++----------
+>>>>>>>      1 file changed, 12 insertions(+), 10 deletions(-)
+>>>>>>>
+>>>>>>> diff --git a/drivers/pci/vgaarb.c b/drivers/pci/vgaarb.c
+>>>>>>> index c1bc6c983932..22a505e877dc 100644
+>>>>>>> --- a/drivers/pci/vgaarb.c
+>>>>>>> +++ b/drivers/pci/vgaarb.c
+>>>>>>> @@ -754,10 +754,6 @@ static bool vga_arbiter_add_pci_device(struct pci_dev *pdev)
+>>>>>>>          struct pci_dev *bridge;
+>>>>>>>          u16 cmd;
+>>>>>>>
+>>>>>>> -     /* Only deal with VGA class devices */
+>>>>>>> -     if ((pdev->class >> 8) != PCI_CLASS_DISPLAY_VGA)
+>>>>>>> -             return false;
+>>>>>>> -
+>>>>>> Hi, here is probably a bug fixing.
+>>>>>>
+>>>>>> For an example, nvidia render only GPU typically has 0x0380.
+>>>>>>
+>>>>>> as its PCI class number, but render only GPU should not participate in
+>>>>>> the arbitration.
+>>>>>>
+>>>>>> As it shouldn't snoop the legacy fixed VGA address.
+>>>>>>
+>>>>>> It(render only GPU) can not display anything.
+>>>>>>
+>>>>>>
+>>>>>> But 0x0380 >> 8 = 0x03, the filter  failed.
+>>>>>>
+>>>>>>
+>>>>>>>          /* Allocate structure */
+>>>>>>>          vgadev = kzalloc(sizeof(struct vga_device), GFP_KERNEL);
+>>>>>>>          if (vgadev == NULL) {
+>>>>>>> @@ -1500,7 +1496,9 @@ static int pci_notify(struct notifier_block *nb, unsigned long action,
+>>>>>>>          struct pci_dev *pdev = to_pci_dev(dev);
+>>>>>>>          bool notify = false;
+>>>>>>>
+>>>>>>> -     vgaarb_dbg(dev, "%s\n", __func__);
+>>>>>>> +     /* Only deal with VGA class devices */
+>>>>>>> +     if (pdev->class != PCI_CLASS_DISPLAY_VGA << 8)
+>>>>>>> +             return 0;
+>>>>>> So here we only care 0x0300, my initial intent is to make an optimization,
+>>>>>>
+>>>>>> nowadays sane display graphic card should all has 0x0300 as its PCI
+>>>>>> class number, is this complete right?
+>>>>>>
+>>>>>> ```
+>>>>>>
+>>>>>> #define PCI_BASE_CLASS_DISPLAY        0x03
+>>>>>> #define PCI_CLASS_DISPLAY_VGA        0x0300
+>>>>>> #define PCI_CLASS_DISPLAY_XGA        0x0301
+>>>>>> #define PCI_CLASS_DISPLAY_3D        0x0302
+>>>>>> #define PCI_CLASS_DISPLAY_OTHER        0x0380
+>>>>>>
+>>>>>> ```
+>>>>>>
+>>>>>> Any ideas ?
+>>>>> I'm not quite sure what you are asking about here.
+>>>> To be honest, I'm worried about the PCI devices which has a
+>>>>
+>>>> PCI_CLASS_DISPLAY_XGA as its PCI class number.
+>>>>
+>>>> As those devices are very uncommon in the real world.
+>>>>
+>>>>
+>>>> $ find . -name "*.c" -type f | xargs grep "PCI_CLASS_DISPLAY_XGA"
+>>>>
+>>>>
+>>>> Grep the "PCI_CLASS_DISPLAY_XGA" in the linux kernel tree got ZERO,
+>>>>
+>>>> there no code reference this macro. So I think it seems safe to ignore
+>>>> the XGA ?
+>>>>
+>>>>
+>>>> PCI_CLASS_DISPLAY_3D and PCI_CLASS_DISPLAY_OTHER are used to annotate
+>>>> the render-only GPU.
+>>>>
+>>>> And render-only GPU can't decode the fixed VGA address space, it is safe
+>>>> to ignore them.
+>>>>
+>>>>
+>>>>>     For vga_arb, we
+>>>>> only care about VGA class devices since those should be on the only
+>>>>> ones that might have VGA routed to them.
+>>>>>     However, as VGA gets deprecated,
+>>>> We need the vgaarb for a system with multiple video card.
+>>>>
+>>>> Not only because some Legacy VGA devices implemented
+>>>>
+>>>> on PCI will typically have the same "hard-decoded" addresses;
+>>>>
+>>>> But also these video card need to participate in the arbitration,
+>>>>
+>>>> determine the default boot device.
+>>> But couldn't the boot device be determined via what whatever resources
+>>> were used by the pre-OS console?
+>> I don't know what you are refer to by saying  pre-OS console, UEFI
+>> SHELL,  UEFI GOP  or something like that.
+>>
+> Right.  Before the OS loads the platform firmware generally sets up
+> something for display.  That could be GOP or vesa or some other
+> platform specific protocol.
+>
+>> If you are referring to the framebuffer driver which light up the screen
+>> before the Linux kernel is loaded .
+>>
+>>
+>> Then, what you have said is true,  the boot device is determined by the
+>> pre-OS console.
+>>
+>> But the problem is how does the Linux kernel(vgaarb) could know which
+>> one is the default boot device
+>>
+>> on a multiple GPU machine.  Relaying on the firmware fb's address and
+>> size is what the mechanism
+>>
+>> we already in using.
+> Right.  It shouldn't need to depend on vgaarb.
+>
+>>
+>>>    I feel like that should be separate from vgaarb.
+>> Emm, this really deserved another patch, please ?
+>>
+>>>    vgaarb should handle PCI VGA routing and some other
+>>> mechanism should be used to determine what device provided the pre-OS
+>>> console.
+>> If the new mechanism need the firmware changed, then this probably break
+>> the old machine.
+>>
+>> Also, this probably will get all arch involved. to get the new mechanism
+>> supported.
+>>
+>> The testing pressure and review power needed is quite large.
+>>
+>> drm/amdgpu and drm/radeon already being used on X86, ARM64,  Mips and
+>> more arch...
+>>
+>> The reviewing process will became quite difficult then.
+>>
+>> vgaarb is really what we already in use, and being used more than ten
+>> years ...
+> Yes, it works for x86 (and a few other platforms) today because of the
+> VGA legacy, so we can look at VGA routing to determine this.  But even
+> today, we don't need VGA routing to determine what was the primary
+> display before starting the OS.  We could probably have a platform
+> independent way to handle this by looking at the bread crumbs leftover
+> from the pre-OS environment.  E.g., for pre-UEFI platforms, we can
+> look at VGA routing.  For UEFI platforms we can look at what GOP left
+> us.  For various non-UEFI ARM/PPC/MIPS/etc. platforms we can look at
+> whatever breadcrumbs those pre-OS environments left.  That way when
+> VGA goes away, we can have a clean break and you won't need vgaarb if
+> the platform has no VGA devices.
 
-The patch went through multiple iteration by me and Rob and the final
-version that was merged uses the consistent but incompatible naming.
 
-The other option would be to adapt the offb driver, presumably.
+Thanks for the dear developers from AMDGPU,
 
-I don't understand how the device name figures in attaching the driver
-to the device, the only other occurence of of-display is the name of the
-offb and ofdrm drivers.
 
-> > I've just replaced my clueless workaround with this patch on top of the
-> > kernel found in Debian 12 (Bookworm), i.e. 6.1.27 at this point, and it
-> > indeed fixes the black screen problem in the installer's context.
-> 
-> ... at least it fixes the issue.
+Mario already give me a R-B to V6 of this series[1],  I link it to 
+here,//for fear of lost it.
 
-I would expect as much. I don't have the hardware either but keeping
-what was there before, and only adding on top is kind of the least
-disruptive way of adding new stuff.
+He may be busy,  not seeing the latest.
 
-Thanks
 
-Michal
+For this patch series, V6 is same with the V7.
+
+
+[1] 
+https://lore.kernel.org/all/5b6fdf65-b354-94a9-f883-be820157efad@amd.com/
+
+> Alex
+>
+>>
+>>> Alex
+>>>
+>>>> Nowadays, the 'VGA devices' here is stand for the Graphics card
+>>>>
+>>>> which is capable of display something on the screen.
+>>>>
+>>>> We still need vgaarb to select the default boot device.
+>>>>
+>>>>
+>>>>> you'll have more non VGA PCI classes for devices which
+>>>>> could be the pre-OS console device.
+>>>> Ah, we still want  do this(by applying this patch) first,
+>>>>
+>>>> and then we will have the opportunity to see who will crying if
+>>>> something is broken. Will know more then.
+>>>>
+>>>> But drop this patch or revise it with more consideration is also
+>>>> acceptable.
+>>>>
+>>>>
+>>>> I asking about suggestion and/or review.
+>>>>
+>>>>> Alex
+>>>>>
+>>>>>>>          /* For now we're only intereted in devices added and removed. I didn't
+>>>>>>>           * test this thing here, so someone needs to double check for the
+>>>>>>> @@ -1510,6 +1508,8 @@ static int pci_notify(struct notifier_block *nb, unsigned long action,
+>>>>>>>          else if (action == BUS_NOTIFY_DEL_DEVICE)
+>>>>>>>                  notify = vga_arbiter_del_pci_device(pdev);
+>>>>>>>
+>>>>>>> +     vgaarb_dbg(dev, "%s: action = %lu\n", __func__, action);
+>>>>>>> +
+>>>>>>>          if (notify)
+>>>>>>>                  vga_arbiter_notify_clients();
+>>>>>>>          return 0;
+>>>>>>> @@ -1534,8 +1534,8 @@ static struct miscdevice vga_arb_device = {
+>>>>>>>
+>>>>>>>      static int __init vga_arb_device_init(void)
+>>>>>>>      {
+>>>>>>> +     struct pci_dev *pdev = NULL;
+>>>>>>>          int rc;
+>>>>>>> -     struct pci_dev *pdev;
+>>>>>>>
+>>>>>>>          rc = misc_register(&vga_arb_device);
+>>>>>>>          if (rc < 0)
+>>>>>>> @@ -1545,11 +1545,13 @@ static int __init vga_arb_device_init(void)
+>>>>>>>
+>>>>>>>          /* We add all PCI devices satisfying VGA class in the arbiter by
+>>>>>>>           * default */
+>>>>>>> -     pdev = NULL;
+>>>>>>> -     while ((pdev =
+>>>>>>> -             pci_get_subsys(PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
+>>>>>>> -                            PCI_ANY_ID, pdev)) != NULL)
+>>>>>>> +     while (1) {
+>>>>>>> +             pdev = pci_get_class(PCI_CLASS_DISPLAY_VGA << 8, pdev);
+>>>>>>> +             if (!pdev)
+>>>>>>> +                     break;
+>>>>>>> +
+>>>>>>>                  vga_arbiter_add_pci_device(pdev);
+>>>>>>> +     }
+>>>>>>>
+>>>>>>>          pr_info("loaded\n");
+>>>>>>>          return rc;
+>>>>>> --
+>>>>>> Jingfeng
+>>>>>>
+>>>> --
+>>>> Jingfeng
+>>>>
+>> --
+>> Jingfeng
+>>
+-- 
+Jingfeng
+

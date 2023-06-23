@@ -2,96 +2,168 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDF84EB64D7
-	for <linux-fbdev@archiver.kernel.org>; Fri, 23 Jun 2023 04:07:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07363C001DC
+	for <linux-fbdev@archiver.kernel.org>; Fri, 23 Jun 2023 07:20:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231243AbjFWEHo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 23 Jun 2023 00:07:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39258 "EHLO
+        id S230503AbjFWHUZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 23 Jun 2023 03:20:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55702 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231209AbjFWEHn (ORCPT
+        with ESMTP id S231271AbjFWHUS (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 23 Jun 2023 00:07:43 -0400
-Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05C0F2114;
-        Thu, 22 Jun 2023 21:07:41 -0700 (PDT)
-Received: by mail-wr1-x430.google.com with SMTP id ffacd0b85a97d-3112f256941so198399f8f.1;
-        Thu, 22 Jun 2023 21:07:40 -0700 (PDT)
+        Fri, 23 Jun 2023 03:20:18 -0400
+Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C58DA2685
+        for <linux-fbdev@vger.kernel.org>; Fri, 23 Jun 2023 00:20:10 -0700 (PDT)
+Received: by mail-lf1-x12d.google.com with SMTP id 2adb3069b0e04-4f955850e30so1838719e87.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 23 Jun 2023 00:20:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1687493259; x=1690085259;
-        h=message-id:date:subject:cc:to:from:from:to:cc:subject:date
+        d=shruggie-ro.20221208.gappssmtp.com; s=20221208; t=1687504809; x=1690096809;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=jfr4aHtExKCjhX8/rfHVnmOqxjAsOewVsr3RQTrb4Ps=;
-        b=PZGIC4e5GlPnSZSwaatuVGl+7FwpRbN7D3kl8h7U/PdQzYuJZ2lfvZvnHezsX45RCY
-         Ncv2PlGe8MIK5Y/SgLxIbNIt5sbIimMtFdiKyfmQI0MxvWlXuaxcdLFroNrQZDMuQqUt
-         Ae8/EUwr02EsrhZJo2upRM3Xp/ZBXDWvmvGx+KB1eskjb1vIegE6UMOLCnzL0J0MiDaR
-         UhKIZ1JhYkJnJ172G0Z3QOzBSQ/brHtGqSUpJQk40Qr+KhAylFeOGyBm8H/7sg7TKFkv
-         h0WjtYvg5vP4FyghFdBc+1sGkAqvnzj+mwKGZV+ANz3tRf4UV8yFnqr1SkD0BwmsNf+a
-         mEgQ==
+        bh=ImZnIaT63i6HYM9TPUGnMEDuzzS3iTPlc0kdGdrlb5A=;
+        b=3Yhpu9WhcwMjEy5oQYEaH2RAw8HdPk8Sv/n2Q8JSF6EqCQEVVxXprA1frXJEgGN1U9
+         hVOp0nvyddcDIqhQ50PyHfp5iFb75PLHASG4IVuZCJ4BPUW2/hgLHtYRZokHtp6ol4lI
+         +G8YXJ22ryzI8Piz96B/lLyl2J0Nd44LIkFaMAAd3oKphqY+ZSFbEhJt1XzFVZlGZO/+
+         mGi5MoKNowW0VaLuUZnrEkoAUeVt2ccKfKi7aiTIU5hUYtQISqtl1oPMM7WPKTeWKfFd
+         s9J5O34Z2RnllHP+kfAoFIyyOoWvAD7s/rSkz4XT08y9TKiJbr/7fc72bOACPdS21NgY
+         KuTQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687493259; x=1690085259;
-        h=message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20221208; t=1687504809; x=1690096809;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=jfr4aHtExKCjhX8/rfHVnmOqxjAsOewVsr3RQTrb4Ps=;
-        b=b78RKUi2PY1nS0XT+MwtV4ymEtCOAKbvUoTm+70GZM1EANJ3KeHKdQ6fzMNJo2c2Qq
-         3vJaMKqN40aA68ptnUnCEKaCmiq3L6NJr7N4fD2+XiUcWbbs16oC35zrGTBOQZDZ6C7T
-         ttEEzJUDBJ/WXKVjRseGi7kihcO+jdSVhRsGIrrDYNcp1jfcMGeL/cZRYoP4iSJXIRsl
-         ELbNkzxWavJBDberXG0U6r3ly+mRLazQYaeuNKKCVbYPisxzYKA1c3qg+xCfbZUmX7zr
-         BuFKOP4keY0irH5vLolmkhyEkz5caado5MC6GfA6U2/3TxArpG+WsFk9fLElYhn8O8Q0
-         YT1w==
-X-Gm-Message-State: AC+VfDwksJ1dL6jj+3bpz2xSIPSHJPpA7OW8SqcoH6TLxSEmmqXc2c6f
-        zzslj83C4sKHaSTGhnMzm07uc6vZUdc=
-X-Google-Smtp-Source: ACHHUZ4bJ7yS6ZD3ioE6Qng90F9n0ELRAyLZg88+aPuX+QJBSsmH1HUmvPgTqornneVCSn8kwE3pTw==
-X-Received: by 2002:adf:d092:0:b0:307:7f38:37f with SMTP id y18-20020adfd092000000b003077f38037fmr13245166wrh.66.1687493259449;
-        Thu, 22 Jun 2023 21:07:39 -0700 (PDT)
-Received: from felia.fritz.box ([2a02:810d:7e40:14b0:851e:d01d:5e81:992f])
-        by smtp.gmail.com with ESMTPSA id b13-20020a5d4d8d000000b003048477729asm8445713wru.81.2023.06.22.21.07.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 22 Jun 2023 21:07:39 -0700 (PDT)
-From:   Lukas Bulwahn <lukas.bulwahn@gmail.com>
-To:     Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Lukas Bulwahn <lukas.bulwahn@gmail.com>
-Subject: [PATCH] MAINTAINERS: adjust entry in VIA UNICHROME(PRO)/CHROME9 FRAMEBUFFER DRIVER
-Date:   Fri, 23 Jun 2023 06:07:36 +0200
-Message-Id: <20230623040736.9026-1-lukas.bulwahn@gmail.com>
-X-Mailer: git-send-email 2.17.1
+        bh=ImZnIaT63i6HYM9TPUGnMEDuzzS3iTPlc0kdGdrlb5A=;
+        b=QIOPd++2ctRPUcbQ+IfC2lF9J91exOqOwWjsh4EGSQ94S6EcyOgnhZjgzLjiEsljaq
+         XIu3z9/DGEmGxhs9pXpRbRlCJmknlMpaKdP94f0Q6/Sez3lCY0ffCPkewcjXwWBdnZ0o
+         fvJgqh782imtDJspWkb3UG6nFt1qY32S/R+1h4FQ3NVy417Mp0J92aOJxpCt4NEJWt/n
+         jVVMp66NJB/peCvO8CBuYLBuqMhZej/0cYSU77DiKUfde6fOJOBFkM0xC5JTc10wRXA/
+         co64NMV4sIFKq0gXJ5/CWVnFOkgw9ZfDsYkItsrhgsrGrIIo6qlqHP0UsRDtZJVF2of3
+         XtTw==
+X-Gm-Message-State: AC+VfDwb79tvDhH8sXlhEJxfDoXuDtACMNzL6SsoH/kQa09h7CpZH+E1
+        GrINf3feis29hIj8KiG21ksdANRSDSDaL2w22BgjhQ==
+X-Google-Smtp-Source: ACHHUZ4bflw+9FBpnbPDHod6ikRPIK3fJONA4szxg89SYbr1d0RYYS1tjPE/1SywatKL1fnzbFURrYMfl8Iwm3F9A30=
+X-Received: by 2002:ac2:4e0a:0:b0:4f6:56ca:36fc with SMTP id
+ e10-20020ac24e0a000000b004f656ca36fcmr9407801lfr.6.1687504808812; Fri, 23 Jun
+ 2023 00:20:08 -0700 (PDT)
+MIME-Version: 1.0
+References: <20230621215457.11297-1-alex@shruggie.ro> <20230622021303.GA68330-robh@kernel.org>
+In-Reply-To: <20230622021303.GA68330-robh@kernel.org>
+From:   Alexandru Ardelean <alex@shruggie.ro>
+Date:   Fri, 23 Jun 2023 10:19:57 +0300
+Message-ID: <CAH3L5Qp3q=K5w+LbccZBJqvkz98WgFLqg__y7Be_=-2GsWQs+Q@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] dt-bindings: backlight: document new property default-brightness-level
+To:     Rob Herring <robh@kernel.org>
+Cc:     dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, lee@kernel.org,
+        daniel.thompson@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
+        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
+        deller@gmx.de, Yannick Fertre <yannick.fertre@foss.st.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Commit d4313a68ec91 ("fbdev/media: Use GPIO descriptors for VIA GPIO")
-moves via-gpio.h from include/linux to drivers/video/fbdev/via, but misses
-to adjust the file entry for the VIA UNICHROME(PRO)/CHROME9 FRAMEBUFFER
-DRIVER section.
+On Thu, Jun 22, 2023 at 5:13=E2=80=AFAM Rob Herring <robh@kernel.org> wrote=
+:
+>
+> On Thu, Jun 22, 2023 at 12:54:56AM +0300, Alexandru Ardelean wrote:
+> > From: Yannick Fertre <yannick.fertre@foss.st.com>
+> >
+> > Add documentation for new default-brightness-level property.
+>
+> Why?
 
-Hence, ./scripts/get_maintainer.pl --self-test=patterns complains about a
-broken reference.
+I'll admit, I liked the fact that the "default-brightness-level" is
+more uniform in the space of backlights.
+The "default-on" property is more specific to the gpio-backlight driver.
+And then there's gpio hogging that could also work.
 
-Remove the file entry in VIA UNICHROME(PRO)/CHROME9 FRAMEBUFFER DRIVER, as
-the new location of the header is already covered by the file entry
-drivers/video/fbdev/via/.
+>
+> >
+> > Signed-off-by: Yannick Fertre <yannick.fertre@foss.st.com>
+> > Signed-off-by: Alexandru Ardelean <alex@shruggie.ro>
+> > ---
+> >
+> > Link to original patch:
+> >   https://github.com/STMicroelectronics/linux/commit/c4067d7bd883c6fa14=
+ffd49892c4ce663cdafe98
+> >
+> > Changelog v1 -> v2:
+> > * https://lore.kernel.org/dri-devel/20230519200520.10657-2-alex@shruggi=
+e.ro/
+> > * removed 'brightness-levels' reference
+> > * updated doc-text for 'default-brightness-level'
+> > * updated doc-text for 'default-on'
+> > * added 'minimum' & 'maximum' to 'default-brightness-level' property
+> > * removed 'Reviewed-by: Philippe CORNU <philippe.cornu@foss.st.com>' as
+> >   requested
+> > * patch is first in series of 2 patches (was second patch)
+> >
+> >  .../bindings/leds/backlight/gpio-backlight.yaml    | 14 +++++++++++++-
+> >  1 file changed, 13 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/Documentation/devicetree/bindings/leds/backlight/gpio-back=
+light.yaml b/Documentation/devicetree/bindings/leds/backlight/gpio-backligh=
+t.yaml
+> > index 584030b6b0b9..2da6552a207c 100644
+> > --- a/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.y=
+aml
+> > +++ b/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.y=
+aml
+> > @@ -20,9 +20,21 @@ properties:
+> >      maxItems: 1
+> >
+> >    default-on:
+> > -    description: enable the backlight at boot.
+> > +    description:
+> > +      The default power state of the backlight at boot.
+> >      type: boolean
+> >
+> > +  default-brightness-level:
+> > +    description:
+> > +      The default brightness level on device init. The value can be 0 =
+or 1.
+> > +      If omitted, the value is 1. In the context of the "gpio-backligh=
+t" driver
+> > +      the effect of this setting will be that the backlight is on/off.
+> > +      The difference between this setting and "default-on" is that thi=
+s handles
+> > +      brightness, while "default-on" handles the power setting of the =
+device.
+>
+> What power setting? You only have 1 GPIO to control here which is 2
+> states. I fail to see why you need 6 possible states with all the
+> combinations of 2 properties.
 
-Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
----
- MAINTAINERS | 1 -
- 1 file changed, 1 deletion(-)
+So, the "default-on" bool gets converted to backlight power settings,
+which eventually gets converted back to GPIO values (at some point).
+Which sounds quirky (when saying/writing it).
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 88954a1c0017..e12ac544aa9d 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -22415,7 +22415,6 @@ L:	linux-fbdev@vger.kernel.org
- S:	Maintained
- F:	drivers/video/fbdev/via/
- F:	include/linux/via-core.h
--F:	include/linux/via-gpio.h
- F:	include/linux/via_i2c.h
- 
- VIA VELOCITY NETWORK DRIVER
--- 
-2.17.1
+But, yeah.
+That's one thing that also made me a bit undecided to send this.
+On the one hand I like the uniformity it brings.
+On the other hand, because there is the legacy behavior (the
+"default-on" property, and the fact that we can use the GPIO DT
+settings to control this) just explodes complexity/quirks.
 
+We can probably just drop this.
+I'll also admit that my doc-writing skills aren't too great.
+
+Thanks
+Alex
+
+>
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    minimum: 0
+> > +    maximum: 1
+> > +
+> >  required:
+> >    - compatible
+> >    - gpios
+> > --
+> > 2.40.1
+> >

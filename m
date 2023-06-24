@@ -2,91 +2,106 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E24FEEB64DA
-	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Jun 2023 16:18:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 415F6EB64DA
+	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Jun 2023 19:56:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231173AbjFXQSX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 24 Jun 2023 12:18:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58208 "EHLO
+        id S229689AbjFXTz7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 24 Jun 2023 15:55:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59178 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229485AbjFXQSW (ORCPT
+        with ESMTP id S229641AbjFXTz6 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 24 Jun 2023 12:18:22 -0400
-Received: from out162-62-57-137.mail.qq.com (out162-62-57-137.mail.qq.com [162.62.57.137])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 839621BC1;
-        Sat, 24 Jun 2023 09:18:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foxmail.com;
-        s=s201512; t=1687623491;
-        bh=t9PX+gmI/UcKkpcbDt6R77sgA+FoIjM4NOaJUDP49iw=;
-        h=From:To:Cc:Subject:Date;
-        b=LlU9ooFauSX2TF5vuDT7+eRYQ+SFZ7Sg6xnkipyLIJR25pp/9F/p2FX1lXQ5J3faW
-         ZrUe9yTBVke4sMU4k+cmTkiF0PxNiBhQIUhR89q/j3b8AYxIx41j/hkffO5s0TrAlK
-         idqI7hvQ5tjD2zFFlzaw20j89tbUUa9ADG7Ut0dQ=
-Received: from localhost.localdomain ([220.243.191.12])
-        by newxmesmtplogicsvrszc2-0.qq.com (NewEsmtp) with SMTP
-        id 4369B8A1; Sun, 25 Jun 2023 00:16:54 +0800
-X-QQ-mid: xmsmtpt1687623414t8wdy9pz9
-Message-ID: <tencent_72AB00ACD94346E10E954A42FBC6A3567E05@qq.com>
-X-QQ-XMAILINFO: NRsgaNGnQ1mYXSLvJsE20/BEtApm6wd+h+4qUWSseRo64YtLfRF/SEx46U+keq
-         FPzj9eNWVCNEJMblY/Bpjz4MPrAE2G4RLGZ4IaWAHbkjBxeJNST5FZobvO6OM9vUEAYqOw+r43Nm
-         tmOUCQE3Tt7Cp1nsf1+jmjBo9hKOnBTkAmgWax7COrfEh6QVSjLfjdoxEtCiOsjZVWv82ItIwPgP
-         LaXfZaVSXkAwabzm5TVHAccuDYcRpgPfvJRzS8jroXgfq5KD9w7kXuWBE4cK9qNIropRTRzbYSah
-         e0yMBKyOoCTT/eEVmLn+ykmfnfAC7fcQbQXLhFNH3ejutAWClDD97IqB6clvSrVmk1xCCd97hASv
-         zKJzEedCqRapGz6BztSOMHBd95Pum4sRd+tLmm0s5rx7hnGDuhmTDsRLfQ8DilvR/ND0eSB7fG0J
-         D43g+cX27fnjkq+g49hx1Lp+zPoEGC/T0OSq6cp3dJJFOoAEDoD+N/iIWfEopvhyQaCZU2bJex+7
-         yWfJXi3CYV8nWjEYCtskocqzdfYqwjlP+/u4sfKCxjiG55rHbhzjynCKkmbdx5ongNLip9gkJNlb
-         olcV28uAzuKXojZwTB1Qan6ooGGu2gaYfYzMGar+lD+80nX6Bo+57zt4m52Z5WwIlV3oIwOo9ob6
-         Hxl/jr8ke/0//xJSQFQ9xG/JAxQDD8Div6uChBqg3j2txBmx2E08ycmsdfmlqLicATFho6pem5jx
-         k5MMOMP4r/asT+J4VAumR6X47GDJLfZY2IXUXt2vfkRp6ecwCO8gHyHUmWRDynsjzUsGoPASgl5S
-         bZegNrtzRjCwJog3+NZmzMeZWwyNMQqZcQazTQhl/Ejhv7hbnSgkTMAfSmRhNf9nN61llPdZOnJO
-         /UCQMS6J6TKkqwUPKWeeXAJvDr+VaiJW304XEsj3TEJlXqGt9/jNJc38CQE7Ps4xltmEo3wc6XJG
-         f9jkrE+j0m0v+LYcwpdqUtz1INWY4DJ0AdEgjseO5ty5689MC2FfkJ9bNE8BJs
-X-QQ-XMRINFO: N9UmAew/oWQdyj+ues2o31rfXVIHRUyJrg==
-From:   Zhang Shurong <zhang_shurong@foxmail.com>
-To:     daniel@ffwll.ch
-Cc:     deller@gmx.de, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Zhang Shurong <zhang_shurong@foxmail.com>
-Subject: [PATCH] video: fbdev: fix potential OOB read in fast_imageblit()
-Date:   Sun, 25 Jun 2023 00:16:49 +0800
-X-OQ-MSGID: <20230624161649.13823-1-zhang_shurong@foxmail.com>
-X-Mailer: git-send-email 2.41.0
+        Sat, 24 Jun 2023 15:55:58 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB6471BDF;
+        Sat, 24 Jun 2023 12:55:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
+ s=s31663417; t=1687636550; x=1688241350; i=deller@gmx.de;
+ bh=/Jy/sFDkn/FMoUAdBvQLhq+kBJ8hJfRSlwh0/b8ionU=;
+ h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+ b=I9UAL9zv3+1qubpUKzY1NNBvcvwFyrZEd0yOy0vKPLLcdBMYwYLdKWTNbMnVIFZ47/F2ydi
+ 5ruFV0HsIaQs87F6dLyTtdNo4P21eBIQeHVwFxFGBo1FYxktoFA8hHdA1tWKrd7awh9RNFvfo
+ Sdrm42q2LUfB/qa3Y6+GJeywMU0hsgs+SJlF/jNq+xmoffTCkz6FueLt5qoILWKrno1FbHGtZ
+ ZQcCt90OVXPEyEDtNvfmOOkY/hXBq9wjd2CQAzTqIOS3vOHlILEhkxzLK17cZM10i//t8RWe3
+ 3s54g/mS9VSoCS6y8JcZ/dlCC6RQd4Z8uAWtjvpYgvNbKJSxKOLw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.156.152]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N8GMk-1q04V40uXI-014BNp; Sat, 24
+ Jun 2023 21:55:50 +0200
+Message-ID: <bd436365-300c-a73c-7452-d874d7a279a6@gmx.de>
+Date:   Sat, 24 Jun 2023 21:55:49 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Subject: Re: [PATCH] video: fbdev: fix potential OOB read in fast_imageblit()
+Content-Language: en-US
+To:     Zhang Shurong <zhang_shurong@foxmail.com>, daniel@ffwll.ch
+Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <tencent_72AB00ACD94346E10E954A42FBC6A3567E05@qq.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <tencent_72AB00ACD94346E10E954A42FBC6A3567E05@qq.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:ZFzdGXzQJyDkDBgdCPz4lCyWJp793REJrqk2POWCMC6OfZvNtrb
+ KaH2VD/asP7C/cpMNy9XVHf3n0KkmL7Ql6QC+QkwI4GaXZusKiuv5+wtIF1faV5mr53rsY6
+ AdG83D+/eKYLNYWNIF3+FaPl28rcecIBp7tZUSlHYBGkRTOPDmmyUEVOfw6DQDAD6Y0kumU
+ HDlQ0EGGdpkPcSBaR/I/Q==
+UI-OutboundReport: notjunk:1;M01:P0:Oi4NTdrW1BI=;1GK4eOF/eeUU09C0pNKKBkhVlhN
+ nnDV4LFCNVOrGCb/SEchYVrbYKk0/pfCWkX9tQjZSRP2vV1EVY8PzpXysqW9wCLz48zIXup6c
+ 4QphGUMzmvTM0tcVvv6CS1gnD4N/9maOS6s7zbkcMH54NMRwjPtAT3b3VNjqVD3Uwg/HMCFKm
+ XPozSYfSYEkIxTTiOry3NN2Twvei4YJLsWgiyk5gRIlmJcPbUquYaQVkK0DYfdyAMVWGLrsy+
+ 0Y+g84Xqm9B3G17/zz1sOgczIrep5HgKqpqLx2p/BEBmk7JFgHehmBVnouzo9AQfX5JMJ+8XN
+ TRKzIkTpTroTNlAEd3Ma0kCY9BFmtKuUtXli/yeZD9fBQHxDIY5b/CakzoyseFTX5gQrbYJsr
+ tlMGLoYKfdOql2UphoFh/lAR4UAdYHWGkyF6hfsc7YRNmPPA50jkVO4PnnLtruGBPZDJgjNry
+ bTfweeF2sqinPHnv5f6coDSjKEoML53PdienHKhEul458yhMppTadBffgjnd8bsrKEMaJEHhn
+ sXAGbPaWh0PjIoshLI0J+tD9CLkZN+qZqLXv0guMIKIYLTGz/nYDxSllSB32Tbo+c0QZ1Dbvi
+ QTaibOWc/R3kpPBdUtPJ3GIhXZs0UrV1eoasgcoX7NYNIMEbap7lZ4z+OzzzGZXZ242rl3+sm
+ XRxwFvdUfSGaqwEvXQzuvW5/cb4EStmePSB+arCMdMOMq3hs0LWP0HPJEWXsxmbs0NjhCx/Nn
+ dbtK6duYbk1aHKhnDthF7qB+UQ0gHeyz/ouUV6j4eiU2kKch9c2v1KNdxS0HvwjA6kHBsBhm1
+ 0wrhXo7Fmlf3nWn0JE4YZpMsVyibZ5EjrKJXmC2ozMCQUxdh8z8jBQ04QX4HgQYLLsL9YKyN0
+ UV/ha/QZ3CrzlUhuDfr6XY0w/SxS2lw3bcloszLD+bRrDnU9PUVdwZLb1iP5yqI9hsMnhrgbO
+ deW2zw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-There is a potential OOB read at fast_imageblit, for
-"colortab[(*src >> 4)]" can become a negative value due to
-"const char *s = image->data, *src".
-This change makes sure the index for colortab always positive
-or zero.
+On 6/24/23 18:16, Zhang Shurong wrote:
+> There is a potential OOB read at fast_imageblit, for
+> "colortab[(*src >> 4)]" can become a negative value due to
+> "const char *s =3D image->data, *src".
+> This change makes sure the index for colortab always positive
+> or zero.
+>
+> Similar commit:
+> https://patchwork.kernel.org/patch/11746067
+>
+> Potential bug report:
+> https://groups.google.com/g/syzkaller-bugs/c/9ubBXKeKXf4/m/k-QXy4UgAAAJ
+>
+> Signed-off-by: Zhang Shurong <zhang_shurong@foxmail.com>
 
-Similar commit:
-https://patchwork.kernel.org/patch/11746067
+applied.
 
-Potential bug report:
-https://groups.google.com/g/syzkaller-bugs/c/9ubBXKeKXf4/m/k-QXy4UgAAAJ
+Thanks!
+Helge
 
-Signed-off-by: Zhang Shurong <zhang_shurong@foxmail.com>
----
- drivers/video/fbdev/core/sysimgblt.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/core/sysimgblt.c b/drivers/video/fbdev/core/sysimgblt.c
-index 335e92b813fc..665ef7a0a249 100644
---- a/drivers/video/fbdev/core/sysimgblt.c
-+++ b/drivers/video/fbdev/core/sysimgblt.c
-@@ -189,7 +189,7 @@ static void fast_imageblit(const struct fb_image *image, struct fb_info *p,
- 	u32 fgx = fgcolor, bgx = bgcolor, bpp = p->var.bits_per_pixel;
- 	u32 ppw = 32/bpp, spitch = (image->width + 7)/8;
- 	u32 bit_mask, eorx, shift;
--	const char *s = image->data, *src;
-+	const u8 *s = image->data, *src;
- 	u32 *dst;
- 	const u32 *tab;
- 	size_t tablen;
--- 
-2.41.0
+> ---
+>   drivers/video/fbdev/core/sysimgblt.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/core/sysimgblt.c b/drivers/video/fbdev/=
+core/sysimgblt.c
+> index 335e92b813fc..665ef7a0a249 100644
+> --- a/drivers/video/fbdev/core/sysimgblt.c
+> +++ b/drivers/video/fbdev/core/sysimgblt.c
+> @@ -189,7 +189,7 @@ static void fast_imageblit(const struct fb_image *im=
+age, struct fb_info *p,
+>   	u32 fgx =3D fgcolor, bgx =3D bgcolor, bpp =3D p->var.bits_per_pixel;
+>   	u32 ppw =3D 32/bpp, spitch =3D (image->width + 7)/8;
+>   	u32 bit_mask, eorx, shift;
+> -	const char *s =3D image->data, *src;
+> +	const u8 *s =3D image->data, *src;
+>   	u32 *dst;
+>   	const u32 *tab;
+>   	size_t tablen;
 

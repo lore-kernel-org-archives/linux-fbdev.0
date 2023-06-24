@@ -2,110 +2,130 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC8CDEB64DC
-	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Jun 2023 08:08:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98956EB64DC
+	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Jun 2023 09:28:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232533AbjFXIIX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 24 Jun 2023 04:08:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59078 "EHLO
+        id S232924AbjFXJ2d (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 24 Jun 2023 05:28:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53528 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231834AbjFXIIX (ORCPT
+        with ESMTP id S233086AbjFXJ2Q (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 24 Jun 2023 04:08:23 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 56DBBDC;
-        Sat, 24 Jun 2023 01:08:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1687594095; x=1688198895; i=deller@gmx.de;
- bh=nV3CTyxNKPTPooCvqcC4CRaJBTriP3iL6heU9HaLMsk=;
- h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=WEND6irihw3+hXVTVzVRCtDU6tDJ9hPbciyqs75FgtbyRqGH3K2kBeb0ngWAak/YLiCruqG
- 3chkD/b1oSHz1pnxe0UhMIdnhtU32g+Zsjiuo05hJ4h3X2jkZKWd4pMm6pr5m7Yju+tQtAeYq
- EH1WW8dp7uCijj7T2gHUwb029m15dhuoDgoInJ+3SzQswAOaqvpNqbUjlb2gyuzmpGVAqS755
- dz0jXPu5CkW1S1Hi0DKU8gbpHWIhLZM84ATshOTLpLqqT5h6FB1RgMI5aZUKosGMHkgzVBBdb
- 8N1f1ola9udpPt+hSoAleFGxHSah31B6qQezb8NF1HvsYdRB2YTA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.156.152]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MRTRH-1qPQd93pht-00NNmj; Sat, 24
- Jun 2023 10:08:15 +0200
-Message-ID: <4570ff59-8f31-b218-7c21-0a69eb9130f3@gmx.de>
-Date:   Sat, 24 Jun 2023 10:08:14 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH] MAINTAINERS: adjust entry in VIA UNICHROME(PRO)/CHROME9
- FRAMEBUFFER DRIVER
-Content-Language: en-US
-To:     Lukas Bulwahn <lukas.bulwahn@gmail.com>,
-        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20230623040736.9026-1-lukas.bulwahn@gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20230623040736.9026-1-lukas.bulwahn@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:sdgtWdVp7ip4/4ayIBB1vUFupzXQG/VWEONZNgCv661G2u7SWyo
- 2fHSGlayiRWr/Pz7IZnIpC94+PobtToPkpGjUSj2YFJmi5kJB1tqS8Cf4oVDdi72MC5Rv67
- dsWrfcCdDqO8V5gyoZWqNPKgAlQnOrc/wnwKyMMcCtDRMJWrLPYrdFaqMXdsHL750B9ArS1
- YWGP1tsJqwXKxJJOTSwkQ==
-UI-OutboundReport: notjunk:1;M01:P0:PYeCmMABKKI=;z6O1tiq+JqUujWJ+qFqTF8l+vsN
- M2rVfKqx94bc4Mpq4LGO37g3bCi2ZctqOl5cs+uIJZOoeawuCulUxGWCnAVyC5gxx9u4i5Yme
- XaomuDRTwvM46beTVb5NCbnkpNQ+mv4uZKJLxGxx2mh7V+RU/DCjT2DLu8612JjtWk4fOvaXW
- eRLdfl56WmNiMrjLVbekqV9qvOuIAr0uEeRBYbOsovSBMYcc33TFmt8D/bewFeDbo3raEFzfc
- Ndr+1r82vHSJpBZLALAsKQpErerQrLJYEbDVk3q5BDYPdRKxKo3CV1J1aglbHj5BoqJKk2Lbb
- lye1tCsdimB3hnkrpqMBrsZFl2anzH8XKECNxOqTtcnvVyBkNL2L+O46HfKjO90tLHK8Xq4NB
- 6SRea2Y+NfQvRlN7Xq4ZT3lXZ9jOi2FifkgI44nJ0DwdURwf4i8U7CG2lrJl2cpmIWk8fqSlR
- fIQ5GvmPX/tlGaKK404qkQrlpRkXrpS2ez4IyP/n6Q/9MnKXHt4fGCSqzbMLKqUX+hvnz1xKR
- Tp50v6EeW7fdApM0hsUGAIvDGJ9XIqZ51crchbhDG5d886L102q6bj563zk/90z5jiqGAlJYu
- 5pkjO3ltq3V2u7Ff0r/4AplrETTzRF7koBC0FMZm23spgjJcXI9aoxaauBy1iSZCW/YOsmfLm
- m969E7UR0AwfdoRJhw/q4OorflltI/YgmEYedOdc+uPsz8oaTlkCJY4OzqQ6pELAKGqn68/9h
- u4iDbGejirxAk3WkopHgUI3Ox7ZCr4pesIDisMxKtLRqI3ROBGDcbNIaKpJDoZvqbBLSDYgZ4
- jWguu9MRZPMpDOroSmKFwB0/yc23s81jBqIqw05Y4o8XEGgZAJhytxWpxNwZrjhLXYeuuX9iI
- BmYg6eLCUdG0zlgtcqesbibcW14SOr4YeTH6t50C4s0Il50XcnS3qHcxjD4dzXEHHTNhyYRw1
- fIw9y+HH/Dl6yiEAcO1Z+N8FvY8=
+        Sat, 24 Jun 2023 05:28:16 -0400
+Received: from new3-smtp.messagingengine.com (new3-smtp.messagingengine.com [66.111.4.229])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 895CE26B0;
+        Sat, 24 Jun 2023 02:28:09 -0700 (PDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
+        by mailnew.nyi.internal (Postfix) with ESMTP id 3DD9B5842D1;
+        Sat, 24 Jun 2023 05:28:05 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute6.internal (MEProxy); Sat, 24 Jun 2023 05:28:05 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+        :cc:content-type:content-type:date:date:from:from:in-reply-to
+        :in-reply-to:message-id:mime-version:references:reply-to:sender
+        :subject:subject:to:to; s=fm1; t=1687598885; x=1687606085; bh=qY
+        ntvL1gKhXrmWH0tTXfCuX8ddCTc/3rP2W4LxyKhm0=; b=2fzrhKF90cpXdCJJhX
+        LNQ5t74+BoUFAWu2Z9oVvwfRP+G2j+kHetfXDo7jXuv6MZjlVNDYMOe5uMBuCdrY
+        tfPOeSOrdnMHi5ExY6XX7AWMG7KA6nVtCTrwrLskcwomUPvEud6GLH7At6wunV8T
+        1xjw8VbSHv+R4fEe2U3K0VAbm+xpbPHip2N4n+Wjl5qhwQ5ZCL9UOgj1O/Ev3fUz
+        wFoNMcX1DQqOGh3VF3wDQoCuthyjHY5xOlhizC1sa5RpiNIFDzQpiYdpxDZoyaus
+        Jb8lK1gCGSw8zq5XV56wA5i2aAdBsF5Nj6taOY18hsohd5+dcepsDuWV8vsh6/Bp
+        FnCg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-type:content-type:date:date
+        :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+        :x-sasl-enc; s=fm2; t=1687598885; x=1687606085; bh=qYntvL1gKhXrm
+        WH0tTXfCuX8ddCTc/3rP2W4LxyKhm0=; b=Ss12EnHU4AcwmUdUHarRTM5S6SQng
+        s1jzkZTwt45UxEwaoXOe27PqNaIoImQzAcGstwg5plJ41roH3XuppaxR7+klgqAT
+        t2qTaZahs2nvwu7r3H1VhEDI35lYik3jAGEsIHR2BPHNrkn6lrob8XsuLvH5a0nS
+        3PctpKkR+/0CA0SYvMYr+Yi8zJioA3pDKC07QmhNdD7FSzOplFMmbgKTCxZsf7qJ
+        UiCtm5Hf06e/mrw5KEp0RhzySvecvFKrkEIZ3jIqTxjSlYxkPmMjRGDkZYisUHdp
+        Ltzzz1MP7nRj6pHsmgact/qcePRWHX8qnnokQvpv2K8E68y0F1jWwV5xw==
+X-ME-Sender: <xms:JLeWZFOBFglxl1i5bI3l1p0oN8XlQzdcdm1l_G7s8_E-sM0HZytL4g>
+    <xme:JLeWZH--P5FdBTJ_umdmBwIQ3BaF9UxuoF5B2lSO_XD_aJ1GsWYULUTZ9P4U_i4Wt
+    0CGKV6DR5IBfrDLmGM>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrgeegjedgudeiucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
+    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
+    htvghrnhepffehueegteeihfegtefhjefgtdeugfegjeelheejueethfefgeeghfektdek
+    teffnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
+    hrnhgusegrrhhnuggsrdguvg
+X-ME-Proxy: <xmx:JLeWZESOvtN3WRtL4qcbs1TxlvwwnmscUJ664LO5SZIsEeCM99_NTw>
+    <xmx:JLeWZBsXh796y04w6P0GVP04uwY_zKhNkC-ozsUZCaW2YmXR9CpM-Q>
+    <xmx:JLeWZNfcbt5O64mkJb1sR3C8x8YFQCpWT18ij9tkQXIoWlLXKJHfnQ>
+    <xmx:JbeWZOBhhQ4yvPgqPpUS3E42vsWe4WTrrcu1uDU2wkIyXn5yBFMoWw>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+        id 03220B60086; Sat, 24 Jun 2023 05:28:03 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-499-gf27bbf33e2-fm-20230619.001-gf27bbf33
+Mime-Version: 1.0
+Message-Id: <55130a50-d129-4336-99ce-3be4229b1c7d@app.fastmail.com>
+In-Reply-To: <c525adc9-6623-4660-8718-e0c9311563b8@roeck-us.net>
+References: <20230417125651.25126-18-tzimmermann@suse.de>
+ <c525adc9-6623-4660-8718-e0c9311563b8@roeck-us.net>
+Date:   Sat, 24 Jun 2023 11:27:42 +0200
+From:   "Arnd Bergmann" <arnd@arndb.de>
+To:     "Guenter Roeck" <linux@roeck-us.net>,
+        "Thomas Zimmermann" <tzimmermann@suse.de>
+Cc:     "Daniel Vetter" <daniel.vetter@ffwll.ch>,
+        "Helge Deller" <deller@gmx.de>,
+        "Javier Martinez Canillas" <javierm@redhat.com>,
+        "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+        Linux-Arch <linux-arch@vger.kernel.org>,
+        linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org,
+        linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org,
+        x86@kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org,
+        linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev,
+        sparclinux@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+        linuxppc-dev@lists.ozlabs.org,
+        "David S . Miller" <davem@davemloft.net>,
+        linux-arm-kernel@lists.infradead.org
+Subject: Re: [v3,17/19] arch/sparc: Implement fb_is_primary_device() in source file
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 6/23/23 06:07, Lukas Bulwahn wrote:
-> Commit d4313a68ec91 ("fbdev/media: Use GPIO descriptors for VIA GPIO")
-> moves via-gpio.h from include/linux to drivers/video/fbdev/via, but miss=
-es
-> to adjust the file entry for the VIA UNICHROME(PRO)/CHROME9 FRAMEBUFFER
-> DRIVER section.
+On Sat, Jun 24, 2023, at 03:55, Guenter Roeck wrote:
 >
-> Hence, ./scripts/get_maintainer.pl --self-test=3Dpatterns complains abou=
-t a
-> broken reference.
+> On Mon, Apr 17, 2023 at 02:56:49PM +0200, Thomas Zimmermann wrote:
+>> Other architectures implment fb_is_primary_device() in a source
+>> file. Do the same on sparc. No functional changes, but allows to
+>> remove several include statement from <asm/fb.h>.
+>> 
+>> v2:
+>> 	* don't include <asm/prom.h> in header file
+>> 
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>> Cc: "David S. Miller" <davem@davemloft.net>
 >
-> Remove the file entry in VIA UNICHROME(PRO)/CHROME9 FRAMEBUFFER DRIVER, =
-as
-> the new location of the header is already covered by the file entry
-> drivers/video/fbdev/via/.
+> This patch results (or appears to result) in the following build error
+> when trying to build sparc64:allmodconfig.
 >
-> Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+> Error log:
+> <stdin>:1519:2: warning: #warning syscall clone3 not implemented [-Wcpp]
+> WARNING: modpost: drivers/cpufreq/sparc-us2e-cpufreq: section mismatch 
+> in reference: cpufreq_us2e_driver+0x20 (section: .data) -> 
+> us2e_freq_cpu_init (section: .init.text)
+> WARNING: modpost: drivers/cpufreq/sparc-us3-cpufreq: section mismatch 
+> in reference: cpufreq_us3_driver+0x20 (section: .data) -> 
+> us3_freq_cpu_init (section: .init.text)
+> ERROR: modpost: "__xchg_called_with_bad_pointer" [lib/atomic64_test.ko] 
+> undefined!
 
-Added the Fixes tag and applied.
+These all look like old bugs that would be trivially fixed if
+anyone cared about sparc.
 
-Thanks!
-Helge
+> ERROR: modpost: missing MODULE_LICENSE() in arch/sparc/video/fbdev.o
 
-> ---
->   MAINTAINERS | 1 -
->   1 file changed, 1 deletion(-)
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 88954a1c0017..e12ac544aa9d 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -22415,7 +22415,6 @@ L:	linux-fbdev@vger.kernel.org
->   S:	Maintained
->   F:	drivers/video/fbdev/via/
->   F:	include/linux/via-core.h
-> -F:	include/linux/via-gpio.h
->   F:	include/linux/via_i2c.h
->
->   VIA VELOCITY NETWORK DRIVER
+I checked that there are no callers of fb_is_primary_device()
+in built-in code when CONFIG_FB is =m, so adding the MODULE_LICENSE()
+and MODULE_DESCRIPTION() tags to the file is the correct fix.
 
+    Arnd

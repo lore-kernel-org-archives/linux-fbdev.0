@@ -2,149 +2,140 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C9BAEB64D7
-	for <linux-fbdev@archiver.kernel.org>; Fri, 23 Jun 2023 11:32:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EB98C001B3
+	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Jun 2023 01:55:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230117AbjFWLcp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 23 Jun 2023 07:32:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34132 "EHLO
+        id S232112AbjFXBze (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 23 Jun 2023 21:55:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36284 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230081AbjFWLco (ORCPT
+        with ESMTP id S232108AbjFXBzd (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 23 Jun 2023 07:32:44 -0400
-Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C764A295A
-        for <linux-fbdev@vger.kernel.org>; Fri, 23 Jun 2023 04:32:16 -0700 (PDT)
-Received: by mail-wr1-x433.google.com with SMTP id ffacd0b85a97d-31121494630so625685f8f.3
-        for <linux-fbdev@vger.kernel.org>; Fri, 23 Jun 2023 04:32:16 -0700 (PDT)
+        Fri, 23 Jun 2023 21:55:33 -0400
+Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9BBDB273E;
+        Fri, 23 Jun 2023 18:55:32 -0700 (PDT)
+Received: by mail-pl1-x629.google.com with SMTP id d9443c01a7336-1b52bf6e669so9913995ad.2;
+        Fri, 23 Jun 2023 18:55:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1687519930; x=1690111930;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=P9ZwMVs40czKD5XDSrs3iEN9LA7uWnLI8CR5BnKA0UY=;
-        b=CBjeN7Yvl5QDbituklmqZYeodwleXYQass+yos6URLcHssixFhCMZxvF+jOiJBronY
-         TUc+FzMyHVmqqqWiV9V+k5l6twTk122i3RyDlVkNHI3MWhcxB6hJgbF81mldq2SB0/o4
-         +TSgcFT7VMD+sL+b8QR5RByGb5dEfhRF0t4C3w3BJBiJ2+UdO5VsrRvXs3LNp6ofdMjA
-         kDgPzaJc8xIdR8XyFaJuykoj1vS04qnfS239pyKpQrtH4itrndfzksqWEYdq6rF8AQq/
-         PhsCgdhin9pB5O5vUA8m9f+mNTumHP8dApeX+y6jtCT4yI/ogr8Conin9X3SJ2MG2PpU
-         0u9A==
+        d=gmail.com; s=20221208; t=1687571732; x=1690163732;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=QARueVM5NgEI8ly6kngoX66nkjJ1HIAQ25yUVJM/M7k=;
+        b=jnZC2ybL2QP1QYE4yr+wvqkrseWiA9e6NoqP59ZFdonp0a0kyhkp+nxwBRo6v1Y6Z/
+         YBydA7V4cijiWmqQJyW4qnDfnVFc68PWFrCyQW3WfyV83ZcXiNsnDb36P/IPvxrgawFQ
+         PdsKZv5Qeij8R+FWyRTJSBaFp39sDmm1TEDZXejL81ABXEvWRWyW8842SfLapBaR16sF
+         vD+ELtc/pHAw+pFteF4AqHPumHwOHQ8Xukac1UTuqCAW8wrP8Mwv7RW0ehQhkTSuQINb
+         3rHDLxwqMxX1Ty8DNYaLL6kO4Y4zAIst7+KWnQ3JQ6oIvuvnGT2NsAhP5/RdOvdpuSiy
+         65Eg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687519930; x=1690111930;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=P9ZwMVs40czKD5XDSrs3iEN9LA7uWnLI8CR5BnKA0UY=;
-        b=JpomLFMD8ikVkQN8WByS/JQwIU0SM9NsFqnNf60+ecYmSlWDdtipnRl/qwZyPK1Fky
-         1fxT8zWdUlbFdn+hrYAFquGUsEkmgnrzIqIXtiEPbjJhbgbq0w4Ntw290x/KcidFGreS
-         GMFEYxLWQpg+KSBspDM0L53R02k0lXEG6C/4sHm/MfqkMSk1Uh1DndArKS/GB75fNV6V
-         cEmWZZ5gn6LyLJonYbxEM6rO52/k1AO+Ai9j7BAEH0xFP8vjNRc82UVF5ybQ8DhWLgqC
-         F4ovsWVBiHxX7XN5H53Wp/SY9ciL5YJnQCaZHnVwinBhuDbxwsgi358C3VTIpx+e56/c
-         Dzhw==
-X-Gm-Message-State: AC+VfDzx2/joA0Rn8B21aY8PbgWrG9fz1zpmfJxZMokrspmtUm61u+t6
-        k+gz5sS0g3j/vX++nfXPrjjuzA==
-X-Google-Smtp-Source: ACHHUZ4yGE7Jj/528UNR5dVYTd1jl6cieW71vsAHwRVCrwh0+5oIyPiflT16AwEbtFUCmIfx+HhwlQ==
-X-Received: by 2002:a5d:5751:0:b0:30f:c943:f925 with SMTP id q17-20020a5d5751000000b0030fc943f925mr16966957wrw.49.1687519929755;
-        Fri, 23 Jun 2023 04:32:09 -0700 (PDT)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id x7-20020a5d54c7000000b0031270cf1904sm9365570wrv.59.2023.06.23.04.32.08
+        d=1e100.net; s=20221208; t=1687571732; x=1690163732;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=QARueVM5NgEI8ly6kngoX66nkjJ1HIAQ25yUVJM/M7k=;
+        b=SGFDTHtNBzrFI1rAqzLPj4AxcZnjGEWr9Ly5TOrMTfIk6Mz/+kLUHQA6nuIIYo1hGc
+         JY/e5CFVlKngxo459jOPqzho64957EUGAJeXfLGEem8A4DAVvhnImpy84HYkElvJ0huQ
+         KyB7qSVzf/oHrCLlIhh/tSXsC6WlLdR2QBrxiH7rQsZTuJvdMR1MVjZZDuWj4M8buYgR
+         IBLmLwRynO0uc4xA4hgiJkqc+CKjuezuZR5MpVtHjGRy3Flu+rHajWrAc7iFmKwy3xME
+         L0fUaJr5fvUK9BsSUCVC3BdkUETI8ujVfWwK6Vc3QX6UT9NMSewr9JO5GyJKquIyIIFe
+         QRjQ==
+X-Gm-Message-State: AC+VfDw2bUm5UUsTZ4uih77FefgKRjy/7u3t3DJ0cjJd5t3W8+Ikv42a
+        Bb9IA88yMAhCIwqt8DrYgfOPC3+2QiM=
+X-Google-Smtp-Source: ACHHUZ7EKMVxU8TWRgRU9+XwK7LYVXWH3v+gEDo5Epfh8lUR0ifndnY3uj+0AVLI0zG/i3TrUbosxA==
+X-Received: by 2002:a17:902:d50c:b0:1b0:4a37:9ccc with SMTP id b12-20020a170902d50c00b001b04a379cccmr736136plg.62.1687571731937;
+        Fri, 23 Jun 2023 18:55:31 -0700 (PDT)
+Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+        by smtp.gmail.com with ESMTPSA id jn16-20020a170903051000b001b53472353csm172067plb.211.2023.06.23.18.55.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 23 Jun 2023 04:32:09 -0700 (PDT)
-Date:   Fri, 23 Jun 2023 12:32:07 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Alexandru Ardelean <alex@shruggie.ro>
-Cc:     Rob Herring <robh@kernel.org>, dri-devel@lists.freedesktop.org,
-        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        lee@kernel.org, jingoohan1@gmail.com, pavel@ucw.cz,
-        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
-        deller@gmx.de, Yannick Fertre <yannick.fertre@foss.st.com>
-Subject: Re: [PATCH v2 1/2] dt-bindings: backlight: document new property
- default-brightness-level
-Message-ID: <20230623113207.GB4426@aspen.lan>
-References: <20230621215457.11297-1-alex@shruggie.ro>
- <20230622021303.GA68330-robh@kernel.org>
- <CAH3L5Qp3q=K5w+LbccZBJqvkz98WgFLqg__y7Be_=-2GsWQs+Q@mail.gmail.com>
+        Fri, 23 Jun 2023 18:55:31 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date:   Fri, 23 Jun 2023 18:55:29 -0700
+From:   Guenter Roeck <linux@roeck-us.net>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     arnd@arndb.de, daniel.vetter@ffwll.ch, deller@gmx.de,
+        javierm@redhat.com, gregkh@linuxfoundation.org,
+        linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
+        linux-sh@vger.kernel.org, x86@kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-mips@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+        loongarch@lists.linux.dev, sparclinux@vger.kernel.org,
+        linux-snps-arc@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+        "David S. Miller" <davem@davemloft.net>,
+        linux-arm-kernel@lists.infradead.org
+Subject: Re: [v3,17/19] arch/sparc: Implement fb_is_primary_device() in
+ source file
+Message-ID: <c525adc9-6623-4660-8718-e0c9311563b8@roeck-us.net>
+References: <20230417125651.25126-18-tzimmermann@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAH3L5Qp3q=K5w+LbccZBJqvkz98WgFLqg__y7Be_=-2GsWQs+Q@mail.gmail.com>
+In-Reply-To: <20230417125651.25126-18-tzimmermann@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jun 23, 2023 at 10:19:57AM +0300, Alexandru Ardelean wrote:
-> On Thu, Jun 22, 2023 at 5:13 AM Rob Herring <robh@kernel.org> wrote:
-> > > +++ b/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
-> > >    default-on:
-> > > -    description: enable the backlight at boot.
-> > > +    description:
-> > > +      The default power state of the backlight at boot.
-> > >      type: boolean
-> > >
-> > > +  default-brightness-level:
-> > > +    description:
-> > > +      The default brightness level on device init. The value can be 0 or 1.
-> > > +      If omitted, the value is 1. In the context of the "gpio-backlight" driver
-> > > +      the effect of this setting will be that the backlight is on/off.
-> > > +      The difference between this setting and "default-on" is that this handles
-> > > +      brightness, while "default-on" handles the power setting of the device.
-> >
-> > What power setting? You only have 1 GPIO to control here which is 2
-> > states.
+Hi,
 
-There are at least three states: On/Off/HiZ .
+On Mon, Apr 17, 2023 at 02:56:49PM +0200, Thomas Zimmermann wrote:
+> Other architectures implment fb_is_primary_device() in a source
+> file. Do the same on sparc. No functional changes, but allows to
+> remove several include statement from <asm/fb.h>.
+> 
+> v2:
+> 	* don't include <asm/prom.h> in header file
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: "David S. Miller" <davem@davemloft.net>
 
-Currently the DT description isn't acually rich enough to allow drivers
-to safely use the HiZ state so that is not why this change is potentially
-useful today (but does illustrate why it is not "wrong" to put it on the
-h/ware description).
+This patch results (or appears to result) in the following build error
+when trying to build sparc64:allmodconfig.
 
+Error log:
+<stdin>:1519:2: warning: #warning syscall clone3 not implemented [-Wcpp]
+WARNING: modpost: drivers/cpufreq/sparc-us2e-cpufreq: section mismatch in reference: cpufreq_us2e_driver+0x20 (section: .data) -> us2e_freq_cpu_init (section: .init.text)
+WARNING: modpost: drivers/cpufreq/sparc-us3-cpufreq: section mismatch in reference: cpufreq_us3_driver+0x20 (section: .data) -> us3_freq_cpu_init (section: .init.text)
+ERROR: modpost: missing MODULE_LICENSE() in arch/sparc/video/fbdev.o
+ERROR: modpost: "__xchg_called_with_bad_pointer" [lib/atomic64_test.ko] undefined!
 
-> > I fail to see why you need 6 possible states with all the
-> > combinations of 2 properties.
->
-> So, the "default-on" bool gets converted to backlight power settings,
-> which eventually gets converted back to GPIO values (at some point).
-> Which sounds quirky (when saying/writing it).
+Bisect log attached. Note that I suspect that there are several problems,
+but that is difficult to determine since this patch can not easily
+be reverted.
 
-Modern DT practice is to for the display to link to backlight. This
-gives display control over power state (so backlight automatically
-follows the display power state). On such systems the backlight will
-be turned "on" when the display hardware comes up (regardless of whether
-or not default-on is set).
+Guenter
 
-Thus this control covers the case where we have a display that is
-readable when the GPIO is off (e.g. transflexive LCD or epaper).
-A display that is readable with the GPIO off means the default
-brightness brightness at boot can meaningfully be zero. In this
-case the backlight is nominally on but the GPIO is off.
-
-In short, this becomes part of the hardware description, rather than
-merely being a driver feature, due to the effect of linking display
-to backlight in the DT.
-
-Note also that most backlights do expose on/off via DT for the same
-reasons (when the off and zero states both result in the backlight
-output pin doing physically the same thing).
-
-
-> But, yeah.
-> That's one thing that also made me a bit undecided to send this.
-> On the one hand I like the uniformity it brings.
-> On the other hand, because there is the legacy behavior (the
-> "default-on" property, and the fact that we can use the GPIO DT
-> settings to control this) just explodes complexity/quirks.
->
-> We can probably just drop this.
-> I'll also admit that my doc-writing skills aren't too great.
-
-It may be potentially useful for people building kit with sunlight
-readable displays and trivial backlights as a backup in the dark.
-
-Of course if the pin the backlight is connected to is PWM capable
-then the PWM backlight is probably a better bet ;-) .
-
-
-Daniel.
+---
+# bad: [8d2be868b42c08290509c60515865f4de24ea704] Add linux-next specific files for 20230623
+# good: [45a3e24f65e90a047bef86f927ebdc4c710edaa1] Linux 6.4-rc7
+git bisect start 'HEAD' 'v6.4-rc7'
+# good: [a5838c78db6a3a02e8d221e588c948f792e7f256] Merge branch 'for-next' of git://git.kernel.org/pub/scm/linux/kernel/git/wireless/wireless-next.git
+git bisect good a5838c78db6a3a02e8d221e588c948f792e7f256
+# bad: [cca41cc0b5485a0ec20707316c1a00082c01a2af] Merge branch 'for-next' of git://git.kernel.dk/linux-block.git
+git bisect bad cca41cc0b5485a0ec20707316c1a00082c01a2af
+# bad: [901bdf5ea1a836400ee69aa32b04e9c209271ec7] Merge tag 'amd-drm-next-6.5-2023-06-09' of https://gitlab.freedesktop.org/agd5f/linux into drm-next
+git bisect bad 901bdf5ea1a836400ee69aa32b04e9c209271ec7
+# good: [c2d2588c702364ff53916ddd97e2b26fd4f4a317] drm/amdkfd: add send exception operation
+git bisect good c2d2588c702364ff53916ddd97e2b26fd4f4a317
+# bad: [1b842f73edbb1f8513ef4a89389176c628dc014a] drm/i915/guc: Remove some obsolete definitions
+git bisect bad 1b842f73edbb1f8513ef4a89389176c628dc014a
+# bad: [b8887e796e06b1de4db899f49d531d220f94f393] Merge tag 'drm-misc-next-2023-05-24' of git://anongit.freedesktop.org/drm/drm-misc into drm-next
+git bisect bad b8887e796e06b1de4db899f49d531d220f94f393
+# bad: [bfdede3a58ea970333d77a05144a7bcec13cf515] drm/rockchip: cdn-dp: call drm_connector_update_edid_property() unconditionally
+git bisect bad bfdede3a58ea970333d77a05144a7bcec13cf515
+# good: [b50f6d465ac1fb37cab7bfb39ac6c9fb9d8e3716] arch/powerpc: Implement <asm/fb.h> with generic helpers
+git bisect good b50f6d465ac1fb37cab7bfb39ac6c9fb9d8e3716
+# bad: [322d716a3e8a74fb75cd0f657647be4df253fd2f] drm/vkms: isolate pixel conversion functionality
+git bisect bad 322d716a3e8a74fb75cd0f657647be4df253fd2f
+# bad: [55b24786b74863b8f10e4d262e642749911cb3bb] drm/display: Add missing OLED Vesa brightnesses definitions
+git bisect bad 55b24786b74863b8f10e4d262e642749911cb3bb
+# bad: [1c9da7db8899fa0e891997118d75b46d38102497] drm/armada: Include <linux/of.h>
+git bisect bad 1c9da7db8899fa0e891997118d75b46d38102497
+# bad: [db76f19a607d6cf4a9d5868d05675c355e99809c] arch/sparc: Implement <asm/fb.h> with generic helpers
+git bisect bad db76f19a607d6cf4a9d5868d05675c355e99809c
+# bad: [4eec0b3048fcd74b504c2a6828a07f133a8ab508] arch/sparc: Implement fb_is_primary_device() in source file
+git bisect bad 4eec0b3048fcd74b504c2a6828a07f133a8ab508
+# good: [b6cf29637be638a6846d2d297d80cf7c6fb74faf] arch/sh: Implement <asm/fb.h> with generic helpers
+git bisect good b6cf29637be638a6846d2d297d80cf7c6fb74faf
+# first bad commit: [4eec0b3048fcd74b504c2a6828a07f133a8ab508] arch/sparc: Implement fb_is_primary_device() in source file

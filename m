@@ -2,135 +2,96 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1262DEB64DA
-	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Jun 2023 06:56:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41739EB64DC
+	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Jun 2023 12:29:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229704AbjFZG4n (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 26 Jun 2023 02:56:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51754 "EHLO
+        id S230519AbjFZM3D (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 26 Jun 2023 08:29:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59776 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229647AbjFZG4m (ORCPT
+        with ESMTP id S231152AbjFZM2s (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 26 Jun 2023 02:56:42 -0400
-Received: from mail-pl1-f179.google.com (mail-pl1-f179.google.com [209.85.214.179])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 173B9AC;
-        Sun, 25 Jun 2023 23:56:42 -0700 (PDT)
-Received: by mail-pl1-f179.google.com with SMTP id d9443c01a7336-1b7fb1a82c4so3799195ad.1;
-        Sun, 25 Jun 2023 23:56:42 -0700 (PDT)
+        Mon, 26 Jun 2023 08:28:48 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C90CF2950
+        for <linux-fbdev@vger.kernel.org>; Mon, 26 Jun 2023 05:27:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1687782433;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=Q7A4QtIPQ46OJKI9lflLzm3DTzPmnZrWIQG2/OeQ3hc=;
+        b=ZOlgo35hKGBCoOJze6GQ03Sgcxnp+jGHJbd5I9qDAsLaqxfpy6bdNRK3pxW0NNQxywDccT
+        l7flhFZsLdQunVs1C23F7OtKG05J/6S71Kbbw6TWw/pBDndhwWOCh/9m8G2Lca3ZY9G+0P
+        EzuNUqUQyxQUU41/uc+0k0RvBmu8FCU=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-61--JbMxioTMOOiHE9a_8ly5w-1; Mon, 26 Jun 2023 08:27:12 -0400
+X-MC-Unique: -JbMxioTMOOiHE9a_8ly5w-1
+Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-30932d15a30so2456540f8f.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 26 Jun 2023 05:27:12 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687762601; x=1690354601;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=u58j1CoFhNAAP0kPknc/GhPhE9N5OmJCD1ZWCCtRRgc=;
-        b=WDPKuhXalnGPckp2TpIKynsO8ZnokkfdhiarQXI1U9VrqORX/RqI+YQ6iOzudxuYfh
-         4q6XXJOoyqqR6QwbktPcLn3j/Hia6cNtm2Nrhm3yJiWc7JcKmjD3tVjEuADNSmK2GgDV
-         xk8ovnwV1ONicO1yc5JYu90NJCKD2g0I+aPJlJcB+YR5HHSFgftpBca8XhiVusEZTmu+
-         +qlUGGQiGJiMT1OVUk9z8yv0fpOv85eDrKiCyXaOhKgjcvScYC6P8FrVEMhdjE7n32Sn
-         iHlKwHWwvll89VW7GKPNxJvK15XueSQ8E1WR4TpisHG4FV0/OHjFbqUI8/raDxp23ahg
-         j18A==
-X-Gm-Message-State: AC+VfDzH7/LQdst87G9Hu9Qbm2z58jPxCzQv6It28ppNG805JMr6LwXE
-        0lNQtVHRiUvsINC/V/q86Hk=
-X-Google-Smtp-Source: ACHHUZ6OtbsuuY2aXoeHYGi4XSA3mdaoGOU6p/4pXML9TF8F1ADk58bPj18ptJOfaGu5YjoBFEMRig==
-X-Received: by 2002:a17:903:1250:b0:1b5:3c7f:1b3b with SMTP id u16-20020a170903125000b001b53c7f1b3bmr5150508plh.35.1687762601317;
-        Sun, 25 Jun 2023 23:56:41 -0700 (PDT)
-Received: from localhost (fpd11144dd.ap.nuro.jp. [209.17.68.221])
-        by smtp.gmail.com with ESMTPSA id jg3-20020a17090326c300b001a2104d706fsm2559571plb.225.2023.06.25.23.56.40
+        d=1e100.net; s=20221208; t=1687782431; x=1690374431;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Q7A4QtIPQ46OJKI9lflLzm3DTzPmnZrWIQG2/OeQ3hc=;
+        b=P9yshxH+md/HnYeRmVKpZus8QqR0yPhNYvdJN6F4k9Y2US6GqHGnofpv2elOyPqp7r
+         A8lTCzaw14yciDKjYXv3goJQzEqRTlzbyNnJTfUrXaqJXGPGZfAQo84VgvjSXUWIU5Sq
+         3p6gqYcSkOQg3IDmlr0kqyOt/6sipYn/B5Hp++385MrFtj0koINI00WUVMDuDDUPAECf
+         xOQzjj+Nhj9/gVeDdtwm5yJsn2cGMNynGKQTZriQmslxFctbXw9M4faWmpL0M07xnPzU
+         JdDZeoq9JhNZtA3BmE74WYbWNOXsYSA5WKNhHEjDSLDpTEI6DIpk3mZw5h6iZ7sf1JBG
+         wFbA==
+X-Gm-Message-State: AC+VfDxjN87JtcM+niYoJZPkuMIQgSblxZjZxMuzMiswjsnfW3ItNbdL
+        M1EV5A59WnCCzH4sxgdAYZSt0w9LXp4KQx3masOk+iDYEqDWz8NhVk4r5CSpMHacgcf7ZcWC55Y
+        toe4jzxjpo4M7WBXxQ0g2q+U=
+X-Received: by 2002:adf:e98b:0:b0:30f:befc:d864 with SMTP id h11-20020adfe98b000000b0030fbefcd864mr25143864wrm.62.1687782431247;
+        Mon, 26 Jun 2023 05:27:11 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ5s+xo+3GocfRAN2ddT936OL6TbSjlftKvOe/WQg4sXaYYvHxhA/vC/T+Q/4yNgIvb7WBFVgw==
+X-Received: by 2002:adf:e98b:0:b0:30f:befc:d864 with SMTP id h11-20020adfe98b000000b0030fbefcd864mr25143851wrm.62.1687782430944;
+        Mon, 26 Jun 2023 05:27:10 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id s11-20020a5d69cb000000b00313f07ccca4sm3108010wrw.117.2023.06.26.05.27.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 25 Jun 2023 23:56:40 -0700 (PDT)
-Date:   Mon, 26 Jun 2023 15:56:39 +0900
-From:   Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>
-To:     Randy Dunlap <rdunlap@infradead.org>
-Cc:     linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
-        Russell King <linux@armlinux.org.uk>,
-        Jens Axboe <axboe@kernel.dk>,
-        Vladimir Oltean <olteanv@gmail.com>,
-        Steffen Klassert <steffen.klassert@secunet.com>,
-        Daniel Jordan <daniel.m.jordan@oracle.com>,
-        Akinobu Mita <akinobu.mita@gmail.com>,
-        Helge Deller <deller@gmx.de>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Henrik Rydberg <rydberg@bitmath.org>,
-        Karsten Keil <isdn@linux-pingi.de>,
-        Jiri Kosina <jikos@kernel.org>,
-        Miroslav Benes <mbenes@suse.cz>,
-        Petr Mladek <pmladek@suse.com>,
-        Josh Poimboeuf <jpoimboe@kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Ingo Molnar <mingo@redhat.com>, Will Deacon <will@kernel.org>,
-        =?utf-8?B?SsOpcsO0bWU=?= Glisse <jglisse@redhat.com>,
-        Naoya Horiguchi <naoya.horiguchi@nec.com>,
-        Miaohe Lin <linmiaohe@huawei.com>,
-        Jonas Bonn <jonas@southpole.se>,
-        Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
-        Stafford Horne <shorne@gmail.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Marc Zyngier <maz@kernel.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Heiko Carstens <hca@linux.ibm.com>,
-        Vasily Gorbik <gor@linux.ibm.com>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        David Howells <dhowells@redhat.com>,
-        Jarkko Sakkinen <jarkko@kernel.org>,
-        Paul Moore <paul@paul-moore.com>,
-        James Morris <jmorris@namei.org>,
-        "Serge E. Hallyn" <serge@hallyn.com>,
-        Daniel Bristot de Oliveira <bristot@kernel.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Masami Hiramatsu <mhiramat@kernel.org>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Evgeniy Polyakov <zbr@ioremap.net>,
-        Fenghua Yu <fenghua.yu@intel.com>,
-        Reinette Chatre <reinette.chatre@intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Borislav Petkov <bp@alien8.de>,
-        Chris Zankel <chris@zankel.net>,
-        Max Filippov <jcmvbkbc@gmail.com>, coresight@lists.linaro.org,
-        dri-devel@lists.freedesktop.org, keyrings@vger.kernel.org,
-        linux-block@vger.kernel.org, linux-crypto@vger.kernel.org,
-        linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linux-sgx@vger.kernel.org, linux-trace-devel@vger.kernel.org,
-        linux-trace-kernel@vger.kernel.org, live-patching@vger.kernel.org,
-        linux-security-module@vger.kernel.org, linux-usb@vger.kernel.org,
-        netdev@vger.kernel.org, linux-mm@kvack.org,
-        openrisc@lists.librecores.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-xtensa@linux-xtensa.org, linuxppc-dev@lists.ozlabs.org,
-        x86@kernel.org
-Subject: Re: [PATCH 00/24 v2] Documentation: correct lots of spelling errors
- (series 1)
-Message-ID: <20230626065639.GA3403711@rocinante>
-References: <20230209071400.31476-1-rdunlap@infradead.org>
+        Mon, 26 Jun 2023 05:27:10 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
+        sam@ravnborg.org, deller@gmx.de, geert+renesas@glider.be,
+        lee@kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com,
+        dan.carpenter@linaro.org, michael.j.ruhl@intel.com
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-sh@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH v3 27/38] fbdev/sh7760fb: Alloc DMA memory from hardware
+ device
+In-Reply-To: <20230613110953.24176-28-tzimmermann@suse.de>
+References: <20230613110953.24176-1-tzimmermann@suse.de>
+ <20230613110953.24176-28-tzimmermann@suse.de>
+Date:   Mon, 26 Jun 2023 14:27:09 +0200
+Message-ID: <87sfaeh0iq.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230209071400.31476-1-rdunlap@infradead.org>
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello,
+Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-> Correct many spelling errors in Documentation/ as reported by codespell.
-> 
-> Maintainers of specific kernel subsystems are only Cc-ed on their
-> respective patches, not the entire series.
-> 
-> These patches are based on linux-next-20230209.
-> 
-[...]
->  [PATCH 13/24] Documentation: PCI: correct spelling
-[...]
+> Pass the hardware device to the DMA helpers dma_alloc_coherent() and
+> dma_free_coherent(). The fbdev device that is currently being used is
+> a software device and does not provide DMA memory. Also update the
+> related dev_*() output statements similarly.
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
 
-Applied to misc, thank you!
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
-[1/1] Documentation: PCI: correct spelling
-      https://git.kernel.org/pci/pci/c/b58d6d89ae02
+-- 
+Best regards,
 
-	Krzysztof
+Javier Martinez Canillas
+Core Platforms
+Red Hat
+

@@ -2,106 +2,135 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 415F6EB64DA
-	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Jun 2023 19:56:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1262DEB64DA
+	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Jun 2023 06:56:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229689AbjFXTz7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 24 Jun 2023 15:55:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59178 "EHLO
+        id S229704AbjFZG4n (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 26 Jun 2023 02:56:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51754 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229641AbjFXTz6 (ORCPT
+        with ESMTP id S229647AbjFZG4m (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 24 Jun 2023 15:55:58 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB6471BDF;
-        Sat, 24 Jun 2023 12:55:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1687636550; x=1688241350; i=deller@gmx.de;
- bh=/Jy/sFDkn/FMoUAdBvQLhq+kBJ8hJfRSlwh0/b8ionU=;
- h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=I9UAL9zv3+1qubpUKzY1NNBvcvwFyrZEd0yOy0vKPLLcdBMYwYLdKWTNbMnVIFZ47/F2ydi
- 5ruFV0HsIaQs87F6dLyTtdNo4P21eBIQeHVwFxFGBo1FYxktoFA8hHdA1tWKrd7awh9RNFvfo
- Sdrm42q2LUfB/qa3Y6+GJeywMU0hsgs+SJlF/jNq+xmoffTCkz6FueLt5qoILWKrno1FbHGtZ
- ZQcCt90OVXPEyEDtNvfmOOkY/hXBq9wjd2CQAzTqIOS3vOHlILEhkxzLK17cZM10i//t8RWe3
- 3s54g/mS9VSoCS6y8JcZ/dlCC6RQd4Z8uAWtjvpYgvNbKJSxKOLw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.156.152]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1N8GMk-1q04V40uXI-014BNp; Sat, 24
- Jun 2023 21:55:50 +0200
-Message-ID: <bd436365-300c-a73c-7452-d874d7a279a6@gmx.de>
-Date:   Sat, 24 Jun 2023 21:55:49 +0200
+        Mon, 26 Jun 2023 02:56:42 -0400
+Received: from mail-pl1-f179.google.com (mail-pl1-f179.google.com [209.85.214.179])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 173B9AC;
+        Sun, 25 Jun 2023 23:56:42 -0700 (PDT)
+Received: by mail-pl1-f179.google.com with SMTP id d9443c01a7336-1b7fb1a82c4so3799195ad.1;
+        Sun, 25 Jun 2023 23:56:42 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1687762601; x=1690354601;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=u58j1CoFhNAAP0kPknc/GhPhE9N5OmJCD1ZWCCtRRgc=;
+        b=WDPKuhXalnGPckp2TpIKynsO8ZnokkfdhiarQXI1U9VrqORX/RqI+YQ6iOzudxuYfh
+         4q6XXJOoyqqR6QwbktPcLn3j/Hia6cNtm2Nrhm3yJiWc7JcKmjD3tVjEuADNSmK2GgDV
+         xk8ovnwV1ONicO1yc5JYu90NJCKD2g0I+aPJlJcB+YR5HHSFgftpBca8XhiVusEZTmu+
+         +qlUGGQiGJiMT1OVUk9z8yv0fpOv85eDrKiCyXaOhKgjcvScYC6P8FrVEMhdjE7n32Sn
+         iHlKwHWwvll89VW7GKPNxJvK15XueSQ8E1WR4TpisHG4FV0/OHjFbqUI8/raDxp23ahg
+         j18A==
+X-Gm-Message-State: AC+VfDzH7/LQdst87G9Hu9Qbm2z58jPxCzQv6It28ppNG805JMr6LwXE
+        0lNQtVHRiUvsINC/V/q86Hk=
+X-Google-Smtp-Source: ACHHUZ6OtbsuuY2aXoeHYGi4XSA3mdaoGOU6p/4pXML9TF8F1ADk58bPj18ptJOfaGu5YjoBFEMRig==
+X-Received: by 2002:a17:903:1250:b0:1b5:3c7f:1b3b with SMTP id u16-20020a170903125000b001b53c7f1b3bmr5150508plh.35.1687762601317;
+        Sun, 25 Jun 2023 23:56:41 -0700 (PDT)
+Received: from localhost (fpd11144dd.ap.nuro.jp. [209.17.68.221])
+        by smtp.gmail.com with ESMTPSA id jg3-20020a17090326c300b001a2104d706fsm2559571plb.225.2023.06.25.23.56.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 25 Jun 2023 23:56:40 -0700 (PDT)
+Date:   Mon, 26 Jun 2023 15:56:39 +0900
+From:   Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>
+To:     Randy Dunlap <rdunlap@infradead.org>
+Cc:     linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+        Russell King <linux@armlinux.org.uk>,
+        Jens Axboe <axboe@kernel.dk>,
+        Vladimir Oltean <olteanv@gmail.com>,
+        Steffen Klassert <steffen.klassert@secunet.com>,
+        Daniel Jordan <daniel.m.jordan@oracle.com>,
+        Akinobu Mita <akinobu.mita@gmail.com>,
+        Helge Deller <deller@gmx.de>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Henrik Rydberg <rydberg@bitmath.org>,
+        Karsten Keil <isdn@linux-pingi.de>,
+        Jiri Kosina <jikos@kernel.org>,
+        Miroslav Benes <mbenes@suse.cz>,
+        Petr Mladek <pmladek@suse.com>,
+        Josh Poimboeuf <jpoimboe@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Ingo Molnar <mingo@redhat.com>, Will Deacon <will@kernel.org>,
+        =?utf-8?B?SsOpcsO0bWU=?= Glisse <jglisse@redhat.com>,
+        Naoya Horiguchi <naoya.horiguchi@nec.com>,
+        Miaohe Lin <linmiaohe@huawei.com>,
+        Jonas Bonn <jonas@southpole.se>,
+        Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+        Stafford Horne <shorne@gmail.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        Marc Zyngier <maz@kernel.org>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Heiko Carstens <hca@linux.ibm.com>,
+        Vasily Gorbik <gor@linux.ibm.com>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        David Howells <dhowells@redhat.com>,
+        Jarkko Sakkinen <jarkko@kernel.org>,
+        Paul Moore <paul@paul-moore.com>,
+        James Morris <jmorris@namei.org>,
+        "Serge E. Hallyn" <serge@hallyn.com>,
+        Daniel Bristot de Oliveira <bristot@kernel.org>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Masami Hiramatsu <mhiramat@kernel.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Suzuki K Poulose <suzuki.poulose@arm.com>,
+        Evgeniy Polyakov <zbr@ioremap.net>,
+        Fenghua Yu <fenghua.yu@intel.com>,
+        Reinette Chatre <reinette.chatre@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Borislav Petkov <bp@alien8.de>,
+        Chris Zankel <chris@zankel.net>,
+        Max Filippov <jcmvbkbc@gmail.com>, coresight@lists.linaro.org,
+        dri-devel@lists.freedesktop.org, keyrings@vger.kernel.org,
+        linux-block@vger.kernel.org, linux-crypto@vger.kernel.org,
+        linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-input@vger.kernel.org, linux-pci@vger.kernel.org,
+        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
+        linux-sgx@vger.kernel.org, linux-trace-devel@vger.kernel.org,
+        linux-trace-kernel@vger.kernel.org, live-patching@vger.kernel.org,
+        linux-security-module@vger.kernel.org, linux-usb@vger.kernel.org,
+        netdev@vger.kernel.org, linux-mm@kvack.org,
+        openrisc@lists.librecores.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-xtensa@linux-xtensa.org, linuxppc-dev@lists.ozlabs.org,
+        x86@kernel.org
+Subject: Re: [PATCH 00/24 v2] Documentation: correct lots of spelling errors
+ (series 1)
+Message-ID: <20230626065639.GA3403711@rocinante>
+References: <20230209071400.31476-1-rdunlap@infradead.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH] video: fbdev: fix potential OOB read in fast_imageblit()
-Content-Language: en-US
-To:     Zhang Shurong <zhang_shurong@foxmail.com>, daniel@ffwll.ch
-Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <tencent_72AB00ACD94346E10E954A42FBC6A3567E05@qq.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <tencent_72AB00ACD94346E10E954A42FBC6A3567E05@qq.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:ZFzdGXzQJyDkDBgdCPz4lCyWJp793REJrqk2POWCMC6OfZvNtrb
- KaH2VD/asP7C/cpMNy9XVHf3n0KkmL7Ql6QC+QkwI4GaXZusKiuv5+wtIF1faV5mr53rsY6
- AdG83D+/eKYLNYWNIF3+FaPl28rcecIBp7tZUSlHYBGkRTOPDmmyUEVOfw6DQDAD6Y0kumU
- HDlQ0EGGdpkPcSBaR/I/Q==
-UI-OutboundReport: notjunk:1;M01:P0:Oi4NTdrW1BI=;1GK4eOF/eeUU09C0pNKKBkhVlhN
- nnDV4LFCNVOrGCb/SEchYVrbYKk0/pfCWkX9tQjZSRP2vV1EVY8PzpXysqW9wCLz48zIXup6c
- 4QphGUMzmvTM0tcVvv6CS1gnD4N/9maOS6s7zbkcMH54NMRwjPtAT3b3VNjqVD3Uwg/HMCFKm
- XPozSYfSYEkIxTTiOry3NN2Twvei4YJLsWgiyk5gRIlmJcPbUquYaQVkK0DYfdyAMVWGLrsy+
- 0Y+g84Xqm9B3G17/zz1sOgczIrep5HgKqpqLx2p/BEBmk7JFgHehmBVnouzo9AQfX5JMJ+8XN
- TRKzIkTpTroTNlAEd3Ma0kCY9BFmtKuUtXli/yeZD9fBQHxDIY5b/CakzoyseFTX5gQrbYJsr
- tlMGLoYKfdOql2UphoFh/lAR4UAdYHWGkyF6hfsc7YRNmPPA50jkVO4PnnLtruGBPZDJgjNry
- bTfweeF2sqinPHnv5f6coDSjKEoML53PdienHKhEul458yhMppTadBffgjnd8bsrKEMaJEHhn
- sXAGbPaWh0PjIoshLI0J+tD9CLkZN+qZqLXv0guMIKIYLTGz/nYDxSllSB32Tbo+c0QZ1Dbvi
- QTaibOWc/R3kpPBdUtPJ3GIhXZs0UrV1eoasgcoX7NYNIMEbap7lZ4z+OzzzGZXZ242rl3+sm
- XRxwFvdUfSGaqwEvXQzuvW5/cb4EStmePSB+arCMdMOMq3hs0LWP0HPJEWXsxmbs0NjhCx/Nn
- dbtK6duYbk1aHKhnDthF7qB+UQ0gHeyz/ouUV6j4eiU2kKch9c2v1KNdxS0HvwjA6kHBsBhm1
- 0wrhXo7Fmlf3nWn0JE4YZpMsVyibZ5EjrKJXmC2ozMCQUxdh8z8jBQ04QX4HgQYLLsL9YKyN0
- UV/ha/QZ3CrzlUhuDfr6XY0w/SxS2lw3bcloszLD+bRrDnU9PUVdwZLb1iP5yqI9hsMnhrgbO
- deW2zw==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230209071400.31476-1-rdunlap@infradead.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 6/24/23 18:16, Zhang Shurong wrote:
-> There is a potential OOB read at fast_imageblit, for
-> "colortab[(*src >> 4)]" can become a negative value due to
-> "const char *s =3D image->data, *src".
-> This change makes sure the index for colortab always positive
-> or zero.
->
-> Similar commit:
-> https://patchwork.kernel.org/patch/11746067
->
-> Potential bug report:
-> https://groups.google.com/g/syzkaller-bugs/c/9ubBXKeKXf4/m/k-QXy4UgAAAJ
->
-> Signed-off-by: Zhang Shurong <zhang_shurong@foxmail.com>
+Hello,
 
-applied.
+> Correct many spelling errors in Documentation/ as reported by codespell.
+> 
+> Maintainers of specific kernel subsystems are only Cc-ed on their
+> respective patches, not the entire series.
+> 
+> These patches are based on linux-next-20230209.
+> 
+[...]
+>  [PATCH 13/24] Documentation: PCI: correct spelling
+[...]
 
-Thanks!
-Helge
+Applied to misc, thank you!
 
-> ---
->   drivers/video/fbdev/core/sysimgblt.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/video/fbdev/core/sysimgblt.c b/drivers/video/fbdev/=
-core/sysimgblt.c
-> index 335e92b813fc..665ef7a0a249 100644
-> --- a/drivers/video/fbdev/core/sysimgblt.c
-> +++ b/drivers/video/fbdev/core/sysimgblt.c
-> @@ -189,7 +189,7 @@ static void fast_imageblit(const struct fb_image *im=
-age, struct fb_info *p,
->   	u32 fgx =3D fgcolor, bgx =3D bgcolor, bpp =3D p->var.bits_per_pixel;
->   	u32 ppw =3D 32/bpp, spitch =3D (image->width + 7)/8;
->   	u32 bit_mask, eorx, shift;
-> -	const char *s =3D image->data, *src;
-> +	const u8 *s =3D image->data, *src;
->   	u32 *dst;
->   	const u32 *tab;
->   	size_t tablen;
+[1/1] Documentation: PCI: correct spelling
+      https://git.kernel.org/pci/pci/c/b58d6d89ae02
 
+	Krzysztof

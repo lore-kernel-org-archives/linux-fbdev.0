@@ -2,101 +2,86 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D922DEB64DC
-	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Jun 2023 14:39:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F710EB64DD
+	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Jun 2023 15:05:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229698AbjFZOjv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 26 Jun 2023 10:39:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51184 "EHLO
+        id S230372AbjFZPFY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 26 Jun 2023 11:05:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34390 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230268AbjFZOjo (ORCPT
+        with ESMTP id S230384AbjFZPFU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 26 Jun 2023 10:39:44 -0400
-Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63A6010C8
-        for <linux-fbdev@vger.kernel.org>; Mon, 26 Jun 2023 07:39:42 -0700 (PDT)
-Received: by mail-wr1-x434.google.com with SMTP id ffacd0b85a97d-313f3a6db22so896483f8f.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 26 Jun 2023 07:39:42 -0700 (PDT)
+        Mon, 26 Jun 2023 11:05:20 -0400
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41E3F10CA
+        for <linux-fbdev@vger.kernel.org>; Mon, 26 Jun 2023 08:05:19 -0700 (PDT)
+Received: by mail-wr1-x432.google.com with SMTP id ffacd0b85a97d-313f04ff978so1150241f8f.3
+        for <linux-fbdev@vger.kernel.org>; Mon, 26 Jun 2023 08:05:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1687790381; x=1690382381;
+        d=linaro.org; s=google; t=1687791917; x=1690383917;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=GbmG/0Wb9nQ6z/PJEyshEPOBYP8Ve8ZuPqHoAlT0PBU=;
-        b=v+xGmGJ0qIKRU0aurzhYHzIhjNpseb32nFxtt0cVXyZgxRKLexvjA1I7WRCD30AJL5
-         Eh+qbIjAP4NQcnlNR1I/NzBsJKqid+podoDPCDocJl+LEfk/pJHXsu1L4EtQQNKsx5dP
-         fef50DtyMYVYCyHso5OggdKwQmH6wr7etq++Nio8hL9QiYjg2gVJtWMqiO7yErYgevzf
-         8IKienQinE4jICssw7dY926yyBUebZc/1seLsWOtDpNlnlmAc6/i5uAzbdv+jtLbsHnA
-         hNiVcwkKf/6G4yupLdqBQJX93vw8ruAa85Bj++UM8ySsTwFkZPPROGk10fcd/nOaXpWw
-         /H4A==
+        bh=348adPXQRKrKNTWGAwb9z5LOcOD3S5LIRa6IrQyqmGc=;
+        b=BpdMkRqMxf6XEjAul5+0XQ4Uqv2kRvyAG7uM//NhkYVZS74eHBo+NlzGx6Km7k8dew
+         blQILAw7fwJy27T2x3DKaUlmEQcDJRSCj8uKQURAmWzo7FGHZNgXP+PTFSBy3ViEwxDK
+         bwUXavKKzBgmLv3XDq49ITl/dbsCckPuHheh1OyxNCa9H1yrYB1OubNaNBFQMYfXVyf9
+         4jZ/Dp+NUWclfn5YkfLFegJDrQ6plDOZ1zLMYwpsVnYWM2AtacotDLe1spyxM2z0yHPk
+         j0ZN67PMABHain93jKjzWnpDNib5oPHQXOXXsIpIXONZ9UFxlFj04vrTDLF/c98FZA07
+         LqIw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687790381; x=1690382381;
+        d=1e100.net; s=20221208; t=1687791917; x=1690383917;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=GbmG/0Wb9nQ6z/PJEyshEPOBYP8Ve8ZuPqHoAlT0PBU=;
-        b=OZhmNzLNPYvwg/XyDmXfopgQW5p42cmKVUSACOxRL0KKtsR7tN0+Q5dBnFc6zZka4N
-         X+ClgWK36+SGDFWd+6W0hZG4R9pqEcNmvTv6lKu9E/TaDVBJ2KTrPBy/gL/Kb7t2+6/n
-         OmWc/uqp8PIYvdiOi2zgAJF7lqzC4hj8CMrzrhyOPSFDq3O9ubGqaQBvrWHtLEAfeQEY
-         QRPCFas068zPhCsWzwBhCkqE2CvR6qjQupzow2gfKfulMySWAj8jo0EjmI8uJXZHb7fQ
-         dBMOrxLloVLs6M9Sjcff55p6syDFkR1ZGGWWMMV5RhVM/2xqEV2ioUFDUiWJz+zrgzRU
-         5spQ==
-X-Gm-Message-State: AC+VfDyPXANiti7lkbxiUENvV9Rm3IhGzDpHbRdxZEG2ASkpCN/zBNKr
-        pZpH5p/5xdHwTgSrZK7Fi/60hA==
-X-Google-Smtp-Source: ACHHUZ5u0xLo84AQuU8IWtL8/XKYwsSCcaLqPaN0OzwE1PROPfhND29UAU7NVe45aBYE+KDJ8dq3Jw==
-X-Received: by 2002:a5d:4250:0:b0:311:170e:8d with SMTP id s16-20020a5d4250000000b00311170e008dmr23526468wrr.26.1687790380687;
-        Mon, 26 Jun 2023 07:39:40 -0700 (PDT)
+        bh=348adPXQRKrKNTWGAwb9z5LOcOD3S5LIRa6IrQyqmGc=;
+        b=d3B0ih+xkDO+W4bJN/d8JBJk+jtH6zdsWP0Udenf4Lg4LqGge8NUWyTNcMYOee/Ek6
+         E9xtXwkasuuZwx2fhOnq4gu50KRq2JxGQbeHCSfCVVjYXUPll+Tc2fvGrbB9RVSMJVgO
+         Sn8dCUer6keESKF0US2noVwgzEewqgwyjM1gonvP2/1iBbvzXwt4fjSOTxqyrhdpadN7
+         Be7f/PPWRhXPLOImJtmvoJFziHke/+WvoD/Xp0UZBAE/FrsWcC5GjP+XKuyWxVDDJMs3
+         4o0fiq7r7zYa39AD+/SKff2F0IiGkSN2UUsqIg1HudwIRetW2vxdKgaafQ8uNix5FL/E
+         wcjg==
+X-Gm-Message-State: AC+VfDwmP9Ns9bRKJy2zU6blqJr89FkrAGvAD1OqOeDAaMC+LogmgVnM
+        Re7yetgRMkNWpWi0OHL+5l92+A==
+X-Google-Smtp-Source: ACHHUZ5VYTqqVMy0dhtZ4hxs5N4mrJgTTvouyQr7HxLT3nJwXi1SuqaAezHLUswOmb65Bowi8io8Mg==
+X-Received: by 2002:a5d:5960:0:b0:30f:c56c:b5b3 with SMTP id e32-20020a5d5960000000b0030fc56cb5b3mr8897292wri.4.1687791917522;
+        Mon, 26 Jun 2023 08:05:17 -0700 (PDT)
 Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id u14-20020adfdb8e000000b003112ab916cdsm7675793wri.73.2023.06.26.07.39.39
+        by smtp.gmail.com with ESMTPSA id e15-20020adfe7cf000000b0030fae360f14sm7644766wrn.68.2023.06.26.08.05.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Jun 2023 07:39:40 -0700 (PDT)
-Date:   Mon, 26 Jun 2023 15:39:38 +0100
+        Mon, 26 Jun 2023 08:05:16 -0700 (PDT)
+Date:   Mon, 26 Jun 2023 16:05:14 +0100
 From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Maximilian Weigand <mweigand2017@gmail.com>
-Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Heiko Stuebner <heiko@sntech.de>,
+To:     Philipp Zabel <p.zabel@pengutronix.de>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>, Lee Jones <lee@kernel.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, linux-pwm@vger.kernel.org,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-rockchip@lists.infradead.org,
-        Maximilian Weigand <mweigand@mweigand.net>
-Subject: Re: [PATCH 1/3] backlight: lm3630a: add support for changing the
- boost frequency
-Message-ID: <20230626143938.GC95170@aspen.lan>
-References: <20230602-lm3630a_boost_frequency-v1-0-076472036d1a@mweigand.net>
- <20230602-lm3630a_boost_frequency-v1-1-076472036d1a@mweigand.net>
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] backlight: pwm_bl: Avoid backlight flicker applying
+ initial PWM state
+Message-ID: <20230626150514.GD95170@aspen.lan>
+References: <20230608-backlight-pwm-avoid-flicker-v1-1-afd380d50174@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230602-lm3630a_boost_frequency-v1-1-076472036d1a@mweigand.net>
+In-Reply-To: <20230608-backlight-pwm-avoid-flicker-v1-1-afd380d50174@pengutronix.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Jun 14, 2023 at 09:08:52PM +0200, Maximilian Weigand wrote:
-> From: Maximilian Weigand <mweigand@mweigand.net>
->
-> The led driver supports changing the switching frequency of the boost
-> converter by two means: the base switching frequency can be changed from
-> 500 kHz to 1 MHz, and a frequency shift can be activated, leading to
-> switching frequencies of 560 kHz or 1.12 Mhz, respectively.
->
-> Add this functionality to the led driver by introducing two dts entries
-> that control the boost frequency (500 kHz by default) and the frequency
-> shift (no shift by default).
->
-> Signed-off-by: Maximilian Weigand <mweigand@mweigand.net>
+On Thu, Jun 08, 2023 at 04:11:14PM +0200, Philipp Zabel wrote:
+> The initial PWM state returned by pwm_init_state() has a duty cycle
+> of 0 ns. To avoid backlight flicker when taking over an enabled
+> display from the bootloader, skip the initial pwm_apply_state()
+> and leave the PWM be until backlight_update_state() will apply the
+> state with the desired brightness.
 
-Driver changes look ok (or at least will be when the DT bindings are
-finalized).
+backlight_update_state() uses pwm_get_state() to update the PWM.
 
-However... I think patches 1 and 2 of this series are in the wrong
-order. See #5 in
-https://docs.kernel.org/devicetree/bindings/submitting-patches.html
-for details.
+Without applying something that came from pwm_init_state() then
+we will never adopt the reference values from pwm->args.
 
 
 Daniel.

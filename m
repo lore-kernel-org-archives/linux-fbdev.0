@@ -2,86 +2,140 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F710EB64DD
-	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Jun 2023 15:05:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E778EB64D9
+	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Jun 2023 06:18:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230372AbjFZPFY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 26 Jun 2023 11:05:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34390 "EHLO
+        id S229647AbjF0GSA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 27 Jun 2023 02:18:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59702 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230384AbjFZPFU (ORCPT
+        with ESMTP id S229495AbjF0GR7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 26 Jun 2023 11:05:20 -0400
-Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41E3F10CA
-        for <linux-fbdev@vger.kernel.org>; Mon, 26 Jun 2023 08:05:19 -0700 (PDT)
-Received: by mail-wr1-x432.google.com with SMTP id ffacd0b85a97d-313f04ff978so1150241f8f.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 26 Jun 2023 08:05:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1687791917; x=1690383917;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=348adPXQRKrKNTWGAwb9z5LOcOD3S5LIRa6IrQyqmGc=;
-        b=BpdMkRqMxf6XEjAul5+0XQ4Uqv2kRvyAG7uM//NhkYVZS74eHBo+NlzGx6Km7k8dew
-         blQILAw7fwJy27T2x3DKaUlmEQcDJRSCj8uKQURAmWzo7FGHZNgXP+PTFSBy3ViEwxDK
-         bwUXavKKzBgmLv3XDq49ITl/dbsCckPuHheh1OyxNCa9H1yrYB1OubNaNBFQMYfXVyf9
-         4jZ/Dp+NUWclfn5YkfLFegJDrQ6plDOZ1zLMYwpsVnYWM2AtacotDLe1spyxM2z0yHPk
-         j0ZN67PMABHain93jKjzWnpDNib5oPHQXOXXsIpIXONZ9UFxlFj04vrTDLF/c98FZA07
-         LqIw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687791917; x=1690383917;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=348adPXQRKrKNTWGAwb9z5LOcOD3S5LIRa6IrQyqmGc=;
-        b=d3B0ih+xkDO+W4bJN/d8JBJk+jtH6zdsWP0Udenf4Lg4LqGge8NUWyTNcMYOee/Ek6
-         E9xtXwkasuuZwx2fhOnq4gu50KRq2JxGQbeHCSfCVVjYXUPll+Tc2fvGrbB9RVSMJVgO
-         Sn8dCUer6keESKF0US2noVwgzEewqgwyjM1gonvP2/1iBbvzXwt4fjSOTxqyrhdpadN7
-         Be7f/PPWRhXPLOImJtmvoJFziHke/+WvoD/Xp0UZBAE/FrsWcC5GjP+XKuyWxVDDJMs3
-         4o0fiq7r7zYa39AD+/SKff2F0IiGkSN2UUsqIg1HudwIRetW2vxdKgaafQ8uNix5FL/E
-         wcjg==
-X-Gm-Message-State: AC+VfDwmP9Ns9bRKJy2zU6blqJr89FkrAGvAD1OqOeDAaMC+LogmgVnM
-        Re7yetgRMkNWpWi0OHL+5l92+A==
-X-Google-Smtp-Source: ACHHUZ5VYTqqVMy0dhtZ4hxs5N4mrJgTTvouyQr7HxLT3nJwXi1SuqaAezHLUswOmb65Bowi8io8Mg==
-X-Received: by 2002:a5d:5960:0:b0:30f:c56c:b5b3 with SMTP id e32-20020a5d5960000000b0030fc56cb5b3mr8897292wri.4.1687791917522;
-        Mon, 26 Jun 2023 08:05:17 -0700 (PDT)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id e15-20020adfe7cf000000b0030fae360f14sm7644766wrn.68.2023.06.26.08.05.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Jun 2023 08:05:16 -0700 (PDT)
-Date:   Mon, 26 Jun 2023 16:05:14 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Philipp Zabel <p.zabel@pengutronix.de>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>, Lee Jones <lee@kernel.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, linux-pwm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] backlight: pwm_bl: Avoid backlight flicker applying
- initial PWM state
-Message-ID: <20230626150514.GD95170@aspen.lan>
-References: <20230608-backlight-pwm-avoid-flicker-v1-1-afd380d50174@pengutronix.de>
+        Tue, 27 Jun 2023 02:17:59 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE68B99;
+        Mon, 26 Jun 2023 23:17:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
+ s=s31663417; t=1687846672; x=1688451472; i=deller@gmx.de;
+ bh=biWKrKStgCQVZ9bbSwx3mVIhNb6laWf8emSgOMQzZ5s=;
+ h=X-UI-Sender-Class:Date:From:To:Subject;
+ b=Adz33hOz0C9Rocc4r6kS7TC64qNTuom5XmlpJUnw3YOc2V2+t2PnKq5XWsv083Y0sRpYqfA
+ tZ62BYKklRNXuipkyAKSMlv1nqBoamk8EiRExx5chhIru3mB2g4pjTQk2kxtcmdgBqUc3q7oq
+ i88H7RIftKsTmUIx0Ax+gTKPfPfTE53NLNt9eicJJHBaGXOyX5oIBtjxfXEEvLh3f6FgfSLLz
+ nSeoaKTwJB2ciEFSMVE5E8ySVOeIznzkwMhEyDLUJFkMHdrasVgK8OdEp7yj9t9uA+FbqIJOd
+ ZTFexuq84oPfL6bkszWq0viaIBBOCWpo6TpaQ0E4RJbGR+v7SXVg==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from ls3530 ([94.134.155.6]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1Mv31W-1pwVCi1ZY0-00r4BQ; Tue, 27
+ Jun 2023 08:17:52 +0200
+Date:   Tue, 27 Jun 2023 08:17:50 +0200
+From:   Helge Deller <deller@gmx.de>
+To:     Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev fixes for v6.5-rc1
+Message-ID: <ZJp/DpaLeYq6s3hB@ls3530>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230608-backlight-pwm-avoid-flicker-v1-1-afd380d50174@pengutronix.de>
+X-Provags-ID: V03:K1:zTp4pv51aTHsupl3rEEfdVUmEV8y05XJW4UGEP7OX89HuzsBbmy
+ c6U9j4ZlZBZ6xf9PCz2lOnqrd6yeR9hXtmZo3Bp6gRAMIWms/FeKJpfLab2vTD4CEXqGRb/
+ wmfoRNtlDecQEXrWHtW/W+isM2p9e40mVbdpxDWs7qiejy6EIDUjXpySVD2NuxBESdLfDd4
+ Pp9czyrG+z8GatWr66Dmw==
+UI-OutboundReport: notjunk:1;M01:P0:k9dm2dWlI+w=;X+V+rc4OQJPNZciMEMo6pehR1oN
+ UtTEiI8CgsXW4213CZmjTsFwAK4Cr+RmnV5xUrJE31pPoZma8P1KmJIrfCnUWu2DRIZunjon3
+ b/e4ZDB7mTWvYnttxJWwnDLzOjoWHfMdkE28oH6fqxTkwNJ3hDlBBBuboMHCrJd9v6e2BnAax
+ GQ+0Fa5Bdj2f5Rj+n+KbbQ6EtIsvDoWUYEDojfmTNGYGWywDlDmzor1vZElBAOe3eft5KLIZJ
+ LdYzuSL5DFI1QhVQaoEuo8kyyVBcxyae1K2RdDgjR4byi+1CzxQQttiHLO2b9fpw805h7g3S4
+ sjzIk7bw7noCnIBKzesvhe/wC9ChHOSbQ3oyGxsKeMimKekJafNLNJ41gy/xfw0Muuw0P9YXk
+ E1WKEi9B+Bdf5IegeVycAD5TNqzt/Ha+qkHtfxSRo6ur/QujAJTxU4W97/FT9JWYdV7M3+pKh
+ L8MquGH614FZrXI6UPaExOLbJQwywDWTeJImxRO8j3WkJ2EhTI3BNfe1VOYQk67omXvymdu5/
+ j19KGHy5ynZuPOEFzm/Ln7+m7faCssbZlgHBPF8Ll3Ze8EYVefyXGB2/7yhnwc0opSpRLK7H7
+ kIssTzjdbNv5GcCuG6jniJThYGfdzQ/2IYM+Dyt936nIVHvrW6CKT37oZaDVXP8VA6qafpktB
+ pepsWWq8WqbO/aEna0SDg2u5+ckRSk/KdcnVepCzWi1NgSCnLy4C/Ay+MIjsjz8SjRbS9eZUC
+ xajiHmhJ1CN9Ub88Z1oP5ocWc4phAWu1FK6+jF4RtAmdZM8/KxqHfQ/o7VcKYmYXpgQFJHzue
+ 1r1fiIBucW+OdlJ8S/V38jjn3RZRlY5mQFaM+mELxJtTLHul11f7Krqg4L7719jVvgtb9s1k3
+ NmJqTx+lYMkRMA4p2shhwyrr1n7Uvvg0gZyfMyOZDWnyRLqYUOQ2JIo1S3m1beZwImjRw39rW
+ sqWblw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Jun 08, 2023 at 04:11:14PM +0200, Philipp Zabel wrote:
-> The initial PWM state returned by pwm_init_state() has a duty cycle
-> of 0 ns. To avoid backlight flicker when taking over an enabled
-> display from the bootloader, skip the initial pwm_apply_state()
-> and leave the PWM be until backlight_update_state() will apply the
-> state with the desired brightness.
+Hi Linus,
 
-backlight_update_state() uses pwm_get_state() to update the PWM.
+please pull some fbdev fixes & cleanups for kernel 6.5-rc1.
+Includes is a fix for a potential out-of-bound memory access in
+fast_imageblit() and the switch of the VIA fbdev driver to use GPIO
+descriptors.
 
-Without applying something that came from pwm_init_state() then
-we will never adopt the reference values from pwm->args.
+Thanks!
+Helge
 
+--------------
 
-Daniel.
+The following changes since commit 9561de3a55bed6bdd44a12820ba81ec416e705a7:
+
+  Linux 6.4-rc5 (2023-06-04 14:04:27 -0400)
+
+are available in the Git repository at:
+
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.5-rc1
+
+for you to fetch changes up to c2d22806aecb24e2de55c30a06e5d6eb297d161d:
+
+  fbdev: fix potential OOB read in fast_imageblit() (2023-06-24 21:55:11 +0200)
+
+----------------------------------------------------------------
+fbdev fixes for 6.5-rc1:
+
+- fix potential OOB read in fast_imageblit()
+- fbdev/media: Use GPIO descriptors for VIA GPIO
+- broadsheetfb & metronomefb: Add MODULE_FIRMWARE macro
+- omapfb: error handling fix in mipid_spi_probe()
+- sh_mobile_lcdcfb, sh7760fb: Typo and warning fixes
+- hitfb: code cleanups
+
+----------------------------------------------------------------
+Christophe JAILLET (2):
+      fbdev: omapfb: lcd_mipid: Fix an error handling path in mipid_spi_probe()
+      video/hdmi: Reorder fields in 'struct hdmi_avi_infoframe'
+
+Geert Uytterhoeven (1):
+      fbdev: sh_mobile_lcdcfb: Fix ARGB32 overlay format typo
+
+Gustavo A. R. Silva (1):
+      fbdev: sh7760fb: Fix -Wimplicit-fallthrough warnings
+
+Juerg Haefliger (2):
+      fbdev: metronomefb: Add MODULE_FIRMWARE macro
+      fbdev: broadsheetfb: Add MODULE_FIRMWARE macro
+
+Linus Walleij (1):
+      fbdev/media: Use GPIO descriptors for VIA GPIO
+
+Lukas Bulwahn (1):
+      MAINTAINERS: adjust entry in VIA UNICHROME(PRO)/CHROME9 FRAMEBUFFER DRIVER
+
+Thomas Zimmermann (3):
+      fbdev: hitfb: Declare hitfb_blank() as static
+      fbdev: hitfb: Fix integer-to-pointer cast
+      fbdev: hitfb: Use NULL for pointers
+
+Zhang Shurong (1):
+      fbdev: fix potential OOB read in fast_imageblit()
+
+ MAINTAINERS                                        |  1 -
+ drivers/media/platform/via/via-camera.c            | 51 +++++++++-------------
+ drivers/video/fbdev/broadsheetfb.c                 |  2 +
+ drivers/video/fbdev/core/sysimgblt.c               |  2 +-
+ drivers/video/fbdev/hitfb.c                        |  8 ++--
+ drivers/video/fbdev/metronomefb.c                  |  2 +
+ drivers/video/fbdev/omap/lcd_mipid.c               |  6 ++-
+ drivers/video/fbdev/sh7760fb.c                     |  2 +
+ drivers/video/fbdev/sh_mobile_lcdcfb.c             |  2 +-
+ drivers/video/fbdev/via/via-core.c                 |  2 +-
+ drivers/video/fbdev/via/via-gpio.c                 | 28 ++++++------
+ .../linux => drivers/video/fbdev/via}/via-gpio.h   |  1 -
+ include/linux/hdmi.h                               |  4 +-
+ 13 files changed, 54 insertions(+), 57 deletions(-)
+ rename {include/linux => drivers/video/fbdev/via}/via-gpio.h (84%)

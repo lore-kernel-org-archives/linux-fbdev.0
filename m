@@ -2,108 +2,64 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CEECEEB64DD
-	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Jun 2023 10:28:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AABEBEB64D7
+	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Jun 2023 13:27:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230499AbjF1K2O (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 28 Jun 2023 06:28:14 -0400
-Received: from mail.xen0n.name ([115.28.160.31]:50250 "EHLO
-        mailbox.box.xen0n.name" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231189AbjF1K0N (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 28 Jun 2023 06:26:13 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=xen0n.name; s=mail;
-        t=1687947969; bh=CywiEZ2ioeoVRwvb3VhckHlwPQWISEuRuyDIMUh/SlE=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=sO40R4CELoyZP15+xzNfqv8fc7MUdkASAJSkqWSLOF+ywVO11MV3l+vbMWMg1dqiL
-         S3XqzYIfgs3lH9JEuQ4NBON04QSxnL2skzqa8NCotSC1yJtWdJ9eUJkPUFbXxZTmd4
-         Zxi4HVbihTOgYh7ZLnJNy6YsG4+r5nIfmYW+cbyA=
-Received: from [100.100.34.13] (unknown [220.248.53.61])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (No client certificate requested)
-        by mailbox.box.xen0n.name (Postfix) with ESMTPSA id 05B73600A6;
-        Wed, 28 Jun 2023 18:26:08 +0800 (CST)
-Message-ID: <dd7bd914-634a-115f-ab5c-80349493b1f6@xen0n.name>
-Date:   Wed, 28 Jun 2023 18:26:08 +0800
+        id S231874AbjF1N1Y (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 28 Jun 2023 09:27:24 -0400
+Received: from viti.kaiser.cx ([85.214.81.225]:45606 "EHLO viti.kaiser.cx"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S232004AbjF1N0t (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 28 Jun 2023 09:26:49 -0400
+Received: from dslb-178-004-201-159.178.004.pools.vodafone-ip.de ([178.4.201.159] helo=martin-debian-2.paytec.ch)
+        by viti.kaiser.cx with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.89)
+        (envelope-from <martin@kaiser.cx>)
+        id 1qEVBz-00031t-9V; Wed, 28 Jun 2023 15:26:43 +0200
+From:   Martin Kaiser <martin@kaiser.cx>
+To:     Helge Deller <deller@gmx.de>
+Cc:     Pengutronix Kernel Team <kernel@pengutronix.de>,
+        linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, Martin Kaiser <martin@kaiser.cx>
+Subject: [PATCH] fbdev: imxfb: warn about invalid left/right margin
+Date:   Wed, 28 Jun 2023 15:24:37 +0200
+Message-Id: <20230628132437.87085-1-martin@kaiser.cx>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.12.0
-Subject: Re: [PATCH v3 06/19] arch/loongarch: Implement <asm/fb.h> with
- generic helpers
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, arnd@arndb.de,
-        daniel.vetter@ffwll.ch, deller@gmx.de, javierm@redhat.com,
-        gregkh@linuxfoundation.org
-Cc:     linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        linux-snps-arc@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
-        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
-        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
-        sparclinux@vger.kernel.org, x86@kernel.org,
-        Huacai Chen <chenhuacai@kernel.org>
-References: <20230417125651.25126-1-tzimmermann@suse.de>
- <20230417125651.25126-7-tzimmermann@suse.de>
-From:   WANG Xuerui <kernel@xen0n.name>
-In-Reply-To: <20230417125651.25126-7-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+Warn about invalid var->left_margin or var->right_margin. Their values
+are read from the device tree.
 
-On 2023/4/17 20:56, Thomas Zimmermann wrote:
-> Replace the architecture's fbdev helpers with the generic
-> ones from <asm-generic/fb.h>. No functional changes.
-> 
-> v2:
-> 	* use default implementation for fb_pgprotect() (Arnd)
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Huacai Chen <chenhuacai@kernel.org>
-> Cc: WANG Xuerui <kernel@xen0n.name>
-> ---
->   arch/loongarch/include/asm/fb.h | 15 +--------------
->   1 file changed, 1 insertion(+), 14 deletions(-)
-> 
-> diff --git a/arch/loongarch/include/asm/fb.h b/arch/loongarch/include/asm/fb.h
-> index 3116bde8772d..ff82f20685c8 100644
-> --- a/arch/loongarch/include/asm/fb.h
-> +++ b/arch/loongarch/include/asm/fb.h
-> @@ -5,19 +5,6 @@
->   #ifndef _ASM_FB_H_
->   #define _ASM_FB_H_
->   
-> -#include <linux/fb.h>
-> -#include <linux/fs.h>
-> -#include <asm/page.h>
-> -
-> -static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
-> -				unsigned long off)
-> -{
-> -	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
-> -}
-> -
-> -static inline int fb_is_primary_device(struct fb_info *info)
-> -{
-> -	return 0;
-> -}
-> +#include <asm-generic/fb.h>
->   
->   #endif /* _ASM_FB_H_ */
+We store var->left_margin-3 and var->right_margin-1 in register
+fields. These fields should be >= 0.
 
-Sorry for the late review. The change is fairly trivial, so:
+Fixes: 7e8549bcee00 ("imxfb: Fix margin settings")
+Signed-off-by: Martin Kaiser <martin@kaiser.cx>
+---
+ drivers/video/fbdev/imxfb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Reviewed-by: WANG Xuerui <git@xen0n.name>
-
-Thanks!
-
+diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+index adf36690c342..5fbcb78a9cae 100644
+--- a/drivers/video/fbdev/imxfb.c
++++ b/drivers/video/fbdev/imxfb.c
+@@ -613,10 +613,10 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
+ 	if (var->hsync_len < 1    || var->hsync_len > 64)
+ 		printk(KERN_ERR "%s: invalid hsync_len %d\n",
+ 			info->fix.id, var->hsync_len);
+-	if (var->left_margin > 255)
++	if (var->left_margin < 3  || var->left_margin > 255)
+ 		printk(KERN_ERR "%s: invalid left_margin %d\n",
+ 			info->fix.id, var->left_margin);
+-	if (var->right_margin > 255)
++	if (var->right_margin < 1 || var->right_margin > 255)
+ 		printk(KERN_ERR "%s: invalid right_margin %d\n",
+ 			info->fix.id, var->right_margin);
+ 	if (var->yres < 1 || var->yres > ymax_mask)
 -- 
-WANG "xen0n" Xuerui
-
-Linux/LoongArch mailing list: https://lore.kernel.org/loongarch/
+2.30.2
 

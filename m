@@ -2,163 +2,70 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3792CC001DB
-	for <linux-fbdev@archiver.kernel.org>; Thu, 29 Jun 2023 17:00:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C71AFEB64DD
+	for <linux-fbdev@archiver.kernel.org>; Thu, 29 Jun 2023 17:34:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232106AbjF2RAX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 29 Jun 2023 13:00:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50350 "EHLO
+        id S232267AbjF2Re4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 29 Jun 2023 13:34:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58554 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229522AbjF2RAW (ORCPT
+        with ESMTP id S232818AbjF2Rem (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 29 Jun 2023 13:00:22 -0400
-Received: from 189.cn (ptr.189.cn [183.61.185.101])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 0E3242D4C;
-        Thu, 29 Jun 2023 10:00:18 -0700 (PDT)
-HMM_SOURCE_IP: 10.64.8.31:48394.1297546617
-HMM_ATTACHE_NUM: 0000
-HMM_SOURCE_TYPE: SMTP
-Received: from clientip-114.242.206.180 (unknown [10.64.8.31])
-        by 189.cn (HERMES) with SMTP id 05A4C10020D;
-        Fri, 30 Jun 2023 01:00:13 +0800 (CST)
-Received: from  ([114.242.206.180])
-        by gateway-151646-dep-75648544bd-xp9j7 with ESMTP id 2713aa1564624f348fd6c097b85f39d9 for helgaas@kernel.org;
-        Fri, 30 Jun 2023 01:00:17 CST
-X-Transaction-ID: 2713aa1564624f348fd6c097b85f39d9
-X-Real-From: 15330273260@189.cn
-X-Receive-IP: 114.242.206.180
-X-MEDUSA-Status: 0
-Sender: 15330273260@189.cn
-Message-ID: <bcfdc77d-a94d-bca1-56e3-5e14e91f6fd9@189.cn>
-Date:   Fri, 30 Jun 2023 01:00:10 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Subject: Re: [PATCH v7 6/8] PCI/VGA: Introduce is_boot_device function
- callback to vga_client_register
-To:     Bjorn Helgaas <helgaas@kernel.org>,
-        Sui Jingfeng <suijingfeng@loongson.cn>
-Cc:     Bjorn Helgaas <bhelgaas@google.com>, linux-fbdev@vger.kernel.org,
-        Cornelia Huck <cohuck@redhat.com>,
-        Karol Herbst <kherbst@redhat.com>,
-        nouveau@lists.freedesktop.org,
-        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-        dri-devel@lists.freedesktop.org, YiPeng Chai <YiPeng.Chai@amd.com>,
-        Mario Limonciello <mario.limonciello@amd.com>,
-        Likun Gao <Likun.Gao@amd.com>,
-        David Airlie <airlied@gmail.com>,
-        Ville Syrjala <ville.syrjala@linux.intel.com>,
-        Yi Liu <yi.l.liu@intel.com>, kvm@vger.kernel.org,
-        amd-gfx@lists.freedesktop.org, Jason Gunthorpe <jgg@ziepe.ca>,
-        Ben Skeggs <bskeggs@redhat.com>, linux-pci@vger.kernel.org,
-        Kevin Tian <kevin.tian@intel.com>,
-        Lijo Lazar <lijo.lazar@amd.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Bokun Zhang <Bokun.Zhang@amd.com>,
-        intel-gfx@lists.freedesktop.org,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Jani Nikula <jani.nikula@linux.intel.com>,
-        Alex Williamson <alex.williamson@redhat.com>,
-        Abhishek Sahu <abhsahu@nvidia.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-        Yishai Hadas <yishaih@nvidia.com>,
-        Pan Xinhui <Xinhui.Pan@amd.com>, linux-kernel@vger.kernel.org,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Christian Konig <christian.koenig@amd.com>,
-        Hawking Zhang <Hawking.Zhang@amd.com>
-References: <20230629155436.GA397963@bhelgaas>
-Content-Language: en-US
-From:   Sui Jingfeng <15330273260@189.cn>
-In-Reply-To: <20230629155436.GA397963@bhelgaas>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+        Thu, 29 Jun 2023 13:34:42 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 154B335A5;
+        Thu, 29 Jun 2023 10:34:41 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id A232B615C8;
+        Thu, 29 Jun 2023 17:34:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 1623BC433C0;
+        Thu, 29 Jun 2023 17:34:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1688060080;
+        bh=6fDzS8S6GJhX0BHRKcZ+yXdaSTKoh7FAFJWjWKouEDc=;
+        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+        b=iJY3NdbQ+VEqwusgtRaGx2dNHsVkvFzyqBJT+fDTeFxGVwrR6NeTtIUQA4QaLNCt8
+         5dHPQuWKWsXk5xKgaYplBhka6LesgZvnubiHX6oyUKBxpqH89+Fm88giwStNbLjEAc
+         DG/AU5qF0c0mdeQa3FFMdLhtIbX7XGNdrfgyq5RTSZM90/PX5bmf5a1ARBkG4NBQ66
+         zH3BFFhJNUg4TgAYq9Xtr11rUoflqt1yA0ZDxr3lrJNQsmHrdL0r0eQ0wxtUzdyB+w
+         xRiv+3sDnj+IXZuA2rXoVVkqXStzsmuVx2ZVIbyyNYTKIxI461eP6e4ypG8hTYB7nm
+         iJj+1AL2sBWBA==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 04FBDC41671;
+        Thu, 29 Jun 2023 17:34:40 +0000 (UTC)
+Subject: Re: [GIT PULL] fbdev fixes for v6.5-rc1
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <ZJp/DpaLeYq6s3hB@ls3530>
+References: <ZJp/DpaLeYq6s3hB@ls3530>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <ZJp/DpaLeYq6s3hB@ls3530>
+X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.5-rc1
+X-PR-Tracked-Commit-Id: c2d22806aecb24e2de55c30a06e5d6eb297d161d
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 675285ad819293844018aa8096ba9a6d7c77b90b
+Message-Id: <168806008001.7356.17414940393085478476.pr-tracker-bot@kernel.org>
+Date:   Thu, 29 Jun 2023 17:34:40 +0000
+To:     Helge Deller <deller@gmx.de>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+The pull request you sent on Tue, 27 Jun 2023 08:17:50 +0200:
 
-On 2023/6/29 23:54, Bjorn Helgaas wrote:
-> On Thu, Jun 22, 2023 at 01:08:15PM +0800, Sui Jingfeng wrote:
->> Hi,
->>
->>
->> A nouveau developer(Lyude) from redhat send me a R-B,
->>
->> Thanks for the developers of nouveau project.
->>
->>
->> Please allow me add a link[1] here.
->>
->>
->> [1] https://lore.kernel.org/all/0afadc69f99a36bc9d03ecf54ff25859dbc10e28.camel@redhat.com/
-> 1) Thanks for this.  If you post another version of this series,
->     please pick up Lyude's Reviewed-by and include it in the relevant
->     patches (as long as you haven't made significant changes to the
->     code Lyude reviewed).
+> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.5-rc1
 
-Yes, no significant changes. Just fix typo.
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/675285ad819293844018aa8096ba9a6d7c77b90b
 
-I also would like to add support for other DRM drivers.
+Thank you!
 
-But I think this deserve another patch.
-
->   Whoever applies this should automatically
->     pick up Reviewed-by/Ack/etc that are replies to the version being
->     applied, but they won't go through previous revisions to find them.
->
-> 2) Please mention the commit to which the series applies.  I tried to
->     apply this on v6.4-rc1, but it doesn't apply cleanly.
-
-Since I'm a graphic driver developer, I'm using drm-tip.
-
-I just have already pulled, it still apply cleanly on drm-tip.
-
-> 3) Thanks for including cover letters in your postings.  Please
->     include a little changelog in the cover letter so we know what
->     changed between v6 and v7, etc.
-
-No change between v6 and v7,
-
-it seems that it is because the mailbox don't allow me to sending too 
-many mails a day.
-
-so some of the patch is failed to delivery because out of quota.
-
-
-> 4) Right now we're in the middle of the v6.5 merge window, so new
->     content, e.g., this series, is too late for v6.5.  Most
->     maintainers, including me, wait to merge new content until the
->     merge window closes and a new -rc1 is tagged.  This merge window
->     should close on July 9, and people will start merging content for
->     v6.6, typically based on v6.5-rc1.
-
-I'm wondering
-
-Would you will merge all of the patches in this series (e.g. including 
-the patch for drm/amdgpu(7/8) and drm/radeon(8/8)) ?
-
-Or just part of them?
-
-Emm, I don't know because my patch seems across different subsystem of 
-Linux kernel.
-
-There is also a developer for AMDGPU (Mario) give me a R-B for the 
-patch-0002 of this series.
-
-So, at least, PATCH-0001, PATCH-0002, PATCH-0003, PATCH-0004, PATCH-0006 
-are already OK(got reviewed by).
-
-Those 5 patch are already qualified to be merged, I think.
-
-I means that if you could merge those 5 patch first, then there no need 
-to send another version again.
-
-I will refine the rest patch with more details and description.
-
-I'm fear of making too much noise.
-
-> Bjorn
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html

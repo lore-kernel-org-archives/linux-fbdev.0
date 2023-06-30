@@ -2,250 +2,109 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36D7EEB64D7
-	for <linux-fbdev@archiver.kernel.org>; Fri, 30 Jun 2023 10:52:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1B79EB64D7
+	for <linux-fbdev@archiver.kernel.org>; Fri, 30 Jun 2023 10:58:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231501AbjF3KwE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 30 Jun 2023 06:52:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43422 "EHLO
+        id S231633AbjF3K6P (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 30 Jun 2023 06:58:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46418 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230054AbjF3KwD (ORCPT
+        with ESMTP id S232361AbjF3K6C (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 30 Jun 2023 06:52:03 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8DE7330C5
-        for <linux-fbdev@vger.kernel.org>; Fri, 30 Jun 2023 03:51:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1688122271;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=uyqtfh/uO+c59eeqAPwfK8ApK34k3U13F7I83iFK+cU=;
-        b=CRBf8E0Qxr9ZIqedptmeoMzbFl6R08GUGH6R39whIwuWfhHEjmd963xa+0d1cTPCrpFZrg
-        4yONJLN8Ps31Gpfi5hpZI6FHWAAqv6VrFFxwphbN0wV3NPfgIXF8wauGT+ZqMKQ9hvPyNh
-        IMou0UJ9uXMpQSBImvJVTM2Hzq94uUQ=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-124-VDDGpuwKNlK9pS6TMLZdpw-1; Fri, 30 Jun 2023 06:51:10 -0400
-X-MC-Unique: VDDGpuwKNlK9pS6TMLZdpw-1
-Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-3fbb18e9bd9so8421765e9.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 30 Jun 2023 03:51:10 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688122269; x=1690714269;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=uyqtfh/uO+c59eeqAPwfK8ApK34k3U13F7I83iFK+cU=;
-        b=BMWevjfZ5FStcuIiTcOzANuWEinnAY4CL9UzpnUiqyTY3p1wj9E5tjnSvBW4ff0Jyt
-         fWZweYX1cYdTdSQksqC/X/iYNe9BjmF6JvBySW2w4+YQt6fc5GBW5VSSRfvI2gdTsCs0
-         P+IrA1GKr++NTXj6i6Mr+CnDPVn3wcd6SodC9/xWGn1g8w2tkTlanEmj6E/a03YdoTxv
-         wiKFK5i3mt8qf5T4qADM8XPvyRIyAknsb8P5JjQablEmoQxgYQKTuTbp48c76Hu2/x9y
-         ee6hx43id4mTOOAzOg0whuyy8X8qUIBydDCkfruXTSNL+RvP/SDW9silx7dK1XWNU1zq
-         N77Q==
-X-Gm-Message-State: AC+VfDyj43RwsqiRg16RaCmwc1ewlxXH8QVYcbTmkQJeUqZgCCtdOS1G
-        plEl3t2qzMbUZ7vlbbewFkwucogVhHMfq+85/jXJwh1ZWUyJDMTwgyFvJrS45O8UgocoIWTQohI
-        3bestx38LCPRldn3kxjB3ol8=
-X-Received: by 2002:a05:600c:2259:b0:3f7:aee8:c23a with SMTP id a25-20020a05600c225900b003f7aee8c23amr6742603wmm.19.1688122269280;
-        Fri, 30 Jun 2023 03:51:09 -0700 (PDT)
-X-Google-Smtp-Source: ACHHUZ4ar/tTtvUE+lxD/WKHTgCoVCq4pBAcO5fMERH2qhCP0DM6uF+75yi5jYVG8xRfdHUuTfLWAQ==
-X-Received: by 2002:a05:600c:2259:b0:3f7:aee8:c23a with SMTP id a25-20020a05600c225900b003f7aee8c23amr6742572wmm.19.1688122268942;
-        Fri, 30 Jun 2023 03:51:08 -0700 (PDT)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id a10-20020a05600c224a00b003faef96ee78sm12491386wmm.33.2023.06.30.03.51.08
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 30 Jun 2023 03:51:08 -0700 (PDT)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
-Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Borislav Petkov <bp@alien8.de>,
+        Fri, 30 Jun 2023 06:58:02 -0400
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 11C581BCA;
+        Fri, 30 Jun 2023 03:57:58 -0700 (PDT)
+Received: from loongson.cn (unknown [10.20.42.43])
+        by gateway (Coremail) with SMTP id _____8BxlfA1tZ5kjkQEAA--.6980S3;
+        Fri, 30 Jun 2023 18:57:57 +0800 (CST)
+Received: from openarena.loongson.cn (unknown [10.20.42.43])
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8DxJ801tZ5k5GETAA--.63992S2;
+        Fri, 30 Jun 2023 18:57:57 +0800 (CST)
+From:   Sui Jingfeng <suijingfeng@loongson.cn>
+To:     Alex Deucher <alexander.deucher@amd.com>,
+        David Airlie <airlied@gmail.com>,
         Daniel Vetter <daniel@ffwll.ch>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "H. Peter Anvin" <hpa@zytor.com>, Helge Deller <deller@gmx.de>,
-        Ingo Molnar <mingo@redhat.com>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        x86@kernel.org
-Subject: Re: [PATCH 1/2] fbdev: Split frame buffer support in FB and FB_CORE
- symbols
-In-Reply-To: <723a3c51-7997-46d0-9262-68f33384a9e7@app.fastmail.com>
-References: <20230629225113.297512-1-javierm@redhat.com>
- <20230629225113.297512-2-javierm@redhat.com>
- <723a3c51-7997-46d0-9262-68f33384a9e7@app.fastmail.com>
-Date:   Fri, 30 Jun 2023 12:51:07 +0200
-Message-ID: <87h6qpdy04.fsf@minerva.mail-host-address-is-not-set>
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Maxime Ripard <mripard@kernel.org>,
+        Jani Nikula <jani.nikula@linux.intel.com>
+Cc:     dri-devel@lists.freedesktop.org, amd-gfx@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+        nouveau@lists.freedesktop.org, linux-pci@vger.kernel.org,
+        kvm@vger.kernel.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH v1 0/4] PCI/VGA: Improve the default VGA device selection
+Date:   Fri, 30 Jun 2023 18:57:53 +0800
+Message-Id: <20230630105757.141582-1-suijingfeng@loongson.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: AQAAf8DxJ801tZ5k5GETAA--.63992S2
+X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
+X-Coremail-Antispam: 1Uk129KBj93XoW7ZFWfuw4DAFWxAw1rtr1UJwc_yoW8tF15pF
+        429F9Ivrn5JF43Kw13Zay8AFy5Zan7JayrKr9rA34Yga13Ary8trZFyFW5K34DXr48ZF12
+        qr9xKryUWFyqv3gCm3ZEXasCq-sJn29KB7ZKAUJUUUUf529EdanIXcx71UUUUU7KY7ZEXa
+        sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+        0xBIdaVrnRJUUUB2b4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+        IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+        e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_JFI_Gr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+        0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AK
+        xVWxJr0_GcWln4kS14v26r126r1DM2AIxVAIcxkEcVAq07x20xvEncxIr21l57IF6xkI12
+        xvs2x26I8E6xACxx1l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r12
+        6r1DMcIj6I8E87Iv67AKxVW8JVWxJwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64
+        vIr41lc7CjxVAaw2AFwI0_Jw0_GFyl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_
+        Jr0_Gr1l4IxYO2xFxVAFwI0_JF0_Jw1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8Gjc
+        xK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0
+        cI8IcVAFwI0_JFI_Gr1lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8V
+        AvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVW8JVWxJwCI42IY6I8E87Iv6xkF7I0E
+        14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjxUcApnDUUUU
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-"Arnd Bergmann" <arnd@arndb.de> writes:
+Currently, the default VGA device selection is not perfect. Potential
+problems are:
 
-Hello Arnd,
+1) This function is a no-op on non-x86 architectures.
+2) It does not take the PCI Bar may get relocated into consideration.
+3) It is not effective for the PCI device without a dedicated VRAM Bar.
+4) It is device-agnostic, thus it has to waste the effort to iterate all
+   of the PCI Bar to find the VRAM aperture.
+5) It has invented lots of methods to determine which one is the default
+   boot device on a multiple video card coexistence system. But this is
+   still a policy because it doesn't give the user a choice to override.
 
-Thanks for your review!
+With the observation that device drivers or video aperture helpers may
+have better knowledge about which PCI bar contains the firmware FB,
 
-> On Fri, Jun 30, 2023, at 00:51, Javier Martinez Canillas wrote:
->> Currently the CONFIG_FB option has to be enabled even if no legacy fbdev
->> drivers are needed (e.g: only to have support for framebuffer consoles).
->>
->> The DRM subsystem has a fbdev emulation layer, but depends on CONFIG_FB
->> and so it can only be enabled if that dependency is enabled as well.
->>
->> That means fbdev drivers have to be explicitly disabled if users want to
->> enable CONFIG_FB, only to use fbcon and/or the DRM fbdev emulation layer.
->>
->> This patch introduces a CONFIG_FB_CORE option that could be enabled just
->> to have the core support needed for CONFIG_DRM_FBDEV_EMULATION, allowing
->> CONFIG_FB to be disabled (and automatically disabling all fbdev drivers).
->>
->> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
->> ---
->
-> This looks really nice!
->
-> I tried to do something like this a few years ago, but failed as
+This patch tries to solve the above problems by introducing a function
+callback to the vga_client_register() function interface. DRM device
+drivers for the PCI device need to register the is_boot_device() function
+callback during the driver loading time. Once the driver binds the device
+successfully, VRAARB will call back to the driver. This gives the device
+drivers a chance to provide accurate boot device identification. Which in
+turn unlock the abitration service to non-x86 architectures. A device
+driver can also pass a NULL pointer to the keep the original behavior.
 
-Yes, I also tried to do this before some time ago [0]:
+Sui Jingfeng (4):
+  video/aperture: Add a helper to detect if an aperture contains
+    firmware FB
+  PCI/VGA: Improve the default VGA device selection
+  drm/amdgpu: Implement the is_boot_device callback function
+  drm/radeon: Implement the is_boot_device callback function
 
-[0]: https://lore.kernel.org/lkml/20210827100027.1577561-1-javierm@redhat.com/t/#mc8bb6cda8c2d795673618049b6c834b34bf86162
-
-and at the time required some code refactoring but now thanks to all the
-cleanups that Thomas has been doing over, I could just do it with Kconfig.
-
-> I did too much at once by attempting to cut out msot of the fb core
-> support that is not actually used by DRM at the same time.
->
-> Doing just the Kconfig bits as you do here is probably better
-> anyway, cutting out unneeded bits into separate modules or #ifdef
-> sections can come later.
->
-
-Exactly, that was my thought too. Glad that you agree with the approach.
-
->> @@ -59,7 +71,7 @@ config FIRMWARE_EDID
->> 
->>  config FB_DEVICE
->>  	bool "Provide legacy /dev/fb* device"
->> -	depends on FB
->> +	depends on FB_CORE
->>  	default y
->>  	help
->>  	  Say Y here if you want the legacy /dev/fb* device file and
->
-> I don't see this symbol in linux-next yet, what tree are you using
-> as a base?
->
-
-It's now in the drm-misc/drm-misc-next branch [1]. It's not in -next yet
-because it just landed a few days ago [2].
-
-[1]: https://cgit.freedesktop.org/drm/drm-misc/log/?h=drm-misc-next
-[2]: https://cgit.freedesktop.org/drm/drm-misc/commit/?id=701d2054fa3
-
-In fact, that's the reason why I rebased my previous attempt [0].
-
->> @@ -69,13 +81,13 @@ config FB_DEVICE
->> 
->>  config FB_DDC
->>  	tristate
->> -	depends on FB
->> +	depends on FB_CORE
->>  	select I2C_ALGOBIT
->>  	select I2C
->
-> This seems to only be used by actual fbdev drivers, so maybe
-> don't change the dependency here.
->
-
-Indeed.
-
->> @@ -162,22 +174,22 @@ endchoice
->> 
->>  config FB_SYS_FOPS
->>  	tristate
->> -	depends on FB
->> +	depends on FB_CORE
->
-> Same for this one
->
-
-Ok.
-
->>  config FB_HECUBA
->>  	tristate
->> -	depends on FB
->> +	depends on FB_CORE
->>  	depends on FB_DEFERRED_IO
->> 
->>  config FB_SVGALIB
->>  	tristate
->> -	depends on FB
->> +	depends on FB_CORE
->>  	help
->>  	  Common utility functions useful to fbdev drivers of VGA-based
->>  	  cards.
->>  config FB_MACMODES
->>  	tristate
->> -	depends on FB
->> +	depends on FB_CORE
->> 
->
-> These three seem to actually be part of fbdev drivers rather
-> than the core, and it may be best to move them into
-> drviers/video/fbdev/ as standalone modules. That would be a
-> separate patch of course.
->
-
-Agreed. I'll then also don't change the dependency on these ones.
-
->>  config FB_BACKLIGHT
->>  	tristate
->> -	depends on FB
->> +	depends on FB_CORE
->>  	select BACKLIGHT_CLASS_DEVICE
->
-> Separating this one from FB_CORE would help avoid circular dependencies,
-> this one keeps causing issues.
->
-
-You mean separating from FB or should I keep the existing depends on FB?
-
-It seems this is only used by fbdev drivers so probably the latter?
-
->> @@ -1,22 +1,22 @@
->>  # SPDX-License-Identifier: GPL-2.0
->>  obj-$(CONFIG_FB_NOTIFY)           += fb_notify.o
->> -obj-$(CONFIG_FB)                  += fb.o
->> -fb-y                              := fb_backlight.o \
->> +obj-$(CONFIG_FB_CORE)             += fb_core.o
->> +fb_core-y                         := fb_backlight.o \
->>                                       fb_info.o \
->>                                       fbmem.o fbmon.o fbcmap.o \
->>                                       modedb.o fbcvt.o fb_cmdline.o 
->
-> I would not bother renaming the module itself here, that
-> might cause problems if anything relies on loading the
-> module by name or a named module parameter.
->
-
-I was actually not sure about this, but then thought that someone could
-had complained that the Kconfig symbol and module name wouldn't match :)
-
-I'll just keep the existing module name then and drop the rename.
-
->       Arnd
->
+ drivers/gpu/drm/amd/amdgpu/amdgpu_device.c | 12 ++++++++-
+ drivers/gpu/drm/drm_aperture.c             | 16 ++++++++++++
+ drivers/gpu/drm/i915/display/intel_vga.c   |  3 +--
+ drivers/gpu/drm/nouveau/nouveau_vga.c      |  2 +-
+ drivers/gpu/drm/radeon/radeon_device.c     | 12 ++++++++-
+ drivers/pci/vgaarb.c                       | 21 +++++++++++++++-
+ drivers/vfio/pci/vfio_pci_core.c           |  2 +-
+ drivers/video/aperture.c                   | 29 ++++++++++++++++++++++
+ include/drm/drm_aperture.h                 |  2 ++
+ include/linux/aperture.h                   |  7 ++++++
+ include/linux/vgaarb.h                     |  8 +++---
+ 11 files changed, 104 insertions(+), 10 deletions(-)
 
 -- 
-Best regards,
-
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+2.25.1
 

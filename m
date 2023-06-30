@@ -2,161 +2,128 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E223EB64D7
-	for <linux-fbdev@archiver.kernel.org>; Fri, 30 Jun 2023 18:32:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 629F7EB64DC
+	for <linux-fbdev@archiver.kernel.org>; Fri, 30 Jun 2023 20:30:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231765AbjF3Scf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 30 Jun 2023 14:32:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40940 "EHLO
+        id S232144AbjF3UaW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 30 Jun 2023 16:30:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48406 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230001AbjF3Sce (ORCPT
+        with ESMTP id S231765AbjF3UaV (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 30 Jun 2023 14:32:34 -0400
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DD90D3C2F;
-        Fri, 30 Jun 2023 11:32:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1688149953; x=1719685953;
-  h=from:to:cc:subject:in-reply-to:references:date:
-   message-id:mime-version;
-  bh=AUog1oylk7F8erWTwuZvVpqNmif9eOSht3QwuL4uOG8=;
-  b=KK1RfvbhbAh74z3tzwv+CJBtmzNehYTlcpbn4/sGM0VtVNRl7RPKG2Oe
-   usWsvVk8XNFb5zzrzCLFzIkE7A/x9Jk4zD4b+OEtSTev2OOVXFb8YS/CH
-   4E2ITrdBQ9xhMLR5r8JcxGHWe6NGhr4w4jK+UZfTV6Qz7EvRdEqQPQBxz
-   KmetxV6fNdhar/tZAFv+/89lKiuhK4Jh8lyzPrDSJDfvtZX98H3/mQAjb
-   IDEEsE3vIVMfmHoQcgBuFY9+t1WLMfBptJ6dXrWaiM6iozkgNoOoqFMNG
-   7SnVsrI2jLFYXyw2ro6JbtZAWj8pLkjT2IE0yx02mCMKm8k3sLpTzHeF7
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10757"; a="365949330"
-X-IronPort-AV: E=Sophos;i="6.01,171,1684825200"; 
-   d="scan'208";a="365949330"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jun 2023 11:32:32 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10757"; a="717896031"
-X-IronPort-AV: E=Sophos;i="6.01,171,1684825200"; 
-   d="scan'208";a="717896031"
-Received: from lpascal-mobl.amr.corp.intel.com (HELO localhost) ([10.252.49.62])
-  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jun 2023 11:32:23 -0700
-From:   Jani Nikula <jani.nikula@linux.intel.com>
-To:     Bjorn Helgaas <helgaas@kernel.org>,
-        suijingfeng <suijingfeng@loongson.cn>
-Cc:     "Limonciello, Mario" <Mario.Limonciello@amd.com>,
-        "15330273260@189.cn" <15330273260@189.cn>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "Pan, Xinhui" <Xinhui.Pan@amd.com>,
-        "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-        "nouveau@lists.freedesktop.org" <nouveau@lists.freedesktop.org>,
-        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "Chai, Thomas" <YiPeng.Chai@amd.com>,
-        "Gao, Likun" <Likun.Gao@amd.com>, David Airlie <airlied@gmail.com>,
-        Ville Syrjala <ville.syrjala@linux.intel.com>,
-        Yi Liu <yi.l.liu@intel.com>, Karol Herbst <kherbst@redhat.com>,
-        "amd-gfx@lists.freedesktop.org" <amd-gfx@lists.freedesktop.org>,
-        Jason Gunthorpe <jgg@ziepe.ca>,
-        Ben Skeggs <bskeggs@redhat.com>,
-        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-        Kevin Tian <kevin.tian@intel.com>,
-        "Lazar, Lijo" <Lijo.Lazar@amd.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        "Zhang, Bokun" <Bokun.Zhang@amd.com>,
-        "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Alex Williamson <alex.williamson@redhat.com>,
-        Abhishek Sahu <abhsahu@nvidia.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-        Yishai Hadas <yishaih@nvidia.com>,
-        Cornelia Huck <cohuck@redhat.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        Fri, 30 Jun 2023 16:30:21 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4F5AA3AAD
+        for <linux-fbdev@vger.kernel.org>; Fri, 30 Jun 2023 13:29:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1688156970;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=7z4+FJGtx+jfLkCNL8iZp50XQ8kawtYgJi/zo0dFBDw=;
+        b=V+cKKrNcB018SeD0TX371GJ/vgV6j/X510pwIGR7ofg8sHhaiGdLLb/Oq83M4DZlro7S44
+        OU1qPXZl6aPY2xHieddeLY3b/dnraGNbY1jasPkGnJYw67qVxKdQfI2lTfHqOsqmMYsO0m
+        agZfeKztNSqNd2vtLJNM29AfaYpq5wo=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-589-5TuPUF7gOD2r9o8lJDZ1Mg-1; Fri, 30 Jun 2023 16:29:26 -0400
+X-MC-Unique: 5TuPUF7gOD2r9o8lJDZ1Mg-1
+Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-3fbb0c01e71so13296985e9.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 30 Jun 2023 13:29:24 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1688156962; x=1690748962;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=7z4+FJGtx+jfLkCNL8iZp50XQ8kawtYgJi/zo0dFBDw=;
+        b=WSD5cAe8jULeLnhnr6G5NVdm1vqNwhK6qJ2k8BMzDMIDTX6SOdwNLwndEiCpfNGJZR
+         PIh9ypcrMv/JtGaCUyDfv5ycJJRL+42QM98sxK2TuET9d/St3YTC/xDLdv4MgfD7ubPb
+         Z9bseL5JN6JuIgz16xItIkmKGIPYue3DCPas3ijHnjwaG7QTkVc3QBCZmvq1rSQUc2Z8
+         hZoHdgPWEqBocoLur9R3DT9slh5gCmD/9SQq9aIoqvbNEcE+JeZxcYXmvY497oQxBTrb
+         C9CL03JklJ80dZ4fO6rW+QU81D16T5SmnJWzwF/gsEyedqs3k+Wgkv1j/J8LaOmWgWZk
+         o3fA==
+X-Gm-Message-State: AC+VfDyx71vg5ebWMnG8wwf7BgSDpLuvV3exb4nc3Q8F3x2Yvm7YAmJd
+        F+Z5mWg+/cBDdEH2Rody4NreSEbYnp6HNLHaQ/kkG250Q7TrHI2oYyCw9qEc41lgeR2bgJL1kdm
+        qxyXNJTiyb/fvHCB5f5d+PQ8=
+X-Received: by 2002:a7b:c8c9:0:b0:3f8:fe2a:25c2 with SMTP id f9-20020a7bc8c9000000b003f8fe2a25c2mr2902277wml.38.1688156962807;
+        Fri, 30 Jun 2023 13:29:22 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ5t8O8YZhUAlsnULK6AfHeoTDYcnWUXH+rludG0BAB8MB7qDFkZFaO5oKC6zcLL0Qt4ESi3eA==
+X-Received: by 2002:a7b:c8c9:0:b0:3f8:fe2a:25c2 with SMTP id f9-20020a7bc8c9000000b003f8fe2a25c2mr2902251wml.38.1688156962461;
+        Fri, 30 Jun 2023 13:29:22 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id n10-20020a1c720a000000b003fa96620b23sm15085928wmc.12.2023.06.30.13.29.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 30 Jun 2023 13:29:21 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc:     linux-kernel@vger.kernel.org,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        "Deucher, Alexander" <Alexander.Deucher@amd.com>,
-        "Koenig, Christian" <Christian.Koenig@amd.com>,
-        "Zhang, Hawking" <Hawking.Zhang@amd.com>
-Subject: Re: [PATCH v7 6/8] PCI/VGA: Introduce is_boot_device function
- callback to vga_client_register
-In-Reply-To: <20230630174156.GA487980@bhelgaas>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-References: <20230630174156.GA487980@bhelgaas>
-Date:   Fri, 30 Jun 2023 21:32:20 +0300
-Message-ID: <87v8f4243v.fsf@intel.com>
+        Arnd Bergmann <arnd@arndb.de>, Borislav Petkov <bp@alien8.de>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        David Airlie <airlied@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "H. Peter Anvin" <hpa@zytor.com>, Helge Deller <deller@gmx.de>,
+        Ingo Molnar <mingo@redhat.com>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        x86@kernel.org
+Subject: Re: [PATCH 0/2] Allow disabling all native fbdev drivers and only
+ keeping DRM emulation
+In-Reply-To: <ZJ8T/Fexkr9wEZoP@smile.fi.intel.com>
+References: <20230629225113.297512-1-javierm@redhat.com>
+ <ZJ8RY7ZUlryrPB50@smile.fi.intel.com>
+ <878rc0etqe.fsf@minerva.mail-host-address-is-not-set>
+ <ZJ8T/Fexkr9wEZoP@smile.fi.intel.com>
+Date:   Fri, 30 Jun 2023 22:29:20 +0200
+Message-ID: <875y74elsv.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
 Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, 30 Jun 2023, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> On Fri, Jun 30, 2023 at 10:14:11AM +0800, suijingfeng wrote:
->> On 2023/6/30 01:44, Limonciello, Mario wrote:
->> > > On 2023/6/29 23:54, Bjorn Helgaas wrote:
->> > > > On Thu, Jun 22, 2023 at 01:08:15PM +0800, Sui Jingfeng wrote:
+Andy Shevchenko <andriy.shevchenko@linux.intel.com> writes:
+
+> On Fri, Jun 30, 2023 at 07:38:01PM +0200, Javier Martinez Canillas wrote:
+>> Andy Shevchenko <andriy.shevchenko@linux.intel.com> writes:
+>> > On Fri, Jun 30, 2023 at 12:51:02AM +0200, Javier Martinez Canillas wrote:
+>> >> This patch series splits the fbdev core support in two different Kconfig
+>> >> symbols: FB and FB_CORE. The motivation for this is to allow CONFIG_FB to
+>> >> be disabled, while still having the the core fbdev support needed for the
+>> >> CONFIG_DRM_FBDEV_EMULATION to be enabled. The motivation is automatically
+>> >> disabling all fbdev drivers instead of having to be disabled individually.
+>> >> 
+>> >> The reason for doing this is that now with simpledrm, there's no need for
+>> >> the legacy fbdev (e.g: efifb or vesafb) drivers anymore and many distros
+>> >
+>> > How does simpledrm works with earlycon=efi?
+>> >
+>> 
+>> simpledrm isn't for earlycon. For that you use a different driver (i.e:
+>> drivers/firmware/efi/earlycon.c). I'm just talking about fbdev drivers
+>> here that could be replaced by simpledrm.
 >
->> > > > 4) Right now we're in the middle of the v6.5 merge window, so new
->> > > >      content, e.g., this series, is too late for v6.5.  Most
->> > > >      maintainers, including me, wait to merge new content until the
->> > > >      merge window closes and a new -rc1 is tagged.  This merge window
->> > > >      should close on July 9, and people will start merging content for
->> > > >      v6.6, typically based on v6.5-rc1.
->> > > 
->> > > Would you will merge all of the patches in this series (e.g. including
->> > > the patch for drm/amdgpu(7/8) and drm/radeon(8/8)) ?
->> > > 
->> > > Or just part of them?
+> So, efifb can't be replaced. Please, fix your cover letter to reduce false
+> impression of the scope of usage of the simpledrm.
 >
-> The bulk of this series is drivers/pci changes, so typically I would
-> merge all the patches after getting Acked-by tags from the other
-> subsystems (DRM and VFIO).
 
-For the (negligible) i915 parts,
+Nothing to fixup.
 
-Acked-by: Jani Nikula <jani.nikula@intel.com>
-
->> Is it possible to merge the PCI/VGA part as fast as possible,
->> especially the PATCH-0006 PCI/VGA: Introduce is_boot_device function
->> callback to vga_client_register
->
-> We're in the middle of the v6.5 merge window, so it's too late to add
-> things to v6.5-rc1.  The most likely path for new material like this
-> would be to queue it for v6.6, which means I would merge it after
-> v6.5-rc1 is tagged (that tag will probably happen on July 9).
-
-Perhaps the part that causes confusion here is that the drm-misc-next
-and drm-intel-next branches, for example, are always open for new
-patches; it's just that there's a cutoff at around rc5/rc6 after which
-they start targeting the next+1 release. We basically hide the merge
-window from a lot of drm developers.
-
-> It would then be in -next until the v6.6 merge window opens (likely in
-> September), when it would be merged into Linus' tree.
->
-> If the series fixes a regression or other major defect, it's
-> *possible* to merge things earlier, so they appear in v6.5.  But this
-> series doesn't seem to fall in that category, so I think v6.6 is a
-> more realistic target.
->
-> Merging for v6.6 would include both the PCI parts and the DRM parts at
-> the same time, so hopefully that addresses your dependency concerns.
-
-I guess the main question is whether Sui Jingfeng has follow-up work
-planned in drm that depends on these being merged. This would set that
-back by a full release. (But it happens.)
-
-BR,
-Jani.
-
-
-
->
-> I suggest that you wait until v6.5-rc1, rebase your patches so they
-> apply cleanly on that tag, collect all the Reviewed-by and Acked-by
-> tags, include them in your commit logs, and then repost them.
->
-> Bjorn
+You are conflating the efifb fbdev driver (drivers/video/fbdev/efifb.c)
+with the efifb earlycon driver (drivers/firmware/efi/earlycon.c). I'm
+talking about the former (which can be replaced by simpledrm) while you
+are talking about the latter.
 
 -- 
-Jani Nikula, Intel Open Source Graphics Center
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
+

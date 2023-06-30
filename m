@@ -2,31 +2,30 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F18BC001B1
-	for <linux-fbdev@archiver.kernel.org>; Fri, 30 Jun 2023 11:08:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F0B9C001DB
+	for <linux-fbdev@archiver.kernel.org>; Fri, 30 Jun 2023 11:08:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232601AbjF3LIt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 30 Jun 2023 07:08:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53534 "EHLO
+        id S232671AbjF3LIu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 30 Jun 2023 07:08:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53542 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232613AbjF3LIk (ORCPT
+        with ESMTP id S232620AbjF3LIl (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 30 Jun 2023 07:08:40 -0400
-X-Greylist: delayed 345 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 30 Jun 2023 04:08:38 PDT
-Received: from out-61.mta0.migadu.com (out-61.mta0.migadu.com [IPv6:2001:41d0:1004:224b::3d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 84E1935A0
+        Fri, 30 Jun 2023 07:08:41 -0400
+X-Greylist: delayed 347 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 30 Jun 2023 04:08:39 PDT
+Received: from out-47.mta0.migadu.com (out-47.mta0.migadu.com [91.218.175.47])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D22A135AB
         for <linux-fbdev@vger.kernel.org>; Fri, 30 Jun 2023 04:08:38 -0700 (PDT)
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-        t=1688122990;
+        t=1688122970;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=btfhp53flz2znRJhVRVROxzr2+xJwf5jWKVzzdMQNCg=;
-        b=T73HFHyypfPukJHUCivjqAqiND6lcrXP+g0ZSla4MUTvXmqJbQrwuT16aoxpOada4b8PuN
-        Zb0G/hybooeV4zLJKuZI6dmV348rzV47I3c7QaAf/CWaoV1LLUZGqtqBRZZ0N54w/EswIc
-        92ry4Yxu6TJa1mUgnhkXb/bif7YjLxY=
+         content-transfer-encoding:content-transfer-encoding;
+        bh=cVG0vYo3/T6AYLTc+lVhTKp0CFi2Q+EH9QFPQ8sIsCY=;
+        b=QJBgFt91Udo2cXx8LVpCoBtf7Y4/HJOpcgBM5f7wsHRC7s8fn0Gq0+gjEx8Kdqa8vLzzux
+        ImcisPtx/765642G+b1B9DPM0cwQmRH7G6DfBumi4NU28u+y6k1b891sHZhyldmWbhiRGW
+        1E3abKbe5vxdsoxrSChe7QJ6GbCbOoo=
 From:   Sui Jingfeng <sui.jingfeng@linux.dev>
 To:     Alex Deucher <alexander.deucher@amd.com>,
         David Airlie <airlied@gmail.com>,
@@ -38,14 +37,10 @@ Cc:     dri-devel@lists.freedesktop.org, amd-gfx@lists.freedesktop.org,
         linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
         nouveau@lists.freedesktop.org, linux-pci@vger.kernel.org,
         kvm@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        Sui Jingfeng <suijingfeng@loongson.cn>,
-        Christian Konig <christian.koenig@amd.com>,
-        Pan Xinhui <Xinhui.Pan@amd.com>
-Subject: [PATCH v1 4/4] drm/radeon: Implement the is_boot_device callback function
-Date:   Fri, 30 Jun 2023 19:02:43 +0800
-Message-Id: <20230630110243.141671-5-sui.jingfeng@linux.dev>
-In-Reply-To: <20230630110243.141671-1-sui.jingfeng@linux.dev>
-References: <20230630110243.141671-1-sui.jingfeng@linux.dev>
+        Sui Jingfeng <suijingfeng@loongson.cn>
+Subject: [PATCH v1 0/4] PCI/VGA: Improve the default VGA device selection
+Date:   Fri, 30 Jun 2023 19:02:39 +0800
+Message-Id: <20230630110243.141671-1-sui.jingfeng@linux.dev>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
@@ -55,68 +50,50 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Sui Jingfeng <suijingfeng@loongson.cn>
 
-[why]
+Currently, the default VGA device selection is not perfect. Potential
+problems are:
 
-The vga_is_firmware_default() defined in drivers/pci/vgaarb.c is
-arch-dependent, it's a dummy on non-x86 architectures currently.
-This made VGAARB lost an important condition for the arbitration.
-It could still be wrong even if we remove the #ifdef and #endif guards.
-because the PCI bar will move (resource re-allocation).
+1) This function is a no-op on non-x86 architectures.
+2) It does not take the PCI Bar may get relocated into consideration.
+3) It is not effective for the PCI device without a dedicated VRAM Bar.
+4) It is device-agnostic, thus it has to waste the effort to iterate all
+   of the PCI Bar to find the VRAM aperture.
+5) It has invented lots of methods to determine which one is the default
+   boot device on a multiple video card coexistence system. But this is
+   still a policy because it doesn't give the user a choice to override.
 
-[how]
+With the observation that device drivers or video aperture helpers may
+have better knowledge about which PCI bar contains the firmware FB,
 
-The device that owns the firmware framebuffer should be the default boot
-device. This patch adds an arch-independent function to enforce this rule.
-The vgaarb subsystem will call back to radeon_is_boot_device() function
-when drm/radeon is successfully bound to a radeon GPU device.
+This patch tries to solve the above problems by introducing a function
+callback to the vga_client_register() function interface. DRM device
+drivers for the PCI device need to register the is_boot_device() function
+callback during the driver loading time. Once the driver binds the device
+successfully, VRAARB will call back to the driver. This gives the device
+drivers a chance to provide accurate boot device identification. Which in
+turn unlock the abitration service to non-x86 architectures. A device
+driver can also pass a NULL pointer to the keep the original behavior.
 
-Cc: Alex Deucher <alexander.deucher@amd.com>
-Cc: Christian Konig <christian.koenig@amd.com>
-Cc: Pan Xinhui <Xinhui.Pan@amd.com>
-Cc: David Airlie <airlied@gmail.com>
-Cc: Daniel Vetter <daniel@ffwll.ch>
-Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
----
- drivers/gpu/drm/radeon/radeon_device.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+Sui Jingfeng (4):
+  video/aperture: Add a helper to detect if an aperture contains
+    firmware FB
+  PCI/VGA: Improve the default VGA device selection
+  drm/amdgpu: Implement the is_boot_device callback function
+  drm/radeon: Implement the is_boot_device callback function
 
-diff --git a/drivers/gpu/drm/radeon/radeon_device.c b/drivers/gpu/drm/radeon/radeon_device.c
-index 71f2ff39d6a1..afb49000830c 100644
---- a/drivers/gpu/drm/radeon/radeon_device.c
-+++ b/drivers/gpu/drm/radeon/radeon_device.c
-@@ -34,6 +34,7 @@
- #include <linux/vga_switcheroo.h>
- #include <linux/vgaarb.h>
- 
-+#include <drm/drm_aperture.h>
- #include <drm/drm_cache.h>
- #include <drm/drm_crtc_helper.h>
- #include <drm/drm_device.h>
-@@ -1263,6 +1264,15 @@ static const struct vga_switcheroo_client_ops radeon_switcheroo_ops = {
- 	.can_switch = radeon_switcheroo_can_switch,
- };
- 
-+static bool radeon_is_boot_device(struct pci_dev *pdev)
-+{
-+	struct drm_device *dev = pci_get_drvdata(pdev);
-+	struct radeon_device *rdev = dev->dev_private;
-+	struct radeon_mc *gmc = &rdev->mc;
-+
-+	return drm_aperture_contain_firmware_fb(gmc->aper_base, gmc->aper_size);
-+}
-+
- /**
-  * radeon_device_init - initialize the driver
-  *
-@@ -1425,7 +1435,7 @@ int radeon_device_init(struct radeon_device *rdev,
- 	/* if we have > 1 VGA cards, then disable the radeon VGA resources */
- 	/* this will fail for cards that aren't VGA class devices, just
- 	 * ignore it */
--	vga_client_register(rdev->pdev, radeon_vga_set_decode, NULL);
-+	vga_client_register(rdev->pdev, radeon_vga_set_decode, radeon_is_boot_device);
- 
- 	if (rdev->flags & RADEON_IS_PX)
- 		runtime = true;
+ drivers/gpu/drm/amd/amdgpu/amdgpu_device.c | 12 ++++++++-
+ drivers/gpu/drm/drm_aperture.c             | 16 ++++++++++++
+ drivers/gpu/drm/i915/display/intel_vga.c   |  3 +--
+ drivers/gpu/drm/nouveau/nouveau_vga.c      |  2 +-
+ drivers/gpu/drm/radeon/radeon_device.c     | 12 ++++++++-
+ drivers/pci/vgaarb.c                       | 21 +++++++++++++++-
+ drivers/vfio/pci/vfio_pci_core.c           |  2 +-
+ drivers/video/aperture.c                   | 29 ++++++++++++++++++++++
+ include/drm/drm_aperture.h                 |  2 ++
+ include/linux/aperture.h                   |  7 ++++++
+ include/linux/vgaarb.h                     |  8 +++---
+ 11 files changed, 104 insertions(+), 10 deletions(-)
+
 -- 
 2.25.1
 

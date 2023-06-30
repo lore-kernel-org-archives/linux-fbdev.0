@@ -2,107 +2,161 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75C1CEB64DC
-	for <linux-fbdev@archiver.kernel.org>; Fri, 30 Jun 2023 17:44:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E223EB64D7
+	for <linux-fbdev@archiver.kernel.org>; Fri, 30 Jun 2023 18:32:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231361AbjF3Rn7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 30 Jun 2023 13:43:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53860 "EHLO
+        id S231765AbjF3Scf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 30 Jun 2023 14:32:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40940 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232281AbjF3Rn6 (ORCPT
+        with ESMTP id S230001AbjF3Sce (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 30 Jun 2023 13:43:58 -0400
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DFA58199B;
-        Fri, 30 Jun 2023 10:43:56 -0700 (PDT)
+        Fri, 30 Jun 2023 14:32:34 -0400
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DD90D3C2F;
+        Fri, 30 Jun 2023 11:32:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1688147036; x=1719683036;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=I1kCbYOYtU84AgQILFjkzypl9YavoPrVMeRutm6k2fc=;
-  b=Yhdo5qP/2KeuUEfmewR633linpvmiaUQkba311QmcQLgsJxUfVkVKLd+
-   hh+ZtZHmXAHSb0KodpsrOu/SpeaCDjtFe5GSuKfLpGPJ4/DE+nPes8tBx
-   DZX1ons/dwMLgIBuZSX2Ybn1UHdNPdgPh6fNkVu1cxWtRuMXpDBS6fwAw
-   swbdpbdgvoMaBx6BgAyb2iFhlhzrzxWhfmT0YWMqoK2rm0MMbu7Hpo8AF
-   4jApWgiABH0GBqhU3rjrPxjXX0p3ZPjvj1Ams3mEAq8TUvjZqOWW2JkbD
-   tGIY5zYUGusWPedLtuCwjcKHRbZ5kYwKLpcB4hWh6S8PB6TifbuFX7pPX
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10757"; a="352273548"
+  t=1688149953; x=1719685953;
+  h=from:to:cc:subject:in-reply-to:references:date:
+   message-id:mime-version;
+  bh=AUog1oylk7F8erWTwuZvVpqNmif9eOSht3QwuL4uOG8=;
+  b=KK1RfvbhbAh74z3tzwv+CJBtmzNehYTlcpbn4/sGM0VtVNRl7RPKG2Oe
+   usWsvVk8XNFb5zzrzCLFzIkE7A/x9Jk4zD4b+OEtSTev2OOVXFb8YS/CH
+   4E2ITrdBQ9xhMLR5r8JcxGHWe6NGhr4w4jK+UZfTV6Qz7EvRdEqQPQBxz
+   KmetxV6fNdhar/tZAFv+/89lKiuhK4Jh8lyzPrDSJDfvtZX98H3/mQAjb
+   IDEEsE3vIVMfmHoQcgBuFY9+t1WLMfBptJ6dXrWaiM6iozkgNoOoqFMNG
+   7SnVsrI2jLFYXyw2ro6JbtZAWj8pLkjT2IE0yx02mCMKm8k3sLpTzHeF7
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10757"; a="365949330"
 X-IronPort-AV: E=Sophos;i="6.01,171,1684825200"; 
-   d="scan'208";a="352273548"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jun 2023 10:43:56 -0700
+   d="scan'208";a="365949330"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jun 2023 11:32:32 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10757"; a="787790740"
+X-IronPort-AV: E=McAfee;i="6600,9927,10757"; a="717896031"
 X-IronPort-AV: E=Sophos;i="6.01,171,1684825200"; 
-   d="scan'208";a="787790740"
-Received: from smile.fi.intel.com ([10.237.72.54])
-  by fmsmga004.fm.intel.com with ESMTP; 30 Jun 2023 10:43:51 -0700
-Received: from andy by smile.fi.intel.com with local (Exim 4.96)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1qFI9s-001AXB-1Z;
-        Fri, 30 Jun 2023 20:43:48 +0300
-Date:   Fri, 30 Jun 2023 20:43:48 +0300
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     linux-kernel@vger.kernel.org,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Arnd Bergmann <arnd@arndb.de>, Borislav Petkov <bp@alien8.de>,
+   d="scan'208";a="717896031"
+Received: from lpascal-mobl.amr.corp.intel.com (HELO localhost) ([10.252.49.62])
+  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jun 2023 11:32:23 -0700
+From:   Jani Nikula <jani.nikula@linux.intel.com>
+To:     Bjorn Helgaas <helgaas@kernel.org>,
+        suijingfeng <suijingfeng@loongson.cn>
+Cc:     "Limonciello, Mario" <Mario.Limonciello@amd.com>,
+        "15330273260@189.cn" <15330273260@189.cn>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "Pan, Xinhui" <Xinhui.Pan@amd.com>,
+        "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+        "nouveau@lists.freedesktop.org" <nouveau@lists.freedesktop.org>,
+        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "Chai, Thomas" <YiPeng.Chai@amd.com>,
+        "Gao, Likun" <Likun.Gao@amd.com>, David Airlie <airlied@gmail.com>,
+        Ville Syrjala <ville.syrjala@linux.intel.com>,
+        Yi Liu <yi.l.liu@intel.com>, Karol Herbst <kherbst@redhat.com>,
+        "amd-gfx@lists.freedesktop.org" <amd-gfx@lists.freedesktop.org>,
+        Jason Gunthorpe <jgg@ziepe.ca>,
+        Ben Skeggs <bskeggs@redhat.com>,
+        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+        Kevin Tian <kevin.tian@intel.com>,
+        "Lazar, Lijo" <Lijo.Lazar@amd.com>,
         Daniel Vetter <daniel@ffwll.ch>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        David Airlie <airlied@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "H. Peter Anvin" <hpa@zytor.com>, Helge Deller <deller@gmx.de>,
-        Ingo Molnar <mingo@redhat.com>,
+        "Zhang, Bokun" <Bokun.Zhang@amd.com>,
+        "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Alex Williamson <alex.williamson@redhat.com>,
+        Abhishek Sahu <abhsahu@nvidia.com>,
         Maxime Ripard <mripard@kernel.org>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        x86@kernel.org
-Subject: Re: [PATCH 0/2] Allow disabling all native fbdev drivers and only
- keeping DRM emulation
-Message-ID: <ZJ8UVHEWXu1Jrg+I@smile.fi.intel.com>
-References: <20230629225113.297512-1-javierm@redhat.com>
- <ZJ8RY7ZUlryrPB50@smile.fi.intel.com>
- <878rc0etqe.fsf@minerva.mail-host-address-is-not-set>
- <ZJ8T/Fexkr9wEZoP@smile.fi.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ZJ8T/Fexkr9wEZoP@smile.fi.intel.com>
+        Rodrigo Vivi <rodrigo.vivi@intel.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
+        Yishai Hadas <yishaih@nvidia.com>,
+        Cornelia Huck <cohuck@redhat.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        "Deucher, Alexander" <Alexander.Deucher@amd.com>,
+        "Koenig, Christian" <Christian.Koenig@amd.com>,
+        "Zhang, Hawking" <Hawking.Zhang@amd.com>
+Subject: Re: [PATCH v7 6/8] PCI/VGA: Introduce is_boot_device function
+ callback to vga_client_register
+In-Reply-To: <20230630174156.GA487980@bhelgaas>
 Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+References: <20230630174156.GA487980@bhelgaas>
+Date:   Fri, 30 Jun 2023 21:32:20 +0300
+Message-ID: <87v8f4243v.fsf@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jun 30, 2023 at 08:42:21PM +0300, Andy Shevchenko wrote:
-> On Fri, Jun 30, 2023 at 07:38:01PM +0200, Javier Martinez Canillas wrote:
-> > Andy Shevchenko <andriy.shevchenko@linux.intel.com> writes:
-> > > On Fri, Jun 30, 2023 at 12:51:02AM +0200, Javier Martinez Canillas wrote:
+On Fri, 30 Jun 2023, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> On Fri, Jun 30, 2023 at 10:14:11AM +0800, suijingfeng wrote:
+>> On 2023/6/30 01:44, Limonciello, Mario wrote:
+>> > > On 2023/6/29 23:54, Bjorn Helgaas wrote:
+>> > > > On Thu, Jun 22, 2023 at 01:08:15PM +0800, Sui Jingfeng wrote:
+>
+>> > > > 4) Right now we're in the middle of the v6.5 merge window, so new
+>> > > >      content, e.g., this series, is too late for v6.5.  Most
+>> > > >      maintainers, including me, wait to merge new content until the
+>> > > >      merge window closes and a new -rc1 is tagged.  This merge window
+>> > > >      should close on July 9, and people will start merging content for
+>> > > >      v6.6, typically based on v6.5-rc1.
+>> > > 
+>> > > Would you will merge all of the patches in this series (e.g. including
+>> > > the patch for drm/amdgpu(7/8) and drm/radeon(8/8)) ?
+>> > > 
+>> > > Or just part of them?
+>
+> The bulk of this series is drivers/pci changes, so typically I would
+> merge all the patches after getting Acked-by tags from the other
+> subsystems (DRM and VFIO).
 
-...
+For the (negligible) i915 parts,
 
-> > >> The reason for doing this is that now with simpledrm, there's no need for
-> > >> the legacy fbdev (e.g: efifb or vesafb) drivers anymore and many distros
-> > >
-> > > How does simpledrm works with earlycon=efi?
-> > >
-> > 
-> > simpledrm isn't for earlycon. For that you use a different driver (i.e:
-> > drivers/firmware/efi/earlycon.c). I'm just talking about fbdev drivers
-> > here that could be replaced by simpledrm.
-> 
-> So, efifb can't be replaced. Please, fix your cover letter to reduce false
-> impression of the scope of usage of the simpledrm.
+Acked-by: Jani Nikula <jani.nikula@intel.com>
 
-Or tell how it can be used for earlycon on EFI platforms (if it can be).
+>> Is it possible to merge the PCI/VGA part as fast as possible,
+>> especially the PATCH-0006 PCI/VGA: Introduce is_boot_device function
+>> callback to vga_client_register
+>
+> We're in the middle of the v6.5 merge window, so it's too late to add
+> things to v6.5-rc1.  The most likely path for new material like this
+> would be to queue it for v6.6, which means I would merge it after
+> v6.5-rc1 is tagged (that tag will probably happen on July 9).
+
+Perhaps the part that causes confusion here is that the drm-misc-next
+and drm-intel-next branches, for example, are always open for new
+patches; it's just that there's a cutoff at around rc5/rc6 after which
+they start targeting the next+1 release. We basically hide the merge
+window from a lot of drm developers.
+
+> It would then be in -next until the v6.6 merge window opens (likely in
+> September), when it would be merged into Linus' tree.
+>
+> If the series fixes a regression or other major defect, it's
+> *possible* to merge things earlier, so they appear in v6.5.  But this
+> series doesn't seem to fall in that category, so I think v6.6 is a
+> more realistic target.
+>
+> Merging for v6.6 would include both the PCI parts and the DRM parts at
+> the same time, so hopefully that addresses your dependency concerns.
+
+I guess the main question is whether Sui Jingfeng has follow-up work
+planned in drm that depends on these being merged. This would set that
+back by a full release. (But it happens.)
+
+BR,
+Jani.
+
+
+
+>
+> I suggest that you wait until v6.5-rc1, rebase your patches so they
+> apply cleanly on that tag, collect all the Reviewed-by and Acked-by
+> tags, include them in your commit logs, and then repost them.
+>
+> Bjorn
 
 -- 
-With Best Regards,
-Andy Shevchenko
-
-
+Jani Nikula, Intel Open Source Graphics Center

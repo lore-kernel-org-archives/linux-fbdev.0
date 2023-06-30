@@ -2,383 +2,244 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B01E4C0015E
-	for <linux-fbdev@archiver.kernel.org>; Thu, 29 Jun 2023 22:52:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 464CFEB64DD
+	for <linux-fbdev@archiver.kernel.org>; Fri, 30 Jun 2023 02:14:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231545AbjF2Wwb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 29 Jun 2023 18:52:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53032 "EHLO
+        id S231950AbjF3COV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 29 Jun 2023 22:14:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54096 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231461AbjF2WwP (ORCPT
+        with ESMTP id S230013AbjF3COU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 29 Jun 2023 18:52:15 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52C1C2D63
-        for <linux-fbdev@vger.kernel.org>; Thu, 29 Jun 2023 15:51:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1688079083;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=YAXyw5cSv19lHG5FT64qf0eoLGlTjWx7HZp8kfcWz1U=;
-        b=Bfhj+otZfp/HuxRBTqjMTQTdVsUjbjjHZRlH+PWRtu35iObJ5WV1TPD1LsTf06A8cHkPAI
-        db9S27bpDKrRizFG1VfOXvHH7wlXEpe6kpRGD/nsKpRfXrYHw1UGyC87xBt18D60x945LT
-        xqGMWeMrzYraMgyvIuxAwZxdQztycRI=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-561-ZGENRwFXOkuC_fEck_eUhw-1; Thu, 29 Jun 2023 18:51:22 -0400
-X-MC-Unique: ZGENRwFXOkuC_fEck_eUhw-1
-Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-313fe11f5e2so759077f8f.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 29 Jun 2023 15:51:21 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688079081; x=1690671081;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=YAXyw5cSv19lHG5FT64qf0eoLGlTjWx7HZp8kfcWz1U=;
-        b=A/wTXcY8kkCWRfmag8YKQCUR1aDEmfwgNOspbH4KBjTqaXLiN0FhaFurEQu2S18LWW
-         sIL8K6PO9yC8dfEy+bOilY8GQEp/ZnOxN84dR5/uK1VxvDM4atO5ncVoFtWPv47uFFy3
-         Y/8lN0WesLzcRyXHxwkx1OOGPe+OuialSrfummpwSteRAnr+Kp0Xe7WYGJXrM7qg08CV
-         tWpGOY6BgneQr20iPQ6UXB5JzErqCY5Onot+3OHVUOe17S6vltVOaNJA1Q7SNnXqSiA0
-         +YeLt7Ppln+ghAIXTmrv1rBIZn6RSrsO6GSJsVxcwMJC4goU0SpUvkOdiO8IPX70ZQYo
-         cbmw==
-X-Gm-Message-State: ABy/qLbAVbAn1x0eDsuKsHoskGbKdk8UoU3dy8iRyod9AvwQrgyIbVQi
-        sa0Oqjyf5ThybKJ9tN9RTuVD7ZvUCWMcDF0mvoWGJXE6RFWX+0SNFBE2KNB6YYUH+ULs4uT+ux3
-        9rODghC0du0ezpdBrC093qmo=
-X-Received: by 2002:a5d:4688:0:b0:313:f8ca:989f with SMTP id u8-20020a5d4688000000b00313f8ca989fmr740606wrq.10.1688079080966;
-        Thu, 29 Jun 2023 15:51:20 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlFZ7b9QmVUmLNGAXuU3X5c4NLO4EQJ8+1xJQDGKxGNR00wBDY9lQ9qneS1jBj0+hGrRnG7Zzg==
-X-Received: by 2002:a5d:4688:0:b0:313:f8ca:989f with SMTP id u8-20020a5d4688000000b00313f8ca989fmr740589wrq.10.1688079080610;
-        Thu, 29 Jun 2023 15:51:20 -0700 (PDT)
-Received: from minerva.home (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id i6-20020adff306000000b00311339f5b06sm16795690wro.57.2023.06.29.15.51.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 29 Jun 2023 15:51:20 -0700 (PDT)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Arnd Bergmann <arnd@arndb.de>, Borislav Petkov <bp@alien8.de>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "H. Peter Anvin" <hpa@zytor.com>, Helge Deller <deller@gmx.de>,
-        Ingo Molnar <mingo@redhat.com>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        x86@kernel.org
-Subject: [PATCH 1/2] fbdev: Split frame buffer support in FB and FB_CORE symbols
-Date:   Fri, 30 Jun 2023 00:51:03 +0200
-Message-ID: <20230629225113.297512-2-javierm@redhat.com>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230629225113.297512-1-javierm@redhat.com>
-References: <20230629225113.297512-1-javierm@redhat.com>
+        Thu, 29 Jun 2023 22:14:20 -0400
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id C104730EF;
+        Thu, 29 Jun 2023 19:14:17 -0700 (PDT)
+Received: from loongson.cn (unknown [10.20.42.43])
+        by gateway (Coremail) with SMTP id _____8BxlfB4Op5kzh0EAA--.6712S3;
+        Fri, 30 Jun 2023 10:14:16 +0800 (CST)
+Received: from [10.20.42.43] (unknown [10.20.42.43])
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8BxxsxzOp5kA3oSAA--.41851S3;
+        Fri, 30 Jun 2023 10:14:11 +0800 (CST)
+Message-ID: <2c81fbe3-308a-4c5e-0150-32006253b3ea@loongson.cn>
+Date:   Fri, 30 Jun 2023 10:14:11 +0800
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.7.1
+Subject: Re: [PATCH v7 6/8] PCI/VGA: Introduce is_boot_device function
+ callback to vga_client_register
+To:     "Limonciello, Mario" <Mario.Limonciello@amd.com>,
+        "15330273260@189.cn" <15330273260@189.cn>,
+        Bjorn Helgaas <helgaas@kernel.org>
+Cc:     Bjorn Helgaas <bhelgaas@google.com>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        Cornelia Huck <cohuck@redhat.com>,
+        Karol Herbst <kherbst@redhat.com>,
+        "nouveau@lists.freedesktop.org" <nouveau@lists.freedesktop.org>,
+        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "Chai, Thomas" <YiPeng.Chai@amd.com>,
+        "Gao, Likun" <Likun.Gao@amd.com>, David Airlie <airlied@gmail.com>,
+        Ville Syrjala <ville.syrjala@linux.intel.com>,
+        Yi Liu <yi.l.liu@intel.com>,
+        "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+        "amd-gfx@lists.freedesktop.org" <amd-gfx@lists.freedesktop.org>,
+        Jason Gunthorpe <jgg@ziepe.ca>,
+        Ben Skeggs <bskeggs@redhat.com>,
+        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+        Kevin Tian <kevin.tian@intel.com>,
+        "Lazar, Lijo" <Lijo.Lazar@amd.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        "Zhang, Bokun" <Bokun.Zhang@amd.com>,
+        "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Jani Nikula <jani.nikula@linux.intel.com>,
+        Alex Williamson <alex.williamson@redhat.com>,
+        Abhishek Sahu <abhsahu@nvidia.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>,
+        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
+        Yishai Hadas <yishaih@nvidia.com>,
+        "Pan, Xinhui" <Xinhui.Pan@amd.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        "Deucher, Alexander" <Alexander.Deucher@amd.com>,
+        "Koenig, Christian" <Christian.Koenig@amd.com>,
+        "Zhang, Hawking" <Hawking.Zhang@amd.com>
+References: <20230629155436.GA397963@bhelgaas>
+ <bcfdc77d-a94d-bca1-56e3-5e14e91f6fd9@189.cn>
+ <MN0PR12MB6101CDB6FF9DC8F8EDEF5F45E225A@MN0PR12MB6101.namprd12.prod.outlook.com>
+Content-Language: en-US
+From:   suijingfeng <suijingfeng@loongson.cn>
+In-Reply-To: <MN0PR12MB6101CDB6FF9DC8F8EDEF5F45E225A@MN0PR12MB6101.namprd12.prod.outlook.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-CM-TRANSID: AQAAf8BxxsxzOp5kA3oSAA--.41851S3
+X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
+X-Coremail-Antispam: 1Uk129KBj93XoW3JryDGFWfuryxZw1xGryrZrc_yoW7ZF4xpr
+        WY9FsIkrs7Xr1rAF1kKa4UAF1jq3y8J343Wrn8t3W8ur909F1SqrZaqr4a9Fy5Ar1akF4Y
+        vw4agrn2k395Z3gCm3ZEXasCq-sJn29KB7ZKAUJUUUUd529EdanIXcx71UUUUU7KY7ZEXa
+        sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+        0xBIdaVrnRJUUUPqb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+        IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+        e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+        0_Cr0_Gr1UM28EF7xvwVC2z280aVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIEc7CjxVAF
+        wI0_Gr1j6F4UJwAaw2AFwI0_Jw0_GFyle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqjxCEc2
+        xF0cIa020Ex4CE44I27wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_
+        Jw0_WrylYx0Ex4A2jsIE14v26r4j6F4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvEwI
+        xGrwCYjI0SjxkI62AI1cAE67vIY487MxkF7I0En4kS14v26rWY6Fy7MxAIw28IcxkI7VAK
+        I48JMxC20s026xCaFVCjc4AY6r1j6r4UMxCIbckI1I0E14v26r1q6r43MI8I3I0E5I8CrV
+        AFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWrXVW8Jr1l
+        IxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVW8JVW5JwCI42IY6xIIjxv20xvEc7CjxV
+        AFwI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r4j
+        6F4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x07bUzu
+        AUUUUU=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Currently the CONFIG_FB option has to be enabled even if no legacy fbdev
-drivers are needed (e.g: only to have support for framebuffer consoles).
+Hi,
 
-The DRM subsystem has a fbdev emulation layer, but depends on CONFIG_FB
-and so it can only be enabled if that dependency is enabled as well.
+On 2023/6/30 01:44, Limonciello, Mario wrote:
+> [Public]
+>
+>> -----Original Message-----
+>> From: 15330273260@189.cn <15330273260@189.cn>
+>> Sent: Thursday, June 29, 2023 12:00 PM
+>> To: Bjorn Helgaas <helgaas@kernel.org>; Sui Jingfeng
+>> <suijingfeng@loongson.cn>
+>> Cc: Bjorn Helgaas <bhelgaas@google.com>; linux-fbdev@vger.kernel.org;
+>> Cornelia Huck <cohuck@redhat.com>; Karol Herbst <kherbst@redhat.com>;
+>> nouveau@lists.freedesktop.org; Joonas Lahtinen
+>> <joonas.lahtinen@linux.intel.com>; dri-devel@lists.freedesktop.org; Chai,
+>> Thomas <YiPeng.Chai@amd.com>; Limonciello, Mario
+>> <Mario.Limonciello@amd.com>; Gao, Likun <Likun.Gao@amd.com>; David
+>> Airlie <airlied@gmail.com>; Ville Syrjala <ville.syrjala@linux.intel.com>; Yi Liu
+>> <yi.l.liu@intel.com>; kvm@vger.kernel.org; amd-gfx@lists.freedesktop.org;
+>> Jason Gunthorpe <jgg@ziepe.ca>; Ben Skeggs <bskeggs@redhat.com>; linux-
+>> pci@vger.kernel.org; Kevin Tian <kevin.tian@intel.com>; Lazar, Lijo
+>> <Lijo.Lazar@amd.com>; Thomas Zimmermann <tzimmermann@suse.de>;
+>> Zhang, Bokun <Bokun.Zhang@amd.com>; intel-gfx@lists.freedesktop.org;
+>> Maarten Lankhorst <maarten.lankhorst@linux.intel.com>; Jani Nikula
+>> <jani.nikula@linux.intel.com>; Alex Williamson
+>> <alex.williamson@redhat.com>; Abhishek Sahu <abhsahu@nvidia.com>;
+>> Maxime Ripard <mripard@kernel.org>; Rodrigo Vivi <rodrigo.vivi@intel.com>;
+>> Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>; Yishai Hadas
+>> <yishaih@nvidia.com>; Pan, Xinhui <Xinhui.Pan@amd.com>; linux-
+>> kernel@vger.kernel.org; Daniel Vetter <daniel@ffwll.ch>; Deucher, Alexander
+>> <Alexander.Deucher@amd.com>; Koenig, Christian
+>> <Christian.Koenig@amd.com>; Zhang, Hawking <Hawking.Zhang@amd.com>
+>> Subject: Re: [PATCH v7 6/8] PCI/VGA: Introduce is_boot_device function
+>> callback to vga_client_register
+>>
+>> Hi,
+>>
+>> On 2023/6/29 23:54, Bjorn Helgaas wrote:
+>>> On Thu, Jun 22, 2023 at 01:08:15PM +0800, Sui Jingfeng wrote:
+>>>> Hi,
+>>>>
+>>>>
+>>>> A nouveau developer(Lyude) from redhat send me a R-B,
+>>>>
+>>>> Thanks for the developers of nouveau project.
+>>>>
+>>>>
+>>>> Please allow me add a link[1] here.
+>>>>
+>>>>
+>>>> [1]
+>> https://lore.kernel.org/all/0afadc69f99a36bc9d03ecf54ff25859dbc10e28.ca
+>> mel@redhat.com/
+>>> 1) Thanks for this.  If you post another version of this series,
+>>>      please pick up Lyude's Reviewed-by and include it in the relevant
+>>>      patches (as long as you haven't made significant changes to the
+>>>      code Lyude reviewed).
+>> Yes, no significant changes. Just fix typo.
+>>
+>> I also would like to add support for other DRM drivers.
+>>
+>> But I think this deserve another patch.
+>>
+>>>    Whoever applies this should automatically
+>>>      pick up Reviewed-by/Ack/etc that are replies to the version being
+>>>      applied, but they won't go through previous revisions to find them.
+>>>
+>>> 2) Please mention the commit to which the series applies.  I tried to
+>>>      apply this on v6.4-rc1, but it doesn't apply cleanly.
+>> Since I'm a graphic driver developer, I'm using drm-tip.
+>>
+>> I just have already pulled, it still apply cleanly on drm-tip.
+>>
+>>> 3) Thanks for including cover letters in your postings.  Please
+>>>      include a little changelog in the cover letter so we know what
+>>>      changed between v6 and v7, etc.
+>> No change between v6 and v7,
+>>
+>> it seems that it is because the mailbox don't allow me to sending too
+>> many mails a day.
+>>
+>> so some of the patch is failed to delivery because out of quota.
+>>
+>>
+>>> 4) Right now we're in the middle of the v6.5 merge window, so new
+>>>      content, e.g., this series, is too late for v6.5.  Most
+>>>      maintainers, including me, wait to merge new content until the
+>>>      merge window closes and a new -rc1 is tagged.  This merge window
+>>>      should close on July 9, and people will start merging content for
+>>>      v6.6, typically based on v6.5-rc1.
+>> I'm wondering
+>>
+>> Would you will merge all of the patches in this series (e.g. including
+>> the patch for drm/amdgpu(7/8) and drm/radeon(8/8)) ?
+>>
+>> Or just part of them?
+>>
+>> Emm, I don't know because my patch seems across different subsystem of
+>> Linux kernel.
+>>
+>> There is also a developer for AMDGPU (Mario) give me a R-B for the
+>> patch-0002 of this series.
+>>
+>> So, at least, PATCH-0001, PATCH-0002, PATCH-0003, PATCH-0004, PATCH-
+>> 0006
+>> are already OK(got reviewed by).
+>>
+>> Those 5 patch are already qualified to be merged, I think.
+> I think what you can do is pick up all the tags in your next version.  Once the
+> whole series has tags we can discuss how it merges.
 
-That means fbdev drivers have to be explicitly disabled if users want to
-enable CONFIG_FB, only to use fbcon and/or the DRM fbdev emulation layer.
+Thanks a lot, Mario.
 
-This patch introduces a CONFIG_FB_CORE option that could be enabled just
-to have the core support needed for CONFIG_DRM_FBDEV_EMULATION, allowing
-CONFIG_FB to be disabled (and automatically disabling all fbdev drivers).
 
-Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
----
+Is it possible to merge the PCI/VGA part as fast as possible, especially the
 
- arch/x86/Makefile                 |  2 +-
- arch/x86/video/Makefile           |  2 +-
- drivers/video/console/Kconfig     |  2 +-
- drivers/video/fbdev/Kconfig       | 62 ++++++++++++++++++-------------
- drivers/video/fbdev/core/Makefile | 14 +++----
- 5 files changed, 47 insertions(+), 35 deletions(-)
+PATCH-0006 PCI/VGA: Introduce is_boot_device function callback to vga_client_register
 
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index b39975977c03..89a02e69be5f 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -259,7 +259,7 @@ drivers-$(CONFIG_PCI)            += arch/x86/pci/
- # suspend and hibernation support
- drivers-$(CONFIG_PM) += arch/x86/power/
- 
--drivers-$(CONFIG_FB) += arch/x86/video/
-+drivers-$(CONFIG_FB_CORE) += arch/x86/video/
- 
- ####
- # boot loader support. Several targets are kept for legacy purposes
-diff --git a/arch/x86/video/Makefile b/arch/x86/video/Makefile
-index 11640c116115..5ebe48752ffc 100644
---- a/arch/x86/video/Makefile
-+++ b/arch/x86/video/Makefile
-@@ -1,2 +1,2 @@
- # SPDX-License-Identifier: GPL-2.0-only
--obj-$(CONFIG_FB)               += fbdev.o
-+obj-$(CONFIG_FB_CORE)		+= fbdev.o
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index a2a88d42edf0..1b5a319971ed 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -72,7 +72,7 @@ config DUMMY_CONSOLE_ROWS
- 
- config FRAMEBUFFER_CONSOLE
- 	bool "Framebuffer Console support"
--	depends on FB && !UML
-+	depends on FB_CORE && !UML
- 	select VT_HW_CONSOLE_BINDING
- 	select CRC32
- 	select FONT_SUPPORT
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index cecf15418632..74d7a305657a 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -6,10 +6,8 @@
- config FB_NOTIFY
- 	bool
- 
--menuconfig FB
--	tristate "Support for frame buffer devices"
--	select FB_NOTIFY
--	select VIDEO_CMDLINE
-+menuconfig FB_CORE
-+	tristate "Core support for frame buffer devices"
- 	help
- 	  The frame buffer device provides an abstraction for the graphics
- 	  hardware. It represents the frame buffer of some video hardware and
-@@ -33,6 +31,20 @@ menuconfig FB
- 	  <http://www.munted.org.uk/programming/Framebuffer-HOWTO-1.3.html> for more
- 	  information.
- 
-+	  This options enables the core support for frame buffer devices.
-+
-+menuconfig FB
-+	tristate "Support for frame buffer device drivers"
-+	depends on FB_CORE
-+	select FB_NOTIFY
-+	select VIDEO_CMDLINE
-+	help
-+	  This enables support for native frame buffer device (fbdev) drivers.
-+
-+	  The DRM subsystem provides support for emulated frame buffer devices
-+	  on top of KMS drivers, but this option allows legacy fbdev drivers to
-+	  be enabled as well.
-+
- 	  Say Y here and to the driver for your graphics board below if you
- 	  are compiling a kernel for a non-x86 architecture.
- 
-@@ -44,7 +56,7 @@ menuconfig FB
- 
- config FIRMWARE_EDID
- 	bool "Enable firmware EDID"
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  This enables access to the EDID transferred from the firmware.
- 	  On the i386, this is from the Video BIOS. Enable this if DDC/I2C
-@@ -59,7 +71,7 @@ config FIRMWARE_EDID
- 
- config FB_DEVICE
- 	bool "Provide legacy /dev/fb* device"
--	depends on FB
-+	depends on FB_CORE
- 	default y
- 	help
- 	  Say Y here if you want the legacy /dev/fb* device file and
-@@ -69,13 +81,13 @@ config FB_DEVICE
- 
- config FB_DDC
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	select I2C_ALGOBIT
- 	select I2C
- 
- config FB_CFB_FILLRECT
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the cfb_fillrect function for generic software rectangle
- 	  filling. This is used by drivers that don't provide their own
-@@ -83,7 +95,7 @@ config FB_CFB_FILLRECT
- 
- config FB_CFB_COPYAREA
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the cfb_copyarea function for generic software area copying.
- 	  This is used by drivers that don't provide their own (accelerated)
-@@ -91,7 +103,7 @@ config FB_CFB_COPYAREA
- 
- config FB_CFB_IMAGEBLIT
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the cfb_imageblit function for generic software image
- 	  blitting. This is used by drivers that don't provide their own
-@@ -99,7 +111,7 @@ config FB_CFB_IMAGEBLIT
- 
- config FB_CFB_REV_PIXELS_IN_BYTE
- 	bool
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Allow generic frame-buffer functions to work on displays with 1, 2
- 	  and 4 bits per pixel depths which has opposite order of pixels in
-@@ -107,7 +119,7 @@ config FB_CFB_REV_PIXELS_IN_BYTE
- 
- config FB_SYS_FILLRECT
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the sys_fillrect function for generic software rectangle
- 	  filling. This is used by drivers that don't provide their own
-@@ -115,7 +127,7 @@ config FB_SYS_FILLRECT
- 
- config FB_SYS_COPYAREA
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the sys_copyarea function for generic software area copying.
- 	  This is used by drivers that don't provide their own (accelerated)
-@@ -123,7 +135,7 @@ config FB_SYS_COPYAREA
- 
- config FB_SYS_IMAGEBLIT
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the sys_imageblit function for generic software image
- 	  blitting. This is used by drivers that don't provide their own
-@@ -162,22 +174,22 @@ endchoice
- 
- config FB_SYS_FOPS
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 
- config FB_DEFERRED_IO
- 	bool
--	depends on FB
-+	depends on FB_CORE
- 
- config FB_IO_HELPERS
- 	bool
--	depends on FB
-+	depends on FB_CORE
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_IMAGEBLIT
- 
- config FB_SYS_HELPERS
- 	bool
--	depends on FB
-+	depends on FB_CORE
- 	select FB_SYS_COPYAREA
- 	select FB_SYS_FILLRECT
- 	select FB_SYS_FOPS
-@@ -185,34 +197,34 @@ config FB_SYS_HELPERS
- 
- config FB_SYS_HELPERS_DEFERRED
- 	bool
--	depends on FB
-+	depends on FB_CORE
- 	select FB_DEFERRED_IO
- 	select FB_SYS_HELPERS
- 
- config FB_HECUBA
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	depends on FB_DEFERRED_IO
- 
- config FB_SVGALIB
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Common utility functions useful to fbdev drivers of VGA-based
- 	  cards.
- 
- config FB_MACMODES
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 
- config FB_BACKLIGHT
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	select BACKLIGHT_CLASS_DEVICE
- 
- config FB_MODE_HELPERS
- 	bool "Enable Video Mode Handling Helpers"
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  This enables functions for handling video modes using the
- 	  Generalized Timing Formula and the EDID parser. A few drivers rely
-@@ -222,7 +234,7 @@ config FB_MODE_HELPERS
- 
- config FB_TILEBLITTING
- 	bool "Enable Tile Blitting Support"
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  This enables tile blitting.  Tile blitting is a drawing technique
- 	  where the screen is divided into rectangular sections (tiles), whereas
-diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
-index 9150bafd9e89..88ef39dad03b 100644
---- a/drivers/video/fbdev/core/Makefile
-+++ b/drivers/video/fbdev/core/Makefile
-@@ -1,22 +1,22 @@
- # SPDX-License-Identifier: GPL-2.0
- obj-$(CONFIG_FB_NOTIFY)           += fb_notify.o
--obj-$(CONFIG_FB)                  += fb.o
--fb-y                              := fb_backlight.o \
-+obj-$(CONFIG_FB_CORE)             += fb_core.o
-+fb_core-y                         := fb_backlight.o \
-                                      fb_info.o \
-                                      fbmem.o fbmon.o fbcmap.o \
-                                      modedb.o fbcvt.o fb_cmdline.o fb_io_fops.o
--fb-$(CONFIG_FB_DEFERRED_IO)       += fb_defio.o
--fb-$(CONFIG_FB_DEVICE)            += fb_chrdev.o \
-+fb_core-$(CONFIG_FB_DEFERRED_IO)  += fb_defio.o
-+fb_core-$(CONFIG_FB_DEVICE)       += fb_chrdev.o \
-                                      fb_procfs.o \
-                                      fbsysfs.o
- 
- ifeq ($(CONFIG_FRAMEBUFFER_CONSOLE),y)
--fb-y				  += fbcon.o bitblit.o softcursor.o
-+fb_core-y			  += fbcon.o bitblit.o softcursor.o
- ifeq ($(CONFIG_FB_TILEBLITTING),y)
--fb-y				  += tileblit.o
-+fb_core-y			  += tileblit.o
- endif
- ifeq ($(CONFIG_FRAMEBUFFER_CONSOLE_ROTATION),y)
--fb-y				  += fbcon_rotate.o fbcon_cw.o fbcon_ud.o \
-+fb_core-y			  += fbcon_rotate.o fbcon_cw.o fbcon_ud.o \
- 				     fbcon_ccw.o
- endif
- endif
--- 
-2.41.0
+As this patch is fundamental, it introduce no functional change, as long as the drm
+
+driver side don't introduce a callback.
+
+I'm not hurry, but drm driver-side's patch have a dependency on this patch,
+
+I think it is better the PCI/VGA-side's patch got merge first.
+
+At least for get the first four cleanup(0001 ~ 0004) patch merged first,
+
+so that I don't have to send so much on the next version on one series.
+
+Being exposed so far, there no obvious objection.
+
+It saying that other people also want it got merged.
+
+Bjorn, is this OK ?
+
+>
+>> I means that if you could merge those 5 patch first, then there no need
+>> to send another version again.
+>>
+>> I will refine the rest patch with more details and description.
+>>
+>> I'm fear of making too much noise.
+>>
+>>> Bjorn
 

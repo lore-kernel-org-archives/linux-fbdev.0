@@ -2,128 +2,203 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79B25EB64D7
-	for <linux-fbdev@archiver.kernel.org>; Fri, 30 Jun 2023 08:53:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 333DAEB64D7
+	for <linux-fbdev@archiver.kernel.org>; Fri, 30 Jun 2023 09:02:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232628AbjF3Ixp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 30 Jun 2023 04:53:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52250 "EHLO
+        id S232234AbjF3JCA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 30 Jun 2023 05:02:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54548 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232663AbjF3Ixe (ORCPT
+        with ESMTP id S231140AbjF3JB7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 30 Jun 2023 04:53:34 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 60C3235A0;
-        Fri, 30 Jun 2023 01:53:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1688115199; x=1688719999; i=deller@gmx.de;
- bh=yclpbwa2nMn46Zo9sja7sWvN3MOdzaJ89fOvhuYL0vw=;
- h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=np0zpTfkYv7fmxlCu9VmHKMWcOGepbahVM+YISY4DJLVUuS1QSZ6jtLExKknE40cZHjEiNn
- 8qEBAb3bdBFjNRzorG0lD91Ki3+Ae7Fb0GsI9FkFlYoA63OYVSOh+NSSygDvifCRDdJiA4h49
- shVxX5jAmK/cY2N9mRtqCs/z4TeVxuFoHK7XN0wSRhLJodcPe801BdBiqXkZa3cMe/Sc8FOGk
- q+K94jT4NGsoIMEUCZjtH0CZEZHqgX2Qop8mXi6gLuOQkoW5OE0qfoUdUSM8oiVuFTgZuFDsU
- ba4zbf4jpgxqKv1TLDBP45YlAje//h2uaNE6Zbhr5Tsp4eETiGtg==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.148.7]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MybGh-1pq3F547zR-00ywRy; Fri, 30
- Jun 2023 10:53:19 +0200
-Message-ID: <bd6d481b-22be-217f-e6f9-95a31575d7af@gmx.de>
-Date:   Fri, 30 Jun 2023 10:53:17 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH] fbdev: imxfb: switch to DEFINE_SIMPLE_DEV_PM_OPS
-Content-Language: en-US
-To:     Martin Kaiser <martin@kaiser.cx>
-Cc:     Pengutronix Kernel Team <kernel@pengutronix.de>,
-        linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        Fri, 30 Jun 2023 05:01:59 -0400
+Received: from out5-smtp.messagingengine.com (out5-smtp.messagingengine.com [66.111.4.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6EC752694;
+        Fri, 30 Jun 2023 02:01:53 -0700 (PDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
+        by mailout.nyi.internal (Postfix) with ESMTP id E7AA65C077C;
+        Fri, 30 Jun 2023 05:01:50 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute6.internal (MEProxy); Fri, 30 Jun 2023 05:01:50 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+        :cc:content-type:content-type:date:date:from:from:in-reply-to
+        :in-reply-to:message-id:mime-version:references:reply-to:sender
+        :subject:subject:to:to; s=fm1; t=1688115710; x=1688202110; bh=s5
+        e30PYxznm5bjH94t6OSnq1UQxAXEBynjfZFskfTro=; b=Fk2mfj2pHEgQtYfuCn
+        w47ClgV8qhWugDTEOUGSH786h9rQ2x/jUj/LwvKWOqH90KgO19JOG95TDIET818o
+        Wzp/SKtl3L9Nm4ayuKJV1PRjKHbaXVrI/gA85gSmLXiH3ySxUO/GM1EeTsz3Bdwx
+        I2Eu4JhEwF4uEDuqvPIKQVj6hwzvmqe1eIlL9OtPeXpimKr42mkTxTnfUwFlu65W
+        cyQoT5RkSKhNegTyQhvnOdNBRQSNlH6hsOp1tqKhYLCmvdgLmGpzaSs3XpWK+nJK
+        8wVxwIuUuqqYvgAwz7TOQm6S6+FC/k3pjYmG6ds5k5BsRdmhvrYYAtMFLu5Vvfsu
+        v6xw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-type:content-type:date:date
+        :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+        :x-sasl-enc; s=fm2; t=1688115710; x=1688202110; bh=s5e30PYxznm5b
+        jH94t6OSnq1UQxAXEBynjfZFskfTro=; b=dYeRIX6lOKWnLkaZZ2MKUm5z0ISjy
+        cdOYKBWHmqviM14FTL/UACwzYmajEmcmj1E3Qo/gQ1fQ/NBQDyt6QZ2GteGOlsBk
+        3FPFHB8XO6svZ4ZMcwY4fdFBw/i4fH25B6CBquWlJkvL55f416khIJWFaIfkWPXl
+        I0s3/q1hpkc3+1cR/UqeL9UVI93zY0hjB8k0VdfuQNVHoe6hx5hZzMjRv0oVFbOl
+        f0qML2SIGDs0YcYV6Ewv97y/05coRF3kvY8g32EhFEvnJ12uUomVDzxO+QMdytHY
+        9X17D/7KGC4mlAE0lw+eYbEki1+PTUjUfwwLqP3klWQtVoWTBsjUJsqyw==
+X-ME-Sender: <xms:-5meZD20VPfMckdHCgqUo96PrE7aAKg5cpfFr8n9nIPbHG3gPcvFGw>
+    <xme:-5meZCGoMb9-OmXmQjuUmcu33LD0yTQ6L6eWWp6_2cnpQNATQNM__WourHNgUA2tF
+    cbc-XBVAvtcjxZjpn8>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrtdeigddutdcutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
+    fjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdetrhhn
+    ugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtth
+    gvrhhnpeffheeugeetiefhgeethfejgfdtuefggeejleehjeeutefhfeeggefhkedtkeet
+    ffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrh
+    hnugesrghrnhgusgdruggv
+X-ME-Proxy: <xmx:_JmeZD6U_piJmM8svyuqu2M2OMIWxG-UqxEayVD4NhxZ61W8BsIRLg>
+    <xmx:_JmeZI0-oI8SfzRysS6a47fzHBEpWkSc-C0cCxsqPXRuZ2YnOhEo6Q>
+    <xmx:_JmeZGEUrUsIsV1WKovHr6etgK17kY8izd85URWL8w-651rxUE_f1g>
+    <xmx:_pmeZEGfbas44gfWicUAyNJWee57qwJM-Wq-yz9AfeB8Q6rhS2CVmA>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+        id CD041B6008D; Fri, 30 Jun 2023 05:01:47 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-499-gf27bbf33e2-fm-20230619.001-gf27bbf33
+Mime-Version: 1.0
+Message-Id: <723a3c51-7997-46d0-9262-68f33384a9e7@app.fastmail.com>
+In-Reply-To: <20230629225113.297512-2-javierm@redhat.com>
+References: <20230629225113.297512-1-javierm@redhat.com>
+ <20230629225113.297512-2-javierm@redhat.com>
+Date:   Fri, 30 Jun 2023 11:01:27 +0200
+From:   "Arnd Bergmann" <arnd@arndb.de>
+To:     "Javier Martinez Canillas" <javierm@redhat.com>,
         linux-kernel@vger.kernel.org
-References: <20230628132652.87202-1-martin@kaiser.cx>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20230628132652.87202-1-martin@kaiser.cx>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:UJmk3kDYtKsx9v8NINHGRE4AmIzh149vn7KQFoeF222OUiWAlwQ
- yhpu6zpLfmmxwnnZIP5W2bqI2d6yJmN+xs/Mj3tsKIyq6PGKCeaN96ncUkTWpVbPa5nGBgH
- 5Rro5Vk9IR4TX1iDU+lHXTN27y3J6dids0L4eA00rfjbcrbNWWudJjI4IykIsQZJT8Bv+cn
- YOi6ZXIM2FBRVCjrzIqgA==
-UI-OutboundReport: notjunk:1;M01:P0:OzRIr3icWdo=;uFSp3F0P2MjpucVdZ7yC5En2sZ/
- DPCdCYXIE4a584xpGHo8/5foXPF9YZZk3v4x5ZTp6JTZrfgySSUH30vIBjH2iuXxK1vwH5mVn
- IPfIRsxSzs5mJWqfRczMKe1hmCAdy/5mZEeGNMmAf9Ft9QJbQn1W3FTZAf0tjmA/ZqQN7lPiq
- 9bbZC2izISPqfdKbeHavme6Jl+c9zpDaO4giyiZgmMBV4nuoBRtazkaoyo1oBmTJT+W1jrS4g
- yEuybnm8UbI0s0UOupVSXh7XqdQDAODHG/HYI1VB5B4HCedsJ+8ndhWlgFoVwevKiDWpAp+L5
- 73XoJTWrqAz9HXAtbGhfBLfH8N5WsE4ChJGCD3duwzFm23CxyIsmCr4XeJXvXllnCA4pmTRpS
- 7GKpVvJiJ8CMEwhAX3GUN6vTL6gWEdrb+pxsYxq5uURGO4LU6nI4X+WQWkSsS/H9vmE9VweR7
- NHei4rTgRXsMhdqThZOMbWmjTnVk4sKzN4hOsTqHNVhLpiIUiR1XR5Pjf4U0I/9cwF/XWa9Zf
- Wdldea/IfoTmivzox/B7g+VS6ke+pkM2T3KmSFxS9s7a7J+R9K3GQGmugg0eVvbDojMroDIPV
- vTCzkm2IHFgEwT0BJLpMBxBC2xXJAa++Hz2Sk+YPNHF+r1gdKNK+zBQ9AYFa+hjjbmjQ0Mpc2
- IZIbnq3pxRh1+lx1868fK5folGFXz58vfcvNpgacutZu83hiDKeibfJ9KvldQwnhQHx7+/ouh
- 1TPivBlmbjz3sjYCms18cWjrr6YLsL3wo67TiIYgs/+cxgx38tPGkcXWUSWfUo6yhCUEpOORN
- Yko0s1e0pUt3KQHo/BKVcrrmQylGC5/fpHR2O51rGQ+XbhhU2ufr6ZG5WZ2Ms8kYLMX0VDnVH
- 8MbzGuhi4WdCMUSYmWE1iDxzPwuBYu10XDDc4QqN6m8Wun13fbO3TizuKc4ddfOCMApxbvG22
- hP183mz5qBNPSvPEJoQDAWwG/Fg=
+Cc:     "Geert Uytterhoeven" <geert@linux-m68k.org>,
+        "Thomas Zimmermann" <tzimmermann@suse.de>,
+        "Andy Shevchenko" <andriy.shevchenko@linux.intel.com>,
+        "Borislav Petkov" <bp@alien8.de>,
+        "Daniel Vetter" <daniel@ffwll.ch>,
+        "Dave Hansen" <dave.hansen@linux.intel.com>,
+        "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+        "H. Peter Anvin" <hpa@zytor.com>, "Helge Deller" <deller@gmx.de>,
+        "Ingo Molnar" <mingo@redhat.com>,
+        "Randy Dunlap" <rdunlap@infradead.org>,
+        "Sam Ravnborg" <sam@ravnborg.org>,
+        "Thomas Gleixner" <tglx@linutronix.de>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        x86@kernel.org
+Subject: Re: [PATCH 1/2] fbdev: Split frame buffer support in FB and FB_CORE symbols
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 6/28/23 15:26, Martin Kaiser wrote:
-> SIMPLE_DEV_PM_OPS is deprecated, replace it with DEFINE_SIMPLE_DEV_PM_OP=
-S
-> and use pm_sleep_ptr for setting the driver's pm routines. We can now
-> remove the __maybe_unused qualifier in the suspend and resume functions.
+On Fri, Jun 30, 2023, at 00:51, Javier Martinez Canillas wrote:
+> Currently the CONFIG_FB option has to be enabled even if no legacy fbdev
+> drivers are needed (e.g: only to have support for framebuffer consoles).
 >
-> Signed-off-by: Martin Kaiser <martin@kaiser.cx>
-
-both patches applied.
-
-Thanks!
-Helge
-
+> The DRM subsystem has a fbdev emulation layer, but depends on CONFIG_FB
+> and so it can only be enabled if that dependency is enabled as well.
+>
+> That means fbdev drivers have to be explicitly disabled if users want to
+> enable CONFIG_FB, only to use fbcon and/or the DRM fbdev emulation layer.
+>
+> This patch introduces a CONFIG_FB_CORE option that could be enabled just
+> to have the core support needed for CONFIG_DRM_FBDEV_EMULATION, allowing
+> CONFIG_FB to be disabled (and automatically disabling all fbdev drivers).
+>
+> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
 > ---
->   drivers/video/fbdev/imxfb.c | 8 ++++----
->   1 file changed, 4 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-> index 5fbcb78a9cae..04f3bf30a529 100644
-> --- a/drivers/video/fbdev/imxfb.c
-> +++ b/drivers/video/fbdev/imxfb.c
-> @@ -1066,7 +1066,7 @@ static void imxfb_remove(struct platform_device *p=
-dev)
->   	framebuffer_release(info);
->   }
->
-> -static int __maybe_unused imxfb_suspend(struct device *dev)
-> +static int imxfb_suspend(struct device *dev)
->   {
->   	struct fb_info *info =3D dev_get_drvdata(dev);
->   	struct imxfb_info *fbi =3D info->par;
-> @@ -1076,7 +1076,7 @@ static int __maybe_unused imxfb_suspend(struct dev=
-ice *dev)
->   	return 0;
->   }
->
-> -static int __maybe_unused imxfb_resume(struct device *dev)
-> +static int imxfb_resume(struct device *dev)
->   {
->   	struct fb_info *info =3D dev_get_drvdata(dev);
->   	struct imxfb_info *fbi =3D info->par;
-> @@ -1086,13 +1086,13 @@ static int __maybe_unused imxfb_resume(struct de=
-vice *dev)
->   	return 0;
->   }
->
-> -static SIMPLE_DEV_PM_OPS(imxfb_pm_ops, imxfb_suspend, imxfb_resume);
-> +static DEFINE_SIMPLE_DEV_PM_OPS(imxfb_pm_ops, imxfb_suspend, imxfb_resu=
-me);
->
->   static struct platform_driver imxfb_driver =3D {
->   	.driver		=3D {
->   		.name	=3D DRIVER_NAME,
->   		.of_match_table =3D imxfb_of_dev_id,
-> -		.pm	=3D &imxfb_pm_ops,
-> +		.pm	=3D pm_sleep_ptr(&imxfb_pm_ops),
->   	},
->   	.probe		=3D imxfb_probe,
->   	.remove_new	=3D imxfb_remove,
 
+This looks really nice!
+
+I tried to do something like this a few years ago, but failed as
+I did too much at once by attempting to cut out msot of the fb core
+support that is not actually used by DRM at the same time.
+
+Doing just the Kconfig bits as you do here is probably better
+anyway, cutting out unneeded bits into separate modules or #ifdef
+sections can come later.
+
+> @@ -59,7 +71,7 @@ config FIRMWARE_EDID
+> 
+>  config FB_DEVICE
+>  	bool "Provide legacy /dev/fb* device"
+> -	depends on FB
+> +	depends on FB_CORE
+>  	default y
+>  	help
+>  	  Say Y here if you want the legacy /dev/fb* device file and
+
+I don't see this symbol in linux-next yet, what tree are you using
+as a base?
+
+> @@ -69,13 +81,13 @@ config FB_DEVICE
+> 
+>  config FB_DDC
+>  	tristate
+> -	depends on FB
+> +	depends on FB_CORE
+>  	select I2C_ALGOBIT
+>  	select I2C
+
+This seems to only be used by actual fbdev drivers, so maybe
+don't change the dependency here.
+
+> @@ -162,22 +174,22 @@ endchoice
+> 
+>  config FB_SYS_FOPS
+>  	tristate
+> -	depends on FB
+> +	depends on FB_CORE
+
+Same for this one
+
+>  config FB_HECUBA
+>  	tristate
+> -	depends on FB
+> +	depends on FB_CORE
+>  	depends on FB_DEFERRED_IO
+> 
+>  config FB_SVGALIB
+>  	tristate
+> -	depends on FB
+> +	depends on FB_CORE
+>  	help
+>  	  Common utility functions useful to fbdev drivers of VGA-based
+>  	  cards.
+>  config FB_MACMODES
+>  	tristate
+> -	depends on FB
+> +	depends on FB_CORE
+> 
+
+These three seem to actually be part of fbdev drivers rather
+than the core, and it may be best to move them into
+drviers/video/fbdev/ as standalone modules. That would be a
+separate patch of course.
+ 
+>  config FB_BACKLIGHT
+>  	tristate
+> -	depends on FB
+> +	depends on FB_CORE
+>  	select BACKLIGHT_CLASS_DEVICE
+
+Separating this one from FB_CORE would help avoid circular dependencies,
+this one keeps causing issues.
+
+> @@ -1,22 +1,22 @@
+>  # SPDX-License-Identifier: GPL-2.0
+>  obj-$(CONFIG_FB_NOTIFY)           += fb_notify.o
+> -obj-$(CONFIG_FB)                  += fb.o
+> -fb-y                              := fb_backlight.o \
+> +obj-$(CONFIG_FB_CORE)             += fb_core.o
+> +fb_core-y                         := fb_backlight.o \
+>                                       fb_info.o \
+>                                       fbmem.o fbmon.o fbcmap.o \
+>                                       modedb.o fbcvt.o fb_cmdline.o 
+
+I would not bother renaming the module itself here, that
+might cause problems if anything relies on loading the
+module by name or a named module parameter.
+
+      Arnd

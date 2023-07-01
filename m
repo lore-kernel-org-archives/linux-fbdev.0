@@ -2,59 +2,58 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BDC66EB64DC
-	for <linux-fbdev@archiver.kernel.org>; Sat,  1 Jul 2023 21:46:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08172EB64DC
+	for <linux-fbdev@archiver.kernel.org>; Sat,  1 Jul 2023 21:46:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229554AbjGAVqD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 1 Jul 2023 17:46:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50872 "EHLO
+        id S229755AbjGAVqP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 1 Jul 2023 17:46:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50876 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229523AbjGAVqC (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 1 Jul 2023 17:46:02 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 45AE9171B
+        with ESMTP id S229502AbjGAVqH (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 1 Jul 2023 17:46:07 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C5261717
         for <linux-fbdev@vger.kernel.org>; Sat,  1 Jul 2023 14:45:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
         s=mimecast20190719; t=1688247916;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=CVp6/k8iItY4Fh6tN5JBgOkeUtA2k8q9cd5KwLvRASM=;
-        b=eQh6g9WMHzalF5+MuTk5vXUs48/u42il59kWIJFrnP9bnI+6JQGYMBm/8TUEeVRnDxEdu1
-        zxV7WZTATuDSAbrFL1bjBr87ZjSt2doffsp4wmDlfebC2QJxe+PhXv/qw1+pumIvz/oxSf
-        vnrhpHnxU2xr+Y+p55NDNBCytaro+0g=
-Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
- [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+         content-transfer-encoding:content-transfer-encoding;
+        bh=ixfgD95cECm9IJRwnBAQBSBQpbSMzbZAJ/z6SVP266o=;
+        b=DnHoLUHbHYE6h6eDw5tRySeASE/OSY3gTDS2yJGtEr845KelDnonfF8zY6WDc5gb6QU1rb
+        W3HwDxC2Y21Cj3hNmF5no0yq9ABZusPbi4k0o1FIL1L+gLc9o2dCOf3W6sGPOwbew+xmtR
+        jCmhQ8jdKYVSY5TrDlIiaMobxyU71bI=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-389-4ZFoJ9p7PUSrVp1E-mu6EQ-1; Sat, 01 Jul 2023 17:45:15 -0400
-X-MC-Unique: 4ZFoJ9p7PUSrVp1E-mu6EQ-1
-Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-3f9bef91aa4so18319885e9.3
-        for <linux-fbdev@vger.kernel.org>; Sat, 01 Jul 2023 14:45:15 -0700 (PDT)
+ us-mta-344-W4qkQlRBPCW2Om6F42fKIQ-1; Sat, 01 Jul 2023 17:45:13 -0400
+X-MC-Unique: W4qkQlRBPCW2Om6F42fKIQ-1
+Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-3fa871e1eaaso38697785e9.3
+        for <linux-fbdev@vger.kernel.org>; Sat, 01 Jul 2023 14:45:13 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688247914; x=1690839914;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=CVp6/k8iItY4Fh6tN5JBgOkeUtA2k8q9cd5KwLvRASM=;
-        b=Rj6d+A5Zivrqt/v50wWJZi90z81zhFgNOnBSAmp+BnbD9X5+NSKkjRhUCxFPKyb0AY
-         fpdwko+0cU3/BKmKmwkUHOhJfw4vKXs7VXTtFKCXnTDCmJZ11pk5uS8VSgmoKNlNJPDD
-         C7h/xPx4/1d2Fw3Ol9y8Jr8mARes1pnY95S50Zjt41VAmFzDxQV26AC+Z6kNfCjSr7A5
-         kO1kr0xCn+ZFfKxNUI2dqWUN6Dd7CeHUpLsh5bNb5ZVAw6Ym8YxDMHPcW2kySIifyTUP
-         hlLPHG3Ed5MNQAgcfEicq7+eegsFdxnTF14J5bLZ+GUrcCW7ASY/7ygvuH0nKmoL/QQG
-         UWTg==
-X-Gm-Message-State: AC+VfDy1vsqguWG6kvs5+doMTODR1oCqhlQaWszeragtTjqzc/AoozOx
-        +93vprNI7YkpApaLr1X3YOKbkd8UNi0dx4PYKZQcRHyJ/jPGE7wa0rYceHia62bfz42dkDp4c7/
-        15wgU4hGU8QU8fwp6lccPa0w=
-X-Received: by 2002:a1c:7706:0:b0:3fb:b61f:c719 with SMTP id t6-20020a1c7706000000b003fbb61fc719mr4959573wmi.33.1688247914152;
-        Sat, 01 Jul 2023 14:45:14 -0700 (PDT)
-X-Google-Smtp-Source: ACHHUZ5WtvTVFU6XcG3QtAxzUOBs4bnSkgPG7Dra6Iy7iETJyiZfrdtFMs1g1wQAz4NSuuTBGfeRFg==
-X-Received: by 2002:a1c:7706:0:b0:3fb:b61f:c719 with SMTP id t6-20020a1c7706000000b003fbb61fc719mr4959554wmi.33.1688247913775;
-        Sat, 01 Jul 2023 14:45:13 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1688247912; x=1690839912;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=ixfgD95cECm9IJRwnBAQBSBQpbSMzbZAJ/z6SVP266o=;
+        b=irDAlg2Dsqx0gTZWl4x8MJwFXkb2fNXSlN8OmoRBB8wOhwkgaHaPWxBf04fdrQnjez
+         J7VYFTGYBMJkxaWPqrXJ7nK3Ndq9PWHqWMiaPwKfSXMwaj9/zOfNX5nYVeIBh4RIVgCh
+         FECDu0ThLffkfzPGkd/J6iay8iUxzOrhl4nbtCNH+Y6cqlOE6TP6Op73UdFbANr3zcwi
+         ruhlfo3FFtvFx9dDQDoOoyG0zB5t1IlVAy8FcGLjQidmMIJbYZHP/kCb/HQQkhEgr/ef
+         1jj+AZlP/sp5StKbkkoAfQiJU3z5B88j7oWHcx3qrMFOkRwreBx/d0loKkgcMC3kLBFr
+         An0Q==
+X-Gm-Message-State: AC+VfDzuPc0ZlAWGgV9LeU/Hl6h9v+Oc49QdoGOwd+7g6lUqbdL0jHKv
+        eh4F7TSbmwGUGGp3C6P88JTF9rHzPqp26lNj2SeLnRuTVEu0H/Yo29qFhKm5fQwuCr3POI1W+Sl
+        HEiNbgyKV7uI04XQLxMIlYzI=
+X-Received: by 2002:a7b:cd8e:0:b0:3fa:8aed:d57f with SMTP id y14-20020a7bcd8e000000b003fa8aedd57fmr6784944wmj.24.1688247912608;
+        Sat, 01 Jul 2023 14:45:12 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ4VVFAC+mKe4oPCU8/6h1nc/0/NeVojU7eqWExkSndccFGWikoSilyCREx/O03MkmAP6nkbXg==
+X-Received: by 2002:a7b:cd8e:0:b0:3fa:8aed:d57f with SMTP id y14-20020a7bcd8e000000b003fa8aedd57fmr6784914wmj.24.1688247912252;
+        Sat, 01 Jul 2023 14:45:12 -0700 (PDT)
 Received: from minerva.home (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id o10-20020a1c750a000000b003fbc0ea491dsm6913800wmc.40.2023.07.01.14.45.12
+        by smtp.gmail.com with ESMTPSA id o10-20020a1c750a000000b003fbc0ea491dsm6913800wmc.40.2023.07.01.14.45.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 01 Jul 2023 14:45:13 -0700 (PDT)
+        Sat, 01 Jul 2023 14:45:11 -0700 (PDT)
 From:   Javier Martinez Canillas <javierm@redhat.com>
 To:     linux-kernel@vger.kernel.org
 Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
@@ -65,250 +64,72 @@ Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
         Borislav Petkov <bp@alien8.de>,
         Daniel Vetter <daniel@ffwll.ch>,
         Dave Hansen <dave.hansen@linux.intel.com>,
+        David Airlie <airlied@gmail.com>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         "H. Peter Anvin" <hpa@zytor.com>, Helge Deller <deller@gmx.de>,
         Ingo Molnar <mingo@redhat.com>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
         Randy Dunlap <rdunlap@infradead.org>,
         Sam Ravnborg <sam@ravnborg.org>,
         Thomas Gleixner <tglx@linutronix.de>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         x86@kernel.org
-Subject: [PATCH v2 1/2] fbdev: Split frame buffer support in FB and FB_CORE symbols
-Date:   Sat,  1 Jul 2023 23:44:50 +0200
-Message-ID: <20230701214503.550549-2-javierm@redhat.com>
+Subject: [PATCH v2 0/2] Allow disabling all native fbdev drivers and only keeping DRM emulation
+Date:   Sat,  1 Jul 2023 23:44:49 +0200
+Message-ID: <20230701214503.550549-1-javierm@redhat.com>
 X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230701214503.550549-1-javierm@redhat.com>
-References: <20230701214503.550549-1-javierm@redhat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Currently the CONFIG_FB option has to be enabled even if no legacy fbdev
-drivers are needed (e.g: only to have support for framebuffer consoles).
+This patch series splits the fbdev core support in two different Kconfig
+symbols: FB and FB_CORE. The motivation for this is to allow CONFIG_FB to
+be disabled, while still having the the core fbdev support needed for the
+CONFIG_DRM_FBDEV_EMULATION to be enabled. The motivation is automatically
+disabling all fbdev drivers instead of having to be disabled individually.
 
-The DRM subsystem has a fbdev emulation layer, but depends on CONFIG_FB
-and so it can only be enabled if that dependency is enabled as well.
+The reason for doing this is that now with simpledrm, there's no need for
+the legacy fbdev (e.g: efifb or vesafb) drivers anymore and many distros
+now disable them. But it would simplify the config a lot fo have a single
+Kconfig symbol to disable all fbdev drivers.
 
-That means fbdev drivers have to be explicitly disabled if users want to
-enable CONFIG_FB, only to use fbcon and/or the DRM fbdev emulation layer.
+I've built tested with possible combinations of CONFIG_FB, CONFIG_FB_CORE,
+CONFIG_DRM_FBDEV_EMULATION and CONFIG_FB_DEVICE symbols set to 'y' or 'n'.
 
-This patch introduces a non-visible CONFIG_FB_CORE symbol that could be
-enabled just to have core support needed for CONFIG_DRM_FBDEV_EMULATION,
-allowing CONFIG_FB to be disabled (and automatically disabling all the
-fbdev drivers).
+Patch 1/2 makes the CONFIG_FB split that is mentioned above and patch 2/2
+makes the DRM fbdev emulation to select the new FB_CORE symbol instead of
+depending on FB.
 
-Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
----
+This is a v2 of the patch-set that addresses issues pointed out by Arnd
+Bergmann and Thomas Zimmermann in the previous version:
+
+https://lists.freedesktop.org/archives/dri-devel/2023-June/411435.html
+
 
 Changes in v2:
 - Keep "depends on FB" for FB_DDC, FB_HECUBA, FB_SVGALIB, FB_MACMODES,
   FB_BACKLIGHT, FB_MODE_HELPERS and FB_TILEBLITTING (Arnd Bergmann).
 - Don't change the fb.o object name (Arnd Bergmann).
 - Make FB_CORE a non-visible Kconfig symbol instead (Thomas Zimmermann).
+- Make CONFIG_DRM_FBDEV_EMULATION to select FB_CORE (Thomas Zimmermann).
+
+Javier Martinez Canillas (2):
+  fbdev: Split frame buffer support in FB and FB_CORE symbols
+  drm: Make fbdev emulation select FB_CORE instead of depends on FB
 
  arch/x86/Makefile                 |  2 +-
  arch/x86/video/Makefile           |  2 +-
+ drivers/gpu/drm/Kconfig           |  2 +-
  drivers/video/console/Kconfig     |  2 +-
  drivers/video/fbdev/Kconfig       | 40 +++++++++++++++++++------------
  drivers/video/fbdev/core/Makefile |  2 +-
- 5 files changed, 29 insertions(+), 19 deletions(-)
+ 6 files changed, 30 insertions(+), 20 deletions(-)
 
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index b39975977c03..89a02e69be5f 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -259,7 +259,7 @@ drivers-$(CONFIG_PCI)            += arch/x86/pci/
- # suspend and hibernation support
- drivers-$(CONFIG_PM) += arch/x86/power/
- 
--drivers-$(CONFIG_FB) += arch/x86/video/
-+drivers-$(CONFIG_FB_CORE) += arch/x86/video/
- 
- ####
- # boot loader support. Several targets are kept for legacy purposes
-diff --git a/arch/x86/video/Makefile b/arch/x86/video/Makefile
-index 11640c116115..5ebe48752ffc 100644
---- a/arch/x86/video/Makefile
-+++ b/arch/x86/video/Makefile
-@@ -1,2 +1,2 @@
- # SPDX-License-Identifier: GPL-2.0-only
--obj-$(CONFIG_FB)               += fbdev.o
-+obj-$(CONFIG_FB_CORE)		+= fbdev.o
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index a2a88d42edf0..1b5a319971ed 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -72,7 +72,7 @@ config DUMMY_CONSOLE_ROWS
- 
- config FRAMEBUFFER_CONSOLE
- 	bool "Framebuffer Console support"
--	depends on FB && !UML
-+	depends on FB_CORE && !UML
- 	select VT_HW_CONSOLE_BINDING
- 	select CRC32
- 	select FONT_SUPPORT
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index cecf15418632..da6f7d588f17 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -6,8 +6,12 @@
- config FB_NOTIFY
- 	bool
- 
-+menuconfig FB_CORE
-+	tristate "Core support for frame buffer devices"
-+
- menuconfig FB
--	tristate "Support for frame buffer devices"
-+	tristate "Support for frame buffer device drivers"
-+	select FB_CORE
- 	select FB_NOTIFY
- 	select VIDEO_CMDLINE
- 	help
-@@ -33,6 +37,12 @@ menuconfig FB
- 	  <http://www.munted.org.uk/programming/Framebuffer-HOWTO-1.3.html> for more
- 	  information.
- 
-+	  This enables support for native frame buffer device (fbdev) drivers.
-+
-+	  The DRM subsystem provides support for emulated frame buffer devices
-+	  on top of KMS drivers, but this option allows legacy fbdev drivers to
-+	  be enabled as well.
-+
- 	  Say Y here and to the driver for your graphics board below if you
- 	  are compiling a kernel for a non-x86 architecture.
- 
-@@ -44,7 +54,7 @@ menuconfig FB
- 
- config FIRMWARE_EDID
- 	bool "Enable firmware EDID"
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  This enables access to the EDID transferred from the firmware.
- 	  On the i386, this is from the Video BIOS. Enable this if DDC/I2C
-@@ -59,7 +69,7 @@ config FIRMWARE_EDID
- 
- config FB_DEVICE
- 	bool "Provide legacy /dev/fb* device"
--	depends on FB
-+	select FB_CORE
- 	default y
- 	help
- 	  Say Y here if you want the legacy /dev/fb* device file and
-@@ -75,7 +85,7 @@ config FB_DDC
- 
- config FB_CFB_FILLRECT
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the cfb_fillrect function for generic software rectangle
- 	  filling. This is used by drivers that don't provide their own
-@@ -83,7 +93,7 @@ config FB_CFB_FILLRECT
- 
- config FB_CFB_COPYAREA
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the cfb_copyarea function for generic software area copying.
- 	  This is used by drivers that don't provide their own (accelerated)
-@@ -91,7 +101,7 @@ config FB_CFB_COPYAREA
- 
- config FB_CFB_IMAGEBLIT
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the cfb_imageblit function for generic software image
- 	  blitting. This is used by drivers that don't provide their own
-@@ -99,7 +109,7 @@ config FB_CFB_IMAGEBLIT
- 
- config FB_CFB_REV_PIXELS_IN_BYTE
- 	bool
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Allow generic frame-buffer functions to work on displays with 1, 2
- 	  and 4 bits per pixel depths which has opposite order of pixels in
-@@ -107,7 +117,7 @@ config FB_CFB_REV_PIXELS_IN_BYTE
- 
- config FB_SYS_FILLRECT
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the sys_fillrect function for generic software rectangle
- 	  filling. This is used by drivers that don't provide their own
-@@ -115,7 +125,7 @@ config FB_SYS_FILLRECT
- 
- config FB_SYS_COPYAREA
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the sys_copyarea function for generic software area copying.
- 	  This is used by drivers that don't provide their own (accelerated)
-@@ -123,7 +133,7 @@ config FB_SYS_COPYAREA
- 
- config FB_SYS_IMAGEBLIT
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the sys_imageblit function for generic software image
- 	  blitting. This is used by drivers that don't provide their own
-@@ -162,22 +172,22 @@ endchoice
- 
- config FB_SYS_FOPS
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 
- config FB_DEFERRED_IO
- 	bool
--	depends on FB
-+	depends on FB_CORE
- 
- config FB_IO_HELPERS
- 	bool
--	depends on FB
-+	depends on FB_CORE
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_IMAGEBLIT
- 
- config FB_SYS_HELPERS
- 	bool
--	depends on FB
-+	depends on FB_CORE
- 	select FB_SYS_COPYAREA
- 	select FB_SYS_FILLRECT
- 	select FB_SYS_FOPS
-@@ -185,7 +195,7 @@ config FB_SYS_HELPERS
- 
- config FB_SYS_HELPERS_DEFERRED
- 	bool
--	depends on FB
-+	depends on FB_CORE
- 	select FB_DEFERRED_IO
- 	select FB_SYS_HELPERS
- 
-diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
-index 9150bafd9e89..4c2e4a026d12 100644
---- a/drivers/video/fbdev/core/Makefile
-+++ b/drivers/video/fbdev/core/Makefile
-@@ -1,6 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0
- obj-$(CONFIG_FB_NOTIFY)           += fb_notify.o
--obj-$(CONFIG_FB)                  += fb.o
-+obj-$(CONFIG_FB_CORE)             += fb.o
- fb-y                              := fb_backlight.o \
-                                      fb_info.o \
-                                      fbmem.o fbmon.o fbcmap.o \
+
+base-commit: 270689d257c88fd1ad7050041ed196a8188e6914
 -- 
 2.41.0
 

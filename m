@@ -2,105 +2,113 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1882EB64D9
-	for <linux-fbdev@archiver.kernel.org>; Sun,  2 Jul 2023 13:01:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5E02EB64D9
+	for <linux-fbdev@archiver.kernel.org>; Sun,  2 Jul 2023 18:28:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229605AbjGBNB6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 2 Jul 2023 09:01:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37416 "EHLO
+        id S229776AbjGBS2J (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 2 Jul 2023 14:28:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51930 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229604AbjGBNB5 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 2 Jul 2023 09:01:57 -0400
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 602FD135;
-        Sun,  2 Jul 2023 06:01:56 -0700 (PDT)
-Received: by mail-wm1-x334.google.com with SMTP id 5b1f17b1804b1-3fbc1218262so41229355e9.3;
-        Sun, 02 Jul 2023 06:01:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1688302915; x=1690894915;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=Zzka9CnRuiGxtiFqL9JgKk46K47spIoim848zQhRx/I=;
-        b=b1WNUNT4oTwKh77H5nT3jfqCE3yGRMR6EkAhEAFqi7jR/T1jTcluVilYz655Q0pIYX
-         T2+nS0EnBCIcSSafc/OxQJqxPWnGwo/JC6P82Lk9Y+ViWTeTIaVmFbB1YsyrSArw55Jp
-         Q7EzB3uerrUwVEzqSXYRtc1Hx75rNfVpJAO+Yed1N5X5PhwnNJfvuoajZAZddgo589/9
-         PqorW4chq2JgOvNZaWYMjFQISh+CFw/Ln+QEMnujnKV72B1XldfUSU76VI+6G39hvJOs
-         coOn32UVkkeyRyID1QqcL6Ao82nPtI+qhfOVXnJgbPlxM8inX6eahd0mnV3MBG1w1nin
-         Zg4A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688302915; x=1690894915;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Zzka9CnRuiGxtiFqL9JgKk46K47spIoim848zQhRx/I=;
-        b=dKjHIwJdB4KTrxmig7pqaU/BgHKekoBRcR6cUfv/80iwGxzLOA96eQBr0toeCEbeJd
-         o3tRy7Pv+3SJ5M7bMCp5/jRh7N2a4DcUEFRaHIg5k4dyku0Nx/9H5XIUMLV7LuG3yBe8
-         44gLNlymvSJT0vv7manJyuMJqqnzQ2cKmq8Om5jsYt3YFcv62KGi3LaYtbtf1hj/Jcxd
-         1/MgCYVxyZOVp+9yBeOd+OrkJh7KEIgNIbIucABlbE2vFJbMyqG5Mf30kPLdtiE+VXvB
-         lME+NYNFkPylI8oeLsrjrslqb1lzY1Gc7mt5G+a5hdsRXJLPXMai67KKLlpGfnNzYNAn
-         xHlw==
-X-Gm-Message-State: AC+VfDxSMznpH/dddddpe4jyoI7gHT4atN5CFlefHhH9+IeH6tw3x5TR
-        nWqtnE1ZpJcYYUqHYLif29CMH5QCQgY=
-X-Google-Smtp-Source: ACHHUZ57l2NYdjFz6gnbDv5RtxHSLeNECuh+UmIbNVUXxycz4UEWnF6Th5b5Yk8FZNtDi4ojGzHT9g==
-X-Received: by 2002:a05:600c:2213:b0:3fa:e92e:7a7b with SMTP id z19-20020a05600c221300b003fae92e7a7bmr6995851wml.15.1688302914474;
-        Sun, 02 Jul 2023 06:01:54 -0700 (PDT)
-Received: from ?IPV6:2a01:e0a:32f:1f0:ae0b:3bc8:c743:b2d8? ([2a01:e0a:32f:1f0:ae0b:3bc8:c743:b2d8])
-        by smtp.gmail.com with ESMTPSA id y17-20020a1c4b11000000b003f90a604885sm24277641wma.34.2023.07.02.06.01.54
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 02 Jul 2023 06:01:54 -0700 (PDT)
-Message-ID: <ae400e28-0cd4-cdf8-811d-843e62cd4a95@gmail.com>
-Date:   Sun, 2 Jul 2023 15:05:25 +0200
+        with ESMTP id S229608AbjGBS2J (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 2 Jul 2023 14:28:09 -0400
+Received: from out-38.mta0.migadu.com (out-38.mta0.migadu.com [91.218.175.38])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B1787AC;
+        Sun,  2 Jul 2023 11:28:07 -0700 (PDT)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+        t=1688322485;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=c8oIOXLUyu6Hy3euIb+35kAKURoMMfCL4+zt+LpgQrI=;
+        b=cj5i7X8NIGfrWOZux8pWRT6wSPgfMb6og8nVfn9C+hC3/QDZo2zIbH5h7ncrhXIklQCVrX
+        6sITBq6QW4gJjbqqGZFN3lcWgbJ1Qxrx8UY03BDxOWGGVbOpuqz6kYpL8d6nWQmT14fnfl
+        1JU2TEA88cvmiWUcyHCZqsveRzQOEyg=
+From:   Sui Jingfeng <sui.jingfeng@linux.dev>
+To:     Alex Deucher <alexander.deucher@amd.com>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Maxime Ripard <mripard@kernel.org>,
+        Jani Nikula <jani.nikula@linux.intel.com>,
+        Lyude Paul <lyude@redhat.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Mario Limonciello <mario.limonciello@amd.com>
+Cc:     dri-devel@lists.freedesktop.org, amd-gfx@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+        nouveau@lists.freedesktop.org, linux-pci@vger.kernel.org,
+        kvm@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        Sui Jingfeng <suijingfeng@loongson.cn>
+Subject: [PATCH v2 0/6] PCI/VGA: Improve the default VGA device selection
+Date:   Mon,  3 Jul 2023 02:27:38 +0800
+Message-Id: <20230702182744.755467-1-sui.jingfeng@linux.dev>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.12.0
-Subject: Re: [PATCH] staging: fbtft: ili9341: use macro
- FBTFT_REGISTER_SPI_DRIVER
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-References: <20230702080324.120137-1-rgallaispou@gmail.com>
- <2023070254-embark-subplot-4dd4@gregkh>
-Content-Language: en-US, fr
-From:   =?UTF-8?Q?Rapha=c3=abl_Gallais-Pou?= <rgallaispou@gmail.com>
-In-Reply-To: <2023070254-embark-subplot-4dd4@gregkh>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+From: Sui Jingfeng <suijingfeng@loongson.cn>
 
-Le 02/07/2023 à 14:02, Greg Kroah-Hartman a écrit :
-> On Sun, Jul 02, 2023 at 10:03:24AM +0200, Raphael Gallais-Pou wrote:
->> Using FBTFT_REGISTER_DRIVER resolves to a NULL struct spi_device_id. This
->> ultimately causes the module to an early exit at probe time.
-> 
-> So this doesn't work at all today?  Has it ever worked?  What commit
-> does thi fix?
+Currently, the default VGA device selection is not perfect. Potential
+problems are:
 
-I tested again with only a tweak in my device-tree. The early exit in 
-the driver's code is caused by a missing field. So regarding this 
-particular driver the macro works.
+1) This function is a no-op on non-x86 architectures.
+2) It does not take the PCI Bar may get relocated into consideration.
+3) It is not effective for the PCI device without a dedicated VRAM Bar.
+4) It is device-agnostic, thus it has to waste the effort to iterate all
+   of the PCI Bar to find the VRAM aperture.
+5) It has invented lots of methods to determine which one is the default
+   boot device on a multiple video card coexistence system. But this is
+   still a policy because it doesn't give the user a choice to override.
 
-It resolves to set spi_driver.id_table = NULL, which yields a warning in 
-__spi_register_driver(). So I guess this patch only fixes a warning.
+With the observation that device drivers or video aperture helpers may
+have better knowledge about which PCI bar contains the firmware FB,
 
-> 
->> In addition the MODULE_ALIASes can be dropped.
-> 
-> Why?  When you say "also" or "in addition", that's a huge hint it should
-> be a separate patch.
-I did not find any reference to those aliases in the kernel, which led 
-me to remove those.
+This patch tries to solve the above problems by introducing a function
+callback to the vga_client_register() function interface. DRM device
+drivers for the PCI device need to register the is_boot_device() function
+callback during the driver loading time. Once the driver binds the device
+successfully, VRAARB will call back to the driver. This gives the device
+drivers a chance to provide accurate boot device identification. Which in
+turn unlock the abitration service to non-x86 architectures. A device
+driver can also pass a NULL pointer to keep the original behavior.
 
-If you think they are still necessary, I'll split them in an upcoming v2.
+This series is applied on the drm-tip branch (with a cleanup patch set[1]
+applied beforehand)
 
-Thanks for your insights,
+[1] https://patchwork.freedesktop.org/series/120053/
 
-Raphaël
-> 
-> thanks,
-> 
-> greg k-h
+v2:
+	* Add a simple implemment for drm/i915 and drm/ast
+	* Pick up all tags (Mario)
+
+Sui Jingfeng (6):
+  video/aperture: Add a helper to detect if an aperture contains
+    firmware FB
+  PCI/VGA: Improve the default VGA device selection
+  drm/amdgpu: Implement the is_boot_device callback function
+  drm/radeon: Implement the is_boot_device callback function
+  drm/i915: Implement the is_boot_device callback function
+  drm/ast: Register as a vga client to vgaarb by calling
+    vga_client_register()
+
+ drivers/gpu/drm/amd/amdgpu/amdgpu_device.c | 12 +++++++-
+ drivers/gpu/drm/ast/ast_drv.c              | 29 ++++++++++++++++++++
+ drivers/gpu/drm/drm_aperture.c             | 16 +++++++++++
+ drivers/gpu/drm/i915/display/intel_vga.c   | 32 ++++++++++++++++++++--
+ drivers/gpu/drm/nouveau/nouveau_vga.c      |  2 +-
+ drivers/gpu/drm/radeon/radeon_device.c     | 12 +++++++-
+ drivers/pci/vgaarb.c                       | 21 +++++++++++++-
+ drivers/vfio/pci/vfio_pci_core.c           |  2 +-
+ drivers/video/aperture.c                   | 29 ++++++++++++++++++++
+ include/drm/drm_aperture.h                 |  2 ++
+ include/linux/aperture.h                   |  7 +++++
+ include/linux/vgaarb.h                     |  8 ++++--
+ 12 files changed, 162 insertions(+), 10 deletions(-)
+
+-- 
+2.25.1
+

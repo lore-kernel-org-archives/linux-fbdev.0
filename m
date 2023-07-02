@@ -2,126 +2,144 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 12E02EB64DA
-	for <linux-fbdev@archiver.kernel.org>; Sun,  2 Jul 2023 18:29:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22E3DEB64D9
+	for <linux-fbdev@archiver.kernel.org>; Sun,  2 Jul 2023 19:16:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229960AbjGBS27 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 2 Jul 2023 14:28:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52700 "EHLO
+        id S229649AbjGBTQc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 2 Jul 2023 15:16:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45922 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229554AbjGBS26 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 2 Jul 2023 14:28:58 -0400
-Received: from out-22.mta0.migadu.com (out-22.mta0.migadu.com [IPv6:2001:41d0:1004:224b::16])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F094A137
-        for <linux-fbdev@vger.kernel.org>; Sun,  2 Jul 2023 11:28:38 -0700 (PDT)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-        t=1688322516;
+        with ESMTP id S229504AbjGBTQc (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 2 Jul 2023 15:16:32 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A181D9
+        for <linux-fbdev@vger.kernel.org>; Sun,  2 Jul 2023 12:15:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1688325344;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=JD+BSfEOubeM4NaunZhKuggns+1jx3KG/ygiczCTpQY=;
-        b=hsPJDuYj9iRgllcgTdnKnVeIWHI4dbFO6cetTcGBRitOohcizdBhNOgpXttZSEDOrRYB5m
-        YFJNaZLsmoLXvdcfKsN/KjXlvPsWffQ20eToqWq6ZBWru43mzpRqHFZmlFwwfPaOHCHF4R
-        FpaJ05EzBAAFuai3Fohx7nkMzTFuZlM=
-From:   Sui Jingfeng <sui.jingfeng@linux.dev>
-To:     Alex Deucher <alexander.deucher@amd.com>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
+         content-transfer-encoding:content-transfer-encoding;
+        bh=4kLj8dmTPlNd9hpuLLmsoj1kmn9VFM9AznQMmSVeuFI=;
+        b=Rs/DzK4YH0/554twzALjT2p64PL12lDZUgTHiMFjPDhi6B3nQtrNC95DWl8sDKWSIb2IKG
+        3k56AFlU4BWkVqnpmA3w7XU5ULF/P0sAyQZOiBfUsDaZ+AGorLzwjsuA8rDtbe0OEW0fzO
+        IF9rmNaDn+nAZNx4c/+X1rk/Tw1Gunc=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-230-9L43zDErNS6ewIHa9ahzJg-1; Sun, 02 Jul 2023 15:15:43 -0400
+X-MC-Unique: 9L43zDErNS6ewIHa9ahzJg-1
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-3f41a04a297so18895645e9.3
+        for <linux-fbdev@vger.kernel.org>; Sun, 02 Jul 2023 12:15:42 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1688325342; x=1690917342;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=4kLj8dmTPlNd9hpuLLmsoj1kmn9VFM9AznQMmSVeuFI=;
+        b=dAMhmbo1e0W4d49glreX0Umbc6uRD9dIco6k05Leb/YQtEguBtdbbIYFUn208KR+MM
+         E7QYUYHvTlXQBIbF4Qh0oZjh9R7Nr4+2Gr5DGUv+cmaT71CmgAzHU9fOlEgxDMYncSrQ
+         +va6UDPriG+JrhhFedWDJbQb0joOEk2wGmhUoerHZaZvcvtpToGYTCtuUcbj2xvlcdKQ
+         6ySBFKz2OUKnrXKXw3uOR3edxHat8kpY2oRQBBHKDlkxCrR54ySGW3pIeUQW3VEeqgPu
+         grHQ2rGhjO4F1kv6I5kKAT+1OI2kMd+vJTVGZ3LSNOnCUVbVb1azqb3tSeLDWRxBVgRM
+         Gl9A==
+X-Gm-Message-State: AC+VfDzQmy/bBTWlMtrwdywbSzvjeO5aWyME2PSB4dlpa07RccdvruUO
+        j9QkidqfLnIJSPUEhTYmmJWkopjxuxnOmmXDC08Lxts1jInZCeQ4e9xKs8cjFdk/wic4fW1Gvmu
+        xnByFuhS6MaTy7IEldbiJKPM=
+X-Received: by 2002:a05:600c:294a:b0:3fa:770c:5918 with SMTP id n10-20020a05600c294a00b003fa770c5918mr5858772wmd.9.1688325341934;
+        Sun, 02 Jul 2023 12:15:41 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ7zvHRJ6y1/LCj1vDiagN6ACwcdgHIj6l3XviwcGwUovId3cFIYrKqPqTFSB9KPelIQ9jAP7w==
+X-Received: by 2002:a05:600c:294a:b0:3fa:770c:5918 with SMTP id n10-20020a05600c294a00b003fa770c5918mr5858748wmd.9.1688325341581;
+        Sun, 02 Jul 2023 12:15:41 -0700 (PDT)
+Received: from minerva.home (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id g11-20020a7bc4cb000000b003fbab76165asm14144231wmk.48.2023.07.02.12.15.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 02 Jul 2023 12:15:41 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Borislav Petkov <bp@alien8.de>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        David Airlie <airlied@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "H. Peter Anvin" <hpa@zytor.com>, Helge Deller <deller@gmx.de>,
+        Ingo Molnar <mingo@redhat.com>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
-        Jani Nikula <jani.nikula@linux.intel.com>,
-        Lyude Paul <lyude@redhat.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Mario Limonciello <mario.limonciello@amd.com>
-Cc:     dri-devel@lists.freedesktop.org, amd-gfx@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
-        nouveau@lists.freedesktop.org, linux-pci@vger.kernel.org,
-        kvm@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        Sui Jingfeng <suijingfeng@loongson.cn>,
-        Jocelyn Falempe <jfalempe@redhat.com>
-Subject: [PATCH v2 6/6] drm/ast: Register as a vga client to vgaarb by calling vga_client_register()
-Date:   Mon,  3 Jul 2023 02:27:44 +0800
-Message-Id: <20230702182744.755467-7-sui.jingfeng@linux.dev>
-In-Reply-To: <20230702182744.755467-1-sui.jingfeng@linux.dev>
-References: <20230702182744.755467-1-sui.jingfeng@linux.dev>
+        Randy Dunlap <rdunlap@infradead.org>,
+        Robert Jarzmik <robert.jarzmik@free.fr>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        x86@kernel.org
+Subject: [PATCH v3 0/3] Allow disabling all native fbdev drivers and only keeping DRM emulation
+Date:   Sun,  2 Jul 2023 21:15:17 +0200
+Message-ID: <20230702191529.768248-1-javierm@redhat.com>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Sui Jingfeng <suijingfeng@loongson.cn>
+This patch series splits the fbdev core support in two different Kconfig
+symbols: FB and FB_CORE. The motivation for this is to allow CONFIG_FB to
+be disabled, while still having the the core fbdev support needed for the
+CONFIG_DRM_FBDEV_EMULATION to be enabled. The motivation is automatically
+disabling all fbdev drivers instead of having to be disabled individually.
 
-Becasuse the VGA Display Controller in the ASpeed BMC chip is also a PCIe
-device, the Software Programming guide of AST2400 say that it is Fully
-IBM VGA compliant, thus, it should also particiate in the arbitration.
+The reason for doing this is that now with simpledrm, there's no need for
+the legacy fbdev (e.g: efifb or vesafb) drivers anymore and many distros
+now disable them. But it would simplify the config a lot fo have a single
+Kconfig symbol to disable all fbdev drivers.
 
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Jocelyn Falempe <jfalempe@redhat.com>
-Cc: David Airlie <airlied@gmail.com>
-Cc: Daniel Vetter <daniel@ffwll.ch>
-Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
----
- drivers/gpu/drm/ast/ast_drv.c | 29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+I've built tested with possible combinations of CONFIG_FB, CONFIG_FB_CORE,
+CONFIG_DRM_FBDEV_EMULATION and CONFIG_FB_DEVICE symbols set to 'y' or 'n'.
 
-diff --git a/drivers/gpu/drm/ast/ast_drv.c b/drivers/gpu/drm/ast/ast_drv.c
-index e1224ef4ad83..5ce681142679 100644
---- a/drivers/gpu/drm/ast/ast_drv.c
-+++ b/drivers/gpu/drm/ast/ast_drv.c
-@@ -28,6 +28,7 @@
- 
- #include <linux/module.h>
- #include <linux/pci.h>
-+#include <linux/vgaarb.h>
- 
- #include <drm/drm_aperture.h>
- #include <drm/drm_atomic_helper.h>
-@@ -89,6 +90,32 @@ static const struct pci_device_id ast_pciidlist[] = {
- 
- MODULE_DEVICE_TABLE(pci, ast_pciidlist);
- 
-+static bool ast_is_boot_device(struct pci_dev *pdev)
-+{
-+	struct drm_device *drm = pci_get_drvdata(pdev);
-+	struct ast_device *ast = to_ast_device(drm);
-+
-+	return drm_aperture_contain_firmware_fb(ast->vram_base, ast->vram_size);
-+}
-+
-+static unsigned int ast_vga_set_decode(struct pci_dev *pdev, bool state)
-+{
-+	struct drm_device *drm = pci_get_drvdata(pdev);
-+	struct ast_device *ast = to_ast_device(drm);
-+
-+	if (state) {
-+		/* Enable standard VGA decode and Enable normal VGA decode */
-+		ast_set_index_reg(ast, AST_IO_CRTC_PORT, 0xa1, 0x04);
-+
-+		return VGA_RSRC_LEGACY_IO | VGA_RSRC_LEGACY_MEM |
-+		       VGA_RSRC_NORMAL_IO | VGA_RSRC_NORMAL_MEM;
-+	}
-+
-+	ast_set_index_reg(ast, AST_IO_CRTC_PORT, 0xa1, 0x07);
-+
-+	return VGA_RSRC_NORMAL_IO | VGA_RSRC_NORMAL_MEM;
-+}
-+
- static int ast_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- {
- 	struct ast_device *ast;
-@@ -112,6 +139,8 @@ static int ast_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (ret)
- 		return ret;
- 
-+	vga_client_register(pdev, ast_vga_set_decode, ast_is_boot_device);
-+
- 	drm_fbdev_generic_setup(dev, 32);
- 
- 	return 0;
+Patch #1 is just a cleanup for the DRM symbol prompt and help texts, patch
+DRM symbol to select FB_CORE if CONFIG_DRM_FBDEV_EMULATION was enabled.
+
+This is a v3 of the patch-set that addresses issues pointed out by Arnd
+Bergmann, Thomas Zimmermann and Geert Uytterhoeven in the previous v2:
+
+https://lists.freedesktop.org/archives/dri-devel/2023-July/411660.html
+
+Changes in v3:
+- Really make a hidden symbol by removing the prompt (Arnd Bergmann).
+- Change FB_CORE to config instead of menuconfig (Arnd Bergmann).
+- Keep "depends on FB" for FIRMWARE_EDID (Arnd Bergmann).
+- Compile out fb_backlight.o and fbmon.o that are only needed for FB
+  (Arnd Bergmann).
+- Make FB_DEVICE to depend on FB_CORE instead of selecting it.
+- Make the DRM symbol to select FB_CORE if DRM_FBDEV_EMULATION is
+  enabled (Arnd Bergmann).
+- Also make DRM select FB_SYS_HELPERS_DEFERRED if DRM_FBDEV_EMULATION
+- Make DRM_FBDEV_EMULATION to depend on DRM instead of DRM_KMS_HELPER.
+
+Changes in v2:
+- Keep "depends on FB" for FB_DDC, FB_HECUBA, FB_SVGALIB, FB_MACMODES,
+  FB_BACKLIGHT, FB_MODE_HELPERS and FB_TILEBLITTING (Arnd Bergmann).
+- Don't change the fb.o object name (Arnd Bergmann).
+- Make FB_CORE a non-visible Kconfig symbol instead (Thomas Zimmermann).
+- Make CONFIG_DRM_FBDEV_EMULATION to select FB_CORE (Thomas Zimmermann).
+
+Javier Martinez Canillas (3):
+  drm: Improve Kconfig symbol prompt and help texts
+  fbdev: Split frame buffer support in FB and FB_CORE symbols
+  drm: Make FB_CORE to be selected if DRM fbdev emulation is enabled
+
+ arch/x86/Makefile                 |  2 +-
+ arch/x86/video/Makefile           |  2 +-
+ drivers/gpu/drm/Kconfig           | 29 ++++++++++++----------
+ drivers/video/console/Kconfig     |  2 +-
+ drivers/video/fbdev/Kconfig       | 40 +++++++++++++++++++------------
+ drivers/video/fbdev/core/Makefile |  8 +++----
+ 6 files changed, 49 insertions(+), 34 deletions(-)
+
 -- 
-2.25.1
+2.41.0
 

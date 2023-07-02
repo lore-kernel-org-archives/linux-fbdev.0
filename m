@@ -2,93 +2,137 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02DD3EB64D9
-	for <linux-fbdev@archiver.kernel.org>; Sun,  2 Jul 2023 08:00:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 558A6EB64DA
+	for <linux-fbdev@archiver.kernel.org>; Sun,  2 Jul 2023 09:08:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229689AbjGBIAJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 2 Jul 2023 04:00:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60440 "EHLO
+        id S229584AbjGBJII convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 2 Jul 2023 05:08:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38790 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229516AbjGBIAI (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 2 Jul 2023 04:00:08 -0400
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 75EC9E4D;
-        Sun,  2 Jul 2023 01:00:05 -0700 (PDT)
-Received: by mail-wm1-x32b.google.com with SMTP id 5b1f17b1804b1-3fbc0981756so30488335e9.0;
-        Sun, 02 Jul 2023 01:00:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1688284804; x=1690876804;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=sAUhZCQsdk87kgdWEBUppph6/yxmaqqjG5LD2yozjmE=;
-        b=LBRWF0qTQR1vdSojoeWP1/KHAKjxNGrEGOta35tbFekBwztv59f6JpjhB+swxUm03M
-         uHYwSjcfeVZtjnG6peUR4eiZyK7foW8X8L2CF2rXFWKMoVjI120mABOGo2+Mi+zAMOqh
-         ibiYMjp6XuoG02OvryQ8zxR5J/2+vvCATS69eOt3IQ2bQuNn4Y0PsfHoOUXiD9t3Q8u3
-         8CTAQuItiUyFQVWHmevHWJ3bnWdgig+MdazSHOc3Vriu24pE+6Wj2ZX82nkOR6anjNGX
-         Ng/aO+61ZqZby1IcBbTTHSPHEcQR382kW760yL9mqRuieCpmpWebiymU9urthu4IHxQh
-         eoAQ==
+        with ESMTP id S229460AbjGBJIH (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 2 Jul 2023 05:08:07 -0400
+Received: from mail-yw1-f178.google.com (mail-yw1-f178.google.com [209.85.128.178])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E01161AC;
+        Sun,  2 Jul 2023 02:08:06 -0700 (PDT)
+Received: by mail-yw1-f178.google.com with SMTP id 00721157ae682-579ed2829a8so5466977b3.1;
+        Sun, 02 Jul 2023 02:08:06 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688284804; x=1690876804;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=sAUhZCQsdk87kgdWEBUppph6/yxmaqqjG5LD2yozjmE=;
-        b=Sx/j7O84SSxn8F5XhHSepHjohHLzvSIv+YDGDeoiDtRiF1Mq+JhEpdp8Z9+VyQJ07Y
-         YYcYUVcFtCClYLJyEJzRLs24vKUtIS8qKj01HbU24uuG8gbMI6BQLo+d6OsWzAUBH3k6
-         o/NJ/qyHOphuoW1B15V22PavzLoz1XjcgH7xkxnI2Da715aecMybd89ba5osPmZKb01d
-         1tByJMTwfcwPL/zwFlN5URgW3hDQDp/Gwr1McjIrSlUNeGXwIt9uU9LfJOcxnDYGTaJy
-         aOSk5cpA4z8BLoNH96G9v9hN8YvF5sUicaYPUsXZ0KBjaz7y5kvls8xxITTBzejGNXgA
-         uerg==
-X-Gm-Message-State: AC+VfDzg7tOMQTWTuBjrwHfg9qy0GpbB75OG93W6ITxcH/QUbcVQaGiK
-        QWhCVZwjhk7xSpYqWVtMxZQ=
-X-Google-Smtp-Source: ACHHUZ51p/7W85vZ05OKRDLNDDfo8EshPrLib7+JwjGfEjbu9EJG3gx3IjKjhfuy4GzOOT5vGJX+lQ==
-X-Received: by 2002:a1c:750a:0:b0:3f5:878:c0c2 with SMTP id o10-20020a1c750a000000b003f50878c0c2mr4895518wmc.3.1688284803762;
-        Sun, 02 Jul 2023 01:00:03 -0700 (PDT)
-Received: from localhost ([2a01:e0a:32f:1f0:ae0b:3bc8:c743:b2d8])
-        by smtp.gmail.com with ESMTPSA id cx16-20020a056000093000b00301a351a8d6sm22710943wrb.84.2023.07.02.01.00.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 02 Jul 2023 01:00:03 -0700 (PDT)
-From:   Raphael Gallais-Pou <rgallaispou@gmail.com>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: [PATCH] staging: fbtft: ili9341: use macro FBTFT_REGISTER_SPI_DRIVER
-Date:   Sun,  2 Jul 2023 10:03:24 +0200
-Message-ID: <20230702080324.120137-1-rgallaispou@gmail.com>
-X-Mailer: git-send-email 2.41.0
+        d=1e100.net; s=20221208; t=1688288885; x=1690880885;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=5OBtu7Z4+GE6q0l8ikA7nuhp09YCEyCrOF7iEJtpDP4=;
+        b=ko56/etOz/98NHqsuAD5G8XKmyJ1FEdD+DPKRXLSDq7UA9OLXmtn145xq75CF07aea
+         Y0jxDEkhUlZHlgLCQYRSQZYzXzlcuj2qnsnU7kAfnH8gz/sgB1t+InAJeb/Ud2BV8QAI
+         js6hSOxEBdSlvkLw0utwWuev0+pt55BczexZNB4aRVqollcJUka6YrvRvrF4dcjs01RT
+         lotEIDjeotDDz+WSNBWJot8cdXs3QuJUn4WW1CymU8J5/rT8E3OFKhk9DzDIZlaDuuea
+         n/CVeEPJufR7nPVG11JVehsHllzZdFJvfJPVxgumftBsfuuNmGVd2THrsn0g6ZF1el9L
+         j7Eg==
+X-Gm-Message-State: ABy/qLYHdFfUdpVDGkUsCgCneUjmsOS3A+fA7QX9ooiJe8Z8SOmk2FJN
+        lcNUskOKdjx/j6Z8d0r2lKhUnrqHhlGkNoeh
+X-Google-Smtp-Source: APBJJlFHohJ3A9y5XwEOe1lswJoZMXLBEJsfI6Q9pVf+182NwTbV/XNJKvlW8IwvWk7ggGkBmWyInA==
+X-Received: by 2002:a81:6e03:0:b0:577:3663:e478 with SMTP id j3-20020a816e03000000b005773663e478mr7881854ywc.8.1688288885516;
+        Sun, 02 Jul 2023 02:08:05 -0700 (PDT)
+Received: from mail-yb1-f177.google.com (mail-yb1-f177.google.com. [209.85.219.177])
+        by smtp.gmail.com with ESMTPSA id l189-20020a0dfbc6000000b0055a931afe48sm4424990ywf.8.2023.07.02.02.08.05
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 02 Jul 2023 02:08:05 -0700 (PDT)
+Received: by mail-yb1-f177.google.com with SMTP id 3f1490d57ef6-c4d04d50c4cso492228276.1;
+        Sun, 02 Jul 2023 02:08:05 -0700 (PDT)
+X-Received: by 2002:a25:26c4:0:b0:c40:f090:98bf with SMTP id
+ m187-20020a2526c4000000b00c40f09098bfmr6398754ybm.28.1688288884964; Sun, 02
+ Jul 2023 02:08:04 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20230701214503.550549-1-javierm@redhat.com> <20230701214503.550549-2-javierm@redhat.com>
+ <393ca142-5226-4779-a963-c34fb0464c59@app.fastmail.com>
+In-Reply-To: <393ca142-5226-4779-a963-c34fb0464c59@app.fastmail.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Sun, 2 Jul 2023 11:07:53 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdWLRBePox24kBHBMhzKWZX2ncXCD_8JBZrWcbwo0eBZ1Q@mail.gmail.com>
+Message-ID: <CAMuHMdWLRBePox24kBHBMhzKWZX2ncXCD_8JBZrWcbwo0eBZ1Q@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] fbdev: Split frame buffer support in FB and
+ FB_CORE symbols
+To:     Arnd Bergmann <arnd@arndb.de>
+Cc:     Javier Martinez Canillas <javierm@redhat.com>,
+        linux-kernel@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Borislav Petkov <bp@alien8.de>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "H. Peter Anvin" <hpa@zytor.com>, Helge Deller <deller@gmx.de>,
+        Ingo Molnar <mingo@redhat.com>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        x86@kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Using FBTFT_REGISTER_DRIVER resolves to a NULL struct spi_device_id. This
-ultimately causes the module to an early exit at probe time.
-In addition the MODULE_ALIASes can be dropped.
+Hi Arnd,
 
-Signed-off-by: Raphael Gallais-Pou <rgallaispou@gmail.com>
----
- drivers/staging/fbtft/fb_ili9341.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+On Sun, Jul 2, 2023 at 12:25 AM Arnd Bergmann <arnd@arndb.de> wrote:
+> On Sat, Jul 1, 2023, at 23:44, Javier Martinez Canillas wrote:
+> > Currently the CONFIG_FB option has to be enabled even if no legacy fbdev
+> > drivers are needed (e.g: only to have support for framebuffer consoles).
+> >
+> > The DRM subsystem has a fbdev emulation layer, but depends on CONFIG_FB
+> > and so it can only be enabled if that dependency is enabled as well.
+> >
+> > That means fbdev drivers have to be explicitly disabled if users want to
+> > enable CONFIG_FB, only to use fbcon and/or the DRM fbdev emulation layer.
+> >
+> > This patch introduces a non-visible CONFIG_FB_CORE symbol that could be
+> > enabled just to have core support needed for CONFIG_DRM_FBDEV_EMULATION,
+> > allowing CONFIG_FB to be disabled (and automatically disabling all the
+> > fbdev drivers).
+> >
+> > Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
 
-diff --git a/drivers/staging/fbtft/fb_ili9341.c b/drivers/staging/fbtft/fb_ili9341.c
-index 9ccd0823c3ab..9528bf3cf711 100644
---- a/drivers/staging/fbtft/fb_ili9341.c
-+++ b/drivers/staging/fbtft/fb_ili9341.c
-@@ -145,12 +145,7 @@ static struct fbtft_display display = {
- 	},
- };
- 
--FBTFT_REGISTER_DRIVER(DRVNAME, "ilitek,ili9341", &display);
--
--MODULE_ALIAS("spi:" DRVNAME);
--MODULE_ALIAS("platform:" DRVNAME);
--MODULE_ALIAS("spi:ili9341");
--MODULE_ALIAS("platform:ili9341");
-+FBTFT_REGISTER_SPI_DRIVER(DRVNAME, "ilitek", "ili9341", &display);
- 
- MODULE_DESCRIPTION("FB driver for the ILI9341 LCD display controller");
- MODULE_AUTHOR("Christian Vogelgsang");
+> > @@ -59,7 +69,7 @@ config FIRMWARE_EDID
+> >
+> >  config FB_DEVICE
+> >       bool "Provide legacy /dev/fb* device"
+> > -     depends on FB
+> > +     select FB_CORE
+> >       default y
+> >       help
+> >         Say Y here if you want the legacy /dev/fb* device file and
+>
+> These are now the only user visible sub-options when CONFIG_FB is
+> disabled. I missed FIRMWARE_EDID earlier, but this also looks like
+> it can clearly be left as depending on FB since nothing else calls
+> fb_firmware_edid. In fact, it looks like all of fbmon.c could be
+> left out since none of its exported symbols are needed for DRM.
+>
+> That would leave CONFIG_FB_DEVICE as the only user visible option
+> for DRM-only configs, which is slightly odd for the menuconfig,
+> so I still wonder if that could be done differently.
+>
+> Is there actually a point in configurations for kernels with FB=y,
+> DRM=n and FB_DEVICE=n? If we don't expect that to be a useful
+> configuration, an easier way would be to have CONFIG_FB turn it
+> on implicitly and instead have a user-visible Kconfig option
+> below CONFIG_DRM_FBDEV_EMULATION that allows controlling the
+> creation of /dev/fb*.
+
+Such a combination would allow the user to still have a text console
+on a legacy fbdev, while not having to worry about possible security
+ramifications of providing fbdev userspace access.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.41.0
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

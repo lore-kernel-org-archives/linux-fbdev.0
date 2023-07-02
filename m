@@ -2,167 +2,93 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 808F7EB64DC
-	for <linux-fbdev@archiver.kernel.org>; Sat,  1 Jul 2023 22:25:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02DD3EB64D9
+	for <linux-fbdev@archiver.kernel.org>; Sun,  2 Jul 2023 08:00:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229557AbjGAWZP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 1 Jul 2023 18:25:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56602 "EHLO
+        id S229689AbjGBIAJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 2 Jul 2023 04:00:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60440 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229446AbjGAWZO (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 1 Jul 2023 18:25:14 -0400
-Received: from wout3-smtp.messagingengine.com (wout3-smtp.messagingengine.com [64.147.123.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B026F10CE;
-        Sat,  1 Jul 2023 15:25:13 -0700 (PDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-        by mailout.west.internal (Postfix) with ESMTP id A38EA3200A84;
-        Sat,  1 Jul 2023 18:25:11 -0400 (EDT)
-Received: from imap51 ([10.202.2.101])
-  by compute6.internal (MEProxy); Sat, 01 Jul 2023 18:25:13 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-        :cc:content-type:content-type:date:date:from:from:in-reply-to
-        :in-reply-to:message-id:mime-version:references:reply-to:sender
-        :subject:subject:to:to; s=fm1; t=1688250311; x=1688336711; bh=L5
-        h/Ryrtjk3RSUbaAmGHoCMI71Hh6B3GS25Ko06eU7A=; b=l9tacFGlLNUW498NfR
-        2HMQMmJCbKpZKi8ZrBBVmmOS1kfbP6UD9QRj0UvRLPfEE1CX5yCZS+95of92s2jt
-        EgLsJU54z1zX3QXZZdIA+pAWQs5JOM8P1zB+ZGDf03krk9sukn9NUe6mk1YILu6L
-        lzEbal6qkEMCRC+XDhPYKovoKm58+5ss8loOIYbVcBLRvmLLJbaeB9dd9WtLUdaT
-        tdU04pNcut2hECqnBLgEic3ayrr4lraloH98SzSqjRIiNp1Ke6BZGP1vOLXpUnkE
-        Y3uikCLqSV3gkGBp6jfZzzK9ws4N5dFMbFzS8ZEmhLumbFHVpDgKtWjVTCrAsJrH
-        gQyg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-type:content-type:date:date
-        :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-        :message-id:mime-version:references:reply-to:sender:subject
-        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-        :x-sasl-enc; s=fm2; t=1688250311; x=1688336711; bh=L5h/Ryrtjk3RS
-        UbaAmGHoCMI71Hh6B3GS25Ko06eU7A=; b=dqd93ovx5UK1r5i99ilZw9lJnCIIA
-        L+tDqCqsQFg1fnK++u17Lo8hOEZFeNAPN3/G51fUDNAEUG+ETs/BXhvZXfOpz1n1
-        HO/rf4MlBBT6CJRUYHoNzGHLuF4ln9E/SdGLo4x+tx9FiOFP5uaueZxFI8ldp7A8
-        y3h6EIXWQsVHz5+acySCAQ9UH4qf0VussviSzB5APSPHDGjhSOFsW3wY6IW1YO6W
-        58TJU5VmfvNH0mjMlv/KFLCe7CRQCjqmV3y6tso2uOYAzyNaFq/HT6vNQa/DFJem
-        nbHEoVIlmfv3Vh8RlPs+jClrTH/VI1lZO7lLXBsdXqul531hjmgCyKpSA==
-X-ME-Sender: <xms:xqegZF4EXdtptYecUzKdN8BeIQcbgzWQSzXpXrIQtV3a_qoMUGwXSA>
-    <xme:xqegZC5sJcuKFKNxurhqOd4jdIRVhpqaN3t6rcEoKZx5Qn5FagKvfD9A20yjomyow
-    sRIMb3fknsj-fMt8Vk>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrtdelgddtlecutefuodetggdotefrodftvf
-    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
-    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
-    fjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdetrhhn
-    ugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtth
-    gvrhhnpeffheeugeetiefhgeethfejgfdtuefggeejleehjeeutefhfeeggefhkedtkeet
-    ffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrh
-    hnugesrghrnhgusgdruggv
-X-ME-Proxy: <xmx:xqegZMe76LP1KMxgOhIEU7FTSpW7gUOtgxBbz_vmEMWQ19VAK-G98A>
-    <xmx:xqegZOIpJKVnx3ex1K_E0pHZpY9m959DqoKy99wh-Tvlxw-lcPGZvA>
-    <xmx:xqegZJKloqLtXh5N50gA7rMVQ_dBWML-ktCjO4-km_dJYT6G1mtvVQ>
-    <xmx:x6egZC596rrEo0oU1CzyS9GOsWi2oZ3XsOlWXJwzcvzHICJhprDX8g>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-        id 2B8ECB60086; Sat,  1 Jul 2023 18:25:10 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.9.0-alpha0-499-gf27bbf33e2-fm-20230619.001-gf27bbf33
-Mime-Version: 1.0
-Message-Id: <393ca142-5226-4779-a963-c34fb0464c59@app.fastmail.com>
-In-Reply-To: <20230701214503.550549-2-javierm@redhat.com>
-References: <20230701214503.550549-1-javierm@redhat.com>
- <20230701214503.550549-2-javierm@redhat.com>
-Date:   Sun, 02 Jul 2023 00:24:49 +0200
-From:   "Arnd Bergmann" <arnd@arndb.de>
-To:     "Javier Martinez Canillas" <javierm@redhat.com>,
-        linux-kernel@vger.kernel.org
-Cc:     "Thomas Zimmermann" <tzimmermann@suse.de>,
-        "Geert Uytterhoeven" <geert@linux-m68k.org>,
-        "Andy Shevchenko" <andriy.shevchenko@linux.intel.com>,
-        "Borislav Petkov" <bp@alien8.de>,
-        "Daniel Vetter" <daniel@ffwll.ch>,
-        "Dave Hansen" <dave.hansen@linux.intel.com>,
-        "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
-        "H. Peter Anvin" <hpa@zytor.com>, "Helge Deller" <deller@gmx.de>,
-        "Ingo Molnar" <mingo@redhat.com>,
-        "Randy Dunlap" <rdunlap@infradead.org>,
-        "Sam Ravnborg" <sam@ravnborg.org>,
-        "Thomas Gleixner" <tglx@linutronix.de>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        x86@kernel.org
-Subject: Re: [PATCH v2 1/2] fbdev: Split frame buffer support in FB and FB_CORE symbols
-Content-Type: text/plain
+        with ESMTP id S229516AbjGBIAI (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 2 Jul 2023 04:00:08 -0400
+Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 75EC9E4D;
+        Sun,  2 Jul 2023 01:00:05 -0700 (PDT)
+Received: by mail-wm1-x32b.google.com with SMTP id 5b1f17b1804b1-3fbc0981756so30488335e9.0;
+        Sun, 02 Jul 2023 01:00:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1688284804; x=1690876804;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=sAUhZCQsdk87kgdWEBUppph6/yxmaqqjG5LD2yozjmE=;
+        b=LBRWF0qTQR1vdSojoeWP1/KHAKjxNGrEGOta35tbFekBwztv59f6JpjhB+swxUm03M
+         uHYwSjcfeVZtjnG6peUR4eiZyK7foW8X8L2CF2rXFWKMoVjI120mABOGo2+Mi+zAMOqh
+         ibiYMjp6XuoG02OvryQ8zxR5J/2+vvCATS69eOt3IQ2bQuNn4Y0PsfHoOUXiD9t3Q8u3
+         8CTAQuItiUyFQVWHmevHWJ3bnWdgig+MdazSHOc3Vriu24pE+6Wj2ZX82nkOR6anjNGX
+         Ng/aO+61ZqZby1IcBbTTHSPHEcQR382kW760yL9mqRuieCpmpWebiymU9urthu4IHxQh
+         eoAQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1688284804; x=1690876804;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=sAUhZCQsdk87kgdWEBUppph6/yxmaqqjG5LD2yozjmE=;
+        b=Sx/j7O84SSxn8F5XhHSepHjohHLzvSIv+YDGDeoiDtRiF1Mq+JhEpdp8Z9+VyQJ07Y
+         YYcYUVcFtCClYLJyEJzRLs24vKUtIS8qKj01HbU24uuG8gbMI6BQLo+d6OsWzAUBH3k6
+         o/NJ/qyHOphuoW1B15V22PavzLoz1XjcgH7xkxnI2Da715aecMybd89ba5osPmZKb01d
+         1tByJMTwfcwPL/zwFlN5URgW3hDQDp/Gwr1McjIrSlUNeGXwIt9uU9LfJOcxnDYGTaJy
+         aOSk5cpA4z8BLoNH96G9v9hN8YvF5sUicaYPUsXZ0KBjaz7y5kvls8xxITTBzejGNXgA
+         uerg==
+X-Gm-Message-State: AC+VfDzg7tOMQTWTuBjrwHfg9qy0GpbB75OG93W6ITxcH/QUbcVQaGiK
+        QWhCVZwjhk7xSpYqWVtMxZQ=
+X-Google-Smtp-Source: ACHHUZ51p/7W85vZ05OKRDLNDDfo8EshPrLib7+JwjGfEjbu9EJG3gx3IjKjhfuy4GzOOT5vGJX+lQ==
+X-Received: by 2002:a1c:750a:0:b0:3f5:878:c0c2 with SMTP id o10-20020a1c750a000000b003f50878c0c2mr4895518wmc.3.1688284803762;
+        Sun, 02 Jul 2023 01:00:03 -0700 (PDT)
+Received: from localhost ([2a01:e0a:32f:1f0:ae0b:3bc8:c743:b2d8])
+        by smtp.gmail.com with ESMTPSA id cx16-20020a056000093000b00301a351a8d6sm22710943wrb.84.2023.07.02.01.00.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 02 Jul 2023 01:00:03 -0700 (PDT)
+From:   Raphael Gallais-Pou <rgallaispou@gmail.com>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: [PATCH] staging: fbtft: ili9341: use macro FBTFT_REGISTER_SPI_DRIVER
+Date:   Sun,  2 Jul 2023 10:03:24 +0200
+Message-ID: <20230702080324.120137-1-rgallaispou@gmail.com>
+X-Mailer: git-send-email 2.41.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, Jul 1, 2023, at 23:44, Javier Martinez Canillas wrote:
-> Currently the CONFIG_FB option has to be enabled even if no legacy fbdev
-> drivers are needed (e.g: only to have support for framebuffer consoles).
->
-> The DRM subsystem has a fbdev emulation layer, but depends on CONFIG_FB
-> and so it can only be enabled if that dependency is enabled as well.
->
-> That means fbdev drivers have to be explicitly disabled if users want to
-> enable CONFIG_FB, only to use fbcon and/or the DRM fbdev emulation layer.
->
-> This patch introduces a non-visible CONFIG_FB_CORE symbol that could be
-> enabled just to have core support needed for CONFIG_DRM_FBDEV_EMULATION,
-> allowing CONFIG_FB to be disabled (and automatically disabling all the
-> fbdev drivers).
->
-> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
-> ---
+Using FBTFT_REGISTER_DRIVER resolves to a NULL struct spi_device_id. This
+ultimately causes the module to an early exit at probe time.
+In addition the MODULE_ALIASes can be dropped.
 
-I found two more things now:
+Signed-off-by: Raphael Gallais-Pou <rgallaispou@gmail.com>
+---
+ drivers/staging/fbtft/fb_ili9341.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-> 
-> +menuconfig FB_CORE
-> +	tristate "Core support for frame buffer devices"
-> +
+diff --git a/drivers/staging/fbtft/fb_ili9341.c b/drivers/staging/fbtft/fb_ili9341.c
+index 9ccd0823c3ab..9528bf3cf711 100644
+--- a/drivers/staging/fbtft/fb_ili9341.c
++++ b/drivers/staging/fbtft/fb_ili9341.c
+@@ -145,12 +145,7 @@ static struct fbtft_display display = {
+ 	},
+ };
+ 
+-FBTFT_REGISTER_DRIVER(DRVNAME, "ilitek,ili9341", &display);
+-
+-MODULE_ALIAS("spi:" DRVNAME);
+-MODULE_ALIAS("platform:" DRVNAME);
+-MODULE_ALIAS("spi:ili9341");
+-MODULE_ALIAS("platform:ili9341");
++FBTFT_REGISTER_SPI_DRIVER(DRVNAME, "ilitek", "ili9341", &display);
+ 
+ MODULE_DESCRIPTION("FB driver for the ILI9341 LCD display controller");
+ MODULE_AUTHOR("Christian Vogelgsang");
+-- 
+2.41.0
 
-This is not actually a hidden option, since you left the prompt
-after the 'tristate' keyword. There is also no pointn in having
-it as a menu, just use the simpler
-
-config FB_CORE
-        tristate
-
-or (as in my other email)
-
-config FB_CORE
-       def_tristate FB || (DRM && DRM_FBDEV_EMULATION)
-
-
-> @@ -44,7 +54,7 @@ menuconfig FB
-> 
->  config FIRMWARE_EDID
->  	bool "Enable firmware EDID"
-> -	depends on FB
-> +	depends on FB_CORE
->  	help
->  	  This enables access to the EDID transferred from the firmware.
->  	  On the i386, this is from the Video BIOS. Enable this if DDC/I2C
-> @@ -59,7 +69,7 @@ config FIRMWARE_EDID
-> 
->  config FB_DEVICE
->  	bool "Provide legacy /dev/fb* device"
-> -	depends on FB
-> +	select FB_CORE
->  	default y
->  	help
->  	  Say Y here if you want the legacy /dev/fb* device file and
-
-These are now the only user visible sub-options when CONFIG_FB is
-disabled. I missed FIRMWARE_EDID earlier, but this also looks like
-it can clearly be left as depending on FB since nothing else calls
-fb_firmware_edid. In fact, it looks like all of fbmon.c could be
-left out since none of its exported symbols are needed for DRM.
-
-That would leave CONFIG_FB_DEVICE as the only user visible option
-for DRM-only configs, which is slightly odd for the menuconfig,
-so I still wonder if that could be done differently.
-
-Is there actually a point in configurations for kernels with FB=y,
-DRM=n and FB_DEVICE=n? If we don't expect that to be a useful
-configuration, an easier way would be to have CONFIG_FB turn it
-on implicitly and instead have a user-visible Kconfig option
-below CONFIG_DRM_FBDEV_EMULATION that allows controlling the
-creation of /dev/fb*.
-
-     Arnd

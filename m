@@ -2,176 +2,122 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BF1DEB64DD
-	for <linux-fbdev@archiver.kernel.org>; Mon,  3 Jul 2023 07:53:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DBB03EB64DC
+	for <linux-fbdev@archiver.kernel.org>; Mon,  3 Jul 2023 08:21:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229516AbjGCHxB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 3 Jul 2023 03:53:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42544 "EHLO
+        id S230444AbjGCIVq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 3 Jul 2023 04:21:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32822 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229653AbjGCHxA (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 3 Jul 2023 03:53:00 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 29C66BA;
-        Mon,  3 Jul 2023 00:52:59 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id A88851F8AC;
-        Mon,  3 Jul 2023 07:52:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1688370777; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=tjcTbVMiizpIZqZCmtNiu9ZgGpYWuGwMKK6QoxAyIHI=;
-        b=Rb6SDZNjtzfNnEwmU+phWSNKsCG5UJ1NpH+iv3U320xZ83f4wLg1IxyRlyv2PUIEFuYwEu
-        +CXyomUTPHWf7HtTsN0+tOVpfQiX1pBsGF0Nps3rn/VNp6cmmB8QH+Se8Pl9utKw/ru+Ql
-        tCzXcgyogVCDFSs7RPz2lZndFinkJGA=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1688370777;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=tjcTbVMiizpIZqZCmtNiu9ZgGpYWuGwMKK6QoxAyIHI=;
-        b=feRAQGHaFNLITnlZ4yYTz/w1bzqwQEhInSKWyfUZL9n0OZVn0ODC0KGsFI9NmLsEF0wAKL
-        H/VA5pWibPyliGDQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 52EF5138FC;
-        Mon,  3 Jul 2023 07:52:57 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id jJxXE1l+omRiYAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 03 Jul 2023 07:52:57 +0000
-Message-ID: <04fa72f3-d6ca-bd68-7ed9-57151c1877df@suse.de>
-Date:   Mon, 3 Jul 2023 09:52:56 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.12.0
-Subject: Re: [PATCH v2 1/2] fbdev: Split frame buffer support in FB and
- FB_CORE symbols
-Content-Language: en-US
-To:     Javier Martinez Canillas <javierm@redhat.com>,
-        linux-kernel@vger.kernel.org
-Cc:     linux-fbdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Helge Deller <deller@gmx.de>, x86@kernel.org,
-        dri-devel@lists.freedesktop.org,
+        with ESMTP id S231139AbjGCIVn (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 3 Jul 2023 04:21:43 -0400
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0503AB2;
+        Mon,  3 Jul 2023 01:21:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1688372502; x=1719908502;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=Tv0UDvKju0GbZ5KiKlAN1E7wvkV4ONRaMHUw+7Se7Hg=;
+  b=Le2JDLs6wlw5yaTgQM2n2nfH2TgwMKoUGqv40PmZXlusjQK5Ip1zBYx+
+   TLPpCt/uiSAjE+tZ4lvm6tv2fvYlnKWJPcdcczAU4PG6bzmXGOVseTQeX
+   Wve0xGHcG7tbpVCa8dnfmbOrQAHDLZHe22dEB2+Quglf6kMLbD8qyKtWF
+   fpZKficjuSL3QfhczWnkRg16eer0LrfiVdEVIfpv1JRF9w53ph6gLWJdg
+   JTHXhC9r748d66wKthTdEPcbw4KNYpI4p4DdzTu6VBvelNUMsELJwdCSz
+   Qi84EtnEPGsH6eWM86G4FBRDxI9XXMSdKXrYBZsK0P6wMAXzp7bNQC27f
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10759"; a="361683487"
+X-IronPort-AV: E=Sophos;i="6.01,177,1684825200"; 
+   d="scan'208";a="361683487"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Jul 2023 01:21:41 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10759"; a="753663631"
+X-IronPort-AV: E=Sophos;i="6.01,177,1684825200"; 
+   d="scan'208";a="753663631"
+Received: from smile.fi.intel.com ([10.237.72.54])
+  by orsmga001.jf.intel.com with ESMTP; 03 Jul 2023 01:21:35 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.96)
+        (envelope-from <andriy.shevchenko@linux.intel.com>)
+        id 1qGEoP-001nv3-0M;
+        Mon, 03 Jul 2023 11:21:33 +0300
+Date:   Mon, 3 Jul 2023 11:21:32 +0300
+From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     linux-kernel@vger.kernel.org,
         Geert Uytterhoeven <geert@linux-m68k.org>,
-        Ingo Molnar <mingo@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Arnd Bergmann <arnd@arndb.de>, Borislav Petkov <bp@alien8.de>,
+        Daniel Vetter <daniel@ffwll.ch>,
         Dave Hansen <dave.hansen@linux.intel.com>,
-        "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@alien8.de>,
+        David Airlie <airlied@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "H. Peter Anvin" <hpa@zytor.com>, Helge Deller <deller@gmx.de>,
+        Ingo Molnar <mingo@redhat.com>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Sam Ravnborg <sam@ravnborg.org>,
         Thomas Gleixner <tglx@linutronix.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Sam Ravnborg <sam@ravnborg.org>
-References: <20230701214503.550549-1-javierm@redhat.com>
- <20230701214503.550549-2-javierm@redhat.com>
- <e83eab26-a8fe-b151-6bd4-7a7db6ceee1f@suse.de>
- <873525e8tb.fsf@minerva.mail-host-address-is-not-set>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <873525e8tb.fsf@minerva.mail-host-address-is-not-set>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------oXvTJlmCdi1BeUtnw2N9740V"
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        x86@kernel.org
+Subject: Re: [PATCH 0/2] Allow disabling all native fbdev drivers and only
+ keeping DRM emulation
+Message-ID: <ZKKFDECBXfQF+n8Z@smile.fi.intel.com>
+References: <20230629225113.297512-1-javierm@redhat.com>
+ <ZJ8RY7ZUlryrPB50@smile.fi.intel.com>
+ <878rc0etqe.fsf@minerva.mail-host-address-is-not-set>
+ <ZJ8T/Fexkr9wEZoP@smile.fi.intel.com>
+ <875y74elsv.fsf@minerva.mail-host-address-is-not-set>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <875y74elsv.fsf@minerva.mail-host-address-is-not-set>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------oXvTJlmCdi1BeUtnw2N9740V
-Content-Type: multipart/mixed; boundary="------------yEVrolPn78GGGYeuop5R7PJg";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Javier Martinez Canillas <javierm@redhat.com>,
- linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>,
- Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller
- <deller@gmx.de>, x86@kernel.org, dri-devel@lists.freedesktop.org,
- Geert Uytterhoeven <geert@linux-m68k.org>, Ingo Molnar <mingo@redhat.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Sam Ravnborg <sam@ravnborg.org>
-Message-ID: <04fa72f3-d6ca-bd68-7ed9-57151c1877df@suse.de>
-Subject: Re: [PATCH v2 1/2] fbdev: Split frame buffer support in FB and
- FB_CORE symbols
-References: <20230701214503.550549-1-javierm@redhat.com>
- <20230701214503.550549-2-javierm@redhat.com>
- <e83eab26-a8fe-b151-6bd4-7a7db6ceee1f@suse.de>
- <873525e8tb.fsf@minerva.mail-host-address-is-not-set>
-In-Reply-To: <873525e8tb.fsf@minerva.mail-host-address-is-not-set>
+On Fri, Jun 30, 2023 at 10:29:20PM +0200, Javier Martinez Canillas wrote:
+> Andy Shevchenko <andriy.shevchenko@linux.intel.com> writes:
+> > On Fri, Jun 30, 2023 at 07:38:01PM +0200, Javier Martinez Canillas wrote:
+> >> Andy Shevchenko <andriy.shevchenko@linux.intel.com> writes:
+> >> > On Fri, Jun 30, 2023 at 12:51:02AM +0200, Javier Martinez Canillas wrote:
+> >> >> This patch series splits the fbdev core support in two different Kconfig
+> >> >> symbols: FB and FB_CORE. The motivation for this is to allow CONFIG_FB to
+> >> >> be disabled, while still having the the core fbdev support needed for the
+> >> >> CONFIG_DRM_FBDEV_EMULATION to be enabled. The motivation is automatically
+> >> >> disabling all fbdev drivers instead of having to be disabled individually.
+> >> >> 
+> >> >> The reason for doing this is that now with simpledrm, there's no need for
+> >> >> the legacy fbdev (e.g: efifb or vesafb) drivers anymore and many distros
+> >> >
+> >> > How does simpledrm works with earlycon=efi?
+> >> >
+> >> 
+> >> simpledrm isn't for earlycon. For that you use a different driver (i.e:
+> >> drivers/firmware/efi/earlycon.c). I'm just talking about fbdev drivers
+> >> here that could be replaced by simpledrm.
+> >
+> > So, efifb can't be replaced. Please, fix your cover letter to reduce false
+> > impression of the scope of usage of the simpledrm.
+> >
+> 
+> Nothing to fixup.
+> 
+> You are conflating the efifb fbdev driver (drivers/video/fbdev/efifb.c)
+> with the efifb earlycon driver (drivers/firmware/efi/earlycon.c). I'm
+> talking about the former (which can be replaced by simpledrm) while you
+> are talking about the latter.
 
---------------yEVrolPn78GGGYeuop5R7PJg
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Ah, this makes sense!
 
-SGkNCg0KQW0gMDMuMDcuMjMgdW0gMDk6NDYgc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
-aWxsYXM6DQo+IFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPiB3cml0
-ZXM6DQo+IA0KPiBIZWxsbyBUaG9tYXMsDQo+IA0KPiBUaGFua3MgZm9yIHlvdXIgcmV2aWV3
-Lg0KPiANCj4+IEhpDQo+Pg0KPj4gQW0gMDEuMDcuMjMgdW0gMjM6NDQgc2NocmllYiBKYXZp
-ZXIgTWFydGluZXogQ2FuaWxsYXM6DQo+IA0KPiBbLi4uXQ0KPiANCj4+PiAgICANCj4+PiAr
-bWVudWNvbmZpZyBGQl9DT1JFDQo+Pj4gKwl0cmlzdGF0ZSAiQ29yZSBzdXBwb3J0IGZvciBm
-cmFtZSBidWZmZXIgZGV2aWNlcyINCj4+DQo+PiBXaXRoIHRoZSB0ZXh0LCB0aGlzIGlzIHZp
-c2libGU7IGFzIG90aGVycyBub3RlZC4NCj4+DQo+IA0KPiBZZXMsIEkgbWlzcmVtZW1iZXJl
-ZCB3aGF0IG1hZGUgYSBLY29uZmlnIHN5bWJvbCBub24tdmlzaWJsZSwgYW5kIHRob3VnaHQN
-Cj4gdGhhdCB3YXMganVzdCB0aGUgbGFjayBvZiBhIGhlbHAgc2VjdGlvbiBidXQgZm9yZ290
-IHRvIHJlbW92ZSB0aGUgcHJvbXB0Lg0KPiANCj4gVGhpcyBpcyBhbHJlYWR5IGZpeGVkIGlu
-IHYzLg0KPiANCj4+PiArDQo+Pj4gICAgbWVudWNvbmZpZyBGQg0KPj4+IC0JdHJpc3RhdGUg
-IlN1cHBvcnQgZm9yIGZyYW1lIGJ1ZmZlciBkZXZpY2VzIg0KPj4+ICsJdHJpc3RhdGUgIlN1
-cHBvcnQgZm9yIGZyYW1lIGJ1ZmZlciBkZXZpY2UgZHJpdmVycyINCj4+DQo+PiBKdXN0IGtl
-ZXAgdGhlIHRleHQgYXMtaXMuDQo+Pg0KPiANCj4gSSBkaXNhZ3JlZS4gQmVjYXVzZSB3ZSBh
-cmUgc2xpZ2h0bHkgY2hhbmdpbmcgdGhlIEtjb25maWcgc3ltYm9sIHNlbWFudGljcw0KPiBo
-ZXJlLCBmb3IgaW5zdGFuY2UgQ09ORklHX0ZCX0NPUkUgKyBDT05GSUdfRFJNX0ZCREVWX0VN
-VUxBVElPTiB3aWxsIGFsc28NCj4gcHJvdmlkZSBhIGZyYW1lIGJ1ZmZlciBkZXZpY2UgKGFu
-ZCB3aXRoIENPTkZJR19GQl9ERVZJQ0UsIHdpbGwgYmUgZXhwb3NlZA0KPiB0byB1c2VyLXNw
-YWNlIGFzIGEgL2Rldi9mYj8gZGV2aWNlKS4NCj4gDQo+IFNvIG5vdyBDT05GSUdfRkIgaXMg
-cmVhbGx5IGFib3V0IGFsbG93aW5nIHRoZSBuYXRpdmUgZmJkZXYgZHJpdmVycyB0byBiZQ0K
-PiBlbmFibGVkLiBUaGF0J3Mgd2h5IEknbSBjaGFuZ2luZyB0aGUgcHJvbXB0IHRleHQgdG8g
-bWFrZSB0aGF0IG1vcmUgY2xlYXIuDQo+IA0KPiBbLi4uXQ0KPiANCj4+PiAgICBjb25maWcg
-RkJfREVWSUNFDQo+Pj4gICAgCWJvb2wgIlByb3ZpZGUgbGVnYWN5IC9kZXYvZmIqIGRldmlj
-ZSINCj4+PiAtCWRlcGVuZHMgb24gRkINCj4+PiArCXNlbGVjdCBGQl9DT1JFDQo+Pg0KPj4g
-VGhpcyBzaG91bGQgZGVwZW5kIG9uIEZCX0NPUkUuDQo+Pg0KPiANCj4gWWVzLCBhbHJlYWR5
-IGZpeGVkIGluIHYzIHRvby4gSSBkaWQgYSBzZWxlY3QgdG8gcHJldmVudCBzeW1ib2wgY2ly
-Y3VsYXINCj4gZGVwZW5kZW5jaWVzIGJ1dCBkb2luZyB0aGF0IGxlYWQgdG8gQ09ORklHX0ZC
-X0NPUkU9eSBldmVuIGlmIENPTkZJR19EUk0NCj4gd2FzIHNldCBhcyBhIG1vZHVsZS4NCj4g
-DQo+IEJ1dCB3aXRoIHRoZSAic2VsZWN0IEZCX0NPUkUgaWYgRFJNX0ZCREVWX0VNVUxBVElP
-TiIgaW4gdGhlIERSTSBzeW1ib2wgYXMNCj4gQXJuZCBzdWdnZXN0ZWQsIEkgd2FzIGFibGUg
-dG8gaGF2ZSBGQl9ERVZJQ0UgdG8gZGVwZW5kIG9uIEZCX0NPUkUgYWdhaW4uDQoNCkJUVywg
-d2hlcmUgZG9lcyB0aGlzIGl0ZW0gbm93IHNob3cgdXAgaW4gdGhlIG1lbnU/IEl0IHVzZWQg
-dG8gYmUgaW4gdGhlIA0KZnJhbWVidWZmZXIgbWVudS4gSXQncyBub3cgaW4gdGhlIGdyYXBo
-aWNzLWRyaXZlcnMgbWVudT8NCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiANCj4+IEJl
-c3QgcmVnYXJkcw0KPj4gVGhvbWFzDQo+Pg0KPiANCg0KLS0gDQpUaG9tYXMgWmltbWVybWFu
-bg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMg
-R2VybWFueSBHbWJIDQpGcmFua2Vuc3RyYXNzZSAxNDYsIDkwNDYxIE51ZXJuYmVyZywgR2Vy
-bWFueQ0KR0Y6IEl2byBUb3RldiwgQW5kcmV3IE15ZXJzLCBBbmRyZXcgTWNEb25hbGQsIEJv
-dWRpZW4gTW9lcm1hbg0KSFJCIDM2ODA5IChBRyBOdWVybmJlcmcpDQo=
+I remember now that it was (still is?) an attempt to move from efifb to
+simpledrm, but have no idea what the status of that series is.
 
---------------yEVrolPn78GGGYeuop5R7PJg--
+-- 
+With Best Regards,
+Andy Shevchenko
 
---------------oXvTJlmCdi1BeUtnw2N9740V
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
 
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmSiflgFAwAAAAAACgkQlh/E3EQov+Cy
-sA//blrF7Js6UhybXcDbcr02zUs8GiFhjqXj7fRsC2p2RT9vh1II2OnTe31NUZypvaQeCguFRHOD
-D90MxIIi4w86JMqvJVuEr/PJT3TaMI03pFvY4FNj8/5Or/RPqoO18MLN4hA0jhcrM4/7Fw0VyxaK
-CVgtukCYY8fcn0p/ih8dLQFOoqOCjneSDpUJllIxZuza1Gl0cLkR72Pb1w8VF3kh3s0H9CohHQFI
-Hj0z4LWdETOolJbUkENAhrojOjMugn223SYBSMO6t3K97tM0Y7XWW2DaY1pYGmj5h0dH/NjsNCpp
-0qNFiaWgidN83UN4jfmryNXl+pVEIh+1ND9dyjzujZv0d2N34TEccjuq2Lydd/njmloVRikdKtb5
-nB3aT9i+TfQqbZ2+xnNvbrRjHIuMbOw2GPKUqh8HeCjuUb4e79fbiQTtuE3o1MCk6eio/1IOSe1g
-LAKfDJWsi36J1wbejjTonNqoJZh1MIlnGrBJhlRvvxurtitjCub8HPAwTHI93a/zhqipz3JPfI87
-eqdsJzidTfhloOFrbXq1S1Aj9iveQtmczuSdoxj+KrgLnSRKzVQ6E7a1fTUSdpFxAongaWGoJxXm
-fZg4ceau2Pf2dImih2+PlaG+/TUu32QHp58iuzbaeJ1jUQJhy39ufY5ZNWGLRU05TJ29QLA3h4Qj
-Wuw=
-=t5iO
------END PGP SIGNATURE-----
-
---------------oXvTJlmCdi1BeUtnw2N9740V--

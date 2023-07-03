@@ -2,84 +2,87 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DBB05C0015E
-	for <linux-fbdev@archiver.kernel.org>; Mon,  3 Jul 2023 10:36:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DCAAC0015E
+	for <linux-fbdev@archiver.kernel.org>; Mon,  3 Jul 2023 13:26:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230138AbjGCKg1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 3 Jul 2023 06:36:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53200 "EHLO
+        id S229504AbjGCN0O (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 3 Jul 2023 09:26:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49836 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230237AbjGCKgZ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 3 Jul 2023 06:36:25 -0400
-Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 53487CC
-        for <linux-fbdev@vger.kernel.org>; Mon,  3 Jul 2023 03:36:24 -0700 (PDT)
-Received: by mail-wr1-x42d.google.com with SMTP id ffacd0b85a97d-3141c3a7547so4422784f8f.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 03 Jul 2023 03:36:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1688380582; x=1690972582;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=ixKZPqjMUtYmaa1DZf59STOffMkhoGUDgvvQ1w9gmxU=;
-        b=pz0dwk4ABASU/bsaehINWP2hrWKMVGOli4cj08a0jsh3za/q/rasrg6XpxZRlZ/cc5
-         n1eawc3Rp+oltxx6Y/8NogISdO2UbMJ0JzROiR6FMN9/mmrXb27Ad+F3ch5UZ1lFS2oR
-         BTuyqyz80hrUkr1a578tKS+0vAOAEq//koWS6aZIVyaeE21CAOlo8pqxWHuaduD0FojJ
-         OM2HWmX0P0SFSgnlx+FVEX+P3tyni1cNBO06taAKgbzCK+fpjKyjhtQQnr9JjcVOSYTx
-         +UW69hVXfDMnYDDkhi9OnDsQHBq3yfR8YpiXGwBCO4iSs1KvayYKZGz1FXjuKSQhaKmq
-         2Wkg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688380582; x=1690972582;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ixKZPqjMUtYmaa1DZf59STOffMkhoGUDgvvQ1w9gmxU=;
-        b=WFrho/i5c3n+CNHM4Tl/a77cuRjpoExF+uN0iR3FVof2fK2qB+TMAmiuiYon80/kZH
-         2ow4uZ1bjx9XHEjEd2sFwuB0KmdSNTagU8z/Kc1NDOYWXRRpy1LSNwkbJWmyzPAUQ8Vk
-         v8doyVQmpDvbSCyluoMs5g0YC/ABlcPuoz9pvlyNR3VjFTyQPb4x6Ep8yVRmkBZnAmVH
-         iuIeYuYPt0ncq4qMz7ncIsFVbczqkQ4GGXoxraTPhHc0X+BB5/pzG9TPEcKm2l30qCcU
-         v01LrkQcZx/tPz5t4JIY3KSzCAM0AAA5MDP9mCm19UqIanqWZN4UGsK/acQkmeoYHDnM
-         ZnRQ==
-X-Gm-Message-State: ABy/qLY/APJh5AkB+y2tpOQ7dNbvYK/nJDrs/VsmZzh9xpvmpHYAxYzy
-        6JdxDEqeVQQzK9upPmHP8TU+YQ==
-X-Google-Smtp-Source: APBJJlFCtn/MbjA2G8ZvLuBmC6KdcueKpt+ZPYpnE6pacAyeUCSM0gU2+5700Tz56JqYf+INB/Q1GQ==
-X-Received: by 2002:adf:cd87:0:b0:313:edaa:24fd with SMTP id q7-20020adfcd87000000b00313edaa24fdmr7691744wrj.21.1688380582578;
-        Mon, 03 Jul 2023 03:36:22 -0700 (PDT)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id fa12-20020a05600c518c00b003fbb1ce274fsm10250195wmb.0.2023.07.03.03.36.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 03 Jul 2023 03:36:21 -0700 (PDT)
-Date:   Mon, 3 Jul 2023 11:36:20 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Julius Zint <julius@zint.sh>
-Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH 0/1] Backlight driver for the Apple Studio Display
-Message-ID: <20230703103620.GB4328@aspen.lan>
-References: <20230701120806.11812-1-julius@zint.sh>
+        with ESMTP id S229960AbjGCN0N (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 3 Jul 2023 09:26:13 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D8769E70;
+        Mon,  3 Jul 2023 06:26:08 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 6B3EC60EE0;
+        Mon,  3 Jul 2023 13:26:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 197ADC433C9;
+        Mon,  3 Jul 2023 13:25:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1688390767;
+        bh=lOto3+2FBgpgZYTbSv5jQU8R2gXWk1bZIPsTI/IYNIM=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=jR0vzl0SnAnlH9AL2mHlfOw7ml7dux3qyyJCHrzNVWXX8mXNomw2vrfuqRd/fPs7J
+         FX731LoZbOcq0kJ8EudGvauceZ0xT6soX/7XeWdGr0QuOBx5ebSCrQ1z9ErA+1xIfx
+         6Wn/4RFXqMKebtYuaBKN/PPgppDxI74arIK/jifM=
+Date:   Mon, 3 Jul 2023 15:25:00 +0200
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     =?iso-8859-1?Q?Rapha=EBl?= Gallais-Pou <rgallaispou@gmail.com>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: fbtft: ili9341: use macro
+ FBTFT_REGISTER_SPI_DRIVER
+Message-ID: <2023070312-pasty-divisive-fa22@gregkh>
+References: <20230702080324.120137-1-rgallaispou@gmail.com>
+ <2023070254-embark-subplot-4dd4@gregkh>
+ <ae400e28-0cd4-cdf8-811d-843e62cd4a95@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20230701120806.11812-1-julius@zint.sh>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ae400e28-0cd4-cdf8-811d-843e62cd4a95@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, Jul 01, 2023 at 02:08:02PM +0200, Julius Zint wrote:
-> I have been using and testing this as a DKMS for 6 months now without
-> any known issues. It bothers me, that it needs to be part of the
-> initramfs instead of just working out of the box. Maybe someone else
-> here knows, how to tell the USB HID driver, that this is not a HID device
-> and it should keep its fingers from it.
+On Sun, Jul 02, 2023 at 03:05:25PM +0200, Raphaël Gallais-Pou wrote:
+> Hi,
+> 
+> Le 02/07/2023 à 14:02, Greg Kroah-Hartman a écrit :
+> > On Sun, Jul 02, 2023 at 10:03:24AM +0200, Raphael Gallais-Pou wrote:
+> > > Using FBTFT_REGISTER_DRIVER resolves to a NULL struct spi_device_id. This
+> > > ultimately causes the module to an early exit at probe time.
+> > 
+> > So this doesn't work at all today?  Has it ever worked?  What commit
+> > does thi fix?
+> 
+> I tested again with only a tweak in my device-tree. The early exit in the
+> driver's code is caused by a missing field. So regarding this particular
+> driver the macro works.
+> 
+> It resolves to set spi_driver.id_table = NULL, which yields a warning in
+> __spi_register_driver(). So I guess this patch only fixes a warning.
 
-If is says it is a HID device and is uses HID reports for control then
-it *is* a HID device!
+Ok, please fix the changelog text when you resend this.
 
-In other words you need your driver to register as a HID driver instead
-of sending raw HID frames using the USB stack. If you do that then the
-HID core infrastructure will ensure the right driver gets loaded (it
-has special logic to automatically unregister hid-generic and load the
-better driver as soon as one becomes available).
+> > > In addition the MODULE_ALIASes can be dropped.
+> > 
+> > Why?  When you say "also" or "in addition", that's a huge hint it should
+> > be a separate patch.
+> I did not find any reference to those aliases in the kernel, which led me to
+> remove those.
 
+Aliases are used by userspace, not the kernel.
 
-Daniel.
+> If you think they are still necessary, I'll split them in an upcoming v2.
+
+Please document why they are not needed in order to be able to be
+removed.
+
+thanks,
+
+greg k-h

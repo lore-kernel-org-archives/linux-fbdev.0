@@ -2,326 +2,286 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5769EB64D9
-	for <linux-fbdev@archiver.kernel.org>; Sun,  2 Jul 2023 19:16:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89697EB64DC
+	for <linux-fbdev@archiver.kernel.org>; Mon,  3 Jul 2023 06:53:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229608AbjGBTQm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 2 Jul 2023 15:16:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45936 "EHLO
+        id S230292AbjGCGxe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 3 Jul 2023 02:53:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50608 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230328AbjGBTQg (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 2 Jul 2023 15:16:36 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AD3DA134
-        for <linux-fbdev@vger.kernel.org>; Sun,  2 Jul 2023 12:15:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1688325350;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
+        with ESMTP id S229908AbjGCGx1 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 3 Jul 2023 02:53:27 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E371DD;
+        Sun,  2 Jul 2023 23:53:24 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 876AF218E5;
+        Mon,  3 Jul 2023 06:53:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1688367203; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=O+OpQ8FhWL4vINUgdpBq2jtly/gGBeEwyQXrGSBuzmI=;
-        b=J3eYqcEo+SEaOeGRDJhyM98ODRgZew8AC5SOMYgHTXHh1Pl0X4xUvyOFmwdHPq0Fcv3C7I
-        z0XNrz8ClprTla9eI7h0jG8nKQX51jmUwkPTe2lab5r6UYS3RgBJVbIdYA+A4D0ItdIx/V
-        FqTdlDZ36SuGgIdYMXWX2N7eWI/Jg1Y=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-275-ptTGL9FEMk-Fp5i3lLeUTQ-1; Sun, 02 Jul 2023 15:15:49 -0400
-X-MC-Unique: ptTGL9FEMk-Fp5i3lLeUTQ-1
-Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-3fbb34f7224so22155885e9.2
-        for <linux-fbdev@vger.kernel.org>; Sun, 02 Jul 2023 12:15:48 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688325348; x=1690917348;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=O+OpQ8FhWL4vINUgdpBq2jtly/gGBeEwyQXrGSBuzmI=;
-        b=MQxu7FBrPo8uyjYUZKlrEEUGiTeE8bfYfazxEADW1+aBKJfBBDK/vSNdHVzJjo7Ww7
-         d56kZB7uEMYIJrVvu/F33BEFe7p5z44wWTeMluCTaCjTN1ZYWBvQNz0YW4XnWJuVns7b
-         6w/cTus6aTu11Kv9L1HsecBpwLm9XZ72LOr7MY027CEccnIjKgEqJ64AC0s19E7ay7yb
-         956aI1JYI+/C+rSI4830fEMP/1t19GvRc0I32yjQGGkwgUPsvClKYJfjYFG9+juRUH/K
-         yfPa4OLhUJVdl5rAHPzUfkOcRsdOrLY5kaWmoMH01WN3VU/fXBhSChFLEBL4zpEj1/Ft
-         SNNw==
-X-Gm-Message-State: AC+VfDw7WK2D7+pOruf9VhErvcWifpxb/mIVnERkDnd/3pPU/sN+p+i0
-        5OTtUGYAiPNkmHTaqTS/h9x9HBsY8wo68EYx+4llmRAn1XRynPMcGmAYvHDBjt21QFoSAHt6u/u
-        S6Q7ZIAn9dLymAyPRDL4ug/w=
-X-Received: by 2002:a1c:ed19:0:b0:3fb:407e:9b30 with SMTP id l25-20020a1ced19000000b003fb407e9b30mr6973007wmh.13.1688325347774;
-        Sun, 02 Jul 2023 12:15:47 -0700 (PDT)
-X-Google-Smtp-Source: ACHHUZ6TEDx7mZMSKS0zMb7cTutew+fp0z6fzjfQL6TR1HiUxmFFKyKRmLqu7ujS36y1E7Z5uUniDA==
-X-Received: by 2002:a1c:ed19:0:b0:3fb:407e:9b30 with SMTP id l25-20020a1ced19000000b003fb407e9b30mr6972988wmh.13.1688325347442;
-        Sun, 02 Jul 2023 12:15:47 -0700 (PDT)
-Received: from minerva.home (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id g11-20020a7bc4cb000000b003fbab76165asm14144231wmk.48.2023.07.02.12.15.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 02 Jul 2023 12:15:47 -0700 (PDT)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Borislav Petkov <bp@alien8.de>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "H. Peter Anvin" <hpa@zytor.com>, Helge Deller <deller@gmx.de>,
-        Ingo Molnar <mingo@redhat.com>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Robert Jarzmik <robert.jarzmik@free.fr>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        x86@kernel.org
-Subject: [PATCH v3 2/3] fbdev: Split frame buffer support in FB and FB_CORE symbols
-Date:   Sun,  2 Jul 2023 21:15:19 +0200
-Message-ID: <20230702191529.768248-3-javierm@redhat.com>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230702191529.768248-1-javierm@redhat.com>
-References: <20230702191529.768248-1-javierm@redhat.com>
+        bh=k47v4CO90EEqIshC+rQiqkbrxzkEATD9KOfHaH4P9LM=;
+        b=AH2b2ztj8kJr1FF4KTZpVGB72AD6h77eqYoTNr5pANyIqi4zu+nEkh4luq2+qnZwoINjMz
+        x9UfjNXErLw0GVivrUZqdiQi+6pNO30m4mSkP9jrdEeX/QKuFDgcpTCKjImK16WRWZ/0Xn
+        YpHiqv2phNKQxbmfh0TBZFgfkR85iPk=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1688367203;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=k47v4CO90EEqIshC+rQiqkbrxzkEATD9KOfHaH4P9LM=;
+        b=badGysFZAQPe0g3HMPpFSw8EgCG4hGWqcIPnBpvYN11QLYHubsv3FCCG5pMcCVaU2GqpBs
+        9TSdhhNGZyrIIGCQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 248AE13276;
+        Mon,  3 Jul 2023 06:53:23 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id 13rsB2NwomRWQgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 03 Jul 2023 06:53:23 +0000
+Message-ID: <e83eab26-a8fe-b151-6bd4-7a7db6ceee1f@suse.de>
+Date:   Mon, 3 Jul 2023 08:53:22 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.12.0
+Subject: Re: [PATCH v2 1/2] fbdev: Split frame buffer support in FB and
+ FB_CORE symbols
+To:     Javier Martinez Canillas <javierm@redhat.com>,
+        linux-kernel@vger.kernel.org
+Cc:     x86@kernel.org, linux-fbdev@vger.kernel.org,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Helge Deller <deller@gmx.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        dri-devel@lists.freedesktop.org, Ingo Molnar <mingo@redhat.com>,
+        Borislav Petkov <bp@alien8.de>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Sam Ravnborg <sam@ravnborg.org>
+References: <20230701214503.550549-1-javierm@redhat.com>
+ <20230701214503.550549-2-javierm@redhat.com>
+Content-Language: en-US
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20230701214503.550549-2-javierm@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------sKXktxSX2QeYrt3OBJ9eAnFc"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Currently the CONFIG_FB option has to be enabled even if no legacy fbdev
-drivers are needed (e.g: only to have support for framebuffer consoles).
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------sKXktxSX2QeYrt3OBJ9eAnFc
+Content-Type: multipart/mixed; boundary="------------tblOCBbtXb0tY0N9lUcZgunQ";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Javier Martinez Canillas <javierm@redhat.com>,
+ linux-kernel@vger.kernel.org
+Cc: x86@kernel.org, linux-fbdev@vger.kernel.org,
+ Randy Dunlap <rdunlap@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller
+ <deller@gmx.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ dri-devel@lists.freedesktop.org, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Sam Ravnborg <sam@ravnborg.org>
+Message-ID: <e83eab26-a8fe-b151-6bd4-7a7db6ceee1f@suse.de>
+Subject: Re: [PATCH v2 1/2] fbdev: Split frame buffer support in FB and
+ FB_CORE symbols
+References: <20230701214503.550549-1-javierm@redhat.com>
+ <20230701214503.550549-2-javierm@redhat.com>
+In-Reply-To: <20230701214503.550549-2-javierm@redhat.com>
 
-The DRM subsystem has a fbdev emulation layer, but depends on CONFIG_FB
-and so it can only be enabled if that dependency is enabled as well.
+--------------tblOCBbtXb0tY0N9lUcZgunQ
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-That means fbdev drivers have to be explicitly disabled if users want to
-enable CONFIG_FB, only to use fbcon and/or the DRM fbdev emulation layer.
+SGkNCg0KQW0gMDEuMDcuMjMgdW0gMjM6NDQgc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
+aWxsYXM6DQo+IEN1cnJlbnRseSB0aGUgQ09ORklHX0ZCIG9wdGlvbiBoYXMgdG8gYmUgZW5h
+YmxlZCBldmVuIGlmIG5vIGxlZ2FjeSBmYmRldg0KPiBkcml2ZXJzIGFyZSBuZWVkZWQgKGUu
+Zzogb25seSB0byBoYXZlIHN1cHBvcnQgZm9yIGZyYW1lYnVmZmVyIGNvbnNvbGVzKS4NCj4g
+DQo+IFRoZSBEUk0gc3Vic3lzdGVtIGhhcyBhIGZiZGV2IGVtdWxhdGlvbiBsYXllciwgYnV0
+IGRlcGVuZHMgb24gQ09ORklHX0ZCDQo+IGFuZCBzbyBpdCBjYW4gb25seSBiZSBlbmFibGVk
+IGlmIHRoYXQgZGVwZW5kZW5jeSBpcyBlbmFibGVkIGFzIHdlbGwuDQo+IA0KPiBUaGF0IG1l
+YW5zIGZiZGV2IGRyaXZlcnMgaGF2ZSB0byBiZSBleHBsaWNpdGx5IGRpc2FibGVkIGlmIHVz
+ZXJzIHdhbnQgdG8NCj4gZW5hYmxlIENPTkZJR19GQiwgb25seSB0byB1c2UgZmJjb24gYW5k
+L29yIHRoZSBEUk0gZmJkZXYgZW11bGF0aW9uIGxheWVyLg0KPiANCj4gVGhpcyBwYXRjaCBp
+bnRyb2R1Y2VzIGEgbm9uLXZpc2libGUgQ09ORklHX0ZCX0NPUkUgc3ltYm9sIHRoYXQgY291
+bGQgYmUNCj4gZW5hYmxlZCBqdXN0IHRvIGhhdmUgY29yZSBzdXBwb3J0IG5lZWRlZCBmb3Ig
+Q09ORklHX0RSTV9GQkRFVl9FTVVMQVRJT04sDQo+IGFsbG93aW5nIENPTkZJR19GQiB0byBi
+ZSBkaXNhYmxlZCAoYW5kIGF1dG9tYXRpY2FsbHkgZGlzYWJsaW5nIGFsbCB0aGUNCj4gZmJk
+ZXYgZHJpdmVycykuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBKYXZpZXIgTWFydGluZXogQ2Fu
+aWxsYXMgPGphdmllcm1AcmVkaGF0LmNvbT4NCj4gLS0tDQo+IA0KPiBDaGFuZ2VzIGluIHYy
+Og0KPiAtIEtlZXAgImRlcGVuZHMgb24gRkIiIGZvciBGQl9EREMsIEZCX0hFQ1VCQSwgRkJf
+U1ZHQUxJQiwgRkJfTUFDTU9ERVMsDQo+ICAgIEZCX0JBQ0tMSUdIVCwgRkJfTU9ERV9IRUxQ
+RVJTIGFuZCBGQl9USUxFQkxJVFRJTkcgKEFybmQgQmVyZ21hbm4pLg0KPiAtIERvbid0IGNo
+YW5nZSB0aGUgZmIubyBvYmplY3QgbmFtZSAoQXJuZCBCZXJnbWFubikuDQo+IC0gTWFrZSBG
+Ql9DT1JFIGEgbm9uLXZpc2libGUgS2NvbmZpZyBzeW1ib2wgaW5zdGVhZCAoVGhvbWFzIFpp
+bW1lcm1hbm4pLg0KPiANCj4gICBhcmNoL3g4Ni9NYWtlZmlsZSAgICAgICAgICAgICAgICAg
+fCAgMiArLQ0KPiAgIGFyY2gveDg2L3ZpZGVvL01ha2VmaWxlICAgICAgICAgICB8ICAyICst
+DQo+ICAgZHJpdmVycy92aWRlby9jb25zb2xlL0tjb25maWcgICAgIHwgIDIgKy0NCj4gICBk
+cml2ZXJzL3ZpZGVvL2ZiZGV2L0tjb25maWcgICAgICAgfCA0MCArKysrKysrKysrKysrKysr
+KysrLS0tLS0tLS0tLS0tDQo+ICAgZHJpdmVycy92aWRlby9mYmRldi9jb3JlL01ha2VmaWxl
+IHwgIDIgKy0NCj4gICA1IGZpbGVzIGNoYW5nZWQsIDI5IGluc2VydGlvbnMoKyksIDE5IGRl
+bGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2FyY2gveDg2L01ha2VmaWxlIGIvYXJj
+aC94ODYvTWFrZWZpbGUNCj4gaW5kZXggYjM5OTc1OTc3YzAzLi44OWEwMmU2OWJlNWYgMTAw
+NjQ0DQo+IC0tLSBhL2FyY2gveDg2L01ha2VmaWxlDQo+ICsrKyBiL2FyY2gveDg2L01ha2Vm
+aWxlDQo+IEBAIC0yNTksNyArMjU5LDcgQEAgZHJpdmVycy0kKENPTkZJR19QQ0kpICAgICAg
+ICAgICAgKz0gYXJjaC94ODYvcGNpLw0KPiAgICMgc3VzcGVuZCBhbmQgaGliZXJuYXRpb24g
+c3VwcG9ydA0KPiAgIGRyaXZlcnMtJChDT05GSUdfUE0pICs9IGFyY2gveDg2L3Bvd2VyLw0K
+PiAgIA0KPiAtZHJpdmVycy0kKENPTkZJR19GQikgKz0gYXJjaC94ODYvdmlkZW8vDQo+ICtk
+cml2ZXJzLSQoQ09ORklHX0ZCX0NPUkUpICs9IGFyY2gveDg2L3ZpZGVvLw0KPiAgIA0KPiAg
+ICMjIyMNCj4gICAjIGJvb3QgbG9hZGVyIHN1cHBvcnQuIFNldmVyYWwgdGFyZ2V0cyBhcmUg
+a2VwdCBmb3IgbGVnYWN5IHB1cnBvc2VzDQo+IGRpZmYgLS1naXQgYS9hcmNoL3g4Ni92aWRl
+by9NYWtlZmlsZSBiL2FyY2gveDg2L3ZpZGVvL01ha2VmaWxlDQo+IGluZGV4IDExNjQwYzEx
+NjExNS4uNWViZTQ4NzUyZmZjIDEwMDY0NA0KPiAtLS0gYS9hcmNoL3g4Ni92aWRlby9NYWtl
+ZmlsZQ0KPiArKysgYi9hcmNoL3g4Ni92aWRlby9NYWtlZmlsZQ0KPiBAQCAtMSwyICsxLDIg
+QEANCj4gICAjIFNQRFgtTGljZW5zZS1JZGVudGlmaWVyOiBHUEwtMi4wLW9ubHkNCj4gLW9i
+ai0kKENPTkZJR19GQikgICAgICAgICAgICAgICArPSBmYmRldi5vDQo+ICtvYmotJChDT05G
+SUdfRkJfQ09SRSkJCSs9IGZiZGV2Lm8NCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8v
+Y29uc29sZS9LY29uZmlnIGIvZHJpdmVycy92aWRlby9jb25zb2xlL0tjb25maWcNCj4gaW5k
+ZXggYTJhODhkNDJlZGYwLi4xYjVhMzE5OTcxZWQgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMv
+dmlkZW8vY29uc29sZS9LY29uZmlnDQo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vY29uc29sZS9L
+Y29uZmlnDQo+IEBAIC03Miw3ICs3Miw3IEBAIGNvbmZpZyBEVU1NWV9DT05TT0xFX1JPV1MN
+Cj4gICANCj4gICBjb25maWcgRlJBTUVCVUZGRVJfQ09OU09MRQ0KPiAgIAlib29sICJGcmFt
+ZWJ1ZmZlciBDb25zb2xlIHN1cHBvcnQiDQo+IC0JZGVwZW5kcyBvbiBGQiAmJiAhVU1MDQo+
+ICsJZGVwZW5kcyBvbiBGQl9DT1JFICYmICFVTUwNCj4gICAJc2VsZWN0IFZUX0hXX0NPTlNP
+TEVfQklORElORw0KPiAgIAlzZWxlY3QgQ1JDMzINCj4gICAJc2VsZWN0IEZPTlRfU1VQUE9S
+VA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9mYmRldi9LY29uZmlnIGIvZHJpdmVy
+cy92aWRlby9mYmRldi9LY29uZmlnDQo+IGluZGV4IGNlY2YxNTQxODYzMi4uZGE2ZjdkNTg4
+ZjE3IDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L0tjb25maWcNCj4gKysr
+IGIvZHJpdmVycy92aWRlby9mYmRldi9LY29uZmlnDQo+IEBAIC02LDggKzYsMTIgQEANCj4g
+ICBjb25maWcgRkJfTk9USUZZDQo+ICAgCWJvb2wNCj4gICANCj4gK21lbnVjb25maWcgRkJf
+Q09SRQ0KPiArCXRyaXN0YXRlICJDb3JlIHN1cHBvcnQgZm9yIGZyYW1lIGJ1ZmZlciBkZXZp
+Y2VzIg0KDQpXaXRoIHRoZSB0ZXh0LCB0aGlzIGlzIHZpc2libGU7IGFzIG90aGVycyBub3Rl
+ZC4NCg0KPiArDQo+ICAgbWVudWNvbmZpZyBGQg0KPiAtCXRyaXN0YXRlICJTdXBwb3J0IGZv
+ciBmcmFtZSBidWZmZXIgZGV2aWNlcyINCj4gKwl0cmlzdGF0ZSAiU3VwcG9ydCBmb3IgZnJh
+bWUgYnVmZmVyIGRldmljZSBkcml2ZXJzIg0KDQpKdXN0IGtlZXAgdGhlIHRleHQgYXMtaXMu
+DQoNCj4gKwlzZWxlY3QgRkJfQ09SRQ0KPiAgIAlzZWxlY3QgRkJfTk9USUZZDQo+ICAgCXNl
+bGVjdCBWSURFT19DTURMSU5FDQo+ICAgCWhlbHANCj4gQEAgLTMzLDYgKzM3LDEyIEBAIG1l
+bnVjb25maWcgRkINCj4gICAJICA8aHR0cDovL3d3dy5tdW50ZWQub3JnLnVrL3Byb2dyYW1t
+aW5nL0ZyYW1lYnVmZmVyLUhPV1RPLTEuMy5odG1sPiBmb3IgbW9yZQ0KPiAgIAkgIGluZm9y
+bWF0aW9uLg0KPiAgIA0KPiArCSAgVGhpcyBlbmFibGVzIHN1cHBvcnQgZm9yIG5hdGl2ZSBm
+cmFtZSBidWZmZXIgZGV2aWNlIChmYmRldikgZHJpdmVycy4NCj4gKw0KPiArCSAgVGhlIERS
+TSBzdWJzeXN0ZW0gcHJvdmlkZXMgc3VwcG9ydCBmb3IgZW11bGF0ZWQgZnJhbWUgYnVmZmVy
+IGRldmljZXMNCj4gKwkgIG9uIHRvcCBvZiBLTVMgZHJpdmVycywgYnV0IHRoaXMgb3B0aW9u
+IGFsbG93cyBsZWdhY3kgZmJkZXYgZHJpdmVycyB0bw0KPiArCSAgYmUgZW5hYmxlZCBhcyB3
+ZWxsLg0KPiArDQo+ICAgCSAgU2F5IFkgaGVyZSBhbmQgdG8gdGhlIGRyaXZlciBmb3IgeW91
+ciBncmFwaGljcyBib2FyZCBiZWxvdyBpZiB5b3UNCj4gICAJICBhcmUgY29tcGlsaW5nIGEg
+a2VybmVsIGZvciBhIG5vbi14ODYgYXJjaGl0ZWN0dXJlLg0KPiAgIA0KPiBAQCAtNDQsNyAr
+NTQsNyBAQCBtZW51Y29uZmlnIEZCDQo+ICAgDQo+ICAgY29uZmlnIEZJUk1XQVJFX0VESUQN
+Cj4gICAJYm9vbCAiRW5hYmxlIGZpcm13YXJlIEVESUQiDQo+IC0JZGVwZW5kcyBvbiBGQg0K
+PiArCWRlcGVuZHMgb24gRkJfQ09SRQ0KPiAgIAloZWxwDQo+ICAgCSAgVGhpcyBlbmFibGVz
+IGFjY2VzcyB0byB0aGUgRURJRCB0cmFuc2ZlcnJlZCBmcm9tIHRoZSBmaXJtd2FyZS4NCj4g
+ICAJICBPbiB0aGUgaTM4NiwgdGhpcyBpcyBmcm9tIHRoZSBWaWRlbyBCSU9TLiBFbmFibGUg
+dGhpcyBpZiBEREMvSTJDDQo+IEBAIC01OSw3ICs2OSw3IEBAIGNvbmZpZyBGSVJNV0FSRV9F
+RElEDQo+ICAgDQo+ICAgY29uZmlnIEZCX0RFVklDRQ0KPiAgIAlib29sICJQcm92aWRlIGxl
+Z2FjeSAvZGV2L2ZiKiBkZXZpY2UiDQo+IC0JZGVwZW5kcyBvbiBGQg0KPiArCXNlbGVjdCBG
+Ql9DT1JFDQoNClRoaXMgc2hvdWxkIGRlcGVuZCBvbiBGQl9DT1JFLg0KDQpCZXN0IHJlZ2Fy
+ZHMNClRob21hcw0KDQo+ICAgCWRlZmF1bHQgeQ0KPiAgIAloZWxwDQo+ICAgCSAgU2F5IFkg
+aGVyZSBpZiB5b3Ugd2FudCB0aGUgbGVnYWN5IC9kZXYvZmIqIGRldmljZSBmaWxlIGFuZA0K
+PiBAQCAtNzUsNyArODUsNyBAQCBjb25maWcgRkJfRERDDQo+ICAgDQo+ICAgY29uZmlnIEZC
+X0NGQl9GSUxMUkVDVA0KPiAgIAl0cmlzdGF0ZQ0KPiAtCWRlcGVuZHMgb24gRkINCj4gKwlk
+ZXBlbmRzIG9uIEZCX0NPUkUNCj4gICAJaGVscA0KPiAgIAkgIEluY2x1ZGUgdGhlIGNmYl9m
+aWxscmVjdCBmdW5jdGlvbiBmb3IgZ2VuZXJpYyBzb2Z0d2FyZSByZWN0YW5nbGUNCj4gICAJ
+ICBmaWxsaW5nLiBUaGlzIGlzIHVzZWQgYnkgZHJpdmVycyB0aGF0IGRvbid0IHByb3ZpZGUg
+dGhlaXIgb3duDQo+IEBAIC04Myw3ICs5Myw3IEBAIGNvbmZpZyBGQl9DRkJfRklMTFJFQ1QN
+Cj4gICANCj4gICBjb25maWcgRkJfQ0ZCX0NPUFlBUkVBDQo+ICAgCXRyaXN0YXRlDQo+IC0J
+ZGVwZW5kcyBvbiBGQg0KPiArCWRlcGVuZHMgb24gRkJfQ09SRQ0KPiAgIAloZWxwDQo+ICAg
+CSAgSW5jbHVkZSB0aGUgY2ZiX2NvcHlhcmVhIGZ1bmN0aW9uIGZvciBnZW5lcmljIHNvZnR3
+YXJlIGFyZWEgY29weWluZy4NCj4gICAJICBUaGlzIGlzIHVzZWQgYnkgZHJpdmVycyB0aGF0
+IGRvbid0IHByb3ZpZGUgdGhlaXIgb3duIChhY2NlbGVyYXRlZCkNCj4gQEAgLTkxLDcgKzEw
+MSw3IEBAIGNvbmZpZyBGQl9DRkJfQ09QWUFSRUENCj4gICANCj4gICBjb25maWcgRkJfQ0ZC
+X0lNQUdFQkxJVA0KPiAgIAl0cmlzdGF0ZQ0KPiAtCWRlcGVuZHMgb24gRkINCj4gKwlkZXBl
+bmRzIG9uIEZCX0NPUkUNCj4gICAJaGVscA0KPiAgIAkgIEluY2x1ZGUgdGhlIGNmYl9pbWFn
+ZWJsaXQgZnVuY3Rpb24gZm9yIGdlbmVyaWMgc29mdHdhcmUgaW1hZ2UNCj4gICAJICBibGl0
+dGluZy4gVGhpcyBpcyB1c2VkIGJ5IGRyaXZlcnMgdGhhdCBkb24ndCBwcm92aWRlIHRoZWly
+IG93bg0KPiBAQCAtOTksNyArMTA5LDcgQEAgY29uZmlnIEZCX0NGQl9JTUFHRUJMSVQNCj4g
+ICANCj4gICBjb25maWcgRkJfQ0ZCX1JFVl9QSVhFTFNfSU5fQllURQ0KPiAgIAlib29sDQo+
+IC0JZGVwZW5kcyBvbiBGQg0KPiArCWRlcGVuZHMgb24gRkJfQ09SRQ0KPiAgIAloZWxwDQo+
+ICAgCSAgQWxsb3cgZ2VuZXJpYyBmcmFtZS1idWZmZXIgZnVuY3Rpb25zIHRvIHdvcmsgb24g
+ZGlzcGxheXMgd2l0aCAxLCAyDQo+ICAgCSAgYW5kIDQgYml0cyBwZXIgcGl4ZWwgZGVwdGhz
+IHdoaWNoIGhhcyBvcHBvc2l0ZSBvcmRlciBvZiBwaXhlbHMgaW4NCj4gQEAgLTEwNyw3ICsx
+MTcsNyBAQCBjb25maWcgRkJfQ0ZCX1JFVl9QSVhFTFNfSU5fQllURQ0KPiAgIA0KPiAgIGNv
+bmZpZyBGQl9TWVNfRklMTFJFQ1QNCj4gICAJdHJpc3RhdGUNCj4gLQlkZXBlbmRzIG9uIEZC
+DQo+ICsJZGVwZW5kcyBvbiBGQl9DT1JFDQo+ICAgCWhlbHANCj4gICAJICBJbmNsdWRlIHRo
+ZSBzeXNfZmlsbHJlY3QgZnVuY3Rpb24gZm9yIGdlbmVyaWMgc29mdHdhcmUgcmVjdGFuZ2xl
+DQo+ICAgCSAgZmlsbGluZy4gVGhpcyBpcyB1c2VkIGJ5IGRyaXZlcnMgdGhhdCBkb24ndCBw
+cm92aWRlIHRoZWlyIG93bg0KPiBAQCAtMTE1LDcgKzEyNSw3IEBAIGNvbmZpZyBGQl9TWVNf
+RklMTFJFQ1QNCj4gICANCj4gICBjb25maWcgRkJfU1lTX0NPUFlBUkVBDQo+ICAgCXRyaXN0
+YXRlDQo+IC0JZGVwZW5kcyBvbiBGQg0KPiArCWRlcGVuZHMgb24gRkJfQ09SRQ0KPiAgIAlo
+ZWxwDQo+ICAgCSAgSW5jbHVkZSB0aGUgc3lzX2NvcHlhcmVhIGZ1bmN0aW9uIGZvciBnZW5l
+cmljIHNvZnR3YXJlIGFyZWEgY29weWluZy4NCj4gICAJICBUaGlzIGlzIHVzZWQgYnkgZHJp
+dmVycyB0aGF0IGRvbid0IHByb3ZpZGUgdGhlaXIgb3duIChhY2NlbGVyYXRlZCkNCj4gQEAg
+LTEyMyw3ICsxMzMsNyBAQCBjb25maWcgRkJfU1lTX0NPUFlBUkVBDQo+ICAgDQo+ICAgY29u
+ZmlnIEZCX1NZU19JTUFHRUJMSVQNCj4gICAJdHJpc3RhdGUNCj4gLQlkZXBlbmRzIG9uIEZC
+DQo+ICsJZGVwZW5kcyBvbiBGQl9DT1JFDQo+ICAgCWhlbHANCj4gICAJICBJbmNsdWRlIHRo
+ZSBzeXNfaW1hZ2VibGl0IGZ1bmN0aW9uIGZvciBnZW5lcmljIHNvZnR3YXJlIGltYWdlDQo+
+ICAgCSAgYmxpdHRpbmcuIFRoaXMgaXMgdXNlZCBieSBkcml2ZXJzIHRoYXQgZG9uJ3QgcHJv
+dmlkZSB0aGVpciBvd24NCj4gQEAgLTE2MiwyMiArMTcyLDIyIEBAIGVuZGNob2ljZQ0KPiAg
+IA0KPiAgIGNvbmZpZyBGQl9TWVNfRk9QUw0KPiAgIAl0cmlzdGF0ZQ0KPiAtCWRlcGVuZHMg
+b24gRkINCj4gKwlkZXBlbmRzIG9uIEZCX0NPUkUNCj4gICANCj4gICBjb25maWcgRkJfREVG
+RVJSRURfSU8NCj4gICAJYm9vbA0KPiAtCWRlcGVuZHMgb24gRkINCj4gKwlkZXBlbmRzIG9u
+IEZCX0NPUkUNCj4gICANCj4gICBjb25maWcgRkJfSU9fSEVMUEVSUw0KPiAgIAlib29sDQo+
+IC0JZGVwZW5kcyBvbiBGQg0KPiArCWRlcGVuZHMgb24gRkJfQ09SRQ0KPiAgIAlzZWxlY3Qg
+RkJfQ0ZCX0NPUFlBUkVBDQo+ICAgCXNlbGVjdCBGQl9DRkJfRklMTFJFQ1QNCj4gICAJc2Vs
+ZWN0IEZCX0NGQl9JTUFHRUJMSVQNCj4gICANCj4gICBjb25maWcgRkJfU1lTX0hFTFBFUlMN
+Cj4gICAJYm9vbA0KPiAtCWRlcGVuZHMgb24gRkINCj4gKwlkZXBlbmRzIG9uIEZCX0NPUkUN
+Cj4gICAJc2VsZWN0IEZCX1NZU19DT1BZQVJFQQ0KPiAgIAlzZWxlY3QgRkJfU1lTX0ZJTExS
+RUNUDQo+ICAgCXNlbGVjdCBGQl9TWVNfRk9QUw0KPiBAQCAtMTg1LDcgKzE5NSw3IEBAIGNv
+bmZpZyBGQl9TWVNfSEVMUEVSUw0KPiAgIA0KPiAgIGNvbmZpZyBGQl9TWVNfSEVMUEVSU19E
+RUZFUlJFRA0KPiAgIAlib29sDQo+IC0JZGVwZW5kcyBvbiBGQg0KPiArCWRlcGVuZHMgb24g
+RkJfQ09SRQ0KPiAgIAlzZWxlY3QgRkJfREVGRVJSRURfSU8NCj4gICAJc2VsZWN0IEZCX1NZ
+U19IRUxQRVJTDQo+ICAgDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2Nv
+cmUvTWFrZWZpbGUgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvTWFrZWZpbGUNCj4gaW5k
+ZXggOTE1MGJhZmQ5ZTg5Li40YzJlNGEwMjZkMTIgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMv
+dmlkZW8vZmJkZXYvY29yZS9NYWtlZmlsZQ0KPiArKysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2
+L2NvcmUvTWFrZWZpbGUNCj4gQEAgLTEsNiArMSw2IEBADQo+ICAgIyBTUERYLUxpY2Vuc2Ut
+SWRlbnRpZmllcjogR1BMLTIuMA0KPiAgIG9iai0kKENPTkZJR19GQl9OT1RJRlkpICAgICAg
+ICAgICArPSBmYl9ub3RpZnkubw0KPiAtb2JqLSQoQ09ORklHX0ZCKSAgICAgICAgICAgICAg
+ICAgICs9IGZiLm8NCj4gK29iai0kKENPTkZJR19GQl9DT1JFKSAgICAgICAgICAgICArPSBm
+Yi5vDQo+ICAgZmIteSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDo9IGZiX2JhY2ts
+aWdodC5vIFwNCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZmJf
+aW5mby5vIFwNCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZmJt
+ZW0ubyBmYm1vbi5vIGZiY21hcC5vIFwNCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3Jh
+cGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFu
+eSBHbWJIDQpGcmFua2Vuc3RyYXNzZSAxNDYsIDkwNDYxIE51ZXJuYmVyZywgR2VybWFueQ0K
+R0Y6IEl2byBUb3RldiwgQW5kcmV3IE15ZXJzLCBBbmRyZXcgTWNEb25hbGQsIEJvdWRpZW4g
+TW9lcm1hbg0KSFJCIDM2ODA5IChBRyBOdWVybmJlcmcpDQo=
 
-This patch introduces a non-visible CONFIG_FB_CORE symbol that could be
-enabled just to have core support needed for CONFIG_DRM_FBDEV_EMULATION,
-allowing CONFIG_FB to be disabled (and automatically disabling all the
-fbdev drivers).
+--------------tblOCBbtXb0tY0N9lUcZgunQ--
 
-Nothing from fb_backlight.o and fbmon.o is used by the DRM fbdev emulation
-layer so these two objects can be compiled out when CONFIG_FB is disabled.
+--------------sKXktxSX2QeYrt3OBJ9eAnFc
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
----
+-----BEGIN PGP SIGNATURE-----
 
-Changes in v3:
-- Really make a hidden symbol by removing the prompt (Arnd Bergmann).
-- Change FB_CORE to config instead of menuconfig (Arnd Bergmann).
-- Keep "depends on FB" for FIRMWARE_EDID (Arnd Bergmann).
-- Compile out fb_backlight.o and fbmon.o that are only needed for FB
-  (Arnd Bergmann).
-- Make FB_DEVICE to depend on FB_CORE instead of selecting it.
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmSicGIFAwAAAAAACgkQlh/E3EQov+CN
+GxAAt6hJ0eRDR3i7hQ/PZ2Tot5keQPyIJLYfIb4v6y78UT2/YcBcNTSA0066iYVjs1SLEV3ZW3wp
+xShXh6sLvc45bHKItGfIdKwwiiwMcS643dSA1R5nWmotvnkNN7/eD+3MPx+WQftQDxHRBFoXCAgq
+Js8JEtupUnoJSo4hAKkVaDxFxMR9H5LfWGZyW4nP9029UYIPPuhBthQLDn2eacyOuGUVjitq9IMH
+/pcNOcGtKMTGA/2sZ/uFKJYp8/7ha+7chi9zvouXChHKCrD5TWG6LR2EaP58tXK66fdbiBxRNWRZ
+xyJyGrIbk/hdIKgzKmWRQnfYxfWW3Cds65zJ7BMcrP/1y0BTMQ+4QFHfZ3v3+SIVgNQY76jiq7Yf
+4e+KXrCQl4TVI7dikqWFXL6Xhw2b/EiG8R8v7/YqLYwblmKXvBKEwHdnZcxnsteABC6CLDaEus2S
+aFfKUE4QTqdtLrkmj/KKd1YOFA+gRvAgzNuAgFr0HMD1uElaAXZlVCo0aFyidI/bGjzxcbAFWXmk
+mMru5c7UXTauI9bcsYX/KlYKnRrC/T1pJNZYQFPCjpsxCMBKnd9BPjKeAg9lRaacRtrubW5BK4+Q
+yZX/IGMaevuMceHWurqSTcXyIRp4hJqgwdOqRMsccEyNh4d0AoLLry9IpYu1VnHS9/j1HZnNbHpW
+jmU=
+=PzKm
+-----END PGP SIGNATURE-----
 
-Changes in v2:
-- Keep "depends on FB" for FB_DDC, FB_HECUBA, FB_SVGALIB, FB_MACMODES,
-  FB_BACKLIGHT, FB_MODE_HELPERS and FB_TILEBLITTING (Arnd Bergmann).
-- Don't change the fb.o object name (Arnd Bergmann).
-- Make FB_CORE a non-visible Kconfig symbol instead (Thomas Zimmermann).
-
- arch/x86/Makefile                 |  2 +-
- arch/x86/video/Makefile           |  2 +-
- drivers/video/console/Kconfig     |  2 +-
- drivers/video/fbdev/Kconfig       | 40 +++++++++++++++++++------------
- drivers/video/fbdev/core/Makefile |  8 +++----
- 5 files changed, 32 insertions(+), 22 deletions(-)
-
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index b39975977c03..89a02e69be5f 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -259,7 +259,7 @@ drivers-$(CONFIG_PCI)            += arch/x86/pci/
- # suspend and hibernation support
- drivers-$(CONFIG_PM) += arch/x86/power/
- 
--drivers-$(CONFIG_FB) += arch/x86/video/
-+drivers-$(CONFIG_FB_CORE) += arch/x86/video/
- 
- ####
- # boot loader support. Several targets are kept for legacy purposes
-diff --git a/arch/x86/video/Makefile b/arch/x86/video/Makefile
-index 11640c116115..5ebe48752ffc 100644
---- a/arch/x86/video/Makefile
-+++ b/arch/x86/video/Makefile
-@@ -1,2 +1,2 @@
- # SPDX-License-Identifier: GPL-2.0-only
--obj-$(CONFIG_FB)               += fbdev.o
-+obj-$(CONFIG_FB_CORE)		+= fbdev.o
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index a2a88d42edf0..1b5a319971ed 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -72,7 +72,7 @@ config DUMMY_CONSOLE_ROWS
- 
- config FRAMEBUFFER_CONSOLE
- 	bool "Framebuffer Console support"
--	depends on FB && !UML
-+	depends on FB_CORE && !UML
- 	select VT_HW_CONSOLE_BINDING
- 	select CRC32
- 	select FONT_SUPPORT
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index cecf15418632..d436a4fd6f0a 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -6,10 +6,14 @@
- config FB_NOTIFY
- 	bool
- 
-+config FB_CORE
-+	select VIDEO_CMDLINE
-+	tristate
-+
- menuconfig FB
--	tristate "Support for frame buffer devices"
-+	tristate "Support for frame buffer device drivers"
-+	select FB_CORE
- 	select FB_NOTIFY
--	select VIDEO_CMDLINE
- 	help
- 	  The frame buffer device provides an abstraction for the graphics
- 	  hardware. It represents the frame buffer of some video hardware and
-@@ -33,6 +37,12 @@ menuconfig FB
- 	  <http://www.munted.org.uk/programming/Framebuffer-HOWTO-1.3.html> for more
- 	  information.
- 
-+	  This enables support for native frame buffer device (fbdev) drivers.
-+
-+	  The DRM subsystem provides support for emulated frame buffer devices
-+	  on top of KMS drivers, but this option allows legacy fbdev drivers to
-+	  be enabled as well.
-+
- 	  Say Y here and to the driver for your graphics board below if you
- 	  are compiling a kernel for a non-x86 architecture.
- 
-@@ -59,7 +69,7 @@ config FIRMWARE_EDID
- 
- config FB_DEVICE
- 	bool "Provide legacy /dev/fb* device"
--	depends on FB
-+	depends on FB_CORE
- 	default y
- 	help
- 	  Say Y here if you want the legacy /dev/fb* device file and
-@@ -75,7 +85,7 @@ config FB_DDC
- 
- config FB_CFB_FILLRECT
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the cfb_fillrect function for generic software rectangle
- 	  filling. This is used by drivers that don't provide their own
-@@ -83,7 +93,7 @@ config FB_CFB_FILLRECT
- 
- config FB_CFB_COPYAREA
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the cfb_copyarea function for generic software area copying.
- 	  This is used by drivers that don't provide their own (accelerated)
-@@ -91,7 +101,7 @@ config FB_CFB_COPYAREA
- 
- config FB_CFB_IMAGEBLIT
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the cfb_imageblit function for generic software image
- 	  blitting. This is used by drivers that don't provide their own
-@@ -99,7 +109,7 @@ config FB_CFB_IMAGEBLIT
- 
- config FB_CFB_REV_PIXELS_IN_BYTE
- 	bool
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Allow generic frame-buffer functions to work on displays with 1, 2
- 	  and 4 bits per pixel depths which has opposite order of pixels in
-@@ -107,7 +117,7 @@ config FB_CFB_REV_PIXELS_IN_BYTE
- 
- config FB_SYS_FILLRECT
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the sys_fillrect function for generic software rectangle
- 	  filling. This is used by drivers that don't provide their own
-@@ -115,7 +125,7 @@ config FB_SYS_FILLRECT
- 
- config FB_SYS_COPYAREA
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the sys_copyarea function for generic software area copying.
- 	  This is used by drivers that don't provide their own (accelerated)
-@@ -123,7 +133,7 @@ config FB_SYS_COPYAREA
- 
- config FB_SYS_IMAGEBLIT
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 	help
- 	  Include the sys_imageblit function for generic software image
- 	  blitting. This is used by drivers that don't provide their own
-@@ -162,22 +172,22 @@ endchoice
- 
- config FB_SYS_FOPS
- 	tristate
--	depends on FB
-+	depends on FB_CORE
- 
- config FB_DEFERRED_IO
- 	bool
--	depends on FB
-+	depends on FB_CORE
- 
- config FB_IO_HELPERS
- 	bool
--	depends on FB
-+	depends on FB_CORE
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_IMAGEBLIT
- 
- config FB_SYS_HELPERS
- 	bool
--	depends on FB
-+	depends on FB_CORE
- 	select FB_SYS_COPYAREA
- 	select FB_SYS_FILLRECT
- 	select FB_SYS_FOPS
-@@ -185,7 +195,7 @@ config FB_SYS_HELPERS
- 
- config FB_SYS_HELPERS_DEFERRED
- 	bool
--	depends on FB
-+	depends on FB_CORE
- 	select FB_DEFERRED_IO
- 	select FB_SYS_HELPERS
- 
-diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
-index 9150bafd9e89..2cd213716c12 100644
---- a/drivers/video/fbdev/core/Makefile
-+++ b/drivers/video/fbdev/core/Makefile
-@@ -1,10 +1,10 @@
- # SPDX-License-Identifier: GPL-2.0
- obj-$(CONFIG_FB_NOTIFY)           += fb_notify.o
--obj-$(CONFIG_FB)                  += fb.o
--fb-y                              := fb_backlight.o \
--                                     fb_info.o \
--                                     fbmem.o fbmon.o fbcmap.o \
-+obj-$(CONFIG_FB_CORE)             += fb.o
-+fb-y                              := fb_info.o \
-+                                     fbmem.o fbcmap.o \
-                                      modedb.o fbcvt.o fb_cmdline.o fb_io_fops.o
-+fb-$(CONFIG_FB)                   += fb_backlight.o fbmon.o
- fb-$(CONFIG_FB_DEFERRED_IO)       += fb_defio.o
- fb-$(CONFIG_FB_DEVICE)            += fb_chrdev.o \
-                                      fb_procfs.o \
--- 
-2.41.0
-
+--------------sKXktxSX2QeYrt3OBJ9eAnFc--

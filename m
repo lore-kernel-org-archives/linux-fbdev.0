@@ -2,350 +2,162 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15B44C001B0
-	for <linux-fbdev@archiver.kernel.org>; Mon,  3 Jul 2023 17:18:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66D35EB64DC
+	for <linux-fbdev@archiver.kernel.org>; Mon,  3 Jul 2023 23:06:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230441AbjGCRS4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 3 Jul 2023 13:18:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42378 "EHLO
+        id S230426AbjGCXGc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 3 Jul 2023 19:06:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45472 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230037AbjGCRS4 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 3 Jul 2023 13:18:56 -0400
-Received: from 189.cn (ptr.189.cn [183.61.185.104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E45DC137;
-        Mon,  3 Jul 2023 10:18:52 -0700 (PDT)
-HMM_SOURCE_IP: 10.64.8.41:35966.1431009104
-HMM_ATTACHE_NUM: 0000
-HMM_SOURCE_TYPE: SMTP
-Received: from clientip-114.242.206.180 (unknown [10.64.8.41])
-        by 189.cn (HERMES) with SMTP id EF4CB102946;
-        Tue,  4 Jul 2023 01:18:47 +0800 (CST)
-Received: from  ([114.242.206.180])
-        by gateway-151646-dep-6d8594f54d-zsdp9 with ESMTP id fc12c12b49854199baccb2d6144ed528 for alexdeucher@gmail.com;
-        Tue, 04 Jul 2023 01:18:49 CST
-X-Transaction-ID: fc12c12b49854199baccb2d6144ed528
-X-Real-From: 15330273260@189.cn
-X-Receive-IP: 114.242.206.180
-X-MEDUSA-Status: 0
-Sender: 15330273260@189.cn
-Message-ID: <d5bd0bfb-69de-70db-59b2-6e315aa69422@189.cn>
-Date:   Tue, 4 Jul 2023 01:18:44 +0800
+        with ESMTP id S229793AbjGCXGb (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 3 Jul 2023 19:06:31 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2AD11E47
+        for <linux-fbdev@vger.kernel.org>; Mon,  3 Jul 2023 16:05:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1688425542;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=T2H4I33KaT/CjDOhVJYMDoMgR8IdFg0Tm8qqUiSuquk=;
+        b=P4YeR1fZPbDkADAmXecfcP6leE350vxThNu15AUU8sDzOmPu74q+MjqnQLzcU6SrPKH3/c
+        0Np6K6cxJ6/hXdE6Rbter0HCm0g7ZSR58nvs9c4WqnxC8TUtBYOK7Nvw3c+ouz3t+4eeRu
+        mFt37oiqQ2Gz4gsPTKWQwS22pOCC01Q=
+Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
+ [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-622-32NaZYYlNDWgi2pjNox7uQ-1; Mon, 03 Jul 2023 19:05:41 -0400
+X-MC-Unique: 32NaZYYlNDWgi2pjNox7uQ-1
+Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-3143b277985so543618f8f.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 03 Jul 2023 16:05:41 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1688425540; x=1691017540;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=T2H4I33KaT/CjDOhVJYMDoMgR8IdFg0Tm8qqUiSuquk=;
+        b=lqPVG77JAayRiHTcvKpAFtQ9ed83Ybif5AcNnErx4FmBFk++2czlkK+J0ODR89xXbL
+         LX5E1Z96Y5psilpdF4Zn0c4PUyiEh/RWmo3KtyGyF/r7auMfAAKHv3m784VyIjegaoFw
+         rHJURm79lTqx+j7/mOGYw6DPMhYF9Pw2b9axuKt9ex6FNeXCgnOi5hDN0yyLIW+SjxYQ
+         0LrbCOPWK376a6ZcgLwL9OdaD21wGkHjiL0b8KYJRDxny2zb3tU2aYiufmNC8/NXlq9v
+         UIuRLvKbaThyJl2ZOpbqRChBhqNj45+CaA0JFqXVwlO5jauE5lBDElScuOefajKn3Y42
+         KGJg==
+X-Gm-Message-State: ABy/qLb8D0kZYhJf8VKl6cwrlt+lJu+4MkV+yPRvA0pEtvJBrRjxZImZ
+        i+HimERD5e9oGf6BJXQUX86WWkQwjeUEf+JCU5JfcdvWjDToI1MMo+hrBpvcoXxKlJsrBxT7HzE
+        xMFRFAwli1Kaq+8iC6rZIZ8U=
+X-Received: by 2002:adf:fe02:0:b0:313:f124:aa53 with SMTP id n2-20020adffe02000000b00313f124aa53mr9514829wrr.45.1688425540253;
+        Mon, 03 Jul 2023 16:05:40 -0700 (PDT)
+X-Google-Smtp-Source: APBJJlFDiQ9CTDvxM8RjD5e6R9srvFb7gfEdNT7h9sgQp7ev4whpG0Vkx82r/6mI1ZjP3FfbRfvHfA==
+X-Received: by 2002:adf:fe02:0:b0:313:f124:aa53 with SMTP id n2-20020adffe02000000b00313f124aa53mr9514818wrr.45.1688425539897;
+        Mon, 03 Jul 2023 16:05:39 -0700 (PDT)
+Received: from minerva.home (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id cw13-20020a056000090d00b003112f836d4esm26504465wrb.85.2023.07.03.16.05.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 03 Jul 2023 16:05:39 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Borislav Petkov <bp@alien8.de>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        David Airlie <airlied@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "H. Peter Anvin" <hpa@zytor.com>, Helge Deller <deller@gmx.de>,
+        Ingo Molnar <mingo@redhat.com>,
+        Jacek Lawrynowicz <jacek.lawrynowicz@linux.intel.com>,
+        Liviu Dudau <liviu.dudau@arm.com>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Nipun Gupta <nipun.gupta@amd.com>,
+        Oded Gabbay <ogabbay@kernel.org>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        x86@kernel.org
+Subject: [PATCH v4 0/5] Allow disabling all native fbdev drivers and only keeping DRM emulation
+Date:   Tue,  4 Jul 2023 01:05:24 +0200
+Message-ID: <20230703230534.997525-1-javierm@redhat.com>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Subject: Re: [PATCH v7 2/8] PCI/VGA: Deal only with VGA class devices
-To:     Alex Deucher <alexdeucher@gmail.com>,
-        Sui Jingfeng <suijingfeng@loongson.cn>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        linux-fbdev@vger.kernel.org, kvm@vger.kernel.org,
-        nouveau@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        amd-gfx@lists.freedesktop.org, linux-pci@vger.kernel.org
-References: <20230613030151.216625-1-15330273260@189.cn>
- <20230613030151.216625-3-15330273260@189.cn>
- <dbf0d89f-717a-1f78-aef2-f30506751d4d@loongson.cn>
- <CADnq5_N6vVtzH6tzguZdHnP_TdRoG1G-Cr94O+X03jvtk=vhag@mail.gmail.com>
- <3c1c86ab-96ea-aa1c-c9c5-9a4012644fd6@loongson.cn>
- <CADnq5_Px-HWfwetv8LZsCnCeV7SMt_uqtLwMVK7648ZQiP2RCQ@mail.gmail.com>
- <f08b6a76-6c90-b59b-ff43-c779ef759d09@loongson.cn>
- <CADnq5_PFoM2O8mCd6+VFfu9Nc-Hg_HTnwEMxrq0FGRpva1kKiA@mail.gmail.com>
-Content-Language: en-US
-From:   Sui Jingfeng <15330273260@189.cn>
-In-Reply-To: <CADnq5_PFoM2O8mCd6+VFfu9Nc-Hg_HTnwEMxrq0FGRpva1kKiA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+This patch series splits the fbdev core support in two different Kconfig
+symbols: FB and FB_CORE. The motivation for this is to allow CONFIG_FB to
+be disabled, while still having the the core fbdev support needed for the
+CONFIG_DRM_FBDEV_EMULATION to be enabled. The motivation is automatically
+disabling all fbdev drivers instead of having to be disabled individually.
 
-On 2023/6/16 22:34, Alex Deucher wrote:
-> On Fri, Jun 16, 2023 at 10:22 AM Sui Jingfeng <suijingfeng@loongson.cn> wrote:
->>
->> On 2023/6/16 21:41, Alex Deucher wrote:
->>> On Fri, Jun 16, 2023 at 3:11 AM Sui Jingfeng <suijingfeng@loongson.cn> wrote:
->>>> Hi,
->>>>
->>>> On 2023/6/16 05:11, Alex Deucher wrote:
->>>>> On Wed, Jun 14, 2023 at 6:50 AM Sui Jingfeng <suijingfeng@loongson.cn> wrote:
->>>>>> Hi,
->>>>>>
->>>>>> On 2023/6/13 11:01, Sui Jingfeng wrote:
->>>>>>> From: Sui Jingfeng <suijingfeng@loongson.cn>
->>>>>>>
->>>>>>> Deal only with the VGA devcie(pdev->class == 0x0300), so replace the
->>>>>>> pci_get_subsys() function with pci_get_class(). Filter the non-PCI display
->>>>>>> device(pdev->class != 0x0300) out. There no need to process the non-display
->>>>>>> PCI device.
->>>>>>>
->>>>>>> Cc: Bjorn Helgaas <bhelgaas@google.com>
->>>>>>> Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
->>>>>>> ---
->>>>>>>      drivers/pci/vgaarb.c | 22 ++++++++++++----------
->>>>>>>      1 file changed, 12 insertions(+), 10 deletions(-)
->>>>>>>
->>>>>>> diff --git a/drivers/pci/vgaarb.c b/drivers/pci/vgaarb.c
->>>>>>> index c1bc6c983932..22a505e877dc 100644
->>>>>>> --- a/drivers/pci/vgaarb.c
->>>>>>> +++ b/drivers/pci/vgaarb.c
->>>>>>> @@ -754,10 +754,6 @@ static bool vga_arbiter_add_pci_device(struct pci_dev *pdev)
->>>>>>>          struct pci_dev *bridge;
->>>>>>>          u16 cmd;
->>>>>>>
->>>>>>> -     /* Only deal with VGA class devices */
->>>>>>> -     if ((pdev->class >> 8) != PCI_CLASS_DISPLAY_VGA)
->>>>>>> -             return false;
->>>>>>> -
->>>>>> Hi, here is probably a bug fixing.
->>>>>>
->>>>>> For an example, nvidia render only GPU typically has 0x0380.
->>>>>>
->>>>>> as its PCI class number, but render only GPU should not participate in
->>>>>> the arbitration.
->>>>>>
->>>>>> As it shouldn't snoop the legacy fixed VGA address.
->>>>>>
->>>>>> It(render only GPU) can not display anything.
->>>>>>
->>>>>>
->>>>>> But 0x0380 >> 8 = 0x03, the filter  failed.
->>>>>>
->>>>>>
->>>>>>>          /* Allocate structure */
->>>>>>>          vgadev = kzalloc(sizeof(struct vga_device), GFP_KERNEL);
->>>>>>>          if (vgadev == NULL) {
->>>>>>> @@ -1500,7 +1496,9 @@ static int pci_notify(struct notifier_block *nb, unsigned long action,
->>>>>>>          struct pci_dev *pdev = to_pci_dev(dev);
->>>>>>>          bool notify = false;
->>>>>>>
->>>>>>> -     vgaarb_dbg(dev, "%s\n", __func__);
->>>>>>> +     /* Only deal with VGA class devices */
->>>>>>> +     if (pdev->class != PCI_CLASS_DISPLAY_VGA << 8)
->>>>>>> +             return 0;
->>>>>> So here we only care 0x0300, my initial intent is to make an optimization,
->>>>>>
->>>>>> nowadays sane display graphic card should all has 0x0300 as its PCI
->>>>>> class number, is this complete right?
->>>>>>
->>>>>> ```
->>>>>>
->>>>>> #define PCI_BASE_CLASS_DISPLAY        0x03
->>>>>> #define PCI_CLASS_DISPLAY_VGA        0x0300
->>>>>> #define PCI_CLASS_DISPLAY_XGA        0x0301
->>>>>> #define PCI_CLASS_DISPLAY_3D        0x0302
->>>>>> #define PCI_CLASS_DISPLAY_OTHER        0x0380
->>>>>>
->>>>>> ```
->>>>>>
->>>>>> Any ideas ?
->>>>> I'm not quite sure what you are asking about here.
->>>> To be honest, I'm worried about the PCI devices which has a
->>>>
->>>> PCI_CLASS_DISPLAY_XGA as its PCI class number.
->>>>
->>>> As those devices are very uncommon in the real world.
->>>>
->>>>
->>>> $ find . -name "*.c" -type f | xargs grep "PCI_CLASS_DISPLAY_XGA"
->>>>
->>>>
->>>> Grep the "PCI_CLASS_DISPLAY_XGA" in the linux kernel tree got ZERO,
->>>>
->>>> there no code reference this macro. So I think it seems safe to ignore
->>>> the XGA ?
->>>>
->>>>
->>>> PCI_CLASS_DISPLAY_3D and PCI_CLASS_DISPLAY_OTHER are used to annotate
->>>> the render-only GPU.
->>>>
->>>> And render-only GPU can't decode the fixed VGA address space, it is safe
->>>> to ignore them.
->>>>
->>>>
->>>>>     For vga_arb, we
->>>>> only care about VGA class devices since those should be on the only
->>>>> ones that might have VGA routed to them.
->>>>>     However, as VGA gets deprecated,
->>>> We need the vgaarb for a system with multiple video card.
->>>>
->>>> Not only because some Legacy VGA devices implemented
->>>>
->>>> on PCI will typically have the same "hard-decoded" addresses;
->>>>
->>>> But also these video card need to participate in the arbitration,
->>>>
->>>> determine the default boot device.
->>> But couldn't the boot device be determined via what whatever resources
->>> were used by the pre-OS console?
->> I don't know what you are refer to by saying  pre-OS console, UEFI
->> SHELL,  UEFI GOP  or something like that.
->>
-> Right.  Before the OS loads the platform firmware generally sets up
-> something for display.  That could be GOP or vesa or some other
-> platform specific protocol.
->
->> If you are referring to the framebuffer driver which light up the screen
->> before the Linux kernel is loaded .
->>
->>
->> Then, what you have said is true,  the boot device is determined by the
->> pre-OS console.
->>
->> But the problem is how does the Linux kernel(vgaarb) could know which
->> one is the default boot device
->>
->> on a multiple GPU machine.  Relaying on the firmware fb's address and
->> size is what the mechanism
->>
->> we already in using.
-> Right.  It shouldn't need to depend on vgaarb.
->
->>
->>>    I feel like that should be separate from vgaarb.
->> Emm, this really deserved another patch, please ?
->>
->>>    vgaarb should handle PCI VGA routing and some other
->>> mechanism should be used to determine what device provided the pre-OS
->>> console.
->> If the new mechanism need the firmware changed, then this probably break
->> the old machine.
->>
->> Also, this probably will get all arch involved. to get the new mechanism
->> supported.
->>
->> The testing pressure and review power needed is quite large.
->>
->> drm/amdgpu and drm/radeon already being used on X86, ARM64,  Mips and
->> more arch...
->>
->> The reviewing process will became quite difficult then.
->>
->> vgaarb is really what we already in use, and being used more than ten
->> years ...
-> Yes, it works for x86 (and a few other platforms) today because of the
-> VGA legacy, so we can look at VGA routing to determine this.  But even
-> today, we don't need VGA routing to determine what was the primary
-> display before starting the OS.  We could probably have a platform
-> independent way to handle this by looking at the bread crumbs leftover
-> from the pre-OS environment.  E.g., for pre-UEFI platforms, we can
-> look at VGA routing.  For UEFI platforms we can look at what GOP left
-> us.  For various non-UEFI ARM/PPC/MIPS/etc. platforms we can look at
-> whatever breadcrumbs those pre-OS environments left.
+The reason for doing this is that now with simpledrm, there's no need for
+the legacy fbdev (e.g: efifb or vesafb) drivers anymore and many distros
+now disable them. But it would simplify the config a lot fo have a single
+Kconfig symbol to disable all fbdev drivers.
 
-Yes, it's good idea. I know what you means.
+I've built tested with possible combinations of CONFIG_FB, CONFIG_FB_CORE,
+CONFIG_DRM_FBDEV_EMULATION and CONFIG_FB_DEVICE symbols set to 'y' or 'n'.
 
-I'm trying to craft platform-independent way to handle this, and I have 
-something in my mind.
+Patch #1, #2 and #3 are cleanups to the "Graphics support" Kconfig menu,
+patch #4 does the FB symbol split and introduces the FB_CORE symbol and
+finally patch #5 makes the DRM symbol to select FB_CORE if the DRM fbdev
+emualtion support was enabled.
 
-I already write a few scratch code to verify the idea.
+Since this series touches three subsystems (auxdisplay, fbdev and DRM),
+I would like to merge it through DRM with the acks of these maintainers.
 
-But when I go deeper, I ask myself frequently, what's the problem you 
-are going to solve ?
+This is a v4 of the patch-set that addresses issues pointed out by Arnd
+Bergmann, Thomas Zimmermann and Geert Uytterhoeven in the previous v3:
 
-A platform-independent implement itself is not a good sake (not enough).
+https://lists.freedesktop.org/archives/dri-devel/2023-July/411689.html
 
-To allow the platform device P.K. with the PCI device is a good rationale.
+Changes in v4:
+- Fix menuconfig hierarchy that was broken in v3 (Arnd Bergmann).
 
-But now,  I don't have such a hardware platform anymore.
+Changes in v3:
+- Really make a hidden symbol by removing the prompt (Arnd Bergmann).
+- Change FB_CORE to config instead of menuconfig (Arnd Bergmann).
+- Keep "depends on FB" for FIRMWARE_EDID (Arnd Bergmann).
+- Compile out fb_backlight.o and fbmon.o that are only needed for FB
+  (Arnd Bergmann).
+- Make FB_DEVICE to depend on FB_CORE instead of selecting it.
+- Make the DRM symbol to select FB_CORE if DRM_FBDEV_EMULATION is
+  enabled (Arnd Bergmann).
+- Also make DRM select FB_SYS_HELPERS_DEFERRED if DRM_FBDEV_EMULATION
+- Make DRM_FBDEV_EMULATION to depend on DRM instead of DRM_KMS_HELPER.
 
-Such a hardware platform should have PCIe controller integrated to 
-support dedicated GPU.
+Changes in v2:
+- Keep "depends on FB" for FB_DDC, FB_HECUBA, FB_SVGALIB, FB_MACMODES,
+  FB_BACKLIGHT, FB_MODE_HELPERS and FB_TILEBLITTING (Arnd Bergmann).
+- Don't change the fb.o object name (Arnd Bergmann).
+- Make FB_CORE a non-visible Kconfig symbol instead (Thomas Zimmermann).
+- Make CONFIG_DRM_FBDEV_EMULATION to select FB_CORE (Thomas Zimmermann).
 
-It should also have integrated GPU(display controller). I should also be 
-famous platform (ARM64 for example)
+Javier Martinez Canillas (5):
+  video: Add auxiliary display drivers to Graphics support menu
+  fbdev: Move core fbdev symbols to a separate Kconfig file
+  drm/arm: Make ARM devices menu depend on DRM
+  fbdev: Split frame buffer support in FB and FB_CORE symbols
+  drm: Make FB_CORE to be selected if DRM fbdev emulation is enabled
 
-I means that we at least need a bug to push us to do so :-)
+ arch/x86/Makefile                 |   2 +-
+ arch/x86/video/Makefile           |   2 +-
+ drivers/Kconfig                   |   2 -
+ drivers/gpu/drm/Kconfig           |   7 +-
+ drivers/gpu/drm/arm/Kconfig       |   1 +
+ drivers/video/Kconfig             |   2 +
+ drivers/video/console/Kconfig     |   2 +-
+ drivers/video/fbdev/Kconfig       | 213 ++----------------------------
+ drivers/video/fbdev/core/Kconfig  | 206 +++++++++++++++++++++++++++++
+ drivers/video/fbdev/core/Makefile |   8 +-
+ 10 files changed, 230 insertions(+), 215 deletions(-)
+ create mode 100644 drivers/video/fbdev/core/Kconfig
 
+-- 
+2.41.0
 
-Strip it away from vgaarb sound like a challenge to Bjorn, I'm not going 
-to do so.
-
-Currently, we are trying to push it to be arch-independent,
-
-which is to make vgaarb more functional(and more useful) on non-x86 arch,
-
-which also help to amdgpu/radeon cooperate with the hardware vendor 
-native integrated one harmoniously.
-
-while there are even no enough supporter.
-
-> VGA goes away, we can have a clean break and you won't need vgaarb if
-> the platform has no VGA devices.
->
-> Alex
->
->>
->>> Alex
->>>
->>>> Nowadays, the 'VGA devices' here is stand for the Graphics card
->>>>
->>>> which is capable of display something on the screen.
->>>>
->>>> We still need vgaarb to select the default boot device.
->>>>
->>>>
->>>>> you'll have more non VGA PCI classes for devices which
->>>>> could be the pre-OS console device.
->>>> Ah, we still want  do this(by applying this patch) first,
->>>>
->>>> and then we will have the opportunity to see who will crying if
->>>> something is broken. Will know more then.
->>>>
->>>> But drop this patch or revise it with more consideration is also
->>>> acceptable.
->>>>
->>>>
->>>> I asking about suggestion and/or review.
->>>>
->>>>> Alex
->>>>>
->>>>>>>          /* For now we're only intereted in devices added and removed. I didn't
->>>>>>>           * test this thing here, so someone needs to double check for the
->>>>>>> @@ -1510,6 +1508,8 @@ static int pci_notify(struct notifier_block *nb, unsigned long action,
->>>>>>>          else if (action == BUS_NOTIFY_DEL_DEVICE)
->>>>>>>                  notify = vga_arbiter_del_pci_device(pdev);
->>>>>>>
->>>>>>> +     vgaarb_dbg(dev, "%s: action = %lu\n", __func__, action);
->>>>>>> +
->>>>>>>          if (notify)
->>>>>>>                  vga_arbiter_notify_clients();
->>>>>>>          return 0;
->>>>>>> @@ -1534,8 +1534,8 @@ static struct miscdevice vga_arb_device = {
->>>>>>>
->>>>>>>      static int __init vga_arb_device_init(void)
->>>>>>>      {
->>>>>>> +     struct pci_dev *pdev = NULL;
->>>>>>>          int rc;
->>>>>>> -     struct pci_dev *pdev;
->>>>>>>
->>>>>>>          rc = misc_register(&vga_arb_device);
->>>>>>>          if (rc < 0)
->>>>>>> @@ -1545,11 +1545,13 @@ static int __init vga_arb_device_init(void)
->>>>>>>
->>>>>>>          /* We add all PCI devices satisfying VGA class in the arbiter by
->>>>>>>           * default */
->>>>>>> -     pdev = NULL;
->>>>>>> -     while ((pdev =
->>>>>>> -             pci_get_subsys(PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
->>>>>>> -                            PCI_ANY_ID, pdev)) != NULL)
->>>>>>> +     while (1) {
->>>>>>> +             pdev = pci_get_class(PCI_CLASS_DISPLAY_VGA << 8, pdev);
->>>>>>> +             if (!pdev)
->>>>>>> +                     break;
->>>>>>> +
->>>>>>>                  vga_arbiter_add_pci_device(pdev);
->>>>>>> +     }
->>>>>>>
->>>>>>>          pr_info("loaded\n");
->>>>>>>          return rc;
->>>>>> --
->>>>>> Jingfeng
->>>>>>
->>>> --
->>>> Jingfeng
->>>>
->> --
->> Jingfeng
->>

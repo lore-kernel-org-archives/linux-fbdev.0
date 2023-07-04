@@ -2,91 +2,96 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D4A1EB64D9
-	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Jul 2023 16:30:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BAEC7EB64DA
+	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Jul 2023 17:07:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231159AbjGDQaV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 4 Jul 2023 12:30:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40774 "EHLO
+        id S231491AbjGDRHg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 4 Jul 2023 13:07:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59948 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231154AbjGDQaV (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Jul 2023 12:30:21 -0400
-Received: from unicorn.mansr.com (unicorn.mansr.com [81.2.72.234])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0603EE3;
-        Tue,  4 Jul 2023 09:30:20 -0700 (PDT)
-Received: from raven.mansr.com (raven.mansr.com [81.2.72.235])
-        by unicorn.mansr.com (Postfix) with ESMTPS id ACE5315360;
-        Tue,  4 Jul 2023 17:30:16 +0100 (BST)
-Received: by raven.mansr.com (Postfix, from userid 51770)
-        id 9E919219FC1; Tue,  4 Jul 2023 17:30:16 +0100 (BST)
-From:   Mans Rullgard <mans@mansr.com>
-To:     Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>
-Cc:     Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2] backlight: led_bl: fix initial power state
-Date:   Tue,  4 Jul 2023 17:19:52 +0100
-Message-ID: <20230704163013.21097-1-mans@mansr.com>
-X-Mailer: git-send-email 2.41.0
+        with ESMTP id S231482AbjGDRHf (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Jul 2023 13:07:35 -0400
+Received: from mailrelay3-1.pub.mailoutpod2-cph3.one.com (mailrelay3-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:402::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 012D8E76
+        for <linux-fbdev@vger.kernel.org>; Tue,  4 Jul 2023 10:07:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=rsa1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=R1ftX/nJ28RCUlvCxqfDZHT0ym06Es3SsEj3om09Vrs=;
+        b=mFMBx5NkiSByK1HMjoIkzQWNmb/ecgu4OOhkDtUvQth7NKdDRhm3aIp5s8eso3WdLAB+9xiBPbmSt
+         PA3WhzFS9ZgVq2RloHgeFfgZ/NFVjPtgR+YEMQeC/6OM40w1LuQTKek+MlpIRwyDxL6tWPQAs6ZJgE
+         VPloanifqZ0Kpn16QDQRettF7Yffput5jWae6HWTFbdQJ0O7HJCiR9EAWZAg2OvcA0CJtCElPD/h2c
+         IEuuVxok7/fSaC2Krc7/yMkaLKGY5KaKVOIdBcI2Qckntdn8h5ZUiZFJLdCzZxdE9fXzXeToS5HZt1
+         2A8rIjpoUk4iTafFGT1fxcFbgp045ZQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=ed1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=R1ftX/nJ28RCUlvCxqfDZHT0ym06Es3SsEj3om09Vrs=;
+        b=toRiw7qMpH7Z7h0WvXiLqGcMRtSWVEuTV0dLMJp/Y5OSdD/HkZxSQEK+aO01h63/4SliBFN0BR4Ib
+         6F8dl2YAw==
+X-HalOne-ID: 428b86cc-1a8d-11ee-8bd0-b90637070a9d
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+        by mailrelay3 (Halon) with ESMTPSA
+        id 428b86cc-1a8d-11ee-8bd0-b90637070a9d;
+        Tue, 04 Jul 2023 17:07:32 +0000 (UTC)
+Date:   Tue, 4 Jul 2023 19:07:31 +0200
+From:   Sam Ravnborg <sam@ravnborg.org>
+To:     Daniel Thompson <daniel.thompson@linaro.org>
+Cc:     Mans Rullgard <mans@mansr.com>, linux-fbdev@vger.kernel.org,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, Lee Jones <lee@kernel.org>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>
+Subject: Re: [PATCH] backlight: led_bl: fix initial power state
+Message-ID: <20230704170731.GB940443@ravnborg.org>
+References: <20230704140750.25799-1-mans@mansr.com>
+ <20230704150310.GA385243@aspen.lan>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230704150310.GA385243@aspen.lan>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The condition for the initial power state based on the default
-brightness value is reversed.  Fix it.
+Hi Daniel,
 
-Furthermore, use the actual state of the LEDs rather than the default
-brightness specified in the devicetree as the latter should not cause
-the backlight to be automatically turned on.
+> > @@ -200,8 +200,8 @@ static int led_bl_probe(struct platform_device *pdev)
+> >  	props.type = BACKLIGHT_RAW;
+> >  	props.max_brightness = priv->max_brightness;
+> >  	props.brightness = priv->default_brightness;
+> > -	props.power = (priv->default_brightness > 0) ? FB_BLANK_POWERDOWN :
+> > -		      FB_BLANK_UNBLANK;
+> > +	props.power = (priv->default_brightness > 0) ? FB_BLANK_UNBLANK :
+> > +		      FB_BLANK_POWERDOWN;
+> 
+> The logic was wrong before but I think will still be wrong after the
+> change too (e.g. the bogus logic is probably avoiding backlight flicker
+> in some use cases).
+> 
+> The logic here needs to be similar to what pwm_bl.c implements in
+> pwm_backlight_initial_power_state(). Whilst it might be better
+> to implement this in led_bl_get_leds() let me show what I mean
+> in code that fits in the current line:
+> 
+> 	/*
+> 	 * Activate the backlight if the LEDs are already lit *or*
+> 	 * there is no phandle link (meaning the backlight power
+> 	 * state cannot be synced with the display state).
+> 	 */
+> 	props.power = (active_at_boot || !dev->node->phandle) ?
+> 			FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN;
+> 
+The following code does the same using helpers:
 
-If the backlight device is not linked to any display, set the initial
-power to on unconditionally.
+	if (active_at_boot || !dev->node->phandle))
+		backlight_enable(bd);
+	else
+		backlight_disable(bd);
 
-Fixes: ae232e45acf9 ("backlight: add led-backlight driver")
-Signed-off-by: Mans Rullgard <mans@mansr.com>
----
-Changes in v2:
-- Use the reported LED state to set initial power state
-- Always power on if no phandle in DT
----
- drivers/video/backlight/led_bl.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+The code needs to execute after backlight_device_register() so maybe not
+so great an idea?!?
 
-diff --git a/drivers/video/backlight/led_bl.c b/drivers/video/backlight/led_bl.c
-index 3259292fda76..bbf1673b1fb0 100644
---- a/drivers/video/backlight/led_bl.c
-+++ b/drivers/video/backlight/led_bl.c
-@@ -176,6 +176,7 @@ static int led_bl_probe(struct platform_device *pdev)
- {
- 	struct backlight_properties props;
- 	struct led_bl_data *priv;
-+	int init_brightness;
- 	int ret, i;
- 
- 	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-@@ -190,6 +191,8 @@ static int led_bl_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
- 
-+	init_brightness = priv->default_brightness;
-+
- 	ret = led_bl_parse_levels(&pdev->dev, priv);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "Failed to parse DT data\n");
-@@ -200,8 +203,8 @@ static int led_bl_probe(struct platform_device *pdev)
- 	props.type = BACKLIGHT_RAW;
- 	props.max_brightness = priv->max_brightness;
- 	props.brightness = priv->default_brightness;
--	props.power = (priv->default_brightness > 0) ? FB_BLANK_POWERDOWN :
--		      FB_BLANK_UNBLANK;
-+	props.power = (init_brightness || !pdev->dev.of_node->phandle) ?
-+		FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN;
- 	priv->bl_dev = backlight_device_register(dev_name(&pdev->dev),
- 			&pdev->dev, priv, &led_bl_ops, &props);
- 	if (IS_ERR(priv->bl_dev)) {
--- 
-2.41.0
-
+	Sam

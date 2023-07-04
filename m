@@ -2,101 +2,108 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BA5EEB64DD
-	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Jul 2023 07:21:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9DE0EB64D9
+	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Jul 2023 07:37:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230052AbjGDHVl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 4 Jul 2023 03:21:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44558 "EHLO
+        id S231392AbjGDHh1 convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 4 Jul 2023 03:37:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50740 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229441AbjGDHVk (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Jul 2023 03:21:40 -0400
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C5010186;
-        Tue,  4 Jul 2023 00:21:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1688455299; x=1719991299;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=dmMqRubBY7jl+nvFgHg9YoaIiWyudbhqZ/7je2LSMIU=;
-  b=ZxmfyoqIrD1Q5aIqfMGssKtNobL7mxEutnz996A3pkTdnlgoQAOcjoej
-   OYIpCgt3AZfx80Z5kkS4K0XefqewL0xhuPyoVQmzOUb44XckrciSwTr+3
-   mgOmsYIQBeoS/ktFxObdw3JpSKfB993QWGthOxadi0mn2tfSPe6BI4uUR
-   HdL9MqJ14qPIgezFztNLOlQyfk6M0swduB6c+JtgpwzYteYtIGAjLwSHf
-   i84LsoJ1NBKKIZxoQBs75bVRskdlsSCfMXoGV4cGouG7DpphzHxIsE6wl
-   PAIjnS2sB/UOvrGQx4z5p/huvLXKbaN7F4s4En0tPoRYP1dfV2Pp94HaZ
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10760"; a="426740879"
-X-IronPort-AV: E=Sophos;i="6.01,179,1684825200"; 
-   d="scan'208";a="426740879"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Jul 2023 00:21:39 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10760"; a="753975095"
-X-IronPort-AV: E=Sophos;i="6.01,179,1684825200"; 
-   d="scan'208";a="753975095"
-Received: from smile.fi.intel.com ([10.237.72.54])
-  by orsmga001.jf.intel.com with ESMTP; 04 Jul 2023 00:21:34 -0700
-Received: from andy by smile.fi.intel.com with local (Exim 4.96)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1qGaLr-0024Fd-2I;
-        Tue, 04 Jul 2023 10:21:31 +0300
-Date:   Tue, 4 Jul 2023 10:21:31 +0300
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+        with ESMTP id S230259AbjGDHhZ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Jul 2023 03:37:25 -0400
+Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com [209.85.128.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3DFFFE5B;
+        Tue,  4 Jul 2023 00:37:24 -0700 (PDT)
+Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-5728df0a7d9so66092607b3.1;
+        Tue, 04 Jul 2023 00:37:24 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1688456243; x=1691048243;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=ttaFFJ0r0f9jhzySfvd5lZ1LEwbKcvVHje2Xigt05e4=;
+        b=Wg6s6p9wLsYLXMQ54+1dGpn5wB2a68KaX2axjzS6Ud3qiI1n+ogWTxx1WzkdHKc5oy
+         /yIHtdsVjn+v4KDuV9JpNHb6Zyd8zZ+Bi8t80S+vhxQCEg0zIZE4bUDiCuSfgUbvQMmP
+         XQWb1SeP2Q6KwQtgQHZlSvILEsm0PktgszWvN/KfgKoxw+7acMGydkScvwG28a8S7ROG
+         kEu5uHOeU9yBxvSI3OjiVFlsIUjJ7qzubfm2+NfegwTatpKIDz7+P0WXkO5HNvflkmdh
+         csDndSvARMsjMlDg+pL3Im3aE95SmRRuPO1oLdjhWDLR31W/rnNdWx1a5rYr/sUWO2DO
+         nq3w==
+X-Gm-Message-State: ABy/qLbfV9Pd4mpZ3NfSUCXF0CAhk7jBg7K9dzviIkF+7/b6uwAXFBNZ
+        AkKV4ZRzN9yaB8u5UJ7vk9dB+NpbimhgKQ==
+X-Google-Smtp-Source: APBJJlHwlQ4ScDs0JUrT4LSjPnA+MDeRzxPICLf5D5cZ5Iw4ecLnyX62VhzbtCAF6MzvLhlIIagXMQ==
+X-Received: by 2002:a81:5249:0:b0:579:efd3:964 with SMTP id g70-20020a815249000000b00579efd30964mr5781714ywb.52.1688456243148;
+        Tue, 04 Jul 2023 00:37:23 -0700 (PDT)
+Received: from mail-yb1-f175.google.com (mail-yb1-f175.google.com. [209.85.219.175])
+        by smtp.gmail.com with ESMTPSA id z6-20020a816506000000b0056d443372f0sm5532978ywb.119.2023.07.04.00.37.21
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 04 Jul 2023 00:37:22 -0700 (PDT)
+Received: by mail-yb1-f175.google.com with SMTP id 3f1490d57ef6-bacf685150cso6075115276.3;
+        Tue, 04 Jul 2023 00:37:21 -0700 (PDT)
+X-Received: by 2002:a5b:412:0:b0:ba8:7122:2917 with SMTP id
+ m18-20020a5b0412000000b00ba871222917mr12316676ybp.0.1688456241685; Tue, 04
+ Jul 2023 00:37:21 -0700 (PDT)
+MIME-Version: 1.0
+References: <20230703230534.997525-1-javierm@redhat.com> <20230703230534.997525-2-javierm@redhat.com>
+In-Reply-To: <20230703230534.997525-2-javierm@redhat.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Tue, 4 Jul 2023 09:37:10 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdXRg1OUy6UHuH4H+qkK-qO+jTKdVoG_SRM3q_PkyD+Bbw@mail.gmail.com>
+Message-ID: <CAMuHMdXRg1OUy6UHuH4H+qkK-qO+jTKdVoG_SRM3q_PkyD+Bbw@mail.gmail.com>
+Subject: Re: [PATCH v4 1/5] video: Add auxiliary display drivers to Graphics
+ support menu
 To:     Javier Martinez Canillas <javierm@redhat.com>
 Cc:     linux-kernel@vger.kernel.org,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Arnd Bergmann <arnd@arndb.de>, Borislav Petkov <bp@alien8.de>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
+        Arnd Bergmann <arnd@arndb.de>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "H. Peter Anvin" <hpa@zytor.com>, Helge Deller <deller@gmx.de>,
-        Ingo Molnar <mingo@redhat.com>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        x86@kernel.org
-Subject: Re: [PATCH v4 4/5] fbdev: Split frame buffer support in FB and
- FB_CORE symbols
-Message-ID: <ZKPIezsC1zhKRrGU@smile.fi.intel.com>
-References: <20230703230534.997525-1-javierm@redhat.com>
- <20230703230534.997525-5-javierm@redhat.com>
- <ZKPIQngz6WkzASqa@smile.fi.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ZKPIQngz6WkzASqa@smile.fi.intel.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+        Helge Deller <deller@gmx.de>,
+        Jacek Lawrynowicz <jacek.lawrynowicz@linux.intel.com>,
+        Nipun Gupta <nipun.gupta@amd.com>,
+        Oded Gabbay <ogabbay@kernel.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Jul 04, 2023 at 10:20:35AM +0300, Andy Shevchenko wrote:
-> On Tue, Jul 04, 2023 at 01:05:28AM +0200, Javier Martinez Canillas wrote:
+Hi Javier,
 
-...
+On Tue, Jul 4, 2023 at 1:05 AM Javier Martinez Canillas
+<javierm@redhat.com> wrote:
+> The drivers in this subsystem are for character-based LCD displays, which
+> can fall into the same category of the DRM/KMS and fbdev drivers that are
+> located under the "Graphics support" menu. Add auxdisplay there as well.
+>
+> Suggested-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
 
-> Wondering if
-> 
->   if FB_CORE
->   ...
->   endif
-> 
-> makes Kconfig looking better instead of replacing all these "depends on" lines.
+Thanks for your patch!
 
-I meant user visible effect (via `make *config` and in the source code.
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -30,6 +30,8 @@ if HAS_IOMEM
+>  config HAVE_FB_ATMEL
+>         bool
+>
+> +source "drivers/auxdisplay/Kconfig"
 
-> >  config FB_DEVICE
-> >  	bool "Provide legacy /dev/fb* device"
-> > -	depends on FB
-> > +	depends on FB_CORE
-> >  	default y
+This is inside the "if HAS_IOMEM" section, while there was no
+such limitation before.
+
+> +
+>  source "drivers/char/agp/Kconfig"
+>
+>  source "drivers/gpu/vga/Kconfig"
+
+Gr{oetje,eeting}s,
+
+                        Geert
 
 -- 
-With Best Regards,
-Andy Shevchenko
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

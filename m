@@ -2,57 +2,61 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9DE0EB64D9
-	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Jul 2023 07:37:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3860AEB64D9
+	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Jul 2023 07:56:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231392AbjGDHh1 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 4 Jul 2023 03:37:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50740 "EHLO
+        id S231491AbjGDH4U (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 4 Jul 2023 03:56:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35596 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230259AbjGDHhZ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Jul 2023 03:37:25 -0400
-Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com [209.85.128.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3DFFFE5B;
-        Tue,  4 Jul 2023 00:37:24 -0700 (PDT)
-Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-5728df0a7d9so66092607b3.1;
-        Tue, 04 Jul 2023 00:37:24 -0700 (PDT)
+        with ESMTP id S231423AbjGDHzz (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Jul 2023 03:55:55 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BECE4173B
+        for <linux-fbdev@vger.kernel.org>; Tue,  4 Jul 2023 00:54:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1688457283;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=QKrB5YS08GogmNSu7Y0RQRA2Szw+Z40s1lTL+YoBbo8=;
+        b=B1JCrY73CrV3nmTyA8Xv2L5RnrSmYenblr1SAhitvUDw1J7CKuWUn9t4tVoVhgM06LXeH2
+        5j8wDKz9aaqxXELIxEX1hTDJVW7g3SlDU+UQJGuyKIiO9hHeZ/g/t9T0IAf6OcFnk0ckdD
+        O113PHcPaRacxiRGFCTxELbIR9T9ZDQ=
+Received: from mail-lf1-f72.google.com (mail-lf1-f72.google.com
+ [209.85.167.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-605-CVQPM-LsNgeXQDXCHSNVWA-1; Tue, 04 Jul 2023 03:54:42 -0400
+X-MC-Unique: CVQPM-LsNgeXQDXCHSNVWA-1
+Received: by mail-lf1-f72.google.com with SMTP id 2adb3069b0e04-4fb76659d44so4897625e87.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 04 Jul 2023 00:54:42 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688456243; x=1691048243;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20221208; t=1688457281; x=1691049281;
+        h=content-transfer-encoding:mime-version:message-id:date:references
+         :in-reply-to:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=ttaFFJ0r0f9jhzySfvd5lZ1LEwbKcvVHje2Xigt05e4=;
-        b=Wg6s6p9wLsYLXMQ54+1dGpn5wB2a68KaX2axjzS6Ud3qiI1n+ogWTxx1WzkdHKc5oy
-         /yIHtdsVjn+v4KDuV9JpNHb6Zyd8zZ+Bi8t80S+vhxQCEg0zIZE4bUDiCuSfgUbvQMmP
-         XQWb1SeP2Q6KwQtgQHZlSvILEsm0PktgszWvN/KfgKoxw+7acMGydkScvwG28a8S7ROG
-         kEu5uHOeU9yBxvSI3OjiVFlsIUjJ7qzubfm2+NfegwTatpKIDz7+P0WXkO5HNvflkmdh
-         csDndSvARMsjMlDg+pL3Im3aE95SmRRuPO1oLdjhWDLR31W/rnNdWx1a5rYr/sUWO2DO
-         nq3w==
-X-Gm-Message-State: ABy/qLbfV9Pd4mpZ3NfSUCXF0CAhk7jBg7K9dzviIkF+7/b6uwAXFBNZ
-        AkKV4ZRzN9yaB8u5UJ7vk9dB+NpbimhgKQ==
-X-Google-Smtp-Source: APBJJlHwlQ4ScDs0JUrT4LSjPnA+MDeRzxPICLf5D5cZ5Iw4ecLnyX62VhzbtCAF6MzvLhlIIagXMQ==
-X-Received: by 2002:a81:5249:0:b0:579:efd3:964 with SMTP id g70-20020a815249000000b00579efd30964mr5781714ywb.52.1688456243148;
-        Tue, 04 Jul 2023 00:37:23 -0700 (PDT)
-Received: from mail-yb1-f175.google.com (mail-yb1-f175.google.com. [209.85.219.175])
-        by smtp.gmail.com with ESMTPSA id z6-20020a816506000000b0056d443372f0sm5532978ywb.119.2023.07.04.00.37.21
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 04 Jul 2023 00:37:22 -0700 (PDT)
-Received: by mail-yb1-f175.google.com with SMTP id 3f1490d57ef6-bacf685150cso6075115276.3;
-        Tue, 04 Jul 2023 00:37:21 -0700 (PDT)
-X-Received: by 2002:a5b:412:0:b0:ba8:7122:2917 with SMTP id
- m18-20020a5b0412000000b00ba871222917mr12316676ybp.0.1688456241685; Tue, 04
- Jul 2023 00:37:21 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230703230534.997525-1-javierm@redhat.com> <20230703230534.997525-2-javierm@redhat.com>
-In-Reply-To: <20230703230534.997525-2-javierm@redhat.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 4 Jul 2023 09:37:10 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXRg1OUy6UHuH4H+qkK-qO+jTKdVoG_SRM3q_PkyD+Bbw@mail.gmail.com>
-Message-ID: <CAMuHMdXRg1OUy6UHuH4H+qkK-qO+jTKdVoG_SRM3q_PkyD+Bbw@mail.gmail.com>
-Subject: Re: [PATCH v4 1/5] video: Add auxiliary display drivers to Graphics
- support menu
-To:     Javier Martinez Canillas <javierm@redhat.com>
+        bh=QKrB5YS08GogmNSu7Y0RQRA2Szw+Z40s1lTL+YoBbo8=;
+        b=LUy2+cxvopTgb7Og+syPlKJ9YbzcPaLVqlpOq3le64HISAaGG85Z3dwf+ZWMNrWyM3
+         STVJVd2Kpz2Yj2P/u1iwzadA6mu4IWE5zxjHU8hAyg9106GVevNMmuqB/8BRLOS5buv5
+         2+sM/6bB6cOd5tlujFCiC7o/dZcQabbg1ZrKUeej6UObszSoP909gRodwA+dMxcvPPcC
+         AIDp2ekjjPooVCOJrXy+6wrIP5TQ2XkElcUgTS/NNM7UekFqUgYmLIstTyhNQuyKpEL/
+         e0woItOkC8yKhDO0C2YAdpR8cvGYUNqqJ8Z/ER0EvuZf9UsOI6OiUjStUWU3drcQsTxB
+         TwPA==
+X-Gm-Message-State: ABy/qLacQnJULoJdLVgkE07DGksYcU95BPFlkwxFXMndZIFb2YRd1QDG
+        luGjP6tCTZXUQj8VyuxoK+Kk5ZmJlk5bsyGTc4JuXU+xh7wVreHhjHlgugVLNcLMj9cR9IHqgj5
+        fBfc+V73r8Fht9cp2uRIXjhM=
+X-Received: by 2002:ac2:5f92:0:b0:4fa:a0c3:efa1 with SMTP id r18-20020ac25f92000000b004faa0c3efa1mr8124397lfe.7.1688457280934;
+        Tue, 04 Jul 2023 00:54:40 -0700 (PDT)
+X-Google-Smtp-Source: APBJJlGv5H/b0zhH/dQl8i//ZbCh57DUE2bTT97eL1Mf3dlGQfF99dJp+Ktbu5zRXTh1sOMdVeb8dQ==
+X-Received: by 2002:ac2:5f92:0:b0:4fa:a0c3:efa1 with SMTP id r18-20020ac25f92000000b004faa0c3efa1mr8124377lfe.7.1688457280294;
+        Tue, 04 Jul 2023 00:54:40 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id 7-20020a05600c230700b003fa968e9c27sm24443386wmo.9.2023.07.04.00.54.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 04 Jul 2023 00:54:40 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
 Cc:     linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Arnd Bergmann <arnd@arndb.de>,
@@ -62,48 +66,61 @@ Cc:     linux-kernel@vger.kernel.org,
         Nipun Gupta <nipun.gupta@amd.com>,
         Oded Gabbay <ogabbay@kernel.org>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Subject: Re: [PATCH v4 1/5] video: Add auxiliary display drivers to Graphics
+ support menu
+In-Reply-To: <CAMuHMdXRg1OUy6UHuH4H+qkK-qO+jTKdVoG_SRM3q_PkyD+Bbw@mail.gmail.com>
+References: <20230703230534.997525-1-javierm@redhat.com>
+ <20230703230534.997525-2-javierm@redhat.com>
+ <CAMuHMdXRg1OUy6UHuH4H+qkK-qO+jTKdVoG_SRM3q_PkyD+Bbw@mail.gmail.com>
+Date:   Tue, 04 Jul 2023 09:54:39 +0200
+Message-ID: <87h6qkyuv4.fsf@minerva.mail-host-address-is-not-set>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Javier,
+Geert Uytterhoeven <geert@linux-m68k.org> writes:
 
-On Tue, Jul 4, 2023 at 1:05 AM Javier Martinez Canillas
-<javierm@redhat.com> wrote:
-> The drivers in this subsystem are for character-based LCD displays, which
-> can fall into the same category of the DRM/KMS and fbdev drivers that are
-> located under the "Graphics support" menu. Add auxdisplay there as well.
+Hello Geert,
+
+> Hi Javier,
 >
-> Suggested-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
-
-Thanks for your patch!
-
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -30,6 +30,8 @@ if HAS_IOMEM
->  config HAVE_FB_ATMEL
->         bool
+> On Tue, Jul 4, 2023 at 1:05=E2=80=AFAM Javier Martinez Canillas
+> <javierm@redhat.com> wrote:
+>> The drivers in this subsystem are for character-based LCD displays, which
+>> can fall into the same category of the DRM/KMS and fbdev drivers that are
+>> located under the "Graphics support" menu. Add auxdisplay there as well.
+>>
+>> Suggested-by: Thomas Zimmermann <tzimmermann@suse.de>
+>> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
 >
-> +source "drivers/auxdisplay/Kconfig"
-
-This is inside the "if HAS_IOMEM" section, while there was no
-such limitation before.
-
-> +
->  source "drivers/char/agp/Kconfig"
+> Thanks for your patch!
 >
->  source "drivers/gpu/vga/Kconfig"
+>> --- a/drivers/video/Kconfig
+>> +++ b/drivers/video/Kconfig
+>> @@ -30,6 +30,8 @@ if HAS_IOMEM
+>>  config HAVE_FB_ATMEL
+>>         bool
+>>
+>> +source "drivers/auxdisplay/Kconfig"
+>
+> This is inside the "if HAS_IOMEM" section, while there was no
+> such limitation before.
+>
 
-Gr{oetje,eeting}s,
+Gah, I missed that. Thanks a lot for pointing it out.
 
-                        Geert
+If I move the source outside of the if block, are you OK with this patch?
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I think Thomas is correct and would make sense to put the character-based
+drivers next to the DRM and fbdev drivers since all these are for display.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+--=20
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
+

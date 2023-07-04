@@ -2,80 +2,79 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D812C0015E
-	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Jul 2023 16:24:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B015C001B1
+	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Jul 2023 16:26:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231578AbjGDQYg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 4 Jul 2023 12:24:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36428 "EHLO
+        id S230264AbjGDQ02 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 4 Jul 2023 12:26:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37576 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231571AbjGDQYg (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Jul 2023 12:24:36 -0400
+        with ESMTP id S230507AbjGDQ00 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Jul 2023 12:26:26 -0400
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32493DC
-        for <linux-fbdev@vger.kernel.org>; Tue,  4 Jul 2023 09:23:45 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 81EFB10D9
+        for <linux-fbdev@vger.kernel.org>; Tue,  4 Jul 2023 09:25:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1688487824;
+        s=mimecast20190719; t=1688487942;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=2FITFWtbRXE3gky2EO4aMziTa3J/r1+wMO4yc2vs7Pc=;
-        b=Yaj0XoGTnPY3jldtaJrBd3h0EFLc5QY5r2f1GcQiDU5Bwt+QkhnRA5Y3ClkBsx59aWT2Mc
-        O1BXRKMpVO9+Wb82xQFvJuf17h84NyATS9f4N1wgCJHvmtmtX5bmQkya0n1s8pMiouL+Iu
-        fyHZ1/QKZQcqnRr3IdPIPspTAWH3/GI=
+        bh=M8/mkORscNjCU/dvtXt+o+8I4w7Qa8785g4rCe6dq88=;
+        b=dtjWkysOlHq5uaRMSRftHkei1a1ILK6vtvXDwGWxj6H9UtNGfSZziG3QQXv3Pw/9mYaOT5
+        BFgwdS2tZNoR+A98bGas5LWcWuye1DM2KCxquN9mBMZb8/j6FpFxHM5nnSCZGzzPFrdDPs
+        9kEqHhmCTaHdL/oBciG6FhPCYaKlV+I=
 Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
  [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-391-W7WV46pZOCSXzjXyK8z8Zw-1; Tue, 04 Jul 2023 12:23:43 -0400
-X-MC-Unique: W7WV46pZOCSXzjXyK8z8Zw-1
-Received: by mail-wm1-f70.google.com with SMTP id 5b1f17b1804b1-3fbdf341934so8962895e9.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 04 Jul 2023 09:23:43 -0700 (PDT)
+ us-mta-583-dpDJ8O8kN8KTCBatsSzVmA-1; Tue, 04 Jul 2023 12:25:41 -0400
+X-MC-Unique: dpDJ8O8kN8KTCBatsSzVmA-1
+Received: by mail-wm1-f70.google.com with SMTP id 5b1f17b1804b1-3fbab56aac7so36502745e9.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 04 Jul 2023 09:25:41 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688487822; x=1691079822;
+        d=1e100.net; s=20221208; t=1688487940; x=1691079940;
         h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
          :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=2FITFWtbRXE3gky2EO4aMziTa3J/r1+wMO4yc2vs7Pc=;
-        b=FbwwkhY1//RmymSnF86rP4wh4N4HOcu8aB/Vxlee6iPhy0iWJnLEDImsz+VGtoetjT
-         Zefk+eaM3r0zXV2IMmDZajFClubMeWRuuoQMwg0gSljEaxUPcvZ0QCW/hRA+5QPq0gP3
-         5lBcrFJ2kgNnhYSWlfWieyjzhJrleYL585ViVCzYBLnI8g0r+/vPbeaHvtM3PUr6P9S+
-         AWqqSVRxRRur7bzEf35M2oY9R179omb/gpKPqEi/3FUfTPVBoEbKOL8be3E4z9tZnpdY
-         X7i7Ri2szz4r/jjiSzSk83v9hCvFPJ/lcYMO0Z6m3ZzuPa6JmSvEzOkW7pRuHP9pqb7a
-         kqXA==
-X-Gm-Message-State: AC+VfDzK/2HbTRvPIyP99P+LlCAuChCByqsA3J8A7GCfFb4icHlJ6DjH
-        z5K7CZQdwR47tgrPASPLrN5+/NjedRGBjxE6FmX8vr3C+TyshnY/F8dhfwjvAi8AR9a61bgjPlJ
-        nSFOrq7YL9O79OdABsvr8KeE=
-X-Received: by 2002:a05:600c:2145:b0:3fb:415f:a85b with SMTP id v5-20020a05600c214500b003fb415fa85bmr18158824wml.3.1688487822321;
-        Tue, 04 Jul 2023 09:23:42 -0700 (PDT)
-X-Google-Smtp-Source: ACHHUZ7T04nL74CM9kmUBFWNxbGLn7ruUc6nb3zVFQfaw7cBAYtqvH64gACvFSpImO/HrduwXThnBg==
-X-Received: by 2002:a05:600c:2145:b0:3fb:415f:a85b with SMTP id v5-20020a05600c214500b003fb415fa85bmr18158793wml.3.1688487821958;
-        Tue, 04 Jul 2023 09:23:41 -0700 (PDT)
+        bh=M8/mkORscNjCU/dvtXt+o+8I4w7Qa8785g4rCe6dq88=;
+        b=kdnUULcoZ16CW34TKOftscAIaOvllyo27q215t+v7lJqKPLQjb/4kTNYFLfWoHuxbA
+         nmbpO5sv0HXweAgHDdFlumvSbZB9VrR9Ah4biCAkpvVqBJtjcp74qbHHzTXocd6fBh16
+         wQujvJSNO9SjhDXeEHuiVpSWnzfy7mmYogC1sRDaPJxkSXoyWVz/7F1SyfJ20VfdXEj0
+         mieMTWleJxpiDkWflJ/R2KVUk0sgu+//KyBWw+IWK47ufdDahRoi4sIOothdvKrhwI0b
+         q1v5jmo9bM+aBhxYAQh+vqbzeSw9elClmC4g6PCQ8Q+rmQC5zpTyCeozZuTzuGTKdZtI
+         U/bw==
+X-Gm-Message-State: AC+VfDwY/adFDeHVTM/TfWcNzfjJ6Z4947OtUxFz3mzfDQHl0sbY9A0S
+        p7E9vLD7Pm1WU7H2Z05SjEdkkPRge4/9ep6pIMn+Mp6kzfx+bWGiodXHIWOeG5ITjXKHeMbjMZr
+        ix8cdO2db/J1PCM3O0brtDHs=
+X-Received: by 2002:a05:600c:c1:b0:3fa:8cd8:9743 with SMTP id u1-20020a05600c00c100b003fa8cd89743mr12082798wmm.19.1688487940449;
+        Tue, 04 Jul 2023 09:25:40 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ5IB6++c8U11SK9oMV+tMdqHs9QUr8ub/i7nSM7HKLee5NlCRabAo+D01Z67Wv3BYjVWg90GQ==
+X-Received: by 2002:a05:600c:c1:b0:3fa:8cd8:9743 with SMTP id u1-20020a05600c00c100b003fa8cd89743mr12082767wmm.19.1688487940180;
+        Tue, 04 Jul 2023 09:25:40 -0700 (PDT)
 Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id m21-20020a7bcb95000000b003faabd8fcb8sm24447459wmi.46.2023.07.04.09.23.41
+        by smtp.gmail.com with ESMTPSA id r8-20020a056000014800b003143b032b7asm4333122wrx.116.2023.07.04.09.25.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 04 Jul 2023 09:23:41 -0700 (PDT)
+        Tue, 04 Jul 2023 09:25:39 -0700 (PDT)
 From:   Javier Martinez Canillas <javierm@redhat.com>
 To:     Thomas Zimmermann <tzimmermann@suse.de>, arnd@arndb.de,
         deller@gmx.de, daniel@ffwll.ch, airlied@gmail.com
-Cc:     linux-hyperv@vger.kernel.org, linux-efi@vger.kernel.org,
-        linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-mips@vger.kernel.org, sparclinux@vger.kernel.org,
-        linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>,
-        Ard Biesheuvel <ardb@kernel.org>, linux-arch@vger.kernel.org,
-        linux-hexagon@vger.kernel.org, linux-staging@lists.linux.dev,
-        Russell King <linux@armlinux.org.uk>,
-        linux-csky@vger.kernel.org, loongarch@lists.linux.dev,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+Cc:     linux-arch@vger.kernel.org, linux-hyperv@vger.kernel.org,
+        linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 01/12] efi: Do not include <linux/screen_info.h> from
- EFI header
-In-Reply-To: <20230629121952.10559-2-tzimmermann@suse.de>
+        linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
+        linux-csky@vger.kernel.org, linux-mips@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        loongarch@lists.linux.dev, linux-alpha@vger.kernel.org,
+        sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+        linuxppc-dev@lists.ozlabs.org,
+        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        linux-arm-kernel@lists.infradead.org,
+        Teddy Wang <teddy.wang@siliconmotion.com>
+Subject: Re: [PATCH 02/12] fbdev/sm712fb: Do not include <linux/screen_info.h>
+In-Reply-To: <20230629121952.10559-3-tzimmermann@suse.de>
 References: <20230629121952.10559-1-tzimmermann@suse.de>
- <20230629121952.10559-2-tzimmermann@suse.de>
-Date:   Tue, 04 Jul 2023 18:23:40 +0200
-Message-ID: <87ilazlk6r.fsf@minerva.mail-host-address-is-not-set>
+ <20230629121952.10559-3-tzimmermann@suse.de>
+Date:   Tue, 04 Jul 2023 18:25:39 +0200
+Message-ID: <87fs63lk3g.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
 Content-Type: text/plain
 Precedence: bulk
@@ -84,16 +83,15 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-> The header file <linux/efi.h> does not need anything from
-> <linux/screen_info.h>. Declare struct screen_info and remove
-> the include statements. Update a number of source files that
-> require struct screen_info's definition.
+> Sm712fb's dependency on <linux/screen_info.h> is artificial in that
+> it only uses struct screen_info for its internals. Replace the use of
+> struct screen_info with a custom data structure and remove the include
+> of <linux/screen_info.h>.
 >
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Ard Biesheuvel <ardb@kernel.org>
-> Cc: Russell King <linux@armlinux.org.uk>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will@kernel.org>
+> Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+> Cc: Teddy Wang <teddy.wang@siliconmotion.com>
+> Cc: Helge Deller <deller@gmx.de>
 > ---
 
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>

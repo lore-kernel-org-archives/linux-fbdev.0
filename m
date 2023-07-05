@@ -2,79 +2,121 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22B3AEB64DA
-	for <linux-fbdev@archiver.kernel.org>; Wed,  5 Jul 2023 14:51:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D668EB64DA
+	for <linux-fbdev@archiver.kernel.org>; Wed,  5 Jul 2023 17:56:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232197AbjGEOvI convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 5 Jul 2023 10:51:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55852 "EHLO
+        id S231550AbjGER4n (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 5 Jul 2023 13:56:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37174 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231676AbjGEOvH (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 5 Jul 2023 10:51:07 -0400
-Received: from unicorn.mansr.com (unicorn.mansr.com [81.2.72.234])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88494131;
-        Wed,  5 Jul 2023 07:51:06 -0700 (PDT)
-Received: from raven.mansr.com (raven.mansr.com [81.2.72.235])
-        by unicorn.mansr.com (Postfix) with ESMTPS id 639AE15360;
-        Wed,  5 Jul 2023 15:51:05 +0100 (BST)
-Received: by raven.mansr.com (Postfix, from userid 51770)
-        id 4E1D1219FC1; Wed,  5 Jul 2023 15:51:05 +0100 (BST)
-From:   =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+        with ESMTP id S231874AbjGER4m (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 5 Jul 2023 13:56:42 -0400
+Received: from mailrelay2-1.pub.mailoutpod2-cph3.one.com (mailrelay2-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:401::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C7B38199D
+        for <linux-fbdev@vger.kernel.org>; Wed,  5 Jul 2023 10:56:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=rsa1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=iBBtnRklVqMQ6mkde8T1v6wMY0Ar5kLbR8KuMGyUvyw=;
+        b=GF90gPCvd8mEOngfUgQ59M+s5yRlPK7b2PnKpmpMnIjBFMszO4/vVi8TdAIN+T4XXNDIBa1cEljQA
+         OaSgSWv9V4iO8aiBOkixFILrXIigudR1NAANlPev2komLg+lvFqYkKOVyw7dU7ciKRpuqOHuixtnCW
+         azZqlkQw7SLDnFd7RdJeupMSRKwpLduu1VjDes2+Uu4ZiuWiF5OVKEMq/tcdLBTBfw+JfSicHqDQRF
+         IYTpvxpmZ4rv107iezXfjqLdQ70qXOdVeeOroTWIh77DcdHy3MseQ9mAmn9v98uk2Ze+Mtd90bG0HJ
+         Rb3zZy+8jWl2H1z2nLf+tQcWtCzHKvg==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=ed1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=iBBtnRklVqMQ6mkde8T1v6wMY0Ar5kLbR8KuMGyUvyw=;
+        b=/U4cLTc4mm2o+4LrKjw/bJrmBsg6NMPgQJ9mg4yrxISURD04T/fLHemun271zeTYH/jq/QmT2Kf1V
+         /gOZs4QCA==
+X-HalOne-ID: 4359365c-1b5d-11ee-87e5-5ba399456a4a
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+        by mailrelay2 (Halon) with ESMTPSA
+        id 4359365c-1b5d-11ee-87e5-5ba399456a4a;
+        Wed, 05 Jul 2023 17:56:28 +0000 (UTC)
+Date:   Wed, 5 Jul 2023 19:56:27 +0200
+From:   Sam Ravnborg <sam@ravnborg.org>
 To:     Daniel Thompson <daniel.thompson@linaro.org>
-Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     Mans Rullgard <mans@mansr.com>, linux-fbdev@vger.kernel.org,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, Lee Jones <lee@kernel.org>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>
 Subject: Re: [PATCH] backlight: led_bl: fix initial power state
-References: <20230705142447.15546-1-mans@mansr.com>
-        <20230705143320.GE6265@aspen.lan> <yw1xjzvezapt.fsf@mansr.com>
-        <20230705144406.GA9021@aspen.lan>
-Date:   Wed, 05 Jul 2023 15:51:05 +0100
-In-Reply-To: <20230705144406.GA9021@aspen.lan> (Daniel Thompson's message of
-        "Wed, 5 Jul 2023 15:44:06 +0100")
-Message-ID: <yw1xfs62za1y.fsf@mansr.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/28.2 (gnu/linux)
+Message-ID: <20230705175627.GD106478@ravnborg.org>
+References: <20230704140750.25799-1-mans@mansr.com>
+ <20230704150310.GA385243@aspen.lan>
+ <20230704170731.GB940443@ravnborg.org>
+ <20230705140731.GB6265@aspen.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230705140731.GB6265@aspen.lan>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Daniel Thompson <daniel.thompson@linaro.org> writes:
+Hi Daniel,
 
-> On Wed, Jul 05, 2023 at 03:36:46PM +0100, Måns Rullgård wrote:
->> Daniel Thompson <daniel.thompson@linaro.org> writes:
->>
->> > On Wed, Jul 05, 2023 at 03:24:14PM +0100, Mans Rullgard wrote:
->> >> The condition for the initial power state based on the default
->> >> brightness value is reversed.  Fix it.
->> >>
->> >> Furthermore, use the actual state of the LEDs rather than the default
->> >> brightness specified in the devicetree as the latter should not cause
->> >> the backlight to be automatically turned on.
->> >>
->> >> If the backlight device is not linked to any display, set the initial
->> >> power to on unconditionally.
->> >>
->> >> Fixes: ae232e45acf9 ("backlight: add led-backlight driver")
->> >> Signed-off-by: Mans Rullgard <mans@mansr.com>
->> >> ---
->> >> Changes in v3:
->> >> - Add comment
->> >
->> > This mismatches the subject line ;-) but I can live with that if Lee
->> > and Jingoo can!
->>
->> Does it not fix it?  If you think the subject is misleading, feel free
->> to change it.
->
-> The bit that goes into version control is fine!
->
-> However without '[PATCH v3]' on the subject line for the initial patch
-> there is a risk this thread will get overlooked and not queued[1].
+On Wed, Jul 05, 2023 at 03:07:31PM +0100, Daniel Thompson wrote:
+> On Tue, Jul 04, 2023 at 07:07:31PM +0200, Sam Ravnborg wrote:
+> > Hi Daniel,
+> >
+> > > > @@ -200,8 +200,8 @@ static int led_bl_probe(struct platform_device *pdev)
+> > > >  	props.type = BACKLIGHT_RAW;
+> > > >  	props.max_brightness = priv->max_brightness;
+> > > >  	props.brightness = priv->default_brightness;
+> > > > -	props.power = (priv->default_brightness > 0) ? FB_BLANK_POWERDOWN :
+> > > > -		      FB_BLANK_UNBLANK;
+> > > > +	props.power = (priv->default_brightness > 0) ? FB_BLANK_UNBLANK :
+> > > > +		      FB_BLANK_POWERDOWN;
+> > >
+> > > The logic was wrong before but I think will still be wrong after the
+> > > change too (e.g. the bogus logic is probably avoiding backlight flicker
+> > > in some use cases).
+> > >
+> > > The logic here needs to be similar to what pwm_bl.c implements in
+> > > pwm_backlight_initial_power_state(). Whilst it might be better
+> > > to implement this in led_bl_get_leds() let me show what I mean
+> > > in code that fits in the current line:
+> > >
+> > > 	/*
+> > > 	 * Activate the backlight if the LEDs are already lit *or*
+> > > 	 * there is no phandle link (meaning the backlight power
+> > > 	 * state cannot be synced with the display state).
+> > > 	 */
+> > > 	props.power = (active_at_boot || !dev->node->phandle) ?
+> > > 			FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN;
+> > >
+> > The following code does the same using helpers:
+> >
+> > 	if (active_at_boot || !dev->node->phandle))
+> > 		backlight_enable(bd);
+> > 	else
+> > 		backlight_disable(bd);
+> >
+> > The code needs to execute after backlight_device_register() so maybe not
+> > so great an idea?!?
+> 
+> It would introduce a need for a bunch of new locks since userspace
+> could get in between device creation and the call to the helpers.
+I thought we were safe while in the probe function, but I have been
+fooled by the driver model before.
 
-Oh, I see now I forgot to add the v3 tag.  Sorry about that.
+> 
+> Additionally, it is even correct for a driver to forcefully set
+> fb_blank to powerdown during the probe? All current drivers set
+> fb_blank to unblank during the probe.
+fb_blank is more or less unused. I thought that Lee applied the patch set
+to eliminate most users, but I see that this is not the case.
+I need to resend one day.
+Some (at least one) drivers update .power after registering the device, so if this
+is racy then these drivers could use some care.
 
--- 
-Måns Rullgård
+Anyway, looking at how many drivers access backlight_properties direct is
+is futile to try to avoid it. So the approach you suggest seems the best
+way to do it.
+
+	Sam

@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7503FEB64DC
-	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Jul 2023 12:50:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47693C04FE0
+	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Jul 2023 12:50:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232479AbjGFMuF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 6 Jul 2023 08:50:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53218 "EHLO
+        id S232509AbjGFMuH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 6 Jul 2023 08:50:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53224 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232505AbjGFMt4 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Jul 2023 08:49:56 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 899392126;
+        with ESMTP id S232507AbjGFMt5 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Jul 2023 08:49:57 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D6D371FD4;
         Thu,  6 Jul 2023 05:49:36 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 3F3C11FF5A;
-        Thu,  6 Jul 2023 12:49:08 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 1616A221B6;
+        Thu,  6 Jul 2023 12:49:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1688647748; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1688647749; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=jl7S46mv6InEsHfLSGrNmxiKrUHhe7iR5mOjG/vfIWw=;
-        b=pIgftidvCh/qqCFQHV1ZOyQfYF7x5aqvuhWl6LJ2kkpu+NkW19RrMuCEVNqVGL5Pb2gUDh
-        YlziCQ76n9/9XwpSvV+gSf7VN509N9kmMOZ3qCVQb6jaubfZip8cs4p1dJbM6zME0lPpQX
-        cX1uM6oySB/03y6q+OiOdBhAx8bpmY4=
+        bh=jR41kl1ejSgzYNGauvgCBXnjtoUFEQnccov2q9gbEhw=;
+        b=awCWd2i9MryGwYJQL8K0I2grWFChetzmds1SR9I+t5xuLgUXiiA5NDVP+2gAmlnw5mcEa4
+        2vEpoAWAALtgP5BArz6BxP18OTprlc24Xxb7fdoArWdzh1QeGibtzEry4o4MDwxbaHO8Zg
+        ykjodtHo65i83owPdjBI8V+1XAndr+4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1688647748;
+        s=susede2_ed25519; t=1688647749;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=jl7S46mv6InEsHfLSGrNmxiKrUHhe7iR5mOjG/vfIWw=;
-        b=nz0r3y+SYC2hrK5F3fnGoGXf+tHwaM/YIK4/iLoUNIEAVm2qcB5TVTGaeuDlRZKkrsU0sC
-        12rFAPfeG7AdwPBg==
+        bh=jR41kl1ejSgzYNGauvgCBXnjtoUFEQnccov2q9gbEhw=;
+        b=invPtFDy8DFVDK2zBZMM9uY0TaajJCxpcOTImR6yzMDflUhkoapAa3xdNX1Ai449SVQDHr
+        ucx7b2xCt4fFxGCg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id DB142138FC;
-        Thu,  6 Jul 2023 12:49:07 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C333B1390F;
+        Thu,  6 Jul 2023 12:49:08 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id oACANEO4pmS7QgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 06 Jul 2023 12:49:07 +0000
+        id GKrDLkS4pmS7QgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 06 Jul 2023 12:49:08 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     javierm@redhat.com, maarten.lankhorst@linux.intel.com,
         mripard@kernel.org
@@ -56,11 +56,14 @@ Cc:     dri-devel@lists.freedesktop.org,
         linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-fbdev@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Mikko Perttunen <mperttunen@nvidia.com>
-Subject: [PATCH v2 03/11] drm/tegra: Use fbdev DMA helpers
-Date:   Thu,  6 Jul 2023 14:46:41 +0200
-Message-ID: <20230706124905.15134-4-tzimmermann@suse.de>
+        Inki Dae <inki.dae@samsung.com>,
+        Seung-Woo Kim <sw0312.kim@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Alim Akhtar <alim.akhtar@samsung.com>
+Subject: [PATCH v2 06/11] drm/exynos: Set fbdev FBINFO_VIRTFB flag
+Date:   Thu,  6 Jul 2023 14:46:44 +0200
+Message-ID: <20230706124905.15134-7-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230706124905.15134-1-tzimmermann@suse.de>
 References: <20230706124905.15134-1-tzimmermann@suse.de>
@@ -70,48 +73,37 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use fbdev's DMA helpers for fbdev emulation. They are equivalent to the
-previously used system-memory helpers, so no functional changes here.
+Mark the framebuffer with FBINFO_VIRTFB. The framebuffer range is
+in DMA-able memory and should be accessed with the CPU's regular
+memory ops.
+
+v2:
+	* drop FBINFO_FLAG_DEFAULT
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 Acked-by: Maxime Ripard <mripard@kernel.org>
-Cc: Thierry Reding <thierry.reding@gmail.com>
-Cc: Mikko Perttunen <mperttunen@nvidia.com>
+Cc: Inki Dae <inki.dae@samsung.com>
+Cc: Seung-Woo Kim <sw0312.kim@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc: Alim Akhtar <alim.akhtar@samsung.com>
 ---
- drivers/gpu/drm/tegra/Kconfig | 2 +-
- drivers/gpu/drm/tegra/fbdev.c | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/gpu/drm/exynos/exynos_drm_fbdev.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/gpu/drm/tegra/Kconfig b/drivers/gpu/drm/tegra/Kconfig
-index 498313778175..39452c8480c1 100644
---- a/drivers/gpu/drm/tegra/Kconfig
-+++ b/drivers/gpu/drm/tegra/Kconfig
-@@ -12,7 +12,7 @@ config DRM_TEGRA
- 	select DRM_KMS_HELPER
- 	select DRM_MIPI_DSI
- 	select DRM_PANEL
--	select FB_SYS_HELPERS if DRM_FBDEV_EMULATION
-+	select FB_DMA_HELPERS if DRM_FBDEV_EMULATION
- 	select TEGRA_HOST1X
- 	select INTERCONNECT
- 	select IOMMU_IOVA
-diff --git a/drivers/gpu/drm/tegra/fbdev.c b/drivers/gpu/drm/tegra/fbdev.c
-index e74d9be981c7..82577b7c88da 100644
---- a/drivers/gpu/drm/tegra/fbdev.c
-+++ b/drivers/gpu/drm/tegra/fbdev.c
-@@ -59,9 +59,9 @@ static void tegra_fbdev_fb_destroy(struct fb_info *info)
+diff --git a/drivers/gpu/drm/exynos/exynos_drm_fbdev.c b/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
+index 7ca3424b59ce..828318de8529 100644
+--- a/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
++++ b/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
+@@ -79,6 +79,7 @@ static int exynos_drm_fbdev_update(struct drm_fb_helper *helper,
+ 	offset = fbi->var.xoffset * fb->format->cpp[0];
+ 	offset += fbi->var.yoffset * fb->pitches[0];
  
- static const struct fb_ops tegra_fb_ops = {
- 	.owner = THIS_MODULE,
--	__FB_DEFAULT_SYS_OPS_RDWR,
-+	__FB_DEFAULT_DMA_OPS_RDWR,
- 	DRM_FB_HELPER_DEFAULT_OPS,
--	__FB_DEFAULT_SYS_OPS_DRAW,
-+	__FB_DEFAULT_DMA_OPS_DRAW,
- 	.fb_mmap = tegra_fb_mmap,
- 	.fb_destroy = tegra_fbdev_fb_destroy,
- };
++	fbi->flags |= FBINFO_VIRTFB;
+ 	fbi->screen_buffer = exynos_gem->kvaddr + offset;
+ 	fbi->screen_size = size;
+ 	fbi->fix.smem_len = size;
 -- 
 2.41.0
 

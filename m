@@ -2,135 +2,99 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32DE8EB64DD
-	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Jul 2023 10:49:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C30DEB64D9
+	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Jul 2023 11:36:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232022AbjGFKtD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 6 Jul 2023 06:49:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41234 "EHLO
+        id S230125AbjGFLg2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 6 Jul 2023 07:36:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38666 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231905AbjGFKs7 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Jul 2023 06:48:59 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 787EE1BEF;
-        Thu,  6 Jul 2023 03:48:57 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id C5F9120527;
-        Thu,  6 Jul 2023 10:48:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1688640535; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=6IQse9Ci+6BuJu92+Tlb4VQ/loHLj6fZX2PSRhDLRfs=;
-        b=rPiQO52hmp/q6FguwE88lYtcvI1sL9Nta/vMBo2Oc9eISn+vWsTbL+XMOe9N9SofDdiygZ
-        w01dH8jLKkkuJzfkC8VKGtLq2cF7LyWshdb5oTTTcyFiqhyo3+N9sUGodHZuUYMq6Ho8MR
-        rklpliiQDVjGRVnJqnnY8DbYjLM8txc=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1688640535;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=6IQse9Ci+6BuJu92+Tlb4VQ/loHLj6fZX2PSRhDLRfs=;
-        b=4IBVpZARJrETGFFUgtTFeYGsq3n4Y0+wJgPKohJ7VUGz4fmN2NSPLil1ZsPhVcHnNYxSmF
-        yDcG2dfMZuiSRYCQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 88862138EE;
-        Thu,  6 Jul 2023 10:48:55 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id 6Bh1IBecpmSDAQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 06 Jul 2023 10:48:55 +0000
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-To:     javierm@redhat.com, suijingfeng@loongson.cn, arnd@arndb.de
+        with ESMTP id S229774AbjGFLg1 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Jul 2023 07:36:27 -0400
+Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com [66.111.4.25])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF8E0AA;
+        Thu,  6 Jul 2023 04:36:26 -0700 (PDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
+        by mailout.nyi.internal (Postfix) with ESMTP id 6973E5C00CF;
+        Thu,  6 Jul 2023 07:36:26 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute6.internal (MEProxy); Thu, 06 Jul 2023 07:36:26 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+        :cc:content-type:content-type:date:date:from:from:in-reply-to
+        :in-reply-to:message-id:mime-version:references:reply-to:sender
+        :subject:subject:to:to; s=fm2; t=1688643386; x=1688729786; bh=C6
+        FVmoTeWIWnJ398pRC/XE6TyNj7Ymf62dAsmaGtmb0=; b=BGdluiom3ggcRnDdxp
+        oee0FvzfxpIvCY638tQFktcGhwOwhI/XrlJsyp2RiY/jp66a0kp0i4kzB50Nqzj+
+        m/GNGAiPe1F+41dKNx0j9TXocBWXc2ufXklfxDDTcKLAr8QK90fpbFQYooSOvxNY
+        squbxC2U9VEEYoab/tsz66VHwP4qpRaAybj3RyetmVcABnDy35/H4PhNI537HMMl
+        Alp905FYz+MUPF+uTBorshIxPxn5GXogQUBG7RsNU+9iKDeCBgTAeOPPsIdsHR+A
+        iqE5oUzoC6eNOhKT+ggsZELNRm9QR+bdKDO4Z1RA640NTcaNlR2u6h+PPS/STnPy
+        6fvA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-type:content-type:date:date
+        :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+        :x-sasl-enc; s=fm2; t=1688643386; x=1688729786; bh=C6FVmoTeWIWnJ
+        398pRC/XE6TyNj7Ymf62dAsmaGtmb0=; b=HgJL/+GrbgeA+YFm5wY12KsV+XMlf
+        I27AR7t2G64hgj9h3LHJ9JHL/p0fuYvHGoBUFQmnExZEw15FQu3X5vrkOiZITQfT
+        aAR4LFGeGQWIFunHDDZSbhA/B79sOx1cKVUBvih/BhOyCK0kKIW1E+lKx03BWFK+
+        9hHhJrL2sNGDfTWAuQIO8zbQkPeKCZmCNsmUCEz9HHfVM9gOkUMVo8hf+hS0kFxx
+        Kxo7Nt2rTl+DdncvRl3sbXo18vOFay3Y9mwGu8/xBannx8AdWSuUTc6aikJwg8oY
+        UtMXxykZEzyYo1vLbYLvGIemQHhNvC9ILdHpvLo72fsANwPNPbyi9birw==
+X-ME-Sender: <xms:OaemZOVlx0154p7bocZZlUeBHpdW82c0XY_NdXki0MG0Ou92E5XCjg>
+    <xme:OaemZKk8hBBmwpHJ3NcYpX4zrZ9G4zOa33jY7F_gmcq-MWcaY1DeaKYxVIJVkEIns
+    rNPrzavq1Io0MH0aFk>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrudelgdegvdcutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
+    fjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdetrhhn
+    ugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtth
+    gvrhhnpeffheeugeetiefhgeethfejgfdtuefggeejleehjeeutefhfeeggefhkedtkeet
+    ffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrh
+    hnugesrghrnhgusgdruggv
+X-ME-Proxy: <xmx:OaemZCYC-kcNVGyv9tbkCRAZgzbXAnZNjIdYX4lmWN2MRrQEyK-GoQ>
+    <xmx:OaemZFV6THc4JH7aD5rBuPCk8TpjQpy6zynjY4ckYHEcPWFLG86o2A>
+    <xmx:OaemZIk4GDpiUC1IRM-thG41fdAQ8w_42nIr51vo8Fq_AXoedROxQg>
+    <xmx:OqemZBf_EX86cWlRl9fbPwVaJYQVWvnoMpDF7tXummLoJFIh-O-IMg>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+        id 8E56CB60089; Thu,  6 Jul 2023 07:36:25 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-531-gfdfa13a06d-fm-20230703.001-gfdfa13a0
+Mime-Version: 1.0
+Message-Id: <97ae7c3d-3eeb-4bd5-bac3-64a1605d48e2@app.fastmail.com>
+In-Reply-To: <20230706104852.27451-3-tzimmermann@suse.de>
+References: <20230706104852.27451-1-tzimmermann@suse.de>
+ <20230706104852.27451-3-tzimmermann@suse.de>
+Date:   Thu, 06 Jul 2023 13:36:05 +0200
+From:   "Arnd Bergmann" <arnd@arndb.de>
+To:     "Thomas Zimmermann" <tzimmermann@suse.de>,
+        "Javier Martinez Canillas" <javierm@redhat.com>,
+        "Sui Jingfeng" <suijingfeng@loongson.cn>
 Cc:     linux-efi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-kernel@vger.kernel.org, loongarch@lists.linux.dev,
         linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
         dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Teddy Wang <teddy.wang@siliconmotion.com>
-Subject: [PATCH v2 4/4] staging/sm750fb: Do not include <linux/screen_info.h>
-Date:   Thu,  6 Jul 2023 12:42:17 +0200
-Message-ID: <20230706104852.27451-5-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230706104852.27451-1-tzimmermann@suse.de>
-References: <20230706104852.27451-1-tzimmermann@suse.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        "Sudip Mukherjee" <sudipm.mukherjee@gmail.com>,
+        "Teddy Wang" <teddy.wang@siliconmotion.com>,
+        "Helge Deller" <deller@gmx.de>
+Subject: Re: [PATCH v2 2/4] fbdev/sm712fb: Do not include <linux/screen_info.h>
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The sm750fb driver does not need anything from <linux/screen_info.h>.
-Remove the include statements.
+On Thu, Jul 6, 2023, at 12:42, Thomas Zimmermann wrote:
+> Sm712fb's dependency on <linux/screen_info.h> is artificial in that
+> it only uses struct screen_info for its internals. Replace the use of
+> struct screen_info with a custom data structure and remove the include
+> of <linux/screen_info.h>.
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+> Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+> Cc: Teddy Wang <teddy.wang@siliconmotion.com>
+> Cc: Helge Deller <deller@gmx.de>
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: Teddy Wang <teddy.wang@siliconmotion.com>
----
- drivers/staging/sm750fb/sm750.c        | 1 -
- drivers/staging/sm750fb/sm750_accel.c  | 1 -
- drivers/staging/sm750fb/sm750_cursor.c | 1 -
- drivers/staging/sm750fb/sm750_hw.c     | 1 -
- 4 files changed, 4 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 55e302a27847..c260f73cf570 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -14,7 +14,6 @@
- #include <linux/mm_types.h>
- #include <linux/vmalloc.h>
- #include <linux/pagemap.h>
--#include <linux/screen_info.h>
- #include <linux/console.h>
- 
- #include "sm750.h"
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 24b9077a634a..44b9e3fe3a41 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -14,7 +14,6 @@
- #include <linux/pagemap.h>
- #include <linux/console.h>
- #include <linux/platform_device.h>
--#include <linux/screen_info.h>
- 
- #include "sm750.h"
- #include "sm750_accel.h"
-diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-index 43e6f52c2551..eea4d1bd36ce 100644
---- a/drivers/staging/sm750fb/sm750_cursor.c
-+++ b/drivers/staging/sm750fb/sm750_cursor.c
-@@ -14,7 +14,6 @@
- #include <linux/pagemap.h>
- #include <linux/console.h>
- #include <linux/platform_device.h>
--#include <linux/screen_info.h>
- 
- #include "sm750.h"
- #include "sm750_cursor.h"
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 55cb00e8b0d1..71247eaf26ee 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -17,7 +17,6 @@
- #include <asm/mtrr.h>
- #endif
- #include <linux/platform_device.h>
--#include <linux/screen_info.h>
- #include <linux/sizes.h>
- 
- #include "sm750.h"
--- 
-2.41.0
-
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>

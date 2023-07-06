@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47693C04FE0
-	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Jul 2023 12:50:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77A03C04A94
+	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Jul 2023 12:50:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232509AbjGFMuH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 6 Jul 2023 08:50:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53224 "EHLO
+        id S232505AbjGFMuG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 6 Jul 2023 08:50:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53236 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232507AbjGFMt5 (ORCPT
+        with ESMTP id S232509AbjGFMt5 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Jul 2023 08:49:57 -0400
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D6D371FD4;
-        Thu,  6 Jul 2023 05:49:36 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 187761FE9;
+        Thu,  6 Jul 2023 05:49:37 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 1616A221B6;
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 91E422293B;
         Thu,  6 Jul 2023 12:49:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
         t=1688647749; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=jR41kl1ejSgzYNGauvgCBXnjtoUFEQnccov2q9gbEhw=;
-        b=awCWd2i9MryGwYJQL8K0I2grWFChetzmds1SR9I+t5xuLgUXiiA5NDVP+2gAmlnw5mcEa4
-        2vEpoAWAALtgP5BArz6BxP18OTprlc24Xxb7fdoArWdzh1QeGibtzEry4o4MDwxbaHO8Zg
-        ykjodtHo65i83owPdjBI8V+1XAndr+4=
+        bh=rQb6IlG62XQo7ECKPZHeGs/kIp3cTj1XvxOVONelJVM=;
+        b=XXyQO1r/oD0Gh0XUdYz+U+gz85uLqLFXL03MwkFp50tOFXs8i5coudsdv4Nt0Mc4Eo17t5
+        pB8iRay+nnHv7XZzkzK6J5kZ7vW8PudikbFwrQAVSX8R9ufyhxMWslzrHLxSh1p1RMJ9L+
+        jPswOesbieib183KG3Ral1DNsaEyO8s=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
         s=susede2_ed25519; t=1688647749;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=jR41kl1ejSgzYNGauvgCBXnjtoUFEQnccov2q9gbEhw=;
-        b=invPtFDy8DFVDK2zBZMM9uY0TaajJCxpcOTImR6yzMDflUhkoapAa3xdNX1Ai449SVQDHr
-        ucx7b2xCt4fFxGCg==
+        bh=rQb6IlG62XQo7ECKPZHeGs/kIp3cTj1XvxOVONelJVM=;
+        b=9tTAQk3bIAhHElprALzXZ726ggQd5qsc1YPG1O3Np/weCPKmMdrJME9h/Nm7od6TwqakF2
+        hZdw9oY8kv4q2iBA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C333B1390F;
-        Thu,  6 Jul 2023 12:49:08 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 578A11390F;
+        Thu,  6 Jul 2023 12:49:09 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id GKrDLkS4pmS7QgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 06 Jul 2023 12:49:08 +0000
+        id GCJSFEW4pmS7QgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 06 Jul 2023 12:49:09 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     javierm@redhat.com, maarten.lankhorst@linux.intel.com,
         mripard@kernel.org
@@ -56,14 +56,10 @@ Cc:     dri-devel@lists.freedesktop.org,
         linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-fbdev@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Inki Dae <inki.dae@samsung.com>,
-        Seung-Woo Kim <sw0312.kim@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Alim Akhtar <alim.akhtar@samsung.com>
-Subject: [PATCH v2 06/11] drm/exynos: Set fbdev FBINFO_VIRTFB flag
-Date:   Thu,  6 Jul 2023 14:46:44 +0200
-Message-ID: <20230706124905.15134-7-tzimmermann@suse.de>
+        Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Subject: [PATCH v2 08/11] drm/omapdrm: Use GEM mmap for fbdev emulation
+Date:   Thu,  6 Jul 2023 14:46:46 +0200
+Message-ID: <20230706124905.15134-9-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230706124905.15134-1-tzimmermann@suse.de>
 References: <20230706124905.15134-1-tzimmermann@suse.de>
@@ -73,37 +69,77 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Mark the framebuffer with FBINFO_VIRTFB. The framebuffer range is
-in DMA-able memory and should be accessed with the CPU's regular
-memory ops.
+The fbdev emulation currently uses fbdev's default mmap code, which
+has been written for I/O memory. Provide an mmap that uses GEM's mmap
+infrastructure.
 
-v2:
-	* drop FBINFO_FLAG_DEFAULT
+Utilize fine-grained fbdev macros to initialize struct fb_ops. The
+macros set the read/write and the draw callbacks for DMA memory. Set
+the fb_mmap callback to omapdrm's new mmap helper. Also select the
+correct Kconfig token for fbdev's DMA helpers. Note that the DMA
+helpers are the same as for system memory.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 Acked-by: Maxime Ripard <mripard@kernel.org>
-Cc: Inki Dae <inki.dae@samsung.com>
-Cc: Seung-Woo Kim <sw0312.kim@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc: Alim Akhtar <alim.akhtar@samsung.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
 ---
- drivers/gpu/drm/exynos/exynos_drm_fbdev.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/gpu/drm/omapdrm/Kconfig      |  2 +-
+ drivers/gpu/drm/omapdrm/omap_fbdev.c | 15 +++++++++++++--
+ 2 files changed, 14 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/gpu/drm/exynos/exynos_drm_fbdev.c b/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
-index 7ca3424b59ce..828318de8529 100644
---- a/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
-+++ b/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
-@@ -79,6 +79,7 @@ static int exynos_drm_fbdev_update(struct drm_fb_helper *helper,
- 	offset = fbi->var.xoffset * fb->format->cpp[0];
- 	offset += fbi->var.yoffset * fb->pitches[0];
+diff --git a/drivers/gpu/drm/omapdrm/Kconfig b/drivers/gpu/drm/omapdrm/Kconfig
+index b4ac76c9f31b..d3c4877e465c 100644
+--- a/drivers/gpu/drm/omapdrm/Kconfig
++++ b/drivers/gpu/drm/omapdrm/Kconfig
+@@ -4,7 +4,7 @@ config DRM_OMAP
+ 	depends on DRM && OF
+ 	depends on ARCH_OMAP2PLUS
+ 	select DRM_KMS_HELPER
+-	select FB_SYS_HELPERS if DRM_FBDEV_EMULATION
++	select FB_DMA_HELPERS if DRM_FBDEV_EMULATION
+ 	select VIDEOMODE_HELPERS
+ 	select HDMI
+ 	default n
+diff --git a/drivers/gpu/drm/omapdrm/omap_fbdev.c b/drivers/gpu/drm/omapdrm/omap_fbdev.c
+index b7ccce0704a3..b1a2d00ef52d 100644
+--- a/drivers/gpu/drm/omapdrm/omap_fbdev.c
++++ b/drivers/gpu/drm/omapdrm/omap_fbdev.c
+@@ -76,6 +76,15 @@ static int omap_fbdev_pan_display(struct fb_var_screeninfo *var,
+ 	return drm_fb_helper_pan_display(var, fbi);
+ }
  
-+	fbi->flags |= FBINFO_VIRTFB;
- 	fbi->screen_buffer = exynos_gem->kvaddr + offset;
- 	fbi->screen_size = size;
- 	fbi->fix.smem_len = size;
++static int omap_fbdev_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
++{
++	struct drm_fb_helper *helper = info->par;
++	struct drm_framebuffer *fb = helper->fb;
++	struct drm_gem_object *bo = drm_gem_fb_get_obj(fb, 0);
++
++	return drm_gem_mmap_obj(bo, omap_gem_mmap_size(bo), vma);
++}
++
+ static void omap_fbdev_fb_destroy(struct fb_info *info)
+ {
+ 	struct drm_fb_helper *helper = info->par;
+@@ -97,14 +106,16 @@ static void omap_fbdev_fb_destroy(struct fb_info *info)
+ 
+ static const struct fb_ops omap_fb_ops = {
+ 	.owner = THIS_MODULE,
+-	FB_DEFAULT_SYS_OPS,
++	__FB_DEFAULT_DMA_OPS_RDWR,
+ 	.fb_check_var	= drm_fb_helper_check_var,
+ 	.fb_set_par	= drm_fb_helper_set_par,
+ 	.fb_setcmap	= drm_fb_helper_setcmap,
+ 	.fb_blank	= drm_fb_helper_blank,
+ 	.fb_pan_display = omap_fbdev_pan_display,
++	__FB_DEFAULT_DMA_OPS_DRAW,
+ 	.fb_ioctl	= drm_fb_helper_ioctl,
+-	.fb_destroy = omap_fbdev_fb_destroy,
++	.fb_mmap	= omap_fbdev_fb_mmap,
++	.fb_destroy	= omap_fbdev_fb_destroy,
+ };
+ 
+ static int omap_fbdev_create(struct drm_fb_helper *helper,
 -- 
 2.41.0
 

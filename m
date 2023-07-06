@@ -2,150 +2,91 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD19AC0015E
-	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Jul 2023 14:47:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35114EB64D9
+	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Jul 2023 15:14:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233499AbjGFOri (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 6 Jul 2023 10:47:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36068 "EHLO
+        id S231623AbjGFPOh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 6 Jul 2023 11:14:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56042 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233389AbjGFOrI (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Jul 2023 10:47:08 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC3151BE3;
-        Thu,  6 Jul 2023 07:47:04 -0700 (PDT)
+        with ESMTP id S229641AbjGFPOg (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Jul 2023 11:14:36 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4958F0
+        for <linux-fbdev@vger.kernel.org>; Thu,  6 Jul 2023 08:14:35 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 6D1A9225F6;
-        Thu,  6 Jul 2023 14:47:03 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id A1A051F88F;
+        Thu,  6 Jul 2023 15:14:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1688654823; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=zxFRTe1s/AyQFaamG/WE4NHjFP87zNjruuubNEspJbM=;
-        b=XTN51SjkX3EOTNpTW9uUDNqX/qxrnqGJUL4KyoXgOlvcfLC9WkKSX5LxzuSvYwiFpQBtFK
-        ZSLHjpZE4hozqgeUyRiX4y0TCI1tc1XvURzS8YaglDAtNyuy1aSi3CNAxyxQ4I4zs0UW5G
-        KBdnsww8btNjU6vs9hkbb+jpVB0k0Sg=
+        t=1688656474; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=As4kMc/EQnv4x1h6UjH+L2M3C7Pzlg8Iav1SSMTHjVw=;
+        b=QIMhXzhClSiikuk/LZH4oABB0QaA5Fds3DfZbyEIA5yJr73GoaCRNr+TxlQNkZ/GSIm0I2
+        zHYVURdn5YFhIEQEqUrqu3l+tWlC1tXr6Mck03TTREQIzUS5LyXw2fiyNnkTN2cIgJgca7
+        RZlho96Jc8yOlb5aML6xe5ZtotebjMA=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1688654823;
+        s=susede2_ed25519; t=1688656474;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=zxFRTe1s/AyQFaamG/WE4NHjFP87zNjruuubNEspJbM=;
-        b=Q/s6FD0+pYeji9OpHYj4Z6B1zYlht34F9jmdI3Je6e8Zx1gffJ4QdP5oQc7NcXZB2iFG9s
-        NMcvlScMZeyPU8Cg==
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=As4kMc/EQnv4x1h6UjH+L2M3C7Pzlg8Iav1SSMTHjVw=;
+        b=9VKBDQvAKc+L33Uc/mrU0UwlzC2geGx6JUeo516Cdjz9tldhMLvLyFYLdwbDTZT9QNUEvg
+        yJeLLaXPfQ1iLTCw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 39287138FC;
-        Thu,  6 Jul 2023 14:47:03 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8087B138FC;
+        Thu,  6 Jul 2023 15:14:34 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id icnaDOfTpmTefgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 06 Jul 2023 14:47:03 +0000
-Message-ID: <515dfb8b-e79e-f0fd-3d3f-5ac110527220@suse.de>
-Date:   Thu, 6 Jul 2023 16:47:02 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.12.0
-Subject: Re: [PATCH v2 04/11] drm/tegra: Set fbdev FBINFO_VIRTFB flag
-Content-Language: en-US
-To:     Thierry Reding <thierry.reding@gmail.com>
-Cc:     javierm@redhat.com, maarten.lankhorst@linux.intel.com,
-        mripard@kernel.org, dri-devel@lists.freedesktop.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-fbdev@vger.kernel.org,
-        Mikko Perttunen <mperttunen@nvidia.com>
-References: <20230706124905.15134-1-tzimmermann@suse.de>
- <20230706124905.15134-5-tzimmermann@suse.de> <ZKbQM2SsPcdiWXnB@orome>
+        id pRlcHlrapmRvDgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 06 Jul 2023 15:14:34 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <ZKbQM2SsPcdiWXnB@orome>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------OofbKFw7gQ99Ec3r33Cc4so4"
+To:     javierm@redhat.com, deller@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 00/10] fbdev: Generate deferred-I/O helpers
+Date:   Thu,  6 Jul 2023 17:08:43 +0200
+Message-ID: <20230706151432.20674-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.41.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------OofbKFw7gQ99Ec3r33Cc4so4
-Content-Type: multipart/mixed; boundary="------------KzMOJKPziQXwXDjbMNqQFRgH";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: javierm@redhat.com, maarten.lankhorst@linux.intel.com,
- mripard@kernel.org, dri-devel@lists.freedesktop.org,
- linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org,
- linux-tegra@vger.kernel.org, linux-fbdev@vger.kernel.org,
- Mikko Perttunen <mperttunen@nvidia.com>
-Message-ID: <515dfb8b-e79e-f0fd-3d3f-5ac110527220@suse.de>
-Subject: Re: [PATCH v2 04/11] drm/tegra: Set fbdev FBINFO_VIRTFB flag
-References: <20230706124905.15134-1-tzimmermann@suse.de>
- <20230706124905.15134-5-tzimmermann@suse.de> <ZKbQM2SsPcdiWXnB@orome>
-In-Reply-To: <ZKbQM2SsPcdiWXnB@orome>
+Generate the I/O callbacks for drivers with deferred I/O. As in
+the old, opencoded functions, the generated functions operate on
+system memory and trigger damage handling if necessary. Also bring
+the drivers' Kconfig options up to date.
 
---------------KzMOJKPziQXwXDjbMNqQFRgH
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Generating and initializing via helpers macros will later allow for
+a fine-grained setup, depending on Kconfig options. For example, it
+will be possible to leave out file I/O if FB_DEVICE has not been set.
 
-SGkNCg0KQW0gMDYuMDcuMjMgdW0gMTY6MzEgc2NocmllYiBUaGllcnJ5IFJlZGluZzoNCj4g
-T24gVGh1LCBKdWwgMDYsIDIwMjMgYXQgMDI6NDY6NDJQTSArMDIwMCwgVGhvbWFzIFppbW1l
-cm1hbm4gd3JvdGU6DQo+PiBNYXJrIHRoZSBmcmFtZWJ1ZmZlciB3aXRoIEZCSU5GT19WSVJU
-RkIuIFRoZSBmcmFtZWJ1ZmZlciByYW5nZSBpcw0KPj4gaW4gRE1BLWFibGUgbWVtb3J5IGFu
-ZCBzaG91bGQgYmUgYWNjZXNzZWQgd2l0aCB0aGUgQ1BVJ3MgcmVndWxhcg0KPj4gbWVtb3J5
-IG9wcy4NCj4+DQo+PiB2MjoNCj4+IAkqIGRyb3AgRkJJTkZPX0RFRkFVTFQNCj4+DQo+PiBT
-aWduZWQtb2ZmLWJ5OiBUaG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1hbm5Ac3VzZS5kZT4N
-Cj4+IFJldmlld2VkLWJ5OiBKYXZpZXIgTWFydGluZXogQ2FuaWxsYXMgPGphdmllcm1AcmVk
-aGF0LmNvbT4NCj4+IEFja2VkLWJ5OiBNYXhpbWUgUmlwYXJkIDxtcmlwYXJkQGtlcm5lbC5v
-cmc+DQo+PiBDYzogVGhpZXJyeSBSZWRpbmcgPHRoaWVycnkucmVkaW5nQGdtYWlsLmNvbT4N
-Cj4+IENjOiBNaWtrbyBQZXJ0dHVuZW4gPG1wZXJ0dHVuZW5AbnZpZGlhLmNvbT4NCj4+IC0t
-LQ0KPj4gICBkcml2ZXJzL2dwdS9kcm0vdGVncmEvZmJkZXYuYyB8IDEgKw0KPj4gICAxIGZp
-bGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKykNCj4+DQo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVy
-cy9ncHUvZHJtL3RlZ3JhL2ZiZGV2LmMgYi9kcml2ZXJzL2dwdS9kcm0vdGVncmEvZmJkZXYu
-Yw0KPj4gaW5kZXggODI1NzdiN2M4OGRhLi5kODQ2MGM1ZGM5MWUgMTAwNjQ0DQo+PiAtLS0g
-YS9kcml2ZXJzL2dwdS9kcm0vdGVncmEvZmJkZXYuYw0KPj4gKysrIGIvZHJpdmVycy9ncHUv
-ZHJtL3RlZ3JhL2ZiZGV2LmMNCj4+IEBAIC0xMzIsNiArMTMyLDcgQEAgc3RhdGljIGludCB0
-ZWdyYV9mYmRldl9wcm9iZShzdHJ1Y3QgZHJtX2ZiX2hlbHBlciAqaGVscGVyLA0KPj4gICAJ
-CX0NCj4+ICAgCX0NCj4+ICAgDQo+PiArCWluZm8tPmZsYWdzIHw9IEZCSU5GT19WSVJURkI7
-DQo+PiAgIAlpbmZvLT5zY3JlZW5fYmFzZSA9ICh2b2lkIF9faW9tZW0gKiliby0+dmFkZHIg
-KyBvZmZzZXQ7DQo+IA0KPiBBcyBwYXJ0IG9mIHRoaXMsIGRvIHdlIGFsc28gbmVlZCB0byBz
-ZXQgaW5mby0+c2NyZWVuX2J1ZmZlciBpbnN0ZWFkIG9mDQo+IGluZm8tPnNjcmVlbl9iYXNl
-PyBUaGUgZHJtX2ZiZGV2X2RtYV9oZWxwZXIgZnVuY3Rpb25zIGRvIHRoYXQuDQoNCkluZGVl
-ZCwgZ29vZCBwb2ludC4gSSdsbCB1cGRhdGUgdGhpcyBpbiB0aGUgbmV4dCBpdGVyYXRpb24u
-DQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4gDQo+IFRoaWVycnkNCj4gDQo+PiAgIAlp
-bmZvLT5zY3JlZW5fc2l6ZSA9IHNpemU7DQo+PiAgIAlpbmZvLT5maXguc21lbV9zdGFydCA9
-ICh1bnNpZ25lZCBsb25nKShiby0+aW92YSArIG9mZnNldCk7DQo+PiAtLSANCj4+IDIuNDEu
-MA0KPj4NCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVs
-b3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpGcmFua2Vuc3Ry
-YXNzZSAxNDYsIDkwNDYxIE51ZXJuYmVyZywgR2VybWFueQ0KR0Y6IEl2byBUb3RldiwgQW5k
-cmV3IE15ZXJzLCBBbmRyZXcgTWNEb25hbGQsIEJvdWRpZW4gTW9lcm1hbg0KSFJCIDM2ODA5
-IChBRyBOdWVybmJlcmcpDQo=
+Thomas Zimmermann (10):
+  fbdev/broadsheetfb: Select FB_SYS_HELPERS_DEFERRED
+  fbdev/broadsheetfb: Generate deferred I/O ops
+  fbdev/hecubafb: Select FB_SYS_HELPERS_DEFERRED
+  fbdev/hecubafb: Generate deferred I/O ops
+  fbdev/metronomefb: Select FB_SYS_HELPERS_DEFERRED
+  fbdev/metronomefb: Generate deferred I/O ops
+  fbdev/ssd1307fb: Select FB_SYS_HELPERS_DEFERRED
+  fbdev/ssd1307fb: Generate deferred I/O ops
+  fbdev/xen-fbfront: Select FB_SYS_HELPERS_DEFERRED
+  fbdev/xen-fbfront: Generate deferred I/O ops
 
---------------KzMOJKPziQXwXDjbMNqQFRgH--
+ drivers/video/fbdev/Kconfig        | 31 ++----------
+ drivers/video/fbdev/broadsheetfb.c | 78 +++---------------------------
+ drivers/video/fbdev/hecubafb.c     | 78 +++---------------------------
+ drivers/video/fbdev/metronomefb.c  | 74 +++-------------------------
+ drivers/video/fbdev/ssd1307fb.c    | 69 +++++---------------------
+ drivers/video/fbdev/xen-fbfront.c  | 61 ++++++++---------------
+ 6 files changed, 60 insertions(+), 331 deletions(-)
 
---------------OofbKFw7gQ99Ec3r33Cc4so4
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+-- 
+2.41.0
 
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmSm0+YFAwAAAAAACgkQlh/E3EQov+DT
-+A/8CuNQo/vSIOVB+6XSEamWRL9Pw1ZfmA59h5L1FkNnso02jNeL2y9CJP9+S0WKJqxism5G+K5y
-YtOUxuGgG0nk2mJ1w6I8HPm68NOtUS4Nk91JxVJlbenzpBWN8nRCpb8vFOvLWrW4Wk1ZvFXVjllR
-Yphm1Yeo2/eJDbOn45lH408brxDxXwLu6gPF+EUVjDRwoGH6lp/LRH7MGMorb5NuuExCO69Wx+t7
-tj+Hf5fR7z6V7Lw1p/1zk3KO82+CbZuk9NeyRCwuRFHQP7IhumEr5s/i1KYQJ/4JynMMdOT7dJ8M
-2jkEImEUDgvFH7QE2Gt3Lhgi4bjGwD3/t33YUtqneLsY+AGZGJ+0iD6qNUrWAHKm5ueuyamynR3A
-GHm+fCoBZjEXMAihQ1bpKZ/0k8Dl9LfRb2mp1+u5u7SVO0opdXDLGKWl/QMlO2o2gNeuqi1d2n8Z
-mqI6b3RmiTpTaO0HXKNBk2ET+gDs8y8/2b5JJhZ0CCnaPnoI/SE0kTkKs6xcXKvfitQo1yhYDvEh
-xow1p70hj2kFj6b3lrvbere+j0NX9Xl445/qalfFm/d23JSI0GzgweT0s4N8TpWLknXkfdO38J6U
-16gJDi3tbUo2c+15M8gst7ibxZNhzh9stMXPinU+7eaJc5mtJxEQQG3KQ8QN3qo3wk2c8iaIKxT8
-fAM=
-=Q66m
------END PGP SIGNATURE-----
-
---------------OofbKFw7gQ99Ec3r33Cc4so4--

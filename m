@@ -2,80 +2,105 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FC6BEB64D9
-	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Jul 2023 17:43:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D568EB64DD
+	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Jul 2023 19:14:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232163AbjGFRnT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 6 Jul 2023 13:43:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42660 "EHLO
+        id S229735AbjGFTOB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 6 Jul 2023 15:14:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42164 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232134AbjGFRnT (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Jul 2023 13:43:19 -0400
-Received: from mailrelay6-1.pub.mailoutpod2-cph3.one.com (mailrelay6-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:405::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6884910EA
-        for <linux-fbdev@vger.kernel.org>; Thu,  6 Jul 2023 10:43:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=rsa1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=bp7torwHPDd5eLPJe0WGi7efdWJvnoEKvs296k74Pf0=;
-        b=aXlfRn9oO/QjRv5h6ryHLEbKiV2TMQyffeHBSueAJ3fOaseobTu/Yj0qttWfaNPaEVHIHc97AKiE0
-         ZgUPPZYnOmJYhvL4cpu+0duR9V4dkBIuVV7DSEN6IPkKr43Jc1V0VGvyrww3zzgxgztg4SSmbpyFp/
-         FilYpIFVVKTv5XR36vyeFv1lhAN5JOmsQtkzh9zRe78uK3yOHALj3gaTOzHl84YHf1toy5Q90EGJOf
-         esNH3n1+/byr3aI0nldBXYnNZTX88SlOkxjRvZIokktgTxLpSrYGSD+v3eud6qaPYRh+4O/T6AgWNZ
-         +uvWDqRctl69cF0T9JcxK28CbN5aFyA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=ed1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=bp7torwHPDd5eLPJe0WGi7efdWJvnoEKvs296k74Pf0=;
-        b=KZJrKC62SkbFOADYDfY2lTdet1592aTNhxb5/yVQSoMLhFd9jWNHmPN6GyCzA4P16zXfNSBF7YZny
-         mqKXCMkAA==
-X-HalOne-ID: 950f486c-1c24-11ee-b2ac-6f01c1d0a443
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-        by mailrelay6 (Halon) with ESMTPSA
-        id 950f486c-1c24-11ee-b2ac-6f01c1d0a443;
-        Thu, 06 Jul 2023 17:43:16 +0000 (UTC)
-Date:   Thu, 6 Jul 2023 19:43:15 +0200
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     javierm@redhat.com, deller@gmx.de, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH 00/10] fbdev: Generate deferred-I/O helpers
-Message-ID: <20230706174315.GB226645@ravnborg.org>
-References: <20230706151432.20674-1-tzimmermann@suse.de>
+        with ESMTP id S229672AbjGFTOB (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Jul 2023 15:14:01 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9385B1BDB
+        for <linux-fbdev@vger.kernel.org>; Thu,  6 Jul 2023 12:13:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
+ s=s31663417; t=1688670832; x=1689275632; i=deller@gmx.de;
+ bh=a8EovxS7F3wo6/WJq5URlyIFDA9CAV8P4Cp0GextQbY=;
+ h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+ b=LF5XiARbG/TyqxTe3XxmgMfjoqN34FOUQWCHCzxrtGALC3S7fPUkMtc5dWALqK//AFWHeeM
+ 3BE12FYk0fgpm7Z8/BchK796I5lTOyIxAApbiPzaABcFvXI+UzAmG2s0zNVd2f+C2ar/GY3BY
+ cujpBjXR9OznVv9OHwSS4o3b4epYV6QN//JOw6mxOX0fzNAmKEZlO3vjZ/myX6Axm7mRi0Hoy
+ eyi9+tOOfodRmtwgoeS3osXxK8sNHKwzKg2AhaGfa6S0+pWI5Ihtl12+FnW9yLF7fGBsVR7o0
+ tG88fXFvvrHP0JyB7/YnkxWQmNIxZecPu9YkrHdQ7AxdhaqOvq4Q==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.152.0]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MwQXN-1pyjBd1g0b-00sKuC; Thu, 06
+ Jul 2023 21:13:52 +0200
+Message-ID: <57cd2e4b-fcfc-587d-4b1b-eefad5416b61@gmx.de>
+Date:   Thu, 6 Jul 2023 21:13:51 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230706151432.20674-1-tzimmermann@suse.de>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.12.0
+Subject: Re: [PATCH 01/10] fbdev/broadsheetfb: Select FB_SYS_HELPERS_DEFERRED
+Content-Language: en-US
+To:     Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <20230706151432.20674-1-tzimmermann@suse.de>
+ <20230706151432.20674-2-tzimmermann@suse.de>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20230706151432.20674-2-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:zeolCenktJTicAkt66ZEwDpjKCbugaTzUcsNNLv2dAfD0NZrBGD
+ udrLg9fkmpmuBuDeinbFVz0vXycm68see7LwQxGGuqx1nSUmkGnNHRdNuahhvJCVX3YFevM
+ UCP/TfYi48Ots84DY7SoD2iO+WGQ7xJ6sh+e52i9uzCkepGj0PLaRPb8yMM+mclyxVVGFJ8
+ e3/G/WIBE1t3FI38SU4sw==
+UI-OutboundReport: notjunk:1;M01:P0:7e0Fi/oszT0=;TzvvoMW3eP6qTSuH1GXFtAiT/iT
+ EUiUBwcoHi4Qmhmk4UtgiIcLQKMMNIxrekc13x5U64Xo5EvVPlpPp7uisorg3CCNufEQeyd6f
+ usMeZfNAkzP/EWf7KF2gqwo6jFrK686Riz2XaQPpXlBi9XQ0gQSYedaXxaSVIpi67mbJE6Rlo
+ TiokWIE3gRjSokVJeG5giq4y0ZpKg/peziaVzdtVsuTHwDV+ut+Hdqga+v7v4QfuYv22m26Id
+ Z9inqUpXSCKGY7dTL26WWx2mtfTDUQftU/4fzrxTGoTmkloKANR0RzjhWjcFPp4oAaPURlRvE
+ adeNgp5MYQdEcUJSn3Q1EBGw35b1CjsPGH3s0STKXjbnm/zFUaOS2rQQqEYGxefMFazdThd9B
+ 0DJqN9NcPB0+0zBnuYv4Ct8q9PRRPEUknRldzS9CRphNdKZG9ECiCjY6NsU7xwDPnDEWNwfio
+ /cXX0EzMINTQQq1LEKHGJf0NSPlz6/Uf1DAZ/I6PNdNW5S+62103Tk4TChVk5xoBrJMQTRLC9
+ RkLW81gMVABpfAyUDgGblMyWmgUpM5y4lsimD0a0QslCDU/MyBbk1+lssJMPep4uFNvbWcUMB
+ xHF/NpmkSS4PtjkCzea8Y416zSrB4b36HdLwcyVUfWhz1CoUHzcNv/nRstvhv4qPbY2mmavKr
+ eZWpR80jofhk3RrRpUzS++zcC3upkEPn8AVRsE8PwQS7Pn4gCGuSGeJ3oa+CR2+ikGjSO+WXo
+ 0VKufnvYtKVISN4giLH08j6CDynz77OwtzEE8qaZUCrGxNIBGXbppd2lFpuzUglab/cx7NTp0
+ UJ9QmzRh+fWGgWIwWuTbjZC6Qnt4mx9JsNBwhWn4Bq1RYvmcmo7Qkvz5jkSIkQisFrPfMpfe8
+ ASg/hWOQj6/mzN4S/MsN9JmrOXv4jYofIDoYDwT7dAb6QEBP1kko2hmrNogeU0m/C3Sg785rb
+ 1c/0oA==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+On 7/6/23 17:08, Thomas Zimmermann wrote:
+> The Kconfig token FB_SYS_HELPERS_DEFERRED selects everything that
+> is required for deferred I/O on system-memory framebuffers. Select
+> it from FB_BROADSHEET in favor of the existing identical selection.
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-On Thu, Jul 06, 2023 at 05:08:43PM +0200, Thomas Zimmermann wrote:
-> Generate the I/O callbacks for drivers with deferred I/O. As in
-> the old, opencoded functions, the generated functions operate on
-> system memory and trigger damage handling if necessary. Also bring
-> the drivers' Kconfig options up to date.
-> 
-> Generating and initializing via helpers macros will later allow for
-> a fine-grained setup, depending on Kconfig options. For example, it
-> will be possible to leave out file I/O if FB_DEVICE has not been set.
-> 
-> Thomas Zimmermann (10):
->   fbdev/broadsheetfb: Select FB_SYS_HELPERS_DEFERRED
->   fbdev/broadsheetfb: Generate deferred I/O ops
->   fbdev/hecubafb: Select FB_SYS_HELPERS_DEFERRED
->   fbdev/hecubafb: Generate deferred I/O ops
->   fbdev/metronomefb: Select FB_SYS_HELPERS_DEFERRED
->   fbdev/metronomefb: Generate deferred I/O ops
->   fbdev/ssd1307fb: Select FB_SYS_HELPERS_DEFERRED
->   fbdev/ssd1307fb: Generate deferred I/O ops
->   fbdev/xen-fbfront: Select FB_SYS_HELPERS_DEFERRED
->   fbdev/xen-fbfront: Generate deferred I/O ops
+I'm actually not a fan of deferred-IO for older drivers, but
+in this case where the drivers operate on system memory anyway,
+this is the right approach.
 
-Browsed the full series - nice reduction in complexity all over.
-Everything looked good so:
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+The series looks good:
+
+Acked-by: Helge Deller <deller@gmx.de>
+
+Helge
+
+> ---
+>   drivers/video/fbdev/Kconfig | 6 +-----
+>   1 file changed, 1 insertion(+), 5 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+> index f14229757311..fd862faafe66 100644
+> --- a/drivers/video/fbdev/Kconfig
+> +++ b/drivers/video/fbdev/Kconfig
+> @@ -2179,11 +2179,7 @@ config FB_MX3
+>   config FB_BROADSHEET
+>   	tristate "E-Ink Broadsheet/Epson S1D13521 controller support"
+>   	depends on FB && (ARCH_PXA || COMPILE_TEST)
+> -	select FB_SYS_FILLRECT
+> -	select FB_SYS_COPYAREA
+> -	select FB_SYS_IMAGEBLIT
+> -	select FB_SYS_FOPS
+> -	select FB_DEFERRED_IO
+> +	select FB_SYS_HELPERS_DEFERRED
+>   	help
+>   	  This driver implements support for the E-Ink Broadsheet
+>   	  controller. The release name for this device was Epson S1D13521
+

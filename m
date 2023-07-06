@@ -2,47 +2,51 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE0D0C0015E
-	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Jul 2023 10:49:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 068FAEB64D9
+	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Jul 2023 10:49:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231835AbjGFKtA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 6 Jul 2023 06:49:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41200 "EHLO
+        id S231967AbjGFKtB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 6 Jul 2023 06:49:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41226 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231921AbjGFKs6 (ORCPT
+        with ESMTP id S231929AbjGFKs6 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Jul 2023 06:48:58 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EBC251BE3;
-        Thu,  6 Jul 2023 03:48:55 -0700 (PDT)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CFBD21BE5;
+        Thu,  6 Jul 2023 03:48:56 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id A3C55229D2;
-        Thu,  6 Jul 2023 10:48:54 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 42017204E4;
+        Thu,  6 Jul 2023 10:48:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1688640534; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-        bh=fdccDL/2gY7MVJiBv6HySUTnssAS/IzsINY4DdaHR98=;
-        b=JbOuQ1uwS33lIYSEo7DM5MmTaKIf3b9IswyTcs7QkzZWJc6QWcbxBmJ5KecJmO0ils47LG
-        /d44K6KDFcilxC5HynwVQXejSUpPTmvu1ZJOJobmRQDvlgWhAwCHUobMjZLVC0++mcMnYy
-        Xp0WpMu3EXcCgzErT41Rli4VGyF1PdA=
+        t=1688640535; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=0yN2iGJzPRI5qeaMkkVQG1/mfO37rIiV1XHtVYwXdmk=;
+        b=QsKVTUAZs9bZ1Zqds/Rr99SwmMWTBA7dJIpiJOcfOiVr9PaiDz9/gvJ8Xpd41hGSLu5A1L
+        NkoTEDB5bnVHBN7YgwWnK7m/BqHfO0Dkj5wC/OE+oye5NVAseEzcVlgqlIBt4EKvhmLMqv
+        jUP5NQDW4EoBc8dJA3cL2jjg1Eejf2I=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1688640534;
+        s=susede2_ed25519; t=1688640535;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-        bh=fdccDL/2gY7MVJiBv6HySUTnssAS/IzsINY4DdaHR98=;
-        b=hOkVUUyhDO2O4Nr6IRJY3NuSB8KrmNGHLH8kdbGf/sAYqgtxcLKvyQfKqEWMaIVVjmAEtC
-        A4jOjqtLkXIiE3Cg==
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=0yN2iGJzPRI5qeaMkkVQG1/mfO37rIiV1XHtVYwXdmk=;
+        b=hCzA+TAkXJSjwQ5MsRnAI4urtMf8Rqw5taRcMcRV7jwZ5cNBr0JQtZwtD/nolJEXZiCfec
+        6V42HBVTJrjgp9CA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 69D6B138EE;
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 00BA1138EE;
         Thu,  6 Jul 2023 10:48:54 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id aeThGBacpmSDAQAAMHmgww
+        id KBntOhacpmSDAQAAMHmgww
         (envelope-from <tzimmermann@suse.de>); Thu, 06 Jul 2023 10:48:54 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     javierm@redhat.com, suijingfeng@loongson.cn, arnd@arndb.de
@@ -50,48 +54,68 @@ Cc:     linux-efi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-kernel@vger.kernel.org, loongarch@lists.linux.dev,
         linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
         dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 0/4] Remove unnecessary includes of <linux/screen_info.h>
-Date:   Thu,  6 Jul 2023 12:42:13 +0200
-Message-ID: <20230706104852.27451-1-tzimmermann@suse.de>
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        Teddy Wang <teddy.wang@siliconmotion.com>,
+        Helge Deller <deller@gmx.de>
+Subject: [PATCH v2 2/4] fbdev/sm712fb: Do not include <linux/screen_info.h>
+Date:   Thu,  6 Jul 2023 12:42:15 +0200
+Message-ID: <20230706104852.27451-3-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230706104852.27451-1-tzimmermann@suse.de>
+References: <20230706104852.27451-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-(was: arch,fbdev: Move screen_info into arch/)
+Sm712fb's dependency on <linux/screen_info.h> is artificial in that
+it only uses struct screen_info for its internals. Replace the use of
+struct screen_info with a custom data structure and remove the include
+of <linux/screen_info.h>.
 
-Remove include statements of <linux/screen_info.h> The patches have
-been reviewed as part of the patchset at [1]. Patch 1 has a fix to make
-it build on loongarch. 
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Teddy Wang <teddy.wang@siliconmotion.com>
+Cc: Helge Deller <deller@gmx.de>
+---
+ drivers/video/fbdev/sm712fb.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-v2:
-	* update loongarch
-
-[1] https://patchwork.freedesktop.org/series/120010/#rev1
-
-Thomas Zimmermann (4):
-  efi: Do not include <linux/screen_info.h> from EFI header
-  fbdev/sm712fb: Do not include <linux/screen_info.h>
-  sysfb: Do not include <linux/screen_info.h> from sysfb header
-  staging/sm750fb: Do not include <linux/screen_info.h>
-
- arch/arm/kernel/efi.c                         | 2 ++
- arch/arm64/kernel/efi.c                       | 1 +
- arch/loongarch/kernel/efi.c                   | 1 +
- drivers/firmware/efi/libstub/efi-stub-entry.c | 2 ++
- drivers/firmware/efi/libstub/screen_info.c    | 2 ++
- drivers/staging/sm750fb/sm750.c               | 1 -
- drivers/staging/sm750fb/sm750_accel.c         | 1 -
- drivers/staging/sm750fb/sm750_cursor.c        | 1 -
- drivers/staging/sm750fb/sm750_hw.c            | 1 -
- drivers/video/fbdev/sm712fb.c                 | 9 +++++++--
- include/linux/efi.h                           | 3 ++-
- include/linux/sysfb.h                         | 3 ++-
- 12 files changed, 19 insertions(+), 8 deletions(-)
-
+diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
+index b7ad3c644e13..f929091da4e7 100644
+--- a/drivers/video/fbdev/sm712fb.c
++++ b/drivers/video/fbdev/sm712fb.c
+@@ -27,12 +27,17 @@
+ #include <linux/uaccess.h>
+ #include <linux/module.h>
+ #include <linux/console.h>
+-#include <linux/screen_info.h>
+ 
+ #include <linux/pm.h>
+ 
+ #include "sm712.h"
+ 
++struct smtcfb_screen_info {
++	u16 lfb_width;
++	u16 lfb_height;
++	u16 lfb_depth;
++};
++
+ /*
+  * Private structure
+  */
+@@ -829,7 +834,7 @@ static const struct modeinit vgamode[] = {
+ 	},
+ };
+ 
+-static struct screen_info smtc_scr_info;
++static struct smtcfb_screen_info smtc_scr_info;
+ 
+ static char *mode_option;
+ 
 -- 
 2.41.0
 

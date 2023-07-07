@@ -2,109 +2,116 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4162C0015E
-	for <linux-fbdev@archiver.kernel.org>; Fri,  7 Jul 2023 11:33:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A90B7EB64DA
+	for <linux-fbdev@archiver.kernel.org>; Fri,  7 Jul 2023 12:27:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229800AbjGGLdj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 7 Jul 2023 07:33:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42384 "EHLO
+        id S232010AbjGGM1K (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 7 Jul 2023 08:27:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57260 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229695AbjGGLdi (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 7 Jul 2023 07:33:38 -0400
-Received: from mail-yb1-xb2c.google.com (mail-yb1-xb2c.google.com [IPv6:2607:f8b0:4864:20::b2c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AC34B9E
-        for <linux-fbdev@vger.kernel.org>; Fri,  7 Jul 2023 04:33:37 -0700 (PDT)
-Received: by mail-yb1-xb2c.google.com with SMTP id 3f1490d57ef6-c4cb4919bb9so1950344276.3
-        for <linux-fbdev@vger.kernel.org>; Fri, 07 Jul 2023 04:33:37 -0700 (PDT)
+        with ESMTP id S231972AbjGGM1J (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 7 Jul 2023 08:27:09 -0400
+Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com [IPv6:2a00:1450:4864:20::32d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7645119B2;
+        Fri,  7 Jul 2023 05:27:05 -0700 (PDT)
+Received: by mail-wm1-x32d.google.com with SMTP id 5b1f17b1804b1-3fbea14706eso19851225e9.2;
+        Fri, 07 Jul 2023 05:27:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1688729617; x=1691321617;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
+        d=gmail.com; s=20221208; t=1688732824; x=1691324824;
+        h=user-agent:in-reply-to:content-disposition:mime-version:references
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=RMDmR1AyUqqSLlrR4dAl1mTPWPJqJms7W4GVYjDPIGA=;
-        b=xiiQaYZq3bDHw91HWI3fRO9UDkLX7hyAFNYDmTVBWHFjkvIZjxGpJ9Ucr1pqYcfkCy
-         mZ8qVZI4gHIQAjBqmvS/E0Lu5McUUZMuarBruPYB3Z5vRsXtxYrhontrBigkgUOWMcTh
-         AcX/Q+4iYvqSQQhP4CqYV5lOm749u86MZwzKYr+PWH5I2o2upjOC8iQKoaLsHS4ZmX9i
-         wduX5j7NLHNyM6waY5iUjI7MOSAgIh63hRMWL+VCYtcrsbS3S8OPN70xEFgGPBQFGdi1
-         qUGifkUwapGATJFhAkRv9er8DG50uEop5Wi7WKN1Ync5B+2EBdQZ+fNxjctFco+oSLIX
-         sYaw==
+        bh=nciTqFzq3m83C37bVuS25/vbGoA9jD+37yyxJfMtABw=;
+        b=ZNIHElwkb0VEXSHoF0tGuHcp1TVifo58gxj5pt5t6hd0iqJUb6JD2ugaZdUNiEKeHP
+         Putj1KHdjJFh9rxJLYktjlUirzCROnaJNFs93GCLVYv1+qerITfgn2VkTwnp0ID2gmmC
+         zzvD3TiQ9GqUfgL9o8TAlB9SPIeVEu6ph+aQ3lY61FlRVDDxLQVuJOJlCTIhDcL0tJ6+
+         kaMiCxDFGphUaqkYlWQufcA/+v711O7RHzcIVoxe5mCpFJvQDOwsp2qUh6Ys+1hQUMJU
+         St3j/5j9fPEmDSPdC2tnSRFE999WBcD0c9afnKBT9koaKtVfVrpG1uh7mw5q/HJbhL4d
+         QEwA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688729617; x=1691321617;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20221208; t=1688732824; x=1691324824;
+        h=user-agent:in-reply-to:content-disposition:mime-version:references
+         :message-id:subject:cc:to:from:date:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=RMDmR1AyUqqSLlrR4dAl1mTPWPJqJms7W4GVYjDPIGA=;
-        b=KLj2ZYttOp9yPNcERKGu8u9sSt4DXyHgxSAr+jw/BIb4Mv+ri5JmELhGgI4hcKqdPy
-         iVKAmYiiT2xFYSowO6K7IvGy35g28S5LB0/DvvAmtIxLWxnaIQ+l/WuuuMbWUwaaP+F8
-         R700t5YcuUhtHpCHWJWKTg4ouEYukg917pa1FLDF452yEduA//3rfHAQwlwX8zIXvTAO
-         UzL/EZaaGa+26/2N6Z6MRm3O6JjjKCDZcSiF1jzp/1GAdp2YYbALCY5Rq27+CbuYXiqg
-         URVPGJ5oE0amPIK5vbGAm1HiVtdIXi1E72eJ/6n9K/pDMbQEP818VyOaQ9PcXh7cSQdQ
-         Mofw==
-X-Gm-Message-State: ABy/qLYP/9vht1Rj2zqfsbOqEFnwkCyTHgo/O8f1gUxs00I/DaF3UyNA
-        Q0uHpD/0CicDIiv8l5RWyOi83ECUN26jLUM+8EN9zBBo6XBUfDxp
-X-Google-Smtp-Source: APBJJlEQSj9eXj+7lnzyovN+ytLh/4DHueGCx30NZ+9pdKgvYoJ0FyPX7RpPM7SVjIqI/EaQCzqVM+GieMin6C25zn0=
-X-Received: by 2002:a25:604:0:b0:c5f:d493:c91f with SMTP id
- 4-20020a250604000000b00c5fd493c91fmr3740950ybg.61.1688729616893; Fri, 07 Jul
- 2023 04:33:36 -0700 (PDT)
+        bh=nciTqFzq3m83C37bVuS25/vbGoA9jD+37yyxJfMtABw=;
+        b=DFFDr4R/jzK5qePyNDFrsvAbzA0RJ5kb2D1Swp0T1x7NxFqBqdqNabDpqCURyLFq/Q
+         uCBVuPVY5NaqD13/jzz8pcm8dxCNN14mBatNT8gbOni6sm7UZinYADACMNi8oLKvwJfH
+         up6KOqcWwEsWvS5J7LteOv5yTeg75n28cIrKJMnuOZUvwGOqSpMvtv099hwH29OU3Gt6
+         4WN4uUKqLKhyG0q+oYeul2zB0oMWldC43RpunIEE7QyjSgOqFfLtpivWKN5zB1hxi5Lm
+         9T6YLSgq4hI0hNBOkekBxzg7rFUP+fgiYVKpVh+aAFnRl/aguY34QOcXnPsj/6/Be1mJ
+         5tHQ==
+X-Gm-Message-State: ABy/qLYFcf+vSNSMHtbrj4+cxSATDxi/cjWxbzMqGl8mx68C3xUQHb7+
+        Z1D03d1BjkRBeVLyJ1HECls=
+X-Google-Smtp-Source: APBJJlG4wejAtuzFwuAno7AbNiD6c/xCroAdDwnXIE0jz7PtmMPhUKO4Rc5+t/vC7H7oMYbYpfu0iw==
+X-Received: by 2002:a7b:cc9a:0:b0:3f9:c0f2:e1a4 with SMTP id p26-20020a7bcc9a000000b003f9c0f2e1a4mr3680341wma.34.1688732823578;
+        Fri, 07 Jul 2023 05:27:03 -0700 (PDT)
+Received: from orome (p200300e41f4b7100f22f74fffe1f3a53.dip0.t-ipconnect.de. [2003:e4:1f4b:7100:f22f:74ff:fe1f:3a53])
+        by smtp.gmail.com with ESMTPSA id x4-20020a05600c21c400b003fa74bff02asm2328318wmj.26.2023.07.07.05.27.02
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 07 Jul 2023 05:27:03 -0700 (PDT)
+Date:   Fri, 7 Jul 2023 14:27:01 +0200
+From:   Thierry Reding <thierry.reding@gmail.com>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     javierm@redhat.com, maarten.lankhorst@linux.intel.com,
+        mripard@kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-fbdev@vger.kernel.org,
+        Mikko Perttunen <mperttunen@nvidia.com>
+Subject: Re: [PATCH v3 03/12] drm/tegra: Use fbdev DMA helpers
+Message-ID: <ZKgElQ7E3jN4gZv2@orome>
+References: <20230707083422.18691-1-tzimmermann@suse.de>
+ <20230707083422.18691-4-tzimmermann@suse.de>
 MIME-Version: 1.0
-References: <20230707095415.1449376-1-arnd@kernel.org> <20230707095415.1449376-3-arnd@kernel.org>
-In-Reply-To: <20230707095415.1449376-3-arnd@kernel.org>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Fri, 7 Jul 2023 13:33:24 +0200
-Message-ID: <CACRpkdbiDUomH8HLkk_jyJZYc+mEmRaFL8-JasDmd=ooSB62Qw@mail.gmail.com>
-Subject: Re: [PATCH 3/4] dummycon: limit Arm console size hack to footbridge
-To:     Arnd Bergmann <arnd@kernel.org>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Russell King <linux@armlinux.org.uk>,
-        dri-devel@lists.freedesktop.org, Ard Biesheuvel <ardb@kernel.org>,
-        Helge Deller <deller@gmx.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        "Russell King (Oracle)" <rmk+kernel@armlinux.org.uk>,
-        linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="b6kExiNv+/vFdEiT"
+Content-Disposition: inline
+In-Reply-To: <20230707083422.18691-4-tzimmermann@suse.de>
+User-Agent: Mutt/2.2.10 (2023-03-25)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jul 7, 2023 at 11:56=E2=80=AFAM Arnd Bergmann <arnd@kernel.org> wro=
-te:
 
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> The dummycon default console size used to be determined by architecture,
-> but now this is a Kconfig setting on everything except ARM. Tracing this
-> back in the historic git trees, this was used to match the size of VGA
-> console or VGA framebuffer on early machines, but nowadays that code is
-> no longer used, except probably on the old footbridge/netwinder since
-> that is the only one that supports vgacon.
->
-> On machines with a framebuffer, booting with DT so far results in always
-> using the hardcoded 80x30 size in dummycon, while on ATAGS the setting
-> can come from a bootloader specific override. Both seem to be worse
-> choices than the Kconfig setting, since the actual text size for fbcon
-> also depends on the selected font.
->
-> Make this work the same way as everywhere else and use the normal
-> Kconfig setting, except for the footbridge with vgacon, which keeps
-> using the traditional code. If vgacon is disabled, footbridge can
-> also ignore the setting. This means the screen_info only has to be
-> provided when either vgacon or EFI are enabled now.
->
-> To limit the amount of surprises on Arm, change the Kconfig default
-> to the previously used 80x30 setting instead of the usual 80x25.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+--b6kExiNv+/vFdEiT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Tested this before and after patch and it looks the same on the NetWinder.
-Tested-by: Linus Walleij <linus.walleij@linaro.org>
+On Fri, Jul 07, 2023 at 10:31:54AM +0200, Thomas Zimmermann wrote:
+> Use fbdev's DMA helpers for fbdev emulation. They are equivalent to the
+> previously used system-memory helpers, so no functional changes here.
+>=20
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+> Acked-by: Maxime Ripard <mripard@kernel.org>
+> Cc: Thierry Reding <thierry.reding@gmail.com>
+> Cc: Mikko Perttunen <mperttunen@nvidia.com>
+> ---
+>  drivers/gpu/drm/tegra/Kconfig | 2 +-
+>  drivers/gpu/drm/tegra/fbdev.c | 4 ++--
+>  2 files changed, 3 insertions(+), 3 deletions(-)
 
-The legacy in the cyber2000 FB driver supports pseudocolor which
-makes it a bit hard to rewrite into a simple DRM driver, which is something
-I could otherwise look into, it's not a very big or complex driver
-after all.
+Acked-by: Thierry Reding <treding@nvidia.com>
 
-Yours,
-Linus Walleij
+--b6kExiNv+/vFdEiT
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAmSoBJUACgkQ3SOs138+
+s6GxAg/9FUZU5bvbmvYmw09JA2QTqFtvZ7EfyPB2eYDw9cyXBHv3+N+JxLHYyUUM
+PVsoWw/szCPU9rvFRcm+MmakHkpxuoBlrB29uB8TSdKDzyYdSUFkRMdugKAcz78L
+zjXIXooqgZbObY/kVQzMHcp9411++fwAv2jcB/DtlzrZii/0aNug6TduPIxxltm0
+OPe4kESRnb+pR+ikU5+OQ2WHdDDxINoYzrJbHf5zfHWclseshrWG9ERttjgL9usE
+7pthMg02TSpbQOI34O3z7DUZvA2/HgrqQFY0RvMuJ2MqmBpjY32b2R/WAf6FZ8Rv
+5yFsb/3fo5UbHZiYTuY2lWo3zJ8AFYT5cgHviyBXqFbAqYwmLM6L5jUrNO0j69OW
+d2KUNHiCPkUpx/vqHWUB6Aw1BHkUnNy4r4jamCwR4gcvsJKkdV8+dRA1B7Eh9jac
+Obb9gVb0JL9ukBrGOGTTh0tGI1WvkwEeVmEkNEhCvLMfK1S8PJoBcLIdvdWcZznU
+JQxHJ3u0R0IZmzo2VhhHs1h7EbGNmHStvKFWlEIDNqh9xAv+zMiADzr/D8bX4db6
+wuqbLsRAkedumpk1TjN55hgz88Mhc5LVyqMjSxJXzvH7+LeBvX3KOauwi1GYoTO4
+e6UWuA8iMN5+WpskFdl96BjlRYjfpCLEYnhMalMJFUKOFdzIqrE=
+=CXji
+-----END PGP SIGNATURE-----
+
+--b6kExiNv+/vFdEiT--

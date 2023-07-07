@@ -2,54 +2,54 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A90B7EB64DA
-	for <linux-fbdev@archiver.kernel.org>; Fri,  7 Jul 2023 12:27:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 273F4EB64DA
+	for <linux-fbdev@archiver.kernel.org>; Fri,  7 Jul 2023 12:27:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232010AbjGGM1K (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 7 Jul 2023 08:27:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57260 "EHLO
+        id S232396AbjGGM1Z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 7 Jul 2023 08:27:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57350 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231972AbjGGM1J (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 7 Jul 2023 08:27:09 -0400
-Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com [IPv6:2a00:1450:4864:20::32d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7645119B2;
-        Fri,  7 Jul 2023 05:27:05 -0700 (PDT)
-Received: by mail-wm1-x32d.google.com with SMTP id 5b1f17b1804b1-3fbea14706eso19851225e9.2;
-        Fri, 07 Jul 2023 05:27:05 -0700 (PDT)
+        with ESMTP id S231972AbjGGM1Y (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 7 Jul 2023 08:27:24 -0400
+Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC10B19B2;
+        Fri,  7 Jul 2023 05:27:23 -0700 (PDT)
+Received: by mail-wm1-x332.google.com with SMTP id 5b1f17b1804b1-3fbc244d307so20102035e9.1;
+        Fri, 07 Jul 2023 05:27:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1688732824; x=1691324824;
+        d=gmail.com; s=20221208; t=1688732842; x=1691324842;
         h=user-agent:in-reply-to:content-disposition:mime-version:references
          :message-id:subject:cc:to:from:date:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=nciTqFzq3m83C37bVuS25/vbGoA9jD+37yyxJfMtABw=;
-        b=ZNIHElwkb0VEXSHoF0tGuHcp1TVifo58gxj5pt5t6hd0iqJUb6JD2ugaZdUNiEKeHP
-         Putj1KHdjJFh9rxJLYktjlUirzCROnaJNFs93GCLVYv1+qerITfgn2VkTwnp0ID2gmmC
-         zzvD3TiQ9GqUfgL9o8TAlB9SPIeVEu6ph+aQ3lY61FlRVDDxLQVuJOJlCTIhDcL0tJ6+
-         kaMiCxDFGphUaqkYlWQufcA/+v711O7RHzcIVoxe5mCpFJvQDOwsp2qUh6Ys+1hQUMJU
-         St3j/5j9fPEmDSPdC2tnSRFE999WBcD0c9afnKBT9koaKtVfVrpG1uh7mw5q/HJbhL4d
-         QEwA==
+        bh=miiLkM0CrGFVGmHvIpnji0OMSUMh4Pbjaf/A3Rfnl5o=;
+        b=Vu5HWx9u3V9rXjZ4b4cB27G2d1VvXosrTKjM62C0xR+Vm1RTEjQfsWlLhODdnfh+tA
+         NB3rn89cWz4qLytgjearKzt0ClfhXfJXOJbnfO/iFeEgZvk8pxVUUnjyIw83CYflUfLl
+         DD5J8sYd1Qe5cyuYg4DSfwfYG4eurGDn8/X42i+kCBp4m9jhmUBEEM5i0bS4xukKzwD3
+         hTqZTPjM2DaiNfyEbUk8TRaerLnlcF2ftVtmkhsx9PGW86QFBsnn6nCasIfEqjesNfnx
+         bbyRddGR1ejbebLA3tT3JdUtF3RG+tCCBzSkD+dvKTOFKaFudZ51V4MHlORZNPpyiexf
+         /yAQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688732824; x=1691324824;
+        d=1e100.net; s=20221208; t=1688732842; x=1691324842;
         h=user-agent:in-reply-to:content-disposition:mime-version:references
          :message-id:subject:cc:to:from:date:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=nciTqFzq3m83C37bVuS25/vbGoA9jD+37yyxJfMtABw=;
-        b=DFFDr4R/jzK5qePyNDFrsvAbzA0RJ5kb2D1Swp0T1x7NxFqBqdqNabDpqCURyLFq/Q
-         uCBVuPVY5NaqD13/jzz8pcm8dxCNN14mBatNT8gbOni6sm7UZinYADACMNi8oLKvwJfH
-         up6KOqcWwEsWvS5J7LteOv5yTeg75n28cIrKJMnuOZUvwGOqSpMvtv099hwH29OU3Gt6
-         4WN4uUKqLKhyG0q+oYeul2zB0oMWldC43RpunIEE7QyjSgOqFfLtpivWKN5zB1hxi5Lm
-         9T6YLSgq4hI0hNBOkekBxzg7rFUP+fgiYVKpVh+aAFnRl/aguY34QOcXnPsj/6/Be1mJ
-         5tHQ==
-X-Gm-Message-State: ABy/qLYFcf+vSNSMHtbrj4+cxSATDxi/cjWxbzMqGl8mx68C3xUQHb7+
-        Z1D03d1BjkRBeVLyJ1HECls=
-X-Google-Smtp-Source: APBJJlG4wejAtuzFwuAno7AbNiD6c/xCroAdDwnXIE0jz7PtmMPhUKO4Rc5+t/vC7H7oMYbYpfu0iw==
-X-Received: by 2002:a7b:cc9a:0:b0:3f9:c0f2:e1a4 with SMTP id p26-20020a7bcc9a000000b003f9c0f2e1a4mr3680341wma.34.1688732823578;
-        Fri, 07 Jul 2023 05:27:03 -0700 (PDT)
+        bh=miiLkM0CrGFVGmHvIpnji0OMSUMh4Pbjaf/A3Rfnl5o=;
+        b=A0SfjYfVF0kbEE/+UNDBDxphZsVlWr4lvwGBS07uGhV89mzJzDpkzEz/OuAf29PUbD
+         nrHJDd6ObBH93MkvrVm9UbhDZWCyWNH+4+zY4nKEH2f25M1wovLLcTCt8R+m4GSfPbQI
+         TR8ifXqK9g3saFm/TbQovOKtXhXBQ4XVM/0Qm6VyrGEG26YXb+DavnOvEGmE2iUHP9te
+         SvwJYSu1CITiKNrAMUFFfTF3TautKaKC2ltJOsTPQHK/bJFgV2SY+ABXMj61TI8tXsKf
+         VKlYfVxoimxWhHY8x0HoFImmxdBghc2yGSj11jaSbud03QIykvWEGENNoeYWMeT2Tg6Z
+         OyZQ==
+X-Gm-Message-State: ABy/qLbuBV4uM4WbCZ3GpjST1BQF9BKLbC7nIRS7FSzCy0aNo++z/MDy
+        8jv4jiMQihtk5vrzmlT+wNQ=
+X-Google-Smtp-Source: APBJJlF7fR1W+pHh1Mzn9BUQbJN/Uj+O9uypICWZaJN5U8ZkOD+qBbjYftweSghkV2agxYEfbczIIQ==
+X-Received: by 2002:a05:600c:3654:b0:3fb:b3aa:1c8a with SMTP id y20-20020a05600c365400b003fbb3aa1c8amr4260905wmq.16.1688732842067;
+        Fri, 07 Jul 2023 05:27:22 -0700 (PDT)
 Received: from orome (p200300e41f4b7100f22f74fffe1f3a53.dip0.t-ipconnect.de. [2003:e4:1f4b:7100:f22f:74ff:fe1f:3a53])
-        by smtp.gmail.com with ESMTPSA id x4-20020a05600c21c400b003fa74bff02asm2328318wmj.26.2023.07.07.05.27.02
+        by smtp.gmail.com with ESMTPSA id c16-20020a7bc850000000b003fbb06af219sm2363613wml.32.2023.07.07.05.27.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Jul 2023 05:27:03 -0700 (PDT)
-Date:   Fri, 7 Jul 2023 14:27:01 +0200
+        Fri, 07 Jul 2023 05:27:21 -0700 (PDT)
+Date:   Fri, 7 Jul 2023 14:27:20 +0200
 From:   Thierry Reding <thierry.reding@gmail.com>
 To:     Thomas Zimmermann <tzimmermann@suse.de>
 Cc:     javierm@redhat.com, maarten.lankhorst@linux.intel.com,
@@ -58,29 +58,33 @@ Cc:     javierm@redhat.com, maarten.lankhorst@linux.intel.com,
         linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-fbdev@vger.kernel.org,
         Mikko Perttunen <mperttunen@nvidia.com>
-Subject: Re: [PATCH v3 03/12] drm/tegra: Use fbdev DMA helpers
-Message-ID: <ZKgElQ7E3jN4gZv2@orome>
+Subject: Re: [PATCH v3 04/12] drm/tegra: Set fbdev FBINFO_VIRTFB flag
+Message-ID: <ZKgEqBVCkCpGyFI7@orome>
 References: <20230707083422.18691-1-tzimmermann@suse.de>
- <20230707083422.18691-4-tzimmermann@suse.de>
+ <20230707083422.18691-5-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="b6kExiNv+/vFdEiT"
+        protocol="application/pgp-signature"; boundary="ts1b/mYBCw25ZidD"
 Content-Disposition: inline
-In-Reply-To: <20230707083422.18691-4-tzimmermann@suse.de>
+In-Reply-To: <20230707083422.18691-5-tzimmermann@suse.de>
 User-Agent: Mutt/2.2.10 (2023-03-25)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 
---b6kExiNv+/vFdEiT
+--ts1b/mYBCw25ZidD
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jul 07, 2023 at 10:31:54AM +0200, Thomas Zimmermann wrote:
-> Use fbdev's DMA helpers for fbdev emulation. They are equivalent to the
-> previously used system-memory helpers, so no functional changes here.
+On Fri, Jul 07, 2023 at 10:31:55AM +0200, Thomas Zimmermann wrote:
+> Mark the framebuffer with FBINFO_VIRTFB. The framebuffer range is
+> in DMA-able memory and should be accessed with the CPU's regular
+> memory ops.
+>=20
+> v2:
+> 	* drop FBINFO_DEFAULT
 >=20
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
@@ -88,30 +92,29 @@ On Fri, Jul 07, 2023 at 10:31:54AM +0200, Thomas Zimmermann wrote:
 > Cc: Thierry Reding <thierry.reding@gmail.com>
 > Cc: Mikko Perttunen <mperttunen@nvidia.com>
 > ---
->  drivers/gpu/drm/tegra/Kconfig | 2 +-
->  drivers/gpu/drm/tegra/fbdev.c | 4 ++--
->  2 files changed, 3 insertions(+), 3 deletions(-)
+>  drivers/gpu/drm/tegra/fbdev.c | 1 +
+>  1 file changed, 1 insertion(+)
 
 Acked-by: Thierry Reding <treding@nvidia.com>
 
---b6kExiNv+/vFdEiT
+--ts1b/mYBCw25ZidD
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAmSoBJUACgkQ3SOs138+
-s6GxAg/9FUZU5bvbmvYmw09JA2QTqFtvZ7EfyPB2eYDw9cyXBHv3+N+JxLHYyUUM
-PVsoWw/szCPU9rvFRcm+MmakHkpxuoBlrB29uB8TSdKDzyYdSUFkRMdugKAcz78L
-zjXIXooqgZbObY/kVQzMHcp9411++fwAv2jcB/DtlzrZii/0aNug6TduPIxxltm0
-OPe4kESRnb+pR+ikU5+OQ2WHdDDxINoYzrJbHf5zfHWclseshrWG9ERttjgL9usE
-7pthMg02TSpbQOI34O3z7DUZvA2/HgrqQFY0RvMuJ2MqmBpjY32b2R/WAf6FZ8Rv
-5yFsb/3fo5UbHZiYTuY2lWo3zJ8AFYT5cgHviyBXqFbAqYwmLM6L5jUrNO0j69OW
-d2KUNHiCPkUpx/vqHWUB6Aw1BHkUnNy4r4jamCwR4gcvsJKkdV8+dRA1B7Eh9jac
-Obb9gVb0JL9ukBrGOGTTh0tGI1WvkwEeVmEkNEhCvLMfK1S8PJoBcLIdvdWcZznU
-JQxHJ3u0R0IZmzo2VhhHs1h7EbGNmHStvKFWlEIDNqh9xAv+zMiADzr/D8bX4db6
-wuqbLsRAkedumpk1TjN55hgz88Mhc5LVyqMjSxJXzvH7+LeBvX3KOauwi1GYoTO4
-e6UWuA8iMN5+WpskFdl96BjlRYjfpCLEYnhMalMJFUKOFdzIqrE=
-=CXji
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAmSoBKcACgkQ3SOs138+
+s6GeKg//UisIKLJ5ssVJTPCXmJuMbWZch/UGKG7Zu3f04RzbsdSVXFaPDCOgDyQJ
+gBZafMU0tRBU7fDa+0HCqcD9ojEDAz1QvsrjSrkmONRrh6LrOHCt4LUsia7jvXq/
+dk4apSMa5apZSxNpDj8JxQtKjuYSu6kyZRHU7xLskuZf+Tm/YfxQUeKcVhgCRWWf
+s3Gwnpzb5dORUnYa24l3mZYkCv2aXmv+C4/dBd3nYZ7HwWFlIr+TLKLo765BbEKe
+8BUA0uQYTK5hrJap32b6x6r+Qr9LYInwYFfFqucXc2L8f36kpDJtLGbMetYKWsXK
+YKI+gXRtYD/BvPf2BlPNKx4fpSrrHnv91U71pcsY1Y2N+dj2PSt3gZbuRH/q2IYa
+sqmFaDKfm+Y9asUP6oZ5IrKOK4Z1Jy8jy/RN3ll06elD6EFlF9gYchuJ6b0dx40u
+hNiLSOI0yQ8h1S+8D1NdeFJ8WtExkLuImoIf/I/h2Aw8zp3pnl+if2tRzm5k2UmH
+3w/QpxbkqzRGmKnfQIPPQQnFJ3h7JtBX1i+EE0BxOBm0oXDPUJFUmU/rTeHWy6PI
+joVQF8R7AJhj08s+7d/jJVbVn1QHV9v1ff40XD6V+5Ankg48cKlwEJCeOL0GEYoR
+QbknvsvKNaGObh+/1LOkqr1qOj+jhXr1WLEhZdEzN0W9OrUDULU=
+=vRiE
 -----END PGP SIGNATURE-----
 
---b6kExiNv+/vFdEiT--
+--ts1b/mYBCw25ZidD--

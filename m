@@ -2,128 +2,150 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A95CEB64DA
-	for <linux-fbdev@archiver.kernel.org>; Fri,  7 Jul 2023 06:31:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A94AEB64D9
+	for <linux-fbdev@archiver.kernel.org>; Fri,  7 Jul 2023 07:38:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231492AbjGGGbK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 7 Jul 2023 02:31:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36452 "EHLO
+        id S232470AbjGGHiO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 7 Jul 2023 03:38:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35438 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229775AbjGGGbI (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 7 Jul 2023 02:31:08 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF08A1FF9;
-        Thu,  6 Jul 2023 23:30:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1688711413; x=1689316213; i=deller@gmx.de;
- bh=DdPZOtZVNsdAm2tHjUakaoi2IjUtD9GANS/45KrMaYA=;
- h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=YWqKVDhJ/5QrBSx4epjdd9S6wn4+H9LF7ZRZrFZaHPs+sg8z/piT+ulqT9TqaGi8p7fxz/8
- dk1JlCbT0HHWtQ5jYQOl0pQYuRkSfkCDv5D7IHILsnvJ34BBZ5A9BkYU+DVNNqTC06LB34U6c
- uP4pkMmY7f1Azz0k7SW6J5hCwlV7Pxy7z7wlAIHY1eM7Ta/34HRiWDdTffjaKs8cMWTI1IVFa
- WLo9U7W12qaQOnCuEzymnlqxYwwAJF6FNPz0X/fVRYJAkz3GoyErWjTnjQFqqvv+dn9g6F3xm
- FnV+l+f6skv24bD1BmXpoWxkwOTUeo9oz24PpZBDfYO2ypf3c6Vg==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.153.180]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1Mw9UE-1pytbk3ese-00s5Aw; Fri, 07
- Jul 2023 08:30:13 +0200
-Message-ID: <7b51c68e-c716-e510-48a4-5da697e33d05@gmx.de>
-Date:   Fri, 7 Jul 2023 08:30:11 +0200
+        with ESMTP id S229910AbjGGHiN (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 7 Jul 2023 03:38:13 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 59E611BDB
+        for <linux-fbdev@vger.kernel.org>; Fri,  7 Jul 2023 00:38:12 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 05B3F22487;
+        Fri,  7 Jul 2023 07:38:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1688715491; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=F36gO1AIjWSom4BofC9EDwp7MTdtMD0LArwcqibCWEs=;
+        b=gu6aUFwaHz2F1nuOb94T3ubZp2ch0lw2m7gesT7r+zPsZP/fpkP2cujPdb1MFnXg50gHTD
+        8lR68UJeFL4m+D9qRuYp+wSFcGj8W1KDDfDU5Z5SW8JucgvefMx6cBmoLRCnHN4U+HPMwg
+        B3UeepOJDcWwg5TCSC7l/eFCP5uTbBo=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1688715491;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=F36gO1AIjWSom4BofC9EDwp7MTdtMD0LArwcqibCWEs=;
+        b=wcv9ZDcVXE5ddVLknCubPotGV5WRtkqSYmNb60AC3c9m0HklaUSH3a3fq/JYp1/yUioDwY
+        bIJgyb7H01iCm9Aw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id E0A08139E0;
+        Fri,  7 Jul 2023 07:38:10 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id p7ztNeLAp2QsIgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Fri, 07 Jul 2023 07:38:10 +0000
+Message-ID: <208dc0f5-0b7c-0ca9-665e-72d0e154226c@suse.de>
+Date:   Fri, 7 Jul 2023 09:38:10 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.12.0
-Subject: Re: [PATCH] fbdev: imxfb: Convert to devm_platform_ioremap_resource()
+Subject: Re: [PATCH 01/10] fbdev/broadsheetfb: Select FB_SYS_HELPERS_DEFERRED
 Content-Language: en-US
-To:     Yangtao Li <frank.li@vivo.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>
-Cc:     linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-References: <20230704093652.18191-1-frank.li@vivo.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20230704093652.18191-1-frank.li@vivo.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:z7uLkJkCXWtZ3ZEnT389CW1h6m97XY9J80PvCGh+RRpnGXxKGvy
- Y5Uok2CnRSlO3JhCNIEYMLnAUH8uCfMsIIlgifMJrQfJrprG0Ck4qu8Yz8aSx+wJE4NW7Aa
- X0VZyjUDqgf4+qifqtbwDK44NHFAaf9dLLDNt6pnxaYXk/sIaSXLz4OYSpAKzLuypbWWsDP
- exbh59sYUWBTE2JhTjbhQ==
-UI-OutboundReport: notjunk:1;M01:P0:isxEHFQiltc=;bgO/0Xo+1wUaV+mwEQBP8hnhwPl
- 4tAxG+7Fhb9ubKHwsgewihLJ6Rmv/J0S7NS+znhlxaQ9SbIBHC8jHiBX/MDB2bfideesnxGxZ
- N71wdqIOZDp1TKCQ3tpj3NzLuK4/frkOQO88IbAz+mcw4pkfiRycVTBGpeOpxXStge7b0bnuZ
- 69EP4IaPi5eELdNROeBxRb9gZoAJ44zKtuPn6evtqrukfxJDM5J1fqGM3+9kmzjd/txjIBjxl
- AAgP+eVOpj6X4qxI8XVBMngDAr975gzUZoqugZu2q/XlbU1cdMAtdH9gZ7tHeboFuigYqF8te
- YhsI3Ed9sSJuvQWAwKn+Ayxu/fzkrHX4i+CNPKos9lsgZa85dtOHA8wfab9UPC3qQlanipxWG
- wlNjUHu50EXBDiFHxpuBxRs6OcD54r0l2RwW/MVnuVgF+UFSErnjTitpdjBBiQClufQxG0M4j
- 9S8NzLXoZAaKwWqDV/3V68s/fc/Q4DUmKc++rBbOGQSYHD01yMDxDvB6C6Mufnvsr2cl1ZDZx
- oay2RZ2bJoQMx0F20llLMVugs3DCI5iylh5Q4uZye2W5lahiCNAVXmFnWFqne4nIQbqqdRoLd
- y7Wnvhgit7cYGSVBihyh0qCb1Bm1IqCXzOAM4+OxI5JTAlUKXZMPBk7Oji7whun927DGw01Qt
- rK0Yuxfjra1+qAZtciQMUolLHY+E9ge3B1n7yXTXi9CGl2MO00Wl5AzVqDCyqSKx+1KvA97QI
- qJoE4E+LTmgQ8TMKUHV9TzupjT8eo6k6wVU70zobxL7Xp4PV6BsaDc30Q+eimHqYKFN1tvQTn
- f5RQ7mrmMl9RzZJYdsTHZrRZZFRDgzs1/6gVqw+5PH+Zl/V9W5kxavf5zVNrXuIGWEMc8yy+Y
- OgUwzGv1PCQqvUdBeyM1GIl/HtENoXA7DqN+HjEBXuvqaCoHqj4VdJpoHsoWBlbELv/3c3nnq
- +i+msg==
+To:     Helge Deller <deller@gmx.de>, javierm@redhat.com
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <20230706151432.20674-1-tzimmermann@suse.de>
+ <20230706151432.20674-2-tzimmermann@suse.de>
+ <57cd2e4b-fcfc-587d-4b1b-eefad5416b61@gmx.de>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <57cd2e4b-fcfc-587d-4b1b-eefad5416b61@gmx.de>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------0HLmc2htMoWD3sXp4CD1cEgB"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/4/23 11:36, Yangtao Li wrote:
-> Use devm_platform_ioremap_resource() to simplify code.
->
-> Signed-off-by: Yangtao Li <frank.li@vivo.com>
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------0HLmc2htMoWD3sXp4CD1cEgB
+Content-Type: multipart/mixed; boundary="------------kNDiVmaVXCdRefq87bEjif9W";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Helge Deller <deller@gmx.de>, javierm@redhat.com
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Message-ID: <208dc0f5-0b7c-0ca9-665e-72d0e154226c@suse.de>
+Subject: Re: [PATCH 01/10] fbdev/broadsheetfb: Select FB_SYS_HELPERS_DEFERRED
+References: <20230706151432.20674-1-tzimmermann@suse.de>
+ <20230706151432.20674-2-tzimmermann@suse.de>
+ <57cd2e4b-fcfc-587d-4b1b-eefad5416b61@gmx.de>
+In-Reply-To: <57cd2e4b-fcfc-587d-4b1b-eefad5416b61@gmx.de>
 
-applied.
+--------------kNDiVmaVXCdRefq87bEjif9W
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Thanks!
-Helge
+SGkNCg0KQW0gMDYuMDcuMjMgdW0gMjE6MTMgc2NocmllYiBIZWxnZSBEZWxsZXI6DQo+IE9u
+IDcvNi8yMyAxNzowOCwgVGhvbWFzIFppbW1lcm1hbm4gd3JvdGU6DQo+PiBUaGUgS2NvbmZp
+ZyB0b2tlbiBGQl9TWVNfSEVMUEVSU19ERUZFUlJFRCBzZWxlY3RzIGV2ZXJ5dGhpbmcgdGhh
+dA0KPj4gaXMgcmVxdWlyZWQgZm9yIGRlZmVycmVkIEkvTyBvbiBzeXN0ZW0tbWVtb3J5IGZy
+YW1lYnVmZmVycy4gU2VsZWN0DQo+PiBpdCBmcm9tIEZCX0JST0FEU0hFRVQgaW4gZmF2b3Ig
+b2YgdGhlIGV4aXN0aW5nIGlkZW50aWNhbCBzZWxlY3Rpb24uDQo+Pg0KPj4gU2lnbmVkLW9m
+Zi1ieTogVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+DQo+IA0KPiBJ
+J20gYWN0dWFsbHkgbm90IGEgZmFuIG9mIGRlZmVycmVkLUlPIGZvciBvbGRlciBkcml2ZXJz
+LCBidXQNCj4gaW4gdGhpcyBjYXNlIHdoZXJlIHRoZSBkcml2ZXJzIG9wZXJhdGUgb24gc3lz
+dGVtIG1lbW9yeSBhbnl3YXksDQo+IHRoaXMgaXMgdGhlIHJpZ2h0IGFwcHJvYWNoLg0KDQpZ
+ZWFoLCBkZWZlcnJlZCBJL08gaGFzIGEgY2VydGFpbiBvdmVyaGVhZC4gQnV0IGZvciB0aGlz
+IGtpbmQgb2YgaGFyZHdhcmUgDQp0aGVyZSdzIG5vIGdvb2Qgd2F5IHRvIG1ha2UgbW1hcCB3
+b3JrIHJlbGlhYmx5IHdpdGhvdXQuIChXZWxsLCB0aGVyZSdzIA0KbXN5bmMoKSwgYnV0IHdo
+byB1c2VzIHRoYXQ/KSBUaGVzZSBkcml2ZXJzIGFscmVhZHkgaW1wbGVtZW50IGRlZmlvLCBz
+byANCml0J3Mgbm90IHJlYWxseSBhIGNoYW5nZSwganVzdCBhIGNsZWFudXAuDQoNCj4gDQo+
+IFRoZSBzZXJpZXMgbG9va3MgZ29vZDoNCj4gDQo+IEFja2VkLWJ5OiBIZWxnZSBEZWxsZXIg
+PGRlbGxlckBnbXguZGU+DQoNClRoYW5rcyBhIGxvdC4NCg0KQmVzdCByZWdhcmRzDQpUaG9t
+YXMNCg0KPiANCj4gSGVsZ2UNCj4gDQo+PiAtLS0NCj4+IMKgIGRyaXZlcnMvdmlkZW8vZmJk
+ZXYvS2NvbmZpZyB8IDYgKy0tLS0tDQo+PiDCoCAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRp
+b24oKyksIDUgZGVsZXRpb25zKC0pDQo+Pg0KPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlk
+ZW8vZmJkZXYvS2NvbmZpZyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvS2NvbmZpZw0KPj4gaW5k
+ZXggZjE0MjI5NzU3MzExLi5mZDg2MmZhYWZlNjYgMTAwNjQ0DQo+PiAtLS0gYS9kcml2ZXJz
+L3ZpZGVvL2ZiZGV2L0tjb25maWcNCj4+ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvS2Nv
+bmZpZw0KPj4gQEAgLTIxNzksMTEgKzIxNzksNyBAQCBjb25maWcgRkJfTVgzDQo+PiDCoCBj
+b25maWcgRkJfQlJPQURTSEVFVA0KPj4gwqDCoMKgwqDCoCB0cmlzdGF0ZSAiRS1JbmsgQnJv
+YWRzaGVldC9FcHNvbiBTMUQxMzUyMSBjb250cm9sbGVyIHN1cHBvcnQiDQo+PiDCoMKgwqDC
+oMKgIGRlcGVuZHMgb24gRkIgJiYgKEFSQ0hfUFhBIHx8IENPTVBJTEVfVEVTVCkNCj4+IC3C
+oMKgwqAgc2VsZWN0IEZCX1NZU19GSUxMUkVDVA0KPj4gLcKgwqDCoCBzZWxlY3QgRkJfU1lT
+X0NPUFlBUkVBDQo+PiAtwqDCoMKgIHNlbGVjdCBGQl9TWVNfSU1BR0VCTElUDQo+PiAtwqDC
+oMKgIHNlbGVjdCBGQl9TWVNfRk9QUw0KPj4gLcKgwqDCoCBzZWxlY3QgRkJfREVGRVJSRURf
+SU8NCj4+ICvCoMKgwqAgc2VsZWN0IEZCX1NZU19IRUxQRVJTX0RFRkVSUkVEDQo+PiDCoMKg
+wqDCoMKgIGhlbHANCj4+IMKgwqDCoMKgwqDCoMKgIFRoaXMgZHJpdmVyIGltcGxlbWVudHMg
+c3VwcG9ydCBmb3IgdGhlIEUtSW5rIEJyb2Fkc2hlZXQNCj4+IMKgwqDCoMKgwqDCoMKgIGNv
+bnRyb2xsZXIuIFRoZSByZWxlYXNlIG5hbWUgZm9yIHRoaXMgZGV2aWNlIHdhcyBFcHNvbiBT
+MUQxMzUyMQ0KPiANCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVy
+IERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpGcmFu
+a2Vuc3RyYXNzZSAxNDYsIDkwNDYxIE51ZXJuYmVyZywgR2VybWFueQ0KR0Y6IEl2byBUb3Rl
+diwgQW5kcmV3IE15ZXJzLCBBbmRyZXcgTWNEb25hbGQsIEJvdWRpZW4gTW9lcm1hbg0KSFJC
+IDM2ODA5IChBRyBOdWVybmJlcmcpDQo=
 
-> ---
->   drivers/video/fbdev/imxfb.c | 8 +-------
->   1 file changed, 1 insertion(+), 7 deletions(-)
->
-> diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-> index adf36690c342..517eb65bbaa6 100644
-> --- a/drivers/video/fbdev/imxfb.c
-> +++ b/drivers/video/fbdev/imxfb.c
-> @@ -868,7 +868,6 @@ static int imxfb_probe(struct platform_device *pdev)
->   	struct imxfb_info *fbi;
->   	struct lcd_device *lcd;
->   	struct fb_info *info;
-> -	struct resource *res;
->   	struct imx_fb_videomode *m;
->   	const struct of_device_id *of_id;
->   	struct device_node *display_np;
-> @@ -885,10 +884,6 @@ static int imxfb_probe(struct platform_device *pdev=
-)
->   	if (of_id)
->   		pdev->id_entry =3D of_id->data;
->
-> -	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	if (!res)
-> -		return -ENODEV;
-> -
->   	info =3D framebuffer_alloc(sizeof(struct imxfb_info), &pdev->dev);
->   	if (!info)
->   		return -ENOMEM;
-> @@ -970,7 +965,7 @@ static int imxfb_probe(struct platform_device *pdev)
->   		goto failed_getclock;
->   	}
->
-> -	fbi->regs =3D devm_ioremap_resource(&pdev->dev, res);
-> +	fbi->regs =3D devm_platform_ioremap_resource(pdev, 0);
->   	if (IS_ERR(fbi->regs)) {
->   		ret =3D PTR_ERR(fbi->regs);
->   		goto failed_ioremap;
-> @@ -1043,7 +1038,6 @@ static int imxfb_probe(struct platform_device *pde=
-v)
->   failed_map:
->   failed_ioremap:
->   failed_getclock:
-> -	release_mem_region(res->start, resource_size(res));
->   failed_of_parse:
->   	kfree(info->pseudo_palette);
->   failed_init:
+--------------kNDiVmaVXCdRefq87bEjif9W--
 
+--------------0HLmc2htMoWD3sXp4CD1cEgB
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmSnwOIFAwAAAAAACgkQlh/E3EQov+B9
+nQ//X4R+B6egBQh9Ua5bHteBe4gEJZZsW47tvRIM738uRmhxWV/FR152UDv4eNSV9wdfeDViUMD6
+bF/UIU9B+Vy01UJw/YF6un7PtA6hFMXYh6rI7QcWz/M+448ubVVgtAmo56ZaZh0IH2ifP3vq4Wq7
+/VwMN8kPJcm8mfufZWEDRnN6l01DbTgL5/7zlr0JyQurSRTh4aAe1QfrXncyBJAs1dn30DZU2GiV
+unMU/GBUk1EdKGYAaTTuPrj83zGxl4g+2TnLaCPHWEWLGxgAsIJTMVW9V8M5lorZl1oHD2Yzf1QB
+jV3lWDsi5sGhiDmkNGYL1uMyLQhDbRv/C3OIWZdn2lnCyOaWv3R1CbpEzYrhApjGKbuQTKc4nKZh
+WeV5Wi/Au+JJfhs8Eje3aynmWDryY0cJEDnpPVUbXbVi+6TvjLyrGu7q7gZ0uCfjwUpwkIHISRzP
+vaj42yIKbAbinb7quEa5UaoiWxw5F1vOT6OteynHMnk+5z6pwujcgMlZ+ZgGSBl4/nq0M+MUYIOu
+ruDKaa4COAJuya/GUXz9hBnLSAbfy4bLOf6aJAn90AVrivb60iQNO4/u8gz9E2FNPjJkEZQyKOJt
+2CLJLMTxEuZ8VqGKhxv1F3HtOmu1SR4gdrctwxHpfw73OfJsP8pG+5AEkXSLnsz3R6fsn09vhsvz
+K5g=
+=uz6b
+-----END PGP SIGNATURE-----
+
+--------------0HLmc2htMoWD3sXp4CD1cEgB--

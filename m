@@ -2,105 +2,180 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D568EB64DD
-	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Jul 2023 19:14:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50272EB64D9
+	for <linux-fbdev@archiver.kernel.org>; Fri,  7 Jul 2023 02:01:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229735AbjGFTOB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 6 Jul 2023 15:14:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42164 "EHLO
+        id S231421AbjGGCBk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 6 Jul 2023 22:01:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49790 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229672AbjGFTOB (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Jul 2023 15:14:01 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9385B1BDB
-        for <linux-fbdev@vger.kernel.org>; Thu,  6 Jul 2023 12:13:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1688670832; x=1689275632; i=deller@gmx.de;
- bh=a8EovxS7F3wo6/WJq5URlyIFDA9CAV8P4Cp0GextQbY=;
- h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=LF5XiARbG/TyqxTe3XxmgMfjoqN34FOUQWCHCzxrtGALC3S7fPUkMtc5dWALqK//AFWHeeM
- 3BE12FYk0fgpm7Z8/BchK796I5lTOyIxAApbiPzaABcFvXI+UzAmG2s0zNVd2f+C2ar/GY3BY
- cujpBjXR9OznVv9OHwSS4o3b4epYV6QN//JOw6mxOX0fzNAmKEZlO3vjZ/myX6Axm7mRi0Hoy
- eyi9+tOOfodRmtwgoeS3osXxK8sNHKwzKg2AhaGfa6S0+pWI5Ihtl12+FnW9yLF7fGBsVR7o0
- tG88fXFvvrHP0JyB7/YnkxWQmNIxZecPu9YkrHdQ7AxdhaqOvq4Q==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.152.0]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MwQXN-1pyjBd1g0b-00sKuC; Thu, 06
- Jul 2023 21:13:52 +0200
-Message-ID: <57cd2e4b-fcfc-587d-4b1b-eefad5416b61@gmx.de>
-Date:   Thu, 6 Jul 2023 21:13:51 +0200
+        with ESMTP id S229991AbjGGCBj (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Jul 2023 22:01:39 -0400
+Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7E0E819B7
+        for <linux-fbdev@vger.kernel.org>; Thu,  6 Jul 2023 19:01:35 -0700 (PDT)
+Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
+        by mailout1.samsung.com (KnoxPortal) with ESMTP id 20230707020131epoutp01cbe0ae20079ab0fc06a3c668c126f842~vc2uSuLKN0109401094epoutp01_
+        for <linux-fbdev@vger.kernel.org>; Fri,  7 Jul 2023 02:01:31 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.samsung.com 20230707020131epoutp01cbe0ae20079ab0fc06a3c668c126f842~vc2uSuLKN0109401094epoutp01_
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1688695291;
+        bh=PelmqNjPk6oGqr+lcQscDDbKwoYt8iFv7lsSXZ03UmI=;
+        h=From:To:Cc:In-Reply-To:Subject:Date:References:From;
+        b=luyfCIl3bXzuI5QT1nWtKOisZrTtU+AP598MGtr7llexDzg7QLTvlu51sbumiqhyl
+         r9EvnSkkUGBvXRKdEceZ2WR7RJqlisYMHPwBtWvPfQVztcSQUTaDXrCKhH5lC/Kl2V
+         PxCNZlkf+2rWEf/RcxxBktdYu4cr1DfG8gXNeIe8=
+Received: from epsnrtp1.localdomain (unknown [182.195.42.162]) by
+        epcas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20230707020130epcas1p23da995d70977a4d1729186a5652aa9c5~vc2tr7BDm2743927439epcas1p2u;
+        Fri,  7 Jul 2023 02:01:30 +0000 (GMT)
+Received: from epsmges1p5.samsung.com (unknown [182.195.36.135]) by
+        epsnrtp1.localdomain (Postfix) with ESMTP id 4QxxTP33qWz4x9Pv; Fri,  7 Jul
+        2023 02:01:29 +0000 (GMT)
+Received: from epcas1p2.samsung.com ( [182.195.41.46]) by
+        epsmges1p5.samsung.com (Symantec Messaging Gateway) with SMTP id
+        FA.9C.22933.7F177A46; Fri,  7 Jul 2023 11:01:27 +0900 (KST)
+Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
+        epcas1p3.samsung.com (KnoxPortal) with ESMTPA id
+        20230707020127epcas1p328fc9539cb01bf314f569e676c277f86~vc2q4MKf_1856118561epcas1p3b;
+        Fri,  7 Jul 2023 02:01:27 +0000 (GMT)
+Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
+        epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20230707020127epsmtrp12d135f5243a3857ae29611840fcd0c98~vc2q3S9-R0210602106epsmtrp1E;
+        Fri,  7 Jul 2023 02:01:27 +0000 (GMT)
+X-AuditID: b6c32a39-a83ff70000005995-51-64a771f7a53e
+Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
+        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        83.16.34491.7F177A46; Fri,  7 Jul 2023 11:01:27 +0900 (KST)
+Received: from inkidae001 (unknown [10.113.221.213]) by epsmtip2.samsung.com
+        (KnoxPortal) with ESMTPA id
+        20230707020127epsmtip20f142e261c01eca40e56dc0c4330cec4~vc2qmQ3cU0804308043epsmtip2j;
+        Fri,  7 Jul 2023 02:01:27 +0000 (GMT)
+From:   =?ks_c_5601-1987?B?tOvAzrHiL1RpemVuIFBsYXRmb3JtIExhYihTUikvu++8usD8wNo=?= 
+        <inki.dae@samsung.com>
+To:     "'Thomas Zimmermann'" <tzimmermann@suse.de>, <javierm@redhat.com>,
+        <maarten.lankhorst@linux.intel.com>, <mripard@kernel.org>
+Cc:     <dri-devel@lists.freedesktop.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-samsung-soc@vger.kernel.org>, <linux-tegra@vger.kernel.org>,
+        <linux-fbdev@vger.kernel.org>,
+        "'Seung-Woo Kim'" <sw0312.kim@samsung.com>,
+        "'Kyungmin Park'" <kyungmin.park@samsung.com>,
+        "'Krzysztof Kozlowski'" <krzysztof.kozlowski@linaro.org>,
+        "'Alim Akhtar'" <alim.akhtar@samsung.com>
+In-Reply-To: <20230706124905.15134-7-tzimmermann@suse.de>
+Subject: RE: [PATCH v2 06/11] drm/exynos: Set fbdev FBINFO_VIRTFB flag
+Date:   Fri, 7 Jul 2023 11:01:27 +0900
+Message-ID: <026c01d9b076$f090ef00$d1b2cd00$@samsung.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.12.0
-Subject: Re: [PATCH 01/10] fbdev/broadsheetfb: Select FB_SYS_HELPERS_DEFERRED
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20230706151432.20674-1-tzimmermann@suse.de>
- <20230706151432.20674-2-tzimmermann@suse.de>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20230706151432.20674-2-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:zeolCenktJTicAkt66ZEwDpjKCbugaTzUcsNNLv2dAfD0NZrBGD
- udrLg9fkmpmuBuDeinbFVz0vXycm68see7LwQxGGuqx1nSUmkGnNHRdNuahhvJCVX3YFevM
- UCP/TfYi48Ots84DY7SoD2iO+WGQ7xJ6sh+e52i9uzCkepGj0PLaRPb8yMM+mclyxVVGFJ8
- e3/G/WIBE1t3FI38SU4sw==
-UI-OutboundReport: notjunk:1;M01:P0:7e0Fi/oszT0=;TzvvoMW3eP6qTSuH1GXFtAiT/iT
- EUiUBwcoHi4Qmhmk4UtgiIcLQKMMNIxrekc13x5U64Xo5EvVPlpPp7uisorg3CCNufEQeyd6f
- usMeZfNAkzP/EWf7KF2gqwo6jFrK686Riz2XaQPpXlBi9XQ0gQSYedaXxaSVIpi67mbJE6Rlo
- TiokWIE3gRjSokVJeG5giq4y0ZpKg/peziaVzdtVsuTHwDV+ut+Hdqga+v7v4QfuYv22m26Id
- Z9inqUpXSCKGY7dTL26WWx2mtfTDUQftU/4fzrxTGoTmkloKANR0RzjhWjcFPp4oAaPURlRvE
- adeNgp5MYQdEcUJSn3Q1EBGw35b1CjsPGH3s0STKXjbnm/zFUaOS2rQQqEYGxefMFazdThd9B
- 0DJqN9NcPB0+0zBnuYv4Ct8q9PRRPEUknRldzS9CRphNdKZG9ECiCjY6NsU7xwDPnDEWNwfio
- /cXX0EzMINTQQq1LEKHGJf0NSPlz6/Uf1DAZ/I6PNdNW5S+62103Tk4TChVk5xoBrJMQTRLC9
- RkLW81gMVABpfAyUDgGblMyWmgUpM5y4lsimD0a0QslCDU/MyBbk1+lssJMPep4uFNvbWcUMB
- xHF/NpmkSS4PtjkCzea8Y416zSrB4b36HdLwcyVUfWhz1CoUHzcNv/nRstvhv4qPbY2mmavKr
- eZWpR80jofhk3RrRpUzS++zcC3upkEPn8AVRsE8PwQS7Pn4gCGuSGeJ3oa+CR2+ikGjSO+WXo
- 0VKufnvYtKVISN4giLH08j6CDynz77OwtzEE8qaZUCrGxNIBGXbppd2lFpuzUglab/cx7NTp0
- UJ9QmzRh+fWGgWIwWuTbjZC6Qnt4mx9JsNBwhWn4Bq1RYvmcmo7Qkvz5jkSIkQisFrPfMpfe8
- ASg/hWOQj6/mzN4S/MsN9JmrOXv4jYofIDoYDwT7dAb6QEBP1kko2hmrNogeU0m/C3Sg785rb
- 1c/0oA==
+Content-Type: text/plain; charset="ks_c_5601-1987"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Outlook 16.0
+Content-Language: ko
+Thread-Index: AQGcl+T1wpybQEf0N9BGhueYe3tDCQE/Zq+0Ao2EXCuwCVaXQA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrLJsWRmVeSWpSXmKPExsWy7bCmnu73wuUpBhPbDS0ezNvGZnHl63s2
+        i4XTljNa7H29ld3ibNMbdotNj6+xWpzo+8BqMeP8PiaLzi+zgEo+bmWxaOtcBhSb/JLNYsub
+        iawOvB6bVnWyedy5tofNY97JQI/73ceZPDYvqfd4v+8qm0ffllWMHptPV3t83iQXwBmVbZOR
+        mpiSWqSQmpecn5KZl26r5B0c7xxvamZgqGtoaWGupJCXmJtqq+TiE6DrlpkDdLWSQlliTilQ
+        KCCxuFhJ386mKL+0JFUhI7+4xFYptSAlp8C0QK84Mbe4NC9dLy+1xMrQwMDIFKgwITtj7v2/
+        jAV7BCra7v1ibmDs4uti5OSQEDCRuPXrCWMXIxeHkMAORontV6+yQzifGCUmfZ/LCuF8Y5To
+        ufeJGablw+O/bBCJvYwSm1d+YYFwXjJKHFw8lx2kik0gQ+Ju+2KwdhGBJkaJGe/bwRxmgV9M
+        Ej8OrQWbxSlgKbHrwBEmEFtYwE2ibeEzsDiLgIrEry17wOK8QDVvTu5nhbAFJU7OfMICYjML
+        GEksWT2fCcKWl9j+dg7UfQoSP58uY4WIi0jM7mwDi4sIOEncuf8R7FUJgTscEh+WdUA1uEjc
+        X/gPyhaWeHV8CzuELSXxsr+NHaJhMqPEnesrWCCcGYwSh39eZ4SoMpbYv3QyE4StKLHz91xG
+        iNV8Eu++9gCdwQEU55XoaBOCKFGSOHbxBlSrhMSFJRPZJjAqzULy3Cwkz81C8twsJA8tYGRZ
+        xSiWWlCcm55abFhgCo/z5PzcTYzgdK1luYNx+tsPeocYmTgYDzFKcDArifAeO7MsRYg3JbGy
+        KrUoP76oNCe1+BCjKTC8JzJLiSbnAzNGXkm8oYmlgYmZkbGJhaGZoZI477m3vSlCAumJJanZ
+        qakFqUUwfUwcnFINTEqua06xiRRErXnivOXJ6V3BXZmM295VLiyd8qsrXyV3woLKH843e0UE
+        etTvMOt3T3RYofdG99XrPRO5bsTcMby4ylooqW/CAkOBIvnFwXZzuorcl4h9Fnidu//2IqfT
+        qp+KH0nob/omu8n+o1h4bqL/kt6UGoWHqw9fyn9+Ovd0f/D5D7OFT35jt/CevX/1l2DejTv3
+        at0+5vFAg810n6dX7tx5oXJpR9NNhafyKq+Jn6gQ+V+udU9asjjf0mCTGpVeDu5T3Q/VZzPb
+        cVvbzfW3kl3YEHzOYQfLiRWr4zjWB9sI3/q4Pl5neqyptpVfVli60qctPfr6Plpv9ly1r+AJ
+        EZlqz+f5yONS86ODSizFGYmGWsxFxYkAXJUZb2AEAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrEIsWRmVeSWpSXmKPExsWy7bCSvO73wuUpBju7JCwezNvGZnHl63s2
+        i4XTljNa7H29ld3ibNMbdotNj6+xWpzo+8BqMeP8PiaLzi+zgEo+bmWxaOtcBhSb/JLNYsub
+        iawOvB6bVnWyedy5tofNY97JQI/73ceZPDYvqfd4v+8qm0ffllWMHptPV3t83iQXwBnFZZOS
+        mpNZllqkb5fAlTH3/l/Ggj0CFW33fjE3MHbxdTFyckgImEh8ePyXrYuRi0NIYDejxML+Pcxd
+        jBxACQmJLVs5IExhicOHi0HKhQSeM0rMO6ELYrMJpElMmrufFaRVRKCNUeLRx/9gDrNAA7PE
+        wlOr2SGGbmeU2Nx5jQWkhVPAUmLXgSNMILawgJtE28JnzCA2i4CKxK8te8DivEA1b06CjAWx
+        BSVOznwC1ssMdGnj4W4oW15i+9s5zBAfKEj8fLqMFSIuIjG7sw0sLiLgJHHn/kfGCYzCs5CM
+        moVk1Cwko2YhaV/AyLKKUTK1oDg3PbfYsMAwL7Vcrzgxt7g0L10vOT93EyM4WrU0dzBuX/VB
+        7xAjEwfjIUYJDmYlEd5jZ5alCPGmJFZWpRblxxeV5qQWH2KU5mBREucVf9GbIiSQnliSmp2a
+        WpBaBJNl4uCUamDq5Vv+IuLKUY8d3xhu2BgyCjJkvrxX9O+kT/bXT7JFX60XG3x6vSNg/szA
+        eM95F87Nmi3w1CzrllnjM4PnQp+rJC4/Tz3d8emCVIvKknjjZb2XpBadFb2RfuvVpapfvwXN
+        4+4xqH/dO31x8hqDmdkdyQ8Y0v6LPMjnfNK/XYZzwUXD1qdSff/85KZnmt9sjmzZveD4+Zd2
+        mx7pV27a8V+4YoPWy+o4HWnx1q4/797u1erb/WDCVIHfvqbf76w4MumC0SJhoZWHY3zntbxa
+        kZC51vnGLwmnm/NLZbgq79hx7A3uu6SlraJ16uFFxpjyBheuLaWyFmJ2U/6dqC7c8MPGOlHk
+        U5GPjuWOiuRGWY7dSizFGYmGWsxFxYkANMGVdUUDAAA=
+X-CMS-MailID: 20230707020127epcas1p328fc9539cb01bf314f569e676c277f86
+X-Msg-Generator: CA
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20230706125011epcas1p437211c1555189b16614f13aa212688db
+References: <20230706124905.15134-1-tzimmermann@suse.de>
+        <CGME20230706125011epcas1p437211c1555189b16614f13aa212688db@epcas1p4.samsung.com>
+        <20230706124905.15134-7-tzimmermann@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/6/23 17:08, Thomas Zimmermann wrote:
-> The Kconfig token FB_SYS_HELPERS_DEFERRED selects everything that
-> is required for deferred I/O on system-memory framebuffers. Select
-> it from FB_BROADSHEET in favor of the existing identical selection.
->
+Hi,
+
+> -----Original Message-----
+> From: Thomas Zimmermann <tzimmermann@suse.de>
+> Sent: Thursday, July 6, 2023 9:47 PM
+> To: javierm@redhat.com; maarten.lankhorst@linux.intel.com;
+> mripard@kernel.org
+> Cc: dri-devel@lists.freedesktop.org; linux-arm-kernel@lists.infradead.org;
+> linux-samsung-soc@vger.kernel.org; linux-tegra@vger.kernel.org; linux-
+> fbdev@vger.kernel.org; Thomas Zimmermann <tzimmermann@suse.de>; Inki Dae
+> <inki.dae@samsung.com>; Seung-Woo Kim <sw0312.kim@samsung.com>; Kyungmin
+> Park <kyungmin.park@samsung.com>; Krzysztof Kozlowski
+> <krzysztof.kozlowski@linaro.org>; Alim Akhtar <alim.akhtar@samsung.com>
+> Subject: [PATCH v2 06/11] drm/exynos: Set fbdev FBINFO_VIRTFB flag
+> 
+> Mark the framebuffer with FBINFO_VIRTFB. The framebuffer range is
+> in DMA-able memory and should be accessed with the CPU's regular
+> memory ops.
+> 
+> v2:
+> 	* drop FBINFO_FLAG_DEFAULT
+> 
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+> Acked-by: Maxime Ripard <mripard@kernel.org>
 
-I'm actually not a fan of deferred-IO for older drivers, but
-in this case where the drivers operate on system memory anyway,
-this is the right approach.
+Acked-by : Inki Dae <inki.dae@samsung.com>
 
-The series looks good:
+Thanks,
+Inki Dae
 
-Acked-by: Helge Deller <deller@gmx.de>
-
-Helge
-
+> Cc: Inki Dae <inki.dae@samsung.com>
+> Cc: Seung-Woo Kim <sw0312.kim@samsung.com>
+> Cc: Kyungmin Park <kyungmin.park@samsung.com>
+> Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Cc: Alim Akhtar <alim.akhtar@samsung.com>
 > ---
->   drivers/video/fbdev/Kconfig | 6 +-----
->   1 file changed, 1 insertion(+), 5 deletions(-)
->
-> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-> index f14229757311..fd862faafe66 100644
-> --- a/drivers/video/fbdev/Kconfig
-> +++ b/drivers/video/fbdev/Kconfig
-> @@ -2179,11 +2179,7 @@ config FB_MX3
->   config FB_BROADSHEET
->   	tristate "E-Ink Broadsheet/Epson S1D13521 controller support"
->   	depends on FB && (ARCH_PXA || COMPILE_TEST)
-> -	select FB_SYS_FILLRECT
-> -	select FB_SYS_COPYAREA
-> -	select FB_SYS_IMAGEBLIT
-> -	select FB_SYS_FOPS
-> -	select FB_DEFERRED_IO
-> +	select FB_SYS_HELPERS_DEFERRED
->   	help
->   	  This driver implements support for the E-Ink Broadsheet
->   	  controller. The release name for this device was Epson S1D13521
+>  drivers/gpu/drm/exynos/exynos_drm_fbdev.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
+> b/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
+> index 7ca3424b59ce..828318de8529 100644
+> --- a/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
+> +++ b/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
+> @@ -79,6 +79,7 @@ static int exynos_drm_fbdev_update(struct drm_fb_helper
+> *helper,
+>  	offset = fbi->var.xoffset * fb->format->cpp[0];
+>  	offset += fbi->var.yoffset * fb->pitches[0];
+> 
+> +	fbi->flags |= FBINFO_VIRTFB;
+>  	fbi->screen_buffer = exynos_gem->kvaddr + offset;
+>  	fbi->screen_size = size;
+>  	fbi->fix.smem_len = size;
+> --
+> 2.41.0
+
 

@@ -2,99 +2,109 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1588FC001DD
-	for <linux-fbdev@archiver.kernel.org>; Fri,  7 Jul 2023 10:14:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4162C0015E
+	for <linux-fbdev@archiver.kernel.org>; Fri,  7 Jul 2023 11:33:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232507AbjGGKOi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 7 Jul 2023 06:14:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39752 "EHLO
+        id S229800AbjGGLdj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 7 Jul 2023 07:33:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42384 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232915AbjGGKOH (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 7 Jul 2023 06:14:07 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 45D5830D7
-        for <linux-fbdev@vger.kernel.org>; Fri,  7 Jul 2023 03:12:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1688724749;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=DlW1R/8hRwezlWgbC+wvZSXHhVUh/eG+VQMZJgN0Tvc=;
-        b=SKvhzrwoSXjEeAVCIGLfT5B6/Ux74RR+4qclTt80kZw2qgHW+ph0GeZ+BZJdiml1m1mkVO
-        Qm95Bq+9Xw04mzOS7EH849Oq9qjkGgT+lq+VE8KrkO5mvGDffZGf8nSfdBhYQ+KyTP7dav
-        QkxCazsX36QdyvZtGIq4cq6Q8MS7Dhc=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-134-nXTbHQs3O0mtFu0jaaA5AQ-1; Fri, 07 Jul 2023 06:12:27 -0400
-X-MC-Unique: nXTbHQs3O0mtFu0jaaA5AQ-1
-Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-3158a22534aso115025f8f.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 07 Jul 2023 03:12:27 -0700 (PDT)
+        with ESMTP id S229695AbjGGLdi (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 7 Jul 2023 07:33:38 -0400
+Received: from mail-yb1-xb2c.google.com (mail-yb1-xb2c.google.com [IPv6:2607:f8b0:4864:20::b2c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AC34B9E
+        for <linux-fbdev@vger.kernel.org>; Fri,  7 Jul 2023 04:33:37 -0700 (PDT)
+Received: by mail-yb1-xb2c.google.com with SMTP id 3f1490d57ef6-c4cb4919bb9so1950344276.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 07 Jul 2023 04:33:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1688729617; x=1691321617;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=RMDmR1AyUqqSLlrR4dAl1mTPWPJqJms7W4GVYjDPIGA=;
+        b=xiiQaYZq3bDHw91HWI3fRO9UDkLX7hyAFNYDmTVBWHFjkvIZjxGpJ9Ucr1pqYcfkCy
+         mZ8qVZI4gHIQAjBqmvS/E0Lu5McUUZMuarBruPYB3Z5vRsXtxYrhontrBigkgUOWMcTh
+         AcX/Q+4iYvqSQQhP4CqYV5lOm749u86MZwzKYr+PWH5I2o2upjOC8iQKoaLsHS4ZmX9i
+         wduX5j7NLHNyM6waY5iUjI7MOSAgIh63hRMWL+VCYtcrsbS3S8OPN70xEFgGPBQFGdi1
+         qUGifkUwapGATJFhAkRv9er8DG50uEop5Wi7WKN1Ync5B+2EBdQZ+fNxjctFco+oSLIX
+         sYaw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688724746; x=1691316746;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=DlW1R/8hRwezlWgbC+wvZSXHhVUh/eG+VQMZJgN0Tvc=;
-        b=aPeXHATpeIl/sTHupK0v3HstQvmlABSVMzt15dIV7iWH4S5PN1SzFVNQAevFV6pWEU
-         csQC5Y771VOGU8f0G6dEHqyG7Nxz7Z6OnGP9tz9uLqU6z3BaFa7YpLpNYGEFNYtPW6At
-         uoFwnRjsVuu5EsoOwaapR9gr5x0a2l8K69zOFyJtsNb9JANlBXoTK54OiVB5DRcy4nBO
-         BBVKG35j7bT1uSNBnvCuPGysX8kItoC2BL7RJDdahahu+quaXUm/cBAKwRIbiGOkhHFH
-         WC9eBWnUjx64dqh8DalGRP7N57A4LLTtziB9lEI/wcCR5a7KgfiHlbZWm4Xn1/muMdJE
-         8bqQ==
-X-Gm-Message-State: ABy/qLZc+QxsH/Txg2M+OSmG3N9xn0+KRfNLQ2g9vNKlXfvVkWMMjjG+
-        TMY5pWALILy8uMOdQugG8Xu/kkUOOPFOP4xBEOIIveL5TsuY2ICA1mhoeOX5X+p6jFgc7Hx6428
-        kR7RMDP6sYyMhxBRQfkK+WOo=
-X-Received: by 2002:adf:e40b:0:b0:313:f02f:be7f with SMTP id g11-20020adfe40b000000b00313f02fbe7fmr3429135wrm.55.1688724746545;
-        Fri, 07 Jul 2023 03:12:26 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlEl0rRQx8YRJhH9y3kGM2crHvIosSMl2yPsiQFeLRX1mWJpZ5P5lO4jWKSG6bWALHyxhssqPQ==
-X-Received: by 2002:adf:e40b:0:b0:313:f02f:be7f with SMTP id g11-20020adfe40b000000b00313f02fbe7fmr3429126wrm.55.1688724746175;
-        Fri, 07 Jul 2023 03:12:26 -0700 (PDT)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id m5-20020adfe945000000b00313f9085119sm4031028wrn.113.2023.07.07.03.12.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Jul 2023 03:12:25 -0700 (PDT)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
-        maarten.lankhorst@linux.intel.com, mripard@kernel.org
-Cc:     dri-devel@lists.freedesktop.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-fbdev@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Mikko Perttunen <mperttunen@nvidia.com>
-Subject: Re: [PATCH v3 05/12] drm/tegra: Store pointer to vmap'ed
- framebuffer in screen_buffer
-In-Reply-To: <20230707083422.18691-6-tzimmermann@suse.de>
-References: <20230707083422.18691-1-tzimmermann@suse.de>
- <20230707083422.18691-6-tzimmermann@suse.de>
-Date:   Fri, 07 Jul 2023 12:12:19 +0200
-Message-ID: <87pm54xc70.fsf@minerva.mail-host-address-is-not-set>
+        d=1e100.net; s=20221208; t=1688729617; x=1691321617;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=RMDmR1AyUqqSLlrR4dAl1mTPWPJqJms7W4GVYjDPIGA=;
+        b=KLj2ZYttOp9yPNcERKGu8u9sSt4DXyHgxSAr+jw/BIb4Mv+ri5JmELhGgI4hcKqdPy
+         iVKAmYiiT2xFYSowO6K7IvGy35g28S5LB0/DvvAmtIxLWxnaIQ+l/WuuuMbWUwaaP+F8
+         R700t5YcuUhtHpCHWJWKTg4ouEYukg917pa1FLDF452yEduA//3rfHAQwlwX8zIXvTAO
+         UzL/EZaaGa+26/2N6Z6MRm3O6JjjKCDZcSiF1jzp/1GAdp2YYbALCY5Rq27+CbuYXiqg
+         URVPGJ5oE0amPIK5vbGAm1HiVtdIXi1E72eJ/6n9K/pDMbQEP818VyOaQ9PcXh7cSQdQ
+         Mofw==
+X-Gm-Message-State: ABy/qLYP/9vht1Rj2zqfsbOqEFnwkCyTHgo/O8f1gUxs00I/DaF3UyNA
+        Q0uHpD/0CicDIiv8l5RWyOi83ECUN26jLUM+8EN9zBBo6XBUfDxp
+X-Google-Smtp-Source: APBJJlEQSj9eXj+7lnzyovN+ytLh/4DHueGCx30NZ+9pdKgvYoJ0FyPX7RpPM7SVjIqI/EaQCzqVM+GieMin6C25zn0=
+X-Received: by 2002:a25:604:0:b0:c5f:d493:c91f with SMTP id
+ 4-20020a250604000000b00c5fd493c91fmr3740950ybg.61.1688729616893; Fri, 07 Jul
+ 2023 04:33:36 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+References: <20230707095415.1449376-1-arnd@kernel.org> <20230707095415.1449376-3-arnd@kernel.org>
+In-Reply-To: <20230707095415.1449376-3-arnd@kernel.org>
+From:   Linus Walleij <linus.walleij@linaro.org>
+Date:   Fri, 7 Jul 2023 13:33:24 +0200
+Message-ID: <CACRpkdbiDUomH8HLkk_jyJZYc+mEmRaFL8-JasDmd=ooSB62Qw@mail.gmail.com>
+Subject: Re: [PATCH 3/4] dummycon: limit Arm console size hack to footbridge
+To:     Arnd Bergmann <arnd@kernel.org>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Russell King <linux@armlinux.org.uk>,
+        dri-devel@lists.freedesktop.org, Ard Biesheuvel <ardb@kernel.org>,
+        Helge Deller <deller@gmx.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Arnd Bergmann <arnd@arndb.de>,
+        "Russell King (Oracle)" <rmk+kernel@armlinux.org.uk>,
+        linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Thomas Zimmermann <tzimmermann@suse.de> writes:
+On Fri, Jul 7, 2023 at 11:56=E2=80=AFAM Arnd Bergmann <arnd@kernel.org> wro=
+te:
 
-> Tegra uses DMA-able memory, which has to be acessed with CPU ops
-> for system-memory. Store the framebuffer's vmap address in struct
-> fb_info.screen_buffer. The currently used field 'screen_base' is
-> for I/O memory.
+> From: Arnd Bergmann <arnd@arndb.de>
 >
-> Suggested-by: Thierry Reding <thierry.reding@gmail.com>
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Thierry Reding <thierry.reding@gmail.com>
-> Cc: Mikko Perttunen <mperttunen@nvidia.com>
-> ---
+> The dummycon default console size used to be determined by architecture,
+> but now this is a Kconfig setting on everything except ARM. Tracing this
+> back in the historic git trees, this was used to match the size of VGA
+> console or VGA framebuffer on early machines, but nowadays that code is
+> no longer used, except probably on the old footbridge/netwinder since
+> that is the only one that supports vgacon.
+>
+> On machines with a framebuffer, booting with DT so far results in always
+> using the hardcoded 80x30 size in dummycon, while on ATAGS the setting
+> can come from a bootloader specific override. Both seem to be worse
+> choices than the Kconfig setting, since the actual text size for fbcon
+> also depends on the selected font.
+>
+> Make this work the same way as everywhere else and use the normal
+> Kconfig setting, except for the footbridge with vgacon, which keeps
+> using the traditional code. If vgacon is disabled, footbridge can
+> also ignore the setting. This means the screen_info only has to be
+> provided when either vgacon or EFI are enabled now.
+>
+> To limit the amount of surprises on Arm, change the Kconfig default
+> to the previously used 80x30 setting instead of the usual 80x25.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Tested this before and after patch and it looks the same on the NetWinder.
+Tested-by: Linus Walleij <linus.walleij@linaro.org>
 
--- 
-Best regards,
+The legacy in the cyber2000 FB driver supports pseudocolor which
+makes it a bit hard to rewrite into a simple DRM driver, which is something
+I could otherwise look into, it's not a very big or complex driver
+after all.
 
-Javier Martinez Canillas
-Core Platforms
-Red Hat
-
+Yours,
+Linus Walleij

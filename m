@@ -2,57 +2,57 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73037C0015E
-	for <linux-fbdev@archiver.kernel.org>; Fri,  7 Jul 2023 13:43:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C477C0015E
+	for <linux-fbdev@archiver.kernel.org>; Fri,  7 Jul 2023 13:43:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229729AbjGGNnC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 7 Jul 2023 09:43:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55502 "EHLO
+        id S232181AbjGGNnl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 7 Jul 2023 09:43:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55836 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230104AbjGGNnB (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 7 Jul 2023 09:43:01 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1194226A6
-        for <linux-fbdev@vger.kernel.org>; Fri,  7 Jul 2023 06:41:53 -0700 (PDT)
+        with ESMTP id S232552AbjGGNne (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 7 Jul 2023 09:43:34 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EAFA41FE8
+        for <linux-fbdev@vger.kernel.org>; Fri,  7 Jul 2023 06:42:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1688737313;
+        s=mimecast20190719; t=1688737370;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=lszDzBh1sFuGKtdYdBJwoIUw40PY44r7U0tPTyFHI1Y=;
-        b=C/uyhEkVC0bU0K+UW/LzuhSwAQkh8RUXH/vtze2/wMvwdbIS6mpPJv3Xu3DQcfmXbrKWlr
-        xwKyboxorQGfX2QYyxKvBVUnogYoc3GxjMECSJzQGQgG+LY3k8WPWFxbjOX/xe4Mee/cK4
-        IV43bpa3bZmt7xDYjDJ1e+egK+hvwrg=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=I+owWNOWvEK7SZ1O/p9+BsoqrhRbp6l42ZVJTUZNbK4=;
+        b=al24FDfIHIpwfIhJZ/GjyMRkqN6Ebtm6UIeOmij0IPwvVUa9gbYQxg3jGwRv8oqKixNFVL
+        IKF1S4ezG1Yo0QTg3UFKKdp7vdk5VUjZCJGwBfgDGDLudN86CWLuzZ/olGqwVU63g6JHMN
+        tbZ0JVjmEIfPfP4HkMMW7nJNGql5eLU=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-588-LruRFjD_Nn-GN079Cjrrpw-1; Fri, 07 Jul 2023 09:41:52 -0400
-X-MC-Unique: LruRFjD_Nn-GN079Cjrrpw-1
-Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-314134f403fso999269f8f.2
-        for <linux-fbdev@vger.kernel.org>; Fri, 07 Jul 2023 06:41:51 -0700 (PDT)
+ us-mta-587-r15ZWOOAM6mRLF4mUuNYfA-1; Fri, 07 Jul 2023 09:42:49 -0400
+X-MC-Unique: r15ZWOOAM6mRLF4mUuNYfA-1
+Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-3f5df65f9f4so11352305e9.2
+        for <linux-fbdev@vger.kernel.org>; Fri, 07 Jul 2023 06:42:48 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688737311; x=1691329311;
+        d=1e100.net; s=20221208; t=1688737368; x=1691329368;
         h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
          :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=lszDzBh1sFuGKtdYdBJwoIUw40PY44r7U0tPTyFHI1Y=;
-        b=VMNZly04cmAYfs7c+EHCWaNd/nsX12I0/K9NNQsRiWoLgvVR0ZTUgp8b59ScLsgX2Y
-         u4Op7mILdOAuYACU6Doy4msCQ+ZPZpSH/dRJg8hMCxQovsxQmxpDqpr8kW83sLMT6/a8
-         /dyZ9v/agRZI9W1hIQ4WHnFyGlOMB7JhiAdTQXIQLNB8spGKx8xfWLuCy2ROx8M65vtF
-         ROJD6oshRaCo0YpExmV6r/oTP7sqyxBDvr4Mxvpfo45l6dvNfkyULtaEfqdaVVGIXR0M
-         bcvj6L2Bw6iyYXoXGI2a7KGmalAdWTdh3397HDWbF/uZhs6lCzi7vxGbS5cBAbCZBtGi
-         ju6A==
-X-Gm-Message-State: ABy/qLYZB++0VbkYnrE19rMtVyCFhxSSLJt0qPNgCCKXkfa8lbVNv+5Z
-        Aa7tyo6m+1448N8YNTTU+XY2trEQleBpYwZDuH7AfgNZWBnOViecUTkldNv6BjlxJs9LAwLLOg6
-        SM7ddNY/BpZ/xDcrPixZGdYo=
-X-Received: by 2002:a5d:4d4d:0:b0:313:ed1d:39d5 with SMTP id a13-20020a5d4d4d000000b00313ed1d39d5mr3821981wru.35.1688737311022;
-        Fri, 07 Jul 2023 06:41:51 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlHSL73NnelkECzSlrHFzZyBm2hgT0OM42vU9A9OivdXpoF5fr4x25M2kgCTNebgI6XNosfvXQ==
-X-Received: by 2002:a5d:4d4d:0:b0:313:ed1d:39d5 with SMTP id a13-20020a5d4d4d000000b00313ed1d39d5mr3821963wru.35.1688737310726;
-        Fri, 07 Jul 2023 06:41:50 -0700 (PDT)
+        bh=I+owWNOWvEK7SZ1O/p9+BsoqrhRbp6l42ZVJTUZNbK4=;
+        b=LN7Fda6FeKe0rUTDC38GoTxBmgo6f6ABNMTpA/5oGUmGd14N6n/HLv3KvkYdcaEibM
+         2b7Lxn9jJNN8qb/AJGbdyjvTaHieostCfZ5y/bAIIUdODX/konNx3qcSJNDom3wB3ch+
+         iWO54EwMM5tlPUvOdr4cjQvLNPkw60YNPJ56eK2vAcmyLjBakhQyueTy3dgfRcIv2KRB
+         kbG4grtrghN2BfboqjARQbQGbuk8/9+p5RM6J110ZEed9ewFtPLCU0FGMoBOtwepsVGF
+         V8qb0Ecej2JRq+GQ8QUdZRKhsLNCJq7gjnq2SM4yO7TjkhBrIPXiccm9Nc1M0jt97ylG
+         81yQ==
+X-Gm-Message-State: ABy/qLaz1n6j/f8FnvcFdbf/StMhyIQVenTCsfWctddmcgpxGCysfwT0
+        AuAp9/C+/IfFDZRIQwdeSAqInBmpcimn2JdB1pqX7WaYIis0dDvbNgh/NHFl1/ynAEBmAYBJ8RD
+        LviJsHxygGy+FOq2uM11ZYC0=
+X-Received: by 2002:a7b:cd85:0:b0:3fb:5dad:1392 with SMTP id y5-20020a7bcd85000000b003fb5dad1392mr3824010wmj.17.1688737367976;
+        Fri, 07 Jul 2023 06:42:47 -0700 (PDT)
+X-Google-Smtp-Source: APBJJlEZxhfEH8UwFPHB4pXOYFja3GHddFsOU/EgTb58z7K38wBQ2x+vg0IaPSVH4aXqur2PYGn+xA==
+X-Received: by 2002:a7b:cd85:0:b0:3fb:5dad:1392 with SMTP id y5-20020a7bcd85000000b003fb5dad1392mr3823993wmj.17.1688737367817;
+        Fri, 07 Jul 2023 06:42:47 -0700 (PDT)
 Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id g23-20020a7bc4d7000000b003fc02a410d0sm181059wmk.48.2023.07.07.06.41.50
+        by smtp.gmail.com with ESMTPSA id k12-20020a7bc30c000000b003fba92fad35sm2498874wmj.26.2023.07.07.06.42.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Jul 2023 06:41:50 -0700 (PDT)
+        Fri, 07 Jul 2023 06:42:47 -0700 (PDT)
 From:   Javier Martinez Canillas <javierm@redhat.com>
 To:     Arnd Bergmann <arnd@kernel.org>,
         Thomas Zimmermann <tzimmermann@suse.de>
@@ -61,16 +61,23 @@ Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
         dri-devel@lists.freedesktop.org, Ard Biesheuvel <ardb@kernel.org>,
         Helge Deller <deller@gmx.de>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        "Russell King (Oracle)" <rmk+kernel@armlinux.org.uk>,
-        linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 3/4] dummycon: limit Arm console size hack to footbridge
-In-Reply-To: <20230707095415.1449376-3-arnd@kernel.org>
+        Arnd Bergmann <arnd@arndb.de>, Guo Ren <guoren@kernel.org>,
+        Brian Cain <bcain@quicinc.com>,
+        Dinh Nguyen <dinguyen@kernel.org>,
+        Rich Felker <dalias@libc.org>,
+        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+        "David S. Miller" <davem@davemloft.net>,
+        Chris Zankel <chris@zankel.net>,
+        Max Filippov <jcmvbkbc@gmail.com>,
+        Masahiro Yamada <masahiroy@kernel.org>,
+        linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
+        linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: [PATCH 4/4] vgacon, arch/*: remove unused screen_info definitions
+In-Reply-To: <20230707095415.1449376-4-arnd@kernel.org>
 References: <20230707095415.1449376-1-arnd@kernel.org>
- <20230707095415.1449376-3-arnd@kernel.org>
-Date:   Fri, 07 Jul 2023 15:41:49 +0200
-Message-ID: <87h6qfyh2a.fsf@minerva.mail-host-address-is-not-set>
+ <20230707095415.1449376-4-arnd@kernel.org>
+Date:   Fri, 07 Jul 2023 15:42:46 +0200
+Message-ID: <87edljyh0p.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
 Content-Type: text/plain
 Precedence: bulk
@@ -81,30 +88,18 @@ Arnd Bergmann <arnd@kernel.org> writes:
 
 > From: Arnd Bergmann <arnd@arndb.de>
 >
-> The dummycon default console size used to be determined by architecture,
-> but now this is a Kconfig setting on everything except ARM. Tracing this
-> back in the historic git trees, this was used to match the size of VGA
-> console or VGA framebuffer on early machines, but nowadays that code is
-> no longer used, except probably on the old footbridge/netwinder since
-> that is the only one that supports vgacon.
+> A number of architectures either kept the screen_info definition for
+> historical purposes as it used to be required by the generic VT code, or
+> they copied it from another architecture in order to build the VGA
+> console driver in an allmodconfig build.
 >
-> On machines with a framebuffer, booting with DT so far results in always
-> using the hardcoded 80x30 size in dummycon, while on ATAGS the setting
-> can come from a bootloader specific override. Both seem to be worse
-> choices than the Kconfig setting, since the actual text size for fbcon
-> also depends on the selected font.
->
-> Make this work the same way as everywhere else and use the normal
-> Kconfig setting, except for the footbridge with vgacon, which keeps
-> using the traditional code. If vgacon is disabled, footbridge can
-> also ignore the setting. This means the screen_info only has to be
-> provided when either vgacon or EFI are enabled now.
->
-> To limit the amount of surprises on Arm, change the Kconfig default
-> to the previously used 80x30 setting instead of the usual 80x25.
+> Now that vgacon no longer builds on these architectures, remove the
+> stale definitions.
 >
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 > ---
+
+Nice cleanup!
 
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 

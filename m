@@ -2,111 +2,122 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C477C0015E
-	for <linux-fbdev@archiver.kernel.org>; Fri,  7 Jul 2023 13:43:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BC11EB64DA
+	for <linux-fbdev@archiver.kernel.org>; Fri,  7 Jul 2023 14:28:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232181AbjGGNnl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 7 Jul 2023 09:43:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55836 "EHLO
+        id S232912AbjGGO20 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 7 Jul 2023 10:28:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57450 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232552AbjGGNne (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 7 Jul 2023 09:43:34 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EAFA41FE8
-        for <linux-fbdev@vger.kernel.org>; Fri,  7 Jul 2023 06:42:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1688737370;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=I+owWNOWvEK7SZ1O/p9+BsoqrhRbp6l42ZVJTUZNbK4=;
-        b=al24FDfIHIpwfIhJZ/GjyMRkqN6Ebtm6UIeOmij0IPwvVUa9gbYQxg3jGwRv8oqKixNFVL
-        IKF1S4ezG1Yo0QTg3UFKKdp7vdk5VUjZCJGwBfgDGDLudN86CWLuzZ/olGqwVU63g6JHMN
-        tbZ0JVjmEIfPfP4HkMMW7nJNGql5eLU=
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
- [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-587-r15ZWOOAM6mRLF4mUuNYfA-1; Fri, 07 Jul 2023 09:42:49 -0400
-X-MC-Unique: r15ZWOOAM6mRLF4mUuNYfA-1
-Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-3f5df65f9f4so11352305e9.2
-        for <linux-fbdev@vger.kernel.org>; Fri, 07 Jul 2023 06:42:48 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688737368; x=1691329368;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=I+owWNOWvEK7SZ1O/p9+BsoqrhRbp6l42ZVJTUZNbK4=;
-        b=LN7Fda6FeKe0rUTDC38GoTxBmgo6f6ABNMTpA/5oGUmGd14N6n/HLv3KvkYdcaEibM
-         2b7Lxn9jJNN8qb/AJGbdyjvTaHieostCfZ5y/bAIIUdODX/konNx3qcSJNDom3wB3ch+
-         iWO54EwMM5tlPUvOdr4cjQvLNPkw60YNPJ56eK2vAcmyLjBakhQyueTy3dgfRcIv2KRB
-         kbG4grtrghN2BfboqjARQbQGbuk8/9+p5RM6J110ZEed9ewFtPLCU0FGMoBOtwepsVGF
-         V8qb0Ecej2JRq+GQ8QUdZRKhsLNCJq7gjnq2SM4yO7TjkhBrIPXiccm9Nc1M0jt97ylG
-         81yQ==
-X-Gm-Message-State: ABy/qLaz1n6j/f8FnvcFdbf/StMhyIQVenTCsfWctddmcgpxGCysfwT0
-        AuAp9/C+/IfFDZRIQwdeSAqInBmpcimn2JdB1pqX7WaYIis0dDvbNgh/NHFl1/ynAEBmAYBJ8RD
-        LviJsHxygGy+FOq2uM11ZYC0=
-X-Received: by 2002:a7b:cd85:0:b0:3fb:5dad:1392 with SMTP id y5-20020a7bcd85000000b003fb5dad1392mr3824010wmj.17.1688737367976;
-        Fri, 07 Jul 2023 06:42:47 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlEZxhfEH8UwFPHB4pXOYFja3GHddFsOU/EgTb58z7K38wBQ2x+vg0IaPSVH4aXqur2PYGn+xA==
-X-Received: by 2002:a7b:cd85:0:b0:3fb:5dad:1392 with SMTP id y5-20020a7bcd85000000b003fb5dad1392mr3823993wmj.17.1688737367817;
-        Fri, 07 Jul 2023 06:42:47 -0700 (PDT)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id k12-20020a7bc30c000000b003fba92fad35sm2498874wmj.26.2023.07.07.06.42.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Jul 2023 06:42:47 -0700 (PDT)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     Arnd Bergmann <arnd@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Russell King <linux@armlinux.org.uk>,
-        dri-devel@lists.freedesktop.org, Ard Biesheuvel <ardb@kernel.org>,
-        Helge Deller <deller@gmx.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Arnd Bergmann <arnd@arndb.de>, Guo Ren <guoren@kernel.org>,
-        Brian Cain <bcain@quicinc.com>,
-        Dinh Nguyen <dinguyen@kernel.org>,
-        Rich Felker <dalias@libc.org>,
-        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-        "David S. Miller" <davem@davemloft.net>,
-        Chris Zankel <chris@zankel.net>,
-        Max Filippov <jcmvbkbc@gmail.com>,
-        Masahiro Yamada <masahiroy@kernel.org>,
-        linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
-        linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: [PATCH 4/4] vgacon, arch/*: remove unused screen_info definitions
-In-Reply-To: <20230707095415.1449376-4-arnd@kernel.org>
+        with ESMTP id S232698AbjGGO2Z (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 7 Jul 2023 10:28:25 -0400
+Received: from out3-smtp.messagingengine.com (out3-smtp.messagingengine.com [66.111.4.27])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 66AB2199F;
+        Fri,  7 Jul 2023 07:28:23 -0700 (PDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
+        by mailout.nyi.internal (Postfix) with ESMTP id D1B245C0158;
+        Fri,  7 Jul 2023 10:28:22 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute6.internal (MEProxy); Fri, 07 Jul 2023 10:28:22 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+        :cc:content-transfer-encoding:content-type:content-type:date
+        :date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+        :references:reply-to:sender:subject:subject:to:to; s=fm2; t=
+        1688740102; x=1688826502; bh=PRCJoByWe+jzYViHJySz4cgcOiF7hvymZA3
+        KbZ+oY2Y=; b=SQC42SJyIUH6HBC+3wWyAI8Q8ZTOPjSPWkoCdYZg3n+YgJ8rYr7
+        8Yd/pZNWJuReBgg1FKSG0vonD8XrZwzeYYq6ytR/gOUHaghSGJHC5L+QETUEex9P
+        rNPDiecC2xrjvJEslLJLG8/6nkzD+dh/CoGmNZlv8GC7cKh+bdxH4ql0oqWk5mqM
+        xksv4NObeVk2gNWz6Rl1Wge+peEo6eqgkazVYjmvmwt121hSaIJHQp/HYoDTqJvc
+        rh1OkSL2tihN+3yc4lf1Bh3eq3qDG83JPjHz13+8JfKcEQjxb9y8/p6+KvRtKl0Y
+        ppfyNS7YeLDRG3XpLS58SpvlKdDfnW2BmaA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-transfer-encoding
+        :content-type:content-type:date:date:feedback-id:feedback-id
+        :from:from:in-reply-to:in-reply-to:message-id:mime-version
+        :references:reply-to:sender:subject:subject:to:to:x-me-proxy
+        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=
+        1688740102; x=1688826502; bh=PRCJoByWe+jzYViHJySz4cgcOiF7hvymZA3
+        KbZ+oY2Y=; b=Vt+uJAbyT853SlzTCvpdCfXXfkkPxhZPFsVRGCsCrK7L7LCiXmv
+        D2Wz81H++FMx2xCWDASgDyLzqm4h8I/zavUlOdR99ZNjYVrrfym/YlmQOUNlZJga
+        Xc/15KXTBH9MV+UrR/2eoAvAguo0sz6Mv2iE5WjsDGYMBl7T01U66auVbP1v6r0I
+        xl/5rM4srHf88MzdZMBkfIyFPEsE69qZsCIvc3Uc3eB2+0IHj6yAtGv1yvO9S8Wl
+        2Xu3P928RSn2mDvegGmXuRuskPtFB8aemouLQ5CoQoY9g0V22H0KniI3NbYvMZbQ
+        tAzw28oYcldDsAQreYpe+P4OBg3GZE4p6yQ==
+X-ME-Sender: <xms:BSGoZK-xFddpFgwnnkWCHC3k2ZffPejzzSL3IJN7mb4pbAEWKfQ42w>
+    <xme:BSGoZKv9Kek_rQfcZ8OElDOsb_1--HFZSAmJ1Xlor_2fJ7bk8UxFdyn0XqXMbV5A_
+    n-KuEZbs8UpIVSfCXI>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrvddugdejiecutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
+    fjughrpefofgggkfgjfhffhffvvefutgfgsehtqhertderreejnecuhfhrohhmpedftehr
+    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
+    htvghrnhepgeefjeehvdelvdffieejieejiedvvdfhleeivdelveehjeelteegudektdfg
+    jeevnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
+    hrnhgusegrrhhnuggsrdguvg
+X-ME-Proxy: <xmx:BSGoZAD8zBtV9OHPZb7LgBlKayHpz9rMgfG7gBRo-r4j-te92FN2Yg>
+    <xmx:BSGoZCe4kpWceq5DZEu4I0BcW9olColr5TaIWK_Weli3DVUFgbNEAw>
+    <xmx:BSGoZPM2I1Ooa2DpWRndyBnRsUDnUo24Px63LKANSjew2-PDmXsMBQ>
+    <xmx:BiGoZAFs4fgiCXHcNw-2JJHlyxy7WbaoOVtK4pXXRtk2_zGDpsDxhw>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+        id D5A5FB60086; Fri,  7 Jul 2023 10:28:21 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-531-gfdfa13a06d-fm-20230703.001-gfdfa13a0
+Mime-Version: 1.0
+Message-Id: <1c0119cc-7787-4f95-870e-da1c5894625d@app.fastmail.com>
+In-Reply-To: <CACRpkdbiDUomH8HLkk_jyJZYc+mEmRaFL8-JasDmd=ooSB62Qw@mail.gmail.com>
 References: <20230707095415.1449376-1-arnd@kernel.org>
- <20230707095415.1449376-4-arnd@kernel.org>
-Date:   Fri, 07 Jul 2023 15:42:46 +0200
-Message-ID: <87edljyh0p.fsf@minerva.mail-host-address-is-not-set>
-MIME-Version: 1.0
-Content-Type: text/plain
+ <20230707095415.1449376-3-arnd@kernel.org>
+ <CACRpkdbiDUomH8HLkk_jyJZYc+mEmRaFL8-JasDmd=ooSB62Qw@mail.gmail.com>
+Date:   Fri, 07 Jul 2023 16:27:02 +0200
+From:   "Arnd Bergmann" <arnd@arndb.de>
+To:     "Linus Walleij" <linus.walleij@linaro.org>,
+        "Arnd Bergmann" <arnd@kernel.org>
+Cc:     "Thomas Zimmermann" <tzimmermann@suse.de>,
+        "Javier Martinez Canillas" <javierm@redhat.com>,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        "Russell King" <linux@armlinux.org.uk>,
+        dri-devel@lists.freedesktop.org,
+        "Ard Biesheuvel" <ardb@kernel.org>, "Helge Deller" <deller@gmx.de>,
+        "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+        "Russell King" <rmk+kernel@armlinux.org.uk>,
+        linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 3/4] dummycon: limit Arm console size hack to footbridge
+Content-Type: text/plain;charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Arnd Bergmann <arnd@kernel.org> writes:
-
-> From: Arnd Bergmann <arnd@arndb.de>
+On Fri, Jul 7, 2023, at 13:33, Linus Walleij wrote:
+> On Fri, Jul 7, 2023 at 11:56=E2=80=AFAM Arnd Bergmann <arnd@kernel.org=
+> wrote:
+>> From: Arnd Bergmann <arnd@arndb.de>
+>>
+>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 >
-> A number of architectures either kept the screen_info definition for
-> historical purposes as it used to be required by the generic VT code, or
-> they copied it from another architecture in order to build the VGA
-> console driver in an allmodconfig build.
->
-> Now that vgacon no longer builds on these architectures, remove the
-> stale definitions.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
+> Tested this before and after patch and it looks the same on the NetWin=
+der.
+> Tested-by: Linus Walleij <linus.walleij@linaro.org>
 
-Nice cleanup!
+Great, thanks for testing!
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+> The legacy in the cyber2000 FB driver supports pseudocolor which
+> makes it a bit hard to rewrite into a simple DRM driver, which is some=
+thing
+> I could otherwise look into, it's not a very big or complex driver
+> after all.
 
--- 
-Best regards,
+Not sure if that's worth it, my feeling is that we are stuck with
+fbdev on a lot of other workstations of the era, so unless someone
+puts significant energy into converting all the others as well, there
+is little benefit of changing this one. It would be a little different
+on platforms that actually run a regular Debian distro kernel that
+is shared with modern machines.
 
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+Since you have already spent the time to build and test a kernel with
+this patch, can you do one more test here and check the text size
+reported in the atags on this machine and the actual text sizes you
+get from both vgacon and cyber2000fb?
 
+     Arnd

@@ -2,157 +2,168 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09FCAEB64D9
-	for <linux-fbdev@archiver.kernel.org>; Mon, 10 Jul 2023 09:55:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3640EB64D9
+	for <linux-fbdev@archiver.kernel.org>; Mon, 10 Jul 2023 13:01:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229462AbjGJJzH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 10 Jul 2023 05:55:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38278 "EHLO
+        id S231509AbjGJNBY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 10 Jul 2023 09:01:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47826 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229964AbjGJJyo (ORCPT
+        with ESMTP id S231631AbjGJNBV (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 10 Jul 2023 05:54:44 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 48E283C16;
-        Mon, 10 Jul 2023 02:50:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1688982585; x=1689587385; i=deller@gmx.de;
- bh=3Fhk4S+KBpOnob+kEitQvs6om2f8v6w/tRZ9oWyic+g=;
- h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=rIlLn6b29I6Ct09EJYNArofs8uticSLQ2GcOTXsnKAeI6CQINWrD1HXivM2tQE/C5UV12by
- AQDPgK3+wxn4PTHC8aWrPGrT66vKg0N7td+r7Ay4g8FRqb0XdysywzBag0LMrVWUuGMbzfmKT
- 8hidQ58vTDCgYFTb2MVnOKjcODlF6EEwQMgqzaJ9/Hc5PHJv6KbN2v+vV1Wkb6SA8KM4pz4xc
- jzR78KXrL2MoFMEP6qr/GF0BrY6x7H94xwBKkB4OKez9VYdIZ5Qupd0Cdwj2/9LDindQIrGHC
- qYkFsD5akq/hyqqEPs+un2jHdBJKHtHEiUolQtG2zJrsY14x/nTw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.144.196]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MJE6F-1qXJbP3tlb-00KeCK; Mon, 10
- Jul 2023 11:49:44 +0200
-Message-ID: <375f48de-8093-a540-b78c-e90d57cfbf27@gmx.de>
-Date:   Mon, 10 Jul 2023 11:49:43 +0200
+        Mon, 10 Jul 2023 09:01:21 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A768118;
+        Mon, 10 Jul 2023 06:01:17 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id C15CE221BA;
+        Mon, 10 Jul 2023 13:01:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1688994075; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=88rPmDGaS5gKniv3Edf9SKUMMSNGLxAYotJPEpDKSY0=;
+        b=iI+YdRNDj5roFr+qOpBW4pQiEAaBopdRUiHG5zuIRb1y0+ybtz/NnVxVBMa5EIJRu6ltWS
+        +fc/WnmvzwBboWzDqmOj5Qob383Is/QvSeg41r5d75Sr0CU8Qf8Gzrsq/+f7Ssni6U/Qea
+        O5hM6rasaSVFgFepwU9E2Sc7GM1WzHM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1688994075;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=88rPmDGaS5gKniv3Edf9SKUMMSNGLxAYotJPEpDKSY0=;
+        b=UtgwnR9WK2m89ypILgWLnJMM0a9zUC2f0u22B30PTkORSB9Ev+brG4x1VLnbIsxRmb0NOA
+        jcaYZmAYjwgIieBg==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 70DE313A05;
+        Mon, 10 Jul 2023 13:01:15 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id mIWQGhsBrGTTFAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 10 Jul 2023 13:01:15 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     deller@gmx.de, javierm@redhat.com
+Cc:     linux-sh@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org,
+        linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-arm-kernel@lists.infradead.org,
+        linux-geode@lists.infradead.org, linux-nvidia@lists.surfsouth.com,
+        linux-hyperv@vger.kernel.org, linux-omap@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 02/17] fbdev: Remove flag FBINFO_DEFAULT from fbdev drivers
+Date:   Mon, 10 Jul 2023 14:50:06 +0200
+Message-ID: <20230710130113.14563-3-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230710130113.14563-1-tzimmermann@suse.de>
+References: <20230710130113.14563-1-tzimmermann@suse.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.12.0
-Subject: Re: [PATCH] fbdev: imxfb: Convert to devm_platform_ioremap_resource()
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Yangtao Li <frank.li@vivo.com>
-Cc:     Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>
-References: <20230704093652.18191-1-frank.li@vivo.com>
- <CAMuHMdWrBY1+JDuwODyqLrwJJivt=ewCOKfK41xq+0Hpaf8akQ@mail.gmail.com>
- <da543602-f88e-45ee-d7fd-8fddd0b0ac56@vivo.com>
- <CAMuHMdVa3RmtFouTYk_rPoxO1EswGzTtt855-eFcvtTYObgUCA@mail.gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <CAMuHMdVa3RmtFouTYk_rPoxO1EswGzTtt855-eFcvtTYObgUCA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:DsiWJcWkamKBqNIa2GdiC72CIgoQwSWSK1m6aAfAC0vch6GdTrs
- sIlHka91R5JbhbzUUBAz4dIpvs2cEIwaJ7AjNg3TXv8DKpvFtgG0rYeBi+nt7DmrP/w4YN8
- ptwjV0czdgK0UCysI0BBunVyxZmKdcqtv5R28Kr+2S+vAmkI48AinyiE+7dfxAJK3lI/02W
- cdX7VM8QtUSYk6ybr8QZQ==
-UI-OutboundReport: notjunk:1;M01:P0:U8Djpdcbr3g=;4HQKtk8oZRgrTXuEqs9zKM185TG
- 5Z5uiyYmJ5ytgCE0KzhutdG/0FUntlRUmL6/sI2rPnnWjatXIlRg7Y76OpQ73DtRSEtxU7x33
- uHMzzgkZU3kS9Ju5RoFnp+8WYxYqjLahlyBsf96t6j5J+cnolZ8qrlQM/sNc1PEvZVtn6prbG
- SBdHmco1xtupqjNhS+aavds4wCo92wCmrMYricknDdRRjsAvYHdUNWgczOBXnJO12afy9Zjw2
- p+2ab4rMVBPQDeqDO1yV6vFj55ENdRyJ7V+5gXwzusQ5NBRItzH5bC+u8H0mLtgZy7npvxaZG
- kTfJBUJEOJ7jaOaettIrmrycb0tQgdenFLUhlsDpuqPf2KqXqoU+xDFPlvaNraRLkRMbp3J7B
- IZtqOBOSXiAmJTsPjUezdbtPWnjybhkBy3lVeKEh6+1gyRodoZV9IzU6YDvyv4hbKKS927XLe
- 4mhFi9qXGLQtPObX/977jTC+CSBlTKJakIj/y0r1E0cImnFrE97ZzX7raJu30Eiiz7483yzzi
- gto/HS7DpKMIGDhNAIuCR8SdggZT6qImvp8GK4MNzwmJx5PP1reIj61TGqxPfWMpjvx812NgD
- T6MpdT0DGMgh12y8jQt2rAfMv/3ckMknXLfWk0BnF8wYytd45EebwsljhI31TdcBGq0XBlz7v
- PDXiysDMV9Tb+T7YiiGSncTFS7bzPb2Kzwa6uoN4dChrcoZ3aCV53KAB/2/8MJse4QFBdGNcP
- 7GVeQXlmBHdv0Mp6teTuGzc6dTdNY/HRTEZWjVTFHGUqiIPCmGmzRVUhu6+GfrgNsxGy7914E
- g5w2OzPdDFGxBvqCjDR3LZBo+NWHMm87B+6okXQDwfIo5xI1GAz0y6pY1Pn9+hRT/FNLKwpHs
- hQeTZwgK2Joc7p7Q+zRYP3BynyXKBzuyCEeS67Bi+z4FUHZUT2Rp4MEXK7poQQTKc9YLM0k/M
- WktucR0nhQtfV5WFJ4fJ1HxoJlk=
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/10/23 09:41, Geert Uytterhoeven wrote:
-> Hi Yangtao,
->
-> On Mon, Jul 10, 2023 at 9:25=E2=80=AFAM Yangtao Li <frank.li@vivo.com> w=
-rote:
->> On 2023/7/10 15:10, Geert Uytterhoeven wrote:
->>> [=E4=BD=A0=E9=80=9A=E5=B8=B8=E4=B8=8D=E4=BC=9A=E6=94=B6=E5=88=B0=E6=9D=
-=A5=E8=87=AA geert@linux-m68k.org =E7=9A=84=E7=94=B5=E5=AD=90=E9=82=AE=E4=
-=BB=B6=E3=80=82=E8=AF=B7=E8=AE=BF=E9=97=AE https://aka.ms/LearnAboutSender=
-Identification=EF=BC=8C=E4=BB=A5=E4=BA=86=E8=A7=A3=E8=BF=99=E4=B8=80=E7=82=
-=B9=E4=B8=BA=E4=BB=80=E4=B9=88=E5=BE=88=E9=87=8D=E8=A6=81]
->>> On Tue, Jul 4, 2023 at 11:38=E2=80=AFAM Yangtao Li <frank.li@vivo.com>=
- wrote:
->>>> Use devm_platform_ioremap_resource() to simplify code.
->>>>
->>>> Signed-off-by: Yangtao Li <frank.li@vivo.com>
->>> Thanks for your patch, which is now commit c1cd7a7a231a26c6 ("fbdev:
->>> imxfb: Convert to devm_platform_ioremap_resource()") in fbdev/for-next
->>>
->>>> --- a/drivers/video/fbdev/imxfb.c
->>>> +++ b/drivers/video/fbdev/imxfb.c
->>>> @@ -868,7 +868,6 @@ static int imxfb_probe(struct platform_device *pd=
-ev)
->>>>           struct imxfb_info *fbi;
->>>>           struct lcd_device *lcd;
->>>>           struct fb_info *info;
->>>> -       struct resource *res;
->>>>           struct imx_fb_videomode *m;
->>>>           const struct of_device_id *of_id;
->>>>           struct device_node *display_np;
->>>> @@ -885,10 +884,6 @@ static int imxfb_probe(struct platform_device *p=
-dev)
->>>>           if (of_id)
->>>>                   pdev->id_entry =3D of_id->data;
->>>>
->>>> -       res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
->>>> -       if (!res)
->>>> -               return -ENODEV;
->>>> -
->>>>           info =3D framebuffer_alloc(sizeof(struct imxfb_info), &pdev=
-->dev);
->>>>           if (!info)
->>>>                   return -ENOMEM;
->>>> @@ -970,7 +965,7 @@ static int imxfb_probe(struct platform_device *pd=
-ev)
->>>>                   goto failed_getclock;
->>>>           }
->>>>
->>>> -       fbi->regs =3D devm_ioremap_resource(&pdev->dev, res);
->>>> +       fbi->regs =3D devm_platform_ioremap_resource(pdev, 0);
->>>>           if (IS_ERR(fbi->regs)) {
->>>>                   ret =3D PTR_ERR(fbi->regs);
->>>>                   goto failed_ioremap;
->>>> @@ -1043,7 +1038,6 @@ static int imxfb_probe(struct platform_device *=
-pdev)
->>>>    failed_map:
->>>>    failed_ioremap:
->>>>    failed_getclock:
->>>> -       release_mem_region(res->start, resource_size(res));
->>> This part is not directly related, but a bug fix for commit
->>> b083c22d51148f3d ("video: fbdev: imxfb: Convert request_mem_region +
->>> ioremap to devm_ioremap_resource") in v6.0.
->>
->>
->> IIUC, split this patch into two, remove release_mem_region in one and
->>
->> mark it as Fixes: b083c22d51148f3d ("video: fbdev: imxfb: Convert
->> request_mem_region +
->>
->> ioremap to devm_ioremap_resource")?
->
-> Exactly.  But as Helge has already applied this patch to his tree, we ha=
-ve
-> to check with him if this is still feasible...
+The flag FBINFO_DEFAULT is 0 and has no effect, as struct fbinfo.flags
+has been allocated to zero by a static declaration. So do not set it.
 
-Sure. Just send them to the list and I apply those patches instead.
+Flags should signal differences from the default values. After cleaning
+up all occurences of FBINFO_DEFAULT, the token can be removed.
 
-Thanks!
-Helge
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Helge Deller <deller@gmx.de>
+---
+ drivers/video/fbdev/68328fb.c  | 2 +-
+ drivers/video/fbdev/acornfb.c  | 2 +-
+ drivers/video/fbdev/g364fb.c   | 2 +-
+ drivers/video/fbdev/hpfb.c     | 1 -
+ drivers/video/fbdev/macfb.c    | 1 -
+ drivers/video/fbdev/maxinefb.c | 1 -
+ 6 files changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/fbdev/68328fb.c b/drivers/video/fbdev/68328fb.c
+index 07d6e8dc686b..956dd2399cc0 100644
+--- a/drivers/video/fbdev/68328fb.c
++++ b/drivers/video/fbdev/68328fb.c
+@@ -448,7 +448,7 @@ static int __init mc68x328fb_init(void)
+ 		fb_info.var.red.offset = fb_info.var.green.offset = fb_info.var.blue.offset = 0;
+ 	}
+ 	fb_info.pseudo_palette = &mc68x328fb_pseudo_palette;
+-	fb_info.flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
++	fb_info.flags = FBINFO_HWACCEL_YPAN;
+ 
+ 	if (fb_alloc_cmap(&fb_info.cmap, 256, 0))
+ 		return -ENOMEM;
+diff --git a/drivers/video/fbdev/acornfb.c b/drivers/video/fbdev/acornfb.c
+index 1b72edc01cfb..8fec21dfca09 100644
+--- a/drivers/video/fbdev/acornfb.c
++++ b/drivers/video/fbdev/acornfb.c
+@@ -694,7 +694,7 @@ static void acornfb_init_fbinfo(void)
+ 	first = 0;
+ 
+ 	fb_info.fbops		= &acornfb_ops;
+-	fb_info.flags		= FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
++	fb_info.flags		= FBINFO_HWACCEL_YPAN;
+ 	fb_info.pseudo_palette	= current_par.pseudo_palette;
+ 
+ 	strcpy(fb_info.fix.id, "Acorn");
+diff --git a/drivers/video/fbdev/g364fb.c b/drivers/video/fbdev/g364fb.c
+index c5b7673ddc6c..0825cbde116e 100644
+--- a/drivers/video/fbdev/g364fb.c
++++ b/drivers/video/fbdev/g364fb.c
+@@ -219,7 +219,7 @@ int __init g364fb_init(void)
+ 	fb_info.screen_base = (char *) G364_MEM_BASE;	/* virtual kernel address */
+ 	fb_info.var = fb_var;
+ 	fb_info.fix = fb_fix;
+-	fb_info.flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
++	fb_info.flags = FBINFO_HWACCEL_YPAN;
+ 
+ 	fb_alloc_cmap(&fb_info.cmap, 255, 0);
+ 
+diff --git a/drivers/video/fbdev/hpfb.c b/drivers/video/fbdev/hpfb.c
+index 77fbff47b1a8..406c1383cbda 100644
+--- a/drivers/video/fbdev/hpfb.c
++++ b/drivers/video/fbdev/hpfb.c
+@@ -287,7 +287,6 @@ static int hpfb_init_one(unsigned long phys_base, unsigned long virt_base)
+ 	else
+ 		strcat(fb_info.fix.id, "Catseye");
+ 	fb_info.fbops = &hpfb_ops;
+-	fb_info.flags = FBINFO_DEFAULT;
+ 	fb_info.var   = hpfb_defined;
+ 	fb_info.screen_base = (char *)fb_start;
+ 
+diff --git a/drivers/video/fbdev/macfb.c b/drivers/video/fbdev/macfb.c
+index 44ff860a3f37..5ca208d992cc 100644
+--- a/drivers/video/fbdev/macfb.c
++++ b/drivers/video/fbdev/macfb.c
+@@ -876,7 +876,6 @@ static int __init macfb_init(void)
+ 	fb_info.var		= macfb_defined;
+ 	fb_info.fix		= macfb_fix;
+ 	fb_info.pseudo_palette	= pseudo_palette;
+-	fb_info.flags		= FBINFO_DEFAULT;
+ 
+ 	err = fb_alloc_cmap(&fb_info.cmap, video_cmap_len, 0);
+ 	if (err)
+diff --git a/drivers/video/fbdev/maxinefb.c b/drivers/video/fbdev/maxinefb.c
+index 4e6b05232ae2..0ac1873b2acb 100644
+--- a/drivers/video/fbdev/maxinefb.c
++++ b/drivers/video/fbdev/maxinefb.c
+@@ -155,7 +155,6 @@ int __init maxinefb_init(void)
+ 	fb_info.screen_base = (char *)maxinefb_fix.smem_start;
+ 	fb_info.var = maxinefb_defined;
+ 	fb_info.fix = maxinefb_fix;
+-	fb_info.flags = FBINFO_DEFAULT;
+ 
+ 	fb_alloc_cmap(&fb_info.cmap, 256, 0);
+ 
+-- 
+2.41.0
 

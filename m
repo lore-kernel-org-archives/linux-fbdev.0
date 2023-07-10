@@ -2,111 +2,147 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EAC6EB64DC
-	for <linux-fbdev@archiver.kernel.org>; Mon, 10 Jul 2023 19:11:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E91CC001DC
+	for <linux-fbdev@archiver.kernel.org>; Mon, 10 Jul 2023 20:15:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229702AbjGJTLb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 10 Jul 2023 15:11:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34910 "EHLO
+        id S229575AbjGJUPZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 10 Jul 2023 16:15:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35602 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232209AbjGJTLT (ORCPT
+        with ESMTP id S229469AbjGJUPZ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 10 Jul 2023 15:11:19 -0400
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6E5A210D8
-        for <linux-fbdev@vger.kernel.org>; Mon, 10 Jul 2023 12:10:51 -0700 (PDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qIwHP-00057Q-Im; Mon, 10 Jul 2023 21:10:39 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qIwHO-00DUHC-7r; Mon, 10 Jul 2023 21:10:38 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qIwHN-003rOB-I8; Mon, 10 Jul 2023 21:10:37 +0200
-Date:   Mon, 10 Jul 2023 21:10:35 +0200
-From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To:     Yangtao Li <frank.li@vivo.com>
-Cc:     Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Helge Deller <deller@gmx.de>, Shawn Guo <shawnguo@kernel.org>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v2 4/4] fbdev: imxfb: remove unneeded lable
-Message-ID: <20230710191035.nxazpwdhqulbegsg@pengutronix.de>
-References: <20230710132001.50764-1-frank.li@vivo.com>
- <20230710132001.50764-4-frank.li@vivo.com>
+        Mon, 10 Jul 2023 16:15:25 -0400
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 03547BB;
+        Mon, 10 Jul 2023 13:15:22 -0700 (PDT)
+Received: from loongson.cn (unknown [10.20.42.43])
+        by gateway (Coremail) with SMTP id _____8AxV_HZZqxkZ0YDAA--.9710S3;
+        Tue, 11 Jul 2023 04:15:21 +0800 (CST)
+Received: from [10.20.42.43] (unknown [10.20.42.43])
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8CxbSPDZqxkILcnAA--.63575S3;
+        Tue, 11 Jul 2023 04:15:17 +0800 (CST)
+Message-ID: <e7e87325-0b95-2b1c-5652-7f119948b4bd@loongson.cn>
+Date:   Tue, 11 Jul 2023 04:14:59 +0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="eidfnx3p3pfbmdcd"
-Content-Disposition: inline
-In-Reply-To: <20230710132001.50764-4-frank.li@vivo.com>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.11.0
+Subject: Re: [PATCH] fbdev/hyperv_fb: Include <linux/screen_info.h>
+To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
+        javierm@redhat.com, decui@microsoft.com, wei.liu@kernel.org,
+        haiyangz@microsoft.com, kys@microsoft.com
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        kernel test robot <lkp@intel.com>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Russell King <linux@armlinux.org.uk>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        linux-efi@vger.kernel.org, linux-hyperv@vger.kernel.org
+References: <20230710075848.23087-1-tzimmermann@suse.de>
+Content-Language: en-US
+From:   suijingfeng <suijingfeng@loongson.cn>
+In-Reply-To: <20230710075848.23087-1-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-CM-TRANSID: AQAAf8CxbSPDZqxkILcnAA--.63575S3
+X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
+X-Coremail-Antispam: 1Uk129KBj93XoWxCr1rJw1kKFWUuF13Kw43XFc_yoW5urWxpF
+        48AFy3CrWrAr1xGa17G342kF90gw15Cryj9F9rKw1YyryYyr1q9r47uFsxW398Jr45GF13
+        tFy3Ww1jka4DuagCm3ZEXasCq-sJn29KB7ZKAUJUUUUP529EdanIXcx71UUUUU7KY7ZEXa
+        sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+        0xBIdaVrnRJUUUPFb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+        IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+        e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_JFI_Gr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+        0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8JVWxJwA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_
+        Gr0_Gr1UM2kKe7AKxVWUtVW8ZwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07AIYI
+        kI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUtVWr
+        XwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcVAKI48JMx
+        k0xIA0c2IEe2xFo4CEbIxvr21lc7CjxVAaw2AFwI0_Jw0_GFyl42xK82IYc2Ij64vIr41l
+        4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1l4IxYO2xFxVAFwI0_Jw0_GFylx2IqxVAqx4xG67AKxV
+        WUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r4a6rW5MIIYrxkI
+        7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_JFI_Gr1lIxAIcVC0I7IYx2IY6xkF7I0E14v26r
+        4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8JwCI
+        42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjxUstxhDUUUU
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Hi,
 
---eidfnx3p3pfbmdcd
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 2023/7/10 15:58, Thomas Zimmermann wrote:
+> Include <linux/screen_info.h> to get the global screen_info state.
+> Fixes the following errors:
+>
+>>> drivers/video/fbdev/hyperv_fb.c:1033:10: error: use of undeclared identifier 'screen_info'
+>      1033 |                 base = screen_info.lfb_base;
+>           |                        ^
+>     drivers/video/fbdev/hyperv_fb.c:1034:10: error: use of undeclared identifier 'screen_info'
+>      1034 |                 size = screen_info.lfb_size;
+> 	 |                        ^
+>>> drivers/video/fbdev/hyperv_fb.c:1080:3: error: must use 'struct' tag to refer to type 'screen_info'
+>      1080 |                 screen_info.lfb_size = 0;
+> 	 |                 ^
+> 	 |                 struct
+>>> drivers/video/fbdev/hyperv_fb.c:1080:14: error: expected identifier or '('
+>      1080 |                 screen_info.lfb_size = 0;
+> 	 |                            ^
+>     drivers/video/fbdev/hyperv_fb.c:1081:3: error: must use 'struct' tag to refer to type 'screen_info'
+>      1081 |                 screen_info.lfb_base = 0;
+> 	 |                 ^
+> 	 |                 struct
+>     drivers/video/fbdev/hyperv_fb.c:1081:14: error: expected identifier or '('
+>      1081 |                 screen_info.lfb_base = 0;
+> 	 |                            ^
+>     drivers/video/fbdev/hyperv_fb.c:1082:3: error: must use 'struct' tag to refer to type 'screen_info'
+>      1082 |                 screen_info.orig_video_isVGA = 0;
+> 	 |                 ^
+> 	 |                 struct
+>      drivers/video/fbdev/hyperv_fb.c:1082:14: error: expected identifier or '('
+>      1082 |                 screen_info.orig_video_isVGA = 0;
+> 	 |                            ^
+>      8 errors generated.
+>
+> Reported-by: kernel test robot <lkp@intel.com>
+> Closes: https://lore.kernel.org/oe-kbuild-all/202307101042.rqehuauj-lkp@intel.com/
+> Fixes: 8b0d13545b09 ("efi: Do not include <linux/screen_info.h> from EFI header")
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-On Mon, Jul 10, 2023 at 09:20:01PM +0800, Yangtao Li wrote:
-> These lables are redundant and don't do anything, let's remove it.
 
-s/lable/label/ here an in the subject line.
+Reviewed-by: Sui Jingfeng <suijingfeng@loongson.cn>
 
-Are you using this driver, or did you just stumble over it while looking
-for some janitorial todo? If the former, I suggest you look into the drm
-driver (imx-lcdc) instead.
 
-Having said that, I'm not sure this cleanup is really valuable. While
-a single jump target position has several names,=20
+> Cc: "K. Y. Srinivasan" <kys@microsoft.com> (supporter:Hyper-V/Azure CORE AND DRIVERS)
+> Cc: Haiyang Zhang <haiyangz@microsoft.com> (supporter:Hyper-V/Azure CORE AND DRIVERS)
+> Cc: Wei Liu <wei.liu@kernel.org> (supporter:Hyper-V/Azure CORE AND DRIVERS)
+> Cc: Dexuan Cui <decui@microsoft.com> (supporter:Hyper-V/Azure CORE AND DRIVERS)
+> Cc: Helge Deller <deller@gmx.de> (maintainer:FRAMEBUFFER LAYER)
+> Cc: Javier Martinez Canillas <javierm@redhat.com>
+> Cc: Sui Jingfeng <suijingfeng@loongson.cn>
+> Cc: Ard Biesheuvel <ardb@kernel.org>
+> Cc: Russell King <linux@armlinux.org.uk>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Will Deacon <will@kernel.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: linux-efi@vger.kernel.org
+> Cc: linux-hyperv@vger.kernel.org (open list:Hyper-V/Azure CORE AND DRIVERS)
+> Cc: linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER)
+> Cc: dri-devel@lists.freedesktop.org (open list:FRAMEBUFFER LAYER)
+> ---
+>   drivers/video/fbdev/hyperv_fb.c | 1 +
+>   1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+> index 1ae35ab62b29..b331452aab4f 100644
+> --- a/drivers/video/fbdev/hyperv_fb.c
+> +++ b/drivers/video/fbdev/hyperv_fb.c
+> @@ -48,6 +48,7 @@
+>   #include <linux/aperture.h>
+>   #include <linux/module.h>
+>   #include <linux/kernel.h>
+> +#include <linux/screen_info.h>
+>   #include <linux/vmalloc.h>
+>   #include <linux/init.h>
+>   #include <linux/completion.h>
 
-  	ret =3D imxfb_of_read_mode(&pdev->dev, display_np, fbi->mode);
-  	of_node_put(display_np);
-  	if (ret)
-  		goto failed_of_parse;
 
-is more obvious correct than
+Ah, I also overlook this one. :-)
 
-  	ret =3D imxfb_of_read_mode(&pdev->dev, display_np, fbi->mode);
-  	of_node_put(display_np);
-  	if (ret)
-  		goto failed_init;
-
-=2E *shrug*
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---eidfnx3p3pfbmdcd
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmSsV6sACgkQj4D7WH0S
-/k5b8Qf+IN365SKDDLXyi0u6+8iebC+94VaaWfL3Hts3Nqmhkz8dU+3pFLTznxyp
-3LSfnYLL1r1wmZZmXwjmam8547qkxRe6RNWr6jXCZT5DLbENHn/tHIU9dhHnHee6
-QL/HzDAX3BGDfxMI75KeUzJ+KYJA/XsYIMePLs6Y2GeAVZUxm3EzucMX1pSiBqpb
-GVe0X14LefFTVCA1OfZPjgGuDWxc0v9KE6NhlGdQRn8q16vbyyZMtfKzjbEBMew9
-wWD6Uh77bUTlnDCB83Xyf61Vun5wNZl8sN7F+7EAAVwTHAFXaHZV71Qsr0UEtA2y
-c8n7vRCUrmhVVdLSQ8soWv3GdkBeAA==
-=5kPp
------END PGP SIGNATURE-----
-
---eidfnx3p3pfbmdcd--

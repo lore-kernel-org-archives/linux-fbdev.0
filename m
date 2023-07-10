@@ -2,149 +2,139 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF23DEB64DC
-	for <linux-fbdev@archiver.kernel.org>; Mon, 10 Jul 2023 07:41:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9EE9EB64D9
+	for <linux-fbdev@archiver.kernel.org>; Mon, 10 Jul 2023 07:59:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229679AbjGJHl2 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 10 Jul 2023 03:41:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45298 "EHLO
+        id S231520AbjGJH7R (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 10 Jul 2023 03:59:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59886 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229560AbjGJHl1 (ORCPT
+        with ESMTP id S231381AbjGJH7Q (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 10 Jul 2023 03:41:27 -0400
-Received: from mail-yb1-f180.google.com (mail-yb1-f180.google.com [209.85.219.180])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72EDB95;
-        Mon, 10 Jul 2023 00:41:26 -0700 (PDT)
-Received: by mail-yb1-f180.google.com with SMTP id 3f1490d57ef6-c5cf26e9669so3968072276.0;
-        Mon, 10 Jul 2023 00:41:26 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688974885; x=1691566885;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=CaG+dxGLhC0WVqrix8l2g6lvQOz/XURDuBAw1AOu2T0=;
-        b=JSV576iGL+LjlEi7x/FjJ7R6oh+YMyVM6ymT+hlAlBcmTQTbl7n1UWBfINtv76RCxb
-         UhIscFgrwcgQ5kwB5C82WK292i/PnclkuHDbaqK8o5MS358any6rlpW+Z5Scv2694WLp
-         B2hvfevT2wwXuE8sseTuqR6YKHHHEuhMqVnBwceKl3KweZZVko3Y0/XN6IP7Nop/hvhx
-         KqSfok8fmiWcpP1A96+le7Paxp8FmO3aHHjOou2mRQdG70CyFGZz5lEoy7go6w+gHCZo
-         BTbu22a9MZUn0hoX+d7TMMJmx7lwu0Uq+3HBlSIgnubm4tpzcoz0Pxt39PQxNzNL6Zua
-         kjYA==
-X-Gm-Message-State: ABy/qLaAp2yjvFAfUdS5S5QAQJsiiq76Ml1amO2N1SbwRBMemZJuDb/i
-        NIhHYDPlWMAPxCTPNFgP/pQ9UpKZ8/HEaA==
-X-Google-Smtp-Source: APBJJlGygztoZvB/+etWk8ncAjr5Udq2kibn/Ngcnba2E10FRhYuH3lF6olZ2F74lqaLNcv7itp8sg==
-X-Received: by 2002:a0d:cad6:0:b0:576:94e1:efec with SMTP id m205-20020a0dcad6000000b0057694e1efecmr13282688ywd.33.1688974885422;
-        Mon, 10 Jul 2023 00:41:25 -0700 (PDT)
-Received: from mail-yb1-f182.google.com (mail-yb1-f182.google.com. [209.85.219.182])
-        by smtp.gmail.com with ESMTPSA id u13-20020a0deb0d000000b0057a79da2009sm1058122ywe.16.2023.07.10.00.41.24
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 10 Jul 2023 00:41:24 -0700 (PDT)
-Received: by mail-yb1-f182.google.com with SMTP id 3f1490d57ef6-c5cf26e9669so3968040276.0;
-        Mon, 10 Jul 2023 00:41:24 -0700 (PDT)
-X-Received: by 2002:a25:4c07:0:b0:bc6:5d71:f820 with SMTP id
- z7-20020a254c07000000b00bc65d71f820mr10395845yba.55.1688974884151; Mon, 10
- Jul 2023 00:41:24 -0700 (PDT)
+        Mon, 10 Jul 2023 03:59:16 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DEB5BE72;
+        Mon, 10 Jul 2023 00:58:52 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 6235C1F38D;
+        Mon, 10 Jul 2023 07:58:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1688975931; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=TSxAHMmxEivW56VlqKGsszG1dOS5ltPLD3X3UNzkHWk=;
+        b=lLntlDmEtq0NiiEA8k9LkWNUJ1FWJNjqAwjWqygWd8zkJvNixJas1iH8KtfHVi5KX7QmdS
+        h4r9Oa8mCe7MriH2fVthy+BJYf4j5FxVa82m/zZVueeup4LGJpoO2rn8tkvnrrLANrwW3b
+        7S4Vs7vAEu4V9R2MfplkYT8R04aHjpU=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1688975931;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=TSxAHMmxEivW56VlqKGsszG1dOS5ltPLD3X3UNzkHWk=;
+        b=dO6QvqfGpg3ZveLg9PRn/TjXXRwJz8hDV/klYAZFb3zFMznVXAm7Cr/SP1J796+u7a4UG4
+        Z+o5+cavxPEr/UDQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 0B6AA13A05;
+        Mon, 10 Jul 2023 07:58:51 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id Zt3MATu6q2SAfwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 10 Jul 2023 07:58:51 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     deller@gmx.de, javierm@redhat.com, suijingfeng@loongson.cn,
+        decui@microsoft.com, wei.liu@kernel.org, haiyangz@microsoft.com,
+        kys@microsoft.com
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        kernel test robot <lkp@intel.com>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Russell King <linux@armlinux.org.uk>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        linux-efi@vger.kernel.org, linux-hyperv@vger.kernel.org
+Subject: [PATCH] fbdev/hyperv_fb: Include <linux/screen_info.h>
+Date:   Mon, 10 Jul 2023 09:58:38 +0200
+Message-ID: <20230710075848.23087-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
-References: <20230704093652.18191-1-frank.li@vivo.com> <CAMuHMdWrBY1+JDuwODyqLrwJJivt=ewCOKfK41xq+0Hpaf8akQ@mail.gmail.com>
- <da543602-f88e-45ee-d7fd-8fddd0b0ac56@vivo.com>
-In-Reply-To: <da543602-f88e-45ee-d7fd-8fddd0b0ac56@vivo.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 10 Jul 2023 09:41:10 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdVa3RmtFouTYk_rPoxO1EswGzTtt855-eFcvtTYObgUCA@mail.gmail.com>
-Message-ID: <CAMuHMdVa3RmtFouTYk_rPoxO1EswGzTtt855-eFcvtTYObgUCA@mail.gmail.com>
-Subject: Re: [PATCH] fbdev: imxfb: Convert to devm_platform_ioremap_resource()
-To:     Yangtao Li <frank.li@vivo.com>
-Cc:     Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Helge Deller <deller@gmx.de>, Shawn Guo <shawnguo@kernel.org>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Yangtao,
+Include <linux/screen_info.h> to get the global screen_info state.
+Fixes the following errors:
 
-On Mon, Jul 10, 2023 at 9:25 AM Yangtao Li <frank.li@vivo.com> wrote:
-> On 2023/7/10 15:10, Geert Uytterhoeven wrote:
-> > [你通常不会收到来自 geert@linux-m68k.org 的电子邮件。请访问 https://aka.ms/LearnAboutSenderIdentification，以了解这一点为什么很重要]
-> > On Tue, Jul 4, 2023 at 11:38 AM Yangtao Li <frank.li@vivo.com> wrote:
-> >> Use devm_platform_ioremap_resource() to simplify code.
-> >>
-> >> Signed-off-by: Yangtao Li <frank.li@vivo.com>
-> > Thanks for your patch, which is now commit c1cd7a7a231a26c6 ("fbdev:
-> > imxfb: Convert to devm_platform_ioremap_resource()") in fbdev/for-next
-> >
-> >> --- a/drivers/video/fbdev/imxfb.c
-> >> +++ b/drivers/video/fbdev/imxfb.c
-> >> @@ -868,7 +868,6 @@ static int imxfb_probe(struct platform_device *pdev)
-> >>          struct imxfb_info *fbi;
-> >>          struct lcd_device *lcd;
-> >>          struct fb_info *info;
-> >> -       struct resource *res;
-> >>          struct imx_fb_videomode *m;
-> >>          const struct of_device_id *of_id;
-> >>          struct device_node *display_np;
-> >> @@ -885,10 +884,6 @@ static int imxfb_probe(struct platform_device *pdev)
-> >>          if (of_id)
-> >>                  pdev->id_entry = of_id->data;
-> >>
-> >> -       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> >> -       if (!res)
-> >> -               return -ENODEV;
-> >> -
-> >>          info = framebuffer_alloc(sizeof(struct imxfb_info), &pdev->dev);
-> >>          if (!info)
-> >>                  return -ENOMEM;
-> >> @@ -970,7 +965,7 @@ static int imxfb_probe(struct platform_device *pdev)
-> >>                  goto failed_getclock;
-> >>          }
-> >>
-> >> -       fbi->regs = devm_ioremap_resource(&pdev->dev, res);
-> >> +       fbi->regs = devm_platform_ioremap_resource(pdev, 0);
-> >>          if (IS_ERR(fbi->regs)) {
-> >>                  ret = PTR_ERR(fbi->regs);
-> >>                  goto failed_ioremap;
-> >> @@ -1043,7 +1038,6 @@ static int imxfb_probe(struct platform_device *pdev)
-> >>   failed_map:
-> >>   failed_ioremap:
-> >>   failed_getclock:
-> >> -       release_mem_region(res->start, resource_size(res));
-> > This part is not directly related, but a bug fix for commit
-> > b083c22d51148f3d ("video: fbdev: imxfb: Convert request_mem_region +
-> > ioremap to devm_ioremap_resource") in v6.0.
->
->
-> IIUC, split this patch into two, remove release_mem_region in one and
->
-> mark it as Fixes: b083c22d51148f3d ("video: fbdev: imxfb: Convert
-> request_mem_region +
->
-> ioremap to devm_ioremap_resource")?
+>> drivers/video/fbdev/hyperv_fb.c:1033:10: error: use of undeclared identifier 'screen_info'
+    1033 |                 base = screen_info.lfb_base;
+         |                        ^
+   drivers/video/fbdev/hyperv_fb.c:1034:10: error: use of undeclared identifier 'screen_info'
+    1034 |                 size = screen_info.lfb_size;
+	 |                        ^
+>> drivers/video/fbdev/hyperv_fb.c:1080:3: error: must use 'struct' tag to refer to type 'screen_info'
+    1080 |                 screen_info.lfb_size = 0;
+	 |                 ^
+	 |                 struct
+>> drivers/video/fbdev/hyperv_fb.c:1080:14: error: expected identifier or '('
+    1080 |                 screen_info.lfb_size = 0;
+	 |                            ^
+   drivers/video/fbdev/hyperv_fb.c:1081:3: error: must use 'struct' tag to refer to type 'screen_info'
+    1081 |                 screen_info.lfb_base = 0;
+	 |                 ^
+	 |                 struct
+   drivers/video/fbdev/hyperv_fb.c:1081:14: error: expected identifier or '('
+    1081 |                 screen_info.lfb_base = 0;
+	 |                            ^
+   drivers/video/fbdev/hyperv_fb.c:1082:3: error: must use 'struct' tag to refer to type 'screen_info'
+    1082 |                 screen_info.orig_video_isVGA = 0;
+	 |                 ^
+	 |                 struct
+    drivers/video/fbdev/hyperv_fb.c:1082:14: error: expected identifier or '('
+    1082 |                 screen_info.orig_video_isVGA = 0;
+	 |                            ^
+    8 errors generated.
 
-Exactly.  But as Helge has already applied this patch to his tree, we have
-to check with him if this is still feasible...
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202307101042.rqehuauj-lkp@intel.com/
+Fixes: 8b0d13545b09 ("efi: Do not include <linux/screen_info.h> from EFI header")
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: "K. Y. Srinivasan" <kys@microsoft.com> (supporter:Hyper-V/Azure CORE AND DRIVERS)
+Cc: Haiyang Zhang <haiyangz@microsoft.com> (supporter:Hyper-V/Azure CORE AND DRIVERS)
+Cc: Wei Liu <wei.liu@kernel.org> (supporter:Hyper-V/Azure CORE AND DRIVERS)
+Cc: Dexuan Cui <decui@microsoft.com> (supporter:Hyper-V/Azure CORE AND DRIVERS)
+Cc: Helge Deller <deller@gmx.de> (maintainer:FRAMEBUFFER LAYER)
+Cc: Javier Martinez Canillas <javierm@redhat.com>
+Cc: Sui Jingfeng <suijingfeng@loongson.cn>
+Cc: Ard Biesheuvel <ardb@kernel.org>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-efi@vger.kernel.org
+Cc: linux-hyperv@vger.kernel.org (open list:Hyper-V/Azure CORE AND DRIVERS)
+Cc: linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER)
+Cc: dri-devel@lists.freedesktop.org (open list:FRAMEBUFFER LAYER)
+---
+ drivers/video/fbdev/hyperv_fb.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-> > Please do not mix bug fixes with other changes.
-> > The stable teams want to backport only bugfixes .
-> >
-> >>   failed_of_parse:
-> >>          kfree(info->pseudo_palette);
-> >>   failed_init:
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index 1ae35ab62b29..b331452aab4f 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -48,6 +48,7 @@
+ #include <linux/aperture.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
++#include <linux/screen_info.h>
+ #include <linux/vmalloc.h>
+ #include <linux/init.h>
+ #include <linux/completion.h>
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.41.0
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

@@ -2,78 +2,88 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4881DEB64DD
-	for <linux-fbdev@archiver.kernel.org>; Sat,  8 Jul 2023 14:12:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E77F5C0015E
+	for <linux-fbdev@archiver.kernel.org>; Mon, 10 Jul 2023 03:38:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229926AbjGHOMR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 8 Jul 2023 10:12:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44592 "EHLO
+        id S230008AbjGJDiK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 9 Jul 2023 23:38:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35574 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229462AbjGHOMQ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 8 Jul 2023 10:12:16 -0400
-Received: from elvis.franken.de (elvis.franken.de [193.175.24.41])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id D7F0A126;
-        Sat,  8 Jul 2023 07:12:14 -0700 (PDT)
-Received: from uucp by elvis.franken.de with local-rmail (Exim 3.36 #1)
-        id 1qI8fN-00023x-00; Sat, 08 Jul 2023 16:12:05 +0200
-Received: by alpha.franken.de (Postfix, from userid 1000)
-        id 11AC8C01C1; Sat,  8 Jul 2023 16:11:52 +0200 (CEST)
-Date:   Sat, 8 Jul 2023 16:11:52 +0200
-From:   Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-To:     Arnd Bergmann <arnd@kernel.org>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Russell King <linux@armlinux.org.uk>,
+        with ESMTP id S229554AbjGJDiJ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 9 Jul 2023 23:38:09 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ACF32AF;
+        Sun,  9 Jul 2023 20:38:08 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 3BA3E60DC5;
+        Mon, 10 Jul 2023 03:38:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 122C6C433C7;
+        Mon, 10 Jul 2023 03:38:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1688960287;
+        bh=v0OsTtvNKU6Dld3+w3JG1lJowk+7fQMnwswrEl/ZXho=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=I3vszjayKwTZgx7pu48sWg1k5KBKxkXctrW6bu353IwqtA9FDkUA7UB58Thl0EhHA
+         B70Ik7KJ+gLjEd/EJMekP58Fj22ciYqtrwFfDgaE8piXiARykGJpw4fmJMr0abMiYv
+         kznZLRTeIpAciA+le/inMAv0/2rIwFn7wPgoi0g6V+OEpDki3zv82reX0K4OX0Vk6U
+         Pk3PpnvQIPIwP0lZqaH5XhB2u9jeRgPYAmJw6E9/kj6Hic8bm2+vgsnEqqkEqgA9Ri
+         Z5P+PafgNNhL27TXboyzGxGeY4OuUhIK5umaEMLtbzeoYff/FKxbLMUD0g8AMLhDai
+         VEhKaDKNhWjAg==
+Message-ID: <fd95e3cb-d7b7-ec8b-c48b-d86634f07dfd@kernel.org>
+Date:   Sun, 9 Jul 2023 22:38:03 -0500
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.11.0
+Subject: Re: [PATCH 4/4] vgacon, arch/*: remove unused screen_info definitions
+Content-Language: en-US
+To:     Arnd Bergmann <arnd@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     javierm@redhat.com, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>,
         dri-devel@lists.freedesktop.org, Ard Biesheuvel <ardb@kernel.org>,
         Helge Deller <deller@gmx.de>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Richard Henderson <richard.henderson@linaro.org>,
-        Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-        Matt Turner <mattst88@gmail.com>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        WANG Xuerui <kernel@xen0n.name>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Albert Ou <aou@eecs.berkeley.edu>, linux-alpha@vger.kernel.org,
-        linux-ia64@vger.kernel.org, loongarch@lists.linux.dev,
-        linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-riscv@lists.infradead.org
-Subject: Re: [PATCH 2/4] vgacon: rework screen_info #ifdef checks
-Message-ID: <ZKluqG2ZqKtAmnEG@alpha.franken.de>
+        Arnd Bergmann <arnd@arndb.de>, Guo Ren <guoren@kernel.org>,
+        Brian Cain <bcain@quicinc.com>, Rich Felker <dalias@libc.org>,
+        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+        "David S. Miller" <davem@davemloft.net>,
+        Chris Zankel <chris@zankel.net>,
+        Max Filippov <jcmvbkbc@gmail.com>,
+        Masahiro Yamada <masahiroy@kernel.org>,
+        linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
+        linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
 References: <20230707095415.1449376-1-arnd@kernel.org>
- <20230707095415.1449376-2-arnd@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230707095415.1449376-2-arnd@kernel.org>
+ <20230707095415.1449376-4-arnd@kernel.org>
+From:   Dinh Nguyen <dinguyen@kernel.org>
+In-Reply-To: <20230707095415.1449376-4-arnd@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jul 07, 2023 at 11:52:24AM +0200, Arnd Bergmann wrote:
-> diff --git a/arch/mips/jazz/setup.c b/arch/mips/jazz/setup.c
-> index ee044261eb223..3c14548353e47 100644
-> --- a/arch/mips/jazz/setup.c
-> +++ b/arch/mips/jazz/setup.c
-> @@ -76,7 +76,7 @@ void __init plat_mem_setup(void)
->  
->  	_machine_restart = jazz_machine_restart;
->  
-> -#ifdef CONFIG_VT
-> +#ifdef CONFIG_VGA_CONSOLE
->  	screen_info = (struct screen_info) {
->  		.orig_video_cols	= 160,
->  		.orig_video_lines	= 64,
 
-that wssn't intended for VGA but for fbdev/g364fb, which doesn't use
-it. So removing it is probably the best thing.
 
-Thomas.
+On 7/7/23 04:52, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> A number of architectures either kept the screen_info definition for
+> historical purposes as it used to be required by the generic VT code, or
+> they copied it from another architecture in order to build the VGA
+> console driver in an allmodconfig build.
+> 
+> Now that vgacon no longer builds on these architectures, remove the
+> stale definitions.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>   arch/csky/kernel/setup.c          | 12 ------------
+>   arch/hexagon/kernel/Makefile      |  2 --
+>   arch/hexagon/kernel/screen_info.c |  3 ---
+>   arch/nios2/kernel/setup.c         |  5 -----
 
--- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
-good idea.                                                [ RFC1925, 2.3 ]
+Acked-by: Dinh Nguyen <dinguyen@kernel.org>
+

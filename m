@@ -2,104 +2,91 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 687DEEB64D9
-	for <linux-fbdev@archiver.kernel.org>; Mon, 10 Jul 2023 16:36:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02DCFEB64DA
+	for <linux-fbdev@archiver.kernel.org>; Mon, 10 Jul 2023 17:19:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230080AbjGJQgq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 10 Jul 2023 12:36:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42488 "EHLO
+        id S230295AbjGJRTX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 10 Jul 2023 13:19:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39782 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230078AbjGJQgp (ORCPT
+        with ESMTP id S229756AbjGJRTU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 10 Jul 2023 12:36:45 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 59333127;
-        Mon, 10 Jul 2023 09:36:44 -0700 (PDT)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
-        by smtp-out2.suse.de (Postfix) with ESMTP id 1A72E1FF06;
-        Mon, 10 Jul 2023 16:36:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1689007003; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=50GMs5nmGpITPWTG7u5Zcxqbmkf0dcUoVQiJpGtLvBg=;
-        b=MAkcYfuu2e/AwBYCJ8iEsRGbL7yA8cBwUv3bbYwWUSPqAWWE3+OD7CUwXSDvzwimmPxDm1
-        snlvw8+Zbn4vbzubmlOotkSLqVnSnZZloPrWWPbnQLgC3FYXKyueUbjMkHNPEQd9xpbZnd
-        rimCb3GOjrBYy3y5WVygqzW/TA9ld7I=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1689007003;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=50GMs5nmGpITPWTG7u5Zcxqbmkf0dcUoVQiJpGtLvBg=;
-        b=h+IckA4+b99FPAeRV10LGOxH9p9DpOwRbzQ2LuIS61mLAFsz2z61ZESsEGm+Evi1q3fXu3
-        3LuUg1XOFV1btxDg==
-Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by relay2.suse.de (Postfix) with ESMTPS id E67762C142;
-        Mon, 10 Jul 2023 16:36:42 +0000 (UTC)
-Date:   Mon, 10 Jul 2023 18:36:41 +0200
-From:   Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To:     Cyril Brulebois <cyril@debamax.com>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Rob Herring <robh@kernel.org>, linux-kernel@vger.kernel.org,
-        stable@vger.kernel.org
-Subject: Re: [PATCH 2/2] drm/ofdrm: Update expected device name
-Message-ID: <20230710163641.GA9196@kitsune.suse.cz>
-References: <20230412095509.2196162-1-cyril@debamax.com>
- <20230412095509.2196162-3-cyril@debamax.com>
+        Mon, 10 Jul 2023 13:19:20 -0400
+Received: from mailrelay6-1.pub.mailoutpod2-cph3.one.com (mailrelay6-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:405::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 069BE120
+        for <linux-fbdev@vger.kernel.org>; Mon, 10 Jul 2023 10:19:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=rsa1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=IgD20OUQ8wy5rFFsoBYb/VGqjIM7D6p+vuvVuio9hik=;
+        b=CcwAZRGze1nz78tsTeGG31sH+B/tjdH+6ekcCAKy3lsh8Fx6Y+YXCD/TmIei/HlJU/+CjyCRKUyPh
+         4CUMeeNCmxnxg5WnN8WYc+Y/3TRBu3GgBHOLLMWNEmjaKunSp3X6NAJPGuB+DxEkEZX+QnanSr3FYn
+         2wlZ5UBU9Zu+O246GL/D/HneI1rQcFtBUkUV1dNMCwn+vM9M1hVrPjLsgJxFcU87WZ4nq2Vtx30nj9
+         ArzioTOrLCz4P2HsQj4ZOuK/Fmh+TNaxaKUMNXnO1dvheypIb7/oOCjfcrCaYpZhivEpRMotLSbonb
+         DLfigJoJ7elOqxhN67CrfrrG5kpNeWw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=ed1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=IgD20OUQ8wy5rFFsoBYb/VGqjIM7D6p+vuvVuio9hik=;
+        b=vxQog57Oi39/DPw2NHC1MnZmnCknkQQw5bg9fTJIlcxSuaigVTP3V2Z7GSu+tbSUPTOKht6NYG4oF
+         2pB/Sc4AQ==
+X-HalOne-ID: de71c874-1f45-11ee-b17e-6f01c1d0a443
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+        by mailrelay6 (Halon) with ESMTPSA
+        id de71c874-1f45-11ee-b17e-6f01c1d0a443;
+        Mon, 10 Jul 2023 17:19:05 +0000 (UTC)
+Date:   Mon, 10 Jul 2023 19:19:03 +0200
+From:   Sam Ravnborg <sam@ravnborg.org>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     deller@gmx.de, javierm@redhat.com, linux-fbdev@vger.kernel.org,
+        kvm@vger.kernel.org, linux-hyperv@vger.kernel.org,
+        linux-sh@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org,
+        linux-geode@lists.infradead.org, dri-devel@lists.freedesktop.org,
+        linux-input@vger.kernel.org, linux-nvidia@lists.surfsouth.com,
+        linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
+Subject: Re: [PATCH 00/17] fbdev: Remove FBINFO_DEFAULT and
+ FBINFO_FLAG_DEFAULT flags
+Message-ID: <20230710171903.GA14712@ravnborg.org>
+References: <20230710130113.14563-1-tzimmermann@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230412095509.2196162-3-cyril@debamax.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20230710130113.14563-1-tzimmermann@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Apr 12, 2023 at 11:55:09AM +0200, Cyril Brulebois wrote:
-> Since commit 241d2fb56a18 ("of: Make OF framebuffer device names unique"),
-> as spotted by Frédéric Bonnard, the historical "of-display" device is
-> gone: the updated logic creates "of-display.0" instead, then as many
-> "of-display.N" as required.
+Hi Thomas,
+
+On Mon, Jul 10, 2023 at 02:50:04PM +0200, Thomas Zimmermann wrote:
+> Remove the unused flags FBINFO_DEFAULT and FBINFO_FLAG_DEFAULT from
+> fbdev and drivers, as briefly discussed at [1]. Both flags were maybe
+> useful when fbdev had special handling for driver modules. With
+> commit 376b3ff54c9a ("fbdev: Nuke FBINFO_MODULE"), they are both 0
+> and have no further effect.
 > 
-> This means that offb no longer finds the expected device, which prevents
-> the Debian Installer from setting up its interface, at least on ppc64el.
+> Patches 1 to 7 remove FBINFO_DEFAULT from drivers. Patches 2 to 5
+> split this by the way the fb_info struct is being allocated. All flags
+> are cleared to zero during the allocation.
 > 
-> Given the code similarity it is likely to affect ofdrm in the same way.
+> Patches 8 to 16 do the same for FBINFO_FLAG_DEFAULT. Patch 8 fixes
+> an actual bug in how arch/sh uses the tokne for struct fb_videomode,
+> which is unrelated.
 > 
-> It might be better to iterate on all possible nodes, but updating the
-> hardcoded device from "of-display" to "of-display.0" is likely to help
-> as a first step.
-> 
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=217328
-> Link: https://bugs.debian.org/1033058
-> Fixes: 241d2fb56a18 ("of: Make OF framebuffer device names unique")
-> Cc: stable@vger.kernel.org # v6.2+
-> Signed-off-by: Cyril Brulebois <cyril@debamax.com>
-Reviewed-by: Michal Suchánek <msuchanek@suse.de>
-> ---
->  drivers/gpu/drm/tiny/ofdrm.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/gpu/drm/tiny/ofdrm.c b/drivers/gpu/drm/tiny/ofdrm.c
-> index 6e349ca42485..92df021d71df 100644
-> --- a/drivers/gpu/drm/tiny/ofdrm.c
-> +++ b/drivers/gpu/drm/tiny/ofdrm.c
-> @@ -1390,7 +1390,7 @@ MODULE_DEVICE_TABLE(of, ofdrm_of_match_display);
->  
->  static struct platform_driver ofdrm_platform_driver = {
->  	.driver = {
-> -		.name = "of-display",
-> +		.name = "of-display.0",
->  		.of_match_table = ofdrm_of_match_display,
->  	},
->  	.probe = ofdrm_probe,
-> -- 
-> 2.30.2
-> 
+> Patch 17 removes both flag constants from <linux/fb.h>
+
+We have a few more flags that are unused - should they be nuked too?
+FBINFO_HWACCEL_FILLRECT
+FBINFO_HWACCEL_ROTATE
+FBINFO_HWACCEL_XPAN
+
+Unused as in no references from fbdev/core/*
+
+I would rather see one series nuke all unused FBINFO flags in one go.
+Assuming my quick grep are right and the above can be dropped.
+
+	Sam

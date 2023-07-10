@@ -2,124 +2,137 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2585EB64D9
-	for <linux-fbdev@archiver.kernel.org>; Mon, 10 Jul 2023 13:12:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6586EB64D9
+	for <linux-fbdev@archiver.kernel.org>; Mon, 10 Jul 2023 13:20:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229608AbjGJNMn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 10 Jul 2023 09:12:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58414 "EHLO
+        id S230407AbjGJNUT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 10 Jul 2023 09:20:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34172 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229569AbjGJNMm (ORCPT
+        with ESMTP id S230392AbjGJNUS (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 10 Jul 2023 09:12:42 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 87307E2
-        for <linux-fbdev@vger.kernel.org>; Mon, 10 Jul 2023 06:11:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1688994711;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=cSSXjKtHNo2g+s4fKQO8ycwZ9VSR9y5qDmg/kPz0J+8=;
-        b=FZBpLjQPJ1W6dkCpF0lOqntUlfxNii7eEm7+O2Hd/bvulFSdj+eVG3grHbFcyxuwARgD8I
-        teFX9qviVSoJnS4CJuvrJIST9QS0mm9U2lvYCj/LHoIltV46Azi+ZQhxSFQvabnRxAG2p1
-        SYGg4kBQbqXY5U+XB0sG3b66lugi4C4=
-Received: from mail-yb1-f198.google.com (mail-yb1-f198.google.com
- [209.85.219.198]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-562-pZj3GqTRPNSXp3Jwoc5tig-1; Mon, 10 Jul 2023 09:05:32 -0400
-X-MC-Unique: pZj3GqTRPNSXp3Jwoc5tig-1
-Received: by mail-yb1-f198.google.com with SMTP id 3f1490d57ef6-bacfa4ef059so5434325276.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 10 Jul 2023 06:05:32 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688994331; x=1691586331;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=cSSXjKtHNo2g+s4fKQO8ycwZ9VSR9y5qDmg/kPz0J+8=;
-        b=WEj1TpFTl0oK+dFQpH1guEXtffYo3i6LKcxpIPDsOa1sxKh8O+v33yO9L0e0z4gvqP
-         MCutawkq+l3nvuzt/iuuBJiqrbKpF/odXuUDqP1lHaVr835Nek6tP+IFHC7MgSviykcy
-         1il9Ft9uCW5Zb4lV1+QhB7ADiDXOg71QJjLwsVaU7//tHZUB19TWeRlIBS0VROBWCKWp
-         dGIXlYBg1Gx1fk/ME5gHGndCj7NAdy9/ceAxSftOnVdrIopikEaPPQ3s8Yv149o8yeVZ
-         ILTabbIjyMXMBgk+q9KQ9wlUnA4u4g7DkdIvtFTtBmGlUm/Hw4f8px6DZ2mcYRpdaaWc
-         XtqQ==
-X-Gm-Message-State: ABy/qLY6gYsO37vAZ+asAjDG4UatZqH9CfYg3vA97PpqGjALTTLTfXwJ
-        ohNOjj9jio5YtxRUzB23ayqnyx2QhPIrdON5f+Alls5yPcZZ1t6CsIk51C1sRCw19FG/4qwIe8f
-        AayqBKrw/B3+gyJlI8degusXitLAFmauvJHndIRo=
-X-Received: by 2002:a25:1f02:0:b0:c67:8903:532b with SMTP id f2-20020a251f02000000b00c678903532bmr9557473ybf.44.1688994331564;
-        Mon, 10 Jul 2023 06:05:31 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlFYCDVRqXESu2lKlw5OOq57+bm9EWCrFUc3sqkdq7rbGFO3X2AFRnXejnh8LqRK8eFbanSG74Fa5+uKsOptTgw=
-X-Received: by 2002:a25:1f02:0:b0:c67:8903:532b with SMTP id
- f2-20020a251f02000000b00c678903532bmr9557452ybf.44.1688994331376; Mon, 10 Jul
- 2023 06:05:31 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230710130113.14563-1-tzimmermann@suse.de> <20230710130113.14563-11-tzimmermann@suse.de>
-In-Reply-To: <20230710130113.14563-11-tzimmermann@suse.de>
-From:   Benjamin Tissoires <benjamin.tissoires@redhat.com>
-Date:   Mon, 10 Jul 2023 15:05:19 +0200
-Message-ID: <CAO-hwJLvBpNu1z4qM9+331-oUroh4g5HORL=EZS0nb+HHe+fdw@mail.gmail.com>
-Subject: Re: [PATCH 10/17] hid/picolcd: Remove flag FBINFO_FLAG_DEFAULT from
- fbdev driver
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     deller@gmx.de, javierm@redhat.com, linux-sh@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        amd-gfx@lists.freedesktop.org, linux-input@vger.kernel.org,
-        linux-media@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev,
+        Mon, 10 Jul 2023 09:20:18 -0400
+Received: from APC01-SG2-obe.outbound.protection.outlook.com (mail-sgaapc01on2113.outbound.protection.outlook.com [40.107.215.113])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A117AC4;
+        Mon, 10 Jul 2023 06:20:17 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=htOVpUO2j8elDid3u3guFhgnz17pMmqPGz0E4aB5G8WgPzdgwgoY7jGCVXTQGpV+UKILVK356RCbdzOpZonetQaFT2IYIehIzNWpBW40B60z5bV/OgOViapPYzy/AxedSwGaee/DOz2SB4OWgDvI/UjidVNYuYQFNhgxCQqpu8ZrtXwI4Wn95ivvm5uIEpoRQQYstqiJoO5meMzYzIag02MmOuFbNI3kyHPlemvWwk1H+rjxqEwAv074wtjqVv2mXxZXWbOXSPj7wwd41kt7YJQqIRmFByb6HG0ZM51JOKHwt/lGidQv/sXpVDNlsyNjK/davTZwBQDDlc/v3wvD3g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=fs+EtTk758No/dWDSdfwTWpFXRynKbiaOREM2MESQn4=;
+ b=PihuN6cO2+1tqQ0BxY9BkcZK5riTFqD4f5yrjqgIkFww7anlwdidLzB/7cXzPeUiO3JMHhu1pg0c5/XkdzSo0arJemMM6xRou3KQpX8IzVBFcRhpHIC7sRXDOiMgkTkDDEu0nkEroWlCHtXlqNuwZO8SCYhWQkRRRb+ajZ/zz3l0mYddSiZTkPZTmjgKUhWSKbTAqBjn3HWCNESJn5EOSDTmPJZ/T0kDIDrMrx8uzBptL2vPz4G1kKI+38gtXwUw3HTMte3xLVwfOpeGl+VjdAi4TSsFsVpjg36e/vDc5pZNvtu14ruVEheKRgUuIAadjh+2IzjnlvfoV44KFKlpHw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
+ dkim=pass header.d=vivo.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=fs+EtTk758No/dWDSdfwTWpFXRynKbiaOREM2MESQn4=;
+ b=e6+SJ2Ff74lGYIRyLlWS/gH4e9qeUPe4UahvESCw6W7a5NGWTASypO/4BObv3ztcCKRa6o/qBpcVEXdDkx+VtWkyncEKU9LQk42dvSKgjmM8z0hCcThKEWbehgeY/M+otKYPju3lk3aJIY2OK8N+WdxstPpquwphCAUiANLsDWZ8z1NxXVR6y0mrvLd6v7G9TL/Zt74SxMPDbRCl16FrXarPh3QWsxm/lY5YwIfd4W38UhOcbvqShmWGRkmD71TwBkGKbb5O4MTmswcw6PGGQUXfoIR8I+EbsdTrKYDIgBIoK7ohJ8ezrxPLeSRkc+djzsYMU6yn+GPo0jmv6GFTlg==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=vivo.com;
+Received: from SEZPR06MB5269.apcprd06.prod.outlook.com (2603:1096:101:78::6)
+ by SG2PR06MB5131.apcprd06.prod.outlook.com (2603:1096:4:1ce::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6565.30; Mon, 10 Jul
+ 2023 13:20:12 +0000
+Received: from SEZPR06MB5269.apcprd06.prod.outlook.com
+ ([fe80::fa0e:6c06:7474:285c]) by SEZPR06MB5269.apcprd06.prod.outlook.com
+ ([fe80::fa0e:6c06:7474:285c%5]) with mapi id 15.20.6565.028; Mon, 10 Jul 2023
+ 13:20:12 +0000
+From:   Yangtao Li <frank.li@vivo.com>
+To:     Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Helge Deller <deller@gmx.de>, Shawn Guo <shawnguo@kernel.org>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+Cc:     Yangtao Li <frank.li@vivo.com>, linux-fbdev@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org,
-        linux-geode@lists.infradead.org, linux-nvidia@lists.surfsouth.com,
-        linux-hyperv@vger.kernel.org, linux-omap@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-        =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>,
-        Jiri Kosina <jikos@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 1/4] fbdev: imxfb: Removed unneeded release_mem_region
+Date:   Mon, 10 Jul 2023 21:19:58 +0800
+Message-Id: <20230710132001.50764-1-frank.li@vivo.com>
+X-Mailer: git-send-email 2.39.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SGBP274CA0005.SGPP274.PROD.OUTLOOK.COM (2603:1096:4:b0::17)
+ To SEZPR06MB5269.apcprd06.prod.outlook.com (2603:1096:101:78::6)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SEZPR06MB5269:EE_|SG2PR06MB5131:EE_
+X-MS-Office365-Filtering-Correlation-Id: c236b37b-e1fd-46d8-a131-08db8148639b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: mS3vPm/H1rv4xygV6WaSNmQdASxQUrCoCXxA3t8M4RHe16SkoK8KwJNs3qdZ93Q/BC/zkKLIIwRMdYN9TkJyuQdUEMcYHmXRmOyf8C8BdNYlqcEHPUeyRTiYVvOw0koC90Ag/m8YsJKbTn39Esvv0UklLmI/4DTnzEBvjo6VqADLRM9Hw+iopl+ipuRwqCixSWZzqRRVrcVAZg7/xkaUkBjWP32iWQBjkV/44xfVCcVONQXPvFqICTnMAY8P3k7nvTHVG8wAi+KcIWkxkYR4h16321THvSmQP2uCn+Vbtj0Tl/Yuywmwonvb3O5A+q2eun2vKNE7ZAojU57h+x+x/aoaqTZ1nBaQ1fMSGRTE9s2dKeueQa5EgmJv+Ydg5hcaGtRNGt7sYdXqnGsvBzRU5gCBaFafrK/8IMfJLl+20IfhtsvA7rnCvqmRZ76zEH560dOoZGPDF/2dEonpHdfCeYhiEbNbVbDWoAc1w0YhGUdouGMUws8OYADAv0xLjY8s0ARsE+YSzADaAyOFikYUm2rWpz1PEWIEqziFP+G7hpRU3kLoKTuSaIjc6hGWvuFye7lLio5TnXzr03pDF8d1d33Ejy934XCBwMwUhI3cDZcmtr0ZSqNE/0RgKvhtfFnH
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEZPR06MB5269.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(366004)(376002)(396003)(39860400002)(346002)(136003)(451199021)(38350700002)(86362001)(38100700002)(36756003)(6666004)(6486002)(52116002)(110136005)(26005)(6506007)(186003)(6512007)(1076003)(2616005)(7416002)(5660300002)(2906002)(66556008)(316002)(478600001)(66946007)(8936002)(66476007)(8676002)(83380400001)(4326008)(4744005)(41300700001);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?islLeWcQBhH4+AToX3FcMqMKCqus2bQKwqb3NNOwZNfiw49ggPzoGugAodV2?=
+ =?us-ascii?Q?hFoDXReUlCfOYq7Ff6xEpwU0MidH4CgIDEkehPi10RyPkhBNaN6nvzX6An2t?=
+ =?us-ascii?Q?J1Mh6m68WagWwD4wfAzuNoifrHr1DAwwoiY7tccTCDVLkzk9rH+5VFX50rHR?=
+ =?us-ascii?Q?eI+/Qk+nbqn2WC2s1i9AqNpnJgbFmKLviIdeV7Any5B0QPjP2MDeFlpcx8L/?=
+ =?us-ascii?Q?KbfzKqLcZMuMhAyFb1YYfIzPeXlOIqbzazT7Ero47mXa7cYLh2R16u1vxQ3J?=
+ =?us-ascii?Q?oJ8XyJulrzY13Zpxbqwrtcv7O9NOgh0/NHZqrDmaro/k0S7yImI9mqa71Lxs?=
+ =?us-ascii?Q?AthxsiEHFpPUIA+65C+9hIADWBUibnXkG4lX4cx67CVsMyBkJ67k+7Q2us2r?=
+ =?us-ascii?Q?XxLfu2TW8Kakyusd0zLElCyZjBR3bRzkGqjG9lcSbucdlYVi8r/4DMTxq+gW?=
+ =?us-ascii?Q?8bgoZQM9XBaI5XkIYWQX9Kh2RIub0u8ZYmCRnN9x7zP5kBXl8SHUnlNORjzF?=
+ =?us-ascii?Q?MfZfNO4P0vHk98/vqTOZzOhfxyhlSgO/w+jxnqmG579inQia/5xC0ZsuUhj8?=
+ =?us-ascii?Q?hHTHCqUM2JEv5Qk4tgEQ+T8Rqb2wWda2bADR2zEk4+L5G2kGaCJThaOL6XYV?=
+ =?us-ascii?Q?EEz17xqEAlbxZfLtVnYn/QETOhCiOQOCnqb09MwImlx8gMhpSX5HPbcfuHXG?=
+ =?us-ascii?Q?CxXBp97Tfa+uFf6q8bNFsByPXJJkXvpa6ruH7qhizQIrMMo3jqIXG3vAKV4Z?=
+ =?us-ascii?Q?zSQpNYg4RpFbjntXccgjqliZXmwCd+q6oFQd1lypFOGPTLiUzRpC+h+hBiAI?=
+ =?us-ascii?Q?vQE1ApU0WWbB/qAzsjYN+5rkeCWYt+41YcmIs3ZLMSmf8HnzmGZfiBd0EmpT?=
+ =?us-ascii?Q?klt9b/dzNRVlGJ/k28cD2V8r/UACNdY39jwXv3eEsM/pK1fuVdxYV2BKwcAg?=
+ =?us-ascii?Q?eShWmqaU0vyghhlMAT+wqcQ6AOiZMkZ4azt36dHuykEtuZOG9bsy9g8RjYIj?=
+ =?us-ascii?Q?I34Xwir4n2IG+HKDkgs7Y82CyPeiKnY8Qd4gME7Lx7mUzbLHvLMa/cgvTGZk?=
+ =?us-ascii?Q?ZG1LXzrwtNzKbjmTmVvdbz4qlLCYtBu2EVN9wtzq7+D0jpglsxvgQKrM3MkI?=
+ =?us-ascii?Q?L+bk/x5Uhq3CtF2lx02b542CFqu6ZEuUYWEOQwWmfDfCS23o1sC6paVqTAnE?=
+ =?us-ascii?Q?X9+Db6O08X/wnBbxPkxcmsHQNcwxL0zcHUq/saSyYvw8IKnUZKL31tm4o5un?=
+ =?us-ascii?Q?EL+tpBTT4MeagrcV79LcM/WJm+yt8KTtfFfOJGS5Kkg5l4HYAPkUCHpqLNgC?=
+ =?us-ascii?Q?aaeJYU9tgxBUpSl2zlhlV/fY0MPSja2yzVfT5zwTdoFndrxigvdL/5DQIYWD?=
+ =?us-ascii?Q?OfW0XOWannwmtpYMCC0gYvNWhpiulCbcxXHK8c+0Y5wfHnryzqCcEH/8I9bo?=
+ =?us-ascii?Q?VSZITavRw+o5Y4PfAANT3uEoWWsrOQk1JduToZDtHPxi2EbYA5Nu7WT3JVVs?=
+ =?us-ascii?Q?GAHYQHf/chnB1DtUtj14cFmV9/R/YPcLUiMdDHVilNbXDsS5aSeg4r03WUvG?=
+ =?us-ascii?Q?TFmr/IOPUhrqi86GucpcwshxFPAkWJWgsMUf0GTy?=
+X-OriginatorOrg: vivo.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: c236b37b-e1fd-46d8-a131-08db8148639b
+X-MS-Exchange-CrossTenant-AuthSource: SEZPR06MB5269.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Jul 2023 13:20:11.4121
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: laGEcHXNLlipK8dw2WLzhy0Mjii6dOQGBunFhp2pgwCp8MhQbxqMXqpjxHb1nCAMM15aXWOiXaGsIiHGS0BvBg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SG2PR06MB5131
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Jul 10, 2023 at 3:01=E2=80=AFPM Thomas Zimmermann <tzimmermann@suse=
-.de> wrote:
->
-> The flag FBINFO_FLAG_DEFAULT is 0 and has no effect, as struct
-> fbinfo.flags has been allocated to zero by framebuffer_alloc(). So do
-> not set it.
->
-> Flags should signal differences from the default values. After cleaning
-> up all occurences of FBINFO_FLAG_DEFAULT, the token can be removed.
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: "Bruno Pr=C3=A9mont" <bonbons@linux-vserver.org>
-> Cc: Jiri Kosina <jikos@kernel.org>
-> Cc: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Remove unnecessary release_mem_region from the error path to prevent
+mem region from being released twice, which could avoid resource leak
+or other unexpected issues.
 
-Acked-by: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Fixes: b083c22d5114 ("video: fbdev: imxfb: Convert request_mem_region + ioremap to devm_ioremap_resource")
+Signed-off-by: Yangtao Li <frank.li@vivo.com>
+---
+ drivers/video/fbdev/imxfb.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-Feel free to take this through the DRI tree (or any other that handles
-FB) with the rest of the series if you want.
-
-Cheers,
-Benjamin
-
-> ---
->  drivers/hid/hid-picolcd_fb.c | 1 -
->  1 file changed, 1 deletion(-)
->
-> diff --git a/drivers/hid/hid-picolcd_fb.c b/drivers/hid/hid-picolcd_fb.c
-> index dabcd054dad9..d726aaafb146 100644
-> --- a/drivers/hid/hid-picolcd_fb.c
-> +++ b/drivers/hid/hid-picolcd_fb.c
-> @@ -527,7 +527,6 @@ int picolcd_init_framebuffer(struct picolcd_data *dat=
-a)
->         info->var =3D picolcdfb_var;
->         info->fix =3D picolcdfb_fix;
->         info->fix.smem_len   =3D PICOLCDFB_SIZE*8;
-> -       info->flags =3D FBINFO_FLAG_DEFAULT;
->
->         fbdata =3D info->par;
->         spin_lock_init(&fbdata->lock);
-> --
-> 2.41.0
->
+diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+index 04f3bf30a529..385c4715c7b7 100644
+--- a/drivers/video/fbdev/imxfb.c
++++ b/drivers/video/fbdev/imxfb.c
+@@ -1043,7 +1043,6 @@ static int imxfb_probe(struct platform_device *pdev)
+ failed_map:
+ failed_ioremap:
+ failed_getclock:
+-	release_mem_region(res->start, resource_size(res));
+ failed_of_parse:
+ 	kfree(info->pseudo_palette);
+ failed_init:
+-- 
+2.39.0
 

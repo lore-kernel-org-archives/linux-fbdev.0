@@ -2,91 +2,99 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02DCFEB64DA
-	for <linux-fbdev@archiver.kernel.org>; Mon, 10 Jul 2023 17:19:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC2AEEB64DC
+	for <linux-fbdev@archiver.kernel.org>; Mon, 10 Jul 2023 17:40:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230295AbjGJRTX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 10 Jul 2023 13:19:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39782 "EHLO
+        id S230399AbjGJRkU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 10 Jul 2023 13:40:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53652 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229756AbjGJRTU (ORCPT
+        with ESMTP id S230397AbjGJRkU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 10 Jul 2023 13:19:20 -0400
-Received: from mailrelay6-1.pub.mailoutpod2-cph3.one.com (mailrelay6-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:405::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 069BE120
-        for <linux-fbdev@vger.kernel.org>; Mon, 10 Jul 2023 10:19:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=rsa1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=IgD20OUQ8wy5rFFsoBYb/VGqjIM7D6p+vuvVuio9hik=;
-        b=CcwAZRGze1nz78tsTeGG31sH+B/tjdH+6ekcCAKy3lsh8Fx6Y+YXCD/TmIei/HlJU/+CjyCRKUyPh
-         4CUMeeNCmxnxg5WnN8WYc+Y/3TRBu3GgBHOLLMWNEmjaKunSp3X6NAJPGuB+DxEkEZX+QnanSr3FYn
-         2wlZ5UBU9Zu+O246GL/D/HneI1rQcFtBUkUV1dNMCwn+vM9M1hVrPjLsgJxFcU87WZ4nq2Vtx30nj9
-         ArzioTOrLCz4P2HsQj4ZOuK/Fmh+TNaxaKUMNXnO1dvheypIb7/oOCjfcrCaYpZhivEpRMotLSbonb
-         DLfigJoJ7elOqxhN67CrfrrG5kpNeWw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=ed1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=IgD20OUQ8wy5rFFsoBYb/VGqjIM7D6p+vuvVuio9hik=;
-        b=vxQog57Oi39/DPw2NHC1MnZmnCknkQQw5bg9fTJIlcxSuaigVTP3V2Z7GSu+tbSUPTOKht6NYG4oF
-         2pB/Sc4AQ==
-X-HalOne-ID: de71c874-1f45-11ee-b17e-6f01c1d0a443
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-        by mailrelay6 (Halon) with ESMTPSA
-        id de71c874-1f45-11ee-b17e-6f01c1d0a443;
-        Mon, 10 Jul 2023 17:19:05 +0000 (UTC)
-Date:   Mon, 10 Jul 2023 19:19:03 +0200
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     deller@gmx.de, javierm@redhat.com, linux-fbdev@vger.kernel.org,
-        kvm@vger.kernel.org, linux-hyperv@vger.kernel.org,
-        linux-sh@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org,
-        linux-geode@lists.infradead.org, dri-devel@lists.freedesktop.org,
-        linux-input@vger.kernel.org, linux-nvidia@lists.surfsouth.com,
-        linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
-Subject: Re: [PATCH 00/17] fbdev: Remove FBINFO_DEFAULT and
- FBINFO_FLAG_DEFAULT flags
-Message-ID: <20230710171903.GA14712@ravnborg.org>
-References: <20230710130113.14563-1-tzimmermann@suse.de>
+        Mon, 10 Jul 2023 13:40:20 -0400
+Received: from mail-io1-f42.google.com (mail-io1-f42.google.com [209.85.166.42])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5EBA8135;
+        Mon, 10 Jul 2023 10:40:17 -0700 (PDT)
+Received: by mail-io1-f42.google.com with SMTP id ca18e2360f4ac-78362f57500so243177639f.3;
+        Mon, 10 Jul 2023 10:40:17 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1689010816; x=1691602816;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=pJ0X7LH8Y32+25vFKtVfefQZ8VxfYOg+I+aDeHwgaRg=;
+        b=ea8pNLA3H378zc+JylHhCzz6ZFAycmOCxxiA3R46VYh9UVYdBjav9B7keAQbvCsXbK
+         ynSNLKnHOMpgvb429xybA/nVdXVeu79Ok+Ln7iLybDTmtJlYIhZlDGUAl9FawZINC+8u
+         C+lyPZrriz/I1KEKRIkUiYBSFY1D+oZjdhClZBOnD8N+g+IbwoyAcZjl4kwBH0A9QpOV
+         HUIc7clL0+nBdrjGOvEUDx+0V97Z/jluph3uANqCwCs0muSCe6l9u3lwkE2CN0e5bGDN
+         kJQdDrffWnwo2b3XjPfzseM8ruUmxz7WrdYfGyY5B4i+anzA0jBNt04xykLEIbLfzNPd
+         GrlA==
+X-Gm-Message-State: ABy/qLZIe+XDfVCE/NQLsr9B+A3I03tv38TKIVYSoaQJ38gkSAGpFAa5
+        tTByAbXOH5x8T2OnZwsETg==
+X-Google-Smtp-Source: APBJJlE0oA73gYUIwMelcM8z0408U22yjSo8RUGJb2rqGjtGdswxkKCC9nABPtEoktryHkXAAacu7A==
+X-Received: by 2002:a92:4b08:0:b0:33b:dcbf:e711 with SMTP id m8-20020a924b08000000b0033bdcbfe711mr15060887ilg.8.1689010816389;
+        Mon, 10 Jul 2023 10:40:16 -0700 (PDT)
+Received: from robh_at_kernel.org ([64.188.179.250])
+        by smtp.gmail.com with ESMTPSA id w18-20020a029692000000b0042036f06b24sm3449146jai.163.2023.07.10.10.40.14
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 10 Jul 2023 10:40:15 -0700 (PDT)
+Received: (nullmailer pid 2291150 invoked by uid 1000);
+        Mon, 10 Jul 2023 17:40:13 -0000
+From:   Rob Herring <robh@kernel.org>
+To:     Frank Rowand <frowand.list@gmail.com>,
+        Michal Suchanek <msuchanek@suse.de>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        stable@vger.kernel.org, Cyril Brulebois <cyril@debamax.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Helge Deller <deller@gmx.de>, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] of: Preserve "of-display" device name for compatibility
+Date:   Mon, 10 Jul 2023 11:40:07 -0600
+Message-Id: <20230710174007.2291013-1-robh@kernel.org>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230710130113.14563-1-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+Since commit 241d2fb56a18 ("of: Make OF framebuffer device names unique"),
+as spotted by Frédéric Bonnard, the historical "of-display" device is
+gone: the updated logic creates "of-display.0" instead, then as many
+"of-display.N" as required.
 
-On Mon, Jul 10, 2023 at 02:50:04PM +0200, Thomas Zimmermann wrote:
-> Remove the unused flags FBINFO_DEFAULT and FBINFO_FLAG_DEFAULT from
-> fbdev and drivers, as briefly discussed at [1]. Both flags were maybe
-> useful when fbdev had special handling for driver modules. With
-> commit 376b3ff54c9a ("fbdev: Nuke FBINFO_MODULE"), they are both 0
-> and have no further effect.
-> 
-> Patches 1 to 7 remove FBINFO_DEFAULT from drivers. Patches 2 to 5
-> split this by the way the fb_info struct is being allocated. All flags
-> are cleared to zero during the allocation.
-> 
-> Patches 8 to 16 do the same for FBINFO_FLAG_DEFAULT. Patch 8 fixes
-> an actual bug in how arch/sh uses the tokne for struct fb_videomode,
-> which is unrelated.
-> 
-> Patch 17 removes both flag constants from <linux/fb.h>
+This means that offb no longer finds the expected device, which prevents
+the Debian Installer from setting up its interface, at least on ppc64el.
 
-We have a few more flags that are unused - should they be nuked too?
-FBINFO_HWACCEL_FILLRECT
-FBINFO_HWACCEL_ROTATE
-FBINFO_HWACCEL_XPAN
+Fix this by keeping "of-display" for the first device and "of-display.N"
+for subsequent devices.
 
-Unused as in no references from fbdev/core/*
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=217328
+Link: https://bugs.debian.org/1033058
+Fixes: 241d2fb56a18 ("of: Make OF framebuffer device names unique")
+Cc: stable@vger.kernel.org
+Cc: Cyril Brulebois <cyril@debamax.com>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Helge Deller <deller@gmx.de>
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+ drivers/of/platform.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I would rather see one series nuke all unused FBINFO flags in one go.
-Assuming my quick grep are right and the above can be dropped.
+diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+index 051e29b7ad2b..0c3475e7d2ff 100644
+--- a/drivers/of/platform.c
++++ b/drivers/of/platform.c
+@@ -552,7 +552,7 @@ static int __init of_platform_default_populate_init(void)
+ 			if (!of_get_property(node, "linux,opened", NULL) ||
+ 			    !of_get_property(node, "linux,boot-display", NULL))
+ 				continue;
+-			dev = of_platform_device_create(node, "of-display.0", NULL);
++			dev = of_platform_device_create(node, "of-display", NULL);
+ 			of_node_put(node);
+ 			if (WARN_ON(!dev))
+ 				return -ENOMEM;
+-- 
+2.40.1
 
-	Sam

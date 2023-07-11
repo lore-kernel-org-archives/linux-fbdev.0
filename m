@@ -2,164 +2,131 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D92BC001DC
-	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Jul 2023 16:05:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 427B5C00528
+	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Jul 2023 16:32:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230178AbjGKQE7 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 11 Jul 2023 12:04:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40278 "EHLO
+        id S232110AbjGKQcU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 11 Jul 2023 12:32:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32788 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229476AbjGKQE6 (ORCPT
+        with ESMTP id S231368AbjGKQcT (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 11 Jul 2023 12:04:58 -0400
-Received: from mail-oi1-f172.google.com (mail-oi1-f172.google.com [209.85.167.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5936F9B;
-        Tue, 11 Jul 2023 09:04:57 -0700 (PDT)
-Received: by mail-oi1-f172.google.com with SMTP id 5614622812f47-3a3b7fafd61so4811049b6e.2;
-        Tue, 11 Jul 2023 09:04:57 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689091496; x=1691683496;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Y7zt5pO69xVTkx3WPA+RT/byFcn7lDWoK0rY+7VhmSY=;
-        b=iswsFtqDQPyT+TBcWW9QuGDGaoW9J/WE0dqbVdW2lfs12vS3rfmijgYd7SLjJaAZof
-         XrOA3Ce8j04eGTsHS0Su3Ums7ze/i5HjohDwArrnndmRTVthDeIbZwyx3B8m/WhvRyiH
-         +WD6q+Yw6Wdhpyk6f4NdBf53b4KwSZZW79ntkAzhvTfxY5DevdIf4OYcS4K8KJ5ImYAK
-         d0yLaq6Wr9s0xPEsx1ibL8amzrO2DVIg+c0UdkMkjfL/vv1G+grw1dffrkMy2k7htxrv
-         mKKRbhVCl01GHUU8Gy1vOOWvrdulGqP6pNvwrHuOSdfo7NCTPzVy6tbmPBxui2bayy5Z
-         QlbQ==
-X-Gm-Message-State: ABy/qLaK8gquVnCuVL57J8lg01orhIsLWN3Ym5o+LUzt1oQh62+gFMGt
-        /pX0cEOryUFqmyZQJa8MIV1pi+WPYs8PTg==
-X-Google-Smtp-Source: APBJJlELsv1YirHZDxBK1svirqsvA2URB3xoL7T7MpgJRuIfE7H6LFZcm35pIOmp1dGUcJI/gbeLwg==
-X-Received: by 2002:a05:6808:190b:b0:3a3:aedd:6b21 with SMTP id bf11-20020a056808190b00b003a3aedd6b21mr21095471oib.39.1689091496363;
-        Tue, 11 Jul 2023 09:04:56 -0700 (PDT)
-Received: from mail-oi1-f170.google.com (mail-oi1-f170.google.com. [209.85.167.170])
-        by smtp.gmail.com with ESMTPSA id u13-20020a056808000d00b003a371c611f6sm1005829oic.18.2023.07.11.09.04.56
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 11 Jul 2023 09:04:56 -0700 (PDT)
-Received: by mail-oi1-f170.google.com with SMTP id 5614622812f47-3a04e5baffcso4806589b6e.3;
-        Tue, 11 Jul 2023 09:04:56 -0700 (PDT)
-X-Received: by 2002:a05:6358:4198:b0:132:7a2e:87bc with SMTP id
- w24-20020a056358419800b001327a2e87bcmr13654687rwc.5.1689091495810; Tue, 11
- Jul 2023 09:04:55 -0700 (PDT)
+        Tue, 11 Jul 2023 12:32:19 -0400
+Received: from out-38.mta0.migadu.com (out-38.mta0.migadu.com [91.218.175.38])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 488D3E7E
+        for <linux-fbdev@vger.kernel.org>; Tue, 11 Jul 2023 09:32:15 -0700 (PDT)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+        t=1689093133;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=AOe2sK5corMJVr8s18spKTEHFO7S6COQNSRgsjkc54A=;
+        b=ixKAhLu28/nq1vazDkLtGsR/XEiVHt1ra2tNTmdDLo9BPHekHQ7OViZ9PZCadSk3DSxHL1
+        6Md7s5pSxG/rbDPk5WiAXKGCJ9q1jxF9DVPaEOAcGbdFMUXTFAqhY+mtay7NocxBghXDdE
+        nl8Q8HRCQmWsB+O7po7KrEn9IlnkOKE=
+From:   Sui Jingfeng <sui.jingfeng@linux.dev>
+To:     Alex Deucher <alexander.deucher@amd.com>,
+        Christian Koenig <christian.koenig@amd.com>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Dave Airlie <airlied@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Jocelyn Falempe <jfalempe@redhat.com>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Jani Nikula <jani.nikula@linux.intel.com>,
+        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+        Ben Skeggs <bskeggs@redhat.com>, Lyude Paul <lyude@redhat.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Helge Deller <deller@gmx.de>,
+        Mario Limonciello <mario.limonciello@amd.com>
+Cc:     amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+        nouveau@lists.freedesktop.org, linux-pci@vger.kernel.org,
+        kvm@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        Sui Jingfeng <suijingfeng@loongson.cn>
+Subject: [PATCH v3 0/9] PCI/VGA: Improve the default VGA device selection
+Date:   Wed, 12 Jul 2023 00:31:46 +0800
+Message-Id: <20230711163155.791522-1-sui.jingfeng@linux.dev>
 MIME-Version: 1.0
-References: <20230710130113.14563-1-tzimmermann@suse.de> <20230710171903.GA14712@ravnborg.org>
- <ab92f8d9-36ab-06bc-b85b-d52b7a1bfe9a@suse.de> <20230711144744.GA117276@ravnborg.org>
- <bf439387-6b13-0fd9-f61b-1a5cbf731187@gmx.de>
-In-Reply-To: <bf439387-6b13-0fd9-f61b-1a5cbf731187@gmx.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 11 Jul 2023 18:04:41 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXnTDK6uZNhNR=NFTiy4F+2nLJd1E47vDoXUV3zFSCGOA@mail.gmail.com>
-Message-ID: <CAMuHMdXnTDK6uZNhNR=NFTiy4F+2nLJd1E47vDoXUV3zFSCGOA@mail.gmail.com>
-Subject: Re: [PATCH 00/17] fbdev: Remove FBINFO_DEFAULT and
- FBINFO_FLAG_DEFAULT flags
-To:     Helge Deller <deller@gmx.de>
-Cc:     Sam Ravnborg <sam@ravnborg.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
-        linux-fbdev@vger.kernel.org, kvm@vger.kernel.org,
-        linux-hyperv@vger.kernel.org, linux-sh@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
-        amd-gfx@lists.freedesktop.org, linux-geode@lists.infradead.org,
-        dri-devel@lists.freedesktop.org, linux-input@vger.kernel.org,
-        linux-nvidia@lists.surfsouth.com, linux-omap@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org,
-        linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Helge,
+From: Sui Jingfeng <suijingfeng@loongson.cn>
 
-On Tue, Jul 11, 2023 at 5:26 PM Helge Deller <deller@gmx.de> wrote:
-> On 7/11/23 16:47, Sam Ravnborg wrote:
-> > On Tue, Jul 11, 2023 at 08:24:40AM +0200, Thomas Zimmermann wrote:
-> >> Am 10.07.23 um 19:19 schrieb Sam Ravnborg:
-> >>> On Mon, Jul 10, 2023 at 02:50:04PM +0200, Thomas Zimmermann wrote:
-> >>>> Remove the unused flags FBINFO_DEFAULT and FBINFO_FLAG_DEFAULT from
-> >>>> fbdev and drivers, as briefly discussed at [1]. Both flags were maybe
-> >>>> useful when fbdev had special handling for driver modules. With
-> >>>> commit 376b3ff54c9a ("fbdev: Nuke FBINFO_MODULE"), they are both 0
-> >>>> and have no further effect.
-> >>>>
-> >>>> Patches 1 to 7 remove FBINFO_DEFAULT from drivers. Patches 2 to 5
-> >>>> split this by the way the fb_info struct is being allocated. All flags
-> >>>> are cleared to zero during the allocation.
-> >>>>
-> >>>> Patches 8 to 16 do the same for FBINFO_FLAG_DEFAULT. Patch 8 fixes
-> >>>> an actual bug in how arch/sh uses the tokne for struct fb_videomode,
-> >>>> which is unrelated.
-> >>>>
-> >>>> Patch 17 removes both flag constants from <linux/fb.h>
-> >>>
-> >>> We have a few more flags that are unused - should they be nuked too?
-> >>> FBINFO_HWACCEL_FILLRECT
-> >>> FBINFO_HWACCEL_ROTATE
-> >>> FBINFO_HWACCEL_XPAN
-> >>
-> >> It seems those are there for completeness. Nothing sets _ROTATE,
->
-> I think some fbdev drivers had hardware acceleration for ROTATE in the
-> past. HWACCEL_XPAN is still in some drivers.
->
-> >> the others are simply never checked. According to the comments,
-> >> some are required, some are optional. I don't know what that
-> >> means.
->
-> I think it's OK if you remove those flags which aren't used anywhere,
-> e.g. FBINFO_HWACCEL_ROTATE.
+Currently, the default VGA device selection is not perfect. Potential
+problems are:
 
-Indeed.
+1) This function is a no-op on non-x86 architectures.
+2) It does not take the PCI Bar may get relocated into consideration.
+3) It is not effective for the PCI device without a dedicated VRAM Bar.
+4) It is device-agnostic, thus it has to waste the effort to iterate all
+   of the PCI Bar to find the VRAM aperture.
+5) It has invented lots of methods to determine which one is the default
+   boot device on a multiple video card coexistence system. But this is
+   still a policy because it doesn't give the user a choice to override.
 
-> >> IIRC there were complains about performance when Daniel tried to remove
-> >> fbcon acceleration, so not all _HWACCEL_ flags are unneeded.
->
-> Correct. I think COPYAREA and FILLRECT are the bare minimum to accelerate
-> fbcon, IMAGEBLIT is for showing the tux penguin (?),
-> XPAN/YPAN and YWRAP for some hardware screen panning needed by some drivers
-> (not sure if this is still used as I don't have such hardware, Geert?).
+With the observation that device drivers or video aperture helpers may
+have better knowledge about which PCI bar contains the firmware FB,
 
-Yes, they are used.  Anything that is handled in drivers/video/fbdev/core/
-is used:
+This patch tries to solve the above problems by introducing a function
+callback to the vga_client_register() function interface. DRM device
+drivers for the PCI device need to register the is_boot_device() function
+callback during the driver loading time. Once the driver binds the device
+successfully, VRAARB will call back to the driver. This gives the device
+drivers a chance to provide accurate boot device identification. Which in
+turn unlock the abitration service to non-x86 architectures. A device
+driver can also pass a NULL pointer to keep the original behavior.
 
-$ git grep  HWACCEL_ -- drivers/video/fbdev/core/
-drivers/video/fbdev/core/fbcon.c:       if ((info->flags &
-FBINFO_HWACCEL_COPYAREA) &&
-drivers/video/fbdev/core/fbcon.c:           !(info->flags &
-FBINFO_HWACCEL_DISABLED))
-drivers/video/fbdev/core/fbcon.c:       int good_pan = (cap &
-FBINFO_HWACCEL_YPAN) &&
-drivers/video/fbdev/core/fbcon.c:       int good_wrap = (cap &
-FBINFO_HWACCEL_YWRAP) &&
-drivers/video/fbdev/core/fbcon.c:       int fast_copyarea = (cap &
-FBINFO_HWACCEL_COPYAREA) &&
-drivers/video/fbdev/core/fbcon.c:               !(cap &
-FBINFO_HWACCEL_DISABLED);
-drivers/video/fbdev/core/fbcon.c:       int fast_imageblit = (cap &
-FBINFO_HWACCEL_IMAGEBLIT) &&
-drivers/video/fbdev/core/fbcon.c:               !(cap &
-FBINFO_HWACCEL_DISABLED);
+This series is applied on the drm-tip branch (with a cleanup patch set[1]
+applied beforehand)
 
-BTW, I'm surprised FBINFO_HWACCEL_FILLRECT is not handled.
-But looking at the full history, it never was...
+[1] https://patchwork.freedesktop.org/series/120548/
 
-> >> Leaving them in for reference/completeness might be an option; or not. I
-> >> have no strong feelings about those flags.
->
-> I'd say drop FBINFO_HWACCEL_ROTATE at least ?
+v2:
+	* Add a simple implemment for drm/i915 and drm/ast
+	* Pick up all tags (Mario)
+v3:
+	* Fix a mistake for drm/i915 implement
+	* Fix patch can not be applied problem because of drm/amdgpu merged
+          other people's patch.
 
-Agreed.
+Sui Jingfeng (9):
+  video/aperture: Add a helper to detect if an aperture contains
+    firmware FB
+  video/aperture: Add a helper for determining if an unmoved aperture
+    contain FB
+  PCI/VGA: Switch to aperture_contain_firmware_fb_nonreloc()
+  PCI/VGA: Improve the default VGA device selection
+  drm/amdgpu: Implement the is_primary_gpu callback of
+    vga_client_register()
+  drm/radeon: Add an implement for the is_primary_gpu function callback
+  drm/i915: Add an implement for the is_primary_gpu hook
+  drm/ast: Register as a vga client to vgaarb by calling
+    vga_client_register()
+  drm/loongson: Add an implement for the is_primary_gpu function
+    callback
 
-Gr{oetje,eeting}s,
-
-                        Geert
+ drivers/gpu/drm/amd/amdgpu/amdgpu_device.c | 12 +++-
+ drivers/gpu/drm/ast/ast_drv.c              | 29 +++++++++
+ drivers/gpu/drm/drm_aperture.c             | 16 +++++
+ drivers/gpu/drm/i915/display/intel_vga.c   | 31 ++++++++-
+ drivers/gpu/drm/loongson/lsdc_drv.c        | 10 ++-
+ drivers/gpu/drm/nouveau/nouveau_vga.c      |  2 +-
+ drivers/gpu/drm/radeon/radeon_device.c     | 12 +++-
+ drivers/pci/vgaarb.c                       | 74 ++++++++++++++++------
+ drivers/vfio/pci/vfio_pci_core.c           |  2 +-
+ drivers/video/aperture.c                   | 65 +++++++++++++++++++
+ include/drm/drm_aperture.h                 |  2 +
+ include/linux/aperture.h                   | 14 ++++
+ include/linux/vgaarb.h                     |  8 ++-
+ 13 files changed, 247 insertions(+), 30 deletions(-)
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.25.1
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

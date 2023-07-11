@@ -2,148 +2,141 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C71DDC001DD
-	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Jul 2023 15:24:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48517EB64DC
+	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Jul 2023 15:46:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231177AbjGKPYs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 11 Jul 2023 11:24:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41226 "EHLO
+        id S232952AbjGKPqc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 11 Jul 2023 11:46:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59668 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232046AbjGKPYq (ORCPT
+        with ESMTP id S232825AbjGKPqZ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 11 Jul 2023 11:24:46 -0400
+        Tue, 11 Jul 2023 11:46:25 -0400
 Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 66A1710F1;
-        Tue, 11 Jul 2023 08:24:38 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B08EE170A;
+        Tue, 11 Jul 2023 08:46:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1689089042; x=1689693842; i=deller@gmx.de;
- bh=X5J8IwR1yeKrwbjkpPsX7TYJjlXNjW6vNyFiaXSONCI=;
+ s=s31663417; t=1689090368; x=1689695168; i=deller@gmx.de;
+ bh=10xMRkjlDtxZS9LQyRHHnsW87xAMUprLN04Jvmm+ctI=;
  h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=GN6pEgcKFc3TiPb2BrkoJgWpY3wT6K0R5RBigRXBblVMjch41be3tnm2swuTsuX+Os7iA/8
- Z9v2vToEYoOPOQ4s3z2aViTvBbo31jTtusNzIKxOpiwD7D9NwU7sqcIn+JNbk0jHZjwhfVLl2
- d6iWR9cqVyWu0u7qANiT81Cpfdu3Eqc00ZipKFbQhesar/5TX1xB7U9VpXwXmNRtS/1YNiPfU
- SRgIgcZf4Vy4C2hoDDHbvEMYqAxah1b5gF/4wDuoYtNwfTn8iZrmD7X6N5eREBk0mQ+SO7vLm
- XJUXEar9IV97stc6Qd3jl7GNwSx3M24HJnop1aHhCU7ipk3XBcaQ==
+ b=conMbIE+nxzY1Ihl5gk4rASMagP3eSIKPLkMUeO6/ZvgOZzo7Ab1Bg8ex+Ls7LSn/jXxLDn
+ 8V5X0NbouhxtvH7SQrMG7cXZtcwFYfHLNbtItK46cGi8gZdJtwoN5YGGqJb9Q5kI698pnisuO
+ 37OawNy05VPw42nAUnYZPhtF5w6+vRQcTIk2AanIXP0SfOsmuDvvVDoDTDeLciyUB8dPQwhY4
+ NNb/oigsZ1YiQaHzRRBVtVe/42Q/08JYqaS58QOf7Uoh5wnvzMHJsmnJKxoA3yolfQuk4UXh1
+ aMu9avW7Y1+roZIGDxXa1qNCSf4E/VJbhmeSPYmqLHRPFG610nLw==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.60] ([94.134.149.147]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1N4hzZ-1ps3V72pTb-011i72; Tue, 11
- Jul 2023 17:24:02 +0200
-Message-ID: <bf439387-6b13-0fd9-f61b-1a5cbf731187@gmx.de>
-Date:   Tue, 11 Jul 2023 17:24:01 +0200
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N7zFZ-1pxXrX15Wd-015041; Tue, 11
+ Jul 2023 17:46:08 +0200
+Message-ID: <4de35c35-c00d-d21a-bcd1-dc878137eb94@gmx.de>
+Date:   Tue, 11 Jul 2023 17:46:07 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.12.0
-Subject: Re: [PATCH 00/17] fbdev: Remove FBINFO_DEFAULT and
- FBINFO_FLAG_DEFAULT flags
+Subject: Re: [PATCH] of: Preserve "of-display" device name for compatibility
 Content-Language: en-US
-To:     Sam Ravnborg <sam@ravnborg.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     javierm@redhat.com, linux-fbdev@vger.kernel.org,
-        kvm@vger.kernel.org, linux-hyperv@vger.kernel.org,
-        linux-sh@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org,
-        linux-geode@lists.infradead.org, dri-devel@lists.freedesktop.org,
-        linux-input@vger.kernel.org, linux-nvidia@lists.surfsouth.com,
-        linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
-References: <20230710130113.14563-1-tzimmermann@suse.de>
- <20230710171903.GA14712@ravnborg.org>
- <ab92f8d9-36ab-06bc-b85b-d52b7a1bfe9a@suse.de>
- <20230711144744.GA117276@ravnborg.org>
+To:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Rob Herring <robh@kernel.org>,
+        Frank Rowand <frowand.list@gmail.com>,
+        Michal Suchanek <msuchanek@suse.de>
+Cc:     devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+        Cyril Brulebois <cyril@debamax.com>,
+        dri-devel@lists.freedesktop.org
+References: <20230710174007.2291013-1-robh@kernel.org>
+ <a0aa122d-38a1-d4be-edc1-a49b4e5e9b6b@suse.de>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20230711144744.GA117276@ravnborg.org>
+In-Reply-To: <a0aa122d-38a1-d4be-edc1-a49b4e5e9b6b@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:6I/u9K9DZKAMaYzMuqb+xXVwXoFF+h72slV7307qnBcsm0Dzs1x
- nG8x0xILsiEhhUVyajytT1uvIrwO9pRmYfPk78Yjls8o/KkVUspWf98tkujsctomDLRF6u0
- UdBWhjkxLyl8NlhxrYI/AySAPNbWQr6NnCxEKWsR0EsTYbybHP0PZ/RgD80PFRH8fmhW/rk
- TAn21cXKojNy9UOEmBO4g==
-UI-OutboundReport: notjunk:1;M01:P0:XNImko0fYwY=;AiV+j1oEN7JVd7gQE4GAf5pZu6m
- wj99cJ2LSeHJsHr2sKsT5CY1HR5Yi2t55wwqJhZ6uGfcqxHOW/2sn0V3JJ1io82GaOhNRHzvt
- zR9PmCQCilcJeIgDWCjc0NTIJrJwKg9hfWHSI53inWj0QmjAnOKmMCU3wO+aUNaQN4UL9Li4U
- pS0CQrlM7YGW4BTIwfY0xyXtCF6IMWdx7BHqF3QxocVpNzMqT/GVE2zmfibCAiVqoVQY40T+o
- NfQL+Sjc8hRtasBpRBrc2z21M5uGIuje56htBn3GdlF1wxQAOhS7U4WVJMB/RUoYnHtqc+5C7
- Y3Z39Ph2nMGi4aLfGFPQ8o5aDWO2iSZAEyXK9ibsLnG8FE5wcp3HfnnPdYVrcXXRMfCi9Y0y8
- dPaGqnM2nlp1XoENCoUkPedNE+amwXmHeMkLsw4/azwj2BHBlZDUJbT5TEDhDYiUleyOTHX6w
- 9DrDsMO8KTBvWuKxlyh6SvhMiT5th1mL55DNnDe9iAzx5CzX3I/WPmvRDiOsFpDevTdtc/8Ul
- fXWMM1JgkhhzesMwjc3WGGL0WR7ZLDoAXdy6HgvU6DYnM5ZKWbGaU0kGq3Xt62kPOP/TPi57t
- 7xnqiNwytZ9sHQk0abZBXvyhMmffWWlPi7PkmADCqAImC+5wCWCuFIzRZjFe8toJm2oLadiV3
- knPTCfauwkQqsirUUTKP+Fvtut4kgg/lM/XFnPlOr6ONXkR+PAt+jXB02SliulYmhRIkG9Cps
- DEGpDks4ZL0YBrtLU06OAYGJk5e79ZlPpMsMOxggmhzdOq5gASDzlXo2v/5WI4kajcTiXWshU
- AsE+znIk2ZnZVFDRN2aKd1kxacUupl9dFU1lXpXl4FV9iCrgKo+mSF8JrBT4S2N98M8WXk/wg
- j6ZDK2VfivJIrmvtPfy2OGuo6dP1yz/NEjvVfotUNvuZgi41Wa3hoMtQxYuWKIroLVVgCW7x4
- ElEk/ywwPT4Kak54lZ31n9Y0OxE=
+X-Provags-ID: V03:K1:OekAkpBqUCxuG1+JyXZyC7/2fpPfrldaJSFdZme0KAcMxvUfeoN
+ veCEfU7iFi+a33ulHh5TfAyA1lGOR+hPuATf/vCJiEjRac5ET/QcWuzxRrXC/JbS9tIaNNa
+ 8WwNTT3gM669xDj/3PmH4YPkl4FGnnA9IPPBTBzjkuxWQZn0X5XPAeF9kgFzwGk3/c7n9ww
+ dKADfwpo0wxkxshZ5IxAw==
+UI-OutboundReport: notjunk:1;M01:P0:ZN1cWxUa0fI=;fgbb/uD6p39KTmTtmPiJHwFZeeg
+ a6ylHQ320VvmzbF5ViY2jAzht3LKGyiN5mBiVzbuoperXxo1A5RCyZ9AbMr1TENEFsUeyhkQG
+ VJkdW2TdDh8pMKSCGItqXSk862RgTlb2O+NgbKaIXDrS0CysuppJIC7dCOygf82xW3oDU8M4B
+ VeUNgqtLzVn00ABC1r0t2RCukrSqeHlZwmu8T0t2uoiuZZP5OFLE9ii2aAo4pa79/KiIVq4UZ
+ AA1iFKyAD9OMi6p3Yv8D5qdw/NGG6m9M6QKbXpQ9qXMTma4zxLoM1lS0gRXlnKGlZOkc9F7dp
+ FLLe+rH72FXy+aFqsESouj5ZBiQAwxr9Ypks8sObOYHhC5Gre1Ng5iX3KKLCZ3N1vTjHmtT3C
+ u9efBJOAZIqyxe6gWMD9ZuMqVx2Jmq8NUe85tggFvLqD/cPo1sDjAs9ucqpNh9tB7OJmZ+37M
+ p6z/ndoguoWpdHGzq8HOhogzQOy/z85R/vIm0cqYcEZD6CAzQU35KXgNTI402sq9pofZHFM/Q
+ KnEU+XZUiHQOCFMh0aO+Kq3uiomuEF+CfWnouQdZCj5Jo6mDnSHY6V93UpHakHj89PgP6sf+b
+ OS8ytbbXKGXV6cRSJ1nEGlASaoVhn17+CdaAW6hXAT4L1AOXTjFkjsXrAhemqqRkZ7nxBtzNH
+ oJt7XHN3XQLfFnnDUY8cBqT2jGz2xS1kkp+h2UZJiKEGnXEFboacK6wmu4KSZDgQlIea81XGy
+ pF5jWciGmh5kiw8XiUsLJvytLcvrIfdmhyf+jaFsOzjjTXC8be8BfAo4xcI0LvC51oJgwNo/q
+ R23YoKr1vm3x3QwssM5zuYL+XeshlwHTBmkGWRdYrcT+QSqFWPawgI6cgcuApesYBAzI61klm
+ g6jGs/FULM7IqHKwHw9lRNzo+Ntvv+JDsWX17ZWFbS/FCIWJBfrcyVIc1Xs8pYG4WidLz8OaM
+ +nOMIKFX5QL15qy+J/1PrsmggL4=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/11/23 16:47, Sam Ravnborg wrote:
-> Hi Thomas,
+On 7/11/23 08:00, Thomas Zimmermann wrote:
 >
-> On Tue, Jul 11, 2023 at 08:24:40AM +0200, Thomas Zimmermann wrote:
->> Hi Sam
+>
+> Am 10.07.23 um 19:40 schrieb Rob Herring:
+>> Since commit 241d2fb56a18 ("of: Make OF framebuffer device names unique=
+"),
+>> as spotted by Fr=C3=A9d=C3=A9ric Bonnard, the historical "of-display" d=
+evice is
+>> gone: the updated logic creates "of-display.0" instead, then as many
+>> "of-display.N" as required.
 >>
->> Am 10.07.23 um 19:19 schrieb Sam Ravnborg:
->>> Hi Thomas,
->>>
->>> On Mon, Jul 10, 2023 at 02:50:04PM +0200, Thomas Zimmermann wrote:
->>>> Remove the unused flags FBINFO_DEFAULT and FBINFO_FLAG_DEFAULT from
->>>> fbdev and drivers, as briefly discussed at [1]. Both flags were maybe
->>>> useful when fbdev had special handling for driver modules. With
->>>> commit 376b3ff54c9a ("fbdev: Nuke FBINFO_MODULE"), they are both 0
->>>> and have no further effect.
->>>>
->>>> Patches 1 to 7 remove FBINFO_DEFAULT from drivers. Patches 2 to 5
->>>> split this by the way the fb_info struct is being allocated. All flag=
+>> This means that offb no longer finds the expected device, which prevent=
 s
->>>> are cleared to zero during the allocation.
->>>>
->>>> Patches 8 to 16 do the same for FBINFO_FLAG_DEFAULT. Patch 8 fixes
->>>> an actual bug in how arch/sh uses the tokne for struct fb_videomode,
->>>> which is unrelated.
->>>>
->>>> Patch 17 removes both flag constants from <linux/fb.h>
->>>
->>> We have a few more flags that are unused - should they be nuked too?
->>> FBINFO_HWACCEL_FILLRECT
->>> FBINFO_HWACCEL_ROTATE
->>> FBINFO_HWACCEL_XPAN
+>> the Debian Installer from setting up its interface, at least on ppc64el=
+.
 >>
->> It seems those are there for completeness. Nothing sets _ROTATE,
-
-I think some fbdev drivers had hardware acceleration for ROTATE in the
-past. HWACCEL_XPAN is still in some drivers.
-
->> the others are simply never checked. According to the comments,
->> some are required, some are optional. I don't know what that
->> means.
-
-I think it's OK if you remove those flags which aren't used anywhere,
-e.g. FBINFO_HWACCEL_ROTATE.
-
->> IIRC there were complains about performance when Daniel tried to remove
->> fbcon acceleration, so not all _HWACCEL_ flags are unneeded.
-
-Correct. I think COPYAREA and FILLRECT are the bare minimum to accelerate
-fbcon, IMAGEBLIT is for showing the tux penguin (?),
-XPAN/YPAN and YWRAP for some hardware screen panning needed by some driver=
-s
-(not sure if this is still used as I don't have such hardware, Geert?).
-
->> Leaving them in for reference/completeness might be an option; or not. =
-I
->> have no strong feelings about those flags.
-
-I'd say drop FBINFO_HWACCEL_ROTATE at least ?
-
->>> Unused as in no references from fbdev/core/*
->>>
->>> I would rather see one series nuke all unused FBINFO flags in one go.
->>> Assuming my quick grep are right and the above can be dropped.
+>> Fix this by keeping "of-display" for the first device and "of-display.N=
+"
+>> for subsequent devices.
 >>
->> I would not want to extend this series. I'm removing _DEFAULT as it's
->> absolutely pointless and confusing.
+>> Link: https://bugzilla.kernel.org/show_bug.cgi?id=3D217328
+>> Link: https://bugs.debian.org/1033058
+>> Fixes: 241d2fb56a18 ("of: Make OF framebuffer device names unique")
+>> Cc: stable@vger.kernel.org
+>> Cc: Cyril Brulebois <cyril@debamax.com>
+>> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+>> Cc: Helge Deller <deller@gmx.de>
+>> Signed-off-by: Rob Herring <robh@kernel.org>
+>
+> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-Yes, Ok.
+Acked-by: Helge Deller <deller@gmx.de>
+
+Who will pick up that patch?
+Shall I take it via fbdev git tree?
 
 Helge
+
+>
+>> ---
+>> =C2=A0 drivers/of/platform.c | 2 +-
+>> =C2=A0 1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+>> index 051e29b7ad2b..0c3475e7d2ff 100644
+>> --- a/drivers/of/platform.c
+>> +++ b/drivers/of/platform.c
+>> @@ -552,7 +552,7 @@ static int __init of_platform_default_populate_init=
+(void)
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0 if (!of_get_property(node, "linux,opened", NULL) ||
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 !of_get_property(node, "linux,boot-displ=
+ay", NULL))
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 continue;
+>> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 dev=
+ =3D of_platform_device_create(node, "of-display.0", NULL);
+>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 dev=
+ =3D of_platform_device_create(node, "of-display", NULL);
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0 of_node_put(node);
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0 if (WARN_ON(!dev))
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return -ENOMEM;
+>
+

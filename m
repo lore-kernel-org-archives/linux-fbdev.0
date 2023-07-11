@@ -2,30 +2,30 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D6C2DEB64DD
-	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Jul 2023 16:53:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E75AEC001DF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Jul 2023 16:53:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232056AbjGKQxg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 11 Jul 2023 12:53:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50436 "EHLO
+        id S232952AbjGKQxj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 11 Jul 2023 12:53:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50468 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231555AbjGKQxd (ORCPT
+        with ESMTP id S231797AbjGKQxe (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 11 Jul 2023 12:53:33 -0400
-Received: from out-10.mta1.migadu.com (out-10.mta1.migadu.com [95.215.58.10])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F0BFF10D8
-        for <linux-fbdev@vger.kernel.org>; Tue, 11 Jul 2023 09:53:31 -0700 (PDT)
+        Tue, 11 Jul 2023 12:53:34 -0400
+Received: from out-22.mta1.migadu.com (out-22.mta1.migadu.com [IPv6:2001:41d0:203:375::16])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4CBE610EA
+        for <linux-fbdev@vger.kernel.org>; Tue, 11 Jul 2023 09:53:32 -0700 (PDT)
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-        t=1689093809;
+        t=1689093834;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=GBy5pJ1hlnJ55l3+0FoW8CoU4fx5kPQd0O17NeAPNiY=;
-        b=VLnHpbhmCbj+VytfP2De0A90dTbIOm7DbFncSWPFk5st0NBQu1Rgdl8iXr4M//w7gMNkg6
-        k82DFVKmL0UkqsJrG275lNVeqSYnUy+KXU/qz2KFRRtukDcsipHPOqzM3498Fm16a4DX4L
-        10mrRoZDA7Sbop614INjogTPQZG6Ouw=
+        bh=iVEqfzU8LKaeTCpd0iTjGV1loy12NrUravzVWeb1zk8=;
+        b=H3VPH7tc08QQlw2h5nbl1lpqKBm+1PGywtLormVFLl9T0Bl6ppxX8pZfolXuvzfQorxg1H
+        /L2uyQ6b68f3NY/OM/G+v4+IsWmf3aM/9tRax3B/Gphu9fd9i4aHg5iRxClevu+H1Lvr/T
+        ZGpawz4uQZx+ixsSXOPb3VhDlhvWY94=
 From:   Sui Jingfeng <sui.jingfeng@linux.dev>
 To:     David Airlie <airlied@gmail.com>
 Cc:     amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
@@ -33,11 +33,11 @@ Cc:     amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
         kvm@vger.kernel.org, linux-fbdev@vger.kernel.org,
         Sui Jingfeng <suijingfeng@loongson.cn>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Helge Deller <deller@gmx.de>
-Subject: [PATCH v3 2/9] video/aperture: Add a helper for determining if an unmoved aperture contain FB
-Date:   Wed, 12 Jul 2023 00:43:03 +0800
-Message-Id: <20230711164310.791756-3-sui.jingfeng@linux.dev>
+        Jocelyn Falempe <jfalempe@redhat.com>,
+        Daniel Vetter <daniel@ffwll.ch>
+Subject: [PATCH v3 8/9] drm/ast: Register as a vga client to vgaarb by calling vga_client_register()
+Date:   Wed, 12 Jul 2023 00:43:09 +0800
+Message-Id: <20230711164310.791756-9-sui.jingfeng@linux.dev>
 In-Reply-To: <20230711164310.791756-1-sui.jingfeng@linux.dev>
 References: <20230711164310.791756-1-sui.jingfeng@linux.dev>
 MIME-Version: 1.0
@@ -49,97 +49,73 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Sui Jingfeng <suijingfeng@loongson.cn>
 
-This patch is intended to form a uniform approach to determining if an
-unmoved aperture contains the firmware FB. I believe that the global
-screen_info is more about video-specific things.
-
-Putting it in video/aperture.c helps form a uniform approach.
+Becasuse the VGA Display Controller in the ASpeed BMC chip is also a PCIe
+device, the Software Programming guide of AST2400 say that it is Fully
+IBM VGA compliant, thus, it should also particiate in the arbitration.
 
 Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Helge Deller <deller@gmx.de>
+Cc: Jocelyn Falempe <jfalempe@redhat.com>
+Cc: David Airlie <airlied@gmail.com>
+Cc: Daniel Vetter <daniel@ffwll.ch>
 Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
 ---
- drivers/video/aperture.c | 36 ++++++++++++++++++++++++++++++++++++
- include/linux/aperture.h |  7 +++++++
- 2 files changed, 43 insertions(+)
+ drivers/gpu/drm/ast/ast_drv.c | 29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
-diff --git a/drivers/video/aperture.c b/drivers/video/aperture.c
-index 34eb962cfae8..f03dfcabc303 100644
---- a/drivers/video/aperture.c
-+++ b/drivers/video/aperture.c
-@@ -6,6 +6,7 @@
- #include <linux/mutex.h>
+diff --git a/drivers/gpu/drm/ast/ast_drv.c b/drivers/gpu/drm/ast/ast_drv.c
+index e1224ef4ad83..0e53b0cd3f09 100644
+--- a/drivers/gpu/drm/ast/ast_drv.c
++++ b/drivers/gpu/drm/ast/ast_drv.c
+@@ -28,6 +28,7 @@
+ 
+ #include <linux/module.h>
  #include <linux/pci.h>
- #include <linux/platform_device.h>
-+#include <linux/screen_info.h>
- #include <linux/slab.h>
- #include <linux/sysfb.h>
- #include <linux/types.h>
-@@ -406,3 +407,38 @@ bool aperture_contain_firmware_fb(resource_size_t ap_start, resource_size_t ap_e
- 	return false;
- }
- EXPORT_SYMBOL(aperture_contain_firmware_fb);
-+
-+/**
-+ * aperture_contain_firmware_fb_nonreloc - Detect if the firmware framebuffer
-+ * belong to a non-relocatable aperture, such as the aperture of platform
-+ * device. Note that this function relay on the global screen info.
-+ * @ap_start: the aperture's start address in physical memory
-+ * @ap_end: the aperture's end address in physical memory
-+ *
-+ * Returns:
-+ * true if there is a firmware framebuffer belong to the aperture passed in,
-+ * or false otherwise.
-+ */
-+bool aperture_contain_firmware_fb_nonreloc(resource_size_t ap_start, resource_size_t ap_end)
++#include <linux/vgaarb.h>
+ 
+ #include <drm/drm_aperture.h>
+ #include <drm/drm_atomic_helper.h>
+@@ -89,6 +90,32 @@ static const struct pci_device_id ast_pciidlist[] = {
+ 
+ MODULE_DEVICE_TABLE(pci, ast_pciidlist);
+ 
++static bool ast_vga_is_primary_gpu(struct pci_dev *pdev)
 +{
-+	u64 fb_start;
-+	u64 fb_end;
++	struct drm_device *drm = pci_get_drvdata(pdev);
++	struct ast_device *ast = to_ast_device(drm);
 +
-+	if (screen_info.capabilities & VIDEO_CAPABILITY_64BIT_BASE) {
-+		fb_start = (u64)screen_info.ext_lfb_base << 32 | screen_info.lfb_base;
-+		fb_end = fb_start + screen_info.lfb_size;
-+	} else {
-+		fb_start = screen_info.lfb_base;
-+		fb_end = fb_start + screen_info.lfb_size;
++	return drm_aperture_contain_firmware_fb(ast->vram_base, ast->vram_size);
++}
++
++static unsigned int ast_vga_set_decode(struct pci_dev *pdev, bool state)
++{
++	struct drm_device *drm = pci_get_drvdata(pdev);
++	struct ast_device *ast = to_ast_device(drm);
++
++	if (state) {
++		/* Enable standard VGA decode and Enable normal VGA decode */
++		ast_set_index_reg(ast, AST_IO_CRTC_PORT, 0xa1, 0x04);
++
++		return VGA_RSRC_LEGACY_IO | VGA_RSRC_LEGACY_MEM |
++		       VGA_RSRC_NORMAL_IO | VGA_RSRC_NORMAL_MEM;
 +	}
 +
-+	/* No firmware framebuffer support */
-+	if (!fb_start || !fb_end)
-+		return false;
++	ast_set_index_reg(ast, AST_IO_CRTC_PORT, 0xa1, 0x07);
 +
-+	if (fb_start >= ap_start && fb_end <= ap_end)
-+		return true;
-+
-+	return false;
++	return VGA_RSRC_NORMAL_IO | VGA_RSRC_NORMAL_MEM;
 +}
-+EXPORT_SYMBOL(aperture_contain_firmware_fb_nonreloc);
-diff --git a/include/linux/aperture.h b/include/linux/aperture.h
-index d4dc5917c49b..906d23532b56 100644
---- a/include/linux/aperture.h
-+++ b/include/linux/aperture.h
-@@ -21,6 +21,8 @@ int __aperture_remove_legacy_vga_devices(struct pci_dev *pdev);
- int aperture_remove_conflicting_pci_devices(struct pci_dev *pdev, const char *name);
- 
- bool aperture_contain_firmware_fb(resource_size_t ap_start, resource_size_t ap_end);
 +
-+bool aperture_contain_firmware_fb_nonreloc(resource_size_t ap_start, resource_size_t ap_end);
- #else
- static inline int devm_aperture_acquire_for_platform_device(struct platform_device *pdev,
- 							    resource_size_t base,
-@@ -49,6 +51,11 @@ static inline bool aperture_contain_firmware_fb(resource_size_t ap_start, resour
+ static int ast_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  {
- 	return false;
- }
-+
-+static bool aperture_contain_firmware_fb_nonreloc(resource_size_t ap_start, resource_size_t ap_end)
-+{
-+	return false;
-+}
- #endif
+ 	struct ast_device *ast;
+@@ -112,6 +139,8 @@ static int ast_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (ret)
+ 		return ret;
  
- /**
++	vga_client_register(pdev, ast_vga_set_decode, ast_vga_is_primary_gpu);
++
+ 	drm_fbdev_generic_setup(dev, 32);
+ 
+ 	return 0;
 -- 
 2.25.1
 

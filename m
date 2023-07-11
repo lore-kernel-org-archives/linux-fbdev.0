@@ -2,147 +2,106 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E91CC001DC
-	for <linux-fbdev@archiver.kernel.org>; Mon, 10 Jul 2023 20:15:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8174EB64DC
+	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Jul 2023 05:29:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229575AbjGJUPZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 10 Jul 2023 16:15:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35602 "EHLO
+        id S230238AbjGKF3p (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 11 Jul 2023 01:29:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57864 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229469AbjGJUPZ (ORCPT
+        with ESMTP id S229449AbjGKF3p (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 10 Jul 2023 16:15:25 -0400
-Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 03547BB;
-        Mon, 10 Jul 2023 13:15:22 -0700 (PDT)
-Received: from loongson.cn (unknown [10.20.42.43])
-        by gateway (Coremail) with SMTP id _____8AxV_HZZqxkZ0YDAA--.9710S3;
-        Tue, 11 Jul 2023 04:15:21 +0800 (CST)
-Received: from [10.20.42.43] (unknown [10.20.42.43])
-        by localhost.localdomain (Coremail) with SMTP id AQAAf8CxbSPDZqxkILcnAA--.63575S3;
-        Tue, 11 Jul 2023 04:15:17 +0800 (CST)
-Message-ID: <e7e87325-0b95-2b1c-5652-7f119948b4bd@loongson.cn>
-Date:   Tue, 11 Jul 2023 04:14:59 +0800
+        Tue, 11 Jul 2023 01:29:45 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D47F7134;
+        Mon, 10 Jul 2023 22:29:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
+ s=s31663417; t=1689053363; x=1689658163; i=deller@gmx.de;
+ bh=4QllDK5N6KW5ySDanE63Wz0r1DuAJrr5WWCDUK8NUBc=;
+ h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+ b=EIHdv7Rp18tH8i6AVqcdweFs/dheQ84sw1NiLc3eMs4MTKCbmIxyWKYCqsONqU+0S3WpBsa
+ ZFkH2jXDmWitNp8vO+Ffr9nlCS6RTGw4uEEPkapyf4gYSNuE4N5n70/gdSaS4LtlM6VJdJEms
+ ZglnOXkz0AtWOO2QLyzJ2GgrFjdPPLkcLJJo6acr/oVnK2Poy88isgBKT3bKdyZ8Ks1uci4o4
+ qnHrM/XeRk20ofkkKKgs1WVBSeNhRNWB+WZG+lYJHnpyXf5d3UqD6wWLP5S7z4JdgPphnlOoW
+ VHN0I890c2Ia0VvJqhP4eXQpv27rPVM/1EUKzltXlw92gOdvczoA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.149.147]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1N3bX1-1ptHe40ERX-010YmL; Tue, 11
+ Jul 2023 07:29:23 +0200
+Message-ID: <c3e67df5-c25a-1123-4b64-cd5816a5642e@gmx.de>
+Date:   Tue, 11 Jul 2023 07:29:22 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Subject: Re: [PATCH] fbdev/hyperv_fb: Include <linux/screen_info.h>
-To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
-        javierm@redhat.com, decui@microsoft.com, wei.liu@kernel.org,
-        haiyangz@microsoft.com, kys@microsoft.com
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        kernel test robot <lkp@intel.com>,
-        Ard Biesheuvel <ardb@kernel.org>,
-        Russell King <linux@armlinux.org.uk>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        linux-efi@vger.kernel.org, linux-hyperv@vger.kernel.org
-References: <20230710075848.23087-1-tzimmermann@suse.de>
+ Thunderbird/102.12.0
+Subject: Re: [PATCH v2 1/4] fbdev: imxfb: Removed unneeded release_mem_region
 Content-Language: en-US
-From:   suijingfeng <suijingfeng@loongson.cn>
-In-Reply-To: <20230710075848.23087-1-tzimmermann@suse.de>
+To:     Yangtao Li <frank.li@vivo.com>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>
+Cc:     linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+References: <20230710132001.50764-1-frank.li@vivo.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20230710132001.50764-1-frank.li@vivo.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-CM-TRANSID: AQAAf8CxbSPDZqxkILcnAA--.63575S3
-X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
-X-Coremail-Antispam: 1Uk129KBj93XoWxCr1rJw1kKFWUuF13Kw43XFc_yoW5urWxpF
-        48AFy3CrWrAr1xGa17G342kF90gw15Cryj9F9rKw1YyryYyr1q9r47uFsxW398Jr45GF13
-        tFy3Ww1jka4DuagCm3ZEXasCq-sJn29KB7ZKAUJUUUUP529EdanIXcx71UUUUU7KY7ZEXa
-        sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
-        0xBIdaVrnRJUUUPFb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
-        IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
-        e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_JFI_Gr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
-        0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8JVWxJwA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_
-        Gr0_Gr1UM2kKe7AKxVWUtVW8ZwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07AIYI
-        kI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUtVWr
-        XwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcVAKI48JMx
-        k0xIA0c2IEe2xFo4CEbIxvr21lc7CjxVAaw2AFwI0_Jw0_GFyl42xK82IYc2Ij64vIr41l
-        4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1l4IxYO2xFxVAFwI0_Jw0_GFylx2IqxVAqx4xG67AKxV
-        WUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r4a6rW5MIIYrxkI
-        7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_JFI_Gr1lIxAIcVC0I7IYx2IY6xkF7I0E14v26r
-        4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8JwCI
-        42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjxUstxhDUUUU
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:qhJUziMMhMozDpBHJhmj8WIcMHW5BDfy1dWmyboQDPzVPsnGowl
+ drexJdoeA6i3GjZ5QGqjeAnX8rvxzUwzLngqOBX8cO/NFisUG0Eh3t1iUwRc+H1aXGjq/eg
+ 4D3+jrLdfSDT6028/0XUsElylI+99FKU6iJPkbVOmKmzonofI5xjT9h/jtPkh2jO0WXvkPQ
+ Hy2by1LxZhIZG9ox5MT4Q==
+UI-OutboundReport: notjunk:1;M01:P0:EG/PweqhG9Q=;duFnQUTnZGQ6CV9gE+bpwUwVofd
+ rGERjbZp9CpdbXiyyXxgg8IG3AZoPTJMEYRsyKn9AQ0zXNMCbRc3LuBwrPWEwRgOxt4UvOeYt
+ 3Ja6j2Er4GeUAqKw7KN1w2cSSoLttOLl3FSDUXgkLJKKR58Wt6qPeTx6FIZt6/0b6INPNxH0C
+ E0QREFvGT3s+Ayo/ZmjtdjPKGgpaMq17IL67w2ev7vRz0p7kxSkvCNp+T6+Zo6PP5mwJ60/8z
+ nGgc5ce77CB+U93zDiaKxr+pUj6+0bneX9WZf8rZmVlDiHRPJC5dDjW5z7JTPKZBDzRHNS2+C
+ RJLCUMx/QaJ408O8BLKHD+2eLGC7k1nbhBCQ1vWT98ljSjCobw6aAGwsJgC7E6nupyPID+sif
+ 6WMuw3kPqp8WrP6KvHhvYeDkr+rm+CM16FGgPZV5rggK4pxrhuw5Ui+uFMK6R+yDWD/06IKws
+ I4zh2IPmgJI6P1iKuLV8QKSMY18FHk9A+atGJth8/5sYGbgZ1tnTcq2ltqa3qqclpAwE46HLh
+ G862Pj9KMyIzqP90QxxfKH6M77X9K2lGcHg0J/a11+h9UE0VfjZY5+pXdWCkQMKJX/vlOF2SO
+ xmjT+uz0Trlgg1N5MibBb1mWGmNmwPzmER84VbthQyugXDigpa9Vc8TxXPCF2X+RK7vf9fQlm
+ VWXOVm99NmWNTiLhUhB6GW3zgETSH4xdjnrMymuvxRdlEH0gkPHZxcA8ZF5IewSWLJGc5fdKT
+ 8hLRa80BJ8PCfuovDlsGhLAswIm6bBo3jnCVzaVxRU/UWVYHkxQAqSfwRtN4iT58UMlNPWtZw
+ G5xMAi9wLX2sCbqi7zaWgtBFvUgjcYpzdQQkH0HvcAT2kwzoxdOiFoCAomFpOeVv6/euYmFU1
+ 7y7s5EAThKuGi6ziqCtLp/1ebobaJ27MKHSKiT+5bvsFIv6BhMZNHCsKGhVDp5iO0ihYCBIgv
+ 7fF6PQ==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
-
-On 2023/7/10 15:58, Thomas Zimmermann wrote:
-> Include <linux/screen_info.h> to get the global screen_info state.
-> Fixes the following errors:
+On 7/10/23 15:19, Yangtao Li wrote:
+> Remove unnecessary release_mem_region from the error path to prevent
+> mem region from being released twice, which could avoid resource leak
+> or other unexpected issues.
 >
->>> drivers/video/fbdev/hyperv_fb.c:1033:10: error: use of undeclared identifier 'screen_info'
->      1033 |                 base = screen_info.lfb_base;
->           |                        ^
->     drivers/video/fbdev/hyperv_fb.c:1034:10: error: use of undeclared identifier 'screen_info'
->      1034 |                 size = screen_info.lfb_size;
-> 	 |                        ^
->>> drivers/video/fbdev/hyperv_fb.c:1080:3: error: must use 'struct' tag to refer to type 'screen_info'
->      1080 |                 screen_info.lfb_size = 0;
-> 	 |                 ^
-> 	 |                 struct
->>> drivers/video/fbdev/hyperv_fb.c:1080:14: error: expected identifier or '('
->      1080 |                 screen_info.lfb_size = 0;
-> 	 |                            ^
->     drivers/video/fbdev/hyperv_fb.c:1081:3: error: must use 'struct' tag to refer to type 'screen_info'
->      1081 |                 screen_info.lfb_base = 0;
-> 	 |                 ^
-> 	 |                 struct
->     drivers/video/fbdev/hyperv_fb.c:1081:14: error: expected identifier or '('
->      1081 |                 screen_info.lfb_base = 0;
-> 	 |                            ^
->     drivers/video/fbdev/hyperv_fb.c:1082:3: error: must use 'struct' tag to refer to type 'screen_info'
->      1082 |                 screen_info.orig_video_isVGA = 0;
-> 	 |                 ^
-> 	 |                 struct
->      drivers/video/fbdev/hyperv_fb.c:1082:14: error: expected identifier or '('
->      1082 |                 screen_info.orig_video_isVGA = 0;
-> 	 |                            ^
->      8 errors generated.
->
-> Reported-by: kernel test robot <lkp@intel.com>
-> Closes: https://lore.kernel.org/oe-kbuild-all/202307101042.rqehuauj-lkp@intel.com/
-> Fixes: 8b0d13545b09 ("efi: Do not include <linux/screen_info.h> from EFI header")
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Fixes: b083c22d5114 ("video: fbdev: imxfb: Convert request_mem_region + =
+ioremap to devm_ioremap_resource")
+> Signed-off-by: Yangtao Li <frank.li@vivo.com>
 
+I've applied that series (and fixed minor grammar typos in the commit logs=
+).
 
-Reviewed-by: Sui Jingfeng <suijingfeng@loongson.cn>
+Thanks!
+Helge
 
-
-> Cc: "K. Y. Srinivasan" <kys@microsoft.com> (supporter:Hyper-V/Azure CORE AND DRIVERS)
-> Cc: Haiyang Zhang <haiyangz@microsoft.com> (supporter:Hyper-V/Azure CORE AND DRIVERS)
-> Cc: Wei Liu <wei.liu@kernel.org> (supporter:Hyper-V/Azure CORE AND DRIVERS)
-> Cc: Dexuan Cui <decui@microsoft.com> (supporter:Hyper-V/Azure CORE AND DRIVERS)
-> Cc: Helge Deller <deller@gmx.de> (maintainer:FRAMEBUFFER LAYER)
-> Cc: Javier Martinez Canillas <javierm@redhat.com>
-> Cc: Sui Jingfeng <suijingfeng@loongson.cn>
-> Cc: Ard Biesheuvel <ardb@kernel.org>
-> Cc: Russell King <linux@armlinux.org.uk>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will@kernel.org>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: linux-efi@vger.kernel.org
-> Cc: linux-hyperv@vger.kernel.org (open list:Hyper-V/Azure CORE AND DRIVERS)
-> Cc: linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER)
-> Cc: dri-devel@lists.freedesktop.org (open list:FRAMEBUFFER LAYER)
 > ---
->   drivers/video/fbdev/hyperv_fb.c | 1 +
->   1 file changed, 1 insertion(+)
+>   drivers/video/fbdev/imxfb.c | 1 -
+>   1 file changed, 1 deletion(-)
 >
-> diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
-> index 1ae35ab62b29..b331452aab4f 100644
-> --- a/drivers/video/fbdev/hyperv_fb.c
-> +++ b/drivers/video/fbdev/hyperv_fb.c
-> @@ -48,6 +48,7 @@
->   #include <linux/aperture.h>
->   #include <linux/module.h>
->   #include <linux/kernel.h>
-> +#include <linux/screen_info.h>
->   #include <linux/vmalloc.h>
->   #include <linux/init.h>
->   #include <linux/completion.h>
-
-
-Ah, I also overlook this one. :-)
+> diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+> index 04f3bf30a529..385c4715c7b7 100644
+> --- a/drivers/video/fbdev/imxfb.c
+> +++ b/drivers/video/fbdev/imxfb.c
+> @@ -1043,7 +1043,6 @@ static int imxfb_probe(struct platform_device *pde=
+v)
+>   failed_map:
+>   failed_ioremap:
+>   failed_getclock:
+> -	release_mem_region(res->start, resource_size(res));
+>   failed_of_parse:
+>   	kfree(info->pseudo_palette);
+>   failed_init:
 

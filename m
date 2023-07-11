@@ -2,135 +2,106 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BDC45EB64DC
-	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Jul 2023 16:53:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8479EB64DD
+	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Jul 2023 17:05:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232975AbjGKQxj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 11 Jul 2023 12:53:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50466 "EHLO
+        id S231528AbjGKRFl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 11 Jul 2023 13:05:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55336 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230155AbjGKQxe (ORCPT
+        with ESMTP id S229766AbjGKRFk (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 11 Jul 2023 12:53:34 -0400
-Received: from out-43.mta1.migadu.com (out-43.mta1.migadu.com [IPv6:2001:41d0:203:375::2b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4C84510E7
-        for <linux-fbdev@vger.kernel.org>; Tue, 11 Jul 2023 09:53:32 -0700 (PDT)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-        t=1689093831;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=Pi4iM6wkxmiCh7Toa8pia5vdqJbo9NSOCLkxp70eYG0=;
-        b=FliLSndwDYIjP8JiUu8QT/T5KCdyHxGgYsO5BSzr4LgcOctrmmgGeB2MyfEdilZAYRJv+v
-        u3Uk68mEPVZMQj92hxvLpVlcbsTe/5SyMdk4JvIYgXe1kFibyRM+OhpLNqtBWj+Xc/IUGP
-        UNEGIHiX/bggBEDYF1XrTClNUQr51WA=
-From:   Sui Jingfeng <sui.jingfeng@linux.dev>
-To:     David Airlie <airlied@gmail.com>
-Cc:     amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
-        kvm@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        Sui Jingfeng <suijingfeng@loongson.cn>,
-        Jani Nikula <jani.nikula@linux.intel.com>,
-        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= 
-        <ville.syrjala@linux.intel.com>, Lyude Paul <lyude@redhat.com>
-Subject: [PATCH v3 7/9] drm/i915: Add an implement for the is_primary_gpu hook
-Date:   Wed, 12 Jul 2023 00:43:08 +0800
-Message-Id: <20230711164310.791756-8-sui.jingfeng@linux.dev>
-In-Reply-To: <20230711164310.791756-1-sui.jingfeng@linux.dev>
-References: <20230711164310.791756-1-sui.jingfeng@linux.dev>
+        Tue, 11 Jul 2023 13:05:40 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EB0E195;
+        Tue, 11 Jul 2023 10:05:39 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 89CB26158F;
+        Tue, 11 Jul 2023 17:05:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E19DDC433CC;
+        Tue, 11 Jul 2023 17:05:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1689095138;
+        bh=ffeJIapA2i8KtpkaQDaRRzVDC4qeHx8KurMrQFWzP7g=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=la3HOtHvy0XM/f2Y4iTCps1/Ti4qRFo+7rh5KcklI3mtDVdSM3SrCeQr+ZvTu3Hbo
+         zSpeSXhIIAT3AlrPPkw2+oymssLz8lCmLikDCttV1Y+1D7GUySlfUq57J23rzSbfnk
+         r8IFpBqbGZ6Hntuxk246q4e9H9/UFZnpCNMeUTwbuxZoZu1yhSSPhfHhMmdBHCQPio
+         nj8efEDaWTf3FdFrVe4NvM3l8UfrCZaWB3FjuaiPOr9X/IEiGybno2x9bRKyeKn/53
+         2IsxxjksJxxQQfldC3UBRzTw/NbQZKNBAeUssPxK1UQYYeuNJwWupQKWgnaj0Balk/
+         EMiFfAMwnCb2Q==
+Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-2b6f0508f54so93227331fa.3;
+        Tue, 11 Jul 2023 10:05:38 -0700 (PDT)
+X-Gm-Message-State: ABy/qLZBI+Amd07+7/rcuo08UHcwjx9qGu50FpPK52ipk9zwy3d7tyLm
+        PPZs8m38Iik54YlQaYDEGQ+scYtRleo42iKLqA==
+X-Google-Smtp-Source: APBJJlHoS1FcFxGwFPJ/ewPGABck5kWIkACfr8013AsyHvluCY8e0O92fpKWd7fFdLAfImxRrLkI27/ePXUc6RRhShw=
+X-Received: by 2002:a2e:9d9a:0:b0:2b6:c4cf:76a8 with SMTP id
+ c26-20020a2e9d9a000000b002b6c4cf76a8mr13182327ljj.10.1689095136927; Tue, 11
+ Jul 2023 10:05:36 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+References: <20230710174007.2291013-1-robh@kernel.org> <a0aa122d-38a1-d4be-edc1-a49b4e5e9b6b@suse.de>
+ <4de35c35-c00d-d21a-bcd1-dc878137eb94@gmx.de>
+In-Reply-To: <4de35c35-c00d-d21a-bcd1-dc878137eb94@gmx.de>
+From:   Rob Herring <robh@kernel.org>
+Date:   Tue, 11 Jul 2023 11:05:24 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqJmQ+70CkqPDT3vhs0bYJ_e6fuQrSOkNwCj7i0JQA4-EA@mail.gmail.com>
+Message-ID: <CAL_JsqJmQ+70CkqPDT3vhs0bYJ_e6fuQrSOkNwCj7i0JQA4-EA@mail.gmail.com>
+Subject: Re: [PATCH] of: Preserve "of-display" device name for compatibility
+To:     Helge Deller <deller@gmx.de>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Frank Rowand <frowand.list@gmail.com>,
+        Michal Suchanek <msuchanek@suse.de>,
+        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+        Cyril Brulebois <cyril@debamax.com>,
+        dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Sui Jingfeng <suijingfeng@loongson.cn>
+On Tue, Jul 11, 2023 at 9:46=E2=80=AFAM Helge Deller <deller@gmx.de> wrote:
+>
+> On 7/11/23 08:00, Thomas Zimmermann wrote:
+> >
+> >
+> > Am 10.07.23 um 19:40 schrieb Rob Herring:
+> >> Since commit 241d2fb56a18 ("of: Make OF framebuffer device names uniqu=
+e"),
+> >> as spotted by Fr=C3=A9d=C3=A9ric Bonnard, the historical "of-display" =
+device is
+> >> gone: the updated logic creates "of-display.0" instead, then as many
+> >> "of-display.N" as required.
+> >>
+> >> This means that offb no longer finds the expected device, which preven=
+ts
+> >> the Debian Installer from setting up its interface, at least on ppc64e=
+l.
+> >>
+> >> Fix this by keeping "of-display" for the first device and "of-display.=
+N"
+> >> for subsequent devices.
+> >>
+> >> Link: https://bugzilla.kernel.org/show_bug.cgi?id=3D217328
+> >> Link: https://bugs.debian.org/1033058
+> >> Fixes: 241d2fb56a18 ("of: Make OF framebuffer device names unique")
+> >> Cc: stable@vger.kernel.org
+> >> Cc: Cyril Brulebois <cyril@debamax.com>
+> >> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> >> Cc: Helge Deller <deller@gmx.de>
+> >> Signed-off-by: Rob Herring <robh@kernel.org>
+> >
+> > Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
+>
+> Acked-by: Helge Deller <deller@gmx.de>
+>
+> Who will pick up that patch?
+> Shall I take it via fbdev git tree?
 
-This patch add a function to identify if a device is the default boot
-selected by the firmware, it require the GPU has firmware framebuffer
-driver support (such as efifb). If a specific hardware doesn't have
-firmware framebuffer support, then the introduced function will just
-return false. But even in this case, it still do no harms.
+I'll take it. I've got other fixes queued up already.
 
-Cc: Jani Nikula <jani.nikula@linux.intel.com>
-Cc: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
-Cc: Rodrigo Vivi <rodrigo.vivi@intel.com>
-Cc: Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>
-Cc: David Airlie <airlied@gmail.com>
-Cc: Daniel Vetter <daniel@ffwll.ch>
-Cc: "Ville Syrjälä" <ville.syrjala@linux.intel.com>
-Cc: Lyude Paul <lyude@redhat.com>
-Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
----
- drivers/gpu/drm/i915/display/intel_vga.c | 30 +++++++++++++++++++++++-
- 1 file changed, 29 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/gpu/drm/i915/display/intel_vga.c b/drivers/gpu/drm/i915/display/intel_vga.c
-index 98d7d4dffe9f..465ac61e2fd9 100644
---- a/drivers/gpu/drm/i915/display/intel_vga.c
-+++ b/drivers/gpu/drm/i915/display/intel_vga.c
-@@ -3,9 +3,12 @@
-  * Copyright © 2019 Intel Corporation
-  */
- 
-+#include <linux/aperture.h>
- #include <linux/pci.h>
- #include <linux/vgaarb.h>
- 
-+#include <drm/drm_aperture.h>
-+
- #include <video/vga.h>
- 
- #include "soc/intel_gmch.h"
-@@ -113,6 +116,30 @@ intel_vga_set_decode(struct pci_dev *pdev, bool enable_decode)
- 		return VGA_RSRC_NORMAL_IO | VGA_RSRC_NORMAL_MEM;
- }
- 
-+static bool intel_vga_is_primary_gpu(struct pci_dev *pdev)
-+{
-+	struct drm_i915_private *i915 = pdev_to_i915(pdev);
-+	struct i915_gem_mm *mm = &i915->mm;
-+	struct intel_gt *gt = &i915->gt0;
-+	struct i915_ggtt *ggtt = gt->ggtt;
-+	unsigned int i;
-+
-+	if (aperture_contain_firmware_fb(ggtt->gmadr.start, ggtt->gmadr.end))
-+		return true;
-+
-+	for (i = 0; i < ARRAY_SIZE(mm->regions); i++) {
-+		struct intel_memory_region *mr = mm->regions[i];
-+
-+		if (mr) {
-+			if (drm_aperture_contain_firmware_fb(mr->io_start,
-+							     mr->io_size))
-+				return true;
-+		}
-+	}
-+
-+	return false;
-+}
-+
- int intel_vga_register(struct drm_i915_private *i915)
- {
- 	struct pci_dev *pdev = to_pci_dev(i915->drm.dev);
-@@ -126,7 +153,8 @@ int intel_vga_register(struct drm_i915_private *i915)
- 	 * then we do not take part in VGA arbitration and the
- 	 * vga_client_register() fails with -ENODEV.
- 	 */
--	ret = vga_client_register(pdev, intel_vga_set_decode, NULL);
-+	ret = vga_client_register(pdev, intel_vga_set_decode,
-+				  intel_vga_is_primary_gpu);
- 	if (ret && ret != -ENODEV)
- 		return ret;
- 
--- 
-2.25.1
-
+Rob

@@ -2,85 +2,98 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86234EB64DD
-	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Jul 2023 10:01:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA971EB64DA
+	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Jul 2023 12:28:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232170AbjGLKAu convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 12 Jul 2023 06:00:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35178 "EHLO
+        id S231522AbjGLM2I (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 12 Jul 2023 08:28:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47060 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231944AbjGLKAT (ORCPT
+        with ESMTP id S233507AbjGLM2D (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 12 Jul 2023 06:00:19 -0400
-X-Greylist: delayed 601 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 12 Jul 2023 03:00:12 PDT
-Received: from hygieia.sysophe.eu (hygieia.sysophe.eu [138.201.91.14])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 011841720;
-        Wed, 12 Jul 2023 03:00:11 -0700 (PDT)
-Received: from hemera.lan.sysophe.eu (unknown [IPv6:2001:a18:2c5:a501:fa75:a4ff:fe28:fe3a])
-        by smtp.sysophe.eu (Postfix) with ESMTPSA id 1A675260A610;
-        Wed, 12 Jul 2023 11:43:42 +0200 (CEST)
-Date:   Wed, 12 Jul 2023 11:43:35 +0200
-From:   Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     deller@gmx.de, javierm@redhat.com, linux-sh@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        amd-gfx@lists.freedesktop.org, linux-input@vger.kernel.org,
-        linux-media@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev,
-        linux-arm-kernel@lists.infradead.org,
-        linux-geode@lists.infradead.org, linux-nvidia@lists.surfsouth.com,
-        linux-hyperv@vger.kernel.org, linux-omap@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-        Jiri Kosina <jikos@kernel.org>,
-        Benjamin Tissoires <benjamin.tissoires@redhat.com>
-Subject: Re: [PATCH 10/17] hid/picolcd: Remove flag FBINFO_FLAG_DEFAULT from
- fbdev driver
-Message-ID: <20230712114335.42644eab@hemera.lan.sysophe.eu>
-In-Reply-To: <20230710130113.14563-11-tzimmermann@suse.de>
-References: <20230710130113.14563-1-tzimmermann@suse.de>
- <20230710130113.14563-11-tzimmermann@suse.de>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.37; x86_64-pc-linux-gnu)
+        Wed, 12 Jul 2023 08:28:03 -0400
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA9B1A0;
+        Wed, 12 Jul 2023 05:28:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Transfer-Encoding:
+        Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
+        Sender:Reply-To:Content-ID:Content-Description;
+        bh=ZXR+7zHmkWbyYVaIYilEixXpel3+ET8rhBNIy+I7sKc=; b=burEIjw7Ax9oR6XyYXgzDOhcuF
+        Xhtc5KYLObU41T0IENhk9G9qohZmC0Yvpb0wRw7l1oWGurx+n06gfe89pV9j1He1PowmLd8jJyW8G
+        6zVp1GF2gkOuSfQqmnXwyuzEsSHJpzBzRoDcraZR5u1o/H5XlxRZYWJLxZ3Q2LE0UHn9fNAfiTk55
+        AwKLj1j/r+rbJ4LHiTTJZlao2GGhqWJsjFEZodtwqDNEFYvFkQ0yagZeMU8KXrBVYKFvCwlCCX60H
+        AgkXU1Hco0bnyVOotp2bryNT8o+jpABaFGlsKFzTpw66wm7t7tRLyXKz9AmKG+OeMgsd4mE9EXCCa
+        pxRUvSiw==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1qJYwd-003e8q-0G;
+        Wed, 12 Jul 2023 12:27:47 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id AB77B30036B;
+        Wed, 12 Jul 2023 14:27:45 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id 8E54B243429D2; Wed, 12 Jul 2023 14:27:45 +0200 (CEST)
+Date:   Wed, 12 Jul 2023 14:27:45 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>,
+        "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        kernel-team@meta.com, Linux PM list <linux-pm@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        linux-rtc@vger.kernel.org,
+        linux-riscv <linux-riscv@lists.infradead.org>,
+        netdev <netdev@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linux MMC List <linux-mmc@vger.kernel.org>,
+        "open list:LIBATA SUBSYSTEM (Serial and Parallel ATA drivers)" 
+        <linux-ide@vger.kernel.org>,
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Subject: Re: Consider switching to WQ_UNBOUND messages (was: Re: [PATCH v2
+ 6/7] workqueue: Report work funcs that trigger automatic CPU_INTENSIVE
+ mechanism)
+Message-ID: <20230712122745.GH3100107@hirez.programming.kicks-ass.net>
+References: <20230511181931.869812-1-tj@kernel.org>
+ <20230511181931.869812-7-tj@kernel.org>
+ <ZF6WsSVGX3O1d0pL@slm.duckdns.org>
+ <CAMuHMdVCQmh6V182q4g---jvsWiTOP2hBPZKvma6oUN6535LEg@mail.gmail.com>
+ <CAMuHMdW1kxZ1RHKTRVRqDNAbj1Df2=v0fPn5KYK3kfX_kiXR6A@mail.gmail.com>
+ <ZK3MBfPS-3-tJgjO@slm.duckdns.org>
+ <20230712080504.GA3100107@hirez.programming.kicks-ass.net>
+ <CAMuHMdUMRS9_nJXp3rrWQrODRQcBQggze0k=0GjSScCknFmmgQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAMuHMdUMRS9_nJXp3rrWQrODRQcBQggze0k=0GjSScCknFmmgQ@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, 10 Jul 2023 14:50:14 +0200 Thomas Zimmermann wrote:
-> The flag FBINFO_FLAG_DEFAULT is 0 and has no effect, as struct
-> fbinfo.flags has been allocated to zero by framebuffer_alloc(). So do
-> not set it.
+On Wed, Jul 12, 2023 at 11:04:16AM +0200, Geert Uytterhoeven wrote:
+> Hoi Peter,
 > 
-> Flags should signal differences from the default values. After cleaning
-> up all occurences of FBINFO_FLAG_DEFAULT, the token can be removed.
+> On Wed, Jul 12, 2023 at 10:05 AM Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Tue, Jul 11, 2023 at 11:39:17AM -1000, Tejun Heo wrote:
+> > > I wonder whether the right thing to do here is somehow scaling the threshold
+> > > according to the relative processing power. It's difficult to come up with a
+> > > threshold which works well across the latest & fastest and really tiny CPUs.
+> > > I'll think about it some more but if you have some ideas, please feel free
+> > > to suggest.
+> >
+> > We could scale by BogoMIPS I suppose, it's a bogus measurement, as per
+> > the name, but it does have some relation to how fast the machine is.
 > 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: "Bruno Prémont" <bonbons@linux-vserver.org>
-> Cc: Jiri Kosina <jikos@kernel.org>
-> Cc: Benjamin Tissoires <benjamin.tissoires@redhat.com>
-
-Acked-by: Bruno Prémont <bonbons@linux-vserver.org>
-
-Cheers,
-Bruno
-
-
-> ---
->  drivers/hid/hid-picolcd_fb.c | 1 -
->  1 file changed, 1 deletion(-)
+> That's gonna fail miserably on e.g. ARM and RISC-V, where BogoMIPS
+> depends on some timer frequency.
 > 
-> diff --git a/drivers/hid/hid-picolcd_fb.c b/drivers/hid/hid-picolcd_fb.c
-> index dabcd054dad9..d726aaafb146 100644
-> --- a/drivers/hid/hid-picolcd_fb.c
-> +++ b/drivers/hid/hid-picolcd_fb.c
-> @@ -527,7 +527,6 @@ int picolcd_init_framebuffer(struct picolcd_data *data)
->  	info->var = picolcdfb_var;
->  	info->fix = picolcdfb_fix;
->  	info->fix.smem_len   = PICOLCDFB_SIZE*8;
-> -	info->flags = FBINFO_FLAG_DEFAULT;
->  
->  	fbdata = info->par;
->  	spin_lock_init(&fbdata->lock);
+> R-Car M2-W with 1.5 GHz Cortex-A15: 40.00 BogoMIPS
+> R-Car V4H with 1.8 GHz Cortex-A76: 33.33 BogoMIPS
+> 
+> while the real slow 48 MHz VexRiscV gets 128 BogoMIPS.
 
+Hehe, OK, really bogus then. Lets file this idea in the bit-bucket then.

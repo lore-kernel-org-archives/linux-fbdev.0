@@ -2,57 +2,96 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AF83EB64DD
-	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Jul 2023 08:09:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FB21EB64D9
+	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Jul 2023 09:01:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230126AbjGLIJP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 12 Jul 2023 04:09:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43664 "EHLO
+        id S233070AbjGLJBf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 12 Jul 2023 05:01:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47414 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230038AbjGLIJO (ORCPT
+        with ESMTP id S231796AbjGLJBI (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 12 Jul 2023 04:09:14 -0400
-Received: from mail.lokoho.com (mail.lokoho.com [217.61.105.98])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32314CA
-        for <linux-fbdev@vger.kernel.org>; Wed, 12 Jul 2023 01:09:14 -0700 (PDT)
-Received: by mail.lokoho.com (Postfix, from userid 1002)
-        id 636C987652; Wed, 12 Jul 2023 10:05:40 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=lokoho.com; s=mail;
-        t=1689149142; bh=Z0N5VlX9/JlryGOL5I747Le9USomZJCRNNGRT3LbbKc=;
-        h=Date:From:To:Subject:From;
-        b=d1Ux7dtXL7gyWpv1dPb28uULc6AgZK5/K7uqi6fr4IFJDr7NRchMrAtYyz8Epl1qZ
-         C21WBS0wMR0WWIEacgsBBSMlmel120/wQM/+Lr84g/oKdgbecBmLA4kikL1zeli+xu
-         lvPNjhnU2FtaC6zVhDRKOMHJRP69IFcVdtfeUR3Vhq/KWB/UvYALh6b5rpZ0+Xio0B
-         g5+SlX7VhBI9juJWEMkGsiCSZ50AcgI2JzmyYqVmqTulMq34lanyUub2BuxWYQ7thx
-         ww07JwukAg8AbSxbjmZuYCqhLsP9t779WjfXs2p7ZAku53CfoeDZpDJsqsIQC+GjvU
-         wp0Zdx1mbbVbQ==
-Received: by mail.lokoho.com for <linux-fbdev@vger.kernel.org>; Wed, 12 Jul 2023 08:05:10 GMT
-Message-ID: <20230712084501-0.1.9.2iwm.0.2yux7myfdi@lokoho.com>
-Date:   Wed, 12 Jul 2023 08:05:10 GMT
-From:   "Adam Charachuta" <adam.charachuta@lokoho.com>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: =?UTF-8?Q?S=C5=82owa_kluczowe_do_wypozycjonowania?=
-X-Mailer: mail.lokoho.com
+        Wed, 12 Jul 2023 05:01:08 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 208C5269A;
+        Wed, 12 Jul 2023 01:59:49 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 92541616E6;
+        Wed, 12 Jul 2023 08:59:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 699AAC433CA;
+        Wed, 12 Jul 2023 08:59:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1689152388;
+        bh=ZrJHzT2K9435cGUOZjdcu1RL4XkwF5n9Ynfmc/OI09Q=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=kHMz1RajGGyT8QAgPhNYUibwugiKRyBupzLguqjKvMqzVnEj4uap14DzDwsl7xEhk
+         IhNjzK7h+yaZuqJGS75WXsePAnLedFsRFi6LtzkWK2BeYhGHdq2DXuEaeulC+TmBZ8
+         Tf1KHe1DXobmTlW965juIlOyZFmBmtMlSC03TxK2wWGMMMPUGDEGFImqFb1s/hd4zQ
+         xp8RhOiPyJqjQeRnPKbedtQA/4/r/PiQsPKsLjSb88pZTiQtOLCVeOx9+GSOiVJWBv
+         7PHaMMAYgdTDuUGMMOu6m1Vv/E2RUJE5xGeNJCjMOB7Xr3pnRu995sZWDCBSu80iRU
+         P8LR9M37ACinA==
+From:   "Jiri Slaby (SUSE)" <jirislaby@kernel.org>
+To:     gregkh@linuxfoundation.org
+Cc:     linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
+        "Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
+        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH 1/7] vgacon: switch vgacon_scrolldelta() and vgacon_restore_screen()
+Date:   Wed, 12 Jul 2023 10:59:36 +0200
+Message-ID: <20230712085942.5064-2-jirislaby@kernel.org>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230712085942.5064-1-jirislaby@kernel.org>
+References: <20230712085942.5064-1-jirislaby@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,
+Switch vgacon_scrolldelta() and vgacon_restore_screen() positions, so
+that the former is not needed to be forward-declared.
 
-zapozna=C5=82em si=C4=99 z Pa=C5=84stwa ofert=C4=85 i z przyjemno=C5=9Bci=
-=C4=85 przyznaj=C4=99, =C5=BCe przyci=C4=85ga uwag=C4=99 i zach=C4=99ca d=
-o dalszych rozm=C3=B3w.=20
+Signed-off-by: Jiri Slaby (SUSE) <jirislaby@kernel.org>
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+---
+ drivers/video/console/vgacon.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Pomy=C5=9Bla=C5=82em, =C5=BCe mo=C5=BCe m=C3=B3g=C5=82bym mie=C4=87 sw=C3=
-=B3j wk=C5=82ad w Pa=C5=84stwa rozw=C3=B3j i pom=C3=B3c dotrze=C4=87 z t=C4=
-=85 ofert=C4=85 do wi=C4=99kszego grona odbiorc=C3=B3w. Pozycjonuj=C4=99 =
-strony www, dzi=C4=99ki czemu generuj=C4=85 =C5=9Bwietny ruch w sieci.
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index e25ba523892e..fbed2862c317 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -142,12 +142,6 @@ static inline void vga_set_mem_top(struct vc_data *c)
+ 	write_vga(12, (c->vc_visible_origin - vga_vram_base) / 2);
+ }
+ 
+-static void vgacon_restore_screen(struct vc_data *c)
+-{
+-	if (c->vc_origin != c->vc_visible_origin)
+-		vgacon_scrolldelta(c, 0);
+-}
+-
+ static void vgacon_scrolldelta(struct vc_data *c, int lines)
+ {
+ 	vc_scrolldelta_helper(c, lines, vga_rolled_over, (void *)vga_vram_base,
+@@ -155,6 +149,12 @@ static void vgacon_scrolldelta(struct vc_data *c, int lines)
+ 	vga_set_mem_top(c);
+ }
+ 
++static void vgacon_restore_screen(struct vc_data *c)
++{
++	if (c->vc_origin != c->vc_visible_origin)
++		vgacon_scrolldelta(c, 0);
++}
++
+ static const char *vgacon_startup(void)
+ {
+ 	const char *display_desc = NULL;
+-- 
+2.41.0
 
-Mo=C5=BCemy porozmawia=C4=87 w najbli=C5=BCszym czasie?
-
-
-Pozdrawiam
-Adam Charachuta

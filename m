@@ -2,98 +2,286 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA971EB64DA
-	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Jul 2023 12:28:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF5A6C0015E
+	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Jul 2023 14:46:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231522AbjGLM2I (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 12 Jul 2023 08:28:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47060 "EHLO
+        id S231986AbjGLOqe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 12 Jul 2023 10:46:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43380 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233507AbjGLM2D (ORCPT
+        with ESMTP id S231579AbjGLOqd (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 12 Jul 2023 08:28:03 -0400
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA9B1A0;
-        Wed, 12 Jul 2023 05:28:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Transfer-Encoding:
-        Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
-        Sender:Reply-To:Content-ID:Content-Description;
-        bh=ZXR+7zHmkWbyYVaIYilEixXpel3+ET8rhBNIy+I7sKc=; b=burEIjw7Ax9oR6XyYXgzDOhcuF
-        Xhtc5KYLObU41T0IENhk9G9qohZmC0Yvpb0wRw7l1oWGurx+n06gfe89pV9j1He1PowmLd8jJyW8G
-        6zVp1GF2gkOuSfQqmnXwyuzEsSHJpzBzRoDcraZR5u1o/H5XlxRZYWJLxZ3Q2LE0UHn9fNAfiTk55
-        AwKLj1j/r+rbJ4LHiTTJZlao2GGhqWJsjFEZodtwqDNEFYvFkQ0yagZeMU8KXrBVYKFvCwlCCX60H
-        AgkXU1Hco0bnyVOotp2bryNT8o+jpABaFGlsKFzTpw66wm7t7tRLyXKz9AmKG+OeMgsd4mE9EXCCa
-        pxRUvSiw==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1qJYwd-003e8q-0G;
-        Wed, 12 Jul 2023 12:27:47 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
-        (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id AB77B30036B;
-        Wed, 12 Jul 2023 14:27:45 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-        id 8E54B243429D2; Wed, 12 Jul 2023 14:27:45 +0200 (CEST)
-Date:   Wed, 12 Jul 2023 14:27:45 +0200
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>,
-        "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        kernel-team@meta.com, Linux PM list <linux-pm@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        linux-rtc@vger.kernel.org,
-        linux-riscv <linux-riscv@lists.infradead.org>,
-        netdev <netdev@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux MMC List <linux-mmc@vger.kernel.org>,
-        "open list:LIBATA SUBSYSTEM (Serial and Parallel ATA drivers)" 
-        <linux-ide@vger.kernel.org>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>
-Subject: Re: Consider switching to WQ_UNBOUND messages (was: Re: [PATCH v2
- 6/7] workqueue: Report work funcs that trigger automatic CPU_INTENSIVE
- mechanism)
-Message-ID: <20230712122745.GH3100107@hirez.programming.kicks-ass.net>
-References: <20230511181931.869812-1-tj@kernel.org>
- <20230511181931.869812-7-tj@kernel.org>
- <ZF6WsSVGX3O1d0pL@slm.duckdns.org>
- <CAMuHMdVCQmh6V182q4g---jvsWiTOP2hBPZKvma6oUN6535LEg@mail.gmail.com>
- <CAMuHMdW1kxZ1RHKTRVRqDNAbj1Df2=v0fPn5KYK3kfX_kiXR6A@mail.gmail.com>
- <ZK3MBfPS-3-tJgjO@slm.duckdns.org>
- <20230712080504.GA3100107@hirez.programming.kicks-ass.net>
- <CAMuHMdUMRS9_nJXp3rrWQrODRQcBQggze0k=0GjSScCknFmmgQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+        Wed, 12 Jul 2023 10:46:33 -0400
+Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 124FF1998
+        for <linux-fbdev@vger.kernel.org>; Wed, 12 Jul 2023 07:46:31 -0700 (PDT)
+Received: by mail-pl1-x636.google.com with SMTP id d9443c01a7336-1b9e8e5b12dso21522295ad.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 12 Jul 2023 07:46:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=rivosinc-com.20221208.gappssmtp.com; s=20221208; t=1689173190; x=1691765190;
+        h=content-transfer-encoding:mime-version:message-id:to:from:cc
+         :in-reply-to:subject:date:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=3RJlGEMkrK0JJ4Kxd7hYeKyRhV465TrolA6xg6qfxJ8=;
+        b=rkydKRIpQBAKPCJ/OjBL6hiE17WoRL68apriz9iDe8EWclBfKbIdoJm4e9Eq2EPQi0
+         ifoCBc/mQNoqKpsVSFjAvU1zwmLLbcz9gOwTfHqUO7t77dBsUyymCe5IRz40Fg6SDToR
+         Oc6ao8Q3d3m8mD29bYwG3wr4aNSAhk4NRV8IxVo4QDWs5rInTu/wOy/c/e3gbxq1ux8y
+         U2BvPk7NxgGPhtSCzjNCOr4B+wGukwQDT0GS1npIvr9Dq9pIRajUzWQ26doL3oleIJbu
+         48U7KoFPYtHT9bJygROE78+SiMVX5rgurr4XvDfj0iyB6n4M4XuWhzc3I/VD3kVmqxoT
+         6gag==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1689173190; x=1691765190;
+        h=content-transfer-encoding:mime-version:message-id:to:from:cc
+         :in-reply-to:subject:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=3RJlGEMkrK0JJ4Kxd7hYeKyRhV465TrolA6xg6qfxJ8=;
+        b=Xu0rhhF0IjXAW5Do2K0ULd1CQ2yFTEEcFE6VFAhBcF0T27oM13kgs73Du41yV5OUpo
+         hNFeY8187Z8ERxQxiynmgtcGU87mUZ1xU517pn+6Qr8iXIkxTyQkZmKP31SjM6fkBco7
+         HGU9ELdzyl4oSUTQiRLKiDJVm6HOg6IuErXzTvSQgJM8YLW+iyfTF967J/Osf3EqlzoN
+         9UlmPihnWBrTO6l/t/fgqy13xA2TqTB71Nn/piHoQGZhvX+EyLJ4ChcvTJtWI3iLNGaw
+         iO2PZfoGWMYK2aqH6wm/ry1Oz9rfPHFYlGt3n+VBNse0BMoUZulQ6phs2O42UdQtYs1s
+         nMtw==
+X-Gm-Message-State: ABy/qLaOvzML3zekPL85ePyRP0tNnlllwhHjSaTunqQYOH08xiF8WM4Y
+        +TAiSbaL3QuIHB1KeIW1UL3TLw==
+X-Google-Smtp-Source: APBJJlHxSmG9jFkJQFDwDAILENgpdtukWjxbKoYhVkmclBMHHMEXiP6I525g1aGIuImZ/nj7vZ2fug==
+X-Received: by 2002:a17:902:ecce:b0:1b9:ebe9:5f01 with SMTP id a14-20020a170902ecce00b001b9ebe95f01mr7747418plh.19.1689173190386;
+        Wed, 12 Jul 2023 07:46:30 -0700 (PDT)
+Received: from localhost ([50.38.6.230])
+        by smtp.gmail.com with ESMTPSA id s13-20020a170902988d00b001b9e9765d8fsm4027382plp.261.2023.07.12.07.46.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 12 Jul 2023 07:46:30 -0700 (PDT)
+Date:   Wed, 12 Jul 2023 07:46:30 -0700 (PDT)
+X-Google-Original-Date: Wed, 12 Jul 2023 07:45:43 PDT (-0700)
+Subject:     Re: [PATCH 4/4] vgacon, arch/*: remove unused screen_info definitions
+In-Reply-To: <20230707095415.1449376-4-arnd@kernel.org>
+CC:     tzimmermann@suse.de, javierm@redhat.com,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux@armlinux.org.uk, dri-devel@lists.freedesktop.org,
+        Ard Biesheuvel <ardb@kernel.org>, deller@gmx.de,
+        Greg KH <gregkh@linuxfoundation.org>,
+        Arnd Bergmann <arnd@arndb.de>, guoren@kernel.org,
+        bcain@quicinc.com, dinguyen@kernel.org, dalias@libc.org,
+        glaubitz@physik.fu-berlin.de, davem@davemloft.net,
+        chris@zankel.net, jcmvbkbc@gmail.com, masahiroy@kernel.org,
+        linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
+        linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
+From:   Palmer Dabbelt <palmer@rivosinc.com>
+To:     arnd@kernel.org
+Message-ID: <mhng-099c5770-3367-48d7-a068-25762b837196@palmer-ri-x1c9a>
+Mime-Version: 1.0 (MHng)
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAMuHMdUMRS9_nJXp3rrWQrODRQcBQggze0k=0GjSScCknFmmgQ@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Jul 12, 2023 at 11:04:16AM +0200, Geert Uytterhoeven wrote:
-> Hoi Peter,
-> 
-> On Wed, Jul 12, 2023 at 10:05 AM Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Tue, Jul 11, 2023 at 11:39:17AM -1000, Tejun Heo wrote:
-> > > I wonder whether the right thing to do here is somehow scaling the threshold
-> > > according to the relative processing power. It's difficult to come up with a
-> > > threshold which works well across the latest & fastest and really tiny CPUs.
-> > > I'll think about it some more but if you have some ideas, please feel free
-> > > to suggest.
-> >
-> > We could scale by BogoMIPS I suppose, it's a bogus measurement, as per
-> > the name, but it does have some relation to how fast the machine is.
-> 
-> That's gonna fail miserably on e.g. ARM and RISC-V, where BogoMIPS
-> depends on some timer frequency.
-> 
-> R-Car M2-W with 1.5 GHz Cortex-A15: 40.00 BogoMIPS
-> R-Car V4H with 1.8 GHz Cortex-A76: 33.33 BogoMIPS
-> 
-> while the real slow 48 MHz VexRiscV gets 128 BogoMIPS.
+On Fri, 07 Jul 2023 02:52:26 PDT (-0700), arnd@kernel.org wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+>
+> A number of architectures either kept the screen_info definition for
+> historical purposes as it used to be required by the generic VT code, or
+> they copied it from another architecture in order to build the VGA
+> console driver in an allmodconfig build.
+>
+> Now that vgacon no longer builds on these architectures, remove the
+> stale definitions.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  arch/csky/kernel/setup.c          | 12 ------------
+>  arch/hexagon/kernel/Makefile      |  2 --
+>  arch/hexagon/kernel/screen_info.c |  3 ---
+>  arch/nios2/kernel/setup.c         |  5 -----
+>  arch/sh/kernel/setup.c            |  5 -----
+>  arch/sparc/kernel/setup_32.c      | 13 -------------
+>  arch/sparc/kernel/setup_64.c      | 13 -------------
+>  arch/xtensa/kernel/setup.c        | 12 ------------
+>  8 files changed, 65 deletions(-)
+>  delete mode 100644 arch/hexagon/kernel/screen_info.c
+>
+> diff --git a/arch/csky/kernel/setup.c b/arch/csky/kernel/setup.c
+> index 106fbf0b6f3b4..51012e90780d6 100644
+> --- a/arch/csky/kernel/setup.c
+> +++ b/arch/csky/kernel/setup.c
+> @@ -8,22 +8,10 @@
+>  #include <linux/of_fdt.h>
+>  #include <linux/start_kernel.h>
+>  #include <linux/dma-map-ops.h>
+> -#include <linux/screen_info.h>
+>  #include <asm/sections.h>
+>  #include <asm/mmu_context.h>
+>  #include <asm/pgalloc.h>
+>
+> -#ifdef CONFIG_DUMMY_CONSOLE
+> -struct screen_info screen_info = {
+> -	.orig_video_lines	= 30,
+> -	.orig_video_cols	= 80,
+> -	.orig_video_mode	= 0,
+> -	.orig_video_ega_bx	= 0,
+> -	.orig_video_isVGA	= 1,
+> -	.orig_video_points	= 8
+> -};
+> -#endif
+> -
+>  static void __init csky_memblock_init(void)
+>  {
+>  	unsigned long lowmem_size = PFN_DOWN(LOWMEM_LIMIT - PHYS_OFFSET_OFFSET);
+> diff --git a/arch/hexagon/kernel/Makefile b/arch/hexagon/kernel/Makefile
+> index e73cb321630ec..3fdf937eb572e 100644
+> --- a/arch/hexagon/kernel/Makefile
+> +++ b/arch/hexagon/kernel/Makefile
+> @@ -17,5 +17,3 @@ obj-y += vm_vectors.o
+>  obj-$(CONFIG_HAS_DMA) += dma.o
+>
+>  obj-$(CONFIG_STACKTRACE) += stacktrace.o
+> -
+> -obj-$(CONFIG_VGA_CONSOLE) += screen_info.o
+> diff --git a/arch/hexagon/kernel/screen_info.c b/arch/hexagon/kernel/screen_info.c
+> deleted file mode 100644
+> index 1e1ceb18bafe7..0000000000000
+> --- a/arch/hexagon/kernel/screen_info.c
+> +++ /dev/null
+> @@ -1,3 +0,0 @@
+> -#include <linux/screen_info.h>
+> -
+> -struct screen_info screen_info;
+> diff --git a/arch/nios2/kernel/setup.c b/arch/nios2/kernel/setup.c
+> index 8582ed9658447..da122a5fa43b2 100644
+> --- a/arch/nios2/kernel/setup.c
+> +++ b/arch/nios2/kernel/setup.c
+> @@ -19,7 +19,6 @@
+>  #include <linux/memblock.h>
+>  #include <linux/initrd.h>
+>  #include <linux/of_fdt.h>
+> -#include <linux/screen_info.h>
+>
+>  #include <asm/mmu_context.h>
+>  #include <asm/sections.h>
+> @@ -36,10 +35,6 @@ static struct pt_regs fake_regs = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+>  					0, 0, 0, 0, 0, 0,
+>  					0};
+>
+> -#ifdef CONFIG_VT
+> -struct screen_info screen_info;
+> -#endif
+> -
+>  /* Copy a short hook instruction sequence to the exception address */
+>  static inline void copy_exception_handler(unsigned int addr)
+>  {
+> diff --git a/arch/sh/kernel/setup.c b/arch/sh/kernel/setup.c
+> index b3da2757faaf3..3d80515298d26 100644
+> --- a/arch/sh/kernel/setup.c
+> +++ b/arch/sh/kernel/setup.c
+> @@ -7,7 +7,6 @@
+>   *  Copyright (C) 1999  Niibe Yutaka
+>   *  Copyright (C) 2002 - 2010 Paul Mundt
+>   */
+> -#include <linux/screen_info.h>
+>  #include <linux/ioport.h>
+>  #include <linux/init.h>
+>  #include <linux/initrd.h>
+> @@ -69,10 +68,6 @@ EXPORT_SYMBOL(cpu_data);
+>  struct sh_machine_vector sh_mv = { .mv_name = "generic", };
+>  EXPORT_SYMBOL(sh_mv);
+>
+> -#ifdef CONFIG_VT
+> -struct screen_info screen_info;
+> -#endif
+> -
+>  extern int root_mountflags;
+>
+>  #define RAMDISK_IMAGE_START_MASK	0x07FF
+> diff --git a/arch/sparc/kernel/setup_32.c b/arch/sparc/kernel/setup_32.c
+> index 34ef7febf0d56..e3b72a7b46d37 100644
+> --- a/arch/sparc/kernel/setup_32.c
+> +++ b/arch/sparc/kernel/setup_32.c
+> @@ -17,7 +17,6 @@
+>  #include <linux/initrd.h>
+>  #include <asm/smp.h>
+>  #include <linux/user.h>
+> -#include <linux/screen_info.h>
+>  #include <linux/delay.h>
+>  #include <linux/fs.h>
+>  #include <linux/seq_file.h>
+> @@ -51,18 +50,6 @@
+>
+>  #include "kernel.h"
+>
+> -struct screen_info screen_info = {
+> -	0, 0,			/* orig-x, orig-y */
+> -	0,			/* unused */
+> -	0,			/* orig-video-page */
+> -	0,			/* orig-video-mode */
+> -	128,			/* orig-video-cols */
+> -	0,0,0,			/* ega_ax, ega_bx, ega_cx */
+> -	54,			/* orig-video-lines */
+> -	0,                      /* orig-video-isVGA */
+> -	16                      /* orig-video-points */
+> -};
+> -
+>  /* Typing sync at the prom prompt calls the function pointed to by
+>   * romvec->pv_synchook which I set to the following function.
+>   * This should sync all filesystems and return, for now it just
+> diff --git a/arch/sparc/kernel/setup_64.c b/arch/sparc/kernel/setup_64.c
+> index 6546ca9d4d3f1..6a4797dec34b4 100644
+> --- a/arch/sparc/kernel/setup_64.c
+> +++ b/arch/sparc/kernel/setup_64.c
+> @@ -15,7 +15,6 @@
+>  #include <linux/ptrace.h>
+>  #include <asm/smp.h>
+>  #include <linux/user.h>
+> -#include <linux/screen_info.h>
+>  #include <linux/delay.h>
+>  #include <linux/fs.h>
+>  #include <linux/seq_file.h>
+> @@ -68,18 +67,6 @@
+>  DEFINE_SPINLOCK(ns87303_lock);
+>  EXPORT_SYMBOL(ns87303_lock);
+>
+> -struct screen_info screen_info = {
+> -	0, 0,			/* orig-x, orig-y */
+> -	0,			/* unused */
+> -	0,			/* orig-video-page */
+> -	0,			/* orig-video-mode */
+> -	128,			/* orig-video-cols */
+> -	0, 0, 0,		/* unused, ega_bx, unused */
+> -	54,			/* orig-video-lines */
+> -	0,                      /* orig-video-isVGA */
+> -	16                      /* orig-video-points */
+> -};
+> -
+>  static void
+>  prom_console_write(struct console *con, const char *s, unsigned int n)
+>  {
+> diff --git a/arch/xtensa/kernel/setup.c b/arch/xtensa/kernel/setup.c
+> index aba3ff4e60d85..3f22d0537818d 100644
+> --- a/arch/xtensa/kernel/setup.c
+> +++ b/arch/xtensa/kernel/setup.c
+> @@ -19,7 +19,6 @@
+>  #include <linux/init.h>
+>  #include <linux/mm.h>
+>  #include <linux/proc_fs.h>
+> -#include <linux/screen_info.h>
+>  #include <linux/kernel.h>
+>  #include <linux/percpu.h>
+>  #include <linux/reboot.h>
+> @@ -49,17 +48,6 @@
+>  #include <asm/timex.h>
+>  #include <asm/traps.h>
+>
+> -#if defined(CONFIG_VGA_CONSOLE) || defined(CONFIG_DUMMY_CONSOLE)
+> -struct screen_info screen_info = {
+> -	.orig_x = 0,
+> -	.orig_y = 24,
+> -	.orig_video_cols = 80,
+> -	.orig_video_lines = 24,
+> -	.orig_video_isVGA = 1,
+> -	.orig_video_points = 16,
+> -};
+> -#endif
+> -
+>  #ifdef CONFIG_BLK_DEV_INITRD
+>  extern unsigned long initrd_start;
+>  extern unsigned long initrd_end;
 
-Hehe, OK, really bogus then. Lets file this idea in the bit-bucket then.
+Acked-by: Palmer Dabbelt <palmer@rivosinc.com>

@@ -2,110 +2,85 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19BA7EB64D9
-	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Jul 2023 09:58:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86234EB64DD
+	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Jul 2023 10:01:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232148AbjGLJ6G convert rfc822-to-8bit (ORCPT
+        id S232170AbjGLKAu convert rfc822-to-8bit (ORCPT
         <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 12 Jul 2023 05:58:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34366 "EHLO
+        Wed, 12 Jul 2023 06:00:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35178 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232026AbjGLJ6G (ORCPT
+        with ESMTP id S231944AbjGLKAT (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 12 Jul 2023 05:58:06 -0400
-Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com [209.85.128.176])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B0271720;
-        Wed, 12 Jul 2023 02:58:05 -0700 (PDT)
-Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-5768a7e3adbso8595087b3.0;
-        Wed, 12 Jul 2023 02:58:05 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689155884; x=1691747884;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Y6MzudJP2Fu/sGdEnelPPluUqTi475Db7xeaDmuW9Sk=;
-        b=LJrwQd7/GT/f6oIF/VO5++yTV31g4WJbSQ1fWlc/6aaAe0vQvJYr4kByUnVfNzoT7X
-         3q3FGJZT/6Z6RHfymi63tAJPT1EY2iwRa75CXHjS3Ot25+fRu84WDKLN9xUi8pxJQluj
-         PwGyOtMkZiK8HKdqp2iAgC0FDJFT+heoiVo5a8pdlw7A+EuipACA1m7X08NZYQuLg/OD
-         4BH/kujvK/Db+8rFjpsFKMfyxPvqea1avTy6JQUB0jahhM9Itqqy49SgaLfGIPhGEnbL
-         ljW/5yIUDSlUn4axOB9G4IApIlfDzHpZdHk/JMhE1rmohX36QxlmsHnsHGtr/7g1jdHD
-         Kl4w==
-X-Gm-Message-State: ABy/qLY/EwIOYS6AZrz2ivULfQAnXCA21K/X7hfKfuI+kiyLNdahXYQ4
-        UHdcDF7kMwh4RmGN6+ZFK/Up2wQ6pmTPxA==
-X-Google-Smtp-Source: APBJJlGYudo9gVR+Cou01gtan/TCm1WXI5ja4PeIWua5VW5I2pAP/ypMPtV4ncbiIL0wMtb9qlUwGw==
-X-Received: by 2002:a0d:d616:0:b0:573:284d:6476 with SMTP id y22-20020a0dd616000000b00573284d6476mr1711934ywd.1.1689155884332;
-        Wed, 12 Jul 2023 02:58:04 -0700 (PDT)
-Received: from mail-yb1-f178.google.com (mail-yb1-f178.google.com. [209.85.219.178])
-        by smtp.gmail.com with ESMTPSA id f67-20020a816a46000000b0057a93844c15sm1059234ywc.127.2023.07.12.02.58.03
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 12 Jul 2023 02:58:03 -0700 (PDT)
-Received: by mail-yb1-f178.google.com with SMTP id 3f1490d57ef6-ca9804dc6e4so198576276.0;
-        Wed, 12 Jul 2023 02:58:03 -0700 (PDT)
-X-Received: by 2002:a25:ae5d:0:b0:bd6:a97e:3597 with SMTP id
- g29-20020a25ae5d000000b00bd6a97e3597mr1632945ybe.30.1689155883328; Wed, 12
- Jul 2023 02:58:03 -0700 (PDT)
+        Wed, 12 Jul 2023 06:00:19 -0400
+X-Greylist: delayed 601 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 12 Jul 2023 03:00:12 PDT
+Received: from hygieia.sysophe.eu (hygieia.sysophe.eu [138.201.91.14])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 011841720;
+        Wed, 12 Jul 2023 03:00:11 -0700 (PDT)
+Received: from hemera.lan.sysophe.eu (unknown [IPv6:2001:a18:2c5:a501:fa75:a4ff:fe28:fe3a])
+        by smtp.sysophe.eu (Postfix) with ESMTPSA id 1A675260A610;
+        Wed, 12 Jul 2023 11:43:42 +0200 (CEST)
+Date:   Wed, 12 Jul 2023 11:43:35 +0200
+From:   Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     deller@gmx.de, javierm@redhat.com, linux-sh@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        amd-gfx@lists.freedesktop.org, linux-input@vger.kernel.org,
+        linux-media@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev,
+        linux-arm-kernel@lists.infradead.org,
+        linux-geode@lists.infradead.org, linux-nvidia@lists.surfsouth.com,
+        linux-hyperv@vger.kernel.org, linux-omap@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+        Jiri Kosina <jikos@kernel.org>,
+        Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Subject: Re: [PATCH 10/17] hid/picolcd: Remove flag FBINFO_FLAG_DEFAULT from
+ fbdev driver
+Message-ID: <20230712114335.42644eab@hemera.lan.sysophe.eu>
+In-Reply-To: <20230710130113.14563-11-tzimmermann@suse.de>
+References: <20230710130113.14563-1-tzimmermann@suse.de>
+ <20230710130113.14563-11-tzimmermann@suse.de>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.37; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-References: <20230511181931.869812-1-tj@kernel.org> <20230511181931.869812-7-tj@kernel.org>
- <ZF6WsSVGX3O1d0pL@slm.duckdns.org> <CAMuHMdVCQmh6V182q4g---jvsWiTOP2hBPZKvma6oUN6535LEg@mail.gmail.com>
- <CAMuHMdW1kxZ1RHKTRVRqDNAbj1Df2=v0fPn5KYK3kfX_kiXR6A@mail.gmail.com>
- <ZK3MBfPS-3-tJgjO@slm.duckdns.org> <ZK30CR196rs-OWLq@slm.duckdns.org>
-In-Reply-To: <ZK30CR196rs-OWLq@slm.duckdns.org>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 12 Jul 2023 11:57:49 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdUCXPi+aS-7bR3qRetKF9T3W9jk_HKjvaXmfHv5SEeuFg@mail.gmail.com>
-Message-ID: <CAMuHMdUCXPi+aS-7bR3qRetKF9T3W9jk_HKjvaXmfHv5SEeuFg@mail.gmail.com>
-Subject: Re: Consider switching to WQ_UNBOUND messages (was: Re: [PATCH v2
- 6/7] workqueue: Report work funcs that trigger automatic CPU_INTENSIVE mechanism)
-To:     Tejun Heo <tj@kernel.org>
-Cc:     Lai Jiangshan <jiangshanlai@gmail.com>,
-        "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        kernel-team@meta.com, Linux PM list <linux-pm@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        linux-rtc@vger.kernel.org,
-        linux-riscv <linux-riscv@lists.infradead.org>,
-        netdev <netdev@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux MMC List <linux-mmc@vger.kernel.org>,
-        "open list:LIBATA SUBSYSTEM (Serial and Parallel ATA drivers)" 
-        <linux-ide@vger.kernel.org>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Tejun,
+On Mon, 10 Jul 2023 14:50:14 +0200 Thomas Zimmermann wrote:
+> The flag FBINFO_FLAG_DEFAULT is 0 and has no effect, as struct
+> fbinfo.flags has been allocated to zero by framebuffer_alloc(). So do
+> not set it.
+> 
+> Flags should signal differences from the default values. After cleaning
+> up all occurences of FBINFO_FLAG_DEFAULT, the token can be removed.
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: "Bruno Prémont" <bonbons@linux-vserver.org>
+> Cc: Jiri Kosina <jikos@kernel.org>
+> Cc: Benjamin Tissoires <benjamin.tissoires@redhat.com>
 
-On Wed, Jul 12, 2023 at 2:30 AM Tejun Heo <tj@kernel.org> wrote:
-> On Tue, Jul 11, 2023 at 11:39:17AM -1000, Tejun Heo wrote:
-> > On Tue, Jul 11, 2023 at 04:06:22PM +0200, Geert Uytterhoeven wrote:
-> > > On Tue, Jul 11, 2023 at 3:55 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> ...
-> > > workqueue: neigh_managed_work hogged CPU for >10000us 4 times,
-> > > consider switching to WQ_UNBOUND
-> >
-> > I wonder whether the right thing to do here is somehow scaling the threshold
-> > according to the relative processing power. It's difficult to come up with a
-> > threshold which works well across the latest & fastest and really tiny CPUs.
-> > I'll think about it some more but if you have some ideas, please feel free
-> > to suggest.
->
-> Geert, do you mind posting the full kernel logs for the affected machines?
+Acked-by: Bruno Prémont <bonbons@linux-vserver.org>
 
-https://drive.google.com/file/d/1toDs7ugZJ2eXatpdvySY4yxSsNam9xAC
-is an archive with boot and s2ram logs.  Note that my kernels do contain
-local debug code, and may be noisy.
+Cheers,
+Bruno
 
-Gr{oetje,eeting}s,
 
-                        Geert
+> ---
+>  drivers/hid/hid-picolcd_fb.c | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+> diff --git a/drivers/hid/hid-picolcd_fb.c b/drivers/hid/hid-picolcd_fb.c
+> index dabcd054dad9..d726aaafb146 100644
+> --- a/drivers/hid/hid-picolcd_fb.c
+> +++ b/drivers/hid/hid-picolcd_fb.c
+> @@ -527,7 +527,6 @@ int picolcd_init_framebuffer(struct picolcd_data *data)
+>  	info->var = picolcdfb_var;
+>  	info->fix = picolcdfb_fix;
+>  	info->fix.smem_len   = PICOLCDFB_SIZE*8;
+> -	info->flags = FBINFO_FLAG_DEFAULT;
+>  
+>  	fbdata = info->par;
+>  	spin_lock_init(&fbdata->lock);
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

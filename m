@@ -2,117 +2,91 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50387C001DD
-	for <linux-fbdev@archiver.kernel.org>; Thu, 13 Jul 2023 13:57:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9773C001DD
+	for <linux-fbdev@archiver.kernel.org>; Thu, 13 Jul 2023 16:02:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232012AbjGMN47 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 13 Jul 2023 09:56:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51454 "EHLO
+        id S234862AbjGMQCr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 13 Jul 2023 12:02:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57666 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231279AbjGMN46 (ORCPT
+        with ESMTP id S233618AbjGMQCq (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 13 Jul 2023 09:56:58 -0400
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AD829273C;
-        Thu, 13 Jul 2023 06:56:30 -0700 (PDT)
-Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
-          by outpost.zedat.fu-berlin.de (Exim 4.95)
-          with esmtps (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@zedat.fu-berlin.de>)
-          id 1qJwo0-003uyK-7j; Thu, 13 Jul 2023 15:56:28 +0200
-Received: from p57bd9f0d.dip0.t-ipconnect.de ([87.189.159.13] helo=suse-laptop.fritz.box)
-          by inpost2.zedat.fu-berlin.de (Exim 4.95)
-          with esmtpsa (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@physik.fu-berlin.de>)
-          id 1qJwnz-002qWA-Vd; Thu, 13 Jul 2023 15:56:28 +0200
-Message-ID: <6d04a1b87a9820d8ae23191092665f2dcb17ce19.camel@physik.fu-berlin.de>
-Subject: Re: [PATCH v2 08/18] sh: Assign FB_MODE_IS_UNKNOWN to struct
- fb_videomode.flag
-From:   John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
-        javierm@redhat.com
-Cc:     linux-sh@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org,
-        linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        Thu, 13 Jul 2023 12:02:46 -0400
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4F44226B2;
+        Thu, 13 Jul 2023 09:02:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+        bh=FGfECluQ+8FqgloN5y7njhMRYgbNQmkghpgv24LmuxM=; b=0XY4/FQJa9khQp7bFpbGplPtrB
+        5SpA/Xwz1+y5xMC8TkQ/RIwD1YWvtpubNsS1DOufMRk8U8ZOw4QBT/2OcdaSsugIN7fvQtpI7FoTv
+        cytb12hmpQ++kNkMjOGEjV3X0J/VuBhB9uSnfg9JjtfUZNml3TMudThtLyoBgiurIyPLTXfpsW1zN
+        ZtXFfJPqxyrJBHJb3985aNxuQmUFSYt3wjhQoX2i+JeMJunamtLIY8iXJ5jgN3F/OMabSTImubkKK
+        MN74NscjU6mryhy24nJ4dBieOuA4YvnVsMsArDKWNb60xY8A4s7oL4npScU177xtucZj0Dk4Lyl65
+        o8/EadpQ==;
+Received: from [2601:1c2:980:9ec0::2764]
+        by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1qJym9-003r1C-08;
+        Thu, 13 Jul 2023 16:02:41 +0000
+Message-ID: <801dbd65-ee7f-526d-6cd8-27cb0291c4ba@infradead.org>
+Date:   Thu, 13 Jul 2023 09:02:39 -0700
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.12.0
+Subject: Re: [PATCH v2 18/18] fbdev: Document that framebuffer_alloc() returns
+ zero'ed data
+Content-Language: en-US
+To:     Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     deller@gmx.de, javierm@redhat.com, linux-sh@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        amd-gfx@lists.freedesktop.org, linux-input@vger.kernel.org,
+        linux-media@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev,
         linux-arm-kernel@lists.infradead.org,
         linux-geode@lists.infradead.org, linux-nvidia@lists.surfsouth.com,
         linux-hyperv@vger.kernel.org, linux-omap@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Yoshinori Sato <ysato@users.sourceforge.jp>,
-        Rich Felker <dalias@libc.org>
-Date:   Thu, 13 Jul 2023 15:56:26 +0200
-In-Reply-To: <4622810f8bceb66f212fa09d34b10f0d2d71a35d.camel@physik.fu-berlin.de>
+        Miguel Ojeda <ojeda@kernel.org>
 References: <20230713130338.31086-1-tzimmermann@suse.de>
-         <20230713130338.31086-9-tzimmermann@suse.de>
-         <4622810f8bceb66f212fa09d34b10f0d2d71a35d.camel@physik.fu-berlin.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-User-Agent: Evolution 3.48.4 
-MIME-Version: 1.0
-X-Original-Sender: glaubitz@physik.fu-berlin.de
-X-Originating-IP: 87.189.159.13
-X-ZEDAT-Hint: PO
+ <20230713130338.31086-19-tzimmermann@suse.de>
+ <CANiq72mbLmMKph8aiz4apNF9n3MtVO-nhM9rEWYApZbSVAO9Qw@mail.gmail.com>
+From:   Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <CANiq72mbLmMKph8aiz4apNF9n3MtVO-nhM9rEWYApZbSVAO9Qw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas!
 
-On Thu, 2023-07-13 at 15:53 +0200, John Paul Adrian Glaubitz wrote:
-> On Thu, 2023-07-13 at 14:58 +0200, Thomas Zimmermann wrote:
-> > Assign FB_MODE_IS_UNKNOWN to sh7763fb_videomode.flag instead of
-> > FBINFO_FLAG_DEFAULT. Both are 0, so the stored value does not change.
-> > 
-> > FBINFO_FLAG_DEFAULT is a flag for a framebuffer in struct fb_info.
-> > Flags for videomodes are prefixed with FB_MODE_.
-> > 
-> > v2:
-> > 	* assign FB_MODE_IS_UNKNOWN (Adrian)
-> > 
-> > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> > Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> > Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-> > Cc: Rich Felker <dalias@libc.org>
-> > Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-> > ---
-> >  arch/sh/boards/mach-sh7763rdp/setup.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/sh/boards/mach-sh7763rdp/setup.c b/arch/sh/boards/mach-sh7763rdp/setup.c
-> > index 97e715e4e9b3..e25193001ea0 100644
-> > --- a/arch/sh/boards/mach-sh7763rdp/setup.c
-> > +++ b/arch/sh/boards/mach-sh7763rdp/setup.c
-> > @@ -119,7 +119,7 @@ static struct fb_videomode sh7763fb_videomode = {
-> >  	.vsync_len = 1,
-> >  	.sync = 0,
-> >  	.vmode = FB_VMODE_NONINTERLACED,
-> > -	.flag = FBINFO_FLAG_DEFAULT,
-> > +	.flag = FB_MODE_IS_UNKNOWN,
-> >  };
-> >  
-> >  static struct sh7760fb_platdata sh7763fb_def_pdata = {
+
+On 7/13/23 06:21, Miguel Ojeda wrote:
+> On Thu, Jul 13, 2023 at 3:03 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+>>
+>> Most fbdev drivers depend on framebuffer_alloc() to initialize the
+>> allocated memory to 0. Document this guarantee.
+>>
+>> Suggested-by: Miguel Ojeda <ojeda@kernel.org>
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>> Cc: Helge Deller <deller@gmx.de>
 > 
-> Acked-by: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+> Thanks for sending this! Maybe this would be best earlier in the
+> series, so that later patches make more sense (since they use the
+> guarantee), but it is not a big deal.
+> 
+>> + * aligned to sizeof(long). Both, the instance of struct fb_info and
+>> + * the driver private data, are cleared to zero.
+> 
+> I think both commas may be best omitted (but I am not a native speaker).
 
-Ah, just one tiny request: Could you change the subject to include the
-board name, i.e.:
+Yes, it would be better to omit them.
 
-	sh: mach-sh7763rdp: Assign FB_MODE_IS_UNKNOWN to struct fb_videomode.flag
-
-?
-
-I wasn't paying close attention to the path of the file being changed when
-I first looked at your patch. Sorry for that.
-
-Adrian
+> Reviewed-by: Miguel Ojeda <ojeda@kernel.org>
+> 
+> Cheers,
+> Miguel
 
 -- 
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer
-`. `'   Physicist
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
+~Randy

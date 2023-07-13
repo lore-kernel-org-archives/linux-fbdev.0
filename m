@@ -2,53 +2,53 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3F18C001E0
-	for <linux-fbdev@archiver.kernel.org>; Thu, 13 Jul 2023 13:03:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 338FCC04E69
+	for <linux-fbdev@archiver.kernel.org>; Thu, 13 Jul 2023 13:03:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234396AbjGMNDp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 13 Jul 2023 09:03:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40480 "EHLO
+        id S234803AbjGMNDw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 13 Jul 2023 09:03:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40524 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234076AbjGMNDo (ORCPT
+        with ESMTP id S234603AbjGMNDs (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 13 Jul 2023 09:03:44 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6929B1BEB;
-        Thu, 13 Jul 2023 06:03:43 -0700 (PDT)
+        Thu, 13 Jul 2023 09:03:48 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D477D1989;
+        Thu, 13 Jul 2023 06:03:46 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 20AC11F45A;
-        Thu, 13 Jul 2023 13:03:42 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 5CE741FDAF;
+        Thu, 13 Jul 2023 13:03:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1689253422; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
+        t=1689253425; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=sWCVV7wJiemOx2M9P2wz1m/QXnYnbGSsQYJ48wiDA5o=;
-        b=G3PYzma+GnPXsWDQcWEiJv7+6N0jkIzvIqL3XrkAaNDI5dGI8oCyGDegIPMBEhOO6zso9c
-        K5VThQHBuOhXlprpuD0nN/dF79tpjdwwkTSMKFCLf145LdCAaSa7mwQ+6NYpUz5Y4s5PAn
-        tEbKa6k8zUIs+FVcjuyiTVPw1uhIoY4=
+        bh=N3ShY8nHVy2Uay8SMC7IIP+u11ICJ0kvaU7vZpkeGvw=;
+        b=neEEsF0423ZQegvd/Vl4uWyIfCVcI1SvBw9ly7Ix7PF+lJG0Jv0HzaRv5zSJ/+5NJuZ4bN
+        j/zJane2bcT1dnlOqTJd/fG6MpfCvQEhu8EOC61gY7mzJN07LYl+8LCZEcKPU4xkSX8GJj
+        /1AT+cJf+ciAPBRpproKLug6vUGGm2Q=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1689253422;
+        s=susede2_ed25519; t=1689253425;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
+         mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=sWCVV7wJiemOx2M9P2wz1m/QXnYnbGSsQYJ48wiDA5o=;
-        b=WeSOcLCLUIdHcwsbiId4esnjfTG+ztdeDfD2PYzOsAG3OUq0C7SYad86to4wDt0BZzV2cu
-        qQ29qEYIeql73fBw==
+        bh=N3ShY8nHVy2Uay8SMC7IIP+u11ICJ0kvaU7vZpkeGvw=;
+        b=xF3v5U/qkvo9ynqkbndFoJCYE760wJq4nAH1gPFvOoSXNSfFZMU61jYkDMSJN/NEAWGR9n
+        bP72sQTRjiBbTJDg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 9AA8D13A94;
-        Thu, 13 Jul 2023 13:03:41 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id E075C13489;
+        Thu, 13 Jul 2023 13:03:44 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id OGKbJC32r2TVPgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 13 Jul 2023 13:03:41 +0000
+        id sJ/jNTD2r2TVPgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 13 Jul 2023 13:03:44 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, javierm@redhat.com
 Cc:     linux-sh@vger.kernel.org, dri-devel@lists.freedesktop.org,
@@ -61,95 +61,52 @@ Cc:     linux-sh@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Sam Ravnborg <sam@ravnborg.org>,
-        Patrik Jakobsson <patrik.r.jakobsson@gmail.com>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
-        "Pan, Xinhui" <Xinhui.Pan@amd.com>
-Subject: [PATCH v2 01/18] drm: Remove flag FBINFO_DEFAULT from fbdev emulation
-Date:   Thu, 13 Jul 2023 14:58:21 +0200
-Message-ID: <20230713130338.31086-2-tzimmermann@suse.de>
+        Yoshinori Sato <ysato@users.sourceforge.jp>,
+        Rich Felker <dalias@libc.org>,
+        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Subject: [PATCH v2 08/18] sh: Assign FB_MODE_IS_UNKNOWN to struct fb_videomode.flag
+Date:   Thu, 13 Jul 2023 14:58:28 +0200
+Message-ID: <20230713130338.31086-9-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230713130338.31086-1-tzimmermann@suse.de>
 References: <20230713130338.31086-1-tzimmermann@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The flag FBINFO_DEFAULT is 0 and has no effect, as struct fbinfo.flags
-has been allocated to zero by framebuffer_alloc(). So do not set it.
+Assign FB_MODE_IS_UNKNOWN to sh7763fb_videomode.flag instead of
+FBINFO_FLAG_DEFAULT. Both are 0, so the stored value does not change.
 
-Flags should signal differences from the default values. After cleaning
-up all occurrences of FBINFO_DEFAULT, the token will be removed.
+FBINFO_FLAG_DEFAULT is a flag for a framebuffer in struct fb_info.
+Flags for videomodes are prefixed with FB_MODE_.
 
 v2:
-	* fix commit message (Miguel)
+	* assign FB_MODE_IS_UNKNOWN (Adrian)
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Patrik Jakobsson <patrik.r.jakobsson@gmail.com>
-Cc: Alex Deucher <alexander.deucher@amd.com>
-Cc: "Christian König" <christian.koenig@amd.com>
-Cc: "Pan, Xinhui" <Xinhui.Pan@amd.com>
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: Rich Felker <dalias@libc.org>
+Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
 ---
- drivers/gpu/drm/drm_fbdev_dma.c       | 1 -
- drivers/gpu/drm/drm_fbdev_generic.c   | 1 -
- drivers/gpu/drm/gma500/fbdev.c        | 2 +-
- drivers/gpu/drm/radeon/radeon_fbdev.c | 2 +-
- 4 files changed, 2 insertions(+), 4 deletions(-)
+ arch/sh/boards/mach-sh7763rdp/setup.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/drm_fbdev_dma.c b/drivers/gpu/drm/drm_fbdev_dma.c
-index f9b1f7cd31b7..ee7c265b0585 100644
---- a/drivers/gpu/drm/drm_fbdev_dma.c
-+++ b/drivers/gpu/drm/drm_fbdev_dma.c
-@@ -123,7 +123,6 @@ static int drm_fbdev_dma_helper_fb_probe(struct drm_fb_helper *fb_helper,
- 	drm_fb_helper_fill_info(info, fb_helper, sizes);
+diff --git a/arch/sh/boards/mach-sh7763rdp/setup.c b/arch/sh/boards/mach-sh7763rdp/setup.c
+index 97e715e4e9b3..e25193001ea0 100644
+--- a/arch/sh/boards/mach-sh7763rdp/setup.c
++++ b/arch/sh/boards/mach-sh7763rdp/setup.c
+@@ -119,7 +119,7 @@ static struct fb_videomode sh7763fb_videomode = {
+ 	.vsync_len = 1,
+ 	.sync = 0,
+ 	.vmode = FB_VMODE_NONINTERLACED,
+-	.flag = FBINFO_FLAG_DEFAULT,
++	.flag = FB_MODE_IS_UNKNOWN,
+ };
  
- 	info->fbops = &drm_fbdev_dma_fb_ops;
--	info->flags = FBINFO_DEFAULT;
- 
- 	/* screen */
- 	info->flags |= FBINFO_VIRTFB; /* system memory */
-diff --git a/drivers/gpu/drm/drm_fbdev_generic.c b/drivers/gpu/drm/drm_fbdev_generic.c
-index b9343fb6cf13..a0ea042b1526 100644
---- a/drivers/gpu/drm/drm_fbdev_generic.c
-+++ b/drivers/gpu/drm/drm_fbdev_generic.c
-@@ -109,7 +109,6 @@ static int drm_fbdev_generic_helper_fb_probe(struct drm_fb_helper *fb_helper,
- 	drm_fb_helper_fill_info(info, fb_helper, sizes);
- 
- 	info->fbops = &drm_fbdev_generic_fb_ops;
--	info->flags = FBINFO_DEFAULT;
- 
- 	/* screen */
- 	info->flags |= FBINFO_VIRTFB | FBINFO_READS_FAST;
-diff --git a/drivers/gpu/drm/gma500/fbdev.c b/drivers/gpu/drm/gma500/fbdev.c
-index 054426549fc6..be8f5fbd5260 100644
---- a/drivers/gpu/drm/gma500/fbdev.c
-+++ b/drivers/gpu/drm/gma500/fbdev.c
-@@ -215,7 +215,7 @@ static int psb_fbdev_fb_probe(struct drm_fb_helper *fb_helper,
- 	}
- 
- 	info->fbops = &psb_fbdev_fb_ops;
--	info->flags = FBINFO_DEFAULT;
-+
- 	/* Accessed stolen memory directly */
- 	info->screen_base = dev_priv->vram_addr + backing->offset;
- 	info->screen_size = size;
-diff --git a/drivers/gpu/drm/radeon/radeon_fbdev.c b/drivers/gpu/drm/radeon/radeon_fbdev.c
-index f941e2e7cae6..68c06ac9acce 100644
---- a/drivers/gpu/drm/radeon/radeon_fbdev.c
-+++ b/drivers/gpu/drm/radeon/radeon_fbdev.c
-@@ -253,7 +253,7 @@ static int radeon_fbdev_fb_helper_fb_probe(struct drm_fb_helper *fb_helper,
- 	}
- 
- 	info->fbops = &radeon_fbdev_fb_ops;
--	info->flags = FBINFO_DEFAULT;
-+
- 	/* radeon resume is fragile and needs a vt switch to help it along */
- 	info->skip_vt_switch = false;
- 
+ static struct sh7760fb_platdata sh7763fb_def_pdata = {
 -- 
 2.41.0
 

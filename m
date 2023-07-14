@@ -2,134 +2,126 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B7D0C001B0
-	for <linux-fbdev@archiver.kernel.org>; Fri, 14 Jul 2023 12:14:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2B45EB64DC
+	for <linux-fbdev@archiver.kernel.org>; Fri, 14 Jul 2023 17:17:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235750AbjGNMOy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 14 Jul 2023 08:14:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59978 "EHLO
+        id S235987AbjGNRRm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 14 Jul 2023 13:17:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44794 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235752AbjGNMOw (ORCPT
+        with ESMTP id S235965AbjGNRRm (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 14 Jul 2023 08:14:52 -0400
-Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B900830C6;
-        Fri, 14 Jul 2023 05:14:50 -0700 (PDT)
-Received: by mail-ed1-x52d.google.com with SMTP id 4fb4d7f45d1cf-51e99584a82so2322995a12.1;
-        Fri, 14 Jul 2023 05:14:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1689336889; x=1691928889;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=TgPMyqhcYOSoB/wLOssO63qlIlM49Q140+nxqiBvG58=;
-        b=EbmcQKgul6r57U77VkLKxO0Std3+UK3ldoAw+5il/pbmMcEIV1j+yevY/ZXv9VkR1J
-         +/4YKAtOae75xN9J3tA3yU6G/kVO8Gp0bFwl5dIJuAwF2wZIh3TyV4U7YEdginHL/7Wb
-         7Q1POHwuTeLeqtDaHV/M3Jf86N/52phGiATyqOFX3N/F+/oJdH8fEQuZ8P4tssx7VF0i
-         cnKyIvsUWZ8cnnyPsUwLjS0mxRidx3JCST4tNTSARsNIg+Uq4qVposX3W9wSB2mTqIYb
-         deDgxSM8kXx180pIPlKeKPAAvQEkHfxRwlsp0RxiOIOL/chzdSVfhdoEG8qejnhK4qJg
-         EGMA==
+        Fri, 14 Jul 2023 13:17:42 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 80FA13594
+        for <linux-fbdev@vger.kernel.org>; Fri, 14 Jul 2023 10:16:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1689355015;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=Mf75CzVatbv3pQWH8r83ggHJgBXSpuprGf6QjemCQEc=;
+        b=EQ4qIt1136QBA4QNpxW6KIY7vys1mhFt4qMKsZgFTx2f2nae43LGqyBhgP3QlE10aVtSq4
+        7G5cVf12myaNQcqNmbySqXY85JEjXZ/wN5w/+unXRn7M76W1Lf6wRoWWn3JO8Whk9o+nQU
+        L4jQ9Au+VNIeNTCUVG4JOVTM7H5PM+g=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-267-DfGXFvWgO6S1T--6sR1Btg-1; Fri, 14 Jul 2023 13:16:54 -0400
+X-MC-Unique: DfGXFvWgO6S1T--6sR1Btg-1
+Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-313c930ee0eso1252206f8f.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 14 Jul 2023 10:16:54 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689336889; x=1691928889;
+        d=1e100.net; s=20221208; t=1689355013; x=1691947013;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=TgPMyqhcYOSoB/wLOssO63qlIlM49Q140+nxqiBvG58=;
-        b=J4m0ASrhAdtqOWC6961OqdEcxQowHTt9QXvx0HHbSuvhn9IYW5OcOBuzXbZ6c0NxlV
-         aKrx/enIQwN+7KRk7ugmf+P3YeTQuXaWGFLQ95VYFWRj/lnmdq1kmWoTomHShvOQrKV/
-         YYiV2ZgFVcA+McNU8TX9fjhrsydLnWgdez8uqVebnXqRy4satd3Anx1jzVTkaQC0f5QK
-         6h2s2+8jIjaT/0EwQsvA+sFw/zotM/7ocluprpYdfi/jKk3UDxMkxgApizievSljDlEB
-         O6qpWMiwzFPle7LwSuD6L6ORnzrZLg63HSO69xw3d6o2ei4OExf+Ml0nFWcRtCBF9tm1
-         PvtA==
-X-Gm-Message-State: ABy/qLaHEic7zGGanZgnK7Y6qDVw4Iz3WrtPcEdPFjNkrGkR5an0zAW3
-        CIn8xsx0leEvs9FcgHTbPxg=
-X-Google-Smtp-Source: APBJJlGCZk5eIAzsAIRe5sakyckPhJ0aqKFTBus5ia20xD48WrEFzxV5rsu/e+vLMLzskRlnKNWdwQ==
-X-Received: by 2002:a50:fa98:0:b0:51e:4bc7:3976 with SMTP id w24-20020a50fa98000000b0051e4bc73976mr5022133edr.10.1689336888953;
-        Fri, 14 Jul 2023 05:14:48 -0700 (PDT)
-Received: from tablet.my.domain (ip-37-248-157-105.multi.internet.cyfrowypolsat.pl. [37.248.157.105])
-        by smtp.gmail.com with ESMTPSA id r16-20020aa7d150000000b0051e19bf66a4sm5680666edo.83.2023.07.14.05.14.47
+        bh=Mf75CzVatbv3pQWH8r83ggHJgBXSpuprGf6QjemCQEc=;
+        b=K/wq+tK7a5gBEDE7R19jZk9ot3YR+8TUZ878QuSUJlBab8uX86s76AXvam3jT0t5bI
+         aiE+dK/UZAtIUIGovxcjHbUG4iMj2tm5LK6MRQR/VAG6M1r1BwIEI4NCa318rzFuUciU
+         7Ngq4h1JpAY3uvKYDm0mso/LPvVX+UiNv4BuOwP+xByrdJoBRa9+6B4THbK0B9JEALy0
+         xsA5gIhGOcmu/tU6C97/mjekC5EYCbsUBdQaKiYp4N335A06IxxuZ0rk2RXHBKgo5W2n
+         xDova5Lsxh9xs2gXdd0gSJE3zu9fszyA3Nzt4BBxNPoKVUjU29J8YMxbSwNJ1hqj4H7v
+         RJBg==
+X-Gm-Message-State: ABy/qLa0B+buYgHqy373mFyjg7kNmVDjYq0jDO6dgSyUUmRfuHWa7nqN
+        iiLAYprg8jYgN7xLLcUGFBsYDXHj4iD/4iS8xAgQ6eHVYtGUV0V5ACocIFdqX/acc4VUMpWon+q
+        6LpxHVTLI6flIuEVO04VZCZc=
+X-Received: by 2002:adf:e952:0:b0:30e:5bd0:21a2 with SMTP id m18-20020adfe952000000b0030e5bd021a2mr4555833wrn.52.1689355013351;
+        Fri, 14 Jul 2023 10:16:53 -0700 (PDT)
+X-Google-Smtp-Source: APBJJlHHYMLvriZ/ew3fit58RdAJhlMPoyTBoUoDcI2u13QGKOg6uAz3m3L/7sXIDsUPeQ4e8DoUOA==
+X-Received: by 2002:adf:e952:0:b0:30e:5bd0:21a2 with SMTP id m18-20020adfe952000000b0030e5bd021a2mr4555827wrn.52.1689355013182;
+        Fri, 14 Jul 2023 10:16:53 -0700 (PDT)
+Received: from minerva.home (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id d17-20020adfe891000000b003143cdc5949sm11620842wrm.9.2023.07.14.10.16.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 14 Jul 2023 05:14:48 -0700 (PDT)
-From:   Artur Weber <aweber.kernel@gmail.com>
-To:     Lee Jones <lee@kernel.org>
-Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
+        Fri, 14 Jul 2023 10:16:52 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Helge Deller <deller@gmx.de>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
-        Artur Weber <aweber.kernel@gmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht
-Subject: [PATCH 2/2] backlight: lp855x: Catch errors when changing brightness
-Date:   Fri, 14 Jul 2023 14:14:40 +0200
-Message-ID: <20230714121440.7717-3-aweber.kernel@gmail.com>
+        Jacek Lawrynowicz <jacek.lawrynowicz@linux.intel.com>,
+        Melissa Wen <mwen@igalia.com>,
+        Nipun Gupta <nipun.gupta@amd.com>,
+        Oded Gabbay <ogabbay@kernel.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH v5 1/4] video: Add auxiliary display drivers to Graphics support menu
+Date:   Fri, 14 Jul 2023 19:16:29 +0200
+Message-ID: <20230714171642.91185-2-javierm@redhat.com>
 X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230714121440.7717-1-aweber.kernel@gmail.com>
-References: <20230714121440.7717-1-aweber.kernel@gmail.com>
+In-Reply-To: <20230714171642.91185-1-javierm@redhat.com>
+References: <20230714171642.91185-1-javierm@redhat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The lp855x_bl_update_status function's return type is int, but
-it always returns 0, without checking for the results of the
-write_byte/pwm_ctrl functions called within.
+The drivers in this subsystem are for character-based LCD displays, which
+can fall into the same category of the DRM/KMS and fbdev drivers that are
+located under the "Graphics support" menu. Add auxdisplay there as well.
 
-Make this function return the return values of the functions it
-calls, and modify the lp855x_pwm_ctrl function to return errors.
-
-Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
+Suggested-by: Thomas Zimmermann <tzimmermann@suse.de>
+Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/video/backlight/lp855x_bl.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-index 349ec324bc1e..61a7f45bfad8 100644
---- a/drivers/video/backlight/lp855x_bl.c
-+++ b/drivers/video/backlight/lp855x_bl.c
-@@ -217,7 +217,7 @@ static int lp855x_configure(struct lp855x *lp)
- 	return ret;
- }
+Changes in v5:
+- Take the auxdisplay/Kconfig source out of "if HAS_IOMEM" (Geert Uytterhoeven).
+
+ drivers/Kconfig       | 2 --
+ drivers/video/Kconfig | 2 ++
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index 514ae6b24cb2..496ca02ee18f 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -129,8 +129,6 @@ source "drivers/dma-buf/Kconfig"
  
--static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
-+static int lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
- {
- 	struct pwm_state state;
+ source "drivers/dca/Kconfig"
  
-@@ -234,23 +234,26 @@ static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
- 	state.duty_cycle = div_u64(br * state.period, max_br);
- 	state.enabled = state.duty_cycle;
+-source "drivers/auxdisplay/Kconfig"
+-
+ source "drivers/uio/Kconfig"
  
--	pwm_apply_state(lp->pwm, &state);
-+	return pwm_apply_state(lp->pwm, &state);
- }
+ source "drivers/vfio/Kconfig"
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 8b2b9ac37c3d..e5b1cc54cafa 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -25,6 +25,8 @@ config VIDEO_NOMODESET
+ 	bool
+ 	default n
  
- static int lp855x_bl_update_status(struct backlight_device *bl)
- {
- 	struct lp855x *lp = bl_get_data(bl);
- 	int brightness = bl->props.brightness;
-+	int ret;
++source "drivers/auxdisplay/Kconfig"
++
+ if HAS_IOMEM
  
- 	if (bl->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
- 		brightness = 0;
- 
- 	if (lp->mode == PWM_BASED)
--		lp855x_pwm_ctrl(lp, brightness, bl->props.max_brightness);
-+		ret = lp855x_pwm_ctrl(lp, brightness,
-+				      bl->props.max_brightness);
- 	else if (lp->mode == REGISTER_BASED)
--		lp855x_write_byte(lp, lp->cfg->reg_brightness, (u8)brightness);
-+		ret = lp855x_write_byte(lp, lp->cfg->reg_brightness,
-+					(u8)brightness);
- 
--	return 0;
-+	return ret;
- }
- 
- static const struct backlight_ops lp855x_bl_ops = {
+ config HAVE_FB_ATMEL
 -- 
 2.41.0
 

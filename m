@@ -2,115 +2,173 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13A02C0015E
-	for <linux-fbdev@archiver.kernel.org>; Fri, 14 Jul 2023 00:37:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FB48C0015E
+	for <linux-fbdev@archiver.kernel.org>; Fri, 14 Jul 2023 07:52:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232666AbjGNAhz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 13 Jul 2023 20:37:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46770 "EHLO
+        id S235518AbjGNHwD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 14 Jul 2023 03:52:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45786 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231292AbjGNAhy (ORCPT
+        with ESMTP id S235508AbjGNHwB (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 13 Jul 2023 20:37:54 -0400
-Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 574F5211C;
-        Thu, 13 Jul 2023 17:37:53 -0700 (PDT)
-Received: by mail-pf1-x433.google.com with SMTP id d2e1a72fcca58-6686a05bc66so1000299b3a.1;
-        Thu, 13 Jul 2023 17:37:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1689295073; x=1691887073;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=CctAjUFV1xpereksxrBg0+mczOOOQo8Ume+knSAyNSA=;
-        b=lYJpcJRJb9SNL3nkgSZJixYh9SFl72yF1riPiYiU8ciraE3COWM1XxqEcRv2LXBGi4
-         wQx9jFsqpPNRfK1lPzrOVs3ut0a5jR8GlT/JvhNyeHGIewXMcfMxxWBFmDMyH1JjL8lU
-         lntJP6Y3pGlDGZo8MrpLf+8844EE+0JJdNCG3gGFfKMcuzrOqN39yFFpm3H7BWPQvkLG
-         FtWgm+EsPtlACRVy2WfZOPx/FzVJd4bazCeZjywlak2gDsY4yR+3FoIzmISFHqRYuv97
-         20/M90KLBiKKvcVVLCN7PbMnGsw6/NJwo211cglp84au5+sOuJd0izOZnPxTgQOHTl2w
-         AxkA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689295073; x=1691887073;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=CctAjUFV1xpereksxrBg0+mczOOOQo8Ume+knSAyNSA=;
-        b=B2Hu91nY/EVUW+pddPSyWJ2MVTA0fey6FuhoLsDkUVubmyrMFNHeQPejVVtrC4zFfo
-         /TAgp/falK+V9pOI8tlnHQlU8amOP8HXWlejGkWpVvHVslceNXdPbBw2jqGehywMb2CO
-         IpReQ8qc612wGbtWNTCUXhK8PXarog3SngLOwuZs3GcR3Y8CzrSBOs3gRokY6R+WMqCu
-         zYWchLuzDAUq19ctiEry6bgr6fl5Bf7XTvwZs9sq3m1yAX6AyYPi5mA7GPgcrKSCadWo
-         m2WSmrJI2UG8NkmkpUwwzYdlWeSX0UUDsZUYMCuzvTq5k+9T5oIOXwK+4cQkNBlkZNLY
-         g8zg==
-X-Gm-Message-State: ABy/qLaRuONLonZZPwpYsNgcZlUjVHoIBzilZDEYVn94qWwbGB++ZRZ6
-        8ASfAPLIv7k1pJUEdwCMXWCS0NfU/dg=
-X-Google-Smtp-Source: APBJJlEiHiaptAXuvtXrlZ6sVYZbgFP0Qaahhb0xY+3xGXgYFbidFVi2AxUIRJJ595Diplb5DXLQVA==
-X-Received: by 2002:a05:6a00:2492:b0:64d:5b4b:8429 with SMTP id c18-20020a056a00249200b0064d5b4b8429mr3305331pfv.18.1689295072299;
-        Thu, 13 Jul 2023 17:37:52 -0700 (PDT)
-Received: from ubuntu777.domain.name (36-228-70-13.dynamic-ip.hinet.net. [36.228.70.13])
-        by smtp.gmail.com with ESMTPSA id s11-20020a62e70b000000b006825003a276sm5970384pfh.42.2023.07.13.17.37.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 13 Jul 2023 17:37:51 -0700 (PDT)
-From:   Min-Hua Chen <minhuadotchen@gmail.com>
-To:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>
-Cc:     Min-Hua Chen <minhuadotchen@gmail.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev: fbmem: mark registered_fb static
-Date:   Fri, 14 Jul 2023 08:37:46 +0800
-Message-Id: <20230714003748.91129-1-minhuadotchen@gmail.com>
-X-Mailer: git-send-email 2.34.1
+        Fri, 14 Jul 2023 03:52:01 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5CA4330E2;
+        Fri, 14 Jul 2023 00:51:59 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id D419022138;
+        Fri, 14 Jul 2023 07:51:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1689321117; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=CXr4BB0oj6JKkl5nx+4UTwhEgFQBdrO4bA0J1U4BuDM=;
+        b=anxAp1fdL5Ny+EW8lqrFCnyB199dfmlBinoXpJYcvTt25HK/fDI1j13j//ljCNjxbxWyZl
+        AwGy91hhx80vvo7QI5DyuakojmBVl4+D9SnTpDGZwuH/H7P0iendYalH5wCfs/UmZm9WK3
+        3JHA6sDKC7MvXXJYzYPGP+UMlYhbF5w=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1689321117;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=CXr4BB0oj6JKkl5nx+4UTwhEgFQBdrO4bA0J1U4BuDM=;
+        b=xpPIOncRHeqeYcP8TRD+DSpegzn30nDCF+zM7Khyx/O6KGXC3C7if5wTusK77CnqyPBPyS
+        7N3yiw1Kexutn7BA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 7DB9513A15;
+        Fri, 14 Jul 2023 07:51:57 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id 2IPCHZ3+sGQCQwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Fri, 14 Jul 2023 07:51:57 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     deller@gmx.de, javierm@redhat.com
+Cc:     linux-sh@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org,
+        linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-arm-kernel@lists.infradead.org,
+        linux-geode@lists.infradead.org, linux-nvidia@lists.surfsouth.com,
+        linux-hyperv@vger.kernel.org, linux-omap@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH v3 02/18] fbdev: Remove flag FBINFO_DEFAULT from fbdev drivers
+Date:   Fri, 14 Jul 2023 09:49:28 +0200
+Message-ID: <20230714075155.5686-3-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230714075155.5686-1-tzimmermann@suse.de>
+References: <20230714075155.5686-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Mark registered_fb, num_registered_fb, fbcon_registered_fb, and
-fbcon_num_registered_fb static to fix the following sparse
-warnings:
+The flag FBINFO_DEFAULT is 0 and has no effect, as struct fbinfo.flags
+has been allocated to zero by a static declaration. So do not set it.
 
-drivers/video/fbdev/core/fbmem.c:51:16: sparse: warning: symbol 'registered_fb' was not declared. Should it be static?
-drivers/video/fbdev/core/fbmem.c:52:5: sparse: warning: symbol 'num_registered_fb' was not declared. Should it be static?
-drivers/video/fbdev/core/fbcon.c:105:16: sparse: warning: symbol 'fbcon_registered_fb' was not declared. Should it be static?
-drivers/video/fbdev/core/fbcon.c:106:5: sparse: warning: symbol 'fbcon_num_registered_fb' was not declared. Should it be static?
+Flags should signal differences from the default values. After cleaning
+up all occurrences of FBINFO_DEFAULT, the token will be removed.
 
-No functional change intended.
+v2:
+	* fix commit message (Miguel)
 
-Signed-off-by: Min-Hua Chen <minhuadotchen@gmail.com>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Helge Deller <deller@gmx.de>
 ---
- drivers/video/fbdev/core/fbcon.c | 4 ++--
- drivers/video/fbdev/core/fbmem.c | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/68328fb.c  | 2 +-
+ drivers/video/fbdev/acornfb.c  | 2 +-
+ drivers/video/fbdev/g364fb.c   | 2 +-
+ drivers/video/fbdev/hpfb.c     | 1 -
+ drivers/video/fbdev/macfb.c    | 1 -
+ drivers/video/fbdev/maxinefb.c | 1 -
+ 6 files changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index c6c9d040bdec..4336c7d64ed0 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -102,8 +102,8 @@ enum {
+diff --git a/drivers/video/fbdev/68328fb.c b/drivers/video/fbdev/68328fb.c
+index 07d6e8dc686b..956dd2399cc0 100644
+--- a/drivers/video/fbdev/68328fb.c
++++ b/drivers/video/fbdev/68328fb.c
+@@ -448,7 +448,7 @@ static int __init mc68x328fb_init(void)
+ 		fb_info.var.red.offset = fb_info.var.green.offset = fb_info.var.blue.offset = 0;
+ 	}
+ 	fb_info.pseudo_palette = &mc68x328fb_pseudo_palette;
+-	fb_info.flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
++	fb_info.flags = FBINFO_HWACCEL_YPAN;
  
- static struct fbcon_display fb_display[MAX_NR_CONSOLES];
+ 	if (fb_alloc_cmap(&fb_info.cmap, 256, 0))
+ 		return -ENOMEM;
+diff --git a/drivers/video/fbdev/acornfb.c b/drivers/video/fbdev/acornfb.c
+index 1b72edc01cfb..8fec21dfca09 100644
+--- a/drivers/video/fbdev/acornfb.c
++++ b/drivers/video/fbdev/acornfb.c
+@@ -694,7 +694,7 @@ static void acornfb_init_fbinfo(void)
+ 	first = 0;
  
--struct fb_info *fbcon_registered_fb[FB_MAX];
--int fbcon_num_registered_fb;
-+static struct fb_info *fbcon_registered_fb[FB_MAX];
-+static int fbcon_num_registered_fb;
+ 	fb_info.fbops		= &acornfb_ops;
+-	fb_info.flags		= FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
++	fb_info.flags		= FBINFO_HWACCEL_YPAN;
+ 	fb_info.pseudo_palette	= current_par.pseudo_palette;
  
- #define fbcon_for_each_registered_fb(i)		\
- 	for (i = 0; WARN_CONSOLE_UNLOCKED(), i < FB_MAX; i++)		\
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 329d16e49a90..18355655959a 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -48,8 +48,8 @@
+ 	strcpy(fb_info.fix.id, "Acorn");
+diff --git a/drivers/video/fbdev/g364fb.c b/drivers/video/fbdev/g364fb.c
+index c5b7673ddc6c..0825cbde116e 100644
+--- a/drivers/video/fbdev/g364fb.c
++++ b/drivers/video/fbdev/g364fb.c
+@@ -219,7 +219,7 @@ int __init g364fb_init(void)
+ 	fb_info.screen_base = (char *) G364_MEM_BASE;	/* virtual kernel address */
+ 	fb_info.var = fb_var;
+ 	fb_info.fix = fb_fix;
+-	fb_info.flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
++	fb_info.flags = FBINFO_HWACCEL_YPAN;
  
- static DEFINE_MUTEX(registration_lock);
+ 	fb_alloc_cmap(&fb_info.cmap, 255, 0);
  
--struct fb_info *registered_fb[FB_MAX] __read_mostly;
--int num_registered_fb __read_mostly;
-+static struct fb_info *registered_fb[FB_MAX] __read_mostly;
-+static int num_registered_fb __read_mostly;
- #define for_each_registered_fb(i)		\
- 	for (i = 0; i < FB_MAX; i++)		\
- 		if (!registered_fb[i]) {} else
+diff --git a/drivers/video/fbdev/hpfb.c b/drivers/video/fbdev/hpfb.c
+index 77fbff47b1a8..406c1383cbda 100644
+--- a/drivers/video/fbdev/hpfb.c
++++ b/drivers/video/fbdev/hpfb.c
+@@ -287,7 +287,6 @@ static int hpfb_init_one(unsigned long phys_base, unsigned long virt_base)
+ 	else
+ 		strcat(fb_info.fix.id, "Catseye");
+ 	fb_info.fbops = &hpfb_ops;
+-	fb_info.flags = FBINFO_DEFAULT;
+ 	fb_info.var   = hpfb_defined;
+ 	fb_info.screen_base = (char *)fb_start;
+ 
+diff --git a/drivers/video/fbdev/macfb.c b/drivers/video/fbdev/macfb.c
+index 44ff860a3f37..5ca208d992cc 100644
+--- a/drivers/video/fbdev/macfb.c
++++ b/drivers/video/fbdev/macfb.c
+@@ -876,7 +876,6 @@ static int __init macfb_init(void)
+ 	fb_info.var		= macfb_defined;
+ 	fb_info.fix		= macfb_fix;
+ 	fb_info.pseudo_palette	= pseudo_palette;
+-	fb_info.flags		= FBINFO_DEFAULT;
+ 
+ 	err = fb_alloc_cmap(&fb_info.cmap, video_cmap_len, 0);
+ 	if (err)
+diff --git a/drivers/video/fbdev/maxinefb.c b/drivers/video/fbdev/maxinefb.c
+index 4e6b05232ae2..0ac1873b2acb 100644
+--- a/drivers/video/fbdev/maxinefb.c
++++ b/drivers/video/fbdev/maxinefb.c
+@@ -155,7 +155,6 @@ int __init maxinefb_init(void)
+ 	fb_info.screen_base = (char *)maxinefb_fix.smem_start;
+ 	fb_info.var = maxinefb_defined;
+ 	fb_info.fix = maxinefb_fix;
+-	fb_info.flags = FBINFO_DEFAULT;
+ 
+ 	fb_alloc_cmap(&fb_info.cmap, 256, 0);
+ 
 -- 
-2.34.1
+2.41.0
 

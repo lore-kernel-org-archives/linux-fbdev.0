@@ -2,153 +2,93 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DAD8C0015E
-	for <linux-fbdev@archiver.kernel.org>; Fri, 14 Jul 2023 10:47:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FCD5C001B0
+	for <linux-fbdev@archiver.kernel.org>; Fri, 14 Jul 2023 12:14:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235618AbjGNKrG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 14 Jul 2023 06:47:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48806 "EHLO
+        id S235686AbjGNMOs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 14 Jul 2023 08:14:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59952 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234989AbjGNKrF (ORCPT
+        with ESMTP id S235404AbjGNMOr (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 14 Jul 2023 06:47:05 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA67B1720;
-        Fri, 14 Jul 2023 03:47:04 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 7ECEB1FD8E;
-        Fri, 14 Jul 2023 10:47:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1689331623; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=i6h55HQftgQvvkADA67nYyBV+C/0slxTlkvYG6YPBpQ=;
-        b=JZN2yI8rzL18Kd+zDHxd/TnFZF8NcWznRSUZbF+sDr4OinPC2cSxFcSkTAzJSwhPTy5GER
-        8RR7GB8vyS+yJ9Vrf2sPB8e5nfnWH646KN34d0NT1VKITWZcIQd3H5Uf54bGaP42JBn9z2
-        caBWuuGKXdn5VW0NsACfB7CapldgqfM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1689331623;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=i6h55HQftgQvvkADA67nYyBV+C/0slxTlkvYG6YPBpQ=;
-        b=/epw2TagvC6JEinSwpHEJxmj1PG/pM/YY2ZPJdrmm2KOfeJr3f2ATmf8+LQH8TDFG9gdkX
-        Z7hM/OF80gyVoJCQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 060C213A15;
-        Fri, 14 Jul 2023 10:47:02 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id qw1yO6YnsWQgHgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Fri, 14 Jul 2023 10:47:02 +0000
-Message-ID: <12d980f4-e681-378d-6d94-da5cc6be5210@suse.de>
-Date:   Fri, 14 Jul 2023 12:47:02 +0200
+        Fri, 14 Jul 2023 08:14:47 -0400
+Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E8B3B2D68;
+        Fri, 14 Jul 2023 05:14:46 -0700 (PDT)
+Received: by mail-lf1-x132.google.com with SMTP id 2adb3069b0e04-4fa48b5dc2eso3085773e87.1;
+        Fri, 14 Jul 2023 05:14:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1689336885; x=1691928885;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=1wNzU1jOzNUiKRxU7gqcIT9SB28krhRHjHYXdxzclRE=;
+        b=jPQt3zLyyTcTqT5ijbQq3e0L9rHwwr8SOxE3IeG2tAOaiJJYQugwzDdhW/P/UgpC8s
+         VeN0uZO7SlelJM8gpuq1TT4rTe9/ssJBM3shpliPbBHLa9almmevLoIsJS6nWP6ByD/q
+         jfYpnLOZx5ltlsj+KkU88i8OnjsleS0ci5lb9DXbiyz2Romth0Vl/r7TVaQrAvocZJA+
+         eiq4HdeXvZW+xSAOTf+tA9MhMRJKRxClm1zliGFGWUqo/Pqc8GjV/HvqDjryIGZbZXQk
+         GeReLVLjnVLRUL6g7u3gvpxZiHO6mhMHTPH/Y4hsglAmDUGcS+4THgeTfusT+tlaO1yw
+         HSjw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1689336885; x=1691928885;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=1wNzU1jOzNUiKRxU7gqcIT9SB28krhRHjHYXdxzclRE=;
+        b=F+10tMxZOkbqjUkX5aofcQzTIjUOoc1QI9ifLAy6ltZP4TXpl0bmd7R/NLcPlCjQ3W
+         YhiZQZjSM0muyTpdA62mqE0IOm80zDrGsEi72j+oEx3Utakd0zxb5hzr+dpe/cRMTbI7
+         bL9RMd5Ev53ZGWWX4L5wC7S30Si5ZMuykMPCiKK20h5wxDARfLWyQU77Z9x08RLLTwyk
+         KHqToPud3hopqruePQfQ91C3SW8+/4CzObpQjBzc7sOQVqkrL9DGJsVFaUpVc/w+N7L1
+         P8QQdaR4cWvqAtTGGYXw5Q6sclWxQj9m/GWYzOQu0W9zEyMxNyK20cOI2YMjtFpiHKrZ
+         gQvw==
+X-Gm-Message-State: ABy/qLYyUKIxr3QRSyOv4yvXHpfBEAD35on5elmyyztCqlcG8sXIvIQ0
+        kcC0wseOUBqxvlmHHBdxIGE=
+X-Google-Smtp-Source: APBJJlEou3hBquZ72I9tXaAkxSKmu6ns5tLytwoP8Lson4Z4VFO/VawIygYHQlL/4B4CxJGRZ0r2Wg==
+X-Received: by 2002:a05:6512:32cc:b0:4f8:62a6:8b2 with SMTP id f12-20020a05651232cc00b004f862a608b2mr4270397lfg.46.1689336884909;
+        Fri, 14 Jul 2023 05:14:44 -0700 (PDT)
+Received: from tablet.my.domain (ip-37-248-157-105.multi.internet.cyfrowypolsat.pl. [37.248.157.105])
+        by smtp.gmail.com with ESMTPSA id r16-20020aa7d150000000b0051e19bf66a4sm5680666edo.83.2023.07.14.05.14.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 14 Jul 2023 05:14:44 -0700 (PDT)
+From:   Artur Weber <aweber.kernel@gmail.com>
+To:     Lee Jones <lee@kernel.org>
+Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>,
+        Artur Weber <aweber.kernel@gmail.com>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht
+Subject: [PATCH 0/2] backlight: lp855x: Fixes after c1ff7da03e16
+Date:   Fri, 14 Jul 2023 14:14:38 +0200
+Message-ID: <20230714121440.7717-1-aweber.kernel@gmail.com>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.12.0
-Subject: Re: [PATCH v3 00/18] fbdev: Remove FBINFO_DEFAULT and
- FBINFO_FLAG_DEFAULT flags
-Content-Language: en-US
-To:     Dan Carpenter <dan.carpenter@linaro.org>
-Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        linux-fbdev@vger.kernel.org, kvm@vger.kernel.org,
-        linux-hyperv@vger.kernel.org, linux-sh@vger.kernel.org,
-        deller@gmx.de, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org,
-        javierm@redhat.com, dri-devel@lists.freedesktop.org,
-        linux-input@vger.kernel.org, linux-nvidia@lists.surfsouth.com,
-        linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-geode@lists.infradead.org,
-        linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
-References: <20230714075155.5686-1-tzimmermann@suse.de>
- <CAMuHMdWoeyJPAgPgFi545SJFcaVCgZi1-zW2N5cBeU9BnHgo1w@mail.gmail.com>
- <47a3ab8d-5e8c-db2c-fcde-5c2b1bac32aa@suse.de>
- <b3c23ea3-f46c-43b9-b12a-9f55de2294c6@kadam.mountain>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <b3c23ea3-f46c-43b9-b12a-9f55de2294c6@kadam.mountain>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------vCsdIumFTGHoRkqMx9FMKvYN"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------vCsdIumFTGHoRkqMx9FMKvYN
-Content-Type: multipart/mixed; boundary="------------Nh1ETrjj519EbQRvF1jjXvLz";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Dan Carpenter <dan.carpenter@linaro.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev@vger.kernel.org,
- kvm@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-sh@vger.kernel.org,
- deller@gmx.de, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
- amd-gfx@lists.freedesktop.org, javierm@redhat.com,
- dri-devel@lists.freedesktop.org, linux-input@vger.kernel.org,
- linux-nvidia@lists.surfsouth.com, linux-omap@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-geode@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
-Message-ID: <12d980f4-e681-378d-6d94-da5cc6be5210@suse.de>
-Subject: Re: [PATCH v3 00/18] fbdev: Remove FBINFO_DEFAULT and
- FBINFO_FLAG_DEFAULT flags
-References: <20230714075155.5686-1-tzimmermann@suse.de>
- <CAMuHMdWoeyJPAgPgFi545SJFcaVCgZi1-zW2N5cBeU9BnHgo1w@mail.gmail.com>
- <47a3ab8d-5e8c-db2c-fcde-5c2b1bac32aa@suse.de>
- <b3c23ea3-f46c-43b9-b12a-9f55de2294c6@kadam.mountain>
-In-Reply-To: <b3c23ea3-f46c-43b9-b12a-9f55de2294c6@kadam.mountain>
+Two small fixes after commit c1ff7da03e16 ("video: backlight: lp855x:
+Get PWM for PWM mode during probe"), stemming from a review[1] by
+Uwe Kleine-König.
 
---------------Nh1ETrjj519EbQRvF1jjXvLz
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+[1] https://lore.kernel.org/all/20230614083953.e4kkweddjz7wztby@pengutronix.de/
 
-SGkNCg0KQW0gMTQuMDcuMjMgdW0gMTI6Mjkgc2NocmllYiBEYW4gQ2FycGVudGVyOg0KPiBP
-biBGcmksIEp1bCAxNCwgMjAyMyBhdCAxMjoyNDowNVBNICswMjAwLCBUaG9tYXMgWmltbWVy
-bWFubiB3cm90ZToNCj4+Pg0KPj4+PiAgICAgZmJkZXY6IFJlbW92ZSBmbGFnIEZCSU5GT19E
-RUZBVUxUIGZyb20gZmJkZXYgZHJpdmVycw0KPj4+PiAgICAgZmJkZXY6IFJlbW92ZSBmbGFn
-IEZCSU5GT19ERUZBVUxUIGZyb20gZmJkZXYgZHJpdmVycw0KPj4+PiAgICAgZmJkZXY6IFJl
-bW92ZSBmbGFnIEZCSU5GT19ERUZBVUxUIGZyb20gZmJkZXYgZHJpdmVycw0KPj4+PiAgICAg
-ZmJkZXY6IFJlbW92ZSBmbGFnIEZCSU5GT19ERUZBVUxUIGZyb20gZmJkZXYgZHJpdmVycw0K
-Pj4NCj4+DQo+PiBJIHdhc24ndCBoYXBweSBhYm91dCB0aGlzIGVpdGhlci4gQnV0IEkgY291
-bGQgbm90IGNvbWUgdXAgd2l0aCBhIGRlc2NyaXB0aW9uDQo+PiB0aGF0IGZpdHMgaW50byB0
-aGUgNzQtY2hhciBsaW1pdCBmb3IgZWFjaCBjb21taXQuIFRoZXkgb25seSBkaWZmZXIgaW4g
-dGhlDQo+PiBtZXRob2Qgb2YgbWVtb3J5IGFsbG9jYXRpb24uIERvIHlvdSBoYXZlIGFueSBp
-ZGVhcz8NCj4gDQo+IGZiZGV2OiBSZW1vdmUgRkJJTkZPX0RFRkFVTFQgZnJvbSBzdGF0aWMg
-c3RydWN0cw0KPiBmYmRldjogUmVtb3ZlIEZCSU5GT19ERUZBVUxUIGZyb20ga3phbGxvYygp
-IHN0cnVjdHMNCj4gZmJkZXY6IFJlbW92ZSBGQklORk9fREVGQVVMVCBmcm9tIGRldm1fa3ph
-bGxvYygpIHN0cnVjdHMNCg0KU291bmRzIGdvb2QsIEknbGwgdXNlIHRoYXQuIFRoYW5rcyEN
-Cg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiANCj4gcmVnYXJkcywNCj4gZGFuIGNhcnBl
-bnRlcg0KPiANCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERl
-dmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpGcmFua2Vu
-c3RyYXNzZSAxNDYsIDkwNDYxIE51ZXJuYmVyZywgR2VybWFueQ0KR0Y6IEl2byBUb3Rldiwg
-QW5kcmV3IE15ZXJzLCBBbmRyZXcgTWNEb25hbGQsIEJvdWRpZW4gTW9lcm1hbg0KSFJCIDM2
-ODA5IChBRyBOdWVybmJlcmcpDQo=
+Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
 
---------------Nh1ETrjj519EbQRvF1jjXvLz--
+Artur Weber (2):
+  backlight: lp855x: Initialize PWM state on first brightness change
+  backlight: lp855x: Catch errors when changing brightness
 
---------------vCsdIumFTGHoRkqMx9FMKvYN
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+ drivers/video/backlight/lp855x_bl.c | 33 +++++++++++++++++------------
+ 1 file changed, 20 insertions(+), 13 deletions(-)
 
------BEGIN PGP SIGNATURE-----
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmSxJ6YFAwAAAAAACgkQlh/E3EQov+Bc
-Ww//WC0tumM5S+EfD4Q3tfllL5EPhego1FSEQVXnQdTPZc8IN3W/NQ8i9WsQ6fo9LKFvVgpf95fb
-Kfd8xqKPvezuQuHVb2IAFP7ibxikAyWlb4WNOFJB4Ah0CMaPvo84TGqc1PsVTLxN4RjfxW1TIWo/
-tTSL1DLFkQcZyyf9Ob45Xhziifbry/gBRBLnFod84polfZ43cqBSY3/Hq2LjXpJCQTj9Hqr46qe6
-B48hMgAHnh80y+nol5nDEpssM51l6ZHeoHTjmyzfZRGqSKVPLWqIj+ptehPA119yW2bUvFILYbJy
-RbZitdzmNooqtDyQ+6Pz4UKvyYr0nROzPQSwNoOLXMl8RZ5THCdy0yS734X7KL5NoVH0CM7O7olG
-5tDK5ZzrMItI+Q1OZALGcEJ6T+gFPn+lIvE8EIeY0aFS+rrtSYA2ATXOjI08LVKAF9ATH7+RiDQX
-owVo7azYHBZshazZ1oYIzErxlpf1eBhF9c8I2+nL7uVgG4QtfFt/xIVifp/DOWfRdRNKgelVhi33
-a9bW51tp/GdqwqIdJ/QeLWUpbJT7kDVinHpA8PqYaTI3Z6TlWR1n+/2UN7pj2QE3YSwIwLBMdgv4
-ZD+RBXHdIo8W4ChCFELPyYjW9ixpmLgCNjta6dhBpYODkuM0XtTLdHmTqOkISlup+qdi9vk/9H8t
-Cbg=
-=ZWbe
------END PGP SIGNATURE-----
+base-commit: 7fcd473a6455450428795d20db7afd2691c92336
+-- 
+2.41.0
 
---------------vCsdIumFTGHoRkqMx9FMKvYN--

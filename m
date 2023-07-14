@@ -2,125 +2,115 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67B2AC001DE
-	for <linux-fbdev@archiver.kernel.org>; Thu, 13 Jul 2023 18:54:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13A02C0015E
+	for <linux-fbdev@archiver.kernel.org>; Fri, 14 Jul 2023 00:37:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232662AbjGMSyk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 13 Jul 2023 14:54:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49336 "EHLO
+        id S232666AbjGNAhz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 13 Jul 2023 20:37:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46770 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232744AbjGMSyg (ORCPT
+        with ESMTP id S231292AbjGNAhy (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 13 Jul 2023 14:54:36 -0400
-Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B41BE3589;
-        Thu, 13 Jul 2023 11:54:08 -0700 (PDT)
-Received: by mail-pj1-x102c.google.com with SMTP id 98e67ed59e1d1-262fa79e97fso524530a91.2;
-        Thu, 13 Jul 2023 11:54:08 -0700 (PDT)
+        Thu, 13 Jul 2023 20:37:54 -0400
+Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 574F5211C;
+        Thu, 13 Jul 2023 17:37:53 -0700 (PDT)
+Received: by mail-pf1-x433.google.com with SMTP id d2e1a72fcca58-6686a05bc66so1000299b3a.1;
+        Thu, 13 Jul 2023 17:37:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1689274437; x=1691866437;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:sender
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=S/Rh3N7Hpk2RvvFOi7xZjggtoYOkILDnWZuYI4DoA10=;
-        b=HW5cIj8f6UrrRKqCSEGCEMigQIuAtz5FZOoyenrcfjQXnkfk3x91KqAgmOfMu8rjb0
-         Ck7tu7PddO79GoM9qYGS7C5Xmp7NtD3l3Ns10x1+yAakLRUN0IwG4ffbzHFORM5JjEK7
-         XoqNvaQKUfKQuOFxG8WDYi3aM5Mwe7+AaPuBKK9Iih+Z8SC1e7KILlhVi9WuzfQdrHlp
-         tX9sJsE4pQET7vVqcOht85rsQOHTeT9LGfxwrSPrzw69KHgZP3dH4E01yzu5A0S6DWwQ
-         7EBTGYF8Cw5Pp86VOfuv5xYomnc9HKvK9VUJmyCveJoOvbxWORxNPPNzkQ1CVAsvt35m
-         O2XA==
+        d=gmail.com; s=20221208; t=1689295073; x=1691887073;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=CctAjUFV1xpereksxrBg0+mczOOOQo8Ume+knSAyNSA=;
+        b=lYJpcJRJb9SNL3nkgSZJixYh9SFl72yF1riPiYiU8ciraE3COWM1XxqEcRv2LXBGi4
+         wQx9jFsqpPNRfK1lPzrOVs3ut0a5jR8GlT/JvhNyeHGIewXMcfMxxWBFmDMyH1JjL8lU
+         lntJP6Y3pGlDGZo8MrpLf+8844EE+0JJdNCG3gGFfKMcuzrOqN39yFFpm3H7BWPQvkLG
+         FtWgm+EsPtlACRVy2WfZOPx/FzVJd4bazCeZjywlak2gDsY4yR+3FoIzmISFHqRYuv97
+         20/M90KLBiKKvcVVLCN7PbMnGsw6/NJwo211cglp84au5+sOuJd0izOZnPxTgQOHTl2w
+         AxkA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689274437; x=1691866437;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:sender
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=S/Rh3N7Hpk2RvvFOi7xZjggtoYOkILDnWZuYI4DoA10=;
-        b=Q4zGKmKl3FfJ0jQjeHwnZedqU36DzpOMEd8XvNjxrsiY+7JEl8jdnoyBngf0HMJXXq
-         l6Iz7U15V46irymToyX+50XyLH2Mo7rYjFPehEZnETASLIfi7nnktEodehKtKnC+cV/l
-         g4g9VSrfvT30crZwf/ynQZXHehufoQyhg2jh8kTRtEU7sld6RWQlCZEJqfmPALv0fD5R
-         CFNsDzr7AHlDY3XuGL4aVS5dFvK41qq2P8IzuZMHJ6Zq3xzF642J6/qOk9FgUAHSQHuy
-         eV2nDR9RBBdzl373mRmNwavfNbsoCW2Tkgx2EYU7dm23bS/FPJf1wAQF3A6bqdl1bvaO
-         IvNg==
-X-Gm-Message-State: ABy/qLbMADM/57V1QEUvcfMFHsF4+M5JYfbZa+GtQBGr5HFEYNnizQUO
-        nC7oVVsw9CN0x6LIaCJHqvs=
-X-Google-Smtp-Source: APBJJlH+ZBRMwsng5OvfXU8dbB3Xd4jXwQ7bYsHQHvrkPh/St/88lWUsQjEONL/kaZAV4BM6m8npqA==
-X-Received: by 2002:a17:90a:43c3:b0:260:d8c0:ae79 with SMTP id r61-20020a17090a43c300b00260d8c0ae79mr1339393pjg.35.1689274436784;
-        Thu, 13 Jul 2023 11:53:56 -0700 (PDT)
-Received: from localhost (dhcp-72-235-13-41.hawaiiantel.net. [72.235.13.41])
-        by smtp.gmail.com with ESMTPSA id d13-20020a17090a2a4d00b00262eccfa29fsm13036699pjg.33.2023.07.13.11.53.56
+        d=1e100.net; s=20221208; t=1689295073; x=1691887073;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=CctAjUFV1xpereksxrBg0+mczOOOQo8Ume+knSAyNSA=;
+        b=B2Hu91nY/EVUW+pddPSyWJ2MVTA0fey6FuhoLsDkUVubmyrMFNHeQPejVVtrC4zFfo
+         /TAgp/falK+V9pOI8tlnHQlU8amOP8HXWlejGkWpVvHVslceNXdPbBw2jqGehywMb2CO
+         IpReQ8qc612wGbtWNTCUXhK8PXarog3SngLOwuZs3GcR3Y8CzrSBOs3gRokY6R+WMqCu
+         zYWchLuzDAUq19ctiEry6bgr6fl5Bf7XTvwZs9sq3m1yAX6AyYPi5mA7GPgcrKSCadWo
+         m2WSmrJI2UG8NkmkpUwwzYdlWeSX0UUDsZUYMCuzvTq5k+9T5oIOXwK+4cQkNBlkZNLY
+         g8zg==
+X-Gm-Message-State: ABy/qLaRuONLonZZPwpYsNgcZlUjVHoIBzilZDEYVn94qWwbGB++ZRZ6
+        8ASfAPLIv7k1pJUEdwCMXWCS0NfU/dg=
+X-Google-Smtp-Source: APBJJlEiHiaptAXuvtXrlZ6sVYZbgFP0Qaahhb0xY+3xGXgYFbidFVi2AxUIRJJ595Diplb5DXLQVA==
+X-Received: by 2002:a05:6a00:2492:b0:64d:5b4b:8429 with SMTP id c18-20020a056a00249200b0064d5b4b8429mr3305331pfv.18.1689295072299;
+        Thu, 13 Jul 2023 17:37:52 -0700 (PDT)
+Received: from ubuntu777.domain.name (36-228-70-13.dynamic-ip.hinet.net. [36.228.70.13])
+        by smtp.gmail.com with ESMTPSA id s11-20020a62e70b000000b006825003a276sm5970384pfh.42.2023.07.13.17.37.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 13 Jul 2023 11:53:56 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date:   Thu, 13 Jul 2023 08:53:55 -1000
-From:   Tejun Heo <tj@kernel.org>
-To:     Peter Zijlstra <peterz@infradead.org>
-Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Lai Jiangshan <jiangshanlai@gmail.com>,
-        "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        kernel-team@meta.com, Linux PM list <linux-pm@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        linux-rtc@vger.kernel.org,
-        linux-riscv <linux-riscv@lists.infradead.org>,
-        netdev <netdev@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux MMC List <linux-mmc@vger.kernel.org>,
-        "open list:LIBATA SUBSYSTEM (Serial and Parallel ATA drivers)" 
-        <linux-ide@vger.kernel.org>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>
-Subject: Re: Consider switching to WQ_UNBOUND messages (was: Re: [PATCH v2
- 6/7] workqueue: Report work funcs that trigger automatic CPU_INTENSIVE
- mechanism)
-Message-ID: <ZLBIQ550U-PhkuKJ@slm.duckdns.org>
-References: <20230511181931.869812-1-tj@kernel.org>
- <20230511181931.869812-7-tj@kernel.org>
- <ZF6WsSVGX3O1d0pL@slm.duckdns.org>
- <CAMuHMdVCQmh6V182q4g---jvsWiTOP2hBPZKvma6oUN6535LEg@mail.gmail.com>
- <CAMuHMdW1kxZ1RHKTRVRqDNAbj1Df2=v0fPn5KYK3kfX_kiXR6A@mail.gmail.com>
- <ZK3MBfPS-3-tJgjO@slm.duckdns.org>
- <20230712080504.GA3100107@hirez.programming.kicks-ass.net>
- <CAMuHMdUMRS9_nJXp3rrWQrODRQcBQggze0k=0GjSScCknFmmgQ@mail.gmail.com>
- <20230712122745.GH3100107@hirez.programming.kicks-ass.net>
+        Thu, 13 Jul 2023 17:37:51 -0700 (PDT)
+From:   Min-Hua Chen <minhuadotchen@gmail.com>
+To:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>
+Cc:     Min-Hua Chen <minhuadotchen@gmail.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] fbdev: fbmem: mark registered_fb static
+Date:   Fri, 14 Jul 2023 08:37:46 +0800
+Message-Id: <20230714003748.91129-1-minhuadotchen@gmail.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230712122745.GH3100107@hirez.programming.kicks-ass.net>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Jul 12, 2023 at 02:27:45PM +0200, Peter Zijlstra wrote:
-> On Wed, Jul 12, 2023 at 11:04:16AM +0200, Geert Uytterhoeven wrote:
-> > Hoi Peter,
-> > 
-> > On Wed, Jul 12, 2023 at 10:05 AM Peter Zijlstra <peterz@infradead.org> wrote:
-> > > On Tue, Jul 11, 2023 at 11:39:17AM -1000, Tejun Heo wrote:
-> > > > I wonder whether the right thing to do here is somehow scaling the threshold
-> > > > according to the relative processing power. It's difficult to come up with a
-> > > > threshold which works well across the latest & fastest and really tiny CPUs.
-> > > > I'll think about it some more but if you have some ideas, please feel free
-> > > > to suggest.
-> > >
-> > > We could scale by BogoMIPS I suppose, it's a bogus measurement, as per
-> > > the name, but it does have some relation to how fast the machine is.
-> > 
-> > That's gonna fail miserably on e.g. ARM and RISC-V, where BogoMIPS
-> > depends on some timer frequency.
-> > 
-> > R-Car M2-W with 1.5 GHz Cortex-A15: 40.00 BogoMIPS
-> > R-Car V4H with 1.8 GHz Cortex-A76: 33.33 BogoMIPS
-> > 
-> > while the real slow 48 MHz VexRiscV gets 128 BogoMIPS.
-> 
-> Hehe, OK, really bogus then. Lets file this idea in the bit-bucket then.
+Mark registered_fb, num_registered_fb, fbcon_registered_fb, and
+fbcon_num_registered_fb static to fix the following sparse
+warnings:
 
-I think it can still be useful. On ryzen 3975wx, it's 6989.92, so while it
-may be off by some hundreds of percents, there are still orders of magnitude
-signal range and that should be enough to suppress most spurious warnings.
-I'll post something later today.
+drivers/video/fbdev/core/fbmem.c:51:16: sparse: warning: symbol 'registered_fb' was not declared. Should it be static?
+drivers/video/fbdev/core/fbmem.c:52:5: sparse: warning: symbol 'num_registered_fb' was not declared. Should it be static?
+drivers/video/fbdev/core/fbcon.c:105:16: sparse: warning: symbol 'fbcon_registered_fb' was not declared. Should it be static?
+drivers/video/fbdev/core/fbcon.c:106:5: sparse: warning: symbol 'fbcon_num_registered_fb' was not declared. Should it be static?
 
-Thanks.
+No functional change intended.
 
+Signed-off-by: Min-Hua Chen <minhuadotchen@gmail.com>
+---
+ drivers/video/fbdev/core/fbcon.c | 4 ++--
+ drivers/video/fbdev/core/fbmem.c | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index c6c9d040bdec..4336c7d64ed0 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -102,8 +102,8 @@ enum {
+ 
+ static struct fbcon_display fb_display[MAX_NR_CONSOLES];
+ 
+-struct fb_info *fbcon_registered_fb[FB_MAX];
+-int fbcon_num_registered_fb;
++static struct fb_info *fbcon_registered_fb[FB_MAX];
++static int fbcon_num_registered_fb;
+ 
+ #define fbcon_for_each_registered_fb(i)		\
+ 	for (i = 0; WARN_CONSOLE_UNLOCKED(), i < FB_MAX; i++)		\
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 329d16e49a90..18355655959a 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -48,8 +48,8 @@
+ 
+ static DEFINE_MUTEX(registration_lock);
+ 
+-struct fb_info *registered_fb[FB_MAX] __read_mostly;
+-int num_registered_fb __read_mostly;
++static struct fb_info *registered_fb[FB_MAX] __read_mostly;
++static int num_registered_fb __read_mostly;
+ #define for_each_registered_fb(i)		\
+ 	for (i = 0; i < FB_MAX; i++)		\
+ 		if (!registered_fb[i]) {} else
 -- 
-tejun
+2.34.1
+

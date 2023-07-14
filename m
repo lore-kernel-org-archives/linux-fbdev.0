@@ -2,377 +2,104 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D6AAC001DC
-	for <linux-fbdev@archiver.kernel.org>; Fri, 14 Jul 2023 17:59:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D4FFEB64DC
+	for <linux-fbdev@archiver.kernel.org>; Fri, 14 Jul 2023 20:46:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236016AbjGNR66 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 14 Jul 2023 13:58:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45284 "EHLO
+        id S235900AbjGNUqL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 14 Jul 2023 16:46:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37942 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236876AbjGNR6O (ORCPT
+        with ESMTP id S229915AbjGNUqL (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 14 Jul 2023 13:58:14 -0400
-Received: from mail-io1-xd32.google.com (mail-io1-xd32.google.com [IPv6:2607:f8b0:4864:20::d32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A58DE1BD4;
-        Fri, 14 Jul 2023 10:57:49 -0700 (PDT)
-Received: by mail-io1-xd32.google.com with SMTP id ca18e2360f4ac-78666994bc2so90382239f.0;
-        Fri, 14 Jul 2023 10:57:49 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689357086; x=1691949086;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=tsm18Z/x+l+oB943/XiV2kuKPcdxzHAhIxFuPRhImLE=;
-        b=QBNZsBu9hmnVp2P8ZWjG65b36gOrlcvmphn+vlGf53MGz1d1zVu/FnMmOQPmEEMZIS
-         VelPW3OGf/jyOXAHGhjvoLd2Z7J+vjclo0M8x6C6Uz838DRAPQAkVrgfM9+G6kgQGPNB
-         6sjFDUSrDrl2XAWoV7Qgj0jCkJOQqn+mdxWplk2qCi67/CanLwOg94S6P4LdSFsJEpJX
-         TKPocKSkySBOfWCbozP5sX8lzKS8WO7A7y7b1ZDRJvXrnG4vBIYFc/oRnSR4IiallSFC
-         HYP5IYbVjLYAkawgnP5oT2r2GoDdf42ggJU/Xs90tHcUy3U8nSQvCtotURhhyZXIJ1yW
-         yCxQ==
-X-Gm-Message-State: ABy/qLbcmawuDItYenG9WlG2HLg0mgN+S7mQ4KDa6EDTHuvwnjHFKoJQ
-        OakQkhlVSz2OXxmjoGCoTw==
-X-Google-Smtp-Source: APBJJlEBjHZ93+83bg5vG9zxP+ye50/ZV4Ps/NTZz7ryBzH4IRLL0LhGABVbLueVX73r4x7dl56wHQ==
-X-Received: by 2002:a5e:a916:0:b0:785:fbe8:1da0 with SMTP id c22-20020a5ea916000000b00785fbe81da0mr5454406iod.15.1689357086619;
-        Fri, 14 Jul 2023 10:51:26 -0700 (PDT)
-Received: from robh_at_kernel.org ([64.188.179.250])
-        by smtp.gmail.com with ESMTPSA id dm26-20020a0566023b9a00b0077a1d1029fcsm2850098iob.28.2023.07.14.10.51.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 14 Jul 2023 10:51:25 -0700 (PDT)
-Received: (nullmailer pid 4065617 invoked by uid 1000);
-        Fri, 14 Jul 2023 17:50:38 -0000
-From:   Rob Herring <robh@kernel.org>
-To:     Helge Deller <deller@gmx.de>, Michal Simek <michal.simek@amd.com>
-Cc:     devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH] fb: Explicitly include correct DT includes
-Date:   Fri, 14 Jul 2023 11:50:34 -0600
-Message-Id: <20230714175035.4065508-1-robh@kernel.org>
-X-Mailer: git-send-email 2.40.1
+        Fri, 14 Jul 2023 16:46:11 -0400
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 87794E74;
+        Fri, 14 Jul 2023 13:46:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        Content-Type:In-Reply-To:References:Cc:To:From:Subject:MIME-Version:Date:
+        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+        bh=le4ybvADpoYVkHD+wIYkLE44RuLGjbiyDDb/dPUwbJ8=; b=IeSTTdmTC0OYlvGidk/UM7TNvs
+        g/ksr0YT5pvH452fhQsbd4LNcth/0gyQ4q2L3ZOd/+O1udHExOkymIG0IlCv5a1Amp0T6opzoRZo2
+        y2yDDoVdYxrd0LPEIRc2MmTFf7wKtwdn6LVtWWNn1VRgodu/IYWKZZQDzqa3F1+yaKhlMi/t/c6xZ
+        qa1SkD2pQxszgtX2hyX1oreUOyYAAn85eczfppFx72acjt+3DZKZc3EtV0Vaxa0zitS/Di5xt1Xw0
+        kUB1X9ap4dAcRx6qdOyFsrYdIwngMLAnKQt6gpsOcIxBLqjIqkuAcHyo33h6BXPBG3yBEhC0eMcjr
+        e+hkVbYg==;
+Received: from [2601:1c2:980:9ec0::2764]
+        by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1qKPfz-007DXO-2O;
+        Fri, 14 Jul 2023 20:46:07 +0000
+Message-ID: <72cdbfa2-28f0-19e9-8601-d9611da9410e@infradead.org>
+Date:   Fri, 14 Jul 2023 13:46:06 -0700
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.12.0
+Subject: Re: linux-next: Tree for Jul 13 (drivers/video/fbdev/ps3fb.c)
+Content-Language: en-US
+From:   Randy Dunlap <rdunlap@infradead.org>
+To:     Stephen Rothwell <sfr@canb.auug.org.au>,
+        Linux Next Mailing List <linux-next@vger.kernel.org>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Helge Deller <deller@gmx.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        linux-fbdev@vger.kernel.org,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <20230713123710.5d7d81e4@canb.auug.org.au>
+ <ccc63065-2976-88ef-1211-731330bf2866@infradead.org>
+In-Reply-To: <ccc63065-2976-88ef-1211-731330bf2866@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The DT of_device.h and of_platform.h date back to the separate
-of_platform_bus_type before it as merged into the regular platform bus.
-As part of that merge prepping Arm DT support 13 years ago, they
-"temporarily" include each other. They also include platform_device.h
-and of.h. As a result, there's a pretty much random mix of those include
-files used throughout the tree. In order to detangle these headers and
-replace the implicit includes with struct declarations, users need to
-explicitly include the correct includes.
+Thomas,
 
-Signed-off-by: Rob Herring <robh@kernel.org>
----
- drivers/video/fbdev/bw2.c                                | 3 ++-
- drivers/video/fbdev/cg14.c                               | 3 ++-
- drivers/video/fbdev/cg3.c                                | 3 ++-
- drivers/video/fbdev/cg6.c                                | 3 ++-
- drivers/video/fbdev/ffb.c                                | 3 ++-
- drivers/video/fbdev/grvga.c                              | 3 +--
- drivers/video/fbdev/leo.c                                | 3 ++-
- drivers/video/fbdev/mb862xx/mb862xxfb_accel.c            | 4 +---
- drivers/video/fbdev/mb862xx/mb862xxfbdrv.c               | 6 +++---
- drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c | 2 +-
- drivers/video/fbdev/p9100.c                              | 3 ++-
- drivers/video/fbdev/platinumfb.c                         | 4 ++--
- drivers/video/fbdev/sbuslib.c                            | 6 +++---
- drivers/video/fbdev/sunxvr1000.c                         | 3 ++-
- drivers/video/fbdev/sunxvr2500.c                         | 2 +-
- drivers/video/fbdev/sunxvr500.c                          | 2 +-
- drivers/video/fbdev/tcx.c                                | 3 ++-
- drivers/video/fbdev/xilinxfb.c                           | 5 ++---
- 18 files changed, 33 insertions(+), 28 deletions(-)
+On 7/13/23 09:11, Randy Dunlap wrote:
+> 
+> 
+> On 7/12/23 19:37, Stephen Rothwell wrote:
+>> Hi all,
+>>
 
-diff --git a/drivers/video/fbdev/bw2.c b/drivers/video/fbdev/bw2.c
-index 025d663dc6fd..39f438de0d6b 100644
---- a/drivers/video/fbdev/bw2.c
-+++ b/drivers/video/fbdev/bw2.c
-@@ -17,7 +17,8 @@
- #include <linux/init.h>
- #include <linux/fb.h>
- #include <linux/mm.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/io.h>
- #include <asm/fbio.h>
-diff --git a/drivers/video/fbdev/cg14.c b/drivers/video/fbdev/cg14.c
-index 832a82f45c80..90fdc9d9bf5a 100644
---- a/drivers/video/fbdev/cg14.c
-+++ b/drivers/video/fbdev/cg14.c
-@@ -17,7 +17,8 @@
- #include <linux/fb.h>
- #include <linux/mm.h>
- #include <linux/uaccess.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/io.h>
- #include <asm/fbio.h>
-diff --git a/drivers/video/fbdev/cg3.c b/drivers/video/fbdev/cg3.c
-index 6335cd364c74..98c60f72046a 100644
---- a/drivers/video/fbdev/cg3.c
-+++ b/drivers/video/fbdev/cg3.c
-@@ -17,7 +17,8 @@
- #include <linux/init.h>
- #include <linux/fb.h>
- #include <linux/mm.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/io.h>
- #include <asm/fbio.h>
-diff --git a/drivers/video/fbdev/cg6.c b/drivers/video/fbdev/cg6.c
-index 6884572efea1..6427b85f1a94 100644
---- a/drivers/video/fbdev/cg6.c
-+++ b/drivers/video/fbdev/cg6.c
-@@ -17,7 +17,8 @@
- #include <linux/init.h>
- #include <linux/fb.h>
- #include <linux/mm.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/io.h>
- #include <asm/fbio.h>
-diff --git a/drivers/video/fbdev/ffb.c b/drivers/video/fbdev/ffb.c
-index c6d3111dcbb0..c473841eb6ff 100644
---- a/drivers/video/fbdev/ffb.c
-+++ b/drivers/video/fbdev/ffb.c
-@@ -16,7 +16,8 @@
- #include <linux/fb.h>
- #include <linux/mm.h>
- #include <linux/timer.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/io.h>
- #include <asm/upa.h>
-diff --git a/drivers/video/fbdev/grvga.c b/drivers/video/fbdev/grvga.c
-index 9aa15be29ea9..d4a9a58b3691 100644
---- a/drivers/video/fbdev/grvga.c
-+++ b/drivers/video/fbdev/grvga.c
-@@ -12,8 +12,7 @@
- 
- #include <linux/platform_device.h>
- #include <linux/dma-mapping.h>
--#include <linux/of_platform.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/string.h>
-diff --git a/drivers/video/fbdev/leo.c b/drivers/video/fbdev/leo.c
-index 3ffc0a725f89..89ca48235dbe 100644
---- a/drivers/video/fbdev/leo.c
-+++ b/drivers/video/fbdev/leo.c
-@@ -16,8 +16,9 @@
- #include <linux/init.h>
- #include <linux/fb.h>
- #include <linux/mm.h>
--#include <linux/of_device.h>
- #include <linux/io.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/fbio.h>
- 
-diff --git a/drivers/video/fbdev/mb862xx/mb862xxfb_accel.c b/drivers/video/fbdev/mb862xx/mb862xxfb_accel.c
-index 61aed7fc0b8d..c35a7479fbf2 100644
---- a/drivers/video/fbdev/mb862xx/mb862xxfb_accel.c
-+++ b/drivers/video/fbdev/mb862xx/mb862xxfb_accel.c
-@@ -15,9 +15,7 @@
- #include <linux/module.h>
- #include <linux/pci.h>
- #include <linux/slab.h>
--#if defined(CONFIG_OF)
--#include <linux/of_platform.h>
--#endif
-+
- #include "mb862xxfb.h"
- #include "mb862xx_reg.h"
- #include "mb862xxfb_accel.h"
-diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-index b5c8fcab9940..9dc347d163cf 100644
---- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-+++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-@@ -18,11 +18,11 @@
- #include <linux/init.h>
- #include <linux/interrupt.h>
- #include <linux/pci.h>
--#if defined(CONFIG_OF)
-+#include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/of_irq.h>
--#include <linux/of_platform.h>
--#endif
-+#include <linux/platform_device.h>
-+
- #include "mb862xxfb.h"
- #include "mb862xx_reg.h"
- 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-index ba94a0a7bd4f..77fce1223a64 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-@@ -15,12 +15,12 @@
- #include <linux/gpio/consumer.h>
- #include <linux/interrupt.h>
- #include <linux/jiffies.h>
-+#include <linux/mod_devicetable.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/sched/signal.h>
- #include <linux/slab.h>
- #include <linux/workqueue.h>
--#include <linux/of_device.h>
- 
- #include <video/omapfb_dss.h>
- #include <video/mipi_display.h>
-diff --git a/drivers/video/fbdev/p9100.c b/drivers/video/fbdev/p9100.c
-index 0876962c52eb..e2e747cae9b1 100644
---- a/drivers/video/fbdev/p9100.c
-+++ b/drivers/video/fbdev/p9100.c
-@@ -15,7 +15,8 @@
- #include <linux/init.h>
- #include <linux/fb.h>
- #include <linux/mm.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/io.h>
- #include <asm/fbio.h>
-diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
-index f8283fcd5edb..b27f43b3616e 100644
---- a/drivers/video/fbdev/platinumfb.c
-+++ b/drivers/video/fbdev/platinumfb.c
-@@ -30,9 +30,9 @@
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/nvram.h>
-+#include <linux/of.h>
- #include <linux/of_address.h>
--#include <linux/of_device.h>
--#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
- 
- #include "macmodes.h"
- #include "platinumfb.h"
-diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
-index 7f79db827b07..4d524db5c4f2 100644
---- a/drivers/video/fbdev/sbuslib.c
-+++ b/drivers/video/fbdev/sbuslib.c
-@@ -11,7 +11,7 @@
- #include <linux/fb.h>
- #include <linux/mm.h>
- #include <linux/uaccess.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
- 
- #include <asm/fbio.h>
- 
-@@ -48,7 +48,7 @@ int sbusfb_mmap_helper(struct sbus_mmap_map *map,
- 	unsigned long map_offset = 0;
- 	unsigned long off;
- 	int i;
--                                        
-+
- 	if (!(vma->vm_flags & (VM_SHARED | VM_MAYSHARE)))
- 		return -EINVAL;
- 
-@@ -72,7 +72,7 @@ int sbusfb_mmap_helper(struct sbus_mmap_map *map,
- #define POFF_MASK	(PAGE_MASK|0x1UL)
- #else
- #define POFF_MASK	(PAGE_MASK)
--#endif				
-+#endif
- 				map_offset = (physbase + map[i].poff) & POFF_MASK;
- 				break;
- 			}
-diff --git a/drivers/video/fbdev/sunxvr1000.c b/drivers/video/fbdev/sunxvr1000.c
-index 490bd9a14763..17d61e1d11a6 100644
---- a/drivers/video/fbdev/sunxvr1000.c
-+++ b/drivers/video/fbdev/sunxvr1000.c
-@@ -8,7 +8,8 @@
- #include <linux/kernel.h>
- #include <linux/fb.h>
- #include <linux/init.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
- 
- struct gfb_info {
- 	struct fb_info		*info;
-diff --git a/drivers/video/fbdev/sunxvr2500.c b/drivers/video/fbdev/sunxvr2500.c
-index 2cab4b9be68a..e64ec7d0caf9 100644
---- a/drivers/video/fbdev/sunxvr2500.c
-+++ b/drivers/video/fbdev/sunxvr2500.c
-@@ -10,7 +10,7 @@
- #include <linux/fb.h>
- #include <linux/pci.h>
- #include <linux/init.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
- 
- #include <asm/io.h>
- 
-diff --git a/drivers/video/fbdev/sunxvr500.c b/drivers/video/fbdev/sunxvr500.c
-index 6ec358af1256..c4e01e871483 100644
---- a/drivers/video/fbdev/sunxvr500.c
-+++ b/drivers/video/fbdev/sunxvr500.c
-@@ -10,7 +10,7 @@
- #include <linux/fb.h>
- #include <linux/pci.h>
- #include <linux/init.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
- 
- #include <asm/io.h>
- 
-diff --git a/drivers/video/fbdev/tcx.c b/drivers/video/fbdev/tcx.c
-index fc3ac2301b45..255eb57aefa2 100644
---- a/drivers/video/fbdev/tcx.c
-+++ b/drivers/video/fbdev/tcx.c
-@@ -17,7 +17,8 @@
- #include <linux/init.h>
- #include <linux/fb.h>
- #include <linux/mm.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/io.h>
- #include <asm/fbio.h>
-diff --git a/drivers/video/fbdev/xilinxfb.c b/drivers/video/fbdev/xilinxfb.c
-index 2aa3a528277f..542baddd54ad 100644
---- a/drivers/video/fbdev/xilinxfb.c
-+++ b/drivers/video/fbdev/xilinxfb.c
-@@ -24,14 +24,13 @@
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-+#include <linux/platform_device.h>
- #include <linux/string.h>
- #include <linux/mm.h>
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/dma-mapping.h>
--#include <linux/of_device.h>
--#include <linux/of_platform.h>
--#include <linux/of_address.h>
-+#include <linux/of.h>
- #include <linux/io.h>
- #include <linux/slab.h>
- 
+I still see this build error on linux-next  20230714.
+
+>> Changes since 20230712:
+>>
+> 
+> on ppc64:
+> 
+> In file included from ../include/linux/device.h:15,
+>                  from ../arch/powerpc/include/asm/io.h:22,
+>                  from ../include/linux/io.h:13,
+>                  from ../include/linux/irq.h:20,
+>                  from ../arch/powerpc/include/asm/hardirq.h:6,
+>                  from ../include/linux/hardirq.h:11,
+>                  from ../include/linux/interrupt.h:11,
+>                  from ../drivers/video/fbdev/ps3fb.c:25:
+> ../drivers/video/fbdev/ps3fb.c: In function 'ps3fb_probe':
+> ../drivers/video/fbdev/ps3fb.c:1172:40: error: 'struct fb_info' has no member named 'dev'
+>  1172 |                  dev_driver_string(info->dev), dev_name(info->dev),
+>       |                                        ^~
+> ../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
+>   110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
+>       |                                     ^~~~~~~~~~~
+> ../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
+>  1171 |         dev_info(info->device, "%s %s, using %u KiB of video memory\n",
+>       |         ^~~~~~~~
+> ../drivers/video/fbdev/ps3fb.c:1172:61: error: 'struct fb_info' has no member named 'dev'
+>  1172 |                  dev_driver_string(info->dev), dev_name(info->dev),
+>       |                                                             ^~
+> ../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
+>   110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
+>       |                                     ^~~~~~~~~~~
+> ../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
+>  1171 |         dev_info(info->device, "%s %s, using %u KiB of video memory\n",
+>       |         ^~~~~~~~
+> 
+> 
+> Full randconfig file is attached.
+
 -- 
-2.40.1
-
+~Randy

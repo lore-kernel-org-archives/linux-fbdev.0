@@ -2,89 +2,190 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7797EB64DC
-	for <linux-fbdev@archiver.kernel.org>; Sat, 15 Jul 2023 08:23:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F3A1C0015E
+	for <linux-fbdev@archiver.kernel.org>; Sat, 15 Jul 2023 18:34:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229506AbjGOIXQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 15 Jul 2023 04:23:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42994 "EHLO
+        id S230308AbjGOSeN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 15 Jul 2023 14:34:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46694 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229436AbjGOIXP (ORCPT
+        with ESMTP id S229500AbjGOSeM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 15 Jul 2023 04:23:15 -0400
-X-Greylist: delayed 372 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Sat, 15 Jul 2023 01:23:13 PDT
-Received: from out203-205-221-221.mail.qq.com (out203-205-221-221.mail.qq.com [203.205.221.221])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6011D3A8E
-        for <linux-fbdev@vger.kernel.org>; Sat, 15 Jul 2023 01:23:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foxmail.com;
-        s=s201512; t=1689409389;
-        bh=IYNA/T8SwiQPcz1b4CrLywjEfP8ocEm4NvLV8lNv8kw=;
-        h=From:To:Cc:Subject:Date;
-        b=yO3RE6V16tn8BSs2mn1dzq0ZAWKj8TYwoZ+3yK647pwmkyLqKWs0HtnbbyezfpqEm
-         liKad+QXeEFHJS1vnOKuYF6UiI062UU/FcLcnynKbZvQXWKG0O1iZDlMbX73mydLlU
-         WjlEO4zKMAG68t4ixmdbNjT0eMFqgdlxoWEjdEes=
-Received: from KernelDevBox.byted.org ([180.184.51.40])
-        by newxmesmtplogicsvrsza10-0.qq.com (NewEsmtp) with SMTP
-        id 4391A0B9; Sat, 15 Jul 2023 16:16:57 +0800
-X-QQ-mid: xmsmtpt1689409017twy3nsj2q
-Message-ID: <tencent_DB7525706E9A6B13B7E6C1C43C36145A5009@qq.com>
-X-QQ-XMAILINFO: MRhkIe3mT0C6m1ATvlVQLha9jUu1RBv3lzuVv1YxAOKDB3WzREnvbushfWNJ4e
-         TPizoQAkpPBgxOsIBCf1fJG9we38ZE0kvpkyObiG9DDQZJ+S/tRdcDNMJUn3ivMKfkSeGGJCd9Ep
-         aOP52SiMeeYENmT8QbcdNN2wPIWxfdKryjv+29RPGpkVgv3hcoZ15umTZBE3iQMZOMVm09IEWv6j
-         qj+tHb/0w6w0gPkbCbtEQv6xEBGtwDz4/0kMTvkhKyRAuDFnNaeqGz0ufSB3MLl3/sWHCTX/3Uu0
-         IxW58m+Nch/pnUJDTGkzmDWDRIsNyPaJnZTnB8NO62aF0juZtNe+8+yVCs6TdPM/rGmbQ7Rh6vdL
-         eTlj/7dCNVoi40r77ojn1DClMGlrda1uYoOpkYK3h3LU46B7TYro9kS3TpGBjCaNP40akCSmtqL2
-         Mswu/kozly/H34ojBu1OEoO1pmlvfabOXsrX2HygpqSapV3f3w+KtprXJXuUDCzI+wOBZ90Mjfs9
-         +p9kNMzJDLw5ptzsz7jpv6316AwOwA3ORm9oICVgMZx2+WnqH9qDRePh19RCaBMgtkQFrWKl7oJ9
-         2bbx77sMkZe0sFVs3HtfwtpYlg1tMUE2i2ekWgaeS7l4D5YfkjoMUDh5uWkUDZcMTw5tYr4Rv/n1
-         LZyZdfSACCvqfDPNCpdA/NuHNInwOU9HJyppB6SOXYhiPR3cH45lAZ5Lrua7i6qzctcEEKxcDR8r
-         8VjhKVWm3P5Yf0ScRmg0jHrG2oebD3WrPe+S4cYTx99lFb9g0lYb0DyYtGYTa9vbFDOKbuiC07BL
-         DI3tFvfuYn3WJOGdexsKemvDBJx3OT8CSD1VBQcKavH0+4F0tdGU1jykxEMslNrfFFx6pEEoiirZ
-         ypOIfSBZgaQxkQuVE+/DAoTU+rexlAl3lZ6GhdX8bESitcRiU3q8TCvmNzK7FpxjyfTaazn0O7cH
-         rMt6jxwjwpx1tZcomNVPgy+DQp7JoD/KQNO9TSG+cw9XZiI5jJs1TeNrciFOGJ2aO2nRmrL+NHM2
-         OsFI/ZSA==
-X-QQ-XMRINFO: OD9hHCdaPRBwq3WW+NvGbIU=
-From:   Zhang Shurong <zhang_shurong@foxmail.com>
-To:     deller@gmx.de
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org,
-        Zhang Shurong <zhang_shurong@foxmail.com>
-Subject: [PATCH] fbdev: au1200fb: Fix missing IRQ check in au1200fb_drv_probe
-Date:   Sat, 15 Jul 2023 16:16:56 +0800
-X-OQ-MSGID: <20230715081656.1266601-1-zhang_shurong@foxmail.com>
-X-Mailer: git-send-email 2.30.2
+        Sat, 15 Jul 2023 14:34:12 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B2DE22702;
+        Sat, 15 Jul 2023 11:34:10 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 2CA3321A71;
+        Sat, 15 Jul 2023 18:34:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1689446049; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=RYeCd7HoR8uEw1k7ZVr0OZS9nvGsn4cIaqKR0z4Onsc=;
+        b=fQJ8Ed37zO2h2xpVGJHgeXgbFlMYWZiQyR2E1Vj6U9o3crxeMk6Dolw/GHlDs3gCiDCgEg
+        XjM6dYEHOsZpNig4WvurwGD2dKKAXItEsx1ugA2u1eeSyvSjJgOSdhbKIZ2/Z56MXGxR1q
+        r2BHnxcno8Eubp53rXNArviIQXb9i5I=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1689446049;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=RYeCd7HoR8uEw1k7ZVr0OZS9nvGsn4cIaqKR0z4Onsc=;
+        b=yP408vg2SsLg1wW8YSLEtC9aqf9lJsv3y5D2L3sOOFaAgOiRrUy+nW21jIkbG7JG9RUM9X
+        Yua0AAwib+ee/1Dg==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id E3F5D133F7;
+        Sat, 15 Jul 2023 18:34:08 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id HExLNqDmsmQlfwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Sat, 15 Jul 2023 18:34:08 +0000
+Message-ID: <317a9fd8-0ae9-daa0-012b-3908ca248b74@suse.de>
+Date:   Sat, 15 Jul 2023 20:34:08 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.12.0
+Subject: Re: [PATCH] fb: Explicitly include correct DT includes
+To:     Rob Herring <robh@kernel.org>, Helge Deller <deller@gmx.de>,
+        Michal Simek <michal.simek@amd.com>
+Cc:     devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+References: <20230714175035.4065508-1-robh@kernel.org>
+Content-Language: en-US
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20230714175035.4065508-1-robh@kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------fKlGCpVLu7rfpmAw9xHrErQE"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This func misses checking for platform_get_irq()'s call and may passes the
-negative error codes to request_irq(), which takes unsigned IRQ #,
-causing it to fail with -EINVAL, overriding an original error code.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------fKlGCpVLu7rfpmAw9xHrErQE
+Content-Type: multipart/mixed; boundary="------------Aa0Mf3WyZj0EdxJytzy7LFbU";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Rob Herring <robh@kernel.org>, Helge Deller <deller@gmx.de>,
+ Michal Simek <michal.simek@amd.com>
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+ linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Message-ID: <317a9fd8-0ae9-daa0-012b-3908ca248b74@suse.de>
+Subject: Re: [PATCH] fb: Explicitly include correct DT includes
+References: <20230714175035.4065508-1-robh@kernel.org>
+In-Reply-To: <20230714175035.4065508-1-robh@kernel.org>
 
-Fix this by stop calling request_irq() with invalid IRQ #s.
+--------------Aa0Mf3WyZj0EdxJytzy7LFbU
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Fixes: 1630d85a8312 ("au1200fb: fix hardcoded IRQ")
-Signed-off-by: Zhang Shurong <zhang_shurong@foxmail.com>
----
- drivers/video/fbdev/au1200fb.c | 3 +++
- 1 file changed, 3 insertions(+)
+SGkNCg0KQW0gMTQuMDcuMjMgdW0gMTk6NTAgc2NocmllYiBSb2IgSGVycmluZzoNCj4gVGhl
+IERUIG9mX2RldmljZS5oIGFuZCBvZl9wbGF0Zm9ybS5oIGRhdGUgYmFjayB0byB0aGUgc2Vw
+YXJhdGUNCj4gb2ZfcGxhdGZvcm1fYnVzX3R5cGUgYmVmb3JlIGl0IGFzIG1lcmdlZCBpbnRv
+IHRoZSByZWd1bGFyIHBsYXRmb3JtIGJ1cy4NCj4gQXMgcGFydCBvZiB0aGF0IG1lcmdlIHBy
+ZXBwaW5nIEFybSBEVCBzdXBwb3J0IDEzIHllYXJzIGFnbywgdGhleQ0KPiAidGVtcG9yYXJp
+bHkiIGluY2x1ZGUgZWFjaCBvdGhlci4gVGhleSBhbHNvIGluY2x1ZGUgcGxhdGZvcm1fZGV2
+aWNlLmgNCj4gYW5kIG9mLmguIEFzIGEgcmVzdWx0LCB0aGVyZSdzIGEgcHJldHR5IG11Y2gg
+cmFuZG9tIG1peCBvZiB0aG9zZSBpbmNsdWRlDQo+IGZpbGVzIHVzZWQgdGhyb3VnaG91dCB0
+aGUgdHJlZS4gSW4gb3JkZXIgdG8gZGV0YW5nbGUgdGhlc2UgaGVhZGVycyBhbmQNCj4gcmVw
+bGFjZSB0aGUgaW1wbGljaXQgaW5jbHVkZXMgd2l0aCBzdHJ1Y3QgZGVjbGFyYXRpb25zLCB1
+c2VycyBuZWVkIHRvDQo+IGV4cGxpY2l0bHkgaW5jbHVkZSB0aGUgY29ycmVjdCBpbmNsdWRl
+cy4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IFJvYiBIZXJyaW5nIDxyb2JoQGtlcm5lbC5vcmc+
+DQpbLi4uXQ0KPiAgIA0KPiBAQCAtNDgsNyArNDgsNyBAQCBpbnQgc2J1c2ZiX21tYXBfaGVs
+cGVyKHN0cnVjdCBzYnVzX21tYXBfbWFwICptYXAsDQo+ICAgCXVuc2lnbmVkIGxvbmcgbWFw
+X29mZnNldCA9IDA7DQo+ICAgCXVuc2lnbmVkIGxvbmcgb2ZmOw0KPiAgIAlpbnQgaTsNCj4g
+LQ0KPiArDQoNClRoZSB2YXJpb3VzIHdoaXRlc3BhY2UgZml4ZXMgc2hvdWxkIHJhdGhlciBn
+byBpbnRvIGEgc2VwYXJhdGUgcGF0Y2guIFlvdSANCmNhbiBhZGQNCg0KUmV2aWV3ZWQtYnk6
+IFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPg0KDQp0byB0aGUgd2hp
+dGVzcGFjZSBmaXggYW5kIHRoZSBpbmNsdWRlIGNsZWFudXAuDQoNCkJlc3QgcmVnYXJkcw0K
+VGhvbWFzDQoNCj4gICAJaWYgKCEodm1hLT52bV9mbGFncyAmIChWTV9TSEFSRUQgfCBWTV9N
+QVlTSEFSRSkpKQ0KPiAgIAkJcmV0dXJuIC1FSU5WQUw7DQo+ICAgDQo+IEBAIC03Miw3ICs3
+Miw3IEBAIGludCBzYnVzZmJfbW1hcF9oZWxwZXIoc3RydWN0IHNidXNfbW1hcF9tYXAgKm1h
+cCwNCj4gICAjZGVmaW5lIFBPRkZfTUFTSwkoUEFHRV9NQVNLfDB4MVVMKQ0KPiAgICNlbHNl
+DQo+ICAgI2RlZmluZSBQT0ZGX01BU0sJKFBBR0VfTUFTSykNCj4gLSNlbmRpZgkJCQkNCj4g
+KyNlbmRpZg0KPiAgIAkJCQltYXBfb2Zmc2V0ID0gKHBoeXNiYXNlICsgbWFwW2ldLnBvZmYp
+ICYgUE9GRl9NQVNLOw0KPiAgIAkJCQlicmVhazsNCj4gICAJCQl9DQo+IGRpZmYgLS1naXQg
+YS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3N1bnh2cjEwMDAuYyBiL2RyaXZlcnMvdmlkZW8vZmJk
+ZXYvc3VueHZyMTAwMC5jDQo+IGluZGV4IDQ5MGJkOWExNDc2My4uMTdkNjFlMWQxMWE2IDEw
+MDY0NA0KPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3N1bnh2cjEwMDAuYw0KPiArKysg
+Yi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3N1bnh2cjEwMDAuYw0KPiBAQCAtOCw3ICs4LDggQEAN
+Cj4gICAjaW5jbHVkZSA8bGludXgva2VybmVsLmg+DQo+ICAgI2luY2x1ZGUgPGxpbnV4L2Zi
+Lmg+DQo+ICAgI2luY2x1ZGUgPGxpbnV4L2luaXQuaD4NCj4gLSNpbmNsdWRlIDxsaW51eC9v
+Zl9kZXZpY2UuaD4NCj4gKyNpbmNsdWRlIDxsaW51eC9vZi5oPg0KPiArI2luY2x1ZGUgPGxp
+bnV4L3BsYXRmb3JtX2RldmljZS5oPg0KPiAgIA0KPiAgIHN0cnVjdCBnZmJfaW5mbyB7DQo+
+ICAgCXN0cnVjdCBmYl9pbmZvCQkqaW5mbzsNCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlk
+ZW8vZmJkZXYvc3VueHZyMjUwMC5jIGIvZHJpdmVycy92aWRlby9mYmRldi9zdW54dnIyNTAw
+LmMNCj4gaW5kZXggMmNhYjRiOWJlNjhhLi5lNjRlYzdkMGNhZjkgMTAwNjQ0DQo+IC0tLSBh
+L2RyaXZlcnMvdmlkZW8vZmJkZXYvc3VueHZyMjUwMC5jDQo+ICsrKyBiL2RyaXZlcnMvdmlk
+ZW8vZmJkZXYvc3VueHZyMjUwMC5jDQo+IEBAIC0xMCw3ICsxMCw3IEBADQo+ICAgI2luY2x1
+ZGUgPGxpbnV4L2ZiLmg+DQo+ICAgI2luY2x1ZGUgPGxpbnV4L3BjaS5oPg0KPiAgICNpbmNs
+dWRlIDxsaW51eC9pbml0Lmg+DQo+IC0jaW5jbHVkZSA8bGludXgvb2ZfZGV2aWNlLmg+DQo+
+ICsjaW5jbHVkZSA8bGludXgvb2YuaD4NCj4gICANCj4gICAjaW5jbHVkZSA8YXNtL2lvLmg+
+DQo+ICAgDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3N1bnh2cjUwMC5j
+IGIvZHJpdmVycy92aWRlby9mYmRldi9zdW54dnI1MDAuYw0KPiBpbmRleCA2ZWMzNThhZjEy
+NTYuLmM0ZTAxZTg3MTQ4MyAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9z
+dW54dnI1MDAuYw0KPiArKysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3N1bnh2cjUwMC5jDQo+
+IEBAIC0xMCw3ICsxMCw3IEBADQo+ICAgI2luY2x1ZGUgPGxpbnV4L2ZiLmg+DQo+ICAgI2lu
+Y2x1ZGUgPGxpbnV4L3BjaS5oPg0KPiAgICNpbmNsdWRlIDxsaW51eC9pbml0Lmg+DQo+IC0j
+aW5jbHVkZSA8bGludXgvb2ZfZGV2aWNlLmg+DQo+ICsjaW5jbHVkZSA8bGludXgvb2YuaD4N
+Cj4gICANCj4gICAjaW5jbHVkZSA8YXNtL2lvLmg+DQo+ICAgDQo+IGRpZmYgLS1naXQgYS9k
+cml2ZXJzL3ZpZGVvL2ZiZGV2L3RjeC5jIGIvZHJpdmVycy92aWRlby9mYmRldi90Y3guYw0K
+PiBpbmRleCBmYzNhYzIzMDFiNDUuLjI1NWViNTdhZWZhMiAxMDA2NDQNCj4gLS0tIGEvZHJp
+dmVycy92aWRlby9mYmRldi90Y3guYw0KPiArKysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3Rj
+eC5jDQo+IEBAIC0xNyw3ICsxNyw4IEBADQo+ICAgI2luY2x1ZGUgPGxpbnV4L2luaXQuaD4N
+Cj4gICAjaW5jbHVkZSA8bGludXgvZmIuaD4NCj4gICAjaW5jbHVkZSA8bGludXgvbW0uaD4N
+Cj4gLSNpbmNsdWRlIDxsaW51eC9vZl9kZXZpY2UuaD4NCj4gKyNpbmNsdWRlIDxsaW51eC9v
+Zi5oPg0KPiArI2luY2x1ZGUgPGxpbnV4L3BsYXRmb3JtX2RldmljZS5oPg0KPiAgIA0KPiAg
+ICNpbmNsdWRlIDxhc20vaW8uaD4NCj4gICAjaW5jbHVkZSA8YXNtL2ZiaW8uaD4NCj4gZGlm
+ZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYveGlsaW54ZmIuYyBiL2RyaXZlcnMvdmlk
+ZW8vZmJkZXYveGlsaW54ZmIuYw0KPiBpbmRleCAyYWEzYTUyODI3N2YuLjU0MmJhZGRkNTRh
+ZCAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi94aWxpbnhmYi5jDQo+ICsr
+KyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYveGlsaW54ZmIuYw0KPiBAQCAtMjQsMTQgKzI0LDEz
+IEBADQo+ICAgI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPg0KPiAgICNpbmNsdWRlIDxsaW51
+eC9rZXJuZWwuaD4NCj4gICAjaW5jbHVkZSA8bGludXgvZXJybm8uaD4NCj4gKyNpbmNsdWRl
+IDxsaW51eC9wbGF0Zm9ybV9kZXZpY2UuaD4NCj4gICAjaW5jbHVkZSA8bGludXgvc3RyaW5n
+Lmg+DQo+ICAgI2luY2x1ZGUgPGxpbnV4L21tLmg+DQo+ICAgI2luY2x1ZGUgPGxpbnV4L2Zi
+Lmg+DQo+ICAgI2luY2x1ZGUgPGxpbnV4L2luaXQuaD4NCj4gICAjaW5jbHVkZSA8bGludXgv
+ZG1hLW1hcHBpbmcuaD4NCj4gLSNpbmNsdWRlIDxsaW51eC9vZl9kZXZpY2UuaD4NCj4gLSNp
+bmNsdWRlIDxsaW51eC9vZl9wbGF0Zm9ybS5oPg0KPiAtI2luY2x1ZGUgPGxpbnV4L29mX2Fk
+ZHJlc3MuaD4NCj4gKyNpbmNsdWRlIDxsaW51eC9vZi5oPg0KPiAgICNpbmNsdWRlIDxsaW51
+eC9pby5oPg0KPiAgICNpbmNsdWRlIDxsaW51eC9zbGFiLmg+DQo+ICAgDQoNCi0tIA0KVGhv
+bWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdh
+cmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KRnJhbmtlbnN0cmFzc2UgMTQ2LCA5MDQ2MSBO
+dWVybmJlcmcsIEdlcm1hbnkNCkdGOiBJdm8gVG90ZXYsIEFuZHJldyBNeWVycywgQW5kcmV3
+IE1jRG9uYWxkLCBCb3VkaWVuIE1vZXJtYW4NCkhSQiAzNjgwOSAoQUcgTnVlcm5iZXJnKQ0K
 
-diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
-index 5c232eb13724..c137d6afe484 100644
---- a/drivers/video/fbdev/au1200fb.c
-+++ b/drivers/video/fbdev/au1200fb.c
-@@ -1732,6 +1732,9 @@ static int au1200fb_drv_probe(struct platform_device *dev)
- 
- 	/* Now hook interrupt too */
- 	irq = platform_get_irq(dev, 0);
-+	if (irq < 0)
-+		return irq;
-+
- 	ret = request_irq(irq, au1200fb_handle_irq,
- 			  IRQF_SHARED, "lcd", (void *)dev);
- 	if (ret) {
--- 
-2.30.2
 
+--------------Aa0Mf3WyZj0EdxJytzy7LFbU--
+
+--------------fKlGCpVLu7rfpmAw9xHrErQE
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmSy5qAFAwAAAAAACgkQlh/E3EQov+DV
+hg//Xw0qaGOqIuiMoHIxPoO8/jbT0356p1A2GRp52n9+r+rHkHF4HBkb7K4W9jjF+5tjpd7chkiB
+8qEqheekrCWZ6Vg8ZqIDmJPes4pHsd56bExm6Jk8yTa7rShbN9Jdogm44a3TVOXcOVM+gHl0h3Jh
+GbksvdQX1g+l4EzK4UlFOBJit/oLHofORyKyki0I4a0kVyPbYj6ynVvwVIlFQbocybEUVTLfTGz7
+cHPzSdv7hsngyXhdqjzGNX4EMEwktcP42IXHv4Jrcxu2e4rILtJvmXvK5ku5t/FX6yMpxSU3oaaP
+t13+3PS/JVSt/S3X+kyQwazL2Jx4BBrWNRNlL1Dbm80OzdntELHprVOCvB+ZTq6Yz5OUfJbdh+00
+3SU6nfvCKNtOmEhaYyGE5XSlQPcjs43SABM5lqIZbdozKVB0EUPsRkOfa05ZrAykwha36qgUjDqf
+z4u9moi7/bPNo7REdwXW0ogALg+q3FFq3HfW2umUmh3Pu+YdMVBr7FF0yzzdyBN4IRrv0QljXhgl
+XjJgXl7r9Ize6S5GzfCVM7QUuR/LTL6vcP/wUy/Awemx6odLnVvxnKQipgrP6/dATviNyXPB5IrK
+5E32NfllUy4qk3XvVBbRV8Yr7OsXq0tn6jSQFvwDbU8QpeyPt+ERYjqMD1S+hDHoars/jf8eFkUb
+qtw=
+=Utls
+-----END PGP SIGNATURE-----
+
+--------------fKlGCpVLu7rfpmAw9xHrErQE--

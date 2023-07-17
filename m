@@ -2,87 +2,94 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CAF97EB64DD
-	for <linux-fbdev@archiver.kernel.org>; Sun, 16 Jul 2023 21:22:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2768C001DE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Jul 2023 08:38:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230197AbjGPVW6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 16 Jul 2023 17:22:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49616 "EHLO
+        id S231350AbjGQIic (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 Jul 2023 04:38:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49904 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229461AbjGPVW4 (ORCPT
+        with ESMTP id S229891AbjGQIib (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 16 Jul 2023 17:22:56 -0400
-Received: from mail-yw1-x112a.google.com (mail-yw1-x112a.google.com [IPv6:2607:f8b0:4864:20::112a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 96A601B5
-        for <linux-fbdev@vger.kernel.org>; Sun, 16 Jul 2023 14:22:55 -0700 (PDT)
-Received: by mail-yw1-x112a.google.com with SMTP id 00721157ae682-57045429f76so37378647b3.0
-        for <linux-fbdev@vger.kernel.org>; Sun, 16 Jul 2023 14:22:55 -0700 (PDT)
+        Mon, 17 Jul 2023 04:38:31 -0400
+Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF685103
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 Jul 2023 01:38:29 -0700 (PDT)
+Received: by mail-wm1-x332.google.com with SMTP id 5b1f17b1804b1-3fbc63c2e84so41405985e9.3
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 Jul 2023 01:38:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1689542575; x=1692134575;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ehHFd2i1D4cdxDgZXxDtxev4s/OtFUIBV9R8JH1GczI=;
-        b=TUANb1xdwg4ApfDT153qsO6QCznb5nxHBKEhNirqqCNXAE2sRkK2qbvW49vqxIsAj2
-         o2d0ZFedzmRDzUrDHmn0LcAsYOg6z8ZPD+RX6Vqg3LesLA6K8FweiqJ6RiNjb507yS7J
-         mdzOgTJygiJIrBrFtehvMOuu6AhkSN0LytONWTRC2sSOQeK9jfjBPxGgmtKU3x5wVAuk
-         pGIeeLly8iAwYCG5ts7WPiV6nwFJ9jkDCjgu5w3cFHMpcmzUjp6oCkVNsHui7JD8NlYY
-         /naJzYS/oBC+CDcx7XIUGGVbOkDCjT84b8RociW+eusq3Wx7Uvgx9u/SPNpIoF3bfmLH
-         gjcg==
+        d=linaro.org; s=google; t=1689583108; x=1692175108;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=z4o4TF/LxZly0vmrx76BwSM2BKqw0I4+/QaBjz9uTXs=;
+        b=JaV92xVDUvovCm+5AOf7VXTT70biF1yo1d8ZNHDTZ7c8s8DJ7s8HFrJ51Pe9GuXZHs
+         2+7R9LUaxFYqKXfjRy9R8w5Zzll+hJLQWKthxlNKNLLHExtWxu/kdoibRd4eNf/Dz9+m
+         86KU/z0VcVrBZfGG8oKSLJ5gTp2hr6Q6fyHGxbQ9WYTzZZimI6hZsdKWkZ5A0T9RjqWb
+         WBi0II2wYy1IYlg2w+X8qvt5GBKIASiTQVWK3KrrzU5d3KKyKDqBJAUomig/PhPUMH8R
+         TZ8AJ6fE6eOxd/kPHP85EbY/JbZ/Zn7/RNOdMcEEdvAKFq3TwfVpdREMsxfzZEUIfLXF
+         42dA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689542575; x=1692134575;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ehHFd2i1D4cdxDgZXxDtxev4s/OtFUIBV9R8JH1GczI=;
-        b=TWS0MBZ56JC0x8oybi+GY8viwS0p5rFuOEyd/Wv5pAiX3egYXnrOFUxXkdoJ4CCyoF
-         8Db9K14Nm3dYQ8epwybuBXpuOOIaYfPwfp00nQAsuqMgfYS+wIQNYEjADwVcQnUB+H/q
-         ow8/g+cgvHSfEN+NhNmvX1M5CZ7lkiU2XrgW4K0sEUG4/4GdKtViMwZEog1IRXuJ790C
-         1abvIdVyklJSSFwH5s/4Q/GnJW4zm0wG/9SCK3XQ8vuFwJtcvWrgM9Lajys9gE/pNsYI
-         eZRC1VsRVnUUKG464Q+OjeU7HXb2bX9lgHzMm5kW42L0XJ0OcTodsfuEom5OG+QBK80D
-         1aaw==
-X-Gm-Message-State: ABy/qLYu5qLCJRrkuvEnriLl5vfx4RNJ6utOQNNbFNFkeoxA5UgufsGj
-        +w5HUp8HbdLLIela+aH0uy29dww1z9QWdEJmQ7KZuw==
-X-Google-Smtp-Source: APBJJlErNg8Oc3PPMT7Mk+Lfx5QAC/OC92g4sKDGGNguhpK28xKdYtC3K+IjcJQWqeu8+LMrged+MnE1lM++5T7GyW0=
-X-Received: by 2002:a0d:eec3:0:b0:577:3fb4:f245 with SMTP id
- x186-20020a0deec3000000b005773fb4f245mr12710224ywe.19.1689542574879; Sun, 16
- Jul 2023 14:22:54 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230707095415.1449376-1-arnd@kernel.org> <20230707095415.1449376-3-arnd@kernel.org>
- <CACRpkdbiDUomH8HLkk_jyJZYc+mEmRaFL8-JasDmd=ooSB62Qw@mail.gmail.com> <1c0119cc-7787-4f95-870e-da1c5894625d@app.fastmail.com>
-In-Reply-To: <1c0119cc-7787-4f95-870e-da1c5894625d@app.fastmail.com>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Sun, 16 Jul 2023 23:22:43 +0200
-Message-ID: <CACRpkdYVQa-p_tA5reK1Biniz6xf9gWm3K8JKCbjr4fO3=GHZQ@mail.gmail.com>
-Subject: Re: [PATCH 3/4] dummycon: limit Arm console size hack to footbridge
-To:     Arnd Bergmann <arnd@arndb.de>
-Cc:     Arnd Bergmann <arnd@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Russell King <linux@armlinux.org.uk>,
-        dri-devel@lists.freedesktop.org, Ard Biesheuvel <ardb@kernel.org>,
+        d=1e100.net; s=20221208; t=1689583108; x=1692175108;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=z4o4TF/LxZly0vmrx76BwSM2BKqw0I4+/QaBjz9uTXs=;
+        b=NyiE1wK2a+87k5mcW6QgcBiU+l5i5zVnt6lp11v5BWpUb0CiNJWTVDh9P2fQDz5Su4
+         cWlvqXS/jR3uVJCyj003a9J5kMMt4dqG+nLlFC3qQQ2gaotwPSM5RqjYdBgceOHidJp5
+         rMs7RHcI1nwSKhFDU/hQWr3M5aAXILibUl+y/acTfZAIHipOhR4w4u3J08KpDcdTueZB
+         0+Qwwz5cHHxkltlh1q0NljbRjAkwxbOuBq08SCmCRtmsdcdGZkuxoBADQzfla8E2496g
+         6jg111cynBzKHNoSXyaYDkp+wlONxwgsaP6pVKvLm1XMBS/paPxb+VoHrTj1sY2ViP/i
+         hrWg==
+X-Gm-Message-State: ABy/qLZK8DSCxDVFMnFdPrmx7CRavls+VO4sYqYiPbwQ1sIW2H2ukDo4
+        M+BbqENt3CdXU+O8YD/wAPs/kQ==
+X-Google-Smtp-Source: APBJJlGx68JBlekO0xvjwT7iigvCwI/s1FOxF/ffNTRgvDyXHyJIZnu+G2GKCpabCXWQUYGMJS6rNA==
+X-Received: by 2002:a05:600c:21c8:b0:3fb:fef3:53f8 with SMTP id x8-20020a05600c21c800b003fbfef353f8mr9724649wmj.25.1689583108129;
+        Mon, 17 Jul 2023 01:38:28 -0700 (PDT)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id y20-20020a05600c20d400b003f91e32b1ebsm7485189wmm.17.2023.07.17.01.38.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 17 Jul 2023 01:38:27 -0700 (PDT)
+Date:   Mon, 17 Jul 2023 09:38:25 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Artur Weber <aweber.kernel@gmail.com>
+Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
         Helge Deller <deller@gmx.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Russell King <rmk+kernel@armlinux.org.uk>,
-        linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        Thierry Reding <thierry.reding@gmail.com>,
+        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pwm@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht
+Subject: Re: [PATCH 1/2] backlight: lp855x: Initialize PWM state on first
+ brightness change
+Message-ID: <20230717083825.GA3448956@aspen.lan>
+References: <20230714121440.7717-1-aweber.kernel@gmail.com>
+ <20230714121440.7717-2-aweber.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20230714121440.7717-2-aweber.kernel@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jul 7, 2023 at 4:28=E2=80=AFPM Arnd Bergmann <arnd@arndb.de> wrote:
+On Fri, Jul 14, 2023 at 02:14:39PM +0200, Artur Weber wrote:
+> As pointed out by Uwe Kleine-König[1], the changes introduced in
+> commit c1ff7da03e16 ("video: backlight: lp855x: Get PWM for PWM mode
+> during probe") caused the PWM state set up by the bootloader to be
+> re-set when the driver is probed. This differs from the behavior from
+> before that patch, where the PWM state would be initialized on the
+> first brightness change.
+>
+> Fix this by moving the PWM state initialization into the PWM control
+> function. Add a new variable, needs_pwm_init, to the device info struct
+> to allow us to check whether we need the initialization, or whether it
+> has already been done.
+>
+> [1] https://lore.kernel.org/lkml/20230614083953.e4kkweddjz7wztby@pengutronix.de/
+>
+> Fixes: c1ff7da03e16 ("video: backlight: lp855x: Get PWM for PWM mode during probe")
+> Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
 
-> Since you have already spent the time to build and test a kernel with
-> this patch, can you do one more test here and check the text size
-> reported in the atags on this machine and the actual text sizes you
-> get from both vgacon and cyber2000fb?
-
-Heh I tested this then walked out of the office for vacation.
-
-But I can put a note in my calendar to test it when I return to
-my equipment!
-
-Yours,
-Linus Walleij
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>

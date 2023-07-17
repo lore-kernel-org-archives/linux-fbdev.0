@@ -2,74 +2,97 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A68DEB64DC
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Jul 2023 14:48:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB0DBEB64DC
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Jul 2023 15:23:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229562AbjGQOsp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 Jul 2023 10:48:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35834 "EHLO
+        id S231604AbjGQPXe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 Jul 2023 11:23:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56450 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229528AbjGQOso (ORCPT
+        with ESMTP id S231511AbjGQPXd (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 Jul 2023 10:48:44 -0400
-Received: from m12.mail.163.com (m12.mail.163.com [220.181.12.215])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 55AE8B2
-        for <linux-fbdev@vger.kernel.org>; Mon, 17 Jul 2023 07:48:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-        s=s110527; h=From:Subject:Date:Message-Id; bh=HBK5Q+ySw32oZrRHgS
-        eByfZVcxU6Jl87fS5CHI/bjpM=; b=bw/wWvVRHt84u9u86fRD+6YnKmAtDXiQaI
-        boRX/oRwlQ9xTsNdW2dwnwKQiEiCYJCYMtrT3xA1ItU+ssVRn3hA0yVWjtYmoQ89
-        jF4CA/ssHgCKgB3ANGHhH7OFEkTMX7dEp1dwiqzaTYq9MaMZMxl4V97aLMKv7A27
-        UZ1vybRlE=
-Received: from localhost.localdomain (unknown [202.112.113.212])
-        by zwqz-smtp-mta-g2-1 (Coremail) with SMTP id _____wB3pXKrVLVk8jU1Ag--.34432S4;
-        Mon, 17 Jul 2023 22:48:15 +0800 (CST)
-From:   Yuanjun Gong <ruc_gongyuanjun@163.com>
-To:     Yuanjun Gong <ruc_gongyuanjun@163.com>,
-        Helge Deller <deller@gmx.de>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
-        Gaosheng Cui <cuigaosheng1@huawei.com>,
-        linux-fbdev@vger.kernel.org
-Subject: [PATCH 1/1] drivers:video: fix return value check in ep93xxfb_probe
-Date:   Mon, 17 Jul 2023 22:48:09 +0800
-Message-Id: <20230717144809.24895-1-ruc_gongyuanjun@163.com>
-X-Mailer: git-send-email 2.17.1
-X-CM-TRANSID: _____wB3pXKrVLVk8jU1Ag--.34432S4
-X-Coremail-Antispam: 1Uf129KBjvdXoW7Xr1fKryrJry5XF1xCw48JFb_yoW3CwcEkw
-        srZ39xW3WYvrs7Krn5Gr15ZryFk348XFs7WF1Iyay5try7WryfXrWDXrnru3yUWr4DKF90
-        kr1qqw4Ivr1fCjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-        9fnUUvcSsGvfC2KfnxnUUI43ZEXa7sRK2Nt5UUUUU==
-X-Originating-IP: [202.112.113.212]
-X-CM-SenderInfo: 5uxfsw5rqj53pdqm30i6rwjhhfrp/1tbiJxOv5V5vEy91pAAAsi
+        Mon, 17 Jul 2023 11:23:33 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4C8DB173F;
+        Mon, 17 Jul 2023 08:23:10 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id A8FA461134;
+        Mon, 17 Jul 2023 15:22:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E725C433CC;
+        Mon, 17 Jul 2023 15:22:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1689607345;
+        bh=s72Q/8XYhHQvzmI1VDsEoAqOtnrO5eU9UNP8CV8UKys=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=C0emZjBNCquR9Voe1+urrx1DBzBKr/jIAPVcl7u3QyWptIgTEaYmI2gncVVzCgAS5
+         UsJ3cmZgP5/bjdGONrJUV/8N+Qg3CZcPU9NQ8I231bshDjHFaaq8IRPUKlOty/uLJq
+         asTt8cRYh9EedkxLKjIOeHO6MkHuxL+gwcBMRVq66EArGgNGRm67cPUWwJJvCakvko
+         VkdbEJ8bQWgSTaXdf7jKSuxVfcwLBmk+N8o3hvYCcSK44mUiRfpl0VyIosk4kYBuYA
+         cVoo29w8Fc9X9JkzfvMXlZBP6bz6III07Lk8epOGDkmTQpyYYFGYa5VS408LD0Ocz6
+         miuGXx/6g/rHg==
+Received: by mail-lj1-f178.google.com with SMTP id 38308e7fff4ca-2b70bfc8db5so68917131fa.2;
+        Mon, 17 Jul 2023 08:22:25 -0700 (PDT)
+X-Gm-Message-State: ABy/qLb6r7vEQcoB/oVi8BsUDQUTIyc1oM0mclHmSRC2imggsEIpWmC3
+        l6BqYIJiyj62F4aljrvlOBfqsxrJH3Yw34rL0A==
+X-Google-Smtp-Source: APBJJlFjUVuF8cT9Mjizg85yzlG3XoHjjgUIN2M6YkcqSURtLtAQSGtjkKNJqo2G7fj6obony0hWhkxkfR/W6HeRCjA=
+X-Received: by 2002:a2e:9d84:0:b0:2b6:e76b:1e50 with SMTP id
+ c4-20020a2e9d84000000b002b6e76b1e50mr9175045ljj.41.1689607343110; Mon, 17 Jul
+ 2023 08:22:23 -0700 (PDT)
+MIME-Version: 1.0
+References: <20230714175035.4065508-1-robh@kernel.org> <317a9fd8-0ae9-daa0-012b-3908ca248b74@suse.de>
+In-Reply-To: <317a9fd8-0ae9-daa0-012b-3908ca248b74@suse.de>
+From:   Rob Herring <robh@kernel.org>
+Date:   Mon, 17 Jul 2023 09:22:10 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqJ2bkBU0WQG2jt755c_V4x4uR36Dvt2qEeXv52zCWeUmw@mail.gmail.com>
+Message-ID: <CAL_JsqJ2bkBU0WQG2jt755c_V4x4uR36Dvt2qEeXv52zCWeUmw@mail.gmail.com>
+Subject: Re: [PATCH] fb: Explicitly include correct DT includes
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Helge Deller <deller@gmx.de>, Michal Simek <michal.simek@amd.com>,
+        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-function clk_prepare_enable may fail in ep93xxfb_probe, therefore,
-add a return value check to clk_prepare_enable and handle the
-error.
+On Sat, Jul 15, 2023 at 12:34=E2=80=AFPM Thomas Zimmermann <tzimmermann@sus=
+e.de> wrote:
+>
+> Hi
+>
+> Am 14.07.23 um 19:50 schrieb Rob Herring:
+> > The DT of_device.h and of_platform.h date back to the separate
+> > of_platform_bus_type before it as merged into the regular platform bus.
+> > As part of that merge prepping Arm DT support 13 years ago, they
+> > "temporarily" include each other. They also include platform_device.h
+> > and of.h. As a result, there's a pretty much random mix of those includ=
+e
+> > files used throughout the tree. In order to detangle these headers and
+> > replace the implicit includes with struct declarations, users need to
+> > explicitly include the correct includes.
+> >
+> > Signed-off-by: Rob Herring <robh@kernel.org>
+> [...]
+> >
+> > @@ -48,7 +48,7 @@ int sbusfb_mmap_helper(struct sbus_mmap_map *map,
+> >       unsigned long map_offset =3D 0;
+> >       unsigned long off;
+> >       int i;
+> > -
+> > +
+>
+> The various whitespace fixes should rather go into a separate patch. You
+> can add
+>
+> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+>
+> to the whitespace fix and the include cleanup.
 
-Signed-off-by: Yuanjun Gong <ruc_gongyuanjun@163.com>
----
- drivers/video/fbdev/ep93xx-fb.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Indeed. I missed dropping the whitespace change.
 
-diff --git a/drivers/video/fbdev/ep93xx-fb.c b/drivers/video/fbdev/ep93xx-fb.c
-index 94fe52928be2..22158d9ca8dd 100644
---- a/drivers/video/fbdev/ep93xx-fb.c
-+++ b/drivers/video/fbdev/ep93xx-fb.c
-@@ -548,7 +548,9 @@ static int ep93xxfb_probe(struct platform_device *pdev)
- 	}
- 
- 	ep93xxfb_set_par(info);
--	clk_prepare_enable(fbi->clk);
-+	err = clk_prepare_enable(fbi->clk);
-+	if (err)
-+		goto failed_check;
- 
- 	err = register_framebuffer(info);
- 	if (err)
--- 
-2.17.1
-
+Rob

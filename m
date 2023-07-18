@@ -2,160 +2,105 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9BF2C001DC
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 09:56:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30CC8EB64DA
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 10:07:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232426AbjGRJ4f convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Jul 2023 05:56:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48428 "EHLO
+        id S231245AbjGRKHE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Jul 2023 06:07:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58578 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232388AbjGRJ4K (ORCPT
+        with ESMTP id S230406AbjGRKHA (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Jul 2023 05:56:10 -0400
-Received: from mail-yb1-f177.google.com (mail-yb1-f177.google.com [209.85.219.177])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D6C7626B2;
-        Tue, 18 Jul 2023 02:55:12 -0700 (PDT)
-Received: by mail-yb1-f177.google.com with SMTP id 3f1490d57ef6-c2cf4e61bc6so5807310276.3;
-        Tue, 18 Jul 2023 02:55:12 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689674112; x=1692266112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=dkfu4+zrfsEvNM/oP4wLx2h/8nsgQPK5hugPJnR2T8Y=;
-        b=bpbkAuFRysVLakByeshb8zpAsRtDwSouyWI2zK8LDbire43Ga6Px797CbkzAEiYTKh
-         piTAc/yW/QL3vr53oUbNpxFt5cPJkATey1YCK71ZQagCHeVXrO32uIis8HA7XLQFfqsW
-         S5n52bvq5HBIybyTxHoC8tZ3iUO5lzXGf0Oai+tGxmOCqcyqyD9P34lpYl0pQppd/BLd
-         xFtARFHae+ozxOlCh1aIc0RgweteWxn/3C7dNypw34JcK45OkiqAiJGGCJUzpWg6mavK
-         PqldY9eDrQR3+uGc4HbfLWR05ihT06SvVrQh22NKEjO2C3COV1RX6dSdLs3T51QHncMi
-         yoeg==
-X-Gm-Message-State: ABy/qLaKFV4gKKmCio9VcszED83JhY/l94h7gsHuaSgsQvcG/fREdS2p
-        Sq903AZKZLFu6PblYNwErObL3XvKfNFUbA==
-X-Google-Smtp-Source: APBJJlGPc04fhgxz0E0wgRdcDYs3513a4we7nVqGeT+GTp9gDnYZ0rkf654mHClpLr/GNVPMHelMGg==
-X-Received: by 2002:a25:6fc2:0:b0:c91:717e:7658 with SMTP id k185-20020a256fc2000000b00c91717e7658mr2408070ybc.2.1689674111749;
-        Tue, 18 Jul 2023 02:55:11 -0700 (PDT)
-Received: from mail-yb1-f178.google.com (mail-yb1-f178.google.com. [209.85.219.178])
-        by smtp.gmail.com with ESMTPSA id x71-20020a25ce4a000000b00cec105e03d1sm123056ybe.38.2023.07.18.02.55.10
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 18 Jul 2023 02:55:10 -0700 (PDT)
-Received: by mail-yb1-f178.google.com with SMTP id 3f1490d57ef6-bc379e4c1cbso5811573276.2;
-        Tue, 18 Jul 2023 02:55:10 -0700 (PDT)
-X-Received: by 2002:a25:860f:0:b0:cec:59f7:b352 with SMTP id
- y15-20020a25860f000000b00cec59f7b352mr989091ybk.58.1689674110647; Tue, 18 Jul
- 2023 02:55:10 -0700 (PDT)
+        Tue, 18 Jul 2023 06:07:00 -0400
+Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de [80.237.130.52])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F134135;
+        Tue, 18 Jul 2023 03:06:58 -0700 (PDT)
+Received: from [2a02:8108:8980:2478:8cde:aa2c:f324:937e]; authenticated
+        by wp530.webpack.hosteurope.de running ExIM with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        id 1qLhbX-0002Vt-7x; Tue, 18 Jul 2023 12:06:51 +0200
+Message-ID: <f5e6258b-ba76-001b-4942-588f4cbb0aa7@leemhuis.info>
+Date:   Tue, 18 Jul 2023 12:06:50 +0200
 MIME-Version: 1.0
-References: <20230511181931.869812-1-tj@kernel.org> <20230511181931.869812-7-tj@kernel.org>
- <ZF6WsSVGX3O1d0pL@slm.duckdns.org> <CAMuHMdVCQmh6V182q4g---jvsWiTOP2hBPZKvma6oUN6535LEg@mail.gmail.com>
- <CAMuHMdW1kxZ1RHKTRVRqDNAbj1Df2=v0fPn5KYK3kfX_kiXR6A@mail.gmail.com>
- <ZK3MBfPS-3-tJgjO@slm.duckdns.org> <ZK30CR196rs-OWLq@slm.duckdns.org>
- <CAMuHMdUCXPi+aS-7bR3qRetKF9T3W9jk_HKjvaXmfHv5SEeuFg@mail.gmail.com> <ZLXIvXBvhsnL-ik_@slm.duckdns.org>
-In-Reply-To: <ZLXIvXBvhsnL-ik_@slm.duckdns.org>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 18 Jul 2023 11:54:58 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdU8CGhsU-1PZNdWH1xjbWcWSg2s2RFAegXi+vs=d-0t8Q@mail.gmail.com>
-Message-ID: <CAMuHMdU8CGhsU-1PZNdWH1xjbWcWSg2s2RFAegXi+vs=d-0t8Q@mail.gmail.com>
-Subject: Re: Consider switching to WQ_UNBOUND messages (was: Re: [PATCH v2
- 6/7] workqueue: Report work funcs that trigger automatic CPU_INTENSIVE mechanism)
-To:     Tejun Heo <tj@kernel.org>
-Cc:     Lai Jiangshan <jiangshanlai@gmail.com>,
-        "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        kernel-team@meta.com, Linux PM list <linux-pm@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        linux-rtc@vger.kernel.org,
-        linux-riscv <linux-riscv@lists.infradead.org>,
-        netdev <netdev@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux MMC List <linux-mmc@vger.kernel.org>,
-        "open list:LIBATA SUBSYSTEM (Serial and Parallel ATA drivers)" 
-        <linux-ide@vger.kernel.org>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Subject: Re: linux-next: Tree for Jul 13 (drivers/video/fbdev/ps3fb.c)
+Content-Language: en-US, de-DE
+To:     Bagas Sanjaya <bagasdotme@gmail.com>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Helge Deller <deller@gmx.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        linux-fbdev@vger.kernel.org,
+        Linux PowerPC <linuxppc-dev@lists.ozlabs.org>,
+        Linux Regressions <regressions@lists.linux.dev>,
+        Stephen Rothwell <sfr@canb.auug.org.au>,
+        Linux Next Mailing List <linux-next@vger.kernel.org>
+References: <20230713123710.5d7d81e4@canb.auug.org.au>
+ <ccc63065-2976-88ef-1211-731330bf2866@infradead.org>
+ <ZLYHtVuS7AElXcCb@debian.me>
+From:   Thorsten Leemhuis <regressions@leemhuis.info>
+In-Reply-To: <ZLYHtVuS7AElXcCb@debian.me>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-bounce-key: webpack.hosteurope.de;regressions@leemhuis.info;1689674818;0e49b331;
+X-HE-SMSGID: 1qLhbX-0002Vt-7x
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Tejun,
+On 18.07.23 05:32, Bagas Sanjaya wrote:
+> On Thu, Jul 13, 2023 at 09:11:10AM -0700, Randy Dunlap wrote:
+>> On 7/12/23 19:37, Stephen Rothwell wrote:
+>>> Changes since 20230712:
+>>
+>> on ppc64:
+>>
+>> In file included from ../include/linux/device.h:15,
+>>                  from ../arch/powerpc/include/asm/io.h:22,
+>>                  from ../include/linux/io.h:13,
+>>                  from ../include/linux/irq.h:20,
+>>                  from ../arch/powerpc/include/asm/hardirq.h:6,
+>>                  from ../include/linux/hardirq.h:11,
+>>                  from ../include/linux/interrupt.h:11,
+>>                  from ../drivers/video/fbdev/ps3fb.c:25:
+>> ../drivers/video/fbdev/ps3fb.c: In function 'ps3fb_probe':
+>> ../drivers/video/fbdev/ps3fb.c:1172:40: error: 'struct fb_info' has no member named 'dev'
+>>  1172 |                  dev_driver_string(info->dev), dev_name(info->dev),
+>>       |                                        ^~
+>> ../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
+>>   110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
+>>       |                                     ^~~~~~~~~~~
+>> ../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
+>>  1171 |         dev_info(info->device, "%s %s, using %u KiB of video memory\n",
+>>       |         ^~~~~~~~
+>> ../drivers/video/fbdev/ps3fb.c:1172:61: error: 'struct fb_info' has no member named 'dev'
+>>  1172 |                  dev_driver_string(info->dev), dev_name(info->dev),
+>>       |                                                             ^~
+>> ../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
+>>   110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
+>>       |                                     ^~~~~~~~~~~
+>> ../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
+>>  1171 |         dev_info(info->device, "%s %s, using %u KiB of video memory\n",
+>>       |         ^~~~~~~~
+> 
+> Hmm, there is no response from Thomas yet. I guess we should go with
+> reverting bdb616479eff419, right?
 
-On Tue, Jul 18, 2023 at 1:03 AM Tejun Heo <tj@kernel.org> wrote:
-> Can you please the following patch and see how many reports you get? Looking
-> back at your reports, I think some of them probably should be converted to
-> UNBOUND but we should have a better idea with the adjusted threshold.
->
-> Thanks.
->
-> From 8555cbd4b22e5f85eb2bdcb84fd1d1f519a0a0d3 Mon Sep 17 00:00:00 2001
-> From: Tejun Heo <tj@kernel.org>
-> Date: Mon, 17 Jul 2023 12:50:02 -1000
-> Subject: [PATCH] workqueue: Scale up wq_cpu_intensive_thresh_us if BogoMIPS is
->  below 1000
->
-> wq_cpu_intensive_thresh_us is used to detect CPU-hogging per-cpu work items.
-> Once detected, they're excluded from concurrency management to prevent them
-> from blocking other per-cpu work items. If CONFIG_WQ_CPU_INTENSIVE_REPORT is
-> enabled, repeat offenders are also reported so that the code can be updated.
->
-> The default threshold is 10ms which is long enough to do fair bit of work on
-> modern CPUs while short enough to be usually not noticeable. This
-> unfortunately leads to a lot of, arguable spurious, detections on very slow
-> CPUs. Using the same threshold across CPUs whose performance levels may be
-> apart by multiple levels of magnitude doesn't make whole lot of sense.
->
-> This patch scales up wq_cpu_intensive_thresh_us upto 1 second when BogoMIPS
-> is below 1000. This is obviously very inaccurate but it doesn't have to be
-> accurate to be useful. The mechanism is still useful when the threshold is
-> fully scaled up and the benefits of reports are usually shared with everyone
-> regardless of who's reporting, so as long as there are sufficient number of
-> fast machines reporting, we don't lose much.
->
-> Some (or is it all?) ARM CPUs systemtically report significantly lower
-> BogoMIPS. While this doesn't break anything, given how widespread ARM CPUs
-> are, it's at least a missed opportunity and it probably would be a good idea
-> to teach workqueue about it.
->
-> Signed-off-by: Tejun Heo <tj@kernel.org>
+I'm missing something here:
 
-Thanks!
+* What makes you think this is caused by bdb616479eff419? I didn't see
+anything in the thread that claims this, but I might be missing something
+* related: if I understand Randy right, this is only happening in -next;
+so why is bdb616479eff419 the culprit, which is also in mainline since
+End of June?
 
-I gave it a try on a system with an 800 MHz Cortex A9, only to discover
-it makes no difference, as that machine has 1600 BogoMIPS:
+And asking for a revert already is a bit jumping the gun; sure, it would
+be good to get this fixed, but remember: developers have a lot on their
+plate and thus sometimes are forced to set priorities; they also
+sometimes go on vacation or are afk for other reasons; and sometimes
+they just miss a mail or two. These are just a few reasons why there
+might be good reasons why Thomas didn't look into this yet, hence please
+first ask really kindly before asking for a revert.
 
-workqueue: drm_fb_helper_damage_work hogged CPU for >10000us 4 times,
-consider switching to WQ_UNBOUND
-workqueue: drm_fb_helper_damage_work hogged CPU for >10000us 8 times,
-consider switching to WQ_UNBOUND
-workqueue: genpd_power_off_work_fn hogged CPU for >10000us 4 times,
-consider switching to WQ_UNBOUND
-workqueue: blk_mq_run_work_fn hogged CPU for >10000us 4 times,
-consider switching to WQ_UNBOUND
-workqueue: pm_runtime_work hogged CPU for >10000us 4 times, consider
-switching to WQ_UNBOUND
-workqueue: phy_state_machine hogged CPU for >10000us 4 times, consider
-switching to WQ_UNBOUND
-workqueue: drm_mode_rmfb_work_fn hogged CPU for >10000us 4 times,
-consider switching to WQ_UNBOUND
-workqueue: sync_hw_clock hogged CPU for >10000us 4 times, consider
-switching to WQ_UNBOUND
-workqueue: rtc_timer_do_work hogged CPU for >10000us 4 times, consider
-switching to WQ_UNBOUND
-
-Artificially low BogoMIPS numbers only happen on systems that have
-the related timers (Cortex A7/A15 and later, Cortex A9 MPCore,
-and arm64).
-
-I will test on more systems, but that will probably not happen until
-next week...
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Ciao, Thorsten

@@ -2,159 +2,101 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 607B4C0015E
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 16:15:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75241EB64DD
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 16:51:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231133AbjGRQPT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Jul 2023 12:15:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34826 "EHLO
+        id S231134AbjGRQvy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Jul 2023 12:51:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56538 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229724AbjGRQPS (ORCPT
+        with ESMTP id S229573AbjGRQvx (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Jul 2023 12:15:18 -0400
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0C43FE0;
-        Tue, 18 Jul 2023 09:15:18 -0700 (PDT)
-Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-666e3b15370so4305837b3a.0;
-        Tue, 18 Jul 2023 09:15:18 -0700 (PDT)
+        Tue, 18 Jul 2023 12:51:53 -0400
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D1582199;
+        Tue, 18 Jul 2023 09:51:52 -0700 (PDT)
+Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-3fbd33a57b6so61625585e9.2;
+        Tue, 18 Jul 2023 09:51:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1689696917; x=1692288917;
+        d=gmail.com; s=20221208; t=1689699111; x=1692291111;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=Na1N69oGSFxdRjjEQS9A1nDY6v0D8diedcdZ35e5WcM=;
-        b=nMRD3rJUi6U8jz3ZNN70bMZlnHnFExyIvu7PL2U08n7xmhZRD2Uxp3TBUHEKvJ022I
-         D/NCip+bMpmnWyYN8xP1yAXupduOJLvtz/Rl2MRIPpcwJlFurHpiqewlg8Y0pgDZorti
-         jFNtGE0OVDY/DYOa+x7p5AsNCcWDkDlwKiAGygPI3HqOX+2pRknd0W+olS7ugFUTUGqG
-         ARLUmIld50DGpS/GhxTLk4RRzN90t90GmEA+4aU8rIpS08lsWow1AZkqAj3iXUE0HaPU
-         8EALiVUtGerXVNeBwsPPBeY1afnVqipHBuYQEUc3rOcmy7Exbo2m5cbrjJN5FAMX7FhV
-         /xvg==
+        bh=MN6YwH/Sg2GWW0btTszOmesTuh4cunm9Lg6HKMqqnCw=;
+        b=egfysYxgLkUoEleL1gyoe/YSMlHqdSH48uaDD4e/3n+ywjtXgUQutVP+GXKZzMiku9
+         SvXy2p5WOAoco6rrCaqJJp/Ik2oXBysd3Fs4clBrawSOPtl9y8elKKmU8+AhNwHGL6ne
+         YC3F67N7Bu37kJBH/JYkH2DnzkznRTwAi1noYg3b2EyJ8KHMmltUKdqpcx3Ih3RJpMKy
+         BjVJBu3V5HAP6Ge5mFZqDY8gcB3BRL+Rsbg+L0kTRQHNvFy9ypKUY3kaP//+QKpjVe5/
+         YvbyKsyb/6xC1vC47PS4BTCmPBh+YS9BkuHrKnWoL2ehaBK8FJaFQTDZMhV9BqXs/GcT
+         XsSw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689696917; x=1692288917;
+        d=1e100.net; s=20221208; t=1689699111; x=1692291111;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Na1N69oGSFxdRjjEQS9A1nDY6v0D8diedcdZ35e5WcM=;
-        b=OfLEhBQpqAmqRdqn+bfYatScXx4AMM9MsEhxVC+KoRRo531SdPMHiw074KiAC2DVbE
-         HvXO5Q4q3oQnJ/5fjx/LG9xdi6Y2Mhr+89+JCfr13uofQc9fEHdRbDci1epU0Imfsv9O
-         epgVV5NFxorWujLV+y7I4DB2wGzYdq50moRNM1R2yV+us/cBOPArL/dvp0uWggeZvuLi
-         +WX86UnhJj6JzzAKel5S/4jXPa+WJqlXaC/Cpqd+iXey/pHD/kX0fueewbh3wJ6G2rUg
-         7bL9FxVwm39PibEC6vZLCyrJB59lXyI1mCYtcAqXtn+5zNlbrN3bAAXWIzIG4NmLnRZv
-         pCIg==
-X-Gm-Message-State: ABy/qLZvSJPhqAPHwoUJT17BZov+Ozt2fILWHQqtu0SiyTV8K2dZCRjT
-        7HPkvLjkZKck53NZ1vFqbsg=
-X-Google-Smtp-Source: APBJJlGDZgvnQDrQyjvF2Kc+/Eo1CpJR0XBffNwdVBMhPEbrYP8yTMy9F+vHwnEHtA4wvSI4YnvWtA==
-X-Received: by 2002:a17:903:50b:b0:1b7:c166:f197 with SMTP id jn11-20020a170903050b00b001b7c166f197mr2151693plb.29.1689696917397;
-        Tue, 18 Jul 2023 09:15:17 -0700 (PDT)
-Received: from ?IPV6:2601:1c2:980:9ec0::2764? ([2601:1c2:980:9ec0::2764])
-        by smtp.gmail.com with ESMTPSA id iw10-20020a170903044a00b001b9be3b94d3sm2069605plb.140.2023.07.18.09.15.16
+        bh=MN6YwH/Sg2GWW0btTszOmesTuh4cunm9Lg6HKMqqnCw=;
+        b=IBo5K5amqfMgbJMx2Og7gSWKYhj+5u7i4xypz61Qr4IfmJrY9G3g2Midr4zN2/PMs8
+         laIKuVoiiMgYsdrLicyl5p4WZva8VG5ntKOikkJ1N1aES+b9G1KupAGNHfyeAuJX8n77
+         IqhIXlTmkOpYthQVssV8yV01PaxL13CJoMZeG7k8Ap9YU8o/Tx6B3I4fM+X/mVCu1GAe
+         DsEwGWF1etVHw8YmwjRBza3KavPcHfT+HMXJ3vEgV/cO3C4l1mDRNK/PQujTT1RDMMk7
+         zt7w5dwFofwP9DXp/x9d7ikwR3L+T56/8ZLduNb2uGHEpld4ae07UZO2dcuku/PA59Kr
+         1Hmw==
+X-Gm-Message-State: ABy/qLYeSup6cdp7PIpYjOkPIegaeHl9Vjt6NZIQrUAYXg1rjODd+yqa
+        iYT1mpG/R4BbPxhLmeUcLnc=
+X-Google-Smtp-Source: APBJJlHOFvWvbot+HP++JP3fT3TaaKdoAq2pAqKoUA88Vosh8ICwrFeGwoU1pwkBqV7ju6n7ny7FzQ==
+X-Received: by 2002:a1c:6a0a:0:b0:3fa:aeac:e96c with SMTP id f10-20020a1c6a0a000000b003faaeace96cmr2796662wmc.9.1689699111032;
+        Tue, 18 Jul 2023 09:51:51 -0700 (PDT)
+Received: from [192.168.70.38] ([37.174.75.194])
+        by smtp.gmail.com with ESMTPSA id h19-20020a05600c261300b003fbb5506e54sm2568348wma.29.2023.07.18.09.51.48
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 18 Jul 2023 09:15:17 -0700 (PDT)
-Message-ID: <d9616a67-23e8-118f-dc0a-7ed4afd4bffd@gmail.com>
-Date:   Tue, 18 Jul 2023 09:15:16 -0700
+        Tue, 18 Jul 2023 09:51:49 -0700 (PDT)
+Message-ID: <d3090a47-4bf9-4aef-34f4-6dc06198189b@gmail.com>
+Date:   Tue, 18 Jul 2023 18:55:25 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: linux-next: Tree for Jul 13 (drivers/video/fbdev/ps3fb.c)
-Content-Language: en-US
-To:     Michael Ellerman <mpe@ellerman.id.au>,
-        Bagas Sanjaya <bagasdotme@gmail.com>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Stephen Rothwell <sfr@canb.auug.org.au>,
-        Linux Next Mailing List <linux-next@vger.kernel.org>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Helge Deller <deller@gmx.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        linux-fbdev@vger.kernel.org,
-        Linux PowerPC <linuxppc-dev@lists.ozlabs.org>,
-        Linux Regressions <regressions@lists.linux.dev>,
-        Geoff Levand <geoff@infradead.org>
-References: <20230713123710.5d7d81e4@canb.auug.org.au>
- <ccc63065-2976-88ef-1211-731330bf2866@infradead.org>
- <ZLYHtVuS7AElXcCb@debian.me> <874jm1jv9m.fsf@mail.lhotse>
-From:   Randy Dunlap <rd.dunlab@gmail.com>
-In-Reply-To: <874jm1jv9m.fsf@mail.lhotse>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+ Thunderbird/102.12.0
+Subject: Re: [PATCH RESEND v2] staging: fbtft: ili9341: use macro
+ FBTFT_REGISTER_SPI_DRIVER
+Content-Language: en-US, fr
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+References: <20230718081759.28902-1-rgallaispou@gmail.com>
+ <2023071817-enslave-unlovable-f8ae@gregkh>
+From:   =?UTF-8?Q?Rapha=c3=abl_Gallais-Pou?= <rgallaispou@gmail.com>
+In-Reply-To: <2023071817-enslave-unlovable-f8ae@gregkh>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/18/23 04:48, Michael Ellerman wrote:
-> Bagas Sanjaya <bagasdotme@gmail.com> writes:
->> On Thu, Jul 13, 2023 at 09:11:10AM -0700, Randy Dunlap wrote:
->>> on ppc64:
->>>
->>> In file included from ../include/linux/device.h:15,
->>>                  from ../arch/powerpc/include/asm/io.h:22,
->>>                  from ../include/linux/io.h:13,
->>>                  from ../include/linux/irq.h:20,
->>>                  from ../arch/powerpc/include/asm/hardirq.h:6,
->>>                  from ../include/linux/hardirq.h:11,
->>>                  from ../include/linux/interrupt.h:11,
->>>                  from ../drivers/video/fbdev/ps3fb.c:25:
->>> ../drivers/video/fbdev/ps3fb.c: In function 'ps3fb_probe':
->>> ../drivers/video/fbdev/ps3fb.c:1172:40: error: 'struct fb_info' has no member named 'dev'
->>>  1172 |                  dev_driver_string(info->dev), dev_name(info->dev),
->>>       |                                        ^~
->>> ../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
->>>   110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
->>>       |                                     ^~~~~~~~~~~
->>> ../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
->>>  1171 |         dev_info(info->device, "%s %s, using %u KiB of video memory\n",
->>>       |         ^~~~~~~~
->>> ../drivers/video/fbdev/ps3fb.c:1172:61: error: 'struct fb_info' has no member named 'dev'
->>>  1172 |                  dev_driver_string(info->dev), dev_name(info->dev),
->>>       |                                                             ^~
->>> ../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
->>>   110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
->>>       |                                     ^~~~~~~~~~~
->>> ../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
->>>  1171 |         dev_info(info->device, "%s %s, using %u KiB of video memory\n",
->>>       |         ^~~~~~~~
->>>
->>>
+Hi,
+
+Le 18/07/2023 à 15:33, Greg Kroah-Hartman a écrit :
+> On Tue, Jul 18, 2023 at 10:17:59AM +0200, Raphael Gallais-Pou wrote:
+>> Using FBTFT_REGISTER_DRIVER resolves to a NULL struct spi_device_id. This
+>> ultimately causes a warning when the module probes. Fixes it.
 >>
->> Hmm, there is no response from Thomas yet. I guess we should go with
->> reverting bdb616479eff419, right? Regardless, I'm adding this build regression
->> to regzbot so that parties involved are aware of it:
+>> Changes in v2:
+>> 	- dropped MODULE_ALIAS changes
+>> 	- changed commit log for more accurate description
 >>
->> #regzbot ^introduced: bdb616479eff419
->> #regzbot title: build regression in PS3 framebuffer
+>> Signed-off-by: Raphael Gallais-Pou <rgallaispou@gmail.com>
+>> ---
+>>   drivers/staging/fbtft/fb_ili9341.c | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Does regzbot track issues in linux-next?
-> 
-> They're not really regressions because they're not in a release yet.
-> 
-> Anyway I don't see where bdb616479eff419 comes from.
-> 
-> The issue was introduced by:
-> 
->   701d2054fa31 fbdev: Make support for userspace interfaces configurable
-> 
-> The driver seems to only use info->dev in that one dev_info() line,
-> which seems purely cosmetic, so I think it could just be removed, eg:
-> 
-> diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
-> index d4abcf8aff75..a304a39d712b 100644
-> --- a/drivers/video/fbdev/ps3fb.c
-> +++ b/drivers/video/fbdev/ps3fb.c
-> @@ -1168,8 +1168,7 @@ static int ps3fb_probe(struct ps3_system_bus_device *dev)
->  
->  	ps3_system_bus_set_drvdata(dev, info);
->  
-> -	dev_info(info->device, "%s %s, using %u KiB of video memory\n",
-> -		 dev_driver_string(info->dev), dev_name(info->dev),
-> +	dev_info(info->device, "using %u KiB of video memory\n",
->  		 info->fix.smem_len >> 10);
->  
->  	task = kthread_run(ps3fbd, info, DEVICE_NAME);
+> Why is this a resend? >
+> And the changes need to go below the --- line as per the documentation.
 
+I messed up the first send and forgot the changelog.
+Thanks for your insights, I understand now that I shouldn't have sent a 
+'RESEND', but rather a v3 with a third entry in the changelog.
 
-Tested-by: Randy Dunlap <rdunlap@infradead.org> # build-tested
-
-Thanks.
-
--- 
-~Randy
+Regards,
+Raphaël
+> 
+> thanks,
+> 
+> greg k-h

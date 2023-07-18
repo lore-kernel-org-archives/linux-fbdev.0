@@ -2,60 +2,60 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D04E0EB64DC
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 08:11:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20BFBEB64DA
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 08:14:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229724AbjGRILV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Jul 2023 04:11:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42396 "EHLO
+        id S230058AbjGRIOZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Jul 2023 04:14:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44026 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229553AbjGRILU (ORCPT
+        with ESMTP id S230231AbjGRIOY (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Jul 2023 04:11:20 -0400
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6C8C58E;
-        Tue, 18 Jul 2023 01:11:19 -0700 (PDT)
-Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-4fb96e2b573so8815584e87.3;
-        Tue, 18 Jul 2023 01:11:19 -0700 (PDT)
+        Tue, 18 Jul 2023 04:14:24 -0400
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 799EDE7;
+        Tue, 18 Jul 2023 01:14:23 -0700 (PDT)
+Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-3fbf1b82de7so33821765e9.1;
+        Tue, 18 Jul 2023 01:14:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1689667878; x=1692259878;
+        d=gmail.com; s=20221208; t=1689668062; x=1692260062;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=HpSa3JuGu2F5rDkHmeBs8MJOc0K66x3Zvji8Ik/U/dU=;
-        b=luKqgmR6miKDMTlzg9Q2mfg05kLQVXqLLBIjOFAOZiqm/QFsGNS7EihK1lq6wdpGWK
-         rN8dc7CyYvzwroWLp6nOzy68lFyoRSWA+IALFI/K0LTISsud6I4u5w4O4l6rPiIMxX4g
-         ytol2K7xSb2FpFwt0fiariP4YYLdGarplXSD4pYyoirOO8FpxNzn6WfHJm9iTdQvHZXC
-         ri0Qbm4chtUws3WnZzaacn0akPcMS6RW8JHvzq8ccsntzStBwGiH4/bsgvPhxiPQAc3f
-         GJh4ipwqlcsVErqM1phGfJd1o7dOQdQJOz+iSYmmfCh6VYaUPZcOEF95E8+h/OMlU369
-         wCxw==
+        bh=/eySJfQ7/Gc/AEP/cNfIUTGk9yVoHTH7Q2UCStgdmPk=;
+        b=XzGeZP2wfi7lajh/fHbLEBJLGoAEiqq93llvJZk83NQLWkpkhmJAPN4y6D1tu3zrxn
+         RFIt3dvm5FsiQrDmGigRFSxtj/klhPmQ86sy5b/xMdTu5m66zEilWY9Hjajhx+6OkUPY
+         iqX2cNwwDpxwU/8UNAHY4k4e/nCqWiQ//ioPJ8/0tLJkljRyQXzDVpx2og+MBslxVCk5
+         siOxXQU1aBTN3mWlYuQVKiamtHU829DnwSBRpsp7B6oFee9zU2kQbuwoPaLNEir5oKOJ
+         0VCPx9V1Bd8q3ZJ8+oVMKF1zmAzJ55XtzP1Br+PzvxynBNdBcv1YWWnONYKkFtTWrlCn
+         dCLw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689667878; x=1692259878;
+        d=1e100.net; s=20221208; t=1689668062; x=1692260062;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=HpSa3JuGu2F5rDkHmeBs8MJOc0K66x3Zvji8Ik/U/dU=;
-        b=aBtw89fMRW4gzSbx0qTy2JyEa2Kox72PgOJu0prR8o/+BXNP5n1l48xUQG6T13+m5x
-         HKpx5P1j/Zk5yKXesyQ7zJ8pBUxiVnb4BhfCFpHmGEM4PUBBquoeBZ1z+jUiI8KLTs48
-         iEOJTUdsvD+/5388KxyyMGvJjIL0hVjrET4d7H8kBC/jB29l6kcp+2bCE9vfi/Filq8X
-         6/mjkpNxoUoj31osEyWkIXXlZv0/LNUNRskXRzZfUvQuhopMTmGE2uQSR4Wtf/+bpCoZ
-         fb62lQtg6FKTAXPjY3kgKzSXAIdKHbUZbQdnfLV90v7GBWA4N4fSXRaVPMJyHJTJLkq/
-         mwwQ==
-X-Gm-Message-State: ABy/qLYI9zIc9u65mivDsIXrFez1Zm1cD16wb22+LptanuGkVkBS22gR
-        8h3b/QRAhhLr1TEcFp0rFkI=
-X-Google-Smtp-Source: APBJJlHwD5T0hI02QFCRKs9CDtc0FTWE17lYnAwkmOzKvsDjYMJ9puMNcByCKr+Z7+Gf22wp4xWuzA==
-X-Received: by 2002:a05:6512:3694:b0:4fb:8dcc:59e5 with SMTP id d20-20020a056512369400b004fb8dcc59e5mr1001179lfs.39.1689667877381;
-        Tue, 18 Jul 2023 01:11:17 -0700 (PDT)
+        bh=/eySJfQ7/Gc/AEP/cNfIUTGk9yVoHTH7Q2UCStgdmPk=;
+        b=aScr/y2Zu/sQGFrS+m9gy4ZCR3r3jq4qSncFb9410+OpQEiqF1MH5mQlUaz+qLP2PK
+         jdbYxSKau2RLjptTJmeI8GDMz5k/c/HLI6JCnBI4F8+I5zbIn1MBW9GQiRHlrtmmaOoa
+         fJwN8UPq/NiOam+VJEtC66H9rCs8WBpCOa3Yp2CiZLtmYJtUG6fQrC0qrtNJP6J8rtQA
+         ckOuz4wx6qYOVMkZ6ZBWXUDyAUB/m+8j5M6quXnoSh4j7weesaS97SEVbvXlAQ95lan/
+         aodRFaf++yE0A65HPcZJtAU3bvSXD/Yz68+FuRoyQbvLOKktC6/cIrmOJ3Z8CHdEP1LV
+         HT/Q==
+X-Gm-Message-State: ABy/qLZdd1xQVkUaJf+6Fp1RSJUvJjEjWMLKSHqZPT/aFX8AqUberSpy
+        hwCxF8i6GuJDgaS0cYs/hdqoy7dar68=
+X-Google-Smtp-Source: APBJJlFUcyYNxBMp/Ez4i7yBxOUkaSiUF+hhVo3KRjjCatmyU6lTEJosDE+EkEfmsxzp8bFfdalcVg==
+X-Received: by 2002:a05:600c:2046:b0:3fa:8422:158d with SMTP id p6-20020a05600c204600b003fa8422158dmr1225340wmg.18.1689668061660;
+        Tue, 18 Jul 2023 01:14:21 -0700 (PDT)
 Received: from localhost ([37.174.75.194])
-        by smtp.gmail.com with ESMTPSA id g15-20020adff40f000000b00316f9abf073sm1627560wro.82.2023.07.18.01.11.16
+        by smtp.gmail.com with ESMTPSA id e16-20020adffc50000000b0031432c2fb95sm1626137wrs.88.2023.07.18.01.14.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 18 Jul 2023 01:11:17 -0700 (PDT)
+        Tue, 18 Jul 2023 01:14:21 -0700 (PDT)
 From:   Raphael Gallais-Pou <rgallaispou@gmail.com>
 To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: [PATCH v2] staging: fbtft: ili9341: use macro FBTFT_REGISTER_SPI_DRIVER
-Date:   Tue, 18 Jul 2023 10:14:18 +0200
-Message-ID: <20230718081418.28225-1-rgallaispou@gmail.com>
+Subject: [PATCH RESEND v2] staging: fbtft: ili9341: use macro FBTFT_REGISTER_SPI_DRIVER
+Date:   Tue, 18 Jul 2023 10:17:59 +0200
+Message-ID: <20230718081759.28902-1-rgallaispou@gmail.com>
 X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -65,6 +65,10 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Using FBTFT_REGISTER_DRIVER resolves to a NULL struct spi_device_id. This
 ultimately causes a warning when the module probes. Fixes it.
+
+Changes in v2:
+	- dropped MODULE_ALIAS changes
+	- changed commit log for more accurate description
 
 Signed-off-by: Raphael Gallais-Pou <rgallaispou@gmail.com>
 ---

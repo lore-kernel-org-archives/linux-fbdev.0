@@ -2,120 +2,68 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BBD8EB64DA
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 12:17:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A78EEB64DA
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 13:33:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231135AbjGRMRo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Jul 2023 08:17:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44470 "EHLO
+        id S232095AbjGRNdq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Jul 2023 09:33:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37684 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229740AbjGRMRn (ORCPT
+        with ESMTP id S232757AbjGRNdo (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Jul 2023 08:17:43 -0400
-Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de [80.237.130.52])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0932EE43;
-        Tue, 18 Jul 2023 05:17:41 -0700 (PDT)
-Received: from [2a02:8108:8980:2478:8cde:aa2c:f324:937e]; authenticated
-        by wp530.webpack.hosteurope.de running ExIM with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        id 1qLje3-0001Gz-HV; Tue, 18 Jul 2023 14:17:35 +0200
-Message-ID: <2148b246-96e8-3beb-c21d-904df215cded@leemhuis.info>
-Date:   Tue, 18 Jul 2023 14:17:34 +0200
+        Tue, 18 Jul 2023 09:33:44 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A4B7CE5;
+        Tue, 18 Jul 2023 06:33:43 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 345526158A;
+        Tue, 18 Jul 2023 13:33:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF596C433C8;
+        Tue, 18 Jul 2023 13:33:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1689687222;
+        bh=/gnZG6o0DMnotHgfldqGvalM6a/Vulwkk2wHnxMrZAA=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=upk/z28T72VgEyaJkNGdvIrsytrYpric58NXQB6VYUVRyy3OcNMqBWEtVf4ZIsT04
+         46s9mJsM3Ox9Mg6EJqNjwVJqwnJfiQWrUisHJ82lvg9rJh/9MzFuZZkBapJHUcy8Zl
+         0MJdaybC9IRqWDbu3/WTtODTkXY/jyp0H69miUmY=
+Date:   Tue, 18 Jul 2023 15:33:35 +0200
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Raphael Gallais-Pou <rgallaispou@gmail.com>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RESEND v2] staging: fbtft: ili9341: use macro
+ FBTFT_REGISTER_SPI_DRIVER
+Message-ID: <2023071817-enslave-unlovable-f8ae@gregkh>
+References: <20230718081759.28902-1-rgallaispou@gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: linux-next: Tree for Jul 13 (drivers/video/fbdev/ps3fb.c)
-Content-Language: en-US, de-DE
-To:     Michael Ellerman <mpe@ellerman.id.au>,
-        Bagas Sanjaya <bagasdotme@gmail.com>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Stephen Rothwell <sfr@canb.auug.org.au>,
-        Linux Next Mailing List <linux-next@vger.kernel.org>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Helge Deller <deller@gmx.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        linux-fbdev@vger.kernel.org,
-        Linux PowerPC <linuxppc-dev@lists.ozlabs.org>,
-        Linux Regressions <regressions@lists.linux.dev>,
-        Geoff Levand <geoff@infradead.org>
-References: <20230713123710.5d7d81e4@canb.auug.org.au>
- <ccc63065-2976-88ef-1211-731330bf2866@infradead.org>
- <ZLYHtVuS7AElXcCb@debian.me> <874jm1jv9m.fsf@mail.lhotse>
-From:   "Linux regression tracking (Thorsten Leemhuis)" 
-        <regressions@leemhuis.info>
-Reply-To: Linux regressions mailing list <regressions@lists.linux.dev>
-In-Reply-To: <874jm1jv9m.fsf@mail.lhotse>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-bounce-key: webpack.hosteurope.de;regressions@leemhuis.info;1689682662;87baaa02;
-X-HE-SMSGID: 1qLje3-0001Gz-HV
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230718081759.28902-1-rgallaispou@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Michael, thx for looking into this!
-
-On 18.07.23 13:48, Michael Ellerman wrote:
-> Bagas Sanjaya <bagasdotme@gmail.com> writes:
->> On Thu, Jul 13, 2023 at 09:11:10AM -0700, Randy Dunlap wrote:
->>> on ppc64:
->>>
->>> In file included from ../include/linux/device.h:15,
->>>                  from ../arch/powerpc/include/asm/io.h:22,
->>>                  from ../include/linux/io.h:13,
->>>                  from ../include/linux/irq.h:20,
->>>                  from ../arch/powerpc/include/asm/hardirq.h:6,
->>>                  from ../include/linux/hardirq.h:11,
->>>                  from ../include/linux/interrupt.h:11,
->>>                  from ../drivers/video/fbdev/ps3fb.c:25:
->>> ../drivers/video/fbdev/ps3fb.c: In function 'ps3fb_probe':
->>> ../drivers/video/fbdev/ps3fb.c:1172:40: error: 'struct fb_info' has no member named 'dev'
->>>  1172 |                  dev_driver_string(info->dev), dev_name(info->dev),
->>>       |                                        ^~
->>> ../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
->>>   110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
->>>       |                                     ^~~~~~~~~~~
->>> ../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
->>>  1171 |         dev_info(info->device, "%s %s, using %u KiB of video memory\n",
->>>       |         ^~~~~~~~
->>> ../drivers/video/fbdev/ps3fb.c:1172:61: error: 'struct fb_info' has no member named 'dev'
->>>  1172 |                  dev_driver_string(info->dev), dev_name(info->dev),
->>>       |                                                             ^~
->>> ../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
->>>   110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
->>>       |                                     ^~~~~~~~~~~
->>> ../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
->>>  1171 |         dev_info(info->device, "%s %s, using %u KiB of video memory\n",
->>>       |         ^~~~~~~~
->>>
->>>
->>
->> Hmm, there is no response from Thomas yet. I guess we should go with
->> reverting bdb616479eff419, right? Regardless, I'm adding this build regression
->> to regzbot so that parties involved are aware of it:
->>
->> #regzbot ^introduced: bdb616479eff419
->> #regzbot title: build regression in PS3 framebuffer
+On Tue, Jul 18, 2023 at 10:17:59AM +0200, Raphael Gallais-Pou wrote:
+> Using FBTFT_REGISTER_DRIVER resolves to a NULL struct spi_device_id. This
+> ultimately causes a warning when the module probes. Fixes it.
 > 
-> Does regzbot track issues in linux-next?
-
-It can, I made sure of that in case somebody want to use this sooner or
-later (and it wasn't much work), but I don't actively use this
-functionally right now and do not plan to do so, there are more
-important issues to spend time on.
-
-> They're not really regressions because they're not in a release yet.
+> Changes in v2:
+> 	- dropped MODULE_ALIAS changes
+> 	- changed commit log for more accurate description
 > 
-> Anyway I don't see where bdb616479eff419 comes from.
+> Signed-off-by: Raphael Gallais-Pou <rgallaispou@gmail.com>
+> ---
+>  drivers/staging/fbtft/fb_ili9341.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-That makes two of us :-D
+Why is this a resend?
 
-> The issue was introduced by:
-> 
->   701d2054fa31 fbdev: Make support for userspace interfaces configurable
+And the changes need to go below the --- line as per the documentation.
 
-Ahh, that makes a lot more sense. While at it, let me tell regzbot:
+thanks,
 
-#regzbot introduced: 701d2054fa31
-
-Ciao, Thorsten
+greg k-h

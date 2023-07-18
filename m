@@ -2,51 +2,51 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C166EB64DC
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 19:28:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CAFFEEB64DC
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 19:36:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229879AbjGRT2H (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Jul 2023 15:28:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54348 "EHLO
+        id S229849AbjGRTg5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Jul 2023 15:36:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57512 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229843AbjGRT2H (ORCPT
+        with ESMTP id S229838AbjGRTg4 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Jul 2023 15:28:07 -0400
-Received: from new2-smtp.messagingengine.com (new2-smtp.messagingengine.com [66.111.4.224])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5DEE5198D;
-        Tue, 18 Jul 2023 12:27:59 -0700 (PDT)
+        Tue, 18 Jul 2023 15:36:56 -0400
+Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com [66.111.4.25])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 353A7198D;
+        Tue, 18 Jul 2023 12:36:55 -0700 (PDT)
 Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-        by mailnew.nyi.internal (Postfix) with ESMTP id 1E0F55801F1;
-        Tue, 18 Jul 2023 15:27:56 -0400 (EDT)
+        by mailout.nyi.internal (Postfix) with ESMTP id 651A45C004D;
+        Tue, 18 Jul 2023 15:36:54 -0400 (EDT)
 Received: from imap51 ([10.202.2.101])
-  by compute6.internal (MEProxy); Tue, 18 Jul 2023 15:27:56 -0400
+  by compute6.internal (MEProxy); Tue, 18 Jul 2023 15:36:54 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
         :cc:content-type:content-type:date:date:from:from:in-reply-to
         :in-reply-to:message-id:mime-version:references:reply-to:sender
-        :subject:subject:to:to; s=fm2; t=1689708476; x=1689715676; bh=3v
-        5olxqQbLHEUCw1wGcplsHOcuOaFlaTEOubTkDMSCY=; b=EKxjS+X8XjLaKcSjTM
-        7VlHdd5cD4mhgvP83FlCd2TWGW9gfWbhvLBagTe+GE2se/43Ik0MCMjjT2c3bdVS
-        KM5EMAg+Be1ww/HAkXJQibi11eulu31uXuD8eA9hDrgaUZjG+PlI+zFItCfMHoWs
-        3gOT8/VbI3erWYArJZVYwO3Kl4m3KxhlZ3QinLJpPnkjaOpOJJFdXexgEg+Uaj1h
-        hzvqtFXJ0Aj03BMVE0CKhX77LXn7hxYibm8XZGb9Gk3ZCr5vR/M1azcftLFJQjMv
-        npTyGxx9wunQ4OaVn2H0dKJx1uLZTS8pEF+28/M8Xr4oYYklVZGTMVZSj5mR47Y/
-        1QGg==
+        :subject:subject:to:to; s=fm2; t=1689709014; x=1689795414; bh=9Y
+        F80M8AumnJ2cGW1p1PoEqywaxWXZl7S/aY3kdi8QM=; b=h+oY/Y54OyZ945XdUb
+        1Z91zhj3lumlF6L8R+VwhlL1j0Bz9j2pq90XdqULhHF/1C2jQ4uCdbY1fh6JgQh9
+        0PGy4aUaF3ovo/VHO9pHQkUZNMElIsy0ZSHVi9tkbOfbMb94PahIhFbw5N3jTXBh
+        m031K0XKyNuBpUbaEBHFArJb2p85Jnw+vvMaRBIJk/IdLDxS0uxQx6dy+4frpd1r
+        Gb0whYzmeQa5etv6OJwz8yP9NXbf603WAvGd3NVJ55QEw4xFbDQ587+Gi4b2gco0
+        1tlg+qrGnX6Gxge75/pX4+stU4oE+7TWDY2pVl68jJB5b+R3v+z7pupmoygQ8rIK
+        wJzA==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
         messagingengine.com; h=cc:cc:content-type:content-type:date:date
         :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
         :message-id:mime-version:references:reply-to:sender:subject
         :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-        :x-sasl-enc; s=fm3; t=1689708476; x=1689715676; bh=3v5olxqQbLHEU
-        Cw1wGcplsHOcuOaFlaTEOubTkDMSCY=; b=lBfpAEOc91iqQkRxRnoe9r+Hc5VIe
-        u7P5e6pp7ptT9MD7v+vbSgYEJWI/gQN+Us99eRkCBxtnSFcTcV9G7vD6j9S+zz+6
-        FkSX02PMrF9Y2Sv9ysEOHnZ9N7XJNZstKoKNiOB8F5/f1v4RnvCgR1H78b8fdGjt
-        SsagM7fSrar7+UIjkvtYnzMsDpKPGcGfsYZJkTwRGI6IZvweGi1rwOSfZyvyAEhU
-        psuTd1bR7/soXkHz9fcPh9Doe1k6ES6od3X0XHrQWnsim1g1R1o7VArXK/CLB+8y
-        mNUsS47U6pb/swIoGGP9KPHKpphRgwaX1SpvzHteSUE/SkBW3bTLAaW0g==
-X-ME-Sender: <xms:uue2ZM1E1bss64jhpTKf0hTUOXiDK83ymplhDc67gSPSgkymXlYTIw>
-    <xme:uue2ZHGVkBAGx-e0H3YA_pTmINI0cyYa4_ygqX1ZWuIGT29Pscd0F0_nBfrJyftUl
-    Kh9ie8maIyGoPDC-2w>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrgeeggddufeegucetufdoteggodetrfdotf
+        :x-sasl-enc; s=fm3; t=1689709014; x=1689795414; bh=9YF80M8AumnJ2
+        cGW1p1PoEqywaxWXZl7S/aY3kdi8QM=; b=YxBbmiuRs0uw7FqpqHCzEz9YE3PZf
+        h7J0GzqAvn9Tls1RgXgr9HmYSGW8G9V1R+f4hXlkuqiCIIKWtNjSbqeFnIJzCMAI
+        vyoNNcTeAHJAWasrTPfdM9F1Oo0ocTlK70no13F7Q92bCzlgO7nvRnyQqb76PCiH
+        7JZjMcQDDIyp/Vj4OMuSjhcVioxhBVEEiADAoqnlpDGIoBs0vx6+fqpHlYBBf1mi
+        kQyNNwY5ZoEvZydZoeNh4yCKB88tIBT6/ZhzySspCPItjcGIXCQhyntnIFNISspi
+        eY1GNrzGyvPpsS8ZpWcnJUOfxyfeTo2uIRaxxhRfNu9bnoapTB57nBHVw==
+X-ME-Sender: <xms:1em2ZDVD5aTbjBESKA-j3p2A3tHRoQ2de3w3wycByaC7ifZRtYzF8w>
+    <xme:1em2ZLlX0WJsfXhNhL5VPe7GU-dgK1knFvckGZIX5u9NYt-njPETWu_ystcoJLSjS
+    _e4hPPn3pMBILBmB0U>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrgeeggddufeeiucetufdoteggodetrfdotf
     fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
     uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
     cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
@@ -54,119 +54,75 @@ X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrgeeggddufeegucetufdoteggod
     htvghrnhepffehueegteeihfegtefhjefgtdeugfegjeelheejueethfefgeeghfektdek
     teffnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
     hrnhgusegrrhhnuggsrdguvg
-X-ME-Proxy: <xmx:uue2ZE5_X60ZxILcTJhPmhrD8RNolXcUtdyUb8WWA1db88eCph9FcQ>
-    <xmx:uue2ZF201OJvOoAueRbhOsR24Ir5NUex5TUsnU8ONLHEw7um30ahtw>
-    <xmx:uue2ZPEdnNbd8cxgOP2NRIDDLW4-wIas0x5OMFJLOHy3oprBmU0BXg>
-    <xmx:vOe2ZN-w3E9C_QMOeeMdT0x9Znrg8uctEno_w7BLhBRzJsVfdT4_1Q>
+X-ME-Proxy: <xmx:1em2ZPbn3mvk73znuzLL2wnwc-zGBTLR5k16kD3qqibq8oqDWzBMiA>
+    <xmx:1em2ZOUz-6EAzWUVZaactFrJln0jxCXuDmzGeSj-QWQ0k5nS8UCSgA>
+    <xmx:1em2ZNma9FHf5mWkdhz5pLFGx83A8ATVzCDFtUd-W1bHIhb6nYZXYQ>
+    <xmx:1um2ZP65j7T_qcONMk4_-hS1eLQshNefVimFaTBIO8cW3O2nktIpOg>
 Feedback-ID: i56a14606:Fastmail
 Received: by mailuser.nyi.internal (Postfix, from userid 501)
-        id 357ECB60086; Tue, 18 Jul 2023 15:27:54 -0400 (EDT)
+        id B6543B60086; Tue, 18 Jul 2023 15:36:53 -0400 (EDT)
 X-Mailer: MessagingEngine.com Webmail Interface
 User-Agent: Cyrus-JMAP/3.9.0-alpha0-531-gfdfa13a06d-fm-20230703.001-gfdfa13a0
 Mime-Version: 1.0
-Message-Id: <91486e8b-49ca-4a8a-8dd6-e9a2c6ed63ee@app.fastmail.com>
-In-Reply-To: <20230714171642.91185-4-javierm@redhat.com>
+Message-Id: <f925fa1c-a6db-4032-8adc-d6aba8cd2ef8@app.fastmail.com>
+In-Reply-To: <20230714171642.91185-3-javierm@redhat.com>
 References: <20230714171642.91185-1-javierm@redhat.com>
- <20230714171642.91185-4-javierm@redhat.com>
-Date:   Tue, 18 Jul 2023 21:27:32 +0200
+ <20230714171642.91185-3-javierm@redhat.com>
+Date:   Tue, 18 Jul 2023 21:36:30 +0200
 From:   "Arnd Bergmann" <arnd@arndb.de>
 To:     "Javier Martinez Canillas" <javierm@redhat.com>,
         linux-kernel@vger.kernel.org
 Cc:     "Geert Uytterhoeven" <geert@linux-m68k.org>,
         "Thomas Zimmermann" <tzimmermann@suse.de>,
         "Andy Shevchenko" <andriy.shevchenko@linux.intel.com>,
-        "Borislav Petkov" <bp@alien8.de>,
-        "Daniel Thompson" <daniel.thompson@linaro.org>,
-        "Daniel Vetter" <daniel@ffwll.ch>,
-        "Dave Hansen" <dave.hansen@linux.intel.com>,
-        "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
-        "H. Peter Anvin" <hpa@zytor.com>, "Helge Deller" <deller@gmx.de>,
-        "Ingo Molnar" <mingo@redhat.com>,
-        "Jingoo Han" <jingoohan1@gmail.com>, "Lee Jones" <lee@kernel.org>,
+        "Daniel Vetter" <daniel@ffwll.ch>, "Helge Deller" <deller@gmx.de>,
         "Randy Dunlap" <rdunlap@infradead.org>,
-        "Sam Ravnborg" <sam@ravnborg.org>,
-        "Thomas Gleixner" <tglx@linutronix.de>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        x86@kernel.org
-Subject: Re: [PATCH v5 3/4] fbdev: Split frame buffer support in FB and FB_CORE symbols
+        "Sam Ravnborg" <sam@ravnborg.org>, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v5 2/4] fbdev: Move core fbdev symbols to a separate Kconfig file
 Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 On Fri, Jul 14, 2023, at 19:16, Javier Martinez Canillas wrote:
-> Currently the CONFIG_FB option has to be enabled even if no legacy fbdev
-> drivers are needed (e.g: only to have support for framebuffer consoles).
+> The drivers/video/fbdev/Kconfig defines both symbols for fbdev drivers and
+> core fbdev symbols, that can be enabled independently of the fbdev drivers.
 >
-> The DRM subsystem has a fbdev emulation layer, but depends on CONFIG_FB
-> and so it can only be enabled if that dependency is enabled as well.
+> Split the Kconfig in two, one that only has the symbols for fbdev drivers
+> and another one that contains the fbdev core symbols.
 >
-> That means fbdev drivers have to be explicitly disabled if users want to
-> enable CONFIG_FB, only to use fbcon and/or the DRM fbdev emulation layer.
->
-> This patch introduces a non-visible CONFIG_FB_CORE symbol that could be
-> enabled just to have core support needed for CONFIG_DRM_FBDEV_EMULATION,
-> allowing CONFIG_FB to be disabled (and automatically disabling all the
-> fbdev drivers).
->
-> Nothing from fb_backlight.o and fbmon.o is used by the DRM fbdev emulation
-> layer so these two objects can be compiled out when CONFIG_FB is disabled.
+> Suggested-by: Arnd Bergmann <arnd@arndb.de>
+> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+> ---
 
-I gave this a spin in my randconfig build setup and found one small
-mistake:
+While testing this patch series, I noticed a conflict against
+Thomas Zimmermann's series for FB_SYS_HELPERS_DEFERRED, so you'll
+have to adapt the patches in order to apply them on top.
 
-> diff --git a/drivers/video/fbdev/core/Makefile 
-> b/drivers/video/fbdev/core/Makefile
-> index 9150bafd9e89..2cd213716c12 100644
-> --- a/drivers/video/fbdev/core/Makefile
-> +++ b/drivers/video/fbdev/core/Makefile
-> @@ -1,10 +1,10 @@
->  # SPDX-License-Identifier: GPL-2.0
->  obj-$(CONFIG_FB_NOTIFY)           += fb_notify.o
-> -obj-$(CONFIG_FB)                  += fb.o
-> -fb-y                              := fb_backlight.o \
-> -                                     fb_info.o \
-> -                                     fbmem.o fbmon.o fbcmap.o \
-> +obj-$(CONFIG_FB_CORE)             += fb.o
-> +fb-y                              := fb_info.o \
-> +                                     fbmem.o fbcmap.o \
->                                       modedb.o fbcvt.o fb_cmdline.o 
-> fb_io_fops.o
-> +fb-$(CONFIG_FB)                   += fb_backlight.o fbmon.o
+> +
+> +config FB_HECUBA
+> +	tristate
+> +	depends on FB
+> +	depends on FB_DEFERRED_IO
+> +
+> +config FB_SVGALIB
+> +	tristate
+> +	depends on FB
+> +	help
+> +	  Common utility functions useful to fbdev drivers of VGA-based
+> +	  cards.
+> +
+> +config FB_MACMODES
+> +	tristate
+> +	depends on FB
+> +
 
-With CONFIG_FB_CORE=y and CONFIG_FB=m, Kbuild does not include
-the fb_backlight.o and fbmon.o files in fb.ko because they are not
-set to =y, causing link failures for fbdev drivers later:
+The FB_HECUBA now needs 'FB_SYS_HELPERS_DEFERRED' instead
+of 'FB_DEFERRED_IO', which is the change done in the other
+patch. I think the best way of doing that would be to just
+not move the three symbols above to core/Kconfig but leave them
+in place, as they are all just helper modules for some other
+drivers, rather than core code.
 
-ERROR: modpost: "of_get_fb_videomode" [drivers/video/fbdev/clps711x-fb.ko] undefined!
-ERROR: modpost: "fb_videomode_from_videomode" [drivers/video/fbdev/atmel_lcdfb.ko] undefined!
-ERROR: modpost: "of_get_fb_videomode" [drivers/video/fbdev/imxfb.ko] undefined!
-ERROR: modpost: "fb_destroy_modedb" [drivers/video/fbdev/udlfb.ko] undefined!
-ERROR: modpost: "fb_edid_to_monspecs" [drivers/video/fbdev/udlfb.ko] undefined!
-ERROR: modpost: "fb_destroy_modedb" [drivers/video/fbdev/smscufx.ko] undefined!
-ERROR: modpost: "fb_edid_to_monspecs" [drivers/video/fbdev/smscufx.ko] undefined!
-ERROR: modpost: "fb_destroy_modedb" [drivers/video/fbdev/uvesafb.ko] undefined!
-ERROR: modpost: "fb_validate_mode" [drivers/video/fbdev/uvesafb.ko] undefined!
-ERROR: modpost: "fb_get_mode" [drivers/video/fbdev/uvesafb.ko] undefined!
-
-
-Folding this fixup into the patch makes it work:
-
-diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
-index 2cd213716c12f..84ddc5d308b58 100644
---- a/drivers/video/fbdev/core/Makefile
-+++ b/drivers/video/fbdev/core/Makefile
-@@ -4,7 +4,9 @@ obj-$(CONFIG_FB_CORE)             += fb.o
- fb-y                              := fb_info.o \
-                                      fbmem.o fbcmap.o \
-                                      modedb.o fbcvt.o fb_cmdline.o fb_io_fops.o
--fb-$(CONFIG_FB)                   += fb_backlight.o fbmon.o
-+ifdef CONFIG_FB
-+fb-y		                   += fb_backlight.o fbmon.o
-+endif
- fb-$(CONFIG_FB_DEFERRED_IO)       += fb_defio.o
- fb-$(CONFIG_FB_DEVICE)            += fb_chrdev.o \
-                                      fb_procfs.o \
-
-
-     Arnd
+      Arnd

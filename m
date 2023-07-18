@@ -2,92 +2,160 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20BFBEB64DA
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 08:14:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9BF2C001DC
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 09:56:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230058AbjGRIOZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Jul 2023 04:14:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44026 "EHLO
+        id S232426AbjGRJ4f convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Jul 2023 05:56:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48428 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230231AbjGRIOY (ORCPT
+        with ESMTP id S232388AbjGRJ4K (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Jul 2023 04:14:24 -0400
-Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 799EDE7;
-        Tue, 18 Jul 2023 01:14:23 -0700 (PDT)
-Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-3fbf1b82de7so33821765e9.1;
-        Tue, 18 Jul 2023 01:14:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1689668062; x=1692260062;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=/eySJfQ7/Gc/AEP/cNfIUTGk9yVoHTH7Q2UCStgdmPk=;
-        b=XzGeZP2wfi7lajh/fHbLEBJLGoAEiqq93llvJZk83NQLWkpkhmJAPN4y6D1tu3zrxn
-         RFIt3dvm5FsiQrDmGigRFSxtj/klhPmQ86sy5b/xMdTu5m66zEilWY9Hjajhx+6OkUPY
-         iqX2cNwwDpxwU/8UNAHY4k4e/nCqWiQ//ioPJ8/0tLJkljRyQXzDVpx2og+MBslxVCk5
-         siOxXQU1aBTN3mWlYuQVKiamtHU829DnwSBRpsp7B6oFee9zU2kQbuwoPaLNEir5oKOJ
-         0VCPx9V1Bd8q3ZJ8+oVMKF1zmAzJ55XtzP1Br+PzvxynBNdBcv1YWWnONYKkFtTWrlCn
-         dCLw==
+        Tue, 18 Jul 2023 05:56:10 -0400
+Received: from mail-yb1-f177.google.com (mail-yb1-f177.google.com [209.85.219.177])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D6C7626B2;
+        Tue, 18 Jul 2023 02:55:12 -0700 (PDT)
+Received: by mail-yb1-f177.google.com with SMTP id 3f1490d57ef6-c2cf4e61bc6so5807310276.3;
+        Tue, 18 Jul 2023 02:55:12 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689668062; x=1692260062;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=/eySJfQ7/Gc/AEP/cNfIUTGk9yVoHTH7Q2UCStgdmPk=;
-        b=aScr/y2Zu/sQGFrS+m9gy4ZCR3r3jq4qSncFb9410+OpQEiqF1MH5mQlUaz+qLP2PK
-         jdbYxSKau2RLjptTJmeI8GDMz5k/c/HLI6JCnBI4F8+I5zbIn1MBW9GQiRHlrtmmaOoa
-         fJwN8UPq/NiOam+VJEtC66H9rCs8WBpCOa3Yp2CiZLtmYJtUG6fQrC0qrtNJP6J8rtQA
-         ckOuz4wx6qYOVMkZ6ZBWXUDyAUB/m+8j5M6quXnoSh4j7weesaS97SEVbvXlAQ95lan/
-         aodRFaf++yE0A65HPcZJtAU3bvSXD/Yz68+FuRoyQbvLOKktC6/cIrmOJ3Z8CHdEP1LV
-         HT/Q==
-X-Gm-Message-State: ABy/qLZdd1xQVkUaJf+6Fp1RSJUvJjEjWMLKSHqZPT/aFX8AqUberSpy
-        hwCxF8i6GuJDgaS0cYs/hdqoy7dar68=
-X-Google-Smtp-Source: APBJJlFUcyYNxBMp/Ez4i7yBxOUkaSiUF+hhVo3KRjjCatmyU6lTEJosDE+EkEfmsxzp8bFfdalcVg==
-X-Received: by 2002:a05:600c:2046:b0:3fa:8422:158d with SMTP id p6-20020a05600c204600b003fa8422158dmr1225340wmg.18.1689668061660;
-        Tue, 18 Jul 2023 01:14:21 -0700 (PDT)
-Received: from localhost ([37.174.75.194])
-        by smtp.gmail.com with ESMTPSA id e16-20020adffc50000000b0031432c2fb95sm1626137wrs.88.2023.07.18.01.14.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 18 Jul 2023 01:14:21 -0700 (PDT)
-From:   Raphael Gallais-Pou <rgallaispou@gmail.com>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: [PATCH RESEND v2] staging: fbtft: ili9341: use macro FBTFT_REGISTER_SPI_DRIVER
-Date:   Tue, 18 Jul 2023 10:17:59 +0200
-Message-ID: <20230718081759.28902-1-rgallaispou@gmail.com>
-X-Mailer: git-send-email 2.41.0
+        d=1e100.net; s=20221208; t=1689674112; x=1692266112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=dkfu4+zrfsEvNM/oP4wLx2h/8nsgQPK5hugPJnR2T8Y=;
+        b=bpbkAuFRysVLakByeshb8zpAsRtDwSouyWI2zK8LDbire43Ga6Px797CbkzAEiYTKh
+         piTAc/yW/QL3vr53oUbNpxFt5cPJkATey1YCK71ZQagCHeVXrO32uIis8HA7XLQFfqsW
+         S5n52bvq5HBIybyTxHoC8tZ3iUO5lzXGf0Oai+tGxmOCqcyqyD9P34lpYl0pQppd/BLd
+         xFtARFHae+ozxOlCh1aIc0RgweteWxn/3C7dNypw34JcK45OkiqAiJGGCJUzpWg6mavK
+         PqldY9eDrQR3+uGc4HbfLWR05ihT06SvVrQh22NKEjO2C3COV1RX6dSdLs3T51QHncMi
+         yoeg==
+X-Gm-Message-State: ABy/qLaKFV4gKKmCio9VcszED83JhY/l94h7gsHuaSgsQvcG/fREdS2p
+        Sq903AZKZLFu6PblYNwErObL3XvKfNFUbA==
+X-Google-Smtp-Source: APBJJlGPc04fhgxz0E0wgRdcDYs3513a4we7nVqGeT+GTp9gDnYZ0rkf654mHClpLr/GNVPMHelMGg==
+X-Received: by 2002:a25:6fc2:0:b0:c91:717e:7658 with SMTP id k185-20020a256fc2000000b00c91717e7658mr2408070ybc.2.1689674111749;
+        Tue, 18 Jul 2023 02:55:11 -0700 (PDT)
+Received: from mail-yb1-f178.google.com (mail-yb1-f178.google.com. [209.85.219.178])
+        by smtp.gmail.com with ESMTPSA id x71-20020a25ce4a000000b00cec105e03d1sm123056ybe.38.2023.07.18.02.55.10
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 18 Jul 2023 02:55:10 -0700 (PDT)
+Received: by mail-yb1-f178.google.com with SMTP id 3f1490d57ef6-bc379e4c1cbso5811573276.2;
+        Tue, 18 Jul 2023 02:55:10 -0700 (PDT)
+X-Received: by 2002:a25:860f:0:b0:cec:59f7:b352 with SMTP id
+ y15-20020a25860f000000b00cec59f7b352mr989091ybk.58.1689674110647; Tue, 18 Jul
+ 2023 02:55:10 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20230511181931.869812-1-tj@kernel.org> <20230511181931.869812-7-tj@kernel.org>
+ <ZF6WsSVGX3O1d0pL@slm.duckdns.org> <CAMuHMdVCQmh6V182q4g---jvsWiTOP2hBPZKvma6oUN6535LEg@mail.gmail.com>
+ <CAMuHMdW1kxZ1RHKTRVRqDNAbj1Df2=v0fPn5KYK3kfX_kiXR6A@mail.gmail.com>
+ <ZK3MBfPS-3-tJgjO@slm.duckdns.org> <ZK30CR196rs-OWLq@slm.duckdns.org>
+ <CAMuHMdUCXPi+aS-7bR3qRetKF9T3W9jk_HKjvaXmfHv5SEeuFg@mail.gmail.com> <ZLXIvXBvhsnL-ik_@slm.duckdns.org>
+In-Reply-To: <ZLXIvXBvhsnL-ik_@slm.duckdns.org>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Tue, 18 Jul 2023 11:54:58 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdU8CGhsU-1PZNdWH1xjbWcWSg2s2RFAegXi+vs=d-0t8Q@mail.gmail.com>
+Message-ID: <CAMuHMdU8CGhsU-1PZNdWH1xjbWcWSg2s2RFAegXi+vs=d-0t8Q@mail.gmail.com>
+Subject: Re: Consider switching to WQ_UNBOUND messages (was: Re: [PATCH v2
+ 6/7] workqueue: Report work funcs that trigger automatic CPU_INTENSIVE mechanism)
+To:     Tejun Heo <tj@kernel.org>
+Cc:     Lai Jiangshan <jiangshanlai@gmail.com>,
+        "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        kernel-team@meta.com, Linux PM list <linux-pm@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        linux-rtc@vger.kernel.org,
+        linux-riscv <linux-riscv@lists.infradead.org>,
+        netdev <netdev@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linux MMC List <linux-mmc@vger.kernel.org>,
+        "open list:LIBATA SUBSYSTEM (Serial and Parallel ATA drivers)" 
+        <linux-ide@vger.kernel.org>,
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Using FBTFT_REGISTER_DRIVER resolves to a NULL struct spi_device_id. This
-ultimately causes a warning when the module probes. Fixes it.
+Hi Tejun,
 
-Changes in v2:
-	- dropped MODULE_ALIAS changes
-	- changed commit log for more accurate description
+On Tue, Jul 18, 2023 at 1:03 AM Tejun Heo <tj@kernel.org> wrote:
+> Can you please the following patch and see how many reports you get? Looking
+> back at your reports, I think some of them probably should be converted to
+> UNBOUND but we should have a better idea with the adjusted threshold.
+>
+> Thanks.
+>
+> From 8555cbd4b22e5f85eb2bdcb84fd1d1f519a0a0d3 Mon Sep 17 00:00:00 2001
+> From: Tejun Heo <tj@kernel.org>
+> Date: Mon, 17 Jul 2023 12:50:02 -1000
+> Subject: [PATCH] workqueue: Scale up wq_cpu_intensive_thresh_us if BogoMIPS is
+>  below 1000
+>
+> wq_cpu_intensive_thresh_us is used to detect CPU-hogging per-cpu work items.
+> Once detected, they're excluded from concurrency management to prevent them
+> from blocking other per-cpu work items. If CONFIG_WQ_CPU_INTENSIVE_REPORT is
+> enabled, repeat offenders are also reported so that the code can be updated.
+>
+> The default threshold is 10ms which is long enough to do fair bit of work on
+> modern CPUs while short enough to be usually not noticeable. This
+> unfortunately leads to a lot of, arguable spurious, detections on very slow
+> CPUs. Using the same threshold across CPUs whose performance levels may be
+> apart by multiple levels of magnitude doesn't make whole lot of sense.
+>
+> This patch scales up wq_cpu_intensive_thresh_us upto 1 second when BogoMIPS
+> is below 1000. This is obviously very inaccurate but it doesn't have to be
+> accurate to be useful. The mechanism is still useful when the threshold is
+> fully scaled up and the benefits of reports are usually shared with everyone
+> regardless of who's reporting, so as long as there are sufficient number of
+> fast machines reporting, we don't lose much.
+>
+> Some (or is it all?) ARM CPUs systemtically report significantly lower
+> BogoMIPS. While this doesn't break anything, given how widespread ARM CPUs
+> are, it's at least a missed opportunity and it probably would be a good idea
+> to teach workqueue about it.
+>
+> Signed-off-by: Tejun Heo <tj@kernel.org>
 
-Signed-off-by: Raphael Gallais-Pou <rgallaispou@gmail.com>
----
- drivers/staging/fbtft/fb_ili9341.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thanks!
 
-diff --git a/drivers/staging/fbtft/fb_ili9341.c b/drivers/staging/fbtft/fb_ili9341.c
-index 9ccd0823c3ab..47e72b87d76d 100644
---- a/drivers/staging/fbtft/fb_ili9341.c
-+++ b/drivers/staging/fbtft/fb_ili9341.c
-@@ -145,7 +145,7 @@ static struct fbtft_display display = {
- 	},
- };
- 
--FBTFT_REGISTER_DRIVER(DRVNAME, "ilitek,ili9341", &display);
-+FBTFT_REGISTER_SPI_DRIVER(DRVNAME, "ilitek", "ili9341", &display);
- 
- MODULE_ALIAS("spi:" DRVNAME);
- MODULE_ALIAS("platform:" DRVNAME);
--- 
-2.41.0
+I gave it a try on a system with an 800 MHz Cortex A9, only to discover
+it makes no difference, as that machine has 1600 BogoMIPS:
 
+workqueue: drm_fb_helper_damage_work hogged CPU for >10000us 4 times,
+consider switching to WQ_UNBOUND
+workqueue: drm_fb_helper_damage_work hogged CPU for >10000us 8 times,
+consider switching to WQ_UNBOUND
+workqueue: genpd_power_off_work_fn hogged CPU for >10000us 4 times,
+consider switching to WQ_UNBOUND
+workqueue: blk_mq_run_work_fn hogged CPU for >10000us 4 times,
+consider switching to WQ_UNBOUND
+workqueue: pm_runtime_work hogged CPU for >10000us 4 times, consider
+switching to WQ_UNBOUND
+workqueue: phy_state_machine hogged CPU for >10000us 4 times, consider
+switching to WQ_UNBOUND
+workqueue: drm_mode_rmfb_work_fn hogged CPU for >10000us 4 times,
+consider switching to WQ_UNBOUND
+workqueue: sync_hw_clock hogged CPU for >10000us 4 times, consider
+switching to WQ_UNBOUND
+workqueue: rtc_timer_do_work hogged CPU for >10000us 4 times, consider
+switching to WQ_UNBOUND
+
+Artificially low BogoMIPS numbers only happen on systems that have
+the related timers (Cortex A7/A15 and later, Cortex A9 MPCore,
+and arm64).
+
+I will test on more systems, but that will probably not happen until
+next week...
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

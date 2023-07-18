@@ -2,114 +2,129 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 191D0C001DC
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 10:58:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC01DEB64DA
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 11:48:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231985AbjGRK6W (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Jul 2023 06:58:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55940 "EHLO
+        id S232198AbjGRLsV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Jul 2023 07:48:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55040 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231901AbjGRK6P (ORCPT
+        with ESMTP id S232127AbjGRLsU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Jul 2023 06:58:15 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C8C0E77;
-        Tue, 18 Jul 2023 03:58:14 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        Tue, 18 Jul 2023 07:48:20 -0400
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72F19C0;
+        Tue, 18 Jul 2023 04:48:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+        s=201909; t=1689680892;
+        bh=qkoJ1TZtcbRhGyivE/SKxy/6onKpIFRvIjW5wMAgnBM=;
+        h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+        b=YEPnsELMRu2D63Po1X6IMo2QJZo1eeq40G3q70WNISWlYL4FRhEQ37pMLkjrQ4mBJ
+         5xNE2tapB5aAsebvtRoEMWnJHZJHmRjcjvPQxEzbUGzfGCN0z3SgXv3Uq8G67davGC
+         yCQFDYEKUu6fF7/8ssxM376PlGMPjTbRjCKwtC+uUHfyIGoRvXbuUKPSBkqDIDq5q7
+         JcTEVmEwbilBc37Z9U3ob+DNVY9aeD8LGCJ4AlAZSxnwgoSkhyVSCn7AzDSyxV2WCM
+         az8MGdjlTUrwvozShNmcwBuTGqiXLAPAmWYSKo0MeWf+ZGMWkn85vFDjMsOC12FZ5p
+         SUB7lDSRwQTRQ==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id C711B61514;
-        Tue, 18 Jul 2023 10:58:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 626C4C433C8;
-        Tue, 18 Jul 2023 10:58:09 +0000 (UTC)
-Message-ID: <263b3c0f-53cf-14b6-b956-e0f5b03c95b5@xs4all.nl>
-Date:   Tue, 18 Jul 2023 12:58:07 +0200
+        by mail.ozlabs.org (Postfix) with ESMTPSA id 4R4xzG5srnz4wxV;
+        Tue, 18 Jul 2023 21:48:10 +1000 (AEST)
+From:   Michael Ellerman <mpe@ellerman.id.au>
+To:     Bagas Sanjaya <bagasdotme@gmail.com>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Stephen Rothwell <sfr@canb.auug.org.au>,
+        Linux Next Mailing List <linux-next@vger.kernel.org>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Helge Deller <deller@gmx.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        linux-fbdev@vger.kernel.org,
+        Linux PowerPC <linuxppc-dev@lists.ozlabs.org>,
+        Linux Regressions <regressions@lists.linux.dev>,
+        Geoff Levand <geoff@infradead.org>
+Subject: Re: linux-next: Tree for Jul 13 (drivers/video/fbdev/ps3fb.c)
+In-Reply-To: <ZLYHtVuS7AElXcCb@debian.me>
+References: <20230713123710.5d7d81e4@canb.auug.org.au>
+ <ccc63065-2976-88ef-1211-731330bf2866@infradead.org>
+ <ZLYHtVuS7AElXcCb@debian.me>
+Date:   Tue, 18 Jul 2023 21:48:05 +1000
+Message-ID: <874jm1jv9m.fsf@mail.lhotse>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.12.0
-Subject: Re: [PATCH v4 11/18] media: Remove flag FBINFO_FLAG_DEFAULT from
- fbdev drivers
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
-        javierm@redhat.com, geert@linux-m68k.org, dan.carpenter@linaro.org
-Cc:     linux-sh@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org,
-        linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-arm-kernel@lists.infradead.org,
-        linux-geode@lists.infradead.org, linux-hyperv@vger.kernel.org,
-        linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        kvm@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-        Andy Walls <awalls@md.metrocast.net>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>
-References: <20230715185343.7193-1-tzimmermann@suse.de>
- <20230715185343.7193-12-tzimmermann@suse.de>
-From:   Hans Verkuil <hverkuil@xs4all.nl>
-In-Reply-To: <20230715185343.7193-12-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+Bagas Sanjaya <bagasdotme@gmail.com> writes:
+> On Thu, Jul 13, 2023 at 09:11:10AM -0700, Randy Dunlap wrote:
+>> on ppc64:
+>> 
+>> In file included from ../include/linux/device.h:15,
+>>                  from ../arch/powerpc/include/asm/io.h:22,
+>>                  from ../include/linux/io.h:13,
+>>                  from ../include/linux/irq.h:20,
+>>                  from ../arch/powerpc/include/asm/hardirq.h:6,
+>>                  from ../include/linux/hardirq.h:11,
+>>                  from ../include/linux/interrupt.h:11,
+>>                  from ../drivers/video/fbdev/ps3fb.c:25:
+>> ../drivers/video/fbdev/ps3fb.c: In function 'ps3fb_probe':
+>> ../drivers/video/fbdev/ps3fb.c:1172:40: error: 'struct fb_info' has no member named 'dev'
+>>  1172 |                  dev_driver_string(info->dev), dev_name(info->dev),
+>>       |                                        ^~
+>> ../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
+>>   110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
+>>       |                                     ^~~~~~~~~~~
+>> ../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
+>>  1171 |         dev_info(info->device, "%s %s, using %u KiB of video memory\n",
+>>       |         ^~~~~~~~
+>> ../drivers/video/fbdev/ps3fb.c:1172:61: error: 'struct fb_info' has no member named 'dev'
+>>  1172 |                  dev_driver_string(info->dev), dev_name(info->dev),
+>>       |                                                             ^~
+>> ../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
+>>   110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
+>>       |                                     ^~~~~~~~~~~
+>> ../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
+>>  1171 |         dev_info(info->device, "%s %s, using %u KiB of video memory\n",
+>>       |         ^~~~~~~~
+>> 
+>> 
+>
+> Hmm, there is no response from Thomas yet. I guess we should go with
+> reverting bdb616479eff419, right? Regardless, I'm adding this build regression
+> to regzbot so that parties involved are aware of it:
+>
+> #regzbot ^introduced: bdb616479eff419
+> #regzbot title: build regression in PS3 framebuffer
 
-On 15/07/2023 20:51, Thomas Zimmermann wrote:
-> The flag FBINFO_FLAG_DEFAULT is 0 and has no effect, as struct
-> fbinfo.flags has been allocated to zero by kzalloc(). So do not
-> set it.
-> 
-> Flags should signal differences from the default values. After cleaning
-> up all occurrences of FBINFO_DEFAULT, the token will be removed.
-> 
-> v2:
-> 	* fix commit message (Miguel)
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Andy Walls <awalls@md.metrocast.net>
-> Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
-> Cc: Hans Verkuil <hverkuil@xs4all.nl>
-> ---
->  drivers/media/pci/ivtv/ivtvfb.c              | 1 -
->  drivers/media/test-drivers/vivid/vivid-osd.c | 1 -
->  2 files changed, 2 deletions(-)
+Does regzbot track issues in linux-next?
 
-I can take this patches for 6.6, unless you prefer to have this whole series
-merged in one go?
+They're not really regressions because they're not in a release yet.
 
-In that case you can use my:
+Anyway I don't see where bdb616479eff419 comes from.
 
-Reviewed-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+The issue was introduced by:
 
-Regards,
+  701d2054fa31 fbdev: Make support for userspace interfaces configurable
 
-	Hans
+The driver seems to only use info->dev in that one dev_info() line,
+which seems purely cosmetic, so I think it could just be removed, eg:
 
-> 
-> diff --git a/drivers/media/pci/ivtv/ivtvfb.c b/drivers/media/pci/ivtv/ivtvfb.c
-> index 0aeb9daaee4c..23c8c094e791 100644
-> --- a/drivers/media/pci/ivtv/ivtvfb.c
-> +++ b/drivers/media/pci/ivtv/ivtvfb.c
-> @@ -1048,7 +1048,6 @@ static int ivtvfb_init_vidmode(struct ivtv *itv)
->  	/* Generate valid fb_info */
->  
->  	oi->ivtvfb_info.node = -1;
-> -	oi->ivtvfb_info.flags = FBINFO_FLAG_DEFAULT;
->  	oi->ivtvfb_info.par = itv;
->  	oi->ivtvfb_info.var = oi->ivtvfb_defined;
->  	oi->ivtvfb_info.fix = oi->ivtvfb_fix;
-> diff --git a/drivers/media/test-drivers/vivid/vivid-osd.c b/drivers/media/test-drivers/vivid/vivid-osd.c
-> index ec25edc679b3..051f1805a16d 100644
-> --- a/drivers/media/test-drivers/vivid/vivid-osd.c
-> +++ b/drivers/media/test-drivers/vivid/vivid-osd.c
-> @@ -310,7 +310,6 @@ static int vivid_fb_init_vidmode(struct vivid_dev *dev)
->  	/* Generate valid fb_info */
->  
->  	dev->fb_info.node = -1;
-> -	dev->fb_info.flags = FBINFO_FLAG_DEFAULT;
->  	dev->fb_info.par = dev;
->  	dev->fb_info.var = dev->fb_defined;
->  	dev->fb_info.fix = dev->fb_fix;
+diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
+index d4abcf8aff75..a304a39d712b 100644
+--- a/drivers/video/fbdev/ps3fb.c
++++ b/drivers/video/fbdev/ps3fb.c
+@@ -1168,8 +1168,7 @@ static int ps3fb_probe(struct ps3_system_bus_device *dev)
+ 
+ 	ps3_system_bus_set_drvdata(dev, info);
+ 
+-	dev_info(info->device, "%s %s, using %u KiB of video memory\n",
+-		 dev_driver_string(info->dev), dev_name(info->dev),
++	dev_info(info->device, "using %u KiB of video memory\n",
+ 		 info->fix.smem_len >> 10);
+ 
+ 	task = kthread_run(ps3fbd, info, DEVICE_NAME);
 
+
+cheers

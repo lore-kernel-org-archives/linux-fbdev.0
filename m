@@ -2,211 +2,108 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F306BC001DE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Jul 2023 23:05:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA8C7EB64DC
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 00:46:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231186AbjGQXFg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 Jul 2023 19:05:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56246 "EHLO
+        id S230333AbjGRAqE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 Jul 2023 20:46:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46294 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231183AbjGQXFf (ORCPT
+        with ESMTP id S230239AbjGRAqD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 Jul 2023 19:05:35 -0400
-Received: from mail-il1-x132.google.com (mail-il1-x132.google.com [IPv6:2607:f8b0:4864:20::132])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 563AA170A;
-        Mon, 17 Jul 2023 16:04:47 -0700 (PDT)
-Received: by mail-il1-x132.google.com with SMTP id e9e14a558f8ab-3459baa237bso32105315ab.3;
-        Mon, 17 Jul 2023 16:04:47 -0700 (PDT)
+        Mon, 17 Jul 2023 20:46:03 -0400
+Received: from mail-vk1-xa2c.google.com (mail-vk1-xa2c.google.com [IPv6:2607:f8b0:4864:20::a2c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D290210E5;
+        Mon, 17 Jul 2023 17:46:01 -0700 (PDT)
+Received: by mail-vk1-xa2c.google.com with SMTP id 71dfb90a1353d-48159634694so1864814e0c.2;
+        Mon, 17 Jul 2023 17:46:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1689635007; x=1692227007;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=PjdXTr3dzdMnu6+stW9Y5PEi63LoYA7/O+Nyj8BgZrY=;
-        b=DXaD1vRPgFSnKmXn3XmG3556H/iN7AORkeSIiv52gtXqrSsva4y99v678W83plsKQd
-         Sb2RzUfAyqCwSAZXeTyPSTPVhft5cksYPgmlzFxPtaVsXr5qxjkvMhG/pbHf0f5Z50aS
-         h9GVaj7R2fjtsiyItodMYi2N+0lWvihW95Yh1xyg3f7uUHAUyazn/6vxom75h3hyS49M
-         aLO1zkjumLSNbljkXUZ1tYdZnJUSGtbH6lbZ/WdbgQyAalJGZBSmguuL4aRnR0VkTQfA
-         MypCw40Sse8dM7MJ11W8RLcgEnNMiagL13pXMPaU1M+MYaMVjRDZvWqM2XKdb/0HVNLA
-         OHpA==
+        d=gmail.com; s=20221208; t=1689641161; x=1692233161;
+        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=2l3cSyrjXW2glLWWy50xQezOhIrGHIZF9/wpOtpT3iM=;
+        b=jl6Q1T/UvfyGWSh5abi6PR7NY7TwYREiUdP6upkLK1hHlbD/Q+P7uHfvl+cL42JYLx
+         4MwePqDz77I0H0V5PoHao3mV8GMHSlx6Vmh4Ykpm29Fm5U5VVO7AxF4sSL3KsYzTjX4/
+         mbpP9rb663wlq6gkFHbHXfaRo9BjSvsr5APM2G/8iI0xzEYa9ewYFJvFtRlFPbH5oXIJ
+         HLym89l7u6iTae916D945xgsryejXFdi5+9ytbm5Vi1GAycqaN3+d4tIAhRgkLMpQ8j2
+         9LtoBsTGIgBoWY0slJr6FvQYl2Fr/kYEwFiwAS5WaVcSxT4BTvt7DTG/8XJhKent0fFH
+         eYwQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689635007; x=1692227007;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:sender:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=PjdXTr3dzdMnu6+stW9Y5PEi63LoYA7/O+Nyj8BgZrY=;
-        b=Z7n7lzoXYvBT8hCuzrQASx0hG8HTGb9DGHccm88ehjGh06T9Bu69MviUaVyk16M4sc
-         vu4IyW8tW5UmrGumqrN8KAdiWqEvGe8F2885N8/Q8YmH+KNMYTxDuJO3Q1D4s2PRR26o
-         1ly73thmitkNId63hcStYYHWaIqg/LLradphCKaLWXpH40WLVJRg/01wN0j1syRV3rxv
-         O9EWRprGV939k9wtnF4LH5KtQjehuyDjUeCat3xvvfjKBVZUOqmMx6YrAcyUdsFdCgLo
-         h+qHCOW20sHg9vnxroV8W+4fGoRH2FMoMt/L1jhS7f7dC2/vyxXYKJJgUX0eh0QB0Gqe
-         YpmQ==
-X-Gm-Message-State: ABy/qLY08tPpSixf7wqxm5/UlPcb50dIt7iLDivYpMaTsp37rOnwi3kV
-        LPkWLStK4lgUom5I4g2Ztqg=
-X-Google-Smtp-Source: APBJJlFC6SX/VCeG/MeX057j4EOjP0lF4J3jcfQ3edgXjMjcygGdQA4pJA+cbFryNUtJs9NdzCdVQg==
-X-Received: by 2002:a05:6e02:1b07:b0:346:189a:1b74 with SMTP id i7-20020a056e021b0700b00346189a1b74mr1436604ilv.0.1689635007204;
-        Mon, 17 Jul 2023 16:03:27 -0700 (PDT)
-Received: from localhost (dhcp-72-235-13-41.hawaiiantel.net. [72.235.13.41])
-        by smtp.gmail.com with ESMTPSA id w5-20020a92d605000000b0034628814e66sm254216ilm.40.2023.07.17.16.03.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 17 Jul 2023 16:03:26 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date:   Mon, 17 Jul 2023 13:03:25 -1000
-From:   Tejun Heo <tj@kernel.org>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Lai Jiangshan <jiangshanlai@gmail.com>,
-        "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        kernel-team@meta.com, Linux PM list <linux-pm@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        linux-rtc@vger.kernel.org,
-        linux-riscv <linux-riscv@lists.infradead.org>,
-        netdev <netdev@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux MMC List <linux-mmc@vger.kernel.org>,
-        "open list:LIBATA SUBSYSTEM (Serial and Parallel ATA drivers)" 
-        <linux-ide@vger.kernel.org>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>
-Subject: Re: Consider switching to WQ_UNBOUND messages (was: Re: [PATCH v2
- 6/7] workqueue: Report work funcs that trigger automatic CPU_INTENSIVE
- mechanism)
-Message-ID: <ZLXIvXBvhsnL-ik_@slm.duckdns.org>
-References: <20230511181931.869812-1-tj@kernel.org>
- <20230511181931.869812-7-tj@kernel.org>
- <ZF6WsSVGX3O1d0pL@slm.duckdns.org>
- <CAMuHMdVCQmh6V182q4g---jvsWiTOP2hBPZKvma6oUN6535LEg@mail.gmail.com>
- <CAMuHMdW1kxZ1RHKTRVRqDNAbj1Df2=v0fPn5KYK3kfX_kiXR6A@mail.gmail.com>
- <ZK3MBfPS-3-tJgjO@slm.duckdns.org>
- <ZK30CR196rs-OWLq@slm.duckdns.org>
- <CAMuHMdUCXPi+aS-7bR3qRetKF9T3W9jk_HKjvaXmfHv5SEeuFg@mail.gmail.com>
+        d=1e100.net; s=20221208; t=1689641161; x=1692233161;
+        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=2l3cSyrjXW2glLWWy50xQezOhIrGHIZF9/wpOtpT3iM=;
+        b=YhpBpC4msTHEWYmvAwGBl6Q9ChyR2JpSO8bpuKCMjiyg0gArud5+ik949iJseakh0J
+         pyNaiNNXwIbf7WmtEKWwiD4LKi1SY30yTkzHurSsHfOG8p5YeQC0R5SCCzuNL49TuYt9
+         W5zmm46oySoBinAva29sO4PnKJgXYlseWIt5nfGlf+Zw7ouUi1TmM2UzJTKNDKmcP21o
+         cDs28+318827BLsHac+SBYG7KxUkgx7t3jtrMCNAMDzNQhkPyVdKLtD/q4Nw5/qtG+6i
+         7KUbaDZOaHF3JMZLCmQwh875ntxeLEcgVnhzL849ktDak1dEMljzQeNfrWmcxJZmTrFr
+         ksPA==
+X-Gm-Message-State: ABy/qLZmi9aeWthGZ8NKPqcpIzQmyQuFqVQ6YMpNivK58v9S/+KjvbbF
+        cpF4Wx7oVF+BuYqBFytNCYr7o3h5eM99+sYVco3Ol54isjI=
+X-Google-Smtp-Source: APBJJlHbga8/mCPPGYpoNLFPICB0dJUDdptCl+a2F2sIrBnJTs6imHkAqXAPrK0MZMc4ZXkvropP0wAxhst7rg2aS/k=
+X-Received: by 2002:a1f:d184:0:b0:471:9190:fa09 with SMTP id
+ i126-20020a1fd184000000b004719190fa09mr762999vkg.7.1689641160683; Mon, 17 Jul
+ 2023 17:46:00 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdUCXPi+aS-7bR3qRetKF9T3W9jk_HKjvaXmfHv5SEeuFg@mail.gmail.com>
+From:   Randy Dunlap <rd.dunlab@gmail.com>
+Date:   Mon, 17 Jul 2023 17:45:49 -0700
+Message-ID: <CA+LWhsE+TUG5L9uPBiF324_madiHr86Kw27hazr88CFuPukYkg@mail.gmail.com>
+Subject: Re: linux-next: Tree for Jul 13 (drivers/video/fbdev/ps3fb.c)
+To:     lkml <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
+Cc:     sfr@canb.auug.org.au, Thomas Zimmermann <tzimmermann@suse.de>,
+        Helge Deller <deller@gmx.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        linux-fbdev@vger.kernel.org,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello, Geert.
+Hi Thomas,
+On 7/14/23 13:46, Randy Dunlap wrote:
+> Thomas,
+>
+> On 7/13/23 09:11, Randy Dunlap wrote:
+>>
+>>
+>> On 7/12/23 19:37, Stephen Rothwell wrote:
+>>> Hi all,
+>>>
+>
+> I still see this build error on linux-next 20230714.
 
-Can you please the following patch and see how many reports you get? Looking
-back at your reports, I think some of them probably should be converted to
-UNBOUND but we should have a better idea with the adjusted threshold.
+I still see this build error on linux-next 20230717.
 
-Thanks.
+>
+>>> Changes since 20230712:
+>>>
+>>
+>> on ppc64:
+>>
+>> In file included from ../include/linux/device.h:15,
+>> from ../arch/powerpc/include/asm/io.h:22,
+>> from ../include/linux/io.h:13,
+>> from ../include/linux/irq.h:20,
+>> from ../arch/powerpc/include/asm/hardirq.h:6,
+>> from ../include/linux/hardirq.h:11,
+>> from ../include/linux/interrupt.h:11,
+>> from ../drivers/video/fbdev/ps3fb.c:25:
+>> ../drivers/video/fbdev/ps3fb.c: In function 'ps3fb_probe':
+>> ../drivers/video/fbdev/ps3fb.c:1172:40: error: 'struct fb_info' has no member named 'dev'
+>> 1172 | dev_driver_string(info->dev), dev_name(info->dev),
+>> | ^~
+>> ../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
+>> 110 | _p_func(dev, fmt, ##__VA_ARGS__); \
+>> | ^~~~~~~~~~~
+>> ../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
+>> 1171 | dev_info(info->device, "%s %s, using %u KiB of video memory\n",
+>> | ^~~~~~~~
+>> ../drivers/video/fbdev/ps3fb.c:1172:61: error: 'struct fb_info' has no member named 'dev'
+>> 1172 | dev_driver_string(info->dev), dev_name(info->dev),
+>> | ^~
+>> ../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
 
-From 8555cbd4b22e5f85eb2bdcb84fd1d1f519a0a0d3 Mon Sep 17 00:00:00 2001
-From: Tejun Heo <tj@kernel.org>
-Date: Mon, 17 Jul 2023 12:50:02 -1000
-Subject: [PATCH] workqueue: Scale up wq_cpu_intensive_thresh_us if BogoMIPS is
- below 1000
-
-wq_cpu_intensive_thresh_us is used to detect CPU-hogging per-cpu work items.
-Once detected, they're excluded from concurrency management to prevent them
-from blocking other per-cpu work items. If CONFIG_WQ_CPU_INTENSIVE_REPORT is
-enabled, repeat offenders are also reported so that the code can be updated.
-
-The default threshold is 10ms which is long enough to do fair bit of work on
-modern CPUs while short enough to be usually not noticeable. This
-unfortunately leads to a lot of, arguable spurious, detections on very slow
-CPUs. Using the same threshold across CPUs whose performance levels may be
-apart by multiple levels of magnitude doesn't make whole lot of sense.
-
-This patch scales up wq_cpu_intensive_thresh_us upto 1 second when BogoMIPS
-is below 1000. This is obviously very inaccurate but it doesn't have to be
-accurate to be useful. The mechanism is still useful when the threshold is
-fully scaled up and the benefits of reports are usually shared with everyone
-regardless of who's reporting, so as long as there are sufficient number of
-fast machines reporting, we don't lose much.
-
-Some (or is it all?) ARM CPUs systemtically report significantly lower
-BogoMIPS. While this doesn't break anything, given how widespread ARM CPUs
-are, it's at least a missed opportunity and it probably would be a good idea
-to teach workqueue about it.
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
----
- kernel/workqueue.c | 43 ++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 42 insertions(+), 1 deletion(-)
-
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 02a8f402eeb5..0d7a3d29762f 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -52,6 +52,7 @@
- #include <linux/sched/debug.h>
- #include <linux/nmi.h>
- #include <linux/kvm_para.h>
-+#include <linux/delay.h>
- 
- #include "workqueue_internal.h"
- 
-@@ -338,8 +339,10 @@ static cpumask_var_t *wq_numa_possible_cpumask;
-  * Per-cpu work items which run for longer than the following threshold are
-  * automatically considered CPU intensive and excluded from concurrency
-  * management to prevent them from noticeably delaying other per-cpu work items.
-+ * ULONG_MAX indicates that the user hasn't overridden it with a boot parameter.
-+ * The actual value is initialized in wq_cpu_intensive_thresh_init().
-  */
--static unsigned long wq_cpu_intensive_thresh_us = 10000;
-+static unsigned long wq_cpu_intensive_thresh_us = ULONG_MAX;
- module_param_named(cpu_intensive_thresh_us, wq_cpu_intensive_thresh_us, ulong, 0644);
- 
- static bool wq_disable_numa;
-@@ -6513,6 +6516,42 @@ void __init workqueue_init_early(void)
- 	       !system_freezable_power_efficient_wq);
- }
- 
-+static void __init wq_cpu_intensive_thresh_init(void)
-+{
-+	unsigned long thresh;
-+	unsigned long mips;
-+
-+	/* if the user set it to a specific value, keep it */
-+	if (wq_cpu_intensive_thresh_us != ULONG_MAX)
-+		return;
-+
-+	/*
-+	 * The default of 10ms is derived from the fact that most modern (as of
-+	 * 2023) processors can do a lot in 10ms and that it's just below what
-+	 * most consider human-perceivable. However, the kernel also runs on a
-+	 * lot slower CPUs including microcontrollers where the threshold is way
-+	 * too low.
-+	 *
-+	 * Let's scale up the threshold upto 1 second if BogoMips is below 1000.
-+	 * This is by no means accurate but it doesn't have to be. The mechanism
-+	 * is still useful even when the threshold is fully scaled up. Also, as
-+	 * the reports would usually be applicable to everyone, some machines
-+	 * operating on longer thresholds won't significantly diminish their
-+	 * usefulness.
-+	 */
-+	thresh = 10 * USEC_PER_MSEC;
-+
-+	/* see init/calibrate.c for lpj -> BogoMIPS calculation */
-+	mips = max_t(unsigned long, loops_per_jiffy / 500000 * HZ, 1);
-+	if (mips < 1000)
-+		thresh = min_t(unsigned long, thresh * 1000 / mips, USEC_PER_SEC);
-+
-+	pr_debug("wq_cpu_intensive_thresh: lpj=%lu mips=%lu thresh_us=%lu\n",
-+		 loops_per_jiffy, mips, thresh);
-+
-+	wq_cpu_intensive_thresh_us = thresh;
-+}
-+
- /**
-  * workqueue_init - bring workqueue subsystem fully online
-  *
-@@ -6528,6 +6567,8 @@ void __init workqueue_init(void)
- 	struct worker_pool *pool;
- 	int cpu, bkt;
- 
-+	wq_cpu_intensive_thresh_init();
-+
- 	/*
- 	 * It'd be simpler to initialize NUMA in workqueue_init_early() but
- 	 * CPU to node mapping may not be available that early on some
 -- 
-2.41.0
-
+~Randy [using gmail temporarily while infradead is down]

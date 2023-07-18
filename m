@@ -2,128 +2,114 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01222EB64DD
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 03:32:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DED29EB64DA
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 05:24:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229471AbjGRDch (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 Jul 2023 23:32:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36904 "EHLO
+        id S229714AbjGRFYZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Jul 2023 01:24:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34646 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230130AbjGRDcN (ORCPT
+        with ESMTP id S229449AbjGRFYY (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 Jul 2023 23:32:13 -0400
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2BCF3D1;
-        Mon, 17 Jul 2023 20:32:11 -0700 (PDT)
-Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-67ef5af0ce8so5328069b3a.2;
-        Mon, 17 Jul 2023 20:32:11 -0700 (PDT)
+        Tue, 18 Jul 2023 01:24:24 -0400
+Received: from mail-oo1-xc33.google.com (mail-oo1-xc33.google.com [IPv6:2607:f8b0:4864:20::c33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 843BA1B4;
+        Mon, 17 Jul 2023 22:24:23 -0700 (PDT)
+Received: by mail-oo1-xc33.google.com with SMTP id 006d021491bc7-56661fe27cbso3357976eaf.3;
+        Mon, 17 Jul 2023 22:24:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1689651130; x=1692243130;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=qsCgfp2s3CRfk6nv+x0Mk0r1Oznh1MYu4hj6PzpztDM=;
-        b=ZEPFLg7rh5L4b7krkym5Ya+3jpyqEqMmL/f2boSjPTpbBG26VM+k7464Jo5583X0SD
-         a1Hw0wjSHGPNytPVL9TwTmmRBuq54jqOx6viOG/XyfQinG8Bjmw5k9NRMeQwdVcqYJuw
-         +Lm5xtcuXeY9RnnUpmW1s1zhsxPisZtikjU9KUPopAYpCiR82uGhq4dgb81vUAKKYm5x
-         rDIpRedktdlIfSkhJkVC7cTqJoWL1XbBorpIdJ9NtHJXVyiU17Nn/QlU9ya6Ad6aEYVA
-         Rx4Fffm3aba7pO1PPklVrsRr1dy1uTyApY745rTX/ZTXC7zxlXgsm+ya1+HKpNg50sMF
-         bhTA==
+        d=gmail.com; s=20221208; t=1689657863; x=1692249863;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=dnjYiL+P/K0sOilY3BcyTijfvnwbF/zuRsmlT3Sdj7M=;
+        b=GhjQ8+Znf8xgCYTOPwrvPXsG/hO5f/Q2l31JLWjKAAxFeENLSOFl+Gg/meRIVcWwPY
+         WMtcDUx+Q5IOcQIaj7IaJA7sp3VtwunceJNi6gv6GfzqMK0MyhdWATANFGnosaGk7/9L
+         KQ5IzUUSG4dm9Zf3g09FTGTKnZJRcUkhM5XZxsUhybx1qsjkfL5EJE0FRRNzWb+at4GT
+         PME88Di2PKyuYdEPIEF15B/bFGj4tgtvvOX7NJvEfgEQZxW6SZbIH9NzNXiG6pfwFSCO
+         Q6oBsHYeUaW8rqpu6vXQM0K6C2qk5QFX/WkHIictf8rUv4Riwiq71SGVn7jda+rtzdbb
+         +cPQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689651130; x=1692243130;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=qsCgfp2s3CRfk6nv+x0Mk0r1Oznh1MYu4hj6PzpztDM=;
-        b=MK42jZQ10ailQBw7FJ8/KP+dLM0dAw+UMiMlU8PqtOAh5LKdeUWZN49eWFf3V+vDKN
-         qsr65hj8adqNT+OTmeXNwXEzUORIg5gazdlAELWPIUorPidJQX9j9lRZptK6eZncdGhO
-         Y5KzUIfK6ykdCyRAAvpCx/PKPy2dcZSjs9a32791Q9Z4JW0ItEsCqnhB8mHkJChVJ5IW
-         AgKGJWIUD9ZzVe/zm4iVp07eQxLTRilxQ+eigi4UzQ4sWUtEGFK66dpwTg0fdn6AcRTk
-         Nxis4ed/AVMn+iqsk47tnNwHRY1W22fj0dJrSCbhqy85s8zNlvA6CH8dkFL1G5pZSQIH
-         uViQ==
-X-Gm-Message-State: ABy/qLZfs1RyKe1muBfOc+kKzNNIMaHOo60CQnU9qmDFZZkq8tEtTYmC
-        PUxQJwy53IBW5TbdvbxxPxdLpSqEF02/3u9F
-X-Google-Smtp-Source: APBJJlFAwDoW4yADO2Pjd04stMQf1iujcnSKviiNjIZ3895AEfrruDatfQyAiKeDtImLL7XYcqiTtg==
-X-Received: by 2002:a05:6a21:7883:b0:133:215e:746d with SMTP id bf3-20020a056a21788300b00133215e746dmr17816681pzc.41.1689651130509;
-        Mon, 17 Jul 2023 20:32:10 -0700 (PDT)
-Received: from debian.me ([103.131.18.64])
-        by smtp.gmail.com with ESMTPSA id j14-20020a170902758e00b001b9be2e2b3esm584344pll.277.2023.07.17.20.32.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 17 Jul 2023 20:32:10 -0700 (PDT)
-Received: by debian.me (Postfix, from userid 1000)
-        id 5ED5E834F19C; Tue, 18 Jul 2023 10:32:05 +0700 (WIB)
-Date:   Tue, 18 Jul 2023 10:32:05 +0700
-From:   Bagas Sanjaya <bagasdotme@gmail.com>
-To:     Randy Dunlap <rdunlap@infradead.org>,
-        Stephen Rothwell <sfr@canb.auug.org.au>,
+        d=1e100.net; s=20221208; t=1689657863; x=1692249863;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=dnjYiL+P/K0sOilY3BcyTijfvnwbF/zuRsmlT3Sdj7M=;
+        b=FtZrKnTD9umHcxhZUZNOmFiv/4BLG5Jvw8uUSGzbbvNG4kmm+IS4JldR1WgaUKIhhb
+         sBkgNGI7fi1bNJKUmCH9EA8QE8TZK+BZ6WY5KEO9QWXCHLFj7PVtEcWgrm9xcx7Gj9qW
+         oXbNp5ELAFCMSdPXRa8YPCXIMhN0h6/WHeS4phAQYwoRSegmF1yp6HrRhmPWuoM6UkhK
+         duWNYfp6/0Tk80Uu2iMINkUl5nHLpTofoSVL3fgRwVCPhQsYWaVVxORRc4I7lFCyJUsk
+         OiKnJyX5L7K0+8uvHm5szRbmPSiJH8T2b+xitNEu3P2NbOt+FBHCuZQZPJOx5qsY+dbN
+         I6LA==
+X-Gm-Message-State: ABy/qLaQ4HrAXMduUi2eJak241fkoieme3tazapSNdr8/sEFZ7KAHFu4
+        nD+OeKqjzSISVz2ZGfhrlw8=
+X-Google-Smtp-Source: APBJJlFV0tmQu+2m2ZbuY7wtK7PjpKTT29CsCqSheEv01DgD1vjRHs1Os4zbpj/crev1odDaJOLamQ==
+X-Received: by 2002:a05:6358:7f10:b0:134:e964:134c with SMTP id p16-20020a0563587f1000b00134e964134cmr12194494rwn.11.1689657862719;
+        Mon, 17 Jul 2023 22:24:22 -0700 (PDT)
+Received: from ?IPV6:2601:1c2:980:9ec0::2764? ([2601:1c2:980:9ec0::2764])
+        by smtp.gmail.com with ESMTPSA id e2-20020aa78242000000b006833bcc95b0sm648452pfn.115.2023.07.17.22.24.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 17 Jul 2023 22:24:22 -0700 (PDT)
+Message-ID: <84f0bdbc-09d1-ae4f-79ce-0d54c3410f18@gmail.com>
+Date:   Mon, 17 Jul 2023 22:24:21 -0700
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Subject: Re: linux-next: Tree for Jul 18 (drivers/video/fbdev/ps3fb.c)
+Content-Language: en-US
+To:     Stephen Rothwell <sfr@canb.auug.org.au>,
         Linux Next Mailing List <linux-next@vger.kernel.org>
 Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Helge Deller <deller@gmx.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        linux-fbdev@vger.kernel.org,
-        Linux PowerPC <linuxppc-dev@lists.ozlabs.org>,
-        Linux Regressions <regressions@lists.linux.dev>
-Subject: Re: linux-next: Tree for Jul 13 (drivers/video/fbdev/ps3fb.c)
-Message-ID: <ZLYHtVuS7AElXcCb@debian.me>
-References: <20230713123710.5d7d81e4@canb.auug.org.au>
- <ccc63065-2976-88ef-1211-731330bf2866@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <ccc63065-2976-88ef-1211-731330bf2866@infradead.org>
+        linux-fbdev@vger.kernel.org, Helge Deller <deller@gmx.de>,
+        Javier Martinez Canillas <javierm@redhat.com>
+References: <20230718135733.0f1789a4@canb.auug.org.au>
+From:   Randy Dunlap <rd.dunlab@gmail.com>
+In-Reply-To: <20230718135733.0f1789a4@canb.auug.org.au>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Jul 13, 2023 at 09:11:10AM -0700, Randy Dunlap wrote:
+Hi Thomas,
+
+On 7/17/23 20:57, Stephen Rothwell wrote:
+> Hi all,
 > 
-> 
-> On 7/12/23 19:37, Stephen Rothwell wrote:
-> > Hi all,
-> > 
-> > Changes since 20230712:
-> > 
-> 
-> on ppc64:
-> 
-> In file included from ../include/linux/device.h:15,
->                  from ../arch/powerpc/include/asm/io.h:22,
->                  from ../include/linux/io.h:13,
->                  from ../include/linux/irq.h:20,
->                  from ../arch/powerpc/include/asm/hardirq.h:6,
->                  from ../include/linux/hardirq.h:11,
->                  from ../include/linux/interrupt.h:11,
->                  from ../drivers/video/fbdev/ps3fb.c:25:
-> ../drivers/video/fbdev/ps3fb.c: In function 'ps3fb_probe':
-> ../drivers/video/fbdev/ps3fb.c:1172:40: error: 'struct fb_info' has no member named 'dev'
->  1172 |                  dev_driver_string(info->dev), dev_name(info->dev),
->       |                                        ^~
-> ../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
->   110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
->       |                                     ^~~~~~~~~~~
-> ../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
->  1171 |         dev_info(info->device, "%s %s, using %u KiB of video memory\n",
->       |         ^~~~~~~~
-> ../drivers/video/fbdev/ps3fb.c:1172:61: error: 'struct fb_info' has no member named 'dev'
->  1172 |                  dev_driver_string(info->dev), dev_name(info->dev),
->       |                                                             ^~
-> ../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
->   110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
->       |                                     ^~~~~~~~~~~
-> ../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
->  1171 |         dev_info(info->device, "%s %s, using %u KiB of video memory\n",
->       |         ^~~~~~~~
-> 
+> Changes since 20230717:
 > 
 
-Hmm, there is no response from Thomas yet. I guess we should go with
-reverting bdb616479eff419, right? Regardless, I'm adding this build regression
-to regzbot so that parties involved are aware of it:
+I'm still seeing build errors on PPC64 for ps3fb.c:
 
-#regzbot ^introduced: bdb616479eff419
-#regzbot title: build regression in PS3 framebuffer
-
-Thanks.
+In file included from ../include/linux/device.h:15,
+                 from ../arch/powerpc/include/asm/io.h:22,
+                 from ../include/linux/io.h:13,
+                 from ../include/linux/irq.h:20,
+                 from ../arch/powerpc/include/asm/hardirq.h:6,
+                 from ../include/linux/hardirq.h:11,
+                 from ../include/linux/interrupt.h:11,
+                 from ../drivers/video/fbdev/ps3fb.c:25:
+../drivers/video/fbdev/ps3fb.c: In function 'ps3fb_probe':
+../drivers/video/fbdev/ps3fb.c:1172:40: error: 'struct fb_info' has no member named 'dev'
+ 1172 |                  dev_driver_string(info->dev), dev_name(info->dev),
+      |                                        ^~
+../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
+  110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
+      |                                     ^~~~~~~~~~~
+../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
+ 1171 |         dev_info(info->device, "%s %s, using %u KiB of video memory\n",
+      |         ^~~~~~~~
+../drivers/video/fbdev/ps3fb.c:1172:61: error: 'struct fb_info' has no member named 'dev'
+ 1172 |                  dev_driver_string(info->dev), dev_name(info->dev),
+      |                                                             ^~
+../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
+  110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
+      |                                     ^~~~~~~~~~~
+../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
+ 1171 |         dev_info(info->device, "%s %s, using %u KiB of video memory\n",
+      |         ^~~~~~~~
 
 -- 
-An old man doll... just what I always wanted! - Clara
+~Randy
+

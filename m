@@ -2,40 +2,60 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CFB1DC001B0
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jul 2023 17:38:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3ED67C001B0
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jul 2023 17:50:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229554AbjGSRir (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Jul 2023 13:38:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60440 "EHLO
+        id S229795AbjGSRuK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Jul 2023 13:50:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37996 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229510AbjGSRiq (ORCPT
+        with ESMTP id S229477AbjGSRuJ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Jul 2023 13:38:46 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B9F621735;
-        Wed, 19 Jul 2023 10:38:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1689788265; x=1690393065; i=deller@gmx.de;
- bh=OWBVwKAKYUubldyKOngR8zmONyJsgCd+Y+uEyDM72hQ=;
- h=X-UI-Sender-Class:Date:To:Cc:References:From:Subject:In-Reply-To;
- b=guruUfPdwFDagx0lv+gWEMgDuLsxBie8ub8B5JtGiMzkVFBbmvGzFPVXNbg2wknzgDA/p9r
- GdhfWxrCZ9IRlwpJUx377WhvA9iBJVqkXqrivCxBkE355un6BLBS5up1iN/nbB0HuDjVERAKq
- N3kCju7DY4KzV/2HDKXIP/ZCybPgvKMoTk1eL4LPoQKal2KKXAr3zTArnvueln1Ap1xraF1Df
- qUZo95hk+45qyXR8ttW6rrnJRH+dAe/7CI6FIAKplD2s3xcq/azJPOAUYNbV408RxzXoUi4xs
- rZ9GSoN0U/hYtvvoBDO8lKo8/mUmhdf7wNTotRwkZsb2K/2JIy7w==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.145.157]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mt79F-1q2qqf473J-00tU81; Wed, 19
- Jul 2023 19:37:45 +0200
-Message-ID: <46d933f5-38e4-b46a-f94b-0e9a6e3b2e31@gmx.de>
-Date:   Wed, 19 Jul 2023 19:37:41 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.12.0
-Content-Language: en-US
-To:     Javier Martinez Canillas <javierm@redhat.com>,
-        linux-kernel@vger.kernel.org
+        Wed, 19 Jul 2023 13:50:09 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E0D771FC0
+        for <linux-fbdev@vger.kernel.org>; Wed, 19 Jul 2023 10:49:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1689788962;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=XYue51ytI6NDHPfrk6nzrr+J7lvDM0nrv78I+/fXUNw=;
+        b=I+Czp5PLpbLSe7eW1tK/L5q6/WPbKhkSc6X/M7IWTNT3jIzft3HkWhjNQn9qwwynqYPuME
+        A1LOdZuTlW6Rz3aDC7aiQmLyAh+KzlFRxR54jJJ68nPff5ch7M+Bi2eBO2+l7xmXoIxASf
+        FlPQMUGr6mYAmCrq/K4ONg9geEfEfkw=
+Received: from mail-lj1-f199.google.com (mail-lj1-f199.google.com
+ [209.85.208.199]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-397-X1vdaEblONand4-Y1yK02g-1; Wed, 19 Jul 2023 13:49:20 -0400
+X-MC-Unique: X1vdaEblONand4-Y1yK02g-1
+Received: by mail-lj1-f199.google.com with SMTP id 38308e7fff4ca-2b92dd520a2so46905801fa.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 19 Jul 2023 10:49:20 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1689788959; x=1690393759;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=XYue51ytI6NDHPfrk6nzrr+J7lvDM0nrv78I+/fXUNw=;
+        b=Rjew4ZvDWvqkQqIcXeLUeLdZZ7w4j5JbXh9GAkEnYOWCEs21QxfGdtk7h2KVOQZ1Sn
+         wNK/eab9BNTPXV9Z+65qVo5cQ7S4SYAYteyj0Ii2/7RcrbhQ+MkHoXdJt03zbqh3ab6x
+         IYgLDnKAk0JtrPQPX57lmRza8KazeUR1L0CqdEA17QVrIdi1/ebG/44mcVJb1ueAIALW
+         4gRgLlrlQNu4iLUjZjodl4QCPto0udch6YPLX25xHhIb8D8SrZVc+K0IyLPLeMgYstG+
+         TgvQE/9VzXoqc2fa0EJOdIB0tvYfPMPDtftIPzWj1RtwtklNa3JRrKAnDsKxwPAfI8ju
+         +Vxg==
+X-Gm-Message-State: ABy/qLZAwhzWQBL9ODr7Tu9Z/pAUvr6HljeJ2VbL6KkJM65se6e1KnNx
+        +czJDvUtY9s99O0ZhLhhkwS2gn5uqYD3O6/goo/5CVku6ZSjtMLKNOvssxg1mzyW1dwLEbQABae
+        tWE5rqot2NPgQYgY2Ro4eYCM=
+X-Received: by 2002:a2e:b60a:0:b0:2b6:c8e8:915f with SMTP id r10-20020a2eb60a000000b002b6c8e8915fmr525300ljn.22.1689788959378;
+        Wed, 19 Jul 2023 10:49:19 -0700 (PDT)
+X-Google-Smtp-Source: APBJJlHGcoA3ayLgHeAmqmqFqjnQ7AOt3SyqJk7AsijJMopV3od5+bU+++6SyugmvMMgSvDsgJiIRg==
+X-Received: by 2002:a2e:b60a:0:b0:2b6:c8e8:915f with SMTP id r10-20020a2eb60a000000b002b6c8e8915fmr525282ljn.22.1689788958986;
+        Wed, 19 Jul 2023 10:49:18 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id t13-20020a7bc3cd000000b003fc05b89e5bsm2165158wmj.34.2023.07.19.10.49.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 19 Jul 2023 10:49:18 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org
 Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
         Arnd Bergmann <arnd@arndb.de>,
@@ -60,150 +80,80 @@ Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
         Thomas Gleixner <tglx@linutronix.de>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         x86@kernel.org
+Subject: Re: [PATCH v6 0/4] Allow disabling all native fbdev drivers and
+ only keeping DRM emulation
+In-Reply-To: <46d933f5-38e4-b46a-f94b-0e9a6e3b2e31@gmx.de>
 References: <20230719081544.741051-1-javierm@redhat.com>
-From:   Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH v6 0/4] Allow disabling all native fbdev drivers and only
- keeping DRM emulation
-In-Reply-To: <20230719081544.741051-1-javierm@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:9cAVIXMKo4AH5+eIgZyiJgdeXzzKeujpS1D6y9fuD67jVW84HDf
- 6X2V38hfOBcUmNOb5yqIo83uy2JB29MZz29l+nHTs0Zd14Tqf2zMKa6iX2i/0iV1qu+i3/0
- ke4LmGXBYm1/z7n1kDNfaZWZ25GCHZTuuEo68Tp0hDh5umrojkS/KvhOOKVwRI9nZirMIhJ
- XoJ2a19abU4kJvS9ndLzQ==
-UI-OutboundReport: notjunk:1;M01:P0:NTSnM/LsKoc=;qDjULDS9Nr+CRmJpIQDxoc2r9ta
- ayn723RKQT33yIGU+FTddVCSAP4do7LD8fZN8xM28rE6o76FDaDiyGo/2DXfwHh2Marc/tKA5
- 6ip5ew8OtrsB+zOnO1t8kJESvzZCgajH/fmicRAZ049drOtRFJKCBCoK4IRXeVqa/iX/41wgI
- mm2Df0+Me82D+p+HcMSS0Wjr+pQS+ZGt7CKases4EG74lYCws+80FXf85FA24TgK9QimQnveW
- 7+6lhTAqqlA7hZscPl0U6lzAPBzyhxgo7UjZgrOAK4DZtIJF+Xv1/WIdBjn9170+PzEJ/MB74
- He7elFE6hb3stfq2K/WaIsL0n40Ez5FijYsbmI7j4wc6fh3pB4Uy7mNAeN+wXG+pXjwredIYT
- bMpl2y6SBCRVucG192Gps2/LWDLOwGNgaq8KTHyojNz+PbjOSOpUjE4WSqzVqBQAjRPcTCdJ4
- 1RZ6R67kxyLqqNwTNPIFle5bUCIrHaHH0CMnY5Oy/SAp4+uHcJkDMKYn3NBL0Eij5UcG5N6No
- p6rwgohIrF1Jm7tWQVMAF5fFZ5443o+DnXpbpj+1QCWL37zgQbhgDbZ9hG5IqmVvd2hAQUOYP
- peJ73QUSxaKvZtRVFwdPYk1Zek9lm1jo7BIeLXEVKibnI7CZIzYe7Yk/EUynTOokinGBy2sG1
- 49UHe41dU8UXAuaZd7ls82kDKevGyPPVfTcZeFLTKvyL25AjzdGzUpYv4Fznh4Bm3Vjol4956
- dVVxI4PnahMw6VAoKERfBcy9yCTV79O4LWzD3fLpWtO6mTwkwIROAx72wAS31QbeEfYMq6MOZ
- TZsptI8EwOK9XCcwy7kMX4wKl8e/8HB2r9LS3ZBzWNdQSlVrsQB3W3FTIijHdeawe6AcrD/NM
- x53wATvGkI6VHksLzYhIskR27ZC8G64eF6QWMuho5tTuJYTjkeT72OTWFY5EiDdIG0UqwBHSb
- UdTkiS9VN8fVLJIeavWK4YOEkI8=
+ <46d933f5-38e4-b46a-f94b-0e9a6e3b2e31@gmx.de>
+Date:   Wed, 19 Jul 2023 19:49:17 +0200
+Message-ID: <877cqvkd0i.fsf@minerva.mail-host-address-is-not-set>
+MIME-Version: 1.0
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Javier,
+Helge Deller <deller@gmx.de> writes:
 
-On 7/19/23 10:15, Javier Martinez Canillas wrote:
-> This patch series splits the fbdev core support in two different Kconfig
-> symbols: FB and FB_CORE. The motivation for this is to allow CONFIG_FB t=
-o
-> be disabled, while still having the the core fbdev support needed for th=
-e
+Hello Helge,
 
-One "the" too much.
-(correcting just because this is a cover letter)
+> Hi Javier,
+>
+> On 7/19/23 10:15, Javier Martinez Canillas wrote:
+>> This patch series splits the fbdev core support in two different Kconfig
+>> symbols: FB and FB_CORE. The motivation for this is to allow CONFIG_FB to
+>> be disabled, while still having the the core fbdev support needed for the
+>
+> One "the" too much.
+> (correcting just because this is a cover letter)
+>
+>> CONFIG_DRM_FBDEV_EMULATION to be enabled. The motivation is automatically
+>> disabling all fbdev drivers instead of having to be disabled individually.
+>>
+>> The reason for doing this is that now with simpledrm, there's no need for
+>> the legacy fbdev (e.g: efifb or vesafb) drivers anymore and many distros
+>> now disable them. > But it would simplify the config a lot fo have a single
+>> Kconfig symbol to disable all fbdev drivers.
+>
+> I suggest to rephrase this, e.g.:
+> The reason for doing this is that with simpledrm, mainstream Linux distributions
+> like Fedora, SUSE or Ubuntu can then more easily enable the DRM drivers only
+> by switching off legacy fbdev drivers with one Kconfig option (e.g. for efifb or
+> vesafb).
+>
+> (note: there are quite many other distributions, e.g. debian and the derivates,
+> which still need the fbdev drivers for the various other architectures)
+>
 
-> CONFIG_DRM_FBDEV_EMULATION to be enabled. The motivation is automaticall=
-y
-> disabling all fbdev drivers instead of having to be disabled individuall=
-y.
->
-> The reason for doing this is that now with simpledrm, there's no need fo=
-r
-> the legacy fbdev (e.g: efifb or vesafb) drivers anymore and many distros
-> now disable them. > But it would simplify the config a lot fo have a sin=
-gle
-> Kconfig symbol to disable all fbdev drivers.
+Right, I meant that there is no need anymore for the remaining fbdev
+drivers that many distributions used to enable only to have fallback
+fbcon/VT (like vesafb, efifb, simplefb, etc). But I'm OK with your
+rephrasing and agree that's more accurate to cover all the distros.
 
-I suggest to rephrase this, e.g.:
-The reason for doing this is that with simpledrm, mainstream Linux distrib=
-utions
-like Fedora, SUSE or Ubuntu can then more easily enable the DRM drivers on=
-ly
-by switching off legacy fbdev drivers with one Kconfig option (e.g. for ef=
-ifb or
-vesafb).
+>> I've built tested with possible combinations of CONFIG_FB, CONFIG_FB_CORE,
+>> CONFIG_DRM_FBDEV_EMULATION and CONFIG_FB_DEVICE symbols set to 'y' or 'n'.
+>>
+>> Patch #1 moves the auxdisplay drivers to "Graphics support" Kconfig menu,
+>> patch #2 moves the core fbdev Kconfig symbols to a separate Kconfig file,
+>> patch #3 does the FB symbol split and introduces the FB_CORE symbol and
+>> finally patch #4 makes the DRM symbol to select FB_CORE if the DRM fbdev
+>> emualtion support was enabled.
+>>
+>> Since this series touches three subsystems (auxdisplay, fbdev and DRM),
+>> I would like to merge it through DRM with the acks of these maintainers.
+>
+> Sure. Ack from me.
+>
+> The patch series look good otherwise. You may add:
+> Acked-by: Helge Deller <deller@gmx.de>
+>
 
-(note: there are quite many other distributions, e.g. debian and the deriv=
-ates,
-which still need the fbdev drivers for the various other architectures)
+Thanks!
 
-> I've built tested with possible combinations of CONFIG_FB, CONFIG_FB_COR=
-E,
-> CONFIG_DRM_FBDEV_EMULATION and CONFIG_FB_DEVICE symbols set to 'y' or 'n=
-'.
->
-> Patch #1 moves the auxdisplay drivers to "Graphics support" Kconfig menu=
-,
-> patch #2 moves the core fbdev Kconfig symbols to a separate Kconfig file=
-,
-> patch #3 does the FB symbol split and introduces the FB_CORE symbol and
-> finally patch #4 makes the DRM symbol to select FB_CORE if the DRM fbdev
-> emualtion support was enabled.
->
-> Since this series touches three subsystems (auxdisplay, fbdev and DRM),
-> I would like to merge it through DRM with the acks of these maintainers.
+-- 
+Best regards,
 
-Sure. Ack from me.
-
-The patch series look good otherwise. You may add:
-Acked-by: Helge Deller <deller@gmx.de>
-
-> This is a v6 of the patch-set that addresses issues pointed out by Arnd
-> Bergmann in the previous v5:
->
-> https://lists.freedesktop.org/archives/dri-devel/2023-July/413943.html
->
-> Changes in v6:
-> - Don't move FB_{HECUBA,SVGALIB,MACMODES} to config/Kcore (Arnd Bergmann=
-).
-> - Fix link error when CONFIG_FB_CORE=3Dy and CONFIG_FB=3Dm (Arnd Bergman=
-n).
->
-> Changes in v5:
-> - Take the auxdisplay/Kconfig source out of "if HAS_IOMEM" (Geert Uytter=
-hoeven).
-> - Fix ifdef guard check in drivers/video/backlight/backlight.c (Arnd Ber=
-gmann).
->
-> Changes in v4:
-> - Fix menuconfig hierarchy that was broken in v3 (Arnd Bergmann).
->
-> Changes in v3:
-> - Really make a hidden symbol by removing the prompt (Arnd Bergmann).
-> - Change FB_CORE to config instead of menuconfig (Arnd Bergmann).
-> - Keep "depends on FB" for FIRMWARE_EDID (Arnd Bergmann).
-> - Compile out fb_backlight.o and fbmon.o that are only needed for FB
->    (Arnd Bergmann).
-> - Make FB_DEVICE to depend on FB_CORE instead of selecting it.
-> - Make the DRM symbol to select FB_CORE if DRM_FBDEV_EMULATION is
->    enabled (Arnd Bergmann).
-> - Also make DRM select FB_SYS_HELPERS_DEFERRED if DRM_FBDEV_EMULATION
-> - Make DRM_FBDEV_EMULATION to depend on DRM instead of DRM_KMS_HELPER.
->
-> Changes in v2:
-> - Keep "depends on FB" for FB_DDC, FB_HECUBA, FB_SVGALIB, FB_MACMODES,
->    FB_BACKLIGHT, FB_MODE_HELPERS and FB_TILEBLITTING (Arnd Bergmann).
-> - Don't change the fb.o object name (Arnd Bergmann).
-> - Make FB_CORE a non-visible Kconfig symbol instead (Thomas Zimmermann).
-> - Make CONFIG_DRM_FBDEV_EMULATION to select FB_CORE (Thomas Zimmermann).
->
-> Javier Martinez Canillas (4):
->    video: Add auxiliary display drivers to Graphics support menu
->    fbdev: Move core fbdev symbols to a separate Kconfig file
->    fbdev: Split frame buffer support in FB and FB_CORE symbols
->    drm: Make FB_CORE to be selected if DRM fbdev emulation is enabled
->
->   arch/x86/Makefile                   |   2 +-
->   arch/x86/video/Makefile             |   2 +-
->   drivers/Kconfig                     |   2 -
->   drivers/gpu/drm/Kconfig             |   7 +-
->   drivers/video/Kconfig               |   2 +
->   drivers/video/backlight/backlight.c |   6 +-
->   drivers/video/console/Kconfig       |   2 +-
->   drivers/video/fbdev/Kconfig         | 197 ++--------------------------
->   drivers/video/fbdev/core/Kconfig    | 190 +++++++++++++++++++++++++++
->   drivers/video/fbdev/core/Makefile   |  10 +-
->   10 files changed, 218 insertions(+), 202 deletions(-)
->   create mode 100644 drivers/video/fbdev/core/Kconfig
->
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 

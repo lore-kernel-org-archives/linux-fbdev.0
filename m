@@ -2,158 +2,166 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3ED67C001B0
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jul 2023 17:50:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92979C001DE
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jul 2023 19:32:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229795AbjGSRuK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Jul 2023 13:50:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37996 "EHLO
+        id S229960AbjGSTcj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Jul 2023 15:32:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55726 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229477AbjGSRuJ (ORCPT
+        with ESMTP id S229765AbjGSTci (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Jul 2023 13:50:09 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E0D771FC0
-        for <linux-fbdev@vger.kernel.org>; Wed, 19 Jul 2023 10:49:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1689788962;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=XYue51ytI6NDHPfrk6nzrr+J7lvDM0nrv78I+/fXUNw=;
-        b=I+Czp5PLpbLSe7eW1tK/L5q6/WPbKhkSc6X/M7IWTNT3jIzft3HkWhjNQn9qwwynqYPuME
-        A1LOdZuTlW6Rz3aDC7aiQmLyAh+KzlFRxR54jJJ68nPff5ch7M+Bi2eBO2+l7xmXoIxASf
-        FlPQMUGr6mYAmCrq/K4ONg9geEfEfkw=
-Received: from mail-lj1-f199.google.com (mail-lj1-f199.google.com
- [209.85.208.199]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-397-X1vdaEblONand4-Y1yK02g-1; Wed, 19 Jul 2023 13:49:20 -0400
-X-MC-Unique: X1vdaEblONand4-Y1yK02g-1
-Received: by mail-lj1-f199.google.com with SMTP id 38308e7fff4ca-2b92dd520a2so46905801fa.2
-        for <linux-fbdev@vger.kernel.org>; Wed, 19 Jul 2023 10:49:20 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689788959; x=1690393759;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=XYue51ytI6NDHPfrk6nzrr+J7lvDM0nrv78I+/fXUNw=;
-        b=Rjew4ZvDWvqkQqIcXeLUeLdZZ7w4j5JbXh9GAkEnYOWCEs21QxfGdtk7h2KVOQZ1Sn
-         wNK/eab9BNTPXV9Z+65qVo5cQ7S4SYAYteyj0Ii2/7RcrbhQ+MkHoXdJt03zbqh3ab6x
-         IYgLDnKAk0JtrPQPX57lmRza8KazeUR1L0CqdEA17QVrIdi1/ebG/44mcVJb1ueAIALW
-         4gRgLlrlQNu4iLUjZjodl4QCPto0udch6YPLX25xHhIb8D8SrZVc+K0IyLPLeMgYstG+
-         TgvQE/9VzXoqc2fa0EJOdIB0tvYfPMPDtftIPzWj1RtwtklNa3JRrKAnDsKxwPAfI8ju
-         +Vxg==
-X-Gm-Message-State: ABy/qLZAwhzWQBL9ODr7Tu9Z/pAUvr6HljeJ2VbL6KkJM65se6e1KnNx
-        +czJDvUtY9s99O0ZhLhhkwS2gn5uqYD3O6/goo/5CVku6ZSjtMLKNOvssxg1mzyW1dwLEbQABae
-        tWE5rqot2NPgQYgY2Ro4eYCM=
-X-Received: by 2002:a2e:b60a:0:b0:2b6:c8e8:915f with SMTP id r10-20020a2eb60a000000b002b6c8e8915fmr525300ljn.22.1689788959378;
-        Wed, 19 Jul 2023 10:49:19 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlHGcoA3ayLgHeAmqmqFqjnQ7AOt3SyqJk7AsijJMopV3od5+bU+++6SyugmvMMgSvDsgJiIRg==
-X-Received: by 2002:a2e:b60a:0:b0:2b6:c8e8:915f with SMTP id r10-20020a2eb60a000000b002b6c8e8915fmr525282ljn.22.1689788958986;
-        Wed, 19 Jul 2023 10:49:18 -0700 (PDT)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id t13-20020a7bc3cd000000b003fc05b89e5bsm2165158wmj.34.2023.07.19.10.49.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Jul 2023 10:49:18 -0700 (PDT)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Borislav Petkov <bp@alien8.de>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
+        Wed, 19 Jul 2023 15:32:38 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2366D199A;
+        Wed, 19 Jul 2023 12:32:37 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id AA37D617F4;
+        Wed, 19 Jul 2023 19:32:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C165BC433C8;
+        Wed, 19 Jul 2023 19:32:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1689795156;
+        bh=5B2uDA9tsswf97AKzHjJwVKSaC/eQwz3Ft+8HwN2cMY=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=sKPn8HunIyLND9JEMu4ESWhCtE81F+Kc4q9T+MsHvJe5fiVAGpbXuDRp/BYXpZpLS
+         W6t2CpoThhFjaBKMq9V/vJ4xDtEDO/+QJLKs4qmGj74udh8yjbH1CzdstTCReicUZ8
+         a+GuNCN4+RignvXbuNN79PYXWUJifJtjcjTBO9iPpuJst49Rh/J1yePIbEk1m6saDf
+         mz8tkyzl0u4mUpS4M6IUgiyI4u7WnVW2a2CTTQ6PLdK70OCT8nqJw53A7dhVhXa36m
+         HFuvV439o4y7M4ZqbsSopjve8dD2ar20mZs0A1OecssekbzYQInKUphXz5EvXRa7wO
+         tCq85pkSsXacQ==
+Date:   Wed, 19 Jul 2023 14:32:33 -0500
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     Sui Jingfeng <sui.jingfeng@linux.dev>
+Cc:     David Airlie <airlied@gmail.com>, amd-gfx@lists.freedesktop.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org,
+        linux-pci@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        Sui Jingfeng <suijingfeng@loongson.cn>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Christian Konig <christian.koenig@amd.com>,
+        Pan Xinhui <Xinhui.Pan@amd.com>,
         Daniel Vetter <daniel@ffwll.ch>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        David Airlie <airlied@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-        Jacek Lawrynowicz <jacek.lawrynowicz@linux.intel.com>,
-        Jeffrey Hugo <quic_jhugo@quicinc.com>,
-        Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee@kernel.org>,
+        Jani Nikula <jani.nikula@linux.intel.com>,
+        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>,
+        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
+        Ben Skeggs <bskeggs@redhat.com>,
+        Karol Herbst <kherbst@redhat.com>,
+        Lyude Paul <lyude@redhat.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Alex Williamson <alex.williamson@redhat.com>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
-        Nipun Gupta <nipun.gupta@amd.com>,
-        Oded Gabbay <ogabbay@kernel.org>,
-        Pieter Jansen van Vuuren <pieter.jansen-van-vuuren@amd.com>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        x86@kernel.org
-Subject: Re: [PATCH v6 0/4] Allow disabling all native fbdev drivers and
- only keeping DRM emulation
-In-Reply-To: <46d933f5-38e4-b46a-f94b-0e9a6e3b2e31@gmx.de>
-References: <20230719081544.741051-1-javierm@redhat.com>
- <46d933f5-38e4-b46a-f94b-0e9a6e3b2e31@gmx.de>
-Date:   Wed, 19 Jul 2023 19:49:17 +0200
-Message-ID: <877cqvkd0i.fsf@minerva.mail-host-address-is-not-set>
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Hawking Zhang <Hawking.Zhang@amd.com>,
+        Mario Limonciello <mario.limonciello@amd.com>,
+        Lijo Lazar <lijo.lazar@amd.com>,
+        YiPeng Chai <YiPeng.Chai@amd.com>,
+        Bokun Zhang <Bokun.Zhang@amd.com>,
+        Likun Gao <Likun.Gao@amd.com>,
+        Ville Syrjala <ville.syrjala@linux.intel.com>,
+        Jason Gunthorpe <jgg@ziepe.ca>,
+        Kevin Tian <kevin.tian@intel.com>,
+        Cornelia Huck <cohuck@redhat.com>,
+        Yishai Hadas <yishaih@nvidia.com>,
+        Abhishek Sahu <abhsahu@nvidia.com>,
+        Yi Liu <yi.l.liu@intel.com>,
+        Jani Nikula <jani.nikula@intel.com>
+Subject: Re: [PATCH v3 4/9] PCI/VGA: Improve the default VGA device selection
+Message-ID: <20230719193233.GA511659@bhelgaas>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230711164310.791756-5-sui.jingfeng@linux.dev>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Helge Deller <deller@gmx.de> writes:
+[+cc linux-pci (please cc in the future since the bulk of this patch
+is in drivers/pci/)]
 
-Hello Helge,
+On Wed, Jul 12, 2023 at 12:43:05AM +0800, Sui Jingfeng wrote:
+> From: Sui Jingfeng <suijingfeng@loongson.cn>
+> 
+> Currently, the strategy of selecting the default boot on a multiple video
+> card coexistence system is not perfect. Potential problems are:
+> 
+> 1) This function is a no-op on non-x86 architectures.
 
-> Hi Javier,
->
-> On 7/19/23 10:15, Javier Martinez Canillas wrote:
->> This patch series splits the fbdev core support in two different Kconfig
->> symbols: FB and FB_CORE. The motivation for this is to allow CONFIG_FB to
->> be disabled, while still having the the core fbdev support needed for the
->
-> One "the" too much.
-> (correcting just because this is a cover letter)
->
->> CONFIG_DRM_FBDEV_EMULATION to be enabled. The motivation is automatically
->> disabling all fbdev drivers instead of having to be disabled individually.
->>
->> The reason for doing this is that now with simpledrm, there's no need for
->> the legacy fbdev (e.g: efifb or vesafb) drivers anymore and many distros
->> now disable them. > But it would simplify the config a lot fo have a single
->> Kconfig symbol to disable all fbdev drivers.
->
-> I suggest to rephrase this, e.g.:
-> The reason for doing this is that with simpledrm, mainstream Linux distributions
-> like Fedora, SUSE or Ubuntu can then more easily enable the DRM drivers only
-> by switching off legacy fbdev drivers with one Kconfig option (e.g. for efifb or
-> vesafb).
->
-> (note: there are quite many other distributions, e.g. debian and the derivates,
-> which still need the fbdev drivers for the various other architectures)
->
+Which function in particular is a no-op for non-x86?
 
-Right, I meant that there is no need anymore for the remaining fbdev
-drivers that many distributions used to enable only to have fallback
-fbcon/VT (like vesafb, efifb, simplefb, etc). But I'm OK with your
-rephrasing and agree that's more accurate to cover all the distros.
+> 2) It does not take the PCI Bar may get relocated into consideration.
+> 3) It is not effective for the PCI device without a dedicated VRAM Bar.
+> 4) It is device-agnostic, thus it has to waste the effort to iterate all
+>    of the PCI Bar to find the VRAM aperture.
+> 5) It has invented lots of methods to determine which one is the default
+>    boot device, but this is still a policy because it doesn't give the
+>    user a choice to override.
 
->> I've built tested with possible combinations of CONFIG_FB, CONFIG_FB_CORE,
->> CONFIG_DRM_FBDEV_EMULATION and CONFIG_FB_DEVICE symbols set to 'y' or 'n'.
->>
->> Patch #1 moves the auxdisplay drivers to "Graphics support" Kconfig menu,
->> patch #2 moves the core fbdev Kconfig symbols to a separate Kconfig file,
->> patch #3 does the FB symbol split and introduces the FB_CORE symbol and
->> finally patch #4 makes the DRM symbol to select FB_CORE if the DRM fbdev
->> emualtion support was enabled.
->>
->> Since this series touches three subsystems (auxdisplay, fbdev and DRM),
->> I would like to merge it through DRM with the acks of these maintainers.
->
-> Sure. Ack from me.
->
-> The patch series look good otherwise. You may add:
-> Acked-by: Helge Deller <deller@gmx.de>
->
+I don't think we need a list of *potential* problems.  We need an
+example of the specific problem this will solve, i.e., what currently
+does not work?
 
-Thanks!
+The drm/ast and maybe drm/loongson patches are the only ones that use
+the new callback, so I assume there are real problems with those
+drivers.
 
--- 
-Best regards,
+CONFIG_DRM_AST is a tristate.  We're talking about identifying the
+boot-time console device.  So if CONFIG_DRM_AST=m, I guess we don't
+get the benefit of the new callback unless the module gets loaded?
 
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+> Also honor the comment: "Clients have *TWO* callback mechanisms they
+> can use"
 
+This refers to the existing vga_client_register() function comment:
+
+   * vga_client_register - register or unregister a VGA arbitration client
+   * @pdev: pci device of the VGA client
+   * @set_decode: vga decode change callback
+   *
+   * Clients have two callback mechanisms they can use.
+   *
+   * @set_decode callback: If a client can disable its GPU VGA resource, it
+   * will get a callback from this to set the encode/decode state.
+
+and the fact that struct vga_device currently only contains *one*
+callback function pointer:
+
+  unsigned int (*set_decode)(struct pci_dev *pdev, bool decode);
+
+Adding the .is_primary_gpu() callback does mean there will now be two
+callbacks, as the comment says, but I think it's just confusing to
+mention this in the commit log, so I would just remove it.
+
+> @@ -1509,13 +1543,24 @@ static int pci_notify(struct notifier_block *nb, unsigned long action,
+>  	 * cases of hotplugable vga cards.
+>  	 */
+>  
+> -	if (action == BUS_NOTIFY_ADD_DEVICE)
+> +	switch (action) {
+> +	case BUS_NOTIFY_ADD_DEVICE:
+>  		notify = vga_arbiter_add_pci_device(pdev);
+> -	else if (action == BUS_NOTIFY_DEL_DEVICE)
+> +		if (notify)
+> +			vga_arbiter_notify_clients();
+> +		break;
+> +	case BUS_NOTIFY_DEL_DEVICE:
+>  		notify = vga_arbiter_del_pci_device(pdev);
+> +		if (notify)
+> +			vga_arbiter_notify_clients();
+> +		break;
+> +	case BUS_NOTIFY_BOUND_DRIVER:
+> +		vga_arbiter_do_arbitration(pdev);
+> +		break;
+> +	default:
+> +		break;
+> +	}
+
+Changing from if/else to switch makes the patch bigger than necessary
+for no real benefit and obscures what is really changing.
+
+Bjorn

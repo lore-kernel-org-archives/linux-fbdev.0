@@ -2,93 +2,203 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B36AC0015E
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jul 2023 21:18:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85A71C04A94
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jul 2023 22:04:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229991AbjGSVSv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Jul 2023 17:18:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58910 "EHLO
+        id S230205AbjGSWEc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Jul 2023 18:04:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44210 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229796AbjGSVSp (ORCPT
+        with ESMTP id S230177AbjGSWEb (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Jul 2023 17:18:45 -0400
+        Wed, 19 Jul 2023 18:04:31 -0400
 Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id D6F4F1FC0;
-        Wed, 19 Jul 2023 14:18:43 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 804561FE8;
+        Wed, 19 Jul 2023 15:04:23 -0700 (PDT)
 Received: from loongson.cn (unknown [10.20.42.43])
-        by gateway (Coremail) with SMTP id _____8BxHOsyU7hkPm8HAA--.13941S3;
-        Thu, 20 Jul 2023 05:18:42 +0800 (CST)
+        by gateway (Coremail) with SMTP id _____8Cxc_DmXbhkBHMHAA--.18957S3;
+        Thu, 20 Jul 2023 06:04:22 +0800 (CST)
 Received: from [10.20.42.43] (unknown [10.20.42.43])
-        by localhost.localdomain (Coremail) with SMTP id AQAAf8CxvM4yU7hk5xU1AA--.15484S3;
-        Thu, 20 Jul 2023 05:18:42 +0800 (CST)
-Message-ID: <184a570c-cd11-fc08-be63-3ff795dfc6d8@loongson.cn>
-Date:   Thu, 20 Jul 2023 05:18:41 +0800
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8Cx7yPlXbhkPxo1AA--.40661S3;
+        Thu, 20 Jul 2023 06:04:22 +0800 (CST)
+Message-ID: <d490f455-5228-b85a-656a-dce11586dee5@loongson.cn>
+Date:   Thu, 20 Jul 2023 06:04:21 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.13.0
-Subject: Re: [PATCH v3 1/9] video/aperture: Add a helper to detect if an
- aperture contains firmware FB
+Subject: Re: [Intel-gfx] [PATCH v3 3/9] PCI/VGA: Switch to
+ aperture_contain_firmware_fb_nonreloc()
 Content-Language: en-US
 To:     Bjorn Helgaas <helgaas@kernel.org>,
         Sui Jingfeng <sui.jingfeng@linux.dev>
-Cc:     David Airlie <airlied@gmail.com>, amd-gfx@lists.freedesktop.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org,
-        linux-fbdev@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Helge Deller <deller@gmx.de>
-References: <20230719204343.GA513226@bhelgaas>
+Cc:     David Airlie <airlied@gmail.com>, linux-fbdev@vger.kernel.org,
+        kvm@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        amd-gfx@lists.freedesktop.org, linux-pci@vger.kernel.org
+References: <20230719204314.GA512532@bhelgaas>
 From:   suijingfeng <suijingfeng@loongson.cn>
-In-Reply-To: <20230719204343.GA513226@bhelgaas>
+In-Reply-To: <20230719204314.GA512532@bhelgaas>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-CM-TRANSID: AQAAf8CxvM4yU7hk5xU1AA--.15484S3
+X-CM-TRANSID: AQAAf8Cx7yPlXbhkPxo1AA--.40661S3
 X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
-X-Coremail-Antispam: 1Uk129KBj9xXoWruFyDAFyrXFWxXFy8uFyrZrc_yoWDKFc_Ww
-        43A3s29348JFZ2krn7Jr4rCrZYkayjkryjvas3tFs7Wry7tF4DXF1fCw1rWa45uryFyF15
-        C398tF4Fkw13uosvyTuYvTs0mTUanT9S1TB71UUUUjDqnTZGkaVYY2UrUUUUj1kv1TuYvT
-        s0mT0YCTnIWjqI5I8CrVACY4xI64kE6c02F40Ex7xfYxn0WfASr-VFAUDa7-sFnT9fnUUI
-        cSsGvfJTRUUUbDAYFVCjjxCrM7AC8VAFwI0_Jr0_Gr1l1xkIjI8I6I8E6xAIw20EY4v20x
-        vaj40_Wr0E3s1l1IIY67AEw4v_Jrv_JF1l8cAvFVAK0II2c7xJM28CjxkF64kEwVA0rcxS
-        w2x7M28EF7xvwVC0I7IYx2IY67AKxVWUCVW8JwA2z4x0Y4vE2Ix0cI8IcVCY1x0267AKxV
-        W8JVWxJwA2z4x0Y4vEx4A2jsIE14v26r4j6F4UM28EF7xvwVC2z280aVCY1x0267AKxVW8
-        JVW8Jr1ln4kS14v26r126r1DM2AIxVAIcxkEcVAq07x20xvEncxIr21l57IF6xkI12xvs2
-        x26I8E6xACxx1l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r126r1D
-        McIj6I8E87Iv67AKxVW8JVWxJwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IY64vIr41lc7
-        I2V7IY0VAS07AlzVAYIcxG8wCY1x0262kKe7AKxVWUAVWUtwCF04k20xvY0x0EwIxGrwCF
-        x2IqxVCFs4IE7xkEbVWUJVW8JwCFI7km07C267AKxVWUAVWUtwC20s026c02F40E14v26r
-        1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij
-        64vIr41lIxAIcVC0I7IYx2IY67AKxVWUCVW8JwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr
-        0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r4j6F4UMIIF
-        0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x07jFApnUUUUU=
+X-Coremail-Antispam: 1Uk129KBj93XoWxAr47uw17Jryxtw1rAr1xtFc_yoWrZw4xpa
+        n5AFZ3Aa1DGr4rG3W2v3W2vF1Fvws7GFyUKF98Zw1ru3sIkwn7Kr18ArZ0v3s7ArZ7Ja1S
+        vF43tw15uan8ZFXCm3ZEXasCq-sJn29KB7ZKAUJUUUU8529EdanIXcx71UUUUU7KY7ZEXa
+        sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+        0xBIdaVrnRJUUUvIb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+        IYs7xG6rWj6s0DM7CIcVAFz4kK6r106r15M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+        e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Jr0_JF4l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+        0_Jr0_Gr1l84ACjcxK6I8E87Iv67AKxVWxJVW8Jr1l84ACjcxK6I8E87Iv6xkF7I0E14v2
+        6r4j6r4UJwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07AIYIkI8VC2zVCFFI0UMc
+        02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUGVWUXwAv7VC2z280aVAF
+        wI0_Cr0_Gr1UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvEwIxGrwCYjI0SjxkI62AI1c
+        AE67vIY487MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8C
+        rVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUtVW8Zw
+        CIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x02
+        67AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Cr
+        0_Gr1UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x07UA
+        Ma8UUUUU=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Hi,
 
-
 On 2023/7/20 04:43, Bjorn Helgaas wrote:
-> On Wed, Jul 12, 2023 at 12:43:02AM +0800, Sui Jingfeng wrote:
+> [+cc linux-pci; I don't apply or ack PCI patches unless they appear there]
+>
+> On Wed, Jul 12, 2023 at 12:43:04AM +0800, Sui Jingfeng wrote:
 >> From: Sui Jingfeng <suijingfeng@loongson.cn>
 >>
->> This patch adds the aperture_contain_firmware_fb() function to do the
->> determination. Unfortunately, due to the fact that the apertures list
->> will be freed dynamically, the location and size information of the
->> firmware FB will be lost after dedicated drivers call
->> aperture_remove_conflicting_devices(),
->> aperture_remove_conflicting_pci_devices() or
->> aperture_remove_all_conflicting_devices() functions
->> We solve this problem by introducing two static variables that record the
->> firmware framebuffer's start addrness and end addrness. It assumes that the
->> system has only one active firmware framebuffer driver at a time. We don't
->> use the global structure screen_info here, because PCI resources may get
->> reallocated (the VRAM BAR could be moved) during the kernel boot stage.
-> s/addrness/address/ (twice)
+>> The observation behind this is that we should avoid accessing the global
+>> screen_info directly. Call the aperture_contain_firmware_fb_nonreloc()
+>> function to implement the detection of whether an aperture contains the
+>> firmware FB.
+> Because it's better to access the global screen_info from
+> aperture_contain_firmware_fb_nonreloc()?  The reasoning here is not
+> super clear to me.
+
+Yes, honestly the benefits of this patch is not obvious.
+
+But I do have some (may not practical) ideas in my mind when I create 
+this patch.
+
+See my explanation at the end.
 
 
-Will be fixed at the next version, thanks.
+>> This patch helps to decouple the determination from the implementation.
+>> Or, in other words, we intend to make the determination opaque to the
+>> caller. The determination may choose to be arch-dependent or
+>> arch-independent. But vgaarb, as a consumer of the determination,
+>> shouldn't care how the does determination is implemented.
+> "how the determination ..."  (drop the "does")
+Ok, will be fixed at the next version.
+>
+> Are you saying that aperture_contain_firmware_fb_nonreloc() might be
+> arch-dependent?  Are there multiple callers?  Or does this just move
+> code from one place to a more appropriate place?
 
+1) To form a unify approach, and drop the screen_info.h header.
+
+There are similar cleanup patch at patchwork.
+
+
+screen_info.h is definitely arch-dependent, while vgaarb is just 
+device-dependent.
+
+I think, they do have subtle difference.
+
+
+2) Convert the *device driven* to the "driver driven".
+
+Move it from vgaarb.c to video/apperture allow code sharing.
+
+While this function are not going to be shared in vgaarb.
+
+Previous it is the device make the decision,
+
+after applied this patch it allow driver make the decision.
+
+They do have subtle difference.
+
+Emm, I will try to give some examples at the next version.
+
+
+3) I was imagine to drag platform display controllers in (get platform 
+devices involved in the arbitration).
+
+As Alex seem hint to implement something platform-independent.
+
+The aperture_contain_firmware_fb_nonreloc() actually is possible be shared.
+
+The aperture of platform device will be not moved.
+
+So it seems that platform device driver could call this function to do 
+something else.
+
+
+>> Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
+>> ---
+>>   drivers/pci/vgaarb.c | 19 ++++---------------
+>>   1 file changed, 4 insertions(+), 15 deletions(-)
+>>
+>> diff --git a/drivers/pci/vgaarb.c b/drivers/pci/vgaarb.c
+>> index bf96e085751d..953daf731b2c 100644
+>> --- a/drivers/pci/vgaarb.c
+>> +++ b/drivers/pci/vgaarb.c
+>> @@ -14,6 +14,7 @@
+>>   #define vgaarb_info(dev, fmt, arg...)	dev_info(dev, "vgaarb: " fmt, ##arg)
+>>   #define vgaarb_err(dev, fmt, arg...)	dev_err(dev, "vgaarb: " fmt, ##arg)
+>>   
+>> +#include <linux/aperture.h>
+>>   #include <linux/module.h>
+>>   #include <linux/kernel.h>
+>>   #include <linux/pci.h>
+>> @@ -26,7 +27,6 @@
+>>   #include <linux/poll.h>
+>>   #include <linux/miscdevice.h>
+>>   #include <linux/slab.h>
+>> -#include <linux/screen_info.h>
+>>   #include <linux/vt.h>
+>>   #include <linux/console.h>
+>>   #include <linux/acpi.h>
+>> @@ -558,20 +558,11 @@ void vga_put(struct pci_dev *pdev, unsigned int rsrc)
+>>   }
+>>   EXPORT_SYMBOL(vga_put);
+>>   
+>> +/* Select the device owning the boot framebuffer if there is one */
+>>   static bool vga_is_firmware_default(struct pci_dev *pdev)
+>>   {
+>>   #if defined(CONFIG_X86) || defined(CONFIG_IA64)
+>> -	u64 base = screen_info.lfb_base;
+>> -	u64 size = screen_info.lfb_size;
+>>   	struct resource *r;
+>> -	u64 limit;
+>> -
+>> -	/* Select the device owning the boot framebuffer if there is one */
+>> -
+>> -	if (screen_info.capabilities & VIDEO_CAPABILITY_64BIT_BASE)
+>> -		base |= (u64)screen_info.ext_lfb_base << 32;
+>> -
+>> -	limit = base + size;
+>>   
+>>   	/* Does firmware framebuffer belong to us? */
+>>   	pci_dev_for_each_resource(pdev, r) {
+>> @@ -581,10 +572,8 @@ static bool vga_is_firmware_default(struct pci_dev *pdev)
+>>   		if (!r->start || !r->end)
+>>   			continue;
+>>   
+>> -		if (base < r->start || limit >= r->end)
+>> -			continue;
+>> -
+>> -		return true;
+>> +		if (aperture_contain_firmware_fb_nonreloc(r->start, r->end))
+>> +			return true;
+>>   	}
+>>   #endif
+>>   	return false;
+>> -- 
+>> 2.25.1
+>>
 

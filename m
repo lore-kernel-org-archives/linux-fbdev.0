@@ -2,125 +2,142 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0DC8C001DC
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jul 2023 19:33:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A1CFC001B0
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jul 2023 20:43:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229709AbjGSTdB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Jul 2023 15:33:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56006 "EHLO
+        id S229819AbjGSUnT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Jul 2023 16:43:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43910 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229815AbjGSTcv (ORCPT
+        with ESMTP id S229480AbjGSUnS (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Jul 2023 15:32:51 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BB89B1FE6;
-        Wed, 19 Jul 2023 12:32:45 -0700 (PDT)
+        Wed, 19 Jul 2023 16:43:18 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CD1909E;
+        Wed, 19 Jul 2023 13:43:17 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 9C49261804;
-        Wed, 19 Jul 2023 19:32:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CCAE6C433C9;
-        Wed, 19 Jul 2023 19:32:43 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 699A46182F;
+        Wed, 19 Jul 2023 20:43:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A388C433C8;
+        Wed, 19 Jul 2023 20:43:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1689795164;
-        bh=hZI4hitD39aZ+Qdl1lmi9pA61QSLLLHm+XV9ADPTsus=;
+        s=k20201202; t=1689799396;
+        bh=Tyjuk2o5/6zWPoP1zMw3/ypWfYVhxYWg4rjX3S4aZtg=;
         h=Date:From:To:Cc:Subject:In-Reply-To:From;
-        b=eQXfqj+zST5V+UqVLxrOjyGA+WFrIALYwsndDf8yb+d/ZcAhNbmKZDq169VZaA9sf
-         25+bBsBNSvp0yYQUkVL2vtrX8ooa/xyi+l+HGRTJ1LyPinE1QFLpb5R0Cg36sW3qNn
-         YgZrsKi4oHpxkgHsNexLn2gxv7Eeh2OoajZB5APtfPQ+10fXyIgjl2R3+z+WXlvO86
-         Qn893HS/fbI8ZKTtw08zvDfUMSHa1Fv8E+7oGp9QKbDJfH1c2kWXr4T2FGBMg+JkXS
-         oxjrRjZ46Nr7EXvdUaNgc1xypDfdpbsWW38ebY+nmePmjVTAwUQssX3tnWVYHKKP77
-         X9BK/nT/OlPNA==
-Date:   Wed, 19 Jul 2023 14:32:41 -0500
+        b=FiAa9y/2tv71wEXdSyAGzNYhBUxM+hvhiaqxmMnzXpP8UcpFHg9j/QVPzqJ1auM37
+         lbHnkX0NYfz7AI9yHQjtRu9TYLXdBTGLfLBfe6m5AW1ZMZ1Db0D8YHv0o/kXURCPBg
+         6o2jg6IJRGYIgt179i38xPkXzaLIsMgsxFnK0fpi91ooT8kKWcS8B/1ovFntmhRFU0
+         Q8BPuImDwnSqp/UoGGhqBPPlkEWcYQ8KgeRMf3mdhJTJhj6Do9nbOMZCXofTjkWIFw
+         Snq6WsZ6LAoKSxoq4zjBx4b7UYqEw6ID5xRozHH9G3pl2v8PjgHJhBEsxoAdXceHil
+         xp9Aiqzk429pA==
+Date:   Wed, 19 Jul 2023 15:43:14 -0500
 From:   Bjorn Helgaas <helgaas@kernel.org>
 To:     Sui Jingfeng <sui.jingfeng@linux.dev>
-Cc:     David Airlie <airlied@gmail.com>, amd-gfx@lists.freedesktop.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org,
-        linux-fbdev@vger.kernel.org,
-        Sui Jingfeng <suijingfeng@loongson.cn>,
+Cc:     David Airlie <airlied@gmail.com>, linux-fbdev@vger.kernel.org,
+        Sui Jingfeng <suijingfeng@loongson.cn>, kvm@vger.kernel.org,
+        intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, amd-gfx@lists.freedesktop.org,
         linux-pci@vger.kernel.org
-Subject: Re: [PATCH v3 0/9] PCI/VGA: Improve the default VGA device selection
-Message-ID: <20230719193241.GA510805@bhelgaas>
+Subject: Re: [Intel-gfx] [PATCH v3 3/9] PCI/VGA: Switch to
+ aperture_contain_firmware_fb_nonreloc()
+Message-ID: <20230719204314.GA512532@bhelgaas>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230711164310.791756-1-sui.jingfeng@linux.dev>
+In-Reply-To: <20230711164310.791756-4-sui.jingfeng@linux.dev>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-[+cc linux-pci]
+[+cc linux-pci; I don't apply or ack PCI patches unless they appear there]
 
-On Wed, Jul 12, 2023 at 12:43:01AM +0800, Sui Jingfeng wrote:
+On Wed, Jul 12, 2023 at 12:43:04AM +0800, Sui Jingfeng wrote:
 > From: Sui Jingfeng <suijingfeng@loongson.cn>
 > 
-> Currently, the default VGA device selection is not perfect. Potential
-> problems are:
+> The observation behind this is that we should avoid accessing the global
+> screen_info directly. Call the aperture_contain_firmware_fb_nonreloc()
+> function to implement the detection of whether an aperture contains the
+> firmware FB.
+
+Because it's better to access the global screen_info from
+aperture_contain_firmware_fb_nonreloc()?  The reasoning here is not
+super clear to me.
+
+> This patch helps to decouple the determination from the implementation.
+> Or, in other words, we intend to make the determination opaque to the
+> caller. The determination may choose to be arch-dependent or
+> arch-independent. But vgaarb, as a consumer of the determination,
+> shouldn't care how the does determination is implemented.
+
+"how the determination ..."  (drop the "does")
+
+Are you saying that aperture_contain_firmware_fb_nonreloc() might be
+arch-dependent?  Are there multiple callers?  Or does this just move
+code from one place to a more appropriate place?
+
+> Signed-off-by: Sui Jingfeng <suijingfeng@loongson.cn>
+> ---
+>  drivers/pci/vgaarb.c | 19 ++++---------------
+>  1 file changed, 4 insertions(+), 15 deletions(-)
 > 
-> 1) This function is a no-op on non-x86 architectures.
-> 2) It does not take the PCI Bar may get relocated into consideration.
-> 3) It is not effective for the PCI device without a dedicated VRAM Bar.
-> 4) It is device-agnostic, thus it has to waste the effort to iterate all
->    of the PCI Bar to find the VRAM aperture.
-> 5) It has invented lots of methods to determine which one is the default
->    boot device on a multiple video card coexistence system. But this is
->    still a policy because it doesn't give the user a choice to override.
+> diff --git a/drivers/pci/vgaarb.c b/drivers/pci/vgaarb.c
+> index bf96e085751d..953daf731b2c 100644
+> --- a/drivers/pci/vgaarb.c
+> +++ b/drivers/pci/vgaarb.c
+> @@ -14,6 +14,7 @@
+>  #define vgaarb_info(dev, fmt, arg...)	dev_info(dev, "vgaarb: " fmt, ##arg)
+>  #define vgaarb_err(dev, fmt, arg...)	dev_err(dev, "vgaarb: " fmt, ##arg)
+>  
+> +#include <linux/aperture.h>
+>  #include <linux/module.h>
+>  #include <linux/kernel.h>
+>  #include <linux/pci.h>
+> @@ -26,7 +27,6 @@
+>  #include <linux/poll.h>
+>  #include <linux/miscdevice.h>
+>  #include <linux/slab.h>
+> -#include <linux/screen_info.h>
+>  #include <linux/vt.h>
+>  #include <linux/console.h>
+>  #include <linux/acpi.h>
+> @@ -558,20 +558,11 @@ void vga_put(struct pci_dev *pdev, unsigned int rsrc)
+>  }
+>  EXPORT_SYMBOL(vga_put);
+>  
+> +/* Select the device owning the boot framebuffer if there is one */
+>  static bool vga_is_firmware_default(struct pci_dev *pdev)
+>  {
+>  #if defined(CONFIG_X86) || defined(CONFIG_IA64)
+> -	u64 base = screen_info.lfb_base;
+> -	u64 size = screen_info.lfb_size;
+>  	struct resource *r;
+> -	u64 limit;
+> -
+> -	/* Select the device owning the boot framebuffer if there is one */
+> -
+> -	if (screen_info.capabilities & VIDEO_CAPABILITY_64BIT_BASE)
+> -		base |= (u64)screen_info.ext_lfb_base << 32;
+> -
+> -	limit = base + size;
+>  
+>  	/* Does firmware framebuffer belong to us? */
+>  	pci_dev_for_each_resource(pdev, r) {
+> @@ -581,10 +572,8 @@ static bool vga_is_firmware_default(struct pci_dev *pdev)
+>  		if (!r->start || !r->end)
+>  			continue;
+>  
+> -		if (base < r->start || limit >= r->end)
+> -			continue;
+> -
+> -		return true;
+> +		if (aperture_contain_firmware_fb_nonreloc(r->start, r->end))
+> +			return true;
+>  	}
+>  #endif
+>  	return false;
+> -- 
+> 2.25.1
 > 
-> With the observation that device drivers or video aperture helpers may
-> have better knowledge about which PCI bar contains the firmware FB,
-> 
-> This patch tries to solve the above problems by introducing a function
-> callback to the vga_client_register() function interface. DRM device
-> drivers for the PCI device need to register the is_boot_device() function
-> callback during the driver loading time. Once the driver binds the device
-> successfully, VRAARB will call back to the driver. This gives the device
-> drivers a chance to provide accurate boot device identification. Which in
-> turn unlock the abitration service to non-x86 architectures. A device
-> driver can also pass a NULL pointer to keep the original behavior.
-
-I skimmed all these patches, but the only one that seems to mention an
-actual problem being solved, i.e., something that doesn't work for an
-end user, is "drm/ast: Register as a vga client ..."  Maybe
-"drm/loongson: Add an implement for ..." also solves a problem, but it
-lacks a commit log, so I don't know what the problem is.
-
-In the future, can you please cc: linux-pci with the entire series?
-In this posting, only the patches that touched drivers/pci/vgaarb.c
-went to linux-pci, but those aren't enough to make sense of the series
-as a whole.
-
->   video/aperture: Add a helper to detect if an aperture contains
->     firmware FB
->   video/aperture: Add a helper for determining if an unmoved aperture
->     contain FB
->   PCI/VGA: Switch to aperture_contain_firmware_fb_nonreloc()
-
-Since this subject includes the function name (which is nice!), it
-would also be helpful if the "Add a helper ..." subject included the
-same function name.
-
->   PCI/VGA: Improve the default VGA device selection
-
-If you can make this subject any more specific, that would be useful.
-There's more to say about that patch, so I'll respond there.
-
->   drm/amdgpu: Implement the is_primary_gpu callback of
->     vga_client_register()
->   drm/radeon: Add an implement for the is_primary_gpu function callback
->   drm/i915: Add an implement for the is_primary_gpu hook
->   drm/ast: Register as a vga client to vgaarb by calling
->     vga_client_register()
->   drm/loongson: Add an implement for the is_primary_gpu function
->     callback
-
-There's unnecessary variation in the subject lines (and the commit
-logs) of these patches.  If they all do the same thing but in
-different drivers, it's useful if the patches all *look* the same.
-
-You might be able to write these subjects as
-"Implement .is_primary_gpu() callback" for brevity.
-
-Bjorn

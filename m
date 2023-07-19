@@ -2,233 +2,179 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 205A0EB64DC
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jul 2023 22:01:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D0C7EB64DA
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jul 2023 07:57:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230169AbjGRWBH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Jul 2023 18:01:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59306 "EHLO
+        id S229609AbjGSH5v (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Jul 2023 03:57:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48812 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229679AbjGRWBG (ORCPT
+        with ESMTP id S229596AbjGSH5v (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Jul 2023 18:01:06 -0400
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E02B198D;
-        Tue, 18 Jul 2023 15:01:05 -0700 (PDT)
-Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-1b8bd586086so49972035ad.2;
-        Tue, 18 Jul 2023 15:01:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1689717664; x=1692309664;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=/DBv5NGK1dmc+CZMq0/WXS3utH3EmBQl9zIKDmjQ1i4=;
-        b=cathwXRCdEL7wvuiZ7bcMAHF2YkxTm1Pa99hNgy2x+3oEKy8vP5p1pu9MijkOsOxyc
-         jVjO8T1YTkH454Bng4g8CC+ThLmAff8Zub0Wh44Fl8hmA3B+pz1cCE8AhFvDJSoUkJID
-         NS7KV1XDtpxLbe2HWUcgGi+EM6yjEGw6Sq2n/Qnwk0U558oV9/CsEMgkI+jF8M4J14Bl
-         j/CISxZtgmOZEeF8ngbj99zwzx/DpIifrqP3yzGJWnNbKrjb9QyRTvPr1aPJ88+oJ9jy
-         batIZ/8swsAtixDHJfvcm05Qd0arLM9+ER1NC94CBHpMmwXt1e8Hdw90O3brBFBThqFk
-         WTSw==
+        Wed, 19 Jul 2023 03:57:51 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 58ECF9D
+        for <linux-fbdev@vger.kernel.org>; Wed, 19 Jul 2023 00:57:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1689753427;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=0LSXzH9KgQuNIJHrVFvJ9YD/ZmxqwFC+Ci2ZGBbMwGk=;
+        b=R/bSZ5mtXvrl69m0j2LPjtqiFDM2BSu5VOtMCs3305nuxWSEevRP1VvhXKuouidC+3A43t
+        ACls23rYvAb3pbmab44FxRi02bzkfInG2Vp74Wp+RMyK9taDKcyza5CLaVAFhFpakZu//d
+        1BqaJGu1ejaybMFF38L4/Gy6UJLRFWE=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-488-bE-azvwzNcKI_tf5KcgW1w-1; Wed, 19 Jul 2023 03:57:06 -0400
+X-MC-Unique: bE-azvwzNcKI_tf5KcgW1w-1
+Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-3fa8db49267so35482255e9.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 19 Jul 2023 00:57:06 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689717664; x=1692309664;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:sender:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=/DBv5NGK1dmc+CZMq0/WXS3utH3EmBQl9zIKDmjQ1i4=;
-        b=F/tUQgnLIUh7k4cfUVhIpjDliLqZwwf0l41Huwl4zjXkQA0JKojnj2mFfHcFN90heM
-         ZNbtYX3rUTK3Nol+nW4v4BHKcgNmwO8xMX7lkLLXW1z5OYg0rBbtYNeufujSJz0LudmE
-         ap9YOyYtsubLNUtxkhGuddJbAgc/nUy1cvxsrNN+KIPG/ZbvETsLH6xukHX8VlDZ3k5v
-         MyMC5tQd+mF/VtpXuLOImcgLrPZFCR6j/kcY2F88npPbhsrgio1+cn7GrLyRJuqWkitc
-         1UDaQ1QcWVifKaNcMEl7zHrT7scCcyHv8E04X3vVdoUvgB8dLJ1QIhgSp3NuPs1SkXgs
-         JIIw==
-X-Gm-Message-State: ABy/qLY304gpiS7wb5vBgM1nPYoUGsg7u5ovfsOTbAjHNu9NVn6WTmIk
-        +62EVgK6e1cxGvCCLb8O2xk=
-X-Google-Smtp-Source: APBJJlEKmijXIQPxNbeLXXqgtsMDd/YUFQr0MtJ3gF/quDqVxbtlCH7F50lGttR5T6rSx/zqeT1Vfg==
-X-Received: by 2002:a17:902:768c:b0:1ba:ff05:d8b1 with SMTP id m12-20020a170902768c00b001baff05d8b1mr982129pll.19.1689717664188;
-        Tue, 18 Jul 2023 15:01:04 -0700 (PDT)
-Received: from localhost ([2620:10d:c090:400::5:fbd8])
-        by smtp.gmail.com with ESMTPSA id g15-20020a1709029f8f00b001b8b2a6c4a4sm2354458plq.172.2023.07.18.15.01.03
+        d=1e100.net; s=20221208; t=1689753425; x=1690358225;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=0LSXzH9KgQuNIJHrVFvJ9YD/ZmxqwFC+Ci2ZGBbMwGk=;
+        b=HwEE17h3Sor/+8zgvo5KgfftKiaTPOBaE/B5X96wzU7ibrs7toNzFqzXNe7KojWbxM
+         B0Kk4XVs1DSiw+IIML1l4wo1xFCi47sUry25J099mTXKCVD7s2GjlPTswBSzG+MMNGfM
+         dB/4V5zEUYF115OnpK/6csh+yTOBuNViw0jIGKfLsILK36L+2GrLPZPbejeuT5l2nM37
+         yf6hY72VKs3TDPfCjUALrj+K19J3AOoxZs8dBVgdMtaaGYCvmX+NkoJRIu//uBsSFLzM
+         y0fRqLaFS4VKWyOhojoss40su0hZaZbBddcGrc5P3gVZxZbyrP8h0vVWV4qsCPMZXSWy
+         55rg==
+X-Gm-Message-State: ABy/qLY6K+EmHAV5dW05jxylN6jve/6jis+vblGBf77iUmFDtSAz/pEa
+        Wq2/yymQnOQGUk6/2/BWTCK7s4ScAgi74J70v8bTXEE2ivsEDRnHTWt4/+IAKwfjpEo5VKJx4E6
+        9hrG4HRx/14N6RvOgXJpdjJU=
+X-Received: by 2002:a05:600c:cd:b0:3f7:f884:7be3 with SMTP id u13-20020a05600c00cd00b003f7f8847be3mr1334657wmm.4.1689753425238;
+        Wed, 19 Jul 2023 00:57:05 -0700 (PDT)
+X-Google-Smtp-Source: APBJJlH74UgMTjLsFyK1xbqZGPblld9XHaIy+slQtfM8QvANl8wo4fumWmYeLIfxy+UY4GY0/K0oJw==
+X-Received: by 2002:a05:600c:cd:b0:3f7:f884:7be3 with SMTP id u13-20020a05600c00cd00b003f7f8847be3mr1334641wmm.4.1689753424896;
+        Wed, 19 Jul 2023 00:57:04 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id x15-20020a05600c21cf00b003fbbe41fd78sm1046275wmj.10.2023.07.19.00.57.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 18 Jul 2023 15:01:03 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date:   Tue, 18 Jul 2023 12:01:02 -1000
-From:   Tejun Heo <tj@kernel.org>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Lai Jiangshan <jiangshanlai@gmail.com>,
-        "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        kernel-team@meta.com, Linux PM list <linux-pm@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        linux-rtc@vger.kernel.org,
-        linux-riscv <linux-riscv@lists.infradead.org>,
-        netdev <netdev@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux MMC List <linux-mmc@vger.kernel.org>,
-        "open list:LIBATA SUBSYSTEM (Serial and Parallel ATA drivers)" 
-        <linux-ide@vger.kernel.org>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>
-Subject: Re: Consider switching to WQ_UNBOUND messages (was: Re: [PATCH v2
- 6/7] workqueue: Report work funcs that trigger automatic CPU_INTENSIVE
- mechanism)
-Message-ID: <ZLcLnoAoJmQ9WTuM@slm.duckdns.org>
-References: <20230511181931.869812-1-tj@kernel.org>
- <20230511181931.869812-7-tj@kernel.org>
- <ZF6WsSVGX3O1d0pL@slm.duckdns.org>
- <CAMuHMdVCQmh6V182q4g---jvsWiTOP2hBPZKvma6oUN6535LEg@mail.gmail.com>
- <CAMuHMdW1kxZ1RHKTRVRqDNAbj1Df2=v0fPn5KYK3kfX_kiXR6A@mail.gmail.com>
- <ZK3MBfPS-3-tJgjO@slm.duckdns.org>
- <ZK30CR196rs-OWLq@slm.duckdns.org>
- <CAMuHMdUCXPi+aS-7bR3qRetKF9T3W9jk_HKjvaXmfHv5SEeuFg@mail.gmail.com>
- <ZLXIvXBvhsnL-ik_@slm.duckdns.org>
- <CAMuHMdU8CGhsU-1PZNdWH1xjbWcWSg2s2RFAegXi+vs=d-0t8Q@mail.gmail.com>
+        Wed, 19 Jul 2023 00:57:04 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
+Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Borislav Petkov <bp@alien8.de>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "H. Peter Anvin" <hpa@zytor.com>, Helge Deller <deller@gmx.de>,
+        Ingo Molnar <mingo@redhat.com>,
+        Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee@kernel.org>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        x86@kernel.org
+Subject: Re: [PATCH v5 3/4] fbdev: Split frame buffer support in FB and
+ FB_CORE symbols
+In-Reply-To: <91486e8b-49ca-4a8a-8dd6-e9a2c6ed63ee@app.fastmail.com>
+References: <20230714171642.91185-1-javierm@redhat.com>
+ <20230714171642.91185-4-javierm@redhat.com>
+ <91486e8b-49ca-4a8a-8dd6-e9a2c6ed63ee@app.fastmail.com>
+Date:   Wed, 19 Jul 2023 09:57:03 +0200
+Message-ID: <87o7k8ibao.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdU8CGhsU-1PZNdWH1xjbWcWSg2s2RFAegXi+vs=d-0t8Q@mail.gmail.com>
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello,
+"Arnd Bergmann" <arnd@arndb.de> writes:
 
-On Tue, Jul 18, 2023 at 11:54:58AM +0200, Geert Uytterhoeven wrote:
-> I gave it a try on a system with an 800 MHz Cortex A9, only to discover
-> it makes no difference, as that machine has 1600 BogoMIPS:
+> On Fri, Jul 14, 2023, at 19:16, Javier Martinez Canillas wrote:
+>> Currently the CONFIG_FB option has to be enabled even if no legacy fbdev
+>> drivers are needed (e.g: only to have support for framebuffer consoles).
+>>
+>> The DRM subsystem has a fbdev emulation layer, but depends on CONFIG_FB
+>> and so it can only be enabled if that dependency is enabled as well.
+>>
+>> That means fbdev drivers have to be explicitly disabled if users want to
+>> enable CONFIG_FB, only to use fbcon and/or the DRM fbdev emulation layer.
+>>
+>> This patch introduces a non-visible CONFIG_FB_CORE symbol that could be
+>> enabled just to have core support needed for CONFIG_DRM_FBDEV_EMULATION,
+>> allowing CONFIG_FB to be disabled (and automatically disabling all the
+>> fbdev drivers).
+>>
+>> Nothing from fb_backlight.o and fbmon.o is used by the DRM fbdev emulation
+>> layer so these two objects can be compiled out when CONFIG_FB is disabled.
+>
+> I gave this a spin in my randconfig build setup and found one small
+> mistake:
+>
 
-Oops.
+Thanks for testing!
 
-> workqueue: blk_mq_run_work_fn hogged CPU for >10000us 4 times,
-> consider switching to WQ_UNBOUND
+>> diff --git a/drivers/video/fbdev/core/Makefile 
+>> b/drivers/video/fbdev/core/Makefile
+>> index 9150bafd9e89..2cd213716c12 100644
+>> --- a/drivers/video/fbdev/core/Makefile
+>> +++ b/drivers/video/fbdev/core/Makefile
+>> @@ -1,10 +1,10 @@
+>>  # SPDX-License-Identifier: GPL-2.0
+>>  obj-$(CONFIG_FB_NOTIFY)           += fb_notify.o
+>> -obj-$(CONFIG_FB)                  += fb.o
+>> -fb-y                              := fb_backlight.o \
+>> -                                     fb_info.o \
+>> -                                     fbmem.o fbmon.o fbcmap.o \
+>> +obj-$(CONFIG_FB_CORE)             += fb.o
+>> +fb-y                              := fb_info.o \
+>> +                                     fbmem.o fbcmap.o \
+>>                                       modedb.o fbcvt.o fb_cmdline.o 
+>> fb_io_fops.o
+>> +fb-$(CONFIG_FB)                   += fb_backlight.o fbmon.o
+>
+> With CONFIG_FB_CORE=y and CONFIG_FB=m, Kbuild does not include
+> the fb_backlight.o and fbmon.o files in fb.ko because they are not
+> set to =y, causing link failures for fbdev drivers later:
+>
+> ERROR: modpost: "of_get_fb_videomode" [drivers/video/fbdev/clps711x-fb.ko] undefined!
+> ERROR: modpost: "fb_videomode_from_videomode" [drivers/video/fbdev/atmel_lcdfb.ko] undefined!
+> ERROR: modpost: "of_get_fb_videomode" [drivers/video/fbdev/imxfb.ko] undefined!
+> ERROR: modpost: "fb_destroy_modedb" [drivers/video/fbdev/udlfb.ko] undefined!
+> ERROR: modpost: "fb_edid_to_monspecs" [drivers/video/fbdev/udlfb.ko] undefined!
+> ERROR: modpost: "fb_destroy_modedb" [drivers/video/fbdev/smscufx.ko] undefined!
+> ERROR: modpost: "fb_edid_to_monspecs" [drivers/video/fbdev/smscufx.ko] undefined!
+> ERROR: modpost: "fb_destroy_modedb" [drivers/video/fbdev/uvesafb.ko] undefined!
+> ERROR: modpost: "fb_validate_mode" [drivers/video/fbdev/uvesafb.ko] undefined!
+> ERROR: modpost: "fb_get_mode" [drivers/video/fbdev/uvesafb.ko] undefined!
+>
 
-It could be that we actually want to switch to UNBOUND for some reports but
-the above triggering most likely indicates that the threshold is too
-aggressive.
+Right, sorry for missing that combination.
 
-> Artificially low BogoMIPS numbers only happen on systems that have
-> the related timers (Cortex A7/A15 and later, Cortex A9 MPCore,
-> and arm64).
+>
+> Folding this fixup into the patch makes it work:
+>
+> diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
+> index 2cd213716c12f..84ddc5d308b58 100644
+> --- a/drivers/video/fbdev/core/Makefile
+> +++ b/drivers/video/fbdev/core/Makefile
+> @@ -4,7 +4,9 @@ obj-$(CONFIG_FB_CORE)             += fb.o
+>  fb-y                              := fb_info.o \
+>                                       fbmem.o fbcmap.o \
+>                                       modedb.o fbcvt.o fb_cmdline.o fb_io_fops.o
+> -fb-$(CONFIG_FB)                   += fb_backlight.o fbmon.o
+> +ifdef CONFIG_FB
+> +fb-y		                   += fb_backlight.o fbmon.o
+> +endif
+>  fb-$(CONFIG_FB_DEFERRED_IO)       += fb_defio.o
+>  fb-$(CONFIG_FB_DEVICE)            += fb_chrdev.o \
+>                                       fb_procfs.o \
+>
 
-Ah, I see. Thanks for the explanation.
+Perfect, I'll squash your fix in v6. Thanks!
 
-> I will test on more systems, but that will probably not happen until
-> next week...
-
-Thanks, really appreciate it. Can you try the following instead when you
-have time? I just pushed up the lower boundary to 4000 MIPS. The scaling is
-still capped at 1s.
-
-From 8555cbd4b22e5f85eb2bdcb84fd1d1f519a0a0d3 Mon Sep 17 00:00:00 2001
-From: Tejun Heo <tj@kernel.org>
-Date: Mon, 17 Jul 2023 12:50:02 -1000
-Subject: [PATCH] workqueue: Scale up wq_cpu_intensive_thresh_us if BogoMIPS is
- below 4000
-
-wq_cpu_intensive_thresh_us is used to detect CPU-hogging per-cpu work items.
-Once detected, they're excluded from concurrency management to prevent them
-from blocking other per-cpu work items. If CONFIG_WQ_CPU_INTENSIVE_REPORT is
-enabled, repeat offenders are also reported so that the code can be updated.
-
-The default threshold is 10ms which is long enough to do fair bit of work on
-modern CPUs while short enough to be usually not noticeable. This
-unfortunately leads to a lot of, arguable spurious, detections on very slow
-CPUs. Using the same threshold across CPUs whose performance levels may be
-apart by multiple levels of magnitude doesn't make whole lot of sense.
-
-This patch scales up wq_cpu_intensive_thresh_us upto 1 second when BogoMIPS
-is below 4000. This is obviously very inaccurate but it doesn't have to be
-accurate to be useful. The mechanism is still useful when the threshold is
-fully scaled up and the benefits of reports are usually shared with everyone
-regardless of who's reporting, so as long as there are sufficient number of
-fast machines reporting, we don't lose much.
-
-Some (or is it all?) ARM CPUs systemtically report significantly lower
-BogoMIPS. While this doesn't break anything, given how widespread ARM CPUs
-are, it's at least a missed opportunity and it probably would be a good idea
-to teach workqueue about it.
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
----
- kernel/workqueue.c | 43 ++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 42 insertions(+), 1 deletion(-)
-
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 02a8f402eeb5..0d7a3d29762f 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -52,6 +52,7 @@
- #include <linux/sched/debug.h>
- #include <linux/nmi.h>
- #include <linux/kvm_para.h>
-+#include <linux/delay.h>
- 
- #include "workqueue_internal.h"
- 
-@@ -338,8 +339,10 @@ static cpumask_var_t *wq_numa_possible_cpumask;
-  * Per-cpu work items which run for longer than the following threshold are
-  * automatically considered CPU intensive and excluded from concurrency
-  * management to prevent them from noticeably delaying other per-cpu work items.
-+ * ULONG_MAX indicates that the user hasn't overridden it with a boot parameter.
-+ * The actual value is initialized in wq_cpu_intensive_thresh_init().
-  */
--static unsigned long wq_cpu_intensive_thresh_us = 10000;
-+static unsigned long wq_cpu_intensive_thresh_us = ULONG_MAX;
- module_param_named(cpu_intensive_thresh_us, wq_cpu_intensive_thresh_us, ulong, 0644);
- 
- static bool wq_disable_numa;
-@@ -6513,6 +6516,42 @@ void __init workqueue_init_early(void)
- 	       !system_freezable_power_efficient_wq);
- }
- 
-+static void __init wq_cpu_intensive_thresh_init(void)
-+{
-+	unsigned long thresh;
-+	unsigned long mips;
-+
-+	/* if the user set it to a specific value, keep it */
-+	if (wq_cpu_intensive_thresh_us != ULONG_MAX)
-+		return;
-+
-+	/*
-+	 * The default of 10ms is derived from the fact that most modern (as of
-+	 * 2023) processors can do a lot in 10ms and that it's just below what
-+	 * most consider human-perceivable. However, the kernel also runs on a
-+	 * lot slower CPUs including microcontrollers where the threshold is way
-+	 * too low.
-+	 *
-+	 * Let's scale up the threshold upto 1 second if BogoMips is below 4000.
-+	 * This is by no means accurate but it doesn't have to be. The mechanism
-+	 * is still useful even when the threshold is fully scaled up. Also, as
-+	 * the reports would usually be applicable to everyone, some machines
-+	 * operating on longer thresholds won't significantly diminish their
-+	 * usefulness.
-+	 */
-+	thresh = 10 * USEC_PER_MSEC;
-+
-+	/* see init/calibrate.c for lpj -> BogoMIPS calculation */
-+	mips = max_t(unsigned long, loops_per_jiffy / 500000 * HZ, 1);
-+	if (mips < 4000)
-+		thresh = min_t(unsigned long, thresh * 4000 / mips, USEC_PER_SEC);
-+
-+	pr_debug("wq_cpu_intensive_thresh: lpj=%lu mips=%lu thresh_us=%lu\n",
-+		 loops_per_jiffy, mips, thresh);
-+
-+	wq_cpu_intensive_thresh_us = thresh;
-+}
-+
- /**
-  * workqueue_init - bring workqueue subsystem fully online
-  *
-@@ -6528,6 +6567,8 @@ void __init workqueue_init(void)
- 	struct worker_pool *pool;
- 	int cpu, bkt;
- 
-+	wq_cpu_intensive_thresh_init();
-+
- 	/*
- 	 * It'd be simpler to initialize NUMA in workqueue_init_early() but
- 	 * CPU to node mapping may not be available that early on some
 -- 
-2.41.0
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 

@@ -2,100 +2,114 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 08BC0C001B0
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jul 2023 22:54:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14181EB64DA
+	for <linux-fbdev@archiver.kernel.org>; Thu, 20 Jul 2023 05:48:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231304AbjGSWyS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Jul 2023 18:54:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47994 "EHLO
+        id S229552AbjGTFsG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 20 Jul 2023 01:48:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45312 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231316AbjGSWyE (ORCPT
+        with ESMTP id S229908AbjGTFr6 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Jul 2023 18:54:04 -0400
-Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id CC68326B3;
-        Wed, 19 Jul 2023 15:53:32 -0700 (PDT)
-Received: from loongson.cn (unknown [10.20.42.43])
-        by gateway (Coremail) with SMTP id _____8CxLOshabhkHHYHAA--.13769S3;
-        Thu, 20 Jul 2023 06:52:17 +0800 (CST)
-Received: from [10.20.42.43] (unknown [10.20.42.43])
-        by localhost.localdomain (Coremail) with SMTP id AQAAf8AxjiMJabhkXiA1AA--.40588S3;
-        Thu, 20 Jul 2023 06:52:17 +0800 (CST)
-Message-ID: <6f2faa2f-f91b-eaae-06bf-25367088645e@loongson.cn>
-Date:   Thu, 20 Jul 2023 06:51:53 +0800
+        Thu, 20 Jul 2023 01:47:58 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E0D12107;
+        Wed, 19 Jul 2023 22:47:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
+ s=s31663417; t=1689832054; x=1690436854; i=deller@gmx.de;
+ bh=/Bb2ropaPWrZgW8ZarCptKpfd1MfwEElK6UW93fFvrc=;
+ h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+ b=WfyOvBHsvY9wPrwfDgQSvcR4FNoPoxygbPyCmizEK7zYHfBCHX/ygNP5ii+/zr8SqJmPTrT
+ JOLFlZc6HI08kvyVCfpmhaoKRhdWtpfS/Fo9GuGErc8L5r1UMduKTRMEVBumIt/Vg6j4ieS2E
+ wZapufWu8DfwURV466h1TVVN8jmvbxX54Px+ScCnCV27KYse602BTCcFsa7I27f61ZiJjtCKT
+ DXiYoNn76kvtDLys78yTqZAJPWvxu+SoMrfXxNPaSWp/IFY8WYjuu4UNe0cyND1OqzaOdtI2v
+ 4aPK6wVIittGMHvvGB5tJahKTOFJPbxuz8jGKKCDJV8DNr9jp5dw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.153.9]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1M4s0t-1qOI3G3xPb-001xhq; Thu, 20
+ Jul 2023 07:47:34 +0200
+Message-ID: <898d9b03-bcaf-ec1b-2539-a290ab89aead@gmx.de>
+Date:   Thu, 20 Jul 2023 07:47:33 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH v3 4/9] PCI/VGA: Improve the default VGA device selection
-To:     Bjorn Helgaas <helgaas@kernel.org>,
-        Sui Jingfeng <sui.jingfeng@linux.dev>
-Cc:     David Airlie <airlied@gmail.com>, amd-gfx@lists.freedesktop.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org,
-        linux-pci@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Christian Konig <christian.koenig@amd.com>,
-        Pan Xinhui <Xinhui.Pan@amd.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Jani Nikula <jani.nikula@linux.intel.com>,
-        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-        Ben Skeggs <bskeggs@redhat.com>,
-        Karol Herbst <kherbst@redhat.com>,
-        Lyude Paul <lyude@redhat.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Alex Williamson <alex.williamson@redhat.com>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Hawking Zhang <Hawking.Zhang@amd.com>,
-        Mario Limonciello <mario.limonciello@amd.com>,
-        Lijo Lazar <lijo.lazar@amd.com>,
-        YiPeng Chai <YiPeng.Chai@amd.com>,
-        Bokun Zhang <Bokun.Zhang@amd.com>,
-        Likun Gao <Likun.Gao@amd.com>,
-        Ville Syrjala <ville.syrjala@linux.intel.com>,
-        Jason Gunthorpe <jgg@ziepe.ca>,
-        Kevin Tian <kevin.tian@intel.com>,
-        Cornelia Huck <cohuck@redhat.com>,
-        Yishai Hadas <yishaih@nvidia.com>,
-        Abhishek Sahu <abhsahu@nvidia.com>,
-        Yi Liu <yi.l.liu@intel.com>,
-        Jani Nikula <jani.nikula@intel.com>
-References: <20230719193233.GA511659@bhelgaas>
+ Thunderbird/102.12.0
+Subject: Re: [PATCH][next][V2] video: fbdev: kyro: make some const read-only
+ arrays static and reduce type size
 Content-Language: en-US
-From:   suijingfeng <suijingfeng@loongson.cn>
-In-Reply-To: <20230719193233.GA511659@bhelgaas>
+To:     Colin Ian King <colin.i.king@gmail.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20230712161123.465713-1-colin.i.king@gmail.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20230712161123.465713-1-colin.i.king@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-CM-TRANSID: AQAAf8AxjiMJabhkXiA1AA--.40588S3
-X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
-X-Coremail-Antispam: 1Uk129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7
-        ZEXasCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29K
-        BjDU0xBIdaVrnRJUUUmqb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26c
-        xKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vE
-        j48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxV
-        AFwI0_Cr0_Gr1UM28EF7xvwVC2z280aVAFwI0_Cr0_Gr1UM28EF7xvwVC2z280aVCY1x02
-        67AKxVW8Jr0_Cr1UM2AIxVAIcxkEcVAq07x20xvEncxIr21l57IF6xkI12xvs2x26I8E6x
-        ACxx1l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1q6rW5McIj6I8E
-        87Iv67AKxVWxJVW8Jr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcVAKI48JMxk0xIA0c2
-        IEe2xFo4CEbIxvr21l42xK82IYc2Ij64vIr41l4c8EcI0En4kS14v26r4a6rW5MxAqzxv2
-        6xkF7I0En4kS14v26Fy26r43JwCFx2IqxVCFs4IE7xkEbVWUJVW8JwCFI7km07C267AKxV
-        WrXVW3AwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF
-        67kF1VAFwI0_Wrv_Gr1UMIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Xr0_Ar1lIx
-        AIcVC0I7IYx2IY6xkF7I0E14v26F4j6r4UJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4l
-        IxAIcVC2z280aVAFwI0_Cr0_Gr1UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr1j6F4UJbIYCT
-        nIWIevJa73UjIFyTuYvjxU7eT5DUUUU
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:aHQQj7LTSb7/TMhWaW8kmCX5or1MajVcWBVOjVTCqa2/iVEBWWB
+ ZKoTtFQLazh7naWbeUqu+3kSKVneApDxvdCjob6T2ZkVAWk4yVEVDvSrtvQGbrxcTyzCcq7
+ nn02gWaOqeM4luhbwrEzbzDEndWlFclvegySS1HY8vo6zJFH2pAY/43g1Lfq15sefR5cIRP
+ Df/Ym7zzOafhHBvXhEiqg==
+UI-OutboundReport: notjunk:1;M01:P0:p8ORew802gw=;Q0cPP/rJgzxAAwmn3zeRXwRrHBO
+ iHJ8EDhhMnboXKsOHOO5IX7qBEqaeaPw2JgHheZLNnnlt/395oEvwTFWnwE+G3QNFYDvQtvYD
+ wK/R0UymqG1hDcp/0jKRBExnZud948+HJyCuwEcSq1Dip8bK+gf84LWSA8rzxuH25ViNs1T1M
+ iZWyJsFpDvKKCGWRpHIGwOwqSxcatvXdi94QOyvi5C2OSj7Uik5rIGRDj7BOi7v6SKiE/KJYg
+ tcsA6KHM/zyrSSzMBo7Iw739uEgOWGrVHKIS/qmfVJAQYjCLQfiHJEOATk+5+PHoXOXLs4KG/
+ RT9NZkYEARfA8pyGic5JCjtWOLdS2NkJqidBQs7hbCFSyDtiLweJgdVUhRiuGWI28RTpjuB3l
+ RkMIW1+VIbOod4u1LNCVn9+jB9QbK0iFvhjAlXzvOjvGqu2nz1W7YmoogDMpke6+DmGPMuzsP
+ ZMCyiqQphFBnpsgAkcqykuD19knHYQNwhvndp1TDqWekzTkHQod3K5ebmKFECvc7W5tu6A1UA
+ IyM4f0KGH7ye2wDD6W/IwAvdmoseK44o36urmxX+wPIDP3h09qIHJY0QzwyrJImFq5RcX3Lgl
+ 8X2ZmvSrNK+6UrafTXsi4ojfszOquBFFFrGEg9eIdxJvORY/EewqFwDtUAiyRfckM3tOZQYvz
+ NFZK7zf8tOFkCode5eUBACfpCESUpeRHOmX3GOuuBqFdlQZPNT+lCoqgZD6AhiZ72PmkSXQb2
+ /8VOjUXL8ELCvLHrhGJScPSokBlURw04zSBKwI0vMdB7pqkkLyjE97bAnN65zVVdqtxwnMwm0
+ lF+RDCxHrwBnN9nnxgJ4z13W+EBPwFO4J0OH2lvbq0l1sHgNMEX5nRL5R+bj/eNpkZTmt34FQ
+ HivdKnvZBciZ4kn/GopuIvzlkagfoJo4UotjuP5Jc7iAztUpXKQ4DBmguXpFmdyjBsZo9fYPF
+ 11aYeA==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+On 7/12/23 18:11, Colin Ian King wrote:
+> Don't populate the const read-only arrays on the stack but instead
+> make them static const. Use smaller types to use less storage for
+> the arrays.  Also makes the object code a little smaller.
+>
+> Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
 
-On 2023/7/20 03:32, Bjorn Helgaas wrote:
-> but I think it's just confusing to
-> mention this in the commit log, so I would just remove it.
+applied.
 
+Thanks!
+Helge
 
-Ok, will be done at the next version.
+> ---
+>
+> V2: Use smaller int types, kudos to Helge Deller for suggesting this
+>
+> ---
+>   drivers/video/fbdev/kyro/STG4000InitDevice.c | 10 +++++-----
+>   1 file changed, 5 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/kyro/STG4000InitDevice.c b/drivers/vide=
+o/fbdev/kyro/STG4000InitDevice.c
+> index edfa0a04854d..79886a246638 100644
+> --- a/drivers/video/fbdev/kyro/STG4000InitDevice.c
+> +++ b/drivers/video/fbdev/kyro/STG4000InitDevice.c
+> @@ -83,11 +83,11 @@ volatile u32 i,count=3D0; \
+>   static u32 InitSDRAMRegisters(volatile STG4000REG __iomem *pSTGReg,
+>   			      u32 dwSubSysID, u32 dwRevID)
+>   {
+> -	u32 adwSDRAMArgCfg0[] =3D { 0xa0, 0x80, 0xa0, 0xa0, 0xa0 };
+> -	u32 adwSDRAMCfg1[] =3D { 0x8732, 0x8732, 0xa732, 0xa732, 0x8732 };
+> -	u32 adwSDRAMCfg2[] =3D { 0x87d2, 0x87d2, 0xa7d2, 0x87d2, 0xa7d2 };
+> -	u32 adwSDRAMRsh[] =3D { 36, 39, 40 };
+> -	u32 adwChipSpeed[] =3D { 110, 120, 125 };
+> +	static const u8 adwSDRAMArgCfg0[] =3D { 0xa0, 0x80, 0xa0, 0xa0, 0xa0 }=
+;
+> +	static const u16 adwSDRAMCfg1[] =3D { 0x8732, 0x8732, 0xa732, 0xa732, =
+0x8732 };
+> +	static const u16 adwSDRAMCfg2[] =3D { 0x87d2, 0x87d2, 0xa7d2, 0x87d2, =
+0xa7d2 };
+> +	static const u8 adwSDRAMRsh[] =3D { 36, 39, 40 };
+> +	static const u8 adwChipSpeed[] =3D { 110, 120, 125 };
+>   	u32 dwMemTypeIdx;
+>   	u32 dwChipSpeedIdx;
+>
 

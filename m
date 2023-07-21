@@ -2,125 +2,166 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8524DC0015E
-	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jul 2023 06:33:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2971AC0015E
+	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jul 2023 07:31:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229452AbjGUGdi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 21 Jul 2023 02:33:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33194 "EHLO
+        id S229576AbjGUHbn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 21 Jul 2023 03:31:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56484 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230364AbjGUGdh (ORCPT
+        with ESMTP id S229500AbjGUHbm (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 21 Jul 2023 02:33:37 -0400
-Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63A8D113;
-        Thu, 20 Jul 2023 23:33:36 -0700 (PDT)
-Received: by mail-ej1-x62a.google.com with SMTP id a640c23a62f3a-9891c73e0fbso339026066b.1;
-        Thu, 20 Jul 2023 23:33:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1689921215; x=1690526015;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=wnoccgm9pbFbfKUa9nHPfrhyKpJevZV6lRDZU+5R3HY=;
-        b=lff+WY/rFM79DiX68p0sDAXj+pfWUi86h0J8FhNtLOqTuVYK4386kw1jWOHJxhPE1R
-         SIe5+u3TWL7OlQRjR5PRK/CieuHVltbVamSV7z7kaexGnAYwy+0sp+MUtYfiKrTVze+J
-         TMPlDVVlRNU6WA3LEIhsldmVb7xy3J3eezzWe9R4MtcHd8TajMhBTQT22TFFRkQfP6Zh
-         nY+TUv3fKJwglNZkTIlf+Nvrder7u9HOEbrkfGDewYQRsQp36KdVojRsb+NpR0zvXNty
-         +Kmu4lZObKQTE7cNVAPVFOjNjukIsu5umvADczDVnC6unINqxKyyhYdS8kw5OT8TxWe/
-         xP1g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689921215; x=1690526015;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=wnoccgm9pbFbfKUa9nHPfrhyKpJevZV6lRDZU+5R3HY=;
-        b=ATMIVlhZmDLCCO4/IBy6Kp3vqYMAU3MKCt756UJd0jJhXPLGG8H/lstpWIRn3KPUA6
-         EVkbh2FNLBRkKShj6PHtnrkqltQDVscLR1fbKHCoIdGZXUC3OwlNfl+Sv3PtdH5DgqxJ
-         v9aL/O4KCxM1PRbmEKz/RpGaJd0BWzvUAc8htAcTjtxrvUF+d7Si4l4ABRJVMOfUhVQU
-         ESMLEMsv9T/DH7aWSfgg2I1FwD5Rqbie43C9LlVxpHncp+ffyLm6Unb5jtY3Iwq4uxPy
-         1sxRitwa/JYvtg1hMflwpGNf86C6DRf+Bcg/xot262gdPODTCY8/kl2juXzE2V6HCA+Q
-         L1BA==
-X-Gm-Message-State: ABy/qLYGrOdxYQYX6bkfft1euA8njG16yPLEYvAXrcB1f6nz3Ywuk5YQ
-        L0oMNe4Iu3DeV9D2Jo56wJJ8g8+AGK6oO2dThic=
-X-Google-Smtp-Source: APBJJlEtO4UicrSfPlGEItokOw0Rqd9qo0Xz3sQB7r3a2uNCVNw6hO5cWfLViqwkI1hefdfKpgawHCVRuNQc60GaJTw=
-X-Received: by 2002:a17:907:7e92:b0:98e:4f1:f987 with SMTP id
- qb18-20020a1709077e9200b0098e04f1f987mr8028770ejc.3.1689921214685; Thu, 20
- Jul 2023 23:33:34 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230720061105.154821-1-victor.liu@nxp.com> <20230720112742.GA2525277@aspen.lan>
- <AM7PR04MB7046CF1E1561A37C7A5AC89B983FA@AM7PR04MB7046.eurprd04.prod.outlook.com>
-In-Reply-To: <AM7PR04MB7046CF1E1561A37C7A5AC89B983FA@AM7PR04MB7046.eurprd04.prod.outlook.com>
-From:   Andy Shevchenko <andy.shevchenko@gmail.com>
-Date:   Fri, 21 Jul 2023 09:32:58 +0300
-Message-ID: <CAHp75Vf6FTgHyimX+B80tZEwJRg7ut1=DS=Dbdy+Aa+xVwh5YQ@mail.gmail.com>
-Subject: Re: [PATCH] backlight: gpio_backlight: Drop output gpio direction
- check for initial power state
-To:     Ying Liu <victor.liu@nxp.com>
-Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        Fri, 21 Jul 2023 03:31:42 -0400
+Received: from EUR05-AM6-obe.outbound.protection.outlook.com (mail-am6eur05on2077.outbound.protection.outlook.com [40.107.22.77])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C9861199D;
+        Fri, 21 Jul 2023 00:31:40 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=IstlTZQfyGK8MwPmCmcPJzFjVNgbHQDJXtEudeebA0pln76iMBqNt0ig4Gdp/z+XF7QcQY4Z/DTrnH9T5z1+AHnBDFyV9qAfzKURoRzNeFqNMBMM4ggZ6DZIidTRoLmY7YxeS+F5nTgyioem8Dy1N9KbZxaqMO1VJcPB3Mt72Ftn1ci8gFPStRPG3gPUu1NJZdOTnTc5sLFDtnHQC3ib62YR7M4tAD8K2qfwjez0GRuW+vh88VZgh+Tq2zmsrKRiA6bbOcZzS3QXXP9hEgQWKCigc1v3N3IO+rqyvDkzwJM/gLXB5GJzctx/6nu7FcvWSLH+GIUg8SNiKq3yKfJGaw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=5UNaZGNev4novCdYIm2ldQldfepvYxuod0+t8U6p2bE=;
+ b=BQqLJdnBd+HKF1GtbwCkKC2K3zVYQ+KreuMbNiajhFAbHGc6XKnTCTHKmLOyTNYYIZqIEqYh3bF0PEd2Wdx+cLj7MlW1Ixa01zpSBvsxO3kkJ9S1utaUaCqYqmIyzyOsNrjIK6Dh4y7D+pzft884IxK1cAIWUGuJXJWFM/ZFP4mKT64C2A2g0gxccwcx6uVw56EmWh0xOQalz3AAhQUmf62e1/+XKxLngAnz9ZnaIbN1/60qGea0bQOBMaXDF8q+Cu+z6HgaxLzafhVvF730lXKDkOEznpLv34ENO73BPimLll8L5Ac80jbLArgrZ+tBHgPPjJitEbRqG2goofGmAw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=5UNaZGNev4novCdYIm2ldQldfepvYxuod0+t8U6p2bE=;
+ b=apo0NwzxNovDhbNlVdYzA47r17qHIXZmkFhzaAeg45XQrpipf8oQ8o6ZKXUQEbwg4J1VnFqe2oyx+n66/wkfy/mCd6Nf8YZHL7zALRNqWmnEhRRawms6q0yxrQA9o85ym7BITyuw+4a5nRXZERT672vQt/Ym5tlkzVtdsm2ZjYw=
+Received: from AM7PR04MB7046.eurprd04.prod.outlook.com (2603:10a6:20b:113::22)
+ by DB9PR04MB8314.eurprd04.prod.outlook.com (2603:10a6:10:249::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6609.28; Fri, 21 Jul
+ 2023 07:31:37 +0000
+Received: from AM7PR04MB7046.eurprd04.prod.outlook.com
+ ([fe80::9018:e395:332c:e24b]) by AM7PR04MB7046.eurprd04.prod.outlook.com
+ ([fe80::9018:e395:332c:e24b%4]) with mapi id 15.20.6609.022; Fri, 21 Jul 2023
+ 07:31:37 +0000
+From:   Ying Liu <victor.liu@nxp.com>
+To:     "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
         "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "lee@kernel.org" <lee@kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC:     "lee@kernel.org" <lee@kernel.org>,
+        "daniel.thompson@linaro.org" <daniel.thompson@linaro.org>,
         "jingoohan1@gmail.com" <jingoohan1@gmail.com>,
         "deller@gmx.de" <deller@gmx.de>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        Andy Shevchenko <andy@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        "andy@kernel.org" <andy@kernel.org>,
+        "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
+        "brgl@bgdev.pl" <brgl@bgdev.pl>
+Subject: [PATCH v2] backlight: gpio_backlight: Drop output gpio direction
+ check for initial power state
+Thread-Topic: [PATCH v2] backlight: gpio_backlight: Drop output gpio direction
+ check for initial power state
+Thread-Index: Adm7pWHkE3L5gGu8m0ilbj6s2t0e8g==
+Date:   Fri, 21 Jul 2023 07:31:37 +0000
+Message-ID: <20230721073555.1377236-1-victor.liu@nxp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: SG2PR02CA0033.apcprd02.prod.outlook.com
+ (2603:1096:3:18::21) To AM7PR04MB7046.eurprd04.prod.outlook.com
+ (2603:10a6:20b:113::22)
+x-mailer: git-send-email 2.37.1
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: AM7PR04MB7046:EE_|DB9PR04MB8314:EE_
+x-ms-office365-filtering-correlation-id: 2e085f9b-d50d-4b48-3c54-08db89bc846c
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: +7tibUE2ixVyDDKbsvQJXaf7iGtraVMkAfl7qeVcNzMNGkupfHofn98EEBd7kDMqnh795bITKeyAKhYtRW6wQ8tYYy/CfKBMQguGn51/tI45AYSvQ81rMf3fOoKn/jHwY8zksv/cOvdtMoA4l2HsV91JAvIuedRb1zM9teeEr3DgL7hD0+p8o6Q9lr5BctIKzvtkK7m1AgoGc7JorrSnmb9/d3YroWSXDK3qT8N4x3TvixgfmOToaHeHec1WLLxZxINgADcsUHd78XAcuGrqKmUJSw45yatbNFN5rLPbKGe7uboKNxxwz1Vaendb6ERW9y8pyfGHqqMK8bfV8B/8Ggh8NYacJI3ZlfWhgtYYww+dpyCsAE4CmHTORZMkYDCYb1TMuH8hLFTXOXJItQyEAlFfPnmd41iTyYMUGYHXlF1mc+xBam5uTancC7k/+qRXnBN4BkMbOJ1ZhaB+BfOVKcUn9RuMO46uThsA8rkrWRWf59rijKLLRI6E2q8ZC0wtwSUhPeKbSqIrmC70sXcbzsxmDy5KIt6uSFFCXZ1KMMsjjLZM245ceNR460hnYESYV6r1PlKwcnZKRKEhQihlVe06bZHJIGj6WmsU/X6D7dga8f+JUhr0mQ53GLpnZdG4
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM7PR04MB7046.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(366004)(396003)(39860400002)(136003)(376002)(346002)(451199021)(6512007)(71200400001)(64756008)(66446008)(66476007)(66556008)(4326008)(66946007)(52116002)(36756003)(6486002)(2906002)(110136005)(54906003)(316002)(478600001)(86362001)(1076003)(6506007)(83380400001)(2616005)(186003)(122000001)(38100700002)(38350700002)(5660300002)(8676002)(8936002)(41300700001)(7416002)(26005);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?iso-8859-1?Q?NiWZE13aWilcX0kM2AbE2ejB7ZnwfX3G5lRc3a3p+L5IIQ7ZH/IT6xdFb4?=
+ =?iso-8859-1?Q?0vcyO3zVMJgMJoMKMfVgSR3EviAH877mQC7YHlDfw3c1qVtaiqoCE7eEa3?=
+ =?iso-8859-1?Q?5byIsP1mGdy/9BAsCygwgfaZm6+vOHvnWNi4a7pd8JB0C7dngH8jPdyKzl?=
+ =?iso-8859-1?Q?jh3PtYCy2Q342SUZzK9F63wqg0tyQ3VBJ0II9Mss2+n11vgedMHiMzB/Pe?=
+ =?iso-8859-1?Q?0zdKWVeRPzzPDpF0HrhqSAlON4WPM8YdrKn/yNf+kr5CBCQCSqC6TFbt7i?=
+ =?iso-8859-1?Q?rsmrFMYeC7jKs/hFDVHM4f6rpU3hM7XEE3ci7I3726kBMYehN6fhSQ+vc+?=
+ =?iso-8859-1?Q?DtD5+Ok1A0rZVdKUuPtb1Ovd6VVS2NzdTDvlUtBHJX1edhgW38LwfgkjNS?=
+ =?iso-8859-1?Q?DKlkHNku7CXai31xCPWf74x83JQz6RxFSetVuAoflAVZ1qh4v66fO49A9t?=
+ =?iso-8859-1?Q?DUNJgcNTCQ9TyjYBz5xZWlQVUacKbKpqLqo2YX0ensxARagmly4k0FSXMY?=
+ =?iso-8859-1?Q?HIqI/e1EbHFoYU9GwogIlDP2dwdYE7whsYBi9CdhsWCd9M0yTCL8Z0pNqp?=
+ =?iso-8859-1?Q?pEbMp+op+cab6386MIkqCzOlnhwfCjzk04sJqXUo1jKncKk/KBnP5YnV3F?=
+ =?iso-8859-1?Q?frSPtNldelSm6diag4pv93xUQhgDO/gWyNeBOqwDqbRB/lZLTbNenvqWA9?=
+ =?iso-8859-1?Q?itamjbWXiyTJsuGUthsiZZ4gvxOcy6YZaKnlZCAjyTZfkOcBuweJzg0ssn?=
+ =?iso-8859-1?Q?xQN69YqjlmHk7X8fCQm26WmEZEjc4T/Zpl14J1GBGw6y2xat9zhD9FWsQr?=
+ =?iso-8859-1?Q?Zmn34nEBaFf6j1zuiLJPi0Lwp0WmcnpbrC9jf22D7CIW/3S0gcxvMRMP2b?=
+ =?iso-8859-1?Q?qOz51yHY3L0vsN6LgJDGC1019m039OOdOESCXBL72v+atGVJA+O++tIDJh?=
+ =?iso-8859-1?Q?ZXUln17aW4finlS/bfOiKC1SPAZSVCaH7jMXZY0RLPbXh0o12gyHoXS+1H?=
+ =?iso-8859-1?Q?mVkSBXui6n+vsRoTbT1fjXa1Iege8u0kiqQ5r80bkx0pBLpdiUFYy+1yKN?=
+ =?iso-8859-1?Q?P4GaUpNaVJzA3qogfD15E8i54nmdBs0VyjdERmFl1ZR56OvdGbHtDsIy0V?=
+ =?iso-8859-1?Q?BkbNljBuQBR7vDnmFe+e5ldmgB1+B2baKC9sU5uOz3V9doW4mUPMP8c8+f?=
+ =?iso-8859-1?Q?sSrNFzPQewznRPFLAXVcHXY+Eq8Rk7hWTEAsn7PCFm4qMZ8gNZ1blc5xIn?=
+ =?iso-8859-1?Q?d6Bo3Frsqj48WW5EMY8I4sxgH4unVLqfrjwWexaO1H/22xyUcDEoPY1OFi?=
+ =?iso-8859-1?Q?P3jgfyMkhHX6iJ2N3dh40iZkEu5izjege1aYc+tClu/PGPXw+tGPsAzWSY?=
+ =?iso-8859-1?Q?kbMBbWVHv32XwFF/CRGZMBne0TtAomte+/S5mzcAw2m/zKeumnVjnC5N67?=
+ =?iso-8859-1?Q?IISbR5oEDeSvnPm0OmOVWUwtepMmYQ2N0/migLZ4JOlOqXTxDeDLSKYd8A?=
+ =?iso-8859-1?Q?4cBzIzOfANBiMd6CJJmdK/K0nRYc6VtsXjR3t7IP9Xzz3nnnQ/0w6eZEdU?=
+ =?iso-8859-1?Q?yI7xFgpaqXS8tA4UmNZQ7enLpgv8TOFOx4k0RsXHZ559aMYx8V+OozRxgT?=
+ =?iso-8859-1?Q?Sayl8AkvtD7TwVDAXDgn1RjOjigdnv8inf?=
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: AM7PR04MB7046.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2e085f9b-d50d-4b48-3c54-08db89bc846c
+X-MS-Exchange-CrossTenant-originalarrivaltime: 21 Jul 2023 07:31:37.0813
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: LZy4KYHSMWqSHLFxcpyCzH7jAD9f68gPGQkMt9BCieqnR0+5/zo9ERsj4i5yWsnt64RyqvyktefiGtPzF5vLNg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR04MB8314
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jul 21, 2023 at 8:17=E2=80=AFAM Ying Liu <victor.liu@nxp.com> wrote=
-:
-> On Thursday, July 20, 2023 7:28 PM Daniel Thompson <daniel.thompson@linar=
-o.org> wrote:
-> > On Thu, Jul 20, 2023 at 06:06:27AM +0000, Ying Liu wrote:
-> > > Bootloader may leave gpio direction as input and gpio value as logica=
-l low.
-> > > It hints that initial backlight power state should be
-> > FB_BLANK_POWERDOWN
-> > > since the gpio value is literally logical low.
-> >
-> > To be honest this probably "hints" that the bootloader simply didn't
-> > consider the backlight at all :-) . I'd rather the patch description
-> > focus on what circumstances lead to the current code making a bad
-> > decision. More like:
-> >
-> >   If the GPIO pin is in the input state but the backlight is currently
-> >   off due to default pull downs then ...
->
-> How about this patch description?
->
-> ---------------------------------8<--------------------------------------=
------
-> Without this patch, if gpio pin is in input state but backlight is curren=
-tly
+If gpio pin is in input state but backlight is currently off due to
+default pull downs, then initial power state is set to FB_BLANK_UNBLANK
+in DT boot mode with phandle link and the backlight is effectively
+turned on in gpio_backlight_probe(), which is undesirable according to
+patch description of commit ec665b756e6f ("backlight: gpio-backlight:
+Correct initial power state handling").
 
-s/Without this patch, if/If/
+Quote:
+---
+If in DT boot we have phandle link then leave the GPIO in a state which the
+bootloader left it and let the user of the backlight to configure it furthe=
+r.
+---
 
-> off due to default pull downs, then initial power state is set to
-> FB_BLANK_UNBLANK in DT boot mode with phandle link and the backlight is
-> effectively turned on in gpio_backlight_probe(), which is undesirable
-> according to patch description of commit ec665b756e6f ("backlight:
-> gpio-backlight: Correct initial power state handling").
->
-> Quote:
-> ---
-> If in DT boot we have phandle link then leave the GPIO in a state which t=
-he
-> bootloader left it and let the user of the backlight to configure it furt=
-her.
-> ---
->
-> So, let's drop output gpio direction check and only check gpio value to s=
-et
-> the initial power state.
-> ---------------------------------8<--------------------------------------=
------
+So, let's drop output gpio direction check and only check gpio value to set
+the initial power state.
 
+Signed-off-by: Liu Ying <victor.liu@nxp.com>
+---
+v1->v2:
+* Improve patch description. (Daniel, Bartosz, Andy)
+
+ drivers/video/backlight/gpio_backlight.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backl=
+ight/gpio_backlight.c
+index 6f78d928f054..38c46936fdcd 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -87,8 +87,7 @@ static int gpio_backlight_probe(struct platform_device *p=
+dev)
+ 		/* Not booted with device tree or no phandle link to the node */
+ 		bl->props.power =3D def_value ? FB_BLANK_UNBLANK
+ 					    : FB_BLANK_POWERDOWN;
+-	else if (gpiod_get_direction(gbl->gpiod) =3D=3D 0 &&
+-		 gpiod_get_value_cansleep(gbl->gpiod) =3D=3D 0)
++	else if (gpiod_get_value_cansleep(gbl->gpiod) =3D=3D 0)
+ 		bl->props.power =3D FB_BLANK_POWERDOWN;
+ 	else
+ 		bl->props.power =3D FB_BLANK_UNBLANK;
 --=20
-With Best Regards,
-Andy Shevchenko
+2.37.1
+

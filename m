@@ -2,228 +2,156 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15389EB64DC
-	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jul 2023 13:53:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D525CC04FE1
+	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jul 2023 14:13:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230508AbjGUNxg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 21 Jul 2023 09:53:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49514 "EHLO
+        id S231560AbjGUONI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 21 Jul 2023 10:13:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38072 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231344AbjGUNxa (ORCPT
+        with ESMTP id S231248AbjGUONG (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 21 Jul 2023 09:53:30 -0400
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BE16630EC;
-        Fri, 21 Jul 2023 06:53:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1689947600; x=1721483600;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=jwdXRg3P3UmW5n1ff6El/jezcNwpEzwczgkGeziGSaU=;
-  b=oCdQJgBDnnCJLCopEj0hLn713msCnrzux0goLuLjXEnZjJMwnO1jRo7f
-   7d8WoxvEVksaun/MGmu72pDfntK2tpPFkOWR1Cr+WSRT/SAeG2Y6/wFcR
-   p7qTXBKmu6i4En6gSF7vMrpllW/K54AlnYVo2n8Ed30bNug/TZyPuVTTk
-   OwzK6Ml8T6+x/0hIRF0Ghe/89XAzgyl3gM3zxEmiJT/VQrP+hJ+x9xBQp
-   Gg58nVzdWpItFlLlzz4ROG3F4bTfxUl3vH4GYnqtAy5aFWeN1wb6DF0Dm
-   leOcXZWqIL65u1PeJV4mb4CZBAxB6bbj21qfQofV5AAOeMuKXGOFdw7Nb
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10778"; a="397919027"
-X-IronPort-AV: E=Sophos;i="6.01,220,1684825200"; 
-   d="scan'208";a="397919027"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jul 2023 06:53:20 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10778"; a="790205398"
-X-IronPort-AV: E=Sophos;i="6.01,220,1684825200"; 
-   d="scan'208";a="790205398"
-Received: from black.fi.intel.com ([10.237.72.28])
-  by fmsmga008.fm.intel.com with ESMTP; 21 Jul 2023 06:53:14 -0700
-Received: by black.fi.intel.com (Postfix, from userid 1003)
-        id D288B370; Fri, 21 Jul 2023 16:53:21 +0300 (EEST)
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Jani Nikula <jani.nikula@intel.com>,
-        Imre Deak <imre.deak@intel.com>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Alexey Dobriyan <adobriyan@gmail.com>,
-        intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-        linux-fbdev@vger.kernel.org
-Cc:     Jani Nikula <jani.nikula@linux.intel.com>,
-        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Helge Deller <deller@gmx.de>, Stephen Boyd <sboyd@kernel.org>,
-        Nikita Shubin <nikita.shubin@maquefel.me>,
-        Nikita Shubin via B4 Relay 
-        <devnull+nikita.shubin.maquefel.me@kernel.org>
-Subject: [PATCH v2 1/1] drm/i915: Move abs_diff() to math.h
-Date:   Fri, 21 Jul 2023 16:53:18 +0300
-Message-Id: <20230721135318.17603-1-andriy.shevchenko@linux.intel.com>
-X-Mailer: git-send-email 2.40.0.1.gaa8946217a0b
+        Fri, 21 Jul 2023 10:13:06 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5AFE72737;
+        Fri, 21 Jul 2023 07:13:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
+ s=s31663417; t=1689948773; x=1690553573; i=deller@gmx.de;
+ bh=B6OJug3RQ/dhSV0+iYjTHPYdl9R4HHqWZ5P7FggM32Y=;
+ h=X-UI-Sender-Class:Date:From:To:Cc:Subject;
+ b=jvrwo7EU26Qn4xLZeQXP/TrNQi1RZKW+AD9fUtCdj82fuNtmHjLTxWQWDG00Yx5n9KvhRe+
+ NP6yrMKFi+1QGZGD6Lt2/C/WRXRM0TYZBf/XrD9FUByffGHWsucTDeWuIBCqAL2gRmmiRH2YZ
+ aw962IZW/k4O1/xlLyd7BE7OCTof2xol3JGXq2UpeaY/Mr5AIDbXZvEky/WxmxzA3BPxDZqui
+ Keefbj2ssedH+yR+mysXpushYzh0qmRkjCUJuFvCEdwk7rBwBQiN+k8VKoAhX0aeCEIM0Vlnt
+ NE5xImXzoCmqeb+25TYYYu6tLIXI/PJIXy2aks7OSQQZBSKuEBZw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from ls3530 ([94.134.144.189]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MD9T7-1qEMY0224n-0094cI; Fri, 21
+ Jul 2023 16:12:53 +0200
+Date:   Fri, 21 Jul 2023 16:12:51 +0200
+From:   Helge Deller <deller@gmx.de>
+To:     Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Cc:     Jiri Slaby <jirislaby@kernel.org>,
+        Martin Kaiser <martin@kaiser.cx>, Rob Herring <robh@kernel.org>
+Subject: [GIT PULL] fbdev fixes and cleanups for v6.5-rc3
+Message-ID: <ZLqSYylyXm2C+aOV@ls3530>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Provags-ID: V03:K1:bw6bgLEYCwMnCIoBsQoi4Xek0KYaNO2nzlmlmjiBM6WSjLqgkPq
+ 3hLND5tJwOqyDFYZwsI1OzvTpgx/XVITlRtCe1vf+lle8oPvmAAX9xtDwjbZd4NrL9TV+xy
+ kGHycCFcPmni6FZq1bzb9G1EgLw6TzP7j2/EsZ3jDCyK3lAXgI0AMQkw+ZwzTzTh4q5DXOE
+ e8qMDw4hEQboQqeY4RHIw==
+UI-OutboundReport: notjunk:1;M01:P0:x75p+0ShAvQ=;id5z+tiQTFDYt/CRQx283MBd06A
+ v+Xt2JMyLemCGWm0XtLmFFsb8iMsiOpRlkH4nE+HAZfqeVks0hS+qtbGmpY54vEDOSAQfhyg7
+ 1WvUjwLNK2ezJ/vb/ksywXD4wuXBIBwKL6hRZlQhWRuGL2aNU0HE0AIUPczZIl2xiPYBhHiFt
+ B2IUATykGq/weii+uRyjKtx5hyChdeExtS3+FhksE+oBmvzpvyrv2dkOcZ+yokMV+CtQPp767
+ 5IkDB4wsDcCarO63GzUHMWPrAsQmjq9ta6hL8sf1177t4eQP03HInu4WXhVsknsixP2Kw7dZC
+ kiwtYGDczvn8ggKr++efbQeiJGUWI118Ko/3EdFkNZQ9N1Dcq486zekq/QSqjhyLenZr0bdCf
+ xNPvFz1l8cVME9RweMjEF5f0ZyrmssFj3EvxPMPLl04UlTDpv3CiRAyh9BUgnezBMuG+iU3jj
+ 58r6PQETbQzpU+XcrHhTbiaZymVCgPeEVM3pyKoHzSAjX8YKGOtoFrvADnD+iKG9ITITu3LxW
+ 7PrLrHY9S3oFS1rjNKR3RPP5+XgTU5iCTgXvAo/RSrfArJDnTa9XQ2dH+mTCxHooqvVtFB02V
+ VbMbrmXNHeELNwtmjoa3SUCsK+CE+D1uRz306smDh9qKS18giePBqsULf3jEODZC8y0fAmabM
+ iI80cJzmj8633OZ+i1vysQbc0FCc4NU1oc68mhAthUU/Tn5o7SpdEsRl4BcVE/8PRnW6iyveK
+ vEXry8mxPL9BPBI6K9CDcbR9GtU4NU8vHgtfVarSx7Ef1W/IE5/Vb00SOSrlYLKsRey+JC7zh
+ WEzewfyP6/XH9FUFoVpSVBzFHwqlZFp0xo7xTumbaUj3Z1URriHNpYRMGtVAdpfeaIUjqrL7u
+ xWaY08adgb5bvS1IEfkHRdJU5VCQzZKvlRELFYTP6TgmOOmCUBxquIYU9T4WTfVF1YEs5s1Rx
+ 41vSIQ==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-abs_diff() belongs to math.h. Move it there.
-This will allow others to use it.
+Hi Linus,
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
-v2: better header location on ipu-v3, converted omap-serial as well
- drivers/gpu/drm/i915/display/intel_dpll_mgr.c |  1 +
- drivers/gpu/drm/i915/display/intel_dpll_mgr.h |  7 -------
- drivers/gpu/ipu-v3/ipu-image-convert.c        | 15 +++++++--------
- drivers/tty/serial/omap-serial.c              |  7 +------
- drivers/video/fbdev/core/svgalib.c            |  7 +------
- include/linux/math.h                          |  6 ++++++
- 6 files changed, 16 insertions(+), 27 deletions(-)
+please pull some fbdev fixes & cleanups for kernel 6.5-rc3.
 
-diff --git a/drivers/gpu/drm/i915/display/intel_dpll_mgr.c b/drivers/gpu/drm/i915/display/intel_dpll_mgr.c
-index 6b2d8a1e2aa9..290e856fe9e9 100644
---- a/drivers/gpu/drm/i915/display/intel_dpll_mgr.c
-+++ b/drivers/gpu/drm/i915/display/intel_dpll_mgr.c
-@@ -21,6 +21,7 @@
-  * DEALINGS IN THE SOFTWARE.
-  */
- 
-+#include <linux/math.h>
- #include <linux/string_helpers.h>
- 
- #include "i915_reg.h"
-diff --git a/drivers/gpu/drm/i915/display/intel_dpll_mgr.h b/drivers/gpu/drm/i915/display/intel_dpll_mgr.h
-index ba62eb5d7c51..04e6810954b2 100644
---- a/drivers/gpu/drm/i915/display/intel_dpll_mgr.h
-+++ b/drivers/gpu/drm/i915/display/intel_dpll_mgr.h
-@@ -29,13 +29,6 @@
- 
- #include "intel_wakeref.h"
- 
--/*FIXME: Move this to a more appropriate place. */
--#define abs_diff(a, b) ({			\
--	typeof(a) __a = (a);			\
--	typeof(b) __b = (b);			\
--	(void) (&__a == &__b);			\
--	__a > __b ? (__a - __b) : (__b - __a); })
--
- enum tc_port;
- struct drm_i915_private;
- struct intel_atomic_state;
-diff --git a/drivers/gpu/ipu-v3/ipu-image-convert.c b/drivers/gpu/ipu-v3/ipu-image-convert.c
-index af1612044eef..841316582ea9 100644
---- a/drivers/gpu/ipu-v3/ipu-image-convert.c
-+++ b/drivers/gpu/ipu-v3/ipu-image-convert.c
-@@ -7,7 +7,10 @@
- 
- #include <linux/interrupt.h>
- #include <linux/dma-mapping.h>
-+#include <linux/math.h>
-+
- #include <video/imx-ipu-image-convert.h>
-+
- #include "ipu-prv.h"
- 
- /*
-@@ -543,7 +546,7 @@ static void find_best_seam(struct ipu_image_convert_ctx *ctx,
- 		unsigned int in_pos;
- 		unsigned int in_pos_aligned;
- 		unsigned int in_pos_rounded;
--		unsigned int abs_diff;
-+		unsigned int diff;
- 
- 		/*
- 		 * Tiles in the right row / bottom column may not be allowed to
-@@ -575,15 +578,11 @@ static void find_best_seam(struct ipu_image_convert_ctx *ctx,
- 		    (in_edge - in_pos_rounded) % in_burst)
- 			continue;
- 
--		if (in_pos < in_pos_aligned)
--			abs_diff = in_pos_aligned - in_pos;
--		else
--			abs_diff = in_pos - in_pos_aligned;
--
--		if (abs_diff < min_diff) {
-+		diff = abs_diff(in_pos, in_pos_aligned);
-+		if (diff < min_diff) {
- 			in_seam = in_pos_rounded;
- 			out_seam = out_pos;
--			min_diff = abs_diff;
-+			min_diff = diff;
- 		}
- 	}
- 
-diff --git a/drivers/tty/serial/omap-serial.c b/drivers/tty/serial/omap-serial.c
-index 82d35dbbfa6c..9be63a1f1f0c 100644
---- a/drivers/tty/serial/omap-serial.c
-+++ b/drivers/tty/serial/omap-serial.c
-@@ -222,16 +222,11 @@ static inline int calculate_baud_abs_diff(struct uart_port *port,
- 				unsigned int baud, unsigned int mode)
- {
- 	unsigned int n = port->uartclk / (mode * baud);
--	int abs_diff;
- 
- 	if (n == 0)
- 		n = 1;
- 
--	abs_diff = baud - (port->uartclk / (mode * n));
--	if (abs_diff < 0)
--		abs_diff = -abs_diff;
--
--	return abs_diff;
-+	return abs_diff(baud, port->uartclk / (mode * n));
- }
- 
- /*
-diff --git a/drivers/video/fbdev/core/svgalib.c b/drivers/video/fbdev/core/svgalib.c
-index 9e01322fabe3..2cba158888ea 100644
---- a/drivers/video/fbdev/core/svgalib.c
-+++ b/drivers/video/fbdev/core/svgalib.c
-@@ -14,6 +14,7 @@
- #include <linux/kernel.h>
- #include <linux/string.h>
- #include <linux/fb.h>
-+#include <linux/math.h>
- #include <linux/svga.h>
- #include <asm/types.h>
- #include <asm/io.h>
-@@ -372,12 +373,6 @@ EXPORT_SYMBOL(svga_get_caps);
-  *  F_VCO = (F_BASE * M) / N
-  *  F_OUT = F_VCO / (2^R)
-  */
--
--static inline u32 abs_diff(u32 a, u32 b)
--{
--	return (a > b) ? (a - b) : (b - a);
--}
--
- int svga_compute_pll(const struct svga_pll *pll, u32 f_wanted, u16 *m, u16 *n, u16 *r, int node)
- {
- 	u16 am, an, ar;
-diff --git a/include/linux/math.h b/include/linux/math.h
-index 449a29b73f6d..45a21b51f183 100644
---- a/include/linux/math.h
-+++ b/include/linux/math.h
-@@ -157,6 +157,12 @@ __STRUCT_FRACT(u32)
- 	__builtin_types_compatible_p(typeof(x), unsigned type),		\
- 	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
- 
-+#define abs_diff(a, b) ({			\
-+	typeof(a) __a = (a);			\
-+	typeof(b) __b = (b);			\
-+	(void) (&__a == &__b);			\
-+	__a > __b ? (__a - __b) : (__b - __a); })
-+
- /**
-  * reciprocal_scale - "scale" a value into range [0, ep_ro)
-  * @val: value
--- 
-2.40.0.1.gaa8946217a0b
+Just the usual bunch of code cleanups in various drivers, this time
+mostly in vgacon and imxfb.
 
+Thanks!
+Helge
+
+--------------
+
+The following changes since commit 06c2afb862f9da8dc5efa4b6076a0e48c3fbaaa5:
+
+  Linux 6.5-rc1 (2023-07-09 13:53:13 -0700)
+
+are available in the Git repository at:
+
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.5-rc3
+
+for you to fetch changes up to e8812acb5bf724f2fc23a500e590c776ebda7b0a:
+
+  fbdev: Explicitly include correct DT includes (2023-07-20 07:56:30 +0200)
+
+----------------------------------------------------------------
+fbdev fixes and cleanups for 6.5-rc3:
+
+- Code cleanup in vgacon (Jiri Slaby)
+- Explicitly include correct DT includes (Rob Herring)
+- imxfb code cleanup (Yangtao Li, Martin Kaiser)
+- kyrofb: make arrays const and smaller (Colin Ian King)
+- ep93xx-fb: return value check fix (Yuanjun Gong)
+- au1200fb: add missing IRQ check (Zhang Shurong)
+
+----------------------------------------------------------------
+Colin Ian King (1):
+      fbdev: kyro: make some const read-only arrays static and reduce type size
+
+Jiri Slaby (SUSE) (7):
+      vgacon: switch vgacon_scrolldelta() and vgacon_restore_screen()
+      vgacon: remove unneeded forward declarations
+      vgacon: remove unused xpos from vgacon_set_cursor_size()
+      vgacon: let vgacon_doresize() return void
+      vgacon: cache vc_cell_height in vgacon_cursor()
+      sticon: make sticon_set_def_font() void and remove op parameter
+      fbcon: remove unused display (p) from fbcon_redraw()
+
+Martin Kaiser (2):
+      fbdev: imxfb: warn about invalid left/right margin
+      fbdev: imxfb: switch to DEFINE_SIMPLE_DEV_PM_OPS
+
+Rob Herring (1):
+      fbdev: Explicitly include correct DT includes
+
+Yangtao Li (4):
+      fbdev: imxfb: Removed unneeded release_mem_region
+      fbdev: imxfb: Convert to devm_kmalloc_array()
+      fbdev: imxfb: Convert to devm_platform_ioremap_resource()
+      fbdev: imxfb: remove unneeded labels
+
+Yuanjun Gong (1):
+      fbdev: ep93xx-fb: fix return value check in ep93xxfb_probe
+
+Zhang Shurong (1):
+      fbdev: au1200fb: Fix missing IRQ check in au1200fb_drv_probe
+
+ drivers/video/console/sticon.c                     | 12 ++--
+ drivers/video/console/vgacon.c                     | 74 ++++++++--------------
+ drivers/video/fbdev/au1200fb.c                     |  3 +
+ drivers/video/fbdev/bw2.c                          |  3 +-
+ drivers/video/fbdev/cg14.c                         |  3 +-
+ drivers/video/fbdev/cg3.c                          |  3 +-
+ drivers/video/fbdev/cg6.c                          |  3 +-
+ drivers/video/fbdev/core/fbcon.c                   |  7 +-
+ drivers/video/fbdev/ep93xx-fb.c                    |  4 +-
+ drivers/video/fbdev/ffb.c                          |  3 +-
+ drivers/video/fbdev/grvga.c                        |  3 +-
+ drivers/video/fbdev/imxfb.c                        | 48 ++++++--------
+ drivers/video/fbdev/kyro/STG4000InitDevice.c       | 10 +--
+ drivers/video/fbdev/leo.c                          |  3 +-
+ drivers/video/fbdev/mb862xx/mb862xxfb_accel.c      |  4 +-
+ drivers/video/fbdev/mb862xx/mb862xxfbdrv.c         |  6 +-
+ .../fbdev/omap2/omapfb/displays/panel-dsi-cm.c     |  2 +-
+ drivers/video/fbdev/p9100.c                        |  3 +-
+ drivers/video/fbdev/platinumfb.c                   |  4 +-
+ drivers/video/fbdev/sbuslib.c                      |  2 +-
+ drivers/video/fbdev/sunxvr1000.c                   |  3 +-
+ drivers/video/fbdev/sunxvr2500.c                   |  2 +-
+ drivers/video/fbdev/sunxvr500.c                    |  2 +-
+ drivers/video/fbdev/tcx.c                          |  3 +-
+ drivers/video/fbdev/xilinxfb.c                     |  5 +-
+ 25 files changed, 97 insertions(+), 118 deletions(-)

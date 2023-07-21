@@ -2,156 +2,104 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D525CC04FE1
-	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jul 2023 14:13:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0544C0015E
+	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jul 2023 15:34:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231560AbjGUONI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 21 Jul 2023 10:13:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38072 "EHLO
+        id S231268AbjGUPeF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 21 Jul 2023 11:34:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36948 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231248AbjGUONG (ORCPT
+        with ESMTP id S229801AbjGUPeE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 21 Jul 2023 10:13:06 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5AFE72737;
-        Fri, 21 Jul 2023 07:13:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1689948773; x=1690553573; i=deller@gmx.de;
- bh=B6OJug3RQ/dhSV0+iYjTHPYdl9R4HHqWZ5P7FggM32Y=;
- h=X-UI-Sender-Class:Date:From:To:Cc:Subject;
- b=jvrwo7EU26Qn4xLZeQXP/TrNQi1RZKW+AD9fUtCdj82fuNtmHjLTxWQWDG00Yx5n9KvhRe+
- NP6yrMKFi+1QGZGD6Lt2/C/WRXRM0TYZBf/XrD9FUByffGHWsucTDeWuIBCqAL2gRmmiRH2YZ
- aw962IZW/k4O1/xlLyd7BE7OCTof2xol3JGXq2UpeaY/Mr5AIDbXZvEky/WxmxzA3BPxDZqui
- Keefbj2ssedH+yR+mysXpushYzh0qmRkjCUJuFvCEdwk7rBwBQiN+k8VKoAhX0aeCEIM0Vlnt
- NE5xImXzoCmqeb+25TYYYu6tLIXI/PJIXy2aks7OSQQZBSKuEBZw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from ls3530 ([94.134.144.189]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MD9T7-1qEMY0224n-0094cI; Fri, 21
- Jul 2023 16:12:53 +0200
-Date:   Fri, 21 Jul 2023 16:12:51 +0200
-From:   Helge Deller <deller@gmx.de>
-To:     Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Cc:     Jiri Slaby <jirislaby@kernel.org>,
-        Martin Kaiser <martin@kaiser.cx>, Rob Herring <robh@kernel.org>
-Subject: [GIT PULL] fbdev fixes and cleanups for v6.5-rc3
-Message-ID: <ZLqSYylyXm2C+aOV@ls3530>
+        Fri, 21 Jul 2023 11:34:04 -0400
+Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com [IPv6:2a00:1450:4864:20::534])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B64B30DD;
+        Fri, 21 Jul 2023 08:34:03 -0700 (PDT)
+Received: by mail-ed1-x534.google.com with SMTP id 4fb4d7f45d1cf-521dc8ae899so2406454a12.3;
+        Fri, 21 Jul 2023 08:34:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1689953641; x=1690558441;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=e+J3maWKZDLZOHu0KMClUTkcLoWuu+H0TcJ6B1ppGIM=;
+        b=fmDH21f77I25libj1wRrEk4TILKZ1kLWnMOmbSvfilgvRDaX/q9nI0LnO6BRwwLGyw
+         g4JnW+IFQt+HznIwYpdXczSCO43cnfYgNAcCU5ljr0kBxTgU46cr6ev4SqEIZ2yHYbZl
+         /+31gkI32NDaV/JIDkwmoD/mS26kbmdXRdCJFwQ7l5ihDpRHzBRd42vr6SM2dQ+gRKoa
+         RCj0DGnoWV384OkZm/EzMt3wXooPGX9thKsillns/ckLFVKOCyzMFv5ezIDO3PxdEIpj
+         XfuuKMAWBPKVZiOXw7/6NTCYGPvW3oaqbjYUfWeoQlvX098jxbIdIyLkRjlYP7SKMuHc
+         5JEA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1689953641; x=1690558441;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=e+J3maWKZDLZOHu0KMClUTkcLoWuu+H0TcJ6B1ppGIM=;
+        b=Ro3MFcytaO7kVIbqUU6RsW8knv9lGbWJ1shRgz5JrKzzehiJKIsGEaKx9N8QMPnLMd
+         Lq+41KIhGvAo9uOS6XyqMwJYvptga3+1zPpyzHFmg6UJy7YI9QiZjECftthexPbTWpot
+         C3zNisD0FiAZ7uhSkb366jBYQw7CHsyz7THPpSE54QCDOAI2dLx0g0jzzHUKpKO5YzMk
+         VfK9ZyypmpBZ5uhp77Ch1SiweyuTT+jsAXmISHdY91s2cI4tEZfoZ5c3XUIky4/Gq8UL
+         +nrzxKHBrlxMtcNw/kQM5ouFgKEJe5WcshdlNdGfBGsJltUNp3mWzob7yhX9IhLB7Mk8
+         lieA==
+X-Gm-Message-State: ABy/qLYKIqY3ohvdALQzwc9A4RQg9XOeOymcbssnROf9TUnIRCekP5/5
+        tLqDMXfoGImci4+iwh8LAiQ=
+X-Google-Smtp-Source: APBJJlHxHpHitpRJOlz0XvfBo0jSQ+i1+osJAXEtnMET5LtbtSRMYQN2nySPQ57QEZdfL8+yUCjgKQ==
+X-Received: by 2002:aa7:c982:0:b0:51e:404:1e6d with SMTP id c2-20020aa7c982000000b0051e04041e6dmr1981954edt.38.1689953641105;
+        Fri, 21 Jul 2023 08:34:01 -0700 (PDT)
+Received: from localhost (p200300e41f1bd600f22f74fffe1f3a53.dip0.t-ipconnect.de. [2003:e4:1f1b:d600:f22f:74ff:fe1f:3a53])
+        by smtp.gmail.com with ESMTPSA id u11-20020a056402064b00b0051dfa2e30b2sm2244385edx.9.2023.07.21.08.34.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 21 Jul 2023 08:34:00 -0700 (PDT)
+From:   Thierry Reding <thierry.reding@gmail.com>
+To:     Lee Jones <lee@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Artur Weber <aweber.kernel@gmail.com>
+Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Helge Deller <deller@gmx.de>,
+        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>, Luca Weiss <luca@z3ntu.xyz>,
+        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht
+Subject: Re: (subset) [PATCH v2 0/4] video: backlight: lp855x: modernize bindings
+Date:   Fri, 21 Jul 2023 17:33:58 +0200
+Message-ID: <168995363315.3656835.14137740606773160898.b4-ty@nvidia.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230519180728.2281-1-aweber.kernel@gmail.com>
+References: <20230519180728.2281-1-aweber.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Provags-ID: V03:K1:bw6bgLEYCwMnCIoBsQoi4Xek0KYaNO2nzlmlmjiBM6WSjLqgkPq
- 3hLND5tJwOqyDFYZwsI1OzvTpgx/XVITlRtCe1vf+lle8oPvmAAX9xtDwjbZd4NrL9TV+xy
- kGHycCFcPmni6FZq1bzb9G1EgLw6TzP7j2/EsZ3jDCyK3lAXgI0AMQkw+ZwzTzTh4q5DXOE
- e8qMDw4hEQboQqeY4RHIw==
-UI-OutboundReport: notjunk:1;M01:P0:x75p+0ShAvQ=;id5z+tiQTFDYt/CRQx283MBd06A
- v+Xt2JMyLemCGWm0XtLmFFsb8iMsiOpRlkH4nE+HAZfqeVks0hS+qtbGmpY54vEDOSAQfhyg7
- 1WvUjwLNK2ezJ/vb/ksywXD4wuXBIBwKL6hRZlQhWRuGL2aNU0HE0AIUPczZIl2xiPYBhHiFt
- B2IUATykGq/weii+uRyjKtx5hyChdeExtS3+FhksE+oBmvzpvyrv2dkOcZ+yokMV+CtQPp767
- 5IkDB4wsDcCarO63GzUHMWPrAsQmjq9ta6hL8sf1177t4eQP03HInu4WXhVsknsixP2Kw7dZC
- kiwtYGDczvn8ggKr++efbQeiJGUWI118Ko/3EdFkNZQ9N1Dcq486zekq/QSqjhyLenZr0bdCf
- xNPvFz1l8cVME9RweMjEF5f0ZyrmssFj3EvxPMPLl04UlTDpv3CiRAyh9BUgnezBMuG+iU3jj
- 58r6PQETbQzpU+XcrHhTbiaZymVCgPeEVM3pyKoHzSAjX8YKGOtoFrvADnD+iKG9ITITu3LxW
- 7PrLrHY9S3oFS1rjNKR3RPP5+XgTU5iCTgXvAo/RSrfArJDnTa9XQ2dH+mTCxHooqvVtFB02V
- VbMbrmXNHeELNwtmjoa3SUCsK+CE+D1uRz306smDh9qKS18giePBqsULf3jEODZC8y0fAmabM
- iI80cJzmj8633OZ+i1vysQbc0FCc4NU1oc68mhAthUU/Tn5o7SpdEsRl4BcVE/8PRnW6iyveK
- vEXry8mxPL9BPBI6K9CDcbR9GtU4NU8vHgtfVarSx7Ef1W/IE5/Vb00SOSrlYLKsRey+JC7zh
- WEzewfyP6/XH9FUFoVpSVBzFHwqlZFp0xo7xTumbaUj3Z1URriHNpYRMGtVAdpfeaIUjqrL7u
- xWaY08adgb5bvS1IEfkHRdJU5VCQzZKvlRELFYTP6TgmOOmCUBxquIYU9T4WTfVF1YEs5s1Rx
- 41vSIQ==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Linus,
+From: Thierry Reding <treding@nvidia.com>
 
-please pull some fbdev fixes & cleanups for kernel 6.5-rc3.
 
-Just the usual bunch of code cleanups in various drivers, this time
-mostly in vgacon and imxfb.
+On Fri, 19 May 2023 20:07:24 +0200, Artur Weber wrote:
+> Convert TI LP855X backlight controller bindings from TXT to YAML and,
+> while we're at it, rework some of the code related to PWM handling.
+> Also correct existing DTS files to avoid introducing new dtb_check
+> errors.
+> 
+> Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
+> 
+> [...]
 
-Thanks!
-Helge
+Applied, thanks!
 
---------------
+[4/4] arm64: dts: adapt to LP855X bindings changes
+      commit: faae0778fa10fa4e8909fe9164f06acab170f1e9
 
-The following changes since commit 06c2afb862f9da8dc5efa4b6076a0e48c3fbaaa5:
-
-  Linux 6.5-rc1 (2023-07-09 13:53:13 -0700)
-
-are available in the Git repository at:
-
-  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.5-rc3
-
-for you to fetch changes up to e8812acb5bf724f2fc23a500e590c776ebda7b0a:
-
-  fbdev: Explicitly include correct DT includes (2023-07-20 07:56:30 +0200)
-
-----------------------------------------------------------------
-fbdev fixes and cleanups for 6.5-rc3:
-
-- Code cleanup in vgacon (Jiri Slaby)
-- Explicitly include correct DT includes (Rob Herring)
-- imxfb code cleanup (Yangtao Li, Martin Kaiser)
-- kyrofb: make arrays const and smaller (Colin Ian King)
-- ep93xx-fb: return value check fix (Yuanjun Gong)
-- au1200fb: add missing IRQ check (Zhang Shurong)
-
-----------------------------------------------------------------
-Colin Ian King (1):
-      fbdev: kyro: make some const read-only arrays static and reduce type size
-
-Jiri Slaby (SUSE) (7):
-      vgacon: switch vgacon_scrolldelta() and vgacon_restore_screen()
-      vgacon: remove unneeded forward declarations
-      vgacon: remove unused xpos from vgacon_set_cursor_size()
-      vgacon: let vgacon_doresize() return void
-      vgacon: cache vc_cell_height in vgacon_cursor()
-      sticon: make sticon_set_def_font() void and remove op parameter
-      fbcon: remove unused display (p) from fbcon_redraw()
-
-Martin Kaiser (2):
-      fbdev: imxfb: warn about invalid left/right margin
-      fbdev: imxfb: switch to DEFINE_SIMPLE_DEV_PM_OPS
-
-Rob Herring (1):
-      fbdev: Explicitly include correct DT includes
-
-Yangtao Li (4):
-      fbdev: imxfb: Removed unneeded release_mem_region
-      fbdev: imxfb: Convert to devm_kmalloc_array()
-      fbdev: imxfb: Convert to devm_platform_ioremap_resource()
-      fbdev: imxfb: remove unneeded labels
-
-Yuanjun Gong (1):
-      fbdev: ep93xx-fb: fix return value check in ep93xxfb_probe
-
-Zhang Shurong (1):
-      fbdev: au1200fb: Fix missing IRQ check in au1200fb_drv_probe
-
- drivers/video/console/sticon.c                     | 12 ++--
- drivers/video/console/vgacon.c                     | 74 ++++++++--------------
- drivers/video/fbdev/au1200fb.c                     |  3 +
- drivers/video/fbdev/bw2.c                          |  3 +-
- drivers/video/fbdev/cg14.c                         |  3 +-
- drivers/video/fbdev/cg3.c                          |  3 +-
- drivers/video/fbdev/cg6.c                          |  3 +-
- drivers/video/fbdev/core/fbcon.c                   |  7 +-
- drivers/video/fbdev/ep93xx-fb.c                    |  4 +-
- drivers/video/fbdev/ffb.c                          |  3 +-
- drivers/video/fbdev/grvga.c                        |  3 +-
- drivers/video/fbdev/imxfb.c                        | 48 ++++++--------
- drivers/video/fbdev/kyro/STG4000InitDevice.c       | 10 +--
- drivers/video/fbdev/leo.c                          |  3 +-
- drivers/video/fbdev/mb862xx/mb862xxfb_accel.c      |  4 +-
- drivers/video/fbdev/mb862xx/mb862xxfbdrv.c         |  6 +-
- .../fbdev/omap2/omapfb/displays/panel-dsi-cm.c     |  2 +-
- drivers/video/fbdev/p9100.c                        |  3 +-
- drivers/video/fbdev/platinumfb.c                   |  4 +-
- drivers/video/fbdev/sbuslib.c                      |  2 +-
- drivers/video/fbdev/sunxvr1000.c                   |  3 +-
- drivers/video/fbdev/sunxvr2500.c                   |  2 +-
- drivers/video/fbdev/sunxvr500.c                    |  2 +-
- drivers/video/fbdev/tcx.c                          |  3 +-
- drivers/video/fbdev/xilinxfb.c                     |  5 +-
- 25 files changed, 97 insertions(+), 118 deletions(-)
+Best regards,
+-- 
+Thierry Reding <treding@nvidia.com>

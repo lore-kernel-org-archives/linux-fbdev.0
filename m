@@ -2,175 +2,99 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC4D5C001DE
-	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jul 2023 08:27:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8DA6EB64DC
+	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jul 2023 08:43:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230194AbjGUI1Z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 21 Jul 2023 04:27:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38666 "EHLO
+        id S229671AbjGUInB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 21 Jul 2023 04:43:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49152 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230062AbjGUI1Y (ORCPT
+        with ESMTP id S231639AbjGUIm7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 21 Jul 2023 04:27:24 -0400
-Received: from new3-smtp.messagingengine.com (new3-smtp.messagingengine.com [66.111.4.229])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EB5E1F0;
-        Fri, 21 Jul 2023 01:27:22 -0700 (PDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-        by mailnew.nyi.internal (Postfix) with ESMTP id CDE4D58026A;
-        Fri, 21 Jul 2023 04:27:21 -0400 (EDT)
-Received: from imap51 ([10.202.2.101])
-  by compute6.internal (MEProxy); Fri, 21 Jul 2023 04:27:21 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-        :cc:content-type:content-type:date:date:from:from:in-reply-to
-        :in-reply-to:message-id:mime-version:references:reply-to:sender
-        :subject:subject:to:to; s=fm2; t=1689928041; x=1689935241; bh=V8
-        kkxioRFPjR/pcGqI7bYcicee1af9QaKC3pDwPABSg=; b=b9mWPVKTa+C0qxGJVm
-        gVTKr5SnuCufxByEgtuEiTC/HjonV9yPvhgncSRQ0wUrLNE7orD78Rw7ohjT0q3C
-        c0X7wLA5W1uO4gHBmiwybGJLQQ7SrEMtBGvFZKQaT/Y0wzIbtxoIfYUgm9pO+XSJ
-        6I08Fx8oDJAOPBCXHuGFZFeWb1RYZSXq09xFAfH85OnLe5l+htjQL+F/B4Y6gUvs
-        ut/AOfdKRpwcHg/s2ox2GO/l5Ce/RBfBcnmaRO/F69sTDvSKTTvAQwHRFh24O6bw
-        V6xDq+6cg4uZot5gbimNNmCu9SHpdf5MFTDtGh/g5OFBKMn02cs7TznQk+C9/i4Y
-        dRwg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-type:content-type:date:date
-        :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-        :message-id:mime-version:references:reply-to:sender:subject
-        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-        :x-sasl-enc; s=fm3; t=1689928041; x=1689935241; bh=V8kkxioRFPjR/
-        pcGqI7bYcicee1af9QaKC3pDwPABSg=; b=unYn7VUfp/o2gT07nbqvQ5lIW9kBd
-        mBnKota720DDPc/oG1aRttW/D+crNdOAUEl9St9nonOTjtR5EHZ/ERbVU6RS/8a9
-        h60zyLUrHFHJTeNLWeadDvND/TVlwE64W4ER4jaFI7yfcqQcM9JFFXLEQa8gKTAm
-        2NneyWtfI14HUK6C7gElYEN39Z+C3ZEMkQn2ZM6gax2xS8UlImkh100FKtZaGPhv
-        lQk5OR6Mr17MQHWJ9UIPy7fklXcZo7AkC1hU9D8FRcT0DoHGZ1ht5evHlxZxLnfx
-        AEw3wiOX0qizHBpHqwTM2HVi93NRv6iA2yioBToovm3YnDAmy38mo5uCg==
-X-ME-Sender: <xms:Z0G6ZPfhyAhlj173FbFhonwA5KlUmCGO5J9kcywp3cozm27OsbAtLw>
-    <xme:Z0G6ZFM8NgJAA5o18IVcSBdDXzUfupTyVLyoGRWKf5AMnD9G8DAPvvhIosyFM_Fej
-    ixYPDY94XlYrOC-EQE>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrhedvgddtudcutefuodetggdotefrodftvf
-    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
-    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
-    fjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdetrhhn
-    ugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtth
-    gvrhhnpeffheeugeetiefhgeethfejgfdtuefggeejleehjeeutefhfeeggefhkedtkeet
-    ffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrh
-    hnugesrghrnhgusgdruggv
-X-ME-Proxy: <xmx:Z0G6ZIiZLjl3BUt93nzxV1cAQo4CS1KP6FaAGJXgj4g5DNvVpNZydQ>
-    <xmx:Z0G6ZA_7CvV2s3gdLefuPIP0mdWvT9_hDkmlpVhsn9Y5247aBbErLw>
-    <xmx:Z0G6ZLsjVOM0mZftdLzFVNIO9YmEUfPLUQYjwEJhvs0yikPIce9HbQ>
-    <xmx:aUG6ZDnhPzImHPxpYpY9KW7ioRMX4qP1VaFRlm_1LSESQRplTz4wfQ>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-        id AB365B60089; Fri, 21 Jul 2023 04:27:19 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.9.0-alpha0-531-gfdfa13a06d-fm-20230703.001-gfdfa13a0
-Mime-Version: 1.0
-Message-Id: <19631e74-415e-4dcb-b79d-33dcf03d2dfc@app.fastmail.com>
-In-Reply-To: <87pm4lj1w3.fsf@mail.lhotse>
-References: <20230719123944.3438363-1-arnd@kernel.org>
- <20230719123944.3438363-2-arnd@kernel.org> <87pm4lj1w3.fsf@mail.lhotse>
-Date:   Fri, 21 Jul 2023 10:26:30 +0200
-From:   "Arnd Bergmann" <arnd@arndb.de>
-To:     "Michael Ellerman" <mpe@ellerman.id.au>,
-        "Arnd Bergmann" <arnd@kernel.org>, linux-fbdev@vger.kernel.org,
-        "Thomas Zimmermann" <tzimmermann@suse.de>,
-        "Helge Deller" <deller@gmx.de>,
-        "Javier Martinez Canillas" <javierm@redhat.com>
-Cc:     "David S . Miller" <davem@davemloft.net>,
-        "K. Y. Srinivasan" <kys@microsoft.com>,
-        "Ard Biesheuvel" <ardb@kernel.org>,
-        "Borislav Petkov" <bp@alien8.de>, "Brian Cain" <bcain@quicinc.com>,
-        "Catalin Marinas" <catalin.marinas@arm.com>,
-        "Christophe Leroy" <christophe.leroy@csgroup.eu>,
-        "Daniel Vetter" <daniel@ffwll.ch>,
-        "Dave Hansen" <dave.hansen@linux.intel.com>,
-        "Dave Airlie" <airlied@gmail.com>,
-        "Deepak Rawat" <drawat.floss@gmail.com>,
-        "Dexuan Cui" <decui@microsoft.com>,
-        "Dinh Nguyen" <dinguyen@kernel.org>,
-        "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
-        guoren <guoren@kernel.org>,
-        "Haiyang Zhang" <haiyangz@microsoft.com>,
-        "Huacai Chen" <chenhuacai@kernel.org>,
-        "Ingo Molnar" <mingo@redhat.com>,
-        "John Paul Adrian Glaubitz" <glaubitz@physik.fu-berlin.de>,
-        "Khalid Aziz" <khalid@gonehiking.org>,
-        "Linus Walleij" <linus.walleij@linaro.org>,
-        "Matt Turner" <mattst88@gmail.com>,
-        "Max Filippov" <jcmvbkbc@gmail.com>,
-        "Nicholas Piggin" <npiggin@gmail.com>,
-        "Palmer Dabbelt" <palmer@dabbelt.com>,
-        "Russell King" <linux@armlinux.org.uk>,
-        "Thomas Bogendoerfer" <tsbogend@alpha.franken.de>,
-        "Thomas Gleixner" <tglx@linutronix.de>,
-        "WANG Xuerui" <kernel@xen0n.name>, "Wei Liu" <wei.liu@kernel.org>,
-        "Will Deacon" <will@kernel.org>, x86@kernel.org,
-        linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-efi@vger.kernel.org,
-        "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>,
-        linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
-        loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
-        linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
-        linux-hyperv@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v2 1/9] vgacon: rework Kconfig dependencies
-Content-Type: text/plain
+        Fri, 21 Jul 2023 04:42:59 -0400
+Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AECA82D50
+        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jul 2023 01:42:55 -0700 (PDT)
+Received: by mail-wm1-x32a.google.com with SMTP id 5b1f17b1804b1-3fd18b1d924so13573205e9.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jul 2023 01:42:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1689928974; x=1690533774;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=XQaE+aGAoPiWTrzxC0m23eci3gy8Nzf0koJxtpNK2YA=;
+        b=N2h3UNJDdhqd87L3F4mYmBXLz0qK1XjoAFFJkLXJL1KKoYmOgmauzLv185j/ocWYA5
+         R3etvIdFfA2ZAkggjQMd+poAmzQfVSvcsKMAoR3TgARskd/Rqg5htrh0tAqZFbm020Q6
+         EhTfIwPbnUM8RX+KkLUC/QvNUXBwqtk05iaLgVGW5/ml0lYCOH9AAQiG2jw9/OVbQTYd
+         sPYqSXzbVvHjiO297NGcXQMx+BbECWhZsHR6Z2eL2XqeB/IvWoqSLhivGEkxUMN50hlg
+         6G5rCstvluru5Nbve2rK0+JFlo4a/7uf7gcJKLy6AYImNAoLJDVS4tn2rrKhZpSALEYU
+         +V3A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1689928974; x=1690533774;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=XQaE+aGAoPiWTrzxC0m23eci3gy8Nzf0koJxtpNK2YA=;
+        b=OsFwQb4jNHjlweWaeYsY0Qel/PsL+EGN9N1oXnIoE8xp9SCrSdBFiZvlo6UAqupGH9
+         O9mvDGa8eGj3XnwERgb8iwCcF1AZZhWlVHTW3z25b2Pcxr0uwUN8TvAnQSf40e2Qrg8M
+         yC83DguZB2fpU8fmHC8IfWlw/GAEHM1V2IEPYL/CeZ3B7qekHz2oWEZqOYaS+dA/2Vou
+         cXMQB+YISFyApJ8uYwwI3fT7X7UOF/3XGol+qPH28LVWObrWJqKcCVR9F4V15IPWVNa0
+         0NNmtD1AE6DwNaUMwpTTyvvGNe7VlSAi5YsIowH13QMLXeLVfu48p/nVfHkiv41vHWv3
+         Z/qQ==
+X-Gm-Message-State: ABy/qLZUxaBllJcaZobylyhebyrHot+9yo/V+jcazwRDo2i9PAgfP3EP
+        kMzhSRSb/Eo959boquKwfzAuFQ==
+X-Google-Smtp-Source: APBJJlE3K30Gc1FY8KUg8IGeriUSJfp+eK3+VTcAwyFZWEeBiWs4OcFMYvjx+IJ5eAdxug70zn9QFQ==
+X-Received: by 2002:a5d:6ac8:0:b0:317:15f5:a1ca with SMTP id u8-20020a5d6ac8000000b0031715f5a1camr925360wrw.10.1689928974175;
+        Fri, 21 Jul 2023 01:42:54 -0700 (PDT)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id u1-20020adfdb81000000b0030e5bd253aasm3564628wri.39.2023.07.21.01.42.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 21 Jul 2023 01:42:53 -0700 (PDT)
+Date:   Fri, 21 Jul 2023 09:42:51 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Ying Liu <victor.liu@nxp.com>
+Cc:     "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "lee@kernel.org" <lee@kernel.org>,
+        "jingoohan1@gmail.com" <jingoohan1@gmail.com>,
+        "deller@gmx.de" <deller@gmx.de>,
+        "andy@kernel.org" <andy@kernel.org>,
+        "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
+        "brgl@bgdev.pl" <brgl@bgdev.pl>
+Subject: Re: [PATCH v2] backlight: gpio_backlight: Drop output gpio direction
+ check for initial power state
+Message-ID: <20230721084251.GF2525277@aspen.lan>
+References: <20230721073555.1377236-1-victor.liu@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230721073555.1377236-1-victor.liu@nxp.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jul 21, 2023, at 06:59, Michael Ellerman wrote:
-> Arnd Bergmann <arnd@kernel.org> writes:
->> From: Arnd Bergmann <arnd@arndb.de>
->>
->> The list of dependencies here is phrased as an opt-out, but this is missing
->> a lot of architectures that don't actually support VGA consoles, and some
->> of the entries are stale:
->>
->>  - powerpc used to support VGA consoles in the old arch/ppc codebase, but
->>    the merged arch/powerpc never did
+On Fri, Jul 21, 2023 at 07:31:37AM +0000, Ying Liu wrote:
+> If gpio pin is in input state but backlight is currently off due to
+> default pull downs, then initial power state is set to FB_BLANK_UNBLANK
+> in DT boot mode with phandle link and the backlight is effectively
+> turned on in gpio_backlight_probe(), which is undesirable according to
+> patch description of commit ec665b756e6f ("backlight: gpio-backlight:
+> Correct initial power state handling").
 >
-> Not disputing this, but how did you come to that conclusion? I grepped
-> around and couldn't convince myself whether it can work on powerpc or
-> not. ie. currently it's possible to enable CONFIG_VGA_CONSOLE and
-> powerpc does have a struct screen_info defined which seems like it would
-> allow vgacon_startup() to complete.
+> Quote:
+> ---
+> If in DT boot we have phandle link then leave the GPIO in a state which the
+> bootloader left it and let the user of the backlight to configure it further.
+> ---
+>
+> So, let's drop output gpio direction check and only check gpio value to set
+> the initial power state.
+>
+> Signed-off-by: Liu Ying <victor.liu@nxp.com>
 
-The VGA console needs both screen_info and vga_con to work. In arch/ppc
-we had both, but in arch/powerpc we only retained the screen_info:
+Based on the discussion for v1 about 706dc68102bc ("backlight: gpio:
+Explicitly set the direction of the GPIO"), I think there should
+be a Fixes: tag here.
 
-$ git grep vga_con v2.6.26 -- arch/ppc arch/ppc64 arch/powerpc
-v2.6.26:arch/ppc/platforms/pplus.c:     conswitchp = &vga_con;
-v2.6.26:arch/ppc/platforms/prep_setup.c:        conswitchp = &vga_con;
 
-so after arch/ppc was removed, this became impossible to use on both
-pplus and prep. These two platforms were also (as far as I can tell)
-the only ones to support vga16fb as an alternative to vgacon, but
-both platforms were removed later on.
-
-> My only concern is that someone could be using it with Qemu?
-
-I have not yet ruled out anyone using vga16fb on qemu before
-commit 0db5b61e0dc07 ("fbdev/vga16fb: Create EGA/VGA devices
-in sysfb code"), but I can see that this has been broken for
-12 months without anyone complaining about it, since vga16fb
-no longer works with the "orig_video_isVGA == 1" setting
-in arch/powerpc (the device is not created).
-
-In the qemu sources, I see five powerpc machines that intialize
-VGA support: mac_newworld, mac_oldworld, pegasos2, prep, and spapr.
-I think we can exclude prep (which was removed from the kernel)
-and spapr (64-bit VGA_MAP_MEM() looks broken). I think the
-macs always come up in graphical mode and only use
-offb/atifb/rivafb/matroxfb but not vga16fb that would require
-running the x86 VGA BIOS initialization.
-
-I suppose it's possible to use vga16fb (not vgacon) with
-"qemu-system-ppc -M pegasos2 -vga std" if that still boots
-at all. Support for pegasos2 hardware appears to have been
-removed with commit 04debf21fa174 ("powerpc: Remove core
-support for Marvell mv64x60 hostbridges"), but it's possible
-that this did not break qemu support if that only uses
-devices under arch/powerpc/platforms/chrp/pci.c. I could
-not get it to boot, but did not try very hard.
-
-      Arnd
+Daniel.

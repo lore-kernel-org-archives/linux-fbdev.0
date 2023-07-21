@@ -2,40 +2,36 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE913EB64DD
-	for <linux-fbdev@archiver.kernel.org>; Thu, 20 Jul 2023 19:24:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0187DEB64DD
+	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jul 2023 04:59:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230257AbjGTTYM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 20 Jul 2023 15:24:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36428 "EHLO
+        id S229579AbjGUE7p (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 21 Jul 2023 00:59:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52390 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229684AbjGTTYM (ORCPT
+        with ESMTP id S229457AbjGUE7o (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 20 Jul 2023 15:24:12 -0400
-Received: from mailout.easymail.ca (mailout.easymail.ca [64.68.200.34])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC1B7171D;
-        Thu, 20 Jul 2023 12:24:09 -0700 (PDT)
-Received: from localhost (localhost [127.0.0.1])
-        by mailout.easymail.ca (Postfix) with ESMTP id 479C0623ED;
-        Thu, 20 Jul 2023 18:48:50 +0000 (UTC)
-X-Virus-Scanned: Debian amavisd-new at emo07-pco.easydns.vpn
-Received: from mailout.easymail.ca ([127.0.0.1])
-        by localhost (emo07-pco.easydns.vpn [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id YkMMq7FPWqRc; Thu, 20 Jul 2023 18:48:49 +0000 (UTC)
-Received: from mail.gonehiking.org (unknown [38.15.45.1])
-        by mailout.easymail.ca (Postfix) with ESMTPA id C8ABC61E38;
-        Thu, 20 Jul 2023 18:48:49 +0000 (UTC)
-Received: from [192.168.1.4] (internal [192.168.1.4])
-        by mail.gonehiking.org (Postfix) with ESMTP id CC21F3EED6;
-        Thu, 20 Jul 2023 12:48:47 -0600 (MDT)
-Message-ID: <aea82980-358a-863f-d6a0-66f4ce3f87b7@gonehiking.org>
-Date:   Thu, 20 Jul 2023 12:48:47 -0600
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Reply-To: khalid@gonehiking.org
-Subject: Re: [PATCH v2 1/9] vgacon: rework Kconfig dependencies
-Content-Language: en-US
+        Fri, 21 Jul 2023 00:59:44 -0400
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 19870B3;
+        Thu, 20 Jul 2023 21:59:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+        s=201909; t=1689915579;
+        bh=E8y/g9Khd0fFkgBzOo2hgfNC9FxKvpUwWSNkgdFASms=;
+        h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+        b=Vz9fUc/RXTu27vyeQvrCGoaE8JdmFqjso1U7IKft3F4+AMIPMbJxbd6+vpUogCok2
+         jjqvREfJvYqz3QSGYRTfM9NbVcZw6ETTGk+G5ORy8Ef27KmVipGpAru/++iMcP0ZIY
+         irL63A70ZpZtpSAA842FIXFsBi3K9pkiGHMiMA9uGES1k6AQTlIav7DvOXvaXW5lr1
+         +C0AtN1LzNzfZWs6cqLKzQSLR9CakXGeTo5RmwHO24fURCoJ28UFMNlTF5RfwYFygo
+         JIBkIXyWk0zwzOR6aKsdnuJSg4XvmCPd8c6HNDSu/dKGG51lsM7dl8r9XMYvtkwX6A
+         gBrLXrGghZj8Q==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        by mail.ozlabs.org (Postfix) with ESMTPSA id 4R6cmH4jNJz4wqW;
+        Fri, 21 Jul 2023 14:59:27 +1000 (AEST)
+From:   Michael Ellerman <mpe@ellerman.id.au>
 To:     Arnd Bergmann <arnd@kernel.org>, linux-fbdev@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Helge Deller <deller@gmx.de>,
@@ -59,10 +55,10 @@ Cc:     Arnd Bergmann <arnd@arndb.de>,
         Huacai Chen <chenhuacai@kernel.org>,
         Ingo Molnar <mingo@redhat.com>,
         John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+        Khalid Aziz <khalid@gonehiking.org>,
         Linus Walleij <linus.walleij@linaro.org>,
         Matt Turner <mattst88@gmail.com>,
         Max Filippov <jcmvbkbc@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
         Nicholas Piggin <npiggin@gmail.com>,
         Palmer Dabbelt <palmer@dabbelt.com>,
         Russell King <linux@armlinux.org.uk>,
@@ -78,69 +74,34 @@ Cc:     Arnd Bergmann <arnd@arndb.de>,
         linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
         sparclinux@vger.kernel.org, linux-hyperv@vger.kernel.org,
         dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v2 1/9] vgacon: rework Kconfig dependencies
+In-Reply-To: <20230719123944.3438363-2-arnd@kernel.org>
 References: <20230719123944.3438363-1-arnd@kernel.org>
  <20230719123944.3438363-2-arnd@kernel.org>
-From:   Khalid Aziz <khalid@gonehiking.org>
-In-Reply-To: <20230719123944.3438363-2-arnd@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Date:   Fri, 21 Jul 2023 14:59:24 +1000
+Message-ID: <87pm4lj1w3.fsf@mail.lhotse>
+MIME-Version: 1.0
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/19/23 6:39 AM, Arnd Bergmann wrote:
+Arnd Bergmann <arnd@kernel.org> writes:
 > From: Arnd Bergmann <arnd@arndb.de>
-> 
+>
 > The list of dependencies here is phrased as an opt-out, but this is missing
 > a lot of architectures that don't actually support VGA consoles, and some
 > of the entries are stale:
-> 
->   - powerpc used to support VGA consoles in the old arch/ppc codebase, but
->     the merged arch/powerpc never did
-> 
->   - arm lists footbridge, integrator and netwinder, but netwinder is actually
->     part of footbridge, and integrator does not appear to have an actual
->     VGA hardware, or list it in its ATAG or DT.
-> 
->   - mips has a few platforms (malta, sibyte, and sni) that initialize
->     screen_info, on everything else the console is selected but cannot
->     actually work.
-> 
->   - csky, hexgagon, loongarch, nios2, riscv and xtensa are not listed
->     in the opt-out table and declare a screen_info to allow building
->     vga_con, but this cannot work because the console is never selected.
-> 
-> Replace this with an opt-in table that lists only the platforms that
-> remain. This is effectively x86, plus a couple of historic workstation
-> and server machines that reused parts of the x86 system architecture.
-> 
-> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>
+>  - powerpc used to support VGA consoles in the old arch/ppc codebase, but
+>    the merged arch/powerpc never did
 
+Not disputing this, but how did you come to that conclusion? I grepped
+around and couldn't convince myself whether it can work on powerpc or
+not. ie. currently it's possible to enable CONFIG_VGA_CONSOLE and
+powerpc does have a struct screen_info defined which seems like it would
+allow vgacon_startup() to complete.
 
-Reviewed-by: Khalid Aziz <khalid@gonehiking.org>
+My only concern is that someone could be using it with Qemu?
 
-
-> ---
->   drivers/video/console/Kconfig | 6 +++---
->   1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-> index 1b5a319971ed0..6af90db6d2da9 100644
-> --- a/drivers/video/console/Kconfig
-> +++ b/drivers/video/console/Kconfig
-> @@ -7,9 +7,9 @@ menu "Console display driver support"
->   
->   config VGA_CONSOLE
->   	bool "VGA text console" if EXPERT || !X86
-> -	depends on !4xx && !PPC_8xx && !SPARC && !M68K && !PARISC &&  !SUPERH && \
-> -		(!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER) && \
-> -		!ARM64 && !ARC && !MICROBLAZE && !OPENRISC && !S390 && !UML
-> +	depends on ALPHA || IA64 || X86 || \
-> +		(ARM && ARCH_FOOTBRIDGE) || \
-> +		(MIPS && (MIPS_MALTA || SIBYTE_BCM112X || SIBYTE_SB1250 || SIBYTE_BCM1x80 || SNI_RM))
->   	select APERTURE_HELPERS if (DRM || FB || VFIO_PCI_CORE)
->   	default y
->   	help
-
+cheers

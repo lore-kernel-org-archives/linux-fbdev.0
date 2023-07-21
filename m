@@ -2,99 +2,171 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8DA6EB64DC
-	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jul 2023 08:43:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64D9EEB64DC
+	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jul 2023 08:58:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229671AbjGUInB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 21 Jul 2023 04:43:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49152 "EHLO
+        id S229904AbjGUI6w (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 21 Jul 2023 04:58:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57794 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231639AbjGUIm7 (ORCPT
+        with ESMTP id S230245AbjGUI6v (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 21 Jul 2023 04:42:59 -0400
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AECA82D50
-        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jul 2023 01:42:55 -0700 (PDT)
-Received: by mail-wm1-x32a.google.com with SMTP id 5b1f17b1804b1-3fd18b1d924so13573205e9.1
-        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jul 2023 01:42:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1689928974; x=1690533774;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=XQaE+aGAoPiWTrzxC0m23eci3gy8Nzf0koJxtpNK2YA=;
-        b=N2h3UNJDdhqd87L3F4mYmBXLz0qK1XjoAFFJkLXJL1KKoYmOgmauzLv185j/ocWYA5
-         R3etvIdFfA2ZAkggjQMd+poAmzQfVSvcsKMAoR3TgARskd/Rqg5htrh0tAqZFbm020Q6
-         EhTfIwPbnUM8RX+KkLUC/QvNUXBwqtk05iaLgVGW5/ml0lYCOH9AAQiG2jw9/OVbQTYd
-         sPYqSXzbVvHjiO297NGcXQMx+BbECWhZsHR6Z2eL2XqeB/IvWoqSLhivGEkxUMN50hlg
-         6G5rCstvluru5Nbve2rK0+JFlo4a/7uf7gcJKLy6AYImNAoLJDVS4tn2rrKhZpSALEYU
-         +V3A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689928974; x=1690533774;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=XQaE+aGAoPiWTrzxC0m23eci3gy8Nzf0koJxtpNK2YA=;
-        b=OsFwQb4jNHjlweWaeYsY0Qel/PsL+EGN9N1oXnIoE8xp9SCrSdBFiZvlo6UAqupGH9
-         O9mvDGa8eGj3XnwERgb8iwCcF1AZZhWlVHTW3z25b2Pcxr0uwUN8TvAnQSf40e2Qrg8M
-         yC83DguZB2fpU8fmHC8IfWlw/GAEHM1V2IEPYL/CeZ3B7qekHz2oWEZqOYaS+dA/2Vou
-         cXMQB+YISFyApJ8uYwwI3fT7X7UOF/3XGol+qPH28LVWObrWJqKcCVR9F4V15IPWVNa0
-         0NNmtD1AE6DwNaUMwpTTyvvGNe7VlSAi5YsIowH13QMLXeLVfu48p/nVfHkiv41vHWv3
-         Z/qQ==
-X-Gm-Message-State: ABy/qLZUxaBllJcaZobylyhebyrHot+9yo/V+jcazwRDo2i9PAgfP3EP
-        kMzhSRSb/Eo959boquKwfzAuFQ==
-X-Google-Smtp-Source: APBJJlE3K30Gc1FY8KUg8IGeriUSJfp+eK3+VTcAwyFZWEeBiWs4OcFMYvjx+IJ5eAdxug70zn9QFQ==
-X-Received: by 2002:a5d:6ac8:0:b0:317:15f5:a1ca with SMTP id u8-20020a5d6ac8000000b0031715f5a1camr925360wrw.10.1689928974175;
-        Fri, 21 Jul 2023 01:42:54 -0700 (PDT)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id u1-20020adfdb81000000b0030e5bd253aasm3564628wri.39.2023.07.21.01.42.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 21 Jul 2023 01:42:53 -0700 (PDT)
-Date:   Fri, 21 Jul 2023 09:42:51 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Ying Liu <victor.liu@nxp.com>
-Cc:     "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        Fri, 21 Jul 2023 04:58:51 -0400
+Received: from EUR05-DB8-obe.outbound.protection.outlook.com (mail-db8eur05on2051.outbound.protection.outlook.com [40.107.20.51])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EE9679E;
+        Fri, 21 Jul 2023 01:58:48 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=fhh3ykt4Gfy25yA2m/JaHhG0nmDB9xkQWES98EowDxnSM02sZqNQCr6WdyL5O6kEg6n8+xtSPMlBaSOVPWyEFgbpbc4tIte/HPdBhZd++gwbLNcjinJ37N51S4kpqMdxe3ua3pOhKZ8Pbc0v8z9c3HYR1NbnFb2N2tag7JpdHUuzCNX+fsPXYPkdEXXgnRXc6tBdK4ZwZFtDKy8mvX1MN/qdCwRFGEZ/t20tx8Rzgtq11eHbeCHNhhk3TJG5a/atGbfiZu0RWCyfrJLJc+UMY2BrfNMB5vbvKcYc+1aAlpqsQfZRsQ77EfG5ma35gddiRvZyaJgXXEVtNZfG1aY48Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=brNKtdgr5/RDVTk3kxKzAONwKOFSrLcxc1cvYN3wT7M=;
+ b=YyZcqSFfsi8f6zubh1ou0KVFwlNLWy+aR9NjZ/p55qYDLNo0v47xXAFzgm9XCQQVo0ltJ4dVpvaFOmi1uSnp9mqQqoGRXap/acYava9BGvNzelfd00K9WkUbBb7AXTxtHZo40AXWrNoPK5JuBLB2acBnR+hX/9LWYWQMqKhpV/YjPkaO4OJ2R1+vInOd/R0/ryHMwlyjxUEi9thYop5lVkKqLBBeGVb+fp2kTC1ejF/g59rkTp4dkUrMG0cHUvXdDlbTQPFgST1Di9P3ndYssqf1eI+j08wZB/Zeea5DfyvSeR82S61jCpascQW7p3D1CKCYRkW9eVu6uq47RS+Nxg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=brNKtdgr5/RDVTk3kxKzAONwKOFSrLcxc1cvYN3wT7M=;
+ b=EhpbrAUb+VZZ2nhhadtVrEo0+tTItDGgeFGANCXfpBns1e4VZDFdJflEtYnPKkOpMDM5eJN48BHBm8nupzsN9gcurB7Ncrkceu2Iu10RuMBsbVTA/pcboOz+o83KjKbQMTCTyLbX2iWN/cPl6dCh+bWFSyV6uV/aRt3MAs3CUqw=
+Received: from AM7PR04MB7046.eurprd04.prod.outlook.com (2603:10a6:20b:113::22)
+ by AM9PR04MB8684.eurprd04.prod.outlook.com (2603:10a6:20b:43f::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6609.28; Fri, 21 Jul
+ 2023 08:58:46 +0000
+Received: from AM7PR04MB7046.eurprd04.prod.outlook.com
+ ([fe80::9018:e395:332c:e24b]) by AM7PR04MB7046.eurprd04.prod.outlook.com
+ ([fe80::9018:e395:332c:e24b%4]) with mapi id 15.20.6609.022; Fri, 21 Jul 2023
+ 08:58:46 +0000
+From:   Ying Liu <victor.liu@nxp.com>
+To:     "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
         "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "lee@kernel.org" <lee@kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC:     "lee@kernel.org" <lee@kernel.org>,
+        "daniel.thompson@linaro.org" <daniel.thompson@linaro.org>,
         "jingoohan1@gmail.com" <jingoohan1@gmail.com>,
         "deller@gmx.de" <deller@gmx.de>,
         "andy@kernel.org" <andy@kernel.org>,
         "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
         "brgl@bgdev.pl" <brgl@bgdev.pl>
-Subject: Re: [PATCH v2] backlight: gpio_backlight: Drop output gpio direction
+Subject: [PATCH v3] backlight: gpio_backlight: Drop output gpio direction
  check for initial power state
-Message-ID: <20230721084251.GF2525277@aspen.lan>
-References: <20230721073555.1377236-1-victor.liu@nxp.com>
+Thread-Topic: [PATCH v3] backlight: gpio_backlight: Drop output gpio direction
+ check for initial power state
+Thread-Index: Adm7sY7YALfa08QfDUG/0iqESGxZGA==
+Date:   Fri, 21 Jul 2023 08:58:46 +0000
+Message-ID: <20230721090332.1528569-1-victor.liu@nxp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: SI1PR02CA0029.apcprd02.prod.outlook.com
+ (2603:1096:4:1f4::20) To AM7PR04MB7046.eurprd04.prod.outlook.com
+ (2603:10a6:20b:113::22)
+x-mailer: git-send-email 2.37.1
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: AM7PR04MB7046:EE_|AM9PR04MB8684:EE_
+x-ms-office365-filtering-correlation-id: e4cb94b7-a601-404b-d2be-08db89c8b15a
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: Wfd27YR7EDUkP3KJR3eTNzXOAJddIPOgCTSrhcsJ7RpiraAp/HwCP6RnAhFgS8DwWQqFzZwjQpMWlmBw92mVFD871tjvgIeMVov5SekQ85kymMPrI2iS1QZnPsY7UU4TZFxQ39gpDwciFKzWYR7xiqyajo4Yz9Gp1cBuArxLEqEUZkxZIOG/Vyx/ryxLSvohlqmfFiHa9Dc8lnnnGm+fWrwjh8iHumdOCBYLQoB6j2ctWFpYFH42V9xCUY295PUqrzv38VMmgphVfiJXoWftEtTAXdKCDnTClf+Php4Qy7EbgD8pcb/TNeMVezmNRIyE+o9X+t705PYz+OCGUh7a0uCD+A9Ffo+M7wtROgm32/KVC3KLflmAb+k8ebTJeeTif4tVbGMfGbXP2Q0oJw4X17nalewqp03/Bk3RnrJ7qxVTFDlbAQ+9gxfWeKh0/vJNGpnvmVONTJgGYtnjYgem2+Fk8e8CMMYvddo1/A6+e6oDdKEUJiSapt1yd0vXS7OkxnYfC4Tr5t2W2bQfRFfNgkokHrsy7zWGtedpuHEw+jQGVw126c0RDvcRTUZ4U4YzMb0EGM5KVWdxsuKE90hfOcbqwgB/7AjKUzNLgVbcN7q5Z2HJ2kBPL5bzwPS4MZDl
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM7PR04MB7046.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(396003)(39860400002)(376002)(346002)(366004)(136003)(451199021)(6506007)(1076003)(186003)(26005)(7416002)(8936002)(8676002)(5660300002)(41300700001)(86362001)(2906002)(36756003)(110136005)(478600001)(4326008)(54906003)(316002)(66446008)(66476007)(66556008)(64756008)(66946007)(38350700002)(38100700002)(71200400001)(52116002)(6486002)(6512007)(83380400001)(2616005)(122000001);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?iso-8859-1?Q?zZZq2XhEqnN37IEGt7BAOD3uaX+0u1ftcoChmiFAUYlaky6dGMuxbtJlEr?=
+ =?iso-8859-1?Q?oZ+ztG5x/456xcUTwUNkvKjr3KWG6kaPlY2uojwTespyUtENtX3ltI3nhc?=
+ =?iso-8859-1?Q?vR/ka25mr1EKmD0BXDXjCnzwcg5bx2jX6j8Un3aXG/nSDYMB+R1v0RRgCY?=
+ =?iso-8859-1?Q?VYq8ajKEmfT2soSidmNiBpGikH/W4/A3/6Vbe/U/+fADfjBzmnoGFy+CNF?=
+ =?iso-8859-1?Q?Xmu70CkHSh7hMwEgcPXb4nh/TjxCIFi8VaBmiyPUNF8QNWa1Sf7GFqGq21?=
+ =?iso-8859-1?Q?jYhbN931UPUFXSWrdAUD9lLR4ivUKZNiHK1XrPZUFHx3OOMZUIE/FhqU2k?=
+ =?iso-8859-1?Q?kjm2eP/QTPeJjmFQe2cm53eahMAALG03WFeUMcFZL5Cncomk9c1j4/8tjJ?=
+ =?iso-8859-1?Q?BVDNKTFTxjJ7ykJEFQZAicdsxWdRNaUxANSZNjJfXVFXNZhYFIpSPKm7dq?=
+ =?iso-8859-1?Q?rkROv0A+X6C59R6OH5pUmBvB1FYvx3Ggd19kqsnHQdJGkYaJbDYbwH2X55?=
+ =?iso-8859-1?Q?uGxDF+w1KmXSb03RRS7CBXHybAQceNJOyDVgM7RQFzXZb0nUrFLNLDBp1u?=
+ =?iso-8859-1?Q?CiFXixMc9SsR8EMp7Fbx560ZPhpIbd+JD2NgrEpFmaFQxu37NX699+lGaF?=
+ =?iso-8859-1?Q?jOYXtHZ3oAQ7hq34+O7yp5jt1whQp8EDHbsItL6vavv0/0bSKpFTVLcP6x?=
+ =?iso-8859-1?Q?dH6ayIJaXK6dw1cs5OkM6Q0GHjiYcz3woDvaV6BGBBn8ZbMSbPDglSYCbF?=
+ =?iso-8859-1?Q?N8z0JqKAXOt5HHoqnOK1gb8uxPHXOpP0haTZIjArIP8QdGipH7d5gvjVh+?=
+ =?iso-8859-1?Q?+93CGEZlGv/LNHheW1WA3xCGWOIWf6vmUbdI/K9l+6cgM/9PollwzT8mJw?=
+ =?iso-8859-1?Q?62zVM7xE0+9ZohVdBR1nkuCmAyjW2wiQ8joAQS1u/Rd9lbbGHDeWCUBurQ?=
+ =?iso-8859-1?Q?B2gGNsEHlDX9zoCNe+1CG0E78qzccShpgVZOxvW5xk36W2cTpz59t0vgTv?=
+ =?iso-8859-1?Q?6V45OBc08zk4j6OniHK/ICOHAFUZTnCBAZhtJGG3ZbYUDUY212Ng9YWcO5?=
+ =?iso-8859-1?Q?Ld+kkiJYc2r6YnfCMf3JpEF7dflsa36Ck6QzfpHGWASEPtWeTxm+vGOsIO?=
+ =?iso-8859-1?Q?jfKGt3ignfGZMKdXqdRd6RnfTEhxrnCQtjQDX+RJqjwM3PuaC8PWjmigOL?=
+ =?iso-8859-1?Q?jcpuKQ1Y0tYvenBvHxKLXDRI/lxFgrCTpwrXx1UnpGakY7WhZTDB1z8TeB?=
+ =?iso-8859-1?Q?lnkNnXX1P2FaXmx10rofSWU2RnjgONwsLnwa6LVNwNBlbESZXXJISMtCsm?=
+ =?iso-8859-1?Q?1Po9UGMXaIusVG52PP49Hw3RKG/EmeibRNvMKr61UgiW6HvA4DiH9dyY7Q?=
+ =?iso-8859-1?Q?Intl2FTt3WbRuaVUhQ7x5ZrL1HYSyhiI0Ijdw2I+fTC2X/5knQHVS85mO5?=
+ =?iso-8859-1?Q?YfhKpBdj3rjNRXWNJo7bHVvGNpvJ1RTBURhzd389Yw4GqeLK8hruX1M04r?=
+ =?iso-8859-1?Q?dUMV2jPaaXjvEvt33hjuTIO/KEYoAC/kpUrferDuVzUlON/Ihd4I68y1V+?=
+ =?iso-8859-1?Q?aW6zZ4OKcw4aSr5b1h79hMqGoSTWmYVyX4QZhgAjajYr9dmpG/ZwazIvM3?=
+ =?iso-8859-1?Q?GDEqfb+N3BJ7NXw0sEWMAz4KrJng8C66pH?=
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230721073555.1377236-1-victor.liu@nxp.com>
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: AM7PR04MB7046.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: e4cb94b7-a601-404b-d2be-08db89c8b15a
+X-MS-Exchange-CrossTenant-originalarrivaltime: 21 Jul 2023 08:58:46.5013
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: /O1Hft2yG93Glg7qgoBFIdKrhBibK/kA+4EHwPa6fm6+bYHVddlyIymw8k7mz9x71Rycs61D5w3IkKFjVwJuSQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR04MB8684
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jul 21, 2023 at 07:31:37AM +0000, Ying Liu wrote:
-> If gpio pin is in input state but backlight is currently off due to
-> default pull downs, then initial power state is set to FB_BLANK_UNBLANK
-> in DT boot mode with phandle link and the backlight is effectively
-> turned on in gpio_backlight_probe(), which is undesirable according to
-> patch description of commit ec665b756e6f ("backlight: gpio-backlight:
-> Correct initial power state handling").
->
-> Quote:
-> ---
-> If in DT boot we have phandle link then leave the GPIO in a state which the
-> bootloader left it and let the user of the backlight to configure it further.
-> ---
->
-> So, let's drop output gpio direction check and only check gpio value to set
-> the initial power state.
->
-> Signed-off-by: Liu Ying <victor.liu@nxp.com>
+If gpio pin is in input state but backlight is currently off due to
+default pull downs, then initial power state is set to FB_BLANK_UNBLANK
+in DT boot mode with phandle link and the backlight is effectively
+turned on in gpio_backlight_probe(), which is undesirable according to
+patch description of commit ec665b756e6f ("backlight: gpio-backlight:
+Correct initial power state handling").
 
-Based on the discussion for v1 about 706dc68102bc ("backlight: gpio:
-Explicitly set the direction of the GPIO"), I think there should
-be a Fixes: tag here.
+Quote:
+---
+If in DT boot we have phandle link then leave the GPIO in a state which the
+bootloader left it and let the user of the backlight to configure it furthe=
+r.
+---
 
+So, let's drop output gpio direction check and only check gpio value to set
+the initial power state.
 
-Daniel.
+Fixes: 706dc68102bc ("backlight: gpio: Explicitly set the direction of the =
+GPIO")
+Signed-off-by: Liu Ying <victor.liu@nxp.com>
+---
+v2->v3:
+* Add Fixes tag. (Daniel)
+
+v1->v2:
+* Improve patch description. (Daniel, Bartosz, Andy)
+
+ drivers/video/backlight/gpio_backlight.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backl=
+ight/gpio_backlight.c
+index 6f78d928f054..38c46936fdcd 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -87,8 +87,7 @@ static int gpio_backlight_probe(struct platform_device *p=
+dev)
+ 		/* Not booted with device tree or no phandle link to the node */
+ 		bl->props.power =3D def_value ? FB_BLANK_UNBLANK
+ 					    : FB_BLANK_POWERDOWN;
+-	else if (gpiod_get_direction(gbl->gpiod) =3D=3D 0 &&
+-		 gpiod_get_value_cansleep(gbl->gpiod) =3D=3D 0)
++	else if (gpiod_get_value_cansleep(gbl->gpiod) =3D=3D 0)
+ 		bl->props.power =3D FB_BLANK_POWERDOWN;
+ 	else
+ 		bl->props.power =3D FB_BLANK_UNBLANK;
+--=20
+2.37.1
+

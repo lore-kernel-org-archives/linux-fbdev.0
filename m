@@ -2,89 +2,113 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D093AC41513
-	for <linux-fbdev@archiver.kernel.org>; Sat, 22 Jul 2023 01:01:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0E35EB64DA
+	for <linux-fbdev@archiver.kernel.org>; Sat, 22 Jul 2023 10:30:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230344AbjGVBBc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 21 Jul 2023 21:01:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60446 "EHLO
+        id S229865AbjGVKaR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 22 Jul 2023 06:30:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39834 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229487AbjGVBBa (ORCPT
+        with ESMTP id S229579AbjGVKaQ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 21 Jul 2023 21:01:30 -0400
-Received: from mail-yw1-x112c.google.com (mail-yw1-x112c.google.com [IPv6:2607:f8b0:4864:20::112c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E554F30D7;
-        Fri, 21 Jul 2023 18:01:29 -0700 (PDT)
-Received: by mail-yw1-x112c.google.com with SMTP id 00721157ae682-57045429f76so28503167b3.0;
-        Fri, 21 Jul 2023 18:01:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1689987689; x=1690592489;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=HgAKBTCLGko3WFZbluw/Ne8ucJz0BHQta3RW0S2hIRk=;
-        b=LJQH6PoUH2lr8N6JBNj1lPRiAbArnv1CI14uzPKWm4ggEgemPpsC6f03HGJf0lAtKP
-         scIRDJ1WOnSZuQCoAwbBGc0yYYx50JdWx6HyFaBwE6TYJ5P3bVreBqyMSsKlFG5/GvxZ
-         ZQNaxuQdlNpcdT/65HJ/GiEYYfpSbVXAizKOb/JRv3FUl4KRKwvNMI0g2xuBG+tYqyiO
-         OKSTfCdoTt8tnxABz6Wtrn3+uiHyHV0WEtTELlFk3AiJlii92eBTvBT5kIL/ORQ3Sf9g
-         SmDHfqquHPED4OOgo+JBboYubJwdEpJAxyyFToDNx2W1uKddK7YUgXkerflXco2H8QQu
-         oAGw==
+        Sat, 22 Jul 2023 06:30:16 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E8FA270F
+        for <linux-fbdev@vger.kernel.org>; Sat, 22 Jul 2023 03:29:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1690021772;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=qZLRLDZZbasI3kPxd2PCiFXEwaPIuFeJBoo7oz3+UCU=;
+        b=cetov833HA282mK96GhekqGFH9OdLnUrxR4VX+BPOdk6ycw0q59nllxX0kH7gpkIPfC18i
+        Hiir2X8vr03KxRC6nuVievT59D70i2pd47spVAMZ8T+0del9cZJAzao4H6aD0N6Hcx8Zjc
+        TggaJE0lt/Qtw4nTyhnnELjUdRrZ4pE=
+Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
+ [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-330-0NkElijXOLi8ByBl4X4mDQ-1; Sat, 22 Jul 2023 06:29:28 -0400
+X-MC-Unique: 0NkElijXOLi8ByBl4X4mDQ-1
+Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-31443e13f9dso1445452f8f.0
+        for <linux-fbdev@vger.kernel.org>; Sat, 22 Jul 2023 03:29:27 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689987689; x=1690592489;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=HgAKBTCLGko3WFZbluw/Ne8ucJz0BHQta3RW0S2hIRk=;
-        b=OExIHBFz3ZPdgU6YDo0NYtIy92iiah0YBCV4belMFsTIAWtLiKvtpwgvxtLIk8Bkxg
-         MBK1pU6lUWQi+iaScDytdPvPKAmWzVzv6Z+IGSmEGFU+3X2/X9xHkb/VahlX9pceCU5u
-         h9i8YfSLKqxn6ykQCI5EZkA1kxQMOjRVymJpv4V19/ttAN/CqrUb7ab6n1v+vUBd2x3s
-         /QrfhP8f9MlFkXLJnL07YP2ufEiCwE1PhW0l4T3lR1GrLcdmaeK4fUyko5/rzb/iXc9u
-         WnmyEc9Y3f7NsWRV8oBZ4cF0sJi32v2z7vmzEN586XaL9gkVSD7dxi06DDHAs1Y1dT2I
-         gRFQ==
-X-Gm-Message-State: ABy/qLbNGIaqNYfmncxzksO8pemDc0Nz5NrNVEzHnHz2rSDrsrQ0hCQJ
-        RLwgx9fIYnJviuJVCjgXVyGZW1V+MMGxu0axRmPUxywg82oUSg==
-X-Google-Smtp-Source: APBJJlF0//QiQWtD+L/zdxm4m2v5yewUmFENZfqZXoW8TfgOJ3R2IFQidV6q5TbqWU9Fe4aXsfKC/kf56gdIg4lT7tQ=
-X-Received: by 2002:a81:6a45:0:b0:583:a418:c3fc with SMTP id
- f66-20020a816a45000000b00583a418c3fcmr1764965ywc.23.1689987689139; Fri, 21
- Jul 2023 18:01:29 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230719081544.741051-1-javierm@redhat.com> <20230719081544.741051-2-javierm@redhat.com>
- <87sf9gublz.fsf@minerva.mail-host-address-is-not-set> <CANiq72=A3PLGGPGnwL=gjX7LFsQL9N8W__ojxmVpj2uCAKvhQA@mail.gmail.com>
- <87mszou7kz.fsf@minerva.mail-host-address-is-not-set> <CANiq72=RBUdFdt8=k-AACxXWrbnqfiaiViNUNxvwzGNCDkjwQA@mail.gmail.com>
- <87jzusu5uz.fsf@minerva.mail-host-address-is-not-set>
-In-Reply-To: <87jzusu5uz.fsf@minerva.mail-host-address-is-not-set>
-From:   Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date:   Sat, 22 Jul 2023 03:01:17 +0200
-Message-ID: <CANiq72=UZun8=ibyKd7dJoxSZGaohg8-YEqxGb1RzXfELCV9AQ@mail.gmail.com>
-Subject: Re: [PATCH v6 1/4] video: Add auxiliary display drivers to Graphics
- support menu
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     linux-kernel@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>,
+        d=1e100.net; s=20221208; t=1690021766; x=1690626566;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=qZLRLDZZbasI3kPxd2PCiFXEwaPIuFeJBoo7oz3+UCU=;
+        b=D47fsNF8glv38gVn5h1UY9QgiXDfMiQdFysWfjiDXxNVGSku6mh5EUECARIY2Ck3Z0
+         +GvK73AgStn0NHmZS7dgOKGR4NbV6CI6E1mdlltcfG8kBD8WaaLQEF0o4nN2iG9QgETF
+         LIFlR0QYRXztrDZ5tOYnhG6n+gO1JywTuJ9yAHkciEz4eWkZPChHLhruZTGH3vBtsYn4
+         Jl8BdbSpSwyciwK+EkLg6uo2yKs8uV77jzc3tLSk2fkGspydzUnXXeSSiPRMMiDRL53Q
+         0NjZtgnesQ8Q7yebo5GRfsL9BjY0dpnOdc8Ysy5y+MTTsl2/NPa64U7bJrxnJTNfOwAv
+         bk1w==
+X-Gm-Message-State: ABy/qLZnUSs3GzdQEZeXhrr40OutSve1i9N/chknlqaGg/HIa+AhNYSg
+        6p2MKC9fxIkIO3u7akDWG1aK+yIALPC3gb0bn1zK3CFvI8sglPex5s9QrUXMALV0nn7eQoomNc1
+        I1+AV+RKpdYOUoKfnI1njysE=
+X-Received: by 2002:a5d:594c:0:b0:317:49a2:1f89 with SMTP id e12-20020a5d594c000000b0031749a21f89mr442339wri.1.1690021765925;
+        Sat, 22 Jul 2023 03:29:25 -0700 (PDT)
+X-Google-Smtp-Source: APBJJlG0CW3cuTzgVY3orLwkAx2H5NfB4jIEo8bf4kpoNIbZm8TlKtXSwhP5qmSJP+CHTVpIhD+K5A==
+X-Received: by 2002:a5d:594c:0:b0:317:49a2:1f89 with SMTP id e12-20020a5d594c000000b0031749a21f89mr442306wri.1.1690021765546;
+        Sat, 22 Jul 2023 03:29:25 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id t10-20020a5d690a000000b00316fc844be7sm6553821wru.36.2023.07.22.03.29.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 22 Jul 2023 03:29:25 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     Miguel Ojeda <ojeda@kernel.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
         Arnd Bergmann <arnd@arndb.de>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Borislav Petkov <bp@alien8.de>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        David Airlie <airlied@gmail.com>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Helge Deller <deller@gmx.de>,
+        "H. Peter Anvin" <hpa@zytor.com>, Helge Deller <deller@gmx.de>,
+        Ingo Molnar <mingo@redhat.com>,
         Jacek Lawrynowicz <jacek.lawrynowicz@linux.intel.com>,
         Jeffrey Hugo <quic_jhugo@quicinc.com>,
+        Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee@kernel.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
         Nipun Gupta <nipun.gupta@amd.com>,
         Oded Gabbay <ogabbay@kernel.org>,
         Pieter Jansen van Vuuren <pieter.jansen-van-vuuren@amd.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        Randy Dunlap <rdunlap@infradead.org>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        x86@kernel.org
+Subject: Re: [PATCH v6 0/4] Allow disabling all native fbdev drivers and
+ only keeping DRM emulation
+In-Reply-To: <20230719081544.741051-1-javierm@redhat.com>
+References: <20230719081544.741051-1-javierm@redhat.com>
+Date:   Sat, 22 Jul 2023 12:29:24 +0200
+Message-ID: <87h6pwtf23.fsf@minerva.mail-host-address-is-not-set>
+MIME-Version: 1.0
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, Jul 22, 2023 at 2:50=E2=80=AFAM Javier Martinez Canillas
-<javierm@redhat.com> wrote:
+Javier Martinez Canillas <javierm@redhat.com> writes:
+
+> This patch series splits the fbdev core support in two different Kconfig
+> symbols: FB and FB_CORE. The motivation for this is to allow CONFIG_FB to
+> be disabled, while still having the the core fbdev support needed for the
+> CONFIG_DRM_FBDEV_EMULATION to be enabled. The motivation is automatically
+> disabling all fbdev drivers instead of having to be disabled individually.
 >
-> Got it. Then that's yet another argument for adding the auxdisplay
-> drivers under the same "Graphics support" menu.
 
-Just in case it matters for Helge/you: these may also register an
-input device, e.g. the ht16k33 has a matrix keypad.
+Pushed to drm-misc (drm-misc-next). Thanks all!
 
-Cheers,
-Miguel
+-- 
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
+

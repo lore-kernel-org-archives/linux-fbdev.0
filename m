@@ -2,61 +2,62 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8932CC001DF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jul 2023 23:47:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E6A6EB64DD
+	for <linux-fbdev@archiver.kernel.org>; Sat, 22 Jul 2023 00:14:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230121AbjGUXr4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 21 Jul 2023 19:47:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60632 "EHLO
+        id S229656AbjGVAOL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 21 Jul 2023 20:14:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38750 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229503AbjGUXry (ORCPT
+        with ESMTP id S230211AbjGVAOK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 21 Jul 2023 19:47:54 -0400
-Received: from mail-yb1-xb2b.google.com (mail-yb1-xb2b.google.com [IPv6:2607:f8b0:4864:20::b2b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3DD4E30DD;
-        Fri, 21 Jul 2023 16:47:53 -0700 (PDT)
-Received: by mail-yb1-xb2b.google.com with SMTP id 3f1490d57ef6-bff27026cb0so2366175276.1;
-        Fri, 21 Jul 2023 16:47:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1689983272; x=1690588072;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=+zdidEn8+DgwQGZvgmO/L7F7xMLay9WsUmEDZLpMAbc=;
-        b=ATeyEp3GDz4IolJEsWAOgfWaNajJWJaT7YmLW8cwz3oTgSTyQrQ1xDw+btoHCCmREk
-         9mfO28n8sozhIRUV5vZaCRUiCzXPciykCwPDegkZ/65H8kCoLJCQNKQeWbVCrb9nZJH9
-         NpLgK+05kMwTgoX8gSn8lp1AlxdkgMqLONwOG4WWu4yJlUCScPff9Sn+Nz2JpboIxDFY
-         DRLQa0HBCEmdycRf76jWWOjagssQSqB+w/i0KZQsUxefDFvp1k9QdIYeJqhfOVJhNlj5
-         TjaBU5pN81p9uMKOD4VyTrk2lbj6lS3srRD4PbcnEelCS37M6mKUPhRm898R0uGZQF0h
-         BSkA==
+        Fri, 21 Jul 2023 20:14:10 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B0B3FE42
+        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jul 2023 17:13:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1689984799;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=9zAUVsITJjQgJMe+wUauASsmwQ/Teft8FD3ucSilGuQ=;
+        b=GrwvLIM8xfzlNmNWyGXdbk5Pug5IRngwdQLvtLOBQo2pD4egn0H600hkpYaSUZjiQxTN0v
+        XcNzB3LHW5Cpwz/Fs28qv9XVDvL009f7w8hdPbvJZJIeFT28EVTw1pnEEkire2WNod3plE
+        HBJs9p//othUXYPXLgFTpe+Jlloa+oQ=
+Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
+ [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-31-0nShzWB0MiezpPWZQDujuw-1; Fri, 21 Jul 2023 20:13:18 -0400
+X-MC-Unique: 0nShzWB0MiezpPWZQDujuw-1
+Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-315998d6e7fso1289388f8f.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jul 2023 17:13:18 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689983272; x=1690588072;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20221208; t=1689984797; x=1690589597;
+        h=content-transfer-encoding:mime-version:message-id:date:references
+         :in-reply-to:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=+zdidEn8+DgwQGZvgmO/L7F7xMLay9WsUmEDZLpMAbc=;
-        b=Y/zfs6PcJVDWvBi3l3DN+bZleOIQ1mjL4zoF60F+sgo3Tg3V/SdJeHxv1fPXieUyVt
-         Cj1QSiwHvPCC0uztWC8D26SeN6pDd+LnJjLz73dYpImmLsydlpThIadQoUgi2g4ZX1dJ
-         evDYLRtWQV7GWAIavkU121j1rzCzLJkcThJlh7G37qsqPPk5NXmQ1MgBlUQhNZ7+MdGV
-         XryEjU6Ut7ifdef/cI6ukPIxw+SpQ3v6DLqIFyrBdwZmYcTxgS4UfjVpfPldPkQDS7Ee
-         eX7wghnaJTRuF/FzapJbvm4vTtyjyXvy9SLkUicHRFB6nopyYMi/5vIlFNe4tJ0BVlxm
-         r6Gw==
-X-Gm-Message-State: ABy/qLaxuLjyZfjvNhDwlpR1ViCteps+J02L+3B/C9PIToxfOE8abMT3
-        rTLC+Rj9i+4NKWJ2QAwQsCmR3IEjNXjY3DW1FV4=
-X-Google-Smtp-Source: APBJJlFkKQC+QsNexWYuobiHBX2ekwBWJ20OWolyOxCqLoJOHqwSCYA+fdngamCB9WAB4U8kMWo6B4XdlY0RmE+j8CQ=
-X-Received: by 2002:a25:d804:0:b0:d01:6e22:9291 with SMTP id
- p4-20020a25d804000000b00d016e229291mr2880083ybg.34.1689983272333; Fri, 21 Jul
- 2023 16:47:52 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230719081544.741051-1-javierm@redhat.com> <20230719081544.741051-2-javierm@redhat.com>
- <87sf9gublz.fsf@minerva.mail-host-address-is-not-set>
-In-Reply-To: <87sf9gublz.fsf@minerva.mail-host-address-is-not-set>
-From:   Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date:   Sat, 22 Jul 2023 01:47:41 +0200
-Message-ID: <CANiq72=A3PLGGPGnwL=gjX7LFsQL9N8W__ojxmVpj2uCAKvhQA@mail.gmail.com>
-Subject: Re: [PATCH v6 1/4] video: Add auxiliary display drivers to Graphics
- support menu
-To:     Javier Martinez Canillas <javierm@redhat.com>
+        bh=9zAUVsITJjQgJMe+wUauASsmwQ/Teft8FD3ucSilGuQ=;
+        b=OlNOR/s7IOcXTTHptpBNHLNRwU2AbDtFjLmcU7MpXU52UgPG6Q3CmmGoniZLiM/F4j
+         g/5miU6mWzhk5I7oss6ucMFWgr8bG+4QpeR9wbj3iVLPizIKJr1ce2MSYDQlWeHrQtoX
+         llY26XTJNnTW0xcHWpDG8X70iXhNbCK5YnpWfVykNwHtrXdyJa7+D/gKaK+5b6AT9spQ
+         vqyFygTBZ6YWx6wV9OZCcJ54vfLMystl+PItp9mZ4tWMfkEI8ppXwxjai/MIeJPpWRwI
+         bU9B97IT4APjXCAJtCiIplzrZT5qd0emSEWgD8FWp9FVCStywd4XyMv5lkvTpXRvzahb
+         8ykw==
+X-Gm-Message-State: ABy/qLYKaWURN5bdhze6QIS9WJXKhRLZBpPIcG0S4QEezUgj+aSgXw0L
+        KCcwQWw3vjBvmHp+PWCD0ffIENldbif4s3yeSXk13/Idkv4Gf8Iw9hHdvtNMH1MmxmwHCEzlQSd
+        81FCkJOgZ1f+DL1+KAcdnrqw=
+X-Received: by 2002:a05:600c:20d1:b0:3fd:1daf:abd8 with SMTP id y17-20020a05600c20d100b003fd1dafabd8mr2089739wmm.40.1689984797568;
+        Fri, 21 Jul 2023 17:13:17 -0700 (PDT)
+X-Google-Smtp-Source: APBJJlEXRkyrt5UhsSX2MfCaQiSDHQSKHbh/kU/IrA6UfVzAbLX+sn0IQirVDLsddlSuFOcFPpbQDw==
+X-Received: by 2002:a05:600c:20d1:b0:3fd:1daf:abd8 with SMTP id y17-20020a05600c20d100b003fd1dafabd8mr2089733wmm.40.1689984797253;
+        Fri, 21 Jul 2023 17:13:17 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id u9-20020a05600c210900b003fbcdba1a52sm6920280wml.3.2023.07.21.17.13.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 21 Jul 2023 17:13:16 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
 Cc:     linux-kernel@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
@@ -69,43 +70,81 @@ Cc:     linux-kernel@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>,
         Oded Gabbay <ogabbay@kernel.org>,
         Pieter Jansen van Vuuren <pieter.jansen-van-vuuren@amd.com>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [PATCH v6 1/4] video: Add auxiliary display drivers to Graphics
+ support menu
+In-Reply-To: <CANiq72=A3PLGGPGnwL=gjX7LFsQL9N8W__ojxmVpj2uCAKvhQA@mail.gmail.com>
+References: <20230719081544.741051-1-javierm@redhat.com>
+ <20230719081544.741051-2-javierm@redhat.com>
+ <87sf9gublz.fsf@minerva.mail-host-address-is-not-set>
+ <CANiq72=A3PLGGPGnwL=gjX7LFsQL9N8W__ojxmVpj2uCAKvhQA@mail.gmail.com>
+Date:   Sat, 22 Jul 2023 02:13:16 +0200
+Message-ID: <87mszou7kz.fsf@minerva.mail-host-address-is-not-set>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, Jul 22, 2023 at 12:46=E2=80=AFAM Javier Martinez Canillas
-<javierm@redhat.com> wrote:
+Miguel Ojeda <miguel.ojeda.sandonis@gmail.com> writes:
+
+Hello Miguel,
+
+> On Sat, Jul 22, 2023 at 12:46=E2=80=AFAM Javier Martinez Canillas
+> <javierm@redhat.com> wrote:
+>>
+>> Javier Martinez Canillas <javierm@redhat.com> writes:
+>>
+>> [adding Miguel Ojeda who was not in the Cc list]
+>>
+>> Hello Miguel, could you please ack this patch so that I can take the who=
+le
+>> patch-set through the drm-misc tree?
 >
-> Javier Martinez Canillas <javierm@redhat.com> writes:
+> A note below...
 >
-> [adding Miguel Ojeda who was not in the Cc list]
+>> > The drivers in this subsystem are for character-based LCD displays, wh=
+ich
+>> > can fall into the same category of the DRM/KMS and fbdev drivers that =
+are
+>> > located under the "Graphics support" menu. Add auxdisplay there as wel=
+l.
 >
-> Hello Miguel, could you please ack this patch so that I can take the whol=
-e
-> patch-set through the drm-misc tree?
+> Nit: this is not exactly true, e.g. ks0108/cfag12864b (which were the
+> first in the subsystem) were not character-based but a very simple
+> black-or-white 128x64 grid, so we should probably reword slightly
+> this.
+>
 
-A note below...
+Oh, interesting. I wonder why that couldn't had been a fbdev driver then
+using FB_VISUAL_MONO01? I'll reword then the commit message before apply
+to the following instead:
 
-> > The drivers in this subsystem are for character-based LCD displays, whi=
-ch
-> > can fall into the same category of the DRM/KMS and fbdev drivers that a=
-re
-> > located under the "Graphics support" menu. Add auxdisplay there as well=
-.
+"The drivers in this subsystem are for either character-based or monochrome
+LCD controllers, which can fall into the same category of the DRM/KMS and
+fbdev drivers, that are located under the "Graphics support" menu.
 
-Nit: this is not exactly true, e.g. ks0108/cfag12864b (which were the
-first in the subsystem) were not character-based but a very simple
-black-or-white 128x64 grid, so we should probably reword slightly
-this.
+Add the auxdisplay drivers there as well to have all display drivers under
+the same menu."
 
-In any case, if Helge thinks these may belong in the "Graphics
-support" menu, then I am fine with it:
+> In any case, if Helge thinks these may belong in the "Graphics
+> support" menu, then I am fine with it:
+>
+>     Acked-by: Miguel Ojeda <ojeda@kernel.org>
+>
 
-    Acked-by: Miguel Ojeda <ojeda@kernel.org>
+Perfect, thanks!
 
-Thanks!
+> Thanks!
+>
+> Cheers,
+> Miguel
+>
 
-Cheers,
-Miguel
+--=20
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
+

@@ -2,80 +2,45 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E50FC0015E
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jul 2023 08:34:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98801C41513
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jul 2023 09:34:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230431AbjGXIev convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Jul 2023 04:34:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33568 "EHLO
+        id S230300AbjGXJd7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Jul 2023 05:33:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42758 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231630AbjGXIet (ORCPT
+        with ESMTP id S231716AbjGXJdx (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Jul 2023 04:34:49 -0400
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D8FAC94
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jul 2023 01:34:48 -0700 (PDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <p.zabel@pengutronix.de>)
-        id 1qNr1d-0008D2-KF; Mon, 24 Jul 2023 10:34:41 +0200
-Received: from [2a0a:edc0:0:900:1d::4e] (helo=lupine)
-        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-        (envelope-from <p.zabel@pengutronix.de>)
-        id 1qNr1a-001iLG-LE; Mon, 24 Jul 2023 10:34:38 +0200
-Received: from pza by lupine with local (Exim 4.96)
-        (envelope-from <p.zabel@pengutronix.de>)
-        id 1qNr1a-000NGv-0X;
-        Mon, 24 Jul 2023 10:34:38 +0200
-Message-ID: <3edf59510eda9806e254479cde3e1c8a3670f2d1.camel@pengutronix.de>
-Subject: Re: [PATCH v3 1/1] drm/i915: Move abs_diff() to math.h
-From:   Philipp Zabel <p.zabel@pengutronix.de>
-To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Jani Nikula <jani.nikula@intel.com>,
-        Imre Deak <imre.deak@intel.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-        Alexey Dobriyan <adobriyan@gmail.com>,
-        intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-        linux-fbdev@vger.kernel.org
-Cc:     Jani Nikula <jani.nikula@linux.intel.com>,
-        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Nikita Shubin <nikita.shubin@maquefel.me>,
-        Nikita Shubin via B4 Relay 
-        <devnull+nikita.shubin.maquefel.me@kernel.org>,
-        Andi Shyti <andi.shyti@kernel.org>
-Date:   Mon, 24 Jul 2023 10:34:38 +0200
-In-Reply-To: <20230724082511.3225-1-andriy.shevchenko@linux.intel.com>
-References: <20230724082511.3225-1-andriy.shevchenko@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-User-Agent: Evolution 3.46.4-2 
+        Mon, 24 Jul 2023 05:33:53 -0400
+X-Greylist: delayed 1514 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 24 Jul 2023 02:33:53 PDT
+Received: from fluorez-com.cfd (fluorez-com.cfd [107.174.244.118])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C001129
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jul 2023 02:33:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; s=re1; d=fluorez-com.cfd;
+ h=Reply-To:From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:
+ Content-Transfer-Encoding; i=info@fluorez-com.cfd;
+ bh=LqAKS0rQcqRhfS2AomqosmxOtHjI8TSd2DPxtKmN8Fo=;
+ b=UvUO3SIVF+6lb/SOGdcDDfNkx+IeGYw1WwqLaX1bU/nh43w/RWRvRVNM3cnXwLO2DfnQwIVb9V8B
+   +ciaAfVjul0EAF9vt1h1ylRivV9os5R37nStUgOGijdMND8kSUPjL2AOt9lnco3rM4KovewgDBc8
+   kfwY46ktHfqEdNf+Yx1jwVrmE1u9IN5eX5kBMOT6Fl4o+VS5POhtgIrC/P0runNlboI8XwT1tI3P
+   Gtvv9SCcGyWBBAzOxF44cpngEIec+Vd0uIm9sJhgtpIQuMgdK6uDRn7U2i5H8SYpW4EcMI7siPMc
+   ceinHCCBYvSLAO8kg9kJuqUXdSVlKOhYOos+Qg==
+Reply-To: info@coinloansupport.online
+From:   Coinloan Support Center <info@fluorez-com.cfd>
+To:     linux-fbdev@vger.kernel.org
+Subject: Low Interest loan opportunity
+Date:   24 Jul 2023 10:46:46 +0200
+Message-ID: <20230724104646.1055B3F96FE8DDC3@fluorez-com.cfd>
 MIME-Version: 1.0
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: p.zabel@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+Content-Type: text/plain;
+        charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mo, 2023-07-24 at 11:25 +0300, Andy Shevchenko wrote:
-> abs_diff() belongs to math.h. Move it there.
-> This will allow others to use it.
-> 
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Reviewed-by: Jiri Slaby <jirislaby@kernel.org> # tty/serial
-
-Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de> # gpu/ipu-v3
-
-regards
-Philipp
+Are you looking for a loan to either increase your activity or to=20
+carry out a project.=20
+We offer Crypto Loans at 2-7% interest rate with or without a=20
+credit check.
+Please get back to us if you are interested in more details.

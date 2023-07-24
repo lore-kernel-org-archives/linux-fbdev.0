@@ -2,113 +2,88 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0E35EB64DA
-	for <linux-fbdev@archiver.kernel.org>; Sat, 22 Jul 2023 10:30:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC0FEC001B0
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jul 2023 06:39:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229865AbjGVKaR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 22 Jul 2023 06:30:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39834 "EHLO
+        id S230440AbjGXGjq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Jul 2023 02:39:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35946 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229579AbjGVKaQ (ORCPT
+        with ESMTP id S230444AbjGXGjn (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 22 Jul 2023 06:30:16 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E8FA270F
-        for <linux-fbdev@vger.kernel.org>; Sat, 22 Jul 2023 03:29:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1690021772;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=qZLRLDZZbasI3kPxd2PCiFXEwaPIuFeJBoo7oz3+UCU=;
-        b=cetov833HA282mK96GhekqGFH9OdLnUrxR4VX+BPOdk6ycw0q59nllxX0kH7gpkIPfC18i
-        Hiir2X8vr03KxRC6nuVievT59D70i2pd47spVAMZ8T+0del9cZJAzao4H6aD0N6Hcx8Zjc
-        TggaJE0lt/Qtw4nTyhnnELjUdRrZ4pE=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-330-0NkElijXOLi8ByBl4X4mDQ-1; Sat, 22 Jul 2023 06:29:28 -0400
-X-MC-Unique: 0NkElijXOLi8ByBl4X4mDQ-1
-Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-31443e13f9dso1445452f8f.0
-        for <linux-fbdev@vger.kernel.org>; Sat, 22 Jul 2023 03:29:27 -0700 (PDT)
+        Mon, 24 Jul 2023 02:39:43 -0400
+Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B34BCE5C;
+        Sun, 23 Jul 2023 23:39:17 -0700 (PDT)
+Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-3175f17a7baso329005f8f.0;
+        Sun, 23 Jul 2023 23:39:17 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690021766; x=1690626566;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=qZLRLDZZbasI3kPxd2PCiFXEwaPIuFeJBoo7oz3+UCU=;
-        b=D47fsNF8glv38gVn5h1UY9QgiXDfMiQdFysWfjiDXxNVGSku6mh5EUECARIY2Ck3Z0
-         +GvK73AgStn0NHmZS7dgOKGR4NbV6CI6E1mdlltcfG8kBD8WaaLQEF0o4nN2iG9QgETF
-         LIFlR0QYRXztrDZ5tOYnhG6n+gO1JywTuJ9yAHkciEz4eWkZPChHLhruZTGH3vBtsYn4
-         Jl8BdbSpSwyciwK+EkLg6uo2yKs8uV77jzc3tLSk2fkGspydzUnXXeSSiPRMMiDRL53Q
-         0NjZtgnesQ8Q7yebo5GRfsL9BjY0dpnOdc8Ysy5y+MTTsl2/NPa64U7bJrxnJTNfOwAv
-         bk1w==
-X-Gm-Message-State: ABy/qLZnUSs3GzdQEZeXhrr40OutSve1i9N/chknlqaGg/HIa+AhNYSg
-        6p2MKC9fxIkIO3u7akDWG1aK+yIALPC3gb0bn1zK3CFvI8sglPex5s9QrUXMALV0nn7eQoomNc1
-        I1+AV+RKpdYOUoKfnI1njysE=
-X-Received: by 2002:a5d:594c:0:b0:317:49a2:1f89 with SMTP id e12-20020a5d594c000000b0031749a21f89mr442339wri.1.1690021765925;
-        Sat, 22 Jul 2023 03:29:25 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlG0CW3cuTzgVY3orLwkAx2H5NfB4jIEo8bf4kpoNIbZm8TlKtXSwhP5qmSJP+CHTVpIhD+K5A==
-X-Received: by 2002:a5d:594c:0:b0:317:49a2:1f89 with SMTP id e12-20020a5d594c000000b0031749a21f89mr442306wri.1.1690021765546;
-        Sat, 22 Jul 2023 03:29:25 -0700 (PDT)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id t10-20020a5d690a000000b00316fc844be7sm6553821wru.36.2023.07.22.03.29.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 22 Jul 2023 03:29:25 -0700 (PDT)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     Miguel Ojeda <ojeda@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Borislav Petkov <bp@alien8.de>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        David Airlie <airlied@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "H. Peter Anvin" <hpa@zytor.com>, Helge Deller <deller@gmx.de>,
-        Ingo Molnar <mingo@redhat.com>,
-        Jacek Lawrynowicz <jacek.lawrynowicz@linux.intel.com>,
-        Jeffrey Hugo <quic_jhugo@quicinc.com>,
-        Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee@kernel.org>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Nipun Gupta <nipun.gupta@amd.com>,
-        Oded Gabbay <ogabbay@kernel.org>,
-        Pieter Jansen van Vuuren <pieter.jansen-van-vuuren@amd.com>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        x86@kernel.org
-Subject: Re: [PATCH v6 0/4] Allow disabling all native fbdev drivers and
- only keeping DRM emulation
-In-Reply-To: <20230719081544.741051-1-javierm@redhat.com>
-References: <20230719081544.741051-1-javierm@redhat.com>
-Date:   Sat, 22 Jul 2023 12:29:24 +0200
-Message-ID: <87h6pwtf23.fsf@minerva.mail-host-address-is-not-set>
+        d=1e100.net; s=20221208; t=1690180734; x=1690785534;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=nBFPtNUr5zfQpCgu0uRJ8hgMdYMycg/Xxc747XVGWkA=;
+        b=I2he+yw5UCaSK16Llg2Jj1ZS2y6/MuCAluMR/qE3darHFx1fIM4dwcaXcCPK4ipCwc
+         ehmgEv4TbLzUma2B0bwh+29VuYBRNojZbmdYAixXc3mha3Xj0BPKdnGPitbdn5DzGP3w
+         7++BUWkJ1v+7KYLUx/YTqGXS3h2Oleb9ONJNdDKuwtYTN0zoKnwSEPHstP/AKwWE4DgC
+         PJCoJBM174n5c51mLa8FKR+OCfdiKdY7Hc/DuyvoDqcP0tNqHzqH5DXrtXAiFuJrVCpq
+         9GwXiN0TxWnsSFV2cDbMm955CUbBxVQOnL/8orpBh2YKnCQQo0rJM48FLlQLOK8mGTAP
+         CLoQ==
+X-Gm-Message-State: ABy/qLYyUKvKFyA/q6eF1w2n5wtcWkRB0e+vAO162yfkB7riIF6f5EI8
+        vGzcbSchgGl+z0Bw2ZDFms0=
+X-Google-Smtp-Source: APBJJlGSUmRKzqjC/Uqd0tfK/mlDP8ww9QDg5376q0LqdGrJd79508IrFYaOBR6hTASFTeZL5KjIpw==
+X-Received: by 2002:adf:f8ca:0:b0:314:1d7b:5b86 with SMTP id f10-20020adff8ca000000b003141d7b5b86mr5433796wrq.21.1690180733790;
+        Sun, 23 Jul 2023 23:38:53 -0700 (PDT)
+Received: from ?IPV6:2a0b:e7c0:0:107::aaaa:59? ([2a0b:e7c0:0:107::aaaa:59])
+        by smtp.gmail.com with ESMTPSA id a15-20020adfeecf000000b00311d8c2561bsm11722892wrp.60.2023.07.23.23.38.52
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 23 Jul 2023 23:38:53 -0700 (PDT)
+Message-ID: <c1f2f55e-bd1b-957e-c4d9-6a326f7e19fd@kernel.org>
+Date:   Mon, 24 Jul 2023 08:38:51 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Subject: Re: [PATCH v2 1/1] drm/i915: Move abs_diff() to math.h
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Jani Nikula <jani.nikula@intel.com>,
+        Imre Deak <imre.deak@intel.com>,
+        =?UTF-8?Q?Ilpo_J=c3=a4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Alexey Dobriyan <adobriyan@gmail.com>,
+        intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+        linux-fbdev@vger.kernel.org
+Cc:     Jani Nikula <jani.nikula@linux.intel.com>,
+        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>,
+        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Helge Deller <deller@gmx.de>, Stephen Boyd <sboyd@kernel.org>,
+        Nikita Shubin <nikita.shubin@maquefel.me>,
+        Nikita Shubin via B4 Relay 
+        <devnull+nikita.shubin.maquefel.me@kernel.org>
+References: <20230721135318.17603-1-andriy.shevchenko@linux.intel.com>
+Content-Language: en-US
+From:   Jiri Slaby <jirislaby@kernel.org>
+In-Reply-To: <20230721135318.17603-1-andriy.shevchenko@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Javier Martinez Canillas <javierm@redhat.com> writes:
+On 21. 07. 23, 15:53, Andy Shevchenko wrote:
+> abs_diff() belongs to math.h. Move it there.
+> This will allow others to use it.
+> 
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-> This patch series splits the fbdev core support in two different Kconfig
-> symbols: FB and FB_CORE. The motivation for this is to allow CONFIG_FB to
-> be disabled, while still having the the core fbdev support needed for the
-> CONFIG_DRM_FBDEV_EMULATION to be enabled. The motivation is automatically
-> disabling all fbdev drivers instead of having to be disabled individually.
->
-
-Pushed to drm-misc (drm-misc-next). Thanks all!
+Reviewed-by: Jiri Slaby <jirislaby@kernel.org> # tty/serial
 
 -- 
-Best regards,
-
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+-- 
+js
+suse labs
 

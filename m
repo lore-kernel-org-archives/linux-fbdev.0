@@ -2,102 +2,78 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 579BAC04A94
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jul 2023 12:49:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CE3AC04A6A
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jul 2023 17:04:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231209AbjGXMtQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Jul 2023 08:49:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38752 "EHLO
+        id S229576AbjGXREC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Jul 2023 13:04:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50616 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231207AbjGXMsU (ORCPT
+        with ESMTP id S230443AbjGXREB (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Jul 2023 08:48:20 -0400
-Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id EE2531FF2;
-        Mon, 24 Jul 2023 05:47:50 -0700 (PDT)
-Received: from loongson.cn (unknown [10.20.42.43])
-        by gateway (Coremail) with SMTP id _____8AxDOv1cr5k_zUJAA--.17747S3;
-        Mon, 24 Jul 2023 20:47:49 +0800 (CST)
-Received: from [10.20.42.43] (unknown [10.20.42.43])
-        by localhost.localdomain (Coremail) with SMTP id AQAAf8CxLCP0cr5kczY5AA--.5514S3;
-        Mon, 24 Jul 2023 20:47:48 +0800 (CST)
-Message-ID: <4cb6fd14-4661-4285-ac5f-c8f6ea1f4208@loongson.cn>
-Date:   Mon, 24 Jul 2023 20:47:48 +0800
+        Mon, 24 Jul 2023 13:04:01 -0400
+Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6D05E54
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jul 2023 10:03:58 -0700 (PDT)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:2d50:2ea4:d4e1:2af3])
+        by xavier.telenet-ops.be with bizsmtp
+        id R53t2A00F2TBYXr0153tLe; Mon, 24 Jul 2023 19:03:56 +0200
+Received: from rox.of.borg ([192.168.97.57])
+        by ramsan.of.borg with esmtp (Exim 4.95)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1qNyyD-002PJX-Ku;
+        Mon, 24 Jul 2023 19:03:53 +0200
+Received: from geert by rox.of.borg with local (Exim 4.95)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1qNyyP-007DmR-NR;
+        Mon, 24 Jul 2023 19:03:53 +0200
+From:   Geert Uytterhoeven <geert+renesas@glider.be>
+To:     Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>
+Cc:     Kees Cook <keescook@chromium.org>,
+        Alexander Potapenko <glider@google.com>,
+        Marco Elver <elver@google.com>,
+        Dmitry Vyukov <dvyukov@google.com>,
+        kasan-dev <kasan-dev@googlegroups.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org,
+        Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] Revert "fbcon: Use kzalloc() in fbcon_prepare_logo()"
+Date:   Mon, 24 Jul 2023 19:03:48 +0200
+Message-Id: <98b79fbdde69a4a203096eb9c8801045c5a055fb.1690218016.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH v3 0/9] PCI/VGA: Improve the default VGA device selection
-Content-Language: en-US
-To:     Bjorn Helgaas <helgaas@kernel.org>,
-        Sui Jingfeng <sui.jingfeng@linux.dev>
-Cc:     David Airlie <airlied@gmail.com>, amd-gfx@lists.freedesktop.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, linux-pci@vger.kernel.org
-References: <20230719193241.GA510805@bhelgaas>
-From:   suijingfeng <suijingfeng@loongson.cn>
-In-Reply-To: <20230719193241.GA510805@bhelgaas>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: AQAAf8CxLCP0cr5kczY5AA--.5514S3
-X-CM-SenderInfo: xvxlyxpqjiv03j6o00pqjv00gofq/
-X-Coremail-Antispam: 1Uk129KBj93XoW7Cw4UGrWxCFWrXF1ftFyUXFc_yoW8Xr4Upr
-        1rXF4UKry8Jr18Jr1DJr1UJryDJF47J34UJr1UGF1UJr1UJryjq348Xr1jgr47Jr4kXr4U
-        Xr4UJF1UZF1jywbCm3ZEXasCq-sJn29KB7ZKAUJUUUU8529EdanIXcx71UUUUU7KY7ZEXa
-        sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
-        0xBIdaVrnRJUUUvab4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
-        IYs7xG6rWj6s0DM7CIcVAFz4kK6r106r15M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
-        e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Jr0_JF4l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
-        0_Jr0_Gr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AK
-        xVW8Jr0_Cr1UM2AIxVAIcxkEcVAq07x20xvEncxIr21l57IF6xkI12xvs2x26I8E6xACxx
-        1l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r106r15McIj6I8E87Iv
-        67AKxVW8JVWxJwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IY64vIr41lc7I2V7IY0VAS07
-        AlzVAYIcxG8wCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02
-        F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GF
-        ylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7Cj
-        xVAFwI0_Jr0_Gr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r
-        4j6F4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr1j6F4UJbIYCTnIWIevJa73UjIFyTuYvjxU
-        2ID7UUUUU
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+This reverts commit a6a00d7e8ffd78d1cdb7a43f1278f081038c638f.
 
+The syzbot report turned out to be a false possitive, caused by a KMSAN
+problem.  Indeed, after allocating the buffer, it is fully initialized
+using scr_memsetw().  Hence there is no point in allocating zeroed
+memory, while this does incur some overhead.
 
-On 2023/7/20 03:32, Bjorn Helgaas wrote:
-> "drm/loongson: Add an implement for ..." also solves a problem, but it
-> lacks a commit log, so I don't know what the problem is.
+Closes: https://lore.kernel.org/r/CAMuHMdUH4CU9EfoirSxjivg08FDimtstn7hizemzyQzYeq6b6g@mail.gmail.com/
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/video/fbdev/core/fbcon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-I have already telling you one yeas ago.
-
-I want remove the pci_fixup_vgadev() function in arch/loongarch/pci/pci.c
-
-I was the original author of this workaround at our downstream kernel.
-
-While the time is not mature until this patch set be merged.
-
-I don't want mention this, as you asked this question.
-
-So, I think I have to explain.
-
-
--static void pci_fixup_vgadev(struct pci_dev *pdev)
--{
--       struct pci_dev *devp = NULL;
--
--       while ((devp = pci_get_class(PCI_CLASS_DISPLAY_VGA << 8, devp))) {
--               if (devp->vendor != PCI_VENDOR_ID_LOONGSON) {
--                       vga_set_default_device(devp);
--                       dev_info(&pdev->dev,
--                               "Overriding boot device as %X:%X\n",
--                               devp->vendor, devp->device);
--               }
--       }
--}
--DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_LOONGSON, 
-PCI_DEVICE_ID_LOONGSON_DC1, pci_fixup_vgadev);
--DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_LOONGSON, 
-PCI_DEVICE_ID_LOONGSON_DC2, pci_fixup_vgadev);
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 8e76bc246b3871b0..0246948f3c81a7a6 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -577,7 +577,7 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
+ 		if (scr_readw(r) != vc->vc_video_erase_char)
+ 			break;
+ 	if (r != q && new_rows >= rows + logo_lines) {
+-		save = kzalloc(array3_size(logo_lines, new_cols, 2),
++		save = kmalloc(array3_size(logo_lines, new_cols, 2),
+ 			       GFP_KERNEL);
+ 		if (save) {
+ 			int i = min(cols, new_cols);
+-- 
+2.34.1
 

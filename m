@@ -2,73 +2,85 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21B13C001DF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Jul 2023 17:10:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BAD1C41513
+	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Jul 2023 17:56:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230431AbjGYRKj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 25 Jul 2023 13:10:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55328 "EHLO
+        id S231329AbjGYR4o (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 25 Jul 2023 13:56:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49538 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230076AbjGYRKi (ORCPT
+        with ESMTP id S229626AbjGYR4o (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 25 Jul 2023 13:10:38 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D17CA1718;
-        Tue, 25 Jul 2023 10:10:37 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 7053B61820;
-        Tue, 25 Jul 2023 17:10:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F1D9C433C7;
-        Tue, 25 Jul 2023 17:10:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1690305036;
-        bh=gFDIOFJUg+DOfAXFPWC3hL0j9ovfHQMSJqI2XgTzQpk=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=S+N5g77nllkgBlBRqV1c+fDVHcxuV+oE53LaqoIBIfWcSWr5PXsJzP4RjNKR6/+Ng
-         9FJ1gf0hM+UBWpUwZ10DoAq9tTEbGL4EjAiIncisE+kGvL17r/cq6Nm0PfGrD1+12Z
-         amKEpM3IfKLNJU6L8nqeg/RcmcoSdVfbfPdrv9zs=
-Date:   Tue, 25 Jul 2023 19:10:33 +0200
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc:     Jani Nikula <jani.nikula@intel.com>,
-        Imre Deak <imre.deak@intel.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-        Alexey Dobriyan <adobriyan@gmail.com>,
-        intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-        linux-fbdev@vger.kernel.org,
-        Jani Nikula <jani.nikula@linux.intel.com>,
-        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Helge Deller <deller@gmx.de>, Stephen Boyd <sboyd@kernel.org>,
-        Nikita Shubin <nikita.shubin@maquefel.me>,
-        Nikita Shubin via B4 Relay 
-        <devnull+nikita.shubin.maquefel.me@kernel.org>,
-        Andi Shyti <andi.shyti@kernel.org>
-Subject: Re: [PATCH v3 1/1] drm/i915: Move abs_diff() to math.h
-Message-ID: <2023072525-gimmick-debatable-0b87@gregkh>
-References: <20230724082511.3225-1-andriy.shevchenko@linux.intel.com>
+        Tue, 25 Jul 2023 13:56:44 -0400
+Received: from mailrelay1-1.pub.mailoutpod2-cph3.one.com (mailrelay1-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:400::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 38F441FEF
+        for <linux-fbdev@vger.kernel.org>; Tue, 25 Jul 2023 10:56:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=rsa1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=b58HxDk4pWLDi3O792SrDwRigi4TNZsbJpTqvdkuXQw=;
+        b=LTkZxPGUiYmTXLYVZ70EIwnAuEoe8IidUv1urjDHVF5DE3iKISkV+wNHqwNX82fb7/9zJB3ERTrWM
+         bklyLi2z/tBAjWAK+ECNdJQMVcvPGEHI2tmGvpL6yBU0ydySDdUcCystBKecmscZoB6pmbc+1MZCtL
+         7vtFk89c/Ng+awbupm6PbMATPhDFGcdSRHWbqdZnsbSTqo+ZeCnEsBMzLRmHSxvHup0/vCe0AuDWly
+         1NBfaeOWi9c7IREaldfHCXXuIZxrLJhi4g66bi007ctX+1xa2nNPlcIWZpjU04OQrNpL1uiYbgT59z
+         iutkNuTtxPnmMmlGnnRTtwjTXcki3/Q==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=ed1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=b58HxDk4pWLDi3O792SrDwRigi4TNZsbJpTqvdkuXQw=;
+        b=xIWNFOA9Y1e5I+D5BtIac7rX8eyu5PIYXyX3JRjEgiw/PCuSip3XrYqqz7VhOkTpSmuYrJDJcO/KG
+         yvd4QkeAg==
+X-HalOne-ID: 9a250718-2b14-11ee-9efa-99461c6a3fe8
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+        by mailrelay1 (Halon) with ESMTPSA
+        id 9a250718-2b14-11ee-9efa-99461c6a3fe8;
+        Tue, 25 Jul 2023 17:56:40 +0000 (UTC)
+Date:   Tue, 25 Jul 2023 19:56:39 +0200
+From:   Sam Ravnborg <sam@ravnborg.org>
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] video: logo: LOGO should depend on FB_CORE i.s.o. FB
+Message-ID: <20230725175639.GC838289@ravnborg.org>
+References: <5ab3d1fe7b67ab10e4bc1bdbc0fa7731f7960965.1690300189.git.geert+renesas@glider.be>
+ <87a5vkj7qe.fsf@minerva.mail-host-address-is-not-set>
+ <CAMuHMdWBznkqYxCWD2uwGtWLqXnBqX1Ycg31fBDc4cq2u8DkNQ@mail.gmail.com>
+ <877cqoj5q5.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230724082511.3225-1-andriy.shevchenko@linux.intel.com>
+In-Reply-To: <877cqoj5q5.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Jul 24, 2023 at 11:25:11AM +0300, Andy Shevchenko wrote:
-> abs_diff() belongs to math.h. Move it there.
-> This will allow others to use it.
-> 
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Reviewed-by: Jiri Slaby <jirislaby@kernel.org> # tty/serial
+Hi Javier,
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> >> >  menuconfig LOGO
+> >> >       bool "Bootup logo"
+> >> > -     depends on FB || SGI_NEWPORT_CONSOLE
+> >> > +     depends on FB_CORE || SGI_NEWPORT_CONSOLE
+> >> >       help
+> >> >         Enable and select frame buffer bootup logos.
+> >>
+> >> Should then move this option to drivers/video/fbdev/core/Kconfig ?
+> >
+> > No, all logo options are in their own file.
+> >
+> 
+> Yes. I meant to move drivers/video/logo/ to drivers/fbdev/core/logo and to
+> source its Kconfig from drivers/fbdev/core/Kconfig, since it now depends
+> on FB_CORE.
+> 
+> But I see now that it also depends on SGI_NEWPORT_CONSOLE, so having those
+> in drivers/video/logo makes sense indeed.
+
+The SGI_NEWPORT_CONSOLE should be replaced by some ifdef in the
+newport_con.c code - to do what other drivers do.
+But thats for another day.
+
+	Sam

@@ -2,85 +2,146 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A83FC0015E
-	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Jul 2023 12:51:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4426FC41513
+	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Jul 2023 14:46:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231682AbjGYMvg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 25 Jul 2023 08:51:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35332 "EHLO
+        id S230460AbjGYOqz convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 25 Jul 2023 10:46:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55792 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231978AbjGYMvf (ORCPT
+        with ESMTP id S229981AbjGYOqy (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 25 Jul 2023 08:51:35 -0400
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33B4419A2;
-        Tue, 25 Jul 2023 05:51:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1690289488; x=1721825488;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=eC9JYYny7fzTWzMint7Bf1073AJMuH1Fj6VitKBlCJs=;
-  b=QOD6+StajrLJsOzZ3DPaewJqEVlsqZM/3l64ZxDlyg3hprHQCVJjQVcY
-   KTQ1DlfbK1GiWbSWaNetPDRomVYgDlzP4lwATqQCzhy97+fqKD3oL4Q+v
-   ok0KqjNb0U4HvGoq8Cd38j4c7fa5Xq5VbZ0kwvWd4nlO1bF5h5JdKTnYm
-   CdZ04QX2ME3eoTcZYNhZb9kqN+VniGd8Cos1EZ5DwR/LGY9lIbjpyMMMS
-   WfwL3ETFcQA/uBHTwOZ43YoP0O8B4kDBsUmdIGcc+mv7Nz5lJyYnbN+1G
-   MIE7XpNcxyKhhL+FlNnz89aMVKuIGlBkLRhObF8M+4z2d9k/msl6Kb4Sy
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10781"; a="431512467"
-X-IronPort-AV: E=Sophos;i="6.01,230,1684825200"; 
-   d="scan'208";a="431512467"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jul 2023 05:51:27 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10781"; a="720056033"
-X-IronPort-AV: E=Sophos;i="6.01,230,1684825200"; 
-   d="scan'208";a="720056033"
-Received: from kshutemo-mobl.ger.corp.intel.com (HELO intel.com) ([10.249.37.237])
-  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jul 2023 05:51:21 -0700
-Date:   Tue, 25 Jul 2023 14:51:18 +0200
-From:   Andi Shyti <andi.shyti@linux.intel.com>
-To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc:     Jani Nikula <jani.nikula@intel.com>,
-        Imre Deak <imre.deak@intel.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Ilpo =?iso-8859-15?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-        Alexey Dobriyan <adobriyan@gmail.com>,
-        intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-        linux-fbdev@vger.kernel.org,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Nikita Shubin <nikita.shubin@maquefel.me>,
-        Stephen Boyd <sboyd@kernel.org>, Helge Deller <deller@gmx.de>,
-        Andi Shyti <andi.shyti@kernel.org>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        David Airlie <airlied@gmail.com>,
-        Nikita Shubin via B4 Relay 
-        <devnull+nikita.shubin.maquefel.me@kernel.org>
-Subject: Re: [Intel-gfx] [PATCH v3 1/1] drm/i915: Move abs_diff() to math.h
-Message-ID: <ZL/FRsllUVUhruAZ@ashyti-mobl2.lan>
-References: <20230724082511.3225-1-andriy.shevchenko@linux.intel.com>
+        Tue, 25 Jul 2023 10:46:54 -0400
+Received: from mail-yw1-f170.google.com (mail-yw1-f170.google.com [209.85.128.170])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2242319B;
+        Tue, 25 Jul 2023 07:46:53 -0700 (PDT)
+Received: by mail-yw1-f170.google.com with SMTP id 00721157ae682-583f99641adso26075787b3.2;
+        Tue, 25 Jul 2023 07:46:53 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1690296412; x=1690901212;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=0kxOdPyZyaJv5gxG+QtuGeWvPDhLsU0ZIVKhTdMmlNw=;
+        b=X0LxQB7X99KnCUyv3+DnZNuo4sUL6GUapEvNdqPxoRlDaJc0KKREC6yn+Q2BEmaIfh
+         8ah2YYrxZWyOmgVTlydnhN7OBzppK4+JebbHdWFfQVRMX1mdgaZPcJiQF71C88tOD0PU
+         UidLKUFhvy+LiswFphm4q7XSRGODrxb2a7z9TYT7ACrdlBM2nrx0H+0OwPv2p0msaylM
+         tpMJ26mAq6eMBtct86spgV+KqNi2XVhMA59eTwp6e2JGo6iTvBG9UjrRoPcT3T4MWWGW
+         u0Iv+U6Tajs4F1igevacOMYyYR+HbITRRZCGXGEdvctPsDtDZQ30oqQ4pZPMR0FPxNNx
+         WwLA==
+X-Gm-Message-State: ABy/qLajEW7uKuAXzjkAqvo7amR6RbIhfrWJVOxDk3xscmhiIx4TZJ7+
+        sx8YW0Nq1AFPM8Zo0E/pNsxMPWhzwic/yg==
+X-Google-Smtp-Source: APBJJlH1/GgAaLm9I9Ev8XypDOwyhl9MGgeOHlP1baA0DBCE4RSWv5XEN2Nh+/7ily0Yqg7c+bgjgA==
+X-Received: by 2002:a0d:c8c7:0:b0:57d:24e9:e7f3 with SMTP id k190-20020a0dc8c7000000b0057d24e9e7f3mr8176525ywd.38.1690296412031;
+        Tue, 25 Jul 2023 07:46:52 -0700 (PDT)
+Received: from mail-yb1-f170.google.com (mail-yb1-f170.google.com. [209.85.219.170])
+        by smtp.gmail.com with ESMTPSA id j131-20020a819289000000b00570253fc3e5sm3544519ywg.105.2023.07.25.07.46.51
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 25 Jul 2023 07:46:51 -0700 (PDT)
+Received: by mail-yb1-f170.google.com with SMTP id 3f1490d57ef6-c01e1c0402cso4820537276.0;
+        Tue, 25 Jul 2023 07:46:51 -0700 (PDT)
+X-Received: by 2002:a05:6902:1350:b0:c83:27d4:c0d6 with SMTP id
+ g16-20020a056902135000b00c8327d4c0d6mr8607825ybu.37.1690296411349; Tue, 25
+ Jul 2023 07:46:51 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230724082511.3225-1-andriy.shevchenko@linux.intel.com>
+References: <20230511181931.869812-1-tj@kernel.org> <20230511181931.869812-7-tj@kernel.org>
+ <ZF6WsSVGX3O1d0pL@slm.duckdns.org> <CAMuHMdVCQmh6V182q4g---jvsWiTOP2hBPZKvma6oUN6535LEg@mail.gmail.com>
+ <CAMuHMdW1kxZ1RHKTRVRqDNAbj1Df2=v0fPn5KYK3kfX_kiXR6A@mail.gmail.com>
+ <ZK3MBfPS-3-tJgjO@slm.duckdns.org> <ZK30CR196rs-OWLq@slm.duckdns.org>
+ <CAMuHMdUCXPi+aS-7bR3qRetKF9T3W9jk_HKjvaXmfHv5SEeuFg@mail.gmail.com>
+ <ZLXIvXBvhsnL-ik_@slm.duckdns.org> <CAMuHMdU8CGhsU-1PZNdWH1xjbWcWSg2s2RFAegXi+vs=d-0t8Q@mail.gmail.com>
+ <ZLcLnoAoJmQ9WTuM@slm.duckdns.org>
+In-Reply-To: <ZLcLnoAoJmQ9WTuM@slm.duckdns.org>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Tue, 25 Jul 2023 16:46:38 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUo=17kYsNEYr=qyVceRpJ4D3jMFrMOiqaH--OOhJOM4w@mail.gmail.com>
+Message-ID: <CAMuHMdUo=17kYsNEYr=qyVceRpJ4D3jMFrMOiqaH--OOhJOM4w@mail.gmail.com>
+Subject: Re: Consider switching to WQ_UNBOUND messages (was: Re: [PATCH v2
+ 6/7] workqueue: Report work funcs that trigger automatic CPU_INTENSIVE mechanism)
+To:     Tejun Heo <tj@kernel.org>
+Cc:     Lai Jiangshan <jiangshanlai@gmail.com>,
+        "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        kernel-team@meta.com, Linux PM list <linux-pm@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        linux-rtc@vger.kernel.org,
+        linux-riscv <linux-riscv@lists.infradead.org>,
+        netdev <netdev@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linux MMC List <linux-mmc@vger.kernel.org>,
+        "open list:LIBATA SUBSYSTEM (Serial and Parallel ATA drivers)" 
+        <linux-ide@vger.kernel.org>,
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Andy,
+Hi Tejun,
 
-On Mon, Jul 24, 2023 at 11:25:11AM +0300, Andy Shevchenko wrote:
-> abs_diff() belongs to math.h. Move it there.
-> This will allow others to use it.
-> 
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Reviewed-by: Jiri Slaby <jirislaby@kernel.org> # tty/serial
+On Wed, Jul 19, 2023 at 12:01 AM Tejun Heo <tj@kernel.org> wrote:
+> On Tue, Jul 18, 2023 at 11:54:58AM +0200, Geert Uytterhoeven wrote:
+> > I gave it a try on a system with an 800 MHz Cortex A9, only to discover
+> > it makes no difference, as that machine has 1600 BogoMIPS:
+>
+> Oops.
+>
+> > workqueue: blk_mq_run_work_fn hogged CPU for >10000us 4 times,
+> > consider switching to WQ_UNBOUND
+>
+> It could be that we actually want to switch to UNBOUND for some reports but
+> the above triggering most likely indicates that the threshold is too
+> aggressive.
+>
+> > Artificially low BogoMIPS numbers only happen on systems that have
+> > the related timers (Cortex A7/A15 and later, Cortex A9 MPCore,
+> > and arm64).
+>
+> Ah, I see. Thanks for the explanation.
+>
+> > I will test on more systems, but that will probably not happen until
+> > next week...
+>
+> Thanks, really appreciate it. Can you try the following instead when you
+> have time? I just pushed up the lower boundary to 4000 MIPS. The scaling is
+> still capped at 1s.
 
-Reviewed-by: Andi Shyti <andi.shyti@linux.intel.com>
+Thanks, with the below, I see no more WQ_UNBOUND messages.
 
-Thanks,
-Andi
+> From 8555cbd4b22e5f85eb2bdcb84fd1d1f519a0a0d3 Mon Sep 17 00:00:00 2001
+> From: Tejun Heo <tj@kernel.org>
+> Date: Mon, 17 Jul 2023 12:50:02 -1000
+> Subject: [PATCH] workqueue: Scale up wq_cpu_intensive_thresh_us if BogoMIPS is
+>  below 4000
+
+> --- a/kernel/workqueue.c
+> +++ b/kernel/workqueue.c
+
+> @@ -6513,6 +6516,42 @@ void __init workqueue_init_early(void)
+>                !system_freezable_power_efficient_wq);
+>  }
+>
+> +static void __init wq_cpu_intensive_thresh_init(void)
+> +{
+> +       unsigned long thresh;
+> +       unsigned long mips;
+
+This fails to build on mips.
+Apparently mips is a predefined preprocessor macro:
+
+$ echo | mipsel-linux-gnu-gcc -dM -E - | grep -w mips
+#define mips 1
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

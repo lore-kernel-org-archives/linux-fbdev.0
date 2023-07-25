@@ -2,114 +2,144 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1028EEB64DD
-	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Jul 2023 19:54:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F481C001DE
+	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Jul 2023 21:30:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229547AbjGYTyL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 25 Jul 2023 15:54:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42734 "EHLO
+        id S230436AbjGYVa6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 25 Jul 2023 17:30:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60438 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229666AbjGYTyD (ORCPT
+        with ESMTP id S230433AbjGYVax (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 25 Jul 2023 15:54:03 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 93E9719A1
-        for <linux-fbdev@vger.kernel.org>; Tue, 25 Jul 2023 12:53:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1690314799;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=/ehsQdgWSIS7eeNPhg1juxuHJiisqBuDA4AQKiM8tp4=;
-        b=QY9NxMNp3iTsTIV05fwM9kHD9BftD8GRCqkUga4k2qLDEEoGlETcFgDARLNB8DDfGvC7l4
-        7Jn5a4dtqZXOEGif6Zu2sfYii9C6GwA7xNa7L2GvRS1KClY2UhjkEo/tS4xtffgIS5ATkp
-        bOjimQ+lDHUxfrX+GvXsFwL6O8oXqT8=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-348-3J8sVOlhOyuFtpLKtR5KrA-1; Tue, 25 Jul 2023 15:53:18 -0400
-X-MC-Unique: 3J8sVOlhOyuFtpLKtR5KrA-1
-Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-30e4943ca7fso2838756f8f.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 25 Jul 2023 12:53:18 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690314797; x=1690919597;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=/ehsQdgWSIS7eeNPhg1juxuHJiisqBuDA4AQKiM8tp4=;
-        b=k6rhSySQeiELzj5fjZGpJdj9BfdqpocZkmBjEiHs7KyNo7poiWM+b+FZGJZmLHt3jm
-         tPgLpnPsyHVSXYZF6GtZmyDraZIONz6tvCLP5EIPCmhPOK3UjaP4k9WAbNDa5Qs8vJ5f
-         X1tdOGS0+9DOtPcD0w7UwxTBumRizXJH5/10oEXQuII5dFsNLbthaW8PHCgI3z4jKw3S
-         M4jT2dgzJKIYv5g5XmQHfEzryqr60Z6owSTEG40DcCBvG0mY8IOEQUibTzX7NQz7j6Zb
-         xMexQ1Dv6jrH4t4oqWEIK+UXF6h5Pq2fWNHuzFkDfor5arO5itMjXZVM1PhALERHF/h+
-         mdnw==
-X-Gm-Message-State: ABy/qLZbYjtZzkux1QGjVTgVmAyYlqdONLNR12lLYtGjhW0uriE7FS15
-        fmbBTwek/NmMhw+yPi0EloQ7CSY/ut/237QufYxv3QV6KkEUm+2Vju0izEf+1ouUZgnzMXvswBY
-        F4VHGw7sO1E7tUQWsI4A9h0vJDTB+9Es=
-X-Received: by 2002:a5d:4ccd:0:b0:313:e9dc:44d5 with SMTP id c13-20020a5d4ccd000000b00313e9dc44d5mr8756122wrt.61.1690314797299;
-        Tue, 25 Jul 2023 12:53:17 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlEfpWWBSGVv7qsi/9x0G1/ru7iK4Zf2hflHhR0TYMahLeFmVnfj9mjTHzpX0KH0ux4gaM1qHQ==
-X-Received: by 2002:a5d:4ccd:0:b0:313:e9dc:44d5 with SMTP id c13-20020a5d4ccd000000b00313e9dc44d5mr8756108wrt.61.1690314796971;
-        Tue, 25 Jul 2023 12:53:16 -0700 (PDT)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id n15-20020a1c720f000000b003fc0505be19sm13825286wmc.37.2023.07.25.12.53.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 25 Jul 2023 12:53:16 -0700 (PDT)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] video: logo: LOGO should depend on FB_CORE i.s.o. FB
-In-Reply-To: <c10d925b-8d37-caa0-8f66-a0206f948c69@suse.de>
-References: <5ab3d1fe7b67ab10e4bc1bdbc0fa7731f7960965.1690300189.git.geert+renesas@glider.be>
- <87a5vkj7qe.fsf@minerva.mail-host-address-is-not-set>
- <CAMuHMdWBznkqYxCWD2uwGtWLqXnBqX1Ycg31fBDc4cq2u8DkNQ@mail.gmail.com>
- <877cqoj5q5.fsf@minerva.mail-host-address-is-not-set>
- <c10d925b-8d37-caa0-8f66-a0206f948c69@suse.de>
-Date:   Tue, 25 Jul 2023 21:53:16 +0200
-Message-ID: <874jlrkbtf.fsf@minerva.mail-host-address-is-not-set>
+        Tue, 25 Jul 2023 17:30:53 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A59B2136;
+        Tue, 25 Jul 2023 14:30:32 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id CC72D6190B;
+        Tue, 25 Jul 2023 21:30:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF6E2C433C7;
+        Tue, 25 Jul 2023 21:30:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1690320631;
+        bh=V6TKiwei04nE3RMXlxgDm9GDIfoUHRbLAP5mFRrxSIg=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=dkhLGLiaFpp+WjJG779pBjcd3WWJVUu7utaxHvlhcCRdyzKeXxkvnWXgNVYfPoCrC
+         00BYWkOLqS5AK4f/ex7wJFl3qsWzUCOOkzfm/Cyzl5oIfUQ7DqrXlAmvuyPuwBxUPA
+         ONK4jTWRuMX1h4/Bl/vemPvweN7BSgbtdFdQORDKSnKMkr6ISQfqIHvsO7IiH5p3gK
+         EJ70gqs8zlRPzntbZNEBREXXUhMcG42MjKUkPsZq0UCfuSLS4q/5yJ/zJbBJjWnurM
+         FpnEVIVkuBSlkaZ72zuAYKfS4WzIJUU8X8YsdtvLqIitYGOEVk1jXey/IJMQ/mNsx1
+         gAFGaUQUp5rTQ==
+Date:   Tue, 25 Jul 2023 16:30:29 -0500
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     suijingfeng <suijingfeng@loongson.cn>
+Cc:     Sui Jingfeng <sui.jingfeng@linux.dev>,
+        David Airlie <airlied@gmail.com>,
+        amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+        kvm@vger.kernel.org, linux-pci@vger.kernel.org,
+        linux-fbdev@vger.kernel.org,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Christian Konig <christian.koenig@amd.com>,
+        Pan Xinhui <Xinhui.Pan@amd.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Jani Nikula <jani.nikula@linux.intel.com>,
+        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>,
+        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
+        Ben Skeggs <bskeggs@redhat.com>,
+        Karol Herbst <kherbst@redhat.com>,
+        Lyude Paul <lyude@redhat.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Alex Williamson <alex.williamson@redhat.com>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Hawking Zhang <Hawking.Zhang@amd.com>,
+        Mario Limonciello <mario.limonciello@amd.com>,
+        Lijo Lazar <lijo.lazar@amd.com>,
+        YiPeng Chai <YiPeng.Chai@amd.com>,
+        Bokun Zhang <Bokun.Zhang@amd.com>,
+        Likun Gao <Likun.Gao@amd.com>,
+        Ville Syrjala <ville.syrjala@linux.intel.com>,
+        Jason Gunthorpe <jgg@ziepe.ca>,
+        Kevin Tian <kevin.tian@intel.com>,
+        Cornelia Huck <cohuck@redhat.com>,
+        Yishai Hadas <yishaih@nvidia.com>,
+        Abhishek Sahu <abhsahu@nvidia.com>,
+        Yi Liu <yi.l.liu@intel.com>,
+        Jani Nikula <jani.nikula@intel.com>
+Subject: Re: [PATCH v3 4/9] PCI/VGA: Improve the default VGA device selection
+Message-ID: <20230725213029.GA666158@bhelgaas>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5fbc1ec7-fb61-7e4d-960c-81cc11b706f5@loongson.cn>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Thomas Zimmermann <tzimmermann@suse.de> writes:
+On Mon, Jul 24, 2023 at 08:16:18PM +0800, suijingfeng wrote:
+> On 2023/7/20 03:32, Bjorn Helgaas wrote:
+> > > 2) It does not take the PCI Bar may get relocated into consideration.
+> > > 3) It is not effective for the PCI device without a dedicated VRAM Bar.
+> > > 4) It is device-agnostic, thus it has to waste the effort to iterate all
+> > >     of the PCI Bar to find the VRAM aperture.
+> > > 5) It has invented lots of methods to determine which one is the default
+> > >     boot device, but this is still a policy because it doesn't give the
+> > >     user a choice to override.
+> > I don't think we need a list of*potential*  problems.  We need an
+> > example of the specific problem this will solve, i.e., what currently
+> > does not work?
+> 
+> 
+> This version do allow the arbitration service works on non-x86 arch,
+> which also allow me remove a arch-specific workaround.
+> I will give more detail at the next version.
 
-> Hi
->
+Yes.  This part I think we want.
 
-[...]
+> But I want to provide one more drawback of vgaarb here:
+> 
+> (6) It does not works for non VGA-compatible PCI(e) display controllers.
+> 
+> Because, currently, vgaarb deal with PCI VGA compatible devices only.
+> 
+> See another my patch set [1] for more elaborate discussion.
+> 
+> It also ignore PCI_CLASS_NOT_DEFINED_VGA as Maciej puts it[2].
+> 
+> While my approach do not required the display controller to be
+> VGA-compatible to enjoy the arbitration service.
 
->> 
->> Yes. I meant to move drivers/video/logo/ to drivers/fbdev/core/logo and to
->> source its Kconfig from drivers/fbdev/core/Kconfig, since it now depends
->> on FB_CORE.
->
-> No, please rather leave it where it is. There's no code dependencies to 
-> the fbdev core; it merely depends on the Kconfig token.
->
+I think vgaarb is really only for dealing with the problem of the
+legacy VGA address space routing.  For example, there may be VGA
+devices that require the [pci 0xa0000-0xbffff] range but they don't
+describe that via a BAR.  There may also be VGA option ROMs that
+depend on that range so they can initialize the device.
 
-Sure, fine by me. But I disagree that there's merely a Kconfig dependency.
-The include/linux/linux_logo.h header declares both fb_find_logo() and
-fb_append_extra_logo().
+The [pci 0xa0000-0xbffff] range can only be routed to one device at a
+time, and vgaarb is what takes care of that by manipulating the VGA
+Enable bits in bridges.
 
-The fb_find_logo() function is defined in drivers/video/logo.c while the
-fb_append_extra_logo() is in drivers/video/fbdev/core/fbmem.c, even though
-only arch/powerpc/platforms/cell/spu_base.c uses fb_append_extra_logo().
+I don't think we should extend vgaarb to deal with non-VGA GPUs in
+general, i.e., I don't think it should be concerned with devices and
+option ROMs that do not require the [pci 0xa0000-0xbffff] range.
 
-So there's a relationship already between logo and fbdev/core, that's why
-I wondered if would make sense to also move drivers/video/logo.c to have
-both functions in there.
+I think a strict reading of the PCI Class Code spec would be that only
+devices with Programming Interface 0000 0000b can depend on that
+legacy range.
 
-Yes, as noted drivers/video/console/newport_con.c also uses fb_find_logo()
-but the only other user of that in drivers/video/fbdev/core/fbmem.c.
+If that's what vgaarb currently enforces, great.  If it currently
+deals with more than just 0000 0000b devices, and there's some value
+in restricting it to only 0000 0000b, we could try that, but I would
+suggest doing that in a tiny patch all by itself.  Then if we trip
+over a problem, it's easy to bisect and revert it.
 
--- 
-Best regards,
-
-Javier Martinez Canillas
-Core Platforms
-Red Hat
-
+> [1] https://patchwork.freedesktop.org/patch/546690/?series=120548&rev=1
+> 
+> [2] https://lkml.org/lkml/2023/6/18/315
+> 

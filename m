@@ -2,58 +2,96 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9C08C41513
-	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jul 2023 07:44:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4779C0015E
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jul 2023 08:45:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231875AbjGZHoc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Jul 2023 03:44:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36894 "EHLO
+        id S233384AbjGZIpb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Jul 2023 04:45:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48500 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231145AbjGZHnz (ORCPT
+        with ESMTP id S233182AbjGZIo5 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Jul 2023 03:43:55 -0400
-Received: from mail.strategicvision.pl (mail.strategicvision.pl [217.61.105.98])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5535019AF
-        for <linux-fbdev@vger.kernel.org>; Wed, 26 Jul 2023 00:39:34 -0700 (PDT)
-Received: by mail.strategicvision.pl (Postfix, from userid 1002)
-        id 3F20D8470F; Wed, 26 Jul 2023 09:37:11 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=strategicvision.pl;
-        s=mail; t=1690357057;
-        bh=Z0N5VlX9/JlryGOL5I747Le9USomZJCRNNGRT3LbbKc=;
-        h=Date:From:To:Subject:From;
-        b=Ir07jPBcnCi9ZMHt+9LXgYFxEvc4kMh3j5zxOB/luIfBxV/y+Zdcr/gF3ltJw4MLY
-         nnuRfgPPmgdtMLASpe5cfP0tQG45yPssox13vnS2Ok8NiBuHYCQN1ji9Ai5RSJ9QaT
-         h7q192IVwt0pd4R6D5J++iWWQNEHGCJUmiurnPPZnZ19uatEgvXED5IT4uf5loOS79
-         nvSywZvriks3cxcxAn/xfYB6Vb5wlHE15rcpRkRl2GBGucFVCpJ40IQDxPLrga+pkI
-         GIuR5DtEGlQJCGX2JG1MP5fS9mByYC0S0IcAKbN4JfJOg24cxhOZsDbr2GJgTsUZdH
-         IZSs4rjpDgebg==
-Received: by mail.strategicvision.pl for <linux-fbdev@vger.kernel.org>; Wed, 26 Jul 2023 07:35:40 GMT
-Message-ID: <20230726084502-0.1.k.8msp.0.4lcdqradnp@strategicvision.pl>
-Date:   Wed, 26 Jul 2023 07:35:40 GMT
-From:   "Adam Charachuta" <adam.charachuta@strategicvision.pl>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: =?UTF-8?Q?S=C5=82owa_kluczowe_do_wypozycjonowania?=
-X-Mailer: mail.strategicvision.pl
+        Wed, 26 Jul 2023 04:44:57 -0400
+Received: from mailrelay3-1.pub.mailoutpod2-cph3.one.com (mailrelay3-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:402::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF34A7682
+        for <linux-fbdev@vger.kernel.org>; Wed, 26 Jul 2023 01:36:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=rsa1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=r4dvvFPG61dpi+m5wXOqVQJNPQ8+eRHy9QX8yy71vx8=;
+        b=Jps4sk8eHMcL2LM6qEVk5txAIrGoJels8jZ2yVCw1HiHp3bxlnFEr+C6Av0VxQacs41hOX/ejaJSP
+         5Vq+QvNHKzE1hy/Y34nCAE0HMQqR7CQzaMMxVn9DZCXl4liYWX/34D+mSiEXvnVTqJcf4Qq9s+jYd2
+         Ror35/ej4d8OxXFWHbJ0g6GxPMSrdMMwUdJnnxATyCWczsPS2CYpUdf0wmsnQ36my+B4QkGbojjySh
+         CebDGH9h/HS2a/n0mvW5Uq4FzTuDd7DMVbuJZeBj+KBOP0EDB+YuDcc6+XAGpEKKs/v2r/MyyFcrh3
+         R41QRYlmQG8sZbYA9i48IaO/BGmf3Ag==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=ed1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=r4dvvFPG61dpi+m5wXOqVQJNPQ8+eRHy9QX8yy71vx8=;
+        b=Vm5WByldnd82gz8eTojY7srg8mddzQU9H1uSw04x5Fv1MYfeNKpZTR1mOgxTd3U4oswlVraqAYURY
+         eam16l/Cw==
+X-HalOne-ID: 70ef6e65-2b8f-11ee-a266-b90637070a9d
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+        by mailrelay3 (Halon) with ESMTPSA
+        id 70ef6e65-2b8f-11ee-a266-b90637070a9d;
+        Wed, 26 Jul 2023 08:35:58 +0000 (UTC)
+Date:   Wed, 26 Jul 2023 10:35:57 +0200
+From:   Sam Ravnborg <sam@ravnborg.org>
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        dri-devel@lists.freedesktop.org, Helge Deller <deller@gmx.de>,
+        linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] video: logo: LOGO should depend on FB_CORE i.s.o. FB
+Message-ID: <20230726083557.GA921641@ravnborg.org>
+References: <5ab3d1fe7b67ab10e4bc1bdbc0fa7731f7960965.1690300189.git.geert+renesas@glider.be>
+ <87a5vkj7qe.fsf@minerva.mail-host-address-is-not-set>
+ <CAMuHMdWBznkqYxCWD2uwGtWLqXnBqX1Ycg31fBDc4cq2u8DkNQ@mail.gmail.com>
+ <877cqoj5q5.fsf@minerva.mail-host-address-is-not-set>
+ <c10d925b-8d37-caa0-8f66-a0206f948c69@suse.de>
+ <874jlrkbtf.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <874jlrkbtf.fsf@minerva.mail-host-address-is-not-set>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,
+On Tue, Jul 25, 2023 at 09:53:16PM +0200, Javier Martinez Canillas wrote:
+> Thomas Zimmermann <tzimmermann@suse.de> writes:
+> 
+> > Hi
+> >
+> 
+> [...]
+> 
+> >> 
+> >> Yes. I meant to move drivers/video/logo/ to drivers/fbdev/core/logo and to
+> >> source its Kconfig from drivers/fbdev/core/Kconfig, since it now depends
+> >> on FB_CORE.
+> >
+> > No, please rather leave it where it is. There's no code dependencies to 
+> > the fbdev core; it merely depends on the Kconfig token.
+> >
+> 
+> Sure, fine by me. But I disagree that there's merely a Kconfig dependency.
+> The include/linux/linux_logo.h header declares both fb_find_logo() and
+> fb_append_extra_logo().
+> 
+> The fb_find_logo() function is defined in drivers/video/logo.c while the
+> fb_append_extra_logo() is in drivers/video/fbdev/core/fbmem.c, even though
+> only arch/powerpc/platforms/cell/spu_base.c uses fb_append_extra_logo().
+> 
+> So there's a relationship already between logo and fbdev/core, that's why
+> I wondered if would make sense to also move drivers/video/logo.c to have
+> both functions in there.
+Or as I also suggested on irc - to pull out all the logo stuff from
+fbmem and put it in video/logo/
+With a bit of refactoring to make it obvious this is logo stuff and
+maybe avoid some of the ifdeffery in the code of the users.
 
-zapozna=C5=82em si=C4=99 z Pa=C5=84stwa ofert=C4=85 i z przyjemno=C5=9Bci=
-=C4=85 przyznaj=C4=99, =C5=BCe przyci=C4=85ga uwag=C4=99 i zach=C4=99ca d=
-o dalszych rozm=C3=B3w.=20
-
-Pomy=C5=9Bla=C5=82em, =C5=BCe mo=C5=BCe m=C3=B3g=C5=82bym mie=C4=87 sw=C3=
-=B3j wk=C5=82ad w Pa=C5=84stwa rozw=C3=B3j i pom=C3=B3c dotrze=C4=87 z t=C4=
-=85 ofert=C4=85 do wi=C4=99kszego grona odbiorc=C3=B3w. Pozycjonuj=C4=99 =
-strony www, dzi=C4=99ki czemu generuj=C4=85 =C5=9Bwietny ruch w sieci.
-
-Mo=C5=BCemy porozmawia=C4=87 w najbli=C5=BCszym czasie?
-
-
-Pozdrawiam
-Adam Charachuta
+	Sam

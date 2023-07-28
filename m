@@ -2,78 +2,102 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A65BC00528
-	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Jul 2023 09:27:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6C4CC04E69
+	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Jul 2023 10:03:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235544AbjG1J1C (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 28 Jul 2023 05:27:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43500 "EHLO
+        id S233642AbjG1KDh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 28 Jul 2023 06:03:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37070 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235476AbjG1J0k (ORCPT
+        with ESMTP id S235818AbjG1KDc (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 28 Jul 2023 05:26:40 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4057D3A93;
-        Fri, 28 Jul 2023 02:22:55 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id C559862093;
-        Fri, 28 Jul 2023 09:22:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 64FD8C433C9;
-        Fri, 28 Jul 2023 09:22:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1690536174;
-        bh=AL6UUgG3FZVUbTmbZ9j5ob/iwxMoLlBtI6VOTuk7L3Y=;
-        h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-        b=kV/4SwJSDxGPIFO9SqzBTr/WKfLl3fbG9+JtdkQ5g68+3qG+FbBQhGQhgyXFRxeuF
-         x2TzzXv2KahqFkWG4DpisftoqyieCHUe/aScTwjmOLzH4trlPzjWGjVOgIAdBXCLZz
-         cv3q4MTA/ZbxPvumqXarQGAB3+GV9C8T1M2xgDCgX7JWQy31xH5NGc7VSRUpHBgIBU
-         FoALgxCfhFHAQcDe1SiRqZGt9BI2mvzCopjpifgAWFDuwOSwn2VPcyFBZS/bBt9s4B
-         Y1xidOeK7t6p+21I5G+vW8zX7mbUs9WyPYsD8qBg/kESFYAs8FWgKC+o8NKWV77XUR
-         KCMIjwEZZrYcw==
-From:   Lee Jones <lee@kernel.org>
-To:     Lee Jones <lee@kernel.org>, Artur Weber <aweber.kernel@gmail.com>
-Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht
-In-Reply-To: <20230714121440.7717-1-aweber.kernel@gmail.com>
-References: <20230714121440.7717-1-aweber.kernel@gmail.com>
-Subject: Re: [PATCH 0/2] backlight: lp855x: Fixes after c1ff7da03e16
-Message-Id: <169053617109.301530.1109574128133922072.b4-ty@kernel.org>
-Date:   Fri, 28 Jul 2023 10:22:51 +0100
+        Fri, 28 Jul 2023 06:03:32 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8263B3C0A
+        for <linux-fbdev@vger.kernel.org>; Fri, 28 Jul 2023 03:02:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1690538559;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=WJxfGpxbppzJwgJdPmeEdmGhAfwaruKH//tjBHG7QkQ=;
+        b=UcW/bvsfuhZr/nwmvVUjy/TSHGeqUP9SzsPLXJnkWIR0Sbz1CeQ14a7oG5HO2DipEdRmxO
+        QaIYvYTxaFWeblsrzNF/Jyg73INo2TW19gtRjXQzIpUR1cLDTLy1BLjeZPcpAYtEiJpJnV
+        SFpwbl+ioRsa5jF0xNAnQ9D35AuXYIU=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-492--GAgf_-lOGmSQzqcgjD3-w-1; Fri, 28 Jul 2023 06:02:38 -0400
+X-MC-Unique: -GAgf_-lOGmSQzqcgjD3-w-1
+Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-3fa8f8fb7b3so10622625e9.2
+        for <linux-fbdev@vger.kernel.org>; Fri, 28 Jul 2023 03:02:38 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1690538557; x=1691143357;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=WJxfGpxbppzJwgJdPmeEdmGhAfwaruKH//tjBHG7QkQ=;
+        b=JdF8CcG/cIo4Z084ncih5Bq+C4wW4T5nJDfiLWIdDCMIxnJGrh4/tCtK9DDz7E/iUW
+         R2Ox4IbX/J8ELhLKFeKlmfwS0JxP3gPIz+NL8pSTFZs6FxxKttLmYC8uqB2S+XRayBIg
+         5DqkDrDO6oubFQQBFAfrpTfBbA6g42CHMboVfjq3UQe+xTNNJQ52EJ28tmz2SyjCyxi9
+         NdMvIlB6lFMnaDHrrxWCAuRtboIKaTyNZZGOEXQ39WseAj5s3VlMkA+qr+8RvtooQWb6
+         54J/Ye45E+fbHbmt2mrlBxpTYhnWAa3o0deY+r+c5NsDCE4xn1agkbhylAzyp3SyXMUT
+         blyg==
+X-Gm-Message-State: ABy/qLbq8QopolxLEtF1+rL0NBMJLz7ycPtuK1bwVir+q3L+YUiRLM+Y
+        1XyxevfRBb+CYb3HZaMGI1UKSUfe0hxVkxbiVj3jbpL18SyK+VEiqYBCUSjHq10Bx2Dd5HOuR9S
+        gApkIynFM9U9XbBuXDt/6Y24=
+X-Received: by 2002:a05:600c:290b:b0:3fd:1cfa:939e with SMTP id i11-20020a05600c290b00b003fd1cfa939emr1548199wmd.4.1690538557636;
+        Fri, 28 Jul 2023 03:02:37 -0700 (PDT)
+X-Google-Smtp-Source: APBJJlGZAUlnXLzjKeLMo1ALDnDndM9wZM0oCDKowY7IKMK5H4noYhpTucg62NPlgPhdJHLTvyOrGA==
+X-Received: by 2002:a05:600c:290b:b0:3fd:1cfa:939e with SMTP id i11-20020a05600c290b00b003fd1cfa939emr1548187wmd.4.1690538557338;
+        Fri, 28 Jul 2023 03:02:37 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id m25-20020a7bcb99000000b003fc0505be19sm3716930wmi.37.2023.07.28.03.02.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 28 Jul 2023 03:02:36 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Geert Uytterhoeven <geert+renesas@glider.be>,
+        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>
+Cc:     Marco Elver <elver@google.com>, Kees Cook <keescook@chromium.org>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        linux-fbdev@vger.kernel.org,
+        kasan-dev <kasan-dev@googlegroups.com>,
+        linux-kernel@vger.kernel.org,
+        Alexander Potapenko <glider@google.com>,
+        dri-devel@lists.freedesktop.org, Dmitry Vyukov <dvyukov@google.com>
+Subject: Re: [PATCH v2] Revert "fbcon: Use kzalloc() in fbcon_prepare_logo()"
+In-Reply-To: <bd8b71bb13af21cc48af40349db440f794336d3a.1690535849.git.geert+renesas@glider.be>
+References: <bd8b71bb13af21cc48af40349db440f794336d3a.1690535849.git.geert+renesas@glider.be>
+Date:   Fri, 28 Jul 2023 12:02:36 +0200
+Message-ID: <87wmykxsjn.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.12.2
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, 14 Jul 2023 14:14:38 +0200, Artur Weber wrote:
-> Two small fixes after commit c1ff7da03e16 ("video: backlight: lp855x:
-> Get PWM for PWM mode during probe"), stemming from a review[1] by
-> Uwe Kleine-König.
-> 
-> [1] https://lore.kernel.org/all/20230614083953.e4kkweddjz7wztby@pengutronix.de/
-> 
-> Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
-> 
-> [...]
+Geert Uytterhoeven <geert+renesas@glider.be> writes:
 
-Applied, thanks!
+Hello Geert,
 
-[1/2] backlight: lp855x: Initialize PWM state on first brightness change
-      commit: 4c09e20b3c85f60353ace21092e34f35f5e3ab00
-[2/2] backlight: lp855x: Catch errors when changing brightness
-      commit: 5145531be5fbad0e914d1dc1cbd392d7b756abaa
+> This reverts commit a6a00d7e8ffd78d1cdb7a43f1278f081038c638f.
+>
+> This commit is redundant, as the root cause that resulted in a false
+> positive was fixed by commit 27f644dc5a77f8d9 ("x86: kmsan: use C
+> versions of memset16/memset32/memset64").
+>
+> Closes: https://lore.kernel.org/r/CAMuHMdUH4CU9EfoirSxjivg08FDimtstn7hizemzyQzYeq6b6g@mail.gmail.com/
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
 
---
-Lee Jones [李琼斯]
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+
+Pushed to drm-misc (drm-misc-next). Thanks!
+
+-- 
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 

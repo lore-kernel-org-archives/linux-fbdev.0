@@ -2,79 +2,80 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C699C00528
-	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Jul 2023 09:01:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BD69C0015E
+	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Jul 2023 09:25:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234428AbjG1JBz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 28 Jul 2023 05:01:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54708 "EHLO
+        id S235524AbjG1JZt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 28 Jul 2023 05:25:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43500 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230243AbjG1JBw (ORCPT
+        with ESMTP id S235520AbjG1JZ0 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 28 Jul 2023 05:01:52 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8570CB6;
-        Fri, 28 Jul 2023 02:01:51 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 18FED6203D;
-        Fri, 28 Jul 2023 09:01:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C5D86C433C7;
-        Fri, 28 Jul 2023 09:01:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1690534910;
-        bh=QFbAxq6StERpZ+KK7xUrlh9LufNoAHMbQ1zTa9eTS9A=;
-        h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-        b=S6LwPGwK95psSYAKBfRe3YnemnLXtJH1tFmZY2LEnrfl9QzjjDzM947xHZJjJzWSg
-         8Nw5pZS5i7Qtlj3I5BHRld6dyYGG+hgztqHp+h9fm3ZRPZgqza/V7cNT+zz0l8zkDW
-         s3R4RLCccGVqBvBdpHMOTnFmLH62VBq2t783K/PHLqAC4L4FIrApZXTk8AdnUti5LT
-         Ka73CcgVkVXmh7MkY2a3bMW4ZHYROsCrTgVZxQUFJWdYb+KJp45rsGJ2C9VK6OsUzb
-         RLW62+Zi+f4DLTpUk967KT6k916JAaDzGrMouLsCicxyyH142WalportSxAXI1gTDw
-         NvfNv/ZQHSJ3A==
-From:   Lee Jones <lee@kernel.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, Rob Herring <robh@kernel.org>
-Cc:     devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-In-Reply-To: <20230714175029.4065326-1-robh@kernel.org>
-References: <20230714175029.4065326-1-robh@kernel.org>
-Subject: Re: (subset) [PATCH] backlight: qcom-wled: Explicitly include
- correct DT includes
-Message-Id: <169053490748.289850.10304540751076738824.b4-ty@kernel.org>
-Date:   Fri, 28 Jul 2023 10:01:47 +0100
+        Fri, 28 Jul 2023 05:25:26 -0400
+Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be [IPv6:2a02:1800:120:4::f00:13])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 425505FF5
+        for <linux-fbdev@vger.kernel.org>; Fri, 28 Jul 2023 02:19:51 -0700 (PDT)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:12b0:7b7e:d1ff:7873])
+        by baptiste.telenet-ops.be with bizsmtp
+        id SZKn2A0040d1nm801ZKnTg; Fri, 28 Jul 2023 11:19:49 +0200
+Received: from rox.of.borg ([192.168.97.57])
+        by ramsan.of.borg with esmtp (Exim 4.95)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1qPJdF-002ltR-W6;
+        Fri, 28 Jul 2023 11:19:47 +0200
+Received: from geert by rox.of.borg with local (Exim 4.95)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1qPJdT-00AoEo-3k;
+        Fri, 28 Jul 2023 11:19:47 +0200
+From:   Geert Uytterhoeven <geert+renesas@glider.be>
+To:     Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>
+Cc:     Kees Cook <keescook@chromium.org>,
+        Alexander Potapenko <glider@google.com>,
+        Marco Elver <elver@google.com>,
+        Dmitry Vyukov <dvyukov@google.com>,
+        kasan-dev <kasan-dev@googlegroups.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org,
+        Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v2] Revert "fbcon: Use kzalloc() in fbcon_prepare_logo()"
+Date:   Fri, 28 Jul 2023 11:19:45 +0200
+Message-Id: <bd8b71bb13af21cc48af40349db440f794336d3a.1690535849.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.12.2
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, 14 Jul 2023 11:50:29 -0600, Rob Herring wrote:
-> The DT of_device.h and of_platform.h date back to the separate
-> of_platform_bus_type before it as merged into the regular platform bus.
-> As part of that merge prepping Arm DT support 13 years ago, they
-> "temporarily" include each other. They also include platform_device.h
-> and of.h. As a result, there's a pretty much random mix of those include
-> files used throughout the tree. In order to detangle these headers and
-> replace the implicit includes with struct declarations, users need to
-> explicitly include the correct includes.
-> 
-> [...]
+This reverts commit a6a00d7e8ffd78d1cdb7a43f1278f081038c638f.
 
-Applied, thanks!
+This commit is redundant, as the root cause that resulted in a false
+positive was fixed by commit 27f644dc5a77f8d9 ("x86: kmsan: use C
+versions of memset16/memset32/memset64").
 
-[1/1] backlight: qcom-wled: Explicitly include correct DT includes
-      commit: 1bb5187b673208f7191f227249ffe7401e969b97
+Closes: https://lore.kernel.org/r/CAMuHMdUH4CU9EfoirSxjivg08FDimtstn7hizemzyQzYeq6b6g@mail.gmail.com/
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+v2:
+  - Update description, as requested by Handa-san.
+---
+ drivers/video/fbdev/core/fbcon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---
-Lee Jones [李琼斯]
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 62733f118833c6ca..f394c817bc074e0e 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -577,7 +577,7 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
+ 		if (scr_readw(r) != vc->vc_video_erase_char)
+ 			break;
+ 	if (r != q && new_rows >= rows + logo_lines) {
+-		save = kzalloc(array3_size(logo_lines, new_cols, 2),
++		save = kmalloc(array3_size(logo_lines, new_cols, 2),
+ 			       GFP_KERNEL);
+ 		if (save) {
+ 			int i = min(cols, new_cols);
+-- 
+2.34.1
 

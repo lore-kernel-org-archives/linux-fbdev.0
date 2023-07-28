@@ -2,74 +2,79 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EED6C001E0
-	for <linux-fbdev@archiver.kernel.org>; Thu, 27 Jul 2023 17:03:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C699C00528
+	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Jul 2023 09:01:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229746AbjG0RDy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 27 Jul 2023 13:03:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37496 "EHLO
+        id S234428AbjG1JBz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 28 Jul 2023 05:01:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54708 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229817AbjG0RDv (ORCPT
+        with ESMTP id S230243AbjG1JBw (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 27 Jul 2023 13:03:51 -0400
-Received: from m12.mail.163.com (m12.mail.163.com [220.181.12.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id B2E6C2D4B;
-        Thu, 27 Jul 2023 10:03:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-        s=s110527; h=From:Subject:Date:Message-Id; bh=vgyp+xm3eViuAvTy14
-        qqI/Yrv8JsrnJvRDQENmS56Os=; b=GsSUtodMkjXciWPwpP4UPsh19VZpfD5ZNY
-        zYY5ysDgHDYT7uVl5+xDXAan/kHDPIWuYqULXVbSZO2LVC4+MOcMSmnDM4f+Tl7m
-        GukOovOr3WdvANUy+XTrMJpGk0hYkX2iaO5VdHP6reU4S/aOKTjgb8Iv9MmH+XNx
-        XecFlooM8=
-Received: from localhost.localdomain (unknown [202.112.113.212])
-        by zwqz-smtp-mta-g2-0 (Coremail) with SMTP id _____wAnHKVYo8Jk7dXYBQ--.57110S4;
-        Fri, 28 Jul 2023 01:03:32 +0800 (CST)
-From:   Yuanjun Gong <ruc_gongyuanjun@163.com>
-To:     Helge Deller <deller@gmx.de>,
-        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-        Lisa Du <cldu@marvell.com>, linux-fbdev@vger.kernel.org,
+        Fri, 28 Jul 2023 05:01:52 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8570CB6;
+        Fri, 28 Jul 2023 02:01:51 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 18FED6203D;
+        Fri, 28 Jul 2023 09:01:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C5D86C433C7;
+        Fri, 28 Jul 2023 09:01:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1690534910;
+        bh=QFbAxq6StERpZ+KK7xUrlh9LufNoAHMbQ1zTa9eTS9A=;
+        h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+        b=S6LwPGwK95psSYAKBfRe3YnemnLXtJH1tFmZY2LEnrfl9QzjjDzM947xHZJjJzWSg
+         8Nw5pZS5i7Qtlj3I5BHRld6dyYGG+hgztqHp+h9fm3ZRPZgqza/V7cNT+zz0l8zkDW
+         s3R4RLCccGVqBvBdpHMOTnFmLH62VBq2t783K/PHLqAC4L4FIrApZXTk8AdnUti5LT
+         Ka73CcgVkVXmh7MkY2a3bMW4ZHYROsCrTgVZxQUFJWdYb+KJp45rsGJ2C9VK6OsUzb
+         RLW62+Zi+f4DLTpUk967KT6k916JAaDzGrMouLsCicxyyH142WalportSxAXI1gTDw
+         NvfNv/ZQHSJ3A==
+From:   Lee Jones <lee@kernel.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, Rob Herring <robh@kernel.org>
+Cc:     devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Cc:     Yuanjun Gong <ruc_gongyuanjun@163.com>
-Subject: [PATCH 1/1] fbdev: mmp: fix value check in mmphw_probe()
-Date:   Fri, 28 Jul 2023 01:03:18 +0800
-Message-Id: <20230727170318.18412-1-ruc_gongyuanjun@163.com>
-X-Mailer: git-send-email 2.17.1
-X-CM-TRANSID: _____wAnHKVYo8Jk7dXYBQ--.57110S4
-X-Coremail-Antispam: 1Uf129KBjvdXoW7Jr4rAw4fGw18tFW7uF45Jrb_yoWfurbEka
-        y3Zr93Wr9avr4kKrnYywsrArZakFW8XF12gFs7K34FyFy7GFySqr40van8u3yUCryDtFyk
-        tF1DXw47ZF1fujkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-        9fnUUvcSsGvfC2KfnxnUUI43ZEXa7sRNHq2JUUUUU==
-X-Originating-IP: [202.112.113.212]
-X-CM-SenderInfo: 5uxfsw5rqj53pdqm30i6rwjhhfrp/1tbiJwW55V5vE8WMUQAAsE
+In-Reply-To: <20230714175029.4065326-1-robh@kernel.org>
+References: <20230714175029.4065326-1-robh@kernel.org>
+Subject: Re: (subset) [PATCH] backlight: qcom-wled: Explicitly include
+ correct DT includes
+Message-Id: <169053490748.289850.10304540751076738824.b4-ty@kernel.org>
+Date:   Fri, 28 Jul 2023 10:01:47 +0100
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.12.2
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-in mmphw_probe(), check the return value of clk_prepare_enable()
-and return the error code if clk_prepare_enable() returns an
-unexpected value.
+On Fri, 14 Jul 2023 11:50:29 -0600, Rob Herring wrote:
+> The DT of_device.h and of_platform.h date back to the separate
+> of_platform_bus_type before it as merged into the regular platform bus.
+> As part of that merge prepping Arm DT support 13 years ago, they
+> "temporarily" include each other. They also include platform_device.h
+> and of.h. As a result, there's a pretty much random mix of those include
+> files used throughout the tree. In order to detangle these headers and
+> replace the implicit includes with struct declarations, users need to
+> explicitly include the correct includes.
+> 
+> [...]
 
-Fixes: d63028c38905 ("video: mmp display controller support")
-Signed-off-by: Yuanjun Gong <ruc_gongyuanjun@163.com>
----
- drivers/video/fbdev/mmp/hw/mmp_ctrl.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Applied, thanks!
 
-diff --git a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-index 51fbf02a0343..76b50b6c98ad 100644
---- a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-+++ b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-@@ -519,7 +519,9 @@ static int mmphw_probe(struct platform_device *pdev)
- 			      "unable to get clk %s\n", mi->clk_name);
- 		goto failed;
- 	}
--	clk_prepare_enable(ctrl->clk);
-+	ret = clk_prepare_enable(ctrl->clk);
-+	if (ret)
-+		goto failed;
- 
- 	/* init global regs */
- 	ctrl_set_default(ctrl);
--- 
-2.17.1
+[1/1] backlight: qcom-wled: Explicitly include correct DT includes
+      commit: 1bb5187b673208f7191f227249ffe7401e969b97
+
+--
+Lee Jones [李琼斯]
 

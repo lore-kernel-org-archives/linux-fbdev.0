@@ -2,220 +2,230 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09896C001E0
-	for <linux-fbdev@archiver.kernel.org>; Sat, 29 Jul 2023 13:54:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63352C001E0
+	for <linux-fbdev@archiver.kernel.org>; Sat, 29 Jul 2023 19:32:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231207AbjG2NyA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 29 Jul 2023 09:54:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46988 "EHLO
+        id S229543AbjG2TcD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 29 Jul 2023 15:32:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55324 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229685AbjG2NyA (ORCPT
+        with ESMTP id S229483AbjG2TcC (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 29 Jul 2023 09:54:00 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3773F1BFC;
-        Sat, 29 Jul 2023 06:53:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1690638821; x=1691243621; i=deller@gmx.de;
- bh=SF33N+Kpc/wyG9nSqcNT0LlTEH8fet6dIuByUxd0Cic=;
- h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=c7PuZP+dLY/6HRY5CvV47NQ/1RIsow3/wc19NKo0POC7seqZVHaGzIFSamX7HNh7XnPjnSl
- F1MjawpMBcXcdnzTMza184dmiHLoQ0U6JClins9LfVaqdEEXJIiVRsLOJPbISJGXixgWyiYW5
- QSCNlgYwZKRbyksX0e07YuKZKvhr6qIZZbPMkcJc1RfRDke8eTiQJ5dVQil7Hb1lhCdC0ZDYw
- EuoP6E4A4w8cOBbsm77c8riEbqlmGF7Ua9nyI1lRkpsxqdHdT86QKTbxQ+ENcb4kAvujtb7+7
- ehwn+6Pu39M6L8reSF9pRmdeci20dg3mLS1LApTYJ9Bm64IqawMA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.147.68]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MzQg6-1pdXSH2mXY-00vLlS; Sat, 29
- Jul 2023 15:53:41 +0200
-Message-ID: <1ab418ae-592f-4347-fa75-bf9b00115afe@gmx.de>
-Date:   Sat, 29 Jul 2023 15:53:40 +0200
+        Sat, 29 Jul 2023 15:32:02 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B0491FC9
+        for <linux-fbdev@vger.kernel.org>; Sat, 29 Jul 2023 12:32:01 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id B0AFC1FE9A;
+        Sat, 29 Jul 2023 19:31:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1690659119; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=civs/8xdYWi3mr9A7iDWpHZ633rPLL6n/s0mzWxs6Yo=;
+        b=SwAqZ6sJs+DE9Bzk+3sCBG3taxCWSzJEdZA+qHYBHsGQKIESdzH36hyclMYl/88Fm9k5fE
+        jXIC+Dq9pWGDJQGjMrWx4ffbI7/4vm/JITr7hcZGen6FQeLTd9uQTRXWWYo8LCmGZoXNG7
+        j0/WNn3gzcF9/VNw6tTNLcNbYbXH7Sg=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1690659119;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=civs/8xdYWi3mr9A7iDWpHZ633rPLL6n/s0mzWxs6Yo=;
+        b=ACuhYb1l9jm+VmuxjCa2AF1nsI8CAT1r6R+oZZyZnWjBzNb4etn5wpyatvdJuRn37sNmdq
+        U5DaiRvC570S9ZAw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 806B1139EC;
+        Sat, 29 Jul 2023 19:31:59 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id SEV3Hi9pxWSGGgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Sat, 29 Jul 2023 19:31:59 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     deller@gmx.de, sam@ravnborg.org, javierm@redhat.com
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 1/4] fbdev: Use _IOMEM_ infix for I/O-memory helpers
+Date:   Sat, 29 Jul 2023 21:26:46 +0200
+Message-ID: <20230729193157.15446-2-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230729193157.15446-1-tzimmermann@suse.de>
+References: <20230729193157.15446-1-tzimmermann@suse.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH 00/47] fbdev: Use I/O helpers
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Sam Ravnborg <sam@ravnborg.org>
-Cc:     javierm@redhat.com, linux-media@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-geode@lists.infradead.org, linux-omap@vger.kernel.org,
-        kvm@vger.kernel.org
-References: <20230728182234.10680-1-tzimmermann@suse.de>
- <c1a4b7c9-50f2-c43f-277d-c2af9ccc0b50@gmx.de>
- <20230728210127.GA1156027@ravnborg.org>
- <78da21f8-7d00-797e-363a-736ee53b2eb6@gmx.de>
- <126ac851-2f81-4cfd-b06a-774f8428cc93@suse.de>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <126ac851-2f81-4cfd-b06a-774f8428cc93@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:6NOl6qf6INO7VOFdQE2JnRYWdtQDNRo6M9Ca0Q2Is8v9m4IHvfQ
- ua61qy3N+QL+ov3IpkAlBqWzpRLUFIs6319HjFbUd9mLzNsO+tOGAf1YOPOOClcXwlM6iSp
- kqWdFK7mJFVa4iGcdOkTd27JYbqIFT2XR9R2NcEgYG99BLVOTU1kMY1lltzGzVz3OWKFPW0
- zncOfO05x8K5vTsSIA1Nw==
-UI-OutboundReport: notjunk:1;M01:P0:BEPvo3atSHo=;8ZJQxXtTgZ/i8YZdeod/v+Sx78d
- sV7QGqx5P+XbbewQrCUuMM2mIUX57WAhxzXzPwb8HZtWALbUvGqjBKEquCKElhDra9J1W4FsW
- RSbH37IgKyiEPUuLhO3hYhjxJ1OESVY9l46kaw6MCW9UdBOZL0QiCLmw/NgpdUWUkbmqozflr
- By7lwt8Jh04wVLXvhb6zuHhVkqn+x8zyP1dSWKEmjqz7SAJqedZ6dFLka4W1uQIBQeajseAWd
- 5ukRIAAbk7QTSjOlfu28AH0ZYXZQYZBq87n7EpBjmNO7omIBL2l4LLbYkJ+FR17J03p9rJNY2
- N+ptylEF2CfmhShVYEK3IUGwR89DB6qc1VQFMNgE2YLeo3NzyKMUc8owaCPcxVJ0XlqQXqUdW
- 2h7TrrlowCT34sYOoTuVhJgvPpp2xqvGH7HVOEu3yt0araUQULvDoWaZdHuA6YQOZDQ9duzca
- e8l5pfYPEoRqsaE3V9+PGRcw29X6ajx84Cfbrl/57KlvpV7zNrusmfz5fkcWOCTTVgRmsa95W
- DhCT16EIP6TBdqS89NaaLaZfVXjZ6PsCmx0XvivgFHHxj9urbbRgZnnHEnRN4Qb1AJYl5NsQk
- 6ChMZ/3d1cL6STQ8mKyN1gRVln7d/80QWP3TsmFb/U6U+6pyhQa34AFjePb8AyTuVi1IctBdh
- ySFP8XAk/xMXeMTEuovcs1ejQ+l+yFsPmzQwLZkJDJXang0Ap099PVacpsxmtuD0xzYo223VE
- Zg2DpdJpT+UbYxiYbDB2tFbIO0Yux5/Hcv6cO4F0MpAUCQFScJl3WJ2usEQxHolmDaVeuIcM+
- 4V+NxQDfqrxB31DHnYrS6btho99ZsNzVUsn3i58StsPbsHHis35HLMYnWp5M4Qd/2v/bafmss
- mTwVw/Arwed7vSe6A1gNwVgYmS1esFcNDY+01azGbDr82SsBybEYbP2/sRxiLZBqdwQTLylVg
- uuxFsRNLE56F12ao/HwpC6fJMfA=
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/29/23 15:21, Thomas Zimmermann wrote:
-> Hi Helge
->
-> Am 29.07.23 um 08:51 schrieb Helge Deller:
->> On 7/28/23 23:01, Sam Ravnborg wrote:
->>> Hi Helge,
->>>
->>> On Fri, Jul 28, 2023 at 08:46:59PM +0200, Helge Deller wrote:
->>>> On 7/28/23 18:39, Thomas Zimmermann wrote:
->>>>> Most fbdev drivers operate on I/O memory.
->>>>
->>>> Just nitpicking here:
->>>> What is I/O memory?
->>>> Isn't it either memory, or I/O ?
->>>> I mean, I would never think of the cfb* draw functions under I/O.
->>>>
->>>>> And most of those use the
->>>>> default implementations for file I/O and console drawing. Convert al=
-l
->>>>> these low-hanging fruits to the fb_ops initializer macro and Kconfig
->>>>> token for fbdev I/O helpers.
->>>>
->>>> I do see the motivation for your patch, but I think the
->>>> macro names are very misleading.
->>>>
->>>> You have:
->>>> #define __FB_DEFAULT_IO_OPS_RDWR \
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_read=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D fb_io_read, \
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_write=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D fb_io_write
->>>>
->>>> #define __FB_DEFAULT_IO_OPS_DRAW \
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_fillrect=C2=A0=
-=C2=A0=C2=A0 =3D cfb_fillrect, \
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_copyarea=C2=A0=
-=C2=A0=C2=A0 =3D cfb_copyarea, \
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_imageblit=C2=A0=
-=C2=A0 =3D cfb_imageblit
->>>>
->>>> #define __FB_DEFAULT_IO_OPS_MMAP \
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_mmap=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D NULL /* default implementation */
->>>>
->>>> #define FB_DEFAULT_IO_OPS \
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_IO_OPS_=
-RDWR, \
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_IO_OPS_=
-DRAW, \
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_IO_OPS_=
-MMAP
->>>>
->>>> I think FB_DEFAULT_IO_OPS is OK for read/write/mmap.
->>>> But I would suggest to split out __FB_DEFAULT_IO_OPS_DRAW.
->>>> Something like:
->>>> #define FB_DEFAULT_IO_OPS \
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_IO_OPS_=
-RDWR, \
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_IO_OPS_=
-MMAP
->>>
->>>
->>>> #define FB_DEFAULT_CFB_OPS \
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_fillrect=C2=A0=
-=C2=A0=C2=A0 =3D cfb_fillrect, \
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_copyarea=C2=A0=
-=C2=A0=C2=A0 =3D cfb_copyarea, \
->>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_imageblit=C2=A0=
-=C2=A0 =3D cfb_imageblit
->>>
->>> The prefix cfb, I have recently learned, equals color frame buffer.
->>
->> correct.
->>
->>> They are named such for purely historical reasons.
->>
->> well, they operate on MEMORY which represents a (color) frame buffer,
->> either in host memory or memory on some card on some bus.
->> So, the naming cfb is not historical, but even today correct.
->>
->>> What is important is where the data are copied as we have two
->>> implementations of for example copyarea - one using system memory, the
->>> other using IO memory.
->>
->> sys_copyarea() and cfb_copyarea().
->>
->>> The naming FB_DEFAULT_IO_OPS says this is the defaults to IO memory
->>> operations, which tell what they do
->>
->> This is exactly what I find misleading. IO_OPS sounds that it operates
->> on file I/O (like file read/write), but not on iomem.
->>
->>> and avoid the strange cfb acronym.
->>
->>> Reserve cfb for color frame buffers only - and maybe in the end rename
->>> the three cfbcopyarea, cfbfillrect, cfbimgblt to use the io prefix.
->>
->> Again, the io prefix is what I think is misleading.
->> Why not name it what it really is and what is used in the kernel alread=
-y, e.g.
->> iomem_copyarea() and sysmem_copyarea().
->> which would lead to
->> FB_DEFAULT_IOMEM_OPS and FB_DEFAULT_SYSMEM_OPS.
->
-> Yes there's been a bit of confusion and discussion on the naming before.=
- I'd be happy if we can standardize on sysmem and iomem.
->
-> I can add a patch to this patchset to rename the _IO_ macros and tokens =
-to use _IOMEM_. That's not too much change. A later patchset can address s=
-ysmem and deferred I/O helpers separately.
+Change the infix for fbdev's I/O-memory helpers from _IO_ to _IOMEM_
+to distiguish them from other types of I/O, such as file operations.
+The helpers operate on memory ranges in the I/O address space and the
+naming should make this clear. Adapt all users. No functional changes.
 
-Sound good.
+Suggested-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ drivers/gpu/drm/armada/Kconfig        |  2 +-
+ drivers/gpu/drm/armada/armada_fbdev.c |  2 +-
+ drivers/gpu/drm/gma500/Kconfig        |  2 +-
+ drivers/gpu/drm/gma500/fbdev.c        |  4 ++--
+ drivers/gpu/drm/i915/Kconfig          |  2 +-
+ drivers/gpu/drm/radeon/Kconfig        |  2 +-
+ drivers/gpu/drm/radeon/radeon_fbdev.c |  2 +-
+ drivers/video/fbdev/core/Kconfig      |  2 +-
+ include/linux/fb.h                    | 14 +++++++-------
+ 9 files changed, 16 insertions(+), 16 deletions(-)
 
-> On motivation: for now it's a cleanup to make the a bit code easier to u=
-nderstand. But once all drivers set their callbacks correctly, we can make=
- the I/O mem code optional. It's currently the default and built-in uncond=
-itionally. But it's not uncommon that it's unused entirely.
-
-Probably true for x86, on others it might be useful to make the sysmem opt=
-ional as well. I did not checked.
-
-Anyway, thanks for your work!
-
-Helge
-
->
-> Best regards
-> Thomas
->
->>
->>> Which is much simpler to do after this series - and nice extra benefit=
-.
->>>
->>> I hope this properly explains why I like the current naming and
->>> acked it when the macros were introduced.
->>
->> IMHO the naming isn't perfect, but that's just nitpicking.
->> Besides that, Thomas' patches are a nice cleanup.
->> So, if you want add a
->> Acked-by: Helge Deller <deller@gmx.de>
->> to the series.
->>
->> Helge
->
+diff --git a/drivers/gpu/drm/armada/Kconfig b/drivers/gpu/drm/armada/Kconfig
+index 5afade25e217..e5597d7c9ae1 100644
+--- a/drivers/gpu/drm/armada/Kconfig
++++ b/drivers/gpu/drm/armada/Kconfig
+@@ -3,7 +3,7 @@ config DRM_ARMADA
+ 	tristate "DRM support for Marvell Armada SoCs"
+ 	depends on DRM && HAVE_CLK && ARM && MMU
+ 	select DRM_KMS_HELPER
+-	select FB_IO_HELPERS if DRM_FBDEV_EMULATION
++	select FB_IOMEM_HELPERS if DRM_FBDEV_EMULATION
+ 	help
+ 	  Support the "LCD" controllers found on the Marvell Armada 510
+ 	  devices.  There are two controllers on the device, each controller
+diff --git a/drivers/gpu/drm/armada/armada_fbdev.c b/drivers/gpu/drm/armada/armada_fbdev.c
+index e40a95e51785..d223176912b6 100644
+--- a/drivers/gpu/drm/armada/armada_fbdev.c
++++ b/drivers/gpu/drm/armada/armada_fbdev.c
+@@ -34,7 +34,7 @@ static void armada_fbdev_fb_destroy(struct fb_info *info)
+ 
+ static const struct fb_ops armada_fb_ops = {
+ 	.owner		= THIS_MODULE,
+-	FB_DEFAULT_IO_OPS,
++	FB_DEFAULT_IOMEM_OPS,
+ 	DRM_FB_HELPER_DEFAULT_OPS,
+ 	.fb_destroy	= armada_fbdev_fb_destroy,
+ };
+diff --git a/drivers/gpu/drm/gma500/Kconfig b/drivers/gpu/drm/gma500/Kconfig
+index cd3d92725ed4..efb4a2dd2f80 100644
+--- a/drivers/gpu/drm/gma500/Kconfig
++++ b/drivers/gpu/drm/gma500/Kconfig
+@@ -3,7 +3,7 @@ config DRM_GMA500
+ 	tristate "Intel GMA500/600/3600/3650 KMS Framebuffer"
+ 	depends on DRM && PCI && X86 && MMU
+ 	select DRM_KMS_HELPER
+-	select FB_IO_HELPERS if DRM_FBDEV_EMULATION
++	select FB_IOMEM_HELPERS if DRM_FBDEV_EMULATION
+ 	select I2C
+ 	select I2C_ALGOBIT
+ 	# GMA500 depends on ACPI_VIDEO when ACPI is enabled, just like i915
+diff --git a/drivers/gpu/drm/gma500/fbdev.c b/drivers/gpu/drm/gma500/fbdev.c
+index be8f5fbd5260..98b44974d42d 100644
+--- a/drivers/gpu/drm/gma500/fbdev.c
++++ b/drivers/gpu/drm/gma500/fbdev.c
+@@ -135,10 +135,10 @@ static void psb_fbdev_fb_destroy(struct fb_info *info)
+ 
+ static const struct fb_ops psb_fbdev_fb_ops = {
+ 	.owner = THIS_MODULE,
+-	__FB_DEFAULT_IO_OPS_RDWR,
++	__FB_DEFAULT_IOMEM_OPS_RDWR,
+ 	DRM_FB_HELPER_DEFAULT_OPS,
+ 	.fb_setcolreg = psb_fbdev_fb_setcolreg,
+-	__FB_DEFAULT_IO_OPS_DRAW,
++	__FB_DEFAULT_IOMEM_OPS_DRAW,
+ 	.fb_mmap = psb_fbdev_fb_mmap,
+ 	.fb_destroy = psb_fbdev_fb_destroy,
+ };
+diff --git a/drivers/gpu/drm/i915/Kconfig b/drivers/gpu/drm/i915/Kconfig
+index 01b5a8272a27..ce397a8797f7 100644
+--- a/drivers/gpu/drm/i915/Kconfig
++++ b/drivers/gpu/drm/i915/Kconfig
+@@ -17,7 +17,7 @@ config DRM_I915
+ 	select DRM_KMS_HELPER
+ 	select DRM_PANEL
+ 	select DRM_MIPI_DSI
+-	select FB_IO_HELPERS if DRM_FBDEV_EMULATION
++	select FB_IOMEM_HELPERS if DRM_FBDEV_EMULATION
+ 	select RELAY
+ 	select I2C
+ 	select I2C_ALGOBIT
+diff --git a/drivers/gpu/drm/radeon/Kconfig b/drivers/gpu/drm/radeon/Kconfig
+index fe498c8af1bb..f98356be0af2 100644
+--- a/drivers/gpu/drm/radeon/Kconfig
++++ b/drivers/gpu/drm/radeon/Kconfig
+@@ -11,7 +11,7 @@ config DRM_RADEON
+ 	select DRM_SUBALLOC_HELPER
+         select DRM_TTM
+ 	select DRM_TTM_HELPER
+-	select FB_IO_HELPERS if DRM_FBDEV_EMULATION
++	select FB_IOMEM_HELPERS if DRM_FBDEV_EMULATION
+ 	select SND_HDA_COMPONENT if SND_HDA_CORE
+ 	select POWER_SUPPLY
+ 	select HWMON
+diff --git a/drivers/gpu/drm/radeon/radeon_fbdev.c b/drivers/gpu/drm/radeon/radeon_fbdev.c
+index 68c06ac9acce..02bf25759059 100644
+--- a/drivers/gpu/drm/radeon/radeon_fbdev.c
++++ b/drivers/gpu/drm/radeon/radeon_fbdev.c
+@@ -193,7 +193,7 @@ static const struct fb_ops radeon_fbdev_fb_ops = {
+ 	.owner = THIS_MODULE,
+ 	.fb_open = radeon_fbdev_fb_open,
+ 	.fb_release = radeon_fbdev_fb_release,
+-	FB_DEFAULT_IO_OPS,
++	FB_DEFAULT_IOMEM_OPS,
+ 	DRM_FB_HELPER_DEFAULT_OPS,
+ 	.fb_destroy = radeon_fbdev_fb_destroy,
+ };
+diff --git a/drivers/video/fbdev/core/Kconfig b/drivers/video/fbdev/core/Kconfig
+index 85434381b6c6..6d562f83dcc2 100644
+--- a/drivers/video/fbdev/core/Kconfig
++++ b/drivers/video/fbdev/core/Kconfig
+@@ -144,7 +144,7 @@ config FB_DMA_HELPERS
+ 	select FB_SYS_FOPS
+ 	select FB_SYS_IMAGEBLIT
+ 
+-config FB_IO_HELPERS
++config FB_IOMEM_HELPERS
+ 	bool
+ 	depends on FB_CORE
+ 	select FB_CFB_COPYAREA
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 2ef7788311fc..bb5eb98cde83 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -537,22 +537,22 @@ extern ssize_t fb_io_read(struct fb_info *info, char __user *buf,
+ extern ssize_t fb_io_write(struct fb_info *info, const char __user *buf,
+ 			   size_t count, loff_t *ppos);
+ 
+-#define __FB_DEFAULT_IO_OPS_RDWR \
++#define __FB_DEFAULT_IOMEM_OPS_RDWR \
+ 	.fb_read	= fb_io_read, \
+ 	.fb_write	= fb_io_write
+ 
+-#define __FB_DEFAULT_IO_OPS_DRAW \
++#define __FB_DEFAULT_IOMEM_OPS_DRAW \
+ 	.fb_fillrect	= cfb_fillrect, \
+ 	.fb_copyarea	= cfb_copyarea, \
+ 	.fb_imageblit	= cfb_imageblit
+ 
+-#define __FB_DEFAULT_IO_OPS_MMAP \
++#define __FB_DEFAULT_IOMEM_OPS_MMAP \
+ 	.fb_mmap	= NULL /* default implementation */
+ 
+-#define FB_DEFAULT_IO_OPS \
+-	__FB_DEFAULT_IO_OPS_RDWR, \
+-	__FB_DEFAULT_IO_OPS_DRAW, \
+-	__FB_DEFAULT_IO_OPS_MMAP
++#define FB_DEFAULT_IOMEM_OPS \
++	__FB_DEFAULT_IOMEM_OPS_RDWR, \
++	__FB_DEFAULT_IOMEM_OPS_DRAW, \
++	__FB_DEFAULT_IOMEM_OPS_MMAP
+ 
+ /*
+  * Helpers for framebuffers in system memory
+-- 
+2.41.0
 

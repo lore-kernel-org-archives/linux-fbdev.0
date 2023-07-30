@@ -2,79 +2,264 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94FD8C04A94
-	for <linux-fbdev@archiver.kernel.org>; Sun, 30 Jul 2023 08:55:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8554C00528
+	for <linux-fbdev@archiver.kernel.org>; Sun, 30 Jul 2023 16:20:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229632AbjG3Izq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 30 Jul 2023 04:55:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41320 "EHLO
+        id S229492AbjG3QU5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 30 Jul 2023 12:20:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32856 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229559AbjG3Izp (ORCPT
+        with ESMTP id S229716AbjG3QU4 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 30 Jul 2023 04:55:45 -0400
-Received: from mailrelay4-1.pub.mailoutpod2-cph3.one.com (mailrelay4-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:403::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D43D6172D
-        for <linux-fbdev@vger.kernel.org>; Sun, 30 Jul 2023 01:55:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=rsa1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=mFakZeALJNGvZSohmf/wWFUZxBT4BMrnbpl3ezu/8xg=;
-        b=BU2t5HBt6AxOY9DWmwd6uVqDKEE6+EORAWwGLRuq4UorA+nAmmNoiWomF9qfvGspOvbS5ZvS18F1t
-         sk62CSt8rHuLirMkNIcpKQKLW7KrCzbBDjjwykcMa8eZYeSzO/wWRhEl4ModKf6VdkdQ6HCO+OufGP
-         ZQv1d1Ee75zSjQdI2Y3Vhu2MskkhjLvfmey4l70qsJZ1sw2yDfEA6inc15z6WgcmYapS8KN56uoTTq
-         SW+OgaZgrWr0daiw5leZG4aHgHGTzRnYv2HkRLTyTJx68fTSbKyyW03gzmi6+T3qJb1begPp9VdUKt
-         Z4Pvdt0SX24tWwnnDBMxh5Iu9oHsmZw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=ed1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=mFakZeALJNGvZSohmf/wWFUZxBT4BMrnbpl3ezu/8xg=;
-        b=PuqQNp88Cg2L0KD+9U1TyBW/+zsbjIekPa25mUj+6EtxjJ32lV2tqPeMPZhXBf85jc+srwd8PN3mi
-         ADw66rFCA==
-X-HalOne-ID: dbd268c0-2eb6-11ee-a19a-592bb1efe9dc
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-        by mailrelay4 (Halon) with ESMTPSA
-        id dbd268c0-2eb6-11ee-a19a-592bb1efe9dc;
-        Sun, 30 Jul 2023 08:55:41 +0000 (UTC)
-Date:   Sun, 30 Jul 2023 10:55:40 +0200
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     linux-fbdev@vger.kernel.org, kvm@vger.kernel.org, deller@gmx.de,
-        javierm@redhat.com, dri-devel@lists.freedesktop.org,
-        linux-geode@lists.infradead.org, linux-omap@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
-Subject: Re: [PATCH 00/47] fbdev: Use I/O helpers
-Message-ID: <20230730085540.GB1322260@ravnborg.org>
-References: <20230728182234.10680-1-tzimmermann@suse.de>
- <20230728183541.GA1144760@ravnborg.org>
+        Sun, 30 Jul 2023 12:20:56 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6163A1702
+        for <linux-fbdev@vger.kernel.org>; Sun, 30 Jul 2023 09:20:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
+ s=s31663417; t=1690734026; x=1691338826; i=deller@gmx.de;
+ bh=B+LjuH1Nro6Mm9dxZmbdDJ4NHVKDVfaSlow79dtK/aE=;
+ h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+ b=c9WmUwwDTJRiDAD+zM0YAIFG5RlZM8uRwDLl7Z6FQNKLUA3sHN3ukIyo+Qxi7YIqYJW4UW/
+ BC71TX/VpV7al/amWu545KjTx/HrnqhgHRulIuCohZ3WAtVwNL9iBqmt2FcmoNM7OekRLFtJ6
+ YkfjF8A5yx0cRAVFsUZdOwSrJpWp0ai+89kGiOpgacqI9ntmOBRqfANGwuRr2My9GyyKrfIkY
+ JpSe1uaeoeR/BCwLbYBKAx9V1ICjXauabnUSPFBe9fFqfVbL4sWt8UTTQCM6WYn0OJ2AXP8C2
+ BcUNyHsWsdDHRbGefS2qd1JJNpZIr40dXoE0REmV7JKV2hY1JRMQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.144.241]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MSKu0-1qJdpZ46IK-00SgcI; Sun, 30
+ Jul 2023 18:20:26 +0200
+Message-ID: <e25eaae4-dcc9-7864-c655-f9e739db7970@gmx.de>
+Date:   Sun, 30 Jul 2023 18:20:25 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230728183541.GA1144760@ravnborg.org>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Subject: Re: [PATCH 3/4] fbdev: Use _DMAMEM_ infix for DMA-memory helpers
+Content-Language: en-US
+To:     Thomas Zimmermann <tzimmermann@suse.de>, sam@ravnborg.org,
+        javierm@redhat.com
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+References: <20230729193157.15446-1-tzimmermann@suse.de>
+ <20230729193157.15446-4-tzimmermann@suse.de>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20230729193157.15446-4-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:4wNhQhY6WGH5c1kIMydigwdYLBqO8YDF06/xuv2My0xRcYEraod
+ MF/bDQNdDIm4MEodkqbxmfpW/a3diU9LJcSlElkvXUVlRgMvQwPMgkyLjk3SV36KGTa5zpW
+ 6RAq1ACNwf9SXLjwc1nYGotQADN7prtS6CzbxCfgkySsNuLzhvtVTc3vSPdvAeOMHPBumpS
+ wNTkWQ5f31W60jH1Ty2Ig==
+UI-OutboundReport: notjunk:1;M01:P0:9weqy1iDTpI=;Hg5AgOSVd8JTHH9VClJIufTHE+P
+ exgTpSl/Yi5eXbZYxV977nV4bXQ+Cty/sXPirt/ZTo01OMelCBuHuebNgzMJHkErsNw9GClT0
+ cwXFAy4ZC7d9zW2xMW7JHWtZJ3omY3Nao4svG+jgPkc+kWW9hYlJMW8ijPBeyWIOU/gjrvQQF
+ /SnHB2LNmGZRnTAmHJJBNzFB4518AU0gCRKdidGpobiSU4RdmAxuTTuXP410W+0kU0QwTVzFU
+ b16NskxkQZ2iE9okPe+agJRsgcWt3zVkXdrxmVMNNvTIOJ2KBDNmaty3ZUilt9MaxVjybX31l
+ y5UF/WHe9RoWUq3kwg4dTdIvnl+/u+l6c/WWvR8hMpQnr4S/9N4S+4B9IKHBpQOpC2MuLtepy
+ E3dKZq/V/wBfsCjL7f+iAgcrDWV1Gbv5H68DYHlIGPOxZhrHC4rRXVGRVrTcm2xozRngAXKbM
+ wlrhX3tU8KaD3fk2wpX1LHF+OEuZrGIjUz3tbuiKC+wFthZfHg1btfVJPs0LqldnxXyJGR63M
+ 3cYb7hTHOzJoFAC0cFNvJNprEuSLewhxOtU9B1CcMsyhPrcM+sBWSQBLIloyxdP9qVMEUsqcg
+ MY51g/lNoJOQBfrl/qjQLf5Qkesie2Iv4arboVp54x8H6E66ziPIwZnooN8/7FgOwpU4fhJnm
+ z2Y4RhzA8UcgoKCwnvS7H4ExAYYdGzxMOsgeZH/BN27f6d5pO+Mq6szWCLwDGBzjS9QryYczO
+ TMqTOwUWbaTGKKe09RveZ++C3a11BjFiPxOO0E/n73zcLL5sb+k7tRJ6R9yacehpEXvcL6mZc
+ YlulYmxziJ70S2bUf1KunWUqguizkQOw3XzmL+jpjR5aVcSDtyFA6qo9WaXMxpNgoAHjDPBIb
+ A+fFjRdhDOQc8S9RQ8nBaE/9VMckzXNGK7q5pQSFn7f65fiMmzkyg3XRnazfUjwz6QNBJyxAi
+ lXl0EQ==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Jul 28, 2023 at 08:35:41PM +0200, Sam Ravnborg wrote:
-> Hi Thomas,
-> 
-> On Fri, Jul 28, 2023 at 06:39:43PM +0200, Thomas Zimmermann wrote:
-> > Most fbdev drivers operate on I/O memory. And most of those use the
-> > default implementations for file I/O and console drawing. Convert all
-> > these low-hanging fruits to the fb_ops initializer macro and Kconfig
-> > token for fbdev I/O helpers.
-> > 
-> > The fbdev I/O helpers are easily grep-able. In a later patch, they can
-> > be left to empty values if the rsp. funtionality, such as file I/O or
-> > console, has been disabled.
-> > 
-> > There are no functional changes. The helpers set the defaults that
-> > the drivers already use.
-> 
-> I have browsed all patches - they all looks good.
-> Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+On 7/29/23 21:26, Thomas Zimmermann wrote:
+> Change the infix for fbdev's DMA-memory helpers from _DMA_ to
+> _DMAMEM_. The helpers perform operations within DMA-able memory,
 
-When you post v2 with MEM added the review still holds true.
+Since "DMA" stands for "Direct Memory Access", people already
+know that it operates on memory. I don't think we need
+to add "MEM" here.
+So, maybe we should drop this patch and just keep "DMA"?
 
-	Sam
+Other than that you patch series looks good!
+Acked-by: Helge Deller <deller@gmx.de>
+
+Helge
+
+
+> but they don't perform DMA operations. Naming should make this
+> clear. Adapt all users. No functional changes.
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
+>   drivers/gpu/drm/Kconfig                   | 2 +-
+>   drivers/gpu/drm/drm_fbdev_dma.c           | 4 ++--
+>   drivers/gpu/drm/exynos/Kconfig            | 2 +-
+>   drivers/gpu/drm/exynos/exynos_drm_fbdev.c | 4 ++--
+>   drivers/gpu/drm/omapdrm/Kconfig           | 2 +-
+>   drivers/gpu/drm/omapdrm/omap_fbdev.c      | 4 ++--
+>   drivers/gpu/drm/tegra/Kconfig             | 2 +-
+>   drivers/gpu/drm/tegra/fbdev.c             | 4 ++--
+>   drivers/video/fbdev/core/Kconfig          | 2 +-
+>   include/linux/fb.h                        | 4 ++--
+>   10 files changed, 15 insertions(+), 15 deletions(-)
+>
+> diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+> index 34da733e8606..b51c6a141dfa 100644
+> --- a/drivers/gpu/drm/Kconfig
+> +++ b/drivers/gpu/drm/Kconfig
+> @@ -224,7 +224,7 @@ config DRM_TTM_HELPER
+>   config DRM_GEM_DMA_HELPER
+>   	tristate
+>   	depends on DRM
+> -	select FB_DMA_HELPERS if DRM_FBDEV_EMULATION
+> +	select FB_DMAMEM_HELPERS if DRM_FBDEV_EMULATION
+>   	help
+>   	  Choose this if you need the GEM DMA helper functions
+>
+> diff --git a/drivers/gpu/drm/drm_fbdev_dma.c b/drivers/gpu/drm/drm_fbdev=
+_dma.c
+> index 6db168f94290..6c9427bb4053 100644
+> --- a/drivers/gpu/drm/drm_fbdev_dma.c
+> +++ b/drivers/gpu/drm/drm_fbdev_dma.c
+> @@ -62,9 +62,9 @@ static const struct fb_ops drm_fbdev_dma_fb_ops =3D {
+>   	.owner =3D THIS_MODULE,
+>   	.fb_open =3D drm_fbdev_dma_fb_open,
+>   	.fb_release =3D drm_fbdev_dma_fb_release,
+> -	__FB_DEFAULT_DMA_OPS_RDWR,
+> +	__FB_DEFAULT_DMAMEM_OPS_RDWR,
+>   	DRM_FB_HELPER_DEFAULT_OPS,
+> -	__FB_DEFAULT_DMA_OPS_DRAW,
+> +	__FB_DEFAULT_DMAMEM_OPS_DRAW,
+>   	.fb_mmap =3D drm_fbdev_dma_fb_mmap,
+>   	.fb_destroy =3D drm_fbdev_dma_fb_destroy,
+>   };
+> diff --git a/drivers/gpu/drm/exynos/Kconfig b/drivers/gpu/drm/exynos/Kco=
+nfig
+> index 661b42ad4873..733b109a5095 100644
+> --- a/drivers/gpu/drm/exynos/Kconfig
+> +++ b/drivers/gpu/drm/exynos/Kconfig
+> @@ -7,7 +7,7 @@ config DRM_EXYNOS
+>   	select DRM_DISPLAY_HELPER if DRM_EXYNOS_DP
+>   	select DRM_KMS_HELPER
+>   	select VIDEOMODE_HELPERS
+> -	select FB_DMA_HELPERS if DRM_FBDEV_EMULATION
+> +	select FB_DMAMEM_HELPERS if DRM_FBDEV_EMULATION
+>   	select SND_SOC_HDMI_CODEC if SND_SOC
+>   	help
+>   	  Choose this option if you have a Samsung SoC Exynos chipset.
+> diff --git a/drivers/gpu/drm/exynos/exynos_drm_fbdev.c b/drivers/gpu/drm=
+/exynos/exynos_drm_fbdev.c
+> index 4ccb385aff52..a379c8ca435a 100644
+> --- a/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
+> +++ b/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
+> @@ -49,9 +49,9 @@ static void exynos_drm_fb_destroy(struct fb_info *info=
+)
+>
+>   static const struct fb_ops exynos_drm_fb_ops =3D {
+>   	.owner		=3D THIS_MODULE,
+> -	__FB_DEFAULT_DMA_OPS_RDWR,
+> +	__FB_DEFAULT_DMAMEM_OPS_RDWR,
+>   	DRM_FB_HELPER_DEFAULT_OPS,
+> -	__FB_DEFAULT_DMA_OPS_DRAW,
+> +	__FB_DEFAULT_DMAMEM_OPS_DRAW,
+>   	.fb_mmap        =3D exynos_drm_fb_mmap,
+>   	.fb_destroy	=3D exynos_drm_fb_destroy,
+>   };
+> diff --git a/drivers/gpu/drm/omapdrm/Kconfig b/drivers/gpu/drm/omapdrm/K=
+config
+> index d3c4877e465c..b715301ec79f 100644
+> --- a/drivers/gpu/drm/omapdrm/Kconfig
+> +++ b/drivers/gpu/drm/omapdrm/Kconfig
+> @@ -4,7 +4,7 @@ config DRM_OMAP
+>   	depends on DRM && OF
+>   	depends on ARCH_OMAP2PLUS
+>   	select DRM_KMS_HELPER
+> -	select FB_DMA_HELPERS if DRM_FBDEV_EMULATION
+> +	select FB_DMAMEM_HELPERS if DRM_FBDEV_EMULATION
+>   	select VIDEOMODE_HELPERS
+>   	select HDMI
+>   	default n
+> diff --git a/drivers/gpu/drm/omapdrm/omap_fbdev.c b/drivers/gpu/drm/omap=
+drm/omap_fbdev.c
+> index 5b33c789e17a..6b08b137af1a 100644
+> --- a/drivers/gpu/drm/omapdrm/omap_fbdev.c
+> +++ b/drivers/gpu/drm/omapdrm/omap_fbdev.c
+> @@ -106,13 +106,13 @@ static void omap_fbdev_fb_destroy(struct fb_info *=
+info)
+>
+>   static const struct fb_ops omap_fb_ops =3D {
+>   	.owner =3D THIS_MODULE,
+> -	__FB_DEFAULT_DMA_OPS_RDWR,
+> +	__FB_DEFAULT_DMAMEM_OPS_RDWR,
+>   	.fb_check_var	=3D drm_fb_helper_check_var,
+>   	.fb_set_par	=3D drm_fb_helper_set_par,
+>   	.fb_setcmap	=3D drm_fb_helper_setcmap,
+>   	.fb_blank	=3D drm_fb_helper_blank,
+>   	.fb_pan_display =3D omap_fbdev_pan_display,
+> -	__FB_DEFAULT_DMA_OPS_DRAW,
+> +	__FB_DEFAULT_DMAMEM_OPS_DRAW,
+>   	.fb_ioctl	=3D drm_fb_helper_ioctl,
+>   	.fb_mmap	=3D omap_fbdev_fb_mmap,
+>   	.fb_destroy	=3D omap_fbdev_fb_destroy,
+> diff --git a/drivers/gpu/drm/tegra/Kconfig b/drivers/gpu/drm/tegra/Kconf=
+ig
+> index 39452c8480c1..84e7e6bc3a0c 100644
+> --- a/drivers/gpu/drm/tegra/Kconfig
+> +++ b/drivers/gpu/drm/tegra/Kconfig
+> @@ -12,7 +12,7 @@ config DRM_TEGRA
+>   	select DRM_KMS_HELPER
+>   	select DRM_MIPI_DSI
+>   	select DRM_PANEL
+> -	select FB_DMA_HELPERS if DRM_FBDEV_EMULATION
+> +	select FB_DMAMEM_HELPERS if DRM_FBDEV_EMULATION
+>   	select TEGRA_HOST1X
+>   	select INTERCONNECT
+>   	select IOMMU_IOVA
+> diff --git a/drivers/gpu/drm/tegra/fbdev.c b/drivers/gpu/drm/tegra/fbdev=
+.c
+> index 206a399c42d6..db6eaac3d30e 100644
+> --- a/drivers/gpu/drm/tegra/fbdev.c
+> +++ b/drivers/gpu/drm/tegra/fbdev.c
+> @@ -59,9 +59,9 @@ static void tegra_fbdev_fb_destroy(struct fb_info *inf=
+o)
+>
+>   static const struct fb_ops tegra_fb_ops =3D {
+>   	.owner =3D THIS_MODULE,
+> -	__FB_DEFAULT_DMA_OPS_RDWR,
+> +	__FB_DEFAULT_DMAMEM_OPS_RDWR,
+>   	DRM_FB_HELPER_DEFAULT_OPS,
+> -	__FB_DEFAULT_DMA_OPS_DRAW,
+> +	__FB_DEFAULT_DMAMEM_OPS_DRAW,
+>   	.fb_mmap =3D tegra_fb_mmap,
+>   	.fb_destroy =3D tegra_fbdev_fb_destroy,
+>   };
+> diff --git a/drivers/video/fbdev/core/Kconfig b/drivers/video/fbdev/core=
+/Kconfig
+> index 28e771a46df6..baf7e852c75b 100644
+> --- a/drivers/video/fbdev/core/Kconfig
+> +++ b/drivers/video/fbdev/core/Kconfig
+> @@ -136,7 +136,7 @@ config FB_DEFERRED_IO
+>   	bool
+>   	depends on FB_CORE
+>
+> -config FB_DMA_HELPERS
+> +config FB_DMAMEM_HELPERS
+>   	bool
+>   	depends on FB_CORE
+>   	select FB_SYS_COPYAREA
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index 76472482dc30..d255263c2d1d 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -579,11 +579,11 @@ extern ssize_t fb_sys_write(struct fb_info *info, =
+const char __user *buf,
+>    * Helpers for framebuffers in DMA-able memory
+>    */
+>
+> -#define __FB_DEFAULT_DMA_OPS_RDWR \
+> +#define __FB_DEFAULT_DMAMEM_OPS_RDWR \
+>   	.fb_read	=3D fb_sys_read, \
+>   	.fb_write	=3D fb_sys_write
+>
+> -#define __FB_DEFAULT_DMA_OPS_DRAW \
+> +#define __FB_DEFAULT_DMAMEM_OPS_DRAW \
+>   	.fb_fillrect	=3D sys_fillrect, \
+>   	.fb_copyarea	=3D sys_copyarea, \
+>   	.fb_imageblit	=3D sys_imageblit
+

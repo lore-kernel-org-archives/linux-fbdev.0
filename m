@@ -2,101 +2,91 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 494FEC001DF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jul 2023 12:44:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20E30C001DE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jul 2023 12:55:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231337AbjGaMoJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 31 Jul 2023 08:44:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33238 "EHLO
+        id S230242AbjGaMzX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 31 Jul 2023 08:55:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40600 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231253AbjGaMoJ (ORCPT
+        with ESMTP id S231167AbjGaMzW (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 31 Jul 2023 08:44:09 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F0622E46;
-        Mon, 31 Jul 2023 05:44:07 -0700 (PDT)
+        Mon, 31 Jul 2023 08:55:22 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF65D10FF
+        for <linux-fbdev@vger.kernel.org>; Mon, 31 Jul 2023 05:55:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1690807440; x=1691412240; i=deller@gmx.de;
- bh=Ett9X0jsrsgrwDS6JF0aUQXmEsbC9Ju+HRz8v9VHpf0=;
- h=X-UI-Sender-Class:Date:Subject:To:References:From:In-Reply-To;
- b=KCfoDEKpfrgYNK/oeCttNkSWKYY7PISouCDVFRlWfeUVj0U3EHTLp+0tvtKrWakTzHzgiUC
- V04xVf3WZyDn3dZYvoSsWDwcs7hymV6aLnG5CjZIVprSD5VDChVQ19ejIeS+obuKRb4RUkFOh
- IYAPY4dQCZ8cFVNJK3ddjjDjP0IrLQRc/7+I0JGKrg8WlczDSS3sUIGlb6QogHHD0fr8FF6XX
- LPQvc0KeMov0zxAHPUJLn/++Vf5TMnM/vukvB7uNY8d6CFZKBVhnmXtbBw4pWZ2XwAeuDs3tq
- 2v5wOkzL8m7+evpZ5rm7H7UgQd5AQaO6a/U1QN6nX3itt+/YF0UQ==
+ s=s31663417; t=1690808113; x=1691412913; i=deller@gmx.de;
+ bh=uZ24tCDPloarimLbnb8GLRgv81AnDnCwQoQQQYP5vk8=;
+ h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+ b=Cwb/MT6kgZbuNFKxnl71B51I3BO+gA+lXWv07AESRod7V/1xUS/vHyAofvMa4yxEc/yyNHL
+ /TbZnp5NZ6cSbhgoLW6zcqEW4LK1wdLueg4fVnmR3VsPGXMH+0dM1Tg+wAI9EXlE4C7g+wPbo
+ PRRoosckTYglD3Odd9tHFPRvIvBWTAbrZTCFiXy3T15hA5gZlf8U//Wb733SL58JTiwcV0VTP
+ BM/VLy/kDxmKt1P2s/qk04AQn1bJMUgiu1V9R5hyph6aZ8vsfuVQbLJj8Av7sS6rhKfE6dw6G
+ ITiCnWCCZHJnFxZNDfKn15cHwbMfST/t+AiUsmRp2nTm6WL0PaVA==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.159.238]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MIdiZ-1qcG6M3fm9-00EhN6; Mon, 31
- Jul 2023 14:43:59 +0200
-Message-ID: <f84bbc50-2cd1-833d-7e99-e669cfc17c74@gmx.de>
-Date:   Mon, 31 Jul 2023 14:43:58 +0200
+Received: from [192.168.20.60] ([94.134.159.238]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MeCpR-1ppBry10AZ-00bGOf; Mon, 31
+ Jul 2023 14:55:13 +0200
+Message-ID: <064cd2bd-9f36-d30d-586a-cee58d433b8f@gmx.de>
+Date:   Mon, 31 Jul 2023 14:55:12 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.13.0
-Subject: Re: [PATCH 1/1] fbdev: mmp: fix value check in mmphw_probe()
+Subject: Re: [PATCH] fbdev: mx3fb: Remove the driver
 Content-Language: en-US
-To:     Yuanjun Gong <ruc_gongyuanjun@163.com>,
-        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-        Lisa Du <cldu@marvell.com>, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20230727170318.18412-1-ruc_gongyuanjun@163.com>
+To:     Fabio Estevam <festevam@gmail.com>
+Cc:     arnd@arndb.de, linux-fbdev@vger.kernel.org,
+        Fabio Estevam <festevam@denx.de>
+References: <20230728211201.1108407-1-festevam@gmail.com>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20230727170318.18412-1-ruc_gongyuanjun@163.com>
+In-Reply-To: <20230728211201.1108407-1-festevam@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:EWktxHK2pXb/uzLePyiOujXAmpX7rdBW66Gt7Ig1/sEBnAwiEvx
- bzjDu49BhucQSZWleC2XQNoASGz1/grBLsB7TZqQ2kxKe/X5or1owGDTQGQmfikpK2dkqMC
- FRf0YIsZpY1fnwk3R8t13t9wFZYXD2g/bD8vkd86e6Yz2zvAjIzTzx6cqvwUpnPCTFYpQRi
- 8VH4A7V541z4uVYdAHJTg==
-UI-OutboundReport: notjunk:1;M01:P0:juz6mdP1klo=;LOJz6O8knWygtmqjGiIEI6XwyS1
- vi/+iNVpY57sgRndt7MHyb4s5I5O1MhTHRFvlchhO0LgVeav7bWsSHRXA+Gmc5lyog5MTf5Uo
- Ow4/G7POV3BL1jVSyJyCPOxJQ6PPyOUH8r1TiOIQE21GRy6D4uQC2egTrzbM27WVgAONBHY+q
- cbx762NkSJVn2kLA9FgVEHk19+rhXa8C8VBQVWaXI4xx1vqJS+lAU3GG15ZMsHIXNl8yk7Z7c
- 3mHHiDTpI5vhW7Hpy1SvhUwPchS/vC3iAbniWP1uhd63ifuRIQDMjqOmjvo/9u5uX2QREwhTI
- mYeEzTjjn28NyVQsERmoZUFrkdhiNanmHa/ymvBeSw5lO2bhb5pJ7xqXSyni8VREayvR/Xv1a
- kbKACL8G7RMl6/Q/ymc4Z164eG1S2+8dpIkSgW4haMep1zSAtS3RvalxaN96zRrzWHthFi25N
- gRcGylWWL8vC257jnDajrGCfSVckN9UDgG8NNuvejJUFibbEm0WxMx5g+oEKFJRIH+j+2YqcP
- 5xJj55n6epFIQmOCSgPKJY2Y0I2yIIazpMKvSRMzafGIEjROLeHHe28dw5i4UkwhVXSTuFl8L
- CS8X8tGeR0379mDqNM3/R1oMFKGA3JbyC4bfquDSY12dE0Uj5eoDBf+z+ZkJ6r0Dd3NfbfDQT
- 5beTjO2kfoqGPCnJuEFIo0yoO6KEC4bX6/iuMfAJqYOJULwA4FRkL2AY1rAIJIM4ZgrGDW7hy
- rd/nN2LLnQu1grTvUnkwEQyEqtWHWfAHkJ8u9T8Lhxza5FZe9MpF0C7i503rmI8UuzpxdmYEM
- 4ddCwY02xJ+q5ieJEIOXdB223saFD26KbRlB3NbHdelzjCpNWBH+/xzryKFo3ZG5c24pOz8SI
- 6ctMYWNxUQoOd8Ttqo0ka58vugJ3RGycf6XA8nrVJiHrXXrdprS+p6UCjSUQrv1QzaelH2pBu
- SmGG9umZhcxtzvi0YifIbpQu2FQ=
+X-Provags-ID: V03:K1:Q+XUa2ZRPlXWPHLp2AK/mocQGEbtq90vCiNnUnseQlylDBj3OzH
+ Z+bzuBXLcgpYGKflmuU+XrgFXz1gEzGqervM22Acr8cu3IQ7YkAKoSaZ5W7c2z0aZbpTdAC
+ kY1VF8gDGEOxN6/6afj+VqUwfMnuzfEad2uvWbni0/hpS5Vtkz/ryd0oxRsPMH97f/ypMAU
+ hkuJeB+FSo/3WQ8zj8avA==
+UI-OutboundReport: notjunk:1;M01:P0:J7OQoFAIgkM=;duP7BYVdbF5K6m4TSFzGn9IoqjJ
+ F24mcOKC/G6MbeTvObJ5uhWivIGsAjLextXFNzYACShxeqDxPn0/IBQdfVX4xFgb76y5zIa6k
+ Q4zHWuxPlO4Gyhh9hRnY5VsBEHHrbLh/Pzp67JEWMJ8hEptKJm1Y0mAUA3R/YJOuJ4sf0369I
+ gd8jDODyT7mCO062EpoYP1X4ORtT64HGrhow31bOUEvO08NkJ5fQm8qIAhXNEyANFYQeLIJGb
+ a1yf1sN+zvD+1xbel+qMf3wyHtMXBkKL8+maAAU2iFfpZBRi1iQREAwGnWwyC/o8Exx+3plmL
+ FrD2VdciK7OTLAdbH5GQAN2Kse/gSLvMV3AcXlDn74dA42uDLxwB6g2k48egTMggJ8GBqpumN
+ itzFxgB+MtPyR18NIboFpXO+/tP6jS5Mu9i8Xgj3+Z2vVSj0jWg88wXy+eFYrIIO4a4mURmpf
+ noSPI7KCHeGSgWt6UJXOIxbk3SS4l02fkrCcRfe8UfloGjtGmVY4k1nrFI68bLG+pV6g9A0vh
+ sve/DTLEKifM9LAVX4Q8irJCZ555K4W70HjKQcu2mqhpBbHqv1gynoDJ/iyTrsGEP/kxA21Df
+ MMN/HfC8Ju8IRb9bJ2I7P2FEO8sGep9b3eVF50UAt2onaTW58VYC6KnR+S5gxCvDLE9ZEJbMz
+ p1JlL/ZWeCjltPWoGKFxukF/Vu+SaB+P/NPqtCkhJS6SkT5PQiGQVWMXd9/faFvbnxKO6uFwu
+ PWrJklzgAVSG4u93bdGuE1tbdANTOq3be2M2HIPIK/9/EWBN4Sx+2zO9nn0c8beVeFy3d/v4h
+ Z3mJSe43yxcG5kqQI5RL1Nf5PxNDpIwTOPzr7JC0rRr4UthWiGHc2YGG/x07iQnD7TViCaXrT
+ /cZFhrY4XftlGLLvJc1rrXjvLCcbVY90d/APfQmkJmvU7/hJl8u4nR19F8r9vVDa9N+l9+NIK
+ BpEZ6dDLsTHLESVYI+L0XLIEwPY=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/27/23 19:03, Yuanjun Gong wrote:
-> in mmphw_probe(), check the return value of clk_prepare_enable()
-> and return the error code if clk_prepare_enable() returns an
-> unexpected value.
+On 7/28/23 23:12, Fabio Estevam wrote:
+> From: Fabio Estevam <festevam@denx.de>
 >
-> Fixes: d63028c38905 ("video: mmp display controller support")
-> Signed-off-by: Yuanjun Gong <ruc_gongyuanjun@163.com>
+> The mx3fb driver does not support devicetree and i.MX has been converted
+> to a DT-only platform since kernel 5.10.
+>
+> As there is no user for this driver anymore, just remove it.
+>
+> Signed-off-by: Fabio Estevam <festevam@denx.de>
 
 applied.
+
 Thanks!
 Helge
 
 > ---
->   drivers/video/fbdev/mmp/hw/mmp_ctrl.c | 4 +++-
->   1 file changed, 3 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c b/drivers/video/fbdev=
-/mmp/hw/mmp_ctrl.c
-> index 51fbf02a0343..76b50b6c98ad 100644
-> --- a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-> +++ b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-> @@ -519,7 +519,9 @@ static int mmphw_probe(struct platform_device *pdev)
->   			      "unable to get clk %s\n", mi->clk_name);
->   		goto failed;
->   	}
-> -	clk_prepare_enable(ctrl->clk);
-> +	ret =3D clk_prepare_enable(ctrl->clk);
-> +	if (ret)
-> +		goto failed;
->
->   	/* init global regs */
->   	ctrl_set_default(ctrl);
+>   drivers/video/fbdev/Kconfig               |   13 -
+>   drivers/video/fbdev/Makefile              |    1 -
+>   drivers/video/fbdev/mx3fb.c               | 1697 ---------------------
+>   include/linux/platform_data/video-mx3fb.h |   50 -
+>   4 files changed, 1761 deletions(-)
+>   delete mode 100644 drivers/video/fbdev/mx3fb.c
+>   delete mode 100644 include/linux/platform_data/video-mx3fb.h
 

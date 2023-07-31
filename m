@@ -2,108 +2,101 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9ABF2C001DE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jul 2023 12:43:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 494FEC001DF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jul 2023 12:44:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231492AbjGaMnJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 31 Jul 2023 08:43:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60902 "EHLO
+        id S231337AbjGaMoJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 31 Jul 2023 08:44:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33238 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232346AbjGaMmz (ORCPT
+        with ESMTP id S231253AbjGaMoJ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 31 Jul 2023 08:42:55 -0400
+        Mon, 31 Jul 2023 08:44:09 -0400
 Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7761110FF
-        for <linux-fbdev@vger.kernel.org>; Mon, 31 Jul 2023 05:42:52 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F0622E46;
+        Mon, 31 Jul 2023 05:44:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1690807350; x=1691412150; i=deller@gmx.de;
- bh=yRxXX913CYWRa8tXbgcXgYUKEdWaC4JfHSNxWU/JTYE=;
- h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=cQ49Dwl7x+piXC5cIDBYFGRNv21vhfHk6GTS7+hW6o5bfI4XaWFCKGCQw+7EZ9d07igAZyz
- Uzj2M594Cs0f3U3sLFTlJd6ouClC42gSUtqFIoN8jWMQQLNhPs/TTju7Y09hdGlspRynKbGWy
- zMPEYcX/ihUc9nRR9RZ4squGGw0WSTtWLBxeeKKyk6mjaQevBpS/ZM0VkGTpcJKOv4cEtVBrr
- MW4LJJes8naZNbT16t94fyyoCpOeSMWjl9czPsVb/mEI934H52EnfrclmkHbbVwo8uPS9S1NU
- dCgbZtD82zkVknYhGemrq+FcANrmNpB0HUAmnc+YRypy7Hc9Xjpw==
+ s=s31663417; t=1690807440; x=1691412240; i=deller@gmx.de;
+ bh=Ett9X0jsrsgrwDS6JF0aUQXmEsbC9Ju+HRz8v9VHpf0=;
+ h=X-UI-Sender-Class:Date:Subject:To:References:From:In-Reply-To;
+ b=KCfoDEKpfrgYNK/oeCttNkSWKYY7PISouCDVFRlWfeUVj0U3EHTLp+0tvtKrWakTzHzgiUC
+ V04xVf3WZyDn3dZYvoSsWDwcs7hymV6aLnG5CjZIVprSD5VDChVQ19ejIeS+obuKRb4RUkFOh
+ IYAPY4dQCZ8cFVNJK3ddjjDjP0IrLQRc/7+I0JGKrg8WlczDSS3sUIGlb6QogHHD0fr8FF6XX
+ LPQvc0KeMov0zxAHPUJLn/++Vf5TMnM/vukvB7uNY8d6CFZKBVhnmXtbBw4pWZ2XwAeuDs3tq
+ 2v5wOkzL8m7+evpZ5rm7H7UgQd5AQaO6a/U1QN6nX3itt+/YF0UQ==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.60] ([94.134.159.238]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1Mwwdl-1pfNNt1BRj-00ySdU; Mon, 31
- Jul 2023 14:42:30 +0200
-Message-ID: <3d06d451-613b-e872-89f9-c1ffffde2b47@gmx.de>
-Date:   Mon, 31 Jul 2023 14:42:28 +0200
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MIdiZ-1qcG6M3fm9-00EhN6; Mon, 31
+ Jul 2023 14:43:59 +0200
+Message-ID: <f84bbc50-2cd1-833d-7e99-e669cfc17c74@gmx.de>
+Date:   Mon, 31 Jul 2023 14:43:58 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.13.0
-Subject: Re: [PATCH 2/3] video: fbdev: ssd1307fb: Print the PWM's label
- instead of its number
+Subject: Re: [PATCH 1/1] fbdev: mmp: fix value check in mmphw_probe()
 Content-Language: en-US
-To:     =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Benjamin Mugnier <benjamin.mugnier@foss.st.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Jilin Yuan <yuanjilin@cdjrlc.com>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        kernel@pengutronix.de
-References: <20230728145824.616687-1-u.kleine-koenig@pengutronix.de>
- <20230728145824.616687-3-u.kleine-koenig@pengutronix.de>
+To:     Yuanjun Gong <ruc_gongyuanjun@163.com>,
+        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        Lisa Du <cldu@marvell.com>, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20230727170318.18412-1-ruc_gongyuanjun@163.com>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20230728145824.616687-3-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <20230727170318.18412-1-ruc_gongyuanjun@163.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:gF7wtH6jUDnhg8wkOkHbkB8mw82DUCkxkVn0UcreVLVQ3f0DA94
- tOxpZJ1Rlb9jtgxEcOb8c/S8zLXYh4+Ncn4qHnA79NVpwoJPKkoXAEpk0TOOJjwybJvFjz3
- 0/heuC2QK5Mcj7QZX7EXiuwDe2tpfGIr3tNk6vA+YVlCggywqScxx5Xid5qAwVt7visGN+J
- 8BFTsGvkY/etd1PY5SJ3A==
-UI-OutboundReport: notjunk:1;M01:P0:PNQsvJEvGHA=;cQhF9baDSZH13ugyF2rJO0B3hX6
- ImRJpSQ5/NvkU96MqFeeFkkH3mnyWsEm+9bGvuTYtxWXjfZd7YKwPu1p0v/B/JJaZAU01Kjtb
- EoYPqaLGDWVukTLHSs3ZW1IMj2DCI5SUb9fRaMf1Wlk9j5r+gXq1Z8/uRbMgdzdX4CnqSppDQ
- NVIWaWHVY/cxxIokKGCEfYfiAp4kb+x9QVcsqGNqEELWWNoYkaDBt+GqGO7Ib7ZwVd44vHnyB
- lleWah/UoD18fsMvZTr4KQZc6mfH22N1+fZTYGCLWzsq7ND+KAXAAz1b9Mje0qF3TRuil55Jy
- 3RlGpxVAWZXnGgBK3rqSGEbG7uPhJtCMm0JdVS2MV7wvbYY4jiEs/6I6bFn/8o1g0O1in4fN9
- r+1tOB0l+GZ+QQ3aS9gk+MvJ4o/EaDL0sNBarHtcVOolNBMWYMyj2+ymMi4ReEp9EDYVSqdHI
- tfSK5brpW3niF/TCmAAdO/iK4n6iN0pcxB7UrEpNwl0rWV3XxSF+I6C/xktfzdS6fRcNTYbcn
- 1xr85/mIcwVf8IY7oxnavoK3X5iubdmuTK31v5UX7cRHXvuv/41gcaTl2KXDIwSjQIkbOx7VK
- B5X4v6Yus2M35YH1FmLRPNoSazg9r/D4GeXTN7RD7nT23IbORLq6eafq1YWO1jZM9IhkR8QAy
- psFgf5NtuOgSnFV8YUX4KElmM1CL96YYqpCt4WmSZDKCuWvL4atz8dFEcE3F9v3XGSRmsYisp
- 8uZLS8xjEgnGzNo3HmJ9GSCGxiXOTFP3rQF3Ra/1sPfbIa1LZVx+5RMGFKvcuZNOertJGgGcA
- EKyDvlmlNVIe3rFTRoH8+xX2BJR9PlcNlmPafiLXBfH4DDvUoZWPZdPQHjFWmkLCR9xeHDNnm
- 2846HHajm0PrYfQr71txdJHbgALpISG+kMLxBDSJRrFF2+wKL95WsAw8S5qenFWORPWZSZpGw
- dGtHS8CfHaPtHgdKsZr2uvMBTbI=
+X-Provags-ID: V03:K1:EWktxHK2pXb/uzLePyiOujXAmpX7rdBW66Gt7Ig1/sEBnAwiEvx
+ bzjDu49BhucQSZWleC2XQNoASGz1/grBLsB7TZqQ2kxKe/X5or1owGDTQGQmfikpK2dkqMC
+ FRf0YIsZpY1fnwk3R8t13t9wFZYXD2g/bD8vkd86e6Yz2zvAjIzTzx6cqvwUpnPCTFYpQRi
+ 8VH4A7V541z4uVYdAHJTg==
+UI-OutboundReport: notjunk:1;M01:P0:juz6mdP1klo=;LOJz6O8knWygtmqjGiIEI6XwyS1
+ vi/+iNVpY57sgRndt7MHyb4s5I5O1MhTHRFvlchhO0LgVeav7bWsSHRXA+Gmc5lyog5MTf5Uo
+ Ow4/G7POV3BL1jVSyJyCPOxJQ6PPyOUH8r1TiOIQE21GRy6D4uQC2egTrzbM27WVgAONBHY+q
+ cbx762NkSJVn2kLA9FgVEHk19+rhXa8C8VBQVWaXI4xx1vqJS+lAU3GG15ZMsHIXNl8yk7Z7c
+ 3mHHiDTpI5vhW7Hpy1SvhUwPchS/vC3iAbniWP1uhd63ifuRIQDMjqOmjvo/9u5uX2QREwhTI
+ mYeEzTjjn28NyVQsERmoZUFrkdhiNanmHa/ymvBeSw5lO2bhb5pJ7xqXSyni8VREayvR/Xv1a
+ kbKACL8G7RMl6/Q/ymc4Z164eG1S2+8dpIkSgW4haMep1zSAtS3RvalxaN96zRrzWHthFi25N
+ gRcGylWWL8vC257jnDajrGCfSVckN9UDgG8NNuvejJUFibbEm0WxMx5g+oEKFJRIH+j+2YqcP
+ 5xJj55n6epFIQmOCSgPKJY2Y0I2yIIazpMKvSRMzafGIEjROLeHHe28dw5i4UkwhVXSTuFl8L
+ CS8X8tGeR0379mDqNM3/R1oMFKGA3JbyC4bfquDSY12dE0Uj5eoDBf+z+ZkJ6r0Dd3NfbfDQT
+ 5beTjO2kfoqGPCnJuEFIo0yoO6KEC4bX6/iuMfAJqYOJULwA4FRkL2AY1rAIJIM4ZgrGDW7hy
+ rd/nN2LLnQu1grTvUnkwEQyEqtWHWfAHkJ8u9T8Lhxza5FZe9MpF0C7i503rmI8UuzpxdmYEM
+ 4ddCwY02xJ+q5ieJEIOXdB223saFD26KbRlB3NbHdelzjCpNWBH+/xzryKFo3ZG5c24pOz8SI
+ 6ctMYWNxUQoOd8Ttqo0ka58vugJ3RGycf6XA8nrVJiHrXXrdprS+p6UCjSUQrv1QzaelH2pBu
+ SmGG9umZhcxtzvi0YifIbpQu2FQ=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/28/23 16:58, Uwe Kleine-K=C3=B6nig wrote:
-> struct pwm_device::pwm is a write-only variable in the pwm core and used
-> nowhere apart from this and another dev_dbg. So it isn't useful to
-> identify the used PWM. Emit the PWM's label instead in the debug
-> message.
+On 7/27/23 19:03, Yuanjun Gong wrote:
+> in mmphw_probe(), check the return value of clk_prepare_enable()
+> and return the error code if clk_prepare_enable() returns an
+> unexpected value.
 >
-> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+> Fixes: d63028c38905 ("video: mmp display controller support")
+> Signed-off-by: Yuanjun Gong <ruc_gongyuanjun@163.com>
 
 applied.
-
 Thanks!
 Helge
 
 > ---
->   drivers/video/fbdev/ssd1307fb.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
+>   drivers/video/fbdev/mmp/hw/mmp_ctrl.c | 4 +++-
+>   1 file changed, 3 insertions(+), 1 deletion(-)
 >
-> diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd13=
-07fb.c
-> index 11c373798279..46881a691549 100644
-> --- a/drivers/video/fbdev/ssd1307fb.c
-> +++ b/drivers/video/fbdev/ssd1307fb.c
-> @@ -399,8 +399,8 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
->   		/* Enable the PWM */
->   		pwm_enable(par->pwm);
->
-> -		dev_dbg(&par->client->dev, "Using PWM%d with a %lluns period.\n",
-> -			par->pwm->pwm, pwm_get_period(par->pwm));
-> +		dev_dbg(&par->client->dev, "Using PWM %s with a %lluns period.\n",
-> +			par->pwm->label, pwm_get_period(par->pwm));
+> diff --git a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c b/drivers/video/fbdev=
+/mmp/hw/mmp_ctrl.c
+> index 51fbf02a0343..76b50b6c98ad 100644
+> --- a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
+> +++ b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
+> @@ -519,7 +519,9 @@ static int mmphw_probe(struct platform_device *pdev)
+>   			      "unable to get clk %s\n", mi->clk_name);
+>   		goto failed;
 >   	}
+> -	clk_prepare_enable(ctrl->clk);
+> +	ret =3D clk_prepare_enable(ctrl->clk);
+> +	if (ret)
+> +		goto failed;
 >
->   	/* Set initial contrast */
+>   	/* init global regs */
+>   	ctrl_set_default(ctrl);
 

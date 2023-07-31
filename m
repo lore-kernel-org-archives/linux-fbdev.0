@@ -2,319 +2,238 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AEF93C001DE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jul 2023 07:53:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3776C001DE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jul 2023 10:29:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229812AbjGaHxo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 31 Jul 2023 03:53:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53670 "EHLO
+        id S231695AbjGaK3i (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 31 Jul 2023 06:29:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60976 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229644AbjGaHxn (ORCPT
+        with ESMTP id S231496AbjGaK3h (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 31 Jul 2023 03:53:43 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D61C3130
-        for <linux-fbdev@vger.kernel.org>; Mon, 31 Jul 2023 00:53:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1690790011; x=1691394811; i=deller@gmx.de;
- bh=zQ7p0g7OWN3Jmy1po2324Kzdhqc+F8FXPGSMTaI9/aY=;
- h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=YdGEhzo1i1AYVukxqjgcZLwSIMETXawn5VNn7cPI4+JVaBbQHJy9nG4bwT8dBneSO6nly9W
- kpkwwHpe70n9kNohDEX08tdLnJrzXT1vajIOwMqFwb9+uYfUrpfJ6ccRQPSveVueFj016J3do
- WF+XxoenELa9BFhd+CxpsZ8NjjmcP6NTvHAWnaR/GHl4nkky94TjBX895Oby0QtrbO0AdEOPr
- vsOzQ1dXurvJjyoNRQCF13peZ9dSUJxOgdOHye9Z3ie0RX8N27zOoKsXBsWJWiXbpqBDevSvL
- 6/qALfHEld1Xngtd2UBzzkEoa2DdKjP8ElBJnfym13UoHctavNLQ==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.159.238]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MS3mz-1qIqe01H91-00TVbk; Mon, 31
- Jul 2023 09:53:31 +0200
-Message-ID: <6d3dd245-9a13-cfd9-5c21-a0dc12f791bc@gmx.de>
-Date:   Mon, 31 Jul 2023 09:53:30 +0200
+        Mon, 31 Jul 2023 06:29:37 -0400
+Received: from mgamail.intel.com (unknown [192.55.52.43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5DC90EE;
+        Mon, 31 Jul 2023 03:29:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1690799376; x=1722335376;
+  h=from:to:cc:subject:in-reply-to:references:date:
+   message-id:mime-version;
+  bh=qrcUzGPc/mzEUo4ZLeC0gsRlzVMa/7ucsgNmiIe/YQQ=;
+  b=ASn3gYEoYid8C1rUZnVmPZ6Sg+L0LHjpj1KyTTDvLQaz+pjRaFBKTYQm
+   irTyZj2b5b3CiWHIdsAlW+7NYs45QOpufZRuRlOXHuzQJk/ztg8TdURav
+   smKhj9cBBeaTqLmrWfppeqW2FpuJoYTkuVVKZqFJw4tTONGgXuFX3lVBF
+   2t+ZI0sX7PtBRfMH6+EdKlzl40SyZMa64ygkcNqg72OAdOSw9j67HrjPx
+   zie3FN08uC88kT+DUMVfFTEImx4QMzdlX3qQf7LG/kZ97Ay0CxI6qEh8V
+   Vw5aMznR+/ErfEKHa+D2flgfOy1hMSJ23cA1MusI1qpL5l0pRkU0351cA
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10787"; a="455353616"
+X-IronPort-AV: E=Sophos;i="6.01,244,1684825200"; 
+   d="scan'208";a="455353616"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Jul 2023 03:29:35 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10787"; a="818294474"
+X-IronPort-AV: E=Sophos;i="6.01,244,1684825200"; 
+   d="scan'208";a="818294474"
+Received: from naikshri-mobl7.ger.corp.intel.com (HELO localhost) ([10.252.36.230])
+  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Jul 2023 03:29:29 -0700
+From:   Jani Nikula <jani.nikula@intel.com>
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Imre Deak <imre.deak@intel.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Ilpo =?utf-8?Q?J=C3=A4rv?= =?utf-8?Q?inen?= 
+        <ilpo.jarvinen@linux.intel.com>,
+        Alexey Dobriyan <adobriyan@gmail.com>,
+        intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+        linux-fbdev@vger.kernel.org
+Cc:     Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>,
+        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Helge Deller <deller@gmx.de>, Stephen Boyd <sboyd@kernel.org>,
+        Nikita Shubin <nikita.shubin@maquefel.me>,
+        Nikita Shubin via B4 Relay 
+        <devnull+nikita.shubin.maquefel.me@kernel.org>,
+        Andi Shyti <andi.shyti@kernel.org>
+Subject: Re: [PATCH v3 1/1] drm/i915: Move abs_diff() to math.h
+In-Reply-To: <20230724082511.3225-1-andriy.shevchenko@linux.intel.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+References: <20230724082511.3225-1-andriy.shevchenko@linux.intel.com>
+Date:   Mon, 31 Jul 2023 13:29:26 +0300
+Message-ID: <87ila0xtkp.fsf@intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH 3/4] fbdev: Use _DMAMEM_ infix for DMA-memory helpers
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, sam@ravnborg.org,
-        javierm@redhat.com
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20230729193157.15446-1-tzimmermann@suse.de>
- <20230729193157.15446-4-tzimmermann@suse.de>
- <e25eaae4-dcc9-7864-c655-f9e739db7970@gmx.de>
- <bd0338f7-d79e-dfff-581b-b16352c5371c@suse.de>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <bd0338f7-d79e-dfff-581b-b16352c5371c@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:eXa7s6M1llANEHFMEo700DizZYFZgAsRz1viifEZvu21zswGNGi
- eo8O+xQNWFIpqUGpxgOUgBRi5AY+En2KtTjEfrykYZBJqhWfsdo5sUu7b9aKd5Ux1HKjfz2
- WnzEvWltz9mmTVAPXJOYG+xCTJVjMb/no/uPO18dLGTMf8V9dNCt/U+g4oFGciSYlY1jVAw
- rnbfKUSsuRkFdKQY6nmyw==
-UI-OutboundReport: notjunk:1;M01:P0:OK8+QnJPtZE=;wcPvtbmEPJD3qLoDezq4J+UcGnC
- hF4HB+AT7DefKZZZ8oI47k450XR5hceNQrXKwQYiuWeNC8yJa4/NVJkaRsHcu3ESsm9zFTuBq
- wU6zcex+Tn+Tkrf5TEdarvlAn4QF0xkAeUoBF/pCagYI8yPow8AWPMJ9xw6e1tZBAZbGcfhb+
- lK1VaVQNNEwrJDIjl/64rcsfBGgve4YwDgRpa5bVw3QcQOgrAWqXe7EibmtKxidjRfV9qqMfN
- PiHj/pNt12/raP0Tzjv5Ie3D0e0J7Rp8tizsvayDNDdFxBgEb5eHLHuAFZOOK1G3c32v5Ih+4
- FAHkqEVw8BOKsd0mz/vBaIlct91gdRtZq2DURGaIpc102DSycnlxs1IZayYZK/2IEcWFJTAru
- kLIC1E6HZLNOHzL5wPTB7FNYHJxufcm0n30FRxS4u4ipMqBqeEGH6iPOO1s+PgngmF4Qul/Fd
- jEMAiu1Q8eFAccPvCB4W+5aEox0tfpeCurH3ZhIpYfQElkloOjQ9mdLDuIvdVzMrThd6V7fnj
- iJmnLijIxNXcZFiRx63MCN5u8VpS8JvNrp5BFraHT9qFBqXEK4mRTO2l4pgl1zlMuTyx5CueH
- BCpGXWR/zWeSt6xxzgb1fCSsMT3ICkN/nuKVPea0N7XCXqz28DLkqI1l1Dokhrjtj60n4vESx
- SW+d80jTFE0umoe9DBn97X+fG3Q8/wf2O0kX98PAsqR3qExa/muSjsT4FWR32wC1MmkBZRRUW
- P9GhIUpteh2typS/VurFfkth2JOY0z1UwXGPcRqALiIDMzl7Q5OeAJWxeBWGLfguKODJeQQUG
- tMvKcRpQbycfRh8DL5YY9EEhaPGkLE06K/22Fp8B3AgfGbH4I6RuRCeQXiArRLVdmmdiKATjk
- CM5TrNX0MrNXuJtM+DZMcUf8rd8UED+GrMtnLUd7nWJXKfnBtarO8D9Pt+gFHi0mSH793p3hL
- 1ZQiUpZ1n6invW+CUiydDDPAogY=
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/31/23 09:30, Thomas Zimmermann wrote:
-> Hi
+On Mon, 24 Jul 2023, Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
+> abs_diff() belongs to math.h. Move it there.
+> This will allow others to use it.
 >
-> Am 30.07.23 um 18:20 schrieb Helge Deller:
->> On 7/29/23 21:26, Thomas Zimmermann wrote:
->>> Change the infix for fbdev's DMA-memory helpers from _DMA_ to
->>> _DMAMEM_. The helpers perform operations within DMA-able memory,
->>
->> Since "DMA" stands for "Direct Memory Access", people already
->> know that it operates on memory. I don't think we need
->> to add "MEM" here.
->> So, maybe we should drop this patch and just keep "DMA"?
->
-> I think I'd rather leave it to DMAMEM. It's a bit redundant, but it's
-> consistent with the other names and it's clear.  Otherwise, someone
-> might thing these helpers are for using DMA engines of some kind.
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Reviewed-by: Jiri Slaby <jirislaby@kernel.org> # tty/serial
+> ---
+> v3: added tag (Jiri), removed space after a cast (fdo CI)
+>  drivers/gpu/drm/i915/display/intel_dpll_mgr.c |  1 +
+>  drivers/gpu/drm/i915/display/intel_dpll_mgr.h |  7 -------
 
-Ok for me.
+Acked-by: Jani Nikula <jani.nikula@intel.com>
 
-Thanks!
-Helge
+for merging the i915 parts via whichever tree is most convenient for
+you.
 
+>  drivers/gpu/ipu-v3/ipu-image-convert.c        | 15 +++++++--------
+>  drivers/tty/serial/omap-serial.c              |  7 +------
+>  drivers/video/fbdev/core/svgalib.c            |  7 +------
+>  include/linux/math.h                          |  7 +++++++
+>  6 files changed, 17 insertions(+), 27 deletions(-)
 >
-> Best regards
-> Thomas
->
->>
->> Other than that you patch series looks good!
->> Acked-by: Helge Deller <deller@gmx.de>
->>
->> Helge
->>
->>
->>> but they don't perform DMA operations. Naming should make this
->>> clear. Adapt all users. No functional changes.
->>>
->>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
->>> ---
->>> =C2=A0 drivers/gpu/drm/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 2 =
-+-
->>> =C2=A0 drivers/gpu/drm/drm_fbdev_dma.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 4 ++--
->>> =C2=A0 drivers/gpu/drm/exynos/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 2 +-
->>> =C2=A0 drivers/gpu/drm/exynos/exynos_drm_fbdev.c | 4 ++--
->>> =C2=A0 drivers/gpu/drm/omapdrm/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 2 +-
->>> =C2=A0 drivers/gpu/drm/omapdrm/omap_fbdev.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0 | 4 ++--
->>> =C2=A0 drivers/gpu/drm/tegra/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 2 +-
->>> =C2=A0 drivers/gpu/drm/tegra/fbdev.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 4 ++--
->>> =C2=A0 drivers/video/fbdev/core/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0 | 2 +-
->>> =C2=A0 include/linux/fb.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0 | 4 ++--
->>> =C2=A0 10 files changed, 15 insertions(+), 15 deletions(-)
->>>
->>> diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
->>> index 34da733e8606..b51c6a141dfa 100644
->>> --- a/drivers/gpu/drm/Kconfig
->>> +++ b/drivers/gpu/drm/Kconfig
->>> @@ -224,7 +224,7 @@ config DRM_TTM_HELPER
->>> =C2=A0 config DRM_GEM_DMA_HELPER
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 tristate
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on DRM
->>> -=C2=A0=C2=A0=C2=A0 select FB_DMA_HELPERS if DRM_FBDEV_EMULATION
->>> +=C2=A0=C2=A0=C2=A0 select FB_DMAMEM_HELPERS if DRM_FBDEV_EMULATION
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 help
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 Choose this if you need the=
- GEM DMA helper functions
->>>
->>> diff --git a/drivers/gpu/drm/drm_fbdev_dma.c b/drivers/gpu/drm/drm_fbd=
-ev_dma.c
->>> index 6db168f94290..6c9427bb4053 100644
->>> --- a/drivers/gpu/drm/drm_fbdev_dma.c
->>> +++ b/drivers/gpu/drm/drm_fbdev_dma.c
->>> @@ -62,9 +62,9 @@ static const struct fb_ops drm_fbdev_dma_fb_ops =3D =
-{
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .owner =3D THIS_MODULE,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_open =3D drm_fbdev_dma_fb_open,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_release =3D drm_fbdev_dma_fb_releas=
-e,
->>> -=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMA_OPS_RDWR,
->>> +=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMAMEM_OPS_RDWR,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 DRM_FB_HELPER_DEFAULT_OPS,
->>> -=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMA_OPS_DRAW,
->>> +=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMAMEM_OPS_DRAW,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_mmap =3D drm_fbdev_dma_fb_mmap,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_destroy =3D drm_fbdev_dma_fb_destro=
-y,
->>> =C2=A0 };
->>> diff --git a/drivers/gpu/drm/exynos/Kconfig b/drivers/gpu/drm/exynos/K=
-config
->>> index 661b42ad4873..733b109a5095 100644
->>> --- a/drivers/gpu/drm/exynos/Kconfig
->>> +++ b/drivers/gpu/drm/exynos/Kconfig
->>> @@ -7,7 +7,7 @@ config DRM_EXYNOS
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select DRM_DISPLAY_HELPER if DRM_EXYNOS=
-_DP
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select DRM_KMS_HELPER
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select VIDEOMODE_HELPERS
->>> -=C2=A0=C2=A0=C2=A0 select FB_DMA_HELPERS if DRM_FBDEV_EMULATION
->>> +=C2=A0=C2=A0=C2=A0 select FB_DMAMEM_HELPERS if DRM_FBDEV_EMULATION
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select SND_SOC_HDMI_CODEC if SND_SOC
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 help
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 Choose this option if you h=
-ave a Samsung SoC Exynos chipset.
->>> diff --git a/drivers/gpu/drm/exynos/exynos_drm_fbdev.c b/drivers/gpu/d=
-rm/exynos/exynos_drm_fbdev.c
->>> index 4ccb385aff52..a379c8ca435a 100644
->>> --- a/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
->>> +++ b/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
->>> @@ -49,9 +49,9 @@ static void exynos_drm_fb_destroy(struct fb_info *in=
-fo)
->>>
->>> =C2=A0 static const struct fb_ops exynos_drm_fb_ops =3D {
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .owner=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0 =3D THIS_MODULE,
->>> -=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMA_OPS_RDWR,
->>> +=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMAMEM_OPS_RDWR,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 DRM_FB_HELPER_DEFAULT_OPS,
->>> -=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMA_OPS_DRAW,
->>> +=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMAMEM_OPS_DRAW,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_mmap=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0 =3D exynos_drm_fb_mmap,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_destroy=C2=A0=C2=A0=C2=A0 =3D exyno=
-s_drm_fb_destroy,
->>> =C2=A0 };
->>> diff --git a/drivers/gpu/drm/omapdrm/Kconfig b/drivers/gpu/drm/omapdrm=
-/Kconfig
->>> index d3c4877e465c..b715301ec79f 100644
->>> --- a/drivers/gpu/drm/omapdrm/Kconfig
->>> +++ b/drivers/gpu/drm/omapdrm/Kconfig
->>> @@ -4,7 +4,7 @@ config DRM_OMAP
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on DRM && OF
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on ARCH_OMAP2PLUS
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select DRM_KMS_HELPER
->>> -=C2=A0=C2=A0=C2=A0 select FB_DMA_HELPERS if DRM_FBDEV_EMULATION
->>> +=C2=A0=C2=A0=C2=A0 select FB_DMAMEM_HELPERS if DRM_FBDEV_EMULATION
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select VIDEOMODE_HELPERS
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select HDMI
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 default n
->>> diff --git a/drivers/gpu/drm/omapdrm/omap_fbdev.c b/drivers/gpu/drm/om=
-apdrm/omap_fbdev.c
->>> index 5b33c789e17a..6b08b137af1a 100644
->>> --- a/drivers/gpu/drm/omapdrm/omap_fbdev.c
->>> +++ b/drivers/gpu/drm/omapdrm/omap_fbdev.c
->>> @@ -106,13 +106,13 @@ static void omap_fbdev_fb_destroy(struct fb_info=
- *info)
->>>
->>> =C2=A0 static const struct fb_ops omap_fb_ops =3D {
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .owner =3D THIS_MODULE,
->>> -=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMA_OPS_RDWR,
->>> +=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMAMEM_OPS_RDWR,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_check_var=C2=A0=C2=A0=C2=A0 =3D drm=
-_fb_helper_check_var,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_set_par=C2=A0=C2=A0=C2=A0 =3D drm_f=
-b_helper_set_par,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_setcmap=C2=A0=C2=A0=C2=A0 =3D drm_f=
-b_helper_setcmap,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_blank=C2=A0=C2=A0=C2=A0 =3D drm_fb_=
-helper_blank,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_pan_display =3D omap_fbdev_pan_disp=
-lay,
->>> -=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMA_OPS_DRAW,
->>> +=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMAMEM_OPS_DRAW,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_ioctl=C2=A0=C2=A0=C2=A0 =3D drm_fb_=
-helper_ioctl,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_mmap=C2=A0=C2=A0=C2=A0 =3D omap_fbd=
-ev_fb_mmap,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_destroy=C2=A0=C2=A0=C2=A0 =3D omap_=
-fbdev_fb_destroy,
->>> diff --git a/drivers/gpu/drm/tegra/Kconfig b/drivers/gpu/drm/tegra/Kco=
-nfig
->>> index 39452c8480c1..84e7e6bc3a0c 100644
->>> --- a/drivers/gpu/drm/tegra/Kconfig
->>> +++ b/drivers/gpu/drm/tegra/Kconfig
->>> @@ -12,7 +12,7 @@ config DRM_TEGRA
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select DRM_KMS_HELPER
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select DRM_MIPI_DSI
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select DRM_PANEL
->>> -=C2=A0=C2=A0=C2=A0 select FB_DMA_HELPERS if DRM_FBDEV_EMULATION
->>> +=C2=A0=C2=A0=C2=A0 select FB_DMAMEM_HELPERS if DRM_FBDEV_EMULATION
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select TEGRA_HOST1X
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select INTERCONNECT
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select IOMMU_IOVA
->>> diff --git a/drivers/gpu/drm/tegra/fbdev.c b/drivers/gpu/drm/tegra/fbd=
-ev.c
->>> index 206a399c42d6..db6eaac3d30e 100644
->>> --- a/drivers/gpu/drm/tegra/fbdev.c
->>> +++ b/drivers/gpu/drm/tegra/fbdev.c
->>> @@ -59,9 +59,9 @@ static void tegra_fbdev_fb_destroy(struct fb_info *i=
-nfo)
->>>
->>> =C2=A0 static const struct fb_ops tegra_fb_ops =3D {
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .owner =3D THIS_MODULE,
->>> -=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMA_OPS_RDWR,
->>> +=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMAMEM_OPS_RDWR,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 DRM_FB_HELPER_DEFAULT_OPS,
->>> -=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMA_OPS_DRAW,
->>> +=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMAMEM_OPS_DRAW,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_mmap =3D tegra_fb_mmap,
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_destroy =3D tegra_fbdev_fb_destroy,
->>> =C2=A0 };
->>> diff --git a/drivers/video/fbdev/core/Kconfig b/drivers/video/fbdev/co=
-re/Kconfig
->>> index 28e771a46df6..baf7e852c75b 100644
->>> --- a/drivers/video/fbdev/core/Kconfig
->>> +++ b/drivers/video/fbdev/core/Kconfig
->>> @@ -136,7 +136,7 @@ config FB_DEFERRED_IO
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 bool
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on FB_CORE
->>>
->>> -config FB_DMA_HELPERS
->>> +config FB_DMAMEM_HELPERS
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 bool
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on FB_CORE
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select FB_SYS_COPYAREA
->>> diff --git a/include/linux/fb.h b/include/linux/fb.h
->>> index 76472482dc30..d255263c2d1d 100644
->>> --- a/include/linux/fb.h
->>> +++ b/include/linux/fb.h
->>> @@ -579,11 +579,11 @@ extern ssize_t fb_sys_write(struct fb_info *info=
-, const char __user *buf,
->>> =C2=A0=C2=A0 * Helpers for framebuffers in DMA-able memory
->>> =C2=A0=C2=A0 */
->>>
->>> -#define __FB_DEFAULT_DMA_OPS_RDWR \
->>> +#define __FB_DEFAULT_DMAMEM_OPS_RDWR \
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_read=C2=A0=C2=A0=C2=A0 =3D fb_sys_r=
-ead, \
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_write=C2=A0=C2=A0=C2=A0 =3D fb_sys_=
-write
->>>
->>> -#define __FB_DEFAULT_DMA_OPS_DRAW \
->>> +#define __FB_DEFAULT_DMAMEM_OPS_DRAW \
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_fillrect=C2=A0=C2=A0=C2=A0 =3D sys_=
-fillrect, \
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_copyarea=C2=A0=C2=A0=C2=A0 =3D sys_=
-copyarea, \
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_imageblit=C2=A0=C2=A0=C2=A0 =3D sys=
-_imageblit
->>
->
+> diff --git a/drivers/gpu/drm/i915/display/intel_dpll_mgr.c b/drivers/gpu/drm/i915/display/intel_dpll_mgr.c
+> index 6b2d8a1e2aa9..290e856fe9e9 100644
+> --- a/drivers/gpu/drm/i915/display/intel_dpll_mgr.c
+> +++ b/drivers/gpu/drm/i915/display/intel_dpll_mgr.c
+> @@ -21,6 +21,7 @@
+>   * DEALINGS IN THE SOFTWARE.
+>   */
+>  
+> +#include <linux/math.h>
+>  #include <linux/string_helpers.h>
+>  
+>  #include "i915_reg.h"
+> diff --git a/drivers/gpu/drm/i915/display/intel_dpll_mgr.h b/drivers/gpu/drm/i915/display/intel_dpll_mgr.h
+> index ba62eb5d7c51..04e6810954b2 100644
+> --- a/drivers/gpu/drm/i915/display/intel_dpll_mgr.h
+> +++ b/drivers/gpu/drm/i915/display/intel_dpll_mgr.h
+> @@ -29,13 +29,6 @@
+>  
+>  #include "intel_wakeref.h"
+>  
+> -/*FIXME: Move this to a more appropriate place. */
+> -#define abs_diff(a, b) ({			\
+> -	typeof(a) __a = (a);			\
+> -	typeof(b) __b = (b);			\
+> -	(void) (&__a == &__b);			\
+> -	__a > __b ? (__a - __b) : (__b - __a); })
+> -
+>  enum tc_port;
+>  struct drm_i915_private;
+>  struct intel_atomic_state;
+> diff --git a/drivers/gpu/ipu-v3/ipu-image-convert.c b/drivers/gpu/ipu-v3/ipu-image-convert.c
+> index af1612044eef..841316582ea9 100644
+> --- a/drivers/gpu/ipu-v3/ipu-image-convert.c
+> +++ b/drivers/gpu/ipu-v3/ipu-image-convert.c
+> @@ -7,7 +7,10 @@
+>  
+>  #include <linux/interrupt.h>
+>  #include <linux/dma-mapping.h>
+> +#include <linux/math.h>
+> +
+>  #include <video/imx-ipu-image-convert.h>
+> +
+>  #include "ipu-prv.h"
+>  
+>  /*
+> @@ -543,7 +546,7 @@ static void find_best_seam(struct ipu_image_convert_ctx *ctx,
+>  		unsigned int in_pos;
+>  		unsigned int in_pos_aligned;
+>  		unsigned int in_pos_rounded;
+> -		unsigned int abs_diff;
+> +		unsigned int diff;
+>  
+>  		/*
+>  		 * Tiles in the right row / bottom column may not be allowed to
+> @@ -575,15 +578,11 @@ static void find_best_seam(struct ipu_image_convert_ctx *ctx,
+>  		    (in_edge - in_pos_rounded) % in_burst)
+>  			continue;
+>  
+> -		if (in_pos < in_pos_aligned)
+> -			abs_diff = in_pos_aligned - in_pos;
+> -		else
+> -			abs_diff = in_pos - in_pos_aligned;
+> -
+> -		if (abs_diff < min_diff) {
+> +		diff = abs_diff(in_pos, in_pos_aligned);
+> +		if (diff < min_diff) {
+>  			in_seam = in_pos_rounded;
+>  			out_seam = out_pos;
+> -			min_diff = abs_diff;
+> +			min_diff = diff;
+>  		}
+>  	}
+>  
+> diff --git a/drivers/tty/serial/omap-serial.c b/drivers/tty/serial/omap-serial.c
+> index 82d35dbbfa6c..9be63a1f1f0c 100644
+> --- a/drivers/tty/serial/omap-serial.c
+> +++ b/drivers/tty/serial/omap-serial.c
+> @@ -222,16 +222,11 @@ static inline int calculate_baud_abs_diff(struct uart_port *port,
+>  				unsigned int baud, unsigned int mode)
+>  {
+>  	unsigned int n = port->uartclk / (mode * baud);
+> -	int abs_diff;
+>  
+>  	if (n == 0)
+>  		n = 1;
+>  
+> -	abs_diff = baud - (port->uartclk / (mode * n));
+> -	if (abs_diff < 0)
+> -		abs_diff = -abs_diff;
+> -
+> -	return abs_diff;
+> +	return abs_diff(baud, port->uartclk / (mode * n));
+>  }
+>  
+>  /*
+> diff --git a/drivers/video/fbdev/core/svgalib.c b/drivers/video/fbdev/core/svgalib.c
+> index 9e01322fabe3..2cba158888ea 100644
+> --- a/drivers/video/fbdev/core/svgalib.c
+> +++ b/drivers/video/fbdev/core/svgalib.c
+> @@ -14,6 +14,7 @@
+>  #include <linux/kernel.h>
+>  #include <linux/string.h>
+>  #include <linux/fb.h>
+> +#include <linux/math.h>
+>  #include <linux/svga.h>
+>  #include <asm/types.h>
+>  #include <asm/io.h>
+> @@ -372,12 +373,6 @@ EXPORT_SYMBOL(svga_get_caps);
+>   *  F_VCO = (F_BASE * M) / N
+>   *  F_OUT = F_VCO / (2^R)
+>   */
+> -
+> -static inline u32 abs_diff(u32 a, u32 b)
+> -{
+> -	return (a > b) ? (a - b) : (b - a);
+> -}
+> -
+>  int svga_compute_pll(const struct svga_pll *pll, u32 f_wanted, u16 *m, u16 *n, u16 *r, int node)
+>  {
+>  	u16 am, an, ar;
+> diff --git a/include/linux/math.h b/include/linux/math.h
+> index 449a29b73f6d..4459d1786f77 100644
+> --- a/include/linux/math.h
+> +++ b/include/linux/math.h
+> @@ -157,6 +157,13 @@ __STRUCT_FRACT(u32)
+>  	__builtin_types_compatible_p(typeof(x), unsigned type),		\
+>  	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
+>  
+> +#define abs_diff(a, b) ({			\
+> +	typeof(a) __a = (a);			\
+> +	typeof(b) __b = (b);			\
+> +	(void)(&__a == &__b);			\
+> +	__a > __b ? (__a - __b) : (__b - __a);	\
+> +})
+> +
+>  /**
+>   * reciprocal_scale - "scale" a value into range [0, ep_ro)
+>   * @val: value
 
+-- 
+Jani Nikula, Intel Open Source Graphics Center

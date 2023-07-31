@@ -2,91 +2,88 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20E30C001DE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jul 2023 12:55:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA512C001E0
+	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jul 2023 13:08:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230242AbjGaMzX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 31 Jul 2023 08:55:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40600 "EHLO
+        id S230095AbjGaNIO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 31 Jul 2023 09:08:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47306 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231167AbjGaMzW (ORCPT
+        with ESMTP id S232982AbjGaNH6 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 31 Jul 2023 08:55:22 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF65D10FF
-        for <linux-fbdev@vger.kernel.org>; Mon, 31 Jul 2023 05:55:18 -0700 (PDT)
+        Mon, 31 Jul 2023 09:07:58 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 290F510DF;
+        Mon, 31 Jul 2023 06:07:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1690808113; x=1691412913; i=deller@gmx.de;
- bh=uZ24tCDPloarimLbnb8GLRgv81AnDnCwQoQQQYP5vk8=;
+ s=s31663417; t=1690808836; x=1691413636; i=deller@gmx.de;
+ bh=I5E7In3qLeawhm32r5BW4CB4+4g3GLRaXOk7wIj51uQ=;
  h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=Cwb/MT6kgZbuNFKxnl71B51I3BO+gA+lXWv07AESRod7V/1xUS/vHyAofvMa4yxEc/yyNHL
- /TbZnp5NZ6cSbhgoLW6zcqEW4LK1wdLueg4fVnmR3VsPGXMH+0dM1Tg+wAI9EXlE4C7g+wPbo
- PRRoosckTYglD3Odd9tHFPRvIvBWTAbrZTCFiXy3T15hA5gZlf8U//Wb733SL58JTiwcV0VTP
- BM/VLy/kDxmKt1P2s/qk04AQn1bJMUgiu1V9R5hyph6aZ8vsfuVQbLJj8Av7sS6rhKfE6dw6G
- ITiCnWCCZHJnFxZNDfKn15cHwbMfST/t+AiUsmRp2nTm6WL0PaVA==
+ b=jy4RS8jDrPWTY6SPcrgNBJ1FF1cWboSWULhoDUdhJmNGCdgEyaKuo0336hWU3juf3tLZ3vJ
+ dzDKhqe6J8yuaOhl5K5WiapKQZCE9sukFIqeizRf+mScsK/loIAcHnYzApgG5puLbS96ynImV
+ 9C8o+VgFoDF/0G54ZDu27FXqDdwfWHPe3yX2tJ+vrRHBol0cwG/VwRFUZe5Masxe0xpweZkXB
+ oQzG05NQS5T6sx8OY62CkxgPaF5OQ6AmoBgiSaTRJlGxg4VEzb25L3a6yorOjqEajLkf/QvOx
+ C9j+101Nsad20clG95wdIH2KluYlnBYQwUHguXtTobC2NgvF4Wrw==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.159.238]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MeCpR-1ppBry10AZ-00bGOf; Mon, 31
- Jul 2023 14:55:13 +0200
-Message-ID: <064cd2bd-9f36-d30d-586a-cee58d433b8f@gmx.de>
-Date:   Mon, 31 Jul 2023 14:55:12 +0200
+Received: from [192.168.20.60] ([94.134.159.238]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MfHEP-1pwtId2EpP-00gnhA; Mon, 31
+ Jul 2023 15:07:16 +0200
+Message-ID: <0cb2ab66-ca30-b2ab-47f7-04208b2400cd@gmx.de>
+Date:   Mon, 31 Jul 2023 15:07:16 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.13.0
-Subject: Re: [PATCH] fbdev: mx3fb: Remove the driver
+Subject: Re: [PATCH] fbdev: fbmem: mark registered_fb static
 Content-Language: en-US
-To:     Fabio Estevam <festevam@gmail.com>
-Cc:     arnd@arndb.de, linux-fbdev@vger.kernel.org,
-        Fabio Estevam <festevam@denx.de>
-References: <20230728211201.1108407-1-festevam@gmail.com>
+To:     Min-Hua Chen <minhuadotchen@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+References: <20230714003748.91129-1-minhuadotchen@gmail.com>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20230728211201.1108407-1-festevam@gmail.com>
+In-Reply-To: <20230714003748.91129-1-minhuadotchen@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:Q+XUa2ZRPlXWPHLp2AK/mocQGEbtq90vCiNnUnseQlylDBj3OzH
- Z+bzuBXLcgpYGKflmuU+XrgFXz1gEzGqervM22Acr8cu3IQ7YkAKoSaZ5W7c2z0aZbpTdAC
- kY1VF8gDGEOxN6/6afj+VqUwfMnuzfEad2uvWbni0/hpS5Vtkz/ryd0oxRsPMH97f/ypMAU
- hkuJeB+FSo/3WQ8zj8avA==
-UI-OutboundReport: notjunk:1;M01:P0:J7OQoFAIgkM=;duP7BYVdbF5K6m4TSFzGn9IoqjJ
- F24mcOKC/G6MbeTvObJ5uhWivIGsAjLextXFNzYACShxeqDxPn0/IBQdfVX4xFgb76y5zIa6k
- Q4zHWuxPlO4Gyhh9hRnY5VsBEHHrbLh/Pzp67JEWMJ8hEptKJm1Y0mAUA3R/YJOuJ4sf0369I
- gd8jDODyT7mCO062EpoYP1X4ORtT64HGrhow31bOUEvO08NkJ5fQm8qIAhXNEyANFYQeLIJGb
- a1yf1sN+zvD+1xbel+qMf3wyHtMXBkKL8+maAAU2iFfpZBRi1iQREAwGnWwyC/o8Exx+3plmL
- FrD2VdciK7OTLAdbH5GQAN2Kse/gSLvMV3AcXlDn74dA42uDLxwB6g2k48egTMggJ8GBqpumN
- itzFxgB+MtPyR18NIboFpXO+/tP6jS5Mu9i8Xgj3+Z2vVSj0jWg88wXy+eFYrIIO4a4mURmpf
- noSPI7KCHeGSgWt6UJXOIxbk3SS4l02fkrCcRfe8UfloGjtGmVY4k1nrFI68bLG+pV6g9A0vh
- sve/DTLEKifM9LAVX4Q8irJCZ555K4W70HjKQcu2mqhpBbHqv1gynoDJ/iyTrsGEP/kxA21Df
- MMN/HfC8Ju8IRb9bJ2I7P2FEO8sGep9b3eVF50UAt2onaTW58VYC6KnR+S5gxCvDLE9ZEJbMz
- p1JlL/ZWeCjltPWoGKFxukF/Vu+SaB+P/NPqtCkhJS6SkT5PQiGQVWMXd9/faFvbnxKO6uFwu
- PWrJklzgAVSG4u93bdGuE1tbdANTOq3be2M2HIPIK/9/EWBN4Sx+2zO9nn0c8beVeFy3d/v4h
- Z3mJSe43yxcG5kqQI5RL1Nf5PxNDpIwTOPzr7JC0rRr4UthWiGHc2YGG/x07iQnD7TViCaXrT
- /cZFhrY4XftlGLLvJc1rrXjvLCcbVY90d/APfQmkJmvU7/hJl8u4nR19F8r9vVDa9N+l9+NIK
- BpEZ6dDLsTHLESVYI+L0XLIEwPY=
+X-Provags-ID: V03:K1:yveMOZcZH+xrsKsZ6Pi0xpCrONbM7Mh2l8rwBB+bHzDNdZPfLPO
+ KeuC8wh1lMClf4wil/HxE7bv8ROOsclvZSc7SbCBxYkCFjLF/FqKAimjnT/+t7pplEMtpr1
+ O9abhaQGAaB/xjU8ymui+4ozryAHXFx4nW2pHsriT6bqdsojdrVzbzS9hIkA0BeXxPEePix
+ ILKK7B5K/u7hhFTusq9Pg==
+UI-OutboundReport: notjunk:1;M01:P0:8SGNccr63Dg=;iqSetT1mEEkMwDOYOlNV+x50HA5
+ 94myZ1MfqzceDvtuJCPoAV7EbJquvxs8TIZOOUO9YAwqNFYqSUta47+S+0+MsfVqGGXpH2h84
+ xKNjlEaUM1uohHMC1eOzameC0i1XfyjFFhzhygyjsaYjNlBFPvr19t/spzsp5fFbV3HbIyL7K
+ 7JN+mOujNxIflMn4F25/TBRL6AO/BuMqPZRBL8/Dt08DjKqkVZbw/JqXG50kqjNWNfV3zj5vI
+ yoFGJ7IwJw/kFHeRO0qZsWiGgipDGU7xebMme6buuSjKISoqA3AsjcXpblXYGKgsGWAwjP8PE
+ Th4bGivCUcjGz1TfSst70Z8FnFrCA7/aXCWm0C49AlFJf+482x7MK5usdZuGZnHaJQTaaGMux
+ uIs3U8Jg4V2XGH94KLgckEKsMTLyqw6HteHJ9YAFrBeXKRc6Vf8jA86z3o79c3Kgkmwq7tTXT
+ gEHjYaIgO7cYC7wr7PuyG0rl8fA5Vxv7Z7h7y4gup0rqJNtwjJf+CcPN+EaggfN3uoVXcGH0n
+ xcxUVyClKD0eDeVvp4+i+NysAxTqYK5JkWY2Fxekbrj/WJmdQfpf+QS4aBIHGykpcARWxt1ac
+ wbilIg1xfU9ZCwuc1Of99q+DMjHDM5zWB4TwQl0mW7x9JUARYLnQfbQNo9RMwWRzwYCFiesVQ
+ J0FN9Z4Ema+nOAelOVjJKMT/tD90bmqKkjVgceOL4P7pkqGuvK3qYYuHS2BL66gcBIyQh+Xjx
+ GNXp5PJRJt/dPJNONThyKMvJBbZWE5EFYKi2q3bT/8kf87zo1rzCfiyaE8wnqdn5ulT12Q1+G
+ ooqmWcx4bYiP83HqtMIEV4UuWy1YnxAp5S1XLfHOTS1bFenHUgn5+Utpl4crTKkA+km8Z6/nw
+ CSJvcGrZ90mnDICj6QSKVfH4zuleJ3jvFSy2Qc0X4ZAs/ubkmWUAv7THHkIOMNw6vGkLIDUDV
+ fWgheuawauKKUgBy8Si/qpr+Ez0=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/28/23 23:12, Fabio Estevam wrote:
-> From: Fabio Estevam <festevam@denx.de>
+On 7/14/23 02:37, Min-Hua Chen wrote:
+> Mark registered_fb, num_registered_fb, fbcon_registered_fb, and
+> fbcon_num_registered_fb static to fix the following sparse
+> warnings:
 >
-> The mx3fb driver does not support devicetree and i.MX has been converted
-> to a DT-only platform since kernel 5.10.
+> drivers/video/fbdev/core/fbmem.c:51:16: sparse: warning: symbol 'registe=
+red_fb' was not declared. Should it be static?
+> drivers/video/fbdev/core/fbmem.c:52:5: sparse: warning: symbol 'num_regi=
+stered_fb' was not declared. Should it be static?
+> drivers/video/fbdev/core/fbcon.c:105:16: sparse: warning: symbol 'fbcon_=
+registered_fb' was not declared. Should it be static?
+> drivers/video/fbdev/core/fbcon.c:106:5: sparse: warning: symbol 'fbcon_n=
+um_registered_fb' was not declared. Should it be static?
 >
-> As there is no user for this driver anymore, just remove it.
->
-> Signed-off-by: Fabio Estevam <festevam@denx.de>
+> No functional change intended.
 
-applied.
+num_registered_fb is still used in:
+drivers/staging/olpc_dcon/olpc_dcon.c:  if (num_registered_fb < 1) {
 
-Thanks!
 Helge
-
-> ---
->   drivers/video/fbdev/Kconfig               |   13 -
->   drivers/video/fbdev/Makefile              |    1 -
->   drivers/video/fbdev/mx3fb.c               | 1697 ---------------------
->   include/linux/platform_data/video-mx3fb.h |   50 -
->   4 files changed, 1761 deletions(-)
->   delete mode 100644 drivers/video/fbdev/mx3fb.c
->   delete mode 100644 include/linux/platform_data/video-mx3fb.h
-

@@ -2,275 +2,319 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D52FC001DF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jul 2023 07:31:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AEF93C001DE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jul 2023 07:53:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230273AbjGaHbo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 31 Jul 2023 03:31:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39988 "EHLO
+        id S229812AbjGaHxo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 31 Jul 2023 03:53:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53670 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230029AbjGaHb1 (ORCPT
+        with ESMTP id S229644AbjGaHxn (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 31 Jul 2023 03:31:27 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C73E3E7A
-        for <linux-fbdev@vger.kernel.org>; Mon, 31 Jul 2023 00:30:05 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 7CCEA1F74C;
-        Mon, 31 Jul 2023 07:30:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1690788604; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=3Ser/Jbt0cOPxs1Q4uF18wjYZIOsNyb+X1QU88SlYdY=;
-        b=WzuRrgq/HUYs4SR7OehQmT2chHht49leM7AsTYNpAF8XywbdhVrEycHYasDGkAsqlDvJiI
-        8iOO4sJUefyLvRun4Blx4Ji5mNUNOOqtPhxORIL3fP5K5kfV37qsBwnCrHQiXP/oHJ62TW
-        rsCArY3qxDdnogJBTae2ych6Ogkd/ok=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1690788604;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=3Ser/Jbt0cOPxs1Q4uF18wjYZIOsNyb+X1QU88SlYdY=;
-        b=9AV6xidI7DGcLqyA38E3FCV/CWxtDWfVf9MPbJ4ETSzvTeEei08P2ll1+TvmtBbbTWvadR
-        NPjT54/JRg0X3fCA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 5A7E91322C;
-        Mon, 31 Jul 2023 07:30:04 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id 4N0GFfxix2RDAwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 31 Jul 2023 07:30:04 +0000
-Message-ID: <bd0338f7-d79e-dfff-581b-b16352c5371c@suse.de>
-Date:   Mon, 31 Jul 2023 09:30:03 +0200
+        Mon, 31 Jul 2023 03:53:43 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D61C3130
+        for <linux-fbdev@vger.kernel.org>; Mon, 31 Jul 2023 00:53:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
+ s=s31663417; t=1690790011; x=1691394811; i=deller@gmx.de;
+ bh=zQ7p0g7OWN3Jmy1po2324Kzdhqc+F8FXPGSMTaI9/aY=;
+ h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+ b=YdGEhzo1i1AYVukxqjgcZLwSIMETXawn5VNn7cPI4+JVaBbQHJy9nG4bwT8dBneSO6nly9W
+ kpkwwHpe70n9kNohDEX08tdLnJrzXT1vajIOwMqFwb9+uYfUrpfJ6ccRQPSveVueFj016J3do
+ WF+XxoenELa9BFhd+CxpsZ8NjjmcP6NTvHAWnaR/GHl4nkky94TjBX895Oby0QtrbO0AdEOPr
+ vsOzQ1dXurvJjyoNRQCF13peZ9dSUJxOgdOHye9Z3ie0RX8N27zOoKsXBsWJWiXbpqBDevSvL
+ 6/qALfHEld1Xngtd2UBzzkEoa2DdKjP8ElBJnfym13UoHctavNLQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.159.238]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MS3mz-1qIqe01H91-00TVbk; Mon, 31
+ Jul 2023 09:53:31 +0200
+Message-ID: <6d3dd245-9a13-cfd9-5c21-a0dc12f791bc@gmx.de>
+Date:   Mon, 31 Jul 2023 09:53:30 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.1
+ Thunderbird/102.13.0
 Subject: Re: [PATCH 3/4] fbdev: Use _DMAMEM_ infix for DMA-memory helpers
 Content-Language: en-US
-To:     Helge Deller <deller@gmx.de>, sam@ravnborg.org, javierm@redhat.com
+To:     Thomas Zimmermann <tzimmermann@suse.de>, sam@ravnborg.org,
+        javierm@redhat.com
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 References: <20230729193157.15446-1-tzimmermann@suse.de>
  <20230729193157.15446-4-tzimmermann@suse.de>
  <e25eaae4-dcc9-7864-c655-f9e739db7970@gmx.de>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <e25eaae4-dcc9-7864-c655-f9e739db7970@gmx.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------JoBUal1S7COniLTsPqXOVNZB"
+ <bd0338f7-d79e-dfff-581b-b16352c5371c@suse.de>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <bd0338f7-d79e-dfff-581b-b16352c5371c@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:eXa7s6M1llANEHFMEo700DizZYFZgAsRz1viifEZvu21zswGNGi
+ eo8O+xQNWFIpqUGpxgOUgBRi5AY+En2KtTjEfrykYZBJqhWfsdo5sUu7b9aKd5Ux1HKjfz2
+ WnzEvWltz9mmTVAPXJOYG+xCTJVjMb/no/uPO18dLGTMf8V9dNCt/U+g4oFGciSYlY1jVAw
+ rnbfKUSsuRkFdKQY6nmyw==
+UI-OutboundReport: notjunk:1;M01:P0:OK8+QnJPtZE=;wcPvtbmEPJD3qLoDezq4J+UcGnC
+ hF4HB+AT7DefKZZZ8oI47k450XR5hceNQrXKwQYiuWeNC8yJa4/NVJkaRsHcu3ESsm9zFTuBq
+ wU6zcex+Tn+Tkrf5TEdarvlAn4QF0xkAeUoBF/pCagYI8yPow8AWPMJ9xw6e1tZBAZbGcfhb+
+ lK1VaVQNNEwrJDIjl/64rcsfBGgve4YwDgRpa5bVw3QcQOgrAWqXe7EibmtKxidjRfV9qqMfN
+ PiHj/pNt12/raP0Tzjv5Ie3D0e0J7Rp8tizsvayDNDdFxBgEb5eHLHuAFZOOK1G3c32v5Ih+4
+ FAHkqEVw8BOKsd0mz/vBaIlct91gdRtZq2DURGaIpc102DSycnlxs1IZayYZK/2IEcWFJTAru
+ kLIC1E6HZLNOHzL5wPTB7FNYHJxufcm0n30FRxS4u4ipMqBqeEGH6iPOO1s+PgngmF4Qul/Fd
+ jEMAiu1Q8eFAccPvCB4W+5aEox0tfpeCurH3ZhIpYfQElkloOjQ9mdLDuIvdVzMrThd6V7fnj
+ iJmnLijIxNXcZFiRx63MCN5u8VpS8JvNrp5BFraHT9qFBqXEK4mRTO2l4pgl1zlMuTyx5CueH
+ BCpGXWR/zWeSt6xxzgb1fCSsMT3ICkN/nuKVPea0N7XCXqz28DLkqI1l1Dokhrjtj60n4vESx
+ SW+d80jTFE0umoe9DBn97X+fG3Q8/wf2O0kX98PAsqR3qExa/muSjsT4FWR32wC1MmkBZRRUW
+ P9GhIUpteh2typS/VurFfkth2JOY0z1UwXGPcRqALiIDMzl7Q5OeAJWxeBWGLfguKODJeQQUG
+ tMvKcRpQbycfRh8DL5YY9EEhaPGkLE06K/22Fp8B3AgfGbH4I6RuRCeQXiArRLVdmmdiKATjk
+ CM5TrNX0MrNXuJtM+DZMcUf8rd8UED+GrMtnLUd7nWJXKfnBtarO8D9Pt+gFHi0mSH793p3hL
+ 1ZQiUpZ1n6invW+CUiydDDPAogY=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------JoBUal1S7COniLTsPqXOVNZB
-Content-Type: multipart/mixed; boundary="------------E0nXXJtXJ8k7nFCdY7FswvAL";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Helge Deller <deller@gmx.de>, sam@ravnborg.org, javierm@redhat.com
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Message-ID: <bd0338f7-d79e-dfff-581b-b16352c5371c@suse.de>
-Subject: Re: [PATCH 3/4] fbdev: Use _DMAMEM_ infix for DMA-memory helpers
-References: <20230729193157.15446-1-tzimmermann@suse.de>
- <20230729193157.15446-4-tzimmermann@suse.de>
- <e25eaae4-dcc9-7864-c655-f9e739db7970@gmx.de>
-In-Reply-To: <e25eaae4-dcc9-7864-c655-f9e739db7970@gmx.de>
+On 7/31/23 09:30, Thomas Zimmermann wrote:
+> Hi
+>
+> Am 30.07.23 um 18:20 schrieb Helge Deller:
+>> On 7/29/23 21:26, Thomas Zimmermann wrote:
+>>> Change the infix for fbdev's DMA-memory helpers from _DMA_ to
+>>> _DMAMEM_. The helpers perform operations within DMA-able memory,
+>>
+>> Since "DMA" stands for "Direct Memory Access", people already
+>> know that it operates on memory. I don't think we need
+>> to add "MEM" here.
+>> So, maybe we should drop this patch and just keep "DMA"?
+>
+> I think I'd rather leave it to DMAMEM. It's a bit redundant, but it's
+> consistent with the other names and it's clear.  Otherwise, someone
+> might thing these helpers are for using DMA engines of some kind.
 
---------------E0nXXJtXJ8k7nFCdY7FswvAL
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Ok for me.
 
-SGkNCg0KQW0gMzAuMDcuMjMgdW0gMTg6MjAgc2NocmllYiBIZWxnZSBEZWxsZXI6DQo+IE9u
-IDcvMjkvMjMgMjE6MjYsIFRob21hcyBaaW1tZXJtYW5uIHdyb3RlOg0KPj4gQ2hhbmdlIHRo
-ZSBpbmZpeCBmb3IgZmJkZXYncyBETUEtbWVtb3J5IGhlbHBlcnMgZnJvbSBfRE1BXyB0bw0K
-Pj4gX0RNQU1FTV8uIFRoZSBoZWxwZXJzIHBlcmZvcm0gb3BlcmF0aW9ucyB3aXRoaW4gRE1B
-LWFibGUgbWVtb3J5LA0KPiANCj4gU2luY2UgIkRNQSIgc3RhbmRzIGZvciAiRGlyZWN0IE1l
-bW9yeSBBY2Nlc3MiLCBwZW9wbGUgYWxyZWFkeQ0KPiBrbm93IHRoYXQgaXQgb3BlcmF0ZXMg
-b24gbWVtb3J5LiBJIGRvbid0IHRoaW5rIHdlIG5lZWQNCj4gdG8gYWRkICJNRU0iIGhlcmUu
-DQo+IFNvLCBtYXliZSB3ZSBzaG91bGQgZHJvcCB0aGlzIHBhdGNoIGFuZCBqdXN0IGtlZXAg
-IkRNQSI/DQoNCkkgdGhpbmsgSSdkIHJhdGhlciBsZWF2ZSBpdCB0byBETUFNRU0uIEl0J3Mg
-YSBiaXQgcmVkdW5kYW50LCBidXQgaXQncyANCmNvbnNpc3RlbnQgd2l0aCB0aGUgb3RoZXIg
-bmFtZXMgYW5kIGl0J3MgY2xlYXIuICBPdGhlcndpc2UsIHNvbWVvbmUgDQptaWdodCB0aGlu
-ZyB0aGVzZSBoZWxwZXJzIGFyZSBmb3IgdXNpbmcgRE1BIGVuZ2luZXMgb2Ygc29tZSBraW5k
-Lg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KPiBPdGhlciB0aGFuIHRoYXQgeW91
-IHBhdGNoIHNlcmllcyBsb29rcyBnb29kIQ0KPiBBY2tlZC1ieTogSGVsZ2UgRGVsbGVyIDxk
-ZWxsZXJAZ214LmRlPg0KPiANCj4gSGVsZ2UNCj4gDQo+IA0KPj4gYnV0IHRoZXkgZG9uJ3Qg
-cGVyZm9ybSBETUEgb3BlcmF0aW9ucy4gTmFtaW5nIHNob3VsZCBtYWtlIHRoaXMNCj4+IGNs
-ZWFyLiBBZGFwdCBhbGwgdXNlcnMuIE5vIGZ1bmN0aW9uYWwgY2hhbmdlcy4NCj4+DQo+PiBT
-aWduZWQtb2ZmLWJ5OiBUaG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1hbm5Ac3VzZS5kZT4N
-Cj4+IC0tLQ0KPj4gwqAgZHJpdmVycy9ncHUvZHJtL0tjb25maWfCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqAgfCAyICstDQo+PiDCoCBkcml2ZXJzL2dwdS9kcm0vZHJt
-X2ZiZGV2X2RtYS5jwqDCoMKgwqDCoMKgwqDCoMKgwqAgfCA0ICsrLS0NCj4+IMKgIGRyaXZl
-cnMvZ3B1L2RybS9leHlub3MvS2NvbmZpZ8KgwqDCoMKgwqDCoMKgwqDCoMKgwqAgfCAyICst
-DQo+PiDCoCBkcml2ZXJzL2dwdS9kcm0vZXh5bm9zL2V4eW5vc19kcm1fZmJkZXYuYyB8IDQg
-KystLQ0KPj4gwqAgZHJpdmVycy9ncHUvZHJtL29tYXBkcm0vS2NvbmZpZ8KgwqDCoMKgwqDC
-oMKgwqDCoMKgIHwgMiArLQ0KPj4gwqAgZHJpdmVycy9ncHUvZHJtL29tYXBkcm0vb21hcF9m
-YmRldi5jwqDCoMKgwqDCoCB8IDQgKystLQ0KPj4gwqAgZHJpdmVycy9ncHUvZHJtL3RlZ3Jh
-L0tjb25maWfCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgfCAyICstDQo+PiDCoCBkcml2ZXJz
-L2dwdS9kcm0vdGVncmEvZmJkZXYuY8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCB8IDQgKyst
-LQ0KPj4gwqAgZHJpdmVycy92aWRlby9mYmRldi9jb3JlL0tjb25maWfCoMKgwqDCoMKgwqDC
-oMKgwqAgfCAyICstDQo+PiDCoCBpbmNsdWRlL2xpbnV4L2ZiLmjCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHwgNCArKy0tDQo+PiDCoCAxMCBmaWxl
-cyBjaGFuZ2VkLCAxNSBpbnNlcnRpb25zKCspLCAxNSBkZWxldGlvbnMoLSkNCj4+DQo+PiBk
-aWZmIC0tZ2l0IGEvZHJpdmVycy9ncHUvZHJtL0tjb25maWcgYi9kcml2ZXJzL2dwdS9kcm0v
-S2NvbmZpZw0KPj4gaW5kZXggMzRkYTczM2U4NjA2Li5iNTFjNmExNDFkZmEgMTAwNjQ0DQo+
-PiAtLS0gYS9kcml2ZXJzL2dwdS9kcm0vS2NvbmZpZw0KPj4gKysrIGIvZHJpdmVycy9ncHUv
-ZHJtL0tjb25maWcNCj4+IEBAIC0yMjQsNyArMjI0LDcgQEAgY29uZmlnIERSTV9UVE1fSEVM
-UEVSDQo+PiDCoCBjb25maWcgRFJNX0dFTV9ETUFfSEVMUEVSDQo+PiDCoMKgwqDCoMKgIHRy
-aXN0YXRlDQo+PiDCoMKgwqDCoMKgIGRlcGVuZHMgb24gRFJNDQo+PiAtwqDCoMKgIHNlbGVj
-dCBGQl9ETUFfSEVMUEVSUyBpZiBEUk1fRkJERVZfRU1VTEFUSU9ODQo+PiArwqDCoMKgIHNl
-bGVjdCBGQl9ETUFNRU1fSEVMUEVSUyBpZiBEUk1fRkJERVZfRU1VTEFUSU9ODQo+PiDCoMKg
-wqDCoMKgIGhlbHANCj4+IMKgwqDCoMKgwqDCoMKgIENob29zZSB0aGlzIGlmIHlvdSBuZWVk
-IHRoZSBHRU0gRE1BIGhlbHBlciBmdW5jdGlvbnMNCj4+DQo+PiBkaWZmIC0tZ2l0IGEvZHJp
-dmVycy9ncHUvZHJtL2RybV9mYmRldl9kbWEuYyANCj4+IGIvZHJpdmVycy9ncHUvZHJtL2Ry
-bV9mYmRldl9kbWEuYw0KPj4gaW5kZXggNmRiMTY4Zjk0MjkwLi42Yzk0MjdiYjQwNTMgMTAw
-NjQ0DQo+PiAtLS0gYS9kcml2ZXJzL2dwdS9kcm0vZHJtX2ZiZGV2X2RtYS5jDQo+PiArKysg
-Yi9kcml2ZXJzL2dwdS9kcm0vZHJtX2ZiZGV2X2RtYS5jDQo+PiBAQCAtNjIsOSArNjIsOSBA
-QCBzdGF0aWMgY29uc3Qgc3RydWN0IGZiX29wcyBkcm1fZmJkZXZfZG1hX2ZiX29wcyA9IHsN
-Cj4+IMKgwqDCoMKgwqAgLm93bmVyID0gVEhJU19NT0RVTEUsDQo+PiDCoMKgwqDCoMKgIC5m
-Yl9vcGVuID0gZHJtX2ZiZGV2X2RtYV9mYl9vcGVuLA0KPj4gwqDCoMKgwqDCoCAuZmJfcmVs
-ZWFzZSA9IGRybV9mYmRldl9kbWFfZmJfcmVsZWFzZSwNCj4+IC3CoMKgwqAgX19GQl9ERUZB
-VUxUX0RNQV9PUFNfUkRXUiwNCj4+ICvCoMKgwqAgX19GQl9ERUZBVUxUX0RNQU1FTV9PUFNf
-UkRXUiwNCj4+IMKgwqDCoMKgwqAgRFJNX0ZCX0hFTFBFUl9ERUZBVUxUX09QUywNCj4+IC3C
-oMKgwqAgX19GQl9ERUZBVUxUX0RNQV9PUFNfRFJBVywNCj4+ICvCoMKgwqAgX19GQl9ERUZB
-VUxUX0RNQU1FTV9PUFNfRFJBVywNCj4+IMKgwqDCoMKgwqAgLmZiX21tYXAgPSBkcm1fZmJk
-ZXZfZG1hX2ZiX21tYXAsDQo+PiDCoMKgwqDCoMKgIC5mYl9kZXN0cm95ID0gZHJtX2ZiZGV2
-X2RtYV9mYl9kZXN0cm95LA0KPj4gwqAgfTsNCj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2dw
-dS9kcm0vZXh5bm9zL0tjb25maWcgDQo+PiBiL2RyaXZlcnMvZ3B1L2RybS9leHlub3MvS2Nv
-bmZpZw0KPj4gaW5kZXggNjYxYjQyYWQ0ODczLi43MzNiMTA5YTUwOTUgMTAwNjQ0DQo+PiAt
-LS0gYS9kcml2ZXJzL2dwdS9kcm0vZXh5bm9zL0tjb25maWcNCj4+ICsrKyBiL2RyaXZlcnMv
-Z3B1L2RybS9leHlub3MvS2NvbmZpZw0KPj4gQEAgLTcsNyArNyw3IEBAIGNvbmZpZyBEUk1f
-RVhZTk9TDQo+PiDCoMKgwqDCoMKgIHNlbGVjdCBEUk1fRElTUExBWV9IRUxQRVIgaWYgRFJN
-X0VYWU5PU19EUA0KPj4gwqDCoMKgwqDCoCBzZWxlY3QgRFJNX0tNU19IRUxQRVINCj4+IMKg
-wqDCoMKgwqAgc2VsZWN0IFZJREVPTU9ERV9IRUxQRVJTDQo+PiAtwqDCoMKgIHNlbGVjdCBG
-Ql9ETUFfSEVMUEVSUyBpZiBEUk1fRkJERVZfRU1VTEFUSU9ODQo+PiArwqDCoMKgIHNlbGVj
-dCBGQl9ETUFNRU1fSEVMUEVSUyBpZiBEUk1fRkJERVZfRU1VTEFUSU9ODQo+PiDCoMKgwqDC
-oMKgIHNlbGVjdCBTTkRfU09DX0hETUlfQ09ERUMgaWYgU05EX1NPQw0KPj4gwqDCoMKgwqDC
-oCBoZWxwDQo+PiDCoMKgwqDCoMKgwqDCoCBDaG9vc2UgdGhpcyBvcHRpb24gaWYgeW91IGhh
-dmUgYSBTYW1zdW5nIFNvQyBFeHlub3MgY2hpcHNldC4NCj4+IGRpZmYgLS1naXQgYS9kcml2
-ZXJzL2dwdS9kcm0vZXh5bm9zL2V4eW5vc19kcm1fZmJkZXYuYyANCj4+IGIvZHJpdmVycy9n
-cHUvZHJtL2V4eW5vcy9leHlub3NfZHJtX2ZiZGV2LmMNCj4+IGluZGV4IDRjY2IzODVhZmY1
-Mi4uYTM3OWM4Y2E0MzVhIDEwMDY0NA0KPj4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL2V4eW5v
-cy9leHlub3NfZHJtX2ZiZGV2LmMNCj4+ICsrKyBiL2RyaXZlcnMvZ3B1L2RybS9leHlub3Mv
-ZXh5bm9zX2RybV9mYmRldi5jDQo+PiBAQCAtNDksOSArNDksOSBAQCBzdGF0aWMgdm9pZCBl
-eHlub3NfZHJtX2ZiX2Rlc3Ryb3koc3RydWN0IGZiX2luZm8gKmluZm8pDQo+Pg0KPj4gwqAg
-c3RhdGljIGNvbnN0IHN0cnVjdCBmYl9vcHMgZXh5bm9zX2RybV9mYl9vcHMgPSB7DQo+PiDC
-oMKgwqDCoMKgIC5vd25lcsKgwqDCoMKgwqDCoMKgID0gVEhJU19NT0RVTEUsDQo+PiAtwqDC
-oMKgIF9fRkJfREVGQVVMVF9ETUFfT1BTX1JEV1IsDQo+PiArwqDCoMKgIF9fRkJfREVGQVVM
-VF9ETUFNRU1fT1BTX1JEV1IsDQo+PiDCoMKgwqDCoMKgIERSTV9GQl9IRUxQRVJfREVGQVVM
-VF9PUFMsDQo+PiAtwqDCoMKgIF9fRkJfREVGQVVMVF9ETUFfT1BTX0RSQVcsDQo+PiArwqDC
-oMKgIF9fRkJfREVGQVVMVF9ETUFNRU1fT1BTX0RSQVcsDQo+PiDCoMKgwqDCoMKgIC5mYl9t
-bWFwwqDCoMKgwqDCoMKgwqAgPSBleHlub3NfZHJtX2ZiX21tYXAsDQo+PiDCoMKgwqDCoMKg
-IC5mYl9kZXN0cm95wqDCoMKgID0gZXh5bm9zX2RybV9mYl9kZXN0cm95LA0KPj4gwqAgfTsN
-Cj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vb21hcGRybS9LY29uZmlnIA0KPj4g
-Yi9kcml2ZXJzL2dwdS9kcm0vb21hcGRybS9LY29uZmlnDQo+PiBpbmRleCBkM2M0ODc3ZTQ2
-NWMuLmI3MTUzMDFlYzc5ZiAxMDA2NDQNCj4+IC0tLSBhL2RyaXZlcnMvZ3B1L2RybS9vbWFw
-ZHJtL0tjb25maWcNCj4+ICsrKyBiL2RyaXZlcnMvZ3B1L2RybS9vbWFwZHJtL0tjb25maWcN
-Cj4+IEBAIC00LDcgKzQsNyBAQCBjb25maWcgRFJNX09NQVANCj4+IMKgwqDCoMKgwqAgZGVw
-ZW5kcyBvbiBEUk0gJiYgT0YNCj4+IMKgwqDCoMKgwqAgZGVwZW5kcyBvbiBBUkNIX09NQVAy
-UExVUw0KPj4gwqDCoMKgwqDCoCBzZWxlY3QgRFJNX0tNU19IRUxQRVINCj4+IC3CoMKgwqAg
-c2VsZWN0IEZCX0RNQV9IRUxQRVJTIGlmIERSTV9GQkRFVl9FTVVMQVRJT04NCj4+ICvCoMKg
-wqAgc2VsZWN0IEZCX0RNQU1FTV9IRUxQRVJTIGlmIERSTV9GQkRFVl9FTVVMQVRJT04NCj4+
-IMKgwqDCoMKgwqAgc2VsZWN0IFZJREVPTU9ERV9IRUxQRVJTDQo+PiDCoMKgwqDCoMKgIHNl
-bGVjdCBIRE1JDQo+PiDCoMKgwqDCoMKgIGRlZmF1bHQgbg0KPj4gZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvZ3B1L2RybS9vbWFwZHJtL29tYXBfZmJkZXYuYyANCj4+IGIvZHJpdmVycy9ncHUv
-ZHJtL29tYXBkcm0vb21hcF9mYmRldi5jDQo+PiBpbmRleCA1YjMzYzc4OWUxN2EuLjZiMDhi
-MTM3YWYxYSAxMDA2NDQNCj4+IC0tLSBhL2RyaXZlcnMvZ3B1L2RybS9vbWFwZHJtL29tYXBf
-ZmJkZXYuYw0KPj4gKysrIGIvZHJpdmVycy9ncHUvZHJtL29tYXBkcm0vb21hcF9mYmRldi5j
-DQo+PiBAQCAtMTA2LDEzICsxMDYsMTMgQEAgc3RhdGljIHZvaWQgb21hcF9mYmRldl9mYl9k
-ZXN0cm95KHN0cnVjdCBmYl9pbmZvIA0KPj4gKmluZm8pDQo+Pg0KPj4gwqAgc3RhdGljIGNv
-bnN0IHN0cnVjdCBmYl9vcHMgb21hcF9mYl9vcHMgPSB7DQo+PiDCoMKgwqDCoMKgIC5vd25l
-ciA9IFRISVNfTU9EVUxFLA0KPj4gLcKgwqDCoCBfX0ZCX0RFRkFVTFRfRE1BX09QU19SRFdS
-LA0KPj4gK8KgwqDCoCBfX0ZCX0RFRkFVTFRfRE1BTUVNX09QU19SRFdSLA0KPj4gwqDCoMKg
-wqDCoCAuZmJfY2hlY2tfdmFywqDCoMKgID0gZHJtX2ZiX2hlbHBlcl9jaGVja192YXIsDQo+
-PiDCoMKgwqDCoMKgIC5mYl9zZXRfcGFywqDCoMKgID0gZHJtX2ZiX2hlbHBlcl9zZXRfcGFy
-LA0KPj4gwqDCoMKgwqDCoCAuZmJfc2V0Y21hcMKgwqDCoCA9IGRybV9mYl9oZWxwZXJfc2V0
-Y21hcCwNCj4+IMKgwqDCoMKgwqAgLmZiX2JsYW5rwqDCoMKgID0gZHJtX2ZiX2hlbHBlcl9i
-bGFuaywNCj4+IMKgwqDCoMKgwqAgLmZiX3Bhbl9kaXNwbGF5ID0gb21hcF9mYmRldl9wYW5f
-ZGlzcGxheSwNCj4+IC3CoMKgwqAgX19GQl9ERUZBVUxUX0RNQV9PUFNfRFJBVywNCj4+ICvC
-oMKgwqAgX19GQl9ERUZBVUxUX0RNQU1FTV9PUFNfRFJBVywNCj4+IMKgwqDCoMKgwqAgLmZi
-X2lvY3RswqDCoMKgID0gZHJtX2ZiX2hlbHBlcl9pb2N0bCwNCj4+IMKgwqDCoMKgwqAgLmZi
-X21tYXDCoMKgwqAgPSBvbWFwX2ZiZGV2X2ZiX21tYXAsDQo+PiDCoMKgwqDCoMKgIC5mYl9k
-ZXN0cm95wqDCoMKgID0gb21hcF9mYmRldl9mYl9kZXN0cm95LA0KPj4gZGlmZiAtLWdpdCBh
-L2RyaXZlcnMvZ3B1L2RybS90ZWdyYS9LY29uZmlnIA0KPj4gYi9kcml2ZXJzL2dwdS9kcm0v
-dGVncmEvS2NvbmZpZw0KPj4gaW5kZXggMzk0NTJjODQ4MGMxLi44NGU3ZTZiYzNhMGMgMTAw
-NjQ0DQo+PiAtLS0gYS9kcml2ZXJzL2dwdS9kcm0vdGVncmEvS2NvbmZpZw0KPj4gKysrIGIv
-ZHJpdmVycy9ncHUvZHJtL3RlZ3JhL0tjb25maWcNCj4+IEBAIC0xMiw3ICsxMiw3IEBAIGNv
-bmZpZyBEUk1fVEVHUkENCj4+IMKgwqDCoMKgwqAgc2VsZWN0IERSTV9LTVNfSEVMUEVSDQo+
-PiDCoMKgwqDCoMKgIHNlbGVjdCBEUk1fTUlQSV9EU0kNCj4+IMKgwqDCoMKgwqAgc2VsZWN0
-IERSTV9QQU5FTA0KPj4gLcKgwqDCoCBzZWxlY3QgRkJfRE1BX0hFTFBFUlMgaWYgRFJNX0ZC
-REVWX0VNVUxBVElPTg0KPj4gK8KgwqDCoCBzZWxlY3QgRkJfRE1BTUVNX0hFTFBFUlMgaWYg
-RFJNX0ZCREVWX0VNVUxBVElPTg0KPj4gwqDCoMKgwqDCoCBzZWxlY3QgVEVHUkFfSE9TVDFY
-DQo+PiDCoMKgwqDCoMKgIHNlbGVjdCBJTlRFUkNPTk5FQ1QNCj4+IMKgwqDCoMKgwqAgc2Vs
-ZWN0IElPTU1VX0lPVkENCj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vdGVncmEv
-ZmJkZXYuYyANCj4+IGIvZHJpdmVycy9ncHUvZHJtL3RlZ3JhL2ZiZGV2LmMNCj4+IGluZGV4
-IDIwNmEzOTljNDJkNi4uZGI2ZWFhYzNkMzBlIDEwMDY0NA0KPj4gLS0tIGEvZHJpdmVycy9n
-cHUvZHJtL3RlZ3JhL2ZiZGV2LmMNCj4+ICsrKyBiL2RyaXZlcnMvZ3B1L2RybS90ZWdyYS9m
-YmRldi5jDQo+PiBAQCAtNTksOSArNTksOSBAQCBzdGF0aWMgdm9pZCB0ZWdyYV9mYmRldl9m
-Yl9kZXN0cm95KHN0cnVjdCBmYl9pbmZvIA0KPj4gKmluZm8pDQo+Pg0KPj4gwqAgc3RhdGlj
-IGNvbnN0IHN0cnVjdCBmYl9vcHMgdGVncmFfZmJfb3BzID0gew0KPj4gwqDCoMKgwqDCoCAu
-b3duZXIgPSBUSElTX01PRFVMRSwNCj4+IC3CoMKgwqAgX19GQl9ERUZBVUxUX0RNQV9PUFNf
-UkRXUiwNCj4+ICvCoMKgwqAgX19GQl9ERUZBVUxUX0RNQU1FTV9PUFNfUkRXUiwNCj4+IMKg
-wqDCoMKgwqAgRFJNX0ZCX0hFTFBFUl9ERUZBVUxUX09QUywNCj4+IC3CoMKgwqAgX19GQl9E
-RUZBVUxUX0RNQV9PUFNfRFJBVywNCj4+ICvCoMKgwqAgX19GQl9ERUZBVUxUX0RNQU1FTV9P
-UFNfRFJBVywNCj4+IMKgwqDCoMKgwqAgLmZiX21tYXAgPSB0ZWdyYV9mYl9tbWFwLA0KPj4g
-wqDCoMKgwqDCoCAuZmJfZGVzdHJveSA9IHRlZ3JhX2ZiZGV2X2ZiX2Rlc3Ryb3ksDQo+PiDC
-oCB9Ow0KPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9LY29uZmln
-IA0KPj4gYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvS2NvbmZpZw0KPj4gaW5kZXggMjhl
-NzcxYTQ2ZGY2Li5iYWY3ZTg1MmM3NWIgMTAwNjQ0DQo+PiAtLS0gYS9kcml2ZXJzL3ZpZGVv
-L2ZiZGV2L2NvcmUvS2NvbmZpZw0KPj4gKysrIGIvZHJpdmVycy92aWRlby9mYmRldi9jb3Jl
-L0tjb25maWcNCj4+IEBAIC0xMzYsNyArMTM2LDcgQEAgY29uZmlnIEZCX0RFRkVSUkVEX0lP
-DQo+PiDCoMKgwqDCoMKgIGJvb2wNCj4+IMKgwqDCoMKgwqAgZGVwZW5kcyBvbiBGQl9DT1JF
-DQo+Pg0KPj4gLWNvbmZpZyBGQl9ETUFfSEVMUEVSUw0KPj4gK2NvbmZpZyBGQl9ETUFNRU1f
-SEVMUEVSUw0KPj4gwqDCoMKgwqDCoCBib29sDQo+PiDCoMKgwqDCoMKgIGRlcGVuZHMgb24g
-RkJfQ09SRQ0KPj4gwqDCoMKgwqDCoCBzZWxlY3QgRkJfU1lTX0NPUFlBUkVBDQo+PiBkaWZm
-IC0tZ2l0IGEvaW5jbHVkZS9saW51eC9mYi5oIGIvaW5jbHVkZS9saW51eC9mYi5oDQo+PiBp
-bmRleCA3NjQ3MjQ4MmRjMzAuLmQyNTUyNjNjMmQxZCAxMDA2NDQNCj4+IC0tLSBhL2luY2x1
-ZGUvbGludXgvZmIuaA0KPj4gKysrIGIvaW5jbHVkZS9saW51eC9mYi5oDQo+PiBAQCAtNTc5
-LDExICs1NzksMTEgQEAgZXh0ZXJuIHNzaXplX3QgZmJfc3lzX3dyaXRlKHN0cnVjdCBmYl9p
-bmZvIA0KPj4gKmluZm8sIGNvbnN0IGNoYXIgX191c2VyICpidWYsDQo+PiDCoMKgICogSGVs
-cGVycyBmb3IgZnJhbWVidWZmZXJzIGluIERNQS1hYmxlIG1lbW9yeQ0KPj4gwqDCoCAqLw0K
-Pj4NCj4+IC0jZGVmaW5lIF9fRkJfREVGQVVMVF9ETUFfT1BTX1JEV1IgXA0KPj4gKyNkZWZp
-bmUgX19GQl9ERUZBVUxUX0RNQU1FTV9PUFNfUkRXUiBcDQo+PiDCoMKgwqDCoMKgIC5mYl9y
-ZWFkwqDCoMKgID0gZmJfc3lzX3JlYWQsIFwNCj4+IMKgwqDCoMKgwqAgLmZiX3dyaXRlwqDC
-oMKgID0gZmJfc3lzX3dyaXRlDQo+Pg0KPj4gLSNkZWZpbmUgX19GQl9ERUZBVUxUX0RNQV9P
-UFNfRFJBVyBcDQo+PiArI2RlZmluZSBfX0ZCX0RFRkFVTFRfRE1BTUVNX09QU19EUkFXIFwN
-Cj4+IMKgwqDCoMKgwqAgLmZiX2ZpbGxyZWN0wqDCoMKgID0gc3lzX2ZpbGxyZWN0LCBcDQo+
-PiDCoMKgwqDCoMKgIC5mYl9jb3B5YXJlYcKgwqDCoCA9IHN5c19jb3B5YXJlYSwgXA0KPj4g
-wqDCoMKgwqDCoCAuZmJfaW1hZ2VibGl0wqDCoMKgID0gc3lzX2ltYWdlYmxpdA0KPiANCg0K
-LS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VT
-RSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpGcmFua2Vuc3RyYXNzZSAxNDYs
-IDkwNDYxIE51ZXJuYmVyZywgR2VybWFueQ0KR0Y6IEl2byBUb3RldiwgQW5kcmV3IE15ZXJz
-LCBBbmRyZXcgTWNEb25hbGQsIEJvdWRpZW4gTW9lcm1hbg0KSFJCIDM2ODA5IChBRyBOdWVy
-bmJlcmcpDQo=
+Thanks!
+Helge
 
---------------E0nXXJtXJ8k7nFCdY7FswvAL--
+>
+> Best regards
+> Thomas
+>
+>>
+>> Other than that you patch series looks good!
+>> Acked-by: Helge Deller <deller@gmx.de>
+>>
+>> Helge
+>>
+>>
+>>> but they don't perform DMA operations. Naming should make this
+>>> clear. Adapt all users. No functional changes.
+>>>
+>>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>>> ---
+>>> =C2=A0 drivers/gpu/drm/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 2 =
++-
+>>> =C2=A0 drivers/gpu/drm/drm_fbdev_dma.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 4 ++--
+>>> =C2=A0 drivers/gpu/drm/exynos/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 2 +-
+>>> =C2=A0 drivers/gpu/drm/exynos/exynos_drm_fbdev.c | 4 ++--
+>>> =C2=A0 drivers/gpu/drm/omapdrm/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 2 +-
+>>> =C2=A0 drivers/gpu/drm/omapdrm/omap_fbdev.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0 | 4 ++--
+>>> =C2=A0 drivers/gpu/drm/tegra/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 2 +-
+>>> =C2=A0 drivers/gpu/drm/tegra/fbdev.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 4 ++--
+>>> =C2=A0 drivers/video/fbdev/core/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0 | 2 +-
+>>> =C2=A0 include/linux/fb.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0 | 4 ++--
+>>> =C2=A0 10 files changed, 15 insertions(+), 15 deletions(-)
+>>>
+>>> diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+>>> index 34da733e8606..b51c6a141dfa 100644
+>>> --- a/drivers/gpu/drm/Kconfig
+>>> +++ b/drivers/gpu/drm/Kconfig
+>>> @@ -224,7 +224,7 @@ config DRM_TTM_HELPER
+>>> =C2=A0 config DRM_GEM_DMA_HELPER
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 tristate
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on DRM
+>>> -=C2=A0=C2=A0=C2=A0 select FB_DMA_HELPERS if DRM_FBDEV_EMULATION
+>>> +=C2=A0=C2=A0=C2=A0 select FB_DMAMEM_HELPERS if DRM_FBDEV_EMULATION
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 help
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 Choose this if you need the=
+ GEM DMA helper functions
+>>>
+>>> diff --git a/drivers/gpu/drm/drm_fbdev_dma.c b/drivers/gpu/drm/drm_fbd=
+ev_dma.c
+>>> index 6db168f94290..6c9427bb4053 100644
+>>> --- a/drivers/gpu/drm/drm_fbdev_dma.c
+>>> +++ b/drivers/gpu/drm/drm_fbdev_dma.c
+>>> @@ -62,9 +62,9 @@ static const struct fb_ops drm_fbdev_dma_fb_ops =3D =
+{
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .owner =3D THIS_MODULE,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_open =3D drm_fbdev_dma_fb_open,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_release =3D drm_fbdev_dma_fb_releas=
+e,
+>>> -=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMA_OPS_RDWR,
+>>> +=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMAMEM_OPS_RDWR,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 DRM_FB_HELPER_DEFAULT_OPS,
+>>> -=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMA_OPS_DRAW,
+>>> +=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMAMEM_OPS_DRAW,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_mmap =3D drm_fbdev_dma_fb_mmap,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_destroy =3D drm_fbdev_dma_fb_destro=
+y,
+>>> =C2=A0 };
+>>> diff --git a/drivers/gpu/drm/exynos/Kconfig b/drivers/gpu/drm/exynos/K=
+config
+>>> index 661b42ad4873..733b109a5095 100644
+>>> --- a/drivers/gpu/drm/exynos/Kconfig
+>>> +++ b/drivers/gpu/drm/exynos/Kconfig
+>>> @@ -7,7 +7,7 @@ config DRM_EXYNOS
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select DRM_DISPLAY_HELPER if DRM_EXYNOS=
+_DP
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select DRM_KMS_HELPER
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select VIDEOMODE_HELPERS
+>>> -=C2=A0=C2=A0=C2=A0 select FB_DMA_HELPERS if DRM_FBDEV_EMULATION
+>>> +=C2=A0=C2=A0=C2=A0 select FB_DMAMEM_HELPERS if DRM_FBDEV_EMULATION
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select SND_SOC_HDMI_CODEC if SND_SOC
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 help
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 Choose this option if you h=
+ave a Samsung SoC Exynos chipset.
+>>> diff --git a/drivers/gpu/drm/exynos/exynos_drm_fbdev.c b/drivers/gpu/d=
+rm/exynos/exynos_drm_fbdev.c
+>>> index 4ccb385aff52..a379c8ca435a 100644
+>>> --- a/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
+>>> +++ b/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
+>>> @@ -49,9 +49,9 @@ static void exynos_drm_fb_destroy(struct fb_info *in=
+fo)
+>>>
+>>> =C2=A0 static const struct fb_ops exynos_drm_fb_ops =3D {
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .owner=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0 =3D THIS_MODULE,
+>>> -=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMA_OPS_RDWR,
+>>> +=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMAMEM_OPS_RDWR,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 DRM_FB_HELPER_DEFAULT_OPS,
+>>> -=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMA_OPS_DRAW,
+>>> +=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMAMEM_OPS_DRAW,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_mmap=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0 =3D exynos_drm_fb_mmap,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_destroy=C2=A0=C2=A0=C2=A0 =3D exyno=
+s_drm_fb_destroy,
+>>> =C2=A0 };
+>>> diff --git a/drivers/gpu/drm/omapdrm/Kconfig b/drivers/gpu/drm/omapdrm=
+/Kconfig
+>>> index d3c4877e465c..b715301ec79f 100644
+>>> --- a/drivers/gpu/drm/omapdrm/Kconfig
+>>> +++ b/drivers/gpu/drm/omapdrm/Kconfig
+>>> @@ -4,7 +4,7 @@ config DRM_OMAP
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on DRM && OF
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on ARCH_OMAP2PLUS
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select DRM_KMS_HELPER
+>>> -=C2=A0=C2=A0=C2=A0 select FB_DMA_HELPERS if DRM_FBDEV_EMULATION
+>>> +=C2=A0=C2=A0=C2=A0 select FB_DMAMEM_HELPERS if DRM_FBDEV_EMULATION
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select VIDEOMODE_HELPERS
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select HDMI
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 default n
+>>> diff --git a/drivers/gpu/drm/omapdrm/omap_fbdev.c b/drivers/gpu/drm/om=
+apdrm/omap_fbdev.c
+>>> index 5b33c789e17a..6b08b137af1a 100644
+>>> --- a/drivers/gpu/drm/omapdrm/omap_fbdev.c
+>>> +++ b/drivers/gpu/drm/omapdrm/omap_fbdev.c
+>>> @@ -106,13 +106,13 @@ static void omap_fbdev_fb_destroy(struct fb_info=
+ *info)
+>>>
+>>> =C2=A0 static const struct fb_ops omap_fb_ops =3D {
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .owner =3D THIS_MODULE,
+>>> -=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMA_OPS_RDWR,
+>>> +=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMAMEM_OPS_RDWR,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_check_var=C2=A0=C2=A0=C2=A0 =3D drm=
+_fb_helper_check_var,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_set_par=C2=A0=C2=A0=C2=A0 =3D drm_f=
+b_helper_set_par,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_setcmap=C2=A0=C2=A0=C2=A0 =3D drm_f=
+b_helper_setcmap,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_blank=C2=A0=C2=A0=C2=A0 =3D drm_fb_=
+helper_blank,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_pan_display =3D omap_fbdev_pan_disp=
+lay,
+>>> -=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMA_OPS_DRAW,
+>>> +=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMAMEM_OPS_DRAW,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_ioctl=C2=A0=C2=A0=C2=A0 =3D drm_fb_=
+helper_ioctl,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_mmap=C2=A0=C2=A0=C2=A0 =3D omap_fbd=
+ev_fb_mmap,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_destroy=C2=A0=C2=A0=C2=A0 =3D omap_=
+fbdev_fb_destroy,
+>>> diff --git a/drivers/gpu/drm/tegra/Kconfig b/drivers/gpu/drm/tegra/Kco=
+nfig
+>>> index 39452c8480c1..84e7e6bc3a0c 100644
+>>> --- a/drivers/gpu/drm/tegra/Kconfig
+>>> +++ b/drivers/gpu/drm/tegra/Kconfig
+>>> @@ -12,7 +12,7 @@ config DRM_TEGRA
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select DRM_KMS_HELPER
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select DRM_MIPI_DSI
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select DRM_PANEL
+>>> -=C2=A0=C2=A0=C2=A0 select FB_DMA_HELPERS if DRM_FBDEV_EMULATION
+>>> +=C2=A0=C2=A0=C2=A0 select FB_DMAMEM_HELPERS if DRM_FBDEV_EMULATION
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select TEGRA_HOST1X
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select INTERCONNECT
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select IOMMU_IOVA
+>>> diff --git a/drivers/gpu/drm/tegra/fbdev.c b/drivers/gpu/drm/tegra/fbd=
+ev.c
+>>> index 206a399c42d6..db6eaac3d30e 100644
+>>> --- a/drivers/gpu/drm/tegra/fbdev.c
+>>> +++ b/drivers/gpu/drm/tegra/fbdev.c
+>>> @@ -59,9 +59,9 @@ static void tegra_fbdev_fb_destroy(struct fb_info *i=
+nfo)
+>>>
+>>> =C2=A0 static const struct fb_ops tegra_fb_ops =3D {
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .owner =3D THIS_MODULE,
+>>> -=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMA_OPS_RDWR,
+>>> +=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMAMEM_OPS_RDWR,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 DRM_FB_HELPER_DEFAULT_OPS,
+>>> -=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMA_OPS_DRAW,
+>>> +=C2=A0=C2=A0=C2=A0 __FB_DEFAULT_DMAMEM_OPS_DRAW,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_mmap =3D tegra_fb_mmap,
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_destroy =3D tegra_fbdev_fb_destroy,
+>>> =C2=A0 };
+>>> diff --git a/drivers/video/fbdev/core/Kconfig b/drivers/video/fbdev/co=
+re/Kconfig
+>>> index 28e771a46df6..baf7e852c75b 100644
+>>> --- a/drivers/video/fbdev/core/Kconfig
+>>> +++ b/drivers/video/fbdev/core/Kconfig
+>>> @@ -136,7 +136,7 @@ config FB_DEFERRED_IO
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 bool
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on FB_CORE
+>>>
+>>> -config FB_DMA_HELPERS
+>>> +config FB_DMAMEM_HELPERS
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 bool
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on FB_CORE
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select FB_SYS_COPYAREA
+>>> diff --git a/include/linux/fb.h b/include/linux/fb.h
+>>> index 76472482dc30..d255263c2d1d 100644
+>>> --- a/include/linux/fb.h
+>>> +++ b/include/linux/fb.h
+>>> @@ -579,11 +579,11 @@ extern ssize_t fb_sys_write(struct fb_info *info=
+, const char __user *buf,
+>>> =C2=A0=C2=A0 * Helpers for framebuffers in DMA-able memory
+>>> =C2=A0=C2=A0 */
+>>>
+>>> -#define __FB_DEFAULT_DMA_OPS_RDWR \
+>>> +#define __FB_DEFAULT_DMAMEM_OPS_RDWR \
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_read=C2=A0=C2=A0=C2=A0 =3D fb_sys_r=
+ead, \
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_write=C2=A0=C2=A0=C2=A0 =3D fb_sys_=
+write
+>>>
+>>> -#define __FB_DEFAULT_DMA_OPS_DRAW \
+>>> +#define __FB_DEFAULT_DMAMEM_OPS_DRAW \
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_fillrect=C2=A0=C2=A0=C2=A0 =3D sys_=
+fillrect, \
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_copyarea=C2=A0=C2=A0=C2=A0 =3D sys_=
+copyarea, \
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .fb_imageblit=C2=A0=C2=A0=C2=A0 =3D sys=
+_imageblit
+>>
+>
 
---------------JoBUal1S7COniLTsPqXOVNZB
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmTHYvsFAwAAAAAACgkQlh/E3EQov+Di
-OhAAmx1Z3Kp2zOKhJ5gw3NCreVrVkf8FqWW++uzPMS7Yz2l98LqPbSwW+FoqBVxh3HOGJa/X9hQM
-08XS8UQIHFIcVNbsiRd6qsFvKltflMQDLV2x58+mb78YipUkwzelIXwJmqSM+nCNXxHDjfjakttO
-dCMpVW9TA/ideSq9mseVAN7xsOZUTmd5x5QL4GkAqqlDPCqV/PZIpD513HMMAR6B4mosqjpH5Qli
-h/3gwAC17pg6QvFybbInB+5ExN1nrLOM80QyjumWIHIOqzKtlwV6+X+rZlXjyHOcF0ENlS6Ksc1b
-JnP2IdyD9U5anApv+U5BwZGAykorbSkxft9zx/Axi8pbRuNqYu7E2hwMJBz7M5C6t0uZ3BanlJpH
-sNM8gRNUpeNNyGZdCITmWahDf4WP5ioKa3czUTTah7NiyBMwX9EAWpQmhpAtmcX+6rHdsNkVP4dl
-GlsqGyvfzq0R5dCq3fu62mxQvPdNSl+rsXs60OHpKpNLqxyw0sHU4jVllhCVbuz+V7Lm13vMU5rV
-1wLLIzeHNpSxG4rJkzcMvSTlN4Tftemj7txPsVfgSOem7jh+UxB+CcRam7a9PdNmSYlOTGrNVUYY
-QPksGEdsrt+XnUZxYwc8DkREOcSpdy/yR/8K5Tf7JakrPaabYj+iDWMBfjHQQC/ZPgN6oH920NCB
-omg=
-=BqrM
------END PGP SIGNATURE-----
-
---------------JoBUal1S7COniLTsPqXOVNZB--

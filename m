@@ -2,81 +2,127 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E033C001DC
-	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jul 2023 16:28:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A387BC00528
+	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jul 2023 17:55:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232924AbjGaQ26 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 31 Jul 2023 12:28:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33172 "EHLO
+        id S229801AbjGaRzo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 31 Jul 2023 13:55:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36016 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233424AbjGaQ2m (ORCPT
+        with ESMTP id S229701AbjGaRzn (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 31 Jul 2023 12:28:42 -0400
-Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 721301BDC;
-        Mon, 31 Jul 2023 09:28:17 -0700 (PDT)
-Received: by mail-pl1-x635.google.com with SMTP id d9443c01a7336-1bbc06f830aso30259105ad.0;
-        Mon, 31 Jul 2023 09:28:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1690820896; x=1691425696;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=4h7lSNE73lj0ioWSGlzMCJus9tMgkN5ZlR6+RtZDGzA=;
-        b=GYf6wrsH4RBCnRKEyaSJXyu6M/eFU0AqSzSetvo526HOrkihNr9WhcMPEHzdvEocEs
-         hHdzbIfZVcVmk0XmlVJ3iqydGcYMVWp4ASzw3JI1j4f1lDgeOfFgWZUr+lvMKxL85NRh
-         2JiO5EI5XU+l/EaR9sZnW2zOFVhq3sv5OkcNko+Naqreg6UcUOX+ye5EpUjQGMlAbeXk
-         A920b7aqMN9RgMDWR9PkwwtE7lldQ4mzlwKWo/+fV5QbdvPQWS5XP50Mx+rWiu9Zdj77
-         hjAmSr3eNzeq16D3d4ft1EWjs3FSIjBw1THJetHIWpoBWlA7Qk1T1wAZ5X2wbjJnp1/G
-         Q+Wg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690820896; x=1691425696;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=4h7lSNE73lj0ioWSGlzMCJus9tMgkN5ZlR6+RtZDGzA=;
-        b=cOz4bC353BcYACCZ+2Lde6J9bKAXRZUyPg3zlzZoVvbyuiR/Zo9tSub7yYATRN3yaI
-         HGh8TVuNbOdR0VHKqEIkhfJ2VyKVRIRWf2dSts2N27kXWyW/ou/2eSHHXiwlHs6m/8AQ
-         ILla00G1QEXeazTgo1RpPiTAG+k5q19GFzephW8fXNOIbiPJ6daQrfdgJdh6S35fnb+5
-         Fyq0FcCGwgUc35LhrCp5ddTCKQQCfDUMi80p5DPrrVVwoWH9PShGgjqpNlf3XSzR//sk
-         ySvk9pFq9cWW0cnSgrd4oiMRW8+5LyfwJUMTZa1Zh87k0Q+X8izrver+kVZvYnjNZYtO
-         O+lg==
-X-Gm-Message-State: ABy/qLbQXX4oWXMxIvNGs45fg0uYudz9WMWnIA6RCFFDHSISMWYZpoNf
-        bogdjiQB7ZsFlTHab7Xs7Zw=
-X-Google-Smtp-Source: APBJJlEPCe0AQA/D7GKT1NLPzJ+LI5ZLrQPWugkbBuVJTmpTScfwhh8Xreqv+n8ydHmbCelB+Pw6WQ==
-X-Received: by 2002:a17:902:6504:b0:1bc:224a:45c2 with SMTP id b4-20020a170902650400b001bc224a45c2mr301722plk.15.1690820895765;
-        Mon, 31 Jul 2023 09:28:15 -0700 (PDT)
-Received: from ubuntu777.domain.name (36-228-73-13.dynamic-ip.hinet.net. [36.228.73.13])
-        by smtp.gmail.com with ESMTPSA id g22-20020a1709029f9600b001b8b73da7b1sm8796117plq.227.2023.07.31.09.28.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 31 Jul 2023 09:28:15 -0700 (PDT)
-From:   Min-Hua Chen <minhuadotchen@gmail.com>
-To:     deller@gmx.de
-Cc:     daniel@ffwll.ch, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        minhuadotchen@gmail.com
-Subject: Re: [PATCH] fbdev: fbmem: mark registered_fb static
-Date:   Tue,  1 Aug 2023 00:28:12 +0800
-Message-Id: <20230731162812.25518-1-minhuadotchen@gmail.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <0cb2ab66-ca30-b2ab-47f7-04208b2400cd@gmx.de>
-References: <0cb2ab66-ca30-b2ab-47f7-04208b2400cd@gmx.de>
+        Mon, 31 Jul 2023 13:55:43 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 219B8184;
+        Mon, 31 Jul 2023 10:55:41 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id C64F22205E;
+        Mon, 31 Jul 2023 17:55:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1690826139; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=blrHYZH6S+MmbSDFCHnNDxEACT0tP3PtmP/NQlgF3tk=;
+        b=wcMYO8XndgLwG5p/OyuY3UpiE0l+0HMY2x1/SXrwph3joT1jV78ELTxvq5rSvQ59fT3Nan
+        eVT4LzQfnb4JQ5uE96bTIJoDTJElJZ/UjRyNF0RReDUZWsvNZAUGxD0/USFcwUfsyQ21JS
+        NbhXgR+O31ACU0arIv6SxAIQFGfSIjs=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1690826139;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=blrHYZH6S+MmbSDFCHnNDxEACT0tP3PtmP/NQlgF3tk=;
+        b=YfZcOQKWYqRzLZYjV6sNoImbAU2dOa4BJTDS23JpYYytINavTcuFq9l4WepVwHoUXqYIVV
+        MSoFkLnJEEaHv6Dg==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 6FDA1133F7;
+        Mon, 31 Jul 2023 17:55:39 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id If54Gpv1x2SGOgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 31 Jul 2023 17:55:39 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     deller@gmx.de, mpe@ellerman.id.au, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu, sam@ravnborg.org, javierm@redhat.com,
+        bagasdotme@gmail.com, rd.dunlab@gmail.com,
+        regressions@leemhuis.info, sfr@canb.auug.org.au
+Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, regressions@lists.linux.dev,
+        linux-next@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH] fbdev/ps3fb: Build without kernel device
+Date:   Mon, 31 Jul 2023 19:55:00 +0200
+Message-ID: <20230731175535.11345-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Use fb_info() to print status message at the end of the probe function,
+which avoids decoding the devices. fb_info() works with or without an
+fbdev kernel device. Fixes the following error:
 
-Hi Helge,
+../drivers/video/fbdev/ps3fb.c: In function 'ps3fb_probe':
+../drivers/video/fbdev/ps3fb.c:1172:40: error: 'struct fb_info' has no member named 'dev'
+ 1172 |                  dev_driver_string(info->dev), dev_name(info->dev),
+      |                                        ^~
+../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
+  110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
+      |                                     ^~~~~~~~~~~
+../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
+ 1171 |         dev_info(info->device, "%s %s, using %u KiB of video memory\n",
+      |         ^~~~~~~~
+../drivers/video/fbdev/ps3fb.c:1172:61: error: 'struct fb_info' has no member named 'dev'
+ 1172 |                  dev_driver_string(info->dev), dev_name(info->dev),
+      |                                                             ^~
+../include/linux/dev_printk.h:110:37: note: in definition of macro 'dev_printk_index_wrap'
+  110 |                 _p_func(dev, fmt, ##__VA_ARGS__);                       \
+      |                                     ^~~~~~~~~~~
+../drivers/video/fbdev/ps3fb.c:1171:9: note: in expansion of macro 'dev_info'
+ 1171 |         dev_info(info->device, "%s %s, using %u KiB of video memory\n",
+      |         ^~~~~~~~
 
->num_registered_fb is still used in:
->drivers/staging/olpc_dcon/olpc_dcon.c:  if (num_registered_fb < 1) {
->
->Helge
+Reported-by: Randy Dunlap <rdunlap@infradead.org>
+Closes: https://lore.kernel.org/lkml/ccc63065-2976-88ef-1211-731330bf2866@infradead.org/
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Fixes: 701d2054fa31 ("fbdev: Make support for userspace interfaces configurable")
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Javier Martinez Canillas <javierm@redhat.com>
+Cc: Randy Dunlap <rdunlap@infradead.org>
+Cc: Bagas Sanjaya <bagasdotme@gmail.com>
+Cc: Thorsten Leemhuis <regressions@leemhuis.info>
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ drivers/video/fbdev/ps3fb.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-Thanks, you're right, num_registered_fb is still being used.
-I'll check this patch and submit v2.
+diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
+index 5aedc30c5f7e..64d291d6b153 100644
+--- a/drivers/video/fbdev/ps3fb.c
++++ b/drivers/video/fbdev/ps3fb.c
+@@ -1168,9 +1168,7 @@ static int ps3fb_probe(struct ps3_system_bus_device *dev)
+ 
+ 	ps3_system_bus_set_drvdata(dev, info);
+ 
+-	dev_info(info->device, "%s %s, using %u KiB of video memory\n",
+-		 dev_driver_string(info->dev), dev_name(info->dev),
+-		 info->fix.smem_len >> 10);
++	fb_info(info, "using %u KiB of video memory\n", info->fix.smem_len >> 10);
+ 
+ 	task = kthread_run(ps3fbd, info, DEVICE_NAME);
+ 	if (IS_ERR(task)) {
+-- 
+2.41.0
 
-thanks,
-Min-Hua

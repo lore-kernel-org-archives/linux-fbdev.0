@@ -2,88 +2,165 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA512C001E0
-	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jul 2023 13:08:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 282CAC001DC
+	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jul 2023 14:06:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230095AbjGaNIO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 31 Jul 2023 09:08:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47306 "EHLO
+        id S233111AbjGaOGf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 31 Jul 2023 10:06:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54506 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232982AbjGaNH6 (ORCPT
+        with ESMTP id S231629AbjGaOGW (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 31 Jul 2023 09:07:58 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 290F510DF;
-        Mon, 31 Jul 2023 06:07:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1690808836; x=1691413636; i=deller@gmx.de;
- bh=I5E7In3qLeawhm32r5BW4CB4+4g3GLRaXOk7wIj51uQ=;
- h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=jy4RS8jDrPWTY6SPcrgNBJ1FF1cWboSWULhoDUdhJmNGCdgEyaKuo0336hWU3juf3tLZ3vJ
- dzDKhqe6J8yuaOhl5K5WiapKQZCE9sukFIqeizRf+mScsK/loIAcHnYzApgG5puLbS96ynImV
- 9C8o+VgFoDF/0G54ZDu27FXqDdwfWHPe3yX2tJ+vrRHBol0cwG/VwRFUZe5Masxe0xpweZkXB
- oQzG05NQS5T6sx8OY62CkxgPaF5OQ6AmoBgiSaTRJlGxg4VEzb25L3a6yorOjqEajLkf/QvOx
- C9j+101Nsad20clG95wdIH2KluYlnBYQwUHguXtTobC2NgvF4Wrw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.159.238]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MfHEP-1pwtId2EpP-00gnhA; Mon, 31
- Jul 2023 15:07:16 +0200
-Message-ID: <0cb2ab66-ca30-b2ab-47f7-04208b2400cd@gmx.de>
-Date:   Mon, 31 Jul 2023 15:07:16 +0200
+        Mon, 31 Jul 2023 10:06:22 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6C3B330EF;
+        Mon, 31 Jul 2023 07:01:41 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 23D3D1F854;
+        Mon, 31 Jul 2023 14:01:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1690812100; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=b4Ospd9tdJ/9LVp9GV33x9w2ee0DMxOY/R8DWILwyoQ=;
+        b=izT7z9kjtwxOBd9ghqMUp1UFv1IzvxxuGghUc5FGEFkHNFKlE5V//FQpLnrmQJp7FlPSJp
+        Xuv4Ke6C1VYJnbjifSu0kjIbNHReHlmW4psqMnLlfrx0so82ocMYQELlVseeW7BXqVyatk
+        Sd41VkUZqY6vCaNeqNz7XCn6Yx6s3oU=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1690812100;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=b4Ospd9tdJ/9LVp9GV33x9w2ee0DMxOY/R8DWILwyoQ=;
+        b=9dhqslck7oayWZRDdaD/VpUlVPqR61Ngeng4Mcn2EZ7M7Oi2f75cwTVe/DkwsGLS7lWFfO
+        IxxsbHMZt8eUFnDQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id E978C1322C;
+        Mon, 31 Jul 2023 14:01:39 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id p8sAOMO+x2QSSgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 31 Jul 2023 14:01:39 +0000
+Message-ID: <13748adb-1e0f-d492-d2ca-66f2c6be33d0@suse.de>
+Date:   Mon, 31 Jul 2023 16:01:39 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH] fbdev: fbmem: mark registered_fb static
+ Thunderbird/102.13.1
+Subject: Re: linux-next: Tree for Jul 13 (drivers/video/fbdev/ps3fb.c)
 Content-Language: en-US
-To:     Min-Hua Chen <minhuadotchen@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-References: <20230714003748.91129-1-minhuadotchen@gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20230714003748.91129-1-minhuadotchen@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:yveMOZcZH+xrsKsZ6Pi0xpCrONbM7Mh2l8rwBB+bHzDNdZPfLPO
- KeuC8wh1lMClf4wil/HxE7bv8ROOsclvZSc7SbCBxYkCFjLF/FqKAimjnT/+t7pplEMtpr1
- O9abhaQGAaB/xjU8ymui+4ozryAHXFx4nW2pHsriT6bqdsojdrVzbzS9hIkA0BeXxPEePix
- ILKK7B5K/u7hhFTusq9Pg==
-UI-OutboundReport: notjunk:1;M01:P0:8SGNccr63Dg=;iqSetT1mEEkMwDOYOlNV+x50HA5
- 94myZ1MfqzceDvtuJCPoAV7EbJquvxs8TIZOOUO9YAwqNFYqSUta47+S+0+MsfVqGGXpH2h84
- xKNjlEaUM1uohHMC1eOzameC0i1XfyjFFhzhygyjsaYjNlBFPvr19t/spzsp5fFbV3HbIyL7K
- 7JN+mOujNxIflMn4F25/TBRL6AO/BuMqPZRBL8/Dt08DjKqkVZbw/JqXG50kqjNWNfV3zj5vI
- yoFGJ7IwJw/kFHeRO0qZsWiGgipDGU7xebMme6buuSjKISoqA3AsjcXpblXYGKgsGWAwjP8PE
- Th4bGivCUcjGz1TfSst70Z8FnFrCA7/aXCWm0C49AlFJf+482x7MK5usdZuGZnHaJQTaaGMux
- uIs3U8Jg4V2XGH94KLgckEKsMTLyqw6HteHJ9YAFrBeXKRc6Vf8jA86z3o79c3Kgkmwq7tTXT
- gEHjYaIgO7cYC7wr7PuyG0rl8fA5Vxv7Z7h7y4gup0rqJNtwjJf+CcPN+EaggfN3uoVXcGH0n
- xcxUVyClKD0eDeVvp4+i+NysAxTqYK5JkWY2Fxekbrj/WJmdQfpf+QS4aBIHGykpcARWxt1ac
- wbilIg1xfU9ZCwuc1Of99q+DMjHDM5zWB4TwQl0mW7x9JUARYLnQfbQNo9RMwWRzwYCFiesVQ
- J0FN9Z4Ema+nOAelOVjJKMT/tD90bmqKkjVgceOL4P7pkqGuvK3qYYuHS2BL66gcBIyQh+Xjx
- GNXp5PJRJt/dPJNONThyKMvJBbZWE5EFYKi2q3bT/8kf87zo1rzCfiyaE8wnqdn5ulT12Q1+G
- ooqmWcx4bYiP83HqtMIEV4UuWy1YnxAp5S1XLfHOTS1bFenHUgn5+Utpl4crTKkA+km8Z6/nw
- CSJvcGrZ90mnDICj6QSKVfH4zuleJ3jvFSy2Qc0X4ZAs/ubkmWUAv7THHkIOMNw6vGkLIDUDV
- fWgheuawauKKUgBy8Si/qpr+Ez0=
+To:     Randy Dunlap <rdunlap@infradead.org>,
+        Stephen Rothwell <sfr@canb.auug.org.au>,
+        Linux Next Mailing List <linux-next@vger.kernel.org>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Helge Deller <deller@gmx.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        linux-fbdev@vger.kernel.org,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <20230713123710.5d7d81e4@canb.auug.org.au>
+ <ccc63065-2976-88ef-1211-731330bf2866@infradead.org>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <ccc63065-2976-88ef-1211-731330bf2866@infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------yn6IudZAIQmkHUvoB83qGyX8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/14/23 02:37, Min-Hua Chen wrote:
-> Mark registered_fb, num_registered_fb, fbcon_registered_fb, and
-> fbcon_num_registered_fb static to fix the following sparse
-> warnings:
->
-> drivers/video/fbdev/core/fbmem.c:51:16: sparse: warning: symbol 'registe=
-red_fb' was not declared. Should it be static?
-> drivers/video/fbdev/core/fbmem.c:52:5: sparse: warning: symbol 'num_regi=
-stered_fb' was not declared. Should it be static?
-> drivers/video/fbdev/core/fbcon.c:105:16: sparse: warning: symbol 'fbcon_=
-registered_fb' was not declared. Should it be static?
-> drivers/video/fbdev/core/fbcon.c:106:5: sparse: warning: symbol 'fbcon_n=
-um_registered_fb' was not declared. Should it be static?
->
-> No functional change intended.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------yn6IudZAIQmkHUvoB83qGyX8
+Content-Type: multipart/mixed; boundary="------------lFs1kHQPQJKWrh5RcffCHU8U";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Randy Dunlap <rdunlap@infradead.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Linux Next Mailing List <linux-next@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Helge Deller <deller@gmx.de>, Javier Martinez Canillas <javierm@redhat.com>,
+ linux-fbdev@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Message-ID: <13748adb-1e0f-d492-d2ca-66f2c6be33d0@suse.de>
+Subject: Re: linux-next: Tree for Jul 13 (drivers/video/fbdev/ps3fb.c)
+References: <20230713123710.5d7d81e4@canb.auug.org.au>
+ <ccc63065-2976-88ef-1211-731330bf2866@infradead.org>
+In-Reply-To: <ccc63065-2976-88ef-1211-731330bf2866@infradead.org>
 
-num_registered_fb is still used in:
-drivers/staging/olpc_dcon/olpc_dcon.c:  if (num_registered_fb < 1) {
+--------------lFs1kHQPQJKWrh5RcffCHU8U
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Helge
+SGksDQoNCkFtIDEzLjA3LjIzIHVtIDE4OjExIHNjaHJpZWIgUmFuZHkgRHVubGFwOg0KPiAN
+Cj4gDQo+IE9uIDcvMTIvMjMgMTk6MzcsIFN0ZXBoZW4gUm90aHdlbGwgd3JvdGU6DQo+PiBI
+aSBhbGwsDQoNCnNvcnJ5LCBJJ3ZlIGJlZW4gQUZLIGZvciBhIGJpdC4gSSdsbCBzZW5kIGEg
+Zml4IHNvb24uDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4+DQo+PiBDaGFuZ2VzIHNp
+bmNlIDIwMjMwNzEyOg0KPj4NCj4gDQo+IG9uIHBwYzY0Og0KPiANCj4gSW4gZmlsZSBpbmNs
+dWRlZCBmcm9tIC4uL2luY2x1ZGUvbGludXgvZGV2aWNlLmg6MTUsDQo+ICAgICAgICAgICAg
+ICAgICAgIGZyb20gLi4vYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL2lvLmg6MjIsDQo+ICAg
+ICAgICAgICAgICAgICAgIGZyb20gLi4vaW5jbHVkZS9saW51eC9pby5oOjEzLA0KPiAgICAg
+ICAgICAgICAgICAgICBmcm9tIC4uL2luY2x1ZGUvbGludXgvaXJxLmg6MjAsDQo+ICAgICAg
+ICAgICAgICAgICAgIGZyb20gLi4vYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL2hhcmRpcnEu
+aDo2LA0KPiAgICAgICAgICAgICAgICAgICBmcm9tIC4uL2luY2x1ZGUvbGludXgvaGFyZGly
+cS5oOjExLA0KPiAgICAgICAgICAgICAgICAgICBmcm9tIC4uL2luY2x1ZGUvbGludXgvaW50
+ZXJydXB0Lmg6MTEsDQo+ICAgICAgICAgICAgICAgICAgIGZyb20gLi4vZHJpdmVycy92aWRl
+by9mYmRldi9wczNmYi5jOjI1Og0KPiAuLi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3BzM2ZiLmM6
+IEluIGZ1bmN0aW9uICdwczNmYl9wcm9iZSc6DQo+IC4uL2RyaXZlcnMvdmlkZW8vZmJkZXYv
+cHMzZmIuYzoxMTcyOjQwOiBlcnJvcjogJ3N0cnVjdCBmYl9pbmZvJyBoYXMgbm8gbWVtYmVy
+IG5hbWVkICdkZXYnDQo+ICAgMTE3MiB8ICAgICAgICAgICAgICAgICAgZGV2X2RyaXZlcl9z
+dHJpbmcoaW5mby0+ZGV2KSwgZGV2X25hbWUoaW5mby0+ZGV2KSwNCj4gICAgICAgIHwgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXn4NCj4gLi4vaW5jbHVkZS9s
+aW51eC9kZXZfcHJpbnRrLmg6MTEwOjM3OiBub3RlOiBpbiBkZWZpbml0aW9uIG9mIG1hY3Jv
+ICdkZXZfcHJpbnRrX2luZGV4X3dyYXAnDQo+ICAgIDExMCB8ICAgICAgICAgICAgICAgICBf
+cF9mdW5jKGRldiwgZm10LCAjI19fVkFfQVJHU19fKTsgICAgICAgICAgICAgICAgICAgICAg
+IFwNCj4gICAgICAgIHwgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXn5+
+fn5+fn5+fn4NCj4gLi4vZHJpdmVycy92aWRlby9mYmRldi9wczNmYi5jOjExNzE6OTogbm90
+ZTogaW4gZXhwYW5zaW9uIG9mIG1hY3JvICdkZXZfaW5mbycNCj4gICAxMTcxIHwgICAgICAg
+ICBkZXZfaW5mbyhpbmZvLT5kZXZpY2UsICIlcyAlcywgdXNpbmcgJXUgS2lCIG9mIHZpZGVv
+IG1lbW9yeVxuIiwNCj4gICAgICAgIHwgICAgICAgICBefn5+fn5+fg0KPiAuLi9kcml2ZXJz
+L3ZpZGVvL2ZiZGV2L3BzM2ZiLmM6MTE3Mjo2MTogZXJyb3I6ICdzdHJ1Y3QgZmJfaW5mbycg
+aGFzIG5vIG1lbWJlciBuYW1lZCAnZGV2Jw0KPiAgIDExNzIgfCAgICAgICAgICAgICAgICAg
+IGRldl9kcml2ZXJfc3RyaW5nKGluZm8tPmRldiksIGRldl9uYW1lKGluZm8tPmRldiksDQo+
+ICAgICAgICB8ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgIF5+DQo+IC4uL2luY2x1ZGUvbGludXgvZGV2X3ByaW50ay5oOjEx
+MDozNzogbm90ZTogaW4gZGVmaW5pdGlvbiBvZiBtYWNybyAnZGV2X3ByaW50a19pbmRleF93
+cmFwJw0KPiAgICAxMTAgfCAgICAgICAgICAgICAgICAgX3BfZnVuYyhkZXYsIGZtdCwgIyNf
+X1ZBX0FSR1NfXyk7ICAgICAgICAgICAgICAgICAgICAgICBcDQo+ICAgICAgICB8ICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIF5+fn5+fn5+fn5+DQo+IC4uL2RyaXZl
+cnMvdmlkZW8vZmJkZXYvcHMzZmIuYzoxMTcxOjk6IG5vdGU6IGluIGV4cGFuc2lvbiBvZiBt
+YWNybyAnZGV2X2luZm8nDQo+ICAgMTE3MSB8ICAgICAgICAgZGV2X2luZm8oaW5mby0+ZGV2
+aWNlLCAiJXMgJXMsIHVzaW5nICV1IEtpQiBvZiB2aWRlbyBtZW1vcnlcbiIsDQo+ICAgICAg
+ICB8ICAgICAgICAgXn5+fn5+fn4NCj4gDQo+IA0KPiBGdWxsIHJhbmRjb25maWcgZmlsZSBp
+cyBhdHRhY2hlZC4NCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVy
+IERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpGcmFu
+a2Vuc3RyYXNzZSAxNDYsIDkwNDYxIE51ZXJuYmVyZywgR2VybWFueQ0KR0Y6IEl2byBUb3Rl
+diwgQW5kcmV3IE15ZXJzLCBBbmRyZXcgTWNEb25hbGQsIEJvdWRpZW4gTW9lcm1hbg0KSFJC
+IDM2ODA5IChBRyBOdWVybmJlcmcpDQo=
+
+--------------lFs1kHQPQJKWrh5RcffCHU8U--
+
+--------------yn6IudZAIQmkHUvoB83qGyX8
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmTHvsMFAwAAAAAACgkQlh/E3EQov+CV
+ABAAlQIWYmZpcCipgTuWePaqwW4zZGtdDJz9h/7Kr7WHaJiyGLrreCarEryqWKawzv/JoT4MzMLH
++N6RLDF+bLE1BPQ4ZFvAGzAcCF0ygR+AuzQEWn10/a8CUWY6/s7sCVinKWA71BuJdgkvSa2rbBl5
+xHqFjLPSAAF1tmV0qctbWXgPGFq+DbNAbje5PbLU2lxmbigEQ59DSVhOiMH0oS4Opyxw//R5zzEe
+jHDnL1hraznsJJlY9Rb+i2OYu5XP9Huat8jvzRH6TR7TnzOboGd+rMcULq5Ohoibb5uIceZ/7D/c
+4Z/bI9LHv2Q6Y01n48JmOb0vO/tf1o8VxdvpfJT+MOBpaBsKSMCoDKVm+aYLe/G1xFcOlOPs+ivR
+Hdfy9qcq80JXMdb5hDdi21UzQNz9VNnlm3irVK4PNgU15s19p1XlyxYni1EkxAkcvhviFvUUzvYX
+kAv5nqXLPcTJebQUKvZnmHpTVhlgXNVR5Ap9gt451JoA9MLSGMqfXqSGKMjLEgaYqPkgLc8WYr3u
+7SrQPwb3QfV779hi9fYPFVRPFlWqyZCfxMtn0IDqDUJKIH/Knb8nlHZzWmjTr6aeCZEWgsGYpQHf
+ATIL24aQDi0YZmR8OM+qIQkw2IL4/63cb+ctVmH63rcD2OG1IGelNxFAFyo+3k+6j2qizt5ksZJG
+nrU=
+=h8pD
+-----END PGP SIGNATURE-----
+
+--------------yn6IudZAIQmkHUvoB83qGyX8--

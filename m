@@ -2,238 +2,109 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3776C001DE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jul 2023 10:29:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED1FDC41513
+	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jul 2023 11:54:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231695AbjGaK3i (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 31 Jul 2023 06:29:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60976 "EHLO
+        id S231336AbjGaLyC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 31 Jul 2023 07:54:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52230 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231496AbjGaK3h (ORCPT
+        with ESMTP id S230400AbjGaLyB (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 31 Jul 2023 06:29:37 -0400
-Received: from mgamail.intel.com (unknown [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5DC90EE;
-        Mon, 31 Jul 2023 03:29:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1690799376; x=1722335376;
-  h=from:to:cc:subject:in-reply-to:references:date:
-   message-id:mime-version;
-  bh=qrcUzGPc/mzEUo4ZLeC0gsRlzVMa/7ucsgNmiIe/YQQ=;
-  b=ASn3gYEoYid8C1rUZnVmPZ6Sg+L0LHjpj1KyTTDvLQaz+pjRaFBKTYQm
-   irTyZj2b5b3CiWHIdsAlW+7NYs45QOpufZRuRlOXHuzQJk/ztg8TdURav
-   smKhj9cBBeaTqLmrWfppeqW2FpuJoYTkuVVKZqFJw4tTONGgXuFX3lVBF
-   2t+ZI0sX7PtBRfMH6+EdKlzl40SyZMa64ygkcNqg72OAdOSw9j67HrjPx
-   zie3FN08uC88kT+DUMVfFTEImx4QMzdlX3qQf7LG/kZ97Ay0CxI6qEh8V
-   Vw5aMznR+/ErfEKHa+D2flgfOy1hMSJ23cA1MusI1qpL5l0pRkU0351cA
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10787"; a="455353616"
-X-IronPort-AV: E=Sophos;i="6.01,244,1684825200"; 
-   d="scan'208";a="455353616"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Jul 2023 03:29:35 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10787"; a="818294474"
-X-IronPort-AV: E=Sophos;i="6.01,244,1684825200"; 
-   d="scan'208";a="818294474"
-Received: from naikshri-mobl7.ger.corp.intel.com (HELO localhost) ([10.252.36.230])
-  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Jul 2023 03:29:29 -0700
-From:   Jani Nikula <jani.nikula@intel.com>
-To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Imre Deak <imre.deak@intel.com>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Ilpo =?utf-8?Q?J=C3=A4rv?= =?utf-8?Q?inen?= 
-        <ilpo.jarvinen@linux.intel.com>,
-        Alexey Dobriyan <adobriyan@gmail.com>,
-        intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-        linux-fbdev@vger.kernel.org
-Cc:     Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Helge Deller <deller@gmx.de>, Stephen Boyd <sboyd@kernel.org>,
-        Nikita Shubin <nikita.shubin@maquefel.me>,
-        Nikita Shubin via B4 Relay 
-        <devnull+nikita.shubin.maquefel.me@kernel.org>,
-        Andi Shyti <andi.shyti@kernel.org>
-Subject: Re: [PATCH v3 1/1] drm/i915: Move abs_diff() to math.h
-In-Reply-To: <20230724082511.3225-1-andriy.shevchenko@linux.intel.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-References: <20230724082511.3225-1-andriy.shevchenko@linux.intel.com>
-Date:   Mon, 31 Jul 2023 13:29:26 +0300
-Message-ID: <87ila0xtkp.fsf@intel.com>
+        Mon, 31 Jul 2023 07:54:01 -0400
+Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de [80.237.130.52])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3332119F;
+        Mon, 31 Jul 2023 04:54:00 -0700 (PDT)
+Received: from [2a02:8108:8980:2478:8cde:aa2c:f324:937e]; authenticated
+        by wp530.webpack.hosteurope.de running ExIM with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        id 1qQRTH-0004qB-Gx; Mon, 31 Jul 2023 13:53:55 +0200
+Message-ID: <edb7c56e-92d2-317e-b11b-caaabd33161b@leemhuis.info>
+Date:   Mon, 31 Jul 2023 13:53:54 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Subject: Re: linux-next: Tree for Jul 13 (drivers/video/fbdev/ps3fb.c)
+Content-Language: en-US, de-DE
+To:     Randy Dunlap <rd.dunlab@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Bagas Sanjaya <bagasdotme@gmail.com>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Stephen Rothwell <sfr@canb.auug.org.au>,
+        Linux Next Mailing List <linux-next@vger.kernel.org>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Helge Deller <deller@gmx.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        linux-fbdev@vger.kernel.org,
+        Linux PowerPC <linuxppc-dev@lists.ozlabs.org>,
+        Linux Regressions <regressions@lists.linux.dev>,
+        Geoff Levand <geoff@infradead.org>
+References: <20230713123710.5d7d81e4@canb.auug.org.au>
+ <ccc63065-2976-88ef-1211-731330bf2866@infradead.org>
+ <ZLYHtVuS7AElXcCb@debian.me> <874jm1jv9m.fsf@mail.lhotse>
+ <d9616a67-23e8-118f-dc0a-7ed4afd4bffd@gmail.com>
+From:   "Linux regression tracking (Thorsten Leemhuis)" 
+        <regressions@leemhuis.info>
+Reply-To: Linux regressions mailing list <regressions@lists.linux.dev>
+In-Reply-To: <d9616a67-23e8-118f-dc0a-7ed4afd4bffd@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-bounce-key: webpack.hosteurope.de;regressions@leemhuis.info;1690804440;66623b8a;
+X-HE-SMSGID: 1qQRTH-0004qB-Gx
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, 24 Jul 2023, Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
-> abs_diff() belongs to math.h. Move it there.
-> This will allow others to use it.
->
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Reviewed-by: Jiri Slaby <jirislaby@kernel.org> # tty/serial
-> ---
-> v3: added tag (Jiri), removed space after a cast (fdo CI)
->  drivers/gpu/drm/i915/display/intel_dpll_mgr.c |  1 +
->  drivers/gpu/drm/i915/display/intel_dpll_mgr.h |  7 -------
+On 18.07.23 18:15, Randy Dunlap wrote:
+> On 7/18/23 04:48, Michael Ellerman wrote:
+>> Bagas Sanjaya <bagasdotme@gmail.com> writes:
+>>> On Thu, Jul 13, 2023 at 09:11:10AM -0700, Randy Dunlap wrote:
+>>>> on ppc64:
+>>>>
+>>>> In file included from ../include/linux/device.h:15,
+>>>>                  from ../arch/powerpc/include/asm/io.h:22,
+>>>>                  from ../include/linux/io.h:13,
+>>>>                  from ../include/linux/irq.h:20,
+>>>>                  from ../arch/powerpc/include/asm/hardirq.h:6,
+>>>>                  from ../include/linux/hardirq.h:11,
+>>>>                  from ../include/linux/interrupt.h:11,
+>>>>                  from ../drivers/video/fbdev/ps3fb.c:25:
+>>>> ../drivers/video/fbdev/ps3fb.c: In function 'ps3fb_probe':
+>>>> ../drivers/video/fbdev/ps3fb.c:1172:40: error: 'struct fb_info' has no member named 'dev'
+> [...]
+>>
+>> Does regzbot track issues in linux-next?
 
-Acked-by: Jani Nikula <jani.nikula@intel.com>
+Seems your patch didn't make any progress, at least I can't see it in
+-next. Is there a reason why, or did I miss anything?
 
-for merging the i915 parts via whichever tree is most convenient for
-you.
+And yes, sure, I'm aware that it's -next and a driver that people might
+not enable regularly. But I noticed it and thought "quickly bring it up,
+might be good to fix this rather sooner than later before other people
+run into it (and who knows, maybe it'll switch a light in some CI system
+from red to green as well)"
 
->  drivers/gpu/ipu-v3/ipu-image-convert.c        | 15 +++++++--------
->  drivers/tty/serial/omap-serial.c              |  7 +------
->  drivers/video/fbdev/core/svgalib.c            |  7 +------
->  include/linux/math.h                          |  7 +++++++
->  6 files changed, 17 insertions(+), 27 deletions(-)
->
-> diff --git a/drivers/gpu/drm/i915/display/intel_dpll_mgr.c b/drivers/gpu/drm/i915/display/intel_dpll_mgr.c
-> index 6b2d8a1e2aa9..290e856fe9e9 100644
-> --- a/drivers/gpu/drm/i915/display/intel_dpll_mgr.c
-> +++ b/drivers/gpu/drm/i915/display/intel_dpll_mgr.c
-> @@ -21,6 +21,7 @@
->   * DEALINGS IN THE SOFTWARE.
->   */
->  
-> +#include <linux/math.h>
->  #include <linux/string_helpers.h>
->  
->  #include "i915_reg.h"
-> diff --git a/drivers/gpu/drm/i915/display/intel_dpll_mgr.h b/drivers/gpu/drm/i915/display/intel_dpll_mgr.h
-> index ba62eb5d7c51..04e6810954b2 100644
-> --- a/drivers/gpu/drm/i915/display/intel_dpll_mgr.h
-> +++ b/drivers/gpu/drm/i915/display/intel_dpll_mgr.h
-> @@ -29,13 +29,6 @@
->  
->  #include "intel_wakeref.h"
->  
-> -/*FIXME: Move this to a more appropriate place. */
-> -#define abs_diff(a, b) ({			\
-> -	typeof(a) __a = (a);			\
-> -	typeof(b) __b = (b);			\
-> -	(void) (&__a == &__b);			\
-> -	__a > __b ? (__a - __b) : (__b - __a); })
-> -
->  enum tc_port;
->  struct drm_i915_private;
->  struct intel_atomic_state;
-> diff --git a/drivers/gpu/ipu-v3/ipu-image-convert.c b/drivers/gpu/ipu-v3/ipu-image-convert.c
-> index af1612044eef..841316582ea9 100644
-> --- a/drivers/gpu/ipu-v3/ipu-image-convert.c
-> +++ b/drivers/gpu/ipu-v3/ipu-image-convert.c
-> @@ -7,7 +7,10 @@
->  
->  #include <linux/interrupt.h>
->  #include <linux/dma-mapping.h>
-> +#include <linux/math.h>
-> +
->  #include <video/imx-ipu-image-convert.h>
-> +
->  #include "ipu-prv.h"
->  
->  /*
-> @@ -543,7 +546,7 @@ static void find_best_seam(struct ipu_image_convert_ctx *ctx,
->  		unsigned int in_pos;
->  		unsigned int in_pos_aligned;
->  		unsigned int in_pos_rounded;
-> -		unsigned int abs_diff;
-> +		unsigned int diff;
->  
->  		/*
->  		 * Tiles in the right row / bottom column may not be allowed to
-> @@ -575,15 +578,11 @@ static void find_best_seam(struct ipu_image_convert_ctx *ctx,
->  		    (in_edge - in_pos_rounded) % in_burst)
->  			continue;
->  
-> -		if (in_pos < in_pos_aligned)
-> -			abs_diff = in_pos_aligned - in_pos;
-> -		else
-> -			abs_diff = in_pos - in_pos_aligned;
-> -
-> -		if (abs_diff < min_diff) {
-> +		diff = abs_diff(in_pos, in_pos_aligned);
-> +		if (diff < min_diff) {
->  			in_seam = in_pos_rounded;
->  			out_seam = out_pos;
-> -			min_diff = abs_diff;
-> +			min_diff = diff;
->  		}
->  	}
->  
-> diff --git a/drivers/tty/serial/omap-serial.c b/drivers/tty/serial/omap-serial.c
-> index 82d35dbbfa6c..9be63a1f1f0c 100644
-> --- a/drivers/tty/serial/omap-serial.c
-> +++ b/drivers/tty/serial/omap-serial.c
-> @@ -222,16 +222,11 @@ static inline int calculate_baud_abs_diff(struct uart_port *port,
->  				unsigned int baud, unsigned int mode)
->  {
->  	unsigned int n = port->uartclk / (mode * baud);
-> -	int abs_diff;
->  
->  	if (n == 0)
->  		n = 1;
->  
-> -	abs_diff = baud - (port->uartclk / (mode * n));
-> -	if (abs_diff < 0)
-> -		abs_diff = -abs_diff;
-> -
-> -	return abs_diff;
-> +	return abs_diff(baud, port->uartclk / (mode * n));
->  }
->  
->  /*
-> diff --git a/drivers/video/fbdev/core/svgalib.c b/drivers/video/fbdev/core/svgalib.c
-> index 9e01322fabe3..2cba158888ea 100644
-> --- a/drivers/video/fbdev/core/svgalib.c
-> +++ b/drivers/video/fbdev/core/svgalib.c
-> @@ -14,6 +14,7 @@
->  #include <linux/kernel.h>
->  #include <linux/string.h>
->  #include <linux/fb.h>
-> +#include <linux/math.h>
->  #include <linux/svga.h>
->  #include <asm/types.h>
->  #include <asm/io.h>
-> @@ -372,12 +373,6 @@ EXPORT_SYMBOL(svga_get_caps);
->   *  F_VCO = (F_BASE * M) / N
->   *  F_OUT = F_VCO / (2^R)
->   */
-> -
-> -static inline u32 abs_diff(u32 a, u32 b)
-> -{
-> -	return (a > b) ? (a - b) : (b - a);
-> -}
-> -
->  int svga_compute_pll(const struct svga_pll *pll, u32 f_wanted, u16 *m, u16 *n, u16 *r, int node)
->  {
->  	u16 am, an, ar;
-> diff --git a/include/linux/math.h b/include/linux/math.h
-> index 449a29b73f6d..4459d1786f77 100644
-> --- a/include/linux/math.h
-> +++ b/include/linux/math.h
-> @@ -157,6 +157,13 @@ __STRUCT_FRACT(u32)
->  	__builtin_types_compatible_p(typeof(x), unsigned type),		\
->  	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
->  
-> +#define abs_diff(a, b) ({			\
-> +	typeof(a) __a = (a);			\
-> +	typeof(b) __b = (b);			\
-> +	(void)(&__a == &__b);			\
-> +	__a > __b ? (__a - __b) : (__b - __a);	\
-> +})
-> +
->  /**
->   * reciprocal_scale - "scale" a value into range [0, ep_ro)
->   * @val: value
+Ciao, Thorsten
 
--- 
-Jani Nikula, Intel Open Source Graphics Center
+>> The driver seems to only use info->dev in that one dev_info() line,
+>> which seems purely cosmetic, so I think it could just be removed, eg:
+>>
+>> diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
+>> index d4abcf8aff75..a304a39d712b 100644
+>> --- a/drivers/video/fbdev/ps3fb.c
+>> +++ b/drivers/video/fbdev/ps3fb.c
+>> @@ -1168,8 +1168,7 @@ static int ps3fb_probe(struct ps3_system_bus_device *dev)
+>>  
+>>  	ps3_system_bus_set_drvdata(dev, info);
+>>  
+>> -	dev_info(info->device, "%s %s, using %u KiB of video memory\n",
+>> -		 dev_driver_string(info->dev), dev_name(info->dev),
+>> +	dev_info(info->device, "using %u KiB of video memory\n",
+>>  		 info->fix.smem_len >> 10);
+>>  
+>>  	task = kthread_run(ps3fbd, info, DEVICE_NAME);
+> 
+> 
+> Tested-by: Randy Dunlap <rdunlap@infradead.org> # build-tested
+> 
+> Thanks.
+> 

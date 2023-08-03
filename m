@@ -2,62 +2,65 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 680E6C25B77
-	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Aug 2023 18:41:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AE08C25B7F
+	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Aug 2023 18:41:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234796AbjHCSla (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 3 Aug 2023 14:41:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57530 "EHLO
+        id S233417AbjHCSkn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 3 Aug 2023 14:40:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57424 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233941AbjHCSkw (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 3 Aug 2023 14:40:52 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 597262D71;
-        Thu,  3 Aug 2023 11:40:47 -0700 (PDT)
+        with ESMTP id S231821AbjHCSkl (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 3 Aug 2023 14:40:41 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9DBF82D45;
+        Thu,  3 Aug 2023 11:40:39 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 5DC131F897;
-        Thu,  3 Aug 2023 18:40:45 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 40BA321941;
+        Thu,  3 Aug 2023 18:40:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1691088045; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1691088038; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=OZqN7Pc/roMFL0AMlWydngdrYaMSJUPD5Fi0FROQWF8=;
-        b=e+K56gaei6Fm9L1880PABWeMEx0f6mtJE6xJso9aLA27HNbi3fna0q5k0uSMCwNNwAZRv3
-        vuO8DZ3H6BmEABe3WuZpIuqy9ssIcbrfPBClxJ1xjVUDc7brGFVkL/Rh4SqOjuQoI1Y64X
-        siK94wF2fkKABt0hbSpK6h9pY3fDvic=
+        bh=rsfHzEmcWbJAJjqVCoJIzdgJwYXNTRfIrd9e2fBso+A=;
+        b=ceSDqgul6H+Ir2CjYSNoeC+RLrpjvdAS5tavYJn5is7lL+dQN79yqE/4sk1rMG853WkWN5
+        +DJggKFpeDTeq3ysz8PElibq7jtNDwsjsqjo7l8TniceJtT3KJ+YVatRPQ8aHYPpsqBgZ1
+        L0Zjy0zQFuj5tx1ydv1OgA8bZrx2ugA=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1691088045;
+        s=susede2_ed25519; t=1691088038;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=OZqN7Pc/roMFL0AMlWydngdrYaMSJUPD5Fi0FROQWF8=;
-        b=61olfcOkUB7EQ22uv/NivusgJiXJOEkHvC3cwjBZl3p2GtrsVRxSEAleJzBMLJX74FBicl
-        1UPg97JCoItXhCAQ==
+        bh=rsfHzEmcWbJAJjqVCoJIzdgJwYXNTRfIrd9e2fBso+A=;
+        b=mzxW+Y28hWI342Zvcu05LRP/pX1KwxvzNlsL8dYgOqQtHEdqMJwKoxCTuz5+9h4fZWTIv2
+        C1DhzffhtXzbPKBw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 26FA41333C;
-        Thu,  3 Aug 2023 18:40:45 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id EEF2D139BD;
+        Thu,  3 Aug 2023 18:40:37 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id GMKpCK30y2TLGAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 03 Aug 2023 18:40:45 +0000
+        id oClwOaX0y2TLGAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 03 Aug 2023 18:40:37 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, javierm@redhat.com, sam@ravnborg.org
 Cc:     linux-media@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org,
         linux-arm-kernel@lists.infradead.org,
         linux-geode@lists.infradead.org, linux-omap@vger.kernel.org,
-        kvm@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v3 29/47] fbdev/omapfb: Use fbdev I/O helpers
-Date:   Thu,  3 Aug 2023 20:35:54 +0200
-Message-ID: <20230803184034.6456-30-tzimmermann@suse.de>
+        kvm@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
+        Hans Verkuil <hverkuil-cisco@xs4all.nl>,
+        Hans Verkuil <hverkuil@xs4all.nl>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>
+Subject: [PATCH v3 01/47] media/vivid: Use fbdev I/O helpers
+Date:   Thu,  3 Aug 2023 20:35:26 +0200
+Message-ID: <20230803184034.6456-2-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230803184034.6456-1-tzimmermann@suse.de>
 References: <20230803184034.6456-1-tzimmermann@suse.de>
@@ -80,47 +83,51 @@ v2:
 	* updated to use _IOMEM_ tokens
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Reviewed-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
 Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
 Acked-by: Helge Deller <deller@gmx.de>
+Cc: Hans Verkuil <hverkuil@xs4all.nl>
+Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
 ---
- drivers/video/fbdev/omap/Kconfig       | 4 +---
- drivers/video/fbdev/omap/omapfb_main.c | 4 +---
+ drivers/media/test-drivers/vivid/Kconfig     | 4 +---
+ drivers/media/test-drivers/vivid/vivid-osd.c | 4 +---
  2 files changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap/Kconfig b/drivers/video/fbdev/omap/Kconfig
-index a6548283451f..f01278238d50 100644
---- a/drivers/video/fbdev/omap/Kconfig
-+++ b/drivers/video/fbdev/omap/Kconfig
-@@ -3,9 +3,7 @@ config FB_OMAP
- 	tristate "OMAP frame buffer support"
- 	depends on FB
- 	depends on ARCH_OMAP1 || (ARM && COMPILE_TEST)
+diff --git a/drivers/media/test-drivers/vivid/Kconfig b/drivers/media/test-drivers/vivid/Kconfig
+index 318799d317ba..5b08a5ad291e 100644
+--- a/drivers/media/test-drivers/vivid/Kconfig
++++ b/drivers/media/test-drivers/vivid/Kconfig
+@@ -3,11 +3,9 @@ config VIDEO_VIVID
+ 	tristate "Virtual Video Test Driver"
+ 	depends on VIDEO_DEV && !SPARC32 && !SPARC64 && FB
+ 	depends on HAS_DMA
++	select FB_IOMEM_HELPERS
+ 	select FONT_SUPPORT
+ 	select FONT_8x16
 -	select FB_CFB_FILLRECT
 -	select FB_CFB_COPYAREA
 -	select FB_CFB_IMAGEBLIT
-+	select FB_IOMEM_HELPERS
- 	help
- 	  Frame buffer driver for OMAP based boards.
+ 	select VIDEOBUF2_VMALLOC
+ 	select VIDEOBUF2_DMA_CONTIG
+ 	select VIDEO_V4L2_TPG
+diff --git a/drivers/media/test-drivers/vivid/vivid-osd.c b/drivers/media/test-drivers/vivid/vivid-osd.c
+index 051f1805a16d..5c931b94a7b5 100644
+--- a/drivers/media/test-drivers/vivid/vivid-osd.c
++++ b/drivers/media/test-drivers/vivid/vivid-osd.c
+@@ -246,12 +246,10 @@ static int vivid_fb_blank(int blank_mode, struct fb_info *info)
  
-diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
-index 783bbe026207..f28cb90947a3 100644
---- a/drivers/video/fbdev/omap/omapfb_main.c
-+++ b/drivers/video/fbdev/omap/omapfb_main.c
-@@ -1216,13 +1216,11 @@ static int omapfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
-  */
- static struct fb_ops omapfb_ops = {
- 	.owner		= THIS_MODULE,
+ static const struct fb_ops vivid_fb_ops = {
+ 	.owner = THIS_MODULE,
 +	FB_DEFAULT_IOMEM_OPS,
- 	.fb_open        = omapfb_open,
- 	.fb_release     = omapfb_release,
- 	.fb_setcolreg	= omapfb_setcolreg,
- 	.fb_setcmap	= omapfb_setcmap,
--	.fb_fillrect	= cfb_fillrect,
--	.fb_copyarea	= cfb_copyarea,
--	.fb_imageblit	= cfb_imageblit,
- 	.fb_blank       = omapfb_blank,
- 	.fb_ioctl	= omapfb_ioctl,
- 	.fb_check_var	= omapfb_check_var,
+ 	.fb_check_var   = vivid_fb_check_var,
+ 	.fb_set_par     = vivid_fb_set_par,
+ 	.fb_setcolreg   = vivid_fb_setcolreg,
+-	.fb_fillrect    = cfb_fillrect,
+-	.fb_copyarea    = cfb_copyarea,
+-	.fb_imageblit   = cfb_imageblit,
+ 	.fb_cursor      = NULL,
+ 	.fb_ioctl       = vivid_fb_ioctl,
+ 	.fb_pan_display = vivid_fb_pan_display,
 -- 
 2.41.0
 

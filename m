@@ -2,62 +2,63 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A5A4C2FC02
-	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Aug 2023 18:41:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13C36C07E8C
+	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Aug 2023 18:41:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234120AbjHCSlZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 3 Aug 2023 14:41:25 -0400
+        id S234606AbjHCSl1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 3 Aug 2023 14:41:27 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57548 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234381AbjHCSk5 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 3 Aug 2023 14:40:57 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F33B12D70;
-        Thu,  3 Aug 2023 11:40:50 -0700 (PDT)
+        with ESMTP id S234264AbjHCSkz (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 3 Aug 2023 14:40:55 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E9A5330CF;
+        Thu,  3 Aug 2023 11:40:48 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 500F91F8AA;
-        Thu,  3 Aug 2023 18:40:49 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 53B0321983;
+        Thu,  3 Aug 2023 18:40:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1691088049; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1691088047; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=62xQ71QOXV500/MwPQghiTsd8yQOOyY/vk5PmbjJluc=;
-        b=wRe+cpvzF+SwaW02f5jiJiq+mHlkgqQ2mjfmKoJ0cMy4oIoGWjec5AHSLlPFTsHEPwfl/J
-        WGDRObtLvfnqAfXhvmLx/nBTroRA3UK5uMqU3j2PibPtcCSN+i5socKCltucX5OzrZUr2m
-        gbBYl+0fnU91+4jkWNW3MkJyQbH4Utk=
+        bh=ikvYrt9WSI00R7n6bFAYvx4bSk25PYyS0sam7/z9c94=;
+        b=hR9X7T+4F0PfiDaj6URi5FKl12e8i5o7fZ4wcHLm4iB2RUp4Fx+em+3TKto+/C/v0zaRMh
+        qnrW0xLFuJgDLn3mbCEiUcjy4+uTh1J0ZpyKW1xlzIzawzUZvUCPpu9YVnUd59C2fBjtdu
+        VLL5+GikFiDcJwvVg+MplhMyvMFzxos=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1691088049;
+        s=susede2_ed25519; t=1691088047;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=62xQ71QOXV500/MwPQghiTsd8yQOOyY/vk5PmbjJluc=;
-        b=oCW/yGJ6+rehMsdtdMFW2w8jJ3PYWt4/7bDxiGM+6uz981UbyQW8rQaZ6aP0S6rKL7PMSC
-        DXXrh8Z+emYrUcAA==
+        bh=ikvYrt9WSI00R7n6bFAYvx4bSk25PYyS0sam7/z9c94=;
+        b=NhRyWGR7On2r+/A4HBY8AX2pdCvMCX+FbnvP729agTI/p+poLgtFgq5s8uNdMEvSwngYYl
+        3d73phP2QSjtSuAA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 1BE831333C;
-        Thu,  3 Aug 2023 18:40:49 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 1A146139BD;
+        Thu,  3 Aug 2023 18:40:47 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id EMjWBbH0y2TLGAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 03 Aug 2023 18:40:49 +0000
+        id gNeEBa/0y2TLGAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 03 Aug 2023 18:40:47 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, javierm@redhat.com, sam@ravnborg.org
 Cc:     linux-media@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org,
         linux-arm-kernel@lists.infradead.org,
         linux-geode@lists.infradead.org, linux-omap@vger.kernel.org,
-        kvm@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v3 45/47] fbdev/vesafb: Use fbdev I/O helpers
-Date:   Thu,  3 Aug 2023 20:36:10 +0200
-Message-ID: <20230803184034.6456-46-tzimmermann@suse.de>
+        kvm@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
+        Jingoo Han <jingoohan1@gmail.com>
+Subject: [PATCH v3 37/47] fbdev/s3cfb: Use fbdev I/O helpers
+Date:   Thu,  3 Aug 2023 20:36:02 +0200
+Message-ID: <20230803184034.6456-38-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230803184034.6456-1-tzimmermann@suse.de>
 References: <20230803184034.6456-1-tzimmermann@suse.de>
@@ -82,44 +83,46 @@ v2:
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
 Acked-by: Helge Deller <deller@gmx.de>
+Cc: Jingoo Han <jingoohan1@gmail.com>
 ---
  drivers/video/fbdev/Kconfig  | 4 +---
- drivers/video/fbdev/vesafb.c | 4 +---
+ drivers/video/fbdev/s3c-fb.c | 4 +---
  2 files changed, 2 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index b8395ff04f98..29e59979b2bd 100644
+index 4986586c63b0..71766639c542 100644
 --- a/drivers/video/fbdev/Kconfig
 +++ b/drivers/video/fbdev/Kconfig
-@@ -453,9 +453,7 @@ config FB_VESA
- 	bool "VESA VGA graphics support"
- 	depends on (FB = y) && X86
- 	select APERTURE_HELPERS
+@@ -1653,9 +1653,7 @@ config FB_S3C
+ 	tristate "Samsung S3C framebuffer support"
+ 	depends on FB && HAVE_CLK && HAS_IOMEM
+ 	depends on ARCH_S3C64XX || COMPILE_TEST
 -	select FB_CFB_FILLRECT
 -	select FB_CFB_COPYAREA
 -	select FB_CFB_IMAGEBLIT
 +	select FB_IOMEM_HELPERS
- 	select SYSFB
  	help
- 	  This is the frame buffer device driver for generic VESA 2.0
-diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
-index 422a1c53decd..c0edceea0a79 100644
---- a/drivers/video/fbdev/vesafb.c
-+++ b/drivers/video/fbdev/vesafb.c
-@@ -201,12 +201,10 @@ static void vesafb_destroy(struct fb_info *info)
+ 	  Frame buffer driver for the built-in FB controller in the Samsung
+ 	  SoC line such as the S3C6400 and S3C6410.
+diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
+index c50b92c06c5d..2b85aad6a304 100644
+--- a/drivers/video/fbdev/s3c-fb.c
++++ b/drivers/video/fbdev/s3c-fb.c
+@@ -1038,13 +1038,11 @@ static int s3c_fb_ioctl(struct fb_info *info, unsigned int cmd,
  
- static struct fb_ops vesafb_ops = {
+ static const struct fb_ops s3c_fb_ops = {
  	.owner		= THIS_MODULE,
 +	FB_DEFAULT_IOMEM_OPS,
- 	.fb_destroy     = vesafb_destroy,
- 	.fb_setcolreg	= vesafb_setcolreg,
- 	.fb_pan_display	= vesafb_pan_display,
+ 	.fb_check_var	= s3c_fb_check_var,
+ 	.fb_set_par	= s3c_fb_set_par,
+ 	.fb_blank	= s3c_fb_blank,
+ 	.fb_setcolreg	= s3c_fb_setcolreg,
 -	.fb_fillrect	= cfb_fillrect,
 -	.fb_copyarea	= cfb_copyarea,
 -	.fb_imageblit	= cfb_imageblit,
+ 	.fb_pan_display	= s3c_fb_pan_display,
+ 	.fb_ioctl	= s3c_fb_ioctl,
  };
- 
- static int vesafb_setup(char *options)
 -- 
 2.41.0
 

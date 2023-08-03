@@ -2,65 +2,72 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4387FC001DF
-	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Aug 2023 02:10:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E5AAC001DF
+	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Aug 2023 07:10:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230407AbjHCCKN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 2 Aug 2023 22:10:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40428 "EHLO
+        id S232097AbjHCHKj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 3 Aug 2023 03:10:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34066 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229446AbjHCCKM (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 2 Aug 2023 22:10:12 -0400
+        with ESMTP id S229668AbjHCHKi (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 3 Aug 2023 03:10:38 -0400
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ADD0A1B2
-        for <linux-fbdev@vger.kernel.org>; Wed,  2 Aug 2023 19:10:10 -0700 (PDT)
-Received: from dggpemm500024.china.huawei.com (unknown [172.30.72.57])
-        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4RGXJy3Q5KzNmk9;
-        Thu,  3 Aug 2023 10:06:42 +0800 (CST)
-Received: from huawei.com (10.67.175.31) by dggpemm500024.china.huawei.com
- (7.185.36.203) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Thu, 3 Aug
- 2023 10:10:08 +0800
-From:   GUO Zihua <guozihua@huawei.com>
-To:     <daniel@ffwll.ch>, <deller@gmx.de>
-CC:     <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>
-Subject: [PATCH] fbcon: Make fbcon_registered_fb and fbcon_num_registered_fb static
-Date:   Thu, 3 Aug 2023 10:09:39 +0800
-Message-ID: <20230803020939.491-1-guozihua@huawei.com>
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 15EABFF
+        for <linux-fbdev@vger.kernel.org>; Thu,  3 Aug 2023 00:10:38 -0700 (PDT)
+Received: from dggpeml500025.china.huawei.com (unknown [172.30.72.53])
+        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4RGg1Y6g8CzVjnf;
+        Thu,  3 Aug 2023 15:08:49 +0800 (CST)
+Received: from ubuntu1804.huawei.com (10.67.174.202) by
+ dggpeml500025.china.huawei.com (7.185.36.35) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27; Thu, 3 Aug 2023 15:10:35 +0800
+From:   Zhu Wang <wangzhu9@huawei.com>
+To:     <deller@gmx.de>, <u.kleine-koenig@pengutronix.de>,
+        <tzimmermann@suse.de>, <sam@ravnborg.org>,
+        <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>
+CC:     <wangzhu9@huawei.com>
+Subject: [PATCH -next] video: fbdev: goldfishfb: Do not check 0 for platform_get_irq()
+Date:   Thu, 3 Aug 2023 15:10:06 +0800
+Message-ID: <20230803071006.87235-1-wangzhu9@huawei.com>
 X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Originating-IP: [10.67.175.31]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- dggpemm500024.china.huawei.com (7.185.36.203)
+X-Originating-IP: [10.67.174.202]
+X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
+ dggpeml500025.china.huawei.com (7.185.36.35)
 X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-fbcon_registered_fb and fbcon_num_registered_fb is not referred outside
-drivers/video/fbdev/core/fbcon.c, so make them static.
+Since platform_get_irq() never returned zero, so it need not to check
+whether it returned zero, and we use the return error code of
+platform_get_irq() to replace the current return error code.
 
-Signed-off-by: GUO Zihua <guozihua@huawei.com>
+Please refer to the commit a85a6c86c25b ("driver core: platform: Clarify
+that IRQ 0 is invalid") to get that platform_get_irq() never returned
+zero.
+
+Signed-off-by: Zhu Wang <wangzhu9@huawei.com>
 ---
- drivers/video/fbdev/core/fbcon.c | 4 ++--
+ drivers/video/fbdev/goldfishfb.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 887fad44e7ec..976900d6893c 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -102,8 +102,8 @@ enum {
+diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
+index ef2528c3faa9..c3091ce26e5c 100644
+--- a/drivers/video/fbdev/goldfishfb.c
++++ b/drivers/video/fbdev/goldfishfb.c
+@@ -203,8 +203,8 @@ static int goldfish_fb_probe(struct platform_device *pdev)
+ 	}
  
- static struct fbcon_display fb_display[MAX_NR_CONSOLES];
+ 	fb->irq = platform_get_irq(pdev, 0);
+-	if (fb->irq <= 0) {
+-		ret = -ENODEV;
++	if (fb->irq < 0) {
++		ret = fb->irq;
+ 		goto err_no_irq;
+ 	}
  
--struct fb_info *fbcon_registered_fb[FB_MAX];
--int fbcon_num_registered_fb;
-+static struct fb_info *fbcon_registered_fb[FB_MAX];
-+static int fbcon_num_registered_fb;
- 
- #define fbcon_for_each_registered_fb(i)		\
- 	for (i = 0; WARN_CONSOLE_UNLOCKED(), i < FB_MAX; i++)		\
 -- 
 2.17.1
 

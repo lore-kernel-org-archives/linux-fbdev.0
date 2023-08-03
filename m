@@ -2,62 +2,63 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8FB1C3DA40
-	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Aug 2023 18:40:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03A55C3DA41
+	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Aug 2023 18:40:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233948AbjHCSks (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 3 Aug 2023 14:40:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57532 "EHLO
+        id S234002AbjHCSkt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 3 Aug 2023 14:40:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57434 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233714AbjHCSkp (ORCPT
+        with ESMTP id S233801AbjHCSkp (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Thu, 3 Aug 2023 14:40:45 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 94FFA2D64;
-        Thu,  3 Aug 2023 11:40:42 -0700 (PDT)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 55B052D5A;
+        Thu,  3 Aug 2023 11:40:43 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 104012195A;
-        Thu,  3 Aug 2023 18:40:40 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 9C1721F86A;
+        Thu,  3 Aug 2023 18:40:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1691088040; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1691088041; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=0nbJDkcfUStE+pzpVM/PvfWDyADlWpe1R4dC72Difi8=;
-        b=MsYq7cmFizyBKL1tbRMr9tO23/GdsCVouIHVLjFME5LDku7Lu+yPQlR+LkIQgg7bI6gSC9
-        ycB0nmftYQvcTIDRsV4249wtvWAxPH0JNeet2tLvfxp8jGwhuc7URfOnCAXLJ3qxvk1qKt
-        8A354OnJNkg0looFQH+kAGFCFvrOI34=
+        bh=wiexC+zlfiK1TsHWNWOLYsnINJseeoYj/5fUnKCI35M=;
+        b=UEZGzXIz9YyWE3flUoIDlHbaqgr/tBBtKvDA2WXA45JISUVojkh/dLDGM4MX+0tyQc91L2
+        ps9tkkjRT6QkVEFKdVL4X/4AhpMsVxzM1oa2u6Vfq4KKzjzRtvOUnjSdZYz7IVRSW5zQ5T
+        ukDjIdicmshR2Y0mPrW2+zZti8o2W/Q=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1691088040;
+        s=susede2_ed25519; t=1691088041;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=0nbJDkcfUStE+pzpVM/PvfWDyADlWpe1R4dC72Difi8=;
-        b=Xmzl84ymd8VkZD8mVH+tcQhi0VEWDLT5j5WMP5YxGOdYMBBRQ5FXTAeX/pDHgbDvno9xuL
-        VV1iEMAz+u5m49DQ==
+        bh=wiexC+zlfiK1TsHWNWOLYsnINJseeoYj/5fUnKCI35M=;
+        b=cc76Xy0Mg9z2zBIq+xcD+s7SRGH0OHkSpUU8vmusRRCe4RJtayEHecT0NbxQsxNPvB3A6T
+        pqKNFR4xzrTkfoBw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id CE5B11333C;
-        Thu,  3 Aug 2023 18:40:39 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 5E528139BD;
+        Thu,  3 Aug 2023 18:40:41 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id kHqMMaf0y2TLGAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 03 Aug 2023 18:40:39 +0000
+        id 0EEZFqn0y2TLGAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 03 Aug 2023 18:40:41 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, javierm@redhat.com, sam@ravnborg.org
 Cc:     linux-media@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org,
         linux-arm-kernel@lists.infradead.org,
         linux-geode@lists.infradead.org, linux-omap@vger.kernel.org,
-        kvm@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v3 08/47] fbdev/da8xx-fb: Use fbdev I/O helpers
-Date:   Thu,  3 Aug 2023 20:35:33 +0200
-Message-ID: <20230803184034.6456-9-tzimmermann@suse.de>
+        kvm@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
+        Andres Salomon <dilinger@queued.net>
+Subject: [PATCH v3 14/47] fbdev/geode/gxfb: Use fbdev I/O helpers
+Date:   Thu,  3 Aug 2023 20:35:39 +0200
+Message-ID: <20230803184034.6456-15-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230803184034.6456-1-tzimmermann@suse.de>
 References: <20230803184034.6456-1-tzimmermann@suse.de>
@@ -82,47 +83,47 @@ v2:
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
 Acked-by: Helge Deller <deller@gmx.de>
+Cc: Andres Salomon <dilinger@queued.net>
 ---
- drivers/video/fbdev/Kconfig    | 4 +---
- drivers/video/fbdev/da8xx-fb.c | 4 +---
- 2 files changed, 2 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/geode/Kconfig     | 4 +---
+ drivers/video/fbdev/geode/gxfb_core.c | 5 +----
+ 2 files changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index e5e5a499df8b..e57588c144de 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -1837,10 +1837,8 @@ config FB_DA8XX
- 	tristate "DA8xx/OMAP-L1xx/AM335x Framebuffer support"
- 	depends on FB && HAVE_CLK && HAS_IOMEM
- 	depends on ARCH_DAVINCI_DA8XX || SOC_AM33XX || COMPILE_TEST
+diff --git a/drivers/video/fbdev/geode/Kconfig b/drivers/video/fbdev/geode/Kconfig
+index 51b1ec5319c4..957ef0756ced 100644
+--- a/drivers/video/fbdev/geode/Kconfig
++++ b/drivers/video/fbdev/geode/Kconfig
+@@ -29,9 +29,7 @@ config FB_GEODE_LX
+ config FB_GEODE_GX
+ 	tristate "AMD Geode GX framebuffer support"
+ 	depends on FB && FB_GEODE
 -	select FB_CFB_FILLRECT
 -	select FB_CFB_COPYAREA
 -	select FB_CFB_IMAGEBLIT
- 	select FB_CFB_REV_PIXELS_IN_BYTE
 +	select FB_IOMEM_HELPERS
- 	select FB_MODE_HELPERS
- 	select VIDEOMODE_HELPERS
+ 	select VIDEO_NOMODESET
  	help
-diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
-index 988dedcf6be8..4ca70a1bdd3b 100644
---- a/drivers/video/fbdev/da8xx-fb.c
-+++ b/drivers/video/fbdev/da8xx-fb.c
-@@ -1295,14 +1295,12 @@ static int da8xxfb_set_par(struct fb_info *info)
+ 	  Framebuffer driver for the display controller integrated into the
+diff --git a/drivers/video/fbdev/geode/gxfb_core.c b/drivers/video/fbdev/geode/gxfb_core.c
+index 4fb13790c528..af996634c1a9 100644
+--- a/drivers/video/fbdev/geode/gxfb_core.c
++++ b/drivers/video/fbdev/geode/gxfb_core.c
+@@ -268,14 +268,11 @@ static int gxfb_map_video_memory(struct fb_info *info, struct pci_dev *dev)
  
- static const struct fb_ops da8xx_fb_ops = {
- 	.owner = THIS_MODULE,
+ static const struct fb_ops gxfb_ops = {
+ 	.owner		= THIS_MODULE,
 +	FB_DEFAULT_IOMEM_OPS,
- 	.fb_check_var = fb_check_var,
- 	.fb_set_par = da8xxfb_set_par,
- 	.fb_setcolreg = fb_setcolreg,
- 	.fb_pan_display = da8xx_pan_display,
- 	.fb_ioctl = fb_ioctl,
--	.fb_fillrect = cfb_fillrect,
--	.fb_copyarea = cfb_copyarea,
--	.fb_imageblit = cfb_imageblit,
- 	.fb_blank = cfb_blank,
+ 	.fb_check_var	= gxfb_check_var,
+ 	.fb_set_par	= gxfb_set_par,
+ 	.fb_setcolreg	= gxfb_setcolreg,
+ 	.fb_blank       = gxfb_blank,
+-	/* No HW acceleration for now. */
+-	.fb_fillrect	= cfb_fillrect,
+-	.fb_copyarea	= cfb_copyarea,
+-	.fb_imageblit	= cfb_imageblit,
  };
  
+ static struct fb_info *gxfb_init_fbinfo(struct device *dev)
 -- 
 2.41.0
 

@@ -2,105 +2,103 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CF3BC04E69
-	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Aug 2023 04:07:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0035AC001DF
+	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Aug 2023 11:32:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231803AbjHDEH1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 4 Aug 2023 00:07:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57324 "EHLO
+        id S229732AbjHDLcp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 4 Aug 2023 07:32:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43228 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233110AbjHDEHY (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 4 Aug 2023 00:07:24 -0400
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 861AF3C28;
-        Thu,  3 Aug 2023 21:07:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1691122042; x=1722658042;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=Nct1OPaQWyF0NLQQ6u7Wq7eG9CS3igaS6y0hh8xq7cc=;
-  b=P+mTRk0pXznlqitB1u0k4IgWqFzHW6Q69Y7LD1EgJiZ8s32Wnp8jexBh
-   Q6npLYLmmP8Zcu0bFVOGXi0sO06FlbQ9qliXd2+TXhQ0CA0Jr4qf1QaRC
-   EgHc8X+NyeUeWym7wWggt60pVhftfk+EEQA3d1x1JezGZM60vivSeIlu/
-   CId8NjVOlGe+KCrhctoIsk5z8z5NikS9P+c7dIjCrcxzn7Gms3NCjzjPE
-   fQrBvR3KjCSkL3CO0XxZ7JzWT7pCCc2z60e9Y6DVv4zTKaNiQOxWePeQS
-   Oaxvh5VVxvvBYG6abP4ob7hwKQRoVC30JXaN74Poyk6wZTevn0Kxx3mIb
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10791"; a="368962279"
-X-IronPort-AV: E=Sophos;i="6.01,254,1684825200"; 
-   d="scan'208";a="368962279"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Aug 2023 21:07:22 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10791"; a="679758521"
-X-IronPort-AV: E=Sophos;i="6.01,254,1684825200"; 
-   d="scan'208";a="679758521"
-Received: from smile.fi.intel.com ([10.237.72.54])
-  by orsmga003.jf.intel.com with ESMTP; 03 Aug 2023 21:07:16 -0700
-Received: from andy by smile.fi.intel.com with local (Exim 4.96)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1qRm5q-008pgS-0y;
-        Fri, 04 Aug 2023 07:07:14 +0300
-Date:   Fri, 4 Aug 2023 07:07:14 +0300
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Andrew Morton <akpm@linux-foundation.org>
-Cc:     Jani Nikula <jani.nikula@intel.com>,
-        Imre Deak <imre.deak@intel.com>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Andi Shyti <andi.shyti@linux.intel.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Alexey Dobriyan <adobriyan@gmail.com>,
-        intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-        linux-fbdev@vger.kernel.org,
-        Jani Nikula <jani.nikula@linux.intel.com>,
-        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Subject: Re: [PATCH v4 1/1] drm/i915: Move abs_diff() to math.h
-Message-ID: <ZMx5cp1u5noAH0Zg@smile.fi.intel.com>
-References: <20230803131918.53727-1-andriy.shevchenko@linux.intel.com>
- <20230803102446.8edf94acc77e81ab2e09cee3@linux-foundation.org>
+        with ESMTP id S229685AbjHDLco (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 4 Aug 2023 07:32:44 -0400
+Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com [IPv6:2607:f8b0:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 48E4211B;
+        Fri,  4 Aug 2023 04:32:43 -0700 (PDT)
+Received: by mail-pf1-x42d.google.com with SMTP id d2e1a72fcca58-686ea67195dso1421709b3a.2;
+        Fri, 04 Aug 2023 04:32:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1691148763; x=1691753563;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=VfvBijsO2sMlDrlMC7AyPHbFWwb0ahNV79UVj+FEisM=;
+        b=U70dWupWM2FxVvKo+UYn/YBIE4+3RwWguzMzX9YZgY3H5HcliIY1JdK6NyTrSCMCtl
+         7uR5IN+PMCPAtQVuYB11ypayUnXrLZ2/RUJj4Ml1i34TkQWrcahCY5axBckLdhuyuDtJ
+         sy/KqPOssCahHDs7pdlwmffWMDxq2ivladpzNutqTNuUzcuVzc+r8BhX0KsdUKYmC73i
+         K2vedwwlHSCOCWT3CKXRAnSUqu1RJkkUYaDhs6kP08BxWCXXFhZexd3srflWOoEiuZfb
+         1UEc4KS9p32fF6SEyJNM8Xtdv37f0t99VQ0GgJWaZ1Q9Tnf1JoYaqAUxCRHt+W6OvuDM
+         15jg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1691148763; x=1691753563;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=VfvBijsO2sMlDrlMC7AyPHbFWwb0ahNV79UVj+FEisM=;
+        b=e+szlpff74M7im4HT39119k/4fk4ISioYA8lXkvqpRXPR1uCASaKZsNZwptcTcn9VW
+         EyRZkw8T4civN2p8v4gImu5/Utoa7uccwDlRhg0uMZcfJbe2rGrI057RfeE2meoYI/5G
+         nndfq2Fvvj9OFteOoXZ1IZZZ70ezk1hyYWCzDyFRmqPbJdKANtg9ed1TKzWwvUwSwpWa
+         Ojj7exTLNJFgxYRupUpCOH58Snk3rVSbFdV2vAHWGTqwWrEtLf3M+r05pTTp7M2qEOm4
+         AEbKkP/SA9+77lnnLZb0CTRGfZIAThXmI+I0CF1WMzP57W9x/wocaccJKwR1E8bJNwF8
+         XHVw==
+X-Gm-Message-State: AOJu0YwpFNi3gWq+4B9f2+BlQxjqf0ZRV3JzaXSCyNAkPKRIoRBnuGEs
+        eaUweVxVJzGfYkX5DuQm4Ma/V+zK2x0=
+X-Google-Smtp-Source: AGHT+IG9dvCYmEptOFC9VjllrZMWd5c+brV4DTFKrmiuaeUagZRje6Mdh2k+6LaXQABWjnvTuQ3P7g==
+X-Received: by 2002:a17:902:f94e:b0:1b3:f5c3:7682 with SMTP id kx14-20020a170902f94e00b001b3f5c37682mr1049005plb.68.1691148762695;
+        Fri, 04 Aug 2023 04:32:42 -0700 (PDT)
+Received: from ubuntu777.domain.name (36-228-73-13.dynamic-ip.hinet.net. [36.228.73.13])
+        by smtp.gmail.com with ESMTPSA id iw3-20020a170903044300b001b857352285sm1536501plb.247.2023.08.04.04.32.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 04 Aug 2023 04:32:42 -0700 (PDT)
+From:   Min-Hua Chen <minhuadotchen@gmail.com>
+To:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>
+Cc:     Min-Hua Chen <minhuadotchen@gmail.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v2] fbcon: mark fbcon_registered_fb static
+Date:   Fri,  4 Aug 2023 19:32:35 +0800
+Message-Id: <20230804113237.51653-1-minhuadotchen@gmail.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230803102446.8edf94acc77e81ab2e09cee3@linux-foundation.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Aug 03, 2023 at 10:24:46AM -0700, Andrew Morton wrote:
-> On Thu,  3 Aug 2023 16:19:18 +0300 Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
+Mark fbcon_registered_fb, and fbcon_num_registered_fb static
+to fix the following sparse warnings:
 
-...
+drivers/video/fbdev/core/fbcon.c:105:16: sparse: warning: symbol 'fbcon_registered_fb' was not declared. Should it be static?
+drivers/video/fbdev/core/fbcon.c:106:5: sparse: warning: symbol 'fbcon_num_registered_fb' was not declared. Should it be static?
 
-> > +#define abs_diff(a, b) ({			\
-> > +	typeof(a) __a = (a);			\
-> > +	typeof(b) __b = (b);			\
-> > +	(void)(&__a == &__b);			\
-> > +	__a > __b ? (__a - __b) : (__b - __a);	\
-> > +})
-> 
-> Can we document it please?
-> 
-> Also, the open-coded type comparison could be replaced with __typecheck()?
-> 
-> And why the heck isn't __typecheck() in typecheck.h, to be included by
-> minmax.h.
-> 
-> etcetera.  Sigh.  I'll grab it, but please at least send along some
-> kerneldoc?
+No functional change intended.
 
-Sure and thank you!
+Cc: Helge Deller <deller@gmx.de>
+Signed-off-by: Min-Hua Chen <minhuadotchen@gmail.com>
 
+---
+
+change since v1:
+1. registered_fb and num_registered_fb are still used in drivers/staging/olpc_dcon,
+so do keep them as-is.
+2. change the subject to fbcon: mark fbcon_registered_fb static
+---
+ drivers/video/fbdev/core/fbcon.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 887fad44e7ec..976900d6893c 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -102,8 +102,8 @@ enum {
+ 
+ static struct fbcon_display fb_display[MAX_NR_CONSOLES];
+ 
+-struct fb_info *fbcon_registered_fb[FB_MAX];
+-int fbcon_num_registered_fb;
++static struct fb_info *fbcon_registered_fb[FB_MAX];
++static int fbcon_num_registered_fb;
+ 
+ #define fbcon_for_each_registered_fb(i)		\
+ 	for (i = 0; WARN_CONSOLE_UNLOCKED(), i < FB_MAX; i++)		\
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.34.1
 

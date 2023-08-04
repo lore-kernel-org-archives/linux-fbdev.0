@@ -2,107 +2,115 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15349C001DB
-	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Aug 2023 13:19:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DDA8C41513
+	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Aug 2023 15:50:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230129AbjHDNTy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 4 Aug 2023 09:19:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56916 "EHLO
+        id S232055AbjHDPuZ convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 4 Aug 2023 11:50:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46944 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230224AbjHDNTd (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 4 Aug 2023 09:19:33 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E35B94C12
-        for <linux-fbdev@vger.kernel.org>; Fri,  4 Aug 2023 06:15:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1691154948;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=yghE1gT7JEHr9Ft4Ug/jdVqABt7mGQZ6VHMNTdkCnVs=;
-        b=EtXFSAf/R4Us0GdwQVVnqtZMOylXMwaCl0w8BecP7mtvHiIIoCiuWIcZoMNdJ9R5bOf4m3
-        1sWsgw/MdSQ1PDoNT702pNqV8mnd5fcOMfyWr2/5/vEg8gk8NQr0QZXACZIkWENE0fb1IL
-        l2j2+8Bnsuj88I0ueqOn4oOdbQyKouM=
-Received: from mail-oi1-f200.google.com (mail-oi1-f200.google.com
- [209.85.167.200]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-297--laECBO-Mn-Ru6LY1a5Irg-1; Fri, 04 Aug 2023 09:15:47 -0400
-X-MC-Unique: -laECBO-Mn-Ru6LY1a5Irg-1
-Received: by mail-oi1-f200.google.com with SMTP id 5614622812f47-3a5a7e981ddso3410123b6e.2
-        for <linux-fbdev@vger.kernel.org>; Fri, 04 Aug 2023 06:15:47 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691154946; x=1691759746;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=yghE1gT7JEHr9Ft4Ug/jdVqABt7mGQZ6VHMNTdkCnVs=;
-        b=Uj+dsgALblpeMEYsN/uJzGL+Foymm1fS+WWshXemb88b23ZU6RHx27MfVsexCJtIVf
-         h63CojLSYwQuOfB4pvar179x/dPNe7zs6h6Dv3VSYVgcq781q2zzqlftDObultHHJ4hq
-         3QO8wxPPPcjdIrIGK6nO2ICGv/jz8LKEDpZdrJIeKf6r2zHF4a9py1nAOSW3/fMR24Tr
-         ypw2fGmOoZC3m7N6waWMb+zKUfa45DGcZu7cOgtk9kSlnocLGua4SpSt8DpgVHRJNkQv
-         idtSxDVbhh5rxiAqKPpMuSviLVR6YMhZh6pG9AbHXOOG6IvOPgNNLKK1Lc3bpkAzklNr
-         pFZg==
-X-Gm-Message-State: AOJu0YzHw+ZVupNTCJ+XtxuFzrttFFfU3FyoULZNmlkeT2+bFhmw5uzo
-        cat93NSoKcZofscqTfU1QqGfPioD73Vxo8ewn+u3ADyHRHleV9dLKruywLVnl0b7Pc10RA0xa+i
-        TuRSEcIQ/5jLGoQCElVr4t4w=
-X-Received: by 2002:a05:6808:1307:b0:3a0:5596:efe8 with SMTP id y7-20020a056808130700b003a05596efe8mr2348288oiv.54.1691154946638;
-        Fri, 04 Aug 2023 06:15:46 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IENWP+4GK74C7AuYHmh+2X37PsqlfaNPjW5MQ5IAf9v1dlH0ambZpvXNVp8pt59GOqaQo2gFA==
-X-Received: by 2002:a05:6808:1307:b0:3a0:5596:efe8 with SMTP id y7-20020a056808130700b003a05596efe8mr2348264oiv.54.1691154946400;
-        Fri, 04 Aug 2023 06:15:46 -0700 (PDT)
-Received: from localhost ([181.120.144.238])
-        by smtp.gmail.com with ESMTPSA id x16-20020a05680801d000b003a463ded3a3sm939158oic.53.2023.08.04.06.15.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 04 Aug 2023 06:15:46 -0700 (PDT)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     Randy Dunlap <rdunlap@infradead.org>,
-        Stephen Rothwell <sfr@canb.auug.org.au>,
-        Linux Next Mailing List <linux-next@vger.kernel.org>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        linux-um <linux-um@lists.infradead.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: linux-next: Tree for Jul 31 (font problems on UML)
-In-Reply-To: <dd29e5f5-d9f7-0103-e602-b98f26c88fb1@infradead.org>
-References: <20230731140924.5d45b2b4@canb.auug.org.au>
- <dd29e5f5-d9f7-0103-e602-b98f26c88fb1@infradead.org>
-Date:   Fri, 04 Aug 2023 15:15:43 +0200
-Message-ID: <87y1ireyo0.fsf@minerva.mail-host-address-is-not-set>
+        with ESMTP id S231946AbjHDPuY (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 4 Aug 2023 11:50:24 -0400
+Received: from eu-smtp-delivery-151.mimecast.com (eu-smtp-delivery-151.mimecast.com [185.58.85.151])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6E72649D4
+        for <linux-fbdev@vger.kernel.org>; Fri,  4 Aug 2023 08:50:23 -0700 (PDT)
+Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) by
+ relay.mimecast.com with ESMTP with both STARTTLS and AUTH (version=TLSv1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ uk-mta-76-qm7ktrQ9OHKl6gBtn9SNaQ-1; Fri, 04 Aug 2023 16:50:20 +0100
+X-MC-Unique: qm7ktrQ9OHKl6gBtn9SNaQ-1
+Received: from AcuMS.Aculab.com (10.202.163.4) by AcuMS.aculab.com
+ (10.202.163.4) with Microsoft SMTP Server (TLS) id 15.0.1497.48; Fri, 4 Aug
+ 2023 16:50:18 +0100
+Received: from AcuMS.Aculab.com ([::1]) by AcuMS.aculab.com ([::1]) with mapi
+ id 15.00.1497.048; Fri, 4 Aug 2023 16:50:18 +0100
+From:   David Laight <David.Laight@ACULAB.COM>
+To:     'Andrew Morton' <akpm@linux-foundation.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+CC:     Jani Nikula <jani.nikula@intel.com>,
+        Imre Deak <imre.deak@intel.com>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Andi Shyti <andi.shyti@linux.intel.com>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+        Alexey Dobriyan <adobriyan@gmail.com>,
+        "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        Jani Nikula <jani.nikula@linux.intel.com>,
+        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>,
+        Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        "Helge Deller" <deller@gmx.de>,
+        Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Subject: RE: [PATCH v4 1/1] drm/i915: Move abs_diff() to math.h
+Thread-Topic: [PATCH v4 1/1] drm/i915: Move abs_diff() to math.h
+Thread-Index: AQHZxi9qpYx0cq9pFEOYLGUrdsezOq/aSRTQ
+Date:   Fri, 4 Aug 2023 15:50:18 +0000
+Message-ID: <7c1885528d474c719bb4d4e0cf985753@AcuMS.aculab.com>
+References: <20230803131918.53727-1-andriy.shevchenko@linux.intel.com>
+ <20230803102446.8edf94acc77e81ab2e09cee3@linux-foundation.org>
+In-Reply-To: <20230803102446.8edf94acc77e81ab2e09cee3@linux-foundation.org>
+Accept-Language: en-GB, en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
 MIME-Version: 1.0
-Content-Type: text/plain
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: aculab.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Randy Dunlap <rdunlap@infradead.org> writes:
+From: Andrew Morton
+> Sent: 03 August 2023 18:25
+> 
+> On Thu,  3 Aug 2023 16:19:18 +0300 Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
+> 
+> > abs_diff() belongs to math.h. Move it there.
+> > This will allow others to use it.
+> >
+> > ...
+> >
+> > --- a/include/linux/math.h
+> > +++ b/include/linux/math.h
+> > @@ -155,6 +155,13 @@ __STRUCT_FRACT(u32)
+> >  	__builtin_types_compatible_p(typeof(x), unsigned type),		\
+> >  	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
+> >
+> > +#define abs_diff(a, b) ({			\
+> > +	typeof(a) __a = (a);			\
+> > +	typeof(b) __b = (b);			\
+> > +	(void)(&__a == &__b);			\
+> > +	__a > __b ? (__a - __b) : (__b - __a);	\
+> > +})
+> 
+> Can we document it please?
+> 
+> Also, the open-coded type comparison could be replaced with __typecheck()?
+> 
+> And why the heck isn't __typecheck() in typecheck.h, to be included by
+> minmax.h.
 
-Hello Randy,
+And why would you want to use __typecheck() anyway?
+It pretty much isn't the test you are looking for.
+If you are trying to explicitly avoid converting negative value
+to large positive unsigned ones then you want something like:
+	is_signed_type(typeof(a)) == is_signed_type(typeof(b))
+but it isn't even that simple :-)
 
-Thanks for the report.
+	David
 
-> On 7/30/23 21:09, Stephen Rothwell wrote:
->> Hi all,
->> 
->> Changes since 20230728:
->> 
->
-> I don't know if this is related to FONT changes or fbdev build changes.
->
->
-> on ARCH=um, SUBARCH=i386:
->
-> WARNING: unmet direct dependencies detected for FRAMEBUFFER_CONSOLE
->   Depends on [n]: VT [=n] && FB_CORE [=y] && !UML [=y]
->   Selected by [y]:
->   - DRM_FBDEV_EMULATION [=y] && HAS_IOMEM [=y] && DRM [=y] && !EXPERT [=n]
->
-
-https://lists.freedesktop.org/archives/dri-devel/2023-August/417565.html
-should fix this.
-
--- 
-Best regards,
-
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+-
+Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
+Registration No: 1397386 (Wales)
 

@@ -2,140 +2,81 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 369AEC001DB
-	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Aug 2023 20:55:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10A3EC00528
+	for <linux-fbdev@archiver.kernel.org>; Sun,  6 Aug 2023 09:14:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229691AbjHDUzr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 4 Aug 2023 16:55:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55998 "EHLO
+        id S230028AbjHFJOm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 6 Aug 2023 05:14:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34056 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229464AbjHDUzq (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 4 Aug 2023 16:55:46 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 732094C2F
-        for <linux-fbdev@vger.kernel.org>; Fri,  4 Aug 2023 13:55:45 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        with ESMTP id S229436AbjHFJOm (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 6 Aug 2023 05:14:42 -0400
+Received: from relay.yourmailgateway.de (relay.yourmailgateway.de [188.68.63.170])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 94A0A1BFD;
+        Sun,  6 Aug 2023 02:14:32 -0700 (PDT)
+Received: from mors-relay8203.netcup.net (localhost [127.0.0.1])
+        by mors-relay8203.netcup.net (Postfix) with ESMTPS id 4RJYg90PmSz8Yl2;
+        Sun,  6 Aug 2023 09:14:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=zint.sh; s=key2;
+        t=1691313269; bh=CsAs6d5wqQbLSpSawfmFHNKPVraikzHX4fB4qld+jzo=;
+        h=From:To:Cc:Subject:Date:From;
+        b=foKChNOZYTjtG8Jq+Y5DA9ZJ3R+TCw+qrRm82PcIYpcsKiY3MIg8sEjua3aeBZ9tu
+         yZPDs5IIG51bTOH8W8xE0DGeyVuBSIRluRFR+87pbXIpvRBIkHM6RQrqE2TeRlcobR
+         +Y81UAeGCkzjDdNTV46q04idYh2sphCG3LjnJ3fhFvpLEErVjztSY/C6ytipYUUf8u
+         ViSREZi7sx34NvF9UZJ7oMhehDP+eTeIOkNbwg76BECzL6LZ6CRJ6OvJXqGGeE4S6E
+         FRGSRvwyPPVndyPruNPTtNlDBRtRy727CqGuG0X0+JienspQWkwQXTDVdg8CiXA6kr
+         7Sw5cilH6BjJg==
+Received: from policy02-mors.netcup.net (unknown [46.38.225.35])
+        by mors-relay8203.netcup.net (Postfix) with ESMTPS id 4RJYg86pR7z8YWK;
+        Sun,  6 Aug 2023 09:14:28 +0000 (UTC)
+Received: from mxe217.netcup.net (unknown [10.243.12.53])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 086A5620DD
-        for <linux-fbdev@vger.kernel.org>; Fri,  4 Aug 2023 20:55:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 17999C433CA;
-        Fri,  4 Aug 2023 20:55:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1691182544;
-        bh=wReEdRZmNyzKl8e39OUS/Hxln9/SS8v2NW80Cb+MhRg=;
-        h=In-Reply-To:References:Date:From:To:Cc:Subject:From;
-        b=Dg2rKdsCZa9KopomzzcFwZJZVcIoYS0nwbd9LEhg5UBGsMLJciX8q4AFAGHVCtGrC
-         P1nrcHCj2kqOfjWxuGs+6DImdGWftTInrnVWai2gagMhAs71O5JkmtftaoCtiDyu1z
-         AERYu375lf1Pt0yYUcTHlMU9vRcscSn4K36Q5hKgxKT3iqopzNpmm1VOVPcSc2zVPv
-         Zar+WBAKffJmB11lE1UcbucdfFdn9lwxZXodhjiOj84FicrvS5Cc1VUTfFQ9hMCtjl
-         Q2yhSSSty8uLQxpxve0cM3XXCM2fXVihIfPTgeyh1hbBCk5xrbxB6yajkeC07Fnq3i
-         PGtVzRLJge10A==
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-        by mailauth.nyi.internal (Postfix) with ESMTP id DA8B427C0054;
-        Fri,  4 Aug 2023 16:55:42 -0400 (EDT)
-Received: from imap51 ([10.202.2.101])
-  by compute6.internal (MEProxy); Fri, 04 Aug 2023 16:55:42 -0400
-X-ME-Sender: <xms:zmXNZKrcMNnSiSjBe42hFkrLMNaka8fh4JPOnwaDGvMKoDTK4Bekgw>
-    <xme:zmXNZIrMvIAorwCXGgkWQygRfMITle1Ljec5oWGgL6hpaLDMmNHyOOR4qc61vFxNB
-    vLlgvjhk4whRfP3ORo>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrkeeggdduhedvucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
-    nhguuceuvghrghhmrghnnhdfuceorghrnhgusehkvghrnhgvlhdrohhrgheqnecuggftrf
-    grthhtvghrnhepvdeviefgtedugeevieelvdfgveeuvdfgteegfeeiieejjeffgeeghedu
-    gedtveehnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomh
-    eprghrnhguodhmvghsmhhtphgruhhthhhpvghrshhonhgrlhhithihqdduvdekhedujedt
-    vdegqddvkeejtddtvdeigedqrghrnhgupeepkhgvrhhnvghlrdhorhhgsegrrhhnuggsrd
-    guvg
-X-ME-Proxy: <xmx:zmXNZPNqv6JqAbvGdhKTrjHJjz7f6BDwoP6u0n-c0osDzkfvDnn0Ag>
-    <xmx:zmXNZJ5HftwiSGcKWU0ycmkYvV0ayoxBI0_v34C7K4u-buO3oXr_bA>
-    <xmx:zmXNZJ42CJzXtY3RSQmkX5EtQyDdPeo_8WI7wjARdljTjXHqxUIwjA>
-    <xmx:zmXNZIJ-f0ZTQCQxpbdxuHaKLQUvW2kXkhdWs_Jge0gm9mdiYo0ReQ>
-Feedback-ID: i36794607:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-        id 3121EB60089; Fri,  4 Aug 2023 16:55:42 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.9.0-alpha0-624-g7714e4406d-fm-20230801.001-g7714e440
-Mime-Version: 1.0
-Message-Id: <3baeb706-dc62-487c-a909-afc3cb3bed26@app.fastmail.com>
-In-Reply-To: <ZMk7cMgZXgZVobq2@shell.armlinux.org.uk>
-References: <20230707095415.1449376-1-arnd@kernel.org>
- <ZMk7cMgZXgZVobq2@shell.armlinux.org.uk>
-Date:   Fri, 04 Aug 2023 22:55:20 +0200
-From:   "Arnd Bergmann" <arnd@kernel.org>
-To:     "Russell King" <linux@armlinux.org.uk>
-Cc:     "Thomas Zimmermann" <tzimmermann@suse.de>,
-        "Javier Martinez Canillas" <javierm@redhat.com>,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        "Ard Biesheuvel" <ardb@kernel.org>, "Helge Deller" <deller@gmx.de>,
-        "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
-        "Arnd Bergmann" <arnd@arndb.de>,
-        "Paul Walmsley" <paul.walmsley@sifive.com>,
-        "Palmer Dabbelt" <palmer@dabbelt.com>,
-        "Albert Ou" <aou@eecs.berkeley.edu>, guoren <guoren@kernel.org>,
-        linux-riscv@lists.infradead.org,
-        "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>
-Subject: Re: [PATCH 1/4] vgacon: rework Kconfig dependencies
-Content-Type: text/plain
+        by policy02-mors.netcup.net (Postfix) with ESMTPS id 4RJYg838ZJz8sb2;
+        Sun,  6 Aug 2023 11:14:28 +0200 (CEST)
+Received: from thinkpad.fritz.box (p508baab3.dip0.t-ipconnect.de [80.139.170.179])
+        by mxe217.netcup.net (Postfix) with ESMTPSA id E07AA80A93;
+        Sun,  6 Aug 2023 11:14:16 +0200 (CEST)
+From:   Julius Zint <julius@zint.sh>
+To:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>
+Cc:     Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Julius Zint <julius@zint.sh>
+Subject: [PATCH v2 0/1] HID backlight driver
+Date:   Sun,  6 Aug 2023 11:14:02 +0200
+Message-ID: <20230806091403.10002-1-julius@zint.sh>
+X-Mailer: git-send-email 2.41.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Rspamd-Queue-Id: E07AA80A93
+X-Rspamd-Server: rspamd-worker-8404
+X-NC-CID: YoaV/hJ3qfeZp9FORldPhNZL+/cOa7+7Fz+lH9pk
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Aug 1, 2023, at 19:05, Russell King (Oracle) wrote:
-> On Fri, Jul 07, 2023 at 11:52:23AM +0200, Arnd Bergmann wrote:
->> From: Arnd Bergmann <arnd@arndb.de>
->> 
->> The list of dependencies here is phrased as an opt-out, but this is missing
->> a lot of architectures that don't actually support VGA consoles, and some
->> of the entries are stale:
->> 
->>  - powerpc used to support VGA consoles in the old arch/ppc codebase, but
->>    the merged arch/powerpc never did
->> 
->>  - arm lists footbridge, integrator and netwinder, but netwinder is actually
->>    part of footbridge, and integrator does not appear to have an actual
->>    VGA hardware, or list it in its ATAG or DT.
->
-> Integrator/AP has PCI, and I have had PCI VGA cards plugged in to that
-> hardware when I've had it.
+Complete rewrite of [1]. Instead of a USB driver it`s now a HID driver
+and will work without being part of the early boot environment.
 
-I'm pretty sure it can no longer work and broke a while ago,
-so I would prefer to leave it out unless someone actually has
-a reason to use it and puts the work in to restore the support.
-From what I can tell, it's broken in at least three ways with
-the new PCI host driver:
+The driver is no longer heavily tied to the Apple Studio Display, but
+should work with all HID devices, that expose a report containing fields
+with the Monitor - Brightness HID usage value.
 
-- the PCI memory space is identity mapped to its CPU physical
-  address as of d3721efce22d1 ("ARM: dts: integratorap: Fix
-  PCI windows"), which is generally better for compatibility
-  with broken drivers that read the BAR directly, but it
-  prevents memory mapped ISA-style devices including VGA text
-  buffer.
+[1] https://lore.kernel.org/dri-devel/20230701120806.11812-1-julius@zint.sh/
 
-- vga_base is no longer set by the new PCI host driver, so
-  any accesses to the text buffer just end up in user space
-  memory at (__iomem*)0xb8000
+Julius Zint (1):
+  backlight: hid_bl: Add VESA virtual control panel HID backlight driver
 
-- there is no DT binding for setting the global screen_info
-  to whatever the boot firmware has initialized
-  the VGA BIOS to, and the default 80x30 on Arm does not match
-  the typical 80x25 text that would be set by the BIOS.
+ drivers/video/backlight/Kconfig  |   8 +
+ drivers/video/backlight/Makefile |   1 +
+ drivers/video/backlight/hid_bl.c | 267 +++++++++++++++++++++++++++++++
+ 3 files changed, 276 insertions(+)
+ create mode 100644 drivers/video/backlight/hid_bl.c
 
-> Provided any platform sets up PCI in a compatible way, and can run the
-> VGA's BIOS to initialise the card, then vgacon is supportable.
 
-It looks like only footbridge does at this point, all the other
-platforms would need to fix at least some of the three things I
-mentioned above, in particular plat-orion is the only thing
-setting vga_base but also has the identity map issue.
+base-commit: a33677b9211b6c328ad359b072043af94f7c9592
+-- 
+2.41.0
 
-My impression is that nobody has cared about vgacon on most
-Arm systems since it's harder to get working than fbcon with
-a native PCI driver (or the built-in pl110 on integrator) but
-also less useful.
-
-    Arnd

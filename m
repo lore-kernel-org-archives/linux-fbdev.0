@@ -2,51 +2,51 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74EF4C04FDF
-	for <linux-fbdev@archiver.kernel.org>; Sun,  6 Aug 2023 12:09:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE145C04FE1
+	for <linux-fbdev@archiver.kernel.org>; Sun,  6 Aug 2023 12:09:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230194AbjHFMJt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 6 Aug 2023 08:09:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58192 "EHLO
+        id S230167AbjHFMJu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 6 Aug 2023 08:09:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58194 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230164AbjHFMJp (ORCPT
+        with ESMTP id S230168AbjHFMJp (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Sun, 6 Aug 2023 08:09:45 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 00D2B19A7;
-        Sun,  6 Aug 2023 05:09:41 -0700 (PDT)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E9A791AD;
+        Sun,  6 Aug 2023 05:09:40 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 076F51F899;
-        Sun,  6 Aug 2023 12:09:31 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 7179D21889;
+        Sun,  6 Aug 2023 12:09:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1691323771; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1691323770; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=p53Ydv7KZuhONn+fURmWe0GhAj6jYparydyk8YJx4V0=;
-        b=QsPTqvDotob8NajONQqnAJx0kX36JthnQbe6P0+mNolYXlR+YNSrJyPUV2Vnn5rahm/08t
-        v3pV9hHXkAvGr+deTYLFO/zXTIkrMnPFj2vAYz2p3CtewT6USDUE4kyvKahHVzCwBhowgr
-        y019AZ+5HSnUacMfBDdwbNPKIctSsa8=
+        bh=cj0c3XtWbkwgiza4jlIv81QmRjo1K38L75J5G4O6hnk=;
+        b=ADYtsDtmlJ/M55AlWYtOBZ/uGd6N2CyP5QI52p6fPg76WkoBY3smUbXlfkP03Z/UqE9thI
+        2HHv5ox6w7VpuSxLOE95z60ZbEOcUoeNgh1iRZy/8Ez3+cHw1xiVD47250T42LMPwryQql
+        guSujI3RdRolo0D9vKVVkBWleDjnuno=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1691323771;
+        s=susede2_ed25519; t=1691323770;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=p53Ydv7KZuhONn+fURmWe0GhAj6jYparydyk8YJx4V0=;
-        b=lSXGWeV+IZVKsFT6N6uuy/s6u96dgi7Mbr9jvT6LDDnduP4uyKbtYkAWxt/OjBQYgF0isc
-        TEVjrdwTuuM0WrCg==
+        bh=cj0c3XtWbkwgiza4jlIv81QmRjo1K38L75J5G4O6hnk=;
+        b=PrdgoL7ur/c5RoUPJ8KALIawBZ904OJPSE4V8KMr6ZuHsJuDaKNjIRLwRD5WB0iD0VpYxl
+        Vu/c0TLMWHKg/tBw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D0DB3139C4;
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 46783139C4;
         Sun,  6 Aug 2023 12:09:30 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id SJEcMnqNz2QvSwAAMHmgww
+        id 2G5YEHqNz2QvSwAAMHmgww
         (envelope-from <tzimmermann@suse.de>); Sun, 06 Aug 2023 12:09:30 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, sam@ravnborg.org, javierm@redhat.com,
@@ -54,9 +54,9 @@ To:     deller@gmx.de, sam@ravnborg.org, javierm@redhat.com,
 Cc:     sparclinux@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 11/11] fbdev/tcx: Use initializer macro for struct fb_ops
-Date:   Sun,  6 Aug 2023 13:59:02 +0200
-Message-ID: <20230806120926.5368-12-tzimmermann@suse.de>
+Subject: [PATCH 08/11] fbdev/ffb: Use initializer macro for struct fb_ops
+Date:   Sun,  6 Aug 2023 13:58:59 +0200
+Message-ID: <20230806120926.5368-9-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230806120926.5368-1-tzimmermann@suse.de>
 References: <20230806120926.5368-1-tzimmermann@suse.de>
@@ -67,87 +67,76 @@ List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Initialize struct fb_ops to the correct default values with the
-macro FB_DEFAULT_SBUS_OPS(). Rename the ioctl and mmap callbacks
-to use the infix _sbusfb_. This makes them fit the SBUS helpers'
-naming pattern. Also make the driver depend on FB_SBUS_HELPERS,
-which selects the correct modules.
+internal __FB_DEFAULT_SBUS_OPS_*() macros. Rename the ioctl and
+mmap callbacks to use the infix _sbusfb_. This makes them fit the
+SBUS helpers' naming pattern.
+
+It is not possible to use set all defaults via FB_DEAFULT_SBUS_OPS(),
+as ffb provides its own implementation of fb_fillrect, fb_copyarea,
+and fb_imageblit. Hence we also avoid FB_SBUS_HELPERS, but let the
+driver select its dependencies individually instead.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/Kconfig |  4 +---
- drivers/video/fbdev/tcx.c   | 20 ++++++--------------
- 2 files changed, 7 insertions(+), 17 deletions(-)
+ drivers/video/fbdev/ffb.c | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index ae2b0c07223f..79b1e4e542e7 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -559,9 +559,7 @@ config FB_FFB
- config FB_TCX
- 	bool "TCX (SS4/SS5 only) support"
- 	depends on FB_SBUS
--	select FB_CFB_FILLRECT
--	select FB_CFB_COPYAREA
--	select FB_CFB_IMAGEBLIT
-+	select FB_SBUS_HELPERS
- 	help
- 	  This is the frame buffer device driver for the TCX 24/8bit frame
- 	  buffer.
-diff --git a/drivers/video/fbdev/tcx.c b/drivers/video/fbdev/tcx.c
-index 7fb8179a8f41..fe7b7bc77eda 100644
---- a/drivers/video/fbdev/tcx.c
-+++ b/drivers/video/fbdev/tcx.c
-@@ -32,28 +32,21 @@
- static int tcx_setcolreg(unsigned, unsigned, unsigned, unsigned,
- 			 unsigned, struct fb_info *);
- static int tcx_blank(int, struct fb_info *);
--
--static int tcx_mmap(struct fb_info *, struct vm_area_struct *);
--static int tcx_ioctl(struct fb_info *, unsigned int, unsigned long);
- static int tcx_pan_display(struct fb_var_screeninfo *, struct fb_info *);
+diff --git a/drivers/video/fbdev/ffb.c b/drivers/video/fbdev/ffb.c
+index e3a9bb7e9dea..2a0f5337e091 100644
+--- a/drivers/video/fbdev/ffb.c
++++ b/drivers/video/fbdev/ffb.c
+@@ -37,16 +37,18 @@ static void ffb_imageblit(struct fb_info *, const struct fb_image *);
+ static void ffb_fillrect(struct fb_info *, const struct fb_fillrect *);
+ static void ffb_copyarea(struct fb_info *, const struct fb_copyarea *);
+ static int ffb_sync(struct fb_info *);
+-static int ffb_mmap(struct fb_info *, struct vm_area_struct *);
+-static int ffb_ioctl(struct fb_info *, unsigned int, unsigned long);
+ static int ffb_pan_display(struct fb_var_screeninfo *, struct fb_info *);
  
-+static int tcx_sbusfb_mmap(struct fb_info *info, struct vm_area_struct *vma);
-+static int tcx_sbusfb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg);
++static int ffb_sbusfb_mmap(struct fb_info *info, struct vm_area_struct *vma);
++static int ffb_sbusfb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg);
 +
  /*
   *  Frame buffer operations
   */
  
- static const struct fb_ops tcx_ops = {
+ static const struct fb_ops ffb_ops = {
  	.owner			= THIS_MODULE,
-+	FB_DEFAULT_SBUS_OPS(tcx),
- 	.fb_setcolreg		= tcx_setcolreg,
- 	.fb_blank		= tcx_blank,
- 	.fb_pan_display		= tcx_pan_display,
--	.fb_fillrect		= cfb_fillrect,
--	.fb_copyarea		= cfb_copyarea,
--	.fb_imageblit		= cfb_imageblit,
--	.fb_mmap		= tcx_mmap,
--	.fb_ioctl		= tcx_ioctl,
++	__FB_DEFAULT_SBUS_OPS_RDWR(ffb),
+ 	.fb_setcolreg		= ffb_setcolreg,
+ 	.fb_blank		= ffb_blank,
+ 	.fb_pan_display		= ffb_pan_display,
+@@ -54,11 +56,8 @@ static const struct fb_ops ffb_ops = {
+ 	.fb_copyarea		= ffb_copyarea,
+ 	.fb_imageblit		= ffb_imageblit,
+ 	.fb_sync		= ffb_sync,
+-	.fb_mmap		= ffb_mmap,
+-	.fb_ioctl		= ffb_ioctl,
 -#ifdef CONFIG_COMPAT
 -	.fb_compat_ioctl	= sbusfb_compat_ioctl,
 -#endif
++	__FB_DEFAULT_SBUS_OPS_IOCTL(ffb),
++	__FB_DEFAULT_SBUS_OPS_MMAP(ffb),
  };
  
- /* THC definitions */
-@@ -299,7 +292,7 @@ static struct sbus_mmap_map __tcx_mmap_map[TCX_MMAP_ENTRIES] = {
+ /* Register layout and definitions */
+@@ -850,7 +849,7 @@ static struct sbus_mmap_map ffb_mmap_map[] = {
  	{ .size = 0 }
  };
  
--static int tcx_mmap(struct fb_info *info, struct vm_area_struct *vma)
-+static int tcx_sbusfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+-static int ffb_mmap(struct fb_info *info, struct vm_area_struct *vma)
++static int ffb_sbusfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
  {
- 	struct tcx_par *par = (struct tcx_par *)info->par;
+ 	struct ffb_par *par = (struct ffb_par *)info->par;
  
-@@ -308,8 +301,7 @@ static int tcx_mmap(struct fb_info *info, struct vm_area_struct *vma)
- 				  par->which_io, vma);
+@@ -859,7 +858,7 @@ static int ffb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 				  0, vma);
  }
  
--static int tcx_ioctl(struct fb_info *info, unsigned int cmd,
--		     unsigned long arg)
-+static int tcx_sbusfb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+-static int ffb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
++static int ffb_sbusfb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
  {
- 	struct tcx_par *par = (struct tcx_par *) info->par;
+ 	struct ffb_par *par = (struct ffb_par *)info->par;
  
 -- 
 2.41.0

@@ -2,112 +2,80 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13BF3EB64DD
-	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Aug 2023 11:42:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56202C001B0
+	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Aug 2023 16:38:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234286AbjHILmr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 9 Aug 2023 07:42:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37898 "EHLO
+        id S229537AbjHIQia (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 9 Aug 2023 12:38:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42738 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234291AbjHILmq (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Aug 2023 07:42:46 -0400
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 709721FD8;
-        Wed,  9 Aug 2023 04:42:44 -0700 (PDT)
-Received: by mail-wm1-x333.google.com with SMTP id 5b1f17b1804b1-3fe4a89e8c4so41039105e9.3;
-        Wed, 09 Aug 2023 04:42:44 -0700 (PDT)
+        with ESMTP id S229468AbjHIQia (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Aug 2023 12:38:30 -0400
+Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5DCA91982
+        for <linux-fbdev@vger.kernel.org>; Wed,  9 Aug 2023 09:38:29 -0700 (PDT)
+Received: by mail-wm1-x32a.google.com with SMTP id 5b1f17b1804b1-3fe4cdb72b9so40884465e9.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 09 Aug 2023 09:38:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1691581363; x=1692186163;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=7b0FNEltUgJre7QUi/LlASENLPDFiW1RiJtPuEPcdsk=;
-        b=H8bxlFuEJAgtd/W8tH75enhERPJK8n1rNmG7P1oaBuUdwMEbeVDeV8AFbviUIsf0mH
-         L79na/TmkmFu1gjUUH/sP0SO9j8XQgOew6Z5h6lX7S+NBciQ7/gtGkCqB7U7GnJbSbLU
-         JX0V+S4/Vi/pmNYsA+UYUns4yF6HK/6ur3f/YSJaCNPeb0rICJhAoFbMVr8nFXdF8+b7
-         4Zrpng/iX6JbBvRzpVXE33vXPPaUkp92fxJmqaesWhXDHRYQZsfIWz5+LpKvTbnUonTG
-         LxudexIvdvdxUUgNJMeLVtk0I4MGi0sxootYT7F96hgSLWBFws8YM5Psla7H88O4YARw
-         JtJA==
+        d=linaro.org; s=google; t=1691599108; x=1692203908;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=P8nX0pI7rFcPckDGFTH0fbolEOZLnYl6aVYECM4juis=;
+        b=FxqHIVo7uVYddWJpN82jeeBQLa2SewY2J5gQJly6P2rQgUBkAGNnZ+bgQtmpNDgw4v
+         4mN7u5x/LaW6AoYJ+9d0e4LSthWqV17J1YvpHBXPsZZKsDsmd2Zh9HRdhzBRkiL9tE6E
+         5f30eiRt4G59OUhlJM1AhxuL3tX7GgVE2HJMYGN3npJ2PmWIiOwxiHgRcuFTRmSEzuE/
+         KCg6LJi+hxRAzI9fD9V9XoIViD32ndaMe5/QjonBZNhTcPMPvIb2GQvxmAePgKIZBHbN
+         tEIQuTRbltrMWPYaBeS4LecHgQJ6idS15vgVFzZcSokRMVg36JuO5A/AtTawG83t5vMk
+         eNBg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1691581363; x=1692186163;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=7b0FNEltUgJre7QUi/LlASENLPDFiW1RiJtPuEPcdsk=;
-        b=bNAUyb/h/kDGRX+J3+NJZCXJe5NcQzTxzq7G0DjLxlYgu/Z6nxaj1Buihmgctz2SSL
-         BGsSMpIe/BPTVtagZgLwjIqUnqiecAbUClSb6S2hvK3YrQB54mHTzsyDTq3P+FmJGqgr
-         p3HNj8CPIHOP1v7Yy/3O6H430FjBAzPTDbaXemjd0/HuO3EqnsCIQJEONOY0rJwpbsdx
-         C9ItNYhrYCuZl/73Jn29AKPcmbNDMrnKvo3qeaRIYVMj1O/hXmjFCkKGtRUTW89YBrxK
-         i47Hv77DVT50c18LfIiyWJexztALrTl8TirOJklrM+oNtbhdmiSxc9VsUdayNaufJV/C
-         z/tA==
-X-Gm-Message-State: AOJu0Yw/J2iA/U/tFMwjxbGdlz4jmiY+OtC4uokuDvS36EyASVprAu1S
-        lB4i3a5ZQvUa9bAtI+yJh6w=
-X-Google-Smtp-Source: AGHT+IEPX6iqfJAofbYRgtwhfoVTbBfQv99Q0SLYNlvol7nryGa7eR81jSaBuhS6K5USsGMESw/AOQ==
-X-Received: by 2002:a1c:7213:0:b0:3fe:179d:d42e with SMTP id n19-20020a1c7213000000b003fe179dd42emr1932458wmc.23.1691581362742;
-        Wed, 09 Aug 2023 04:42:42 -0700 (PDT)
-Received: from tablet.my.domain (ip-5-172-235-199.multi.internet.cyfrowypolsat.pl. [5.172.235.199])
-        by smtp.gmail.com with ESMTPSA id z4-20020a1c4c04000000b003fe11148055sm1727938wmf.27.2023.08.09.04.42.41
+        d=1e100.net; s=20221208; t=1691599108; x=1692203908;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=P8nX0pI7rFcPckDGFTH0fbolEOZLnYl6aVYECM4juis=;
+        b=V/HMZ5tgjrLdOugFpcbVZN4rUA62f4HHnFPLl3XbYcGdzpKaLVsXJBAtqe3Ke2/LO2
+         t3gnBmJd85aCnoRoiiE6bk0oF73mE+LJ1bTM7baLct5D4dT+yrRKuPUsy+dgNqBuy7H7
+         5q9LdJ3ZFGu7Kge1v7v3eB9ZixPLZnLheXwBu28JGu6P1KB+drqIVXun8uv1uf8i6U/J
+         zNc9JJRzQgLI+TQlnk/9vztP6lgXk3bxfOgDhdDaxnb2BdZGHHgrBRIeS7DB/lmNv8AZ
+         BQdBGCdPTf1jhPoQj5rAxlexVM1ft0LhiNCOnIXYiXJLrh4ufAL01cucZvew2S5UTiWV
+         wWCw==
+X-Gm-Message-State: AOJu0Yx0Uz+nispmV5x97rlbIVUG95dG6ijkLq+2FFCQR5Luv4egVc4O
+        AmNFm+xXEiy+0RzzAT63gQiIv3d4DX9XxtFpsQXAFw==
+X-Google-Smtp-Source: AGHT+IEXw5QpPfHSLyKGkNqtuPh+9Tq+iYFSsWhkI2sxKn6VlTHqXOSJRg51iI6lS3t0Y0bELSUsAA==
+X-Received: by 2002:adf:d0c2:0:b0:313:f98a:1fd3 with SMTP id z2-20020adfd0c2000000b00313f98a1fd3mr2533598wrh.27.1691599107792;
+        Wed, 09 Aug 2023 09:38:27 -0700 (PDT)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id m9-20020a5d4a09000000b0031801aa34e2sm3250114wrq.9.2023.08.09.09.38.27
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Aug 2023 04:42:42 -0700 (PDT)
-From:   Artur Weber <aweber.kernel@gmail.com>
-To:     Lee Jones <lee@kernel.org>
-Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>,
-        Artur Weber <aweber.kernel@gmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kernel test robot <lkp@intel.com>
-Subject: [PATCH] backlight: lp855x: Drop ret variable in brightness change function
-Date:   Wed,  9 Aug 2023 13:42:16 +0200
-Message-ID: <20230809114216.4078-1-aweber.kernel@gmail.com>
-X-Mailer: git-send-email 2.41.0
+        Wed, 09 Aug 2023 09:38:27 -0700 (PDT)
+Date:   Wed, 9 Aug 2023 17:38:25 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Artur Weber <aweber.kernel@gmail.com>
+Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        kernel test robot <lkp@intel.com>
+Subject: Re: [PATCH] backlight: lp855x: Drop ret variable in brightness
+ change function
+Message-ID: <20230809163825.GA5056@aspen.lan>
+References: <20230809114216.4078-1-aweber.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230809114216.4078-1-aweber.kernel@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fixes the following warning:
+On Wed, Aug 09, 2023 at 01:42:16PM +0200, Artur Weber wrote:
+> Fixes the following warning:
+>
+> drivers/video/backlight/lp855x_bl.c:252:7: warning: variable 'ret' is used
+> uninitialized whenever 'if' condition is false [-Wsometimes-uninitialized]
+>
+> Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
+> Fixes: 5145531be5fb ("backlight: lp855x: Catch errors when changing brightness")
+> Reported-by: kernel test robot <lkp@intel.com>
+> Closes: https://lore.kernel.org/oe-kbuild-all/202308091728.NEJhgUPP-lkp@intel.com/
 
-drivers/video/backlight/lp855x_bl.c:252:7: warning: variable 'ret' is used
-uninitialized whenever 'if' condition is false [-Wsometimes-uninitialized]
-
-Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
-Fixes: 5145531be5fb ("backlight: lp855x: Catch errors when changing brightness")
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202308091728.NEJhgUPP-lkp@intel.com/
----
- drivers/video/backlight/lp855x_bl.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-index 61a7f45bfad8..da1f124db69c 100644
---- a/drivers/video/backlight/lp855x_bl.c
-+++ b/drivers/video/backlight/lp855x_bl.c
-@@ -241,19 +241,17 @@ static int lp855x_bl_update_status(struct backlight_device *bl)
- {
- 	struct lp855x *lp = bl_get_data(bl);
- 	int brightness = bl->props.brightness;
--	int ret;
- 
- 	if (bl->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
- 		brightness = 0;
- 
- 	if (lp->mode == PWM_BASED)
--		ret = lp855x_pwm_ctrl(lp, brightness,
-+		return lp855x_pwm_ctrl(lp, brightness,
- 				      bl->props.max_brightness);
- 	else if (lp->mode == REGISTER_BASED)
--		ret = lp855x_write_byte(lp, lp->cfg->reg_brightness,
-+		return lp855x_write_byte(lp, lp->cfg->reg_brightness,
- 					(u8)brightness);
--
--	return ret;
-+	return -EINVAL;
- }
- 
- static const struct backlight_ops lp855x_bl_ops = {
-
-base-commit: 21ef7b1e17d039053edaeaf41142423810572741
--- 
-2.41.0
-
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>

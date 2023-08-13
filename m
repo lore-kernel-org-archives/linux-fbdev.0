@@ -2,96 +2,87 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53351C001DB
-	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Aug 2023 13:16:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B094C001B0
+	for <linux-fbdev@archiver.kernel.org>; Sun, 13 Aug 2023 15:55:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234661AbjHKNQJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 11 Aug 2023 09:16:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56372 "EHLO
+        id S232078AbjHMPzV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 13 Aug 2023 11:55:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47614 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234382AbjHKNQI (ORCPT
+        with ESMTP id S232076AbjHMPzC (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 11 Aug 2023 09:16:08 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 383AC26B6;
-        Fri, 11 Aug 2023 06:16:08 -0700 (PDT)
+        Sun, 13 Aug 2023 11:55:02 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E4F32114;
+        Sun, 13 Aug 2023 08:53:58 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id CC1436576A;
-        Fri, 11 Aug 2023 13:16:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8D0F1C433C8;
-        Fri, 11 Aug 2023 13:16:04 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 091B26338D;
+        Sun, 13 Aug 2023 15:52:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40225C433C7;
+        Sun, 13 Aug 2023 15:52:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1691759767;
-        bh=nukkFSLL4P8Jr+p/dmzT3QsEQ0EGjj5/yMaNaTXyids=;
-        h=From:To:Cc:Subject:Date:From;
-        b=Kk9odl1YytqoGOgtcDfjLlBMzw5GoL/OKM8j6hffFD3mw5FMyFVc3K9ILEbj2+081
-         pudtq1NP5/tZa9Wexobiem93LieQudBbg0eQ0ZtMTvKFqc/JUIXG6/7qQjCcf4XzNO
-         5HfPJF5svI+wL9XINgVDjKLj+ckSslUBaPJoyy+uVJLR8O3KII72czlYyb76JV7EOm
-         AFgBt9FpIcTgeCBFdobX/DABISbmdUwwujnwPNSjjI9WjKlkrk+JK0VZEm5PCb11Hi
-         EtP7oD+qUTFnYSRNGYNqoxIOGxzf4R8xlVmVvhkwsnprLvdBRmpN7sd1mlIcRaQ5Qq
-         EkitZ1qtawnaw==
-From:   Arnd Bergmann <arnd@kernel.org>
-To:     Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>,
-        Artur Weber <aweber.kernel@gmail.com>
-Cc:     Arnd Bergmann <arnd@arndb.de>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
-        Benjamin Mugnier <benjamin.mugnier@foss.st.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        s=k20201202; t=1691941977;
+        bh=Xl+zWuxlzf8UrZZuScqSJCZOz7bnr8WH0zt1Hh4Qr00=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=rHyixOt5JDoBueaLQbG0oikg300GpknpFfMQUSOa72ZDTVpY9C2yr9ULN24xyPeIb
+         eDpErAnMKhVex82OsinofQDzdtlPt83/yOmhLB3EKpi65luhOVSW/Nbq2t8ucs81RB
+         f8mSA15hn24XYe0u6M+Z+mr7/20LjC0gty5+MSB5BBVG5hAqbu1I34B9daRbzcVG9m
+         F/pKxvB0A35olJoHVLNinYg9uCps/DF/ZGxDmO6M3sV9BF/8z/WlGRbmfH5Uqg34/l
+         8ig1k4iCdsMeKFg+Tf5Lttry981cmp2DGabsQ9ho80OdEbLj1RImtqjyxKmnePvbph
+         3y6I6tcQbCAhg==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Raphael Gallais-Pou <rgallaispou@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Sasha Levin <sashal@kernel.org>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] backlight: lp855x: fix unintialized function return
-Date:   Fri, 11 Aug 2023 15:15:53 +0200
-Message-Id: <20230811131600.2380519-1-arnd@kernel.org>
-X-Mailer: git-send-email 2.39.2
+        linux-staging@lists.linux.dev
+Subject: [PATCH AUTOSEL 6.4 50/54] staging: fbtft: ili9341: use macro FBTFT_REGISTER_SPI_DRIVER
+Date:   Sun, 13 Aug 2023 11:49:29 -0400
+Message-Id: <20230813154934.1067569-50-sashal@kernel.org>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230813154934.1067569-1-sashal@kernel.org>
+References: <20230813154934.1067569-1-sashal@kernel.org>
 MIME-Version: 1.0
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 6.4.10
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
+From: Raphael Gallais-Pou <rgallaispou@gmail.com>
 
-The function now returns an error code in some cases, but fails to initialize
-it in others:
+[ Upstream commit 4912649e1cf0317bf563f91655e04a303cacaf8d ]
 
-drivers/video/backlight/lp855x_bl.c:252:11: error: variable 'ret' is used uninitialized whenever 'if' condition is false [-Werror,-Wsometimes-uninitialized]
-        else if (lp->mode == REGISTER_BASED)
-                 ^~~~~~~~~~~~~~~~~~~~~~~~~~
-drivers/video/backlight/lp855x_bl.c:256:9: note: uninitialized use occurs here
-        return ret;
-               ^~~
-drivers/video/backlight/lp855x_bl.c:252:7: note: remove the 'if' if its condition is always true
-        else if (lp->mode == REGISTER_BASED)
-             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using FBTFT_REGISTER_DRIVER resolves to a NULL struct spi_device_id. This
+ultimately causes a warning when the module probes. Fixes it.
 
-Since this case should not actually happen, return the -EINVAL code.
-
-Fixes: 5145531be5fba ("backlight: lp855x: Catch errors when changing brightness")
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Raphael Gallais-Pou <rgallaispou@gmail.com>
+Link: https://lore.kernel.org/r/20230718172024.67488-1-rgallaispou@gmail.com
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/backlight/lp855x_bl.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/staging/fbtft/fb_ili9341.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-index 61a7f45bfad84..ea4fa69e49a70 100644
---- a/drivers/video/backlight/lp855x_bl.c
-+++ b/drivers/video/backlight/lp855x_bl.c
-@@ -252,6 +252,8 @@ static int lp855x_bl_update_status(struct backlight_device *bl)
- 	else if (lp->mode == REGISTER_BASED)
- 		ret = lp855x_write_byte(lp, lp->cfg->reg_brightness,
- 					(u8)brightness);
-+	else
-+		ret = -EINVAL;
+diff --git a/drivers/staging/fbtft/fb_ili9341.c b/drivers/staging/fbtft/fb_ili9341.c
+index 9ccd0823c3ab3..47e72b87d76d9 100644
+--- a/drivers/staging/fbtft/fb_ili9341.c
++++ b/drivers/staging/fbtft/fb_ili9341.c
+@@ -145,7 +145,7 @@ static struct fbtft_display display = {
+ 	},
+ };
  
- 	return ret;
- }
+-FBTFT_REGISTER_DRIVER(DRVNAME, "ilitek,ili9341", &display);
++FBTFT_REGISTER_SPI_DRIVER(DRVNAME, "ilitek", "ili9341", &display);
+ 
+ MODULE_ALIAS("spi:" DRVNAME);
+ MODULE_ALIAS("platform:" DRVNAME);
 -- 
-2.39.2
+2.40.1
 

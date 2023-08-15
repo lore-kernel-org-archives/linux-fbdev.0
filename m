@@ -2,161 +2,104 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CC11C001B0
-	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Aug 2023 18:50:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93871C0015E
+	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Aug 2023 19:10:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235584AbjHOStr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 15 Aug 2023 14:49:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35350 "EHLO
+        id S239462AbjHOTJm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 15 Aug 2023 15:09:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34198 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239423AbjHOStS (ORCPT
+        with ESMTP id S239920AbjHOTJl (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 15 Aug 2023 14:49:18 -0400
-Received: from mail-qk1-x72e.google.com (mail-qk1-x72e.google.com [IPv6:2607:f8b0:4864:20::72e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 76B582128;
-        Tue, 15 Aug 2023 11:48:46 -0700 (PDT)
-Received: by mail-qk1-x72e.google.com with SMTP id af79cd13be357-76c9334baedso349823385a.2;
-        Tue, 15 Aug 2023 11:48:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1692125269; x=1692730069;
-        h=content-disposition:mime-version:message-id:subject:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=WUkzcxBX95ON8ima77ZDNX4N/ymonVr14GMExOANhWY=;
-        b=iHGlzigdgqt6qKcO8L2bAwYQ4Cy5pru4TkmMhTcq3R17uOZ04fmH3bl20knmRW+KGg
-         1Yuo5ng8p3f+cu5Sq/w7aBPdxN9KL3llETkyZhnT7YqbjMcDO2Lj0w3/negM7M3LnDi1
-         EhW+ZKcIcvEFE01IZgtGaMBtmHNfge+YMq9mRt7zk+Q2YO/dqZwXJva2VDjfYYpizBxA
-         imSKhkGUO5kWf2qYFp62uytwSy8GaqDbcMnYXOemiy5FEOW+6+dPziKOTuQ0RLWAlKfl
-         KfPxVi8zsL/uLJdYtN3fdSYwnW2urInybyyx5D61/5owmraXlrR2z6rC+l4WcCbGMdcO
-         kzog==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692125269; x=1692730069;
-        h=content-disposition:mime-version:message-id:subject:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=WUkzcxBX95ON8ima77ZDNX4N/ymonVr14GMExOANhWY=;
-        b=b3/GVgq3GUkY/PDlZhfNh/3I+SXmickGa5+XgqTmRTvj8Sh93+yiYqq7qhHYS9UDl2
-         eg6Wx2mdxZ9350Ob8U0Qw19Wsxu09SXuozQzXzTYUl9yLLtnM8KTn0Vj+0Ej3ifJvvzE
-         /gCMYhpXA+o9fFgPf08/MCPRUetUCbLI+7CywA3iwqAxqvLpUeYzrVhd9WZc+OYkB3YM
-         fRDN2jJ1n+Wga+ox7Al/8LkHcaauI+Wy7TzTvseJjMpiAiI4S3oSTi73WT3jLxFIUhPz
-         QPwARFLx72VESABeyaKLQCUAGN0UOWc9yr7OoUZlx/o5laomJbhczhK5keWu/c+D0lKP
-         Cpyw==
-X-Gm-Message-State: AOJu0Yx0SavbnMk0SXdYuznEDQWN8mzt+D9qc8IgvrVJzQd2110bqIm+
-        N1R5fh0D/r25RY5mb+9NWnY=
-X-Google-Smtp-Source: AGHT+IEzV3XMrb+VmuEwpjkCjCeeSMB6T6VsfFi+bAY0WBPO1p+q8OcjVcQZw6AWErfBf8iettWlDA==
-X-Received: by 2002:a05:620a:2807:b0:76d:3272:ab42 with SMTP id f7-20020a05620a280700b0076d3272ab42mr15387824qkp.9.1692125269007;
-        Tue, 15 Aug 2023 11:47:49 -0700 (PDT)
-Received: from abdel (bras-base-ktnron0692w-grc-13-174-95-13-129.dsl.bell.ca. [174.95.13.129])
-        by smtp.gmail.com with ESMTPSA id m19-20020ae9e013000000b0076745f352adsm3898261qkk.59.2023.08.15.11.47.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Aug 2023 11:47:48 -0700 (PDT)
-Date:   Tue, 15 Aug 2023 14:47:41 -0400
-From:   Abdel Alkuor <alkuor@gmail.com>
-To:     gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org
-Subject: [PATCH v2] staging: sm750fb: fix sii164InitChip function name
-Message-ID: <ZNvITXcfVwpJAh6y@abdel>
+        Tue, 15 Aug 2023 15:09:41 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 20645213A;
+        Tue, 15 Aug 2023 12:09:14 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 7E24861633;
+        Tue, 15 Aug 2023 19:09:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4DB3AC433C7;
+        Tue, 15 Aug 2023 19:09:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1692126552;
+        bh=drMk97XVyKCReqvo0twNj8qWYEWg10p1ckwl8tzVNBA=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=B4yhcg4O90wKEMrx6eDICyuJ5FVGKESOwrgPDmJj7h5k8Dt9xumIm45W4HXOP+sKe
+         FYo8uYUywe2h0MILLpYTJ5sY4N1Fnh5X85ru4Y7BqmBnDcPJ1rY2Dj6upC9+xcm9XN
+         eRZsx67reSsMDkSu8sY4d/q5n4mylCql0Vn1t0ts5rLlobMDdQ/SlN5Zys5KCNMQyu
+         NMx8HSJdPxQqvNTApHOngRa5KEjLcYUYT1AfvOB9j5Il7SxI2I1oL7eNYjMihrzzCd
+         IW3k2zJoJEhZUzsAQo6+QlXFg6KCT/N47znNx3zabXs+TZiMxTuqfSbWz0DF7K9JGK
+         JzxYRrZ9C+Drw==
+Date:   Tue, 15 Aug 2023 12:09:10 -0700
+From:   Nathan Chancellor <nathan@kernel.org>
+To:     Artur Weber <aweber.kernel@gmail.com>
+Cc:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        kernel test robot <lkp@intel.com>
+Subject: Re: [PATCH] backlight: lp855x: Drop ret variable in brightness
+ change function
+Message-ID: <20230815190910.GA2908446@dev-arch.thelio-3990X>
+References: <20230809114216.4078-1-aweber.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20230809114216.4078-1-aweber.kernel@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Adhere to Linux Kernel coding style. Found by checkpatch.
+On Wed, Aug 09, 2023 at 01:42:16PM +0200, Artur Weber wrote:
+> Fixes the following warning:
+> 
+> drivers/video/backlight/lp855x_bl.c:252:7: warning: variable 'ret' is used
+> uninitialized whenever 'if' condition is false [-Wsometimes-uninitialized]
+> 
+> Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
+> Fixes: 5145531be5fb ("backlight: lp855x: Catch errors when changing brightness")
+> Reported-by: kernel test robot <lkp@intel.com>
+> Closes: https://lore.kernel.org/oe-kbuild-all/202308091728.NEJhgUPP-lkp@intel.com/
 
-Signed-off-by: Abdel Alkuor <alkuor@gmail.com>
----
-Changes in v2:
-  -Fix alignment mismatch with open parenthesis
+Reviewed-by: Nathan Chancellor <nathan@kernel.org>
 
- drivers/staging/sm750fb/ddk750_dvi.c    |  2 +-
- drivers/staging/sm750fb/ddk750_sii164.c | 22 +++++++++++-----------
- drivers/staging/sm750fb/ddk750_sii164.h | 20 ++++++++++----------
- 3 files changed, 22 insertions(+), 22 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
-index e0c7ff3352bf..8b81e8642f9e 100644
---- a/drivers/staging/sm750fb/ddk750_dvi.c
-+++ b/drivers/staging/sm750fb/ddk750_dvi.c
-@@ -14,7 +14,7 @@
- static struct dvi_ctrl_device dcft_supported_dvi_controller[] = {
- #ifdef DVI_CTRL_SII164
- 	{
--		.init = sii164InitChip,
-+		.init = sii164_init_chip,
- 		.get_vendor_id = sii164_get_vendor_id,
- 		.get_device_id = sii164GetDeviceID,
- #ifdef SII164_FULL_FUNCTIONS
-diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
-index 3da1796cd7aa..2532b60245ac 100644
---- a/drivers/staging/sm750fb/ddk750_sii164.c
-+++ b/drivers/staging/sm750fb/ddk750_sii164.c
-@@ -72,7 +72,7 @@ unsigned short sii164GetDeviceID(void)
-  */
- 
- /*
-- *  sii164InitChip
-+ *  sii164_init_chip
-  *      This function initialize and detect the DVI controller chip.
-  *
-  *  Input:
-@@ -118,16 +118,16 @@ unsigned short sii164GetDeviceID(void)
-  *      0   - Success
-  *     -1   - Fail.
-  */
--long sii164InitChip(unsigned char edge_select,
--		    unsigned char bus_select,
--		    unsigned char dual_edge_clk_select,
--		    unsigned char hsync_enable,
--		    unsigned char vsync_enable,
--		    unsigned char deskew_enable,
--		    unsigned char deskew_setting,
--		    unsigned char continuous_sync_enable,
--		    unsigned char pll_filter_enable,
--		    unsigned char pll_filter_value)
-+long sii164_init_chip(unsigned char edge_select,
-+		      unsigned char bus_select,
-+		      unsigned char dual_edge_clk_select,
-+		      unsigned char hsync_enable,
-+		      unsigned char vsync_enable,
-+		      unsigned char deskew_enable,
-+		      unsigned char deskew_setting,
-+		      unsigned char continuous_sync_enable,
-+		      unsigned char pll_filter_enable,
-+		      unsigned char pll_filter_value)
- {
- 	unsigned char config;
- 
-diff --git a/drivers/staging/sm750fb/ddk750_sii164.h b/drivers/staging/sm750fb/ddk750_sii164.h
-index ca330f6a43e2..71a7c1cb42c4 100644
---- a/drivers/staging/sm750fb/ddk750_sii164.h
-+++ b/drivers/staging/sm750fb/ddk750_sii164.h
-@@ -16,16 +16,16 @@ enum sii164_hot_plug_mode {
- };
- 
- /* Silicon Image SiI164 chip prototype */
--long sii164InitChip(unsigned char edgeSelect,
--		    unsigned char busSelect,
--		    unsigned char dualEdgeClkSelect,
--		    unsigned char hsyncEnable,
--		    unsigned char vsyncEnable,
--		    unsigned char deskewEnable,
--		    unsigned char deskewSetting,
--		    unsigned char continuousSyncEnable,
--		    unsigned char pllFilterEnable,
--		    unsigned char pllFilterValue);
-+long sii164_init_chip(unsigned char edgeSelect,
-+		      unsigned char busSelect,
-+		      unsigned char dualEdgeClkSelect,
-+		      unsigned char hsyncEnable,
-+		      unsigned char vsyncEnable,
-+		      unsigned char deskewEnable,
-+		      unsigned char deskewSetting,
-+		      unsigned char continuousSyncEnable,
-+		      unsigned char pllFilterEnable,
-+		      unsigned char pllFilterValue);
- 
- unsigned short sii164_get_vendor_id(void);
- unsigned short sii164GetDeviceID(void);
--- 
-2.34.1
-
+> ---
+>  drivers/video/backlight/lp855x_bl.c | 8 +++-----
+>  1 file changed, 3 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
+> index 61a7f45bfad8..da1f124db69c 100644
+> --- a/drivers/video/backlight/lp855x_bl.c
+> +++ b/drivers/video/backlight/lp855x_bl.c
+> @@ -241,19 +241,17 @@ static int lp855x_bl_update_status(struct backlight_device *bl)
+>  {
+>  	struct lp855x *lp = bl_get_data(bl);
+>  	int brightness = bl->props.brightness;
+> -	int ret;
+>  
+>  	if (bl->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
+>  		brightness = 0;
+>  
+>  	if (lp->mode == PWM_BASED)
+> -		ret = lp855x_pwm_ctrl(lp, brightness,
+> +		return lp855x_pwm_ctrl(lp, brightness,
+>  				      bl->props.max_brightness);
+>  	else if (lp->mode == REGISTER_BASED)
+> -		ret = lp855x_write_byte(lp, lp->cfg->reg_brightness,
+> +		return lp855x_write_byte(lp, lp->cfg->reg_brightness,
+>  					(u8)brightness);
+> -
+> -	return ret;
+> +	return -EINVAL;
+>  }
+>  
+>  static const struct backlight_ops lp855x_bl_ops = {
+> 
+> base-commit: 21ef7b1e17d039053edaeaf41142423810572741
+> -- 
+> 2.41.0
+> 

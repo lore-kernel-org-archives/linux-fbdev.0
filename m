@@ -2,124 +2,133 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6310CC0015E
-	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Aug 2023 04:40:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D3B7C04A6A
+	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Aug 2023 05:37:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234476AbjHOEjI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 15 Aug 2023 00:39:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57122 "EHLO
+        id S234623AbjHOFhD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 15 Aug 2023 01:37:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50462 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234326AbjHOEiv (ORCPT
+        with ESMTP id S234654AbjHOFgJ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 15 Aug 2023 00:38:51 -0400
-Received: from mail-qv1-xf36.google.com (mail-qv1-xf36.google.com [IPv6:2607:f8b0:4864:20::f36])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 13678F4;
-        Mon, 14 Aug 2023 21:38:46 -0700 (PDT)
-Received: by mail-qv1-xf36.google.com with SMTP id 6a1803df08f44-63d48c3d242so35481626d6.2;
-        Mon, 14 Aug 2023 21:38:46 -0700 (PDT)
+        Tue, 15 Aug 2023 01:36:09 -0400
+Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com [IPv6:2a00:1450:4864:20::529])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FBFBFA;
+        Mon, 14 Aug 2023 22:36:03 -0700 (PDT)
+Received: by mail-ed1-x529.google.com with SMTP id 4fb4d7f45d1cf-523476e868dso6544678a12.3;
+        Mon, 14 Aug 2023 22:36:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1692074325; x=1692679125;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=vUSlJ1K+YltX3fu0fwuh0HX4VMb0WiCiIqUudwqAsHI=;
-        b=Av+4LsG4ZZU6TgMGKe/aUJfcGcY4JNFgEIKy7F0/L2u2R6253lSrAQk0upWXGiv0AL
-         Lwfp89+pzCbRyOG6ejURrWN3s5LHgEms85TFwIoq/eNDcna3X5sVOa+ydo/5MC/d5hud
-         6Z60XaMHzBPMjJ6mOUE02vqXuN9Dh8hAeFnlNfiP8IUT/z1b+50GCZ/JYV6kKAF0Mrl9
-         EnXqnUm9ZrcU9fWAv2iSeD0KnAktVdz8ApIHBO2V7ZV6MccfEp8UJBp3JLarLeusXuQ7
-         LzZiVmMfLoGTrIGG94mJVj4LYOHkolLqGk2BPA+WhDyhsR5MQZjBHU7fLAWWRxyj6hTg
-         rH+g==
+        d=gmail.com; s=20221208; t=1692077761; x=1692682561;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=bIk/OqrRoEJjSTmzxoUEBu2a2Sc3kU0E+CExCTOuyHE=;
+        b=CG+YeVRvcwfSJmOckrdC21CEF0oQ+gNUvj41XFDEK8uLJKzEz++eaZjTG7Ns/k0cVk
+         LWttB8k3vyVBFL5ZFpDiyrjiKo6eRBhq7/fAIXhOarOA/t0S5IOBZBg566OqZT7ZNFTw
+         BoOkLsaJeGOQX+BnYA661Lq/eLbLS2HFWfprUcyVUNaio7ZNsaWtU/Jph27EeWJs3Pzf
+         3oB5wa2hNQ/R9LaviQV0oBpuf5we02cJlhz3/MjD4p3yacteiajzmzRGZgeGGouVAfAA
+         sTdTMrffIyyt+SuUjJ9DOAvcXp3IjijzBFrgP08d+pdrYWxFBur5nirjGjSRo/cVEPit
+         Zykg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692074325; x=1692679125;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=vUSlJ1K+YltX3fu0fwuh0HX4VMb0WiCiIqUudwqAsHI=;
-        b=PCdPKr9gSYaVrFr+utY9icVB+GQEzTlu7znCHMhnPZlhtEL0kiXGYPi0DHH8WE026w
-         4KLOFysOT1aLKk6ilY1YXIHpofuNnBSk0w6dKrIKVjxN9GKhBnAlluORZAVkvGVEji9e
-         /k9MhbQUSQvsdLZmpSkTiUzNeh2Ua6h6tq0HYZi/6Gxuqj18qJ1d5JxtRrLvtoZbg+4k
-         nAgNDO4T0wygQFG7hz3KLxoeGAu8FWF9WXkN0mqkvM37Soh+O2W5zUVe4ffDxfLjX/Iy
-         /nkHRK0wnOLsz+IhsrIrnqMIrgozgfrm62HgO/AoM2NR7iYbTot3HUruNyI1CgUI2WVu
-         ZcXQ==
-X-Gm-Message-State: AOJu0Yy6Mz3qu5b4B74hfnJdh8xdRXBO6wM9DZHbYjzQRgt+ob8QL5MP
-        2ud7xJyAIF6HQCry/tyuoHuks2axKsu11A==
-X-Google-Smtp-Source: AGHT+IHlRKYII7XNiHTvKhRFpl+U39brmO0LJzBgiLbx8fE8kLkSj0Lwrb5EjbPw5hmZsFns09Ducw==
-X-Received: by 2002:a0c:df8a:0:b0:647:2f8f:8c29 with SMTP id w10-20020a0cdf8a000000b006472f8f8c29mr2054378qvl.48.1692074325225;
-        Mon, 14 Aug 2023 21:38:45 -0700 (PDT)
-Received: from localhost.localdomain ([174.95.13.129])
-        by smtp.gmail.com with ESMTPSA id a7-20020a0cb347000000b00630c0ed6339sm3880822qvf.64.2023.08.14.21.38.44
+        d=1e100.net; s=20221208; t=1692077761; x=1692682561;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=bIk/OqrRoEJjSTmzxoUEBu2a2Sc3kU0E+CExCTOuyHE=;
+        b=LAA+e3N5155wRKM79lZckEpUf1kt5azZygcl4QF1W+1/9PC32I8qJVf6gRHaqhYII6
+         z6XSmONq8fKHuy5Lwt+CK2vo25EZtZkh2n48fuwgP/gJFNdLQr3H5Ot54ydhJH3+6DAE
+         T4FgdJkL1jEnyy0fQwpDDEhzihiNoHdc4u7umfij7rykSYyQFrCX/O00p3MLeZIJ1Ng8
+         b0pr1B8VYzQRxYHRum+JNkZ1yoBLbERKQdgPf/GCTJhCjnyLUZXxR+nRi2szfrMovpc8
+         aIg8PZ9OPcmmm+28aMcp+quoS41RD8mSZYTDxkPxlPzCEhR27B+SSG66s03FJvjFK6AH
+         zLRg==
+X-Gm-Message-State: AOJu0YzFZTXi5REX/GcW7ZCGWsNN4A8XlTz16g1nxgVYYyqLgYDAFhcc
+        sbs0LE27bvv2ShjbXKWCTQCPh2kJugUd2Q==
+X-Google-Smtp-Source: AGHT+IFpLPB6bcWraXia54uKaz4BAJCTyZFd7fSE26sxCsBffFUTbk0czBecUfcy0Dz8JukUC97nYw==
+X-Received: by 2002:a05:6402:124d:b0:525:4420:c425 with SMTP id l13-20020a056402124d00b005254420c425mr6430763edw.12.1692077760995;
+        Mon, 14 Aug 2023 22:36:00 -0700 (PDT)
+Received: from nam-dell (ip-217-105-46-58.ip.prioritytelecom.net. [217.105.46.58])
+        by smtp.gmail.com with ESMTPSA id q9-20020a056402040900b0051dd19d6d6esm6449284edv.73.2023.08.14.22.35.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 14 Aug 2023 21:38:44 -0700 (PDT)
-From:   Abdel Alkuor <alkuor@gmail.com>
-To:     gregkh@linuxfoundation.org
-Cc:     linux-kernel@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-fbdev@vger.kernel.org, Abdel Alkuor <alkuor@gmail.com>
-Subject: [PATCH] staging: sm750fb: fix sii164InitChip function name
-Date:   Tue, 15 Aug 2023 00:37:59 -0400
-Message-Id: <20230815043759.404423-1-alkuor@gmail.com>
-X-Mailer: git-send-email 2.34.1
+        Mon, 14 Aug 2023 22:36:00 -0700 (PDT)
+Date:   Tue, 15 Aug 2023 07:35:59 +0200
+From:   Nam Cao <namcaov@gmail.com>
+To:     Abdel Alkuor <alkuor@gmail.com>
+Cc:     gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH] staging: sm750fb: fix sii164InitChip function name
+Message-ID: <ZNsOv7F1B9AnlUVG@nam-dell>
+References: <20230815043759.404423-1-alkuor@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230815043759.404423-1-alkuor@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Adhere to Linux Kernel coding style. Found by checkpatch.
+On Tue, Aug 15, 2023 at 12:37:59AM -0400, Abdel Alkuor wrote:
+> Adhere to Linux Kernel coding style. Found by checkpatch.
+> 
+> Signed-off-by: Abdel Alkuor <alkuor@gmail.com>
+> ---
+>  drivers/staging/sm750fb/ddk750_dvi.c    | 2 +-
+>  drivers/staging/sm750fb/ddk750_sii164.c | 4 ++--
+>  drivers/staging/sm750fb/ddk750_sii164.h | 2 +-
+>  3 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
+> index e0c7ff3352bf..8b81e8642f9e 100644
+> --- a/drivers/staging/sm750fb/ddk750_dvi.c
+> +++ b/drivers/staging/sm750fb/ddk750_dvi.c
+> @@ -14,7 +14,7 @@
+>  static struct dvi_ctrl_device dcft_supported_dvi_controller[] = {
+>  #ifdef DVI_CTRL_SII164
+>  	{
+> -		.init = sii164InitChip,
+> +		.init = sii164_init_chip,
+>  		.get_vendor_id = sii164_get_vendor_id,
+>  		.get_device_id = sii164GetDeviceID,
+>  #ifdef SII164_FULL_FUNCTIONS
+> diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
+> index 3da1796cd7aa..d162e1a16584 100644
+> --- a/drivers/staging/sm750fb/ddk750_sii164.c
+> +++ b/drivers/staging/sm750fb/ddk750_sii164.c
+> @@ -72,7 +72,7 @@ unsigned short sii164GetDeviceID(void)
+>   */
+>  
+>  /*
+> - *  sii164InitChip
+> + *  sii164_init_chip
+>   *      This function initialize and detect the DVI controller chip.
+>   *
+>   *  Input:
+> @@ -118,7 +118,7 @@ unsigned short sii164GetDeviceID(void)
+>   *      0   - Success
+>   *     -1   - Fail.
+>   */
+> -long sii164InitChip(unsigned char edge_select,
+> +long sii164_init_chip(unsigned char edge_select,
+>  		    unsigned char bus_select,
+>  		    unsigned char dual_edge_clk_select,
+>  		    unsigned char hsync_enable,
 
-Signed-off-by: Abdel Alkuor <alkuor@gmail.com>
----
- drivers/staging/sm750fb/ddk750_dvi.c    | 2 +-
- drivers/staging/sm750fb/ddk750_sii164.c | 4 ++--
- drivers/staging/sm750fb/ddk750_sii164.h | 2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+I think you introduce new checkpatch warnings here.
 
-diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
-index e0c7ff3352bf..8b81e8642f9e 100644
---- a/drivers/staging/sm750fb/ddk750_dvi.c
-+++ b/drivers/staging/sm750fb/ddk750_dvi.c
-@@ -14,7 +14,7 @@
- static struct dvi_ctrl_device dcft_supported_dvi_controller[] = {
- #ifdef DVI_CTRL_SII164
- 	{
--		.init = sii164InitChip,
-+		.init = sii164_init_chip,
- 		.get_vendor_id = sii164_get_vendor_id,
- 		.get_device_id = sii164GetDeviceID,
- #ifdef SII164_FULL_FUNCTIONS
-diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
-index 3da1796cd7aa..d162e1a16584 100644
---- a/drivers/staging/sm750fb/ddk750_sii164.c
-+++ b/drivers/staging/sm750fb/ddk750_sii164.c
-@@ -72,7 +72,7 @@ unsigned short sii164GetDeviceID(void)
-  */
- 
- /*
-- *  sii164InitChip
-+ *  sii164_init_chip
-  *      This function initialize and detect the DVI controller chip.
-  *
-  *  Input:
-@@ -118,7 +118,7 @@ unsigned short sii164GetDeviceID(void)
-  *      0   - Success
-  *     -1   - Fail.
-  */
--long sii164InitChip(unsigned char edge_select,
-+long sii164_init_chip(unsigned char edge_select,
- 		    unsigned char bus_select,
- 		    unsigned char dual_edge_clk_select,
- 		    unsigned char hsync_enable,
-diff --git a/drivers/staging/sm750fb/ddk750_sii164.h b/drivers/staging/sm750fb/ddk750_sii164.h
-index ca330f6a43e2..13420bcc282c 100644
---- a/drivers/staging/sm750fb/ddk750_sii164.h
-+++ b/drivers/staging/sm750fb/ddk750_sii164.h
-@@ -16,7 +16,7 @@ enum sii164_hot_plug_mode {
- };
- 
- /* Silicon Image SiI164 chip prototype */
--long sii164InitChip(unsigned char edgeSelect,
-+long sii164_init_chip(unsigned char edgeSelect,
- 		    unsigned char busSelect,
- 		    unsigned char dualEdgeClkSelect,
- 		    unsigned char hsyncEnable,
--- 
-2.34.1
+> diff --git a/drivers/staging/sm750fb/ddk750_sii164.h b/drivers/staging/sm750fb/ddk750_sii164.h
+> index ca330f6a43e2..13420bcc282c 100644
+> --- a/drivers/staging/sm750fb/ddk750_sii164.h
+> +++ b/drivers/staging/sm750fb/ddk750_sii164.h
+> @@ -16,7 +16,7 @@ enum sii164_hot_plug_mode {
+>  };
+>  
+>  /* Silicon Image SiI164 chip prototype */
+> -long sii164InitChip(unsigned char edgeSelect,
+> +long sii164_init_chip(unsigned char edgeSelect,
+>  		    unsigned char busSelect,
+>  		    unsigned char dualEdgeClkSelect,
+>  		    unsigned char hsyncEnable,
 
+Also here.
+
+Best regards,
+Nam
+> 

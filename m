@@ -2,70 +2,95 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 258B3EE4993
-	for <linux-fbdev@archiver.kernel.org>; Sat, 19 Aug 2023 16:01:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9D9FEE4993
+	for <linux-fbdev@archiver.kernel.org>; Sun, 20 Aug 2023 09:46:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233777AbjHSQBv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 19 Aug 2023 12:01:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56986 "EHLO
+        id S230242AbjHTJqu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 20 Aug 2023 05:46:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46484 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233786AbjHSQBu (ORCPT
+        with ESMTP id S230274AbjHTJqn (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 19 Aug 2023 12:01:50 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88AE622A1C;
-        Sat, 19 Aug 2023 09:01:49 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        Sun, 20 Aug 2023 05:46:43 -0400
+Received: from relay.yourmailgateway.de (relay.yourmailgateway.de [188.68.63.98])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D509B116;
+        Sun, 20 Aug 2023 02:42:48 -0700 (PDT)
+Received: from mors-relay-2501.netcup.net (localhost [127.0.0.1])
+        by mors-relay-2501.netcup.net (Postfix) with ESMTPS id 4RT9dK4zvjz61sl;
+        Sun, 20 Aug 2023 11:42:45 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=zint.sh; s=key2;
+        t=1692524565; bh=Y1lfCYJSajJUwTdBl3a/8wqulGBpXhVxDAJSoFV9FuA=;
+        h=From:To:Cc:Subject:Date:From;
+        b=bB3IY0A5amjWO+5WW2j54b5tuEJVrcWkq7qLVXoviI1mzJdzK0O1iZzrc9eSr7Br2
+         Xsmp/ZgeOvgpsGL6EwZQ5yktaNwm01IirT+sj0lLCSZXx4/3yCzMW+jDZi/n2ZECSA
+         MoXNS9fVIwiGTSn+agEGA/gdC1muaoY4ErQb9CEZjBTtc57Dt2245I7fNYrOGoN/nA
+         CVhZcPK1sX08Jy4BaDNbGQuvI9INLGmrEpXyPFVPCAubxgiO+LdUtzAuYJ9IRpyc/f
+         zPA9WzehDjAag8JXktdYK6iomvsxeetSpv5bqJJK+H2wb9KeeYnIVrshNOv5K3nYyf
+         2fdvkVTJyw7IQ==
+Received: from policy02-mors.netcup.net (unknown [46.38.225.35])
+        by mors-relay-2501.netcup.net (Postfix) with ESMTPS id 4RT9dK4G8hz4wYs;
+        Sun, 20 Aug 2023 11:42:45 +0200 (CEST)
+Received: from mxe217.netcup.net (unknown [10.243.12.53])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 1D7AC61C4A;
-        Sat, 19 Aug 2023 16:01:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 7AEACC433C7;
-        Sat, 19 Aug 2023 16:01:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1692460908;
-        bh=7n1CC74HKqRSxoIXlvbbxvblK1V2CUJ1qbAXF+3uiu0=;
-        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=U2FYUJdukI1452thIbV2EQUFdp+3uvjJ2X9rLc3blPCs4DsQcq+eDLhrzD8EOEo+U
-         6sGKUOhGBNFw/WIocMkpOFUblwEyJC3z4ZZLoll6rw0Lx2ic4EvgbTCnW20iZUZaAF
-         rztVAKshRKqB9MORQ6hNOrkBdThPxngb8VjB8S/fKRkz1wcuBvYS5w+gTJp+HbEG8Q
-         MJE3cEXkfP0Xj9+rycSclMr9FzsSiPQ6W3FZPVLTRWzapSCye3RpB6vbzohbLjhpO0
-         AEvLB491oBzBE/YPj7AfWXn3ivjFXEIPPJPXUaK5vCHFM5TrPfWHMXwkesqefzTY/b
-         3vYGXBO+kcgSQ==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 66F78C395DC;
-        Sat, 19 Aug 2023 16:01:48 +0000 (UTC)
-Subject: Re: [GIT PULL] fbdev fixes and cleanups for v6.5-rc7
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <ZODfqGYs/M1xvIJ8@ls3530>
-References: <ZODfqGYs/M1xvIJ8@ls3530>
-X-PR-Tracked-List-Id: <linux-fbdev.vger.kernel.org>
-X-PR-Tracked-Message-Id: <ZODfqGYs/M1xvIJ8@ls3530>
-X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.5-rc7
-X-PR-Tracked-Commit-Id: 0650d5098f8b6b232cd5ea0e15437fc38f7d63ba
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: b5cab28be6ccf08237078b675fc1d446679779ba
-Message-Id: <169246090841.15016.6846906717154418207.pr-tracker-bot@kernel.org>
-Date:   Sat, 19 Aug 2023 16:01:48 +0000
-To:     Helge Deller <deller@gmx.de>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
+        by policy02-mors.netcup.net (Postfix) with ESMTPS id 4RT9dJ3KWmz8sWg;
+        Sun, 20 Aug 2023 11:42:44 +0200 (CEST)
+Received: from thinkpad.fritz.box (p5dcce04c.dip0.t-ipconnect.de [93.204.224.76])
+        by mxe217.netcup.net (Postfix) with ESMTPSA id C3E6481728;
+        Sun, 20 Aug 2023 11:42:28 +0200 (CEST)
+From:   Julius Zint <julius@zint.sh>
+To:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Jiri Kosina <jikos@kernel.org>,
+        Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Cc:     Helge Deller <deller@gmx.de>,
+        =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <thomas@t-8ch.de>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-input@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        Julius Zint <julius@zint.sh>
+Subject: [PATCH v3 0/1] HID backlight driver
+Date:   Sun, 20 Aug 2023 11:41:17 +0200
+Message-ID: <20230820094118.20521-1-julius@zint.sh>
+X-Mailer: git-send-email 2.41.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Rspamd-Queue-Id: C3E6481728
+X-Rspamd-Server: rspamd-worker-8404
+X-NC-CID: o99rhNWMntfG8PvlZYqJr2wkw11yMiRwqBscVEe9
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The pull request you sent on Sat, 19 Aug 2023 17:28:40 +0200:
+This patch adds support for HID backlight devices, found in the Apple
+Studio Display.
 
-> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-6.5-rc7
+Changes in v1 [1]:
+  - Add USB backlight driver for Studio Display
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/b5cab28be6ccf08237078b675fc1d446679779ba
+Changes in v2 [2]:
+  - Rewrite from a USB driver to a HID driver
 
-Thank you!
+Changes in v3:
+  - Added missing hid_bl prefix for some functions
+  - Early exit in probe when HID parsing fails
+  - Add return code to error logs
+  - Adding HID Maintainers for review
 
+[1] https://lore.kernel.org/dri-devel/20230701120806.11812-1-julius@zint.sh/
+[2] https://lore.kernel.org/dri-devel/20230806091403.10002-1-julius@zint.sh/
+
+Julius Zint (1):
+  backlight: hid_bl: Add VESA VCP HID backlight driver
+
+ drivers/video/backlight/Kconfig  |   8 +
+ drivers/video/backlight/Makefile |   1 +
+ drivers/video/backlight/hid_bl.c | 269 +++++++++++++++++++++++++++++++
+ 3 files changed, 278 insertions(+)
+ create mode 100644 drivers/video/backlight/hid_bl.c
+
+
+base-commit: dfd122fe8591d513b5e51313601217b67ae98d13
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+2.41.0
+

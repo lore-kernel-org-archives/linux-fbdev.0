@@ -2,95 +2,177 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8190EE49AA
-	for <linux-fbdev@archiver.kernel.org>; Mon, 21 Aug 2023 12:21:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58F11EE49A5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 21 Aug 2023 16:36:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234783AbjHUMVM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 21 Aug 2023 08:21:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48658 "EHLO
+        id S236536AbjHUQgi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 21 Aug 2023 12:36:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38498 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232733AbjHUMVL (ORCPT
+        with ESMTP id S236212AbjHUQgh (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 21 Aug 2023 08:21:11 -0400
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33784E2;
-        Mon, 21 Aug 2023 05:21:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=5IiWcS1pGUM8RhlF+xFAzuOei17PLjfs94NmDiNvo6g=; b=MR/QHwNqCgmOxVS7c6EPkcvTOM
-        ewCAH+I5VyIrZrxJzwYfZLZdCgL8s90TQvZ+npslaTk64GCHlebjy/zTEFSP1XKvpvz0F1mp04dGb
-        Q4Mw4xNqTcDxevU3YZo9ZuZG7u7901KOLFAZQFBrfJj6DTvFoLmKqeOrbe9EGAWJD80G+5oUvjC9E
-        GE7/tDN7WYGjkchDeLjeoEXqx63p+j9VqmffpAwOVP34B8h7G2NH+m2Ijbr5WZl9m60lEmymGlSTH
-        3KMB/ugwe8njVx8yVWKJI7O8kZmYJA5QdxgWpCri1u728bx/fA3oJh+UCaWAdHAzd3/DRUeZhFvtJ
-        MESTOvHA==;
-Received: from willy by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1qY3tZ-00A7pc-KQ; Mon, 21 Aug 2023 12:20:33 +0000
-Date:   Mon, 21 Aug 2023 13:20:33 +0100
-From:   Matthew Wilcox <willy@infradead.org>
-To:     Jan Kara <jack@suse.cz>
-Cc:     Xueshi Hu <xueshi.hu@smartx.com>, dan.j.williams@intel.com,
-        vishal.l.verma@intel.com, dave.jiang@intel.com,
-        jayalk@intworks.biz, daniel@ffwll.ch, deller@gmx.de,
-        bcrl@kvack.org, viro@zeniv.linux.org.uk, brauner@kernel.org,
-        jack@suse.com, tytso@mit.edu, adilger.kernel@dilger.ca,
-        miklos@szeredi.hu, mike.kravetz@oracle.com, muchun.song@linux.dev,
-        djwong@kernel.org, akpm@linux-foundation.org, hughd@google.com,
-        nvdimm@lists.linux.dev, linux-cxl@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-aio@kvack.org,
-        linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
-        linux-mm@kvack.org, linux-xfs@vger.kernel.org
-Subject: Re: [PATCH] fs: clean up usage of noop_dirty_folio
-Message-ID: <ZONWka8NpDVGzI8h@casper.infradead.org>
-References: <20230819124225.1703147-1-xueshi.hu@smartx.com>
- <20230821111643.5vxtktznjqk42cak@quack3>
+        Mon, 21 Aug 2023 12:36:37 -0400
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 45C65ED
+        for <linux-fbdev@vger.kernel.org>; Mon, 21 Aug 2023 09:36:35 -0700 (PDT)
+Received: by mail-wr1-x432.google.com with SMTP id ffacd0b85a97d-31977ace1c8so3247002f8f.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 21 Aug 2023 09:36:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1692635794; x=1693240594;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=YLeAswC8FPpnMLWgDTF18xaCa/KlTJOAu90A2tSHG+E=;
+        b=ZMWD+ZPMbu1gWKaNmbRIhaJl6M0UdWARNKG+CVFRFmgdncqHY+nC82h8+Z55xxwz2g
+         H4UsCTHk8poZdmNASIEX0eU9XMxgI/NRqCUKqrBG2vVDLwiNsgf7gUgEWSwFrNqO6Sc4
+         SwklnAofSB96Y+ZzPmfD8ORqEN/I+Ep8ju9AqMYXJm78IGQEM9fPyCbD+4mAVdhZUlAV
+         CcmKjMqJmLtieYZssdfVTjMOqPPWEVy5S0DFCmngIzcQrhUVG1mgUrYasUJoKMEhvuEl
+         UoRQDmK0KDDBFlXHw1Pg/V4LleTBGM3NCg9G5IEfXI80uozNpfmuhAdlHauV7n45GWm9
+         PRlw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1692635794; x=1693240594;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=YLeAswC8FPpnMLWgDTF18xaCa/KlTJOAu90A2tSHG+E=;
+        b=Mz6TdG6Qq4DKvTk/bbRoBywC8sEVPP6qWRbZzo3FhFpChhi6vj3A5Prz6EinKEH/nE
+         ViHcm56ctYhEv34B8CEEl1RCzvuE38dG/xFAGLN6bHWfQoyV/Mw8MTb7D84Hts+Csdxx
+         g/POGbSY8UXKDPwSkCHnOb/Fif62N2uAGu5SHNwiwOK4Hj71uh2kE2ksyZOexDmbPyX+
+         YEJPwwmxd/YSVaYZsaVvesokzjatDAd7v7TL657Y8rvN/+yYRvWtc+uclElTSkH6tR8h
+         8zuD3dTgwT8ok+WCcyA2Ubbceub3zTliwOBdpjDCXVawIQYeYiDlXQrJ7r7/WktbcXki
+         JrJg==
+X-Gm-Message-State: AOJu0YzAOmqJ2x0CdwgTvoh3XiEtha1WRMC90eKH6I+7q6RWP6Efo6kB
+        lSyP/96UKFOp7Nw3EOn9+KNnWaERYZ8Y24bf7QI=
+X-Google-Smtp-Source: AGHT+IFhBb30ZJ4bzxScpzo0htWeygmB0PYxIMb7ZiGf78WIe5bZNnpUTDLFUVFVi2lm3yyfveQCqA==
+X-Received: by 2002:adf:d085:0:b0:317:759a:8ca6 with SMTP id y5-20020adfd085000000b00317759a8ca6mr4734991wrh.62.1692635793634;
+        Mon, 21 Aug 2023 09:36:33 -0700 (PDT)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id e1-20020adfe7c1000000b0031b2c01f342sm7114191wrn.87.2023.08.21.09.36.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 21 Aug 2023 09:36:33 -0700 (PDT)
+Date:   Mon, 21 Aug 2023 17:36:31 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Julius Zint <julius@zint.sh>
+Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        Jiri Kosina <jikos@kernel.org>,
+        Benjamin Tissoires <benjamin.tissoires@redhat.com>,
+        Helge Deller <deller@gmx.de>,
+        Thomas =?iso-8859-1?Q?Wei=DFschuh?= <thomas@t-8ch.de>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-input@vger.kernel.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v3 1/1] backlight: hid_bl: Add VESA VCP HID backlight
+ driver
+Message-ID: <20230821163631.GA214013@aspen.lan>
+References: <20230820094118.20521-1-julius@zint.sh>
+ <20230820094118.20521-2-julius@zint.sh>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230821111643.5vxtktznjqk42cak@quack3>
+In-Reply-To: <20230820094118.20521-2-julius@zint.sh>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Aug 21, 2023 at 01:16:43PM +0200, Jan Kara wrote:
-> On Sat 19-08-23 20:42:25, Xueshi Hu wrote:
-> > In folio_mark_dirty(), it will automatically fallback to
-> > noop_dirty_folio() if a_ops->dirty_folio is not registered.
-> > 
-> > As anon_aops, dev_dax_aops and fb_deferred_io_aops becames empty, remove
-> > them too.
-> > 
-> > Signed-off-by: Xueshi Hu <xueshi.hu@smartx.com>
-> 
-> Yeah, looks sensible to me but for some callbacks we are oscilating between
-> all users having to provide some callback and providing some default
-> behavior for NULL callback. I don't have a strong opinion either way so
-> feel free to add:
-> 
-> Reviewed-by: Jan Kara <jack@suse.cz>
-> 
-> But I guess let's see what Matthew thinks about this and what plans he has
-> so that we don't switch back again in the near future. Matthew?
+On Sun, Aug 20, 2023 at 11:41:18AM +0200, Julius Zint wrote:
+> The HID spec defines the following Usage IDs (p. 345 ff):
+>
+> - Monitor Page (0x80) -> Monitor Control (0x01)
+> - VESA Virtual Controls Page (0x82) -> Brightness (0x10)
+>
+> Apple made use of them in their Apple Studio Display and most likely on
+> other external displays (LG UltraFine 5k, Pro Display XDR).
+>
+> The driver will work for any HID device with a report, where the
+> application matches the Monitor Control Usage ID and:
+>
+> 1. An Input field in this report with the Brightness Usage ID (to get
+>    the current brightness)
+> 2. A Feature field in this report with the Brightness Usage ID (to
+>    set the current brightness)
+>
+> This driver has been developed and tested with the Apple Studio Display.
+> Here is a small excerpt from the decoded HID descriptor showing the
+> feature field for setting the brightness:
+>
+>   Usage Page (Monitor VESA VCP),  ; Monitor VESA VPC (82h, monitor page)
+>   Usage (10h, Brightness),
+>   Logical Minimum (400),
+>   Logical Maximum (60000),
+>   Unit (Centimeter^-2 * Candela),
+>   Unit Exponent (14),
+>   Report Size (32),
+>   Report Count (1),
+>   Feature (Variable, Null State),
+>
+> The full HID descriptor dump is available as a comment in the source
+> code.
+>
+> Signed-off-by: Julius Zint <julius@zint.sh>
 
-I was hoping Christoph would weigh in ;-)  I don't have a strong
-feeling here, but it seems to me that a NULL ->dirty_folio() should mean
-"do the noop thing" rather than "do the buffer_head thing" or "do the
-filemap thing".  In 0af573780b0b, the buffer_head default was removed.
-I think enough time has passed that we're OK to change what a NULL
-->dirty_folio means (plus we also changed the name of ->set_page_dirty()
-to ->dirty_folio())
+I saw Christophe's review (thanks) and won't repeat anything from
+there...
 
-So Ack to the concept.  One minor change I'd request:
+> @@ -472,6 +472,14 @@ config BACKLIGHT_LED
+>  	  If you have a LCD backlight adjustable by LED class driver, say Y
+>  	  to enable this driver.
+>
+> +config BACKLIGHT_HID
+> +	tristate "VESA VCP HID Backlight Driver"
+> +	depends on HID
+> +	help
+> +	  If you have an external display with VESA compliant HID brightness
+> +	  controls then say Y to enable this backlight driver. Currently the
+> +	  only supported device is the Apple Studio Display.
 
--bool noop_dirty_folio(struct address_space *mapping, struct folio *folio)
-+static bool noop_dirty_folio(struct address_space *mapping, struct folio *folio)
- {
- 	if (!folio_test_dirty(folio))
- 		return !folio_test_set_dirty(folio);
- 	return false;
- }
--EXPORT_SYMBOL(noop_dirty_folio);
+This contradicts the description which says you write the driver to the
+standard but only tested on Apple Studio Display. There is no need to
+spell what has been tested in the Kconfig text. Remove the final
+sentence!
 
-Please inline this into folio_mark_dirty() instead of calling it.
+> diff --git a/drivers/video/backlight/hid_bl.c b/drivers/video/backlight/hid_bl.c
+> new file mode 100644
+> index 000000000000..b40f8f412ee2
+> --- /dev/null
+> +++ b/drivers/video/backlight/hid_bl.c
+> <snip>
+> +static void hid_bl_remove(struct hid_device *hdev)
+> +{
+> +	struct backlight_device *bl;
+> +	struct hid_bl_data *data;
+> +
+> +	hid_dbg(hdev, "remove\n");
+
+This message probably should be removed (if you want to know if a function was
+executed use ftrace).
+
+
+> +	bl = hid_get_drvdata(hdev);
+> +	data = bl_get_data(bl);
+> +
+> +	devm_backlight_device_unregister(&hdev->dev, bl);
+> +	hid_hw_close(hdev);
+> +	hid_hw_stop(hdev);
+> +	hid_set_drvdata(hdev, NULL);
+> +	devm_kfree(&hdev->dev, data);
+> +}
+> +
+> +static int hid_bl_get_brightness_raw(struct hid_bl_data *data)
+> +{
+> +	struct hid_field *field;
+> +	int result;
+> +
+> +	field = data->input_field;
+> +	hid_hw_request(data->hdev, field->report, HID_REQ_GET_REPORT);
+> +	hid_hw_wait(data->hdev);
+> +	result = *field->new_value;
+> +	hid_dbg(data->hdev, "get brightness: %d\n", result);
+
+To be honest I'm a little dubious about *all* the hid_dbg() calls. They
+add very little value (e.g. they are useful to get the driver working
+but not that important to keeping it working). As such I don't think
+they are worth the clutter in a CONFIG_DYNAMIC_DEBUG kernel.
+
+Note this is strictly for the hid_dbg() stuff... the hid_err() stuff in
+the probe error paths are much more useful!
+
+
+Daniel.

@@ -2,177 +2,79 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58F11EE49A5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 21 Aug 2023 16:36:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0F35EE49AD
+	for <linux-fbdev@archiver.kernel.org>; Wed, 23 Aug 2023 01:41:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236536AbjHUQgi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 21 Aug 2023 12:36:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38498 "EHLO
+        id S232071AbjHWBle (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 22 Aug 2023 21:41:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52306 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236212AbjHUQgh (ORCPT
+        with ESMTP id S230403AbjHWBld (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 21 Aug 2023 12:36:37 -0400
-Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 45C65ED
-        for <linux-fbdev@vger.kernel.org>; Mon, 21 Aug 2023 09:36:35 -0700 (PDT)
-Received: by mail-wr1-x432.google.com with SMTP id ffacd0b85a97d-31977ace1c8so3247002f8f.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 21 Aug 2023 09:36:35 -0700 (PDT)
+        Tue, 22 Aug 2023 21:41:33 -0400
+X-Greylist: delayed 919 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 22 Aug 2023 18:41:31 PDT
+Received: from symantec4.comsats.net.pk (symantec4.comsats.net.pk [203.124.41.30])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8105AE46
+        for <linux-fbdev@vger.kernel.org>; Tue, 22 Aug 2023 18:41:31 -0700 (PDT)
+X-AuditID: cb7c291e-055ff70000002aeb-56-64e54b4b91a5
+Received: from iesco.comsatshosting.com (iesco.comsatshosting.com [210.56.28.11])
+        (using TLS with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+        (Client did not present a certificate)
+        by symantec4.comsats.net.pk (Symantec Messaging Gateway) with SMTP id D9.6B.10987.B4B45E46; Wed, 23 Aug 2023 04:56:59 +0500 (PKT)
+DomainKey-Signature: a=rsa-sha1; c=nofws; q=dns;
+        d=iesco.com.pk; s=default;
+        h=received:content-type:mime-version:content-transfer-encoding
+          :content-description:subject:to:from:date:reply-to;
+        b=BUUo/eblhpGo9jIDNvw1fRygYNSxZoTbfHKPOEQmnpdTZfsox1zWw0P++1oorvFD6
+          0XhAVcnbMUKH7xNyqA8NJ7Sb2latrxeEge9djAT/URAOjslbtRzEP0qUBLrDTW9pM
+          Bfi7d64g9KUt7PgQOYbS1DFkpzpaCExtpwcOyh9ok=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1692635794; x=1693240594;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=YLeAswC8FPpnMLWgDTF18xaCa/KlTJOAu90A2tSHG+E=;
-        b=ZMWD+ZPMbu1gWKaNmbRIhaJl6M0UdWARNKG+CVFRFmgdncqHY+nC82h8+Z55xxwz2g
-         H4UsCTHk8poZdmNASIEX0eU9XMxgI/NRqCUKqrBG2vVDLwiNsgf7gUgEWSwFrNqO6Sc4
-         SwklnAofSB96Y+ZzPmfD8ORqEN/I+Ep8ju9AqMYXJm78IGQEM9fPyCbD+4mAVdhZUlAV
-         CcmKjMqJmLtieYZssdfVTjMOqPPWEVy5S0DFCmngIzcQrhUVG1mgUrYasUJoKMEhvuEl
-         UoRQDmK0KDDBFlXHw1Pg/V4LleTBGM3NCg9G5IEfXI80uozNpfmuhAdlHauV7n45GWm9
-         PRlw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692635794; x=1693240594;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=YLeAswC8FPpnMLWgDTF18xaCa/KlTJOAu90A2tSHG+E=;
-        b=Mz6TdG6Qq4DKvTk/bbRoBywC8sEVPP6qWRbZzo3FhFpChhi6vj3A5Prz6EinKEH/nE
-         ViHcm56ctYhEv34B8CEEl1RCzvuE38dG/xFAGLN6bHWfQoyV/Mw8MTb7D84Hts+Csdxx
-         g/POGbSY8UXKDPwSkCHnOb/Fif62N2uAGu5SHNwiwOK4Hj71uh2kE2ksyZOexDmbPyX+
-         YEJPwwmxd/YSVaYZsaVvesokzjatDAd7v7TL657Y8rvN/+yYRvWtc+uclElTSkH6tR8h
-         8zuD3dTgwT8ok+WCcyA2Ubbceub3zTliwOBdpjDCXVawIQYeYiDlXQrJ7r7/WktbcXki
-         JrJg==
-X-Gm-Message-State: AOJu0YzAOmqJ2x0CdwgTvoh3XiEtha1WRMC90eKH6I+7q6RWP6Efo6kB
-        lSyP/96UKFOp7Nw3EOn9+KNnWaERYZ8Y24bf7QI=
-X-Google-Smtp-Source: AGHT+IFhBb30ZJ4bzxScpzo0htWeygmB0PYxIMb7ZiGf78WIe5bZNnpUTDLFUVFVi2lm3yyfveQCqA==
-X-Received: by 2002:adf:d085:0:b0:317:759a:8ca6 with SMTP id y5-20020adfd085000000b00317759a8ca6mr4734991wrh.62.1692635793634;
-        Mon, 21 Aug 2023 09:36:33 -0700 (PDT)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id e1-20020adfe7c1000000b0031b2c01f342sm7114191wrn.87.2023.08.21.09.36.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 21 Aug 2023 09:36:33 -0700 (PDT)
-Date:   Mon, 21 Aug 2023 17:36:31 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Julius Zint <julius@zint.sh>
-Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-        Jiri Kosina <jikos@kernel.org>,
-        Benjamin Tissoires <benjamin.tissoires@redhat.com>,
-        Helge Deller <deller@gmx.de>,
-        Thomas =?iso-8859-1?Q?Wei=DFschuh?= <thomas@t-8ch.de>,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-input@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v3 1/1] backlight: hid_bl: Add VESA VCP HID backlight
- driver
-Message-ID: <20230821163631.GA214013@aspen.lan>
-References: <20230820094118.20521-1-julius@zint.sh>
- <20230820094118.20521-2-julius@zint.sh>
+        d=iesco.com.pk; s=default;
+        h=reply-to:date:from:to:subject:content-description
+          :content-transfer-encoding:mime-version:content-type;
+        bh=GMzYzcyTxDsE6wX/XHG6MHqAdAiHrhqbmmLQ/TZ1QnQ=;
+        b=KHUgKSDPJzYzEvPJQwEM1Smoj0MBMbuRGN5o8ZWjEkYSdol+z6/6AfX6TWNXIlqjv
+          pMZTKrFf2O0zy3BVijL+LPvRYJOHxwDi8IXAE8CUqg7zeydti6rNYBsaSjPlAAxMt
+          shUFQgbfUd8sfygxy94L5c8XQAl75a2KX7N28P+u8=
+Received: from [94.156.6.90] (UnknownHost [94.156.6.90]) by iesco.comsatshosting.com with SMTP;
+   Wed, 23 Aug 2023 04:31:00 +0500
+Message-ID: <D9.6B.10987.B4B45E46@symantec4.comsats.net.pk>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230820094118.20521-2-julius@zint.sh>
+Content-Transfer-Encoding: quoted-printable
+Content-Description: Mail message body
+Subject: Re; Interest,
+To:     linux-fbdev@vger.kernel.org
+From:   "Chen Yun" <pso.chairmanbod@iesco.com.pk>
+Date:   Tue, 22 Aug 2023 16:31:14 -0700
+Reply-To: chnyne@gmail.com
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrDLMWRmVeSWpSXmKPExsVyyUKGW9fb+2mKwYFdShYn+j6wOjB6fN4k
+        F8AYxWWTkpqTWZZapG+XwJWxZN0FloLdzBVt/YtYGhgfM3UxcnJICJhI3N/WydjFyMUhJLCH
+        SeL/o3NgCRaB1cwSn9fmgyRYBB4yS8y49J8VoqqZUWL29tWMIFW8AtYSvzbMYgaxmQX0JG5M
+        ncIGEReUODnzCQtEXFti2cLXQDUcQLaaxNeuEpCwsICYxKdpy9hBbBEBeYk9/e1gi9kE9CVW
+        fG1mhDhCVWLdhptgtpCAlMTGK+vZJjDyz0KybRaSbbOQbJuFsG0BI8sqRoniytxEYKglm+gl
+        5+cWJ5YU6+WllugVZG9iBIbh6RpNuR2MSy8lHmIU4GBU4uH9ue5JihBrYhlQ1yFGCQ5mJRFe
+        6e8PU4R4UxIrq1KL8uOLSnNSiw8xSnOwKInz2go9SxYSSE8sSc1OTS1ILYLJMnFwSjUw9h9n
+        Pzaz3+OKo5jp5f+MPYnK+QoS3t9XCv2ep5dwYmn2qv+/znLbhP4t3czDfC9r5uHN4c4b/bnS
+        2Z6Z/30T1q6UHWSi4ltSWqi16u0Bnk8dnolnfyserVE+H/KlnFt6zlPBglbl9Xo8v6/3zRBc
+        opfg1DkloK2j/j3zo+3xPCk/T4lczl2lxFKckWioxVxUnAgAEE1pKz8CAAA=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, Aug 20, 2023 at 11:41:18AM +0200, Julius Zint wrote:
-> The HID spec defines the following Usage IDs (p. 345 ff):
->
-> - Monitor Page (0x80) -> Monitor Control (0x01)
-> - VESA Virtual Controls Page (0x82) -> Brightness (0x10)
->
-> Apple made use of them in their Apple Studio Display and most likely on
-> other external displays (LG UltraFine 5k, Pro Display XDR).
->
-> The driver will work for any HID device with a report, where the
-> application matches the Monitor Control Usage ID and:
->
-> 1. An Input field in this report with the Brightness Usage ID (to get
->    the current brightness)
-> 2. A Feature field in this report with the Brightness Usage ID (to
->    set the current brightness)
->
-> This driver has been developed and tested with the Apple Studio Display.
-> Here is a small excerpt from the decoded HID descriptor showing the
-> feature field for setting the brightness:
->
->   Usage Page (Monitor VESA VCP),  ; Monitor VESA VPC (82h, monitor page)
->   Usage (10h, Brightness),
->   Logical Minimum (400),
->   Logical Maximum (60000),
->   Unit (Centimeter^-2 * Candela),
->   Unit Exponent (14),
->   Report Size (32),
->   Report Count (1),
->   Feature (Variable, Null State),
->
-> The full HID descriptor dump is available as a comment in the source
-> code.
->
-> Signed-off-by: Julius Zint <julius@zint.sh>
+Re; Interest,
 
-I saw Christophe's review (thanks) and won't repeat anything from
-there...
+I am interested in discussing the Investment proposal as I explained
+in my previous mail. May you let me know your interest and the
+possibility of a cooperation aimed for mutual interest.
 
-> @@ -472,6 +472,14 @@ config BACKLIGHT_LED
->  	  If you have a LCD backlight adjustable by LED class driver, say Y
->  	  to enable this driver.
->
-> +config BACKLIGHT_HID
-> +	tristate "VESA VCP HID Backlight Driver"
-> +	depends on HID
-> +	help
-> +	  If you have an external display with VESA compliant HID brightness
-> +	  controls then say Y to enable this backlight driver. Currently the
-> +	  only supported device is the Apple Studio Display.
+Looking forward to your mail for further discussion.
 
-This contradicts the description which says you write the driver to the
-standard but only tested on Apple Studio Display. There is no need to
-spell what has been tested in the Kconfig text. Remove the final
-sentence!
+Regards
 
-> diff --git a/drivers/video/backlight/hid_bl.c b/drivers/video/backlight/hid_bl.c
-> new file mode 100644
-> index 000000000000..b40f8f412ee2
-> --- /dev/null
-> +++ b/drivers/video/backlight/hid_bl.c
-> <snip>
-> +static void hid_bl_remove(struct hid_device *hdev)
-> +{
-> +	struct backlight_device *bl;
-> +	struct hid_bl_data *data;
-> +
-> +	hid_dbg(hdev, "remove\n");
+------
+Chen Yun - Chairman of CREC
+China Railway Engineering Corporation - CRECG
+China Railway Plaza, No.69 Fuxing Road, Haidian District, Beijing, P.R.
+China
 
-This message probably should be removed (if you want to know if a function was
-executed use ftrace).
-
-
-> +	bl = hid_get_drvdata(hdev);
-> +	data = bl_get_data(bl);
-> +
-> +	devm_backlight_device_unregister(&hdev->dev, bl);
-> +	hid_hw_close(hdev);
-> +	hid_hw_stop(hdev);
-> +	hid_set_drvdata(hdev, NULL);
-> +	devm_kfree(&hdev->dev, data);
-> +}
-> +
-> +static int hid_bl_get_brightness_raw(struct hid_bl_data *data)
-> +{
-> +	struct hid_field *field;
-> +	int result;
-> +
-> +	field = data->input_field;
-> +	hid_hw_request(data->hdev, field->report, HID_REQ_GET_REPORT);
-> +	hid_hw_wait(data->hdev);
-> +	result = *field->new_value;
-> +	hid_dbg(data->hdev, "get brightness: %d\n", result);
-
-To be honest I'm a little dubious about *all* the hid_dbg() calls. They
-add very little value (e.g. they are useful to get the driver working
-but not that important to keeping it working). As such I don't think
-they are worth the clutter in a CONFIG_DYNAMIC_DEBUG kernel.
-
-Note this is strictly for the hid_dbg() stuff... the hid_err() stuff in
-the probe error paths are much more useful!
-
-
-Daniel.

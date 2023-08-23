@@ -2,79 +2,178 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0F35EE49AD
-	for <linux-fbdev@archiver.kernel.org>; Wed, 23 Aug 2023 01:41:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B13AEE49AB
+	for <linux-fbdev@archiver.kernel.org>; Wed, 23 Aug 2023 07:22:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232071AbjHWBle (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 22 Aug 2023 21:41:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52306 "EHLO
+        id S233228AbjHWHWN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 23 Aug 2023 03:22:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43212 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230403AbjHWBld (ORCPT
+        with ESMTP id S229920AbjHWHWN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 22 Aug 2023 21:41:33 -0400
-X-Greylist: delayed 919 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 22 Aug 2023 18:41:31 PDT
-Received: from symantec4.comsats.net.pk (symantec4.comsats.net.pk [203.124.41.30])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8105AE46
-        for <linux-fbdev@vger.kernel.org>; Tue, 22 Aug 2023 18:41:31 -0700 (PDT)
-X-AuditID: cb7c291e-055ff70000002aeb-56-64e54b4b91a5
-Received: from iesco.comsatshosting.com (iesco.comsatshosting.com [210.56.28.11])
-        (using TLS with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
-        (Client did not present a certificate)
-        by symantec4.comsats.net.pk (Symantec Messaging Gateway) with SMTP id D9.6B.10987.B4B45E46; Wed, 23 Aug 2023 04:56:59 +0500 (PKT)
-DomainKey-Signature: a=rsa-sha1; c=nofws; q=dns;
-        d=iesco.com.pk; s=default;
-        h=received:content-type:mime-version:content-transfer-encoding
-          :content-description:subject:to:from:date:reply-to;
-        b=BUUo/eblhpGo9jIDNvw1fRygYNSxZoTbfHKPOEQmnpdTZfsox1zWw0P++1oorvFD6
-          0XhAVcnbMUKH7xNyqA8NJ7Sb2latrxeEge9djAT/URAOjslbtRzEP0qUBLrDTW9pM
-          Bfi7d64g9KUt7PgQOYbS1DFkpzpaCExtpwcOyh9ok=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=iesco.com.pk; s=default;
-        h=reply-to:date:from:to:subject:content-description
-          :content-transfer-encoding:mime-version:content-type;
-        bh=GMzYzcyTxDsE6wX/XHG6MHqAdAiHrhqbmmLQ/TZ1QnQ=;
-        b=KHUgKSDPJzYzEvPJQwEM1Smoj0MBMbuRGN5o8ZWjEkYSdol+z6/6AfX6TWNXIlqjv
-          pMZTKrFf2O0zy3BVijL+LPvRYJOHxwDi8IXAE8CUqg7zeydti6rNYBsaSjPlAAxMt
-          shUFQgbfUd8sfygxy94L5c8XQAl75a2KX7N28P+u8=
-Received: from [94.156.6.90] (UnknownHost [94.156.6.90]) by iesco.comsatshosting.com with SMTP;
-   Wed, 23 Aug 2023 04:31:00 +0500
-Message-ID: <D9.6B.10987.B4B45E46@symantec4.comsats.net.pk>
-Content-Type: text/plain; charset="iso-8859-1"
+        Wed, 23 Aug 2023 03:22:13 -0400
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2411ADB
+        for <linux-fbdev@vger.kernel.org>; Wed, 23 Aug 2023 00:22:11 -0700 (PDT)
+Received: from kwepemi500008.china.huawei.com (unknown [172.30.72.54])
+        by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4RVyKy4PQQzrSgM;
+        Wed, 23 Aug 2023 15:20:38 +0800 (CST)
+Received: from huawei.com (10.90.53.73) by kwepemi500008.china.huawei.com
+ (7.221.188.139) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.31; Wed, 23 Aug
+ 2023 15:22:08 +0800
+From:   Jinjie Ruan <ruanjinjie@huawei.com>
+To:     <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
+        <tzimmermann@suse.de>, <sam@ravnborg.org>, <javierm@redhat.com>,
+        <syoshida@redhat.com>, Daniel Vetter <daniel@ffwll.ch>,
+        Helge Deller <deller@gmx.de>
+CC:     <ruanjinjie@huawei.com>
+Subject: [PATCH -next] fbdev/core: Use list_for_each_entry() helper
+Date:   Wed, 23 Aug 2023 15:21:49 +0800
+Message-ID: <20230823072150.451189-1-ruanjinjie@huawei.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Description: Mail message body
-Subject: Re; Interest,
-To:     linux-fbdev@vger.kernel.org
-From:   "Chen Yun" <pso.chairmanbod@iesco.com.pk>
-Date:   Tue, 22 Aug 2023 16:31:14 -0700
-Reply-To: chnyne@gmail.com
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrDLMWRmVeSWpSXmKPExsVyyUKGW9fb+2mKwYFdShYn+j6wOjB6fN4k
-        F8AYxWWTkpqTWZZapG+XwJWxZN0FloLdzBVt/YtYGhgfM3UxcnJICJhI3N/WydjFyMUhJLCH
-        SeL/o3NgCRaB1cwSn9fmgyRYBB4yS8y49J8VoqqZUWL29tWMIFW8AtYSvzbMYgaxmQX0JG5M
-        ncIGEReUODnzCQtEXFti2cLXQDUcQLaaxNeuEpCwsICYxKdpy9hBbBEBeYk9/e1gi9kE9CVW
-        fG1mhDhCVWLdhptgtpCAlMTGK+vZJjDyz0KybRaSbbOQbJuFsG0BI8sqRoniytxEYKglm+gl
-        5+cWJ5YU6+WllugVZG9iBIbh6RpNuR2MSy8lHmIU4GBU4uH9ue5JihBrYhlQ1yFGCQ5mJRFe
-        6e8PU4R4UxIrq1KL8uOLSnNSiw8xSnOwKInz2go9SxYSSE8sSc1OTS1ILYLJMnFwSjUw9h9n
-        Pzaz3+OKo5jp5f+MPYnK+QoS3t9XCv2ep5dwYmn2qv+/znLbhP4t3czDfC9r5uHN4c4b/bnS
-        2Z6Z/30T1q6UHWSi4ltSWqi16u0Bnk8dnolnfyserVE+H/KlnFt6zlPBglbl9Xo8v6/3zRBc
-        opfg1DkloK2j/j3zo+3xPCk/T4lczl2lxFKckWioxVxUnAgAEE1pKz8CAAA=
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.90.53.73]
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
+ kwepemi500008.china.huawei.com (7.221.188.139)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Re; Interest,
+Convert list_for_each() to list_for_each_entry() so that the pos
+list_head pointer and list_entry() call are no longer needed, which
+can reduce a few lines of code. No functional changed.
 
-I am interested in discussing the Investment proposal as I explained
-in my previous mail. May you let me know your interest and the
-possibility of a cooperation aimed for mutual interest.
+Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+---
+ drivers/video/fbdev/core/fbsysfs.c |  8 ++------
+ drivers/video/fbdev/core/modedb.c  | 22 +++++-----------------
+ 2 files changed, 7 insertions(+), 23 deletions(-)
 
-Looking forward to your mail for further discussion.
-
-Regards
-
-------
-Chen Yun - Chairman of CREC
-China Railway Engineering Corporation - CRECG
-China Railway Plaza, No.69 Fuxing Road, Haidian District, Beijing, P.R.
-China
+diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
+index fafe574398b0..1b3c9958ef5c 100644
+--- a/drivers/video/fbdev/core/fbsysfs.c
++++ b/drivers/video/fbdev/core/fbsysfs.c
+@@ -61,14 +61,12 @@ static ssize_t store_mode(struct device *device, struct device_attribute *attr,
+ 	struct fb_var_screeninfo var;
+ 	struct fb_modelist *modelist;
+ 	struct fb_videomode *mode;
+-	struct list_head *pos;
+ 	size_t i;
+ 	int err;
+ 
+ 	memset(&var, 0, sizeof(var));
+ 
+-	list_for_each(pos, &fb_info->modelist) {
+-		modelist = list_entry(pos, struct fb_modelist, list);
++	list_for_each_entry(modelist, &fb_info->modelist, list) {
+ 		mode = &modelist->mode;
+ 		i = mode_string(mstr, 0, mode);
+ 		if (strncmp(mstr, buf, max(count, i)) == 0) {
+@@ -129,13 +127,11 @@ static ssize_t show_modes(struct device *device, struct device_attribute *attr,
+ {
+ 	struct fb_info *fb_info = dev_get_drvdata(device);
+ 	unsigned int i;
+-	struct list_head *pos;
+ 	struct fb_modelist *modelist;
+ 	const struct fb_videomode *mode;
+ 
+ 	i = 0;
+-	list_for_each(pos, &fb_info->modelist) {
+-		modelist = list_entry(pos, struct fb_modelist, list);
++	list_for_each_entry(modelist, &fb_info->modelist, list) {
+ 		mode = &modelist->mode;
+ 		i += mode_string(buf, i, mode);
+ 	}
+diff --git a/drivers/video/fbdev/core/modedb.c b/drivers/video/fbdev/core/modedb.c
+index f7e019dded0f..7196b055f2bd 100644
+--- a/drivers/video/fbdev/core/modedb.c
++++ b/drivers/video/fbdev/core/modedb.c
+@@ -963,15 +963,12 @@ int fb_mode_is_equal(const struct fb_videomode *mode1,
+ const struct fb_videomode *fb_find_best_mode(const struct fb_var_screeninfo *var,
+ 					     struct list_head *head)
+ {
+-	struct list_head *pos;
+ 	struct fb_modelist *modelist;
+ 	struct fb_videomode *mode, *best = NULL;
+ 	u32 diff = -1;
+ 
+-	list_for_each(pos, head) {
++	list_for_each_entry(modelist, head, list) {
+ 		u32 d;
+-
+-		modelist = list_entry(pos, struct fb_modelist, list);
+ 		mode = &modelist->mode;
+ 
+ 		if (mode->xres >= var->xres && mode->yres >= var->yres) {
+@@ -1001,15 +998,12 @@ const struct fb_videomode *fb_find_best_mode(const struct fb_var_screeninfo *var
+ const struct fb_videomode *fb_find_nearest_mode(const struct fb_videomode *mode,
+ 					        struct list_head *head)
+ {
+-	struct list_head *pos;
+ 	struct fb_modelist *modelist;
+ 	struct fb_videomode *cmode, *best = NULL;
+ 	u32 diff = -1, diff_refresh = -1;
+ 
+-	list_for_each(pos, head) {
++	list_for_each_entry(modelist, head, list) {
+ 		u32 d;
+-
+-		modelist = list_entry(pos, struct fb_modelist, list);
+ 		cmode = &modelist->mode;
+ 
+ 		d = abs(cmode->xres - mode->xres) +
+@@ -1041,13 +1035,11 @@ const struct fb_videomode *fb_find_nearest_mode(const struct fb_videomode *mode,
+ const struct fb_videomode *fb_match_mode(const struct fb_var_screeninfo *var,
+ 					 struct list_head *head)
+ {
+-	struct list_head *pos;
+ 	struct fb_modelist *modelist;
+ 	struct fb_videomode *m, mode;
+ 
+ 	fb_var_to_videomode(&mode, var);
+-	list_for_each(pos, head) {
+-		modelist = list_entry(pos, struct fb_modelist, list);
++	list_for_each_entry(modelist, head, list) {
+ 		m = &modelist->mode;
+ 		if (fb_mode_is_equal(m, &mode))
+ 			return m;
+@@ -1065,13 +1057,11 @@ const struct fb_videomode *fb_match_mode(const struct fb_var_screeninfo *var,
+  */
+ int fb_add_videomode(const struct fb_videomode *mode, struct list_head *head)
+ {
+-	struct list_head *pos;
+ 	struct fb_modelist *modelist;
+ 	struct fb_videomode *m;
+ 	int found = 0;
+ 
+-	list_for_each(pos, head) {
+-		modelist = list_entry(pos, struct fb_modelist, list);
++	list_for_each_entry(modelist, head, list) {
+ 		m = &modelist->mode;
+ 		if (fb_mode_is_equal(m, mode)) {
+ 			found = 1;
+@@ -1152,7 +1142,6 @@ void fb_videomode_to_modelist(const struct fb_videomode *modedb, int num,
+ const struct fb_videomode *fb_find_best_display(const struct fb_monspecs *specs,
+ 					        struct list_head *head)
+ {
+-	struct list_head *pos;
+ 	struct fb_modelist *modelist;
+ 	const struct fb_videomode *m, *m1 = NULL, *md = NULL, *best = NULL;
+ 	int first = 0;
+@@ -1161,8 +1150,7 @@ const struct fb_videomode *fb_find_best_display(const struct fb_monspecs *specs,
+ 		goto finished;
+ 
+ 	/* get the first detailed mode and the very first mode */
+-	list_for_each(pos, head) {
+-		modelist = list_entry(pos, struct fb_modelist, list);
++	list_for_each_entry(modelist, head, list) {
+ 		m = &modelist->mode;
+ 
+ 		if (!first) {
+-- 
+2.34.1
 

@@ -2,80 +2,134 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 696DBC3DA66
-	for <linux-fbdev@archiver.kernel.org>; Wed, 23 Aug 2023 20:27:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BFE18C71153
+	for <linux-fbdev@archiver.kernel.org>; Thu, 24 Aug 2023 17:46:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234733AbjHWU03 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 23 Aug 2023 16:26:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52456 "EHLO
+        id S229509AbjHXRp5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 24 Aug 2023 13:45:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41966 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236603AbjHWU0W (ORCPT
+        with ESMTP id S242850AbjHXRpp (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 23 Aug 2023 16:26:22 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B8271A5
-        for <linux-fbdev@vger.kernel.org>; Wed, 23 Aug 2023 13:26:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1692822360; x=1693427160; i=deller@gmx.de;
- bh=PhrGsHXGaQjIMk2bZf7/D8Uivx3B4otze2QEAyyNkds=;
- h=X-UI-Sender-Class:Date:Subject:To:References:From:In-Reply-To;
- b=F/x9+bQFRoQ+t4C+Z9PnO4tX9Ou852yHqFW6ec3/vWcW/JsjmxTHdl1hAPH1yHEUk5cQC5S
- kl46G6/0bYA+UODVrir/6AkCOuLn42LBuHW29e9wAX5InYqA+9xbs9KNcnMITJ9AXrGxR3m5s
- Ij2mAfRjJH/nXYtZsQvFb5OrdejkUBUlPG051T9HWCz1USUJY84tr89kC22iPrB2EivoElXe6
- kNQgs6+iGVdJ57Okyc9XgKqw0UU40f3EfDxB38GoJdTbi8CjiJnoS61/quDx06kiLeiAE+fw5
- gNzM/GMTipFzz4hlYqvcqjwliU9NYWy7l4/Sl9APnd+CuKt6H2bQ==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.150.103]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MYeMj-1qCXvP1kup-00Vhdv; Wed, 23
- Aug 2023 22:26:00 +0200
-Message-ID: <5f33d29a-f5c7-0d35-3327-e31a26e5c8b4@gmx.de>
-Date:   Wed, 23 Aug 2023 22:25:58 +0200
+        Thu, 24 Aug 2023 13:45:45 -0400
+X-Greylist: delayed 610 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 24 Aug 2023 10:45:40 PDT
+Received: from relay.yourmailgateway.de (relay.yourmailgateway.de [185.244.194.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85FF81BD8;
+        Thu, 24 Aug 2023 10:45:40 -0700 (PDT)
+Received: from relay01-mors.netcup.net (localhost [127.0.0.1])
+        by relay01-mors.netcup.net (Postfix) with ESMTPS id 4RWqwv29Mdz8xFh;
+        Thu, 24 Aug 2023 19:35:27 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=zint.sh; s=key2;
+        t=1692898527; bh=uDdCBJw05B5DvjBOJKfmweBC8bPeek5YyqTp773ZeBc=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=fBlbdGLUHouoJ0rPmcoiiKT5kiqFl27p/aSw5iUur1hopBm/A0AnW+YDAxtKsov5i
+         WcRQwJtdIW0m78hEJ8yb0pJtjv2iz/dT6QJtNPnhdQDi8b0sKw5XZ9q3ZSkq3nF+dT
+         4IOxQ26AZxYeurfq8Pe5JY37/hT0LV6k4bQBeGgyoXE/yVcX69E0ABervmirLdg/qD
+         N1kstyRNtRreGffHGN+5zxpeBA2WJHLXAmfoBwTE8tQ905Z2m5S/BMeXiZhjv3o8y7
+         eyQYRQuUg7hx3sfAOuTH4o/12XETX6joY5ewXVzmgMfAkP/A7b4RRSZWm4Uour4EjT
+         FVRqFC0C6+g2g==
+Received: from policy01-mors.netcup.net (unknown [46.38.225.35])
+        by relay01-mors.netcup.net (Postfix) with ESMTPS id 4RWqwv1VCnz7v9g;
+        Thu, 24 Aug 2023 19:35:27 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at policy01-mors.netcup.net
+Received: from mxe217.netcup.net (unknown [10.243.12.53])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by policy01-mors.netcup.net (Postfix) with ESMTPS id 4RWqwl2Q7Mz8sYl;
+        Thu, 24 Aug 2023 19:35:19 +0200 (CEST)
+Received: from [192.168.33.30] (p5dcce04c.dip0.t-ipconnect.de [93.204.224.76])
+        by mxe217.netcup.net (Postfix) with ESMTPSA id D5F5C81990;
+        Thu, 24 Aug 2023 19:35:04 +0200 (CEST)
+Message-ID: <1813ff8c-e192-4873-a22b-5ee48a6f9185@zint.sh>
+Date:   Thu, 24 Aug 2023 19:35:04 +0200
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH -next] fbdev/core: Use list_for_each_entry() helper
-Content-Language: en-US
-To:     Jinjie Ruan <ruanjinjie@huawei.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, tzimmermann@suse.de,
-        sam@ravnborg.org, javierm@redhat.com, syoshida@redhat.com,
-        Daniel Vetter <daniel@ffwll.ch>
-References: <20230823072150.451189-1-ruanjinjie@huawei.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20230823072150.451189-1-ruanjinjie@huawei.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 1/1] backlight: hid_bl: Add VESA VCP HID backlight
+ driver
+Content-Language: de-DE, en-US
+To:     Daniel Thompson <daniel.thompson@linaro.org>
+Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        Jiri Kosina <jikos@kernel.org>,
+        Benjamin Tissoires <benjamin.tissoires@redhat.com>,
+        Helge Deller <deller@gmx.de>,
+        =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas@t-8ch.de>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-input@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <20230820094118.20521-1-julius@zint.sh>
+ <20230820094118.20521-2-julius@zint.sh> <20230821163631.GA214013@aspen.lan>
+From:   Julius Zint <julius@zint.sh>
+In-Reply-To: <20230821163631.GA214013@aspen.lan>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:keMXXUzzlqo3L2Az8U9hj7+vLEJYcKnOamLDCYZ0Fj7RsN4JojE
- 7xDZ0W7Ggx/V/6QCcUWR/ofbsIgOvepYfEGa0jH0L0lhcFOjULbWGoWFOS7EVvCbzvYa3/G
- C/jNl2iiqwDUgqh1hMxYVF8gdmhQ7/vqe0AD7ilUnLpduecUFTjPUrT2t/A73vZ30e2Udui
- FjuMZvt/XpPCMyI+iAArA==
-UI-OutboundReport: notjunk:1;M01:P0:aj2K7ii9Gug=;dJtgR652gOPsH0WQ6OPzKL6LCs0
- 5pZVzBXyGsHmCsSvokUOPmV+iSQsf8ECfntkYmDBMtnHatZrtjKpSX4WMJsKtBgcD5KJvbPuM
- nbDySfbe0UEnXZRbIPBzlcjsj5WxvUGbsfq9MbFXA8gy8/QJJzijDSHgECUzN/UbFiRJ6OXWf
- mwlXLXKdWzyzkHKFJ55jVXrfPHyL+yTlqq+p1rBomt0FQMhdqspXRGSextzFlJNYdo8Ibtsvx
- JZliboNWiTW67Drh146dgSZh2LyhtN4VWJju2Pr4t1AygLpToHh4PVtZCr5q/Mrr1GFlijmKp
- l7Jv7Aig2OrrKE8wNIqc7GSOT3AZ7vgXaSwHjVhSsNiI5L3mEqm2WB+zcQYI4bae0Udxu+rTo
- IdSmi26PyL44yxNeOvA9nWwqA2ZogK9dwxz8gMIXdAk9lkhii4GdqgpSTMijv5q2DSA1aRPs8
- 1ka7tUVry5qkwf4Kh/B6NIa4xm/nKvfUkhCF6IO09C2hBaDD8pNUa58whX1D3RjMY+eXej9oN
- QRRYCnxmwVilLBXfq0w+NEOUW4dTlHj0Dqn/LTIsg721QlZfo7J5Y06pKgn0yeKw4ft6eZOdG
- ThcPjGVu7y4tyvmOrfWHzpLeGTUtnPhAPaIkOrVCCkPBXbcpf5X4djaNnJgwYD8tqsPL+1JQ7
- ZSTvRWuzDQvuNfkSrB1TNKVGKEnT++3qz24XksWK0tXCnNJq3Fmz4ehmQLqP1ItP6G7kUkWbw
- zAQflomM2zkkhSBrnUdXayM+9cksjY4BB9srV976en6nAFDgquJ//PXr3s7lsmIFRLlkrw7Lq
- XyvjiNopfPZhIqHg9KH526Fc2SPB25Xc6I6ewsbMtIsZZp30hVrrTV7GD9u/OJV7oYaqGt5gi
- 5oqpWkE8zLLge/vPqVVLp+OGc0phSV1Fn5yz4cdKfPS8+zdaT3hVbuUBIQGcMOxtQlMfX07GL
- JVuCrQ==
+Content-Transfer-Encoding: 7bit
+X-Rspamd-Queue-Id: D5F5C81990
+X-Rspamd-Server: rspamd-worker-8404
+X-NC-CID: MAl9D4VvBFNVUZn19yuNCMkWaMu7XFKNF+zKd+WI
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 8/23/23 09:21, Jinjie Ruan wrote:
-> Convert list_for_each() to list_for_each_entry() so that the pos
-> list_head pointer and list_entry() call are no longer needed, which
-> can reduce a few lines of code. No functional changed.
+On 21.08.23 18:36, Daniel Thompson wrote:
+>> @@ -472,6 +472,14 @@ config BACKLIGHT_LED
+>>   	  If you have a LCD backlight adjustable by LED class driver, say Y
+>>   	  to enable this driver.
+>>
+>> +config BACKLIGHT_HID
+>> +	tristate "VESA VCP HID Backlight Driver"
+>> +	depends on HID
+>> +	help
+>> +	  If you have an external display with VESA compliant HID brightness
+>> +	  controls then say Y to enable this backlight driver. Currently the
+>> +	  only supported device is the Apple Studio Display.
+> This contradicts the description which says you write the driver to the
+> standard but only tested on Apple Studio Display. There is no need to
+> spell what has been tested in the Kconfig text. Remove the final
+> sentence!
+Will remove it in v4.
+>> diff --git a/drivers/video/backlight/hid_bl.c b/drivers/video/backlight/hid_bl.c
+>> new file mode 100644
+>> index 000000000000..b40f8f412ee2
+>> --- /dev/null
+>> +++ b/drivers/video/backlight/hid_bl.c
+>> <snip>
+>> +static void hid_bl_remove(struct hid_device *hdev)
+>> +{
+>> +	struct backlight_device *bl;
+>> +	struct hid_bl_data *data;
+>> +
+>> +	hid_dbg(hdev, "remove\n");
+> This message probably should be removed (if you want to know if a function was
+> executed use ftrace).
 >
-> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+>
+>> +	bl = hid_get_drvdata(hdev);
+>> +	data = bl_get_data(bl);
+>> +
+>> +	devm_backlight_device_unregister(&hdev->dev, bl);
+>> +	hid_hw_close(hdev);
+>> +	hid_hw_stop(hdev);
+>> +	hid_set_drvdata(hdev, NULL);
+>> +	devm_kfree(&hdev->dev, data);
+>> +}
+>> +
+>> +static int hid_bl_get_brightness_raw(struct hid_bl_data *data)
+>> +{
+>> +	struct hid_field *field;
+>> +	int result;
+>> +
+>> +	field = data->input_field;
+>> +	hid_hw_request(data->hdev, field->report, HID_REQ_GET_REPORT);
+>> +	hid_hw_wait(data->hdev);
+>> +	result = *field->new_value;
+>> +	hid_dbg(data->hdev, "get brightness: %d\n", result);
+> To be honest I'm a little dubious about *all* the hid_dbg() calls. They
+> add very little value (e.g. they are useful to get the driver working
+> but not that important to keeping it working). As such I don't think
+> they are worth the clutter in a CONFIG_DYNAMIC_DEBUG kernel.
+>
+> Note this is strictly for the hid_dbg() stuff... the hid_err() stuff in
+> the probe error paths are much more useful!
+You are right, I will remove all hid_dbg calls in v4.
 
-applied.
+Thank you very much for the review.
 
-Thanks!
-Helge
-
+Julius

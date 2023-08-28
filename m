@@ -2,64 +2,105 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0B36C83F18
-	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Aug 2023 12:19:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4615CC83F11
+	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Aug 2023 13:22:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231441AbjH1MTC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 28 Aug 2023 08:19:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45144 "EHLO
+        id S231264AbjH1NWC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 28 Aug 2023 09:22:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53396 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230092AbjH1MSb (ORCPT
+        with ESMTP id S231642AbjH1NVj (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 28 Aug 2023 08:18:31 -0400
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D550BEA;
-        Mon, 28 Aug 2023 05:18:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=ve4BHXYYDtHmo8gKLNw/Y51LgqpTIonHiBSys2mOFvE=; b=YPhPLM4VvUMqhydvfSNnt3IVIo
-        NF6Vq7yPJcJOISvvC4reeQp3n1ILZOteFy3C8qgXMu4BN5F+3Ea5qT5OQQzKjL5vvxaF+OeuArG4/
-        9gcwlmXRv0MRBTaMxcRLKff80PQlGThqLFVyU3UU8e1RtbDQ0Rh7Iy1P7qQiz28L2FawNSPOuin+n
-        WmjOTHU6a13xRi2ppuVNSsD4Yv/Px1AQcCDqjtRQlyxj38R2gS711V7U+aQIqdfVf7OjwRA4MrYiY
-        QQG/IITuIyF6/xLNZ0cI7vhTTlAe7bcUD/i/7EFI5RN69Qp51h1s9P2mRnYh44ewIkXIDkMgD1kBV
-        bYvHDEww==;
-Received: from willy by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1qabBw-000BZW-FS; Mon, 28 Aug 2023 12:18:00 +0000
-Date:   Mon, 28 Aug 2023 13:18:00 +0100
-From:   Matthew Wilcox <willy@infradead.org>
-To:     Xueshi Hu <xueshi.hu@smartx.com>
-Cc:     hch@infradead.org, dan.j.williams@intel.com,
-        vishal.l.verma@intel.com, dave.jiang@intel.com,
-        jayalk@intworks.biz, daniel@ffwll.ch, deller@gmx.de,
-        bcrl@kvack.org, viro@zeniv.linux.org.uk, brauner@kernel.org,
-        jack@suse.com, tytso@mit.edu, adilger.kernel@dilger.ca,
-        miklos@szeredi.hu, mike.kravetz@oracle.com, muchun.song@linux.dev,
-        djwong@kernel.org, akpm@linux-foundation.org, hughd@google.com,
-        nvdimm@lists.linux.dev, linux-cxl@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-aio@kvack.org,
-        linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
-        linux-mm@kvack.org, linux-xfs@vger.kernel.org
-Subject: Re: [PATCH v2] fs: clean up usage of noop_dirty_folio
-Message-ID: <ZOyQePmvT6LaJst+@casper.infradead.org>
-References: <20230828075449.262510-1-xueshi.hu@smartx.com>
+        Mon, 28 Aug 2023 09:21:39 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A48D4124;
+        Mon, 28 Aug 2023 06:21:36 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 0C0C8219E6;
+        Mon, 28 Aug 2023 13:21:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1693228895; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=pnwZ65nZK9qeQ06lv/Mt+cgcaEzXDu6AFEyAEI4AnZk=;
+        b=fPBDEz9qgFehf6BuZhp2iHjeAXo/bJTGn1MR05cIllGWQEwYt12OohQ7V/SV5rPR3DRSgS
+        +D+xZOWIOPYd5gMN9NtONvBFEh8OoNGl25Uvy02zsnXSDCv2DVVB67QOgcZnp3qmoyQWgs
+        L5SEUTRtXCtetol+ZjGd5hSUQQiXIxY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1693228895;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=pnwZ65nZK9qeQ06lv/Mt+cgcaEzXDu6AFEyAEI4AnZk=;
+        b=wGiy3UgLSj9rxu9VhhXasfT7LMsu/Be88DValn/yjpnAOHvrGmKm0T6IVTQzl+NB5CHtUL
+        GuLsL4b/7iaRxtDA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C699213A11;
+        Mon, 28 Aug 2023 13:21:34 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id Mx11L16f7GTyOAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 28 Aug 2023 13:21:34 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     deller@gmx.de, daniel@ffwll.ch, sam@ravnborg.org,
+        javierm@redhat.com
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-staging@lists.linux.dev, linux-hyperv@vger.kernel.org,
+        linux-input@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 0/8] fbdev: Use helpers for deferred I/O
+Date:   Mon, 28 Aug 2023 15:14:16 +0200
+Message-ID: <20230828132131.29295-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230828075449.262510-1-xueshi.hu@smartx.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Aug 28, 2023 at 03:54:49PM +0800, Xueshi Hu wrote:
-> In folio_mark_dirty(), it can automatically fallback to
-> noop_dirty_folio() if a_ops->dirty_folio is not registered.
-> 
-> As anon_aops, dev_dax_aops and fb_deferred_io_aops becames empty, remove
-> them too.
-> 
-> Signed-off-by: Xueshi Hu <xueshi.hu@smartx.com>
+Here's another patchset for deferred-I/O helpers. Update a number
+of fbdev drivers with deferred I/O to use fbdev's helper macros and
+Kconfig tokens.
 
-Reviewed-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+Generating and initializing via helpers macros will later allow for
+a fine-grained setup, depending on Kconfig options. For example, it
+will be possible to leave out file I/O if FB_DEVICE has not been set.
+
+Each driver in special in its own way. The smscufx and udlfb drivers
+support file I/O without damage updates. (That probably doesn't work
+correctly.) So they provide their own mmap code. The hyperv_fb driver
+sometimes operates on memory in I/O address spaces and fails to do
+damage handling correctly for write operations. The picolcd and fbtft
+drivers are outside of fbdev.
+
+Thomas Zimmermann (8):
+  fbdev/smscufx: Use fb_ops helpers for deferred I/O
+  fbdev/udlfb: Use fb_ops helpers for deferred I/O
+  fbdev: Add Kconfig macro FB_IOMEM_HELPERS_DEFERRED
+  fbdev/hyperv_fb: Use fb_ops helpers for deferred I/O
+  hid: Remove trailing whitespace
+  hid/picolcd: Use fb_ops helpers for deferred I/O
+  staging/fbtft: Initialize fb_op struct as static const
+  staging/fbtft: Use fb_ops helpers for deferred I/O
+
+ drivers/hid/Kconfig                |  8 +--
+ drivers/hid/hid-picolcd_fb.c       | 73 ++++++----------------
+ drivers/staging/fbtft/Kconfig      |  6 +-
+ drivers/staging/fbtft/fbtft-core.c | 99 ++++++++----------------------
+ drivers/video/fbdev/Kconfig        |  5 +-
+ drivers/video/fbdev/core/Kconfig   |  6 ++
+ drivers/video/fbdev/hyperv_fb.c    | 48 +++++----------
+ drivers/video/fbdev/smscufx.c      | 85 +++++++------------------
+ drivers/video/fbdev/udlfb.c        | 89 +++++++--------------------
+ 9 files changed, 114 insertions(+), 305 deletions(-)
+
+-- 
+2.41.0
+

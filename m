@@ -2,206 +2,82 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33CF6C83F27
-	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Aug 2023 13:22:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D58AFC83F17
+	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Aug 2023 14:44:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231635AbjH1NWJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 28 Aug 2023 09:22:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53396 "EHLO
+        id S229525AbjH1Oni (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 28 Aug 2023 10:43:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60748 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231668AbjH1NVn (ORCPT
+        with ESMTP id S231808AbjH1OnP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 28 Aug 2023 09:21:43 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 77B66127;
-        Mon, 28 Aug 2023 06:21:39 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 2FD1E1FD70;
-        Mon, 28 Aug 2023 13:21:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1693228897; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=sgOkmwaDCdX79FmTrsLWYaG//CQZqP82TAKVwlCr3kE=;
-        b=yJIeQCFZ5kxm42rvYFBC2mg/Agu2SjPDBWMbH0l+pt46A9w1JxMIjPqRIwRnm9GKjKl7Ri
-        5rRDptoQdRHk8aWVia5LWVCZWq2alkQ10cD4YurQoJsIe/cutOpGN7YYJvaufHd1HWpjEw
-        Zj0tUAy8aonb3ZsAmPzFj0ME1ih+noE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1693228897;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=sgOkmwaDCdX79FmTrsLWYaG//CQZqP82TAKVwlCr3kE=;
-        b=xMEU56P0grfJ7Jfc/22p7IuYcN+j9uk08jxvGCNY90JIoMIR7PcXh6pGJGTfbLp8Eziya8
-        pa2Z/xXPO21yrKDQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id EF36F13A1C;
-        Mon, 28 Aug 2023 13:21:36 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id iN98OWCf7GTyOAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 28 Aug 2023 13:21:36 +0000
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-To:     deller@gmx.de, daniel@ffwll.ch, sam@ravnborg.org,
-        javierm@redhat.com
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-staging@lists.linux.dev, linux-hyperv@vger.kernel.org,
-        linux-input@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 8/8] staging/fbtft: Use fb_ops helpers for deferred I/O
-Date:   Mon, 28 Aug 2023 15:14:24 +0200
-Message-ID: <20230828132131.29295-9-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230828132131.29295-1-tzimmermann@suse.de>
-References: <20230828132131.29295-1-tzimmermann@suse.de>
+        Mon, 28 Aug 2023 10:43:15 -0400
+Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C63710A;
+        Mon, 28 Aug 2023 07:43:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=linux.org.uk; s=zeniv-20220401; h=Sender:In-Reply-To:Content-Type:
+        MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=fitMFjTe7UlzOJPHkx2hghZeQ5bjBzNc1l5zMQdyLCI=; b=gUZNSERn182ydlMmD/JGiKZEsk
+        OgLplGeOv9vuS9OA35h0aZ/IJvVVfJYA16NlznwAcJA1w9FpMTvQS7V139nKFCrrrZQVPptZW1Qnh
+        NlrtaWY/AJACSI4Kt7OkQtm136BUQbytcXlI1DESQcEcKTQOF5yaAh/drfTjfw19mNNEA5xwfSgHe
+        0BK4iM+Zmjh56/cqY3a2K7nBtryKUbD911r9z6wCXSRIUyA/UBBwxH86i7PeNcYMilqluP9xV6Zfc
+        W/F3EDXvuA+TnyWLXwrAAsHLhDWLLd7vBqiildb/I0VtP2zlFjxC3ArtVa0CxBf7pI91HwBNsB6yE
+        2vzIhf5A==;
+Received: from viro by zeniv.linux.org.uk with local (Exim 4.96 #2 (Red Hat Linux))
+        id 1qadRy-001a4j-36;
+        Mon, 28 Aug 2023 14:42:43 +0000
+Date:   Mon, 28 Aug 2023 15:42:42 +0100
+From:   Al Viro <viro@zeniv.linux.org.uk>
+To:     Xueshi Hu <xueshi.hu@smartx.com>
+Cc:     hch@infradead.org, dan.j.williams@intel.com,
+        vishal.l.verma@intel.com, dave.jiang@intel.com,
+        jayalk@intworks.biz, daniel@ffwll.ch, deller@gmx.de,
+        bcrl@kvack.org, brauner@kernel.org, jack@suse.com, tytso@mit.edu,
+        adilger.kernel@dilger.ca, miklos@szeredi.hu,
+        mike.kravetz@oracle.com, muchun.song@linux.dev, djwong@kernel.org,
+        willy@infradead.org, akpm@linux-foundation.org, hughd@google.com,
+        nvdimm@lists.linux.dev, linux-cxl@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-aio@kvack.org,
+        linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
+        linux-mm@kvack.org, linux-xfs@vger.kernel.org
+Subject: Re: [PATCH v2] fs: clean up usage of noop_dirty_folio
+Message-ID: <20230828144242.GZ3390869@ZenIV>
+References: <20230828075449.262510-1-xueshi.hu@smartx.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230828075449.262510-1-xueshi.hu@smartx.com>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Generate callback functions for struct fb_ops with the fbdev macro
-FB_GEN_DEFAULT_DEFERRED_SYSMEM_OPS(). Initialize struct fb_ops to
-the generated functions with an fbdev initializer macro.
+On Mon, Aug 28, 2023 at 03:54:49PM +0800, Xueshi Hu wrote:
+> In folio_mark_dirty(), it can automatically fallback to
+> noop_dirty_folio() if a_ops->dirty_folio is not registered.
+> 
+> As anon_aops, dev_dax_aops and fb_deferred_io_aops becames empty, remove
+> them too.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- drivers/staging/fbtft/Kconfig      |  6 +--
- drivers/staging/fbtft/fbtft-core.c | 87 ++++++++----------------------
- 2 files changed, 24 insertions(+), 69 deletions(-)
+I'd put the last sentence as 'In dev_dax_aops and fb_deferred_io_aops replacing
+.dirty_folio with NULL makes them identical to default (empty_aops) and since
+we never compare ->a_ops pointer with either of those, we can remove them
+completely'.
 
-diff --git a/drivers/staging/fbtft/Kconfig b/drivers/staging/fbtft/Kconfig
-index 5dda3c65a38e..77ab44362f16 100644
---- a/drivers/staging/fbtft/Kconfig
-+++ b/drivers/staging/fbtft/Kconfig
-@@ -4,12 +4,8 @@ menuconfig FB_TFT
- 	depends on FB && SPI
- 	depends on FB_DEVICE
- 	depends on GPIOLIB || COMPILE_TEST
--	select FB_SYS_FILLRECT
--	select FB_SYS_COPYAREA
--	select FB_SYS_IMAGEBLIT
--	select FB_SYS_FOPS
--	select FB_DEFERRED_IO
- 	select FB_BACKLIGHT
-+	select FB_SYSMEM_HELPERS_DEFERRED
- 
- config FB_TFT_AGM1264K_FL
- 	tristate "FB driver for the AGM1264K-FL LCD display"
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index e4a77a4e7be6..3626f429b002 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -357,61 +357,6 @@ static void fbtft_deferred_io(struct fb_info *info, struct list_head *pagereflis
- 					dirty_lines_start, dirty_lines_end);
- }
- 
--static void fbtft_fb_fillrect(struct fb_info *info,
--			      const struct fb_fillrect *rect)
--{
--	struct fbtft_par *par = info->par;
--
--	dev_dbg(info->dev,
--		"%s: dx=%d, dy=%d, width=%d, height=%d\n",
--		__func__, rect->dx, rect->dy, rect->width, rect->height);
--	sys_fillrect(info, rect);
--
--	par->fbtftops.mkdirty(info, rect->dy, rect->height);
--}
--
--static void fbtft_fb_copyarea(struct fb_info *info,
--			      const struct fb_copyarea *area)
--{
--	struct fbtft_par *par = info->par;
--
--	dev_dbg(info->dev,
--		"%s: dx=%d, dy=%d, width=%d, height=%d\n",
--		__func__,  area->dx, area->dy, area->width, area->height);
--	sys_copyarea(info, area);
--
--	par->fbtftops.mkdirty(info, area->dy, area->height);
--}
--
--static void fbtft_fb_imageblit(struct fb_info *info,
--			       const struct fb_image *image)
--{
--	struct fbtft_par *par = info->par;
--
--	dev_dbg(info->dev,
--		"%s: dx=%d, dy=%d, width=%d, height=%d\n",
--		__func__,  image->dx, image->dy, image->width, image->height);
--	sys_imageblit(info, image);
--
--	par->fbtftops.mkdirty(info, image->dy, image->height);
--}
--
--static ssize_t fbtft_fb_write(struct fb_info *info, const char __user *buf,
--			      size_t count, loff_t *ppos)
--{
--	struct fbtft_par *par = info->par;
--	ssize_t res;
--
--	dev_dbg(info->dev,
--		"%s: count=%zd, ppos=%llu\n", __func__,  count, *ppos);
--	res = fb_sys_write(info, buf, count, ppos);
--
--	/* TODO: only mark changed area update all for now */
--	par->fbtftops.mkdirty(info, -1, 0);
--
--	return res;
--}
--
- /* from pxafb.c */
- static unsigned int chan_to_field(unsigned int chan, struct fb_bitfield *bf)
- {
-@@ -473,16 +418,30 @@ static int fbtft_fb_blank(int blank, struct fb_info *info)
- 	return ret;
- }
- 
-+static void fbtft_ops_damage_range(struct fb_info *info, off_t off, size_t len)
-+{
-+	struct fbtft_par *par = info->par;
-+
-+	/* TODO: only mark changed area update all for now */
-+	par->fbtftops.mkdirty(info, -1, 0);
-+}
-+
-+static void fbtft_ops_damage_area(struct fb_info *info, u32 x, u32 y, u32 width, u32 height)
-+{
-+	struct fbtft_par *par = info->par;
-+
-+	par->fbtftops.mkdirty(info, y, height);
-+}
-+
-+FB_GEN_DEFAULT_DEFERRED_SYSMEM_OPS(fbtft_ops,
-+				   fbtft_ops_damage_range,
-+				   fbtft_ops_damage_area)
-+
- static const struct fb_ops fbtft_ops = {
--	.owner        = THIS_MODULE;
--	.fb_read      = fb_sys_read;
--	.fb_write     = fbtft_fb_write;
--	.fb_fillrect  = fbtft_fb_fillrect;
--	.fb_copyarea  = fbtft_fb_copyarea;
--	.fb_imageblit = fbtft_fb_imageblit;
--	.fb_setcolreg = fbtft_fb_setcolreg;
--	.fb_blank     = fbtft_fb_blank;
--	.fb_mmap      = fb_deferred_io_mmap;
-+	.owner        = THIS_MODULE,
-+	FB_DEFAULT_DEFERRED_OPS(fbtft_ops),
-+	.fb_setcolreg = fbtft_fb_setcolreg,
-+	.fb_blank     = fbtft_fb_blank,
- };
- 
- static void fbtft_merge_fbtftops(struct fbtft_ops *dst, struct fbtft_ops *src)
--- 
-2.41.0
+There could've been places like
+#define is_fb_deferred(mapping) (mapping)->a_ops == fb_deferred_io_aops
+and those would've been broken by that.  The fact that there's nothing
+of that sort in the tree ought to be mentioned in commit message.
 
+Note that we *do* have places where method table comparisons are used
+in predicates like that, so it's not a pure theory; sure, missing that
+would've probably ended up with broken build, but that can easily be
+dependent upon the config (and that, alas, is also not a pure theory -
+BTDT).  In this case the change is correct, fortunately...
+
+Other than that part of commit message -
+
+Acked-by: Al Viro <viro@zeniv.linux.org.uk>

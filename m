@@ -2,123 +2,110 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57A96C83F13
-	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Aug 2023 08:52:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A673C83F13
+	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Aug 2023 10:30:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229516AbjH1Ivt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 28 Aug 2023 04:51:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54796 "EHLO
+        id S231403AbjH1KaV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 28 Aug 2023 06:30:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33526 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229656AbjH1IvZ (ORCPT
+        with ESMTP id S231468AbjH1KaL (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 28 Aug 2023 04:51:25 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 62802BF;
-        Mon, 28 Aug 2023 01:51:22 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        Mon, 28 Aug 2023 06:30:11 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33BFB129;
+        Mon, 28 Aug 2023 03:30:08 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 1AD3821B1B;
-        Mon, 28 Aug 2023 08:51:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1693212680; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=YS8e1L8fy8R+sqnpecFZuJkMlDaGs4krtp7hLbupfhU=;
-        b=NGdBZbIVbLoDS1hdYNZ4txHl5sQMhDEj/CIY7pV9LRNv6BJTAER97LTge1U7QpkmXtRq4V
-        UsOvu/ZLoAXfLmFiXREoy5pdZlyzQlccCQcDwurzUPp/z1+4Oubxd/CeWbgxyEfdLuRMee
-        80JpQbRYFuRhpw1ZtuUnGtHeq0cfoFE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1693212680;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=YS8e1L8fy8R+sqnpecFZuJkMlDaGs4krtp7hLbupfhU=;
-        b=yCmaCWLpzpXD1boOA3nxaat3edYySBThLzegU2aJgd5ZcPzQ5lU1+mnAwM+yk18J+Nhj9A
-        xQ2GRIyoC2DphqCw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id E855F13A11;
-        Mon, 28 Aug 2023 08:51:19 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id no2tNwdg7GT7fAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 28 Aug 2023 08:51:19 +0000
-Message-ID: <b439219a-037a-5641-de9d-adf5eca363ff@suse.de>
-Date:   Mon, 28 Aug 2023 10:51:19 +0200
+        by dfw.source.kernel.org (Postfix) with ESMTPS id BD3A663C6C;
+        Mon, 28 Aug 2023 10:30:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D194BC433C8;
+        Mon, 28 Aug 2023 10:30:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1693218607;
+        bh=mwknJkyoH5UO24OF0N2LW4xoJd3pjAzpMHHxPzl5kic=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=oDW63G9cEQFKSJBYoPg4Vvq5MnD61ONk8MRWLjRvQIeVrrv5/mK2ozW3sUDfD7iuT
+         oK72yryC5nzDohDGbd5/vVBnh2v1vs+4f4M19HAVPBT0TNjzATc1IR3oDiLdxKTQsn
+         fiyPOFhCPylMA50MTKppUKYop2aMy591Hz66vb2o=
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     stable@vger.kernel.org
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        patches@lists.linux.dev, Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        linux-fbdev@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sasha Levin <sashal@kernel.org>
+Subject: [PATCH 6.1 005/122] fbdev/radeon: use pci aperture helpers
+Date:   Mon, 28 Aug 2023 12:12:00 +0200
+Message-ID: <20230828101156.656023754@linuxfoundation.org>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20230828101156.480754469@linuxfoundation.org>
+References: <20230828101156.480754469@linuxfoundation.org>
+User-Agent: quilt/0.67
+X-stable: review
+X-Patchwork-Hint: ignore
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.14.0
-Subject: Re: [PATCH 00/11] fbdev/sbus: Initializers for struct fb_ops
-To:     Sam Ravnborg <sam@ravnborg.org>
-Cc:     linux-fbdev@vger.kernel.org, deller@gmx.de, javierm@redhat.com,
-        dri-devel@lists.freedesktop.org, sparclinux@vger.kernel.org,
-        davem@davemloft.net
-References: <20230806120926.5368-1-tzimmermann@suse.de>
- <20230807171101.GB281773@ravnborg.org>
-Content-Language: en-US
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20230807171101.GB281773@ravnborg.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------0NZ0NHtVPQWE2ThqtYmgtPGF"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------0NZ0NHtVPQWE2ThqtYmgtPGF
-Content-Type: multipart/mixed; boundary="------------UIgAg7MKP0T1ayQXZWd9iPlo";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-fbdev@vger.kernel.org, deller@gmx.de, javierm@redhat.com,
- dri-devel@lists.freedesktop.org, sparclinux@vger.kernel.org,
- davem@davemloft.net
-Message-ID: <b439219a-037a-5641-de9d-adf5eca363ff@suse.de>
-Subject: Re: [PATCH 00/11] fbdev/sbus: Initializers for struct fb_ops
-References: <20230806120926.5368-1-tzimmermann@suse.de>
- <20230807171101.GB281773@ravnborg.org>
-In-Reply-To: <20230807171101.GB281773@ravnborg.org>
+6.1-stable review patch.  If anyone has any objections, please let me know.
 
---------------UIgAg7MKP0T1ayQXZWd9iPlo
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+------------------
 
-SGkgU2FtDQoNCkFtIDA3LjA4LjIzIHVtIDE5OjExIHNjaHJpZWIgU2FtIFJhdm5ib3JnOg0K
-Li4uDQo+IFJldmlld2VkLWJ5OiBTYW0gUmF2bmJvcmcgPHNhbUByYXZuYm9yZy5vcmc+DQoN
-CkkgY29tcGxldGVseSBtaXNzZWQgeW91ciByZXZpZXcuIFRoYW5rcyBhIGxvdC4gSSd2ZSBu
-b3cgcHVzaGVkIHRoZSANCnBhdGNoZXMgdG8gZHJtLW1pc2MtbmV4dC4NCg0KQmVzdCByZWdh
-cmRzDQpUaG9tYXMNCg0KPiANCj4gCVNhbQ0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpH
-cmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJt
-YW55IEdtYkgNCkZyYW5rZW5zdHJhc3NlIDE0NiwgOTA0NjEgTnVlcm5iZXJnLCBHZXJtYW55
-DQpHRjogSXZvIFRvdGV2LCBBbmRyZXcgTXllcnMsIEFuZHJldyBNY0RvbmFsZCwgQm91ZGll
-biBNb2VybWFuDQpIUkIgMzY4MDkgKEFHIE51ZXJuYmVyZykNCg==
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
 
---------------UIgAg7MKP0T1ayQXZWd9iPlo--
+[ Upstream commit 9b539c4d1b921bc9c8c578d4d50f0a7e7874d384 ]
 
---------------0NZ0NHtVPQWE2ThqtYmgtPGF
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+It's not exactly the same since the open coded version doesn't set
+primary correctly. But that's a bugfix, so shouldn't hurt really.
 
------BEGIN PGP SIGNATURE-----
+Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-fbdev@vger.kernel.org
+Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Link: https://patchwork.freedesktop.org/patch/msgid/20230111154112.90575-7-daniel.vetter@ffwll.ch
+Stable-dep-of: 5ae3716cfdcd ("video/aperture: Only remove sysfb on the default vga pci device")
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/aty/radeon_base.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmTsYAcFAwAAAAAACgkQlh/E3EQov+Bu
-Ig//Y4T+G5nfOjVSa9mGMYv222Anwt0XOZxngCo/HW9T9OdO0Xua/RfzsoTK8zmKaSaCDMPfEeGy
-IhGA+FZ0SOZ00JQkWRpWFRiwDVKeAGERwEx5fedthnkk7xG81eGiAzupVumZTjA/s6CAmnZ4yrzJ
-+8muTcRM4c/BsxhCqz+/+NzYP5BcGEL9Pv9N+UvipP1V9MSKO75qSTCbR22wA3dT2N1c65mkT86w
-tkJDtKl/MErB8d3iqTQnoP+xH9yBM/zvFNWtoDBYflyjiekZt6qiFuTb4Mw0/OdxcxMrZpsKGSkV
-DOJn+NjbgEGDCn9dRPiigU6ZMWyV9j2qMz2wSoN4jG3EWw2i/kCN8s1xQLeDYJR8u89o4ms8Si2p
-GO/mLERAF5eqiEk+ixVHjANbDdw+063iaHRO2Lh3DUL1AUx59F6oi08FNXxoo6VnVRBNXEpEKydU
-75+Qvwad4RaJn27Cwl+UHY06bBiTDPYZJCfGsQkI4BWUhXNM7kt7+le9F519pJPdpot9hEPAUVfh
-pv73GUupfgKU03PRUXmtDnuHHLgoMtd6xI8t4ML3Q/fEt5cp9ENLhEfOq7sqsByxo7lNokeREfCC
-6pDYWqXlSzVbl0mTTb95BsOGz6AV1oDz85mUE6UBn7M21xFtS4D+uu98nfYfbtJvvNZBlqbDZ6a8
-Qgs=
-=xy4u
------END PGP SIGNATURE-----
+diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+index 8b28c9bddd974..50c384ce28837 100644
+--- a/drivers/video/fbdev/aty/radeon_base.c
++++ b/drivers/video/fbdev/aty/radeon_base.c
+@@ -2238,14 +2238,6 @@ static const struct bin_attribute edid2_attr = {
+ 	.read	= radeon_show_edid2,
+ };
+ 
+-static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
+-{
+-	resource_size_t base = pci_resource_start(pdev, 0);
+-	resource_size_t size = pci_resource_len(pdev, 0);
+-
+-	return aperture_remove_conflicting_devices(base, size, false, KBUILD_MODNAME);
+-}
+-
+ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 				 const struct pci_device_id *ent)
+ {
+@@ -2296,7 +2288,7 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 	rinfo->fb_base_phys = pci_resource_start (pdev, 0);
+ 	rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
+ 
+-	ret = radeon_kick_out_firmware_fb(pdev);
++	ret = aperture_remove_conflicting_pci_devices(pdev, KBUILD_MODNAME);
+ 	if (ret)
+ 		goto err_release_fb;
+ 
+-- 
+2.40.1
 
---------------0NZ0NHtVPQWE2ThqtYmgtPGF--
+
+

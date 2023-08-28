@@ -2,128 +2,66 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BAE6BC83F13
-	for <linux-fbdev@archiver.kernel.org>; Sat, 26 Aug 2023 10:16:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CA4DC71153
+	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Aug 2023 06:37:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230284AbjHZKQQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 26 Aug 2023 06:16:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59548 "EHLO
+        id S229525AbjH1GhW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 28 Aug 2023 02:37:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47808 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231745AbjHZKPz (ORCPT
+        with ESMTP id S229509AbjH1GhV (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 26 Aug 2023 06:15:55 -0400
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A0691FC3;
-        Sat, 26 Aug 2023 03:15:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=t-8ch.de; s=mail;
-        t=1693044950; bh=PnvzGxtclCb9TxkP/3PB4DGO6+FyzrMczE9z63c14OU=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=c8YfexUMXelmyffaROif3m7Hs/CoMOPtfjOxzp/pvJ2H4SDV1NESIuOa1LWwJK0p7
-         BvrwbwmYpOWXzMmN7/dMIkXZpyi/nVE8gZjffUtJmF0gIlfDQhzn8JxQVislnikCNU
-         ylclk5xx3BYNGm2fmkxs5ElXZtfaSBDodqJcCWOs=
-Date:   Sat, 26 Aug 2023 12:15:49 +0200
-From:   Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas@t-8ch.de>
-To:     Julius Zint <julius@zint.sh>
-Cc:     Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Jiri Kosina <jikos@kernel.org>,
-        Benjamin Tissoires <benjamin.tissoires@redhat.com>,
-        Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-input@vger.kernel.org,
-        linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v3 1/1] backlight: hid_bl: Add VESA VCP HID backlight
- driver
-Message-ID: <9f7475eb-7e57-45cf-9854-90fb4e8da8a0@t-8ch.de>
-References: <20230820094118.20521-1-julius@zint.sh>
- <20230820094118.20521-2-julius@zint.sh>
+        Mon, 28 Aug 2023 02:37:21 -0400
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E34F0126;
+        Sun, 27 Aug 2023 23:37:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
+        :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=5xtken3ztdTUny1OMfzFaKlaMxo854CajVDA38Kiekk=; b=NcopADFc2/ECJJnc4sPTJV2HCs
+        oucoi3FqWUgmmWL2TBAkAp6f5/UWWSPbYwMK2t1FmNf9DCFana51kICNmLtKkXJ761PmFHB0kIciE
+        tDPU+fPlvqzYN8rAM/mSYi0biQaE2nJXWR4/LhXs6sXOwn+rDi85UgDnSeFEYvprxuyB0OJDS3X7o
+        v2xpNI5oF0c/7+f4qUhZDe9jzBoCkqp/fWoSoiT+ozzUuABOWCY4mt+L1Go7qVWjjcWLM8JX/eIsZ
+        5tjE66X7sfMtVGm7PjjSjRMkHZipPHTZVAj/5fkfJ06RMhfPBT227rR2yLfmee/6rVsL/f24aLc1t
+        55V7kRVw==;
+Received: from hch by bombadil.infradead.org with local (Exim 4.96 #2 (Red Hat Linux))
+        id 1qaVri-008xc2-1x;
+        Mon, 28 Aug 2023 06:36:46 +0000
+Date:   Sun, 27 Aug 2023 23:36:46 -0700
+From:   Christoph Hellwig <hch@infradead.org>
+To:     Matthew Wilcox <willy@infradead.org>
+Cc:     Jan Kara <jack@suse.cz>, Xueshi Hu <xueshi.hu@smartx.com>,
+        dan.j.williams@intel.com, vishal.l.verma@intel.com,
+        dave.jiang@intel.com, jayalk@intworks.biz, daniel@ffwll.ch,
+        deller@gmx.de, bcrl@kvack.org, viro@zeniv.linux.org.uk,
+        brauner@kernel.org, jack@suse.com, tytso@mit.edu,
+        adilger.kernel@dilger.ca, miklos@szeredi.hu,
+        mike.kravetz@oracle.com, muchun.song@linux.dev, djwong@kernel.org,
+        akpm@linux-foundation.org, hughd@google.com,
+        nvdimm@lists.linux.dev, linux-cxl@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-aio@kvack.org,
+        linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
+        linux-mm@kvack.org, linux-xfs@vger.kernel.org
+Subject: Re: [PATCH] fs: clean up usage of noop_dirty_folio
+Message-ID: <ZOxAfrz9etoVUfLQ@infradead.org>
+References: <20230819124225.1703147-1-xueshi.hu@smartx.com>
+ <20230821111643.5vxtktznjqk42cak@quack3>
+ <ZONWka8NpDVGzI8h@casper.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230820094118.20521-2-julius@zint.sh>
+In-Reply-To: <ZONWka8NpDVGzI8h@casper.infradead.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2023-08-20 11:41:18+0200, Julius Zint wrote:
-> [..]
+On Mon, Aug 21, 2023 at 01:20:33PM +0100, Matthew Wilcox wrote:
+> I was hoping Christoph would weigh in ;-)  I don't have a strong
 
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> index 51387b1ef012..b964a820956d 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -472,6 +472,14 @@ config BACKLIGHT_LED
->  	  If you have a LCD backlight adjustable by LED class driver, say Y
->  	  to enable this driver.
->  
-> +config BACKLIGHT_HID
-> +	tristate "VESA VCP HID Backlight Driver"
-> +	depends on HID
-> +	help
-> +	  If you have an external display with VESA compliant HID brightness
-> +	  controls then say Y to enable this backlight driver. Currently the
-> +	  only supported device is the Apple Studio Display.
+I've enjoyed 2 weeks of almost uninterrupted vacation.
 
-Is the last sentence needed?
-It will go out of date soon, requiring updates to the Kconfig.
+I agree with this patch and also your incremental improvements.
 
-> +
->  endif # BACKLIGHT_CLASS_DEVICE
->  
->  endmenu
-
-> [..]
-
-> diff --git a/drivers/video/backlight/hid_bl.c b/drivers/video/backlight/hid_bl.c
-> new file mode 100644
-> index 000000000000..b40f8f412ee2
-> --- /dev/null
-> +++ b/drivers/video/backlight/hid_bl.c
-> @@ -0,0 +1,269 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +#include <linux/device.h>
-> +#include <linux/hid.h>
-> +#include <linux/module.h>
-> +#include <linux/backlight.h>
-> +
-> +#define APPLE_STUDIO_DISPLAY_VENDOR_ID  0x05ac
-> +#define APPLE_STUDIO_DISPLAY_PRODUCT_ID 0x1114
-
-Use hid-ids.h.  The vendor ID already has an entry.
-
-> +
-> +#define HID_USAGE_MONITOR_CTRL			0x800001
-> +#define HID_USAGE_VESA_VCP_BRIGHTNESS		0x820010
-
-> [..]
-
-> +static int hid_bl_probe(struct hid_device *hdev, const struct hid_device_id *id)
-> +{
-
-> [..]
-
-> +
-> +	memset(&props, 0, sizeof(props));
-> +	props.type = BACKLIGHT_RAW;
-
-Wouldn't this be more a BACKLIGHT_FIRMWARE?
-
-> +	props.max_brightness = data->max_brightness - data->min_brightness;
-> +
-> +	bl = devm_backlight_device_register(&hdev->dev, "vesa_vcp",
-
-It's non-obvious that the "vesa_vcp" backlight comes from the
-"hid_backlight" driver. Maybe align the names.
-
-What happens when multiple compatible devices are used?
-That seems to be possible with external monitors.
-
-Can existing userspace figure out which display the backlight device
-belongs to?
-(I don't know either)
-
-> +					    &hdev->dev, data,
-> +					    &hid_bl_ops,
-> +					    &props);
-
-> [..]

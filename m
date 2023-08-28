@@ -2,68 +2,123 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CBC9EC83F11
-	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Aug 2023 08:01:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57A96C83F13
+	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Aug 2023 08:52:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229441AbjH1IBF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 28 Aug 2023 04:01:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43202 "EHLO
+        id S229516AbjH1Ivt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 28 Aug 2023 04:51:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54796 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229555AbjH1IBD (ORCPT
+        with ESMTP id S229656AbjH1IvZ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 28 Aug 2023 04:01:03 -0400
-Received: from mail.venturelinkbiz.com (mail.venturelinkbiz.com [51.195.119.142])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E210E114
-        for <linux-fbdev@vger.kernel.org>; Mon, 28 Aug 2023 01:00:55 -0700 (PDT)
-Received: by mail.venturelinkbiz.com (Postfix, from userid 1002)
-        id B26AE45585; Mon, 28 Aug 2023 08:00:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=venturelinkbiz.com;
-        s=mail; t=1693209653;
-        bh=JBV4b8UUo1MSngn/QBoedt1Dv52bT8rWeq4R22MtJMs=;
-        h=Date:From:To:Subject:From;
-        b=yWzHrBrjhMbSB/5d1St5us9Q13/TlG7qlqig1C7OLm5mCGT+BCbLcgFGQyOFBnEkd
-         HJv9IaWqeh/EusJjjFgXCxuvJs0rELBJGoOMjp2CUysHQazefZnYpVxejiBG+cZ4ur
-         qeaD7hB94ULQw2FTTVHqFC4fb5ZE8O4CiKt+oHhH4/lkhMlKGV/+XX7yRF4tXjRD0W
-         Lsh6f6IpDorHhoGLvXccNa1pXavs0TXYtRkmzgVGtVBqUBwvWWLC/Bbz6Ja93C9HBS
-         yzku2sJ4csfy6p2/TY2ivlfzsVdLajVV3S048P3ekughiuM8Kp4r0NN5lKoyGZmtcA
-         gxYOugI94MLfw==
-Received: by mail.venturelinkbiz.com for <linux-fbdev@vger.kernel.org>; Mon, 28 Aug 2023 08:00:44 GMT
-Message-ID: <20230828064500-0.1.21.5fjz.0.eidm4ixlp0@venturelinkbiz.com>
-Date:   Mon, 28 Aug 2023 08:00:44 GMT
-From:   "Michal Rmoutil" <michal.rmoutil@venturelinkbiz.com>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: =?UTF-8?Q?Efektivn=C3=AD_sledov=C3=A1n=C3=AD_a_optimalizace_v=C3=BDroby_pro_va=C5=A1i_spole=C4=8Dnost?=
-X-Mailer: mail.venturelinkbiz.com
+        Mon, 28 Aug 2023 04:51:25 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 62802BF;
+        Mon, 28 Aug 2023 01:51:22 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 1AD3821B1B;
+        Mon, 28 Aug 2023 08:51:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1693212680; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=YS8e1L8fy8R+sqnpecFZuJkMlDaGs4krtp7hLbupfhU=;
+        b=NGdBZbIVbLoDS1hdYNZ4txHl5sQMhDEj/CIY7pV9LRNv6BJTAER97LTge1U7QpkmXtRq4V
+        UsOvu/ZLoAXfLmFiXREoy5pdZlyzQlccCQcDwurzUPp/z1+4Oubxd/CeWbgxyEfdLuRMee
+        80JpQbRYFuRhpw1ZtuUnGtHeq0cfoFE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1693212680;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=YS8e1L8fy8R+sqnpecFZuJkMlDaGs4krtp7hLbupfhU=;
+        b=yCmaCWLpzpXD1boOA3nxaat3edYySBThLzegU2aJgd5ZcPzQ5lU1+mnAwM+yk18J+Nhj9A
+        xQ2GRIyoC2DphqCw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id E855F13A11;
+        Mon, 28 Aug 2023 08:51:19 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id no2tNwdg7GT7fAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 28 Aug 2023 08:51:19 +0000
+Message-ID: <b439219a-037a-5641-de9d-adf5eca363ff@suse.de>
+Date:   Mon, 28 Aug 2023 10:51:19 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.14.0
+Subject: Re: [PATCH 00/11] fbdev/sbus: Initializers for struct fb_ops
+To:     Sam Ravnborg <sam@ravnborg.org>
+Cc:     linux-fbdev@vger.kernel.org, deller@gmx.de, javierm@redhat.com,
+        dri-devel@lists.freedesktop.org, sparclinux@vger.kernel.org,
+        davem@davemloft.net
+References: <20230806120926.5368-1-tzimmermann@suse.de>
+ <20230807171101.GB281773@ravnborg.org>
+Content-Language: en-US
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20230807171101.GB281773@ravnborg.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------0NZ0NHtVPQWE2ThqtYmgtPGF"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dobr=C3=A9 r=C3=A1no,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------0NZ0NHtVPQWE2ThqtYmgtPGF
+Content-Type: multipart/mixed; boundary="------------UIgAg7MKP0T1ayQXZWd9iPlo";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-fbdev@vger.kernel.org, deller@gmx.de, javierm@redhat.com,
+ dri-devel@lists.freedesktop.org, sparclinux@vger.kernel.org,
+ davem@davemloft.net
+Message-ID: <b439219a-037a-5641-de9d-adf5eca363ff@suse.de>
+Subject: Re: [PATCH 00/11] fbdev/sbus: Initializers for struct fb_ops
+References: <20230806120926.5368-1-tzimmermann@suse.de>
+ <20230807171101.GB281773@ravnborg.org>
+In-Reply-To: <20230807171101.GB281773@ravnborg.org>
 
-m=C3=A1te mo=C5=BEnost sledovat stav ka=C5=BEd=C3=A9ho stroje a v=C3=BDro=
-bn=C3=ADho procesu z kancel=C3=A1=C5=99e, konferen=C4=8Dn=C3=AD m=C3=ADst=
-nosti nebo dokonce z domova =C4=8Di na cest=C3=A1ch =E2=80=93 na va=C5=A1=
-em telefonu?
+--------------UIgAg7MKP0T1ayQXZWd9iPlo
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Poskytujeme rychle implementovateln=C3=BD a snadno pou=C5=BEiteln=C3=BD n=
-=C3=A1stroj, kter=C3=BD zachyt=C3=AD i n=C4=9Bkolikasekundov=C3=BD mikrop=
-rostoj a okam=C5=BEit=C4=9B p=C5=99epo=C4=8D=C3=ADt=C3=A1 vyu=C5=BEit=C3=AD=
- stroje v kontextu dan=C3=A9 v=C3=BDrobn=C3=AD zak=C3=A1zky.
+SGkgU2FtDQoNCkFtIDA3LjA4LjIzIHVtIDE5OjExIHNjaHJpZWIgU2FtIFJhdm5ib3JnOg0K
+Li4uDQo+IFJldmlld2VkLWJ5OiBTYW0gUmF2bmJvcmcgPHNhbUByYXZuYm9yZy5vcmc+DQoN
+CkkgY29tcGxldGVseSBtaXNzZWQgeW91ciByZXZpZXcuIFRoYW5rcyBhIGxvdC4gSSd2ZSBu
+b3cgcHVzaGVkIHRoZSANCnBhdGNoZXMgdG8gZHJtLW1pc2MtbmV4dC4NCg0KQmVzdCByZWdh
+cmRzDQpUaG9tYXMNCg0KPiANCj4gCVNhbQ0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpH
+cmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJt
+YW55IEdtYkgNCkZyYW5rZW5zdHJhc3NlIDE0NiwgOTA0NjEgTnVlcm5iZXJnLCBHZXJtYW55
+DQpHRjogSXZvIFRvdGV2LCBBbmRyZXcgTXllcnMsIEFuZHJldyBNY0RvbmFsZCwgQm91ZGll
+biBNb2VybWFuDQpIUkIgMzY4MDkgKEFHIE51ZXJuYmVyZykNCg==
 
-Kdykoli vid=C3=ADte stav objedn=C3=A1vky a jste informov=C3=A1ni o p=C5=99=
-=C3=ADpadn=C3=A9m sn=C3=AD=C5=BEen=C3=AD efektivity. Syst=C3=A9m s=C3=A1m=
- analyzuje data a p=C5=99ipravuje cenn=C3=A9 reporty, co=C5=BE oper=C3=A1=
-tor=C5=AFm umo=C5=BE=C5=88uje soust=C5=99edit se na v=C3=BDrobn=C3=AD c=C3=
-=ADl.
+--------------UIgAg7MKP0T1ayQXZWd9iPlo--
 
-C=C3=ADl je jednoduch=C3=BD: jeden pohled =E2=80=93 cel=C3=A1 tov=C3=A1rn=
-a. =C4=8Cek=C3=A1m na odpov=C4=9B=C4=8F, jestli vid=C3=ADte mo=C5=BEnost =
-vyu=C5=BEit=C3=AD takov=C3=A9ho n=C3=A1stroje ve va=C5=A1=C3=AD firm=C4=9B=
-=2E
+--------------0NZ0NHtVPQWE2ThqtYmgtPGF
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
+-----BEGIN PGP SIGNATURE-----
 
-Pozdravy
-Michal Rmoutil
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmTsYAcFAwAAAAAACgkQlh/E3EQov+Bu
+Ig//Y4T+G5nfOjVSa9mGMYv222Anwt0XOZxngCo/HW9T9OdO0Xua/RfzsoTK8zmKaSaCDMPfEeGy
+IhGA+FZ0SOZ00JQkWRpWFRiwDVKeAGERwEx5fedthnkk7xG81eGiAzupVumZTjA/s6CAmnZ4yrzJ
++8muTcRM4c/BsxhCqz+/+NzYP5BcGEL9Pv9N+UvipP1V9MSKO75qSTCbR22wA3dT2N1c65mkT86w
+tkJDtKl/MErB8d3iqTQnoP+xH9yBM/zvFNWtoDBYflyjiekZt6qiFuTb4Mw0/OdxcxMrZpsKGSkV
+DOJn+NjbgEGDCn9dRPiigU6ZMWyV9j2qMz2wSoN4jG3EWw2i/kCN8s1xQLeDYJR8u89o4ms8Si2p
+GO/mLERAF5eqiEk+ixVHjANbDdw+063iaHRO2Lh3DUL1AUx59F6oi08FNXxoo6VnVRBNXEpEKydU
+75+Qvwad4RaJn27Cwl+UHY06bBiTDPYZJCfGsQkI4BWUhXNM7kt7+le9F519pJPdpot9hEPAUVfh
+pv73GUupfgKU03PRUXmtDnuHHLgoMtd6xI8t4ML3Q/fEt5cp9ENLhEfOq7sqsByxo7lNokeREfCC
+6pDYWqXlSzVbl0mTTb95BsOGz6AV1oDz85mUE6UBn7M21xFtS4D+uu98nfYfbtJvvNZBlqbDZ6a8
+Qgs=
+=xy4u
+-----END PGP SIGNATURE-----
+
+--------------0NZ0NHtVPQWE2ThqtYmgtPGF--

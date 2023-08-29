@@ -2,202 +2,206 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FA72C83F18
-	for <linux-fbdev@archiver.kernel.org>; Tue, 29 Aug 2023 16:29:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51CBAC83F14
+	for <linux-fbdev@archiver.kernel.org>; Tue, 29 Aug 2023 16:39:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236414AbjH2Q23 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 29 Aug 2023 12:28:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34108 "EHLO
+        id S237483AbjH2QjP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 29 Aug 2023 12:39:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50600 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237512AbjH2Q21 (ORCPT
+        with ESMTP id S237555AbjH2QjN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 29 Aug 2023 12:28:27 -0400
-Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 212471B9
-        for <linux-fbdev@vger.kernel.org>; Tue, 29 Aug 2023 09:28:18 -0700 (PDT)
-Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-401d24f1f27so13287955e9.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 29 Aug 2023 09:28:18 -0700 (PDT)
+        Tue, 29 Aug 2023 12:39:13 -0400
+Received: from mail-ed1-x52e.google.com (mail-ed1-x52e.google.com [IPv6:2a00:1450:4864:20::52e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E8E511B1
+        for <linux-fbdev@vger.kernel.org>; Tue, 29 Aug 2023 09:39:07 -0700 (PDT)
+Received: by mail-ed1-x52e.google.com with SMTP id 4fb4d7f45d1cf-522bd411679so6033062a12.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 29 Aug 2023 09:39:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1693326496; x=1693931296;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=rpqa6ldHA7+s03xx4g9dxalk6uI6N/wZjkRdFsn+Mzw=;
-        b=KnmcT3f4tVKSrqfCvp4riPVv63u5NlCU3AyN1khUxhpySjV3IVDDE8W8eXge76a1Pm
-         6VXcNXVjPqGvzFLXTz4QGSyIEDIxaoFhfQnu4PI3ARFdL/0WRG0jhFZFmBJMLPQ2vSjr
-         LQCWdLnf6nwhPF+of9zRRtocUu0UFOxOvGuXEH7OBbyeySBhlt5UHHL2KtjVzJAO3a2d
-         yJF7/gCM+5/wsTGoLIJpXiLKLd3cWEKGizMSL/lHcTQNPp3IPRSb84ov3vojrJtscU7p
-         gIUKBC0l79dwzNOcRYsvkdkJ4/0Afkni/8BwNud1r1hZdVVotmJuz96XZya/IfZ/9m7F
-         Scfg==
+        d=linaro.org; s=google; t=1693327146; x=1693931946;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=mT6oXCgbaIv6xrqOFaIzIhxDtL6iZZ50u0IzIYTJFvk=;
+        b=UbpJ7e7KL9EA1LdgNzK++gknXGMcs5LEHN2Tg0CeDsF+V9PItbRrgw/2Ku4q8TwrAp
+         /RQ1y2sSi1awYmyzllT307gT/U58cJraYSsxN95ED0sro3l7z88tmalAh+KdYXAjWsP8
+         /xjnDZBG9isx7G5Le0dfa7+U6ZfZT02AXuqG/bfoLSM/GgmIlaYPjxQWsWdX+Y/Zyft7
+         tVhVwMBuU1nMKzoUbdrj76MOohFRzOQusMnMlUPlkquLmeGFjDnyxQApNkg67s57PDYm
+         HmbuAeEBTugqvKOdz+7hNePKJMaG9evwGwAJOn7GuGmIjPpUBce61xVuTYAo+TMy+KIp
+         DBOg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693326496; x=1693931296;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=rpqa6ldHA7+s03xx4g9dxalk6uI6N/wZjkRdFsn+Mzw=;
-        b=KCmdEyd/rwa1z6lwcyLAF2wOycL1jzw/Ue7OwFpJz6nUZkyjqqCUkq5mNsXSk49lK/
-         Q+fkDFEdt/9evXf4puTOV0jS8Q2ftJkp2cORZZiuxT88plpEsWXvBuTYa3d+jWbpWrfw
-         t666Wb8qmEl6DXETqB1ZcYeHdTEvkExv00cqqkFW0QhoRZ22i1n/5cjrjS7wRwIHxayE
-         HhH0y2JAoz9te2IomPGUAGqdSy5FbAa+tcSO8ajIKd4ig87csh1nWH6pTHiAqlZsNeKM
-         pic9hrvu6CN8UcOA5U3qD29oHMhgECZDJAijcl8wQF8o3v7lsbHsr45ktPhrbQAG8RU3
-         FQ8A==
-X-Gm-Message-State: AOJu0YyhPFDkNkFjwfXYqzEvn7NJwgdgf/P4vDLah7oGaa+FLnHWe0xM
-        HWE3lpNvdUPfEK+a95iMfN/3qw==
-X-Google-Smtp-Source: AGHT+IEfJSUBL42nyBdyLW7ZL/n8wPUN1nrSlKl/LyAkDJ2R2cEWy2EjLFUTZblF2ciDwd/UsdyPjQ==
-X-Received: by 2002:a7b:cbcd:0:b0:3fe:25b3:951d with SMTP id n13-20020a7bcbcd000000b003fe25b3951dmr21965260wmi.5.1693326496479;
-        Tue, 29 Aug 2023 09:28:16 -0700 (PDT)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id k8-20020a7bc408000000b003fe23b10fdfsm17577866wmi.36.2023.08.29.09.28.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 29 Aug 2023 09:28:16 -0700 (PDT)
-Date:   Tue, 29 Aug 2023 17:28:14 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Flavio Suligoi <f.suligoi@asem.it>
-Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        d=1e100.net; s=20221208; t=1693327146; x=1693931946;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=mT6oXCgbaIv6xrqOFaIzIhxDtL6iZZ50u0IzIYTJFvk=;
+        b=N+O8fydSJNhr09tNv/m04zzCGjwtCC0WumbJI82VEc2/P6k0hT+FI04j0dBjWlXVlh
+         voVd8KqdIr9+Jua85d3aqB98AAWptCy2AwKxIcgTKUtCDhNJBPKNa08K0/Ojkaz23q2p
+         o3U6RIR0ip8MYcF0e2jvAFXdbI8v4HXIP8tHmWOnDK2Br0/bGwhzDuuWzqPQgrD67Urn
+         c7RGVDo7xWbCaVb4yDwGv/Kt2yjkoU41h8OOFOt0dC9HaCoaPWukxMopRteXlPF4VAaY
+         YRrk5bao6zk9wSja5KDraakAD7D0uuem0LuS7sGY5kRU7Cyljz+rV9EI1H5hkaW1QXJW
+         byDA==
+X-Gm-Message-State: AOJu0YzwS19DyifYfqyivOx6l6ZPpC0KOKnkIBW7wG75Cqj4RI2qc6xH
+        2lzuj6Ne66DH34iv6n2l5l3R/w==
+X-Google-Smtp-Source: AGHT+IESQ+U8zTLIIt37ys6oP/s6v/+8nspiHQlBTB0sN17RPl6ikUPDnr2RZG5aF5IG0fNLxxKcTw==
+X-Received: by 2002:a17:906:8a55:b0:9a2:1853:a0be with SMTP id gx21-20020a1709068a5500b009a21853a0bemr10616171ejc.72.1693327146367;
+        Tue, 29 Aug 2023 09:39:06 -0700 (PDT)
+Received: from [192.168.0.22] ([77.252.47.196])
+        by smtp.gmail.com with ESMTPSA id jj26-20020a170907985a00b00988e953a586sm6147826ejc.61.2023.08.29.09.39.04
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 29 Aug 2023 09:39:05 -0700 (PDT)
+Message-ID: <4982cfd7-4930-f205-09e8-fc5028183dba@linaro.org>
+Date:   Tue, 29 Aug 2023 18:39:04 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.14.0
+Subject: Re: [PATCH v1 1/2] dt-bindings: backlight: Add MPS MP3309C
+Content-Language: en-US
+To:     Flavio Suligoi <f.suligoi@asem.it>, Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
         Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v1 2/2] backlight: mp3309c: Add support for MPS MP3309C
-Message-ID: <20230829162814.GA56339@aspen.lan>
+        Conor Dooley <conor+dt@kernel.org>
+Cc:     "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 References: <20230829101546.483189-1-f.suligoi@asem.it>
- <20230829101546.483189-2-f.suligoi@asem.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230829101546.483189-2-f.suligoi@asem.it>
+ <6dfae492-5533-df97-5c72-373d5e89444f@linaro.org>
+ <DU2PR01MB8034C85013ECF222D12BAAA4F9E7A@DU2PR01MB8034.eurprd01.prod.exchangelabs.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <DU2PR01MB8034C85013ECF222D12BAAA4F9E7A@DU2PR01MB8034.eurprd01.prod.exchangelabs.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Aug 29, 2023 at 12:15:46PM +0200, Flavio Suligoi wrote:
-> The Monolithic Power (MPS) MP3309C is a WLED step-up converter, featuring a
-> programmable switching frequency to optimize efficiency.
-> The brightness can be controlled either by I2C commands (called "analog"
-> mode) or by a PWM input signal (PWM mode).
-> This driver supports both modes.
->
-> For DT configuration details, please refer to:
-> - Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
->
-> The datasheet is available at:
-> - https://www.monolithicpower.com/en/mp3309c.html
->
-> Signed-off-by: Flavio Suligoi <f.suligoi@asem.it>
+On 29/08/2023 16:18, Flavio Suligoi wrote:
+> Hi Krzysztof,
+> 
+> Thanks for your quick replay and corrections!
+> Just some questions about some of your remarks:
+> 
+>>> @@ -0,0 +1,202 @@
+>>> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause) %YAML 1.2
+>>> +---
+>>
+>>> +
+>>> +  reg:
+>>> +    maxItems: 1
+>>> +
+>>> +  mps,dimming-mode:
+>>> +    description: The dimming mode (PWM or analog by I2C commands).
+>>> +    $ref: '/schemas/types.yaml#/definitions/string'
+>>
+>> Drop quotes, you should see warnings for this.
+>>
+>> It does not look like you tested the bindings, at least after quick look. Please
+>> run `make dt_binding_check` (see
+>> Documentation/devicetree/bindings/writing-schema.rst for instructions).
+>> Maybe you need to update your dtschema and yamllint.
+>>
+>>> +    enum:
+>>> +      - pwm
+>>> +      - analog-i2c
+>>
+>> Why do you think this is a property of a board? Is PWM signal optional?
+>> If so, its presence would define it. Otherwise it seems you want to control the
+>> driver.
+>>
+> 
+> The MP3309C device always need a I2C bus to rd/wr its internal registers.
+> But the brightness can be controlled in one of the following ways (mutually exclusive,
+> but mandatory):
+> - a PWM input signal
+>     or
+> - a I2C command
+> So, the driver needs a property to select the dimming mode used; this property is mandatory.
 
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> index 51387b1ef012..65d0ac9f611d 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -389,6 +389,19 @@ config BACKLIGHT_LM3639
->  	help
->  	  This supports TI LM3639 Backlight + 1.5A Flash LED Driver
->
-> +config BACKLIGHT_MP3309C
-> +	tristate "Backlight Driver for MPS MP3309C"
-> +	depends on I2C
-> +	select REGMAP_I2C
-> +	select NEW_LEDS
-> +	select LEDS_CLASS
+No, it's not a proof. Don't mix properties and hardware signals.
 
-This doesn't seem right.
+> This is the reason of the existence of the ' mps,dimming-mode' property.
+> PWM signal is not optional, it is required if and only if the 'pwm' dimming mode is used.
 
-Shouldn't PWM and GPIOLIB be listed here? Why are NEW_LEDS and
-LEDS_CLASS needed?
-
-> +	help
-> +	  This supports MPS MP3309C backlight WLED Driver in both PWM and
-> +	  analog/I2C dimming modes.
-> +
-> +	  To compile this driver as a module, choose M here: the module will
-> +	  be called mp3309c_bl.
-> +
->  config BACKLIGHT_LP855X
->  	tristate "Backlight driver for TI LP855X"
->  	depends on I2C && PWM
-
-> +static int mp3309c_bl_update_status(struct backlight_device *bl)
-> +{
-> +	struct mp3309c_chip *chip = bl_get_data(bl);
-> +	int brightness = backlight_get_brightness(bl);
-> +	struct pwm_state pwmstate;
-> +	unsigned int analog_val, bits_val;
-> +	int i, ret;
-> +
-> +	if (chip->pdata->dimming_mode == DIMMING_PWM) {
-> +		/*
-> +		 * PWM dimming mode
-> +		 */
-> +		pwm_init_state(chip->pwmd, &pwmstate);
-> +		pwm_set_relative_duty_cycle(&pwmstate, brightness,
-> +					    chip->pdata->max_brightness);
-> +		pwmstate.enabled = true;
-> +		ret = pwm_apply_state(chip->pwmd, &pwmstate);
-> +		if (ret)
-> +			return ret;
-> +	} else {
-> +		/*
-> +		 * Analog dimming mode by I2C commands
-> +		 *
-> +		 * The 5 bits of the dimming analog value D4..D0 is allocated
-> +		 * in the I2C register #0, in the following way:
-> +		 *
-> +		 *     +--+--+--+--+--+--+--+--+
-> +		 *     |EN|D0|D1|D2|D3|D4|XX|XX|
-> +		 *     +--+--+--+--+--+--+--+--+
-> +		 */
-> +		analog_val = DIV_ROUND_UP(ANALOG_MAX_VAL * brightness,
-> +					  chip->pdata->max_brightness);
-> +		bits_val = 0;
-> +		for (i = 0; i <= 5; i++)
-> +			bits_val += ((analog_val >> i) & 0x01) << (6 - i);
-> +		ret = regmap_update_bits(chip->regmap, REG_I2C_0,
-> +					 ANALOG_REG_MASK, bits_val);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
-> +	if (brightness > 0) {
-> +		switch (chip->pdata->status) {
-> +		case FIRST_POWER_ON:
-> +			/*
-> +			 * Only for the first time, wait for the optional
-> +			 * switch-on delay and then enable the device.
-> +			 * Otherwise enable the backlight immediately.
-> +			 */
-> +			schedule_delayed_work(&chip->enable_work,
-> +					      msecs_to_jiffies(chip->pdata->switch_on_delay_ms));
-
-Delaying this work makes no sense to me, especially when it is only
-going to happen at initial power on.
-
-If you are (ab)using this property to try and sequence the backlight
-power-on with display initialization then this is not the way to do it.
-Normally backlight drivers that support sequencing versus the panel
-work by having a backlight property set on the panel linking it to the
-backlight. When the panel is ready this power status of the backlight
-will be updated accordingly.
-
-All the backlight driver need do is make sure that is the initial
-power status is "powerdown" on systems when the link is present (e.g.
-leave the backlight off and wait to be told the display has settled).
+So the pwms determine the mode. That's it, no need for this property.
 
 
-> +			/*
-> +			 * Optional external device GPIO reset, with
-> +			 * delay pulse length
-> +			 */
-> +			if (chip->pdata->reset_pulse_enable)
-> +				schedule_delayed_work(&chip->reset_gpio_work,
-> +						      msecs_to_jiffies(chip->pdata->reset_on_delay_ms));
+> If the 'analog-i2c' dimming mode is used, instead, the PWM signal must not be used.
+> So the property 'mps,dimming-mode' controls how the MP3309C is used.
+> I can add more details about this in the description section.
 
-Similarly I don't understand what this property is for. A backlight is
-directly perceivable by the user. There is nothing downstream of a
-light that needs to be reset!
+No, drop the property or explain more, e.g. is I2C mode of control used
+while having PWMs signals connected?
 
-What is this used for?
+> ...
+>  
+>>> +
+>>> +  mps,overvoltage-protection-13v:
+>>> +    description: overvoltage protection set to 13.5V.
+>>> +    type: boolean
+>>> +  mps,overvoltage-protection-24v:
+>>> +    description: overvoltage protection set to 24V.
+>>> +    type: boolean
+>>> +  mps,overvoltage-protection-35v:
+>>> +    description: overvoltage protection set to 35.5V.
+>>> +    type: boolean
+>>
+>> Nope for these three. Use -microvolt suffix for one property.
+> 
+> Ok
+> 
+>>
+>>> +
+>>> +  mps,reset-gpios:
+>>> +    description: optional GPIO to reset an external device (LCD panel, FPGA,
+>>> +      etc.) when the backlight is switched on.
+>>> +    maxItems: 1
+>>
+>> No, you should not add here GPIOs for other devices.
+> 
+> Do you mean that I have to remove this property or that I have to move it somewhere else?
+> I added this feature because sometimes, in embedded boards, you need a pulse signal to
 
+How you described it, this is not the property of this device.
 
-Daniel.
+> use after the backlight probing, for example to reset another device in sync with the backlight
+> probe.
+
+There is no term as "probe" in hardware, so you describe drivers.
+
+> Do you think I have to remove this feature from the driver?
+
+You cannot request GPIO after removing it from the bindings, obviously,
+but whether your backlight should reset something else? Don't care,
+don't know. I talk about bindings.
+
+> 
+> ...
+> 
+>>> +allOf:
+>>> +  - $ref: common.yaml#
+>>> +  - if:
+>>> +      properties:
+>>> +        mps,dimming-mode:
+>>> +          contains:
+>>> +            enum:
+>>> +              - pwm
+>>> +    then:
+>>> +      required:
+>>> +        - pwms
+>>
+>> So this proves the point - mps,dimming-mode looks redundant and not
+>> hardware related.
+> 
+> See my previous comment.
+
+No, it still proves the point till you explain why pwms cannot be used
+to determine this. Read my messages.
+
+Best regards,
+Krzysztof
+

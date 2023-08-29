@@ -2,62 +2,62 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6D84C83F19
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3803C83F1B
 	for <linux-fbdev@archiver.kernel.org>; Tue, 29 Aug 2023 14:22:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236685AbjH2OVu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S236678AbjH2OVu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Tue, 29 Aug 2023 10:21:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45180 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45110 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236784AbjH2OVj (ORCPT
+        with ESMTP id S236732AbjH2OVg (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 29 Aug 2023 10:21:39 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 857F41B9;
-        Tue, 29 Aug 2023 07:21:31 -0700 (PDT)
+        Tue, 29 Aug 2023 10:21:36 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D58D4198;
+        Tue, 29 Aug 2023 07:21:30 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 3F0841F461;
-        Tue, 29 Aug 2023 14:21:30 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 6F12D1F38C;
+        Tue, 29 Aug 2023 14:21:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1693318890; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1693318889; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=yz8becST7wGmzsMDOT9jOFY8YWT6Ar12axqZ8QAijXs=;
-        b=FkrErByljgknflatDxOPKH/tIPAWYMzo0czlau8YJAcPY5MHV+bHHb36f84KBwKfwb7Sna
-        5CTx+WZRTQov7qEbxKmC976Iaji2Qkpcehbom7entHGpUgMosQMX4QPAzdjuvqXESs7pdM
-        cwlQ8pyzOB3wEMTQdMLvTYich87N/0M=
+        bh=pdv0cLQ6j1TsZQmdczOCC46tJyhpJPozzqmzgQ+pW6I=;
+        b=ahtn3VTrCuEHEHObH9V07adWKUxOD5bT2xSCSmrvZh0U+l9975MToLLrl/EoeWxNEz1HIL
+        YTmm3zzX1tSIIN6lRaKVHE/83wX2OarloMohDtUZkoymUm+hEtayyCVuSJHkmZdDu40PdZ
+        hzgFEtzx1jC2LAcCIa7yxU+bTVd6HlI=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1693318890;
+        s=susede2_ed25519; t=1693318889;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=yz8becST7wGmzsMDOT9jOFY8YWT6Ar12axqZ8QAijXs=;
-        b=FoCFGEf+3rbIt+IEwxkZ8ySp4XCfx4vWy696e6NK/yBFno+aUpeW+BdPRAcfbJJFciwmOt
-        ABuvTeY7ZgHtWXCw==
+        bh=pdv0cLQ6j1TsZQmdczOCC46tJyhpJPozzqmzgQ+pW6I=;
+        b=lEMwenznQ1/v0CjQSH863yJS+JL0tQVj7OoxDI7yAydKvURMQWCC8TIZgEQVv9VEUpU+3U
+        OMF/wDwxrA03yzDA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 14591138E2;
-        Tue, 29 Aug 2023 14:21:30 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 3868B13909;
+        Tue, 29 Aug 2023 14:21:29 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id kMIXBOr+7WREewAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Tue, 29 Aug 2023 14:21:30 +0000
+        id WHLiDOn+7WREewAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Tue, 29 Aug 2023 14:21:29 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, daniel@ffwll.ch, javierm@redhat.com,
         sam@ravnborg.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
 Cc:     linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 7/7] fbdev/core: Clean up include statements in fbmem.c
-Date:   Tue, 29 Aug 2023 16:15:46 +0200
-Message-ID: <20230829142109.4521-8-tzimmermann@suse.de>
+Subject: [PATCH 3/7] fbdev/core: Fix style of code for boot-up logo
+Date:   Tue, 29 Aug 2023 16:15:42 +0200
+Message-ID: <20230829142109.4521-4-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20230829142109.4521-1-tzimmermann@suse.de>
 References: <20230829142109.4521-1-tzimmermann@suse.de>
@@ -67,50 +67,75 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Remove all unnecessary include statements from fbmem.c. Most of
-them were for functionality that has meanwhile been moved into
-other files.
+Fix a number of warnings from checkpatch.pl in this code before
+moving it into a separate file. This includes
+
+ * Prefer 'unsigned int' to bare use of 'unsigned'
+ * space required after that ',' (ctx:VxV)
+ * space prohibited after that open parenthesis '('
+ * suspect code indent for conditional statements (16, 32)
+ * braces {} are not necessary for single statement blocks
+
+No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/core/fbmem.c | 19 +------------------
- 1 file changed, 1 insertion(+), 18 deletions(-)
+ drivers/video/fbdev/core/fbmem.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 1a662a606ba6..fc206755f5f6 100644
+index ee44a46a66be..98e1847e4287 100644
 --- a/drivers/video/fbdev/core/fbmem.c
 +++ b/drivers/video/fbdev/core/fbmem.c
-@@ -11,29 +11,12 @@
-  * for more details.
-  */
+@@ -186,7 +186,7 @@ EXPORT_SYMBOL(fb_get_buffer_offset);
  
--#include <linux/module.h>
--
--#include <linux/types.h>
--#include <linux/errno.h>
--#include <linux/kernel.h>
--#include <linux/slab.h>
--#include <linux/mm.h>
--#include <linux/mman.h>
--#include <linux/vt.h>
--#include <linux/init.h>
--#include <linux/platform_device.h>
- #include <linux/console.h>
--#include <linux/kmod.h>
--#include <linux/err.h>
--#include <linux/device.h>
--#include <linux/efi.h>
-+#include <linux/export.h>
- #include <linux/fb.h>
- #include <linux/fbcon.h>
--#include <linux/mem_encrypt.h>
--#include <linux/pci.h>
+ #ifdef CONFIG_LOGO
  
- #include <video/nomodeset.h>
--#include <video/vga.h>
+-static inline unsigned safe_shift(unsigned d, int n)
++static inline unsigned int safe_shift(unsigned int d, int n)
+ {
+ 	return n < 0 ? d >> -n : d << n;
+ }
+@@ -229,7 +229,9 @@ static void  fb_set_logo_truepalette(struct fb_info *info,
+ 					    const struct linux_logo *logo,
+ 					    u32 *palette)
+ {
+-	static const unsigned char mask[] = { 0,0x80,0xc0,0xe0,0xf0,0xf8,0xfc,0xfe,0xff };
++	static const unsigned char mask[] = {
++		0, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe, 0xff
++	};
+ 	unsigned char redmask, greenmask, bluemask;
+ 	int redshift, greenshift, blueshift;
+ 	int i;
+@@ -247,7 +249,7 @@ static void  fb_set_logo_truepalette(struct fb_info *info,
+ 	greenshift = info->var.green.offset - (8 - info->var.green.length);
+ 	blueshift  = info->var.blue.offset  - (8 - info->var.blue.length);
  
- #include "fb_internal.h"
+-	for ( i = 0; i < logo->clutsize; i++) {
++	for (i = 0; i < logo->clutsize; i++) {
+ 		palette[i+32] = (safe_shift((clut[0] & redmask), redshift) |
+ 				 safe_shift((clut[1] & greenmask), greenshift) |
+ 				 safe_shift((clut[2] & bluemask), blueshift));
+@@ -371,7 +373,7 @@ static void fb_rotate_logo_cw(const u8 *in, u8 *out, u32 width, u32 height)
  
+ 	for (i = 0; i < height; i++)
+ 		for (j = 0; j < width; j++)
+-				out[height * j + h - i] = *in++;
++			out[height * j + h - i] = *in++;
+ }
+ 
+ static void fb_rotate_logo_ccw(const u8 *in, u8 *out, u32 width, u32 height)
+@@ -636,9 +638,8 @@ int fb_prepare_logo(struct fb_info *info, int rotate)
+ 	/* Return if no suitable logo was found */
+ 	fb_logo.logo = fb_find_logo(depth);
+ 
+-	if (!fb_logo.logo) {
++	if (!fb_logo.logo)
+ 		return 0;
+-	}
+ 
+ 	if (rotate == FB_ROTATE_UR || rotate == FB_ROTATE_UD)
+ 		yres = info->var.yres;
 -- 
 2.41.0
 

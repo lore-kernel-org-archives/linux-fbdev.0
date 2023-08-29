@@ -2,119 +2,150 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3325EC83F14
-	for <linux-fbdev@archiver.kernel.org>; Tue, 29 Aug 2023 17:12:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31F77C71153
+	for <linux-fbdev@archiver.kernel.org>; Tue, 29 Aug 2023 20:03:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232650AbjH2RMJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 29 Aug 2023 13:12:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48466 "EHLO
+        id S240091AbjH2UDW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 29 Aug 2023 16:03:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48790 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237662AbjH2RLo (ORCPT
+        with ESMTP id S240051AbjH2UDM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 29 Aug 2023 13:11:44 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D7621FD;
-        Tue, 29 Aug 2023 10:11:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de;
- s=s31663417; t=1693329085; x=1693933885; i=deller@gmx.de;
- bh=Am0z4fpqq3gPWNH7evU/PjMIRGxd6gp6/fsCQ/0L66o=;
- h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=U4nedsHCoA/1LmSlRHSeHbWXHxCkCzF/0fMB5MMNEqbkl8Aq7pZFV3O13JP6z0lzBDPu78y
- eaiF+0agzmwjfKKGZ5PQ7lw9wDnC0irnyigLmIJrWgCUpsFNp9VKQqqn85kPj6748BRfbrlP7
- y1DVOVfAa5nmC5KXpZ5k5K0dXhnIp8+iG0W8okM3AcO/MP97drELEzqITWhyCYWKln8CKDyAf
- MRy37VFMc5DN2lFRzgrWR6JhrMxlg9hsojGEZcI+otkmNiuXM3xz4tcvK9So9hiqz8Da/Nt76
- PyDFQZV3AiR/Mq2W1bNlnYShwKCP5OJjn7C8i4FFBanF50GxKNQA==
+        Tue, 29 Aug 2023 16:03:12 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B5E8AD2;
+        Tue, 29 Aug 2023 13:03:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+ s=s31663417; t=1693339376; x=1693944176; i=j.neuschaefer@gmx.net;
+ bh=lg5pj3dzVGowh2JUIgjyLPKyTlGmgpDjIfuCipKzTZQ=;
+ h=X-UI-Sender-Class:From:To:Cc:Subject:Date;
+ b=jKSmlhGSRTFuxaaf7iWjl4/nwLhA3eWC56MWa1gEIJXcRJZDSJjGV/4/IAxDIOX1tjVgMEE
+ VzXdPq6dgXJlxUOp/JU63Wp4Kf7rUiqohJo/jnUPKSRqL4KM41JTKiQdHJgUHRO5pRnzK5PcN
+ 0696HpNKi11ChDExvX3TNmUNbQC1j51MB09OzFAFo5XRAV46PU1PPD5bOxT1Tztht6qPyKEF8
+ 5sqlKlhoXSMEAhXgeCPzzjrx5sdxCEpNGfOqb2H7c4htucJGNCCa1qV5hYxSaWYKlP0Cj225U
+ wPUtFWBSMvrJkDVVhzQxjLjSgKnsVwOIaRi2DOOPLV9qB/4BQuqg==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.153.221]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1N5VDE-1pdHfz2KqY-016u5T; Tue, 29
- Aug 2023 19:11:25 +0200
-Message-ID: <9d2bb495-0c1d-0d1b-96ea-4b1110d45b79@gmx.de>
-Date:   Tue, 29 Aug 2023 19:11:25 +0200
+Received: from probook ([87.154.222.166]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MTABZ-1q73Zn1wR5-00UcHm; Tue, 29
+ Aug 2023 22:02:56 +0200
+From:   =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To:     linux-fbdev@vger.kernel.org
+Cc:     =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+        Helge Deller <deller@gmx.de>, Rob Clark <robdclark@gmail.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Jingoo Han <jg1.han@samsung.com>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] fbdev: Update fbdev source file paths
+Date:   Tue, 29 Aug 2023 22:02:52 +0200
+Message-Id: <20230829200253.1473891-1-j.neuschaefer@gmx.net>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: truncation in drivers/video/fbdev/neofb.c
-Content-Language: en-US
-To:     Nick Desaulniers <ndesaulniers@google.com>
-Cc:     linux-fbdev@vger.kernel.org,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        clang-built-linux <llvm@lists.linux.dev>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Nathan Chancellor <nathan@kernel.org>
-References: <CAKwvOdn0xoVWjQ6ufM_rojtKb0f1i1hW-J_xYGfKDNFdHwaeHQ@mail.gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <CAKwvOdn0xoVWjQ6ufM_rojtKb0f1i1hW-J_xYGfKDNFdHwaeHQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:nLhGJZGsPhbosIqFBHO4HTSsCDwh7B/34489wZUsEU4guozePTn
- iVOOt2b9v3YsEHpW1OfD88PAgAHTEbgFfXELfw2Ebm4znjRHVRWmhvb30OA9LZfWVLqEctA
- 4i7B1n7/aiRqpcY2BV1834zhck4UJb5ZmSKJauk4jQlc8J8DDWkDxocVBO3wZc5Y606xQYk
- qFFgxBkyI0OWmLlJMksaA==
-UI-OutboundReport: notjunk:1;M01:P0:NdvL8Q8qicY=;IRYB6GgUXLgy8IgJ3ESMKXhKypa
- khB8z5GixgdUdVJoaHINNn7L3sjLTdUwFpz4ml1HsEVwJK+tTpMgKw5YLNysd7U89fYcEqpyT
- Oz/r4xGSsObPFwEDk09fN62yK+pc26pTymOdTbnmCbNuyLj2Xd2ENaNGsvQEORVYafgu+6JM9
- fIElepZdS+WmmrPSxBX9jWqoj0dmVi585iCmWfGHC40jbgmqyBVGKHUv049SpZbBocTLwkXHK
- DtKllaqG8GPfLfoOM2rOQ07w2/IhgUpouqADoGRMLa60RgG2KWAYvzfatosiH62nGgXrhMvio
- BVnnIQhj0/dS3sWRpPYJPv0ez+FIJWnuydCzf6qpKn2IcYOEv4Tts+O3fLZSseSHQePrTJOT2
- CTfZbZS4MO6ThePqBbj3fyjPouhRtDXLs7xnigrNgcK9U+PNo9MGKNdc3jnb5p09yuUkt1oOn
- Htkz6eDrAqQ0hP5TZGb2Zf4E/BckybE4SQznt2FMV18OY5xja3mwlLx2k5ogCJTAy9+H+xXs1
- EBoNbTAz9mReLc9f1XEwEgd2ISsZHysnNCV1lzgil21B07cfwiwyONK0LnrcZJ/udfd01vsfi
- XxUFhCBgzFfXJh3lOlTpsq6I5R5XMzPkEuYr9LZVqAjJX36ie3iOhv2bhyrRZ3oKr0PAB3xZk
- flPHwr/AwLrYv48h1iEDvvkiRWQLhhBQaxDFmWqvptavPQv1WjsjDQNqo0U/DQOAr7lfwjRvy
- 7yXoQ7PdUcNVJiYSBYGEvXFw/KqEl5ejG2CZoGnVnaKT4bhrxeyHdre/hkTbWjwWzqIu/XEAj
- L2GZawpRtuTA68msObmx5/dLj4RM4kEsBHMpXvZ/1j9/A8ej18clE6ujLJzMVBJauSrNeTSLr
- VE3R0z/1QSdcNwQZ6Tbo4rOM3TLpMxKIAk5wkT7ogK6IZCVcpnhJojsJmaycO0yKHVaXOBEA7
- 2mjR+w==
+X-Provags-ID: V03:K1:7m61yDqPekLpjBk3hCmP1bMSwW5yQXxD++BEvCEIejsTl24Svld
+ oKkPxWjZMc8ISL01SueDCdACV22gdFh8Ogfg/dKhfCn755CMyxej7aWuJ3zNqPJPv8Pzch7
+ YSaGGPhNdFZavhIsKts1JIbExLR9AWW3DgGPCmw4dlEVzB4JpyjMqIHv6i+w74luzqlw7pQ
+ xzmnIlL83dLElVzdgCywQ==
+UI-OutboundReport: notjunk:1;M01:P0:OVMas4vSyPQ=;pcm1/W4MU4//d7kEG7Euf68Nn/k
+ VEl5PIZu5dHRLAJgxbnwXvFLX6QfhFxPpB4GwiDejZ9ZFt+wfdlTkWtgsStm0LJKB+9mTRF55
+ tty/qRQlr+04+ZdXu0wZK49UWq0XOjPaMv3PcxDfkg4i9kV9CFIClRhleeX+Veq59HnsLkoL7
+ WDn4MBNFSe7VDBoll+FnQJuiqk2KvqOSY4KC7At1BtOmYd+sWW/X/pQ3p7RLZlFw2nJDJhcTK
+ Ok71ESJ2tD4tJW15LeB+o1COw/LsJhIb8aI9TkMMarC4fSNoa8kraw+gijKS/EMhjMF6EoEyL
+ VEuKMq9W/7ftOWF5miej18DNsg+kPp130hTVJskbOKlSEvswPyfy8IOoJB8v3Jw3g1Xr7a6G7
+ v3gV5fA2eK9c1WhM5nhPm/R1AZIHk73/G2ust76rt9D7woJv7wMnStVsIQrBkdaBLj3UEa4oR
+ CInue8OGWosuLvldfW7w+vBH5wG1GjAgG2SFFpb6nHW/oJ3kh+xvKamT+GuU01rONDvtdkD4Z
+ HiMw+3wdCKoJNOZXt8EBCC9KbylMVSU00xTTpxLurgvK4nI4T4INqdrVeZcXGGOuY36HLx+zz
+ G8SbSDZAv6TxdMa1WhDdeCbrpXcYcZ3zwEXC1gtp1ZD5TZIjjoOX2EsMpkvl5F7Pirlmj0DEb
+ R5a5mHUV0agu396ibLg5byIIZGmZPjiLU06xH6prx4ocrZhFGU9VLaNNTSVoSzcif9uSnnWwE
+ AriAhJlFXT95cx1i0dMjKPzsEqRMr+ULZVpnEq1cXBbRC1K3UuOwrpdl08TkqiIMf2VL1VSLs
+ RxeuPV5Ld4OeFJRENU7NxOLnkEKZwD9Tkw7hdJ6P1YysXFoCBymIoX/pA2Jx6XxBpK6gyxfso
+ Gyf2TzibNxyjJHOtUWbfJ+XxC1kZZZ0BEyZI70LOL5NlVYCbHWPaYFrjtUDuYMTTMJulmdCj9
+ bTb1yw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 8/29/23 18:45, Nick Desaulniers wrote:
-> Helge,
-> A recent change in clang made it better about spotting snprintf that
-> will result in truncation.  Nathan reported the following instances:
->
-> drivers/video/fbdev/neofb.c:1959:3: warning: 'snprintf' will always be
-> truncated; specified size is 16, but format string expands to at least
-> 17 [-Wfortify-source]
-> drivers/video/fbdev/neofb.c:1963:3: warning: 'snprintf' will always be
-> truncated; specified size is 16, but format string expands to at least
-> 18 [-Wfortify-source]
-> drivers/video/fbdev/neofb.c:1967:3: warning: 'snprintf' will always be
-> truncated; specified size is 16, but format string expands to at least
-> 17 [-Wfortify-source]
-> drivers/video/fbdev/neofb.c:1971:3: warning: 'snprintf' will always be
-> truncated; specified size is 16, but format string expands to at least
-> 17 [-Wfortify-source]
-> drivers/video/fbdev/neofb.c:1978:3: warning: 'snprintf' will always be
-> truncated; specified size is 16, but format string expands to at least
-> 18 [-Wfortify-source]
-> drivers/video/fbdev/neofb.c:1985:3: warning: 'snprintf' will always be
-> truncated; specified size is 16, but format string expands to at least
-> 17 [-Wfortify-source]
-> drivers/video/fbdev/neofb.c:1992:3: warning: 'snprintf' will always be
-> truncated; specified size is 16, but format string expands to at least
-> 18 [-Wfortify-source]
->
-> https://github.com/ClangBuiltLinux/linux/issues/1923
->
-> Clang is right here.  `info->fix.id` is declared as `char id[16];` so
-> indeed string literals like "MagicGraph 256AV+" indeed lead to
-> truncation. But this is declared in include/uapi/linux/fb.h; I assume
-> those headers cant be changed? Can the strings be shortened then? Is
-> it perhaps time to delete this driver?
->
-> I see AKPM mentioned alluded to this in
-> commit 0e90454 ("neofb: avoid overwriting fb_info fields")
->
-> (Also, snprintf probably isn't necessary for string literals that
-> don't contain format strings)
+The files fbmem.c, fb_defio.c, fbsysfs.c, fbmon.c, modedb.c, and
+fbcmap.c were moved to drivers/video/fbdev, and subsequently to
+drivers/video/fbdev/core, in the commits listed below.
 
-It's just an ID field, so I don't think we need the full name of the card.
-So using strscpy() and shorten the name, e.g. "MagicGr. 256XL+"
-instead of "MagicGraph 256XL+" is probably the most simple solution?
+Reported by kalekale in #kernel (Libera IRC).
 
-Anyone want to send a patch?
+Fixes: f7018c213502 ("video: move fbdev to drivers/video/fbdev")
+Fixes: 19757fc8432a ("fbdev: move fbdev core files to separate directory")
+Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
+=2D--
+ include/linux/fb.h | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Helge
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index ce7d588edc3e6..3cda5b9f2469b 100644
+=2D-- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -592,7 +592,7 @@ extern ssize_t fb_sys_write(struct fb_info *info, cons=
+t char __user *buf,
+ 	__FB_DEFAULT_SYS_OPS_DRAW, \
+ 	__FB_DEFAULT_SYS_OPS_MMAP
+
+-/* drivers/video/fbmem.c */
++/* drivers/video/fbdev/core/fbmem.c */
+ extern int register_framebuffer(struct fb_info *fb_info);
+ extern void unregister_framebuffer(struct fb_info *fb_info);
+ extern int fb_prepare_logo(struct fb_info *fb_info, int rotate);
+@@ -636,7 +636,7 @@ static inline void __fb_pad_aligned_buffer(u8 *dst, u3=
+2 d_pitch,
+ 	}
+ }
+
+-/* drivers/video/fb_defio.c */
++/* drivers/video/fbdev/core/fb_defio.c */
+ int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)=
+;
+ extern int  fb_deferred_io_init(struct fb_info *info);
+ extern void fb_deferred_io_open(struct fb_info *info,
+@@ -735,14 +735,14 @@ static inline bool fb_be_math(struct fb_info *info)
+ #endif /* CONFIG_FB_FOREIGN_ENDIAN */
+ }
+
+-/* drivers/video/fbsysfs.c */
++/* drivers/video/fbdev/core/fbsysfs.c */
+ extern struct fb_info *framebuffer_alloc(size_t size, struct device *dev)=
+;
+ extern void framebuffer_release(struct fb_info *info);
+ extern int fb_init_device(struct fb_info *fb_info);
+ extern void fb_cleanup_device(struct fb_info *head);
+ extern void fb_bl_default_curve(struct fb_info *fb_info, u8 off, u8 min, =
+u8 max);
+
+-/* drivers/video/fbmon.c */
++/* drivers/video/fbdev/core/fbmon.c */
+ #define FB_MAXTIMINGS		0
+ #define FB_VSYNCTIMINGS		1
+ #define FB_HSYNCTIMINGS		2
+@@ -776,7 +776,7 @@ extern int of_get_fb_videomode(struct device_node *np,
+ extern int fb_videomode_from_videomode(const struct videomode *vm,
+ 				       struct fb_videomode *fbmode);
+
+-/* drivers/video/modedb.c */
++/* drivers/video/fbdev/core/modedb.c */
+ #define VESA_MODEDB_SIZE 43
+ #define DMT_SIZE 0x50
+
+@@ -802,7 +802,7 @@ extern void fb_videomode_to_modelist(const struct fb_v=
+ideomode *modedb, int num,
+ extern const struct fb_videomode *fb_find_best_display(const struct fb_mo=
+nspecs *specs,
+ 						       struct list_head *head);
+
+-/* drivers/video/fbcmap.c */
++/* drivers/video/fbdev/core/fbcmap.c */
+ extern int fb_alloc_cmap(struct fb_cmap *cmap, int len, int transp);
+ extern int fb_alloc_cmap_gfp(struct fb_cmap *cmap, int len, int transp, g=
+fp_t flags);
+ extern void fb_dealloc_cmap(struct fb_cmap *cmap);
+=2D-
+2.40.1
+

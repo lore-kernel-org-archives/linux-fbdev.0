@@ -2,199 +2,202 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98240C83F12
-	for <linux-fbdev@archiver.kernel.org>; Tue, 29 Aug 2023 15:57:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FA72C83F18
+	for <linux-fbdev@archiver.kernel.org>; Tue, 29 Aug 2023 16:29:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237240AbjH2P4u (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 29 Aug 2023 11:56:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40410 "EHLO
+        id S236414AbjH2Q23 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 29 Aug 2023 12:28:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34108 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237324AbjH2P4Z (ORCPT
+        with ESMTP id S237512AbjH2Q21 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 29 Aug 2023 11:56:25 -0400
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D313212D;
-        Tue, 29 Aug 2023 08:56:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1693324582; x=1724860582;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=0Net98/tBKWwHvEeymx3Z6uXP6ZPeuR/3kE/rCN6ir8=;
-  b=EqA5l2/KfH2xFHJ4VnyXu7OdvZMwS1FTN7GxcICZ1PArXgAjTlDXexy5
-   vEEbv6Bq7My4aD7tzHcDyKNpOn30b0b3b1I2BlETihfIcstiu0Lx23V3c
-   cp+Y/2WvTi2JwgLUaiGJiNi0OWv+JFI+nq/HxN4VXykXAgW5/KSr3eIGD
-   xxGcVMUvgQ3k1OaLRL5kBzXU/82+WGkBgq700oEWuH/R2qod+abf6jUs6
-   NVMS8FByhDeA+/I4hD8GH31PH/GBzuY4npBrFIyqu0FnjyNXDo8nQmJs5
-   JnEHYiMubpa9i1SgNOQU0sR5SqXQCG6dd6RzIsYg91BolMH3p7qDOt/EO
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10817"; a="375365762"
-X-IronPort-AV: E=Sophos;i="6.02,210,1688454000"; 
-   d="scan'208";a="375365762"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Aug 2023 08:56:22 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10817"; a="741870843"
-X-IronPort-AV: E=Sophos;i="6.02,210,1688454000"; 
-   d="scan'208";a="741870843"
-Received: from lkp-server02.sh.intel.com (HELO daf8bb0a381d) ([10.239.97.151])
-  by fmsmga007.fm.intel.com with ESMTP; 29 Aug 2023 08:56:19 -0700
-Received: from kbuild by daf8bb0a381d with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1qb14k-0008sN-2f;
-        Tue, 29 Aug 2023 15:56:18 +0000
-Date:   Tue, 29 Aug 2023 23:55:36 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
-        daniel@ffwll.ch, javierm@redhat.com, sam@ravnborg.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc:     oe-kbuild-all@lists.linux.dev, linux-kernel@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH 4/7] fbdev/core: Move logo functions into separate source
- file
-Message-ID: <202308292302.bkYBkvrg-lkp@intel.com>
-References: <20230829142109.4521-5-tzimmermann@suse.de>
+        Tue, 29 Aug 2023 12:28:27 -0400
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 212471B9
+        for <linux-fbdev@vger.kernel.org>; Tue, 29 Aug 2023 09:28:18 -0700 (PDT)
+Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-401d24f1f27so13287955e9.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 29 Aug 2023 09:28:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1693326496; x=1693931296;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=rpqa6ldHA7+s03xx4g9dxalk6uI6N/wZjkRdFsn+Mzw=;
+        b=KnmcT3f4tVKSrqfCvp4riPVv63u5NlCU3AyN1khUxhpySjV3IVDDE8W8eXge76a1Pm
+         6VXcNXVjPqGvzFLXTz4QGSyIEDIxaoFhfQnu4PI3ARFdL/0WRG0jhFZFmBJMLPQ2vSjr
+         LQCWdLnf6nwhPF+of9zRRtocUu0UFOxOvGuXEH7OBbyeySBhlt5UHHL2KtjVzJAO3a2d
+         yJF7/gCM+5/wsTGoLIJpXiLKLd3cWEKGizMSL/lHcTQNPp3IPRSb84ov3vojrJtscU7p
+         gIUKBC0l79dwzNOcRYsvkdkJ4/0Afkni/8BwNud1r1hZdVVotmJuz96XZya/IfZ/9m7F
+         Scfg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1693326496; x=1693931296;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=rpqa6ldHA7+s03xx4g9dxalk6uI6N/wZjkRdFsn+Mzw=;
+        b=KCmdEyd/rwa1z6lwcyLAF2wOycL1jzw/Ue7OwFpJz6nUZkyjqqCUkq5mNsXSk49lK/
+         Q+fkDFEdt/9evXf4puTOV0jS8Q2ftJkp2cORZZiuxT88plpEsWXvBuTYa3d+jWbpWrfw
+         t666Wb8qmEl6DXETqB1ZcYeHdTEvkExv00cqqkFW0QhoRZ22i1n/5cjrjS7wRwIHxayE
+         HhH0y2JAoz9te2IomPGUAGqdSy5FbAa+tcSO8ajIKd4ig87csh1nWH6pTHiAqlZsNeKM
+         pic9hrvu6CN8UcOA5U3qD29oHMhgECZDJAijcl8wQF8o3v7lsbHsr45ktPhrbQAG8RU3
+         FQ8A==
+X-Gm-Message-State: AOJu0YyhPFDkNkFjwfXYqzEvn7NJwgdgf/P4vDLah7oGaa+FLnHWe0xM
+        HWE3lpNvdUPfEK+a95iMfN/3qw==
+X-Google-Smtp-Source: AGHT+IEfJSUBL42nyBdyLW7ZL/n8wPUN1nrSlKl/LyAkDJ2R2cEWy2EjLFUTZblF2ciDwd/UsdyPjQ==
+X-Received: by 2002:a7b:cbcd:0:b0:3fe:25b3:951d with SMTP id n13-20020a7bcbcd000000b003fe25b3951dmr21965260wmi.5.1693326496479;
+        Tue, 29 Aug 2023 09:28:16 -0700 (PDT)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id k8-20020a7bc408000000b003fe23b10fdfsm17577866wmi.36.2023.08.29.09.28.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 29 Aug 2023 09:28:16 -0700 (PDT)
+Date:   Tue, 29 Aug 2023 17:28:14 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Flavio Suligoi <f.suligoi@asem.it>
+Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1 2/2] backlight: mp3309c: Add support for MPS MP3309C
+Message-ID: <20230829162814.GA56339@aspen.lan>
+References: <20230829101546.483189-1-f.suligoi@asem.it>
+ <20230829101546.483189-2-f.suligoi@asem.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230829142109.4521-5-tzimmermann@suse.de>
+In-Reply-To: <20230829101546.483189-2-f.suligoi@asem.it>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+On Tue, Aug 29, 2023 at 12:15:46PM +0200, Flavio Suligoi wrote:
+> The Monolithic Power (MPS) MP3309C is a WLED step-up converter, featuring a
+> programmable switching frequency to optimize efficiency.
+> The brightness can be controlled either by I2C commands (called "analog"
+> mode) or by a PWM input signal (PWM mode).
+> This driver supports both modes.
+>
+> For DT configuration details, please refer to:
+> - Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
+>
+> The datasheet is available at:
+> - https://www.monolithicpower.com/en/mp3309c.html
+>
+> Signed-off-by: Flavio Suligoi <f.suligoi@asem.it>
 
-kernel test robot noticed the following build warnings:
+> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+> index 51387b1ef012..65d0ac9f611d 100644
+> --- a/drivers/video/backlight/Kconfig
+> +++ b/drivers/video/backlight/Kconfig
+> @@ -389,6 +389,19 @@ config BACKLIGHT_LM3639
+>  	help
+>  	  This supports TI LM3639 Backlight + 1.5A Flash LED Driver
+>
+> +config BACKLIGHT_MP3309C
+> +	tristate "Backlight Driver for MPS MP3309C"
+> +	depends on I2C
+> +	select REGMAP_I2C
+> +	select NEW_LEDS
+> +	select LEDS_CLASS
 
-[auto build test WARNING on drm-misc/drm-misc-next]
-[also build test WARNING on next-20230829]
-[cannot apply to linus/master v6.5]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+This doesn't seem right.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/fbdev-au1200fb-Do-not-display-boot-up-logo/20230829-222419
-base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
-patch link:    https://lore.kernel.org/r/20230829142109.4521-5-tzimmermann%40suse.de
-patch subject: [PATCH 4/7] fbdev/core: Move logo functions into separate source file
-config: alpha-allyesconfig (https://download.01.org/0day-ci/archive/20230829/202308292302.bkYBkvrg-lkp@intel.com/config)
-compiler: alpha-linux-gcc (GCC) 13.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20230829/202308292302.bkYBkvrg-lkp@intel.com/reproduce)
+Shouldn't PWM and GPIOLIB be listed here? Why are NEW_LEDS and
+LEDS_CLASS needed?
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202308292302.bkYBkvrg-lkp@intel.com/
+> +	help
+> +	  This supports MPS MP3309C backlight WLED Driver in both PWM and
+> +	  analog/I2C dimming modes.
+> +
+> +	  To compile this driver as a module, choose M here: the module will
+> +	  be called mp3309c_bl.
+> +
+>  config BACKLIGHT_LP855X
+>  	tristate "Backlight driver for TI LP855X"
+>  	depends on I2C && PWM
 
-All warnings (new ones prefixed by >>):
+> +static int mp3309c_bl_update_status(struct backlight_device *bl)
+> +{
+> +	struct mp3309c_chip *chip = bl_get_data(bl);
+> +	int brightness = backlight_get_brightness(bl);
+> +	struct pwm_state pwmstate;
+> +	unsigned int analog_val, bits_val;
+> +	int i, ret;
+> +
+> +	if (chip->pdata->dimming_mode == DIMMING_PWM) {
+> +		/*
+> +		 * PWM dimming mode
+> +		 */
+> +		pwm_init_state(chip->pwmd, &pwmstate);
+> +		pwm_set_relative_duty_cycle(&pwmstate, brightness,
+> +					    chip->pdata->max_brightness);
+> +		pwmstate.enabled = true;
+> +		ret = pwm_apply_state(chip->pwmd, &pwmstate);
+> +		if (ret)
+> +			return ret;
+> +	} else {
+> +		/*
+> +		 * Analog dimming mode by I2C commands
+> +		 *
+> +		 * The 5 bits of the dimming analog value D4..D0 is allocated
+> +		 * in the I2C register #0, in the following way:
+> +		 *
+> +		 *     +--+--+--+--+--+--+--+--+
+> +		 *     |EN|D0|D1|D2|D3|D4|XX|XX|
+> +		 *     +--+--+--+--+--+--+--+--+
+> +		 */
+> +		analog_val = DIV_ROUND_UP(ANALOG_MAX_VAL * brightness,
+> +					  chip->pdata->max_brightness);
+> +		bits_val = 0;
+> +		for (i = 0; i <= 5; i++)
+> +			bits_val += ((analog_val >> i) & 0x01) << (6 - i);
+> +		ret = regmap_update_bits(chip->regmap, REG_I2C_0,
+> +					 ANALOG_REG_MASK, bits_val);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	if (brightness > 0) {
+> +		switch (chip->pdata->status) {
+> +		case FIRST_POWER_ON:
+> +			/*
+> +			 * Only for the first time, wait for the optional
+> +			 * switch-on delay and then enable the device.
+> +			 * Otherwise enable the backlight immediately.
+> +			 */
+> +			schedule_delayed_work(&chip->enable_work,
+> +					      msecs_to_jiffies(chip->pdata->switch_on_delay_ms));
 
->> drivers/video/fbdev/core/fb_logo.c:433:5: warning: no previous prototype for 'fb_prepare_logo' [-Wmissing-prototypes]
-     433 | int fb_prepare_logo(struct fb_info *info, int rotate)
-         |     ^~~~~~~~~~~~~~~
->> drivers/video/fbdev/core/fb_logo.c:506:5: warning: no previous prototype for 'fb_show_logo' [-Wmissing-prototypes]
-     506 | int fb_show_logo(struct fb_info *info, int rotate)
-         |     ^~~~~~~~~~~~
+Delaying this work makes no sense to me, especially when it is only
+going to happen at initial power on.
+
+If you are (ab)using this property to try and sequence the backlight
+power-on with display initialization then this is not the way to do it.
+Normally backlight drivers that support sequencing versus the panel
+work by having a backlight property set on the panel linking it to the
+backlight. When the panel is ready this power status of the backlight
+will be updated accordingly.
+
+All the backlight driver need do is make sure that is the initial
+power status is "powerdown" on systems when the link is present (e.g.
+leave the backlight off and wait to be told the display has settled).
 
 
-vim +/fb_prepare_logo +433 drivers/video/fbdev/core/fb_logo.c
+> +			/*
+> +			 * Optional external device GPIO reset, with
+> +			 * delay pulse length
+> +			 */
+> +			if (chip->pdata->reset_pulse_enable)
+> +				schedule_delayed_work(&chip->reset_gpio_work,
+> +						      msecs_to_jiffies(chip->pdata->reset_on_delay_ms));
 
-   432	
- > 433	int fb_prepare_logo(struct fb_info *info, int rotate)
-   434	{
-   435		int depth = fb_get_color_depth(&info->var, &info->fix);
-   436		unsigned int yres;
-   437		int height;
-   438	
-   439		memset(&fb_logo, 0, sizeof(struct logo_data));
-   440	
-   441		if (info->flags & FBINFO_MISC_TILEBLITTING ||
-   442		    info->fbops->owner || !fb_logo_count)
-   443			return 0;
-   444	
-   445		if (info->fix.visual == FB_VISUAL_DIRECTCOLOR) {
-   446			depth = info->var.blue.length;
-   447			if (info->var.red.length < depth)
-   448				depth = info->var.red.length;
-   449			if (info->var.green.length < depth)
-   450				depth = info->var.green.length;
-   451		}
-   452	
-   453		if (info->fix.visual == FB_VISUAL_STATIC_PSEUDOCOLOR && depth > 4) {
-   454			/* assume console colormap */
-   455			depth = 4;
-   456		}
-   457	
-   458		/* Return if no suitable logo was found */
-   459		fb_logo.logo = fb_find_logo(depth);
-   460	
-   461		if (!fb_logo.logo)
-   462			return 0;
-   463	
-   464		if (rotate == FB_ROTATE_UR || rotate == FB_ROTATE_UD)
-   465			yres = info->var.yres;
-   466		else
-   467			yres = info->var.xres;
-   468	
-   469		if (fb_logo.logo->height > yres) {
-   470			fb_logo.logo = NULL;
-   471			return 0;
-   472		}
-   473	
-   474		/* What depth we asked for might be different from what we get */
-   475		if (fb_logo.logo->type == LINUX_LOGO_CLUT224)
-   476			fb_logo.depth = 8;
-   477		else if (fb_logo.logo->type == LINUX_LOGO_VGA16)
-   478			fb_logo.depth = 4;
-   479		else
-   480			fb_logo.depth = 1;
-   481	
-   482	
-   483		if (fb_logo.depth > 4 && depth > 4) {
-   484			switch (info->fix.visual) {
-   485			case FB_VISUAL_TRUECOLOR:
-   486				fb_logo.needs_truepalette = 1;
-   487				break;
-   488			case FB_VISUAL_DIRECTCOLOR:
-   489				fb_logo.needs_directpalette = 1;
-   490				fb_logo.needs_cmapreset = 1;
-   491				break;
-   492			case FB_VISUAL_PSEUDOCOLOR:
-   493				fb_logo.needs_cmapreset = 1;
-   494				break;
-   495			}
-   496		}
-   497	
-   498		height = fb_logo.logo->height;
-   499		if (fb_center_logo)
-   500			height += (yres - fb_logo.logo->height) / 2;
-   501	
-   502		return fb_prepare_extra_logos(info, height, yres);
-   503	}
-   504	EXPORT_SYMBOL(fb_prepare_logo);
-   505	
- > 506	int fb_show_logo(struct fb_info *info, int rotate)
-   507	{
-   508		unsigned int count;
-   509		int y;
-   510	
-   511		if (!fb_logo_count)
-   512			return 0;
-   513	
-   514		count = fb_logo_count < 0 ? num_online_cpus() : fb_logo_count;
-   515		y = fb_show_logo_line(info, rotate, fb_logo.logo, 0, count);
-   516		y = fb_show_extra_logos(info, y, rotate);
-   517	
-   518		return y;
-   519	}
-   520	EXPORT_SYMBOL(fb_show_logo);
-   521	#else
-   522	int fb_prepare_logo(struct fb_info *info, int rotate)
-   523	{
-   524		return 0;
-   525	}
-   526	EXPORT_SYMBOL(fb_prepare_logo);
-   527	
+Similarly I don't understand what this property is for. A backlight is
+directly perceivable by the user. There is nothing downstream of a
+light that needs to be reset!
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+What is this used for?
+
+
+Daniel.

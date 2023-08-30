@@ -2,150 +2,187 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31F77C71153
-	for <linux-fbdev@archiver.kernel.org>; Tue, 29 Aug 2023 20:03:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9B43C83F18
+	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Aug 2023 18:35:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240091AbjH2UDW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 29 Aug 2023 16:03:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48790 "EHLO
+        id S232442AbjH3SfN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 30 Aug 2023 14:35:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35124 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240051AbjH2UDM (ORCPT
+        with ESMTP id S241836AbjH3HKe (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 29 Aug 2023 16:03:12 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B5E8AD2;
-        Tue, 29 Aug 2023 13:03:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
- s=s31663417; t=1693339376; x=1693944176; i=j.neuschaefer@gmx.net;
- bh=lg5pj3dzVGowh2JUIgjyLPKyTlGmgpDjIfuCipKzTZQ=;
- h=X-UI-Sender-Class:From:To:Cc:Subject:Date;
- b=jKSmlhGSRTFuxaaf7iWjl4/nwLhA3eWC56MWa1gEIJXcRJZDSJjGV/4/IAxDIOX1tjVgMEE
- VzXdPq6dgXJlxUOp/JU63Wp4Kf7rUiqohJo/jnUPKSRqL4KM41JTKiQdHJgUHRO5pRnzK5PcN
- 0696HpNKi11ChDExvX3TNmUNbQC1j51MB09OzFAFo5XRAV46PU1PPD5bOxT1Tztht6qPyKEF8
- 5sqlKlhoXSMEAhXgeCPzzjrx5sdxCEpNGfOqb2H7c4htucJGNCCa1qV5hYxSaWYKlP0Cj225U
- wPUtFWBSMvrJkDVVhzQxjLjSgKnsVwOIaRi2DOOPLV9qB/4BQuqg==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from probook ([87.154.222.166]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MTABZ-1q73Zn1wR5-00UcHm; Tue, 29
- Aug 2023 22:02:56 +0200
-From:   =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-To:     linux-fbdev@vger.kernel.org
-Cc:     =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
-        Helge Deller <deller@gmx.de>, Rob Clark <robdclark@gmail.com>,
+        Wed, 30 Aug 2023 03:10:34 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7CCD71AE;
+        Wed, 30 Aug 2023 00:10:28 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 362711F45F;
+        Wed, 30 Aug 2023 07:10:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1693379427; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=WAyCzORlXQ671s55Fhl/O2JBvLDCXuVOy/Wf1tHQsfE=;
+        b=bj0t0YuiCNdeH/onBb45AL1SjWhzlArMc9u5tBi0hv+981JDUS89mmXWsEkQOzSGtAsK0s
+        Y9EGut/ZAxOgO4sY6NZbnA27CyeuxCD6fX2241t7v/VweDt2+E4Wh6X/CkhGb/jHQHMtzU
+        RFaLDob1Hwnlf7/tyr4TwYhTSoKbII8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1693379427;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=WAyCzORlXQ671s55Fhl/O2JBvLDCXuVOy/Wf1tHQsfE=;
+        b=Z5XRvkUk+x8TdcIKoCpOnuWtcbm0FIZxflYhX2YeIdIofEgVpdfI5lqyiRmZ8rXIR9Yx5I
+        QPYet/vWnLmmqnBg==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id F0DFB13441;
+        Wed, 30 Aug 2023 07:10:26 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id LmmrOWLr7mQ+TwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 30 Aug 2023 07:10:26 +0000
+Message-ID: <d9a02d20-8b59-cbdd-d054-eac14f9771d2@suse.de>
+Date:   Wed, 30 Aug 2023 09:10:26 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.14.0
+Subject: Re: [PATCH] fbdev: Update fbdev source file paths
+Content-Language: en-US
+To:     =?UTF-8?Q?Jonathan_Neusch=c3=a4fer?= <j.neuschaefer@gmx.net>,
+        linux-fbdev@vger.kernel.org
+Cc:     Helge Deller <deller@gmx.de>, Rob Clark <robdclark@gmail.com>,
         Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
         Jingoo Han <jg1.han@samsung.com>,
         Tomi Valkeinen <tomi.valkeinen@ti.com>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
         dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev: Update fbdev source file paths
-Date:   Tue, 29 Aug 2023 22:02:52 +0200
-Message-Id: <20230829200253.1473891-1-j.neuschaefer@gmx.net>
-X-Mailer: git-send-email 2.40.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:7m61yDqPekLpjBk3hCmP1bMSwW5yQXxD++BEvCEIejsTl24Svld
- oKkPxWjZMc8ISL01SueDCdACV22gdFh8Ogfg/dKhfCn755CMyxej7aWuJ3zNqPJPv8Pzch7
- YSaGGPhNdFZavhIsKts1JIbExLR9AWW3DgGPCmw4dlEVzB4JpyjMqIHv6i+w74luzqlw7pQ
- xzmnIlL83dLElVzdgCywQ==
-UI-OutboundReport: notjunk:1;M01:P0:OVMas4vSyPQ=;pcm1/W4MU4//d7kEG7Euf68Nn/k
- VEl5PIZu5dHRLAJgxbnwXvFLX6QfhFxPpB4GwiDejZ9ZFt+wfdlTkWtgsStm0LJKB+9mTRF55
- tty/qRQlr+04+ZdXu0wZK49UWq0XOjPaMv3PcxDfkg4i9kV9CFIClRhleeX+Veq59HnsLkoL7
- WDn4MBNFSe7VDBoll+FnQJuiqk2KvqOSY4KC7At1BtOmYd+sWW/X/pQ3p7RLZlFw2nJDJhcTK
- Ok71ESJ2tD4tJW15LeB+o1COw/LsJhIb8aI9TkMMarC4fSNoa8kraw+gijKS/EMhjMF6EoEyL
- VEuKMq9W/7ftOWF5miej18DNsg+kPp130hTVJskbOKlSEvswPyfy8IOoJB8v3Jw3g1Xr7a6G7
- v3gV5fA2eK9c1WhM5nhPm/R1AZIHk73/G2ust76rt9D7woJv7wMnStVsIQrBkdaBLj3UEa4oR
- CInue8OGWosuLvldfW7w+vBH5wG1GjAgG2SFFpb6nHW/oJ3kh+xvKamT+GuU01rONDvtdkD4Z
- HiMw+3wdCKoJNOZXt8EBCC9KbylMVSU00xTTpxLurgvK4nI4T4INqdrVeZcXGGOuY36HLx+zz
- G8SbSDZAv6TxdMa1WhDdeCbrpXcYcZ3zwEXC1gtp1ZD5TZIjjoOX2EsMpkvl5F7Pirlmj0DEb
- R5a5mHUV0agu396ibLg5byIIZGmZPjiLU06xH6prx4ocrZhFGU9VLaNNTSVoSzcif9uSnnWwE
- AriAhJlFXT95cx1i0dMjKPzsEqRMr+ULZVpnEq1cXBbRC1K3UuOwrpdl08TkqiIMf2VL1VSLs
- RxeuPV5Ld4OeFJRENU7NxOLnkEKZwD9Tkw7hdJ6P1YysXFoCBymIoX/pA2Jx6XxBpK6gyxfso
- Gyf2TzibNxyjJHOtUWbfJ+XxC1kZZZ0BEyZI70LOL5NlVYCbHWPaYFrjtUDuYMTTMJulmdCj9
- bTb1yw==
+References: <20230829200253.1473891-1-j.neuschaefer@gmx.net>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20230829200253.1473891-1-j.neuschaefer@gmx.net>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------nvOeQaTfZToRoXKsKk00BdEQ"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The files fbmem.c, fb_defio.c, fbsysfs.c, fbmon.c, modedb.c, and
-fbcmap.c were moved to drivers/video/fbdev, and subsequently to
-drivers/video/fbdev/core, in the commits listed below.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------nvOeQaTfZToRoXKsKk00BdEQ
+Content-Type: multipart/mixed; boundary="------------yrpywtRINvbudJVtaOfp07qV";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: =?UTF-8?Q?Jonathan_Neusch=c3=a4fer?= <j.neuschaefer@gmx.net>,
+ linux-fbdev@vger.kernel.org
+Cc: Helge Deller <deller@gmx.de>, Rob Clark <robdclark@gmail.com>,
+ Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Jingoo Han <jg1.han@samsung.com>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>,
+ Daniel Vetter <daniel.vetter@ffwll.ch>, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+Message-ID: <d9a02d20-8b59-cbdd-d054-eac14f9771d2@suse.de>
+Subject: Re: [PATCH] fbdev: Update fbdev source file paths
+References: <20230829200253.1473891-1-j.neuschaefer@gmx.net>
+In-Reply-To: <20230829200253.1473891-1-j.neuschaefer@gmx.net>
 
-Reported by kalekale in #kernel (Libera IRC).
+--------------yrpywtRINvbudJVtaOfp07qV
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Fixes: f7018c213502 ("video: move fbdev to drivers/video/fbdev")
-Fixes: 19757fc8432a ("fbdev: move fbdev core files to separate directory")
-Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
-=2D--
- include/linux/fb.h | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+SGkNCg0KQW0gMjkuMDguMjMgdW0gMjI6MDIgc2NocmllYiBKb25hdGhhbiBOZXVzY2jDpGZl
+cjoNCj4gVGhlIGZpbGVzIGZibWVtLmMsIGZiX2RlZmlvLmMsIGZic3lzZnMuYywgZmJtb24u
+YywgbW9kZWRiLmMsIGFuZA0KPiBmYmNtYXAuYyB3ZXJlIG1vdmVkIHRvIGRyaXZlcnMvdmlk
+ZW8vZmJkZXYsIGFuZCBzdWJzZXF1ZW50bHkgdG8NCj4gZHJpdmVycy92aWRlby9mYmRldi9j
+b3JlLCBpbiB0aGUgY29tbWl0cyBsaXN0ZWQgYmVsb3cuDQo+IA0KPiBSZXBvcnRlZCBieSBr
+YWxla2FsZSBpbiAja2VybmVsIChMaWJlcmEgSVJDKS4NCj4gDQo+IEZpeGVzOiBmNzAxOGMy
+MTM1MDIgKCJ2aWRlbzogbW92ZSBmYmRldiB0byBkcml2ZXJzL3ZpZGVvL2ZiZGV2IikNCj4g
+Rml4ZXM6IDE5NzU3ZmM4NDMyYSAoImZiZGV2OiBtb3ZlIGZiZGV2IGNvcmUgZmlsZXMgdG8g
+c2VwYXJhdGUgZGlyZWN0b3J5IikNCj4gU2lnbmVkLW9mZi1ieTogSm9uYXRoYW4gTmV1c2No
+w6RmZXIgPGoubmV1c2NoYWVmZXJAZ214Lm5ldD4NCg0KSU1ITyB0aGVzZSBjb21tZW50cyBt
+aWdodCBqdXN0IGJlIHJlbW92ZWQuDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4gLS0t
+DQo+ICAgaW5jbHVkZS9saW51eC9mYi5oIHwgMTIgKysrKysrLS0tLS0tDQo+ICAgMSBmaWxl
+IGNoYW5nZWQsIDYgaW5zZXJ0aW9ucygrKSwgNiBkZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYg
+LS1naXQgYS9pbmNsdWRlL2xpbnV4L2ZiLmggYi9pbmNsdWRlL2xpbnV4L2ZiLmgNCj4gaW5k
+ZXggY2U3ZDU4OGVkYzNlNi4uM2NkYTViOWYyNDY5YiAxMDA2NDQNCj4gLS0tIGEvaW5jbHVk
+ZS9saW51eC9mYi5oDQo+ICsrKyBiL2luY2x1ZGUvbGludXgvZmIuaA0KPiBAQCAtNTkyLDcg
+KzU5Miw3IEBAIGV4dGVybiBzc2l6ZV90IGZiX3N5c193cml0ZShzdHJ1Y3QgZmJfaW5mbyAq
+aW5mbywgY29uc3QgY2hhciBfX3VzZXIgKmJ1ZiwNCj4gICAJX19GQl9ERUZBVUxUX1NZU19P
+UFNfRFJBVywgXA0KPiAgIAlfX0ZCX0RFRkFVTFRfU1lTX09QU19NTUFQDQo+IA0KPiAtLyog
+ZHJpdmVycy92aWRlby9mYm1lbS5jICovDQo+ICsvKiBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2Nv
+cmUvZmJtZW0uYyAqLw0KPiAgIGV4dGVybiBpbnQgcmVnaXN0ZXJfZnJhbWVidWZmZXIoc3Ry
+dWN0IGZiX2luZm8gKmZiX2luZm8pOw0KPiAgIGV4dGVybiB2b2lkIHVucmVnaXN0ZXJfZnJh
+bWVidWZmZXIoc3RydWN0IGZiX2luZm8gKmZiX2luZm8pOw0KPiAgIGV4dGVybiBpbnQgZmJf
+cHJlcGFyZV9sb2dvKHN0cnVjdCBmYl9pbmZvICpmYl9pbmZvLCBpbnQgcm90YXRlKTsNCj4g
+QEAgLTYzNiw3ICs2MzYsNyBAQCBzdGF0aWMgaW5saW5lIHZvaWQgX19mYl9wYWRfYWxpZ25l
+ZF9idWZmZXIodTggKmRzdCwgdTMyIGRfcGl0Y2gsDQo+ICAgCX0NCj4gICB9DQo+IA0KPiAt
+LyogZHJpdmVycy92aWRlby9mYl9kZWZpby5jICovDQo+ICsvKiBkcml2ZXJzL3ZpZGVvL2Zi
+ZGV2L2NvcmUvZmJfZGVmaW8uYyAqLw0KPiAgIGludCBmYl9kZWZlcnJlZF9pb19tbWFwKHN0
+cnVjdCBmYl9pbmZvICppbmZvLCBzdHJ1Y3Qgdm1fYXJlYV9zdHJ1Y3QgKnZtYSk7DQo+ICAg
+ZXh0ZXJuIGludCAgZmJfZGVmZXJyZWRfaW9faW5pdChzdHJ1Y3QgZmJfaW5mbyAqaW5mbyk7
+DQo+ICAgZXh0ZXJuIHZvaWQgZmJfZGVmZXJyZWRfaW9fb3BlbihzdHJ1Y3QgZmJfaW5mbyAq
+aW5mbywNCj4gQEAgLTczNSwxNCArNzM1LDE0IEBAIHN0YXRpYyBpbmxpbmUgYm9vbCBmYl9i
+ZV9tYXRoKHN0cnVjdCBmYl9pbmZvICppbmZvKQ0KPiAgICNlbmRpZiAvKiBDT05GSUdfRkJf
+Rk9SRUlHTl9FTkRJQU4gKi8NCj4gICB9DQo+IA0KPiAtLyogZHJpdmVycy92aWRlby9mYnN5
+c2ZzLmMgKi8NCj4gKy8qIGRyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYnN5c2ZzLmMgKi8N
+Cj4gICBleHRlcm4gc3RydWN0IGZiX2luZm8gKmZyYW1lYnVmZmVyX2FsbG9jKHNpemVfdCBz
+aXplLCBzdHJ1Y3QgZGV2aWNlICpkZXYpOw0KPiAgIGV4dGVybiB2b2lkIGZyYW1lYnVmZmVy
+X3JlbGVhc2Uoc3RydWN0IGZiX2luZm8gKmluZm8pOw0KPiAgIGV4dGVybiBpbnQgZmJfaW5p
+dF9kZXZpY2Uoc3RydWN0IGZiX2luZm8gKmZiX2luZm8pOw0KPiAgIGV4dGVybiB2b2lkIGZi
+X2NsZWFudXBfZGV2aWNlKHN0cnVjdCBmYl9pbmZvICpoZWFkKTsNCj4gICBleHRlcm4gdm9p
+ZCBmYl9ibF9kZWZhdWx0X2N1cnZlKHN0cnVjdCBmYl9pbmZvICpmYl9pbmZvLCB1OCBvZmYs
+IHU4IG1pbiwgdTggbWF4KTsNCj4gDQo+IC0vKiBkcml2ZXJzL3ZpZGVvL2ZibW9uLmMgKi8N
+Cj4gKy8qIGRyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYm1vbi5jICovDQo+ICAgI2RlZmlu
+ZSBGQl9NQVhUSU1JTkdTCQkwDQo+ICAgI2RlZmluZSBGQl9WU1lOQ1RJTUlOR1MJCTENCj4g
+ICAjZGVmaW5lIEZCX0hTWU5DVElNSU5HUwkJMg0KPiBAQCAtNzc2LDcgKzc3Niw3IEBAIGV4
+dGVybiBpbnQgb2ZfZ2V0X2ZiX3ZpZGVvbW9kZShzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wLA0K
+PiAgIGV4dGVybiBpbnQgZmJfdmlkZW9tb2RlX2Zyb21fdmlkZW9tb2RlKGNvbnN0IHN0cnVj
+dCB2aWRlb21vZGUgKnZtLA0KPiAgIAkJCQkgICAgICAgc3RydWN0IGZiX3ZpZGVvbW9kZSAq
+ZmJtb2RlKTsNCj4gDQo+IC0vKiBkcml2ZXJzL3ZpZGVvL21vZGVkYi5jICovDQo+ICsvKiBk
+cml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvbW9kZWRiLmMgKi8NCj4gICAjZGVmaW5lIFZFU0Ff
+TU9ERURCX1NJWkUgNDMNCj4gICAjZGVmaW5lIERNVF9TSVpFIDB4NTANCj4gDQo+IEBAIC04
+MDIsNyArODAyLDcgQEAgZXh0ZXJuIHZvaWQgZmJfdmlkZW9tb2RlX3RvX21vZGVsaXN0KGNv
+bnN0IHN0cnVjdCBmYl92aWRlb21vZGUgKm1vZGVkYiwgaW50IG51bSwNCj4gICBleHRlcm4g
+Y29uc3Qgc3RydWN0IGZiX3ZpZGVvbW9kZSAqZmJfZmluZF9iZXN0X2Rpc3BsYXkoY29uc3Qg
+c3RydWN0IGZiX21vbnNwZWNzICpzcGVjcywNCj4gICAJCQkJCQkgICAgICAgc3RydWN0IGxp
+c3RfaGVhZCAqaGVhZCk7DQo+IA0KPiAtLyogZHJpdmVycy92aWRlby9mYmNtYXAuYyAqLw0K
+PiArLyogZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY21hcC5jICovDQo+ICAgZXh0ZXJu
+IGludCBmYl9hbGxvY19jbWFwKHN0cnVjdCBmYl9jbWFwICpjbWFwLCBpbnQgbGVuLCBpbnQg
+dHJhbnNwKTsNCj4gICBleHRlcm4gaW50IGZiX2FsbG9jX2NtYXBfZ2ZwKHN0cnVjdCBmYl9j
+bWFwICpjbWFwLCBpbnQgbGVuLCBpbnQgdHJhbnNwLCBnZnBfdCBmbGFncyk7DQo+ICAgZXh0
+ZXJuIHZvaWQgZmJfZGVhbGxvY19jbWFwKHN0cnVjdCBmYl9jbWFwICpjbWFwKTsNCj4gLS0N
+Cj4gMi40MC4xDQo+IA0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2
+ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCkZy
+YW5rZW5zdHJhc3NlIDE0NiwgOTA0NjEgTnVlcm5iZXJnLCBHZXJtYW55DQpHRjogSXZvIFRv
+dGV2LCBBbmRyZXcgTXllcnMsIEFuZHJldyBNY0RvbmFsZCwgQm91ZGllbiBNb2VybWFuDQpI
+UkIgMzY4MDkgKEFHIE51ZXJuYmVyZykNCg==
 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index ce7d588edc3e6..3cda5b9f2469b 100644
-=2D-- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -592,7 +592,7 @@ extern ssize_t fb_sys_write(struct fb_info *info, cons=
-t char __user *buf,
- 	__FB_DEFAULT_SYS_OPS_DRAW, \
- 	__FB_DEFAULT_SYS_OPS_MMAP
+--------------yrpywtRINvbudJVtaOfp07qV--
 
--/* drivers/video/fbmem.c */
-+/* drivers/video/fbdev/core/fbmem.c */
- extern int register_framebuffer(struct fb_info *fb_info);
- extern void unregister_framebuffer(struct fb_info *fb_info);
- extern int fb_prepare_logo(struct fb_info *fb_info, int rotate);
-@@ -636,7 +636,7 @@ static inline void __fb_pad_aligned_buffer(u8 *dst, u3=
-2 d_pitch,
- 	}
- }
+--------------nvOeQaTfZToRoXKsKk00BdEQ
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
--/* drivers/video/fb_defio.c */
-+/* drivers/video/fbdev/core/fb_defio.c */
- int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)=
-;
- extern int  fb_deferred_io_init(struct fb_info *info);
- extern void fb_deferred_io_open(struct fb_info *info,
-@@ -735,14 +735,14 @@ static inline bool fb_be_math(struct fb_info *info)
- #endif /* CONFIG_FB_FOREIGN_ENDIAN */
- }
+-----BEGIN PGP SIGNATURE-----
 
--/* drivers/video/fbsysfs.c */
-+/* drivers/video/fbdev/core/fbsysfs.c */
- extern struct fb_info *framebuffer_alloc(size_t size, struct device *dev)=
-;
- extern void framebuffer_release(struct fb_info *info);
- extern int fb_init_device(struct fb_info *fb_info);
- extern void fb_cleanup_device(struct fb_info *head);
- extern void fb_bl_default_curve(struct fb_info *fb_info, u8 off, u8 min, =
-u8 max);
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmTu62IFAwAAAAAACgkQlh/E3EQov+Cm
+uBAAq/JU7AkZhy9rNPZ7IbaLWKc3uyP4xQkoximJBypQZMnlCDePcRFzPlz7q0rAVcbgnbNZJvrD
+ohLUNfSedWgsB/I0oE3Ngqy5UwJ0gaLk9R0WGNR5agBzAkkALmLAediOw5jD16zSxKRk3hqO5Dku
+6IP6dFxSzBIEcoaaNUm1hZaotEbq1pjfotOcAITDgyl3or63gkjzOGm+Dri2JGfz2mZQJt3IuNQY
+L8gQgTUUFDTXh2MuVb7pzqcXDl4LqwHTL21JaX0z7pE1yly1o9frcnyRgmmrVXTkLLZEXRWfGMGZ
+Ty7QOCLUrD64FYtxFzdD+nenDcRC2RzYEw4xXeogQqHLdhpoqEbUC3MSZe8y8HGiPrgol35gCme1
+4/GGsMKOUvf2qtzPq3SycR5+EX9L/xZJaS2kW/SgR7ux1sQ7Hk13yoe6lXcXcmXcuaZyIbs/Cl+o
+2JdXdHNMBqRv5NDAxxVH1eeEUqZQvWh8I66nQo767+s1iDbXfmdBnPxju/BHLRgqC9pI4rZ10kR2
+jE1Qdtam7WuTKUQCI75G3bo/peVLt4z6yW3Zk9OKi174BvDjsIbqstc10psyQ6EciLwENDiRR2mQ
+ywjvSudAofqttmFaUBY6J9XUeQT9VMxKJC6y8bFkJP2OdkRsMzun4o9ZHgxKNGSAqTYn32g7S3O6
+sSY=
+=EeEj
+-----END PGP SIGNATURE-----
 
--/* drivers/video/fbmon.c */
-+/* drivers/video/fbdev/core/fbmon.c */
- #define FB_MAXTIMINGS		0
- #define FB_VSYNCTIMINGS		1
- #define FB_HSYNCTIMINGS		2
-@@ -776,7 +776,7 @@ extern int of_get_fb_videomode(struct device_node *np,
- extern int fb_videomode_from_videomode(const struct videomode *vm,
- 				       struct fb_videomode *fbmode);
-
--/* drivers/video/modedb.c */
-+/* drivers/video/fbdev/core/modedb.c */
- #define VESA_MODEDB_SIZE 43
- #define DMT_SIZE 0x50
-
-@@ -802,7 +802,7 @@ extern void fb_videomode_to_modelist(const struct fb_v=
-ideomode *modedb, int num,
- extern const struct fb_videomode *fb_find_best_display(const struct fb_mo=
-nspecs *specs,
- 						       struct list_head *head);
-
--/* drivers/video/fbcmap.c */
-+/* drivers/video/fbdev/core/fbcmap.c */
- extern int fb_alloc_cmap(struct fb_cmap *cmap, int len, int transp);
- extern int fb_alloc_cmap_gfp(struct fb_cmap *cmap, int len, int transp, g=
-fp_t flags);
- extern void fb_dealloc_cmap(struct fb_cmap *cmap);
-=2D-
-2.40.1
-
+--------------nvOeQaTfZToRoXKsKk00BdEQ--

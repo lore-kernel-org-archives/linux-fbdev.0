@@ -2,36 +2,56 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6899C83F2B
-	for <linux-fbdev@archiver.kernel.org>; Thu, 31 Aug 2023 06:45:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 246DAC83F10
+	for <linux-fbdev@archiver.kernel.org>; Thu, 31 Aug 2023 08:51:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343576AbjHaGpX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 31 Aug 2023 02:45:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35284 "EHLO
+        id S236654AbjHaIvI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 31 Aug 2023 04:51:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51692 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232653AbjHaGpW (ORCPT
+        with ESMTP id S233055AbjHaIvH (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 31 Aug 2023 02:45:22 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 857DEFC;
-        Wed, 30 Aug 2023 23:45:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
- s=s31663417; t=1693464307; x=1694069107; i=j.neuschaefer@gmx.net;
- bh=YDHe3ibS11T8nF3ocTf88X/4bPZZBo6JF9SStUra4Hk=;
- h=X-UI-Sender-Class:Date:From:To:Cc:Subject:References:In-Reply-To;
- b=XCOMPC1MpBOMv8M2zn1iMjS2CmeCDIpP63q2qWrn28+/VkJweCrEJZh0X/JeDcyeHp+fvdG
- HqDDMhpZl4cNBoFAMPGcDQ/2k2mUWKhyl02ZjCNzLEofVmousCx1vMBvtJUJFnmDGtPwbCRE1
- UVuuZcuoLfyWA9N9PM+ilTbhc9FFveJPQ2VLNFf8NM4oSP0K1G8q2UqUPT1w4ciinHXVbKUC8
- e7dltqU3rvdRJCjWnPYCpWryydhcxvCj6WbwkzNjd2L8k1flJIgJl0tE9l70saX1RIa5oD6Y4
- hA0PNSjM67PRlSDYoefqjHJ7rK+GWEd2Pu8SyEn7keXzgSvn1Evw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from probook ([87.154.222.166]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MORAa-1qJVVd01p0-00Pu9d; Thu, 31
- Aug 2023 08:45:07 +0200
-Date:   Thu, 31 Aug 2023 08:44:59 +0200
-From:   Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+        Thu, 31 Aug 2023 04:51:07 -0400
+Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69431CE9
+        for <linux-fbdev@vger.kernel.org>; Thu, 31 Aug 2023 01:51:04 -0700 (PDT)
+Received: by mail-ej1-x633.google.com with SMTP id a640c23a62f3a-9a1c0bbfad9so7837166b.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 31 Aug 2023 01:51:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google; t=1693471863; x=1694076663; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:mail-followup-to:message-id:subject:cc:to
+         :from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=jWDq5kck7RscMt2sEXB5y+sPvFhAbNEGrptUJ7vQOfk=;
+        b=dY4LfGDfxPip4PyJTgfcGF20nFfteC7VY2JdxALjBowqW7JsL080LRd22tGkelCRNM
+         eMjcUdttp9CyMRoCu6Rgjv1Wqtv7ftTgYU0G/i2hYRUCvAWPiCtkq/9XAz21yZI8weu6
+         vs3Uiww+YdyjyohBOxQ/3FrTu27etIdgLbWqE=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1693471863; x=1694076663;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:mail-followup-to:message-id:subject:cc:to
+         :from:date:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=jWDq5kck7RscMt2sEXB5y+sPvFhAbNEGrptUJ7vQOfk=;
+        b=CcuZbcBujxBCBWC1RegS+q28c5AiSbniiz74Hx1VGQq6AcxvcFpd8STjtXxqZJfGzI
+         ueDKabG73uHY1sVNt2PYOvhEx0OZOvFcaSZsE/QjAn1Yvlik2wdMuE1WQERvweH6xEFx
+         zKk6jvfOYCeibhe4jNQmAQaUS18xPCmFIv5RcEbiJyLt2/bBVGMgC3MfdJzRP2uNaS8J
+         zJSoHvBe6osZTXwv9dXywLLstX6PvS1ZTagpqnUcHCCPQJKYS/yGlb5ORJwRT55+bRc/
+         h+7tB7lz5d7qGvOirsTj65vzP44aFPHCLXChMf/dsLFT3cRQpyE3JlKn1iErAmQiI0cb
+         92DA==
+X-Gm-Message-State: AOJu0YyvbOLXj+SZ5ZhYgHDOimCVeEOm/Ihesy7gEGYXrQNdDEh0hwuV
+        EV3mh1XoXekS1JRWZYfGpB3GKtW8HTAp9JJ4l6s=
+X-Google-Smtp-Source: AGHT+IHL7Z0g4vh5rzA9SEaNtkyHr08VO+jBiI+WkQ1eiFzmLVjUGcuFX9+sxNcwd5J+kRbpi0kN8Q==
+X-Received: by 2002:a17:906:19:b0:9a1:f96c:4bb9 with SMTP id 25-20020a170906001900b009a1f96c4bb9mr3193922eja.6.1693471862805;
+        Thu, 31 Aug 2023 01:51:02 -0700 (PDT)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id u23-20020a170906951700b0099cf840527csm510831ejx.153.2023.08.31.01.51.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 31 Aug 2023 01:51:02 -0700 (PDT)
+Date:   Thu, 31 Aug 2023 10:51:00 +0200
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Jonathan =?iso-8859-1?Q?Neusch=E4fer?= <j.neuschaefer@gmx.net>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
         linux-fbdev@vger.kernel.org, Helge Deller <deller@gmx.de>,
         Rob Clark <robdclark@gmail.com>,
         Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
@@ -41,110 +61,86 @@ Cc:     Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
         dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] fbdev: Update fbdev source file paths
-Message-ID: <ZPA26xdbTRdfuveS@probook>
+Message-ID: <ZPBUdJwZzvYYrNei@phenom.ffwll.local>
+Mail-Followup-To: Jonathan =?iso-8859-1?Q?Neusch=E4fer?= <j.neuschaefer@gmx.net>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        linux-fbdev@vger.kernel.org, Helge Deller <deller@gmx.de>,
+        Rob Clark <robdclark@gmail.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Jingoo Han <jg1.han@samsung.com>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 References: <20230829200253.1473891-1-j.neuschaefer@gmx.net>
  <d9a02d20-8b59-cbdd-d054-eac14f9771d2@suse.de>
+ <ZPA26xdbTRdfuveS@probook>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="61gvMeB4klPZ0LE6"
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <d9a02d20-8b59-cbdd-d054-eac14f9771d2@suse.de>
-X-Provags-ID: V03:K1:YN6hA2pipnB/LXgD3D6FB3XD/XV2ApQtg1Gl2emx7q4JFOmIzo2
- ob6XmirzZ/fR7rpCb7VKiemUi3sjoUP5J4M/1OFZSTKXGqdx5skiQP2Ts6rdOZ8lxkWwllS
- P/V9TsrAy02cBPEhq4Cfi7kJ8aKuiH+tnX1a+e1ryYyi6rw9sofshSPHRS4lbuH1epJ5tD2
- KGBxW2jq/hjoazWPS3WmQ==
-UI-OutboundReport: notjunk:1;M01:P0:7uYDAgx4GK0=;fnI+DBYs1JXOUhRWd/YF0tyANGA
- BAtZAGKZujgbDymtxmVeZXIMkjS+tUTMV3C9CoBxKnj8hNN3s6f1qjv0dWHvS0JbpKd4G2Rdk
- h5olINI+fmdRlq1NP3FPu7W/Nus+ZI1WXEzazcni3AwGi3QWVmrBY1hxcNWXO/MoRru9CfeGg
- eks9SHMXWGKhkAVHPFEsvJJ1VMKqYxa5/KJaId5pp4tpm1aCs2M8/EWm+KfyG7G715Hht4T4k
- 0U/v4RW7sYLGwQEnedchwvhcAgOmlG6iukPD5EcUEt20XRat8jlXzGVdd9VQ8gsS1LGYSALrD
- BvzqNS5z/6dbGlyr8EIU9ivAeupQ6oD1ySlgBZzrlhbf3Qc6ATTsq2bM3OyIWvmEyeUpm1ean
- d3kMnW6n+oiDE9xRXaNKUcrqEobfJOZeEtlBxl+pv0qncQ06sXkUIM0ae1yNRot+FxPVpG4y0
- HwlEJcX6CNvzQe+eIUbQoiUpgRDWqcHQnu5Gli+DXXr6awFEj+ugsrlZ0GWc9dWPmYMFNgMPW
- ufcYxecjhq84V98glT/5KQTHWWMB+A3ZSPaibt1uzpWxo0LpmQjdumbAyLjjhcWddJH4pQmcT
- X15dACKBDFU21dhiHI+QsfE4lCMpaYpufHtfmfnn9x3jx4b2CXTJcElo+udWJhWsHOc3sYjl3
- JcPmgfkU9LFN2PR1lqmOI+unmxjqOPyyuu8bb0R7JP9sMwsF+dvW9Q7b++pa10sBNFDlNWOo8
- 5X9WyPzseAkeHoxJt3v9MUBoiENJXFjLA66gva40SxutSTCOVMc5KDeLHlUB4tjZqjX/tbNQ9
- pUCShdedl674G7VdJ+4+2UIn70kIAym6j02E+URqRNBC5s/DaJxlDJRavGFLG0OXhz15meXgt
- Amryy/D94Tutpg/U5rctl77LyPQllS/9PnM8dLtEhUJqUMdo09NAP6wcZUe0omHISxQM8PZd4
- G8dc+/ESUwBI5G0gjUfSx5bFlio=
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ZPA26xdbTRdfuveS@probook>
+X-Operating-System: Linux phenom 6.4.0-2-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+On Thu, Aug 31, 2023 at 08:44:59AM +0200, Jonathan Neuschäfer wrote:
+> On Wed, Aug 30, 2023 at 09:10:26AM +0200, Thomas Zimmermann wrote:
+> > Hi
+> > 
+> > Am 29.08.23 um 22:02 schrieb Jonathan Neuschäfer:
+> > > The files fbmem.c, fb_defio.c, fbsysfs.c, fbmon.c, modedb.c, and
+> > > fbcmap.c were moved to drivers/video/fbdev, and subsequently to
+> > > drivers/video/fbdev/core, in the commits listed below.
+> > > 
+> > > Reported by kalekale in #kernel (Libera IRC).
+> > > 
+> > > Fixes: f7018c213502 ("video: move fbdev to drivers/video/fbdev")
+> > > Fixes: 19757fc8432a ("fbdev: move fbdev core files to separate directory")
+> > > Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
+> > 
+> > IMHO these comments might just be removed.
+> 
+> I think it's nice to have some sort of visual separation between groups
+> of functions in fb.h, which these comments provide at the moment.
+> Therefore I'm currently leaning towards my patch as it is, but I'm
+> willing to have my mind changed and do a v2 which just removes the
+> comments.
 
---61gvMeB4klPZ0LE6
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Just the filename without the full path maybe? That's enough to find the
+right file, and it's also better at highlighting the actual important part
+of the comment since the path is very redundant.
+-Sima
 
-On Wed, Aug 30, 2023 at 09:10:26AM +0200, Thomas Zimmermann wrote:
-> Hi
->=20
-> Am 29.08.23 um 22:02 schrieb Jonathan Neusch=C3=A4fer:
-> > The files fbmem.c, fb_defio.c, fbsysfs.c, fbmon.c, modedb.c, and
-> > fbcmap.c were moved to drivers/video/fbdev, and subsequently to
-> > drivers/video/fbdev/core, in the commits listed below.
-> >=20
-> > Reported by kalekale in #kernel (Libera IRC).
-> >=20
-> > Fixes: f7018c213502 ("video: move fbdev to drivers/video/fbdev")
-> > Fixes: 19757fc8432a ("fbdev: move fbdev core files to separate director=
-y")
-> > Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
->=20
-> IMHO these comments might just be removed.
+> 
+> 
+> Thanks
+> 
+> > 
+> > Best regards
+> > Thomas
+> > 
+> > > ---
+> > >   include/linux/fb.h | 12 ++++++------
+> > >   1 file changed, 6 insertions(+), 6 deletions(-)
+> > > 
+> > > diff --git a/include/linux/fb.h b/include/linux/fb.h
+> > > index ce7d588edc3e6..3cda5b9f2469b 100644
+> > > --- a/include/linux/fb.h
+> > > +++ b/include/linux/fb.h
+> > > @@ -592,7 +592,7 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
+> > >   	__FB_DEFAULT_SYS_OPS_DRAW, \
+> > >   	__FB_DEFAULT_SYS_OPS_MMAP
+> > > 
+> > > -/* drivers/video/fbmem.c */
+> > > +/* drivers/video/fbdev/core/fbmem.c */
+> > >   extern int register_framebuffer(struct fb_info *fb_info);
+> > >   extern void unregister_framebuffer(struct fb_info *fb_info);
+> > >   extern int fb_prepare_logo(struct fb_info *fb_info, int rotate);
 
-I think it's nice to have some sort of visual separation between groups
-of functions in fb.h, which these comments provide at the moment.
-Therefore I'm currently leaning towards my patch as it is, but I'm
-willing to have my mind changed and do a v2 which just removes the
-comments.
 
 
-Thanks
-
->=20
-> Best regards
-> Thomas
->=20
-> > ---
-> >   include/linux/fb.h | 12 ++++++------
-> >   1 file changed, 6 insertions(+), 6 deletions(-)
-> >=20
-> > diff --git a/include/linux/fb.h b/include/linux/fb.h
-> > index ce7d588edc3e6..3cda5b9f2469b 100644
-> > --- a/include/linux/fb.h
-> > +++ b/include/linux/fb.h
-> > @@ -592,7 +592,7 @@ extern ssize_t fb_sys_write(struct fb_info *info, c=
-onst char __user *buf,
-> >   	__FB_DEFAULT_SYS_OPS_DRAW, \
-> >   	__FB_DEFAULT_SYS_OPS_MMAP
-> >=20
-> > -/* drivers/video/fbmem.c */
-> > +/* drivers/video/fbdev/core/fbmem.c */
-> >   extern int register_framebuffer(struct fb_info *fb_info);
-> >   extern void unregister_framebuffer(struct fb_info *fb_info);
-> >   extern int fb_prepare_logo(struct fb_info *fb_info, int rotate);
-
---61gvMeB4klPZ0LE6
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEvHAHGBBjQPVy+qvDCDBEmo7zX9sFAmTwNsIACgkQCDBEmo7z
-X9tvbRAAsO2oUGtTVNk9irtcdEBvhsF/pwPMV+PMmjLZl6u7R0ANKB62mvrX57rJ
-uT2lHBORu4DG6pL89TEJjv6nvVXbiz2bC7g7/Ej07U6ebSgFJ2MBcCUfp9IcLmF3
-YLNfIYBrXg9dzOJFt2SbgsxZ/07pDKUbj59lroPdiVcMwZTfm7Rm4nPCJaCzuqPr
-HBZgtVhkIZHifdyElC1Ccat3QNAyYzJ+5R45mV/Nah34JBmZk10dCtmwRYuQ8dXs
-ci3EI8eHZiFf5mvR7Hc6hED5PgsMpKwbI+MJxLz3+N2Z9DL2cFvGn+Z35SCrS2ed
-IycjY9mKlOwm3zhUHDOvGHhAiDvIXFHlIWSNe0ARhTqvvI+DFdy1MdmLk46hbeWg
-utlsA9Iyi8wt3UhWShNWga5FyJVgV78yXEcNHC8ER2TGps2XcSblktgANyVYsWS+
-KvlaPRZ4xE0T3aoeHcjfxSKEdPBv1r6nbuOqq7DGmVM2U2nTZWA4bhndiCyCaoo6
-2JZkx7z2MLoCx96gnM479FBqiEutZ5N9PvBvKmSOB0leem0XfxpjwN1TAR54Ge7f
-66BJ+6KQokqa7XqL0hzJUROjCPseIVxH+3VvvyEo9jKkvPyjyshqMVp6gH1B0tAA
-KStDEv5oAu26Oqa6glA7IvNZlY2T6BAL3ZiGEzcEQKmosdZWmn8=
-=I5hY
------END PGP SIGNATURE-----
-
---61gvMeB4klPZ0LE6--
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

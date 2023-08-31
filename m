@@ -2,89 +2,98 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9168BC83F2F
-	for <linux-fbdev@archiver.kernel.org>; Thu, 31 Aug 2023 18:48:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7374C83F2F
+	for <linux-fbdev@archiver.kernel.org>; Thu, 31 Aug 2023 19:04:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345068AbjHaSs2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 31 Aug 2023 14:48:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36150 "EHLO
+        id S240348AbjHaTEF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 31 Aug 2023 15:04:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38456 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242222AbjHaSs1 (ORCPT
+        with ESMTP id S237140AbjHaTEE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 31 Aug 2023 14:48:27 -0400
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 746AEE65;
-        Thu, 31 Aug 2023 11:48:24 -0700 (PDT)
-Received: by mail-wm1-x32a.google.com with SMTP id 5b1f17b1804b1-401ceda85cdso11947115e9.1;
-        Thu, 31 Aug 2023 11:48:24 -0700 (PDT)
+        Thu, 31 Aug 2023 15:04:04 -0400
+Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63D90E67
+        for <linux-fbdev@vger.kernel.org>; Thu, 31 Aug 2023 12:04:01 -0700 (PDT)
+Received: by mail-ed1-x536.google.com with SMTP id 4fb4d7f45d1cf-52a4b62c2f5so1514504a12.1
+        for <linux-fbdev@vger.kernel.org>; Thu, 31 Aug 2023 12:04:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1693507703; x=1694112503; darn=vger.kernel.org;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=ahmrOVqwwJFu3WxpSfgce+G5opjA33YS4PMyyXAd7ms=;
-        b=Z2FEbL3oRxeE9HwrgpteMUjjhurGOKIfIfcXK14EmAqC0ic6i0UexnRUgui8+o6QDe
-         TewuhOn13t+C/jRFh3BpUfAfEtD6DHOc2Midg1pO9gs36qOrr3gr5HUM+fQP/jTmbj3f
-         gn2Rf/UygTuI6bdhBXE9WPxzhbxR9IuCNJUOc2Qedqu79lCSKzFHS4ZxEdy0sW+rARUy
-         jVw6J3Qc1jqnyBKnEbyr3aC/qeV7s1i/VCKBxTAKUTklKuqFxfUOWkJ/7CVjQlT43Qr8
-         GPJ4zYgYAWGdAFAVPXb4rPNIOntcYZwHnmcKkSce6/zUaBKigsJ40HhgZpVjflLLitCb
-         D0/w==
+        d=linux-foundation.org; s=google; t=1693508640; x=1694113440; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=MxGEoM6NvMI83xhY8G/ImCWZyFVY8xF2ffN+doaTRi0=;
+        b=KhgLzpCYjpxbyaSXMPtJJDXy56CWpI0HSMYo01C/wsL2jw4Avp+/shatNnyP4VpgZv
+         +ksX9D3wMbi8/zubUzc4GgSdgOD5o5CZoWYcaMiyYd4aaz9INhizWFrRzdE8XzMPxJTV
+         Ki9RrwQWkG9xC6r7DAXHb3uvljeflKXT1kUY8=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693507703; x=1694112503;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=ahmrOVqwwJFu3WxpSfgce+G5opjA33YS4PMyyXAd7ms=;
-        b=H7L/XCcNf8RqD2HEUSRbFFfDwS5LE1hY9kABUs3c2k8sUkVHhxCgmfEdSMxJfvp7YY
-         9l4E55uW0ir8GOUStmph8LdeoDN/gk102htzzWVADb+/YSz6puRcCDCFy6ki1TZzAHBJ
-         oyhVYVMBwTpZct/e9/pqztproUmwPnrmsdXooA9791yQzOqolLvt+ChjunM6SUcQvBxM
-         ExVy0Lr0Lx1HtuGyLK+QYfeGW9gxyuwruzVjKkBOCpNao3gJbAcS/t2Fv/XRc74uaNst
-         VritagtelZGRXF7M6D8Ev+5ke0hyVaVFRVr29C6Jp0ZBIAHexVer56uK8KW46wx+ACgh
-         Zoaw==
-X-Gm-Message-State: AOJu0Yz1GWVoX8cFYqKBJiCUkj4R5aoQEbIZjznTawF7GfjffYsThybO
-        dRDKyAdbaHfW7XI7So0XmkDifnMCvFc=
-X-Google-Smtp-Source: AGHT+IGfZb8579Yjvtnal5tdT/GYaF1cGdV5xTKFKo1tpdq7EudzAt4mbBHbPvzHbNAvuygNNe1mGQ==
-X-Received: by 2002:a1c:7911:0:b0:401:4542:5edf with SMTP id l17-20020a1c7911000000b0040145425edfmr181282wme.0.1693507702525;
-        Thu, 31 Aug 2023 11:48:22 -0700 (PDT)
-Received: from debian ([63.135.72.41])
-        by smtp.gmail.com with ESMTPSA id o24-20020a05600c379800b003fed70fb09dsm2745829wmr.26.2023.08.31.11.48.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 31 Aug 2023 11:48:22 -0700 (PDT)
-Date:   Thu, 31 Aug 2023 19:48:20 +0100
-From:   "Sudip Mukherjee (Codethink)" <sudipm.mukherjee@gmail.com>
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Helge Deller <deller@gmx.de>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        regressions@lists.linux.dev
-Subject: mainline build failure due to 501126083855 ("fbdev/g364fb: Use fbdev
- I/O helpers")
-Message-ID: <ZPDgdGBbxrTl+m2s@debian>
+        d=1e100.net; s=20221208; t=1693508640; x=1694113440;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=MxGEoM6NvMI83xhY8G/ImCWZyFVY8xF2ffN+doaTRi0=;
+        b=OY+Z2K4P7BOisioCjjDkrfJE1q4IPy6LVdH01NCo49xl4crBiK8chmMO+zpFtdOH9o
+         KWegOwh0W6zgJC6JE1As9KzA/P55WsFYyjjjPdhJd7s9Mre/G6S9cjEqtAVYSqsZ6qZd
+         dovV6E90hVzBAUv/ueswYIagkKjKhylAH8Wud3joR7zD8bYahrPABFQS1uAG3uw5Y8Gf
+         L8al6AZbOBd4oemO5nTe3q4uV9u+FkjM3l3Vk6GKS4cvvL3qXih84nKjt2pwXwy3PTtb
+         ESFewYdziirQ3y1jhrKbtewAKBoXBYhmXozLg75ZMTopk+Go/3YewFl7QHBk7wJNxYdK
+         0+gg==
+X-Gm-Message-State: AOJu0YweXpg7VTiK0ijFVB4uzXvrlfWoeIoPzjcyBT+RlHpLyGAhNjUP
+        jzxCRwpT4rV+M7r3a1zNv/F8l8EgdYU+iEKKIS7lgJh2
+X-Google-Smtp-Source: AGHT+IEe59UJ7Op6uT8rJdht262zDwCMbrTeD0eF/X3QZT2ZfBDGzaLjYakLfDkaWCtLs3T9Fz8MJg==
+X-Received: by 2002:aa7:c389:0:b0:525:d95b:cd46 with SMTP id k9-20020aa7c389000000b00525d95bcd46mr368021edq.2.1693508639852;
+        Thu, 31 Aug 2023 12:03:59 -0700 (PDT)
+Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com. [209.85.221.48])
+        by smtp.gmail.com with ESMTPSA id l6-20020aa7c306000000b00528dc95ad4bsm1090310edq.95.2023.08.31.12.03.58
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 31 Aug 2023 12:03:58 -0700 (PDT)
+Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-31dcf18f9e2so1013478f8f.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 31 Aug 2023 12:03:58 -0700 (PDT)
+X-Received: by 2002:a5d:5242:0:b0:315:8a13:ef17 with SMTP id
+ k2-20020a5d5242000000b003158a13ef17mr269497wrc.65.1693508638437; Thu, 31 Aug
+ 2023 12:03:58 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+References: <ZPDgdGBbxrTl+m2s@debian>
+In-Reply-To: <ZPDgdGBbxrTl+m2s@debian>
+From:   Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Thu, 31 Aug 2023 12:03:41 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wg4vpuourbbUPn19yFx2cNj93O6t0PhiARLLL6z22yV4Q@mail.gmail.com>
+Message-ID: <CAHk-=wg4vpuourbbUPn19yFx2cNj93O6t0PhiARLLL6z22yV4Q@mail.gmail.com>
+Subject: Re: mainline build failure due to 501126083855 ("fbdev/g364fb: Use
+ fbdev I/O helpers")
+To:     "Sudip Mukherjee (Codethink)" <sudipm.mukherjee@gmail.com>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        regressions@lists.linux.dev
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi All,
+On Thu, 31 Aug 2023 at 11:48, Sudip Mukherjee (Codethink)
+<sudipm.mukherjee@gmail.com> wrote:
+> The latest mainline kernel branch fails to build mips jazz_defconfig with
+> the error:
+>
+> drivers/video/fbdev/g364fb.c:115:9: error: 'FB_DEFAULT_IOMEM_HELPERS' undeclared here (not in a function); did you mean 'FB_DEFAULT_IOMEM_OPS'?
+>   115 |         FB_DEFAULT_IOMEM_HELPERS,
+>       |         ^~~~~~~~~~~~~~~~~~~~~~~~
+>       |         FB_DEFAULT_IOMEM_OPS
+>
+>
+> git bisect pointed to 501126083855 ("fbdev/g364fb: Use fbdev I/O helpers").
+>
+> Reverting the commit has fixed the build failure.
+>
+> I will be happy to test any patch or provide any extra log if needed.
 
-The latest mainline kernel branch fails to build mips jazz_defconfig with
-the error:
+Would you mind testing the exact thing that the compiler suggested?
 
-drivers/video/fbdev/g364fb.c:115:9: error: 'FB_DEFAULT_IOMEM_HELPERS' undeclared here (not in a function); did you mean 'FB_DEFAULT_IOMEM_OPS'?
-  115 |         FB_DEFAULT_IOMEM_HELPERS,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~
-      |         FB_DEFAULT_IOMEM_OPS
+So instead of the revert, just replace FB_DEFAULT_IOMEM_HELPERS with
+FB_DEFAULT_IOMEM_OPS.
 
+I think it's just a typo / confusion with the config variable (which
+is called FB_IOMEM_HELPERS).
 
-git bisect pointed to 501126083855 ("fbdev/g364fb: Use fbdev I/O helpers").
-
-Reverting the commit has fixed the build failure.
-
-I will be happy to test any patch or provide any extra log if needed.
-
-#regzbot introduced: 5011260838551cefbf23d60b48c3243b6d5530a2
-
--- 
-Regards
-Sudip
+               Linus

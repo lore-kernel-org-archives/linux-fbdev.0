@@ -2,205 +2,123 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D5D8EE49B2
-	for <linux-fbdev@archiver.kernel.org>; Thu, 31 Aug 2023 22:27:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C5BBCA0FE3
+	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Sep 2023 01:46:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230300AbjHaW1E (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 31 Aug 2023 18:27:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56300 "EHLO
+        id S1345915AbjIABqM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 31 Aug 2023 21:46:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42242 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347680AbjHaW06 (ORCPT
+        with ESMTP id S230061AbjIABqL (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 31 Aug 2023 18:26:58 -0400
-Received: from mail-qv1-xf2e.google.com (mail-qv1-xf2e.google.com [IPv6:2607:f8b0:4864:20::f2e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 18001E7E
-        for <linux-fbdev@vger.kernel.org>; Thu, 31 Aug 2023 15:26:50 -0700 (PDT)
-Received: by mail-qv1-xf2e.google.com with SMTP id 6a1803df08f44-64cca551ae2so7822146d6.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 31 Aug 2023 15:26:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20221208; t=1693520809; x=1694125609; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=WKlkGKYCgrWeKXNqJyo7pWKtqd+Hx7OjZxfb5gEIfrY=;
-        b=7F/4UpZ7Y+b/BR4O47KEKyVhVx2if6ZZiWPTDI5kzz2GYSHQ4eiTNko+FWdKaRQh/f
-         UY7KHi6Nf5caP0Bck86dXjFFIgPunouEc9bLMFgcACMLUQGai2TRbkg2KCMYvuUhx6o4
-         iWqWGt6zc0u2BsqFV7gAnNvz1xEn14fx0HKIAYKnUguSotEEsiE//8uFziHblIuyesWo
-         LgyhcWupLmEp7ckDssYZ8aojdSxDYuVlWvuCPmManMLcNZLueBln6w54C0Mt1wXGgmNx
-         COo+gOjoU8mDPlB/pIweeKaGzIWjVVAUvrgFRxH6YnsYyLKijnRloIaEwyIwXFhFZKNL
-         hWCw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693520809; x=1694125609;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=WKlkGKYCgrWeKXNqJyo7pWKtqd+Hx7OjZxfb5gEIfrY=;
-        b=FGGCCj4ZemLxiASQ480SHR98yG1/QeBH+ry4jZROXSK14M0Y3fs54lTplW+cyvtqbH
-         DWMScT7UrqurcCRhIMBDZ9baA5fqUC6qUWzbsfbgNC6ONkgH6/9liO+qCnQYcYYc2Tgj
-         6XxA6sodN/rz8MevUV32vy+kCZE5Ql3BeuT1HDE9KhzNd6u8anpOTETBR9zeQwFEdS3+
-         AtfVAEG1zzOWojeBP5TU4at70DSy4pChAuHjlZG+pf52twBlydzy2RuWuPTPtCObtwWZ
-         pshAAnGqCKwF05sjgQodfjbKFJK5x2mIPIDrapKfipbvBIA7uUXM3juUKnk7AOqzoahq
-         SVHw==
-X-Gm-Message-State: AOJu0YzorbZpHx3jhNRTUVljiGycw9YhHVsY2bfhjKZ0L2+Pq8x9A61N
-        K7HbwIQ44SPpyABfJR/6F0D0E+zmaBxX9JMush2plA==
-X-Google-Smtp-Source: AGHT+IHqutLf/Ndx2phVAuqZjb5qjCQ920NGHqHCD34nUPgPY+PJcMk8FLCrkS7O1NZpBb1oQRUn/bM3dMgktFBGgQY=
-X-Received: by 2002:ad4:45aa:0:b0:64c:e8a3:fb68 with SMTP id
- y10-20020ad445aa000000b0064ce8a3fb68mr646024qvu.3.1693520809085; Thu, 31 Aug
- 2023 15:26:49 -0700 (PDT)
-MIME-Version: 1.0
-References: <CAKwvOdn0xoVWjQ6ufM_rojtKb0f1i1hW-J_xYGfKDNFdHwaeHQ@mail.gmail.com>
- <9d2bb495-0c1d-0d1b-96ea-4b1110d45b79@gmx.de> <ZPEEzkQcQOP9yVFF@ls3530>
- <CAKwvOdkXmEe46cG9Hn837215ghWA7UNKtg7ZQM8CpQcEQnoWfg@mail.gmail.com> <ZPERGqgkUwcWvr+4@ls3530>
-In-Reply-To: <ZPERGqgkUwcWvr+4@ls3530>
-From:   Nick Desaulniers <ndesaulniers@google.com>
-Date:   Thu, 31 Aug 2023 15:26:35 -0700
-Message-ID: <CAKwvOdkqZwF_HqyPhm3hxOVpsWqhN4X=bwUw66=ZkPSpwGpLAA@mail.gmail.com>
-Subject: Re: truncation in drivers/video/fbdev/neofb.c
-To:     Helge Deller <deller@gmx.de>
-Cc:     linux-fbdev@vger.kernel.org,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        clang-built-linux <llvm@lists.linux.dev>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Nathan Chancellor <nathan@kernel.org>,
-        Kees Cook <keescook@chromium.org>,
-        Justin Stitt <justinstitt@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        Thu, 31 Aug 2023 21:46:11 -0400
+Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com [66.111.4.26])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7230BE6E;
+        Thu, 31 Aug 2023 18:46:02 -0700 (PDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
+        by mailout.nyi.internal (Postfix) with ESMTP id 1E29B5C007C;
+        Thu, 31 Aug 2023 21:46:00 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute6.internal (MEProxy); Thu, 31 Aug 2023 21:46:00 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+        :cc:content-type:content-type:date:date:from:from:in-reply-to
+        :in-reply-to:message-id:mime-version:references:reply-to:sender
+        :subject:subject:to:to; s=fm3; t=1693532760; x=1693619160; bh=/d
+        C0IWBjlOk1cS3fGjjVkXrON0sGSFSdKCiYoOsqrQ0=; b=lov1FblwV5W5dXCW3y
+        PyhVhnq8a0HDk2STH0OY515uM4YgLit8RKC+mD4F7jyfHGCKgqpDsj7HOrGzgonS
+        RJIMYIS5rdW8g1u4KDce3nmlUJWX/3/Trdj8E+c4+hm8pdu0yemEOslldINe2KdB
+        MDT3AMS0+xzBcGael/Q3t6mjl8uXNsXeg06Akf2qONFaDhXcGowEkvhKd+1WQQhZ
+        8Av4E57X48mSAUu/XuACqnpalmTajcrvnzn+hudkGgPP2kbgh3RAzsAhtbPyUqSa
+        YZ+2+KvrjOvv6zGJULSyuYuLibwJiiNufhd6YXiiiCaMHHlkZWe/ayOofE67Lcrl
+        TNeQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-type:content-type:date:date
+        :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+        :x-sasl-enc; s=fm1; t=1693532760; x=1693619160; bh=/dC0IWBjlOk1c
+        S3fGjjVkXrON0sGSFSdKCiYoOsqrQ0=; b=KNqq/RgJqoO2rbDyJbQroiP9/8Y75
+        WalTecsNOJmxB9enurBhjpkyDFqmOmnBfZcA8c1bYAnnZheb8B6wmEI7LXJgcZNf
+        O69Wtof8HXrRjU0fANKAtKCK/yxhtHYuY6qBr5YuDj9XY+kR3vonsp0T/1LELLyX
+        8gItwmw8Xqi/k9HiKjVi4G+i81a0qd48Ed9N42NGgUThYzNOTAGbut1DnMMsKIJE
+        0TKStVwxfSq2VoqD/jVUA7/LpvJSFqf1HSqZ6N511RjAjfKj+2Y8vIKJbc6CJhqA
+        mElnFI/nuJCtcWPjZDzRwun1SBjFmcnBldXMl/pSTxHkX4rOHq6ikTY2Q==
+X-ME-Sender: <xms:V0LxZOt375m-3W8VOySJrjnjr9ObhvdGxUmMdn04bqErZBhnqNAkIQ>
+    <xme:V0LxZDdNTU-ss4sANAeM8AHqiCe-VSw3RHijcQZZG-sP6F-M5Gn8lDenFsgvKXnwP
+    uZjvtoszEM_GhndjvI>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrudeguddggeelucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
+    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
+    htvghrnhepffehueegteeihfegtefhjefgtdeugfegjeelheejueethfefgeeghfektdek
+    teffnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
+    hrnhgusegrrhhnuggsrdguvg
+X-ME-Proxy: <xmx:V0LxZJyiXQ8Yw6bEIvINotqM1dyr27oQwtGb7O0bxkKU_1Cz34gKPQ>
+    <xmx:V0LxZJPQqR-wEf4eK6SJLtq6RvhCnuEyv9Rdmqn4M8yvLGIf6HG7Lg>
+    <xmx:V0LxZO-keQqiLYWIaNv0YxcGr1Xh2g8vSrHDvNxCaGYfOshb7-coCQ>
+    <xmx:WELxZOytphZ83V37PscaQPVRM8UhnBenszVdE_DQmhdZVq4tCXrP2A>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+        id 89BB0B6008D; Thu, 31 Aug 2023 21:45:59 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-701-g9b2f44d3ee-fm-20230823.001-g9b2f44d3
+Mime-Version: 1.0
+Message-Id: <6ddd3504-9833-4ac8-a30c-cd63494f7ed8@app.fastmail.com>
+In-Reply-To: <5501ba80-bdb0-6344-16b0-0466a950f82c@suse.com>
+References: <5501ba80-bdb0-6344-16b0-0466a950f82c@suse.com>
+Date:   Thu, 31 Aug 2023 21:44:06 -0400
+From:   "Arnd Bergmann" <arnd@arndb.de>
+To:     "Thomas Zimmermann" <tzimmermann@suse.com>,
+        "Michael Ellerman" <mpe@ellerman.id.au>,
+        "Nicholas Piggin" <npiggin@gmail.com>,
+        "Christophe Leroy" <christophe.leroy@csgroup.eu>,
+        "Helge Deller" <deller@gmx.de>
+Cc:     linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        Linux-Arch <linux-arch@vger.kernel.org>,
+        "Linux Fbdev development list" <linux-fbdev@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>
+Subject: Re: Framebuffer mmap on PowerPC
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Aug 31, 2023 at 3:16=E2=80=AFPM Helge Deller <deller@gmx.de> wrote:
+On Thu, Aug 31, 2023, at 10:41, Thomas Zimmermann wrote:
+> Hi,
 >
-> * Nick Desaulniers <ndesaulniers@google.com>:
-> > On Thu, Aug 31, 2023 at 2:23=E2=80=AFPM Helge Deller <deller@gmx.de> wr=
-ote:
-> > >
-> > > * Helge Deller <deller@gmx.de>:
-> > > > On 8/29/23 18:45, Nick Desaulniers wrote:
-> > > > > A recent change in clang made it better about spotting snprintf t=
-hat
-> > > > > will result in truncation.  Nathan reported the following instanc=
-es:
-> > > > >
-> > > > > drivers/video/fbdev/neofb.c:1959:3: warning: 'snprintf' will alwa=
-ys be
-> > > > > truncated; specified size is 16, but format string expands to at =
-least
-> > > > > 17 [-Wfortify-source]
-> > >
-> > > FYI, I've added the patch below to the fbdev for-next git tree.
-> > > [...]
-> >
-> > This indeed makes the warning go away, but that's more so due to the
-> > use of strscpy now rather than snprintf.  That alone is a good change
-> > but we still have definite truncation.  See below:
-> > [...]
+> there's a per-architecture function called fb_pgprotect() that sets 
+> VMA's vm_page_prot for mmaped framebuffers. Most architectures use a 
+> simple implementation based on pgprot_writecomine() [1] or 
+> pgprot_noncached(). [2]
 >
-> Nick, thanks for your review and findings!
-> Now every string should be max. 15 chars (which fits with the trailing
-> NUL into the char[16] array).
+> On PPC this function uses phys_mem_access_prot() and therefore requires 
+> the mmap call's file struct. [3] Removing the file argument would help 
+> with simplifying the caller of fb_pgprotect(). [4]
 >
-> Helge
+> Why is the file even required on PPC?
 >
->
-> Subject: [PATCH] fbdev: neofb: Shorten Neomagic product name in info stru=
-ct
->
-> Avoid those compiler warnings:
-> neofb.c:1959:3: warning: 'snprintf' will always be truncated;
->    specified size is 16, but format string expands to at least 17 [-Wfort=
-ify-source]
->
-> Signed-off-by: Helge Deller <deller@gmx.de>
-> Reported-by: Nathan Chancellor <nathan@kernel.org>
-> Reported-by: Nick Desaulniers <ndesaulniers@google.com>
-> Link: https://lore.kernel.org/all/CAKwvOdn0xoVWjQ6ufM_rojtKb0f1i1hW-J_xYG=
-fKDNFdHwaeHQ@mail.gmail.com/
-> Link: https://github.com/ClangBuiltLinux/linux/issues/1923
+> Is it possible to replace phys_mem_access_prot() with something simpler 
+> that does not use the file struct?
 
-ah yeah LGTM
+What what I can tell, the structure of the code is a result of
+these constraints:
 
-Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+- some powerpc platforms use different page table flags for
+  prefetchable vs nonprefetchable BARs on PCI memory.
 
->
-> diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
-> index d2f622b4c372..b58b11015c0c 100644
-> --- a/drivers/video/fbdev/neofb.c
-> +++ b/drivers/video/fbdev/neofb.c
-> @@ -1948,49 +1948,40 @@ static struct fb_info *neo_alloc_fb_info(struct p=
-ci_dev *dev,
->
->         switch (info->fix.accel) {
->         case FB_ACCEL_NEOMAGIC_NM2070:
-> -               snprintf(info->fix.id, sizeof(info->fix.id),
-> -                               "MagicGraph 128");
-> +               strscpy(info->fix.id, "MagicGraph128", sizeof(info->fix.i=
-d));
->                 break;
->         case FB_ACCEL_NEOMAGIC_NM2090:
-> -               snprintf(info->fix.id, sizeof(info->fix.id),
-> -                               "MagicGraph 128V");
-> +               strscpy(info->fix.id, "MagicGraph128V", sizeof(info->fix.=
-id));
->                 break;
->         case FB_ACCEL_NEOMAGIC_NM2093:
-> -               snprintf(info->fix.id, sizeof(info->fix.id),
-> -                               "MagicGraph 128ZV");
-> +               strscpy(info->fix.id, "MagicGraph128ZV", sizeof(info->fix=
-.id));
->                 break;
->         case FB_ACCEL_NEOMAGIC_NM2097:
-> -               snprintf(info->fix.id, sizeof(info->fix.id),
-> -                               "MagicGraph 128ZV+");
-> +               strscpy(info->fix.id, "Mag.Graph128ZV+", sizeof(info->fix=
-.id));
->                 break;
->         case FB_ACCEL_NEOMAGIC_NM2160:
-> -               snprintf(info->fix.id, sizeof(info->fix.id),
-> -                               "MagicGraph 128XD");
-> +               strscpy(info->fix.id, "MagicGraph128XD", sizeof(info->fix=
-.id));
->                 break;
->         case FB_ACCEL_NEOMAGIC_NM2200:
-> -               snprintf(info->fix.id, sizeof(info->fix.id),
-> -                               "MagicGraph 256AV");
-> +               strscpy(info->fix.id, "MagicGraph256AV", sizeof(info->fix=
-.id));
->                 info->flags |=3D FBINFO_HWACCEL_IMAGEBLIT |
->                                FBINFO_HWACCEL_COPYAREA |
->                                FBINFO_HWACCEL_FILLRECT;
->                 break;
->         case FB_ACCEL_NEOMAGIC_NM2230:
-> -               snprintf(info->fix.id, sizeof(info->fix.id),
-> -                               "MagicGraph 256AV+");
-> +               strscpy(info->fix.id, "Mag.Graph256AV+", sizeof(info->fix=
-.id));
->                 info->flags |=3D FBINFO_HWACCEL_IMAGEBLIT |
->                                FBINFO_HWACCEL_COPYAREA |
->                                FBINFO_HWACCEL_FILLRECT;
->                 break;
->         case FB_ACCEL_NEOMAGIC_NM2360:
-> -               snprintf(info->fix.id, sizeof(info->fix.id),
-> -                               "MagicGraph 256ZX");
-> +               strscpy(info->fix.id, "MagicGraph256ZX", sizeof(info->fix=
-.id));
->                 info->flags |=3D FBINFO_HWACCEL_IMAGEBLIT |
->                                FBINFO_HWACCEL_COPYAREA |
->                                FBINFO_HWACCEL_FILLRECT;
->                 break;
->         case FB_ACCEL_NEOMAGIC_NM2380:
-> -               snprintf(info->fix.id, sizeof(info->fix.id),
-> -                               "MagicGraph 256XL+");
-> +               strscpy(info->fix.id, "Mag.Graph256XL+", sizeof(info->fix=
-.id));
->                 info->flags |=3D FBINFO_HWACCEL_IMAGEBLIT |
->                                FBINFO_HWACCEL_COPYAREA |
->                                FBINFO_HWACCEL_FILLRECT;
->
+- page table flags must match between all mappings, in particular
+  here between /dev/fb0 and /dev/mem, as mismatched attributes
+  cause a checkstop. On other architectures this may cause
+  undefined behavior instead of a checkstop
 
+It's unfortunate that we have multiple incompatible ways
+to determine the page flags based on firmware (ia64),
+pci (powerpc) or file->f_flags (arm, csky), when they all
+try to solve the same problem here.
 
---=20
-Thanks,
-~Nick Desaulniers
+Christophe's suggested approach to simplify it is probably
+fine, another way would be to pass the f_flags value instead
+of the file pointer.
+
+      Arnd

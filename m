@@ -2,141 +2,208 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 760F5CA0FEC
-	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Sep 2023 17:20:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 939C1CA0FF7
+	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Sep 2023 20:10:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229927AbjIARUY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 1 Sep 2023 13:20:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45484 "EHLO
+        id S245181AbjIAUKB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 1 Sep 2023 16:10:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57122 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348916AbjIARUX (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Sep 2023 13:20:23 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 44B9B10F6;
-        Fri,  1 Sep 2023 10:20:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
- s=s31663417; t=1693588800; x=1694193600; i=j.neuschaefer@gmx.net;
- bh=ndEoFRJfDS9SCk3baTyeGk8tFTWpI9NpWJxPLC86/A4=;
- h=X-UI-Sender-Class:Date:From:To:Cc:Subject:References:In-Reply-To;
- b=GphXPdnxQGN0zGSfiU5k22UwJdXDCMTLz1mjzzbHlHl3fHT5qnkB5+O9O8csD2BSDphzN/0
- NfFugNWTjhzI1Ih+XToJujAku08gGPTGGg8aXrsB08PPCS0C1yTqNOZ+a7uyJoyhhclsYWrRq
- O9atkYxJmKOsd2WLC1kGjbboIltQCLLl/YGe3TE8kLE53dxzsBbvFy8rI+dRpe9EmNouoa0vB
- GzP25oFTHpuIqwlnYuCUtImSHF86bZx6KyxXs5rO4XZXIoxZVAtdl6RwpmIhX5CeI1DhxITM+
- weSMWPvLzaio2bPuRYIXHMmom481HJ3aN498ssg3Wk8OHxNUHBxA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from probook ([87.154.222.166]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MWzjt-1q9sV70xZJ-00XMOR; Fri, 01
- Sep 2023 19:20:00 +0200
-Date:   Fri, 1 Sep 2023 19:19:56 +0200
-From:   Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-To:     Helge Deller <deller@gmx.de>
-Cc:     Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-fbdev@vger.kernel.org, Rob Clark <robdclark@gmail.com>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Jingoo Han <jg1.han@samsung.com>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fbdev: Update fbdev source file paths
-Message-ID: <ZPIdPOFbhLCpODIJ@probook>
-References: <20230829200253.1473891-1-j.neuschaefer@gmx.net>
- <d9a02d20-8b59-cbdd-d054-eac14f9771d2@suse.de>
- <ZPA26xdbTRdfuveS@probook>
- <ZPBUdJwZzvYYrNei@phenom.ffwll.local>
- <d0646771-d426-45c6-e189-517b1e6e6248@gmx.de>
- <b8a04a40-a8ad-16ef-fdde-e56acb6845ca@gmx.de>
+        with ESMTP id S233308AbjIAUJ7 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Sep 2023 16:09:59 -0400
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2408910FB;
+        Fri,  1 Sep 2023 13:09:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1693598996; x=1725134996;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=vOvv4kcnqTdtoCPK+gY/aJlakeUeKn0WaUK1Kp42IrU=;
+  b=cIcUF80qJNCtJSuUun1LyxjbrnHCkqsDifc9Lf5gk2n+GR84Q2AvXRtq
+   CDlt0cY/IwyqOxLpB7of+eBLwpkYIIGwsBnkWIWOTr4w18D1vM+AsT2bZ
+   dgAYiwQsj7xdpXo7wjy5XGCw1A+YQ9ZPgQkadQMwSqZd/xVjYk4qVC7Xu
+   iF6kxcsd8iWCttLqatuCpk+fUrM+MtR5FCQ78Y0Qs+qw0nORWCtJ21BnM
+   9yGUBAY+nvrR7AqqlJHtCEd1N4fDSPlT+zaVd9pRRjtQBY496gw/hryWX
+   NIhwLK//HHcmhubzGJtnJrNbpIa60VGtvCe7Xd47sdmbL5vjR75ru8L9h
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10819"; a="366528884"
+X-IronPort-AV: E=Sophos;i="6.02,220,1688454000"; 
+   d="scan'208";a="366528884"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Sep 2023 13:09:55 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10819"; a="913811051"
+X-IronPort-AV: E=Sophos;i="6.02,220,1688454000"; 
+   d="scan'208";a="913811051"
+Received: from lkp-server01.sh.intel.com (HELO 5d8055a4f6aa) ([10.239.97.150])
+  by orsmga005.jf.intel.com with ESMTP; 01 Sep 2023 13:09:52 -0700
+Received: from kbuild by 5d8055a4f6aa with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1qcASk-0001bn-0D;
+        Fri, 01 Sep 2023 20:09:50 +0000
+Date:   Sat, 2 Sep 2023 04:09:40 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
+        daniel@ffwll.ch, javierm@redhat.com, sam@ravnborg.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc:     llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+        linux-kernel@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH 4/7] fbdev/core: Move logo functions into separate source
+ file
+Message-ID: <202309020305.jCImaNGf-lkp@intel.com>
+References: <20230829142109.4521-5-tzimmermann@suse.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="S0SJhlmv8RAfrKFu"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b8a04a40-a8ad-16ef-fdde-e56acb6845ca@gmx.de>
-X-Provags-ID: V03:K1:2pZbCDNpIV3lYRKKD61SN6RHG6Iz4I+1MyrjhbZzrJFD1bAFayO
- Uj6AIBX/6j3ven3LBcVbkQhbRJ2758JxVIu+lEsWImKVMl4f+loJsx5WIhxZ078PscHammZ
- 1a9GYC9FvxMIxyCgXuf0lnGBy1ajnRNtImvbBdLZzuLjq9QUxZzeI7lu4BEa3FLmrGdrQNT
- P/2G4VqG4ZTPZsDApSjoA==
-UI-OutboundReport: notjunk:1;M01:P0:AbjHmf8c+1s=;m5T7KIgPfsxRuqwzjqQU8bfuxP3
- dqndZht2UDVYf/zrril8XGnsx0+O3zEhrXIxNL6+9sdxm6T2sPLkY+e5OTmd2tj/wvKHbKRjI
- Oum7LmUlrkz+Rvm3lTys0p1x/qO5YEcBik3bgv2MfV468wggL1Cadvuv8WG8HEAxEqa+CnFXq
- RPy3Dtv/C0ZZQq0IYD3xEu5wPTI3RbZMKeCU9WynXg4dlMwOVyYXXWoYHD6FUZ6TybTBaKyHd
- Ta9olmyc/lQOdal6k+zMWMw88QoKphzcOEBPw3aMHcXLNrR+aFM3Ch7kxOAhR6FX0KoogFPok
- xO60tDy2CGQt/gmNvMtYnlqw52Bqv1v/k8bl16KDPP3ImcsIAYHG6XaGhSTAINIgVjGmULuym
- BXmnhKaunQCOKLYheLg4ijY9DSSJHq5QyBht2ZhIHEfACcfouOxVeCGmOrNmox8ZGSnpghwHu
- jNlwd18tmnRpgC/LGcBH1bjqPQFKxsZLF3ZdsEqTolxL/zczP1qJAfyqZxUI0ArZCkKBmWhPL
- UPuLteBQoTVs+tK4s4QvsmY7IH8rMZJWU2sSeoRDzM2DPP4mYiX1uhCuqkdWPE8i4bGEVMthZ
- /VOvmiFIbyIRZiCaGr89u0+VFRC9iS14hs6WnniMOlyGoa9A6XKQdg63ZboTR46pmzxJq4Lph
- KXT0Eat6ocmvRAk0gfJKmhcTLH8r6N+F6s+dBb2rIzUMhjZ7o2C1MbuhwQXPqqmikrXJulkzo
- rLtxMc4oOmMG7wldzLFfB6vSN+HfRd5s86X2/CecLCLbDOAHFm2+uhCAFPCVG5LPME1QXCB3R
- gcvb2RV0OpSR8zY6zB6E8TQAdSPmh3cDWsLemauGdr2PP5SREcfMU/CG+gsTYO4V5J68PM0wP
- NauVmndkcP+M25ICaF3L8lsoN43dR57O9sZAtL+0FkFci7a3t8a6XviGdcXlyro9xF2rTf+yj
- dgkl6w==
+In-Reply-To: <20230829142109.4521-5-tzimmermann@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Hi Thomas,
 
---S0SJhlmv8RAfrKFu
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+kernel test robot noticed the following build warnings:
 
-On Thu, Aug 31, 2023 at 11:49:47PM +0200, Helge Deller wrote:
-> On 8/31/23 11:02, Helge Deller wrote:
-> > On 8/31/23 10:51, Daniel Vetter wrote:
-> > > On Thu, Aug 31, 2023 at 08:44:59AM +0200, Jonathan Neusch=C3=A4fer wr=
-ote:
-> > > > On Wed, Aug 30, 2023 at 09:10:26AM +0200, Thomas Zimmermann wrote:
-> > > > > Hi
-> > > > >=20
-> > > > > Am 29.08.23 um 22:02 schrieb Jonathan Neusch=C3=A4fer:
-> > > > > > The files fbmem.c, fb_defio.c, fbsysfs.c, fbmon.c, modedb.c, and
-> > > > > > fbcmap.c were moved to drivers/video/fbdev, and subsequently to
-> > > > > > drivers/video/fbdev/core, in the commits listed below.
-> > > > > >=20
-> > > > > > Reported by kalekale in #kernel (Libera IRC).
-> > > > > >=20
-> > > > > > Fixes: f7018c213502 ("video: move fbdev to drivers/video/fbdev")
-> > > > > > Fixes: 19757fc8432a ("fbdev: move fbdev core files to separate =
-directory")
-> > > > > > Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
-> > > > >=20
-> > > > > IMHO these comments might just be removed.
-> > > >=20
-> > > > I think it's nice to have some sort of visual separation between gr=
-oups
-> > > > of functions in fb.h, which these comments provide at the moment.
-> > > > Therefore I'm currently leaning towards my patch as it is, but I'm
-> > > > willing to have my mind changed and do a v2 which just removes the
-> > > > comments.
-> > >=20
-> > > Just the filename without the full path maybe?
-> >=20
-> > Yes, I'd prefer that as well.
->=20
-> I've manually changed it and applied the patch to the fbdev git tree.
+[auto build test WARNING on drm-misc/drm-misc-next]
+[also build test WARNING on linus/master next-20230831]
+[cannot apply to v6.5]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Thanks, everyone!
+url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/fbdev-au1200fb-Do-not-display-boot-up-logo/20230829-222419
+base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
+patch link:    https://lore.kernel.org/r/20230829142109.4521-5-tzimmermann%40suse.de
+patch subject: [PATCH 4/7] fbdev/core: Move logo functions into separate source file
+config: mips-rs90_defconfig (https://download.01.org/0day-ci/archive/20230902/202309020305.jCImaNGf-lkp@intel.com/config)
+compiler: clang version 17.0.0 (https://github.com/llvm/llvm-project.git 4a5ac14ee968ff0ad5d2cc1ffa0299048db4c88a)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20230902/202309020305.jCImaNGf-lkp@intel.com/reproduce)
 
-Jonathan
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202309020305.jCImaNGf-lkp@intel.com/
 
---S0SJhlmv8RAfrKFu
-Content-Type: application/pgp-signature; name="signature.asc"
+All warnings (new ones prefixed by >>):
 
------BEGIN PGP SIGNATURE-----
+>> drivers/video/fbdev/core/fb_logo.c:433:5: warning: no previous prototype for function 'fb_prepare_logo' [-Wmissing-prototypes]
+     433 | int fb_prepare_logo(struct fb_info *info, int rotate)
+         |     ^
+   drivers/video/fbdev/core/fb_logo.c:433:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+     433 | int fb_prepare_logo(struct fb_info *info, int rotate)
+         | ^
+         | static 
+>> drivers/video/fbdev/core/fb_logo.c:506:5: warning: no previous prototype for function 'fb_show_logo' [-Wmissing-prototypes]
+     506 | int fb_show_logo(struct fb_info *info, int rotate)
+         |     ^
+   drivers/video/fbdev/core/fb_logo.c:506:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+     506 | int fb_show_logo(struct fb_info *info, int rotate)
+         | ^
+         | static 
+   2 warnings generated.
 
-iQIzBAABCgAdFiEEvHAHGBBjQPVy+qvDCDBEmo7zX9sFAmTyHRwACgkQCDBEmo7z
-X9uvdA//YmdduRn9/SYErFaEN2UFGbboxV7N7YFTOx8/SNIX9lfrHqRGrgux0O7X
-FnmS+vetc6nWG/1GWn5y9NlZyMjl73JLcYpoWggLbFv+oNFMplEKSF2Q6E1f/lFl
-U5M8weWOIeF4UXciwvZCf13A9+zcm/0J2iCRjbm38Strvg0m1irRW4bvx1S9J5QT
-gYTpCx9ooJAln9Bb4zJcm6mpuFBJGYMkyf1zG9cP1MdciGeafmEYcWhXWCrVsyPi
-vcz8/V/YJ+8Oa1ERaoFCQM0VWXtTPjkLaib/6tiImW257jS/FYcIlQZxIWfL9ARR
-MLFm7IXtyzKy9kRpZTmjYZP9N4bq9NN/Mzn8NCFr/tmwPoLXwSCtgGetFVtAzB4B
-U/Wadkx5EewVzT1+Z2v+67QrsiW4uAPHfQ8AYU1cM1n23nfKrkQqlRcxVuGnsHGR
-7ztSq+BIUbBryDkseGCSoxMVe0YU5kwFKMZrDUBXy8FEsIRpZBy4U2Noc/vtixow
-OpAa4BlIW/G6K4cPJYJgrnBt50v6NwaagLOWT9OVGZLThRz7YCwi5kG0VoTPozFB
-4yje+8WkpQnvRuKbYrAUGkojrg34ZxJ7DeppJkkRfgxcUZexJaZDsMELNBKDaeOI
-YqbpKTJAFQzbdL9H9cmUR3VJHntvGznO+sGTI90ffK6owMFlQ4I=
-=811W
------END PGP SIGNATURE-----
 
---S0SJhlmv8RAfrKFu--
+vim +/fb_prepare_logo +433 drivers/video/fbdev/core/fb_logo.c
+
+   432	
+ > 433	int fb_prepare_logo(struct fb_info *info, int rotate)
+   434	{
+   435		int depth = fb_get_color_depth(&info->var, &info->fix);
+   436		unsigned int yres;
+   437		int height;
+   438	
+   439		memset(&fb_logo, 0, sizeof(struct logo_data));
+   440	
+   441		if (info->flags & FBINFO_MISC_TILEBLITTING ||
+   442		    info->fbops->owner || !fb_logo_count)
+   443			return 0;
+   444	
+   445		if (info->fix.visual == FB_VISUAL_DIRECTCOLOR) {
+   446			depth = info->var.blue.length;
+   447			if (info->var.red.length < depth)
+   448				depth = info->var.red.length;
+   449			if (info->var.green.length < depth)
+   450				depth = info->var.green.length;
+   451		}
+   452	
+   453		if (info->fix.visual == FB_VISUAL_STATIC_PSEUDOCOLOR && depth > 4) {
+   454			/* assume console colormap */
+   455			depth = 4;
+   456		}
+   457	
+   458		/* Return if no suitable logo was found */
+   459		fb_logo.logo = fb_find_logo(depth);
+   460	
+   461		if (!fb_logo.logo)
+   462			return 0;
+   463	
+   464		if (rotate == FB_ROTATE_UR || rotate == FB_ROTATE_UD)
+   465			yres = info->var.yres;
+   466		else
+   467			yres = info->var.xres;
+   468	
+   469		if (fb_logo.logo->height > yres) {
+   470			fb_logo.logo = NULL;
+   471			return 0;
+   472		}
+   473	
+   474		/* What depth we asked for might be different from what we get */
+   475		if (fb_logo.logo->type == LINUX_LOGO_CLUT224)
+   476			fb_logo.depth = 8;
+   477		else if (fb_logo.logo->type == LINUX_LOGO_VGA16)
+   478			fb_logo.depth = 4;
+   479		else
+   480			fb_logo.depth = 1;
+   481	
+   482	
+   483		if (fb_logo.depth > 4 && depth > 4) {
+   484			switch (info->fix.visual) {
+   485			case FB_VISUAL_TRUECOLOR:
+   486				fb_logo.needs_truepalette = 1;
+   487				break;
+   488			case FB_VISUAL_DIRECTCOLOR:
+   489				fb_logo.needs_directpalette = 1;
+   490				fb_logo.needs_cmapreset = 1;
+   491				break;
+   492			case FB_VISUAL_PSEUDOCOLOR:
+   493				fb_logo.needs_cmapreset = 1;
+   494				break;
+   495			}
+   496		}
+   497	
+   498		height = fb_logo.logo->height;
+   499		if (fb_center_logo)
+   500			height += (yres - fb_logo.logo->height) / 2;
+   501	
+   502		return fb_prepare_extra_logos(info, height, yres);
+   503	}
+   504	EXPORT_SYMBOL(fb_prepare_logo);
+   505	
+ > 506	int fb_show_logo(struct fb_info *info, int rotate)
+   507	{
+   508		unsigned int count;
+   509		int y;
+   510	
+   511		if (!fb_logo_count)
+   512			return 0;
+   513	
+   514		count = fb_logo_count < 0 ? num_online_cpus() : fb_logo_count;
+   515		y = fb_show_logo_line(info, rotate, fb_logo.logo, 0, count);
+   516		y = fb_show_extra_logos(info, y, rotate);
+   517	
+   518		return y;
+   519	}
+   520	EXPORT_SYMBOL(fb_show_logo);
+   521	#else
+   522	int fb_prepare_logo(struct fb_info *info, int rotate)
+   523	{
+   524		return 0;
+   525	}
+   526	EXPORT_SYMBOL(fb_prepare_logo);
+   527	
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

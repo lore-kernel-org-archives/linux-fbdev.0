@@ -2,57 +2,56 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 939C1CA0FF7
-	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Sep 2023 20:10:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13FE0CA0FF3
+	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Sep 2023 20:20:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245181AbjIAUKB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 1 Sep 2023 16:10:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57122 "EHLO
+        id S1344705AbjIAUU6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 1 Sep 2023 16:20:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56652 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233308AbjIAUJ7 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Sep 2023 16:09:59 -0400
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2408910FB;
-        Fri,  1 Sep 2023 13:09:56 -0700 (PDT)
+        with ESMTP id S229668AbjIAUU6 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Sep 2023 16:20:58 -0400
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 44691E65;
+        Fri,  1 Sep 2023 13:20:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1693598996; x=1725134996;
+  t=1693599655; x=1725135655;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=vOvv4kcnqTdtoCPK+gY/aJlakeUeKn0WaUK1Kp42IrU=;
-  b=cIcUF80qJNCtJSuUun1LyxjbrnHCkqsDifc9Lf5gk2n+GR84Q2AvXRtq
-   CDlt0cY/IwyqOxLpB7of+eBLwpkYIIGwsBnkWIWOTr4w18D1vM+AsT2bZ
-   dgAYiwQsj7xdpXo7wjy5XGCw1A+YQ9ZPgQkadQMwSqZd/xVjYk4qVC7Xu
-   iF6kxcsd8iWCttLqatuCpk+fUrM+MtR5FCQ78Y0Qs+qw0nORWCtJ21BnM
-   9yGUBAY+nvrR7AqqlJHtCEd1N4fDSPlT+zaVd9pRRjtQBY496gw/hryWX
-   NIhwLK//HHcmhubzGJtnJrNbpIa60VGtvCe7Xd47sdmbL5vjR75ru8L9h
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10819"; a="366528884"
+  bh=NsjR7KxMOb5iZXiBkPgMybuVtt5nRRRiYgj01lwdMoo=;
+  b=lgjbEU2ig6Dyxkczkrps/9K5KgWTsnQCnPxIhP9CZ+4RnLwtQSD0Qc/F
+   MVmfwhCbcBIjLkV4fzyDbwgynizRjIb0HeofGJNfOd2L/ayTuLedQ003X
+   Fu/jZQ1aajEV2dqKviZ6uXhgkrlcmp4jltQFmhYgeXorY+xtPo/bDOrph
+   pAhO85mQVm3ZZearaNo2gXWauWNFvtvs9Cp2gtcdyYfWOTzy4vADcK2r4
+   qp79brvfrHCUyt8wAUo6Q7GTMA5nIvVtexqpBlfJw9i4cSo9jgwK2dmRw
+   3DLjL3Em2td6NjCyQ8Y1z3sdLmd/5RONwlWLqutVBmCYrzW1N6+G6utxp
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10819"; a="407296611"
 X-IronPort-AV: E=Sophos;i="6.02,220,1688454000"; 
-   d="scan'208";a="366528884"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Sep 2023 13:09:55 -0700
+   d="scan'208";a="407296611"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Sep 2023 13:20:54 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10819"; a="913811051"
+X-IronPort-AV: E=McAfee;i="6600,9927,10819"; a="743240759"
 X-IronPort-AV: E=Sophos;i="6.02,220,1688454000"; 
-   d="scan'208";a="913811051"
+   d="scan'208";a="743240759"
 Received: from lkp-server01.sh.intel.com (HELO 5d8055a4f6aa) ([10.239.97.150])
-  by orsmga005.jf.intel.com with ESMTP; 01 Sep 2023 13:09:52 -0700
+  by fmsmga007.fm.intel.com with ESMTP; 01 Sep 2023 13:20:52 -0700
 Received: from kbuild by 5d8055a4f6aa with local (Exim 4.96)
         (envelope-from <lkp@intel.com>)
-        id 1qcASk-0001bn-0D;
-        Fri, 01 Sep 2023 20:09:50 +0000
-Date:   Sat, 2 Sep 2023 04:09:40 +0800
+        id 1qcAdO-0001c7-0i;
+        Fri, 01 Sep 2023 20:20:50 +0000
+Date:   Sat, 2 Sep 2023 04:20:03 +0800
 From:   kernel test robot <lkp@intel.com>
 To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
         daniel@ffwll.ch, javierm@redhat.com, sam@ravnborg.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc:     llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-        linux-kernel@vger.kernel.org,
+Cc:     oe-kbuild-all@lists.linux.dev, linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
 Subject: Re: [PATCH 4/7] fbdev/core: Move logo functions into separate source
  file
-Message-ID: <202309020305.jCImaNGf-lkp@intel.com>
+Message-ID: <202309020442.Ef28qbgO-lkp@intel.com>
 References: <20230829142109.4521-5-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -77,32 +76,23 @@ url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/fbdev-a
 base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
 patch link:    https://lore.kernel.org/r/20230829142109.4521-5-tzimmermann%40suse.de
 patch subject: [PATCH 4/7] fbdev/core: Move logo functions into separate source file
-config: mips-rs90_defconfig (https://download.01.org/0day-ci/archive/20230902/202309020305.jCImaNGf-lkp@intel.com/config)
-compiler: clang version 17.0.0 (https://github.com/llvm/llvm-project.git 4a5ac14ee968ff0ad5d2cc1ffa0299048db4c88a)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20230902/202309020305.jCImaNGf-lkp@intel.com/reproduce)
+config: x86_64-buildonly-randconfig-001-20230902 (https://download.01.org/0day-ci/archive/20230902/202309020442.Ef28qbgO-lkp@intel.com/config)
+compiler: gcc-7 (Ubuntu 7.5.0-6ubuntu2) 7.5.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20230902/202309020442.Ef28qbgO-lkp@intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202309020305.jCImaNGf-lkp@intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202309020442.Ef28qbgO-lkp@intel.com/
 
 All warnings (new ones prefixed by >>):
 
->> drivers/video/fbdev/core/fb_logo.c:433:5: warning: no previous prototype for function 'fb_prepare_logo' [-Wmissing-prototypes]
-     433 | int fb_prepare_logo(struct fb_info *info, int rotate)
-         |     ^
-   drivers/video/fbdev/core/fb_logo.c:433:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
-     433 | int fb_prepare_logo(struct fb_info *info, int rotate)
-         | ^
-         | static 
->> drivers/video/fbdev/core/fb_logo.c:506:5: warning: no previous prototype for function 'fb_show_logo' [-Wmissing-prototypes]
-     506 | int fb_show_logo(struct fb_info *info, int rotate)
-         |     ^
-   drivers/video/fbdev/core/fb_logo.c:506:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
-     506 | int fb_show_logo(struct fb_info *info, int rotate)
-         | ^
-         | static 
-   2 warnings generated.
+>> drivers/video/fbdev/core/fb_logo.c:433:5: warning: no previous declaration for 'fb_prepare_logo' [-Wmissing-declarations]
+    int fb_prepare_logo(struct fb_info *info, int rotate)
+        ^~~~~~~~~~~~~~~
+>> drivers/video/fbdev/core/fb_logo.c:506:5: warning: no previous declaration for 'fb_show_logo' [-Wmissing-declarations]
+    int fb_show_logo(struct fb_info *info, int rotate)
+        ^~~~~~~~~~~~
 
 
 vim +/fb_prepare_logo +433 drivers/video/fbdev/core/fb_logo.c

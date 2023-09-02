@@ -2,198 +2,134 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13FE0CA0FF3
-	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Sep 2023 20:20:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 260F4CA0FF9
+	for <linux-fbdev@archiver.kernel.org>; Sat,  2 Sep 2023 00:02:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344705AbjIAUU6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 1 Sep 2023 16:20:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56652 "EHLO
+        id S232531AbjIBACP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 1 Sep 2023 20:02:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38328 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229668AbjIAUU6 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Sep 2023 16:20:58 -0400
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 44691E65;
-        Fri,  1 Sep 2023 13:20:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1693599655; x=1725135655;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=NsjR7KxMOb5iZXiBkPgMybuVtt5nRRRiYgj01lwdMoo=;
-  b=lgjbEU2ig6Dyxkczkrps/9K5KgWTsnQCnPxIhP9CZ+4RnLwtQSD0Qc/F
-   MVmfwhCbcBIjLkV4fzyDbwgynizRjIb0HeofGJNfOd2L/ayTuLedQ003X
-   Fu/jZQ1aajEV2dqKviZ6uXhgkrlcmp4jltQFmhYgeXorY+xtPo/bDOrph
-   pAhO85mQVm3ZZearaNo2gXWauWNFvtvs9Cp2gtcdyYfWOTzy4vADcK2r4
-   qp79brvfrHCUyt8wAUo6Q7GTMA5nIvVtexqpBlfJw9i4cSo9jgwK2dmRw
-   3DLjL3Em2td6NjCyQ8Y1z3sdLmd/5RONwlWLqutVBmCYrzW1N6+G6utxp
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10819"; a="407296611"
-X-IronPort-AV: E=Sophos;i="6.02,220,1688454000"; 
-   d="scan'208";a="407296611"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Sep 2023 13:20:54 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10819"; a="743240759"
-X-IronPort-AV: E=Sophos;i="6.02,220,1688454000"; 
-   d="scan'208";a="743240759"
-Received: from lkp-server01.sh.intel.com (HELO 5d8055a4f6aa) ([10.239.97.150])
-  by fmsmga007.fm.intel.com with ESMTP; 01 Sep 2023 13:20:52 -0700
-Received: from kbuild by 5d8055a4f6aa with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1qcAdO-0001c7-0i;
-        Fri, 01 Sep 2023 20:20:50 +0000
-Date:   Sat, 2 Sep 2023 04:20:03 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
-        daniel@ffwll.ch, javierm@redhat.com, sam@ravnborg.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc:     oe-kbuild-all@lists.linux.dev, linux-kernel@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH 4/7] fbdev/core: Move logo functions into separate source
- file
-Message-ID: <202309020442.Ef28qbgO-lkp@intel.com>
-References: <20230829142109.4521-5-tzimmermann@suse.de>
+        with ESMTP id S230348AbjIBACP (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Sep 2023 20:02:15 -0400
+Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A1131705;
+        Fri,  1 Sep 2023 17:02:06 -0700 (PDT)
+Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-1bee82fad0fso20430225ad.2;
+        Fri, 01 Sep 2023 17:02:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1693612926; x=1694217726; darn=vger.kernel.org;
+        h=content-transfer-encoding:subject:from:cc:to:content-language
+         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=BBHir4fqlkZjATOANvJTnaRzDFazZQGgXDcHwsUpUF8=;
+        b=S/tsnNCxOvao9PTt/31JKjkx4YDCiqqmFhdfL+CQa6uwqv8aYuXZuRj2VWGZSIna/R
+         SVaAvarZO8QzV+a+hAHqrsDzN5lR4t5ab4KqcvAewm++xyKHqZ9SJnKjlM3G19rznjba
+         1HHJ8+2lMnPHlKI0HoOzYi7lc52fO8S+3ks3koJobb5DiPJ2899WQ95hY9G7s0svMHFP
+         CTOURj1HUYPNm0K1x5oZneLxrVhnTmgOPD+hxj6I4tDrthkr4ZiWcXLhkLu5YZBsd2ix
+         KgVDbzs8iQTtzbgi9uvDY8CNinjnJy9gGe8yn9f8G/Sx2uKJ+m5EMshXiWhpkQF8uyR8
+         Sb6w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1693612926; x=1694217726;
+        h=content-transfer-encoding:subject:from:cc:to:content-language
+         :user-agent:mime-version:date:message-id:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=BBHir4fqlkZjATOANvJTnaRzDFazZQGgXDcHwsUpUF8=;
+        b=AyaR9s1DarLZ1dfQKBaMOFrd37RI8vpCIRVkVO5oU74WfQ1HtRVdkiKqsJBO8fUDI+
+         a5ABowvEfrRK68pNnZOjdfJqlOJkTkMHr3mJOcxvX+1vu9S+qwUe5to3gWYX8iVDB6pZ
+         mUeyJUC1fzQleXXMuiixxmeKnX/i502+ZWTbKXDDCbeSVMN/VBfNIH4SPDRn6B4DrjRn
+         qWk1icCfgaMFNZhxJ2tDEFhhLAIlAeH2u0/QiykLVP1pQLvp/KYhzfmJR2NGox5TiiMa
+         aiAXG/GFmvH4PMlX8Alu+nQcjhnuRN0pbizOdUOLAcUuDOzZRdeWTWpfIiCowL+2UZHc
+         Kthg==
+X-Gm-Message-State: AOJu0YzvOn4wbJaGYoU52CGPV3YGxA5F7qLjq2mJMFLC8prIM5uQAj6N
+        dZ/nmHa3G8l619Bdg2YIdQE=
+X-Google-Smtp-Source: AGHT+IEh7+4d8XZvbhk9lepBKYK0sM8SMFxCscjK63UUSC17NWVSSaJIEv72x/SN81Qx1AJi+qUaGA==
+X-Received: by 2002:a17:903:2288:b0:1c0:8bf3:eb15 with SMTP id b8-20020a170903228800b001c08bf3eb15mr5119172plh.30.1693612925681;
+        Fri, 01 Sep 2023 17:02:05 -0700 (PDT)
+Received: from [192.168.0.106] ([103.124.138.83])
+        by smtp.gmail.com with ESMTPSA id 4-20020a170902e9c400b001b86dd825e7sm3512634plk.108.2023.09.01.17.02.03
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 01 Sep 2023 17:02:05 -0700 (PDT)
+Message-ID: <f8c26878-aabc-7cc9-59a1-3f68bf1d43c1@gmail.com>
+Date:   Sat, 2 Sep 2023 07:01:59 +0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230829142109.4521-5-tzimmermann@suse.de>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.0
+Content-Language: en-US
+To:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Helge Deller <deller@gmx.de>,
+        Alexei Gradinari <alex2grad@gmail.com>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux Regressions <regressions@lists.linux.dev>,
+        Linux Framebuffer <linux-fbdev@vger.kernel.org>,
+        Linux DRI Development <dri-devel@lists.freedesktop.org>
+From:   Bagas Sanjaya <bagasdotme@gmail.com>
+Subject: Fwd: Kernel version 6.1.50 regression: radeonfb deactivate vga
+ console
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+Hi,
 
-kernel test robot noticed the following build warnings:
+I notice a regression report on Bugzilla [1]. Quoting from it:
 
-[auto build test WARNING on drm-misc/drm-misc-next]
-[also build test WARNING on linus/master next-20230831]
-[cannot apply to v6.5]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+> Since kernel version 6.1.50 the VGA console stopped working on all HP ProLiant (G6 and G7) servers with [AMD/ATI] ES1000 VGA controller.
+> 
+> No issue with all kernel version 6.1.X before 6.1.50.
+> No issue with the kernel 6.1.50 with the reversed next commit:
+> 
+> commit 6db53af15444e7022640d7b8d5e7531d94e27a43
+> Author: Daniel Vetter <daniel.vetter@ffwll.ch>
+> Date:   Wed Jan 11 16:41:08 2023 +0100
+>     fbdev/radeon: use pci aperture helpers
+> 
+> With the commit 6db53af15444e7022640d7b8d5e7531d94e27a43 there is kernel log "radeonfb 0000:01:03.0: vgaarb: deactivate vga console" and VGA console not working. Without this commit no such log and VGA console working.
+> 
+> Equipment:
+> HP ProLiant DL360 G7
+> 01:03.0 VGA compatible controller: Advanced Micro Devices, Inc. [AMD/ATI] ES1000 (rev 02) (prog-if 00 [VGA controller])
+>         Subsystem: Hewlett-Packard Company ProLiant DL360 G5
+>         Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping+ SERR+ FastB2B- DisINTx-
+>         Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+>         Interrupt: pin A routed to IRQ 23
+>         Region 0: Memory at e8000000 (32-bit, prefetchable) [size=128M]
+>         Region 1: I/O ports at 2000 [size=256]
+>         Region 2: Memory at f1cf0000 (32-bit, non-prefetchable) [size=64K]
+>         Expansion ROM at 000c0000 [virtual] [disabled] [size=128K]
+>         Capabilities: [50] Power Management version 2
+>                 Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+>                 Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
+>         Kernel driver in use: radeonfb
+> 
+> HP ProLiant ML330 G6
+> 01:03.0 VGA compatible controller: Advanced Micro Devices, Inc. [AMD/ATI] ES1000 (rev 02) (prog-if 00 [VGA controller])
+>         Subsystem: Hewlett-Packard Company ProLiant DL360 G5
+>         Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping+ SERR+ FastB2B- DisINTx-
+>         Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+>         Interrupt: pin A routed to IRQ 23
+>         Region 0: Memory at f0000000 (32-bit, prefetchable) [size=128M]
+>         Region 1: I/O ports at 3000 [size=256]
+>         Region 2: Memory at fbef0000 (32-bit, non-prefetchable) [size=64K]
+>         Expansion ROM at 000c0000 [virtual] [disabled] [size=128K]
+>         Capabilities: [50] Power Management version 2
+>                 Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+>                 Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
+>         Kernel driver in use: radeonfb
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/fbdev-au1200fb-Do-not-display-boot-up-logo/20230829-222419
-base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
-patch link:    https://lore.kernel.org/r/20230829142109.4521-5-tzimmermann%40suse.de
-patch subject: [PATCH 4/7] fbdev/core: Move logo functions into separate source file
-config: x86_64-buildonly-randconfig-001-20230902 (https://download.01.org/0day-ci/archive/20230902/202309020442.Ef28qbgO-lkp@intel.com/config)
-compiler: gcc-7 (Ubuntu 7.5.0-6ubuntu2) 7.5.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20230902/202309020442.Ef28qbgO-lkp@intel.com/reproduce)
+See Bugzilla for the full thread.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202309020442.Ef28qbgO-lkp@intel.com/
+Anyway, I'm adding it to regzbot:
 
-All warnings (new ones prefixed by >>):
+#regzbot introduced: 9b539c4d1b921b https://bugzilla.kernel.org/show_bug.cgi?id=217861
+#regzbot title: using pci aperture helpers deactivates AMD ES1000 VGA controller
 
->> drivers/video/fbdev/core/fb_logo.c:433:5: warning: no previous declaration for 'fb_prepare_logo' [-Wmissing-declarations]
-    int fb_prepare_logo(struct fb_info *info, int rotate)
-        ^~~~~~~~~~~~~~~
->> drivers/video/fbdev/core/fb_logo.c:506:5: warning: no previous declaration for 'fb_show_logo' [-Wmissing-declarations]
-    int fb_show_logo(struct fb_info *info, int rotate)
-        ^~~~~~~~~~~~
+Thanks.
 
-
-vim +/fb_prepare_logo +433 drivers/video/fbdev/core/fb_logo.c
-
-   432	
- > 433	int fb_prepare_logo(struct fb_info *info, int rotate)
-   434	{
-   435		int depth = fb_get_color_depth(&info->var, &info->fix);
-   436		unsigned int yres;
-   437		int height;
-   438	
-   439		memset(&fb_logo, 0, sizeof(struct logo_data));
-   440	
-   441		if (info->flags & FBINFO_MISC_TILEBLITTING ||
-   442		    info->fbops->owner || !fb_logo_count)
-   443			return 0;
-   444	
-   445		if (info->fix.visual == FB_VISUAL_DIRECTCOLOR) {
-   446			depth = info->var.blue.length;
-   447			if (info->var.red.length < depth)
-   448				depth = info->var.red.length;
-   449			if (info->var.green.length < depth)
-   450				depth = info->var.green.length;
-   451		}
-   452	
-   453		if (info->fix.visual == FB_VISUAL_STATIC_PSEUDOCOLOR && depth > 4) {
-   454			/* assume console colormap */
-   455			depth = 4;
-   456		}
-   457	
-   458		/* Return if no suitable logo was found */
-   459		fb_logo.logo = fb_find_logo(depth);
-   460	
-   461		if (!fb_logo.logo)
-   462			return 0;
-   463	
-   464		if (rotate == FB_ROTATE_UR || rotate == FB_ROTATE_UD)
-   465			yres = info->var.yres;
-   466		else
-   467			yres = info->var.xres;
-   468	
-   469		if (fb_logo.logo->height > yres) {
-   470			fb_logo.logo = NULL;
-   471			return 0;
-   472		}
-   473	
-   474		/* What depth we asked for might be different from what we get */
-   475		if (fb_logo.logo->type == LINUX_LOGO_CLUT224)
-   476			fb_logo.depth = 8;
-   477		else if (fb_logo.logo->type == LINUX_LOGO_VGA16)
-   478			fb_logo.depth = 4;
-   479		else
-   480			fb_logo.depth = 1;
-   481	
-   482	
-   483		if (fb_logo.depth > 4 && depth > 4) {
-   484			switch (info->fix.visual) {
-   485			case FB_VISUAL_TRUECOLOR:
-   486				fb_logo.needs_truepalette = 1;
-   487				break;
-   488			case FB_VISUAL_DIRECTCOLOR:
-   489				fb_logo.needs_directpalette = 1;
-   490				fb_logo.needs_cmapreset = 1;
-   491				break;
-   492			case FB_VISUAL_PSEUDOCOLOR:
-   493				fb_logo.needs_cmapreset = 1;
-   494				break;
-   495			}
-   496		}
-   497	
-   498		height = fb_logo.logo->height;
-   499		if (fb_center_logo)
-   500			height += (yres - fb_logo.logo->height) / 2;
-   501	
-   502		return fb_prepare_extra_logos(info, height, yres);
-   503	}
-   504	EXPORT_SYMBOL(fb_prepare_logo);
-   505	
- > 506	int fb_show_logo(struct fb_info *info, int rotate)
-   507	{
-   508		unsigned int count;
-   509		int y;
-   510	
-   511		if (!fb_logo_count)
-   512			return 0;
-   513	
-   514		count = fb_logo_count < 0 ? num_online_cpus() : fb_logo_count;
-   515		y = fb_show_logo_line(info, rotate, fb_logo.logo, 0, count);
-   516		y = fb_show_extra_logos(info, y, rotate);
-   517	
-   518		return y;
-   519	}
-   520	EXPORT_SYMBOL(fb_show_logo);
-   521	#else
-   522	int fb_prepare_logo(struct fb_info *info, int rotate)
-   523	{
-   524		return 0;
-   525	}
-   526	EXPORT_SYMBOL(fb_prepare_logo);
-   527	
+[1]: https://bugzilla.kernel.org/show_bug.cgi?id=217861
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+An old man doll... just what I always wanted! - Clara

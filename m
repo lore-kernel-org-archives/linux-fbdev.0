@@ -2,137 +2,89 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C72A4C71153
-	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Sep 2023 07:59:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1811DC83F33
+	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Sep 2023 11:11:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352491AbjIDIAB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 4 Sep 2023 04:00:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47162 "EHLO
+        id S230168AbjIDLLd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 4 Sep 2023 07:11:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48242 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240038AbjIDIAA (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Sep 2023 04:00:00 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 34883CD9;
-        Mon,  4 Sep 2023 00:59:43 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id D6A5F2187E;
-        Mon,  4 Sep 2023 07:59:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1693814381; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=itOlEXOBgHzjM3fc6x/LffOVqiKxlejyOrTvybtH+ic=;
-        b=lMNQ8qiaOytquZauVQ7nq270VexaGIpM98uiR071nkuOTgGcTFm3bSf3mC2SPR0I4GQFf5
-        Kv31BC0UrIxhaJXgj/umYGMfr5cAXUeHGrmSXKqI7O/KBO1eLlmyT1byaQRYPFheMb8GGL
-        IJBu9wwyAYLPQorLCvI2yzOeO0nH2KA=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1693814381;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=itOlEXOBgHzjM3fc6x/LffOVqiKxlejyOrTvybtH+ic=;
-        b=n3rS03cBP5iwUmhfgJKurD/5GO//TSI7wx9y/iG8lr38hm2lYY177Kpl+b0Be1FNjL3IBg
-        i/lngbRPxJDBpIDQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id B391C13425;
-        Mon,  4 Sep 2023 07:59:41 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id n7z7Km2O9WSUTAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 04 Sep 2023 07:59:41 +0000
-Message-ID: <fec93bb1-9aae-6202-ddaf-520d55892a27@suse.de>
-Date:   Mon, 4 Sep 2023 09:59:40 +0200
+        with ESMTP id S229980AbjIDLLc (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Sep 2023 07:11:32 -0400
+Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 84F461AD;
+        Mon,  4 Sep 2023 04:11:29 -0700 (PDT)
+Received: by mail-pf1-x434.google.com with SMTP id d2e1a72fcca58-68a402c1fcdso707634b3a.1;
+        Mon, 04 Sep 2023 04:11:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1693825889; x=1694430689; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:references:cc:to:from
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=VfLBqtqsKewVLZ7LDcXD0Gsn2qEn+ss4iL3ZMurcTxk=;
+        b=bibu4mPjfRh5IPg1nwWoymztXmT2z2oYkW9fwPkJ0GKVIicXFrUDe0rSo6jvJ7o92r
+         SO0Vk3TNysD3FmE4qHq5noROtBZb4pwpELPaYE//aSpDiD4fmSL8NDN+cdF7WTEw8ImY
+         /RumMl5pc3yr34MH6ac3MkEZfyWFPi1rtVCjs6PQXXCBKSmlMeV3TMVl1Tm2ZbA1vlA+
+         0tYK0OilRxeEqFHzYUS9eYF9bgzg4vwQEUMyc4/X7DZUJXcv5lhAsR7arDG1pOKYN91v
+         iFAP5ykSd+7e7025eNouG6kieQB++QmmWXBSQG8pEOE3wCAzLo1i0kKMGxe+yttLC9jr
+         Sw1w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1693825889; x=1694430689;
+        h=content-transfer-encoding:in-reply-to:references:cc:to:from
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=VfLBqtqsKewVLZ7LDcXD0Gsn2qEn+ss4iL3ZMurcTxk=;
+        b=PQo2zQEGxiFU6t9iviMSnrms6uMPZ3kfOW8Wf6+SETlYzlUWoCJQi3P61gXiyIZC3/
+         Ar3SL4goITQqcogGVk9wjftNRfLmt9qfMN+o8jBhd96cEQJM6t2+tahbMcjRyfz7V9uQ
+         GNv++ucYDKUxoyz08eqaZ0soKZIQzMObg0KmeSLwEmjMRlZ8DaROreM5lUwoOZENe8I1
+         wz4kBg5ielvbRe41Uh5V1HHAvhDHRAEfQuvH6jmKQ7ydt9zv0y67m1NY+LeV9pr6gWTC
+         ySiiwDKI5nKjqIDibQXS16c9HhZj93PcTjWW23dkUxa7wKYOlDa1MUFWC0mSayyQicaM
+         1l+g==
+X-Gm-Message-State: AOJu0YzklY12NQ4VQzf+OaSCjJejBkaO3xxe25flc0TrDbB0VwzY6LE+
+        eU+c6K0dBHCI5hZTwHcsJTs=
+X-Google-Smtp-Source: AGHT+IGhVcxbTJAKxk/tRr/+FBgRNMp49OEhYj+pugMQgSKYjV7TBH7c1h9wwQ0MwzKbY+MoacCkow==
+X-Received: by 2002:a05:6a00:1587:b0:68c:4ff1:3dfb with SMTP id u7-20020a056a00158700b0068c4ff13dfbmr10008646pfk.8.1693825888906;
+        Mon, 04 Sep 2023 04:11:28 -0700 (PDT)
+Received: from [192.168.0.106] ([103.124.138.83])
+        by smtp.gmail.com with ESMTPSA id x26-20020aa784da000000b0064d57ecaa1dsm7155897pfn.28.2023.09.04.04.11.25
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 04 Sep 2023 04:11:28 -0700 (PDT)
+Message-ID: <79b1e941-b0a1-1b69-0f2e-38f2949ed37a@gmail.com>
+Date:   Mon, 4 Sep 2023 18:11:22 +0700
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.14.0
-Subject: Re: [PATCH] fbdev/g364fb: fix build failure with mips
+ Thunderbird/102.15.0
+Subject: Re: Fwd: Kernel version 6.1.50 regression: radeonfb deactivate vga
+ console
 Content-Language: en-US
-To:     Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Helge Deller <deller@gmx.de>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org,
-        Linus Torvalds <torvalds@linux-foundation.org>
-References: <20230902095102.5908-1-sudip.mukherjee@codethink.co.uk>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20230902095102.5908-1-sudip.mukherjee@codethink.co.uk>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------hg0No08ogNLkYqTCo0YGTIT8"
+From:   Bagas Sanjaya <bagasdotme@gmail.com>
+To:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Helge Deller <deller@gmx.de>,
+        Alexei Gradinari <alex2grad@gmail.com>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux Regressions <regressions@lists.linux.dev>,
+        Linux Framebuffer <linux-fbdev@vger.kernel.org>,
+        Linux DRI Development <dri-devel@lists.freedesktop.org>
+References: <f8c26878-aabc-7cc9-59a1-3f68bf1d43c1@gmail.com>
+In-Reply-To: <f8c26878-aabc-7cc9-59a1-3f68bf1d43c1@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------hg0No08ogNLkYqTCo0YGTIT8
-Content-Type: multipart/mixed; boundary="------------hUYgt0w3QWpZfLDtaCwyTaaZ";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
-Message-ID: <fec93bb1-9aae-6202-ddaf-520d55892a27@suse.de>
-Subject: Re: [PATCH] fbdev/g364fb: fix build failure with mips
-References: <20230902095102.5908-1-sudip.mukherjee@codethink.co.uk>
-In-Reply-To: <20230902095102.5908-1-sudip.mukherjee@codethink.co.uk>
+On 02/09/2023 07:01, Bagas Sanjaya wrote:
+> #regzbot introduced: 9b539c4d1b921b https://bugzilla.kernel.org/show_bug.cgi?id=217861
+> #regzbot title: using pci aperture helpers deactivates AMD ES1000 VGA controller
+> 
 
---------------hUYgt0w3QWpZfLDtaCwyTaaZ
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+#regzbot inconclusive: now tracked on gitlab.freedesktop.org tracker
+#regzbot link: https://gitlab.freedesktop.org/drm/amd/-/issues/2826
 
-SGkNCg0KQW0gMDIuMDkuMjMgdW0gMTE6NTEgc2NocmllYiBTdWRpcCBNdWtoZXJqZWU6DQo+
-IEZyb206IFN1ZGlwIE11a2hlcmplZSA8c3VkaXBtLm11a2hlcmplZUBnbWFpbC5jb20+DQo+
-IA0KPiBGaXggdGhlIHR5cG8gd2hpY2ggcmVzdWx0ZWQgaW4gdGhlIGRyaXZlciB1c2luZyBG
-Ql9ERUZBVUxUX0lPTUVNX0hFTFBFUlMNCj4gaW5zdGVhZCBvZiBGQl9ERUZBVUxUX0lPTUVN
-X09QUyBhcyB0aGUgZmJkZXYgSS9PIGhlbHBlcnMuDQo+IA0KPiBGaXhlczogNTAxMTI2MDgz
-ODU1ICgiZmJkZXYvZzM2NGZiOiBVc2UgZmJkZXYgSS9PIGhlbHBlcnMiKQ0KPiBTdWdnZXN0
-ZWQtYnk6IExpbnVzIFRvcnZhbGRzIDx0b3J2YWxkc0BsaW51eC1mb3VuZGF0aW9uLm9yZz4N
-Cj4gU2lnbmVkLW9mZi1ieTogU3VkaXAgTXVraGVyamVlIDxzdWRpcG0ubXVraGVyamVlQGdt
-YWlsLmNvbT4NCg0KTWVyZ2VkIGludG8gZHJtLW1pc2MtbmV4dC1maXhlcy4gVGhhbmtzIGZv
-ciB0aGUgcGF0Y2guDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4gLS0tDQo+ICAgZHJp
-dmVycy92aWRlby9mYmRldi9nMzY0ZmIuYyB8IDIgKy0NCj4gICAxIGZpbGUgY2hhbmdlZCwg
-MSBpbnNlcnRpb24oKyksIDEgZGVsZXRpb24oLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2
-ZXJzL3ZpZGVvL2ZiZGV2L2czNjRmYi5jIGIvZHJpdmVycy92aWRlby9mYmRldi9nMzY0ZmIu
-Yw0KPiBpbmRleCA3YTEwMTNiMjJmYTcuLmVlNmZlNTFlMGE2YiAxMDA2NDQNCj4gLS0tIGEv
-ZHJpdmVycy92aWRlby9mYmRldi9nMzY0ZmIuYw0KPiArKysgYi9kcml2ZXJzL3ZpZGVvL2Zi
-ZGV2L2czNjRmYi5jDQo+IEBAIC0xMTIsNyArMTEyLDcgQEAgc3RhdGljIGludCBnMzY0ZmJf
-YmxhbmsoaW50IGJsYW5rLCBzdHJ1Y3QgZmJfaW5mbyAqaW5mbyk7DQo+ICAgDQo+ICAgc3Rh
-dGljIGNvbnN0IHN0cnVjdCBmYl9vcHMgZzM2NGZiX29wcyA9IHsNCj4gICAJLm93bmVyCQk9
-IFRISVNfTU9EVUxFLA0KPiAtCUZCX0RFRkFVTFRfSU9NRU1fSEVMUEVSUywNCj4gKwlGQl9E
-RUZBVUxUX0lPTUVNX09QUywNCj4gICAJLmZiX3NldGNvbHJlZwk9IGczNjRmYl9zZXRjb2xy
-ZWcsDQo+ICAgCS5mYl9wYW5fZGlzcGxheQk9IGczNjRmYl9wYW5fZGlzcGxheSwNCj4gICAJ
-LmZiX2JsYW5rCT0gZzM2NGZiX2JsYW5rLA0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpH
-cmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJt
-YW55IEdtYkgNCkZyYW5rZW5zdHJhc3NlIDE0NiwgOTA0NjEgTnVlcm5iZXJnLCBHZXJtYW55
-DQpHRjogSXZvIFRvdGV2LCBBbmRyZXcgTXllcnMsIEFuZHJldyBNY0RvbmFsZCwgQm91ZGll
-biBNb2VybWFuDQpIUkIgMzY4MDkgKEFHIE51ZXJuYmVyZykNCg==
+Thanks.
 
---------------hUYgt0w3QWpZfLDtaCwyTaaZ--
+-- 
+An old man doll... just what I always wanted! - Clara
 
---------------hg0No08ogNLkYqTCo0YGTIT8
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmT1jmwFAwAAAAAACgkQlh/E3EQov+Ag
-9RAAp1IqnqvhGXEkDqLFVAloXH1SHYI+sXiMaJh89QkTvycg2tizUe0qxAxl5bzemCiWriVnc1cA
-8TWDKks2J8Iq0Xdpv4LT8wXOUijN4+tno8E0ADM66MPx02sZHMKfzIu2nDDLZ4axBFfX0xHtXhLE
-q2pX99QdylkxILrd9mu41bjQ4mDfjCkctWFPZukGQ+pkzKb6qCc8sqLL8Tbr92V3Vcu9Dbqt0vcx
-cV9pf/Z1xFdIi1yIu65cwlFH9U56xmgNvD0E9ZvOgKDN0H7HwvUyc1Ze5aXoY8xNwFto7SNso2vI
-oGpUYXt+4AdAM83u6ZxjNjPQ3AKSHXQ9GQq2gaEVHwLP7dIc7I/THoBz/fS+xd6QsmNdND4nLgC5
-jeJZT22nEB+5IHxw6NdLge4uBZ2k765frSScybTaG000b9/nGbf+25k2xbh2UTUOdtGeadxhe+hY
-+og41RRWCCc/CXSvInmwb5rcAdL+FkvYC/6y0PBjjh4/n2l6v3GnPuCxGeOEfGcJspMmUIcFIDJo
-D6UABPke056ejIyT0MkQa1Jjc6XSClXulvQcMYEUbyrZmwJ/bUQB9wBIAP58F/OCUiGPa9XlTso4
-6DW9hewSyrKdQrA7L5vIjk57u9QDZ4JSPHaurgLNs7x7g9V1TIRNSuqBgKxHNjYVYLKGeBMMbI/R
-3Ds=
-=c8cp
------END PGP SIGNATURE-----
-
---------------hg0No08ogNLkYqTCo0YGTIT8--

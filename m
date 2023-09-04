@@ -2,182 +2,94 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AAE3C83F3F
-	for <linux-fbdev@archiver.kernel.org>; Sun,  3 Sep 2023 23:08:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E58D1C71153
+	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Sep 2023 06:50:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231758AbjICXIf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 3 Sep 2023 19:08:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44604 "EHLO
+        id S238664AbjIDGuP convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 4 Sep 2023 02:50:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50984 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229653AbjICXIf (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 3 Sep 2023 19:08:35 -0400
-Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EBE37CC;
-        Sun,  3 Sep 2023 16:08:31 -0700 (PDT)
-Received: by mail-pl1-x629.google.com with SMTP id d9443c01a7336-1bf11b1c7d0so10042275ad.0;
-        Sun, 03 Sep 2023 16:08:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1693782511; x=1694387311; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :sender:from:to:cc:subject:date:message-id:reply-to;
-        bh=Hj7IulSg6psGu9TGsMG33yCBcsQ8GE+D/CDKZbJw97U=;
-        b=CvZEeLp81HdBlxEtrSaQm9uYNU/CIWTIsX+R/TzG2YPd4EjFzmQ2r1xqQGsy2pZ3dh
-         Bh32BtBmaiegGvMEGpMiaMw0pXPEOYtIsqpo2Fh3Txw1x1kv9Gj6OONHO0kUoFA3SDWH
-         OhJKOsx5kM1lrHl9fXR5PoTNa6NJmLRHltr+9B3C8WM9RLqTELRY16DXxzSbkqgVzvYW
-         dRotaLC3FGdLHuoHUo/ttOnt3CjtrgvzSKJ8X13l4ngF4cGrNPD3QcfQAKj3TXy1owrB
-         +CrfHaEsezKDKxuph9fglPqIgz5CHnGmUvWwraxE1fVwnMkhfL6YxVJJURLkazP0w+jk
-         46aQ==
+        with ESMTP id S229579AbjIDGuO (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Sep 2023 02:50:14 -0400
+Received: from mail-yw1-f169.google.com (mail-yw1-f169.google.com [209.85.128.169])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B71B2109;
+        Sun,  3 Sep 2023 23:50:11 -0700 (PDT)
+Received: by mail-yw1-f169.google.com with SMTP id 00721157ae682-58cd9d9dbf5so15252247b3.0;
+        Sun, 03 Sep 2023 23:50:11 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693782511; x=1694387311;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :sender:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Hj7IulSg6psGu9TGsMG33yCBcsQ8GE+D/CDKZbJw97U=;
-        b=hjzjvfjRFn/4iajrZgRrmtM4eg7Z6PfB/ZrvcNWQv7xhTsQ00gzKjUDLQhk830sSkY
-         ikKOMZ3LjDR5Rkbp5en5yOY5fLqXeH9NZBGp3Fa56G31jkxC+hW8X6gwu/SV+VsI3bfJ
-         L6X5d/Tg1NCGJ3wdb6raAmduHQtp61I8WJIAmXESMvqW8XxJNkJufGS6YLtwfDddjsPH
-         Xhdj4fJVh1QxTzhP1z8HrucIwgS70rtXwAaCl7AzvMgSKVCRordRFrqGhtOzvT7PwKdB
-         M3AGChW+aW+tVBEt2PQiLDsCDp4UEkwjcsj/Hq8DfmWotk3NxhHDR30pmItcLETgYj1h
-         uAaQ==
-X-Gm-Message-State: AOJu0YxnaZUk7pXcK9GHs6tzsZoahmI9nXnDSXciTEB6mhfN+so3lj9s
-        oAkvbboflhFoPShEl865xU2GVOrTNpE=
-X-Google-Smtp-Source: AGHT+IF0YF2/F3nm9B76hiQ8f2e6uxNrOFC7OSSv9FfTW9BsmLRr/utQnttK54QGUBobKV0mI2oWVQ==
-X-Received: by 2002:a17:902:c44c:b0:1b8:6984:f5e5 with SMTP id m12-20020a170902c44c00b001b86984f5e5mr8099533plm.12.1693782510702;
-        Sun, 03 Sep 2023 16:08:30 -0700 (PDT)
-Received: from ?IPV6:2600:1700:e321:62f0:329c:23ff:fee3:9d7c? ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id x7-20020a170902820700b001b8052d58a0sm6297129pln.305.2023.09.03.16.08.28
+        d=1e100.net; s=20221208; t=1693810211; x=1694415011;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=3rK9iNlhM9qm2dLN2U9ruHBYs+JWxgylVxpO0f1W8IM=;
+        b=EnQw6OPmlxZD5Z0kW5XnJqBecMlspYL4JVu1kmCzuxVSIbHzWNui761SedU8kNWUQW
+         gxcHdvLd/e8lBbmGtA4SSho8FW0J+ObjbVvduRaJhdMgz5+CJEWKBsDLE2DVbrm+Z6Qw
+         FfqazM6ng2k/72qaGd0hRnlfHO6afWCD7RQE570GM0zKS6m6vGsJuhga3Axu1nV1REnO
+         od/toa6p+PUfFCvsOvaAywkdO0o0ZIsHPejZNzMviHgxFxlbq7YDLBKPJb7UAtiE09At
+         Ly5WXaddH6gM8EWGHqFd+/cqPLIHMxSHrpJNzXOXClvDDPIzS/LUpily77qP9XolDsKB
+         QewQ==
+X-Gm-Message-State: AOJu0YwiiHkdIuEZgHof7OvnSKnIb6u7lH8mtoLSkbdXjZ6OQgOw2KKY
+        JgBWsShNgrGLMy4ULAAd+EsCKoqvjrvWhw==
+X-Google-Smtp-Source: AGHT+IFEi632q5pwab44tv3exkUF3p7vca5QHIZ6OdcFpzEOX5ggp25JIQD9KB+Wjv6+/iXKKagxZw==
+X-Received: by 2002:a81:9a14:0:b0:583:7564:49de with SMTP id r20-20020a819a14000000b00583756449demr1154630ywg.3.1693810210726;
+        Sun, 03 Sep 2023 23:50:10 -0700 (PDT)
+Received: from mail-yb1-f182.google.com (mail-yb1-f182.google.com. [209.85.219.182])
+        by smtp.gmail.com with ESMTPSA id v184-20020a8185c1000000b005843155e284sm2518573ywf.49.2023.09.03.23.50.09
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 03 Sep 2023 16:08:29 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Message-ID: <78473084-d4d5-685f-9778-4bbe8878a43e@roeck-us.net>
-Date:   Sun, 3 Sep 2023 16:08:28 -0700
+        Sun, 03 Sep 2023 23:50:09 -0700 (PDT)
+Received: by mail-yb1-f182.google.com with SMTP id 3f1490d57ef6-d7bae413275so2754423276.0;
+        Sun, 03 Sep 2023 23:50:09 -0700 (PDT)
+X-Received: by 2002:a25:a1a9:0:b0:d7b:a78e:6b2d with SMTP id
+ a38-20020a25a1a9000000b00d7ba78e6b2dmr12488603ybi.20.1693810209384; Sun, 03
+ Sep 2023 23:50:09 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH] lockdep: Fix static memory detection even more
-Content-Language: en-US
-To:     Helge Deller <deller@gmx.de>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Cc:     Andrew Morton <akpm@linux-foundation.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        linux-parisc@vger.kernel.org, Borislav Petkov <bp@suse.de>,
-        Peter Zijlstra <peterz@infradead.org>
-References: <ZNep5EcYskP9HtGD@p100>
- <b7526bf6-886f-457a-beba-84ae9f75bc77@roeck-us.net> <ZPT2cINsHd+sWJQU@ls3530>
-From:   Guenter Roeck <linux@roeck-us.net>
-In-Reply-To: <ZPT2cINsHd+sWJQU@ls3530>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20230901142659.31787-1-tzimmermann@suse.de> <20230901142659.31787-5-tzimmermann@suse.de>
+In-Reply-To: <20230901142659.31787-5-tzimmermann@suse.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Mon, 4 Sep 2023 08:49:57 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdV+0P40QpPcLeuSAd0HJ_Z2uPpmhyBKXnxoOQibtGAVFg@mail.gmail.com>
+Message-ID: <CAMuHMdV+0P40QpPcLeuSAd0HJ_Z2uPpmhyBKXnxoOQibtGAVFg@mail.gmail.com>
+Subject: Re: [PATCH 4/4] fbdev: Replace fb_pgprotect() with fb_pgprot_device()
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+        arnd@arndb.de, deller@gmx.de, linuxppc-dev@lists.ozlabs.org,
+        linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org,
+        linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+        sparclinux@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arch@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 9/3/23 14:11, Helge Deller wrote:
-> * Guenter Roeck <linux@roeck-us.net>:
->> Hi,
->>
->> On Sat, Aug 12, 2023 at 05:48:52PM +0200, Helge Deller wrote:
->>> On the parisc architecture, lockdep reports for all static objects which
->>> are in the __initdata section (e.g. "setup_done" in devtmpfs,
->>> "kthreadd_done" in init/main.c) this warning:
->>>
->>> 	INFO: trying to register non-static key.
->>>
->>> The warning itself is wrong, because those objects are in the __initdata
->>> section, but the section itself is on parisc outside of range from
->>> _stext to _end, which is why the static_obj() functions returns a wrong
->>> answer.
->>>
->>> While fixing this issue, I noticed that the whole existing check can
->>> be simplified a lot.
->>> Instead of checking against the _stext and _end symbols (which include
->>> code areas too) just check for the .data and .bss segments (since we check a
->>> data object). This can be done with the existing is_kernel_core_data()
->>> macro.
->>>
->>> In addition objects in the __initdata section can be checked with
->>> init_section_contains().
->>>
->>> This partly reverts and simplifies commit bac59d18c701 ("x86/setup: Fix static
->>> memory detection").
->>>
->>> Tested on x86-64 and parisc.
->>>
->>> Signed-off-by: Helge Deller <deller@gmx.de>
->>> Fixes: bac59d18c701 ("x86/setup: Fix static memory detection")
->>
->> On loongarch, this patch results in the following backtrace.
->>
->> EFI stub: Loaded initrd from LINUX_EFI_INITRD_MEDIA_GUID device path
->> EFI stub: Exiting boot services
->> [    0.000000] INFO: trying to register non-static key.
->> [    0.000000] The code is fine but needs lockdep annotation, or maybe
->> [    0.000000] you didn't initialize this object before use?
->> [    0.000000] turning off the locking correctness validator.
->> [    0.000000] CPU: 0 PID: 0 Comm: swapper Not tainted 6.5.0+ #1
->> [    0.000000] Stack : 0000000000000000 0000000000000000 9000000000223d6c 9000000001df0000
->> [    0.000000]         9000000001df39a0 9000000001df39a8 0000000000000000 0000000000000000
->> [    0.000000]         9000000001df39a8 0000000000000001 0000000000000000 900000000154b910
->> [    0.000000]         fffffffffffffffe 9000000001df39a8 0000000000000000 0000000000000000
->> [    0.000000]         0000000000000001 0000000000000003 0000000000000010 0000000000000030
->> [    0.000000]         0000000000000063 0000000000000001 0000000000000000 0000000000000000
->> [    0.000000]         0000000000000000 0000000000000000 9000000001c60650 9000000001e12000
->> [    0.000000]         0000000000000000 9000000001560bc0 0000000000000000 9000000002ee6000
->> [    0.000000]         0000000000000000 0000000000000000 9000000000223d84 0000000000000000
->> [    0.000000]         00000000000000b0 0000000000000004 0000000000000000 0000000000000800
->> [    0.000000]         ...
->> [    0.000000] Call Trace:
->> [    0.000000] [<9000000000223d84>] show_stack+0x5c/0x180
->> [    0.000000] [<900000000153e0b4>] dump_stack_lvl+0x88/0xd0
->> [    0.000000] [<90000000002bc548>] register_lock_class+0x768/0x770
->> [    0.000000] [<90000000002bc710>] __lock_acquire+0xb0/0x2a18
->> [    0.000000] [<90000000002bba1c>] lock_acquire+0x11c/0x328
->> [    0.000000] [<9000000000b34a60>] __debug_object_init+0x60/0x244
->> [    0.000000] [<9000000000337f94>] init_cgroup_housekeeping+0xe8/0x144
->> [    0.000000] [<900000000033e364>] init_cgroup_root+0x38/0xa0
->> [    0.000000] [<90000000017801ac>] cgroup_init_early+0x44/0x16c
->> [    0.000000] [<9000000001770758>] start_kernel+0x50/0x624
->> [    0.000000] [<90000000015410b4>] kernel_entry+0xb4/0xc4
->>
->> Reverting it fixes the problem. Bisect log attached.
->>
->> This is also seen in v6.5.y and v6.4.y since the patch has been applied
->> to those branches.
-> 
-> Does this happens with CONFIG_SMP=n ?
-> If so, I think the untested patch below might fix the issue.
-> 
+On Sat, Sep 2, 2023 at 11:13 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Rename the fbdev mmap helper fb_pgprotect() to fb_pgprot_device().
+> The helper sets VMA page-access flags for framebuffers in device I/O
+> memory. The new name follows pgprot_device(), which does the same for
+> arbitrary devices.
+>
+> Also clean up the helper's parameters and return value. Instead of
+> the VMA instance, pass the individial parameters separately: existing
+> page-access flags, the VMAs start and end addresses and the offset
+> in the underlying device memory rsp file. Return the new page-access
+> flags. These changes align fb_pgprot_device() closer with pgprot_device.
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-No, this is loongarch:defconfig with various debug options enabled.
-That has CONFIG_SMP=y.
+>  arch/m68k/include/asm/fb.h           | 19 ++++++++++---------
 
-Guenter
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-> Helge
-> 
-> ---
-> 
-> [PATCH] loogarch: Keep PERCPU section in init section even for !CONFIG_SMP
-> 
-> Signed-off-by: Helge Deller <deller@gmx.de>
-> 
-> diff --git a/arch/loongarch/kernel/vmlinux.lds.S b/arch/loongarch/kernel/vmlinux.lds.S
-> index b1686afcf876..32d61e931cdc 100644
-> --- a/arch/loongarch/kernel/vmlinux.lds.S
-> +++ b/arch/loongarch/kernel/vmlinux.lds.S
-> @@ -99,9 +99,7 @@ SECTIONS
->   		EXIT_DATA
->   	}
->   
-> -#ifdef CONFIG_SMP
->   	PERCPU_SECTION(1 << CONFIG_L1_CACHE_SHIFT)
-> -#endif
->   
->   	.init.bss : {
->   		*(.init.bss)
 
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

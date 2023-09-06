@@ -2,185 +2,95 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59FF5EB8FB6
-	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Sep 2023 08:11:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9702EB8FAD
+	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Sep 2023 09:47:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234790AbjIFILr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 6 Sep 2023 04:11:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58006 "EHLO
+        id S234299AbjIFJrW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 6 Sep 2023 05:47:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41982 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231616AbjIFILq (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Sep 2023 04:11:46 -0400
-Received: from mail-il1-x130.google.com (mail-il1-x130.google.com [IPv6:2607:f8b0:4864:20::130])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 591EA12A;
-        Wed,  6 Sep 2023 01:11:42 -0700 (PDT)
-Received: by mail-il1-x130.google.com with SMTP id e9e14a558f8ab-34f2d7c1bc8so3603765ab.1;
-        Wed, 06 Sep 2023 01:11:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1693987901; x=1694592701; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :sender:from:to:cc:subject:date:message-id:reply-to;
-        bh=IhhoVlvKUxA8fynkdsG8I8qeZV+Vy1d1rJq/QPqmrYo=;
-        b=gqV2v+QMJH0TzHprSPz20sidz30yN6tBXvqdjK9EfM2HVzbVaqMfsbZgtjOvZ1/QE+
-         pQ7ggKdvByNkSOG5u9BlPFEH7dwL/24VLUHBVMVq8eHC4ayvvC0XRK4vJe7pS8g0Niu2
-         uI/H5vQBEuedKgjxTwOAkfWxzIBNJ4kyVCE+7F9IH3UjZqirY4TuzLgaRucidq0s4JwN
-         1k/TaPXo3pgPxHlHao/TR8slHV+VzURtBKUEC79JNDo33KmtKQTZJGLZ3j8X8d0aFSQu
-         KceEbBB/s11LIgGCMmYybNYo0v7sJxqUN/honZZZKZLuMynVcyAJxPJFNxueVGa39HEJ
-         Jc0g==
+        with ESMTP id S235505AbjIFJrV (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Sep 2023 05:47:21 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D16A1BD2
+        for <linux-fbdev@vger.kernel.org>; Wed,  6 Sep 2023 02:46:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1693993535;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=UlEOBu/VE6tjdzL9UJOCpexRbWh3hX2rULyWpu7l158=;
+        b=cilXly8NEdvxAyKzLGZlv06W8dA75Ea6BSaoIp2ClcIdR5an/I8fCSJoEbRih1+pk13eqb
+        VeT318nob5fuZf3Hy81u0V2nDBrUL2dssxdzqAVPrsd365jMIX5sBbiVVvp7xDzHbqqcxn
+        gtWEbMcVYBvv7NuHVujOh4y0mS6p/pU=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-651-UQT7IoDrNKGyRgDtE7xkew-1; Wed, 06 Sep 2023 05:45:34 -0400
+X-MC-Unique: UQT7IoDrNKGyRgDtE7xkew-1
+Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-401ea9bf934so21390915e9.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 06 Sep 2023 02:45:34 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693987901; x=1694592701;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :sender:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=IhhoVlvKUxA8fynkdsG8I8qeZV+Vy1d1rJq/QPqmrYo=;
-        b=NFJXJ5dA8kbAZVwBLUOglIww1Uj4uJYL7DW6z70wOngqa/NmYLYhlsj6tKQejepw02
-         A+Cvpcsd8VMHDV/9/SM/vfYEZwXEdsQ5iAWaLYCARutO9q+R/vzDAL8Oq5EoaFaKsxD0
-         aVkAb010Q5dpP5Y1t/trBxvz2zMBhrDaPUG+/y/bvIIZ10vsMjt3w6W3mtbi02jwYtDl
-         pMLuaCN98R4AvYY38Q8ZSNOy0hT2s1iiI5SN6Rx13DSKrHs5Z8IIT2rM0MDE6tvQuGYx
-         tvQAilnqo70w2QdSeyKFAToOJV9fDWny3AucNjlnR67GZYxj5De4GlGAQdHFP2Yojem1
-         UYDQ==
-X-Gm-Message-State: AOJu0YyC7a44Nt3XWuQY6DfXiVaZTHTnDeHzFVmJEbPeUf+4vCKN1pEL
-        Hm4sFCJvd4LiuhaizijLttI=
-X-Google-Smtp-Source: AGHT+IG5nXCsjWaR4AsUEv0RKaF7zFUYcGHnpQ+SqkUjFGSRHZlNHvOI3aha9sg5lEdUewtBLKisZQ==
-X-Received: by 2002:a05:6e02:1c08:b0:34f:3651:9c74 with SMTP id l8-20020a056e021c0800b0034f36519c74mr940900ilh.0.1693987901497;
-        Wed, 06 Sep 2023 01:11:41 -0700 (PDT)
-Received: from ?IPV6:2600:1700:e321:62f0:329c:23ff:fee3:9d7c? ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id c8-20020a92cf08000000b0034bad471d1fsm4723496ilo.3.2023.09.06.01.11.39
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 06 Sep 2023 01:11:40 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Message-ID: <081537c0-0d74-0242-451a-e6bd6f71cdd9@roeck-us.net>
-Date:   Wed, 6 Sep 2023 01:11:38 -0700
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH] lockdep: Fix static memory detection even more
-To:     Helge Deller <deller@gmx.de>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        d=1e100.net; s=20221208; t=1693993533; x=1694598333;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=UlEOBu/VE6tjdzL9UJOCpexRbWh3hX2rULyWpu7l158=;
+        b=ktXGEWhQy0pXeV2yb6IUJEzoGytuNBEBf+qWnw1fc3pBos+3fC9h90EtvWe6U9hmnk
+         slsnHreALkMS4gE34XKClSTd1JFqLxojA8lvwHErRANmCuDRVg2qq/xHlMkn3GziBJA7
+         uKXDESjj0JRUtRW+vSDELHSqQCweND3gF9IskkOeGxYIc7mPA37hyRM8Aavf9MpyibTz
+         9vzqOwDyn83wdCKAnSK8Kt7w8LCfndJneqkvlKVddj91GdHaXzVlSRZG5xS4bRZJZvQt
+         3Ldhxho1sGhjJ6ddnHYylO4hGOdSTJ8x6ozTTV/JQ4fBilMI98c6L78HGSaHl/eudIZ1
+         fpIA==
+X-Gm-Message-State: AOJu0YwczB6jOhjGvbV3jCPOw1SiiX108yLWUsMxpgd+ri/dHqnN8Izc
+        EAAaT+uO65bjBHfQ42pdhL0S+4ul1ZIDDni1iSnDvpNjcyR0ImJPq8/QRlFjDFSAW2efZIwzzbs
+        OqVCrmcHQSv0hFQRXdE7iebc=
+X-Received: by 2002:a7b:c01a:0:b0:400:419c:bbde with SMTP id c26-20020a7bc01a000000b00400419cbbdemr2083804wmb.18.1693993533251;
+        Wed, 06 Sep 2023 02:45:33 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHvzjMv9fXcOqlGgHExO0/Bky5TAsfqUJ4gFKWD/812OOB2n+3Ka+NKF8N9/cFpNJ2b058T6g==
+X-Received: by 2002:a7b:c01a:0:b0:400:419c:bbde with SMTP id c26-20020a7bc01a000000b00400419cbbdemr2083793wmb.18.1693993532950;
+        Wed, 06 Sep 2023 02:45:32 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id w17-20020a05600c015100b00401d6c0505csm19255994wmm.47.2023.09.06.02.45.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 06 Sep 2023 02:45:32 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
+        daniel@ffwll.ch, sam@ravnborg.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Cc:     Andrew Morton <akpm@linux-foundation.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        linux-parisc@vger.kernel.org, Borislav Petkov <bp@suse.de>,
-        Peter Zijlstra <peterz@infradead.org>
-References: <ZNep5EcYskP9HtGD@p100>
- <b7526bf6-886f-457a-beba-84ae9f75bc77@roeck-us.net> <ZPT2cINsHd+sWJQU@ls3530>
- <78473084-d4d5-685f-9778-4bbe8878a43e@roeck-us.net> <ZPgnslFTlwImJ+Aq@ls3530>
-Content-Language: en-US
-From:   Guenter Roeck <linux@roeck-us.net>
-In-Reply-To: <ZPgnslFTlwImJ+Aq@ls3530>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Cc:     linux-kernel@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH 1/7] fbdev/au1200fb: Do not display boot-up logo
+In-Reply-To: <20230829142109.4521-2-tzimmermann@suse.de>
+References: <20230829142109.4521-1-tzimmermann@suse.de>
+ <20230829142109.4521-2-tzimmermann@suse.de>
+Date:   Wed, 06 Sep 2023 11:45:31 +0200
+Message-ID: <87o7if4ouc.fsf@minerva.mail-host-address-is-not-set>
+MIME-Version: 1.0
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 9/6/23 00:18, Helge Deller wrote:
-> * Guenter Roeck <linux@roeck-us.net>:
->> On 9/3/23 14:11, Helge Deller wrote:
->>> * Guenter Roeck <linux@roeck-us.net>:
->>>> Hi,
->>>>
->>>> On Sat, Aug 12, 2023 at 05:48:52PM +0200, Helge Deller wrote:
->>>>> On the parisc architecture, lockdep reports for all static objects which
->>>>> are in the __initdata section (e.g. "setup_done" in devtmpfs,
->>>>> "kthreadd_done" in init/main.c) this warning:
->>>>>
->>>>> 	INFO: trying to register non-static key.
->>>>>
->>>>> The warning itself is wrong, because those objects are in the __initdata
->>>>> section, but the section itself is on parisc outside of range from
->>>>> _stext to _end, which is why the static_obj() functions returns a wrong
->>>>> answer.
->>>>>
->>>>> While fixing this issue, I noticed that the whole existing check can
->>>>> be simplified a lot.
->>>>> Instead of checking against the _stext and _end symbols (which include
->>>>> code areas too) just check for the .data and .bss segments (since we check a
->>>>> data object). This can be done with the existing is_kernel_core_data()
->>>>> macro.
->>>>>
->>>>> In addition objects in the __initdata section can be checked with
->>>>> init_section_contains().
->>>>>
->>>>> This partly reverts and simplifies commit bac59d18c701 ("x86/setup: Fix static
->>>>> memory detection").
->>>>>
->>>>> Tested on x86-64 and parisc.
->>>>>
->>>>> Signed-off-by: Helge Deller <deller@gmx.de>
->>>>> Fixes: bac59d18c701 ("x86/setup: Fix static memory detection")
->>>>
->>>> On loongarch, this patch results in the following backtrace.
->>>>
->>>> EFI stub: Loaded initrd from LINUX_EFI_INITRD_MEDIA_GUID device path
->>>> EFI stub: Exiting boot services
->>>> [    0.000000] INFO: trying to register non-static key.
->>>> [    0.000000] The code is fine but needs lockdep annotation, or maybe
->>>> [    0.000000] you didn't initialize this object before use?
->>>> [    0.000000] turning off the locking correctness validator.
->>>> [    0.000000] CPU: 0 PID: 0 Comm: swapper Not tainted 6.5.0+ #1
->>>> [    0.000000] Stack : 0000000000000000 0000000000000000 9000000000223d6c 9000000001df0000
->>>> [    0.000000]         9000000001df39a0 9000000001df39a8 0000000000000000 0000000000000000
->>>> [    0.000000]         9000000001df39a8 0000000000000001 0000000000000000 900000000154b910
->>>> [    0.000000]         fffffffffffffffe 9000000001df39a8 0000000000000000 0000000000000000
->>>> [    0.000000]         0000000000000001 0000000000000003 0000000000000010 0000000000000030
->>>> [    0.000000]         0000000000000063 0000000000000001 0000000000000000 0000000000000000
->>>> [    0.000000]         0000000000000000 0000000000000000 9000000001c60650 9000000001e12000
->>>> [    0.000000]         0000000000000000 9000000001560bc0 0000000000000000 9000000002ee6000
->>>> [    0.000000]         0000000000000000 0000000000000000 9000000000223d84 0000000000000000
->>>> [    0.000000]         00000000000000b0 0000000000000004 0000000000000000 0000000000000800
->>>> [    0.000000]         ...
->>>> [    0.000000] Call Trace:
->>>> [    0.000000] [<9000000000223d84>] show_stack+0x5c/0x180
->>>> [    0.000000] [<900000000153e0b4>] dump_stack_lvl+0x88/0xd0
->>>> [    0.000000] [<90000000002bc548>] register_lock_class+0x768/0x770
->>>> [    0.000000] [<90000000002bc710>] __lock_acquire+0xb0/0x2a18
->>>> [    0.000000] [<90000000002bba1c>] lock_acquire+0x11c/0x328
->>>> [    0.000000] [<9000000000b34a60>] __debug_object_init+0x60/0x244
->>>> [    0.000000] [<9000000000337f94>] init_cgroup_housekeeping+0xe8/0x144
->>>> [    0.000000] [<900000000033e364>] init_cgroup_root+0x38/0xa0
->>>> [    0.000000] [<90000000017801ac>] cgroup_init_early+0x44/0x16c
->>>> [    0.000000] [<9000000001770758>] start_kernel+0x50/0x624
->>>> [    0.000000] [<90000000015410b4>] kernel_entry+0xb4/0xc4
->>>>
->>>> Reverting it fixes the problem. Bisect log attached.
->>>>
->>>> This is also seen in v6.5.y and v6.4.y since the patch has been applied
->>>> to those branches.
->>>
->>> Does this happens with CONFIG_SMP=n ?
->>> If so, I think the untested patch below might fix the issue.
->>>
->>
->> No, this is loongarch:defconfig with various debug options enabled.
->> That has CONFIG_SMP=y.
-> 
-> Could you apply below patch and verify with the contents of the
-> System.map file where the lock is located ?
-> 
-> diff --git a/kernel/locking/lockdep.c b/kernel/locking/lockdep.c
-> index e85b5ad3e206..db0a301f9740 100644
-> --- a/kernel/locking/lockdep.c
-> +++ b/kernel/locking/lockdep.c
-> @@ -969,7 +969,7 @@ static bool assign_lock_key(struct lockdep_map *lock)
->   	else {
->   		/* Debug-check: all keys must be persistent! */
->   		debug_locks_off();
-> -		pr_err("INFO: trying to register non-static key.\n");
-> +		pr_err("INFO: trying to register non-static key at %08lx.\n", addr);
->   		pr_err("The code is fine but needs lockdep annotation, or maybe\n");
->   		pr_err("you didn't initialize this object before use?\n");
->   		pr_err("turning off the locking correctness validator.\n");
+Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-90000000015602d0 D __la_abs_end
-...
-90000000016815c0 d fill_pool_map.3  <--- lock pointer
-...
-9000000001770000 T __init_begin
+> The fbcon module takes care of displaying the logo, if any. Remove
+> the code form au1200fb. If we want to display the logo without fbcon,
+> we should implement this in the fbdev core code.
+>
 
-Guenter
+Agreed. I see that this code has been since the driver was added in 2006,
+I wonder if was ever used. Enabling a fbdev driver without fbcon doesn't
+seem to be a common configuration.
+
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
+
+Acked-by: Javier Martinez Canillas <javierm@redhat.com>
+
+-- 
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 

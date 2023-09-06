@@ -2,343 +2,173 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 465E8EE1473
-	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Sep 2023 14:48:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7AF2EE14A5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Sep 2023 15:20:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241977AbjIFOsO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 6 Sep 2023 10:48:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42022 "EHLO
+        id S242456AbjIFPUk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 6 Sep 2023 11:20:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57658 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241919AbjIFOsK (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Sep 2023 10:48:10 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65E0A173F;
-        Wed,  6 Sep 2023 07:48:05 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id F14C222436;
-        Wed,  6 Sep 2023 14:48:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1694011683; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
+        with ESMTP id S229903AbjIFPUj (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Sep 2023 11:20:39 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A48B0170D
+        for <linux-fbdev@vger.kernel.org>; Wed,  6 Sep 2023 08:19:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1694013596;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Bp3+EvNnqgMHHidbPKt1TOwu0+31lb+svFgrrlpQjas=;
-        b=w0g8f9KRsSxudhGVL9cLq7m1lQlyPLvIltbC6M7yC0GsNh8VfkD1+Y8wj1Te43KWQQzUlz
-        +JOZDrz5xlyN/xCwU1FD8Y16R9gQabaEjIdmag34R7Qx4MMsu4Rn3MxFngj6jWK46JnYu5
-        /YlxiIGlkFX34kD4DYyk/s9hdrHxK+M=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1694011683;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=Bp3+EvNnqgMHHidbPKt1TOwu0+31lb+svFgrrlpQjas=;
-        b=ntl2Y+nYnXvfH9D+NJAQDZBnZVLDwE1adNefgh/ZI11sl5xkiw5v95qraOkilo55b1N/PG
-        vo3kBuCxfZXZPoCA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id AC7D31346C;
-        Wed,  6 Sep 2023 14:48:03 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id EEMpKSOR+GSNSgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Wed, 06 Sep 2023 14:48:03 +0000
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-To:     mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
-        arnd@arndb.de, deller@gmx.de
-Cc:     linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org,
-        linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-        linux-mips@vger.kernel.org, sparclinux@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 2/5] fbdev: Replace fb_pgprotect() with fb_pgprot_device()
-Date:   Wed,  6 Sep 2023 16:35:03 +0200
-Message-ID: <20230906144801.25297-3-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20230906144801.25297-1-tzimmermann@suse.de>
-References: <20230906144801.25297-1-tzimmermann@suse.de>
+        bh=YBGwnY8IJ4oOi26b7B4Xq+aeBiWJN7rJ48RnXu/dAI8=;
+        b=RtvbhrbrHG0UIjK5z8bzPPwwC7e3ij+MISF6FZMJ1XTxW3wqkdoAjhrDHt3BsBEssv7kPi
+        9iR5nBgoKdRkoLoiiyMzh4Hx1dOgJbD08rqPkJkdYP81arnnG2cAggRV8d+R7VXgHQzYfq
+        b2MFcBiR5yrfMJZkbZTGkrLu3z5h8FA=
+Received: from mail-ed1-f69.google.com (mail-ed1-f69.google.com
+ [209.85.208.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-47-lPXYchhSMK2brbHEq1KSSQ-1; Wed, 06 Sep 2023 11:19:55 -0400
+X-MC-Unique: lPXYchhSMK2brbHEq1KSSQ-1
+Received: by mail-ed1-f69.google.com with SMTP id 4fb4d7f45d1cf-51bef8bb689so1554605a12.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 06 Sep 2023 08:19:55 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1694013594; x=1694618394;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=YBGwnY8IJ4oOi26b7B4Xq+aeBiWJN7rJ48RnXu/dAI8=;
+        b=WP813ms+zkeaH0+sNHXrcKPTEygIiwSGCLVHCnRIrSIGQi2O3BKg+BMC3QkYXqkTVf
+         jFQkpIqix3e83mGOKLHn2h96tU5AlGe5pW+Rj5nqibG2xiXw4Akr2lDI9ff5maJ5FCEW
+         3u2pINYL2RvyXrrvRb9aKS2UlFJiYEAkwTRIjecCoyeMwGhuXy1e4kF8F/i4p9uXPTwB
+         V1ma2vvs5YjnEVSB+GpJy26AwEQ837NVD0Y6hT8cpJyHBT8y/IWu6FsoHxOOD/4uNZ5o
+         tWc6l/Rqr2VljJx2gXGMZqViWdU402z91c7aJcUmAETKXvL78duAelFCDk61Z1saJRnY
+         itxw==
+X-Gm-Message-State: AOJu0Yw2HTV/CUh86OwoWIGTP6XYUQMp+G1M+NKlrBjZc4/hF40IQh4l
+        xdLbpCXsA/CTndD2gttqw/unqvue3pNGmYHUPmVGA7h/1qoa5/K6Rm5PBOOF353B4AwTXSgqxt2
+        1bqDzDH9zxSboqBX2YRjXs4o=
+X-Received: by 2002:aa7:d704:0:b0:523:2e23:a0bf with SMTP id t4-20020aa7d704000000b005232e23a0bfmr3399250edq.11.1694013594552;
+        Wed, 06 Sep 2023 08:19:54 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHQRje1BTiQeDC0pKG0JIZJVNX1y7mzl6y7CEgKpmM02h2Jahwy26ejPbhXZUuWRDSrUFQtQg==
+X-Received: by 2002:aa7:d704:0:b0:523:2e23:a0bf with SMTP id t4-20020aa7d704000000b005232e23a0bfmr3399238edq.11.1694013594219;
+        Wed, 06 Sep 2023 08:19:54 -0700 (PDT)
+Received: from ?IPV6:2001:1c00:c32:7800:5bfa:a036:83f0:f9ec? (2001-1c00-0c32-7800-5bfa-a036-83f0-f9ec.cable.dynamic.v6.ziggo.nl. [2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
+        by smtp.gmail.com with ESMTPSA id d17-20020aa7ce11000000b00522572f323dsm8504731edv.16.2023.09.06.08.19.53
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 06 Sep 2023 08:19:53 -0700 (PDT)
+Message-ID: <f95da7ff-06dd-2c0e-d563-7e5ad61c3bcc@redhat.com>
+Date:   Wed, 6 Sep 2023 17:19:52 +0200
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Subject: Re: [PATCH v3 1/1] backlight: hid_bl: Add VESA VCP HID backlight
+ driver
+Content-Language: en-US, nl
+To:     Julius Zint <julius@zint.sh>,
+        =?UTF-8?Q?Thomas_Wei=c3=9fschuh?= <thomas@t-8ch.de>
+Cc:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Jiri Kosina <jikos@kernel.org>,
+        Benjamin Tissoires <benjamin.tissoires@redhat.com>,
+        Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-input@vger.kernel.org,
+        linux-fbdev@vger.kernel.org
+References: <20230820094118.20521-1-julius@zint.sh>
+ <20230820094118.20521-2-julius@zint.sh>
+ <f2e1ab9e-e691-42e1-a600-42744f692922@t-8ch.de>
+ <9a5364de-28e1-1d4a-1d3a-d6dcedb7e659@zint.sh>
+From:   Hans de Goede <hdegoede@redhat.com>
+In-Reply-To: <9a5364de-28e1-1d4a-1d3a-d6dcedb7e659@zint.sh>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Rename the fbdev mmap helper fb_pgprotect() to fb_pgprot_device().
-The helper sets VMA page-access flags for framebuffers in device I/O
-memory. The new name follows pgprot_device(), which does the same for
-arbitrary devices.
+Hi Julius,
 
-Also clean up the helper's parameters and return value. Instead of
-the VMA instance, pass the individial parameters separately: existing
-page-access flags, the VMAs start and end addresses and the offset
-in the underlying device memory rsp file. Return the new page-access
-flags. These changes align fb_pgprot_device() closer with pgprot_device.
+On 9/4/23 21:02, Julius Zint wrote:
+> 
+> 
+> On Mon, 4 Sep 2023, Thomas Weißschuh wrote:
+> 
+>> +Cc Hans who ins involved with the backlight subsystem
+>>
+>> Hi Julius,
+>>
+>> today I stumbled upon a mail from Hans [0], which explains that the
+>> backlight subsystem is not actually a good fit (yet?) for external
+>> displays.
+>>
+>> It seems a new API is in the works that would better fit, but I'm not
+>> sure about the state of this API. Maybe Hans can clarify.
+>>
+>> This also ties back to my review question how userspace can figure out
+>> to which display a backlight devices applies. So far it can not.
+>>
+>> [0] https://lore.kernel.org/lkml/7f2d88de-60c5-e2ff-9b22-acba35cfdfb6@redhat.com/
+>>
+> 
+> Hi Thomas,
+> 
+> thanks for the hint. I will make sure to give this a proper read and
+> see, if it fits my use case better then the current backlight subsystem.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- arch/ia64/include/asm/fb.h           | 15 +++++++--------
- arch/m68k/include/asm/fb.h           | 19 ++++++++++---------
- arch/mips/include/asm/fb.h           | 11 +++++------
- arch/powerpc/include/asm/fb.h        | 13 +++++--------
- arch/sparc/include/asm/fb.h          | 15 +++++++++------
- arch/x86/include/asm/fb.h            | 10 ++++++----
- arch/x86/video/fbdev.c               | 15 ++++++++-------
- drivers/video/fbdev/core/fb_chrdev.c |  3 ++-
- include/asm-generic/fb.h             | 12 ++++++------
- 9 files changed, 58 insertions(+), 55 deletions(-)
+Note the actual proposal for the new usespace API for display brightness
+control is here:
 
-diff --git a/arch/ia64/include/asm/fb.h b/arch/ia64/include/asm/fb.h
-index 1717b26fd423..2fbad4a9fc15 100644
---- a/arch/ia64/include/asm/fb.h
-+++ b/arch/ia64/include/asm/fb.h
-@@ -8,17 +8,16 @@
- 
- #include <asm/page.h>
- 
--struct file;
--
--static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
--				unsigned long off)
-+static inline pgprot_t fb_pgprot_device(pgprot_t prot,
-+					unsigned long vm_start, unsigned long vm_end,
-+					unsigned long offset)
- {
--	if (efi_range_is_wc(vma->vm_start, vma->vm_end - vma->vm_start))
--		vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
-+	if (efi_range_is_wc(vm_start, vm_end - vm_start))
-+		return pgprot_writecombine(prot);
- 	else
--		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-+		return pgprot_noncached(prot);
- }
--#define fb_pgprotect fb_pgprotect
-+#define fb_pgprot_device fb_pgprot_device
- 
- static inline void fb_memcpy_fromio(void *to, const volatile void __iomem *from, size_t n)
- {
-diff --git a/arch/m68k/include/asm/fb.h b/arch/m68k/include/asm/fb.h
-index 24273fc7ad91..4acdf5b62871 100644
---- a/arch/m68k/include/asm/fb.h
-+++ b/arch/m68k/include/asm/fb.h
-@@ -5,26 +5,27 @@
- #include <asm/page.h>
- #include <asm/setup.h>
- 
--struct file;
--
--static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
--				unsigned long off)
-+static inline pgprot_t fb_pgprot_device(pgprot_t prot,
-+					unsigned long vm_start, unsigned long vm_end,
-+					unsigned long offset)
- {
- #ifdef CONFIG_MMU
- #ifdef CONFIG_SUN3
--	pgprot_val(vma->vm_page_prot) |= SUN3_PAGE_NOCACHE;
-+	pgprot_val(prot) |= SUN3_PAGE_NOCACHE;
- #else
- 	if (CPU_IS_020_OR_030)
--		pgprot_val(vma->vm_page_prot) |= _PAGE_NOCACHE030;
-+		pgprot_val(prot) |= _PAGE_NOCACHE030;
- 	if (CPU_IS_040_OR_060) {
--		pgprot_val(vma->vm_page_prot) &= _CACHEMASK040;
-+		pgprot_val(prot) &= _CACHEMASK040;
- 		/* Use no-cache mode, serialized */
--		pgprot_val(vma->vm_page_prot) |= _PAGE_NOCACHE_S;
-+		pgprot_val(prot) |= _PAGE_NOCACHE_S;
- 	}
- #endif /* CONFIG_SUN3 */
- #endif /* CONFIG_MMU */
-+
-+	return prot;
- }
--#define fb_pgprotect fb_pgprotect
-+#define fb_pgprot_device fb_pgprot_device
- 
- #include <asm-generic/fb.h>
- 
-diff --git a/arch/mips/include/asm/fb.h b/arch/mips/include/asm/fb.h
-index 18b7226403ba..98e63d14a71f 100644
---- a/arch/mips/include/asm/fb.h
-+++ b/arch/mips/include/asm/fb.h
-@@ -3,14 +3,13 @@
- 
- #include <asm/page.h>
- 
--struct file;
--
--static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
--				unsigned long off)
-+static inline pgprot_t fb_pgprot_device(pgprot_t prot,
-+					unsigned long vm_start, unsigned long vm_end,
-+					unsigned long offset)
- {
--	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-+	return pgprot_noncached(prot);
- }
--#define fb_pgprotect fb_pgprotect
-+#define fb_pgprot_device fb_pgprot_device
- 
- /*
-  * MIPS doesn't define __raw_ I/O macros, so the helpers
-diff --git a/arch/powerpc/include/asm/fb.h b/arch/powerpc/include/asm/fb.h
-index 61e3b8806db6..3c7486323178 100644
---- a/arch/powerpc/include/asm/fb.h
-+++ b/arch/powerpc/include/asm/fb.h
-@@ -2,23 +2,20 @@
- #ifndef _ASM_FB_H_
- #define _ASM_FB_H_
- 
--#include <linux/fs.h>
--
- #include <asm/page.h>
- 
--static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
--				unsigned long off)
-+static inline pgprot_t fb_pgprot_device(pgprot_t prot,
-+					unsigned long vm_start, unsigned long vm_end,
-+					unsigned long offset)
- {
- 	/*
- 	 * PowerPC's implementation of phys_mem_access_prot() does
- 	 * not use the file argument. Set it to NULL in preparation
- 	 * of later updates to the interface.
- 	 */
--	vma->vm_page_prot = phys_mem_access_prot(NULL, PHYS_PFN(off),
--						 vma->vm_end - vma->vm_start,
--						 vma->vm_page_prot);
-+	return phys_mem_access_prot(NULL, PHYS_PFN(offset), vm_end - vm_start, prot);
- }
--#define fb_pgprotect fb_pgprotect
-+#define fb_pgprot_device fb_pgprot_device
- 
- #include <asm-generic/fb.h>
- 
-diff --git a/arch/sparc/include/asm/fb.h b/arch/sparc/include/asm/fb.h
-index 572ecd3e1cc4..dc0fa30d11f3 100644
---- a/arch/sparc/include/asm/fb.h
-+++ b/arch/sparc/include/asm/fb.h
-@@ -4,15 +4,18 @@
- 
- #include <linux/io.h>
- 
-+#include <asm/page.h>
-+
- struct fb_info;
--struct file;
--struct vm_area_struct;
- 
- #ifdef CONFIG_SPARC32
--static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
--				unsigned long off)
--{ }
--#define fb_pgprotect fb_pgprotect
-+static inline pgprot_t fb_pgprot_device(pgprot_t prot,
-+					unsigned long vm_start, unsigned long vm_end,
-+					unsigned long offset)
-+{
-+	return prot;
-+}
-+#define fb_pgprot_device fb_pgprot_device
- #endif
- 
- int fb_is_primary_device(struct fb_info *info);
-diff --git a/arch/x86/include/asm/fb.h b/arch/x86/include/asm/fb.h
-index 23873da8fb77..511aedb23d66 100644
---- a/arch/x86/include/asm/fb.h
-+++ b/arch/x86/include/asm/fb.h
-@@ -2,12 +2,14 @@
- #ifndef _ASM_X86_FB_H
- #define _ASM_X86_FB_H
- 
-+#include <asm/page.h>
-+
- struct fb_info;
--struct file;
--struct vm_area_struct;
- 
--void fb_pgprotect(struct file *file, struct vm_area_struct *vma, unsigned long off);
--#define fb_pgprotect fb_pgprotect
-+pgprot_t fb_pgprot_device(pgprot_t prot,
-+			  unsigned long vm_start, unsigned long vm_end,
-+			  unsigned long offset);
-+#define fb_pgprot_device fb_pgprot_device
- 
- int fb_is_primary_device(struct fb_info *info);
- #define fb_is_primary_device fb_is_primary_device
-diff --git a/arch/x86/video/fbdev.c b/arch/x86/video/fbdev.c
-index 49a0452402e9..c7f247d91386 100644
---- a/arch/x86/video/fbdev.c
-+++ b/arch/x86/video/fbdev.c
-@@ -13,16 +13,17 @@
- #include <linux/vgaarb.h>
- #include <asm/fb.h>
- 
--void fb_pgprotect(struct file *file, struct vm_area_struct *vma, unsigned long off)
-+pgprot_t fb_pgprot_device(pgprot_t prot,
-+			  unsigned long vm_start, unsigned long vm_end,
-+			  unsigned long offset)
- {
--	unsigned long prot;
--
--	prot = pgprot_val(vma->vm_page_prot) & ~_PAGE_CACHE_MASK;
-+	pgprot_val(prot) &= ~_PAGE_CACHE_MASK;
- 	if (boot_cpu_data.x86 > 3)
--		pgprot_val(vma->vm_page_prot) =
--			prot | cachemode2protval(_PAGE_CACHE_MODE_UC_MINUS);
-+		pgprot_val(prot) |= cachemode2protval(_PAGE_CACHE_MODE_UC_MINUS);
-+
-+	return prot;
- }
--EXPORT_SYMBOL(fb_pgprotect);
-+EXPORT_SYMBOL(fb_pgprot_device);
- 
- int fb_is_primary_device(struct fb_info *info)
- {
-diff --git a/drivers/video/fbdev/core/fb_chrdev.c b/drivers/video/fbdev/core/fb_chrdev.c
-index eadb81f53a82..100a92b2c3b7 100644
---- a/drivers/video/fbdev/core/fb_chrdev.c
-+++ b/drivers/video/fbdev/core/fb_chrdev.c
-@@ -365,7 +365,8 @@ static int fb_mmap(struct file *file, struct vm_area_struct *vma)
- 	mutex_unlock(&info->mm_lock);
- 
- 	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
--	fb_pgprotect(file, vma, start);
-+	vma->vm_page_prot = fb_pgprot_device(vma->vm_page_prot, vma->vm_start,
-+					     vma->vm_end, start);
- 
- 	return vm_iomap_memory(vma, start, len);
- }
-diff --git a/include/asm-generic/fb.h b/include/asm-generic/fb.h
-index bb7ee9c70e60..876e1bef7859 100644
---- a/include/asm-generic/fb.h
-+++ b/include/asm-generic/fb.h
-@@ -12,14 +12,14 @@
- #include <linux/pgtable.h>
- 
- struct fb_info;
--struct file;
- 
--#ifndef fb_pgprotect
--#define fb_pgprotect fb_pgprotect
--static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
--				unsigned long off)
-+#ifndef fb_pgprot_device
-+#define fb_pgprot_device fb_pgprot_device
-+static inline pgprot_t fb_pgprot_device(pgprot_t prot,
-+					unsigned long vm_start, unsigned long vm_end,
-+					unsigned long offset)
- {
--	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
-+	return pgprot_writecombine(prot);
- }
- #endif
- 
--- 
-2.42.0
+https://lore.kernel.org/dri-devel/b61d3eeb-6213-afac-2e70-7b9791c86d2e@redhat.com/
+
+I have finished / stabilized the backlight code refactor which I landed
+in 6.1, which is a prerequisite for the above proposal. But I have not
+been able to make time to actually implement the above proposal; and
+I don't know when I will be able to make time for this.
+
+> Especially since I wasnt able to properly address your other review
+> comments for now. You are right that the name should align better with
+> the kernel module and also, that it is possible for multiple displays to
+> be attached.
+> 
+> In its current state, this would mean that you could only control the
+> backlight for the first HID device (enough for me :-).
+> 
+> The systemd-backlight@.service uses not only the file name, but also the
+> full bus path for storing/restoring backlights. I did not yet get around
+> to see how the desktops handle brightness control, but since the
+> systemd-backlight@.service already uses the name, its important to stay
+> the same over multiple boots.
+> 
+> I would be able to get a handle on the underlying USB device and use the
+> serial to uniquely (and persistently) name the backlight. But it does
+> feel hacky doing it this way.
+
+So mutter (gnome-shell compositor library) has a similar issue when saving
+monitor layouts and I can tell you beforehand that monitor serial numbers
+by themselves are not unique enough. Some models just report 123456789
+as serial and if you have a dual-monitor setup with 2 such monitors
+and name the backlight class device <serial>-vcp-hid or something like that
+you will still end up with 2 identical names.
+
+To avoid this when saving monitor layouts mutter saves both the port
+to which the monitor is attached (e.g. DP-1 DP-2) and the serialnumber
+and on startup / monitor hotplug when it checks to see if it has saved
+layout info for the monitor it checks the port+serialnr combination.
+
+So what I think you should do is figure out a way to map which
+VCP HID device maps to which drm-connector and then use
+the connector-name + serial-nr to generate the backlight device name.
+
+We will need the mapping the a drm-connector object anyway for
+the new brightness API proposal from above.
+
+Note this does NOT solve the fact that registering a new backlight
+class device for an external monitor on a laptop will hopelessly
+confuse userspace, see:
+
+https://lore.kernel.org/lkml/7f2d88de-60c5-e2ff-9b22-acba35cfdfb6@redhat.com/
+
+Regards,
+
+Hans
+
 

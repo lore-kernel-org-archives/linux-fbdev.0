@@ -2,150 +2,138 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A06E2CA0FFB
-	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Sep 2023 16:21:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF7DEEB8FB5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Sep 2023 07:18:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234612AbjIEQVN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 5 Sep 2023 12:21:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44240 "EHLO
+        id S229688AbjIFHSY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 6 Sep 2023 03:18:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50432 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354574AbjIEMoO (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 5 Sep 2023 08:44:14 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 23FE01AD;
-        Tue,  5 Sep 2023 05:44:11 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id D1BC51FDB0;
-        Tue,  5 Sep 2023 12:44:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1693917849; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=FkN9fHLyAfRcHsilGUbRusJjN/has0O6CzUMKzXJasI=;
-        b=keVYfmc48mpS4Nt09vnh12VZJSCRjao6bLq8+mD13pxU9x71zSHfdmFp8Kfx0sIOXsaSP1
-        QLaKzvB23hHyKAMtuhTve0e7QYNrA8bdsPZW4JDoFRxpWeBAZBhQKf86/lYvhAs1FAC7Sa
-        J4Fk+xaeTOI5b+kunmcl9yd9y6d2wU4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1693917849;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=FkN9fHLyAfRcHsilGUbRusJjN/has0O6CzUMKzXJasI=;
-        b=vIhIJzxZZmb5DcNB3OjOlwl7lrOhkEIHzE4KHaujlzT60ABsQijnddOVu6k4DIbcF4Ojdb
-        PcktSvBRfw9cC5Aw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 7C3ED13911;
-        Tue,  5 Sep 2023 12:44:09 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id 9K0AHZki92SuHQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Tue, 05 Sep 2023 12:44:09 +0000
-Message-ID: <5265f1eb-e1a6-c91e-9bc2-75089d594a0e@suse.de>
-Date:   Tue, 5 Sep 2023 14:44:08 +0200
+        with ESMTP id S229927AbjIFHSX (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Sep 2023 03:18:23 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 843B9CFA;
+        Wed,  6 Sep 2023 00:18:19 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6BF44C433C8;
+        Wed,  6 Sep 2023 07:18:14 +0000 (UTC)
+Date:   Wed, 6 Sep 2023 09:18:10 +0200
+From:   Helge Deller <deller@gmx.de>
+To:     Guenter Roeck <linux@roeck-us.net>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Cc:     Andrew Morton <akpm@linux-foundation.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        linux-parisc@vger.kernel.org, Borislav Petkov <bp@suse.de>,
+        Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] lockdep: Fix static memory detection even more
+Message-ID: <ZPgnslFTlwImJ+Aq@ls3530>
+References: <ZNep5EcYskP9HtGD@p100>
+ <b7526bf6-886f-457a-beba-84ae9f75bc77@roeck-us.net>
+ <ZPT2cINsHd+sWJQU@ls3530>
+ <78473084-d4d5-685f-9778-4bbe8878a43e@roeck-us.net>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.14.0
-Subject: Re: [PATCH 0/4] ppc, fbdev: Clean up fbdev mmap helper
-Content-Language: en-US
-To:     Michael Ellerman <mpe@ellerman.id.au>, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu, arnd@arndb.de, deller@gmx.de
-Cc:     linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org,
-        linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-        linux-mips@vger.kernel.org, sparclinux@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org
-References: <20230901142659.31787-1-tzimmermann@suse.de>
- <874jk9ibf7.fsf@mail.lhotse>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <874jk9ibf7.fsf@mail.lhotse>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------8cnkOZ3clMojcrflCUVqPiyi"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <78473084-d4d5-685f-9778-4bbe8878a43e@roeck-us.net>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------8cnkOZ3clMojcrflCUVqPiyi
-Content-Type: multipart/mixed; boundary="------------vggYL9Fu9Mr0081TqvPYGkw1";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Michael Ellerman <mpe@ellerman.id.au>, npiggin@gmail.com,
- christophe.leroy@csgroup.eu, arnd@arndb.de, deller@gmx.de
-Cc: linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- linux-mips@vger.kernel.org, sparclinux@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org
-Message-ID: <5265f1eb-e1a6-c91e-9bc2-75089d594a0e@suse.de>
-Subject: Re: [PATCH 0/4] ppc, fbdev: Clean up fbdev mmap helper
-References: <20230901142659.31787-1-tzimmermann@suse.de>
- <874jk9ibf7.fsf@mail.lhotse>
-In-Reply-To: <874jk9ibf7.fsf@mail.lhotse>
+* Guenter Roeck <linux@roeck-us.net>:
+> On 9/3/23 14:11, Helge Deller wrote:
+> > * Guenter Roeck <linux@roeck-us.net>:
+> > > Hi,
+> > > 
+> > > On Sat, Aug 12, 2023 at 05:48:52PM +0200, Helge Deller wrote:
+> > > > On the parisc architecture, lockdep reports for all static objects which
+> > > > are in the __initdata section (e.g. "setup_done" in devtmpfs,
+> > > > "kthreadd_done" in init/main.c) this warning:
+> > > > 
+> > > > 	INFO: trying to register non-static key.
+> > > > 
+> > > > The warning itself is wrong, because those objects are in the __initdata
+> > > > section, but the section itself is on parisc outside of range from
+> > > > _stext to _end, which is why the static_obj() functions returns a wrong
+> > > > answer.
+> > > > 
+> > > > While fixing this issue, I noticed that the whole existing check can
+> > > > be simplified a lot.
+> > > > Instead of checking against the _stext and _end symbols (which include
+> > > > code areas too) just check for the .data and .bss segments (since we check a
+> > > > data object). This can be done with the existing is_kernel_core_data()
+> > > > macro.
+> > > > 
+> > > > In addition objects in the __initdata section can be checked with
+> > > > init_section_contains().
+> > > > 
+> > > > This partly reverts and simplifies commit bac59d18c701 ("x86/setup: Fix static
+> > > > memory detection").
+> > > > 
+> > > > Tested on x86-64 and parisc.
+> > > > 
+> > > > Signed-off-by: Helge Deller <deller@gmx.de>
+> > > > Fixes: bac59d18c701 ("x86/setup: Fix static memory detection")
+> > > 
+> > > On loongarch, this patch results in the following backtrace.
+> > > 
+> > > EFI stub: Loaded initrd from LINUX_EFI_INITRD_MEDIA_GUID device path
+> > > EFI stub: Exiting boot services
+> > > [    0.000000] INFO: trying to register non-static key.
+> > > [    0.000000] The code is fine but needs lockdep annotation, or maybe
+> > > [    0.000000] you didn't initialize this object before use?
+> > > [    0.000000] turning off the locking correctness validator.
+> > > [    0.000000] CPU: 0 PID: 0 Comm: swapper Not tainted 6.5.0+ #1
+> > > [    0.000000] Stack : 0000000000000000 0000000000000000 9000000000223d6c 9000000001df0000
+> > > [    0.000000]         9000000001df39a0 9000000001df39a8 0000000000000000 0000000000000000
+> > > [    0.000000]         9000000001df39a8 0000000000000001 0000000000000000 900000000154b910
+> > > [    0.000000]         fffffffffffffffe 9000000001df39a8 0000000000000000 0000000000000000
+> > > [    0.000000]         0000000000000001 0000000000000003 0000000000000010 0000000000000030
+> > > [    0.000000]         0000000000000063 0000000000000001 0000000000000000 0000000000000000
+> > > [    0.000000]         0000000000000000 0000000000000000 9000000001c60650 9000000001e12000
+> > > [    0.000000]         0000000000000000 9000000001560bc0 0000000000000000 9000000002ee6000
+> > > [    0.000000]         0000000000000000 0000000000000000 9000000000223d84 0000000000000000
+> > > [    0.000000]         00000000000000b0 0000000000000004 0000000000000000 0000000000000800
+> > > [    0.000000]         ...
+> > > [    0.000000] Call Trace:
+> > > [    0.000000] [<9000000000223d84>] show_stack+0x5c/0x180
+> > > [    0.000000] [<900000000153e0b4>] dump_stack_lvl+0x88/0xd0
+> > > [    0.000000] [<90000000002bc548>] register_lock_class+0x768/0x770
+> > > [    0.000000] [<90000000002bc710>] __lock_acquire+0xb0/0x2a18
+> > > [    0.000000] [<90000000002bba1c>] lock_acquire+0x11c/0x328
+> > > [    0.000000] [<9000000000b34a60>] __debug_object_init+0x60/0x244
+> > > [    0.000000] [<9000000000337f94>] init_cgroup_housekeeping+0xe8/0x144
+> > > [    0.000000] [<900000000033e364>] init_cgroup_root+0x38/0xa0
+> > > [    0.000000] [<90000000017801ac>] cgroup_init_early+0x44/0x16c
+> > > [    0.000000] [<9000000001770758>] start_kernel+0x50/0x624
+> > > [    0.000000] [<90000000015410b4>] kernel_entry+0xb4/0xc4
+> > > 
+> > > Reverting it fixes the problem. Bisect log attached.
+> > > 
+> > > This is also seen in v6.5.y and v6.4.y since the patch has been applied
+> > > to those branches.
+> > 
+> > Does this happens with CONFIG_SMP=n ?
+> > If so, I think the untested patch below might fix the issue.
+> > 
+> 
+> No, this is loongarch:defconfig with various debug options enabled.
+> That has CONFIG_SMP=y.
 
---------------vggYL9Fu9Mr0081TqvPYGkw1
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Could you apply below patch and verify with the contents of the
+System.map file where the lock is located ?
 
-SGkNCg0KQW0gMDUuMDkuMjMgdW0gMDQ6NDcgc2NocmllYiBNaWNoYWVsIEVsbGVybWFuOg0K
-PiBUaG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1hbm5Ac3VzZS5kZT4gd3JpdGVzOg0KPj4g
-UmVmYWN0b3IgZmJfcGdwcm90ZWN0KCkgaW4gUG93ZXJQQyB0byB3b3JrIHdpdGhvdXQgc3Ry
-dWN0IGZpbGUuIFRoZW4NCj4+IGNsZWFuIHVwIGFuZCByZW5hbWUgZmJfcGdwcm90ZWN0KCku
-IFRoaXMgY2hhbmdlIGhhcyBiZWVuIGRpc2N1c3NlZCBhdA0KPj4gWzFdIGluIHRoZSBjb250
-ZXh0IG9mIHJlZmFjdG9yaW5nIGZiZGV2J3MgbW1hcCBjb2RlLg0KPj4NCj4+IFRoZSBmaXJz
-dCB0aHJlZSBwYXRjaGVzIGFkYXB0IFBvd2VyUEMncyBpbnRlcm5hbCBpbnRlcmZhY2VzIHRv
-DQo+PiBwcm92aWRlIGEgcGh5c19tZW1fYWNjZXNzX3Byb3QoKSB0aGF0IHdvcmtzIHdpdGhv
-dXQgc3RydWN0IGZpbGUuIE5laXRoZXINCj4+IHRoZSBhcmNoaXRlY3R1cmUgY29kZSBvciBm
-YmRldiBoZWxwZXJzIG5lZWQgdGhlIHBhcmFtZXRlci4NCj4+DQo+PiBQYXRjaCA0IHJlcGxh
-Y2VzIGZiZGV2J3MgZmJfcGdwcm90ZWN0KCkgd2l0aCBmYl9wZ3Byb3RfZGV2aWNlKCkgb24N
-Cj4+IGFsbCBhcmNoaXRlY3R1cmVzLiBUaGUgbmV3IGhlbHBlciB3aXRoIGl0cyBzdHJlYW0t
-bGluZWQgaW50ZXJmYWNlDQo+PiBlbmFibGVzIG1vcmUgcmVmYWN0b3Jpbmcgd2l0aGluIGZi
-ZGV2J3MgbW1hcCBpbXBsZW1lbnRhdGlvbi4NCj4gDQo+IFRoZSBjb250ZW50IG9mIHRoaXMg
-c2VyaWVzIGlzIE9LLCBidXQgdGhlIHdheSBpdCdzIHN0cnVjdHVyZWQgbWFrZXMgaXQgYQ0K
-PiByZWFsIGhlYWRhY2hlIHRvIG1lcmdlLCBiZWNhdXNlIGl0J3MgbW9zdGx5IHBvd2VycGMg
-Y2hhbmdlcyBhbmQgdGhlbiBhDQo+IGRlcGVuZGFudCBjcm9zcyBhcmNoaXRlY3R1cmUgcGF0
-Y2ggYXQgdGhlIGVuZC4NCj4gDQo+IEl0IHdvdWxkIGJlIHNpbXBsZXIgaWYgcGF0Y2ggNCB3
-YXMgZmlyc3QgYW5kIGp1c3QgcGFzc2VkIGZpbGU9TlVMTCB0bw0KPiB0aGUgcG93ZXJwYyBo
-ZWxwZXIsIHdpdGggYW4gZXhwbGFuYXRpb24gdGhhdCBpdCdzIHVudXNlZCBhbmQgd2lsbCBi
-ZQ0KPiBkcm9wcGVkIGluIGEgZnV0dXJlIGNsZWFudXAuDQo+IA0KPiBXZSBjb3VsZCB0aGVu
-IHB1dCB0aGUgZmlyc3QgcGF0Y2ggKHByZXZpb3VzbHkgcGF0Y2ggNCkgaW4gYSB0b3BpYyBi
-cmFuY2gNCj4gdGhhdCBpcyBzaGFyZWQgYmV0d2VlbiB0aGUgcG93ZXJwYyB0cmVlIGFuZCB0
-aGUgZmJkZXYgdHJlZSwgYW5kIHRoZW4gdGhlDQo+IHBvd2VycGMgY2hhbmdlcyBjb3VsZCBi
-ZSBzdGFnZWQgb24gdG9wIG9mIHRoYXQgdGhyb3VnaCB0aGUgcG93ZXJwYyB0cmVlLg0KDQpP
-aywgdGhhbmtzIGZvciByZXZpZXdpbmcuIFRoZSBmYmRldiBwYXRjaCB3b3VsZCBnbyB0aHJv
-dWdoIHRoZSBkcm0tbWlzYyANCnRyZWUgYXMgYmFzZSBmb3IgZnVydGhlciByZWZhY3Rvcmlu
-Zy4NCg0KSSdsbCB1cGRhdGUgdGhlIHBhdGNoc2V0IGFjY29yZGluZ2x5Lg0KDQpCZXN0IHJl
-Z2FyZHMNClRob21hcw0KDQo+IA0KPiBjaGVlcnMNCg0KLS0gDQpUaG9tYXMgWmltbWVybWFu
-bg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMg
-R2VybWFueSBHbWJIDQpGcmFua2Vuc3RyYXNzZSAxNDYsIDkwNDYxIE51ZXJuYmVyZywgR2Vy
-bWFueQ0KR0Y6IEl2byBUb3RldiwgQW5kcmV3IE15ZXJzLCBBbmRyZXcgTWNEb25hbGQsIEJv
-dWRpZW4gTW9lcm1hbg0KSFJCIDM2ODA5IChBRyBOdWVybmJlcmcpDQo=
-
---------------vggYL9Fu9Mr0081TqvPYGkw1--
-
---------------8cnkOZ3clMojcrflCUVqPiyi
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmT3IpgFAwAAAAAACgkQlh/E3EQov+Ar
-2BAAx4GyhqkGBaJfv3puNbbvuB7PEZosJZ/vqe3G59Ue+8wRBHUTSKhDolnDRYRTbKQgZ1SQOrZG
-s6+W76rPXD1Ut4CVvr8k7nTHykj6zZleDub7NrWbfct6eQCj162khf2dJa4gR75GQ2xD+SDj3i4W
-1LGY55I1ufx+7SulJur+5EUbmRBHxru6iU5MYxADPt5aUUbwMNWCr6sobziieqr0IP/20SfispBk
-dUdtMdCkU3Lw2ZK2n9UVUVxmO7XSgRU2UFJEGr3/0BIMhnHMuxkiXPYn/JJlddIgbC24PsKp/gAW
-mcWBqdQnCLya6eb0TYII9VyeJGHISNWx01SprtAnuvp7yuKOwizJEVWC6XclHcSA89RgaRCm0Yx5
-+WPhWrlzgI1Bw9ZwpEP/xRtDXUTFRYBipih65g7Aijb3FiSg3kNTAbE6A4m5agaj28L1ctOaUpz4
-ntRjkcG3o7CyqSKp6sZh6+pvzf7HR1sdFiQuDgG8ySlNND/EJVdu4QS/17JYC0Eo8rdtduUTDhqv
-13/YT17csTxF5EGvFMKS+FXFDansioQxoUsA+Dr+nhakhID6DXmmICnbQSa2f+/4rG1MKN2qxzKe
-3dNq15p4ARLrfNQ6GJsXLOTw+OtJHK4TPzPcP3NaK9UK+HQC3YGExb3Fge10A1SQK1ZJAwfpWaae
-D/g=
-=iHVQ
------END PGP SIGNATURE-----
-
---------------8cnkOZ3clMojcrflCUVqPiyi--
+diff --git a/kernel/locking/lockdep.c b/kernel/locking/lockdep.c
+index e85b5ad3e206..db0a301f9740 100644
+--- a/kernel/locking/lockdep.c
++++ b/kernel/locking/lockdep.c
+@@ -969,7 +969,7 @@ static bool assign_lock_key(struct lockdep_map *lock)
+ 	else {
+ 		/* Debug-check: all keys must be persistent! */
+ 		debug_locks_off();
+-		pr_err("INFO: trying to register non-static key.\n");
++		pr_err("INFO: trying to register non-static key at %08lx.\n", addr);
+ 		pr_err("The code is fine but needs lockdep annotation, or maybe\n");
+ 		pr_err("you didn't initialize this object before use?\n");
+ 		pr_err("turning off the locking correctness validator.\n");

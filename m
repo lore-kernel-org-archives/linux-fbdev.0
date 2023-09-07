@@ -2,111 +2,140 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8379EE14DA
-	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Sep 2023 20:01:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F2DFEC873F
+	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Sep 2023 15:46:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244181AbjIFUBa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 6 Sep 2023 16:01:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35672 "EHLO
+        id S233949AbjIGPqr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 7 Sep 2023 11:46:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40296 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243867AbjIFUA7 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Sep 2023 16:00:59 -0400
-X-Greylist: delayed 447 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 06 Sep 2023 13:00:53 PDT
-Received: from new4-smtp.messagingengine.com (new4-smtp.messagingengine.com [66.111.4.230])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D12A719A2;
-        Wed,  6 Sep 2023 13:00:53 -0700 (PDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-        by mailnew.nyi.internal (Postfix) with ESMTP id A7AB858128A;
-        Wed,  6 Sep 2023 15:53:23 -0400 (EDT)
-Received: from imap51 ([10.202.2.101])
-  by compute6.internal (MEProxy); Wed, 06 Sep 2023 15:53:23 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-        :cc:content-type:content-type:date:date:from:from:in-reply-to
-        :in-reply-to:message-id:mime-version:references:reply-to:sender
-        :subject:subject:to:to; s=fm1; t=1694030003; x=1694037203; bh=VH
-        oiOAVzKFrc1qoVv7v9Mr1BrXqTyFKUxLZW2/6sh7A=; b=B9YGq+m+TaGkZYwKEv
-        mwtpybd3N+c0fMrFAnCMSThlV38UxHGUZar4YL61wnZ8hebh7VNwhdEot1JcM314
-        t90DsstQsCqV320qKAeQxaOy7tIjIN6MM/i7+eNgzBWjvsQZqPhhSdxBflKsD8i4
-        ZRmBezwM15eJWbtMRS/w4aPfiuZYSuhzLqNmuw0oqg7NEL0rlnGLcZEyGKEzrxEN
-        G08pXwkhHEmxCZCmVwpMqwrwJ4jOuXUkafTKfsioh4wptnHthM/+o0QpCzaVlAt5
-        p2HsVsrVY9rdSP1XPW2+akPPpXdZ+NhnO5DN6OVHV68jOgT0d4LVctgdofyw14lg
-        P1wQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-type:content-type:date:date
-        :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-        :message-id:mime-version:references:reply-to:sender:subject
-        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-        :x-sasl-enc; s=fm1; t=1694030003; x=1694037203; bh=VHoiOAVzKFrc1
-        qoVv7v9Mr1BrXqTyFKUxLZW2/6sh7A=; b=0eyhXlcs6SwaXsTsohvaVHSDkEW5t
-        pf9IsSwsFxNCmJrnjsC1r2Ar4uKNxAccIwEZcHP0Glfwt7Pk+h/JnKu5+mRrT8Kq
-        IhOhf9SukEJcq9eb/lSO1m3E0oyB542WZP6lVYMF9zXLOsG7pFDQA7FcQlbIGsWO
-        v/7uE15f2PEQTL46VW9VAMeDZf2i5MRnBuAxMk289lztpWbEepsINFs8crl/i4pi
-        cZ6D7fyA0rWRODs/fQ5p4A4vUmfV2n21gu6zI9vyGqm0BY+5Rsgd482HgncvaExW
-        Sz8l5d7mijRz1HFOBAzL8e10OB5UlqpB6CLhAj7KXk+bFmgGbRpuCuFfg==
-X-ME-Sender: <xms:stj4ZMFT5bUXIujyx8rG3XMkkz8xGkw5hclkerDPojseR-OAKoh2EQ>
-    <xme:stj4ZFUrxldM_py_4Cti_MuQgJweGk5z0Yka0QIrf8JQxP8NlU6tdbgihMPfx7dbz
-    agIOq8G_U8LGbygxoU>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrudehfedgudegudcutefuodetggdotefrod
-    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfgh
-    necuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
-    enucfjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdet
-    rhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrg
-    htthgvrhhnpeffheeugeetiefhgeethfejgfdtuefggeejleehjeeutefhfeeggefhkedt
-    keetffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
-    grrhhnugesrghrnhgusgdruggv
-X-ME-Proxy: <xmx:stj4ZGIpCwrWbQMuQnRKui1vq0jlD_Hw-xaxveFWC1c7nV6BvZOFpg>
-    <xmx:stj4ZOEWKrXyPg7eu5ukVGzSe0cetY7fwF7mwZBQdjSY6eR8XT8jvQ>
-    <xmx:stj4ZCWoKWWomrXTKgZTmEmwM7RaOCq6OifEZR2NKWwutIUZbzo0SQ>
-    <xmx:s9j4ZLONDqSf7o5Z4aSE1onERACQAtFksbMuJmduHrqscQGtXIS0jA>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-        id AE25DB60089; Wed,  6 Sep 2023 15:53:22 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.9.0-alpha0-711-g440737448e-fm-20230828.001-g44073744
-Mime-Version: 1.0
-Message-Id: <8865aa0a-ec40-41ca-a77e-9172cec49f07@app.fastmail.com>
-In-Reply-To: <20230906144801.25297-3-tzimmermann@suse.de>
-References: <20230906144801.25297-1-tzimmermann@suse.de>
- <20230906144801.25297-3-tzimmermann@suse.de>
-Date:   Wed, 06 Sep 2023 15:53:02 -0400
-From:   "Arnd Bergmann" <arnd@arndb.de>
-To:     "Thomas Zimmermann" <tzimmermann@suse.de>,
-        "Michael Ellerman" <mpe@ellerman.id.au>,
-        "Nicholas Piggin" <npiggin@gmail.com>,
-        "Christophe Leroy" <christophe.leroy@csgroup.eu>,
-        "Helge Deller" <deller@gmx.de>
-Cc:     linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org,
-        linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-        linux-mips@vger.kernel.org, sparclinux@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        Linux-Arch <linux-arch@vger.kernel.org>
-Subject: Re: [PATCH v2 2/5] fbdev: Replace fb_pgprotect() with fb_pgprot_device()
-Content-Type: text/plain
+        with ESMTP id S236109AbjIGPaz (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Sep 2023 11:30:55 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0BFDF1FC2;
+        Thu,  7 Sep 2023 08:30:30 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 1EF9B1F892;
+        Thu,  7 Sep 2023 08:54:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1694076851; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=rTdWTaQ0riYteVmSEGuLLxQSuE95aGwkbU+EWn7Zhus=;
+        b=VF9DmHycTsHhbjZNTwE+ES8Kr5Q+issjxv9O3wgDrux7sNo5Ad8dK3c4WnQDyQnA+K8TuC
+        Pb3qqefhcRJAklXQDXBiNd05d7ZAt9iuhMV8iIFwusYWg30DMxAEXQ9Ds0LYxwcz52NZ1Q
+        KeK7YtNG76ah7rGIZV+x8E1rNmYJuG8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1694076851;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=rTdWTaQ0riYteVmSEGuLLxQSuE95aGwkbU+EWn7Zhus=;
+        b=iwlq0EIThJcoMtZrlh40mgCzwKv6qe8cSffZPJ9an4DHHCwqA/JYuA3fzBpdbHv7sdRh+t
+        pr84lhFV4ad+YmAA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id E4A58138FA;
+        Thu,  7 Sep 2023 08:54:10 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id SDrONrKP+WT6JgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 07 Sep 2023 08:54:10 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     deller@gmx.de, daniel@ffwll.ch, javierm@redhat.com,
+        sam@ravnborg.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Cc:     linux-kernel@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v2 3/7] fbdev/core: Fix style of code for boot-up logo
+Date:   Thu,  7 Sep 2023 10:52:02 +0200
+Message-ID: <20230907085408.9354-4-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20230907085408.9354-1-tzimmermann@suse.de>
+References: <20230907085408.9354-1-tzimmermann@suse.de>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Sep 6, 2023, at 10:35, Thomas Zimmermann wrote:
-> Rename the fbdev mmap helper fb_pgprotect() to fb_pgprot_device().
-> The helper sets VMA page-access flags for framebuffers in device I/O
-> memory. The new name follows pgprot_device(), which does the same for
-> arbitrary devices.
->
-> Also clean up the helper's parameters and return value. Instead of
-> the VMA instance, pass the individial parameters separately: existing
-> page-access flags, the VMAs start and end addresses and the offset
-> in the underlying device memory rsp file. Return the new page-access
-> flags. These changes align fb_pgprot_device() closer with pgprot_device.
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Fix a number of warnings from checkpatch.pl in this code before
+moving it into a separate file. This includes
 
-This makes sense as a cleanup, but I'm not sure the new naming is helpful.
+ * Prefer 'unsigned int' to bare use of 'unsigned'
+ * space required after that ',' (ctx:VxV)
+ * space prohibited after that open parenthesis '('
+ * suspect code indent for conditional statements (16, 32)
+ * braces {} are not necessary for single statement blocks
 
-The 'pgprot_device' permissions are based on Arm's memory attributes,
-which have slightly different behavior for "device", "uncached" and
-"writecombine" mappings. I think simply calling this one pgprot_fb()
-or fb_pgprot() would be less confusing, since depending on the architecture
-it appears to give either uncached or writecombine mappings but not
-"device" on the architectures where this is different.
+No functional changes.
 
-      Arnd
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Acked-by: Javier Martinez Canillas <javierm@redhat.com>
+---
+ drivers/video/fbdev/core/fbmem.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index ee44a46a66be..98e1847e4287 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -186,7 +186,7 @@ EXPORT_SYMBOL(fb_get_buffer_offset);
+ 
+ #ifdef CONFIG_LOGO
+ 
+-static inline unsigned safe_shift(unsigned d, int n)
++static inline unsigned int safe_shift(unsigned int d, int n)
+ {
+ 	return n < 0 ? d >> -n : d << n;
+ }
+@@ -229,7 +229,9 @@ static void  fb_set_logo_truepalette(struct fb_info *info,
+ 					    const struct linux_logo *logo,
+ 					    u32 *palette)
+ {
+-	static const unsigned char mask[] = { 0,0x80,0xc0,0xe0,0xf0,0xf8,0xfc,0xfe,0xff };
++	static const unsigned char mask[] = {
++		0, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe, 0xff
++	};
+ 	unsigned char redmask, greenmask, bluemask;
+ 	int redshift, greenshift, blueshift;
+ 	int i;
+@@ -247,7 +249,7 @@ static void  fb_set_logo_truepalette(struct fb_info *info,
+ 	greenshift = info->var.green.offset - (8 - info->var.green.length);
+ 	blueshift  = info->var.blue.offset  - (8 - info->var.blue.length);
+ 
+-	for ( i = 0; i < logo->clutsize; i++) {
++	for (i = 0; i < logo->clutsize; i++) {
+ 		palette[i+32] = (safe_shift((clut[0] & redmask), redshift) |
+ 				 safe_shift((clut[1] & greenmask), greenshift) |
+ 				 safe_shift((clut[2] & bluemask), blueshift));
+@@ -371,7 +373,7 @@ static void fb_rotate_logo_cw(const u8 *in, u8 *out, u32 width, u32 height)
+ 
+ 	for (i = 0; i < height; i++)
+ 		for (j = 0; j < width; j++)
+-				out[height * j + h - i] = *in++;
++			out[height * j + h - i] = *in++;
+ }
+ 
+ static void fb_rotate_logo_ccw(const u8 *in, u8 *out, u32 width, u32 height)
+@@ -636,9 +638,8 @@ int fb_prepare_logo(struct fb_info *info, int rotate)
+ 	/* Return if no suitable logo was found */
+ 	fb_logo.logo = fb_find_logo(depth);
+ 
+-	if (!fb_logo.logo) {
++	if (!fb_logo.logo)
+ 		return 0;
+-	}
+ 
+ 	if (rotate == FB_ROTATE_UR || rotate == FB_ROTATE_UD)
+ 		yres = info->var.yres;
+-- 
+2.42.0
+

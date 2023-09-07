@@ -2,61 +2,61 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 404FAEC874D
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5E65EC8742
 	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Sep 2023 18:26:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236255AbjIGS1A (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S241981AbjIGS1A (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Thu, 7 Sep 2023 14:27:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56622 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56634 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234912AbjIGS07 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Sep 2023 14:26:59 -0400
+        with ESMTP id S231501AbjIGS1A (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Sep 2023 14:27:00 -0400
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B581197;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B6861A8;
         Thu,  7 Sep 2023 11:26:45 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id DF84621865;
-        Thu,  7 Sep 2023 08:54:10 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 05DBA21864;
+        Thu,  7 Sep 2023 08:54:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1694076850; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1694076852; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=41o/btvw9C5S0iA1yowHnm0gHWjgAAVogrPERtBT9GA=;
-        b=PKTYaL/v/ZaN8PPLd2WqAmWUhDE5coJWqhLuQ9pROo9OQdTloob56ywQFvoOVLfnKzaXmB
-        YoVZMBcJ30UXp8bB8IwX+AUygAknUqrbtfeSB276LWFYZ2wHwNBw7gXAU5ZYabD2uvcXxT
-        S60ZPlhuZ/vmT0o9HFBI5HoLejAwjiw=
+        bh=E4B1OE7yKWqlV3goj2C/YTh/xuKA45lLwm9oARh4/H4=;
+        b=PwNT75lztJ5BNelcSODug76J/bAGpitxTDk7mBKjhVutw7JDmHB25xN1HQDLuPRrA6S/rN
+        nmCZgtdGHr/DNjWYk+aa3BW40//x6z8+a478JsXq6NmFpSVpCTyMrQnPU4DqrI4vezPP/U
+        U85XMyvs0ZJgY2phMIkbjMcGFopM/LU=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1694076850;
+        s=susede2_ed25519; t=1694076852;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=41o/btvw9C5S0iA1yowHnm0gHWjgAAVogrPERtBT9GA=;
-        b=hwMwz5AFFPjhFriVqWD4zEyh9RdjaKlIu9wN8cD9VBP5RKAmY/KWnbFss/oEOkMB61pxMe
-        oIAYtxjBjenH11Bw==
+        bh=E4B1OE7yKWqlV3goj2C/YTh/xuKA45lLwm9oARh4/H4=;
+        b=0t0X/KyJEEcLFPyvD61i/HcmKEjl1DePe4g9Om0D5aoG0cPkyQos0RE9BPXfRIy4ypnsWL
+        xBIa7X5qIHFmnPDA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id B237F138FA;
-        Thu,  7 Sep 2023 08:54:10 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id CD60C138FA;
+        Thu,  7 Sep 2023 08:54:11 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id sLtQKrKP+WT6JgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 07 Sep 2023 08:54:10 +0000
+        id WJQoMbOP+WT6JgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 07 Sep 2023 08:54:11 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, daniel@ffwll.ch, javierm@redhat.com,
         sam@ravnborg.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
 Cc:     linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 2/7] fbdev/mmp/mmpfb: Do not display boot-up logo
-Date:   Thu,  7 Sep 2023 10:52:01 +0200
-Message-ID: <20230907085408.9354-3-tzimmermann@suse.de>
+Subject: [PATCH v2 7/7] fbdev/core: Clean up include statements in fbmem.c
+Date:   Thu,  7 Sep 2023 10:52:06 +0200
+Message-ID: <20230907085408.9354-8-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20230907085408.9354-1-tzimmermann@suse.de>
 References: <20230907085408.9354-1-tzimmermann@suse.de>
@@ -66,38 +66,51 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The fbcon module takes care of displaying the logo, if any. Remove
-the code form mmpfb. It is probably no tworking as expected, as it
-interferes with the framebuffer console. If we want to display the
-logo without fbcon, we should implement this in the fbdev core code.
-
-v2:
-	* add a note on fbcon interference (Javier)
+Remove all unnecessary include statements from fbmem.c. Most of
+them were for functionality that has meanwhile been moved into
+other files.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Acked-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/video/fbdev/mmp/fb/mmpfb.c | 7 -------
- 1 file changed, 7 deletions(-)
+ drivers/video/fbdev/core/fbmem.c | 19 +------------------
+ 1 file changed, 1 insertion(+), 18 deletions(-)
 
-diff --git a/drivers/video/fbdev/mmp/fb/mmpfb.c b/drivers/video/fbdev/mmp/fb/mmpfb.c
-index 42a87474bcea..2d9797c6fb3e 100644
---- a/drivers/video/fbdev/mmp/fb/mmpfb.c
-+++ b/drivers/video/fbdev/mmp/fb/mmpfb.c
-@@ -628,13 +628,6 @@ static int mmpfb_probe(struct platform_device *pdev)
- 	dev_info(fbi->dev, "loaded to /dev/fb%d <%s>.\n",
- 		info->node, info->fix.id);
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 1a662a606ba6..fc206755f5f6 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -11,29 +11,12 @@
+  * for more details.
+  */
  
--#ifdef CONFIG_LOGO
--	if (fbi->fb_start) {
--		fb_prepare_logo(info, 0);
--		fb_show_logo(info, 0);
--	}
--#endif
+-#include <linux/module.h>
 -
- 	return 0;
+-#include <linux/types.h>
+-#include <linux/errno.h>
+-#include <linux/kernel.h>
+-#include <linux/slab.h>
+-#include <linux/mm.h>
+-#include <linux/mman.h>
+-#include <linux/vt.h>
+-#include <linux/init.h>
+-#include <linux/platform_device.h>
+ #include <linux/console.h>
+-#include <linux/kmod.h>
+-#include <linux/err.h>
+-#include <linux/device.h>
+-#include <linux/efi.h>
++#include <linux/export.h>
+ #include <linux/fb.h>
+ #include <linux/fbcon.h>
+-#include <linux/mem_encrypt.h>
+-#include <linux/pci.h>
  
- failed_clear_info:
+ #include <video/nomodeset.h>
+-#include <video/vga.h>
+ 
+ #include "fb_internal.h"
+ 
 -- 
 2.42.0
 

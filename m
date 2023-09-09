@@ -2,141 +2,104 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE554EC8742
-	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Sep 2023 18:41:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A029EE801F
+	for <linux-fbdev@archiver.kernel.org>; Sat,  9 Sep 2023 16:25:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242616AbjIGSlx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 7 Sep 2023 14:41:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55352 "EHLO
+        id S232969AbjIIQZ1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 9 Sep 2023 12:25:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39322 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245229AbjIGSlv (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Sep 2023 14:41:51 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 53B231A8;
-        Thu,  7 Sep 2023 11:41:45 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 7026C2185E;
-        Thu,  7 Sep 2023 06:56:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1694069784; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
+        with ESMTP id S1346464AbjIIOjS (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 9 Sep 2023 10:39:18 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1844188
+        for <linux-fbdev@vger.kernel.org>; Sat,  9 Sep 2023 07:38:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1694270312;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=ZdpALMS9MEckS/XjTWoYzgCz9B+N4NdUqPbDlpcyLaw=;
-        b=vs+USKGGhjZpaHawDKSjdiCoweo3k5Fr8f/c9qrEV234o+z7MpRp90yBxPKv+f2URc6umO
-        xv7IEco3fTupmftaGfIsNeXb1+/vuuU9GztmW3SAE/GGxOj3LtY5K66Tkw90KYJFDYX132
-        Wxek0f2YzilVEceUUBowKvGaYlAJQdI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1694069784;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=ZdpALMS9MEckS/XjTWoYzgCz9B+N4NdUqPbDlpcyLaw=;
-        b=0aay+d2s3fSsFLhpn6ZTQWzYs+wj525vROsjIkx+Ndzf3eKOCc/BUsVfWDHvkoeHUTXcDQ
-        nDl+0F6ZEaNzmfAQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 4AC7D1358B;
-        Thu,  7 Sep 2023 06:56:24 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id I4VDERh0+WTFfQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 07 Sep 2023 06:56:24 +0000
-Message-ID: <1d001e59-be78-3de8-25a3-087dcd19d58a@suse.de>
-Date:   Thu, 7 Sep 2023 08:56:23 +0200
+        bh=0+4HcA1k/8qF1IXNw0Bg9+Q9i2TWOoU8T7hDCYKbYZ0=;
+        b=G14NTEOIVYciUIIIDstqiysVj4XiQr+7voS9d7sscsNa/hX8czG0fQTbU35NKVBLWmNSfY
+        0PkM6jMZNp4oObshsDJxXMRqAMjurT/yd6wUSqB6SDxEh166RIxAMZJLKqQHbCMfTc/P8C
+        tQEu7+h2McPo4TRYExNYBxgJ8UVBP5Y=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-378-UjF59EsUNcmUQEQvaqHkpA-1; Sat, 09 Sep 2023 10:38:30 -0400
+X-MC-Unique: UjF59EsUNcmUQEQvaqHkpA-1
+Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-401c4f03b00so23297155e9.1
+        for <linux-fbdev@vger.kernel.org>; Sat, 09 Sep 2023 07:38:30 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694270309; x=1694875109;
+        h=content-transfer-encoding:mime-version:message-id:date:references
+         :in-reply-to:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=0+4HcA1k/8qF1IXNw0Bg9+Q9i2TWOoU8T7hDCYKbYZ0=;
+        b=r3rnxrg61iOFxlh3neolhr0CGxinbxg7pv60jT2GQ0ZQrT+xFpTqJbSGZJpxP6PfhB
+         BulnT4yBRQaCQ+Ec8iBpM10d/Xu1oMHB5RCzkUZVddYO/LYgk1UxpZz3NPC4vI0bKN4e
+         RtLEB157S6HIi/vSTvMLohDMSsQz+mtxjTRFq3Mgs8Ph2cOOy44ufkMNeVKs3tidYkVd
+         5X6DDlbCB7dhNCFgQts4ZrVe67YIjTF/ahMFu16ntwziyW7aM/S98C1zDu9jiUNuE48N
+         4osd8lwn5REcdjOl0YEGuzBjTmiokNDzPymjLuO32PvaUPI3j662iVPn7Om6DZEPIS1l
+         gr/A==
+X-Gm-Message-State: AOJu0YxBnO3eKm8IMBFTFnS2VNr4npqOBz6RS5jTj8glW/z0DKNxV/M9
+        36P9ZbwEwSFJlHzcccWH5b6r3Kj7FqP3uqCS+ixVRVeAj8TiOyT9JF7SyWV3ydMC/YF0wYrANtH
+        W18cvSwBXty8OdEpaJ+Fp0EU=
+X-Received: by 2002:a1c:ed08:0:b0:401:d803:6242 with SMTP id l8-20020a1ced08000000b00401d8036242mr4639447wmh.27.1694270309542;
+        Sat, 09 Sep 2023 07:38:29 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHOej/d14sWmLizTh2i9esPauTJp58e7fPOscywQN9ddxhYmMXBFm9Ht5FE7LNRjGS+PLhdRQ==
+X-Received: by 2002:a1c:ed08:0:b0:401:d803:6242 with SMTP id l8-20020a1ced08000000b00401d8036242mr4639434wmh.27.1694270309221;
+        Sat, 09 Sep 2023 07:38:29 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id h19-20020a05600c315300b00402bda974ddsm4869260wmo.6.2023.09.09.07.38.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 09 Sep 2023 07:38:28 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>, Helge Deller <deller@gmx.de>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Benjamin Mugnier <benjamin.mugnier@foss.st.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Jilin Yuan <yuanjilin@cdjrlc.com>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        kernel@pengutronix.de
+Subject: Re: [PATCH 2/3] video: fbdev: ssd1307fb: Print the PWM's label
+ instead of its number
+In-Reply-To: <87lef0xcw4.fsf@minerva.mail-host-address-is-not-set>
+References: <20230728145824.616687-1-u.kleine-koenig@pengutronix.de>
+ <20230728145824.616687-3-u.kleine-koenig@pengutronix.de>
+ <87lef0xcw4.fsf@minerva.mail-host-address-is-not-set>
+Date:   Sat, 09 Sep 2023 16:38:28 +0200
+Message-ID: <87zg1vif8b.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.14.0
-Subject: Re: [PATCH 2/7] fbdev/mmp/mmpfb: Do not display boot-up logo
-Content-Language: en-US
-To:     Javier Martinez Canillas <javierm@redhat.com>, deller@gmx.de,
-        daniel@ffwll.ch, sam@ravnborg.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Cc:     linux-kernel@vger.kernel.org
-References: <20230829142109.4521-1-tzimmermann@suse.de>
- <20230829142109.4521-3-tzimmermann@suse.de>
- <87ledj4og7.fsf@minerva.mail-host-address-is-not-set>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <87ledj4og7.fsf@minerva.mail-host-address-is-not-set>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------ZGdlOT3gOMcfm9RyxxfPW8an"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------ZGdlOT3gOMcfm9RyxxfPW8an
-Content-Type: multipart/mixed; boundary="------------QgVRd7mUO2Fg82aUFcKk3qNQ";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Javier Martinez Canillas <javierm@redhat.com>, deller@gmx.de,
- daniel@ffwll.ch, sam@ravnborg.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org
-Cc: linux-kernel@vger.kernel.org
-Message-ID: <1d001e59-be78-3de8-25a3-087dcd19d58a@suse.de>
-Subject: Re: [PATCH 2/7] fbdev/mmp/mmpfb: Do not display boot-up logo
-References: <20230829142109.4521-1-tzimmermann@suse.de>
- <20230829142109.4521-3-tzimmermann@suse.de>
- <87ledj4og7.fsf@minerva.mail-host-address-is-not-set>
-In-Reply-To: <87ledj4og7.fsf@minerva.mail-host-address-is-not-set>
+Javier Martinez Canillas <javierm@redhat.com> writes:
 
---------------QgVRd7mUO2Fg82aUFcKk3qNQ
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+> Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de> writes:
+>
+>> struct pwm_device::pwm is a write-only variable in the pwm core and used
+>> nowhere apart from this and another dev_dbg. So it isn't useful to
+>> identify the used PWM. Emit the PWM's label instead in the debug
+>> message.
+>>
+>> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+>> ---
+>
+> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+>
 
-SGkgSmF2aWVyDQoNCkFtIDA2LjA5LjIzIHVtIDExOjU0IHNjaHJpZWIgSmF2aWVyIE1hcnRp
-bmV6IENhbmlsbGFzOg0KPiBUaG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1hbm5Ac3VzZS5k
-ZT4gd3JpdGVzOg0KPiANCj4+IFRoZSBmYmNvbiBtb2R1bGUgdGFrZXMgY2FyZSBvZiBkaXNw
-bGF5aW5nIHRoZSBsb2dvLCBpZiBhbnkuIFJlbW92ZQ0KPj4gdGhlIGNvZGUgZm9ybSBtbXBm
-Yi4gSWYgd2Ugd2FudCB0byBkaXNwbGF5IHRoZSBsb2dvIHdpdGhvdXQgZmJjb24sDQo+IA0K
-PiBzL2Zvcm0vZnJvbQ0KPiANCj4+IHdlIHNob3VsZCBpbXBsZW1lbnQgdGhpcyBpbiB0aGUg
-ZmJkZXYgY29yZSBjb2RlLg0KPj4NCj4gDQo+IFRoZSBjb21taXQgbWVzc2FnZSBzYXlzIHRo
-ZSBzYW1lIHRoYW4gcGF0Y2ggIzEgYnV0IHRoZSBkcml2ZXIgd2lsbCBiZWhhdmUNCj4gZGlm
-ZmVyZW50bHkgcmlnaHQ/IFRoYXQgaXMsIHdvbid0IG9ubHkgc2hvdyB0aGUgbG9nbyB3aGVu
-IGZiY29uIGlzIG5vdA0KPiBlbmFibGVkIGJ1dCB1bmNvbmRpdGlvbmFsbHk/IFNvIHRoZSBs
-b2dvIHdpbGwgYmUgZHVwbGljYXRlZCB3aGVuIGZiY29uIGlzDQo+IGVuYWJsZWQ/DQo+IA0K
-PiBJZiBJIHVuZGVyc3Rvb2QgdGhhdCBjb3JyZWN0bHksIHByb2JhYmx5IHlvdSBzaG91bGQg
-bWVudGlvbiB0aGF0IGluIHRoZQ0KPiBjb21taXQgbWVzc2FnZSBzaW5jZSByZW1vdmluZyB0
-aGUgZmJfc2hvd19sb2dvKCkgd2lsbCBtYWtlIHRoZSBkcml2ZXIgdG8NCj4gYmVoYXZlIGNv
-cnJlY3RseS4NCg0KVEJIIEkgZG9uJ3QgdW5kZXJzdGFuZCB3aGF0IGhhcHBlbnMgaGVyZSBp
-ZiB0aGUgY29uc29sZSBhbmQgdGhlIGxvZ28gaGFzIA0KYmVlbiBlbmFibGVkIGF0IHRoZSBz
-YW1lIHRpbWUuIEFGQUlLIGZiY29uIHJlc3BlY3RzIGRpc3BsYXkgcm90YXRpb24sIA0KYnV0
-IHRoaXMgZHJpdmVyIGRvZXNuJ3QuIFNvIHRoZSBsb2dvIHNob3dzIHVwIGluIHRoZSB3cm9u
-ZyBwbGFjZSB0aGVuPw0KDQo+IA0KPj4gU2lnbmVkLW9mZi1ieTogVGhvbWFzIFppbW1lcm1h
-bm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+DQo+PiAtLS0NCj4gDQo+IEFja2VkLWJ5OiBKYXZp
-ZXIgTWFydGluZXogQ2FuaWxsYXMgPGphdmllcm1AcmVkaGF0LmNvbT4NCj4gDQoNCi0tIA0K
-VGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29m
-dHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KRnJhbmtlbnN0cmFzc2UgMTQ2LCA5MDQ2
-MSBOdWVybmJlcmcsIEdlcm1hbnkNCkdGOiBJdm8gVG90ZXYsIEFuZHJldyBNeWVycywgQW5k
-cmV3IE1jRG9uYWxkLCBCb3VkaWVuIE1vZXJtYW4NCkhSQiAzNjgwOSAoQUcgTnVlcm5iZXJn
-KQ0K
+Pushed to drm-misc (drm-misc-next). Thanks!
 
---------------QgVRd7mUO2Fg82aUFcKk3qNQ--
+--=20
+Best regards,
 
---------------ZGdlOT3gOMcfm9RyxxfPW8an
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmT5dBcFAwAAAAAACgkQlh/E3EQov+B3
-1A/5AXno2YctCIpTMTjW7SZmyyM/Mkcz4CqcYnZt0+IqrRan8O2Pp/7rPqXVrVtTkuHV2M4f3u27
-E9Ps05pN4hjnIP9XUA6eMRaeKYN1tZ5OMS5YIqLDofbNw5gfrD7H0BKUSkj8Ovfq+C2NuN5eDVxh
-MTWd9maFZdQan1936sRqrnM1cBAPaAfhm4Rumi6xM4X6YHo2swAig8Swz4C1DR4e3ZymaHPrS2QN
-XZOD5MI4CsOBpXcDIMC+xF/dOuFobtsi7uHlX/lpuw8LdKG7TID5Q7i3bpAChP7GGFHSjSii2lhY
-c7OaMi0PvqX74Vs6fQyKoE+ihkfzRoj11yGmaQXpdxk/+SYROC68ZYYxwk1bveK0IiPclJn/F11d
-ynzuAFVXdWB3a4/dZe2rEF1S5kXdqQI1YKA1xoaSncH8jLcn8HFWMph0/K3KgDLihJ3L3API2YqH
-oo+zDtY1pYNDaP2zxp73W0tsdk+lMP4cT1xOAvvrknv7Kgn6IdhHeJagt2P0nc64PjSfDPltdmQ4
-bwuakOmUhvxL6IHrqX5OBgMXZV1qJc/dzRThGSNz1kE03F34FxQFgM6vFqFGK8fb2Ig97e0dx6ZP
-CCDP6yU8NxKSnEBr4omSguJcJ4YIdV0fbp4NYuTpjRyMwlFKW/+p3esYT/i7QiU/UPTJYe01fSOv
-dH0=
-=Kpnr
------END PGP SIGNATURE-----
-
---------------ZGdlOT3gOMcfm9RyxxfPW8an--

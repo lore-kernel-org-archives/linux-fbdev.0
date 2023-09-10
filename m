@@ -2,33 +2,62 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F35D0EE14C3
-	for <linux-fbdev@archiver.kernel.org>; Sat,  9 Sep 2023 20:23:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DDE14EE7FF4
+	for <linux-fbdev@archiver.kernel.org>; Sun, 10 Sep 2023 06:59:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229740AbjIIUXY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 9 Sep 2023 16:23:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50732 "EHLO
+        id S1346298AbjIJG7Y (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 10 Sep 2023 02:59:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58730 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230089AbjIIUXX (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 9 Sep 2023 16:23:23 -0400
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1A8EDCCC
-        for <linux-fbdev@vger.kernel.org>; Sat,  9 Sep 2023 13:22:51 -0700 (PDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qf4SA-0000Iw-Ci; Sat, 09 Sep 2023 22:21:14 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qf4S7-005Ann-7d; Sat, 09 Sep 2023 22:21:11 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qf4S6-000E4T-GZ; Sat, 09 Sep 2023 22:21:10 +0200
-Date:   Sat, 9 Sep 2023 22:21:10 +0200
-From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To:     Javier Martinez Canillas <javierm@redhat.com>
+        with ESMTP id S237311AbjIJG7Y (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Sun, 10 Sep 2023 02:59:24 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C976C1B8
+        for <linux-fbdev@vger.kernel.org>; Sat,  9 Sep 2023 23:58:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1694329112;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=EF+mREtObA6if9r8T28Dzw3gPzt9UPJWLv6e0kWaOFM=;
+        b=JzvS8dFiBqgGZI0/Hf+cYG+gEPmB7oZSdQsFHipOytxE0J9FGv/QBO806RNIZPHyRVa2oX
+        943/x4ipNJk0Vc1aOo/13/YogMEGsqSnRcBZfVNBgXp0jRFbGcvA0jcwSTGlEWfXO3VGF5
+        NELfAOtmrf7U0/GRpY/vjimo09qwAc0=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-152-bf3PW4dMNxuAj6Zk2v64PQ-1; Sun, 10 Sep 2023 02:58:31 -0400
+X-MC-Unique: bf3PW4dMNxuAj6Zk2v64PQ-1
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-401d9abf21cso27992005e9.0
+        for <linux-fbdev@vger.kernel.org>; Sat, 09 Sep 2023 23:58:30 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694329109; x=1694933909;
+        h=content-transfer-encoding:mime-version:message-id:date:references
+         :in-reply-to:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=EF+mREtObA6if9r8T28Dzw3gPzt9UPJWLv6e0kWaOFM=;
+        b=NMmgkCCn5y+4LmcuHYpXOHaPcSvC/WlF4wAr68uqm7fNVCdZ/WwWhnXq+l+PHTNL3p
+         esjow5A+JGhkcmYJyTNnnSp0zKjWSszQmn2c8vltNMp5RZ5LXh5qJb1H2PuY7OhQrsL9
+         YECgSxOMqgurrMrsw/fD38dVBayyG8sE4ay8u6A3jzgXyAdY31sATw6YzJ9pGdZOYJuu
+         gZeQUIHmhREAuOKvZYbI5wAjopViZEXFFheSH1/JqAxpo+u844Il07o5HfXmmR9Rf3lJ
+         kEFCqEudTgZVnt4XWAMP/X17/CtokMebv1jMXNRaT4OKJA+SXY9WtWy+4s4f0U4W67Rs
+         9Ugw==
+X-Gm-Message-State: AOJu0Yx89f68kPxnj5rZi36Xk8y54ETsjiPnsC0RnAxpJaWvYquHnsAq
+        lH/bQbYHF57TCWLs2u3zd8iT6QDna3FAmC7yaTdd5yw8KMEJQSK6r43r4rva4BWpfGHrnk8kDvt
+        YJG2uy2/hdcuMJSSxsQI7ebcQl9oeSwbq/A==
+X-Received: by 2002:a5d:6b06:0:b0:319:6e74:1637 with SMTP id v6-20020a5d6b06000000b003196e741637mr4428767wrw.27.1694329109787;
+        Sat, 09 Sep 2023 23:58:29 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IGSx+L2ni7dhd9xEaYUSqtrodGiDpQly/+lPBox6GKopSYayzZ75i6DkIouMBEt+4EzGlCrUg==
+X-Received: by 2002:a5d:6b06:0:b0:319:6e74:1637 with SMTP id v6-20020a5d6b06000000b003196e741637mr4428761wrw.27.1694329109475;
+        Sat, 09 Sep 2023 23:58:29 -0700 (PDT)
+Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id i9-20020a5d5589000000b003141e629cb6sm6502547wrv.101.2023.09.09.23.58.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 09 Sep 2023 23:58:29 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
 Cc:     Helge Deller <deller@gmx.de>,
         Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Benjamin Mugnier <benjamin.mugnier@foss.st.com>,
@@ -37,76 +66,63 @@ Cc:     Helge Deller <deller@gmx.de>,
         kernel@pengutronix.de, dri-devel@lists.freedesktop.org
 Subject: Re: [PATCH 2/3] video: fbdev: ssd1307fb: Print the PWM's label
  instead of its number
-Message-ID: <20230909202110.bcz5qvb7bfrzco73@pengutronix.de>
+In-Reply-To: <20230909202110.bcz5qvb7bfrzco73@pengutronix.de>
 References: <20230728145824.616687-1-u.kleine-koenig@pengutronix.de>
  <20230728145824.616687-3-u.kleine-koenig@pengutronix.de>
  <87lef0xcw4.fsf@minerva.mail-host-address-is-not-set>
  <87zg1vif8b.fsf@minerva.mail-host-address-is-not-set>
+ <20230909202110.bcz5qvb7bfrzco73@pengutronix.de>
+Date:   Sun, 10 Sep 2023 08:58:27 +0200
+Message-ID: <87v8ciikfg.fsf@minerva.mail-host-address-is-not-set>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="fur7e2akxpm43452"
-Content-Disposition: inline
-In-Reply-To: <87zg1vif8b.fsf@minerva.mail-host-address-is-not-set>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de> writes:
 
---fur7e2akxpm43452
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello Uwe,
 
-Hello,
+> Hello,
+>
+> On Sat, Sep 09, 2023 at 04:38:28PM +0200, Javier Martinez Canillas wrote:
+>> Javier Martinez Canillas <javierm@redhat.com> writes:
+>>=20
+>> > Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de> writes:
+>> >
+>> >> struct pwm_device::pwm is a write-only variable in the pwm core and u=
+sed
+>> >> nowhere apart from this and another dev_dbg. So it isn't useful to
+>> >> identify the used PWM. Emit the PWM's label instead in the debug
+>> >> message.
+>> >>
+>> >> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+>> >> ---
+>> >
+>> > Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+>> >
+>>=20
+>> Pushed to drm-misc (drm-misc-next). Thanks!
+>
+> JFTR: This patch is already in linus/master. And Javier pushed
+> "drm/ssd130x: Print the PWM's label instead of its number" to
+> drm-misc-next which is great. So the "Pushed to ..." mail is just in
+> reply to the wrong patch in this thread and in git everything is fine.
+>
 
-On Sat, Sep 09, 2023 at 04:38:28PM +0200, Javier Martinez Canillas wrote:
-> Javier Martinez Canillas <javierm@redhat.com> writes:
->=20
-> > Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de> writes:
-> >
-> >> struct pwm_device::pwm is a write-only variable in the pwm core and us=
-ed
-> >> nowhere apart from this and another dev_dbg. So it isn't useful to
-> >> identify the used PWM. Emit the PWM's label instead in the debug
-> >> message.
-> >>
-> >> Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-> >> ---
-> >
-> > Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-> >
->=20
-> Pushed to drm-misc (drm-misc-next). Thanks!
+Ups, that's correct. Thanks a lot for pointing that out!
 
-JFTR: This patch is already in linus/master. And Javier pushed
-"drm/ssd130x: Print the PWM's label instead of its number" to
-drm-misc-next which is great. So the "Pushed to ..." mail is just in
-reply to the wrong patch in this thread and in git everything is fine.
+> Thanks
+> Uwe
+>
 
-Thanks
-Uwe
 
 --=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+Best regards,
 
---fur7e2akxpm43452
-Content-Type: application/pgp-signature; name="signature.asc"
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmT807UACgkQj4D7WH0S
-/k5gEAgApJDMf6qFSjEhYdieBJ4vC6YIQlzyH4Ro807Y/FwmsB/0Vt2x6N3Mx4TF
-kVgD5VDwiYViHskX9/UK7iqa7K2dkLExcIK7hLL5PZRhf2BGEOk/JapbypBHNm9m
-cT4h1m3DnThc4av2TbnfKg6SlhwYTb++RDjOSc3kzqVegwQEThB1OvTKXzrawKXz
-hYJDn/iwa7k5aD/nviy1yhqyQROqeNrtEMswo+I2T887iRIM/h/mKg78J7Rr98FT
-bigt5kxPEhoLCRb3pB+bXe6NIFF1uiG0qmGtu+Zad9/Onm4fbMg1xNSJX+nMY8hO
-nd1Jl1ph/9uYigX4HJCUX/DSHXSiGA==
-=F+dV
------END PGP SIGNATURE-----
-
---fur7e2akxpm43452--

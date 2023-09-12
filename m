@@ -2,208 +2,213 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FF53CA0EC3
-	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Sep 2023 08:02:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFB1BCA0ECA
+	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Sep 2023 08:11:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232426AbjILICc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 12 Sep 2023 04:02:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60752 "EHLO
+        id S231971AbjILILv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 12 Sep 2023 04:11:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51748 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232409AbjILICO (ORCPT
+        with ESMTP id S232032AbjILILu (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 12 Sep 2023 04:02:14 -0400
-Received: from wout2-smtp.messagingengine.com (wout2-smtp.messagingengine.com [64.147.123.25])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D3BC91FF5;
-        Tue, 12 Sep 2023 00:59:04 -0700 (PDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-        by mailout.west.internal (Postfix) with ESMTP id D100332008C0;
-        Tue, 12 Sep 2023 03:59:02 -0400 (EDT)
-Received: from imap51 ([10.202.2.101])
-  by compute6.internal (MEProxy); Tue, 12 Sep 2023 03:59:04 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-        :cc:content-transfer-encoding:content-type:content-type:date
-        :date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-        :references:reply-to:sender:subject:subject:to:to; s=fm1; t=
-        1694505542; x=1694591942; bh=qPHeyFedUwjFkIx8oudsmrh0QO5gAytcUsb
-        D3UuDNAk=; b=O5E3jEJ95BxAVgDYksiezRxNdQlu+sbdPJNS5iYygkXpB0Vpf7o
-        cPj8ILqNM0gwEnHUg6003hlfrW090XMDq1+wHvlSaPLOnORwY+hB81N2gnWQBO9C
-        d/WTQlSWY1muyh2uDL2b4Kgk+gMglLMyVu/BGpHUA/Bu6TNfR1xxOWpy6SBwYrAg
-        yZVScICNmyZycv2mgtafjAcfiONf0cuO7XIgWyn4t2zlfY6kMYGzIQPVvSy1nzEn
-        voNZS1lxeptfdEjtQqq67jsYWYqbDnoj0z1z2ylA0QQQf575dcV1sjRCXThJ4tg5
-        3rZLIYn5KWnQXDKjFKInUiF8lEec7zctxnw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-transfer-encoding
-        :content-type:content-type:date:date:feedback-id:feedback-id
-        :from:from:in-reply-to:in-reply-to:message-id:mime-version
-        :references:reply-to:sender:subject:subject:to:to:x-me-proxy
-        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=
-        1694505542; x=1694591942; bh=qPHeyFedUwjFkIx8oudsmrh0QO5gAytcUsb
-        D3UuDNAk=; b=lVIgwVxCdObYdxA4mI+pGHlj1jhMzOUN3PCEosrGW/9UuI5klzi
-        BVXDO8MY40VksaytO0gIQ1Qxzh7X+eTYgSgDHAOB+BB4qwC9RCqtzHNfx6vZCE9O
-        vbWdJA0QQ1MJYEldYK7vamxcYe6DonDy9ZRcy3+YT3/W+94zIG8ccVaQ95cQnoy9
-        aOGFFkjiQgYexXnIWQrc6wvLvBZ5vS943tzp/H8NAXyRbJjJvI8UW3JVD4GlQAWL
-        rpDWMmRV0P4KdKG++XNvYYCpk1fX0regMUH8oV4PsBRqOJ3nQFp2eCM+skcz7lXP
-        4s64rVbqaslUu2EjQJSIM/8BGqnk4Xesf/A==
-X-ME-Sender: <xms:RRoAZRQV9kKZ6fip7TIuLbUxtHtTw3YvuZqnr1_V63VCNLY3FXNVKg>
-    <xme:RRoAZawNHaiDaVHMoWR2sg8V-y3zzEF2UJVblqnoUCL-BoZsJa3cVJDU2Gbx8gQey
-    9r4VTGA5ZQStspv_Xk>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrudeihedguddvfecutefuodetggdotefrod
-    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfgh
-    necuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
-    enucfjughrpefofgggkfgjfhffhffvvefutgfgsehtqhertderreejnecuhfhrohhmpedf
-    tehrnhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrf
-    grthhtvghrnhepgeefjeehvdelvdffieejieejiedvvdfhleeivdelveehjeelteegudek
-    tdfgjeevnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomh
-    eprghrnhgusegrrhhnuggsrdguvg
-X-ME-Proxy: <xmx:RRoAZW2yl2iwwalZEORLkowNMsqb84zZxrn4CZ_AiP93Z-84vUvw5Q>
-    <xmx:RRoAZZBSRBpEI4F4QXNaF3tDH18BGrM-hGc2BCmk7_2yJMTcH3Bqaw>
-    <xmx:RRoAZahLSMqk7dctZafY2jhmSmf5_6mG-gpLrhds92VQAH7jtm-p-g>
-    <xmx:RhoAZezbXA_pzfgeJujOGNBMwrWxhG8CgT3HXSGXRFTLeqEtHGftfQ>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-        id 9AB1DB60089; Tue, 12 Sep 2023 03:59:01 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.9.0-alpha0-745-g95dd7bea33-fm-20230905.001-g95dd7bea
-Mime-Version: 1.0
-Message-Id: <f4d77a67-3069-4e25-9b41-8bb06f6d51f9@app.fastmail.com>
-In-Reply-To: <87a5tr3k92.fsf@minerva.mail-host-address-is-not-set>
-References: <20230911205338.2385278-1-arnd@kernel.org>
- <CAMuHMdWizKkuLEcv8sFFOWPib-0e1onCRuQEZm6OhV592VWUKQ@mail.gmail.com>
- <87a5tr3k92.fsf@minerva.mail-host-address-is-not-set>
-Date:   Tue, 12 Sep 2023 09:58:41 +0200
-From:   "Arnd Bergmann" <arnd@arndb.de>
-To:     "Javier Martinez Canillas" <javierm@redhat.com>,
-        "Geert Uytterhoeven" <geert@linux-m68k.org>,
-        "Arnd Bergmann" <arnd@kernel.org>
-Cc:     "Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>,
-        "Maxime Ripard" <mripard@kernel.org>,
-        "Thomas Zimmermann" <tzimmermann@suse.de>,
-        "Dave Airlie" <airlied@gmail.com>,
-        "Daniel Vetter" <daniel@ffwll.ch>,
-        "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
-        "Helge Deller" <deller@gmx.de>,
+        Tue, 12 Sep 2023 04:11:50 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6754EE73;
+        Tue, 12 Sep 2023 01:11:46 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id E197D1F85D;
+        Tue, 12 Sep 2023 08:11:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1694506304; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+        bh=WXdqCK7IJxe5rTLnJmNveWbh8pP8IIVl6oZz8TWuo30=;
+        b=Dnq0OX99SWDBkUkg4NqR285fXpw4UtUQlC6v6a33Ld3VUqbE+ogQNgvnc36ojM+/vAOfZl
+        vyLPpPnn2hmNSxGQIYeG/vaoMBLilloT1NUP1xWVzdHqV5QwEkzocdSeHw70rravqQPclW
+        n0IR3a0JOIQatXAf91xoKGe3m//O16c=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1694506304;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+        bh=WXdqCK7IJxe5rTLnJmNveWbh8pP8IIVl6oZz8TWuo30=;
+        b=p0yWx0VB92CYyXAsKozfKBHpAE6R93eb0u1c7uIHhEX1LSkA7doJgxsHUL6n1OqW0P/6S2
+        ZTFWluW+UjUrp1AA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 818FA13A39;
+        Tue, 12 Sep 2023 08:11:44 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id XQU5G0AdAGVIFAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Tue, 12 Sep 2023 08:11:44 +0000
+Message-ID: <637afb25-8ee2-4188-9385-27ee6a97ec59@suse.de>
+Date:   Tue, 12 Sep 2023 10:11:43 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] drm: fix up fbdev Kconfig defaults
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Arnd Bergmann <arnd@kernel.org>
+Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Helge Deller <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
         =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
-        "Dave Airlie" <airlied@redhat.com>,
-        "Jim Cromie" <jim.cromie@gmail.com>,
-        "Sam Ravnborg" <sam@ravnborg.org>,
-        "Arthur Grillo" <arthurgrillo@riseup.net>,
+        Dave Airlie <airlied@redhat.com>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Jim Cromie <jim.cromie@gmail.com>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Arthur Grillo <arthurgrillo@riseup.net>,
         dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
         linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH] drm: fix up fbdev Kconfig defaults
-Content-Type: text/plain;charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+References: <20230911205338.2385278-1-arnd@kernel.org>
+ <CAMuHMdWizKkuLEcv8sFFOWPib-0e1onCRuQEZm6OhV592VWUKQ@mail.gmail.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <CAMuHMdWizKkuLEcv8sFFOWPib-0e1onCRuQEZm6OhV592VWUKQ@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------z16WFs9halpjk3MPJ08ovkgt"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Sep 12, 2023, at 09:48, Javier Martinez Canillas wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> writes:
->> On Mon, Sep 11, 2023 at 10:53=E2=80=AFPM Arnd Bergmann <arnd@kernel.o=
-rg> wrote:
->>> --- a/drivers/gpu/drm/Kconfig
->>> +++ b/drivers/gpu/drm/Kconfig
->>> @@ -135,7 +135,7 @@ config DRM_FBDEV_EMULATION
->>>         bool "Enable legacy fbdev support for your modesetting drive=
-r"
->>>         depends on DRM
->>>         select FRAMEBUFFER_CONSOLE_DETECT_PRIMARY if FRAMEBUFFER_CON=
-SOLE
->>> -       default y
->>> +       default FB
->>
->> While this is true for existing configs, it is no longer true in gene=
-ral,
->> as DRM_FBDEV_EMULATION is no longer related to FB.
->>
->
-> Maybe default y if (FB_DEVICE || FRAMEBUFFER_CONSOLE) ?
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------z16WFs9halpjk3MPJ08ovkgt
+Content-Type: multipart/mixed; boundary="------------0NR9gq0a3l3oFllEsTkfW0tM";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Arnd Bergmann <arnd@kernel.org>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
+ Daniel Vetter <daniel@ffwll.ch>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller
+ <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
+ =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
+ Dave Airlie <airlied@redhat.com>,
+ Javier Martinez Canillas <javierm@redhat.com>,
+ Jim Cromie <jim.cromie@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+ Arthur Grillo <arthurgrillo@riseup.net>, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Message-ID: <637afb25-8ee2-4188-9385-27ee6a97ec59@suse.de>
+Subject: Re: [PATCH] drm: fix up fbdev Kconfig defaults
+References: <20230911205338.2385278-1-arnd@kernel.org>
+ <CAMuHMdWizKkuLEcv8sFFOWPib-0e1onCRuQEZm6OhV592VWUKQ@mail.gmail.com>
+In-Reply-To: <CAMuHMdWizKkuLEcv8sFFOWPib-0e1onCRuQEZm6OhV592VWUKQ@mail.gmail.com>
 
-That wouldn't work unless we swap around the 'select DRM_CORE',
-which currently gets selected when DRM_FBDEV_EMULATION is
-turned on.
+--------------0NR9gq0a3l3oFllEsTkfW0tM
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
->>>         help
->>>           Choose this option if you have a need for the legacy fbdev
->>>           support. Note that this support also provides the linux co=
-nsole
->>> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/K=
-config
->>> index b575cf54174af..83c2d7329ca58 100644
->>> --- a/drivers/video/console/Kconfig
->>> +++ b/drivers/video/console/Kconfig
->>> @@ -74,6 +74,7 @@ config DUMMY_CONSOLE_ROWS
->>>  config FRAMEBUFFER_CONSOLE
->>>         bool "Framebuffer Console support"
->>>         depends on FB_CORE && !UML
->>> +       default DRM_FBDEV_EMULATION
->>
->> Sounds good to me, although it looks a bit strange at first sight
->> (FRAMEBUFFER_CONSOLE defaults to n on a system with real fbdev, but
->> y on emulated fbdev?).
->
-> And there Maybe default y if (FB || DRM_FBDEV_EMULATION) ?
+SGkNCg0KQW0gMTIuMDkuMjMgdW0gMDk6MTQgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
+DQpbLi4uXQ0KPj4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL0tjb25maWcNCj4+ICsrKyBiL2Ry
+aXZlcnMvZ3B1L2RybS9LY29uZmlnDQo+PiBAQCAtMTM1LDcgKzEzNSw3IEBAIGNvbmZpZyBE
+Uk1fRkJERVZfRU1VTEFUSU9ODQo+PiAgICAgICAgICBib29sICJFbmFibGUgbGVnYWN5IGZi
+ZGV2IHN1cHBvcnQgZm9yIHlvdXIgbW9kZXNldHRpbmcgZHJpdmVyIg0KPj4gICAgICAgICAg
+ZGVwZW5kcyBvbiBEUk0NCj4+ICAgICAgICAgIHNlbGVjdCBGUkFNRUJVRkZFUl9DT05TT0xF
+X0RFVEVDVF9QUklNQVJZIGlmIEZSQU1FQlVGRkVSX0NPTlNPTEUNCj4+IC0gICAgICAgZGVm
+YXVsdCB5DQo+PiArICAgICAgIGRlZmF1bHQgRkINCj4gDQo+IFdoaWxlIHRoaXMgaXMgdHJ1
+ZSBmb3IgZXhpc3RpbmcgY29uZmlncywgaXQgaXMgbm8gbG9uZ2VyIHRydWUgaW4gZ2VuZXJh
+bCwNCj4gYXMgRFJNX0ZCREVWX0VNVUxBVElPTiBpcyBubyBsb25nZXIgcmVsYXRlZCB0byBG
+Qi4NCg0KV291bGQgaXQgbWFrZSBzZW5zZSB0byBtYWtlIEZSQU1FQlVGRkVSX0NPTlNPTEUg
+YW4gaW5kZXBlbmRlbnQgb3B0aW9uIA0KYW5kIGhhdmUgRkJERVZfRU1VTEFUSU9OIGRlcGVu
+ZCBvbiBpdD8gU29tZXRoaW5nIGxpa2UgdGhpczoNCg0KRlJBTUVCVUZGRVJfQ09OU09MRQ0K
+CWRlcGVuZHMgb24gRFJNIHx8IEZCDQoJc2VsZWN0IEZCX0NPUkUNCg0KRkJERVZfRU1VTEFU
+SU9ODQoJZGVwZW5kcyBvbiBEUk0NCglkZXBlbmRzIG9uIEZSQU1FQlVGRkVSX0NPTlNPTEUN
+CglkZWZhdWx0IHkNCg0KU28gaWYgYW55IGdyYXBoaWNzIHN1YnN5c3RlbXMgYXJlIGVuYWJs
+ZWQsIEZSQU1FQlVGRkVSX0NPTlNPTEUgaXMgDQpzZWxlY3QtYWJsZS4gQnV0IGZvciBEUk0s
+IEZCREVWX0VNVUxBVElPTiBkaXNhYmxlcyB0aGUgY29uc29sZS4gVGhhdCANCm9wdGlvbiBy
+ZW1haW5zIG1vcmUgZm9yIGhpc3RvcmljYWwgcmVhc29ucyB0aGFuIGFjdHVhbCB1c2VmdWxu
+ZXNzLg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KPj4gICAgICAgICAgaGVscA0K
+Pj4gICAgICAgICAgICBDaG9vc2UgdGhpcyBvcHRpb24gaWYgeW91IGhhdmUgYSBuZWVkIGZv
+ciB0aGUgbGVnYWN5IGZiZGV2DQo+PiAgICAgICAgICAgIHN1cHBvcnQuIE5vdGUgdGhhdCB0
+aGlzIHN1cHBvcnQgYWxzbyBwcm92aWRlcyB0aGUgbGludXggY29uc29sZQ0KPj4gZGlmZiAt
+LWdpdCBhL2RyaXZlcnMvdmlkZW8vY29uc29sZS9LY29uZmlnIGIvZHJpdmVycy92aWRlby9j
+b25zb2xlL0tjb25maWcNCj4+IGluZGV4IGI1NzVjZjU0MTc0YWYuLjgzYzJkNzMyOWNhNTgg
+MTAwNjQ0DQo+PiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2NvbnNvbGUvS2NvbmZpZw0KPj4gKysr
+IGIvZHJpdmVycy92aWRlby9jb25zb2xlL0tjb25maWcNCj4+IEBAIC03NCw2ICs3NCw3IEBA
+IGNvbmZpZyBEVU1NWV9DT05TT0xFX1JPV1MNCj4+ICAgY29uZmlnIEZSQU1FQlVGRkVSX0NP
+TlNPTEUNCj4+ICAgICAgICAgIGJvb2wgIkZyYW1lYnVmZmVyIENvbnNvbGUgc3VwcG9ydCIN
+Cj4+ICAgICAgICAgIGRlcGVuZHMgb24gRkJfQ09SRSAmJiAhVU1MDQo+PiArICAgICAgIGRl
+ZmF1bHQgRFJNX0ZCREVWX0VNVUxBVElPTg0KPiANCj4gU291bmRzIGdvb2QgdG8gbWUsIGFs
+dGhvdWdoIGl0IGxvb2tzIGEgYml0IHN0cmFuZ2UgYXQgZmlyc3Qgc2lnaHQNCj4gKEZSQU1F
+QlVGRkVSX0NPTlNPTEUgZGVmYXVsdHMgdG8gbiBvbiBhIHN5c3RlbSB3aXRoIHJlYWwgZmJk
+ZXYsIGJ1dA0KPiB5IG9uIGVtdWxhdGVkIGZiZGV2PykuDQo+IFNvIHRoaXMgaXMgdGhlIGZp
+eCBmb3IgY29tbWl0IGE1YWUzMzFlZGIwMmIgKCJkcm06IERyb3Agc2VsZWN0DQo+IEZSQU1F
+QlVGRkVSX0NPTlNPTEUgZm9yIERSTV9GQkRFVl9FTVVMQVRJT04iKS4NCj4gDQo+PiAgICAg
+ICAgICBzZWxlY3QgVlRfSFdfQ09OU09MRV9CSU5ESU5HDQo+PiAgICAgICAgICBzZWxlY3Qg
+Q1JDMzINCj4+ICAgICAgICAgIHNlbGVjdCBGT05UX1NVUFBPUlQNCj4+IGRpZmYgLS1naXQg
+YS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvS2NvbmZpZyBiL2RyaXZlcnMvdmlkZW8vZmJk
+ZXYvY29yZS9LY29uZmlnDQo+PiBpbmRleCAxMTRjYjhhYTZjOGZkLi44MDRjMmJlYzliNDNj
+IDEwMDY0NA0KPj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL0tjb25maWcNCj4+
+ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9LY29uZmlnDQo+PiBAQCAtMjgsNyAr
+MjgsNyBAQCBjb25maWcgRklSTVdBUkVfRURJRA0KPj4gICBjb25maWcgRkJfREVWSUNFDQo+
+PiAgICAgICAgICBib29sICJQcm92aWRlIGxlZ2FjeSAvZGV2L2ZiKiBkZXZpY2UiDQo+PiAg
+ICAgICAgICBkZXBlbmRzIG9uIEZCX0NPUkUNCj4+IC0gICAgICAgZGVmYXVsdCB5DQo+PiAr
+ICAgICAgIGRlZmF1bHQgRkINCj4gDQo+IENoYW5naW5nIHRoaXMgbWVhbnMgcG9zc2libHkg
+Y2F1c2luZyByZWdyZXNzaW9ucyBvbiBzeXN0ZW1zIHJ1bm5pbmcNCj4gYW4gZmJkZXYgdXNl
+cnNwYWNlLg0KPiANCj4+ICAgICAgICAgIGhlbHANCj4+ICAgICAgICAgICAgU2F5IFkgaGVy
+ZSBpZiB5b3Ugd2FudCB0aGUgbGVnYWN5IC9kZXYvZmIqIGRldmljZSBmaWxlIGFuZA0KPj4g
+ICAgICAgICAgICBpbnRlcmZhY2VzIHdpdGhpbiBzeXNmcyBhbmMgcHJvY2ZzLiBJdCBpcyBv
+bmx5IHJlcXVpcmVkIGlmIHlvdQ0KPiANCj4gR3J7b2V0amUsZWV0aW5nfXMsDQo+IA0KPiAg
+ICAgICAgICAgICAgICAgICAgICAgICAgR2VlcnQNCj4gDQoNCi0tIA0KVGhvbWFzIFppbW1l
+cm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRp
+b25zIEdlcm1hbnkgR21iSA0KRnJhbmtlbnN0cmFzc2UgMTQ2LCA5MDQ2MSBOdWVybmJlcmcs
+IEdlcm1hbnkNCkdGOiBJdm8gVG90ZXYsIEFuZHJldyBNeWVycywgQW5kcmV3IE1jRG9uYWxk
+LCBCb3VkaWVuIE1vZXJtYW4NCkhSQiAzNjgwOSAoQUcgTnVlcm5iZXJnKQ0K
 
-That would be the same as a plain 'default y' based on the
-dependencies. We can definitely do that, but it does change
-the behavior for FB-only users.
+--------------0NR9gq0a3l3oFllEsTkfW0tM--
 
-At the moment, we have 21 defconfig files in the kernel
-that enable CONFIG_FB but not CONFIG_FRAMEBUFFER_CONSOLE:
+--------------z16WFs9halpjk3MPJ08ovkgt
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature.asc"
 
-$ git grep -l CONFIG_FB=3Dy  arch/*configs/ | xargs grep -L "FRAMEBUFFER=
-_CONSOLE=3D\|DRM=3D"
-arch/arm/configs/am200epdkit_defconfig
-arch/arm/configs/assabet_defconfig
-arch/arm/configs/clps711x_defconfig
-arch/arm/configs/ep93xx_defconfig
-arch/arm/configs/footbridge_defconfig
-arch/arm/configs/h3600_defconfig
-arch/arm/configs/multi_v4t_defconfig
-arch/arm/configs/mvebu_v5_defconfig
-arch/arm/configs/pxa910_defconfig
-arch/arm/configs/s3c6400_defconfig
-arch/arm/configs/wpcm450_defconfig
-arch/microblaze/configs/mmu_defconfig
-arch/mips/configs/cobalt_defconfig
-arch/mips/configs/generic/board-ranchu.config
-arch/mips/configs/malta_qemu_32r6_defconfig
-arch/mips/configs/maltaaprp_defconfig
-arch/mips/configs/maltasmvp_defconfig
-arch/mips/configs/maltasmvp_eva_defconfig
-arch/mips/configs/maltaup_defconfig
-arch/sh/configs/r7785rp_defconfig
-arch/sh/configs/se7343_defconfig
+-----BEGIN PGP SIGNATURE-----
 
->> So this is the fix for commit a5ae331edb02b ("drm: Drop select
->> FRAMEBUFFER_CONSOLE for DRM_FBDEV_EMULATION").
->>
->>>         select VT_HW_CONSOLE_BINDING
->>>         select CRC32
->>>         select FONT_SUPPORT
->>> diff --git a/drivers/video/fbdev/core/Kconfig b/drivers/video/fbdev/=
-core/Kconfig
->>> index 114cb8aa6c8fd..804c2bec9b43c 100644
->>> --- a/drivers/video/fbdev/core/Kconfig
->>> +++ b/drivers/video/fbdev/core/Kconfig
->>> @@ -28,7 +28,7 @@ config FIRMWARE_EDID
->>>  config FB_DEVICE
->>>         bool "Provide legacy /dev/fb* device"
->>>         depends on FB_CORE
->>> -       default y
->>> +       default FB
->>
->> Changing this means possibly causing regressions on systems running
->> an fbdev userspace.
->>
->
-> Right, specially if using DRM fbdev emulation since then the default w=
-ill
-> be different between v6.5 and v6.6 (that's what this patch tries to av=
-oid).
->
-> So probably we could keept that default as 'y'.
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmUAHT8FAwAAAAAACgkQlh/E3EQov+DU
+Pw//bjtTKDkr6zUHhIzruyB3IaL13aLU4GbkVUM6gBsYTyrv99UrVpdnzbI1yip0ayia3l4IuuLi
+zheiwC/0NQAZa6E5l9AqXv5eGMyuBpD9jUy9BYGojo/TfcV/uRq1eBj1ZzJo7TIPEkCC+7zfQ1W4
+pX9oiLPsmkgSvZ2U7C647XcX1SzNRj8lG9ZpoDHJpslEe377rkUJcIY+E2GeUTt7sExDnJlf3q3u
+AHWUWmCyQesHKqiq0KjqOCtQOlm4Q3RrCuswJWKvJR7i76s9qx0RWQCoRbAIh3BWhHrXWQKKTOJ+
+73YcyJtmk8pBbyoUEawWWkaeKVhWFPxR8EEcXF+OOWynRxeP7yZIyxYPffkoFFVcR7uPoMoqhDUe
+J1olUE+hiHc5znxx3QKRNc1+JRkKMTEu2yfP63aKnHAoCsPoTkomSPytLQiCQwdsKCmOjdP1jHSS
+uvR8yNY5NpveaOz8yG7T1s9dxpy1WQbNSiCFQOy07oVB0et459pORhn1PrKVcMy+k+XAvNNLzhCe
+it8aCsF8dmxiqoqAYX/3niD3U7IG9IxZ9xilXi0KlI8RaLz+L+tqwPgjtxn9vXxiiziYzuG+C1A7
+vq36g6rKNNAopoGR7Vh4sUWmlzVt5FS4GK7PbiuuzGwGm6/9Ou8hLQ0lWKbzms5Xf1YYvvz7oEpG
+unM=
+=5E0s
+-----END PGP SIGNATURE-----
 
-I really don't want to start enabling this for configs that
-didn't have it in the past.
-
-    Arnd
+--------------z16WFs9halpjk3MPJ08ovkgt--

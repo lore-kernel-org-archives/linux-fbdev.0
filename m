@@ -2,60 +2,60 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFB1BCA0ECA
-	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Sep 2023 08:11:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89574CA0ECE
+	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Sep 2023 08:18:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231971AbjILILv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 12 Sep 2023 04:11:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51748 "EHLO
+        id S232494AbjILISq convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 12 Sep 2023 04:18:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53694 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232032AbjILILu (ORCPT
+        with ESMTP id S232433AbjILISl (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 12 Sep 2023 04:11:50 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6754EE73;
-        Tue, 12 Sep 2023 01:11:46 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id E197D1F85D;
-        Tue, 12 Sep 2023 08:11:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1694506304; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-        bh=WXdqCK7IJxe5rTLnJmNveWbh8pP8IIVl6oZz8TWuo30=;
-        b=Dnq0OX99SWDBkUkg4NqR285fXpw4UtUQlC6v6a33Ld3VUqbE+ogQNgvnc36ojM+/vAOfZl
-        vyLPpPnn2hmNSxGQIYeG/vaoMBLilloT1NUP1xWVzdHqV5QwEkzocdSeHw70rravqQPclW
-        n0IR3a0JOIQatXAf91xoKGe3m//O16c=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1694506304;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-        bh=WXdqCK7IJxe5rTLnJmNveWbh8pP8IIVl6oZz8TWuo30=;
-        b=p0yWx0VB92CYyXAsKozfKBHpAE6R93eb0u1c7uIHhEX1LSkA7doJgxsHUL6n1OqW0P/6S2
-        ZTFWluW+UjUrp1AA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 818FA13A39;
-        Tue, 12 Sep 2023 08:11:44 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id XQU5G0AdAGVIFAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Tue, 12 Sep 2023 08:11:44 +0000
-Message-ID: <637afb25-8ee2-4188-9385-27ee6a97ec59@suse.de>
-Date:   Tue, 12 Sep 2023 10:11:43 +0200
+        Tue, 12 Sep 2023 04:18:41 -0400
+Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com [209.85.128.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31B34E78;
+        Tue, 12 Sep 2023 01:18:37 -0700 (PDT)
+Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-58fa51a0d97so51200077b3.3;
+        Tue, 12 Sep 2023 01:18:37 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694506716; x=1695111516;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=khdzgLGt8t6E0rL7mFhUTkO1q/TxNFHuMsXkANz78Pg=;
+        b=Y0MimktYlbVJ2v3vP/LiFofWk5udQyoGxEHWfdfWb6HaElNmAczp3XkhIjYFU6uDwE
+         ii7r6xNxc/jYCgN6Gu9lF2NZYBogXXnsP0xkW3O2SbKa7o6fhBfoF2YaDEkeVet/pfnV
+         do+tb9KZFHSHer6qEpBcAqnvp1oijyrHxSsqqjl9GPWLBkDdapkFvlhNaLyC2AqhDfnI
+         TQEGppayBqLA46ff1FS+563PJzPHoKnGgJNAWmoqM+1+kNle0DObqJljyaLqhlR266/j
+         faizdCcdnRJkNGPZvvgvqWBSsbVQvNN6mnubGs2rZM9+y+BLkYjlINMUKvNPDk0wVKBH
+         MOrA==
+X-Gm-Message-State: AOJu0YwFaSh1lVX6bwaYNP9tubuN0evyrwljvw/uveJgL5qaqGOMb5h0
+        lJefC/N7QlU9MUIoHFtH4gCWMdY+eBpYzg==
+X-Google-Smtp-Source: AGHT+IHkVDm3UHR6hVgc80M8CMmIpM40wKCdcqnNTB1Ik/VtnAO6fQKS1hDt8qVsvtuwkkgQKq7gzw==
+X-Received: by 2002:a25:ca16:0:b0:d4e:4103:7807 with SMTP id a22-20020a25ca16000000b00d4e41037807mr10491465ybg.60.1694506716181;
+        Tue, 12 Sep 2023 01:18:36 -0700 (PDT)
+Received: from mail-yb1-f181.google.com (mail-yb1-f181.google.com. [209.85.219.181])
+        by smtp.gmail.com with ESMTPSA id v3-20020a05690204c300b00c62e0df7ca8sm2002244ybs.24.2023.09.12.01.18.35
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 12 Sep 2023 01:18:35 -0700 (PDT)
+Received: by mail-yb1-f181.google.com with SMTP id 3f1490d57ef6-d7e741729a2so4949063276.2;
+        Tue, 12 Sep 2023 01:18:35 -0700 (PDT)
+X-Received: by 2002:a25:ac22:0:b0:d80:1604:f6e9 with SMTP id
+ w34-20020a25ac22000000b00d801604f6e9mr11644271ybi.44.1694506715264; Tue, 12
+ Sep 2023 01:18:35 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
+References: <20230911205338.2385278-1-arnd@kernel.org> <CAMuHMdWizKkuLEcv8sFFOWPib-0e1onCRuQEZm6OhV592VWUKQ@mail.gmail.com>
+ <637afb25-8ee2-4188-9385-27ee6a97ec59@suse.de>
+In-Reply-To: <637afb25-8ee2-4188-9385-27ee6a97ec59@suse.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Tue, 12 Sep 2023 10:18:23 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdW63WjidvAovqRz70bMgbLt4cSkOP1xSh7sEcqdwR3tOw@mail.gmail.com>
+Message-ID: <CAMuHMdW63WjidvAovqRz70bMgbLt4cSkOP1xSh7sEcqdwR3tOw@mail.gmail.com>
 Subject: Re: [PATCH] drm: fix up fbdev Kconfig defaults
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Arnd Bergmann <arnd@kernel.org>
-Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Arnd Bergmann <arnd@kernel.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
         David Airlie <airlied@gmail.com>,
         Daniel Vetter <daniel@ffwll.ch>,
@@ -69,146 +69,99 @@ Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Arthur Grillo <arthurgrillo@riseup.net>,
         dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
         linux-fbdev@vger.kernel.org
-References: <20230911205338.2385278-1-arnd@kernel.org>
- <CAMuHMdWizKkuLEcv8sFFOWPib-0e1onCRuQEZm6OhV592VWUKQ@mail.gmail.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <CAMuHMdWizKkuLEcv8sFFOWPib-0e1onCRuQEZm6OhV592VWUKQ@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------z16WFs9halpjk3MPJ08ovkgt"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------z16WFs9halpjk3MPJ08ovkgt
-Content-Type: multipart/mixed; boundary="------------0NR9gq0a3l3oFllEsTkfW0tM";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Arnd Bergmann <arnd@kernel.org>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
- Daniel Vetter <daniel@ffwll.ch>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller
- <deller@gmx.de>, Arnd Bergmann <arnd@arndb.de>,
- =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
- Dave Airlie <airlied@redhat.com>,
- Javier Martinez Canillas <javierm@redhat.com>,
- Jim Cromie <jim.cromie@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
- Arthur Grillo <arthurgrillo@riseup.net>, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Message-ID: <637afb25-8ee2-4188-9385-27ee6a97ec59@suse.de>
-Subject: Re: [PATCH] drm: fix up fbdev Kconfig defaults
-References: <20230911205338.2385278-1-arnd@kernel.org>
- <CAMuHMdWizKkuLEcv8sFFOWPib-0e1onCRuQEZm6OhV592VWUKQ@mail.gmail.com>
-In-Reply-To: <CAMuHMdWizKkuLEcv8sFFOWPib-0e1onCRuQEZm6OhV592VWUKQ@mail.gmail.com>
+Hi Thomas,
 
---------------0NR9gq0a3l3oFllEsTkfW0tM
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+On Tue, Sep 12, 2023 at 10:11 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Am 12.09.23 um 09:14 schrieb Geert Uytterhoeven:
+> [...]
+> >> --- a/drivers/gpu/drm/Kconfig
+> >> +++ b/drivers/gpu/drm/Kconfig
+> >> @@ -135,7 +135,7 @@ config DRM_FBDEV_EMULATION
+> >>          bool "Enable legacy fbdev support for your modesetting driver"
+> >>          depends on DRM
+> >>          select FRAMEBUFFER_CONSOLE_DETECT_PRIMARY if FRAMEBUFFER_CONSOLE
+> >> -       default y
+> >> +       default FB
+> >
+> > While this is true for existing configs, it is no longer true in general,
+> > as DRM_FBDEV_EMULATION is no longer related to FB.
+>
+> Would it make sense to make FRAMEBUFFER_CONSOLE an independent option
+> and have FBDEV_EMULATION depend on it? Something like this:
+>
+> FRAMEBUFFER_CONSOLE
+>         depends on DRM || FB
+>         select FB_CORE
+>
+> FBDEV_EMULATION
+>         depends on DRM
+>         depends on FRAMEBUFFER_CONSOLE
+>         default y
 
-SGkNCg0KQW0gMTIuMDkuMjMgdW0gMDk6MTQgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
-DQpbLi4uXQ0KPj4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL0tjb25maWcNCj4+ICsrKyBiL2Ry
-aXZlcnMvZ3B1L2RybS9LY29uZmlnDQo+PiBAQCAtMTM1LDcgKzEzNSw3IEBAIGNvbmZpZyBE
-Uk1fRkJERVZfRU1VTEFUSU9ODQo+PiAgICAgICAgICBib29sICJFbmFibGUgbGVnYWN5IGZi
-ZGV2IHN1cHBvcnQgZm9yIHlvdXIgbW9kZXNldHRpbmcgZHJpdmVyIg0KPj4gICAgICAgICAg
-ZGVwZW5kcyBvbiBEUk0NCj4+ICAgICAgICAgIHNlbGVjdCBGUkFNRUJVRkZFUl9DT05TT0xF
-X0RFVEVDVF9QUklNQVJZIGlmIEZSQU1FQlVGRkVSX0NPTlNPTEUNCj4+IC0gICAgICAgZGVm
-YXVsdCB5DQo+PiArICAgICAgIGRlZmF1bHQgRkINCj4gDQo+IFdoaWxlIHRoaXMgaXMgdHJ1
-ZSBmb3IgZXhpc3RpbmcgY29uZmlncywgaXQgaXMgbm8gbG9uZ2VyIHRydWUgaW4gZ2VuZXJh
-bCwNCj4gYXMgRFJNX0ZCREVWX0VNVUxBVElPTiBpcyBubyBsb25nZXIgcmVsYXRlZCB0byBG
-Qi4NCg0KV291bGQgaXQgbWFrZSBzZW5zZSB0byBtYWtlIEZSQU1FQlVGRkVSX0NPTlNPTEUg
-YW4gaW5kZXBlbmRlbnQgb3B0aW9uIA0KYW5kIGhhdmUgRkJERVZfRU1VTEFUSU9OIGRlcGVu
-ZCBvbiBpdD8gU29tZXRoaW5nIGxpa2UgdGhpczoNCg0KRlJBTUVCVUZGRVJfQ09OU09MRQ0K
-CWRlcGVuZHMgb24gRFJNIHx8IEZCDQoJc2VsZWN0IEZCX0NPUkUNCg0KRkJERVZfRU1VTEFU
-SU9ODQoJZGVwZW5kcyBvbiBEUk0NCglkZXBlbmRzIG9uIEZSQU1FQlVGRkVSX0NPTlNPTEUN
-CglkZWZhdWx0IHkNCg0KU28gaWYgYW55IGdyYXBoaWNzIHN1YnN5c3RlbXMgYXJlIGVuYWJs
-ZWQsIEZSQU1FQlVGRkVSX0NPTlNPTEUgaXMgDQpzZWxlY3QtYWJsZS4gQnV0IGZvciBEUk0s
-IEZCREVWX0VNVUxBVElPTiBkaXNhYmxlcyB0aGUgY29uc29sZS4gVGhhdCANCm9wdGlvbiBy
-ZW1haW5zIG1vcmUgZm9yIGhpc3RvcmljYWwgcmVhc29ucyB0aGFuIGFjdHVhbCB1c2VmdWxu
-ZXNzLg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KPj4gICAgICAgICAgaGVscA0K
-Pj4gICAgICAgICAgICBDaG9vc2UgdGhpcyBvcHRpb24gaWYgeW91IGhhdmUgYSBuZWVkIGZv
-ciB0aGUgbGVnYWN5IGZiZGV2DQo+PiAgICAgICAgICAgIHN1cHBvcnQuIE5vdGUgdGhhdCB0
-aGlzIHN1cHBvcnQgYWxzbyBwcm92aWRlcyB0aGUgbGludXggY29uc29sZQ0KPj4gZGlmZiAt
-LWdpdCBhL2RyaXZlcnMvdmlkZW8vY29uc29sZS9LY29uZmlnIGIvZHJpdmVycy92aWRlby9j
-b25zb2xlL0tjb25maWcNCj4+IGluZGV4IGI1NzVjZjU0MTc0YWYuLjgzYzJkNzMyOWNhNTgg
-MTAwNjQ0DQo+PiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2NvbnNvbGUvS2NvbmZpZw0KPj4gKysr
-IGIvZHJpdmVycy92aWRlby9jb25zb2xlL0tjb25maWcNCj4+IEBAIC03NCw2ICs3NCw3IEBA
-IGNvbmZpZyBEVU1NWV9DT05TT0xFX1JPV1MNCj4+ICAgY29uZmlnIEZSQU1FQlVGRkVSX0NP
-TlNPTEUNCj4+ICAgICAgICAgIGJvb2wgIkZyYW1lYnVmZmVyIENvbnNvbGUgc3VwcG9ydCIN
-Cj4+ICAgICAgICAgIGRlcGVuZHMgb24gRkJfQ09SRSAmJiAhVU1MDQo+PiArICAgICAgIGRl
-ZmF1bHQgRFJNX0ZCREVWX0VNVUxBVElPTg0KPiANCj4gU291bmRzIGdvb2QgdG8gbWUsIGFs
-dGhvdWdoIGl0IGxvb2tzIGEgYml0IHN0cmFuZ2UgYXQgZmlyc3Qgc2lnaHQNCj4gKEZSQU1F
-QlVGRkVSX0NPTlNPTEUgZGVmYXVsdHMgdG8gbiBvbiBhIHN5c3RlbSB3aXRoIHJlYWwgZmJk
-ZXYsIGJ1dA0KPiB5IG9uIGVtdWxhdGVkIGZiZGV2PykuDQo+IFNvIHRoaXMgaXMgdGhlIGZp
-eCBmb3IgY29tbWl0IGE1YWUzMzFlZGIwMmIgKCJkcm06IERyb3Agc2VsZWN0DQo+IEZSQU1F
-QlVGRkVSX0NPTlNPTEUgZm9yIERSTV9GQkRFVl9FTVVMQVRJT04iKS4NCj4gDQo+PiAgICAg
-ICAgICBzZWxlY3QgVlRfSFdfQ09OU09MRV9CSU5ESU5HDQo+PiAgICAgICAgICBzZWxlY3Qg
-Q1JDMzINCj4+ICAgICAgICAgIHNlbGVjdCBGT05UX1NVUFBPUlQNCj4+IGRpZmYgLS1naXQg
-YS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvS2NvbmZpZyBiL2RyaXZlcnMvdmlkZW8vZmJk
-ZXYvY29yZS9LY29uZmlnDQo+PiBpbmRleCAxMTRjYjhhYTZjOGZkLi44MDRjMmJlYzliNDNj
-IDEwMDY0NA0KPj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL0tjb25maWcNCj4+
-ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9LY29uZmlnDQo+PiBAQCAtMjgsNyAr
-MjgsNyBAQCBjb25maWcgRklSTVdBUkVfRURJRA0KPj4gICBjb25maWcgRkJfREVWSUNFDQo+
-PiAgICAgICAgICBib29sICJQcm92aWRlIGxlZ2FjeSAvZGV2L2ZiKiBkZXZpY2UiDQo+PiAg
-ICAgICAgICBkZXBlbmRzIG9uIEZCX0NPUkUNCj4+IC0gICAgICAgZGVmYXVsdCB5DQo+PiAr
-ICAgICAgIGRlZmF1bHQgRkINCj4gDQo+IENoYW5naW5nIHRoaXMgbWVhbnMgcG9zc2libHkg
-Y2F1c2luZyByZWdyZXNzaW9ucyBvbiBzeXN0ZW1zIHJ1bm5pbmcNCj4gYW4gZmJkZXYgdXNl
-cnNwYWNlLg0KPiANCj4+ICAgICAgICAgIGhlbHANCj4+ICAgICAgICAgICAgU2F5IFkgaGVy
-ZSBpZiB5b3Ugd2FudCB0aGUgbGVnYWN5IC9kZXYvZmIqIGRldmljZSBmaWxlIGFuZA0KPj4g
-ICAgICAgICAgICBpbnRlcmZhY2VzIHdpdGhpbiBzeXNmcyBhbmMgcHJvY2ZzLiBJdCBpcyBv
-bmx5IHJlcXVpcmVkIGlmIHlvdQ0KPiANCj4gR3J7b2V0amUsZWV0aW5nfXMsDQo+IA0KPiAg
-ICAgICAgICAgICAgICAgICAgICAgICAgR2VlcnQNCj4gDQoNCi0tIA0KVGhvbWFzIFppbW1l
-cm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRp
-b25zIEdlcm1hbnkgR21iSA0KRnJhbmtlbnN0cmFzc2UgMTQ2LCA5MDQ2MSBOdWVybmJlcmcs
-IEdlcm1hbnkNCkdGOiBJdm8gVG90ZXYsIEFuZHJldyBNeWVycywgQW5kcmV3IE1jRG9uYWxk
-LCBCb3VkaWVuIE1vZXJtYW4NCkhSQiAzNjgwOSAoQUcgTnVlcm5iZXJnKQ0K
+Oops, now you can no longer have FBDEV_EMULATION without
+FRAMEBUFFER_CONSOLE, which is useful to be able to enable
+FB_DEVICE...
 
---------------0NR9gq0a3l3oFllEsTkfW0tM--
+And what's the point (if DRM is enabled) of having FB_CORE with
+FBDEV_EMULATION disabled?
 
---------------z16WFs9halpjk3MPJ08ovkgt
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature.asc"
+> So if any graphics subsystems are enabled, FRAMEBUFFER_CONSOLE is
+> select-able. But for DRM, FBDEV_EMULATION disables the console. That
 
------BEGIN PGP SIGNATURE-----
+Huh?
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmUAHT8FAwAAAAAACgkQlh/E3EQov+DU
-Pw//bjtTKDkr6zUHhIzruyB3IaL13aLU4GbkVUM6gBsYTyrv99UrVpdnzbI1yip0ayia3l4IuuLi
-zheiwC/0NQAZa6E5l9AqXv5eGMyuBpD9jUy9BYGojo/TfcV/uRq1eBj1ZzJo7TIPEkCC+7zfQ1W4
-pX9oiLPsmkgSvZ2U7C647XcX1SzNRj8lG9ZpoDHJpslEe377rkUJcIY+E2GeUTt7sExDnJlf3q3u
-AHWUWmCyQesHKqiq0KjqOCtQOlm4Q3RrCuswJWKvJR7i76s9qx0RWQCoRbAIh3BWhHrXWQKKTOJ+
-73YcyJtmk8pBbyoUEawWWkaeKVhWFPxR8EEcXF+OOWynRxeP7yZIyxYPffkoFFVcR7uPoMoqhDUe
-J1olUE+hiHc5znxx3QKRNc1+JRkKMTEu2yfP63aKnHAoCsPoTkomSPytLQiCQwdsKCmOjdP1jHSS
-uvR8yNY5NpveaOz8yG7T1s9dxpy1WQbNSiCFQOy07oVB0et459pORhn1PrKVcMy+k+XAvNNLzhCe
-it8aCsF8dmxiqoqAYX/3niD3U7IG9IxZ9xilXi0KlI8RaLz+L+tqwPgjtxn9vXxiiziYzuG+C1A7
-vq36g6rKNNAopoGR7Vh4sUWmlzVt5FS4GK7PbiuuzGwGm6/9Ou8hLQ0lWKbzms5Xf1YYvvz7oEpG
-unM=
-=5E0s
------END PGP SIGNATURE-----
+/me looks at his morning coffee, and confirms the cup is empty...
 
---------------z16WFs9halpjk3MPJ08ovkgt--
+> option remains more for historical reasons than actual usefulness.
+
+> >> --- a/drivers/video/console/Kconfig
+> >> +++ b/drivers/video/console/Kconfig
+> >> @@ -74,6 +74,7 @@ config DUMMY_CONSOLE_ROWS
+> >>   config FRAMEBUFFER_CONSOLE
+> >>          bool "Framebuffer Console support"
+> >>          depends on FB_CORE && !UML
+> >> +       default DRM_FBDEV_EMULATION
+> >
+> > Sounds good to me, although it looks a bit strange at first sight
+> > (FRAMEBUFFER_CONSOLE defaults to n on a system with real fbdev, but
+> > y on emulated fbdev?).
+> > So this is the fix for commit a5ae331edb02b ("drm: Drop select
+> > FRAMEBUFFER_CONSOLE for DRM_FBDEV_EMULATION").
+> >
+> >>          select VT_HW_CONSOLE_BINDING
+> >>          select CRC32
+> >>          select FONT_SUPPORT
+> >> diff --git a/drivers/video/fbdev/core/Kconfig b/drivers/video/fbdev/core/Kconfig
+> >> index 114cb8aa6c8fd..804c2bec9b43c 100644
+> >> --- a/drivers/video/fbdev/core/Kconfig
+> >> +++ b/drivers/video/fbdev/core/Kconfig
+> >> @@ -28,7 +28,7 @@ config FIRMWARE_EDID
+> >>   config FB_DEVICE
+> >>          bool "Provide legacy /dev/fb* device"
+> >>          depends on FB_CORE
+> >> -       default y
+> >> +       default FB
+> >
+> > Changing this means possibly causing regressions on systems running
+> > an fbdev userspace.
+> >
+> >>          help
+> >>            Say Y here if you want the legacy /dev/fb* device file and
+> >>            interfaces within sysfs anc procfs. It is only required if you
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

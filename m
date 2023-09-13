@@ -2,202 +2,114 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56198CA0EEA
-	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Sep 2023 13:50:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8322EE3F39
+	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Sep 2023 01:02:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235566AbjILNvB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 12 Sep 2023 09:51:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43692 "EHLO
+        id S232059AbjIMBCW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 12 Sep 2023 21:02:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57826 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235052AbjILNu6 (ORCPT
+        with ESMTP id S229553AbjIMBCW (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 12 Sep 2023 09:50:58 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2CA0610DC;
-        Tue, 12 Sep 2023 06:50:54 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id DB3741F750;
-        Tue, 12 Sep 2023 13:50:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1694526652; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=8wTvIDVhYd6CW8GIlwJym+m+SkuYKKbeC+cqwQHGlPw=;
-        b=DZ5O6TroiOclaFjC69JtEN9NxmnFJICFUViEGw9CTLYjsiEOkFBiqOqG++vCLqimXo9cbI
-        BQCSNjXKTjqroW0y0NhVjJUYfaxrIu53jrDiicKsARE3QKo3fyovh3F8y457MFmiwYTLGF
-        QfHKeeqC8lB5LJBGb1ITVYS8BB5auvU=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1694526652;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=8wTvIDVhYd6CW8GIlwJym+m+SkuYKKbeC+cqwQHGlPw=;
-        b=OsfJh4JUPYTkmgnKzXjtISuHCuMGc++yW41Y0MpokQf1OuMy+M26q+2JinCUfj/dqYfbyz
-        cqGIO1koC2q6oPCg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id A1A73139DB;
-        Tue, 12 Sep 2023 13:50:52 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id aBpwJrxsAGVKQwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Tue, 12 Sep 2023 13:50:52 +0000
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-To:     mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
-        arnd@arndb.de, deller@gmx.de
-Cc:     linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org,
-        linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-        linux-mips@vger.kernel.org, sparclinux@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v4 4/5] arch/powerpc: Remove file parameter from phys_mem_access_prot code
-Date:   Tue, 12 Sep 2023 15:49:02 +0200
-Message-ID: <20230912135050.17155-5-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20230912135050.17155-1-tzimmermann@suse.de>
-References: <20230912135050.17155-1-tzimmermann@suse.de>
+        Tue, 12 Sep 2023 21:02:22 -0400
+Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com [IPv6:2607:f8b0:4864:20::529])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68291C3;
+        Tue, 12 Sep 2023 18:02:18 -0700 (PDT)
+Received: by mail-pg1-x529.google.com with SMTP id 41be03b00d2f7-5776089b652so2303777a12.2;
+        Tue, 12 Sep 2023 18:02:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1694566937; x=1695171737; darn=vger.kernel.org;
+        h=content-disposition:mime-version:message-id:subject:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=iP1lkvVYjBN+KkdHkwdbL7/nnWbR17dZlHeb1s8O7n4=;
+        b=KbHf2qK2SVn/MBDjbhi3YrnmKPWoyhpp9B5+y40kWtGcuYrBUAX2Q9+vL11mvIfmi1
+         DZFsCNenaUi7FGjwl+YH1wXir5iwSt6e+bSlItB3yDeo0XkZe2Z20nsIcv6ltsKGZWTe
+         MRZxAvP1f7drGWshG0QOMtlJP49BOm7xbUzDyd2BrBMQ18tFIWb7YkoYIxQMPrba+sY3
+         aMQ1WlLVcwpnxrV3XyP8A3iUKMZ85nVZvUm60e5ddoIsQcesGI6WXgxAJITBTrWtQqk1
+         RwZ6scRb2GRly2KcHuYX4MX09llnrcyesPUCwxviCCSv76JyQg5hW523vYLUHYd16YOe
+         5V+g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1694566937; x=1695171737;
+        h=content-disposition:mime-version:message-id:subject:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=iP1lkvVYjBN+KkdHkwdbL7/nnWbR17dZlHeb1s8O7n4=;
+        b=C0BODmpKuaZGzL2HHhxw+nSjcqbyK6EYAOZkcCwlvUgJVkRzPECDEI/n9quZ+cccJv
+         YKjjcZtM02I4gvfhIJAlSLEGfL86ztaYaaKVSxlGaFtBX0tYFL0KIVuxdpZl32Ug5dU6
+         3kZeqRdnZAlEmEOsSRZA2QSUU1W6fOFyYdm4g5U1Zk+0t35D7gBBU6VBi9mLCtFjiYDK
+         6t5L8Z0jChyDI1/2gbv77ERzWqKiun9ELfULYrH25zB+sIo1nLftCGcIsE0aS0KySAJU
+         VjFLfYkNT6ZdMU68FdNvP9Ug6xzZlPRE1a54DDygZp/fd+ZIPf8Tq1ZHKPh5KOSqnbNB
+         3Edg==
+X-Gm-Message-State: AOJu0YzXxYCz0OnuKk4V/WI22/I/vyjC3YN+EJvkOuLBgdBZl479i4Py
+        Ypzc1bGTRqU8a4bZADVyQl2I14c47w3FEQ==
+X-Google-Smtp-Source: AGHT+IFN1PhjaXlp3JAOzpJIqkPhljBgbMWen3PGjjdkTkL3ORlcQHP+ND9StB5BT8IMPAYJA6wFWw==
+X-Received: by 2002:a05:6a20:7d85:b0:13a:12c2:359e with SMTP id v5-20020a056a207d8500b0013a12c2359emr1424023pzj.2.1694566937349;
+        Tue, 12 Sep 2023 18:02:17 -0700 (PDT)
+Received: from midnight ([2001:8003:6434:b000:c30f:d88d:412c:6e9a])
+        by smtp.gmail.com with ESMTPSA id h4-20020a170902748400b001bbb8d5166bsm9102235pll.123.2023.09.12.18.02.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 12 Sep 2023 18:02:16 -0700 (PDT)
+Date:   Wed, 13 Sep 2023 11:02:13 +1000
+From:   Angus Gardner <angusg778@gmail.com>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: [PATCH] staging: fbtft: Removed unnecessary parenthesis around
+ conditions to comply with the checkpatch coding style.
+Message-ID: <ZQEKFR1OPoXGI2lO@midnight>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Remove 'file' parameter from struct machdep_calls.phys_mem_access_prot
-and its implementation in pci_phys_mem_access_prot(). The file is not
-used on PowerPC. By removing it, a later patch can simplify fbdev's
-mmap code, which uses phys_mem_access_prot() on PowerPC.
-
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- arch/powerpc/include/asm/book3s/pgtable.h | 10 ++++++++--
- arch/powerpc/include/asm/machdep.h        |  3 +--
- arch/powerpc/include/asm/nohash/pgtable.h | 10 ++++++++--
- arch/powerpc/include/asm/pci.h            |  4 +---
- arch/powerpc/kernel/pci-common.c          |  3 +--
- arch/powerpc/mm/mem.c                     |  8 ++++----
- 6 files changed, 23 insertions(+), 15 deletions(-)
+ drivers/staging/fbtft/fb_ra8875.c | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/pgtable.h b/arch/powerpc/include/asm/book3s/pgtable.h
-index d18b748ea3ae0..84e36a5726417 100644
---- a/arch/powerpc/include/asm/book3s/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/pgtable.h
-@@ -20,9 +20,15 @@ extern void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
- extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
- 				 pte_t *ptep, pte_t entry, int dirty);
+diff --git a/drivers/staging/fbtft/fb_ra8875.c b/drivers/staging/fbtft/fb_ra8875.c
+index 398bdbf53c9a..658f915b8528 100644
+--- a/drivers/staging/fbtft/fb_ra8875.c
++++ b/drivers/staging/fbtft/fb_ra8875.c
+@@ -50,7 +50,7 @@ static int init_display(struct fbtft_par *par)
  
-+extern pgprot_t __phys_mem_access_prot(unsigned long pfn, unsigned long size,
-+				       pgprot_t vma_prot);
-+
- struct file;
--extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
--				     unsigned long size, pgprot_t vma_prot);
-+static inline pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
-+					    unsigned long size, pgprot_t vma_prot)
-+{
-+	return __phys_mem_access_prot(pfn, size, vma_prot);
-+}
- #define __HAVE_PHYS_MEM_ACCESS_PROT
+ 	par->fbtftops.reset(par);
  
- void __update_mmu_cache(struct vm_area_struct *vma, unsigned long address, pte_t *ptep);
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 933465ed4c432..d31a5ec1550d4 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -106,8 +106,7 @@ struct machdep_calls {
- 	int		(*pci_get_legacy_ide_irq)(struct pci_dev *dev, int channel);
- 
- 	/* Get access protection for /dev/mem */
--	pgprot_t	(*phys_mem_access_prot)(struct file *file,
--						unsigned long pfn,
-+	pgprot_t	(*phys_mem_access_prot)(unsigned long pfn,
- 						unsigned long size,
- 						pgprot_t vma_prot);
- 
-diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-index a6caaaab6f922..90366b0b3ad9a 100644
---- a/arch/powerpc/include/asm/nohash/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/pgtable.h
-@@ -246,9 +246,15 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long addre
- 
- #define pgprot_writecombine pgprot_noncached_wc
- 
-+extern pgprot_t __phys_mem_access_prot(unsigned long pfn, unsigned long size,
-+				       pgprot_t vma_prot);
-+
- struct file;
--extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
--				     unsigned long size, pgprot_t vma_prot);
-+static inline pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
-+					    unsigned long size, pgprot_t vma_prot)
-+{
-+	return __phys_mem_access_prot(pfn, size, vma_prot);
-+}
- #define __HAVE_PHYS_MEM_ACCESS_PROT
- 
- #ifdef CONFIG_HUGETLB_PAGE
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index 289f1ec85bc54..34ed4d51c546b 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -104,9 +104,7 @@ extern void of_scan_pci_bridge(struct pci_dev *dev);
- extern void of_scan_bus(struct device_node *node, struct pci_bus *bus);
- extern void of_rescan_bus(struct device_node *node, struct pci_bus *bus);
- 
--struct file;
--extern pgprot_t	pci_phys_mem_access_prot(struct file *file,
--					 unsigned long pfn,
-+extern pgprot_t	pci_phys_mem_access_prot(unsigned long pfn,
- 					 unsigned long size,
- 					 pgprot_t prot);
- 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index e88d7c9feeec3..73f12a17e572e 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -521,8 +521,7 @@ int pci_iobar_pfn(struct pci_dev *pdev, int bar, struct vm_area_struct *vma)
-  * PCI device, it tries to find the PCI device first and calls the
-  * above routine
-  */
--pgprot_t pci_phys_mem_access_prot(struct file *file,
--				  unsigned long pfn,
-+pgprot_t pci_phys_mem_access_prot(unsigned long pfn,
- 				  unsigned long size,
- 				  pgprot_t prot)
- {
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 8b121df7b08f8..03aadf657d15a 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -34,18 +34,18 @@ unsigned long long memory_limit;
- unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)] __page_aligned_bss;
- EXPORT_SYMBOL(empty_zero_page);
- 
--pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
--			      unsigned long size, pgprot_t vma_prot)
-+pgprot_t __phys_mem_access_prot(unsigned long pfn, unsigned long size,
-+				pgprot_t vma_prot)
- {
- 	if (ppc_md.phys_mem_access_prot)
--		return ppc_md.phys_mem_access_prot(file, pfn, size, vma_prot);
-+		return ppc_md.phys_mem_access_prot(pfn, size, vma_prot);
- 
- 	if (!page_is_ram(pfn))
- 		vma_prot = pgprot_noncached(vma_prot);
- 
- 	return vma_prot;
- }
--EXPORT_SYMBOL(phys_mem_access_prot);
-+EXPORT_SYMBOL(__phys_mem_access_prot);
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
- static DEFINE_MUTEX(linear_mapping_mutex);
+-	if ((par->info->var.xres == 320) && (par->info->var.yres == 240)) {
++	if (par->info->var.xres == 320 && par->info->var.yres == 240) {
+ 		/* PLL clock frequency */
+ 		write_reg(par, 0x88, 0x0A);
+ 		write_reg(par, 0x89, 0x02);
+@@ -74,8 +74,7 @@ static int init_display(struct fbtft_par *par)
+ 		write_reg(par, 0x1D, 0x0E);
+ 		write_reg(par, 0x1E, 0x00);
+ 		write_reg(par, 0x1F, 0x02);
+-	} else if ((par->info->var.xres == 480) &&
+-		   (par->info->var.yres == 272)) {
++	} else if (par->info->var.xres == 480 && par->info->var.yres == 272) {
+ 		/* PLL clock frequency  */
+ 		write_reg(par, 0x88, 0x0A);
+ 		write_reg(par, 0x89, 0x02);
+@@ -99,8 +98,7 @@ static int init_display(struct fbtft_par *par)
+ 		write_reg(par, 0x1D, 0x07);
+ 		write_reg(par, 0x1E, 0x00);
+ 		write_reg(par, 0x1F, 0x09);
+-	} else if ((par->info->var.xres == 640) &&
+-		   (par->info->var.yres == 480)) {
++	} else if (par->info->var.xres == 640 && par->info->var.yres == 480) {
+ 		/* PLL clock frequency */
+ 		write_reg(par, 0x88, 0x0B);
+ 		write_reg(par, 0x89, 0x02);
+@@ -124,8 +122,7 @@ static int init_display(struct fbtft_par *par)
+ 		write_reg(par, 0x1D, 0x0E);
+ 		write_reg(par, 0x1E, 0x00);
+ 		write_reg(par, 0x1F, 0x01);
+-	} else if ((par->info->var.xres == 800) &&
+-		   (par->info->var.yres == 480)) {
++	} else if (par->info->var.xres == 800 && par->info->var.yres == 480) {
+ 		/* PLL clock frequency */
+ 		write_reg(par, 0x88, 0x0B);
+ 		write_reg(par, 0x89, 0x02);
 -- 
-2.42.0
+2.40.1
 

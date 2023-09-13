@@ -2,114 +2,111 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8322EE3F39
-	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Sep 2023 01:02:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AC4BEE49B7
+	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Sep 2023 01:32:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232059AbjIMBCW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 12 Sep 2023 21:02:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57826 "EHLO
+        id S233643AbjIMBc3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 12 Sep 2023 21:32:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38994 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229553AbjIMBCW (ORCPT
+        with ESMTP id S230113AbjIMBc2 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 12 Sep 2023 21:02:22 -0400
-Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com [IPv6:2607:f8b0:4864:20::529])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68291C3;
-        Tue, 12 Sep 2023 18:02:18 -0700 (PDT)
-Received: by mail-pg1-x529.google.com with SMTP id 41be03b00d2f7-5776089b652so2303777a12.2;
-        Tue, 12 Sep 2023 18:02:18 -0700 (PDT)
+        Tue, 12 Sep 2023 21:32:28 -0400
+Received: from mail-oo1-xc36.google.com (mail-oo1-xc36.google.com [IPv6:2607:f8b0:4864:20::c36])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF3D610E6;
+        Tue, 12 Sep 2023 18:32:24 -0700 (PDT)
+Received: by mail-oo1-xc36.google.com with SMTP id 006d021491bc7-5733789a44cso3710090eaf.2;
+        Tue, 12 Sep 2023 18:32:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1694566937; x=1695171737; darn=vger.kernel.org;
-        h=content-disposition:mime-version:message-id:subject:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=iP1lkvVYjBN+KkdHkwdbL7/nnWbR17dZlHeb1s8O7n4=;
-        b=KbHf2qK2SVn/MBDjbhi3YrnmKPWoyhpp9B5+y40kWtGcuYrBUAX2Q9+vL11mvIfmi1
-         DZFsCNenaUi7FGjwl+YH1wXir5iwSt6e+bSlItB3yDeo0XkZe2Z20nsIcv6ltsKGZWTe
-         MRZxAvP1f7drGWshG0QOMtlJP49BOm7xbUzDyd2BrBMQ18tFIWb7YkoYIxQMPrba+sY3
-         aMQ1WlLVcwpnxrV3XyP8A3iUKMZ85nVZvUm60e5ddoIsQcesGI6WXgxAJITBTrWtQqk1
-         RwZ6scRb2GRly2KcHuYX4MX09llnrcyesPUCwxviCCSv76JyQg5hW523vYLUHYd16YOe
-         5V+g==
+        d=gmail.com; s=20221208; t=1694568744; x=1695173544; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Vq8SgHFXKS/TzFJSEmQtwxfAWXj6dXC3+mc9FsXzQZg=;
+        b=J3CNpbC7FRbJefEBec8UWlsQjDcTEuiKYu0lkWTW+y86SBEmecHkjgOdXQf51lKmla
+         pUxLluAEXD6lG1T6XLh3RlOwVsjFq1jkmYat40WMWUba1RCL6WL9KoNtYRLch0jQkZPl
+         KR+tVWfYUB7enIlq/XZUuGWUaYom0r1iXznVjOqRp560EgszpIv/0zNU1jQJqGk6/aiR
+         1UGSsWMfYewf7ap5x0FgbI+CkkRsj7MgGvB+yrlqL+pvgjXpjkbb3siEcBCroMAoQMaF
+         4TJyT2yy7nTAkxVGIpR78OJPJn0V9lHJWG6t9/q+IuYjBaFUW9BKk8pRWtqPq2IvOJ2V
+         Q0YQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694566937; x=1695171737;
-        h=content-disposition:mime-version:message-id:subject:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=iP1lkvVYjBN+KkdHkwdbL7/nnWbR17dZlHeb1s8O7n4=;
-        b=C0BODmpKuaZGzL2HHhxw+nSjcqbyK6EYAOZkcCwlvUgJVkRzPECDEI/n9quZ+cccJv
-         YKjjcZtM02I4gvfhIJAlSLEGfL86ztaYaaKVSxlGaFtBX0tYFL0KIVuxdpZl32Ug5dU6
-         3kZeqRdnZAlEmEOsSRZA2QSUU1W6fOFyYdm4g5U1Zk+0t35D7gBBU6VBi9mLCtFjiYDK
-         6t5L8Z0jChyDI1/2gbv77ERzWqKiun9ELfULYrH25zB+sIo1nLftCGcIsE0aS0KySAJU
-         VjFLfYkNT6ZdMU68FdNvP9Ug6xzZlPRE1a54DDygZp/fd+ZIPf8Tq1ZHKPh5KOSqnbNB
-         3Edg==
-X-Gm-Message-State: AOJu0YzXxYCz0OnuKk4V/WI22/I/vyjC3YN+EJvkOuLBgdBZl479i4Py
-        Ypzc1bGTRqU8a4bZADVyQl2I14c47w3FEQ==
-X-Google-Smtp-Source: AGHT+IFN1PhjaXlp3JAOzpJIqkPhljBgbMWen3PGjjdkTkL3ORlcQHP+ND9StB5BT8IMPAYJA6wFWw==
-X-Received: by 2002:a05:6a20:7d85:b0:13a:12c2:359e with SMTP id v5-20020a056a207d8500b0013a12c2359emr1424023pzj.2.1694566937349;
-        Tue, 12 Sep 2023 18:02:17 -0700 (PDT)
-Received: from midnight ([2001:8003:6434:b000:c30f:d88d:412c:6e9a])
-        by smtp.gmail.com with ESMTPSA id h4-20020a170902748400b001bbb8d5166bsm9102235pll.123.2023.09.12.18.02.16
+        d=1e100.net; s=20230601; t=1694568744; x=1695173544;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Vq8SgHFXKS/TzFJSEmQtwxfAWXj6dXC3+mc9FsXzQZg=;
+        b=xQAHU/SVoHsio+lvNZDcoDZ9LJypq7fVbfu2t45q/4zWYHTCNS6/+oBoUMSfd5sStK
+         fE7ha506K/THFmWmAu/btYPXXkpTQXd059J7j/WGj+M7miMMAqwWPbxgilkIfXiMrXq7
+         wS+qPJIrxq9IGZ+doE1QTsG+nymY545DH4nE+XLkgZYfYzApOlXAg2/UfpUyAeG7pSo3
+         rDyq7sDgSV3+Iqd2LOkHpncCBRYlk+CAQQKD98krPk+Fim5qAKQxhzwryt/SVEKF6H1Y
+         mVEyK+BHY25UCu307RlCeJUybt/9CCX8HqDXgJIx6y0SS03kmKxu/ytf5tNXeySwBrCj
+         BtJQ==
+X-Gm-Message-State: AOJu0YwrvYzfd1zoGHzpwNBPr0sdLVDnfLgoGKCsK03sdT1HGD/ooS8V
+        MdF4hZiDNPrTf9etqdZEmAxjQqi2lac=
+X-Google-Smtp-Source: AGHT+IEt/bNpU0mRtK+AR7hsEVoqnuNX7FLGK81vCmsCoUDqeDEL7zNOB7lGTmHbnmb1jDXtdgZqDQ==
+X-Received: by 2002:a05:6358:2611:b0:135:3f5c:9675 with SMTP id l17-20020a056358261100b001353f5c9675mr1730097rwc.19.1694568743861;
+        Tue, 12 Sep 2023 18:32:23 -0700 (PDT)
+Received: from debian.me ([103.124.138.83])
+        by smtp.gmail.com with ESMTPSA id c14-20020aa781ce000000b00687dde8ae5dsm7997630pfn.154.2023.09.12.18.32.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 12 Sep 2023 18:02:16 -0700 (PDT)
-Date:   Wed, 13 Sep 2023 11:02:13 +1000
-From:   Angus Gardner <angusg778@gmail.com>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Tue, 12 Sep 2023 18:32:23 -0700 (PDT)
+Received: by debian.me (Postfix, from userid 1000)
+        id 6773E89F3BBE; Wed, 13 Sep 2023 08:32:20 +0700 (WIB)
+Date:   Wed, 13 Sep 2023 08:32:20 +0700
+From:   Bagas Sanjaya <bagasdotme@gmail.com>
+To:     Angus Gardner <angusg778@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: [PATCH] staging: fbtft: Removed unnecessary parenthesis around
+Subject: Re: [PATCH] staging: fbtft: Removed unnecessary parenthesis around
  conditions to comply with the checkpatch coding style.
-Message-ID: <ZQEKFR1OPoXGI2lO@midnight>
+Message-ID: <ZQERJIGOOeYxgX3E@debian.me>
+References: <ZQEKFR1OPoXGI2lO@midnight>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="x1+FQVa4UDBiUUPt"
 Content-Disposition: inline
+In-Reply-To: <ZQEKFR1OPoXGI2lO@midnight>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
----
- drivers/staging/fbtft/fb_ra8875.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/staging/fbtft/fb_ra8875.c b/drivers/staging/fbtft/fb_ra8875.c
-index 398bdbf53c9a..658f915b8528 100644
---- a/drivers/staging/fbtft/fb_ra8875.c
-+++ b/drivers/staging/fbtft/fb_ra8875.c
-@@ -50,7 +50,7 @@ static int init_display(struct fbtft_par *par)
- 
- 	par->fbtftops.reset(par);
- 
--	if ((par->info->var.xres == 320) && (par->info->var.yres == 240)) {
-+	if (par->info->var.xres == 320 && par->info->var.yres == 240) {
- 		/* PLL clock frequency */
- 		write_reg(par, 0x88, 0x0A);
- 		write_reg(par, 0x89, 0x02);
-@@ -74,8 +74,7 @@ static int init_display(struct fbtft_par *par)
- 		write_reg(par, 0x1D, 0x0E);
- 		write_reg(par, 0x1E, 0x00);
- 		write_reg(par, 0x1F, 0x02);
--	} else if ((par->info->var.xres == 480) &&
--		   (par->info->var.yres == 272)) {
-+	} else if (par->info->var.xres == 480 && par->info->var.yres == 272) {
- 		/* PLL clock frequency  */
- 		write_reg(par, 0x88, 0x0A);
- 		write_reg(par, 0x89, 0x02);
-@@ -99,8 +98,7 @@ static int init_display(struct fbtft_par *par)
- 		write_reg(par, 0x1D, 0x07);
- 		write_reg(par, 0x1E, 0x00);
- 		write_reg(par, 0x1F, 0x09);
--	} else if ((par->info->var.xres == 640) &&
--		   (par->info->var.yres == 480)) {
-+	} else if (par->info->var.xres == 640 && par->info->var.yres == 480) {
- 		/* PLL clock frequency */
- 		write_reg(par, 0x88, 0x0B);
- 		write_reg(par, 0x89, 0x02);
-@@ -124,8 +122,7 @@ static int init_display(struct fbtft_par *par)
- 		write_reg(par, 0x1D, 0x0E);
- 		write_reg(par, 0x1E, 0x00);
- 		write_reg(par, 0x1F, 0x01);
--	} else if ((par->info->var.xres == 800) &&
--		   (par->info->var.yres == 480)) {
-+	} else if (par->info->var.xres == 800 && par->info->var.yres == 480) {
- 		/* PLL clock frequency */
- 		write_reg(par, 0x88, 0x0B);
- 		write_reg(par, 0x89, 0x02);
--- 
-2.40.1
+--x1+FQVa4UDBiUUPt
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Wed, Sep 13, 2023 at 11:02:13AM +1000, Angus Gardner wrote:
+> ---
+>  drivers/staging/fbtft/fb_ra8875.c | 11 ++++-------
+>  1 file changed, 4 insertions(+), 7 deletions(-)
+
+No patch description and SoB, so Greg can't take this as-is.
+
+> -	if ((par->info->var.xres =3D=3D 320) && (par->info->var.yres =3D=3D 240=
+)) {
+> +	if (par->info->var.xres =3D=3D 320 && par->info->var.yres =3D=3D 240) {
+
+Greg prefers explicit parentheses on complex expressions (see [1] and [2]
+for examples), hence NAK.
+
+Thanks.
+
+[1]: https://lore.kernel.org/linux-staging/ZCWGOZqdH1kWtOEq@kroah.com/
+[2]: https://lore.kernel.org/linux-staging/Y%2FiaYtKk4VSokAFz@kroah.com/
+
+--=20
+An old man doll... just what I always wanted! - Clara
+
+--x1+FQVa4UDBiUUPt
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQSSYQ6Cy7oyFNCHrUH2uYlJVVFOowUCZQERHgAKCRD2uYlJVVFO
+o73FAQCZr9WVvTPdXrwCR23Z8ew/F2TTSZkLjZY6t94QNZFc4gD8CN1oD399IWU0
+p9IhzWXKtA85w37Q5pwbRZUfvAEcmwg=
+=8y2y
+-----END PGP SIGNATURE-----
+
+--x1+FQVa4UDBiUUPt--

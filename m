@@ -2,111 +2,115 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AC4BEE49B7
-	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Sep 2023 01:32:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DFEFEEB594
+	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Sep 2023 05:13:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233643AbjIMBc3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 12 Sep 2023 21:32:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38994 "EHLO
+        id S230055AbjIMFNt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 13 Sep 2023 01:13:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49262 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230113AbjIMBc2 (ORCPT
+        with ESMTP id S231916AbjIMFNt (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 12 Sep 2023 21:32:28 -0400
-Received: from mail-oo1-xc36.google.com (mail-oo1-xc36.google.com [IPv6:2607:f8b0:4864:20::c36])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF3D610E6;
-        Tue, 12 Sep 2023 18:32:24 -0700 (PDT)
-Received: by mail-oo1-xc36.google.com with SMTP id 006d021491bc7-5733789a44cso3710090eaf.2;
-        Tue, 12 Sep 2023 18:32:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1694568744; x=1695173544; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=Vq8SgHFXKS/TzFJSEmQtwxfAWXj6dXC3+mc9FsXzQZg=;
-        b=J3CNpbC7FRbJefEBec8UWlsQjDcTEuiKYu0lkWTW+y86SBEmecHkjgOdXQf51lKmla
-         pUxLluAEXD6lG1T6XLh3RlOwVsjFq1jkmYat40WMWUba1RCL6WL9KoNtYRLch0jQkZPl
-         KR+tVWfYUB7enIlq/XZUuGWUaYom0r1iXznVjOqRp560EgszpIv/0zNU1jQJqGk6/aiR
-         1UGSsWMfYewf7ap5x0FgbI+CkkRsj7MgGvB+yrlqL+pvgjXpjkbb3siEcBCroMAoQMaF
-         4TJyT2yy7nTAkxVGIpR78OJPJn0V9lHJWG6t9/q+IuYjBaFUW9BKk8pRWtqPq2IvOJ2V
-         Q0YQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694568744; x=1695173544;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Vq8SgHFXKS/TzFJSEmQtwxfAWXj6dXC3+mc9FsXzQZg=;
-        b=xQAHU/SVoHsio+lvNZDcoDZ9LJypq7fVbfu2t45q/4zWYHTCNS6/+oBoUMSfd5sStK
-         fE7ha506K/THFmWmAu/btYPXXkpTQXd059J7j/WGj+M7miMMAqwWPbxgilkIfXiMrXq7
-         wS+qPJIrxq9IGZ+doE1QTsG+nymY545DH4nE+XLkgZYfYzApOlXAg2/UfpUyAeG7pSo3
-         rDyq7sDgSV3+Iqd2LOkHpncCBRYlk+CAQQKD98krPk+Fim5qAKQxhzwryt/SVEKF6H1Y
-         mVEyK+BHY25UCu307RlCeJUybt/9CCX8HqDXgJIx6y0SS03kmKxu/ytf5tNXeySwBrCj
-         BtJQ==
-X-Gm-Message-State: AOJu0YwrvYzfd1zoGHzpwNBPr0sdLVDnfLgoGKCsK03sdT1HGD/ooS8V
-        MdF4hZiDNPrTf9etqdZEmAxjQqi2lac=
-X-Google-Smtp-Source: AGHT+IEt/bNpU0mRtK+AR7hsEVoqnuNX7FLGK81vCmsCoUDqeDEL7zNOB7lGTmHbnmb1jDXtdgZqDQ==
-X-Received: by 2002:a05:6358:2611:b0:135:3f5c:9675 with SMTP id l17-20020a056358261100b001353f5c9675mr1730097rwc.19.1694568743861;
-        Tue, 12 Sep 2023 18:32:23 -0700 (PDT)
-Received: from debian.me ([103.124.138.83])
-        by smtp.gmail.com with ESMTPSA id c14-20020aa781ce000000b00687dde8ae5dsm7997630pfn.154.2023.09.12.18.32.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 12 Sep 2023 18:32:23 -0700 (PDT)
-Received: by debian.me (Postfix, from userid 1000)
-        id 6773E89F3BBE; Wed, 13 Sep 2023 08:32:20 +0700 (WIB)
-Date:   Wed, 13 Sep 2023 08:32:20 +0700
-From:   Bagas Sanjaya <bagasdotme@gmail.com>
-To:     Angus Gardner <angusg778@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: fbtft: Removed unnecessary parenthesis around
- conditions to comply with the checkpatch coding style.
-Message-ID: <ZQERJIGOOeYxgX3E@debian.me>
-References: <ZQEKFR1OPoXGI2lO@midnight>
+        Wed, 13 Sep 2023 01:13:49 -0400
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 620901730;
+        Tue, 12 Sep 2023 22:13:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+        bh=wi7sEbnWQkNm+KIFbt3O9vgRJK/F8KR/obeG/emHIA8=; b=mF4o7D1Pwuotid1cqUWyP06EWN
+        wdHk1PWBHmFNgEJj9ir7EfipnECbpCn+2OjcwKU9ut7MzkaurrT0nlKh2M4K0E1YVWQt5kTD1Un0z
+        gKOAHtClUeHNckSh7UbmPTb+ykXCvZqNrS8e0Cy4BadXGmszINThFi8OAs8bS8K0maQNoeqrzQXPH
+        ujZST+qzlif3pqAjOGra+2gG6UCanH9jWre8WT43o+gLiFLuzP7gyd9qwmA7mybIS7YfDKnPdL2+B
+        15VAtbtaDkd21lFi6jpl4qH5pPNhquNPBBRFJDXNbXAE8impg2scv+4R1j3pwkSv7CWcd4rd7uDWL
+        zoYgc6BA==;
+Received: from [2601:1c2:980:9ec0::9fed]
+        by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1qgIBz-004edS-29;
+        Wed, 13 Sep 2023 05:13:35 +0000
+Message-ID: <feadd6a5-0f56-4575-9891-3a7d88e69e64@infradead.org>
+Date:   Tue, 12 Sep 2023 22:13:34 -0700
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="x1+FQVa4UDBiUUPt"
-Content-Disposition: inline
-In-Reply-To: <ZQEKFR1OPoXGI2lO@midnight>
+User-Agent: Mozilla Thunderbird
+Subject: Re: sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:undefined reference
+ to `fb_io_read'
+Content-Language: en-US
+To:     kernel test robot <lkp@intel.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     oe-kbuild-all@lists.linux.dev, linux-kernel@vger.kernel.org,
+        Sam Ravnborg <sam@ravnborg.org>,
+        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+        linux-fbdev@vger.kernel.org
+References: <202309130632.LS04CPWu-lkp@intel.com>
+From:   Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <202309130632.LS04CPWu-lkp@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 
---x1+FQVa4UDBiUUPt
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, Sep 13, 2023 at 11:02:13AM +1000, Angus Gardner wrote:
-> ---
->  drivers/staging/fbtft/fb_ra8875.c | 11 ++++-------
->  1 file changed, 4 insertions(+), 7 deletions(-)
+On 9/12/23 15:42, kernel test robot wrote:
+> Hi Thomas,
+> 
+> FYI, the error/warning was bisected to this commit, please ignore it if it's irrelevant.
+> 
+> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master
+> head:   3669558bdf354cd352be955ef2764cde6a9bf5ec
+> commit: 5f86367006c6a0662faaf36f753f437afe42fb63 fbdev/sh7760fb: Use fbdev I/O helpers
+> date:   6 weeks ago
+> config: sh-randconfig-r012-20230913 (https://download.01.org/0day-ci/archive/20230913/202309130632.LS04CPWu-lkp@intel.com/config)
+> compiler: sh4-linux-gcc (GCC) 13.2.0
+> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20230913/202309130632.LS04CPWu-lkp@intel.com/reproduce)
+> 
+> If you fix the issue in a separate patch/commit (i.e. not just a new version of
+> the same patch/commit), kindly add following tags
+> | Reported-by: kernel test robot <lkp@intel.com>
+> | Closes: https://lore.kernel.org/oe-kbuild-all/202309130632.LS04CPWu-lkp@intel.com/
+> 
+> All errors (new ones prefixed by >>):
+> 
+>    sh4-linux-ld: drivers/video/fbdev/sh7760fb.o: in function `sh7760fb_probe':
+>    sh7760fb.c:(.text+0x374): undefined reference to `framebuffer_alloc'
+>    sh4-linux-ld: sh7760fb.c:(.text+0x394): undefined reference to `fb_videomode_to_var'
+>    sh4-linux-ld: sh7760fb.c:(.text+0x39c): undefined reference to `fb_alloc_cmap'
+>    sh4-linux-ld: sh7760fb.c:(.text+0x3a4): undefined reference to `register_framebuffer'
+>    sh4-linux-ld: sh7760fb.c:(.text+0x3ac): undefined reference to `fb_dealloc_cmap'
+>    sh4-linux-ld: sh7760fb.c:(.text+0x434): undefined reference to `framebuffer_release'
+>    sh4-linux-ld: drivers/video/fbdev/sh7760fb.o: in function `sh7760fb_remove':
+>    sh7760fb.c:(.text+0x800): undefined reference to `unregister_framebuffer'
+>    sh4-linux-ld: sh7760fb.c:(.text+0x804): undefined reference to `fb_dealloc_cmap'
+>    sh4-linux-ld: sh7760fb.c:(.text+0x814): undefined reference to `framebuffer_release'
+>>> sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0xc): undefined reference to `fb_io_read'
+>>> sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x10): undefined reference to `fb_io_write'
+>    sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x2c): undefined reference to `cfb_fillrect'
+>    sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x30): undefined reference to `cfb_copyarea'
+>    sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x34): undefined reference to `cfb_imageblit'
 
-No patch description and SoB, so Greg can't take this as-is.
+The problem is CONFIG_FB=m and CONFIG_FB_SH7760=y.
 
-> -	if ((par->info->var.xres =3D=3D 320) && (par->info->var.yres =3D=3D 240=
-)) {
-> +	if (par->info->var.xres =3D=3D 320 && par->info->var.yres =3D=3D 240) {
+This can be fixed by this simple change ... if it's correct.
 
-Greg prefers explicit parentheses on complex expressions (see [1] and [2]
-for examples), hence NAK.
+or this Kconfig entry can be made into a tristate, but that may not
+help with booting a system.
 
-Thanks.
+~~~
+diff -- a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -1762,7 +1762,7 @@ config FB_COBALT
+ 
+ config FB_SH7760
+ 	bool "SH7760/SH7763/SH7720/SH7721 LCDC support"
+-	depends on FB && (CPU_SUBTYPE_SH7760 || CPU_SUBTYPE_SH7763 \
++	depends on FB=y && (CPU_SUBTYPE_SH7760 || CPU_SUBTYPE_SH7763 \
+ 		|| CPU_SUBTYPE_SH7720 || CPU_SUBTYPE_SH7721)
+ 	select FB_IOMEM_HELPERS
+ 	help
 
-[1]: https://lore.kernel.org/linux-staging/ZCWGOZqdH1kWtOEq@kroah.com/
-[2]: https://lore.kernel.org/linux-staging/Y%2FiaYtKk4VSokAFz@kroah.com/
 
---=20
-An old man doll... just what I always wanted! - Clara
-
---x1+FQVa4UDBiUUPt
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQSSYQ6Cy7oyFNCHrUH2uYlJVVFOowUCZQERHgAKCRD2uYlJVVFO
-o73FAQCZr9WVvTPdXrwCR23Z8ew/F2TTSZkLjZY6t94QNZFc4gD8CN1oD399IWU0
-p9IhzWXKtA85w37Q5pwbRZUfvAEcmwg=
-=8y2y
------END PGP SIGNATURE-----
-
---x1+FQVa4UDBiUUPt--
+-- 
+~Randy

@@ -2,452 +2,208 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 703F1EE6447
-	for <linux-fbdev@archiver.kernel.org>; Fri, 15 Sep 2023 09:05:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CE85EE645D
+	for <linux-fbdev@archiver.kernel.org>; Fri, 15 Sep 2023 14:05:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230149AbjIOJFY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 15 Sep 2023 05:05:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48620 "EHLO
+        id S235526AbjIOOFb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 15 Sep 2023 10:05:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47584 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233310AbjIOJFX (ORCPT
+        with ESMTP id S235470AbjIOOFa (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 15 Sep 2023 05:05:23 -0400
-X-Greylist: delayed 528 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 15 Sep 2023 02:03:20 PDT
-Received: from riemann.telenet-ops.be (riemann.telenet-ops.be [195.130.137.80])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E14473A93
-        for <linux-fbdev@vger.kernel.org>; Fri, 15 Sep 2023 02:03:20 -0700 (PDT)
-Received: from andre.telenet-ops.be (andre.telenet-ops.be [IPv6:2a02:1800:120:4::f00:15])
-        by riemann.telenet-ops.be (Postfix) with ESMTPS id 4Rn7KY0NHtz4xMd1
-        for <linux-fbdev@vger.kernel.org>; Fri, 15 Sep 2023 10:54:25 +0200 (CEST)
-Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:7135:da8b:ba1d:1a7c])
-        by andre.telenet-ops.be with bizsmtp
-        id m8uE2A0073q21w7018uEem; Fri, 15 Sep 2023 10:54:24 +0200
-Received: from rox.of.borg ([192.168.97.57])
-        by ramsan.of.borg with esmtp (Exim 4.95)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1qh4aJ-003lFs-3L;
-        Fri, 15 Sep 2023 10:54:14 +0200
-Received: from geert by rox.of.borg with local (Exim 4.95)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1qh4ac-00Gdag-2x;
-        Fri, 15 Sep 2023 10:54:14 +0200
-From:   Geert Uytterhoeven <geert+renesas@glider.be>
-To:     Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Magnus Damm <magnus.damm@gmail.com>
-Cc:     dri-devel@lists.freedesktop.org, linux-renesas-soc@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Fri, 15 Sep 2023 10:05:30 -0400
+Received: from EUR04-DB3-obe.outbound.protection.outlook.com (mail-db3eur04on2054.outbound.protection.outlook.com [40.107.6.54])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D0DD1FCC;
+        Fri, 15 Sep 2023 07:05:24 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=byxp5s74KzQpULehQgGzu49lSYOadqYhIFLBqkXp6HLN9axa6iSETvfAKCe4PCdN+E9GOeXMPZ4ISA1wUf3+cViaGbP7OUXZI/NKFTtOirCVcKMw8NnHa5kA4UL8F/0/7Bq9ZAyU8ljrvamg3SSc2IET8MYwh1w/W6e9JKtDam7EzUULybAmYszBuc+k6p4Hoq+FQYnnTIyHOTXfHHt8NugGNzthqUsC+vTwTSWG577h9RfCv6yT4Y729/xf5zcseZzmgwOtRRgEBVOF+x62fPbU2LIP3N+Mt/H+8xzLerpE/DZa/saq2kLQ3Uy8gc9c9DNOF4wSImyghsjfIGkeIg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=py9fIa4DYNUu9u5VEoQ5z5bqAm59jnw+4sHK1LITt0E=;
+ b=cFAR+wvXvPq1XqJdQksdi6/fyAVVx0B4YZC/j/S960nirYis60Jzxe1svtVpERk4G1f1Nva52rlqGK2o3vf3NFZb4aGNcAzIuQwVWdRiOALu6ws0r6IiCC/c5c1YYsLPkzdl6eXVTCuzM5a5yx2OjAnsvQwmKnCUS9th1lVCDkIvp9kg5ubBHH+tkOxDh9E0mbEY+6Aq3mVvZIiS8eb49n9NjQnml+fAsEbm+iDKf/0eN/jSYdYMMHw8PUHMmWrTawXalSj2qoSiOLuORfVAw6HSdbbuW5caEK66qQ6GujWMaW9iHK8g5gldgo28nEhhFgaefC3LMO0QKyYCaqvxVQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=softfail (sender ip
+ is 151.1.184.193) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=asem.it;
+ dmarc=fail (p=none sp=none pct=100) action=none header.from=asem.it;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=asem.it; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=py9fIa4DYNUu9u5VEoQ5z5bqAm59jnw+4sHK1LITt0E=;
+ b=l/e2Gk1z8sTHGQKPVWPf4QpyiYZ5eu8k7zlLv0ML2nT5SZTpQie0Gtr+JWOU9gJu0Df9bhKHvhkDiKeqMChVnjpoccFhw9MrCo8YYdqL2a5D+POOLZf0CeIy2c1L4A/CrZiL5dItjK+aaXDOvY2KH6CxcX51VI8ec7H+YQUmU0g=
+Received: from AM0PR04CA0095.eurprd04.prod.outlook.com (2603:10a6:208:be::36)
+ by AS8PR01MB8603.eurprd01.prod.exchangelabs.com (2603:10a6:20b:44b::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6813.7; Fri, 15 Sep
+ 2023 14:05:21 +0000
+Received: from AM4PEPF00025F99.EURPRD83.prod.outlook.com
+ (2603:10a6:208:be:cafe::74) by AM0PR04CA0095.outlook.office365.com
+ (2603:10a6:208:be::36) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6792.21 via Frontend
+ Transport; Fri, 15 Sep 2023 14:05:21 +0000
+X-MS-Exchange-Authentication-Results: spf=softfail (sender IP is
+ 151.1.184.193) smtp.mailfrom=asem.it; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=none header.from=asem.it;
+Received-SPF: SoftFail (protection.outlook.com: domain of transitioning
+ asem.it discourages use of 151.1.184.193 as permitted sender)
+Received: from asas054.asem.intra (151.1.184.193) by
+ AM4PEPF00025F99.mail.protection.outlook.com (10.167.16.8) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6838.0 via Frontend Transport; Fri, 15 Sep 2023 14:05:20 +0000
+Received: from flavio-x.asem.intra ([172.16.18.47]) by asas054.asem.intra with Microsoft SMTPSVC(10.0.14393.4169);
+         Fri, 15 Sep 2023 16:05:20 +0200
+From:   Flavio Suligoi <f.suligoi@asem.it>
+To:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Hans Verkuil <hverkuil@xs4all.nl>, devicetree@vger.kernel.org,
-        linux-media@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-sh@vger.kernel.org
-Subject: [PATCH v4 00/41] drm: renesas: shmobile: Atomic conversion + DT support
-Date:   Fri, 15 Sep 2023 10:53:15 +0200
-Message-Id: <cover.1694767208.git.geert+renesas@glider.be>
+        Conor Dooley <conor+dt@kernel.org>
+Cc:     dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Flavio Suligoi <f.suligoi@asem.it>
+Subject: [PATCH v2 1/2] dt-bindings: backlight: Add MPS MP3309C
+Date:   Fri, 15 Sep 2023 16:05:15 +0200
+Message-Id: <20230915140516.1294925-1-f.suligoi@asem.it>
 X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 15 Sep 2023 14:05:20.0279 (UTC) FILETIME=[A9912270:01D9E7DD]
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM4PEPF00025F99:EE_|AS8PR01MB8603:EE_
+Content-Type: text/plain
+X-MS-Office365-Filtering-Correlation-Id: a7d04cf5-8ae5-4f69-7cfb-08dbb5f4cc93
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: D5Dl+jch3IoJzEVXlELOpfLsFJuCEgkQsowD7rDcgFQWoywZZWe8mz+9vNxjtqCrYjOPdtVGDlPG1/ksPsg4Nx4qw948RjB0tvQ6DMDpaAd8copdYhWjSZGmad6uoEkpfFcVN+1EEGvo837jvxWze115Q7J0Dwmu4wU/bUO3C3BCQziRVCOSxbcmQZAElqQBpqfCW8TNxUkNoYGmB7fB5f8d8AcFcN7JTFVLN0OoVx3ecE21GSnkHGCiU8eu2B6qQU7Nbg/RC/vSwCz/3pGpfD0FQcaMfrJdjRZHa9s8yCi3q8vu6wvXN1RtPX2LX2jrH7Yg2OP+gYWSIaz9kEttbHcGUXYVqwWFOKBA6yGAXSO6XgK5iYRTya0uXTLnbH8S1E/wCP+6qH1pvASoS+dADU4OXpirJtVjfWmi4h6Wu+wqyaBbpRMnVZfjzGg9BG72CpoRAClqCioa1yltLM4kAdqGY+Bhb+Afew6vvGhymkoEaMbNd4fkou3J/bIIW06m1Sy21q7Bwqcvy8MvkqXUcuHC3ajxAaBnB6edYmLEysk1ULuPDNtHoB5iHIExaTUPf6saHrK5DeunJUNyQKNeKSCFjST6A4tn1My8LuY+tBEiuQwTsY9UjHcmiR/VV9A3+yKL09o+he6R+muQ3ovYEMZwzB4ogQcOQVTauaBNCuyFFvDO36jRzIa+3rF86Eek36fCz1z6MB5VE2vae/0PbpbF0HlO6/tTGoEJxrqzx6s=
+X-Forefront-Antispam-Report: CIP:151.1.184.193;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:asas054.asem.intra;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(136003)(346002)(396003)(376002)(39850400004)(1800799009)(82310400011)(186009)(451199024)(46966006)(36840700001)(36756003)(8936002)(110136005)(5660300002)(86362001)(36860700001)(40480700001)(8676002)(450100002)(41300700001)(82740400003)(6666004)(2616005)(26005)(336012)(1076003)(107886003)(356005)(47076005)(4326008)(70206006)(70586007)(81166007)(478600001)(2906002)(966005)(316002)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: asem.it
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Sep 2023 14:05:20.9735
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: a7d04cf5-8ae5-4f69-7cfb-08dbb5f4cc93
+X-MS-Exchange-CrossTenant-Id: d0a766c6-7992-4344-a4a2-a467a7bb1ed2
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=d0a766c6-7992-4344-a4a2-a467a7bb1ed2;Ip=[151.1.184.193];Helo=[asas054.asem.intra]
+X-MS-Exchange-CrossTenant-AuthSource: AM4PEPF00025F99.EURPRD83.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR01MB8603
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-	Hi all,
+The Monolithic Power (MPS) MP3309C is a WLED step-up converter, featuring a
+programmable switching frequency to optimize efficiency.
+The brightness can be controlled either by I2C commands (called "analog"
+mode) or by a PWM input signal (PWM mode).
+This driver supports both modes.
 
-It has been 3 years since the last conversion of a DRM driver to atomic
-modesetting, so I guess it's time for another one? ;-)
+For device driver details, please refer to:
+- drivers/video/backlight/mp3309c_bl.c
 
-Currently, there are two drivers for the LCD controller on Renesas
-SuperH-based and ARM-based SH-Mobile and R-Mobile SoCs:
-  1. sh_mobile_lcdcfb, using the fbdev framework,
-  2. shmob_drm, using the DRM framework.
-However, only the former driver is used, as all platform support
-integrates the former.  None of these drivers support DT-based systems.
+The datasheet is available at:
+- https://www.monolithicpower.com/en/mp3309c.html
 
-This patch series converts the SH-Mobile DRM driver to atomic
-modesetting, and adds DT support, complemented by the customary set of
-fixes and improvements.
+Signed-off-by: Flavio Suligoi <f.suligoi@asem.it>
+---
 
-Overview:
-  - Patch 1 adds a separate maintainer entry.
-  - Patch 2 adds DT bindings for the SH-Mobile LCD controller,
-  - Patch 3 adds definitions for RGB666 9:9 media bus formats,
-  - Patches 4-35 contains miscellaneous fixes, improvements, and
-    cleanups for the SH-Mobile DRM driver,
-  - Patches 36-40 convert the SH-Mobile DRM driver to atomic
-    modesetting,
-  - Patch 41 adds DT support to the SH-Mobile DRM driver.
+v2:
+ - remove useless properties (dimming-mode, pinctrl-names, pinctrl-0,
+   switch-on-delay-ms, switch-off-delay-ms, reset-gpios, reset-on-delay-ms,
+   reset-on-length-ms)
+ - add common.yaml#
+ - remove already included properties (default-brightness, max-brightness)
+ - substitute three boolean properties, used for the overvoltage-protection
+   values, with a single enum property
+ - remove some conditional definitions
+ - remove the 2nd example
+v1:
+ - first version
 
-To reduce strain on the audience, I have CCed the DT and media people
-only on the cover letter and the DT resp. media patches.  If interested,
-the full series should be available through lore.kernel.org.
+ .../bindings/leds/backlight/mps,mp3309c.yaml  | 73 +++++++++++++++++++
+ 1 file changed, 73 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
 
-Some comments and questions can be found in the individual patches.
-
-Changes compared to v3[1]:
-  - Rebase on top of v6.6-rc1 and commit 775b0669e19f2e4a
-    ("drm/shmobile: Convert to platform remove callback returning void")
-    in drm-misc/for-linux-next.
-
-Changes compared to v2[2]:
-  - Add Reviewed-by.
-
-Changes compared to v1[3]:
-  - New patches:
-      - "[PATCH v2 01/41] MAINTAINER: Create entry for Renesas SH-Mobile
-	 DRM drivers",
-      - "[PATCH v2 18/41] drm: renesas: shmobile: Remove custom plane
-	 destroy callback",
-  - Add myself as co-maintainer,
-  - Make fck clock required,
-  - Drop ports description referring to obsolete graph.txt,
-  - Condition ports to compatible strings,
-  - Drop label and status from example,
-  - Add Reviewed-by,
-  - Drop unused MEDIA_BUS_FMT_RGB666_2X9_LE, as requested by Laurent,
-  - Move explicit clock handling to Runtime PM callbacks,
-  - Move devm_pm_runtime_enable() after shmob_drm_setup_clocks(),
-  - Depend on PM,
-  - Split off removal of call to drm_plane_force_disable(),
-  - Select VIDEOMODE_HELPERS,
-  - Keep table instead of replacing it by a switch() statement,
-  - Fix shmob_drm_interface_data.bus_fmt comment,
-  - Drop superfluous blank lines,
-  - Keep initialization of info fields together,
-  - Use shmob_drm_bus_fmts[],
-  - Keep bus format validation at probe time,
-  - Pass plane type to shmob_drm_plane_create() to avoid having to shift
-    all overlay plane indices by one,
-  - Rename primary_plane_funcs to shmob_drm_primary_plane_funcs,
-  - Rename shmob_drm_plane_funcs to shmob_drm_overlay_plane_funcs,
-  - Move shmob_drm_crtc_finish_page_flip() further up,
-  - Inline shmob_drm_crtc_st{art,op}(),
-  - Use devm_drm_of_get_bridge(),
-  - Don't print bridge->of_node on failure, as this field depends on
-    CONFIG_OF.
-
-This has been tested on the R-Mobile A1-based Atmark Techno
-Armadillo-800-EVA development board, using both legacy[4] and
-DT-based[5] instantiation, with the fbdev-emulated text console, fbset,
-and modetest, a.o.
-
-    modetest -M shmob-drm -s 43:800x480@RG16 -P 33@41:640x320+80+80@RG16
-    modetest -M shmob-drm -s 43:800x480@RG16
-
-The output of "modetest -M shmob-drm" can be found below[6].
-
-Not much activity has happened since v2, how can we move this forward?
-Thanks!
-
-[1] "[PATCH v3 00/41] drm: renesas: shmobile: Atomic conversion + DT
-     support"
-    https://lore.kernel.org/r/cover.1692178020.git.geert+renesas@glider.be
-
-[2] "[PATCH v2 00/41] drm: renesas: shmobile: Atomic conversion + DT
-     support"
-    https://lore.kernel.org/r/cover.1689698048.git.geert+renesas@glider.be
-
-[3] "[PATCH 00/39] drm: renesas: shmobile: Atomic conversion + DT
-     support"
-    https://lore.kernel.org/r/cover.1687423204.git.geert+renesas@glider.be/
-
-[4] "[PATCH/RFC] staging: board: armadillo800eva: Add DRM support"
-    https://lore.kernel.org/r/f7874a9da4bcb20fbc9cd133147b67862ebcf0b9.1687418281.git.geert+renesas@glider.be
-
-[5] "[PATCH 0/2] ARM: dts: r8a7740/armadillo800eva: Add LCD support"
-    https://lore.kernel.org/r/cover.1687417585.git.geert+renesas@glider.be
-
-[6] Encoders:
-    id	crtc	type	possible crtcs	possible clones	
-    42	41	DPI	0x00000001	0x00000001
-
-    Connectors:
-    id	encoder	status		name		size (mm)	modes	encoders
-    43	42	connected	DPI-1          	111x67		1	42
-      modes:
-	    index name refresh (Hz) hdisp hss hse htot vdisp vss vse vtot
-      #0 800x480 59.99 800 840 968 1056 480 515 517 525 33260 flags: nhsync, nvsync; type: preferred, driver
-      props:
-	    1 EDID:
-		    flags: immutable blob
-		    blobs:
-
-		    value:
-	    2 DPMS:
-		    flags: enum
-		    enums: On=0 Standby=1 Suspend=2 Off=3
-		    value: 0
-	    5 link-status:
-		    flags: enum
-		    enums: Good=0 Bad=1
-		    value: 0
-	    6 non-desktop:
-		    flags: immutable range
-		    values: 0 1
-		    value: 0
-	    4 TILE:
-		    flags: immutable blob
-		    blobs:
-
-		    value:
-
-    CRTCs:
-    id	fb	pos	size
-    41	44	(0,0)	(800x480)
-      #0 800x480 59.99 800 840 968 1056 480 515 517 525 33260 flags: nhsync, nvsync; type: preferred, driver
-      props:
-	    24 VRR_ENABLED:
-		    flags: range
-		    values: 0 1
-		    value: 0
-
-    Planes:
-    id	crtc	fb	CRTC x,y	x,y	gamma size	possible crtcs
-    31	41	44	0,0		0,0	0       	0x00000001
-      formats: RG16 RG24 AR24 XR24 NV12 NV21 NV16 NV61 NV24 NV42
-      props:
-	    8 type:
-		    flags: immutable enum
-		    enums: Overlay=0 Primary=1 Cursor=2
-		    value: 1
-	    30 IN_FORMATS:
-		    flags: immutable blob
-		    blobs:
-
-		    value:
-			    01000000000000000a00000018000000
-			    01000000400000005247313652473234
-			    41523234585232344e5631324e563231
-			    4e5631364e5636314e5632344e563432
-			    ff030000000000000000000000000000
-			    0000000000000000
-		    in_formats blob decoded:
-			     RG16:  LINEAR
-			     RG24:  LINEAR
-			     AR24:  LINEAR
-			     XR24:  LINEAR
-			     NV12:  LINEAR
-			     NV21:  LINEAR
-			     NV16:  LINEAR
-			     NV61:  LINEAR
-			     NV24:  LINEAR
-			     NV42:  LINEAR
-    33	0	0	0,0		0,0	0       	0x00000001
-      formats: RG16 RG24 AR24 XR24 NV12 NV21 NV16 NV61 NV24 NV42
-      props:
-	    8 type:
-		    flags: immutable enum
-		    enums: Overlay=0 Primary=1 Cursor=2
-		    value: 0
-	    30 IN_FORMATS:
-		    flags: immutable blob
-		    blobs:
-
-		    value:
-			    01000000000000000a00000018000000
-			    01000000400000005247313652473234
-			    41523234585232344e5631324e563231
-			    4e5631364e5636314e5632344e563432
-			    ff030000000000000000000000000000
-			    0000000000000000
-		    in_formats blob decoded:
-			     RG16:  LINEAR
-			     RG24:  LINEAR
-			     AR24:  LINEAR
-			     XR24:  LINEAR
-			     NV12:  LINEAR
-			     NV21:  LINEAR
-			     NV16:  LINEAR
-			     NV61:  LINEAR
-			     NV24:  LINEAR
-			     NV42:  LINEAR
-    35	0	0	0,0		0,0	0       	0x00000001
-      formats: RG16 RG24 AR24 XR24 NV12 NV21 NV16 NV61 NV24 NV42
-      props:
-	    8 type:
-		    flags: immutable enum
-		    enums: Overlay=0 Primary=1 Cursor=2
-		    value: 0
-	    30 IN_FORMATS:
-		    flags: immutable blob
-		    blobs:
-
-		    value:
-			    01000000000000000a00000018000000
-			    01000000400000005247313652473234
-			    41523234585232344e5631324e563231
-			    4e5631364e5636314e5632344e563432
-			    ff030000000000000000000000000000
-			    0000000000000000
-		    in_formats blob decoded:
-			     RG16:  LINEAR
-			     RG24:  LINEAR
-			     AR24:  LINEAR
-			     XR24:  LINEAR
-			     NV12:  LINEAR
-			     NV21:  LINEAR
-			     NV16:  LINEAR
-			     NV61:  LINEAR
-			     NV24:  LINEAR
-			     NV42:  LINEAR
-    37	0	0	0,0		0,0	0       	0x00000001
-      formats: RG16 RG24 AR24 XR24 NV12 NV21 NV16 NV61 NV24 NV42
-      props:
-	    8 type:
-		    flags: immutable enum
-		    enums: Overlay=0 Primary=1 Cursor=2
-		    value: 0
-	    30 IN_FORMATS:
-		    flags: immutable blob
-		    blobs:
-
-		    value:
-			    01000000000000000a00000018000000
-			    01000000400000005247313652473234
-			    41523234585232344e5631324e563231
-			    4e5631364e5636314e5632344e563432
-			    ff030000000000000000000000000000
-			    0000000000000000
-		    in_formats blob decoded:
-			     RG16:  LINEAR
-			     RG24:  LINEAR
-			     AR24:  LINEAR
-			     XR24:  LINEAR
-			     NV12:  LINEAR
-			     NV21:  LINEAR
-			     NV16:  LINEAR
-			     NV61:  LINEAR
-			     NV24:  LINEAR
-			     NV42:  LINEAR
-    39	0	0	0,0		0,0	0       	0x00000001
-      formats: RG16 RG24 AR24 XR24 NV12 NV21 NV16 NV61 NV24 NV42
-      props:
-	    8 type:
-		    flags: immutable enum
-		    enums: Overlay=0 Primary=1 Cursor=2
-		    value: 0
-	    30 IN_FORMATS:
-		    flags: immutable blob
-		    blobs:
-
-		    value:
-			    01000000000000000a00000018000000
-			    01000000400000005247313652473234
-			    41523234585232344e5631324e563231
-			    4e5631364e5636314e5632344e563432
-			    ff030000000000000000000000000000
-			    0000000000000000
-		    in_formats blob decoded:
-			     RG16:  LINEAR
-			     RG24:  LINEAR
-			     AR24:  LINEAR
-			     XR24:  LINEAR
-			     NV12:  LINEAR
-			     NV21:  LINEAR
-			     NV16:  LINEAR
-			     NV61:  LINEAR
-			     NV24:  LINEAR
-			     NV42:  LINEAR
-
-    Frame buffers:
-    id	size	pitch
-
-Geert Uytterhoeven (36):
-  MAINTAINER: Create entry for Renesas SH-Mobile DRM drivers
-  dt-bindings: display: Add Renesas SH-Mobile LCDC bindings
-  media: uapi: Add MEDIA_BUS_FMT_RGB666_2X9_BE format
-  drm: renesas: shmobile: Fix overlay plane disable
-  drm: renesas: shmobile: Fix ARGB32 overlay format typo
-  drm: renesas: shmobile: Correct encoder/connector types
-  drm: renesas: shmobile: Add support for Runtime PM
-  drm: renesas: shmobile: Restore indentation of
-    shmob_drm_setup_clocks()
-  drm: renesas: shmobile: Use %p4cc to print fourcc code
-  drm: renesas: shmobile: Add missing YCbCr formats
-  drm: renesas: shmobile: Improve shmob_drm_format_info table
-  drm: renesas: shmobile: Improve error handling
-  drm: renesas: shmobile: Convert to use devm_request_irq()
-  drm: renesas: shmobile: Remove custom plane destroy callback
-  drm: renesas: shmobile: Use drmm_universal_plane_alloc()
-  drm: renesas: shmobile: Embed drm_device in shmob_drm_device
-  drm: renesas: shmobile: Convert container helpers to static inline
-    functions
-  drm: renesas: shmobile: Replace .dev_private with container_of()
-  drm: renesas: shmobile: Use media bus formats in platform data
-  drm: renesas: shmobile: Move interface handling to connector setup
-  drm: renesas: shmobile: Unify plane allocation
-  drm: renesas: shmobile: Rename shmob_drm_crtc.crtc
-  drm: renesas: shmobile: Rename shmob_drm_connector.connector
-  drm: renesas: shmobile: Rename shmob_drm_plane.plane
-  drm: renesas: shmobile: Use drm_crtc_handle_vblank()
-  drm: renesas: shmobile: Move shmob_drm_crtc_finish_page_flip()
-  drm: renesas: shmobile: Wait for page flip when turning CRTC off
-  drm: renesas: shmobile: Turn vblank on/off when enabling/disabling
-    CRTC
-  drm: renesas: shmobile: Shutdown the display on remove
-  drm: renesas: shmobile: Cleanup encoder
-  drm: renesas: shmobile: Atomic conversion part 1
-  drm: renesas: shmobile: Atomic conversion part 2
-  drm: renesas: shmobile: Use suspend/resume helpers
-  drm: renesas: shmobile: Remove internal CRTC state tracking
-  drm: renesas: shmobile: Atomic conversion part 3
-  drm: renesas: shmobile: Add DT support
-
-Laurent Pinchart (5):
-  drm: renesas: shmobile: Remove backlight support
-  drm: renesas: shmobile: Don't set display info width and height twice
-  drm: renesas: shmobile: Rename input clocks
-  drm: renesas: shmobile: Remove support for SYS panels
-  drm: renesas: shmobile: Use struct videomode in platform data
-
- .../display/renesas,shmobile-lcdc.yaml        | 130 ++++
- .../media/v4l/subdev-formats.rst              |  72 ++
- MAINTAINERS                                   |  13 +-
- drivers/gpu/drm/renesas/shmobile/Kconfig      |   3 +-
- drivers/gpu/drm/renesas/shmobile/Makefile     |   3 +-
- .../renesas/shmobile/shmob_drm_backlight.c    |  82 ---
- .../renesas/shmobile/shmob_drm_backlight.h    |  19 -
- .../gpu/drm/renesas/shmobile/shmob_drm_crtc.c | 650 ++++++++----------
- .../gpu/drm/renesas/shmobile/shmob_drm_crtc.h |  27 +-
- .../gpu/drm/renesas/shmobile/shmob_drm_drv.c  | 179 +++--
- .../gpu/drm/renesas/shmobile/shmob_drm_drv.h  |  18 +-
- .../gpu/drm/renesas/shmobile/shmob_drm_kms.c  |  77 ++-
- .../gpu/drm/renesas/shmobile/shmob_drm_kms.h  |   9 +-
- .../drm/renesas/shmobile/shmob_drm_plane.c    | 326 +++++----
- .../drm/renesas/shmobile/shmob_drm_plane.h    |   5 +-
- include/linux/platform_data/shmob_drm.h       |  57 +-
- include/uapi/linux/media-bus-format.h         |   3 +-
- 17 files changed, 860 insertions(+), 813 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/display/renesas,shmobile-lcdc.yaml
- delete mode 100644 drivers/gpu/drm/renesas/shmobile/shmob_drm_backlight.c
- delete mode 100644 drivers/gpu/drm/renesas/shmobile/shmob_drm_backlight.h
-
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-Cc: Conor Dooley <conor+dt@kernel.org>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
-Cc: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: devicetree@vger.kernel.org
-Cc: linux-media@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-sh@vger.kernel.org
+diff --git a/Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml b/Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
+new file mode 100644
+index 000000000000..99ccdba2c08f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
+@@ -0,0 +1,73 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/backlight/mps,mp3309c.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: MPS MP3309C backlight
++
++maintainers:
++  - Flavio Suligoi <f.suligoi@asem.it>
++
++description: |
++  The Monolithic Power (MPS) MP3309C is a WLED step-up converter, featuring a
++  programmable switching frequency to optimize efficiency.
++  It supports two different dimming modes:
++
++  - analog mode, via I2C commands (default)
++  - PWM controlled mode.
++
++  The datasheet is available at:
++  https://www.monolithicpower.com/en/mp3309c.html
++
++allOf:
++  - $ref: common.yaml#
++
++properties:
++  compatible:
++    const: mps,mp3309c
++
++  reg:
++    maxItems: 1
++
++  pwms:
++    description: if present, the backlight is controlled in PWM mode.
++    maxItems: 1
++
++  enable-gpios:
++    description: GPIO used to enable the backlight in "analog-i2c" dimming mode.
++    maxItems: 1
++
++  mps,overvoltage-protection-microvolt:
++    description: Overvoltage protection (13.5V, 24V or 35.5V). If missing, the
++      hardware default of 35.5V is used.
++    enum: [ 13500000, 24000000, 35500000 ]
++
++  mps,no-sync-mode:
++    description: disable synchronous rectification mode
++    type: boolean
++
++required:
++  - compatible
++  - reg
++  - max-brightness
++  - default-brightness
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        /* Backlight with PWM control */
++        backlight_pwm: backlight@17 {
++            compatible = "mps,mp3309c-backlight";
++            reg = <0x17>;
++            pwms = <&pwm1 0 3333333 0>; /* 300 Hz --> (1/f) * 1*10^9 */
++            max-brightness = <100>;
++            default-brightness = <80>;
++            overvoltage-protection-microvolt = <24000000>;
++        };
++    };
 -- 
 2.34.1
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds

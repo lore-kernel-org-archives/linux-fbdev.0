@@ -2,108 +2,131 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DADB0CA550A
-	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Sep 2023 08:10:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37823EE6431
+	for <linux-fbdev@archiver.kernel.org>; Fri, 15 Sep 2023 07:56:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236844AbjIMIKm convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 13 Sep 2023 04:10:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50040 "EHLO
+        id S231997AbjIOH4t (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 15 Sep 2023 03:56:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45960 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238777AbjIMIKF (ORCPT
+        with ESMTP id S229943AbjIOH4t (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 13 Sep 2023 04:10:05 -0400
-Received: from mail-yw1-f175.google.com (mail-yw1-f175.google.com [209.85.128.175])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6424719B4;
-        Wed, 13 Sep 2023 01:09:24 -0700 (PDT)
-Received: by mail-yw1-f175.google.com with SMTP id 00721157ae682-59bbdb435bfso6342307b3.3;
-        Wed, 13 Sep 2023 01:09:24 -0700 (PDT)
+        Fri, 15 Sep 2023 03:56:49 -0400
+Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 39F0AAC;
+        Fri, 15 Sep 2023 00:56:43 -0700 (PDT)
+Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-1c328b53aeaso15808435ad.2;
+        Fri, 15 Sep 2023 00:56:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1694764602; x=1695369402; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Sa23m9Sh+czmtoCmVFBbzydEhVvJnPH9LtopoO7enGk=;
+        b=JwhuK8y+7iv0ypni46TXh0EjHgRtvPEYOv1T5HePZESIWfe0SBo7Z0SOwpVT5O+BDZ
+         r1iZCoxYRr+HoLtrt1ZWtXImxVrmZv4SFyThU/W7VJhwREoVt38LCv3MiNPD0CaM5hJv
+         IiY9dIH2qGeyaP+nAYicC6VWZLU37C9C0KFNPW3nLPYGBISWnIcSvIluhC2Zy/sA6DEi
+         ufczMxgKub+Kq0S4s4YGdcPZik1TwVtT2gd2gOg7Xx59xbWU6qqK42LhZ/wPY6moLi6l
+         JitjGzYj+vapQCHLG/SZG6bLgek2/w6AyktzAynU5mmLfuE3g8mfiodA8XYvnCONQ/wU
+         v6EQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1694592563; x=1695197363;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=uCz1YqPLlml0me4QSAkCQsY8FV1Cudx91zoZbXBVMOA=;
-        b=BeElRkB1CATd6mKPq8RoLrRadz6xAOfpPbZUjhJx+t+OvoODubPyT7xtzMrwXDquuY
-         EqM72LdAfemAyocjOLzauU4WeD8Spk644nCSFWeNKHEiW7FVf9qtjOBaqF7usX/H4WI3
-         tmzY/jGNLEiQUYUALASJTJLMyplXy/5Ge5xVaAw4KBnFT5m3bHgqq/GjDDqE/vbKzNNn
-         5GLnEvJwr0xHD1ppdAUB8qf4XVrLc3D0si/ZDyW6FPUEhVzTT3I8fphWghju6iilZPCx
-         2r+tgYB+ejvBNyWyRzJ3ZVAeRbQ1pFnW9dpA3Gu9qRqMFIeCN4Zt0BnzHARSaStb6fvn
-         Gzsg==
-X-Gm-Message-State: AOJu0YxG8mRZKy37YSJj0nLTpWUyDTO6VVKoS5hsMkge7rShJbwbq35i
-        ZarEv/7cEPaLP/8Aeztlt6hFPj+JFd8YgA==
-X-Google-Smtp-Source: AGHT+IFO+rvt4ojVBQ2tebVg0XDEybdj1FyTPO36buG4UjXjdMhv6eYEqWKAgfV6plEnsus/Iyw4yg==
-X-Received: by 2002:a81:6c04:0:b0:594:e4d1:bd7e with SMTP id h4-20020a816c04000000b00594e4d1bd7emr1644354ywc.5.1694592563414;
-        Wed, 13 Sep 2023 01:09:23 -0700 (PDT)
-Received: from mail-yb1-f179.google.com (mail-yb1-f179.google.com. [209.85.219.179])
-        by smtp.gmail.com with ESMTPSA id x83-20020a0dd556000000b0058c4e33b2d6sm3002279ywd.90.2023.09.13.01.09.22
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 13 Sep 2023 01:09:22 -0700 (PDT)
-Received: by mail-yb1-f179.google.com with SMTP id 3f1490d57ef6-d7d50ba994eso5677604276.1;
-        Wed, 13 Sep 2023 01:09:22 -0700 (PDT)
-X-Received: by 2002:a25:9844:0:b0:d81:4e98:4f5c with SMTP id
- k4-20020a259844000000b00d814e984f5cmr1178332ybo.47.1694592562230; Wed, 13 Sep
- 2023 01:09:22 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1694764602; x=1695369402;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Sa23m9Sh+czmtoCmVFBbzydEhVvJnPH9LtopoO7enGk=;
+        b=FFf8vDC4m8P7o7Tj4ZUpEorNzplyObM7poTj70/ikXxg90a6MoMaAUbEsRhwcx25rE
+         VhkdklLqE3z8ijNPMTcThLVfOwehIgocoT/4AEfLXhxCN/3J0c8VKMePT/7CDalkYtI+
+         54zxOzBQHgS/YYKFflKMFrH9zRcpRgcVzQ7H+yW0qBgSOM/Ixpgw848h9f2DfkhJfgm+
+         ziZBSfJ/UVR7Ty3xLzhohm+hSHSh6hjqnkiBoakReRU907r3OX2nHA8ifI3G+M1ho4b+
+         Acz37ND4pyGsBYTORN1fDRfTF9fk8vvTUyfu6O7RbOI8uFV/lrzqsKPZgGkJxMXR49Vq
+         VLUg==
+X-Gm-Message-State: AOJu0YyF4KcVk4WUONeB02P7ueIDCjklt3h+XQXHKmcyN/MV8eowhJGl
+        /klzt/F1g6kyOPjx17WfbcY=
+X-Google-Smtp-Source: AGHT+IE9RcRJ910CnL7JvJNrqjoaC0IFvFSCZdBwD31Y9Swflcx2melRR4bsTZgiId84hdnlKqufcA==
+X-Received: by 2002:a17:903:1210:b0:1bb:7f71:df43 with SMTP id l16-20020a170903121000b001bb7f71df43mr1107314plh.34.1694764602592;
+        Fri, 15 Sep 2023 00:56:42 -0700 (PDT)
+Received: from debian.me ([103.124.138.83])
+        by smtp.gmail.com with ESMTPSA id u5-20020a170902b28500b001bb750189desm2836147plr.255.2023.09.15.00.56.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 15 Sep 2023 00:56:42 -0700 (PDT)
+Received: by debian.me (Postfix, from userid 1000)
+        id 88F408AA8414; Fri, 15 Sep 2023 14:56:38 +0700 (WIB)
+Date:   Fri, 15 Sep 2023 14:56:38 +0700
+From:   Bagas Sanjaya <bagasdotme@gmail.com>
+To:     angus gardner <angusg778@gmail.com>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: fbtft: Removed unnecessary parenthesis around
+ conditions to comply with the checkpatch coding style.
+Message-ID: <ZQQONo8biMWlCiG3@debian.me>
+References: <ZQEKFR1OPoXGI2lO@midnight>
+ <ZQERJIGOOeYxgX3E@debian.me>
+ <CAC5tM5u8L50fAhReAmP0dqexSmv-PdZJKa_ES2hxZMp41MJjGQ@mail.gmail.com>
 MIME-Version: 1.0
-References: <20230912135050.17155-1-tzimmermann@suse.de> <20230912135050.17155-3-tzimmermann@suse.de>
-In-Reply-To: <20230912135050.17155-3-tzimmermann@suse.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 13 Sep 2023 10:09:10 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdU66MLdWM9Qjk-2qmHUZA6F8L-W1iAoc73-HvSB1n-drg@mail.gmail.com>
-Message-ID: <CAMuHMdU66MLdWM9Qjk-2qmHUZA6F8L-W1iAoc73-HvSB1n-drg@mail.gmail.com>
-Subject: Re: [PATCH v4 2/5] fbdev: Replace fb_pgprotect() with pgprot_framebuffer()
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
-        arnd@arndb.de, deller@gmx.de, linuxppc-dev@lists.ozlabs.org,
-        linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org,
-        linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
-        sparclinux@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-arch@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="jzeagO5P9A3kQsYx"
+Content-Disposition: inline
+In-Reply-To: <CAC5tM5u8L50fAhReAmP0dqexSmv-PdZJKa_ES2hxZMp41MJjGQ@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
 
-On Tue, Sep 12, 2023 at 5:32 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> Rename the fbdev mmap helper fb_pgprotect() to pgprot_framebuffer(
-> The helper sets VMA page-access flags for framebuffers in device I/O
-> memory.
->
-> Also clean up the helper's parameters and return value. Instead of
-> the VMA instance, pass the individial parameters separately: existing
-> page-access flags, the VMAs start and end addresses and the offset
-> in the underlying device memory rsp file. Return the new page-access
-> flags. These changes align pgprot_framebuffer() with other pgprot_()
-> functions.
->
-> v4:
->         * fix commit message (Christophe)
-> v3:
->         * rename fb_pgprotect() to pgprot_framebuffer() (Arnd)
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+--jzeagO5P9A3kQsYx
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for your patch!
+On Fri, Sep 15, 2023 at 11:58:47AM +1000, angus gardner wrote:
+> Thanks for the feedback Bagas,
+>=20
+> "Then checkpatch is wrong, " lol
+>=20
+> Ill double check my SoB.
+>=20
 
->  arch/m68k/include/asm/fb.h           | 19 ++++++++++---------
+tl;dr:
 
-Looks like you forgot to apply my
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-given on v1.
+> A: http://en.wikipedia.org/wiki/Top_post
+> Q: Were do I find info about this thing called top-posting?
+> A: Because it messes up the order in which people normally read text.
+> Q: Why is top-posting such a bad thing?
+> A: Top-posting.
+> Q: What is the most annoying thing in e-mail?
+>=20
+> A: No.
+> Q: Should I include quotations after my reply?
+>=20
+> http://daringfireball.net/2007/07/on_top
 
-I didn't notice before, as I never received v2 and v3 due to the
-gmail/vger email issues.
+Also, don't send HTML emails as mailing lists reject them away.
 
-Gr{oetje,eeting}s,
+Last but not least, this is the third time you do parentheses fixup, for
+which Greg's bot said:
 
-                        Geert
+>   You sent a patch that has been sent multiple times in the past few
+>   days, and is identical to ones that has been recently rejected.
+>   Please always look at the mailing list traffic to determine if you are
+>   duplicating other people's work.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Again, read all Documentation/process/*.rst docs so that you won't make
+mistakes again as kernel developer.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Bye!
+
+--=20
+An old man doll... just what I always wanted! - Clara
+
+--jzeagO5P9A3kQsYx
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQSSYQ6Cy7oyFNCHrUH2uYlJVVFOowUCZQQOMQAKCRD2uYlJVVFO
+ozABAP9f4cJ4x4CFW0UEkBJrggxsKLo1ON0XZG0LmZPzzQI2JQD/fEkTFsH2KkSP
+z0qFevhjEpUHaH2/N4WS6Tya9TaUdwo=
+=iIZ2
+-----END PGP SIGNATURE-----
+
+--jzeagO5P9A3kQsYx--

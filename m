@@ -2,30 +2,33 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99036CD37B0
-	for <linux-fbdev@archiver.kernel.org>; Mon, 18 Sep 2023 20:52:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12518CD37B0
+	for <linux-fbdev@archiver.kernel.org>; Mon, 18 Sep 2023 20:52:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229972AbjIRUwa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 18 Sep 2023 16:52:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41688 "EHLO
+        id S230030AbjIRUwe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 18 Sep 2023 16:52:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33824 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230017AbjIRUw2 (ORCPT
+        with ESMTP id S230041AbjIRUwc (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 18 Sep 2023 16:52:28 -0400
+        Mon, 18 Sep 2023 16:52:32 -0400
 Received: from mx01.omp.ru (mx01.omp.ru [90.154.21.10])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CCE72116
-        for <linux-fbdev@vger.kernel.org>; Mon, 18 Sep 2023 13:52:20 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B4F17132;
+        Mon, 18 Sep 2023 13:52:23 -0700 (PDT)
 Received: from localhost.localdomain (178.176.74.219) by msexch01.omp.ru
  (10.188.4.12) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.986.14; Mon, 18 Sep
- 2023 23:52:15 +0300
+ 2023 23:52:16 +0300
 From:   Sergey Shtylyov <s.shtylyov@omp.ru>
 To:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
         <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>
-Subject: [PATCH 0/2] Fix sloppy typing in the area copy
-Date:   Mon, 18 Sep 2023 23:52:07 +0300
-Message-ID: <20230918205209.11709-1-s.shtylyov@omp.ru>
+CC:     <stable@vger.kernel.org>
+Subject: [PATCH 1/2] video: fbdev: core: cfbcopyarea: fix sloppy typing
+Date:   Mon, 18 Sep 2023 23:52:08 +0300
+Message-ID: <20230918205209.11709-2-s.shtylyov@omp.ru>
 X-Mailer: git-send-email 2.26.3
+In-Reply-To: <20230918205209.11709-1-s.shtylyov@omp.ru>
+References: <20230918205209.11709-1-s.shtylyov@omp.ru>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7BIT
 Content-Type:   text/plain; charset=US-ASCII
@@ -73,27 +76,40 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Here are 2 patches against the 'master' branch of Linus' 'linux.git' repo...
+In cfb_copyarea(), when initializing *unsigned long const* bits_per_line
+__u32 typed fb_fix_screeninfo::line_length gets multiplied by 8u -- which
+might overflow __u32; multiplying by 8UL instead should fix that...
+Also, that bits_per_line constant is used to advance *unsigned* src_idx
+and dst_idx variables -- which might be overflowed as well; declaring
+them as *unsigned long* should fix that too...
 
-In {cfb|sys}_copyarea(), when initializing *unsigned long const* bits_per_line
-__u32 typed fb_fix_screeninfo::line_length gets multiplied by 8u which might
-overflow __u32; this whole *struct* fb_fix_screeninfo seems to come from
-userland (as it's declared in the UAPI header)... Also, that bits_per_line
-constant is used to advance *unsigned* src_idx and dst_idx lccal variables
-which might be overflowed as well...
+Found by Linux Verification Center (linuxtesting.org) with the Svace static
+analysis tool.
 
-These overflow possibilities were there from the very begining of the source
-files in question, so I decided to just CC stable@vger.kernel.org, without
-the Fixes tags...
-
-Sergey Shtylyov (2):
-  video: fbdev: core: cfbcopyarea: fix sloppy typing
-  video: fbdev: core: syscopyarea: fix sloppy typing
-
+Signed-off-by: Sergey Shtylyov <s.shtylyov@omp.ru>
+Cc: stable@vger.kernel.org
+---
  drivers/video/fbdev/core/cfbcopyarea.c | 5 +++--
- drivers/video/fbdev/core/syscopyarea.c | 5 +++--
- 2 files changed, 6 insertions(+), 4 deletions(-)
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/video/fbdev/core/cfbcopyarea.c b/drivers/video/fbdev/core/cfbcopyarea.c
+index 6d4bfeecee35..b67ba69ea2fb 100644
+--- a/drivers/video/fbdev/core/cfbcopyarea.c
++++ b/drivers/video/fbdev/core/cfbcopyarea.c
+@@ -382,10 +382,11 @@ void cfb_copyarea(struct fb_info *p, const struct fb_copyarea *area)
+ {
+ 	u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy;
+ 	u32 height = area->height, width = area->width;
+-	unsigned long const bits_per_line = p->fix.line_length*8u;
++	unsigned long const bits_per_line = p->fix.line_length * 8UL;
+ 	unsigned long __iomem *base = NULL;
+ 	int bits = BITS_PER_LONG, bytes = bits >> 3;
+-	unsigned dst_idx = 0, src_idx = 0, rev_copy = 0;
++	unsigned long dst_idx = 0, src_idx = 0;
++	unsigned int rev_copy = 0;
+ 	u32 bswapmask = fb_compute_bswapmask(p);
+ 
+ 	if (p->state != FBINFO_STATE_RUNNING)
 -- 
 2.26.3
 

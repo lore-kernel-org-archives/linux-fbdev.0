@@ -2,157 +2,98 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FAF4C46CA1
-	for <linux-fbdev@archiver.kernel.org>; Mon, 18 Sep 2023 12:32:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99036CD37B0
+	for <linux-fbdev@archiver.kernel.org>; Mon, 18 Sep 2023 20:52:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236976AbjIRMbm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 18 Sep 2023 08:31:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59914 "EHLO
+        id S229972AbjIRUwa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 18 Sep 2023 16:52:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41688 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241465AbjIRMb2 (ORCPT
+        with ESMTP id S230017AbjIRUw2 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 18 Sep 2023 08:31:28 -0400
-Received: from EUR05-AM6-obe.outbound.protection.outlook.com (mail-am6eur05on2075.outbound.protection.outlook.com [40.107.22.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 02E7C187;
-        Mon, 18 Sep 2023 05:30:53 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=AfI/AAH6jP/qdtxhIEsF6DfP9W3QsBHywBAE2gNOAbCpoQ5MkBGa6r3RPYOupU2/3KyzfyRvve1eppBZeCrrcwsLVKMCgpxFFC4NQWohHaC68iFx6rzWpjs+sW6oFHuDFGG0qtLrLrKmvOckh1AanooQeWV+8voQTd8aL8QSWev6zwDTOSS7konxDoFyhCNl9o6AZVMkcrInyX/5h7rl9Iar25wUUMlRXHYy3xd9vI4+p+UeOW5A/QOSLXFu+4KDR2YljE/h1M3jiY+y1/laxtGhtQbjLRDuOYL7xLRBYFpSMnEfcmCp3I/v0ttO7xvwfJjF1TedPVZp1Pa8N4bp3Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=simwv9Z13cpvqGyvF3EecEfKZD5u4ypRhiJMDTXPUPw=;
- b=NwAH2qTz+9S3ntb7CwR+r7FnCVrELiXSoo7X13RRbWSlXt5n6xFObmPsX0xgpf107defQr/x1XCFHxUmiKf51NG7Mo9GQ9wIzyo+7niHWFiTU20U1wTbaThGNylMsRPMzbSfZ5nmRBoHaWCzFuRStGVdvC12z7oCZI2PERyDRgc8dITMQo/qGHiWAJkEnwG0AOKxNvzK3+BU+PZ9LrvjciXXHYNdzoccNuMFaHIG1my8o0kc0lgFuPHinxu2kLESvPz2CX4HNyIOWF5EgCFYZCVbC/m35qM5DCbZuA48kHOAY/X4U0+umdMxgfYAp8H11G+Uzvrfav8/KpY2QrOfDg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=asem.it; dmarc=pass action=none header.from=asem.it; dkim=pass
- header.d=asem.it; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=asem.it; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=simwv9Z13cpvqGyvF3EecEfKZD5u4ypRhiJMDTXPUPw=;
- b=K8aA0Rpa5drxITo76i9RIU9RfmuFdBJImWWaapl9vovEibIfPY7psbwkE5+osh2IWycVlKtqxbaUgcgYXByTNkJG0oXBXG5kClWL+dCp09+8agjlBUkKL+SV8/jlXm4k7YV+/9dQ7ofBJO+DTHSRtdhNuTUgqPrcTSOteHwdmcY=
-Received: from DU2PR01MB8034.eurprd01.prod.exchangelabs.com
- (2603:10a6:10:273::14) by DB9PR01MB7321.eurprd01.prod.exchangelabs.com
- (2603:10a6:10:1f9::18) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6813.13; Mon, 18 Sep
- 2023 12:30:51 +0000
-Received: from DU2PR01MB8034.eurprd01.prod.exchangelabs.com
- ([fe80::11d:15c1:fca6:e077]) by DU2PR01MB8034.eurprd01.prod.exchangelabs.com
- ([fe80::11d:15c1:fca6:e077%7]) with mapi id 15.20.6813.013; Mon, 18 Sep 2023
- 12:30:51 +0000
-From:   Flavio Suligoi <f.suligoi@asem.it>
-To:     Rob Herring <robh@kernel.org>
-CC:     Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH v2 1/2] dt-bindings: backlight: Add MPS MP3309C
-Thread-Topic: [PATCH v2 1/2] dt-bindings: backlight: Add MPS MP3309C
-Thread-Index: AQHZ592r0UV0+OQAK0qc65NPyGpwxrAcCHeAgAR9mDA=
-Date:   Mon, 18 Sep 2023 12:30:51 +0000
-Message-ID: <DU2PR01MB80345CA8F7FD429BCDF126A2F9FBA@DU2PR01MB8034.eurprd01.prod.exchangelabs.com>
-References: <20230915140516.1294925-1-f.suligoi@asem.it>
- <20230915154841.GA3776155-robh@kernel.org>
-In-Reply-To: <20230915154841.GA3776155-robh@kernel.org>
-Accept-Language: it-IT, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=asem.it;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: DU2PR01MB8034:EE_|DB9PR01MB7321:EE_
-x-ms-office365-filtering-correlation-id: 1c5fdce0-dd94-4c59-5f4e-08dbb8431844
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: GkPIQts+Y5UNnWEutP+RXsK83O2G2jbjX6cGxSX3HQGH63+aTe/KSU2i6FjH0kd98S0/6o1r/491JFC0wEdmXVRhTQr1s2+LsNU0okg+JdkM6yTdJp/MJRMRrKAFX+g/F6A8YiMWscbF7S3y7dYkkfhqmDIyH53X4MxsfSWefgNru4IMRebWhmTNYLHREx2bO7Z92JC1fwGBfj2BTxuGPGQdlIA+yJoOzN6B+T8UtpQP7beMXU9w2kLB6VT2+jflwn1MYeAAfDn9W+GoHvShMLatYHTGqH7+uyXZS1So/H7l30SGt0YYgLo1AIAApXBSoLJItH6rr8szAY39lbLdvtoedwHW+JefUiayowmz/bFLSjmv5Obtj7xELzl+Xx8yG4fMELWzYt4uzv6xid7HnFiBan183vt+kOEyyhFAhAEACJ2eEdKFJSvRnCx3Q9By0m+6MeKXrUk8a4OLpA6B1xXN0gLT6HlaqMNWeAiDGTVrhrEPpkL8dI8KwdS+ijOrq245TB5Pmhu0nR3ZJYoawArjSPHWfzGuWgjcJJUuMB4n7N2kjMStjXLoobc5taPmKNEXaTG2FS1HYcfmUSB6y7T4zyZGU6qqs3LEXsQ5llFAuaK2pr1gVTGtviigsWGB
-x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU2PR01MB8034.eurprd01.prod.exchangelabs.com;PTR:;CAT:NONE;SFS:(13230031)(346002)(376002)(136003)(39850400004)(396003)(366004)(451199024)(1800799009)(186009)(55016003)(86362001)(33656002)(122000001)(6506007)(26005)(6916009)(2906002)(7696005)(9686003)(66556008)(66476007)(66446008)(478600001)(316002)(54906003)(64756008)(71200400001)(66946007)(76116006)(7416002)(5660300002)(38100700002)(38070700005)(4744005)(4326008)(52536014)(8676002)(41300700001)(8936002);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?TH+1buKsDFoLis1ogKWdByf1RV61r3vHBdxkDZVdT9OLqhX+HWauXFOsheK7?=
- =?us-ascii?Q?Zgt4DDYeJxzjO1IWuEONhNfygYfaVoEeAvRXHcOGhH82k2hDB9CufOv/o8ta?=
- =?us-ascii?Q?R8RqkbPcgbKanFk1ukJQ7B7J+eAaZ4CgNVz/oniR0366PZPrDeAS76D1W7e+?=
- =?us-ascii?Q?DolOW3I5Dpmky8Jx0lZcKetUyATZpFV+P6F+jI58fkVVIflytrLfQZDVho8L?=
- =?us-ascii?Q?dKsZvmQXSlNEnLRkGLfhiqVBwmxq0HPiDtDzp5W0ls61dsj3HlMKK/ZkhQO1?=
- =?us-ascii?Q?Kcqv0xe/ydlsT7+JTRn4djjmURBknNGwpt9DtpbJot8eN7zNqYUK/QwGzJTi?=
- =?us-ascii?Q?ryXoBCa5FT+gXTczaOO2EPBonBACdaBDRMXeW9SaRBkuXOpDoFmS1yW35Jk4?=
- =?us-ascii?Q?+fWvsEW/k6az5e/FJ7rm3L+0dcAFn/khL0SO80+Gb5+tZug2EIR5nGV7P4PO?=
- =?us-ascii?Q?db0JuHJXyHMqajDLsZClzTkhHyRtL9tEyL4X8+M4zk3xO6sltv/+EgYwwtN7?=
- =?us-ascii?Q?NblMGeQNx7yUk1FpK2lwDpARMJfxNl3VKNXRkHx4NgiYAoq13z1glyLQX9HC?=
- =?us-ascii?Q?xjhk36CgI5u7vwP+uPNIXySXlVvl0WBNcjXtOEThGhb/3P+WqUiOE++qfEoG?=
- =?us-ascii?Q?gDsrpAHx7/2IpaC+BjagfEqeWFNA3jMR4o7BHNFEk5p41Se2Hz1VBGLLXcS2?=
- =?us-ascii?Q?ap4WhqJUm0YYdmAgSwvm1I2zldnVCI6BE6ezK+WHarDBU9IqAZHko/ZZMW5+?=
- =?us-ascii?Q?LEPSJr08SWuK5lruXIRsZ4OJSi+q22NvlAyZirvnR5Hro8rVrKj/ltRqOZrB?=
- =?us-ascii?Q?C46ll033au+tATrqNB+p2XHMySGTlBYDIhdrcctNTbJIffZfikeW2Gbp13dA?=
- =?us-ascii?Q?QFM9LEUbmvUU6mlk2L9+LMJhIy4nVi/kN2LMAQUSkdMKWmmb7TCIPNWXqFD3?=
- =?us-ascii?Q?nq2hq3cp4xaUZdKhG13WUKuyRIajhfxA9J2+bHv5Z5y8Hl0Idn6GqvaZaBbV?=
- =?us-ascii?Q?ngsG+/rcMwQx+NpBrFKhTGWPrDZr/Al3DUOlGzOT7gZej66/A6Q2FXvapvZw?=
- =?us-ascii?Q?gv29A9REygewnvCt3PdtNUYqbyZQ+SfuPBf2JktLqlKg5cGz9XDWJgK3K2fd?=
- =?us-ascii?Q?QApwtEutWPTlMgrymhBYjFRfzX88MbauRiZcZu3pGkZChBTEP+yecIS917Ub?=
- =?us-ascii?Q?OWwNaMD4lG5S7UGUnp9qWdzZWtHRal+RuPdnwp4bEuc4N2JAG7ca2DFq5OyW?=
- =?us-ascii?Q?tVslhlcUC/H2iB5AV8Ea4CgYZwrnP+QLXoEBXdUrqQAX1GgXrkuet6Va5n9e?=
- =?us-ascii?Q?XPS3YshLnvp1pXtPLa9mFxVzXiuVd2VGIw4iahl97tWqfA0iKG0IYnGiBpnQ?=
- =?us-ascii?Q?ZomIPGtn30Z6Q5t1g6QArdsRuuuHOzm4qOwlC2SGrd5vUYYzo6Zvq1N6Cp00?=
- =?us-ascii?Q?CLwuRWetEHjHxfzevas5J/wvqyQFKPA3fxdgj7je9dKtgNST0KPelCzgsSid?=
- =?us-ascii?Q?I3BNVOyolMXNkiYGw7V0qlyQ7Zipj6zjMtbndOhwtGGfpBOeFRI6FVM/bmjV?=
- =?us-ascii?Q?wiGWINwY6dOZ+ef8mAY=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+        Mon, 18 Sep 2023 16:52:28 -0400
+Received: from mx01.omp.ru (mx01.omp.ru [90.154.21.10])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CCE72116
+        for <linux-fbdev@vger.kernel.org>; Mon, 18 Sep 2023 13:52:20 -0700 (PDT)
+Received: from localhost.localdomain (178.176.74.219) by msexch01.omp.ru
+ (10.188.4.12) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.986.14; Mon, 18 Sep
+ 2023 23:52:15 +0300
+From:   Sergey Shtylyov <s.shtylyov@omp.ru>
+To:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+        <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>
+Subject: [PATCH 0/2] Fix sloppy typing in the area copy
+Date:   Mon, 18 Sep 2023 23:52:07 +0300
+Message-ID: <20230918205209.11709-1-s.shtylyov@omp.ru>
+X-Mailer: git-send-email 2.26.3
 MIME-Version: 1.0
-X-OriginatorOrg: asem.it
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: DU2PR01MB8034.eurprd01.prod.exchangelabs.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1c5fdce0-dd94-4c59-5f4e-08dbb8431844
-X-MS-Exchange-CrossTenant-originalarrivaltime: 18 Sep 2023 12:30:51.2434
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: d0a766c6-7992-4344-a4a2-a467a7bb1ed2
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: gXEDU6wPZFGtmdgxjxXhGJZK4HQKdMANJF1Zb7e1E7yrKh6KFUQ780fK05juJn+zGYPMpgRJY4qLbh9+Ipb0IQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR01MB7321
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [178.176.74.219]
+X-ClientProxiedBy: msexch01.omp.ru (10.188.4.12) To msexch01.omp.ru
+ (10.188.4.12)
+X-KSE-ServerInfo: msexch01.omp.ru, 9
+X-KSE-AntiSpam-Interceptor-Info: scan successful
+X-KSE-AntiSpam-Version: 5.9.59, Database issued on: 09/18/2023 20:36:01
+X-KSE-AntiSpam-Status: KAS_STATUS_NOT_DETECTED
+X-KSE-AntiSpam-Method: none
+X-KSE-AntiSpam-Rate: 59
+X-KSE-AntiSpam-Info: Lua profiles 179936 [Sep 18 2023]
+X-KSE-AntiSpam-Info: Version: 5.9.59.0
+X-KSE-AntiSpam-Info: Envelope from: s.shtylyov@omp.ru
+X-KSE-AntiSpam-Info: LuaCore: 530 530 ecb1547b3f72d1df4c71c0b60e67ba6b4aea5432
+X-KSE-AntiSpam-Info: {rep_avail}
+X-KSE-AntiSpam-Info: {Tracking_from_domain_doesnt_match_to}
+X-KSE-AntiSpam-Info: {relay has no DNS name}
+X-KSE-AntiSpam-Info: {SMTP from is not routable}
+X-KSE-AntiSpam-Info: {Found in DNSBL: 178.176.74.219 in (user)
+ b.barracudacentral.org}
+X-KSE-AntiSpam-Info: {Found in DNSBL: 178.176.74.219 in (user)
+ dbl.spamhaus.org}
+X-KSE-AntiSpam-Info: 127.0.0.199:7.1.2;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1;omp.ru:7.1.1
+X-KSE-AntiSpam-Info: FromAlignment: s
+X-KSE-AntiSpam-Info: {rdns complete}
+X-KSE-AntiSpam-Info: {fromrtbl complete}
+X-KSE-AntiSpam-Info: ApMailHostAddress: 178.176.74.219
+X-KSE-AntiSpam-Info: Rate: 59
+X-KSE-AntiSpam-Info: Status: not_detected
+X-KSE-AntiSpam-Info: Method: none
+X-KSE-AntiSpam-Info: Auth:dmarc=none header.from=omp.ru;spf=none
+ smtp.mailfrom=omp.ru;dkim=none
+X-KSE-Antiphishing-Info: Clean
+X-KSE-Antiphishing-ScanningType: Heuristic
+X-KSE-Antiphishing-Method: None
+X-KSE-Antiphishing-Bases: 09/18/2023 20:41:00
+X-KSE-Antivirus-Interceptor-Info: scan successful
+X-KSE-Antivirus-Info: Clean, bases: 9/18/2023 6:04:00 PM
+X-KSE-Attachment-Filter-Triggered-Rules: Clean
+X-KSE-Attachment-Filter-Triggered-Filters: Clean
+X-KSE-BulkMessagesFiltering-Scan-Result: InTheLimit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-HI Rob,
+Here are 2 patches against the 'master' branch of Linus' 'linux.git' repo...
 
-...
+In {cfb|sys}_copyarea(), when initializing *unsigned long const* bits_per_line
+__u32 typed fb_fix_screeninfo::line_length gets multiplied by 8u which might
+overflow __u32; this whole *struct* fb_fix_screeninfo seems to come from
+userland (as it's declared in the UAPI header)... Also, that bits_per_line
+constant is used to advance *unsigned* src_idx and dst_idx lccal variables
+which might be overflowed as well...
 
-> Subject: Re: [PATCH v2 1/2] dt-bindings: backlight: Add MPS MP3309C
->=20
+These overflow possibilities were there from the very begining of the source
+files in question, so I decided to just CC stable@vger.kernel.org, without
+the Fixes tags...
 
-...
+Sergey Shtylyov (2):
+  video: fbdev: core: cfbcopyarea: fix sloppy typing
+  video: fbdev: core: syscopyarea: fix sloppy typing
 
-> > +
-> > +  mps,overvoltage-protection-microvolt:
-> > +    description: Overvoltage protection (13.5V, 24V or 35.5V). If miss=
-ing, the
-> > +      hardware default of 35.5V is used.
->=20
-> default: 35500000
->=20
-> instead of prose saying the same thing.
->=20
-> With that,
->=20
-> Reviewed-by: Rob Herring <robh@kernel.org>
+ drivers/video/fbdev/core/cfbcopyarea.c | 5 +++--
+ drivers/video/fbdev/core/syscopyarea.c | 5 +++--
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
-Ok, right, I'll fix it in my next version.
+-- 
+2.26.3
 
-I prefer to wait a few days before sending the next version,
-to wait if there are other comments on the device driver file as well.
-
-Just a question about the procedure: in my next version, I have to add the =
-sentence:
-
-"Reviewed-by: Rob Herring <robh@kernel.org>"
-
-in my commit or it will be added again by you?
-
-Thanks for your help,
-Flavio=20

@@ -2,173 +2,146 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EBB1CE79A9
-	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Sep 2023 17:46:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C60B1CE79A9
+	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Sep 2023 18:55:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232285AbjISRqm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Sep 2023 13:46:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42706 "EHLO
+        id S232549AbjISSzh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Sep 2023 14:55:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42276 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232209AbjISRql (ORCPT
+        with ESMTP id S232477AbjISSzg (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Sep 2023 13:46:41 -0400
-Received: from relay.yourmailgateway.de (relay.yourmailgateway.de [185.244.194.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9CC768F;
-        Tue, 19 Sep 2023 10:46:30 -0700 (PDT)
-Received: from relay01-mors.netcup.net (localhost [127.0.0.1])
-        by relay01-mors.netcup.net (Postfix) with ESMTPS id 4RqpxY6gJLz8vYk;
-        Tue, 19 Sep 2023 19:46:25 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=zint.sh; s=key2;
-        t=1695145585; bh=IoDopC/FI0Xw8EhjdeXx3lkqipHTvqW2eqTVLHiaOTs=;
-        h=Date:From:To:cc:Subject:In-Reply-To:References:From;
-        b=MzHvvI9eBXMIZWmg+tCAcbxZuAVznBOkFqzsgyH1TSCU61HOHyOF/mU7ZlFoCsvWM
-         0pCLXW2q3yVxuDqwAGg8nG0gYkuONS69gv0POr+FXcz89WB1hb7ng6tlTH6hiV3LY1
-         p+F7mozEWXcCCN0Ov3/vzHe0el0cC6QZ5jYZjSXhI3PTZVhVTaR/kki2JBznBE05E/
-         dvUTVSJltCM4JA7DIIIit75UMJf1/i2jyobPqEbQqbypgWhaNxUB2C8aqniyM+MfJ3
-         LaU0Y3ULdZRoA7CAuV5Na7XdNPUbsZZNTJMUkXBqhfpN7JFFVUQBq+Sgo07zw3qXYW
-         3ohMQRYj96vVQ==
-Received: from policy02-mors.netcup.net (unknown [46.38.225.35])
-        by relay01-mors.netcup.net (Postfix) with ESMTPS id 4RqpxY5yk3z7wXm;
-        Tue, 19 Sep 2023 19:46:25 +0200 (CEST)
-Received: from mxe217.netcup.net (unknown [10.243.12.53])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by policy02-mors.netcup.net (Postfix) with ESMTPS id 4RqpxY1Qx7z8sZR;
-        Tue, 19 Sep 2023 19:46:25 +0200 (CEST)
-Received: from thinkpad (p5795fada.dip0.t-ipconnect.de [87.149.250.218])
-        by mxe217.netcup.net (Postfix) with ESMTPSA id 9D3D481CC0;
-        Tue, 19 Sep 2023 19:46:09 +0200 (CEST)
-Date:   Tue, 19 Sep 2023 19:46:09 +0200 (CEST)
-From:   Julius Zint <julius@zint.sh>
-To:     Hans de Goede <hdegoede@redhat.com>
-cc:     =?ISO-8859-15?Q?Thomas_Wei=DFschuh?= <thomas@t-8ch.de>,
-        Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Jiri Kosina <jikos@kernel.org>,
-        Benjamin Tissoires <benjamin.tissoires@redhat.com>,
-        Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-input@vger.kernel.org,
-        linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v3 1/1] backlight: hid_bl: Add VESA VCP HID backlight
- driver
-In-Reply-To: <f95da7ff-06dd-2c0e-d563-7e5ad61c3bcc@redhat.com>
-Message-ID: <afed6395-8680-7e2c-d88c-8bb5f3c39346@zint.sh>
-References: <20230820094118.20521-1-julius@zint.sh> <20230820094118.20521-2-julius@zint.sh> <f2e1ab9e-e691-42e1-a600-42744f692922@t-8ch.de> <9a5364de-28e1-1d4a-1d3a-d6dcedb7e659@zint.sh> <f95da7ff-06dd-2c0e-d563-7e5ad61c3bcc@redhat.com>
+        Tue, 19 Sep 2023 14:55:36 -0400
+Received: from mx01.omp.ru (mx01.omp.ru [90.154.21.10])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 176509D;
+        Tue, 19 Sep 2023 11:55:30 -0700 (PDT)
+Received: from [192.168.1.103] (178.176.79.31) by msexch01.omp.ru
+ (10.188.4.12) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.986.14; Tue, 19 Sep
+ 2023 21:55:26 +0300
+Subject: Re: [PATCH 1/2] video: fbdev: core: cfbcopyarea: fix sloppy typing
+To:     Helge Deller <deller@gmx.de>, Daniel Vetter <daniel@ffwll.ch>,
+        <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>
+CC:     <stable@vger.kernel.org>
+References: <20230918205209.11709-1-s.shtylyov@omp.ru>
+ <20230918205209.11709-2-s.shtylyov@omp.ru>
+ <d436d191-9580-c3ca-1583-02c9cff58494@gmx.de>
+From:   Sergey Shtylyov <s.shtylyov@omp.ru>
+Organization: Open Mobile Platform
+Message-ID: <03096350-c12a-b442-b695-3233a46d1008@omp.ru>
+Date:   Tue, 19 Sep 2023 21:55:25 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.1
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="-1463806431-1318981254-1695145580=:112385"
-X-Rspamd-Queue-Id: 9D3D481CC0
-X-Rspamd-Server: rspamd-worker-8404
-X-NC-CID: rOoqEf3663s8YZEX+EphuZt68xJXACRwen9fb7xg
+In-Reply-To: <d436d191-9580-c3ca-1583-02c9cff58494@gmx.de>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [178.176.79.31]
+X-ClientProxiedBy: msexch01.omp.ru (10.188.4.12) To msexch01.omp.ru
+ (10.188.4.12)
+X-KSE-ServerInfo: msexch01.omp.ru, 9
+X-KSE-AntiSpam-Interceptor-Info: scan successful
+X-KSE-AntiSpam-Version: 5.9.59, Database issued on: 09/19/2023 18:39:25
+X-KSE-AntiSpam-Status: KAS_STATUS_NOT_DETECTED
+X-KSE-AntiSpam-Method: none
+X-KSE-AntiSpam-Rate: 59
+X-KSE-AntiSpam-Info: Lua profiles 179974 [Sep 19 2023]
+X-KSE-AntiSpam-Info: Version: 5.9.59.0
+X-KSE-AntiSpam-Info: Envelope from: s.shtylyov@omp.ru
+X-KSE-AntiSpam-Info: LuaCore: 534 534 808c2ea49f7195c68d40844e073217da4fa0d1e3
+X-KSE-AntiSpam-Info: {rep_avail}
+X-KSE-AntiSpam-Info: {Tracking_from_domain_doesnt_match_to}
+X-KSE-AntiSpam-Info: {relay has no DNS name}
+X-KSE-AntiSpam-Info: {SMTP from is not routable}
+X-KSE-AntiSpam-Info: {Found in DNSBL: 178.176.79.31 in (user)
+ dbl.spamhaus.org}
+X-KSE-AntiSpam-Info: 127.0.0.199:7.1.2;omp.ru:7.1.1;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1
+X-KSE-AntiSpam-Info: FromAlignment: s
+X-KSE-AntiSpam-Info: {rdns complete}
+X-KSE-AntiSpam-Info: {fromrtbl complete}
+X-KSE-AntiSpam-Info: ApMailHostAddress: 178.176.79.31
+X-KSE-AntiSpam-Info: Rate: 59
+X-KSE-AntiSpam-Info: Status: not_detected
+X-KSE-AntiSpam-Info: Method: none
+X-KSE-AntiSpam-Info: Auth:dmarc=none header.from=omp.ru;spf=none
+ smtp.mailfrom=omp.ru;dkim=none
+X-KSE-Antiphishing-Info: Clean
+X-KSE-Antiphishing-ScanningType: Heuristic
+X-KSE-Antiphishing-Method: None
+X-KSE-Antiphishing-Bases: 09/19/2023 18:46:00
+X-KSE-Antivirus-Interceptor-Info: scan successful
+X-KSE-Antivirus-Info: Clean, bases: 9/19/2023 4:23:00 PM
+X-KSE-Attachment-Filter-Triggered-Rules: Clean
+X-KSE-Attachment-Filter-Triggered-Filters: Clean
+X-KSE-BulkMessagesFiltering-Scan-Result: InTheLimit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hello!
 
----1463806431-1318981254-1695145580=:112385
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+On 9/19/23 10:05 AM, Helge Deller wrote:
 
+>> In cfb_copyarea(), when initializing *unsigned long const* bits_per_line
+>> __u32 typed fb_fix_screeninfo::line_length gets multiplied by 8u -- which
+>> might overflow __u32; multiplying by 8UL instead should fix that...
+>> Also, that bits_per_line constant is used to advance *unsigned* src_idx
+>> and dst_idx variables -- which might be overflowed as well; declaring
+>> them as *unsigned long* should fix that too...
+>>
+>> Found by Linux Verification Center (linuxtesting.org) with the Svace static
+>> analysis tool.
+>>
+>> Signed-off-by: Sergey Shtylyov <s.shtylyov@omp.ru>
+>> Cc: stable@vger.kernel.org
+>> ---
+>>   drivers/video/fbdev/core/cfbcopyarea.c | 5 +++--
+>>   1 file changed, 3 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/video/fbdev/core/cfbcopyarea.c b/drivers/video/fbdev/core/cfbcopyarea.c
+>> index 6d4bfeecee35..b67ba69ea2fb 100644
+>> --- a/drivers/video/fbdev/core/cfbcopyarea.c
+>> +++ b/drivers/video/fbdev/core/cfbcopyarea.c
+>> @@ -382,10 +382,11 @@ void cfb_copyarea(struct fb_info *p, const struct fb_copyarea *area)
+>>   {
+>>       u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy;
+>>       u32 height = area->height, width = area->width;
+>> -    unsigned long const bits_per_line = p->fix.line_length*8u;
+>> +    unsigned long const bits_per_line = p->fix.line_length * 8UL;
+> 
+> you wrote:
+>> __u32 typed fb_fix_screeninfo::line_length gets multiplied by 8u -- which
+>> might overflow __u32; multiplying by 8UL instead should fix that...
+> 
+> This would only be true on 64-bit CPUs, where unsigned long is 64 bits,
 
+   Right, Svace was run with the arm64 and x86_64 configs -- and I forgot
+to make the emphasis on the 64-bit specifics here...
 
-On Wed, 6 Sep 2023, Hans de Goede wrote:
+> while on 32-bit CPUs, it's still 32 bits (same as _u32).
 
-> Hi Julius,
-> 
-> On 9/4/23 21:02, Julius Zint wrote:
-> > 
-> > 
-> > On Mon, 4 Sep 2023, Thomas Weißschuh wrote:
-> > 
-> >> +Cc Hans who ins involved with the backlight subsystem
-> >>
-> >> Hi Julius,
-> >>
-> >> today I stumbled upon a mail from Hans [0], which explains that the
-> >> backlight subsystem is not actually a good fit (yet?) for external
-> >> displays.
-> >>
-> >> It seems a new API is in the works that would better fit, but I'm not
-> >> sure about the state of this API. Maybe Hans can clarify.
-> >>
-> >> This also ties back to my review question how userspace can figure out
-> >> to which display a backlight devices applies. So far it can not.
-> >>
-> >> [0] https://lore.kernel.org/lkml/7f2d88de-60c5-e2ff-9b22-acba35cfdfb6@redhat.com/
-> >>
-> > 
-> > Hi Thomas,
-> > 
-> > thanks for the hint. I will make sure to give this a proper read and
-> > see, if it fits my use case better then the current backlight subsystem.
-> 
-> Note the actual proposal for the new usespace API for display brightness
-> control is here:
-> 
-> https://lore.kernel.org/dri-devel/b61d3eeb-6213-afac-2e70-7b9791c86d2e@redhat.com/
-> 
-> I have finished / stabilized the backlight code refactor which I landed
-> in 6.1, which is a prerequisite for the above proposal. But I have not
-> been able to make time to actually implement the above proposal; and
-> I don't know when I will be able to make time for this.
-> 
-> > Especially since I wasnt able to properly address your other review
-> > comments for now. You are right that the name should align better with
-> > the kernel module and also, that it is possible for multiple displays to
-> > be attached.
-> > 
-> > In its current state, this would mean that you could only control the
-> > backlight for the first HID device (enough for me :-).
-> > 
-> > The systemd-backlight@.service uses not only the file name, but also the
-> > full bus path for storing/restoring backlights. I did not yet get around
-> > to see how the desktops handle brightness control, but since the
-> > systemd-backlight@.service already uses the name, its important to stay
-> > the same over multiple boots.
-> > 
-> > I would be able to get a handle on the underlying USB device and use the
-> > serial to uniquely (and persistently) name the backlight. But it does
-> > feel hacky doing it this way.
-> 
-> So mutter (gnome-shell compositor library) has a similar issue when saving
-> monitor layouts and I can tell you beforehand that monitor serial numbers
-> by themselves are not unique enough. Some models just report 123456789
-> as serial and if you have a dual-monitor setup with 2 such monitors
-> and name the backlight class device <serial>-vcp-hid or something like that
-> you will still end up with 2 identical names.
-> 
-> To avoid this when saving monitor layouts mutter saves both the port
-> to which the monitor is attached (e.g. DP-1 DP-2) and the serialnumber
-> and on startup / monitor hotplug when it checks to see if it has saved
-> layout info for the monitor it checks the port+serialnr combination.
-> 
-> So what I think you should do is figure out a way to map which
-> VCP HID device maps to which drm-connector and then use
-> the connector-name + serial-nr to generate the backlight device name.
-> 
-> We will need the mapping the a drm-connector object anyway for
-> the new brightness API proposal from above.
-> 
-> Note this does NOT solve the fact that registering a new backlight
-> class device for an external monitor on a laptop will hopelessly
-> confuse userspace, see:
-> 
-> https://lore.kernel.org/lkml/7f2d88de-60c5-e2ff-9b22-acba35cfdfb6@redhat.com/
-> 
-> Regards,
-> 
-> Hans
-> 
+   Yes, indeed. That *unsigned long const* doesn't seem justified
+at all then...
 
-Thank you for all this additional information. I have watched the talks
-and read up upon the mail threads you`ve linked.
+> Instead we could make bits_per_line __u32 (or unsigned int) too.
 
-I will see if I can make the mapping to the DRM connector and plan to
-update this patchset.
+   Yes. Will you accept such a patch? :-)
 
-Thanks,
+>>       unsigned long __iomem *base = NULL;
+>>       int bits = BITS_PER_LONG, bytes = bits >> 3;
+>> -    unsigned dst_idx = 0, src_idx = 0, rev_copy = 0;
+>> +    unsigned long dst_idx = 0, src_idx = 0;
+> 
+> An "unsigned int" can address at least up to 4GB, which is fully sufficent here.
 
-Julius
----1463806431-1318981254-1695145580=:112385--
+   Good to know! :-)
+
+> So, both patches don't have any real effect.
+> NAK.
+
+   Thanks for your time!
+
+> Helge
+
+MBR, Sergey

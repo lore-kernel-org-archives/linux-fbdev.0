@@ -2,182 +2,173 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B15C9CD5BDC
-	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Sep 2023 15:24:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EBB1CE79A9
+	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Sep 2023 17:46:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233137AbjISPYZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Sep 2023 11:24:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41740 "EHLO
+        id S232285AbjISRqm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Sep 2023 13:46:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42706 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232823AbjISPYZ (ORCPT
+        with ESMTP id S232209AbjISRql (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Sep 2023 11:24:25 -0400
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BE1AEE60;
-        Tue, 19 Sep 2023 08:24:17 -0700 (PDT)
-Received: from pendragon.ideasonboard.com (213-243-189-158.bb.dnainternet.fi [213.243.189.158])
-        by perceval.ideasonboard.com (Postfix) with ESMTPSA id A7479B53;
-        Tue, 19 Sep 2023 17:22:39 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-        s=mail; t=1695136959;
-        bh=9vIyKWF61Oki0ViP0MM9OtlYNdPRel3PPjwYgBK9PgM=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=fxBxJ7GxeYlxsv1O+e8OcB0xbaq3uqYvHMy6CJ+TAxNH9W/dGWlrG+m/XoCY3m6z6
-         QH/kgnB92SDfVDlD79tXdPCTTTNCgerQ8jVda95uBOVKtQVkPsKmtQuPAwhTeAbQXP
-         BBt/QdZG/1mxqJrUUV1gCD1fW4Gj21NPLG2qfhvI=
-Date:   Tue, 19 Sep 2023 18:24:28 +0300
-From:   Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
-        Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Magnus Damm <magnus.damm@gmail.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Hans Verkuil <hverkuil@xs4all.nl>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>,
-        Linux Media Mailing List <linux-media@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux-sh list <linux-sh@vger.kernel.org>
-Subject: Re: [GIT PULL] drm: renesas: shmobile: Atomic conversion + DT
- support (was: Re: [PATCH v4 00/41] drm: renesas: shmobile: Atomic conversion
- + DT support)
-Message-ID: <20230919152428.GB18426@pendragon.ideasonboard.com>
-References: <cover.1694767208.git.geert+renesas@glider.be>
- <CAMuHMdWfBTKdXvZutg4LvWqBjuz-X=ZjzX0LKPqD=JxYuLoPRw@mail.gmail.com>
+        Tue, 19 Sep 2023 13:46:41 -0400
+Received: from relay.yourmailgateway.de (relay.yourmailgateway.de [185.244.194.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9CC768F;
+        Tue, 19 Sep 2023 10:46:30 -0700 (PDT)
+Received: from relay01-mors.netcup.net (localhost [127.0.0.1])
+        by relay01-mors.netcup.net (Postfix) with ESMTPS id 4RqpxY6gJLz8vYk;
+        Tue, 19 Sep 2023 19:46:25 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=zint.sh; s=key2;
+        t=1695145585; bh=IoDopC/FI0Xw8EhjdeXx3lkqipHTvqW2eqTVLHiaOTs=;
+        h=Date:From:To:cc:Subject:In-Reply-To:References:From;
+        b=MzHvvI9eBXMIZWmg+tCAcbxZuAVznBOkFqzsgyH1TSCU61HOHyOF/mU7ZlFoCsvWM
+         0pCLXW2q3yVxuDqwAGg8nG0gYkuONS69gv0POr+FXcz89WB1hb7ng6tlTH6hiV3LY1
+         p+F7mozEWXcCCN0Ov3/vzHe0el0cC6QZ5jYZjSXhI3PTZVhVTaR/kki2JBznBE05E/
+         dvUTVSJltCM4JA7DIIIit75UMJf1/i2jyobPqEbQqbypgWhaNxUB2C8aqniyM+MfJ3
+         LaU0Y3ULdZRoA7CAuV5Na7XdNPUbsZZNTJMUkXBqhfpN7JFFVUQBq+Sgo07zw3qXYW
+         3ohMQRYj96vVQ==
+Received: from policy02-mors.netcup.net (unknown [46.38.225.35])
+        by relay01-mors.netcup.net (Postfix) with ESMTPS id 4RqpxY5yk3z7wXm;
+        Tue, 19 Sep 2023 19:46:25 +0200 (CEST)
+Received: from mxe217.netcup.net (unknown [10.243.12.53])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by policy02-mors.netcup.net (Postfix) with ESMTPS id 4RqpxY1Qx7z8sZR;
+        Tue, 19 Sep 2023 19:46:25 +0200 (CEST)
+Received: from thinkpad (p5795fada.dip0.t-ipconnect.de [87.149.250.218])
+        by mxe217.netcup.net (Postfix) with ESMTPSA id 9D3D481CC0;
+        Tue, 19 Sep 2023 19:46:09 +0200 (CEST)
+Date:   Tue, 19 Sep 2023 19:46:09 +0200 (CEST)
+From:   Julius Zint <julius@zint.sh>
+To:     Hans de Goede <hdegoede@redhat.com>
+cc:     =?ISO-8859-15?Q?Thomas_Wei=DFschuh?= <thomas@t-8ch.de>,
+        Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Jiri Kosina <jikos@kernel.org>,
+        Benjamin Tissoires <benjamin.tissoires@redhat.com>,
+        Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-input@vger.kernel.org,
+        linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v3 1/1] backlight: hid_bl: Add VESA VCP HID backlight
+ driver
+In-Reply-To: <f95da7ff-06dd-2c0e-d563-7e5ad61c3bcc@redhat.com>
+Message-ID: <afed6395-8680-7e2c-d88c-8bb5f3c39346@zint.sh>
+References: <20230820094118.20521-1-julius@zint.sh> <20230820094118.20521-2-julius@zint.sh> <f2e1ab9e-e691-42e1-a600-42744f692922@t-8ch.de> <9a5364de-28e1-1d4a-1d3a-d6dcedb7e659@zint.sh> <f95da7ff-06dd-2c0e-d563-7e5ad61c3bcc@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdWfBTKdXvZutg4LvWqBjuz-X=ZjzX0LKPqD=JxYuLoPRw@mail.gmail.com>
+Content-Type: multipart/mixed; boundary="-1463806431-1318981254-1695145580=:112385"
+X-Rspamd-Queue-Id: 9D3D481CC0
+X-Rspamd-Server: rspamd-worker-8404
+X-NC-CID: rOoqEf3663s8YZEX+EphuZt68xJXACRwen9fb7xg
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Sep 19, 2023 at 04:28:40PM +0200, Geert Uytterhoeven wrote:
-> Hi David, Daniel,
-> 
-> The following changes since commit 0663e1da5ba8e6459e3555ac12c62741668c0d30:
-> 
->   drm/dp_mst: Tune down error message during payload addition
-> (2023-09-18 16:38:21 +0300)
-> 
-> are available in the Git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git
-> tags/shmob-drm-atomic-dt-tag1
-> 
-> for you to fetch changes up to bfea0fa9052aa8d235b24957eb84d9ff20cb87b7:
-> 
->   drm: renesas: shmobile: Add DT support (2023-09-19 15:58:04 +0200)
-> 
-> ----------------------------------------------------------------
-> drm: renesas: shmobile: Atomic conversion + DT support
-> 
-> Currently, there are two drivers for the LCD controller on Renesas
-> SuperH-based and ARM-based SH-Mobile and R-Mobile SoCs:
->   1. sh_mobile_lcdcfb, using the fbdev framework,
->   2. shmob_drm, using the DRM framework.
-> However, only the former driver is used, as all platform support
-> integrates the former.  None of these drivers support DT-based systems.
-> 
-> Convert the SH-Mobile DRM driver to atomic modesetting, and add DT
-> support, complemented by the customary set of fixes and improvements.
-> 
-> Link: https://lore.kernel.org/r/cover.1694767208.git.geert+renesas@glider.be/
-> 
-> This PR is based on today's drm-misc/for-linux-next, to avoid a
-> conflict with commit 775b0669e19f2e4a ("drm/shmobile: Convert to
-> platform remove callback returning void") in drm-misc/for-linux-next
-> .
-> Thanks for pulling!
-> ----------------------------------------------------------------
-> Geert Uytterhoeven (36):
->       MAINTAINER: Create entry for Renesas SH-Mobile DRM drivers
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I'm technically listed as the maintainer for this driver until Geert
-takes over, so for this pull request,
+---1463806431-1318981254-1695145580=:112385
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-And after that, shmobile won't need my ack to merge further changes :-)
 
-This is very nice work Geert. I'm looking forward to dropping the
-sh_mobile_lcdcfb driver.
+On Wed, 6 Sep 2023, Hans de Goede wrote:
 
->       dt-bindings: display: Add Renesas SH-Mobile LCDC bindings
->       media: uapi: Add MEDIA_BUS_FMT_RGB666_2X9_BE format
->       drm: renesas: shmobile: Fix overlay plane disable
->       drm: renesas: shmobile: Fix ARGB32 overlay format typo
->       drm: renesas: shmobile: Correct encoder/connector types
->       drm: renesas: shmobile: Add support for Runtime PM
->       drm: renesas: shmobile: Restore indentation of shmob_drm_setup_clocks()
->       drm: renesas: shmobile: Use %p4cc to print fourcc code
->       drm: renesas: shmobile: Add missing YCbCr formats
->       drm: renesas: shmobile: Improve shmob_drm_format_info table
->       drm: renesas: shmobile: Improve error handling
->       drm: renesas: shmobile: Convert to use devm_request_irq()
->       drm: renesas: shmobile: Remove custom plane destroy callback
->       drm: renesas: shmobile: Use drmm_universal_plane_alloc()
->       drm: renesas: shmobile: Embed drm_device in shmob_drm_device
->       drm: renesas: shmobile: Convert container helpers to static inline functions
->       drm: renesas: shmobile: Replace .dev_private with container_of()
->       drm: renesas: shmobile: Use media bus formats in platform data
->       drm: renesas: shmobile: Move interface handling to connector setup
->       drm: renesas: shmobile: Unify plane allocation
->       drm: renesas: shmobile: Rename shmob_drm_crtc.crtc
->       drm: renesas: shmobile: Rename shmob_drm_connector.connector
->       drm: renesas: shmobile: Rename shmob_drm_plane.plane
->       drm: renesas: shmobile: Use drm_crtc_handle_vblank()
->       drm: renesas: shmobile: Move shmob_drm_crtc_finish_page_flip()
->       drm: renesas: shmobile: Wait for page flip when turning CRTC off
->       drm: renesas: shmobile: Turn vblank on/off when enabling/disabling CRTC
->       drm: renesas: shmobile: Shutdown the display on remove
->       drm: renesas: shmobile: Cleanup encoder
->       drm: renesas: shmobile: Atomic conversion part 1
->       drm: renesas: shmobile: Atomic conversion part 2
->       drm: renesas: shmobile: Use suspend/resume helpers
->       drm: renesas: shmobile: Remove internal CRTC state tracking
->       drm: renesas: shmobile: Atomic conversion part 3
->       drm: renesas: shmobile: Add DT support
+> Hi Julius,
 > 
-> Laurent Pinchart (5):
->       drm: renesas: shmobile: Remove backlight support
->       drm: renesas: shmobile: Don't set display info width and height twice
->       drm: renesas: shmobile: Rename input clocks
->       drm: renesas: shmobile: Remove support for SYS panels
->       drm: renesas: shmobile: Use struct videomode in platform data
+> On 9/4/23 21:02, Julius Zint wrote:
+> > 
+> > 
+> > On Mon, 4 Sep 2023, Thomas Weißschuh wrote:
+> > 
+> >> +Cc Hans who ins involved with the backlight subsystem
+> >>
+> >> Hi Julius,
+> >>
+> >> today I stumbled upon a mail from Hans [0], which explains that the
+> >> backlight subsystem is not actually a good fit (yet?) for external
+> >> displays.
+> >>
+> >> It seems a new API is in the works that would better fit, but I'm not
+> >> sure about the state of this API. Maybe Hans can clarify.
+> >>
+> >> This also ties back to my review question how userspace can figure out
+> >> to which display a backlight devices applies. So far it can not.
+> >>
+> >> [0] https://lore.kernel.org/lkml/7f2d88de-60c5-e2ff-9b22-acba35cfdfb6@redhat.com/
+> >>
+> > 
+> > Hi Thomas,
+> > 
+> > thanks for the hint. I will make sure to give this a proper read and
+> > see, if it fits my use case better then the current backlight subsystem.
 > 
->  .../bindings/display/renesas,shmobile-lcdc.yaml    | 130 +++++
->  .../userspace-api/media/v4l/subdev-formats.rst     |  72 +++
->  MAINTAINERS                                        |  13 +-
->  drivers/gpu/drm/renesas/shmobile/Kconfig           |   3 +-
->  drivers/gpu/drm/renesas/shmobile/Makefile          |   3 +-
->  .../gpu/drm/renesas/shmobile/shmob_drm_backlight.c |  82 ---
->  .../gpu/drm/renesas/shmobile/shmob_drm_backlight.h |  19 -
->  drivers/gpu/drm/renesas/shmobile/shmob_drm_crtc.c  | 650 +++++++++------------
->  drivers/gpu/drm/renesas/shmobile/shmob_drm_crtc.h  |  27 +-
->  drivers/gpu/drm/renesas/shmobile/shmob_drm_drv.c   | 179 +++---
->  drivers/gpu/drm/renesas/shmobile/shmob_drm_drv.h   |  18 +-
->  drivers/gpu/drm/renesas/shmobile/shmob_drm_kms.c   |  77 ++-
->  drivers/gpu/drm/renesas/shmobile/shmob_drm_kms.h   |   9 +-
->  drivers/gpu/drm/renesas/shmobile/shmob_drm_plane.c | 326 ++++++-----
->  drivers/gpu/drm/renesas/shmobile/shmob_drm_plane.h |   5 +-
->  include/linux/platform_data/shmob_drm.h            |  57 +-
->  include/uapi/linux/media-bus-format.h              |   3 +-
->  17 files changed, 860 insertions(+), 813 deletions(-)
->  create mode 100644
-> Documentation/devicetree/bindings/display/renesas,shmobile-lcdc.yaml
->  delete mode 100644 drivers/gpu/drm/renesas/shmobile/shmob_drm_backlight.c
->  delete mode 100644 drivers/gpu/drm/renesas/shmobile/shmob_drm_backlight.h
+> Note the actual proposal for the new usespace API for display brightness
+> control is here:
+> 
+> https://lore.kernel.org/dri-devel/b61d3eeb-6213-afac-2e70-7b9791c86d2e@redhat.com/
+> 
+> I have finished / stabilized the backlight code refactor which I landed
+> in 6.1, which is a prerequisite for the above proposal. But I have not
+> been able to make time to actually implement the above proposal; and
+> I don't know when I will be able to make time for this.
+> 
+> > Especially since I wasnt able to properly address your other review
+> > comments for now. You are right that the name should align better with
+> > the kernel module and also, that it is possible for multiple displays to
+> > be attached.
+> > 
+> > In its current state, this would mean that you could only control the
+> > backlight for the first HID device (enough for me :-).
+> > 
+> > The systemd-backlight@.service uses not only the file name, but also the
+> > full bus path for storing/restoring backlights. I did not yet get around
+> > to see how the desktops handle brightness control, but since the
+> > systemd-backlight@.service already uses the name, its important to stay
+> > the same over multiple boots.
+> > 
+> > I would be able to get a handle on the underlying USB device and use the
+> > serial to uniquely (and persistently) name the backlight. But it does
+> > feel hacky doing it this way.
+> 
+> So mutter (gnome-shell compositor library) has a similar issue when saving
+> monitor layouts and I can tell you beforehand that monitor serial numbers
+> by themselves are not unique enough. Some models just report 123456789
+> as serial and if you have a dual-monitor setup with 2 such monitors
+> and name the backlight class device <serial>-vcp-hid or something like that
+> you will still end up with 2 identical names.
+> 
+> To avoid this when saving monitor layouts mutter saves both the port
+> to which the monitor is attached (e.g. DP-1 DP-2) and the serialnumber
+> and on startup / monitor hotplug when it checks to see if it has saved
+> layout info for the monitor it checks the port+serialnr combination.
+> 
+> So what I think you should do is figure out a way to map which
+> VCP HID device maps to which drm-connector and then use
+> the connector-name + serial-nr to generate the backlight device name.
+> 
+> We will need the mapping the a drm-connector object anyway for
+> the new brightness API proposal from above.
+> 
+> Note this does NOT solve the fact that registering a new backlight
+> class device for an external monitor on a laptop will hopelessly
+> confuse userspace, see:
+> 
+> https://lore.kernel.org/lkml/7f2d88de-60c5-e2ff-9b22-acba35cfdfb6@redhat.com/
+> 
+> Regards,
+> 
+> Hans
+> 
 
--- 
-Regards,
+Thank you for all this additional information. I have watched the talks
+and read up upon the mail threads you`ve linked.
 
-Laurent Pinchart
+I will see if I can make the mapping to the DRM connector and plan to
+update this patchset.
+
+Thanks,
+
+Julius
+---1463806431-1318981254-1695145580=:112385--

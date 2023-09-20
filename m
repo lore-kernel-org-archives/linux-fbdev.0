@@ -2,110 +2,215 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82ED9C004D6
-	for <linux-fbdev@archiver.kernel.org>; Wed, 20 Sep 2023 15:07:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B74CDC04AAF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 20 Sep 2023 16:43:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235382AbjITPHT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 20 Sep 2023 11:07:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48772 "EHLO
+        id S234740AbjITQnc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 20 Sep 2023 12:43:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41864 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235264AbjITPHS (ORCPT
+        with ESMTP id S234501AbjITQnb (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 20 Sep 2023 11:07:18 -0400
-Received: from out5-smtp.messagingengine.com (out5-smtp.messagingengine.com [66.111.4.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A719AF;
-        Wed, 20 Sep 2023 08:07:12 -0700 (PDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-        by mailout.nyi.internal (Postfix) with ESMTP id DE07F5C01BB;
-        Wed, 20 Sep 2023 11:07:08 -0400 (EDT)
-Received: from imap51 ([10.202.2.101])
-  by compute6.internal (MEProxy); Wed, 20 Sep 2023 11:07:08 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-        :cc:content-type:content-type:date:date:from:from:in-reply-to
-        :in-reply-to:message-id:mime-version:references:reply-to:sender
-        :subject:subject:to:to; s=fm1; t=1695222428; x=1695308828; bh=ms
-        4LUioRCx9g5Fcd6Nj2Z553BmfY/nfNy++/9p0eMTE=; b=BHuLRfyyuipWu6am6/
-        M3C5KuEVtPRgHdnUSWE2tXf1NF5z/c0HjnG1qXb1WaGZu8Uq7k1Lq5DXx3SfUhLJ
-        +AGNDQ0Gvdy1xUAqZGHxFG0dPweDd4IWaDHtLa1Ju8frSZGFQNlRlxX/YTmR+QTm
-        FrxvvQHeQGOAH4tKQgxAP8/n/XDBfPur4ivYpz7AqfbRaoZFC/0DB/LRt6ogTvDK
-        ibhf89hk7VyhvpN4sS3aoNoWA5NNg9KqAE+6NjLPwBok0RZB1mJOs3iV6MFt/MH4
-        Dtvydol1NjIVeiH0yas9c7mbU50veoZbaGHU9IbQP2FByO/vbbLSQKTuw+/nHr+K
-        WV2g==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-type:content-type:date:date
-        :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-        :message-id:mime-version:references:reply-to:sender:subject
-        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-        :x-sasl-enc; s=fm2; t=1695222428; x=1695308828; bh=ms4LUioRCx9g5
-        Fcd6Nj2Z553BmfY/nfNy++/9p0eMTE=; b=qgZHhiyUGnQdiRx/usTNHt32rPNJr
-        9B5WYZMfGf4Wh7FyO6A52lomoJ9ynn4fijFhbL1uXxQvXbZqDqwI3RtNixlUDdBY
-        nr7g83/UKByMv2jpbfoqr0MMhEyLeVl4HTvngpxiAH2TNzYOuQTYsysj+12PQUhh
-        NfZeCSd5kQ2vll+YcV+q/+APQLD6yBY/5mJ6KzJ/VXaqAf54B8D5OfAW8ja+q4S8
-        OwObw1sDeIiXVgJxGcmw5NakTXzLLouS4lIeLJo/w8h5AT4kacfRuTF+izO/lkmJ
-        F56Yyuk075kXqXJcxdmlOPxlIIi+Xm++i+2jPz5jH6sqj1NLjf7H1eCog==
-X-ME-Sender: <xms:nAoLZYwrTKoT42bcnpXZ4-w53D73C76DbJIuYsMLzYvbbB86qR_ffQ>
-    <xme:nAoLZcRulMbaUjUAhbE-QFya1Gxyi5QzCzhATtS7FolBRFqxN9c07Aga3yV4Qoxiq
-    eWbYSyImVFth6dskDE>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrudekfedgkeehucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
-    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
-    htvghrnhepffehueegteeihfegtefhjefgtdeugfegjeelheejueethfefgeeghfektdek
-    teffnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
-    hrnhgusegrrhhnuggsrdguvg
-X-ME-Proxy: <xmx:nAoLZaWZx_TRLb7BjvQU3lpTtrt3jJpa0avXJjdRrHX-EzABxErB_A>
-    <xmx:nAoLZWgVBoycMfqp10qcSIzofTqfa999ofexvDZjpX2k4ORya7JL9g>
-    <xmx:nAoLZaBR9j0jFMUdPxCKTuDNgoxms16P9lFOofBz07ktzPmbvA4Yng>
-    <xmx:nAoLZe6LFDULF3sZ_R6NM9MvFBnTENxcVdrZ0bbn_jFL0BMhje4eJA>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-        id EC7C5B60089; Wed, 20 Sep 2023 11:07:07 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.9.0-alpha0-761-gece9e40c48-fm-20230913.001-gece9e40c
+        Wed, 20 Sep 2023 12:43:31 -0400
+Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BB76D9F
+        for <linux-fbdev@vger.kernel.org>; Wed, 20 Sep 2023 09:43:24 -0700 (PDT)
+Received: by mail-lf1-x132.google.com with SMTP id 2adb3069b0e04-503056c8195so120419e87.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 20 Sep 2023 09:43:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1695228203; x=1695833003; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=MQEJW6zv06NkEBajWL99vk6sAX7Ll9wuR8Kb5COdX+s=;
+        b=e5F6iaVE8tzmsXu4+NYrHXWXiq5RCpSkFDTsLxvP5kQoLV8Lmr42X5uQ0Kp6uq0+5e
+         xlGRaFEhz3OH7ToErELGFWr/0SFhCWUu5ojtyuTF8OLfKMKlVYYomupxoP9MFSBLT6Gl
+         tGQkvMhOT2AnWLYAewwV7uxI2MKYBOdtTgsvhm2xxNB6R7OA98Vlqr3M5Evb09MVYVZj
+         ZMkfcIbe9Igxncq+nioJmoL4rez1evJhm3pRkjPDtilycgSxGb5jrLx20cl6w7LuM+yD
+         N15qp8mf0jL1U2h4v4VSNrdgHeRWQUVvfeXCu24mCyp1D2oFdmGDL+3YM3BUCeuR2R+L
+         1mEA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695228203; x=1695833003;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=MQEJW6zv06NkEBajWL99vk6sAX7Ll9wuR8Kb5COdX+s=;
+        b=lyR6Ve+U2jDIQAIQwbFbYT6ptIrKbmhTHfB8z7rv2UF0tchbFKw2yIs3OL9KzthKKL
+         M0UuIjk4omkAue2yHrO1xt0JlZVKTwtxzCqV8jV3hacgzoJqD78tfJdEFcAocXI/1ch5
+         iKu4BH5lTWRV1Q+yfJLk/YA6A9FpkPY4n1QeEtKyf0YqdgE0DB7Wd840CPoa2xd3xh93
+         +K4FqzJEDauYarvSjo31cncEu98uV4NXja+/r5okJjQjkcv4em/SjoCjvygCAOj7UY/Y
+         FDsdkG1I/5hBKN91+9OjeCu1ylQW5k+JZfSdp1vcQJ9vV36dY12ANTspLgUFn3lWjAkq
+         VFmQ==
+X-Gm-Message-State: AOJu0YwzuU2Zm0rGeH0JzMvJnKKjM2R7Q1COGQq9jsh7P492gWLbQb8X
+        dwt0mH0FV2cNMP7p59k9ye5DRQ==
+X-Google-Smtp-Source: AGHT+IF4SftKY63aF7hO17I140HgFWGwNL1QYPGPfTT/ye3c4L7+hoZq756DMpDyutWuZZK55Xbpuw==
+X-Received: by 2002:a05:6512:4885:b0:500:9a45:63b with SMTP id eq5-20020a056512488500b005009a45063bmr2829468lfb.13.1695228202819;
+        Wed, 20 Sep 2023 09:43:22 -0700 (PDT)
+Received: from aspen.lan (static-212-193-78-212.thenetworkfactory.nl. [212.78.193.212])
+        by smtp.gmail.com with ESMTPSA id cz20-20020a0564021cb400b00530c46e2b32sm6496057edb.34.2023.09.20.09.43.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 20 Sep 2023 09:43:22 -0700 (PDT)
+Date:   Wed, 20 Sep 2023 18:43:20 +0200
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Flavio Suligoi <f.suligoi@asem.it>
+Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] backlight: mp3309c: Add support for MPS MP3309C
+Message-ID: <20230920164320.GA20969@aspen.lan>
+References: <20230915140516.1294925-1-f.suligoi@asem.it>
+ <20230915140516.1294925-2-f.suligoi@asem.it>
 MIME-Version: 1.0
-Message-Id: <df784a58-23f8-43d2-8506-ab1d351da8fe@app.fastmail.com>
-In-Reply-To: <20230912135050.17155-1-tzimmermann@suse.de>
-References: <20230912135050.17155-1-tzimmermann@suse.de>
-Date:   Wed, 20 Sep 2023 11:06:48 -0400
-From:   "Arnd Bergmann" <arnd@arndb.de>
-To:     "Thomas Zimmermann" <tzimmermann@suse.de>,
-        "Michael Ellerman" <mpe@ellerman.id.au>,
-        "Nicholas Piggin" <npiggin@gmail.com>,
-        "Christophe Leroy" <christophe.leroy@csgroup.eu>,
-        "Helge Deller" <deller@gmx.de>
-Cc:     linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org,
-        linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-        linux-mips@vger.kernel.org, sparclinux@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        Linux-Arch <linux-arch@vger.kernel.org>
-Subject: Re: [PATCH v4 0/5] ppc, fbdev: Clean up fbdev mmap helper
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230915140516.1294925-2-f.suligoi@asem.it>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Sep 12, 2023, at 09:48, Thomas Zimmermann wrote:
-> Clean up and rename fb_pgprotect() to work without struct file. Then
-> refactor the implementation for PowerPC. This change has been discussed
-> at [1] in the context of refactoring fbdev's mmap code.
+On Fri, Sep 15, 2023 at 04:05:16PM +0200, Flavio Suligoi wrote:
+> The Monolithic Power (MPS) MP3309C is a WLED step-up converter, featuring a
+> programmable switching frequency to optimize efficiency.
+> The brightness can be controlled either by I2C commands (called "analog"
+> mode) or by a PWM input signal (PWM mode).
+> This driver supports both modes.
 >
-> The first two patches update fbdev and replace fbdev's fb_pgprotect()
-> with pgprot_framebuffer() on all architectures. The new helper's stream-
-> lined interface enables more refactoring within fbdev's mmap
-> implementation.
+> For DT configuration details, please refer to:
+> - Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
 >
-> Patches 3 to 5 adapt PowerPC's internal interfaces to provide
-> phys_mem_access_prot() that works without struct file. Neither the
-> architecture code or fbdev helpers need the parameter.
+> The datasheet is available at:
+> - https://www.monolithicpower.com/en/mp3309c.html
 >
-> v4:
-> 	* fix commit message (Christophe)
-> v3:
-> 	* rename fb_pgrotect() to pgprot_framebuffer() (Arnd)
+> Signed-off-by: Flavio Suligoi <f.suligoi@asem.it>
+> ---
+>
+> v2:
+>  - fix dependecies in Kconfig
+>  - fix Kconfig MP3309C entry order
+>  - remove switch-on-delay-ms property
+>  - remove optional gpio property to reset external devices
+>  - remove dimming-mode property (the analog-i2c dimming mode is the default; the
+>    presence of the pwms property, in DT, selects automatically the pwm dimming
+>    mode)
+>  - substitute three boolean properties, used for the overvoltage-protection
+>    values, with a single enum property
+>  - drop simple tracing messages
+>  - use dev_err_probe() in probe function
+>  - change device name from mp3309c_bl to the simple mp3309c
+>  - remove shutdown function
+> v1:
+>  - first version
+>
+>  MAINTAINERS                       |   6 +
+>  drivers/video/backlight/Kconfig   |  11 +
+>  drivers/video/backlight/Makefile  |   1 +
+>  drivers/video/backlight/mp3309c.c | 395 ++++++++++++++++++++++++++++++
+>  4 files changed, 413 insertions(+)
+>  create mode 100644 drivers/video/backlight/mp3309c.c
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 3be1bdfe8ecc..f779df433af1 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -14333,6 +14333,12 @@ S:	Maintained
+>  F:	Documentation/driver-api/tty/moxa-smartio.rst
+>  F:	drivers/tty/mxser.*
+>
+> +MP3309C BACKLIGHT DRIVER
+> +M:	Flavio Suligoi <f.suligoi@asem.it>
+> +S:	Maintained
+> +F:	Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
+> +F:	drivers/video/backlight/mp3309c.c
+> +
+>  MR800 AVERMEDIA USB FM RADIO DRIVER
+>  M:	Alexey Klimov <klimov.linux@gmail.com>
+>  L:	linux-media@vger.kernel.org
+> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+> index 51387b1ef012..1144a54a35c0 100644
+> --- a/drivers/video/backlight/Kconfig
+> +++ b/drivers/video/backlight/Kconfig
+> @@ -402,6 +402,17 @@ config BACKLIGHT_LP8788
+>  	help
+>  	  This supports TI LP8788 backlight driver.
+>
+> +config BACKLIGHT_MP3309C
+> +	tristate "Backlight Driver for MPS MP3309C"
+> +	depends on I2C && PWM
+> +	select REGMAP_I2C
+> +	help
+> +	  This supports MPS MP3309C backlight WLED driver in both PWM and
+> +	  analog/I2C dimming modes.
+> +
+> +	  To compile this driver as a module, choose M here: the module will
+> +	  be called mp3309c.
+> +
+>  config BACKLIGHT_PANDORA
+>  	tristate "Backlight driver for Pandora console"
+>  	depends on TWL4030_CORE
+> diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+> index f72e1c3c59e9..1af583de665b 100644
+> --- a/drivers/video/backlight/Makefile
+> +++ b/drivers/video/backlight/Makefile
+> @@ -44,6 +44,7 @@ obj-$(CONFIG_BACKLIGHT_LP855X)		+= lp855x_bl.o
+>  obj-$(CONFIG_BACKLIGHT_LP8788)		+= lp8788_bl.o
+>  obj-$(CONFIG_BACKLIGHT_LV5207LP)	+= lv5207lp.o
+>  obj-$(CONFIG_BACKLIGHT_MAX8925)		+= max8925_bl.o
+> +obj-$(CONFIG_BACKLIGHT_MP3309C)		+= mp3309c.o
+>  obj-$(CONFIG_BACKLIGHT_MT6370)		+= mt6370-backlight.o
+>  obj-$(CONFIG_BACKLIGHT_OMAP1)		+= omap1_bl.o
+>  obj-$(CONFIG_BACKLIGHT_PANDORA)		+= pandora_bl.o
+> diff --git a/drivers/video/backlight/mp3309c.c b/drivers/video/backlight/mp3309c.c
+> new file mode 100644
+> index 000000000000..470c960d7438
+> --- /dev/null
+> +++ b/drivers/video/backlight/mp3309c.c
+> @@ -0,0 +1,395 @@
+> +// SPDX-License-Identifier: GPL-2.0+
 
-I had another look today, and everything look good to me now.
+This is an obsolete spelling. Should be:
+https://spdx.org/licenses/GPL-2.0-or-later.html
 
-Whole series
 
-Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+> +static int mp3309c_bl_update_status(struct backlight_device *bl)
+> +{
+> +	struct mp3309c_chip *chip = bl_get_data(bl);
+> +	int brightness = backlight_get_brightness(bl);
+> +	struct pwm_state pwmstate;
+> +	unsigned int analog_val, bits_val;
+> +	int i, ret;
+> +
+> +	if (chip->pdata->dimming_mode == DIMMING_PWM) {
+> +		/*
+> +		 * PWM dimming mode
+> +		 */
+> +		pwm_get_state(chip->pwmd, &pwmstate);
+> +		pwm_set_relative_duty_cycle(&pwmstate, brightness,
+> +					    chip->pdata->max_brightness);
+> +		pwmstate.enabled = true;
+> +		ret = pwm_apply_state(chip->pwmd, &pwmstate);
+> +		if (ret)
+> +			return ret;
+> +
+> +		switch (chip->pdata->status) {
+> +		case FIRST_POWER_ON:
+> +		case BACKLIGHT_OFF:
+> +			/*
+> +			 * After 20ms of pwm off, we must enable the chip again
+> +			 */
+> +			if (brightness > 0) {
+> +				msleep_interruptible(10);
+
+This is either missing a return code check (and working bail-out logic)
+or, more likely, shouldn't be interruptible.
+
+Also it looks like the delay time and the comment do not match.
+
+However, when these and the license comment is addressed please add my:
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+
+
+Daniel.

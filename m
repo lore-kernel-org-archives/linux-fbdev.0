@@ -2,133 +2,59 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB75FCE79AA
-	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Sep 2023 19:05:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04965CE79AE
+	for <linux-fbdev@archiver.kernel.org>; Wed, 20 Sep 2023 07:57:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229853AbjISTFS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Sep 2023 15:05:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60642 "EHLO
+        id S232575AbjITH5u (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 20 Sep 2023 03:57:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60910 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232088AbjISTFQ (ORCPT
+        with ESMTP id S232937AbjITH5s (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Sep 2023 15:05:16 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B5C1B3;
-        Tue, 19 Sep 2023 12:05:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
- t=1695150305; x=1695755105; i=deller@gmx.de;
- bh=dwOFLat/09ZJ5a2N0ZwfI8NSGgbcVOgBd49x7DssaFU=;
- h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=PuwyhZ9ByNuO/j9G9ZPqNyO/+lGpbFEbggAXgl07hgc982nDFSf0BEJiHZ50yTJdnHL+yNo/u+S
- VPd3ZI0+2PAIL5tMlq1Eg7PttpKualTq6kcIwDxKy+ixkYzzrwvXD5l5Cw7Y4emwzSJv72/WC1ePB
- LqbmGy7fCeBjl4FssPnRce26NbmTthMpWyHzK74OiTfVR28VwUcvZX1pWvlinExF2R0z8NR6Mcyh6
- pNGxFt9zHSc36IZ1fM0f246kR5YwkG6odo9zs+w1ojbVyyny2/oIr+msVqHtPN4S/usDYlYbs68Jj
- Zm4e5g4dSJHFeqSi0bZfh+TwIEEpWYXubSXw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.152.254]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1N8ob6-1ro4QR2ES6-015pDP; Tue, 19
- Sep 2023 21:05:05 +0200
-Message-ID: <6f192cac-45d6-ccf9-7a3b-22a39ed77681@gmx.de>
-Date:   Tue, 19 Sep 2023 21:05:04 +0200
+        Wed, 20 Sep 2023 03:57:48 -0400
+X-Greylist: delayed 384 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 20 Sep 2023 00:57:42 PDT
+Received: from mail.venturelinkage.com (mail.venturelinkage.com [80.211.143.151])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C8D6AF
+        for <linux-fbdev@vger.kernel.org>; Wed, 20 Sep 2023 00:57:42 -0700 (PDT)
+Received: by mail.venturelinkage.com (Postfix, from userid 1002)
+        id 53C5782826; Wed, 20 Sep 2023 09:51:09 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=venturelinkage.com;
+        s=mail; t=1695196277;
+        bh=7iowqdzve/IIiUUjcEwx8j3uMrVqqiE7R9zbOCKRV9Q=;
+        h=Date:From:To:Subject:From;
+        b=CVp8PY7pjZaKCxQe7BKCFpvY94jd75MneJ6LaqwHcMlmohmPP/2yCKAtF9AVIFVnf
+         QlUdZoFkv27llC4CILoG7bGnYST/YLBUoh9wSj9i5qOoMFfqtRF2vWK7MvtQu2ShWG
+         3QXddrUSfOoVBs2brvpIKrtltOkUocsbCdEAJ/CIjsIaJKc+BMbPQcHwCYZMM+mmwl
+         INiFEB7m1PYCqEDYpLmoB5wIXpvRLhxW0GyKjqpuycGjB9qzsj7b4ofXhoXmTZXzaf
+         +c7V8naRuJIN7vYeP5I9LBzNAHYj18tidPePXb70YT6CDlUSF8ay8Vy+5TVa06iBhw
+         zMhKc1/aRne6A==
+Received: by mail.venturelinkage.com for <linux-fbdev@vger.kernel.org>; Wed, 20 Sep 2023 07:51:03 GMT
+Message-ID: <20230920084500-0.1.l.12a2.0.a8hr1q63f9@venturelinkage.com>
+Date:   Wed, 20 Sep 2023 07:51:03 GMT
+From:   "Lukas Varga" <lukas.varga@venturelinkage.com>
+To:     <linux-fbdev@vger.kernel.org>
+Subject: =?UTF-8?Q?Popt=C3=A1vka?=
+X-Mailer: mail.venturelinkage.com
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH 1/2] video: fbdev: core: cfbcopyarea: fix sloppy typing
-Content-Language: en-US
-To:     Sergey Shtylyov <s.shtylyov@omp.ru>,
-        Daniel Vetter <daniel@ffwll.ch>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Cc:     stable@vger.kernel.org
-References: <20230918205209.11709-1-s.shtylyov@omp.ru>
- <20230918205209.11709-2-s.shtylyov@omp.ru>
- <d436d191-9580-c3ca-1583-02c9cff58494@gmx.de>
- <03096350-c12a-b442-b695-3233a46d1008@omp.ru>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <03096350-c12a-b442-b695-3233a46d1008@omp.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:VWdmznwkFNxkUIlNzL6BBFXovi8RBYTT4IP1/01ZhF7f8lR5WiS
- TjIWMiEgOP0il+QgGe21rmxE0RERw6oyPl19Udp+mH0QIcO/yRWxry7vEkTFz4+R+U7ebsu
- iPpXOmEA3t092rnwqNCjSJ9SnMHYyW4N5nJTacBW06cUfiqjnQF4Eh8c7aANbE1Nt7Wp/pp
- jR1IaGRkW4ZyaEGA5iBmQ==
-UI-OutboundReport: notjunk:1;M01:P0:LGmTAwygX2E=;5We/VlHTzu19f1QaU+jfG0oaH8p
- BxyyPVYZ9o3KcDOo6MkrZb4u0eXjTHqdXvGRRCBzWPSrQ8G72fEDJJsbZZpTCuK9tq/IShpXe
- jUogQZJWYo7tNrH80+4yHm1UOQFmmHTznznuaDTpb+mXbOMlePzxj9DfldT5H2LFKq7a6mgwR
- Q2+fQbH+8ujtCqgcyS4b7wZ7SCH6zCPpMhHyeYvhzbEokwv3huQh3NNBQtiipKHuVpAVMGK4I
- nn3swnoh1CwvMHBmOskfjYJqWbYIlX9WNgytMTAbEVz64EiJb4EcIg+S82KW5B1MMQ1/9Aj+L
- VMEKccQX4kzoaLw0csT7ywzy8nkrZ9nHcRj2LhkQiLtI6VVVupgDQ91O0l7kOYFSRdVcMNFhe
- 9w3ugbubSCVvFpzpzo5BuJOBaR95WgDMAJlGmgIGGYcZfyhifqP6SlQK+hakRaegzUsKxqogH
- ypYMFt+AL2+XkQ4+NRUrRK76iN45JO8q7L+EsKXcMmcE6lkdIwVL30htEPAdyji/CRmGJa0yA
- 9Yl+nzXz0LhM8FeVh9EZAy1iuNba820vVNBYfqIwCc73sZwAJmY/rg5J45jdI/koHlqX+lF8q
- Ze3hBHrH5ICXnNV3N9O5QMnM6oJ9CXeB5DQi4oPcTQnCEmhhzXxOzeWw42BeAqYatP56sZqlR
- Obwe9WSPygJxUYZQ5qqpNQsxTeq08KDvAVDXKEeqBdsHeQEivK+i4rQrDBTZAgyoXIkRy99aO
- s7s1G6KteM9ki5RESK77BEwsFwwnbqc3gn6KpW1IhY/2hcUaN5ZQ6XZubAS1td3hSVTyv45KK
- VQY0gQvWSyF2VJ/rEmdNowD7AiRIryqJLvoJnIYO8U7EHNJIz6VV/UqzG5hrDUwirkNsS386d
- voB1MiFRf/t4E/eghHhjJPqGvN0rqxpjS2kJfsq4MyUU8E1eG+FP09fI9naMIAyuCV3XTzoXk
- ELt0hg==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 9/19/23 20:55, Sergey Shtylyov wrote:
-> On 9/19/23 10:05 AM, Helge Deller wrote:
->>> In cfb_copyarea(), when initializing *unsigned long const* bits_per_li=
-ne
->>> __u32 typed fb_fix_screeninfo::line_length gets multiplied by 8u -- wh=
-ich
->>> might overflow __u32; multiplying by 8UL instead should fix that...
->>> Also, that bits_per_line constant is used to advance *unsigned* src_id=
-x
->>> and dst_idx variables -- which might be overflowed as well; declaring
->>> them as *unsigned long* should fix that too...
->>>
->>> Found by Linux Verification Center (linuxtesting.org) with the Svace s=
-tatic
->>> analysis tool.
->>>
->>> Signed-off-by: Sergey Shtylyov <s.shtylyov@omp.ru>
->>> Cc: stable@vger.kernel.org
->>> ---
->>>  =C2=A0 drivers/video/fbdev/core/cfbcopyarea.c | 5 +++--
->>>  =C2=A0 1 file changed, 3 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/video/fbdev/core/cfbcopyarea.c b/drivers/video/fb=
-dev/core/cfbcopyarea.c
->>> index 6d4bfeecee35..b67ba69ea2fb 100644
->>> --- a/drivers/video/fbdev/core/cfbcopyarea.c
->>> +++ b/drivers/video/fbdev/core/cfbcopyarea.c
->>> @@ -382,10 +382,11 @@ void cfb_copyarea(struct fb_info *p, const struc=
-t fb_copyarea *area)
->>>  =C2=A0 {
->>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 u32 dx =3D area->dx, dy =3D area->dy, =
-sx =3D area->sx, sy =3D area->sy;
->>>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 u32 height =3D area->height, width =3D=
- area->width;
->>> -=C2=A0=C2=A0=C2=A0 unsigned long const bits_per_line =3D p->fix.line_=
-length*8u;
->>> +=C2=A0=C2=A0=C2=A0 unsigned long const bits_per_line =3D p->fix.line_=
-length * 8UL;
->>
->> you wrote:
->>> __u32 typed fb_fix_screeninfo::line_length gets multiplied by 8u -- wh=
-ich
->>> might overflow __u32; multiplying by 8UL instead should fix that...
->>
->> This would only be true on 64-bit CPUs, where unsigned long is 64 bits,
->
->     Right, Svace was run with the arm64 and x86_64 configs -- and I forg=
-ot
-> to make the emphasis on the 64-bit specifics here...
->
->> while on 32-bit CPUs, it's still 32 bits (same as _u32).
->
->     Yes, indeed. That *unsigned long const* doesn't seem justified
-> at all then...
->
->> Instead we could make bits_per_line __u32 (or unsigned int) too.
->
->     Yes. Will you accept such a patch? :-)
+Dobr=C3=A9 r=C3=A1no,
 
-Sure.
+Dovolil jsem si V=C3=A1s kontaktovat, proto=C5=BEe m=C3=A1m z=C3=A1jem ov=
+=C4=9B=C5=99it mo=C5=BEnost nav=C3=A1z=C3=A1n=C3=AD spolupr=C3=A1ce.
 
-Helge
+Podporujeme firmy p=C5=99i z=C3=ADsk=C3=A1v=C3=A1n=C3=AD nov=C3=BDch obch=
+odn=C3=ADch z=C3=A1kazn=C3=ADk=C5=AF.
+
+M=C5=AF=C5=BEeme si promluvit a poskytnout podrobnosti?
+
+V p=C5=99=C3=ADpad=C4=9B z=C3=A1jmu V=C3=A1s bude kontaktovat n=C3=A1=C5=A1=
+ anglicky mluv=C3=ADc=C3=AD z=C3=A1stupce.
+
+
+Pozdravy
+Lukas Varga

@@ -2,201 +2,110 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C522CE79AE
-	for <linux-fbdev@archiver.kernel.org>; Wed, 20 Sep 2023 09:33:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82ED9C004D6
+	for <linux-fbdev@archiver.kernel.org>; Wed, 20 Sep 2023 15:07:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234171AbjITJdN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 20 Sep 2023 05:33:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40350 "EHLO
+        id S235382AbjITPHT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 20 Sep 2023 11:07:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48772 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234132AbjITJdM (ORCPT
+        with ESMTP id S235264AbjITPHS (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 20 Sep 2023 05:33:12 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E647883
-        for <linux-fbdev@vger.kernel.org>; Wed, 20 Sep 2023 02:32:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1695202338;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=sQo8vDODXx3fYaCE4WfuBHpjkAu0nWv+Aif1bIm+G0c=;
-        b=KCzy7X43Ky3iuukcyVTgy1FmssN+P9IW4wqXUj8y1MHwDQHPB1Ii5OHzLZwkgoiTkV6yOW
-        LbpVOT5imfpn0LMrF+dWZVyN4zJO2ZilDndT7aH+JNYR9tclgT9H6SqZTsMe3jPuwLtHAx
-        pIyuq37p0QX6eyRIC9zmouQoavx1IjA=
-Received: from mail-ed1-f71.google.com (mail-ed1-f71.google.com
- [209.85.208.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-338-24IZi0_-PLm-Qxgcg1kRSA-1; Wed, 20 Sep 2023 05:32:17 -0400
-X-MC-Unique: 24IZi0_-PLm-Qxgcg1kRSA-1
-Received: by mail-ed1-f71.google.com with SMTP id 4fb4d7f45d1cf-530b29ca69dso3286006a12.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 20 Sep 2023 02:32:16 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695202336; x=1695807136;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=sQo8vDODXx3fYaCE4WfuBHpjkAu0nWv+Aif1bIm+G0c=;
-        b=dZo7Y1jqt6Z0ioWKiAFSXIXeg9KhU1lKjdRGYkTvmLoL+nxDSi3L8a8sd7QeqYj/SC
-         xqqux5Iml5xYFeupmJL5cB8QwK7G8Zx4ZOQ+9pN6NhBagVMBl+YJndArMLiMtmFTUU2+
-         LKD4nrVhPa6Tk1e67C9bqOEoshB1y2o0uXRHpq0cGMXmjDVXOVVahKMKJKOBkZNNi4jl
-         wkkX550N31lz5h3z6BcOyeIH+gJCgke8caAhBG5W0TrDr5AHgdmNwbjRi+xs+whlmiTT
-         hroSM3j3K4I+Nzt3ZxYgJGNpBKnr83Jc9Axswr5CF0Okjj+mliIjVPu/N5cA7DY6MH8O
-         XCrg==
-X-Gm-Message-State: AOJu0YzOsJLEsZTqz9NrvmVF0iB+iiSljPHsUxfu3IpFXFtScTQF9BPd
-        sYhZSkSBczvJLrmv8iyG4mg9KahGDJd4PY38bP9APC+72i/rA4IAKOll0Mo5gh2pNx7jmqjd8Zd
-        VJdc8CHm7ADW0gFPx/YjpHmQ=
-X-Received: by 2002:aa7:c54f:0:b0:530:ccf7:37af with SMTP id s15-20020aa7c54f000000b00530ccf737afmr1655279edr.12.1695202335953;
-        Wed, 20 Sep 2023 02:32:15 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IFaUP5dVk9CWrrPSr4tZuRr3vNxGCrFv9HX3iFf0s8C4SfG5v0k/wBMpGQFXLN/ulBtdLvDqw==
-X-Received: by 2002:aa7:c54f:0:b0:530:ccf7:37af with SMTP id s15-20020aa7c54f000000b00530ccf737afmr1655263edr.12.1695202335605;
-        Wed, 20 Sep 2023 02:32:15 -0700 (PDT)
-Received: from ?IPV6:2001:1c00:c32:7800:5bfa:a036:83f0:f9ec? (2001-1c00-0c32-7800-5bfa-a036-83f0-f9ec.cable.dynamic.v6.ziggo.nl. [2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
-        by smtp.gmail.com with ESMTPSA id fg5-20020a056402548500b00530aae2d5bfsm6429345edb.9.2023.09.20.02.32.14
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 20 Sep 2023 02:32:14 -0700 (PDT)
-Message-ID: <b85fe6f1-3c1b-4bca-25c5-7b0e6441ed27@redhat.com>
-Date:   Wed, 20 Sep 2023 11:32:14 +0200
+        Wed, 20 Sep 2023 11:07:18 -0400
+Received: from out5-smtp.messagingengine.com (out5-smtp.messagingengine.com [66.111.4.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A719AF;
+        Wed, 20 Sep 2023 08:07:12 -0700 (PDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
+        by mailout.nyi.internal (Postfix) with ESMTP id DE07F5C01BB;
+        Wed, 20 Sep 2023 11:07:08 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute6.internal (MEProxy); Wed, 20 Sep 2023 11:07:08 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+        :cc:content-type:content-type:date:date:from:from:in-reply-to
+        :in-reply-to:message-id:mime-version:references:reply-to:sender
+        :subject:subject:to:to; s=fm1; t=1695222428; x=1695308828; bh=ms
+        4LUioRCx9g5Fcd6Nj2Z553BmfY/nfNy++/9p0eMTE=; b=BHuLRfyyuipWu6am6/
+        M3C5KuEVtPRgHdnUSWE2tXf1NF5z/c0HjnG1qXb1WaGZu8Uq7k1Lq5DXx3SfUhLJ
+        +AGNDQ0Gvdy1xUAqZGHxFG0dPweDd4IWaDHtLa1Ju8frSZGFQNlRlxX/YTmR+QTm
+        FrxvvQHeQGOAH4tKQgxAP8/n/XDBfPur4ivYpz7AqfbRaoZFC/0DB/LRt6ogTvDK
+        ibhf89hk7VyhvpN4sS3aoNoWA5NNg9KqAE+6NjLPwBok0RZB1mJOs3iV6MFt/MH4
+        Dtvydol1NjIVeiH0yas9c7mbU50veoZbaGHU9IbQP2FByO/vbbLSQKTuw+/nHr+K
+        WV2g==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-type:content-type:date:date
+        :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+        :x-sasl-enc; s=fm2; t=1695222428; x=1695308828; bh=ms4LUioRCx9g5
+        Fcd6Nj2Z553BmfY/nfNy++/9p0eMTE=; b=qgZHhiyUGnQdiRx/usTNHt32rPNJr
+        9B5WYZMfGf4Wh7FyO6A52lomoJ9ynn4fijFhbL1uXxQvXbZqDqwI3RtNixlUDdBY
+        nr7g83/UKByMv2jpbfoqr0MMhEyLeVl4HTvngpxiAH2TNzYOuQTYsysj+12PQUhh
+        NfZeCSd5kQ2vll+YcV+q/+APQLD6yBY/5mJ6KzJ/VXaqAf54B8D5OfAW8ja+q4S8
+        OwObw1sDeIiXVgJxGcmw5NakTXzLLouS4lIeLJo/w8h5AT4kacfRuTF+izO/lkmJ
+        F56Yyuk075kXqXJcxdmlOPxlIIi+Xm++i+2jPz5jH6sqj1NLjf7H1eCog==
+X-ME-Sender: <xms:nAoLZYwrTKoT42bcnpXZ4-w53D73C76DbJIuYsMLzYvbbB86qR_ffQ>
+    <xme:nAoLZcRulMbaUjUAhbE-QFya1Gxyi5QzCzhATtS7FolBRFqxN9c07Aga3yV4Qoxiq
+    eWbYSyImVFth6dskDE>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedviedrudekfedgkeehucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
+    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
+    htvghrnhepffehueegteeihfegtefhjefgtdeugfegjeelheejueethfefgeeghfektdek
+    teffnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
+    hrnhgusegrrhhnuggsrdguvg
+X-ME-Proxy: <xmx:nAoLZaWZx_TRLb7BjvQU3lpTtrt3jJpa0avXJjdRrHX-EzABxErB_A>
+    <xmx:nAoLZWgVBoycMfqp10qcSIzofTqfa999ofexvDZjpX2k4ORya7JL9g>
+    <xmx:nAoLZaBR9j0jFMUdPxCKTuDNgoxms16P9lFOofBz07ktzPmbvA4Yng>
+    <xmx:nAoLZe6LFDULF3sZ_R6NM9MvFBnTENxcVdrZ0bbn_jFL0BMhje4eJA>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+        id EC7C5B60089; Wed, 20 Sep 2023 11:07:07 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-761-gece9e40c48-fm-20230913.001-gece9e40c
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH v3 1/1] backlight: hid_bl: Add VESA VCP HID backlight
- driver
-To:     Julius Zint <julius@zint.sh>
-Cc:     =?UTF-8?Q?Thomas_Wei=c3=9fschuh?= <thomas@t-8ch.de>,
-        Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Jiri Kosina <jikos@kernel.org>,
-        Benjamin Tissoires <benjamin.tissoires@redhat.com>,
-        Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-input@vger.kernel.org,
-        linux-fbdev@vger.kernel.org
-References: <20230820094118.20521-1-julius@zint.sh>
- <20230820094118.20521-2-julius@zint.sh>
- <f2e1ab9e-e691-42e1-a600-42744f692922@t-8ch.de>
- <9a5364de-28e1-1d4a-1d3a-d6dcedb7e659@zint.sh>
- <f95da7ff-06dd-2c0e-d563-7e5ad61c3bcc@redhat.com>
- <afed6395-8680-7e2c-d88c-8bb5f3c39346@zint.sh>
-Content-Language: en-US, nl
-From:   Hans de Goede <hdegoede@redhat.com>
-In-Reply-To: <afed6395-8680-7e2c-d88c-8bb5f3c39346@zint.sh>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Message-Id: <df784a58-23f8-43d2-8506-ab1d351da8fe@app.fastmail.com>
+In-Reply-To: <20230912135050.17155-1-tzimmermann@suse.de>
+References: <20230912135050.17155-1-tzimmermann@suse.de>
+Date:   Wed, 20 Sep 2023 11:06:48 -0400
+From:   "Arnd Bergmann" <arnd@arndb.de>
+To:     "Thomas Zimmermann" <tzimmermann@suse.de>,
+        "Michael Ellerman" <mpe@ellerman.id.au>,
+        "Nicholas Piggin" <npiggin@gmail.com>,
+        "Christophe Leroy" <christophe.leroy@csgroup.eu>,
+        "Helge Deller" <deller@gmx.de>
+Cc:     linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org,
+        linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+        linux-mips@vger.kernel.org, sparclinux@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        Linux-Arch <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH v4 0/5] ppc, fbdev: Clean up fbdev mmap helper
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+On Tue, Sep 12, 2023, at 09:48, Thomas Zimmermann wrote:
+> Clean up and rename fb_pgprotect() to work without struct file. Then
+> refactor the implementation for PowerPC. This change has been discussed
+> at [1] in the context of refactoring fbdev's mmap code.
+>
+> The first two patches update fbdev and replace fbdev's fb_pgprotect()
+> with pgprot_framebuffer() on all architectures. The new helper's stream-
+> lined interface enables more refactoring within fbdev's mmap
+> implementation.
+>
+> Patches 3 to 5 adapt PowerPC's internal interfaces to provide
+> phys_mem_access_prot() that works without struct file. Neither the
+> architecture code or fbdev helpers need the parameter.
+>
+> v4:
+> 	* fix commit message (Christophe)
+> v3:
+> 	* rename fb_pgrotect() to pgprot_framebuffer() (Arnd)
 
-On 9/19/23 19:46, Julius Zint wrote:
-> 
-> 
-> On Wed, 6 Sep 2023, Hans de Goede wrote:
-> 
->> Hi Julius,
->>
->> On 9/4/23 21:02, Julius Zint wrote:
->>>
->>>
->>> On Mon, 4 Sep 2023, Thomas Weißschuh wrote:
->>>
->>>> +Cc Hans who ins involved with the backlight subsystem
->>>>
->>>> Hi Julius,
->>>>
->>>> today I stumbled upon a mail from Hans [0], which explains that the
->>>> backlight subsystem is not actually a good fit (yet?) for external
->>>> displays.
->>>>
->>>> It seems a new API is in the works that would better fit, but I'm not
->>>> sure about the state of this API. Maybe Hans can clarify.
->>>>
->>>> This also ties back to my review question how userspace can figure out
->>>> to which display a backlight devices applies. So far it can not.
->>>>
->>>> [0] https://lore.kernel.org/lkml/7f2d88de-60c5-e2ff-9b22-acba35cfdfb6@redhat.com/
->>>>
->>>
->>> Hi Thomas,
->>>
->>> thanks for the hint. I will make sure to give this a proper read and
->>> see, if it fits my use case better then the current backlight subsystem.
->>
->> Note the actual proposal for the new usespace API for display brightness
->> control is here:
->>
->> https://lore.kernel.org/dri-devel/b61d3eeb-6213-afac-2e70-7b9791c86d2e@redhat.com/
->>
->> I have finished / stabilized the backlight code refactor which I landed
->> in 6.1, which is a prerequisite for the above proposal. But I have not
->> been able to make time to actually implement the above proposal; and
->> I don't know when I will be able to make time for this.
->>
->>> Especially since I wasnt able to properly address your other review
->>> comments for now. You are right that the name should align better with
->>> the kernel module and also, that it is possible for multiple displays to
->>> be attached.
->>>
->>> In its current state, this would mean that you could only control the
->>> backlight for the first HID device (enough for me :-).
->>>
->>> The systemd-backlight@.service uses not only the file name, but also the
->>> full bus path for storing/restoring backlights. I did not yet get around
->>> to see how the desktops handle brightness control, but since the
->>> systemd-backlight@.service already uses the name, its important to stay
->>> the same over multiple boots.
->>>
->>> I would be able to get a handle on the underlying USB device and use the
->>> serial to uniquely (and persistently) name the backlight. But it does
->>> feel hacky doing it this way.
->>
->> So mutter (gnome-shell compositor library) has a similar issue when saving
->> monitor layouts and I can tell you beforehand that monitor serial numbers
->> by themselves are not unique enough. Some models just report 123456789
->> as serial and if you have a dual-monitor setup with 2 such monitors
->> and name the backlight class device <serial>-vcp-hid or something like that
->> you will still end up with 2 identical names.
->>
->> To avoid this when saving monitor layouts mutter saves both the port
->> to which the monitor is attached (e.g. DP-1 DP-2) and the serialnumber
->> and on startup / monitor hotplug when it checks to see if it has saved
->> layout info for the monitor it checks the port+serialnr combination.
->>
->> So what I think you should do is figure out a way to map which
->> VCP HID device maps to which drm-connector and then use
->> the connector-name + serial-nr to generate the backlight device name.
->>
->> We will need the mapping the a drm-connector object anyway for
->> the new brightness API proposal from above.
->>
->> Note this does NOT solve the fact that registering a new backlight
->> class device for an external monitor on a laptop will hopelessly
->> confuse userspace, see:
->>
->> https://lore.kernel.org/lkml/7f2d88de-60c5-e2ff-9b22-acba35cfdfb6@redhat.com/
->>
->> Regards,
->>
->> Hans
->>
-> 
-> Thank you for all this additional information. I have watched the talks
-> and read up upon the mail threads you`ve linked.
+I had another look today, and everything look good to me now.
 
-Now I wonder which presentation you have watched, did you watch
-the old XDC2014 presentation ?  Note I gave a much more up2date
-presentation on this at kernel-recipes last year:
+Whole series
 
-https://kernel-recipes.org/en/2022/talks/new-userspace-api-for-display-panel-brightness-control/
-
-> I will see if I can make the mapping to the DRM connector and plan to
-> update this patchset.
-
-Sounds good.
-
-Regards,
-
-Hans
-
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>

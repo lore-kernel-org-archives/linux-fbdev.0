@@ -2,33 +2,33 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CEEE8E7D0A8
-	for <linux-fbdev@archiver.kernel.org>; Thu, 21 Sep 2023 18:50:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDC4EE7D0A9
+	for <linux-fbdev@archiver.kernel.org>; Thu, 21 Sep 2023 18:50:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230004AbjIUSvB convert rfc822-to-8bit (ORCPT
+        id S230314AbjIUSvD convert rfc822-to-8bit (ORCPT
         <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 21 Sep 2023 14:51:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59198 "EHLO
+        Thu, 21 Sep 2023 14:51:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46450 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230016AbjIUSur (ORCPT
+        with ESMTP id S230030AbjIUSur (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Thu, 21 Sep 2023 14:50:47 -0400
 Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1550F8849F;
-        Thu, 21 Sep 2023 10:39:03 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1BD2788490;
+        Thu, 21 Sep 2023 10:38:59 -0700 (PDT)
 Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
           by outpost.zedat.fu-berlin.de (Exim 4.95)
           with esmtps (TLS1.3)
           tls TLS_AES_256_GCM_SHA384
           (envelope-from <glaubitz@zedat.fu-berlin.de>)
-          id 1qjDgT-003FyF-1a; Thu, 21 Sep 2023 09:01:09 +0200
+          id 1qjDgo-003G9s-Fd; Thu, 21 Sep 2023 09:01:30 +0200
 Received: from p5b13a40a.dip0.t-ipconnect.de ([91.19.164.10] helo=[192.168.178.81])
           by inpost2.zedat.fu-berlin.de (Exim 4.95)
           with esmtpsa (TLS1.3)
           tls TLS_AES_256_GCM_SHA384
           (envelope-from <glaubitz@physik.fu-berlin.de>)
-          id 1qjDgS-0028lF-Ps; Thu, 21 Sep 2023 09:01:08 +0200
-Message-ID: <bb88a97216ed9bb5314cb215f5691013d2010f1f.camel@physik.fu-berlin.de>
+          id 1qjDgo-0028oM-87; Thu, 21 Sep 2023 09:01:30 +0200
+Message-ID: <a720e92592db824e65d0fcc03d89e20ea59b11a6.camel@physik.fu-berlin.de>
 Subject: Re: [PATCH] fbdev/sh7760fb: Depend on FB=y
 From:   John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
 To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
@@ -37,7 +37,7 @@ To:     Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org, oe-kbuild-all@lists.linux.dev,
         kernel test robot <lkp@intel.com>
-Date:   Thu, 21 Sep 2023 09:01:07 +0200
+Date:   Thu, 21 Sep 2023 09:01:29 +0200
 In-Reply-To: <20230918090400.13264-1-tzimmermann@suse.de>
 References: <20230918090400.13264-1-tzimmermann@suse.de>
 Content-Type: text/plain; charset="UTF-8"

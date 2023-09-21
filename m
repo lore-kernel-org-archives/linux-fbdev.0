@@ -2,90 +2,111 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6637E7D0A8
-	for <linux-fbdev@archiver.kernel.org>; Thu, 21 Sep 2023 19:30:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59801E7D0A2
+	for <linux-fbdev@archiver.kernel.org>; Thu, 21 Sep 2023 20:13:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230521AbjIUTax (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 21 Sep 2023 15:30:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43470 "EHLO
+        id S229909AbjIUUNR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 21 Sep 2023 16:13:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51968 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230487AbjIUTaK (ORCPT
+        with ESMTP id S229708AbjIUUNC (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 21 Sep 2023 15:30:10 -0400
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B6CD4AC3CC;
-        Thu, 21 Sep 2023 11:01:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
-        Content-ID:Content-Description:In-Reply-To:References;
-        bh=gdqW2btEAGTjUcr6tPXF8qJKNeNz/rAyxIMM40y9I9w=; b=SWocHAyJZpAAngQ47nwB5OeiR3
-        YOZKLNFRzgqPHosliGblFbf62gIeaDU6/FjBeIqe4fSke+drAQNrno+yRUjWC/8YrkDRBb3xeUVNe
-        v1aa3Yx6Djf7J4Kcs+fGBg1EcU4zRp1wV91uFHEmQFq8z/7kH624JMHQZlzQSa7+ec1kksacwnOkN
-        cmjYrIMBWiI9qaFkO3kRcVzdbmFhGQHki/2SDPEdpVau5CEW5xVNFRBr6any6+WhfnmAlIJJ5rbhL
-        m9vVbDkwAcYJv4JkF0jSsAxvB4w/bYDTanh0v+NcFWi+jtEWbbbS3otMbbq0oDgbPgA1sAvhUi2mu
-        9YNiyNCw==;
-Received: from [2601:1c2:980:9ec0::9fed] (helo=bombadil.infradead.org)
-        by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1qjClk-005Eii-0U;
-        Thu, 21 Sep 2023 06:02:32 +0000
-From:   Randy Dunlap <rdunlap@infradead.org>
+        Thu, 21 Sep 2023 16:13:02 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 75F8256D14
+        for <linux-fbdev@vger.kernel.org>; Thu, 21 Sep 2023 10:27:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1695317218;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=8AP4WAkfm0g8fnMPEPLH78szMDWqxElEcpAiYehWd/g=;
+        b=Folh+jQJL/OPeBidcyITKXn5+93z3abMwWsAZPaYio+MDo3UHBrZKqDdVNgHHx5/zw4XFe
+        3WMUpfTNcfMCCZx7ChpDd+HmEr6p1ibwYwaPxRgaoDb0dtL0irXRF3it3xDXLUCxPEXxrX
+        VDaNTolBD+nRIPGeO1IqbFRoxKy/kt4=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-584-Ku-6zn3_OjOqTQ_ymnSqzQ-1; Thu, 21 Sep 2023 07:04:42 -0400
+X-MC-Unique: Ku-6zn3_OjOqTQ_ymnSqzQ-1
+Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com [10.11.54.6])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 6C410185A79B;
+        Thu, 21 Sep 2023 11:04:41 +0000 (UTC)
+Received: from MiWiFi-R3L-srv.redhat.com (unknown [10.72.112.40])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id C03FF2156711;
+        Thu, 21 Sep 2023 11:04:34 +0000 (UTC)
+From:   Baoquan He <bhe@redhat.com>
 To:     linux-kernel@vger.kernel.org
-Cc:     Randy Dunlap <rdunlap@infradead.org>,
-        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-        linux-sh@vger.kernel.org
-Subject: [PATCH] fbdev: sh7760fb: require FB=y to build cleanly
-Date:   Wed, 20 Sep 2023 23:02:28 -0700
-Message-ID: <20230921060228.29041-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.42.0
+Cc:     linux-arch@vger.kernel.org, linux-mm@kvack.org,
+        akpm@linux-foundation.org, arnd@arndb.de, jiaxun.yang@flygoat.com,
+        mpe@ellerman.id.au, geert@linux-m68k.org, mcgrof@kernel.org,
+        hch@infradead.org, tsbogend@alpha.franken.de, f.fainelli@gmail.com,
+        deller@gmx.de, Baoquan He <bhe@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH v5 1/4] video: fbdev: atyfb: only use ioremap_uc() on i386 and ia64
+Date:   Thu, 21 Sep 2023 19:04:21 +0800
+Message-ID: <20230921110424.215592-2-bhe@redhat.com>
+In-Reply-To: <20230921110424.215592-1-bhe@redhat.com>
+References: <20230921110424.215592-1-bhe@redhat.com>
 MIME-Version: 1.0
+Content-type: text/plain
 Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.6
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fix build errors when CONFIG_FB=m and CONFIG_FB_SH7760=y:
+From: Arnd Bergmann <arnd@arndb.de>
 
-sh2-linux-ld: drivers/video/fbdev/sh7760fb.o: in function `sh7760fb_probe':
-sh7760fb.c:(.text+0x374): undefined reference to `framebuffer_alloc'
-sh2-linux-ld: sh7760fb.c:(.text+0x394): undefined reference to `fb_videomode_to_var'
-sh2-linux-ld: sh7760fb.c:(.text+0x3a0): undefined reference to `fb_alloc_cmap'
-sh2-linux-ld: sh7760fb.c:(.text+0x3a4): undefined reference to `register_framebuffer'
-sh2-linux-ld: sh7760fb.c:(.text+0x3ac): undefined reference to `fb_dealloc_cmap'
-sh2-linux-ld: sh7760fb.c:(.text+0x434): undefined reference to `framebuffer_release'
-sh2-linux-ld: drivers/video/fbdev/sh7760fb.o: in function `sh7760fb_remove':
-sh7760fb.c:(.text+0x800): undefined reference to `unregister_framebuffer'
-sh2-linux-ld: sh7760fb.c:(.text+0x804): undefined reference to `fb_dealloc_cmap'
-sh2-linux-ld: sh7760fb.c:(.text+0x814): undefined reference to `framebuffer_release'
-sh2-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0xc): undefined reference to `fb_io_read'
-sh2-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x10): undefined reference to `fb_io_write'
-sh2-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x2c): undefined reference to `cfb_fillrect'
-sh2-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x30): undefined reference to `cfb_copyarea'
-sh2-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x34): undefined reference to `cfb_imageblit'
+ioremap_uc() is only meaningful on old x86-32 systems with the PAT
+extension, and on ia64 with its slightly unconventional ioremap()
+behavior, everywhere else this is the same as ioremap() anyway.
 
-Fixes: 4a25e41831ee ("video: sh7760fb: SH7760/SH7763 LCDC framebuffer driver")
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Daniel Vetter <daniel@ffwll.ch>
+Change the only driver that still references ioremap_uc() to only do so
+on x86-32/ia64 in order to allow removing that interface at some
+point in the future for the other architectures.
+
+On some architectures, ioremap_uc() just returns NULL, changing
+the driver to call ioremap() means that they now have a chance
+of working correctly.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Baoquan He <bhe@redhat.com>
+Reviewed-by: Luis Chamberlain <mcgrof@kernel.org>
 Cc: Helge Deller <deller@gmx.de>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
 Cc: linux-fbdev@vger.kernel.org
 Cc: dri-devel@lists.freedesktop.org
-Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-Cc: linux-sh@vger.kernel.org
 ---
- drivers/video/fbdev/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/aty/atyfb_base.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff -- a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -1762,7 +1762,7 @@ config FB_COBALT
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index 5c87817a4f4c..3dcf83f5e7b4 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -3440,11 +3440,15 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
+ 	}
  
- config FB_SH7760
- 	bool "SH7760/SH7763/SH7720/SH7721 LCDC support"
--	depends on FB && (CPU_SUBTYPE_SH7760 || CPU_SUBTYPE_SH7763 \
-+	depends on FB=y && (CPU_SUBTYPE_SH7760 || CPU_SUBTYPE_SH7763 \
- 		|| CPU_SUBTYPE_SH7720 || CPU_SUBTYPE_SH7721)
- 	select FB_IOMEM_HELPERS
- 	help
+ 	info->fix.mmio_start = raddr;
++#if defined(__i386__) || defined(__ia64__)
+ 	/*
+ 	 * By using strong UC we force the MTRR to never have an
+ 	 * effect on the MMIO region on both non-PAT and PAT systems.
+ 	 */
+ 	par->ati_regbase = ioremap_uc(info->fix.mmio_start, 0x1000);
++#else
++	par->ati_regbase = ioremap(info->fix.mmio_start, 0x1000);
++#endif
+ 	if (par->ati_regbase == NULL)
+ 		return -ENOMEM;
+ 
+-- 
+2.41.0
+

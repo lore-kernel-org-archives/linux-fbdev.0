@@ -2,114 +2,105 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AF0BCD4847
-	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Sep 2023 17:53:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B874BCE7A89
+	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Sep 2023 23:27:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233406AbjIVRxH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 22 Sep 2023 13:53:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48102 "EHLO
+        id S230120AbjIVX1V (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 22 Sep 2023 19:27:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47934 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230053AbjIVRwt (ORCPT
+        with ESMTP id S230203AbjIVX1U (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 22 Sep 2023 13:52:49 -0400
-Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5BEEC1715
-        for <linux-fbdev@vger.kernel.org>; Fri, 22 Sep 2023 10:51:46 -0700 (PDT)
-Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-1c0c6d4d650so22165015ad.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 22 Sep 2023 10:51:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1695405103; x=1696009903; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=rJoQ4rDttwSQzl+h8GPO+G7mapr3BtySN8HDbnxSAIA=;
-        b=AVnjaPfNtxZiQeTDab+hYDn/Q7HWede/UtWdyr9caUwqQ8HcUnDEytBMCF1euy0Qfv
-         hEiW7tOe4CbInHmrzcsf6dqbpgcJRhn4lrj8nTGCT1LgXXvy4BoES2oZDUZ+SCdMr/d2
-         p0jT0XC6dRP0nMH/SbVJA/qVcd9SbUOMNcGg0=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695405103; x=1696009903;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=rJoQ4rDttwSQzl+h8GPO+G7mapr3BtySN8HDbnxSAIA=;
-        b=FINO8rHYEfmAdH1+Fo4LTXn5svEVu814P5KsI3vvh+RwKEiY9EWJKGSWWBr0xN1kBz
-         SSYfGvBjwghE8Gw6TPyOo8VGv/mUUzopq9sNxTkRlT7XUnYlaxTRv/xXMHlMjLOWcmrJ
-         EWHthAX2Y7jM3Pq3yyYpL+Y3w1Q63Yy1Dw6O2fgjM84ANBg2E31FmZMbkWoFn+fj+jm7
-         dcWgLpj3uAUni/Keoa0yYUCLzzV0Hu8PcM2vb4qdmUyjjj11p3SUSC09zSSLNwliZ0+N
-         vS9Ei2jA49qlMD5XaQz1QZJFmnHCUo8c+GGONkMLVQaMmz/ryrAKCpOQe2991y7qlEap
-         HC+Q==
-X-Gm-Message-State: AOJu0Yz/OKPI2b4t9do81W3kQkjCLq4Q5A/DJnhV3wxd7F6WJczKGmIj
-        PtOPTenBvzZ1r3NFfyvsjSnRvZHEXBb14HDZxnw=
-X-Google-Smtp-Source: AGHT+IE0vw3tENlyJ7OADDBoRIfgRk/i//iN/tovYi2O/PZ45AZp8cZKFhBRGB/lpULSf1SYlKBaxg==
-X-Received: by 2002:a17:902:f7c7:b0:1c5:dd24:f0bb with SMTP id h7-20020a170902f7c700b001c5dd24f0bbmr158735plw.63.1695405103381;
-        Fri, 22 Sep 2023 10:51:43 -0700 (PDT)
-Received: from www.outflux.net (198-0-35-241-static.hfc.comcastbusiness.net. [198.0.35.241])
-        by smtp.gmail.com with ESMTPSA id ji21-20020a170903325500b001b392bf9192sm3789240plb.145.2023.09.22.10.51.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 22 Sep 2023 10:51:43 -0700 (PDT)
-From:   Kees Cook <keescook@chromium.org>
-To:     Helge Deller <deller@gmx.de>
-Cc:     Kees Cook <keescook@chromium.org>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        Nathan Chancellor <nathan@kernel.org>,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        Tom Rix <trix@redhat.com>, linux-kernel@vger.kernel.org,
-        llvm@lists.linux.dev, linux-hardening@vger.kernel.org
-Subject: [PATCH] video: mmp: Annotate struct mmp_path with __counted_by
-Date:   Fri, 22 Sep 2023 10:51:41 -0700
-Message-Id: <20230922175141.work.450-kees@kernel.org>
-X-Mailer: git-send-email 2.34.1
+        Fri, 22 Sep 2023 19:27:20 -0400
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 903001A5;
+        Fri, 22 Sep 2023 16:27:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+        bh=e8yFnfvH8JKoyp3aR9fSLHVbC7SF8CuDkjkUeoufqfk=; b=JGXd2C0i6TG9hdIvK+EcQwcxjZ
+        e2EbPtXPYbToivjN0PcBI+CpyX1tperD4GPzxUU0nQMjl6QpkTBufReIFGz4l8vL0UwsT8qPyJxKP
+        d4qD20U98UCtEhtkJmFG8Vr+n0QAp5bB0jkdG7FR4yRr6UN1kTefoIJlauqPymdQk0rYsgiTkP5KN
+        Vm5UhTOBP0QVNA0Blua6DaZnYsf8+bSTAdJQPxyDVDUVRqJuXcgN080eZGHlxEJDDeeb+j2PiszA+
+        pOQEVatXhfFi9NAVF24VDGZZmFa9RtAFq1Z6B8Sp5S5zEfP3LELwI15MND2XhKIgU8WXKnjMwzBWW
+        muRgYyKg==;
+Received: from [2601:1c2:980:9ec0::9fed]
+        by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1qjpYG-009yq5-19;
+        Fri, 22 Sep 2023 23:27:12 +0000
+Message-ID: <a2537bfc-d7c6-4afc-acb3-f049ba82249e@infradead.org>
+Date:   Fri, 22 Sep 2023 16:27:11 -0700
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1140; i=keescook@chromium.org;
- h=from:subject:message-id; bh=H1/vE1vzDEkKr/pR9G2TlDq8I/0Pjxfcmq4WIBG2rX4=;
- b=owEBbQKS/ZANAwAKAYly9N/cbcAmAcsmYgBlDdQtbAyYSxB3rtoiVITScXMw9/igQbzzli6cd
- 9NaF66HGJGJAjMEAAEKAB0WIQSlw/aPIp3WD3I+bhOJcvTf3G3AJgUCZQ3ULQAKCRCJcvTf3G3A
- JgFvD/9aVhNFMXOLfYvQuvtNWdczuksf82WmWUjZ3XxnXA2fVtRIrmINsMubWXN5BqlzWb54JAd
- 2JvpfxjAjclOiZQ1TaC+xCzUTkoEbnWszJAT778l3qNuM+FynSmS8WJqcyfFWae6qACzw/UexAD
- JDEdStWGpO05F2Y+sgcCmf6rvfJS8A3MiilSGKaXl+xUHsXWS2iEBwRa4eiIE70ykhfR0HAMdXS
- L5qBSDWbXjlq0mui0yKkhE6H+xAA95ChwfuiVfcSp3s7uA5qT12D1BC9Cxy9TwGWQc/gzstl0q5
- Act4VdII0lEJtWXvl4Sj9czaYZOIflGtUky/NbxfaXdyCXBldJ15O3hex7Gy+a7jRwaFIO5lP1l
- VrXKQwNlknIw7kLZsuScN9wJEkwbAkNtn2dNeXWJRIVDRZlEDYch+nmd1ma+pDKFjLccKHNVCyn
- srI+NBBV0w6HIUUfyqXhVfXNhpxbawfW88qpoywu/N71xmeTIdAbcNhW4F7jFKwwFPOz8+ib6PB
- htPR2uKXF1fwz05xPScZwFqkbtuiB5nzGhfpttxqXo6HjJpg3OuRsjckExbw4ipKW2dbuANjPVL
- n1Saavvp4yFM7FKZDSNxqVP/nSKD8kjtleMkQzEEJwmM4S/b0Fm0MbxtSCIKC/ed6tHkllPeipu
- NODokxp /mmGU/PQ==
-X-Developer-Key: i=keescook@chromium.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: sh7760fb: require FB=y to build cleanly
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     linux-kernel@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>,
+        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+        linux-sh@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>
+References: <20230921060228.29041-1-rdunlap@infradead.org>
+ <CAMuHMdWBhCcUJw00ZzeHJ=x62RGP2MJ8H-AXRHxBrfOaGeU8Dw@mail.gmail.com>
+From:   Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <CAMuHMdWBhCcUJw00ZzeHJ=x62RGP2MJ8H-AXRHxBrfOaGeU8Dw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Prepare for the coming implementation by GCC and Clang of the __counted_by
-attribute. Flexible array members annotated with __counted_by can have
-their accesses bounds-checked at run-time checking via CONFIG_UBSAN_BOUNDS
-(for array indexing) and CONFIG_FORTIFY_SOURCE (for strcpy/memcpy-family
-functions).
+Hi Geert,
 
-As found with Coccinelle[1], add __counted_by for struct mmp_path.
 
-[1] https://github.com/kees/kernel-tools/blob/trunk/coccinelle/examples/counted_by.cocci
+On 9/22/23 00:23, Geert Uytterhoeven wrote:
+> Hi Randy,
+> 
+> On Thu, Sep 21, 2023 at 10:43 PM Randy Dunlap <rdunlap@infradead.org> wrote:
+>> Fix build errors when CONFIG_FB=m and CONFIG_FB_SH7760=y:
+>>
+>> sh2-linux-ld: drivers/video/fbdev/sh7760fb.o: in function `sh7760fb_probe':
+>> sh7760fb.c:(.text+0x374): undefined reference to `framebuffer_alloc'
+>> sh2-linux-ld: sh7760fb.c:(.text+0x394): undefined reference to `fb_videomode_to_var'
+>> sh2-linux-ld: sh7760fb.c:(.text+0x3a0): undefined reference to `fb_alloc_cmap'
+>> sh2-linux-ld: sh7760fb.c:(.text+0x3a4): undefined reference to `register_framebuffer'
+>> sh2-linux-ld: sh7760fb.c:(.text+0x3ac): undefined reference to `fb_dealloc_cmap'
+>> sh2-linux-ld: sh7760fb.c:(.text+0x434): undefined reference to `framebuffer_release'
+>> sh2-linux-ld: drivers/video/fbdev/sh7760fb.o: in function `sh7760fb_remove':
+>> sh7760fb.c:(.text+0x800): undefined reference to `unregister_framebuffer'
+>> sh2-linux-ld: sh7760fb.c:(.text+0x804): undefined reference to `fb_dealloc_cmap'
+>> sh2-linux-ld: sh7760fb.c:(.text+0x814): undefined reference to `framebuffer_release'
+>> sh2-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0xc): undefined reference to `fb_io_read'
+>> sh2-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x10): undefined reference to `fb_io_write'
+>> sh2-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x2c): undefined reference to `cfb_fillrect'
+>> sh2-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x30): undefined reference to `cfb_copyarea'
+>> sh2-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x34): undefined reference to `cfb_imageblit'
+>>
+>> Fixes: 4a25e41831ee ("video: sh7760fb: SH7760/SH7763 LCDC framebuffer driver")
+>> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> 
+> Thanks for your patch!
+> 
+>> --- a/drivers/video/fbdev/Kconfig
+>> +++ b/drivers/video/fbdev/Kconfig
+>> @@ -1762,7 +1762,7 @@ config FB_COBALT
+>>
+>>  config FB_SH7760
+>>         bool "SH7760/SH7763/SH7720/SH7721 LCDC support"
+>> -       depends on FB && (CPU_SUBTYPE_SH7760 || CPU_SUBTYPE_SH7763 \
+>> +       depends on FB=y && (CPU_SUBTYPE_SH7760 || CPU_SUBTYPE_SH7763 \
+>>                 || CPU_SUBTYPE_SH7720 || CPU_SUBTYPE_SH7721)
+>>         select FB_IOMEM_HELPERS
+>>         help
+> 
+> Any reason this can't become tristate instead?
+> drivers/video/fbdev/sh7760fb.c uses module_platform_driver(), and
+> already has all needed MODULE_*().
 
-Cc: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
- include/video/mmp_disp.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+That's what I tried to ask here:
+  https://lore.kernel.org/all/feadd6a5-0f56-4575-9891-3a7d88e69e64@infradead.org/
+but nobody replied to that.
 
-diff --git a/include/video/mmp_disp.h b/include/video/mmp_disp.h
-index 77252cb46361..a722dcbf5073 100644
---- a/include/video/mmp_disp.h
-+++ b/include/video/mmp_disp.h
-@@ -231,7 +231,7 @@ struct mmp_path {
- 
- 	/* layers */
- 	int overlay_num;
--	struct mmp_overlay overlays[];
-+	struct mmp_overlay overlays[] __counted_by(overlay_num);
- };
- 
- extern struct mmp_path *mmp_get_path(const char *name);
 -- 
-2.34.1
-
+~Randy

@@ -2,118 +2,175 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E8D8CD4F2E
-	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Sep 2023 07:25:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4A55CD4F32
+	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Sep 2023 07:41:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231521AbjIVHZ5 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 22 Sep 2023 03:25:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41286 "EHLO
+        id S231584AbjIVHlI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 22 Sep 2023 03:41:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47290 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231544AbjIVHZc (ORCPT
+        with ESMTP id S231254AbjIVHlI (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 22 Sep 2023 03:25:32 -0400
-Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 042FF18F;
-        Fri, 22 Sep 2023 00:23:39 -0700 (PDT)
-Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5041d6d8b10so2906810e87.2;
-        Fri, 22 Sep 2023 00:23:38 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695367415; x=1695972215;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=JOFXpuvl1H4NAlV/tBfiU1JSfb7HtfZX/jg6fk0KIaU=;
-        b=uySOc49gDQGaUiDmgFOVyyes+qKuksFk+bkucinl7YWpcwXbZYkqbrWWdAgiyDRLNs
-         ZctUty0AEf5Ftt84D/kRgck/Su4Lkd3ew5IJW5y74RrEDhXEDXavcm+CV910X1Kp6shj
-         FVgLvXLEs8Q4ZfuBMsfH86/VZpYWLnBBVm7QjrtmehCh+RBZCUnEbDuNccE0dW+R4ca1
-         rbAjT/SJBSlM3sir1OVdQBgw674KAEz3S1j0CwYDEZ7nr8eO1Bq8nDaWIswWlKOYEvBH
-         /TONHyvNV+XfU7tquj+4Y7MvGxjtfCPcgO6sUZI+ryyrVHMw27wztgkNNUmfxOuwmSMQ
-         K9xw==
-X-Gm-Message-State: AOJu0YyztVqzbqteMWMJt81vZHBRAMJpCeV/Ejs7NkwkOP4Ysj9u6FVS
-        phNKNHzNBDRQLlK9ScKkHuRBShtpUDDu6HUD
-X-Google-Smtp-Source: AGHT+IHrkPr8UMGJOTjWcm6l/0n1CVnK7ePJQiZ/a6YAxqWP2honS0cgNBCDRmFpNzLY7R+PGTW8NQ==
-X-Received: by 2002:a05:6512:1582:b0:503:654:cf27 with SMTP id bp2-20020a056512158200b005030654cf27mr8523906lfb.28.1695367414797;
-        Fri, 22 Sep 2023 00:23:34 -0700 (PDT)
-Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com. [209.85.167.52])
-        by smtp.gmail.com with ESMTPSA id m29-20020a056512015d00b0050234d02e64sm626862lfo.15.2023.09.22.00.23.34
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 22 Sep 2023 00:23:34 -0700 (PDT)
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5041d6d8b10so2906741e87.2;
-        Fri, 22 Sep 2023 00:23:34 -0700 (PDT)
-X-Received: by 2002:ac2:5b07:0:b0:500:9a15:9054 with SMTP id
- v7-20020ac25b07000000b005009a159054mr5914632lfn.20.1695367414153; Fri, 22 Sep
- 2023 00:23:34 -0700 (PDT)
+        Fri, 22 Sep 2023 03:41:08 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B586195;
+        Fri, 22 Sep 2023 00:40:58 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 1DBF21F38A;
+        Fri, 22 Sep 2023 07:40:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1695368457; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+        bh=UzGwVSjCR+yrFPQyulO5JFw6QA4KG0lIL/Ovv19nuW0=;
+        b=q0wXyfa7VKohYeGvfMV9OwXzUerxqyyRSCMEIu1AzS19RbP/lgKdE7ADR1dJ7isHFduccz
+        PzycuR8DqGEoR7jcaRRmhAq3eVAmpABLzw1f4WUVxPGZjjFt5KIirgAzQrGTEQILav7mHX
+        FpBy6HejQqPlYiR3RMK4U9XHrXIWARM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1695368457;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+        bh=UzGwVSjCR+yrFPQyulO5JFw6QA4KG0lIL/Ovv19nuW0=;
+        b=HJ8cMoVH3n0b50SM9KRefgE3ppqzlQ/byNBIh3g6Nl8D+bOk8Xfbm5PcA1IZARyxgLy1iU
+        rD+JOrvLST5UDGBA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id BA34B13478;
+        Fri, 22 Sep 2023 07:40:56 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id q1oJLAhFDWXuJAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Fri, 22 Sep 2023 07:40:56 +0000
+Message-ID: <79b3dd76-7b3e-4be2-946a-6f20532f7ff8@suse.de>
+Date:   Fri, 22 Sep 2023 09:40:55 +0200
 MIME-Version: 1.0
-References: <20230921060228.29041-1-rdunlap@infradead.org>
-In-Reply-To: <20230921060228.29041-1-rdunlap@infradead.org>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Fri, 22 Sep 2023 09:23:20 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWBhCcUJw00ZzeHJ=x62RGP2MJ8H-AXRHxBrfOaGeU8Dw@mail.gmail.com>
-Message-ID: <CAMuHMdWBhCcUJw00ZzeHJ=x62RGP2MJ8H-AXRHxBrfOaGeU8Dw@mail.gmail.com>
-Subject: Re: [PATCH] fbdev: sh7760fb: require FB=y to build cleanly
-To:     Randy Dunlap <rdunlap@infradead.org>
-Cc:     linux-kernel@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>,
-        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-        linux-sh@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 1/5] fbdev: Avoid file argument in fb_pgprotect()
+To:     Javier Martinez Canillas <javierm@redhat.com>, mpe@ellerman.id.au,
+        npiggin@gmail.com, christophe.leroy@csgroup.eu, arnd@arndb.de,
+        deller@gmx.de
+Cc:     linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-m68k@lists.linux-m68k.org,
+        sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <20230912135050.17155-1-tzimmermann@suse.de>
+ <20230912135050.17155-2-tzimmermann@suse.de>
+ <87il85l1d4.fsf@minerva.mail-host-address-is-not-set>
+Content-Language: en-US
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <87il85l1d4.fsf@minerva.mail-host-address-is-not-set>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------WWtw0AZdar3TECEKBCRy3XTn"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Randy,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------WWtw0AZdar3TECEKBCRy3XTn
+Content-Type: multipart/mixed; boundary="------------8JZrsftAebvYOCedOF8WyKJL";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Javier Martinez Canillas <javierm@redhat.com>, mpe@ellerman.id.au,
+ npiggin@gmail.com, christophe.leroy@csgroup.eu, arnd@arndb.de, deller@gmx.de
+Cc: linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-m68k@lists.linux-m68k.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-ID: <79b3dd76-7b3e-4be2-946a-6f20532f7ff8@suse.de>
+Subject: Re: [PATCH v4 1/5] fbdev: Avoid file argument in fb_pgprotect()
+References: <20230912135050.17155-1-tzimmermann@suse.de>
+ <20230912135050.17155-2-tzimmermann@suse.de>
+ <87il85l1d4.fsf@minerva.mail-host-address-is-not-set>
+In-Reply-To: <87il85l1d4.fsf@minerva.mail-host-address-is-not-set>
 
-On Thu, Sep 21, 2023 at 10:43 PM Randy Dunlap <rdunlap@infradead.org> wrote:
-> Fix build errors when CONFIG_FB=m and CONFIG_FB_SH7760=y:
->
-> sh2-linux-ld: drivers/video/fbdev/sh7760fb.o: in function `sh7760fb_probe':
-> sh7760fb.c:(.text+0x374): undefined reference to `framebuffer_alloc'
-> sh2-linux-ld: sh7760fb.c:(.text+0x394): undefined reference to `fb_videomode_to_var'
-> sh2-linux-ld: sh7760fb.c:(.text+0x3a0): undefined reference to `fb_alloc_cmap'
-> sh2-linux-ld: sh7760fb.c:(.text+0x3a4): undefined reference to `register_framebuffer'
-> sh2-linux-ld: sh7760fb.c:(.text+0x3ac): undefined reference to `fb_dealloc_cmap'
-> sh2-linux-ld: sh7760fb.c:(.text+0x434): undefined reference to `framebuffer_release'
-> sh2-linux-ld: drivers/video/fbdev/sh7760fb.o: in function `sh7760fb_remove':
-> sh7760fb.c:(.text+0x800): undefined reference to `unregister_framebuffer'
-> sh2-linux-ld: sh7760fb.c:(.text+0x804): undefined reference to `fb_dealloc_cmap'
-> sh2-linux-ld: sh7760fb.c:(.text+0x814): undefined reference to `framebuffer_release'
-> sh2-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0xc): undefined reference to `fb_io_read'
-> sh2-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x10): undefined reference to `fb_io_write'
-> sh2-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x2c): undefined reference to `cfb_fillrect'
-> sh2-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x30): undefined reference to `cfb_copyarea'
-> sh2-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x34): undefined reference to `cfb_imageblit'
->
-> Fixes: 4a25e41831ee ("video: sh7760fb: SH7760/SH7763 LCDC framebuffer driver")
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+--------------8JZrsftAebvYOCedOF8WyKJL
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Thanks for your patch!
+SGkgSmF2aWVyDQoNCkFtIDIwLjA5LjIzIHVtIDEwOjAxIHNjaHJpZWIgSmF2aWVyIE1hcnRp
+bmV6IENhbmlsbGFzOg0KPiBUaG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1hbm5Ac3VzZS5k
+ZT4gd3JpdGVzOg0KPiANCj4gSGVsbG8gVGhvbWFzLA0KPiANCj4+IE9ubHkgUG93ZXJQQydz
+IGZiX3BncHJvdGVjdCgpIG5lZWRzIHRoZSBmaWxlIGFyZ3VtZW50LCBhbHRob3VnaA0KPj4g
+dGhlIGltcGxlbWVudGF0aW9uIGRvZXMgbm90IHVzZSBpdC4gUGFzcyBOVUxMIHRvIHRoZSBp
+bnRlcm5hbA0KPiANCj4gQ2FuIHlvdSBwbGVhc2UgbWVudGlvbiB0aGUgZnVuY3Rpb24gdGhh
+dCdzIHRoZSBpbXBsZW1lbnRhdGlvbiBmb3INCg0KU3VyZQ0KDQo+IFBvd2VyUEMgPyBJZiBJ
+J20gbG9va2luZyBhdCB0aGUgY29kZSBjb3JyZWN0bHksIHRoYXQgZnVuY3Rpb24gaXMNCj4g
+cGh5c19tZW1fYWNjZXNzX3Byb3QoKSBkZWZpbmVkIGluIHRoZSBhcmNoL3Bvd2VycGMvbW0v
+bWVtLmMgZmlsZToNCj4gDQo+IHBncHJvdF90IHBoeXNfbWVtX2FjY2Vzc19wcm90KHN0cnVj
+dCBmaWxlICpmaWxlLCB1bnNpZ25lZCBsb25nIHBmbiwNCj4gCQkJICAgICAgdW5zaWduZWQg
+bG9uZyBzaXplLCBwZ3Byb3RfdCB2bWFfcHJvdCkNCj4gew0KPiAJaWYgKHBwY19tZC5waHlz
+X21lbV9hY2Nlc3NfcHJvdCkNCj4gCQlyZXR1cm4gcHBjX21kLnBoeXNfbWVtX2FjY2Vzc19w
+cm90KGZpbGUsIHBmbiwgc2l6ZSwgdm1hX3Byb3QpOw0KPiANCj4gCWlmICghcGFnZV9pc19y
+YW0ocGZuKSkNCj4gCQl2bWFfcHJvdCA9IHBncHJvdF9ub25jYWNoZWQodm1hX3Byb3QpOw0K
+PiANCj4gCXJldHVybiB2bWFfcHJvdDsNCj4gfQ0KPiANCj4gYW5kIGlmIHNldCwgcHBjX21k
+LnBoeXNfbWVtX2FjY2Vzc19wcm90IGlzIHBjaV9waHlzX21lbV9hY2Nlc3NfcHJvdCgpDQo+
+IHRoYXQgaXMgZGVmaW5lZCBpbiB0aGUgYXJjaC9wb3dlcnBjL2tlcm5lbC9wY2ktY29tbW9u
+LmMgc291cmNlIGZpbGU6DQo+IA0KPiBodHRwczovL2VsaXhpci5ib290bGluLmNvbS9saW51
+eC92Ni42LXJjMi9zb3VyY2UvYXJjaC9wb3dlcnBjL2tlcm5lbC9wY2ktY29tbW9uLmMjTDUy
+NA0KDQpZZXMsIHRoYXQncyBjb3JyZWN0LiBUaGUgb25seSB2YWx1ZSBmb3IgdGhhdCBmdW5j
+dGlvbiBwb2ludGVyIGFwcGVhcnMgdG8gDQpiZSBwY2lfcGh5c19tZW1fYWNjZXNzX3Byb3Qo
+KQ0KDQo+IA0KPiBUaGF0IGZ1bmN0aW9uIGluZGVlZCBkb2Vzbid0IHVzZSB0aGUgZmlsZSBh
+cmd1bWVudC4gU28geW91ciBwYXRjaCBsb29rcw0KPiBjb3JyZWN0IHRvIG1lLg0KPiANCj4g
+UmV2aWV3ZWQtYnk6IEphdmllciBNYXJ0aW5leiBDYW5pbGxhcyA8amF2aWVybUByZWRoYXQu
+Y29tPg0KDQpUaGFua3MNCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiANCg0KLS0gDQpU
+aG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0
+d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpGcmFua2Vuc3RyYXNzZSAxNDYsIDkwNDYx
+IE51ZXJuYmVyZywgR2VybWFueQ0KR0Y6IEl2byBUb3RldiwgQW5kcmV3IE15ZXJzLCBBbmRy
+ZXcgTWNEb25hbGQsIEJvdWRpZW4gTW9lcm1hbg0KSFJCIDM2ODA5IChBRyBOdWVybmJlcmcp
+DQo=
 
-> --- a/drivers/video/fbdev/Kconfig
-> +++ b/drivers/video/fbdev/Kconfig
-> @@ -1762,7 +1762,7 @@ config FB_COBALT
->
->  config FB_SH7760
->         bool "SH7760/SH7763/SH7720/SH7721 LCDC support"
-> -       depends on FB && (CPU_SUBTYPE_SH7760 || CPU_SUBTYPE_SH7763 \
-> +       depends on FB=y && (CPU_SUBTYPE_SH7760 || CPU_SUBTYPE_SH7763 \
->                 || CPU_SUBTYPE_SH7720 || CPU_SUBTYPE_SH7721)
->         select FB_IOMEM_HELPERS
->         help
+--------------8JZrsftAebvYOCedOF8WyKJL--
 
-Any reason this can't become tristate instead?
-drivers/video/fbdev/sh7760fb.c uses module_platform_driver(), and
-already has all needed MODULE_*().
+--------------WWtw0AZdar3TECEKBCRy3XTn
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature.asc"
 
-Gr{oetje,eeting}s,
+-----BEGIN PGP SIGNATURE-----
 
-                        Geert
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmUNRQgFAwAAAAAACgkQlh/E3EQov+D1
+wBAAkkU6MKDBuTUiaD5TKHmO7dXPKVu+AbeDL4Nke0dAJDVIT+UBb+vi1qxDQB8YYspeiMfvCzWG
+cgvmtKC2LLNIvGbNIgSr3lxDRjIVhAMtz2vgO46C3YYKmC+2yvbkf1kpPqO/RshwRPGSq1MaL10P
+945+zfGtItDzcX7eq3vaeyE+4NjnlHY4RAolQTyks2slRTKCEZ4yMhrf5gWegjGdLHWq+Z30mZht
+1s3wXdSHhpo29wiBcIkPHWCJHbmVafC+xAfbjvCu5H4oK8Ftj5/Ina3RCDxC9p3UaZ+t326qCNjJ
+nzWbrs4IP/eLt/tA3x0zfF914RJa8IobSscsWTWhM6Cth+vxh3h8P0IXgJAiU+T9WFTQL0beFmyq
+aeDDx0UFVbD74FrgyETElnCygHLpuwt7SGRSAncJcYHIqxYgrqIZj5+3PjTz2TLyzCy2HVtEzLJe
+c+aIxxt1A9DpBD2/FuoL2dnOg8wPHVDg1IW8eL5nnTI/H8V5APzplncFtAN+DFaKzU0Rh+hJX70O
+AZkJze0bICeSTuN9EG6wVMzo7fY+jN9WcWoA64sUd92rLr9PicSDovOn4DQKDKRikp1HOMHwGz1A
+U/VS8zMmskbqpUSuCDszZDUNJaP9DVC1GMZ2aJjiK3s0878gJNCOKxUyA/FgII+GJle1GwblCwJB
+DOs=
+=tnOC
+-----END PGP SIGNATURE-----
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+--------------WWtw0AZdar3TECEKBCRy3XTn--

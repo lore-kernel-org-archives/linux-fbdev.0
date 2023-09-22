@@ -2,110 +2,114 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3C0CCD4F33
-	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Sep 2023 08:29:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B19DDCD484A
+	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Sep 2023 17:52:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232509AbjIVI3z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 22 Sep 2023 04:29:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54874 "EHLO
+        id S233703AbjIVRw4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 22 Sep 2023 13:52:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36904 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229476AbjIVI3y (ORCPT
+        with ESMTP id S233160AbjIVRwh (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 22 Sep 2023 04:29:54 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 288A2114
-        for <linux-fbdev@vger.kernel.org>; Fri, 22 Sep 2023 01:29:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1695371343;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=xUT8FtJmdwXZ1XdzLxxJQDSF0F15AqqVAfggCoYwa/o=;
-        b=JQjm1m5Y6NdPRz6o1+yrBAU9eudVCHhMq9LCtrhYC4kEIyOPB2ngin6g7Q1rSkuiUj6wXV
-        JJBVMVDmoN0/qwDBLv8lF5mndDx8wylqRtTAOwCuOle9tXPaSZJIzdjNRXPqmK3PAzUJsj
-        oruXWwnndZpEeO3LjQDJABQyWqGTM3o=
-Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
- [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-511-rTeTdQ3nPXmMIfrfZiteVA-1; Fri, 22 Sep 2023 04:29:01 -0400
-X-MC-Unique: rTeTdQ3nPXmMIfrfZiteVA-1
-Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-40526a782f7so14588135e9.2
-        for <linux-fbdev@vger.kernel.org>; Fri, 22 Sep 2023 01:29:01 -0700 (PDT)
+        Fri, 22 Sep 2023 13:52:37 -0400
+Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D157F1F03
+        for <linux-fbdev@vger.kernel.org>; Fri, 22 Sep 2023 10:51:39 -0700 (PDT)
+Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-1c0ecb9a075so20925325ad.2
+        for <linux-fbdev@vger.kernel.org>; Fri, 22 Sep 2023 10:51:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1695405099; x=1696009899; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=twFznqPJAzdntzHByi/iGsaxmBX3ZQhIhF3BInh8ZW4=;
+        b=az1oUIyRSw9Grl5S1D2v/+ryG62KGBmdLb2hgDUoXb4gwJ1xMy44YlEEY9TAUW5Faj
+         sh298Mb54ZKiX9UTNPGb5O5E0t5H3XLnsjPb6hWr177wNQ3Xz5Q1pAVgiLJh1+oIhsru
+         ydQQIjXZdpQS0xhEiie1do0iAEFBtj/i0oAgg=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695371340; x=1695976140;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=xUT8FtJmdwXZ1XdzLxxJQDSF0F15AqqVAfggCoYwa/o=;
-        b=nfT67XL/jAUvAuDIryx36Gk2lI93Q49y4Vcr24Li/ChpQtYU0qpJNDsBAlZCo3QXer
-         4seIP7jp9tboItwxTSowUxk2USXDXtiL5THURrQVnMWSCjgViJ4XODn+rikIvhUhcPAg
-         eKc8FQBy2djqiXQtuUTQaikM3uMSL1Y0xonXTMCBm/v5tNkD2QBEOnimqXr2naA3ZCzU
-         lI3a9s5V7praQLRumD4tRndGvx5ELobdtnM4NQ5C4sjwjltmIQLGndpsoAzck0Z/XCGe
-         oSmUYkFewG9C6rxQbNLI0aggg2dxCX1PIJC/OfPxe5731CxnJPtMkNAf6IZSqpF06tdA
-         ZzZA==
-X-Gm-Message-State: AOJu0YweSmMRXiNd/djSxJrXng6/FHcFEaAPSs3RPhloITv1g7/FtlN5
-        bXt27ABT/9JS4gYh0yg0/Fp/ptXbInPFxcFETaQXnGXRgJTEt3GvupBWI4Z8tA3mHbXUAVmWj7f
-        7NsrjYDqR5SnqY0ukDLmWcMI=
-X-Received: by 2002:a05:600c:1e0b:b0:405:4002:825a with SMTP id ay11-20020a05600c1e0b00b004054002825amr568121wmb.13.1695371340724;
-        Fri, 22 Sep 2023 01:29:00 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGrR9BIVVw8Y2WgBOUvl/XqDvvu2Yb9s8zAvf4Vn3nfvNA1NNc3OCwyRPJ1UY+bCHomzJ5jcg==
-X-Received: by 2002:a05:600c:1e0b:b0:405:4002:825a with SMTP id ay11-20020a05600c1e0b00b004054002825amr568100wmb.13.1695371340371;
-        Fri, 22 Sep 2023 01:29:00 -0700 (PDT)
-Received: from localhost (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id x14-20020a05600c21ce00b003fefcbe7fa8sm4004012wmj.28.2023.09.22.01.28.59
+        d=1e100.net; s=20230601; t=1695405099; x=1696009899;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=twFznqPJAzdntzHByi/iGsaxmBX3ZQhIhF3BInh8ZW4=;
+        b=pyf/ChXkGfCFY8MRdWKjaAlrYLUxBvgpypEKHFLq/KQ5LhlLb6FvmsuS7BRf/ebVxM
+         buxlfVjqEQ8bsYChbKtq9B3y+oJn1T44sixQBUX91///7F6e4w/EZXfh7R3kgmj8JRMO
+         //ySf1I9bMtnZBEPlXevLtzulVsH9ZNErr1Mh66fysE9Qpi4RZMhZtGggSD5bLEDJ2rd
+         qkZxQ1q6rS/IX9VEUA9xwNBOuNw0yrrsZ1vZZSZZgEFG9JEvut9oUh3KNFXG6WyC8rEk
+         WqIbOG+N+TeRJKtH+teo95K5fmRNqbmHeVOZmObvmEBCqlg1ppVsmybz/bgz5OF8GdyN
+         IgzA==
+X-Gm-Message-State: AOJu0YxprKzcQrAiOyOpmMeOGe4vIBvqrDpLEQo/VFxpQXM/OKfPvvOe
+        OP6EhY8jwY53UeN2dbgRDCjqqA==
+X-Google-Smtp-Source: AGHT+IHB34HabKxPxhlVK2seBKatLPFUq6kU/+85gP5fTKuuek7ZguwnwQJ5Z9ew9kyzRDNm5r1Vvw==
+X-Received: by 2002:a17:902:c409:b0:1c3:ed30:cdf4 with SMTP id k9-20020a170902c40900b001c3ed30cdf4mr268638plk.4.1695405099157;
+        Fri, 22 Sep 2023 10:51:39 -0700 (PDT)
+Received: from www.outflux.net (198-0-35-241-static.hfc.comcastbusiness.net. [198.0.35.241])
+        by smtp.gmail.com with ESMTPSA id y24-20020a1709027c9800b001c3267ae31bsm3752412pll.301.2023.09.22.10.51.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 22 Sep 2023 01:29:00 -0700 (PDT)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     Thomas Zimmermann <tzimmermann@suse.de>, mpe@ellerman.id.au,
-        npiggin@gmail.com, christophe.leroy@csgroup.eu, arnd@arndb.de,
-        deller@gmx.de
-Cc:     linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org,
-        linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-        linux-mips@vger.kernel.org, sparclinux@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-arch@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v5 2/5] fbdev: Replace fb_pgprotect() with
- pgprot_framebuffer()
-In-Reply-To: <20230922080636.26762-3-tzimmermann@suse.de>
-References: <20230922080636.26762-1-tzimmermann@suse.de>
- <20230922080636.26762-3-tzimmermann@suse.de>
-Date:   Fri, 22 Sep 2023 10:28:59 +0200
-Message-ID: <87wmwik3w4.fsf@minerva.mail-host-address-is-not-set>
+        Fri, 22 Sep 2023 10:51:38 -0700 (PDT)
+From:   Kees Cook <keescook@chromium.org>
+To:     Helge Deller <deller@gmx.de>
+Cc:     Kees Cook <keescook@chromium.org>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        Nathan Chancellor <nathan@kernel.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        Tom Rix <trix@redhat.com>, linux-kernel@vger.kernel.org,
+        llvm@lists.linux.dev, linux-hardening@vger.kernel.org
+Subject: [PATCH] video: fbdev: mmp: Annotate struct mmphw_ctrl with __counted_by
+Date:   Fri, 22 Sep 2023 10:51:37 -0700
+Message-Id: <20230922175137.work.062-kees@kernel.org>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1221; i=keescook@chromium.org;
+ h=from:subject:message-id; bh=n796F6gX1K105GWhE1qUnocaNksGRQXNbRMxIxep6mI=;
+ b=owEBbQKS/ZANAwAKAYly9N/cbcAmAcsmYgBlDdQpfO6l85dcFKBvYH3iqyyXKMRFw4FsqlSgo
+ l0M82mlouCJAjMEAAEKAB0WIQSlw/aPIp3WD3I+bhOJcvTf3G3AJgUCZQ3UKQAKCRCJcvTf3G3A
+ JmosEACKrvk+R5bxR/JWhJvcODkoIL4vvUwiWD0CFpi5Eymp+XCYI6ln5AmRkbBljl2C+DOn9lP
+ /xGwXy7Cldh8FdZeGkKIveevk2iaNkfiRfUYIe8FtSoT3+Ot2WLc7oOVp/w6rRDhnM4XFwfvawe
+ ZpJLfH5kaiJOjyeBi82kQMkZ7UI2C8mT8OuPyWgNnsOFn6zsREp4WT6n2vsY8er/KNCNVlz2Z7A
+ X5E2TU039VS17sTVtcJPPHE+RR0Uhrtk4dIE8LVq0gQ4e4xcpZbQ4uebgTfEkfmdyZ99ifS0bFf
+ Eg41SJykV3lWoJAoubku8CFdF8gJTaAf6Cu3WuSCRdnYBJLieTTvidvMeFxZNvikF0n61qp1N0r
+ 4NuEuRqdYuoV+2yADJzRVU/jGEop6VKrfo4D5WSyeCZgXU/R7O+sUlKUyhqUY1RJWm64VCosD8/
+ 3fg8BzxzcGNhSCXl6rOP9eLOW4uybKcDn73YoWnLbebH7U2uljs3qa082E7FLcVFByIvFKVH77Q
+ g6KXVDWHGrsiJlrNJHDoFHlFAR9Ew7cD/GI6uNA9bWm+ggsZCUhTcRXT1peqy0nWTznTL+3Gav3
+ ocDpFhl3eFcdHGCnBW42PofiKK0C/IhdUL2mYalkf1nGk3IzI0GfA4F0/rvJvBjQoCW/FDOHvZM
+ 5TiuKMR MK5e3B+w==
+X-Developer-Key: i=keescook@chromium.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Thomas Zimmermann <tzimmermann@suse.de> writes:
+Prepare for the coming implementation by GCC and Clang of the __counted_by
+attribute. Flexible array members annotated with __counted_by can have
+their accesses bounds-checked at run-time checking via CONFIG_UBSAN_BOUNDS
+(for array indexing) and CONFIG_FORTIFY_SOURCE (for strcpy/memcpy-family
+functions).
 
-> Rename the fbdev mmap helper fb_pgprotect() to pgprot_framebuffer().
-> The helper sets VMA page-access flags for framebuffers in device I/O
-> memory.
->
-> Also clean up the helper's parameters and return value. Instead of
-> the VMA instance, pass the individial parameters separately: existing
-> page-access flags, the VMAs start and end addresses and the offset
-> in the underlying device memory rsp file. Return the new page-access
-> flags. These changes align pgprot_framebuffer() with other pgprot_()
-> functions.
->
-> v4:
-> 	* fix commit message (Christophe)
-> v3:
-> 	* rename fb_pgprotect() to pgprot_framebuffer() (Arnd)
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # m68k
-> ---
+As found with Coccinelle[1], add __counted_by for struct mmphw_ctrl.
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+[1] https://github.com/kees/kernel-tools/blob/trunk/coccinelle/examples/counted_by.cocci
 
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ drivers/video/fbdev/mmp/hw/mmp_ctrl.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/mmp/hw/mmp_ctrl.h b/drivers/video/fbdev/mmp/hw/mmp_ctrl.h
+index 167585a889d3..719b99a9bc77 100644
+--- a/drivers/video/fbdev/mmp/hw/mmp_ctrl.h
++++ b/drivers/video/fbdev/mmp/hw/mmp_ctrl.h
+@@ -1406,7 +1406,7 @@ struct mmphw_ctrl {
+ 
+ 	/*pathes*/
+ 	int path_num;
+-	struct mmphw_path_plat path_plats[];
++	struct mmphw_path_plat path_plats[] __counted_by(path_num);
+ };
+ 
+ static inline int overlay_is_vid(struct mmp_overlay *overlay)
 -- 
-Best regards,
-
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+2.34.1
 

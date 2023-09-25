@@ -2,182 +2,598 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3198CCE7A81
-	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Sep 2023 11:28:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84C47CE7A94
+	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Sep 2023 12:26:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229537AbjIYL26 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 25 Sep 2023 07:28:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42856 "EHLO
+        id S231452AbjIYM1A (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 25 Sep 2023 08:27:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53850 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229449AbjIYL25 (ORCPT
+        with ESMTP id S230470AbjIYM07 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 25 Sep 2023 07:28:57 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC7D9C6;
-        Mon, 25 Sep 2023 04:28:50 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 3D6E421853;
-        Mon, 25 Sep 2023 11:28:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1695641329; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-        bh=qu940DjXqKMZcoGUA4iGNheXJEiCeKPz/Uc1UaaJNmU=;
-        b=OaXupLG5WuKcUz1XaZFhW9aBaSG276Pe8U6/W63ga2kbgPXpvN5EDy3p9laRezgBqMXsQX
-        dqFZ8VgFSX8HM/7P5JpSWLLHdoeOwHcryPortdYWqA400GXw/4QXHMZSjtyBTjssvzxqHM
-        XwpeowVE8zMsMoWNl/wd7IVLQ+JYS3A=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1695641329;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-        bh=qu940DjXqKMZcoGUA4iGNheXJEiCeKPz/Uc1UaaJNmU=;
-        b=pOJ+A8+uZTuc2NnSPPFSY6hKOiy6OAzoNpIk41WF3tMCEwVtU2vqk9n5OaTeGF9W3w6yfC
-        36ewYTAWpdXSmfCA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id EEF151358F;
-        Mon, 25 Sep 2023 11:28:48 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id itnrOPBuEWV9SQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 25 Sep 2023 11:28:48 +0000
-Message-ID: <e81bfc6a-7d14-429a-88bc-3f53ac6a2858@suse.de>
-Date:   Mon, 25 Sep 2023 13:28:48 +0200
+        Mon, 25 Sep 2023 08:26:59 -0400
+Received: from EUR03-AM7-obe.outbound.protection.outlook.com (mail-am7eur03on2048.outbound.protection.outlook.com [40.107.105.48])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 50C3BFB;
+        Mon, 25 Sep 2023 05:26:51 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=UzWrkYKiueVfXJb35Qf2oHOaj6hEXJodzCmyt/qo9FR3MOdJ54+/RJThtXOMgYlW1yTZ2dws86FgG1BGtevpCXi/lv7AJD+eWOub3p2uVS/0rVttMXT66Ujftqa2nYx8Y0ErF8maBGE9pPfQTJKYsEIeFFUmWYjH/C3l22SrsTeWuxfGQV1xGUkiMPHknDAmrslbTOPzWv+otNg/WjOzA21IA6Eii5TpJOXXHoPqNqFL408FdPOclzZqngU1EY3UP6gqqNFiS0eJH1C7Eq0GmeiTN+HYU0tiU+Dl2pZ+N1i3MdtT+uAvQ5DnOSqXBwNA7F8OdUG2llABhKM3VzXSjA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Fwt5InLBRm94N8NetWatP6uFL5iVe6ck11yZANmZSp0=;
+ b=nHAKoMbNPnUeWI2IikIsfTHL5DIoXEfB6evyzkbQsQ4Fu4IRjLpc9GDbiEAMlws6MVTvC87z+zqHYcBbJffOGYcR/TFY0X71Jk1hJsb46yz7Q15Tj+SgDrDCCU8B98ibVQggL+HSZ96vKke50d7/l3uiAHozZnUc4G8Lgd/CQT/HK4HZizXOXB0flW8kKgPGzxJ2v87pDlK1M/808ENEK5EehCn3JVIwWYNgXzy96yFnDLYjB/p7NdXyYfWas1Px1gqNyReY0s1F3bcT2KgBh00gCiI/6tFYyOoOTfdEUHZ7tVan0qyakoIgidJhiAxBSxh96bbA6Kh1D4i6LTC7JQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=softfail (sender ip
+ is 151.1.184.193) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=asem.it;
+ dmarc=fail (p=none sp=none pct=100) action=none header.from=asem.it;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=asem.it; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Fwt5InLBRm94N8NetWatP6uFL5iVe6ck11yZANmZSp0=;
+ b=NwB/hefXd7EHv13eN2VdxQo0ImposqZMJeBOCWmFtjkkdtpWOgl5e6MuuLVEPvnTwiWKJc2cZmdeinBqGCdFl5Aq4am1FbNNmEArHY8rhGReqix1A0zSGqUnNkznd62MsRI7T05SZBXvb/fceT4Iu6SCE0dCcLOg1/GvjVXD4HI=
+Received: from AS9PR06CA0213.eurprd06.prod.outlook.com (2603:10a6:20b:45e::12)
+ by PA4PR01MB7549.eurprd01.prod.exchangelabs.com (2603:10a6:102:c8::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6838.18; Mon, 25 Sep
+ 2023 12:26:48 +0000
+Received: from AM3PEPF00009BA2.eurprd04.prod.outlook.com
+ (2603:10a6:20b:45e:cafe::2f) by AS9PR06CA0213.outlook.office365.com
+ (2603:10a6:20b:45e::12) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6792.35 via Frontend
+ Transport; Mon, 25 Sep 2023 12:26:48 +0000
+X-MS-Exchange-Authentication-Results: spf=softfail (sender IP is
+ 151.1.184.193) smtp.mailfrom=asem.it; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=none header.from=asem.it;
+Received-SPF: SoftFail (protection.outlook.com: domain of transitioning
+ asem.it discourages use of 151.1.184.193 as permitted sender)
+Received: from asas054.asem.intra (151.1.184.193) by
+ AM3PEPF00009BA2.mail.protection.outlook.com (10.167.16.27) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6838.14 via Frontend Transport; Mon, 25 Sep 2023 12:26:48 +0000
+Received: from flavio-x.asem.intra ([172.16.18.47]) by asas054.asem.intra with Microsoft SMTPSVC(10.0.14393.4169);
+         Mon, 25 Sep 2023 14:26:46 +0200
+From:   Flavio Suligoi <f.suligoi@asem.it>
+To:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>
+Cc:     dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Flavio Suligoi <f.suligoi@asem.it>
+Subject: [PATCH v3 2/2] backlight: mp3309c: Add support for MPS MP3309C
+Date:   Mon, 25 Sep 2023 14:26:09 +0200
+Message-Id: <20230925122609.78849-2-f.suligoi@asem.it>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230925122609.78849-1-f.suligoi@asem.it>
+References: <20230925122609.78849-1-f.suligoi@asem.it>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] sh: ecovec24: Rename missed backlight field from fbdev to
- dev
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert+renesas@glider.be>,
-        Yoshinori Sato <ysato@users.sourceforge.jp>,
-        Rich Felker <dalias@libc.org>,
-        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>
-Cc:     linux-sh@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        kernel test robot <lkp@intel.com>
-References: <20230925111022.3626362-1-geert+renesas@glider.be>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20230925111022.3626362-1-geert+renesas@glider.be>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------rtnW0y2YctxiLg3D48klbWpd"
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 25 Sep 2023 12:26:46.0715 (UTC) FILETIME=[8CF060B0:01D9EFAB]
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM3PEPF00009BA2:EE_|PA4PR01MB7549:EE_
+Content-Type: text/plain
+X-MS-Office365-Filtering-Correlation-Id: d7d67d06-00fa-4a58-85c7-08dbbdc2b05f
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: JNvCsvoSmUYntkrA+7h3NQl0a3P6DgW/v0h6zMTGXtIBSePW+pLlETXIT6DoDZ2zJctGGKkk4h4VljPNQ8sAgVIjFnOEPa3v70jpYgM9mTDfECA58S5itcmUSUrS0EYuRkEh88wI9a5PjuVsmizejvqI2aUVI+qp7fE9f0FtWlLcEVColdNFWpjbEkrgZgbjCHOwbEipA9un4dNMD+wa69S9W61QalA4WZURnu2iafe30v1n+5yI2+l73c0oT1CPOBVIQ9FCdvRfLCxVc8BigjPM6sCsokk7kiiaL7KmMsGxg/8jeuE2U5pd+xDudbKm0hL/HD1wkBzTj/6WpJgzZw9Zs2QtI9LMvSfBnYfAkrrJ9WWncnAPG8B9pMyZxljDIGrXPVg2rSzJ7ih12NQY4IBen3/dOWqKhBCxCtJ4Swd6LbRNLhnOmsNN6XxtFLIBw+9HjFxaDgnK0oEqkJuADMBFKtpirlF7U8bAGXjHinNioj+qyXumuBJ9m6c2uNLJznywKahXIdmHLnXg9Bla0fbY0rvsd/5qDP/1lG9BUGcETrvIjwNIgG4lJXRwp5SlhoUsUlY9WRuD+9WxpIxItQvzvCKIugX3dz0Pkx9UlfLWMY/YJ6w5KwRn0tStJTZAFaOFbp3ka0dEZ4kdDDNkBMwfMkNMDunieA6IECwYQSnelIuI99JG0jlz3GK/MSQWOa1XWUEuFfW0oTKLiwCgIm4NigogGXEC/eN0f1Y3fSI=
+X-Forefront-Antispam-Report: CIP:151.1.184.193;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:asas054.asem.intra;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(376002)(346002)(136003)(396003)(39850400004)(230922051799003)(186009)(82310400011)(1800799009)(451199024)(46966006)(36840700001)(2906002)(86362001)(30864003)(5660300002)(36756003)(6666004)(83380400001)(356005)(81166007)(478600001)(966005)(82740400003)(47076005)(40480700001)(107886003)(4326008)(8676002)(450100002)(8936002)(1076003)(2616005)(41300700001)(26005)(110136005)(336012)(70586007)(70206006)(36860700001)(316002)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: asem.it
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Sep 2023 12:26:48.1537
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: d7d67d06-00fa-4a58-85c7-08dbbdc2b05f
+X-MS-Exchange-CrossTenant-Id: d0a766c6-7992-4344-a4a2-a467a7bb1ed2
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=d0a766c6-7992-4344-a4a2-a467a7bb1ed2;Ip=[151.1.184.193];Helo=[asas054.asem.intra]
+X-MS-Exchange-CrossTenant-AuthSource: AM3PEPF00009BA2.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA4PR01MB7549
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------rtnW0y2YctxiLg3D48klbWpd
-Content-Type: multipart/mixed; boundary="------------794h0679uA5ATzYq0AM5oz9Q";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Geert Uytterhoeven <geert+renesas@glider.be>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- Sam Ravnborg <sam@ravnborg.org>, Daniel Thompson <daniel.thompson@linaro.org>
-Cc: linux-sh@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- kernel test robot <lkp@intel.com>
-Message-ID: <e81bfc6a-7d14-429a-88bc-3f53ac6a2858@suse.de>
-Subject: Re: [PATCH] sh: ecovec24: Rename missed backlight field from fbdev to
- dev
-References: <20230925111022.3626362-1-geert+renesas@glider.be>
-In-Reply-To: <20230925111022.3626362-1-geert+renesas@glider.be>
+The Monolithic Power (MPS) MP3309C is a WLED step-up converter, featuring a
+programmable switching frequency to optimize efficiency.
+The brightness can be controlled either by I2C commands (called "analog"
+mode) or by a PWM input signal (PWM mode).
+This driver supports both modes.
 
---------------794h0679uA5ATzYq0AM5oz9Q
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+For DT configuration details, please refer to:
+- Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
 
-SGkNCg0KQW0gMjUuMDkuMjMgdW0gMTM6MTAgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
-DQo+IE9uZSBpbnN0YW5jZSBvZiBncGlvX2JhY2tsaWdodF9wbGF0Zm9ybV9kYXRhLmZiZGV2
-IHdhcyByZW5hbWVkLCBidXQgdGhlDQo+IHNlY29uZCBpbnN0YW5jZSB3YXMgZm9yZ290dGVu
-LCBjYXVzaW5nIGEgYnVpbGQgZmFpbHVyZToNCj4gDQo+ICAgICAgYXJjaC9zaC9ib2FyZHMv
-bWFjaC1lY292ZWMyNC9zZXR1cC5jOiBJbiBmdW5jdGlvbiDigJhhcmNoX3NldHVw4oCZOg0K
-PiAgICAgIGFyY2gvc2gvYm9hcmRzL21hY2gtZWNvdmVjMjQvc2V0dXAuYzoxMjIzOjM3OiBl
-cnJvcjog4oCYc3RydWN0IGdwaW9fYmFja2xpZ2h0X3BsYXRmb3JtX2RhdGHigJkgaGFzIG5v
-IG1lbWJlciBuYW1lZCDigJhmYmRlduKAmTsgZGlkIHlvdSBtZWFuIOKAmGRlduKAmT8NCj4g
-ICAgICAgMTIyMyB8ICAgICAgICAgICAgICAgICBncGlvX2JhY2tsaWdodF9kYXRhLmZiZGV2
-ID0gTlVMTDsNCj4gCSAgfCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBe
-fn5+fg0KPiAJICB8ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGRldg0K
-PiANCj4gRml4IHRoaXMgYnkgdXBkYXRpbmcgdGhlIHNlY29uZCBpbnN0YW5jZS4NCj4gDQo+
-IEZpeGVzOiBlZDM2OWRlZjkxYzE1NzlhICgiYmFja2xpZ2h0L2dwaW9fYmFja2xpZ2h0OiBS
-ZW5hbWUgZmllbGQgJ2ZiZGV2JyB0byAnZGV2JyIpDQo+IFJlcG9ydGVkLWJ5OiBrZXJuZWwg
-dGVzdCByb2JvdCA8bGtwQGludGVsLmNvbT4NCj4gQ2xvc2VzOiBodHRwczovL2xvcmUua2Vy
-bmVsLm9yZy9vZS1rYnVpbGQtYWxsLzIwMjMwOTIzMTYwMS5VdTZxY1JuVS1sa3BAaW50ZWwu
-Y29tLw0KPiBTaWduZWQtb2ZmLWJ5OiBHZWVydCBVeXR0ZXJob2V2ZW4gPGdlZXJ0K3JlbmVz
-YXNAZ2xpZGVyLmJlPg0KDQpBY2tlZC1ieTogVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJt
-YW5uQHN1c2UuZGU+DQoNClNvcnJ5IGZvciBtaXNzaW5nIHRoaXMgZHJpdmVyIGluIHRoZSBv
-cmlnaW5hbCBwYXRjaC4NCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiAtLS0NCj4gICBh
-cmNoL3NoL2JvYXJkcy9tYWNoLWVjb3ZlYzI0L3NldHVwLmMgfCAyICstDQo+ICAgMSBmaWxl
-IGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspLCAxIGRlbGV0aW9uKC0pDQo+IA0KPiBkaWZmIC0t
-Z2l0IGEvYXJjaC9zaC9ib2FyZHMvbWFjaC1lY292ZWMyNC9zZXR1cC5jIGIvYXJjaC9zaC9i
-b2FyZHMvbWFjaC1lY292ZWMyNC9zZXR1cC5jDQo+IGluZGV4IDNiZTI5MzMzNWRlNTQ1MTIu
-LjdhNzg4ZDQ0Y2M3MzQ5NmMgMTAwNjQ0DQo+IC0tLSBhL2FyY2gvc2gvYm9hcmRzL21hY2gt
-ZWNvdmVjMjQvc2V0dXAuYw0KPiArKysgYi9hcmNoL3NoL2JvYXJkcy9tYWNoLWVjb3ZlYzI0
-L3NldHVwLmMNCj4gQEAgLTEyMjAsNyArMTIyMCw3IEBAIHN0YXRpYyBpbnQgX19pbml0IGFy
-Y2hfc2V0dXAodm9pZCkNCj4gICAJCWxjZGNfaW5mby5jaFswXS5udW1fbW9kZXMJCT0gQVJS
-QVlfU0laRShlY292ZWNfZHZpX21vZGVzKTsNCj4gICANCj4gICAJCS8qIE5vIGJhY2tsaWdo
-dCAqLw0KPiAtCQlncGlvX2JhY2tsaWdodF9kYXRhLmZiZGV2ID0gTlVMTDsNCj4gKwkJZ3Bp
-b19iYWNrbGlnaHRfZGF0YS5kZXYgPSBOVUxMOw0KPiAgIA0KPiAgIAkJZ3Bpb19zZXRfdmFs
-dWUoR1BJT19QVEEyLCAxKTsNCj4gICAJCWdwaW9fc2V0X3ZhbHVlKEdQSU9fUFRVMSwgMSk7
-DQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXIN
-ClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KRnJhbmtlbnN0cmFzc2Ug
-MTQ2LCA5MDQ2MSBOdWVybmJlcmcsIEdlcm1hbnkNCkdGOiBJdm8gVG90ZXYsIEFuZHJldyBN
-eWVycywgQW5kcmV3IE1jRG9uYWxkLCBCb3VkaWVuIE1vZXJtYW4NCkhSQiAzNjgwOSAoQUcg
-TnVlcm5iZXJnKQ0K
+The datasheet is available at:
+- https://www.monolithicpower.com/en/mp3309c.html
 
---------------794h0679uA5ATzYq0AM5oz9Q--
+Signed-off-by: Flavio Suligoi <f.suligoi@asem.it>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+---
 
---------------rtnW0y2YctxiLg3D48klbWpd
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature.asc"
+v3:
+ - fix SPDX obsolete spelling
+ - in mp3309c_bl_update_status, change from msleep_interruptible() to msleep()
+   and improve the related comment
+v2:
+ - fix dependecies in Kconfig
+ - fix Kconfig MP3309C entry order
+ - remove switch-on-delay-ms property
+ - remove optional gpio property to reset external devices
+ - remove dimming-mode property (the analog-i2c dimming mode is the default; the
+   presence of the pwms property, in DT, selects automatically the pwm dimming
+   mode)
+ - substitute three boolean properties, used for the overvoltage-protection
+   values, with a single enum property
+ - drop simple tracing messages
+ - use dev_err_probe() in probe function
+ - change device name from mp3309c_bl to the simple mp3309c
+ - remove shutdown function
+v1:
+ - first version
 
------BEGIN PGP SIGNATURE-----
+ MAINTAINERS                       |   6 +
+ drivers/video/backlight/Kconfig   |  11 +
+ drivers/video/backlight/Makefile  |   1 +
+ drivers/video/backlight/mp3309c.c | 398 ++++++++++++++++++++++++++++++
+ 4 files changed, 416 insertions(+)
+ create mode 100644 drivers/video/backlight/mp3309c.c
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmURbvAFAwAAAAAACgkQlh/E3EQov+BU
-+w//UJCGLDzhsQtidhuNeeelP2BPDsVyROWV87SiW69cXKWAiSFeEBdoHsorvyVusPGoyXdL6+xt
-X6bgSHHhTyAhgrlGpXYT2Qh189eSDgMQNqSw5xDOU2YYaUFIUbA0jBaWy5PLZLYmMbkUP4yGRR8c
-8qHrZYNzDFhSi9O88uGC4S3suWblE7EHP6AO/ZdSEvFv1ppbu8/GeN8Bbq9vvLd7zVLNlSUCszN6
-tn5gaPN+l/Qp81YHh/SLLxos2B7D3YcEGB/4omCWuU3fxvQGP7TxS9lc8SJjBuTmzoL6mGtqsfIN
-H7XaGhTBuKGGrPbbeXaGMyE8pSfKZHPhgdl7TrmjdBDgNO9y0f0ho8Z/jzR2S02Bhm8KWp9EzxAc
-BqJ+CuHCBNxlAV2XOG0D9oen4khFVX9cZRA0ptfswH7RIyWtNQ5iYr+3BlJn0St/ppsaEC/SoUP0
-f+a92zj8Zti9cX3lzJsaTHcaNtQlxwnz13gv6mfNNkgSHHEf/siBM/dx048oR63hOetSKoytRKcc
-bfS8Ddv4pcbfeCO/c35RTEbbLrc+KjbmiESSqOl7R/cbLjKu0IzvjLJGd8v12HuUlwasOiSF4ugK
-2YPao5G12RshvUF5lwsQMqmQ/49otXdskDQlAC7CvXpctTAet29OkIMs3rMUphHrsI/tphPs+sau
-T6E=
-=C/7O
------END PGP SIGNATURE-----
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 3be1bdfe8ecc..f779df433af1 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -14333,6 +14333,12 @@ S:	Maintained
+ F:	Documentation/driver-api/tty/moxa-smartio.rst
+ F:	drivers/tty/mxser.*
+ 
++MP3309C BACKLIGHT DRIVER
++M:	Flavio Suligoi <f.suligoi@asem.it>
++S:	Maintained
++F:	Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
++F:	drivers/video/backlight/mp3309c.c
++
+ MR800 AVERMEDIA USB FM RADIO DRIVER
+ M:	Alexey Klimov <klimov.linux@gmail.com>
+ L:	linux-media@vger.kernel.org
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 51387b1ef012..1144a54a35c0 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -402,6 +402,17 @@ config BACKLIGHT_LP8788
+ 	help
+ 	  This supports TI LP8788 backlight driver.
+ 
++config BACKLIGHT_MP3309C
++	tristate "Backlight Driver for MPS MP3309C"
++	depends on I2C && PWM
++	select REGMAP_I2C
++	help
++	  This supports MPS MP3309C backlight WLED driver in both PWM and
++	  analog/I2C dimming modes.
++
++	  To compile this driver as a module, choose M here: the module will
++	  be called mp3309c.
++
+ config BACKLIGHT_PANDORA
+ 	tristate "Backlight driver for Pandora console"
+ 	depends on TWL4030_CORE
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index f72e1c3c59e9..1af583de665b 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -44,6 +44,7 @@ obj-$(CONFIG_BACKLIGHT_LP855X)		+= lp855x_bl.o
+ obj-$(CONFIG_BACKLIGHT_LP8788)		+= lp8788_bl.o
+ obj-$(CONFIG_BACKLIGHT_LV5207LP)	+= lv5207lp.o
+ obj-$(CONFIG_BACKLIGHT_MAX8925)		+= max8925_bl.o
++obj-$(CONFIG_BACKLIGHT_MP3309C)		+= mp3309c.o
+ obj-$(CONFIG_BACKLIGHT_MT6370)		+= mt6370-backlight.o
+ obj-$(CONFIG_BACKLIGHT_OMAP1)		+= omap1_bl.o
+ obj-$(CONFIG_BACKLIGHT_PANDORA)		+= pandora_bl.o
+diff --git a/drivers/video/backlight/mp3309c.c b/drivers/video/backlight/mp3309c.c
+new file mode 100644
+index 000000000000..923ac7f7b291
+--- /dev/null
++++ b/drivers/video/backlight/mp3309c.c
+@@ -0,0 +1,398 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Driver for MPS MP3309C White LED driver with I2C interface
++ *
++ * Copyright (C) 2023 ASEM Srl
++ * Author: Flavio Suligoi <f.suligoi@asem.it>
++ */
++
++#include <linux/backlight.h>
++#include <linux/delay.h>
++#include <linux/gpio/consumer.h>
++#include <linux/i2c.h>
++#include <linux/pwm.h>
++#include <linux/regmap.h>
++
++#define REG_I2C_0	0x00
++#define REG_I2C_1	0x01
++
++#define REG_I2C_0_EN	0x80
++#define REG_I2C_0_D0	0x40
++#define REG_I2C_0_D1	0x20
++#define REG_I2C_0_D2	0x10
++#define REG_I2C_0_D3	0x08
++#define REG_I2C_0_D4	0x04
++#define REG_I2C_0_RSRV1	0x02
++#define REG_I2C_0_RSRV2	0x01
++
++#define REG_I2C_1_RSRV1	0x80
++#define REG_I2C_1_DIMS	0x40
++#define REG_I2C_1_SYNC	0x20
++#define REG_I2C_1_OVP0	0x10
++#define REG_I2C_1_OVP1	0x08
++#define REG_I2C_1_VOS	0x04
++#define REG_I2C_1_LEDO	0x02
++#define REG_I2C_1_OTP	0x01
++
++#define ANALOG_MAX_VAL	31
++#define ANALOG_REG_MASK 0x7c
++
++enum mp3309c_status_value {
++	FIRST_POWER_ON,
++	BACKLIGHT_OFF,
++	BACKLIGHT_ON,
++};
++
++enum mp3309c_dimming_mode_value {
++	DIMMING_PWM,
++	DIMMING_ANALOG_I2C,
++};
++
++struct mp3309c_platform_data {
++	u32 max_brightness;
++	u32 default_brightness;
++	u8  dimming_mode;
++	u8  over_voltage_protection;
++	bool sync_mode;
++	u8 status;
++};
++
++struct mp3309c_chip {
++	struct device *dev;
++	struct mp3309c_platform_data *pdata;
++	struct backlight_device *bl;
++	struct gpio_desc *enable_gpio;
++	struct regmap *regmap;
++	struct pwm_device *pwmd;
++	int irq;
++	struct gpio_desc *reset_gpio;
++};
++
++static const struct regmap_config mp3309c_regmap = {
++	.name = "mp3309c_regmap",
++	.reg_bits = 8,
++	.reg_stride = 1,
++	.val_bits = 8,
++	.max_register = REG_I2C_1,
++};
++
++static int mp3309c_enable_device(struct mp3309c_chip *chip)
++{
++	u8 reg_val;
++	int ret;
++
++	/* I2C register #0 - Device enable */
++	ret = regmap_update_bits(chip->regmap, REG_I2C_0, REG_I2C_0_EN,
++				 REG_I2C_0_EN);
++	if (ret)
++		return ret;
++
++	/*
++	 * I2C register #1 - Set working mode:
++	 *  - set one of the two dimming mode:
++	 *    - PWM dimming using an external PWM dimming signal
++	 *    - analog dimming using I2C commands
++	 *  - enable/disable synchronous mode
++	 *  - set overvoltage protection (OVP)
++	 */
++	reg_val = 0x00;
++	if (chip->pdata->dimming_mode == DIMMING_PWM)
++		reg_val |= REG_I2C_1_DIMS;
++	if (chip->pdata->sync_mode)
++		reg_val |= REG_I2C_1_SYNC;
++	reg_val |= chip->pdata->over_voltage_protection;
++	ret = regmap_write(chip->regmap, REG_I2C_1, reg_val);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
++static int mp3309c_bl_update_status(struct backlight_device *bl)
++{
++	struct mp3309c_chip *chip = bl_get_data(bl);
++	int brightness = backlight_get_brightness(bl);
++	struct pwm_state pwmstate;
++	unsigned int analog_val, bits_val;
++	int i, ret;
++
++	if (chip->pdata->dimming_mode == DIMMING_PWM) {
++		/*
++		 * PWM dimming mode
++		 */
++		pwm_get_state(chip->pwmd, &pwmstate);
++		pwm_set_relative_duty_cycle(&pwmstate, brightness,
++					    chip->pdata->max_brightness);
++		pwmstate.enabled = true;
++		ret = pwm_apply_state(chip->pwmd, &pwmstate);
++		if (ret)
++			return ret;
++
++		switch (chip->pdata->status) {
++		case FIRST_POWER_ON:
++		case BACKLIGHT_OFF:
++			/*
++			 * After 20ms of low pwm signal level, the chip turns
++			   off automatically. In this case, before enabling the
++			   chip again, we must wait about 10ms for pwm signal to
++			   stabilize.
++			 */
++			if (brightness > 0) {
++				msleep(10);
++				mp3309c_enable_device(chip);
++				chip->pdata->status = BACKLIGHT_ON;
++			} else {
++				chip->pdata->status = BACKLIGHT_OFF;
++			}
++			break;
++		case BACKLIGHT_ON:
++			if (brightness == 0)
++				chip->pdata->status = BACKLIGHT_OFF;
++			break;
++		}
++	} else {
++		/*
++		 * Analog dimming (by I2C command) dimming mode
++		 *
++		 * The first time, before setting brightness, we must enable the
++		 * device
++		 */
++		if (chip->pdata->status == FIRST_POWER_ON)
++			mp3309c_enable_device(chip);
++
++		/*
++		 * Dimming mode I2C command
++		 *
++		 * The 5 bits of the dimming analog value D4..D0 is allocated
++		 * in the I2C register #0, in the following way:
++		 *
++		 *     +--+--+--+--+--+--+--+--+
++		 *     |EN|D0|D1|D2|D3|D4|XX|XX|
++		 *     +--+--+--+--+--+--+--+--+
++		 */
++		analog_val = DIV_ROUND_UP(ANALOG_MAX_VAL * brightness,
++					  chip->pdata->max_brightness);
++		bits_val = 0;
++		for (i = 0; i <= 5; i++)
++			bits_val += ((analog_val >> i) & 0x01) << (6 - i);
++		ret = regmap_update_bits(chip->regmap, REG_I2C_0,
++					 ANALOG_REG_MASK, bits_val);
++		if (ret)
++			return ret;
++
++		if (brightness > 0)
++			chip->pdata->status = BACKLIGHT_ON;
++		else
++			chip->pdata->status = BACKLIGHT_OFF;
++	}
++
++	return 0;
++}
++
++static const struct backlight_ops mp3309c_bl_ops = {
++	.update_status = mp3309c_bl_update_status,
++};
++
++static int pm3309c_parse_dt_node(struct mp3309c_chip *chip,
++				 struct mp3309c_platform_data *pdata)
++{
++	struct device_node *node = chip->dev->of_node;
++	struct property *prop;
++	int length, ret;
++	unsigned int tmp_value;
++
++	if (!node) {
++		dev_err(chip->dev, "failed to get DT node\n");
++		return -ENODEV;
++	}
++
++	/*
++	 * Dimming mode: the MP3309C provides two dimming control mode:
++	 *
++	 * - PWM mode
++	 * - Analog by I2C control mode (default)
++	 *
++	 * I2C control mode is assumed as default but, if the pwms property is
++	 * found in the backlight node, the mode switches to PWM mode.
++	 */
++	pdata->dimming_mode = DIMMING_ANALOG_I2C;
++	prop = of_find_property(node, "pwms", &length);
++	if (prop) {
++		chip->pwmd = devm_pwm_get(chip->dev, NULL);
++		if (IS_ERR(chip->pwmd))
++			return dev_err_probe(chip->dev, PTR_ERR(chip->pwmd),
++					     "error getting pwm data\n");
++		pdata->dimming_mode = DIMMING_PWM;
++		pwm_apply_args(chip->pwmd);
++	}
++
++	/* Dimming steps (levels): 0 .. max_brightness */
++	ret = of_property_read_u32(node, "max-brightness",
++				   &pdata->max_brightness);
++	if (ret < 0) {
++		dev_err(chip->dev, "failed to get max-brightness from DT\n");
++		return ret;
++	}
++
++	/* Default brightness at startup */
++	ret = of_property_read_u32(node, "default-brightness",
++				   &pdata->default_brightness);
++	if (ret < 0) {
++		dev_err(chip->dev,
++			"failed to get default-brightness from DT\n");
++		return ret;
++	}
++
++	/* Enable GPIO used in I2C dimming mode */
++	if (pdata->dimming_mode == DIMMING_ANALOG_I2C) {
++		chip->enable_gpio = devm_gpiod_get(chip->dev, "enable",
++						   GPIOD_OUT_HIGH);
++		if (IS_ERR(chip->enable_gpio))
++			return dev_err_probe(chip->dev, PTR_ERR(chip->enable_gpio),
++					     "error getting enable gpio\n");
++	}
++
++	/*
++	 * Over-voltage protection (OVP)
++	 *
++	 * This (optional) property values are:
++	 *
++	 *  - 13.5V
++	 *  - 24V
++	 *  - 35.5V (hardware default setting)
++	 *
++	 * If missing, the default value for OVP is 35.5V
++	 */
++	pdata->over_voltage_protection = REG_I2C_1_OVP1;
++	if (!of_property_read_u32(node, "mps,overvoltage-protection-microvolt",
++				  &tmp_value)) {
++		switch (tmp_value) {
++		case 13500000:
++			pdata->over_voltage_protection = 0x00;
++			break;
++		case 24000000:
++			pdata->over_voltage_protection = REG_I2C_1_OVP0;
++			break;
++		case 35500000:
++			pdata->over_voltage_protection = REG_I2C_1_OVP1;
++			break;
++		default:
++			return -EINVAL;
++		}
++	}
++
++	/* Synchronous (default) and non-synchronous mode */
++	pdata->sync_mode = true;
++	if (of_property_read_bool(node, "mps,no-sync-mode"))
++		pdata->sync_mode = false;
++
++	return 0;
++}
++
++static int mp3309c_probe(struct i2c_client *client)
++{
++	struct mp3309c_platform_data *pdata = dev_get_platdata(&client->dev);
++	struct mp3309c_chip *chip;
++	struct backlight_properties props;
++	struct pwm_state pwmstate;
++	int ret;
++
++	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
++		dev_err(&client->dev, "failed to check i2c functionality\n");
++		return -EOPNOTSUPP;
++	}
++
++	chip = devm_kzalloc(&client->dev, sizeof(*chip), GFP_KERNEL);
++	if (!chip)
++		return -ENOMEM;
++
++	chip->dev = &client->dev;
++
++	chip->regmap = devm_regmap_init_i2c(client, &mp3309c_regmap);
++	if (IS_ERR(chip->regmap))
++		return dev_err_probe(&client->dev, PTR_ERR(chip->regmap),
++				     "failed to allocate register map\n");
++
++	i2c_set_clientdata(client, chip);
++
++	if (!pdata) {
++		pdata = devm_kzalloc(chip->dev, sizeof(*pdata), GFP_KERNEL);
++		if (!pdata)
++			return -ENOMEM;
++
++		ret = pm3309c_parse_dt_node(chip, pdata);
++		if (ret)
++			return ret;
++	}
++	chip->pdata = pdata;
++
++	/* Backlight properties */
++	props.brightness = pdata->default_brightness;
++	props.max_brightness = pdata->max_brightness;
++	props.scale = BACKLIGHT_SCALE_LINEAR;
++	props.type = BACKLIGHT_RAW;
++	props.power = FB_BLANK_UNBLANK;
++	props.fb_blank = FB_BLANK_UNBLANK;
++	chip->bl = devm_backlight_device_register(chip->dev, "mp3309c",
++						  chip->dev, chip, &mp3309c_bl_ops,
++						  &props);
++	if (IS_ERR(chip->bl))
++		return dev_err_probe(chip->dev, PTR_ERR(chip->bl),
++				     "error registering backlight device\n");
++
++	/* In PWM dimming mode, enable pwm device */
++	if (chip->pdata->dimming_mode == DIMMING_PWM) {
++		pwm_init_state(chip->pwmd, &pwmstate);
++		pwm_set_relative_duty_cycle(&pwmstate,
++					    chip->pdata->default_brightness,
++					    chip->pdata->max_brightness);
++		pwmstate.enabled = true;
++		ret = pwm_apply_state(chip->pwmd, &pwmstate);
++		if (ret)
++			return dev_err_probe(chip->dev, ret,
++					     "error setting pwm device\n");
++	}
++
++	chip->pdata->status = FIRST_POWER_ON;
++	backlight_update_status(chip->bl);
++
++	return 0;
++}
++
++static void mp3309c_remove(struct i2c_client *client)
++{
++	struct mp3309c_chip *chip = i2c_get_clientdata(client);
++	struct backlight_device *bl = chip->bl;
++
++	bl->props.power = FB_BLANK_POWERDOWN;
++	bl->props.brightness = 0;
++	backlight_update_status(chip->bl);
++}
++
++static const struct of_device_id mp3309c_match_table[] = {
++	{ .compatible = "mps,mp3309c", },
++	{ },
++};
++MODULE_DEVICE_TABLE(of, mp3309c_match_table);
++
++static const struct i2c_device_id mp3309c_id[] = {
++	{ "mp3309c", 0 },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, mp3309c_id);
++
++static struct i2c_driver mp3309c_i2c_driver = {
++	.driver	= {
++			.name		= KBUILD_MODNAME,
++			.of_match_table	= mp3309c_match_table,
++	},
++	.probe		= mp3309c_probe,
++	.remove		= mp3309c_remove,
++	.id_table	= mp3309c_id,
++};
++
++module_i2c_driver(mp3309c_i2c_driver);
++
++MODULE_DESCRIPTION("Backlight Driver for MPS MP3309C");
++MODULE_AUTHOR("Flavio Suligoi <f.suligoi@asem.it>");
++MODULE_LICENSE("GPL");
+-- 
+2.34.1
 
---------------rtnW0y2YctxiLg3D48klbWpd--

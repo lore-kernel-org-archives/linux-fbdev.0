@@ -2,131 +2,141 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D15B4CE7A89
-	for <linux-fbdev@archiver.kernel.org>; Sat, 23 Sep 2023 20:21:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 565DECE7A81
+	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Sep 2023 07:32:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229777AbjIWUWC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 23 Sep 2023 16:22:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35240 "EHLO
+        id S229709AbjIYHcV convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 25 Sep 2023 03:32:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60510 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229690AbjIWUWA (ORCPT
+        with ESMTP id S229561AbjIYHcU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 23 Sep 2023 16:22:00 -0400
-Received: from omta34.uswest2.a.cloudfilter.net (omta34.uswest2.a.cloudfilter.net [35.89.44.33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 61A9E1AD;
-        Sat, 23 Sep 2023 13:21:51 -0700 (PDT)
-Received: from eig-obgw-6006a.ext.cloudfilter.net ([10.0.30.182])
-        by cmsmtp with ESMTP
-        id k0HiqjBDJOzKlk98RqJrfl; Sat, 23 Sep 2023 20:21:51 +0000
-Received: from gator4166.hostgator.com ([108.167.133.22])
-        by cmsmtp with ESMTPS
-        id k98Qq2PqJHLNfk98Qqo33Y; Sat, 23 Sep 2023 20:21:50 +0000
-X-Authority-Analysis: v=2.4 cv=Vp0wvs6n c=1 sm=1 tr=0 ts=650f48de
- a=1YbLdUo/zbTtOZ3uB5T3HA==:117 a=P7XfKmiOJ4/qXqHZrN7ymg==:17
- a=OWjo9vPv0XrRhIrVQ50Ab3nP57M=:19 a=dLZJa+xiwSxG16/P+YVxDGlgEgI=:19
- a=IkcTkHD0fZMA:10 a=zNV7Rl7Rt7sA:10 a=wYkD_t78qR0A:10 a=NEAV23lmAAAA:8
- a=VwQbUJbxAAAA:8 a=e5mUnYsNAAAA:8 a=cm27Pg_UAAAA:8 a=HvF037n1xESchLcPDVoA:9
- a=QEXdDO2ut3YA:10 a=AjGcO6oz07-iQ99wixmX:22 a=Vxmtnl_E_bksehYqCbjh:22
- a=xmb-EsYY8bH0VWELuYED:22
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=embeddedor.com; s=default; h=Content-Transfer-Encoding:Content-Type:
-        In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
-        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=dMtmtT6tX/J/Z9nN8F6wXmACJvxIhIjSA2EPSc7V54o=; b=nLSy7Yyg8X16vsP4+fNRB4Rotn
-        66Cg4GycjlShrC9MRh6WTMvGPinJuZLxjOs9e7FizT69nAYp/OkhR/IhrDiNHjixOGY/4eQKAaoAX
-        k5Mo8kidONlYLjZEvPv5x03+/cg8aCmfQvKmVYwJJLElNvPgHwbAr3yxCrtCiOdxlxn92geZB8iJJ
-        XBNc4Flajgvmg6YhTs2c+QPVHTvFUWeE0RH4EULSQF2sBJ0kPOkstu9MQClUpd+K2JjCAdzdvLssr
-        /wYuucKyHkJ8cnJPRYkXa3e+aPSVpAWxxoGE685mXoLtUsQXWVVXwa5l9DNTpIkhtmnfuc3VkZQ8v
-        6sGqmEew==;
-Received: from [94.239.20.48] (port=58218 helo=[192.168.1.98])
-        by gator4166.hostgator.com with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-        (Exim 4.96)
-        (envelope-from <gustavo@embeddedor.com>)
-        id 1qjy3s-003bcu-2i;
-        Sat, 23 Sep 2023 03:32:25 -0500
-Message-ID: <f1aa9b5a-6867-6000-8f3c-9a15eb216961@embeddedor.com>
-Date:   Sat, 23 Sep 2023 10:33:29 -0600
+        Mon, 25 Sep 2023 03:32:20 -0400
+Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com [209.85.128.176])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1BE13CE;
+        Mon, 25 Sep 2023 00:32:14 -0700 (PDT)
+Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-59f82ad1e09so8742087b3.0;
+        Mon, 25 Sep 2023 00:32:14 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695627133; x=1696231933;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=xThiWU+H5y1zPVxgj/ULPXRi0AJOVCXd78/fbyAqgmg=;
+        b=uAbJMuub9pOa9N5Ha/hsAIk/p+BDxM2jWdLfhSWwQ+p8kJPovc7gqFq7L5dhpJ4oUf
+         R2A30bd/trmLhWjnXQq/d8tADp65XM6VQBWG4zf//APJcwDBW3CSo755P+5DxBYn56XE
+         EZ4LxwcS7f7ku9J79SzXE3CaBRDEIIlBsDZ9pL4vRHBnrzV4CP3hHO5nN/23sGvtvzCD
+         Sn4iTjKUmJ7+FaLVA3x4uyLUscQ89OvtOVP8NBvK1rk1RfolB3yq3mhakWHLhxC140aI
+         7qMOhBATQ/VYjlQnv6id0CnC6h2sfLK3OmQBom4K1bxiDijO2ppxhDYTa/gNu/N/GAI3
+         R6aA==
+X-Gm-Message-State: AOJu0YxBZc/s2MHXZfNuvLBvcEBFusAEcIXy6vPqSYLsC4SDNWkRAOnh
+        NZG3IPIUieOSkOvC+toPSlqqa7v+MI7ZjQ==
+X-Google-Smtp-Source: AGHT+IEvQzYxT9r00rsUVKsh5Moqkn6GgZLJE7uewZ7n1ZLSRrLFJ/ka7lxDnp2EBFr16oL7OGxg0Q==
+X-Received: by 2002:a81:bf48:0:b0:59b:6c4:b822 with SMTP id s8-20020a81bf48000000b0059b06c4b822mr6756049ywk.36.1695627132945;
+        Mon, 25 Sep 2023 00:32:12 -0700 (PDT)
+Received: from mail-yb1-f182.google.com (mail-yb1-f182.google.com. [209.85.219.182])
+        by smtp.gmail.com with ESMTPSA id x125-20020a0dee83000000b0057a918d6644sm2274542ywe.128.2023.09.25.00.32.12
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 25 Sep 2023 00:32:12 -0700 (PDT)
+Received: by mail-yb1-f182.google.com with SMTP id 3f1490d57ef6-d815a5eee40so6369733276.2;
+        Mon, 25 Sep 2023 00:32:12 -0700 (PDT)
+X-Received: by 2002:a25:ec0c:0:b0:d81:bb7e:f47f with SMTP id
+ j12-20020a25ec0c000000b00d81bb7ef47fmr6282466ybh.44.1695627132454; Mon, 25
+ Sep 2023 00:32:12 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.1
-Subject: Re: [PATCH] video: mmp: Annotate struct mmp_path with __counted_by
-Content-Language: en-US
-To:     Kees Cook <keescook@chromium.org>, Helge Deller <deller@gmx.de>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Nathan Chancellor <nathan@kernel.org>,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        Tom Rix <trix@redhat.com>, linux-kernel@vger.kernel.org,
-        llvm@lists.linux.dev, linux-hardening@vger.kernel.org
-References: <20230922175141.work.450-kees@kernel.org>
-From:   "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-In-Reply-To: <20230922175141.work.450-kees@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - embeddedor.com
-X-BWhitelist: no
-X-Source-IP: 94.239.20.48
-X-Source-L: No
-X-Exim-ID: 1qjy3s-003bcu-2i
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-X-Source-Sender: ([192.168.1.98]) [94.239.20.48]:58218
-X-Source-Auth: gustavo@embeddedor.com
-X-Email-Count: 0
-X-Org:  HG=hgshared;ORG=hostgator;
-X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
-X-Local-Domain: yes
-X-CMAE-Envelope: MS4xfAg1o1m1slACG/5MiR22o/lfKiMf1eXt4tBJ7+At16soq6acAFNQbeKijHAMUkSOiUJfxhzeFb8lP530gr+De8qTCMBNBEBRMg3Qm00ieDOq87Tb/lhU
- mi84RPQjlgW9MWfZxdRiRVleltxUNPsLBbuEvg/mWdk69qeONyM8QzE8wYsP645mvsb/7p4YY1x1wrcJQRNhceRz41CL0JXzOyNTiGaXmG1TTm6/gZh5kBvt
- RRy3Kv1ynklXW5EH2bixdDS1URsfCz1RFSK/kkFTtcqCg+4dagWLna5XB+4MB1r2qDBEqJwWfsuwbYaY9fR4zA==
+References: <202309130632.LS04CPWu-lkp@intel.com> <feadd6a5-0f56-4575-9891-3a7d88e69e64@infradead.org>
+In-Reply-To: <feadd6a5-0f56-4575-9891-3a7d88e69e64@infradead.org>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Mon, 25 Sep 2023 09:32:00 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVRyaq5xT+2GGREHS95Nm86wHmmU0cE_qR5-eza1vMExw@mail.gmail.com>
+Message-ID: <CAMuHMdVRyaq5xT+2GGREHS95Nm86wHmmU0cE_qR5-eza1vMExw@mail.gmail.com>
+Subject: Re: sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:undefined reference
+ to `fb_io_read'
+To:     Randy Dunlap <rdunlap@infradead.org>
+Cc:     kernel test robot <lkp@intel.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        oe-kbuild-all@lists.linux.dev, linux-kernel@vger.kernel.org,
+        Sam Ravnborg <sam@ravnborg.org>,
+        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+        linux-fbdev@vger.kernel.org,
+        Linux-sh list <linux-sh@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Hi Randy,
 
+On Wed, Sep 13, 2023 at 7:13 AM Randy Dunlap <rdunlap@infradead.org> wrote:
+> On 9/12/23 15:42, kernel test robot wrote:
+> > FYI, the error/warning was bisected to this commit, please ignore it if it's irrelevant.
+> >
+> > tree:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master
+> > head:   3669558bdf354cd352be955ef2764cde6a9bf5ec
+> > commit: 5f86367006c6a0662faaf36f753f437afe42fb63 fbdev/sh7760fb: Use fbdev I/O helpers
+> > date:   6 weeks ago
+> > config: sh-randconfig-r012-20230913 (https://download.01.org/0day-ci/archive/20230913/202309130632.LS04CPWu-lkp@intel.com/config)
+> > compiler: sh4-linux-gcc (GCC) 13.2.0
+> > reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20230913/202309130632.LS04CPWu-lkp@intel.com/reproduce)
+> >
+> > If you fix the issue in a separate patch/commit (i.e. not just a new version of
+> > the same patch/commit), kindly add following tags
+> > | Reported-by: kernel test robot <lkp@intel.com>
+> > | Closes: https://lore.kernel.org/oe-kbuild-all/202309130632.LS04CPWu-lkp@intel.com/
+> >
+> > All errors (new ones prefixed by >>):
+> >
+> >    sh4-linux-ld: drivers/video/fbdev/sh7760fb.o: in function `sh7760fb_probe':
+> >    sh7760fb.c:(.text+0x374): undefined reference to `framebuffer_alloc'
+> >    sh4-linux-ld: sh7760fb.c:(.text+0x394): undefined reference to `fb_videomode_to_var'
+> >    sh4-linux-ld: sh7760fb.c:(.text+0x39c): undefined reference to `fb_alloc_cmap'
+> >    sh4-linux-ld: sh7760fb.c:(.text+0x3a4): undefined reference to `register_framebuffer'
+> >    sh4-linux-ld: sh7760fb.c:(.text+0x3ac): undefined reference to `fb_dealloc_cmap'
+> >    sh4-linux-ld: sh7760fb.c:(.text+0x434): undefined reference to `framebuffer_release'
+> >    sh4-linux-ld: drivers/video/fbdev/sh7760fb.o: in function `sh7760fb_remove':
+> >    sh7760fb.c:(.text+0x800): undefined reference to `unregister_framebuffer'
+> >    sh4-linux-ld: sh7760fb.c:(.text+0x804): undefined reference to `fb_dealloc_cmap'
+> >    sh4-linux-ld: sh7760fb.c:(.text+0x814): undefined reference to `framebuffer_release'
+> >>> sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0xc): undefined reference to `fb_io_read'
+> >>> sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x10): undefined reference to `fb_io_write'
+> >    sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x2c): undefined reference to `cfb_fillrect'
+> >    sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x30): undefined reference to `cfb_copyarea'
+> >    sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x34): undefined reference to `cfb_imageblit'
+>
+> The problem is CONFIG_FB=m and CONFIG_FB_SH7760=y.
+>
+> This can be fixed by this simple change ... if it's correct.
+>
+> or this Kconfig entry can be made into a tristate, but that may not
+> help with booting a system.
 
-On 9/22/23 11:51, Kees Cook wrote:
-> Prepare for the coming implementation by GCC and Clang of the __counted_by
-> attribute. Flexible array members annotated with __counted_by can have
-> their accesses bounds-checked at run-time checking via CONFIG_UBSAN_BOUNDS
-> (for array indexing) and CONFIG_FORTIFY_SOURCE (for strcpy/memcpy-family
-> functions).
-> 
-> As found with Coccinelle[1], add __counted_by for struct mmp_path.
-> 
-> [1] https://github.com/kees/kernel-tools/blob/trunk/coccinelle/examples/counted_by.cocci
-> 
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: dri-devel@lists.freedesktop.org
-> Signed-off-by: Kees Cook <keescook@chromium.org>
+What kind of problem do you foresee? Users could still configure it builtin
+when needed.
 
-Reviewed-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+I see no reason to restrict this to builtin.
+The driver already has all MODULE_*() boilerplate.
 
-Thanks
+> --- a/drivers/video/fbdev/Kconfig
+> +++ b/drivers/video/fbdev/Kconfig
+> @@ -1762,7 +1762,7 @@ config FB_COBALT
+>
+>  config FB_SH7760
+>         bool "SH7760/SH7763/SH7720/SH7721 LCDC support"
+> -       depends on FB && (CPU_SUBTYPE_SH7760 || CPU_SUBTYPE_SH7763 \
+> +       depends on FB=y && (CPU_SUBTYPE_SH7760 || CPU_SUBTYPE_SH7763 \
+>                 || CPU_SUBTYPE_SH7720 || CPU_SUBTYPE_SH7721)
+>         select FB_IOMEM_HELPERS
+>         help
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-Gustavo
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-> ---
->   include/video/mmp_disp.h | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/include/video/mmp_disp.h b/include/video/mmp_disp.h
-> index 77252cb46361..a722dcbf5073 100644
-> --- a/include/video/mmp_disp.h
-> +++ b/include/video/mmp_disp.h
-> @@ -231,7 +231,7 @@ struct mmp_path {
->   
->   	/* layers */
->   	int overlay_num;
-> -	struct mmp_overlay overlays[];
-> +	struct mmp_overlay overlays[] __counted_by(overlay_num);
->   };
->   
->   extern struct mmp_path *mmp_get_path(const char *name);
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

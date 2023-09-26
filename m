@@ -2,168 +2,152 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78F1CE7E633
-	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Sep 2023 13:10:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7926DE7E643
+	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Sep 2023 14:52:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234735AbjIZNKw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 26 Sep 2023 09:10:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50212 "EHLO
+        id S234870AbjIZOwI convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 26 Sep 2023 10:52:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35148 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234792AbjIZNKv (ORCPT
+        with ESMTP id S229726AbjIZOwI (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 26 Sep 2023 09:10:51 -0400
-Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BBA4810C
-        for <linux-fbdev@vger.kernel.org>; Tue, 26 Sep 2023 06:10:43 -0700 (PDT)
-Received: by mail-wm1-x335.google.com with SMTP id 5b1f17b1804b1-40572aeb73cso54593455e9.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 26 Sep 2023 06:10:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1695733842; x=1696338642; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=gUb8ILoSgQFCLFSqMOXdU7OSCDKaDGHaYb2wQZ5A7J8=;
-        b=XynLUSsP+m2kqkkoUMuXe2Gxvl37narI78SLbxBtHplKza8Q5BXwE5TnbWOSK1iVnP
-         G8V5H6TBaNKdyRRCGVE2sivsBv7Pnjh0zyIlXoZBtR2S4Xepe5/b04p4l524cjZhu9zy
-         KLJ6T1ugbCZyRU2nsCQdcBXf9r4nKEsEOA3QdJm/2b0lvp5LpM/ZNsooyzv0vJlQjhz/
-         FgxweQ733/Bn4bROQY5qaeGTju+zvOwdPJpYWhAMcopZL+HltwMHeDFONOjh58PlkCeW
-         KbHpYA6mH4StKYXJk9nHX83DISi3skSYgN3XaHQBkxxGvRLzUAWRsl/yhfEFfUo0No14
-         dUhw==
+        Tue, 26 Sep 2023 10:52:08 -0400
+Received: from mail-yw1-f174.google.com (mail-yw1-f174.google.com [209.85.128.174])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E9824E6;
+        Tue, 26 Sep 2023 07:52:01 -0700 (PDT)
+Received: by mail-yw1-f174.google.com with SMTP id 00721157ae682-5a1d0fee86aso38019487b3.2;
+        Tue, 26 Sep 2023 07:52:01 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695733842; x=1696338642;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=gUb8ILoSgQFCLFSqMOXdU7OSCDKaDGHaYb2wQZ5A7J8=;
-        b=XO/4Wy/7paBRa0+00s8hDyL56AQG0WcNwDNQ2a1P1yZ9dkyVOMi3k9B/+Wgpu/bBrK
-         QwPWbdUzVlmMtCmnUuDMoJ7AvsZ8U30DIIkXPPGMaaMV7xsaFAL8MYg8CEe1Ax2m5iQ+
-         ZXgN4t9pJT1kUsbpp+syWSbXgI/1DmOkHIIX9oLOxgF6UZR92RyYguTOJrJTfvtPhC7x
-         VBenqQ5XdfEZ56edH3RYC8c7L4DJ1O8vkRyqgh3xvpMTOkuu6Q6UQVs2j7MwkrmL1ant
-         RLRYVxq7x6ks5BMMphClfuFn836qBXCFRBqKKDesYWK1QdjW+CLptx+PiXsyHAxKDxU0
-         7cDg==
-X-Gm-Message-State: AOJu0YxQ8Diyd2EkYTgTKZIixiBCKKXtbQDC1AJS+yK9c+WR7FDdmj/u
-        rSwKO6EWMYT51NCnhbZ1OLGhvA==
-X-Google-Smtp-Source: AGHT+IGeSiQ3WveeVgUpyC7fww+V4WeYYuKrHSsckzOgpEr82JSyPAjlpUwHyvObx/ZUX2OzY5V6rg==
-X-Received: by 2002:a05:600c:2489:b0:405:3dbc:8821 with SMTP id 9-20020a05600c248900b004053dbc8821mr8955020wms.22.1695733842083;
-        Tue, 26 Sep 2023 06:10:42 -0700 (PDT)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id j13-20020adfd20d000000b003232c2109cbsm4788764wrh.7.2023.09.26.06.10.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 26 Sep 2023 06:10:41 -0700 (PDT)
-Date:   Tue, 26 Sep 2023 14:10:39 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Flavio Suligoi <f.suligoi@asem.it>
-Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
+        d=1e100.net; s=20230601; t=1695739921; x=1696344721;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=GeJt2kDkJDREmJCiOFGlfnsT2tn2qZEwAJk2/hTfX/A=;
+        b=mKZfX09dwIW1CL9VUU/k7AKmdtn5FLzmKXuJ7CWMrrDzz3YcoFb1fG9Yt4QwHztf1C
+         kUKFwQDi0ad9YpxYk9vXLHy5iO+c+o+P/1zlOs1FVmc1UUSK34br7gpSV7ekKpOVMv69
+         Zedm9svPQ4pBc4QTvUlKn9Yax1OdO0U66WIBbhYdncbCup/BCdj46NosCizDgryZ9plX
+         klKxszuXMx2nWE9r0n6HOW2mJXVyZdAlpBkCo0AtF6kZaeqax5Lo5f/oDtR29WpJEm1I
+         oa86k5o+Fhoubdlt6Eag4RdKOyhwxgMEige5al2ayRUmKvjFS+3g9a+0BtulFgF3lVh6
+         fnKw==
+X-Gm-Message-State: AOJu0Yzy6dF7+7g4vrqcR3GzVFAYqNMvnBcCQTJ1TZNVHueuwyXvW1DZ
+        NtN82qrKmLT8MhjcgpG4aUpkKGQlIyEmdA==
+X-Google-Smtp-Source: AGHT+IHA9Kwv8b9RsIF/btN0XIzdlR77dl0BD83zmSktk2GgARGXV6ketpyUafK+4HljurNDkPRSKA==
+X-Received: by 2002:a81:5245:0:b0:59b:e72a:e40b with SMTP id g66-20020a815245000000b0059be72ae40bmr10149177ywb.6.1695739920709;
+        Tue, 26 Sep 2023 07:52:00 -0700 (PDT)
+Received: from mail-yb1-f170.google.com (mail-yb1-f170.google.com. [209.85.219.170])
+        by smtp.gmail.com with ESMTPSA id c7-20020a0dc107000000b0058e37788bf7sm3029319ywd.72.2023.09.26.07.51.58
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 26 Sep 2023 07:51:58 -0700 (PDT)
+Received: by mail-yb1-f170.google.com with SMTP id 3f1490d57ef6-d7f0a60a159so10242142276.0;
+        Tue, 26 Sep 2023 07:51:58 -0700 (PDT)
+X-Received: by 2002:a25:f211:0:b0:d86:b9d5:124d with SMTP id
+ i17-20020a25f211000000b00d86b9d5124dmr5899090ybe.16.1695739918497; Tue, 26
+ Sep 2023 07:51:58 -0700 (PDT)
+MIME-Version: 1.0
+References: <cover.1694767208.git.geert+renesas@glider.be> <CAMuHMdWfBTKdXvZutg4LvWqBjuz-X=ZjzX0LKPqD=JxYuLoPRw@mail.gmail.com>
+ <20230919152428.GB18426@pendragon.ideasonboard.com>
+In-Reply-To: <20230919152428.GB18426@pendragon.ideasonboard.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Tue, 26 Sep 2023 16:51:46 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUwBXQ2X6hOm+kcZOteDLMau8x5xUcRJr2zy9dXyVf9Xw@mail.gmail.com>
+Message-ID: <CAMuHMdUwBXQ2X6hOm+kcZOteDLMau8x5xUcRJr2zy9dXyVf9Xw@mail.gmail.com>
+Subject: Re: [GIT PULL] drm: renesas: shmobile: Atomic conversion + DT support
+ (was: Re: [PATCH v4 00/41] drm: renesas: shmobile: Atomic conversion + DT support)
+To:     Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        David Airlie <airlied@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>
+Cc:     Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Magnus Damm <magnus.damm@gmail.com>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>,
-        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 2/2] backlight: mp3309c: Add support for MPS MP3309C
-Message-ID: <20230926131039.GC4356@aspen.lan>
-References: <20230925122609.78849-1-f.suligoi@asem.it>
- <20230925122609.78849-2-f.suligoi@asem.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230925122609.78849-2-f.suligoi@asem.it>
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Hans Verkuil <hverkuil@xs4all.nl>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>,
+        Linux Media Mailing List <linux-media@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linux-sh list <linux-sh@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Sep 25, 2023 at 02:26:09PM +0200, Flavio Suligoi wrote:
-> diff --git a/drivers/video/backlight/mp3309c.c b/drivers/video/backlight/mp3309c.c
-> new file mode 100644
-> index 000000000000..923ac7f7b291
-> --- /dev/null
-> +++ b/drivers/video/backlight/mp3309c.c
-> @@ -0,0 +1,398 @@
-> ...
-> +static int mp3309c_bl_update_status(struct backlight_device *bl)
-> +{
-> +	struct mp3309c_chip *chip = bl_get_data(bl);
-> +	int brightness = backlight_get_brightness(bl);
-> +	struct pwm_state pwmstate;
-> +	unsigned int analog_val, bits_val;
-> +	int i, ret;
-> +
-> +	if (chip->pdata->dimming_mode == DIMMING_PWM) {
-> +		/*
-> +		 * PWM dimming mode
-> +		 */
-> +		pwm_get_state(chip->pwmd, &pwmstate);
-> +		pwm_set_relative_duty_cycle(&pwmstate, brightness,
-> +					    chip->pdata->max_brightness);
-> +		pwmstate.enabled = true;
-> +		ret = pwm_apply_state(chip->pwmd, &pwmstate);
-> +		if (ret)
-> +			return ret;
-> +
-> +		switch (chip->pdata->status) {
-> +		case FIRST_POWER_ON:
-> +		case BACKLIGHT_OFF:
-> +			/*
-> +			 * After 20ms of low pwm signal level, the chip turns
-> +			   off automatically. In this case, before enabling the
-> +			   chip again, we must wait about 10ms for pwm signal to
-> +			   stabilize.
-> +			 */
-> +			if (brightness > 0) {
-> +				msleep(10);
-> +				mp3309c_enable_device(chip);
-> +				chip->pdata->status = BACKLIGHT_ON;
-> +			} else {
-> +				chip->pdata->status = BACKLIGHT_OFF;
-> +			}
-> +			break;
-> +		case BACKLIGHT_ON:
-> +			if (brightness == 0)
-> +				chip->pdata->status = BACKLIGHT_OFF;
-> +			break;
-> +		}
-> +	} else {
-> +		/*
-> +		 * Analog dimming (by I2C command) dimming mode
-> +		 *
-> +		 * The first time, before setting brightness, we must enable the
-> +		 * device
-> +		 */
-> +		if (chip->pdata->status == FIRST_POWER_ON)
-> +			mp3309c_enable_device(chip);
-> +
-> +		/*
-> +		 * Dimming mode I2C command
-> +		 *
-> +		 * The 5 bits of the dimming analog value D4..D0 is allocated
-> +		 * in the I2C register #0, in the following way:
-> +		 *
-> +		 *     +--+--+--+--+--+--+--+--+
-> +		 *     |EN|D0|D1|D2|D3|D4|XX|XX|
-> +		 *     +--+--+--+--+--+--+--+--+
-> +		 */
-> +		analog_val = DIV_ROUND_UP(ANALOG_MAX_VAL * brightness,
-> +					  chip->pdata->max_brightness);
+Hi Laurent, David, Daniel,
 
-Sorry to only notice after sharing a Reviewed-by:[1] but...
+On Tue, Sep 19, 2023 at 5:24 PM Laurent Pinchart
+<laurent.pinchart@ideasonboard.com> wrote:
+> On Tue, Sep 19, 2023 at 04:28:40PM +0200, Geert Uytterhoeven wrote:
+> > The following changes since commit 0663e1da5ba8e6459e3555ac12c62741668c0d30:
+> >
+> >   drm/dp_mst: Tune down error message during payload addition
+> > (2023-09-18 16:38:21 +0300)
+> >
+> > are available in the Git repository at:
+> >
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git
+> > tags/shmob-drm-atomic-dt-tag1
+> >
+> > for you to fetch changes up to bfea0fa9052aa8d235b24957eb84d9ff20cb87b7:
+> >
+> >   drm: renesas: shmobile: Add DT support (2023-09-19 15:58:04 +0200)
+> >
+> > ----------------------------------------------------------------
+> > drm: renesas: shmobile: Atomic conversion + DT support
+> >
+> > Currently, there are two drivers for the LCD controller on Renesas
+> > SuperH-based and ARM-based SH-Mobile and R-Mobile SoCs:
+> >   1. sh_mobile_lcdcfb, using the fbdev framework,
+> >   2. shmob_drm, using the DRM framework.
+> > However, only the former driver is used, as all platform support
+> > integrates the former.  None of these drivers support DT-based systems.
+> >
+> > Convert the SH-Mobile DRM driver to atomic modesetting, and add DT
+> > support, complemented by the customary set of fixes and improvements.
+> >
+> > Link: https://lore.kernel.org/r/cover.1694767208.git.geert+renesas@glider.be/
+> >
+> > This PR is based on today's drm-misc/for-linux-next, to avoid a
+> > conflict with commit 775b0669e19f2e4a ("drm/shmobile: Convert to
+> > platform remove callback returning void") in drm-misc/for-linux-next
 
-Scaling brightness here isn't right. When running in I2C dimming mode then
-max_brightness *must* be 31 or lower, meaning the value in brightness can
-be applied directly to the hardware without scaling.
+Now drm-misc/for-linux-next (which is still at v6.5-rc2) has been
+merged into drm/drm-next (which is at v6.6-rc2), do you want me to
+rebase my branch to current drm/drm-next, or any other commit?
 
-Quoting the DT binding docs about how max-brightness should be
-interpretted:
+Thanks!
 
-  Normally the maximum brightness is determined by the hardware and this
-  property is not required. This property is used to put a software
-  limit on the brightness apart from what the driver says, as it could
-  happen that a LED can be made so bright that it gets damaged or causes
-  damage due to restrictions in a specific system, such as mounting
-  conditions.
+> > Thanks for pulling!
+> > ----------------------------------------------------------------
+> > Geert Uytterhoeven (36):
+> >       MAINTAINER: Create entry for Renesas SH-Mobile DRM drivers
+>
+> I'm technically listed as the maintainer for this driver until Geert
+> takes over, so for this pull request,
+>
+> Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+>
+> And after that, shmobile won't need my ack to merge further changes :-)
+>
+> This is very nice work Geert. I'm looking forward to dropping the
+> sh_mobile_lcdcfb driver.
 
+Thank you!
 
-Daniel.
+Gr{oetje,eeting}s,
 
+                        Geert
 
-[1] I remember checking if this code could overflow the field but I was
-    so distracted by that I ended up missing the obvious!
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

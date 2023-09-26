@@ -2,133 +2,107 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD3CECD3431
-	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Sep 2023 18:16:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34AA3E7D242
+	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Sep 2023 07:17:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230184AbjIYSQO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 25 Sep 2023 14:16:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33270 "EHLO
+        id S229685AbjIZHSA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 26 Sep 2023 03:18:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56270 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229777AbjIYSQN (ORCPT
+        with ESMTP id S229513AbjIZHR7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 25 Sep 2023 14:16:13 -0400
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 608AD103;
-        Mon, 25 Sep 2023 11:16:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-        bh=BKLraxw+2cT6Y1DNrlWQPp9jaHszQHQqGz00lrO3DWs=; b=WY3k3i7SsxkjKjTCxuOxR3+/SV
-        v05dJNNqoLtu50Yt6ROa5S1jMLxqBwYvCU/cex79wucm7LUem3++XIkXOOvIUl4BZ0o74YxXtvA/v
-        Cr4KaWmxiHp+gQZesQxZbJNs4yYPjqWE4KU39EqQAurpa91Ka+Behmm6YlJ8u/mu3rniBizz2SO9l
-        SCvLJ1cVVXhlLFRHVfgjQmSpigPm6fjDyOOuNwaj72lehYBZMymFqwmY8hlVlWfaKO5d+HPDG6UPr
-        6Mw29QgSTcYIXSmYDHvdrBMpYLxfSLSJFZ9sBh43DOWAd3Kq2NmBrM+OJ+9jVNZhZtQuOuTZe59nw
-        iUY8aEHw==;
-Received: from [2601:1c2:980:9ec0::9fed]
-        by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1qkq7f-00EoSA-1w;
-        Mon, 25 Sep 2023 18:15:55 +0000
-Message-ID: <f905a3ad-0259-4dae-8071-d3371b49f0c8@infradead.org>
-Date:   Mon, 25 Sep 2023 11:15:52 -0700
+        Tue, 26 Sep 2023 03:17:59 -0400
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4DA40DE
+        for <linux-fbdev@vger.kernel.org>; Tue, 26 Sep 2023 00:17:53 -0700 (PDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1ql2KH-0003JD-7I; Tue, 26 Sep 2023 09:17:45 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1ql2KG-0093NE-Iq; Tue, 26 Sep 2023 09:17:44 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1ql2KG-004tvU-9J; Tue, 26 Sep 2023 09:17:44 +0200
+Date:   Tue, 26 Sep 2023 09:17:44 +0200
+From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To:     Aisheng Dong <aisheng.dong@nxp.com>,
+        "daniel.thompson@linaro.org" <daniel.thompson@linaro.org>
+Cc:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        "deller@gmx.de" <deller@gmx.de>, "lee@kernel.org" <lee@kernel.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "thierry.reding@gmail.com" <thierry.reding@gmail.com>,
+        "kernel@pengutronix.de" <kernel@pengutronix.de>
+Subject: Re: [PATCH] backlight: pwm_bl: Disable PWM on shutdown and suspend
+ disabled PWM emiting inactive state")
+Message-ID: <20230926071744.oikg3ndaq6x7yjrw@pengutronix.de>
+References: <DB9PR04MB84779AF9758B7FE747C6693D80869@DB9PR04MB8477.eurprd04.prod.outlook.com>
+ <20230322070352.xfwmnqyrao3mifuu@pengutronix.de>
+ <DB9PR04MB8477FD24740251860648786380869@DB9PR04MB8477.eurprd04.prod.outlook.com>
+ <20230322085129.jxxz55tbcxkc6usd@pengutronix.de>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:undefined reference
- to `fb_io_read'
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     kernel test robot <lkp@intel.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        oe-kbuild-all@lists.linux.dev, linux-kernel@vger.kernel.org,
-        Sam Ravnborg <sam@ravnborg.org>,
-        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-        linux-fbdev@vger.kernel.org,
-        Linux-sh list <linux-sh@vger.kernel.org>
-References: <202309130632.LS04CPWu-lkp@intel.com>
- <feadd6a5-0f56-4575-9891-3a7d88e69e64@infradead.org>
- <CAMuHMdVRyaq5xT+2GGREHS95Nm86wHmmU0cE_qR5-eza1vMExw@mail.gmail.com>
-From:   Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <CAMuHMdVRyaq5xT+2GGREHS95Nm86wHmmU0cE_qR5-eza1vMExw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="7ds4pnxi44iyaelx"
+Content-Disposition: inline
+In-Reply-To: <20230322085129.jxxz55tbcxkc6usd@pengutronix.de>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 
+--7ds4pnxi44iyaelx
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 9/25/23 00:32, Geert Uytterhoeven wrote:
-> Hi Randy,
-> 
-> On Wed, Sep 13, 2023 at 7:13 AM Randy Dunlap <rdunlap@infradead.org> wrote:
->> On 9/12/23 15:42, kernel test robot wrote:
->>> FYI, the error/warning was bisected to this commit, please ignore it if it's irrelevant.
->>>
->>> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master
->>> head:   3669558bdf354cd352be955ef2764cde6a9bf5ec
->>> commit: 5f86367006c6a0662faaf36f753f437afe42fb63 fbdev/sh7760fb: Use fbdev I/O helpers
->>> date:   6 weeks ago
->>> config: sh-randconfig-r012-20230913 (https://download.01.org/0day-ci/archive/20230913/202309130632.LS04CPWu-lkp@intel.com/config)
->>> compiler: sh4-linux-gcc (GCC) 13.2.0
->>> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20230913/202309130632.LS04CPWu-lkp@intel.com/reproduce)
->>>
->>> If you fix the issue in a separate patch/commit (i.e. not just a new version of
->>> the same patch/commit), kindly add following tags
->>> | Reported-by: kernel test robot <lkp@intel.com>
->>> | Closes: https://lore.kernel.org/oe-kbuild-all/202309130632.LS04CPWu-lkp@intel.com/
->>>
->>> All errors (new ones prefixed by >>):
->>>
->>>    sh4-linux-ld: drivers/video/fbdev/sh7760fb.o: in function `sh7760fb_probe':
->>>    sh7760fb.c:(.text+0x374): undefined reference to `framebuffer_alloc'
->>>    sh4-linux-ld: sh7760fb.c:(.text+0x394): undefined reference to `fb_videomode_to_var'
->>>    sh4-linux-ld: sh7760fb.c:(.text+0x39c): undefined reference to `fb_alloc_cmap'
->>>    sh4-linux-ld: sh7760fb.c:(.text+0x3a4): undefined reference to `register_framebuffer'
->>>    sh4-linux-ld: sh7760fb.c:(.text+0x3ac): undefined reference to `fb_dealloc_cmap'
->>>    sh4-linux-ld: sh7760fb.c:(.text+0x434): undefined reference to `framebuffer_release'
->>>    sh4-linux-ld: drivers/video/fbdev/sh7760fb.o: in function `sh7760fb_remove':
->>>    sh7760fb.c:(.text+0x800): undefined reference to `unregister_framebuffer'
->>>    sh4-linux-ld: sh7760fb.c:(.text+0x804): undefined reference to `fb_dealloc_cmap'
->>>    sh4-linux-ld: sh7760fb.c:(.text+0x814): undefined reference to `framebuffer_release'
->>>>> sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0xc): undefined reference to `fb_io_read'
->>>>> sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x10): undefined reference to `fb_io_write'
->>>    sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x2c): undefined reference to `cfb_fillrect'
->>>    sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x30): undefined reference to `cfb_copyarea'
->>>    sh4-linux-ld: drivers/video/fbdev/sh7760fb.o:(.rodata+0x34): undefined reference to `cfb_imageblit'
->>
->> The problem is CONFIG_FB=m and CONFIG_FB_SH7760=y.
->>
->> This can be fixed by this simple change ... if it's correct.
->>
->> or this Kconfig entry can be made into a tristate, but that may not
->> help with booting a system.
-> 
-> What kind of problem do you foresee? Users could still configure it builtin
-> when needed.
+Hello,
 
-I was hoping that someone who is familiar with this particular h/w
-could respond, but I agree with you:  I don't know of any reason to
-restrict this driver to builtin only.
+On Wed, Mar 22, 2023 at 09:51:29AM +0100, Uwe Kleine-K=F6nig wrote:
+> Since commit 00e7e698bff1 ("backlight: pwm_bl: Configure pwm only once
+> per backlight toggle") calling pwm_backlight_power_off() doesn't disable
+> the PWM any more. However this is necessary to suspend, because PWM
+> drivers usually refuse to suspend if they are still enabled.
+>=20
+> Also adapt shutdown to disable the PWM for similar reasons.
+>=20
+> Fixes: 00e7e698bff1 ("backlight: pwm_bl: Configure pwm only once per back=
+light toggle")
+> Reported-by: Aisheng Dong <aisheng.dong@nxp.com>
+> Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
 
-> I see no reason to restrict this to builtin.
-> The driver already has all MODULE_*() boilerplate.
-> 
->> --- a/drivers/video/fbdev/Kconfig
->> +++ b/drivers/video/fbdev/Kconfig
->> @@ -1762,7 +1762,7 @@ config FB_COBALT
->>
->>  config FB_SH7760
->>         bool "SH7760/SH7763/SH7720/SH7721 LCDC support"
->> -       depends on FB && (CPU_SUBTYPE_SH7760 || CPU_SUBTYPE_SH7763 \
->> +       depends on FB=y && (CPU_SUBTYPE_SH7760 || CPU_SUBTYPE_SH7763 \
->>                 || CPU_SUBTYPE_SH7720 || CPU_SUBTYPE_SH7721)
->>         select FB_IOMEM_HELPERS
->>         help
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
+This patch was never applied but I think it is still needed. I assume it
+fell through the cracks?
 
--- 
-~Randy
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--7ds4pnxi44iyaelx
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmUShZcACgkQj4D7WH0S
+/k42Tgf/Tir1DYkvJiUE1QS6MkI16X656C4B4XQbHRwG1pSy2RgetRNm08W+X/j6
+nBGthOGckEwMPDATx7U/TP6Me5taUO8otLanBnZholUnGQWL6utcRNCYI+bURrWH
+meqqPB6qFS74qib1161gTlrvHKkekqqDXuTCznWdSAtQOF4QWwnAguOee6QUHgr+
+GLsgwfSBZkogfxffEh0PYdb50ttrFIxd0ZSmoPWDzPgJR27YGtGy5MoQ0Z6//f7z
+bIdWhTCnIlZqIP7+UIua/1LKNXKYa5YVVWwTpU5fq2pGU5sRhrPgY/qamDwG/QZ4
+QNlQ+Wu3YS2IswvekbDn6sTWUipk3w==
+=Sftu
+-----END PGP SIGNATURE-----
+
+--7ds4pnxi44iyaelx--

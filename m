@@ -2,154 +2,127 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EF88E7E644
-	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Sep 2023 15:01:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFD9FE80AA2
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Sep 2023 07:47:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234346AbjIZPBd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 26 Sep 2023 11:01:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48338 "EHLO
+        id S230056AbjI0Hre (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Sep 2023 03:47:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33184 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233134AbjIZPBc (ORCPT
+        with ESMTP id S230061AbjI0Hr2 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 26 Sep 2023 11:01:32 -0400
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5BF3010E
-        for <linux-fbdev@vger.kernel.org>; Tue, 26 Sep 2023 08:01:25 -0700 (PDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1ql9Yt-0008Ns-FK; Tue, 26 Sep 2023 17:01:19 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1ql9Ys-009883-5s; Tue, 26 Sep 2023 17:01:18 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1ql9Yr-004zRC-Sn; Tue, 26 Sep 2023 17:01:17 +0200
-From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-To:     Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>
-Cc:     Aisheng Dong <aisheng.dong@nxp.com>, linux-pwm@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, Helge Deller <deller@gmx.de>,
-        dri-devel@lists.freedesktop.org,
-        Thierry Reding <thierry.reding@gmail.com>,
-        kernel@pengutronix.de
-Subject: [PATCH v3] backlight: pwm_bl: Disable PWM on shutdown and suspend
-Date:   Tue, 26 Sep 2023 17:01:16 +0200
-Message-Id: <20230926150116.2124384-1-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.40.1
+        Wed, 27 Sep 2023 03:47:28 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A6DDB196;
+        Wed, 27 Sep 2023 00:47:26 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 5738D1F897;
+        Wed, 27 Sep 2023 07:47:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1695800845; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=5HaPVljnpjkFD2YdeJo0vWJ6OUpqhQ0QctV6KzfcKc0=;
+        b=jJjgZYjtXI/ykIsrffxhfyQiCb7hg7CejksKX7NS4hGu0O0jrU0McMSUt0fjA6W4seDT02
+        eK3VCVJULZUiGKgViPvPBJcJGaSDE26WNHU+3LVfbi3qG/cvzjmTq/0jstvEkf1No0aNCC
+        7S5vSmt+uot/CtdCl7O8c2icvzZCj50=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1695800845;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=5HaPVljnpjkFD2YdeJo0vWJ6OUpqhQ0QctV6KzfcKc0=;
+        b=vHAkbN3zjuM1bxnPzK9j0z676nnv2THBcr9o5aKwuwwMO1lHZN3EuxE5i37B18SM9c6wB/
+        pzvNVV6pz1TWJHCQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 1A0D11338F;
+        Wed, 27 Sep 2023 07:47:25 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id wOqGBQ3eE2XvUQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 27 Sep 2023 07:47:25 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     deller@gmx.de, javierm@redhat.com, sam@ravnborg.org, arnd@arndb.de,
+        daniel@ffwll.ch
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-nvidia@lists.surfsouth.com, linux-omap@vger.kernel.org,
+        linux-parisc@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 02/46] fbdev/68328fb: Initialize fb_ops to fbdev I/O-memory helpers
+Date:   Wed, 27 Sep 2023 09:26:35 +0200
+Message-ID: <20230927074722.6197-3-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20230927074722.6197-1-tzimmermann@suse.de>
+References: <20230927074722.6197-1-tzimmermann@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3373; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=61FP9G4E8M9F1pTU3wuzp0u70AjlycxIrURHR3QM++A=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlEvI7fKNBv6WMI58kdVa/QJNJIswdnYz9HDjvW tYOgyJzHGqJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZRLyOwAKCRCPgPtYfRL+ TsHMCACY/dDub8/nxtStdqOoD5+FVknnQRRC/OVkjMROReL5w0mRNZfZlwSQjiDmaT1M278Bn9E fLCddz5oyxegjFJOhVwF6Yxykfct6HKMG3bUZePVS0z/wlJ0ncuAJ2dc1EK9l5XNpH7SoF5HoSa lLGwS7aUcnaZh+ueKtWVsJrGwtT3ldeddIwnZq+bbHzyQGD3g/DN9JnAaKnpKw2EDtN2tTbtdh4 ZQv4K7DsOKqT4XS55EFrsVvnG+tSU5G9au+kjxDPsvrEFT5xPhqn8B2Y4oqWeRftN0tMoKLwOfl COQj9T89QKgnwHzZb4MdAiE+oISw5CccM+Whma2peneA4QIP
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Since commit 00e7e698bff1 ("backlight: pwm_bl: Configure pwm only once
-per backlight toggle") calling pwm_backlight_power_off() doesn't disable
-the PWM any more. However this is necessary to suspend because PWM
-drivers usually refuse to suspend if they are still enabled.
+Initialize the instance of struct fb_ops with fbdev initializer
+macros for framebuffers in I/O address space. Set the read/write,
+draw and mmap callbacks to the correct implementation and avoid
+implicit defaults. Also select the necessary I/O helpers in Kconfig.
 
-Also adapt shutdown and remove callbacks to disable the PWM for similar
-reasons.
+Fbdev drivers sometimes rely on the callbacks being NULL for a
+default implementation to be invoked; hence requiring the I/O
+helpers to be built in any case. Setting all callbacks in all
+drivers explicitly will allow to make the I/O helpers optional.
+This benefits systems that do not use these functions.
 
-Fixes: 00e7e698bff1 ("backlight: pwm_bl: Configure pwm only once per backlight toggle")
-Reported-by: Aisheng Dong <aisheng.dong@nxp.com>
-Tested-by: Aisheng Dong <aisheng.dong@nxp.com>
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+No functional changes.
+
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
-Hello,
+ drivers/video/fbdev/68328fb.c | 5 ++---
+ drivers/video/fbdev/Kconfig   | 4 +---
+ 2 files changed, 3 insertions(+), 6 deletions(-)
 
-On Tue, Sep 26, 2023 at 12:11:37PM +0100, Daniel Thompson wrote:
-> Changes proposed look good (and the comment about badly designed boards
-> going to HiZ state we super helpful).
-
-I didn't mention Hi-Z and note that disabling a PWM can even result in
-the hardware driving to the active level. (This can happen for example
-for pwm-mxs and pwm-imx27.)
-
-> Only thing from my is why there is no attempt to disable the PWM
-> from the .remove_new() callback.
-
-Good catch, good I didn't manage to send out a v3 for the email address
-fix yet :-) So here comes a v3 with two improvments:
-
-Changes since v2
-(https://lore.kernel.org/dri-devel/20230926084612.2074692-1-u.kleine-koenig@pengutronix.de):
-
- - Fix Aisheng Dong's email address
- - also disable PWM in .remove and adapt commit log accordingly (Thanks
-   to Daniel Thompson for spotting that).
-
- drivers/video/backlight/pwm_bl.c | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
-
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index a51fbab96368..390398ae07b9 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -629,6 +629,10 @@ static void pwm_backlight_remove(struct platform_device *pdev)
+diff --git a/drivers/video/fbdev/68328fb.c b/drivers/video/fbdev/68328fb.c
+index 956dd2399cc0b..c24156eb3d0f6 100644
+--- a/drivers/video/fbdev/68328fb.c
++++ b/drivers/video/fbdev/68328fb.c
+@@ -95,13 +95,12 @@ static int mc68x328fb_mmap(struct fb_info *info, struct vm_area_struct *vma);
  
- 	backlight_device_unregister(bl);
- 	pwm_backlight_power_off(pb);
-+	pwm_get_state(pb->pwm, &state);
-+	state.duty_cycle = 0;
-+	state.enabled = false;
-+	pwm_apply_state(pb->pwm, &state);
+ static const struct fb_ops mc68x328fb_ops = {
+ 	.owner		= THIS_MODULE,
++	__FB_DEFAULT_IOMEM_OPS_RDWR,
+ 	.fb_check_var	= mc68x328fb_check_var,
+ 	.fb_set_par	= mc68x328fb_set_par,
+ 	.fb_setcolreg	= mc68x328fb_setcolreg,
+ 	.fb_pan_display	= mc68x328fb_pan_display,
+-	.fb_fillrect	= cfb_fillrect,
+-	.fb_copyarea	= cfb_copyarea,
+-	.fb_imageblit	= cfb_imageblit,
++	__FB_DEFAULT_IOMEM_OPS_DRAW,
+ 	.fb_mmap	= mc68x328fb_mmap,
+ };
  
- 	if (pb->exit)
- 		pb->exit(&pdev->dev);
-@@ -638,8 +642,13 @@ static void pwm_backlight_shutdown(struct platform_device *pdev)
- {
- 	struct backlight_device *bl = platform_get_drvdata(pdev);
- 	struct pwm_bl_data *pb = bl_get_data(bl);
-+	struct pwm_state state;
- 
- 	pwm_backlight_power_off(pb);
-+	pwm_get_state(pb->pwm, &state);
-+	state.duty_cycle = 0;
-+	state.enabled = false;
-+	pwm_apply_state(pb->pwm, &state);
- }
- 
- #ifdef CONFIG_PM_SLEEP
-@@ -647,12 +656,24 @@ static int pwm_backlight_suspend(struct device *dev)
- {
- 	struct backlight_device *bl = dev_get_drvdata(dev);
- 	struct pwm_bl_data *pb = bl_get_data(bl);
-+	struct pwm_state state;
- 
- 	if (pb->notify)
- 		pb->notify(pb->dev, 0);
- 
- 	pwm_backlight_power_off(pb);
- 
-+	/*
-+	 * Note that disabling the PWM doesn't guarantee that the output stays
-+	 * at its inactive state. However without the PWM disabled, the PWM
-+	 * driver refuses to suspend. So disable here even though this might
-+	 * enable the backlight on poorly designed boards.
-+	 */
-+	pwm_get_state(pb->pwm, &state);
-+	state.duty_cycle = 0;
-+	state.enabled = false;
-+	pwm_apply_state(pb->pwm, &state);
-+
- 	if (pb->notify_after)
- 		pb->notify_after(pb->dev, 0);
- 
-
-base-commit: 8fff9184d1b5810dca5dd1a02726d4f844af88fc
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index e142b15862cb7..94f578a44f275 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -1541,9 +1541,7 @@ config FB_G364
+ config FB_68328
+ 	bool "Motorola 68328 native frame buffer support"
+ 	depends on (FB = y) && (M68328 || M68EZ328 || M68VZ328)
+-	select FB_CFB_FILLRECT
+-	select FB_CFB_COPYAREA
+-	select FB_CFB_IMAGEBLIT
++	select FB_IOMEM_HELPERS
+ 	help
+ 	  Say Y here if you want to support the built-in frame buffer of
+ 	  the Motorola 68328 CPU family.
 -- 
-2.40.1
+2.42.0
 

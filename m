@@ -2,53 +2,53 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1440E80AAF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Sep 2023 07:47:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A91F9E810A5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Sep 2023 07:47:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230120AbjI0Hrq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Sep 2023 03:47:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40468 "EHLO
+        id S230171AbjI0Hrs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Sep 2023 03:47:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40334 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230086AbjI0Hrd (ORCPT
+        with ESMTP id S230093AbjI0Hre (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Sep 2023 03:47:33 -0400
+        Wed, 27 Sep 2023 03:47:34 -0400
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4DA8E1B9;
-        Wed, 27 Sep 2023 00:47:30 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B17FC1BE;
+        Wed, 27 Sep 2023 00:47:32 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 8719A2189E;
-        Wed, 27 Sep 2023 07:47:27 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 19E64218A0;
+        Wed, 27 Sep 2023 07:47:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1695800847; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1695800849; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=OTRgjt9ZIxQ8wFm8yqaudH0Dvs4qJ3X/F+C81dN1guQ=;
-        b=sYF7UICBTy0vHY1RyJPAlA/aq8R43iAqGRyyQbQn6HlCwyrqMk8CDtO3diRr3KjCpU/D2r
-        ib7lWJZC1nnddEvkcLoXun0UWfPzgBLoF7VglTcXyX7XzHLuoQumW2+uPmFkxMPP0nUdbv
-        lrm67Bldhg57WlLVdgkq+lUaScHRj5g=
+        bh=a1cq3c/ruH7vpeaGLX2GQTQpwjLjGI8CdqEohsvmpzQ=;
+        b=eQZp9EKEeBcw2piskzwn/PKIA+8HFg221d7xem7srB/fHpesXl78CfNhvIe/8bEx+TTJQS
+        8AqmKkMVLVSyV5eHZyOzF48OyD++AIT5eBJwAjCvM1vLjgbZZ1sIPr6XkbjNhnkc3FKrrC
+        OEjQLXPWpuADLckK/B6YiT9PGUnHHdY=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1695800847;
+        s=susede2_ed25519; t=1695800849;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=OTRgjt9ZIxQ8wFm8yqaudH0Dvs4qJ3X/F+C81dN1guQ=;
-        b=4vFlmY7+NBgSDYMmfYbgJIlF4r5PrRXijodYHhO6rr3WXbZjdW80JijDaTHCTIrKb2YMjw
-        rjRTZp+IH73pilCw==
+        bh=a1cq3c/ruH7vpeaGLX2GQTQpwjLjGI8CdqEohsvmpzQ=;
+        b=GzVUm9VcDLtSfmlMhD8lP0iqa7KhWqrUwJOQ1K57t2Ihr033n13EyRH6vLSQGYbvtEfrBV
+        4iTmaGiKN46rRlDA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 503D413A74;
-        Wed, 27 Sep 2023 07:47:27 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id CC7B913A74;
+        Wed, 27 Sep 2023 07:47:28 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id SBCzEg/eE2XvUQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Wed, 27 Sep 2023 07:47:27 +0000
+        id SOz+MBDeE2XvUQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 27 Sep 2023 07:47:28 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, javierm@redhat.com, sam@ravnborg.org, arnd@arndb.de,
         daniel@ffwll.ch
@@ -57,9 +57,9 @@ Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-nvidia@lists.surfsouth.com, linux-omap@vger.kernel.org,
         linux-parisc@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 11/46] fbdev/controlfb: Initialize fb_ops to fbdev I/O-memory helpers
-Date:   Wed, 27 Sep 2023 09:26:44 +0200
-Message-ID: <20230927074722.6197-12-tzimmermann@suse.de>
+Subject: [PATCH 17/46] fbdev/hitfb: Initialize fb_ops to fbdev I/O-memory helpers
+Date:   Wed, 27 Sep 2023 09:26:50 +0200
+Message-ID: <20230927074722.6197-18-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20230927074722.6197-1-tzimmermann@suse.de>
 References: <20230927074722.6197-1-tzimmermann@suse.de>
@@ -84,47 +84,47 @@ No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/Kconfig     | 4 +---
- drivers/video/fbdev/controlfb.c | 5 ++---
- 2 files changed, 3 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/Kconfig | 2 +-
+ drivers/video/fbdev/hitfb.c | 4 +++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 5f8ba796aa382..499403f69329f 100644
+index 0e0591fb32cae..6a5437ab3df30 100644
 --- a/drivers/video/fbdev/Kconfig
 +++ b/drivers/video/fbdev/Kconfig
-@@ -309,9 +309,7 @@ config FB_OF
- config FB_CONTROL
- 	bool "Apple \"control\" display support"
- 	depends on (FB = y) && ((PPC_PMAC && PPC32) || COMPILE_TEST)
--	select FB_CFB_FILLRECT
+@@ -1490,8 +1490,8 @@ config FB_HIT
+ 	tristate "HD64461 Frame Buffer support"
+ 	depends on FB && HD64461
+ 	select FB_CFB_FILLRECT
 -	select FB_CFB_COPYAREA
--	select FB_CFB_IMAGEBLIT
-+	select FB_IOMEM_HELPERS
- 	select FB_MACMODES
+ 	select FB_CFB_IMAGEBLIT
++	select FB_IOMEM_FOPS
  	help
- 	  This driver supports a frame buffer for the graphics adapter in the
-diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
-index 717134c141ffe..5c5284e8ae0e9 100644
---- a/drivers/video/fbdev/controlfb.c
-+++ b/drivers/video/fbdev/controlfb.c
-@@ -755,15 +755,14 @@ static int controlfb_mmap(struct fb_info *info,
+ 	  This is the frame buffer device driver for the Hitachi HD64461 LCD
+ 	  frame buffer card.
+diff --git a/drivers/video/fbdev/hitfb.c b/drivers/video/fbdev/hitfb.c
+index 17715eaf06732..b64b74b76c71f 100644
+--- a/drivers/video/fbdev/hitfb.c
++++ b/drivers/video/fbdev/hitfb.c
+@@ -328,8 +328,9 @@ static int hitfb_set_par(struct fb_info *info)
  
- static const struct fb_ops controlfb_ops = {
+ static const struct fb_ops hitfb_ops = {
  	.owner		= THIS_MODULE,
 +	__FB_DEFAULT_IOMEM_OPS_RDWR,
- 	.fb_check_var	= controlfb_check_var,
- 	.fb_set_par	= controlfb_set_par,
- 	.fb_setcolreg	= controlfb_setcolreg,
- 	.fb_pan_display = controlfb_pan_display,
- 	.fb_blank	= controlfb_blank,
-+	__FB_DEFAULT_IOMEM_OPS_DRAW,
- 	.fb_mmap	= controlfb_mmap,
--	.fb_fillrect	= cfb_fillrect,
--	.fb_copyarea	= cfb_copyarea,
--	.fb_imageblit	= cfb_imageblit,
+ 	.fb_check_var	= hitfb_check_var,
+-	.fb_set_par		= hitfb_set_par,
++	.fb_set_par	= hitfb_set_par,
+ 	.fb_setcolreg	= hitfb_setcolreg,
+ 	.fb_blank	= hitfb_blank,
+ 	.fb_sync	= hitfb_sync,
+@@ -337,6 +338,7 @@ static const struct fb_ops hitfb_ops = {
+ 	.fb_fillrect	= hitfb_fillrect,
+ 	.fb_copyarea	= hitfb_copyarea,
+ 	.fb_imageblit	= cfb_imageblit,
++	__FB_DEFAULT_IOMEM_OPS_MMAP,
  };
  
- /*
+ static int hitfb_probe(struct platform_device *dev)
 -- 
 2.42.0
 

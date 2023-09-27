@@ -2,53 +2,53 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19664E810A2
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Sep 2023 07:48:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B292BE810A6
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Sep 2023 07:48:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230183AbjI0HsD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Sep 2023 03:48:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40364 "EHLO
+        id S230198AbjI0HsE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Sep 2023 03:48:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40390 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230115AbjI0Hrg (ORCPT
+        with ESMTP id S230117AbjI0Hrh (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Sep 2023 03:47:36 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B2731B2;
-        Wed, 27 Sep 2023 00:47:35 -0700 (PDT)
+        Wed, 27 Sep 2023 03:47:37 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 25AC31B3;
+        Wed, 27 Sep 2023 00:47:36 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id C93A71F8B5;
-        Wed, 27 Sep 2023 07:47:33 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id D28ED218DF;
+        Wed, 27 Sep 2023 07:47:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1695800853; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1695800854; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=uofMW0N/SIEKfHbQAWI4b3x+nOBu0EETY7TdIDrepVE=;
-        b=naiTM/rt06TaOoNoBGrcp253HSOkYFx32omxqrWW4ec3dhRdiXgUjxPlP5WievcdyBkIds
-        gjzonAHd7UKRf4WVsEcyRDuFmYXS8ETkht5tqYw9/Hl32Rjn2XyZtMiZD4LRpykxcpFcat
-        SoaMA6wBHZNNYm2JyYYjSbKhy8zeg64=
+        bh=u3eRdS85xwPQzBuwJ54dspR9cbt48tPp46vdNh1wjsk=;
+        b=WBdRDS1btysNCgwlgznFfPl70efEpbrCr4Tcv25lls+aMwgz2+dfAZPgRKWNd8kuXiCxt5
+        JcLewc0AZXfg1lRNvuPhT+IFIUSgOlq4S4rhq3R7Ttd8P2QXco6mvwnNU4dyJS/7IZHN3s
+        GBa/qat9H7Ce3fvcPDL+NkL3r9YigAg=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1695800853;
+        s=susede2_ed25519; t=1695800854;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=uofMW0N/SIEKfHbQAWI4b3x+nOBu0EETY7TdIDrepVE=;
-        b=r2QPGT8vYo97vafmi+GcCubtO771otKPnVFjqFPHK78avjQZfNMv2R2fTMYr2xu7GFnY0O
-        fRcTkgFkHufFzOCA==
+        bh=u3eRdS85xwPQzBuwJ54dspR9cbt48tPp46vdNh1wjsk=;
+        b=8YIepgZd82gcTVo2funY19jpuH62p5/D7vph6egOvw4iuYYt+9iaBIsueRoewIXWLPKJRm
+        dtWXYMcypeqLTsBA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8DD911338F;
-        Wed, 27 Sep 2023 07:47:33 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 956401338F;
+        Wed, 27 Sep 2023 07:47:34 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id mA7iIRXeE2XvUQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Wed, 27 Sep 2023 07:47:33 +0000
+        id 4M+fIxbeE2XvUQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 27 Sep 2023 07:47:34 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, javierm@redhat.com, sam@ravnborg.org, arnd@arndb.de,
         daniel@ffwll.ch
@@ -57,10 +57,10 @@ Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-nvidia@lists.surfsouth.com, linux-omap@vger.kernel.org,
         linux-parisc@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Antonino Daplas <adaplas@gmail.com>
-Subject: [PATCH 34/46] fbdev/savagefb: Initialize fb_ops to fbdev I/O-memory helpers
-Date:   Wed, 27 Sep 2023 09:27:07 +0200
-Message-ID: <20230927074722.6197-35-tzimmermann@suse.de>
+        "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+Subject: [PATCH 38/46] fbdev/stifb: Initialize fb_ops to fbdev I/O-memory helpers
+Date:   Wed, 27 Sep 2023 09:27:11 +0200
+Message-ID: <20230927074722.6197-39-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20230927074722.6197-1-tzimmermann@suse.de>
 References: <20230927074722.6197-1-tzimmermann@suse.de>
@@ -84,54 +84,43 @@ This benefits systems that do not use these functions.
 No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
 ---
- drivers/video/fbdev/Kconfig                  | 3 ++-
- drivers/video/fbdev/savage/savagefb_driver.c | 6 +++---
- 2 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/Kconfig | 1 +
+ drivers/video/fbdev/stifb.c | 2 ++
+ 2 files changed, 3 insertions(+)
 
 diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 061af94837f99..2d8b7fe502f74 100644
+index b018f10ad07fc..a7587f680e3a2 100644
 --- a/drivers/video/fbdev/Kconfig
 +++ b/drivers/video/fbdev/Kconfig
-@@ -1163,10 +1163,11 @@ config FB_S3_DDC
- config FB_SAVAGE
- 	tristate "S3 Savage support"
- 	depends on FB && PCI
--	select FB_MODE_HELPERS
+@@ -384,6 +384,7 @@ config FB_STI
  	select FB_CFB_FILLRECT
  	select FB_CFB_COPYAREA
  	select FB_CFB_IMAGEBLIT
 +	select FB_IOMEM_FOPS
-+	select FB_MODE_HELPERS
- 	select VGASTATE
- 	select VIDEO_NOMODESET
+ 	select STI_CORE
+ 	default y
  	help
-diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
-index b5f84bd4804b8..dddd6afcb972a 100644
---- a/drivers/video/fbdev/savage/savagefb_driver.c
-+++ b/drivers/video/fbdev/savage/savagefb_driver.c
-@@ -1641,6 +1641,7 @@ static const struct fb_ops savagefb_ops = {
- 	.owner          = THIS_MODULE,
- 	.fb_open        = savagefb_open,
- 	.fb_release     = savagefb_release,
+diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
+index c746deb79afce..548d992f8cb18 100644
+--- a/drivers/video/fbdev/stifb.c
++++ b/drivers/video/fbdev/stifb.c
+@@ -1167,12 +1167,14 @@ stifb_init_display(struct stifb_info *fb)
+ 
+ static const struct fb_ops stifb_ops = {
+ 	.owner		= THIS_MODULE,
 +	__FB_DEFAULT_IOMEM_OPS_RDWR,
- 	.fb_check_var   = savagefb_check_var,
- 	.fb_set_par     = savagefb_set_par,
- 	.fb_setcolreg   = savagefb_setcolreg,
-@@ -1652,10 +1653,9 @@ static const struct fb_ops savagefb_ops = {
- 	.fb_imageblit   = savagefb_imageblit,
- 	.fb_sync        = savagefb_sync,
- #else
--	.fb_fillrect    = cfb_fillrect,
--	.fb_copyarea    = cfb_copyarea,
--	.fb_imageblit   = cfb_imageblit,
-+	__FB_DEFAULT_IOMEM_OPS_DRAW,
- #endif
+ 	.fb_check_var	= stifb_check_var,
+ 	.fb_setcolreg	= stifb_setcolreg,
+ 	.fb_blank	= stifb_blank,
+ 	.fb_fillrect	= stifb_fillrect,
+ 	.fb_copyarea	= stifb_copyarea,
+ 	.fb_imageblit	= cfb_imageblit,
 +	__FB_DEFAULT_IOMEM_OPS_MMAP,
  };
  
- /* --------------------------------------------------------------------- */
+ 
 -- 
 2.42.0
 

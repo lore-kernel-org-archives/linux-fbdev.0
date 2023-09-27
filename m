@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B60CAE810A8
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Sep 2023 07:47:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9F81E810AD
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Sep 2023 07:47:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230101AbjI0Hrv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S230147AbjI0Hrv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Wed, 27 Sep 2023 03:47:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50670 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50676 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230061AbjI0Hre (ORCPT
+        with ESMTP id S230076AbjI0Hrf (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Sep 2023 03:47:34 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B49B61BF;
+        Wed, 27 Sep 2023 03:47:35 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E595DCC0;
         Wed, 27 Sep 2023 00:47:32 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 30598218A2;
-        Wed, 27 Sep 2023 07:47:30 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 9DEEE1F8AE;
+        Wed, 27 Sep 2023 07:47:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1695800850; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1695800849; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=zoNkSP1xm6F8e8A1K7Rp8buTbSF05HOcVujnEuQjmXA=;
-        b=g3uV31Zq5cu/s+j+N17iTRI7prQaoiU42/M3es/U5vfZm3J8r9YpB70qiDLWSKf7dyTcO7
-        /gimMZzrguh2xuvMP5mIGJ6ZbgCj8DHYnZ1eU93p9+vCqbp2aGcnD9Q6luwSCa94zhuRI4
-        XzCXphj7wkaTcJxOaSx9ErcZQSiZAmo=
+        bh=NxBcd+igdUhtckrFZURNbcjN7GUux7BiTjx9FHmuYUo=;
+        b=ZYCyX7r0cwcVJuy0LbAIc3dfYn16daA1zWaYMDf/G4t2CitbNzwZSjg2O+E7Jk1gxr2qzF
+        j61FmDEDjHFlZteTtvA2GdD9T6mLWq3CDooI0sCXqRnEQ8qp8/mfaUc5jAWRpIo1VupUyg
+        CFQ41Hg7cBT2+rn9hywtOmYNPxoWVIU=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1695800850;
+        s=susede2_ed25519; t=1695800849;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=zoNkSP1xm6F8e8A1K7Rp8buTbSF05HOcVujnEuQjmXA=;
-        b=G2sOpLRe/EVgCAJJjss/r3CZV4J6LvipbEO6PHnwKCjNY/svTjrN0PKOz172NvGAN2sfve
-        ECQgYnvKZNNLsNCQ==
+        bh=NxBcd+igdUhtckrFZURNbcjN7GUux7BiTjx9FHmuYUo=;
+        b=GI97PDQXS1zxO7wDoQc0aZYPvGqpDwWWGJJGuAdaFAqpCGTlpvL0D9hPs6KhFpTL9jD0Ty
+        LWd4okG9vbbYHgCA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id E2A711338F;
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 62AB213A74;
         Wed, 27 Sep 2023 07:47:29 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id 2DJ4NhHeE2XvUQAAMHmgww
+        id 0BtDFxHeE2XvUQAAMHmgww
         (envelope-from <tzimmermann@suse.de>); Wed, 27 Sep 2023 07:47:29 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, javierm@redhat.com, sam@ravnborg.org, arnd@arndb.de,
@@ -57,10 +57,10 @@ Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-nvidia@lists.surfsouth.com, linux-omap@vger.kernel.org,
         linux-parisc@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Maik Broemme <mbroemme@libmpq.org>
-Subject: [PATCH 21/46] fbdev/intelfb: Initialize fb_ops to fbdev I/O-memory helpers
-Date:   Wed, 27 Sep 2023 09:26:54 +0200
-Message-ID: <20230927074722.6197-22-tzimmermann@suse.de>
+        Antonino Daplas <adaplas@gmail.com>
+Subject: [PATCH 19/46] fbdev/i810fb: Initialize fb_ops to fbdev I/O-memory helpers
+Date:   Wed, 27 Sep 2023 09:26:52 +0200
+Message-ID: <20230927074722.6197-20-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20230927074722.6197-1-tzimmermann@suse.de>
 References: <20230927074722.6197-1-tzimmermann@suse.de>
@@ -84,51 +84,48 @@ This benefits systems that do not use these functions.
 No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Maik Broemme <mbroemme@libmpq.org>
+Cc: Antonino Daplas <adaplas@gmail.com>
 ---
- drivers/video/fbdev/Kconfig              | 3 ++-
- drivers/video/fbdev/intelfb/intelfbdrv.c | 4 +++-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/Kconfig          | 4 +---
+ drivers/video/fbdev/i810/i810_main.c | 2 ++
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 46f761ffa13c9..c1bb885cee4c3 100644
+index 3c28bff8a0770..e42439cfb1a1d 100644
 --- a/drivers/video/fbdev/Kconfig
 +++ b/drivers/video/fbdev/Kconfig
-@@ -861,10 +861,11 @@ config FB_CARILLO_RANCH
- config FB_INTEL
- 	tristate "Intel 830M/845G/852GM/855GM/865G/915G/945G/945GM/965G/965GM support"
- 	depends on FB && PCI && X86 && AGP_INTEL && EXPERT
--	select FB_MODE_HELPERS
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
+@@ -793,10 +793,8 @@ config FB_I740
+ config FB_I810
+ 	tristate "Intel 810/815 support"
+ 	depends on FB && PCI && X86_32 && AGP_INTEL
 +	select FB_IOMEM_FOPS
-+	select FB_MODE_HELPERS
- 	select BOOT_VESA_SUPPORT if FB_INTEL = y
+ 	select FB_MODE_HELPERS
+-	select FB_CFB_FILLRECT
+-	select FB_CFB_COPYAREA
+-	select FB_CFB_IMAGEBLIT
+ 	select VGASTATE
  	select VIDEO_NOMODESET
- 	depends on !DRM_I915
-diff --git a/drivers/video/fbdev/intelfb/intelfbdrv.c b/drivers/video/fbdev/intelfb/intelfbdrv.c
-index 3d334f1719596..d29d80a16295e 100644
---- a/drivers/video/fbdev/intelfb/intelfbdrv.c
-+++ b/drivers/video/fbdev/intelfb/intelfbdrv.c
-@@ -198,6 +198,7 @@ static const struct fb_ops intel_fb_ops = {
- 	.owner =		THIS_MODULE,
- 	.fb_open =              intelfb_open,
- 	.fb_release =           intelfb_release,
+ 	help
+diff --git a/drivers/video/fbdev/i810/i810_main.c b/drivers/video/fbdev/i810/i810_main.c
+index f5511bb4fadca..d73a795fe1bef 100644
+--- a/drivers/video/fbdev/i810/i810_main.c
++++ b/drivers/video/fbdev/i810/i810_main.c
+@@ -1547,6 +1547,7 @@ static const struct fb_ops i810fb_ops = {
+ 	.owner =             THIS_MODULE,
+ 	.fb_open =           i810fb_open,
+ 	.fb_release =        i810fb_release,
 +	__FB_DEFAULT_IOMEM_OPS_RDWR,
- 	.fb_check_var =         intelfb_check_var,
- 	.fb_set_par =           intelfb_set_par,
- 	.fb_setcolreg =		intelfb_setcolreg,
-@@ -208,7 +209,8 @@ static const struct fb_ops intel_fb_ops = {
- 	.fb_imageblit =         intelfb_imageblit,
- 	.fb_cursor =            intelfb_cursor,
- 	.fb_sync =              intelfb_sync,
--	.fb_ioctl =		intelfb_ioctl
-+	.fb_ioctl =		intelfb_ioctl,
+ 	.fb_check_var =      i810fb_check_var,
+ 	.fb_set_par =        i810fb_set_par,
+ 	.fb_setcolreg =      i810fb_setcolreg,
+@@ -1557,6 +1558,7 @@ static const struct fb_ops i810fb_ops = {
+ 	.fb_imageblit =      i810fb_imageblit,
+ 	.fb_cursor =         i810fb_cursor,
+ 	.fb_sync =           i810fb_sync,
 +	__FB_DEFAULT_IOMEM_OPS_MMAP,
  };
  
- /* PCI driver module table */
+ /***********************************************************************
 -- 
 2.42.0
 

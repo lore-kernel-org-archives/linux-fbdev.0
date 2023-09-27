@@ -2,53 +2,53 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90428E810C3
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Sep 2023 07:47:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65851E810CE
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Sep 2023 07:47:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230182AbjI0Hr4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Sep 2023 03:47:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40528 "EHLO
+        id S230103AbjI0Hr6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Sep 2023 03:47:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50706 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230102AbjI0Hrf (ORCPT
+        with ESMTP id S230041AbjI0Hrf (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Wed, 27 Sep 2023 03:47:35 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E28BA1B0;
-        Wed, 27 Sep 2023 00:47:32 -0700 (PDT)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 67DA612A;
+        Wed, 27 Sep 2023 00:47:34 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 718461F8B0;
-        Wed, 27 Sep 2023 07:47:30 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 0A698218CE;
+        Wed, 27 Sep 2023 07:47:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1695800850; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1695800853; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=h92Cu0T0RlZflzHgcawkGCio2NpMhXHxxurgHdpog5I=;
-        b=DayUKSGy56Gb+Qn/WJpEv3oC/TgW61JXeTBF0x40yHiD7YR5qgOzFX/jNIkGEGmPuoYbiB
-        cYealw8oKu6PKfa+AgJRWcsY4s7vnw+RYiCNwqs1QSZQ7/UWCEx/KsOXUjRO4l6vIoKplO
-        M51Taj/CcghFu4vgnUdh/I7z/s8D+sQ=
+        bh=GaxMUTxJx9REMKwDO9x/6XTWgzZI2rs0OcKvhJZVHQ8=;
+        b=Ds07cppu9esS5bqr4WlvqywT/Nn6DVNuKAa9OXwxQIUS155b2t7OnJi42gxJP2JXHC6ykG
+        N2w0AQ1wfYbzbmuDaxfAWa8HFIxbXKyYlkxsdqtUj0SlCnoXDS9UeuBapt/gD+qOKoamLa
+        DQbP0DJbX9pLGDjp0sgBvbsu0ris44A=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1695800850;
+        s=susede2_ed25519; t=1695800853;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=h92Cu0T0RlZflzHgcawkGCio2NpMhXHxxurgHdpog5I=;
-        b=LFDte3MO/cosS32fVUJhb1ezVH4WPymlHBK5D3BV89hZ0XfJExXv4ZoCWBE70gaQaO03y7
-        OWyNOiqwwKgyzQBw==
+        bh=GaxMUTxJx9REMKwDO9x/6XTWgzZI2rs0OcKvhJZVHQ8=;
+        b=S6vECYBQdIhDxJVnevb0+OLehSOeXE1NGQAQzOxVBu1wJB+cVBHOZOv4lH0AlRpJPUxIJc
+        VUyjP5ZPDmMjIZCQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 3365B13A74;
-        Wed, 27 Sep 2023 07:47:30 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C41071338F;
+        Wed, 27 Sep 2023 07:47:32 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id MGqlCxLeE2XvUQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Wed, 27 Sep 2023 07:47:30 +0000
+        id WMUXLxTeE2XvUQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 27 Sep 2023 07:47:32 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     deller@gmx.de, javierm@redhat.com, sam@ravnborg.org, arnd@arndb.de,
         daniel@ffwll.ch
@@ -56,10 +56,11 @@ Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-arm-kernel@lists.infradead.org,
         linux-nvidia@lists.surfsouth.com, linux-omap@vger.kernel.org,
         linux-parisc@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 22/46] fbdev/matroxfb: Initialize fb_ops to fbdev I/O-memory helpers
-Date:   Wed, 27 Sep 2023 09:26:55 +0200
-Message-ID: <20230927074722.6197-23-tzimmermann@suse.de>
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Subject: [PATCH 31/46] fbdev/s1d13xxxfb: Initialize fb_ops to fbdev I/O-memory helpers
+Date:   Wed, 27 Sep 2023 09:27:04 +0200
+Message-ID: <20230927074722.6197-32-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20230927074722.6197-1-tzimmermann@suse.de>
 References: <20230927074722.6197-1-tzimmermann@suse.de>
@@ -69,7 +70,7 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Initialize each instance of struct fb_ops with fbdev initializer
+Initialize the instance of struct fb_ops with fbdev initializer
 macros for framebuffers in I/O address space. Set the read/write,
 draw and mmap callbacks to the correct implementation and avoid
 implicit defaults. Also select the necessary I/O helpers in Kconfig.
@@ -80,76 +81,85 @@ helpers to be built in any case. Setting all callbacks in all
 drivers explicitly will allow to make the I/O helpers optional.
 This benefits systems that do not use these functions.
 
-No functional changes.
+To simplify the conversion, provide a dedicated fb_ops instance
+for accelerated devices. No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Kristoffer Ericson <kristoffer.ericson@gmail.com>
 ---
- drivers/video/fbdev/Kconfig                 | 2 ++
- drivers/video/fbdev/matrox/matroxfb_base.c  | 2 ++
- drivers/video/fbdev/matrox/matroxfb_crtc2.c | 4 +---
- 3 files changed, 5 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/Kconfig      |  1 +
+ drivers/video/fbdev/s1d13xxxfb.c | 25 ++++++++++++++++---------
+ 2 files changed, 17 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index c1bb885cee4c3..aa3d2e3930e91 100644
+index 64131e2b11bd5..fdac5f9177068 100644
 --- a/drivers/video/fbdev/Kconfig
 +++ b/drivers/video/fbdev/Kconfig
-@@ -903,6 +903,7 @@ config FB_MATROX
+@@ -671,6 +671,7 @@ config FB_S1D13XXX
  	select FB_CFB_FILLRECT
  	select FB_CFB_COPYAREA
  	select FB_CFB_IMAGEBLIT
 +	select FB_IOMEM_FOPS
- 	select FB_TILEBLITTING
- 	select FB_MACMODES if PPC_PMAC
- 	select VIDEO_NOMODESET
-@@ -989,6 +990,7 @@ config FB_MATROX_I2C
- config FB_MATROX_MAVEN
- 	tristate "G400 second head support"
- 	depends on FB_MATROX_G && FB_MATROX_I2C
-+	select FB_IOMEM_HELPERS
  	help
- 	  WARNING !!! This support does not work with G450 !!!
+ 	  Support for S1D13XXX framebuffer device family (currently only
+ 	  working with S1D13806). Product specs at
+diff --git a/drivers/video/fbdev/s1d13xxxfb.c b/drivers/video/fbdev/s1d13xxxfb.c
+index c7d221cce06d7..0e871197c6de6 100644
+--- a/drivers/video/fbdev/s1d13xxxfb.c
++++ b/drivers/video/fbdev/s1d13xxxfb.c
+@@ -596,18 +596,26 @@ s1d13xxxfb_bitblt_solidfill(struct fb_info *info, const struct fb_fillrect *rect
+ }
  
-diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
-index a043a737ea9f7..81603ce05a229 100644
---- a/drivers/video/fbdev/matrox/matroxfb_base.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_base.c
-@@ -1204,6 +1204,7 @@ static const struct fb_ops matroxfb_ops = {
- 	.owner =	THIS_MODULE,
- 	.fb_open =	matroxfb_open,
- 	.fb_release =	matroxfb_release,
+ /* framebuffer information structures */
+-static struct fb_ops s1d13xxxfb_fbops = {
++static const struct fb_ops s1d13xxxfb_fbops = {
+ 	.owner		= THIS_MODULE,
++	FB_DEFAULT_IOMEM_OPS,
+ 	.fb_set_par	= s1d13xxxfb_set_par,
+ 	.fb_setcolreg	= s1d13xxxfb_setcolreg,
+ 	.fb_blank	= s1d13xxxfb_blank,
+-
+ 	.fb_pan_display	= s1d13xxxfb_pan_display,
++};
+ 
+-	/* gets replaced at chip detection time */
+-	.fb_fillrect	= cfb_fillrect,
+-	.fb_copyarea	= cfb_copyarea,
++static const struct fb_ops s1d13xxxfb_fbops_s1d13506 = {
++	.owner		= THIS_MODULE,
 +	__FB_DEFAULT_IOMEM_OPS_RDWR,
- 	.fb_check_var =	matroxfb_check_var,
- 	.fb_set_par =	matroxfb_set_par,
- 	.fb_setcolreg =	matroxfb_setcolreg,
-@@ -1214,6 +1215,7 @@ static const struct fb_ops matroxfb_ops = {
- /*	.fb_copyarea =	<set by matrox_cfbX_init>, */
- /*	.fb_imageblit =	<set by matrox_cfbX_init>, */
- /*	.fb_cursor =	<set by matrox_cfbX_init>, */
++	.fb_set_par	= s1d13xxxfb_set_par,
++	.fb_setcolreg	= s1d13xxxfb_setcolreg,
++	.fb_blank	= s1d13xxxfb_blank,
++	.fb_pan_display	= s1d13xxxfb_pan_display,
++	.fb_fillrect	= s1d13xxxfb_bitblt_solidfill,
++	.fb_copyarea	= s1d13xxxfb_bitblt_copyarea,
+ 	.fb_imageblit	= cfb_imageblit,
 +	__FB_DEFAULT_IOMEM_OPS_MMAP,
  };
  
- #define RSDepth(X)	(((X) >> 8) & 0x0F)
-diff --git a/drivers/video/fbdev/matrox/matroxfb_crtc2.c b/drivers/video/fbdev/matrox/matroxfb_crtc2.c
-index 372197c124dec..417fc692468da 100644
---- a/drivers/video/fbdev/matrox/matroxfb_crtc2.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_crtc2.c
-@@ -567,15 +567,13 @@ static const struct fb_ops matroxfb_dh_ops = {
- 	.owner =	THIS_MODULE,
- 	.fb_open =	matroxfb_dh_open,
- 	.fb_release =	matroxfb_dh_release,
-+	FB_DEFAULT_IOMEM_OPS,
- 	.fb_check_var =	matroxfb_dh_check_var,
- 	.fb_set_par =	matroxfb_dh_set_par,
- 	.fb_setcolreg =	matroxfb_dh_setcolreg,
- 	.fb_pan_display =matroxfb_dh_pan_display,
- 	.fb_blank =	matroxfb_dh_blank,
- 	.fb_ioctl =	matroxfb_dh_ioctl,
--	.fb_fillrect =	cfb_fillrect,
--	.fb_copyarea =	cfb_copyarea,
--	.fb_imageblit =	cfb_imageblit,
- };
+ static int s1d13xxxfb_width_tab[2][4] = {
+@@ -869,17 +877,16 @@ static int s1d13xxxfb_probe(struct platform_device *pdev)
+ 	       default_par->regs, info->fix.smem_len / 1024, info->screen_base);
  
- static struct fb_var_screeninfo matroxfb_dh_defined = {
+ 	info->par = default_par;
+-	info->flags = FBINFO_HWACCEL_YPAN;
+-	info->fbops = &s1d13xxxfb_fbops;
+ 
+ 	switch(prod_id) {
+ 	case S1D13506_PROD_ID:	/* activate acceleration */
+-		s1d13xxxfb_fbops.fb_fillrect = s1d13xxxfb_bitblt_solidfill;
+-		s1d13xxxfb_fbops.fb_copyarea = s1d13xxxfb_bitblt_copyarea;
+ 		info->flags = FBINFO_HWACCEL_YPAN |
+ 			FBINFO_HWACCEL_FILLRECT | FBINFO_HWACCEL_COPYAREA;
++		info->fbops = &s1d13xxxfb_fbops_s1d13506;
+ 		break;
+ 	default:
++		info->flags = FBINFO_HWACCEL_YPAN;
++		info->fbops = &s1d13xxxfb_fbops;
+ 		break;
+ 	}
+ 
 -- 
 2.42.0
 

@@ -2,124 +2,74 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 914A5E80AAB
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Sep 2023 07:48:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D82A5E732D9
+	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Sep 2023 14:03:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230138AbjI0HsQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Sep 2023 03:48:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40468 "EHLO
+        id S232281AbjI1ODb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 28 Sep 2023 10:03:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35034 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230140AbjI0Hrj (ORCPT
+        with ESMTP id S231902AbjI1ODb (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Sep 2023 03:47:39 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 768541B7;
-        Wed, 27 Sep 2023 00:47:38 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id E4DC51F8BD;
-        Wed, 27 Sep 2023 07:47:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1695800856; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=nyztPihry+uYWVQVQilr9GF3JEmaojYG/GDs/5jbvgg=;
-        b=rHGHbynxiC201XZf419py+7wmacbnv7TvFX6pL8BmBQmCu3jxALTfunKlMmemhQB/UwxLE
-        ZBlrt/jR3yfiS91k3QpYnT4cwDdvDPBerZS3ZYz+kiQi5Pluj4lT8s0BTpbDFcXEmUL0Fx
-        a8n5SMYiuhtFUsaNX1X1DMzIKlXz9fw=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1695800856;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=nyztPihry+uYWVQVQilr9GF3JEmaojYG/GDs/5jbvgg=;
-        b=bsi9xPfXPtJYkKZOeDjG2LSjbZRJca7H7r4qHipe8HYJhIj+7lJt/AV335m+SgoLhaLaI/
-        1rVsDDIKV9XQxyAA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id A8F431338F;
-        Wed, 27 Sep 2023 07:47:36 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id 4PVRKBjeE2XvUQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Wed, 27 Sep 2023 07:47:36 +0000
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-To:     deller@gmx.de, javierm@redhat.com, sam@ravnborg.org, arnd@arndb.de,
-        daniel@ffwll.ch
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-nvidia@lists.surfsouth.com, linux-omap@vger.kernel.org,
-        linux-parisc@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 46/46] fbdev/vt8623fb: Initialize fb_ops to fbdev I/O-memory helpers
-Date:   Wed, 27 Sep 2023 09:27:19 +0200
-Message-ID: <20230927074722.6197-47-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20230927074722.6197-1-tzimmermann@suse.de>
-References: <20230927074722.6197-1-tzimmermann@suse.de>
+        Thu, 28 Sep 2023 10:03:31 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB6E311F;
+        Thu, 28 Sep 2023 07:03:29 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 974D9C433C8;
+        Thu, 28 Sep 2023 14:03:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1695909809;
+        bh=n2bDHzk2s5pAtaibWAwFVOIL4i6SiOY2rnYokEWoql0=;
+        h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+        b=D95uGPuTGA8Y7UqNsKhGsRlqlnJe4RWQUvfGWgj2Oiqdg81cL0lj4N5/qOxosGS35
+         SvP2gCSX24agKDhZXJrfpkPsSjTQmB40EVJ4EVkP7NkUQsY4BPgIe3wQjm040jlvH9
+         7KSxZJJNEynr3A/CTsxG65POGEpaTUUPDoCUTNEwR/NYAWcWz7PjargFlC8bomS/07
+         QOmyZenXmNiowWfEP9W+UYLNLxGwU9ypIFHxP+chWW/UB+hylroPiHW6hC4VGjCd+g
+         vDRDnfukLR8pou+/HDi5fcl4NxQ441P417cyMETI6OtkQUj2dlOT1x39xCMx0u9ATA
+         5rE7iH3hJopKg==
+From:   Lee Jones <lee@kernel.org>
+To:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Flavio Suligoi <f.suligoi@asem.it>
+Cc:     dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Rob Herring <robh@kernel.org>
+In-Reply-To: <20230925122609.78849-1-f.suligoi@asem.it>
+References: <20230925122609.78849-1-f.suligoi@asem.it>
+Subject: Re: (subset) [PATCH v3 1/2] dt-bindings: backlight: Add MPS
+ MP3309C
+Message-Id: <169590980634.1618521.3566617275020298182.b4-ty@kernel.org>
+Date:   Thu, 28 Sep 2023 15:03:26 +0100
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.12.2
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Initialize the instance of struct fb_ops with fbdev initializer
-macros for framebuffers in I/O address space. Set the read/write,
-draw and mmap callbacks to the correct implementation and avoid
-implicit defaults. Also select the necessary I/O helpers in Kconfig.
+On Mon, 25 Sep 2023 14:26:08 +0200, Flavio Suligoi wrote:
+> The Monolithic Power (MPS) MP3309C is a WLED step-up converter, featuring a
+> programmable switching frequency to optimize efficiency.
+> The brightness can be controlled either by I2C commands (called "analog"
+> mode) or by a PWM input signal (PWM mode).
+> This driver supports both modes.
+> 
+> For device driver details, please refer to:
+> - drivers/video/backlight/mp3309c_bl.c
+> 
+> [...]
 
-Fbdev drivers sometimes rely on the callbacks being NULL for a
-default implementation to be invoked; hence requiring the I/O
-helpers to be built in any case. Setting all callbacks in all
-drivers explicitly will allow to make the I/O helpers optional.
-This benefits systems that do not use these functions.
+Applied, thanks!
 
-No functional changes.
+[1/2] dt-bindings: backlight: Add MPS MP3309C
+      commit: 02c4e661658f73d3c266c68f89f0b14bd8ba6bd8
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- drivers/video/fbdev/Kconfig    | 1 +
- drivers/video/fbdev/vt8623fb.c | 2 ++
- 2 files changed, 3 insertions(+)
-
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index dab0e49a66d20..20e0167bf20c9 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -1359,6 +1359,7 @@ config FB_VT8623
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-+	select FB_IOMEM_FOPS
- 	select FB_TILEBLITTING
- 	select FB_SVGALIB
- 	select VGASTATE
-diff --git a/drivers/video/fbdev/vt8623fb.c b/drivers/video/fbdev/vt8623fb.c
-index 034333ee6e455..f8d022cb61e8d 100644
---- a/drivers/video/fbdev/vt8623fb.c
-+++ b/drivers/video/fbdev/vt8623fb.c
-@@ -644,6 +644,7 @@ static const struct fb_ops vt8623fb_ops = {
- 	.owner		= THIS_MODULE,
- 	.fb_open	= vt8623fb_open,
- 	.fb_release	= vt8623fb_release,
-+	__FB_DEFAULT_IOMEM_OPS_RDWR,
- 	.fb_check_var	= vt8623fb_check_var,
- 	.fb_set_par	= vt8623fb_set_par,
- 	.fb_setcolreg	= vt8623fb_setcolreg,
-@@ -652,6 +653,7 @@ static const struct fb_ops vt8623fb_ops = {
- 	.fb_fillrect	= vt8623fb_fillrect,
- 	.fb_copyarea	= cfb_copyarea,
- 	.fb_imageblit	= vt8623fb_imageblit,
-+	__FB_DEFAULT_IOMEM_OPS_MMAP,
- 	.fb_get_caps    = svga_get_caps,
- };
- 
--- 
-2.42.0
+--
+Lee Jones [李琼斯]
 

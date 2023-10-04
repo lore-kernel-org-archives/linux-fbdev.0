@@ -2,163 +2,209 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 188E7E8FDDA
-	for <linux-fbdev@archiver.kernel.org>; Wed,  4 Oct 2023 08:45:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08ABAE7C4D5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  4 Oct 2023 15:18:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241761AbjJDIpv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 4 Oct 2023 04:45:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38276 "EHLO
+        id S243021AbjJDPSg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 4 Oct 2023 11:18:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39144 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241715AbjJDIpv (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 4 Oct 2023 04:45:51 -0400
-Received: from mail-oi1-f206.google.com (mail-oi1-f206.google.com [209.85.167.206])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A233CA6
-        for <linux-fbdev@vger.kernel.org>; Wed,  4 Oct 2023 01:45:47 -0700 (PDT)
-Received: by mail-oi1-f206.google.com with SMTP id 5614622812f47-3af83e7478bso2688371b6e.2
-        for <linux-fbdev@vger.kernel.org>; Wed, 04 Oct 2023 01:45:47 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696409147; x=1697013947;
-        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=2LXOqdL09PdEzf2Z1P9MseJKNWEnjUR6MgaW5Ba4b4k=;
-        b=tSdhsu/Da4jajg9rF3r2mqCWeo6LVCp2BHe4aVCycmQjFZy8RceNGQfzdC9wGhmicd
-         xGVFxcpFGJgyJkDoqxDgnAXASTYXnnrizjDLCtgVALcWn8MIXPFIo/vXDtcO5RN/PRMT
-         pvYlvdL00j6DaOErmkNi7CxgiGQv3Rj2Fv9ED+IdUobEjShTlRhGcNFQ/0Ymi35EL1as
-         Dp2N1V2tFX1e5+yrcll8oeS+MnPJvX5uYV4cMLr29BVNbNPDr7N4RgEKFIkSQzEFNzPH
-         M5BsGoiJvRNn8f3f1MyIcuNpvWfzErxR3TI75ZLGLPvK83M7vSlRk6QN+b64R0smyWAB
-         yvJw==
-X-Gm-Message-State: AOJu0YytM91g+KEX1fmTy52HGmHmT72f4AX0UnFiUjknhbKRFMEnbT3F
-        1zV2rjrcuD2A8vRpuCFIA7MNJKsYvHEGC3f+FdPo2dWcvL9n
-X-Google-Smtp-Source: AGHT+IEWHp6cZMFHBw7kmkOx2YxIFrzIHl4HLYaXzfrBPgZGJg8qTVWaj9fO4RD6PsRAIDixFw9mWzpyJokD1Sg8QvuLcge10uZY
+        with ESMTP id S233553AbjJDPSf (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 4 Oct 2023 11:18:35 -0400
+Received: from EUR05-VI1-obe.outbound.protection.outlook.com (mail-vi1eur05on2080.outbound.protection.outlook.com [40.107.21.80])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7BF9F93;
+        Wed,  4 Oct 2023 08:18:29 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=ArJrNLZN82j8XZxk+vSxyQ5dTlcVSnu8rz4e+rqMvu2TdwPcefYsDJhAyDM6RwOXuB6VF7hjukSey2uqEMujgIEP7sbbtLH/wTk6wx+pBaqHhlUrqI1bCn2dHzCLa96JFF8j7uHYMtSV66LuGQ3wn3+eKwh7WzK94uiYoiRU0ZpIZ9GN/2y/tGA5iyIfaaoJZR7Qa+xnIOSbZ0PSDgugjAm4kSgegsn6Z1K5CJNM/R+4Ic/monKxt6o+GZb6ABxlOUudnAZT//z/n4OM2vFlLo8jrtzjgX/6jaN04kzJbSdLVos8NrjimAbb36/4MLIgpKwLIh8OSEVXqC9CrQA83w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=h7v6nDhaUwiuENxl9EW1PnekAKk8hpRD9elLSa6/VL8=;
+ b=KK2+RskYVrIvX0PJwrxEixjUPXYS6G27Z3EBy4lEyV0wI8K+dXgnJvIxpcW7ktVivqRij+v8h7mjK5ynxH214SB6yRJhdjTuPINrks+EHNikI+//oIitZVmMK3g/hZ0SmNTaOTUxlevw5FRpZ2L3iuNaoiwiqTmYEjoJ7YNVk1J2qtcmZIkMCVouMaY0kyUI37WTAhZcEJNb2cB5slbKeYqu8M50XevoL8dQSX9AEEHCS8AeqeBV9JH94cERhT+Mx0PLxpwvlb2FFWJpCWP0cehFtqxAUb+OzGjpikLTzMa+yIdCxOF+r6FwN82GbzyJDngcT+2otfKqt1UoYWEEkg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=asem.it; dmarc=pass action=none header.from=asem.it; dkim=pass
+ header.d=asem.it; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=asem.it; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=h7v6nDhaUwiuENxl9EW1PnekAKk8hpRD9elLSa6/VL8=;
+ b=HmrqRzbQjjRD25WELH1UE8JCxhqpD1D1mvQq4xP7PRPOCAh1cgy/IwkgH+YU1CGyUegseTlleM5hKs0Syno8HPktczA2fgxFX8C2O6mwwcko7xPAvizjuOudPx8HWjEwD6y0vpVEek57TQttyHEkADDJFzk1V50myRY82KRpMwY=
+Received: from DU2PR01MB8034.eurprd01.prod.exchangelabs.com
+ (2603:10a6:10:273::14) by DU2PR01MB8624.eurprd01.prod.exchangelabs.com
+ (2603:10a6:10:2fb::11) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6838.24; Wed, 4 Oct
+ 2023 15:18:24 +0000
+Received: from DU2PR01MB8034.eurprd01.prod.exchangelabs.com
+ ([fe80::ad2b:a1e7:8828:ba2f]) by DU2PR01MB8034.eurprd01.prod.exchangelabs.com
+ ([fe80::ad2b:a1e7:8828:ba2f%7]) with mapi id 15.20.6863.024; Wed, 4 Oct 2023
+ 15:18:24 +0000
+From:   Flavio Suligoi <f.suligoi@asem.it>
+To:     Daniel Thompson <daniel.thompson@linaro.org>
+CC:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        Rob Herring <robh@kernel.org>
+Subject: RE: [PATCH v3 1/2] dt-bindings: backlight: Add MPS MP3309C
+Thread-Topic: [PATCH v3 1/2] dt-bindings: backlight: Add MPS MP3309C
+Thread-Index: AQHZ76uO1Fb/EPNT/k67j1TrFzld37AtE7aAgAmVcBCAAT5MAIAAXgAggAGFVUA=
+Date:   Wed, 4 Oct 2023 15:18:24 +0000
+Message-ID: <DU2PR01MB8034F17A9C81FE198CCAC5B7F9CBA@DU2PR01MB8034.eurprd01.prod.exchangelabs.com>
+References: <20230925122609.78849-1-f.suligoi@asem.it>
+ <20230926130113.GB4356@aspen.lan>
+ <DU2PR01MB8034F448F6E66BAC3823CDB1F9C4A@DU2PR01MB8034.eurprd01.prod.exchangelabs.com>
+ <20231003102138.GB69443@aspen.lan>
+ <DU2PR01MB80349344FB8CB1415BFA917DF9C4A@DU2PR01MB8034.eurprd01.prod.exchangelabs.com>
+In-Reply-To: <DU2PR01MB80349344FB8CB1415BFA917DF9C4A@DU2PR01MB8034.eurprd01.prod.exchangelabs.com>
+Accept-Language: it-IT, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=asem.it;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: DU2PR01MB8034:EE_|DU2PR01MB8624:EE_
+x-ms-office365-filtering-correlation-id: f1d76810-552f-472c-4d02-08dbc4ed26f1
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: /FM81apmaCf7eq3Xyj3bCLMFn/HdrQOTCfahjwIGPF4udy9anHX1ItWkT/YfLIPjxSIMLGhNl0ueZ+Xo/sfs19D7BI7cN2pTQVHlgLKvCRrR7XNjNJLT/zIJyVlJ9Y3LfsTSKCcOABl5mCBLj43ZJjQycaGNYH/duCyV1y9/uuKOuKaxuMdcdQfWd3/+6X1mxOpI9Xmc1gsYJ8YXsN1nF5Vi6kiRYydiMY3TXNCqWag//j7NUn8EzVu3gr7Hg/PmgB4dZNkE/RYUjugWZnc/k70F89nA6++fw58p6dfEECG/U6XY4jsSvZaXdcimKB0WripNgh38ZG2uGtjOdVAsLySB5fPd6QlMVjldlVSalhoEB/Lskjkfb9QJuqWSOKXVDCc7KGICqVuQskykVygIUkYq0CBCnTrd6//1srdA53/a11wOIV0jfb4YeJryMKd/CDpcJTEcNf5lt9m2K3ZsJr05LP7QPN2jclqNh3X7oaruLt2STWiuUQ6xeRPL/PQZzaCRcrYTKhJM4kdhGZHhnWeM5u4AZgI7/fka4p75EXFgWmftCQoeNfIBMfRFjflyKYmKai+aHuNrusn8C9PZygGyVSaO9srTc9M2NEU0naX94dKMsKKfalk435pKRVYM
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU2PR01MB8034.eurprd01.prod.exchangelabs.com;PTR:;CAT:NONE;SFS:(13230031)(376002)(39840400004)(346002)(366004)(136003)(396003)(230922051799003)(186009)(451199024)(1800799009)(64100799003)(71200400001)(26005)(478600001)(6506007)(7696005)(9686003)(76116006)(7416002)(4326008)(2906002)(8676002)(64756008)(8936002)(54906003)(66556008)(66476007)(52536014)(66446008)(5660300002)(66946007)(316002)(41300700001)(6916009)(122000001)(33656002)(86362001)(38070700005)(55016003)(38100700002)(66899024);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?6UEWUcpwBy8EkfaPEZDemwfL1c/HBfplVlUTc3qG0OvjDRMuUAspoo/R9iDE?=
+ =?us-ascii?Q?UTt+z9yRJXdm/ybTwyWZDmfJdHsQg/Bn94LaYQdsVFdKwKs1yw1vPnyO0sqW?=
+ =?us-ascii?Q?JBk4l2SMEQSTNwQLxT6rKO8SJnpHp2ZbcHxRwz9USkjF5r47YBJhAxD8mgCd?=
+ =?us-ascii?Q?ShSGxXq+hfNv35V3/R0OplzBcK6iHdHNyHWEb5OBEjmoFxn5kLubPmGhJDHN?=
+ =?us-ascii?Q?kh4wMBFr33TefZf617GyztdPUjUgpqCnVxt3jwPCfHJ92keF2hjJmfZH6sRf?=
+ =?us-ascii?Q?EUcOssyNeA7skollrXNR1nThE7t4sj1vHryHr0Cmy6ll2euhZWD+DHaLfYZF?=
+ =?us-ascii?Q?IgFsRWE4VCS5kC3ve5vkz1/TeO30/QvzqrHOhhPWPS6YHtbZNN72yXhMGVMS?=
+ =?us-ascii?Q?1ZH1QX8TwX6xyLRjrnXRoNCGWLdNh5tw8+j9+uJcWvoatRoPyp1niVFVf8fT?=
+ =?us-ascii?Q?rkuZN34YuhBujYpHwXskJD2Y3fsQZ8Bj8IW4g52i8tcfiR9C8ahIIJx4Wgfw?=
+ =?us-ascii?Q?ZM4cQIfPO3T/BfP2v0GoGcauW6I2rEZMCx984XXfwQL9Ubg4AW00UOMsrtIO?=
+ =?us-ascii?Q?EtNuRTqfpGW0mpv4FcrWgSOLe9zl3NTXfg7+3ZPxAnGL5vQbBsskE98pxMbK?=
+ =?us-ascii?Q?7+QSC3TArcog4O5I8SUOY/BPFy937gZfT4nmmle5WSc1V6Df+L1BEdVDlOgV?=
+ =?us-ascii?Q?WMmcOXGiJP9p3B7TmoVuX6R08Nep2LB7DbltpBMwLDebz0BOaMGAt6pn7ID8?=
+ =?us-ascii?Q?/i4d9AytWoFzu6RjKQUO5IVzLnhg++VPd52CTMEViJDfRpi3J/6eR4wGTSNS?=
+ =?us-ascii?Q?J9oG7+BjBMM+7tug5njju8atMy5y3idwbim9sePvB7Ej1uzZNdmAEz9Jqcq1?=
+ =?us-ascii?Q?t4X8wDSvVmusjzVEsdLcW7NWd5EzHa9CsX1L6fOiFNf81k4BEd3EkZs1dkBZ?=
+ =?us-ascii?Q?vt+1wzA07pb5d3i+5l+zaw9U602VMLYu7jbr47dCZfCc+Y/DO33xi9Ezvdd6?=
+ =?us-ascii?Q?CnaLmTUWyLbEccEklh1U1bf352b/2+QW7QwV36nZ61PT2NTecQJQIHIXFq9K?=
+ =?us-ascii?Q?4heqB64ZxikNz+lkBVWTXuefPFj8yTjSUMO/5lrIpgqD8uVQZLaBezr0H8vW?=
+ =?us-ascii?Q?KeBvCnYSP0zoISjeruQSMEjJoL0t0x6Lw8QC6nnfwHYWLZ09yKaeluMIIkoo?=
+ =?us-ascii?Q?lmSknwfS7sdMeNkp8zxgLKlWW5+rQGELEIfX5Hfs/U/YxfIqhPbFxx2nqZou?=
+ =?us-ascii?Q?PCQ76C0ev2v/dFiBZmMD5XqaXTFQ9l+Ss7Na/kJ6A9y0rNbN47us3/8fwubm?=
+ =?us-ascii?Q?SBoFgvhY/5MSl39m+up1Y8hTa/zGgwxVJOCPqMsNOaKcAyzPqyAbdx9C0ROs?=
+ =?us-ascii?Q?ioeR1oRU5Hlsti2nuLxVj2e9o7wwAS5jIR8A9PXIVsQTyX0A5OzJney/X3Fy?=
+ =?us-ascii?Q?vW3cKbT6GPqI7CGwpVpxxdK1WmsVZ0hKQGqznmczLsbQ8QyrBjbu82MU2g0e?=
+ =?us-ascii?Q?oV5FC113sUWzE1x1aMooT2Mryi2RVGqjIFAWN39Yp48qLYuOafsF5Zgf/TtV?=
+ =?us-ascii?Q?yl4/N5RGoRk8YgY8zrs=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-X-Received: by 2002:a05:6808:23d0:b0:3a8:74ff:6c01 with SMTP id
- bq16-20020a05680823d000b003a874ff6c01mr1053711oib.5.1696409147021; Wed, 04
- Oct 2023 01:45:47 -0700 (PDT)
-Date:   Wed, 04 Oct 2023 01:45:46 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <0000000000009a1d4a0606e008dc@google.com>
-Subject: [syzbot] [fbdev?] general protection fault in bit_putcs
-From:   syzbot <syzbot+524697c54d6e7ec67cf2@syzkaller.appspotmail.com>
-To:     daniel@ffwll.ch, deller@gmx.de, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+X-OriginatorOrg: asem.it
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: DU2PR01MB8034.eurprd01.prod.exchangelabs.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f1d76810-552f-472c-4d02-08dbc4ed26f1
+X-MS-Exchange-CrossTenant-originalarrivaltime: 04 Oct 2023 15:18:24.2081
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: d0a766c6-7992-4344-a4a2-a467a7bb1ed2
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: b8Is2HQx+mpw1c858+TDKKPVpMQJ3pBKtFUZ+QCeOR9KL+QwJTygVBfLDXwY/hvbuEn5HbceRA3tk7ZCGX+9EQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU2PR01MB8624
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello,
+Hi Daniel,
+...
+> ...
+> > > > > +required:
+> > > > > +  - compatible
+> > > > > +  - reg
+> > > > > +  - max-brightness
+> > > >
+> > > > Why is this mandatory?
+> > > >
+> > > > There's no point in setting max-brightness when running in I2C
+> > > > mode
+> > > > (max- brightness should default to 31 in that case).
+> > > >
+> > > >
+> > > > > +  - default-brightness
+> > > >
+> > > > Again. I'm not clear why this needs to be mandatory.
+> > > >
+> > > >
+> > >
+> > > Ok, you are right, I'll remove max-brightness and default-brightness
+> > > from required properties list. I think to change these properties,
+> > > for the pwm dimming, into a clearer:
+> > >
+> > > - brightness-levels (uint32)
+> > > - default-brightness-levels (uint32).
+> > >
+> > > For example:
+> > >
+> > >   brightness-levels:
+> > >     description:
+> > >       Number of brightness levels. The actual brightness
+> > >       level (PWM duty cycle) will be interpolated from 0 to this valu=
+e.
+> > >       0 means a  0% duty cycle (darkest/off), while the
+> > > brightness-levels
+> > represents
+> > >       a 100% duty cycle (brightest).
+> > >     $ref: /schemas/types.yaml#/definitions/uint32
+> > >
+> > >   default-brightness-level:
+> > >     description:
+> > >       The default brightness level (from 0 to brightness-levels)
+> > >     $ref: /schemas/types.yaml#/definitions/uint32
+> > >
+> > > Example:
+> > > brightness-levels =3D <10>;
+> > > default-brightness-level =3D <6>;
+> > >
+> > > What do you think about this solution?
+> >
+> > If you want to introduce a brightness-levels property then I would
+> > expect it to be defined with the same meaning as pwm-backlight (it's
+> > not relevant to the bindings but ideally it would be implemented by
+> > refactoring and reusing the code from pwm_bl.c).
+>=20
+> ok, I'll use the brightness-levels property as used in pwm-backlight
+>=20
+> >
+> > Same with default-brightness-level although I'm not sure why one
+> > wouldn't just use default-brightness for new bindings (doesn't
+> > default-brightness-level simply do exactly the same thing as default-
+> brightness).
+>=20
+> ok for default-brightness instead of default-brightness-level
 
-syzbot found the following issue on:
+Just a question: default-brightness-level is the index into the brightness-=
+levels array.
+But, if I use default-brightness instead of default-brightness-level, =20
+should I consider default-brightness also as an index into brightness-level=
+s array?
+Or, in this case, have the default-brightness to be equal to one of the val=
+ues inside the
+brightness-levels array?
 
-HEAD commit:    2e530aeb342b Merge branch 'for-next/core', remote-tracking..
-git tree:       git://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux.git for-kernelci
-console output: https://syzkaller.appspot.com/x/log.txt?x=121c1fe6680000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=5cc95add722fb0c1
-dashboard link: https://syzkaller.appspot.com/bug?extid=524697c54d6e7ec67cf2
-compiler:       Debian clang version 15.0.6, GNU ld (GNU Binutils for Debian) 2.40
-userspace arch: arm64
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=10b93281680000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1076e749680000
+>=20
+> >
+> >
+> > Daniel.
+>=20
+> Thanks an best regards,
+> Flavio
 
-Downloadable assets:
-disk image: https://storage.googleapis.com/syzbot-assets/2468ab4c933e/disk-2e530aeb.raw.xz
-vmlinux: https://storage.googleapis.com/syzbot-assets/bd3708bf8a20/vmlinux-2e530aeb.xz
-kernel image: https://storage.googleapis.com/syzbot-assets/86bc7d3468f9/Image-2e530aeb.gz.xz
+Thanks,
 
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+524697c54d6e7ec67cf2@syzkaller.appspotmail.com
-
-Unable to handle kernel paging request at virtual address dfff800000000040
-KASAN: null-ptr-deref in range [0x0000000000000200-0x0000000000000207]
-Mem abort info:
-  ESR = 0x0000000096000005
-  EC = 0x25: DABT (current EL), IL = 32 bits
-  SET = 0, FnV = 0
-  EA = 0, S1PTW = 0
-  FSC = 0x05: level 1 translation fault
-Data abort info:
-  ISV = 0, ISS = 0x00000005, ISS2 = 0x00000000
-  CM = 0, WnR = 0, TnD = 0, TagAccess = 0
-  GCS = 0, Overlay = 0, DirtyBit = 0, Xs = 0
-[dfff800000000040] address between user and kernel address ranges
-Internal error: Oops: 0000000096000005 [#1] PREEMPT SMP
-Modules linked in:
-CPU: 0 PID: 6015 Comm: syz-executor865 Not tainted 6.6.0-rc3-syzkaller-g2e530aeb342b #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 08/04/2023
-pstate: 80400005 (Nzcv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--)
-pc : __fb_pad_aligned_buffer include/linux/fb.h:629 [inline]
-pc : bit_putcs_aligned drivers/video/fbdev/core/bitblit.c:96 [inline]
-pc : bit_putcs+0x958/0xe30 drivers/video/fbdev/core/bitblit.c:185
-lr : __fb_pad_aligned_buffer include/linux/fb.h:626 [inline]
-lr : bit_putcs_aligned drivers/video/fbdev/core/bitblit.c:96 [inline]
-lr : bit_putcs+0x93c/0xe30 drivers/video/fbdev/core/bitblit.c:185
-sp : ffff800096a974a0
-x29: ffff800096a976b0 x28: 0000000000000200 x27: ffff0000c8fb9010
-x26: ffff0000c8fb9010 x25: 000000000000000f x24: dfff800000000000
-x23: 0000000000000080 x22: 0000000000000000 x21: 0000000000000000
-x20: ffff0000c0032440 x19: 0000000000000200 x18: ffff800096a96dc0
-x17: ffff80008e19d000 x16: ffff80008a576f00 x15: 0000000000000009
-x14: 1ffff00012d52ec1 x13: 0000000000000000 x12: 00000000ffffffff
-x11: 0000000000000000 x10: 0000000000000000 x9 : 0000000000000000
-x8 : 0000000000000040 x7 : 0000000000000000 x6 : 0000000000000007
-x5 : 0000000000000000 x4 : 0000000000000008 x3 : ffff8000831e57e8
-x2 : 0000000000000800 x1 : 0000000000000010 x0 : 0000000000000000
-Call trace:
- __fb_pad_aligned_buffer include/linux/fb.h:629 [inline]
- bit_putcs_aligned drivers/video/fbdev/core/bitblit.c:96 [inline]
- bit_putcs+0x958/0xe30 drivers/video/fbdev/core/bitblit.c:185
- fbcon_putcs+0x318/0x4e8 drivers/video/fbdev/core/fbcon.c:1282
- do_update_region+0x42c/0x5f8 drivers/tty/vt/vt.c:623
- redraw_screen+0x82c/0xd54 drivers/tty/vt/vt.c:983
- fbcon_modechanged+0x9f4/0x1090 drivers/video/fbdev/core/fbcon.c:2703
- fbcon_update_vcs+0x3c/0x4c drivers/video/fbdev/core/fbcon.c:2748
- do_fb_ioctl+0xa68/0xd24 drivers/video/fbdev/core/fb_chrdev.c:92
- fb_ioctl+0xec/0x134 drivers/video/fbdev/core/fb_chrdev.c:169
- vfs_ioctl fs/ioctl.c:51 [inline]
- __do_sys_ioctl fs/ioctl.c:871 [inline]
- __se_sys_ioctl fs/ioctl.c:857 [inline]
- __arm64_sys_ioctl+0x14c/0x1c8 fs/ioctl.c:857
- __invoke_syscall arch/arm64/kernel/syscall.c:37 [inline]
- invoke_syscall+0x98/0x2b8 arch/arm64/kernel/syscall.c:51
- el0_svc_common+0x130/0x23c arch/arm64/kernel/syscall.c:136
- do_el0_svc+0x48/0x58 arch/arm64/kernel/syscall.c:155
- el0_svc+0x58/0x16c arch/arm64/kernel/entry-common.c:678
- el0t_64_sync_handler+0x84/0xfc arch/arm64/kernel/entry-common.c:696
- el0t_64_sync+0x190/0x194 arch/arm64/kernel/entry.S:595
-Code: 51000679 aa1c03f3 d343fe68 12000a69 (38f86908) 
----[ end trace 0000000000000000 ]---
-----------------
-Code disassembly (best guess):
-   0:	51000679 	sub	w25, w19, #0x1
-   4:	aa1c03f3 	mov	x19, x28
-   8:	d343fe68 	lsr	x8, x19, #3
-   c:	12000a69 	and	w9, w19, #0x7
-* 10:	38f86908 	ldrsb	w8, [x8, x24] <-- trapping instruction
-
-
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
-
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
-
-If the bug is already fixed, let syzbot know by replying with:
-#syz fix: exact-commit-title
-
-If you want syzbot to run the reproducer, reply with:
-#syz test: git://repo/address.git branch-or-commit-hash
-If you attach or paste a git patch, syzbot will apply it before testing.
-
-If you want to overwrite bug's subsystems, reply with:
-#syz set subsystems: new-subsystem
-(See the list of subsystem names on the web dashboard)
-
-If the bug is a duplicate of another bug, reply with:
-#syz dup: exact-subject-of-another-report
-
-If you want to undo deduplication, reply with:
-#syz undup
+Flavio

@@ -2,183 +2,126 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61F2DE9270F
-	for <linux-fbdev@archiver.kernel.org>; Thu,  5 Oct 2023 14:30:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ECD6DE9272A
+	for <linux-fbdev@archiver.kernel.org>; Thu,  5 Oct 2023 18:55:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231460AbjJEOaK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 5 Oct 2023 10:30:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37102 "EHLO
+        id S229891AbjJESzk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 5 Oct 2023 14:55:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59400 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234011AbjJEO23 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 Oct 2023 10:28:29 -0400
-Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ECE2226A73
-        for <linux-fbdev@vger.kernel.org>; Thu,  5 Oct 2023 05:58:28 -0700 (PDT)
-Received: by mail-ed1-x52d.google.com with SMTP id 4fb4d7f45d1cf-5347e657a11so1542112a12.2
-        for <linux-fbdev@vger.kernel.org>; Thu, 05 Oct 2023 05:58:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1696510707; x=1697115507; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=54uUEylq3LVuurRVtb2mIY1GDBu2n1bSehibVDW31Ek=;
-        b=TkVI5vH4Mq8NwWi2aiPtB6u7px28PwXRXDUNBhejq/y1pfLKUjoVJPR5LOz4h9+S/O
-         VSb/iSVm0/MRjkx6STM8vVC1EuVqOJ290GzSRYJXeYVSdFE0vdyNLGVl3GvNhWgRE5sm
-         RsB6CWMr5IcauVrc4HIFXIgc7e8TOvxWpvVmszNLUkfuGTUyi1dUJG2qLP8oC5Ld+lAj
-         IPGwHSILgWzda7Ddm8a9G2Al3ix4IXZiRisjZVZUnX9Kvn7ES4SYTCD/JRhtrMB+moHN
-         8EPAXLQ/YViemrrRxKhosF7QyP+3bz9FWR2cYOmjndupHzynSmJcKDseeAYRm4TkA9XW
-         NxhA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696510707; x=1697115507;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=54uUEylq3LVuurRVtb2mIY1GDBu2n1bSehibVDW31Ek=;
-        b=UQnY4UW7/WJzPfjx3wSr4cSNQa+1IjMXUIgh/iKBC6MQE41KbXGmVA6CKlCwgwu06F
-         AacItVjS6goAAZmu+eZ/vj4e/zgi21iG5LuxfuM3TNGPnZZ/P0RFHdu7vH+1od0RVt4p
-         4ICgEViDjqh6rqV1OY2F0M6wSL+VDnjoMSGgOMURHdn+WgYdlOqsmGiceDdKZG1rxTjG
-         OqtTuKYizlX2Qgg7E0dKjFZcADXS3e14pU11wH3EYDasjzGuG9MU5Q789miCoT4D+Ndb
-         Bp8AKefQo2IU3YDr4JU7pVYv9hMIHHvq/nCUxSulw7XR9/dzpfJ3APLlwW4ZCXGum72G
-         vANQ==
-X-Gm-Message-State: AOJu0YwYCEepv/TS4a4lFMc4rk8HoPa5rGae6odZA29ywMKOr6/KV3LP
-        BIUmajlYGqxuYO5Bg0wMvnXFSw==
-X-Google-Smtp-Source: AGHT+IGYliWIqnSbYurYXmldF5bpXzcFNUK7z8v11/xiPWf8HMiN9f4fcRM4OMhil9K85Li760ospg==
-X-Received: by 2002:aa7:d945:0:b0:523:2e30:aaee with SMTP id l5-20020aa7d945000000b005232e30aaeemr4359227eds.32.1696510707341;
-        Thu, 05 Oct 2023 05:58:27 -0700 (PDT)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id m4-20020a056402050400b00533f111b61dsm1024857edv.68.2023.10.05.05.58.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Oct 2023 05:58:26 -0700 (PDT)
-Date:   Thu, 5 Oct 2023 13:58:24 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Flavio Suligoi <f.suligoi@asem.it>
-Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
+        with ESMTP id S229656AbjJESzj (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 Oct 2023 14:55:39 -0400
+X-Greylist: delayed 350 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 05 Oct 2023 11:55:38 PDT
+Received: from mx.skole.hr (mx1.hosting.skole.hr [161.53.165.185])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 140AC93;
+        Thu,  5 Oct 2023 11:55:38 -0700 (PDT)
+Received: from mx1.hosting.skole.hr (localhost.localdomain [127.0.0.1])
+        by mx.skole.hr (mx.skole.hr) with ESMTP id 54BB984F75;
+        Thu,  5 Oct 2023 20:49:48 +0200 (CEST)
+From:   =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
+Date:   Thu, 05 Oct 2023 20:49:08 +0200
+Subject: [PATCH 1/2] dt-bindings: backlight: add Kinetic KTD2801 binding
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20231005-ktd2801-v1-1-43cd85b0629a@skole.hr>
+References: <20231005-ktd2801-v1-0-43cd85b0629a@skole.hr>
+In-Reply-To: <20231005-ktd2801-v1-0-43cd85b0629a@skole.hr>
+To:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v3 1/2] dt-bindings: backlight: Add MPS MP3309C
-Message-ID: <20231005125824.GC4874@aspen.lan>
-References: <20230925122609.78849-1-f.suligoi@asem.it>
- <20230926130113.GB4356@aspen.lan>
- <DU2PR01MB8034F448F6E66BAC3823CDB1F9C4A@DU2PR01MB8034.eurprd01.prod.exchangelabs.com>
- <20231003102138.GB69443@aspen.lan>
- <DU2PR01MB80349344FB8CB1415BFA917DF9C4A@DU2PR01MB8034.eurprd01.prod.exchangelabs.com>
- <DU2PR01MB8034F17A9C81FE198CCAC5B7F9CBA@DU2PR01MB8034.eurprd01.prod.exchangelabs.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <DU2PR01MB8034F17A9C81FE198CCAC5B7F9CBA@DU2PR01MB8034.eurprd01.prod.exchangelabs.com>
+        Helge Deller <deller@gmx.de>
+Cc:     Karel Balej <balejk@matfyz.cz>, dri-devel@lists.freedesktop.org,
+        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        =?utf-8?q?Duje_Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1714;
+ i=duje.mihanovic@skole.hr; h=from:subject:message-id;
+ bh=UdiONCDFn7tSC5O0Vn6kl8sVoN7CSUp9mQWdTvRQG54=;
+ b=owEBbQKS/ZANAwAIAZoRnrBCLZbhAcsmYgBlHwVCfv22qJGXGxy+4xw0vT+90XZOJv8VbwEA1
+ upnGjCeI6eJAjMEAAEIAB0WIQRT351NnD/hEPs2LXiaEZ6wQi2W4QUCZR8FQgAKCRCaEZ6wQi2W
+ 4RKXD/9XfqrqI9hIeLFo4dL2yYC+GvW8XRQw3ij9ldGmH5vDRakMYYgMM3RjG204uN3bQO9yPjJ
+ AIZnmONSC6fEjx3EgOBYvhNaa4sxxDsh7LwUvIbQeIQ+eZZVRS6YusOguR3xv+vvr1SJ8UrPGas
+ 60idqG69zQjXVnoBK3lVlzZKQlBBlyRXyzoBJOgvB+T0s9/jT/2IqEXnS+i6EM7M2+werN3lGo+
+ lunZHJmuTmWuOrr1yKi4YaxE5h8uPToiALQdwfuU6TSwcdP0hi92LpAVE4p51KYB74pFKXm1IXQ
+ FaIUFk+NmvntQR8P/sGc4CNlN21LmpJ/D6wxIIXxmrmrFYnqOMqJwIvDKhjkAxsJD/sTwEh2A6s
+ P/UBNpCfl3iCqAZP//0qZ9EzVfEBrafl0pqlKWkEkY9K1YP8L3uujyxgDMfoHaWvnggeGAEQs9u
+ ksij04LIVR1XFIlDtfgx+NZ5sspmDjWKLpXiw/JdMzDAEeZexNnwa0NmZyeiahubRIaXAnvZLy2
+ bt0df+oNz7ackb4gSEVOitqw0g5IjN/TZEeJKxobJq3RUg0ErGS7xljASaIqMkaLkVJ3xHrCYJq
+ eXsYYDr/sKW8S7VYFNtzeVYfMX01hfx/NxCrCSCVd+WkT7Dby2gzwQMk7zZVHxwFFKWpgjmX6BH
+ SU0bAmrwbsBOFag==
+X-Developer-Key: i=duje.mihanovic@skole.hr; a=openpgp;
+ fpr=53DF9D4D9C3FE110FB362D789A119EB0422D96E1
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Oct 04, 2023 at 03:18:24PM +0000, Flavio Suligoi wrote:
-> Hi Daniel,
-> ...
-> > ...
-> > > > > > +required:
-> > > > > > +  - compatible
-> > > > > > +  - reg
-> > > > > > +  - max-brightness
-> > > > >
-> > > > > Why is this mandatory?
-> > > > >
-> > > > > There's no point in setting max-brightness when running in I2C
-> > > > > mode
-> > > > > (max- brightness should default to 31 in that case).
-> > > > >
-> > > > >
-> > > > > > +  - default-brightness
-> > > > >
-> > > > > Again. I'm not clear why this needs to be mandatory.
-> > > > >
-> > > > >
-> > > >
-> > > > Ok, you are right, I'll remove max-brightness and default-brightness
-> > > > from required properties list. I think to change these properties,
-> > > > for the pwm dimming, into a clearer:
-> > > >
-> > > > - brightness-levels (uint32)
-> > > > - default-brightness-levels (uint32).
-> > > >
-> > > > For example:
-> > > >
-> > > >   brightness-levels:
-> > > >     description:
-> > > >       Number of brightness levels. The actual brightness
-> > > >       level (PWM duty cycle) will be interpolated from 0 to this value.
-> > > >       0 means a  0% duty cycle (darkest/off), while the
-> > > > brightness-levels
-> > > represents
-> > > >       a 100% duty cycle (brightest).
-> > > >     $ref: /schemas/types.yaml#/definitions/uint32
-> > > >
-> > > >   default-brightness-level:
-> > > >     description:
-> > > >       The default brightness level (from 0 to brightness-levels)
-> > > >     $ref: /schemas/types.yaml#/definitions/uint32
-> > > >
-> > > > Example:
-> > > > brightness-levels = <10>;
-> > > > default-brightness-level = <6>;
-> > > >
-> > > > What do you think about this solution?
-> > >
-> > > If you want to introduce a brightness-levels property then I would
-> > > expect it to be defined with the same meaning as pwm-backlight (it's
-> > > not relevant to the bindings but ideally it would be implemented by
-> > > refactoring and reusing the code from pwm_bl.c).
-> >
-> > ok, I'll use the brightness-levels property as used in pwm-backlight
-> >
-> > >
-> > > Same with default-brightness-level although I'm not sure why one
-> > > wouldn't just use default-brightness for new bindings (doesn't
-> > > default-brightness-level simply do exactly the same thing as default-
-> > brightness).
-> >
-> > ok for default-brightness instead of default-brightness-level
->
-> Just a question: default-brightness-level is the index into the brightness-levels array.
-> But, if I use default-brightness instead of default-brightness-level,
-> should I consider default-brightness also as an index into brightness-levels array?
+Add the dt binding for the Kinetic KTD2801 backlight driver.
 
-Yes.
+Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>
+---
+ .../bindings/leds/backlight/kinetic,ktd2801.yaml   | 46 ++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/leds/backlight/kinetic,ktd2801.yaml b/Documentation/devicetree/bindings/leds/backlight/kinetic,ktd2801.yaml
+new file mode 100644
+index 000000000000..970d54bac18e
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/kinetic,ktd2801.yaml
+@@ -0,0 +1,46 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/backlight/kinetic,ktd2801.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Kinetic Technologies KTD2801 one-wire backlight
++
++maintainers:
++  - Duje Mihanović <duje.mihanovic@skole.hr>
++
++description: |
++  The Kinetic Technologies KTD2801 is a LED backlight driver controlled
++  by a single GPIO line. The driver can be controlled with a PWM signal
++  or by pulsing the GPIO line to set the backlight level. This is called
++  "ExpressWire".
++
++allOf:
++  - $ref: common.yaml#
++
++properties:
++  compatible:
++    const: kinetic,ktd2801
++
++  enable-gpios:
++    maxItems: 1
++
++  default-brightness: true
++  max-brightness: true
++
++required:
++  - compatible
++  - enable-gpios
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++
++    backlight {
++        compatible = "kinetic,ktd2801";
++        enable-gpios = <&gpio 97 GPIO_ACTIVE_LOW>;
++        max-brightness = <210>;
++        default-brightness = <100>;
++    };
+
+-- 
+2.42.0
 
 
-> Or, in this case, have the default-brightness to be equal to one of the values inside the
-> brightness-levels array?
-
-When there is a brightness array (and there is no interpolation) then
-it is indexed by brightness. The values in the array are not
-brightness (e.g. the controlable value describing the output of the
-hardware). The values in the table are merely the PWM duty cycle...
-
-Main difference is, with a correct table the brightness can use an
-appropriate logarithmic power scale (which matches how humans perceive
-brightness) instead of the linear scale provided by the PWM duty cycle.
-
-
-Daniel.
-
-
-Brightness and "index into the brightness-levels array" should be one
-and the same thing
->
-> >
-> > >
-> > >
-> > > Daniel.
-> >
-> > Thanks an best regards,
-> > Flavio
->
-> Thanks,
->
-> Flavio

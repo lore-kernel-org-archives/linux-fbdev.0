@@ -2,150 +2,110 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1651EE92FF1
-	for <linux-fbdev@archiver.kernel.org>; Fri,  6 Oct 2023 06:58:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77AE1E92FF9
+	for <linux-fbdev@archiver.kernel.org>; Fri,  6 Oct 2023 08:10:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230243AbjJFG6A convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 6 Oct 2023 02:58:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46838 "EHLO
+        id S230406AbjJFIKV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 6 Oct 2023 04:10:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59828 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230175AbjJFG57 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 6 Oct 2023 02:57:59 -0400
-Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com [209.85.128.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90099CA;
-        Thu,  5 Oct 2023 23:57:57 -0700 (PDT)
-Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-5a21ea6baccso22057157b3.1;
-        Thu, 05 Oct 2023 23:57:57 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696575476; x=1697180276;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=gwH34nAKT/9gJP0Nz0nWG6ojc2t+JiQa+bhA5w8EoOU=;
-        b=JZJrhj2CSxjx94rGuFqYzXFXCxTfOtOSEbwQJUzJS+icM7eCeEyuRCRpqjJPzQm93t
-         +6eh4M1dTL9AR0M8CiUOsb/orusLgBNz7i63YNU7T85gfqW8Z+kIOY6PdqHYwOj4XwV/
-         shwNKtmuQY8nA8ds2ZeCYPaGD9asFFHXqTxXX0V3E7AfsREXlfOOWeWgOZlFnRh9VAt6
-         lcc49bpZuiiNMmHqKevCt1HkIfOOXfIkiQuUw60h9fjvWfMkM8zhRX68WwxHqgiUuqMW
-         5kAyL/jIyKbI8i7+hq2K5I1IjlyMl6tGV7Y9patx5zkHXCE6Ylx/9PZPmc8U9x6A5P6L
-         VOhg==
-X-Gm-Message-State: AOJu0YwYUb9BmQbqKyP3vBRQMj2Y/ZRcWOUyeMQFAZxBJ4W5YxVHwouD
-        yz3xk1M2bPt816knSFGaHtWLVeuMrrHfzQ==
-X-Google-Smtp-Source: AGHT+IGhu6JArA9cHaP9r9i2HcIvm9k6frV9bXDtZLv2ovBOUJVekyOSi0HKYflebjNQQ/dN5nvj+w==
-X-Received: by 2002:a05:6902:1024:b0:d55:cf49:9144 with SMTP id x4-20020a056902102400b00d55cf499144mr8274974ybt.15.1696575476571;
-        Thu, 05 Oct 2023 23:57:56 -0700 (PDT)
-Received: from mail-yw1-f171.google.com (mail-yw1-f171.google.com. [209.85.128.171])
-        by smtp.gmail.com with ESMTPSA id i84-20020a25d157000000b00d81479172f8sm906344ybg.5.2023.10.05.23.57.56
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 05 Oct 2023 23:57:56 -0700 (PDT)
-Received: by mail-yw1-f171.google.com with SMTP id 00721157ae682-5a2536adaf3so21893897b3.2;
-        Thu, 05 Oct 2023 23:57:56 -0700 (PDT)
-X-Received: by 2002:a0d:dfc6:0:b0:57a:2e83:4daf with SMTP id
- i189-20020a0ddfc6000000b0057a2e834dafmr7696369ywe.32.1696575475803; Thu, 05
- Oct 2023 23:57:55 -0700 (PDT)
+        with ESMTP id S230344AbjJFIKU (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 6 Oct 2023 04:10:20 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 74ACCE4;
+        Fri,  6 Oct 2023 01:10:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+ t=1696579798; x=1697184598; i=deller@gmx.de;
+ bh=iT66/fIkXuxQl5Ykf5c3jyidte+AmXlznZ9k12kkl6w=;
+ h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+ b=QIpwp84tI0++h9feuiZU4gexg5u5HHfrWsC62NVr1aV7r4t6+r+geNhj+Or6Yp27V4Q/Z5+2FvA
+ UY2x/XNTbT+6XJw+qB4S96CdJxBIJJXfct899Dv6HBJIAMA83Izxw3EcEBK9MIDjrMH6Xf2NesThW
+ j71PPPUmaZ5AHMCMTjBsa4RF7vKCmJfBr6nLrYAG/nIPLYRbw6fis2GdxIA+B4JOnONTYMi3SUzx3
+ G5mt1ZlKtByruXXjZr9wPTfr2qb7rCVvPpuTOQ1n1Gdqzdw0Fe1eC+Kh0HocjNmElTNznOY4Ywgrt
+ LMH6W6pqBcHc5B0BLEfnc3vPG0lt6h8CKsBA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.151.133]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1M4JmN-1qoOvP0Bmr-000KlD; Fri, 06
+ Oct 2023 10:09:58 +0200
+Message-ID: <b9e51034-bc6c-81d8-39ef-9fc74fa09c62@gmx.de>
+Date:   Fri, 6 Oct 2023 10:09:57 +0200
 MIME-Version: 1.0
-References: <cover.1694767208.git.geert+renesas@glider.be> <CAMuHMdWfBTKdXvZutg4LvWqBjuz-X=ZjzX0LKPqD=JxYuLoPRw@mail.gmail.com>
- <20230919152428.GB18426@pendragon.ideasonboard.com> <CAMuHMdUwBXQ2X6hOm+kcZOteDLMau8x5xUcRJr2zy9dXyVf9Xw@mail.gmail.com>
-In-Reply-To: <CAMuHMdUwBXQ2X6hOm+kcZOteDLMau8x5xUcRJr2zy9dXyVf9Xw@mail.gmail.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Fri, 6 Oct 2023 08:57:43 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdUnQx82bzJ7XyzCo6MuDHNhDviZigJOyuYvtUOCkogxqQ@mail.gmail.com>
-Message-ID: <CAMuHMdUnQx82bzJ7XyzCo6MuDHNhDviZigJOyuYvtUOCkogxqQ@mail.gmail.com>
-Subject: Re: [GIT PULL] drm: renesas: shmobile: Atomic conversion + DT support
- (was: Re: [PATCH v4 00/41] drm: renesas: shmobile: Atomic conversion + DT support)
-To:     Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>
-Cc:     Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Magnus Damm <magnus.damm@gmail.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Hans Verkuil <hverkuil@xs4all.nl>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>,
-        Linux Media Mailing List <linux-media@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux-sh list <linux-sh@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.15.1
+Subject: Re: [PATCH] video: fbdev: arkfb: fix possible object reference leak
+To:     Zhang Shurong <zhang_shurong@foxmail.com>
+Cc:     tzimmermann@suse.de, jiapeng.chong@linux.alibaba.com,
+        javierm@redhat.com, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+References: <tencent_55C1A344A101B55762ECA6A6366D0B0F8C05@qq.com>
+Content-Language: en-US
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <tencent_55C1A344A101B55762ECA6A6366D0B0F8C05@qq.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:xW8ZYfmIVsHIeEXUlDFd07NCLKqg4hpq9PkyCY9xKtX5hx9CRaB
+ EePJCyFfn15sI01Yv7JR1IYH9f5yGyOFls0Sun1WAepTf++rnkXMSJoXip+cthx11IW/q15
+ FegU/U2T3UJMhGCo6cjWa1a+Uw0Pg6nYcBlonVaFWRqQAEAzGbr5gahcRBSgDjZ4qz1WI1p
+ YlHJfFiP71XKjQKmkfKog==
+UI-OutboundReport: notjunk:1;M01:P0:PIxdzX21cmo=;/awmiudSoLpgbXtofgLVGPGRkqp
+ hPWL6OueJ+V7Rqzz94gLtp6pJC7p0iqiJPgNCcI/rQGrNVP3iDfxrtGGuD4RYD8l5FB33IPax
+ ZzYF5psxCJEYsNAxybcNYeU+LVP37FfLA1bRhdX0jHj5y8Q7JVA6NaKIA+COGPNWX0eJ9AG5K
+ dGsXZ89bavsxPoacOw7QpNLuDxcCdfrAOzp/3zY2KFhvR2rajVuEjFgIPYEC0h4Uk11cI515j
+ 0o/ubT2LZp4hw6iTWK3pnt2zsI3hR0h5IJhSmm5e6gw3gERaHne2W9mZcCudMQfd0EtvHE/5V
+ UFkuoY5oaTA60tZ0sK+wlkr8U7Vvs9uNrGDGZcomPF+dHKYBz/pPM/2lRUam6svtXoHQ4BwBs
+ kZcgCmSeynOlpSCiXF57syZRcAgFisezEbT7RBoy/vKHFhfo/EJCMt24GAWtmLMCMrbkb1BB1
+ mXTi2MmhiKjpiWDFTAXOsTKkIqE4kZ/tb5jGVcQuvhuQj8EXmbk+F/04rWHmCfrl5NTGVFqfE
+ wbbE6AA1jVeKFocC0QJ2U/GJVasumMFJRRp0Dw8a96+qSlTQ2FZyh10WGrLAiNCqJ7FU6H/jg
+ /aFb6QSi3TuFqJuI+WWc2CP0fTS0XSgr5p9BJRDB4S+9CXlYeB7+tYJlOMjSrxtXVKSGPcK3d
+ zabtNJ2feeS1P1g6l4VGsGEP6L2SgWf2c/vOZkKeD2t12TznFmEcH9O+af2nrsSUO3D0s/+HJ
+ cxfUTQ3bWLPm1FFfvnLiMhi1LJJK+O7Rofwtzwv+4YSDPsvFyrLJfygIhM9XEZp+rkTfSgSts
+ REBEC+FGPZbiY7UuGf0dIq8OQu1rJsKqdJ3VwQKtrwrAdPeVP7AF5Dy5HDRR2jf/rY4QkBpXM
+ 7Cj1TkGKEo5xTaDaZH/FWhg5sK2sSiPW2rVgqAbvn4sJXXly7DsQTfxXyE6hy6F+byT2SjyXR
+ +4AZPg==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi all,
+On 10/5/23 09:01, Zhang Shurong wrote:
+> Add missing pci_disable_device() in error path in ark_pci_probe().
 
-On Tue, Sep 26, 2023 at 4:51 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Tue, Sep 19, 2023 at 5:24 PM Laurent Pinchart
-> <laurent.pinchart@ideasonboard.com> wrote:
-> > On Tue, Sep 19, 2023 at 04:28:40PM +0200, Geert Uytterhoeven wrote:
-> > > The following changes since commit 0663e1da5ba8e6459e3555ac12c62741668c0d30:
-> > >
-> > >   drm/dp_mst: Tune down error message during payload addition
-> > > (2023-09-18 16:38:21 +0300)
-> > >
-> > > are available in the Git repository at:
-> > >
-> > >   git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git
-> > > tags/shmob-drm-atomic-dt-tag1
-> > >
-> > > for you to fetch changes up to bfea0fa9052aa8d235b24957eb84d9ff20cb87b7:
-> > >
-> > >   drm: renesas: shmobile: Add DT support (2023-09-19 15:58:04 +0200)
-> > >
-> > > ----------------------------------------------------------------
-> > > drm: renesas: shmobile: Atomic conversion + DT support
-> > >
-> > > Currently, there are two drivers for the LCD controller on Renesas
-> > > SuperH-based and ARM-based SH-Mobile and R-Mobile SoCs:
-> > >   1. sh_mobile_lcdcfb, using the fbdev framework,
-> > >   2. shmob_drm, using the DRM framework.
-> > > However, only the former driver is used, as all platform support
-> > > integrates the former.  None of these drivers support DT-based systems.
-> > >
-> > > Convert the SH-Mobile DRM driver to atomic modesetting, and add DT
-> > > support, complemented by the customary set of fixes and improvements.
-> > >
-> > > Link: https://lore.kernel.org/r/cover.1694767208.git.geert+renesas@glider.be/
-> > >
-> > > This PR is based on today's drm-misc/for-linux-next, to avoid a
-> > > conflict with commit 775b0669e19f2e4a ("drm/shmobile: Convert to
-> > > platform remove callback returning void") in drm-misc/for-linux-next
+Do you have this hardware and tested your patch?
+I'm sure there is a reason, why "pci_disable_device()" was commented
+out in the original submission in commit 681e14730c73c...
+
+Additionally I'm wondering why your patch doesn't show up in
+the fbdev patchwork, although you added linux-fbdev mailing list.
+Probably a vger issue.
+
+Helge
+
+
+> Signed-off-by: Zhang Shurong <zhang_shurong@foxmail.com>
+> ---
+>   drivers/video/fbdev/arkfb.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
 >
-> Now drm-misc/for-linux-next (which is still at v6.5-rc2) has been
-> merged into drm/drm-next (which is at v6.6-rc2), do you want me to
-> rebase my branch to current drm/drm-next, or any other commit?
+> diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
+> index 60a96fdb5dd8..6c4e5065646f 100644
+> --- a/drivers/video/fbdev/arkfb.c
+> +++ b/drivers/video/fbdev/arkfb.c
+> @@ -1064,7 +1064,7 @@ static int ark_pci_probe(struct pci_dev *dev, cons=
+t struct pci_device_id *id)
+>   err_dac:
+>   	pci_release_regions(dev);
+>   err_request_regions:
+> -/*	pci_disable_device(dev); */
+> +	pci_disable_device(dev);
+>   err_enable_device:
+>   	framebuffer_release(info);
+>   	return rc;
+> @@ -1085,7 +1085,7 @@ static void ark_pci_remove(struct pci_dev *dev)
+>
+>   		pci_iounmap(dev, info->screen_base);
+>   		pci_release_regions(dev);
+> -/*		pci_disable_device(dev); */
+> +		pci_disable_device(dev);
+>
+>   		framebuffer_release(info);
+>   	}
 
-Please advise me what needs to be done to move this forward.
-Thanks!
-
-> > > Thanks for pulling!
-> > > ----------------------------------------------------------------
-> > > Geert Uytterhoeven (36):
-> > >       MAINTAINER: Create entry for Renesas SH-Mobile DRM drivers
-> >
-> > I'm technically listed as the maintainer for this driver until Geert
-> > takes over, so for this pull request,
-> >
-> > Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> >
-> > And after that, shmobile won't need my ack to merge further changes :-)
-> >
-> > This is very nice work Geert. I'm looking forward to dropping the
-> > sh_mobile_lcdcfb driver.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

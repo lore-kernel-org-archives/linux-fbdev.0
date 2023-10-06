@@ -2,128 +2,120 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7278E81DE1
-	for <linux-fbdev@archiver.kernel.org>; Fri,  6 Oct 2023 11:20:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E42FE81DED
+	for <linux-fbdev@archiver.kernel.org>; Fri,  6 Oct 2023 12:30:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232076AbjJFLUY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 6 Oct 2023 07:20:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52604 "EHLO
+        id S231553AbjJFMa3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 6 Oct 2023 08:30:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35084 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232024AbjJFLUN (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 6 Oct 2023 07:20:13 -0400
-Received: from out203-205-221-192.mail.qq.com (out203-205-221-192.mail.qq.com [203.205.221.192])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BEAF1119;
-        Fri,  6 Oct 2023 04:20:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foxmail.com;
-        s=s201512; t=1696591198;
-        bh=oWIxnG2J+Jy/dMyxMYG3xUlceaQ+HsSfWnd1NKXS+fw=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=HvIqtxBm3oQMs8oFAO8wFLYtDIr7RAf9U0XC+4R/WGDiKz8a2QSFidbmcqWLpHrJr
-         HD/e9P78sDXPhtiYZNpy2wdXvUtIJXNuzeQnc/1OyQLkkX0+MWE17Q6/qD8J+pCtDb
-         3tFdykT5J792IGIWglBJFMILOf/3RTEzScQRW5xM=
-Received: from [10.255.201.129] ([122.14.229.79])
-        by newxmesmtplogicsvrszb1-0.qq.com (NewEsmtp) with SMTP
-        id 4D906841; Fri, 06 Oct 2023 19:19:25 +0800
-X-QQ-mid: xmsmtpt1696591165t6inxp8yd
-Message-ID: <tencent_B2B6C2C0E43CB415F6506B24B66ED26BB909@qq.com>
-X-QQ-XMAILINFO: M1rD3f8svNznDRsIcsNQ+c8SApwT/aeO2z0Gmtae0OnHojt/PWMwiJrUAFbnj0
-         mA/lVdwN2n9K9h/e2nieBg1QjnDXgN4YREP5/+MvhYFqWV34B/vkPYWtOu1CzyMwqPpcccIKDWzl
-         E5CTqO5GkYvpTfpCjjfkz+aGNsDmPOR19PrOD0lHp/lY7VlF5Sox6YL2GKMiBeNAM814qLeOUQdi
-         UHRi2T8Qf7e/1Bvz9NFACZfI2sWST6jjPeDZi0V+mAqUQ2qupLph6Wi2ntFys21xVdTgS+RB6pQd
-         bmutlMiYuI9ZR1BwCRj8zO3ojbZ3/8AQxvqLiiEvs0DjQDRrgE7sPY0LF6m4uKOiw0DeOhpaVb4U
-         EM10JFzHcf1Y0vdNBI5ytzajDptk3hq2kddK34Tw2+guWVglnN69O8NidJhOfO9Ge9zhh1Jbz1Nk
-         Axqdp0rQWdXlMfQKB6jxrhJeErNhSf5MUSC5o/NW9tIe5XokSGBL6MRPgB6apq01IfHU8Q1G1GuP
-         Ic+uoDQXLk8K1uOuXge9dIG4/XAaCpCzjj+bAkmVZgN9cbOYCAZR3N8kgGRwRaeCNVr2CvtRCDAg
-         gj89CtUYENULRkbBmeuz7iraUgPd7D1V6kXBYFB7GkQtghEIKi/mXz3qVG8aQs4XYE2fcuTW1b1d
-         fAbEdmmRWp3EhKnHOaJj58gH7l2lSqVCPWIdqEXNhI7gZfS/HkXP0JBQOMoBed4+ZqteDUL18eZc
-         ES2C1M2F1ieky+JVDetTawztUg/lFmbrVdkH+fkPoLmyx3/cyeCQUrNbw0SLs6kqMeMDJcbwENFi
-         jsiYzJCdUXAn5pPgmhpuFiNpVHOwe+EYXV1YrCu2clJbKzdHZNkTMteZBD03+jHlwyE9RxMijIrn
-         XBtUcZhnq0utcurPsjeGR1qZb3Eu635NTECXgkOGNVwK9+lPX+i9VaUo6KilSPeDsFcPJTYEXMiM
-         ek8zx5jSGSWxpp9XDxdrMm6EoKMmoqFX1CbD2BNlpe3KfwOVMlLo2CRDgsgtHvP2sFLJT+3Q3BW7
-         Gn1QY8GJhGmyISynz4
-X-QQ-XMRINFO: MPJ6Tf5t3I/ycC2BItcBVIA=
-X-OQ-MSGID: <2fc26726-9db8-466c-9760-ce2fc57e3338@foxmail.com>
-Date:   Fri, 6 Oct 2023 19:19:24 +0800
+        with ESMTP id S231797AbjJFMa1 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 6 Oct 2023 08:30:27 -0400
+Received: from mail-ed1-x52a.google.com (mail-ed1-x52a.google.com [IPv6:2a00:1450:4864:20::52a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 982D311D
+        for <linux-fbdev@vger.kernel.org>; Fri,  6 Oct 2023 05:30:18 -0700 (PDT)
+Received: by mail-ed1-x52a.google.com with SMTP id 4fb4d7f45d1cf-533d6a8d6b6so3799056a12.2
+        for <linux-fbdev@vger.kernel.org>; Fri, 06 Oct 2023 05:30:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1696595417; x=1697200217; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=sYSZgor/RBGjf4wuXsOz+ucEbF12Vj/yAHNRuHZ3l+Q=;
+        b=i2mlEtJrA7fE5xNLnVS42Kxq7T87YxagT0s9Bdw76j2ejWhNdyBX3+3j3NLxrVP8wV
+         +FRzwA37aXtuiSKsOxqgS0Tj81X6C8JnZaJkrbfD50KwyeafelCUedU9+ogwmiCOZ/tO
+         gojugn+AEy/C5/E/1kHQ2paOQcU748fZtErmhCEEzrBFFbGDOJYopfKtL4/9RG0kYQvR
+         45+PR/bvWAHlCprhCaMR+FMGYgr4oe743UmWA4OcrYPvZtTvR9n83IY7trakfPe9sHdA
+         CQHRc1g6ZHgIh4FUdJK0tiq5n0nmN17zh3XlseHWoV548/asSm2fLvsBZk1PJ00NRv7c
+         Mlqg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1696595417; x=1697200217;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=sYSZgor/RBGjf4wuXsOz+ucEbF12Vj/yAHNRuHZ3l+Q=;
+        b=X75+zm85YmazW7Zhs0mN9JgvPViny9geOzgOk0k0DENRrzn8v7RLebmC9RdgAf/vmk
+         sP+F9DT/GJbH86swe01G+94YK5ZkUycitqegZFNVzFwFU2WWzbcgUIMfz4juFyEuYr40
+         qcSX1jCk3YirG3g3f+0Id+y62L2wjDfZPsXpBDKoRb8kMP6gqfqCgFQYgrQ0YJy7eujh
+         +jkguu6PB1OsyuRTL/T+0FiRED160jj1D56kWd5BsTpfdkxP/Yqj8yUT6/GRWJ2+RRcQ
+         J8RAocHCkSH9m3tRrINa6VaE2g3e/r3Y+7jkNGL1cIt4VlISYfYNUWclALFre2moxpqt
+         MP5Q==
+X-Gm-Message-State: AOJu0Yxm6eW499dPoleAfQ6lsPugbvN4JOIP7ET4KuiCV275gneXhHMh
+        PPx+vlWn8YJVE5tGb5N70RJIDg==
+X-Google-Smtp-Source: AGHT+IHTOw/VY6TBFq65jsChMS223mo3Uv9ez720nz2z/rFj0PF94m9QIFEGrTuIdcUQuzYKV9Ty9Q==
+X-Received: by 2002:a50:ee91:0:b0:51e:53eb:88a3 with SMTP id f17-20020a50ee91000000b0051e53eb88a3mr6699147edr.25.1696595417011;
+        Fri, 06 Oct 2023 05:30:17 -0700 (PDT)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id v4-20020aa7d9c4000000b0052284228e3bsm2511897eds.8.2023.10.06.05.30.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 06 Oct 2023 05:30:16 -0700 (PDT)
+Date:   Fri, 6 Oct 2023 13:30:14 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Duje =?utf-8?Q?Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
+Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Helge Deller <deller@gmx.de>, Karel Balej <balejk@matfyz.cz>,
+        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht
+Subject: Re: [PATCH 1/2] dt-bindings: backlight: add Kinetic KTD2801 binding
+Message-ID: <20231006123014.GA96854@aspen.lan>
+References: <20231005-ktd2801-v1-0-43cd85b0629a@skole.hr>
+ <20231005-ktd2801-v1-1-43cd85b0629a@skole.hr>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] video: fbdev: arkfb: fix possible object reference leak
-Content-Language: en-US
-To:     Helge Deller <deller@gmx.de>
-Cc:     tzimmermann@suse.de, jiapeng.chong@linux.alibaba.com,
-        javierm@redhat.com, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-References: <tencent_55C1A344A101B55762ECA6A6366D0B0F8C05@qq.com>
- <b9e51034-bc6c-81d8-39ef-9fc74fa09c62@gmx.de>
-From:   Zhang Shurong <zhang_shurong@foxmail.com>
-In-Reply-To: <b9e51034-bc6c-81d8-39ef-9fc74fa09c62@gmx.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20231005-ktd2801-v1-1-43cd85b0629a@skole.hr>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Since the graphic card in question is quite old, I haven't had the 
-opportunity
-to personally test it yet.
-
-I decided to send the patch because, upon careful consideration,
-I couldn't find any compelling reasons not to include the call to
-pci_disable_device(). However, I completely understand your point,
-and I agree that if there is no definitive explanation for why
-it should be ignored, it would be prudent to locate the actual hardware
-and conduct proper testing.
-
-I genuinely appreciate your thorough review and valuable feedback on
-this matter. Maybe I will find this old card and test this patch.
-
-
-Thank you and best regards,
-
-Shurong
-
-On 2023/10/6 16:09, Helge Deller wrote:
-> On 10/5/23 09:01, Zhang Shurong wrote:
->> Add missing pci_disable_device() in error path in ark_pci_probe().
+On Thu, Oct 05, 2023 at 08:49:08PM +0200, Duje Mihanović wrote:
+> Add the dt binding for the Kinetic KTD2801 backlight driver.
 >
-> Do you have this hardware and tested your patch?
-> I'm sure there is a reason, why "pci_disable_device()" was commented
-> out in the original submission in commit 681e14730c73c...
+> Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>
+> ---
+>  .../bindings/leds/backlight/kinetic,ktd2801.yaml   | 46 ++++++++++++++++++++++
+>  1 file changed, 46 insertions(+)
 >
-> Additionally I'm wondering why your patch doesn't show up in
-> the fbdev patchwork, although you added linux-fbdev mailing list.
-> Probably a vger issue.
->
-> Helge
->
->
->> Signed-off-by: Zhang Shurong <zhang_shurong@foxmail.com>
->> ---
->>   drivers/video/fbdev/arkfb.c | 4 ++--
->>   1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
->> index 60a96fdb5dd8..6c4e5065646f 100644
->> --- a/drivers/video/fbdev/arkfb.c
->> +++ b/drivers/video/fbdev/arkfb.c
->> @@ -1064,7 +1064,7 @@ static int ark_pci_probe(struct pci_dev *dev, 
->> const struct pci_device_id *id)
->>   err_dac:
->>       pci_release_regions(dev);
->>   err_request_regions:
->> -/*    pci_disable_device(dev); */
->> +    pci_disable_device(dev);
->>   err_enable_device:
->>       framebuffer_release(info);
->>       return rc;
->> @@ -1085,7 +1085,7 @@ static void ark_pci_remove(struct pci_dev *dev)
->>
->>           pci_iounmap(dev, info->screen_base);
->>           pci_release_regions(dev);
->> -/*        pci_disable_device(dev); */
->> +        pci_disable_device(dev);
->>
->>           framebuffer_release(info);
->>       }
->
+> diff --git a/Documentation/devicetree/bindings/leds/backlight/kinetic,ktd2801.yaml b/Documentation/devicetree/bindings/leds/backlight/kinetic,ktd2801.yaml
+> new file mode 100644
+> index 000000000000..970d54bac18e
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/leds/backlight/kinetic,ktd2801.yaml
+> @@ -0,0 +1,46 @@
+> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/leds/backlight/kinetic,ktd2801.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Kinetic Technologies KTD2801 one-wire backlight
+> +
+> +maintainers:
+> +  - Duje Mihanović <duje.mihanovic@skole.hr>
+> +
+> +description: |
+> +  The Kinetic Technologies KTD2801 is a LED backlight driver controlled
+> +  by a single GPIO line. The driver can be controlled with a PWM signal
+> +  or by pulsing the GPIO line to set the backlight level. This is called
+> +  "ExpressWire".
+> +
+> +allOf:
+> +  - $ref: common.yaml#
+> +
+> +properties:
+> +  compatible:
+> +    const: kinetic,ktd2801
+> +
+> +  enable-gpios:
+> +    maxItems: 1
+
+Why "enable"? This is the line we are going to us to bitbang the
+ExpressWire protocol. Doesn't that make it a control or data pin?
 
 
+Daniel.

@@ -2,146 +2,91 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADEACE95A91
-	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Oct 2023 09:32:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ECFE7E95A91
+	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Oct 2023 10:18:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345695AbjJIJcj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 9 Oct 2023 05:32:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48548 "EHLO
+        id S1346016AbjJIKSj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 9 Oct 2023 06:18:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58524 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345449AbjJIJci (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Oct 2023 05:32:38 -0400
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2F58B94
-        for <linux-fbdev@vger.kernel.org>; Mon,  9 Oct 2023 02:32:37 -0700 (PDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qpmcq-0008RZ-Jd; Mon, 09 Oct 2023 11:32:32 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qpmco-000NZy-UD; Mon, 09 Oct 2023 11:32:30 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1qpmco-00C59f-Kj; Mon, 09 Oct 2023 11:32:30 +0200
-From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        with ESMTP id S1346048AbjJIKSj (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Oct 2023 06:18:39 -0400
+Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 92231BA
+        for <linux-fbdev@vger.kernel.org>; Mon,  9 Oct 2023 03:18:37 -0700 (PDT)
+Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-50585357903so5743206e87.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 09 Oct 2023 03:18:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1696846716; x=1697451516; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=KzjqhcxTplk/fjWtjjswcwgpKZ+f2AVwpc+PUpIKpZs=;
+        b=ZEUKLlgG/gqJMRxvNHNWSDthUAREEt003CrTKeTuRNfvd/UOpwsu93VQOfO34/amnB
+         y88jK5pmZAvN9dvwadadS3zMDa8Bldab1Gae6gQtRKl65J9k41zsPih/MEPw46HTiiAp
+         xrx7tvKvSZrUlq3YxRJVyqwpUXwNnMgmonDsoiBXNiDfYZH90xdHl5xtjq9bvXRNNGKH
+         HcJmwcjfxYTd2R4dNQdhmEU9IRDOobevYP1O1AexRCNsw6sslBJEv6FKPjWlkvl7x8Zn
+         NLPxxVJU/WmKI4B87j1mOQDV0R3TC0eff4jQv3ODtCNSiDUg1uWmSi0SwwC4gQYKnown
+         XzrA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1696846716; x=1697451516;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=KzjqhcxTplk/fjWtjjswcwgpKZ+f2AVwpc+PUpIKpZs=;
+        b=ojBXQz4kCda0u/a7aQI3Tz9qMW8yOPLlO+4oQ4R4gE4LyTTmjVbskNPP7mzyNEG2QT
+         O191+OnU0dLmgNcJLxtTO2R79a5q6//LEeTFfFe21ea9woyCC8cqpDSOdaiIPvqA9B56
+         GFkMOM7C8Njwh2ByOPZ+eVv5Ys1OVe9H8ecpfRCRL+Z3A2zNjfKCyGp9GTWJ5503aoAE
+         anTT/Bi6IUJKMWjO2UjOw4oh0STR/niqk6xEwtM7uHmASeOJvASMVSxrMZ1OlfAPMKR1
+         sj55+39dS5MM6g7kdDP8uArxyFBZD4PaHIu/ou+DN8qLy5ZJc8LvrxBO+O1Xx14oEZ5v
+         J9Kg==
+X-Gm-Message-State: AOJu0Ywr+Y7BWuGiCIAxzQwuJniWSZEHTlCAJ3+ka7ntloUEW9pT6WEb
+        nd9Xq/E55l36IU7rm1dcDocqkA==
+X-Google-Smtp-Source: AGHT+IGY9WKDt7ALyy/qcEMDEosc8dNznZ/T5vS8ZD92++froNBAqLNU25PJBwaTdb63LswVmU9kIQ==
+X-Received: by 2002:a05:6512:250c:b0:503:8fa:da21 with SMTP id be12-20020a056512250c00b0050308fada21mr16362091lfb.43.1696846715809;
+        Mon, 09 Oct 2023 03:18:35 -0700 (PDT)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id m19-20020a7bcb93000000b003fe61c33df5sm13038355wmi.3.2023.10.09.03.18.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 09 Oct 2023 03:18:35 -0700 (PDT)
+Date:   Mon, 9 Oct 2023 11:18:33 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
         <u.kleine-koenig@pengutronix.de>
-To:     Lee Jones <lee@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>
-Cc:     Aisheng Dong <aisheng.dong@nxp.com>, linux-pwm@vger.kernel.org,
+Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        Aisheng Dong <aisheng.dong@nxp.com>, linux-pwm@vger.kernel.org,
         linux-fbdev@vger.kernel.org, Helge Deller <deller@gmx.de>,
         dri-devel@lists.freedesktop.org,
         Thierry Reding <thierry.reding@gmail.com>,
         kernel@pengutronix.de
-Subject: [PATCH v4] backlight: pwm_bl: Disable PWM on shutdown, suspend and remove
-Date:   Mon,  9 Oct 2023 11:32:23 +0200
-Message-Id: <20231009093223.227286-1-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.40.1
+Subject: Re: [PATCH v4] backlight: pwm_bl: Disable PWM on shutdown, suspend
+ and remove
+Message-ID: <20231009101833.GB223751@aspen.lan>
+References: <20231009093223.227286-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2987; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=ukp03GXhJGGhriRo81oTqb+ZF09mBJI1HDBsdlZDDEw=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBlI8imhPFLFc7G9DQzsmEVrBtK7ni6oOsoVVU0d du0W4DICtGJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZSPIpgAKCRCPgPtYfRL+ TpelB/9veiKkWgBLSFdRf8C/mZU536ZliA4SH6xEfVnniFW/RGorUdbDglV1YQkTaUbtOb6EwCT WKwjQ0OCOnwbxoL6cxSDcUKVgLnHh9wOFP4dnnosQ3thzE83HFaiCLJLNLvWWHzsQIQOTisdCIM FGESqKYG9TSdjVfI/Y8mQo2jTmwP1IdFUFfrU1P0GYum55T8xK8peNaSK1fP6T9/lDIlO6CfeOo 1tjTEGqLjX49b1xNgegMOHzAfkeMg0EETle7IAeCSy9E+x5ajTvgbaBASBH4weevYfseX2h7UR8 uEW0PNIhm4irmPEbl9vEaBh8NUQ6nYUD3/+l3mjsy7kedtKc
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+In-Reply-To: <20231009093223.227286-1-u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Since commit 00e7e698bff1 ("backlight: pwm_bl: Configure pwm only once
-per backlight toggle") calling pwm_backlight_power_off() doesn't disable
-the PWM any more. However this is necessary to suspend because PWM
-drivers usually refuse to suspend if they are still enabled.
+On Mon, Oct 09, 2023 at 11:32:23AM +0200, Uwe Kleine-König wrote:
+> Since commit 00e7e698bff1 ("backlight: pwm_bl: Configure pwm only once
+> per backlight toggle") calling pwm_backlight_power_off() doesn't disable
+> the PWM any more. However this is necessary to suspend because PWM
+> drivers usually refuse to suspend if they are still enabled.
+>
+> Also adapt shutdown and remove callbacks to disable the PWM for similar
+> reasons.
+>
+> Fixes: 00e7e698bff1 ("backlight: pwm_bl: Configure pwm only once per backlight toggle")
+> Reported-by: Aisheng Dong <aisheng.dong@nxp.com>
+> Tested-by: Aisheng Dong <aisheng.dong@nxp.com>
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-Also adapt shutdown and remove callbacks to disable the PWM for similar
-reasons.
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
-Fixes: 00e7e698bff1 ("backlight: pwm_bl: Configure pwm only once per backlight toggle")
-Reported-by: Aisheng Dong <aisheng.dong@nxp.com>
-Tested-by: Aisheng Dong <aisheng.dong@nxp.com>
-Signed-off-by: Uwe Kleine-KÃ¶nig <u.kleine-koenig@pengutronix.de>
----
-Hello,
 
-Changes since v3 (available at
-https://lore.kernel.org/linux-fbdev/20230926150116.2124384-1-u.kleine-koenig@pengutronix.de):
-
- - Fix buildfailure identified by the kernel test robot. (*Sigh*, that's
-   what you get if you improve a patch without build testing ...)
- - Fix the Subject to also mention "remove".
-
-Best regards
-Uwe
-
- drivers/video/backlight/pwm_bl.c | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
-
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index a51fbab96368..289bd9ce4d36 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -626,9 +626,14 @@ static void pwm_backlight_remove(struct platform_device *pdev)
- {
- 	struct backlight_device *bl = platform_get_drvdata(pdev);
- 	struct pwm_bl_data *pb = bl_get_data(bl);
-+	struct pwm_state state;
- 
- 	backlight_device_unregister(bl);
- 	pwm_backlight_power_off(pb);
-+	pwm_get_state(pb->pwm, &state);
-+	state.duty_cycle = 0;
-+	state.enabled = false;
-+	pwm_apply_state(pb->pwm, &state);
- 
- 	if (pb->exit)
- 		pb->exit(&pdev->dev);
-@@ -638,8 +643,13 @@ static void pwm_backlight_shutdown(struct platform_device *pdev)
- {
- 	struct backlight_device *bl = platform_get_drvdata(pdev);
- 	struct pwm_bl_data *pb = bl_get_data(bl);
-+	struct pwm_state state;
- 
- 	pwm_backlight_power_off(pb);
-+	pwm_get_state(pb->pwm, &state);
-+	state.duty_cycle = 0;
-+	state.enabled = false;
-+	pwm_apply_state(pb->pwm, &state);
- }
- 
- #ifdef CONFIG_PM_SLEEP
-@@ -647,12 +657,24 @@ static int pwm_backlight_suspend(struct device *dev)
- {
- 	struct backlight_device *bl = dev_get_drvdata(dev);
- 	struct pwm_bl_data *pb = bl_get_data(bl);
-+	struct pwm_state state;
- 
- 	if (pb->notify)
- 		pb->notify(pb->dev, 0);
- 
- 	pwm_backlight_power_off(pb);
- 
-+	/*
-+	 * Note that disabling the PWM doesn't guarantee that the output stays
-+	 * at its inactive state. However without the PWM disabled, the PWM
-+	 * driver refuses to suspend. So disable here even though this might
-+	 * enable the backlight on poorly designed boards.
-+	 */
-+	pwm_get_state(pb->pwm, &state);
-+	state.duty_cycle = 0;
-+	state.enabled = false;
-+	pwm_apply_state(pb->pwm, &state);
-+
- 	if (pb->notify_after)
- 		pb->notify_after(pb->dev, 0);
- 
-
-base-commit: 0bb80ecc33a8fb5a682236443c1e740d5c917d1d
--- 
-2.40.1
-
+Daniel.

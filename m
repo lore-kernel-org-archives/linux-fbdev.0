@@ -2,54 +2,54 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 192BEE95A91
-	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Oct 2023 09:21:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0F3BE95A97
+	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Oct 2023 09:29:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345662AbjJIJVK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 9 Oct 2023 05:21:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53478 "EHLO
+        id S1345763AbjJIJ32 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 9 Oct 2023 05:29:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36806 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345623AbjJIJVJ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Oct 2023 05:21:09 -0400
-Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6196B9
-        for <linux-fbdev@vger.kernel.org>; Mon,  9 Oct 2023 02:21:07 -0700 (PDT)
-Received: by mail-lf1-x131.google.com with SMTP id 2adb3069b0e04-505748580ceso5367340e87.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 09 Oct 2023 02:21:07 -0700 (PDT)
+        with ESMTP id S1345707AbjJIJ31 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Oct 2023 05:29:27 -0400
+Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 015C997
+        for <linux-fbdev@vger.kernel.org>; Mon,  9 Oct 2023 02:29:25 -0700 (PDT)
+Received: by mail-wr1-x42a.google.com with SMTP id ffacd0b85a97d-3247d69ed2cso4142662f8f.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 09 Oct 2023 02:29:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1696843266; x=1697448066; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1696843764; x=1697448564; darn=vger.kernel.org;
         h=in-reply-to:content-transfer-encoding:content-disposition
          :mime-version:references:message-id:subject:cc:to:from:date:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=jcRTJtu5/xplXYf4mxgpTZIYcsNwbD0mhUQlRdvZ5Jw=;
-        b=dfWobpuGkVeAzfhXUsLhRoViJ2LS6VUQHiI2HwMK/LQ7JQ+b6zOEm4HaPCqg+SrS79
-         1G+LR5mmt1yTCJIgJ5v+5wu4kQDxUL9fikkmJsb1GhxiRBRLJnXb2v49AOD0wwZ8xP8P
-         /uz3T5uE3oSSqkg4R+bSkb1bW2rIhpmYPwIQLgJRfyN6ZkUDv7c/EQcqkucYuwZsTC/D
-         jWZyyg+e6vyiWkXRyzqfxq9O6RvFJKIco6OkMhuzEi9XQX9A8uPAYAa6PKOnNiLihCEv
-         SYX+fl/JbwdnxqWZ8OoIH/ClSdZ/PUE4R6XW6Qkwe9q6BwjhQFwbx5ZPO1mBUqvHCglJ
-         Keiw==
+        bh=X8m4m0ieEJ2SA5cCHHqMfizD1ZJJDz/TnRHcokgUvn4=;
+        b=XI0PPwQ06rDSlCLpr68nDNoKTMKv98UsyZR0SJc5Uxvs91vts0ykziX76nILvSEMGq
+         Od3PB+10EvCoLvW+vH4fCK8KEoitd5VlnZoN0GZj9Lf3372M0X3nY1+BQ5HEOp+kQXCb
+         vatxSuhws1ELs9EoaL+Jn4ZIGsX6XFpbHM9U2UvtghswsDBZf4xXFMLzyr3NLFgGrdhA
+         4UoNjEVgCUBHpN0hJffMPYGWGjtEoGuiWb880Z5MSsTLqLYNYM7zXqvGnWPaUzveeljv
+         7i/rcMPEb0Cv/R7QVE7VsFICRSBkg2HH9Keon06p/rjncWtZkvz4X4TZDZZRGsLoJS6q
+         jXiA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696843266; x=1697448066;
+        d=1e100.net; s=20230601; t=1696843764; x=1697448564;
         h=in-reply-to:content-transfer-encoding:content-disposition
          :mime-version:references:message-id:subject:cc:to:from:date
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=jcRTJtu5/xplXYf4mxgpTZIYcsNwbD0mhUQlRdvZ5Jw=;
-        b=mr6dcy10YqlHPkdDISFsMJYOpsdsWbZoWOotpBBs1heQ0z89yvHOKjEV51pOGOxNZY
-         BmxvFNDA1dsn1Qn9iMuTYI5co7rq8Op5Sa8bGeELyHmVyERjUImmoOclcd6abFoPzRdh
-         NZj1CJY2Hjg1lLyOWSTM8u0B6kQEIWjlRlL92UkGIes1C6Ad1oJesYDS0w+It64jzSsn
-         i3XyuSUR5wCrem9Vw6lR/2tLaD5AeSG/o2K1hLn/iLaYaKna5laomQZo2N8ifAwAjG2J
-         JZmrc0olMivn/mK66YA3wB/T7JRRNcWFb1L7ZIpnmSYbfwDLrgQ++D7v+2usy3pT8eBw
-         pQdw==
-X-Gm-Message-State: AOJu0YyRvp7fjdC9g7Yore6TjTcgbYhPPpICvoTITffZKyc1mccfqzlJ
-        N2nAKqq/0PO8htNPvPAgNa6xoA==
-X-Google-Smtp-Source: AGHT+IGht+RvnWroW3ujbIVtFNoEpt6TS29+ZsWLWowpvwWhX2hK9fCxDFD93GaUGI0u0FoeaydCUg==
-X-Received: by 2002:a05:6512:68a:b0:503:26bc:b08f with SMTP id t10-20020a056512068a00b0050326bcb08fmr15658141lfe.24.1696843265916;
-        Mon, 09 Oct 2023 02:21:05 -0700 (PDT)
+        bh=X8m4m0ieEJ2SA5cCHHqMfizD1ZJJDz/TnRHcokgUvn4=;
+        b=unkWO+k1f5zgPHl2/0CAgLmIPXyGVMoXfbgXq33LOpbbSdyfjwWTBV3+/i9ldPEGmL
+         elRHejRKuBqIfT8oHZJ8JO3R8VrPhjI/Z2WZAQzcboQL9Iex4K7jhB22bVBvAvCMSEzv
+         VU/Qe6TW1bJ1klSyYNV2z6MFBKu+3jzoTjvp9lYrw0sPuU42ljx0AZVFfXWnRJtj6iMJ
+         KdwzVcq8muujqyKww6mlVrTdnGULrLv2ennmhsjM2KNq/90fonzb6JkeDJsxIwtGjW3X
+         Y2vNsR8Ob41zskrKIeX55ZHmpq7jnRc1VuG/yecl3lIXoiOgLY3oU5aflS46gjH6rUH/
+         7umQ==
+X-Gm-Message-State: AOJu0Yy4lsOR6rySXZvYHrAtRlIHhPM1jkNDy9jPqFFycBE6Ac857e/K
+        u3QU7HlWBzeGAoQ4+Y2RJgby2Q==
+X-Google-Smtp-Source: AGHT+IEXeYstdXT6TbrSO2yEei8azH2660L8AX7ojU3STjxM7Q8gohifEoelTb8KAy2MvYiMxGH00g==
+X-Received: by 2002:a05:6000:38b:b0:329:6bd7:470c with SMTP id u11-20020a056000038b00b003296bd7470cmr9256860wrf.58.1696843764410;
+        Mon, 09 Oct 2023 02:29:24 -0700 (PDT)
 Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id n5-20020a05600c294500b003fc02e8ea68sm12764192wmd.13.2023.10.09.02.21.04
+        by smtp.gmail.com with ESMTPSA id r18-20020adfe692000000b0031912c0ffebsm9059425wrm.23.2023.10.09.02.29.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Oct 2023 02:21:05 -0700 (PDT)
-Date:   Mon, 9 Oct 2023 10:21:03 +0100
+        Mon, 09 Oct 2023 02:29:24 -0700 (PDT)
+Date:   Mon, 9 Oct 2023 10:29:22 +0100
 From:   Daniel Thompson <daniel.thompson@linaro.org>
 To:     Duje =?utf-8?Q?Mihanovi=C4=87?= <duje.mihanovic@skole.hr>
 Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
@@ -60,205 +60,36 @@ Cc:     Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
         dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-fbdev@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht
-Subject: Re: [PATCH 2/2] backlight: Add Kinetic KTD2801 driver
-Message-ID: <20231009092103.GB96854@aspen.lan>
+Subject: Re: [PATCH 1/2] dt-bindings: backlight: add Kinetic KTD2801 binding
+Message-ID: <20231009092922.GA223751@aspen.lan>
 References: <20231005-ktd2801-v1-0-43cd85b0629a@skole.hr>
- <20231005-ktd2801-v1-2-43cd85b0629a@skole.hr>
+ <20231005-ktd2801-v1-1-43cd85b0629a@skole.hr>
+ <20231006123014.GA96854@aspen.lan>
+ <5984411.lOV4Wx5bFT@radijator>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20231005-ktd2801-v1-2-43cd85b0629a@skole.hr>
+In-Reply-To: <5984411.lOV4Wx5bFT@radijator>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Oct 05, 2023 at 08:49:09PM +0200, Duje Mihanović wrote:
-> Add driver for the Kinetic KTD2801 backlight driver.
+On Fri, Oct 06, 2023 at 03:08:42PM +0200, Duje Mihanović wrote:
+> On Friday, October 6, 2023 2:30:14 PM CEST Daniel Thompson wrote:
+> > On Thu, Oct 05, 2023 at 08:49:08PM +0200, Duje Mihanović wrote:
+> > > +  enable-gpios:
+> > > +    maxItems: 1
+> >
+> > Why "enable"? This is the line we are going to us to bitbang the
+> > ExpressWire protocol. Doesn't that make it a control or data pin?
 >
-> Signed-off-by: Duje Mihanović <duje.mihanovic@skole.hr>
-> ---
->  MAINTAINERS                                 |   6 ++
->  drivers/video/backlight/Kconfig             |   7 ++
->  drivers/video/backlight/Makefile            |   1 +
->  drivers/video/backlight/ktd2801-backlight.c | 151 ++++++++++++++++++++++++++++
->  4 files changed, 165 insertions(+)
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 35977b269d5e..7da78f06a65d 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -11777,6 +11777,12 @@ S:	Maintained
->  F:	Documentation/devicetree/bindings/leds/backlight/kinetic,ktd253.yaml
->  F:	drivers/video/backlight/ktd253-backlight.c
->
-> +KTD2801 BACKLIGHT DRIVER
-> +M:	Duje Mihanović <duje.mihanovic@skole.hr>
-> +S:	Maintained
-> +F:	Documentation/devicetree/bindings/leds/backlight/kinetic,ktd2801.yaml
-> +F:	drivers/video/backlight/ktd2801-backlight.c
-> +
->  KTEST
->  M:	Steven Rostedt <rostedt@goodmis.org>
->  M:	John Hawley <warthog9@eaglescrag.net>
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> index 51387b1ef012..a2b268293345 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -183,6 +183,13 @@ config BACKLIGHT_KTD253
->  	  which is a 1-wire GPIO-controlled backlight found in some mobile
->  	  phones.
->
-> +config BACKLIGHT_KTD2801
-> +	tristate "Backlight Driver for Kinetic KTD2801"
-> +	depends on GPIOLIB || COMPILE_TEST
-> +	help
-> +	  Say Y to enable the backlight driver for the Kinetic KTD2801 1-wire
-> +	  GPIO-controlled backlight found in Samsung Galaxy Core Prime VE LTE.
-> +
->  config BACKLIGHT_KTZ8866
->  	tristate "Backlight Driver for Kinetic KTZ8866"
->  	depends on I2C
-> diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-> index f72e1c3c59e9..b33b647f31ca 100644
-> --- a/drivers/video/backlight/Makefile
-> +++ b/drivers/video/backlight/Makefile
-> @@ -35,6 +35,7 @@ obj-$(CONFIG_BACKLIGHT_HP680)		+= hp680_bl.o
->  obj-$(CONFIG_BACKLIGHT_HP700)		+= jornada720_bl.o
->  obj-$(CONFIG_BACKLIGHT_IPAQ_MICRO)	+= ipaq_micro_bl.o
->  obj-$(CONFIG_BACKLIGHT_KTD253)		+= ktd253-backlight.o
-> +obj-$(CONFIG_BACKLIGHT_KTD2801)		+= ktd2801-backlight.o
->  obj-$(CONFIG_BACKLIGHT_KTZ8866)		+= ktz8866.o
->  obj-$(CONFIG_BACKLIGHT_LM3533)		+= lm3533_bl.o
->  obj-$(CONFIG_BACKLIGHT_LM3630A)		+= lm3630a_bl.o
-> diff --git a/drivers/video/backlight/ktd2801-backlight.c b/drivers/video/backlight/ktd2801-backlight.c
-> new file mode 100644
-> index 000000000000..24a5f9e5d606
-> --- /dev/null
-> +++ b/drivers/video/backlight/ktd2801-backlight.c
-> @@ -0,0 +1,151 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +#include <linux/backlight.h>
-> +#include <linux/delay.h>
-> +#include <linux/gpio/consumer.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/property.h>
-> +
-> +#define EW_DELAY	150
-> +#define EW_DET		270
-> +#define LOW_BIT_HIGH	5
-> +#define LOW_BIT_LOW	(4 * HIGH_BIT_LOW)
-> +#define HIGH_BIT_LOW	5
-> +#define HIGH_BIT_HIGH	(4 * HIGH_BIT_LOW)
+> I named it "enable" because the KTD253 driver does so too, but also because
+> that pin is also used to power down the IC. If "enable" isn't right
+> regardless, is just "gpios" fine for this?
 
-These names are pretty cryptic (they don't even mention that they
-are time values and that the unit is microseconds). They also look
-like they were derived by tuning so comments would be nice explaining
-where they come from (or, failing that, why they are correct).
-
-
-> +#define DS		5
-> +#define EOD_L		10
-> +#define EOD_H		350
-> +#define PWR_DOWN_DELAY	2600
-> +
-> +#define KTD2801_DEFAULT_BRIGHTNESS	100
-> +#define KTD2801_MAX_BRIGHTNESS		255
-> +
-> +struct ktd2801_backlight {
-> +	struct device *dev;
-> +	struct backlight_device *bd;
-> +	struct gpio_desc *desc;
-> +	bool was_on;
-> +};
-> +
-> +static int ktd2801_update_status(struct backlight_device *bd)
-> +{
-> +	struct ktd2801_backlight *ktd2801 = bl_get_data(bd);
-> +	u8 brightness = (u8) backlight_get_brightness(bd);
-> +
-> +	if (backlight_is_blank(bd)) {
-> +		gpiod_set_value(ktd2801->desc, 1);
-> +		udelay(PWR_DOWN_DELAY);
-> +		ktd2801->was_on = false;
-> +		return 0;
-> +	}
-> +
-> +	if (!ktd2801->was_on) {
-> +		gpiod_set_value(ktd2801->desc, 0);
-> +		udelay(EW_DELAY);
-> +		gpiod_set_value(ktd2801->desc, 1);
-> +		udelay(EW_DET);
-> +		gpiod_set_value(ktd2801->desc, 0);
-> +		ktd2801->was_on = true;
-> +	}
-
-Isn't this implementing the same single GPIO line protocol used by
-drivers/leds/flash/leds-ktd2692.c?
-
-If so, it would be good to pull the expresswire handling into a library
-so it can be shared between drivers. leds-ktd2692.c does a pretty
-good job of decomposing the expresswire management into functions (e.g.
-separating data framing from setting of control values). Expresswire is
-a data framing protocol rather than a bus so I think just implementing
-it as library code is probably sufficient.
-
-Also, can the expresswire code have protocol-violation watchdogs that
-trigger a re-transmit of the message if we get pre-empted in the middle
-of sending a message to the backlight (see calls to ktime_get_ns() in
-ktd253-backlight.c ).
-
-
-> +
-> +	gpiod_set_value(ktd2801->desc, 0);
-> +	udelay(DS);
-> +
-> +	for (int i = 0; i < 8; i++) {
-> +		u8 next_bit = (brightness & 0x80) >> 7;
-> +
-> +		if (!next_bit) {
-> +			gpiod_set_value(ktd2801->desc, 1);
-> +			udelay(LOW_BIT_LOW);
-> +			gpiod_set_value(ktd2801->desc, 0);
-> +			udelay(LOW_BIT_HIGH);
-> +		} else {
-> +			gpiod_set_value(ktd2801->desc, 1);
-> +			udelay(HIGH_BIT_LOW);
-> +			gpiod_set_value(ktd2801->desc, 0);
-> +			udelay(HIGH_BIT_HIGH);
-> +		}
-> +		brightness <<= 1;
-> +	}
-> +	gpiod_set_value(ktd2801->desc, 1);
-> +	udelay(EOD_L);
-> +	gpiod_set_value(ktd2801->desc, 0);
-> +	udelay(EOD_H);
-> +	return 0;
-> +}
-> +
-> +static const struct backlight_ops ktd2801_backlight_ops = {
-> +	.update_status = ktd2801_update_status,
-> +};
-> +
-> +static int ktd2801_backlight_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct backlight_device *bd;
-> +	struct ktd2801_backlight *ktd2801;
-> +	u32 brightness, max_brightness;
-> +	int ret;
-> +
-> +	ktd2801 = devm_kzalloc(dev, sizeof(*ktd2801), GFP_KERNEL);
-> +	if (!ktd2801)
-> +		return -ENOMEM;
-> +	ktd2801->dev = dev;
-
-This appears to be a write-only variable.
-
-Overall the driver looks good but it would be nice to figure out how to
-share expresswire framing between drivers (don't worry about ktd253, it
-uses a different protocol).
+KTD2692 implements ExpressWire and calls this signal ctrl-gpios. I'd
+suggest copying that prior art for now.
 
 
 Daniel.

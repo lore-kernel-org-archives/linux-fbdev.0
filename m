@@ -2,299 +2,226 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C73FCD80B7
-	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Oct 2023 11:48:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDBEACD80BD
+	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Oct 2023 12:16:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231423AbjJJLsR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 10 Oct 2023 07:48:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46848 "EHLO
+        id S231637AbjJJMQe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 10 Oct 2023 08:16:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58136 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231453AbjJJLsQ (ORCPT
+        with ESMTP id S231494AbjJJMQc (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 10 Oct 2023 07:48:16 -0400
-Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0748DAF
-        for <linux-fbdev@vger.kernel.org>; Tue, 10 Oct 2023 04:48:13 -0700 (PDT)
-Received: by mail-wm1-x329.google.com with SMTP id 5b1f17b1804b1-405e48d8e72so9708025e9.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 10 Oct 2023 04:48:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google; t=1696938491; x=1697543291; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references
-         :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Qeq+CWrwPWSdPs7u52cPWH+iL7zE4yXXVbL0GY/hrf4=;
-        b=McPAKOYHZKgFxRhV9/9mnqrasO6x6PXDAU4V8+WPjU8QaxU9dTr79E4990CuEr7iXf
-         ynnXu79MZswBJd4Iqq3ILd8HqON9/YDDE2Gb4YDinLJf6d9c2p9V3ogu92ilH+sZVPK+
-         9hUrj7T0ekmeCi6SCHHbjGcH26gW41tMp8bZs=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696938491; x=1697543291;
-        h=in-reply-to:content-disposition:mime-version:references
-         :mail-followup-to:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Qeq+CWrwPWSdPs7u52cPWH+iL7zE4yXXVbL0GY/hrf4=;
-        b=YIp6k5fKInkeGTNACEAQbs6iQzvZypq5muoqIC8DnZSXF7guWY/oSn2q+tdEivLsL9
-         l/ARn8ua/wP5rhuaX3IIbaYJFXRlnWBPvyT/2qoQTqT0t42v7v+9vQ0ihQiOnxB6xM9g
-         ciaBYg7pFd9dlIkfFyg/OoyZZ1yahlyS0gytdkpFzca1vasV0rb0ZCnn1cBTNYCGGNd5
-         IKamabSzc9ftZ6OPjkPZAH8LH4hIXXQY3wUYl0CZmurGmMjNrieE/usz6cT6ecePr2cx
-         S+aGLBluOopxj8w4SIldRIGaONuaCEqD9H+uvQOC1mVKafqkspCJO9qBp9aZr64SA5BF
-         YgZw==
-X-Gm-Message-State: AOJu0Yz/kMu1vIYD6udvRVO1NbA2aUAoGlUqdGC/wxqPl6yrMoTu5pII
-        FbtBhsAhRzCfduH/CQQSMYfsmJxvAqGtoQIB1AI=
-X-Google-Smtp-Source: AGHT+IHSPZ4F6W9A3ZHvZu/x94TDI5DewSSycnSK8EH04IOCCRrNbnju9CZ5CNGfePnoo7+rHPyYdQ==
-X-Received: by 2002:a05:600c:3c96:b0:403:334:fb0d with SMTP id bg22-20020a05600c3c9600b004030334fb0dmr16107480wmb.4.1696938491335;
-        Tue, 10 Oct 2023 04:48:11 -0700 (PDT)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id x11-20020adff0cb000000b00323293bd023sm12587864wro.6.2023.10.10.04.48.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Oct 2023 04:48:10 -0700 (PDT)
-Date:   Tue, 10 Oct 2023 13:48:07 +0200
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Arnd Bergmann <arnd@kernel.org>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Arnd Bergmann <arnd@arndb.de>,
-        "David S. Miller" <davem@davemloft.net>,
-        "K. Y. Srinivasan" <kys@microsoft.com>,
-        Ard Biesheuvel <ardb@kernel.org>,
-        Borislav Petkov <bp@alien8.de>, Brian Cain <bcain@quicinc.com>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        David Airlie <airlied@gmail.com>,
-        Deepak Rawat <drawat.floss@gmail.com>,
-        Dexuan Cui <decui@microsoft.com>,
-        Dinh Nguyen <dinguyen@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Guo Ren <guoren@kernel.org>,
-        Haiyang Zhang <haiyangz@microsoft.com>,
-        Helge Deller <deller@gmx.de>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-        Khalid Aziz <khalid@gonehiking.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Matt Turner <mattst88@gmail.com>,
-        Max Filippov <jcmvbkbc@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        WANG Xuerui <kernel@xen0n.name>, Wei Liu <wei.liu@kernel.org>,
-        Will Deacon <will@kernel.org>, x86@kernel.org,
-        linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-efi@vger.kernel.org,
-        linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
-        linux-ia64@vger.kernel.org, loongarch@lists.linux.dev,
-        linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
-        sparclinux@vger.kernel.org, linux-hyperv@vger.kernel.org
-Subject: Re: [PATCH v3 0/9] video: screen_info cleanups
-Message-ID: <ZSU59yPUO_Fu39o5@phenom.ffwll.local>
-Mail-Followup-To: Arnd Bergmann <arnd@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Arnd Bergmann <arnd@arndb.de>,
-        "David S. Miller" <davem@davemloft.net>,
-        "K. Y. Srinivasan" <kys@microsoft.com>,
-        Ard Biesheuvel <ardb@kernel.org>, Borislav Petkov <bp@alien8.de>,
-        Brian Cain <bcain@quicinc.com>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        David Airlie <airlied@gmail.com>,
-        Deepak Rawat <drawat.floss@gmail.com>,
-        Dexuan Cui <decui@microsoft.com>, Dinh Nguyen <dinguyen@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Guo Ren <guoren@kernel.org>, Haiyang Zhang <haiyangz@microsoft.com>,
-        Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-        Khalid Aziz <khalid@gonehiking.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Matt Turner <mattst88@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        WANG Xuerui <kernel@xen0n.name>, Wei Liu <wei.liu@kernel.org>,
-        Will Deacon <will@kernel.org>, x86@kernel.org,
-        linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-efi@vger.kernel.org,
-        linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
-        linux-ia64@vger.kernel.org, loongarch@lists.linux.dev,
-        linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
-        sparclinux@vger.kernel.org, linux-hyperv@vger.kernel.org
-References: <20231009211845.3136536-1-arnd@kernel.org>
+        Tue, 10 Oct 2023 08:16:32 -0400
+Received: from EUR05-DB8-obe.outbound.protection.outlook.com (mail-db8eur05on2054.outbound.protection.outlook.com [40.107.20.54])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 82F0FA4;
+        Tue, 10 Oct 2023 05:16:29 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=OJyvcr1A7l+HqqJ00grmZTkqe2GSyPvn3lmruOS/T5NLbjxltTp9f27RD+vSXQ9qfJ7Jh7y5LCv/uH7AYCjrXsQir63dhAz1nxOaAH8ox2q8YvCfodiwB/yIj6PIEaykC0tpjOXFBF1jJoISWwz2ERWMEEvMzRhHoG8T4ejcHwxjd3Yoj2wfNADzgv1Cx7dBLr/m51phU+TWo5pv8wzrEtHSajc+XtCOh+ndKQMN3sPJPiXRn7mhebkdhkdvbj9of28TxFs7q0KuChwLoj9S2Pb+J3GbWKvGxt6pVDlu/OlR8tdmDfg4UkPk2P4DjALonfXedDnf6Yed5JQUE1Ktjg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=eiP9OYAokihYsk6mwFuxzU5u73vQxiEPThzkg+/dh7o=;
+ b=ZbFdBNypP05IdLrgtQgiV1UDEZs8AFQiP18n8ZIXq9OFiKVMr3WE3B3aJ9HoTYENTifLWtyT7XuOav3uKnQhs5L4b335XnLfrY3oOs8gFMl682xromUGv7o9od8Jpl7ZgtlyEk7vjvUCygx0KW/WnymRpDW7SflP+IM3StdrN16kCT1JLLndIYuW81dC8eyYMOysUirIxTsyG1oLNrjiK6161fPC9dfft+W6sSyk0O7ma2AaiMiJJEVOqiCk079Daf4I5qXPOAQFub8+D1J+ZWNxi8/Mkg+2MUDEsyvYD1BX1cPshx4sxpraLGlvnJbCvlZ2zSIXWIaPccoyoaRABA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=softfail (sender ip
+ is 151.1.184.193) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=asem.it;
+ dmarc=fail (p=none sp=none pct=100) action=none header.from=asem.it;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=asem.it; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=eiP9OYAokihYsk6mwFuxzU5u73vQxiEPThzkg+/dh7o=;
+ b=hiVt8qbY3uAMsnd1+mpvF9kIr9603jC44fEHGx4dR8muO/T9mppjtHkUzsRGRX3YDyWfgJmNNFNQNeFQ7Jgw2Lg0GmofDMElywe5+/SwJ+/Wg9fFjdRn0DSMOdeZRAFqM5+W6EBOTcbH3rInpQK0KbjBLr+ll50AU1NjC8v22OE=
+Received: from DB8PR06CA0058.eurprd06.prod.outlook.com (2603:10a6:10:120::32)
+ by PAXPR01MB8488.eurprd01.prod.exchangelabs.com (2603:10a6:102:22a::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6863.37; Tue, 10 Oct
+ 2023 12:16:27 +0000
+Received: from DU6PEPF0000B621.eurprd02.prod.outlook.com
+ (2603:10a6:10:120:cafe::47) by DB8PR06CA0058.outlook.office365.com
+ (2603:10a6:10:120::32) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6863.36 via Frontend
+ Transport; Tue, 10 Oct 2023 12:16:26 +0000
+X-MS-Exchange-Authentication-Results: spf=softfail (sender IP is
+ 151.1.184.193) smtp.mailfrom=asem.it; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=none header.from=asem.it;
+Received-SPF: SoftFail (protection.outlook.com: domain of transitioning
+ asem.it discourages use of 151.1.184.193 as permitted sender)
+Received: from asas054.asem.intra (151.1.184.193) by
+ DU6PEPF0000B621.mail.protection.outlook.com (10.167.8.138) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6838.22 via Frontend Transport; Tue, 10 Oct 2023 12:16:26 +0000
+Received: from flavio-x.asem.intra ([172.16.18.47]) by asas054.asem.intra with Microsoft SMTPSVC(10.0.14393.4169);
+         Tue, 10 Oct 2023 14:16:26 +0200
+From:   Flavio Suligoi <f.suligoi@asem.it>
+To:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>
+Cc:     dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Flavio Suligoi <f.suligoi@asem.it>
+Subject: [PATCH v4 1/2] dt-bindings: backlight: Add MPS MP3309C
+Date:   Tue, 10 Oct 2023 14:16:21 +0200
+Message-Id: <20231010121621.3009154-1-f.suligoi@asem.it>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231009211845.3136536-1-arnd@kernel.org>
-X-Operating-System: Linux phenom 6.5.0-1-amd64 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 10 Oct 2023 12:16:26.0024 (UTC) FILETIME=[972CB280:01D9FB73]
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DU6PEPF0000B621:EE_|PAXPR01MB8488:EE_
+Content-Type: text/plain
+X-MS-Office365-Filtering-Correlation-Id: 78448551-c482-43fc-974e-08dbc98aba1a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: gkIkhLFbwhcAxs+n/736kV49Cqc1ith2aXf2J6KYibZYd5H49sd2QcQircOCO+fGaVnRP0vq2weGlj1ic3MLNSV79Ypsoc6WVY6Cn1cqK3iyTyVWOqMQxTFwZpySbHENjDxuoxqc7kra2ORwtLYcs5u6BooQ2LOtvtT5OfQdDhU8EM+PptUxpt11ajZpGaVUjvEqinvwwJX+nDb+53gxmrnlVl7zdFA+opSUqL9eMgVpol1d/st/2qf0IvFg88tBQfCEaES59HyT2C4Hd4HpHVBsFhAE1vWtA0wZVzRBo8CbfSCI2S08VVYYCwUsxGuuPNFvZuvkqXuoUviqwP0+8ayQAjp+ySRrDd2Xy91DwdZWajHi7WV+dR42Dy2Kp6ToO9QE2wKxutLmAJPPTbFNQq/XLhqkJf1hmPJdqeh8aiYBT7oPu9NEm6mQVQSQbg2SCPQ2VxysFOiZSUxtmWu5SqQunNe0Kw6krNIX4KwE0UN5orExVSYVi746NhEFk8JzE0HW0KYyE+0B/fYLcUR4gHcyrO3FIaOUDXCOeSLKn85j52uxbb77ney+YbbQIfxkoJBPfCtcQ0em8FqjqaVeQIQA9qbnAxAp/POeE4vBaU7uS0vFBsLmqAm9dWpxbeuTNWpMUq5tFrYAARNYq/1RSLXeP80wGstRbmG0HNS8wWDX+RsXEwbA3dB3QyrnlyS3gGpDAncH3Z9p+PFs+H8WVyys+ADJPhPw+NQ5XuzImjs=
+X-Forefront-Antispam-Report: CIP:151.1.184.193;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:asas054.asem.intra;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230031)(346002)(376002)(39840400004)(136003)(396003)(230922051799003)(186009)(64100799003)(1800799009)(82310400011)(451199024)(36840700001)(46966006)(40480700001)(83380400001)(107886003)(1076003)(336012)(2616005)(47076005)(26005)(70586007)(36860700001)(110136005)(316002)(70206006)(6666004)(4326008)(8676002)(41300700001)(5660300002)(966005)(2906002)(478600001)(8936002)(450100002)(36756003)(356005)(81166007)(86362001)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: asem.it
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Oct 2023 12:16:26.5844
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 78448551-c482-43fc-974e-08dbc98aba1a
+X-MS-Exchange-CrossTenant-Id: d0a766c6-7992-4344-a4a2-a467a7bb1ed2
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=d0a766c6-7992-4344-a4a2-a467a7bb1ed2;Ip=[151.1.184.193];Helo=[asas054.asem.intra]
+X-MS-Exchange-CrossTenant-AuthSource: DU6PEPF0000B621.eurprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR01MB8488
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Oct 09, 2023 at 11:18:36PM +0200, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
-> 
-> v3 changelog
-> 
-> No real changes, just rebased for context changes, and picked up the Acks.
-> 
-> This now conflicts with the ia64 removal and introduces one new dependency
-> on IA64, but that is harmless and trivial to deal with later.
-> 
-> Link: https://lore.kernel.org/lkml/20230719123944.3438363-1-arnd@kernel.org/
-> ---
-> v2 changelog
-> 
-> I refreshed the first four patches that I sent before with very minor
-> updates, and then added some more to further disaggregate the use
-> of screen_info:
-> 
->  - I found that powerpc wasn't using vga16fb any more
-> 
->  - vgacon can be almost entirely separated from the global
->    screen_info, except on x86
-> 
->  - similarly, the EFI framebuffer initialization can be
->    kept separate, except on x86.
-> 
-> I did extensive build testing on arm/arm64/x86 and the normal built bot
-> testing for the other architectures.
-> 
-> Which tree should this get merged through?
+The Monolithic Power (MPS) MP3309C is a WLED step-up converter, featuring a
+programmable switching frequency to optimize efficiency.
+The brightness can be controlled either by I2C commands (called "analog"
+mode) or by a PWM input signal (PWM mode).
+This driver supports both modes.
 
-I guess if no one else volunteers (Greg maybe?) I can stuff this into
-drm-misc ...
--Sima
+For device driver details, please refer to:
+- drivers/video/backlight/mp3309c_bl.c
 
-> 
-> Link: https://lore.kernel.org/lkml/20230707095415.1449376-1-arnd@kernel.org/
-> 
-> 
-> Arnd Bergmann (9):
->   vgacon: rework Kconfig dependencies
->   vgacon: rework screen_info #ifdef checks
->   dummycon: limit Arm console size hack to footbridge
->   vgacon, arch/*: remove unused screen_info definitions
->   vgacon: remove screen_info dependency
->   vgacon: clean up global screen_info instances
->   vga16fb: drop powerpc support
->   hyperv: avoid dependency on screen_info
->   efi: move screen_info into efi init code
-> 
->  arch/alpha/kernel/proto.h                     |  2 +
->  arch/alpha/kernel/setup.c                     |  8 +--
->  arch/alpha/kernel/sys_sio.c                   |  8 ++-
->  arch/arm/include/asm/setup.h                  |  5 ++
->  arch/arm/kernel/atags_parse.c                 | 20 +++---
->  arch/arm/kernel/efi.c                         |  6 --
->  arch/arm/kernel/setup.c                       | 11 +--
->  arch/arm64/kernel/efi.c                       |  4 --
->  arch/arm64/kernel/image-vars.h                |  2 +
->  arch/csky/kernel/setup.c                      | 12 ----
->  arch/hexagon/kernel/Makefile                  |  2 -
->  arch/hexagon/kernel/screen_info.c             |  3 -
->  arch/ia64/kernel/setup.c                      | 53 ++++++++-------
->  arch/loongarch/kernel/efi.c                   |  3 +-
->  arch/loongarch/kernel/image-vars.h            |  2 +
->  arch/loongarch/kernel/setup.c                 |  3 -
->  arch/mips/jazz/setup.c                        |  9 ---
->  arch/mips/kernel/setup.c                      | 11 ---
->  arch/mips/mti-malta/malta-setup.c             |  4 +-
->  arch/mips/sibyte/swarm/setup.c                | 26 ++++---
->  arch/mips/sni/setup.c                         | 18 ++---
->  arch/nios2/kernel/setup.c                     |  5 --
->  arch/powerpc/kernel/setup-common.c            | 16 -----
->  arch/riscv/kernel/image-vars.h                |  2 +
->  arch/riscv/kernel/setup.c                     | 12 ----
->  arch/sh/kernel/setup.c                        |  5 --
->  arch/sparc/kernel/setup_32.c                  | 13 ----
->  arch/sparc/kernel/setup_64.c                  | 13 ----
->  arch/x86/kernel/setup.c                       |  2 +-
->  arch/xtensa/kernel/setup.c                    | 12 ----
->  drivers/firmware/efi/efi-init.c               | 14 +++-
->  drivers/firmware/efi/libstub/efi-stub-entry.c |  8 ++-
->  drivers/firmware/pcdp.c                       |  1 -
->  drivers/gpu/drm/hyperv/hyperv_drm_drv.c       |  7 +-
->  drivers/hv/vmbus_drv.c                        |  6 +-
->  drivers/video/console/Kconfig                 | 11 +--
->  drivers/video/console/dummycon.c              |  2 +-
->  drivers/video/console/vgacon.c                | 68 +++++++++++--------
->  drivers/video/fbdev/Kconfig                   |  2 +-
->  drivers/video/fbdev/hyperv_fb.c               |  8 +--
->  drivers/video/fbdev/vga16fb.c                 |  9 +--
->  include/linux/console.h                       |  7 ++
->  42 files changed, 183 insertions(+), 252 deletions(-)
->  delete mode 100644 arch/hexagon/kernel/screen_info.c
-> 
-> -- 
-> 2.39.2
-> 
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: "K. Y. Srinivasan" <kys@microsoft.com>
-> Cc: Ard Biesheuvel <ardb@kernel.org>
-> Cc: Borislav Petkov <bp@alien8.de>
-> Cc: Brian Cain <bcain@quicinc.com>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Cc: Daniel Vetter <daniel@ffwll.ch>
-> Cc: Dave Hansen <dave.hansen@linux.intel.com>
-> Cc: David Airlie <airlied@gmail.com>
-> Cc: Deepak Rawat <drawat.floss@gmail.com>
-> Cc: Dexuan Cui <decui@microsoft.com>
-> Cc: Dinh Nguyen <dinguyen@kernel.org>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Guo Ren <guoren@kernel.org>
-> Cc: Haiyang Zhang <haiyangz@microsoft.com>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: Huacai Chen <chenhuacai@kernel.org>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Javier Martinez Canillas <javierm@redhat.com>
-> Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-> Cc: Khalid Aziz <khalid@gonehiking.org>
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Cc: Matt Turner <mattst88@gmail.com>
-> Cc: Max Filippov <jcmvbkbc@gmail.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
-> Cc: Palmer Dabbelt <palmer@dabbelt.com>
-> Cc: Russell King <linux@armlinux.org.uk>
-> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: WANG Xuerui <kernel@xen0n.name>
-> Cc: Wei Liu <wei.liu@kernel.org>
-> Cc: Will Deacon <will@kernel.org>
-> Cc: x86@kernel.org
-> Cc: linux-alpha@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-efi@vger.kernel.org
-> Cc: linux-csky@vger.kernel.org
-> Cc: linux-hexagon@vger.kernel.org
-> Cc: linux-ia64@vger.kernel.org
-> Cc: loongarch@lists.linux.dev
-> Cc: linux-mips@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-riscv@lists.infradead.org
-> Cc: linux-sh@vger.kernel.org
-> Cc: sparclinux@vger.kernel.org
-> Cc: linux-hyperv@vger.kernel.org
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: linux-fbdev@vger.kernel.org
-> 
+The datasheet is available at:
+- https://www.monolithicpower.com/en/mp3309c.html
 
+Signed-off-by: Flavio Suligoi <f.suligoi@asem.it>
+---
+
+v4:
+ - remove not more used allOf keyword
+ - add brightness-levels and default-brightness properties
+ - remove max-brightness and default-brightness from required properties
+ - update example, adding brightness-levels and default-brightness properties
+v3:
+ - add default value for mps,overvoltage-protection-microvolt property
+ - fix the example, changing from "mps,mp3309c-backlight" to "mps,mp3309c" in
+   compatible property
+v2:
+ - remove useless properties (dimming-mode, pinctrl-names, pinctrl-0,
+   switch-on-delay-ms, switch-off-delay-ms, reset-gpios, reset-on-delay-ms,
+   reset-on-length-ms)
+ - add common.yaml#
+ - remove already included properties (default-brightness, max-brightness)
+ - substitute three boolean properties, used for the overvoltage-protection
+   values, with a single enum property
+ - remove some conditional definitions
+ - remove the 2nd example
+v1:
+ - first version
+
+ .../bindings/leds/backlight/mps,mp3309c.yaml  | 82 +++++++++++++++++++
+ 1 file changed, 82 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
+
+diff --git a/Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml b/Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
+new file mode 100644
+index 000000000000..e2f9ae2b3fb4
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
+@@ -0,0 +1,82 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/backlight/mps,mp3309c.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: MPS MP3309C backlight
++
++maintainers:
++  - Flavio Suligoi <f.suligoi@asem.it>
++
++description: |
++  The Monolithic Power (MPS) MP3309C is a WLED step-up converter, featuring a
++  programmable switching frequency to optimize efficiency.
++  It supports two different dimming modes:
++
++  - analog mode, via I2C commands, as default mode (32 dimming levels)
++  - PWM controlled mode (optional)
++
++  The datasheet is available at:
++  https://www.monolithicpower.com/en/mp3309c.html
++
++properties:
++  compatible:
++    const: mps,mp3309c
++
++  reg:
++    maxItems: 1
++
++  pwms:
++    description: if present, the backlight is controlled in PWM mode.
++    maxItems: 1
++
++  enable-gpios:
++    description: GPIO used to enable the backlight in "analog-i2c" dimming mode.
++    maxItems: 1
++
++  brightness-levels:
++    description:
++      Array of distinct brightness levels, in PWM dimming mode.
++      Typically these are in the range from 0 to 255, but any range starting
++      at 0 will do.
++      The 0 value means a 0% duty cycle (darkest/off), while the last value in
++      the array represents a 100% duty cycle (brightest).
++    $ref: /schemas/types.yaml#/definitions/uint32-array
++
++  default-brightness:
++    description:
++      The default brightness (index into the levels array).
++    $ref: /schemas/types.yaml#/definitions/uint32
++
++  mps,overvoltage-protection-microvolt:
++    description: Overvoltage protection (13.5V, 24V or 35.5V).
++    enum: [ 13500000, 24000000, 35500000 ]
++    default: 35500000
++
++  mps,no-sync-mode:
++    description: disable synchronous rectification mode
++    type: boolean
++
++required:
++  - compatible
++  - reg
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        /* Backlight with PWM control */
++        backlight_pwm: backlight@17 {
++            compatible = "mps,mp3309c";
++            reg = <0x17>;
++            pwms = <&pwm1 0 3333333 0>; /* 300 Hz --> (1/f) * 1*10^9 */
++            brightness-levels = <0 1 2 3 4 5 6 7 8 9 10>;
++            default-brightness = <8>;
++            mps,overvoltage-protection-microvolt = <24000000>;
++        };
++    };
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+2.34.1
+

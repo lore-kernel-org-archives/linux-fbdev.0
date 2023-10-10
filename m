@@ -2,120 +2,199 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C28E3CD80B7
-	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Oct 2023 12:21:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A40AACD8CAB
+	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Oct 2023 16:15:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231786AbjJJMVA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 10 Oct 2023 08:21:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46384 "EHLO
+        id S233689AbjJJQPX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 10 Oct 2023 12:15:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34040 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231775AbjJJMU7 (ORCPT
+        with ESMTP id S231246AbjJJQPV (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 10 Oct 2023 08:20:59 -0400
+        Tue, 10 Oct 2023 12:15:21 -0400
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E877A99;
-        Tue, 10 Oct 2023 05:20:57 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6DE79C433C9;
-        Tue, 10 Oct 2023 12:20:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1696940457;
-        bh=UxKiOjwRVBO8hPyVUUWzczAVTUMRjFlQkrN/ltCYT8k=;
-        h=Date:From:To:Subject:References:In-Reply-To:From;
-        b=z6owfJjLMQIFX2uC9sV/8w0Sqo46Pwrls0o6HMuGNTLpJ6j2UenvrZZUZyQPOk4e4
-         J3ULbbvJmYW9SamstV3gX+7XoWSBjLaIAkObsItWXbwj4B3BwNurPGM/XAYXjZVith
-         +in/PsQQCypXf3oYXYGwsK8NbTcgAuJuaCoH/RRg=
-Date:   Tue, 10 Oct 2023 14:20:54 +0200
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Arnd Bergmann <arnd@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Arnd Bergmann <arnd@arndb.de>,
-        "David S. Miller" <davem@davemloft.net>,
-        "K. Y. Srinivasan" <kys@microsoft.com>,
-        Ard Biesheuvel <ardb@kernel.org>,
-        Borislav Petkov <bp@alien8.de>, Brian Cain <bcain@quicinc.com>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        David Airlie <airlied@gmail.com>,
-        Deepak Rawat <drawat.floss@gmail.com>,
-        Dexuan Cui <decui@microsoft.com>,
-        Dinh Nguyen <dinguyen@kernel.org>, Guo Ren <guoren@kernel.org>,
-        Haiyang Zhang <haiyangz@microsoft.com>,
-        Helge Deller <deller@gmx.de>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-        Khalid Aziz <khalid@gonehiking.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Matt Turner <mattst88@gmail.com>,
-        Max Filippov <jcmvbkbc@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        WANG Xuerui <kernel@xen0n.name>, Wei Liu <wei.liu@kernel.org>,
-        Will Deacon <will@kernel.org>, x86@kernel.org,
-        linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-efi@vger.kernel.org,
-        linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
-        linux-ia64@vger.kernel.org, loongarch@lists.linux.dev,
-        linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
-        sparclinux@vger.kernel.org, linux-hyperv@vger.kernel.org
-Subject: Re: [PATCH v3 0/9] video: screen_info cleanups
-Message-ID: <2023101007-retread-spyglass-4b8c@gregkh>
-References: <20231009211845.3136536-1-arnd@kernel.org>
- <ZSU59yPUO_Fu39o5@phenom.ffwll.local>
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AC492B6;
+        Tue, 10 Oct 2023 09:15:19 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A06BC433C9;
+        Tue, 10 Oct 2023 16:15:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1696954519;
+        bh=kQ2iDBdPLPq+PkT4qaZo/GhZJCoCv5+ORm9na2Gd43Q=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=i06qqhVwMRaYPZiIodAKuE9bsZUzbH12d7+xwnM4CvaJ+O5dnZB57DT/8sBZHHxwm
+         qvRkl9GsEHltDHyY985VYKcm3qDWnzjPcsLYRAA/78G3SkwZY96spiutPJvzzHNgg0
+         myiQSGDgYBlVKRjhw6uoyEO3yWxHWeiiADQgTZ384vlFagoo5jzhFfiP4NQokLE7/1
+         W9hF+snYo3h2Duisods1nD20/4PsySyOJTXAztrPH0pfYHlqC/uo0Y77oO3WdvePQh
+         fByDUAUizrqKOhFYpYo9aGeieCfMvZQFAtWSLVnNCAw1zu/Gtcawbxk6YFPpVQuS8m
+         8a+nqEaCkv/hg==
+Received: (nullmailer pid 998583 invoked by uid 1000);
+        Tue, 10 Oct 2023 16:15:12 -0000
+Date:   Tue, 10 Oct 2023 11:15:12 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Flavio Suligoi <f.suligoi@asem.it>
+Cc:     Lee Jones <lee@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, Pavel Machek <pavel@ucw.cz>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 1/2] dt-bindings: backlight: Add MPS MP3309C
+Message-ID: <20231010161512.GA944015-robh@kernel.org>
+References: <20231010121621.3009154-1-f.suligoi@asem.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ZSU59yPUO_Fu39o5@phenom.ffwll.local>
+In-Reply-To: <20231010121621.3009154-1-f.suligoi@asem.it>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Oct 10, 2023 at 01:48:07PM +0200, Daniel Vetter wrote:
-> On Mon, Oct 09, 2023 at 11:18:36PM +0200, Arnd Bergmann wrote:
-> > From: Arnd Bergmann <arnd@arndb.de>
-> > 
-> > v3 changelog
-> > 
-> > No real changes, just rebased for context changes, and picked up the Acks.
-> > 
-> > This now conflicts with the ia64 removal and introduces one new dependency
-> > on IA64, but that is harmless and trivial to deal with later.
-> > 
-> > Link: https://lore.kernel.org/lkml/20230719123944.3438363-1-arnd@kernel.org/
-> > ---
-> > v2 changelog
-> > 
-> > I refreshed the first four patches that I sent before with very minor
-> > updates, and then added some more to further disaggregate the use
-> > of screen_info:
-> > 
-> >  - I found that powerpc wasn't using vga16fb any more
-> > 
-> >  - vgacon can be almost entirely separated from the global
-> >    screen_info, except on x86
-> > 
-> >  - similarly, the EFI framebuffer initialization can be
-> >    kept separate, except on x86.
-> > 
-> > I did extensive build testing on arm/arm64/x86 and the normal built bot
-> > testing for the other architectures.
-> > 
-> > Which tree should this get merged through?
+On Tue, Oct 10, 2023 at 02:16:21PM +0200, Flavio Suligoi wrote:
+> The Monolithic Power (MPS) MP3309C is a WLED step-up converter, featuring a
+> programmable switching frequency to optimize efficiency.
+> The brightness can be controlled either by I2C commands (called "analog"
+> mode) or by a PWM input signal (PWM mode).
+> This driver supports both modes.
 > 
-> I guess if no one else volunteers (Greg maybe?) I can stuff this into
-> drm-misc ...
+> For device driver details, please refer to:
+> - drivers/video/backlight/mp3309c_bl.c
+> 
+> The datasheet is available at:
+> - https://www.monolithicpower.com/en/mp3309c.html
+> 
+> Signed-off-by: Flavio Suligoi <f.suligoi@asem.it>
+> ---
+> 
+> v4:
+>  - remove not more used allOf keyword
+>  - add brightness-levels and default-brightness properties
+>  - remove max-brightness and default-brightness from required properties
+>  - update example, adding brightness-levels and default-brightness properties
+> v3:
+>  - add default value for mps,overvoltage-protection-microvolt property
+>  - fix the example, changing from "mps,mp3309c-backlight" to "mps,mp3309c" in
+>    compatible property
+> v2:
+>  - remove useless properties (dimming-mode, pinctrl-names, pinctrl-0,
+>    switch-on-delay-ms, switch-off-delay-ms, reset-gpios, reset-on-delay-ms,
+>    reset-on-length-ms)
+>  - add common.yaml#
+>  - remove already included properties (default-brightness, max-brightness)
+>  - substitute three boolean properties, used for the overvoltage-protection
+>    values, with a single enum property
+>  - remove some conditional definitions
+>  - remove the 2nd example
+> v1:
+>  - first version
+> 
+>  .../bindings/leds/backlight/mps,mp3309c.yaml  | 82 +++++++++++++++++++
+>  1 file changed, 82 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml b/Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
+> new file mode 100644
+> index 000000000000..e2f9ae2b3fb4
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/leds/backlight/mps,mp3309c.yaml
+> @@ -0,0 +1,82 @@
+> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/leds/backlight/mps,mp3309c.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: MPS MP3309C backlight
+> +
+> +maintainers:
+> +  - Flavio Suligoi <f.suligoi@asem.it>
+> +
+> +description: |
+> +  The Monolithic Power (MPS) MP3309C is a WLED step-up converter, featuring a
+> +  programmable switching frequency to optimize efficiency.
+> +  It supports two different dimming modes:
+> +
+> +  - analog mode, via I2C commands, as default mode (32 dimming levels)
+> +  - PWM controlled mode (optional)
+> +
+> +  The datasheet is available at:
+> +  https://www.monolithicpower.com/en/mp3309c.html
+> +
+> +properties:
+> +  compatible:
+> +    const: mps,mp3309c
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  pwms:
+> +    description: if present, the backlight is controlled in PWM mode.
+> +    maxItems: 1
+> +
+> +  enable-gpios:
+> +    description: GPIO used to enable the backlight in "analog-i2c" dimming mode.
+> +    maxItems: 1
+> +
+> +  brightness-levels:
+> +    description:
+> +      Array of distinct brightness levels, in PWM dimming mode.
+> +      Typically these are in the range from 0 to 255, but any range starting
+> +      at 0 will do.
+> +      The 0 value means a 0% duty cycle (darkest/off), while the last value in
+> +      the array represents a 100% duty cycle (brightest).
+> +    $ref: /schemas/types.yaml#/definitions/uint32-array
 
-Oh, hey, console code is for me, I keep forgetting.
+This already has a type defined. Please add it to backlight/common.yaml 
+and remove from led-backlight.yaml and pwm-backlight.yaml.
 
-I can take it, looks like we have enough acks now, thanks for reminding
-me!
+You say 0-255 here, but your example is 0-10. One of those seems wrong. 
+Anyways, don't define constraints in prose, use a schema:
 
-greg k-h
+items:
+  maximum: 10 (or 255?)
+
+> +
+> +  default-brightness:
+> +    description:
+> +      The default brightness (index into the levels array).
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+
+Already has a type. You need to reference backlight/common.yaml.
+
+> +
+> +  mps,overvoltage-protection-microvolt:
+> +    description: Overvoltage protection (13.5V, 24V or 35.5V).
+> +    enum: [ 13500000, 24000000, 35500000 ]
+> +    default: 35500000
+> +
+> +  mps,no-sync-mode:
+> +    description: disable synchronous rectification mode
+> +    type: boolean
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +
+> +unevaluatedProperties: false
+> +
+> +examples:
+> +  - |
+> +    i2c {
+> +        #address-cells = <1>;
+> +        #size-cells = <0>;
+> +
+> +        /* Backlight with PWM control */
+> +        backlight_pwm: backlight@17 {
+> +            compatible = "mps,mp3309c";
+> +            reg = <0x17>;
+> +            pwms = <&pwm1 0 3333333 0>; /* 300 Hz --> (1/f) * 1*10^9 */
+> +            brightness-levels = <0 1 2 3 4 5 6 7 8 9 10>;
+> +            default-brightness = <8>;
+> +            mps,overvoltage-protection-microvolt = <24000000>;
+> +        };
+> +    };
+> -- 
+> 2.34.1
+> 

@@ -2,176 +2,143 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07363CD80A4
-	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Oct 2023 10:26:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2A27CD80B0
+	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Oct 2023 11:46:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230145AbjJJK03 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 10 Oct 2023 06:26:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37952 "EHLO
+        id S231419AbjJJLqE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 10 Oct 2023 07:46:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44380 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230511AbjJJK01 (ORCPT
+        with ESMTP id S230320AbjJJLqD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 10 Oct 2023 06:26:27 -0400
-Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com [209.85.128.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E622BC1;
-        Tue, 10 Oct 2023 03:26:25 -0700 (PDT)
-Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-59f4db9e11eso64637497b3.0;
-        Tue, 10 Oct 2023 03:26:25 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1696933585; x=1697538385;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+        Tue, 10 Oct 2023 07:46:03 -0400
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CEA909D
+        for <linux-fbdev@vger.kernel.org>; Tue, 10 Oct 2023 04:46:01 -0700 (PDT)
+Received: by mail-wr1-x42f.google.com with SMTP id ffacd0b85a97d-3232e96deaaso1349713f8f.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 10 Oct 2023 04:46:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google; t=1696938360; x=1697543160; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references
+         :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=vbmON3xp7LlIs9AFrDaNfaYi2KFfIcOVngy3VzyA1Hk=;
-        b=Y71D59HOyKqTrz43/4TlpQM92IH+gjAjomNB5WNQgIjBiVB4WFxad7LD4E64qsg1es
-         Emft3alTmvw/bJ4bAW4kvhDOoN1rxuuakJTpLZp0IgmZTeYTXChockrv7UJf5roGeaMT
-         AXhX6VHe+FzR6huPSDLTxNzyNQgGgmMN2kUBW6otG1bqxoNU96iRSPlxGsm7DU5ToD4L
-         pENVbx92yZ9u5r/ZMDdTJAAox/eTZEKk3du1kZJfCIhIb+fSid2NnAjHwyrPOGJNld43
-         szkCShBOfQTiSa+y4gQhxA24TmzamzT9WnsJnf4HRUmTZwtjJPHH1/tM7/Dj+H4AV6ll
-         UKnQ==
-X-Gm-Message-State: AOJu0YxchQSsaP8YIBsa2SXsyjd/p9LQJakx8JD8FEpcZI+xptt+N+1T
-        OodIkpdpbHe/y22E9jZBvuIyyhmac2lo5Q==
-X-Google-Smtp-Source: AGHT+IEgXVCRVf4KhZn6EXPz63NiFaC8BYKJvcVSh3HgBqtkdUqDtNlHVIAfWZ8UVaVnyYxSqAjG/Q==
-X-Received: by 2002:a0d:d857:0:b0:5a7:ba00:6dd8 with SMTP id a84-20020a0dd857000000b005a7ba006dd8mr2042106ywe.8.1696933584892;
-        Tue, 10 Oct 2023 03:26:24 -0700 (PDT)
-Received: from mail-yw1-f178.google.com (mail-yw1-f178.google.com. [209.85.128.178])
-        by smtp.gmail.com with ESMTPSA id c65-20020a0df344000000b005925765aa30sm4353903ywf.135.2023.10.10.03.26.24
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 10 Oct 2023 03:26:24 -0700 (PDT)
-Received: by mail-yw1-f178.google.com with SMTP id 00721157ae682-5a7c08b7744so5244777b3.3;
-        Tue, 10 Oct 2023 03:26:24 -0700 (PDT)
-X-Received: by 2002:a81:8647:0:b0:595:89b0:6b56 with SMTP id
- w68-20020a818647000000b0059589b06b56mr20014839ywf.28.1696933584327; Tue, 10
- Oct 2023 03:26:24 -0700 (PDT)
+        bh=aiA4D11X2sFtXKvFj+BVZkBdxaJKzeEbh5cY8Yxytvg=;
+        b=GWGMs53od8yUrlA7N4SoxSsh2ZToEPeBj3Rpp+VJFhZn5gtJWgk2cQfJ5xogoiQqUR
+         jbV+gSb9JkOQS2z8iE6aFgQckIx8TNsSpye63zupsFBMDI1ULBRExnoNTE1r/7W2Nwv0
+         6vsSPucoUJzQO8M6+++2+Zc9IvadJXeA1sAnI=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1696938360; x=1697543160;
+        h=in-reply-to:content-disposition:mime-version:references
+         :mail-followup-to:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=aiA4D11X2sFtXKvFj+BVZkBdxaJKzeEbh5cY8Yxytvg=;
+        b=iIys9nKIKXOL3vfCBqqDdwCGRpLZIfNPt1mGbqMyljljJKlPMtQfNs0G5/UsDIhpap
+         06oMq/ueWP5ZMRtGREQObWz46twCci4YSvAooEz6lpLf10gl6yDOa2+9e06T8FqMtpAx
+         U/7/JESy2/F2hrvLjjEFiFHZ4RMk8sKuJ4zxYH+n/Gy/FVGAiuDoXwIK8ZFE2k7eCQit
+         OrEWgB1iBPzq4Gbph2vUHZ1C8BHyT3wRrdEb86j1syWouZklseB6Qaz7tf7eTsmjlLVC
+         ow8qfVyWIWi/qtnB7jjjyt45ZfulCTF2EJbLyreW7ODbiSCUxCdRhqjC+HfDIuVcL+qD
+         yfiQ==
+X-Gm-Message-State: AOJu0YxeKDAR0iqEA+UlWjEyNiIqflHQFVaFHcjWwH4ibYwuiiCa+4RO
+        h+A4n7zmkVjvWD0SNIqpYrFi3A==
+X-Google-Smtp-Source: AGHT+IE4/UvRoJK4tGLVIxW4ixF9DbnO2siW/LMpb7C9C8dsXdtbYclfJKlYBA0WjLwnhm1UDv3LbA==
+X-Received: by 2002:a5d:6909:0:b0:320:8f0:b93d with SMTP id t9-20020a5d6909000000b0032008f0b93dmr14892975wru.3.1696938360227;
+        Tue, 10 Oct 2023 04:46:00 -0700 (PDT)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id h9-20020a5d6889000000b0031c52e81490sm12640936wru.72.2023.10.10.04.45.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 10 Oct 2023 04:45:59 -0700 (PDT)
+Date:   Tue, 10 Oct 2023 13:45:57 +0200
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Ondrej Zary <linux@zary.sk>
+Cc:     Helge Deller <deller@gmx.de>, jiapeng.chong@linux.alibaba.com,
+        linux-fbdev@vger.kernel.org, javierm@redhat.com,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        tzimmermann@suse.de, Zhang Shurong <zhang_shurong@foxmail.com>
+Subject: Re: [PATCH] video: fbdev: arkfb: fix possible object reference leak
+Message-ID: <ZSU5dZJqd8CIFzM6@phenom.ffwll.local>
+Mail-Followup-To: Ondrej Zary <linux@zary.sk>, Helge Deller <deller@gmx.de>,
+        jiapeng.chong@linux.alibaba.com, linux-fbdev@vger.kernel.org,
+        javierm@redhat.com, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, tzimmermann@suse.de,
+        Zhang Shurong <zhang_shurong@foxmail.com>
+References: <tencent_55C1A344A101B55762ECA6A6366D0B0F8C05@qq.com>
+ <b9e51034-bc6c-81d8-39ef-9fc74fa09c62@gmx.de>
+ <202310061634.02110.linux@zary.sk>
 MIME-Version: 1.0
-References: <20231009211845.3136536-1-arnd@kernel.org> <20231009211845.3136536-2-arnd@kernel.org>
-In-Reply-To: <20231009211845.3136536-2-arnd@kernel.org>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 10 Oct 2023 12:26:07 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdU6MFLCOe4BSWr5oVC4JcLpBS+2PvQsoSEWMLRAFpvaGA@mail.gmail.com>
-Message-ID: <CAMuHMdU6MFLCOe4BSWr5oVC4JcLpBS+2PvQsoSEWMLRAFpvaGA@mail.gmail.com>
-Subject: Re: [PATCH v3 1/9] vgacon: rework Kconfig dependencies
-To:     Arnd Bergmann <arnd@kernel.org>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Arnd Bergmann <arnd@arndb.de>,
-        "David S. Miller" <davem@davemloft.net>,
-        "K. Y. Srinivasan" <kys@microsoft.com>,
-        Ard Biesheuvel <ardb@kernel.org>,
-        Borislav Petkov <bp@alien8.de>, Brian Cain <bcain@quicinc.com>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        David Airlie <airlied@gmail.com>,
-        Deepak Rawat <drawat.floss@gmail.com>,
-        Dexuan Cui <decui@microsoft.com>,
-        Dinh Nguyen <dinguyen@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Guo Ren <guoren@kernel.org>,
-        Haiyang Zhang <haiyangz@microsoft.com>,
-        Helge Deller <deller@gmx.de>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-        Khalid Aziz <khalid@gonehiking.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Matt Turner <mattst88@gmail.com>,
-        Max Filippov <jcmvbkbc@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        WANG Xuerui <kernel@xen0n.name>, Wei Liu <wei.liu@kernel.org>,
-        Will Deacon <will@kernel.org>, x86@kernel.org,
-        linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-efi@vger.kernel.org,
-        linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
-        linux-ia64@vger.kernel.org, loongarch@lists.linux.dev,
-        linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
-        sparclinux@vger.kernel.org, linux-hyperv@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <202310061634.02110.linux@zary.sk>
+X-Operating-System: Linux phenom 6.5.0-1-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Arnd,
+On Fri, Oct 06, 2023 at 04:34:01PM +0200, Ondrej Zary wrote:
+> On Friday 06 October 2023, Helge Deller wrote:
+> > On 10/5/23 09:01, Zhang Shurong wrote:
+> > > Add missing pci_disable_device() in error path in ark_pci_probe().
+> > 
+> > Do you have this hardware and tested your patch?
+> > I'm sure there is a reason, why "pci_disable_device()" was commented
+> > out in the original submission in commit 681e14730c73c...
+> 
+> pci_disable_device() call is disabled in many fbdev drivers because
+> calling it might prevent display from working.
 
-On Mon, Oct 9, 2023 at 11:19 PM Arnd Bergmann <arnd@kernel.org> wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> The list of dependencies here is phrased as an opt-out, but this is missing
-> a lot of architectures that don't actually support VGA consoles, and some
-> of the entries are stale:
->
->  - powerpc used to support VGA consoles in the old arch/ppc codebase, but
->    the merged arch/powerpc never did
->
->  - arm lists footbridge, integrator and netwinder, but netwinder is actually
->    part of footbridge, and integrator does not appear to have an actual
->    VGA hardware, or list it in its ATAG or DT.
->
->  - mips has a few platforms (malta, sibyte, and sni) that initialize
->    screen_info, on everything else the console is selected but cannot
->    actually work.
->
->  - csky, hexgagon, loongarch, nios2, riscv and xtensa are not listed
->    in the opt-out table and declare a screen_info to allow building
->    vga_con, but this cannot work because the console is never selected.
->
-> Replace this with an opt-in table that lists only the platforms that
-> remain. This is effectively x86, plus a couple of historic workstation
-> and server machines that reused parts of the x86 system architecture.
->
-> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Reviewed-by: Khalid Aziz <khalid@gonehiking.org>
-> Acked-by: Helge Deller <deller@gmx.de>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Yeah I've recently hit some _really_ interesting regression report where
+essentially fbdev driver and vgacon where managing the hardware
+collaboratively. There's enormous amounts of "this shouldn't work like
+that, but it is how it does" going on in old fbdev drivers, and what you
+brought up is also what I immediately thought of.
 
-Thanks for your patch!
+This patch feels way too risky to me that we should apply it ...
+-Sima
 
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-A few suggestions for simplification below...
-
-> --- a/drivers/video/console/Kconfig
-> +++ b/drivers/video/console/Kconfig
-> @@ -7,9 +7,9 @@ menu "Console display driver support"
->
->  config VGA_CONSOLE
->         bool "VGA text console" if EXPERT || !X86
-> -       depends on !4xx && !PPC_8xx && !SPARC && !M68K && !PARISC &&  !SUPERH && \
-> -               (!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER) && \
-> -               !ARM64 && !ARC && !MICROBLAZE && !OPENRISC && !S390 && !UML
-> +       depends on ALPHA || IA64 || X86 || \
-> +               (ARM && ARCH_FOOTBRIDGE) || \
-
-You can drop "ARM &&", as it is implied by ARCH_FOOTBRIDGE.
-
-> +               (MIPS && (MIPS_MALTA || SIBYTE_BCM112X || SIBYTE_SB1250 || SIBYTE_BCM1x80 || SNI_RM))
-
-Likewise for "MIPS &&".
-
-The 3 SIBYTE dependencies can be replaced by SIBYTE_SB1xxx_SOC.
-
->         select APERTURE_HELPERS if (DRM || FB || VFIO_PCI_CORE)
->         default y
->         help
-
-Gr{oetje,eeting}s,
-
-                        Geert
+> 
+> > 
+> > Additionally I'm wondering why your patch doesn't show up in
+> > the fbdev patchwork, although you added linux-fbdev mailing list.
+> > Probably a vger issue.
+> > 
+> > Helge
+> > 
+> > 
+> > > Signed-off-by: Zhang Shurong <zhang_shurong@foxmail.com>
+> > > ---
+> > >   drivers/video/fbdev/arkfb.c | 4 ++--
+> > >   1 file changed, 2 insertions(+), 2 deletions(-)
+> > >
+> > > diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
+> > > index 60a96fdb5dd8..6c4e5065646f 100644
+> > > --- a/drivers/video/fbdev/arkfb.c
+> > > +++ b/drivers/video/fbdev/arkfb.c
+> > > @@ -1064,7 +1064,7 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+> > >   err_dac:
+> > >   	pci_release_regions(dev);
+> > >   err_request_regions:
+> > > -/*	pci_disable_device(dev); */
+> > > +	pci_disable_device(dev);
+> > >   err_enable_device:
+> > >   	framebuffer_release(info);
+> > >   	return rc;
+> > > @@ -1085,7 +1085,7 @@ static void ark_pci_remove(struct pci_dev *dev)
+> > >
+> > >   		pci_iounmap(dev, info->screen_base);
+> > >   		pci_release_regions(dev);
+> > > -/*		pci_disable_device(dev); */
+> > > +		pci_disable_device(dev);
+> > >
+> > >   		framebuffer_release(info);
+> > >   	}
+> > 
+> > 
+> 
+> 
+> 
+> -- 
+> Ondrej Zary
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

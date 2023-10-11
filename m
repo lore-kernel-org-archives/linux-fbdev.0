@@ -2,61 +2,61 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B59ACD6E77
-	for <linux-fbdev@archiver.kernel.org>; Wed, 11 Oct 2023 14:38:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 530BDCD6E7C
+	for <linux-fbdev@archiver.kernel.org>; Wed, 11 Oct 2023 14:38:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235052AbjJKOiS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 11 Oct 2023 10:38:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43508 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235055AbjJKOiR (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
+        id S235044AbjJKOiR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Wed, 11 Oct 2023 10:38:17 -0400
-Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3570492
-        for <linux-fbdev@vger.kernel.org>; Wed, 11 Oct 2023 07:38:15 -0700 (PDT)
-Received: by mail-wm1-x331.google.com with SMTP id 5b1f17b1804b1-40651a72807so66856675e9.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 11 Oct 2023 07:38:15 -0700 (PDT)
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43514 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235074AbjJKOiP (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 11 Oct 2023 10:38:15 -0400
+Received: from mail-ej1-x631.google.com (mail-ej1-x631.google.com [IPv6:2a00:1450:4864:20::631])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 96FA19D
+        for <linux-fbdev@vger.kernel.org>; Wed, 11 Oct 2023 07:38:13 -0700 (PDT)
+Received: by mail-ej1-x631.google.com with SMTP id a640c23a62f3a-9ad8a822508so1259687766b.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 11 Oct 2023 07:38:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1697035093; x=1697639893; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1697035092; x=1697639892; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=vF4uO90NovqaRh6VMscLRyanHDtPOqcaalcaa8i5r2I=;
-        b=mCKAgOgn9Oi5FcTp1JoCrMzRsSfDX/qCOyPa0QNx6EoV8XUv+i7+0kWEhpkMvg6v9o
-         mQS+2jj/2YtMkUUvNOIqeQOLZVUnQI3kXxzZOD5urZ4kTeXv05QLfrNPnoZhkocoXgZ5
-         WaH9c3pClfHrU8SEtoOu62O1+jQdKhkGTBwTgDLxj9CngdePyguKmOtok88R8K1cOAyY
-         JhYMf2MoBvgKqjZalOV+6Ir9YzLXM2aXMibSG5/K891XYqf+17XR0VPvrMRo5K6yZaG9
-         lrD/poC+g9J5yE0Mot4XDLWNZMZ7rK2eExmD7kvNCqkL9Zsm6PvZHwxuTLrCq4P8Y6OU
-         Yu9w==
+        bh=C0H21NAxHWpVVzgKPMwSiQ6VL6uuihpmAvcOM/Zucss=;
+        b=Wnn8okJvAP5eYQOuUI7kpEqulH6eFdOl91edqDEdqHyX3bUJyachGoLbBWFVQA9h5k
+         O+hQlynjxmhkJTrOQAeGBdNM0qZ/GXGEQbKZShmHvrfMJBrblLMTrIpKFFL35AkangEH
+         VMvrretrkTPA6unvRbMi1tqk3LZuFBY6mze+4qc4JWD9hU0ofY0GTvUq8yBFoRqkhKo8
+         eBTmUpJ+/PVewnLHRssKy1cFm0uZ7pd2lhh39s1VeZZ7ebAIjUf1+0KQEJv3fE2dfMIs
+         ThXFyk3GkycVhV7vjFjWxbR0hwrnNcQQL4GLCJEdgWhzVs4tM1567SRVBJJ3+z3sLi4P
+         M3NA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697035093; x=1697639893;
+        d=1e100.net; s=20230601; t=1697035092; x=1697639892;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=vF4uO90NovqaRh6VMscLRyanHDtPOqcaalcaa8i5r2I=;
-        b=TWctwbXgRPlCwLqCIK0cxaTWThO9bBdAX7XmBetHsZgTWkQ6YZr4HO6nTHbbGMle2q
-         kPJD+lwct81JLvywrpK71gZyFET39Map15SPFgyox0H1Hdo2s+tzDKcO4vaBJVlEXyxi
-         0KXG/A3n04KiTQwq9NecNE7bp2pXGSClcbFsDiz2BicUgoxig9KyeG1iRjPi1mqWGa7c
-         ItInPAd7SSxS8Ai1GU8lWNGC62fPVnhRcT/W4BMrNbHDCsE7Jc+GCRUxnbyUtVBW0FtI
-         qYMEetEQbWG03bkt7MAkR5r7ikBBtbNmwenVozhHC8dKvOgzl37N2yRsjAhoG9WpWBRg
-         q5WA==
-X-Gm-Message-State: AOJu0Ywjbi9pNHjcSiRIsdE4rcWaWFpOklUqyOHLOUGOcuqV3edXu+sT
-        DFHWF+WtldXnIL4a579Auec=
-X-Google-Smtp-Source: AGHT+IHChBapVzVvAYkFv62bxpTDvF0tfbAwpm266ScxTppnDb9LHy1SGE1EUMg7OwHDyYDQZ8k7HA==
-X-Received: by 2002:a5d:6390:0:b0:32d:3ecc:38c9 with SMTP id p16-20020a5d6390000000b0032d3ecc38c9mr3933985wru.0.1697035093055;
-        Wed, 11 Oct 2023 07:38:13 -0700 (PDT)
+        bh=C0H21NAxHWpVVzgKPMwSiQ6VL6uuihpmAvcOM/Zucss=;
+        b=hGfzuuEWByrUpUswW5VM++Z7HYTDG7UGzOTOZwXT1YHeklJKZftTAuSB20rjEBv8/u
+         mVw4CDa7hjfeaW8hQTsPeg1vtJAb5LvmmzGN0ahHZTTgg+HXs+HNGPxGNZKvV25vI9Db
+         hpIawinBLIpLJgMyRI0aiJZr3s7pnGI1M00i+qDyh4bWJTSu5pJNvVjLxkEoE9KmjNpd
+         m0HaOONEG3O5nwoQo+CRY9PCvpZ1EmozRbxUaKFd58i8Hnr2ygmrfjOgIXC5OWZPShNK
+         KbC4XQ6IgzAXZ8bpwp/hrNZBCaTnrmh+Gzq7K36KDE7vZ4w4YcB5QNU60mZ8E51af/IQ
+         4EXA==
+X-Gm-Message-State: AOJu0YxcvwK9eQsMoXMKYBAimNeId/GjlAu6VhkqHgu7TwXq7cdqeOcJ
+        g4h9WoeIuswQn9EixVmj+lU=
+X-Google-Smtp-Source: AGHT+IFkW31k/TJYDnRHJXlJQmJc6ZC0M1NnjX6UKAFzKEHalfSt4SHdlfpvmLIIIw3xese1yVQXGQ==
+X-Received: by 2002:a17:906:319a:b0:9a5:9f8d:770 with SMTP id 26-20020a170906319a00b009a59f8d0770mr19331256ejy.46.1697035091924;
+        Wed, 11 Oct 2023 07:38:11 -0700 (PDT)
 Received: from localhost (p200300e41f3f4900f22f74fffe1f3a53.dip0.t-ipconnect.de. [2003:e4:1f3f:4900:f22f:74ff:fe1f:3a53])
-        by smtp.gmail.com with ESMTPSA id p22-20020a05640210d600b00530a9488623sm8962615edu.46.2023.10.11.07.38.12
+        by smtp.gmail.com with ESMTPSA id n12-20020a170906378c00b0099d45ed589csm9842711ejc.125.2023.10.11.07.38.11
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Oct 2023 07:38:12 -0700 (PDT)
+        Wed, 11 Oct 2023 07:38:11 -0700 (PDT)
 From:   Thierry Reding <thierry.reding@gmail.com>
 To:     Hans de Goede <hdegoede@redhat.com>, Helge Deller <deller@gmx.de>
 Cc:     Robert Foss <rfoss@kernel.org>, Jon Hunter <jonathanh@nvidia.com>,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH 2/2] fbdev/simplefb: Add support for generic power-domains
-Date:   Wed, 11 Oct 2023 16:38:09 +0200
-Message-ID: <20231011143809.1108034-3-thierry.reding@gmail.com>
+Subject: [PATCH 1/2] fbdev/simplefb: Support memory-region property
+Date:   Wed, 11 Oct 2023 16:38:08 +0200
+Message-ID: <20231011143809.1108034-2-thierry.reding@gmail.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20231011143809.1108034-1-thierry.reding@gmail.com>
 References: <20231011143809.1108034-1-thierry.reding@gmail.com>
@@ -68,157 +68,95 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Thierry Reding <treding@nvidia.com>
 
-The simple-framebuffer device tree bindings document the power-domains
-property, so make sure that simplefb supports it. This ensures that the
-power domains remain enabled as long as simplefb is active.
+The simple-framebuffer bindings specify that the "memory-region"
+property can be used as an alternative to the "reg" property to define
+the framebuffer memory used by the display hardware. Implement support
+for this in the simplefb driver.
 
 Signed-off-by: Thierry Reding <treding@nvidia.com>
 ---
- drivers/video/fbdev/simplefb.c | 93 +++++++++++++++++++++++++++++++++-
- 1 file changed, 91 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/simplefb.c | 35 +++++++++++++++++++++++++++++-----
+ 1 file changed, 30 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index 18025f34fde7..e69fb0ad2d54 100644
+index 62f99f6fccd3..18025f34fde7 100644
 --- a/drivers/video/fbdev/simplefb.c
 +++ b/drivers/video/fbdev/simplefb.c
-@@ -25,6 +25,7 @@
+@@ -21,6 +21,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+ #include <linux/of.h>
++#include <linux/of_address.h>
  #include <linux/of_clk.h>
  #include <linux/of_platform.h>
  #include <linux/parser.h>
-+#include <linux/pm_domain.h>
- #include <linux/regulator/consumer.h>
+@@ -121,12 +122,13 @@ struct simplefb_params {
+ 	u32 height;
+ 	u32 stride;
+ 	struct simplefb_format *format;
++	struct resource memory;
+ };
  
- static const struct fb_fix_screeninfo simplefb_fix = {
-@@ -78,6 +79,11 @@ struct simplefb_par {
- 	unsigned int clk_count;
- 	struct clk **clks;
- #endif
-+#if defined CONFIG_OF && defined CONFIG_PM_GENERIC_DOMAINS
-+	unsigned int num_genpds;
-+	struct device **genpds;
-+	struct device_link **genpd_links;
-+#endif
- #if defined CONFIG_OF && defined CONFIG_REGULATOR
- 	bool regulators_enabled;
- 	u32 regulator_count;
-@@ -432,6 +438,83 @@ static void simplefb_regulators_enable(struct simplefb_par *par,
- static void simplefb_regulators_destroy(struct simplefb_par *par) { }
- #endif
+ static int simplefb_parse_dt(struct platform_device *pdev,
+ 			   struct simplefb_params *params)
+ {
+-	struct device_node *np = pdev->dev.of_node;
++	struct device_node *np = pdev->dev.of_node, *mem;
+ 	int ret;
+ 	const char *format;
+ 	int i;
+@@ -166,6 +168,23 @@ static int simplefb_parse_dt(struct platform_device *pdev,
+ 		return -EINVAL;
+ 	}
  
-+#if defined CONFIG_OF && defined CONFIG_PM_GENERIC_DOMAINS
-+static void simplefb_detach_genpds(void *res)
-+{
-+	struct simplefb_par *par = res;
-+	unsigned int i = par->num_genpds;
-+
-+	if (par->num_genpds <= 1)
-+		return;
-+
-+	while (i--) {
-+		if (par->genpd_links[i])
-+			device_link_del(par->genpd_links[i]);
-+
-+		if (!IS_ERR_OR_NULL(par->genpds[i]))
-+			dev_pm_domain_detach(par->genpds[i], true);
-+	}
-+}
-+
-+static int simplefb_attach_genpd(struct simplefb_par *par,
-+				 struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	unsigned int i;
-+	int err;
-+
-+	par->num_genpds = of_count_phandle_with_args(dev->of_node,
-+						     "power-domains",
-+						     "#power-domain-cells");
-+	/*
-+	 * Single power-domain devices are handled by the driver core, so
-+	 * nothing to do here.
-+	 */
-+	if (par->num_genpds <= 1)
-+		return 0;
-+
-+	par->genpds = devm_kcalloc(dev, par->num_genpds, sizeof(*par->genpds),
-+				   GFP_KERNEL);
-+	if (!par->genpds)
-+		return -ENOMEM;
-+
-+	par->genpd_links = devm_kcalloc(dev, par->num_genpds,
-+					sizeof(*par->genpd_links),
-+					GFP_KERNEL);
-+	if (!par->genpd_links)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < par->num_genpds; i++) {
-+		par->genpds[i] = dev_pm_domain_attach_by_id(dev, i);
-+		if (IS_ERR(par->genpds[i])) {
-+			err = PTR_ERR(par->genpds[i]);
-+			if (err == -EPROBE_DEFER) {
-+				simplefb_detach_genpds(par);
-+				return err;
-+			}
-+
-+			dev_warn(dev, "failed to attach domain %u: %d\n", i, err);
-+			continue;
++	mem = of_parse_phandle(np, "memory-region", 0);
++	if (mem) {
++		ret = of_address_to_resource(mem, 0, &params->memory);
++		if (ret < 0) {
++			dev_err(&pdev->dev, "failed to parse memory-region\n");
++			of_node_put(mem);
++			return ret;
 +		}
 +
-+		par->genpd_links[i] = device_link_add(dev, par->genpds[i],
-+						      DL_FLAG_STATELESS |
-+						      DL_FLAG_PM_RUNTIME |
-+						      DL_FLAG_RPM_ACTIVE);
-+		if (!par->genpd_links[i])
-+			dev_warn(dev, "failed to link power-domain %u\n", i);
++		if (of_property_present(np, "reg"))
++			dev_warn(&pdev->dev, "preferring \"memory-region\" over \"reg\" property\n");
++
++		of_node_put(mem);
++	} else {
++		memset(&params->memory, 0, sizeof(params->memory));
 +	}
 +
-+	return devm_add_action_or_reset(dev, simplefb_detach_genpds, par);
-+}
-+#else
-+static int simplefb_attach_genpd(struct simplefb_par *par,
-+				 struct platform_device *pdev)
-+{
-+	return 0;
-+}
-+#endif
-+
- static int simplefb_probe(struct platform_device *pdev)
- {
- 	int ret;
-@@ -518,6 +601,10 @@ static int simplefb_probe(struct platform_device *pdev)
- 	if (ret < 0)
- 		goto error_clocks;
- 
-+	ret = simplefb_attach_genpd(par, pdev);
-+	if (ret < 0)
-+		goto error_regulators;
-+
- 	simplefb_clocks_enable(par, pdev);
- 	simplefb_regulators_enable(par, pdev);
- 
-@@ -534,18 +621,20 @@ static int simplefb_probe(struct platform_device *pdev)
- 	ret = devm_aperture_acquire_for_platform_device(pdev, par->base, par->size);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Unable to acquire aperture: %d\n", ret);
--		goto error_regulators;
-+		goto error_genpds;
- 	}
- 	ret = register_framebuffer(info);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "Unable to register simplefb: %d\n", ret);
--		goto error_regulators;
-+		goto error_genpds;
- 	}
- 
- 	dev_info(&pdev->dev, "fb%d: simplefb registered!\n", info->node);
- 
  	return 0;
+ }
  
-+error_genpds:
-+	simplefb_detach_genpds(par);
- error_regulators:
- 	simplefb_regulators_destroy(par);
- error_clocks:
+@@ -193,6 +212,8 @@ static int simplefb_parse_pd(struct platform_device *pdev,
+ 		return -EINVAL;
+ 	}
+ 
++	memset(&params->memory, 0, sizeof(params->memory));
++
+ 	return 0;
+ }
+ 
+@@ -431,10 +452,14 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (!res) {
+-		dev_err(&pdev->dev, "No memory resource\n");
+-		return -EINVAL;
++	if (params.memory.start == 0 && params.memory.end == 0) {
++		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++		if (!res) {
++			dev_err(&pdev->dev, "No memory resource\n");
++			return -EINVAL;
++		}
++	} else {
++		res = &params.memory;
+ 	}
+ 
+ 	mem = request_mem_region(res->start, resource_size(res), "simplefb");
 -- 
 2.42.0
 

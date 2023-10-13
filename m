@@ -2,133 +2,106 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73604CDB47E
-	for <linux-fbdev@archiver.kernel.org>; Fri, 13 Oct 2023 16:00:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49772CDB484
+	for <linux-fbdev@archiver.kernel.org>; Fri, 13 Oct 2023 20:50:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232576AbjJMQAh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 13 Oct 2023 12:00:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35200 "EHLO
+        id S229679AbjJMUuq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 13 Oct 2023 16:50:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60758 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232596AbjJMQAf (ORCPT
+        with ESMTP id S229704AbjJMUuq (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 13 Oct 2023 12:00:35 -0400
-Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 30293DA;
-        Fri, 13 Oct 2023 09:00:32 -0700 (PDT)
-Received: by mail-wr1-x42a.google.com with SMTP id ffacd0b85a97d-32157c8e4c7so2125652f8f.1;
-        Fri, 13 Oct 2023 09:00:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1697212830; x=1697817630; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=mfHYWVeXZkEiH4m2tnI9YIZClF3r0QNLYgJ4gF7eXfw=;
-        b=Yq+AFrj3I5yVJKkE1z4T+SeuVnlBGvp1vcc4DeispRSIi22CNiOOk8ObJVf2E2zrCe
-         E2WhQop1XZu9G4w+Y9zp3E7Xkw4omu2cJ87ZFRvH2DJVRPX5s3tqf9ARfJ9PQHMwq+jP
-         19ebT4OaZI2hTFOA+MjIz5TayqmyMWne7VHmB17A3xFEA9ytseO7lxjg3jFPtXEdka62
-         b0v4Oh5u0mnIRaNE3qFJ6YP2tW6xjEF7fKdQ+F5aCPyu2pBOSrK+M67fji2aufas9LJN
-         xGUYigfVyr8NwIhCxdAvF7Wd15sj6utBSRPnRFeBb7n66snsvX8C9ELwx3myOnZH7XN+
-         9B0Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697212830; x=1697817630;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=mfHYWVeXZkEiH4m2tnI9YIZClF3r0QNLYgJ4gF7eXfw=;
-        b=bPzw931cKS8OQH21dhELB/3bPjP6CsjNNHsO++T/s7bBoF7achqDs6fjBbM+XQQBpQ
-         cOQI3CZN1RF5Jt9lOIiP3iJgJkWypYIYDdwtDKrBlCXwyOt/IwXSPGULvaZszCEHg/PP
-         h2Q3+igPsB+UnMfenrYRE8sANtRjBvF76NPUj5cdF1T5GiYJvOk0DP6gAX6T/pXy+wBa
-         NkHsd01PQLs0ou/zLhTz5PmBIGkWoQKSkdgUyfg2caykbzzGvc50Pc+7MPYa4oOGEWYR
-         L2c2IX5gHt7X+Of8Bau9Y/jd0vgOPnk+gpY7KsmlOi8EgRhFKhLo/2D6WF4rBQRKGyTv
-         kUAg==
-X-Gm-Message-State: AOJu0YxVVECSbMlzEUykl8pF5DoVx/4Ci5gZwsuRIGqVtzDtMvlABKzG
-        6wGJlIOYG2BJr8aI0NuQKA==
-X-Google-Smtp-Source: AGHT+IE9zHwK80IGz+wxOh5k8G7VLdRI3RWJZuSCCA/9uDwewxsetoyv6NSUV20Yjmp/N3IitbftZA==
-X-Received: by 2002:a5d:4586:0:b0:321:5e2f:37e1 with SMTP id p6-20020a5d4586000000b003215e2f37e1mr23336167wrq.19.1697212830200;
-        Fri, 13 Oct 2023 09:00:30 -0700 (PDT)
-Received: from dorcaslitunya-virtual-machine ([105.163.2.146])
-        by smtp.gmail.com with ESMTPSA id iv10-20020a05600c548a00b0040472ad9a3dsm516532wmb.14.2023.10.13.09.00.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 13 Oct 2023 09:00:29 -0700 (PDT)
-Date:   Fri, 13 Oct 2023 14:46:04 +0300
-From:   Dorcas Litunya <anonolitunya@gmail.com>
-To:     Dan Carpenter <dan.carpenter@linaro.org>
-Cc:     outreachy@lists.linux.dev,
-        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Teddy Wang <teddy.wang@siliconmotion.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [PATCH]Staging: sm750fb:Add snakecase naming style
-Message-ID: <ZSkt/B+hyDmOoocF@dorcaslitunya-virtual-machine>
-References: <20231013104220.7527-1-anonolitunya@gmail.com>
- <efcb4734-0349-493e-be93-b95381eb6c78@kadam.mountain>
- <ZSkq7E+Tp1X/qiER@dorcaslitunya-virtual-machine>
- <780713a6-5f93-4393-a46d-36904e7fbd11@kadam.mountain>
+        Fri, 13 Oct 2023 16:50:46 -0400
+Received: from mx01.omp.ru (mx01.omp.ru [90.154.21.10])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D165BB
+        for <linux-fbdev@vger.kernel.org>; Fri, 13 Oct 2023 13:50:43 -0700 (PDT)
+Received: from localhost.localdomain (178.176.73.157) by msexch01.omp.ru
+ (10.188.4.12) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.986.14; Fri, 13 Oct
+ 2023 23:50:36 +0300
+From:   Sergey Shtylyov <s.shtylyov@omp.ru>
+To:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+        <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>
+Subject: [PATCH v2 1/2] video: fbdev: core: cfbcopyarea: fix sloppy typing
+Date:   Fri, 13 Oct 2023 23:50:23 +0300
+Message-ID: <20231013205024.8099-2-s.shtylyov@omp.ru>
+X-Mailer: git-send-email 2.26.3
+In-Reply-To: <20231013205024.8099-1-s.shtylyov@omp.ru>
+References: <20231013205024.8099-1-s.shtylyov@omp.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <780713a6-5f93-4393-a46d-36904e7fbd11@kadam.mountain>
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [178.176.73.157]
+X-ClientProxiedBy: msexch01.omp.ru (10.188.4.12) To msexch01.omp.ru
+ (10.188.4.12)
+X-KSE-ServerInfo: msexch01.omp.ru, 9
+X-KSE-AntiSpam-Interceptor-Info: scan successful
+X-KSE-AntiSpam-Version: 6.0.0, Database issued on: 10/13/2023 20:32:07
+X-KSE-AntiSpam-Status: KAS_STATUS_NOT_DETECTED
+X-KSE-AntiSpam-Method: none
+X-KSE-AntiSpam-Rate: 59
+X-KSE-AntiSpam-Info: Lua profiles 180616 [Oct 13 2023]
+X-KSE-AntiSpam-Info: Version: 6.0.0.2
+X-KSE-AntiSpam-Info: Envelope from: s.shtylyov@omp.ru
+X-KSE-AntiSpam-Info: LuaCore: 539 539 807534d9021bfe9ca369c363d15ac993cd93d4d9
+X-KSE-AntiSpam-Info: {rep_avail}
+X-KSE-AntiSpam-Info: {Tracking_from_domain_doesnt_match_to}
+X-KSE-AntiSpam-Info: {relay has no DNS name}
+X-KSE-AntiSpam-Info: {SMTP from is not routable}
+X-KSE-AntiSpam-Info: {Found in DNSBL: 178.176.73.157 in (user)
+ b.barracudacentral.org}
+X-KSE-AntiSpam-Info: {Found in DNSBL: 178.176.73.157 in (user)
+ dbl.spamhaus.org}
+X-KSE-AntiSpam-Info: 127.0.0.199:7.1.2;omp.ru:7.1.1;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1
+X-KSE-AntiSpam-Info: FromAlignment: s
+X-KSE-AntiSpam-Info: {rdns complete}
+X-KSE-AntiSpam-Info: {fromrtbl complete}
+X-KSE-AntiSpam-Info: ApMailHostAddress: 178.176.73.157
+X-KSE-AntiSpam-Info: Rate: 59
+X-KSE-AntiSpam-Info: Status: not_detected
+X-KSE-AntiSpam-Info: Method: none
+X-KSE-AntiSpam-Info: Auth:dmarc=none header.from=omp.ru;spf=none
+ smtp.mailfrom=omp.ru;dkim=none
+X-KSE-Antiphishing-Info: Clean
+X-KSE-Antiphishing-ScanningType: Heuristic
+X-KSE-Antiphishing-Method: None
+X-KSE-Antiphishing-Bases: 10/13/2023 20:35:00
+X-KSE-Antivirus-Interceptor-Info: scan successful
+X-KSE-Antivirus-Info: Clean, bases: 10/13/2023 4:55:00 PM
+X-KSE-Attachment-Filter-Triggered-Rules: Clean
+X-KSE-Attachment-Filter-Triggered-Filters: Clean
+X-KSE-BulkMessagesFiltering-Scan-Result: InTheLimit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Oct 13, 2023 at 06:56:08PM +0300, Dan Carpenter wrote:
-> On Fri, Oct 13, 2023 at 02:33:00PM +0300, Dorcas Litunya wrote:
-> > On Fri, Oct 13, 2023 at 01:48:08PM +0300, Dan Carpenter wrote:
-> > > On Fri, Oct 13, 2023 at 01:42:15PM +0300, Dorcas AnonoLitunya wrote:
-> > > > From: Dorcas Anono Litunya <anonolitunya@gmail.com>
-> > > > 
-> > > > Change camelCase variables in file to snake_case for consistent naming
-> > > > practices. Issue found by checkpatch.
-> > > > 
-> > > > Signed-off-by: Dorcas Anono Litunya <anonolitunya@gmail.com>
-> > > > ---
-> > > >  drivers/staging/sm750fb/ddk750_mode.c | 86 +++++++++++++--------------
-> > > >  drivers/staging/sm750fb/ddk750_mode.h |  2 +-
-> > > >  drivers/staging/sm750fb/sm750_hw.c    |  2 +-
-> > > >  3 files changed, 45 insertions(+), 45 deletions(-)
-> > > > 
-> > > > diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-> > > > index e00a6cb31947..f08dcab29172 100644
-> > > > --- a/drivers/staging/sm750fb/ddk750_mode.c
-> > > > +++ b/drivers/staging/sm750fb/ddk750_mode.c
-> > > > @@ -14,13 +14,13 @@
-> > > >   * in bit 29:27 of Display Control register.
-> > > >   */
-> > > >  static unsigned long
-> > > > -displayControlAdjust_SM750LE(struct mode_parameter *pModeParam,
-> > > > -			     unsigned long dispControl)
-> > > > +display_control_adjust_SM750LE(struct mode_parameter *p_mode_param,
-> > > 
-> > > The p stands for pointer.  We don't like that naming style.  Just call
-> > > it mode_param.
-> > > 
-> > > Thes are the renamed things.
-> > > 
-> > > displayControlAdjust_SM750LE => display_control_adjust_SM750LE
-> > > pModeParam => p_mode_param
-> > > dispControl => disp_control
-> > > programModeRegisters => program_mode_registers
-> > > ddk750_setModeTiming => ddk750_set_mode_timing
-> > > 
-> > > I feel like this would be better broken up probably into one variable
-> > > per patch.  It's jumping around between files.  These variables are not
-> > > closely related.
-> > Thanks for the feedback Dan. I will revise to do one variable per patch.
-> > 
-> > However,I have an inquiry the main reason its jumping between files is because one of the
-> > functions I am modifying(the ddk_set_mode_timing) is imported and used
-> > in other files. In this case, should I do one patch per variable per
-> > file?
-> 
-> No that would break the build...
-> 
-> It's just that I felt that in this case it's especially useful to
-> break it apart because some of them affect multiple files and some of
-> the variables are local to a given function.  (You should still adjust
-> the header file to match even though the compiler doesn't care).
+In cfb_copyarea(), the local variable bits_per_line is needlessly typed as
+*unsigned long* -- which is a 32-bit type on the 32-bit arches and a 64-bit
+type on the 64-bit arches; that variable's value is derived from the __u32
+typed fb_fix_screeninfo::line_length field (multiplied by 8u) and a 32-bit
+*unsigned int* type should still be enough to store the # of bits per line.
 
-Makes more sense. I will work on that. Thanks!
-> regards,
-> dan carpenter
-> 
+Found by Linux Verification Center (linuxtesting.org) with the Svace static
+analysis tool.
+
+Signed-off-by: Sergey Shtylyov <s.shtylyov@omp.ru>
+---
+ drivers/video/fbdev/core/cfbcopyarea.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/core/cfbcopyarea.c b/drivers/video/fbdev/core/cfbcopyarea.c
+index 6d4bfeecee35..5b80bf3dae50 100644
+--- a/drivers/video/fbdev/core/cfbcopyarea.c
++++ b/drivers/video/fbdev/core/cfbcopyarea.c
+@@ -382,7 +382,7 @@ void cfb_copyarea(struct fb_info *p, const struct fb_copyarea *area)
+ {
+ 	u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy;
+ 	u32 height = area->height, width = area->width;
+-	unsigned long const bits_per_line = p->fix.line_length*8u;
++	unsigned int const bits_per_line = p->fix.line_length * 8u;
+ 	unsigned long __iomem *base = NULL;
+ 	int bits = BITS_PER_LONG, bytes = bits >> 3;
+ 	unsigned dst_idx = 0, src_idx = 0, rev_copy = 0;
+-- 
+2.26.3
+

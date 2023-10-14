@@ -2,106 +2,87 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91B05CDB483
-	for <linux-fbdev@archiver.kernel.org>; Fri, 13 Oct 2023 20:50:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0B15CDB465
+	for <linux-fbdev@archiver.kernel.org>; Sat, 14 Oct 2023 12:22:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229958AbjJMUus (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 13 Oct 2023 16:50:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47802 "EHLO
+        id S233043AbjJNMWc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 14 Oct 2023 08:22:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43942 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229704AbjJMUur (ORCPT
+        with ESMTP id S233033AbjJNMWb (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 13 Oct 2023 16:50:47 -0400
-Received: from mx01.omp.ru (mx01.omp.ru [90.154.21.10])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8CF4EA9
-        for <linux-fbdev@vger.kernel.org>; Fri, 13 Oct 2023 13:50:45 -0700 (PDT)
-Received: from localhost.localdomain (178.176.73.157) by msexch01.omp.ru
- (10.188.4.12) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.986.14; Fri, 13 Oct
- 2023 23:50:36 +0300
-From:   Sergey Shtylyov <s.shtylyov@omp.ru>
-To:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>
-Subject: [PATCH v2 2/2] video: fbdev: core: syscopyarea: fix sloppy typing
-Date:   Fri, 13 Oct 2023 23:50:24 +0300
-Message-ID: <20231013205024.8099-3-s.shtylyov@omp.ru>
-X-Mailer: git-send-email 2.26.3
-In-Reply-To: <20231013205024.8099-1-s.shtylyov@omp.ru>
-References: <20231013205024.8099-1-s.shtylyov@omp.ru>
+        Sat, 14 Oct 2023 08:22:31 -0400
+X-Greylist: delayed 448 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Sat, 14 Oct 2023 05:22:28 PDT
+Received: from out203-205-221-245.mail.qq.com (out203-205-221-245.mail.qq.com [203.205.221.245])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 15CA0A9
+        for <linux-fbdev@vger.kernel.org>; Sat, 14 Oct 2023 05:22:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foxmail.com;
+        s=s201512; t=1697286145;
+        bh=YQheIxJjOau1s9uk+wO2dkdpHL1+wExdCD1+23pg5Oc=;
+        h=From:To:Cc:Subject:Date;
+        b=PUkeA7PlH/JWuKrBQiUXxDdhK7tYU5DJUHzhZ6WFGlgRqCMlgcThNSgE/INJHu7+Z
+         f+6KTkFGR2brHCouXenzUm8Tg+LVqiPcV6estqxaBGGbcz21L19QavvX3Xkz+7GHGf
+         Bva/JHWlonPaG/VOBowoNmTy2EpbWr+1ADYmtkqQ=
+Received: from KernelDevBox.byted.org ([180.184.49.4])
+        by newxmesmtplogicsvrszb9-0.qq.com (NewEsmtp) with SMTP
+        id 3B6A8E9A; Sat, 14 Oct 2023 20:14:54 +0800
+X-QQ-mid: xmsmtpt1697285694tghy4mbab
+Message-ID: <tencent_C816151C508524D86E346A69B706C0D03C09@qq.com>
+X-QQ-XMAILINFO: OGEC8BYa7lsBWWZ/vEd4TQyQV9TARh6WvGGkSsO7/3IuF9yTmPnEUCQIn8ey2z
+         F64IQTFMZP37lymHUS6B2HZo4knNaarGV2AJKI0/yTUoLqfNF4afRuhhV4FTNaoSbeWeTktBa01p
+         JD4VwXJudoABheJBhAln465jjNlbz+PN6oeSO6JNDmPskkFClQDABviiDTBWrUidCOn/iR6SKVep
+         7P9tbTQhjAEBati0PEr7KJd0GzpWhIerLX/BtXOXLvC+fTwkCfM/Hj5SgJp9yum/bb1Qznc1tjE6
+         3tMx7ExLXY1y821ipYkuuelfpdP31zq/zL3ipJuYIxBBHuGaWnnPq++I8dYdCV/Ture6ssLqk9qC
+         qcCXEO9lC+0o5c68yDTu7NMukeKRl1O04UQQC2cA8N9Kr2qFbphyC1HIieIeJ6IfywqBlXKajofI
+         O2x5CIeWnDQh+ONXQVm8VaB+Gt3U57AncYVPzbSHGuo/sRxPzwOyHT2IcqQmNtTv4iUqMme0TEl/
+         CuZ63UASKrVN7Ylw6O/N2yqTpEdXvUyAk5RQRMBU1FdfIY3Wa6eHYSWxzgK3VMt9AVTkjt2FDT2w
+         1encBQgxY5THYl1runLZR1+trSAJvHQiZ8gtGSJwmy5ole1jRD60lrSLrsoAzJcweW5jFIfEvVJ2
+         quMcPFQzMVZiEOpGHUgrbsVbM2lpYXNPYT0TNGcZbowROSBnw/gEqK6XoY1SquAj0S2SGZrFnVEh
+         rj+wdVDzIkbrNbojMWEv1G1JkWvt6gsdIWZZgCvkltWD8U/OdcOyRHnlgbJJncplq2uVO/sjNeul
+         fw5AvqlFOJUW1rebBiLRw9F+xJy49ZA5xYdVZqEND1+p2VWkBEHCSzw9E8e8cr0ppCgKhdMAFmBm
+         ymULOurlgBRfIeZKtH6SY/6KRUEsomydJTRfpNl5zmUjj40C0xNJ5k0SD1JQKkT6qgAH/po+Q1rP
+         cfaacsbGI0CrhReW36tO2u3h4ZBtlznK+ZlUdGM6Ok9boHcJb3JuvvMCpr0qOVHOq3AyYnD1RGzF
+         0YUZGzbA==
+X-QQ-XMRINFO: NS+P29fieYNw95Bth2bWPxk=
+From:   Zhang Shurong <zhang_shurong@foxmail.com>
+To:     daniel@ffwll.ch
+Cc:     deller@gmx.de, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Zhang Shurong <zhang_shurong@foxmail.com>
+Subject: [PATCH] fbdev: fbmon: fix potential divide error in fb_validate_mode
+Date:   Sat, 14 Oct 2023 20:14:53 +0800
+X-OQ-MSGID: <20231014121453.3034941-1-zhang_shurong@foxmail.com>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [178.176.73.157]
-X-ClientProxiedBy: msexch01.omp.ru (10.188.4.12) To msexch01.omp.ru
- (10.188.4.12)
-X-KSE-ServerInfo: msexch01.omp.ru, 9
-X-KSE-AntiSpam-Interceptor-Info: scan successful
-X-KSE-AntiSpam-Version: 6.0.0, Database issued on: 10/13/2023 20:32:07
-X-KSE-AntiSpam-Status: KAS_STATUS_NOT_DETECTED
-X-KSE-AntiSpam-Method: none
-X-KSE-AntiSpam-Rate: 59
-X-KSE-AntiSpam-Info: Lua profiles 180616 [Oct 13 2023]
-X-KSE-AntiSpam-Info: Version: 6.0.0.2
-X-KSE-AntiSpam-Info: Envelope from: s.shtylyov@omp.ru
-X-KSE-AntiSpam-Info: LuaCore: 539 539 807534d9021bfe9ca369c363d15ac993cd93d4d9
-X-KSE-AntiSpam-Info: {rep_avail}
-X-KSE-AntiSpam-Info: {Tracking_from_domain_doesnt_match_to}
-X-KSE-AntiSpam-Info: {relay has no DNS name}
-X-KSE-AntiSpam-Info: {SMTP from is not routable}
-X-KSE-AntiSpam-Info: {Found in DNSBL: 178.176.73.157 in (user)
- b.barracudacentral.org}
-X-KSE-AntiSpam-Info: {Found in DNSBL: 178.176.73.157 in (user)
- dbl.spamhaus.org}
-X-KSE-AntiSpam-Info: 127.0.0.199:7.1.2;omp.ru:7.1.1;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1
-X-KSE-AntiSpam-Info: FromAlignment: s
-X-KSE-AntiSpam-Info: {rdns complete}
-X-KSE-AntiSpam-Info: {fromrtbl complete}
-X-KSE-AntiSpam-Info: ApMailHostAddress: 178.176.73.157
-X-KSE-AntiSpam-Info: Rate: 59
-X-KSE-AntiSpam-Info: Status: not_detected
-X-KSE-AntiSpam-Info: Method: none
-X-KSE-AntiSpam-Info: Auth:dmarc=none header.from=omp.ru;spf=none
- smtp.mailfrom=omp.ru;dkim=none
-X-KSE-Antiphishing-Info: Clean
-X-KSE-Antiphishing-ScanningType: Heuristic
-X-KSE-Antiphishing-Method: None
-X-KSE-Antiphishing-Bases: 10/13/2023 20:35:00
-X-KSE-Antivirus-Interceptor-Info: scan successful
-X-KSE-Antivirus-Info: Clean, bases: 10/13/2023 4:55:00 PM
-X-KSE-Attachment-Filter-Triggered-Rules: Clean
-X-KSE-Attachment-Filter-Triggered-Filters: Clean
-X-KSE-BulkMessagesFiltering-Scan-Result: InTheLimit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-In sys_copyarea(), the local variable bits_per_line is needlessly typed as
-*unsigned long* -- which is a 32-bit type on the 32-bit arches and a 64-bit
-type on the 64-bit arches; that variable's value is derived from the __u32
-typed fb_fix_screeninfo::line_length field (multiplied by 8u) and a 32-bit
-*unsigned int* type should still be enough to store the # of bits per line.
+We can easily use FBIOPUT_VSCREENINFO set fb_var_screeninfo, so
+it's possible for a divide by zero error to occur.
 
-Found by Linux Verification Center (linuxtesting.org) with the Svace static
-analysis tool.
+Fix this by making sure the divisor is non-zero before the computation.
 
-Signed-off-by: Sergey Shtylyov <s.shtylyov@omp.ru>
+Signed-off-by: Zhang Shurong <zhang_shurong@foxmail.com>
 ---
- drivers/video/fbdev/core/syscopyarea.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/core/fbmon.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/core/syscopyarea.c b/drivers/video/fbdev/core/syscopyarea.c
-index c1eda3190968..7b8bd3a2bedc 100644
---- a/drivers/video/fbdev/core/syscopyarea.c
-+++ b/drivers/video/fbdev/core/syscopyarea.c
-@@ -316,7 +316,7 @@ void sys_copyarea(struct fb_info *p, const struct fb_copyarea *area)
- {
- 	u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy;
- 	u32 height = area->height, width = area->width;
--	unsigned long const bits_per_line = p->fix.line_length*8u;
-+	unsigned int const bits_per_line = p->fix.line_length * 8u;
- 	unsigned long *base = NULL;
- 	int bits = BITS_PER_LONG, bytes = bits >> 3;
- 	unsigned dst_idx = 0, src_idx = 0, rev_copy = 0;
+diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
+index 79e5bfbdd34c..bdd15b8e3a71 100644
+--- a/drivers/video/fbdev/core/fbmon.c
++++ b/drivers/video/fbdev/core/fbmon.c
+@@ -1470,6 +1470,9 @@ int fb_validate_mode(const struct fb_var_screeninfo *var, struct fb_info *info)
+ 	if (var->vmode & FB_VMODE_DOUBLE)
+ 		vtotal *= 2;
+ 
++	if (!htotal || !vtotal)
++		return -EINVAL;
++
+ 	hfreq = pixclock/htotal;
+ 	hfreq = (hfreq + 500) / 1000 * 1000;
+ 
 -- 
-2.26.3
+2.30.2
 

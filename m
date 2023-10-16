@@ -2,54 +2,54 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65D9BCDB465
-	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 20:29:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88726CDB465
+	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 20:31:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233280AbjJPU37 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 16 Oct 2023 16:29:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57258 "EHLO
+        id S234000AbjJPUbB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 16 Oct 2023 16:31:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55526 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231955AbjJPU36 (ORCPT
+        with ESMTP id S234170AbjJPUa7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 16 Oct 2023 16:29:58 -0400
-Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 898A3B4;
-        Mon, 16 Oct 2023 13:29:53 -0700 (PDT)
-Received: by mail-wm1-x32c.google.com with SMTP id 5b1f17b1804b1-405361bb9f7so50208375e9.2;
-        Mon, 16 Oct 2023 13:29:53 -0700 (PDT)
+        Mon, 16 Oct 2023 16:30:59 -0400
+Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 20661F3;
+        Mon, 16 Oct 2023 13:30:56 -0700 (PDT)
+Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-405417465aaso48609365e9.1;
+        Mon, 16 Oct 2023 13:30:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1697488192; x=1698092992; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1697488254; x=1698093054; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=UwRWv8WzXK7ulsIjQYcQ2H5E6aNrsXzP3LLjUnpeYMY=;
-        b=NQhMGZS6o4Udb2K191Ec7f07mkjb8kx+nNQpkRZ6EpU+5/mLnp34QIpKEhUHRDzsY1
-         uD+jOalrAxKxPM88pA4d4iWrmgf5XOf3KPC42YSPhBK0UyGpl48kS8BNIXK1SOAzoT/N
-         Xt7Z7zePsO3+GsHsIk8PFle1OrmL3Ac4d50sFfZYgNtS7YVRZHiU2gON0uP4hxB/1/LK
-         9VkGKhHvPevE7eJ0IOoAA85QaM+YQEz7YE9nenbM/tVPG4IOAtB//BxgKj9cnHbOzufA
-         1JWI18DBE+1ykQ356UFzpLPrbUoU54yhy/f3ztl0oBjAJi1ELaLT7xonydEx1I5LQDku
-         PwEg==
+        bh=yP03Yjd+YrRnUI9Z4/vJQB7dAVo1TlzSZV/Wwx+jtHQ=;
+        b=FgngYESc8iguPN8DdepLB/f4jQ1lqeXzJNAj3rw9jDVmEJPdB17syfhgOs2NOEdEF8
+         dIfQg1aJvQUuhrTiXtpjRNCTKDwWTdluyPphNkAX23uWtDN/HG60aFLCP9NmQVfPCiBp
+         S/yxehQxzpXMQjtG0tFTFXhw4xDQM49NFbYeDD/6QOQt3zpi4pC15J2pgloR7eBbaQWS
+         3o1jpFmKD41QueM/0hISteUKr2VVDfN6tghI3vepWaSl05YD492XCPkQF/FfkTKqwkjk
+         uDqeXpN58Vamlexi31OiXW8SPRHMNs4MpYjFbVipBwthycnuQ0LzuVxbVr5O8o0mxZH7
+         ckXw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697488192; x=1698092992;
+        d=1e100.net; s=20230601; t=1697488254; x=1698093054;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=UwRWv8WzXK7ulsIjQYcQ2H5E6aNrsXzP3LLjUnpeYMY=;
-        b=ghIEC6I+2wJ/fYvnOCJdmWkxs5g9bMV7Wzxlhgv8220zUxhco9rPQjCGKzR1HqxGU7
-         mMZKpWTRloxXlz81+WoNnP2ta0VcUJf5IbRL0tWh4QT0Knwam0EeGaGoFHr112HWGPxF
-         XRqEEeX9ArBMxIYD7pZ+j4Xzf9/0ofKTi6eqyfESkE05nYgX0Gq6v7T7ztLafTAu7lry
-         +6rIhD/Kiiah8nlYMijEzy8PnZbg1V/J4UWQAZ3BcJwrTlkk6GRbcQlIUckberLjalZg
-         nVAz4Y9lLOZmffLhqsZgGZSyVf+4HF+6cCCoQYlH43J7Jw1cgiPpnAIjovxdVrzuPb1J
-         6Ijg==
-X-Gm-Message-State: AOJu0Yw68WQ/gx2IlgDNCKwETA4NdbZgeABjPHeHkNU0e8Isu8pQI9ND
-        JCHUptFVpjs9Q/EAIq1l7g==
-X-Google-Smtp-Source: AGHT+IGHR6pm/ebcyjCzv/iEasWkYG4F4GvkqOo2vIn6DGhR2AerZFfF4bL0VTU13lVA7nWMfdiv1w==
-X-Received: by 2002:a5d:6885:0:b0:32d:a022:8559 with SMTP id h5-20020a5d6885000000b0032da0228559mr397043wru.47.1697488191736;
-        Mon, 16 Oct 2023 13:29:51 -0700 (PDT)
+        bh=yP03Yjd+YrRnUI9Z4/vJQB7dAVo1TlzSZV/Wwx+jtHQ=;
+        b=uPrwttExOjmj2NwhtH1Daxt+baCO/TRE9OlbKFiDysIKbGydgWYdTIIzif3pUiYhvV
+         ZR2VQENVYHLboqyPXm+EFhVUUNaMsKGcDnyKe+aHLXZHeLiyo8XvmJtZl0pkjE/+hadm
+         tVJcTl7FewpjTq5GcioWkkCgvepZwtxzO5PeBfZ4kFSkRX6oJ/3SUSmNZMMndWK5eGGX
+         geMpEfid40ycX0tp0/tm1Pm40W9nxxXoSy7mWxSOt1r920Zl5aredRpxETANylV2JwBc
+         yJ/tMpkyI05B1h8LIUEcxnPjw7utsrja2f3hm2cEPWkq64yjPstthdzH7QxthzMLRZHV
+         9YbQ==
+X-Gm-Message-State: AOJu0YzPM9ktbRzGQZAxdSSPhcFi/jy3qDVE7CH2PbPjKIcsemd5t428
+        U5rSJaLzYM8aRoCBh4zK0Q==
+X-Google-Smtp-Source: AGHT+IGR2WYyvQGDSVWvcnP9TKmfjCt0gbYLkfoAC0FYqIYNl1BRisa6qK/vHorshbbX/iwXh4QmBw==
+X-Received: by 2002:a05:600c:19cd:b0:405:1baf:cedf with SMTP id u13-20020a05600c19cd00b004051bafcedfmr172204wmq.24.1697488254326;
+        Mon, 16 Oct 2023 13:30:54 -0700 (PDT)
 Received: from dorcaslitunya-virtual-machine ([105.163.1.143])
-        by smtp.gmail.com with ESMTPSA id i5-20020adffc05000000b0032dab20e773sm73834wrr.69.2023.10.16.13.29.49
+        by smtp.gmail.com with ESMTPSA id 13-20020a05600c230d00b004068495910csm7946115wmo.23.2023.10.16.13.30.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 16 Oct 2023 13:29:51 -0700 (PDT)
-Date:   Mon, 16 Oct 2023 23:29:47 +0300
+        Mon, 16 Oct 2023 13:30:54 -0700 (PDT)
+Date:   Mon, 16 Oct 2023 23:30:50 +0300
 From:   Dorcas Litunya <anonolitunya@gmail.com>
 To:     Julia Lawall <julia.lawall@inria.fr>
 Cc:     outreachy@lists.linux.dev,
@@ -58,72 +58,116 @@ Cc:     outreachy@lists.linux.dev,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
         linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] Staging: sm750fb: Rename displayControlAdjust_SM750E
-Message-ID: <ZS2dO4oirsQlM+TU@dorcaslitunya-virtual-machine>
+Subject: Re: [PATCH 3/5] Staging: sm750fb: Rename displayControl
+Message-ID: <ZS2deicLPyamwb5T@dorcaslitunya-virtual-machine>
 References: <cover.1697400022.git.anonolitunya@gmail.com>
- <16a9ad33ef67993482da0d350d7239aee3f0dd22.1697400022.git.anonolitunya@gmail.com>
- <d4fb378f-7446-cf16-2d14-3623e313d6ac@inria.fr>
+ <596de9b4cf3483d872b1ba25e1b02194aec34bac.1697400022.git.anonolitunya@gmail.com>
+ <a5cbf027-7990-c54d-8bfc-dc042ac166f@inria.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <d4fb378f-7446-cf16-2d14-3623e313d6ac@inria.fr>
+In-Reply-To: <a5cbf027-7990-c54d-8bfc-dc042ac166f@inria.fr>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, Oct 15, 2023 at 10:22:29PM +0200, Julia Lawall wrote:
+On Sun, Oct 15, 2023 at 10:23:54PM +0200, Julia Lawall wrote:
 > 
 > 
 > On Sun, 15 Oct 2023, Dorcas AnonoLitunya wrote:
 > 
-> > Rename function displayControlAdjust_SM750E to
-> > display_control_adjust_SM750E.This follows snakecase naming convention
-> > and ensures consistent naming style throughout the file.Issue by
-> > checkpatch.
+> > Rename variable displayControl to display_control. This follows
+> > snakecase naming convention and ensures consistent naming style
+> > throughout the file.Issue by checkpatch.
 > 
-> The period at the end of a sentence should have a space after it.
+> Actually, the variable seems to be dispControl?
 > 
-> ensures -> ensures a
-> 
-> Issue -> Issue found
-> 
-This is corrected. Thanks Julia!
+I had actually missed this. Thanks for the correction. Its now corrected
+in v2.
 
+Dorcas
 > julia
 > 
 > >
-> > Mutes the following error:
-> > CHECK:Avoid CamelCase: <displayControlAdjust_SM750E>
+> > Mutes the following checkpatch error:
+> > CHECK: Avoid CamelCase: <dispControl>
 > >
 > > Signed-off-by: Dorcas AnonoLitunya <anonolitunya@gmail.com>
 > > ---
-> >  drivers/staging/sm750fb/ddk750_mode.c | 6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
+> >  drivers/staging/sm750fb/ddk750_mode.c | 32 +++++++++++++--------------
+> >  1 file changed, 16 insertions(+), 16 deletions(-)
 > >
 > > diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-> > index e00a6cb31947..8708995f676c 100644
+> > index 431b273a347a..fc3db09de9ae 100644
 > > --- a/drivers/staging/sm750fb/ddk750_mode.c
 > > +++ b/drivers/staging/sm750fb/ddk750_mode.c
-> > @@ -14,8 +14,8 @@
-> >   * in bit 29:27 of Display Control register.
+> > @@ -15,7 +15,7 @@
 > >   */
 > >  static unsigned long
-> > -displayControlAdjust_SM750LE(struct mode_parameter *pModeParam,
-> > -			     unsigned long dispControl)
-> > +display_control_adjust_SM750LE(struct mode_parameter *pModeParam,
-> > +			       unsigned long dispControl)
+> >  display_control_adjust_SM750LE(struct mode_parameter *mode_param,
+> > -			       unsigned long dispControl)
+> > +			       unsigned long disp_control)
 > >  {
 > >  	unsigned long x, y;
 > >
-> > @@ -125,7 +125,7 @@ static int programModeRegisters(struct mode_parameter *pModeParam,
-> >  			tmp |= DISPLAY_CTRL_HSYNC_PHASE;
+> > @@ -36,42 +36,42 @@ display_control_adjust_SM750LE(struct mode_parameter *mode_param,
+> >  	       ((x - 1) & CRT_AUTO_CENTERING_BR_RIGHT_MASK));
 > >
-> >  		if (sm750_get_chip_type() == SM750LE) {
-> > -			displayControlAdjust_SM750LE(pModeParam, tmp);
-> > +			display_control_adjust_SM750LE(pModeParam, tmp);
-> >  		} else {
-> >  			reg = peek32(CRT_DISPLAY_CTRL) &
-> >  				~(DISPLAY_CTRL_VSYNC_PHASE |
+> >  	/*
+> > -	 * Assume common fields in dispControl have been properly set before
+> > +	 * Assume common fields in disp_control have been properly set before
+> >  	 * calling this function.
+> > -	 * This function only sets the extra fields in dispControl.
+> > +	 * This function only sets the extra fields in disp_control.
+> >  	 */
+> >
+> >  	/* Clear bit 29:27 of display control register */
+> > -	dispControl &= ~CRT_DISPLAY_CTRL_CLK_MASK;
+> > +	disp_control &= ~CRT_DISPLAY_CTRL_CLK_MASK;
+> >
+> >  	/* Set bit 29:27 of display control register for the right clock */
+> >  	/* Note that SM750LE only need to supported 7 resolutions. */
+> >  	if (x == 800 && y == 600)
+> > -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL41;
+> > +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL41;
+> >  	else if (x == 1024 && y == 768)
+> > -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL65;
+> > +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL65;
+> >  	else if (x == 1152 && y == 864)
+> > -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL80;
+> > +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL80;
+> >  	else if (x == 1280 && y == 768)
+> > -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL80;
+> > +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL80;
+> >  	else if (x == 1280 && y == 720)
+> > -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL74;
+> > +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL74;
+> >  	else if (x == 1280 && y == 960)
+> > -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL108;
+> > +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL108;
+> >  	else if (x == 1280 && y == 1024)
+> > -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL108;
+> > +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL108;
+> >  	else /* default to VGA clock */
+> > -		dispControl |= CRT_DISPLAY_CTRL_CLK_PLL25;
+> > +		disp_control |= CRT_DISPLAY_CTRL_CLK_PLL25;
+> >
+> >  	/* Set bit 25:24 of display controller */
+> > -	dispControl |= (CRT_DISPLAY_CTRL_CRTSELECT | CRT_DISPLAY_CTRL_RGBBIT);
+> > +	disp_control |= (CRT_DISPLAY_CTRL_CRTSELECT | CRT_DISPLAY_CTRL_RGBBIT);
+> >
+> >  	/* Set bit 14 of display controller */
+> > -	dispControl |= DISPLAY_CTRL_CLOCK_PHASE;
+> > +	disp_control |= DISPLAY_CTRL_CLOCK_PHASE;
+> >
+> > -	poke32(CRT_DISPLAY_CTRL, dispControl);
+> > +	poke32(CRT_DISPLAY_CTRL, disp_control);
+> >
+> > -	return dispControl;
+> > +	return disp_control;
+> >  }
+> >
+> >  /* only timing related registers will be  programed */
 > > --
 > > 2.42.0.345.gaab89be2eb
 > >

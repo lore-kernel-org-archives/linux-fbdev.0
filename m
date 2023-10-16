@@ -2,110 +2,75 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70C87CDB465
-	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 14:58:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 715D1CDB474
+	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 20:04:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233843AbjJPO6T (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 16 Oct 2023 10:58:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42582 "EHLO
+        id S232578AbjJPUE7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 16 Oct 2023 16:04:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58394 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233838AbjJPO6S (ORCPT
+        with ESMTP id S231508AbjJPUE6 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 16 Oct 2023 10:58:18 -0400
+        Mon, 16 Oct 2023 16:04:58 -0400
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0C104AB;
-        Mon, 16 Oct 2023 07:58:17 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B3D2C433C7;
-        Mon, 16 Oct 2023 14:58:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1697468296;
-        bh=zmZs3cT99Ur9yvFFGEPGXCP9E85IltaNJadsTOusyko=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=kClicbi0FEtJOIS2/IWCagp0cUksl6C6Tf/QrfEX9GfBmW89XU5uFV+l8/jAe1vip
-         OUsWpbUhVyGgMeY5w0k7kgVEEBIXsol7uxKBM5x225a19aIZenh4CSO1Hg9+7gJG9f
-         E4XKQBULQatlAAkf6qALInjQh9D6MqaaaZ4xRUcQ=
-Date:   Mon, 16 Oct 2023 16:28:15 +0200
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Nandha Kumar Singaram <nandhakumar.singaram@gmail.com>
-Cc:     Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Teddy Wang <teddy.wang@siliconmotion.com>,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: sm750fb: remove unnecessary parentheses
-Message-ID: <2023101643-nemesis-residence-89a6@gregkh>
-References: <20231016130053.GA9696@ubuntu>
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 036B883;
+        Mon, 16 Oct 2023 13:04:57 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C629CC433C7;
+        Mon, 16 Oct 2023 20:04:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1697486696;
+        bh=+CKoakIKRn8tAacvsCSRM0rsr0ykK+jJR6uwcT1H03s=;
+        h=From:To:Cc:Subject:Date:From;
+        b=D1h/PEOWkFFhGEqvx5NqiK82gHeTCGUuSJfwks5MkWbwbnVN/mKglBBjVG/UHIvoS
+         bqRgcaOcPoHaX36lDPsDBYKWGUHx+BLHKth43SR+8/HZBK536qNAVWUNRnMFfmBeR0
+         G4pQ6zdHgkwse4tO9ZiGSJAq3eubliFJE+nD3eEMfS2wj1Q4sdKlYsVkCpBqG7nze5
+         Ga8OAYDOjmzwh/8k01bTNCEWpoSTqACdKKWMmrejxvQhebsnz5NGebFKwR5QEojhgl
+         9xZHX5iPtj+dHURWf7GWlGDOUz/BjgQvHadd81mhkY313PyS/ym0fs+tAg3pbd6FUZ
+         XHyCLk+toyTAQ==
+From:   Arnd Bergmann <arnd@kernel.org>
+To:     Helge Deller <deller@gmx.de>
+Cc:     Arnd Bergmann <arnd@arndb.de>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Lee Jones <lee@kernel.org>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] fbdev: sa1100fb: mark sa1100fb_init() static
+Date:   Mon, 16 Oct 2023 22:04:40 +0200
+Message-Id: <20231016200450.826502-1-arnd@kernel.org>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231016130053.GA9696@ubuntu>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Oct 16, 2023 at 06:00:53AM -0700, Nandha Kumar Singaram wrote:
-> Adhere to linux coding style. Reported by checkpatch:
-> CHECK: Unnecessary parentheses
-> 
-> Signed-off-by: Nandha Kumar Singaram <nandhakumar.singaram@gmail.com>
-> ---
->  drivers/staging/sm750fb/ddk750_swi2c.c | 2 +-
->  drivers/staging/sm750fb/sm750_accel.c  | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
-> index 0ef8d4ff2ef9..50e51d730d86 100644
-> --- a/drivers/staging/sm750fb/ddk750_swi2c.c
-> +++ b/drivers/staging/sm750fb/ddk750_swi2c.c
-> @@ -393,7 +393,7 @@ long sm750_sw_i2c_init(unsigned char clk_gpio, unsigned char data_gpio)
->  	 * Return 0 if the GPIO pins to be used is out of range. The
->  	 * range is only from [0..63]
->  	 */
-> -	if ((clk_gpio > 31) || (data_gpio > 31))
-> +	if (clk_gpio > 31 || data_gpio > 31)
->  		return -1;
->  
->  	if (sm750_get_chip_type() == SM750LE)
-> diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-> index 44b9e3fe3a41..bbef19a39f81 100644
-> --- a/drivers/staging/sm750fb/sm750_accel.c
-> +++ b/drivers/staging/sm750fb/sm750_accel.c
-> @@ -215,7 +215,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
->  		}
->  	}
->  
-> -	if ((nDirection == BOTTOM_TO_TOP) || (nDirection == RIGHT_TO_LEFT)) {
-> +	if (nDirection == BOTTOM_TO_TOP || nDirection == RIGHT_TO_LEFT) {
->  		sx += width - 1;
->  		sy += height - 1;
->  		dx += width - 1;
-> -- 
-> 2.25.1
-> 
-> 
+From: Arnd Bergmann <arnd@arndb.de>
 
-Hi,
+This is a global function that is only referenced as an initcall. This causes
+a warning:
 
-This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
-a patch that has triggered this response.  He used to manually respond
-to these common problems, but in order to save his sanity (he kept
-writing the same thing over and over, yet to different people), I was
-created.  Hopefully you will not take offence and will fix the problem
-in your patch and resubmit it so that it can be accepted into the Linux
-kernel tree.
+drivers/video/fbdev/sa1100fb.c:1218:12: error: no previous prototype for 'sa1100fb_init' [-Werror=missing-prototypes]
 
-You are receiving this message because of the following common error(s)
-as indicated below:
+Make it static instead.
 
-- You sent a patch that has been sent multiple times in the past and is
-  identical to ones that have been rrejected.  Please always look at the
-  mailing list traffic to determine if you are duplicating other
-  people's work.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/video/fbdev/sa1100fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-If you wish to discuss this problem further, or you have questions about
-how to resolve this issue, please feel free to respond to this email and
-Greg will reply once he has dug out from the pending patches received
-from other developers.
+diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
+index 63e12a7c1100e..e14eb634cb944 100644
+--- a/drivers/video/fbdev/sa1100fb.c
++++ b/drivers/video/fbdev/sa1100fb.c
+@@ -1215,7 +1215,7 @@ static struct platform_driver sa1100fb_driver = {
+ 	},
+ };
+ 
+-int __init sa1100fb_init(void)
++static int __init sa1100fb_init(void)
+ {
+ 	if (fb_get_options("sa1100fb", NULL))
+ 		return -ENODEV;
+-- 
+2.39.2
 
-thanks,
-
-greg k-h's patch email bot

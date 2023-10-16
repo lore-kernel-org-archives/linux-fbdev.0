@@ -2,45 +2,48 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0380CDB465
-	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 21:07:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB77ACDB465
+	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 21:09:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231221AbjJPVHE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 16 Oct 2023 17:07:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47564 "EHLO
+        id S232531AbjJPVJk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 16 Oct 2023 17:09:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52736 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229848AbjJPVHD (ORCPT
+        with ESMTP id S233463AbjJPVJk (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 16 Oct 2023 17:07:03 -0400
+        Mon, 16 Oct 2023 17:09:40 -0400
 Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 54E31A7;
-        Mon, 16 Oct 2023 14:07:01 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 78C29D9;
+        Mon, 16 Oct 2023 14:09:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
- t=1697490408; x=1698095208; i=deller@gmx.de;
- bh=d6tjiijzqQhQKa4d9B5bi64BIn8+37P4rH09K0TNgCk=;
+ t=1697490548; x=1698095348; i=deller@gmx.de;
+ bh=0l5HRln2aLrQCHUgzKay/9XIY0Mr4awYAadqROs/OAs=;
  h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=fW880YgfFGiPWR6gnyAu9yN8aKybPvsczrXXi3oKHWDCXOshb5ThdkCvB+m2F9qZ45ZSNlaTS5F
- USfUQvnj73mxGhkeT4IJfFsy/jZvvDIDEcGXJt411XIRe1d/jJqqNcckQR/HSHTR094bo72yQWn0y
- f/0G7/+Jhe/fDKnwbfTY/QSJLYxJPkSB3BxHTRLkXFFezJ4ZRmuHQrRgm2RHbGBEpb+PnK2ZgCJQQ
- OU7RIfsVBa/mpsn0PL4nzYNdw+vm5IKrtujiYAluw8+SkMTWeXLZQNe3V+0JVWhduK0oeqXVpLbTZ
- Z+GVYuIPjTEnLjca+N+pyWj4KxyfZbEg8HTw==
+ b=N5BdS+KWNPUf9/OfdjXUFTlr5rSCv5vppRovuPYZt+pf5CL9NNHFWru4ZeD6x1JuLw694COb1at
+ JTLa3T5h84yqBSABtTXdSSToXnYC9UyHik1skJ1ShcQY8Ohr+xzGoqWkERNDJihHxdVFN6dLvyeJI
+ khKZoa/VEIfQHBgnOWKob+cKWEeNEuyztdvtSzMU2YwYkMIPRiv88DARhMW+W/mwWHMnN378ngwI/
+ /W+zY3rdxp5Y8iuTGaNaWhn/xgxFOk0NAn0vPziID1ercUVQ4CQUllrXmKDblV60pSq/9YoXil4+l
+ UbfSVQznT1pNnP0ynF9jbUJpx+VExszunZqA==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([94.134.153.197]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MPokD-1rEr8t1oIt-00MuL8; Mon, 16
- Oct 2023 23:06:48 +0200
-Message-ID: <3ad85b24-4f7d-4031-ab27-d5c6516dff8b@gmx.de>
-Date:   Mon, 16 Oct 2023 23:06:47 +0200
+Received: from [192.168.20.60] ([94.134.153.197]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N3siA-1raOH61yrY-00zpwm; Mon, 16
+ Oct 2023 23:09:08 +0200
+Message-ID: <e1c6a19b-7587-4b99-b8d5-5572d946f185@gmx.de>
+Date:   Mon, 16 Oct 2023 23:09:05 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: sa1100fb: mark sa1100fb_init() static
+Subject: Re: [PATCH] fbdev: omapfb: fix some error codes
 Content-Language: en-US
-To:     Arnd Bergmann <arnd@kernel.org>
-Cc:     Arnd Bergmann <arnd@arndb.de>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Lee Jones <lee@kernel.org>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-References: <20231016200450.826502-1-arnd@kernel.org>
+To:     Dan Carpenter <dan.carpenter@linaro.org>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+        Yang Yang <yang.yang29@zte.com>,
+        Xu Panda <xu.panda@zte.com.cn>,
+        Lucy Mielke <mielkesteven@icloud.com>,
+        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, kernel-janitors@vger.kernel.org
+References: <843b063c-ee4a-4e17-add6-75e2cc82c2f4@moroto.mountain>
 From:   Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
  xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
@@ -85,45 +88,36 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20231016200450.826502-1-arnd@kernel.org>
+In-Reply-To: <843b063c-ee4a-4e17-add6-75e2cc82c2f4@moroto.mountain>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:oww78UoT3556zyxNmfdLNIun6dvYXk9jadrobaQVz4Ke3P4xxcO
- 5RcgOMbOl9NAdoDa55i132ZOvOqAZL5iEt+JOLGvJW9eB2l7PKfcDScXSt+17+JUpyJm5Yy
- Kqrk27CMl/ArKvcxBlRJk4Fc11B3R+1J0nPDmu0HZ7mlOCO0ZPZAiE9JT5LvpY2dzejnGlL
- 0Qu5OMhDPh/VK02ibFRGw==
-UI-OutboundReport: notjunk:1;M01:P0:NXFGhKVB1Ss=;t5w+h5GczZzzMmIu5idSOSmAJQU
- CPUt4xslxFC6MVMCH9aF90nkkhWCzff0sYrjWJwLBKbSHT/u/hONVVbxvl3s8EwK3UPUnuBHK
- dlJzgt3mGp5mfm90KqQKHu24AFzOnE5O61aO8RJrhQHjPDjq+j+BnqA/+EMdC9K3trMR03vPm
- 3hd1E8gao+EhTERXmdjqAdMTpvqopTOr7U26T4M4eZQL+CRnCf2KLkzI6lZ82pkIOkbBcvNQO
- EcGZKoERagWuFWqRaVH7QeRYdy7owkpCSlt58KaaUYzNuCT/ID5u+F/7bgFDXBDMbMg8ZG4rK
- 7cY3jThtJkxQdPM5L4ukBehVrJQQFyTGZFczeaSdeAf+6gIB67xxiaoBhSTKW+7mAnDeT6uh1
- Tjm9m1f02I677taUegWVUm9+JqfT6+UWrLTEeDjokYWkSB4PNQreZ7/0CnxhbChV4YNZXE96I
- dhsI6j6J0wwh42nZoHamBGsAaCjhDK+V+FCXyxqUxYEDiQg4X/aZDmxixNqt0/Op0pJQmKRF3
- AcB9PtCt1ePbpVKdpk6ihgKFXaVAWH7WgIroUeVdS/E/7kwDd2NK7mXNSYQJyC+ApCuENDQiS
- qeRjPtk5T+lXRVa4GBZ4BhA52+I/S0MyCG9kLuiPqbTwm/bvAIWSSZq4g1tAq0MXtjr5sBASn
- eh34AT2bbYaSvOFqJnSXyalKlERVuF7EUP9y+jupTuZd1BhgT8C0CPDnQ7gyiACJE6g0o99r+
- gRXBPpmeoMEgarLOuoG05VgXpviDBMW9pHHOYCAwbkSfqQeXBlvts3ZUkxtTf5yW8Yfrveu0c
- lGrWQxq384w/EsuHlJwLrVuVc5c2HgfSMgVe8Ou19xT1FJ3zdF95xNd4P2Gip6BvHBfClPCld
- zFDw7zDNBXNf8JGb2bn5uk7Ks+Vnq6UVV6eST24fJ9gx9gR7JvhFUx5N0m1lyBiTFpClCWyqJ
- MIBnVxKmliDvl9EuQjKjKteNzJw=
+X-Provags-ID: V03:K1:FOyYUK4b2kQYxx/cAdXEvw+vAIrXHbwCICGIvD6Kz5Obv8fpWfo
+ +yxSC1QHy9oSBBS+anxDLcgMYbDMpuj/kYNgRbd8u4EUTiQZExSABwuTZ6wpNJYTaAvH4w6
+ GGzs305XXJBHWE3UgmezXl4gIZMEZ5HLU7AhntwUFtq5K6DpCiLi7tQr0NsAvpjdyEtnn2h
+ ANIv4o7mbdykPwdII9uzw==
+UI-OutboundReport: notjunk:1;M01:P0:i3G6yuKsgbo=;HyJOwbkzpDfgVsMPYidrsW2Dbgm
+ kXOBK3eWbsiNnbYRo1a9giCySikv94pxQPxGLaIEkO5kHowmkfxNzf2I8CTaY6KEm5tcrYsQ/
+ Nsn/31TdVzmDfcENep2oouVDmdEwSy84IFV46FlD/V9p2Dy36l8o+XL2aCasQ8j+/J1eb9cPg
+ a8SaCHvv6mn83gYgss9U5O99oWMButQKjkyiWsTPa+IoMuxkpaNQ6XYmGaKjsRnEAqghZpoK5
+ zouLeu7r0iFkwrKu043Clb+4xpAbvrR/wzrp4klYxqr5cuBg5UxbpepzkE6jqRAlSn89dsOr+
+ elGLbOe7eamMh7xq/AkFb0HGDX4x0GgP+LKORwh3sOErVbuqDW8U+jXTAX6FlvfqhfOVM+xfh
+ ifl1xL9c2/DQg5WW3Dptf1VKijyP5yOqMMQwJibDOfr5lL63gOff+U7I7TDLZcgziKlFfDOpp
+ 7JmnmWYe1NYF0pFFmLjSlZ1vkhzl3tyoEVNjlwN24Bv9SLlS5MuXYPCFGYf9GZRdmIAQDsMCo
+ wsX08Pw97zI45yA5V/w2gGmyALj2aoXDa31R1KotmNeWqOSCnQQuqxwIES3amgYzR8krjlutr
+ 64/CsF54D9iNMP6ZW/4n96u0O0Pu99CTl/EHrIW0CKE6o0JkqqIeSs8KfVSYKsiyzW2XqwEjq
+ elpWv5O5oV0iQdSDW5+CdiB0ReQFP6GFcivKq+w7BeFaZ5mDsQ2cersNIVPtCe47J0h30AhKs
+ XqWq8HbMACJTlJINQjKA5hYP9rXJw1zn8emqne9od2b9QTNJGxU0tL0fKR6J62cJl2M2oB5KF
+ 8m9eSV87Gk8LQGC4yRqIyUwLnwGbNVMa/prsO1IwsRFYobRSGHPzGXLTaqAjWVUHuxIoOQvRR
+ TsWoyfWa7D4V4syb7xiT9VDV5dV1eb/cvDh3Jx/aeshpNsHTKuQKKSw6zND4rDbjFGvx4Blya
+ xr7TDCJo9w8AjoRMvTvObtMroI0=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 10/16/23 22:04, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
+On 10/16/23 13:19, Dan Carpenter wrote:
+> Return negative -ENXIO instead of positive ENXIO.
 >
-> This is a global function that is only referenced as an initcall. This c=
-auses
-> a warning:
->
-> drivers/video/fbdev/sa1100fb.c:1218:12: error: no previous prototype for=
- 'sa1100fb_init' [-Werror=3Dmissing-prototypes]
->
-> Make it static instead.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
 
 applied.
 
@@ -131,22 +125,31 @@ Thanks!
 Helge
 
 > ---
->   drivers/video/fbdev/sa1100fb.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+> No fixes tag because the caller doesn't check for errors.
 >
-> diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100=
-fb.c
-> index 63e12a7c1100e..e14eb634cb944 100644
-> --- a/drivers/video/fbdev/sa1100fb.c
-> +++ b/drivers/video/fbdev/sa1100fb.c
-> @@ -1215,7 +1215,7 @@ static struct platform_driver sa1100fb_driver =3D =
-{
->   	},
->   };
+>   drivers/video/fbdev/omap/omapfb_main.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
 >
-> -int __init sa1100fb_init(void)
-> +static int __init sa1100fb_init(void)
->   {
->   	if (fb_get_options("sa1100fb", NULL))
->   		return -ENODEV;
+> diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbde=
+v/omap/omapfb_main.c
+> index f28cb90947a3..42c96f1cfc93 100644
+> --- a/drivers/video/fbdev/omap/omapfb_main.c
+> +++ b/drivers/video/fbdev/omap/omapfb_main.c
+> @@ -1645,13 +1645,13 @@ static int omapfb_do_probe(struct platform_devic=
+e *pdev,
+>   	}
+>   	fbdev->int_irq =3D platform_get_irq(pdev, 0);
+>   	if (fbdev->int_irq < 0) {
+> -		r =3D ENXIO;
+> +		r =3D -ENXIO;
+>   		goto cleanup;
+>   	}
+>
+>   	fbdev->ext_irq =3D platform_get_irq(pdev, 1);
+>   	if (fbdev->ext_irq < 0) {
+> -		r =3D ENXIO;
+> +		r =3D -ENXIO;
+>   		goto cleanup;
+>   	}
+>
 

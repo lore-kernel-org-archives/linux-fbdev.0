@@ -2,42 +2,43 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CEC3CDB465
-	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 21:20:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D15F0CDB465
+	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 21:24:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231560AbjJPVUb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 16 Oct 2023 17:20:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51372 "EHLO
+        id S229943AbjJPVYV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 16 Oct 2023 17:24:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57744 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231221AbjJPVUa (ORCPT
+        with ESMTP id S229666AbjJPVYU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 16 Oct 2023 17:20:30 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 49906A7
-        for <linux-fbdev@vger.kernel.org>; Mon, 16 Oct 2023 14:20:28 -0700 (PDT)
+        Mon, 16 Oct 2023 17:24:20 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A68EAA2
+        for <linux-fbdev@vger.kernel.org>; Mon, 16 Oct 2023 14:24:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
- t=1697491223; x=1698096023; i=deller@gmx.de;
- bh=GWUbh7pGVR/h1ijcKK5YwaWOr2HdMU1IhnXSZVQcncg=;
- h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
- b=C8UsoCdnizVjhyRkJiYe3VkT4vP3UA7fpaLbynBCXfgg7hsfaOB6oCsJbbyHmy2qinXA4cOBtFp
- XBCE2WtK1VFi5ES50d5AUmf1W43K22Oluo0FQpRNY4rIEnVeZRaPc/zlB9qGuwkvhUQWGCdAKhes/
- QZ6jrL+SA3y7egb3JaVaptb8HaZeLmMvrrE1HtpELPbnsJFDw/D3Ue5kF7RqMy8po+g7XqCQsMmRX
- XLN7/mo7+JXbj3DLsBAUk75A+62GCUPmS6uhkI1o0+upzDK7KYb3/3O/IDvP7WkFckJabA4tAbzBW
- tR5ZvCfot3fCGcsk3QXtQJXPRoRgEg/Yf+5g==
+ t=1697491453; x=1698096253; i=deller@gmx.de;
+ bh=8jUO08HNrfpJtMMD2zoBRZuL+JGAUil05Lp+9H+JWF4=;
+ h=X-UI-Sender-Class:Date:Subject:To:References:From:In-Reply-To;
+ b=ErqNyeXV6paBZXM/A9In7g7YwJPT83/t1jqsWalb4R5r+QdTOcj1SjnDLbZQ4lFN/FDuAAkQGsm
+ jx0vMob1/v6+eVvMTFjt2ClCUTWjKltYJYIHxnQKPBUdjFeXE4czCbWRYH43daLfn/LpskcMLnd+A
+ MJwzJjF9JTg3zcDVluP4wXUgtmw7vhYahm68VKlyhEijz5Mmws4Q3f150eub7b+AZKC6cP4rVjvYI
+ 4pN/iJGaabiBxx0aBZjupLSNJosvcd0UrhphiHKO4KvbHo+tWoRkNv1pHx+PU1ffHPpHNNbiZCB8W
+ vKmunsxCSQIdr3ymfLUrGNEEnkrB53LGAU6Q==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.60] ([94.134.153.197]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MLzFr-1r9tIs28wb-00HygD; Mon, 16
- Oct 2023 23:20:23 +0200
-Message-ID: <758a2d2e-20d7-420b-b07e-69bba79a45b8@gmx.de>
-Date:   Mon, 16 Oct 2023 23:20:23 +0200
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N49lD-1ra7KO0csr-0108uX; Mon, 16
+ Oct 2023 23:24:13 +0200
+Message-ID: <a47d414d-c9b4-486e-946f-cef58752f589@gmx.de>
+Date:   Mon, 16 Oct 2023 23:24:12 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] fbdev/uvesafb: Remove uvesafb_exec() prototype from
- include/video/uvesafb.h
+Subject: Re: [PATCH v2 1/2] video: fbdev: core: cfbcopyarea: fix sloppy typing
 Content-Language: en-US
-To:     Jorge Maidana <jorgem.linux@gmail.com>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20231006204347.2594-1-jorgem.linux@gmail.com>
+To:     Sergey Shtylyov <s.shtylyov@omp.ru>,
+        Daniel Vetter <daniel@ffwll.ch>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+References: <20231013205024.8099-1-s.shtylyov@omp.ru>
+ <20231013205024.8099-2-s.shtylyov@omp.ru>
 From:   Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
  xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
@@ -82,65 +83,73 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20231006204347.2594-1-jorgem.linux@gmail.com>
+In-Reply-To: <20231013205024.8099-2-s.shtylyov@omp.ru>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:bTDjVyejDKF1Y/3ZyyZeV17Dx8C0/e0S5lgZiLY+7eOHDwryyJv
- Bc12tk+G2y8/V0MW7/kh0/9lSfAVpLEmQTW/rchrLQGANfBV9vwyEHV2kwv8vt9Tq7c8byk
- DL1XPaaIL4ihHUhj+RVVD7pEnuEtBoGOxGLRLsxq3sz27k3isHX+8T8qKvl2bVt4/rsVj/H
- is/vLHVXsm2oRKIP6z+8Q==
-UI-OutboundReport: notjunk:1;M01:P0:qqGdopg7N+k=;7Q6F9Z6YSefV8mPIgbXJWGBWDlG
- /9Rpg/px77H3Mg+m2635LO28uh0NXSEQVy5JPeeaKd2nX+CTduZVztX+/l4RApvuIrB7NLU7W
- g/6zIqOgQvpi8Bf9+v+x+HDBvKo687QFkPPEebWQSuwrDAIItxfAoVECyErB46B4sPgkdm6Ts
- FKv4cbTAwel10QfP7fOb2CUhB351SpNhf0DKuJKTYzpjV48OSbGfO428/9nJ76vF580f5um4D
- 1jAUv5oXqxVyzC/EqINkVE4ZKqgyFZDbpo/sgnNDMh5+lVVmkC/FNrPsxH7ol+mH9Rlaor0/g
- vx8SRY/OnsG91X/8GTawpW3CigzxdsOj1bkJqBl1NsyROG99yWnoYBFRVS0Jr0/HaK818AE2r
- 8hBixThzW8rJ9qO85H1KZt9bKFIyAFR/Q/PjvBgLEXfzF1wMYCi07Xbb+zpy4QOwK2VK3cpUm
- q4EkNxM8z5o5cznVmoLeeR8qL2hpNRpvhMId3kAQI+os5BWAeqc+1WDSIqORsHU9dmcYhd3gS
- TaRUYSRebVidNDJzYf4oeFVIY4DT28YXKBBs6TnTfrvXV7Lxe3YJxY6/XcvSUwytKNLf1EYEu
- 4xZK5KIYdDsqNlFo/YbzBuWvNqzF7JOwgtGtNim1yu5m9jDJuSg4wqOnfmLT4+vVpAAmwaypU
- aW8MTB/Tl3FJnrJfBZtW/mNB5148DQ3qIWS0WMm/t2QS/i+AvTjEBHfs9EM1Lt3mDvqDVeYAX
- CBOSBy9OJR+46ZRLOxomNZ+UHAXH5TFlCbiSy8zzT/RgQcPVpqoS4J9pnBkV5sDdczKYT2KlS
- l95d7bQYECkGGfmLMiHP7zeV7wtctb6YQdrCMrsDTifFsZujVFu69iGFuJeoZFW9YI1n4bGCP
- 66WqLklqGBEe/q85LCvi3wT0RueDMFf0mX4BlsJlWQj3iaNqJka78G/p0oEOcLrqQKnSy3+0g
- ZMxoxw==
+X-Provags-ID: V03:K1:XFFCCOL6P6sYAvEJFuZyZbt8Lu8fFHw64e5s6bmhMHx9o/p5bnA
+ fTNDn1ulxfPtUNmkWLjsJ4EtRh3h+7je9euZ60jRXJazYMDR3wN2VwMvcyOtgf3g4E2WoOR
+ RoMmX/4F41+sx4g9yO184OBYF6pvPVBkxunR3bLlE02neGxjAZ1ToBFJv6Q7IEApsmeO8X/
+ KYVlppPX6ytKU4RS6UGbw==
+UI-OutboundReport: notjunk:1;M01:P0:/KBklV4KaOE=;3qzpPseRovlfNqpB0sdTZYlj/+Q
+ EOcVECWHswr1Dah0IXzYRiq082/QR8tM3TQ4SBq9XxEGIHO3x2GoowOzRZLMMajcgo5aBbdBW
+ s/cK+36+Rt4hDreOqGEIdjloeA2o+iCs/Nvwp5z/8lIgGBZ9SJEB6QEkqCkdrjZDfGLM87nYa
+ QyAktUe3klD8cHB2e2CQdggHoDS9utLqs1Z+mJsBGdrdA9OVQLatewWzeiwLdYow2ncSbwfcn
+ h0BbcRa2Q51vWOT0Yzi0arsOQ+omHnTpWHwecotVpdfTDrmMMiHfcCfGMGDtSpbf4XkYQ9qU9
+ zuNW1heNOKNP1c323l8vgHKTx6yyhMMQSs1DQV3fdEaN3o5EtXfYopW7Oq6HzBHQetcgXWGfk
+ jxXpDd/FnHQTyAMnk2tnoxDJ1uyJdN8hE33v3RT8jsF1y+M9C4x1YOfdP9/kgWhQAsuwYNQff
+ sU8FeAJvIO6B531+LcDENwXswwN6APjIN/pKSrnMF2uEC3+XI+jnCINo9TZ9IaqP+Wi3hcj2M
+ x/IR2v9DZYax1aQeA8V088UcBIFIzwNMB1zIr6wdUPlVDmVH/yyHCp7NQzE5T9wR3sknGyL+W
+ qLXuWaGYzXt/i5Zxl0sB+iH+Aqz6Bxk8o4OyXBTDl+qMqCtKCkJ7pH40HY8fQKJB4eIspjaoF
+ OISlqf2CaQVMyGRorwIh/j5MIL96oyQ2oH8dIwiBHfauI0Mt069t55Wv6BoMObIgRI/IuFcWC
+ I9WXVOlSI0zzWt8AHk16SiaLqYbCeuHGdWBlHuIALDE84INPxQlLwaOD2d3DNtoHMfMLZoir/
+ d1+xN4Gcz3c2/FFul1pApaps60RX8A//vTDHvo9iu9Ygr7tpu9J/BupFSdzjDWKdUjQUyfpV2
+ YexIRCm1uVpPh9OZ8bRSAi05YKqPZdjMUf/IH93DLAiT8jvO5Vb7o1t2PUsoTRZsdAGUoEZ5z
+ ZAHyx3r2HiPCzQBWEs/pUX0rRhE=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 10/6/23 22:43, Jorge Maidana wrote:
-> uvesafb_exec() is a static function defined and called only in
-> drivers/video/fbdev/uvesafb.c, remove the prototype from
-> include/video/uvesafb.h.
+On 10/13/23 22:50, Sergey Shtylyov wrote:
+> In cfb_copyarea(), the local variable bits_per_line is needlessly typed =
+as
+> *unsigned long* -- which is a 32-bit type on the 32-bit arches and a 64-=
+bit
+> type on the 64-bit arches; that variable's value is derived from the __u=
+32
+> typed fb_fix_screeninfo::line_length field (multiplied by 8u) and a 32-b=
+it
+> *unsigned int* type should still be enough to store the # of bits per li=
+ne.
 >
-> Fixes the warning:
-> ./include/video/uvesafb.h:112:12: warning: 'uvesafb_exec' declared 'stat=
-ic' but never defined [-Wunused-function]
-> when including '<video/uvesafb.h>' in an external program.
+> Found by Linux Verification Center (linuxtesting.org) with the Svace sta=
+tic
+> analysis tool.
 >
-> Signed-off-by: Jorge Maidana <jorgem.linux@gmail.com>
+> Signed-off-by: Sergey Shtylyov <s.shtylyov@omp.ru>
 
 applied both patches.
 
 Thanks!
 Helge
 
-
 > ---
->   include/video/uvesafb.h | 2 --
->   1 file changed, 2 deletions(-)
+>   drivers/video/fbdev/core/cfbcopyarea.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> diff --git a/include/video/uvesafb.h b/include/video/uvesafb.h
-> index 8d2a3bfc8..47d96e75e 100644
-> --- a/include/video/uvesafb.h
-> +++ b/include/video/uvesafb.h
-> @@ -109,8 +109,6 @@ struct uvesafb_ktask {
->   	u32 ack;
->   };
->
-> -static int uvesafb_exec(struct uvesafb_ktask *tsk);
-> -
->   #define UVESAFB_EXACT_RES	1
->   #define UVESAFB_EXACT_DEPTH	2
->
+> diff --git a/drivers/video/fbdev/core/cfbcopyarea.c b/drivers/video/fbde=
+v/core/cfbcopyarea.c
+> index 6d4bfeecee35..5b80bf3dae50 100644
+> --- a/drivers/video/fbdev/core/cfbcopyarea.c
+> +++ b/drivers/video/fbdev/core/cfbcopyarea.c
+> @@ -382,7 +382,7 @@ void cfb_copyarea(struct fb_info *p, const struct fb=
+_copyarea *area)
+>   {
+>   	u32 dx =3D area->dx, dy =3D area->dy, sx =3D area->sx, sy =3D area->s=
+y;
+>   	u32 height =3D area->height, width =3D area->width;
+> -	unsigned long const bits_per_line =3D p->fix.line_length*8u;
+> +	unsigned int const bits_per_line =3D p->fix.line_length * 8u;
+>   	unsigned long __iomem *base =3D NULL;
+>   	int bits =3D BITS_PER_LONG, bytes =3D bits >> 3;
+>   	unsigned dst_idx =3D 0, src_idx =3D 0, rev_copy =3D 0;
 

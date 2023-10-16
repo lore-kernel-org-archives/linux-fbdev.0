@@ -2,103 +2,110 @@ Return-Path: <linux-fbdev-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56129CDB465
-	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 13:01:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70C87CDB465
+	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Oct 2023 14:58:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231569AbjJPNBA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 16 Oct 2023 09:01:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59028 "EHLO
+        id S233843AbjJPO6T (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 16 Oct 2023 10:58:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42582 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232133AbjJPNA7 (ORCPT
+        with ESMTP id S233838AbjJPO6S (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 16 Oct 2023 09:00:59 -0400
-Received: from mail-oo1-xc2b.google.com (mail-oo1-xc2b.google.com [IPv6:2607:f8b0:4864:20::c2b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5E1EF2;
-        Mon, 16 Oct 2023 06:00:57 -0700 (PDT)
-Received: by mail-oo1-xc2b.google.com with SMTP id 006d021491bc7-57be3d8e738so2598155eaf.1;
-        Mon, 16 Oct 2023 06:00:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1697461257; x=1698066057; darn=vger.kernel.org;
-        h=content-disposition:mime-version:message-id:subject:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=vRSNHwdO/tIPJtA5wXwUSgkVx6Nppqe1ZqNrcskxaoE=;
-        b=MgLhzfIaSEpBy6bFa38ReELtg2y8DNL8TWK3TuiRkH9EZHD3dccLZybxKA4njiHI4W
-         mxUrdNF9lra9Txs5j7shDhZlpLe2+wjnoplJF3bl858IplSsmsmKKZYsNqdxABZ6kHLx
-         5WylQRZ27JOl2Sz1tRgDpZYoVMGH76W59yd0LLewIKk4puPwnkRegE7+TKqv3guC7kwk
-         bOfp9DTGMO/hrwgNVcmF40RighYVoQWm+pr4KpS+5eqJqOpg/pwj04ybK/uNRRaHywfl
-         aD2gxNr1V0VMnUhj4jUexHUWsL3CI6iCkUCXvfSfm46iCmPq+jrm413eOwDMwW+DcY0N
-         cGTw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1697461257; x=1698066057;
-        h=content-disposition:mime-version:message-id:subject:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=vRSNHwdO/tIPJtA5wXwUSgkVx6Nppqe1ZqNrcskxaoE=;
-        b=CvxcuShxBP/8PMVs8QOBR/N9KufwtWf2J/7aFUjAv6TS1CQeWu/eBgsPOireiq34PK
-         RMFJf0WaOkj1ffrrWwb/jE0nM9u1v+kESskcKlMyVVFyH5uvSp7VqpNWO2Z/tAOsc+0C
-         ndpGI4tYC7q1kYrINFfqvb0+VNRBk20HVQ+M1hDk3fR6ypAzKvSXgL155tms1kgCh16U
-         QqK1W75hNmcxqg8gaTSVsPrQnz1+1qa0np2c8+quMHxSuxgPrRLw6XA+RPD9/8oEW8ax
-         9JTJCibfZyGMxcXtrGUCEVe/Pazu20Eos03IzIHIuQ5JyxQv0VJJ7/IAUjNEAuKRFyyL
-         4++Q==
-X-Gm-Message-State: AOJu0YyZjg7ISLHF1q/Tg4gjMCTdDQvkJ99uv4iPxoJSHO0XfrctMJ27
-        E+PxfOY8Chci97ZRIUeU6jM=
-X-Google-Smtp-Source: AGHT+IHkqaGRFiSDzIC8/PY+WcmLdafEJPlOVfqU/vUx0GF0CaZ4cYipr6e7qW1L1NjWOrO9T9Ck8Q==
-X-Received: by 2002:a05:6358:7e92:b0:143:5383:af8b with SMTP id o18-20020a0563587e9200b001435383af8bmr35449974rwn.11.1697461256761;
-        Mon, 16 Oct 2023 06:00:56 -0700 (PDT)
-Received: from ubuntu ([223.226.54.200])
-        by smtp.gmail.com with ESMTPSA id u12-20020aa7848c000000b0068883728c16sm18783070pfn.144.2023.10.16.06.00.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 16 Oct 2023 06:00:56 -0700 (PDT)
-Date:   Mon, 16 Oct 2023 06:00:53 -0700
-From:   Nandha Kumar Singaram <nandhakumar.singaram@gmail.com>
-To:     Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        Mon, 16 Oct 2023 10:58:18 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0C104AB;
+        Mon, 16 Oct 2023 07:58:17 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B3D2C433C7;
+        Mon, 16 Oct 2023 14:58:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1697468296;
+        bh=zmZs3cT99Ur9yvFFGEPGXCP9E85IltaNJadsTOusyko=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=kClicbi0FEtJOIS2/IWCagp0cUksl6C6Tf/QrfEX9GfBmW89XU5uFV+l8/jAe1vip
+         OUsWpbUhVyGgMeY5w0k7kgVEEBIXsol7uxKBM5x225a19aIZenh4CSO1Hg9+7gJG9f
+         E4XKQBULQatlAAkf6qALInjQh9D6MqaaaZ4xRUcQ=
+Date:   Mon, 16 Oct 2023 16:28:15 +0200
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Nandha Kumar Singaram <nandhakumar.singaram@gmail.com>
+Cc:     Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
         Teddy Wang <teddy.wang@siliconmotion.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
         linux-kernel@vger.kernel.org
-Subject: [PATCH] staging: sm750fb: remove unnecessary parentheses
-Message-ID: <20231016130053.GA9696@ubuntu>
+Subject: Re: [PATCH] staging: sm750fb: remove unnecessary parentheses
+Message-ID: <2023101643-nemesis-residence-89a6@gregkh>
+References: <20231016130053.GA9696@ubuntu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20231016130053.GA9696@ubuntu>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Adhere to linux coding style. Reported by checkpatch:
-CHECK: Unnecessary parentheses
+On Mon, Oct 16, 2023 at 06:00:53AM -0700, Nandha Kumar Singaram wrote:
+> Adhere to linux coding style. Reported by checkpatch:
+> CHECK: Unnecessary parentheses
+> 
+> Signed-off-by: Nandha Kumar Singaram <nandhakumar.singaram@gmail.com>
+> ---
+>  drivers/staging/sm750fb/ddk750_swi2c.c | 2 +-
+>  drivers/staging/sm750fb/sm750_accel.c  | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
+> index 0ef8d4ff2ef9..50e51d730d86 100644
+> --- a/drivers/staging/sm750fb/ddk750_swi2c.c
+> +++ b/drivers/staging/sm750fb/ddk750_swi2c.c
+> @@ -393,7 +393,7 @@ long sm750_sw_i2c_init(unsigned char clk_gpio, unsigned char data_gpio)
+>  	 * Return 0 if the GPIO pins to be used is out of range. The
+>  	 * range is only from [0..63]
+>  	 */
+> -	if ((clk_gpio > 31) || (data_gpio > 31))
+> +	if (clk_gpio > 31 || data_gpio > 31)
+>  		return -1;
+>  
+>  	if (sm750_get_chip_type() == SM750LE)
+> diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+> index 44b9e3fe3a41..bbef19a39f81 100644
+> --- a/drivers/staging/sm750fb/sm750_accel.c
+> +++ b/drivers/staging/sm750fb/sm750_accel.c
+> @@ -215,7 +215,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+>  		}
+>  	}
+>  
+> -	if ((nDirection == BOTTOM_TO_TOP) || (nDirection == RIGHT_TO_LEFT)) {
+> +	if (nDirection == BOTTOM_TO_TOP || nDirection == RIGHT_TO_LEFT) {
+>  		sx += width - 1;
+>  		sy += height - 1;
+>  		dx += width - 1;
+> -- 
+> 2.25.1
+> 
+> 
 
-Signed-off-by: Nandha Kumar Singaram <nandhakumar.singaram@gmail.com>
----
- drivers/staging/sm750fb/ddk750_swi2c.c | 2 +-
- drivers/staging/sm750fb/sm750_accel.c  | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Hi,
 
-diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
-index 0ef8d4ff2ef9..50e51d730d86 100644
---- a/drivers/staging/sm750fb/ddk750_swi2c.c
-+++ b/drivers/staging/sm750fb/ddk750_swi2c.c
-@@ -393,7 +393,7 @@ long sm750_sw_i2c_init(unsigned char clk_gpio, unsigned char data_gpio)
- 	 * Return 0 if the GPIO pins to be used is out of range. The
- 	 * range is only from [0..63]
- 	 */
--	if ((clk_gpio > 31) || (data_gpio > 31))
-+	if (clk_gpio > 31 || data_gpio > 31)
- 		return -1;
- 
- 	if (sm750_get_chip_type() == SM750LE)
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 44b9e3fe3a41..bbef19a39f81 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -215,7 +215,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
- 		}
- 	}
- 
--	if ((nDirection == BOTTOM_TO_TOP) || (nDirection == RIGHT_TO_LEFT)) {
-+	if (nDirection == BOTTOM_TO_TOP || nDirection == RIGHT_TO_LEFT) {
- 		sx += width - 1;
- 		sy += height - 1;
- 		dx += width - 1;
--- 
-2.25.1
+This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
+a patch that has triggered this response.  He used to manually respond
+to these common problems, but in order to save his sanity (he kept
+writing the same thing over and over, yet to different people), I was
+created.  Hopefully you will not take offence and will fix the problem
+in your patch and resubmit it so that it can be accepted into the Linux
+kernel tree.
 
+You are receiving this message because of the following common error(s)
+as indicated below:
+
+- You sent a patch that has been sent multiple times in the past and is
+  identical to ones that have been rrejected.  Please always look at the
+  mailing list traffic to determine if you are duplicating other
+  people's work.
+
+If you wish to discuss this problem further, or you have questions about
+how to resolve this issue, please feel free to respond to this email and
+Greg will reply once he has dug out from the pending patches received
+from other developers.
+
+thanks,
+
+greg k-h's patch email bot
